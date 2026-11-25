@@ -108,7 +108,15 @@ describe('every dialog walker in the sources', () => {
   const sources = readdirSync(process.cwd()).filter(f => f.endsWith('_source.jsx'));
   const walkers = [];
   for (const f of sources) {
-    for (const m of readFileSync(resolve(process.cwd(), f), 'utf8').matchAll(WALKER)) walkers.push({ file: f, rest: m[2] });
+    const text = readFileSync(resolve(process.cwd(), f), 'utf8');
+    // Walkers may name the selector once as `liveSel` and test it on the same or the next line.
+    const liveSel = (text.match(/\bliveSel = '([^']*)'/) || [])[1] || '';
+    for (const m of text.matchAll(WALKER)) {
+      const lineEnd = text.indexOf('\n', m.index + m[0].length);
+      const nextEnd = lineEnd < 0 ? -1 : text.indexOf('\n', lineEnd + 1);
+      const nextLine = lineEnd < 0 ? '' : text.slice(lineEnd + 1, nextEnd < 0 ? undefined : nextEnd);
+      walkers.push({ file: f, rest: m[2], nextLine, liveSel });
+    }
   }
 
   it('finds the dialogs it is meant to check', () => {
@@ -116,13 +124,20 @@ describe('every dialog walker in the sources', () => {
   });
 
   it('skips the announcement and toast regions in every one', () => {
-    const missing = walkers.filter(w => !/matches\('\[aria-live\], \[role="status"\], \[role="alert"\], \[data-toast-region\]'\)/.test(w.rest)).map(w => w.file);
+    const LITERAL = /matches\('\[aria-live\], \[role="status"\], \[role="alert"\], \[data-toast-region\](?:, [^']*)?'\)/;
+    const VIA_VAR = /\.matches(?:\?\.)?\(liveSel\)/;
+    const coversRegions = (sel) => ['[aria-live]', '[role="status"]', '[role="alert"]', '[data-toast-region]'].every(part => sel.split(', ').includes(part));
+    const skips = (w) => [w.rest, w.nextLine].some(code => LITERAL.test(code) || (VIA_VAR.test(code) && coversRegions(w.liveSel)));
+    const missing = walkers.filter(w => !skips(w)).map(w => w.file);
     expect(missing).toEqual([]);
   });
 
   it('and so does each built module', () => {
     const stale = [...new Set(walkers.map(w => w.file))].filter((f) => {
-      const built = readFileSync(resolve(process.cwd(), f.replace(/_source\.jsx$/, '_module.js')), 'utf8');
+      // walkthrough_copilot_source.jsx builds walkthrough_copilot_cdn_module.js
+      // (walkthrough_copilot_module.js is the separate headless core).
+      const builtName = f === 'walkthrough_copilot_source.jsx' ? 'walkthrough_copilot_cdn_module.js' : f.replace(/_source\.jsx$/, '_module.js');
+      const built = readFileSync(resolve(process.cwd(), builtName), 'utf8');
       return !built.includes('[data-toast-region]');
     });
     expect(stale).toEqual([]);

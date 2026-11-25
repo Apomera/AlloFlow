@@ -18,19 +18,24 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.AlloVR) {
-    console.log('[AlloVR] Already loaded, skipping');
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[AlloVR] Already loaded, skipping');
     return;
   }
 
   function _clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function _isFiniteNum(v) { return typeof v === 'number' && Number.isFinite(v); }
+  function _safeStr(v, fallback) {
+    if (v === undefined || v === null) return fallback || '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return fallback || ''; }
+  }
   function _sanitizeStyleText(raw, fallback) {
     if (typeof raw !== 'string') return fallback;
     var s = raw.trim();
     if (!s || s.length > 1000) return fallback;
-    if (/url\s*\(|expression\s*\(|@import|javascript:|behavior\s*:|-moz-binding/i.test(s)) return fallback;
+    if (/url\s*\(|image-set\s*\(|cross-fade\s*\(|src\s*\(|expression\s*\(|@import|javascript:|vbscript:|data:|behavior\s*:|-moz-binding|\\|\/\*|[\u0000-\u001F\u007F]/i.test(s)) return fallback;
     return s;
   }
 
@@ -51,9 +56,15 @@
   function onSupportChange(cb) {
     if (typeof cb !== 'function') return function () {};
     var active = true;
-    var guarded = function (ok) { if (active) cb(!!ok); };
-    isSupported(guarded);
-    var handler = function () { if (active) isSupported(guarded); };
+    var seq = 0;
+    var check = function () {
+      var token = ++seq;
+      isSupported(function (ok) {
+        if (active && token === seq) { try { cb(!!ok); } catch (e) {} }
+      });
+    };
+    check();
+    var handler = function () { if (active) check(); };
     try { if (typeof navigator !== 'undefined' && navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', handler); } catch (e) {}
     return function () {
       active = false;
@@ -76,9 +87,11 @@
   //   onFrame: () => void              — optional per-XR-frame hook (before render)
   //   onEnter / onExit / onError: () => void — optional lifecycle hooks
   function enable(opts) {
-    opts = opts || {};
+    opts = opts && typeof opts === 'object' ? opts : {};
     var THREE = opts.THREE, renderer = opts.renderer, scene = opts.scene, camera = opts.camera;
-    if (!THREE || !renderer || !scene || !camera) { return { enterVR: function () {}, destroy: function () {}, isPresenting: function () { return false; } }; }
+    if (!THREE || typeof THREE.Group !== 'function' || !renderer || typeof renderer !== 'object' || !scene || typeof scene.add !== 'function' || !camera || typeof camera !== 'object') {
+      return Object.freeze({ enterVR: function () {}, destroy: function () {}, isPresenting: function () { return false; } });
+    }
     try { renderer.xr.enabled = true; } catch (e) {}
 
     // Rig: while presenting, the headset drives the camera's LOCAL pose, so the
@@ -94,8 +107,8 @@
       (rawPos && _isFiniteNum(rawPos[2])) ? rawPos[2] : 0
     ];
     var seatYaw = _isFiniteNum(seat.faceYaw) ? seat.faceYaw : 0;
-    function seatUser() { rig.scale.setScalar(seatScale); rig.position.set(seatPos[0], seatPos[1], seatPos[2]); rig.rotation.set(0, seatYaw, 0); }
-    function unseat() { rig.scale.setScalar(1); rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); }
+    function seatUser() { try { rig.scale.setScalar(seatScale); rig.position.set(seatPos[0], seatPos[1], seatPos[2]); rig.rotation.set(0, seatYaw, 0); } catch (e) {} }
+    function unseat() { try { rig.scale.setScalar(1); rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); } catch (e) {} }
 
     var rawBounds = opts.bounds && typeof opts.bounds === 'object' ? opts.bounds : null;
     var bounds = (rawBounds && _isFiniteNum(rawBounds.minX) && _isFiniteNum(rawBounds.maxX) && _isFiniteNum(rawBounds.minZ) && _isFiniteNum(rawBounds.maxZ))
@@ -193,7 +206,7 @@
     function onTrigger(ctrl) {   // teleport to the floor point under the ray
       try {
         if (!teleTmp) teleTmp = new THREE.Vector3();
-        if (floorHit(ctrl, teleTmp)) {
+        if (floorHit(ctrl, teleTmp) && _isFiniteNum(teleTmp.x) && _isFiniteNum(teleTmp.z)) {
           rig.position.x = _clamp(teleTmp.x, bounds.minX + PAD, bounds.maxX - PAD);
           rig.position.z = _clamp(teleTmp.z, bounds.minZ + PAD, bounds.maxZ - PAD);
           teleFlash = 1; haptic(0.6, 30);
@@ -209,8 +222,14 @@
       try {
         var obj = grabFn && grabFn(); if (!obj) return;
         if (grab && grab.obj === obj && grab.ctrl !== ctrl) {
-          grab.two = { ctrlB: ctrl, startDist: ctrlDist(grab.ctrl, ctrl) || 1, startScale: obj.scale.x || 1 };
-        } else { ctrl.attach(obj); grab = { ctrl: ctrl, obj: obj, two: null }; }
+          var sDist = ctrlDist(grab.ctrl, ctrl);
+          var sScale = obj.scale && _isFiniteNum(obj.scale.x) && obj.scale.x > 0 ? obj.scale.x : 1;
+          grab.two = { ctrlB: ctrl, startDist: (_isFiniteNum(sDist) && sDist > 0) ? sDist : 1, startScale: sScale };
+        } else {
+          if (grab && grab.obj && grab.obj !== obj) releaseGrab();
+          ctrl.attach(obj);
+          grab = { ctrl: ctrl, obj: obj, two: null };
+        }
         haptic(0.5, 30);
       } catch (e) {}
     }
@@ -245,10 +264,13 @@
         var srcs = sess.inputSources || [];
         var mvX = 0, mvY = 0, snap = 0;
         for (var i = 0; i < srcs.length; i++) {
+          if (!srcs[i]) continue;
           var g = srcs[i].gamepad; if (!g || !g.axes) continue;
           var ax = g.axes;
-          var sx = ax.length >= 4 ? ax[2] : (ax[0] || 0);
-          var sy = ax.length >= 4 ? ax[3] : (ax[1] || 0);
+          var rawSx = ax.length >= 4 ? ax[2] : ax[0];
+          var rawSy = ax.length >= 4 ? ax[3] : ax[1];
+          var sx = _isFiniteNum(rawSx) ? _clamp(rawSx, -1, 1) : 0;
+          var sy = _isFiniteNum(rawSy) ? _clamp(rawSy, -1, 1) : 0;
           if (srcs[i].handedness === 'right') { snap = sx; } else { mvX += sx; mvY += sy; }
         }
         if (Math.abs(mvX) < 0.2) mvX = 0;
@@ -266,11 +288,11 @@
         }
         if (Math.abs(snap) > 0.7) { if (snapArmed) { rig.rotation.y -= (snap > 0 ? 1 : -1) * SNAP_DEG * Math.PI / 180; snapArmed = false; } }
         else if (Math.abs(snap) < 0.3) { snapArmed = true; }
-        if (teleMarker) {
+        if (teleMarker && Array.isArray(ctrls)) {
           if (!teleTmp) teleTmp = new THREE.Vector3();
           var shown = false;
           for (var k = 0; k < ctrls.length; k++) {
-            if (floorHit(ctrls[k], teleTmp)) {
+            if (floorHit(ctrls[k], teleTmp) && _isFiniteNum(teleTmp.x) && _isFiniteNum(teleTmp.z)) {
               teleMarker.position.set(_clamp(teleTmp.x, bounds.minX + PAD, bounds.maxX - PAD), 0.2, _clamp(teleTmp.z, bounds.minZ + PAD, bounds.maxZ - PAD));
               teleMarker.visible = true; shown = true; break;
             }
@@ -302,11 +324,14 @@
     }
 
     function enterVR(btn) {
-      if (destroyed || inFlight || presenting || typeof navigator === 'undefined' || !navigator.xr || typeof navigator.xr.requestSession !== 'function') return;
+      if (typeof navigator === 'undefined') return;
+      if (destroyed || inFlight || presenting || !navigator.xr) return;
+      if (typeof navigator.xr.requestSession !== 'function') return;
       inFlight = true;
       if (btn) btn.disabled = true;
-      Promise.resolve(navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }))
-        .then(function (session) {
+      Promise.resolve().then(function () {
+        return navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] });
+      }).then(function (session) {
           if (destroyed) {
             inFlight = false;
             try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {}
@@ -326,14 +351,18 @@
             presenting = false;
             inFlight = false;
             lastFrameMs = null;
+            try { if (session && typeof session.removeEventListener === 'function') session.removeEventListener('end', endHandler); } catch (e) {}
             try { renderer.setAnimationLoop(null); } catch (e) {}
             releaseGrab(); unseat();
             if (btn) btn.disabled = false;
+            if (destroyed) return;
             if (typeof opts.onExit === 'function') { try { opts.onExit(); } catch (e) {} }
             if (typeof opts.resumeLoop === 'function') { try { opts.resumeLoop(); } catch (e) {} }
           };
           try { if (session && typeof session.addEventListener === 'function') session.addEventListener('end', endHandler); } catch (e) {}
-          Promise.resolve(renderer.xr.setSession(session)).then(function () {
+          Promise.resolve().then(function () {
+            return renderer.xr.setSession(session);
+          }).then(function () {
             inFlight = false;
             if (destroyed) {
               try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {}
@@ -345,12 +374,13 @@
             ended = true;
             presenting = false;
             inFlight = false;
+            try { if (session && typeof session.removeEventListener === 'function') session.removeEventListener('end', endHandler); } catch (e) {}
             try { renderer.setAnimationLoop(null); } catch (e) {}
             releaseGrab(); unseat();
             try { Promise.resolve(session.end()).catch(function () {}); } catch (e) {}
             if (btn) btn.disabled = false;
             if (typeof opts.onError === 'function') { try { opts.onError(); } catch (e) {} }
-            if (typeof opts.resumeLoop === 'function') { try { opts.resumeLoop(); } catch (e) {} }
+            if (!destroyed && typeof opts.resumeLoop === 'function') { try { opts.resumeLoop(); } catch (e) {} }
           });
         })
         .catch(function () { inFlight = false; if (btn) btn.disabled = false; if (typeof opts.onError === 'function') { try { opts.onError(); } catch (e) {} } });
@@ -378,8 +408,18 @@
       try { if (ctrls) ctrls.forEach(function (c) { rig.remove(c); }); } catch (e) {}
       try { if (grips) grips.forEach(function (gp) { rig.remove(gp); }); } catch (e) {}
       ctrls = null; grips = null;
-      try { if (teleMarker) { scene.remove(teleMarker); if (teleMarker.geometry) teleMarker.geometry.dispose(); if (teleMarker.material) teleMarker.material.dispose(); teleMarker = null; } } catch (e) {}
-      try { if (vignette) { if (vignette.parent) vignette.parent.remove(vignette); if (vignette.geometry) vignette.geometry.dispose(); if (vignette.material) vignette.material.dispose(); vignette = null; } } catch (e) {}
+      if (teleMarker) {
+        try { scene.remove(teleMarker); } catch (e) {}
+        try { if (teleMarker.geometry && teleMarker.geometry.dispose) teleMarker.geometry.dispose(); } catch (e) {}
+        try { if (teleMarker.material && teleMarker.material.dispose) teleMarker.material.dispose(); } catch (e) {}
+        teleMarker = null;
+      }
+      if (vignette) {
+        try { if (vignette.parent) vignette.parent.remove(vignette); } catch (e) {}
+        try { if (vignette.geometry && vignette.geometry.dispose) vignette.geometry.dispose(); } catch (e) {}
+        try { if (vignette.material && vignette.material.dispose) vignette.material.dispose(); } catch (e) {}
+        vignette = null;
+      }
       try { if (camera && camera.parent === rig) { rig.remove(camera); scene.add(camera); } } catch (e) {}
       try { if (rig && rig.parent) rig.parent.remove(rig); } catch (e) {}
     }
@@ -397,22 +437,24 @@
     var DEFAULT_STYLE = 'border:none;background:#4f46e5;color:#fff;border-radius:999px;min-height:44px;min-width:44px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;';
     var btn = null;
     function make() {
-      if (btn || !container || typeof container.appendChild !== 'function') return;
+      if (btn || typeof document === 'undefined' || !document || typeof document.createElement !== 'function' || !container || typeof container.appendChild !== 'function') return;
       btn = document.createElement('button');
       btn.type = 'button';
-      btn.textContent = '🥽 ' + t('vr.enter', 'VR');
-      btn.setAttribute('aria-label', t('vr.enter_title', 'Enter VR (needs a headset)'));
-      btn.title = t('vr.enter_title', 'Enter VR (needs a headset)');
+      var enterLabel = _safeStr(t('vr.enter', 'VR'), 'VR');
+      var enterTitle = _safeStr(t('vr.enter_title', 'Enter VR (needs a headset)'), 'Enter VR (needs a headset)');
+      btn.textContent = '🥽 ' + enterLabel;
+      btn.setAttribute('aria-label', enterTitle);
+      btn.title = enterTitle;
       btn.style.cssText = _sanitizeStyleText(opts.style, DEFAULT_STYLE);
       btn.onclick = function () { if (handle && typeof handle.enterVR === 'function') handle.enterVR(btn); };
       container.appendChild(btn);
     }
-    function remove() { if (btn) { try { if (btn.parentNode) btn.parentNode.removeChild(btn); } catch (e) {} btn = null; } }
+    function remove() { if (btn) { try { btn.onclick = null; } catch (e) {} try { if (btn.parentNode) btn.parentNode.removeChild(btn); } catch (e) {} btn = null; } }
     var off = onSupportChange(function (ok) { if (ok) make(); else remove(); });
     return function () { off(); remove(); };
   }
 
-  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
   window.AlloModules.AlloVR = Object.freeze({
     version: 'allovr/1',
     isSupported: isSupported,
@@ -420,5 +462,5 @@
     enable: enable,
     mountButton: mountButton
   });
-  console.log('[AlloVR] Registered (allovr/1 — reusable WebXR layer for three.js STEM scenes)');
+  if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[AlloVR] Registered (allovr/1 — reusable WebXR layer for three.js STEM scenes)');
 })();

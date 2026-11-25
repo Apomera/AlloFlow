@@ -100,14 +100,19 @@ describe('H5 — assessment mode withholds the concept-sort key (behavioral slic
     expect(out).toContain('class="alloflow-cs-dropzone" data-category-id="cat-a"'); // placement target intact
     expect(out).toMatch(/alloflow-cs-strip[^>]*data-category-id=""/);               // key withheld
     expect(out).not.toMatch(/alloflow-cs-strip[^>]*data-category-id="cat-a"/);
-    expect(out).toContain('.alloflow-cs-controls{display:none !important}');
-    expect(out).toContain('.quiz-controls{display:none !important}');
+    // Since 2026-11-14 only the self-grading Check buttons and feedback are hidden
+    // (one injected rule), not the whole controls bar.
+    const hidden = (out.match(/<style>([^<]*)\{display:none !important\}<\/style>/) || [])[1] || '';
+    for (const sel of ['.alloflow-cs-check-btn', '.quiz-check-btn', '.alloflow-quiz-check-btn', '.alloflow-quiz-feedback', '[data-allo-self-check-btn]']) {
+      expect(hidden.split(','), sel).toContain(sel);
+    }
   });
   it('practice mode (assessmentMode off) is untouched', () => {
     const out = postProcess(FIXTURE, {});
     expect(out).toContain('data-correct="2"');
     expect(out).toMatch(/alloflow-cs-strip[^>]*data-category-id="cat-a"/);
-    expect(out).not.toContain('.alloflow-cs-controls{display:none');
+    expect(out).not.toContain('[data-allo-self-check-btn]{display:none');
+    expect(out).not.toContain('.alloflow-cs-check-btn,');
   });
 });
 

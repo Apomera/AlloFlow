@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  if (typeof window !== 'object' || !window || typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
   function safeJsonParse(raw) {
     return JSON.parse(raw, function (k, v) {
       return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
@@ -24,25 +24,30 @@
       var qm = window.__alloQrStudentMode;
       if (qm === true || (qm && typeof qm === 'object' && (qm.active === true || qm.aiDisabled === true || qm.aiPolicy === 'off' || qm.allowAi === false || qm.aiEnabled === false))) return false;
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
-    } catch (_) {}
+      if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return false;
+    } catch (_) { return false; }
     return true;
   }
   var E = window.AlloOutingEngine;
   var byId = function (id) { return document.getElementById(id); };
-  var text = function (id, value) { byId(id).textContent = value || ''; };
+  var focusEl = function (el, opts) { if (el && typeof el.focus === 'function') { try { el.focus(opts); } catch (_) {} } };
+  var text = function (id, value) { var el = byId(id); if (el) el.textContent = value || ''; };
   var storage;
   try { storage = window.localStorage; } catch (_) { storage = null; }
   if (!E) {
     text('feedback', 'The practice could not load. Reload this page to try again.');
-    byId('sceneContainer').hidden = true;
+    var sc = byId('sceneContainer'); if (sc) sc.hidden = true;
     return;
   }
+  if (!byId('stationActions') || !byId('settingsForm')) return;
   var current, activeStation = 'kitchen', shownHint = false, sceneHidden = false;
   var selectedObject = null, hoveredObject = null, closeView = false, objectNodes = {};
   var originalEmissive = new WeakMap();
   var requestSerial = 0, pendingController = null, busy = false, selectedContentId = null;
   var contentNotice = '', sceneReady = false, textSerial = 0, eventSerial = 0, latestView;
-  var urlParams = new URLSearchParams(window.location && window.location.search ? window.location.search : '');
+  var urlParams;
+  try { urlParams = new URLSearchParams(window.location && window.location.search ? window.location.search : ''); }
+  catch (_) { urlParams = { get: function () { return null; } }; }
   var learnerScope = String(urlParams.get('learner') || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
   var scopeTag = learnerScope ? ':' + learnerScope : '';
   var ACTIVE_KEY = 'alloflow-life-outing-active:v1' + scopeTag;
@@ -64,7 +69,8 @@
   var updateTopic = null, updateSnapshot = null, updateAssessment = null;
   var departureGuess = null, departureReview = null, departureVisited = false;
   var waterMoment = null, waterMotionTimer = null;
-  var motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var motionPreference = null;
+  try { motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null; } catch (_) {}
   var routePreview = null;
   var routeActions = {walk:'choose_walk', bus:'choose_bus', ride:'choose_ride', late_bus:'choose_late_bus'};
   var notes = Object.create(null), comparison = null, reviewRevision = null, importSerial = 0, lastSaveOk = false;
@@ -315,7 +321,7 @@
   }
   function act(id, source) {
     stopReading();
-    var focusedAction = document.activeElement && document.activeElement.dataset.action;
+    var focusedAction = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.action;
     var wasComplete = latestView.completed, oldEvent = latestView.event && latestView.event.title;
     var bottlePosition = byId('bottleObject') && byId('bottleObject').getAttribute('position');
     var bottleFrom = bottlePosition && typeof bottlePosition === 'object' ? [bottlePosition.x,bottlePosition.y,bottlePosition.z].join(' ') : bottlePosition;
@@ -344,7 +350,7 @@
         text('waterStatus', latestView.feedback + ' Practice clock: ' + latestView.clock + '.');
         (latestView.scene.bottlePacked ? byId('waterReadyTitle') : byId('packAtTap')).focus();
       }
-      else if (source === 'packing') (byId('packingReady').hidden ? byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary') : byId('packingReadyTitle')).focus();
+      else if (source === 'packing') focusEl(byId('packingReady').hidden ? byId('packingItems').querySelector('button:not(:disabled)') || byId('packingWorkbench').querySelector('summary') : byId('packingReadyTitle'));
       else if (source === 'wardrobe') byId('wardrobeReadyTitle').focus();
       else if (source === 'update') byId('updateReadStatus').focus();
       else if (source !== 'scene' && focusedAction) {
@@ -695,11 +701,11 @@
     if (readUtterance && readScope === scope) { stopReading('Reading stopped.'); return; }
     stopReading(); var content = readingText(scope);
     if (!content) return;
-    if (readService.speaking || readService.pending) { text('readAloudStatus','Another voice is reading. Try again when it finishes.'); return; }
     try {
+      if (readService.speaking || readService.pending) { text('readAloudStatus','Another voice is reading. Try again when it finishes.'); return; }
       var utterance = new window.SpeechSynthesisUtterance(content), serial = ++readSerial;
       utterance.lang = 'en'; utterance.rate = .95;
-      var voices = readService.getVoices ? readService.getVoices() : [], voice = voices.find(function (item) { return /^en(?:-|$)/i.test(item.lang) && item.localService; });
+      var voices = readService.getVoices ? readService.getVoices() : [], voice = Array.isArray(voices) ? voices.find(function (item) { return item && /^en(?:-|$)/i.test(item.lang) && item.localService; }) : null;
       if (voice) utterance.voice = voice;
       readUtterance = utterance; readScope = scope; readText = content; readButtonId = {guide:'readNextStep',activity:'readActivity',change:'readReceivedChange',outcome:'readOutcome',comparison:'readComparison',review:'readReview',saved:'readSavedPreview'}[scope];
       renderReadingControls();
@@ -789,8 +795,9 @@
     waterMotionTimer = window.setTimeout(clearWaterMotion, 650);
   }
   function motionPreferenceChanged(event) { if (event.matches) clearWaterMotion(); }
+  function onVisibilityChange() { if (document.hidden) { stopReading(); clearWaterMotion(); } }
   if (motionPreference && motionPreference.addEventListener) motionPreference.addEventListener('change', motionPreferenceChanged);
-  document.addEventListener('visibilitychange', function () { if (document.hidden) { stopReading(); clearWaterMotion(); } });
+  document.addEventListener('visibilitychange', onVisibilityChange);
   function clearPacking(collapse) {
     packingSelection = null; packingPreview = null;
     byId('packingPreviewResult').hidden = true;
@@ -1776,9 +1783,10 @@
         button.setAttribute('aria-label',entry[1]+' planned step '+(index+1)+': '+step.label);
         button.disabled=v.completed||(operation==='up'&&index===0)||(operation==='down'&&index===v.steps.length-1);
         button.addEventListener('click',function(){
+          if(!plan||!Array.isArray(plan.steps))return;
           var steps=plan.steps.slice(),target=step.id;
-          if(operation==='remove'){steps.splice(index,1);target=steps[Math.min(index,steps.length-1)]&&steps[Math.min(index,steps.length-1)].id;}
-          else {var at=index+(operation==='up'?-1:1),other=steps[at];steps[at]=steps[index];steps[index]=other;}
+          if(operation==='remove'){if(index<0||index>=steps.length)return;steps.splice(index,1);target=steps[Math.min(index,steps.length-1)]&&steps[Math.min(index,steps.length-1)].id;}
+          else {var at=index+(operation==='up'?-1:1);if(at<0||at>=steps.length||index<0||index>=steps.length)return;var other=steps[at];steps[at]=steps[index];steps[index]=other;}
           editPlan(steps,target||'removed',operation,operation==='remove'?'Step removed from your plan.':'Step moved '+(operation==='up'?'earlier':'later')+' in your plan.');
         });
         controls.appendChild(button);
@@ -1847,7 +1855,8 @@
   }
   function exploreDeparture(value,announceChange) {
     var minimum=E.travelAt(current).minimumDeparture;
-    exploredDeparture=Math.max(minimum,Math.min(60,value));
+    var parsed=Number.isFinite(value)?Math.round(value):minimum;
+    exploredDeparture=Math.max(minimum,Math.min(60,parsed));
     var timing=renderTravelLab();
     if(announceChange)text('travelLabStatus','At '+timing.departure+', '+timing.routes.filter(function(route){return route.onTime;}).length+' of '+timing.routes.length+' routes arrive by 09:35. The practice clock stays '+timing.practiceClock+'.');
   }
@@ -1936,7 +1945,7 @@
     var owner = { runId: current.runId, revision: current.commands.length, serial: ++requestSerial };
     var payload = { kind: kind, runId: owner.runId, revision: owner.revision, context: current.config.context, language: current.config.language, facts: boundedFacts(latestView.facts) };
     if (kind === 'dialogue') payload.intent = intent;
-    pendingController = new AbortController();
+    pendingController = typeof AbortController === 'function' ? new AbortController() : { signal: { aborted: false }, abort: function () { this.signal.aborted = true; } };
     var signal = pendingController.signal;
     busy = true; contentNotice = ''; renderStory();
     var request = (client && isAiAllowed()) ? client.request(payload, { signal: signal }) : Promise.resolve({ text: latestView.intro, status: 'authored' });
@@ -1975,12 +1984,14 @@
     canvas.id = 'outing-label-' + (++textSerial);
     canvas.width = 768; canvas.height = 192; canvas.hidden = true;
     var ctx = canvas.getContext('2d');
-    if (style.background) { ctx.fillStyle = style.background; ctx.fillRect(0,0,768,192); }
-    ctx.fillStyle = style.color || '#28413c'; ctx.font = '600 ' + (style.fontSize || 38) + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    var words = String(value).split(/\s+/), lines = [], line = '';
-    words.forEach(function (word) { var next = line ? line + ' ' + word : word; if (ctx.measureText(next).width > 704 && line) { lines.push(line); line = word; } else line = next; });
-    if (line) lines.push(line);
-    lines.slice(0,3).forEach(function (part, i) { ctx.fillText(part, 384, 96 + (i - (Math.min(lines.length,3)-1)/2) * 46); });
+    if (ctx) {
+      if (style.background) { ctx.fillStyle = style.background; ctx.fillRect(0,0,768,192); }
+      ctx.fillStyle = style.color || '#28413c'; ctx.font = '600 ' + (style.fontSize || 38) + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      var words = String(value).split(/\s+/), lines = [], line = '';
+      words.forEach(function (word) { var next = line ? line + ' ' + word : word; if (ctx.measureText(next).width > 704 && line) { lines.push(line); line = word; } else line = next; });
+      if (line) lines.push(line);
+      lines.slice(0,3).forEach(function (part, i) { ctx.fillText(part, 384, 96 + (i - (Math.min(lines.length,3)-1)/2) * 46); });
+    }
     byId('roomLabels').appendChild(canvas);
     var plane = entity('a-plane', Object.assign({ width:1.7, height:.42, material:'src: #' + canvas.id + '; shader: flat; transparent: true; side: double' }, attrs), parent);
     plane.dataset.canvasId = canvas.id;
@@ -2037,7 +2048,9 @@
     }, true);
   }
   function fitScene() {
-    var scene = byId('outingScene'), camera = scene.querySelector('a-camera');
+    var scene = byId('outingScene');
+    if (!scene) return;
+    var camera = scene.querySelector('a-camera');
     var bounds = scene.getBoundingClientRect();
     if (!camera || !bounds.width || !bounds.height) return;
     // Fit the whole home at both wide desktop and narrow phone aspect ratios.
@@ -2122,13 +2135,16 @@
     textPlane('HEAD OUT',{position:'3.12 .13 -.83',rotation:'-25 0 0',width:1.4},travel);
     [['bottleObject','bottle'],['tapObject','bottle'],['shirtObject','outfit'],['clothesFolded','outfit'],['documentObject','card'],['packedDocument','card'],['forecastObject','forecast'],['weatherObject','raincoat'],['hatObject','hat'],['bagObject','bag'],['doorHinge','route']].forEach(function (pair) { attachObject(byId(pair[0]),pair[1]); });
     sceneReady=true;
-    var scene=byId('outingScene'); if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');
-    scene.addEventListener('loaded', function () {
+    var scene=byId('outingScene');
+    if (scene) {
       if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');
-      fitScene(); updateScene(); renderActions();
-    });
-    scene.addEventListener('render-target-loaded', function () { if(scene.canvas) scene.canvas.setAttribute('tabindex','-1'); });
-    scene.addEventListener('webglcontextlost', function () { byId('sceneContainer').hidden=true; byId('sceneUnavailable').hidden=false; byId('focusView').disabled=true; });
+      scene.addEventListener('loaded', function () {
+        if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');
+        fitScene(); updateScene(); renderActions();
+      });
+      scene.addEventListener('render-target-loaded', function () { if(scene.canvas) scene.canvas.setAttribute('tabindex','-1'); });
+      scene.addEventListener('webglcontextlost', function () { byId('sceneContainer').hidden=true; byId('sceneUnavailable').hidden=false; byId('focusView').disabled=true; });
+    }
     window.addEventListener('resize', fitScene);
     fitScene();
   }
@@ -2198,6 +2214,7 @@
     var focused = document.activeElement, owner = current, selection = selectedObject;
     // The canvas can regain focus when the original pointer event finishes.
     if (window.requestAnimationFrame) window.requestAnimationFrame(function () {
+      if (presentationDisposed) return;
       var active = document.activeElement, scene = byId('outingScene');
       if (owner === current && selection === selectedObject && focused && focused.isConnected && (active === document.body || (scene && active === scene.canvas))) focused.focus();
     });
@@ -2241,16 +2258,17 @@
     if (muted) stopReading('Audio is muted.');
   }
   window.addEventListener('alloflow-mute-changed', onGlobalMuteChanged);
-  window.addEventListener('storage',function(event){
+  function onStorageChange(event) {
     if(event && (event.key === 'alloflow-global-muted' || event.key === 'alloflow_muted') && isGlobalMuted()) stopReading('Audio is muted.');
     if(!current || presentationDisposed || byId('settings').hidden)return;
     if(event.key === null || typeof event.key === 'string' && (event.key.indexOf(E.PREFIX) === 0 || event.key.indexOf(PLAN_PREFIX) === 0))refreshSaved();
-  });
+  }
+  window.addEventListener('storage', onStorageChange);
   byId('sceneToggle').addEventListener('click',function(){
     clearWaterMotion();
     sceneHidden=!sceneHidden;byId('sceneContainer').hidden=sceneHidden;this.setAttribute('aria-pressed',String(sceneHidden));this.textContent=sceneHidden?'Show 3D view':'Hide 3D view';
     byId('focusView').disabled=sceneHidden;
-    var scene=byId('outingScene'); if (scene.canvas) scene.canvas.setAttribute('tabindex','-1');if(sceneHidden&&scene.pause)scene.pause();if(!sceneHidden&&scene.play){scene.play();window.dispatchEvent(new Event('resize'));}
+    var scene=byId('outingScene'); if (scene && scene.canvas) scene.canvas.setAttribute('tabindex','-1');if(scene&&sceneHidden&&scene.pause)scene.pause();if(scene&&!sceneHidden&&scene.play){scene.play();window.dispatchEvent(new Event('resize'));}
     announce(sceneHidden?'3D view hidden. All practice actions remain available.':'3D view shown.');
   });
   byId('focusView').addEventListener('click',function(){
@@ -2387,7 +2405,7 @@
   }
   byId('nextPlanButton').addEventListener('click',goToPlannedStep);
   byId('followPlanButton').addEventListener('click',goToPlannedStep);
-  byId('editPlanButton').addEventListener('click',function(){revealExtraTools();byId('planner').open=true;byId('planner').querySelector('summary').focus();});
+  byId('editPlanButton').addEventListener('click',function(){revealExtraTools();var p=byId('planner');if(p){p.open=true;focusEl(p.querySelector('summary'));}});
   byId('retryChoiceButton').addEventListener('click',function(){startReviewRetry(null);});
   function saveReflection() {
     notes[current.runId]={reflection:byId('reflection').value.slice(0,600),comparison:comparison,plan:plan};
@@ -2426,9 +2444,9 @@
     reader.onerror=function(){if(serial===importSerial)text('backupStatus','This file could not be opened. Your current practice is unchanged.');};
     reader.readAsText(file);
   });
-  window.addEventListener('pagehide',function(){stopReading();presentationDisposed=true;});
+  window.addEventListener('pagehide',function(){stopReading();clearWaterMotion();presentationDisposed=true;});
   window.addEventListener('pageshow',function(){presentationDisposed=false;if(latestView)renderPresentation();});
-  window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();window.removeEventListener('alloflow-mute-changed',onGlobalMuteChanged);if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
+  window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();document.removeEventListener('visibilitychange',onVisibilityChange);window.removeEventListener('resize',fitScene);window.removeEventListener('storage',onStorageChange);window.removeEventListener('alloflow-mute-changed',onGlobalMuteChanged);if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
   var restored;
   try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key,learnerScope);}catch(_){}
   if(!restored){var valid=savedRuns().find(function(entry){return entry.run;});if(valid)restored=valid.run;}

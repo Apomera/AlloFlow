@@ -19,8 +19,20 @@
 //   - No verdicts: nothing here scores, flags, or classifies anything.
 (function () {
   'use strict';
-  var GLOBAL = typeof window !== 'undefined' ? window : globalThis;
-  if (GLOBAL.AlloModules && GLOBAL.AlloModules.ProvenanceModule) { try { console.log('[CDN] ProvenanceModule already loaded, skipping'); } catch (_) {} return; }
+  var GLOBAL = (typeof window === 'object' && window) ? window : (typeof globalThis === 'object' && globalThis ? globalThis : {});
+  if (GLOBAL.AlloModules && typeof GLOBAL.AlloModules === 'object' && GLOBAL.AlloModules.ProvenanceModule) { try { console.log('[CDN] ProvenanceModule already loaded, skipping'); } catch (_) {} return; }
+
+  function _pvStr(v) {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'symbol') return '';
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function _pvNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'symbol' || v === null || v === undefined) return NaN;
+    try { return Number(v); } catch (_) { return NaN; }
+  }
 
   var LEDGER_VERSION = 1;
   var MAX_EVENTS = 20000; // a school year of assignments, not a keylogger
@@ -40,7 +52,7 @@
     'spellcheck', 'word_prediction', 'speech_to_text', 'magnify'];
   var CHECKPOINT_GATED_SUPPORTS = ['allobot', 'compose', 'explain_content', 'answer_help'];
   function isAllowedDuringCheckpoint(support) {
-    var s = String(support || '').toLowerCase();
+    var s = _pvStr(support).toLowerCase();
     if (CHECKPOINT_ALWAYS_ALLOWED.indexOf(s) >= 0) return true;
     if (CHECKPOINT_GATED_SUPPORTS.indexOf(s) >= 0) return false;
     return false; // unclassified generative support: gated, never guessed open
@@ -52,7 +64,7 @@
   // never be presented as though it were the generative case.
   var SUPPORT_KINDS = ['access', 'generative', 'unattributed'];
   function classifySupport(support) {
-    var v = String(support || '').toLowerCase();
+    var v = _pvStr(support).toLowerCase();
     if (CHECKPOINT_ALWAYS_ALLOWED.indexOf(v) >= 0) return 'access';
     if (CHECKPOINT_GATED_SUPPORTS.indexOf(v) >= 0) return 'generative';
     return 'unattributed';
@@ -71,7 +83,7 @@
     spellcheck: 'spellcheck', magnify: 'zoom'
   };
   function friendlySupport(slug) {
-    var k = String(slug || '');
+    var k = _pvStr(slug);
     return Object.prototype.hasOwnProperty.call(SUPPORT_WORDS, k) ? SUPPORT_WORDS[k] : k.replace(/_/g, ' ');
   }
   function joinWords(list) {
@@ -79,7 +91,7 @@
     return list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
   }
   function bucketDuration(sec) {
-    var n = Number(sec);
+    var n = _pvNum(sec);
     if (!isFinite(n) || n < 0) return 'unknown';
     if (n < 60) return 'under_1m';
     if (n < 300) return '1_5m';
@@ -91,17 +103,24 @@
   function stableStringify(value, seen, depth) {
     var d = depth || 0;
     if (d > 32) throw new Error('Provenance payload exceeds maximum nesting depth.');
-    if (value === null || typeof value !== 'object') return value === undefined ? 'null' : JSON.stringify(value);
+    if (value === null || typeof value !== 'object') {
+      if (value === undefined || typeof value === 'function' || typeof value === 'symbol') return 'null';
+      if (typeof value === 'bigint') throw new TypeError('BigInt values are not supported in provenance payload.');
+      return JSON.stringify(value);
+    }
     var active = seen || [];
     if (active.indexOf(value) !== -1) throw new Error('Circular provenance payload.');
     active.push(value);
     try {
       if (Array.isArray(value)) {
         return '[' + value.map(function (item) {
-          return item === undefined ? 'null' : stableStringify(item, active, d + 1);
+          return (item === undefined || typeof item === 'function' || typeof item === 'symbol') ? 'null' : stableStringify(item, active, d + 1);
         }).join(',') + ']';
       }
-      var keys = Object.keys(value).sort().filter(function (k) { return value[k] !== undefined; });
+      var keys = Object.keys(value).sort().filter(function (k) {
+        var v = value[k];
+        return v !== undefined && typeof v !== 'function' && typeof v !== 'symbol';
+      });
       return '{' + keys.map(function (k) { return JSON.stringify(k) + ':' + stableStringify(value[k], active, d + 1); }).join(',') + '}';
     } finally {
       active.pop();
@@ -112,8 +131,10 @@
   function sha256Hex(text) {
     var subtle = (GLOBAL.crypto && GLOBAL.crypto.subtle) || null;
     if (!subtle) return Promise.reject(new Error('WebCrypto unavailable — provenance chain cannot run.'));
-    var bytes = new TextEncoder().encode(String(text));
-    return subtle.digest('SHA-256', bytes).then(function (buf) {
+    return Promise.resolve().then(function () {
+      var bytes = new TextEncoder().encode(_pvStr(text));
+      return subtle.digest('SHA-256', bytes);
+    }).then(function (buf) {
       var v = new Uint8Array(buf), out = '';
       for (var i = 0; i < v.length; i++) out += (v[i] < 16 ? '0' : '') + v[i].toString(16);
       return out;
@@ -121,8 +142,8 @@
   }
 
   // ── Event schema: whitelist of types and, per type, of fields ─────────────
-  var clampStr = function (v, n) { return String(v == null ? '' : v).slice(0, n); };
-  var clampInt = function (v, lo, hi) { var n = Math.round(Number(v)); if (!isFinite(n)) return null; return Math.max(lo, Math.min(hi, n)); };
+  var clampStr = function (v, n) { return _pvStr(v).slice(0, n); };
+  var clampInt = function (v, lo, hi) { var n = Math.round(_pvNum(v)); if (!isFinite(n)) return null; return Math.max(lo, Math.min(hi, n)); };
   var EVENT_FIELDS = {
     session: function (e) {
       var action = e.action === 'start' || e.action === 'resume' || e.action === 'end' ? e.action : null;
@@ -249,6 +270,7 @@
     var supportWentIntoWork = evt.type === 'support' && evt.insertedToWork === true;
     for (var k in evt) {
       if (!Object.prototype.hasOwnProperty.call(evt, k)) continue;
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       if (k === 'h' || k === 'f' || k === 'v') continue;
       if (evt.type === 'ai' && HIDDEN_FROM_SUBMISSION[k]) continue;
       // Scaffold intensity is support-lens data whatever event carries it.
@@ -276,11 +298,12 @@
     opts = opts || {};
     var rawNow = typeof opts.now === 'function' ? opts.now : function () { return Date.now(); };
     var now = function () {
-      var v = Number(rawNow());
+      var v = _pvNum(rawNow());
       return Number.isFinite(v) ? v : Date.now();
     };
     var startedAt = now();
-    var startedWallClock = opts.wallClock ? String(opts.wallClock).slice(0, 40) : new Date(startedAt).toISOString();
+    var startedDate = new Date(startedAt);
+    var startedWallClock = opts.wallClock ? _pvStr(opts.wallClock).slice(0, 40) : (isFinite(startedDate.getTime()) ? startedDate.toISOString() : new Date().toISOString());
     var events = [];
     var head = '';
     var chain = Promise.resolve();
@@ -294,6 +317,7 @@
       if (events.length >= MAX_EVENTS) return Promise.resolve(null);
       var evt = Object.assign({ t: Math.max(0, now() - startedAt), type: type }, clean);
       var next = chain.catch(function () {}).then(function () {
+        if (events.length >= MAX_EVENTS) return null;
         // DUAL COMMITMENT. f commits to the whole event (including the
         // support-lens fields a teacher must never see); v commits only to
         // the fields that survive stripping. The chain links BOTH, so the
@@ -313,11 +337,11 @@
           evt.h = h;
           head = h;
           events.push(evt);
-          if (storage) {
+          if (storage && typeof storage.set === 'function') {
             // Crash-safe buffer; a failed persist must never lose the session.
-            try { storage.set(storageNs, storageKey, exportNow()); } catch (_) {}
+            try { Promise.resolve(storage.set(storageNs, storageKey, exportNow())).catch(function () {}); } catch (_) {}
           }
-          return evt;
+          return Object.assign({}, evt);
         });
       });
       chain = next;
@@ -325,18 +349,23 @@
     }
 
     function exportNow() {
-      return { version: LEDGER_VERSION, startedWallClock: startedWallClock, events: events.slice(), head: head };
+      return {
+        version: LEDGER_VERSION,
+        startedWallClock: startedWallClock,
+        events: events.map(function (e) { return Object.assign({}, e); }),
+        head: head
+      };
     }
 
     // ~15s edit buckets: direction + magnitude, never content.
     var buckets = Object.create(null);
     var BUCKET_MS = opts.bucketMs || 15000;
     function finiteRound(n) {
-      var v = Number(n);
+      var v = _pvNum(n);
       return Number.isFinite(v) ? Math.round(v) : 0;
     }
     function noteEdit(field, deltaChars, len) {
-      var key = String(field || '').slice(0, 80);
+      var key = _pvStr(field).slice(0, 80);
       var b = buckets[key];
       var t = now();
       var dChars = finiteRound(deltaChars);
@@ -355,16 +384,17 @@
     // the SAME level with the SAME insertedToWork. Collapsing across any of
     // those would average away the distinction the lenses depend on.
     var supportBuckets = Object.create(null);
-    function supportKeyFor(kind, level, inserted) {
-      return kind + '|' + level + '|' + (inserted ? '1' : '0');
+    function supportKeyFor(kind, level, inserted, assistiveTech) {
+      return kind + '|' + level + '|' + (inserted ? '1' : '0') + '|' + (assistiveTech ? '1' : '0');
     }
     function noteSupport(kind, promptLevel, options) {
-      var name = String(kind || '').slice(0, 40);
+      var name = _pvStr(kind).slice(0, 40);
       if (!name) return Promise.resolve(null);
-      var o = options || {};
+      var o = (options && typeof options === 'object') ? options : {};
       var level = PROMPT_LEVELS.indexOf(promptLevel) >= 0 ? promptLevel : 'none';
       var inserted = o.insertedToWork === true;
-      var key = supportKeyFor(name, level, inserted);
+      var assistiveTech = o.assistiveTech === true;
+      var key = supportKeyFor(name, level, inserted, assistiveTech);
       var t = now();
       var b = supportBuckets[key];
       if (b && t - b.since < BUCKET_MS) { b.count += 1; return Promise.resolve(null); }
@@ -375,7 +405,7 @@
       }
       var payload = { kind: name, promptLevel: level, count: 1 };
       if (inserted) payload.insertedToWork = true;
-      if (o.assistiveTech === true) payload.assistiveTech = true;
+      if (assistiveTech) payload.assistiveTech = true;
       supportBuckets[key] = { since: t, count: 1, payload: payload };
       return flushed;
     }
@@ -449,7 +479,7 @@
     var i = 0;
     function step() {
       if (i >= evts.length) {
-        var headOk = head === String(exported.head || '');
+        var headOk = head === _pvStr(exported.head);
         return Promise.resolve(headOk ? { ok: true, events: evts.length } : { ok: false, brokenAt: evts.length, reason: 'head mismatch' });
       }
       var evt = evts[i];
@@ -463,7 +493,10 @@
         visibleJson = stableStringify(visibleBody(evt));
         if (isFull) {
           var fullBody = {};
-          for (var k in evt) if (k !== 'h' && k !== 'f' && k !== 'v' && Object.prototype.hasOwnProperty.call(evt, k)) fullBody[k] = evt[k];
+          for (var k in evt) {
+            if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+            if (k !== 'h' && k !== 'f' && k !== 'v' && Object.prototype.hasOwnProperty.call(evt, k)) fullBody[k] = evt[k];
+          }
           fullJson = stableStringify(fullBody);
         }
       } catch (_) {
@@ -472,6 +505,9 @@
       var checks = [sha256Hex(visibleJson)];
       if (isFull) checks.push(sha256Hex(fullJson));
       return Promise.all(checks).then(function (got) {
+        if (typeof evt.f !== 'string' || typeof evt.v !== 'string' || typeof evt.h !== 'string') {
+          return { ok: false, brokenAt: i, reason: 'chain break' };
+        }
         if (got[0] !== evt.v) return { ok: false, brokenAt: i, reason: 'chain break' };
         if (isFull && got[1] !== evt.f) return { ok: false, brokenAt: i, reason: 'chain break' };
         return sha256Hex(head + '|' + evt.f + '|' + evt.v).then(function (h) {
@@ -686,14 +722,15 @@
   // join is a lookup rather than a translation — but kept in its own object so
   // nothing that reads progressHistory can reach it.
   function mergeFadeRecord(store, record, retentionLimit) {
-    var limit = Math.max(1, parseInt(retentionLimit, 10) || 30);
+    var parsedLimit = parseInt(_pvStr(retentionLimit), 10);
+    var limit = Math.max(1, isFinite(parsedLimit) ? parsedLimit : 30);
     var next = Object.create(null);
     var src = store && typeof store === 'object' ? store : {};
     Object.keys(src).forEach(function (k) {
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
       next[k] = Array.isArray(src[k]) ? src[k].slice() : [];
     });
-    if (record && record.ok !== false && record.codename && record.codename !== '__proto__' && record.codename !== 'constructor' && record.codename !== 'prototype') {
+    if (record && typeof record === 'object' && record.ok !== false && typeof record.codename === 'string' && record.codename && record.codename !== '__proto__' && record.codename !== 'constructor' && record.codename !== 'prototype') {
       var list = (Array.isArray(next[record.codename]) ? next[record.codename] : []).filter(function (r) {
         return !record.sessionId || (r && r.sessionId !== record.sessionId);
       });
@@ -727,10 +764,10 @@
       // deliberate one, and gives an audit something to record later.
       return { ok: false, reason: 'no-purpose', periods: [] };
     }
-    var key = String(codename || '');
+    var key = _pvStr(codename);
     if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype') return { ok: false, reason: 'no-codename', periods: [] };
     var list = (store && typeof store === 'object' && Object.prototype.hasOwnProperty.call(store, key) && Array.isArray(store[key])) ? store[key] : [];
-    return { ok: true, codename: key, purpose: String(access.purpose).slice(0, 120), periods: list.slice() };
+    return { ok: true, codename: key, purpose: _pvStr(access.purpose).slice(0, 120), periods: list.slice() };
   }
 
   // The model a team reads: every support, every period, plus a plain statement
@@ -784,12 +821,15 @@
   // scaffolds also get a LEVEL statement, because for a scaffold the level is
   // the thing being faded and the count is not.
   function describeSupportChange(name, points) {
-    if (!points || points.length < 2) {
+    if (!Array.isArray(points) || points.length < 2) {
       return { direction: 'insufficient', text: 'Not enough sessions yet to read a direction.' };
     }
-    var first = points[0], last = points[points.length - 1];
+    var first = (points[0] && typeof points[0] === 'object') ? points[0] : { uses: 0, levels: null };
+    var last = (points[points.length - 1] && typeof points[points.length - 1] === 'object') ? points[points.length - 1] : { uses: 0, levels: null };
+    var firstUses = _pvNum(first.uses); if (!isFinite(firstUses)) firstUses = 0;
+    var lastUses = _pvNum(last.uses); if (!isFinite(lastUses)) lastUses = 0;
     var kind = classifySupport(name);
-    var useDelta = last.uses - first.uses;
+    var useDelta = lastUses - firstUses;
     var useWord = useDelta < 0 ? 'less often' : useDelta > 0 ? 'more often' : 'about as often';
     if (kind === 'access') {
       // An access support has no level to fade. Reporting one would invent a
@@ -797,14 +837,14 @@
       // accommodation used more is an accommodation doing its job.
       return {
         direction: useDelta < 0 ? 'less' : useDelta > 0 ? 'more' : 'steady',
-        text: 'Used ' + useWord + ' than at the start (' + first.uses + ' to ' + last.uses + ').'
+        text: 'Used ' + useWord + ' than at the start (' + firstUses + ' to ' + lastUses + ').'
       };
     }
     var heaviestFirst = heaviestLevel(first.levels);
     var heaviestLast = heaviestLevel(last.levels);
     var rank = { model: 3, guided: 2, hint: 1, none: 0 };
     var levelDelta = rank[heaviestLast] - rank[heaviestFirst];
-    var text = 'Used ' + useWord + ' than at the start (' + first.uses + ' to ' + last.uses + ')';
+    var text = 'Used ' + useWord + ' than at the start (' + firstUses + ' to ' + lastUses + ')';
     if (levelDelta < 0) text += ', and the prompting got lighter (' + heaviestFirst + ' to ' + heaviestLast + ').';
     else if (levelDelta > 0) text += ', and the prompting got heavier (' + heaviestFirst + ' to ' + heaviestLast + '). '
       + 'That may reflect harder material as much as anything about the student.';
@@ -814,7 +854,11 @@
 
   function heaviestLevel(levels) {
     var order = ['model', 'guided', 'hint', 'none'];
-    for (var i = 0; i < order.length; i++) if ((levels || {})[order[i]] > 0) return order[i];
+    var src = (levels && typeof levels === 'object') ? levels : null;
+    if (!src) return 'none';
+    for (var i = 0; i < order.length; i++) {
+      if (Object.prototype.hasOwnProperty.call(src, order[i]) && _pvNum(src[order[i]]) > 0) return order[i];
+    }
     return 'none';
   }
 
@@ -1240,8 +1284,8 @@
     var onAnswer = (props && props.onAnswer) || function () {};
     var onDefer = (props && props.onDefer) || function () {};
     var onMisfit = (props && props.onMisfit) || function () {};
-    var allowed = (props && props.allowedSupports) || CHECKPOINT_ALWAYS_ALLOWED;
-    var choices = (props && props.choices) || [];
+    var allowed = (props && Array.isArray(props.allowedSupports)) ? props.allowedSupports : CHECKPOINT_ALWAYS_ALLOWED;
+    var choices = (props && Array.isArray(props.choices)) ? props.choices : [];
     var speechSupported = Boolean(GLOBAL.SpeechRecognition || GLOBAL.webkitSpeechRecognition);
 
     var stopSpeech = function () {
@@ -1286,7 +1330,14 @@
         rec.onresult = function (ev) {
           if (!speechMountedRef.current) return;
           var said = '';
-          for (var i = 0; i < ev.results.length; i++) said += ev.results[i][0].transcript;
+          var results = ev && ev.results;
+          if (results && typeof results.length === 'number') {
+            for (var i = 0; i < results.length; i++) {
+              if (results[i] && results[i][0] && typeof results[i][0].transcript === 'string') {
+                said += results[i][0].transcript;
+              }
+            }
+          }
           set(function (prev) { return Object.assign({}, prev, { text: (prev.text ? prev.text + ' ' : '') + said, speaking: false, speechNotice: '' }); });
         };
         rec.onerror = function () { if (speechMountedRef.current) set(function (prev) { return Object.assign({}, prev, { speaking: false }); }); };
@@ -1374,7 +1425,7 @@
     if (!model || !model.present) return null;
     var p = model.process || {};
     var integrity = (model.integrity && typeof model.integrity === 'object') ? model.integrity : {};
-    var checkpointsList = Array.isArray(props.checkpoints)
+    var checkpointsList = (props && Array.isArray(props.checkpoints))
       ? props.checkpoints.filter(function (c) { return c && typeof c === 'object'; })
       : [];
     var muted = { color: '#475569', fontSize: '0.8rem' };
@@ -1426,8 +1477,9 @@
     );
   }
 
+  if (typeof GLOBAL.AlloModules !== 'object') GLOBAL.AlloModules = null;
   GLOBAL.AlloModules = GLOBAL.AlloModules || {};
-  var PROVENANCE_API = {
+  var PROVENANCE_API = Object.freeze({
     ProcessPanel: ProcessPanel,
     CheckpointPanel: CheckpointPanel,
     buildCheckpointChoices: buildCheckpointChoices,
@@ -1452,7 +1504,7 @@
     // hash of an answer, never the answer text.
     hashText: sha256Hex,
     LEDGER_VERSION: LEDGER_VERSION,
-    PROMPT_LEVELS: PROMPT_LEVELS.slice(),
+    PROMPT_LEVELS: Object.freeze(PROMPT_LEVELS.slice()),
     // ── P3 ──
     sanitizeCheckpointQuestions: sanitizeCheckpointQuestions,
     templateCheckpoints: templateCheckpoints,
@@ -1462,18 +1514,18 @@
     hashCheckpointAnswer: hashCheckpointAnswer,
     isAllowedDuringCheckpoint: isAllowedDuringCheckpoint,
     classifySupport: classifySupport,
-    NEVER_OBSERVABLE: NEVER_OBSERVABLE.slice(),
+    NEVER_OBSERVABLE: Object.freeze(NEVER_OBSERVABLE.slice()),
     COVERAGE_NOTE: COVERAGE_NOTE,
-    SUPPORT_KINDS: SUPPORT_KINDS.slice(),
+    SUPPORT_KINDS: Object.freeze(SUPPORT_KINDS.slice()),
     describeAiUse: describeAiUse,
     isStudentAuthoredSpan: isStudentAuthoredSpan,
     bucketDuration: bucketDuration,
-    CHECKPOINT_ALWAYS_ALLOWED: CHECKPOINT_ALWAYS_ALLOWED.slice(),
-    CHECKPOINT_OUTCOMES: CHECKPOINT_OUTCOMES.slice(),
-    CHECKPOINT_RESPONSE_MODES: CHECKPOINT_RESPONSE_MODES.slice(),
-    CHECKPOINT_VERDICTS: CHECKPOINT_VERDICTS.slice(),
-    DURATION_BUCKETS: DURATION_BUCKETS.slice()
-  };
+    CHECKPOINT_ALWAYS_ALLOWED: Object.freeze(CHECKPOINT_ALWAYS_ALLOWED.slice()),
+    CHECKPOINT_OUTCOMES: Object.freeze(CHECKPOINT_OUTCOMES.slice()),
+    CHECKPOINT_RESPONSE_MODES: Object.freeze(CHECKPOINT_RESPONSE_MODES.slice()),
+    CHECKPOINT_VERDICTS: Object.freeze(CHECKPOINT_VERDICTS.slice()),
+    DURATION_BUCKETS: Object.freeze(DURATION_BUCKETS.slice())
+  });
   // Registered against `window` LITERALLY, not via the GLOBAL alias: the
   // repo's registry gate and the loadModule contract both scan for
   // `window.AlloModules.<Name>` as text, so an aliased assignment registers
@@ -1481,14 +1533,15 @@
   // The GLOBAL alias stays for the Node/test path below.
   GLOBAL.AlloModules.Provenance = PROVENANCE_API;
   GLOBAL.AlloModules.WorkStoryPanel = WorkStoryPanel;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
+    if (typeof window.AlloModules !== 'object') window.AlloModules = null;
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.Provenance = PROVENANCE_API;
     window.AlloModules.WorkStoryPanel = WorkStoryPanel;
     window.AlloModules.ProcessPanel = ProcessPanel;
     window.AlloModules.CheckpointPanel = CheckpointPanel;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = PROVENANCE_API;
+  if (typeof module === 'object' && module && module.exports) module.exports = PROVENANCE_API;
   GLOBAL.AlloModules.ProvenanceModule = true;
   try { console.log('[Provenance] ledger core registered (inert until the Work Story surface ships)'); } catch (_) {}
 })();

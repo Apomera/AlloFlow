@@ -713,9 +713,13 @@ describe('Phase 10 Group 6: Wave 2 & Wave 3 Security, AI Gating & Accessibility 
     });
     expect(html).not.toContain('//attacker.example');
     expect(html).toContain('href="#"');
-    expect(html).toContain('\\n');
-    expect(html).toContain('\\u2028');
-    expect(html).toContain('min-width:44px;min-height:44px');
+    // The placeholder no longer has inline on*= handlers (the JS-string sink that
+    // needed \n / \u2028 escaping is gone); the description only reaches HTML
+    // attributes and text, escaped for those contexts.
+    expect(html).not.toMatch(/<[^>]*\son[a-z]+\s*=/i);
+    expect(html).toContain('data-allo-placeholder-alt="Alt\nBreak\u2028Line"');
+    // Labelled action buttons: 44px tall and padded wide; the remove button is a fixed 44x44.
+    expect(html).toContain('min-height:44px;box-sizing:border-box;padding:10px 14px');
     expect(html).toContain('width:44px;height:44px');
   });
 

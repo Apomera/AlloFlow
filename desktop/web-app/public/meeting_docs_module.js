@@ -32,6 +32,14 @@
 const MEETDOCS_TEMPLATES_KEY = "allo_meetdocs_templates_v1";
 const MEETDOCS_MEETINGS_KEY = "allo_meetdocs_meetings_v1";
 const MEETDOCS_DRAFT_KEY = "allo_meetdocs_draft_v1";
+function _ensureMeetingDocsA11yCss() {
+  if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+  if (document.getElementById("allo-meetdocs-a11y-css")) return;
+  const st = document.createElement("style");
+  st.id = "allo-meetdocs-a11y-css";
+  st.textContent = '[data-meeting-docs="true"] button,[data-meeting-docs="true"] a,[data-meeting-docs="true"] input,[data-meeting-docs="true"] select,[data-meeting-docs="true"] textarea,[data-meeting-docs="true"] summary{touch-action:manipulation;}[data-meeting-docs="true"] button:focus-visible,[data-meeting-docs="true"] a:focus-visible,[data-meeting-docs="true"] input:focus-visible,[data-meeting-docs="true"] select:focus-visible,[data-meeting-docs="true"] textarea:focus-visible,[data-meeting-docs="true"] summary:focus-visible{outline:2px solid #0f766e;outline-offset:2px;}@media (forced-colors: active){[data-meeting-docs="true"] button:focus-visible,[data-meeting-docs="true"] a:focus-visible,[data-meeting-docs="true"] input:focus-visible,[data-meeting-docs="true"] select:focus-visible,[data-meeting-docs="true"] textarea:focus-visible,[data-meeting-docs="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-meeting-docs="true"],[data-meeting-docs="true"] *,[data-meeting-docs="true"] *::before,[data-meeting-docs="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 const MEETDOCS_BUILTIN_TEMPLATES = [
   { id: "sst", builtin: true, name: "Student Support Team (SST)", sections: [
     { id: "attendees", title: "Attendees and roles", hint: "Who was present, in what role" },
@@ -432,18 +440,19 @@ function MeetingDocsPanel(props) {
       }
       return true;
     });
+    _ensureMeetingDocsA11yCss();
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
       if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
       if (event.key === "Escape") {
-        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== "Tab" || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) {
         event.preventDefault();
@@ -742,7 +751,7 @@ function MeetingDocsPanel(props) {
         if (allow && e.target === e.currentTarget) onClose();
       }
     },
-    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-meeting-docs": "true", "data-help-key": "meetdocs_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "meetdocs-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "meetdocs-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("meetdocs.title", "Meeting Documentation")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("meetdocs.subtitle", "Notes in, your district’s format out — names masked locally before any AI call."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("meetdocs.close_aria", "Close Meeting Documentation") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("meetdocs.tabs_aria", "Meeting documentation sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: tb.id,
@@ -758,6 +767,7 @@ function MeetingDocsPanel(props) {
           if (tb.id !== "meetings") setViewId(null);
         },
         onKeyDown: (e) => {
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           let next = null;
           if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
           else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -885,7 +895,7 @@ function MeetingDocsPanel(props) {
         value: nameInput,
         onChange: (e) => setNameInput(e.target.value),
         onKeyDown: (e) => {
-          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Enter") {
             e.preventDefault();
             addMaskName();
@@ -1024,7 +1034,7 @@ function MeetingDocsPanel(props) {
         value: meetingsQuery,
         onChange: (e) => setMeetingsQuery(e.target.value),
         onKeyDown: (e) => {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Escape" && meetingsQuery) {
             e.preventDefault();
             e.stopPropagation();
@@ -1071,7 +1081,7 @@ function MeetingDocsPanel(props) {
         value: actionQuery,
         onChange: (e) => setActionQuery(e.target.value),
         onKeyDown: (e) => {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Escape" && actionQuery) {
             e.preventDefault();
             e.stopPropagation();

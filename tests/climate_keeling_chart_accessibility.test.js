@@ -48,7 +48,7 @@ describe.each(sources)('Keeling chart rendering: %s',source=>{
     expect(canvas?.getAttribute('role')).toBe('img');expect(canvas.hasAttribute('tabindex')).toBe(false);
     expect(canvas.getAttribute('aria-label')).toContain('Selected historical records, 1958 to 2024');
     expect(canvas.getAttribute('aria-label')).toContain('315.0 to 424.6 ppm');
-    expect(canvas.getAttribute('aria-label')).toContain('+0.07 to +1.28 degrees Celsius');
+    expect(canvas.getAttribute('aria-label')).toContain('+0.06 to +1.28 degrees Celsius');
     expect(canvas.getAttribute('aria-label')).toContain('1951 to 1980 average');
     expect(canvas.getAttribute('aria-label')).toContain('separate aligned plots');
     expect(canvas.getAttribute('aria-describedby').split(/\s+/)).toEqual(['ce-keeling-summary','ce-keeling-legend']);
@@ -67,7 +67,7 @@ describe.each(sources)('Keeling chart rendering: %s',source=>{
     expect(co2.points.at(-1).x).toBe(temperature.points.at(-1).x);expect(co2.points.at(-1).x).toBe(228);
     expect(co2.points[0].y).toBeCloseTo(182-(315-300)/140*128);
     expect(co2.points.at(-1).y).toBeCloseTo(182-(424.6-300)/140*128);
-    expect(temperature.points[0].y).toBeCloseTo(414-(0.07+0.2)/1.6*128);
+    expect(temperature.points[0].y).toBeCloseTo(414-(0.06+0.2)/1.6*128);
     expect(temperature.points.at(-1).y).toBeCloseTo(414-(1.28+0.2)/1.6*128);
     expect(co2.points.every(point=>point.y>=54&&point.y<=182)).toBe(true);
     expect(temperature.points.every(point=>point.y>=286&&point.y<=414)).toBe(true);

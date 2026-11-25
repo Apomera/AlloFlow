@@ -58,8 +58,10 @@ try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 const outputCode =
 `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.UILanguageSelector) { console.log('[CDN] UiLanguageSelectorModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React;
+if (!React) { console.error('[UiLanguageSelector] React not found on window'); return; }
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState;
 var useRef = React.useRef;
@@ -67,7 +69,7 @@ var useContext = React.useContext;
 var useEffect = React.useEffect;
 var _lazyIcon = function (name) {
   return function (props) {
-    var I = window.AlloIcons && window.AlloIcons[name];
+    var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
     return I ? React.createElement(I, props) : null;
   };
 };

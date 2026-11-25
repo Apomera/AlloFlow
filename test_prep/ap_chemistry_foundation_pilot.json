@@ -1952,7 +1952,7 @@
         "24.02 g"
       ],
       "answerIndex": 0,
-      "rationale": "The molar mass of CO2 is 12.01 plus 2 times 16.00, or 44.01 g/mol; multiplying by 2.00 mol gives 88.02 g.",
+      "rationale": "Using molar mass addition for CO2 gives 12.01 + 2(16.00) = 44.01 g/mol; applying mass = n times M yields 2.00 mol times 44.01 g/mol = 88.02 g.",
       "choiceRationales": [
         "The molar mass of CO2 is 12.01 plus 2 times 16.00, or 44.01 g/mol; multiplying by 2.00 mol gives 88.02 g.",
         "This option is not the best answer because 44.01 g equals the mass of only one mole of CO2 and omits multiplying the molar mass by 2.00 mol.",
@@ -2579,12 +2579,12 @@
         "16.0 percent"
       ],
       "answerIndex": 3,
-      "rationale": "Mass percent equals solute mass divided by total solution mass times 100: 4.00 divided by 25.0 times 100 equals 16.0 percent.",
+      "rationale": "Mass percent equals solute mass divided by total solution mass multiplied by 100: (4.00 g NaCl / 25.0 g solution) x 100 = 16.0 percent.",
       "choiceRationales": [
         "This option is not the best answer because 6.25 percent divides the total mass by the solute mass and omits the percent conversion.",
-        "This option is not the best answer because 21.0 percent adds the two masses rather than finding the solute fraction.",
+        "This option is not the best answer because 21.0 equals the solvent mass obtained by subtracting 4.00 g from 25.0 g rather than the NaCl mass percent.",
         "This option is not the best answer because 84.0 percent represents the solvent fraction, not the sodium chloride fraction.",
-        "Mass percent equals solute mass divided by total solution mass times 100: 4.00 divided by 25.0 times 100 equals 16.0 percent."
+        "Mass percent equals solute mass divided by total solution mass times 100: (4.00 g NaCl / 25.0 g solution) x 100 = 16.0 percent."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -2668,7 +2668,7 @@
         "1s2 2s2 2p6 3s2"
       ],
       "answerIndex": 0,
-      "rationale": "Sodium has 11 electrons, filling through 2p6 and placing one electron in the 3s orbital.",
+      "rationale": "Neutral sodium (atomic number 11) has 11 electrons; following the Aufbau filling order fills 1s2 2s2 2p6 (10 electrons) and places the single valence electron in 3s1.",
       "choiceRationales": [
         "Sodium has 11 electrons, filling through 2p6 and placing one electron in the 3s orbital.",
         "This option is not the best answer because The 3p orbital is higher in energy than 3s and is not occupied first in neutral sodium.",
@@ -3293,7 +3293,7 @@
         "Increasing the charge on both ions while keeping sizes similar"
       ],
       "answerIndex": 3,
-      "rationale": "Electrostatic attraction becomes stronger as ion charge magnitude increases and separation remains similar.",
+      "rationale": "By Coulomb's law (U proportional to q1q2/r), increasing the magnitude of both ionic charges at comparable interionic distance strengthens electrostatic attraction and raises lattice energy.",
       "choiceRationales": [
         "This option is not the best answer because Larger ions generally increase separation and weaken the attraction.",
         "This option is not the best answer because Solvent molecules can affect observed behavior but do not change the lattice-energy relationship of the isolated ions in this comparison.",
@@ -3382,7 +3382,7 @@
         "Eight"
       ],
       "answerIndex": 0,
-      "rationale": "Chlorine is a group 17 element with seven valence electrons, represented as seven dots around the symbol.",
+      "rationale": "Chlorine lies in group 17 (halogen family) with outer shell 3s2 3p5, giving seven valence electrons that are drawn as seven dots around the Cl symbol in a Lewis dot diagram.",
       "choiceRationales": [
         "Chlorine is a group 17 element with seven valence electrons, represented as seven dots around the symbol.",
         "This option is not the best answer because a single valence electron characterizes a group 1 alkali metal, whereas chlorine in group 17 has seven valence electrons.",
@@ -4186,7 +4186,7 @@
         "2 to 3"
       ],
       "answerIndex": 1,
-      "rationale": "Two chloride ions with total charge 2- are needed to balance one Mg2+ ion with charge 2+.",
+      "rationale": "Charge neutrality in an ionic formula unit requires total positive and negative charges to sum to zero; two Cl- ions (2-) balance one Mg2+ ion (2+), giving a 2-to-1 Cl- to Mg2+ ratio in MgCl2.",
       "choiceRationales": [
         "This option is not the best answer because A one-to-one ratio would leave a net positive charge of 1+.",
         "Two chloride ions with total charge 2- are needed to balance one Mg2+ ion with charge 2+.",
@@ -5968,12 +5968,12 @@
         "44.8 L"
       ],
       "answerIndex": 1,
-      "rationale": "Using PV = nRT gives V = 0.500 times 0.0821 times 273 divided by 1.00, or approximately 11.2 L.",
+      "rationale": "Applying the ideal gas law PV = nRT rearranged to V = nRT/P gives (0.500 mol)(0.0821 L atm mol-1 K-1)(273 K) / 1.00 atm = 11.2 L, which is half the 22.4 L molar volume at STP.",
       "choiceRationales": [
         "This option is not the best answer because 5.60 L is half of the correct value and results from an arithmetic or mole-factor error.",
         "Using PV = nRT gives V = 0.500 times 0.0821 times 273 divided by 1.00, or approximately 11.2 L.",
         "This option is not the best answer because 22.4 L is the volume of approximately 1.00 mol under these conditions.",
-        "This option is not the best answer because 44.8 L doubles the correct volume rather than applying the stated 0.500 mol."
+        "This option is not the best answer because 44.8 L is four times the correct volume (2.00 mol at STP), resulting from dividing by 0.500 instead of multiplying."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -6058,7 +6058,7 @@
         "Pressure becomes zero because compression removes all gas particles."
       ],
       "answerIndex": 2,
-      "rationale": "At constant temperature and amount, Boyle law predicts that pressure is inversely proportional to volume.",
+      "rationale": "At constant temperature and moles of gas, Boyle's law (P1V1 = P2V2) shows pressure varies inversely with volume because confining the same particles into less space increases wall-collision frequency.",
       "choiceRationales": [
         "This option is not the best answer because Reducing volume increases collision frequency with the container walls.",
         "This option is not the best answer because Pressure can change when volume changes even if temperature remains constant.",
@@ -6147,7 +6147,7 @@
         "The gases have the same average kinetic energy, though average speeds can differ."
       ],
       "answerIndex": 3,
-      "rationale": "Average kinetic energy depends on absolute temperature, while particle speed also depends on particle mass.",
+      "rationale": "In kinetic molecular theory, average translational kinetic energy depends solely on Kelvin temperature (KE = 3/2 kBT), so gases at the same temperature share equal average KE while lighter particles move faster.",
       "choiceRationales": [
         "This option is not the best answer because Lighter particles generally move faster at the same average kinetic energy.",
         "This option is not the best answer because Temperature does not give heavier particles more average kinetic energy than lighter particles.",
@@ -6415,7 +6415,7 @@
         "4.00 M"
       ],
       "answerIndex": 2,
-      "rationale": "Molarity equals moles of solute divided by liters of solution: 0.250 divided by 0.500 equals 0.500 M.",
+      "rationale": "Molarity is defined as moles of solute per liter of solution (M = n/V); dividing 0.250 mol of glucose by 0.500 L of solution directly gives a concentration of 0.500 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.125 M multiplies moles of glucose by solution volume (0.250 times 0.500) instead of dividing moles by liters.",
         "This option is not the best answer because 2.00 M inverts the molarity definition by dividing 0.500 L of solution by 0.250 mol of glucose.",
@@ -6504,10 +6504,10 @@
         "0.400 M"
       ],
       "answerIndex": 3,
-      "rationale": "The moles of solute remain constant, so M1V1 = M2V2 gives M2 = 2.00 times 100.0 divided by 500.0, or 0.400 M.",
+      "rationale": "Dilution conserves moles of solute, so M1V1 = M2V2 applies; solving M2 = (2.00 M)(100.0 mL) / 500.0 mL lowers the concentration fivefold to 0.400 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.0400 M is ten times too small for the stated volume ratio.",
-        "This option is not the best answer because 1.00 M would result from halving the volume, not increasing it fivefold.",
+        "This option is not the best answer because 1.00 M would result from doubling the volume to 200.0 mL, not increasing it fivefold to 500.0 mL.",
         "This option is not the best answer because 10.0 M increases concentration during a dilution and reverses the relationship.",
         "The moles of solute remain constant, so M1V1 = M2V2 gives M2 = 2.00 times 100.0 divided by 500.0, or 0.400 M."
       ],
@@ -7040,7 +7040,7 @@
         "All photons have the same frequency regardless of wavelength"
       ],
       "answerIndex": 1,
-      "rationale": "Frequency and wavelength are inversely related, so the shortest wavelength has the highest frequency.",
+      "rationale": "Because electromagnetic waves in vacuum obey c = lambda nu, frequency nu = c/lambda is inversely proportional to wavelength; thus the shortest wavelength (400 nm) has the highest frequency.",
       "choiceRationales": [
         "This option is not the best answer because 700 nm is longer than 400 nm and therefore has lower frequency.",
         "Frequency and wavelength are inversely related, so the shortest wavelength has the highest frequency.",
@@ -7129,7 +7129,7 @@
         "The photon with the larger wavelength always has greater energy"
       ],
       "answerIndex": 2,
-      "rationale": "Photon energy is directly proportional to frequency and inversely proportional to wavelength.",
+      "rationale": "By the Planck-Einstein relation E = h nu = hc/lambda, a photon's energy scales directly with frequency nu and inversely with wavelength lambda, so the higher-frequency photon carries greater energy.",
       "choiceRationales": [
         "This option is not the best answer because photon energy is directly proportional to frequency (E = h nu), so a lower frequency corresponds to less energy.",
         "This option is not the best answer because All electromagnetic photons travel at the same speed in vacuum but can have different energies.",
@@ -7308,7 +7308,7 @@
         "Balancing is optional when a reaction includes a catalyst."
       ],
       "answerIndex": 0,
-      "rationale": "Conservation of matter requires the same number of atoms of each element on both sides of the equation.",
+      "rationale": "The law of conservation of mass requires that chemical reactions only rearrange existing atoms without creating or destroying them, so balanced coefficients must match atom counts for each element on both sides.",
       "choiceRationales": [
         "Conservation of matter requires the same number of atoms of each element on both sides of the equation.",
         "This option is not the best answer because Ordinary chemical reactions do not change one element into another.",
@@ -7665,7 +7665,7 @@
         "The reaction cannot occur because products have lower potential energy."
       ],
       "answerIndex": 0,
-      "rationale": "Products at lower potential energy indicate that energy is released overall in the forward direction.",
+      "rationale": "Since delta H = H(products) - H(reactants), placing products at lower potential energy than reactants yields a negative enthalpy change, showing the forward reaction releases net heat and is exothermic.",
       "choiceRationales": [
         "Products at lower potential energy indicate that energy is released overall in the forward direction.",
         "This option is not the best answer because Lower product energy corresponds to an exothermic, not endothermic, forward process.",
@@ -7755,7 +7755,7 @@
         "A solid metal sample is cut into several smaller pieces without any other change being made to it."
       ],
       "answerIndex": 1,
-      "rationale": "Formation of a gas with a new composition is evidence that chemical bonds and substance identities changed.",
+      "rationale": "Unlike phase changes or mechanical cutting that preserve molecular identity, producing a gas with a new chemical composition when mixing solutions shows bonds broke and reformed in a chemical change.",
       "choiceRationales": [
         "This option is not the best answer because melting ice converts solid H2O into liquid H2O, changing only physical phase while keeping the molecular composition identical.",
         "Formation of a gas with a new composition is evidence that chemical bonds and substance identities changed.",
@@ -8291,7 +8291,7 @@
         "CH4 plus 2O2 yields CO2 plus 2H2O"
       ],
       "answerIndex": 3,
-      "rationale": "Complete combustion of a hydrocarbon with oxygen produces carbon dioxide and water.",
+      "rationale": "Hydrocarbon combustion reacts a carbon-hydrogen compound with O2 to yield CO2 and H2O; CH4 + 2O2 -> CO2 + 2H2O matches this pattern, whereas the other reactions show precipitation, decomposition, or neutralization.",
       "choiceRationales": [
         "This option is not the best answer because reacting NaCl with AgNO3 to form insoluble AgCl is a double-replacement precipitation reaction rather than hydrocarbon combustion.",
         "This option is not the best answer because heating CaCO3 to yield CaO and CO2 is a thermal decomposition reaction rather than combustion with oxygen gas.",
@@ -8380,7 +8380,7 @@
         "The sulfate spectator ion is reduced because it remains in solution."
       ],
       "answerIndex": 0,
-      "rationale": "Reduction is gain of electrons; Cu2+ gains two electrons to become copper metal.",
+      "rationale": "Reduction is the gain of electrons accompanied by a decrease in oxidation state; in Zn + Cu2+ -> Zn2+ + Cu, each Cu2+ ion gains two electrons as its oxidation number drops from +2 to 0 in Cu(s).",
       "choiceRationales": [
         "Reduction is gain of electrons; Cu2+ gains two electrons to become copper metal.",
         "This option is not the best answer because metallic Zn loses two electrons to become Zn2+, meaning zinc undergoes oxidation rather than reduction in this reaction.",
@@ -8469,7 +8469,7 @@
         "OH-, because it donates an electron pair to water"
       ],
       "answerIndex": 1,
-      "rationale": "A Brønsted-Lowry acid donates H+; water transfers a proton to ammonia and becomes hydroxide.",
+      "rationale": "A Brønsted-Lowry acid is a proton (H+) donor; in NH3 + H2O <-> NH4+ + OH-, H2O donates a proton to NH3 to form its conjugate base OH-, while NH3 acts as the proton-accepting base.",
       "choiceRationales": [
         "This option is not the best answer because NH3 accepts a proton and acts as the base in the forward direction.",
         "A Brønsted-Lowry acid donates H+; water transfers a proton to ammonia and becomes hydroxide.",
@@ -8647,7 +8647,7 @@
         "+6"
       ],
       "answerIndex": 3,
-      "rationale": "Oxygen is assigned -2 in sulfate, giving 4 times -2 equals -8; sulfur must be +6 so the total is -2.",
+      "rationale": "In polyatomic oxyanions, oxygen has oxidation number -2, so four oxygens contribute 4(-2) = -8; to match the -2 overall charge on SO4 2-, sulfur must have an oxidation number of +6.",
       "choiceRationales": [
         "This option is not the best answer because +4 would give a total ion charge of -4 with four oxygens.",
         "This option is not the best answer because assigning sulfur an oxidation state of -2 alongside four oxygens at -2 each would give a total charge of -10 instead of -2.",
@@ -9004,11 +9004,11 @@
         "0.125 M"
       ],
       "answerIndex": 3,
-      "rationale": "The HCl amount is 0.0250 L times 0.100 mol/L, or 0.00250 mol. Dividing by 0.0200 L of NaOH gives 0.125 M.",
+      "rationale": "For a 1:1 neutralization (HCl + NaOH -> NaCl + H2O), n(NaOH) = n(HCl) = (0.0250 L)(0.100 M) = 0.00250 mol; dividing by 0.0200 L of NaOH gives a molarity of 0.125 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.0800 M reverses the volume ratio and does not conserve the measured acid moles.",
         "This option is not the best answer because The equal numerical molarity would require equal titrant and analyte volumes, which are not used.",
-        "This option is not the best answer because 0.250 M doubles the acid concentration rather than dividing its moles by the titrant volume.",
+        "This option is not the best answer because 0.250 M is twice the true NaOH molarity (and 2.5 times the HCl molarity) rather than dividing 0.00250 mol by 0.0200 L.",
         "The HCl amount is 0.0250 L times 0.100 mol/L, or 0.00250 mol. Dividing by 0.0200 L of NaOH gives 0.125 M."
       ],
       "references": [
@@ -9094,7 +9094,7 @@
         "1.30 M per second"
       ],
       "answerIndex": 0,
-      "rationale": "The magnitude of the concentration change is 0.30 M; dividing by 30 s gives 0.010 M/s.",
+      "rationale": "Average rate of disappearance is -delta[reactant]/delta t; here -(0.50 M - 0.80 M) / 30 s = 0.30 M / 30 s = 0.010 M/s, expressing a positive reaction rate magnitude.",
       "choiceRationales": [
         "The magnitude of the concentration change is 0.30 M; dividing by 30 s gives 0.010 M/s.",
         "This option is not the best answer because 0.30 M is the total concentration decrease over the interval and has not been divided by the 30-second elapsed time.",
@@ -9273,7 +9273,7 @@
         "The rate increases by a factor of eight."
       ],
       "answerIndex": 2,
-      "rationale": "The second-order dependence means the rate changes by 2 squared when concentration doubles.",
+      "rationale": "With rate = k[A]^2 at constant temperature (fixed k), doubling [A] multiplies the rate by (2)^2 = 4 because second-order kinetics scale with the square of reactant concentration.",
       "choiceRationales": [
         "This option is not the best answer because A first-order relationship would double, but the stated order is two.",
         "This option is not the best answer because The rate depends on [A] in the stated law, so it does not remain constant.",
@@ -10435,7 +10435,7 @@
         "The local minimum between both transition states"
       ],
       "answerIndex": 3,
-      "rationale": "An intermediate is a local minimum in potential energy between elementary-step transition states.",
+      "rationale": "On a multistep reaction coordinate diagram, peaks correspond to high-energy transition states while the local potential-energy minimum (valley) between peaks represents a transient reaction intermediate.",
       "choiceRationales": [
         "This option is not the best answer because The highest peak represents the largest activation barrier or transition state, not the intermediate.",
         "This option is not the best answer because the energy plateau on the far left represents the starting reactants before crossing the first transition-state peak.",
@@ -11417,7 +11417,7 @@
         "418 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "Using q = m c delta T gives 100.0 times 4.18 times 10.0 J, or 4180 J, which is 4.18 kJ.",
+      "rationale": "Applying calorimetry equation q = mc delta T gives (100.0 g)(4.18 J g-1 C-1)(10.0 C) = 4180 J; dividing by 1000 J/kJ converts this heat input to 4.18 kJ.",
       "choiceRationales": [
         "This option is not the best answer because 0.418 kJ drops a factor of ten when computing q = m c delta T = (100.0 g)(4.18 J/g C)(10.0 C) = 4,180 J.",
         "This option is not the best answer because 41.8 kJ is ten times too large for the stated mass and temperature change.",
@@ -11685,7 +11685,7 @@
         "0.0833 kJ/mol"
       ],
       "answerIndex": 1,
-      "rationale": "The molar enthalpy is total energy divided by amount: 6.00 kJ divided by 0.500 mol equals 12.0 kJ/mol.",
+      "rationale": "Molar enthalpy of vaporization equals heat absorbed per mole vaporized (delta Hvap = q/n); dividing 6.00 kJ by 0.500 mol yields 12.0 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because 3.00 kJ/mol multiplies 6.00 kJ by 0.500 mol rather than dividing the heat absorbed by the number of moles vaporized.",
         "The molar enthalpy is total energy divided by amount: 6.00 kJ divided by 0.500 mol equals 12.0 kJ/mol.",
@@ -11774,7 +11774,7 @@
         "+200 kJ/mol"
       ],
       "answerIndex": 2,
-      "rationale": "Heat released is negative for the system; dividing -100 kJ by 2.00 mol gives -50.0 kJ/mol.",
+      "rationale": "By thermochemical sign convention, heat released by the system is negative (q = -100 kJ); dividing by 2.00 mol of reactant consumed gives a molar reaction enthalpy of -50.0 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because a positive sign indicates heat absorption, whereas releasing 100 kJ to the surroundings requires a negative reaction enthalpy.",
         "This option is not the best answer because -200 kJ/mol multiplies by the amount instead of dividing.",
@@ -12130,7 +12130,7 @@
         "The molar mass of the element"
       ],
       "answerIndex": 2,
-      "rationale": "By definition, the standard enthalpy of formation of an element in its standard state is zero.",
+      "rationale": "Standard enthalpy of formation measures enthalpy change to form a substance from its elements in standard states; forming a standard-state element from itself involves no change, so delta Hf standard is zero.",
       "choiceRationales": [
         "This option is not the best answer because Atomic number identifies the element but is not an enthalpy value.",
         "This option is not the best answer because Melting point is a physical property unrelated to the formation reference.",
@@ -12219,7 +12219,7 @@
         "-200 kJ"
       ],
       "answerIndex": 3,
-      "rationale": "Delta H reaction equals products minus reactants: -500 minus -300 equals -200 kJ.",
+      "rationale": "Applying Hess's law with standard enthalpies of formation, delta Hrxn = sum delta Hf(products) - sum delta Hf(reactants) = (-500 kJ) - (-300 kJ) = -200 kJ.",
       "choiceRationales": [
         "This option is not the best answer because The negative result reflects that products have lower total formation enthalpy.",
         "This option is not the best answer because -800 kJ adds magnitudes instead of subtracting the reactant sum.",
@@ -12397,11 +12397,11 @@
         "+110 kJ"
       ],
       "answerIndex": 1,
-      "rationale": "Adding the two reactions gives A yields C and adding their enthalpies gives +40 plus -70 equals -30 kJ.",
+      "rationale": "Because enthalpy is a state function, Hess's law lets us sum A -> B (+40 kJ) and B -> C (-70 kJ) so intermediate B cancels, giving A -> C with delta H = +40 + (-70) = -30 kJ.",
       "choiceRationales": [
         "This option is not the best answer because The signs must be added algebraically, producing a negative result.",
         "Adding the two reactions gives A yields C and adding their enthalpies gives +40 plus -70 equals -30 kJ.",
-        "This option is not the best answer because -110 kJ subtracts the magnitudes without preserving the first reaction sign.",
+        "This option is not the best answer because -110 kJ adds the magnitudes 40 and 70 with a negative sign, reversing the positive sign on the first step (+40 kJ).",
         "This option is not the best answer because +110 kJ ignores the negative enthalpy of the second step."
       ],
       "references": [
@@ -13109,7 +13109,7 @@
         "The new K is the square root of the original K regardless of coefficients."
       ],
       "answerIndex": 1,
-      "rationale": "Reversing a reaction inverts the equilibrium expression, so Kreverse equals 1/Kforward.",
+      "rationale": "Reversing a balanced equilibrium swaps numerator (products) and denominator (reactants) in the mass-action expression, so the reverse equilibrium constant equals the reciprocal, Krev = 1/Kfwd.",
       "choiceRationales": [
         "This option is not the best answer because The direction of the equation changes the ratio of products to reactants.",
         "Reversing a reaction inverts the equilibrium expression, so Kreverse equals 1/Kforward.",
@@ -13287,7 +13287,7 @@
         "[A] = 1.00 - x and [B] = x"
       ],
       "answerIndex": 3,
-      "rationale": "A one-to-one reaction decreases A by x and increases B by x in the ICE change row.",
+      "rationale": "In an ICE table for 1:1 reaction A <-> B starting at [A]0 = 1.00 M and [B]0 = 0.00 M, consuming x M of A produces x M of B, yielding equilibrium values [A] = 1.00 - x and [B] = x.",
       "choiceRationales": [
         "This option is not the best answer because Reactant is consumed and product is formed, so the signs are opposite to this option.",
         "This option is not the best answer because The initial B concentration is zero, but A does not disappear completely by definition of x.",
@@ -13376,7 +13376,7 @@
         "0.50 M"
       ],
       "answerIndex": 0,
-      "rationale": "The reactant decreased from 0.40 to 0.10 M, so the magnitude of the change is 0.30 M.",
+      "rationale": "In an ICE table, the change row equals equilibrium minus initial concentration; dropping from 0.40 M to 0.10 M corresponds to delta[reactant] = -0.30 M, a change magnitude of 0.30 M.",
       "choiceRationales": [
         "The reactant decreased from 0.40 to 0.10 M, so the magnitude of the change is 0.30 M.",
         "This option is not the best answer because 0.10 M is the remaining equilibrium concentration of the species, not the 0.30 M decrease from its initial 0.40 M value.",
@@ -14447,7 +14447,7 @@
         "A substance that cannot react with water"
       ],
       "answerIndex": 0,
-      "rationale": "A Bronsted-Lowry acid donates a proton to another species in an acid-base reaction.",
+      "rationale": "The Bronsted-Lowry definition classifies acids and bases by proton transfer: an acid donates an H+ ion (proton) to a base, which accepts that proton during the reaction.",
       "choiceRationales": [
         "A Bronsted-Lowry acid donates a proton to another species in an acid-base reaction.",
         "This option is not the best answer because a species that accepts a proton (H+) is defined as a Bronsted-Lowry base, not a Bronsted-Lowry acid.",
@@ -15160,7 +15160,7 @@
         "14.00"
       ],
       "answerIndex": 0,
-      "rationale": "At half-equivalence, the weak acid and conjugate base concentrations are equal, so pH equals pKa.",
+      "rationale": "At the half-equivalence point of a weak-acid titration, half the HA is converted to A- so [A-] = [HA]; by Henderson-Hasselbalch (pH = pKa + log([A-]/[HA])), log(1) = 0 gives pKa = pH = 4.75.",
       "choiceRationales": [
         "At half-equivalence, the weak acid and conjugate base concentrations are equal, so pH equals pKa.",
         "This option is not the best answer because Dividing pH by two has no basis in the half-equivalence relationship.",
@@ -15339,7 +15339,7 @@
         "Strength cannot be compared from pKa"
       ],
       "answerIndex": 2,
-      "rationale": "Lower pKa corresponds to larger Ka and a stronger acid, so the acid with pKa 3 is stronger.",
+      "rationale": "Because pKa = -log Ka, a lower pKa corresponds to a larger acid ionization constant Ka and greater proton donation; thus pKa 3 (Ka = 10^-3) is 100 times stronger than pKa 5 (Ka = 10^-5).",
       "choiceRationales": [
         "This option is not the best answer because a larger pKa value corresponds to a smaller Ka dissociation constant, meaning the acid with pKa 5 ionizes less and is weaker.",
         "This option is not the best answer because weak acids span many orders of magnitude in Ka and differ significantly in how much hydronium they produce at equal molarity.",
@@ -15428,7 +15428,7 @@
         "8.0"
       ],
       "answerIndex": 3,
-      "rationale": "The pH is 6.0, and pH plus pOH equals 14.0 at 25 degrees Celsius, so pOH is 8.0.",
+      "rationale": "First compute pH = -log(1.0 x 10^-6) = 6.0; using the water autoionization identity pH + pOH = 14.0 at 25 C gives pOH = 14.0 - 6.0 = 8.0.",
       "choiceRationales": [
         "This option is not the best answer because 6.0 equals -log([H+]), which is the pH of the solution rather than its pOH calculated from 14.0 - pH.",
         "This option is not the best answer because pOH is a logarithmic quantity, not a concentration of 1.0 times 10 to the negative 8.",
@@ -15606,7 +15606,7 @@
         "The water solvent exclusively with no change in buffer species"
       ],
       "answerIndex": 1,
-      "rationale": "The conjugate base acetate consumes added protons to form acetic acid, limiting the pH change.",
+      "rationale": "In a CH3COOH/CH3COO- buffer, the conjugate base acetate (CH3COO-) neutralizes added strong-acid H+ via CH3COO- + H+ -> CH3COOH, preventing a sharp rise in free [H+] and stabilizing pH.",
       "choiceRationales": [
         "This option is not the best answer because Sodium is a spectator cation and does not accept the proton in the buffer reaction.",
         "The conjugate base acetate consumes added protons to form acetic acid, limiting the pH change.",
@@ -15784,7 +15784,7 @@
         "5.75"
       ],
       "answerIndex": 3,
-      "rationale": "The logarithm of a base-to-acid ratio of 10 is 1, so pH equals 4.75 plus 1.00, or 5.75.",
+      "rationale": "Substituting pKa = 4.75 and [base]/[acid] = 10 into the Henderson-Hasselbalch equation pH = pKa + log([A-]/[HA]) gives 4.75 + log(10) = 4.75 + 1.00 = 5.75.",
       "choiceRationales": [
         "This option is not the best answer because A ratio of 0.1 would lower pH by one unit; the stated ratio raises it.",
         "This option is not the best answer because 4.75 applies only when the acid and base concentrations are equal.",
@@ -16499,7 +16499,7 @@
         "+70 J per mol K"
       ],
       "answerIndex": 3,
-      "rationale": "The reaction entropy is the products sum minus the reactants sum: 250 minus 180 equals +70 J per mol K.",
+      "rationale": "Using standard molar entropies, delta S standard = sum S standard(products) - sum S standard(reactants) = 250 - 180 = +70 J/(mol K), indicating a net entropy increase.",
       "choiceRationales": [
         "This option is not the best answer because Reversing the subtraction would give the sign for the reverse process.",
         "This option is not the best answer because Adding the two sums is not the entropy-change relationship.",
@@ -16677,7 +16677,7 @@
         "+55.0 kJ per mol"
       ],
       "answerIndex": 1,
-      "rationale": "Using delta G = delta H minus T delta S gives -40.0 minus 300 times (-0.0500), or -25.0 kJ per mol.",
+      "rationale": "Substituting into the Gibbs free-energy equation delta G = delta H - T delta S with consistent kJ units gives -40.0 - (300 K)(-0.0500 kJ mol-1 K-1) = -40.0 + 15.0 = -25.0 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because The entropy term is positive here because both T and delta S are used with the negative sign in the equation.",
         "Using delta G = delta H minus T delta S gives -40.0 minus 300 times (-0.0500), or -25.0 kJ per mol.",
@@ -17034,7 +17034,7 @@
         "The sign cannot be related to K"
       ],
       "answerIndex": 1,
-      "rationale": "The relationship delta G standard = -RT ln K gives a negative value when K is greater than 1.",
+      "rationale": "In delta G standard = -RT ln K, when K = 1.0 x 10^5 > 1, ln K is positive while R and T are positive, making delta G standard negative and the standard forward reaction product-favored.",
       "choiceRationales": [
         "This option is not the best answer because A K greater than 1 makes ln K positive, so the leading negative sign makes delta G standard negative.",
         "The relationship delta G standard = -RT ln K gives a negative value when K is greater than 1.",
@@ -17302,11 +17302,11 @@
         "+85 kJ per mol"
       ],
       "answerIndex": 0,
-      "rationale": "The free-energy changes add: +35 plus (-50) equals -15 kJ per mol for the combined process.",
+      "rationale": "Because Gibbs free energy is a state function, coupling one mole of A (+35 kJ/mol) with one mole of B (-50 kJ/mol) adds their values directly: +35 + (-50) = -15 kJ/mol.",
       "choiceRationales": [
         "The free-energy changes add: +35 plus (-50) equals -15 kJ per mol for the combined process.",
         "This option is not the best answer because The negative contribution is larger in magnitude, so the sum is not positive.",
-        "This option is not the best answer because Adding magnitudes without signs gives 85 but ignores the exergonic sign.",
+        "This option is not the best answer because -85 kJ/mol adds the magnitudes 35 and 50 with a negative sign, ignoring the positive endergonic sign of reaction A (+35 kJ/mol).",
         "This option is not the best answer because The signs must be retained when state-function changes are combined."
       ],
       "references": [
@@ -17927,12 +17927,12 @@
         "Approximately 2.00 F, or 1.93 times 10 to the 5 C"
       ],
       "answerIndex": 3,
-      "rationale": "Each Cu2+ ion requires two electrons, so one mole of copper requires two faradays of charge, about 2 times 96485 C.",
+      "rationale": "Reducing Cu2+ + 2e- -> Cu requires 2 mol of electrons per mole of copper; thus 1.00 mol Cu needs 2.00 faradays, or 2.00 x 96,485 C = 1.93 x 10^5 C of charge.",
       "choiceRationales": [
-        "This option is not the best answer because One-half faraday would provide only one electron per copper ion on average.",
+        "This option is not the best answer because 0.500 F supplies only 0.500 mol of electrons (one-fourth of the 2.00 mol required), reducing only 0.250 mol of Cu2+.",
         "This option is not the best answer because One faraday provides one mole of electrons, but two are required per copper ion.",
         "This option is not the best answer because Four faradays would provide twice the electrons required by the reduction.",
-        "Each Cu2+ ion requires two electrons, so one mole of copper requires two faradays of charge, about 2 times 96485 C."
+        "Each Cu2+ ion requires two electrons, so one mole of copper requires two faradays of charge, about 2 times 96,485 C = 1.93 x 10^5 C."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -18106,7 +18106,7 @@
         "4.00 mol"
       ],
       "answerIndex": 1,
-      "rationale": "Dividing 1.204 times 10 to the 24th atoms by 6.02 times 10 to the 23rd atoms per mole gives 2.00 mol.",
+      "rationale": "Using Avogadro's number (6.02 x 10^23 atoms/mol) to convert particles to moles, dividing 1.204 x 10^24 Mg atoms by 6.02 x 10^23 atoms/mol yields exactly 2.00 mol.",
       "choiceRationales": [
         "This option is not the best answer because 0.500 mol would contain one-fourth of the stated number of atoms.",
         "Dividing 1.204 times 10 to the 24th atoms by 6.02 times 10 to the 23rd atoms per mole gives 2.00 mol.",
@@ -18195,7 +18195,7 @@
         "20.0"
       ],
       "answerIndex": 2,
-      "rationale": "The weighted average is 10 times 0.20 plus 11 times 0.80, which equals 10.8 mass units.",
+      "rationale": "Average atomic mass is the abundance-weighted sum of isotopic masses: (10)(0.20) + (11)(0.80) = 2.0 + 8.8 = 10.8, lying closer to mass 11 because that isotope dominates at 80 percent.",
       "choiceRationales": [
         "This option is not the best answer because 10.2 reverses the larger abundance contribution and gives too much weight to mass 10.",
         "This option is not the best answer because 11.0 would require all detected atoms to be the isotope at mass 11.",
@@ -18375,11 +18375,11 @@
         "H4O"
       ],
       "answerIndex": 0,
-      "rationale": "The masses correspond to about 2.00 mol hydrogen atoms and 1.00 mol oxygen atoms, giving a 2:1 simplest ratio.",
+      "rationale": "Converting masses to moles gives 2.00 g / 1.008 g/mol = 1.98 mol H and 16.0 g / 16.00 g/mol = 1.00 mol O, a 2:1 simplest whole-number ratio matching H2O.",
       "choiceRationales": [
-        "The masses correspond to about 2.00 mol hydrogen atoms and 1.00 mol oxygen atoms, giving a 2:1 simplest ratio.",
+        "The masses correspond to about 2.00 mol hydrogen atoms and 1.00 mol oxygen atoms, giving a 2:1 simplest whole-number ratio matching H2O.",
         "This option is not the best answer because HO has a one-to-one atom ratio rather than the calculated two-to-one ratio.",
-        "This option is not the best answer because H2O2 doubles the simplest ratio and is not an empirical formula for these data.",
+        "This option is not the best answer because H2O2 has a 1:1 hydrogen-to-oxygen mole ratio (empirical formula HO) rather than the calculated 2:1 ratio.",
         "This option is not the best answer because H4O contains twice as much hydrogen as the simplest whole-number ratio requires."
       ],
       "references": [
@@ -18464,7 +18464,7 @@
         "The sample is placed under a lamp without measuring mass again."
       ],
       "answerIndex": 1,
-      "rationale": "Constant mass indicates that additional heating is no longer removing measurable water under the procedure.",
+      "rationale": "Heating to constant mass verifies complete dehydration because any remaining bound water would still vaporize and lower the measured mass on subsequent heating-and-cooling cycles.",
       "choiceRationales": [
         "This option is not the best answer because Color change can occur without proving that all water has been removed.",
         "Constant mass indicates that additional heating is no longer removing measurable water under the procedure.",
@@ -18643,7 +18643,7 @@
         "0.400 M"
       ],
       "answerIndex": 3,
-      "rationale": "The solute amount is 5.00 divided by 50.0, or 0.100 mol; dividing by 0.2500 L gives 0.400 M.",
+      "rationale": "First convert mass to moles: n = 5.00 g / 50.0 g/mol = 0.100 mol; then convert volume to 0.2500 L and compute molarity M = n/V = 0.100 mol / 0.2500 L = 0.400 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.0400 M is ten times too small because the volume conversion or division is mishandled.",
         "This option is not the best answer because 0.200 M would require twice the final volume for the same amount of solute.",
@@ -18732,7 +18732,7 @@
         "Sulfur"
       ],
       "answerIndex": 0,
-      "rationale": "The configuration contains 17 electrons, which identifies neutral chlorine by its atomic number.",
+      "rationale": "Summing the superscripts in 1s2 2s2 2p6 3s2 3p5 yields 2 + 2 + 6 + 2 + 5 = 17 electrons; in a neutral atom this equals 17 protons (atomic number 17), identifying chlorine.",
       "choiceRationales": [
         "The configuration contains 17 electrons, which identifies neutral chlorine by its atomic number.",
         "This option is not the best answer because Fluorine has nine electrons and ends in 2p5 rather than 3p5.",
@@ -18910,7 +18910,7 @@
         "Magnesium"
       ],
       "answerIndex": 2,
-      "rationale": "The peak areas account for ten electrons in the configuration 1s2 2s2 2p6, identifying neutral neon.",
+      "rationale": "PES peak areas are proportional to subshell electron counts; peaks of 2, 2, and 6 electrons correspond to 1s2 2s2 2p6 (10 electrons total), uniquely identifying neutral neon (Z = 10).",
       "choiceRationales": [
         "This option is not the best answer because Fluorine has nine electrons and would have one fewer electron in the final subshell.",
         "This option is not the best answer because Sodium has eleven electrons and includes a 3s electron beyond the shown peaks.",
@@ -19268,7 +19268,7 @@
         "Ca(PO4)3"
       ],
       "answerIndex": 2,
-      "rationale": "Three Ca2+ ions provide six positive charges and two phosphate ions provide six negative charges.",
+      "rationale": "To achieve zero net charge from Ca2+ and PO4 3-, take the least common multiple of 2 and 3 (6): three Ca2+ ions (+6) balance two PO4 3- ions (-6), giving Ca3(PO4)2.",
       "choiceRationales": [
         "This option is not the best answer because A one-to-one formula leaves the positive and negative charges unequal.",
         "This option is not the best answer because Ca2PO4 supplies four positive charges and three negative charges, not neutrality.",
@@ -19446,7 +19446,7 @@
         "86.0 percent"
       ],
       "answerIndex": 0,
-      "rationale": "Let x be the mass-63 fraction: 63x plus 65(1 minus x) equals 63.55, giving x = 0.725.",
+      "rationale": "Setting x as the fractional abundance of Cu-63 gives 63.0x + 65.0(1 - x) = 63.55; solving -2.0x = -1.45 yields x = 0.725, or 72.5 percent abundance for the mass-63 isotope.",
       "choiceRationales": [
         "Let x be the mass-63 fraction: 63x plus 65(1 minus x) equals 63.55, giving x = 0.725.",
         "This option is not the best answer because 27.5 percent is the complementary abundance of the mass-65 isotope.",
@@ -19536,7 +19536,7 @@
         "Aluminum"
       ],
       "answerIndex": 1,
-      "rationale": "The total is twelve electrons with configuration 1s2 2s2 2p6 3s2, corresponding to magnesium.",
+      "rationale": "Shell/subshell populations summing to 2 + 8 + 2 = 12 electrons correspond to ground-state configuration 1s2 2s2 2p6 3s2, matching neutral magnesium with atomic number 12.",
       "choiceRationales": [
         "This option is not the best answer because a neutral sodium atom has only eleven total electrons (2, 8, and 1), leaving one electron short of the 2, 8, 2 spectrum.",
         "The total is twelve electrons with configuration 1s2 2s2 2p6 3s2, corresponding to magnesium.",
@@ -19625,7 +19625,7 @@
         "The ion becomes larger, because a positive charge always expands the whole electron cloud around it."
       ],
       "answerIndex": 2,
-      "rationale": "Removing the outer electrons contracts the remaining electron cloud while the nuclear charge stays unchanged.",
+      "rationale": "Forming Mg2+ removes both 3s valence electrons, eliminating the entire n = 3 shell and reducing electron-electron repulsion while the +12 nuclear charge pulls the remaining 10 electrons tightly inward.",
       "choiceRationales": [
         "This option is not the best answer because Ion formation does not add an occupied shell to magnesium.",
         "This option is not the best answer because Proton number determines element identity and is unchanged during ordinary ion formation.",
@@ -19714,11 +19714,11 @@
         "Eight"
       ],
       "answerIndex": 3,
-      "rationale": "Neutral sulfur has six valence electrons and gains two electrons, giving the ion a complete octet.",
+      "rationale": "Sulfur (group 16) starts with six valence electrons (3s2 3p4); gaining two electrons to form S2- fills the 3p subshell to 3s2 3p6, giving eight valence electrons around the sulfide ion.",
       "choiceRationales": [
         "This option is not the best answer because Six is the neutral sulfur valence count before the ion forms.",
         "This option is not the best answer because Seven does not account for both electrons gained by sulfur.",
-        "This option is not the best answer because The Lewis symbol shows valence electrons, not all ten electrons in the ion.",
+        "This option is not the best answer because Ten is the count of inner core electrons in S2- (which has 18 electrons total), whereas Lewis symbols show only the 8 valence electrons.",
         "Neutral sulfur has six valence electrons and gains two electrons, giving the ion a complete octet."
       ],
       "references": [
@@ -20338,7 +20338,7 @@
         "The added atoms make all metal layers slide with no resistance."
       ],
       "answerIndex": 2,
-      "rationale": "Substitutional or interstitial defects can impede the movement of layers that allows a pure metal to deform.",
+      "rationale": "Pure metals are ductile because uniform atomic planes slide past one another; introducing differently sized substitutional or interstitial alloy atoms distorts the lattice and pins planes against slipping.",
       "choiceRationales": [
         "This option is not the best answer because Metallic bonding usually retains delocalized electrons even in an alloy.",
         "This option is not the best answer because An alloy remains an extended metallic material rather than becoming a molecular hydrogen-bonded solid.",
@@ -20427,9 +20427,9 @@
         "18 electrons"
       ],
       "answerIndex": 3,
-      "rationale": "Nitrogen contributes five electrons, two oxygens contribute twelve, and the negative charge adds one for a total of eighteen.",
+      "rationale": "In the nitrite ion NO2-, nitrogen contributes 5 valence electrons, two oxygens contribute 2(6) = 12, and the 1- ionic charge adds 1, totaling 18 valence electrons.",
       "choiceRationales": [
-        "This option is not the best answer because 16 omits the extra electron associated with the negative charge.",
+        "This option is not the best answer because 16 subtracts one electron from the 17-electron neutral NO2 total instead of adding one for the 1- charge.",
         "This option is not the best answer because 17 is the neutral-atom total before accounting for the ion charge.",
         "This option is not the best answer because 20 adds two more electrons than the formula and charge require.",
         "Nitrogen contributes five electrons, two oxygens contribute twelve, and the negative charge adds one for a total of eighteen."
@@ -20694,7 +20694,7 @@
         "Plus 2"
       ],
       "answerIndex": 2,
-      "rationale": "The formal charge is 5 minus 2 nonbonding electrons minus 3 assigned bonding electrons, which equals zero.",
+      "rationale": "Using FC = valence electrons - nonbonding electrons - (1/2 bonding electrons) gives 5 - 2 - (1/2)(6) = 5 - 2 - 3 = 0, confirming zero formal charge on that atom.",
       "choiceRationales": [
         "This option is not the best answer because A plus-one charge would require one fewer assigned electron than this structure provides.",
         "This option is not the best answer because A minus-one charge would require one more assigned electron than shown.",
@@ -20785,7 +20785,7 @@
       "answerIndex": 3,
       "rationale": "Sulfur has five electron domains including one lone pair; the lone pair occupies an equatorial position and the molecular shape is seesaw.",
       "choiceRationales": [
-        "This option is not the best answer because Tetrahedral describes the electron-domain arrangement before removing the lone pair from the shape description.",
+        "This option is not the best answer because Tetrahedral applies to four electron domains and ignores the lone pair; SF4 has five domains (trigonal bipyramidal) giving a seesaw shape.",
         "This option is not the best answer because Trigonal planar requires three electron domains rather than five.",
         "This option is not the best answer because Linear requires two electron domains around the central atom.",
         "Sulfur has five electron domains including one lone pair; the lone pair occupies an equatorial position and the molecular shape is seesaw."
@@ -20961,7 +20961,7 @@
         "sp3d2"
       ],
       "answerIndex": 1,
-      "rationale": "BF3 has three electron domains around boron, corresponding to a trigonal-planar arrangement and an sp2 model.",
+      "rationale": "In BF3, boron forms three sigma bonds and has no lone pairs, giving three steric domains arranged in a trigonal-planar geometry (120 degrees) modeled by sp2 hybridization.",
       "choiceRationales": [
         "This option is not the best answer because sp corresponds to two electron domains and a linear arrangement.",
         "BF3 has three electron domains around boron, corresponding to a trigonal-planar arrangement and an sp2 model.",
@@ -21763,7 +21763,7 @@
         "A single isolated atom"
       ],
       "answerIndex": 2,
-      "rationale": "Amorphous solids lack long-range periodic order and often soften over a range rather than melting sharply.",
+      "rationale": "Unlike crystalline solids that melt sharply and yield distinct X-ray diffraction peaks from periodic lattices, amorphous solids lack long-range order and therefore soften gradually over a temperature range.",
       "choiceRationales": [
         "This option is not the best answer because A crystalline ionic solid generally has an ordered lattice and more characteristic transitions.",
         "This option is not the best answer because the prompt explicitly describes a solid that softens upon heating, whereas a pure gas has no fixed shape and does not melt.",
@@ -22031,7 +22031,7 @@
         "1.20 atm"
       ],
       "answerIndex": 1,
-      "rationale": "The mole fraction of nitrogen is 0.20, so its partial pressure is 0.20 times 1.00 atm.",
+      "rationale": "By Dalton's law of partial pressures (PN2 = XN2 times Ptotal), the mole fraction is 0.20 mol / 1.00 mol = 0.20, so multiplying by 1.00 atm gives a nitrogen partial pressure of 0.20 atm.",
       "choiceRationales": [
         "This option is not the best answer because 0.05 atm would use an incorrect denominator or mole fraction.",
         "The mole fraction of nitrogen is 0.20, so its partial pressure is 0.20 times 1.00 atm.",
@@ -22121,7 +22121,7 @@
         "The sample with the greatest number of colorless particles only"
       ],
       "answerIndex": 2,
-      "rationale": "For ideal gases at fixed temperature and pressure, density is proportional to molar mass.",
+      "rationale": "Rearranging the ideal gas law PV = (m/M)RT gives gas density d = m/V = PM/(RT); when T and P are held equal, density is directly proportional to molar mass M, so the highest-M gas is densest.",
       "choiceRationales": [
         "This option is not the best answer because A smaller molar mass gives lower density under the same conditions.",
         "This option is not the best answer because Equal temperature and pressure do not erase the molar-mass dependence of density.",
@@ -22388,7 +22388,7 @@
         "2.50 M"
       ],
       "answerIndex": 1,
-      "rationale": "Molarity equals moles divided by liters of solution: 0.100 divided by 0.400 equals 0.250 M.",
+      "rationale": "Using the molarity formula M = moles of solute / liters of solution, dividing 0.100 mol NaCl by 0.400 L of solution yields a concentration of 0.250 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.0400 M results from multiplying rather than dividing by the solution volume.",
         "Molarity equals moles divided by liters of solution: 0.100 divided by 0.400 equals 0.250 M.",
@@ -22566,7 +22566,7 @@
         "Intact glucose molecules dispersed among water molecules"
       ],
       "answerIndex": 3,
-      "rationale": "Glucose dissolves as neutral molecules that become dispersed and hydrated without dissociating into ions.",
+      "rationale": "Because glucose is a covalent nonelectrolyte with polar -OH groups, it dissolves via hydrogen bonding with water as intact, neutral hydrated molecules rather than dissociating into free ions.",
       "choiceRationales": [
         "This option is not the best answer because Glucose is a molecular nonelectrolyte, so ion separation is not the dominant model.",
         "This option is not the best answer because A homogeneous solution does not require a solid lattice at the bottom.",
@@ -22744,7 +22744,7 @@
         "The compound traveled 75 centimeters regardless of the paper length."
       ],
       "answerIndex": 1,
-      "rationale": "Rf equals the distance traveled by the compound divided by the distance traveled by the solvent front.",
+      "rationale": "In chromatography, the retention factor is Rf = (distance traveled by spot) / (distance traveled by solvent front), so Rf = 0.75 means the compound migrated three-fourths as far as the solvent front.",
       "choiceRationales": [
         "This option is not the best answer because Rf is a distance ratio, not a mass percentage of solvent.",
         "Rf equals the distance traveled by the compound divided by the distance traveled by the solvent front.",
@@ -22923,7 +22923,7 @@
         "c = lambda nu"
       ],
       "answerIndex": 3,
-      "rationale": "The speed of light equals wavelength multiplied by frequency for electromagnetic radiation in vacuum.",
+      "rationale": "Every electromagnetic wave in vacuum travels at the constant speed of light c, which equals the product of its wavelength and frequency: c = lambda nu.",
       "choiceRationales": [
         "This option is not the best answer because Dividing wavelength by frequency does not give the invariant speed relationship.",
         "This option is not the best answer because Frequency divided by wavelength has the wrong dimensions for speed.",
@@ -23101,7 +23101,7 @@
         "Absorbance becomes four times larger."
       ],
       "answerIndex": 1,
-      "rationale": "Beer-Lambert law states that absorbance is proportional to path length when the other factors are fixed.",
+      "rationale": "According to the Beer-Lambert law A = epsilon b c, absorbance A varies directly with path length b when molar absorptivity epsilon and concentration c stay constant, so doubling b doubles A.",
       "choiceRationales": [
         "This option is not the best answer because An inverse relationship would apply to a different measured quantity, not absorbance here.",
         "Beer-Lambert law states that absorbance is proportional to path length when the other factors are fixed.",
@@ -23815,12 +23815,12 @@
         "The reaction is exothermic with a forward activation energy of 45 kJ per mol."
       ],
       "answerIndex": 1,
-      "rationale": "Products lower than reactants indicate delta H is negative, while the transition-state height above reactants gives the forward activation energy.",
+      "rationale": "Products 35 kJ/mol below reactants give delta H = -35 kJ/mol (exothermic), while the transition state 80 kJ/mol above reactants gives a forward activation energy of 80 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because A product level below reactants indicates an exothermic, not endothermic, process.",
-        "Products lower than reactants indicate delta H is negative, while the transition-state height above reactants gives the forward activation energy.",
+        "Products lower than reactants indicate delta H is negative, while the transition-state height above reactants gives the forward activation energy of 80 kJ/mol.",
         "This option is not the best answer because Every activated pathway has a barrier even when products are lower in energy.",
-        "This option is not the best answer because The 45 kJ value is the reverse activation-energy difference from products to the transition state."
+        "This option is not the best answer because 45 kJ/mol erroneously subtracts 35 from 80; the forward barrier is 80 kJ/mol and the reverse barrier is 80 - (-35) = 115 kJ/mol."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -24083,10 +24083,10 @@
         "1.50 mol O2"
       ],
       "answerIndex": 0,
-      "rationale": "The balanced ratio is three moles oxygen for every two moles potassium chlorate, so 0.500 times 3/2 equals 0.750 mol.",
+      "rationale": "From the balanced decomposition 2KClO3 -> 2KCl + 3O2, the stoichiometric mole ratio is 3 mol O2 per 2 mol KClO3, so 0.500 mol KClO3 x (3/2) produces 0.750 mol O2.",
       "choiceRationales": [
         "The balanced ratio is three moles oxygen for every two moles potassium chlorate, so 0.500 times 3/2 equals 0.750 mol.",
-        "This option is not the best answer because 0.250 mol reverses the coefficient ratio and is too small for the stated reactant amount.",
+        "This option is not the best answer because 0.250 mol divides 0.500 mol KClO3 by 2 while omitting the coefficient 3 on O2 in the 3:2 mole ratio.",
         "This option is not the best answer because A one-to-one ratio is not the balanced stoichiometric relationship.",
         "This option is not the best answer because 1.50 mol doubles the correct oxygen amount by using three oxygen moles per one chlorate mole."
       ],
@@ -24261,7 +24261,7 @@
         "A is limiting because its molar mass must be the smaller one of the two."
       ],
       "answerIndex": 2,
-      "rationale": "The stoichiometric requirement is two B per A; 2.00 mol B supports only 1.00 mol A, leaving excess A.",
+      "rationale": "With a 1 mol A : 2 mol B stoichiometric ratio, 2.00 mol B requires only 1.00 mol A (leaving 2.00 mol excess A), whereas 3.00 mol A would need 6.00 mol B; therefore B runs out first and limits product.",
       "choiceRationales": [
         "This option is not the best answer because Limiting behavior depends on stoichiometric amounts, not merely which number is larger.",
         "This option is not the best answer because A reactant can be limiting even when another reactant remains in excess.",
@@ -24528,7 +24528,7 @@
         "Combustion"
       ],
       "answerIndex": 1,
-      "rationale": "One compound breaks into two simpler substances, which defines a decomposition reaction.",
+      "rationale": "In CaCO3(s) -> CaO(s) + CO2(g), a single reactant compound breaks apart into two simpler product substances, which is the defining stoichiometry of a decomposition reaction.",
       "choiceRationales": [
         "This option is not the best answer because Synthesis combines simpler substances into one product rather than splitting one compound.",
         "One compound breaks into two simpler substances, which defines a decomposition reaction.",
@@ -24617,7 +24617,7 @@
         "Chlorine gas, Cl2"
       ],
       "answerIndex": 2,
-      "rationale": "Acid protonates carbonate to form carbonic acid, which decomposes into carbon dioxide and water.",
+      "rationale": "Acid-carbonate reactions transfer two protons to CO3 2- to produce unstable carbonic acid (H2CO3), which rapidly decomposes into liquid H2O and effervescent carbon dioxide gas (CO2).",
       "choiceRationales": [
         "This option is not the best answer because Oxygen is not the characteristic gas from acid-carbonate neutralization.",
         "This option is not the best answer because Nitrogen does not arise from carbonate protonation in this reaction.",
@@ -24884,7 +24884,7 @@
         "-1"
       ],
       "answerIndex": 1,
-      "rationale": "Four oxygens contribute -8 total charge, so manganese must be +7 to give the ion an overall -1 charge.",
+      "rationale": "Assigning oxygen its standard oxidation state of -2 gives 4(-2) = -8 across four O atoms; for Mn + (-8) to equal the permanganate ion charge of -1, manganese must be +7.",
       "choiceRationales": [
         "This option is not the best answer because assigning Mn an oxidation state of +4 with four oxygens at -2 each yields an overall charge of -4 rather than -1 for MnO4-.",
         "Four oxygens contribute -8 total charge, so manganese must be +7 to give the ion an overall -1 charge.",
@@ -24973,7 +24973,7 @@
         "The spectator ions are oxidized instead of either redox reactant."
       ],
       "answerIndex": 2,
-      "rationale": "Zinc changes from oxidation state zero to plus two, indicating loss of electrons and oxidation.",
+      "rationale": "Oxidation is the loss of electrons shown by an increasing oxidation number; here Zn(s) goes from 0 to +2 in Zn2+ by losing two electrons, while Cu2+ is reduced to Cu.",
       "choiceRationales": [
         "This option is not the best answer because Copper(II) gains electrons and is reduced in the reaction.",
         "This option is not the best answer because The product state does not define oxidation; electron transfer does.",
@@ -25419,7 +25419,7 @@
         "M-1 s-1"
       ],
       "answerIndex": 3,
-      "rationale": "Dividing M/s by M2 gives M-1 s-1 for the rate constant in a second-order rate law.",
+      "rationale": "Solving rate = k[A]^2 for k gives k = rate/[A]^2; substituting units (M s-1) / M^2 cancels one M factor to leave M-1 s-1, the standard unit for an overall second-order rate constant.",
       "choiceRationales": [
         "This option is not the best answer because M/s are the rate units and would apply to k only for a zero-order law.",
         "This option is not the best answer because Multiplying by M2 gives the wrong dimensional relationship for k.",
@@ -25508,7 +25508,7 @@
         "One-eighth"
       ],
       "answerIndex": 0,
-      "rationale": "Two half-lives pass in 40.0 s, leaving one-half after the first and one-fourth after the second.",
+      "rationale": "For a first-order reaction, the half-life is constant; 40.0 s / 20.0 s = 2 half-lives, so the remaining fraction is (1/2)^2 = 1/4 (half remains at 20.0 s and one-fourth at 40.0 s).",
       "choiceRationales": [
         "Two half-lives pass in 40.0 s, leaving one-half after the first and one-fourth after the second.",
         "This option is not the best answer because one-half of the reactant remains after a single 20.0 s half-life, whereas 40.0 s spans two complete half-lives.",
@@ -25597,7 +25597,7 @@
         "The order cannot be inferred from any concentration plot"
       ],
       "answerIndex": 1,
-      "rationale": "For a zero-order process, integrated rate law gives [A] = [A]0 minus kt, a straight line with negative slope.",
+      "rationale": "Integrating rate = k[A]^0 = k yields the zero-order integrated rate law [A]t = -kt + [A]0, which forms a straight line with slope -k when [A] is plotted directly against time.",
       "choiceRationales": [
         "This option is not the best answer because A first-order process gives a linear ln[A] versus time plot.",
         "For a zero-order process, integrated rate law gives [A] = [A]0 minus kt, a straight line with negative slope.",
@@ -25687,7 +25687,7 @@
         "Trimolecular product formation"
       ],
       "answerIndex": 2,
-      "rationale": "An elementary event involving three reacting particles is classified as termolecular.",
+      "rationale": "Molecularity counts the reactant species colliding simultaneously in an elementary step: one is unimolecular, two is bimolecular, and three colliding particles define a termolecular step.",
       "choiceRationales": [
         "This option is not the best answer because unimolecular refers to an elementary reaction involving only one reacting molecule rather than three colliding particles.",
         "This option is not the best answer because bimolecular refers to an elementary collision between two particles, whereas this step involves three reacting particles.",
@@ -25954,7 +25954,7 @@
         "The chips have higher temperature even when both samples are equilibrated."
       ],
       "answerIndex": 1,
-      "rationale": "More exposed surface allows more acid-carbonate collisions per unit time under otherwise equal conditions.",
+      "rationale": "In heterogeneous solid-solution kinetics, powdering CaCO3 dramatically increases exposed surface area for the same mass, raising the frequency of productive H+-to-carbonate collisions per second.",
       "choiceRationales": [
         "This option is not the best answer because Particle size changes surface area, not the chemical formula of the same solid.",
         "More exposed surface allows more acid-carbonate collisions per unit time under otherwise equal conditions.",
@@ -26133,7 +26133,7 @@
         "30 kJ/mol"
       ],
       "answerIndex": 3,
-      "rationale": "Subtracting 65 kJ/mol from 95 kJ/mol gives a 30 kJ/mol reduction in activation energy.",
+      "rationale": "A catalyst provides an alternative pathway with lower activation energy; the barrier reduction equals Ea(uncatalyzed) - Ea(catalyzed) = 95 kJ/mol - 65 kJ/mol = 30 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because 160 kJ/mol adds the two barriers rather than finding their difference.",
         "This option is not the best answer because 30 kJ omits the per-mole unit required for an activation-energy comparison.",
@@ -26222,7 +26222,7 @@
         "P"
       ],
       "answerIndex": 0,
-      "rationale": "I is produced in the first step and consumed in the second, so it cancels from the overall equation.",
+      "rationale": "A reaction intermediate is generated in an earlier elementary step and consumed in a later step without appearing in the net equation; here I forms in step 1 and is consumed in step 2.",
       "choiceRationales": [
         "I is produced in the first step and consumed in the second, so it cancels from the overall equation.",
         "This option is not the best answer because A is a reactant in the first step and remains part of the overall reactant set.",
@@ -26311,7 +26311,7 @@
         "The overall reaction must be impossible whenever a mechanism contains any intermediate at all."
       ],
       "answerIndex": 1,
-      "rationale": "Intermediates are formed and consumed within a mechanism and should cancel when the steps are summed.",
+      "rationale": "Valid reaction mechanisms must sum to the exact overall balanced stoichiometry with all transient intermediates canceling out; an uncancelled intermediate shows either an algebra error or an invalid mechanism.",
       "choiceRationales": [
         "This option is not the best answer because A valid mechanism removes intermediates from the net equation through cancellation.",
         "Intermediates are formed and consumed within a mechanism and should cancel when the steps are summed.",
@@ -26490,7 +26490,7 @@
         "rate = kKpre[A]"
       ],
       "answerIndex": 3,
-      "rationale": "The slow step gives rate = k[I], and the pre-equilibrium gives [I] = Kpre[A], so the constants multiply.",
+      "rationale": "The rate-determining slow step gives rate = k[I]; substituting [I] = Kpre[A] from the fast pre-equilibrium Kpre = [I]/[A] removes the intermediate and yields rate = kKpre[A].",
       "choiceRationales": [
         "This option is not the best answer because A squared dependence is not implied by the one-to-one fast equilibrium.",
         "This option is not the best answer because The equilibrium relationship multiplies [A] by Kpre rather than dividing by it.",
@@ -26579,7 +26579,7 @@
         "The final product in every mechanism"
       ],
       "answerIndex": 0,
-      "rationale": "A valley between transition-state peaks represents a species or state reached between elementary steps.",
+      "rationale": "In a two-step potential-energy profile, each maximum marks a transition state while the intervening energy valley marks a locally stable intermediate formed after step 1 and consumed in step 2.",
       "choiceRationales": [
         "A valley between transition-state peaks represents a species or state reached between elementary steps.",
         "This option is not the best answer because Transition states are represented by peaks rather than valleys.",
@@ -27114,7 +27114,7 @@
         "The reaction stops because Q is not really a concentration."
       ],
       "answerIndex": 2,
-      "rationale": "Q greater than K indicates an excess of products relative to equilibrium, so the reverse reaction lowers Q.",
+      "rationale": "When reaction quotient Q exceeds equilibrium constant K, the product-to-reactant ratio is too high for equilibrium, so the net reaction proceeds in reverse to consume products until Q = K.",
       "choiceRationales": [
         "This option is not the best answer because The forward direction would increase products and move Q farther from K.",
         "This option is not the best answer because K changes only with temperature, not with the instantaneous composition.",
@@ -27293,7 +27293,7 @@
         "64"
       ],
       "answerIndex": 0,
-      "rationale": "Kc equals [HI] squared divided by [H2][I2], so 0.80 squared divided by 0.20 times 0.20 equals 16.",
+      "rationale": "For H2 + I2 <-> 2HI, the mass-action expression is Kc = [HI]^2 / ([H2][I2]); plugging in the equilibrium molarities gives (0.80)^2 / ((0.20)(0.20)) = 0.64 / 0.040 = 16.",
       "choiceRationales": [
         "Kc equals [HI] squared divided by [H2][I2], so 0.80 squared divided by 0.20 times 0.20 equals 16.",
         "This option is not the best answer because 4.0 omits one factor of the HI concentration or mishandles the denominator.",
@@ -27472,7 +27472,7 @@
         "0.025"
       ],
       "answerIndex": 2,
-      "rationale": "For a one-to-one reaction, Kc equals [B] divided by [A], or 0.10 divided by 0.40 equals 0.25.",
+      "rationale": "For the 1:1 equilibrium A <-> B, Kc = [B]/[A]; substituting the equilibrium concentrations [B] = 0.10 M and [A] = 0.40 M gives 0.10 / 0.40 = 0.25.",
       "choiceRationales": [
         "This option is not the best answer because 4.0 is the reciprocal and would correspond to the reverse reaction.",
         "This option is not the best answer because 0.50 does not follow from the one-to-one concentration ratio.",
@@ -27739,7 +27739,7 @@
         "0.040"
       ],
       "answerIndex": 1,
-      "rationale": "Reversing a reaction takes the reciprocal of K, so 1 divided by 5.0 equals 0.20.",
+      "rationale": "Reversing A <-> B to B <-> A inverts the concentration ratio from [B]/[A] to [A]/[B], so the new equilibrium constant is the reciprocal: Krev = 1 / 5.0 = 0.20.",
       "choiceRationales": [
         "This option is not the best answer because Keeping K unchanged would ignore the reversal of the reaction expression.",
         "Reversing a reaction takes the reciprocal of K, so 1 divided by 5.0 equals 0.20.",
@@ -27828,7 +27828,7 @@
         "The new constant is the reciprocal of the original constant."
       ],
       "answerIndex": 2,
-      "rationale": "Multiplying every coefficient by two squares the reaction quotient expression and therefore squares K.",
+      "rationale": "Multiplying all stoichiometric coefficients in a balanced equation by a factor n raises K to the nth power (Knew = K^n); doubling every coefficient therefore squares the original equilibrium constant.",
       "choiceRationales": [
         "This option is not the best answer because Scaling coefficients does not divide the equilibrium constant.",
         "This option is not the best answer because The expression changes when stoichiometric exponents change, so K is not unchanged.",
@@ -27917,7 +27917,7 @@
         "0.30 M"
       ],
       "answerIndex": 3,
-      "rationale": "The one-to-one reaction consumes 0.20 M A to form 0.20 M B, leaving 0.50 minus 0.20 equals 0.30 M A.",
+      "rationale": "In the 1:1 equilibrium A <-> B, forming 0.20 M of B from 0.00 M consumes 0.20 M of A in the ICE change row, leaving an equilibrium concentration [A] = 0.50 M - 0.20 M = 0.30 M.",
       "choiceRationales": [
         "This option is not the best answer because 0.20 M is the equilibrium product concentration, not the remaining reactant.",
         "This option is not the best answer because The reactant concentration changes as the reaction proceeds from the initial mixture.",
@@ -28721,7 +28721,7 @@
         "Free electrons as the main dissolved species produced"
       ],
       "answerIndex": 0,
-      "rationale": "An Arrhenius acid increases the concentration of H3O+ or equivalently H+ in aqueous solution.",
+      "rationale": "In the Arrhenius acid-base model, an acid is a substance that dissociates or ionizes in water to raise the aqueous hydrogen ion (H+) or hydronium ion (H3O+) concentration.",
       "choiceRationales": [
         "An Arrhenius acid increases the concentration of H3O+ or equivalently H+ in aqueous solution.",
         "This option is not the best answer because Acidic dissolution does not decrease every ion concentration.",
@@ -28810,7 +28810,7 @@
         "CH4, the methane molecule"
       ],
       "answerIndex": 1,
-      "rationale": "Bicarbonate can accept a proton to form H2CO3 or donate a proton to form CO3 2-, so it is amphiprotic.",
+      "rationale": "An amphiprotic species can both donate and accept a proton; HCO3- accepts H+ to form H2CO3 or donates H+ to form CO3 2-, whereas Cl-, Na+, and CH4 cannot perform both roles in water.",
       "choiceRationales": [
         "This option is not the best answer because Chloride is the conjugate base of a strong acid and is not normally proton-donating in water.",
         "Bicarbonate can accept a proton to form H2CO3 or donate a proton to form CO3 2-, so it is amphiprotic.",
@@ -28899,7 +28899,7 @@
         "11.0"
       ],
       "answerIndex": 2,
-      "rationale": "pH equals negative log of the hydronium concentration, so pH is 3.0 for 1.0 times 10 to the negative 3 M.",
+      "rationale": "By definition, pH = -log[H3O+]; substituting [H3O+] = 1.0 x 10^-3 M gives -log(1.0 x 10^-3) = 3.0, confirming an acidic aqueous solution at 25 C.",
       "choiceRationales": [
         "This option is not the best answer because taking the negative base-10 logarithm of 1.0 x 10^-3 M uses the exponent magnitude to give pH 3.0, not 1.0.",
         "This option is not the best answer because pH 7.0 represents a neutral solution with [H3O+] = 1.0 x 10^-7 M at 25 degrees Celsius, four orders of magnitude less acidic.",
@@ -29881,7 +29881,7 @@
         "10.0"
       ],
       "answerIndex": 1,
-      "rationale": "pKa equals negative log Ka, so negative log of 1.0 times 10 to the negative 4 is 4.0.",
+      "rationale": "By definition, pKa = -log10(Ka); substituting Ka = 1.0 x 10^-4 gives -log10(1.0 x 10^-4) = 4.0, matching the positive exponent magnitude of the ionization constant.",
       "choiceRationales": [
         "This option is not the best answer because The logarithm is reported with the opposite sign for pKa.",
         "pKa equals negative log Ka, so negative log of 1.0 times 10 to the negative 4 is 4.0.",
@@ -30059,7 +30059,7 @@
         "The conjugate base reacts with the added H+ to form more weak acid."
       ],
       "answerIndex": 3,
-      "rationale": "The conjugate base consumes much of the added proton, so the buffer resists a large pH change.",
+      "rationale": "A buffer resists pH drops when strong acid is added because its conjugate base component (A-) reacts stoichiometrically with added H+ to form the weak acid (HA), minimizing free [H+].",
       "choiceRationales": [
         "This option is not the best answer because The weak acid is the proton donor and does not preferentially consume added H+.",
         "This option is not the best answer because Buffer capacity limits the pH change but does not make the pH independent of composition.",
@@ -30238,12 +30238,12 @@
         "47.5"
       ],
       "answerIndex": 1,
-      "rationale": "The Henderson-Hasselbalch equation gives pH = 4.75 plus log(0.10) = 4.75 minus 1.00 = 3.75.",
+      "rationale": "Applying Henderson-Hasselbalch (pH = pKa + log([A-]/[HA])) with pKa = 4.75 and ratio 0.10 gives 4.75 + log(0.10) = 4.75 - 1.00 = 3.75, one unit below pKa.",
       "choiceRationales": [
         "This option is not the best answer because The logarithm of 0.10 is negative one, not negative 0.10.",
         "The Henderson-Hasselbalch equation gives pH = 4.75 plus log(0.10) = 4.75 minus 1.00 = 3.75.",
         "This option is not the best answer because pH 5.75 corresponds to adding +1 from a base-to-acid ratio of 10, whereas a ratio of 0.10 subtracts 1 from pKa.",
-        "This option is not the best answer because pH is logarithmic and is not obtained by multiplying pKa by the ratio."
+        "This option is not the best answer because 47.5 divides pKa (4.75) by 0.10 instead of adding log(0.10) = -1.00 as required by Henderson-Hasselbalch."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -30863,7 +30863,7 @@
         "+159.6 kJ/mol"
       ],
       "answerIndex": 0,
-      "rationale": "Using delta G = delta H minus T delta S gives -100 minus 298 times (-0.200), or -40.4 kJ/mol.",
+      "rationale": "Using delta G = delta H - T delta S at 298 K gives -100 kJ/mol - (298 K)(-0.200 kJ mol-1 K-1) = -100 + 59.6 = -40.4 kJ/mol, confirming thermodynamic favorability.",
       "choiceRationales": [
         "Using delta G = delta H minus T delta S gives -100 minus 298 times (-0.200), or -40.4 kJ/mol.",
         "This option is not the best answer because The entropy term is positive after the two negative signs are multiplied, so it is added to -100.",
@@ -31399,7 +31399,7 @@
         "100"
       ],
       "answerIndex": 2,
-      "rationale": "Using delta G standard = -RT ln K, a value near -RT ln(10) at 298 K corresponds to K approximately 10.",
+      "rationale": "Solving delta G standard = -RT ln K with R = 0.008314 kJ mol-1 K-1 and T = 298 K gives ln K = 5.71 / 2.478 = 2.304, so K = e^2.304, which is approximately 10.",
       "choiceRationales": [
         "This option is not the best answer because A positive delta G standard of about 5.71 kJ/mol would correspond to K near 0.10.",
         "This option is not the best answer because an equilibrium constant of 1.0 makes ln K = 0 and gives delta G° = 0 rather than a negative value of -5.71 kJ/mol.",
@@ -31667,7 +31667,7 @@
         "The salt bridge is the positive electrode."
       ],
       "answerIndex": 1,
-      "rationale": "Oxidation occurs at the anode in both cell types, but an electrolytic power source makes the anode positive.",
+      "rationale": "Oxidation always takes place at the anode, but in an electrolytic cell an external power supply draws electrons out of the anode to drive nonspontaneous oxidation, making the anode positively charged.",
       "choiceRationales": [
         "This option is not the best answer because The cathode is the reduction site, and its sign in an electrolytic cell is negative.",
         "Oxidation occurs at the anode in both cell types, but an electrolytic power source makes the anode positive.",
@@ -31929,18 +31929,18 @@
       "cognitiveProcess": "calculate",
       "prompt": "For a galvanic cell transferring 2.00 mol of electrons with E standard cell = 1.10 V, what is delta G standard? Use F = 96485 C per mol electron.",
       "choices": [
-        "Approximately -193 kJ/mol reaction",
-        "Approximately +193 kJ/mol reaction",
-        "Approximately -96.5 kJ/mol reaction",
-        "Approximately +96.5 kJ/mol reaction"
+        "Approximately -212 kJ/mol reaction",
+        "Approximately +212 kJ/mol reaction",
+        "Approximately -106 kJ/mol reaction",
+        "Approximately +106 kJ/mol reaction"
       ],
       "answerIndex": 0,
-      "rationale": "Delta G standard = -nFE = -(2.00)(96485)(1.10) J, or approximately -193 kJ per mole of reaction.",
+      "rationale": "Using delta G standard = -nFE standard with n = 2.00 mol e-, F = 96,485 C/mol e-, and E standard = 1.10 V gives -(2.00)(96,485)(1.10) J = -212,267 J, or approximately -212 kJ/mol reaction.",
       "choiceRationales": [
-        "Delta G standard = -nFE = -(2.00)(96485)(1.10) J, or approximately -193 kJ per mole of reaction.",
-        "This option is not the best answer because A positive cell potential gives a negative free-energy change for the spontaneous direction.",
-        "This option is not the best answer because Using one electron instead of two gives the magnitude 96.5 kJ but misses the stated electron transfer.",
-        "This option is not the best answer because a spontaneous galvanic cell has a negative free-energy change, and +96.5 kJ/mol both flips the sign and omits n = 2."
+        "Correct: multiplying -(2.00 mol)(96,485 C/mol)(1.10 V) gives -212,267 J, which rounds to approximately -212 kJ/mol reaction.",
+        "A positive standard cell potential (+1.10 V) indicates a spontaneous process with a negative delta G standard, not +212 kJ/mol.",
+        "Approximately -106 kJ/mol uses n = 1.00 mol e- instead of the stated 2.00 mol of electrons transferred in the galvanic cell.",
+        "Approximately +106 kJ/mol both reverses the spontaneous negative sign of delta G standard and omits the n = 2.00 electron factor."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -32114,9 +32114,9 @@
         "Approximately 2.00 faradays, or 192970 C"
       ],
       "answerIndex": 2,
-      "rationale": "Each Cu2+ ion requires two electrons, so 0.500 mol Cu requires 1.00 mol electron, equal to one faraday.",
+      "rationale": "Reducing Cu2+ + 2e- -> Cu requires 2 mol electrons per mole of copper; thus 0.500 mol Cu needs 1.00 mol electrons, which equals 1.00 faraday or 96485 C of charge by Q = nF.",
       "choiceRationales": [
-        "This option is not the best answer because One-half faraday would provide only 0.250 mol electrons for the stated copper amount.",
+        "This option is not the best answer because 0.250 faraday supplies only 0.250 mol of electrons (enough for 0.125 mol Cu), which is one-fourth of the 1.00 mol electrons required.",
         "This option is not the best answer because The copper amount is not equal to the electron amount because two electrons are required per Cu2+.",
         "Each Cu2+ ion requires two electrons, so 0.500 mol Cu requires 1.00 mol electron, equal to one faraday.",
         "This option is not the best answer because two faradays supply 2.00 mol of electrons, which would reduce 1.00 mol of Cu2+—twice the 0.500 mol Cu specified."
@@ -32204,7 +32204,7 @@
         "0.200 mol"
       ],
       "answerIndex": 3,
-      "rationale": "The charge is I times t = 2.00 times 9650 = 19300 C, or 0.200 mol electrons; Ag+ needs one electron per Ag.",
+      "rationale": "First find total charge Q = I times t = (2.00 A)(9650 s) = 19300 C; dividing by F = 96485 C/mol gives 0.200 mol e-, and since Ag+ + e- -> Ag is 1:1, 0.200 mol Ag forms.",
       "choiceRationales": [
         "This option is not the best answer because 0.0200 mol is ten times too small for the calculated charge.",
         "This option is not the best answer because 0.100 mol would use half the charge or incorrectly require two electrons per Ag+.",
@@ -32474,7 +32474,7 @@
       "answerIndex": 2,
       "rationale": "The reverse path starts at products 25 kJ/mol below reactants and climbs to a transition state 60 kJ/mol above reactants, a difference of 85 kJ/mol.",
       "choiceRationales": [
-        "This option is not the best answer because 35 kJ/mol is the forward activation energy measured from reactants to products difference, not the reverse barrier.",
+        "This option is not the best answer because 35 kJ/mol erroneously subtracts 25 kJ/mol from 60 kJ/mol instead of adding them to span from products (-25) up to the transition state (+60).",
         "This option is not the best answer because 60 kJ/mol is the forward activation energy from reactants to the transition state.",
         "The reverse path starts at products 25 kJ/mol below reactants and climbs to a transition state 60 kJ/mol above reactants, a difference of 85 kJ/mol.",
         "This option is not the best answer because 25 kJ/mol is the magnitude of the reaction enthalpy, not the reverse barrier."
@@ -32739,7 +32739,7 @@
         "Measure only the cup height after the water is removed."
       ],
       "answerIndex": 1,
-      "rationale": "Equal samples and times allow the rate of heat loss to be compared through temperature change.",
+      "rationale": "Comparing insulation requires controlling heat-capacity variables: holding water mass, starting temperature, and elapsed time identical isolates heat loss rate so smaller delta T directly shows better insulation.",
       "choiceRationales": [
         "This option is not the best answer because Different masses and initial temperatures confound the comparison.",
         "Equal samples and times allow the rate of heat loss to be compared through temperature change.",
@@ -32828,7 +32828,7 @@
         "418 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "q = m c delta T equals 50.0 times 4.18 times 20.0 J, or 4180 J, which is 4.18 kJ.",
+      "rationale": "Applying q = mc delta T with m = 50.0 g, c = 4.18 J g-1 C-1, and delta T = 20.0 C yields 4180 J; dividing by 1000 J/kJ converts the absorbed thermal energy to 4.18 kJ.",
       "choiceRationales": [
         "This option is not the best answer because 0.418 kJ is ten times too small after converting the calculated joules.",
         "This option is not the best answer because 41.8 kJ is ten times too large for the stated mass and temperature change.",
@@ -32917,10 +32917,10 @@
         "0.500 J per g degree Celsius"
       ],
       "answerIndex": 3,
-      "rationale": "Rearranging q = m c delta T gives c = 500 divided by 25.0 times 40.0, or 0.500 J per g degree Celsius.",
+      "rationale": "Solving the calorimetry equation q = mc delta T for specific heat gives c = q / (m delta T) = 500 J / ((25.0 g)(40.0 C)) = 500 / 1000 = 0.500 J per g degree Celsius.",
       "choiceRationales": [
-        "This option is not the best answer because 0.0200 results from dividing by mass but not by the temperature change correctly.",
-        "This option is not the best answer because 20.0 reverses the heat-capacity ratio and is too large by a factor of forty.",
+        "This option is not the best answer because 0.0200 divides the specific heat 0.500 J/(g C) by the 25.0 g mass a second time instead of computing 500 / (25.0 x 40.0).",
+        "This option is not the best answer because 20.0 divides 500 J by 25.0 g alone while omitting the 40.0 C temperature change, making the result forty times too large.",
         "This option is not the best answer because 20000 ignores both the mass and temperature factors in the denominator.",
         "Rearranging q = m c delta T gives c = 500 divided by 25.0 times 40.0, or 0.500 J per g degree Celsius."
       ],
@@ -33006,7 +33006,7 @@
         "1000 kJ/mol"
       ],
       "answerIndex": 0,
-      "rationale": "The molar enthalpy is heat divided by moles: 4.00 kJ divided by 0.250 mol equals 16.0 kJ/mol.",
+      "rationale": "Molar enthalpy of fusion equals the thermal energy absorbed per mole melted (delta Hfus = q/n); dividing 4.00 kJ by 0.250 mol gives 16.0 kJ/mol.",
       "choiceRationales": [
         "The molar enthalpy is heat divided by moles: 4.00 kJ divided by 0.250 mol equals 16.0 kJ/mol.",
         "This option is not the best answer because 1.00 kJ/mol multiplies rather than divides the heat by the amount.",
@@ -33184,7 +33184,7 @@
         "+225 kJ/mol"
       ],
       "answerIndex": 2,
-      "rationale": "Releasing heat gives a negative sign, and 75.0 kJ divided by 3.00 mol gives 25.0 kJ/mol.",
+      "rationale": "Because 75.0 kJ leaves the system into the surroundings, q(system) = -75.0 kJ; dividing by 3.00 mol of fuel reacted yields a molar enthalpy of -25.0 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because The positive sign would describe heat absorbed rather than heat released by the reaction.",
         "This option is not the best answer because -225 kJ/mol multiplies instead of dividing the total heat by moles.",
@@ -33540,7 +33540,7 @@
         "+820 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "The reaction enthalpy is products minus reactants: -520 minus (-300) equals -220 kJ.",
+      "rationale": "Using delta Hrxn = sum delta Hf(products) - sum delta Hf(reactants), subtracting -300 kJ from -520 kJ gives -520 + 300 = -220 kJ, indicating an exothermic reaction.",
       "choiceRationales": [
         "This option is not the best answer because Reversing the subtraction gives the sign for the reverse reaction.",
         "This option is not the best answer because -820 adds magnitudes instead of subtracting the reactant sum.",
@@ -33629,7 +33629,7 @@
         "Zero"
       ],
       "answerIndex": 3,
-      "rationale": "By definition, an element in its standard state has a standard enthalpy of formation of zero.",
+      "rationale": "Dioxygen gas, O2(g), is oxygen's most stable allotrope at 1 atm and 298 K; by thermodynamic reference convention, any element in its standard state has delta Hf standard = 0.",
       "choiceRationales": [
         "This option is not the best answer because -241.8 kJ/mol is associated with a particular compound formation, not elemental oxygen reference.",
         "This option is not the best answer because The reference value is zero rather than a positive compound enthalpy.",
@@ -34075,7 +34075,7 @@
         "53.0 g"
       ],
       "answerIndex": 0,
-      "rationale": "The molar mass of Na2CO3 is 106 g/mol, so 0.250 mol has a mass of 0.250 times 106, or 26.5 g.",
+      "rationale": "Summing atomic masses for Na2CO3 gives 2(23.0) + 12.0 + 3(16.0) = 106.0 g/mol; multiplying 0.250 mol by 106.0 g/mol gives a sample mass of 26.5 g.",
       "choiceRationales": [
         "The molar mass of Na2CO3 is 106 g/mol, so 0.250 mol has a mass of 0.250 times 106, or 26.5 g.",
         "This option is not the best answer because 10.6 g represents 0.100 mol of Na2CO3 (molar mass 106.0 g/mol) rather than the stated 0.250 mol sample.",
@@ -34254,7 +34254,7 @@
         "25.68"
       ],
       "answerIndex": 2,
-      "rationale": "The weighted average is 24 times 0.79 plus 25 times 0.10 plus 26 times 0.11, which equals 24.32.",
+      "rationale": "Calculating the abundance-weighted atomic mass gives (24)(0.79) + (25)(0.10) + (26)(0.11) = 18.96 + 2.50 + 2.86 = 24.32, consistent with magnesium's natural isotopes.",
       "choiceRationales": [
         "This option is not the best answer because 24.00 ignores the heavier isotopes despite their measured abundance.",
         "This option is not the best answer because 25.00 treats the three isotopes as if they had an average mass of 25 without weighting.",
@@ -34434,7 +34434,7 @@
         "C12H24O12"
       ],
       "answerIndex": 0,
-      "rationale": "The empirical-formula mass is 30 g/mol; 180 divided by 30 equals 6, so every subscript is multiplied by six.",
+      "rationale": "The empirical unit CH2O has mass 12 + 2(1) + 16 = 30 g/mol; dividing the molar mass 180 g/mol by 30 g/mol gives factor 6, scaling CH2O to molecular formula C6H12O6.",
       "choiceRationales": [
         "The empirical-formula mass is 30 g/mol; 180 divided by 30 equals 6, so every subscript is multiplied by six.",
         "This option is not the best answer because CH2O is the empirical formula rather than the molecular formula at this molar mass.",
@@ -35328,11 +35328,11 @@
         "Al2SO4"
       ],
       "answerIndex": 2,
-      "rationale": "The least common multiple of charges is six, requiring two Al3+ ions and three sulfate ions for a neutral formula unit.",
+      "rationale": "To balance Al3+ (+3) and sulfate SO4 2- (-2) to zero net charge, the least common multiple is 6: two Al3+ ions (+6) and three SO4 2- ions (-6) give Al2(SO4)3.",
       "choiceRationales": [
-        "This option is not the best answer because One Al3+ and one sulfate ion leave a net charge of negative one.",
+        "This option is not the best answer because one Al3+ (+3) and one sulfate SO4 2- (-2) leave a net charge of +1 rather than zero.",
         "This option is not the best answer because The proposed subscripts give a net charge rather than zero.",
-        "The least common multiple of charges is six, requiring two Al3+ ions and three sulfate ions for a neutral formula unit.",
+        "The least common multiple of charges is six, requiring two Al3+ ions (+6) and three sulfate ions (-6) for a neutral Al2(SO4)3 formula unit.",
         "This option is not the best answer because The sulfate polyatomic ion must remain grouped and three sulfate ions are required."
       ],
       "references": [
@@ -36489,7 +36489,7 @@
         "The favored structure minimizes formal charges and puts negative charge on the more electronegative atom."
       ],
       "answerIndex": 3,
-      "rationale": "Formal-charge patterns and electronegativity provide criteria for comparing valid Lewis representations.",
+      "rationale": "When multiple octet-satisfying Lewis structures exist, the major resonance contributor minimizes formal-charge magnitudes and places any negative formal charge on the most electronegative atom.",
       "choiceRationales": [
         "This option is not the best answer because maximizing formal charges increases unnecessary charge separation, making a Lewis structure less stable rather than more favorable.",
         "This option is not the best answer because placing negative formal charge on the least electronegative atom is destabilizing because more electronegative atoms attract electron density better.",
@@ -36845,7 +36845,7 @@
         "Viscosity"
       ],
       "answerIndex": 3,
-      "rationale": "A liquid that resists flow less has lower viscosity under the same measurement conditions.",
+      "rationale": "Viscosity measures a fluid's internal resistance to flow caused by intermolecular attractions; flowing twice as fast through the same capillary at equal temperature directly indicates Liquid A has lower viscosity.",
       "choiceRationales": [
         "This option is not the best answer because Density may affect flow measurements but is not the direct property described by resistance to flow.",
         "This option is not the best answer because Molar mass does not by itself define viscosity for different liquids.",
@@ -36935,7 +36935,7 @@
         "The diffraction peaks prove that all bonds in the solid are ionic ones."
       ],
       "answerIndex": 0,
-      "rationale": "Sharp diffraction peaks arise from constructive interference in an ordered repeating lattice.",
+      "rationale": "Sharp, repeating diffraction angles obey Bragg's law of constructive wave interference, which requires regularly spaced atomic planes and therefore confirms long-range crystalline order.",
       "choiceRationales": [
         "Sharp diffraction peaks arise from constructive interference in an ordered repeating lattice.",
         "This option is not the best answer because Amorphous solids lack the same long-range periodic order and sharp pattern.",
@@ -37025,7 +37025,7 @@
         "The liquid phase has zero vapor pressure."
       ],
       "answerIndex": 1,
-      "rationale": "The triple point is the unique temperature and pressure at which all three phases are in equilibrium.",
+      "rationale": "On a phase diagram, the triple point is the unique pressure-temperature intersection of the fusion, vaporization, and sublimation curves where solid, liquid, and gas coexist in dynamic equilibrium.",
       "choiceRationales": [
         "This option is not the best answer because Solid-gas coexistence without liquid is a sublimation boundary, not the triple point.",
         "The triple point is the unique temperature and pressure at which all three phases are in equilibrium.",
@@ -37388,7 +37388,7 @@
         "This option is not the best answer because 1.33 L inverts Charles law by multiplying 2.00 L by 300/450 instead of scaling volume upward with temperature as 2.00(450/300).",
         "At constant pressure and moles, Charles's Law states V1/T1 = V2/T2 with Kelvin temperatures. Solving V2 = V1*(T2/T1) = 2.00 L * (450 K / 300 K) = 2.00 * 1.50 = 3.00 L.",
         "This option is not the best answer because 2.00 L would imply no temperature effect at constant pressure.",
-        "This option is not the best answer because 4.50 L multiplies by 450 without dividing by the initial temperature."
+        "This option is not the best answer because 4.50 L scales 2.00 L by an extra 1.50 factor (or divides 450 by 100) rather than applying 2.00 L x (450 K / 300 K) = 3.00 L."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -38011,7 +38011,7 @@
         "A continuous CaCl2 crystal left sitting at the bottom of the whole solution"
       ],
       "answerIndex": 0,
-      "rationale": "Complete dissociation gives one Ca2+ for every two Cl- ions, with hydration by water molecules.",
+      "rationale": "As a strong ionic electrolyte, CaCl2 dissociates completely in water into hydrated ions matching its formula stoichiometry: one Ca2+ cation for every two Cl- anions (1:2 ratio).",
       "choiceRationales": [
         "Complete dissociation gives one Ca2+ for every two Cl- ions, with hydration by water molecules.",
         "This option is not the best answer because A strong electrolyte is represented as ions rather than intact formula units in water.",
@@ -38100,7 +38100,7 @@
         "NaCl cannot dissolve because ionic substances are always insoluble."
       ],
       "answerIndex": 1,
-      "rationale": "Conductivity depends on mobile charge carriers, not only total formula-unit concentration.",
+      "rationale": "Electrical conductivity in solution requires mobile charged ions; NaCl dissociates into free Na+ and Cl- ions that carry current, whereas molecular glucose remains neutral and nonconducting.",
       "choiceRationales": [
         "This option is not the best answer because covalently bonded glucose dissolves as neutral intact molecules and does not dissociate into mobile charge-carrying ions.",
         "Conductivity depends on mobile charge carriers, not only total formula-unit concentration.",
@@ -38368,7 +38368,7 @@
         "60 g"
       ],
       "answerIndex": 0,
-      "rationale": "The solution can retain 20 g at 20 degrees, so 40 minus 20 equals 20 g crystallizes.",
+      "rationale": "Cooling a saturated solution from 60 C (40 g dissolved per 100 g water) to 20 C (maximum 20 g dissolved) leaves an excess of 40 g - 20 g = 20 g of salt that precipitates out as crystals.",
       "choiceRationales": [
         "The solution can retain 20 g at 20 degrees, so 40 minus 20 equals 20 g crystallizes.",
         "This option is not the best answer because 10 g does not match the difference between the two curve values.",
@@ -38547,7 +38547,7 @@
         "Radiation A has four times the wavelength."
       ],
       "answerIndex": 2,
-      "rationale": "In vacuum, c = lambda nu, so wavelength is inversely proportional to frequency when c is fixed.",
+      "rationale": "Because c = lambda nu is constant in vacuum, wavelength lambda = c/nu is inversely proportional to frequency; doubling frequency from B to A therefore halves wavelength to one-half.",
       "choiceRationales": [
         "This option is not the best answer because Frequency and wavelength vary inversely for a fixed wave speed.",
         "This option is not the best answer because Equal speed does not imply equal wavelength when frequencies differ.",
@@ -38726,7 +38726,7 @@
         "The 400-nm photon has four times the energy."
       ],
       "answerIndex": 0,
-      "rationale": "Photon energy is inversely proportional to wavelength, so halving wavelength doubles energy.",
+      "rationale": "From E = hc/lambda, photon energy varies inversely with wavelength; because 400 nm is half of 800 nm, the 400-nm photon carries twice the energy of the 800-nm photon.",
       "choiceRationales": [
         "Photon energy is inversely proportional to wavelength, so halving wavelength doubles energy.",
         "This option is not the best answer because Shorter wavelength means higher, not lower, photon energy.",
@@ -38815,7 +38815,7 @@
         "2K+ plus Pb2+ yields K2Pb solid"
       ],
       "answerIndex": 1,
-      "rationale": "Solubility rules identify PbI2 as the precipitate, while potassium and nitrate ions remain spectators.",
+      "rationale": "In double replacement between Pb(NO3)2 and KI, solubility rules show K+ and NO3- stay aqueous spectators while Pb2+ and I- form insoluble yellow PbI2(s), giving net ionic equation Pb2+ + 2I- -> PbI2(s).",
       "choiceRationales": [
         "This option is not the best answer because Potassium nitrate is soluble and does not form the precipitate.",
         "Solubility rules identify PbI2 as the precipitate, while potassium and nitrate ions remain spectators.",
@@ -38905,7 +38905,7 @@
         "The equation is correct because water is never a product of neutralization."
       ],
       "answerIndex": 2,
-      "rationale": "The net ionic neutralization is H+ plus OH- yields H2O; sodium and chloride are the unchanged spectator ions.",
+      "rationale": "In strong acid-base neutralization (HCl + NaOH), Na+ and Cl- remain unchanged spectator ions while H+ and OH- combine to form liquid H2O, so H+ + OH- -> H2O must remain as the net ionic equation.",
       "choiceRationales": [
         "This option is not the best answer because Na+ and Cl- are spectators in this strong acid-strong base reaction.",
         "This option is not the best answer because Only unchanged species are canceled from a complete ionic equation.",
@@ -38986,7 +38986,7 @@
       "difficulty": "moderate",
       "cognitiveDemand": "application",
       "cognitiveProcess": "interpret",
-      "prompt": "A particulate diagram shows three A2 molecules reacting with two B2 molecules to form two A3B2 molecules, with one A2 molecule left. Which reactant is limiting?",
+      "prompt": "A particulate diagram shows four A2 molecules reacting with two B2 molecules to form two A3B2 molecules, with one A2 molecule left. Which reactant is limiting?",
       "choices": [
         "A2 is limiting because it has the larger particle count initially.",
         "Neither reactant is limiting because both are diatomic.",
@@ -38994,12 +38994,12 @@
         "B2 is limiting because both B2 react while one A2 remains."
       ],
       "answerIndex": 3,
-      "rationale": "The diagram shows the stoichiometric consumption of two B2 molecules and two A2 molecules, leaving A2 in excess.",
+      "rationale": "The balanced process 3A2 + 2B2 -> 2A3B2 conserves all atoms (6 A and 4 B); starting with four A2 and two B2 consumes both B2 and three A2, leaving one A2 in excess so B2 is limiting.",
       "choiceRationales": [
         "This option is not the best answer because The initial particle count alone does not determine the limiting reactant.",
         "This option is not the best answer because being diatomic does not prevent one reactant from running out first; limiting behavior depends on stoichiometric mole ratios.",
         "This option is not the best answer because A product cannot be the reactant that limits formation in the displayed process.",
-        "The diagram shows the stoichiometric consumption of two B2 molecules and two A2 molecules, leaving A2 in excess."
+        "The balanced reaction 3A2 + 2B2 -> 2A3B2 consumes both B2 molecules and three of the four A2 molecules, leaving one A2 in excess so B2 is limiting."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -39174,7 +39174,7 @@
         "124 percent"
       ],
       "answerIndex": 1,
-      "rationale": "The mean actual yield is (9.6 + 9.8 + 9.7)/3 = 9.7 g; 9.7 divided by 12.0 times 100 equals 80.8 percent.",
+      "rationale": "Averaging the three trial masses gives (9.6 + 9.8 + 9.7)/3 = 9.7 g; applying percent yield = (actual / theoretical) x 100 yields (9.7 g / 12.0 g) x 100 = 80.8 percent.",
       "choiceRationales": [
         "This option is not the best answer because 20.8 percent does not equal the average actual yield (9.7 g) divided by the 12.0 g theoretical yield times 100.",
         "The mean actual yield is (9.6 + 9.8 + 9.7)/3 = 9.7 g; 9.7 divided by 12.0 times 100 equals 80.8 percent.",
@@ -39264,7 +39264,7 @@
         "A limits because its molar mass is not known for this whole mixture."
       ],
       "answerIndex": 2,
-      "rationale": "The 2 A to 3 B requirement means 0.90 mol B supports only 0.60 mol A, so B is consumed first.",
+      "rationale": "Given the 2 A : 3 B mole ratio, 0.90 mol B reacts with (2/3)(0.90) = 0.60 mol A, leaving 0.20 mol A unused; thus B is completely consumed first and limits the formation of C.",
       "choiceRationales": [
         "This option is not the best answer because Limiting behavior requires comparison with the balanced ratio, not raw mole numbers.",
         "This option is not the best answer because A reactant can be in excess even when its amount is numerically smaller.",
@@ -39712,7 +39712,7 @@
         "NH4+ and NH3"
       ],
       "answerIndex": 3,
-      "rationale": "Ammonia accepts one proton to become NH4+, so the two species differ by exactly one proton.",
+      "rationale": "A conjugate acid-base pair differs by exactly one proton (H+); when base NH3 accepts a proton from water, it becomes its conjugate acid NH4+, making NH4+ and NH3 the ammonia conjugate pair.",
       "choiceRationales": [
         "This option is not the best answer because H2O and OH- are another conjugate pair in the reaction, not the pair formed from ammonia.",
         "This option is not the best answer because NH3 and OH- do not differ by a single H+ proton; NH3 pairs with NH4+, while OH- pairs with H2O.",
@@ -39801,7 +39801,7 @@
         "-6"
       ],
       "answerIndex": 0,
-      "rationale": "Seven oxygens contribute -14 total charge; two chromium atoms must contribute +12, so each chromium is +6.",
+      "rationale": "In dichromate (Cr2O7 2-), seven oxygens at -2 each contribute -14; to give an overall -2 ion charge, two chromium atoms must total +12, placing each Cr atom at +6.",
       "choiceRationales": [
         "Seven oxygens contribute -14 total charge; two chromium atoms must contribute +12, so each chromium is +6.",
         "This option is not the best answer because +3 would give the wrong total charge for the dichromate ion.",
@@ -40338,7 +40338,7 @@
         "Four half-lives"
       ],
       "answerIndex": 2,
-      "rationale": "The concentration changes from 0.800 to 0.400 after one half-life and to 0.200 after two half-lives.",
+      "rationale": "Each half-life cuts concentration in half: starting at 0.800 M, one half-life leaves 0.400 M and a second leaves 0.200 M, so (0.200/0.800) = (1/2)^2 confirms two half-lives elapsed.",
       "choiceRationales": [
         "This option is not the best answer because after only half of a single half-life, concentration remains well above 0.400 M, whereas 0.800 M dropped all the way to 0.200 M.",
         "This option is not the best answer because letting three half-lives elapse halves 0.800 M three times to 0.100 M rather than stopping at 0.200 M.",
@@ -40427,7 +40427,7 @@
         "[A] versus time"
       ],
       "answerIndex": 3,
-      "rationale": "The integrated zero-order law is [A] = [A]0 minus kt, so concentration plotted against time has slope -k.",
+      "rationale": "For a zero-order reaction (rate = k), the integrated rate law [A]t = -kt + [A]0 is linear in [A] versus time with slope -k, unlike first-order (ln[A]) or second-order (1/[A]) linear plots.",
       "choiceRationales": [
         "This option is not the best answer because a linear plot of ln[A] versus time diagnoses a first-order integrated rate law rather than a zero-order reaction.",
         "This option is not the best answer because a linear plot of 1/[A] versus time diagnoses a second-order integrated rate law rather than a zero-order reaction.",
@@ -40516,7 +40516,7 @@
         "Rate = k products divided by [A]2[B]"
       ],
       "answerIndex": 0,
-      "rationale": "For an elementary step, the molecularity coefficients can be used as the exponents in the step rate law.",
+      "rationale": "For a single elementary collision step (unlike an overall reaction), the molecularity directly dictates reaction orders, so 2A + B -> products follows the rate law Rate = k[A]^2[B].",
       "choiceRationales": [
         "For an elementary step, the molecularity coefficients can be used as the exponents in the step rate law.",
         "This option is not the best answer because The exponents must match the stoichiometric coefficients of the elementary collision.",
@@ -40694,7 +40694,7 @@
         "100 kJ/mol"
       ],
       "answerIndex": 2,
-      "rationale": "The reverse path starts at -10 kJ/mol and rises to 70 kJ/mol, so the reverse activation energy is 80 kJ/mol.",
+      "rationale": "Reverse activation energy is the barrier from products up to the transition state: Ea(rev) = E(TS) - E(products) = 70 kJ/mol - (-10 kJ/mol) = 80 kJ/mol.",
       "choiceRationales": [
         "This option is not the best answer because 50 kJ/mol is the forward activation energy from 20 to 70.",
         "This option is not the best answer because 60 kJ/mol subtracts the wrong endpoint from the transition state.",
@@ -40963,7 +40963,7 @@
         "[I] = Kpre + [A] + [B]"
       ],
       "answerIndex": 1,
-      "rationale": "Rearranging Kpre = [I]/([A][B]) gives [I] = Kpre[A][B], which can be substituted into the slow-step rate law.",
+      "rationale": "Intermediates cannot remain in an overall rate law; solving the fast pre-equilibrium expression Kpre = [I]/([A][B]) for [I] yields [I] = Kpre[A][B] for substitution into the slow-step rate law.",
       "choiceRationales": [
         "This option is not the best answer because The concentration of I is proportional to, not inversely proportional to, the reactant concentrations in the stated equilibrium.",
         "Rearranging Kpre = [I]/([A][B]) gives [I] = Kpre[A][B], which can be substituted into the slow-step rate law.",
@@ -41231,7 +41231,7 @@
         "The sign depends only on the mass of the container"
       ],
       "answerIndex": 0,
-      "rationale": "Heat leaves the reaction system, so q for the system is negative and the process is exothermic.",
+      "rationale": "By IUPAC thermochemical convention, energy transferred out of the reaction system into the surroundings is negative, so q(system) = -45 kJ for this exothermic process.",
       "choiceRationales": [
         "Heat leaves the reaction system, so q for the system is negative and the process is exothermic.",
         "This option is not the best answer because a positive value of q denotes an endothermic process in which heat flows into the system from the surroundings.",
@@ -41768,7 +41768,7 @@
         "240 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "The heat scales with the reaction amount: 120 kJ times 0.50/2.00 = 30 kJ released.",
+      "rationale": "Enthalpy change is an extensive property proportional to reaction extent; scaling 120 kJ per 2.00 mol of reaction by (0.50 mol / 2.00 mol) = 1/4 releases 30 kJ of heat.",
       "choiceRationales": [
         "This option is not the best answer because 60 kJ corresponds to 1.0 mol of reaction (half of 120 kJ), whereas only 0.50 mol—one-fourth of 2 mol—occurs here.",
         "This option is not the best answer because 120 kJ is the total heat released for the full 2 mol written in the thermochemical equation, not for 0.50 mol.",
@@ -42029,18 +42029,18 @@
       "cognitiveProcess": "derive",
       "prompt": "In a Hess-law calculation, A yields B has delta H = -30 kJ and 2B yields C has delta H = +50 kJ. After doubling the first equation, what is delta H for the combined process?",
       "choices": [
-        "-80 kJ",
+        "-110 kJ",
+        "-10 kJ",
         "+20 kJ",
-        "+80 kJ",
-        "-20 kJ"
+        "+110 kJ"
       ],
       "answerIndex": 1,
-      "rationale": "Double the first equation to obtain 2A yields 2B with delta H = -60 kJ, then add +50 kJ to get +20 kJ.",
+      "rationale": "By Hess's law, doubling A -> B scales delta H to 2(-30 kJ) = -60 kJ for 2A -> 2B. Adding 2B -> C (delta H = +50 kJ) cancels 2B and gives delta H = -60 kJ + 50 kJ = -10 kJ for 2A -> C.",
       "choiceRationales": [
-        "This option is not the best answer because The signed enthalpies must be scaled and added, not combined as -30 plus 50.",
-        "Double the first equation to obtain 2A yields 2B with delta H = -60 kJ, then add +50 kJ to get +20 kJ.",
-        "This option is not the best answer because +80 kJ adds the magnitudes of 30 kJ and 50 kJ while ignoring the negative sign on the exothermic step.",
-        "This option is not the best answer because The result is positive after -60 plus 50, not negative 20."
+        "-110 kJ subtracts +50 kJ from -60 kJ instead of adding the positive enthalpy change of the endothermic 2B -> C step.",
+        "Correct: doubling A -> B gives -60 kJ for 2A -> 2B, and adding +50 kJ for 2B -> C yields -60 kJ + 50 kJ = -10 kJ.",
+        "+20 kJ combines -30 kJ and +50 kJ directly without doubling the first reaction so the 2B intermediate cancels.",
+        "+110 kJ adds the magnitudes 60 kJ and 50 kJ while dropping the negative sign on the exothermic first step."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -42394,9 +42394,9 @@
         "Q = 1.0, so no reaction can occur."
       ],
       "answerIndex": 1,
-      "rationale": "Q = [B]2/[A] = (0.20 squared)/0.50 = 0.080; because Q is less than K, the reaction moves forward.",
+      "rationale": "For A <-> 2B, Q = [B]^2/[A] = (0.20)^2 / 0.50 = 0.040 / 0.50 = 0.080; because Q (0.080) is smaller than Kc (1.0), the system shifts forward to produce more B until Q = Kc.",
       "choiceRationales": [
-        "This option is not the best answer because 2.5 is the reciprocal of the correct quotient and would imply the opposite direction.",
+        "This option is not the best answer because 2.5 equals [A]/[B] (0.50/0.20), which both inverts the quotient and omits squaring [B], falsely implying Q > Kc.",
         "Q = [B]2/[A] = (0.20 squared)/0.50 = 0.080; because Q is less than K, the reaction moves forward.",
         "This option is not the best answer because 0.40 divides [B] by [A] without squaring [B] = 0.20 M as required by the coefficient 2 in A <=> 2B, and Q = 0.40 would still not equal 1.0.",
         "This option is not the best answer because Q equals K only at equilibrium, not for the stated values."
@@ -42573,10 +42573,10 @@
         "1.0"
       ],
       "answerIndex": 3,
-      "rationale": "Substitute the equilibrium concentrations into Kc = [B]2/[A]: (0.50 squared) divided by 0.25 gives Kc = 1.0.",
+      "rationale": "Using the equilibrium constant expression Kc = [B]^2/[A] for A <-> 2B and inserting [A] = 0.25 M and [B] = 0.50 M gives (0.50)^2 / 0.25 = 0.25 / 0.25 = 1.0.",
       "choiceRationales": [
-        "This option is not the best answer because The value 0.50 omits the required square on the product concentration.",
-        "This option is not the best answer because The value 2.0 uses an incorrect concentration relationship and does not evaluate the stated expression.",
+        "This option is not the best answer because 0.50 equals [A]/[B] (0.25/0.50) or [B] alone, both inverting the expression and omitting the square on [B].",
+        "This option is not the best answer because 2.0 divides [B] by [A] (0.50/0.25) without squaring [B] as required by the coefficient 2 in A <=> 2B.",
         "This option is not the best answer because The value 4.0 divides 1.0 by 0.25 without applying the complete equilibrium expression.",
         "Substitute the equilibrium concentrations into Kc = [B]2/[A]: (0.50 squared) divided by 0.25 gives Kc = 1.0."
       ],
@@ -42751,7 +42751,7 @@
         "4.0"
       ],
       "answerIndex": 1,
-      "rationale": "Multiplying every coefficient by two squares K, so the new value is 0.25 squared = 0.0625.",
+      "rationale": "Scaling a balanced equilibrium by a factor of 2 raises every concentration exponent by 2, which squares K; thus Knew = (0.25)^2 = 0.0625.",
       "choiceRationales": [
         "This option is not the best answer because doubling a chemical equation raises K to the second power ((0.25)^2) rather than multiplying K by one-half.",
         "Multiplying every coefficient by two squares K, so the new value is 0.25 squared = 0.0625.",
@@ -42840,7 +42840,7 @@
         "2.00"
       ],
       "answerIndex": 2,
-      "rationale": "The one-to-one process leaves [X] = 0.75 - 0.25 = 0.50 M, so Kc = [Y]/[X] = 0.25/0.50 = 0.500.",
+      "rationale": "In the 1:1 reaction X <-> Y, forming [Y] = 0.25 M consumes 0.25 M of X, leaving [X]eq = 0.75 - 0.25 = 0.50 M; therefore Kc = [Y]/[X] = 0.25 / 0.50 = 0.500.",
       "choiceRationales": [
         "This option is not the best answer because 0.250 is the equilibrium Y concentration, not the ratio of product to reactant.",
         "This option is not the best answer because 0.333 would use an incorrect remaining-reactant value in the denominator.",
@@ -43287,7 +43287,7 @@
         "[Ag+]2[CrO4 2-]"
       ],
       "answerIndex": 3,
-      "rationale": "The pure solid is omitted, and the dissolved ions are raised to the coefficients in the dissolution equation.",
+      "rationale": "Heterogeneous solubility-product expressions exclude pure solids (activity = 1) and raise aqueous ion molarities to their stoichiometric coefficients, giving Ksp = [Ag+]^2[CrO4 2-].",
       "choiceRationales": [
         "This option is not the best answer because pure solid Ag2CrO4 has a constant activity of 1 and is omitted from Ksp rather than appearing in a numerator over ion concentrations.",
         "This option is not the best answer because The exponent belongs to Ag+ because two silver ions are produced.",
@@ -43376,7 +43376,7 @@
         "2.0 times 10 to the negative 2"
       ],
       "answerIndex": 0,
-      "rationale": "For a 1:1 salt, Ksp = [M+][X-] = 0.010 times 0.010 = 1.0 times 10 to the negative 4.",
+      "rationale": "For the 1:1 dissolution MX(s) <-> M+(aq) + X-(aq), Ksp = [M+][X-]; multiplying the saturated ion concentrations (0.010 M)(0.010 M) gives 1.0 x 10^-4.",
       "choiceRationales": [
         "For a 1:1 salt, Ksp = [M+][X-] = 0.010 times 0.010 = 1.0 times 10 to the negative 4.",
         "This option is not the best answer because 1.0 times 10 to the negative 2 uses one concentration rather than the product.",
@@ -43465,7 +43465,7 @@
         "The product, because adduct molecules accept electron pairs."
       ],
       "answerIndex": 1,
-      "rationale": "BF3 has an electron-deficient boron center that accepts a lone pair donated by NH3, the Lewis base.",
+      "rationale": "A Lewis acid accepts a nonbonding electron pair to form a coordinate covalent bond; electron-deficient BF3 (only six valence electrons on boron) accepts the lone pair donated by NH3.",
       "choiceRationales": [
         "This option is not the best answer because NH3 donates the electron pair and acts as the Lewis base.",
         "BF3 has an electron-deficient boron center that accepts a lone pair donated by NH3, the Lewis base.",
@@ -43643,7 +43643,7 @@
         "10.48"
       ],
       "answerIndex": 3,
-      "rationale": "pOH = -log(3.0 times 10 to the negative 4) = 3.52, so pH = 14.00 - 3.52 = 10.48.",
+      "rationale": "First compute pOH = -log[OH-] = -log(3.0 x 10^-4) = 3.52; using the 25 C water autoionization relation pH + pOH = 14.00 gives a basic pH of 14.00 - 3.52 = 10.48.",
       "choiceRationales": [
         "This option is not the best answer because 3.52 equals -log(3.0 x 10^-4), which is the pOH of the solution and must be subtracted from 14.00 to obtain pH.",
         "This option is not the best answer because 4.00 ignores the 3.0 coefficient in -log(3.0 x 10^-4) and also confuses pOH with the requested pH.",
@@ -44001,7 +44001,7 @@
         "A- is the conjugate base of HA and accepts H+ in reverse."
       ],
       "answerIndex": 3,
-      "rationale": "The reverse reaction transfers a proton from H3O+ to A-, so A- acts as the conjugate base of HA.",
+      "rationale": "In HA + H2O <-> H3O+ + A-, the anion A- is formed when HA donates H+, so A- is the conjugate base of HA and acts as the proton acceptor in the reverse reaction.",
       "choiceRationales": [
         "This option is not the best answer because A proton donor is an acid, not a base, in the forward direction.",
         "This option is not the best answer because H3O+ is the conjugate acid of water in the displayed pair.",
@@ -44179,12 +44179,12 @@
         "45.0 mL"
       ],
       "answerIndex": 1,
-      "rationale": "The acid contains 0.0300 times 0.100 = 0.00300 mol; dividing by 0.150 mol/L gives 0.0200 L or 20.0 mL base.",
+      "rationale": "At the equivalence point of a monoprotic acid-strong base titration, n(NaOH) = n(HA) = (0.0300 L)(0.100 M) = 0.00300 mol; dividing by 0.150 M yields 0.0200 L, or 20.0 mL.",
       "choiceRationales": [
         "This option is not the best answer because 15.0 mL does not satisfy M1V1 = M2V2; solving (0.100 M)(30.0 mL)/(0.150 M) yields 20.0 mL of NaOH rather than 15.0 mL.",
         "The acid contains 0.0300 times 0.100 = 0.00300 mol; dividing by 0.150 mol/L gives 0.0200 L or 20.0 mL base.",
         "This option is not the best answer because Equal volumes are not required when the concentrations differ.",
-        "This option is not the best answer because 45.0 mL triples rather than divides the acid amount by base concentration."
+        "This option is not the best answer because 45.0 mL multiplies 30.0 mL by the inverted concentration ratio 0.150/0.100 = 1.5 instead of 0.100/0.150."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
@@ -44537,7 +44537,7 @@
         "Resonance always makes a species more basic and less stable."
       ],
       "answerIndex": 1,
-      "rationale": "Equivalent resonance contributors distribute the carboxylate charge over two electronegative oxygens.",
+      "rationale": "A carboxylate ion (RCOO-) has two equivalent resonance contributors that delocalize the negative charge across both electronegative oxygen atoms, whereas an alkoxide (RO-) localizes charge on one oxygen.",
       "choiceRationales": [
         "This option is not the best answer because An alkoxide has its negative charge localized primarily on one oxygen in the simple model.",
         "Equivalent resonance contributors distribute the carboxylate charge over two electronegative oxygens.",
@@ -44804,7 +44804,7 @@
         "Both concentrations become zero."
       ],
       "answerIndex": 0,
-      "rationale": "Hydroxide converts HA into A-, increasing the conjugate-base-to-acid ratio and slightly raising pH.",
+      "rationale": "Added OH- reacts quantitatively with the weak acid component via HA + OH- -> A- + H2O, decreasing [HA] while increasing [A-], which raises the [A-]/[HA] ratio and slightly increases pH.",
       "choiceRationales": [
         "Hydroxide converts HA into A-, increasing the conjugate-base-to-acid ratio and slightly raising pH.",
         "This option is not the best answer because The direction of the neutralization is HA plus OH- yields A- plus water.",
@@ -44982,7 +44982,7 @@
         "10"
       ],
       "answerIndex": 2,
-      "rationale": "Henderson-Hasselbalch gives log([A-]/[HA]) = 5.35 - 4.75 = 0.60, so the ratio is 10^0.60, approximately 4.0.",
+      "rationale": "Rearranging Henderson-Hasselbalch gives log([A-]/[HA]) = pH - pKa = 5.35 - 4.75 = 0.60; taking the antilogarithm yields [A-]/[HA] = 10^0.60, which equals approximately 4.0.",
       "choiceRationales": [
         "This option is not the best answer because 0.25 is the reciprocal ratio [HA]/[A-] corresponding to a pH 0.60 units below pKa rather than 0.60 units above pKa.",
         "This option is not the best answer because 0.60 is the logarithm of the ratio, not the ratio itself.",
@@ -45338,7 +45338,7 @@
         "The metal hydroxide simply becomes a gas whenever it is placed in the acidic solution."
       ],
       "answerIndex": 2,
-      "rationale": "Removing a dissolution product by protonation drives additional dissolution by Le Chatelier reasoning.",
+      "rationale": "In an acidic solution, added H+ neutralizes dissolved OH- to form H2O, lowering [OH-] so Qsp drops below Ksp; by Le Chatelier's principle, the metal hydroxide dissolves further to restore equilibrium.",
       "choiceRationales": [
         "This option is not the best answer because added H+ neutralizes OH- to form water instead of adding more OH-, shifting the dissolution equilibrium toward dissolved ions.",
         "This option is not the best answer because Ksp is fixed by temperature even though equilibrium concentrations respond.",
@@ -45427,7 +45427,7 @@
         "Molar solubility decreases because the common ion raises Qsp."
       ],
       "answerIndex": 3,
-      "rationale": "Added F- shifts the dissolution equilibrium toward solid CaF2, reducing the additional amount that dissolves.",
+      "rationale": "By the common-ion effect, adding soluble F- increases [F-] in Qsp = [Ca2+][F-]^2 above Ksp (at constant T), shifting the CaF2 dissolution equilibrium left toward solid and lowering molar solubility.",
       "choiceRationales": [
         "This option is not the best answer because The common ion suppresses rather than enhances dissolution.",
         "This option is not the best answer because adding a common ion increases Qsp above Ksp and precipitates solid, but Ksp itself remains unchanged at constant temperature.",
@@ -45605,7 +45605,7 @@
         "+730 J per mol K"
       ],
       "answerIndex": 1,
-      "rationale": "Delta S standard equals products minus reactants: 310 minus 420 = -110 J per mol K.",
+      "rationale": "Standard reaction entropy equals products minus reactants: delta S standard = 310 - 420 = -110 J per mol K, showing a net decrease in microstate dispersal.",
       "choiceRationales": [
         "This option is not the best answer because Reversing the subtraction gives the reverse reaction sign.",
         "Delta S standard equals products minus reactants: 310 minus 420 = -110 J per mol K.",
@@ -45694,7 +45694,7 @@
         "At every temperature"
       ],
       "answerIndex": 2,
-      "rationale": "The threshold occurs when delta H = T delta S, so T = 48.0/0.160 = 300 K; above it, delta G is negative.",
+      "rationale": "With delta H > 0 and delta S > 0, delta G = delta H - T delta S crosses zero at T = delta H / delta S = 48.0 / 0.160 = 300 K; above 300 K the T delta S term dominates so delta G < 0.",
       "choiceRationales": [
         "This option is not the best answer because Positive delta H and delta S require sufficiently high temperature for the entropy term to dominate.",
         "This option is not the best answer because 48.0 is an energy value, not the threshold temperature after division by entropy.",
@@ -46051,7 +46051,7 @@
         "+48 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "The total is 2(+18) plus (-30) = +6 kJ, so the stated coupling is not thermodynamically favorable by itself.",
+      "rationale": "Because Gibbs free energy is extensive and additive, coupling two moles of A with one mole of B yields delta G = 2(+18 kJ) + 1(-30 kJ) = +36 - 30 = +6 kJ, still nonspontaneous.",
       "choiceRationales": [
         "This option is not the best answer because Using one mole of A gives -12 kJ, but the problem couples two moles.",
         "This option is not the best answer because Adding magnitudes ignores the signs and stoichiometric multiplier.",
@@ -46141,7 +46141,7 @@
         "Zn(s) yields Zn2+(aq) plus 2e-"
       ],
       "answerIndex": 3,
-      "rationale": "Cell notation places the oxidation half-cell on the left, so zinc loses electrons at the anode.",
+      "rationale": "Standard cell line notation places the anode (oxidation half-cell) on the left of the salt bridge || and the cathode on the right; thus Zn(s) -> Zn2+(aq) + 2e- occurs at the left electrode.",
       "choiceRationales": [
         "This option is not the best answer because copper(II) reduction occurs at the cathode on the right side of the double vertical salt-bridge line in standard cell notation.",
         "This option is not the best answer because The reverse zinc process would be reduction, not the left-side oxidation shown.",
@@ -46230,7 +46230,7 @@
         "0.55 V"
       ],
       "answerIndex": 0,
-      "rationale": "The Nernst equation gives E = E standard - (0.0592/2)log(10) = 1.10 - 0.0296 = 1.07 V.",
+      "rationale": "Applying the Nernst equation at 298 K, E = E standard - (0.0592/n) log Q = 1.10 - (0.0592/2) log(10) = 1.10 - 0.0296 = 1.07 V, slightly lower because Q > 1.",
       "choiceRationales": [
         "The Nernst equation gives E = E standard - (0.0592/2)log(10) = 1.10 - 0.0296 = 1.07 V.",
         "This option is not the best answer because Nonstandard Q changes E; it is not exactly the standard value.",
@@ -46590,7 +46590,7 @@
         "11.50"
       ],
       "answerIndex": 0,
-      "rationale": "The weighted average is 10 times 0.15 plus 11 times 0.35 plus 12 times 0.50, which equals 11.35.",
+      "rationale": "Computing the weighted isotopic average gives (10)(0.15) + (11)(0.35) + (12)(0.50) = 1.50 + 3.85 + 6.00 = 11.35, reflecting the dominant 50 percent abundance at m/z 12.",
       "choiceRationales": [
         "The weighted average is 10 times 0.15 plus 11 times 0.35 plus 12 times 0.50, which equals 11.35.",
         "This option is not the best answer because 10.65 gives too much weight to the lower-mass isotope and does not use the stated abundances.",
@@ -49020,7 +49020,7 @@
         "The claim is reversed because shorter wavelengths carry higher photon energy."
       ],
       "answerIndex": 3,
-      "rationale": "Using E = hc divided by wavelength, the shorter 400-nm wavelength corresponds to the higher photon energy.",
+      "rationale": "According to E = hc/lambda, photon energy is inversely proportional to wavelength; thus a 400-nm photon has 700/400 = 1.75 times more energy than a 700-nm photon, reversing the student's claim.",
       "choiceRationales": [
         "This option is not the best answer because The inverse relationship makes shorter wavelength correspond to greater energy.",
         "This option is not the best answer because Intensity affects the number of photons or total energy, not the energy of each photon at a fixed wavelength.",
@@ -49110,10 +49110,10 @@
         "1.20"
       ],
       "answerIndex": 0,
-      "rationale": "The calibration slope is 0.20 absorbance units per millimolar, so 2.5 millimolar predicts an absorbance of 0.50.",
+      "rationale": "From the linear standards (0.20, 0.40, 0.60 at 1.0, 2.0, 3.0 mM), the Beer-Lambert slope is 0.20 per mM, so a 2.5 mM sample yields A = (0.20/mM)(2.5 mM) = 0.50.",
       "choiceRationales": [
         "The calibration slope is 0.20 absorbance units per millimolar, so 2.5 millimolar predicts an absorbance of 0.50.",
-        "This option is not the best answer because 0.25 halves the concentration instead of applying the measured calibration slope.",
+        "This option is not the best answer because 0.25 divides the 2.5 mM concentration by ten (half the true absorbance) instead of multiplying by the 0.20 per mM slope.",
         "This option is not the best answer because 0.40 is the absorbance for the 2.0-millimolar standard, not 2.5 millimolar.",
         "This option is not the best answer because 1.20 multiplies the concentration by an incorrect slope and leaves the stated linear range."
       ],
@@ -51810,10 +51810,10 @@
         "+69 kJ"
       ],
       "answerIndex": 2,
-      "rationale": "Adding the three state-function changes gives +18 minus 42 plus 9, which equals -15 kJ.",
+      "rationale": "By Hess's law, summing A -> B, B -> C, and C -> D cancels intermediates B and C, so delta H for A -> D equals the algebraic sum +18 + (-42) + 9 = -15 kJ.",
       "choiceRationales": [
         "This option is not the best answer because The sign is reversed when the signed steps are added in the stated direction.",
-        "This option is not the best answer because Adding absolute values ignores the negative enthalpy for B yields C.",
+        "This option is not the best answer because -69 kJ sums all three magnitudes with a negative sign, ignoring the positive signs on A -> B (+18 kJ) and C -> D (+9 kJ).",
         "Adding the three state-function changes gives +18 minus 42 plus 9, which equals -15 kJ.",
         "This option is not the best answer because The total is a signed sum rather than the sum of all magnitudes."
       ],
@@ -52530,7 +52530,7 @@
         "Divide the reactant pressure product by the product pressure squared for the reaction as written."
       ],
       "answerIndex": 2,
-      "rationale": "The reaction quotient uses products over reactants with exponents equal to the balanced gas coefficients.",
+      "rationale": "For 2SO2(g) + O2(g) <-> 2SO3(g), the reaction quotient Qp places product partial pressures over reactant partial pressures raised to their balanced coefficients: P(SO3)^2 / (P(SO2)^2 P(O2)).",
       "choiceRationales": [
         "This option is not the best answer because Equilibrium expressions use products of powers rather than simple sums.",
         "This option is not the best answer because Both reactants and products appear in Q for the written reaction.",
@@ -52890,7 +52890,7 @@
         "[X]eq = 0.30 M and [Y]eq = 0.50 M because the product becomes the remaining reactant."
       ],
       "answerIndex": 2,
-      "rationale": "One-to-one formation of 0.30 M Y consumes 0.30 M X, leaving 0.80 minus 0.30, or 0.50 M X at equilibrium.",
+      "rationale": "For 1:1 reversible reaction X <-> Y starting at 0.80 M X and 0 M Y, forming [Y]eq = 0.30 M requires consuming 0.30 M X, giving ICE equilibrium values [X]eq = 0.50 M and [Y]eq = 0.30 M.",
       "choiceRationales": [
         "This option is not the best answer because The reactant concentration changes by the stoichiometric amount shown in the product.",
         "This option is not the best answer because ICE tables use subtraction for reactant consumption rather than addition.",
@@ -53782,7 +53782,7 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "interpret",
-      "prompt": "A weak-acid solution has pH 3.00 at 0.100 M and pH 3.30 after a tenfold dilution. Which pattern is most consistent with weak-acid behavior?",
+      "prompt": "A weak-acid solution has pH 3.00 at 0.100 M and pH 3.50 after a tenfold dilution. Which pattern is most consistent with weak-acid behavior?",
       "choices": [
         "Dilution lowers [H3O+], yet pH rises by under 1 unit as partial ionization shifts toward ions.",
         "The pH must increase by exactly 10 units, because the concentration was changed tenfold in the flask.",
@@ -53790,9 +53790,9 @@
         "The hydronium concentration remains exactly unchanged during the whole of the tenfold dilution here."
       ],
       "answerIndex": 0,
-      "rationale": "For a weak acid, dilution changes both concentration and percent ionization, so pH responds less simply than a direct tenfold concentration rule.",
+      "rationale": "For a weak acid with [H3O+] approximately sqrt(Ka C), a tenfold dilution lowers [H3O+] by sqrt(10) and raises pH by 0.50 units (3.00 to 3.50) rather than 1.00 unit because percent ionization increases.",
       "choiceRationales": [
-        "For a weak acid, dilution changes both concentration and percent ionization, so pH responds less simply than a direct tenfold concentration rule.",
+        "For a weak acid with [H3O+] approximately sqrt(Ka C), a tenfold dilution lowers [H3O+] by sqrt(10) and raises pH by 0.50 units (3.00 to 3.50) rather than 1.00 unit because percent ionization increases.",
         "This option is not the best answer because pH is logarithmic, so a tenfold concentration change corresponds to one pH unit only for a direct concentration relationship.",
         "This option is not the best answer because Acid strength is an equilibrium property and does not become strong merely through dilution.",
         "This option is not the best answer because Dilution lowers the hydronium concentration even though ionization fraction changes."
@@ -55320,7 +55320,7 @@
         "Coupling cannot change the favorability of a process with positive delta G."
       ],
       "answerIndex": 1,
-      "rationale": "Free-energy changes add with their signs, so +24 plus -31 equals -7 kJ/mol for the coupled net process.",
+      "rationale": "Gibbs free energy is additive across coupled reactions; summing +24 kJ/mol and -31 kJ/mol in a 1:1 ratio gives delta G = -7 kJ/mol, making the net coupled process thermodynamically favorable.",
       "choiceRationales": [
         "This option is not the best answer because Signed thermodynamic quantities are added algebraically rather than by absolute magnitude.",
         "Free-energy changes add with their signs, so +24 plus -31 equals -7 kJ/mol for the coupled net process.",
@@ -55770,7 +55770,7 @@
         "Mg+ with electron configuration 1s2 2s2 2p6 3s1"
       ],
       "answerIndex": 2,
-      "rationale": "Magnesium loses its two 3s electrons to form a 2+ ion with the neon-like configuration.",
+      "rationale": "Magnesium (group 2) reaches a stable octet by losing its two highest-energy 3s valence electrons from 1s2 2s2 2p6 3s2, forming the Mg2+ cation with neon-like configuration 1s2 2s2 2p6.",
       "choiceRationales": [
         "This option is not the best answer because Keeping the 3s electrons would leave the neutral atom rather than the stable cation.",
         "This option is not the best answer because Gaining one electron would create a negative ion and does not match magnesium behavior.",
@@ -56580,7 +56580,7 @@
         "NH3 has trigonal pyramidal 3D geometry, whereas BF3 is trigonal planar."
       ],
       "answerIndex": 3,
-      "rationale": "NH3 has three bonds and one lone pair, while BF3 has three bonding domains and no central lone pair.",
+      "rationale": "By VSEPR theory, NH3 has four electron domains (three bonding pairs plus one lone pair), yielding trigonal pyramidal molecular geometry, whereas BF3 has three bonding domains and no lone pairs, giving trigonal planar geometry.",
       "choiceRationales": [
         "This option is not the best answer because Hybridization labels do not make all molecules with central atoms tetrahedral in molecular geometry.",
         "This option is not the best answer because A lone pair changes the molecular shape even though it is omitted from the atom-only outline.",
@@ -58650,7 +58650,7 @@
         "Electrons move from the salt bridge to zinc without an oxidation or reduction process."
       ],
       "answerIndex": 2,
-      "rationale": "Zinc loses electrons as its oxidation state increases, and Cu2+ gains those electrons to form copper metal.",
+      "rationale": "As Zn becomes Zn2+ (oxidation state 0 to +2), zinc loses two electrons and is oxidized; those electrons transfer to Cu2+ (oxidation state +2 to 0), which gains electrons and is reduced to copper metal.",
       "choiceRationales": [
         "This option is not the best answer because The direction of electron transfer follows oxidation at zinc and reduction at copper ions.",
         "This option is not the best answer because Losing electrons produces oxidation, even though the numerical oxidation state becomes more positive.",
@@ -59910,7 +59910,7 @@
         "Choose the mechanism that has the fewer elementary steps before collecting any data at all."
       ],
       "answerIndex": 0,
-      "rationale": "Different predicted rate dependence on B can be tested directly with controlled initial-rate measurements.",
+      "rationale": "To isolate reaction order in reactant B using the method of initial rates, vary [B] systematically across trials while keeping temperature and all other reactant concentrations fixed so rate changes reflect only [B].",
       "choiceRationales": [
         "Different predicted rate dependence on B can be tested directly with controlled initial-rate measurements.",
         "This option is not the best answer because Final product amount may be the same even when mechanisms and rates differ.",
@@ -60000,7 +60000,7 @@
         "Use a single color observation at the midpoint as the concentration data set."
       ],
       "answerIndex": 1,
-      "rationale": "Timed aliquots preserve the reaction history, and quenching stops further reaction during analysis.",
+      "rationale": "Removing aliquots at recorded times and immediately quenching (e.g., by rapid cooling or chemical neutralization) halts reaction progress in each sample, preserving accurate concentration-versus-time data.",
       "choiceRationales": [
         "This option is not the best answer because Final samples contain no information about the intermediate concentration history.",
         "Timed aliquots preserve the reaction history, and quenching stops further reaction during analysis.",
@@ -60990,7 +60990,7 @@
         "Choose the reaction with the larger coefficient as more exothermic by definition."
       ],
       "answerIndex": 0,
-      "rationale": "Normalizing heat to the same chemical event, such as one mole of water formed, makes reactions comparable.",
+      "rationale": "Because enthalpy is extensive and scales with stoichiometric coefficients, expressing calorimetry results as kJ per mole of H2O formed using known limiting amounts removes coefficient bias for fair comparison.",
       "choiceRationales": [
         "Normalizing heat to the same chemical event, such as one mole of water formed, makes reactions comparable.",
         "This option is not the best answer because Equal volume does not guarantee equal moles or equal reaction extent.",
@@ -61440,7 +61440,7 @@
         "The equilibrium constant decreases immediately, because the mixture composition has changed."
       ],
       "answerIndex": 1,
-      "rationale": "Q less than K means the mixture has too few products for equilibrium, so forward change raises Q toward K.",
+      "rationale": "When Q < K, the current product-to-reactant ratio lies below the equilibrium ratio; therefore the net reaction proceeds forward, converting reactants into products until Q rises to equal K.",
       "choiceRationales": [
         "This option is not the best answer because The reverse direction would lower Q further and move away from the equilibrium composition.",
         "Q less than K means the mixture has too few products for equilibrium, so forward change raises Q toward K.",
@@ -61800,7 +61800,7 @@
         "[A] at equilibrium is 1.00 M because the starting concentration is unchanged by equilibrium."
       ],
       "answerIndex": 1,
-      "rationale": "The one-to-one stoichiometry gives A a change of negative 0.30 M when B increases by 0.30 M.",
+      "rationale": "In the 1:1 equilibrium A <-> B starting from [A]0 = 1.00 M and [B]0 = 0 M, gaining +0.30 M of B requires a -0.30 M change in A, giving [A]eq = 1.00 - 0.30 = 0.70 M.",
       "choiceRationales": [
         "This option is not the best answer because Stoichiometric conversion decreases A as B forms rather than adding B to A.",
         "The one-to-one stoichiometry gives A a change of negative 0.30 M when B increases by 0.30 M.",
@@ -62790,7 +62790,7 @@
         "The acid has fully dissociated because the ions are visible in the diagram."
       ],
       "answerIndex": 0,
-      "rationale": "A weak acid is a partial electrolyte; its molecular and ionic species coexist at equilibrium.",
+      "rationale": "Weak acids have Ka << 1 and act as weak electrolytes, ionizing only partially in water so un-ionized HA molecules predominate in dynamic equilibrium with small concentrations of H3O+ and A-.",
       "choiceRationales": [
         "A weak acid is a partial electrolyte; its molecular and ionic species coexist at equilibrium.",
         "This option is not the best answer because Strong and weak acids both produce hydronium, but the extent of ionization distinguishes them.",
@@ -63060,7 +63060,7 @@
         "The pH approximates pKa because the base-to-acid ratio equals one."
       ],
       "answerIndex": 3,
-      "rationale": "When base and acid concentrations are equal, their ratio is one and log one is zero, so pH equals pKa.",
+      "rationale": "In the Henderson-Hasselbalch equation pH = pKa + log([A-]/[HA]), equal weak-acid and conjugate-base concentrations make the ratio 1; because log(1) = 0, the buffer pH equals pKa.",
       "choiceRationales": [
         "This option is not the best answer because A buffer pH depends on its acid-base pair and ratio, not simply on containing two species.",
         "This option is not the best answer because when [A-] equals [HA], log([A-]/[HA]) = log(1) = 0, so the Henderson-Hasselbalch equation adds zero rather than doubling pKa.",
@@ -63420,7 +63420,7 @@
         "Pick an indicator whose transition interval lies in the steep equivalence pH region."
       ],
       "answerIndex": 3,
-      "rationale": "The endpoint is most accurate when the indicator changes color during the rapid pH change near equivalence.",
+      "rationale": "Near the equivalence point of a titration, pH rises sharply over a tiny added volume; choosing an indicator whose pKa +/- 1 transition range sits inside that steep inflection aligns visual endpoint with equivalence.",
       "choiceRationales": [
         "This option is not the best answer because Indicator range must match the specific titration curve rather than one fixed pH.",
         "This option is not the best answer because Color intensity does not determine whether the transition occurs at the correct chemical pH.",
@@ -63600,7 +63600,7 @@
         "Compare the buffer color with the water color without ever measuring the pH of either one of the samples."
       ],
       "answerIndex": 1,
-      "rationale": "Matched aliquots and volumes create a direct pH-change comparison attributable to buffer composition.",
+      "rationale": "Testing buffer resistance requires a controlled comparison: adding identical measured acid aliquots to equal volumes of buffer and water under identical measurement conditions isolates the pH-stabilizing effect of the buffer.",
       "choiceRationales": [
         "This option is not the best answer because An untreated comparison does not experience the same acid challenge.",
         "Matched aliquots and volumes create a direct pH-change comparison attributable to buffer composition.",

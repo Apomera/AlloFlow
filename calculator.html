@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
     <title>Cost Scenario Planner | AlloFlow</title>
     <meta name="description"
         content="Model an illustrative EdTech subscription scenario, compare potentially overlapping AlloFlow capabilities, and verify assumptions against current written quotes.">
@@ -28,12 +29,28 @@
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
-    <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://apomera.github.io/AlloFlow/calculator.html#app",
+      "url": "https://apomera.github.io/AlloFlow/calculator.html",
+      "name": "AlloFlow Cost Scenario Planner",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "isAccessibleForFree": true,
+      "description": "Model an illustrative EdTech subscription scenario, compare potentially overlapping AlloFlow capabilities, and verify assumptions against current written quotes.",
+      "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" }
+    }
+    </script>
     <style>
         .calc-hero {
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
@@ -405,7 +422,7 @@
 
         .calc-footer p {
             font-size: 1rem;
-            color: #64748b;
+            color: #475569;
             max-width: 600px;
             margin: 0 auto 28px;
         }
@@ -416,7 +433,7 @@
             margin: 0 auto;
             padding: 0 24px 40px;
             font-size: 0.7rem;
-            color: #64748b;
+            color: #475569;
             text-align: center;
             line-height: 1.6;
         }
@@ -438,6 +455,53 @@
             .school-config {
                 flex-direction: column;
                 gap: 16px;
+            }
+        }
+
+        .summary-status {
+            max-width: 1200px;
+            margin: 8px auto 0;
+            padding: 0 24px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f766e;
+            min-height: 1.2em;
+            text-align: center;
+        }
+
+        @media print {
+            .calc-hero {
+                background: #ffffff !important;
+                color: #111827 !important;
+                padding: 20px 0 12px !important;
+                border-bottom: 2px solid #cbd5e1;
+            }
+            .calc-hero p {
+                color: #334155 !important;
+            }
+            .savings-bar {
+                position: static !important;
+                background: #ffffff !important;
+                color: #111827 !important;
+                border-bottom: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+            }
+            .savings-amount,
+            .savings-label,
+            .savings-subtitle {
+                color: #111827 !important;
+            }
+            .savings-cta,
+            .calc-footer,
+            .summary-status {
+                display: none !important;
+            }
+            .product-grid.has-selection .product-card:not(.selected) {
+                display: none !important;
+            }
+            .product-card {
+                break-inside: avoid;
+                box-shadow: none !important;
             }
         }
     </style>
@@ -470,20 +534,32 @@
     <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html">Features</a>
-        <a href="manuals.html">Manuals</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html">Remediation</a>
-        <a href="accessibility_demo.html">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html">For Districts</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -505,7 +581,7 @@
                 Cost Scenario Planner</span>
         </div>
         <h1>Model Your Current<br>EdTech <span
-                style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Stack</span>?
+                style="background:linear-gradient(135deg,#22c55e,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Stack</span>
         </h1>
         <p>Select tools to model an illustrative subscription total, then verify every assumption against your current written quotes. Feature overlap is not equivalent to full product replacement.</p>
     </header>
@@ -522,9 +598,12 @@
                 <span class="selected-count" id="selectedCount">0 tools selected</span>
                 <button type="button" class="savings-action-btn" id="selectAllBtn" onclick="selectAll()">Select all</button>
                 <button type="button" class="savings-action-btn" id="clearSelectionBtn" onclick="clearSelection()" disabled>Clear selection</button>
+                <button type="button" class="savings-action-btn" id="copySummaryBtn" onclick="copyScenarioSummary()" disabled>Copy summary</button>
+                <button type="button" class="savings-action-btn" id="printSummaryBtn" onclick="window.print()">Print summary</button>
             </div>
         </div>
     </div>
+    <p id="scenarioStatus" class="summary-status" role="status" aria-live="polite"></p>
 
     <!-- School Configuration -->
     <div class="school-config">
@@ -550,6 +629,12 @@
         <div class="product-grid" id="productGrid">
             <!-- Cards are rendered by JavaScript -->
         </div>
+        <noscript>
+            <div style="max-width:820px;margin:24px auto;padding:20px 24px;background:#fff7ed;border:1px solid #fdba74;border-radius:12px;color:#7c2d12;line-height:1.6">
+                <p style="margin:0 0 8px"><strong>Interactive scenario modeling requires JavaScript.</strong></p>
+                <p style="margin:0">Without JavaScript, you can still review the capability and pricing-model comparison table on the <a href="for-districts.html#solution" style="color:#3730a3;font-weight:700">For Districts brief</a> or explore the full <a href="features.html" style="color:#3730a3;font-weight:700">Features catalog</a>.</p>
+            </div>
+        </noscript>
     </section>
 
     <!-- Fine Print -->
@@ -585,11 +670,11 @@
             <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
             <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html" aria-current="page">Cost Planner</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
         </div>
@@ -612,7 +697,7 @@
                 whatTheyDo: 'Adaptive phonics and reading program with preset lesson sequences and student progress tracking.',
                 parity: [
                     'Word Sounds Studio — 17 literacy activities across phonemic awareness, syllable &amp; rhyme, phonics, spelling, and handwriting',
-                    'Benchmark Probes — grade-calibrated standardized assessment items (K through Grade 5)',
+                    'Progress-Monitoring Probes — curriculum-based practice and progress checks (K through Grade 5; not standardized tests)',
                     'RTI / MTSS progress monitoring with tier classifications and CSV export',
                     'Mastery-based progression with session goals and XP tracking',
                     'Pre-recorded phoneme audio bank — no internet required for audio playback',
@@ -689,10 +774,10 @@
                 priceNote: 'per student/year',
                 whatTheyDo: 'AI listening companion that assesses K-5 oral reading fluency with WCPM scoring and comprehension.',
                 parity: [
-                    'Oral Fluency Coach — students read aloud, AI calculates WCPM in real time',
+                    'Oral Fluency Coach — students read aloud and receive automated WCPM estimates alongside teacher review and corrections',
                     'Color-coded accuracy heat map (green=correct, yellow=hesitation, red=missed)',
-                    'Configurable time limits for timed reading assessments',
-                    'ORF screening passages with grade-calibrated benchmark probes',
+                    'Configurable time limits for timed reading practice',
+                    'Practice passages and teacher-reviewed fluency probes for classroom progress monitoring',
                     'Fluency data persistence — assessment history saved locally for longitudinal tracking',
                     'Recording controls with playback for teacher review'
                 ]
@@ -708,7 +793,7 @@
                 priceNote: 'per student/year (Enterprise tier)',
                 whatTheyDo: 'AI-powered teacher productivity suite with 80+ tools for lesson planning, rubrics, and content generation.',
                 parity: [
-                    'AI text generation from any topic, grade, or standard — with web grounding to prevent hallucinations',
+                    'AI drafting from your source material, topic, or standard — with source grounding for teacher review before sharing',
                     'Lesson Plan Builder that synthesizes all generated resources with internal links',
                     'Rubric Generator, Writing Scaffolds (sentence starters, paragraph frames, discussion prompts)',
                     'Quiz Generator with DOK tuning, Fact Check Protocol, and QTI/Canvas export',
@@ -722,11 +807,57 @@
 
         let selectedProducts = new Set();
 
+        function clampInt(raw, min, max, fallback) {
+            const n = parseInt(raw, 10);
+            if (!Number.isFinite(n)) return fallback;
+            return Math.min(max, Math.max(min, n));
+        }
+
         function getStudentCount() {
-            return parseInt(document.getElementById('studentCount').value) || 400;
+            return clampInt(document.getElementById('studentCount').value, 1, 50000, 400);
         }
         function getTeacherCount() {
-            return parseInt(document.getElementById('teacherCount').value) || 30;
+            return clampInt(document.getElementById('teacherCount').value, 1, 10000, 30);
+        }
+
+        function syncScenarioUrl() {
+            if (!window.history || typeof window.history.replaceState !== 'function' || typeof URLSearchParams !== 'function') return;
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const s = getStudentCount();
+                const t = getTeacherCount();
+                if (s !== 400) params.set('students', String(s)); else params.delete('students');
+                if (t !== 30) params.set('teachers', String(t)); else params.delete('teachers');
+                const ids = PRODUCTS.map(p => p.id).filter(id => selectedProducts.has(id));
+                if (ids.length) params.set('tools', ids.join(',')); else params.delete('tools');
+                const qs = params.toString();
+                window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + (window.location.hash || ''));
+            } catch (_) {}
+        }
+
+        function restoreScenarioFromUrl() {
+            if (typeof URLSearchParams !== 'function') return;
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const sParam = params.get('students');
+                const tParam = params.get('teachers');
+                if (sParam !== null && sParam.trim() !== '') {
+                    document.getElementById('studentCount').value = String(clampInt(sParam, 50, 5000, 400));
+                }
+                if (tParam !== null && tParam.trim() !== '') {
+                    document.getElementById('teacherCount').value = String(clampInt(tParam, 5, 500, 30));
+                }
+                const validIds = new Set(PRODUCTS.map(p => p.id));
+                const toolsParam = params.get('tools');
+                if (toolsParam) {
+                    toolsParam.split(',').map(s => s.trim().toLowerCase()).forEach(id => {
+                        if (!validIds.has(id)) return;
+                        selectedProducts.add(id);
+                        const card = document.querySelector(`[data-product="${id}"]`);
+                        if (card) { card.classList.add('selected'); card.setAttribute('aria-checked', 'true'); }
+                    });
+                }
+            } catch (_) {}
         }
 
         function calculateCost(product) {
@@ -751,7 +882,7 @@
             return '$' + amount;
         }
 
-        function updateSavingsDisplay() {
+        function updateSavingsDisplay(skipUrlSync) {
             const total = calculateTotalSavings();
             const amountEl = document.getElementById('savingsAmount');
             const subtitleEl = document.getElementById('savingsSubtitle');
@@ -769,8 +900,12 @@
 
             const selectAllBtn = document.getElementById('selectAllBtn');
             const clearBtn = document.getElementById('clearSelectionBtn');
+            const copySummaryBtn = document.getElementById('copySummaryBtn');
+            const gridEl = document.getElementById('productGrid');
             if (selectAllBtn) selectAllBtn.disabled = count === PRODUCTS.length;
             if (clearBtn) clearBtn.disabled = count === 0;
+            if (copySummaryBtn) copySummaryBtn.disabled = count === 0;
+            if (gridEl) gridEl.classList.toggle('has-selection', count > 0);
 
             if (total === 0) {
                 subtitleEl.textContent = 'Select tools to model a scenario';
@@ -783,6 +918,8 @@
                 const costEl = document.getElementById(`cost-${p.id}`);
                 if (costEl) costEl.textContent = formatCurrency(calculateCost(p));
             });
+
+            if (skipUrlSync !== true) syncScenarioUrl();
         }
 
         function toggleProduct(id) {
@@ -851,15 +988,70 @@
 
         // Init
         renderProducts();
+        restoreScenarioFromUrl();
+        updateSavingsDisplay(true);
 
         // Recalculate on input change
-        document.getElementById('studentCount').addEventListener('input', updateSavingsDisplay);
-        document.getElementById('teacherCount').addEventListener('input', updateSavingsDisplay);
+        document.getElementById('studentCount').addEventListener('input', () => updateSavingsDisplay(false));
+        document.getElementById('teacherCount').addEventListener('input', () => updateSavingsDisplay(false));
 
+
+        function copyScenarioSummary() {
+            const statusEl = document.getElementById('scenarioStatus');
+            const report = (msg) => { if (statusEl) statusEl.textContent = msg; };
+            if (!selectedProducts.size) {
+                report('Select at least one tool to copy a scenario summary.');
+                return;
+            }
+            syncScenarioUrl();
+            const students = getStudentCount();
+            const teachers = getTeacherCount();
+            const lines = [
+                'AlloFlow EdTech Stack Cost Scenario (Illustrative Planning Estimate)',
+                `School profile: ${students} students, ${teachers} teachers`,
+                ''
+            ];
+            let total = 0;
+            PRODUCTS.forEach(p => {
+                if (!selectedProducts.has(p.id)) return;
+                const cost = calculateCost(p);
+                total += cost;
+                lines.push(`- ${p.name}: ${formatCurrency(cost)}/yr (${p.priceNote})`);
+            });
+            lines.push('');
+            lines.push(`Illustrative annual subscription total: ${formatCurrency(total)}/yr`);
+            lines.push('AlloFlow software license fee: $0 (AGPL v3 open source). Cloud AI, hosting, local hardware, and support depend on chosen deployment.');
+            lines.push(`Shareable scenario link: ${window.location.href}`);
+            lines.push('Note: Illustrative planning assumptions only — verify against current written vendor quotes. Feature overlap is not full product replacement.');
+            const text = lines.join('\n');
+            const okMsg = `Copied summary for ${selectedProducts.size} ${selectedProducts.size === 1 ? 'tool' : 'tools'} (${formatCurrency(total)}/yr illustrative total).`;
+            const fallbackCopy = () => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.setAttribute('readonly', '');
+                    ta.setAttribute('aria-hidden', 'true');
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    const ok = Boolean(document.execCommand && document.execCommand('copy'));
+                    document.body.removeChild(ta);
+                    report(ok ? okMsg : 'Clipboard copy unavailable — use Print summary to save as PDF.');
+                } catch (_) {
+                    report('Clipboard copy unavailable — use Print summary to save as PDF.');
+                }
+            };
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(text).then(() => report(okMsg)).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+        }
 
         // Copy Link
         function copyCanvasLink() {
-            const link = new URL("/launch.html", window.location.href).href;
+            const link = new URL("launch.html", window.location.href).href;
             const statusEl = document.getElementById('copyLinkStatus');
             const reportStatus = (msg) => { if (statusEl) statusEl.textContent = msg; };
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {

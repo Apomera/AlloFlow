@@ -390,7 +390,9 @@ describe('Wave 6 · Submission Inbox round-trip, objective auto-scoring, annotat
     expect(entries.find((e) => e.key.endsWith(':cloze-blank'))).toMatchObject({ aiGradable: false, requiresManualReview: true });
     expect(entries.find((e) => e.key.endsWith(':match:0'))).toMatchObject({ aiGradable: false, requiresManualReview: true });
     expect(entries.find((e) => e.key.endsWith(':order:0'))).toMatchObject({ aiGradable: false, requiresManualReview: true });
-    expect(entries.find((e) => e.key.endsWith(':summary'))).toMatchObject({ aiGradable: false, requiresManualReview: true });
+    // Note-taking free-text fields (summary, conclusion, cue answers...) became AI-gradable
+    // free responses on 2026-11-21 (siIsKnownFreeformKey / isNoteFreeform).
+    expect(entries.find((e) => e.key.endsWith(':summary'))).toMatchObject({ aiGradable: true, requiresManualReview: false });
   });
 
   it('extracts v3 and standalone annotations into workEvidence while keeping response-only rows empty', () => {

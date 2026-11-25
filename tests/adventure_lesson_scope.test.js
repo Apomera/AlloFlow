@@ -47,7 +47,9 @@ beforeAll(() => {
   Panel = window.AlloModules.StudentSaveAdventurePanel.StudentSaveAdventurePanel;
 });
 
-const t = (key) => key;
+// The panel's tr() treats t(key) === key as "untranslated" and shows its English
+// fallback, so return a marked value to keep the keys visible in the markup.
+const t = (key) => '[' + key + ']';
 
 const baseProps = {
   activeSessionCode: null,
@@ -194,7 +196,9 @@ describe('the Adventure section only appears when the lesson carries one', () =>
 
   it('reads icons from AlloIcons first, so DOM globals like window.History cannot leak in', () => {
     const view = readFileSync('view_student_save_adventure_source.jsx', 'utf8');
-    expect(view).toContain("const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;");
+    expect(view).toContain("const icon = (name) => (typeof window !== 'undefined' && ((window.AlloIcons && window.AlloIcons[name]) || window[name])) || noop;");
+    // and a History that is still the DOM History interface is refused outright
+    expect(view).toContain('const History = (rawHistory !== browserHistoryConstructor && !(rawHistory && rawHistory.prototype && typeof rawHistory.prototype.pushState === \'function\'))');
     expect(view).not.toContain('const History = window.History || noop;');
   });
 

@@ -22,21 +22,23 @@
  *    contract's visibleItemsFor, so the UI cannot drift from the two backends.
  */
 (function registerQuestionBoardView(root, factory) {
-    const api = factory(root || (typeof globalThis !== 'undefined' ? globalThis : {}));
-    if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
-        root.AlloModules = root.AlloModules || {};
+    'use strict';
+    const host = (root && typeof root === 'object') ? root : (typeof globalThis === 'object' && globalThis ? globalThis : {});
+    const api = factory(host);
+    if (typeof module === 'object' && module && module.exports) module.exports = api;
+    if (root && typeof root === 'object') {
+        if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
         root.AlloModules.QuestionBoardView = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createQuestionBoardView(root) {
+})((typeof window === 'object' && window) ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null), function createQuestionBoardView(root) {
     'use strict';
 
     function React() {
-        return (root && root.React) || (typeof globalThis !== 'undefined' && globalThis.React) || null;
+        return (root && root.React) || (typeof globalThis === 'object' && globalThis && globalThis.React) || null;
     }
     const h = function () {
         const R = React();
-        if (!R) return null;
+        if (!R || typeof R.createElement !== 'function') return null;
         return R.createElement.apply(R, arguments);
     };
 
@@ -49,12 +51,24 @@
         pending:  Object.freeze({ fill: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a', label: 'Waiting for your teacher' })
     });
 
+    function _qbStr(v) {
+        if (v === null || v === undefined || typeof v === 'symbol') return '';
+        if (typeof v === 'string') return v;
+        try { return String(v); } catch (_) { return ''; }
+    }
+
+    function _qbNum(v) {
+        if (typeof v === 'number') return v;
+        if (v === null || v === undefined || typeof v === 'symbol') return NaN;
+        try { return Number(v); } catch (_) { return NaN; }
+    }
+
     function safeText(v) {
         return typeof v === 'string' ? v : (typeof v === 'number' && Number.isFinite(v) ? String(v) : '');
     }
 
     function safePosInt(v, fallback) {
-        const n = Number(v);
+        const n = _qbNum(v);
         return (Number.isFinite(n) && n >= 0) ? Math.floor(n) : fallback;
     }
 
@@ -115,21 +129,25 @@
         const opts = (options && typeof options === 'object') ? options : {};
         const rawCfg = board && board.config;
         const config = (rawCfg && typeof rawCfg === 'object' && !Array.isArray(rawCfg)) ? rawCfg : {};
-        const rawVisible = (contract && typeof contract.visibleItemsFor === 'function')
-            ? contract.visibleItemsFor(actor, board)
-            : [];
+        let rawVisible = [];
+        if (contract && typeof contract.visibleItemsFor === 'function') {
+            try { rawVisible = contract.visibleItemsFor(actor, board); } catch (_) { rawVisible = []; }
+        }
         const visible = Array.isArray(rawVisible) ? rawVisible.filter(function (i) { return !!(i && typeof i === 'object'); }) : [];
         const isHost = !!(actor && actor.role === 'host');
         const actorUid = (actor && typeof actor.uid === 'string' && actor.uid) ? actor.uid : null;
         const mine = actorUid ? visible.filter(function (i) { return i.uid === actorUid; }) : [];
         const peers = actorUid ? visible.filter(function (i) { return i.uid !== actorUid; }) : visible.slice();
         const perStudent = safePosInt(config.itemsPerStudent, 0);
-        const expired = !!(contract && typeof contract.isExpired === 'function' && contract.isExpired(board));
+        let expired = false;
+        if (contract && typeof contract.isExpired === 'function') {
+            try { expired = !!contract.isExpired(board); } catch (_) { expired = false; }
+        }
         const capacity = boardCapacity(contract, board);
 
         const allItems = (board && Array.isArray(board.items)) ? board.items : [];
         const authors = new Set();
-        allItems.forEach(function (i) { if (i && i.uid) authors.add(String(i.uid)); });
+        allItems.forEach(function (i) { const uid = i && _qbStr(i.uid); if (uid) authors.add(uid); });
         const reportedParticipants = (board && typeof board.participantCount === 'number' && Number.isFinite(board.participantCount))
             ? Math.max(0, Math.floor(board.participantCount))
             : 0;
@@ -169,7 +187,7 @@
         const displayName = safeText(item.displayName);
         const answerNote = (item.answered && typeof item.answered === 'object') ? safeText(item.answered.note) : '';
         return h('li', {
-            key: item.id,
+            key: item.id != null ? item.id : (p.fallbackKey != null ? p.fallbackKey : 'card'),
             className: 'rounded-lg border p-3 text-sm',
             style: { background: palette.fill, borderColor: palette.border, color: palette.text },
             // The state is colour-coded, so it must also be readable without
@@ -195,13 +213,16 @@
         const contract = props.contract;
         const tr = translator(props);
         const vm = buildBoardViewModel(contract, props.board, props.actor, { transport: props.transport, t: tr });
-        const draft = props.draft || '';
+        const draft = _qbStr(props.draft);
         const inputId = (typeof props.inputId === 'string' && props.inputId.trim()) ? props.inputId.trim() : 'allo-qb-input';
         const hintId = inputId + '-hint';
+        const itemCharLimit = (contract && contract.LIMITS && Number.isFinite(_qbNum(contract.LIMITS.ITEM_CHARS)) && _qbNum(contract.LIMITS.ITEM_CHARS) > 0)
+            ? _qbNum(contract.LIMITS.ITEM_CHARS)
+            : 280;
 
         const submit = function () {
             if (!vm.canPost) return;
-            const text = String(draft).trim();
+            const text = draft.trim();
             if (!text) return;
             if (typeof props.onPost === 'function') props.onPost(text);
         };
@@ -233,9 +254,9 @@
                     'aria-describedby': hintId,
                     value: draft,
                     rows: 2,
-                    maxLength: contract.LIMITS.ITEM_CHARS,
+                    maxLength: itemCharLimit,
                     disabled: !vm.canPost,
-                    onChange: function (e) { if (typeof props.onDraft === 'function') props.onDraft(e.target.value); },
+                    onChange: function (e) { if (typeof props.onDraft === 'function' && e && e.target) props.onDraft(_qbStr(e.target.value)); },
                     className: 'w-full min-h-11 rounded border border-slate-500 p-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
                 }),
                 h('div', { key: 'row', className: 'flex items-center justify-between' }, [
@@ -248,7 +269,7 @@
                                     ? tr('question_board.closed_short', 'This board is closed.')
                                     : tr('question_board.cap', 'You have added all your questions for this board.'))),
                     h('button', {
-                        key: 'post', type: 'button', onClick: submit, disabled: !vm.canPost || !String(draft).trim(),
+                        key: 'post', type: 'button', onClick: submit, disabled: !vm.canPost || !draft.trim(),
                         className: 'min-h-11 rounded bg-indigo-700 px-3 py-1 text-sm font-bold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2'
                     }, tr('question_board.post', 'Add my question'))
                 ])
@@ -259,7 +280,7 @@
                 + vm.answeredCount + ' ' + tr('question_board.answered', 'answered')),
 
             vm.myItems.length ? h('ul', { key: 'mine', className: 'space-y-2' },
-                vm.myItems.map(function (item) { return QuestionCard({ item: item, isOwn: true, t: props.t }); })) : null,
+                vm.myItems.map(function (item, idx) { return QuestionCard({ item: item, isOwn: true, t: props.t, fallbackKey: 'mine-' + idx }); })) : null,
 
             // An empty-looking board is confusing; name the reason.
             vm.floorPending ? h('p', {
@@ -267,7 +288,7 @@
             }, tr('question_board.floor', 'Classmates’ questions appear once a few more people have posted.')) : null,
 
             vm.peerItems.length ? h('ul', { key: 'peers', className: 'space-y-2' },
-                vm.peerItems.map(function (item) { return QuestionCard({ item: item, isOwn: false, t: props.t }); })) : null
+                vm.peerItems.map(function (item, idx) { return QuestionCard({ item: item, isOwn: false, t: props.t, fallbackKey: 'peer-' + idx }); })) : null
         ]);
     }
 
@@ -282,14 +303,16 @@
      */
     function boardCapacity(contract, board) {
         const items = (board && Array.isArray(board.items)) ? board.items : [];
-        const rawCap = Number(((board && board.config) || {}).boardCap);
+        const rawCap = _qbNum(((board && board.config) || {}).boardCap);
         const cap = (Number.isFinite(rawCap) && rawCap > 0) ? rawCap : 0;
-        const byteCap = (contract && contract.LIMITS && Number.isFinite(Number(contract.LIMITS.DOC_BYTES)) && Number(contract.LIMITS.DOC_BYTES) > 0)
-            ? Number(contract.LIMITS.DOC_BYTES)
+        const rawByteCap = contract && contract.LIMITS ? _qbNum(contract.LIMITS.DOC_BYTES) : NaN;
+        const byteCap = (Number.isFinite(rawByteCap) && rawByteCap > 0)
+            ? rawByteCap
             : 85 * 1024;
-        const rawBytes = (contract && typeof contract.estimateBoardBytes === 'function')
-            ? Number(contract.estimateBoardBytes(board))
-            : 0;
+        let rawBytes = 0;
+        if (contract && typeof contract.estimateBoardBytes === 'function') {
+            try { rawBytes = _qbNum(contract.estimateBoardBytes(board)); } catch (_) { rawBytes = NaN; }
+        }
         const bytes = (Number.isFinite(rawBytes) && rawBytes >= 0) ? rawBytes : byteCap;
         const byCount = cap ? items.length / cap : 0;
         const byBytes = byteCap ? bytes / byteCap : 0;
@@ -362,7 +385,7 @@
     // record. Text is already control-char stripped and single-line by the
     // contract's sanitizer, so only the inline/leading markers need escaping.
     function escapeMarkdown(value) {
-        return String(value == null ? '' : value)
+        return _qbStr(value)
             .replace(/[\r\n\u0000-\u001f\u007f\u2028\u2029]+/g, ' ')
             .replace(/([\\`*_\[\]()#<>!|~])/g, '\\$1')
             .replace(/^(\s*)([-+])/, '$1\\$2')
@@ -371,13 +394,15 @@
 
     function countAuthors(items) {
         const seen = new Set();
-        (Array.isArray(items) ? items : []).forEach(function (i) { if (i && i.uid) seen.add(String(i.uid)); });
+        (Array.isArray(items) ? items : []).forEach(function (i) { const uid = i && _qbStr(i.uid); if (uid) seen.add(uid); });
         return seen.size;
     }
 
     /** What to tell a student who cannot post right now, and why. */
     function postingBlockReason(contract, board, actor, capacity) {
-        if (contract && typeof contract.isExpired === 'function' && contract.isExpired(board)) return 'closed';
+        if (contract && typeof contract.isExpired === 'function') {
+            try { if (contract.isExpired(board)) return 'closed'; } catch (_) {}
+        }
         if (capacity && capacity.full) return 'board-full';
         const config = (board && board.config && typeof board.config === 'object') ? board.config : {};
         const items = (board && Array.isArray(board.items)) ? board.items : [];
@@ -405,7 +430,7 @@
         if (!prompt) errors.prompt = 'Give the board a driving question.';
         const maxPer = (contract.LIMITS && contract.LIMITS.ITEMS_PER_STUDENT_MAX) || 10;
         const hasPer = d.itemsPerStudent !== undefined && d.itemsPerStudent !== null;
-        const per = hasPer ? (String(d.itemsPerStudent).trim() === '' ? NaN : Number(d.itemsPerStudent)) : NaN;
+        const per = hasPer ? (_qbStr(d.itemsPerStudent).trim() === '' ? NaN : _qbNum(d.itemsPerStudent)) : NaN;
         if (hasPer && (!Number.isInteger(per) || per < 1 || per > maxPer)) {
             errors.itemsPerStudent = per > maxPer
                 ? ('Students can add at most ' + maxPer + ' questions per board.')
@@ -449,9 +474,10 @@
         const isHost = !!(actor && actor.role === 'host');
         // Host visibility still comes from the contract, so the teacher panel
         // cannot invent a different answer from the student one.
-        const rawAll = (isHost && contract && typeof contract.visibleItemsFor === 'function')
-            ? contract.visibleItemsFor(actor, board)
-            : [];
+        let rawAll = [];
+        if (isHost && contract && typeof contract.visibleItemsFor === 'function') {
+            try { rawAll = contract.visibleItemsFor(actor, board); } catch (_) { rawAll = []; }
+        }
         const all = Array.isArray(rawAll) ? rawAll.filter(function (i) { return !!(i && typeof i === 'object'); }) : [];
         const needsReview = all.filter(function (i) { return i && (i.status === 'held' || i.status === 'pending' || !i.status); });
         const hidden = all.filter(function (i) { return i && (i.status === 'hidden' || i.status === 'rejected'); });
@@ -459,11 +485,15 @@
         const answered = approved.filter(function (i) { return !!i.answered; });
         const open = approved.filter(function (i) { return !i.answered; });
         const authors = new Set();
-        all.forEach(function (i) { if (i && i.uid) authors.add(String(i.uid)); });
+        all.forEach(function (i) { const uid = i && _qbStr(i.uid); if (uid) authors.add(uid); });
+        let expired = false;
+        if (contract && typeof contract.isExpired === 'function') {
+            try { expired = !!contract.isExpired(board); } catch (_) { expired = false; }
+        }
         return {
             isHost: isHost,
             prompt: safeText(config.prompt),
-            expired: !!(contract && typeof contract.isExpired === 'function' && contract.isExpired(board)),
+            expired: expired,
             needsReview: needsReview,
             hidden: hidden,
             open: open,
@@ -487,7 +517,7 @@
         const snippet = text.slice(0, 60);
         const disabled = !!p.disabled;
         return h('li', {
-            key: item.id,
+            key: item.id != null ? item.id : (p.fallbackKey != null ? p.fallbackKey : 'card'),
             className: 'flex items-start justify-between gap-2 rounded border border-slate-400 bg-white p-2 text-sm text-slate-900'
         }, [
             h('div', { key: 'text' }, [
@@ -498,13 +528,13 @@
                 h('button', {
                     key: 'approve', type: 'button', disabled: disabled,
                     'aria-label': tr('question_board.approve', 'Show to class') + (snippet ? ': ' + snippet : ''),
-                    onClick: function () { if (!disabled && p.onApprove) p.onApprove(item); },
+                    onClick: function () { if (!disabled && typeof p.onApprove === 'function') p.onApprove(item); },
                     className: 'min-h-11 rounded bg-emerald-700 px-3 py-1 text-xs font-bold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2'
                 }, tr('question_board.approve', 'Show to class')),
                 h('button', {
                     key: 'hide', type: 'button', disabled: disabled,
                     'aria-label': tr('question_board.hide', 'Keep hidden') + (snippet ? ': ' + snippet : ''),
-                    onClick: function () { if (!disabled && p.onHide) p.onHide(item); },
+                    onClick: function () { if (!disabled && typeof p.onHide === 'function') p.onHide(item); },
                     className: 'min-h-11 rounded border border-slate-500 bg-white px-3 py-1 text-xs font-bold text-slate-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
                 }, tr('question_board.hide', 'Keep hidden'))
             ])
@@ -523,7 +553,7 @@
         const snippet = text.slice(0, 60);
         const disabled = !!p.disabled;
         return h('li', {
-            key: item.id,
+            key: item.id != null ? item.id : (p.fallbackKey != null ? p.fallbackKey : 'card'),
             className: 'flex items-start justify-between gap-2 rounded border p-2 text-sm',
             style: { background: palette.fill, borderColor: palette.border, color: palette.text },
             'aria-label': text + '. ' + palette.label + '.'
@@ -537,7 +567,7 @@
             h('button', {
                 key: 'toggle', type: 'button', disabled: disabled,
                 'aria-label': actionLabel + (snippet ? ': ' + snippet : ''),
-                onClick: function () { if (!disabled && p.onToggleAnswered) p.onToggleAnswered(item, !done); },
+                onClick: function () { if (!disabled && typeof p.onToggleAnswered === 'function') p.onToggleAnswered(item, !done); },
                 className: 'shrink-0 min-h-11 rounded border px-3 py-1 text-xs font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2',
                 style: { borderColor: palette.border }
             }, actionLabel)
@@ -592,22 +622,22 @@
             vm.needsReview.length ? h('div', { key: 'queue' }, [
                 h('h3', { key: 'h', className: 'text-sm font-bold' },
                     tr('question_board.queue', 'Waiting for you') + ' (' + vm.needsReview.length + ')'),
-                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.needsReview.map(function (item) {
-                    return ReviewRow({ item: item, t: props.t, disabled: vm.expired, onApprove: props.onApprove, onHide: props.onHide });
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.needsReview.map(function (item, idx) {
+                    return ReviewRow({ item: item, t: props.t, disabled: vm.expired, onApprove: props.onApprove, onHide: props.onHide, fallbackKey: 'rev-' + idx });
                 }))
             ]) : null,
 
             vm.open.length ? h('div', { key: 'open' }, [
                 h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.open_heading', 'Open questions')),
-                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.open.map(function (item) {
-                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered });
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.open.map(function (item, idx) {
+                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered, fallbackKey: 'open-' + idx });
                 }))
             ]) : null,
 
             vm.answered.length ? h('div', { key: 'answered' }, [
                 h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.answered_heading', 'Answered')),
-                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.answered.map(function (item) {
-                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered });
+                h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.answered.map(function (item, idx) {
+                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered, fallbackKey: 'ans-' + idx });
                 }))
             ]) : null,
 
@@ -615,7 +645,7 @@
                 tr('question_board.empty', 'No questions yet. Share the board code with your class.')) : null
         ]);
     }
-    return {
+    return Object.freeze({
         VERSION: 1,
         STATE_COLORS,
         itemState,
@@ -632,5 +662,5 @@
         ReviewRow,
         AnswerRow,
         QuestionBoardTeacher
-    };
+    });
 });

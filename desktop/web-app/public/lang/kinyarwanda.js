@@ -6086,7 +6086,7 @@
     "section_app": "Muri porogaramu yose",
     "section_access": "Sobanukirwa & ugereho",
     "jump_to": "Jya kuri",
-    "source_check_text": "Inkomoko yawe ifungukira ku Rupapuro rw'Inkomoko, aho uyihindura, uyikoresha, kandi ukabona isuzuma ryayo: urwego rwo gusoma, ibitekerezo by'ingenzi n'ukuri. Imfashanyigisho zikorwa hakoreshejwe inkomoko irimo gukoreshwa.",
+    "source_check_text": "Gufungura umwandiko fatizo biwugaragaza mu **Mbonerahamwe y'Umwandiko Fatizo**, aho ushobora gusuzuma, guhindura no kwemeza umwandiko ugaburira buri gikoresho gikora ibikoresho.\n### Icyo isuzuma ry'umwandiko fatizo rigaragaza\n• **Urwego rwo gusoma n'ubukomere**: Reba ikiciro cy'amashuri giteganyijwe, uburebure bw'interuro, n'uburemere bw'amagambo mbere yo guhindura.\n• **Ibitekerezo n'amagambo y'ingenzi**: Menya ibitekerezo shingiro n'amagambo y'ishuri bizibanzwaho n'inkoranyamagambo, ibitegura ibitekerezo, n'ibibazo.\n• **Isuzuma ry'ukuri n'ubusobanuro**: Garagaza ibidasobanutse, ibyuho, cyangwa ibyavuzwe bikwiye kunozwa mbere yo gutegura ibikoresho by'abanyeshuri.\n### Inama y'inzobere\nImpinduka zikorewe mu Mbonerahamwe y'Umwandiko Fatizo zihita ziba umwandiko ukoreshwa ku bikoresho byose biri hasi, bityo banza unoze umwandiko wawe hano.",
     "source_check_title": "Suzuma inkomoko yawe",
     "input_panel_title": "Paneli yo Kwinjiza",
     "input_panel_text": "Tangira ukoresheje umwandiko cyangwa insanganyamatsiko ushaka kwigisha. Imfashanyigisho nyinshi zikoresha uyu mwandiko w’inkomoko.\n### Ongeraho inkomoko yawe\n• **Shyiramo cyangwa wandike umwandiko wawe**, cyangwa ukoreshe **Pakira**, **Shaka kuri interineti**, **Urutonde rw’ibitabo** cyangwa **Andika na AI**. Umwandiko wawe ufungukira mu Gice cy’Inkomoko, aho uwuhindurira, uwugenzurira kandi ukawukoresha.\n• Nta mwandiko ufite? Munsi ya **Tangira nta mwandiko**, kora imfashanyigisho uvuye ku nsanganyamatsiko, urutonde rw’amagambo, cyangwa umushinga w’ubusa.\n• Genzura umwandiko winjijwe cyangwa wakozwe niba wuzuye kandi ari ukuri mbere yo gukomeza. Imbuga zimwe zibuza gukuramo inyandiko.\n### Shyiraho imiterere\n• Fungura Igenamiterere Rusange kugira ngo usuzume umwaka w’ishuri, ururimi, n’ibyifuzo by’imyigishirize.\n• Hitamo inzira yihariye y’Uburyo Buyobowe niba ushaka intambwe imwe ku yindi. Suzuma buri gisubizo ukigereranya n’inkomoko n’intego yawe yo kwiga.",
@@ -6103,13 +6103,13 @@
     "visual_title": "Amashusho ya AI",
     "visual_text": "Ongera imyumvire ukoresheje amashusho yakozwe na AI. Kora amashusho agaragaza ibitekerezo by’ingenzi ukoresheje uburyo butandukanye bw’ubugeni n’uburyo bw’ubwenge bw’imigaragarire kugira ngo ushyigikire ingamba za Dual Coding.\n### Amahitamo y’Igice\n• **Uburyo bw’Urupapuro rw’Umukoro**: Bukora amashusho yo kuzuza ahari ubusa ku bikorwa by’abanyeshuri.\n• **Amashusho Anoze**: Bukoresha ubwenge bw’ubuhanzi ku mashusho meza kandi atari uko biri gusa.\n• **Inyandiko Nke**: Bukora amashusho gusa nta turango cyangwa amagambo kugira ngo bugabanye umutwaro mu bwonko.\n• **Uburyo bw’Imigaragarire**: Yobora Umuyobozi w’Ubugeni wa AI kugira ngo akore Amashusho Amwe, Igereranya rya Mbere/Nyuma, Ikurikirana Intambwe ku Ntambwe, cyangwa Ibishushanyo Bifite Uturango.\n• **Uburyo bw’Ubugeni**: Koresha uburyo Rusange, cyangwa ubusimbuze Isometric, Pixel Art, Amarangi y’Amazi, Igishushanyo mbonera, Komike, Line Art, 3D Render, cyangwa uburyo wihitiyemo.\n• **Amabwiriza Wihariye**: Sobanura ibisabwa byihariye cyangwa inzitizi z’amashusho.\n### Ibiranga Ibikorwa Bihuriweho\n• **Ongera Ukore**: Saba ubundi buryo bushya ukanda rimwe.\n• **Manura**: Bika amashusho afite ireme ryiza ku maslayidi cyangwa impapuro.\n• **Siba**: Kuraho maze utangire bushya niba bikenewe.\n### Inama y’Ubuhanga\nKoresha uburyo bw’imigaragarire \"Ikurikirana\" hamwe n’uburyo \"Line Art\" kugira ngo uhite ukora inyobora zicapwa z’intambwe nyinshi!\n### Isano na UDL\n• **Imigaragarire**: Sobanura imiterere y’interuro n’inyubako (Guideline 2) utanga uburyo bw’amashusho busimbura inyandiko.",
     "faq_title": "FAQ Iteganya",
-    "faq_text": "Menya mbere aho abanyeshuri bashobora kujijwa bitaraba. Ikora mu buryo bwikora urutonde rwa FAQ ruteza imbere imyumvire rishingiye ku buremere bw’umwandiko, rugakemura mbere imyumvire itari yo ikunze kugaragara.\n### Amahitamo y’Igice\n• **Umubare w’Ibibazo**: Hitamo ibibazo n’ibisubizo 3, 5, 8, cyangwa 10 byo gukora.\n• **Amabwiriza Wihariye**: Yobora ikorwa ukoresheje ibice byihariye byo kwibandaho (urugero: \"ibande ku magambo\" cyangwa \"wibande ku makosa akunze kubaho\").\n### Ibiranga by’Ingenzi\n• **Ikorwa Ryikora**: Bihita bikora Ibibazo & Ibisubizo bishingiye ku isesengura ry’umwandiko.\n• **Ubufasha bw’Amajwi**: Gusoma inyandiko mu ijwi (Text-to-Speech) ku bibazo no ku bisubizo; kanda ku kibazo cyangwa igisubizo icyo ari cyo cyose ngo ucyumve mu ijwi riranguruye.\n• **Ubufasha bw’Indimi Ebyiri**: Reba ubuhinduzi niba ururimi rugamijwe rwahiswemo.### Inama y’Ubuhanga\nKoresha uburyo bw’amajwi kugira ngo ukore igikorwa cyo kumva aho abanyeshuri bagenzura imyumvire yabo—ni byiza cyane ku matsinda yo mu ishuri!\n### Isano na UDL\n• **Imigaragarire**: Yerekana imiterere n’ibintu by’ingenzi (Guideline 3) binyuze mu gukemura yeruye imyumvire itari yo ikunze kubaho.",
+    "faq_text": "Menya mbere aho abanyeshuri bashobora kujijwa bitaraba. Ikora mu buryo bwikora urutonde rwa FAQ ruteza imbere imyumvire rishingiye ku buremere bw’umwandiko, rugakemura mbere imyumvire itari yo ikunze kugaragara.\n### Amahitamo y’Igice\n• **Umubare w’Ibibazo**: Hitamo ibibazo n’ibisubizo 3, 5, 8, cyangwa 10 byo gukora.\n• **Amabwiriza Wihariye**: Yobora ikorwa ukoresheje ibice byihariye byo kwibandaho (urugero: \"ibande ku magambo\" cyangwa \"wibande ku makosa akunze kubaho\").\n### Ibiranga by’Ingenzi\n• **Ikorwa Ryikora**: Bihita bikora Ibibazo & Ibisubizo bishingiye ku isesengura ry’umwandiko.\n• **Ubufasha bw’Amajwi**: Gusoma inyandiko mu ijwi (Text-to-Speech) ku bibazo no ku bisubizo; kanda ku kibazo cyangwa igisubizo icyo ari cyo cyose ngo ucyumve mu ijwi riranguruye.\n• **Ubufasha bw’Indimi Ebyiri**: Reba ubuhinduzi niba ururimi rugamijwe rwahiswemo.\n### Inama y’Ubuhanga\nKoresha uburyo bw’amajwi kugira ngo ukore igikorwa cyo kumva aho abanyeshuri bagenzura imyumvire yabo—ni byiza cyane ku matsinda yo mu ishuri!\n### Isano na UDL\n• **Imigaragarire**: Yerekana imiterere n’ibintu by’ingenzi (Guideline 3) binyuze mu gukemura yeruye imyumvire itari yo ikunze kubaho.",
     "scaffolds_title": "Inkunga z'Ubwanditsi",
     "scaffolds_text": "Sisitemu yuzuye y’inkunga yo kwandika ifite itanga amanota rya AI n’imiterere y’interuro ishobora guhindurwa. Ni nziza cyane ku kwigisha kwandika kwita ku bushobozi bwa buri mwana.\n### Ubwoko bw’Inkunga\n• **Intangiriro z’Interuro**: Amabwiriza y’urutonde afasha abanyeshuri gutangira ibitekerezo byabo.\n• **Imbonerahamwe z’Ibika**: Ibika byo kuzuza ahari ubusa byo kubaka impaka ziteguwe neza.\n• **Amabwiriza y’Ibiganiro**: Intangiriro z’ibiganiro ku biganiro by’ubufatanye.\n• **Amabwiriza Wihariye**: Tunganya imbonerahamwe ku ntego zihariye z’imvugo (urugero: 'kwemeranya/kutemeranya', 'impamvu n’ingaruka').\n### Sisitemu y’Ibipimo by’Amanota & Isuzumabumenyi\n• **Ibipimo by’Amanota Byikora**: AI ikora ibipimo by’amanota bishingiye ku ngingo zihuye n’ibikubiyemo byawe.\n• **Urutonde rwo Kwisuzuma**: Ibipimo by’intsinzi bigaragarira abanyeshuri byo kwigenzura.\n• **Isuzuma ry’Ubuhanga Bwuzuye**: Suzuma imyumvire y’umunyeshuri ukoresheje amanota y’ibipimo biteguwe.\n• **Huza Imbonerahamwe**: Gabanya ubunini bw’inyandiko y’ibipimo kugira ngo imbonerahamwe yose ikwirwemo, cyangwa usubire kuri Bisanzwe.\n### Umutanga Amanota Wikora wa AI\n• **Ibitekerezo Ako Kanya**: Ohereza imishinga y’abanyeshuri ngo ihite isuzumwa na AI.\n• **Amanota Ashingiye ku Bipimo**: Itanga amanota kuri buri gisubizo ukurikije amanota y’ibipimo.\n• **Ibyiza & Ibyo Kunoza (Glow & Grow)**: Itanga ishimwe ryihariye (\"ibyiza\") n’inama zo kunoza (\"ibyo kunoza\").\n• **Ibitekerezo bya TTS**: AlloBot asoma ibisubizo by’amanota mu ijwi riranguruye kugira ngo bigerweho na bose.\n• **Ibihembo bya XP**: Abanyeshuri babona 100 Mastery XP iyo umushinga uhawe amanota y’ubuhanga bwuzuye, rimwe kuri buri mfashanyigisho.\n### Amahitamo yo Kwinjiza\n• **Kwandika Ukoresheje Ijwi**: Abanyeshuri bashobora kuvuga ibisubizo bakoresheje buto ya mikoro ya FAB.\n• **Uburyo bwo Guhindura**: Abarimu bashobora guhindura intangiriro z’interuro n’amabwiriza.\n• **Subiza ku Ntangiriro & Ongera Ugerageze**: Siba umurimo w’umunyeshuri kugira ngo atangire bushya.\n### Inama y’Ubuhanga\nKoresha buto ya 'Bona ibitekerezo ku mushinga wanjye' kugira ngo utangize uruziga rw’ibitekerezo bya AI — abanyeshuri bashobora kunonosora bashingiye ku nama bakongera kohereza!\n### Isano na UDL\n• **Igikorwa & Imivugire**: Yatunganyijwe ku iyubaka n’imyandikire (Guideline 5), itanga inzego z’inkunga zigenda zizamuka ku myitozo n’imikorere.",
     "quiz_title": "Iya umukino Quiz",
     "quiz_text": "Kora isuzumabumenyi, ryerekane mu kiganiro, cyangwa uhitemo Imikino kugira ngo witoze ukoresheje imfashanyigisho imwe.\n### Uburyo bw’Imikino\n• **Ikizamini Gikorwa Ako Kanya**: Amasomo ahujwe ako kanya afite ikurikirana ry’amanota na kode zo kwinjira ku banyeshuri.\n• **Irushanwa ry’Amatsinda**: Irushanwa ry’amatsinda rifite amatsinda agaragazwa n’amabara n’amanota ahuriweho.\n• **Urugamba n’Umuyobozi Mukuru**: Ishuri vs umuyobozi mukuru wa AI — subiza neza kugira ngo mukomeretse kandi mutsinde umuyobozi mukuru hamwe!\n• **Irushanwa ry’Ibibazo**: Kemura ibibazo by’ubwenge bishingiye ku bibazo, harimo guhuza, gutondeka, n’imibare ihishe, hamwe n’ibimenyetso n’ikigeragezo cya nyuma.\n• **Icyumba cyo Gusohokamo**: Shakisha ibintu bihuye, kusanya ibimenyetso n’ibikoresho, kandi uhuze ibyo wavumbuye ngo ufungure umuryango wo gusohoka. Kina wenyine cyangwa hamwe.\n• **Umukino w’Ikibaho**: Shakisha ahantu h’isomo kandi ukemure ibikorwa, wenyine cyangwa hamwe.\n• **Umukino wo Gusubiramo**: Hitamo ibibazo ku kibaho cy’ibyiciro maze uhe amatsinda amanota.\n• **Urugendo rw’Ibitekerezo**: Urugendo rwo gukina imyanya rufite ibyo uhura nabyo n’umuyobozi mukuru wa nyuma, wenyine cyangwa hamwe n’ishuri.\n### Ubwoko bw’Ibibazo\n• **Guhitamo Muri Byinshi**: MCQ isanzwe ifite umubare w’ibibazo uhindurwa.\n• **Ibibazo byo Kwitekerezaho**: Ibisubizo bifunguye byo gutekereza byimbitse.\n• **Uzuza Ahari Ubusa**: Uzuza interuro ukoresheje amagambo y’ingenzi abura.\n• **Guhuza**: Huza ibitekerezo bifitanye isano mu Irushanwa ry’Ibibazo.\n• **Ibibazo by’Amagambo Ahishe**: Sobanura ubutumwa buhishe mu Irushanwa ry’Ibibazo.\n### Ibiranga Imikino\n• **Urutonde rw’Abayoboye**: Itondeka ry’ako kanya mu masomo akorwa ako kanya.\n• **Amabara y’Amatsinda**: Amazina y’amatsinda atangwa byikora ku marushanwa y’amatsinda.\n• **Sisitemu y’Ibimenyetso**: Koresha uducupa tw’ibimenyetso ngo ubone ubufasha mu Irushanwa ry’Ibibazo (ni bike!).\n• **Gukurikirana Ibirangiye**: Kurikirana Amarushanwa y’Ibibazo yarangiye n’amanota y’ibizamini mu masomo yose.\n### Umutanga Amanota Wikora wa AI\n• **Gutanga Amanota ku Bisubizo Byanditse**: AI isuzuma ibisubizo bya Igisubizo Kigufi Cyanditse na Sobanura Impamvu Yawe ibigereranya n’ibipimo byawe by’amanota cyangwa igisubizo cyitezwe.\n• **Amanota Ako Kanya**: Gutanga amanota byikora hamwe n’ibitekerezo byihariye kuri buri gisubizo.\n### Gutanga Amasomo Atandukanye Ako Kanya\n• **Impinduka z’Amatsinda**: Ha amatsinda yihariye y’abanyeshuri imfashanyigisho cyangwa indimi zitandukanye hagati mu isomo.\n• **Kohereza Bwihariye**: Ohereza ikizamini gifite inkunga ku banyeshuri ba Tier 3 mu gihe abandi bakora ku bisanzwe.\n• **Guhindura Ako Kanya**: Ntibisaba guhagarika isomo — tandukanya ako kanya uvuye ku mbonerahamwe ya mwarimu.\n### Ibiranga Mwarimu\n• **Uburyo bwo Kwerekana**: Erekana ikibaho kinini cy’ibibazo ku kiganiro cy’ishuri ryose. Hitamo igisubizo ngo ukigenzure cyangwa ugaragaze inyobora y’ibisubizo; ibisubizo byo kwerekana ntibyohereza isuzuma ry’uwiga.\n• **Kode z’Isomo**: Kora kode zo kwinjira kugira ngo abanyeshuri bahuze banyuze ku gikoresho icyo ari cyo cyose.\n• **Erekana/Hisha Ibisubizo**: Hindura ukugaragara kw’urufunguzo rw’ibisubizo mu gihe cyo gusubiramo.\n• **Inzego za DOK**: Huza ibibazo n’amahame ya Depth of Knowledge.\n### Inama y’Ubuhanga\nHitamo Irushanwa ry’Ibibazo ku myitozo y’ibibazo cyangwa Icyumba cyo Gusohokamo ku iperereza rihuza ibimenyetso bivuye mu isomo.\n### Isano na UDL\n• **Kwitabira**: Kunoza ikigeragezo (Guideline 8.2) binyuze mu buremere buzamuka gahoro gahoro n’ibisubizo by’imikino.",
     "brainstorm_title": "Umuhanzi w'Ibikorwa",
-    "brainstorm_text": "Uburyo bune bw’ibikorwa mu gikoresho kimwe: Ibikangura Ibitekerezo byihuse, Ibikoresho by’Ibiganiro bishobora gukoreshwa, ibikorwa by’ubufatanye bya Jigsaw, n’Igerageza rya Canvas rikorerwa hamwe. Hitamo uburyo hejuru y’igice.\n### Uburyo bw’Ibikoresho by’Ibiganiro\n• **Amahame y’Ibiganiro**: Tekereza-Fatanya-Sangiza (Think-Pair-Share), Ikiganiro cya Socratic, Fishbowl, cyangwa Urugendo rw’Imurika.\n• **Ibibazo Bizamuka**: Amatsinda y’ibibazo byoroshye, iby’isesengura, n’ibyo gusuzuma bivuye ku nkomoko yawe.\n• **Intangiriro z’Imvugo**: Interuro zifasha abanyeshuri kwemeranya, kutemeranya, gusobanura, no kubakira ku bitekerezo.\n• **Inyandiko za Mwarimu**: Igihe cyo kuyobora, imbogamizi zishoboka, n’ibyo kureba mu kwitabira (ku bwa mwarimu gusa).\n### Uburyo bwa Jigsaw\n• **Paki z’Inzobere**: Inkomoko igabanywamo ibice byuzuzanya, kimwe kuri buri tsinda ry’inzobere.\n• **Amakarita yo Kwigisha Abandi**: Ingingo z’ingenzi n’ibibazo by’isuzuma buri nzobere ikoresha yigisha itsinda ryayo rya mbere.\n• **Isuzuma ry’Inshingano**: Ibibazo bigufi by’ibisubizo byigenga bireba buri gice, hamwe n’urufunguzo rw’ibisubizo rwa mwarimu gusa.\n### Uburyo bw’Ibikangura Ibitekerezo\n• **Amabwiriza Wihariye**: Ongeraho ibice byihariye byo kwibandaho cyangwa imiterere y’ibitekerezo.\n• **Ibitekerezo by’Ibikorwa**: Ibikorwa 5-8 by’amaboko cyangwa bihuriweho n’amasomo menshi bihuza ibitekerezo by’ingenzi n’andi masomo cyangwa imyitozo ngororamubiri.### Gemini Canvas (Igikoresho Gikora Igerageza)\nKora ibigerageza bya Canvas bikorerwa hamwe hamwe no kunoza kwa AI intambwe ku ntambwe:\n• **Ubwoko bw’Igerageza**: Ibice bya React, amashusho ya Python, ibigerageza bya Fiziki, ama-chatbot wihitiyemo.\n• **Umuyoboro w’Umubare w’Intambwe** (1-10): Intambwe nyinshi = amabwiriza anoze cyane ku bushakashatsi bwimbitse.\n• **Buto yo Gukora Amabwiriza ya Canvas**: Ikora amabwiriza intambwe ku ntambwe yo gukoporora no gushyira muri Gemini Canvas.\n### Amakarita y’Ibitekerezo Yakozwe\nBuri gitekerezo kirimo:\n• **Umutwe & Ibisobanuro**: Incamake y’igikorwa shingiro.\n• **Umwanya w’Isano**: Uko gihuye n’ibikubiyemo byawe.\n• **Inyobora ya Mwarimu**: Kora amabwiriza intambwe ku ntambwe yo gushyira mu bikorwa kuri buri gitekerezo.\n• **Uburyo bwo Guhindura**: Hindura umwanya uwo ari wo wose nyuma yo gukorwa.\n### Inama y’Ubuhanga\nKoresha ubwoko bwa Porogaramu ya Web Ikorwa hamwe / Umukino (React) kugira ngo ukore ibikoresho byo kwitoza imibare — abanyeshuri bashyiramo imibare maze bakabona ibisubizo ako kanya!\n### Isano na UDL\n• **Kwitabira**: Kunoza akamaro, agaciro, n’ukuri (Guideline 7) binyuze mu guhuza kwiga n’ibibazo byo mu buzima busanzwe n’uburambe bukorerwa hamwe.",
+    "brainstorm_text": "Uburyo bune bw’ibikorwa mu gikoresho kimwe: Ibikangura Ibitekerezo byihuse, Ibikoresho by’Ibiganiro bishobora gukoreshwa, ibikorwa by’ubufatanye bya Jigsaw, n’Igerageza rya Canvas rikorerwa hamwe. Hitamo uburyo hejuru y’igice.\n### Uburyo bw’Ibikoresho by’Ibiganiro\n• **Amahame y’Ibiganiro**: Tekereza-Fatanya-Sangiza (Think-Pair-Share), Ikiganiro cya Socratic, Fishbowl, cyangwa Urugendo rw’Imurika.\n• **Ibibazo Bizamuka**: Amatsinda y’ibibazo byoroshye, iby’isesengura, n’ibyo gusuzuma bivuye ku nkomoko yawe.\n• **Intangiriro z’Imvugo**: Interuro zifasha abanyeshuri kwemeranya, kutemeranya, gusobanura, no kubakira ku bitekerezo.\n• **Inyandiko za Mwarimu**: Igihe cyo kuyobora, imbogamizi zishoboka, n’ibyo kureba mu kwitabira (ku bwa mwarimu gusa).\n### Uburyo bwa Jigsaw\n• **Paki z’Inzobere**: Inkomoko igabanywamo ibice byuzuzanya, kimwe kuri buri tsinda ry’inzobere.\n• **Amakarita yo Kwigisha Abandi**: Ingingo z’ingenzi n’ibibazo by’isuzuma buri nzobere ikoresha yigisha itsinda ryayo rya mbere.\n• **Isuzuma ry’Inshingano**: Ibibazo bigufi by’ibisubizo byigenga bireba buri gice, hamwe n’urufunguzo rw’ibisubizo rwa mwarimu gusa.\n### Uburyo bw’Ibikangura Ibitekerezo\n• **Amabwiriza Wihariye**: Ongeraho ibice byihariye byo kwibandaho cyangwa imiterere y’ibitekerezo.\n• **Ibitekerezo by’Ibikorwa**: Ibikorwa 5-8 by’amaboko cyangwa bihuriweho n’amasomo menshi bihuza ibitekerezo by’ingenzi n’andi masomo cyangwa imyitozo ngororamubiri.\n### Gemini Canvas (Igikoresho Gikora Igerageza)\nKora ibigerageza bya Canvas bikorerwa hamwe hamwe no kunoza kwa AI intambwe ku ntambwe:\n• **Ubwoko bw’Igerageza**: Ibice bya React, amashusho ya Python, ibigerageza bya Fiziki, ama-chatbot wihitiyemo.\n• **Umuyoboro w’Umubare w’Intambwe** (1-10): Intambwe nyinshi = amabwiriza anoze cyane ku bushakashatsi bwimbitse.\n• **Buto yo Gukora Amabwiriza ya Canvas**: Ikora amabwiriza intambwe ku ntambwe yo gukoporora no gushyira muri Gemini Canvas.\n### Amakarita y’Ibitekerezo Yakozwe\nBuri gitekerezo kirimo:\n• **Umutwe & Ibisobanuro**: Incamake y’igikorwa shingiro.\n• **Umwanya w’Isano**: Uko gihuye n’ibikubiyemo byawe.\n• **Inyobora ya Mwarimu**: Kora amabwiriza intambwe ku ntambwe yo gushyira mu bikorwa kuri buri gitekerezo.\n• **Uburyo bwo Guhindura**: Hindura umwanya uwo ari wo wose nyuma yo gukorwa.\n### Inama y’Ubuhanga\nKoresha ubwoko bwa Porogaramu ya Web Ikorwa hamwe / Umukino (React) kugira ngo ukore ibikoresho byo kwitoza imibare — abanyeshuri bashyiramo imibare maze bakabona ibisubizo ako kanya!\n### Isano na UDL\n• **Kwitabira**: Kunoza akamaro, agaciro, n’ukuri (Guideline 7) binyuze mu guhuza kwiga n’ibibazo byo mu buzima busanzwe n’uburambe bukorerwa hamwe.",
     "persona_title": "Ikiganiro n'Umuntu",
     "persona_text": "Uburyo bw’Ikiganiro n’Umuntu (Persona) buha ubuzima ibikubiyemo binyuze mu biganiro byimbitse n’abantu. Baza abantu b’amateka, abantu bo mu nkuru z’impimbano, cyangwa inzobere zakozwe na AI mu burambe burimo imikino bwubaka impuhwe kandi bukongera imyumvire.\n### Uburyo bw’Ikiganiro\n• **Ikiganiro cya 1-on-1**: Ikiganiro cyimbitse n’umuntu umwe kugira ngo ushakishe byihariye.\n• **Ikiganiro Mpaka cy’Itsinda**: Hitamo abantu babiri ku mpaka n’ibitekerezo bitandukanye.\n• **Igisubizo Cyigenga vs Guhitamo Muri Byinshi**: Hinduranya hagati yo kwandika uko ubishaka cyangwa amahitamo y’ibibazo biyobowe.\n### Ibiranga Imikino\n• **Sisitemu ya XP**: Bona Interview XP ku bibazo byiza no kwitabira ufite ubushishozi.\n• **Imidari**: Fungura intsinzi nka *Umuhuza*, *Igitekerezo cya Mbere*, *Umwubatsi w’Umubano*, na *Inzobere mu Kuganira*.\n• **Amanota yo Kwitekerezaho**: Ohereza kwitekerezaho kwa nyuma kugira ngo ubone XP y’inyongera hamwe n’ibitekerezo bya AI.\n• **Inyongera y’Uburyo Bukomeye**: Andika ibibazo byawe bwite udafunguye ibimenyetso kugira ngo ubone XP yikubye kabiri.\n### Ijwi & Kugerwaho\n• **Gusoma Byikora**: Abantu bavuga ibisubizo byabo mu ijwi riranguruye bakoresheje Text-to-Speech.\n• **Kohereza Byikora**: Uburyo budakoresha intoki bwohereza ubutumwa bwawe bwikora nyuma yo guhagarara gato.\n• **Amabwiriza Wihariye**: Gena amateka, igihe, cyangwa urwego rw’ubumenyi rw’uwo muntu.\n### Inama y’Ubuhanga\n• Erekana Ikiganiro n’Umuntu ku kibaho maze ishuri ryose ritore ikibazo gikurikira cyo kubaza.\n### Isano na UDL\n• **Kwitabira**: Guteza imbere ubufatanye n’umuryango (Guideline 8) binyuze mu mikoranire yigana kwiga mu mibanire.",
     "timeline_title": "Umwubatsi w'Urutonde",
@@ -6119,7 +6119,7 @@
     "math_title": "Umukemuzi wa STEM",
     "math_text": "Umukemuzi w’Ibibazo bya STEM wuzuye urenga ibibazo by’amagambo gusa. Ufata amasomo 10 hamwe n’uburyo 8 bwo gukemura, ubufasha bw’ingero za LaTeX, n’amashusho afasha akorwa mu buryo bwikora.\n### Amahitamo y’Igice\n• **Isomo**: Hitamo mu masomo 10:\n  - Imibare Rusange, Alijebure, Jewometiri, Karikili\n  - Shimi, Fiziki, Biyoloji, Ubumenyi bw’Isi\n  - Ubumenyi bwa Mudasobwa, Ubukungu\n• **Uburyo bwo Gukemura**: Hitamo uburyo bwawe bwo kwigisha:\n  - **Igikoresho Gikora Imikoro**: Kora ibibazo byinshi byo kwitoza hamwe n’ibisubizo\n  - **Intambwe ku Ntambwe**: Ibisubizo birambuye hamwe n’ibisobanuro\n  - **Imyumvire Shingiro**: Ibande ku gusobanukirwa \"impamvu\" mbere ya \"uko bikorwa\"\n  - **Gushyira mu Bikorwa mu Buzima Busanzwe**: Ibihe nyabyo n’ingero z’ukuri\n  - **Isubiramo Rivanze**: Ubuhanga buvanze\n  - **Urwego rw’Uburemere**: Kuva ku byoroshye kugeza ku bikomeye\n  - **Ipimwa ry’Ubumenyi** na **Inzira y’Ubumenyi**: Imyitozo y’umuvuduko n’ukuri\n• **Umubare w’Ibibazo**: Hitamo umubare w’ibibazo byo gukora, kuva kuri 1 kugeza ku 10 (Imikoro, Isubiramo Rivanze n’Urwego rw’Uburemere)\n### Ibiranga Ibisohoka\n• **Ibibazo Bishingiye ku Mwandiko**: Ibibazo by’amagambo bikoresha abantu/insanganyamatsiko bivuye mu mwandiko wawe w’inkomoko\n• **Ibisubizo Byakozwe**: Ibisobanuro byuzuye intambwe ku ntambwe hamwe n’ubushishozi busobanutse\n• **Ingero za LaTeX**: Imyandikire myiza y’imibare igaragara mu murongo\n• **Amashusho Afasha**: Ibishushanyo n’imbonerahamwe za SVG zikorwa byikora ku bibazo bibikeneye\n### Ibindi biri muri iki gice\n• **Shakisha** ifungura ibikoresho n’ibigerageza bikorerwa hamwe bya STEAM Lab.\n• **Math Studio** yubaka amatsinda y’ibibazo n’amasuzuma y’imibare.\n• **Ongeramo Amashusho y’Amakuru**, **Ongeraho ibikoresho bifatika** na **Hindura ukurikije Inkomoko** bigena ibikorwa.\n### Inama y’Ubuhanga\nKoresha uburyo bwa \"Gushyira mu Bikorwa mu Buzima Busanzwe\" mu Bukungu cyangwa Ubumenyi bw’Isi kugira ngo ukore ibibazo bya STEM bihuriweho n’amasomo menshi!\n### Isano na UDL\n• **Imivugire**: Yubaka ubushobozi hamwe n’inzego z’inkunga zigenda zizamuka (Guideline 5.3) itanga uburyo bwinshi bwo gukemura kuva ku myumvire shingiro kugeza ku ngamba.",
     "adventure_title": "Uburyo bw'Ingendo",
-    "adventure_text": "Uburyo bw’Urugendo buhindura ibikubiyemo mo uburambe bwimbitse kandi bukorwa mu bufatanye. Hitamo mu buryo bwinshi bw’imyitozo yigana ukuri bufite imikino yimbitse kugira ngo kwiga bishimishe by’ukuri.\n### Uburyo bwo Kwinjiza Ibitekerezo\n• **Guhitamo Muri Byinshi**: Hitamo hagati y’amahitamo 2 kugeza kuri 6 yakozwe na AI kuri buri ntambwe, agenwa n’Amahitamo kuri buri cyemezo (6 bisanzwe).\n• **Uburyo bw’Impaka**: Emeza abantu bo mu nkuru ukoresheje ingingo zifatika — umuvuduko uhinduka ukurikije ubushishozi.\n• **Igerageza rya Sisitemu**: Genzura amatsinda, umutungo, n’ibyemezo bikomeye bya politiki.\n### Ubwoko bw’Igerageza\n• **Urugendo Rusanzwe**: Inkuru zisanzwe aho uhitamo inzira yawe igenda igabanyamo amashami.\n• **Inkuru Mbonezamubano (SEL)**: Ibikorwa birimo imbogamizi mbonezamubano n’iz’amarangamutima — ubucuti, ubufatanye, guhangana n’umujinya.\n• **Uburyo bw’Amahoro**: Bwibanda ku gushakashaka n’ibibazo by’ubwenge mu rugendo.\n### Ibiranga Imikino\n• **Sisitemu ya XP & Imbaraga**: Bona Adventure XP uko utera imbere; imbaraga zigabanuka iyo uhisemo ibirimo ingorane.\n• **Uburyo bw’Amahirwe ya D20**: Ibikorwa birimo ingorane bituma ujomba uruziga rwa D20 — byigisha amahirwe no gupima ingaruka.\n• **Inzego z’Uburemere**: Inkuru, Bisanzwe, Bikomeye na Bikomeye Cyane, munsi y’Imbaraga & ibihembo.\n• **Kuzamuka mu Nzego**: Zamuka urwego uko ugenda ubona Adventure XP.\n### Sisitemu y’Amatsinda & Umutungo\n• **Gukurikirana Umutungo**: Zahabu, Ubuzima, Umurava, cyangwa ibindi bipimo wihitiyemo bifite ingaruka nyazo.\n• **Uburyo bwa AI cyangwa ubw’Intoki**: Reka AI igenzure umutungo cyangwa wishyirireho imibare y’intangiriro.\n• **Ingaruka**: Ibikorwa bigabanya cyangwa byongera umutungo — hakenewe gutekereza neza mbere yo gukora!\n### Uburyo bwa Demokarasi (Ishuri Ryose)\n• **Itora ry’Ishuri**: Mu isomo rikorwa ako kanya, abanyeshuri batora banyuze ku bikoresho byabo inzira izakurikizwa.\n• **Ubushobozi bw’Itsinda**: Ubona umubare w’amajwi ya buri hitamo, hanyuma ugakomeza inkuru — byigisha gufata ibyemezo mu buryo bwa demokarasi.### Ibiranga Ibikorwa Bihuriweho\n• **Igisubizo Cyigenga**: Andika igikorwa icyo ari cyo cyose mu bwisanzure — AI ihita ihindura inkuru ikurikije udushya twawe.\n• **Uburyo Bwimbitse**: Igaragaza rya ecran yuzuye rimeze nka sinema ngo winjire mu nkuru byuzuye.\n• **Gusoma Byikora (TTS)**: Inkuru isomwa mu ijwi riranguruye mu buryo bwikora.\n• **Gusohora Igitabo cy’Inkuru**: Sohora ingendo zifite amashusho nka HTML hamwe n’amashusho y’ibice yakozwe na AI.\n### Inama y’Ubuhanga\nKoresha uburyo bw’Igerageza rya Sisitemu kugira ngo wigishe ubukungu, uburere mboneragihugu, cyangwa ibidukikije binyuze mu byemezo bifatika byo gucunga umutungo.\n### Isano na UDL\n• **Kwitabira**: Guteza imbere ubufatanye n’umuryango (Guideline 8) binyuze mu bihe byigana imibanire n’ibitekerezo by’ubwenge.",
+    "adventure_text": "Uburyo bw’Urugendo buhindura ibikubiyemo mo uburambe bwimbitse kandi bukorwa mu bufatanye. Hitamo mu buryo bwinshi bw’imyitozo yigana ukuri bufite imikino yimbitse kugira ngo kwiga bishimishe by’ukuri.\n### Uburyo bwo Kwinjiza Ibitekerezo\n• **Guhitamo Muri Byinshi**: Hitamo hagati y’amahitamo 2 kugeza kuri 6 yakozwe na AI kuri buri ntambwe, agenwa n’Amahitamo kuri buri cyemezo (6 bisanzwe).\n• **Uburyo bw’Impaka**: Emeza abantu bo mu nkuru ukoresheje ingingo zifatika — umuvuduko uhinduka ukurikije ubushishozi.\n• **Igerageza rya Sisitemu**: Genzura amatsinda, umutungo, n’ibyemezo bikomeye bya politiki.\n### Ubwoko bw’Igerageza\n• **Urugendo Rusanzwe**: Inkuru zisanzwe aho uhitamo inzira yawe igenda igabanyamo amashami.\n• **Inkuru Mbonezamubano (SEL)**: Ibikorwa birimo imbogamizi mbonezamubano n’iz’amarangamutima — ubucuti, ubufatanye, guhangana n’umujinya.\n• **Uburyo bw’Amahoro**: Bwibanda ku gushakashaka n’ibibazo by’ubwenge mu rugendo.\n### Ibiranga Imikino\n• **Sisitemu ya XP & Imbaraga**: Bona Adventure XP uko utera imbere; imbaraga zigabanuka iyo uhisemo ibirimo ingorane.\n• **Uburyo bw’Amahirwe ya D20**: Ibikorwa birimo ingorane bituma ujomba uruziga rwa D20 — byigisha amahirwe no gupima ingaruka.\n• **Inzego z’Uburemere**: Inkuru, Bisanzwe, Bikomeye na Bikomeye Cyane, munsi y’Imbaraga & ibihembo.\n• **Kuzamuka mu Nzego**: Zamuka urwego uko ugenda ubona Adventure XP.\n### Sisitemu y’Amatsinda & Umutungo\n• **Gukurikirana Umutungo**: Zahabu, Ubuzima, Umurava, cyangwa ibindi bipimo wihitiyemo bifite ingaruka nyazo.\n• **Uburyo bwa AI cyangwa ubw’Intoki**: Reka AI igenzure umutungo cyangwa wishyirireho imibare y’intangiriro.\n• **Ingaruka**: Ibikorwa bigabanya cyangwa byongera umutungo — hakenewe gutekereza neza mbere yo gukora!\n### Uburyo bwa Demokarasi (Ishuri Ryose)\n• **Itora ry’Ishuri**: Mu isomo rikorwa ako kanya, abanyeshuri batora banyuze ku bikoresho byabo inzira izakurikizwa.\n• **Ubushobozi bw’Itsinda**: Ubona umubare w’amajwi ya buri hitamo, hanyuma ugakomeza inkuru — byigisha gufata ibyemezo mu buryo bwa demokarasi.\n### Ibiranga Ibikorwa Bihuriweho\n• **Igisubizo Cyigenga**: Andika igikorwa icyo ari cyo cyose mu bwisanzure — AI ihita ihindura inkuru ikurikije udushya twawe.\n• **Uburyo Bwimbitse**: Igaragaza rya ecran yuzuye rimeze nka sinema ngo winjire mu nkuru byuzuye.\n• **Gusoma Byikora (TTS)**: Inkuru isomwa mu ijwi riranguruye mu buryo bwikora.\n• **Gusohora Igitabo cy’Inkuru**: Sohora ingendo zifite amashusho nka HTML hamwe n’amashusho y’ibice yakozwe na AI.\n### Inama y’Ubuhanga\nKoresha uburyo bw’Igerageza rya Sisitemu kugira ngo wigishe ubukungu, uburere mboneragihugu, cyangwa ibidukikije binyuze mu byemezo bifatika byo gucunga umutungo.\n### Isano na UDL\n• **Kwitabira**: Guteza imbere ubufatanye n’umuryango (Guideline 8) binyuze mu bihe byigana imibanire n’ibitekerezo by’ubwenge.",
     "alignment_title": "Raporo y'Imyumvire",
     "alignment_text": "Menya neza ko isomo ryawe rigera ku ntego. Iyi raporo ihuza mu buryo bwikora imfashanyigisho wakoze n’amahame ugamije hamwe na UDL Guidelines, ikerekana imbaraga n’ibyuho.\n### Umushakashatsi w’Amahame wa AI (muri Kora Inkomoko n’Umuyobozi wa AI)\n• **Ishakisha Ry’ubwenge**: Andika insanganyamatsiko cyangwa ubuhanga maze AI itange ibitekerezo by’amahame ya CCSS, NGSS, cyangwa TEKS ahuye.\n• **Inama za AI**: Bona inama z’uburyo ibikubiyemo byawe bisubiza amahame yihariye.\n• **Amahame Menshi**: Ishyigikira Common Core ELA/Math, NGSS, n’amahame yihariye y’intara cyangwa ibihugu.\n### Igenzura ry’Ihuza\n• **CAST UDL Guidelines**: Igenzura Kwitabira, Imigaragarire, n’Igikorwa/Imivugire.\n• **Igenzura ry’Amahame**: Gereranya n’amahame ugamije.\n• **Isesengura ry’Ibyuho**: Rimenya ibintu bibura cyangwa intege nke mu mfashanyigisho z’isomo ryawe.\n• **Ibitekerezo by’Inyunganizi**: Inama zifatika zo kunoza ihuza.\n### Inama y’Ubuhanga\n• Koresha Isesengura ry’Ibyuho kugira ngo usobanure impamvu ukeneye ibikoresho cyangwa igihe cyo gutegurira hamwe imbere y’ubuyobozi.\n### Isano na UDL\n• **Igikorwa & Imivugire**: Kongera ubushobozi bwo gukurikirana iterambere (Guideline 6.4) hashyirwaho intego zisobanutse n’ibipimo by’intsinzi.",
     "lesson_plan_title": "Gahunda y'Isomo",
@@ -6131,19 +6131,19 @@
     "dashboard_title": "Uko umunyeshuri abibona n’imbonerahamwe",
     "dashboard_text": "### Uko umunyeshuri abibona\nReba ibyo abanyeshuri babona. Igenamiterere rya mwarimu gusa, ibikoresho byo gutanga amanota n’ibigenzura isomo biba bihishe. Koresha buto imwe kugira ngo usubire inyuma.\n### Imbonerahamwe ya Mwarimu\nSuzuma imirimo y’abanyeshuri: injiza dosiye z’imirimo abanyeshuri babitse, reba incamake y’ishuri n’ibikorwa bya buri munyeshuri n’amanota y’ibizamini, kurikirana incamake z’iterambere n’ibimenyetso by’umutekano, kandi usohore amakuru nka mbonerahamwe (CSV).\n### Inama y’Ubuhanga\nSaba abanyeshuri kubika dosiye y’imirimo yabo ku musozo w’isomo, hanyuma winjize dosiye zose icyarimwe.",
     "actions_title": "Umurongo w'Ibikorwa",
-    "actions_text": "Koresha ibigenzura biri hejuru kugira ngo uhitemo ururimi rw'imigaragarire, ucunge amasomo abera igihe nyacyo, uhindure ibikoresho, kandi ufungure ibikoresho byo kohereza.\n### Genzura mbere yo gutanga\n• Reba icyo bisobanura n'ukuri kw'ibikubiye mu byahinduwe.\n• Fungura Umwubatsi w'Inyandiko kugira ngo urebe ibikoresho byatoranyijwe n'uburyo bwo gukuramo buhari. Reba igisubizo mbere yo kugisangiza abanyeshuri.\n• Tangira isomo ribera igihe nyacyo kugira ngo ubone kode yo kwinjira, cyangwa ukore isangira ry'umukoro wo mu rugo ryemewe ku kazi ko kwigira.\n### Komeza gushakashaka\nAmamenu y'ibikoresho by'Umwarimu n'ibyo Kwiga afungura ibindi bikorwa byo gutegura, gusuzuma, guhanga no kugirana ibiganiro. Uburyo Buyobora bugufasha kubaka isomo ryibanze mbere yo gushakashaka ayo mahitamo.",
+    "actions_text": "Koresha umurongo wo hejuru kugira ngo uhindure indimi, utangize ibikorwa bitaziguye, ufungure ibigo bikuru by'imirimo, kandi wohereze amasomo yarangiye.\n### Gutanga no gusangiza\n• **Muhanga w'Inyandiko no Kohereza**: Huza ibikoresho wahisemo, suzuma uburyo bigerwaho n'ubusemuzi, kandi urebe mbere yo gukuramo cyangwa gusohora ku rupapuro.\n• **Amasomo ataziguye n'Amahuza y'Umukoro**: Tangiza kode yo kwinjira ako kanya ku bibazo, amatora, cyangwa ibyumba byo gusohokamo, cyangwa usangize ihuza ry'umukoro wikora.\n• **Semura**: Semura ibikoresho byakozwe ku miryango n'abanyeshuri bavuga indimi nyinshi, hanyuma usuzume ubusobanuro n'imvugo.\n### Shakisha urubuga rwose\n• **Ikigo cy'Abarimu**: Uburyo bwo kubona PDF mu kivunge, abafasha ba IEP/MTSS n'ibipimo by'amanota, itumanaho n'imiryango, n'ibikoresho by'ubuyobozi.\n• **Ibikoresho by'Imyigire na Laboratwari ya STEAM**: Ibikoresho birenga ijana byo gukorana mu mibare, siyansi, gusoma no kwandika, SEL, n'Isomero ryo Gusoma byiteguye kwitoza.",
     "history_title": "Amateka y'Igikorwa",
     "history_text": "Amateka afata ibikoresho biri mu mwanya wawe w'akazi ugezweho. Fungura ikintu wabitse kugira ngo ukirebere cyangwa usubire ku gisubizo cya mbere.\n### Bika kopi y'ubwizigame\n• Bika kopi y'ubwizigame y'umushinga kugira ngo ukomereze ku kindi gikoresho cyangwa ugarure akazi kawe nyuma. Uburyo Buyobora bunerekana niba iterambere ryabitswe kuri iki gikoresho.\n• Umwanya w'akazi ushobora kuba urimo ibikoresho by'amasomo menshi. Reba ibikoresho byatoranyijwe mbere yo kohereza cyangwa gusangira.\n### Ipaki z'amasomo ayobowe\nFungura Umwubatsi w'Inyandiko uhereye mu Buryo Buyobora kugira ngo ukoreshe ibikoresho byatoranyijwe by'iryo somo. Umwubatsi rusange ashobora gukoresha umwanya w'akazi wagutse, bityo reba ibirimo mbere yo gutanga.",
     "spotlight_title": "Itara",
     "spotlight_message": "Tanga muraho {name}!",
     "dbq_title": "Ibibazo Bishingiye ku Nyandiko",
-    "dbq_text": "Ibibazo Bishingiye ku Nyandiko (Document-Based Questions): abanyeshuri basesengura inkomoko z’ibanze, bubaka impaka zishingiye ku bimenyetso, kandi bitoza ubuhanga shingiro bw’amasuzuma y’ubumenyi bw’imibereho + ELA. Ikora inyandiko z’inkomoko, ibibazo bifite inkunga, n’ibipimo by’amanota bihuye n’amahame yawe.",
+    "dbq_text": "Kora paki yuzuye y'**Ibibazo bishingiye ku nyandiko (DBQ)** kugira ngo abanyeshuri bitoze gusesengura amasoko no kubaka ingingo zishingiye ku bimenyetso mu Bumenyi bw'Imibereho n'Ururimi (ELA).\n### Ibikorwa\n• **Inyandiko fatizo zatoranyijwe**: Ibice bigufi by'amasoko y'ibanze n'ayungirije bihuye n'insanganyamatsiko n'ikiciro cyawe.\n• **Ibibazo biyobora bifite ubufasha**: Ibibazo kuri buri nyandiko bijyana abanyeshuri kuva ku kumenya isoko no gusobanukirwa kugera ku kugereranya ibimenyetso.\n• **Ikibazo cy'umwandiko n'igipimo cy'amanota**: Ikibazo gisesengura muri rusange gifite ibipimo bihuye n'amahame wahisemo.\n### Inama ya UDL\nHuza DBQ yawe n'**Ubufasha bwo Kwandika** (imiterere y'interuro) cyangwa **Inkoranyamagambo y'Ubwenge** kugira ngo abanyeshuri bavuga indimi nyinshi n'abanditsi bakizamuka batangaze ibimenyetso bafite icyizere.",
     "quiz_mode_title": "Hitamo quiz uburyo ikwiye",
-    "quiz_mode_text": "Hitamo icyo iki kizamini kigamije. Itike yo Gusohoka igenzura iby’uyu munsi. Isuzuma ry’Ibanze risuzuma ubumenyi bwari busanzwe mbere yo kwigisha kandi rikagaragaza ibyuho nk’amakarita y’ibitekerezo afite buto ya \"Sobanurira ishuri\" itegura ibisobanuro bigufi bya AI byo gusoma mu ijwi riranguruye cyangwa gukoporora. Isuzuma ryo Hagati ni igenzura ryihuse hagati mu isomo. Isubiramo Rinyuranyijemo Igihe rikurikirana ibyo buri munyeshuri yibuka mu masomo atandukanye hamwe n’utudomo tw’amabara ku gerageza riheruka rya buri munyeshuri. Buri buryo butunganya amabwiriza, uruvange rw’ubwoko bw’ibibazo, n’imiterere y’imbonerahamwe y’isomo rikorwa ako kanya.",
+    "quiz_mode_text": "Banza uhitemo **intego y'isuzuma** kugira ngo AlloFlow ihite itunganya uburyo bw'ibibazo, uruvange rw'ubukomere, n'amashusho ataziguye mu ishuri.\n### Uburyo butanu bw'ibibazo\n• **Itike yo Gusohoka**: Isuzuma ryihuse ku musozo w'isomo ku ntego shingiro y'uyu munsi.\n• **Isuzuma ry'Ibanze (Kwitegura)**: Rigenzura ubumenyi bwa mbere yo kwigisha kandi rikagaragaza imyumvire itari yo nk'amakarita y'ibitekerezo afite incamake ya AI mu gukanda rimwe («Sobanurira ishuri»).\n• **Isuzuma ry'Iterambere**: Isuzuma ryoroshye hagati mu isomo riyobora gusubiramo ako kanya.\n• **Isubiramo Rihana Intera**: Rikurikirana uko buri munyeshuri yibuka hagati y'amasomo ukoresheje utudomo tw'amabara tw'iterambere.\n• **Itora ry'Ijwi ry'Abanyeshuri**: Rikusanya ako kanya ibitekerezo by'abanyeshuri, isuzuma ry'icyizere, n'ibitekerezo byo mu ishuri.\n### Ibipimo by'igihe n'ubujyakuzimu\nHuza uburyo ubwo ari bwo bwose na **Gahunda yasabwe**, **Kwibuka kwihuse kw'iminota 2**, **Ibisobanuro bigufi by'iminota 5**, cyangwa **Gusesengura kwimbitse**.",
     "anchor_chart_title": "Ibishushanyo mbonera",
     "anchor_chart_text": "Ikora ibibaho by'urufatiro byiteguye ku ishuri, bituma ibitekerezo, amagambo n'uburyo bikomeza kwibukwa. Icyitegererezo kigaragara abanyeshuri bashobora kugarukaho mu gice cyose cy'isomo.\n### Amahitamo y'agace\n- **Ubwoko bw'ikibaho**: Koresha Byikora cyangwa uhitemo Icyitegererezo, Uburyo, Ikarita y'Ibitekerezo, Ugereranya, Ingamba, Amagambo, Uburyo busanzwe, Urugero Rwakemuwe, Ibipimo by'Intsinzi, Ibitekerezo Bitari byo, cyangwa Ubuyobozi bw'Ibibazo.\n### Ibigize ikibaho\n- **Umurongo w'umutwe**: Umutwe w'ingingo ukurura amaso.\n- **Uko bigaragara**: Imitwe mito, uduce n'utubati twerekanwa byashyizwe ku buryo bisomwa vuba.\n- **Ibimenyetso**: Ibimenyetso byikora, bishimangira buri gitekerezo hifashishijwe ibimenyetso bigaragara bifite kode ebyiri.\n### Ibigenzurwa n'umwarimu\n- **Uburyo bwo guhindura**: Andika umwandiko bundi bushya, hindura urutonde rw'ibice, ongeraho cyangwa ukureho ibice, kandi ukore ibimenyetso bundi bushya.\n- **Uburyo bwo kuganira**: Inzira idahatirwa aho abanyeshuri buzuza ubwabo bakabona igisubizo, igihe ubishaka.\n- **Byiteguye gucapwa**: Manura PNG cyangwa ubicape nk'ikimenyetso cyo ku rukuta cyangwa nk'urupapuro rutangwa.\n### Inama\n- Koresha Ibitekerezo Bitari byo mbere y'isomo ryo gusubiramo, n'Ibipimo by'Intsinzi mbere y'umurimo wo kwandika.\n### Isano na UDL\n- **Kwerekana**: Kangura cyangwa utange ubumenyi bwabanje (Umurongo ngenderwaho 3.1) ukoresheje ibimenyetso bigaragara bihoraho abanyeshuri bashobora kongera kureba ubwabo.",
     "note_taking_title": "Inyandiko zandika ibyiciro",
-    "note_taking_text": "Imbonerahamwe zifasha Gufata Inyandiko zigisha abanyeshuri *uko* bafata inyandiko, atari *ibyo* bandika gusa. Hitamo imiterere ihuye n’igikorwa cy’ubwenge.\n### Ubwoko bw’Imbonerahamwe\n• **Inyandiko za Cornell**: Imiterere isanzwe y’inkingi ebyiri ifite ibimenyetso, inyandiko, n’incamake hasi.\n• **Raporo ya Laboratwari**: Ikibazo, igitekerezo fatizo, uburyo, amakuru, ingingo-ikimenyetso-impamvu n’umwanzuro.\n• **Igisubizo cyo Gusoma**: Inyandiko irimo umurongo ukunzwe, ibitekerezo by’umunyeshuri, isano n’ikibazo.\n• **Igazeti y’Inkingi Ebyiri**: Amagambo avuye mu mwandiko iruhande rw’igisubizo cy’umunyeshuri.\n• **Inyandiko Ziyobowe**: Interuro zo kuzuza ahari ubusa zisize ijambo rimwe ry’ingenzi.\n• **Inyandiko zo Kwiga za Q&A**: Ibibazo n’ibisubizo byo kwisuzuma.\n### Ibiranga Ikorwa\n• **Amabwiriza Yujujwe Mbere**: Buri mbonerahamwe ifite ibimenyetso bivuye mu mwandiko wawe w’inkomoko.• **Amabwiriza Wihariye**: Ibande ku gikorwa cyihariye cy’ubwenge (guhuzahuza, incamake, isuzuma).\n### Gucapa & Ikoranabuhanga\n• **PDF Icapwa**: Imiterere isukuye y’urupapuro ifite umwanya uhagije wo kwandikamo.\n• **Yuzuzwa kuri Mudasobwa**: Abanyeshuri bandika ako kanya mu mbonerahamwe nta rupapuro rukenewe.### Inama y’Ubuhanga\n• Huza *Inyandiko za Cornell* na **Umwandiko Wahujwe**: abanyeshuri bafata inyandiko ku rwego rwabo rwo gusoma, hanyuma bagakoresha agasanduku k’incamake hasi nk’isuzuma ry’iterambere.\n### Isano na UDL\n• **Igikorwa & Imivugire**: Gushyigikira itegura n’iterambere ry’ingamba (Guideline 6.2) binyuze mu guha abiga inzego zisobanutse zo gutunganya amakuru.",
+    "note_taking_text": "Imbonerahamwe zifasha Gufata Inyandiko zigisha abanyeshuri *uko* bafata inyandiko, atari *ibyo* bandika gusa. Hitamo imiterere ihuye n’igikorwa cy’ubwenge.\n### Ubwoko bw’Imbonerahamwe\n• **Inyandiko za Cornell**: Imiterere isanzwe y’inkingi ebyiri ifite ibimenyetso, inyandiko, n’incamake hasi.\n• **Raporo ya Laboratwari**: Ikibazo, igitekerezo fatizo, uburyo, amakuru, ingingo-ikimenyetso-impamvu n’umwanzuro.\n• **Igisubizo cyo Gusoma**: Inyandiko irimo umurongo ukunzwe, ibitekerezo by’umunyeshuri, isano n’ikibazo.\n• **Igazeti y’Inkingi Ebyiri**: Amagambo avuye mu mwandiko iruhande rw’igisubizo cy’umunyeshuri.\n• **Inyandiko Ziyobowe**: Interuro zo kuzuza ahari ubusa zisize ijambo rimwe ry’ingenzi.\n• **Inyandiko zo Kwiga za Q&A**: Ibibazo n’ibisubizo byo kwisuzuma.\n### Ibiranga Ikorwa\n• **Amabwiriza Yujujwe Mbere**: Buri mbonerahamwe ifite ibimenyetso bivuye mu mwandiko wawe w’inkomoko.\n• **Amabwiriza Wihariye**: Ibande ku gikorwa cyihariye cy’ubwenge (guhuzahuza, incamake, isuzuma).\n### Gucapa & Ikoranabuhanga\n• **PDF Icapwa**: Imiterere isukuye y’urupapuro ifite umwanya uhagije wo kwandikamo.\n• **Yuzuzwa kuri Mudasobwa**: Abanyeshuri bandika ako kanya mu mbonerahamwe nta rupapuro rukenewe.\n### Inama y’Ubuhanga\n• Huza *Inyandiko za Cornell* na **Umwandiko Wahujwe**: abanyeshuri bafata inyandiko ku rwego rwabo rwo gusoma, hanyuma bagakoresha agasanduku k’incamake hasi nk’isuzuma ry’iterambere.\n### Isano na UDL\n• **Igikorwa & Imivugire**: Gushyigikira itegura n’iterambere ry’ingamba (Guideline 6.2) binyuze mu guha abiga inzego zisobanutse zo gutunganya amakuru.",
     "upload_accessibility_title": "Gira inyandiko yose iboneke kuri bose",
     "upload_accessibility_text": "Shyiramo dosiye ya PDF, Word cyangwa PowerPoint kugira ngo ugenzure inzitizi z'ikoreshwa. Make Accessible ikora intambwe zo kugenzura no gukosora zihari; suzuma ibisubizo, ibibazo bitarakemuka, n'inyandiko wasohoye mbere yo kuyisangiza abandi. Imiterere y'ibisubizo iboneka iterwa n'inkomoko n'uburyo bwo gutunganya wahisemo. Ibikoresho byo gutunganya dosiye nyinshi icyarimwe na byo biboneka muri Educator Hub.",
     "udl_guide_title": "Wubake isomo uvuga",
@@ -19480,7 +19480,7 @@
     "summary_readings": "Ibisomwa",
     "summary_adventures": "Ingendo",
     "summary_scaffolds": "Inkunga z'inyigisho",
-    "about": "Iby'AlloFlow v1.0",
+    "about": "Ibyerekeye AlloFlow",
     "hints": "Inama Zifasha",
     "xp_history": "Amateka ya XP & Iterambere rya Urwego",
     "summary_details": {
@@ -22918,8 +22918,7 @@
     "reading_tools_close": "Funga Ibikoresho byo gusoma"
   },
   "about": {
-    "title": "Iby'AlloFlow v1.0",
-    "tab_about": "Iby'UDL",
+    "title": "Ibyerekeye AlloFlow",
     "tab_features": "Ubuyobozi bw'Ibikorwa",
     "approach_header": "Inzira ya AlloFlow",
     "allo_acronym_label": "ALLO:",
@@ -22929,343 +22928,13 @@
     "what_is_udl": "UDL ni iki?",
     "udl_definition": "Universal Design for Learning (UDL) ni urwego rwo kunoza no guteza imbere kwigisha no kwiga ku bantu bose, rushingiye ku bumenyi bwa siyansi ku buryo abantu biga.",
     "how_help_header": "Iki gikoresho gifasha gute?",
-    "how_help_desc": "Iki gikoresho gikoresha AI ku gukora ako kanya inzira zitandukanye zo kwinjira mu mabwiriza yawe, byemeza ko uvuga amahame atatu nyamukuru ya UDL:",
-    "rep_title": "Ubuhagarariye:",
-    "rep_desc": "Gutanga amakuru mu buryo butandukanye (urugero, Umwandiko Wahinduwe, Inkunga z'Amashusho, Inkoranyamagambo).",
-    "action_title": "Igikorwa & Ubwigaragazo:",
-    "action_desc": "Gutanga amahitamo ku banyeshuri yo kwerekana ibyo bazi (urugero: Scaffolds, Quizzes).",
-    "engage_title": "Kwitabira:",
-    "engage_desc": "Gukora ku byo bakunda ku gushishikariza no kubaha imbaraga (urugero: Interest-bishingiye analogies).",
-    "ai_guide_tip": "Koresha buto ya \"AI UDL & Alignment Guide\" iri mu ruhande rw'urupapuro (sidebar) kugira ngo uganire n'ubwenge bw'inzobere mu myigishirize ku nama z'ingamba zihariye.",
     "cast_link_text": "Reba Amabwiriza Yuzuye ya UDL (CAST.org)",
     "reset_wizard": "Subiza Umufasha wo Gutangira Vuba",
     "support_kofi": "Shyigikira kuri Ko-fi",
-    "features_list": {
-      "categories": {
-        "creation": "Tegura & Kora",
-        "activities": "Witabire & Kina",
-        "assessment": "Suzuma & Shyigikira",
-        "platform": "Cunga & Huza"
-      },
-      "items": [
-        {
-          "title": "Sesengura Inkomoko",
-          "icon": "Shakisha",
-          "desc": "Kura urwego rwo gusoma, ibitekerezo by'ingenzi, n'igenzura ry'ukuri kuva mu nyandiko iyo ari yo yose y'inkomoko.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Leveled Text",
-          "icon": "BookOpen",
-          "desc": "Hindura ubukomatanye bw'inyandiko kuva mu mashuri y'incuke kugeza kuri kaminuza, hamwe n'ibyerekanwa mu ndimi nyinshi ruhande ku rundi.",
-          "category": "creation",
-          "color": "indigo"
-        },
-        {
-          "title": "Gahunda y'Isomo",
-          "icon": "ClipboardList",
-          "desc": "Huriza hamwe umutungo wose muri gahunda y'isomo cyangwa igitabo cyo kwiga bihuje n'amahame.",
-          "category": "creation",
-          "color": "violet"
-        },
-        {
-          "title": "Visual Organizer",
-          "icon": "Layout",
-          "desc": "Kora ibishushanyo by'imigendekere, amakarita ya Venn, n'incamake zubatse.",
-          "category": "creation",
-          "color": "cyan"
-        },
-        {
-          "title": "Bonera",
-          "icon": "Lightbulb",
-          "desc": "Kora ibitekerezo by'ibikorwa byifite intoki n'isano y'isi nyayo.",
-          "category": "creation",
-          "color": "yellow"
-        },
-        {
-          "title": "FAQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Tekereza ibitekerezo bibi by'umunyeshuri hamwe na Q&A lists zakozwe byikora.",
-          "category": "creation",
-          "color": "teal"
-        },
-        {
-          "title": "Interview Mode",
-          "icon": "Amateka",
-          "desc": "Ganira n'abakinnyi b'amateka, ab'igihimbano, cyangwa experts. Bona ibanga byihishe.",
-          "category": "activities",
-          "color": "amber"
-        },
-        {
-          "title": "Adventure Mode",
-          "icon": "MapIcon",
-          "desc": "Igikorwa cyo kwigana kigirana imikoranire 'Hitamo Urugendo Rwawe' n'ingero z'imikinire y'uruhare.",
-          "category": "activities",
-          "color": "purple"
-        },
-        {
-          "title": "Game Arcade",
-          "icon": "Gamepad2",
-          "desc": "Kora byikora imikino ya Bingo, Guhuza mu Kwibuka, Gushakisha Amagambo, n'Amagambo Yambukiranya.",
-          "category": "activities",
-          "color": "pink"
-        },
-        {
-          "title": "Sequence Builder",
-          "icon": "ListOrdered",
-          "desc": "Igikorwa cyo gukurura no gushyira ku murongo w'igihe ku byabaye bikurikirana mu gihe cyangwa intambwe z'inzira.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "Concept Sort",
-          "icon": "Yungurura",
-          "desc": "Tondeka imvugo n'ibitekerezo mu byiciro. Byiza ku gutandukanya ibitekerezo bisa.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Umwarimu wa Sokrate",
-          "icon": "MessageCircleQuestion",
-          "desc": "AI guide ibaza ibibazo biyobora aho gutanga ibisubizo.",
-          "category": "activities",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Itike yo Gusohoka",
-          "icon": "CheckSquare",
-          "desc": "Kora ibibazo by'isuzuma. Tangiza uburyo bwa 'Live Quiz' ku bivamo by'ishuri ku gihe nyacyo.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "Writing Scaffolds",
-          "icon": "Quote",
-          "desc": "Intangiriro z'interuro n'inyubako z'ibika hamwe n'ibipimo by'isuzuma byinjijwemo.",
-          "category": "assessment",
-          "color": "orange"
-        },
-        {
-          "title": "Inkunga y'Amashusho",
-          "icon": "ImageIcon",
-          "desc": "Ibishushanyo n'amashusho byakozwe na AI. Koresha guhindura ishusho kugira ngo uyinoze cyangwa ukureho inyandiko.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Math & STEM",
-          "icon": "Calculatrice",
-          "desc": "Ibisubizo by'intambwe ku yindi, gukora ibishushanyo by'imibare, n'ibibazo bisa byo kwitoza.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Igenzura ry'Umurongo",
-          "icon": "ShieldCheck",
-          "desc": "Suzuma uko bihuye n'amahame y'uburezi wahisemo kandi ugaragaze ibyuho bishoboka mu bukomezi kugira ngo umwarimu abifateho icyemezo.",
-          "category": "assessment",
-          "color": "slate"
-        },
-        {
-          "title": "Oral Fluency",
-          "icon": "Mic",
-          "desc": "Tega amatwi abanyeshuri basoma mu ijwi rirenga kandi ubare WCPM n'ubunoze.",
-          "category": "assessment",
-          "color": "rose"
-        },
-        {
-          "title": "Imbonerahamwe y'umwarimu",
-          "icon": "Layout",
-          "desc": "Kurikirana iterambere ry'umunyeshuri, reba isesengura, kandi usohore ibitabo by'amanota.",
-          "category": "platform",
-          "color": "indigo"
-        },
-        {
-          "title": "Live Sessions",
-          "icon": "Wifi",
-          "desc": "Tegura amasomo yihujwe, kora amatora y'Uburyo bwa Demokarasi, kandi uyobore ibibazo bikorwa ako kanya.",
-          "category": "platform",
-          "color": "rose"
-        },
-        {
-          "title": "Imishinga y'Abanyeshuri",
-          "icon": "Users",
-          "desc": "Bika igenamiterere ry'itandukanya (Ururimi, Ibyo Bakunda) ku matsinda atandukanye.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Accessibility",
-          "icon": "Ear",
-          "desc": "Umusomyi Wimbitse, Kwibanda ku Murongo, Kwandika ku Ijwi, n'ibikoresho byo guhindura inyandiko amajwi.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "Export Suite",
-          "icon": "Manura",
-          "desc": "Sohora muri PDF, PowerPoint, Canvas QTI, paki za HTML, cyangwa Braille (.brf).",
-          "category": "platform",
-          "color": "blue"
-        },
-        {
-          "title": "Gemini Bridge",
-          "icon": "Terminal",
-          "desc": "Kora ingingo zo kubaka porogaramu zihariye zigirana imikoranire muri Gemini Canvas.",
-          "category": "platform",
-          "color": "slate"
-        },
-        {
-          "title": "Smart Glossary",
-          "icon": "BookOpen",
-          "desc": "Amakarita y'amagambo y'amashusho afite amajwi, ibihindurwa mu ndimi ebyiri, n'imikino 5 y'amagambo (amagambo yambukiranya, bingo, guhuza mu kwibuka, gushakisha amagambo, kuvanga inyuguti).",
-          "category": "creation",
-          "color": "purple"
-        },
-        {
-          "title": "Immersive Reader",
-          "icon": "Ear",
-          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Word Sounds Studio",
-          "icon": "Mic",
-          "desc": "Kwitoza kumenya amajwi y'amagambo mu bwoko 8 bw'ibikorwa — kuvanga, gutandukanya, guhuza amajwi asa, guhuza amajwi n'inyuguti, gutandukanya ijwi rimwe, imyandikire, imiryango y'amagambo, na Reba & Andika.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "StoryForge",
-          "icon": "Quote",
-          "desc": "Kwandika kw'ubuhanzi kunyuze mu byiciro bitandatu bifasha, hamwe n'ibishushanyo bya AI, gusoma ku majwi, ibipimo by'isuzuma byihariye, n'inkunga y'indimi 18.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "AlloBot",
-          "icon": "Sparkles",
-          "desc": "Umwarimu wa AI n'umuyobozi w'urubuga uboneka igihe cyose. Asubiza ibibazo by'ibikubiyemo, akuyobora muri AlloFlow, kandi agena igenamiterere byikora iyo abisabwe.",
-          "category": "activities",
-          "color": "indigo"
-        },
-        {
-          "title": "Icyumba cy'Ibanga",
-          "icon": "MapIcon",
-          "desc": "Imikino y'ibisubizo by'amatsinda yubakiye ku bikubiyemo by'isomo ryawe. Inama zigenzurwa n'umwarimu, gukurikirana igihe cyo gusohoka, ibyumba bifite ibyiciro byinshi.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Ihuriro SEL",
-          "icon": "Umutima",
-          "desc": "Ikusanyirizo ry'ibikoresho byo kwiga ku mibanire n'amarangamutima rihora rivugururwa, rikubiyemo ubushobozi bwa CASEL no hanze yabwo — amakarita yo kwihanganira, uruziga rwo gusana umubano, kwitoza kwivugira, kwitoza ubumenyi, n'ibindi.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "BehaviorLens",
-          "icon": "ShieldCheck",
-          "desc": "Ibikoresho bya FBA/BIP: gukusanya amakuru ya ABC, gukurikirana inshuro/intera, kubara IOA (uburyo 6), isuzuma ry'ibyo umuntu akunda, n'inyandikorugero z'ubutabazi.",
-          "category": "assessment",
-          "color": "indigo"
-        },
-        {
-          "title": "Raporo Writer",
-          "icon": "ClipboardList",
-          "desc": "Umufasha w'intambwe 10 ku raporo z'imitekerereze n'uburezi: ibipimo 17 by'isuzuma byateguwe, kugenzura ibice by'ukuri, gutegura inyandiko mu buryo butatu, no gusuzuma ubunoze incuro ebyiri.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Dynamic isuzuma",
-          "icon": "Yungurura",
-          "desc": "Ibibazo byo gusuzuma-kwigisha-gusubiramo bya Vygotsky/Feuerstein/Lidz bifite ingazi z'ubufasha 4, gupima ubushobozi bwo guhinduka, no gukora intego za IEP + ibyorohereza.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Isesengura ry'Umunyeshuri",
-          "icon": "Layout",
-          "desc": "Gutondeka RTI Urwego 1/2/3 byikora hamwe no gukurikirana umurongo w'intego, amateka y'ibipimo bya CBM, kugaragaza ibidasanzwe, na raporo z'isuzuma ry'ishuri.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "PDF Kugerwaho",
-          "icon": "Manura",
-          "desc": "Suzuma kandi ukosore PDF cyangwa inyandiko ukoresheje igenzura ry'inshuro nyinshi, kureba itandukaniro, axe-core, no gusohora PDF/HTML/amajwi bifite ibirango; isuzuma ry'abantu rigumaho nk'igice cy'imikorere.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Studio y'Ibimenyetso",
-          "icon": "ImageIcon",
-          "desc": "Urubuga rwuzuye rwa AAC: ibimenyetso bya PCS byakozwe na AI, kubaka ibibaho, gahunda zo kureba, inkuru z'imibanire, imikino ya Symbol Quest, no gukurikirana amagambo muri Word Garden.",
-          "category": "platform",
-          "color": "fuchsia"
-        },
-        {
-          "title": "STEM Lab",
-          "icon": "Ibice",
-          "desc": "Ikusanyirizo ry'ibikoresho byo muri mushakisha bigirana imikoranire mu mibare, siyansi, mudasobwa, ubwubatsi, ubumenyi bwo kubaho/CTE, n'ubugeni — kuva ku bushakashatsi bwa ADN kugeza ku bibuga by'imikino ya fiziki.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "DBQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Ibibazo bishingiye ku nyandiko byo gusesengura inkomoko — ibisabwa byo ku nzego za DOK hamwe n'ubufasha bwo kugaragaza inkomoko/ingingo/kwemeza + ibipimo by'isuzuma.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "Note Taking Templates",
-          "icon": "ListOrdered",
-          "desc": "Inyandiko za Cornell, kugereranya mu nkingi ebyiri, ibisabwa byo gushushanya inyandiko, amakarita y'ibitekerezo, n'ubufasha bwo gukora incamake — byujujwe cyangwa ari ubusa.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Ibishushanyo mbonera",
-          "icon": "Layout",
-          "desc": "Amakarita nyamukuru yacapwa nk'ibyapa byo mu ishuri afite ibishushanyo, ibice by'amabara, amashusho ya AI, n'inzego z'ubukomatanye zitandukanye.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "Annotation Suite",
-          "icon": "Quote",
-          "desc": "Shyira inyandiko z'ibisobanuro hejuru y'umutungo uwo ari wo wose wa AlloFlow — gushyira akarango k'urumuri, udupapuro tw'inyandiko, inyandiko z'amajwi, ibishushanyo — hamwe n'ibice by'amabara na PDF zishobora gusohorwa.",
-          "category": "activities",
-          "color": "purple"
-        },
-        null,
-        {
-          "title": "inyandiko Hub"
-        },
-        null,
-        null,
-        null,
-        {
-          "icon": "Shakisha"
-        },
-        null,
-        null,
-        null,
-        {
-          "title": "Katalogi y'Umuryango"
-        }
-      ]
-    },
     "tab_privacy": "Ibanga",
     "tab_atlas": "Atlas",
     "tab_opensource": "Isoko Ifunguye (Open Source)",
     "atlas_title": "Atlas ya AlloFlow",
-    "atlas_intro": "Ikarita iteguye hubs n’imbuga zo gutangiriraho bya AlloFlow byashyizwe muri katalogi. Hitamo akarere kugira ngo ubone ubuyobozi bwako, ibice, ibyinjizwa bishakishwa n’inyandiko z’amasoko.",
-    "atlas_footer": "Ibice bishingiye ku gitabo byubakwa kuri katalogi z’ubu; ibice byatoranyijwe n’ibivanze byerekanwa ku ikarita. Imibare ni ibyinjizwa bishakishwa, si umubare w’ibikoresho byihariye. Igenzura ryikora ry’ubushya ryerekana itandukaniro ry’amakuru.",
     "privacy_title": "Ibanga n’amakuru y’abanyeshuri",
     "privacy_intro": "AlloFlow yagenewe gukoreshwa mu ishuri ryita ku ibanga. Aho amakuru abikwa biterwa n’ububiko, itwarwa ry’isomo n’utanga AI wahisemo; iyi karita ifasha ishuri gusuzuma inzira yose.",
     "privacy_footer": "Iyi ni incamake y’ibicuruzwa mu rurimi rworoshye, si inama y’amategeko cyangwa icyemezo cy’ubwumvikane. Ikigo cyawe kiracyashinzwe FERPA, ibanga, amasezerano, igenamiterere, ukwemera, kubika no gusiba.",
@@ -23275,12 +22944,622 @@
     "oss_credits_intro": "AlloFlow ni ubuntu kandi ni Open Source (AGPL-3.0), yubatswe ku mirimo myiza y'imishinga iri hepfo. Turashimira abanditsi n'imiryango yabo. Imishinga yagaragajwe mbere ni iyo ushobora gusuzuma ako kanya imbere muri AlloFlow.",
     "oss_featured_header": "Ibikoresho byo kwiga duhuza",
     "oss_full_list_header": "Amasomero n’ibikoresho bifunguye duhuza",
-    "oss_credits_footer": "Imikorere ya AI yakiriwe ikoresha utanga serivisi washyizwe mu igenamiterere rya AI (nka Gemini, OpenAI, Claude, cyangwa endpoint ihuye na OpenAI); izo serivisi si porogaramu zihuriweho muri AlloFlow. Inyandiko zuzuye z'impushya ziza hamwe n'inkomoko. Wabonye ikintu dukwiye gushimira cyangwa gukosora? Tubwire.",
     "a11y_title": "Kuboneka",
     "media_guardrails_intro": "Sitidiyo ya Videwo ishobora gukurikirana uwakoze ibikoresho by'ubuntu cyangwa bifunguye muri buri mushinga. Ntitufata buri rubuga rw'ibikoresho by'ubuntu nk'urufunguye rwose: buri gikoresho gikenera uruhushya rwacyo, URL y'aho cyaturutse, n'inyandiko yerekana nyiracyo mbere yo kugisangiza.",
     "media_guardrails_title": "Amabwiriza y'ibikoresho by'ubuntu cyangwa bifunguye",
     "maker": "Byakozwe na Dr. Aaron Pomeranz, umuhanga mu by'imitekerereze ukorera mu mashuri i Portland, Maine.",
-    "dedication": "Kuri data, Dr. Robert Pomeranz: umwarimu, umuganga, kandi wakundaga cyane inkuru z'ibihimbano zishingiye ku bumenyi. Yiyemeje gusana isi, kandi mu buryo bwe, yarabikoze."
+    "dedication": "Kuri data, Dr. Robert Pomeranz: umwarimu, umuganga, kandi wakundaga cyane inkuru z'ibihimbano zishingiye ku bumenyi. Yiyemeje gusana isi, kandi mu buryo bwe, yarabikoze.",
+    "oss_website": "Urubuga",
+    "oss_source": "Inkomoko",
+    "oss_summary_aria": "Incamake y'ishimwe ku mishinga ifunguye",
+    "oss_count_featured": "Imishinga {count} yagaragajwe",
+    "oss_count_libraries": "Amasomero ya kode {count} yashimiwe",
+    "oss_count_reading": "Inkomoko {count} za katalogi yo gusoma",
+    "oss_reading_title": "Ishimwe kuri katalogi yo gusoma",
+    "oss_reading_toggle": "Reba inkomoko zo gusoma zemewe ({count})",
+    "oss_rights": "Uburenganzira:",
+    "atlas_area_desc_generic": "Shakisha ibyinjijwe {count} bya katalogi muri iki gice.",
+    "atlas_area_lens_generic": "Vumbura | Shakisha | Kora | Sangiza",
+    "atlas_route_note": "Ni ubuyobozi, si inzira itegetswe",
+    "atlas_route_sr": "Incamake ya {hub}: {steps}.",
+    "atlas_count_filtered": "{shown} kuri {total} byinjijwe",
+    "atlas_count_entries": "Ibyinjijwe {count}",
+    "atlas_link_copied": "Ihuza rya {tool} ryakoporowe.",
+    "atlas_link_copy_failed": "Hitamo ihuza rya {tool} hanyuma urikoporore: {url}",
+    "atlas_area_focus": "Icyo iki gice cyibandaho",
+    "atlas_area_focus_aria": "Icyo {area} cyibandaho",
+    "atlas_examples": "Ingero:",
+    "atlas_area_entries": "Ibyinjijwe bya katalogi muri iki gice",
+    "atlas_links_hide_all": "Hisha amahuza ataziguye",
+    "atlas_links_show_all": "Erekana amahuza ataziguye ({count})",
+    "atlas_links_hint": "Hitamo igikoresho kugira ngo ubone cyangwa ukoporore ihuza ryacyo ritaziguye. Kirafunguka cyonyine, nta konti ikenewe.",
+    "atlas_area_entries_aria": "Ibyinjijwe bya katalogi ya {area}",
+    "atlas_link_view_aria": "{tool}: erekana ihuza ryacyo ritaziguye",
+    "atlas_link_region_aria": "Ihuza ritaziguye rya {tool}",
+    "atlas_link_note": "Ihuza ritaziguye: rifungura iki gikoresho cyonyine, nta konti ikenewe.",
+    "atlas_link_hide_aria": "Hisha ihuza rya {tool}",
+    "atlas_hide": "Hisha",
+    "atlas_link_copy_aria": "Koporora ihuza rya {tool}",
+    "atlas_link_copied_short": "Ihuza ryakoporowe",
+    "atlas_link_copy": "Koporora ihuza",
+    "atlas_link_open": "Fungura cyonyine",
+    "atlas_links_all_heading": "Amahuza yose ataziguye muri {area}",
+    "atlas_links_all_aria": "Amahuza ataziguye ya {area}",
+    "atlas_copied": "Byakoporowe",
+    "atlas_copy": "Koporora",
+    "atlas_link_open_aria": "Fungura {tool} cyonyine",
+    "atlas_open": "Fungura",
+    "atlas_match_one": "Icyinjijwe {count} gihuye",
+    "atlas_match_many": "Ibyinjijwe {count} bihuye",
+    "atlas_hub_count_areas": "Ibyinjijwe {count} / ibice {areas}",
+    "atlas_launch_title": "Jya aho muri porogaramu",
+    "atlas_launch_hint": "Bifungura Agasanduku k'Amabwiriza, iri huriro ryiteguye ko urihitamo.",
+    "atlas_launch_aria": "{label} mu Gasanduku k'Amabwiriza",
+    "atlas_steam_links_title": "Amahuza ataziguye ushobora gusangiza",
+    "atlas_steam_links_body": "Buri gikoresho cya STEAM Lab kiri hepfo gifite ihuza ritaziguye rifungura icyo gikoresho cyonyine, nta konti ikenewe. Risangize abanyeshuri cyangwa imiryango.",
+    "atlas_steam_directory": "Urutonde rw'ibikoresho rusange",
+    "atlas_overview_eyebrow": "Incamake ya porogaramu yose",
+    "atlas_overview_title": "Hitamo akarere ka AlloFlow",
+    "atlas_overview_hint": "Buri karere gafite ibice, n'ibyinjijwe bya katalogi ushobora gushakisha.",
+    "atlas_region_aria_one": "{hub}: ibyinjijwe {count} bya katalogi mu gice 1. Fungura urutonde.",
+    "atlas_region_aria_many": "{hub}: ibyinjijwe {count} bya katalogi mu bice {areas}. Fungura urutonde.",
+    "atlas_journeys_eyebrow": "Isano hagati y'amahuriro",
+    "atlas_journeys_title": "Inzira zisanzwe muri AlloFlow",
+    "atlas_journeys_note": "Ni ingero gusa. Uzivange uko ushaka.",
+    "atlas_journey_aria": "Inzira ya {title}",
+    "atlas_status_one_one": "Icyinjijwe 1 cya katalogi gihuye mu gice 1.",
+    "atlas_status_one_many": "Icyinjijwe 1 cya katalogi gihuye mu bice {areas}.",
+    "atlas_status_many_one": "Ibyinjijwe {entries} bya katalogi bihuye mu gice 1.",
+    "atlas_status_many_many": "Ibyinjijwe {entries} bya katalogi bihuye mu bice {areas}.",
+    "atlas_status_none": "Nta kintu gihuye cyabonetse muri Atlas.",
+    "atlas_status_idle": "Reba uru rutonde, cyangwa ushakishe kugira ngo urugabanye.",
+    "atlas_lede": "Ikarita y'amahuriro n'ibikoresho bya AlloFlow. Hitamo akarere kugira ngo ubone ibice byako, cyangwa ushakishe igikoresho ukoresheje izina ryacyo.",
+    "atlas_view_aria": "Uko Atlas igaragara",
+    "atlas_view_overview": "Incamake mu mashusho",
+    "atlas_view_directory": "Shakisha mu rutonde",
+    "atlas_ready_prompt": "Witeguye gushaka igice cyangwa igikoresho runaka?",
+    "atlas_ready_button": "Reba kandi ushakishe mu rutonde",
+    "atlas_search_label": "Shaka igikoresho cyangwa igice",
+    "atlas_search_hint": "Shakisha amazina y'amahuriro, intego z'ibice, cyangwa igikoresho kimwe.",
+    "atlas_search_placeholder": "Gerageza “imibare y'ibice”, “kwigenzura”, cyangwa “ubushakashatsi”…",
+    "atlas_search_clear_aria": "Siba ishakisha rya Atlas",
+    "atlas_directory_title": "Urutonde rwa katalogi",
+    "atlas_visibility_aria": "Kugaragara kw'amahuriro ya Atlas",
+    "atlas_expand": "Agura amahuriro",
+    "atlas_collapse": "Funga amahuriro",
+    "atlas_empty_title": "Nta karere gahuye",
+    "atlas_empty_hint": "Gerageza isomo, intego, cyangwa izina ry'igikoresho rigari kurushaho.",
+    "clear_search": "Siba ishakisha",
+    "atlas_note": "Imibare ni ibyinjijwe muri buri katalogi, kandi ibikoresho bike biri mu ihuriro rirenze rimwe. STEAM Lab, Ihuriro rya SEL, n'Ihuriro ry'Ubushakashatsi bisomwa muri katalogi za porogaramu ubwayo. Andi mahuriro yatoranyijwe n'intoki.",
+    "privacy_saved_title": "Ibyo wabitse",
+    "privacy_saved_body": "Amasomo, igenamiterere, n'ibikorwa bibikwa muri iyi mushakisha kuri iki gikoresho. Iyo ufunguye guhuza na cloud, nabyo bibikwa aho. Muri Gemini Canvas cyangwa mu idirishya ryihariye, ububiko bwa mushakisha bushobora kutaramba. Bityo, manura dosiye y'umushinga kugira ngo ugire kopi.",
+    "privacy_speech_title": "Imvugo n'amajwi",
+    "privacy_reports_title": "Raporo z'ibibazo",
+    "privacy_reports_body": "Raporo y'ikibazo yoherezwa gusa iyo uhisemo kuyohereza. Mbere yo kuyohereza, porogaramu ikuramo imfunguzo n'amakuru bwite asanzwe, nka aderesi za imeyili na nimero za telefoni. Raporo zijya mu gasanduku kihariye ka raporo ka AlloFlow, kandi zisibwa nyuma y'iminsi 30.",
+    "privacy_paths_heading": "Aho amakuru ashobora kujya",
+    "privacy_choose_heading": "Hitamo inzira y'amakuru ubyitondeye",
+    "privacy_local_title": "Gukorera kuri iki gikoresho gusa",
+    "privacy_hosted_title": "Iyo ukoresha serivisi zo kuri interineti",
+    "privacy_hosted_body": "Koresha konti, endpoint, umushinga, n'amasezerano yo gutunganya amakuru byemejwe n'ikigo cyawe, aho bikenewe. Kwishyura gahunda gusa ntibigaragaza ko ishuri ryabyemeye, cyangwa ko byubahirije amategeko.",
+    "privacy_checklist_heading": "Mbere yo gukoresha amakuru y'abanyeshuri",
+    "privacy_check_3": "Fungura igenamiterere ry'Imvugo, hanyuma uhitemo uko imvugo ihinduka inyandiko.",
+    "privacy_check_5": "Gabanya amazina n'andi makuru ashobora kugaragaza umuntu. Hanyuma, suzuma ibyakozwe mbere yo kubisangiza.",
+    "privacy_link_gemini_terms": "Amabwiriza ya Gemini API",
+    "privacy_link_gemini_edu": "Gemini for Education",
+    "privacy_link_openai": "Igenzura ry'amakuru rya OpenAI API",
+    "privacy_link_anthropic": "Ikigo cy'ibanga cya Anthropic",
+    "privacy_commitments_heading": "Ibyo AlloFlow yiyemeza",
+    "privacy_commit_1": "AlloFlow ntigurisha amakuru, ntigaragaza amatangazo, kandi ntikora imyirondoro yo kwamamaza. Ntinongeramo kode yo gusesengura amatangazo cyangwa yo gukora imyirondoro.",
+    "privacy_commit_3": "AlloFlow ntifite serivisi ya cloud yayo bwite y'amasomo y'ishuri. Amashuri n'uturere bashaka imwe bishyiriraho iyabo.",
+    "privacy_question_button": "Baza ikibazo ku ibanga cyangwa umenyeshe ikibazo",
+    "a11y_point_fonts": "Imyandikire ifasha abafite dyslexia n'abatabona neza (OpenDyslexic, Atkinson Hyperlegible, Lexend)",
+    "a11y_point_tts": "Guhindura inyandiko ijwi no gusoma mu ijwi riranguruye ahantu h'ingenzi ho gusoma n'ibirimo",
+    "a11y_point_keyboard": "Kugendagenda ukoresheje mwandikisho, n'ibimenyetso bya porogaramu zisoma ecran",
+    "a11y_report_button": "Menyesha inzitizi",
+    "surface_canvas": "Gemini Canvas",
+    "surface_desktop": "Porogaramu ya mudasobwa",
+    "surface_web": "Porogaramu yo kuri interineti",
+    "surface_dev": "Verisiyo y'iterambere",
+    "modal_description": "Ibyerekeye AlloFlow: ikarita y'ibikoresho byayo, ubuyobozi ku bikorwa by'ingenzi, amakuru ku ibanga, n'ishimwe ku mishinga ifunguye.",
+    "tab_home": "Ibyerekeye",
+    "intro_heading": "AlloFlow ni iki",
+    "intro_body": "AlloFlow ni agasanduku k'ibikoresho k'ubuntu kandi gafunguye, ko kwigisha buri munyeshuri uko akwiriye. Abarimu bahindura inkomoko imwe inyandiko z'inzego zitandukanye, inkoranyamagambo, ibikorwa, n'isuzuma. Abanyeshuri bakoresha ibikoresho bimwe, bifite ubufasha bwo gusoma n'ururimi. Ibikoresho byinshi bikora nta AI, kandi bimwe bikora nta interineti.",
+    "version_label": "Verisiyo",
+    "version_build": "Inyubako {build}",
+    "license_label": "Uruhushya",
+    "license_value": "Ubuntu kandi bifunguye (AGPL-3.0)",
+    "source_link": "Kode y'inkomoko",
+    "report_problem": "Menyesha ikibazo cyangwa utange igitekerezo cyo gukosora",
+    "start_heading": "Tangirira hano",
+    "start_hint": "Menya inzira muri AlloFlow.",
+    "start_atlas_title": "Shakisha muri Atlas",
+    "start_atlas_desc": "Reba amahuriro n'ibikoresho byose, byashyizwe mu bice.",
+    "start_features_title": "Fungura Ubuyobozi bw'Ibikorwa",
+    "start_features_desc": "Icyo buri gikoresho cy'ingenzi gikenera, icyo gikora, n'icyo gitanga.",
+    "start_privacy_title": "Suzuma ibanga",
+    "start_privacy_desc": "Aho amakuru ajya ku byo wabitse, amasomo y'ishuri, AI, n'imvugo.",
+    "start_palette_title": "Shaka igikoresho icyo ari cyo cyose",
+    "start_palette_desc": "Shakisha muri porogaramu yose ukoresheje Agasanduku k'Amabwiriza (Ctrl+K cyangwa ⌘K).",
+    "start_video_title": "Reba uko ikora",
+    "start_video_desc": "Urugendo rwa videwo rutagira ijwi, rutageze ku minota ibiri, rufite inyandiko yarwo. Rukinwa ku rubuga rwa AlloFlow ubwayo, si ku rubuga rwa videwo.",
+    "udl_goal": "Mu Mabwiriza ya UDL y'ubu (verisiyo 3.0), CAST isobanura intego nk'ubushobozi bw'uwiga: abiga bafite intego kandi batekereza ku byo bakora, bazi gushaka ibyo bakeneye kandi ari nyabo, bafite ingamba kandi bakora. Umwirondoro w'uwiga ni igice cya buri hame.",
+    "udl_how_desc": "AlloFlow iguha amahitamo muri buri hame mu mahame atatu ya UDL. Ibikoresho bimwe bikoresha AI gutegura imfashanyigisho ngo uzisuzume. Byinshi bikora nta AI.",
+    "udl_engage_title": "Kwitabira",
+    "udl_engage_tagline": "Impamvu yo kwiga",
+    "udl_engage_desc": "Amahitamo yakira ibyo abanyeshuri bakunda n'imyirondoro yabo, abafasha gukomeza umuhate, kandi ashyigikira amarangamutima yabo.",
+    "udl_engage_p1_label": "Uburyo bw'Urugendo:",
+    "udl_engage_p1": "Inkuru uhitamo inzira yazo, no gukina uruhare",
+    "udl_engage_p2_label": "Uburyo bw'Ikiganiro:",
+    "udl_engage_p2": "Ibiganiro n'abantu b'amateka n'inzobere",
+    "udl_engage_p3_label": "Guhuza n'ibyo bakunda:",
+    "udl_engage_p3": "Huza isomo n'ibyo abanyeshuri bitaho",
+    "udl_engage_p4_label": "Ihuriro rya SEL:",
+    "udl_engage_p4": "Imenyereze ubumenyi bw'amarangamutima n'imibanire",
+    "udl_engage_goal": "Bifasha abiga kugira intego no gutekereza ku byo bakora.",
+    "udl_rep_title": "Uburyo bwo Kugaragaza",
+    "udl_rep_tagline": "Icyo twiga",
+    "udl_rep_desc": "Amahitamo yo kumva amakuru, gusobanukirwa ururimi n'ibimenyetso, no kubaka ubumenyi.",
+    "udl_rep_p1_label": "Guhuza Inyandiko:",
+    "udl_rep_p1": "Hindura urwego rw'ubukomere kuva mu mashuri y'incuke kugeza ku rwego rwa kaminuza rwo hejuru",
+    "udl_rep_p2_label": "Ubusemuzi:",
+    "udl_rep_p2": "Kureba indimi nyinshi ziri iruhande rumwe",
+    "udl_rep_p3_label": "Umusomyi Wimbitse:",
+    "udl_rep_p3": "Uburyo bwo kwibanda n'imyandikire ifasha abafite dyslexia",
+    "udl_rep_p4_label": "Gusoma mu ijwi:",
+    "udl_rep_p4": "Guhindura inyandiko ijwi ahantu ho gusoma habishyigikira",
+    "udl_rep_goal": "Bifasha abiga kumenya gushaka ibyo bakeneye no kuba nyabo.",
+    "udl_action_title": "Igikorwa n'Imigaragarire",
+    "udl_action_tagline": "Uko twiga",
+    "udl_action_desc": "Amahitamo yo gukoresha imfashanyigisho, kugaragaza ibitekerezo, no gutegura no gukurikirana akazi.",
+    "udl_action_p1_label": "Ibikorwa bihuza:",
+    "udl_action_p1": "Gutondeka mu matsinda, gukurikiranya, guhuza, n'ibisakuzo",
+    "udl_action_p2_label": "Ubufasha bwo kwandika:",
+    "udl_action_p2": "Imiterere y'interuro n'intangiriro z'interuro",
+    "udl_action_p3_label": "Rubric:",
+    "udl_action_p3": "Ibipimo bisobanutse ku mirimo yo kwandika",
+    "udl_action_p4_label": "Gusoma mu ijwi neza:",
+    "udl_action_p4": "Gufata amajwi yo gusoma, no kugenzura amagambo yasomwe neza ku munota",
+    "udl_action_goal": "Bifasha abiga kugira ingamba no gukora.",
+    "allobot_tip": "Ku bitekerezo by'ingamba, baza AlloBot. Ishobora gutanga inzira za UDL, gushaka igikoresho, cyangwa kugufasha gutegura isomo.",
+    "fg_back": "Subira ku Buyobozi bw'Ibikorwa",
+    "fg_find": "Shaka ibi muri AlloFlow",
+    "fg_atlas_links": "Reba amahuza ataziguye muri Atlas",
+    "fg_how_heading": "Uko bikora",
+    "fg_inputs": "Ibyo uzana",
+    "fg_steps": "Ibyo AlloFlow ikora",
+    "fg_outputs": "Ibyo ubona",
+    "fg_options": "Amahitamo ufite",
+    "fg_tip": "Inama",
+    "fg_intro": "Ubuyobozi ku bikoresho {count} by'ingenzi: icyo buri kimwe gikenera, icyo gikora, n'icyo gitanga. Atlas irimo ibikoresho byose.",
+    "fg_open_atlas": "Fungura Atlas",
+    "fg_search_aria": "Shakisha mu Buyobozi bw'Ibikorwa",
+    "fg_search_label": "Shakisha mu buyobozi",
+    "fg_search_placeholder": "Shakisha ukoresheje igikoresho, icyiciro, cyangwa intego…",
+    "fg_clear": "Siba",
+    "fg_filter_aria": "Yungurura ubuyobozi ukurikije icyiciro",
+    "fg_all": "Byose ({count})",
+    "fg_showing_in": "Herekanwa {shown} kuri {total} by'ubuyobozi muri {category}",
+    "fg_showing": "Herekanwa {shown} kuri {total} by'ubuyobozi",
+    "fg_empty_query": "Nta buyobozi buhuye na “{query}”.",
+    "fg_empty_filter": "Nta buyobozi buhuye n'iyungurura ririho.",
+    "fg_empty_hint": "Siba ishakisha cyangwa iyungurura ry'icyiciro, cyangwa ukoreshe Atlas ku rutonde rwuzuye.",
+    "fg_reset_filters": "Subiza iyungurura",
+    "fg_profiles_tip": "Bika igenamiterere ry'icyiciro, ururimi, n'ibyo bakunda ku matsinda atandukanye ukoresheje {profiles}.",
+    "atlas_hub_name": {
+      "documents": "Inyandiko no Gusoma",
+      "steam": "STEAM Lab",
+      "sel": "Ihuriro rya SEL",
+      "research": "Ihuriro ry'Ubushakashatsi",
+      "studios": "Sitidiyo n'Aho Gukorera"
+    },
+    "atlas_hub_eyebrow": {
+      "documents": "Urujya n'uruza rw'imfashanyigisho",
+      "steam": "Inyenyeri z'ubuvumbuzi",
+      "sel": "Ikarita y'iterambere",
+      "research": "Uruziga rw'ubushakashatsi",
+      "studios": "Agasanduku k'ibikoresho byo guhanga"
+    },
+    "atlas_hub_desc": {
+      "documents": "Hindura inkomoko imfashanyigisho zisobanutse, zifite ubufasha, kandi buri wese ashobora gukoresha.",
+      "steam": "Genda hagati y'imibare, siyansi, ikoranabuhanga, ubuhanga bw'ubwubatsi, n'ubugeni.",
+      "sel": "Huza kwimenya no kwita ku bandi n'umuryango mugari.",
+      "research": "Kurikira igitekerezo kuva ku kibazo gikomeye kugeza ku itumanaho rishingiye ku bihamya.",
+      "studios": "Fungura ahantu horoshye ho gukora, gutunganya, kwerekana, no gutekereza."
+    },
+    "atlas_hub_route": {
+      "documents": "Inkomoko | Hindura | Shyigikira | Sangiza",
+      "steam": "Imibare | Siyansi | Ikoranabuhanga | Ubwubatsi | Ubugeni",
+      "sel": "Kwimenya | Kwigenzura | Imibanire | Gutanga umusanzu",
+      "research": "Baza | Kora ubushakashatsi | Sobanukirwa | Sangiza",
+      "studios": "Kora | Tunganya | Erekana | Subiza amaso inyuma"
+    },
+    "atlas_hub_launch": {
+      "documents": "Shaka Document Builder",
+      "steam": "Shaka STEAM Lab",
+      "sel": "Shaka Ihuriro rya SEL",
+      "research": "Shaka Ihuriro ry'Ubushakashatsi",
+      "studios": "Shaka Ihuriro ry'Abarimu"
+    },
+    "atlas_area_desc": {
+      "core_literacy": "Soma, hindura, ongeraho ubufasha, kandi usohore imfashanyigisho ziteguye ishuri.",
+      "mathfundamentals": "Garagaza ubumenyi bw'imibare n'ishingiro ryayo.",
+      "advancedmath": "Shakisha imiterere, ibihamya, ibyitegererezo, n'imibare igoye.",
+      "geometrymeasurement": "Pima, ubake, kandi utekereze ku miterere, umwanya, n'ibipimo.",
+      "datastatsprobability": "Kusanya amakuru, uyashushanye, kandi ubaze ibibazo ku makuru, amahirwe, n'itandukaniro.",
+      "lifesciencegenetics": "Shakisha uturemangingo, uruhererekane, n'uko ibinyabuzima bikora.",
+      "humanbodyhealth": "Menya uko umubiri ukora, n'uko wagira ubuzima bwiza n'umutekano.",
+      "ecologyenvironment": "Kurikira ibinyabuzima mu aho biba, mu ruhererekane rw'ibiribwa, no mu bidukikije bihinduka.",
+      "earthspacescience": "Iga ku mabuye, amazi, ikirere, imikorere y'Isi, n'isanzure.",
+      "physics_chemistry": "Gerageza ku bintu, ingufu, imbaraga, imiraba, n'ibivangwa bya shimi.",
+      "engineeringdesign": "Sobanura ibibazo, ubake icyitegererezo cya mbere, kandi ugerageze igishushanyo.",
+      "computingai": "Imenyereze kode, ubwenge bw'imitekerereze, amakuru, no gukoresha AI n'itangazamakuru ubyitondeye.",
+      "artsmusic": "Hanga, ukine, utegure, kandi wige binyuze mu guhanga.",
+      "learningbehavioral": "Suzuma imyitwarire, imitekerereze, kwiga, n'imikurire y'umuntu.",
+      "lifeskillscareers": "Ubaka ubumenyi ku mafaranga, imyuga, n'ubuzima bwa buri munsi.",
+      "sportsmovement": "Shakisha siyansi y'imyitozo ngororamubiri, siporo, n'imikino.",
+      "strategy": "Komeza gutegura, gutekereza, no gukemura ibibazo mu buryo bworoshye guhinduka.",
+      "selfawareness": "Menya amarangamutima, imbaraga, umwirondoro, n'ibyo ukeneye.",
+      "selfregulation": "Ubaka ingamba zifatika ku muhangayiko, ingufu, n'amarangamutima akomeye.",
+      "innerwork": "Hagarara gato, tekereza, kandi wimenyereze uburyo bwo gutekereza bworoshye guhinduka.",
+      "careofself": "Shushanya ubufasha, umwirondoro, imibereho myiza, n'ubunararibonye bw'ubuzima.",
+      "selfdirection": "Hindura indangagaciro n'imbaraga zawe intego n'intambwe ikurikira.",
+      "socialawareness": "Imenyereze kureba ibintu nk'abandi, umuco, ijwi, no kwita ku gihugu.",
+      "relationshipskills": "Teza imbere itumanaho, ubufatanye, gusana imibanire, no kumva ko uri umwe mu bandi.",
+      "decisionmaking": "Pima amahitamo, imbibi, umutekano, n'ingaruka z'imyitwarire.",
+      "stewardship": "Huza kwita ku aho utuye n'ibikorwa by'umuryango bifite icyizere.",
+      "inquiry_lanes": "Hitamo inzira y'ubushakashatsi ijyanye n'ikibazo n'ishami ry'ubumenyi.",
+      "studios": "Fungura sitidiyo n'ubufasha byoroshye uturutse ahantu hose muri porogaramu."
+    },
+    "atlas_area_lens": {
+      "core_literacy": "Soma | Sobanukirwa | Hindura | Sohora",
+      "mathfundamentals": "Erekana | Imenyereze | Sobanura | Koresha",
+      "advancedmath": "Shakisha | Hamya | Bona mu ishusho | Shyira mu rusange",
+      "geometrymeasurement": "Pima | Ubaka | Gereranya | Tekereza",
+      "datastatsprobability": "Kusanya | Shushanya | Sesengura | Teganya",
+      "lifesciencegenetics": "Itegereze | Erekana | Gereranya | Sobanura",
+      "humanbodyhealth": "Imiterere | Imikorere | Ubuzima | Umutekano",
+      "ecologyenvironment": "Aho biba | Imikoranire | Impinduka | Kwita",
+      "earthspacescience": "Itegereze | Erekana | Ingano | Sobanura",
+      "physics_chemistry": "Teganya | Gerageza | Pima | Sobanura",
+      "engineeringdesign": "Sobanura | Tegura | Ubaka | Gerageza",
+      "computingai": "Tegura | Andika kode | Gerageza | Suzuma",
+      "artsmusic": "Tekereza | Hanga | Kina | Subiza amaso inyuma",
+      "learningbehavioral": "Itegereze | Sobanura | Huza | Koresha",
+      "lifeskillscareers": "Tegura | Ingengo y'imari | Fata icyemezo | Koresha",
+      "sportsmovement": "Nyeganyega | Pima | Erekana | Noza",
+      "strategy": "Tegura | Gerageza | Hindura | Subiza amaso inyuma",
+      "selfawareness": "Menya | Vuga izina | Sobanukirwa | Wivugire",
+      "selfregulation": "Menya | Hitamo | Imenyereze | Garuka mu buryo",
+      "innerwork": "Hagarara gato | Reba ukundi | Imenyereze | Subiza amaso inyuma",
+      "careofself": "Umva | Shushanya | Shyigikira | Komeza",
+      "selfdirection": "Indangagaciro | Intego | Gahunda | Kora",
+      "socialawareness": "Menya | Uko abandi babona | Umuco | Kwita",
+      "relationshipskills": "Umva | Vugana | Sana | Kuba umwe",
+      "decisionmaking": "Hagarara gato | Pima | Hitamo | Subiza amaso inyuma",
+      "stewardship": "Ahantu | Kwita | Gufatanya | Gukora",
+      "inquiry_lanes": "Baza | Kusanya | Sesengura | Sangiza",
+      "studios": "Kora | Tunganya | Erekana | Subiza amaso inyuma"
+    },
+    "atlas_area_name": {
+      "core_literacy": "Ibikoresho by'ingenzi byo gusoma no kwandika",
+      "inquiry_lanes": "Inzira z'ubushakashatsi",
+      "studios": "Fungura uturutse aho ari ho hose"
+    },
+    "atlas_docs": {
+      "text_adaptation": "Guhuza Inyandiko",
+      "immersive_reader": "Umusomyi Wimbitse",
+      "side_by_side_translation": "Ubusemuzi Bubangikanye",
+      "glossary": "Inkoranyamagambo",
+      "word_sounds": "Amajwi y'Amagambo",
+      "oral_fluency_check": "Isuzuma ryo Gusoma mu Ijwi",
+      "reading_library": "Isomero ryo Gusoma",
+      "accessible_pdf_export": "Gusohora PDF buri wese ashobora gukoresha"
+    },
+    "atlas_journey_title": {
+      "resource": "Kora imfashanyigisho buri wese ashobora gukoresha",
+      "phenomenon": "Kora ubushakashatsi ku kintu kibaho",
+      "whole_learner": "Shyigikira uwiga mu buryo bwuzuye"
+    },
+    "atlas_journey_desc": {
+      "resource": "Tunganya ibirimo, hanyuma ujye muri sitidiyo yoroshye kugira ngo ubitegure kandi ubisohore.",
+      "phenomenon": "Tegura ubushakashatsi, shakisha icyitegererezo cyangwa igerageza ryigana ukuri, hanyuma usangize ibyo wabonye.",
+      "whole_learner": "Huza imibereho myiza no kwiyobora n'imfashanyigisho buri wese ashobora gukoresha no guhanga."
+    },
+    "oss_group": {
+      "app_framework": "Ishingiro rya porogaramu",
+      "documents_pdf_accessibility": "Inyandiko, PDF no kugerwaho na bose",
+      "math_science_simulations": "Imibare, siyansi n'igerageza ryigana ukuri",
+      "3d_graphics_maps_media": "3D, amashusho, amakarita n'itangazamakuru",
+      "on_device_speech_ai": "Imvugo na AI kuri iki gikoresho",
+      "utilities": "Ibikoresho bifasha",
+      "music_singing": "Umuziki no kuririmba",
+      "fonts": "Imyandikire",
+      "desktop_app_local_tools": "Porogaramu ya mudasobwa n'ibikoresho bikorera aho",
+      "readable_or_mirrored_in_alloflow": "Ibishobora gusomwa cyangwa byakoporowe muri AlloFlow",
+      "discovery_and_linked_collections": "Ubuvumbuzi n'ibikusanyo bihujwe"
+    },
+    "oss_media": {
+      "openverse": {
+        "status": "Ni byo byiza kurusha"
+      },
+      "wikimedia_commons": {
+        "status": "Ni byo byiza kurusha"
+      },
+      "freesound": {
+        "status": "Yungurura witonze"
+      },
+      "pixabay": {
+        "status": "Ubuntu, ariko si ibifunguye"
+      }
+    },
+    "fg_category": {
+      "creation": "Tegura & Kora",
+      "activities": "Iga & Kina",
+      "assessment": "Suzuma & Shyigikira",
+      "platform": "Kugerwaho & Gucunga"
+    },
+    "fg": {
+      "text_adaptation": {
+        "title": "Guhuza Inyandiko",
+        "desc": "Ongera wandike umwandiko ku cyiciro icyo ari cyo cyose, kuva mu mashuri y'incuke kugeza kuri kaminuza yo hejuru, mu rundi rurimi cyangwa mu bundi buryo. Hanyuma uwugereranye n'umwimerere."
+      },
+      "glossary": {
+        "title": "Inkoranyamagambo",
+        "desc": "Kora amakarita y'amagambo afite amashusho, amajwi n'ubusemuzi, hanyuma wimenyereze ukoresheje imikino. Ikora na AI cyangwa n'inkoranyamagambo iri muri porogaramu."
+      },
+      "analyze_source": {
+        "title": "Sesengura Inkomoko",
+        "desc": "Suzuma inkomoko mbere yo kwigisha: urwego rwo gusoma, ibitekerezo by'ingenzi, n'inyandiko ku kuri n'ikibonezamvugo. Ibindi bikoresho birayikoresha."
+      },
+      "lesson_plan": {
+        "title": "Gahunda y'Isomo",
+        "desc": "Huriza hamwe imfashanyigisho zawe muri gahunda y'isomo ifite intambwe Ndakora, Turakorana, Urakora. Ihinduka igitabo cyo kwiga ku banyeshuri."
+      },
+      "full_resource_pack": {
+        "title": "Ipaki Yuzuye y'Imfashanyigisho",
+        "desc": "Tegura imfashanyigisho zose uhereye ku nkomoko imwe. Suzuma kandi uhindure gahunda mbere y'uko hagira ikintu gikorwa."
+      },
+      "guided_mode": {
+        "title": "Uburyo Buyobowe",
+        "desc": "Tegura isomo intambwe imwe ku yindi. Hitamo inzira, suzuma buri mfashanyigisho, andika amabwiriza, hanyuma uyifungure muri Document Builder."
+      },
+      "visual_organizer": {
+        "title": "Igishushanyo Gitunganya Ibitekerezo",
+        "desc": "Hindura inyandiko kimwe mu bishushanyo 15 bitunganya ibitekerezo, kuva ku gishushanyo cya Venn kugeza ku Ngoro y'Ibyibukwa ya 3D ushobora kugendamo. Abanyeshuri bashobora gukurura ibintu bakabishyira mu mwanya wabyo."
+      },
+      "activities": {
+        "title": "Ibikorwa",
+        "desc": "Ubwoko bune bw'ibikorwa buturutse ku nkomoko yawe: Intangiriro z'Ibitekerezo, Ibikoresho by'Ibiganiro, amatsinda ya Jigsaw, n'Igerageza ryigana ukuri wubaka muri Gemini Canvas."
+      },
+      "lesson_images": {
+        "title": "Amashusho y'Isomo",
+        "desc": "Kora amashusho ya AI ku bitekerezo by'ingenzi: ishusho imwe, amashusho mbere na nyuma, intambwe ku yindi, cyangwa igishushanyo gifite amazina, mu buryo bwinshi bw'ubugeni."
+      },
+      "faq_generator": {
+        "title": "Ikora Ibibazo Bikunze Kubazwa",
+        "desc": "Teganya ibibazo abanyeshuri bazabaza, kandi ubisubize mu rurimi rworoshye. Buri kibazo n'igisubizo bishobora gusomwa mu ijwi."
+      },
+      "note_taking_templates": {
+        "title": "Imiterere yo Gufata Inyandiko",
+        "desc": "Ha abanyeshuri imiterere yo gufata inyandiko: inyandiko za Cornell, raporo za laboratwari, ikayi y'impande ebyiri, inyandiko ziyobowe n'izindi, zishingiye ku nkomoko yawe."
+      },
+      "anchor_chart": {
+        "title": "Icyapa cy'Ishuri",
+        "desc": "Kora icyapa cy'ishuri ku gitekerezo, uburyo cyangwa ingamba, gifite udushushanyo n'ibice bisobanutse abanyeshuri bashobora gusubiraho mu gihe cyose cy'umutwe w'isomo."
+      },
+      "memory_aid_studio": {
+        "title": "Sitidiyo y'Ibifasha Kwibuka",
+        "desc": "Kora ibifasha kwibuka amagambo akomeye, intambwe n'amategeko y'imibare, nk'impine, amashusho y'ijambo nyamukuru, injyana n'inkuru ngufi."
+      },
+      "applied_challenge_studio": {
+        "title": "Sitidiyo y'Imbogamizi Zishyirwa mu Bikorwa",
+        "desc": "Hindura isomo ryawe igikorwa kimwe gisa n'ubuzima nyabwo, aho abanyeshuri bakoresha ibyo bize aho kwibuka gusa ibyabaye."
+      },
+      "document_based_questions": {
+        "title": "Ibibazo Bishingiye ku Nyandiko",
+        "desc": "Kora ipaki ya DBQ: inyandiko z'inkomoko ngufi, ibibazo biyobora kuri buri imwe, ikibazo cy'umwandiko n'urubric yo gutanga amanota."
+      },
+      "page_designer": {
+        "title": "Utegura Paji",
+        "desc": "Tegura amatangazo, impapuro z'imyitozo, ibyapa n'amaslide buri wese ashobora gukoresha. Buri shusho ikenera ibisobanuro, kandi ni wowe ushyiraho uko bisomwa bikurikirana."
+      },
+      "video_studio": {
+        "title": "Sitidiyo ya Videwo",
+        "desc": "Fata amashusho ya ecran cyangwa ya kamera, hanyuma uyagabanye, wongeremo inyandiko z'amagambo n'ijwi ry'umusobanuzi. Sohora inyandiko z'amagambo n'ipaki yo kugerwaho hamwe na videwo."
+      },
+      "steam_lab": {
+        "title": "STEAM Lab",
+        "desc": "Ibikoresho birenga 100 bikoranwa ku mibare, siyansi, ubwubatsi, mudasobwa n'igishushanyo, hamwe n'igikoresho gikora ibibazo by'imibare na siyansi."
+      },
+      "word_sounds": {
+        "title": "Amajwi y'Amagambo",
+        "desc": "Imyitozo y'amajwi n'inyuguti, n'ubumenyi bw'amajwi, ifite ubwoko bw'ibikorwa 20, kuva ku gushaka no guhuza amajwi kugeza ku gusoma interuro n'inkuru."
+      },
+      "quiz_games": {
+        "title": "Imikino y'Ibibazo",
+        "desc": "Hindura ikizamini cya Assess umukino: ikibaho cyo gusubiramo, Puzzle Challenge, Escape Room, Lesson Board, cyangwa Concept Quest yo gukina uruhare."
+      },
+      "reading_library": {
+        "title": "Isomero ryo Gusoma",
+        "desc": "Ibitabo n'inyandiko zo gusoma birenga 2,900 bifite uruhushya rufunguye, mu ndimi 60, kuva ku bitabo by'amashusho kugeza ku bitabo by'amasomo n'inkomoko z'ibanze."
+      },
+      "immersive_reader": {
+        "title": "Umusomyi Wimbitse",
+        "desc": "Soma inyandiko yahujwe uko ubishaka: umusomyi wibanda werekana ijambo rimwe cyangwa itsinda rito ry'amagambo, gusoma mu ijwi nka karaoke, amabara y'ikibonezamvugo n'imigemo."
+      },
+      "interview_mode": {
+        "title": "Uburyo bw'Ikiganiro",
+        "desc": "Abanyeshuri babaza ibibazo umuntu wakozwe uhereye ku nkomoko yawe, nk'umuntu w'amateka cyangwa inzobere. Bavumbura ukuri guhishe babaza ibibazo byiza."
+      },
+      "adventure_mode": {
+        "title": "Uburyo bw'Urugendo",
+        "desc": "Abanyeshuri bafata ibyemezo mu nkuru yubatswe ku isomo ryawe. Gerageza impaka, igerageza ryo gucunga umutungo, cyangwa inkuru z'imibanire, hamwe n'amatora y'ishuri mu masomo ako kanya."
+      },
+      "concept_sort": {
+        "title": "Gutondeka Ibitekerezo",
+        "desc": "Abanyeshuri batondeka amagambo mu byiciro bakurura cyangwa bakoresheje mwandikisho. Hanyuma bagenzura ibisubizo byabo, bagakosora ibitari byo gusa."
+      },
+      "sequence_builder": {
+        "title": "Utegura Uruhererekane",
+        "desc": "Abanyeshuri bashyira ibyabaye cyangwa intambwe ku murongo bakurura cyangwa bakoresheje buto zo kwimura. Hanyuma barebe umubare w'ibiri mu mwanya wabyo."
+      },
+      "socratic_tutor": {
+        "title": "Umwarimu wa Socratic",
+        "desc": "Ikiganiro cyo kwiga gisubiza n'ibibazo biyobora aho gutanga ibisubizo, kugira ngo abanyeshuri batekereze ubwabo."
+      },
+      "storyforge": {
+        "title": "StoryForge",
+        "desc": "Abanyeshuri bandika inkuru zifite amashusho mu byiciro bitandatu: Gutegura, Umushinga, Gusuzuma, Igishushanyo, Ijwi no Gusohora, mu ndimi 18 cyangwa urundi bahisemo."
+      },
+      "sel_hub": {
+        "title": "Ihuriro rya SEL",
+        "desc": "Ibikoresho byinshi byo kwiga iby'amarangamutima n'imibanire, kuva ku kugenzura amarangamutima n'uburyo bwo kwihangana kugeza ku bucuti, gushyiraho intego n'inziga zo gusana."
+      },
+      "research_hub": {
+        "title": "Ihuriro ry'Ubushakashatsi",
+        "desc": "Ubushakashatsi buyobowe mu nzira eshatu: Ubushakashatsi bwa Siyansi, Igishushanyo cy'Ubwubatsi, n'Ubushakashatsi ku Bumuntu n'Imibereho, hamwe n'ikayi imwe y'ubushakashatsi."
+      },
+      "learning_hub": {
+        "title": "Ihuriro ryo Kwiga",
+        "desc": "Ahantu hamwe h'ibikoresho by'abanyeshuri, harimo LitLab yo gukina inkuru, PoetTree y'imivugo, Test Prep Hub n'ibindi."
+      },
+      "lingua_practice": {
+        "title": "Imyitozo y'Ururimi",
+        "desc": "Ahantu ho kwimenyereza ururimi: ongera amagambo, imenyereze kuvuga, kandi wimenyereze ibiganiro nyabyo."
+      },
+      "allohaven": {
+        "title": "AlloHaven",
+        "desc": "Icyumba gituje abanyeshuri bubaka bibanda kandi batekereza, gifite isaha yo kwibanda n'ikayi. Nta rutonde rw'amanota, nta n'igitutu cyo gukora buri munsi."
+      },
+      "learning_web": {
+        "title": "Urushundura rwo Kwiga",
+        "desc": "Ikarita buri wese ashobora gukoresha y'amahame, ibitekerezo, amasomo n'ibihamya. Shakisha isano yabyo, cyangwa utondeke amasomo mu nzira y'umutwe w'isomo."
+      },
+      "lumen": {
+        "title": "Lumen",
+        "desc": "Aho gukorera ku bihamya: baza ibibazo ku nkomoko cyangwa amakuru, urebe ibice nyabyo bibishyigikira, kandi ubike inyandiko hamwe n'inkomoko zazo."
+      },
+      "annotate": {
+        "title": "Ongeraho Ibimenyetso",
+        "desc": "Shyira ibimenyetso ku mfashanyigisho ukoresheje amabara, inyandiko zifata, sitikeri, ibishushanyo n'inyandiko z'amajwi. Hanyuma ubike ibimenyetso byawe muri dosiye."
+      },
+      "assess": {
+        "title": "Isuzuma",
+        "desc": "Kora ikizamini gifite intego isobanutse: itike yo gusohoka, isuzuma ry'ibanze, isuzuma mu gihe cyo kwiga, gusubiramo, cyangwa amatora y'ibitekerezo by'abanyeshuri. Cyerekane cyangwa ugikine."
+      },
+      "oral_fluency": {
+        "title": "Isuzuma ryo Gusoma mu Ijwi",
+        "desc": "Fata amajwi y'umunyeshuri asoma umwandiko mu ijwi, kugira ngo ubone amagambo yasomwe neza ku munota, ubunyakuri bw'isoma, n'inyandiko y'isoma ifite amabara."
+      },
+      "writing_scaffolds": {
+        "title": "Ubufasha bwo Kwandika",
+        "desc": "Intangiriro z'interuro, imiterere y'igika n'ibibazo by'ibiganiro, hamwe n'urubric n'ibitekerezo bya AI bivuga ibikora neza n'ibyo kunoza."
+      },
+      "teacher_grading_dashboard": {
+        "title": "Ikibaho cy'Amanota cy'Umwarimu",
+        "desc": "Injiza dosiye z'akazi abanyeshuri babitse kugira ngo ubone incamake y'ishuri, ibyavuye kuri buri munyeshuri n'ibimenyetso by'umutekano. Hanyuma usohore spreadsheet."
+      },
+      "assessment_center": {
+        "title": "Ikigo cy'Isuzuma",
+        "desc": "Amasuzuma y'ibanze, ibizamini bigufi bishingiye ku nteganyanyigisho, ubufasha ku byemezo bya RTI, inyandiko z'ubufasha n'ibishushanyo by'iterambere ku banyeshuri bawe."
+      },
+      "curriculum_audit": {
+        "title": "Igenzura ry'Integanyanyigisho",
+        "desc": "Gereranya imfashanyigisho z'isomo ryawe n'amahame ugamije n'Amabwiriza ya UDL, hamwe n'inzego z'ubujyakuzimu bw'ubumenyi, ibyuho n'ibitekerezo."
+      },
+      "symbol_studio": {
+        "title": "Symbol Studio",
+        "desc": "Kora ibimenyetso by'amashusho ku bibaho by'itumanaho, gahunda z'umunsi zishushanyije n'inkuru z'imibanire, uhereye ku bimenyetso bya Mulberry, amafoto cyangwa amashusho ya AI."
+      },
+      "behaviorlens": {
+        "title": "BehaviorLens"
+      },
+      "report_writer": {
+        "title": "Umwanditsi wa Raporo"
+      },
+      "dynamic_assessment": {
+        "desc": "Kora isuzuma-kwigisha-kongera gusuzuma: ikizamini cy'ibanze, ubufasha bwiyongera buhoro buhoro mu gihe cyo kwigisha, ikizamini cya nyuma, n'ikizamini cyo kubikoresha ahandi kitari itegeko."
+      },
+      "accessibility_lab": {
+        "title": "Laboratwari yo Kugerwaho",
+        "desc": "Reba ibyo abanyeshuri babona: reba nk'umunyeshuri, genda ukoresheje mwandikisho gusa, kora igenzura ryo kugerwaho, kandi ugerageze kwigana ubumuga."
+      },
+      "document_accessibility": {
+        "title": "Kugerwaho kw'Inyandiko",
+        "desc": "Ohereza dosiye ya PDF, Word cyangwa PowerPoint kugira ngo usuzume kandi ukosore uko igerwaho. Hanyuma umanure PDF ifite ibimenyetso, HTML buri wese ashobora gukoresha n'ubundi buryo."
+      },
+      "educator_hub": {
+        "title": "Ihuriro ry'Abarimu",
+        "desc": "Ahantu h'umwarimu h'ibikoresho byo gutegura, gusuzuma, kugerwaho n'ubuyobozi, hafite agasanduku ko gushakisha, ibyo ukunda n'ibice bijyanye n'inshingano zawe."
+      },
+      "command_palette": {
+        "title": "Agasanduku k'Amabwiriza",
+        "desc": "Kanda Ctrl+K, cyangwa Cmd+K kuri Mac, hanyuma wandike icyo ushaka gukora. Ibikorwa byinshi bishobora no gukoreshwa n'ijwi."
+      },
+      "allobot": {
+        "title": "AlloBot",
+        "desc": "Umufasha uguha inama uko ukora. Iyo AI ifunguye, isubiza ibibazo, ifungura ibikoresho, kandi itegura amasomo yose ushobora kubanza guhindura."
+      },
+      "live_sessions": {
+        "title": "Amasomo Ako Kanya",
+        "desc": "Tangiza kode y'ishuri kugira ngo abanyeshuri binjire bakoresheje ibikoresho byabo. Hanyuma mukorere hamwe ibizamini, amatora, igenzura ryihuse n'imikino ako kanya."
+      },
+      "student_links": {
+        "title": "Amahuza y'Imikoro yo mu Rugo & QR",
+        "desc": "Sangiza isomo nk'ihuza ry'umukoro wo mu rugo cyangwa kode ya QR abanyeshuri bafungura ku bikoresho byabo. Ni wowe uhitamo igihe rimara."
+      },
+      "packets": {
+        "title": "Amapaki y'Imyitozo",
+        "desc": "Dosiye z'imyitozo z'Amajwi y'Amagambo, amagambo mashya, gusomera hamwe n'imibare, zikora nta AI cyangwa konti. Ibyavuye bishobora kugaruka binyuze kuri kode ya QR."
+      },
+      "family_bridge": {
+        "title": "Ikiraro cy'Umuryango",
+        "desc": "Vugana n'imiryango n'abanyeshuri bavuga indimi nyinshi ukoresheje ubusemuzi bw'ako kanya imbonankubone, cyangwa wohereze ibisobanuro mu ndimi ebyiri ku bikoresho by'abanyeshuri."
+      },
+      "translate": {
+        "title": "Gusemura",
+        "desc": "Semura imfashanyigisho zakozwe ku miryango n'abanyeshuri bavuga indimi nyinshi, kandi uhindure ururimi rwa menu za porogaramu."
+      },
+      "read_aloud_voices": {
+        "title": "Gusoma mu Ijwi & Amajwi",
+        "desc": "Read This Page isoma ecran mu ijwi ikintu ku kindi, harimo ibisobanuro by'amashusho. Hitamo amajwi y'igikoresho, amajwi ya cloud, cyangwa ijwi ushobora kumanura rigakorera ku gikoresho."
+      },
+      "display_settings": {
+        "title": "Gusoma & Imigaragarire",
+        "desc": "Orohereza gusoma kuri ecran ukoresheje ingano y'inyandiko, intera, imyandikire ifasha abafite dyslexia, insanganyamatsiko, amabara atwikira, umurongo wo gusoma no kugabanya ibinyeganyega."
+      },
+      "role_views": {
+        "title": "Uko Umwarimu, Umunyeshuri n'Umubyeyi Babona",
+        "desc": "AlloFlow ihinduka bitewe n'uyikoresha: umwarimu, umunyeshuri, umubyeyi cyangwa uwiga wenyine. Abarimu bashobora kureba uko umunyeshuri abona igihe icyo ari cyo cyose."
+      },
+      "document_builder_export": {
+        "title": "Document Builder & Gusohora",
+        "desc": "Huriza imfashanyigisho mu nyandiko imwe, usuzume kugerwaho n'ubusemuzi, hanyuma ucape cyangwa umanure HTML, PowerPoint, impapuro z'imyitozo, amapaki ya LMS cyangwa Braille."
+      },
+      "universal_settings": {
+        "title": "Igenamiterere Rusange",
+        "desc": "Shyiraho icyiciro n'ururimi rimwe ku bikoresho byose. Bika igenamiterere ry'itsinda nk'umwirondoro w'umunyeshuri kugira ngo uzawukoreshe nyuma."
+      },
+      "ai_settings": {
+        "title": "Igenamiterere rya AI",
+        "desc": "Hitamo uko AlloFlow ikoresha AI, cyangwa uyizimye. Ibikoresho byinshi bikora nta AI, kandi ni wowe ufata icyemezo niba abanyeshuri bashobora kuyikoresha."
+      },
+      "community_catalog": {
+        "title": "Katalogi y'Umuryango",
+        "desc": "Reba amapaki y'amasomo afite uruhushya rufunguye yatanzwe n'abandi barimu, injiza imwe uyihindure, cyangwa wohereze iyawe ngo isuzumwe n'umuryango."
+      },
+      "professional_development": {
+        "title": "Iterambere mu Mwuga",
+        "desc": "Ibice icumi bigufi wiga ku muvuduko wawe, mu nzira eshatu zo kwiga kuri UDL, kwigisha bishingiye ku bihamya, n'itumanaho ryita ku bantu. Buri gice gifite isuzuma ry'ubumenyi."
+      },
+      "leadership_hub": {
+        "title": "Ihuriro ry'Ubuyobozi"
+      },
+      "communications_studio": {
+        "title": "Sitidiyo y'Itumanaho",
+        "desc": "Tegura amakuru agenewe imiryango, ibitekerezo byo ku ndangamanota, amabaruwa y'ubuhamya n'ibisubizo ku miryango, uhereye ku nyandiko zawe. Ntijya yohereza ikintu na kimwe."
+      }
+    }
   },
   "fluency": {
     "partner_show_results": "Erekana ibisubizo",

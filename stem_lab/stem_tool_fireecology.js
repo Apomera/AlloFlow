@@ -2,7 +2,7 @@
 // stem_tool_fireecology.js — Fire Ecology & Indigenous Land Stewardship
 // Cultural burning simulator, fire science explorer, prescribed burn planner,
 // indigenous knowledge map, forest succession model, fire-adapted ecosystems.
-// Centers 65,000+ years of Indigenous fire stewardship knowledge.
+// Centers Indigenous fire stewardship knowledge (dated records per nation: INDIGENOUS_FIRE_NATIONS[].since).
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
@@ -185,6 +185,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.fireecology-fact,.fireecology-badges{min-width:0;}',
       '@media (max-width:860px){.fireecology-route-groups{grid-template-columns:1fr;}.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:repeat(2,minmax(0,1fr));}.fireecology-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (max-width:620px){.fireecology-context{grid-template-columns:1fr;}}',
+      '.fireecology-dt-narrow{display:none;}@media (max-width:560px){.fireecology-dt-wide{display:none;}.fireecology-dt-narrow{display:block;}}',
+      '.fireecology-cyc-narrow{display:none;}@media (max-width:900px){.fireecology-cyc-wide{display:none;}.fireecology-cyc-narrow{display:block;}}',
+      '@media (max-width:900px){.fireecology-svg-emoji-lg{font-size:54px;}}',
       '@media (max-width:560px){.fireecology-tool-shell{padding:0 2px;}.fireecology-command{padding:14px;border-radius:14px;}.fireecology-command-top{gap:8px;}.fireecology-command-icon{display:none;}.fireecology-back{width:40px;height:40px;min-width:40px;}.fireecology-command-copy{font-size:12px;}.fireecology-route-board{padding:10px;}.fireecology-route-heading{align-items:flex-start;}.fireecology-route-step{display:none;}.fireecology-route-list,.fireecology-route-group:last-child .fireecology-route-list{grid-template-columns:repeat(2,minmax(0,1fr));}.fireecology-route-tab{min-height:44px;padding:8px;}.fireecology-route-icon{font-size:16px;}.fireecology-active-band{align-items:flex-start;}.fireecology-metrics{gap:6px;}.fireecology-metric{padding:8px 9px;}.fireecology-metric-value{font-size:13px;}.fireecology-sim-viewer{height:270px;}.fireecology-sim-toolbar{width:100%;}.fireecology-sim-toolbar button{flex:1;min-width:92px;}}',
       '@media (any-pointer:coarse){'
         + '.fireecology-technique{min-height:44px;padding:8px 10px!important;font-size:12px!important;}'
@@ -217,9 +220,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   var getGradeIntro = function(band) {
     if (band === 'k2') return 'Welcome! Some forests NEED fire to stay healthy. Let\u2019s learn how fire helps nature grow!';
-    if (band === 'g35') return 'For thousands of years, Indigenous peoples have used fire to care for the land. Explore how cultural burning can support ecosystem goals and reduce some wildfire hazards.';
+    // Round 10: "For thousands of years" now names its dated record: Adeleye and others 2024 (aboriginal_au below).
+    if (band === 'g35') return 'Indigenous peoples have used fire to care for the land for a very long time. In Tasmania, dated charcoal shows people burning the land about 41,600 years ago (Adeleye and others 2024). Explore how cultural burning can support ecosystem goals and reduce some wildfire hazards.';
     if (band === 'g68') return 'Investigate fire ecology \u2014 how fire shapes ecosystems, how Indigenous fire stewardship differs from blanket suppression, and how to plan a prescribed burn using weather, fuel, and terrain data.';
-    return 'Analyze fire regime ecology, Indigenous land management systems spanning 65,000+ years, prescribed burn modeling with fuel moisture calculations, and the policy failures of total fire suppression.';
+    return 'Analyze fire regime ecology, Indigenous land management with a dated record reaching back about 41,600 years in Tasmania (Adeleye and others 2024), prescribed burn modeling with fuel moisture calculations, and what a century of fire suppression changed.';
   };
 
   // ── Sound effects ──
@@ -444,6 +448,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // recorded outcome instead of replaying an old fire. Session ownership keeps
   // an unmounted tool from completing into a later mount.
   var _fireVisualSessionCounter = 0;
+  var _fireSpreadTimer = null;   // Fire Science spread playback; cleared on unmount
   var _fireVisualPlayback = {
     token: 0, sessionId: null, startedAt: 0, elapsedBeforePause: 0, paused: false,
     duration: 4400, timer: null, onComplete: null
@@ -543,6 +548,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // INDIGENOUS FIRE KNOWLEDGE DATABASE
   // Research-based; sources include Indigenous-led organizations,
   // peer-reviewed fire ecology literature, and tribal publications.
+  // `since` = years ago that dated evidence of this nation's (or its ancestors')
+  // fire use reaches back to, per the source in `sinceSource`. It marks the start
+  // of the RECORD, not of the practice. null = no dated start was found in the
+  // sources checked; the card then says "since time immemorial" and the
+  // deep-time chart lists the nation without a bar. (Checked 2026-11-23.)
   // ═══════════════════════════════════════════
 
   var INDIGENOUS_FIRE_NATIONS = [
@@ -551,19 +561,33 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Aboriginal Australians',
       region: 'Australia (continent-wide)',
       icon: '\uD83E\uDE83',
-      years: '65,000+',
+      // Adeleye, M.A. and others (2024) Landscape burning facilitated Aboriginal migration into
+      // Lutruwita/Tasmania 41,600 years ago. Science Advances, doi:10.1126/sciadv.adp6579.
+      // (65,000 = people at Madjedbebe, Clarkson and others 2017: presence, not landscape burning.)
+      since: 41600,
+      sinceSource: 'Charcoal in ancient mud from Bass Strait islands, Tasmania (Adeleye and others, Science Advances 2024). People have lived in Australia even longer.',
       practice: 'Cultural Burning / Fire-Stick Farming',
-      description: 'Aboriginal Australians developed the world\u2019s oldest known land management system. \u201CFire-stick farming\u201D uses low-intensity mosaic burns \u2014 small, cool fires lit at different times across the landscape \u2014 to create a patchwork of vegetation at various stages of regrowth. This promotes plant diversity, creates habitat corridors for animals, and prevents catastrophic wildfires by reducing fuel loads.',
-      science: 'Mosaic burning creates a landscape of different successional stages. Early-successional patches attract grazing animals (kangaroos, wallabies) to fresh green shoots, while mature patches provide shelter and seed banks. The patchwork pattern acts as a natural firebreak, preventing any single fire from covering large areas. Research shows Aboriginal-managed lands had 40-60% less area burned by uncontrolled wildfire.',
+      // Round 10: "promotes plant diversity, creates habitat corridors ... prevents catastrophic wildfires", the
+      // kangaroo / wallaby line, the yam / cycad timing, "green pick", songlines and the plant list had no source.
+      // Bliege Bird, R., Codding, B.F., Kauhanen, P.G. & Bird, D.W. (2012) PNAS 109:10287 (PMC3387077): "the majority of
+      // indigenous ignitions are during the cool, dry months of April to September"; "Both mean and median fire size are
+      // significantly smaller and fires are more tightly clustered in both seasons"; "Aboriginal regions have
+      // significantly higher successional patch richness, diversity, and evenness"; unburned patches are "larger,
+      // closer, more contiguous" than in lightning regions; fires target "Senna-dominated shrublands and
+      // Triodia-dominated grasslands". These findings are from the Western Desert, not the whole continent.
+      description: 'Aboriginal Australians have cared for land with fire for a very long time: in Tasmania, dated charcoal shows people burning the landscape about 41,600 years ago. \u201CFire-stick farming\u201D means many small fires lit at different times, which leave a patchwork of land at different stages of regrowth. In the Western Desert, land burned by Aboriginal people has more kinds of patches, and smaller fires, than land where only lightning starts fires (Bliege Bird and others 2012).',
+      science: "A patchwork of burn ages gives animals and plants many kinds of places close together. In the Western Desert, researchers found that fires stay smaller where Aboriginal people burn than where only lightning starts fires, and the unburned patches are bigger and closer together, so animals have shelter nearby (Bliege Bird and others, PNAS 2012).",
       keyPractices: [
-        'Cool-season burns when fuel moisture is higher, producing slow, low-intensity fires',
-        'Burn small patches (hectares, not square kilometers) in rotating mosaic patterns',
-        'Time burns to the lifecycle of key food plants (yams, grass seeds, cycads)',
-        'Use fire to create \u201Cgreen pick\u201D \u2014 fresh growth that attracts game animals',
-        'Maintain songlines and ceremonial pathways through strategic burning'
+        'Light most fires in the cool, dry months (April to September in the Western Desert) (Bliege Bird and others 2012)',
+        'Burn many small patches instead of letting a few huge fires sweep the land (Bliege Bird and others 2012)',
+        'Leave unburned patches close together, so animals have shelter nearby (Bliege Bird and others 2012)'
       ],
-      plants: ['Spinifex grass', 'Banksia (fire-triggered seed release)', 'Cycad palms', 'Bush tomato', 'Eucalyptus (fire-adapted bark)'],
-      legacy: 'The 2019-2020 Australian bushfires burned 46 million acres \u2014 a direct consequence of the cessation of Aboriginal burning practices after colonization. The Australian government now partners with Aboriginal ranger groups to reintroduce cultural burning. Victor Steffensen\u2019s work through the National Emerging Technologies Fund has revitalized these practices.',
+      plants: ['Spinifex grass (Triodia)', 'Senna shrubs', 'Eucalypts (resprout after fire)'],
+      // Round 9: Royal Commission into National Natural Disaster Arrangements, Report (28 October 2020; accessible PDF at
+      // oia.pmc.gov.au): "Over 24 million hectares were burnt"; the fires "started in Australia's hottest and driest year
+      // on record"; Recommendation 18.1: governments "should engage further with Traditional Owners to explore the
+      // relationship between Indigenous land and fire management and natural disaster resilience."
+      legacy: "The 2019-2020 Black Summer fires burned more than 24 million hectares (about 59 million acres). The Royal Commission that studied them pointed to record heat and drought, and asked governments to work further with Traditional Owners on Indigenous land and fire management. Victor Steffensen, a Tagalaka man, co-founded Firesticks, a First Nations-led group that is bringing cultural burning back.",
       color: '#dc2626'
     },
     {
@@ -571,19 +595,29 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Karuk, Yurok & Hupa',
       region: 'Northern California, USA (Klamath River)',
       icon: '\uD83C\uDF32',
-      years: '10,000+',
+      // Knight, C.A. and others (2022) Land management explains major trends in forest structure and
+      // composition over the last millennium in California's Klamath Mountains. PNAS 119(12),
+      // doi:10.1073/pnas.2116264119 (USGS summary: Indigenous stewardship "for at least a millennium").
+      since: 1000,
+      sinceSource: 'Lake-mud charcoal and pollen, tree fire scars, and Karuk and Yurok knowledge (Knight and others, PNAS 2022).',
       practice: 'Cultural Burning / \u201CGood Fire\u201D',
-      description: 'The Karuk, Yurok, and Hupa peoples of the Klamath River basin used intentional, low-intensity fire to manage forests, meadows, and riverbanks. Fire maintained tanoak groves for acorn production, encouraged hazel growth for basket-weaving materials, and created open understory habitat for deer and elk. Fire also reduced fuels around villages, protecting communities from wildfire.',
-      science: 'Low-intensity surface fires consume leaf litter and small fuels (1-hour and 10-hour fuels) while leaving mature trees unharmed. This reduces \u201Cfuel ladders\u201D \u2014 the continuous vertical path of vegetation that allows surface fires to climb into the canopy and become devastating crown fires. Karuk burning created open, park-like forests with 40-80 trees per acre instead of the 400+ per acre seen after a century of fire suppression.',
+      // Round 10: the deer habitat, village fuel-break, ridgeline, fall / spring timing, sourberry and training lines, three
+      // plants, and the Department of Natural Resources / Climate Adaptation Plan legacy had no source found. US Climate
+      // Resilience Toolkit, "Karuk's Innate Relationship with Fire" (toolkit.climate.gov, case study): "Tanoak acorns
+      // [...] are a staple Native food for many indigenous people"; tanoak "benefits from cultural burning that
+      // decreases tree and acorn pests and reduces competitive vegetation"; "The blades that grow the first year after a
+      // fire are considered best for basket weaving"; "Fire is important for restoring grasslands for elk"; "Tribal
+      // families continue to use traditional forest management techniques"; "Tribal leaders believe that it is possible
+      // to create a meaningful collaboration with the Forest Service".
+      description: 'The Karuk, Yurok, and Hupa peoples of the Klamath River basin use fire to care for the land. Tanoak acorns are a staple food, and cultural burning helps tanoak by cutting down tree and acorn pests and the plants that crowd it. Fire also helps restore grasslands for elk (US Climate Resilience Toolkit).',
+      science: "Low-intensity surface fires consume leaf litter and small fuels (1-hour and 10-hour fuels) while leaving mature trees unharmed. This reduces 'fuel ladders', the continuous vertical path of vegetation that lets surface fires climb into the canopy and become crown fires. Karuk burning kept forests open, with fewer, larger trees than the crowded stands that grew after a century of fire suppression.",
       keyPractices: [
-        'Burn in late fall and early spring when conditions are cool and moist',
-        'Target specific understory plants: burn to promote hazel, beargrass, and sourberry',
-        'Create and maintain prairies in forest gaps for deer forage and root crops',
-        'Burn along ridgelines to create firebreaks protecting villages in valleys',
-        'Train new fire practitioners through multi-generational knowledge transfer'
+        'Burn to help tanoak: cultural burning cuts down tree and acorn pests and the plants that compete with it (US Climate Resilience Toolkit)',
+        'Burn so new basket-weaving blades grow: blades from the first year after a fire are considered the best (US Climate Resilience Toolkit)',
+        'Use fire to restore grasslands for elk (US Climate Resilience Toolkit)'
       ],
-      plants: ['Tanoak (acorn food source)', 'Hazel (basket weaving)', 'Beargrass (ceremonial regalia)', 'Huckleberry', 'Camas lily'],
-      legacy: 'The Karuk Tribe\u2019s Department of Natural Resources now operates one of the most active cultural burning programs in the US. The Karuk Climate Adaptation Plan explicitly identifies the restoration of cultural burning as essential to ecosystem health. Collaborations with the US Forest Service are reintroducing Indigenous fire to federal lands for the first time in over a century.',
+      plants: ['Tanoak (acorn food source)', 'Basket-weaving plants'],
+      legacy: "Karuk families still use traditional ways of caring for the forest, and tribal programs support their work. Tribal leaders believe a real partnership with the US Forest Service is possible (US Climate Resilience Toolkit).",
       color: '#16a34a'
     },
     {
@@ -591,39 +625,85 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Martu',
       region: 'Western Desert, Australia',
       icon: '\uD83C\uDFDC\uFE0F',
-      years: '50,000+',
+      // No dated start found. Burrows, N.D., Burbidge, A.A., Fuller, P.J. & Behn, G. (2006) Evidence of
+      // altered fire regimes in the Western Desert region of Australia. Conservation Science W. Aust.
+      // 5(3):272-284: July 1953 air photos show a fine mosaic of small burns people "probably lit".
+      since: null,
+      sinceSource: 'Air photos from 1953 show a fine patchwork of small burns across the Western Desert, probably lit by people (Burrows and others 2006). No older dated record was found.',
       practice: 'Hunting Fires / Mosaic Patch Burning',
-      description: 'Martu women use fire as a hunting tool, burning spinifex grasslands to flush sand monitor lizards from burrows. This practice creates a fine-grained mosaic of burned and unburned patches across the desert. Research by Rebecca Bliege Bird (Penn State) demonstrated that Martu burning dramatically increases biodiversity \u2014 landscapes managed by Martu hunters supported 70% more species than unmanaged areas.',
-      science: 'The mosaic of burn ages creates diverse microhabitats. Recently burned areas attract seed-eating birds; regrowing patches shelter small mammals; mature spinifex rings house reptiles. Without Martu burning, spinifex grows into vast, continuous stands that fuel massive, uncontrollable wildfires during lightning storms. Martu fire management fragments fuel continuity, making the landscape resilient to catastrophic fire.',
+      // Round 10: the bird / mammal / reptile microhabitat lines, "often less than 1 hectare", "edge of mature spinifex
+      // rings", "Coordinate burns across family groups" and four of the plants had no source. Bliege Bird and others 2012
+      // (Aboriginal card): "Women use or rely on fire primarily to increase foraging returns in the search for burrowed
+      // sand monitor (Varanus gouldii), which comprise 74% of all foraging activity"; "nearly all hunting fires are
+      // ignited within 50 km of the hunters' community or 5 km of a hunting track to burn patches of mature spinifex
+      // grass (Triodia spp.)"; the cool, dry months; unburned patches "larger, closer, more contiguous". Burrows and
+      // others 2006 (legacy note below): on the 1981 imagery "four very large fires had burnt about 87%" of the area.
+      description: "Martu women use fire as a hunting tool, burning patches of mature spinifex grass to find sand monitor lizards in their burrows. Research led by anthropologist Rebecca Bliege Bird found that this patchwork keeps fires smaller and holds more kinds of habitat close together (Bliege Bird and others 2012).",
+      science: 'Where Martu burn, the desert has more patches of different ages, packed closer together, than where only lightning starts fires (Bliege Bird and others 2012). When people had to leave the desert, lightning fires grew huge: in one study area, four very large fires had burned about 87 percent of the land by 1981 (Burrows and others 2006).',
       keyPractices: [
-        'Burn small patches of spinifex (often less than 1 hectare) during hunting walks',
-        'Light fires at the edge of mature spinifex rings to flush prey',
-        'Leave unburned refugia so animals have shelter and can recolonize',
-        'Burn in cooler months when fire intensity remains low',
-        'Coordinate burns across family groups to manage landscape-scale patterns'
+        'Women burn patches of mature spinifex to hunt burrowed sand monitors, which make up 74 percent of their foraging time (Bliege Bird and others 2012)',
+        'Light nearly all hunting fires within 50 km of the community or 5 km of a hunting track (Bliege Bird and others 2012)',
+        'Burn mostly in the cool, dry months of April to September (Bliege Bird and others 2012)',
+        'Leave unburned patches close together, so animals have shelter nearby (Bliege Bird and others 2012)'
       ],
-      plants: ['Spinifex (Triodia)', 'Desert oak', 'Bush banana', 'Sand fig', 'Desert raisin'],
-      legacy: 'Bliege Bird\u2019s research demonstrated that where Martu people were removed from their lands (during forced relocation), catastrophic wildfires increased and biodiversity crashed. This is one of the strongest scientific demonstrations that Indigenous fire management actively increases ecosystem health.',
+      plants: ['Spinifex (Triodia)', 'Senna shrubs'],
+      // Round 3 (2026-11-23): the earlier "Martu elders say" quotation had no source we could find, so it is
+      // no longer shown as a quotation. Burrows, Burbidge, Fuller & Behn (2006) Conservation Science W. Aust.
+      // 5(3):272-284 (Western Desert, west of Lake Mackay): by 1973, "about a decade after Aborigines began to
+      // leave their homelands", the 1953 fine-grained mosaic "had begun to be erased"; on the 1981 imagery
+      // "four very large fires had burnt about 87%" of the study area. Proposed causes of mammal decline include
+      // the altered fire regime, "predation by introduced carnivores and competition with feral herbivores".
+      // Bliege Bird, Codding, Kauhanen & Bird (2012) PNAS 109:10287, doi:10.1073/pnas.1204585109 (PMC3387077):
+      // Martu "living nomadically in the Karlamilyi region in the 1950s and 1960s"; Punmu (1982) and Parnngurr
+      // (1984) set up by returning Martu groups; "Aboriginal fires are smaller ... and remain small even when
+      // climate variation causes huge fires in the lightning region". Crabtree, Bird & Bliege Bird (2019) Human
+      // Ecology, doi:10.1007/s10745-019-0053-z: "the removal of Aboriginal people from homelands precipitated
+      // rapid ecosystem remodeling".
+      legacy: "When Martu and other desert families left their land in the 1950s and 1960s, the fine patchwork of small burns began to disappear. In one Western Desert study area, air photos from 1953 show many small burns, while satellite images from 1981 show four huge fires that had burned most of the area (Burrows and others 2006). In the 1980s, Martu groups set up communities back on their own country. Today their hunting fires stay small even in years when lightning fires grow huge (Bliege Bird and others 2012). Researchers link the loss of Aboriginal burning to declines in some small desert mammals; introduced foxes and cats are part of the story too (Burrows and others 2006; Crabtree and others 2019).",
       color: '#ea580c'
     },
     {
       id: 'plains_nations',
       nation: 'Blackfeet, Lakota, Comanche & Plains Nations',
+      chartShort: 'Plains Nations',
       region: 'Great Plains, North America',
       icon: '\uD83E\uDDAC',
-      years: '8,000+',
+      // Roos, C.I., Zedeno, M.N., Hollenback, K.L. & Erlick, M.M.H. (2018) Indigenous impacts on North
+      // American Great Plains fire regimes of the past millennium. PNAS 115(32):8143-8148: dated prairie
+      // fire charcoal at bison drive lines, Two Medicine River, Montana, high fire activity 1100-1650 CE.
+      since: 900,
+      sinceSource: 'Dated prairie-fire charcoal at bison drive lines in north-central Montana, from about 1100 CE (Roos and others, PNAS 2018).',
       practice: 'Prairie Burning / Bison Management',
-      description: 'The great grasslands of North America were not a \u201Cnatural\u201D wilderness \u2014 they were actively managed by Indigenous peoples using fire. Plains nations burned vast areas to attract bison to nutritious new grass growth, to drive bison toward hunting grounds, and to prevent the encroachment of woody shrubs and trees that would convert grassland to forest. Without fire, the Great Plains would have been largely woodland.',
-      science: 'Grassland fires kill woody seedlings but stimulate deep-rooted grasses. Bunchgrasses like big bluestem have growing points below ground level, protected from fire. Within days of a burn, new green shoots emerge \u2014 higher in protein than mature grass. Bison preferentially graze recently burned areas, gaining 10-15% more weight than those on unburned range. This \u201Cpyric herbivory\u201D interaction between fire and grazers maintained grassland ecosystems across 500,000+ square miles.',
+      // Round 11: "were not an untouched wilderness" was a framing with no source. Roos and others 2018 (title):
+      // "Indigenous impacts on North American Great Plains fire regimes of the past millennium".
+      description: "Indigenous peoples shaped the great grasslands of North America with fire (Roos and others 2018). Plains nations burned to attract bison to nutritious new grass growth, to draw bison toward hunting grounds, and to keep woody shrubs and trees from spreading. Without fire, shrubs and trees spread into tallgrass prairie (National Park Service).",
+      // Round 10: growing points, "richer in protein" and the plant list had no source. NPS Wildland Fire in Tallgrass
+      // Prairie (tallgrass card): "Growth of native species such as big bluestem, little bluestem and Indian grass
+      // increases significantly following a fire"; Roos and others 2018: bison "prefer to graze recently burned patches".
+      science: "Tallgrass prairie grasses regrow quickly after a fire, and big bluestem, little bluestem and Indian grass grow much more after a burn (National Park Service). Bison prefer to graze recently burned patches (Roos and others 2018). This loop between fire and grazing animals is called 'pyric herbivory'.",
+      // Round 8: "clear dead thatch", "funnel bison herds toward hunting camps", "Ring fires to encircle ... bison",
+      // "Rotation burns across territories" and "Signal fires to communicate between bands" had no source, so they
+      // went. Roos and others 2018 (PNAS, doi:10.1073/pnas.1805259115, full text pmc.ncbi.nlm.nih.gov/articles/PMC6094123):
+      // "naturally ignited fires occurred during the summer, whereas anthropogenic fires occurred predominantly in the
+      // spring or the fall"; "Spring burning (for a fall hunt) or fall burning (for a spring hunt) would have created
+      // attractive conditions for subsequent grazing by bison, who prefer to graze recently burned patches";
+      // "Although it is possible that fire was used to initiate bison drives as well, we think it more likely that
+      // strategic grassland burning was used to lure bison to the gathering basins of particular driveline complexes."
       keyPractices: [
-        'Large-scale burns in late fall or early spring to clear dead thatch',
-        'Strategic burning to funnel bison herds toward hunting camps',
-        'Ring fires to encircle and concentrate bison on the open plain',
-        'Rotation burns across territories to ensure fresh grass throughout the season',
-        'Signal fires to communicate between bands during communal hunts'
+        'Burn in spring for a fall hunt, or in fall for a spring hunt, so bison come to graze the fresh grass. Lightning fires came mostly in summer (Roos and others 2018)',
+        'Burn grass near the start of bison drive lines, so herds gather where hunters expect them. Researchers think this was more likely than using fire to start the drive itself (Roos and others 2018)'
       ],
-      plants: ['Big bluestem', 'Switchgrass', 'Indian grass', 'Prairie clover', 'Coneflower (Echinacea)'],
-      legacy: 'The near-extinction of bison and the cessation of Indigenous prairie burning after colonization allowed woody encroachment across millions of acres. Modern tallgrass prairie restoration projects (like the Tallgrass Prairie National Preserve) now use prescribed fire to maintain grassland, following the same principles Indigenous peoples practiced for millennia.',
+      plants: ['Big bluestem', 'Little bluestem', 'Indian grass'],
+      // Round 8: "woody encroachment across millions of acres" and "the same principles Indigenous peoples practiced for
+      // millennia" had no source. NPS, People and Bison (nps.gov/subjects/bison/people.htm): bison fell "from 30-60
+      // million (estimates vary) to fewer than 1,000 animals by the 1890s"; "The decimation of millions of bison in the
+      // 1800s was pivotal in the tragic devastation of Indian people and society." NPS, Wildland Fire in Tallgrass Prairie
+      // (nps.gov/articles/wildland-fire-in-tallgrass-prairie.htm): "If fire was excluded, the tallgrass prairie would
+      // vanish, and shrubs, trees and exotic grasses would dominate the ecosystem." NPS news release, Tallgrass Prairie
+      // National Preserve, January 26, 2026: prescribed fire "is also used by preserve land managers to control woody
+      // vegetation and promote native plant and animal diversity"; "a partnership operation involving The Nature
+      // Conservancy and the National Park Service".
+      legacy: 'In the 1800s, bison fell from tens of millions to fewer than 1,000 animals, a loss that devastated Plains nations (National Park Service). When fire is kept out of tallgrass prairie, shrubs, trees, and non-native grasses take over (National Park Service). Today the Tallgrass Prairie National Preserve in Kansas uses prescribed fire to hold back woody plants and keep the prairie diverse (National Park Service).',
       color: '#854d0e'
     },
     {
@@ -631,19 +711,53 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Cherokee, Creek, Seminole & Southeast Nations',
       region: 'Southeastern United States',
       icon: '\uD83C\uDF33',
-      years: '7,000+',
+      // No dated start found (Delcourt & Delcourt 1997, Conservation Biology 11:1010, studies a 3,900-year
+      // peat record at Horse Cove, NC, but its abstract gives no start date for Native burning).
+      since: null,
+      sinceSource: 'No dated start for this practice was found in the sources checked.',
       practice: 'Pine Savanna / Understory Burning',
-      description: 'The longleaf pine ecosystem \u2014 once the largest ecosystem in North America, stretching 90 million acres from Virginia to Texas \u2014 was maintained by Indigenous fire. Cherokee, Creek, Muscogee, and Seminole peoples burned the understory of longleaf pine forests every 1-3 years. This created open, park-like savannas with rich ground-cover plants including blueberries, wild strawberries, and medicinal herbs.',
-      science: 'Longleaf pine is a fire-dependent species with remarkable adaptations. Seedlings spend 5-7 years in a \u201Cgrass stage,\u201D looking like a clump of grass, with a thick root storing energy. When the root is large enough, the seedling \u201Cbolts\u201D upward 3-6 feet in a single season, racing its growing tip above fire height. Mature longleaf bark can be 2-3 inches thick and is highly fire resistant. Without fire, shade-tolerant oaks and sweetgum overtop longleaf seedlings, killing them. Only 3% of the original longleaf ecosystem remains.',
+      // Round 10: "burned the understory ... every few years" and the blueberry / strawberry / herb line had no source
+      // (Fowler and Konopik credit blueberry burning to settlers). Fowler, C. & Konopik, E. (2007) The history of fire
+      // in the southern United States. Human Ecology Review 14(2):165-176: "Anthropogenic fires have been a key form of
+      // disturbance in southern ecosystems for more than 10,000 years"; at Fort Center, Florida, "Native Americans at
+      // Fort Center cleared garden land with fire. They also used fire to manage grasslands and to maintain open,
+      // longleaf pine (P. palustris) communities"; after they left in the 1600s "broad-leaved forests emerged".
+      description: "The longleaf pine ecosystem once covered about 90 million acres from Virginia to Texas. People have set fires in the South for more than 10,000 years. At Fort Center, Florida, Native Americans used fire to clear gardens, manage grasslands, and keep longleaf pine forests open. After they were forced to leave in the 1600s, the fires changed and broadleaf forests grew up there (Fowler and Konopik 2007).",
+      // Round 10: "oaks and sweetgum overtop longleaf seedlings" had no source. FEIS Pinus palustris
+      // (fs.usda.gov/database/feis/plants/tree/pinpal/all.html): the grass stage "lasts from 2 to many years"; "the
+      // seedling develops an extensive root system"; then it "uses its stored reserves to quickly grow a straight stem";
+      // "The bark becomes thick with age and insulates the cambium from heat"; "In the absence of frequent fire,
+      // longleaf pine is replaced by hardwoods and other southern pines."
+      science: "Longleaf pine is a fire-dependent species. Seedlings spend 2 or more years in a 'grass stage', looking like a clump of grass while they grow big roots. Then the seedling uses that stored food to shoot up fast. As the tree ages its bark grows thick and shields the living wood from heat. Without frequent fire, hardwoods and other pines replace longleaf (US Forest Service FEIS). Logging, land clearing and fire exclusion cut longleaf to about 3 percent of its old range by the 1990s; restoration has since brought it back to about 5 million acres.",
+      // Round 9: "Annual to triennial understory burns during dormant season (winter)" and "Burn around village sites to
+      // reduce pest insects (ticks, chiggers) and snakes" had no source found, so they went.
+      // Round 10: the savanna-harvest, wiregrass and deer / turkey / quail lines had no source. Fowler and Konopik 2007
+      // (above): "In the early historic period, Native Americans and early European settlers typically lit
+      // low-intensity brush fires. Frequent low-intensity burns helped to create and maintain the longleaf pine and
+      // wiregrass (Aristida stricta) communities that were typical to the Florida sandhills"; "Archaic Indians in the
+      // Little Tennessee River Valley used fire to create and maintain the ecotones where deer prefer to browse"; "One of
+      // the reasons Cherokee Indians in the Southern Appalachians burned the woods in the autumn was to clear the litter
+      // on the forest floor so that it would be easier to collect chestnuts."
       keyPractices: [
-        'Annual to triennial understory burns during dormant season (winter)',
-        'Maintain open savanna structure for wild fruit, tuber, and herb harvest',
-        'Burn to promote wiregrass (the \u201Cfuel\u201D that carries surface fire through longleaf)',
-        'Create open habitats for white-tailed deer, turkey, and quail',
-        'Burn around village sites to reduce pest insects (ticks, chiggers) and snakes'
+        'Clear garden land with fire, manage grasslands, and keep longleaf pine forests open, as at Fort Center, Florida (Fowler and Konopik 2007)',
+        'Light frequent, low-intensity fires that helped make and keep the longleaf pine and wiregrass sandhills of Florida (Fowler and Konopik 2007)',
+        'Burn to keep the forest edges where deer like to browse, as Archaic peoples did in the Little Tennessee River Valley (Fowler and Konopik 2007)',
+        'Burn the woods in autumn to clear the leaf litter so chestnuts are easier to gather (Cherokee, Southern Appalachians; Fowler and Konopik 2007)',
+        // Fowler and Konopik 2007: "Cane was used by the Indians not only for food but also for the construction of
+        // dwellings, weapons"; "the Indians would have burned them in a 7-10 year interval"; "Both annual burning and the
+        // total lack of fire will eliminate cane".
+        'Burn canebrakes now and then, not every year: cane, used for food, houses and tools, dies out with yearly fire or with no fire. Researchers think they were burned about every 7 to 10 years (Fowler and Konopik 2007)'
       ],
-      plants: ['Longleaf pine', 'Wiregrass', 'Saw palmetto', 'Wild blueberry', 'Pitcher plants (carnivorous)'],
-      legacy: 'The longleaf pine ecosystem is one of the most endangered in North America. Indigenous-led prescribed burn programs and organizations like the Longleaf Alliance are working to restore this ecosystem. The endangered red-cockaded woodpecker, gopher tortoise, and over 30 other threatened species depend on the fire-maintained open structure that Indigenous peoples created.',
+      // Round 10: saw palmetto, wild blueberry and pitcher plants had no source tying them to this card; these four do.
+      plants: ['Longleaf pine', 'Wiregrass', 'Cane (canebrakes)', 'Chestnut'],
+      // Round 8: "one of the most endangered in North America", "Indigenous-led prescribed burn programs" and "structure
+      // that Indigenous peoples created" had no source. US Fish and Wildlife Service, Longleaf Pine Ecosystem Fact Sheet,
+      // "An Endangered Ecosystem" (fws.gov/southeast/es/partners/LongleafPine.html, archived 2008 at
+      // webarchive.library.unt.edu/eot2008/20081104204207/): "Over 30 plant and animal species associated with longleaf
+      // pine ecosystems are threatened or endangered, including the red-cockaded woodpecker and gopher tortoise."
+      // The Longleaf Alliance (longleafalliance.org): "a non-profit organization that works throughout the Southeast
+      // U.S." to "guide longleaf restoration, stewardship, and conservation."
+      legacy: "The US Fish and Wildlife Service calls longleaf pine an endangered ecosystem. More than 30 plants and animals that live in it are threatened or endangered, including the red-cockaded woodpecker and the gopher tortoise (US Fish and Wildlife Service). Groups such as the Longleaf Alliance work across the Southeast to restore it.",
       color: '#059669'
     },
     {
@@ -651,19 +765,61 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Coast Salish, Kalapuya & Pacific Northwest Nations',
       region: 'Pacific Northwest, North America',
       icon: '\uD83C\uDF3A',
-      years: '6,000+',
+      // No single dated start. Walsh, M.K. and others (2010) An 11 000-year-long record of fire and vegetation
+      // history at Beaver Lake, Oregon. Quaternary Science Reviews, doi:10.1016/j.quascirev.2010.02.011:
+      // "Middle-to-late Holocene increases in fire frequency ... likely indicate ... anthropogenic burning".
+      since: null,
+      sinceSource: 'Charcoal in Beaver Lake, Oregon, points to people burning nearby over thousands of years, without one start date (Walsh and others 2010).',
       practice: 'Prairie & Meadow Burning / Camas Management',
-      description: 'In the Pacific Northwest \u2014 one of the wettest regions in North America \u2014 Indigenous peoples used fire to maintain prairies and oak savannas in a landscape that would otherwise be dense coniferous forest. The Kalapuya of the Willamette Valley burned annually to maintain vast camas lily meadows. Coast Salish peoples maintained Garry oak prairies on Vancouver Island and the San Juan Islands. These fire-maintained ecosystems supported some of the most productive food systems on the continent.',
-      science: 'Camas bulbs (a primary food staple) require full sunlight and cannot compete with conifers. Annual fall burning killed Douglas-fir seedlings, recycled nutrients into the soil, and stimulated camas bulb division and growth. Studies show camas production increases 3-5x in burned vs. unburned meadows. Garry oak savannas are now critically endangered in British Columbia because without fire, Douglas-fir overtops and shades out the oaks within decades.',
+      description: 'In the Pacific Northwest \u2014 one of the wettest regions in North America \u2014 Indigenous peoples used fire to maintain prairies and oak savannas in a landscape that would otherwise be dense coniferous forest. The Kalapuya of the Willamette Valley dug camas on the wet prairies in late spring and early summer, and did not burn then. They burned the dry prairies in late summer and the oak openings in October (Boyd 1999). Around Victoria, the San Juan Islands, and Whidbey Island, written accounts describe burning open land to grow camas and bracken fern (Boyd 1999).',
+      science: "Regular burning cleared out competing trees and shrubs, which helped camas and other wild roots grow (Boyd 1999). By late summer, when the camas harvest was over, many camas marshes were dry enough to burn (Boyd 1999). In British Columbia, more than 95 percent of Garry oak habitat has been lost. Without fire, Douglas-fir moves in, and few young oaks grow up under the conifers (US Forest Service FEIS).",
+      // Round 7: "shades out the oaks within decades" had no source for "within decades". FEIS, Quercus garryana
+      // (fs.usda.gov/database/feis/plants/tree/quegar/all.html): "In British Columbia ... Oregon white oak habitat
+      // loss has exceeded 95%" (MacDougall and others 2004); "With the elimination of frequent Native American
+      // burning, Douglas-fir encroachment ensued"; Rocky Point, Vancouver Island (Gedalof and others 2006): "From 1950
+      // on, recruitment was almost exclusively by coniferous species" and "significantly ... fewer Oregon white oak
+      // seedlings on plots with a coniferous overstory than those without". Garry oak = Oregon white oak.
       keyPractices: [
-        'Annual fall burning of camas prairies after harvest (September-October)',
-        'Maintain Garry oak savannas by burning out encroaching Douglas-fir',
-        'Burn bracken fern patches to encourage edible fiddlehead production',
-        'Create berry patches (salal, huckleberry, Oregon grape) at forest edges',
-        'Coordinate burns across villages to manage the entire Willamette Valley landscape'
+        // Round 6: "Annual fall burning of camas prairies" contradicted Boyd 1999 p. 127: "In late spring and early summer
+        // ... root crops such as camas were collected and processed. There was no burning at this time." ... "This was
+        // followed in October by firing of the oak openings, after acorns had been collected."
+        'No burning in late spring and early summer, while camas was dug on the wet prairies (Boyd 1999)',
+        'Burn the oak openings in October, after the acorns were gathered (Boyd 1999)',
+        // Round 8: FEIS Quercus garryana (above): "With the removal of Native American burning practices in the
+        // Willamette Valley, Oregon white oak savannahs quickly succeeded to closed-canopy Oregon white oak woodlands,
+        // and Oregon white oak woodlands became Douglas-fir-dominated forests".
+        'Keep Garry oak savannas open with frequent fire. When the burning stopped, Willamette Valley oak woodlands turned into Douglas-fir forest (US Forest Service FEIS)',
+        // Round 7: "fiddlehead production" and "berry patches (salal, huckleberry, Oregon grape) at forest edges" had no
+        // source. Boyd 1999 p. 111: roots eaten include "the rhizome of bracken fern"; "From Whidbey Island, the San Juan
+        // Islands, and the Victoria area, there are ethnographic and historic accounts of burning open areas to encourage
+        // the growth of both camas and bracken fern." Tillamook Ethnography (quoted by Boyd): "Every few years the berry
+        // pickers would burn over the salal or shot huckleberry patch. That meant no berries there next season, but a
+        // greatly improved crop the second year." No source found for Oregon grape, so it leaves the plant list.
+        'Burn open ground so bracken fern grows well; people ate its underground stems (Boyd 1999)',
+        'Burn salal and huckleberry patches every few years: no berries the next season, a much better crop the year after (Tillamook, in Boyd 1999)',
+        // Round 4: "coordinate burns across villages to manage the entire Willamette Valley" had no source.
+        // Boyd 1999 (pp. 94-138): "two major direct uses of fire: in the circle hunt of deer and in the gathering
+        // of tarweed"; the communal drive needed "a high degree of cooperation ... coordinated by a special hunt
+        // leader"; drives "took place ... late October"; "it is hard to believe that all of Marion County was
+        // involved in a single drive".
+        'Burn the valley prairies in late summer to gather tarweed seeds, and set fires for big group deer hunts in the fall, led by a hunt leader (Boyd 1999)'
       ],
-      plants: ['Camas lily (staple food)', 'Garry oak', 'Salal', 'Oregon grape', 'Bracken fern'],
-      legacy: 'When Euro-American settlers arrived in the Willamette Valley, they described it as a \u201Cnatural paradise\u201D of open grasslands and scattered oaks \u2014 not recognizing it as a carefully managed landscape. Today, Garry oak savannas are one of the most endangered ecosystems in Canada, and the Kalapuya are working with conservation organizations to restore cultural burning to Willamette Valley prairies.',
+      // Round 11: each chip ties to this card's sources. Boyd 1999: camas, "the Kalapuya 'staple,' the generation of which
+      // was favored by burning", and "the rhizome of bracken fern" (burned for in the Whidbey Island, San Juan Islands and
+      // Victoria accounts); oak openings fired in October (Boyd 1999; FEIS Quercus garryana); salal and "shot huckleberry"
+      // patches burned every few years (Tillamook Ethnography, in Boyd 1999).
+      plants: ['Camas lily (staple food)', 'Garry oak', 'Salal', 'Huckleberry', 'Bracken fern'],
+      // Round 3: the quoted "natural paradise" had no source. Boyd, R. (1999) Strategies of Indian burning in
+      // the Willamette Valley, in Indians, Fire and the Land in the Pacific Northwest (Oregon State Univ.
+      // Press) pp. 94-138: uses "historical data (1826-1847) on Indian-caused fires in the Willamette Valley";
+      // Boyd, Oregon Encyclopedia "Indian Use of Fire in Early Oregon": most burning "in late summer, after harvest".
+      // Round 7: Garry Oak Ecosystems Recovery Team (goert.ca/about/what-remains): "Collectively, Garry Oak and
+      // associated ecosystems are among the most endangered in Canada." Oregon Watershed Enhancement Board, Plants for
+      // People (oregon.gov/oweb): grantee "Institute for Applied Ecology and the Confederated Tribes of Grand Ronde";
+      // "seven culturally significant prairie and oak habitat locations across the Willamette Valley", "maintained
+      // with disturbance cycles such as culturally prescribed fire and mowing". Oregon Tribal Affairs (oregon.gov/odhs):
+      // Grand Ronde "includes Tribal bands from the Kalapuya, Molalla, Chasta, Umpqua, Rogue River, Chinook and Tillamook".
+      legacy: 'Written accounts from 1826 to 1847 describe Kalapuya fires in the Willamette Valley, mostly in late summer after the harvest (Boyd 1999). After Euro-American settlement the burning stopped, and many prairies and oak savannas filled in with trees. Today, Garry oak ecosystems are among the most endangered in Canada (Garry Oak Ecosystems Recovery Team). In the Willamette Valley, the Confederated Tribes of Grand Ronde, which include Kalapuya bands, work with partners to restore prairie and oak sites, using cultural fire as one tool (Oregon Watershed Enhancement Board).',
       color: '#7c3aed'
     },
     {
@@ -671,19 +827,35 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Indigenous Amazonian Peoples',
       region: 'Amazon Basin, South America',
       icon: '\uD83C\uDF0E',
-      years: '7,000+',
+      // Watling, J. and others (2018) Direct archaeological evidence for Southwestern Amazonia as an early
+      // plant domestication and food production centre. PLOS ONE 13(7):e0199868: charcoal from a fire
+      // structure at the base of the Teotonio dark earth dated 6,495-6,400 cal BP.
+      since: 6500,
+      sinceSource: 'Charcoal from a fire pit at the bottom of the dark earth at Teotonio, on the Madeira River, Brazil (Watling and others, PLOS ONE 2018).',
       practice: 'Terra Preta / Managed Fire for Soil Creation',
-      description: 'Indigenous peoples of the Amazon created \u201Cterra preta\u201D (dark earth) \u2014 some of the most fertile soil on Earth \u2014 through centuries of managed burning, charcoal production, and composting. Amazonian soils are naturally poor (leached by heavy rain), but terra preta patches remain extraordinarily fertile thousands of years after they were created. This represents one of the most sophisticated examples of fire-based land management in human history.',
-      science: 'Terra preta is 2-3 times richer in carbon, nitrogen, and phosphorus than surrounding oxisol soils. The key ingredient is biochar \u2014 charcoal produced by low-oxygen smoldering fires. Biochar\u2019s porous structure provides habitat for soil microbes, retains water and nutrients, and persists in soil for 1,000-4,000+ years. Terra preta soils self-regenerate: they grow at ~1 cm per year when managed, suggesting an active biological process.',
+      // Round 4: "some of the most fertile soil on Earth", "extraordinarily fertile thousands of years after" and
+      // "one of the most sophisticated examples ... in human history" had no source. Glaser, B. (2007) Phil.
+      // Trans. R. Soc. B 362:187-196, doi:10.1098/rstb.2006.1978: Terra Preta soils "exhibit approximately three
+      // times more soil organic matter, nitrogen and phosphorus and 70 times more charcoal compared to adjacent
+      // infertile soils"; made "by chance or intentionally adding large amounts of charred residues (charcoal),
+      // organic wastes, excrements and bones".
+      description: 'Indigenous peoples of the Amazon made \u201Cterra preta\u201D (dark earth). Over many years, by chance or on purpose, they added large amounts of charcoal, food waste, manure, and bones to the soil. Most Amazonian soils are poor (heavy rain washes the nutrients out). Terra preta today has about 3 times more organic matter, nitrogen, and phosphorus than the soil next to it, and about 70 times more charcoal (Glaser, Philosophical Transactions B 2007).',
+      science: "Terra preta is much richer in carbon and nutrients than the surrounding soils. The key ingredient is biochar, charcoal made by low-oxygen smoldering fires. Biochar's porous structure gives soil microbes a home, holds water and nutrients, and can stay in the soil for centuries (Wang and others 2016).",
+      // Round 10: the smoldering-fire, shells, generations-long and agroforestry practices and the acai / cacao /
+      // peach palm plants had no source. Glaser 2007 (above): made "by chance or intentionally adding large amounts of
+      // charred residues (charcoal), organic wastes, excrements and bones". Watling and others 2018 (above), Teotonio:
+      // "Such evidence includes the presence of local and exotic domesticates such as manioc (Manihot esculenta), squash
+      // (Cucurbita sp.) and beans (Phaseolus sp.)"; "Brazil nut (Bertholletia excelsa) seed coats were also recovered".
       keyPractices: [
-        'Low-temperature smoldering fires to produce charcoal (biochar) rather than ash',
-        'Mix charcoal with organic waste (fish bones, shells, food scraps) to create terra preta',
-        'Use slash-and-char (not slash-and-burn) to clear forest patches sustainably',
-        'Maintain terra preta gardens for generations through continuous charcoal addition',
-        'Manage forest-garden mosaics (agroforestry) using fire as a tool for clearing and enrichment'
+        'Add large amounts of charcoal, food waste, manure, and bones to the soil, by chance or on purpose, which builds dark earth (Glaser 2007)',
+        'Grow food in the dark earth: at Teotonio, Brazil, it holds remains of manioc, squash, and beans, along with Brazil nut shells (Watling and others 2018)'
       ],
-      plants: ['Brazil nut (managed groves)', 'A\u00E7a\u00ED palm', 'Cacao', 'Cassava/Manioc', 'Peach palm'],
-      legacy: 'Modern soil scientists are studying terra preta to develop \u201Cbiochar agriculture\u201D \u2014 adding charcoal to degraded soils to restore fertility and sequester carbon. Terra preta research has shown that pre-Columbian Amazonia supported millions of people in sophisticated agricultural societies, challenging the colonial myth of the Amazon as \u201Cpristine wilderness.\u201D',
+      plants: ['Manioc (cassava)', 'Squash', 'Beans', 'Brazil nut'],
+      // Round 6: slash-and-char is a modern proposal. Lehmann, J. and others (2002) 'Slash-and-char: a feasible alternative for
+      // soil fertility management in the Central Amazon?' 17th World Congress of Soil Science, paper 449: "Testing the application
+      // of charred organic matter was stimulated by the fact that anthropogenic soils in the Amazon (so-called 'Terra Preta')";
+      // "The slash-and-char technique is an alternative to burning of the above ground biomass".
+      legacy: "Modern soil scientists are studying terra preta to develop 'biochar agriculture', adding charcoal to worn-out soils to restore fertility and store carbon. One idea they test is 'slash-and-char': turning cleared plants into charcoal instead of burning them to ash (Lehmann and others 2002). At Teotonio, the dark earth also holds early evidence of plant domestication and food production (Watling and others 2018).",
       color: '#065f46'
     },
     {
@@ -691,39 +863,73 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'M\u0101ori',
       region: 'Aotearoa / New Zealand',
       icon: '\uD83C\uDF3F',
-      years: '700+',
+      // McWethy, D.B. and others (2010) Rapid landscape transformation in South Island, New Zealand,
+      // following initial Polynesian settlement. PNAS 107(50):21343-21348: 16 lake cores; high-severity
+      // fires within the first two centuries after arrival about 700-800 years ago.
+      since: 700,
+      sinceSource: 'Charcoal in mud from 16 South Island lakes (McWethy and others, PNAS 2010). Māori arrived about 700 to 800 years ago.',
       practice: 'Landscape Burning / Bracken Fern Management',
-      description: 'M\u0101ori used fire extensively after arriving in Aotearoa to convert dense forest to fernland and grassland for food production. Bracken fern (aruhe) rhizomes were a major carbohydrate source, and burning stimulated vigorous fern regrowth. M\u0101ori also used fire to maintain open hunting grounds and to manage wetlands for bird habitat (critical for harvesting m\u0101tauranga-based food systems).',
-      science: 'Bracken fern is a pyrophyte \u2014 a plant that thrives after fire. Its deep rhizomes survive burning, and the removal of competing vegetation triggers rapid regrowth. Burned fernlands produce rhizomes 2-3x larger than unburned areas. M\u0101ori burning also created grasslands that supported kiore (Pacific rat) populations, an important protein source. Palynological (pollen core) studies confirm a dramatic shift from forest to fernland coinciding with M\u0101ori settlement.',
+      // Round 4: wetland burning "for bird habitat (critical for harvesting matauranga-based food systems)", fire
+      // in "rongoaa Maori (traditional medicine)" and manuka honey as "another legacy of Indigenous landscape
+      // management" had no source. Peden, R. (2008) 'Fire and agriculture', Te Ara - the Encyclopedia of New
+      // Zealand, teara.govt.nz/en/fire-and-agriculture: "the fernlands were maintained by regular burning";
+      // "In some parts of the North Island the fern country needed to be burnt every three to five years";
+      // "It is likely that hunters deliberately set fire to the bush to flush out game birds such as moa";
+      // kumara: "Burning was part of the agricultural cycle to prepare new ground, with the minerals in the ash
+      // from burned scrub and fern providing nutrients for the crop"; torches of dried grass and bird fat in
+      // flax and totara bark "would burn for three to four hours", "likely ... used for setting fire to
+      // vegetation". Wassilieff, M. (2007) 'Forest succession and regeneration', Te Ara: "Manuka (Leptospermum
+      // scoparium) is New Zealand's main pioneer shrub, and thrives after fire"; its capsules "split open when
+      // dry or burnt".
+      // Round 11: "used fire extensively ... to convert dense forest to fernland and grassland for food production" went
+      // past the sources (the grassland came with Europeans). McWethy and others 2010 (abstract, PubMed 21149690): Maori
+      // "used fire as a tool for forest clearance"; "native forests had little or no previous history of fire and little
+      // resilience to the severity of burning"; "The transformation of scrub to grassland by Europeans in the mid-19th
+      // century". Peden, Te Ara 2008: "The fires caused widespread deforestation in the South Island east of the main
+      // dividing range, and also in large parts of the eastern North Island"; "some of the burnoff would have been
+      // accidental"; "The staple vegetable was aruhe (fern root)".
+      description: 'After M\u0101ori arrived in Aotearoa, about 700 to 800 years ago, they used fire to clear forest. These forests had little or no history of fire before people came, so the change lasted (McWethy and others 2010). Fires cleared forest across the eastern South Island and much of the eastern North Island, and some of them were probably accidental. Bracken fern (aruhe) root was the main vegetable, and regular burning kept the fernlands open so the fern could grow back. Hunters probably also set fires to flush out game birds such as moa (Peden, Te Ara 2008).',
+      // Round 10: "pyrophyte", "deep rhizomes survive burning" and the cabbage tree had no source. Peden (Te Ara, above):
+      // "the fernlands were maintained by regular burning". McWethy and others 2010 (above): charcoal in 16 lake cores.
+      science: "Bracken fern grows back after fire, so regular burning kept the fernlands open for the root harvest (Peden, Te Ara 2008). Charcoal in the mud of 16 South Island lakes shows severe fires within about two centuries of M\u0101ori arrival (McWethy and others 2010).",
       keyPractices: [
-        'Burn bracken fern patches on rotation (2-3 year cycle) to maximize rhizome production',
-        'Clear forest edges to expand productive fernland and garden space',
-        'Maintain wetland edges through controlled burning for bird habitat',
-        'Burn to create open areas for kumara (sweet potato) cultivation',
-        'Use fire as part of rongoaa M\u0101ori (traditional medicine) landscape management'
+        'Burn the fern country again and again (every 3 to 5 years in parts of the North Island) so bracken stays open for the root harvest',
+        'Use fire to clear forest (McWethy and others 2010)',
+        'Set fires that probably helped hunters flush out game birds such as moa',
+        'Burn scrub and fern to prepare new k\u016Bmara (sweet potato) gardens; the ash fed the crop',
+        'Carry torches of dried grass and bird fat, wrapped in flax and t\u014Dtara bark, that burned for 3 to 4 hours and were likely used to light vegetation fires'
       ],
-      plants: ['Bracken fern (aruhe)', 'Harakeke (flax)', 'Kumara (sweet potato)', 'Cabbage tree (t\u012B k\u014Duka)', 'M\u0101nuka'],
-      legacy: 'M\u0101ori fire management transformed the New Zealand landscape. Today, m\u0101tauranga M\u0101ori (traditional knowledge) is increasingly integrated into conservation management. M\u0101nuka \u2014 a fire-adapted pioneer species \u2014 has become globally famous for its medicinal honey, another legacy of Indigenous landscape management through fire.',
+      plants: ['Bracken fern (aruhe)', 'Harakeke (flax)', 'Kumara (sweet potato)', 'M\u0101nuka'],
+      legacy: 'M\u0101ori fire management transformed the New Zealand landscape. New Zealand\u2019s 2020 biodiversity strategy sets a goal that m\u0101tauranga M\u0101ori (M\u0101ori knowledge) is \u201Can integral part of biodiversity research and management\u201D (Department of Conservation, Te Mana o te Taiao). M\u0101nuka, New Zealand\u2019s main pioneer shrub, thrives after fire: its seed capsules split open when burnt (Wassilieff, Te Ara 2007). Today it is also known for m\u0101nuka honey.',
       color: '#0369a1'
     },
     {
       id: 'paiute',
       nation: 'Paiute & Great Basin Peoples',
-      region: 'Great Basin, Nevada & Eastern California, USA',
+      region: 'Great Basin and central Utah, USA',
       icon: '\uD83C\uDFD4\uFE0F',
-      years: '8,000+',
-      practice: 'Pine Nut Forest & Meadow Burning',
-      description: 'The Paiute peoples of the Great Basin managed pi\u00F1on-juniper woodlands and montane meadows with fire. Pi\u00F1on pine nuts were the single most important food source \u2014 a calorie-dense, storable staple that sustained families through harsh winters. Paiute burning maintained open, productive pi\u00F1on stands and kept mountain meadows free of encroaching conifers, maximizing edible root, seed, and game production across an arid landscape.',
-      science: 'Pi\u00F1on pines produce heavier cone crops in open stands with less competition. Paiute burning removed juniper (a heavy water user) and dead fuels, reducing competition for scarce moisture. Burned meadows produced abundant biscuitroot, yampa, and other edible tubers. Without fire, juniper encroaches into meadows at rates of 0.5-1 acre/year, fragmenting sage-grouse habitat and reducing water table levels by 15-30% due to increased transpiration.',
+      // Carter, V.A. and others (2021) Legacies of Indigenous land use shaped past wildfire regimes in the
+      // Basin-Plateau Region, USA. Communications Earth & Environment, doi:10.1038/s43247-021-00137-3:
+      // after farming ended about 1400 CE, "ancestors of the Ute and Paiute, continued to burn" (U. of Utah).
+      since: 600,
+      sinceSource: 'Lake-mud charcoal on the Fish Lake Plateau, Utah: ancestors of the Ute and Paiute kept burning after about 1400 CE (Carter and others 2021).',
+      practice: 'Cultural Burning on the Fish Lake Plateau',
+      // Round 10: "single most important food source", the pinon cone-crop, juniper water-use, biscuitroot / yampa and
+      // sage-grouse lines, all five practices, the plant list and the BLM legacy had no source found. University of Utah,
+      // "Wildfires on Fish Lake Plateau" (attheu.utah.edu, April 2021, on Carter and others 2021): "Large-scale farming
+      // ceased after the year 1400"; "Hunters and foragers, ancestors of the Ute and Paiute, continued to burn" "although
+      // less frequently than during the farming period"; "Fremont people practiced cultural burning to support edible
+      // wild plants"; "the Fremont used small, frequent fires, a practice known as cultural burning"; "After Europeans
+      // made cultural burning illegal, the ecosystem returned to be dominated by a thick forest of trees."
+      description: 'On the Fish Lake Plateau in central Utah, the ancestral land of the Ute and Paiute, Fremont farmers used small, frequent fires. After farming ended there around 1400 CE, hunters and foragers who were ancestors of the Ute and Paiute kept burning, though less often (University of Utah; Carter and others 2021).',
+      science: "Lake-mud charcoal, tree rings and archaeology together tell the story. The Fremont burned to help edible wild plants, and those plants were much more common while they lived there (University of Utah; Carter and others 2021).",
       keyPractices: [
-        'Burn beneath pi\u00F1on stands to clear competing juniper and reduce fuel ladders',
-        'Maintain montane meadows by burning encroaching conifers at forest edges',
-        'Burn sagebrush patches on rotation to promote fresh browse for deer and pronghorn',
-        'Time burns to late fall after pi\u00F1on harvest when fuels are drier but nights are cool',
-        'Use fire to drive jackrabbits and other game toward hunting parties in communal drives'
+        'Use small, frequent fires (Fremont farmers, 900 to 1400 CE; University of Utah)',
+        'Burn to help edible wild plants grow (Fremont; University of Utah)',
+        'Keep burning after farming ended, less often, as hunters and foragers (ancestors of the Ute and Paiute; University of Utah)'
       ],
-      plants: ['Pi\u00F1on pine (nut harvest)', 'Mountain sagebrush', 'Biscuitroot', 'Yampa', 'Indian ricegrass'],
-      legacy: 'Western juniper encroachment \u2014 a direct result of fire suppression \u2014 is now the #1 threat to sage-grouse habitat across the Great Basin. Over 40 million acres of sagebrush steppe have been invaded by juniper since the cessation of Indigenous burning. The Bureau of Land Management now spends millions annually on juniper removal programs that replicate what Paiute fire management accomplished for millennia.',
+      plants: [],
+      legacy: "After Europeans made cultural burning illegal, the Fish Lake Plateau filled in with thick forest (University of Utah).",
       color: '#78716c'
     },
     {
@@ -731,19 +937,35 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'Ojibwe / Anishinaabe',
       region: 'Great Lakes Region, North America',
       icon: '\uD83C\uDF0A',
-      years: '5,000+',
-      practice: 'Berry Patch, Wild Rice & Forest Edge Burning',
-      description: 'The Ojibwe (Anishinaabe) peoples of the Great Lakes region used fire to manage a mosaic landscape of boreal forest, wild rice wetlands, berry patches, and birch groves. Fire maintained the blueberry and cranberry barrens critical for food and medicine, kept forest edges open for hunting, and enhanced birch bark quality by promoting vigorous young growth essential for canoe-building and shelter construction.',
-      science: 'Blueberry (Vaccinium) species produce maximum berry crops 2-4 years after low-intensity fire. Fire removes competing shrubs and trees, recycles nutrients into acidic soil, and triggers prolific sprouting from underground rhizomes. Jack pine barrens \u2014 maintained by Ojibwe burning \u2014 were the sole nesting habitat for the now-endangered Kirtland\u2019s warbler. Wild rice (manoomin) beds benefit indirectly: fire-maintained forests reduce nutrient runoff that causes algal blooms in rice lakes.',
+      // No dated start. Kipfmueller, K.F., Larson, E.R., Johnson, L.B. & Schneider, E.A. (2021) Human
+      // augmentation of historical red pine fire regimes in the Boundary Waters Canoe Area Wilderness.
+      // Ecosphere 12, doi:10.1002/ecs2.3673: Anishinaabeg land use "increased rates of local surface fire".
+      since: null,
+      sinceSource: 'Tree-ring fire scars in the Boundary Waters, Minnesota, show Anishinaabe land use made surface fires more frequent, without one start date (Kipfmueller and others, Ecosphere 2021).',
+      practice: 'Surface Burning in Red Pine Forest',
+      // Round 4: burning birch groves for "superior bark quality" had no source; removed here and in the list.
+      // Uchytil, R.J. (1991) Betula papyrifera, USDA Forest Service Fire Effects Information System
+      // (fs.usda.gov/database/feis/plants/tree/betpap/all.html): "Paper birch seeds-in aggressively after
+      // wildfire, often forming large, essentially pure stands"; "Native Americans made paper birch bark into
+      // baskets, storage containers, mats ... and canoes". Kipfmueller and others 2021 (above): sites near "a
+      // primary travel and trade corridor" show "traditional landuse by Anishinaabeg (Ojibwe) increased rates
+      // of local surface fire" in red pine forests.
+      description: 'The Ojibwe (Anishinaabe) peoples of the Great Lakes region used fire on the land. Tree-ring fire scars in the Boundary Waters, Minnesota, show that Anishinaabe land use made surface fires more frequent in red pine forest (Kipfmueller and others 2021). Paper birch, whose bark was made into canoes, baskets, and containers, is a tree that seeds in fast after wildfire (US Forest Service Fire Effects Information System).',
+      // Round 10: "fruits best a few years after", "returns nutrients to acidic soil" and "the only nesting habitat" had
+      // no source. University of Maine Cooperative Extension (Wabanaki blueberry note below): pruned stems grow one year
+      // and fruit the next. FEIS Pinus banksiana (boreal card): Kirtland's warbler nests "on the ground near or at the
+      // edge of fairly dense young jack pine stands".
+      // FEIS Betula papyrifera (above): "Paper birch seeds-in aggressively after wildfire, often forming large,
+      // essentially pure stands".
+      science: "Fire scars in the tree rings of red pines record when surface fires burned (Kipfmueller and others 2021). Paper birch seeds in fast after wildfire, often forming large stands of nearly all birch (US Forest Service FEIS). Young jack pine stands, which come back after fire, are where the Kirtland's warbler nests (US Forest Service FEIS).",
+      // Round 10: the blueberry, jack pine barrens, moose / deer browse and wild-rice buffer practices, the "food and
+      // medicine" line, three plants and "advocate for co-management ... on ceded lands" had no source found in a
+      // quick search, so they went.
       keyPractices: [
-        'Burn blueberry and cranberry barrens on 3-5 year rotation for maximum berry production',
-        'Maintain jack pine barrens through periodic fire to sustain culturally important landscapes',
-        'Burn forest edges and clearings to create browse for moose and deer',
-        'Burn around birch groves to stimulate new growth with superior bark quality',
-        'Protect wild rice lakes by maintaining forested buffer zones with periodic understory burns'
+        'Along a main travel and trade route through red pine forest, Anishinaabe land use made surface fires more frequent (Kipfmueller and others 2021)'
       ],
-      plants: ['Wild blueberry', 'Wild cranberry', 'Jack pine', 'Paper birch', 'Wild rice (manoomin)'],
-      legacy: 'The decline of Kirtland\u2019s warbler (down to 167 pairs by 1987) is directly linked to fire suppression eliminating young jack pine stands that Ojibwe burning maintained. Intensive prescribed burn programs in Michigan have since recovered the population to over 2,000 pairs. Ojibwe communities now advocate for co-management of fire on ceded lands.',
+      plants: ['Red pine', 'Paper birch'],
+      legacy: "The Kirtland's warbler fell to 167 singing males in 1987. Planting and harvesting young jack pine stands, plus controlling cowbirds that raid its nests, brought it back to more than 2,000 pairs, and it was taken off the endangered list in 2019 (US Fish and Wildlife Service).",
       color: '#0891b2'
     },
     {
@@ -751,19 +973,45 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'San (Bushmen)',
       region: 'Kalahari & Southern Africa',
       icon: '\uD83C\uDFF9',
-      years: '20,000+',
+      since: null,
+      sinceSource: 'No dated start for this practice was found in the sources checked.',
       practice: 'Veldt Burning / Hunter-Gatherer Fire Management',
-      description: 'The San peoples of southern Africa \u2014 among the oldest continuous cultures on Earth \u2014 have used fire to manage the Kalahari veldt and surrounding savannas for at least 20,000 years. Fire was used to attract game to fresh green growth, to flush prey from dense vegetation, to clear camping areas of dangerous snakes and insects, and to maintain the mosaic of grassland and woodland that supports the extraordinary biodiversity of southern African savannas.',
-      science: 'San burning practices create a landscape-scale mosaic of burn ages that maximizes edge habitat \u2014 the transition zone between vegetation types where biodiversity is highest. Recently burned patches attract grazing species (springbok, gemsbok, wildebeest), while unburned patches provide cover for predator-sensitive species. Ethnobotanical studies show San fire management maintained over 300 edible plant species across the landscape by preventing any single vegetation type from dominating.',
+      // Round 9: "flush prey from dense vegetation", "clear camping areas of snakes and insects", "keep a mosaic of
+      // grassland and woodland that supports the rich wildlife", "edge habitat" and the springbok / gemsbok / wildebeest
+      // line had no source. Humphrey 2018 (thesis, see below): the Khwe used early burning for "stimulating grass growth
+      // to attract wildlife to grazing areas, opening up the vegetation for visibility for hunting and for the purpose of
+      // detecting animal tracks in the remnant fire ash, and for the protection from dangerous animals"; homestead burns
+      // "chase snakes away"; "a high frequency of early season burning in the inhabited areas of the park reduced the
+      // late season fires"; "late season fires are more damaging to tree cover than early fires (Laris et al., 2017)".
+      description: "The San peoples of southern Africa have long used fire on the Kalahari veldt and nearby savannas. San people living in Bwabwata National Park, Namibia, describe burning early in the dry season to grow fresh grass that draws game, to open up thick plants so hunters can see and track, and to keep dangerous animals and snakes away (Humphrey 2018).",
+      science: "Fires lit early in the dry season, while plants are still damp, stay small and patchy. Where people burn often and early in Bwabwata National Park, there are fewer late-season fires, and late fires do more harm to trees than early ones (Humphrey 2018).",
+      // Round 8: "late dry season", "firebreaks around camps and water sources", "Burn in strips to drive game",
+      // "berry-producing shrublands" and "Coordinate burns across band territories" had no source; Hoodia is not a
+      // fire-managed plant and "(appetite suppressant)" was an unsourced health claim. Humphrey, G. (2018) The role of
+      // humans, climate and vegetation in the complex fire regimes of north-east Namibia. PhD thesis, University of Cape
+      // Town (open.uct.ac.za): San people of Bwabwata National Park "have been using fire for millennia"; "the reasons
+      // why the Khwe used early burning practices included ... stimulating grass growth to attract wildlife to grazing
+      // areas, opening up the vegetation for visibility for hunting and for the purpose of detecting animal tracks in the
+      // remnant fire ash, and for the protection from dangerous animals"; "a high frequency of early season burning in
+      // the inhabited areas of the park reduced the late season fires"; research in the Kalahari in the 1970s "provided
+      // further evidence for the link between the use of fire and attracting game to a fresh flush of grass growth".
       keyPractices: [
-        'Burn dry grassland patches during the late dry season to attract game to green regrowth',
-        'Create firebreaks around camps and water sources for safety and visibility',
-        'Burn in strips to drive game toward hunting positions',
-        'Maintain berry-producing shrublands by burning encroaching trees',
-        'Coordinate burns across band territories to ensure landscape-scale mosaic patterns'
+        'Burn grass early in the dry season, so a fresh flush of new grass draws game to graze (Humphrey 2018)',
+        'Burn to open up tall grass, so hunters can see farther and read animal tracks in the ash (Humphrey 2018)',
+        'Frequent early burns leave a patchwork of burned ground that cuts down late-season fires (Bwabwata National Park, Namibia; Humphrey 2018)'
       ],
-      plants: ['Mongongo nut tree', 'Hoodia (appetite suppressant)', 'Tsamma melon', 'Shepherd\u2019s tree', 'Kalahari truffle (nabas)'],
-      legacy: 'Where San communities have been displaced from their ancestral lands (often for game reserves), bush encroachment has followed. The bitter irony: the wildlife reserves created by removing San peoples have less biodiversity than the landscapes San fire management maintained. Conservation biology is increasingly recognizing that the \u201Cpristine wilderness\u201D these reserves were meant to protect was, in fact, a human-managed landscape.',
+      // Round 10: mongongo, tsamma, shepherd's tree and truffle had no source tying them to burning. Humphrey 2018 (above):
+      // "early season burning is used to assist in hunting, tracking and gathering of veld foods, and for improving forage
+      // for livestock".
+      plants: ['Veld foods (wild plant foods)', 'Fresh grass that draws game', 'Grass for livestock'],
+      // Round 7: "bush encroachment has often followed" displacement and "Conservation biology increasingly recognizes
+      // ..." had no source. NBC News / Reuters, 13 Dec 2006, "Botswana court rules Bushmen evicted illegally": "The
+      // government resettled about 2,000 Bushmen mostly in 1997 and 2002"; "Botswana's High Court ruled ... that more
+      // than 1,000 Bushmen had been wrongly evicted from ancestral hunting grounds in the Kalahari desert". O'Connor, Puttick and Hoffman (2014) Bush
+      // encroachment in southern Africa: changes and causes. African J. Range & Forage Sci. 31(2):67-88,
+      // doi:10.2989/10220119.2014.939996: "Fires, for example, were actively suppressed during the early twentieth
+      // century"; drivers "interact and change over time".
+      legacy: "Many San were moved off their land. In Botswana, the government moved about 2,000 people out of the Central Kalahari Game Reserve, mostly in 1997 and 2002. In 2006 Botswana's High Court ruled that more than 1,000 of them had been wrongly evicted (Reuters, 2006). Across southern Africa, thick bush has spread into many grasslands. Scientists point to several causes working together, and less fire is one of them (O'Connor and others 2014).",
       color: '#a16207'
     },
     {
@@ -771,22 +1019,44 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nation: 'S\u00E1mi',
       region: 'Northern Scandinavia & Finland (S\u00E1pmi)',
       icon: '\u2744\uFE0F',
-      years: '4,000+',
-      practice: 'Reindeer Pasture & Forest Burning',
-      description: 'The S\u00E1mi people of northern Scandinavia used fire to manage reindeer pasture across the boreal and sub-arctic zones of S\u00E1pmi. Burning opened dense forest to encourage lichen growth (the primary winter food for reindeer), promoted berry-producing shrubs (cloudberry, lingonberry), and maintained open birch woodlands used for summer grazing. S\u00E1mi fire management was integrated into the seasonal migration cycle of reindeer herding \u2014 one of the few remaining pastoral nomadic systems in Europe.',
-      science: 'Reindeer lichens (Cladonia) grow best in open conditions with high light levels. Dense forest canopy reduces lichen productivity by 60-80%. S\u00E1mi burning opened canopy gaps and killed competing mosses, stimulating lichen regrowth over 20-40 year cycles. Cloudberry (Rubus chamaemorus) production increases 3x in burned vs. unburned bogs. Fire also controlled reindeer parasites (warble flies, nose bot flies) by burning larval habitat in the soil surface.',
+      // Cogos, S., Ostlund, L. & Roturier, S. (2019) Forest fire and Indigenous Sami land use. Human
+      // Ecology 47:51-64: "little is known about the historical relationships between Sami livelihoods and fire".
+      // Same paper, summarizing earlier studies: "ground lichens become established after an average of 30-40
+      // years following a fire"; "After a period of 80-100 years on average, these species [dwarf shrubs and
+      // feather mosses] are expected to become dominant over lichens unless a new perturbation occurs".
+      // Round 3: the card used to cite "Cogos and others, 2021" for "has not been documented"; the 2019 paper
+      // says "little is known", so the card now says that. The settlers'-fires sentence had no source: removed.
+      since: null,
+      sinceSource: 'Little is known about how Sámi herders used fire in the past (Cogos and others, Human Ecology 2019).',
+      practice: 'Reindeer Pasture Knowledge & Fire',
+      sinceLabel: 'Knowledge of the land since time immemorial',
+      chartNote: 'knowledge of fire and the land; little is known about how herders used fire in the past',
+      plantsLabel: '\uD83C\uDF31 Plants of the Reindeer Pastures',
+      description: "Sami reindeer herders of northern Scandinavia read the forest closely, because ground lichen is the reindeer's main winter food. Their knowledge of fire is two-sided: a forest fire burns away the lichen for decades, but forests that never burn slowly fill with mosses and shrubs that crowd the lichen out. Researchers say that little is known about the past relationship between Sami livelihoods and fire (Cogos and others, Human Ecology 2019).",
+      science: "Reindeer lichens (Cladonia) grow slowly on dry, open forest floors. After a fire they take decades to grow back, so a burn is a short-term loss of winter pasture. Over the long run, though, a long absence of fire lets mosses and shrubs take over the ground, which also shrinks the lichen. Studies summarized by Cogos and others (2019) find that ground lichens come back about 30 to 40 years after a fire, and that after about 80 to 100 years without fire, dwarf shrubs and mosses usually take over.",
+      // Round 10: the herd-rotation, berry, siida and burning-trial practices, three plants and the legacy's "roads",
+      // "testing careful, planned burning" and "pushing for a stronger voice" had no source. Cogos and others 2019
+      // (above): roavve is "a lichen-rich pine-heath that has burned", "a burned forest suitable for reindeer grazing";
+      // "Reindeer herders are facing increasing encroachment of their winter grazing areas because of the activities of
+      // various industries in northern Sweden, including forestry, mining, wind power, and hydropower"; "fire
+      // suppression measures implemented since the late nineteenth century have greatly reduced the number of fires";
+      // "fire restoration is now commonly performed in the Swedish boreal forest during conservation and prescribed
+      // burnings"; lingonberry, bilberry, crowberry and heather are dominant dwarf shrubs with the lichen.
       keyPractices: [
-        'Burn spruce and pine forest patches on long rotation (30-50 years) to regenerate lichen pasture',
-        'Maintain open birch woodlands by burning encroaching conifers',
-        'Burn bog edges to promote cloudberry and lingonberry production',
-        'Coordinate burning with seasonal reindeer migration routes (siida system)',
-        'Use fire to create open areas that allow wind to reduce insect harassment of reindeer herds in summer'
+        'Mark burned forest in place names: some S\u00E1mi place names describe a lichen-rich pine heath that has burned, good for reindeer grazing (Cogos and others 2019)',
+        'Watch where fire has burned, since ground lichen there takes about 30 to 40 years to come back (Cogos and others 2019)'
       ],
-      plants: ['Reindeer lichen (Cladonia)', 'Cloudberry', 'Lingonberry', 'Mountain birch', 'Dwarf willow'],
-      legacy: 'Swedish and Finnish forestry policies suppressed S\u00E1mi burning in the 19th-20th centuries, leading to dense forest regrowth that has drastically reduced lichen pasture. Combined with industrial logging and mining, this has threatened S\u00E1mi reindeer herding. S\u00E1mi communities are now pushing for recognition of traditional fire management rights as part of broader Indigenous land rights movements in Scandinavia.',
+      plants: ['Reindeer lichen (Cladonia)', 'Lingonberry', 'Bilberry', 'Crowberry', 'Heather'],
+      legacy: "Forestry, mining, wind power, and hydropower are taking over more and more of the herders\u2019 winter grazing land in northern Sweden. Fire suppression since the late 1800s has greatly cut the number of forest fires there, and planned burns are now common in conservation work (Cogos and others 2019).",
       color: '#4338ca'
     }
   ];
+
+  // Card label for a nation's dated record (see the `since` note above the array).
+  function nationSinceLabel(n) {
+    if (typeof n.since === 'number' && n.since > 0) return 'Fire use in the record since about ' + n.since.toLocaleString('en-US') + ' years ago';
+    return n.sinceLabel || 'Fire stewardship since time immemorial';
+  }
 
   // ═══════════════════════════════════════════
   // FIRE-ADAPTED ECOSYSTEMS
@@ -798,17 +1068,37 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       name: 'Longleaf Pine Savanna',
       icon: '\uD83C\uDF32',
       region: 'Southeastern USA',
-      fireInterval: '1\u20133 years',
-      description: 'Once 90 million acres, now reduced to 3% by fire suppression. The most fire-dependent ecosystem in North America.',
-      fireRole: 'Surface fires clear understory, recycle nutrients, kill competing hardwoods, and maintain open savanna structure. Longleaf pine has fire-resistant bark (2-3 inches thick) and a unique \u201Cgrass stage\u201D seedling that survives fire.',
+      // Round 10: "1-3 years" had no source. FEIS Pinus palustris (see the Southeast nations card): "The natural fire
+      // interval is every year to every 5 to 10 years."
+      fireInterval: '1\u201310 years',
+      // Frost, C.C. (1993) Four centuries' changing landscape patterns in the longleaf pine ecosystem. Tall
+      // Timbers Fire Ecology Conf. Proc. 18:17-43, cited by later papers for loss from "more than 97%" of its
+      // former lands (about 3 percent left in the 1990s). America's Longleaf Restoration Initiative, Range-wide
+      // Conservation Plan for Longleaf Pine 2025-2040 (nri.tamu.edu): now "approximately 5.2 million acres".
+      // UW-Madison news (2023): "once spanned some 90 million acres".
+      description: "Once about 90 million acres. Logging, land clearing and fire exclusion cut it to about 3 percent by the 1990s; restoration has brought it back to about 5 million acres. It needs frequent fire to stay open (US Forest Service FEIS).",
+      // Round 10: "recycle nutrients", "self-pruning lower branches", wiregrass "within days" and "Nests only in living
+      // longleaf pine" had no source (the woodpecker uses other living pines too). FEIS Pinus palustris: "Longleaf pine
+      // communities often have a grass understory that readily ignites"; the terminal bud "is protected by a moist,
+      // dense tuft of needles"; "Old-growth longleaf pine stands provide nesting habitat for the endangered
+      // red-cockaded woodpecker". Fill and others (2021) Wiregrass (Aristida beyrichiana) survival and reproduction
+      // after fire in a long-unburned pine savanna. PLoS ONE, doi:10.1371/journal.pone.0247159: "With meristems several
+      // centimeters or more below the soil surface ... the species is highly flammable and regrows rapidly after fire";
+      // "The species rarely flowers without fire". US Fish and Wildlife Service, red-cockaded woodpecker
+      // (fws.gov/species/red-cockaded-woodpecker-dryobates-borealis): it "excavates cavities that are exclusively in
+      // living pine trees"; "The birds keep the sap flowing apparently as a cavity defense mechanism against rat snakes".
+      // The pitcher plant line ("dies when shaded") had no source, so it went.
+      fireRole: "Frequent surface fires keep hardwoods from taking over and keep the pine forest open. Its grassy understory catches fire easily. Longleaf pine has bark that thickens with age and a 'grass stage' seedling whose bud is wrapped in a dense, moist tuft of needles (US Forest Service FEIS).",
       adaptations: [
-        { species: 'Longleaf Pine', adaptation: 'Thick bark, grass-stage seedling with protected terminal bud, self-pruning lower branches' },
-        { species: 'Wiregrass', adaptation: 'Burns readily to carry fire; regrows from underground rhizomes within days' },
-        { species: 'Gopher Tortoise', adaptation: 'Deep burrows (up to 40 feet) provide fire refugia for 350+ species including indigo snakes and burrowing owls' },
-        { species: 'Red-cockaded Woodpecker', adaptation: 'Nests only in living longleaf pine; resin wells around nest hole repel rat snakes. Requires open, fire-maintained forest' },
-        { species: 'Pitcher Plant', adaptation: 'Carnivorous plant of fire-maintained bogs; dies when shaded by woody plants in fire-suppressed conditions' }
+        { species: 'Longleaf Pine', adaptation: 'Bark grows thick with age and shields the living wood from heat; the grass-stage seedling keeps its bud inside a moist tuft of needles (US Forest Service FEIS)' },
+        { species: 'Wiregrass', adaptation: 'Burns easily, so it carries fire; its growing points sit a few centimeters underground, so it regrows fast after fire, and it rarely flowers without fire (Fill and others 2021)' },
+        { species: 'Gopher Tortoise', adaptation: 'Long burrows (about 15 feet on average, up to 40 feet) give more than 350 other species shelter, even from fire, such as indigo snakes and gopher frogs (Florida Fish and Wildlife Conservation Commission)' },
+        { species: 'Red-cockaded Woodpecker', adaptation: 'Digs its nest holes only in living pines and keeps sap running from small wells around the hole, which guards against rat snakes (US Fish and Wildlife Service). Old longleaf stands give it places to nest (US Forest Service FEIS)' }
       ],
-      withoutFire: 'Within 5-10 years of fire suppression, hardwood midstory develops. Within 20 years, longleaf seedlings cannot establish. Within 50 years, the savanna converts to closed-canopy hardwood forest, eliminating 90% of the original species.',
+      // Round 10: "longleaf seedlings can no longer get started" and "Most of the ground-cover plants ... disappear" had
+      // no source. FEIS Pinus palustris: "In the absence of frequent fire, longleaf pine is replaced by hardwoods and
+      // other southern pines"; "Invasion by hardwoods accelerates the decline of mature longleaf pine."
+      withoutFire: "Without frequent fire, hardwoods and other southern pines move in and replace the longleaf pine, and the spreading hardwoods speed the decline of the old longleaf trees (US Forest Service FEIS).",
       color: '#16a34a'
     },
     {
@@ -816,17 +1106,55 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       name: 'California Chaparral',
       icon: '\uD83D\uDD25',
       region: 'Mediterranean California',
-      fireInterval: '30\u2013100 years',
-      description: 'Dense, drought-adapted shrublands that experience high-intensity crown fires. Many species require fire for seed germination.',
-      fireRole: 'Stand-replacing fires clear old, senescent shrubs and trigger mass germination of soil seed banks. Some seeds require heat scarification; others respond to chemicals in smoke (karrikinolide). Post-fire landscapes explode with wildflowers in the first spring.',
+      // Round 10: "30-100 years" had no source. FEIS fire regimes, California chaparral
+      // (fs.usda.gov/database/feis/fire_regimes/CA_chaparral/all.html): "Estimated historical (1880s-1940s) fire-return
+      // intervals for chamise-redshank and mixed chaparral range from 30 to 90 years", "with a MFRI (mean fire-return
+      // interval) of 55 years".
+      fireInterval: '30\u201390 years',
+      // Round 10: Keeley, J.E. & Pausas, J.G. (2016, online) Evolution of 'smoke' induced seed germination in pyroendemic
+      // plants. South African Journal of Botany, doi:10.1016/j.sajb.2016.07.012: "Pyroendemics are plants in which seedling
+      // germination and successful seedling recruitment are restricted to immediate postfire environments"; "combustion
+      // products from burning biomass of a wide variety of woody plants in California chaparral ... will stimulate
+      // germination of species restricted to postfire environments".
+      description: 'Dense, drought-adapted shrublands that burn in hot crown fires. Some of their plants grow from seed only right after a fire (Keeley and Pausas 2016).',
+      // Round 9: "explode with wildflowers in the first spring" had no source. NPS, Channel Islands National Park, Fire
+      // Followers (nps.gov/places/000/fire-followers.htm): fire followers "sprout well only after fire has cleared the
+      // chaparral"; "When the winter rains come, the seeds germinate"; "their plants carpet the landscape with a
+      // profusion of wildflowers. Each spring these annuals return, but are decreased in number as the chaparral
+      // regenerates".
+      // Round 10: "old, senescent shrubs" (US Geological Survey work finds old chaparral is not 'overdue', see withoutFire)
+      // and "mass germination ... (karrikinolide)" were more than the sources say. Keeley and Pausas 2016 (above): "The
+      // earliest studies on fire-stimulated germination focused on the role of heat in breaking seed coat permeability";
+      // "nitrogen dioxide, at levels that occur in smoke, can generate 100% germination in the chaparral annual
+      // Emmenanthe penduliflora (Keeley and Fotheringham, 1997)"; "not all pyroendemics in chaparral responded to this
+      // gas"; "karrikin is clearly not the responsible compound" in a number of smoke-responsive species; their Table 1
+      // (from Flematti and others 2011) lists Emmenanthe as responding to both karrikins and N-based compounds.
+      // Karrikinolide itself was found in smoke by Flematti and others (2004) Science 305:977.
+      // FEIS CA chaparral (above): "mostly stand-replacement crown fire at moderate intervals".
+      fireRole: 'Most fires here are crown fires that kill or top-kill the shrubs (US Forest Service FEIS). Seeds that waited in the soil then sprout. Some seeds need heat to crack their coats; others respond to chemicals from smoke and charred wood. No single smoke chemical works for every plant: nitrogen dioxide from smoke made every seed of whispering bells, a chaparral annual, sprout in a lab test (Keeley and Fotheringham 1997), but some other chaparral plants ignore it (Keeley and Pausas 2016). After the shrubs burn, seeds of \u201Cfire followers\u201D sprout with the winter rains and can carpet the land with wildflowers. They come back each spring, but fewer each year as the shrubs grow back (National Park Service).',
       adaptations: [
-        { species: 'Chamise', adaptation: 'Resprouts from lignotuber (underground root burl) within weeks of fire; seeds require heat to germinate' },
-        { species: 'Manzanita', adaptation: 'Seeds dormant in soil for decades; fire heat cracks the seed coat, triggering germination. Some species are \u201Cobligate seeders\u201D (killed by fire, regenerate only from seed)' },
-        { species: 'Fire Poppy', adaptation: 'Seeds lie dormant for 50+ years; germinate ONLY after fire, creating spectacular post-fire wildflower displays' },
-        { species: 'Ceanothus', adaptation: 'Nitrogen-fixing root nodules; fire-stimulated germination enriches post-fire soil for other species' },
-        { species: 'California Gnatcatcher', adaptation: 'Nests in coastal sage scrub adjacent to chaparral; requires mosaic of burn ages for habitat diversity' }
+        // Round 10: manzanita "dormant for decades", fire poppy, ceanothus "enriches post-fire soil" and the gnatcatcher
+        // (a coastal sage scrub bird) had no source. McMurray (1990) Adenostoma fasciculatum, FEIS
+        // (fs.usda.gov/database/feis/plants/shrub/adefas/all.html): "Following fire, chamise sprouts from dormant buds on
+        // the lignotuber"; "Residual plants typically sprout within 6 weeks of fire regardless of season"; "Heat from fire
+        // scarifies the seedcoat and stimulates germination". NPS Santa Monica Mountains, Fire Ecology
+        // (nps.gov/samo/learn/management/fireecology.htm): "non-sprouting shrub species like bigpod ceanothus (Ceanothus
+        // megacarpus) and big-berry manzanita (Arctostaphylos glauca)". NPS Fire Followers (above): "The seeds of these
+        // plants lie dormant until fire removes the shrub canopy".
+        { species: 'Chamise', adaptation: 'Sprouts again from buds on its lignotuber (a woody root crown), usually within 6 weeks of a fire. Heat from fire cracks its hard seed coats so the seeds can sprout (US Forest Service FEIS)' },
+        { species: 'Big-berry Manzanita', adaptation: 'Does not resprout after a fire; it comes back only from seed (National Park Service)' },
+        { species: 'Bigpod Ceanothus', adaptation: 'Also a non-sprouter: fire kills the shrub, and new plants grow from seed (National Park Service)' },
+        { species: 'Fire-following annuals', adaptation: 'Their seeds lie dormant until fire removes the shrub cover, then they bloom for a few springs (National Park Service)' }
       ],
-      withoutFire: 'Old-growth chaparral becomes decadent \u2014 dead wood accumulates, living cover thins. When fire eventually occurs (from lightning or human ignition), the extreme fuel load produces unnaturally intense fires that sterilize soil and cause debris flows.',
+      // Round 10: source for the existing USGS line. Moritz, M.A., Keeley, J.E., Johnson, E.A. & Schaffner, A.A. (2004)
+      // Testing a basic assumption of shrubland fire management: how important is fuel age? Frontiers in Ecology and the
+      // Environment 2(2):67-72 (pubs.usgs.gov/publication/1008272): "there is generally not, as is commonly assumed, a
+      // strong relationship between fuel age and fire probabilities"; "In many shrubland ecosystems exposed to extreme
+      // fire weather, large and intense wildfires may need to be factored in as inevitable events." NPS Santa Monica
+      // Mountains, Fire Ecology (above): "The current fire return interval of 28 years is far shorter than the
+      // estimated natural fire return interval"; "The process of change from a native shrubland to a non-native
+      // dominated grassland is called type conversion."
+      withoutFire: "In much of California the bigger threat to chaparral is fire coming too OFTEN. In the Santa Monica Mountains, fires now come about every 28 years, far more often than the natural interval, and shrubland can turn into non-native grassland (National Park Service). US Geological Survey research on several hundred shrubland fires found that old brush is generally not much more likely to burn than young brush; in extreme fire weather, big fires burn either way (Moritz and others 2004).",
       color: '#dc2626'
     },
     {
@@ -834,17 +1162,52 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       name: 'Boreal Forest (Taiga)',
       icon: '\u2744\uFE0F',
       region: 'Canada, Alaska, Scandinavia, Siberia',
-      fireInterval: '50\u2013200 years',
-      description: 'The largest terrestrial biome on Earth. Fire is the primary agent of forest renewal, creating a landscape mosaic essential for caribou, lynx, and boreal birds.',
-      fireRole: 'Crown fires kill canopy trees but trigger mass release of serotinous seeds (pine cones sealed with resin that melts in fire). Fire exposes mineral soil needed for seed germination and releases nutrients locked in thick moss and organic layers. Post-fire stands of jack pine and black spruce are critical habitat for species like the Kirtland\u2019s warbler.',
+      // Round 10: "50-200 years" had no source. NPS boreal page (below): "In central Alaska, the spruce forest usually
+      // burns every 60 years to 150 years."
+      fireInterval: '60\u2013150 years',
+      // Round 8: "primary agent of forest renewal" and "essential for ... lynx" had no source. NPS, Fire in Ecosystems:
+      // Boreal Forest (nps.gov/articles/000/fire-in-ecosystems-boreal-forest.htm): "The boreal forest, also called taiga,
+      // is the largest forested habitat in the world"; "Fires help remove the thick forest floor mat of old forests so
+      // that new young forests can begin"; "Fires create a variety of landscapes, or mosaic, with young and old trees";
+      // "These mature forests are important for caribou and many species of birds."
+      description: 'The largest forest habitat in the world. Fires clear the thick mat on old forest floors so young forest can start, leaving a mosaic of young and old trees. The older patches matter for caribou and many birds (National Park Service).',
+      // Round 10: "mass release", "releases nutrients locked in thick moss", black spruce layering and the jack pine
+      // 50 C (122 F) had no source; FEIS gives 60 C. FEIS Pinus banksiana
+      // (fs.usda.gov/database/feis/plants/tree/pinban/all.html): "The serotinous cones, sealed shut by a resinous bond,
+      // require high temperatures to open"; "The resin of serotinous cones melts when heated, usually at temperatures in
+      // excess of 140 degrees Fahrenheit (60 deg C)"; "Exposed mineral soil or thin residual humus of about 0.2 inch
+      // (0.5 cm) or less provide the best seedbeds"; "The federally endangered Kirtland's warbler is endemic to jack pine
+      // barrens"; "Nests are located on the ground near or at the edge of fairly dense young jack pine stands". NPS
+      // boreal page (below): black spruce cones "are semi-serotinous. This means that the tree cones release their seeds
+      // due to the heat of a fire."
+      fireRole: "Fire heat opens the resin-sealed (serotinous) cones of jack pine and the semi-serotinous cones of black spruce, so seeds fall onto the fresh burn. Bare mineral soil, or only a thin layer of humus, makes the best seedbed for jack pine. Kirtland's warblers nest on the ground at the edges of young jack pine stands (US Forest Service FEIS; National Park Service).",
       adaptations: [
-        { species: 'Jack Pine', adaptation: 'Serotinous cones sealed with resin; only open when heated to 50\u00B0C (122\u00B0F), releasing seeds onto freshly burned mineral soil' },
-        { species: 'Black Spruce', adaptation: 'Semi-serotinous cones; thick organic layer beneath spruce forests burns and prepares seedbed. Can also layer (clone) from lower branches' },
-        { species: 'Fireweed', adaptation: 'Wind-dispersed seeds colonize burns within weeks; name reflects its role as the first plant to appear after fire' },
-        { species: 'Morel Mushroom', adaptation: 'Mass fruiting in the spring following forest fire; mycorrhizal networks expand in post-fire conditions' },
-        { species: 'Black-backed Woodpecker', adaptation: 'Specially adapted to feed on wood-boring beetles that colonize fire-killed trees; depends entirely on recent burns' }
+        { species: 'Jack Pine', adaptation: 'Serotinous cones are sealed with resin that usually melts above about 60\u00B0C (140\u00B0F) in a fire, releasing seeds onto bare mineral soil (US Forest Service FEIS)' },
+        { species: 'Black Spruce', adaptation: 'Semi-serotinous cones: the tight cluster at the top of the tree releases its seeds in the heat of a fire (National Park Service)' },
+        // Round 8: "colonize burns within weeks" and "name reflects its role as the first plant" had no source. FEIS
+        // Chamerion angustifolium (fs.usda.gov/database/feis/plants/forb/chaang/all.html): "Fireweed is primarily adapted to
+        // fire through its rhizomes and its prolific production of wind-dispersed seed"; "Often, it is not present on a
+        // site before a fire but establishes during the first postfire year"; "one of the first plants to enter a
+        // community during the seedling/herb stage".
+        { species: 'Fireweed', adaptation: 'Huge numbers of wind-blown seeds, plus underground stems that sprout again, let it move in fast; it often arrives in the first year after a fire (US Forest Service FEIS)' },
+        // Round 8: see the morel note in FIRE_FACTS (Pilz and others 2007).
+        { species: 'Morel Mushroom', adaptation: 'Some kinds fruit in huge numbers for a year or two after a forest fire; scientists are still working out why (Pilz and others 2007)' },
+        // Round 10: "depends entirely on recent burns" went past the sources. Hutto, R.L. (2008) The ecological importance of
+        // severe wildfires: some like it hot. Ecological Applications 18(8):1827-1834 (abstract, scholarworks.umt.edu):
+        // "in western Montana, this bird species is extremely specialized on severely burned forests". FEIS Picoides
+        // arcticus (fs.usda.gov/database/feis/animals/bird/piar/all.html): "Fire creates habitat for the bark and
+        // wood-boring beetles that are a preferred food item for black-backed woodpeckers"; "Black-backed woodpeckers may
+        // nest in areas lacking fire or insect outbreaks"; "Unburned forest near burned forest may provide important
+        // foraging habitat."
+        { species: 'Black-backed Woodpecker', adaptation: 'Eats the larvae of bark and wood-boring beetles that move into fire-killed trees. In western Montana it is very closely tied to severely burned forest (Hutto 2008), though it can also nest and feed in unburned forest (US Forest Service FEIS)' }
       ],
-      withoutFire: 'Without fire, boreal forests accumulate deep organic layers that insulate permafrost and acidify soil. Paludification (peat accumulation) eventually converts forest to bog. Fire resets this cycle, maintaining productive forest.',
+      // Round 9: "insulate permafrost", "acidify soil" and "eventually converts forest to bog" had no source. Simard and
+      // others (2007) Forest productivity decline caused by successional paludification of boreal soils. Ecological
+      // Applications 17:1619-1637, doi:10.1890/06-1795.1: "declines in black spruce productivity of 50-80% with increased
+      // paludification"; it "increases soil moisture, reduces soil temperature and nutrient availability"; "the fire
+      // regime (frequency and severity) controls paludification and forest productivity through its effect on soil
+      // organic layers"; low-severity soil burns "significantly accelerate rates of paludification".
+      withoutFire: 'Long gaps without fire let moss and peat pile up on the forest floor (paludification). The soil gets wetter, colder, and poorer, and in one study black spruce grew 50 to 80 percent less as the layer thickened. Fires that burn deep into that layer slow it down (Simard and others 2007).',
       color: '#0369a1'
     },
     {
@@ -852,35 +1215,70 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       name: 'African Savanna',
       icon: '\uD83E\uDD81',
       region: 'Sub-Saharan Africa',
-      fireInterval: '1\u20135 years',
-      description: 'The world\u2019s most extensive fire-maintained ecosystem. Annual fires maintain the grass-tree balance that supports Earth\u2019s greatest concentrations of large mammals.',
-      fireRole: 'Dry-season fires burn dead grass, killing tree seedlings and preventing woodland enclosure. Grasses have growing points at or below ground level and recover within weeks. Large herbivores (elephants, buffalo) and fire work together as \u201Cengineers\u201D maintaining open savanna. Without both, savanna converts to dense woodland.',
+      // Round 10: "1-5 years" had no source. Van Wilgen, B.W., Biggs, H.C., O'Regan, S.P. & Mare, N. (2000) A fire
+      // history of the savanna ecosystems in the Kruger National Park, South Africa, between 1941 and 1996. S. Afr. J.
+      // Science 96:167-178 (record at researchspace.csir.co.za): "The mean fire return period was 4.5 years, with
+      // intervals between fires from 1 to 34 years"; "mean fire return periods ranged from 2.7 to 7.1 years in the 11
+      // major land systems of the park".
+      fireInterval: '3\u20137 years',
+      // Round 3: Andela, N. and others (2019) The Global Fire Atlas. Earth Syst. Sci. Data 11:529-552: "The
+      // majority of burned area occurs in grasslands and savannas where fires maintain open landscapes".
+      // "Annual fires" contradicted the 1-5 year interval above; "greatest concentrations" had no source.
+      // Round 10: "supports large herds of grazing animals" had no source.
+      description: 'Most of the land that burns on Earth each year is grassland and savanna, where fires keep the land open (Andela and others 2019). In Kruger National Park, South Africa, the park\u2019s 11 main land types burned on average every 3 to 7 years from 1941 to 1996 (van Wilgen and others 2000).',
+      // Round 10: "recover within weeks", the elephant / buffalo "engineers" and "Without both, savanna converts to dense
+      // woodland" had no source. Archibald, S., Bond, W.J., Stock, W.D. & Fairbanks, D.H.K. (2005) Shaping the landscape:
+      // fire-grazer interactions in an African savanna. Ecological Applications 15(1):96-109 (abstract, ro.ecu.edu.au):
+      // "Persistent heavy grazing can prevent the spread of fire by breaking up the grass layer"; frequent burning may
+      // act "by attracting grazers to the post-burn green flush"; "Burned areas drew animals off nearby unburned grazed
+      // patches, which then recovered lost biomass"; "Frequent large fires might prevent areas of heavy grazing from
+      // persisting in the landscape". Bond, W.J., Woodward, F.I. & Midgley, G.F. (2005) The global distribution of
+      // ecosystems in a world without fire. New Phytologist 165:525-537 (PubMed 15720663): "vast areas of humid C(4)
+      // grasslands and savannas, especially in South America and Africa, have the climate potential to form forests";
+      // "Without fire, closed forests would double from 27% to 56% of vegetated grid cells". Patrut, A. and others
+      // (2018) The demise of the largest and oldest African baobabs. Nature Plants 4:423-426: the oldest "reach ages
+      // close to 2,000 years"; cavities form "due to fungi decay, fire, elephant damage". Elephant grass, protea (a fynbos
+      // plant), secretarybird and termite-mound lines had no source, so they went.
+      fireRole: 'Fire and grazing animals shape each other. Grazers are drawn to the green flush of new grass after a burn, and patches they keep grazed short can stop a fire from spreading (Archibald and others 2005). A computer model of the world with fire switched off found that much of the wetter savanna of Africa and South America could grow into forest (Bond and others 2005).',
       adaptations: [
-        { species: 'Elephant Grass', adaptation: 'Growing point below soil surface; fire removes dead thatch, stimulating nutrient-rich regrowth within 2 weeks' },
-        { species: 'Baobab', adaptation: 'Thick, fire-resistant bark (up to 4 inches); stores water in trunk; can survive repeated burns for 1,000+ years' },
-        { species: 'Protea', adaptation: 'Woody seedheads open after fire; some species are serotinous. Fire stimulates mass flowering' },
-        { species: 'Secretarybird', adaptation: 'Hunts in recently burned areas where prey (snakes, rodents) are exposed and fleeing' },
-        { species: 'Termite Mounds', adaptation: 'Fire-resistant structures serve as refugia during burns; become nutrient hotspots and seedling nurseries' }
+        { species: 'Grazing animals', adaptation: 'Move onto fresh burns to eat the new green grass. In one South African park, burns drew animals away from patches they had been grazing, and those patches grew back (Archibald and others 2005)' },
+        { species: 'Grazing-lawn grasses', adaptation: 'Short grasses that live where animals graze heavily. Frequent large fires can keep these grazing lawns from lasting (Archibald and others 2005)' },
+        { species: 'Baobab', adaptation: 'The oldest African baobabs reach ages close to 2,000 years. Fire, fungi and elephants can hollow out their trunks (Patrut and others 2018)' }
       ],
-      withoutFire: 'Bush encroachment: without fire, woody plants overtake grasslands. This has occurred across millions of hectares in southern Africa, collapsing grazing capacity, reducing water tables, and threatening savanna-dependent megafauna.',
+      // Round 9: "millions of hectares in southern Africa, collapsing grazing capacity, reducing water tables, and
+      // threatening savanna-dependent megafauna" had no source. Stevens, Lehmann, Murphy and Durigan (2017) Savanna woody
+      // encroachment is widespread across three continents. Global Change Biology 23:235-244, doi:10.1111/gcb.13409:
+      // "We found a global trend of woody encroachment"; "Woody cover is increasing most rapidly in the remaining
+      // uncleared savannas of South America, most likely due to fire suppression and land fragmentation"; "In Africa,
+      // encroachment occurs across multiple land uses and is accelerating over time."
+      withoutFire: 'Bush encroachment: woody plants are spreading into savannas on three continents. It is fastest in South America, where fire suppression is a likely cause, and in Africa it is speeding up (Stevens and others 2017).',
       color: '#ca8a04'
     },
     {
       id: 'eucalyptus',
       name: 'Eucalyptus Forest',
-      icon: '\uD83C\uDDE6\uD83C\uDDFA',
+      icon: '', mark: 'leaf',
       region: 'Australia',
-      fireInterval: '5\u201330 years',
-      description: 'Eucalyptus forests are among the most fire-adapted on Earth. Eucalyptus trees actively promote fire through volatile oils, shedding bark, and canopy architecture \u2014 an evolutionary strategy to eliminate competitors.',
-      fireRole: 'Eucalyptus sheds ribbons of oily bark that carry fire across the landscape. Volatile oils in leaves (cineole, pinene) make canopies highly flammable. After fire, eucalyptus resprouts from epicormic buds beneath bark or from lignotubers at the base \u2014 faster than any competitor. Fire is not something eucalyptus merely survives; it is something eucalyptus has evolved to CREATE.',
+      // Round 10: "5-30 years" had no source. NSW National Parks and Wildlife Service, Evans Crown Nature Reserve Fire
+      // Management Strategy (environment.nsw.gov.au), Dry Sclerophyll Forest (Shrub subformation): "Avoid successive
+      // fires at intervals of < 7 years"; "Avoid fire exclusion for a period of > 30 years". This is guidance for one
+      // kind of dry eucalypt forest; wet mountain ash forest burns far less often.
+      fireInterval: '7\u201330 years',
+      // Round 10: "built to live with fire", the oily-bark / cineole / pinene lines, the "still debated" evolution line,
+      // mountain ash "obligate seeder ... millions of seeds", scribbly gum, grass tree, lyrebird and Banksia "ONLY after
+      // fire" had no source here (some Banksia do not need fire to open). Zimmer, H. and others (2021) Post-fire
+      // recruitment and resprouting of a threatened montane eucalypt. Australian Journal of Botany 69(1):21-29
+      // (abstract): "a fire response typical of many eucalypts", "characterised by seedling recruitment and larger
+      // trees resprouting epicormically, even after high-severity fire".
+      description: 'Many eucalypts live through fire: bigger trees sprout new shoots from buds under their bark, and seedlings come up from fallen seed, even after a severe fire (Zimmer and others 2021).',
+      fireRole: "Buds hidden under the bark (epicormic buds) let a burned eucalypt grow a new crown of leaves along its trunk and branches, while seeds that fall onto the burned ground start a new generation. A study of a threatened mountain eucalypt found both happening, even after a high-severity fire, and calls this typical of many eucalypts (Zimmer and others 2021).",
       adaptations: [
-        { species: 'Mountain Ash (E. regnans)', adaptation: 'World\u2019s tallest flowering plant (100m+). Obligate seeder: killed by fire but drops millions of seeds from crown. Seedlings require full-sun post-fire conditions' },
-        { species: 'Scribbly Gum', adaptation: 'Epicormic buds beneath bark sprout within 2-3 weeks of fire, producing a full canopy before competitors can germinate' },
-        { species: 'Grass Tree (Xanthorrhoea)', adaptation: 'Blackened trunk insulates growing point; flowers prolifically after fire (10x more than unburned). Aboriginal people used the resin as adhesive' },
-        { species: 'Lyrebird', adaptation: 'Forages in recently burned leaf litter; spreads soil fungi through the burn scar, accelerating forest recovery' },
-        { species: 'Banksia', adaptation: 'Woody follicles open ONLY after fire; seeds dispersed onto bare mineral soil for maximum germination success' }
+        // Centurion, Tasmania: 99.6 m by tape (2008), 100.5 m by laser (2018); University of Melbourne:
+        // "the tallest flowering plant in the world".
+        { species: 'Mountain Ash (E. regnans)', adaptation: 'The world\u2019s tallest flowering plant (about 100 m); the tallest one known grows in Tasmania (University of Melbourne)' },
+        { species: 'Many eucalypts', adaptation: 'Larger trees resprout from buds under the bark, and seedlings grow from seed, even after a high-severity fire (Zimmer and others 2021)' }
       ],
-      withoutFire: 'Fuel accumulates to extreme levels. When fire inevitably occurs (from lightning), it burns at catastrophic intensity, killing even fire-adapted species and sterilizing soil. The 2019-2020 Black Summer fires were a direct result of fuel accumulation from decades of reduced burning.',
+      withoutFire: "Fuel builds up where fire is kept out, and when fire comes in extreme weather it can burn hotter, killing even fire-adapted plants. The 2019-2020 Black Summer fires followed Australia's hottest and driest year on record (Bureau of Meteorology, 2019); heat and drought were key, and fuel is one part of the picture.",
       color: '#ea580c'
     },
     {
@@ -888,17 +1286,33 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       name: 'Tallgrass Prairie',
       icon: '\uD83C\uDF3E',
       region: 'Central North America',
-      fireInterval: '1\u20134 years',
-      description: 'The tallgrass prairie once covered 170 million acres of central North America. Less than 4% remains. Fire was the primary force maintaining grassland against forest encroachment.',
-      fireRole: 'Spring fires remove dead thatch, warm the soil 10-15\u00B0F earlier, and stimulate deep-rooted warm-season grasses. Fire kills invading tree seedlings (especially eastern red cedar) whose growing points are above ground. The resulting nutrient flush produces grass growth 30-50% greater than unburned areas.',
+      // Round 10: "1-4 years" had no source. NPS Wildland Fire in Tallgrass Prairie (below): "Before European settlement
+      // of these grasslands, fires were frequent, occurring every 1-5 years."
+      fireInterval: '1\u20135 years',
+      // nps.gov/tapr: "Tallgrass prairie once covered 170 million acres of North America"; "Today less than 4% remains intact".
+      // Round 8: "Fire was the primary force" had no source. NPS (nps.gov/articles/wildland-fire-in-tallgrass-prairie.htm):
+      // "Tallgrass prairies depend on fire to maintain ecosystem stability and diversity"; "If fire was excluded, the
+      // tallgrass prairie would vanish, and shrubs, trees and exotic grasses would dominate the ecosystem."
+      description: 'The tallgrass prairie once covered 170 million acres of central North America. Less than 4% remains. Tallgrass prairie depends on fire: without it, shrubs and trees take over (National Park Service).',
+      // Round 10: thatch / soil-warming / nutrient-flush lines, compass plant, prairie chicken and bison wallows had no
+      // source. NPS (above): "Grasses of the tallgrass prairie regrow quickly in previously burned areas"; "Growth of
+      // native species such as big bluestem, little bluestem and Indian grass increases significantly following a fire";
+      // "Plant recovery following a prairie fire is fastest in the spring and fall when soil moisture is high". Roos and
+      // others 2018 (Plains card): bison "prefer to graze recently burned patches". Oklahoma State University E-947
+      // (below): juniper "shades out forage plants"; "At low levels of juniper cover, restoration to a grassland is
+      // possible using prescribed fire."
+      fireRole: "Tallgrass prairie grasses regrow quickly after a fire, and native grasses such as big bluestem, little bluestem and Indian grass grow much more after a burn. Plants recover fastest after spring and fall fires, when the soil is moist (National Park Service).",
       adaptations: [
-        { species: 'Big Bluestem', adaptation: 'Roots extend 6-10 feet deep; growing point is below ground. Fire removes thatch and triggers explosive spring growth' },
-        { species: 'Compass Plant', adaptation: 'Taproot 15+ feet deep survives any fire; leaves orient north-south to maximize photosynthesis (hence the name)' },
-        { species: 'Prairie Chicken', adaptation: 'Males display (boom) on recently burned open ground; requires mosaic of burned and unburned patches for nesting cover' },
-        { species: 'Bison', adaptation: 'Preferentially graze recently burned areas (pyric herbivory); wallowing creates depressions that hold rainwater and support unique plant communities' },
-        { species: 'Eastern Red Cedar', adaptation: 'FIRE-SENSITIVE invader: without fire, cedar overtakes prairie within 20-30 years, shading out all grasses and wildflowers' }
+        { species: 'Big Bluestem', adaptation: 'Grows much more after a fire, along with little bluestem and Indian grass (National Park Service)' },
+        { species: 'Bison', adaptation: 'Prefer to graze recently burned patches (Roos and others 2018)' },
+        { species: 'Eastern Red Cedar', adaptation: 'A native tree that spreads into prairie when fire is kept out and shades out the grasses that grazing animals eat. While there are still few cedars, prescribed fire can turn the land back to grassland (Oklahoma State University)' },
       ],
-      withoutFire: 'Eastern red cedar invasion is the #1 threat to remaining tallgrass prairie. Cedar canopy closes within 20 years without fire, eliminating grassland birds, wildflowers, and grazing capacity. Oklahoma alone loses 762 acres of grassland to cedar PER DAY.',
+      // Round 8: "about 762 acres a day" had no source comment and traces to an older secondhand figure. Oklahoma State
+      // University Cooperative Extension, Circular E-947, Invasion of Oklahoma Rangelands and Forests by Eastern Redcedar
+      // and Ashe Juniper (pods.okstate.edu/fact-sheets/E-947pod.pdf): the increase into "Oklahoma rangeland and forestland
+      // was about 280,000 acres per year from 1985 to 1994"; "More land is prescribed burned for control of eastern
+      // redcedar and ashe juniper than all other control measures combined."
+      withoutFire: "Eastern red cedar spreading into prairie is a major threat to what is left of the tallgrass prairie. Cedar shades out grassland birds' habitat, wildflowers, and grazing land. An Oklahoma State University survey found eastern red cedar and ashe juniper spreading over about 280,000 more acres of Oklahoma range and forest each year from 1985 to 1994.",
       color: '#854d0e'
     }
   ];
@@ -909,12 +1323,25 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   var FIRE_SCIENCE = [
     {
+      id: 'fireSpread',
+      name: 'Where Will the Fire Go?',
+      icon: '\uD83E\uDDED',
+      description: 'Wind, slope, and gaps in the fuel decide which way a fire spreads. Pick the conditions, predict which side of the fire will burn the most, then light it and check. The grid runs a published fire-spread model (Alexandridis and others, 2008) on a made-up landscape.',
+      elements: [
+        { name: 'Wind', icon: '\uD83D\uDCA8', desc: 'Wind tips the flames forward over the unburned fuel ahead, heating and drying it, so fire runs downwind. Burning back into the wind is slow.' },
+        { name: 'Slope', icon: '\u26F0\uFE0F', desc: 'On a hill, flames lean toward the slope above them and preheat it, so fire runs uphill much faster than downhill.' },
+        { name: 'Gaps in the fuel', icon: '\uD83E\uDDE9', desc: 'Bare patches, like ground a recent burn already cleared, give the fire nothing to carry it. With enough gaps, a fire can go out on its own.' },
+        { name: 'What this model leaves out', icon: '\uD83D\uDCD0', desc: 'In each time step, fire can move at most one square, so the grid shows which way fire spreads, not how fast real fires run. Real wind-driven fires can move much faster and throw embers far ahead.' }
+      ]
+    },
+    {
       id: 'fireTriangle',
       name: 'The Fire Triangle',
       icon: '\u25B3',
       description: 'Every fire requires three elements: heat (ignition source), fuel (organic material), and oxygen. Remove any one element and the fire goes out. Indigenous fire practitioners manipulate all three: choosing ignition timing (heat), managing fuel loads through regular burning (fuel), and burning in calm air to limit oxygen and spread (oxygen). High humidity also keeps a burn gentle — but by dampening the fuel, not by removing oxygen.',
       elements: [
-        { name: 'Heat', icon: '\uD83C\uDF21\uFE0F', desc: 'Ignition temperature for wood is ~300\u00B0C (572\u00B0F). Indigenous practitioners use wind, slope, and time of day to control fire intensity.' },
+        // Round 10: "~300 C (572 F)" had no primary source we could open; ignition depends on how wood is heated.
+        { name: 'Heat', icon: '\uD83C\uDF21\uFE0F', desc: 'Something has to heat the fuel enough to catch fire, such as lightning or a lit torch. How hot wood must get depends on how it is heated, so there is no single number. Wind, slope, and time of day change how hot a fire burns.' },
         { name: 'Fuel', icon: '\uD83C\uDF3F', desc: 'Dead leaves, branches, grass, and woody debris. Fuel moisture content determines if fire will carry. Regular cultural burning keeps fuel loads LOW.' },
         { name: 'Oxygen', icon: '\uD83D\uDCA8', desc: 'Wind supplies oxygen and drives fire spread, so burning in calm air keeps intensity low. (High humidity also lowers intensity \u2014 but by raising fuel moisture, not by changing oxygen.)' }
       ]
@@ -925,7 +1352,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       icon: '\uD83D\uDD25',
       description: 'Fire behaves differently depending on where it burns in the forest structure. Understanding these types is key to both Indigenous fire management and modern prescribed burning.',
       elements: [
-        { name: 'Ground Fire', icon: '\uD83E\uDEA8', desc: 'Smolders in organic soil layers (duff, peat). Very slow, hard to detect, can burn for weeks. Used by Amazonian peoples to create biochar.' },
+        { name: 'Ground Fire', icon: '\uD83E\uDEA8', desc: 'Smolders in organic soil layers (duff, peat). Very slow, hard to detect, can burn for weeks.' },
         { name: 'Surface Fire', icon: '\uD83C\uDF42', desc: 'Burns leaf litter and small fuels on the forest floor. LOW intensity. This is the type used in cultural burning \u2014 whose lower intensity can allow many mobile animals to move away and some mature trees to survive, depending on conditions.' },
         { name: 'Crown Fire', icon: '\uD83C\uDF32', desc: 'Burns through tree canopies. HIGH intensity, often lethal. Crown fires occur when fuel ladders (understory buildup from fire suppression) allow surface fire to climb into the canopy.' }
       ]
@@ -934,24 +1361,35 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       id: 'fuelMoisture',
       name: 'Fuel Moisture & Fire Weather',
       icon: '\uD83D\uDCA7',
-      description: 'Fuel moisture is one major influence on fire behavior, alongside fuel type and arrangement, weather, topography, and ignition pattern. Skilled practitioners interpret these factors together in a specific place.',
+      // Round 11: sizes and the "hour" meaning from the NWCG Glossary of Wildland Fire, PMS 205 (nwcg.gov/publications/
+      // pms205): timelag (TL) is the "Time needed under specified conditions for a fuel particle to lose about 63 percent of
+      // the difference between its initial moisture content and its equilibrium moisture content"; one-hour fuels: "dead
+      // herbaceous plants and roundwood less than about one-fourth inch (6.4 mm) in diameter. Also included is the uppermost
+      // layer of needles or leaves on the forest floor"; ten-hour: "roundwood 1/4 to l-inch (0.6 to 2.5 cm) in diameter";
+      // one-hundred hour: "roundwood in the size range of 1 to 3 inches (2.5 to 7.6 cm)"; one-thousand hour: "roundwood 3-8
+      // inches in diameter and the layer of the forest floor more than about 4 inches below the surface". Cut as unsourced:
+      // "Primary carrier of surface fire in cultural burns", "Cultural burning rarely consumes these", "complicate control".
+      description: 'Fuel moisture is one major influence on fire behavior, alongside fuel type and arrangement, weather, topography, and ignition pattern. Skilled practitioners interpret these factors together in a specific place. Dead fuels are sorted by thickness. The hour in each name is about how long that size takes to go most of the way (about 63 percent) toward matching the dampness of the air around it (NWCG).',
       elements: [
-        { name: '1-Hour Fuels', icon: '\uD83C\uDF43', desc: 'Fine twigs < 0.25 inches. Respond to weather within 1 hour. Dry out fastest. Primary carrier of surface fire in cultural burns.' },
-        { name: '10-Hour Fuels', icon: '\uD83E\uDEB5', desc: 'Branches 0.25-1 inch. Take ~10 hours to adjust moisture. Important for sustained burning.' },
-        { name: '100-Hour Fuels', icon: '\uD83E\uDE9A', desc: 'Branches 1-3 inches. Heavy fuels that burn only in dry conditions. Cultural burning rarely consumes these.' },
-        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Logs > 3 inches. Respond slowly to changing weather and may remain moist longer than fine fuels. When dry enough to ignite, they can sustain heat and complicate control.' }
+        { name: '1-Hour Fuels', icon: '\uD83C\uDF43', desc: 'Dead grass and twigs less than about 1/4 inch thick, plus the top layer of leaves or needles on the ground (NWCG). They dry out, and soak up water, the fastest.' },
+        { name: '10-Hour Fuels', icon: '\uD83E\uDEB5', desc: 'Dead sticks 1/4 to 1 inch thick, and the litter just under the top layer (NWCG).' },
+        { name: '100-Hour Fuels', icon: '\uD83E\uDE9A', desc: 'Dead branches 1 to 3 inches thick, and the litter from about 3/4 inch to 4 inches down (NWCG).' },
+        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Dead logs 3 to 8 inches thick, and the forest floor more than about 4 inches down (NWCG). They change slowest, so they can stay damp long after the fine fuels have dried.' }
       ]
     },
     {
       id: 'succession',
       name: 'Post-Fire Succession',
       icon: '\uD83C\uDF31',
-      description: 'Post-fire change is often described in stages, but pathways vary with ecosystem, burn severity, climate, soils, surviving organisms, and later disturbance. Indigenous practitioners use place-based knowledge to steward these responses.',
+      // Round 11: the year ranges (0-2, 3-10, 10-50, 50-200+), "Berry production peaks", "Deer and elk browse heavily",
+      // "eliminates understory diversity" and "this stage is stuck" had no source, so the stages carry no years. Fireweed:
+      // FEIS (see the boreal card). The fuel build-up line matches "The Fuel Debt" card in the suppression concept.
+      description: 'Post-fire change is often described in stages, but pathways vary with ecosystem, burn severity, climate, soils, surviving organisms, and later disturbance. Indigenous practitioners use place-based knowledge to steward these responses. The four stages below are a simple teaching picture with no fixed number of years: each place moves at its own pace.',
       elements: [
-        { name: 'Stage 1: Pioneer (0\u20132 years)', icon: '\uD83C\uDF3E', desc: 'Fireweed, grasses, and annual wildflowers may colonize exposed ground, and some fungi fruit. Early-seral plant diversity can be high.' },
-        { name: 'Stage 2: Shrub (3\u201310 years)', icon: '\uD83C\uDF3F', desc: 'Shrubs (huckleberry, ceanothus, hazel) establish. Berry production peaks. Deer and elk browse heavily.' },
-        { name: 'Stage 3: Young Forest (10\u201350 years)', icon: '\uD83C\uDF32', desc: 'Trees overtop shrubs. Canopy begins to close. Shade-intolerant species decline. Berry production drops.' },
-        { name: 'Stage 4: Mature Forest (50\u2013200+ years)', icon: '\uD83C\uDF33', desc: 'Closed canopy. Deep shade eliminates understory diversity. Fuel accumulates. Without fire, this stage is \u201Cstuck\u201D and vulnerable to catastrophic wildfire.' }
+        { name: 'Stage 1: Pioneer plants', icon: '\uD83C\uDF3E', desc: 'Fast-growing plants such as fireweed, grasses, and wildflowers move onto the open ground first. Fireweed seeds blow in on the wind, often in the first year after a fire (US Forest Service FEIS).' },
+        { name: 'Stage 2: Shrubs', icon: '\uD83C\uDF3F', desc: 'Shrubs grow up and fill in the open spaces.' },
+        { name: 'Stage 3: Young forest', icon: '\uD83C\uDF32', desc: 'Young trees grow taller than the shrubs and start to shade the ground. Plants that need full sun begin to fade.' },
+        { name: 'Stage 4: Mature forest', icon: '\uD83C\uDF33', desc: 'The canopy closes. In dry forests that used to burn often, keeping fire out lets dead fuel and small trees pile up. Forests that naturally burn only every few hundred years were not changed much by suppression.' }
       ]
     },
     {
@@ -960,22 +1398,36 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       icon: '\u2601\uFE0F',
       description: 'A common misconception is that fire releases carbon and is therefore \u201Cbad for climate.\u201D The reality is more nuanced \u2014 especially when comparing cultural burning to catastrophic wildfire.',
       elements: [
-        { name: 'Cultural Burn Carbon', icon: '\uD83C\uDF31', desc: 'Low-intensity surface fires release small amounts of CO\u2082 from leaf litter. Trees survive and continue sequestering carbon. Soil carbon is preserved. Net effect: near carbon-neutral.' },
-        { name: 'Wildfire Carbon', icon: '\uD83D\uDCA5', desc: 'High-intensity crown fires kill trees (releasing stored carbon), burn soil organic matter (releasing ancient carbon), and sterilize soil microbes (reducing future carbon uptake). Net: massive carbon release.' },
-        { name: 'Biochar Carbon', icon: '\u26AB', desc: 'Charcoal produced by low-intensity fire (terra preta technique) locks carbon in soil for 1,000-4,000+ years. Cultural burning is actually a carbon SEQUESTRATION strategy.' },
-        { name: 'The Math', icon: '\uD83D\uDCCA', desc: 'One acre of wildfire releases 20-60 tons of CO\u2082. The same acre under cultural burning releases 2-5 tons. Preventing one wildfire acre through cultural burning saves 15-55 tons of carbon.' }
+        // Round 11: "Net effect: near carbon-neutral", "ancient carbon", "sterilize soil microbes" and "Net: massive carbon
+        // release" had no source, and "near carbon-neutral" disagreed with this tool's own Carbon Calculator, whose
+        // CARBON_DATA gives the cultural burn netCarbon10yr -2 (a small sink) and the wildfire +50 (a large source).
+        { name: 'Cultural Burn Carbon', icon: '\uD83C\uDF31', desc: 'A low-intensity surface fire burns mostly leaf litter and small fuels. Most trees survive and keep storing carbon. In the Carbon Calculator, which uses rough classroom numbers, a cultural burn comes out as a small carbon sink over 10 years.' },
+        { name: 'Wildfire Carbon', icon: '\uD83D\uDCA5', desc: 'A crown fire kills many trees. Some carbon goes up in smoke right away, and more is released over the years as the dead trees rot. Soil organic matter can burn too. In the Carbon Calculator\u2019s classroom numbers, it is a large carbon source over 10 years.' },
+        // Round 9: "centuries to thousands of years" -> "centuries". Wang, Xiong and Kuzyakov (2016) GCB Bioenergy
+        // 8:512-523, doi:10.1111/gcbb.12266: mean residence time about 556 years for 97% of biochar carbon; "biochar can
+        // persist in soils on a centennial scale".
+        { name: 'Biochar Carbon', icon: '\u26AB', desc: 'Charcoal made by low-oxygen smoldering (the terra preta technique) can hold carbon in soil for centuries (Wang and others 2016). That is one way fire can help store carbon, not only release it.' },
+        { name: 'The Math', icon: '\uD83D\uDCCA', desc: 'How much carbon a fire releases depends on how much fuel burns. A low-intensity surface fire burns litter and leaves the trees, which keep storing carbon. A stand-killing fire burns more fuel and kills the trees. The Carbon Calculator uses rough classroom numbers to compare the two.' },
       ]
     },
     {
       id: 'suppressionHistory',
       name: 'The Suppression Era & Its Consequences',
       icon: '\u26D4',
-      description: 'For over a century, Western governments pursued total fire suppression \u2014 banning Indigenous burning practices and fighting every wildfire. The consequences have been devastating.',
+      // Round 3: USDA Forest Service, The First Century (FS-650): "In 1935, the Forest Service developed the
+      // '10 a.m.' policy"; the policy was abandoned in 1978. 1910: about 3 million acres, 85 dead, 78 of them
+      // firefighters (NWCG Six Minutes for Safety, "The Great Fires of 1910"; Britannica, Big Blowup of 1910).
+      description: 'After the huge fires of 1910, the US Forest Service set out to put out nearly every wildfire. From 1935 to 1978 its rule was to have each fire under control by 10 a.m. the morning after it was reported (US Forest Service history). In many dry forests, keeping fire out let fuel build up.',
       elements: [
-        { name: '1910: The Big Blowup', icon: '\uD83D\uDCC5', desc: 'Massive wildfires across Idaho/Montana killed 85 firefighters and burned 3 million acres. Catalyzed the US policy of suppressing ALL fires \u2014 a policy that directly contradicted millennia of Indigenous fire management.' },
-        { name: 'The Fuel Debt', icon: '\uD83D\uDCE6', desc: 'Every year without fire adds fuel to the forest floor. After 100 years of suppression, forests hold 10-50x more fuel than they did under Indigenous management. This is called the \u201Cfuel debt.\u201D' },
-        { name: 'The Megafire Era', icon: '\uD83D\uDD25', desc: 'Since 2000, wildfire seasons have grown 78 days longer. The area burned annually has quadrupled. Fire suppression did not prevent fire \u2014 it made fire catastrophic.' },
-        { name: 'The Paradigm Shift', icon: '\uD83D\uDD04', desc: 'Land management agencies are now acknowledging that Indigenous fire practices were superior. Prescribed burning budgets are increasing, and co-management agreements with tribal nations are expanding.' }
+        { name: '1910: The Big Blowup', icon: '\uD83D\uDCC5', desc: 'Huge fires across Idaho and Montana burned about 3 million acres and killed about 85 people, 78 of them firefighters. They pushed the young US Forest Service toward putting out every fire, a policy that ran against long traditions of Indigenous fire use.' },
+        { name: 'The Fuel Debt', icon: '\uD83D\uDCE6', desc: 'In dry forests that used to burn every few years, a century of keeping fire out let dead fuel and small trees pile up. This build-up is sometimes called a "fuel debt". It does not apply everywhere: forests that naturally burn only every few hundred years were not changed much by suppression.' },
+        { name: 'Longer Fire Seasons', icon: '\uD83D\uDD25', desc: 'The US Forest Service reports that the fire season is now about 78 days longer than in the 1970s, and the area burned each year in the US has grown since the 1980s (EPA). Hotter, drier weather and fuel build-up both play a part.' },
+        // Round 7: "agencies increasingly recognize ... co-management agreements are growing" was more than Lake 2017
+        // says. Lake and others (2017) Journal of Forestry 115(5):343-353 (see the Indigenous tab intro): workshops of
+        // tribal members, managers and researchers on partnerships. Joint Secretarial Order 3403, signed NOV 15 2021 by
+        // the Secretaries of Agriculture and the Interior (bia.gov): "Make agreements with Indian Tribes to collaborate
+        // in the co-stewardship of Federal lands and waters under the Departments' jurisdiction".
+        { name: 'The Paradigm Shift', icon: '\uD83D\uDD04', desc: 'Many tribes want to bring back traditional burning, and some fire managers and scientists now work with them on it (Lake and others 2017). In 2021 the US Departments of Agriculture and the Interior told their agencies to make agreements with tribes to care for federal lands together (Joint Secretarial Order 3403).' },
       ]
     }
   ];
@@ -1070,6 +1522,206 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       change('understory', b.understoryDensity, a.understoryDensity, ' percent') + '; ' +
       change('canopy', b.canopyCover, a.canopyCover, ' percent') + '; and ' +
       change('biodiversity', b.biodiversity, a.biodiversity, ' out of 100') + '.';
+  }
+
+  // ═══════════════════════════════════════════
+  // ONE FOREST SIMULATOR MODEL
+  // The main simulator and the side-by-side comparison both step through this function, so
+  // the gauges, the event text, the risk readout and the chart read one set of rules. It is
+  // pure (no sound, XP or state writes). The comparison used to carry its own copy, which
+  // had drifted: it still SUBTRACTED carbon on a cultural burn and skipped canopy regrowth.
+  // ═══════════════════════════════════════════
+  var FIRE_SIM_CROWN_FUEL = 55;   // tons per acre; above this the model allows a crown fire
+  function fireSimClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  // Chance that a decade with fire kept out ends in a crown fire, given the fuel at the end
+  // of that decade.
+  function fireSimCrownChance(fuelAfter) {
+    return fuelAfter > FIRE_SIM_CROWN_FUEL ? fireSimClamp((fuelAfter - 40) / 80, 0, 1) : 0;
+  }
+  // The same chance, looked ahead from today's fuel: what keeping fire out for the next
+  // decade would risk.
+  function fireSimNextDecadeRisk(s) {
+    return fireSimCrownChance(fireSimClamp((Number(s && s.fuelLoad) || 0) + 12, 0, 100));
+  }
+  function fireSimAdvance(s, action, rollPurpose) {
+    s = s || SIM_DEFAULTS;
+    var c = fireSimClamp;
+    var n = Object.assign({}, s);
+    var kind = action === 'culturalBurn' ? 'culturalBurn' : (action === 'prescribe' ? 'prescribedBurn' : 'suppression');
+    var wildfire = false, chance = 0, fuelPeak = 0, event = '';
+    if (action === 'culturalBurn') {
+      n.fuelLoad = c(s.fuelLoad - 8, 3, 100);
+      n.understoryDensity = c(s.understoryDensity - 15, 5, 100);
+      n.biodiversity = c(s.biodiversity + 8, 0, 100);
+      n.soilHealth = c(s.soilHealth + 5, 0, 100);
+      n.waterYield = c(s.waterYield + 5, 0, 100);
+      n.carbonStored = c(s.carbonStored + 2, 0, 200);
+      n.yearsSinceLastBurn = 0;
+      n.totalBurns = (s.totalBurns || 0) + 1;
+      n.strategy = 'indigenous';
+    } else if (action === 'prescribe') {
+      n.fuelLoad = c(s.fuelLoad - 5, 3, 100);
+      n.understoryDensity = c(s.understoryDensity - 10, 5, 100);
+      n.biodiversity = c(s.biodiversity + 4, 0, 100);
+      n.soilHealth = c(s.soilHealth + 2, 0, 100);
+      n.waterYield = c(s.waterYield + 3, 0, 100);
+      n.carbonStored = c(s.carbonStored, 0, 200);
+      n.yearsSinceLastBurn = 0;
+      n.totalBurns = (s.totalBurns || 0) + 1;
+      n.strategy = 'prescribe';
+    } else {
+      n.fuelLoad = c(s.fuelLoad + 12, 0, 100);
+      n.understoryDensity = c(s.understoryDensity + 18, 0, 100);
+      n.biodiversity = c(s.biodiversity - 8, 0, 100);
+      n.soilHealth = c(s.soilHealth - 3, 0, 100);
+      n.waterYield = c(s.waterYield - 6, 0, 100);
+      n.carbonStored = c(s.carbonStored + 5, 0, 200);
+      n.yearsSinceLastBurn = (s.yearsSinceLastBurn || 0) + 10;
+      n.strategy = 'suppress';
+      chance = fireSimCrownChance(n.fuelLoad);
+      fuelPeak = n.fuelLoad;
+      if (chance > 0 && fireSimRoll(s, rollPurpose || 'suppression-wildfire') < chance) {
+        var severity = n.fuelLoad / 100;
+        n.canopyCover = c(s.canopyCover - Math.round(severity * 60), 0, 100);
+        n.fuelLoad = c(n.fuelLoad - 30, 0, 100);
+        n.biodiversity = c(n.biodiversity - 25, 0, 100);
+        n.soilHealth = c(n.soilHealth - 20, 0, 100);
+        n.waterYield = c(n.waterYield - 15, 0, 100);
+        n.carbonStored = c(n.carbonStored - 30, 0, 200);
+        n.wildfires = (s.wildfires || 0) + 1;
+        n.yearsSinceLastBurn = 0;
+        kind = 'wildfire';
+        wildfire = true;
+      }
+    }
+    // Natural recovery: canopy regrows, faster when it is open.
+    n.canopyCover = c(n.canopyCover + (n.canopyCover < 40 ? 8 : 2), 0, 95);
+    n.year = (s.year || 0) + 10;
+    n.visualSequence = (s.visualSequence || 0) + 1;
+    n.visualEvent = makeFireSimVisualEvent(kind, s, n, n.year, n.visualSequence);
+    n.decade = (s.decade || []).concat([{
+      year: n.year, fuel: n.fuelLoad, biodiversity: n.biodiversity, canopy: n.canopyCover,
+      carbon: n.carbonStored, water: n.waterYield, soil: n.soilHealth
+    }]);
+    var pct = function (p) { return Math.round(p * 100) + '%'; };
+    var fuelNow = Math.round(n.fuelLoad);
+    if (kind === 'culturalBurn') {
+      event = '🔥 Cultural burn modeled. Fuel fell to ' + fuelNow + ' tons per acre, the understory opened, biodiversity rose, and the surviving trees kept storing carbon.';
+    } else if (kind === 'prescribedBurn') {
+      event = '📋 Prescribed burn modeled. Fuel fell to ' + fuelNow + ' tons per acre and the understory thinned, a little less than a cultural burn does in this model.';
+    } else if (kind === 'wildfire') {
+      event = '🔥 Crown fire. Fuel had built up to ' + Math.round(fuelPeak) + ' tons per acre, over the ' + FIRE_SIM_CROWN_FUEL +
+        ' where this model allows a crown fire (chance this decade: ' + pct(chance) + '). Flames climbed the thick understory into the canopy, so canopy fell to ' +
+        Math.round(n.canopyCover) + '% and biodiversity to ' + Math.round(n.biodiversity) + '.';
+    } else if (chance > 0) {
+      event = '⛔ Fire kept out. Fuel rose to ' + fuelNow + ' tons per acre, over the ' + FIRE_SIM_CROWN_FUEL +
+        ' where this model allows a crown fire. The chance this decade was ' + pct(chance) + ', and no fire started this time.';
+    } else {
+      event = '⛔ Fire kept out. Fuel rose to ' + fuelNow + ' tons per acre and the understory thickened. Crown fires start only above ' +
+        FIRE_SIM_CROWN_FUEL + ' tons per acre in this model.';
+    }
+    n.eventLog = (s.eventLog || []).concat([{ year: n.year, event: event }]);
+    return { next: n, kind: kind, wildfire: wildfire, chance: chance, event: event };
+  }
+
+  // ═══════════════════════════════════════════
+  // FIRE SPREAD MODEL (Fire Science: "Where will the fire go?")
+  // A probabilistic cellular automaton after Alexandridis, Vakalis, Siettos & Bafas (2008),
+  // "A cellular automata model for forest fire spread prediction: the case of the wildfire
+  // that swept through Spetses Island in 1990", Applied Mathematics and Computation 204:191-201.
+  // Each step, every burning cell tries once to light each of its 8 neighbours with
+  //   p = p0 * pw * ps   (capped at 1), then burns out.
+  //   p0 = 0.58 for the paper's reference vegetation and density (pveg = pden = 0 here);
+  //   pw = exp(c1 V) * exp(V c2 (cos theta - 1)), c1 = 0.045, c2 = 0.131 (V in m/s),
+  //        theta = angle between the wind and the direction of spread;
+  //   ps = exp(a thetaS), a = 0.078 per degree, thetaS = slope angle from the burning cell
+  //        to the neighbour (uphill +, downhill -; diagonal run is sqrt(2) cells).
+  // Bare cells (no fuel) never burn. The grid is a classroom landscape, not a real place.
+  // ═══════════════════════════════════════════
+  var FIRE_SPREAD = { p0: 0.58, c1: 0.045, c2: 0.131, a: 0.078, W: 21, H: 21, steps: 8 };
+  var FIRE_SPREAD_WIND = { none: 0, light: 3, strong: 8 };      // m/s, blowing toward the east
+  var FIRE_SPREAD_SLOPE = { flat: 0, moderate: 15, steep: 30 };  // degrees, rising toward the north
+  var FIRE_SPREAD_FUEL = { continuous: 1, patchy: 0.6 };         // share of cells with fuel
+
+  // dx > 0 is east, dy < 0 is north (screen rows grow downward). Wind blows toward +x.
+  function fireSpreadNeighborChance(dx, dy, windSpeed, slopeDeg) {
+    var F = FIRE_SPREAD;
+    var run = Math.sqrt(dx * dx + dy * dy);
+    var cosT = dx / run;
+    var pw = Math.exp(F.c1 * windSpeed) * Math.exp(windSpeed * F.c2 * (cosT - 1));
+    var rise = -dy * Math.tan(slopeDeg * Math.PI / 180);
+    var thetaS = Math.atan(rise / run) * 180 / Math.PI;
+    var ps = Math.exp(F.a * thetaS);
+    return Math.min(1, F.p0 * pw * ps);
+  }
+
+  function fireSpreadRun(opts) {
+    opts = opts || {};
+    var F = FIRE_SPREAD, W = F.W, H = F.H;
+    var windSpeed = FIRE_SPREAD_WIND[opts.wind] != null ? FIRE_SPREAD_WIND[opts.wind] : 0;
+    var slopeDeg = FIRE_SPREAD_SLOPE[opts.slope] != null ? FIRE_SPREAD_SLOPE[opts.slope] : 0;
+    var fuelShare = FIRE_SPREAD_FUEL[opts.fuel] != null ? FIRE_SPREAD_FUEL[opts.fuel] : 1;
+    var key = ['spread', opts.wind || 'none', opts.slope || 'flat', opts.fuel || 'continuous', opts.run || 0].join(':');
+    var rand = mosaicMulberry32(mosaicHash(key));
+    var cx = Math.floor(W / 2), cy = Math.floor(H / 2);
+    var fuel = new Array(W * H), ignitedAt = new Array(W * H);
+    for (var i = 0; i < W * H; i++) { fuel[i] = rand() < fuelShare; ignitedAt[i] = -1; }
+    fuel[cy * W + cx] = true;
+    var chance = {};
+    for (var ddy = -1; ddy <= 1; ddy++) for (var ddx = -1; ddx <= 1; ddx++) {
+      if (ddx || ddy) chance[ddx + ',' + ddy] = fireSpreadNeighborChance(ddx, ddy, windSpeed, slopeDeg);
+    }
+    var burning = [cy * W + cx];
+    ignitedAt[cy * W + cx] = 0;
+    var step = 0;
+    while (burning.length && step < F.steps) {
+      step++;
+      var next = [];
+      for (var b = 0; b < burning.length; b++) {
+        var x = burning[b] % W, y = Math.floor(burning[b] / W);
+        for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          var nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+          var j = ny * W + nx;
+          if (!fuel[j] || ignitedAt[j] !== -1) continue;
+          if (rand() < chance[dx + ',' + dy]) { ignitedAt[j] = step; next.push(j); }
+        }
+      }
+      burning = next;
+    }
+    var sides = { east: 0, west: 0, north: 0, south: 0 }, burned = 0, fuelCells = 0;
+    for (var k = 0; k < W * H; k++) {
+      if (fuel[k]) fuelCells++;
+      if (ignitedAt[k] < 0) continue;
+      burned++;
+      var kx = k % W, ky = Math.floor(k / W);
+      if (kx > cx) sides.east++; else if (kx < cx) sides.west++;
+      if (ky < cy) sides.north++; else if (ky > cy) sides.south++;
+    }
+    var counts = [sides.east, sides.west, sides.north, sides.south];
+    var max = Math.max.apply(null, counts), min = Math.min.apply(null, counts);
+    var share = burned / fuelCells;
+    var answer;
+    if (!burning.length && burned < 20) answer = 'small';
+    else if (min > 0 && max / min < 1.25) answer = 'even';
+    else answer = ['east', 'west', 'north', 'south'][counts.indexOf(max)];
+    return {
+      W: W, H: H, cx: cx, cy: cy, fuel: fuel, ignitedAt: ignitedAt, steps: step, wentOut: !burning.length,
+      burned: burned, fuelCells: fuelCells, share: share, sides: sides, answer: answer,
+      windSpeed: windSpeed, slopeDeg: slopeDeg, fuelShare: fuelShare,
+      ahead: chance['1,0'], behind: chance['-1,0'], uphill: chance['0,-1'], downhill: chance['0,1']
+    };
+  }
+
+  // A side prediction counts when that side burned at least 85% as much as the biggest side,
+  // so two nearly tied sides are both accepted.
+  function fireSpreadPredictionHit(result, pick) {
+    if (!result || !pick) return false;
+    if (pick === result.answer) return true;
+    if (result.answer === 'small' || result.answer === 'even' || pick === 'small' || pick === 'even') return false;
+    var max = Math.max(result.sides.east, result.sides.west, result.sides.north, result.sides.south);
+    return result.sides[pick] >= 0.85 * max;
   }
 
   // Optional procedural 3D layer. Simulation state remains authoritative;
@@ -1787,28 +2439,35 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // ═══════════════════════════════════════════
 
   var QUIZ_QUESTIONS = [
-    { q: 'How long have Aboriginal Australians used fire to manage the landscape?', choices: ['500 years', '10,000+ years', '65,000+ years', '200 years'], answer: 2, why: 'Fire-stick farming appears in the Australian archaeological record for at least 65,000 years, the longest continuous fire-management tradition known.', see: 'Indigenous Knowledge' },
-    { q: 'What is a \u201Cserotinous\u201D cone?', choices: ['A cone that opens in water', 'A cone sealed with resin that opens only with fire heat', 'A cone that is poisonous', 'A cone that grows underground and surfaces only after the soil is disturbed'], answer: 1, why: 'Resin seals the cone shut, and only the heat of a fire melts it, so the seed drops onto a bare ash bed with no competitors.', see: 'Smoke & Seeds' },
+    { q: 'How long have Aboriginal people lived in Australia, caring for the land?', choices: ['500 years', '10,000+ years', '65,000+ years', '200 years'], answer: 2, why: 'Stone tools at Madjedbebe in northern Australia show people there at least 65,000 years ago (Clarkson and others, 2017). Fire has long been one of the ways Aboriginal people care for Country.', see: 'Indigenous Knowledge' },
+    { q: 'What is a \u201Cserotinous\u201D cone?', choices: ['A cone that opens in water', 'A cone sealed with resin that opens only with fire heat', 'A cone that is poisonous', 'A cone that grows underground and surfaces only after the soil is disturbed'], answer: 1, why: 'Resin seals the cone shut until the heat of a fire melts it, so the seeds fall onto the fresh burn, where bare mineral soil makes a good seedbed (US Forest Service FEIS).', see: 'Smoke & Seeds' },
     { q: 'What can decades of fire exclusion contribute to in some fire-adapted forests?', choices: ['Every forest becomes healthier', 'Fuel and ladder buildup that can increase potential fire severity under conducive conditions', 'All trees grow faster', 'Every animal population increases because undisturbed forests offer more shelter, food, and nesting sites'], answer: 1, why: 'Excluding fire lets litter and shrubs grow into a continuous ladder from the ground to the crowns, and that structure is what carries a severe fire when conditions line up.', see: 'Fire Science' },
     { q: 'What is \u201Cterra preta\u201D?', choices: ['A type of volcanic rock', 'Extremely fertile dark soil created by Indigenous Amazonian peoples using fire and charcoal', 'A fire-resistant tree species that Indigenous Amazonian peoples planted in rows to break the path of wildfire', 'A Spanish word for fire'], answer: 1, why: 'Amazonian peoples worked charcoal from low-temperature fires into the soil with organic waste, producing dark earth that is still fertile and still holding carbon centuries later.', see: 'Indigenous Knowledge' },
-    { q: 'The longleaf pine savanna once covered 90 million acres. What percentage remains today?', choices: ['50%', '25%', '3%', '75%'], answer: 2, why: 'About three percent remains. Logging took the first cut, and fire suppression finished the job by letting hardwoods close the canopy over a savanna that needs to stay open.', see: 'Fire Ecosystems' },
-    { q: 'Why did Plains Nations burn the prairie?', choices: ['To destroy enemy camps and drive rival hunters away', 'To attract bison to nutritious new grass growth', 'To create charcoal', 'To signal for rain'], answer: 1, why: 'Burned prairie regrows within days as grass higher in protein, so bison move onto it. That pairing of fire and grazing is what held the plains as grassland.', see: 'Indigenous Knowledge' },
+    { q: 'The longleaf pine savanna once covered about 90 million acres. By the 1990s, about how much was left?', choices: ['About 50%', 'About 25%', 'About 3%', 'About 75%'], answer: 2, why: 'About three percent was left. Logging took most of it, and fire exclusion let hardwoods close in. Restoration has since brought it back to about 5 million acres.', see: 'Fire Ecosystems' },
+    { q: 'Why did Plains Nations burn the prairie?', choices: ['To destroy enemy camps and drive rival hunters away', 'To attract bison to nutritious new grass growth', 'To create charcoal', 'To signal for rain'], answer: 1, why: 'Bison prefer to graze recently burned patches, so people burned in spring for a fall hunt, or in fall for a spring hunt (Roos and others 2018).', see: 'Indigenous Knowledge' },
     { q: 'What is a \u201Cfuel ladder\u201D?', choices: ['A tool firefighters use to climb trees', 'Continuous vertical vegetation that allows surface fire to climb into the tree canopy', 'A type of fire escape', 'A device that measures fuel moisture at several heights so crews can rate how fast a fire will climb'], answer: 1, why: 'It is the continuous vertical vegetation, usually shrubs and low branches, that lets a fire on the ground climb into the canopy.', see: 'Fire Science' },
     { q: 'What type of fire is used in cultural burning?', choices: ['Crown fire', 'Ground fire smoldering in the duff layer', 'Low-intensity surface fire', 'Firestorm'], answer: 2, why: 'Cultural burning aims for low-intensity surface fire that stays in the litter and leaves the canopy and the mature trees standing.', see: 'Fire Science' },
-    { q: 'Which plant produces seeds that ONLY germinate after fire?', choices: ['California Black Oak', 'Bigleaf Maple (Acer macrophyllum)', 'California Fire Poppy', 'California Wild Rose'], answer: 2, why: 'The California fire poppy is a fire-follower: its seed waits in the soil and germinates on the heat and smoke cues a fire provides.', see: 'Smoke & Seeds' },
+    // Round 10: the fire poppy key had no primary source; whispering bells does (Keeley and Pausas 2016, chaparral card).
+    { q: 'Which plant is a "fire follower" whose seeds sprout mainly after fire?', choices: ['California Black Oak', 'Bigleaf Maple (Acer macrophyllum)', 'Whispering Bells', 'California Wild Rose'], answer: 2, why: 'Whispering bells is a chaparral annual whose seeds stay dormant until a fire. Smoke, and gases such as nitrogen dioxide in smoke, can make them sprout (Keeley and Pausas 2016).', see: 'Smoke & Seeds' },
     { q: 'How does cultural burning compare to wildfire for carbon emissions?', choices: ['Cultural burning releases MORE carbon', 'They release the same amount', 'Cultural burning releases roughly ten times less carbon per acre', 'Cultural burning releases no carbon at all because the fires are too cool'], answer: 2, why: 'A cool burn consumes fine fuels and leaves the trees alive to keep storing carbon, so per acre it releases far less than a fire that kills the stand.', see: 'Carbon Calculator' },
     { q: 'What did Coast Salish peoples burn prairies to maintain?', choices: ['Cotton fields', 'Camas lily meadows for food harvest', 'Tobacco crops for ceremonial trade with inland nations', 'Corn fields'], answer: 1, why: 'Burning kept the prairies open for camas lily, a staple root crop. Without it, Douglas-fir grows in and shades the meadows out.', see: 'Indigenous Knowledge' },
-    { q: 'The US policy of total fire suppression began after which event?', choices: ['The Civil War', 'The 1910 Big Blowup fires', 'World War II', 'The Yellowstone fires of 1988'], answer: 1, why: 'The 1910 Big Blowup burned about three million acres and killed 87 people, and the response set United States policy on total suppression for the next century.', see: 'Case Studies' },
-    { q: 'Biochar (charcoal in soil) can store carbon for how long?', choices: ['1-5 years', '10-50 years', '1,000-4,000+ years', 'It releases carbon immediately'], answer: 2, why: 'Charcoal is chemically stable in soil, so its carbon stays locked up for thousands of years rather than decomposing over decades.', see: 'Carbon Calculator' },
+    { q: 'The US policy of total fire suppression began after which event?', choices: ['The Civil War', 'The 1910 Big Blowup fires', 'World War II', 'The Yellowstone fires of 1988'], answer: 1, why: 'The 1910 Big Blowup burned about three million acres and killed about 85 people, and the response set United States policy on total suppression for decades.', see: 'Case Studies' },
+    { q: 'Biochar (charcoal in soil) can store carbon for how long?', choices: ['1-5 years', '10-50 years', 'Hundreds of years', 'It releases carbon immediately'], answer: 2, why: 'Charcoal is chemically stable in soil, so most of its carbon can stay locked up for centuries rather than rotting away in a few decades (Wang and others 2016).', see: 'Carbon Calculator' },
     { q: 'What does \u201Cpyric herbivory\u201D mean?', choices: ['Animals that eat only fire-adapted plants and avoid unburned pasture', 'The interaction between fire and grazing animals like bison', 'Burning herbs for medicine', 'Plants that are poisonous after fire'], answer: 1, why: 'It names the loop between fire and grazers: fire creates fresh growth, grazers concentrate on it, and where they graze shapes where the next fire can carry.', see: 'Indigenous Knowledge' },
-    { q: 'Eucalyptus trees promote fire by:', choices: ['Calling lightning', 'Shedding oily bark and releasing volatile oils from leaves', 'Growing near volcanoes', 'Absorbing all moisture from the soil so the understory dries out and burns'], answer: 1, why: 'Eucalypts shed oily bark and hold volatile oils in their leaves, which makes fire both more likely and more intense, while the trees themselves resprout afterwards.', see: 'Fire Ecosystems' },
-    { q: 'Why are Garry oak savannas endangered in British Columbia?', choices: ['Climate change made the winters too cold and wet for the oaks to set acorns', 'Without Indigenous burning, Douglas-fir overtops and shades out the oaks', 'People cut down all the oaks', 'Invasive insects killed them'], answer: 1, why: 'Without Indigenous burning, Douglas-fir grows up through the savanna and shades the oaks out. The threat is the missing fire, not a pest or a climate shift.', see: 'Indigenous Knowledge' }
+    // Round 10: "promote fire by oily bark and volatile oils" had no source here; the survival answer does (Zimmer 2021).
+    { q: 'Many eucalypts survive a fire by:', choices: ['Calling lightning', 'Sprouting from buds hidden under their bark', 'Growing near volcanoes', 'Absorbing all moisture from the soil so the understory dries out and burns'], answer: 1, why: 'Larger trees grow new shoots from buds under the bark, and seedlings come up from seed, even after a severe fire (Zimmer and others 2021).', see: 'Fire Ecosystems' },
+    // FEIS Quercus garryana: BC habitat loss "is primarily a result of European settlers that suppressed fires, altered
+    // land use, and introduced nonnative species and heavy grazing"; Devine and Harrington (2006) Trees 20:747-756,
+    // "Changes in Oregon white oak ... following release from overtopping conifers".
+    { q: 'Why are Garry oak savannas endangered in British Columbia?', choices: ['Climate change made the winters too cold and wet for the oaks to set acorns', 'Without Indigenous burning, Douglas-fir overtops and shades out the oaks', 'People cut down all the oaks', 'Invasive insects killed them'], answer: 1, why: 'Without Indigenous burning, Douglas-fir grows up through the savanna and shades the oaks out. Land clearing for farms and towns and invasive plants are other big threats.', see: 'Indigenous Knowledge' }
   ];
 
   // ═══════════════════════════════════════════
   // PRESCRIBED BURN PLANNER
   // ═══════════════════════════════════════════
 
+  // Round 11: no published burn plan or NWCG guide was found that sets these as general ranges. Real prescriptions are
+  // written for one unit, fuel type and goal, so the planner calls these "this sim's classroom ranges", not "ideal".
   var BURN_WEATHER = {
     temperature: { min: 40, max: 80, ideal: [50, 70], unit: '\u00B0F', label: 'Temperature' },
     humidity: { min: 20, max: 80, ideal: [30, 55], unit: '%', label: 'Relative Humidity' },
@@ -1822,32 +2481,43 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   var SMOKE_ECOLOGY = {
     title: 'Smoke Ecology: How Smoke Triggers Life',
-    intro: 'For decades, scientists assumed fire-dependent seeds responded to heat alone. The discovery of karrikinolide (KAR\u2081) in 2004 revealed a far more elegant system: specific chemicals IN SMOKE act as germination signals. This means plants don\u2019t just survive fire \u2014 they listen for it.',
+    // Round 3: De Lange, J.H. & Boucher, C. (1990) S. Afr. J. Bot. 56:700-703 (smoke triggers germination of
+    // Audouinia capitata, fynbos); Flematti, G.R. and others (2004) A compound from smoke that promotes seed
+    // germination. Science 305:977. The old intro said the 2004 find was the first sign that smoke mattered.
+    intro: 'In 1990, scientists in South Africa showed that smoke alone could make the seeds of a fynbos shrub sprout (De Lange and Boucher 1990). In 2004, researchers found one of the key chemicals in smoke, karrikinolide (KAR\u2081) (Flematti and others, Science 2004). Chemicals IN SMOKE act as germination signals, so plants don\u2019t just survive fire \u2014 they listen for it.',
+    // Round 10: "works at extremely low amounts", the nitric-oxide root-growth line, ethylene "concentrated in smoke", the
+    // fire poppy / Banksia / Ceanothus "nurse plant" / lodgepole "even-aged" / grass tree / Protea cards, whispering bells
+    // "named for the sound" and "Mass germination", "Seeds may wait decades", Acacia / coast live oak / Watsonia /
+    // orchid examples and "hundreds of dormant buds" had no source here; manzanita was a wrong lignotuber example (the
+    // NPS lists big-berry manzanita as non-sprouting). Sources: Keeley and Pausas 2016 and the chaparral, boreal,
+    // longleaf and eucalyptus notes above. Keeley and Pausas 2016: "the organic compound karrikin (a product of the
+    // degradation of cellulose) is a powerful germination cue in many species"; "the KA12 [KAI2] gene responsible for
+    // the signaling system in plants can be traced back to the earliest plants"; glyceronitrile "(Flematti et al.,
+    // 2011; Downes et al., 2014)"; "there are a number of species that are stimulated to germinate in response to
+    // smoke, but karrikin is clearly not the responsible compound".
     chemicals: [
-      { name: 'Karrikinolide (KAR\u2081)', formula: 'C\u2088H\u2086O\u2083', desc: 'Discovered in smoke from burned vegetation. Triggers germination in over 1,200 plant species worldwide. Active at concentrations as low as 1 part per billion. Works by binding to KAI2 receptor proteins in seeds.', color: '#f97316' },
-      { name: 'Cyanohydrin (Glyceronitrile)', formula: 'C\u2083H\u2085NO\u2082', desc: 'A second smoke-derived germination trigger discovered in 2020. Works synergistically with karrikinolide. May be responsible for germination in species that don\u2019t respond to KAR\u2081 alone.', color: '#3b82f6' },
-      { name: 'Nitric Oxide (NO)', formula: 'NO', desc: 'Produced during combustion. Breaks seed dormancy in some species by mimicking natural dormancy-breaking signals. Also promotes root growth in seedlings.', color: '#22c55e' },
-      { name: 'Ethylene', formula: 'C\u2082H\u2084', desc: 'Gaseous plant hormone concentrated in smoke. Triggers fruit ripening and seed maturation. May signal seeds that fire conditions have created open habitat.', color: '#a855f7' }
+      { name: 'Karrikinolide (KAR\u2081)', formula: 'C\u2088H\u2086O\u2083', desc: 'Found in smoke in 2004 (Flematti and others 2004). It comes from burning cellulose and is a strong sprouting signal for many plants, though not for all of them. Plants sense karrikins through a gene called KAI2 (Keeley and Pausas 2016).', color: '#f97316' },
+      { name: 'Cyanohydrin (Glyceronitrile)', formula: 'C\u2083H\u2085NO\u2082', desc: 'A second smoke chemical that triggers germination, reported in 2011 (Flematti and others 2011). It works in some species that do not respond to karrikinolide (Keeley and Pausas 2016).', color: '#3b82f6' },
+      { name: 'Nitrogen Dioxide (NO\u2082)', formula: 'NO\u2082', desc: 'A gas in smoke. In 1997 it became the first smoke chemical shown to make seeds sprout: at smoke-like levels it made every seed of whispering bells, a chaparral annual, sprout in the lab (Keeley and Fotheringham 1997).', color: '#22c55e' }
     ],
     fireSeeds: [
-      { species: 'California Fire Poppy (Papaver californicum)', strategy: 'Seeds dormant 50-100+ years in soil. Germinate ONLY after fire. Entire hillsides turn orange the first spring after wildfire.', type: 'smoke-responsive', icon: '\uD83C\uDF3A' },
-      { species: 'Giant Sequoia (Sequoiadendron giganteum)', strategy: 'Cones open from fire heat; seeds need bare mineral soil and sunlight. Seedlings cannot establish without fire clearing the forest floor.', type: 'serotinous + heat', icon: '\uD83C\uDF32' },
-      { species: 'Jack Pine (Pinus banksiana)', strategy: 'Serotinous cones sealed with resin that melts at 50\u00B0C (122\u00B0F). Seeds released onto fire-prepared mineral seedbed.', type: 'serotinous', icon: '\uD83C\uDF32' },
-      { species: 'Banksia (multiple species)', strategy: 'Woody follicles held in canopy for years. Fire melts resin seal, releasing seeds onto bare ground below. Some Banksia die in fire and regenerate only from seed (obligate seeders).', type: 'serotinous', icon: '\uD83C\uDF3F' },
-      { species: 'Whispering Bells (Emmenanthe penduliflora)', strategy: 'Named for the sound dried seed capsules make in wind. Seeds respond to karrikinolide in smoke. Mass germination creates \u201Cfire follower\u201D meadows.', type: 'smoke-responsive', icon: '\uD83D\uDD14' },
-      { species: 'Ceanothus (multiple species)', strategy: 'Hard seed coat cracked by fire heat (scarification). Nitrogen-fixing roots enrich post-fire soil. Critical nurse plant for forest recovery.', type: 'heat-scarified', icon: '\uD83C\uDF3F' },
-      { species: 'Lodgepole Pine (Pinus contorta)', strategy: 'Semi-serotinous cones \u2014 some open without fire, but mass release occurs after fire. Colonizes burns in dense, even-aged stands.', type: 'semi-serotinous', icon: '\uD83C\uDF32' },
-      { species: 'Fireweed (Chamerion angustifolium)', strategy: 'Wind-dispersed seeds colonize burns within days. Named for being the first plant visible after fire. Roots can also survive underground.', type: 'pioneer wind-dispersal', icon: '\uD83C\uDF3A' },
-      { species: 'Grass Tree (Xanthorrhoea, Australia)', strategy: 'Flowers 10x more prolifically after fire. Aboriginal Australians used the fire-induced flowering to time resin collection. One of the most recognizable fire-adapted plants on Earth.', type: 'fire-stimulated flowering', icon: '\uD83C\uDF34' },
-      { species: 'Protea (South Africa)', strategy: 'Woody seedheads protect seeds in canopy. Fire opens seedheads and clears competitors. Some species are \u201Csprouters\u201D (resprout from rootstock); others are \u201Cseeders\u201D (killed, regenerate from seed only).', type: 'canopy seed bank', icon: '\uD83C\uDF3B' }
+      // Round 8: see the giant sequoia note in FIRE_FACTS (NPS; FEIS).
+      { species: 'Giant Sequoia (Sequoiadendron giganteum)', strategy: 'Hot air from a fire dries old cones so they open; seeds need bare mineral soil and sunlight. Without regular fire, litter piles up and few seedlings take hold (US Forest Service FEIS).', type: 'serotinous + heat', icon: '\uD83C\uDF32' },
+      { species: 'Jack Pine (Pinus banksiana)', strategy: 'Serotinous cones sealed with resin that usually melts above about 60\u00B0C (140\u00B0F). Seeds fall onto bare mineral soil, its best seedbed (US Forest Service FEIS).', type: 'serotinous', icon: '\uD83C\uDF32' },
+      { species: 'Whispering Bells (Emmenanthe penduliflora)', strategy: 'A chaparral annual whose seeds stay dormant until a fire. In lab tests smoke, nitrogen dioxide, and karrikins can each make them sprout (Keeley and Fotheringham 1997; Keeley and Pausas 2016).', type: 'smoke-responsive', icon: '\uD83D\uDD14' },
+      { species: 'Chamise (Adenostoma fasciculatum)', strategy: 'Heat from fire cracks its hard seed coat so the seed can sprout. The burned shrub also sprouts again from its lignotuber, usually within 6 weeks (US Forest Service FEIS).', type: 'heat-scarified', icon: '\uD83C\uDF3F' },
+      { species: 'Bigpod Ceanothus (Ceanothus megacarpus)', strategy: 'A non-sprouting shrub: fire kills it, and the next generation comes from seed (National Park Service).', type: 'seeder', icon: '\uD83C\uDF3F' },
+      // Round 8: see the fireweed note in the boreal card (FEIS).
+      { species: 'Fireweed (Chamerion angustifolium)', strategy: 'Wind-blown seeds colonize burns quickly, often in the first year after a fire. Its underground stems (rhizomes) also sprout again (US Forest Service FEIS).', type: 'pioneer wind-dispersal', icon: '\uD83C\uDF3A' },
+      { species: 'Wiregrass (Aristida beyrichiana)', strategy: 'Rarely flowers without fire. Its growing points sit a few centimeters underground, so it regrows fast after a burn (Fill and others 2021).', type: 'fire-stimulated flowering', icon: '\uD83C\uDF3E' }
     ],
     strategies: [
-      { name: 'Serotiny', desc: 'Cones/fruits sealed with resin that melts in fire heat, releasing stored seeds onto freshly prepared ground. Examples: Jack pine, lodgepole pine, Banksia.', icon: '\uD83C\uDF32' },
-      { name: 'Smoke-Responsive Germination', desc: 'Seeds contain KAI2 receptor proteins that detect karrikinolide and other smoke chemicals, breaking dormancy. Seeds may wait decades for the fire signal. Examples: fire poppy, whispering bells.', icon: '\uD83D\uDCA8' },
-      { name: 'Heat Scarification', desc: 'Hard seed coat must be cracked by fire temperature (typically 80-120\u00B0C) before water can enter and germination begin. Examples: Ceanothus, Acacia, many legumes.', icon: '\uD83C\uDF21\uFE0F' },
-      { name: 'Epicormic Sprouting', desc: 'Dormant buds beneath bark activate after fire kills the canopy. New shoots emerge directly from trunk and branches within weeks. Examples: eucalyptus, coast live oak.', icon: '\uD83C\uDF3F' },
-      { name: 'Lignotuber Resprouting', desc: 'Massive underground woody root burl stores energy and contains hundreds of dormant buds. Even if the entire aboveground plant is killed, the lignotuber resprouts. Examples: manzanita, chamise, many eucalyptus.', icon: '\uD83E\uDEB5' },
-      { name: 'Fire-Stimulated Flowering', desc: 'Plants produce far more flowers and seeds after fire than in unburned conditions. Fire provides nutrient flush and full sunlight. Examples: grass tree, many orchids, Watsonia.', icon: '\uD83C\uDF3A' }
+      { name: 'Serotiny', desc: 'Cones sealed with resin that melts in fire heat, releasing stored seeds onto the fresh burn. Examples: jack pine, black spruce (US Forest Service FEIS; National Park Service).', icon: '\uD83C\uDF32' },
+      { name: 'Smoke-Responsive Germination', desc: 'Chemicals from smoke and charred wood wake seeds that have been dormant in the soil. More than one chemical can do it, and different plants respond to different ones. Example: whispering bells (Keeley and Pausas 2016).', icon: '\uD83D\uDCA8' },
+      { name: 'Heat Scarification', desc: 'A hard seed coat must be cracked by fire heat before water can enter and germination can begin. Example: chamise (US Forest Service FEIS).', icon: '\uD83C\uDF21\uFE0F' },
+      { name: 'Epicormic Sprouting', desc: 'Buds hidden under the bark grow after fire burns the leaves, so new shoots come straight out of the trunk and branches. Example: many eucalypts (Zimmer and others 2021).', icon: '\uD83C\uDF3F' },
+      { name: 'Lignotuber Resprouting', desc: 'A woody swelling at the base of the stem holds buds and stored food. Even if everything above ground is killed, it sprouts again. Example: chamise, usually within 6 weeks (US Forest Service FEIS).', icon: '\uD83E\uDEB5' },
+      { name: 'Fire-Stimulated Flowering', desc: 'Plants produce far more flowers after fire than without it. Example: wiregrass, which rarely flowers without fire (Fill and others 2021).', icon: '\uD83C\uDF3A' }
     ]
   };
 
@@ -1856,19 +2526,32 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // ═══════════════════════════════════════════
 
   var WATERSHED_SCIENCE = {
-    title: 'Fire & Water: How Burning Protects Watersheds',
-    intro: 'Counterintuitively, regular low-intensity fire is one of the best ways to protect clean water. Catastrophic wildfire is one of the worst threats to water quality. Indigenous fire keepers understood this connection \u2014 protecting water by managing fire.',
+    // Round 11: "one of the best ways", "one of the worst threats" and "Indigenous fire keepers understood this connection"
+    // had no source. DeBano, L.F. (2000) Fire-induced water repellency: an erosional factor in wildland environments.
+    // USDA Forest Service Proc. RMRS-P-13, pp. 307-310: "Hydrophobic organic compounds found in plant litter are vaporized
+    // during wildfires and condense at or near the mineral soils surface where they produce a water-repellent layer";
+    // heat "vaporizes organic substances which are moved downward into the underlying mineral soil where they condense in
+    // the cooler underlying soil layers"; the layer "impedes infiltration into the soil, leading to extensive surface
+    // erosion"; "Under severe fires, produced when heavy, dry fuel loads were consumed, postfire erodibility was
+    // increased"; the effect is strongest "particularly during the first year following fire".
+    title: 'Fire & Water: How Fire Severity Changes a Watershed',
+    intro: 'A severe wildfire can harm a watershed for years: the soil can stop soaking up rain, and floods carry ash and mud into streams. A low-severity burn usually leaves roots, litter, and soil in place, so its effect on water is smaller (DeBano 2000; Moody and others, US Geological Survey).',
     concepts: [
-      { name: 'Cultural Burn \u2192 Healthy Watershed', icon: '\uD83D\uDCA7', desc: 'Low-intensity fire thins understory, reducing water competition. Mature trees survive and stabilize soil with deep roots. Soil structure is preserved, maintaining infiltration capacity. Stream flows increase 10-20% after understory thinning.', impact: 'positive', color: '#22c55e' },
-      { name: 'Wildfire \u2192 Watershed Devastation', icon: '\u26A0\uFE0F', desc: 'High-intensity fire kills trees, burns root systems, and creates hydrophobic (water-repellent) soil layers. With no roots or litter to slow runoff, the next rain causes flash floods and debris flows. Sediment loads in streams increase 100-1000x.', impact: 'negative', color: '#ef4444' },
-      { name: 'Hydrophobic Soil Layer', icon: '\uD83E\uDEA8', desc: 'When intense fire vaporizes organic compounds in soil, the gases condense below the surface creating a waxy, water-repellent layer. This \u201Chydrophobic\u201D layer prevents rain from infiltrating, causing catastrophic surface runoff even in moderate storms.', impact: 'negative', color: '#dc2626' },
-      { name: 'Post-Fire Debris Flows', icon: '\uD83C\uDF0A', desc: 'After high-severity wildfire, rainstorms mobilize loose ash, soil, and dead vegetation into fast-moving debris flows. The 2018 Montecito debris flow (CA) killed 23 people after the Thomas Fire burned the watershed above the town. Low-intensity cultural burning prevents this chain of events.', impact: 'negative', color: '#b91c1c' },
-      { name: 'Municipal Water Supply', icon: '\uD83D\uDEB0', desc: 'Over 60% of US fresh water originates in forested watersheds. Denver, Portland, Seattle, and many cities depend on forested mountains for drinking water. Catastrophic wildfire in these watersheds costs hundreds of millions in water treatment and infrastructure repair.', impact: 'negative', color: '#0369a1' },
-      { name: 'Indigenous Water-Fire Connection', icon: '\u2728', desc: 'Many Indigenous cultures explicitly connect fire and water stewardship. The Karuk word for \u201Cgood fire\u201D is linked to concepts of clean water flowing downstream. Australian Aboriginal burning protects water holes by preventing uncontrolled fire from reaching them. The lesson: managing fire IS managing water.', impact: 'positive', color: '#7c3aed' }
+      { name: 'Cultural Burn \u2192 Healthy Watershed', icon: '\uD83D\uDCA7', desc: 'A low-intensity fire burns the litter and small plants but leaves most mature trees alive, and their roots keep holding the soil. The soil is not heated much, so rain can still soak in.', impact: 'positive', color: '#22c55e' },
+      { name: 'Wildfire \u2192 Watershed Damage', icon: '\u26A0\uFE0F', desc: 'High-intensity fire kills trees, burns root systems, and can create water-repellent soil layers. With no roots or litter to slow runoff, the next heavy rain can cause flash floods and debris flows.', impact: 'negative', color: '#ef4444' },
+      { name: 'Hydrophobic Soil Layer', icon: '\uD83E\uDEA8', desc: 'A hot fire turns water-repelling compounds from the leaf litter into gas. The gas moves down into the cooler soil and condenses there, coating the soil just below the surface. This \u201Chydrophobic\u201D (water-fearing) layer keeps rain from soaking in, so more water runs off and carries soil away. The effect is strongest in the first year after the fire (DeBano 2000, US Forest Service).', impact: 'negative', color: '#dc2626' },
+      // Round 8: Montecito toll from Kean and others 2019 (USGS; see the Montecito case study).
+      { name: 'Post-Fire Debris Flows', icon: '\uD83C\uDF0A', desc: 'After high-severity wildfire, rainstorms mobilize loose ash, soil, and dead vegetation into fast-moving debris flows. The 2018 Montecito debris flow (CA) killed 23 people after the Thomas Fire burned the watershed above the town.', impact: 'negative', color: '#b91c1c' },
+      { name: 'Municipal Water Supply', icon: '\uD83D\uDEB0', desc: 'About two-thirds of the fresh water in the US starts on forested land (US Forest Service). Denver, Portland, Seattle, and many other cities depend on forested mountains for drinking water, so a severe fire upstream can mean costly water treatment and repairs.', impact: 'negative', color: '#0369a1' },
+      // Round 11: "Aboriginal burning in Australia protects water holes by keeping uncontrolled fire away from them" and
+      // "Many Indigenous cultures connect fire and water stewardship" had no source found. Threatened Species Recovery Hub,
+      // "Managing jilas and fire on Ngurrara Country" (8 December 2021, nespthreatenedspecies.edu.au): rangers' training
+      // helps "make good decisions about caring for jilas and doing rightway fire"; "camels that can damage our jilas, which are important desert waterholes".
+      { name: 'Indigenous Water-Fire Connection', icon: '\u2728', desc: 'In one Australian desert, Indigenous rangers care for important desert waterholes and also burn to keep their Country healthy, as parts of the same work (Threatened Species Recovery Hub 2021). The lesson of this tab: managing fire is also managing water.', impact: 'positive', color: '#7c3aed' }
     ],
     comparison: {
-      culturalBurn: { sediment: '0.1-0.5 tons/acre', waterTemp: '+0-1\u00B0F', aquaticLife: 'Minimal impact', recovery: 'Immediate', runoff: 'No increase' },
-      wildfire: { sediment: '10-100 tons/acre', waterTemp: '+5-15\u00B0F (lethal to trout)', aquaticLife: 'Fish kills, invertebrate loss', recovery: '5-20 years', runoff: '200-500% increase' }
+      culturalBurn: { sediment: 'Small and short-lived', waterTemp: 'Little change', aquaticLife: 'Usually small effect', recovery: 'Fast', runoff: 'Little change' },
+      wildfire: { sediment: 'Many times higher for a few years', waterTemp: 'Warmer where shade trees die', aquaticLife: 'Ash and mud can kill fish and insects', recovery: 'Hillslopes: a few years to a decade', runoff: 'Much higher where soil repels water' }
     }
   };
 
@@ -1880,27 +2563,34 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     {
       id: 'blackSummer',
       name: '2019-2020 Australian Black Summer',
-      icon: '\uD83C\uDDE6\uD83C\uDDFA',
+      icon: '', mark: 'flame',
       year: '2019-2020',
       location: 'Australia (NSW, Victoria, SA, QLD)',
-      stats: { acresBurned: '46 million', structuresDestroyed: '5,900+', deaths: '34 direct, 445 smoke-related', animalDeaths: '~3 billion', cost: 'AUD $100+ billion' },
-      description: 'The most destructive wildfire season in recorded Australian history. Fires burned continuously for months across southeastern Australia, creating pyrocumulonimbus clouds (fire-generated thunderstorms) that spawned new fires via lightning. Smoke reached South America and New Zealand.',
-      indigenousContext: 'Aboriginal fire practitioners had warned for decades that the cessation of cultural burning after colonization was creating a catastrophic fuel load. Victor Steffensen, a Tagalaka man and fire practitioner, had been advocating for the return of Indigenous fire management. After Black Summer, the Australian government finally began funding Aboriginal cultural burning programs at scale.',
-      lesson: 'Black Summer was not a natural disaster \u2014 it was the predictable consequence of removing Indigenous fire management from a fire-adapted landscape. 65,000 years of Aboriginal burning had prevented exactly this scenario. One century of colonial fire suppression undid it.',
-      scienceNote: 'Several eucalyptus forests burned so intensely that even fire-adapted species were killed \u2014 an unprecedented event suggesting fire severity exceeded the adaptive range of the ecosystem. Normally, epicormic sprouting allows eucalyptus to recover within weeks. When fire is hot enough to kill even these buds, recovery takes decades.',
+      // Round 9: Royal Commission into National Natural Disaster Arrangements, Report (2020): "Over 24 million hectares
+      // were burnt"; "Tragically, 33 people died"; "Over 3,000 homes were destroyed"; "Nearly three billion animals were
+      // killed or displaced"; smoke "may have contributed up to 429 premature deaths". ("About 3,000 homes" and "about
+      // 400 more" were rounded down from these.) 24 million ha x 2.471 = about 59 million acres.
+      stats: { acresBurned: 'more than 24 million hectares (about 59 million acres)', structuresDestroyed: 'more than 3,000 homes', deaths: '33 in the fires; smoke may have added up to 429 early deaths (estimate)', animalsAffected: 'nearly 3 billion animals killed or displaced (estimate)' },
+      description: "One of the worst fire seasons in Australia's recorded history. It followed the country's hottest and driest year on record. Fires burned for months across southeastern Australia, creating pyrocumulonimbus clouds (fire-made thunderstorms). Smoke crossed the Pacific to South America (NOAA).",
+      indigenousContext: "Aboriginal fire practitioners had long called for cultural burning to return to Country. Victor Steffensen, a Tagalaka man and co-founder of Firesticks, wrote 'Fire Country' (2020) about bringing back 'good fire'. The Royal Commission after Black Summer asked governments to work further with Traditional Owners on Indigenous land and fire management.",
+      lesson: "Black Summer had several causes working together: record heat, deep drought, strong winds, and fuel. No single tool would have stopped it, but Aboriginal fire knowledge is now part of how Australia plans for the next fire season.",
+      // Round 10: "whose lightning started new fires" and "within months" had no source. NOAA NESDIS, "Smoke from
+      // Australian Wildfires Continues to Drift over South America" (17 Jan 2020): on January 16, smoke from the
+      // Australian bushfires "is continuing to stream over the region in the form of a grayish haze."
+      scienceNote: "Many eucalypts grow back after fire from buds hidden under their bark, and from seed, even after a severe fire (Zimmer and others 2021).",
       color: '#dc2626'
     },
     {
       id: 'campFire',
       name: '2018 Camp Fire (Paradise, CA)',
-      icon: '\uD83C\uDDFA\uD83C\uDDF8',
+      icon: '', mark: 'house',
       year: '2018',
       location: 'Butte County, California, USA',
-      stats: { acresBurned: '153,336 acres', structuresDestroyed: '18,804', deaths: '85', displaced: '50,000+', cost: '$16.5 billion' },
-      description: 'The deadliest and most destructive wildfire in California history. The Camp Fire destroyed the town of Paradise in less than 4 hours, moving at up to 80 football fields per minute. Many residents had no time to evacuate. The fire was driven by extreme winds and decades of fuel accumulation.',
-      indigenousContext: 'The Konkow Maidu people \u2014 the original inhabitants of the Paradise area \u2014 practiced regular cultural burning of the foothill woodlands. Maidu burning maintained open, park-like forests with low fuel loads. After Maidu removal and a century of fire suppression, the same landscape became a dense, fuel-heavy tinderbox. Maidu elder and fire practitioner Trina Cunningham has advocated for returning cultural burning to the Butte County landscape.',
-      lesson: 'Paradise was built in a landscape shaped by millennia of Maidu fire management, then stripped of that management for a century. The fuels that burned Paradise had been accumulating since the Maidu were displaced. Rebuilding without restoring Indigenous fire management is rebuilding to burn again.',
-      scienceNote: 'The Camp Fire produced ember transport up to 1 mile ahead of the fire front. Structures ignited from ember rain, not direct flame contact. This \u201Cspot fire\u201D behavior is characteristic of extreme fuel loads \u2014 the kind that would not exist under regular cultural burning.',
+      stats: { acresBurned: '153,336 acres', structuresDestroyed: '18,804', deaths: '85' },
+      description: "The deadliest and most destructive wildfire in California history (CAL FIRE). Strong, dry winds drove the fire into the town of Paradise on its first morning. Embers blew far ahead of the flames and started many spot fires, and burning houses then lit their neighbors (NIST).",
+      indigenousContext: "The Konkow Maidu people, the original inhabitants of the Paradise area, used fire to care for the foothill woodlands. Maidu people today are working to bring cultural burning back to their homelands.",
+      lesson: "Most homes in Paradise were lit by embers and by burning neighbors, not by a wall of flame. Safer towns need both: less fuel in the land around them, and homes and yards that do not catch embers.",
+      scienceNote: "A study by the National Institute of Standards and Technology (NIST) found that fire spread from yard to yard and house to house: sheds, plants, cars, and neighboring homes all carried it. Keeping things that burn away from a house is one of its main recommendations.",
       color: '#ea580c'
     },
     {
@@ -1909,11 +2599,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       icon: '\uD83C\uDFDE',
       year: '1988',
       location: 'Yellowstone National Park, Wyoming, USA',
-      stats: { acresBurned: '793,880 acres (36% of park)', structuresDestroyed: '67', deaths: '0 civilian', cost: '$120 million (firefighting)', firefighters: '25,000 deployed' },
-      description: 'The Yellowstone fires of 1988 were a turning point in American fire policy. After decades of total suppression, nearly 800,000 acres burned in a single season. The fires shocked the public but became a landmark case study in fire ecology \u2014 the park recovered faster and more beautifully than anyone expected.',
-      indigenousContext: 'Before the park was created in 1872, the Crow, Shoshone, Blackfeet, and Bannock peoples all managed the Yellowstone landscape with fire. The \u201Cpristine wilderness\u201D that park founders sought to preserve was, in fact, a fire-managed landscape. When Indigenous burning was replaced by suppression, fuel accumulated for over a century until 1988.',
-      lesson: 'Yellowstone 1988 forced the US to confront a fundamental truth: fire suppression does not prevent fire \u2014 it delays and intensifies it. The fires also demonstrated the resilience of fire-adapted ecosystems. By 1990, burned areas were already covered in fireweed, lodgepole seedlings, and wildflowers. The \u201Cdevastated\u201D landscape became a laboratory for ecological recovery.',
-      scienceNote: 'Lodgepole pine serotinous cones released an estimated 50,000-1,000,000 seeds per acre after the fires. By 2000, burned areas supported twice as many plant species as unburned old-growth. Moose, elk, and bison populations thrived on the nutritious regrowth. The fires created the Yellowstone we enjoy today.',
+      // Round 8: NPS, 1988 Fires (nps.gov/yell/learn/nature/1988-fires.htm): "36% (793,880 acres) of the park was
+      // affected"; "$120 million spent fighting the fires". NPS, Wildland Fire: Yellowstone 1988 25th anniversary
+      // retrospective (nps.gov/articles/wildland-fire-yell-1988-25th-anniv-retrospective.htm): "More than 25,000
+      // firefighters--as many as 9,000 at one time" (dash simplified); "Sixty-seven structures were destroyed".
+      stats: { acresBurned: '793,880 acres (about 36% of the park)', structuresDestroyed: '67', cost: '$120 million (firefighting)', firefighters: 'more than 25,000 (up to 9,000 at once)' },
+      description: "The Yellowstone fires of 1988 were a turning point in American fire policy. Since 1972 the park had let some lightning fires burn. In 1988, the driest summer in the park's records, plus strong winds, made the fires nearly impossible to stop. The fires shocked the public but became a landmark case study in fire ecology.",
+      indigenousContext: "Many tribes, including the Crow, Shoshone, Bannock, and Blackfeet, have deep ties to the Yellowstone area, and Indigenous people used fire in its lower valleys and grasslands. The high lodgepole pine forests are different: the National Park Service says they naturally burn in large fires about every 300 years or more.",
+      lesson: "Not every big fire is caused by fire suppression. Tree-ring studies found fires as large as 1988 in the early 1700s (Romme and Despain, 1989). Lodgepole pine forests are built to burn hot and come back, and by 1990 burned areas were already green with fireweed, wildflowers, and young lodgepole.",
+      scienceNote: "Serotinous lodgepole cones opened in the heat. Seedling numbers varied hugely from place to place, from almost none to very dense young forests, and scientists studied that variety for decades (US Geological Survey).",
       color: '#f59e0b'
     },
     {
@@ -1922,11 +2616,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       icon: '\uD83C\uDF0A',
       year: '2018',
       location: 'Montecito, Santa Barbara County, CA',
-      stats: { deaths: '23', structuresDestroyed: '130', damaged: '300+', displaced: '30,000', debrisVolume: '500,000+ cubic yards', rainfall: '0.5 inches in 5 minutes' },
-      description: 'One month after the Thomas Fire burned the steep slopes above Montecito, a brief rainstorm triggered catastrophic debris flows that buried homes under 15 feet of mud, boulders, and debris. The connection between wildfire and flood was devastating: fire burned the vegetation and soil, then rain mobilized everything downhill.',
-      indigenousContext: 'The Chumash people managed the Santa Barbara coastal mountains with fire for thousands of years. Chumash burning maintained low fuel loads and preserved root systems that stabilized slopes. The Thomas Fire that set the stage for the debris flow was fueled by decades of suppression-era fuel accumulation \u2014 fuel that would not have existed under Chumash fire management.',
-      lesson: 'Montecito demonstrates that fire and water are connected systems. You cannot separate wildfire policy from flood and debris flow risk. Cultural burning prevents the cascade: no fuel accumulation \u2192 no catastrophic fire \u2192 no hydrophobic soil \u2192 no debris flow. The 23 deaths in Montecito were, ultimately, a consequence of fire suppression.',
-      scienceNote: 'The debris flow was triggered by less than 0.5 inches of rain in 5 minutes. Normally, this would cause no damage. But the Thomas Fire had created a hydrophobic (water-repellent) soil layer on the slopes above Montecito. With no vegetation to slow runoff and no soil infiltration capacity, even modest rain became lethal.',
+      // Round 8: Kean, J.W. and others (2019) Inundation, flow dynamics, and damage in the 9 January 2018 Montecito
+      // debris-flow event, California, USA. Geosphere 15(4), doi:10.1130/GES02048.1 (pubs.usgs.gov/publication/70203874):
+      // "The resulting destruction (including 23 fatalities, at least 167 injuries, and 408 damaged homes)".
+      stats: { deaths: '23', structuresDestroyed: 'more than 400 homes damaged or destroyed', rainfall: '0.54 inches in 5 minutes' },
+      description: "About a month after the Thomas Fire burned the steep slopes above Montecito, a short, intense rainstorm triggered debris flows of mud, boulders, and burned wood that swept through homes. Fire had burned the plants and changed the soil, and then rain carried everything downhill.",
+      // Round 9: "for thousands of years" had no source found. UC Santa Barbara Magazine, Fall/Winter 2023, "A Chumash
+      // cultural burn reignites an ancient practice": burns "kept the landscape open, promoted the growth of useful
+      // plants and facilitated hunting"; "The tradition of burning came to an abrupt end in 1793," when "interim Spanish
+      // governor Jose Joaquin de Arrillaga outlawed the practice." Timbrook, Johnson and Earle (1982) Vegetation burning
+      // by the Chumash, J. California and Great Basin Anthropology 4(2):163-186.
+      indigenousContext: "The Chumash people burned these coastal lands to help useful plants grow and to make hunting easier, until a Spanish governor banned the burning in 1793 (UC Santa Barbara). The Thomas Fire itself burned through chaparral; US Geological Survey research found that in California shrublands old brush is generally not much more likely to burn than young brush (Moritz and others 2004).",
+      lesson: "Fire and water are connected. A burned slope can stay dangerous for a few years, so rain forecasts, warnings, and evacuation plans matter long after the flames are out.",
+      scienceNote: "About half an inch of rain (0.54 inches) fell in five minutes (NASA). On unburned slopes that would cause little harm, but the fire had removed the plants and left soil that shed water, so the runoff gathered mud and rock.",
       color: '#0369a1'
     },
     {
@@ -1935,11 +2637,18 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       icon: '\uD83C\uDF32',
       year: '2020',
       location: 'Western Oregon, USA',
-      stats: { acresBurned: '1.1 million acres', structuresDestroyed: '4,000+', deaths: '9', displaced: '500,000 (10% of state under evacuation notice)', towns: 'Detroit, Blue River, Vida, Phoenix, Talent' },
-      description: 'An unprecedented east wind event drove multiple fires simultaneously through the Cascade Range and into the Willamette Valley, destroying entire towns in hours. The fires burned through 100+ years of accumulated fuels in landscapes that historically burned every 5-15 years under Indigenous management.',
-      indigenousContext: 'The Kalapuya people burned the Willamette Valley annually for at least 6,000 years, maintaining the prairie and oak savanna ecosystem. The Molalla people burned the Cascade foothills. After colonization, fire suppression allowed dense Douglas-fir regrowth across the entire landscape. The 2020 fires burned through forests that had been accumulating fuel since the Kalapuya were displaced in the 1850s \u2014 170 years of fuel debt.',
-      lesson: 'The 2020 Oregon fires burned areas where Indigenous peoples had maintained open, fire-resistant landscapes for millennia. The towns destroyed (Detroit, Blue River) were built in narrow canyons that the Molalla had kept clear through regular burning. Without that burning, the canyons became chimneys of accumulated fuel.',
-      scienceNote: 'Wind speeds of 40-60 mph pushed fire through 100,000+ acres in a single day. Fire behavior modeling showed that fuel loads were 3-5x what they would have been under pre-colonial Indigenous burning regimes. At Indigenous fuel levels, the same wind event would have produced fast but survivable surface fires.',
+      // Round 9: Oregon Department of Emergency Management, five-year commemoration, 8 Sep 2025
+      // (apps.oregon.gov/oregon-newsroom/OR/OEM/Posts/Post/five-year-commemoration-labor-day-fires): the fires "burned
+      // more than 1 million acres, destroyed over 5,000 homes and businesses" and "ended with 11 lives lost"; "Nearly
+      // 500,000 Oregonians were under evacuation levels 1-3", "with more than 40,000 having to leave their homes".
+      // Towns: Governor Kate Brown, 9 Sep 2020 (East Oregonian, Oregon Capital Bureau): "Early reports indicate that the
+      // towns of Detroit in Marion County, Blue River and Vida in Lane County, and Phoenix and Talent in Southern Oregon,
+      // are substantially destroyed".
+      stats: { acresBurned: 'more than 1 million acres', structuresDestroyed: 'more than 5,000 homes and businesses', deaths: '11', displaced: 'more than 40,000 left home; about 500,000 under evacuation levels', towns: 'Detroit, Blue River, Vida, Phoenix, Talent' },
+      description: "Strong, dry east winds drove several fires at once down the west side of the Cascades and into the Willamette Valley, destroying whole towns in hours. These wet Douglas-fir forests naturally go a long time between fires, and when they do burn in an east-wind event, the fires can be huge.",
+      indigenousContext: "The Kalapuya people burned the Willamette Valley often, keeping it as prairie and oak savanna. After colonization those valley burns stopped, and many prairies filled in with trees. The wet mountain forests where most of the 2020 fires burned are a different kind of place: they burn rarely, but hard.",
+      lesson: "Different forests need different plans. In valley prairies, regular fire keeps fuel low. In wet mountain forests, researchers suggest that preventing ignitions on east-wind days, fast response, and ready communities matter most (Reilly and others, 2022).",
+      scienceNote: "Researchers found that the 2020 fires matched big wind-driven fires in the region's past, including fires around Labor Day in the early 1900s: historic, but not historically unprecedented (Reilly and others, Ecosphere 2022).",
       color: '#16a34a'
     }
   ];
@@ -1955,10 +2664,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       co2PerAcre: 3,           // tons CO2/acre
       treeSurvival: 95,        // percent
       soilCarbon: 'preserved', // soil C intact
-      biocharCreated: 0.5,     // tons biochar/acre (locks carbon for millennia)
+      biocharCreated: 0.5,     // tons biochar/acre (locks carbon for centuries; Wang and others 2016)
       recoveryTime: 0,         // years (trees survive)
       netCarbon10yr: -2,       // net sequestration (negative = carbon sink) per acre over 10 years
-      description: 'Low-intensity surface fire. Trees survive and continue growing. Soil carbon preserved. Biochar (charcoal) created in soil locks carbon for 1,000+ years. Net result over 10 years: carbon SINK.'
+      description: 'Low-intensity surface fire. Trees survive and continue growing. Soil carbon preserved. Biochar (charcoal) created in soil can hold carbon for centuries or longer. Net result over 10 years in this classroom model: a small carbon sink.'
     },
     prescribedBurn: {
       label: 'Prescribed Burn (Western)',
@@ -1980,7 +2689,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       biocharCreated: 0,
       recoveryTime: 30,
       netCarbon10yr: 50,
-      description: 'Crown fire kills 85% of trees, releasing all stored carbon. Soil organic matter combusted. Hydrophobic soil layer prevents revegetation. No biochar (too hot). Net result over 10 years: massive carbon source. Takes 30-50 years to re-sequester released carbon.'
+      description: 'Crown fire kills most trees. Some carbon goes up in smoke right away, and more is released over years as dead trees rot. Soil organic matter can burn. Net result over 10 years in this classroom model: a large carbon source.'
     },
     suppression50yr: {
       label: '50 Years of Suppression then Wildfire',
@@ -1991,35 +2700,72 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       biocharCreated: 0,
       recoveryTime: 50,
       netCarbon10yr: 80,
-      description: 'Half a century of fuel accumulation produces fire intensity beyond any species\u2019 adaptive range. Soil sterilized to depth. Seed banks destroyed. May convert forest to shrubland or grassland permanently (type conversion). The worst possible carbon outcome.'
+      description: 'In this classroom model, 50 years of built-up fuel feeds a fire hot enough to kill most trees, burn deep into the soil, and destroy many stored seeds. Very severe fires can turn a forest into shrubland or grassland for a long time (type conversion). This is the worst carbon result in the model.'
     }
   };
+  // Car comparison for the carbon tab. US EPA, Greenhouse Gas Emissions from a Typical Passenger Vehicle
+  // (epa.gov/greenvehicles, updated June 3, 2026): "A typical passenger vehicle emits about 4.6 metric tons of carbon
+  // dioxide per year", assuming "about 22.2 miles per gallon" and "around 11,500 miles per year". The model's tons
+  // are read as metric tons here.
+  var EPA_CAR_T_CO2_PER_YEAR = 4.6;
+  function carbonSavedVsWildfire(acres) { return (CARBON_DATA.wildfire.co2PerAcre - CARBON_DATA.culturalBurn.co2PerAcre) * acres; }
+  function carYearsForTons(tons) { return Math.round(tons / EPA_CAR_T_CO2_PER_YEAR); }
 
   // ═══════════════════════════════════════════
   // FIRE FACTS
   // ═══════════════════════════════════════════
 
   var FIRE_FACTS = [
-    '\uD83D\uDD25 Aboriginal Australians have managed fire for 65,000+ years \u2014 making cultural burning the oldest continuous land management system on Earth.',
-    '\uD83C\uDF32 The giant sequoia cannot reproduce without fire. Its tiny seeds need bare mineral soil and sunlight that only fire provides.',
-    '\uD83D\uDCA8 Karrikinolide, the smoke chemical that triggers seed germination, is active at just 1 part per BILLION \u2014 seeds can literally \u201Csmell\u201D fire from miles away.',
-    '\uD83E\uDD8B More species live in recently burned forests than in old-growth forests. Fire creates the habitat diversity that supports biodiversity.',
-    '\uD83C\uDF3E The American tallgrass prairie was NOT a natural wilderness. It was actively maintained by Indigenous burning for 8,000+ years. Without fire, it would be forest.',
-    '\u2601\uFE0F One acre of catastrophic wildfire releases 20-60 tons of CO\u2082. The same acre under cultural burning releases just 2-5 tons. Fire management IS climate action.',
-    '\uD83D\uDCA7 After severe wildfire, even 0.5 inches of rain can trigger deadly debris flows. Cultural burning prevents this by keeping trees alive and soil intact.',
-    '\uD83C\uDF44 Morel mushrooms fruit prolifically the spring after forest fire. Fire creates ideal conditions for mycorrhizal fungi networks to expand.',
-    '\uD83C\uDFD4\uFE0F Oklahoma loses 762 acres of grassland to eastern red cedar encroachment EVERY DAY \u2014 because fire suppression allows this invasive tree to take over prairie.',
-    '\uD83D\uDC26 The Kirtland\u2019s warbler went down to 167 pairs because fire suppression eliminated the young jack pine stands it needs. Prescribed burning has recovered it to 2,000+ pairs.',
-    '\uD83E\uDEB5 Terra preta \u2014 dark soil created by Indigenous Amazonian peoples using fire and charcoal \u2014 is STILL the most fertile soil on Earth, 4,000+ years after it was made.',
-    '\uD83C\uDDE6\uD83C\uDDFA Eucalyptus trees don\u2019t just survive fire \u2014 they PROMOTE it. Volatile oils and shedding bark evolved specifically to carry fire and eliminate competitors.',
-    '\uD83E\uDD81 Without fire, African savannas would be dense woodland. Fire and elephants together maintain the open grasslands that support Earth\u2019s greatest animal concentrations.',
-    '\u2744\uFE0F The S\u00E1mi people of northern Scandinavia burned boreal forest to grow reindeer lichen \u2014 connecting fire management to one of Europe\u2019s last nomadic pastoral traditions.',
-    '\uD83E\uDD97 The black-backed woodpecker depends ENTIRELY on recently burned forest. It can detect fires from 50+ miles away and flies toward them to colonize newly burned trees.',
-    '\uD83C\uDF3A California fire poppies can remain dormant in soil for over 50 years, waiting for the smoke signal to germinate. When they do, entire hillsides turn orange overnight.',
-    '\uD83D\uDCCA The US fire suppression budget has grown from $1 billion/year in 2000 to over $4 billion/year \u2014 while damaging fire seasons remain a major challenge. Suppression alone cannot address fuels, climate, land-use patterns, and community exposure.',
-    '\uD83C\uDF3F The gopher tortoise\u2019s 40-foot-deep burrows provide fire refugia for over 350 other species, including indigo snakes, burrowing owls, and gopher frogs.',
-    '\uD83C\uDF0D Martu women in the Western Desert of Australia use fire as a hunting tool. Research shows their burning increases biodiversity by 70% compared to unmanaged lands.',
-    '\u26AB Biochar (charcoal) in soil sequesters carbon for 1,000-4,000+ years AND improves soil fertility. Indigenous Amazonian fire management was both agriculture AND climate engineering.'
+    '\uD83D\uDD25 Aboriginal people have cared for Country in Australia for at least 65,000 years (Clarkson and others, Nature 2017), and fire has long been one of their tools.',
+    // Round 8: "cannot reproduce without fire" / "only fire provides" overstated it. NPS, Sequoia and Kings Canyon, Giant
+    // Sequoias (nps.gov/seki/learn/nature/bigtrees.htm): "When fire burns through the forest the hot air dries out older
+    // cones"; "Fire also prepares the bare, mineral soil required by sequoia seeds for germination"; "It burns off
+    // undergrowth and trees that compete for the abundant sunlight young sequoias require." NPS Yosemite (2012, Fallen
+    // Green Cones of the Giant Sequoia): seeds "can also be released by two other mechanisms" (beetles, squirrels), and
+    // "Fire helps create the first two conditions [bare mineral soil, ample sunlight] by burning away the underbrush."
+    // FEIS Sequoiadendron giganteum: "In the absence of regular ground fires, litter accumulates on the forest floor and
+    // limits germination and establishment of seedlings".
+    '\uD83C\uDF32 Fire greatly helps giant sequoias start new trees. Its hot air opens old cones, it burns away litter so the tiny seeds land on bare mineral soil, and it clears plants that would shade the seedlings (National Park Service).',
+    '\uD83D\uDCA8 Karrikinolide, a chemical in smoke, is a strong sprouting signal for many plants, but not all of them; other smoke chemicals wake other seeds (Keeley and Pausas 2016).',
+    '\uD83E\uDD8B Recently burned patches next to older forest give animals and plants more kinds of places to live. A patchwork of burn ages supports many species.',
+    '\uD83C\uDF3E The tallgrass prairie once covered about 170 million acres; less than 4 percent remains (National Park Service). Before European settlement, fires there were frequent; without fire, shrubs and trees take over (National Park Service).',
+    '\u2601\uFE0F A gentle surface fire releases far less carbon per acre than a fire that kills the whole stand, because the living trees keep storing carbon.',
+    '\uD83D\uDCA7 After the Thomas Fire, about half an inch of rain in five minutes set off the deadly 2018 Montecito debris flows.',
+    // Round 8: "mycorrhizal (fungi) networks expand" after fire had no source. Pilz, D. and others (2007) Ecology and
+    // management of morels harvested from the forests of western North America. USDA Forest Service PNW-GTR-710
+    // (fs.usda.gov/pnw/pubs/pnw_gtr710.pdf): "some Western species only occur for a year or two after forest fires";
+    // "it appears common to find 1,000 or more morels per acre the first year after a forest fire"; "Why do only fire
+    // morels fruit, and in such large quantities, for only a year or two after fires ...?" (an open question).
+    '\uD83C\uDF44 Some kinds of morel mushrooms come up in huge numbers for a year or two after a forest fire, often 1,000 or more per acre in the first year. Why fire sets them off is still an open question (US Forest Service, Pilz and others 2007).',
+    // Round 8: "about 762 acres a day" had no source comment and traces to an older secondhand figure. Oklahoma State
+    // University Cooperative Extension, Circular E-947, Invasion of Oklahoma Rangelands and Forests by Eastern Redcedar
+    // and Ashe Juniper (pods.okstate.edu/fact-sheets/E-947pod.pdf): the increase into "Oklahoma rangeland and forestland
+    // was about 280,000 acres per year from 1985 to 1994"; "More land is prescribed burned for control of eastern
+    // redcedar and ashe juniper than all other control measures combined."
+    '\uD83C\uDFD4\uFE0F An Oklahoma State University survey found eastern red cedar and ashe juniper spreading over about 280,000 more acres of Oklahoma range and forest each year from 1985 to 1994. In that survey, prescribed fire was the tool used most to hold them back.',
+    // Round 10: "nests only in young jack pine", terra preta "hundreds to thousands of years later", the eucalyptus
+    // "help it spread" line, the woodpecker "depends on", "billions of dollars" and "improve soil fertility" were
+    // unsourced or overstated. Sources: FEIS Pinus banksiana and Picoides arcticus, Hutto 2008, Glaser 2007, Wang 2016,
+    // Zimmer 2021, Cogos 2019, Bliege Bird 2012 (see the cards above). National Interagency Fire Center, Suppression
+    // Costs (nifc.gov/fire-information/statistics/suppression-costs), "Federal Firefighting Costs (Suppression Only)":
+    // 2021 "$4,389,000,000"; 2022 "$3,549,000,000"; 2023 "$3,166,300,000".
+    '\uD83D\uDC26 The Kirtland\u2019s warbler nests on the ground at the edges of young jack pine stands (US Forest Service FEIS). It fell to 167 singing males in 1987, recovered to more than 2,000 pairs through jack pine planting and cowbird control, and left the endangered list in 2019 (US Fish and Wildlife Service).',
+    '\uD83E\uDEB5 Terra preta, dark earth made by Indigenous Amazonian peoples with charcoal and waste, still holds about 3 times more organic matter, nitrogen, and phosphorus than the soil next to it (Glaser 2007).',
+    '\uD83C\uDF3F Many eucalypts sprout again from buds hidden under their bark after a fire, even a severe one (Zimmer and others 2021).',
+    // Round 7: "would be dense woodland" and "Earth's greatest animal concentrations" had no source. O'Connor, Puttick
+    // and Hoffman 2014 (see the San card): "Fires, for example, were actively suppressed during the early twentieth
+    // century"; several drivers "interact and change over time".
+    '\uD83E\uDD81 In southern Africa, thick bush has spread into many grasslands. Less fire is one of several causes working together (O\u2019Connor and others 2014).',
+    '\u2744\uFE0F Reindeer lichen, the winter food of S\u00E1mi reindeer herds, takes about 30 to 40 years to come back after a forest fire (Cogos and others 2019).',
+    '\uD83E\uDD97 In western Montana the black-backed woodpecker is very closely tied to severely burned forest (Hutto 2008), where it eats beetle larvae in fire-killed trees (US Forest Service FEIS).',
+    '\uD83C\uDF3A Whispering bells, a chaparral wildflower, keeps its seeds dormant in the soil until a fire. Smoke can wake them (Keeley and Pausas 2016).',
+    '\uD83D\uDCCA Fighting wildfires cost US federal agencies more than 3 billion dollars a year in 2021, 2022 and 2023 (National Interagency Fire Center). Putting fires out does not by itself change fuels, climate, where people build, or how ready communities are.',
+    // Florida Fish and Wildlife Conservation Commission, gopher tortoise profile (myfwc.com): "Burrows average 15 feet
+    // long and 6.5 feet deep"; "refugia for more than 350 other species"; commensals include "indigo snakes, rabbits,
+    // gopher frogs"; burrows give "protection from extreme temperatures, drought, and fire".
+    '\uD83C\uDF3F Gopher tortoise burrows average about 15 feet long. More than 350 other species, such as indigo snakes and gopher frogs, use them for shelter, even from fire (Florida Fish and Wildlife Conservation Commission).',
+    '\uD83C\uDF0D Martu women in the Western Desert of Australia use fire as a hunting tool. Their fires stay small, even in years when lightning fires grow huge (Bliege Bird and others 2012).',
+    '\u26AB Biochar (charcoal) in soil can hold carbon for centuries (Wang and others 2016).'
   ];
 
   // ═══════════════════════════════════════════
@@ -2028,23 +2774,196 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   // Append to main QUIZ_QUESTIONS
   QUIZ_QUESTIONS.push(
-    { q: 'What is karrikinolide?', choices: ['A type of fire extinguisher foam derived from plant resins for wildland crews', 'A smoke chemical that triggers seed germination in 1,200+ plant species', 'An Indigenous fire tool', 'A fire-resistant mineral'], answer: 1, why: 'Karrikinolide is one of the karrikins carried in smoke. It is the chemical signal that tells buried seed the canopy above has burned away.', see: 'Smoke & Seeds' },
-    { q: 'The Ojibwe burned blueberry barrens because:', choices: ['They wanted to clear land for farming corn, beans, and squash in the barrens', 'Fire stimulates blueberry production 2-4 years after burning', 'Blueberries are fire-resistant', 'It was accidental'], answer: 1, why: 'Blueberry fruits most heavily two to four years after a burn, so the fire is part of the harvest cycle rather than a threat to it.', see: 'Cultural Mosaic' },
+    { q: 'What is karrikinolide?', choices: ['A type of fire extinguisher foam derived from plant resins for wildland crews', 'A chemical in smoke that can trigger buried seeds to sprout', 'An Indigenous fire tool', 'A fire-resistant mineral'], answer: 1, why: 'Karrikinolide is one of the karrikins carried in smoke. It is a chemical signal that tells buried seed the plants above have burned away.', see: 'Smoke & Seeds' },
+    // Round 10: the blueberry source (University of Maine) is about Wabanaki fields, and it says fruit comes the
+    // second year, not "a few years later".
+    { q: 'Wabanaki people burned blueberry barrens because:', choices: ['They wanted to clear land for farming corn, beans, and squash in the barrens', 'Fire prunes old stems so new ones grow and bear fruit', 'Blueberries are fire-resistant', 'It was accidental'], answer: 1, why: 'Fire prunes the old stems to the ground. New shoots grow for one year and bear fruit the next (University of Maine Cooperative Extension), so the burn is part of the harvest cycle.', see: 'Cultural Mosaic' },
+    // Round 8: 23 deaths from Kean and others 2019, Geosphere, doi:10.1130/GES02048.1 (USGS).
     { q: 'What happened one month after the Thomas Fire burned slopes above Montecito, CA?', choices: ['The forest immediately recovered as winter rains brought new growth', 'Brief rain triggered debris flows that killed 23 people', 'A second fire started', 'Nothing \u2014 the danger was over'], answer: 1, why: 'Brief intense rain on the fresh burn scar triggered debris flows through Montecito that killed 23 people. The fire was out; the hazard was not.', see: 'Watersheds' },
-    { q: 'The San (Bushmen) of the Kalahari have used fire for approximately:', choices: ['500 years', '200,000+ years', '20,000+ years', '100 years'], answer: 2, why: 'Veldt burning in the Kalahari is documented for at least 20,000 years as part of hunting and pasture management.', see: 'Indigenous Knowledge' },
-    { q: 'What is a hydrophobic soil layer?', choices: ['Soil that absorbs extra water after fire because the ash acts like a sponge and holds runoff in place', 'A water-repellent layer created by intense fire that causes devastating runoff', 'Soil near rivers', 'Frozen soil'], answer: 1, why: 'Intense heat vaporizes waxy compounds in the litter, which condense just below the surface into a water-repellent layer, so rain runs off instead of soaking in.', see: 'Watersheds' },
-    { q: 'How many animal deaths were estimated in Australia\u2019s 2019-2020 Black Summer fires?', choices: ['10,000', '~30 million', '~3 billion', '500'], answer: 2, why: 'Roughly three billion animals were killed or displaced across the 2019 to 2020 Black Summer fires.', see: 'Case Studies' },
-    { q: 'The S\u00E1mi people burned boreal forest to promote:', choices: ['Pine nut harvest from the boreal stone pine stands', 'Reindeer lichen growth for reindeer pasture', 'Gold mining', 'Whale hunting'], answer: 1, why: 'Burning favours the ground lichen that reindeer graze through the winter, tying fire management to the herds.', see: 'Indigenous Knowledge' },
-    { q: 'Giant sequoia seeds need fire because:', choices: ['Heat makes them taste better', 'They need bare mineral soil and sunlight that only fire creates', 'Fire makes them grow faster by warming the soil and adding ash nutrients', 'They are fireproof'], answer: 1, why: 'Sequoia seed needs bare mineral soil and an opening in the canopy for light. Fire is what supplies both at once.', see: 'Fire Ecosystems' },
+    { q: 'Why did San hunters of the Kalahari burn patches of dry grass?', choices: ['To harden the sand so it would hold rainwater for camps', 'To make salt from the ash of the burned bushes', 'To bring grazing animals to fresh green regrowth', 'To keep warm through the cold desert winter nights'], answer: 2, why: 'New grass sprouts soon after a burn and is more nutritious than old grass, so grazing animals gather there, where hunters can find them.', see: 'Indigenous Knowledge' },
+    { q: 'What is a hydrophobic soil layer?', choices: ['Soil that absorbs extra water after fire because the ash acts like a sponge and holds runoff in place', 'A water-repellent layer created by intense fire that causes devastating runoff', 'Soil near rivers', 'Frozen soil'], answer: 1, why: 'Fire heat turns water-repelling compounds in the leaf litter into gas. The gas moves down and condenses in the cooler soil just below the surface, making a layer that sheds rain, so more water runs off instead of soaking in (DeBano 2000).', see: 'Watersheds' },
+    // Round 9: University of Sydney news, 7 Dec 2020: "Estimates some 3 billion animals were killed or misplaced by the
+    // 2019-20 mega-fires in Australia have been confirmed", in a report "commissioned by the World Wide Fund for
+    // Nature-Australia"; Royal Commission (2020): "Nearly three billion animals were killed or displaced".
+    { q: 'Scientists estimated how many animals were killed or displaced in Australia\u2019s 2019-2020 Black Summer fires?', choices: ['10,000', 'About 30 million', 'Nearly 3 billion', '500'], answer: 2, why: 'A study for WWF-Australia estimated nearly three billion animals were killed or displaced, most of them reptiles.', see: 'Case Studies' },
+    { q: 'Why do S\u00E1mi reindeer herders pay close attention to forest fire?', choices: ['Fire ruins the pine nut harvest from boreal stone pine stands', 'Fire burns away ground lichen, the reindeer\u2019s winter food, for decades', 'Fire uncovers gold', 'Fire drives whales to shore'], answer: 1, why: 'Reindeer dig for ground lichen in winter, and after a fire it takes about 30 to 40 years to come back (Cogos and others 2019), so one fire can take away winter pasture for decades.', see: 'Indigenous Knowledge' },
+    { q: 'Fire helps giant sequoia seeds mainly because:', choices: ['Heat makes them taste better', 'It clears litter to bare soil and lets in sunlight', 'Fire makes them grow faster by warming the soil and adding ash nutrients', 'They are fireproof'], answer: 1, why: 'Sequoia seeds grow best on bare mineral soil with plenty of light. A fire clears the litter and the plants that shade the ground, so it gives both at once (National Park Service).', see: 'Fire Ecosystems' },
     { q: 'What is \u201Cepicormic sprouting\u201D?', choices: ['Seeds germinating from cones that open after fire has passed through the canopy', 'Dormant buds beneath bark that sprout new growth after fire kills the canopy', 'A type of fire spread', 'Mushrooms growing after rain'], answer: 1, why: 'Buds sheltered under thick bark sprout straight out of the trunk and branches after fire kills the crown, so the tree rebuilds its canopy from its own trunk.', see: 'Smoke & Seeds' },
     { q: 'Cultural burning protects watersheds by:', choices: ['Building dams', 'Keeping trees alive so roots stabilize soil and prevent debris flows', 'Adding charcoal to the streams, which filters the sediment out of runoff', 'Increasing snowpack'], answer: 1, why: 'Keeping fire low keeps trees and their roots alive, and living roots are what hold the soil in place when the rain arrives.', see: 'Watersheds' },
-    { q: 'In the 2018 Camp Fire, the town of Paradise was destroyed in:', choices: ['3 days', 'Less than 4 hours', 'Just under 2 weeks', '1 month'], answer: 1, why: 'Paradise was overrun in under four hours. Wind-driven embers moved faster than the town could be evacuated.', see: 'Case Studies' },
+    { q: 'In the 2018 Camp Fire, what lit most homes in Paradise?', choices: ['Lightning from storm clouds that the fire itself built', 'Wind-blown embers, then burning houses lighting their neighbors', 'Strong sunlight heating dry roofs until shingles caught fire', 'Sparks thrown from the engines of passing fire trucks'], answer: 1, why: 'A NIST study found embers blew ahead of the flames, and fire then spread from yard to yard and house to house.', see: 'Case Studies' },
     { q: 'What does the teaching term \u201Cfuel debt\u201D describe?', choices: ['Money owed for firefighting that agencies carry over from one season into the next budget', 'Fuel accumulated during fire exclusion that may contribute to more severe fire behavior', 'The cost of prescribed burns', 'A tax on logging'], answer: 1, why: 'Fuel debt is the teaching name for fuel banked during years of fire exclusion, which raises the severity of the fire that eventually arrives.', see: 'Fire Regime' },
     { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds can create wetter refugia that sometimes burn less severely than surrounding areas', 'Beavers warn other animals by slapping their tails, giving wildlife time to escape the fire front', 'They don\u2019t help at all'], answer: 1, why: 'Ponds and the saturated soil around them stay wet enough to burn less severely, which leaves wildlife somewhere to go.', see: 'Beavers & Fire' },
     { q: 'Emily Fairfax\u2019s satellite research showed that during wildfire, beaver-dammed areas:', choices: ['Burned faster than surrounding land because of dead wood', 'Stayed green and acted as fire refugia for wildlife', 'Dried up completely', 'Were abandoned by all animals'], answer: 1, why: 'Satellite imagery showed beaver-dammed corridors staying green through fires that burned undammed stretches of the very same streams.', see: 'Beavers & Fire' },
-    { q: 'The fur trade\u2019s near-elimination of beavers across North America:', choices: ['Had no ecological effect', 'Drained millions of acres of wetlands, increasing wildfire vulnerability', 'Made forests healthier', 'Increased beaver populations elsewhere as survivors moved into new watersheds'], answer: 1, why: 'Removing the beavers removed the dams. An estimated 40 to 80 million acres of wetland drained, and the wet corridors that used to slow fire dried out.', see: 'Beavers & Fire' },
+    { q: 'The fur trade\u2019s near-elimination of beavers across North America:', choices: ['Had no ecological effect', 'Drained wetlands and dried out stream valleys that once slowed fire', 'Made forests healthier', 'Increased beaver populations elsewhere as survivors moved into new watersheds'], answer: 1, why: 'Removing the beavers removed the dams. Wetlands drained, and the wet corridors that used to slow fire dried out.', see: 'Beavers & Fire' },
     { q: 'What is a Beaver Dam Analog (BDA)?', choices: ['A computer model of beaver behavior that predicts where new dams will form after a wildfire', 'A human-built structure that mimics a beaver dam to restore wetlands in fire-prone areas', 'A type of fire extinguisher', 'A beaver-shaped robot'], answer: 1, why: 'A Beaver Dam Analog is a human-built line of posts and woven branches that mimics a dam, raising the water table and often inviting real beavers back.', see: 'Beavers & Fire' }
   );
+
+  // One-line misconception note for each wrong choice, keyed by the question text and then by
+  // the choice text, so the rotation below cannot misalign them. A wrong pick shows its own note
+  // above the shared `why`. (Round 2, 2026-11-23.)
+  var QUIZ_MISS = {
+    'How long have Aboriginal people lived in Australia, caring for the land?': {
+      '500 years': '500 years ago is recent history. Dated stone tools show people in Australia far earlier than that.',
+      '10,000+ years': 'True, but far too small. Stone tools at Madjedbebe date to at least 65,000 years ago.',
+      '200 years': 'British colonists arrived in 1788, so about 200 years describes colonization, not Aboriginal history.'
+    },
+    'What is a “serotinous” cone?': {
+      'A cone that opens in water': 'Water does not open this kind of cone. Its resin seal melts only with heat.',
+      'A cone that is poisonous': 'Serotiny is about when a cone opens, not about poison.',
+      'A cone that grows underground and surfaces only after the soil is disturbed': 'Cones grow on branches. A serotinous cone stays sealed up in the tree until heat opens it.'
+    },
+    'What can decades of fire exclusion contribute to in some fire-adapted forests?': {
+      'Every forest becomes healthier': 'In fire-adapted forests, keeping fire out lets fuel and crowded young trees pile up, which is not healthier.',
+      'All trees grow faster': 'Without fire, trees crowd together and compete for light and water, so many grow more slowly.',
+      'Every animal population increases because undisturbed forests offer more shelter, food, and nesting sites': 'Animals that need open or recently burned habitat decline when fire is kept out, so not every population grows.'
+    },
+    'What is “terra preta”?': {
+      'A type of volcanic rock': 'Terra preta is soil, not rock. Its dark color comes from charcoal, not lava.',
+      'A fire-resistant tree species that Indigenous Amazonian peoples planted in rows to break the path of wildfire': 'Terra preta is a soil that people made, not a plant.',
+      'A Spanish word for fire': '“Terra preta” is Portuguese for “black earth.” It names a soil, not fire.'
+    },
+    'The longleaf pine savanna once covered about 90 million acres. By the 1990s, about how much was left?': {
+      'About 50%': 'Far too high. Logging, clearing, and fire exclusion left only about 3 percent by the 1990s.',
+      'About 25%': 'Still far too high. Only about 3 percent of the old range was left.',
+      'About 75%': 'That would mean most of it survived. In fact about 97 percent was lost.'
+    },
+    'Why did Plains Nations burn the prairie?': {
+      'To destroy enemy camps and drive rival hunters away': 'The burning on this card was about fresh grass that draws bison, not attacking camps.',
+      'To create charcoal': 'A grass fire leaves little charcoal. The goal was new green growth.',
+      'To signal for rain': 'Burning does not bring rain. The goal was new grass that bison seek out.'
+    },
+    'What is a “fuel ladder”?': {
+      'A tool firefighters use to climb trees': 'It is not equipment. “Ladder” describes plants stacked from the ground up to the treetops.',
+      'A type of fire escape': 'It is not a way out. A fuel ladder is the path a fire uses to climb.',
+      'A device that measures fuel moisture at several heights so crews can rate how fast a fire will climb': 'A fuel ladder is the plants themselves, not a measuring device.'
+    },
+    'What type of fire is used in cultural burning?': {
+      'Crown fire': 'Crown fire races through treetops and kills trees. Cultural burning keeps fire on the ground.',
+      'Ground fire smoldering in the duff layer': 'Smoldering in the duff can cook roots and soil. Cultural burns aim for a quick fire in the surface litter.',
+      'Firestorm': 'A firestorm is an extreme, uncontrolled fire, the opposite of a planned cool burn.'
+    },
+    'Which plant is a "fire follower" whose seeds sprout mainly after fire?': {
+      'California Black Oak': 'Black oak can sprout back after a fire, but its acorns do not wait for fire to sprout.',
+      'Bigleaf Maple (Acer macrophyllum)': 'Bigleaf maple can sprout back from its base after fire. That is regrowth, not seeds waiting for fire.',
+      'California Wild Rose': 'Surviving or regrowing after fire is not enough. A fire follower’s seeds wait in the soil for heat or smoke.'
+    },
+    'How does cultural burning compare to wildfire for carbon emissions?': {
+      'Cultural burning releases MORE carbon': 'A cool burn uses up only fine fuels and leaves the trees alive, so it burns far less material.',
+      'They release the same amount': 'A wildfire burns much more fuel per acre, including whole trees, so the amounts differ.',
+      'Cultural burning releases no carbon at all because the fires are too cool': 'All burning releases some carbon. A cool fire just releases much less.'
+    },
+    'What did Coast Salish peoples burn prairies to maintain?': {
+      'Cotton fields': 'Cotton does not grow in the cool, wet Pacific Northwest. The meadows held camas.',
+      'Tobacco crops for ceremonial trade with inland nations': 'The prairie burning described here kept camas meadows open, not a trade crop.',
+      'Corn fields': 'Corn was not grown here before colonization. Camas bulbs were the staple.'
+    },
+    'The US policy of total fire suppression began after which event?': {
+      'The Civil War': 'The Civil War ended in 1865, decades before the Forest Service (1905) and its suppression policy.',
+      'World War II': 'Suppression was already national policy long before World War II.',
+      'The Yellowstone fires of 1988': 'The 1988 fires came 78 years after the Big Blowup, long after suppression had become policy.'
+    },
+    'Biochar (charcoal in soil) can store carbon for how long?': {
+      '1-5 years': 'Charcoal is chemically stable, so it does not break down in a few years the way leaves do.',
+      '10-50 years': 'Still too short. Charcoal carbon can last for centuries in soil.',
+      'It releases carbon immediately': 'The fire releases some carbon, but the charcoal left behind holds carbon instead of releasing it.'
+    },
+    'What does “pyric herbivory” mean?': {
+      'Animals that eat only fire-adapted plants and avoid unburned pasture': 'Grazers prefer the fresh regrowth on burns, but they do not eat only fire-adapted plants.',
+      'Burning herbs for medicine': '“Herbivory” means animals eating plants, not people burning herbs.',
+      'Plants that are poisonous after fire': 'The term is about grazing on burned ground, not about plant poisons.'
+    },
+    'Many eucalypts survive a fire by:': {
+      'Calling lightning': 'Lightning comes from storms, not from trees calling it. Eucalypts survive fire by sprouting again.',
+      'Growing near volcanoes': 'Volcanoes play no part here. What saves a burned eucalypt is buds hidden under its bark.',
+      'Absorbing all moisture from the soil so the understory dries out and burns': 'Drying the ground would not save the tree. Buds under the bark let it grow new leaves after the fire.'
+    },
+    'Why are Garry oak savannas endangered in British Columbia?': {
+      'Climate change made the winters too cold and wet for the oaks to set acorns': 'Cold, wet winters are not what threatens these oaks. Missing fire, land clearing, and invasive plants are.',
+      'People cut down all the oaks': 'Clearing for farms and towns did remove many oak areas, but not all. Where oaks remain, missing fire lets Douglas-fir crowd them out.',
+      'Invasive insects killed them': 'Insects are not the main threat. The big threats are missing fire, land clearing, and invasive plants such as Scotch broom.'
+    },
+    'What is karrikinolide?': {
+      'A type of fire extinguisher foam derived from plant resins for wildland crews': 'People do not make it to fight fire. It forms on its own when plants burn.',
+      'An Indigenous fire tool': 'It is a chemical, not an object. It forms in the smoke of burning plants.',
+      'A fire-resistant mineral': 'It is a carbon-based chemical carried in smoke, not a mineral.'
+    },
+    'Wabanaki people burned blueberry barrens because:': {
+      'They wanted to clear land for farming corn, beans, and squash in the barrens': 'The barrens were burned to keep the blueberries coming back, not to plant crops there.',
+      'Blueberries are fire-resistant': 'Fire kills the tops of blueberry plants. They come back from underground stems.',
+      'It was accidental': 'The burning was planned and timed, not an accident.'
+    },
+    'What happened one month after the Thomas Fire burned slopes above Montecito, CA?': {
+      'The forest immediately recovered as winter rains brought new growth': 'Plants cannot grow back enough in one month to hold the soil. The bare, burned slopes could not hold the rain.',
+      'A second fire started': 'The disaster was water and mud, not another fire.',
+      'Nothing — the danger was over': 'Burned slopes stay dangerous after the flames are out, because rain runs straight off them.'
+    },
+    'Why did San hunters of the Kalahari burn patches of dry grass?': {
+      'To harden the sand so it would hold rainwater for camps': 'Fire does not make sand hold water. The burns were about fresh grass that draws grazing animals.',
+      'To make salt from the ash of the burned bushes': 'The burns described here were for green regrowth, not for collecting ash.',
+      'To keep warm through the cold desert winter nights': 'A campfire keeps people warm. Burning patches of grassland was for drawing game to new grass.'
+    },
+    'What is a hydrophobic soil layer?': {
+      'Soil that absorbs extra water after fire because the ash acts like a sponge and holds runoff in place': '“Hydrophobic” means water-fearing. This layer sheds water instead of soaking it up.',
+      'Soil near rivers': 'The word describes how soil treats water, not where the soil sits.',
+      'Frozen soil': 'Frozen soil can also shed water, but a hydrophobic layer is made by heat, not cold.'
+    },
+    'Scientists estimated how many animals were killed or displaced in Australia’s 2019-2020 Black Summer fires?': {
+      '10,000': 'Far too low. The study for WWF-Australia estimated nearly 3 billion animals.',
+      'About 30 million': 'Still about 100 times too low. The estimate was nearly 3 billion.',
+      '500': 'Far too low. The fires burned more than 24 million hectares of wildlife habitat.'
+    },
+    'Why do Sámi reindeer herders pay close attention to forest fire?': {
+      'Fire ruins the pine nut harvest from boreal stone pine stands': 'Sámi herding depends on reindeer lichen, not a pine nut harvest.',
+      'Fire uncovers gold': 'Fire does not uncover gold. Herders watch fire because of the lichen their reindeer eat.',
+      'Fire drives whales to shore': 'Forest fires have nothing to do with whales. Herders watch fire because of the lichen.'
+    },
+    'Fire helps giant sequoia seeds mainly because:': {
+      'Heat makes them taste better': 'Taste has nothing to do with it. The seedlings need bare soil and light.',
+      'Fire makes them grow faster by warming the soil and adding ash nutrients': 'Ash can add some nutrients, but the key needs are bare mineral soil and a gap in the canopy.',
+      'They are fireproof': 'The tiny seeds are not fireproof. It is the thick bark of grown trees that resists fire.'
+    },
+    'What is “epicormic sprouting”?': {
+      'Seeds germinating from cones that open after fire has passed through the canopy': 'That describes serotiny. Epicormic sprouts come from buds under the bark, not from seeds.',
+      'A type of fire spread': 'It is how a tree regrows, not how a fire moves.',
+      'Mushrooms growing after rain': 'It is about tree buds, not fungi.'
+    },
+    'Cultural burning protects watersheds by:': {
+      'Building dams': 'Cultural burning does not build anything. Beavers are the ones that build dams.',
+      'Adding charcoal to the streams, which filters the sediment out of runoff': 'Charcoal in streams does not filter runoff. Living roots holding the soil are what matter.',
+      'Increasing snowpack': 'The protection named here is living roots holding the soil, not more snow.'
+    },
+    'In the 2018 Camp Fire, what lit most homes in Paradise?': {
+      'Lightning from storm clouds that the fire itself built': 'Lightning did not light the homes. Wind-blown embers and burning houses did.',
+      'Strong sunlight heating dry roofs until shingles caught fire': 'Sunlight cannot heat a roof enough to light it. Embers did that.',
+      'Sparks thrown from the engines of passing fire trucks': 'Fire trucks were there to fight the fire. The NIST study traced the spread to embers and burning homes.'
+    },
+    'What does the teaching term “fuel debt” describe?': {
+      'Money owed for firefighting that agencies carry over from one season into the next budget': 'Here “debt” is a comparison, not money: fuel piles up like an unpaid bill.',
+      'The cost of prescribed burns': 'The term is about fuel piling up, not what a burn costs.',
+      'A tax on logging': 'It is not a tax. It names fuel that builds up while fire is kept out.'
+    },
+    'How do beaver dams help during wildfire?': {
+      'Beavers fight fires': 'Beavers do not fight fire. Their ponds keep the land wet.',
+      'Beavers warn other animals by slapping their tails, giving wildlife time to escape the fire front': 'A tail slap warns other beavers of danger, but the help in a fire comes from the wet ponds and soil.',
+      'They don’t help at all': 'Satellite studies found beaver-dammed areas stayed greener during fires.'
+    },
+    'Emily Fairfax’s satellite research showed that during wildfire, beaver-dammed areas:': {
+      'Burned faster than surrounding land because of dead wood': 'The research found the opposite: dammed areas stayed green.',
+      'Dried up completely': 'Beaver ponds hold water, so the dammed areas stayed wet.',
+      'Were abandoned by all animals': 'The green, wet areas gave animals somewhere to shelter.'
+    },
+    'The fur trade’s near-elimination of beavers across North America:': {
+      'Had no ecological effect': 'Removing an animal that builds wetlands changes the land a great deal.',
+      'Made forests healthier': 'Losing beaver wetlands dried out stream valleys, which did not make forests healthier.',
+      'Increased beaver populations elsewhere as survivors moved into new watersheds': 'Trapping cut beaver numbers across most of North America. It did not raise them somewhere else.'
+    },
+    'What is a Beaver Dam Analog (BDA)?': {
+      'A computer model of beaver behavior that predicts where new dams will form after a wildfire': 'A BDA is built in the stream from posts and branches, not run on a computer.',
+      'A type of fire extinguisher': 'It does not put out fires. It raises the water table over time.',
+      'A beaver-shaped robot': 'There is no robot. It is a simple line of posts and woven branches.'
+    }
+  };
+  QUIZ_QUESTIONS.forEach(function (q) { q.miss = QUIZ_MISS[q.q] || {}; });
 
   // The authored bank put 24 of 32 correct answers at choice B (and none at
   // A or D), so "always pick B" scored 75% blind. Rotate each question's
@@ -2066,41 +2985,47 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   var BEAVER_FIRE = {
     title: 'Nature\u2019s Firefighters: How Beavers Protect Landscapes from Wildfire',
-    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that can act as comparatively fire-resistant refugia, store water that may sustain surrounding vegetation through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
+    // Round 7: "increasingly recognized as one of the most important allies", "slow post-fire debris flows", Indigenous
+    // beaver management and "the fur trade's near-elimination of beavers is directly linked to increased wildfire
+    // vulnerability" had no source. Fairfax, E. and Whittle, A. (2020) Smokey the Beaver. Ecological Applications
+    // 30(8):e02225, doi:10.1002/eap.2225 (abstract, PubMed 32881199): "Beaver dams are gaining popularity as a low-tech,
+    // low-cost strategy to build climate resiliency"; "They slow and store water that can be accessed by riparian
+    // vegetation during dry periods"; "beaver-dammed riparian corridors are relatively unaffected by wildfire".
+    intro: 'The North American beaver (Castor canadensis) builds dams that slow and store water. Plants along the stream can use that water in dry times, and beaver dams are gaining popularity as a low-cost way to help land cope with drought (Fairfax and Whittle 2020). The same study found that beaver-dammed stream corridors stayed much greener during wildfire than similar streams without dams.',
     science: [
       {
         name: 'Beaver Ponds as Fire Refugia',
         icon: '\uD83D\uDCA7',
-        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This can create a wetter, more fire-resistant corridor along waterways that may provide wildlife refuge during some fires.',
-        stat: 'Beaver-dammed areas had 3x more green vegetation during wildfire than similar undammed streams.',
+        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published satellite research showing that during wildfires, beaver-dammed stream corridors stayed much greener than similar streams without dams. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This can create a wetter, more fire-resistant corridor along waterways that may provide wildlife refuge during some fires.',
+        stat: 'During fire, greenness dropped about 3 times as much along undammed streams as along beaver-dammed ones (Fairfax and Whittle, 2020).',
         color: '#0ea5e9'
       },
       {
         name: 'Water Storage & Drought Resilience',
         icon: '\uD83D\uDEB0',
-        desc: 'A single beaver dam stores 3,000-10,000+ gallons of water. A colony with multiple dams can store millions of gallons. This water slowly recharges the water table, keeping soils moist and vegetation hydrated through dry seasons. In fire-prone landscapes, this moisture buffer is the difference between vegetation that can burn and vegetation that can\u2019t.',
-        stat: 'Beaver complexes raise water tables by 1-3 feet across adjacent floodplains.',
+        desc: 'Beaver dams hold water back in ponds and soak it into the ground. This water slowly recharges the water table, keeping soils moist and plants green through dry seasons. In fire-prone landscapes, this moisture can be the difference between plants that burn and plants that do not.',
+        stat: 'Beaver ponds raise the water table in the floodplain around them.',
         color: '#22c55e'
       },
       {
         name: 'Post-Fire Debris Flow Prevention',
         icon: '\uD83C\uDF0A',
-        desc: 'After wildfire burns a watershed, the next rainstorm can trigger lethal debris flows (see: Montecito 2018). Beaver dams act as natural check dams, slowing water velocity, trapping sediment, and preventing the catastrophic runoff that causes debris flows. A series of beaver dams along a stream can reduce peak flows by 30-50%.',
-        stat: 'Beaver dams reduce downstream sediment transport by 50-90% after fire.',
+        desc: 'After wildfire burns a watershed, the next rainstorm can trigger dangerous debris flows (see: Montecito 2018). Beaver dams work like natural check dams, slowing water and trapping sediment.',
+        stat: 'Ponds behind dams trap sediment that would otherwise wash downstream.',
         color: '#f59e0b'
       },
       {
         name: 'Wildlife Refugia During Fire',
         icon: '\uD83E\uDD86',
         desc: 'Beaver ponds serve as emergency refuge for wildlife during wildfire. Fish, amphibians, waterfowl, deer, elk, and even bears seek out beaver ponds as safe zones. The moist, green vegetation surrounding beaver ponds provides cover and food when surrounding landscapes are scorched. Post-fire, beaver ponds accelerate ecosystem recovery by maintaining seed banks, soil moisture, and aquatic food webs.',
-        stat: 'Beaver ponds support 5-10x more species per acre than adjacent unbuffered streams.',
+        stat: 'Beaver ponds add still water, wet meadows, and dead standing trees, so more kinds of animals can live along the stream.',
         color: '#a855f7'
       },
       {
         name: 'The Fur Trade & Ecological Collapse',
         icon: '\u26A0\uFE0F',
-        desc: 'Before European colonization, an estimated 100-400 million beavers lived in North America. By 1900, the fur trade had reduced the population to approximately 100,000 \u2014 a 99.9% decline. This eliminated millions of beaver dams, draining an estimated 40-80 million acres of wetlands. The loss of these wetlands dried out landscapes, lowered water tables, and removed the natural fire resilience that beaver-maintained waterways provided.',
-        stat: 'The fur trade destroyed an estimated 25 million beaver dams, draining an area the size of California.',
+        desc: 'Before European colonization, tens of millions of beavers or more lived in North America. The fur trade trapped them almost to extinction in many regions. That removed countless dams, drained wetlands, and dried out stream valleys that once slowed fire.',
+        stat: 'Beavers have come back in many places, but far fewer live on the land than before the fur trade.',
         color: '#ef4444'
       },
       {
@@ -2114,7 +3039,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         name: 'Beaver Dam Analogs (BDAs)',
         icon: '\uD83D\uDEE0\uFE0F',
         desc: 'Land managers are now building Beaver Dam Analogs (BDAs) \u2014 simple structures of wooden posts and woven branches that mimic the function of beaver dams \u2014 in fire-prone watersheds. BDAs slow stream flow, raise water tables, re-wet floodplains, and create conditions that encourage real beavers to recolonize. Several post-fire restoration projects now install BDAs as a first step in watershed recovery.',
-        stat: 'BDAs cost $200-500 each to install and can raise water tables by 1+ feet within a single season.',
+        stat: 'BDAs are simple and cheap compared with concrete structures, and real beavers often move in and take over.',
         color: '#16a34a'
       }
     ]
@@ -2137,7 +3062,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'barkBeetle', name: 'Bark Beetle Outbreak', icon: '\uD83D\uDC1E', desc: 'Mountain pine beetles have killed 30% of mature conifers, creating standing dead fuel.', effects: { fuelLoad: 15, canopyCover: -15, biodiversity: -5 }, urgent: true, category: 'ecology' },
     { id: 'cedarInvasion', name: 'Cedar Encroachment', icon: '\uD83C\uDF32', desc: 'Eastern red cedar is spreading rapidly into prairie openings.', effects: { biodiversity: -8, understoryDensity: 15, waterYield: -5 }, urgent: true, category: 'ecology' },
     { id: 'invasiveGrass', name: 'Cheatgrass Invasion', icon: '\uD83C\uDF3E', desc: 'Invasive cheatgrass has established in disturbed areas, creating continuous fine fuel that burns easily.', effects: { fuelLoad: 10, biodiversity: -6 }, urgent: true, category: 'ecology' },
-    { id: 'fungalBloom', name: 'Post-Burn Morel Bloom', icon: '\uD83C\uDF44', desc: 'Morel mushrooms fruit prolifically in areas you recently burned. Mycorrhizal networks expanding!', effects: { soilHealth: 10, biodiversity: 5 }, condition: 'recentBurn', urgent: false, category: 'ecology' },
+    { id: 'fungalBloom', name: 'Post-Burn Morel Bloom', icon: '\uD83C\uDF44', desc: 'Morel mushrooms are coming up in large numbers where you burned recently.', effects: { soilHealth: 10, biodiversity: 5 }, condition: 'recentBurn', urgent: false, category: 'ecology' },
     { id: 'eagleNest', name: 'Bald Eagle Nesting', icon: '\uD83E\uDD85', desc: 'A pair of bald eagles has nested in a fire-scarred old-growth tree \u2014 a sign of healthy ecosystem structure.', effects: { biodiversity: 6 }, condition: 'highBio', urgent: false, category: 'ecology' },
     { id: 'beaverReturn', name: 'Beaver Colony Establishes!', icon: '\uD83E\uDDAB', desc: 'Beavers have built dams in the main creek, raising the water table and creating wetland fire breaks.', effects: { waterYield: 15, biodiversity: 8, fuelLoad: -3 }, urgent: false, category: 'ecology' },
     { id: 'wolfReturn', name: 'Wolf Pack Returns', icon: '\uD83D\uDC3A', desc: 'A wolf pack has recolonized the forest! By controlling elk and deer, they reduce overbrowsing of young trees, improving forest regeneration after burns.', effects: { biodiversity: 10, canopyCover: 3, soilHealth: 2 }, condition: 'highBio', urgent: false, category: 'ecology' },
@@ -2146,14 +3071,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'owlDecline', name: 'Spotted Owl Decline', icon: '\uD83E\uDD89', desc: 'Northern spotted owls are declining. Dense, fire-suppressed forest is being invaded by barred owls. Open-canopy management could help.', effects: { biodiversity: -5 }, condition: 'highUnderstory', urgent: true, category: 'ecology' },
     { id: 'tortoiseThrive', name: 'Gopher Tortoise Colony Thriving', icon: '\uD83D\uDC22', desc: 'Your open, fire-maintained forest is perfect for gopher tortoises. Their burrows now shelter 350+ other species!', effects: { biodiversity: 12 }, condition: 'lowUnderstory', urgent: false, category: 'ecology' },
     // ── Human / Political ──
-    { id: 'elderVisit', name: 'Elder Fire Keeper Visit', icon: '\uD83C\uDF0D', desc: 'An Indigenous fire keeper shares traditional burning knowledge with your team. Cultural burn effectiveness increases!', effects: { biodiversity: 5, soilHealth: 3 }, bonus: 'culturalBurnBoost', urgent: false, category: 'human' },
+    { id: 'elderVisit', name: 'Fire keeper visit', icon: '\uD83C\uDF0D', desc: 'An Indigenous fire keeper shares traditional burning knowledge with your team. Cultural burn effectiveness increases!', effects: { biodiversity: 5, soilHealth: 3 }, bonus: 'culturalBurnBoost', urgent: false, category: 'human' },
     { id: 'development', name: 'Housing Development Proposed', icon: '\uD83C\uDFE0', desc: 'A developer wants to build homes at the forest edge. Community pressure to suppress all fire increases.', effects: { biodiversity: -2 }, pressure: 'suppress', urgent: false, category: 'human' },
     { id: 'budgetCut', name: 'Fire Management Budget Cut', icon: '\uD83D\uDCB8', desc: 'Budget cuts reduce your ability to conduct burns this decade.', effects: { fuelLoad: 5 }, urgent: false, category: 'human' },
     { id: 'communityBurn', name: 'Community Burn Day', icon: '\uD83E\uDD1D', desc: 'Community members join your cultural burn day! Fuel reduction is extra effective and public support grows.', effects: { fuelLoad: -6, biodiversity: 3 }, urgent: false, category: 'human' },
     { id: 'mediaStory', name: 'Media Feature Story', icon: '\uD83D\uDCF0', desc: 'A journalist publishes a positive story about your cultural burning program. Public support for prescribed fire surges!', effects: { biodiversity: 2 }, bonus: 'publicSupport', urgent: false, category: 'human' },
-    { id: 'smokeComplaint', name: 'Smoke Complaints', icon: '\uD83D\uDE37', desc: 'Residents downwind complain about smoke from your cultural burn. Political pressure to stop burning builds.', effects: {}, pressure: 'suppress', urgent: false, category: 'human', teachingMoment: 'A few days of managed smoke prevents months of catastrophic wildfire smoke. Cultural burns produce 10-50x LESS total smoke than the wildfire they prevent.' },
+    { id: 'smokeComplaint', name: 'Smoke Complaints', icon: '\uD83D\uDE37', desc: 'Residents downwind complain about smoke from your cultural burn. Political pressure to stop burning builds.', effects: {}, pressure: 'suppress', urgent: false, category: 'human', teachingMoment: 'A planned burn is timed for weather that carries smoke away from towns and lasts a few days. An unplanned wildfire can fill the air with smoke for weeks.' },
     { id: 'tribalPartnership', name: 'Tribal Co-Management Agreement', icon: '\uD83E\uDD1D', desc: 'A local tribal nation has signed a co-management agreement! Indigenous fire practitioners will lead burns on your land.', effects: { biodiversity: 8, soilHealth: 5, fuelLoad: -5 }, bonus: 'tribalPartner', condition: 'highBio', urgent: false, category: 'human' },
-    { id: 'researchGrant', name: 'Fire Ecology Research Grant', icon: '\uD83D\uDD2C', desc: 'A university team has received a grant to study fire ecology on your land. They discover your cultural burning has increased soil carbon by 20%!', effects: { soilHealth: 5, biodiversity: 3 }, urgent: false, category: 'human' },
+    { id: 'researchGrant', name: 'Fire Ecology Research Grant', icon: '\uD83D\uDD2C', desc: 'A university team has received a grant to study fire ecology on your land. They start measuring how your burns are changing the soil.', effects: { soilHealth: 5, biodiversity: 3 }, urgent: false, category: 'human' },
     { id: 'schoolVisit', name: 'School Field Trip', icon: '\uD83C\uDFEB', desc: 'A class of students visits to learn about fire ecology. Teaching the next generation of fire keepers!', effects: { biodiversity: 1 }, bonus: 'education', urgent: false, category: 'human' },
     { id: 'insuranceCrisis', name: 'Insurance Crisis', icon: '\uD83D\uDCB0', desc: 'Insurance companies are dropping coverage for homes near the forest due to wildfire risk. Your fire management record determines the outcome.', effects: {}, condition: 'any', urgent: true, category: 'human' }
   ];
@@ -2244,15 +3169,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'educator', name: 'Fire Educator', icon: '\uD83C\uDFEB', desc: 'Invest in education 2+ times', condition: function(gs) { return gs.educationCount >= 2; } }
   ];
 
-  // ── Advisor Tips ──
+  // ── Advisor Tips ── (round 4: the quoted "Elder Advisor" voice became plain "Fire-keeping note"
+  // lines; their numbers come from gameAdvance: no action = fuel +8, understory +12; cultural burn = fuel -10.)
   var ADVISOR_TIPS = [
-    { condition: function(gs) { return gs.fuelLoad > 50; }, tip: '\u26A0\uFE0F Elder Advisor: "The land is crying out for fire. Every year without burning adds another layer of danger. Our ancestors would have burned this years ago."', icon: '\uD83C\uDF0D' },
+    { condition: function(gs) { return gs.fuelLoad > 50; }, tip: '\u26A0\uFE0F Fire-keeping note: fuel is above 50. Once fuel passes your level\u2019s wildfire line, a wildfire can start, and each extra point of fuel raises the chance. A cultural burn removes more fuel than any other move.', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.fuelLoad > 35 && gs.yearsSinceLastBurn > 20; }, tip: '\uD83D\uDD25 Fire Science Advisor: "20+ years without fire. Fuel ladders are developing \u2014 understory growth now connects the ground to the canopy. A surface fire could become a crown fire."', icon: '\uD83D\uDD2C' },
     { condition: function(gs) { return gs.waterYield < 50; }, tip: '\uD83D\uDCA7 Watershed Advisor: "Water yield is dangerously low. Consider beaver dam analogs \u2014 they\u2019re the cheapest and most effective way to raise water tables in fire-prone landscapes."', icon: '\uD83E\uDDAB' },
-    { condition: function(gs) { return gs.biodiversity > 85 && gs.fuelLoad < 20; }, tip: '\u2B50 Elder Advisor: "The land is healthy \u2014 diverse, moist, open. This is what our ancestors maintained for thousands of years. You are walking the right path."', icon: '\uD83C\uDF0D' },
+    { condition: function(gs) { return gs.biodiversity > 85 && gs.fuelLoad < 20; }, tip: '\u2B50 Fire-keeping note: biodiversity is above 85 and fuel is below 20. This forest is open and full of life. Keeping fuel low is what protects it.', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.wildfires > 0 && gs.biodiversity < 50; }, tip: '\uD83C\uDF31 Ecology Advisor: "After wildfire, the land needs gentle care. Cultural burning actually HELPS recovery by stimulating fire-adapted seeds and clearing debris. Don\u2019t be afraid to use good fire."', icon: '\uD83C\uDF3F' },
     { condition: function(gs) { return gs.understoryDensity > 60; }, tip: '\uD83C\uDF32 Forestry Advisor: "High understory density can create ladder fuels that help a surface fire move into the canopy. Appropriate treatment depends on local ecology, objectives, conditions, and qualified planning."', icon: '\uD83E\uDE93' },
-    { condition: function(gs) { return gs.totalBurns === 0 && gs.year >= 30; }, tip: '\u26D4 Elder Advisor: "30 years and no fire? The forest is forgetting what fire means. The longer you wait, the harder the first burn becomes. Start small \u2014 but start."', icon: '\uD83C\uDF0D' },
+    { condition: function(gs) { return gs.totalBurns === 0 && gs.year >= 30; }, tip: '\u26D4 Fire-keeping note: 30 years and no burn yet. Each decade you take no action adds 8 fuel and 12 understory, the ladder fuels that can carry a surface fire up into the trees.', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.villageHealth < 60; }, tip: '\uD83C\uDFE0 Community Advisor: "The village is losing faith. Another wildfire could be the end. Every burn you do now is an investment in their safety \u2014 show them that good fire prevents bad fire."', icon: '\uD83E\uDD1D' },
     { condition: function(gs) { return gs.soilHealth < 40; }, tip: '\uD83E\uDEB5 Soil Advisor: "Soil health is critically low. Years of intense fire or no fire have depleted the soil microbiome. Cultural burning with biochar production could begin rebuilding it \u2014 the Amazonian terra preta approach."', icon: '\uD83C\uDF3F' },
     { condition: function(gs) { return gs.beaverDams >= 2 && gs.waterYield > 80; }, tip: '\uD83E\uDDAB Watershed Advisor: "Your beaver dam investment is paying off! Water table is high, streams are flowing, and those green riparian corridors will act as firebreaks during the next dry season. Well played."', icon: '\uD83D\uDCA7' }
@@ -2260,7 +3186,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
   // ── Game Ranks (based on final score) ──
   var GAME_RANKS = [
-    { min: 300, name: 'Legendary Fire Keeper', icon: '\uD83C\uDF1F', desc: 'Your land management rivals the greatest Indigenous fire practitioners in history.' },
+    { min: 300, name: 'Legendary Fire Keeper', icon: '\uD83C\uDF1F', desc: 'Top rank in this game: 300 points or more. Your choices kept the forest healthy and the fuel low.' },
     { min: 220, name: 'Master Fire Keeper', icon: '\uD83D\uDD25', desc: 'You truly understand the relationship between fire, water, land, and community.' },
     { min: 150, name: 'Skilled Fire Keeper', icon: '\uD83C\uDF32', desc: 'The forest thrives under your care. Keep learning from the land.' },
     { min: 80, name: 'Journeyman Fire Keeper', icon: '\uD83C\uDF3F', desc: 'You\u2019re on the right path. Remember: fire is medicine, not enemy.' },
@@ -2282,110 +3208,165 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // a mosaic where each zone gets the right treatment.
   // ═══════════════════════════════════════════
 
+  // Round 11: every zone card now says which numbers are this sim's own choice ("In this sim ... every N years", the
+  // same fireReturn the model uses), and the unsourced cultural and ecological details were cut. The cards' short text
+  // gets new _desc_v2 keys, because the old _desc keys are registered in ui_strings.js with the old wording.
+  // Sources for the rest:
+  // University of Maine Cooperative Extension, "About the Maine Wild Blueberry" (extension.umaine.edu/blueberries/about):
+  // "It was first grown on a large scale by the Wabanaki native people who burn-pruned and harvested fields of wild
+  // blueberry"; "Following the harvest in August, plants are pruned to the ground by mowing or burning".
+  // Tirmenstein, D.A. (1991) Quercus alba, USDA FEIS (fs.usda.gov/database/feis/plants/tree/quealb/all.html): "Oaks typically
+  // become more fire resistant as the bark thickens with age"; "White oak cannot regenerate successfully beneath a dense
+  // canopy"; "fire-tolerant species such as white oak are being replaced by sugar maple and other more shade-tolerant species".
+  // Carey, J.H. (1993) Pinus strobus, USDA FEIS (fs.usda.gov/database/feis/plants/tree/pinstr/all.html): "Mature trees survive
+  // most surface fires because they have thick bark, branch-free boles"; "Severe fire creates large open areas with ash or
+  // mineral seedbeds and reduces competition"; Boundary Waters Canoe Area, Minnesota: "low-severity fire intervals
+  // averaged 36 years, and severe fire intervals averaged 160 years".
+  // Hood Museum of Art, "Wabanaki Basket Weaving" (naaer.hoodmuseum.dartmouth.edu/essay-wabanaki-basket-weaving): "Wabanaki
+  // baskets are made primarily from long, thin strips of wood, or splints, of the brown ash tree"; "The wood of the ash tree
+  // is also both strong and flexible"; "Men would harvest and pound the ash while women would strip the ash and split it
+  // into the correct thickness—fine ash for fancy baskets and thicker ash for work-baskets"; "Wabanaki baskets are also made
+  // from sweetgrass"; "It is collected from saltwater marshes, dried, and often braided"; "The beetle kills all species of
+  // ash"; "The Wabanaki are working with the government to find ways to protect the brown ash tree. They are also
+  // preserving seeds". Fairfax and Whittle 2020 (see BEAVER_FIRE): dams "slow and store water that can be accessed by
+  // riparian vegetation during dry periods"; "beaver-dammed riparian corridors are relatively unaffected by wildfire".
+  // Cut as unsourced: glacial outwash, acorn leaching and tannin, "in a single human lifetime", red spruce fire
+  // sensitivity, "once-a-century", pitch and spruce-root canoe work, spring stubble burning and frost protection on the
+  // intervales, white flint corn, sunflower and tobacco, village moves, sweetgrass decline causes, budworm and fire
+  // suppression, brown ash growth-ring and winter-felling details, and the food-preparation notes.
   var WABANAKI_ZONES = [
     {
       id: 'blueberryBarren', name: 'Blueberry Barren', icon: '🫐', color: '#7c3aed',
       fireReturn: 2, idealFuel: 25, idealYield: 70,
-      desc: 'Open scrubland on glacial outwash. Frequent fire keeps heath low and clears competing shrubs. Wabanaki burned for thousands of years to maintain the blueberry crop.',
+      descKey: 'blueberryBarren_desc_v2',
+      desc: 'Open fields of wild lowbush blueberry. A burn (today, often mowing) prunes the plants to the ground; new stems grow for a year, then bear fruit. Wabanaki people were the first to burn-prune and harvest these fields on a large scale (University of Maine Cooperative Extension). In this sim it comes due for fire every 2 years.',
       cultivars: 'Lowbush blueberry, sweet fern, bracken fern',
-      culturalUse: 'Summer harvest, dried winter stores, trade good',
+      culturalUse: 'Wild blueberry harvest in August (University of Maine Cooperative Extension)',
       defaultState: { fuel: 38, health: 62, yield: 35, lastBurn: 4 },
       deepDive: {
-        bilingual: 'Sata · low-bush blueberry',
-        knowledge: 'Lowbush blueberry is a fire-dependent shrub. It spreads underground through rhizomes and only fruits prolifically on plants that are 2 years past a burn. Hot wildfires sterilize the soil and kill the rhizomes; gentle cool burns release the seeds and prune the canes for next year. A barren that goes 5+ years without fire turns into scrubland and the harvest fails.',
-        preparation: 'Sun-dried into raisins; smoked into cakes; mixed with cornmeal for travel food; sometimes mashed with dried fish. A major caloric input for winter, especially before potatoes arrived.',
-        modernContext: 'Maine\'s commercial wild-blueberry industry runs on the same 2-year burn cycle that Wabanaki communities developed over centuries. The "fields" of Washington County are Indigenous fire culture, retitled. Climate change is shortening the safe-burn window each year.',
-        teaching: 'A barren without fire does not stop being a barren. It stops being a barren that feeds anyone. The fire is the harvest.'
+        bilingual: null, // 'Sata' not found on pmportal.org (PM blueberry = saht) or in the Penobscot dictionary: removed
+        // Round 3: University of Maine Cooperative Extension, "About the Maine Wild Blueberry"
+        // (extension.umaine.edu/blueberries/about): "It was first grown on a large scale by the Wabanaki native
+        // people who burn-pruned and harvested fields of wild blueberry"; "Following the harvest in August, plants
+        // are pruned to the ground by mowing or burning"; a "prune year" then a "crop year"; names the Passamaquoddy
+        // Tribe among the state's wild blueberry farms. Removed as unsourced: "for thousands of years", "5+ years
+        // without fire", burns that "release the seeds", "the same 2-year burn cycle that Wabanaki communities
+        // developed", and the safe-burn-window claim.
+        knowledge: 'Lowbush blueberry is a fire-adapted shrub that spreads underground through rhizomes. After the old stems are pruned to the ground by fire (or, today, often by mowing), new shoots grow for one year and bear fruit the next. A gentle burn prunes the stems while the rhizomes live on underground. A barren that is never pruned slowly fills in with other shrubs and trees, and the berry crop drops.',
+        preparation: null,
+        modernContext: 'Maine\'s wild-blueberry farms still run on a two-year cycle: after the August harvest the plants are pruned to the ground by mowing or burning, grow for a year, then fruit (University of Maine Cooperative Extension). Many farms now mow instead of burning. The Passamaquoddy Tribe runs one of the state\'s wild-blueberry farms.',
+        // Round 4: key ideas are third-person notes from a named source or from this sim's own model, not quotes.
+        keyIdea: 'Wild blueberry fields are pruned to the ground, by fire or by mowing, on a two-year cycle: one year to grow, the next year to fruit (University of Maine Cooperative Extension).'
       }
     },
     {
       id: 'oakSavanna', name: 'White Oak Savanna', icon: '🌳', color: '#a16207',
       fireReturn: 5, idealFuel: 30, idealYield: 65,
-      desc: 'Open oak grassland. Ground fire every few years kills competing maple and birch saplings while mature oaks survive on their thick fire-resistant bark.',
+      descKey: 'oakSavanna_desc_v2',
+      desc: 'Open land with scattered white oaks. Young white oaks cannot grow up under a dense canopy, so where fire is kept out, sugar maple and other trees that grow in shade take over (US Forest Service FEIS). In this sim it comes due for fire every 5 years.',
       cultivars: 'White oak, big bluestem, butterfly weed',
-      culturalUse: 'Acorn flour, deer browse habitat, basket withes',
+      culturalUse: null,
       defaultState: { fuel: 48, health: 68, yield: 48, lastBurn: 6 },
       deepDive: {
-        bilingual: 'Anaskimnesi · white oak',
-        knowledge: 'White oak acorns are preferred over red oak because they have less tannin and can be leached in days instead of weeks. White oaks evolved with frequent fire: their thick bark insulates the cambium while ground fire kills the young maples and beeches that would otherwise shade them out. An oak savanna without fire becomes a closed maple-beech forest in a single human lifetime.',
-        preparation: 'Acorns shelled, ground into meal, soaked in running water (often in a basket weighted in a stream) for several days to leach tannins, then baked into breads or porridge. Deer browse in the open savanna was as important as the acorns themselves.',
-        modernContext: 'Most New England oak savannas converted to closed-canopy forest after Indigenous burning was suppressed. Restoration ecologists are reintroducing prescribed fire on a 3 to 5 year cycle to bring back the open structure, with mixed success.',
-        teaching: 'When the canopy closes, the deer move on, the acorn crop fails, and the meadow plants disappear. The savanna is not a forest with gaps. It is its own thing.'
+        bilingual: null, // 'Anaskimnesi' not found on pmportal.org or in the Penobscot dictionary: removed
+        knowledge: 'White oak bark grows thicker with age, and older oaks resist fire better as it does (US Forest Service FEIS). Young white oaks cannot grow up under a dense canopy. In oak savannas where fire is kept out, white oak is being replaced by sugar maple and other trees that grow in shade (US Forest Service FEIS).',
+        preparation: null,
+        modernContext: null,
+        // Tirmenstein, D.A. (1991) Quercus alba, USDA Forest Service FEIS (fs.usda.gov/database/feis/plants/tree/quealb/all.html):
+        // "White oak cannot regenerate successfully beneath a dense canopy"; in oak savannas, "with increased fire
+        // suppression, fire-tolerant species such as white oak are being replaced by sugar maple and other more
+        // shade-tolerant species. Many open savannas are being converted to dense, forested stands".
+        keyIdea: 'Young white oaks cannot grow up under a dense canopy. Where fire is kept out, open oak savannas turn into thick forest of sugar maple and other trees that grow in shade (US Forest Service Fire Effects Information System).'
       }
     },
     {
       id: 'mixedConifer', name: 'Pine-Spruce Stand', icon: '🌲', color: '#15803d',
       fireReturn: 30, idealFuel: 35, idealYield: 50,
-      desc: 'Higher-elevation pine and spruce. Burns rarely; mostly self-maintaining. Hand thinning is the main intervention. A small understory burn maybe once a generation.',
+      descKey: 'mixedConifer_desc_v2',
+      desc: 'Higher ground with pine and spruce. In this sim it comes due for fire only every 30 years, so most of the work here is hand thinning and rest.',
       cultivars: 'Eastern white pine, red spruce, partridgeberry',
-      culturalUse: 'Pine pitch for sealing, spruce roots for canoe binding, lumber',
+      culturalUse: null,
       defaultState: { fuel: 28, health: 78, yield: 32, lastBurn: 18 },
       deepDive: {
-        bilingual: 'Kuwes · white pine · Skog · spruce',
-        knowledge: 'Eastern white pine is fire-tolerant once mature: thick bark, self-pruning of lower branches, and tall crowns above most ground fires. Red spruce is fire-sensitive but its moist understory rarely carries fire. Stand-replacing fire here is a once-a-century event, not a stewardship tool. The right interventions are selective hand-thinning and patience.',
-        preparation: 'Pine pitch (resin) was collected from wounds in the trunk and rendered with animal fat into a waterproof sealant used on canoes, watertight baskets, and roof seams. Spruce roots were dug, split into long flexible cords, and used as thread to sew birchbark canoe seams that the pitch then sealed.',
-        modernContext: 'White pine remains central to Maine identity and economy. Modern threats are spruce-fir budworm outbreaks (made worse by fire suppression and even-aged management) and white pine blister rust. Climate change is pushing red spruce upslope.',
-        teaching: 'Some land is not waiting for fire. This stand keeps itself if you let it. Stewardship here is to walk through it, take what is dying, and leave the rest.'
+        bilingual: 'kuwes · white pine', // pmportal.org/dictionary/k/kuwes = (Pinus strobus) white pine; 'Skog' not found: removed
+        knowledge: 'Mature eastern white pines survive most surface fires, because they have thick bark and trunks free of low branches (US Forest Service FEIS). In this sim this stand rarely needs a burn, so the main tools are hand thinning and resting the land.',
+        preparation: null,
+        modernContext: null,
+        keyIdea: 'Not every zone needs frequent fire. In this sim, the pine-spruce stand rarely comes due for a burn, so most of the work here is hand thinning and rest.'
       }
     },
     {
       id: 'riparian', name: 'Riparian Corridor', icon: '🌿', color: '#0ea5e9',
       fireReturn: 99, idealFuel: 18, idealYield: 75,
-      desc: 'Stream banks and beaver wetlands. Almost never burned, moisture keeps fire out, and stream health depends on shaded canopy. Beavers do the work here.',
+      descKey: 'riparian_desc_v2',
+      desc: 'Stream banks and beaver wetlands. In this sim this zone never comes due for fire: the sim treats it as too wet to burn, and beavers do the work here. Sweetgrass grows in wet meadows and on stream banks (US Forest Service FEIS).',
       cultivars: 'Silver maple, sweetgrass, fiddlehead fern',
-      culturalUse: 'Sweetgrass braids for ceremony and baskets, fiddleheads, beaver wetlands',
+      culturalUse: 'Sweetgrass, dried and often braided, for Wabanaki baskets (Hood Museum of Art)',
       defaultState: { fuel: 16, health: 86, yield: 58, lastBurn: 99 },
       deepDive: {
-        bilingual: 'Welimanal · sweetgrass · Qapit · beaver',
-        knowledge: 'Sweetgrass (Hierochloe odorata) grows on the moist edge of streams and marshes, in low-fertility soil where competition is weak. It needs open, moist ground. It does not need fire and does not tolerate hot fire. Beavers are the actual stewards of this zone: their dams raise the water table, slow flooding, create the moist meadow conditions sweetgrass needs, and create firebreaks during dry years.',
-        preparation: 'Sweetgrass is cut just before maturity, braided while wet, dried in shade. Burned as smudge for purification (a scent like vanilla and fresh hay) and woven into baskets, often as the binding band along the rim. Fiddleheads (ostrich fern) gathered in May for spring food.',
-        modernContext: 'Sweetgrass populations are declining across Maine due to wetland development, agricultural drainage, and contamination. Maine Indian Basketmakers Alliance and others coordinate restoration plantings. Beaver populations were nearly extirpated by the fur trade; their recovery is slowly restoring this zone.',
-        teaching: 'You cannot make a riparian corridor with fire. You can only protect it from fire. The beaver does the work. Your job is to leave the beaver alone.'
+        bilingual: 'qapit · beaver', // pmportal.org/dictionary/q/qapit-pqapit = beaver (Castor canadensis); 'Welimanal' not found: removed
+        // Round 6: "does not tolerate hot fire" had no source. Walsh, R.A. (1994) Hierochloe odorata, USDA FEIS
+        // (fs.usda.gov/database/feis/plants/graminoid/hieodo/all.html): "wet meadows ... shaded streambanks"; "Sweetgrass probably
+        // sprouts from the root crown and rhizomes after top-kill by fire"; "Fire exclusion from these communities may favor
+        // other species over sweetgrass." Shebitz, D. and James, J.E. (2010) USDA FS Proc. RMRS-P-62 pp. 15-21: "requires partial to full sunlight";
+        // "often found in areas that have little competition from taller plants".
+        knowledge: 'Sweetgrass (Hierochloe odorata) grows in wet meadows, at the edges of marshes, and on shaded stream banks (US Forest Service). It needs sun and grows best where taller plants do not crowd it (Shebitz and James 2010). A fire burns its leaves, but its underground stems can probably sprout again, and keeping fire out of meadows can let other plants crowd sweetgrass out (US Forest Service). Beaver dams slow and store water that streamside plants can use in dry times, and in one satellite study, beaver-dammed stream corridors were relatively unaffected by wildfire (Fairfax and Whittle 2020).',
+        preparation: 'Sweetgrass for Wabanaki baskets is collected from saltwater marshes, dried, and often braided (Hood Museum of Art).',
+        modernContext: null,
+        keyIdea: 'In this sim, the riparian corridor never comes due for fire. Wet summers and growing beaver dams raise its yield.'
       }
     },
     {
       id: 'whitePineGrove', name: 'White Pine Grove', icon: '🌲', color: '#0891b2',
       fireReturn: 25, idealFuel: 30, idealYield: 55,
-      desc: 'A grove of eastern white pine on sandy soil. Tolerates surface fire once mature. Gentle burns every 20 to 30 years keep the understory open and the crowns healthy. Center of canoe-making and pitch economy.',
+      descKey: 'whitePineGrove_desc_v2',
+      desc: 'A grove of eastern white pine. Mature white pines survive most surface fires because of their thick bark (US Forest Service FEIS). In this sim a gentle burn comes due every 25 years.',
       cultivars: 'Eastern white pine, princess pine, partridgeberry',
-      culturalUse: 'Birchbark and white-pine canoes, pine pitch, ceremonial wood',
+      culturalUse: null,
       defaultState: { fuel: 36, health: 72, yield: 38, lastBurn: 22 },
       deepDive: {
-        bilingual: 'Kuwes · white pine · Pasekona · canoe',
-        knowledge: 'Eastern white pine (Pinus strobus) is fire-tolerant once mature. Thick bark protects the cambium, lower branches self-prune, and the crown is usually above ground-fire reach. Cool surface fires every 20 to 30 years remove competing balsam fir and red maple, keep the grove open, and stimulate cone release. Without occasional fire, the grove transitions to closed mixed forest and white pine fails to regenerate.',
-        preparation: 'White pine was the preferred lumber for canoe ribs and gunwales and the trunks were sometimes used for dugout canoes on lakes. Pine pitch (resin) was rendered with bear or moose fat into a sticky waterproofing applied to birchbark canoe seams. Princess pine ground cover was gathered for ceremonial smudge.',
-        modernContext: 'White pine is the Maine state tree and central to Maine identity. It was the masting tree the British Royal Navy claimed in the 1700s, which fueled Wabanaki and colonial resistance. Today modern threats include white pine blister rust (an introduced fungus) and the southward push of red oak under climate change.',
-        teaching: 'A pine grove is a slow place. The work is to walk through it, to take what is dying, to listen for which trees the next canoe lives inside. The fire comes once a generation. The patience is daily.'
+        bilingual: 'kuwes · white pine', // pmportal.org/dictionary/k/kuwes; 'Pasekona' not found: removed
+        knowledge: 'Mature eastern white pines survive most surface fires, because they have thick bark and trunks free of low branches. A severe fire opens the ground: it leaves ash or bare mineral soil where seeds can sprout, and it clears away competing plants. In one study area in northern Minnesota, low-severity fires came about every 36 years on average, and severe fires about every 160 years (US Forest Service FEIS).',
+        preparation: null,
+        modernContext: null,
+        keyIdea: 'In this sim, the white pine grove comes due for a gentle burn only once every few decades. In between, the work is thinning and waiting.'
       }
     },
     {
       id: 'intervaleMeadow', name: 'Intervale Meadow', icon: '🌽', color: '#f59e0b',
       fireReturn: 3, idealFuel: 22, idealYield: 78,
-      desc: 'Rich river-floodplain land along the Penobscot, Kennebec, and Saco intervales. Wabanaki villages grew corn, beans, and squash here using fire to clear and frost-protect the fields. The most productive land in the territory.',
-      cultivars: 'Corn (white flint), beans, squash, sunflower, tobacco',
-      culturalUse: 'Three Sisters agriculture, seed sovereignty, village food economy',
+      descKey: 'intervaleMeadow_desc_v2',
+      desc: 'River floodplain fields. In this sim they hold the territory\'s gardens of corn, beans, and squash, and come due for fire every 3 years, more often than any zone except the blueberry barren.',
+      cultivars: 'Corn, beans, squash',
+      culturalUse: null,
       defaultState: { fuel: 30, health: 80, yield: 60, lastBurn: 3 },
       deepDive: {
-        bilingual: 'Olawagik · intervale · Skamonal · corn · Malsanikuk · squash',
-        knowledge: 'Intervale soil is alluvial, deposited by annual river flooding. It is loose, fertile, and warm: corn matures here in Maine\'s short season where it cannot on upland clay. Wabanaki farmers burned the previous year\'s stubble each spring to clear weeds, add a small ash amendment, and warm the soil. The Three Sisters (corn, beans, squash) were planted together: corn for the stalk, beans to fix nitrogen, squash to shade the soil and deter pests.',
-        preparation: 'White flint corn dried on the ear, ground into samp or meal, boiled into porridge or baked as bread. Beans dried and stored. Squash baked, dried into rings, stored for winter. Fields were chosen on the south-facing intervale and rotated; long-term village sites moved every several decades as soil and firewood demanded.',
-        modernContext: 'Maine intervales were the first land taken for English settlement because they were already cleared and productive. Many "first homestead" sites in Maine are former Wabanaki cornfields. Seed sovereignty work today (such as preserving Wabanaki white flint corn varieties through organizations like Wabanaki Public Health and Wellness) is reconnecting communities to this agricultural inheritance.',
-        teaching: 'When the colonists arrived and asked where to plant, they were shown the intervales. They were already fields. The forest you see along the river now is a forest that grew over a farm.'
+        bilingual: null, // 'Olawagik', 'Skamonal', 'Malsanikuk' not found on pmportal.org (Penobscot corn = skamon): removed
+        knowledge: 'Floodplain soil is laid down by river floods, so it is often loose and fertile. Corn, beans, and squash can be planted together: the corn stalk gives the bean vine something to climb, bean plants add nitrogen to the soil, and the wide squash leaves shade the ground. This sim does not have a source for how Wabanaki farmers used fire on these fields, so it does not describe one.',
+        preparation: null,
+        modernContext: null,
+        keyIdea: 'In this sim, the intervale fields come due for fire more often than any zone except the blueberry barren.'
       }
     },
     {
       id: 'hardwoodStand', name: 'Mixed Hardwood', icon: '🍁', color: '#dc2626',
       fireReturn: 60, idealFuel: 32, idealYield: 60,
-      desc: 'Mature beech, birch, brown ash, sugar maple. Burns once a generation, very low intensity. Most stewardship is coppicing brown ash for the splints that define Wabanaki basketry.',
+      descKey: 'hardwoodStand_desc_v2',
+      desc: 'Mature beech, birch, brown ash, and sugar maple. In this sim it never comes due for fire, and coppicing in the cold season is the main work. Wabanaki baskets are made mainly from splints of brown ash (Hood Museum of Art).',
       cultivars: 'Brown ash, sugar maple, paper birch',
-      culturalUse: 'Ash splint baskets (defining Wabanaki craft), maple sap, birchbark canoes',
+      culturalUse: 'Brown ash splints for baskets (Hood Museum of Art)',
       defaultState: { fuel: 34, health: 74, yield: 42, lastBurn: 38 },
       deepDive: {
-        bilingual: 'Wikp · brown ash · Senomozi · sugar maple',
-        knowledge: 'Brown ash (Fraxinus nigra) is central to Wabanaki life. Each annual growth ring is a discrete layer; when the trunk is pounded with the back of an axe, those rings split into long flexible splints that can be woven into baskets. A single basketmaker may search for years to find the right ash tree (straight, slow-grown, sound). The tree itself takes 50 to 80 years to reach basket size.',
-        preparation: 'Tree felled in winter, hauled out by sled, debarked, pounded section by section to release the splints. Splints scraped smooth with a draw knife, dyed (often with butternut, beet, or commercial dye), and woven. A finished basket may take 30 to 60 hours of work after the splints are made.',
-        modernContext: 'Emerald ash borer, an invasive beetle, is killing brown ash across the East. Wabanaki communities are racing to save seed and preserve mature trees. The Maine Indian Basketmakers Alliance leads both the craft revival and the ecological conservation. Without brown ash, a defining Wabanaki art form ends.',
-        teaching: 'The basket is not the tree. The basket is one generation of the tree taught to a person, then taught to another person, then taught to another. We are inside that line. The beetle does not know what it is breaking.'
+        bilingual: 'wikp · brown ash', // pmportal.org/dictionary/w/wikp = black ash, basket ash (locally brown ash); 'Senomozi' not found: removed
+        knowledge: 'Wabanaki baskets are made mainly from long, thin strips of brown ash wood, called splints. The wood is strong and bends without breaking. Men harvested and pounded the ash, and women split it to the right thickness: fine splints for fancy baskets, thicker ones for work baskets (Hood Museum of Art).',
+        preparation: null,
+        modernContext: 'The emerald ash borer, an invasive beetle, kills every kind of ash tree. Wabanaki communities are working with the government and researchers to protect brown ash and to save its seeds (Hood Museum of Art; University of Maine Mitchell Center).',
+        // Hood Museum of Art, 'Wabanaki Basket Weaving' (naaer.hoodmuseum.dartmouth.edu/essay-wabanaki-basket-weaving):
+        // basket making "has been passed from weaver to weaver, generation to generation". UMaine Mitchell Center,
+        // 'Saving Maine's Basket Trees' (umaine.edu/mitchellcenter/?p=2119): "this ancient art form and the
+        // basketmakers' livelihoods are at risk. An invasive beetle called the emerald ash borer ..."; "The team also is
+        // working with Indian Island youth and the Maliseet tribe in Houlton on collecting and saving brown ash seeds."
+        keyIdea: 'Wabanaki basketmaking is a skill passed from weaver to weaver, generation to generation (Hood Museum of Art). The emerald ash borer, an invasive beetle, now puts the brown ash trees, and the craft that depends on them, at risk (University of Maine Mitchell Center).'
       }
     }
   ];
@@ -2415,7 +3396,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     },
     {
       id: 'seedScatter', name: 'Seed Scatter', icon: '🌾', hours: 4, season: 'any',
-      desc: 'Broadcast cultural plant seeds on a recently burned zone. Lowbush blueberry, big bluestem, sweetgrass establish on bare mineral soil.',
+      desc: 'Broadcast cultural plant seeds on a recently burned zone. Lowbush blueberry and big bluestem establish on bare mineral soil.',
       effects: { fuel: 0, health: 8, yield: 12 },
       requires: 'recentBurn'
     },
@@ -2437,16 +3418,42 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'lateSpring',  name: 'Late Spring',          icon: '❄️', desc: 'Snow lingers into May. All techniques this year are 20 percent less effective.', apply: function(z) { /* effect is applied at action-resolution time via yearMult */ } }
   ];
 
-  // Elder guidance fires based on current state. Each guidance is a soft nudge,
-  // not a directive: the elder names what they are seeing on the land.
-  var MOSAIC_ELDER = [
-    { check: function(z) { return z.id === 'blueberryBarren' && z.fuel > 60; }, msg: 'The barren is choked. Without a burn the heath swallows the blueberries, and the harvest fails.' },
-    { check: function(z) { return z.id === 'blueberryBarren' && (z.lastBurn || 99) > 4; }, msg: 'It has been too long since the barren was burned. Even good rain will not replace good fire.' },
-    { check: function(z) { return z.id === 'oakSavanna' && z.fuel > 55; }, msg: 'The savanna is filling in with maple and birch. The young oaks cannot push through that shade.' },
-    { check: function(z) { return z.id === 'riparian' && z.fuel > 35; }, msg: 'Something is not right by the water. Sweetgrass needs open, moist ground, not crowded brush.' },
-    { check: function(z) { return z.id === 'mixedConifer' && z.health < 55; }, msg: 'The pines are tired. Thin a little, then let them rest. Fire here is rare and patient.' },
-    { check: function(z) { return z.id === 'hardwoodStand' && z.yield < 30; }, msg: 'The brown ash is not giving splints this year. Coppice in winter and the shoots will come.' }
+  // Land notes for the year review: plain, third-person readings of the zone state (round 4 replaced the
+  // quoted "Elder Guidance" voice). `above` / `below` is the test; {v} in the note prints that same number.
+  // The "In this sim" claims come from MOSAIC_TECHNIQUES and MOSAIC_EVENTS; sources for the rest are
+  // in the zone notes above.
+  var MOSAIC_LAND_NOTES = [
+    { zone: 'blueberryBarren', field: 'fuel', above: 60, msg: 'Blueberry Barren: fuel is above {v}. Shrubs are crowding the blueberries. A burn prunes the old stems so new ones can grow and fruit (University of Maine Cooperative Extension).' },
+    { zone: 'blueberryBarren', field: 'lastBurn', above: 4, msg: 'Blueberry Barren: more than {v} years since the last burn. Wild blueberry fields are pruned about every two years (University of Maine Cooperative Extension).' },
+    { zone: 'oakSavanna', field: 'fuel', above: 55, msg: 'White Oak Savanna: fuel is above {v}. Young white oaks cannot grow up under a dense canopy, so without fire the savanna slowly turns into maple forest (US Forest Service).' },
+    { zone: 'riparian', field: 'fuel', above: 35, msg: 'Riparian Corridor: fuel is above {v}. In this sim, hand thinning lowers fuel here without using fire.' },
+    { zone: 'mixedConifer', field: 'health', below: 55, msg: 'Pine-Spruce Stand: health is below {v}. In this sim, hand thinning and resting the land both raise health here.' },
+    { zone: 'hardwoodStand', field: 'yield', below: 30, msg: 'Mixed Hardwood: yield is below {v}. In this sim, coppicing in the cold season adds more yield here than any other move.' }
   ];
+  function mosaicLandNoteHit(note, z) {
+    if (!z || z.id !== note.zone) return false;
+    var val = z[note.field];
+    if (typeof val !== 'number') val = note.field === 'lastBurn' ? 99 : 0;
+    return note.above != null ? val > note.above : val < note.below;
+  }
+  function mosaicLandNoteText(note) {
+    return note.msg.replace('{v}', String(note.above != null ? note.above : note.below));
+  }
+  // Yearly yield change from drift alone (before events): -1 while a burn is not overdue, then
+  // -(4 + years overdue, at most 8) once it is. Zones with fireReturn >= 50 never come due.
+  function mosaicYieldDrift(fireReturn, lastBurn) {
+    var pastDue = lastBurn - fireReturn;
+    return (fireReturn < 50 && pastDue > 0) ? -(4 + Math.min(8, pastDue)) : -1;
+  }
+  // "In this sim" line for a zone's deep-dive, built from mosaicYieldDrift so the numbers match the model.
+  function mosaicCycleLine(def) {
+    var fr = def.fireReturn;
+    var pts = function (n) { return n + (n === 1 ? ' point' : ' points'); };
+    if (fr >= 50) return 'In this sim, ' + def.name + ' never comes due for fire. Each year its yield slips ' + pts(-mosaicYieldDrift(fr, fr + 1)) + ' before events.';
+    return 'In this sim, ' + def.name + ' comes due for a burn about every ' + fr + ' years. Until then, its yield slips ' + pts(-mosaicYieldDrift(fr, fr)) +
+      ' a year. Once a burn is overdue, yield drops ' + pts(-mosaicYieldDrift(fr, fr + 1)) + ' the first year, then ' + (-mosaicYieldDrift(fr, fr + 2)) +
+      ', and so on, up to ' + (-mosaicYieldDrift(fr, fr + 1000)) + ' a year.';
+  }
 
   // Difficulty presets. Affects hours-per-year budget, how often events
   // fire (apprentice gets some quiet years), and how hard events hit.
@@ -2489,7 +3496,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var warmHours = Math.ceil(diff.hoursPerYear / 2);
     return {
       phase: 'setup',          // 'setup' | 'year' | 'review' | 'debrief'
-      subPhase: 'warm',        // 'warm' (Sigwan-Nipon) | 'cold' (Toqaq-Pun)
+      subPhase: 'warm',        // 'warm' (spring + summer) | 'cold' (fall + winter)
       year: 1,
       maxYears: 8,
       difficulty: diff.id,
@@ -2531,13 +3538,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // hand-picked hexes per row, walk the colour's LIGHTNESS toward the readable side
   // until it clears AA against the worst ground that theme uses, keeping the hue
   // that carries the meaning. Colours that already pass come back untouched.
-  function feInk(hex, isDark, isContrast) {
+  // groundRgb (optional): the ground the text really sits on, e.g. a translucent wash over the card.
+  function feInk(hex, isDark, isContrast, groundRgb) {
     if (isContrast) return '#ffff00';
     var m = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
     if (!m) return hex;
     var n = parseInt(m[1], 16);
     var cur = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-    var ground = isDark ? [30, 41, 59] : [226, 232, 240];
+    var ground = groundRgb || (isDark ? [30, 41, 59] : [226, 232, 240]);
     function lin(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
     function lum(c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
     var gl = lum(ground);
@@ -2553,8 +3561,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   window.StemLab.registerTool('fireEcology', {
     icon: '\uD83D\uDD25',
     label: 'Fire Ecology & Indigenous Stewardship',
-    desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, and forest management science.',
+    desc: 'Explore Indigenous fire knowledge, fire-adapted ecosystems, how fire spreads, and forest management science.',
     color: 'orange',
+    model: { advance: fireSimAdvance, crownChance: fireSimCrownChance, nextDecadeRisk: fireSimNextDecadeRisk, crownFuel: FIRE_SIM_CROWN_FUEL, spreadRun: fireSpreadRun, spreadChance: fireSpreadNeighborChance, spreadHit: fireSpreadPredictionHit, quiz: QUIZ_QUESTIONS, nations: INDIGENOUS_FIRE_NATIONS, nationSinceLabel: nationSinceLabel },
     category: 'science',
     gradeRange: '5-12',
     questHooks: [
@@ -2568,6 +3577,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // for inks on grounds that stay LIGHT in both themes (fire-regime status box)
       var tintLight = function (c) { return feInk(c, false, !!ctx.isContrast); };
       var tint = function (c) { return feInk(c, !!ctx.isDark, !!ctx.isContrast); };
+      // Ink on a translucent wash (wash hex at alpha) laid over the card: measured on that wash blended onto the
+      // theme's worst ground, so it clears 4.5:1 where the text sits (Without Fire box, plant chips).
+      var tintOn = function (c, wash, alpha) {
+        var w = parseInt(String(wash).slice(1, 7), 16), b = ctx.isDark ? [30, 41, 59] : [226, 232, 240];
+        var g = [(w >> 16) & 255, (w >> 8) & 255, w & 255].map(function (v, i) { return b[i] + (v - b[i]) * alpha; });
+        return feInk(c, !!ctx.isDark, !!ctx.isContrast, g);
+      };
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var fireSessionRef = React.useRef(null);
@@ -2578,6 +3594,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         fireMountedRef.current = true;
         return function() {
           fireMountedRef.current = false;
+          if (_fireSpreadTimer) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; }
           cancelFireVisualPlayback(fireSessionId);
           stopFireAmbient(fireSessionId);
         };
@@ -2632,7 +3649,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
             canvasNarrate('fireEcology', 'init', {
-              first: 'Fire Ecology and Indigenous Land Stewardship loaded. Explore 65,000 plus years of cultural burning practices, fire-adapted ecosystems, and prescribed burn planning.',
+              first: 'Fire Ecology and Indigenous Land Stewardship loaded. Explore cultural burning practices, fire-adapted ecosystems, fire spread, and prescribed burn planning.',
               repeat: 'Fire Ecology active.',
               terse: 'Fire Ecology.'
             }, { debounce: 800 });
@@ -2772,6 +3789,20 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { minWidth: (minW || 720) } }, svg));
         }
 
+        // Card icon. Flag emoji render as two letters ("AU", "US") on Windows, so cards that
+        // used a flag carry `mark` instead and get a small drawn marker for their subject.
+        var ICON_MARKS = {
+          leaf: { color: '#4ade80', d: 'M5 19 C5 10 11 4 20 4 C20 13 14 19 5 19 Z M5 19 L13 11' },
+          flame: { color: '#fb923c', d: 'M12 3 C14 8 18 10 18 15 A6 6 0 0 1 6 15 C6 12 8 10 9 8 C10 10 11 11 12 11 C12 8 11 6 12 3 Z' },
+          house: { color: '#fca5a5', d: 'M4 11 L12 4 L20 11 M6 10 L6 20 L18 20 L18 10 M10 20 L10 14 L14 14 L14 20' }
+        };
+        function cardIcon(item, size) {
+          var mk = item.mark && ICON_MARKS[item.mark];
+          if (!mk) return h('span', { style: { fontSize: size } }, item.icon);
+          return h('svg', { width: size, height: size, viewBox: '0 0 24 24', 'aria-hidden': 'true', 'data-fe-mark': item.mark, style: { flexShrink: 0 } },
+            h('path', { d: mk.d, fill: 'none', stroke: mk.color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+        }
+
         function checkBadge(id) {
           if (badges[id]) return;
           var newBadges = Object.assign({}, badges);
@@ -2823,13 +3854,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
         function renderTabNav() {
           var TAB_META = {
-            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: t('stem.fireecology.indigenous_fire_knowledge', 'Indigenous fire knowledge'), hint: t('stem.fireecology.cultural_burning_predates_colonization', 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Center Indigenous practitioners as living authorities while comparing their place-based knowledge with contemporary fire ecology.') },
+            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: t('stem.fireecology.indigenous_fire_knowledge', 'Indigenous fire knowledge'), hint: t('stem.fireecology.cultural_burning_predates_colonization_v2', 'Indigenous peoples on several continents used fire to care for the land long before colonization. Center Indigenous practitioners as living authorities while comparing their place-based knowledge with contemporary fire ecology.') },
             ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF32', title: t('stem.fireecology.fire_adapted_ecosystems', 'Fire-adapted ecosystems'), hint: t('stem.fireecology.some_ecosystems_need_fire_to_function_', 'Some ecosystems need fire to function. Compare the adaptations, return intervals, and risks that shape each landscape.') },
             simulator: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83C\uDFAE', title: t('stem.fireecology.forest_simulator_2', 'Forest simulator'), hint: t('stem.fireecology.cellular_automaton_fire_spread_each_ce', 'Test how cultural burning, prescribed burning, and suppression change fuel, biodiversity, and wildfire risk over decades.') },
-            mosaic: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83E\uDDE9', title: t('stem.fireecology.cultural_mosaic_wabanaki_stewardship', 'Cultural mosaic - Wabanaki stewardship'), hint: t('stem.fireecology.a_real_indigenous_approach_is_patchwor', 'Steward a patchwork of habitats with distinct fire-return intervals and management needs.') },
+            mosaic: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83E\uDDE9', title: t('stem.fireecology.cultural_mosaic_wabanaki_stewardship', 'Cultural mosaic - Wabanaki stewardship'), hint: t('stem.fireecology.a_real_indigenous_approach_is_patchwor_v2', 'Steward a patchwork of habitats with distinct fire-return intervals and management needs.') },
             burnPlan: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: t('stem.fireecology.burn_planner_cultural_burn_safety', 'Burn conditions - classroom comparison'), hint: t('stem.fireecology.indigenous_modern_burn_planners_read_t', 'Compare four weather and fuel inputs in a simplified classroom model; real burn decisions require a site-specific approved plan and qualified personnel.') },
-            science: { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)', icon: '\uD83D\uDD2C', title: t('stem.fireecology.fire_science_the_chemistry', 'Fire science - the chemistry'), hint: t('stem.fireecology.the_fire_triangle_fuel_oxygen_heat_com', 'Investigate combustion, the fire triangle, heat transfer, and flashover.') },
-            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: t('stem.fireecology.smoke_seeds_2', 'Smoke + seeds'), hint: t('stem.fireecology.many_plants_need_smoke_chemicals_karri', 'Explore karrikins, fire-followers, and seed banks that wait decades for the right signal.') },
+            science: { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)', icon: '\uD83D\uDD2C', title: t('stem.fireecology.fire_science_the_chemistry', 'Fire science - the chemistry'), hint: t('stem.fireecology.the_fire_triangle_fuel_oxygen_heat_com_v2', 'Explore the fire triangle, fire types, fuel moisture, and what steers a spreading fire.') },
+            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: t('stem.fireecology.smoke_seeds_2', 'Smoke + seeds'), hint: t('stem.fireecology.many_plants_need_smoke_chemicals_karri_v2', 'Explore karrikins, fire followers, and seeds that wait in the soil for a fire.') },
             watershed: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: t('stem.fireecology.fire_watersheds', 'Fire + watersheds'), hint: t('stem.fireecology.burn_scars_trigger_debris_flows_hydrop', 'Connect burn severity to hydrophobic soils, runoff, debris flows, and recovery.') },
             caseStudies: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCF0', title: t('stem.fireecology.case_studies_2', 'Case studies'), hint: t('stem.fireecology.camp_fire_2018_black_saturday_2009_car', 'Use real fire events to examine weather, fuel, policy, and community impacts.') },
             carbon: { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\u2601\uFE0F', title: t('stem.fireecology.wildfire_carbon_ledger', 'Wildfire carbon ledger'), hint: t('stem.fireecology.wildfire_is_carbon_neutral_over_decade', 'Estimate how fire severity and regrowth change the carbon balance.') },
@@ -2948,9 +3979,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('span', { style: { fontSize: 32 } }, nation.icon),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: tint(nation.color), fontSize: 20 } }, nation.nation),
-                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, nation.region + ' \u2022 ' + nation.years + ' years of fire stewardship')
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, nation.region + ' \u2022 ' + nationSinceLabel(nation))
                   )
                 ),
+                h('p', { 'data-fe-since-source': nation.id, style: { margin: '0 0 16px', fontSize: 12.5, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  h('strong', null, 'Source: '), nation.sinceSource),
 
                 h('div', { style: { background: nation.color + '15', borderRadius: 8, padding: 14, marginBottom: 16, borderLeft: '3px solid ' + nation.color } },
                   h('div', { style: { fontWeight: 700, marginBottom: 6, color: tint(nation.color) } }, '\uD83D\uDD25 ' + nation.practice),
@@ -2963,7 +3996,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ),
 
                 h('div', { style: { marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: '#fbbf24' } }, t('stem.fireecology.key_practices', '\uD83D\uDEE0\uFE0F Key Practices')),
+                  h('div', { style: { fontWeight: 700, marginBottom: 8, color: tint('#fbbf24') } }, t('stem.fireecology.key_practices', '\uD83D\uDEE0\uFE0F Key Practices')),
                   nation.keyPractices.map(function(kp, ki) {
                     return h('div', { key: ki, style: { display: 'flex', gap: 8, marginBottom: 6, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } },
                       h('span', { style: { color: tint('#f97316'), flexShrink: 0 } }, '\u2022'),
@@ -2972,10 +4005,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   })
                 ),
 
-                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 4, color: '#4ade80', width: '100%' } }, t('stem.fireecology.fire_managed_plants', '\uD83C\uDF31 Fire-Managed Plants')),
+                (nation.plants || []).length === 0 ? null : h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
+                  h('div', { style: { fontWeight: 700, marginBottom: 4, color: tint('#4ade80'), width: '100%' } }, nation.plantsLabel || t('stem.fireecology.fire_managed_plants', '\uD83C\uDF31 Fire-Managed Plants')),
                   nation.plants.map(function(p, pi) {
-                    return h('span', { key: pi, style: { background: '#065f4620', border: '1px solid #065f4640', borderRadius: 6, padding: '4px 10px', fontSize: 13, color: '#4ade80' } }, p);
+                    return h('span', { key: pi, 'data-fe-plant-chip': '1', style: { background: '#065f4620', border: '1px solid #065f4640', borderRadius: 6, padding: '4px 10px', fontSize: 13, color: tintOn('#4ade80', '#065f46', 0x20 / 255) } }, p);
                   })
                 ),
 
@@ -2991,14 +4024,39 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 14, borderLeft: '3px solid #f97316', border: '1px solid var(--allo-stem-border, #334155)' } },
               h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
-                t('stem.fireecology.for_tens_of_thousands_of_years_indigen', 'For tens of thousands of years, Indigenous peoples around the world have used fire as a sophisticated land management tool. These are not \u201Cprimitive\u201D practices \u2014 they represent deep ecological knowledge refined over hundreds of generations. Modern fire science is only now beginning to understand what Indigenous fire keepers have always known: '),
-                h('strong', { style: { color: tint('#f97316') } }, t('stem.fireecology.fire_is_not_the_enemy_of_healthy_ecosy', 'fire is not the enemy of healthy ecosystems \u2014 the absence of fire is.'))
+                // Round 3: "Modern fire science is only now beginning to understand what Indigenous fire keepers
+                // have always known" had no source. Lake, F.K. and others (2017) Returning Fire to the Land:
+                // Celebrating Traditional Knowledge and Fire. Journal of Forestry 115(5):343-353,
+                // doi:10.5849/jof.2016-043R2: "North American tribes have traditional knowledge about fire effects
+                // on ecosystems, habitats, and resources"; tribal members, managers and researchers met to build
+                // partnerships for fire and fuels management. "Tens of thousands of years": the 41,600-year
+                // Australian record (Adeleye and others 2024, see INDIGENOUS_FIRE_NATIONS).
+                t('stem.fireecology.for_tens_of_thousands_of_years_indigen_v2', 'For tens of thousands of years, Indigenous peoples around the world have used fire to care for the land. These are not \u201Cprimitive\u201D practices \u2014 they hold deep ecological knowledge passed down over many generations. Today many fire agencies and scientists work with Indigenous fire practitioners to bring cultural burning back to the land (Lake and others, Journal of Forestry 2017). A lesson from this work: '),
+                h('strong', { style: { color: tint('#f97316') } }, t('stem.fireecology.fire_is_not_the_enemy_of_healthy_ecosy_v2', 'in many fire-adapted places, the bigger danger is not fire itself but too little of the right kind of fire.'))
               )
             ),
 
-            // 4-Stage Cultural Fire Mosaic Cycle visual diagram (theme-aware)
-            h('figure', { style: { margin: '0 0 16px', padding: 12, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
-              h('svg', {
+            // 4-Stage Cultural Fire Mosaic Cycle visual diagram (theme-aware). Phones get the same four steps as
+            // an HTML list (real 12+ px type), since the 760-unit drawing shrinks its text to about 5 px at 390 px.
+            h('figure', { 'data-fe-cycle': '4', style: { margin: '0 0 16px', padding: 12, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
+              h('ol', { className: 'fireecology-cyc-narrow', 'data-fe-cycle-narrow': '4', 'aria-label': t('stem.fireecology.mosaic_cycle_aria', 'Four-stage cultural fire mosaic cycle: 1. Cool-season low-severity burn, 2. Mineral ash recycles nutrients, 3. Fresh shoots and basketry regrowth, 4. Patchwork mosaic lowers wildfire risk.'),
+                style: { listStyle: 'none', margin: 0, padding: 0 } },
+                [
+                  { n: '1', title: t('stem.fireecology.cycle_s1', 'Cool-Season Burn'), sub: t('stem.fireecology.cycle_s1_sub', 'Low surface flame'), accent: '#f97316' },
+                  { n: '2', title: t('stem.fireecology.cycle_s2', 'Nutrient Pulse'), sub: t('stem.fireecology.cycle_s2_sub', 'Ash feeds soil'), accent: '#eab308' },
+                  { n: '3', title: t('stem.fireecology.cycle_s3', 'Native Regrowth'), sub: t('stem.fireecology.cycle_s3_sub', 'Shoots & seeds'), accent: '#22c55e' },
+                  { n: '4', title: t('stem.fireecology.cycle_s4', 'Mosaic Shield'), sub: t('stem.fireecology.cycle_s4_sub', 'Breaks megafires'), accent: '#38bdf8' }
+                ].map(function (st, idx) {
+                  return h('li', { key: 'cycn-' + idx, style: { margin: 0, padding: 0 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, border: '2px solid ' + st.accent, background: 'var(--allo-stem-canvas, #0f172a)' } },
+                      h('span', { 'aria-hidden': 'true', style: { flex: '0 0 auto', width: 26, height: 26, borderRadius: 13, background: st.accent, color: '#020617', fontSize: 13, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, st.n),
+                      h('span', { style: { minWidth: 0 } },
+                        h('span', { style: { display: 'block', color: 'var(--allo-stem-text, #f8fafc)', fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, st.title),
+                        h('span', { style: { display: 'block', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontWeight: 600, lineHeight: 1.3 } }, st.sub))),
+                    idx < 3 ? h('div', { 'aria-hidden': 'true', style: { textAlign: 'center', color: st.accent, fontSize: 14, lineHeight: '16px', fontWeight: 900 } }, '↓') : null);
+                })
+              ),
+              h('div', { className: 'fireecology-cyc-wide' }, h('svg', {
                 viewBox: '0 0 760 88', width: '100%', role: 'img',
                 'aria-label': t('stem.fireecology.mosaic_cycle_aria', 'Four-stage cultural fire mosaic cycle: 1. Cool-season low-severity burn, 2. Mineral ash recycles nutrients, 3. Fresh shoots and basketry regrowth, 4. Patchwork mosaic lowers wildfire risk.'),
                 style: { display: 'block', width: '100%', height: 'auto' }
@@ -3013,47 +4071,73 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('rect', { x: st.x, y: 8, width: 174, height: 72, rx: 10, fill: 'var(--allo-stem-canvas, #0f172a)', stroke: st.accent, strokeWidth: 1.8 }),
                     h('circle', { cx: st.x + 22, cy: 32, r: 12, fill: st.accent }),
                     h('text', { x: st.x + 22, y: 36, textAnchor: 'middle', fill: '#020617', style: { fontSize: '12px', fontWeight: 900 } }, st.n),
-                    h('text', { x: st.x + 42, y: 36, fill: 'var(--allo-stem-text, #f8fafc)', style: { fontSize: '12px', fontWeight: 800 } }, st.title),
-                    h('text', { x: st.x + 42, y: 56, fill: 'var(--allo-stem-text-soft, #94a3b8)', style: { fontSize: '11px', fontWeight: 600 } }, st.sub),
+                    h('text', { x: st.x + 42, y: 36, fill: 'var(--allo-stem-text, #f8fafc)', style: { fontSize: '13px', fontWeight: 800 } }, st.title),
+                    h('text', { x: st.x + 42, y: 56, fill: 'var(--allo-stem-text-soft, #94a3b8)', style: { fontSize: '12px', fontWeight: 600 } }, st.sub),
                     idx < 3 && h('path', { d: 'M' + (st.x + 176) + ' 44 L' + (st.x + 194) + ' 44 M' + (st.x + 189) + ' 39 L' + (st.x + 195) + ' 44 L' + (st.x + 189) + ' 49', fill: 'none', stroke: st.accent, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
                   );
                 })
-              )
+              ))
             ),
 
             (function () {
-              var rows = INDIGENOUS_FIRE_NATIONS.map(function (n) {
-                return { id: n.id, label: n.nation, color: n.color, yrs: parseInt(String(n.years).replace(/[^0-9]/g, ''), 10) || 0 };
-              }).filter(function (r) { return r.yrs > 0; }).sort(function (a, b) { return b.yrs - a.yrs; });
-              var W = 760, rowH = 42, padT = 34, padB = 34, padL = 22, padR = 84;
+              // Bars = how far back DATED evidence reaches (INDIGENOUS_FIRE_NATIONS[].since, each with
+              // a cited source). Nations with no dated start are listed under the chart without a bar.
+              var rows = INDIGENOUS_FIRE_NATIONS.filter(function (n) { return typeof n.since === 'number' && n.since > 0; }).map(function (n) {
+                return { id: n.id, label: n.nation, short: n.chartShort || n.nation, color: n.color, yrs: n.since };
+              }).sort(function (a, b) { return b.yrs - a.yrs; });
+              var undated = INDIGENOUS_FIRE_NATIONS.filter(function (n) { return !(typeof n.since === 'number' && n.since > 0); });
+              var W = 760, rowH = 42, padT = 22, padB = 34, padL = 22, padR = 150;
               var H = padT + rows.length * rowH + padB;
-              var lo = Math.log(300), hi = Math.log(80000);
-              var xOf = function (v) { return padL + (W - padL - padR) * (Math.log(Math.max(300, v)) - lo) / (hi - lo); };
+              var lo = Math.log(100), hi = Math.log(60000);
+              var xOf = function (v) { return padL + (W - padL - padR) * (Math.log(Math.max(100, v)) - lo) / (hi - lo); };
               var ks = [];
               ks.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: 'var(--allo-stem-canvas, #0f172a)' }));
-              [1000, 10000, 50000].forEach(function (g) {
-                ks.push(h('line', { key: 'g' + g, x1: xOf(g), y1: padT - 12, x2: xOf(g), y2: H - padB + 2, stroke: 'var(--allo-stem-border, #334155)', strokeWidth: 1 }));
-                ks.push(h('text', { key: 'gt' + g, x: xOf(g), y: H - padB + 16, fontSize: 10.5, fill: '#94a3b8', textAnchor: 'middle' }, g.toLocaleString() + ' yrs'));
+              [100, 1000, 10000].forEach(function (g) {
+                ks.push(h('line', { key: 'g' + g, x1: xOf(g), y1: padT - 8, x2: xOf(g), y2: H - padB + 2, stroke: 'var(--allo-stem-border, #334155)', strokeWidth: 1 }));
+                ks.push(h('text', { key: 'gt' + g, x: xOf(g), y: H - padB + 16, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: g === 100 ? 'start' : 'middle' }, g.toLocaleString('en-US') + ' years ago'));
               });
-              // 500 years ago is roughly where sustained European colonization begins in the
-              // territories on these cards; every bar to its right predates it.
-              ks.push(h('line', { key: 'col', x1: xOf(500), y1: padT - 16, x2: xOf(500), y2: H - padB + 2, stroke: '#f87171', strokeWidth: 2, strokeDasharray: '5 4' }));
-              ks.push(h('text', { key: 'colt', x: xOf(500) + 6, y: padT - 18, fontSize: 10.5, fontWeight: 700, fill: '#fca5a5' }, 'roughly 500 years ago: colonization reaches most of these territories'));
               rows.forEach(function (r, i) {
                 var top = padT + i * rowH, y = top + 15, bh = 15;
-                ks.push(h('text', { key: 'l' + i, x: padL, y: top + 9, fontSize: 11.5, fontWeight: 700, fill: '#cbd5e1',
+                ks.push(h('text', { key: 'l' + i, x: padL, y: top + 9, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #cbd5e1)',
                   stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 3.5, paintOrder: 'stroke' },
                   r.label.length > 46 ? r.label.slice(0, 44) + '\u2026' : r.label));
-                ks.push(h('rect', { key: 'b' + i, x: xOf(500), y: y, width: Math.max(3, xOf(r.yrs) - xOf(500)), height: bh, rx: 3, fill: r.color, opacity: 0.92 }));
-                ks.push(h('text', { key: 'n' + i, x: xOf(r.yrs) + 6, y: y + 12, fontSize: 11, fontWeight: 700, fill: '#e2e8f0' }, r.yrs.toLocaleString() + '+'));
+                ks.push(h('rect', { key: 'b' + i, x: xOf(100), y: y, width: Math.max(3, xOf(r.yrs) - xOf(100)), height: bh, rx: 3, fill: r.color, opacity: 0.92 }));
+                ks.push(h('text', { key: 'n' + i, x: xOf(r.yrs) + 6, y: y + 12, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #e2e8f0)' }, 'about ' + r.yrs.toLocaleString('en-US')));
               });
-              return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-deeptime': String(rows.length) },
-                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, marginBottom: 2 } }, 'How long has each nation been burning?'),
-                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Each bar runs from today back to the earliest evidence of that nation\u2019s fire stewardship. The scale multiplies rather than adds, so 10,000 sits the same distance from 1,000 as 50,000 does from 5,000.'),
-                wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                  'aria-label': 'Years of fire stewardship by nation, longest first. ' + rows.map(function (r) { return r.label + ': ' + r.yrs.toLocaleString() + ' or more years.'; }).join(' ') + ' A marker at 500 years ago shows where colonization begins.' }, ks), 760),
+              // Phone layout: 340 units drawn at about 1:1 on a 390 px screen, so 12-unit type stays 12 px.
+              // Name on the left and value on the right of one line, the bar on its own line below.
+              var NW = 340, nRowH = 44, nPadT = 6, nPadB = 40, nPadL = 4, nPadR = 6;
+              var NH = nPadT + rows.length * nRowH + nPadB;
+              var nxOf = function (v) { return nPadL + (NW - nPadL - nPadR) * (Math.log(Math.max(100, v)) - lo) / (hi - lo); };
+              var kn = [];
+              kn.push(h('rect', { key: 'bg', x: 0, y: 0, width: NW, height: NH, fill: 'var(--allo-stem-canvas, #0f172a)' }));
+              [100, 1000, 10000].forEach(function (g) {
+                kn.push(h('line', { key: 'g' + g, x1: nxOf(g), y1: nPadT, x2: nxOf(g), y2: NH - nPadB + 2, stroke: 'var(--allo-stem-border, #334155)', strokeWidth: 1 }));
+                kn.push(h('text', { key: 'gt' + g, x: nxOf(g), y: NH - nPadB + 16, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: g === 100 ? 'start' : 'middle' }, g.toLocaleString('en-US')));
+              });
+              kn.push(h('text', { key: 'ax', x: NW - nPadR, y: NH - 6, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'end' }, 'years ago (each line is 10 times older)'));
+              rows.forEach(function (r, i) {
+                var top = nPadT + i * nRowH;
+                kn.push(h('text', { key: 'l' + i, x: nPadL, y: top + 14, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #cbd5e1)',
+                  stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 3.5, paintOrder: 'stroke' }, r.short));
+                kn.push(h('text', { key: 'n' + i, x: NW - nPadR, y: top + 14, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #e2e8f0)', textAnchor: 'end',
+                  stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 3.5, paintOrder: 'stroke' }, 'about ' + r.yrs.toLocaleString('en-US')));
+                kn.push(h('rect', { key: 'b' + i, x: nxOf(100), y: top + 21, width: Math.max(3, nxOf(r.yrs) - nxOf(100)), height: 14, rx: 3, fill: r.color, opacity: 0.92 }));
+              });
+              var dtAria = 'How far back the dated record of fire use goes, longest first. ' + rows.map(function (r) { return r.label + ': about ' + r.yrs.toLocaleString('en-US') + ' years ago.'; }).join(' ') + ' No dated start was found for ' + undated.length + ' more nations, listed below the chart.';
+              return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-deeptime': String(rows.length), 'data-fe-deeptime-undated': String(undated.length) },
+                h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, marginBottom: 2 } }, 'How far back does the dated record of each nation\u2019s burning go?'),
+                h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Each bar reaches back to the oldest dated evidence of fire use that we found for that nation or its ancestors, such as charcoal in lake mud or tree fire scars. The scale multiplies rather than adds, so 10,000 sits the same distance from 1,000 as 1,000 does from 100. Open a nation\u2019s card to see its source.'),
+                h('div', { tabIndex: 0, role: 'region', 'aria-label': t('stem.fireecology.scrollable_chart', 'Scrollable chart') || 'Scrollable chart', style: { overflowX: 'auto', WebkitOverflowScrolling: 'touch' } },
+                  h('div', { className: 'fireecology-dt-wide', style: { minWidth: 760 } },
+                    h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': dtAria }, ks)),
+                  h('div', { className: 'fireecology-dt-narrow', style: { minWidth: 300 }, 'data-fe-deeptime-narrow': String(rows.length) },
+                    h('svg', { viewBox: '0 0 ' + NW + ' ' + NH, width: '100%', role: 'img', 'aria-label': dtAria }, kn))),
                 h('p', { style: { margin: '8px 2px 0', fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
-                  'Every bar crosses the marker. The shortest record here, ' + rows[rows.length - 1].yrs.toLocaleString() + ' years, is still longer than the colonial history that interrupted it. The marker is a rough guide: colonization arrived at a different date in each of these territories.'));
+                  'A bar shows how old the evidence is, not when the practice began. A short bar means the dated record is short, and many nations\u2019 fire knowledge is older than any record.'),
+                h('p', { 'data-fe-deeptime-undated-list': '1', style: { margin: '6px 2px 0', fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  h('strong', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Since time immemorial, with no dated start in the sources we checked: '),
+                  undated.map(function (n) { return n.nation + (n.chartNote ? ' (' + n.chartNote + ')' : ''); }).join('; ') + '.'));
             })(),
 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
@@ -3076,8 +4160,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     )
                   ),
                   h('div', { style: { fontSize: 13, color: tint('#f59e0b'), marginBottom: 6 } }, '\uD83D\uDD25 ' + nation.practice),
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, nation.years + ' years of fire stewardship'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.studied', '\u2713 Studied')) : null
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, nationSinceLabel(nation)),
+                  viewed ? h('div', { 'data-fe-viewed-mark': nation.id, style: { fontSize: 12, fontWeight: 700, color: tintOn('#4ade80', nation.color, 0x18 / 255), marginTop: 6 } }, t('stem.fireecology.studied', '\u2713 Studied')) : null
                 );
               })
             )
@@ -3109,7 +4193,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + eco.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
-                  h('span', { style: { fontSize: 32 } }, eco.icon),
+                  cardIcon(eco, 32),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: tint(eco.color), fontSize: 20 } }, eco.name),
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, eco.region + ' \u2022 Fire return interval: ' + eco.fireInterval)
@@ -3134,8 +4218,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ),
 
                 h('div', { style: { background: '#7f1d1d20', borderRadius: 8, padding: 14, borderLeft: '3px solid #ef4444' } },
-                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: '#ef4444' } }, t('stem.fireecology.without_fire', '\u26A0\uFE0F Without Fire')),
-                  h('p', { style: { margin: 0, lineHeight: 1.6, color: '#fca5a5', fontSize: 14 } }, eco.withoutFire)
+                  h('div', { style: { fontWeight: 700, marginBottom: 6, color: tintOn('#ef4444', '#7f1d1d', 0x20 / 255) } }, t('stem.fireecology.without_fire', '\u26A0\uFE0F Without Fire')),
+                  h('p', { 'data-fe-without-fire': eco.id, style: { margin: 0, lineHeight: 1.6, color: tintOn('#fca5a5', '#7f1d1d', 0x20 / 255), fontSize: 14 } }, eco.withoutFire)
                 )
               )
             );
@@ -3158,37 +4242,43 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ks.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: 'var(--allo-stem-canvas, #0f172a)' }));
             [1, 3, 10, 30, 100, 200].forEach(function (g) {
               ks.push(h('line', { key: 'g' + g, x1: xOf(g), y1: padT - 14, x2: xOf(g), y2: H - padB + 2, stroke: 'var(--allo-stem-border, #334155)', strokeWidth: 1 }));
-              ks.push(h('text', { key: 'gt' + g, x: xOf(g), y: H - padB + 17, fontSize: 10.5, fill: '#94a3b8', textAnchor: 'middle' }, String(g)));
+              ks.push(h('text', { key: 'gt' + g, x: xOf(g), y: H - padB + 17, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'middle' }, String(g)));
             });
-            ks.push(h('text', { key: 'ax', x: (padL + W - padR) / 2, y: H - 6, fontSize: 11, fill: '#94a3b8', textAnchor: 'middle' }, 'years between fires'));
-            ks.push(h('text', { key: 'lz', x: padL, y: padT - 20, fontSize: 10.5, fontWeight: 700, fill: '#86efac' }, 'burns most years, surface fire'));
-            ks.push(h('text', { key: 'rz', x: W - padR, y: padT - 20, fontSize: 10.5, fontWeight: 700, fill: '#fca5a5', textAnchor: 'end' }, 'burns rarely, stand-replacing'));
+            ks.push(h('text', { key: 'ax', x: (padL + W - padR) / 2, y: H - 6, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'middle' }, 'years between fires'));
+            ks.push(h('text', { key: 'lz', x: padL, y: padT - 20, fontSize: 12, fontWeight: 700, fill: tint('#86efac') }, 'burns most years, surface fire'));
+            ks.push(h('text', { key: 'rz', x: W - padR, y: padT - 20, fontSize: 12, fontWeight: 700, fill: tint('#fca5a5'), textAnchor: 'end' }, 'burns rarely, stand-replacing'));
             rows.forEach(function (r, i) {
               var top = padT + i * rowH, y = top + 16, bh = 16;
               var x1 = xOf(r.lo), x2 = xOf(r.hi);
-              ks.push(h('text', { key: 'l' + i, x: padL, y: top + 10, fontSize: 11.5, fontWeight: 700, fill: '#cbd5e1',
+              ks.push(h('text', { key: 'l' + i, x: padL, y: top + 10, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #cbd5e1)',
                 stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 3.5, paintOrder: 'stroke' },
                 r.label.length > 34 ? r.label.slice(0, 32) + '\u2026' : r.label));
               ks.push(h('rect', { key: 'b' + i, x: x1, y: y, width: Math.max(4, x2 - x1), height: bh, rx: 8, fill: r.color, opacity: 0.9 }));
               ks.push(h('circle', { key: 'c1' + i, cx: x1, cy: y + bh / 2, r: 4, fill: r.color }));
               ks.push(h('circle', { key: 'c2' + i, cx: x2, cy: y + bh / 2, r: 4, fill: r.color }));
-              ks.push(h('text', { key: 't' + i, x: x2 + 8, y: y + 13, fontSize: 11, fontWeight: 700, fill: '#e2e8f0' }, r.txt));
+              ks.push(h('text', { key: 't' + i, x: x2 + 8, y: y + 13, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #e2e8f0)' }, r.txt));
             });
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-interval-spectrum': String(rows.length) },
               h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, marginBottom: 2 } }, 'How often does each one burn?'),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Each bar is that ecosystem\u2019s fire return interval, shortest first. The axis multiplies, so the step from 1 to 10 takes the same width as the step from 10 to 100.'),
+              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Each bar is that ecosystem\u2019s fire return interval, shortest first. The axis multiplies, so the step from 1 to 10 takes the same width as the step from 10 to 100. Sources: US Forest Service FEIS (longleaf, chaparral), National Park Service (tallgrass; boreal spruce in central Alaska), van Wilgen and others 2000 (savanna, Kruger National Park), NSW National Parks (eucalyptus, one kind of dry forest). Real intervals vary from place to place.'),
               wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
                 'aria-label': 'Fire return intervals by ecosystem, most frequent first. ' + rows.map(function (r) { return r.label + ': ' + r.txt + '.'; }).join(' ') }, ks), 760),
               h('p', { style: { margin: '8px 2px 0', fontSize: 13, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
-                'The bars on the left burn so often that fire never builds enough fuel to reach the canopy. The bars on the right store fuel for a human lifetime and then release it all at once. Neither is broken: they are two different ways of being fire-adapted, and holding fire back from either one is what causes damage.'));
+                // Round 10: "holding fire back from either one is what causes damage" contradicted the chaparral card, where
+                // fire coming too often is the bigger threat (NPS; Moritz and others 2004).
+                'The bars on the left burn often, in fires that mostly stay low. The bars on the right go decades between fires, and when they burn, the fires are big and hot. Both are fire-adapted. Keeping fire out harms the ones on the left; in chaparral, fire coming too often is the bigger threat (National Park Service).'));
           })();
 
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #16a34a' } },
               h('p', { style: { margin: 0, lineHeight: 1.6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
-                t('stem.fireecology.many_of_earth_s_most_biodiverse_ecosys', 'Many of Earth\u2019s most biodiverse ecosystems are '),
+                // Round 3: "Many of Earth's most biodiverse ecosystems ... cannot survive without it" had no
+                // source. University of Wisconsin-Madison news, "Seed strategy can help restore a biodiversity
+                // hotspot" (2023): "In a high-quality longleaf stand, you can find over 30 species in a square
+                // meter." https://news.wisc.edu/seed-strategy-can-help-restore-a-biodiversity-hotspot
+                t('stem.fireecology.many_of_earth_s_most_biodiverse_ecosys_v2', 'Many ecosystems are '),
                 h('strong', { style: { color: tint('#4ade80') } }, 'fire-dependent'),
-                t('stem.fireecology.they_evolved_with_fire_and_cannot_surv', ' \u2014 they evolved WITH fire and cannot survive without it. From Australian eucalyptus forests to American tallgrass prairies, fire is as essential as rain or sunlight.')
+                t('stem.fireecology.they_evolved_with_fire_and_cannot_surv_v2', ' \u2014 they evolved with regular fire, and when fire is kept out they slowly change into something else, often losing many of their plants and animals. Some are very rich in life: a healthy longleaf pine stand can hold more than 30 plant species in one square meter (University of Wisconsin\u2013Madison). From Australian eucalyptus forests to American tallgrass prairies, the right kind of fire keeps them going.')
               )
             ),
             intervalSpectrum,
@@ -3206,7 +4296,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                    h('span', { style: { fontSize: 28 } }, eco.icon),
+                    cardIcon(eco, 28),
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: tint(eco.color), fontSize: 15 } }, eco.name),
                       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, eco.region)
@@ -3214,7 +4304,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   ),
                   h('div', { style: { fontSize: 13, color: tint('#f97316'), marginBottom: 4 } }, '\uD83D\uDD04 Fire interval: ' + eco.fireInterval),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, eco.description.substring(0, 100) + '...'),
-                  viewed ? h('div', { style: { fontSize: 11, color: '#4ade80', marginTop: 6 } }, t('stem.fireecology.explored', '\u2713 Explored')) : null
+                  viewed ? h('div', { 'data-fe-viewed-mark': eco.id, style: { fontSize: 12, fontWeight: 700, color: tintOn('#4ade80', eco.color, 0x18 / 255), marginTop: 6 } }, t('stem.fireecology.explored', '\u2713 Explored')) : null
                 );
               })
             )
@@ -3421,10 +4511,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             var burnKind = visualEvent ? visualEvent.kind : 'none';
             var isBurn = burnKind === 'culturalBurn' || burnKind === 'prescribedBurn' || burnKind === 'wildfire';
             var visualDeltas = visualEvent ? [
-              { key: 'fuel', label: t('stem.fireecology.fuel_load', 'Fuel load'), before: visualEvent.before.fuelLoad, after: visualEvent.after.fuelLoad, unit: ' t/acre', max: 100 },
+              { key: 'fuel', label: t('stem.fireecology.fuel_load_v2', 'Fuel load'), before: visualEvent.before.fuelLoad, after: visualEvent.after.fuelLoad, unit: ' t/acre', max: 100 },
               { key: 'understory', label: t('stem.fireecology.understory_density', 'Understory'), before: visualEvent.before.understoryDensity, after: visualEvent.after.understoryDensity, unit: '%', max: 100 },
               { key: 'canopy', label: t('stem.fireecology.canopy_cover', 'Canopy cover'), before: visualEvent.before.canopyCover, after: visualEvent.after.canopyCover, unit: '%', max: 100 },
-              { key: 'biodiversity', label: t('stem.fireecology.biodiversity', 'Biodiversity'), before: visualEvent.before.biodiversity, after: visualEvent.after.biodiversity, unit: '/100', max: 100 }
+              { key: 'biodiversity', label: t('stem.fireecology.biodiversity_v2', 'Biodiversity'), before: visualEvent.before.biodiversity, after: visualEvent.after.biodiversity, unit: '/100', max: 100 }
             ] : [];
             var describedBy = 'fireecology-sim-phase-description fireecology-sim-outcome-description fireecology-sim-legend fireecology-sim-safety-description';
             var treatmentName = visualEvent ? visualEvent.label : t('stem.fireecology.current_forest', 'Current forest');
@@ -3602,98 +4692,26 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             );
           }
           function advanceDecade(action) {
-            var newSim = Object.assign({}, s);
-            var event = '';
-            var visualBefore = fireSimVisualSnapshot(s);
-            var visualKind = action === 'culturalBurn' ? 'culturalBurn' :
-              (action === 'prescribe' ? 'prescribedBurn' : 'suppression');
-
-            if (action === 'culturalBurn') {
-              // Cultural burn: low-intensity, reduces fuel, boosts biodiversity
-              newSim.fuelLoad = clamp(s.fuelLoad - 8, 3, 100);
-              newSim.understoryDensity = clamp(s.understoryDensity - 15, 5, 100);
-              newSim.biodiversity = clamp(s.biodiversity + 8, 0, 100);
-              newSim.soilHealth = clamp(s.soilHealth + 5, 0, 100);
-              newSim.waterYield = clamp(s.waterYield + 5, 0, 100);
-              newSim.carbonStored = clamp(s.carbonStored + 2, 0, 200);
-              newSim.yearsSinceLastBurn = 0;
-              newSim.totalBurns = s.totalBurns + 1;
-              newSim.strategy = 'indigenous';
-              event = '\uD83D\uDD25 Cultural burn modeled. Fuel reduced, understory opened, biodiversity increased, and the surviving trees kept storing carbon through the decade.';
+            // The rules live in fireSimAdvance (module scope); this wrapper only adds sound,
+            // XP, badges and playback.
+            var step = fireSimAdvance(s, action, 'suppression-wildfire');
+            var newSim = step.next;
+            var event = step.event;
+            if (step.kind === 'culturalBurn' || step.kind === 'prescribedBurn') {
               playSound('ignite');
               startFireAmbient(true, newSim.biodiversity, fireSessionId);
+            } else if (step.wildfire) {
+              playSound('wildfire');
+              startFireAmbient(true, newSim.biodiversity, fireSessionId);
+            } else {
+              startFireAmbient(false, newSim.biodiversity, fireSessionId);
+            }
+            if (step.kind === 'culturalBurn') {
               awardStemXP('fire_sim_burn', 10, 'Cultural burn');
               if (newSim.totalBurns === 1) checkBadge('firstBurn');
               if (newSim.totalBurns >= 5) checkBadge('firekeeper');
-            } else if (action === 'suppress') {
-              // Suppress: fuel accumulates, biodiversity drops
-              newSim.fuelLoad = clamp(s.fuelLoad + 12, 0, 100);
-              newSim.understoryDensity = clamp(s.understoryDensity + 18, 0, 100);
-              newSim.biodiversity = clamp(s.biodiversity - 8, 0, 100);
-              newSim.soilHealth = clamp(s.soilHealth - 3, 0, 100);
-              newSim.waterYield = clamp(s.waterYield - 6, 0, 100);
-              newSim.carbonStored = clamp(s.carbonStored + 5, 0, 200);
-              newSim.yearsSinceLastBurn = s.yearsSinceLastBurn + 10;
-              newSim.strategy = 'suppress';
-              event = '\u26D4 Fire suppressed. Fuel accumulating, understory thickening, biodiversity declining.';
-              startFireAmbient(false, newSim.biodiversity, fireSessionId);
-
-              // Wildfire risk check
-              if (newSim.fuelLoad > 55 && fireSimRoll(s, 'suppression-wildfire') < (newSim.fuelLoad - 40) / 80) {
-                // Catastrophic wildfire!
-                var severity = newSim.fuelLoad / 100;
-                newSim.canopyCover = clamp(s.canopyCover - Math.round(severity * 60), 0, 100);
-                newSim.fuelLoad = clamp(newSim.fuelLoad - 30, 0, 100); // fire consumed the fuel
-                newSim.biodiversity = clamp(newSim.biodiversity - 25, 0, 100);
-                newSim.soilHealth = clamp(newSim.soilHealth - 20, 0, 100);
-                newSim.waterYield = clamp(newSim.waterYield - 15, 0, 100);
-                newSim.carbonStored = clamp(newSim.carbonStored - 30, 0, 200);
-                newSim.wildfires = s.wildfires + 1;
-                newSim.yearsSinceLastBurn = 0;
-                visualKind = 'wildfire';
-                event = '\uD83D\uDCA5 CATASTROPHIC WILDFIRE! Decades of fuel accumulation erupted into an uncontrollable crown fire. Canopy, soil, and biodiversity devastated.';
-                playSound('wildfire');
-                startFireAmbient(true, newSim.biodiversity, fireSessionId);
-                checkBadge('suppressionLesson');
-              }
-            } else if (action === 'prescribe') {
-              // Prescribed treatment in this simplified scenario.
-              newSim.fuelLoad = clamp(s.fuelLoad - 5, 3, 100);
-              newSim.understoryDensity = clamp(s.understoryDensity - 10, 5, 100);
-              newSim.biodiversity = clamp(s.biodiversity + 4, 0, 100);
-              newSim.soilHealth = clamp(s.soilHealth + 2, 0, 100);
-              newSim.waterYield = clamp(s.waterYield + 3, 0, 100);
-              newSim.carbonStored = clamp(s.carbonStored, 0, 200);
-              newSim.yearsSinceLastBurn = 0;
-              newSim.totalBurns = s.totalBurns + 1;
-              newSim.strategy = 'prescribe';
-              event = '\uD83D\uDCCB Prescribed burn completed. Surface fuels and understory were reduced in this simplified scenario.';
-              playSound('ignite');
-              startFireAmbient(true, newSim.biodiversity, fireSessionId);
             }
-
-            // Natural recovery
-            newSim.canopyCover = clamp(newSim.canopyCover + (newSim.canopyCover < 40 ? 8 : 2), 0, 95);
-            newSim.year = s.year + 10;
-            newSim.visualSequence = (s.visualSequence || 0) + 1;
-            newSim.visualEvent = makeFireSimVisualEvent(
-              visualKind, visualBefore, newSim, newSim.year, newSim.visualSequence
-            );
-
-            // Decade snapshot
-            var snapshots = (s.decade || []).concat([{
-              year: newSim.year,
-              fuel: newSim.fuelLoad,
-              biodiversity: newSim.biodiversity,
-              canopy: newSim.canopyCover,
-              carbon: newSim.carbonStored,
-              water: newSim.waterYield,
-              soil: newSim.soilHealth
-            }]);
-            newSim.decade = snapshots;
-
-            // Event log
-            newSim.eventLog = (s.eventLog || []).concat([{ year: newSim.year, event: event }]);
+            if (step.wildfire) checkBadge('suppressionLesson');
 
             var nextPlaybackToken = playbackToken + 1;
             var nextVisualFrame = reducedMotion ? 'during' : 'animate';
@@ -3712,14 +4730,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
             if (newSim.year >= 50) checkBadge('successionWatcher');
 
-            if (addToast) addToast(event, event.indexOf('CATASTROPHIC') >= 0 ? 'error' : 'success');
+            if (addToast) addToast(event, step.wildfire ? 'error' : 'success');
           }
 
           // Danger level indicator
-          var dangerLevel = s.fuelLoad < 20 ? { label: 'Low', color: '#22c55e' } :
-                            s.fuelLoad < 40 ? { label: t('stem.fireecology.moderate', 'Moderate'), color: tint('#f59e0b') } :
-                            s.fuelLoad < 60 ? { label: t('stem.fireecology.high', 'High'), color: tint('#f97316') } :
-                            { label: 'EXTREME', color: '#ef4444' };
+          // The risk card reads the model's own crown-fire rule (fireSimNextDecadeRisk), not a
+          // separate set of fuel bands: the old bands said 'High' at 40 tons, where the model's
+          // chance of a crown fire was still zero.
+          var crownRisk = fireSimNextDecadeRisk(s);
+          var crownRiskPct = Math.round(crownRisk * 100);
+          var dangerLevel = crownRisk === 0 ? { label: 'Low', color: '#22c55e' } :
+                            crownRisk < 0.25 ? { label: t('stem.fireecology.moderate', 'Moderate'), color: tint('#f59e0b') } :
+                            crownRisk < 0.5 ? { label: t('stem.fireecology.high', 'High'), color: tint('#f97316') } :
+                            { label: 'Very high', color: '#ef4444' };
           var comparisonFuelGap = Math.round(simB.fuelLoad - sim.fuelLoad);
           var comparisonBiodiversityGap = Math.round(simB.biodiversity - sim.biodiversity);
           var comparisonFuelText = comparisonFuelGap === 0 ? 'the same fuel load' : Math.abs(comparisonFuelGap) + (comparisonFuelGap > 0 ? ' more' : ' fewer') + ' tons of fuel per acre';
@@ -3762,7 +4785,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('button', { 'aria-label': __alloT('stem.fireecology.a11y_toggle_cultural_burn_and_suppression_comparison', 'Toggle cultural-burn and suppression comparison'),
               className: 'fireecology-compare-toggle',
               'aria-pressed': comparisonMode,
-              onClick: function() { updMulti({ comparisonMode: !comparisonMode }); }
+              // Forest A IS the main forest, so Forest B must start from the same state.
+              // It used to start from the defaults: after three suppressed decades in the main
+              // forest, "Cultural Burn" Forest A sat at year 40 with 76 tons of fuel against a
+              // fresh year-10 Forest B, and the summary credited suppression with less fuel.
+              onClick: function() {
+                if (comparisonMode) { updMulti({ comparisonMode: false }); return; }
+                updMulti({ comparisonMode: true, simB: Object.assign({}, sim, { visualEvent: null, strategy: 'suppress' }) });
+              }
             }, comparisonMode ? '\u2716 Exit Comparison Mode' : '\u2194\uFE0F Compare: Cultural Burn vs. Suppression'),
 
             // Stats dashboard
@@ -3773,12 +4803,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ),
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 12 } },
                 h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } }, t('stem.fireecology.wildfire_risk', '\u26A0\uFE0F Wildfire Risk')),
-                h('div', { style: { color: tint(dangerLevel.color), fontSize: 20, fontWeight: 700 } }, dangerLevel.label)
+                h('div', { style: { color: tint(dangerLevel.color), fontSize: 20, fontWeight: 700 } }, dangerLevel.label),
+                h('div', { 'data-fe-crown-risk': crownRiskPct, style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12.5, lineHeight: 1.4, marginTop: 4 } },
+                  crownRiskPct === 0
+                    ? 'If fire is kept out next decade, fuel stays at or below ' + FIRE_SIM_CROWN_FUEL + ' tons per acre, so this model gives no crown-fire chance.'
+                    : 'If fire is kept out next decade, fuel passes ' + FIRE_SIM_CROWN_FUEL + ' tons per acre, so this model gives a ' + crownRiskPct + '% chance of a crown fire.')
               )
             ),
 
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, padding: 14, marginBottom: 16 } },
-              gauge('Fuel Load', Math.round(s.fuelLoad), 100, s.fuelLoad > 50 ? '#ef4444' : s.fuelLoad > 30 ? '#f59e0b' : '#22c55e', ' tons/acre'),
+              gauge('Fuel Load', Math.round(s.fuelLoad), 100, s.fuelLoad > FIRE_SIM_CROWN_FUEL ? '#ef4444' : s.fuelLoad > 30 ? '#f59e0b' : '#22c55e', ' tons/acre'),
               gauge('Canopy Cover', Math.round(s.canopyCover), 100, '#16a34a', '%'),
               gauge('Understory Density', Math.round(s.understoryDensity), 100, s.understoryDensity > 60 ? '#ef4444' : '#f59e0b', '%'),
               gauge('Biodiversity', Math.round(s.biodiversity), 100, '#3b82f6', '/100'),
@@ -3829,49 +4863,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('h3', { id: 'fireecology-compare-title', className: 'fireecology-compare-heading' }, t('stem.fireecology.side_by_side_cultural_burn_vs_suppress', '\u2194\uFE0F Side-by-Side: Cultural Burn vs. Suppression')),
               h('p', { className: 'fireecology-compare-intro' }, t('stem.fireecology.click_to_advance_both_forests_10_years', 'Click to advance both forests 10 years \u2014 one managed with cultural burning, one with total fire suppression.')),
               h('button', { disabled: playbackActive, onClick: function() {
-                  // Advance Forest A (cultural burn)
-                  var newA = Object.assign({}, sim);
-                  newA.fuelLoad = clamp(sim.fuelLoad - 8, 3, 100);
-                  newA.understoryDensity = clamp(sim.understoryDensity - 15, 5, 100);
-                  newA.biodiversity = clamp(sim.biodiversity + 8, 0, 100);
-                  newA.soilHealth = clamp(sim.soilHealth + 5, 0, 100);
-                  newA.waterYield = clamp(sim.waterYield + 5, 0, 100);
-                  newA.carbonStored = clamp(sim.carbonStored - 2, 0, 200);
-                  newA.canopyCover = clamp(newA.canopyCover + 2, 0, 95);
-                  newA.year = sim.year + 10;
-                  newA.totalBurns = sim.totalBurns + 1;
-                  newA.strategy = 'indigenous';
-                  newA.visualSequence = (sim.visualSequence || 0) + 1;
-                  newA.visualEvent = makeFireSimVisualEvent('culturalBurn', sim, newA, newA.year, newA.visualSequence);
+                  // Both forests step through the same fireSimAdvance as the main simulator.
+                  var newA = fireSimAdvance(sim, 'culturalBurn').next;
                   newA.visualEvent.subject = 'Forest A in the comparison';
-                  newA.decade = (sim.decade || []).concat([{ year: newA.year, fuel: newA.fuelLoad, biodiversity: newA.biodiversity, canopy: newA.canopyCover }]);
-
-                  // Advance Forest B (suppression)
-                  var newB = Object.assign({}, simB);
-                  newB.fuelLoad = clamp(simB.fuelLoad + 12, 0, 100);
-                  newB.understoryDensity = clamp(simB.understoryDensity + 18, 0, 100);
-                  newB.biodiversity = clamp(simB.biodiversity - 8, 0, 100);
-                  newB.soilHealth = clamp(simB.soilHealth - 3, 0, 100);
-                  newB.waterYield = clamp(simB.waterYield - 6, 0, 100);
-                  newB.carbonStored = clamp(simB.carbonStored + 5, 0, 200);
-                  newB.yearsSinceLastBurn = simB.yearsSinceLastBurn + 10;
-                  newB.year = simB.year + 10;
-                  newB.canopyCover = clamp(newB.canopyCover + 2, 0, 95);
-
-                  // Wildfire check for Forest B
-                  if (newB.fuelLoad > 55 && fireSimRoll(simB, 'comparison-wildfire') < (newB.fuelLoad - 40) / 80) {
-                    var sev = newB.fuelLoad / 100;
-                    newB.canopyCover = clamp(newB.canopyCover - Math.round(sev * 60), 0, 100);
-                    newB.fuelLoad = clamp(newB.fuelLoad - 30, 0, 100);
-                    newB.biodiversity = clamp(newB.biodiversity - 25, 0, 100);
-                    newB.soilHealth = clamp(newB.soilHealth - 20, 0, 100);
-                    newB.waterYield = clamp(newB.waterYield - 15, 0, 100);
-                    newB.carbonStored = clamp(newB.carbonStored - 30, 0, 200);
-                    newB.wildfires = simB.wildfires + 1;
-                    if (addToast) addToast('\uD83D\uDCA5 Forest B: Catastrophic wildfire from fuel accumulation!', 'error');
+                  var stepB = fireSimAdvance(simB, 'suppress', 'comparison-wildfire');
+                  var newB = stepB.next;
+                  if (stepB.wildfire) {
+                    if (addToast) addToast('\uD83D\uDD25 Forest B: crown fire. Fuel had passed ' + FIRE_SIM_CROWN_FUEL + ' tons per acre.', 'error');
                     playSound('wildfire');
                   }
-                  newB.decade = (simB.decade || []).concat([{ year: newB.year, fuel: newB.fuelLoad, biodiversity: newB.biodiversity, canopy: newB.canopyCover }]);
 
                   var comparePlaybackToken = playbackToken + 1;
                   var compareVisualFrame = reducedMotion ? 'during' : 'animate';
@@ -3887,7 +4887,6 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   revealLandscape();
                   playSound('ignite');
                   startFireAmbient(true, newA.biodiversity, fireSessionId);
-                  checkBadge('mosaicMaster');
                   if (newA.year >= 50) checkBadge('comparisonChamp');
                 },
                 className: 'fireecology-compare-advance'
@@ -3915,7 +4914,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ),
                 h('div', null,
                   h('div', { className: 'fireecology-compare-forest-title', 'data-forest': 'suppression' }, '\u26D4 Forest B: Suppression (Year ' + simB.year + ')'),
-                  gauge('Fuel Load', Math.round(simB.fuelLoad), 100, simB.fuelLoad > 50 ? '#ef4444' : '#f59e0b', ' t/acre'),
+                  gauge('Fuel Load', Math.round(simB.fuelLoad), 100, simB.fuelLoad > FIRE_SIM_CROWN_FUEL ? '#ef4444' : '#f59e0b', ' t/acre'),
                   gauge('Biodiversity', Math.round(simB.biodiversity), 100, '#3b82f6', '/100'),
                   gauge('Soil Health', Math.round(simB.soilHealth), 100, '#854d0e', '/100'),
                   gauge('Water Yield', Math.round(simB.waterYield), 100, '#0ea5e9', '%'),
@@ -3946,22 +4945,22 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 var line = function (key) { return s.decade.map(function (snap, i) { return (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(snap[key]).toFixed(1); }).join(' '); };
                 var kids = [];
                 kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: 'var(--allo-stem-canvas, #0f172a)' }));
-                kids.push(h('rect', { key: 'danger', x: padL, y: yOf(100), width: gw, height: yOf(50) - yOf(100), fill: 'rgba(239,68,68,0.10)' }));
-                kids.push(h('line', { key: 'd50', x1: padL, y1: yOf(50), x2: padL + gw, y2: yOf(50), stroke: '#ef4444', strokeDasharray: '4 4', strokeWidth: 1 }));
-                kids.push(h('text', { key: 'd50L', x: padL + gw - 4, y: yOf(50) - 4, fontSize: 9.5, fill: '#fca5a5', textAnchor: 'end' }, 'fuel above 50: megafire territory'));
+                kids.push(h('rect', { key: 'danger', x: padL, y: yOf(100), width: gw, height: yOf(FIRE_SIM_CROWN_FUEL) - yOf(100), fill: 'rgba(239,68,68,0.10)' }));
+                kids.push(h('line', { key: 'd50', x1: padL, y1: yOf(FIRE_SIM_CROWN_FUEL), x2: padL + gw, y2: yOf(FIRE_SIM_CROWN_FUEL), stroke: '#ef4444', strokeDasharray: '4 4', strokeWidth: 1 }));
+                kids.push(h('text', { key: 'd50L', x: padL + gw - 4, y: yOf(FIRE_SIM_CROWN_FUEL) - 4, fontSize: 12, fontWeight: 700, fill: tint('#fca5a5'), textAnchor: 'end' }, 'fuel above ' + FIRE_SIM_CROWN_FUEL + ': crown fire possible in this model'));
                 kids.push(h('line', { key: 'd30', x1: padL, y1: yOf(30), x2: padL + gw, y2: yOf(30), stroke: '#f59e0b', strokeDasharray: '4 4', strokeWidth: 1 }));
-                kids.push(h('text', { key: 'd30L', x: padL + gw - 4, y: yOf(30) - 4, fontSize: 9.5, fill: '#fde68a', textAnchor: 'end' }, 'goal: fuel under 30'));
+                kids.push(h('text', { key: 'd30L', x: padL + gw - 4, y: yOf(30) - 4, fontSize: 12, fontWeight: 700, fill: tint('#fde68a'), textAnchor: 'end' }, 'goal: fuel under 30'));
                 kids.push(h('line', { key: 'b70', x1: padL, y1: yOf(70), x2: padL + gw, y2: yOf(70), stroke: '#3b82f6', strokeDasharray: '2 4', strokeWidth: 1 }));
-                kids.push(h('text', { key: 'b70L', x: padL + 4, y: yOf(70) - 4, fontSize: 9.5, fill: '#93c5fd' }, 'goal: biodiversity above 70'));
+                kids.push(h('text', { key: 'b70L', x: padL + 4, y: yOf(70) - 4, fontSize: 12, fontWeight: 700, fill: tint('#93c5fd') }, 'goal: biodiversity above 70'));
                 [0, 50, 100].forEach(function (v) {
-                  kids.push(h('text', { key: 'gl' + v, x: padL - 6, y: yOf(v) + 3.5, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'end' }, String(v)));
+                  kids.push(h('text', { key: 'gl' + v, x: padL - 6, y: yOf(v) + 4, fontSize: 12, fill: tint('#94a3b8'), textAnchor: 'end' }, String(v)));
                 });
                 kids.push(h('path', { key: 'bio', d: line('biodiversity'), fill: 'none', stroke: '#3b82f6', strokeWidth: 2.5, strokeLinejoin: 'round' }));
                 kids.push(h('path', { key: 'fuel', d: line('fuel'), fill: 'none', stroke: '#f59e0b', strokeWidth: 2.5, strokeLinejoin: 'round' }));
                 s.decade.forEach(function (snap, i) {
                   kids.push(h('circle', { key: 'bp' + i, cx: xOf(i), cy: yOf(snap.biodiversity), r: 3.5, fill: '#3b82f6' }));
-                  kids.push(h('circle', { key: 'fp' + i, cx: xOf(i), cy: yOf(snap.fuel), r: 3.5, fill: snap.fuel > 50 ? '#ef4444' : '#f59e0b' }));
-                  if (n <= 12 || i % Math.ceil(n / 12) === 0 || i === n - 1) kids.push(h('text', { key: 'yr' + i, x: xOf(i), y: padT + gh + 14, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'middle' }, 'Y' + snap.year));
+                  kids.push(h('circle', { key: 'fp' + i, cx: xOf(i), cy: yOf(snap.fuel), r: 3.5, fill: snap.fuel > FIRE_SIM_CROWN_FUEL ? '#ef4444' : '#f59e0b' }));
+                  if (n <= 12 || i % Math.ceil(n / 12) === 0 || i === n - 1) kids.push(h('text', { key: 'yr' + i, x: xOf(i), y: padT + gh + 15, fontSize: 12, fill: tint('#94a3b8'), textAnchor: 'middle' }, 'Y' + snap.year));
                 });
                 var last = s.decade[n - 1];
                 return wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-fe-health-chart': String(n),
@@ -3970,11 +4969,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'fireecology-sim-legend', role: 'list', 'aria-label': __alloT('stem.fireecology.a11y_chart_legend', 'Chart legend') },
                 h('span', { className: 'fireecology-sim-legend-item', role: 'listitem' },
                   h('span', { className: 'fireecology-sim-swatch', 'aria-hidden': true, style: { background: '#3b82f6' } }),
-                  t('stem.fireecology.biodiversity', 'Biodiversity')
+                  t('stem.fireecology.biodiversity_v2', 'Biodiversity')
                 ),
                 h('span', { className: 'fireecology-sim-legend-item', role: 'listitem' },
                   h('span', { className: 'fireecology-sim-swatch', 'aria-hidden': true, style: { background: '#f59e0b' } }),
-                  t('stem.fireecology.fuel_load', 'Fuel load')
+                  t('stem.fireecology.fuel_load_v2', 'Fuel load')
                 )
               ),
               h('details', { className: 'fireecology-sim-data-details' },
@@ -4032,24 +5031,24 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             var notes = [];
 
             // Temperature
-            if (burnTemp >= 50 && burnTemp <= 70) { score += 25; notes.push('\u2705 Temperature in ideal range (50-70\u00B0F)'); }
-            else if (burnTemp >= 40 && burnTemp <= 80) { score += 15; notes.push('\u26A0\uFE0F Temperature acceptable but not ideal'); }
+            if (burnTemp >= 50 && burnTemp <= 70) { score += 25; notes.push('\u2705 Temperature inside this sim\u2019s classroom range (50-70\u00B0F)'); }
+            else if (burnTemp >= 40 && burnTemp <= 80) { score += 15; notes.push('\u26A0\uFE0F Temperature near, but outside, this sim\u2019s classroom range (50-70\u00B0F)'); }
             else { score += 0; notes.push('\u274C Temperature too extreme for safe burning'); }
 
             // Humidity
-            if (burnHumidity >= 30 && burnHumidity <= 55) { score += 25; notes.push('\u2705 Humidity in ideal range (30-55%)'); }
-            else if (burnHumidity >= 20 && burnHumidity <= 70) { score += 15; notes.push('\u26A0\uFE0F Humidity acceptable but not ideal'); }
+            if (burnHumidity >= 30 && burnHumidity <= 55) { score += 25; notes.push('\u2705 Humidity inside this sim\u2019s classroom range (30-55%)'); }
+            else if (burnHumidity >= 20 && burnHumidity <= 70) { score += 15; notes.push('\u26A0\uFE0F Humidity near, but outside, this sim\u2019s classroom range (30-55%)'); }
             else if (burnHumidity < 20) { score += 0; notes.push('\u274C Humidity too low \u2014 fire will be dangerously intense'); }
             else { score += 5; notes.push('\u26A0\uFE0F High humidity may prevent fire from carrying'); }
 
             // Wind
-            if (burnWind >= 3 && burnWind <= 12) { score += 25; notes.push('\u2705 Wind speed in ideal range (3-12 mph)'); }
+            if (burnWind >= 3 && burnWind <= 12) { score += 25; notes.push('\u2705 Wind speed inside this sim\u2019s classroom range (3-12 mph)'); }
             else if (burnWind < 3) { score += 10; notes.push('\u26A0\uFE0F Wind too calm \u2014 smoke won\u2019t disperse, fire may not carry'); }
             else if (burnWind <= 20) { score += 10; notes.push('\u26A0\uFE0F Wind getting strong \u2014 fire may be difficult to control'); }
             else { score += 0; notes.push('\u274C Wind speed dangerous \u2014 DO NOT BURN'); }
 
             // Fuel moisture
-            if (burnFuelMoisture >= 12 && burnFuelMoisture <= 25) { score += 25; notes.push('\u2705 Fuel moisture in ideal range (12-25%)'); }
+            if (burnFuelMoisture >= 12 && burnFuelMoisture <= 25) { score += 25; notes.push('\u2705 Fuel moisture inside this sim\u2019s classroom range (12-25%)'); }
             else if (burnFuelMoisture >= 8 && burnFuelMoisture < 12) { score += 10; notes.push('\u26A0\uFE0F Fuel moisture low \u2014 fire will burn hot and fast'); }
             else if (burnFuelMoisture < 8) { score += 0; notes.push('\u274C Fuel moisture critically low \u2014 wildfire risk extreme'); }
             else { score += 10; notes.push('\u26A0\uFE0F Fuel moisture high \u2014 fire may not sustain'); }
@@ -4102,12 +5101,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Classroom task: '),
               t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'compare how four inputs affect this classroom score. A high score is not authorization or evidence that a real burn is safe.'),
               d.burnRevealed ? h('div', { style: { marginTop: 6, fontSize: 12.5, color: tint('#fef3c7'), lineHeight: 1.55 }, 'data-fe-burn-ranges': 'revealed' },
-                h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
-                h('div', null, t('stem.fireecology.ideal_humidity_30_to_55_percent', 'Ideal Humidity: 30 to 55 percent')),
-                h('div', null, t('stem.fireecology.ideal_wind_3_to_12_mph', 'Ideal Wind: 3 to 12 mph')),
-                h('div', null, t('stem.fireecology.ideal_fuel_moisture_12_to_25_percent', 'Ideal Fuel Moisture: 12 to 25 percent'))
+                h('div', { style: { fontWeight: 700 } }, 'This sim\u2019s classroom ranges (real burn plans set their own for each place):'),
+                h('div', null, 'Temperature: 50 to 70 ' + '\u00B0F'),
+                h('div', null, t('stem.fireecology.ideal_humidity_30_to_55_percent_v2', 'Humidity: 30 to 55 percent')),
+                h('div', null, t('stem.fireecology.ideal_wind_3_to_12_mph_v2', 'Wind: 3 to 12 mph')),
+                h('div', null, t('stem.fireecology.ideal_fuel_moisture_12_to_25_percent_v2', 'Fuel moisture: 12 to 25 percent'))
               ) : h('div', { style: { marginTop: 6, fontSize: 12.5, color: tint('#fef3c7'), lineHeight: 1.55 }, 'data-fe-burn-ranges': 'hidden' },
-                'The ideal ranges are hidden until your first evaluation. Set the four conditions from what you know about safe burning, predict the verdict, then evaluate.'),
+                'This sim\u2019s classroom ranges are hidden until your first evaluation. Set the four conditions from what you know about safe burning, predict the verdict, then evaluate.'),
               // Prediction first: the evaluation is only a lesson if there was a guess to compare it to.
               h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': __alloT('stem.fireecology.a11y_predict_the_verdict_before_evaluating', 'Predict the verdict before evaluating') },
                 h('span', { style: { fontSize: 12, color: tint('#fde68a'), fontWeight: 700 } }, 'My prediction:'),
@@ -4221,7 +5221,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 (function () {
                   if (concept.id === 'fireTriangle') {
                     var LEGS = [
-                      { key: 'Heat', color: '#f97316', tactic: 'Water and retardant carry heat away, so the fuel never reaches about 300 \u00B0C.', hold: 'Heat: an ignition source, and fuel already at kindling temperature.' },
+                      { key: 'Heat', color: '#f97316', tactic: 'Water and retardant carry heat away, so the fuel stays too cool to catch fire.', hold: 'Heat: an ignition source, and fuel already at kindling temperature.' },
                       { key: 'Fuel', color: '#84cc16', tactic: 'A fuel break, or ground a cultural burn already cleared, leaves nothing for the flame to carry into.', hold: 'Fuel: litter, branches, and grass dry enough to catch.' },
                       { key: 'Oxygen', color: '#38bdf8', tactic: 'Smothering with soil, foam, or a fire blanket cuts off the air supply.', hold: 'Oxygen: air moving through the fuel, usually delivered by wind.' }
                     ];
@@ -4274,11 +5274,153 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     );
                   }
 
+                  if (concept.id === 'fireSpread') {
+                    // Predict, then light. Every number on this panel comes from fireSpreadRun /
+                    // fireSpreadNeighborChance, the same functions that draw the grid.
+                    var spWind = FIRE_SPREAD_WIND[d.spreadWind] != null ? d.spreadWind : 'light';
+                    var spSlope = FIRE_SPREAD_SLOPE[d.spreadSlope] != null ? d.spreadSlope : 'flat';
+                    var spFuel = FIRE_SPREAD_FUEL[d.spreadFuel] != null ? d.spreadFuel : 'continuous';
+                    var spPick = d.spreadPick || null;
+                    var spRunNo = Number(d.spreadRun) || 0;
+                    var spLit = !!d.spreadLit && !!spPick;
+                    var spRes = spLit ? fireSpreadRun({ wind: spWind, slope: spSlope, fuel: spFuel, run: spRunNo }) : null;
+                    var spView = spRes ? (typeof d.spreadView === 'number' ? Math.max(0, Math.min(spRes.steps, d.spreadView)) : spRes.steps) : 0;
+                    var spLog = Array.isArray(d.spreadLog) ? d.spreadLog : [];
+                    var resetSpread = function (patch) {
+                      if (_fireSpreadTimer) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; }
+                      updMulti(Object.assign({ spreadPick: null, spreadLit: false, spreadView: null }, patch));
+                    };
+                    var segBtn = function (group, val, label, on, onClick, extra) {
+                      return h('button', Object.assign({ key: group + val, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: onClick,
+                        style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                          border: '1px solid ' + (on ? '#f97316' : 'var(--allo-stem-border, #334155)'), background: on ? 'rgba(249,115,22,0.20)' : 'transparent',
+                          color: on ? '#fdba74' : 'var(--allo-stem-text, #e2e8f0)' } }, extra || {}), label);
+                    };
+                    var segRow = function (title, kids) {
+                      return h('div', { role: 'group', 'aria-label': title, style: { marginBottom: 10 } },
+                        h('div', { style: { fontSize: 13, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6 } }, title),
+                        h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, kids));
+                    };
+                    var WINDS = [['none', 'No wind'], ['light', 'Light (3 m/s)'], ['strong', 'Strong (8 m/s)']];
+                    var SLOPES = [['flat', 'Flat'], ['moderate', '15\u00B0 hill'], ['steep', '30\u00B0 hill']];
+                    var FUELS = [['continuous', 'Unbroken fuel'], ['patchy', 'Patchy: 4 in 10 squares bare']];
+                    var PICKS = [['east', 'East \u2192'], ['west', '\u2190 West'], ['north', '\u2191 North'], ['south', '\u2193 South'], ['even', 'About the same every way'], ['small', 'It goes out quickly']];
+                    var pickLabel = function (id) { var m = PICKS.filter(function (p) { return p[0] === id; })[0]; return m ? m[1] : id; };
+
+                    // Grid picture
+                    var CELL = 16, OX = 12, OY = 42, G = FIRE_SPREAD.W;
+                    var mapW = G * CELL, VBW = mapW + OX * 2, VBH = mapW + OY + 16;
+                    var gk = [];
+                    gk.push(h('rect', { key: 'bg', x: 0, y: 0, width: VBW, height: VBH, fill: 'var(--allo-stem-canvas, #0f172a)' }));
+                    gk.push(h('rect', { key: 'map', x: OX - 1, y: OY - 1, width: mapW + 2, height: mapW + 2, fill: '#0b1220' }));
+                    var preview = spRes || fireSpreadRun({ wind: spWind, slope: spSlope, fuel: spFuel, run: spRunNo });
+                    for (var gy = 0; gy < G; gy++) for (var gx = 0; gx < G; gx++) {
+                      var gi = gy * G + gx, at = preview.ignitedAt[gi];
+                      var fill = !preview.fuel[gi] ? '#d6c7a1' : '#4d7c0f';
+                      if (spRes && at >= 0 && at < spView) fill = '#57534e';
+                      if (spRes && at >= 0 && at === spView) fill = '#f97316';
+                      if (!spRes && gx === preview.cx && gy === preview.cy) fill = '#f97316';
+                      gk.push(h('rect', { key: 'c' + gi, x: OX + gx * CELL + 0.5, y: OY + gy * CELL + 0.5, width: CELL - 1, height: CELL - 1, fill: fill }));
+                    }
+                    gk.push(h('rect', { key: 'ign', x: OX + preview.cx * CELL - 1, y: OY + preview.cy * CELL - 1, width: CELL + 2, height: CELL + 2, fill: 'none', stroke: '#ffffff', strokeWidth: 2 }));
+                    gk.push(h('text', { key: 'wind', x: OX, y: 16, fontSize: 14, fontWeight: 700, fill: '#93c5fd' }, preview.windSpeed ? 'Wind blows east \u2192 (' + preview.windSpeed + ' m/s)' : 'No wind'));
+                    gk.push(h('text', { key: 'slope', x: OX, y: 34, fontSize: 14, fontWeight: 700, fill: '#fde68a' }, preview.slopeDeg ? 'Ground rises to the north \u2191 (' + preview.slopeDeg + '\u00B0)' : 'Flat ground'));
+                    gk.push(h('text', { key: 'n', x: VBW - OX, y: 34, fontSize: 14, fontWeight: 700, fill: '#e2e8f0', textAnchor: 'end' }, 'N \u2191'));
+                    if (spRes) gk.push(h('text', { key: 'tstep', x: VBW - OX, y: 16, fontSize: 14, fontWeight: 700, fill: '#fdba74', textAnchor: 'end' }, 'Time step ' + spView + ' of ' + spRes.steps));
+                    var sideText = spRes ? 'East ' + spRes.sides.east + ', West ' + spRes.sides.west + ', North ' + spRes.sides.north + ', South ' + spRes.sides.south : '';
+                    var gridLabel = spRes
+                      ? 'Fire spread grid at time step ' + spView + ' of ' + spRes.steps + '. Squares burned on each side of the start: ' + sideText + '.'
+                      : 'Fire spread grid before lighting. ' + (preview.windSpeed ? 'Wind blows east. ' : 'No wind. ') + (preview.slopeDeg ? 'Ground rises to the north. ' : 'Flat ground. ') + (preview.fuelShare < 1 ? 'Some squares are bare.' : 'Every square has fuel.');
+
+                    // Why, in the model's own numbers
+                    var pc = function (p) { return Math.round(p * 100) + '%'; };
+                    var whyText = '';
+                    if (spRes) {
+                      if (spRes.answer === 'small') whyText = 'So many squares were bare that the fire ran out of connected fuel and went out after burning ' + spRes.burned + ' squares. Gaps in the fuel are why a patchwork of old burns can stop a fire.';
+                      else if (spRes.answer === 'even') whyText = 'With these settings every direction has a similar chance (' + pc(spRes.ahead) + ' to the east, ' + pc(spRes.uphill) + ' to the north), so the fire spread out in a rough circle.';
+                      else {
+                        var bits = [];
+                        if (spRes.windSpeed) bits.push('the chance of lighting the next square downwind (east) each step is ' + pc(spRes.ahead) + ', but upwind (west) it is only ' + pc(spRes.behind));
+                        if (spRes.slopeDeg) bits.push('the chance uphill (north) is ' + pc(spRes.uphill) + ', against ' + pc(spRes.downhill) + ' downhill (south)');
+                        if (!bits.length) bits.push('every direction has the same ' + pc(spRes.ahead) + ' chance, so which side wins comes down to the random draw and where the gaps are');
+                        whyText = 'The ' + spRes.answer + ' side burned most. In this model, ' + bits.join(', and ') + '.' + (spRes.fuelShare < 1 ? ' Bare squares also block some paths.' : '');
+                      }
+                    }
+                    var hit = spRes ? fireSpreadPredictionHit(spRes, spPick) : false;
+                    var hits = spLog.filter(function (e) { return e.hit; }).length;
+
+                    var playSpread = function (res) {
+                      if (!res || !res.ignitedAt) return;
+                      if (_fireSpreadTimer) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; }
+                      var reduce = false;
+                      try { reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { reduce = false; }
+                      if (reduce) { upd('spreadView', res.steps); return; }
+                      var v = 0, last = res.steps;
+                      upd('spreadView', 0);
+                      _fireSpreadTimer = setInterval(function () {
+                        if (!fireMountedRef.current) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; return; }
+                        v++;
+                        upd('spreadView', v);
+                        if (v >= last) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; }
+                      }, 450);
+                    };
+
+                    return h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 14, marginBottom: 16 }, 'data-fe-spread': spRes ? 'lit' : (spPick ? 'predicted' : 'setup') },
+                      h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, marginBottom: 4 } }, '1. Set the conditions'),
+                      segRow('Wind (blowing toward the east)', WINDS.map(function (w) { return segBtn('w', w[0], w[1], spWind === w[0], function () { resetSpread({ spreadWind: w[0] }); }); })),
+                      segRow('Slope (ground rising to the north)', SLOPES.map(function (w) { return segBtn('s', w[0], w[1], spSlope === w[0], function () { resetSpread({ spreadSlope: w[0] }); }); })),
+                      segRow('Fuel', FUELS.map(function (w) { return segBtn('f', w[0], w[1], spFuel === w[0], function () { resetSpread({ spreadFuel: w[0] }); }); })),
+                      h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, margin: '12px 0 4px' } }, '2. Predict'),
+                      h('p', { style: { margin: '0 0 8px', fontSize: 13.5, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'The fire starts in the white square. After 8 time steps, which side of it will have burned the most?'),
+                      h('div', { role: 'group', 'aria-label': 'Your prediction', 'data-fe-spread-picks': spPick || 'none', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+                        PICKS.map(function (p) { return segBtn('p', p[0], p[1], spPick === p[0], function () { if (!spLit) upd('spreadPick', p[0]); }, { disabled: spLit, 'data-fe-spread-pick': p[0] }); })),
+                      h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 } },
+                        h('button', { type: 'button', disabled: !spPick || spLit, 'data-fe-spread-light': 'true',
+                          onClick: function () {
+                            var r = fireSpreadRun({ wind: spWind, slope: spSlope, fuel: spFuel, run: spRunNo });
+                            var ok = fireSpreadPredictionHit(r, spPick);
+                            var entry = { wind: spWind, slope: spSlope, fuel: spFuel, pick: spPick, answer: r.answer, hit: ok };
+                            updMulti({ spreadLit: true, spreadView: 0, spreadLog: spLog.concat([entry]).slice(-12) });
+                            playSound(ok ? 'quizCorrect' : 'quizWrong');
+                            if (ok) awardStemXP('fire_spread_predict', 10, 'Fire spread prediction');
+                            if (typeof announceToSR === 'function') announceToSR((ok ? 'Prediction matched. ' : 'Prediction did not match. ') + 'Result: ' + r.answer + '. East ' + r.sides.east + ', West ' + r.sides.west + ', North ' + r.sides.north + ', South ' + r.sides.south + '.');
+                            setTimeout(function () { playSpread(r); }, 0);
+                          },
+                          style: { minHeight: 44, padding: '8px 16px', borderRadius: 8, fontWeight: 800, fontSize: 14, cursor: (!spPick || spLit) ? 'default' : 'pointer',
+                            border: '1px solid #f97316', background: (!spPick || spLit) ? 'transparent' : '#c2410c', color: (!spPick || spLit) ? 'var(--allo-stem-text-soft, #94a3b8)' : '#ffffff' } },
+                          spPick ? '\uD83D\uDD25 Light the fire' : 'Pick a prediction first'),
+                        spRes ? h('button', { type: 'button', onClick: function () { resetSpread({ spreadRun: spRunNo + 1 }); },
+                          style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                          'New random draw (predict again)') : null),
+                      h('svg', { viewBox: '0 0 ' + VBW + ' ' + VBH, width: '100%', role: 'img', 'aria-label': gridLabel, 'data-fe-spread-grid': spRes ? String(spView) : 'setup',
+                        style: { display: 'block', maxWidth: 440, margin: '0 auto' } }, gk),
+                      h('div', { 'aria-hidden': 'true', style: { display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', margin: '6px 0 8px' } },
+                        [['#4d7c0f', 'Fuel'], ['#d6c7a1', 'Bare ground'], ['#f97316', 'Burning'], ['#57534e', 'Burned out']].map(function (sw) {
+                          return h('span', { key: sw[1], style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                            h('span', { style: { width: 12, height: 12, borderRadius: 2, background: sw[0], display: 'inline-block' } }), sw[1]);
+                        })),
+                      spRes ? h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+                        h('button', { type: 'button', onClick: function () { playSpread(spRes); }, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)' } }, '\u25B6 Replay'),
+                        h('label', { htmlFor: 'fireeco-spread-step', style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Time step'),
+                        h('input', { id: 'fireeco-spread-step', type: 'range', min: 0, max: spRes.steps, step: 1, value: spView,
+                          onChange: function (e) { if (_fireSpreadTimer) { clearInterval(_fireSpreadTimer); _fireSpreadTimer = null; } upd('spreadView', parseInt(e.target.value, 10) || 0); },
+                          style: { flex: '1 1 160px', minHeight: 44, accentColor: '#f97316' } })) : null,
+                      spRes ? h('div', { role: 'status', 'aria-live': 'polite', 'data-fe-spread-result': hit ? 'hit' : 'miss',
+                        style: { borderRadius: 8, padding: '10px 12px', border: '1px solid ' + (hit ? '#22c55e' : '#f59e0b'), background: hit ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.55 } },
+                        h('div', { style: { fontWeight: 800, marginBottom: 4 } }, (hit ? '\u2713 Your prediction matched. ' : '\u2717 Not this time. ') + 'You picked: ' + pickLabel(spPick) + '.'),
+                        h('div', null, 'Of the ' + spRes.burned + ' burned squares, ' + spRes.sides.east + ' are east of the start, ' + spRes.sides.west + ' west, ' + spRes.sides.north + ' north, and ' + spRes.sides.south + ' south. (A square can be both north and east.)'),
+                        h('div', { style: { marginTop: 4 } }, whyText),
+                        h('div', { style: { marginTop: 4, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'This model rolls dice, so a new random draw can come out a little differently. Try changing one setting at a time.')) : null,
+                      spLog.length ? h('p', { 'data-fe-spread-score': hits + '/' + spLog.length, style: { margin: '8px 2px 0', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                        'Your predictions so far: ' + hits + ' of ' + spLog.length + ' matched.') : null
+                    );
+                  }
+
                   if (concept.id === 'fireBehavior') {
                     var ZONES = [
-                      { key: 'Ground Fire', band: 'duff', note: 'Fire is down in the duff and peat below the litter. Nothing above ground is alight, which is why it can smoulder for weeks unnoticed.' },
-                      { key: 'Surface Fire', band: 'surface', note: 'Flames stay in the leaf litter and fine fuels. The canopy is untouched, which is the fire a cultural burn aims for.' },
-                      { key: 'Crown Fire', band: 'crown', note: 'The shrub layer carried surface fire up into the canopy. Those shrubs are the ladder that decades of suppression grew.' }
+                      { key: 'Ground Fire', band: 'duff', label: 'smoldering below the surface', note: 'Fire is down in the duff and peat below the litter. Nothing above ground is alight, which is why it can smolder for weeks unnoticed.' },
+                      { key: 'Surface Fire', band: 'surface', label: 'flames knee-high in the litter', note: 'Flames stay in the leaf litter and fine fuels. The canopy is untouched, which is the fire a cultural burn aims for.' },
+                      { key: 'Crown Fire', band: 'crown', label: 'fire in the canopy, carried up the shrub ladder', note: 'The shrub layer carried surface fire up into the canopy. Those shrubs are the ladder that decades of suppression grew.' }
                     ];
                     var zi = ZONES.map(function (z) { return z.key; }).indexOf(d.behaviorZone || 'Surface Fire');
                     if (zi < 0) { zi = 1; }
@@ -4307,12 +5449,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       [70, 150, 240, 320, 390].forEach(function (sx, si) {
                         ks.push(h('ellipse', { key: 'gl' + si, cx: sx, cy: gy + 14 + (si % 2) * 8, rx: 16, ry: 6, fill: '#f97316', opacity: 0.75 }));
                       });
-                      ks.push(h('text', { key: 'sm', x: 12, y: gy + 34, fontSize: 12, fontWeight: 700, fill: '#fed7aa' }, 'smouldering below the surface'));
+                      ks.push(h('text', { key: 'sm', className: 'fireecology-cyc-wide', x: 12, y: gy + 34, fontSize: 12, fontWeight: 700, fill: '#fed7aa' }, Z.label));
                     }
-                    if (hot('surface')) { ks.push(h('text', { key: 'sf', x: 12, y: gy - 16, fontSize: 12, fontWeight: 700, fill: '#fdba74' }, 'flames knee-high in the litter')); }
-                    if (hot('crown')) { ks.push(h('text', { key: 'cf', x: 12, y: 24, fontSize: 12, fontWeight: 700, fill: '#fca5a5' }, 'fire in the canopy, carried up the shrub ladder')); }
+                    if (hot('surface')) { ks.push(h('text', { key: 'sf', className: 'fireecology-cyc-wide', x: 12, y: gy - 16, fontSize: 12, fontWeight: 700, fill: tint('#fdba74') }, Z.label)); }
+                    if (hot('crown')) { ks.push(h('text', { key: 'cf', className: 'fireecology-cyc-wide', x: 12, y: 24, fontSize: 12, fontWeight: 700, fill: tint('#fca5a5') }, Z.label)); }
                     return h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 14, marginBottom: 16 }, 'data-fe-behavior-diagram': Z.band },
                       h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 8 } }, 'Where in the forest is it burning?'),
+                      // Round 11: on phones the drawing shrinks to about 0.8 of its size, so its label (12 px in the
+                      // drawing) would render near 10 px; it shows here as HTML text instead.
+                      h('div', { className: 'fireecology-cyc-narrow', 'data-fe-behavior-label': Z.band, style: { fontSize: 14, fontWeight: 700, marginBottom: 6, color: tint(Z.band === 'crown' ? '#fca5a5' : (Z.band === 'surface' ? '#fdba74' : '#fed7aa')) } }, Z.label),
                       h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', style: { display: 'block', maxWidth: 520, margin: '0 auto' }, role: 'img',
                         'aria-label': Z.key + '. ' + Z.note }, ks),
                       h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
@@ -4320,8 +5465,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                           var on = z.key === Z.key;
                           return h('button', { key: z.key, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'data-fe-behavior-zone': z.band,
                             onClick: function () { upd('behaviorZone', z.key); },
-                            style: { minHeight: 40, padding: '8px 12px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
-                              border: '1px solid ' + (on ? '#f97316' : 'var(--allo-stem-border, #334155)'), background: on ? 'rgba(249,115,22,0.20)' : 'transparent', color: on ? '#fdba74' : 'var(--allo-stem-text, #e2e8f0)' } }, z.key);
+                            style: { minHeight: 44, padding: on ? '7px 11px' : '8px 12px', borderRadius: 8, fontWeight: on ? 800 : 700, fontSize: 13, cursor: 'pointer',
+                              border: on ? '2px solid ' + tint('#ea580c') : '1px solid var(--allo-stem-border, #334155)', background: on ? 'rgba(249,115,22,0.20)' : 'transparent', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                            on ? h('span', { 'aria-hidden': 'true' }, '\u2713 ') : null, z.key);
                         })),
                       h('p', { role: 'status', style: { margin: '10px 2px 0', fontSize: 13.5, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } }, Z.note)
                     );
@@ -4427,7 +5573,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
                   h('li', null, t('stem.fireecology.indigenous_fire_stewardship_timelines_', 'Indigenous fire stewardship (timelines, nations, practices)')),
                   h('li', null, t('stem.fireecology.fire_adapted_ecosystem_mechanics_serot', 'Fire-adapted ecosystem mechanics (serotiny, smoke-cued germination)')),
-                  h('li', null, t('stem.fireecology.combustion_chemistry_fire_triangle_fla', 'Combustion chemistry (fire triangle, flashover, fuel moisture)')),
+                  h('li', null, t('stem.fireecology.combustion_chemistry_fire_triangle_fla_v2', 'Fire behavior (fuel ladders, surface and crown fire, fuel buildup)')),
                   h('li', null, t('stem.fireecology.watershed_and_soil_response_hydrophobi', 'Watershed and soil response (hydrophobic soils, debris flows)')),
                   h('li', null, t('stem.fireecology.suppression_policy_failures_and_their_', 'Suppression policy failures and their case studies')),
                   h('li', null, t('stem.fireecology.beavers_prescribed_burning_and_modern_', 'Beavers, prescribed burning, and modern restoration tools'))
@@ -4468,7 +5614,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     return h('div', { key: r.name, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: '7px 10px' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
                         h('span', { style: { fontWeight: 700 } }, r.name),
-                        h('span', { style: { color: txtCol, fontWeight: 700 } }, r.right + '/' + r.total)),
+                        h('span', { style: { color: tint(txtCol), fontWeight: 700 } }, r.right + '/' + r.total)),
                       h('div', { style: { height: 5, borderRadius: 3, background: 'var(--allo-stem-deeper, #0f172a)', marginTop: 5 } },
                         h('div', { style: { width: Math.round(r.pct * 100) + '%', height: '100%', borderRadius: 3, background: col } })));
                   })),
@@ -4513,6 +5659,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   background: quizAnswer === currentQ.answer ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
                   border: '1px solid ' + (quizAnswer === currentQ.answer ? '#22c55e' : '#f59e0b'),
                   color: 'var(--allo-stem-text, #e2e8f0)' } },
+                (quizAnswer !== currentQ.answer && currentQ.miss && currentQ.miss[currentQ.choices[quizAnswer]])
+                  ? h('div', { 'data-fe-quiz-miss': '1', style: { marginBottom: 6 } },
+                      h('strong', null, t('stem.fireecology.quiz_why_not_that_one', 'Why not that one: ')),
+                      currentQ.miss[currentQ.choices[quizAnswer]])
+                  : null,
                 h('div', null, currentQ.why),
                 currentQ.see ? h('div', { style: { marginTop: 6, fontSize: 12.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                   'Where this is developed: ' + currentQ.see) : null
@@ -4752,11 +5903,123 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         // ══════════════════════════════════════
 
         function renderWatershedTab() {
+          // Round 11: the prediction comes before the cards and the table, because they state the answer ("many
+          // times higher for a few years"); the table's wildfire sediment cell waits for a pick. Phones (900 px and
+          // down) get the two hillslopes stacked, with their labels as HTML text, so no label renders below 12 px.
+          var pick = d.waterPredict || null;
+          var W = 760, H = 250, e = h;
+          function slope(x0, burned, labels) {
+            var k = [];
+            var sky = burned ? '#3b2a24' : '#1e3a5f';
+            k.push(e('rect', { key: 'sky', x: x0, y: 0, width: 370, height: H, fill: sky, rx: 8 }));
+            // hill
+            k.push(e('path', { key: 'hill', d: 'M' + x0 + ' 235 L' + x0 + ' 120 Q' + (x0 + 120) + ' 70 ' + (x0 + 250) + ' 150 L' + (x0 + 300) + ' 185 L' + (x0 + 370) + ' 190 L' + (x0 + 370) + ' 235 Z', fill: burned ? '#57534e' : '#365314' }));
+            // stream at the toe
+            k.push(e('ellipse', { key: 'stream', cx: x0 + 330, cy: 205, rx: 34, ry: 12, fill: burned ? '#92400e' : '#38bdf8', opacity: 0.9 }));
+            k.push(e('text', { key: 'streamL', x: x0 + 362, y: 232, fontSize: 10.5, fill: burned ? '#fdba74' : '#bae6fd', textAnchor: 'end', fontWeight: 700 }, burned ? 'stream choked with ash and mud' : 'clear stream, steady flow'));
+            // trees along the hill
+            [70, 125, 180, 235].forEach(function (dx, i) {
+              var tx = x0 + dx, ty = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 8;
+              if (burned) {
+                k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 36, stroke: '#1c1917', strokeWidth: 4 }));
+                k.push(e('line', { key: 'tb' + i, x1: tx, y1: ty - 22, x2: tx + 10, y2: ty - 30, stroke: '#1c1917', strokeWidth: 3 }));
+              } else {
+                k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 24, stroke: '#78350f', strokeWidth: 4 }));
+                k.push(e('circle', { key: 'tc' + i, cx: tx, cy: ty - 34, r: 15, fill: '#166534' }));
+                // roots holding the soil
+                k.push(e('path', { key: 'tr' + i, d: 'M' + tx + ' ' + (ty + 10) + ' l-8 12 m8 -12 l0 16 m0 -16 l8 12', stroke: '#a16207', strokeWidth: 1.5, fill: 'none' }));
+              }
+            });
+            // rain
+            for (var r = 0; r < 9; r++) k.push(e('line', { key: 'rain' + r, x1: x0 + 20 + r * 38, y1: 32 + (r % 3) * 5, x2: x0 + 14 + r * 38, y2: 46 + (r % 3) * 5, stroke: '#7dd3fc', strokeWidth: 2, strokeLinecap: 'round' }));
+            if (burned) {
+              // hydrophobic layer + surface runoff arrows down the slope
+              k.push(e('path', { key: 'hydro', d: 'M' + x0 + ' 128 Q' + (x0 + 120) + ' 78 ' + (x0 + 250) + ' 158 L' + (x0 + 300) + ' 193', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 3' }));
+              k.push(e('text', { key: 'hydroL', x: x0 + 14, y: 176, fontSize: 10.5, fill: '#fde68a', fontWeight: 700 }, 'water-repellent (hydrophobic) layer'));
+              [60, 130, 200, 260].forEach(function (dx, i) {
+                var ax = x0 + dx, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 4;
+                k.push(e('path', { key: 'run' + i, d: 'M' + ax + ' ' + ay + ' l 26 ' + (dx > 130 ? 16 : 4) + ' m -8 -6 l 8 6 l -9 3', stroke: '#f87171', strokeWidth: 2.5, fill: 'none' }));
+              });
+              k.push(e('text', { key: 'runL', x: x0 + 14, y: 210, fontSize: 12, fill: feInk('#fca5a5', true, !!ctx.isContrast, [0x57, 0x53, 0x4e]), fontWeight: 800 }, 'rain RUNS OFF → flash flood, debris flow'));
+            } else {
+              // infiltration arrows into the soil
+              [60, 130, 200].forEach(function (dx, i) {
+                var ax = x0 + dx + 20, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 14;
+                k.push(e('path', { key: 'inf' + i, d: 'M' + ax + ' ' + ay + ' l 0 26 m -6 -8 l 6 8 l 6 -8', stroke: '#7dd3fc', strokeWidth: 2.5, fill: 'none' }));
+              });
+              k.push(e('text', { key: 'infL', x: x0 + 14, y: 210, fontSize: 11.5, fill: '#bae6fd', fontWeight: 800 }, 'rain SOAKS IN → litter, roots, open soil'));
+            }
+            k.push(e('text', { key: 'title', x: x0 + 12, y: 22, fontSize: 13, fill: tintDark(burned ? '#fca5a5' : '#86efac'), fontWeight: 900 }, burned ? 'After a high-severity wildfire' : 'After a cultural burn'));
+            return labels === false ? k.filter(function (el) { return el.type !== 'text'; }) : k;
+          }
+          // Phone captions: the same words the wide drawing prints, as HTML on the slope's own dark sky color.
+          var NARROW = [
+            { burned: false, sky: [0x1e, 0x3a, 0x5f], title: 'After a cultural burn', titleInk: '#86efac',
+              items: ['Trees stand, and their roots hold the soil.', 'Rain SOAKS IN → litter, roots, open soil.', 'Clear stream, steady flow.'] },
+            { burned: true, sky: [0x3b, 0x2a, 0x24], title: 'After a high-severity wildfire', titleInk: '#fca5a5',
+              items: ['Dead snags. A water-repellent (hydrophobic) layer sits just under the surface.', 'Rain RUNS OFF → flash flood, debris flow.', 'Stream choked with ash and mud.'] }
+          ];
+          var hexOf = function (c) { return '#' + c.map(function (v) { var s = v.toString(16); return s.length < 2 ? '0' + s : s; }).join(''); };
+          var diagram = e('div', null,
+            e('div', { className: 'fireecology-cyc-wide' },
+              e('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' }, 'data-fe-watershed-diagram': 'true' },
+                e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
+                  'aria-label': __alloT('stem.fireecology.a11y_two_hillslopes_in_the_same_rainstorm_after_a_cu', 'Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.') },
+                  slope(0, false).concat([e('rect', { key: 'gap', x: 370, y: 0, width: 20, height: H, fill: '#0f172a' })], slope(390, true))))),
+            e('div', { className: 'fireecology-cyc-narrow', 'data-fe-watershed-narrow': String(NARROW.length), style: { marginTop: 16 } },
+              NARROW.map(function (n) {
+                return e('div', { key: n.title, 'data-fe-watershed-slope': n.burned ? 'burned' : 'cultural', style: { borderRadius: 12, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10, background: hexOf(n.sky) } },
+                  e('svg', { viewBox: '0 0 370 ' + H, width: '100%', 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } }, slope(0, n.burned, false)),
+                  e('div', { style: { padding: '10px 12px 12px' } },
+                    e('div', { style: { fontWeight: 900, fontSize: 15, color: feInk(n.titleInk, true, !!ctx.isContrast, n.sky), marginBottom: 6 } }, n.title),
+                    e('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.5, color: ctx.isContrast ? '#ffff00' : '#f8fafc' } },
+                      n.items.map(function (it, ii) { return e('li', { key: ii }, it); }))));
+              })));
+
+          var predictBlock = (function () {
+            var OPTS = [
+              { id: 'same', label: 'About the same. Rain is rain.' },
+              { id: 'twice', label: 'Roughly twice as much.' },
+              { id: 'huge', label: 'Many times more, for a few years.' },
+              { id: 'less', label: 'Less, because the ash soaks up the water.' }
+            ];
+            var right = 'huge';
+            return h('div', { style: { marginTop: 16, marginBottom: 16, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14 }, 'data-fe-water-predict': pick || 'none' },
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 4 } }, 'Predict first'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                'The same storm falls on both slopes above. How much sediment does the high-severity burn scar send into the stream compared with the culturally burned slope? The table below shows the answer after you pick.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 8 } },
+                OPTS.map(function (o) {
+                  var chosen = pick === o.id;
+                  var isRight = o.id === right;
+                  var bg = pick ? (isRight ? 'rgba(34,197,94,0.16)' : (chosen ? 'rgba(239,68,68,0.16)' : 'transparent')) : 'transparent';
+                  var bd = pick ? (isRight ? '#22c55e' : (chosen ? '#ef4444' : 'var(--allo-stem-border, #334155)')) : 'var(--allo-stem-border, #334155)';
+                  return h('button', { key: o.id, type: 'button', disabled: !!pick, 'aria-pressed': chosen ? 'true' : 'false', 'data-fe-water-option': o.id,
+                    onClick: function () {
+                      upd('waterPredict', o.id);
+                      playSound(o.id === right ? 'quizCorrect' : 'quizWrong');
+                      awardStemXP('fire_water_predict', o.id === right ? 15 : 5, 'Watershed prediction');
+                      checkBadge('waterProtector');
+                    },
+                    style: { minHeight: 44, textAlign: 'left', padding: '8px 10px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                      cursor: pick ? 'default' : 'pointer', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                    (pick && isRight ? '✓ ' : (pick && chosen ? '✗ ' : '')) + o.label);
+                })),
+              pick ? h('p', { role: 'status', style: { margin: '10px 2px 0', fontSize: 13.5, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                (pick === right ? 'That is the scale of it. ' : 'It is bigger than that. ') +
+                'Studies of burned hillsides in the western US found that sediment after a severe fire can be many times higher than before, and that hillslopes usually settle back within a few years to a decade (Moody and others, US Geological Survey). The rain is the same. The difference is the water-repellent soil and the dead roots: less water soaks in and less holds the soil, so the storm carries more of the hillside away (DeBano 2000).') : null);
+          })();
+
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #0ea5e9' } },
               h('h3', { style: { margin: '0 0 8px 0', color: tint('#0ea5e9'), fontSize: 16 } }, WATERSHED_SCIENCE.title),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } }, WATERSHED_SCIENCE.intro)
             ),
+
+            // One pair of hillslopes shows what the concept cards describe in words: where the rain GOES is the
+            // whole difference between the two columns of the table below.
+            diagram,
+            predictBlock,
 
             // Concepts
             WATERSHED_SCIENCE.concepts.map(function(concept, ci) {
@@ -4769,73 +6032,18 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             }),
 
-            // The six concept cards above describe infiltration, hydrophobic soil, debris
-            // flows and sediment in words. One pair of hillslopes shows them: where the rain
-            // GOES is the whole difference between the two columns of the table below.
-            (function () {
-              var W = 760, H = 250, e = h;
-              function slope(x0, burned) {
-                var k = [];
-                var sky = burned ? '#3b2a24' : '#1e3a5f';
-                k.push(e('rect', { key: 'sky', x: x0, y: 0, width: 370, height: H, fill: sky, rx: 8 }));
-                // hill
-                k.push(e('path', { key: 'hill', d: 'M' + x0 + ' 235 L' + x0 + ' 120 Q' + (x0 + 120) + ' 70 ' + (x0 + 250) + ' 150 L' + (x0 + 300) + ' 185 L' + (x0 + 370) + ' 190 L' + (x0 + 370) + ' 235 Z', fill: burned ? '#57534e' : '#365314' }));
-                // stream at the toe
-                k.push(e('ellipse', { key: 'stream', cx: x0 + 330, cy: 205, rx: 34, ry: 12, fill: burned ? '#92400e' : '#38bdf8', opacity: 0.9 }));
-                k.push(e('text', { key: 'streamL', x: x0 + 362, y: 232, fontSize: 10.5, fill: burned ? '#fdba74' : '#bae6fd', textAnchor: 'end', fontWeight: 700 }, burned ? 'stream choked with ash and mud' : 'clear stream, steady flow'));
-                // trees along the hill
-                [70, 125, 180, 235].forEach(function (dx, i) {
-                  var tx = x0 + dx, ty = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 8;
-                  if (burned) {
-                    k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 36, stroke: '#1c1917', strokeWidth: 4 }));
-                    k.push(e('line', { key: 'tb' + i, x1: tx, y1: ty - 22, x2: tx + 10, y2: ty - 30, stroke: '#1c1917', strokeWidth: 3 }));
-                  } else {
-                    k.push(e('line', { key: 't' + i, x1: tx, y1: ty + 10, x2: tx, y2: ty - 24, stroke: '#78350f', strokeWidth: 4 }));
-                    k.push(e('circle', { key: 'tc' + i, cx: tx, cy: ty - 34, r: 15, fill: '#166534' }));
-                    // roots holding the soil
-                    k.push(e('path', { key: 'tr' + i, d: 'M' + tx + ' ' + (ty + 10) + ' l-8 12 m8 -12 l0 16 m0 -16 l8 12', stroke: '#a16207', strokeWidth: 1.5, fill: 'none' }));
-                  }
-                });
-                // rain
-                for (var r = 0; r < 9; r++) k.push(e('line', { key: 'rain' + r, x1: x0 + 20 + r * 38, y1: 32 + (r % 3) * 5, x2: x0 + 14 + r * 38, y2: 46 + (r % 3) * 5, stroke: '#7dd3fc', strokeWidth: 2, strokeLinecap: 'round' }));
-                if (burned) {
-                  // hydrophobic layer + surface runoff arrows down the slope
-                  k.push(e('path', { key: 'hydro', d: 'M' + x0 + ' 128 Q' + (x0 + 120) + ' 78 ' + (x0 + 250) + ' 158 L' + (x0 + 300) + ' 193', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeDasharray: '5 3' }));
-                  k.push(e('text', { key: 'hydroL', x: x0 + 14, y: 176, fontSize: 10.5, fill: '#fde68a', fontWeight: 700 }, 'water-repellent (hydrophobic) layer'));
-                  [60, 130, 200, 260].forEach(function (dx, i) {
-                    var ax = x0 + dx, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 4;
-                    k.push(e('path', { key: 'run' + i, d: 'M' + ax + ' ' + ay + ' l 26 ' + (dx > 130 ? 16 : 4) + ' m -8 -6 l 8 6 l -9 3', stroke: '#f87171', strokeWidth: 2.5, fill: 'none' }));
-                  });
-                  k.push(e('text', { key: 'runL', x: x0 + 14, y: 210, fontSize: 11.5, fill: '#fca5a5', fontWeight: 800 }, 'rain RUNS OFF \u2192 flash flood, debris flow'));
-                } else {
-                  // infiltration arrows into the soil
-                  [60, 130, 200].forEach(function (dx, i) {
-                    var ax = x0 + dx + 20, ay = 120 - Math.sin(dx / 260 * Math.PI) * 44 + 14;
-                    k.push(e('path', { key: 'inf' + i, d: 'M' + ax + ' ' + ay + ' l 0 26 m -6 -8 l 6 8 l 6 -8', stroke: '#7dd3fc', strokeWidth: 2.5, fill: 'none' }));
-                  });
-                  k.push(e('text', { key: 'infL', x: x0 + 14, y: 210, fontSize: 11.5, fill: '#bae6fd', fontWeight: 800 }, 'rain SOAKS IN \u2192 litter, roots, open soil'));
-                }
-                k.push(e('text', { key: 'title', x: x0 + 12, y: 22, fontSize: 13, fill: burned ? '#fca5a5' : '#86efac', fontWeight: 900 }, burned ? 'After a high-severity wildfire' : 'After a cultural burn'));
-                return k;
-              }
-              return e('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' }, 'data-fe-watershed-diagram': 'true' },
-                e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                  'aria-label': __alloT('stem.fireecology.a11y_two_hillslopes_in_the_same_rainstorm_after_a_cu', 'Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.') },
-                  slope(0, false).concat([e('rect', { key: 'gap', x: 370, y: 0, width: 20, height: H, fill: '#0f172a' })], slope(390, true))));
-            })(),
-
             // Comparison table
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginTop: 16, border: '1px solid var(--allo-stem-border, #334155)' } },
-              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.watershed_impact_cultural_burn_vs_wild', '\uD83D\uDCCA Watershed Impact: Cultural Burn vs. Wildfire')),
+              h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12, fontSize: 15 } }, t('stem.fireecology.watershed_impact_cultural_burn_vs_wild', '📊 Watershed Impact: Cultural Burn vs. Wildfire')),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, fontSize: 13 } },
                 // Header
                 h('div', { style: { padding: 8, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.metric', 'Metric')),
-                h('div', { style: { padding: 8, fontWeight: 700, color: tint('#22c55e'), borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.cultural_burn_2', '\uD83D\uDD25 Cultural Burn')),
-                h('div', { style: { padding: 8, fontWeight: 700, color: tint('#ef4444'), borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.wildfire', '\uD83D\uDCA5 Wildfire')),
+                h('div', { style: { padding: 8, fontWeight: 700, color: tint('#22c55e'), borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.cultural_burn_2', '🔥 Cultural Burn')),
+                h('div', { style: { padding: 8, fontWeight: 700, color: tint('#ef4444'), borderBottom: '1px solid var(--allo-stem-border, #334155)' } }, t('stem.fireecology.wildfire', '💥 Wildfire')),
                 // Rows
                 h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.sediment_runoff', 'Sediment runoff')),
                 h('div', { style: { padding: 8, color: tint('#4ade80'), borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.sediment),
-                h('div', { style: { padding: 8, color: tint('#fca5a5'), borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.sediment),
+                h('div', { 'data-fe-water-sediment': pick ? 'shown' : 'hidden', style: { padding: 8, color: pick ? tint('#fca5a5') : 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: pick ? 'normal' : 'italic', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, pick ? WATERSHED_SCIENCE.comparison.wildfire.sediment : 'Predict above first'),
                 h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, t('stem.fireecology.water_temp_change', 'Water temp change')),
                 h('div', { style: { padding: 8, color: tint('#4ade80'), borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.culturalBurn.waterTemp),
                 h('div', { style: { padding: 8, color: tint('#fca5a5'), borderBottom: '1px solid var(--allo-stem-border, #1e293b)' } }, WATERSHED_SCIENCE.comparison.wildfire.waterTemp),
@@ -4848,43 +6056,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { padding: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.runoff_increase', 'Runoff increase')),
                 h('div', { style: { padding: 8, color: tint('#4ade80') } }, WATERSHED_SCIENCE.comparison.culturalBurn.runoff),
                 h('div', { style: { padding: 8, color: tint('#fca5a5') } }, WATERSHED_SCIENCE.comparison.wildfire.runoff)
-              ),
-              (function () {
-                var pick = d.waterPredict || null;
-                var OPTS = [
-                  { id: 'same', label: 'About the same. Rain is rain.' },
-                  { id: 'twice', label: 'Roughly twice as much.' },
-                  { id: 'huge', label: 'Tens to hundreds of times more.' },
-                  { id: 'less', label: 'Less, because the ash soaks up the water.' }
-                ];
-                var right = 'huge';
-                return h('div', { style: { marginTop: 16, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14 }, 'data-fe-water-predict': pick || 'none' },
-                  h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, marginBottom: 4 } }, 'Before you read the table'),
-                  h('p', { style: { margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
-                    'The same storm falls on both slopes above. How much sediment does the high-severity burn scar send into the stream compared with the culturally burned slope?'),
-                  h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
-                    OPTS.map(function (o) {
-                      var chosen = pick === o.id;
-                      var isRight = o.id === right;
-                      var bg = pick ? (isRight ? 'rgba(34,197,94,0.16)' : (chosen ? 'rgba(239,68,68,0.16)' : 'transparent')) : 'transparent';
-                      var bd = pick ? (isRight ? '#22c55e' : (chosen ? '#ef4444' : 'var(--allo-stem-border, #334155)')) : 'var(--allo-stem-border, #334155)';
-                      return h('button', { key: o.id, type: 'button', disabled: !!pick, 'aria-pressed': chosen ? 'true' : 'false', 'data-fe-water-option': o.id,
-                        onClick: function () {
-                          upd('waterPredict', o.id);
-                          playSound(o.id === right ? 'quizCorrect' : 'quizWrong');
-                          awardStemXP('fire_water_predict', o.id === right ? 15 : 5, 'Watershed prediction');
-                          checkBadge('waterProtector');
-                        },
-                        style: { minHeight: 42, textAlign: 'left', padding: '8px 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 700,
-                          cursor: pick ? 'default' : 'pointer', border: '1px solid ' + bd, background: bg, color: 'var(--allo-stem-text, #e2e8f0)' } },
-                        (pick && isRight ? '\u2713 ' : (pick && chosen ? '\u2717 ' : '')) + o.label);
-                    })),
-                  pick ? h('p', { role: 'status', style: { margin: '10px 2px 0', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } },
-                    (pick === right ? 'That is the scale of it. ' : 'It is bigger than that. ') +
-                    'The table below puts the culturally burned slope at ' + WATERSHED_SCIENCE.comparison.culturalBurn.sediment +
-                    ' and the burn scar at ' + WATERSHED_SCIENCE.comparison.wildfire.sediment +
-                    '. The difference is not the rain, it is the hydrophobic layer and the dead roots: with nothing holding the soil and nothing letting water in, the storm takes the hillside with it.') : null);
-              })()
+              )
             )
           );
         }
@@ -4914,7 +6086,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
               h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 20, border: '1px solid ' + cs.color + '44' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
-                  h('span', { style: { fontSize: 32 } }, cs.icon),
+                  cardIcon(cs, 32),
                   h('div', null,
                     h('h3', { style: { margin: 0, color: tint(cs.color), fontSize: 20 } }, cs.name),
                     h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, cs.location + ' \u2022 ' + cs.year)
@@ -4926,8 +6098,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   Object.keys(cs.stats).map(function(key) {
                     var label = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
                     return h('div', { key: key, style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, padding: 10, textAlign: 'center' } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, label),
-                      h('div', { style: { fontSize: 14, fontWeight: 700, color: '#fca5a5' } }, cs.stats[key])
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } }, label),
+                      h('div', { 'data-fe-case-stat': key, style: { fontSize: 14, fontWeight: 700, color: tint('#fca5a5') } }, cs.stats[key])
                     );
                   })
                 ),
@@ -4955,8 +6127,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #ef4444' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                t('stem.fireecology.these_are_not_natural_disasters_each_w', 'These are not \u201Cnatural disasters.\u201D Each wildfire case study below reveals the predictable consequences of removing Indigenous fire management from fire-adapted landscapes. The pattern is the same everywhere: '),
-                h('strong', { style: { color: tint('#ef4444') } }, t('stem.fireecology.suppress_fire_accumulate_fuel_catastro', 'suppress fire \u2192 accumulate fuel \u2192 catastrophic wildfire \u2192 devastation that Indigenous burning would have prevented.'))
+                t('stem.fireecology.these_are_not_natural_disasters_each_w_v2', 'Each case study below has its own mix of causes: heat and drought, strong wind, fuel, where people build, and whether fire was kept out of a forest that needs it. As you read each one, ask: '),
+                h('strong', { style: { color: tint('#ef4444') } }, t('stem.fireecology.suppress_fire_accumulate_fuel_catastro_v2', 'what made this fire so big, and which tools could have helped here?'))
               )
             ),
 
@@ -4974,7 +6146,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ks.push(h('line', { key: 'ax', x1: padL, y1: axis, x2: W - padR, y2: axis, stroke: '#475569', strokeWidth: 2 }));
               [1990, 2000, 2010, 2020].forEach(function (y) {
                 ks.push(h('line', { key: 'tk' + y, x1: xOf(y), y1: axis, x2: xOf(y), y2: axis + 6, stroke: '#475569', strokeWidth: 1.5 }));
-                ks.push(h('text', { key: 'tl' + y, x: xOf(y), y: axis + 20, fontSize: 11, fill: '#94a3b8', textAnchor: 'middle' }, String(y)));
+                ks.push(h('text', { key: 'tl' + y, x: xOf(y), y: axis + 20, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'middle' }, String(y)));
               });
               // Stagger the labels: four of these fall within three years and would otherwise
               // print on top of each other.
@@ -4991,15 +6163,50 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ks.push(h('circle', { key: 'dt' + r.id, cx: mx, cy: axis, r: 5, fill: r.color, stroke: '#0f172a', strokeWidth: 1.5 }));
                 var anchor = mx > W * 0.72 ? 'end' : 'start';
                 var dx = anchor === 'end' ? -7 : 7;
-                ks.push(h('text', { key: 'lb' + r.id, x: mx + dx, y: y, fontSize: 11.5, fontWeight: 700, fill: '#e2e8f0', textAnchor: anchor }, r.yr + '  ' + r.label));
+                ks.push(h('text', { key: 'lb' + r.id, x: mx + dx, y: y, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #e2e8f0)', textAnchor: anchor, stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 4, paintOrder: 'stroke' }, r.yr + '  ' + r.label));
               });
+              // Phone layout (340 units, about 1:1 at 390 px): dots at the true years on one axis, a numbered
+              // badge above each (pushed apart so close years stay readable, with a line down to its dot),
+              // and a numbered list of the cases below, so every case shows with no sideways scroll.
+              var NW = 340, nPadL = 16, nPadR = 16, nAxis = 50, nRowH = 24, nListTop = 92;
+              var NH = nListTop + rows.length * nRowH - 4;
+              var nxOf = function (y) { return nPadL + (NW - nPadL - nPadR) * (y - lo) / (hi - lo); };
+              var bx = rows.map(function (r) { return nxOf(r.yr); });
+              for (var bi = 1; bi < bx.length; bi++) bx[bi] = Math.max(bx[bi], bx[bi - 1] + 20);
+              for (var bj = bx.length - 1; bj >= 0; bj--) bx[bj] = Math.min(bx[bj], bj === bx.length - 1 ? NW - 12 : bx[bj + 1] - 20);
+              var kn = [];
+              kn.push(h('rect', { key: 'bg', x: 0, y: 0, width: NW, height: NH, fill: 'var(--allo-stem-canvas, #0f172a)' }));
+              kn.push(h('line', { key: 'ax', x1: nPadL, y1: nAxis, x2: NW - nPadR, y2: nAxis, stroke: '#475569', strokeWidth: 2 }));
+              [1990, 2000, 2010, 2020].forEach(function (y) {
+                kn.push(h('line', { key: 'tk' + y, x1: nxOf(y), y1: nAxis, x2: nxOf(y), y2: nAxis + 6, stroke: '#475569', strokeWidth: 1.5 }));
+                kn.push(h('text', { key: 'tl' + y, x: nxOf(y), y: nAxis + 22, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'middle' }, String(y)));
+              });
+              rows.forEach(function (r, i) {
+                var tx = nxOf(r.yr), ly = nListTop + i * nRowH;
+                kn.push(h('line', { key: 'nl' + r.id, x1: bx[i], y1: 25, x2: tx, y2: nAxis, stroke: r.color, strokeWidth: 1.5 }));
+                kn.push(h('circle', { key: 'nd' + r.id, cx: tx, cy: nAxis, r: 4.5, fill: r.color, stroke: 'var(--allo-stem-canvas, #0f172a)', strokeWidth: 1.5 }));
+                kn.push(h('circle', { key: 'nb' + r.id, cx: bx[i], cy: 16, r: 9.5, fill: 'var(--allo-stem-canvas, #0f172a)', stroke: r.color, strokeWidth: 2 }));
+                kn.push(h('text', { key: 'nn' + r.id, x: bx[i], y: 20.5, fontSize: 12, fontWeight: 800, fill: 'var(--allo-stem-text, #e2e8f0)', textAnchor: 'middle' }, String(i + 1)));
+                kn.push(h('circle', { key: 'lb' + r.id, cx: 12, cy: ly - 4.5, r: 9.5, fill: 'var(--allo-stem-canvas, #0f172a)', stroke: r.color, strokeWidth: 2 }));
+                kn.push(h('text', { key: 'ln' + r.id, x: 12, y: ly, fontSize: 12, fontWeight: 800, fill: 'var(--allo-stem-text, #e2e8f0)', textAnchor: 'middle' }, String(i + 1)));
+                kn.push(h('text', { key: 'lt' + r.id, x: 30, y: ly, fontSize: 13, fontWeight: 700, fill: 'var(--allo-stem-text, #e2e8f0)' }, r.yr + '  ' + r.label));
+              });
+              var tlAria = 'Timeline of the case studies from 1985 to 2022. ' + rows.map(function (r) { return r.full + ' in ' + r.yr + '.'; }).join(' ');
               return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-case-timeline': String(rows.length) },
                 h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15, marginBottom: 2 } }, 'When these happened'),
-                wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                  'aria-label': 'Timeline of the case studies from 1985 to 2022. ' + rows.map(function (r) { return r.full + ' in ' + r.yr + '.'; }).join(' ') }, ks), 760),
+                h('div', { className: 'fireecology-dt-wide' },
+                  wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': tlAria }, ks), 760)),
+                h('div', { className: 'fireecology-dt-narrow', 'data-fe-case-timeline-narrow': String(rows.length) },
+                  h('svg', { viewBox: '0 0 ' + NW + ' ' + NH, width: '100%', role: 'img', 'aria-label': tlAria }, kn)),
                 h('p', { style: { margin: '4px 2px 0', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   'One of these is from ' + rows[0].yr + '. The rest land in ' + rows[1].yr + ' to ' + rows[rows.length - 1].yr +
-                  '. Fuel does not arrive in a bad year, it accumulates through the quiet ones, so the clustering at the right-hand end is what a century of banked fuel meeting hotter, drier weather looks like.'));
+                  // Round 3: the old ending ("what a century of banked fuel meeting hotter, drier weather looks
+                  // like") contradicted the cards (Yellowstone and the wet Oregon forests were not suppression
+                  // stories; Montecito was a debris flow). Abatzoglou, J.T. & Williams, A.P. (2016) PNAS
+                  // 113(42):11770-11775, doi:10.1073/pnas.1607171113: human-caused climate change "contributed to
+                  // an additional 4.2 million ha of forest fire area during 1984-2015, nearly doubling the forest
+                  // fire area expected in its absence".
+                  '. A handful of cases cannot show a trend by itself, and each one had its own mix of causes: wind, heat, drought, fuel, and where people live. Studies of many fires do find a trend: in western US forests, nearly twice as much forest burned from 1984 to 2015 as would have burned without climate change (Abatzoglou and Williams, PNAS 2016). Open each case to see which causes mattered there.'));
             })(),
 
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
@@ -5015,15 +6222,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                    h('span', { style: { fontSize: 28 } }, cs.icon),
+                    cardIcon(cs, 28),
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 15 } }, cs.name),
                       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, cs.location + ' \u2022 ' + cs.year)
                     )
                   ),
-                  h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '\uD83D\uDD25 ' + (cs.stats.acresBurned || cs.stats.debrisVolume || cs.stats.structuresDestroyed && (cs.stats.structuresDestroyed + ' homes destroyed') || cs.year) + (cs.stats.deaths ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
+                  h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '\uD83D\uDD25 ' + (cs.stats.acresBurned || cs.stats.structuresDestroyed || cs.year) + (/^[0-9]+$/.test(String(cs.stats.deaths || '')) ? ' \u2022 ' + cs.stats.deaths + ' deaths' : '')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, cs.description.substring(0, 120) + '...'),
-                  viewed ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 6 } }, t('stem.fireecology.studied_2', '\u2713 Studied')) : null
+                  viewed ? h('div', { 'data-fe-viewed-mark': cs.id, style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginTop: 6 } }, t('stem.fireecology.studied_2', '\u2713 Studied')) : null
                 );
               })
             )
@@ -5098,30 +6305,32 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('div', { style: { fontWeight: 700, color: tint(sc.color), marginBottom: 10, fontSize: 14 } }, sc.label),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.immediate_co_release', 'Immediate CO\u2082 Release')),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.immediate_co_release', 'Immediate CO\u2082 Release')),
                       h('div', { style: { fontSize: 20, fontWeight: 700, color: tint(sc.color) } }, totalCO2.toLocaleString() + ' tons')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.tree_survival', 'Tree Survival')),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.tree_survival', 'Tree Survival')),
                       h('div', { style: { fontSize: 16, fontWeight: 700, color: tint(sc.treeSurvival > 50 ? '#22c55e' : '#ef4444') } }, sc.treeSurvival + '%')
                     ),
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.soil_carbon', 'Soil Carbon')),
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.soil_carbon', 'Soil Carbon')),
                       h('div', { style: { fontSize: 13, fontWeight: 600, color: sc.soilCarbon === 'preserved' ? '#22c55e' : sc.soilCarbon === 'destroyed' ? '#ef4444' : '#f59e0b' } }, sc.soilCarbon)
                     ),
 
                     biochar > 0 ? h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.biochar_created_1000_yr_storage', 'Biochar Created (1000+ yr storage)')),
+                      // Wang, Xiong & Kuzyakov (2016) GCB Bioenergy 8:512-523: mean residence time about 556 years
+                      // for 97% of biochar carbon; "biochar can persist in soils on a centennial scale".
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.biochar_created_1000_yr_storage_v2', 'Biochar made (stores carbon for centuries)')),
                       h('div', { style: { fontSize: 14, fontWeight: 700, color: '#22c55e' } }, biochar.toLocaleString() + ' tons')
                     ) : null,
 
                     h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.net_carbon_10_years', 'Net Carbon (10 years)')),
-                      h('div', { style: { fontSize: 18, fontWeight: 700, color: net10yr <= 0 ? '#22c55e' : '#ef4444' } },
-                        (net10yr <= 0 ? '\u2193 ' : '\u2191 ') + Math.abs(net10yr).toLocaleString() + ' tons',
-                        h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, net10yr <= 0 ? '(carbon sink)' : '(carbon source)')
+                      h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t('stem.fireecology.net_carbon_10_years', 'Net Carbon (10 years)')),
+                      h('div', { 'data-fe-net-carbon': net10yr === 0 ? 'even' : (net10yr < 0 ? 'sink' : 'source'), style: { fontSize: 18, fontWeight: 700, color: net10yr === 0 ? 'var(--allo-stem-text, #e2e8f0)' : tint(net10yr < 0 ? '#22c55e' : '#ef4444') } },
+                        (net10yr === 0 ? '' : (net10yr < 0 ? '\u2193 ' : '\u2191 ')) + Math.abs(net10yr).toLocaleString() + ' tons',
+                        h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginLeft: 4 } }, net10yr === 0 ? t('stem.fireecology.carbon_about_even', '(about even: stores as much as it releases)') : (net10yr < 0 ? '(carbon sink)' : '(carbon source)'))
                       )
                     ),
 
@@ -5158,27 +6367,58 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   var H = padT + rows.length * rowH + padB;
                   var ks = [];
                   ks.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, fill: 'var(--allo-stem-canvas, #0f172a)' }));
-                  ks.push(h('text', { key: 'hl', x: mid - 10, y: 16, fontSize: 11.5, fontWeight: 700, fill: '#4ade80', textAnchor: 'end' }, 'stores carbon (sink)'));
-                  ks.push(h('text', { key: 'hr', x: mid + 10, y: 16, fontSize: 11.5, fontWeight: 700, fill: '#fca5a5' }, 'releases carbon (source)'));
-                  ks.push(h('line', { key: 'zero', x1: mid, y1: 20, x2: mid, y2: H - padB + 4, stroke: '#94a3b8', strokeWidth: 1.5 }));
-                  ks.push(h('text', { key: 'zl', x: mid, y: H - 6, fontSize: 10.5, fill: '#94a3b8', textAnchor: 'middle' }, '0 tons over 10 years'));
+                  ks.push(h('text', { key: 'hl', x: mid - 10, y: 16, fontSize: 12, fontWeight: 700, fill: tint('#4ade80'), textAnchor: 'end' }, 'stores carbon (sink)'));
+                  ks.push(h('text', { key: 'hr', x: mid + 10, y: 16, fontSize: 12, fontWeight: 700, fill: tint('#fca5a5') }, 'releases carbon (source)'));
+                  ks.push(h('line', { key: 'zero', x1: mid, y1: 20, x2: mid, y2: H - padB + 4, stroke: 'var(--allo-stem-text-soft, #94a3b8)', strokeWidth: 1.5 }));
+                  ks.push(h('text', { key: 'zl', x: mid, y: H - 6, fontSize: 12, fill: 'var(--allo-stem-text-soft, #94a3b8)', textAnchor: 'middle' }, '0 tons over 10 years'));
                   rows.forEach(function (r, i) {
                     var top = padT + i * rowH, y = top + 16, bh = 15;
                     var len = Math.abs(r.net) / span * (half - 40);
                     var x = r.net <= 0 ? mid - len : mid;
                     ks.push(h('rect', { key: 'b' + i, x: x, y: y, width: Math.max(2, len), height: bh, rx: 3,
                       fill: r.net === 0 ? '#94a3b8' : (r.net < 0 ? '#22c55e' : '#ef4444') }));
-                    ks.push(h('text', { key: 'n' + i, x: r.net < 0 ? x - 6 : x + len + 6, y: y + 12, fontSize: 11, fontWeight: 700,
-                      fill: r.net === 0 ? '#cbd5e1' : (r.net < 0 ? '#86efac' : '#fca5a5'), textAnchor: r.net < 0 ? 'end' : 'start' },
+                    ks.push(h('text', { key: 'n' + i, x: r.net < 0 ? x - 6 : x + len + 6, y: y + 12, fontSize: 12, fontWeight: 700,
+                      fill: r.net === 0 ? 'var(--allo-stem-text, #cbd5e1)' : tint(r.net < 0 ? '#86efac' : '#fca5a5'), textAnchor: r.net < 0 ? 'end' : 'start' },
                       r.net === 0 ? 'about even' : (r.net < 0 ? '-' : '+') + Math.abs(r.net).toLocaleString() + ' t'));
-                    ks.push(h('text', { key: 'l' + i, x: 4, y: top + 10, fontSize: 11.5, fontWeight: 700, fill: '#cbd5e1' }, r.label));
+                    ks.push(h('text', { key: 'l' + i, x: 4, y: top + 10, fontSize: 12, fontWeight: 700, fill: 'var(--allo-stem-text, #cbd5e1)' }, r.label));
                   });
+                  var netAria = 'Net carbon after ten years for ' + carbonAcres.toLocaleString() + ' acres. ' + rows.map(function (r) {
+                    return r.label + ': ' + (r.net === 0 ? 'about even' : Math.abs(r.net).toLocaleString() + ' tons ' + (r.net < 0 ? 'stored' : 'released')) + '.';
+                  }).join(' ');
+                  // Phone and tablet layout (round 7): plain HTML rows, so the type stays at its CSS size at any width
+                  // and nothing scrolls sideways. Each row: name and value on one line, then a bar from a shared zero
+                  // line (sinks grow left, sources right) on the same scale for every row.
+                  var negMax = 0, posMax = 0;
+                  rows.forEach(function (r) { if (r.net < 0) negMax = Math.max(negMax, -r.net); if (r.net > 0) posMax = Math.max(posMax, r.net); });
+                  var zeroPct = negMax > 0 ? 30 : 8;
+                  var unitPct = Math.min(negMax > 0 ? (zeroPct - 2) / negMax : Infinity, posMax > 0 ? (100 - zeroPct - 2) / posMax : Infinity);
+                  if (!isFinite(unitPct)) unitPct = 0;
+                  var narrow = h('div', { className: 'fireecology-cyc-narrow', 'data-fe-carbon-net-narrow': String(rows.length) },
+                    h('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, fontWeight: 700, margin: '0 2px 6px' } },
+                      h('span', { style: { color: tint('#4ade80') } }, '← stores carbon (sink)'),
+                      h('span', { style: { color: tint('#fca5a5') } }, 'releases carbon (source) →')),
+                    h('ul', { 'aria-label': netAria, style: { listStyle: 'none', margin: 0, padding: 0 } },
+                      rows.map(function (r) {
+                        var valText = r.net === 0 ? 'about even' : (r.net < 0 ? '-' : '+') + Math.abs(r.net).toLocaleString() + ' t';
+                        var srText = r.net === 0 ? 'about even' : Math.abs(r.net).toLocaleString() + ' tons ' + (r.net < 0 ? 'stored' : 'released');
+                        var lenPct = Math.abs(r.net) * unitPct;
+                        return h('li', { key: r.key, 'data-fe-carbon-net-row': r.key, style: { padding: '6px 2px', borderTop: '1px solid var(--allo-stem-border, #334155)' } },
+                          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, fontSize: 13, lineHeight: 1.35 } },
+                            h('span', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', minWidth: 0 } }, r.label),
+                            h('span', { 'aria-hidden': 'true', style: { fontWeight: 700, whiteSpace: 'nowrap', color: r.net === 0 ? 'var(--allo-stem-text, #e2e8f0)' : tint(r.net < 0 ? '#86efac' : '#fca5a5') } }, valText),
+                            h('span', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } }, ': ' + srText)),
+                          h('div', { 'aria-hidden': 'true', style: { position: 'relative', height: 14, marginTop: 4, borderRadius: 4, background: 'var(--allo-stem-panel, #1e293b)' } },
+                            h('div', { style: { position: 'absolute', top: -2, bottom: -2, left: zeroPct + '%', width: 2, marginLeft: -1, background: 'var(--allo-stem-text-soft, #94a3b8)' } }),
+                            h('div', { 'data-fe-carbon-net-bar': r.key, style: { position: 'absolute', top: 2, bottom: 2, borderRadius: 3,
+                              left: (r.net < 0 ? zeroPct - lenPct : zeroPct) + '%', width: (r.net === 0 ? 0 : Math.max(0.8, lenPct)) + '%',
+                              background: r.net < 0 ? '#22c55e' : '#ef4444' } })));
+                      })),
+                    h('div', { 'aria-hidden': 'true', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '4px 2px 0' } }, 'Gray line = 0 tons over 10 years. Every bar uses the same scale.'));
                   return h('div', { style: { marginTop: 16 }, 'data-fe-carbon-net': String(rows.length) },
                     h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 14 } }, 'Net carbon after 10 years'),
-                    wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                      'aria-label': 'Net carbon after ten years for ' + carbonAcres.toLocaleString() + ' acres. ' + rows.map(function (r) {
-                        return r.label + ': ' + (r.net === 0 ? 'about even' : Math.abs(r.net).toLocaleString() + ' tons ' + (r.net < 0 ? 'stored' : 'released')) + '.';
-                      }).join(' ') }, ks), 720),
+                    h('div', { className: 'fireecology-cyc-wide' },
+                      wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': netAria }, ks), 720)),
+                    narrow,
                     h('p', { style: { margin: '6px 2px 0', fontSize: 12.5, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                       'The first chart is one year of smoke. This one is ten years of regrowth as well, which is where the burns and the fires part company.'));
                 })(),
@@ -5195,12 +6435,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     'You chose ' + CARBON_DATA[picked].label + '. The largest first-year release is ' + CARBON_DATA[worst].label +
                       ' at ' + (CARBON_DATA[worst].co2PerAcre * carbonAcres).toLocaleString() + ' tons, because a century of fuel burns in a few days instead of a few acres at a time.');
                 })(),
-                h('div', { style: { marginTop: 12, padding: 12, background: '#052e16', borderRadius: 8, fontSize: 13, color: '#4ade80', lineHeight: 1.5 } },
+                h('div', { 'data-fe-carbon-cars': String(carYearsForTons(carbonSavedVsWildfire(carbonAcres))), style: { marginTop: 12, padding: 12, background: '#052e16', borderRadius: 8, fontSize: 13, color: '#4ade80', lineHeight: 1.5 } },
                   '\u2B50 For ' + carbonAcres.toLocaleString() + ' acres: Cultural burning saves ',
-                  h('strong', null, ((CARBON_DATA.wildfire.co2PerAcre - CARBON_DATA.culturalBurn.co2PerAcre) * carbonAcres).toLocaleString() + ' tons of CO\u2082'),
-                  t('stem.fireecology.compared_to_wildfire_that_s_equivalent', ' compared to wildfire. That\u2019s equivalent to taking '),
-                  h('strong', null, Math.round(((CARBON_DATA.wildfire.co2PerAcre - CARBON_DATA.culturalBurn.co2PerAcre) * carbonAcres) / 4.6).toLocaleString()),
-                  t('stem.fireecology.cars_off_the_road_for_a_year', ' cars off the road for a year.')
+                  h('strong', null, carbonSavedVsWildfire(carbonAcres).toLocaleString() + ' tons of CO\u2082'),
+                  t('stem.fireecology.compared_to_wildfire_that_s_equivalent_v2', ' in the first year compared to wildfire, using this model\u2019s rough numbers. That is about as much CO\u2082 as '),
+                  h('strong', null, carYearsForTons(carbonSavedVsWildfire(carbonAcres)).toLocaleString()),
+                  t('stem.fireecology.cars_off_the_road_for_a_year_v2', ' typical cars give off in a year (US EPA: about 4.6 metric tons per car).')
                 )
               )
             ) : null
@@ -5771,14 +7011,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 var nz = Object.assign({}, z);
                 nz.fuel = clamp(nz.fuel + 4, 0, 100);
                 nz.lastBurn = (nz.lastBurn || 0) + 1;
-                var pastDue = nz.lastBurn - def.fireReturn;
-                if (def.fireReturn < 50 && pastDue > 0) {
-                  nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
-                  nz.health = clamp(nz.health - 2.5, 0, 100);
-                } else {
-                  nz.yield = clamp(nz.yield - 1, 0, 100);
-                  nz.health = clamp(nz.health - 0.6, 0, 100);
-                }
+                var drift = mosaicYieldDrift(def.fireReturn, nz.lastBurn);
+                nz.yield = clamp(nz.yield + drift, 0, 100);
+                nz.health = clamp(nz.health - (drift < -1 ? 2.5 : 0.6), 0, 100);
                 return nz;
               });
             }
@@ -6055,36 +7290,25 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // ── WABANAKI VOCABULARY GLOSSARY ──
           // Surfaces all bilingual terms in one place. Open / close with the
           // glossary button on the setup phase header.
+          // Every term is Passamaquoddy-Maliseet (Peskotomuhkati-Wolastoqey), spelled and glossed as on the
+          // Passamaquoddy-Maliseet Language Portal, pmportal.org (checked 2026-11-23): nipon 1 'it is summer',
+          // pun 1 'it is winter', kuwes 'white pine', qapit/pqapit 'beaver', wikp 'black ash, basket ash
+          // (locally brown ash)'. Eleven earlier terms (Sigwan, Toqaq, Sata, Anaskimnesi, Skog, Pasekona,
+          // Welimanal, Senomozi, Olawagik, Skamonal, Malsanikuk) could not be verified there or in the
+          // Penobscot Dictionary (penobscot-dictionary.appspot.com) and were removed; PM toqaq means 'last fall'.
           var WABANAKI_GLOSSARY = [
             { group: 'Seasons (across the campaign year)', items: [
-              { term: 'Sigwan',   en: 'spring',   note: t('stem.fireecology.first_part_of_the_warm_season_phase_in', 'First part of the Warm Season phase in the sim.') },
-              { term: 'Nipon',    en: 'summer',   note: t('stem.fireecology.second_part_of_the_warm_season_phase', 'Second part of the Warm Season phase.') },
-              { term: 'Toqaq',    en: 'fall',     note: t('stem.fireecology.first_part_of_the_cold_season_phase_pr', 'First part of the Cold Season phase. Primary cultural-burn window.') },
-              { term: 'Pun',      en: 'winter',   note: t('stem.fireecology.second_part_of_the_cold_season_phase_p', 'Second part of the Cold Season phase. Pile-burn and coppice window.') }
-            ] },
-            { group: 'Blueberry Barren', items: [
-              { term: 'Sata', en: 'lowbush blueberry', note: t('stem.fireecology.fire_dependent_rhizomatous_shrub_burne', 'Fire-dependent rhizomatous shrub. Burned every 2 to 3 years.') }
-            ] },
-            { group: 'White Oak Savanna', items: [
-              { term: 'Anaskimnesi', en: 'white oak', note: t('stem.fireecology.less_tannic_than_red_oak_preferred_aco', 'Less tannic than red oak; preferred acorn source.') }
+              { term: 'nipon', en: 'it is summer', note: t('stem.fireecology.second_part_of_the_warm_season_phase', 'Second part of the Warm Season phase.') },
+              { term: 'pun',   en: 'it is winter', note: t('stem.fireecology.second_part_of_the_cold_season_phase_p', 'Second part of the Cold Season phase. Pile-burn and coppice window.') }
             ] },
             { group: 'Pine-Spruce Stand and White Pine Grove', items: [
-              { term: 'Kuwes',    en: 'white pine',  note: t('stem.fireecology.maine_state_tree_pitch_and_canoe_wood', 'Maine state tree. Pitch and canoe wood.') },
-              { term: 'Skog',     en: 'spruce',      note: t('stem.fireecology.red_spruce_dominates_higher_elevations', 'Red spruce dominates higher elevations.') },
-              { term: 'Pasekona', en: 'canoe',       note: t('stem.fireecology.white_pine_and_birchbark_canoe_traditi', 'White pine and birchbark canoe traditions are central to Wabanaki travel.') }
+              { term: 'kuwes', en: 'white pine', note: t('stem.fireecology.maine_state_tree_pitch_and_canoe_wood', 'Maine state tree. Pitch and canoe wood.') }
             ] },
             { group: 'Riparian Corridor', items: [
-              { term: 'Welimanal', en: 'sweetgrass',  note: t('stem.fireecology.smudge_for_ceremony_binding_band_on_ba', 'Smudge for ceremony; binding band on baskets.') },
-              { term: 'Qapit',     en: 'beaver',      note: t('stem.fireecology.engineer_of_the_riparian_zone_raises_w', 'Engineer of the riparian zone; raises water tables and creates firebreaks.') }
+              { term: 'qapit', en: 'beaver', note: t('stem.fireecology.engineer_of_the_riparian_zone_raises_w', 'Engineer of the riparian zone; raises water tables and creates firebreaks.') }
             ] },
             { group: 'Mixed Hardwood', items: [
-              { term: 'Wikp',     en: 'brown ash',    note: t('stem.fireecology.the_basketry_tree_annual_growth_rings_', 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.') },
-              { term: 'Senomozi', en: 'sugar maple',  note: t('stem.fireecology.spring_sap_run_for_syrup', 'Spring sap run for syrup.') }
-            ] },
-            { group: 'Intervale Meadow', items: [
-              { term: 'Olawagik',   en: 'intervale',   note: t('stem.fireecology.alluvial_river_floodplain_land_warm_lo', 'Alluvial river-floodplain land. Warm, loose, fertile.') },
-              { term: 'Skamonal',   en: 'corn',        note: t('stem.fireecology.white_flint_corn_was_the_wabanaki_stap', 'White flint corn was the Wabanaki staple; dried and ground.') },
-              { term: 'Malsanikuk', en: 'squash',      note: t('stem.fireecology.one_of_the_three_sisters_with_corn_and', 'One of the Three Sisters with corn and beans.') }
+              { term: 'wikp', en: 'brown ash (black ash, basket ash)', note: t('stem.fireecology.the_basketry_tree_annual_growth_rings_', 'The basketry tree. Annual growth rings split into splints when the trunk is pounded.') }
             ] }
           ];
 
@@ -6118,7 +7342,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ),
 
               h('p', { style: { fontSize: 12.5, color: tint('#e9d5ff'), lineHeight: 1.55, marginBottom: 14 } },
-                t('stem.fireecology.the_bilingual_terms_across_this_sim_th', 'The bilingual terms across this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Spellings vary by orthography and dialect; the forms here are representative, not authoritative. For language teaching consult the language program of each nation, the University of Maine Wabanaki Center, or community resources directly.')
+                t('stem.fireecology.the_bilingual_terms_across_this_sim_th_v2', 'The Wabanaki words used in this sim. The Wabanaki Confederacy is five distinct nations (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki), each with its own language. Every word here is Passamaquoddy-Maliseet (Peskotomuhkati-Wolastoqey), spelled as it is on the Passamaquoddy-Maliseet Language Portal (pmportal.org). Words we could not check there were taken out. To learn a language, go to that nation\'s language program, the University of Maine Wabanaki Center, or community resources.')
               ),
 
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 12 } },
@@ -6203,7 +7427,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: tint(def.color), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.fireecology.cultural_deep_dive', 'Cultural deep-dive')),
                   h('h3', { id: 'fireecology-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
-                  h('div', { style: { color: tint(def.color), fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual)
+                  dd.bilingual ? h('div', { style: { color: tint(def.color), fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual) : null
                 ),
                 h('button', {
                   onClick: closeDeepDive,
@@ -6222,28 +7446,32 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#86efac'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.ecological_knowledge', '🌿 Ecological knowledge')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
-                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #a16207' } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#fbbf24'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.traditional_use_and_preparation', '🧺 Traditional use and preparation')),
+                // Round 11: a zone with no sourced use or modern note shows no empty box.
+                dd.preparation ? h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #a16207' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: tint('#fbbf24'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.traditional_use_and_preparation', '🧺 Traditional use and preparation')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.preparation)
-                ),
-                h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #0369a1' } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#38bdf8'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.modern_context', '🌍 Modern context')),
+                ) : null,
+                dd.modernContext ? h('div', { style: { background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 10, padding: 12, borderLeft: '3px solid #0369a1' } },
+                  h('div', { style: { fontSize: 12, fontWeight: 700, color: tint('#38bdf8'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.modern_context', '🌍 Modern context')),
                   h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
-                )
+                ) : null
               ),
 
-              // Teaching pull-quote
+              // Key idea: a third-person note from a named source or from this sim's model (no quotation marks,
+              // no invented voice), plus the zone's fire cycle as the model runs it.
               h('div', {
+                'data-fe-key-idea': def.id,
                 style: {
                   background: 'var(--allo-stem-panel, #1e293b)',
                   borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7',
                   borderRadius: 10, padding: 14, marginTop: 12
                 }
               },
-                h('div', { style: { fontSize: 11, fontWeight: 700, color: tint('#a855f7'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.a_wabanaki_teaching', '✨ A Wabanaki teaching')),
-                h('p', { style: { margin: 0, color: tint('#e9d5ff'), fontSize: 14, lineHeight: 1.6, fontStyle: 'italic' } }, '“' + dd.teaching + '”'),
-                h('div', { style: { marginTop: 6, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                  t('stem.fireecology.paraphrased_from_documented_wabanaki_s', 'Paraphrased from documented Wabanaki stewardship practice. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own distinct language; the bilingual term above is one representative form.')
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: tint('#a855f7'), letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.fireecology.a_wabanaki_teaching_v2', '💡 Key idea')),
+                h('p', { style: { margin: 0, color: tint('#e9d5ff'), fontSize: 14, lineHeight: 1.6 } }, dd.keyIdea),
+                h('p', { 'data-fe-cycle-line': def.id, style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, mosaicCycleLine(def)),
+                h('div', { style: { marginTop: 6, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  t('stem.fireecology.paraphrased_from_documented_wabanaki_s_v3', 'The makers of this sim wrote these notes, from the sources named or from how this sim works. They are not quotes from any person. The Wabanaki Confederacy includes Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, and Abenaki nations, each with its own language. Any Wabanaki word shown above is Passamaquoddy-Maliseet, as spelled on the Passamaquoddy-Maliseet Language Portal (pmportal.org).')
                 )
               )
             );
@@ -6266,9 +7494,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             if (opts.seed) fresh.seed = opts.seed;
             transitionMosaic(fresh);
             playSound('ignite');
-            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (Sigwan-Nipon).' + (opts.seed ? ' (Replay)' : ''), 'success');
+            if (addToast) addToast('🧩 Wabanaki Mosaic begins. Year 1 of 8 on ' + diff.label + ' difficulty. Warm Season (spring and summer).' + (opts.seed ? ' (Replay)' : ''), 'success');
             awardStemXP('mosaic_start', 10, 'Mosaic begins (' + diff.label + ')');
-            if (announceToSR) announceToSR('Cultural Mosaic started on ' + diff.label + '. Year 1 of 8, Warm Season Sigwan-Nipon. ' + warmHours + ' stewardship hours available in this phase.');
+            if (announceToSR) announceToSR('Cultural Mosaic started on ' + diff.label + '. Year 1 of 8, Warm Season (spring and summer). ' + warmHours + ' stewardship hours available in this phase.');
           }
 
           function resetCampaign() {
@@ -6297,7 +7525,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             // Hard season gate: cold-season techniques are simply unavailable in warm phase.
             // (Buttons should already be disabled, but defend against keyboard / a11y paths.)
             if (tech.season !== 'any' && tech.season !== m.subPhase) {
-              if (addToast) addToast(tech.name + ' is a ' + (tech.season === 'cold' ? 'Cold Season (Toqaq-Pun)' : 'Warm Season (Sigwan-Nipon)') + ' technique.', 'info');
+              if (addToast) addToast(tech.name + ' is a ' + (tech.season === 'cold' ? 'Cold Season (fall and winter)' : 'Warm Season (spring and summer)') + ' technique.', 'info');
               return;
             }
             var lateSpringYear = m.lastEvent && m.lastEvent.id === 'lateSpring';
@@ -6334,12 +7562,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               nz.fuel = clamp(nz.fuel + 4, 0, 100);
               nz.lastBurn = (nz.lastBurn || 0) + 1;
               // Yield drift: if you have not burned within the fire-return interval, yield erodes
-              var pastDue = nz.lastBurn - def.fireReturn;
-              if (def.fireReturn < 50 && pastDue > 0) {
-                nz.yield = clamp(nz.yield - 4 - Math.min(8, pastDue), 0, 100);
-              } else {
-                nz.yield = clamp(nz.yield - 1, 0, 100);
-              }
+              nz.yield = clamp(nz.yield + mosaicYieldDrift(def.fireReturn, nz.lastBurn), 0, 100);
               return nz;
             });
 
@@ -6427,8 +7650,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             if (m.subPhase === 'warm') {
               transitionMosaic({ subPhase: 'cold', hoursLeft: m.coldHoursBudget });
               playSound('pause');
-              if (addToast) addToast('Warm Season (Sigwan-Nipon) ends. Cold Season (Toqaq-Pun) begins. ' + m.coldHoursBudget + ' hours.', 'info');
-              if (announceToSR) announceToSR('Cold Season Toqaq-Pun begins. Cultural burn, pile burn, and coppice are now available. ' + m.coldHoursBudget + ' hours.');
+              if (addToast) addToast('Warm Season (spring and summer) ends. Cold Season (fall and winter) begins. ' + m.coldHoursBudget + ' hours.', 'info');
+              if (announceToSR) announceToSR('Cold Season (fall and winter) begins. Cultural burn, pile burn, and coppice are now available. ' + m.coldHoursBudget + ' hours.');
             } else {
               endYear();
             }
@@ -6458,7 +7681,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 hoursLeft: m.warmHoursBudget,
                 yearActions: [], lastEvent: null
               });
-              if (announceToSR) announceToSR('Year ' + (m.year + 1) + ' begins, Warm Season Sigwan-Nipon. ' + m.warmHoursBudget + ' hours.');
+              if (announceToSR) announceToSR('Year ' + (m.year + 1) + ' begins, Warm Season (spring and summer). ' + m.warmHoursBudget + ' hours.');
             }
           }
 
@@ -6483,16 +7706,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, '🧩'),
                   h('div', null,
                     h('h3', { className: 'fireecology-mosaic-heading', tabIndex: -1, 'data-mosaic-heading': 'setup', style: { margin: 0, color: (ctx.isDark || ctx.isContrast) ? T_GREEN_HI : '#166534', fontSize: 22 } }, t('stem.fireecology.wabanaki_cultural_mosaic', 'Wabanaki Cultural Mosaic')),
-                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, t('stem.fireecology.steward_a_real_maine_territory_across_', 'Steward a real Maine territory across 8 years.'))
+                    h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } }, t('stem.fireecology.steward_a_real_maine_territory_across_v2', 'Steward a model of a Maine territory across 8 years.'))
                   )
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                  t('stem.fireecology.your_land_is_divided_into_5_zones_each', 'Your land is divided into ' + WABANAKI_ZONES.length + ' zones, each with its own habitat, its own cultural use, and its own fire-return interval. '),
-                  h('strong', null, t('stem.fireecology.a_blueberry_barren_needs_fire_every_2_', 'A blueberry barren needs fire every 2 years; a riparian corridor needs fire almost never.')),
+                  t('stem.fireecology.your_land_is_divided_into_5_zones_each_v2', 'Your land is divided into ' + WABANAKI_ZONES.length + ' zones, each with its own habitat and its own fire-return interval in this sim. '),
+                  h('strong', null, t('stem.fireecology.a_blueberry_barren_needs_fire_every_2_v2', 'In this sim, the blueberry barren comes due for fire every 2 years; the riparian corridor never does.')),
                   t('stem.fireecology.real_indigenous_stewardship_is_patchwo', ' Real Indigenous stewardship is patchwork, not uniform.')
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } },
-                  t('stem.fireecology.this_sim_is_built_on_documented_wabana', 'This sim is built on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki). Where details are simplified for an 8-year window, the underlying logic is faithful.')
+                  t('stem.fireecology.this_sim_is_built_on_documented_wabana_v2', 'This sim draws on documented Wabanaki practice (Penobscot, Passamaquoddy, Maliseet, Mi\'kmaq, Abenaki) and on the sources named in each zone. It is a simple 8-year classroom model, so its numbers are the sim\'s own, not measurements.')
                 ),
                 h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
@@ -6525,12 +7748,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       h('span', { style: { fontSize: 22 } }, z.icon),
                       h('strong', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, z.name)
                     ),
-                    z.deepDive ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
-                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 4 } },
-                      'Fire return: ' + (z.fireReturn >= 50 ? 'almost never' : 'every ' + z.fireReturn + ' years')
+                    z.deepDive && z.deepDive.bilingual ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontStyle: 'italic', marginBottom: 4 } }, z.deepDive.bilingual) : null,
+                    h('div', { 'data-fe-zone-return': z.id, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 4 } },
+                      // Round 11: the same wording as mosaicCycleLine (fireReturn >= 50 never comes due in the model).
+                      'Fire return in this sim: ' + (z.fireReturn >= 50 ? 'never comes due' : 'every ' + z.fireReturn + ' years')
                     ),
-                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.fireecology.' + (z.id) + '_desc', z.desc)),
-                    h('div', { style: { color: tint('#fbbf24'), fontSize: 11.5, marginBottom: 8 } }, '✨ ' + z.culturalUse),
+                    h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.fireecology.' + (z.descKey || (z.id + '_desc')), z.desc)),
+                    z.culturalUse ? h('div', { style: { color: tint('#fbbf24'), fontSize: 12, marginBottom: 8 } }, '✨ ' + z.culturalUse) : null,
                     z.deepDive ? h('button', {
                       id: 'fireecology-deep-dive-trigger-setup-' + z.id,
                       onClick: function() { openDeepDive(z.id, 'fireecology-deep-dive-trigger-setup-' + z.id); },
@@ -6581,9 +7805,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               },
                 h('strong', { style: { color: tint('#fbbf24') } }, t('stem.fireecology.how_a_year_works', 'How a year works: ')),
                 t('stem.fireecology.each_year_splits_into_a', 'each year splits into a '),
-                h('strong', { style: { color: tint('#fb923c') } }, t('stem.fireecology.warm_season_sigwan_nipon', '☼ Warm Season (Sigwan-Nipon)')),
+                h('strong', { style: { color: tint('#fb923c') } }, t('stem.fireecology.warm_season_sigwan_nipon_v2', '☼ Warm Season (spring and summer)')),
                 t('stem.fireecology.and_a', ' and a '),
-                h('strong', { style: { color: tint('#60a5fa') } }, t('stem.fireecology.cold_season_toqaq_pun', '❄ Cold Season (Toqaq-Pun)')),
+                h('strong', { style: { color: tint('#60a5fa') } }, t('stem.fireecology.cold_season_toqaq_pun_v2', '❄ Cold Season (fall and winter)')),
                 '. You get ' + (MOSAIC_DIFFICULTIES[m.difficulty || 'steward'] || MOSAIC_DIFFICULTIES.steward).hoursPerYear + ' total stewardship hours per year, split half-and-half across the two phases. Cultural burn, pile burn, and coppice only happen in the Cold Season. Hand thinning, rest, and seed scatter (post-burn) work in either. Both phases of one year, then a weather or community event fires and the land drifts to the next year.'
               ),
 
@@ -6627,7 +7851,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   ),
                   h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
                     h('li', null, t('stem.fireecology.where_in_your_local_landscape_do_you_s', 'Where in your local landscape do you see evidence of past or ongoing Indigenous fire stewardship?')),
-                    h('li', null, t('stem.fireecology.how_did_the_seasonal_split_sigwan_nipo', 'How did the seasonal split (Sigwan-Nipon and Toqaq-Pun) change which moves felt high-leverage?')),
+                    h('li', null, t('stem.fireecology.how_did_the_seasonal_split_sigwan_nipo_v2', 'How did splitting each year into a warm season and a cold season change which moves felt high-leverage?')),
                     h('li', null, t('stem.fireecology.which_zone_did_you_find_hardest_to_kee', 'Which zone did you find hardest to keep healthy, and what does that suggest about the cultural infrastructure (food, basketry, canoe-building, ceremony) it supports?')),
                     h('li', null, t('stem.fireecology.how_is_the_loss_of_brown_ash_to_emeral', 'How is the loss of brown ash to emerald ash borer a parallel to other ongoing cultural-ecological emergencies you know about?'))
                   )
@@ -6781,11 +8005,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           if (m.phase === 'review') {
             var lastSnap = m.yearLog[m.yearLog.length - 1] || {};
             var ev = m.lastEvent || {};
-            // Find Elder Guidance entries matching at least one current zone state
-            var elderMatches = [];
+            // Up to three land notes that match the current zone state
+            var landNotes = [];
             m.zones.forEach(function(z) {
-              MOSAIC_ELDER.forEach(function(g) {
-                if (g.check(z) && elderMatches.length < 3 && !elderMatches.find(function(em){return em.msg === g.msg;})) elderMatches.push(g);
+              MOSAIC_LAND_NOTES.forEach(function(g) {
+                if (mosaicLandNoteHit(g, z) && landNotes.length < 3 && landNotes.indexOf(g) < 0) landNotes.push(g);
               });
             });
             // Build delta rows: pre vs post values per zone
@@ -6875,12 +8099,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 )
               ) : null,
 
-              elderMatches.length > 0 ? h('div', {
+              landNotes.length > 0 ? h('div', {
+                'data-fe-land-notes': String(landNotes.length),
                 style: { padding: 12, borderRadius: 10, marginBottom: 12, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' }
               },
-                h('strong', { style: { color: tint('#a855f7'), fontSize: 13 } }, t('stem.fireecology.elder_guidance', '✨ Elder Guidance')),
-                elderMatches.map(function(g, i) {
-                  return h('div', { key: i, style: { margin: '6px 0 0', color: tint('#e9d5ff'), fontSize: 13, lineHeight: 1.5, fontStyle: 'italic' } }, '“' + g.msg + '”');
+                h('strong', { style: { color: tint('#a855f7'), fontSize: 13 } }, t('stem.fireecology.elder_guidance_v2', '🌿 Land notes')),
+                landNotes.map(function(g, i) {
+                  return h('div', { key: i, style: { margin: '6px 0 0', color: tint('#e9d5ff'), fontSize: 13, lineHeight: 1.5 } }, mosaicLandNoteText(g));
                 })
               ) : null,
               h('button', {
@@ -6900,7 +8125,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           return h('div', null,
             deepDivePanel,
             glossaryPanel,
-            h('h3', { className: 'fireecology-mosaic-heading', tabIndex: -1, 'data-mosaic-heading': 'year', style: { margin: '0 0 12px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 20 } }, t('stem.fireecology.mosaic_year_heading', 'Year {year} of {total}').replace('{year}', String(m.year)).replace('{total}', String(m.maxYears)) + ' · ' + (m.subPhase === 'warm' ? t('stem.fireecology.warm_season_sigwan_nipon', '☼ Warm Season (Sigwan-Nipon)') : t('stem.fireecology.cold_season_toqaq_pun', '❄ Cold Season (Toqaq-Pun)'))),
+            h('h3', { className: 'fireecology-mosaic-heading', tabIndex: -1, 'data-mosaic-heading': 'year', style: { margin: '0 0 12px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 20 } }, t('stem.fireecology.mosaic_year_heading', 'Year {year} of {total}').replace('{year}', String(m.year)).replace('{total}', String(m.maxYears)) + ' · ' + (m.subPhase === 'warm' ? t('stem.fireecology.warm_season_sigwan_nipon_v2', '☼ Warm Season (spring and summer)') : t('stem.fireecology.cold_season_toqaq_pun_v2', '❄ Cold Season (fall and winter)'))),
             // Territory map (current state)
             renderTerritoryMap(m.zones, { title: 'Year ' + m.year + ' of ' + m.maxYears + ': current state' }),
             // Year-1 coaching tip (only on Year 1, until first action or dismissed)
@@ -6939,7 +8164,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               var phaseText = tint(isWarm ? '#f59e0b' : '#60a5fa');
               var phaseSoft = isWarm ? 'rgba(161,98,7,0.18)' : 'rgba(29,78,216,0.18)';
               var phaseLabel = isWarm ? '☼ Warm Season' : '❄ Cold Season';
-              var phaseSubLabel = isWarm ? 'Sigwan-Nipon (spring + summer)' : 'Toqaq-Pun (fall + winter)';
+              var phaseSubLabel = isWarm ? 'Spring and summer' : 'Fall and winter';
               var endLabel = isWarm ? 'End Warm Season →' : 'End Cold Season + Run Year →';
               var readLandLabel = m.aiReadLoading ? '⏳ Reading...' : '🔍 Read the land (AI)';
               return h('div', {
@@ -7146,8 +8371,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ks.push(h('path', { key: 'wet', fill: damsIn ? 'rgba(56,189,248,0.28)' : 'rgba(56,189,248,0.14)',
                 d: 'M' + (380 - reach) + ' ' + H + ' L' + (380 - reach) + ' ' + (wt + 6) + ' L' + (380 + reach) + ' ' + (wt + 6) + ' L' + (380 + reach) + ' ' + H + ' Z' }));
               ks.push(h('line', { key: 'wtl', x1: 380 - reach, y1: wt + 6, x2: 380 + reach, y2: wt + 6, stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '6 5' }));
-              ks.push(h('text', { key: 'wtt', x: 380 - reach - 6, y: wt + 10, fontSize: 11, fontWeight: 700, fill: '#7dd3fc', textAnchor: 'end' }, 'water table'));
-              ks.push(h('text', { key: 'wet', x: 380, y: H - 14, fontSize: 11, fontWeight: 700, fill: '#7dd3fc', textAnchor: 'middle' },
+              ks.push(h('text', { key: 'wtt', className: 'fireecology-cyc-wide', x: 380 - reach - 6, y: wt + 10, fontSize: 11, fontWeight: 700, fill: '#7dd3fc', textAnchor: 'end' }, 'water table'));
+              ks.push(h('text', { key: 'wet', className: 'fireecology-cyc-wide', x: 380, y: H - 14, fontSize: 11, fontWeight: 700, fill: '#7dd3fc', textAnchor: 'middle' },
                 damsIn ? 'soil saturated this far into both banks' : 'only the channel itself stays damp'));
               if (damsIn) {
                 // pond behind the dam
@@ -7156,10 +8381,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 [0, 1, 2, 3].forEach(function (k) {
                   ks.push(h('rect', { key: 'st' + k, x: 458, y: gy - 40 + k * 10, width: 32, height: 5, rx: 2, fill: '#a16207', transform: 'rotate(' + (k % 2 ? 8 : -8) + ' 474 ' + (gy - 38 + k * 10) + ')' }));
                 });
-                ks.push(h('text', { key: 'bv', x: 372, y: gy - 40, fontSize: 22, textAnchor: 'middle' }, '\uD83E\uDDAB'));
+                ks.push(h('text', { key: 'bv', className: 'fireecology-svg-emoji-lg', x: 372, y: gy - 40, fontSize: 22, textAnchor: 'middle' }, '\uD83E\uDDAB'));
               } else {
                 ks.push(h('path', { key: 'trickle', fill: '#334155', d: 'M330 ' + (gy - 6) + ' L430 ' + (gy - 6) + ' L430 ' + gy + ' L330 ' + gy + ' Z' }));
-                ks.push(h('text', { key: 'gone', x: 380, y: gy + 52, fontSize: 11.5, fontWeight: 700, fill: '#fdba74', textAnchor: 'middle' }, 'dam gone, channel cut down, banks dry'));
+                ks.push(h('text', { key: 'gone', className: 'fireecology-cyc-wide', x: 380, y: gy + 52, fontSize: 11.5, fontWeight: 700, fill: '#fdba74', textAnchor: 'middle' }, 'dam gone, channel cut down, banks dry'));
               }
               // vegetation: green only where the soil is wet
               for (var vx = 24; vx < W - 10; vx += 34) {
@@ -7177,11 +8402,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               }
               // the fire front, always burning in from both sides
               [40, W - 40].forEach(function (fx, fi) {
-                ks.push(h('text', { key: 'f' + fi, x: fx, y: gy - 64, fontSize: 26, textAnchor: 'middle' }, '\uD83D\uDD25'));
+                ks.push(h('text', { key: 'f' + fi, className: 'fireecology-svg-emoji-lg', x: fx, y: gy - 64, fontSize: 26, textAnchor: 'middle' }, '\uD83D\uDD25'));
               });
-              ks.push(h('text', { key: 'fl', x: 40, y: gy - 84, fontSize: 11, fontWeight: 700, fill: '#fca5a5', textAnchor: 'middle' }, 'wildfire'));
-              ks.push(h('text', { key: 'fr', x: W - 40, y: gy - 84, fontSize: 11, fontWeight: 700, fill: '#fca5a5', textAnchor: 'middle' }, 'wildfire'));
-              ks.push(h('text', { key: 'hd', x: 380, y: 26, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fill: damsIn ? '#7dd3fc' : '#fdba74' },
+              ks.push(h('text', { key: 'fl', className: 'fireecology-cyc-wide', x: 40, y: gy - 84, fontSize: 12, fontWeight: 700, fill: tintDark('#fca5a5'), textAnchor: 'middle' }, 'wildfire'));
+              ks.push(h('text', { key: 'fr', className: 'fireecology-cyc-wide', x: W - 40, y: gy - 84, fontSize: 12, fontWeight: 700, fill: tintDark('#fca5a5'), textAnchor: 'middle' }, 'wildfire'));
+              ks.push(h('text', { key: 'hd', className: 'fireecology-cyc-wide', x: 380, y: 26, fontSize: 13, fontWeight: 700, textAnchor: 'middle', fill: damsIn ? '#7dd3fc' : '#fdba74' },
                 damsIn ? 'The corridor stays green and the fire has to stop at it' : 'Nothing here is wetter than anything else, so the fire runs straight through'));
               return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, border: '1px solid var(--allo-stem-border, #1e3a5f)' }, 'data-fe-beaver-valley': damsIn ? 'dammed' : 'undammed' },
                 h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 10, fontSize: 15 } }, t('stem.fireecology.how_beaver_dams_create_fire_refugia', '\uD83C\uDF0A How Beaver Dams Create Fire Refugia')),
@@ -7189,12 +8414,23 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   'aria-label': damsIn
                     ? 'Valley cross-section with a beaver dam. The pond holds the water table about a metre higher and wets the soil far into both banks, so a wide band of vegetation is green while wildfire burns at both edges.'
                     : 'The same valley with the dam removed. The channel has cut down, the water table sits below the old floor, only a narrow strip stays damp, and the dry vegetation carries fire straight across.' }, ks),
+                // Round 11: at 390 px the drawing is under half size, so its 11-13 px labels would render near 6 px.
+                // Phones get the same words as an HTML legend.
+                h('div', { className: 'fireecology-cyc-narrow', 'data-fe-beaver-legend': damsIn ? 'dammed' : 'undammed', style: { marginTop: 8, fontSize: 14, lineHeight: 1.5, color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  h('div', { style: { fontWeight: 800, marginBottom: 4, color: tint(damsIn ? '#0284c7' : '#c2410c') } },
+                    damsIn ? 'The corridor stays green and the fire has to stop at it' : 'Nothing here is wetter than anything else, so the fire runs straight through'),
+                  h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                    h('li', null, '\uD83D\uDD25 Wildfire burning in from both edges.'),
+                    h('li', null, 'Dashed blue line: the water table.'),
+                    h('li', null, 'Pale blue band: ' + (damsIn ? 'soil saturated this far into both banks.' : 'only the channel itself stays damp.')),
+                    damsIn ? null : h('li', null, 'The dam is gone, the channel has cut down, and the banks are dry.'),
+                    h('li', null, 'Green plants grow on wet soil; brown plants are dry and can burn.'))),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 10 } },
                   [{ on: true, label: 'Beavers at work' }, { on: false, label: 'Dams trapped out' }].map(function (o) {
                     var sel = damsIn === o.on;
                     return h('button', { key: String(o.on), type: 'button', 'aria-pressed': sel ? 'true' : 'false', 'data-fe-beaver-toggle': o.on ? 'dammed' : 'undammed',
                       onClick: function () { upd('beaverDam', o.on); },
-                      style: { minHeight: 40, padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                      style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer',
                         border: '1px solid ' + (sel ? '#38bdf8' : 'var(--allo-stem-border, #334155)'), background: sel ? 'rgba(56,189,248,0.18)' : 'transparent',
                         // ★ sky-300 on the selected chip's own rgba(56,189,248,.18) tint read
                         // 1.45:1: the tint resolves to near-white over stem_lab's card, which is
@@ -7206,8 +8442,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   })),
                 h('p', { role: 'status', style: { margin: '10px 4px 0', fontSize: 13, lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } },
                   damsIn
-                    ? 'One dam raises the water table by one to three feet, and the wet soil spreads well past the pond itself. That damp band is what stays green through a wildfire, which is why beaver-dammed corridors hold roughly three times more green vegetation during a fire than undammed streams nearby.'
-                    : 'Take the dam out and the stream cuts a channel below the old valley floor. The water table drops with it, the banks dry, and the corridor that used to stop a fire now carries one. The fur trade did this an estimated 25 million times over.'));
+                    ? 'A dam raises the water table, and the wet soil spreads well past the pond itself. That damp band is what stays green through a wildfire: satellite images showed greenness dropped about three times less along beaver-dammed streams than along undammed ones during fires (Fairfax and Whittle, 2020).'
+                    : 'Take the dam out and the stream cuts a channel below the old valley floor. The water table drops with it, the banks dry, and the corridor that used to slow a fire now carries one. The fur trade did this across much of North America.'));
             })(),
 
             // Science cards
@@ -7824,36 +9060,36 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               kids.push(h('rect', { key: 'danger', x: padL, y: yOf(100), width: gw, height: yOf(50) - yOf(100), fill: 'rgba(239,68,68,0.10)' }));
               kids.push(h('rect', { key: 'caution', x: padL, y: yOf(50), width: gw, height: yOf(25) - yOf(50), fill: 'rgba(245,158,11,0.08)' }));
               kids.push(h('line', { key: 'd50', x1: padL, y1: yOf(50), x2: padL + gw, y2: yOf(50), stroke: '#ef4444', strokeDasharray: '4 4', strokeWidth: 1 }));
-              kids.push(h('text', { key: 'd50L', x: padL + gw - 4, y: yOf(50) - 4, fontSize: 9.5, fill: '#fca5a5', textAnchor: 'end' }, 'fuel above 50: megafire territory'));
+              kids.push(h('text', { key: 'd50L', x: padL + gw - 4, y: yOf(50) - 4, fontSize: 12, fontWeight: 700, fill: tint('#fca5a5'), textAnchor: 'end' }, 'fuel above 50: megafire territory'));
               kids.push(h('line', { key: 'd25', x1: padL, y1: yOf(25), x2: padL + gw, y2: yOf(25), stroke: '#f59e0b', strokeDasharray: '4 4', strokeWidth: 1 }));
-              kids.push(h('text', { key: 'd25L', x: padL + gw - 4, y: yOf(25) - 4, fontSize: 9.5, fill: '#fde68a', textAnchor: 'end' }, 'fuel under 25 scores'));
+              kids.push(h('text', { key: 'd25L', x: padL + gw - 4, y: yOf(25) - 4, fontSize: 12, fontWeight: 700, fill: tint('#fde68a'), textAnchor: 'end' }, 'fuel under 25 scores'));
               [0, 50, 100].forEach(function (v) {
                 kids.push(h('line', { key: 'g' + v, x1: padL, y1: yOf(v), x2: padL + gw, y2: yOf(v), stroke: 'rgba(148,163,184,0.18)' }));
-                kids.push(h('text', { key: 'gl' + v, x: padL - 6, y: yOf(v) + 3.5, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'end' }, String(v)));
+                kids.push(h('text', { key: 'gl' + v, x: padL - 6, y: yOf(v) + 4, fontSize: 12, fill: tint('#94a3b8'), textAnchor: 'end' }, String(v)));
               });
               kids.push(h('path', { key: 'bio', d: line('biodiversity'), fill: 'none', stroke: '#3b82f6', strokeWidth: 2.5, strokeLinejoin: 'round' }));
               kids.push(h('path', { key: 'fuel', d: line('fuel'), fill: 'none', stroke: '#f59e0b', strokeWidth: 2.5, strokeLinejoin: 'round' }));
               gs.decade.forEach(function (snap, i) {
                 kids.push(h('circle', { key: 'bp' + i, cx: xOf(i), cy: yOf(snap.biodiversity), r: 3.5, fill: '#3b82f6' }));
                 kids.push(h('circle', { key: 'fp' + i, cx: xOf(i), cy: yOf(snap.fuel), r: 3.5, fill: snap.fuel > 50 ? '#ef4444' : '#f59e0b' }));
-                kids.push(h('text', { key: 'yr' + i, x: xOf(i), y: padT + gh + 14, fontSize: 9.5, fill: '#94a3b8', textAnchor: 'middle' }, 'yr ' + snap.year));
+                kids.push(h('text', { key: 'yr' + i, x: xOf(i), y: padT + gh + 15, fontSize: 12, fill: tint('#94a3b8'), textAnchor: 'middle' }, 'yr ' + snap.year));
                 if (snap.action && ACT[snap.action]) kids.push(h('text', { key: 'ac' + i, x: xOf(i), y: padT + gh + 30, fontSize: 12, textAnchor: 'middle' }, ACT[snap.action]));
                 // A wildfire that struck this decade: flag it above the fuel point, so the
                 // fuel that preceded it and the drop that followed read as one event.
                 var prevFires = i > 0 ? (gs.decade[i - 1].wildfires || 0) : 0;
                 if ((snap.wildfires || 0) > prevFires) {
                   kids.push(h('line', { key: 'wfl' + i, x1: xOf(i), y1: padT + 2, x2: xOf(i), y2: yOf(snap.fuel) - 5, stroke: '#ef4444', strokeWidth: 1.5, strokeDasharray: '3 3' }));
-                  kids.push(h('text', { key: 'wf' + i, x: xOf(i), y: padT + 12, fontSize: 11, textAnchor: 'middle', fill: '#fca5a5', fontWeight: 800 }, '\u26A0 wildfire'));
+                  kids.push(h('text', { key: 'wf' + i, x: xOf(i), y: padT + 12, fontSize: 12, textAnchor: 'middle', fill: tint('#fca5a5'), fontWeight: 800 }, '\u26A0 wildfire'));
                 }
               });
               var last = gs.decade[n - 1];
-              kids.push(h('text', { key: 'bioL', x: padL + 4, y: yOf(gs.decade[0].biodiversity) - 8, fontSize: 10, fill: '#93c5fd', fontWeight: 700 }, 'biodiversity'));
-              kids.push(h('text', { key: 'fuelL', x: padL + 4, y: yOf(gs.decade[0].fuel) + 14, fontSize: 10, fill: '#fcd34d', fontWeight: 700 }, 'fuel load'));
+              kids.push(h('text', { key: 'bioL', x: padL + 4, y: yOf(gs.decade[0].biodiversity) - 8, fontSize: 12, fill: tint('#93c5fd'), fontWeight: 700 }, 'biodiversity'));
+              kids.push(h('text', { key: 'fuelL', x: padL + 4, y: yOf(gs.decade[0].fuel) + 14, fontSize: 12, fill: tint('#fcd34d'), fontWeight: 700 }, 'fuel load'));
               return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 10, padding: 12, marginBottom: 10 }, 'data-fe-game-chart': String(n) },
                 h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 6, fontSize: 12 } }, t('stem.fireecology.timeline', '📊 Timeline')),
                 wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'aria-label': 'Biodiversity and fuel load by decade. Latest: year ' + last.year + ', biodiversity ' + Math.round(last.biodiversity) + ' of 100, fuel ' + Math.round(last.fuel) + ' tons per acre.' }, kids), 720),
-                h('div', { style: { display: 'flex', gap: 10, marginTop: 4, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                  h('span', { style: { color: '#93c5fd' } }, t('stem.fireecology.biodiversity_2', '■ Biodiversity')), h('span', { style: { color: tint('#f59e0b') } }, t('stem.fireecology.fuel_load_2', '■ Fuel Load')),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 4, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                  h('span', { style: { color: tint('#93c5fd') } }, t('stem.fireecology.biodiversity_2', '■ Biodiversity')), h('span', { style: { color: tint('#f59e0b') } }, t('stem.fireecology.fuel_load_2', '■ Fuel Load')),
                   h('span', null, '— the icon under each decade is the action you chose')
                 )
               );
@@ -8084,7 +9320,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             }[state];
             return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
               h('h3', { className: 'text-sm font-black text-orange-700' }, t('stem.fireecology.fire_regime_discovery', '🔥 Fire regime discovery')),
-              h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
+              h('p', { className: 'text-[0.75rem] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret_v2', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: tintLight(sm.color) } }, sm.label),
                 h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, sm.desc)

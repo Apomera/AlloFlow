@@ -43,6 +43,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.StorybookExportModal) {
     console.log('[CDN] StorybookExportModal already loaded, skipping');
     return;

@@ -23,8 +23,9 @@
   var DECOR_H = { finger: 0.45, antler: 0.5, corym: 0.42, table: 0.42, massive: 0.42, brain: 0.4, plate: 0.47, encrust: 0.1, soft: 0.45, fan: 0.85, sponge: 0.42, algae: 0.34, deadstand: 0.36, rubble: 0.06, rock: 0.3 };
   var warnings = [];
 
+  function ownProp(obj, k) { return Object.prototype.hasOwnProperty.call(obj, k) ? obj[k] : undefined; }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-  function smooth(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+  function smooth(a, b, x) { if (a === b) return x < a ? 0 : 1; var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
   function damp(rate, dt) { return 1 - Math.exp(-rate * dt); }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function num(v, fallback) {
@@ -293,7 +294,7 @@
     goldmouth_sea_squirt: 'shadedShoulder', feather_duster_worm: 'rockShoulder'
   };
   function speciesInfo(Species, id) {
-    var raw = null, fb = INFO[id] || null;
+    var raw = null, fb = ownProp(INFO, id) || null;
     if (Species && typeof Species.info === 'function') { try { raw = Species.info(id) || null; } catch (ignore) { raw = null; } }
     var group = raw && GROUPS.indexOf(raw.group) >= 0 ? raw.group : fb ? fb[0] : 'fish';
     var habit = raw && HABITS.indexOf(raw.habit) >= 0 ? raw.habit : fb ? fb[1] : (group === 'coral' || group === 'structure' ? 'sessile' : 'solitary');
@@ -307,7 +308,8 @@
     return { id: id, group: group, habit: habit, lengthM: length, depthM: [lo, hi], schoolSize: school ? [smin, smax] : null, origin: origin };
   }
   function behaviorFor(info) {
-    if (SPECIAL[info.id]) return SPECIAL[info.id];
+    var sp = ownProp(SPECIAL, info.id);
+    if (sp) return sp;
     if (info.group === 'coral' || info.group === 'structure' || info.habit === 'sessile' || info.habit === 'bottom') return 'fixed';
     if (info.habit === 'school') return 'school';
     if (info.habit === 'crevice') return 'den';
@@ -318,7 +320,7 @@
   }
   function normalizeSite(site) {
     site = site || {};
-    var h = site.health || {}, r = site.restoration || {}, seen = {}, population = [];
+    var h = site.health || {}, r = site.restoration || {}, seen = Object.create(null), population = [];
     (Array.isArray(site.population) ? site.population : []).forEach(function (p) {
       if (!p || typeof p.id !== 'string' || !p.id) return;
       var count = clamp(Math.round(num(p.count, 1)), 0, 60);
@@ -1053,6 +1055,7 @@
   function inject(src, anchor, code, where) {
     if (src.indexOf(anchor) < 0) {
       var message = 'Reef3DExplore: missing shader anchor ' + anchor + ' (' + where + ')';
+      if (warnings.length >= 200) warnings.shift();
       warnings.push(message);
       if (global.console && global.console.warn) global.console.warn(message);
       return src;
@@ -1412,7 +1415,7 @@
   };
   var FRAGMENT_HEX = [0xe07aa0, 0x9a5bd0, 0xf28a3a, 0x8fd14f, 0xe9c84a, 0x3fb8c8];
   function placeholderGeometry(T, id, info, growth, healthValue, detail) {
-    var look = LOOKS[id] || (info.group === 'coral' ? ['brain', 0xa89060, 0x8a7a50] : info.group === 'structure' ? ['reefball', 0xb8b4a8, 0xe08a6a] :
+    var look = ownProp(LOOKS, id) || (info.group === 'coral' ? ['brain', 0xa89060, 0x8a7a50] : info.group === 'structure' ? ['reefball', 0xb8b4a8, 0xe08a6a] :
       info.group === 'invertebrate' ? ['slug', 0xd0805a, 0xf0d0a0] : info.group === 'reptile' ? ['turtle', 0x6f6a3a, 0xc8b88a] : ['fish', 0x8a9ab0, 0xd0d8e0, 0.38, 0.2]);
     var shape = look[0], L = info.lengthM, b = new Builder(), seg = detail ? 11 : 8, k;
     function lin(hex) { return new T.Color(hex).convertSRGBToLinear(); }
@@ -1720,10 +1723,10 @@
     var highContrastMode = !!options.highContrast;
     if (!highContrastMode) {
       try {
-        if (typeof document !== 'undefined') {
-          var docEl = document.documentElement, bodyEl = document.body;
-          if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
-              (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrastMode = true;
+        if (doc) {
+          var docEl = doc.documentElement, bodyEl = doc.body;
+          if ((docEl && ((docEl.classList && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast'))) || (docEl.getAttribute && docEl.getAttribute('data-theme') === 'high-contrast'))) ||
+              (bodyEl && bodyEl.classList && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrastMode = true;
         }
         if (!highContrastMode && typeof global !== 'undefined' && typeof global.matchMedia === 'function') {
           if (global.matchMedia('(forced-colors: active)').matches || global.matchMedia('(prefers-contrast: more)').matches) highContrastMode = true;
@@ -1733,7 +1736,7 @@
     var listeners = [], resizeObserver = null, notifyTimer = 0, lastNotify = -Infinity, lastCheck = -Infinity, lastKey = '', pendingNotify = false;
     var owned = [], canvasW = 0, canvasH = 0, derivatives = false, cullDist = high ? 34 : 24;
     var terrain = null, bommies = [], station = null, crevice = null, obstacle = new Float32Array(GRID_N * GRID_N), blocked = new Uint8Array(GRID_N * GRID_N);
-    var organisms = [], byUid = {}, owner = new Map(), protos = [], groups = [], anemones = [], sessiles = [], decorMeshes = [], decorKinds = [];
+    var organisms = [], byUid = Object.create(null), owner = new Map(), protos = [], groups = [], anemones = [], sessiles = [], decorMeshes = [], decorKinds = [];
     // Decor level of detail: full models near the diver, stand-ins further out, nothing in the fog beyond.
     var nearDist = high ? 17 : 13, farDist = high ? 34 : 25, smallFar = high ? 19 : 14;
     // Budget governor: the measured frame (renderer.info) scales the decor and organism draw
@@ -1765,13 +1768,13 @@
       target.addEventListener(type, fn, opts); listeners.push(function () { target.removeEventListener(type, fn, opts); });
     }
     function now() { var p = global.performance; return p && typeof p.now === 'function' ? p.now() : Date.now(); }
-    function setTimer(fn, ms) { return (global.setTimeout || setTimeout)(fn, ms); }
-    function clearTimer(id) { if (id) (global.clearTimeout || clearTimeout)(id); }
+    function setTimer(fn, ms) { return global && typeof global.setTimeout === 'function' ? global.setTimeout(fn, ms) : setTimeout(fn, ms); }
+    function clearTimer(id) { if (id) { if (global && typeof global.clearTimeout === 'function') global.clearTimeout(id); else clearTimeout(id); } }
     function reportError(error) {
       if (typeof options.onError === 'function') { try { options.onError(error instanceof Error ? error : new Error(String(error))); } catch (ignore) {} }
       else if (global.console && global.console.error) global.console.error(error);
     }
-    function warn(message) { warnings.push(message); if (global.console && global.console.warn) global.console.warn(message); }
+    function warn(message) { if (warnings.length >= 200) warnings.shift(); warnings.push(message); if (global.console && global.console.warn) global.console.warn(message); }
 
     function dispose() {
       if (disposed) return; disposed = true;
@@ -1791,9 +1794,16 @@
         (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (m) { materials.add(m); });
       });
       owned.forEach(function (r) { if (r.isBufferGeometry) geometries.add(r); else if (r.isMaterial) materials.add(r); else if (r.isTexture) textures.add(r); });
-      materials.forEach(function (m) { Object.keys(m).forEach(function (k) { if (m[k] && m[k].isTexture) textures.add(m[k]); }); });
+      materials.forEach(function (m) {
+        Object.keys(m).forEach(function (k) { if (m[k] && m[k].isTexture) textures.add(m[k]); });
+        if (m.uniforms) Object.keys(m.uniforms).forEach(function (k) { var u = m.uniforms[k]; if (u && u.value && u.value.isTexture) textures.add(u.value); });
+      });
       geometries.forEach(function (g) { g.dispose(); }); materials.forEach(function (m) { m.dispose(); }); textures.forEach(function (t) { t.dispose(); });
       owned.length = 0; organisms.length = 0; protos.length = 0; groups.length = 0; decorMeshes.length = 0; owner.clear();
+      byUid = Object.create(null); anemones.length = 0; sessiles.length = 0; decorKinds.length = 0; shafts.length = 0;
+      plantMotions.length = 0; legs.length = 0; bubbleState.length = 0; cycle.list.length = 0; bommies.length = 0;
+      eco = crowdKit = momentKit = warm = uploads = null; mats = {}; phGeometry = {};
+      floorMesh = bommieMesh = orgRoot = diver = bubbles = focusRing = mask = backdrop = surface = motes = sun = hemi = previewRing = diverBody = null;
       if (renderer) {
         renderer.dispose();
         // GPU resources are disposed above; forced context loss can stall software renderers.
@@ -3639,8 +3649,9 @@
       var HOST = o.speciesId === 'pincushion_sea_star' ? CUSHION_HOST : COTS_HOST;
       // The first starfish takes the preferred colony nearest the start; the others are spread by hash.
       organisms.forEach(function (h) {
-        if (HOST[h.speciesId] === undefined || h.restoration || plan.hosts.indexOf(h) >= 0 || !h.center || coralState(h) !== 'healthy' || h.radius < 0.3) return;
-        list.push([HOST[h.speciesId] + (plan.hosts.length ? eh(101, h.serial, o.index) : 0.04 * Math.hypot(h.center.x - sp.x, h.center.z - sp.z)), h.serial, h]);
+        var hw = ownProp(HOST, h.speciesId);
+        if (hw === undefined || h.restoration || plan.hosts.indexOf(h) >= 0 || !h.center || coralState(h) !== 'healthy' || h.radius < 0.3) return;
+        list.push([hw + (plan.hosts.length ? eh(101, h.serial, o.index) : 0.04 * Math.hypot(h.center.x - sp.x, h.center.z - sp.z)), h.serial, h]);
       });
       list.sort(function (p, q) { return p[0] - q[0] || p[1] - q[1]; });
       for (var i = 0; i < list.length && !best && i < 6; i++) {
@@ -4063,7 +4074,7 @@
         // This species depends on a host. Explicit custom populations may omit
         // anemones; do not invent one or place a hostless crab on the seabed.
         if (e.id === 'porcelain_anemone_crab' && !anemones.length) return;
-        var rnd = stream(seed, 3001 + (hashInt(e.id) % 99991)), zone = ZONE[e.id] || defaultZone(e.info, e.behavior), members = [];
+        var rnd = stream(seed, 3001 + (hashInt(e.id) % 99991)), zone = ownProp(ZONE, e.id) || defaultZone(e.info, e.behavior), members = [];
         for (var k = 0; k < e.uids.length; k++) {
           var draws = []; for (var q = 0; q < 32; q++) draws.push(rnd());
           var o = { uid: e.uids[k], serial: Number(e.uids[k].slice(1)), speciesId: e.id, info: e.info, behavior: e.behavior, index: k, draws: draws, restoration: false, school: 0 };
@@ -4569,7 +4580,7 @@
       var K = crowdState();
       if (K.planned) return;
       K.planned = true;
-      var S = Math.min(1, shelterIndex()), kinds = {}, ids = [], salt = (seed % 65521 + 65521) % 65521;
+      var S = Math.min(1, shelterIndex()), kinds = Object.create(null), ids = [], salt = (seed % 65521 + 65521) % 65521;
       organisms.forEach(function (x) {
         if (!x.planktivore || !x.path) return;
         if (!kinds[x.speciesId]) { kinds[x.speciesId] = { id: x.speciesId, tpl: null, L: x.info.lengthM, clouds: [], fish: [], schools: 0 }; ids.push(x.speciesId); }
@@ -6443,7 +6454,7 @@
     function nearbyList(limitM) {
       if (disposed) return [];
       updateFrustum();
-      var out = [], kinds = {}, res = [], lim = limitM || NEAR_M;
+      var out = [], kinds = Object.create(null), res = [], lim = limitM || NEAR_M;
       organisms.forEach(function (o) {
         var d = surfaceDistance(o); if (d > lim) return;
         out.push({ o: o, d: d, inView: frustum.intersectsSphere(sphere.set(observationCenter(o), Math.max(observationRadius(o), 0.05))) });
@@ -6674,6 +6685,7 @@
     function tick(stamp) {
       raf = 0;
       if (disposed || contextLost || hidden()) return;
+      if (!isFinite(stamp)) stamp = now();
       try {
         var rawMs = lastStamp === null ? 0 : stamp - lastStamp;
         var dt = lastStamp === null ? 0 : clamp((stamp - lastStamp) / 1000, 0, 0.1); lastStamp = stamp;
@@ -7005,7 +7017,7 @@
       return out;
     }
     function resize() {
-      if (disposed || !renderer) return;
+      if (disposed || contextLost || !renderer) return;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { width: canvas.clientWidth, height: canvas.clientHeight };
       var w = Math.max(1, Math.round(rect.width || 0)), h = Math.max(1, Math.round(rect.height || 0));
       if (w === canvasW && h === canvasH) return;
@@ -7022,9 +7034,9 @@
 
     // ---- Picking ---------------------------------------------------------------------------------
     function pick(clientX, clientY) {
-      if (!loaded) return null;
+      if (disposed || contextLost || !loaded || !isFinite(clientX) || !isFinite(clientY)) return null;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0, width: canvasW, height: canvasH };
-      var w = rect.width || canvasW || 1, h = rect.height || canvasH || 1;
+      var w = (rect.width > 0 ? rect.width : canvasW) || 1, h = (rect.height > 0 ? rect.height : canvasH) || 1;
       ndc.set(((clientX - (rect.left || 0)) / w) * 2 - 1, -((clientY - (rect.top || 0)) / h) * 2 + 1);
       camera.updateMatrixWorld(); raycaster.setFromCamera(ndc, camera);
       var ray = raycaster.ray, terrainHits = raycaster.intersectObjects([floorMesh, bommieMesh], false), wall = terrainHits.length ? terrainHits[0].distance : Infinity;
@@ -7054,8 +7066,9 @@
     var HELD = { w: 'forward', arrowup: 'forward', s: 'back', arrowdown: 'back', a: 'left', arrowleft: 'left', d: 'right', arrowright: 'right', r: 'up', pageup: 'up', f: 'down', pagedown: 'down' };
     function clearKeys() { Object.keys(keys).forEach(function (k) { keys[k] = 0; }); }
     listen(canvas, 'keydown', function (event) {
+      if (disposed || contextLost) return;
       if (event.ctrlKey || event.altKey || event.metaKey) return;
-      var k = String(event.key || '').toLowerCase(), held = HELD[k];
+      var k = String(event.key || '').toLowerCase(), held = ownProp(HELD, k);
       if (held) { keys[held] = 1; if (!paused && restoreWideLens()) notify(true); if (autopilot) cancelSwim(); refresh(); }
       else if (k === ' ' || k === 'spacebar') { if (!event.repeat) setPaused(!paused); }
       else if (k === 'n') { if (!event.repeat) cycleFocus(event.shiftKey ? -1 : 1); }
@@ -7064,7 +7077,7 @@
       else { if (k === 'escape' && autopilot) cancelSwim(); return; }
       if (event.preventDefault) event.preventDefault();
     });
-    listen(canvas, 'keyup', function (event) { var held = HELD[String(event.key || '').toLowerCase()]; if (held) keys[held] = 0; });
+    listen(canvas, 'keyup', function (event) { if (disposed || contextLost) return; var held = ownProp(HELD, String(event.key || '').toLowerCase()); if (held) keys[held] = 0; });
     listen(canvas, 'blur', function () { clearKeys(); pointers.clear(); pinch = 0; press = null; dragging = false; });
     function pid(event) { return event.pointerId !== undefined && event.pointerId !== null ? event.pointerId : 1; }
     function lookBy(dx, dy) {
@@ -7076,7 +7089,9 @@
     }
     function zoomBy(amount) { if (view !== 'third') return; if (amount && restoreWideLens()) notify(true); camDist = clamp(camDist * Math.exp(amount), 2.2, 9); refresh(); }
     listen(canvas, 'pointerdown', function (event) {
+      if (disposed || contextLost) return;
       if (event.button && event.pointerType !== 'touch') return;
+      if (!isFinite(event.clientX) || !isFinite(event.clientY)) return;
       var id = pid(event); pointers.set(id, { x: event.clientX, y: event.clientY });
       press = pointers.size === 1 ? { id: id, x: event.clientX, y: event.clientY, t: now(), moved: 0, slop: event.pointerType === 'touch' ? 18 : 6 } : null;
       try { if (canvas.setPointerCapture && event.pointerId !== undefined) canvas.setPointerCapture(event.pointerId); } catch (ignore) {}
@@ -7084,6 +7099,8 @@
       if (pointers.size === 2) { var p = Array.from(pointers.values()); pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
     });
     listen(canvas, 'pointermove', function (event) {
+      if (disposed || contextLost) return;
+      if (!isFinite(event.clientX) || !isFinite(event.clientY)) return;
       var id = pid(event), old = pointers.get(id); if (!old) return;
       var dx = event.clientX - old.x, dy = event.clientY - old.y; pointers.set(id, { x: event.clientX, y: event.clientY });
       if (pointers.size > 1) { var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); if (pinch > 0 && d > 0) zoomBy(Math.log(pinch / d)); pinch = d; press = null; return; }
@@ -7091,13 +7108,14 @@
       if (!press || press.moved > press.slop) { dragging = true; lookBy(dx, dy); }
     });
     listen(canvas, 'pointerup', function (event) {
+      if (disposed || contextLost) return;
       var id = pid(event);
       if (press && press.id === id && press.moved <= press.slop && now() - press.t < 800) pick(event.clientX, event.clientY);
       pointers.delete(id); press = null; pinch = 0; dragging = pointers.size > 0;
     });
     function pointerGone(event) { pointers.delete(pid(event)); press = null; pinch = 0; dragging = pointers.size > 0; }
     listen(canvas, 'pointercancel', pointerGone); listen(canvas, 'lostpointercapture', pointerGone);
-    listen(canvas, 'wheel', function (event) { if (event.preventDefault) event.preventDefault(); zoomBy(clamp(event.deltaY || 0, -200, 200) * 0.0015); }, { passive: false });
+    listen(canvas, 'wheel', function (event) { if (disposed || contextLost) return; if (event.preventDefault) event.preventDefault(); zoomBy(clamp(event.deltaY || 0, -200, 200) * 0.0015); }, { passive: false });
     listen(canvas, 'webglcontextlost', function (event) {
       if (event && event.preventDefault) event.preventDefault();
       contextLost = true; stopLoop(); cancelLoad(); pointers.clear(); clearKeys(); autopilot = null;
@@ -7115,5 +7133,7 @@
     return controller;
   }
 
-  global.Reef3DExplore = { version: '1.0.0', mount: mount, profileDevice: profileDevice };
-})(window);
+  if (global && (typeof global === 'object' || typeof global === 'function')) {
+    global.Reef3DExplore = { version: '1.0.0', mount: mount, profileDevice: profileDevice };
+  }
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

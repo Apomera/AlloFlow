@@ -304,7 +304,9 @@ describe('teacher-surface disable-with-doorway sweep (X6, 2026-08-17)', () => {
       const next = sidebar.indexOf('\nfunction ', at + 10);
       const body = sidebar.slice(at, next === -1 ? undefined : next);
       expect(body, panel + ' must call useAiTextAvailable').toContain('useAiTextAvailable()');
-      expect(body, panel + ' must disable on !aiTextAvailable').toContain('|| !aiTextAvailable}');
+      // 2026-11-23: the Glossary can also run with no AI from the built-in dictionary; then it needs a term list instead.
+      expect(body, panel + ' must disable on !aiTextAvailable').toContain(panel === 'GlossaryPanel'
+        ? '|| (_dictionaryOn ? !_dictionaryTermsReady : !aiTextAvailable)}' : '|| !aiTextAvailable}');
       expect(body, panel + ' must render the doorway notice').toContain('<AiSetupNotice t={t} />');
     });
   }

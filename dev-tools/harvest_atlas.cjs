@@ -35,10 +35,20 @@ function prettify(key) {
   const last = String(key).split('.').pop() || '';
   return last.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim();
 }
-// t shim: t(key, fallback) -> fallback ; t(key) -> resolved or prettified key
+// t shim: t(key, fallback) -> fallback ; t(key) -> resolved or prettified key.
+// It also remembers which key produced each label, so the modal can show the
+// label in the reader's language (toolKeys / nameKey in the output).
+const KEY_BY_TEXT = new Map();
 function tShim(key, fallback) {
-  if (fallback != null && fallback !== '') return fallback;
-  return resolveKey(key) || prettify(key);
+  const english = resolveKey(key);
+  const out = (fallback != null && fallback !== '') ? fallback : (english || prettify(key));
+  // Only record keys that ui_strings.js registers; a pack can only translate those.
+  if (english && !KEY_BY_TEXT.has(out)) KEY_BY_TEXT.set(out, key);
+  return out;
+}
+function keysFor(labels) {
+  const keys = labels.map((l) => KEY_BY_TEXT.get(l) || null);
+  return keys.some(Boolean) ? keys : undefined;
 }
 
 // ── extract a named array literal from a module source, eval with a t shim ──
@@ -91,11 +101,12 @@ function groupByCatMarker(arr) {
   for (const it of arr) {
     if (!it) continue;
     if (it.category === true || /^_cat_/.test(it.id || '')) {
-      cur = { id: it.id, name: it.label, tools: [] };
+      cur = { id: it.id, name: it.label, tools: [], toolIds: [] };
       markerLabel[it.id] = it.label;
       cats.push(cur);
     } else if (cur && it.label) {
       cur.tools.push(it.label);
+      cur.toolIds.push(it.id || '');
     }
   }
   return { cats, markerLabel };
@@ -107,11 +118,22 @@ function groupByCatMarker(arr) {
 // ── STEM ──
 const stemRaw = extractArray('stem_lab/stem_lab_module.js', '_allStemTools');
 const stem = groupByCatMarker(stemRaw);
+// One area record: stable id (descriptions are keyed by it, so renaming an area
+// cannot strand its text), English name + tools, and the keys that translate them.
+function areaRecord(c) {
+  const rec = { id: c.id, name: c.name };
+  const nameKey = KEY_BY_TEXT.get(c.name);
+  if (nameKey) rec.nameKey = nameKey;
+  rec.tools = c.tools;
+  const toolKeys = keysFor(c.tools);
+  if (toolKeys) rec.toolKeys = toolKeys;
+  return rec;
+}
 const stemHub = {
-  hub: 'STEAM Lab', icon: '🔬',
+  id: 'steam', hub: 'STEAM Lab', icon: '🔬',
   sourceKind: 'registry', sourceLabel: 'Generated from the STEAM Lab registry',
   total: stem.cats.reduce((n, c) => n + c.tools.length, 0),
-  categories: stem.cats.filter((c) => c.tools.length).map((c) => ({ name: c.name, tools: c.tools })),
+  categories: stem.cats.filter((c) => c.tools.length).map(areaRecord),
 };
 
 // ── Verified Cloudflare direct links for STEAM Lab tools (strictly from _redirects) ──
@@ -147,30 +169,43 @@ const catPos = { // slug -> _cat_ marker id (from _catPositions in the module)
 for (const dt of selDynamic) {
   const markerId = catPos[dt._cat];
   const cat = sel.cats.find((c) => c.id === markerId);
-  if (cat && dt.label && !cat.tools.includes(dt.label)) cat.tools.push(dt.label);
+  if (cat && dt.label && !cat.tools.includes(dt.label)) { cat.tools.push(dt.label); cat.toolIds.push(dt.id || ''); }
+}
+// The SEL Hub translates its own labels with sel.hub.* keys built from ids
+// (sel_hub_module.js ~84-87); reuse them so the Atlas matches the hub.
+function selAreaRecord(c) {
+  const slug = String(c.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const rec = { id: c.id, name: c.name, nameKey: 'sel.hub.category_info.' + slug + '.label', tools: c.tools };
+  if (c.toolIds.some(Boolean)) rec.toolKeys = c.toolIds.map((id) => (id ? 'sel.hub.tool.' + id + '.label' : null));
+  return rec;
 }
 const selHub = {
-  hub: 'SEL Hub', icon: '🧠',
+  id: 'sel', hub: 'SEL Hub', icon: '🧠',
   sourceKind: 'registry', sourceLabel: 'Generated from the SEL Hub registry',
   total: sel.cats.reduce((n, c) => n + c.tools.length, 0),
-  categories: sel.cats.filter((c) => c.tools.length).map((c) => ({ name: c.name, tools: c.tools })),
+  categories: sel.cats.filter((c) => c.tools.length).map(selAreaRecord),
 };
 
 // ── Research Hub (3 inquiry lanes) ──
 const lanes = extractArray('research_hub_module.js', 'PLACEHOLDER_LANES');
 const researchHub = {
-  hub: 'Research Hub', icon: '🔎', total: lanes.length,
+  id: 'research', hub: 'Research Hub', icon: '🔎', total: lanes.length,
   sourceKind: 'registry', sourceLabel: 'Generated from the inquiry-lane registry',
-  categories: [{ name: 'Inquiry lanes', tools: lanes.map((l) => `${l.label}${l.tagline ? ' — ' + l.tagline : ''}`) }],
+  categories: [{ id: 'inquiry-lanes', name: 'Inquiry lanes', tools: lanes.map((l) => `${l.label}${l.tagline ? ' — ' + l.tagline : ''}`) }],
 };
 
 // ── Studios & Surfaces (top-level surfaces from the command palette) ──
 const cmds = extractArray('allo_commands_module.js', 'cmds');
+// Labels that are actions or settings, not places to work in. Matched after
+// "Open"/"Go to" is stripped, so the palette's wording can change without
+// letting them back in.
+const NOT_A_SURFACE = /^(export( menu)?|read this page( to me)?|class session|class analytics|(the )?dashboard|a specific stem tool|find the right book)$/i;
+// These are hubs of their own in the Atlas, so listing them here double-counts.
+const OWN_HUBS = new Set(['steam lab', 'sel hub', 'research hub']);
 const surfaces = cmds
   .filter((c) => c && c.opensPanel && c.label)
-  .map((c) => c.label.replace(/^Open (the )?/i, '').trim())
-  // drop a few that are settings/dialogs rather than learning surfaces
-  .filter((l) => !/^(export|read this page|class session|class analytics|dashboard)$/i.test(l));
+  .map((c) => c.label.replace(/^(Open|Go to) (the )?/i, '').trim())
+  .filter((l) => !NOT_A_SURFACE.test(l) && !OWN_HUBS.has(l.toLowerCase()));
 // Standalone surfaces reachable from the Learning/Educator hub tiles that are
 // NOT command-palette entries (those launchers are JSX, not a data array — see
 // harvest map). Small documented supplement; review if a hub tile is added.
@@ -179,22 +214,35 @@ const SURFACE_SUPPLEMENT = [
   'LitLab', 'Throughline', 'PoetTree', 'Open Groove Studio', 'Family Bridge',
   'Guided Mode', 'Visual Organizer', 'Interview Mode', 'AlloHaven',
 ];
-const allSurfaces = Array.from(new Set([...surfaces, ...SURFACE_SUPPLEMENT])).sort();
+// "Lit Lab" and "LitLab" are one tool: dedupe on the letters alone, keep the
+// first spelling seen (the palette's), and capitalise labels like "my notebook".
+const surfaceByLetters = new Map();
+for (const label of [...surfaces, ...SURFACE_SUPPLEMENT]) {
+  const letters = label.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!surfaceByLetters.has(letters)) surfaceByLetters.set(letters, label.charAt(0).toUpperCase() + label.slice(1));
+}
+const allSurfaces = Array.from(surfaceByLetters.values()).sort();
 const surfacesHub = {
-  hub: 'Studios & Surfaces', icon: '🎬', total: allSurfaces.length,
+  id: 'studios', hub: 'Studios & Surfaces', icon: '🎬', total: allSurfaces.length,
   sourceKind: 'mixed', sourceLabel: 'Command palette plus curated top-level launchers',
-  categories: [{ name: 'Open from anywhere', tools: allSurfaces }],
+  categories: [{ id: 'studios', name: 'Open from anywhere', tools: allSurfaces }],
 };
 
 // Documents & Literacy is a set of scattered pipeline features, not a tile
 // catalog, so it is curated here rather than harvested (see harvest map).
+// Names follow what the app calls each feature now.
+const DOC_TOOLS = [
+  'Text Adaptation', 'Immersive Reader', 'Side-by-side Translation', 'Glossary',
+  'Word Sounds', 'Oral Fluency Check', 'Reading Library', 'Accessible PDF export',
+];
 const docsHub = {
-  hub: 'Documents & Literacy', icon: '📄', total: 8,
+  id: 'documents', hub: 'Documents & Literacy', icon: '📄', total: DOC_TOOLS.length,
   sourceKind: 'curated', sourceLabel: 'Curated index of core literacy surfaces',
-  categories: [{ name: 'Core literacy tools', tools: [
-    'Leveled Reader', 'Immersive Reader', 'Side-by-side Translation', 'Smart Glossary',
-    'Word Sounds Studio', 'Oral Reading Fluency', 'Reading Library', 'Accessible PDF export',
-  ] }],
+  categories: [{
+    id: 'core-literacy', name: 'Core literacy tools', tools: DOC_TOOLS,
+    // Registered under about.atlas_docs in ui_strings.js so packs can translate them.
+    toolKeys: DOC_TOOLS.map((l) => 'about.atlas_docs.' + l.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')),
+  }],
 };
 
 const ATLAS_HUBS = [docsHub, stemHub, selHub, researchHub, surfacesHub];

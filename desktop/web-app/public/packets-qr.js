@@ -46,6 +46,7 @@
     var clearKeyBtn = $('clear-key');
 
     var sealDrop = $('seal-drop');
+    var sealStationChk = $('seal-station-mode');
     var sealChooseBtn = $('seal-choose');
     var sealFilesInput = $('seal-files');
     var sealStatus = $('seal-status');
@@ -77,14 +78,23 @@
     var activeKey = null; // { kind, version, label, createdAt, fingerprint, publicKey, secretKey, readOnly }
     var keySaved = false;
     var sealedWithUnsavedKey = false;
+    // 2026-11-23: the public key was copied out of this tab (a colleague may seal files with it), so the private key
+    // is the only way to read those results, saved or not.
+    var publicKeyCopied = false;
+    // The button that must be pressed a second time before an unsaved private key is dropped ('clear', 'load', '').
+    var dropArmed = '';
+    var dropTimer = 0;
     var resultsExported = false;
     var demoCodes = [];
     var sealedBatch = []; // [{ name, html, title, fingerprint }]
+    var pendingSealHandoff = null; // { name, bytes } kept in tab memory only from #seal-batch
     var collected = [];   // [{ id, result, truncated, csvName, csvText }]
     var camStream = null;
     var camTimer = null;
     var camDetector = null;
     var camToastTimer = null;
+    var camGen = 0;
+    var camStarting = false;
     var lastCamCode = '';
     var lastCamAt = 0;
 
@@ -293,13 +303,34 @@
       var readOnly = !!activeKey.readOnly;
       if (saveKeyBtn) saveKeyBtn.hidden = readOnly;
       if (keyPubOnlyTag) keyPubOnlyTag.hidden = !readOnly;
-      if (keyUnsavedTag) keyUnsavedTag.hidden = readOnly || keySaved;
+      if (keyUnsavedTag) {
+        keyUnsavedTag.hidden = readOnly || keySaved;
+        keyUnsavedTag.textContent = activeKey.sample ? 'Sample key, for trying this page' : 'Private key not saved yet';
+      }
+      if (saveKeyBtn && activeKey.sample) saveKeyBtn.hidden = true;
       if (keySaveHint) {
-        keySaveHint.textContent = readOnly
-          ? 'Public key only: you can attach this key to student packets in Step 2. Unlocking student QR codes in Step 3 requires the lead teacher\'s private key file (.json).'
+        keySaveHint.textContent = activeKey.sample
+          ? 'This is a sample key, for trying this page with made-up students. It cannot be saved and cannot be used for files you give to students. Press Clear key from tab, then make your own key.'
+          : readOnly
+          ? 'Public key only: you can attach this key to student files in step 2. Unlocking student QR codes in step 3 needs the lead teacher\'s private key file (.json).'
           : 'Save the private key file in your private teacher folder if you plan to scan results later or in a new tab. Closing this tab clears the key from memory.';
       }
       updateSaveNudge();
+      flushPendingSealHandoff();
+    }
+
+    function flushPendingSealHandoff() {
+      if (!pendingSealHandoff || !activeKey || activeKey.sample) return;
+      var held = pendingSealHandoff;
+      pendingSealHandoff = null;
+      var bytes = held.bytes instanceof Uint8Array ? held.bytes : new Uint8Array(held.bytes || 0);
+      var fakeFile = {
+        name: held.name || 'starter-packs.zip',
+        size: bytes.byteLength,
+        arrayBuffer: function () { return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); },
+        text: function () { return Promise.resolve(decodeUtf8(bytes)); },
+      };
+      processPacketFiles([fakeFile]);
     }
 
     makeKeyBtn.addEventListener('click', function () {
@@ -308,6 +339,7 @@
         activeKey.readOnly = false;
         keySaved = false;
         sealedWithUnsavedKey = false;
+        publicKeyCopied = false;
         renderKey();
         setStatus(keyStatus, 'Created a new teacher key (Key ID ' + activeKey.fingerprint + '). Save the private key file if you will collect results later.', 'ok');
       } catch (err) {
@@ -337,7 +369,7 @@
         sealedWithUnsavedKey = false;
         if (pubOnlyFold) pubOnlyFold.open = false;
         renderKey();
-        setStatus(keyStatus, 'Loaded public key only (Key ID ' + activeKey.fingerprint + '). You can now seal packets in Step 2.', 'ok');
+        setStatus(keyStatus, 'Loaded public key only (Key ID ' + activeKey.fingerprint + '). You can now attach it to files in step 2.', 'ok');
       });
     }
 
@@ -345,8 +377,26 @@
       loadKeyFile.value = '';
       loadKeyFile.click();
     }
+    // True when dropping the key in this tab would leave results nobody can read: a private key that was never saved.
+    function unsavedPrivateKey() {
+      return !!(activeKey && !activeKey.readOnly && !activeKey.sample && !keySaved);
+    }
+    // The first press on "which" only warns; a second press within 20 seconds goes ahead.
+    function confirmDrop(which, verb) {
+      if (!unsavedPrivateKey() || dropArmed === which) {
+        dropArmed = '';
+        if (dropTimer) { root.clearTimeout(dropTimer); dropTimer = 0; }
+        return true;
+      }
+      dropArmed = which;
+      if (dropTimer) root.clearTimeout(dropTimer);
+      dropTimer = root.setTimeout(function () { dropArmed = ''; dropTimer = 0; }, 20000);
+      setStatus(keyStatus, 'This private key (Key ID ' + activeKey.fingerprint + ') has not been saved. Without it, nobody can read results from files made with it'
+        + (publicKeyCopied ? ', including files a colleague makes with the public key you copied' : '') + '. Press Save private key (.json) first, or press ' + verb + ' again to go on without saving.', 'warn');
+      return false;
+    }
     loadKeyBtn.addEventListener('click', triggerLoadKey);
-    loadKeyAgainBtn.addEventListener('click', triggerLoadKey);
+    loadKeyAgainBtn.addEventListener('click', function () { if (confirmDrop('load', 'Load another key')) triggerLoadKey(); });
 
     loadKeyFile.addEventListener('change', function () {
       var file = loadKeyFile.files && loadKeyFile.files[0];
@@ -374,6 +424,8 @@
         };
         keySaved = true;
         sealedWithUnsavedKey = false;
+        publicKeyCopied = false;
+        dropArmed = '';
         renderKey();
         setStatus(keyStatus, 'Loaded teacher key (Key ID ' + activeKey.fingerprint + ').', 'ok');
       }, function () {
@@ -384,13 +436,15 @@
     copyPubBtn.addEventListener('click', function () {
       if (!activeKey) return;
       var fallback = function () {
+        if (!activeKey.sample) publicKeyCopied = true;
         keyPubInput.focus();
         keyPubInput.select();
         setStatus(keyStatus, 'Public key selected. Press Ctrl+C (or Cmd+C) to copy.', '');
       };
       try {
         root.navigator.clipboard.writeText(activeKey.publicKey).then(function () {
-          setStatus(keyStatus, 'Public key copied (Key ID ' + activeKey.fingerprint + ').', 'ok');
+          if (!activeKey.sample) publicKeyCopied = true;
+          setStatus(keyStatus, 'Public key copied (Key ID ' + activeKey.fingerprint + ').' + (unsavedPrivateKey() ? ' Save the private key file too: it is the only way to read the results.' : ''), unsavedPrivateKey() ? 'warn' : 'ok');
         }, fallback);
       } catch (_) { fallback(); }
     });
@@ -411,15 +465,19 @@
       downloadBlob(filename, JSON.stringify(payload, null, 2), 'application/json;charset=utf-8');
       keySaved = true;
       sealedWithUnsavedKey = false;
+      publicKeyCopied = false;
+      dropArmed = '';
       renderKey();
       setStatus(keyStatus, 'Saved private key file ' + filename + '. Keep it in your private teacher folder.', 'ok');
     });
 
     clearKeyBtn.addEventListener('click', function () {
+      if (!confirmDrop('clear', 'Clear key from tab')) return;
       stopCamera();
       activeKey = null;
       keySaved = false;
       sealedWithUnsavedKey = false;
+      publicKeyCopied = false;
       if (demoPanel) demoPanel.hidden = true;
       renderKey();
       setStatus(keyStatus, 'Cleared the teacher key from this tab.', '');
@@ -489,12 +547,14 @@
     if (demoStartBtn) {
       demoStartBtn.addEventListener('click', function () {
         if (!activeKey || activeKey.readOnly) {
-          activeKey = Q.generateKeyPair('Sample Demo Class');
+          activeKey = Q.generateKeyPair('Sample (made-up students)');
           activeKey.readOnly = false;
-          keySaved = true; // Demo key does not need a save reminder
+          // 2026-11-23: a sample key is never saved, so it must never seal a file for a student (step 2 refuses it).
+          activeKey.sample = true;
+          keySaved = false;
           sealedWithUnsavedKey = false;
           renderKey();
-          setStatus(keyStatus, 'Created a live sample demo key (Key ID ' + activeKey.fingerprint + ').', 'ok');
+          setStatus(keyStatus, 'Made a sample key for trying this page (Key ID ' + activeKey.fingerprint + '). It cannot be used for files you give to students.', 'ok');
         }
         var samples = makeSampleResults();
         demoCodes = samples.map(function (r) { return Q.sealResult(r, activeKey.publicKey).code; });
@@ -549,7 +609,7 @@
       }
       entries.forEach(function (entry) {
         var right = entry.ok
-          ? makeEl('span', { text: 'Sealed for Key ID ' + entry.fingerprint })
+          ? makeEl('span', { text: 'Sealed for Key ID ' + entry.fingerprint + (entry.stationMode ? ' \u00b7 Station mode' : '') })
           : makeEl('span', { class: 'qr-seal-err', text: entry.message || 'Could not seal file.' });
         sealList.appendChild(makeEl('li', {}, [
           makeEl('strong', { text: entry.name }),
@@ -559,34 +619,40 @@
       sealResults.hidden = false;
       sealDownloadBtn.hidden = sealedBatch.length === 0;
       sealDownloadBtn.textContent = sealedBatch.length === 1
-        ? 'Download sealed packet (.html)'
-        : 'Download ' + sealedBatch.length + ' sealed packets (.zip)';
+        ? 'Download sealed file (.html)'
+        : 'Download ' + sealedBatch.length + ' sealed files (.zip)';
     }
 
     function processPacketFiles(fileList) {
       var files = Array.prototype.slice.call(fileList || []);
       if (!files.length) return;
       if (!activeKey) {
-        setStatus(sealStatus, 'Create or load a teacher key in Step 1 before sealing packet files.', 'warn');
+        setStatus(sealStatus, 'Make or load a teacher key in step 1 first.', 'warn');
         if (makeKeyBtn) makeKeyBtn.focus();
         return;
       }
+      if (activeKey.sample) {
+        setStatus(sealStatus, 'The sample key is only for trying this page: it is never saved, so results from files made with it could not be read later. In step 1 press Clear key from tab, then make your own key.', 'warn');
+        if (clearKeyBtn) clearKeyBtn.focus();
+        return;
+      }
+      var attachOpts = sealStationChk && sealStationChk.checked ? { stationMode: true } : undefined;
       var tasks = files.map(function (file) {
         var name = String(file.name || 'packet.html');
         if (/\.zip$/i.test(name)) {
           return readAsBuffer(file).then(function (buf) {
             return unpackZipUniversal(new Uint8Array(buf)).then(function (unpacked) {
               if (!unpacked.ok || !unpacked.entries.length) {
-                return [{ ok: false, name: name, message: 'No readable .html packet files were found inside this .zip.' }];
+                return [{ ok: false, name: name, message: 'No practice file or check (.html) was found inside this .zip.' }];
               }
               return unpacked.entries.map(function (u) {
                 if (!u.ok) {
                   return { ok: false, name: u.name, message: u.error === 'no_deflate' ? 'This browser cannot unpack compressed .zip files. Unzip the folder and drop the .html files directly.' : 'Could not unpack this entry from the .zip.' };
                 }
-                var res = TH.attachQrKey(decodeUtf8(u.bytes), activeKey.publicKey);
+                var res = TH.attachQrKey(decodeUtf8(u.bytes), activeKey.publicKey, attachOpts);
                 return res.ok
-                  ? { ok: true, name: sealedNameFor(u.name), html: res.html, title: res.title, fingerprint: res.fingerprint }
-                  : { ok: false, name: u.name, message: res.message || 'Not an AlloFlow packet.' };
+                  ? { ok: true, name: sealedNameFor(u.name), html: res.html, title: res.title, fingerprint: res.fingerprint, stationMode: !!res.stationMode }
+                  : { ok: false, name: u.name, message: res.message || 'Not an AlloFlow practice file or check.' };
               });
             });
           }, function () {
@@ -594,10 +660,10 @@
           });
         }
         return readAsText(file).then(function (text) {
-          var res = TH.attachQrKey(text, activeKey.publicKey);
+          var res = TH.attachQrKey(text, activeKey.publicKey, attachOpts);
           return [res.ok
-            ? { ok: true, name: sealedNameFor(name), html: res.html, title: res.title, fingerprint: res.fingerprint }
-            : { ok: false, name: name, message: res.message || 'Not an AlloFlow packet.' }];
+            ? { ok: true, name: sealedNameFor(name), html: res.html, title: res.title, fingerprint: res.fingerprint, stationMode: !!res.stationMode }
+            : { ok: false, name: name, message: res.message || 'Not an AlloFlow practice file or check.' }];
         }, function () {
           return [{ ok: false, name: name, message: 'Could not read this file.' }];
         });
@@ -614,11 +680,11 @@
           updateSaveNudge();
         }
         if (okCount && !errCount) {
-          setStatus(sealStatus, 'Sealed ' + okCount + (okCount === 1 ? ' packet' : ' packets') + ' for Key ID ' + activeKey.fingerprint + '. Ready to download.', 'ok');
+          setStatus(sealStatus, 'Attached your key to ' + okCount + (okCount === 1 ? ' file' : ' files') + ' (Key ID ' + activeKey.fingerprint + '). Ready to download.', 'ok');
         } else if (okCount && errCount) {
-          setStatus(sealStatus, 'Sealed ' + okCount + ' packet' + (okCount === 1 ? '' : 's') + '; ' + errCount + ' could not be sealed.', 'warn');
+          setStatus(sealStatus, 'Attached your key to ' + okCount + ' file' + (okCount === 1 ? '' : 's') + '; ' + errCount + ' could not be used. See the list below.', 'warn');
         } else {
-          setStatus(sealStatus, 'No packet files could be sealed. Check the list below.', 'warn');
+          setStatus(sealStatus, 'None of these files could be used. See the list below.', 'warn');
         }
       });
     }
@@ -653,10 +719,11 @@
       var fp = activeKey ? activeKey.fingerprint : sealedBatch[0].fingerprint;
       var zipName = 'sealed-packets__' + fp + '.zip';
       downloadBlob(zipName, zip.finish(), 'application/zip');
-      setStatus(sealStatus, 'Downloaded ' + zipName + ' (' + sealedBatch.length + ' packets).', 'ok');
+      setStatus(sealStatus, 'Downloaded ' + zipName + ' (' + sealedBatch.length + ' files).', 'ok');
     });
 
     sealClearBtn.addEventListener('click', function () {
+      pendingSealHandoff = null;
       sealedBatch = [];
       clearNode(sealList);
       sealResults.hidden = true;
@@ -671,6 +738,25 @@
       return m + 'm ' + (s < 10 ? '0' : '') + s + 's';
     }
 
+    function readAlongStatsOf(res) {
+      var items = Array.isArray(res && res.items) ? res.items : [];
+      if (!items.length || !items.every(function (it) { return it && it.activity === 'read_along'; })) return null;
+      var read = 0, played = 0, answers = [];
+      items.forEach(function (it, idx) {
+        var pageNo = Number(it.n) > 0 ? Number(it.n) : (idx + 1);
+        var resp = Array.isArray(it.responses) ? it.responses : [];
+        var how = it.practice === 'played' || resp[0] === 'played' ? 'played' : 'read';
+        if (how === 'played') played++;
+        else read++;
+        resp.forEach(function (entry) {
+          var s = String(entry || '').trim();
+          if (!s || s === 'read' || s === 'played') return;
+          answers.push({ page: pageNo, text: s });
+        });
+      });
+      return { pages: items.length, read: read, played: played, answers: answers };
+    }
+
     function summarizeResult(res) {
       var isCheck = res.packet && res.packet.mode === 'check';
       if (isCheck && res.score) {
@@ -680,6 +766,15 @@
           return sc.score + (unit ? ' ' + unit : '') + ' (' + sc.itemsCorrect + '/' + sc.itemsAttempted + ')';
         }
         return sc.itemsCorrect + '/' + sc.itemsAttempted + ' attempted (no score)';
+      }
+      var ra = readAlongStatsOf(res);
+      if (ra) {
+        var raParts = [];
+        if (ra.read) raParts.push(ra.read + ' read');
+        if (ra.played) raParts.push(ra.played + ' played');
+        var raLine = ra.pages + (ra.pages === 1 ? ' page' : ' pages') + (raParts.length ? ' (' + raParts.join(', ') + ')' : '');
+        if (ra.answers.length) raLine += ' · ' + ra.answers.length + (ra.answers.length === 1 ? ' answer' : ' answers');
+        return raLine;
       }
       var sum = res.summary || {};
       if (sum.items > 0) {
@@ -702,6 +797,12 @@
     }
 
     function focusSummary(res) {
+      var ra = readAlongStatsOf(res);
+      if (ra) {
+        return ra.answers.length
+          ? ra.answers.length + (ra.answers.length === 1 ? ' reading answer' : ' reading answers')
+          : 'None';
+      }
       var focus = focusItemsOf(res);
       if (!focus.length) return 'None';
       var shown = focus.slice(0, 6).map(function (it) {
@@ -714,6 +815,12 @@
 
     function detailLinesOf(res) {
       var lines = [];
+      var ra = readAlongStatsOf(res);
+      if (ra && ra.answers.length) {
+        ra.answers.forEach(function (a) {
+          lines.push('Page ' + a.page + ' — ' + a.text);
+        });
+      }
       focusItemsOf(res).forEach(function (it) {
         var label = it.word || ('#' + it.n);
         var kind = !it.correct ? 'Missed' : 'Retry';
@@ -737,14 +844,35 @@
       return [res.lessonId, res.learnerName || res.learner, res.finishedAt, s.items, s.firstTry, s.missed].join('|');
     }
 
+    // What the code left out to fit, as one sentence, or '' when nothing was (packets_qr_crypto.js compactResult).
+    function leftOutLine(res) {
+      var lo = res && res.qrLeftOut;
+      if (!lo || !lo.level) return '';
+      var parts = ['the time on each question'];
+      if (lo.noWording > 0) {
+        parts.push(lo.missedNoWording > 0
+          ? 'the words of ' + lo.noWording + ' question' + (lo.noWording === 1 ? '' : 's') + ' (' + lo.missedNoWording + ' of them missed or tried again)'
+          : 'the words of ' + lo.noWording + ' question' + (lo.noWording === 1 ? '' : 's') + ' answered right the first time');
+      }
+      if (lo.helpsAsTotals) parts.push('which question each help was used on');
+      return 'Every question is counted. Left out to fit in one code: ' + parts.join('; ') + '. The student\'s saved results file has all of it.';
+    }
+    // The results file this page writes for one unlocked code: the rows the student's own file would have, rebuilt
+    // from the code, with a check value over those rows. The summary row (outside the check value) says where the
+    // file came from and how much was left out, so Add up results can say so and prefer the student's own file.
     function buildCsvEntry(res) {
       var tbl = TH.resultsCsv(res);
       var dig = TH.sha256 ? TH.sha256(tbl.basis) : null;
       var integrity = dig ? { method: 'sha256', value: dig.hex } : null;
       res.integrity = integrity;
+      var level = res.qrLeftOut && res.qrLeftOut.level ? res.qrLeftOut.level : 0;
+      var lines = tbl.text(integrity).split('\r\n');
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].indexOf('"#summary",') === 0) { lines[i] += ',"source=sealed_qr","qr_left_out=' + level + '"'; break; }
+      }
       return {
         csvName: tbl.stem + '.csv',
-        csvText: tbl.text(integrity),
+        csvText: lines.join('\r\n'),
       };
     }
 
@@ -768,10 +896,11 @@
         var res = row.result;
         var isCheck = res.packet && res.packet.mode === 'check';
         var packetCell = makeEl('td', {}, [
-          makeEl('span', { text: res.lessonTitle || res.lessonId || 'Packet' }),
-          row.truncated ? makeEl('div', {}, [makeEl('span', { class: 'qr-trim-tag', text: 'Long packet condensed' })]) : null,
+          makeEl('span', { text: res.lessonTitle || res.lessonId || 'File' }),
+          row.truncated ? makeEl('div', {}, [makeEl('span', { class: 'qr-trim-tag', text: 'Some details did not fit' })]) : null,
         ]);
         var detailLines = detailLinesOf(res);
+        if (leftOutLine(res)) detailLines.push(leftOutLine(res));
         var focusCell = makeEl('td', {}, [
           makeEl('span', { text: focusSummary(res) }),
           detailLines.length ? makeEl('details', { class: 'qr-row-details' }, [
@@ -800,7 +929,7 @@
           } },
           text: 'Remove',
         });
-        var timeMs = isCheck && res.score ? (Number(res.score.elapsedS) || 0) * 1000 : (Number(res.activeMs) || 0);
+        var timeMs = isCheck && res.score ? (Number(res.score.elapsedS) || 0) * 1000 : (Number(res.activeMs) || Number(res.durationMs) || 0);
         collectedBody.appendChild(makeEl('tr', { 'data-collected-row': row.id }, [
           makeEl('td', { text: res.learnerName || res.learner || '(No name)' }),
           packetCell,
@@ -813,12 +942,21 @@
       });
     }
 
+    // Each code found in pasted text, as the forms to try in turn: first with the white space inside it taken out (a
+    // code wrapped over several lines), then as far as its first white space (a code followed by other words).
     function extractCodes(rawText) {
       var text = String(rawText || '').trim();
       if (!text) return [];
-      var matches = text.match(/AFQR1:[A-Za-z2-7=\-]+/gi);
-      if (matches && matches.length) return matches;
-      return [text];
+      var parts = text.split(/(?=AFQR1:)/i).filter(function (part) { return /^AFQR1:/i.test(part); });
+      if (!parts.length) return [[text]];
+      return parts.map(function (part) {
+        var joined = /^AFQR1:[A-Za-z2-7=\-]+/i.exec(part.replace(/\s+/g, ''));
+        var first = /^AFQR1:[A-Za-z2-7=\-]+/i.exec(part);
+        var forms = [];
+        if (joined) forms.push(joined[0]);
+        if (first && forms.indexOf(first[0]) < 0) forms.push(first[0]);
+        return forms.length ? forms : [part];
+      });
     }
 
     function ingestText(rawText, fromCamera) {
@@ -836,16 +974,22 @@
         return { added: 0, duplicates: 0, errors: 0 };
       }
       var added = 0, duplicates = 0, lastAdded = null, firstError = '';
-      tokens.forEach(function (tok) {
-        var unlocked = Q.unsealResult(tok, activeKey.secretKey);
+      tokens.forEach(function (forms) {
+        var unlocked = null;
+        for (var f = 0; f < forms.length; f++) {
+          unlocked = Q.unsealResult(forms[f], activeKey.secretKey);
+          if (unlocked.ok || unlocked.reason === 'wrong_key' || unlocked.reason === 'old_condensed') break;
+        }
         if (!unlocked.ok) {
           if (!firstError) {
             if (unlocked.reason === 'wrong_key') {
               firstError = 'Wrong teacher key: this QR was sealed for Key ID ' + unlocked.expectedFingerprint + ', but your active key is ' + activeKey.fingerprint + '. Load the matching private key file in Step 1.';
             } else if (unlocked.reason === 'tampered') {
-              firstError = 'Could not unlock this QR code: the data was changed or cut off. Ask the student to show the QR again.';
+              firstError = 'Could not unlock this code: it was changed or cut short. Ask the student to show the QR code again.';
+            } else if (unlocked.reason === 'old_condensed') {
+              firstError = 'This code comes from a file made before 23 November 2026, and it does not hold every question, so no right score can be counted from it. Ask the student for the saved results file, or attach your key to the file again and give out the new copy.';
             } else if (unlocked.reason === 'version') {
-              firstError = 'This QR code uses a newer format version than this page supports.';
+              firstError = 'This code was made by a newer version of AlloFlow than this page. Load this page again to get the newest version.';
             } else {
               firstError = 'This is not an AlloFlow sealed QR code (expected text starting with AFQR1:).';
             }
@@ -868,7 +1012,7 @@
         showCamToast('Scanned: ' + (lastAdded.learnerName || 'student') + ' — ' + summarizeResult(lastAdded) + ' (' + collected.length + ' collected)');
       }
       if (added === 1 && !firstError && !duplicates && lastAdded) {
-        setStatus(collectStatus, 'Added ' + (lastAdded.learnerName || 'student') + ' — ' + (lastAdded.lessonTitle || 'Packet') + ' (' + summarizeResult(lastAdded) + ').', 'ok');
+        setStatus(collectStatus, 'Added ' + (lastAdded.learnerName || 'student') + ' — ' + (lastAdded.lessonTitle || 'File') + ' (' + summarizeResult(lastAdded) + ').', 'ok');
       } else if (added > 0 && !firstError) {
         setStatus(collectStatus, 'Added ' + added + ' student result' + (added === 1 ? '' : 's') + (duplicates ? ' (' + duplicates + ' duplicate skipped).' : '.'), 'ok');
       } else if (firstError) {
@@ -888,15 +1032,58 @@
       codeInput.focus();
     });
 
-    // --- Camera and QR photo scanning (optional, zero network, BarcodeDetector where available) ---
-    var hasDetector = typeof root.BarcodeDetector === 'function';
+    // --- Camera and QR photo scanning (optional, nothing is sent) ---
+    // 2026-11-23: the browser's own QR reader (BarcodeDetector) where it has one; otherwise jsQR (vendor/jsqr-1.4.0.js,
+    // Apache-2.0, loaded from this site), which reads the picture inside this tab. Chrome and Edge on Windows, Safari on
+    // an iPad or iPhone, and Firefox have no reader of their own, so without jsQR they could only paste codes.
+    var hasNative = typeof root.BarcodeDetector === 'function';
+    var hasJsQr = typeof root.jsQR === 'function';
+    var canRead = hasNative || hasJsQr;
     var hasCamera = !!(root.navigator && root.navigator.mediaDevices && typeof root.navigator.mediaDevices.getUserMedia === 'function');
+    var scanCanvas = null;
+
+    // The pixels of a video frame, an image or a bitmap, at most maxSide on its long side.
+    function pixelsOf(src, w, h, maxSide) {
+      if (!(w > 0) || !(h > 0)) return null;
+      var k = Math.min(1, maxSide / Math.max(w, h));
+      var cw = Math.max(1, Math.round(w * k)), ch = Math.max(1, Math.round(h * k));
+      if (!scanCanvas) scanCanvas = doc.createElement('canvas');
+      scanCanvas.width = cw;
+      scanCanvas.height = ch;
+      var g = scanCanvas.getContext('2d', { willReadFrequently: true });
+      if (!g) return null;
+      g.drawImage(src, 0, 0, cw, ch);
+      return g.getImageData(0, 0, cw, ch);
+    }
+    function readWithJsQr(src, w, h, fromPhoto) {
+      if (!hasJsQr) return [];
+      try {
+        var px = pixelsOf(src, w, h, fromPhoto ? 2000 : 1280);
+        if (!px) return [];
+        // A photo may be dark on light or light on dark; a camera frame of a screen is dark on light.
+        var got = root.jsQR(px.data, px.width, px.height, { inversionAttempts: fromPhoto ? 'attemptBoth' : 'dontInvert' });
+        return got && got.data ? [String(got.data)] : [];
+      } catch (_) { return []; }
+    }
+    // The text of each QR code found in src, as a promise of a list (empty when none is found).
+    function readCodes(src, w, h, fromPhoto) {
+      if (hasNative) {
+        try {
+          if (!camDetector) camDetector = new root.BarcodeDetector({ formats: ['qr_code'] });
+          return camDetector.detect(src).then(function (codes) {
+            var found = (codes || []).map(function (c) { return String(c.rawValue || ''); }).filter(Boolean);
+            return found.length || !hasJsQr ? found : readWithJsQr(src, w, h, fromPhoto);
+          }, function () { return readWithJsQr(src, w, h, fromPhoto); });
+        } catch (_) { /* a reader that will not start: jsQR below */ }
+      }
+      return Promise.resolve(readWithJsQr(src, w, h, fromPhoto));
+    }
 
     function initScannerUi() {
-      if (!hasDetector) {
+      if (!canRead) {
         camToggleBtn.disabled = true;
         qrImgBtn.disabled = true;
-        camHint.textContent = 'Live camera and photo QR scanning are supported in Chrome and Edge. In this browser, use Paste sealed code on the right.';
+        camHint.textContent = 'The part of this page that reads QR codes did not load, so the two buttons here are off. Load the page again, or use Paste sealed code.';
         return;
       }
       if (!hasCamera) {
@@ -907,6 +1094,8 @@
     initScannerUi();
 
     function stopCamera() {
+      camGen++;
+      camStarting = false;
       if (camTimer) { root.clearInterval(camTimer); camTimer = null; }
       if (camToastTimer) { root.clearTimeout(camToastTimer); camToastTimer = null; }
       if (camStream) {
@@ -921,39 +1110,42 @@
       if (camToggleBtn) camToggleBtn.textContent = 'Start camera';
     }
 
-    function ensureDetector() {
-      if (!camDetector && hasDetector) camDetector = new root.BarcodeDetector({ formats: ['qr_code'] });
-      return camDetector;
-    }
-
     camToggleBtn.addEventListener('click', function () {
-      if (camStream) {
+      if (camStream || camStarting) {
         stopCamera();
         setStatus(collectStatus, 'Camera stopped.', '');
         return;
       }
       if (!activeKey || activeKey.readOnly) {
-        setStatus(collectStatus, 'Create or load your teacher private key in Step 1 before scanning.', 'warn');
+        setStatus(collectStatus, 'Make or load your teacher key in step 1 before scanning.', 'warn');
         return;
       }
-      if (!hasDetector || !hasCamera) return;
-      root.navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false }).then(function (stream) {
+      if (!canRead || !hasCamera) return;
+      var gen = ++camGen;
+      camStarting = true;
+      camToggleBtn.textContent = 'Stop camera';
+      setStatus(collectStatus, 'Starting camera...', '');
+      root.navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }).then(function (stream) {
+        if (gen !== camGen || doc.hidden) {
+          try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {}
+          if (gen === camGen) stopCamera();
+          return;
+        }
+        camStarting = false;
         camStream = stream;
         camVideo.srcObject = stream;
         camBox.hidden = false;
         camToggleBtn.textContent = 'Stop camera';
         var playPromise = camVideo.play();
         if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(function () {});
-        var detector = ensureDetector();
         var busy = false;
         camTimer = root.setInterval(function () {
           if (busy || !camStream || camVideo.readyState < 2) return;
           busy = true;
-          detector.detect(camVideo).then(function (codes) {
+          readCodes(camVideo, camVideo.videoWidth, camVideo.videoHeight, false).then(function (codes) {
             busy = false;
-            if (!codes || !codes.length) return;
             for (var i = 0; i < codes.length; i++) {
-              var val = String(codes[i].rawValue || '').trim();
+              var val = String(codes[i] || '').trim();
               if (!val) continue;
               var now = Date.now();
               if (val === lastCamCode && now - lastCamAt < 3500) continue;
@@ -965,6 +1157,7 @@
         }, 250);
         setStatus(collectStatus, 'Camera started. Hold a student\'s sealed QR code in front of the lens.', '');
       }, function () {
+        if (gen !== camGen) return;
         stopCamera();
         setStatus(collectStatus, 'Could not start the camera. Check browser camera permission, or use Scan QR photo or Paste sealed code.', 'warn');
       });
@@ -972,7 +1165,7 @@
 
     qrImgBtn.addEventListener('click', function () {
       if (!activeKey || activeKey.readOnly) {
-        setStatus(collectStatus, 'Create or load your teacher private key in Step 1 before scanning a QR photo.', 'warn');
+        setStatus(collectStatus, 'Make or load your teacher key in step 1 before scanning a QR photo.', 'warn');
         return;
       }
       qrImgFile.value = '';
@@ -981,8 +1174,7 @@
 
     qrImgFile.addEventListener('change', function () {
       var files = Array.prototype.slice.call(qrImgFile.files || []);
-      if (!files.length || !hasDetector) return;
-      var detector = ensureDetector();
+      if (!files.length || !canRead) return;
       var scans = files.map(function (file) {
         var getSource = typeof root.createImageBitmap === 'function'
           ? root.createImageBitmap(file)
@@ -998,9 +1190,10 @@
               fr.readAsDataURL(file);
             });
         return getSource.then(function (src) {
-          return detector.detect(src).then(function (codes) {
+          var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+          return readCodes(src, w, h, true).then(function (codes) {
             if (src && typeof src.close === 'function') src.close();
-            return (codes || []).map(function (c) { return String(c.rawValue || ''); }).filter(Boolean);
+            return codes;
           });
         }, function () { return []; });
       });
@@ -1008,7 +1201,7 @@
         var found = [];
         groups.forEach(function (g) { found = found.concat(g); });
         if (!found.length) {
-          setStatus(collectStatus, 'No QR code was detected in the selected image. Try a clearer photo or paste the AFQR1: code.', 'warn');
+          setStatus(collectStatus, 'No QR code was found in the chosen picture. Try a clearer photo in which the code fills more of the picture, or paste the code that starts with AFQR1:.', 'warn');
           return;
         }
         ingestText(found.join('\n'), false);
@@ -1018,7 +1211,7 @@
     root.addEventListener('pagehide', stopCamera);
     doc.addEventListener('visibilitychange', function () { if (doc.hidden) stopCamera(); });
     root.addEventListener('beforeunload', function (e) {
-      if (sealedWithUnsavedKey || (collected.length > 0 && !resultsExported)) {
+      if (sealedWithUnsavedKey || (publicKeyCopied && unsavedPrivateKey()) || (collected.length > 0 && !resultsExported)) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -1060,6 +1253,26 @@
       renderCollected();
       setStatus(collectStatus, 'Cleared collected results from this tab.', '');
     });
+
+    if (root.location && root.location.hash === '#seal-batch' && HANDOFF && typeof HANDOFF.take === 'function') {
+      try {
+        if (root.history && typeof root.history.replaceState === 'function') {
+          root.history.replaceState(null, '', root.location.pathname + root.location.search);
+        }
+      } catch (_) {}
+      HANDOFF.take().then(function (item) {
+        if (!item || !item.bytes) return;
+        pendingSealHandoff = {
+          name: String(item.name || 'starter-packs.zip').slice(0, 160),
+          bytes: item.bytes,
+        };
+        if (activeKey && !activeKey.sample) {
+          flushPendingSealHandoff();
+        } else {
+          setStatus(sealStatus, 'Received ' + pendingSealHandoff.name + ' ready for your class key. Make or load a teacher key in step 1 to attach your key automatically.', 'ok');
+        }
+      }).catch(function () {});
+    }
   }
 
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot);

@@ -10957,6 +10957,7 @@ var i = 0;
 
           function addModulePlacard(def, index) {
             var labelCanvas = document.createElement('canvas');
+            labelCanvas.setAttribute('aria-hidden', 'true');
             labelCanvas.width = 512; labelCanvas.height = 128;
             var labelContext = labelCanvas.getContext('2d');
             if (!labelContext) return;
@@ -11221,6 +11222,7 @@ var i = 0;
           var hatchVisuals = [];
           function addWayfindingPlacard(label, detail, position, lookTarget, color, upVector, signSize) {
             var signCanvas = document.createElement('canvas');
+            signCanvas.setAttribute('aria-hidden', 'true');
             signCanvas.width = 512; signCanvas.height = 144;
             var signContext = signCanvas.getContext('2d');
             if (!signContext) return;
@@ -11654,6 +11656,7 @@ var i = 0;
           harmonyAirflowBlockedMark.position.set(0.08, 0.58, 0);
           harmonyAirReturn.add(harmonyAirflowBlockedMark);
           var airflowStatusCanvas = document.createElement('canvas');
+          airflowStatusCanvas.setAttribute('aria-hidden', 'true');
           airflowStatusCanvas.width = 512; airflowStatusCanvas.height = 128;
           var airflowStatusContext = airflowStatusCanvas.getContext('2d');
           var airflowStatusTexture = THREE.CanvasTexture ? new THREE.CanvasTexture(airflowStatusCanvas) : new THREE.Texture(airflowStatusCanvas);
@@ -16563,10 +16566,10 @@ var i = 0;
                   h('div', { className: 'iss-dock-inspector-heading' },
                     h('label', { htmlFor: 'iss-dock-forecast-time' }, __alloT('stem.spacestation.dock_forecast_inspect', 'Inspect the coast')),
                     h('span', null, __alloT('stem.spacestation.dock_forecast_prediction_only', 'PREDICTION ONLY'))),
-                  h('input', { id: 'iss-dock-forecast-time', 'data-dock-forecast-time': true, type: 'range', min: 0, max: 60, step: 'any', defaultValue: 60, 'aria-describedby': 'iss-dock-forecast-inspect-help',
+                  h('input', { id: 'iss-dock-forecast-time', 'data-dock-forecast-time': true, type: 'range', min: 0, max: 60, step: 'any', defaultValue: 60, 'aria-valuetext': '+60.0 s', 'aria-describedby': 'iss-dock-forecast-inspect-help',
                     onChange: function (e) { flightControl(e, '_dockSetForecastTime', e.target.value); },
                     onKeyDown: function (e) {
-                      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                       var value = Number(e.currentTarget.value), delta = { ArrowLeft: -.5, ArrowDown: -.5, ArrowRight: .5, ArrowUp: .5, PageDown: -5, PageUp: 5 }[e.key];
                       if (delta !== undefined || e.key === 'Home' || e.key === 'End') { e.preventDefault(); flightControl(e, '_dockSetForecastTime', e.key === 'Home' ? 0 : e.key === 'End' ? 'end' : value + delta); }
                     } }),
@@ -20754,7 +20757,7 @@ var i = 0;
               [0, 5, 10].map(function (value) { return h('text', { key: value, x: 40 + value * 54, y: 113, textAnchor: value === 0 ? 'start' : value === 10 ? 'end' : 'middle', 'aria-hidden': true }, value + ' min'); })),
             h('div', { className: 'iss-forecast-events', 'data-iss-forecast-events': '', role: 'group', 'aria-label': text('crossings_label', 'Inspect predicted shadow crossings') }, ''),
             h('label', { className: 'iss-forecast-time-label', htmlFor: 'iss-map-forecast-time' }, text('time_label', 'Preview time'), h('strong', { 'data-iss-forecast-reading': 'time' }, '+5:00')),
-            h('input', { type: 'range', id: 'iss-map-forecast-time', min: 0, max: 600, step: .1, defaultValue: 300, 'data-iss-forecast-slider': '', onChange: function (event) { seek(Number(event.target.value)); } }),
+            h('input', { type: 'range', id: 'iss-map-forecast-time', min: 0, max: 600, step: .1, defaultValue: 300, 'aria-valuetext': '+5:00', 'data-iss-forecast-slider': '', onChange: function (event) { seek(Number(event.target.value)); } }),
             h('div', { className: 'iss-forecast-transport-options' },
               h('label', null, h('span', null, text('speed', 'Preview speed')),
                 h('select', { 'data-iss-forecast-rate': 'panel', defaultValue: '60', onChange: function (event) { var cv = canvas(); if (cv && cv._issSetForecastTransport) cv._issSetForecastTransport({ rate: event.target.value }); } },
@@ -20890,7 +20893,7 @@ var i = 0;
             h('div', { className: 'iss-arm-preview-key' }, h('span', null, text('key_future', 'Violet · future arm and hand path')), h('span', null, text('key_actual', 'White · current hand')), h('span', null, text('key_dots', 'Dots · 10 seconds apart'))),
             renderMapArmSpeedChart(),
             h('label', { className: 'iss-arm-preview-time', htmlFor: 'iss-arm-preview-time' }, h('span', null, text('time_label', 'Preview time'), h('strong', { 'data-iss-arm-preview-reading': 'time' }, '+30.00 s')),
-              h('input', { id: 'iss-arm-preview-time', type: 'range', min: 0, max: 120, step: .25, defaultValue: 30, 'data-iss-arm-preview-time': '', 'aria-describedby': 'iss-arm-preview-help', onChange: function (event) { call('_issSeekArmPreview', Number(event.target.value)); } })),
+              h('input', { id: 'iss-arm-preview-time', type: 'range', min: 0, max: 120, step: .25, defaultValue: 30, 'aria-valuetext': '+30.00 s', 'data-iss-arm-preview-time': '', 'aria-describedby': 'iss-arm-preview-help', onChange: function (event) { call('_issSeekArmPreview', Number(event.target.value)); } })),
             h('div', { className: 'iss-arm-preview-actions' },
               h('button', { type: 'button', 'data-iss-arm-preview-play': '', 'aria-pressed': false, onClick: function () { call('_issPlayArmPreview'); } }, text('play', 'Play preview 10×')),
               h('button', { type: 'button', 'data-iss-arm-preview-apply': '', 'aria-describedby': 'iss-arm-preview-advance-help', onClick: function () { call('_issApplyArmPreview'); } }, text('advance', 'Advance') + ' +30.00 s'),
@@ -20919,7 +20922,7 @@ var i = 0;
               h('button', { type: 'button', 'data-iss-arm-branch': '', 'aria-pressed': false, onClick: function () { var cv = canvas(); if (cv && cv._issArmState) set({ branch: -cv._issArmState().branch }); } }, text('elbow', 'Elbow configuration') + ' A'),
               h('button', { type: 'button', 'data-iss-arm-hold': '', onClick: function () { var cv = canvas(); if (cv && cv._issArmHold) cv._issArmHold(); } }, text('target_current_pose', 'Target current pose')),
               h('button', { type: 'button', 'data-iss-arm-guides': '', 'aria-pressed': true, onClick: function () { var cv = canvas(); if (cv && cv._issArmState) set({ guides: !cv._issArmState().guides }); } }, text('guides', 'Reach boundary'))),
-            h('div', { className: 'iss-arm-target-controls' }, ['x', 'y'].map(function (axis) { var attrs = { id: 'iss-arm-' + axis, type: 'range', min: -3.5, max: 3.5, step: .05, defaultValue: axis === 'x' ? 0 : 2, 'aria-describedby': 'iss-arm-handle-help', onChange: function (event) { var patch = {}; patch[axis] = Number(event.target.value); set(patch); } }; attrs['data-iss-arm-' + axis] = ''; var valueAttrs = {}; valueAttrs['data-iss-arm-' + axis + '-value'] = ''; return h('label', { key: axis, htmlFor: 'iss-arm-' + axis }, h('span', null, text('target_' + axis, 'Target ' + axis.toUpperCase()), h('strong', valueAttrs, '0.00')), h('input', attrs)); })),
+            h('div', { className: 'iss-arm-target-controls' }, ['x', 'y'].map(function (axis) { var attrs = { id: 'iss-arm-' + axis, type: 'range', min: -3.5, max: 3.5, step: .05, defaultValue: axis === 'x' ? 0 : 2, 'aria-valuetext': axis === 'x' ? '0.00' : '2.00', 'aria-describedby': 'iss-arm-handle-help', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v.toFixed(2)); var patch = {}; patch[axis] = v; set(patch); } }; attrs['data-iss-arm-' + axis] = ''; var valueAttrs = {}; valueAttrs['data-iss-arm-' + axis + '-value'] = ''; return h('label', { key: axis, htmlFor: 'iss-arm-' + axis }, h('span', null, text('target_' + axis, 'Target ' + axis.toUpperCase()), h('strong', valueAttrs, '0.00')), h('input', attrs)); })),
             h('div', { className: 'iss-arm-readings' }, h('strong', { 'data-iss-arm-status': '', role: 'status' }, text('initial_status', 'Target within reach · joints settled')),
               h('span', null, text('gap_label', 'Tip to reachable endpoint: '), h('b', { 'data-iss-arm-gap': '' }, '0.000'), text('gap_units', ' scene units')),
               h('span', null, text('rates_label', 'Shoulder / elbow: '), h('b', { 'data-iss-arm-rates': '' }, '0.00 / 0.00'), ' °/s')),
@@ -20947,12 +20950,12 @@ var i = 0;
             h('div', { className: 'iss-motion-probe-controls' },
               h('div', { className: 'iss-motion-probe-span' },
                 h('label', { htmlFor: 'iss-map-probe-span' }, text('motion_span_position', 'Along panel span'), h('strong', { 'data-iss-motion-span-label': '' }, '100%')),
-                h('input', { id: 'iss-map-probe-span', type: 'range', min: 0, max: 100, step: 1, defaultValue: 100, 'data-iss-motion-span': '', 'aria-describedby': 'iss-motion-probe-units', onChange: function (event) { set({ span: Number(event.target.value) / 100 }); } }),
+                h('input', { id: 'iss-map-probe-span', type: 'range', min: 0, max: 100, step: 1, defaultValue: 100, 'aria-valuetext': '100%', 'data-iss-motion-span': '', 'aria-describedby': 'iss-motion-probe-units', onChange: function (event) { set({ span: Number(event.target.value) / 100 }); } }),
                 h('div', { className: 'iss-motion-probe-presets', role: 'group', 'aria-label': text('motion_positions', 'Probe position presets') },
                   [['root', 0, 'Inner edge'], ['middle', .5, 'Middle'], ['tip', 1, 'Tip']].map(function (preset) { return h('button', { key: preset[0], type: 'button', 'data-iss-motion-preset': preset[0], onClick: function () { set({ span: preset[1] }); } }, text('motion_position_' + preset[0], preset[2])); }))),
               h('div', { className: 'iss-motion-probe-chord' },
                 h('label', { htmlFor: 'iss-map-probe-chord' }, text('motion_chord_position', 'Across panel width'), h('strong', { 'data-iss-motion-chord-label': '' }, '100%')),
-                h('input', { id: 'iss-map-probe-chord', type: 'range', min: 0, max: 100, step: 1, defaultValue: 100, 'data-iss-motion-chord': '', 'aria-describedby': 'iss-motion-probe-units', onChange: function (event) { set({ chord: Number(event.target.value) / 100 }); } }),
+                h('input', { id: 'iss-map-probe-chord', type: 'range', min: 0, max: 100, step: 1, defaultValue: 100, 'aria-valuetext': '100%', 'data-iss-motion-chord': '', 'aria-describedby': 'iss-motion-probe-units', onChange: function (event) { set({ chord: Number(event.target.value) / 100 }); } }),
                 h('div', { className: 'iss-motion-probe-presets', role: 'group', 'aria-label': text('motion_width_positions', 'Panel width presets') },
                   [['minus', 0, '− edge'], ['center', .5, 'Midline'], ['plus', 1, '+ edge']].map(function (preset) { return h('button', { key: preset[0], type: 'button', 'data-iss-motion-chord-preset': preset[0], onClick: function () { set({ chord: preset[1] }); } }, text('motion_chord_' + preset[0], preset[2])); }))),
               h('label', null, text('motion_side', 'Panel half'), h('select', { 'data-iss-motion-side': '', defaultValue: '1', onChange: function (event) { set({ side: Number(event.target.value) }); } },
@@ -21111,9 +21114,9 @@ var i = 0;
           h('div', { className: 'iss-array-grid' },
             h('div', { className: 'iss-array-controls' },
               h('label', { htmlFor: 'iss-map-array-alpha' }, text('array_alpha', 'Rotation around the truss'), h('strong', { 'data-iss-array-reading': 'alpha' }, '35.0°')),
-              h('input', { type: 'range', id: 'iss-map-array-alpha', min: -180, max: 180, step: 1, defaultValue: 35, 'data-iss-array-alpha': '', 'aria-describedby': 'iss-array-help', onChange: function (event) { set({ arrayAlpha: Number(event.target.value) }); } }),
+              h('input', { type: 'range', id: 'iss-map-array-alpha', min: -180, max: 180, step: 1, defaultValue: 35, 'aria-valuetext': '35.0°', 'data-iss-array-alpha': '', 'aria-describedby': 'iss-array-help', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v.toFixed(1) + '°'); set({ arrayAlpha: v }); } }),
               h('label', { htmlFor: 'iss-map-array-feather' }, text('array_feather', 'Wing feather angle'), h('strong', { 'data-iss-array-reading': 'feather' }, '-20.0°')),
-              h('input', { type: 'range', id: 'iss-map-array-feather', min: -90, max: 90, step: 1, defaultValue: -20, 'data-iss-array-feather': '', 'aria-describedby': 'iss-array-help', onChange: function (event) { set({ arrayFeather: Number(event.target.value) }); } }),
+              h('input', { type: 'range', id: 'iss-map-array-feather', min: -90, max: 90, step: 1, defaultValue: -20, 'aria-valuetext': '-20.0°', 'data-iss-array-feather': '', 'aria-describedby': 'iss-array-help', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v.toFixed(1) + '°'); set({ arrayFeather: v }); } }),
               h('div', { className: 'iss-array-actions', role: 'group', 'aria-label': text('array_presets', 'Solar array pointing presets') },
                 [['hold', 'Hold this pointing'], ['sun', 'Face Sun now'], ['edge', 'Edge-on now'], ['away', 'Face away now'], ['park', 'Park flat'], ['track', 'Track the Sun']].map(function (item) {
                   return h('button', { key: item[0], type: 'button', 'data-iss-array-preset': item[0], 'aria-pressed': item[0] === 'track' ? true : undefined, onClick: function () { point(item[0]); } }, text('array_preset_' + item[0], item[1]));
@@ -21143,12 +21146,13 @@ var i = 0;
         function canvas() { return document.querySelector('.iss-station-stage canvas'); }
         function set(patch) { var cv = canvas(); if (cv && cv._issSetThermal) cv._issSetThermal(patch); }
         function reading(key, label) { return h('div', null, h('span', null, label), h('strong', { 'data-iss-map-thermal-reading': key }, '—')); }
+        var kwUnit = ' kW', initHeatLoad = '60' + kwUnit;
         return h('section', { id: 'iss-map-thermal-controls', className: 'iss-map-thermal', 'data-iss-map-thermal-panel': '', hidden: true, 'aria-labelledby': 'iss-map-thermal-title' },
           h('div', { className: 'iss-map-thermal-heading' }, h('h4', { id: 'iss-map-thermal-title' }, text('title', 'Follow the heat')), h('span', null, text('elapsed_label', 'Since temperature reset'), ' ', h('strong', { 'data-iss-map-thermal-reading': 'elapsed' }, '0:00'))),
           h('div', { className: 'iss-map-thermal-metrics' }, reading('cabin', text('cabin', 'Cabin + equipment')), reading('radiator', text('radiator', 'Radiator system')), reading('transferKW', text('transfer', 'Coolant transfer')), reading('emittedKW', text('emission', 'Infrared emission'))),
           h('div', { className: 'iss-map-thermal-controls' },
-            h('label', { htmlFor: 'iss-map-heat-load' }, h('span', null, text('load', 'Equipment heat'), h('strong', { 'data-iss-map-thermal-reading': 'load' }, '60 kW')), h('input', { id: 'iss-map-heat-load', 'data-iss-map-thermal-load': '', type: 'range', min: 0, max: 120, step: 5, defaultValue: 60, onChange: function (event) { set({ heatKW: Number(event.target.value) }); } })),
-            h('label', { htmlFor: 'iss-map-heat-coupling' }, h('span', null, text('coupling', 'Coolant coupling'), h('strong', { 'data-iss-map-thermal-reading': 'coupling' }, '86%')), h('input', { id: 'iss-map-heat-coupling', 'data-iss-map-thermal-coupling': '', type: 'range', min: 0, max: 100, step: 1, defaultValue: 86, onChange: function (event) { set({ cooling: Number(event.target.value) }); } }))),
+            h('label', { htmlFor: 'iss-map-heat-load' }, h('span', null, text('load', 'Equipment heat'), h('strong', { 'data-iss-map-thermal-reading': 'load' }, initHeatLoad)), h('input', { id: 'iss-map-heat-load', 'data-iss-map-thermal-load': '', type: 'range', min: 0, max: 120, step: 5, defaultValue: 60, 'aria-valuetext': initHeatLoad, onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v + kwUnit); set({ heatKW: v }); } })),
+            h('label', { htmlFor: 'iss-map-heat-coupling' }, h('span', null, text('coupling', 'Coolant coupling'), h('strong', { 'data-iss-map-thermal-reading': 'coupling' }, '86%')), h('input', { id: 'iss-map-heat-coupling', 'data-iss-map-thermal-coupling': '', type: 'range', min: 0, max: 100, step: 1, defaultValue: 86, 'aria-valuetext': '86%', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v + '%'); set({ cooling: v }); } }))),
           h('div', { className: 'iss-map-thermal-actions' },
             h('button', { type: 'button', 'data-iss-map-thermal-pump': '', 'aria-pressed': true, onClick: function () { var cv = canvas(); if (cv && cv._issThermalState) set({ pump: !cv._issThermalState().config.pump }); } }, text('pump_on', 'Pump on')),
             h('button', { type: 'button', 'data-iss-map-thermal-play': '', 'aria-pressed': false, onClick: function () { var cv = canvas(); if (cv && cv._issLightingState) cv._issSetLighting({ playing: !cv._issLightingState().playing }); } }, text('play', 'Play orbit')),
@@ -21183,12 +21187,12 @@ var i = 0;
             h('div', { className: 'iss-map-light-controls' },
               h('label', { htmlFor: 'iss-map-orbit-phase' }, text('phase', 'Position around the orbit'), h('strong', { 'data-iss-lighting-reading': 'phase' }, '35.0°')),
               h('div', { className: 'iss-map-orbit-track', 'aria-hidden': 'true' }, h('i', { 'data-iss-orbit-cursor': '' })),
-              h('input', { id: 'iss-map-orbit-phase', type: 'range', min: 0, max: 360, step: 0.5, defaultValue: 35, 'data-iss-orbit-phase': '', 'aria-describedby': 'iss-map-light-help', onChange: function (event) { set({ phase: Number(event.target.value) }); } }),
+              h('input', { id: 'iss-map-orbit-phase', type: 'range', min: 0, max: 360, step: 0.5, defaultValue: 35, 'aria-valuetext': '35.0°', 'data-iss-orbit-phase': '', 'aria-describedby': 'iss-map-light-help', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v.toFixed(1) + '°'); set({ phase: v }); } }),
               h('div', { className: 'iss-map-orbit-ticks', 'aria-hidden': 'true' }, h('span', null, text('noon', 'Noon')), h('span', null, text('midnight', 'Midnight')), h('span', null, text('noon', 'Noon'))),
               h('div', { className: 'iss-map-light-actions', role: 'group', 'aria-label': text('preset_label', 'Inspect orbital lighting events') },
                 ['noon', 'sunset', 'midnight', 'sunrise'].map(function (name) { return h('button', { key: name, type: 'button', 'data-iss-lighting-preset': name, onClick: function () { preset(name); } }, text(name, name.charAt(0).toUpperCase() + name.slice(1))); })),
               h('label', { htmlFor: 'iss-map-beta' }, text('beta_label', 'Sun angle above the orbit plane'), h('strong', { 'data-iss-lighting-reading': 'beta' }, '20°')),
-              h('input', { id: 'iss-map-beta', type: 'range', min: 0, max: 80, step: 1, defaultValue: 20, 'data-iss-beta': '', onChange: function (event) { set({ beta: Number(event.target.value) }); } }),
+              h('input', { id: 'iss-map-beta', type: 'range', min: 0, max: 80, step: 1, defaultValue: 20, 'aria-valuetext': '20°', 'data-iss-beta': '', onChange: function (event) { var v = Number(event.target.value); event.currentTarget.setAttribute('aria-valuetext', v + '°'); set({ beta: v }); } }),
               h('div', { className: 'iss-map-light-actions' },
                 h('button', { type: 'button', 'data-iss-lighting-play': '', 'aria-pressed': false, onClick: function () { var cv = canvas(); if (cv && cv._issLightingState) set({ playing: !cv._issLightingState().playing }); } }, text('play', 'Play orbit')),
                 h('label', { className: 'iss-map-rate-label' }, text('speed', 'Speed'), h('select', { 'data-iss-lighting-rate': '', defaultValue: '60', onChange: function (event) { set({ rate: Number(event.target.value) }); } }, [.1, 1, 10, 60, 180].map(function (rate) { return h('option', { key: rate, value: String(rate) }, rate === 1 ? __alloT('stem.spacestation.map_clock_realtime', '1× · real time') : rate + '×'); }))),
@@ -21233,7 +21237,7 @@ var i = 0;
               h('span', { 'data-iss-arm-preview-stage-reading': '' }, ''),
               h('button', { type: 'button', 'data-iss-arm-preview-stage-play': '', 'aria-pressed': false, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issPlayArmPreview) cv._issPlayArmPreview(); } }, __alloT('stem.spacestation.map_light_arm_preview_play', 'Play preview 10×')),
               h('button', { type: 'button', 'data-iss-arm-preview-stage-close': '', 'aria-label': __alloT('stem.spacestation.map_light_arm_preview_close', 'Close arm preview'), onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issToggleArmPreview) cv._issToggleArmPreview(false); } }, '×'),
-              h('input', { type: 'range', min: 0, max: 120, step: .25, defaultValue: 30, 'data-iss-arm-preview-stage-time': '', 'aria-label': __alloT('stem.spacestation.map_light_arm_preview_stage_time', '3D arm preview time'), onChange: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSeekArmPreview) cv._issSeekArmPreview(Number(event.target.value)); } }),
+              h('input', { type: 'range', min: 0, max: 120, step: .25, defaultValue: 30, 'aria-valuetext': '+30.00 s', 'data-iss-arm-preview-stage-time': '', 'aria-label': __alloT('stem.spacestation.map_light_arm_preview_stage_time', '3D arm preview time'), onChange: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSeekArmPreview) cv._issSeekArmPreview(Number(event.target.value)); } }),
               h('button', { type: 'button', 'data-iss-arm-preview-stage-apply': '', 'aria-describedby': 'iss-arm-preview-advance-help', onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issApplyArmPreview) cv._issApplyArmPreview(); } }, __alloT('stem.spacestation.map_light_arm_preview_advance', 'Advance'))),
             h('div', { className: 'iss-forecast-stage', 'data-iss-forecast-stage': '', hidden: true },
               h('span', { 'data-iss-forecast-time': '' }, 'Preview +5:00'),
@@ -21242,7 +21246,7 @@ var i = 0;
               h('select', { 'data-iss-forecast-rate': 'stage', defaultValue: '60', 'aria-label': __alloT('stem.spacestation.map_light_forecast_speed', 'Preview speed'), onChange: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetForecastTransport) cv._issSetForecastTransport({ rate: event.target.value }); } },
                 [.1, 1, 10, 60].map(function (rate) { return h('option', { key: rate, value: String(rate) }, rate + '×'); })),
               h('span', { 'data-iss-forecast-stage-stop': '', hidden: true }, ''),
-              h('input', { type: 'range', min: 0, max: 600, step: .1, defaultValue: 300, 'data-iss-forecast-stage-slider': '', 'aria-label': __alloT('stem.spacestation.map_light_forecast_stage_time', '3D preview time'), onChange: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSeekForecastTime) cv._issSeekForecastTime(Number(event.target.value)); } }),
+              h('input', { type: 'range', min: 0, max: 600, step: .1, defaultValue: 300, 'aria-valuetext': '+5:00', 'data-iss-forecast-stage-slider': '', 'aria-label': __alloT('stem.spacestation.map_light_forecast_stage_time', '3D preview time'), onChange: function (event) { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSeekForecastTime) cv._issSeekForecastTime(Number(event.target.value)); } }),
               h('button', { type: 'button', 'data-iss-forecast-close': '', 'aria-label': __alloT('stem.spacestation.map_light_forecast_close', 'Close preview'), onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issToggleForecast) cv._issToggleForecast(false); } }, __alloT('stem.spacestation.map_light_forecast_close_short', 'Close'))),
             ['alpha', 'feather'].map(function (axis) {
               return h('button', { key: axis, type: 'button', className: 'iss-joint-handle', 'data-iss-joint-handle': axis, hidden: true,
@@ -22973,7 +22977,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
         }
       }
       function onTabKeyDown(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var next = null;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = index + 1;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = index - 1;

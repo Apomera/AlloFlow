@@ -132,9 +132,11 @@ describe('the About page', () => {
     expect(doc.querySelectorAll('main#main').length).toBe(1);
     expect(doc.documentElement.getAttribute('lang')).toBe('en');
     const foot = (file) => [...parse(file).querySelectorAll('footer.foot p')].map((p) => squash(p.textContent));
-    expect(foot(ABOUT)).toEqual(['Free to use. Open source, license AGPL-3.0.', 'More from AlloFlow']);
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect(foot(ABOUT)).toEqual(['Free to use. Open source, license AGPL-3.0.', 'Send feedback More from AlloFlow']);
     expect(foot(ABOUT)).toEqual(foot(GUIDE));
-    expect(doc.querySelector('footer a').getAttribute('href')).toBe('./');
+    // 2026-11-23: the footer's last link is More from AlloFlow (Send feedback comes first).
+    expect([...doc.querySelectorAll('footer a')].pop().getAttribute('href')).toBe('./');
     const levels = [...doc.querySelectorAll('h1, h2, h3')].map((node) => Number(node.tagName[1]));
     expect(levels.filter((level) => level === 1)).toEqual([1]);
     levels.forEach((level, i) => { if (i) expect(level - levels[i - 1]).toBeLessThanOrEqual(1); });

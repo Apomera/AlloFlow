@@ -23,6 +23,15 @@
     console.error("[ResearchLaneScientific] React not found");
     return;
   }
+  function _ensureRlsA11yCss() {
+    if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+    if (document.getElementById("rls-a11y-css")) return;
+    var st = document.createElement("style");
+    st.id = "rls-a11y-css";
+    st.textContent = '[data-research-lane="scientific"] button,[data-research-lane="scientific"] [role="button"],[data-research-lane="scientific"] [role="tab"],[data-research-lane="scientific"] summary,[data-research-lane="scientific"] a,[data-research-lane="scientific"] input,[data-research-lane="scientific"] select,[data-research-lane="scientific"] textarea{touch-action:manipulation;}[data-research-lane="scientific"] button:focus-visible,[data-research-lane="scientific"] [role="button"]:focus-visible,[data-research-lane="scientific"] [role="tab"]:focus-visible,[data-research-lane="scientific"] summary:focus-visible,[data-research-lane="scientific"] a:focus-visible,[data-research-lane="scientific"] input:focus-visible,[data-research-lane="scientific"] select:focus-visible,[data-research-lane="scientific"] textarea:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){[data-research-lane="scientific"] button:focus-visible,[data-research-lane="scientific"] [role="button"]:focus-visible,[data-research-lane="scientific"] [role="tab"]:focus-visible,[data-research-lane="scientific"] summary:focus-visible,[data-research-lane="scientific"] a:focus-visible,[data-research-lane="scientific"] input:focus-visible,[data-research-lane="scientific"] select:focus-visible,[data-research-lane="scientific"] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-research-lane="scientific"] *,[data-research-lane="scientific"] *::before,[data-research-lane="scientific"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+  }
+  _ensureRlsA11yCss();
   var useState = React.useState;
   var useEffect = React.useEffect;
   var useMemo = React.useMemo;
@@ -979,7 +988,7 @@
         "aria-modal": "true",
         "aria-label": t("scientific.loopback_modal_title") || "Why are you looping back?",
         onKeyDown: function(e) {
-          if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+          if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Escape") {
             e.preventDefault();
             e.stopPropagation();
@@ -1505,7 +1514,7 @@
           setAdding(e.target.value);
         },
         onKeyDown: function(e) {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Enter") addWondering(adding);
         },
         placeholder: t("scientific.wondering_placeholder") || "I wonder whether\u2026",
@@ -2508,7 +2517,7 @@
           setAdding(e.target.value);
         },
         onKeyDown: function(e) {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Enter") addClaim();
         },
         placeholder: t("scientific.claim_placeholder") || "A specific claim about your investigation\u2026",
@@ -2726,10 +2735,13 @@
         return next;
       });
     };
+    useEffect(function() {
+      _ensureRlsA11yCss();
+    }, []);
     var laneCtx = Object.assign({}, ctx, {
       activeStage
     });
-    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "14px" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { "data-research-lane": "scientific", style: { display: "flex", flexDirection: "column", gap: "14px" } }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

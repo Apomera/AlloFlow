@@ -49,7 +49,8 @@
   }
   function formatOf(v) { var out = String(v || '').trim().toUpperCase(); return _hasOwn(FORMATS, out) ? out : ''; }
   function safeFilename(v) { var out = text(v, 120, 'model').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').replace(/^\.+|\.+$/g, ''); return out || 'model'; }
-  function clone(v) { return safeJsonParse(JSON.stringify(v)); }
+  function safeKey(v, fallback) { var k = text(v, 60, fallback); return _isBlockedKey(k) ? fallback : k; }
+  function clone(v) { var serialized = JSON.stringify(v); return serialized === undefined ? null : safeJsonParse(serialized); }
   function stableJson(value, seen) {
     if (value === null || typeof value !== 'object') return JSON.stringify(value);
     seen = seen || new Set();
@@ -64,8 +65,9 @@
   }
   function bytesOf(input) {
     if (input instanceof Uint8Array) return input;
-    if (input && input.buffer instanceof ArrayBuffer) return new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength == null ? input.length : input.byteLength);
-    if (input instanceof ArrayBuffer) return new Uint8Array(input);
+    if (ArrayBuffer.isView(input)) return new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength == null ? input.length : input.byteLength);
+    if (input && input.buffer && typeof input.byteLength === 'number') return new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength);
+    if (input instanceof ArrayBuffer || Object.prototype.toString.call(input) === '[object ArrayBuffer]') return new Uint8Array(input);
     return null;
   }
   function decodeUtf8(bytes) {
@@ -83,8 +85,12 @@
   function hex(bytes) { var out = ''; for (var i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0'); return out; }
   function sha256Hex(input) {
     var bytes = typeof input === 'string' ? encodeUtf8(input) : bytesOf(input);
-    if (!bytes || !window.crypto || !window.crypto.subtle) return Promise.resolve('');
-    return window.crypto.subtle.digest('SHA-256', bytes).then(function (digest) { return hex(new Uint8Array(digest)); });
+    if (!bytes || !window.crypto || !window.crypto.subtle || typeof window.crypto.subtle.digest !== 'function') return Promise.resolve('');
+    try {
+      return Promise.resolve(window.crypto.subtle.digest('SHA-256', bytes))
+        .then(function (digest) { return hex(new Uint8Array(digest)); })
+        .catch(function () { return ''; });
+    } catch (_) { return Promise.resolve(''); }
   }
 
   function normalizeProfile(input) {
@@ -100,15 +106,25 @@
     };
   }
 
+  function computeDims(min, max, scale) {
+    var rawW = (max[0] - min[0]) * scale, rawD = (max[2] - min[2]) * scale, rawH = (max[1] - min[1]) * scale;
+    return {
+      width: Number.isFinite(rawW) ? round(rawW) : rawW,
+      depth: Number.isFinite(rawD) ? round(rawD) : rawD,
+      height: Number.isFinite(rawH) ? round(rawH) : rawH
+    };
+  }
   function issue(code, severity, message) { return { code: code, severity: severity, message: message }; }
   function finalizeMetrics(metrics, profile, extraIssues) {
     profile = normalizeProfile(profile);
     metrics = metrics || {};
     var dims = metrics.dimensionsMm || { width: 0, depth: 0, height: 0 }, issues = (extraIssues || []).slice();
+    var dimsInvalid = !Number.isFinite(dims.width) || !Number.isFinite(dims.depth) || !Number.isFinite(dims.height) || dims.width < 0 || dims.depth < 0 || dims.height < 0;
     if (!metrics.triangleCount) issues.push(issue('NO_GEOMETRY', 'ERROR', 'No printable triangles were found.'));
     if (metrics.byteSize > profile.maxBytes) issues.push(issue('FILE_TOO_LARGE', 'ERROR', 'The file exceeds this school’s upload limit.'));
     if (metrics.triangleCount > profile.maxTriangles) issues.push(issue('TOO_MANY_TRIANGLES', 'ERROR', 'The mesh is too complex for this pilot. Simplify it before submitting.'));
-    if (dims.width > profile.bedWidthMm || dims.depth > profile.bedDepthMm || dims.height > profile.bedHeightMm) issues.push(issue('BED_FIT', 'ERROR', 'The model does not fit the configured printer build area at this scale.'));
+    if (dimsInvalid) issues.push(issue('NON_FINITE_BOUNDS', 'ERROR', 'The model has non-finite or inverted bounding dimensions.'));
+    if (dimsInvalid || dims.width > profile.bedWidthMm || dims.depth > profile.bedDepthMm || dims.height > profile.bedHeightMm) issues.push(issue('BED_FIT', 'ERROR', 'The model does not fit the configured printer build area at this scale.'));
     if (metrics.degenerateTriangles > 0) issues.push(issue('DEGENERATE_TRIANGLES', 'WARNING', metrics.degenerateTriangles + ' zero-area or nearly zero-area triangle(s) need slicer review.'));
     if (metrics.openEdges > 0) issues.push(issue('OPEN_EDGES', 'WARNING', metrics.openEdges + ' boundary edge(s) suggest the mesh may not be watertight.'));
     if (metrics.nonManifoldEdges > 0) issues.push(issue('NON_MANIFOLD_EDGES', 'WARNING', metrics.nonManifoldEdges + ' edge(s) are shared by more than two triangles and require mesh or slicer review.'));
@@ -183,7 +199,7 @@
     });
     if (!valid) return finalizeMetrics({ sourceFormat: 'RECIPE', byteSize: encodeUtf8(JSON.stringify(recipe || {})).length, triangleCount: 0, meshCount: 0, dimensionsMm: { width: 0, depth: 0, height: 0 }, volumeMm3UpperBound: 0, degenerateTriangles: 0, openEdges: 0 }, profile, []);
     var metrics = { sourceFormat: 'RECIPE', byteSize: encodeUtf8(JSON.stringify(recipe)).length, triangleCount: triangles, meshCount: valid,
-      dimensionsMm: { width: round((max[0] - min[0]) * unitMm), depth: round((max[2] - min[2]) * unitMm), height: round((max[1] - min[1]) * unitMm) },
+      dimensionsMm: computeDims(min, max, unitMm),
       volumeMm3UpperBound: round(volume * unitMm * unitMm * unitMm), degenerateTriangles: 0, openEdges: 0, unitDeclaration: 'recipe-unit=' + unitMm + 'mm' };
     return finalizeMetrics(metrics, profile, [issue('ASSEMBLY_NOT_UNIONED', 'WARNING', 'Primitive parts are an assembly, not a guaranteed watertight union. Staff must inspect the sliced result.')]);
   }
@@ -251,15 +267,16 @@
     var roots = Object.create(null);
     for (var i = 0; i < stats.triangles; i++) roots[findRoot(stats.parents, i)] = true;
     var components = stats.triangles ? Object.keys(roots).length : 0;
-    var dims = stats.triangles ? { width: round((stats.max[0]-stats.min[0])*unitMm), depth: round((stats.max[2]-stats.min[2])*unitMm), height: round((stats.max[1]-stats.min[1])*unitMm) } : { width: 0, depth: 0, height: 0 };
+    var dims = stats.triangles ? computeDims(stats.min, stats.max, unitMm) : { width: 0, depth: 0, height: 0 };
     var signedVolume = stats.signedVolume * unitMm * unitMm * unitMm;
+    var finiteVolume = Number.isFinite(signedVolume);
     var closed = !!stats.triangles && open === 0 && nonManifold === 0 && winding === 0;
     return finalizeMetrics({
       sourceFormat: format, byteSize: byteSize, triangleCount: stats.triangles, meshCount: components,
       connectedComponents: components, dimensionsMm: dims, degenerateTriangles: stats.degenerate,
       openEdges: open, nonManifoldEdges: nonManifold, windingInconsistencies: winding,
-      windingOrientation: Math.abs(signedVolume) < 1e-9 ? 'INDETERMINATE' : signedVolume < 0 ? 'NEGATIVE' : 'POSITIVE',
-      signedVolumeMm3: round(signedVolume, 3), enclosedVolumeMm3: closed ? round(Math.abs(signedVolume), 3) : null,
+      windingOrientation: !finiteVolume || Math.abs(signedVolume) < 1e-9 ? 'INDETERMINATE' : signedVolume < 0 ? 'NEGATIVE' : 'POSITIVE',
+      signedVolumeMm3: finiteVolume ? round(signedVolume, 3) : null, enclosedVolumeMm3: closed && finiteVolume ? round(Math.abs(signedVolume), 3) : null,
       volumeAdvisory: closed ? 'Signed-volume estimate for a topologically closed mesh; the school slicer remains authoritative.' : 'Volume is not reported as enclosed because boundary, topology, or winding findings remain.',
       unitDeclaration: 'file-unit=' + unitMm + 'mm'
     }, profile, extra || []);
@@ -290,10 +307,10 @@
       return result;
     }
     result.kind = 'ASCII';
-    var ascii = decodeUtf8(bytes), match, vertices = [], re = /\bvertex\s+([-+\deE.]+)\s+([-+\deE.]+)\s+([-+\deE.]+)/gi;
+    var ascii = decodeUtf8(bytes), match, vertices = [], re = /\bvertex\s+(\S+)\s+(\S+)\s+(\S+)/gi;
     while ((match = re.exec(ascii)) && result.triangles.length <= maxTriangles) {
       var parsed = [Number(match[1]),Number(match[2]),Number(match[3])];
-      if (!isFinite(parsed[0]) || !isFinite(parsed[1]) || !isFinite(parsed[2])) { result.errors.push(issue('NON_FINITE_VERTEX','ERROR','The STL contains a non-finite vertex value.')); break; }
+      if (!Number.isFinite(parsed[0]) || !Number.isFinite(parsed[1]) || !Number.isFinite(parsed[2])) { result.errors.push(issue('NON_FINITE_VERTEX','ERROR','The STL contains a non-finite vertex value.')); break; }
       vertices.push(parsed); if (vertices.length === 3) { result.triangles.push(vertices); vertices = []; }
     }
     if (!result.triangles.length) result.errors.push(issue('INVALID_STL','ERROR','The file is not a supported binary or ASCII STL.'));
@@ -377,17 +394,18 @@
     (Array.isArray(json.extensionsRequired)?json.extensionsRequired:[]).forEach(function(name){if(_hasOwn(decoderExtensions,name))errors.push(issue('DECODER_REQUIRED','ERROR','This GLB requires '+name+', which is outside the no-decoder school pilot. Export a standard embedded GLB.'));});
     var external=false; (Array.isArray(json.buffers)?json.buffers:[]).concat(Array.isArray(json.images)?json.images:[]).forEach(function(x){if(x&&typeof x.uri==='string'&&x.uri&&!/^data:/i.test(x.uri))external=true;});
     if(external)errors.push(issue('EXTERNAL_RESOURCE','ERROR','GLB files must embed all geometry and images; external resource URLs are not allowed.'));
-    var accessors=Array.isArray(json.accessors)?json.accessors:[],min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],triangles=0,meshes=0,MAX_GLB_PRIMITIVES=50000;
-    (Array.isArray(json.meshes)?json.meshes:[]).forEach(function(mesh){(mesh&&Array.isArray(mesh.primitives)?mesh.primitives:[]).forEach(function(primitive){if(!primitive||typeof primitive!=='object'||meshes>=MAX_GLB_PRIMITIVES)return;meshes++;var mode=primitive.mode==null?4:primitive.mode;if(mode!==4){errors.push(issue('UNSUPPORTED_PRIMITIVE','ERROR','Only triangle primitives are supported.'));return}var count=0;var idxAcc=Number.isInteger(primitive.indices)&&primitive.indices>=0?accessors[primitive.indices]:null;var posIdx=primitive.attributes&&Number.isInteger(primitive.attributes.POSITION)&&primitive.attributes.POSITION>=0?primitive.attributes.POSITION:-1;var posAcc=posIdx>=0?accessors[posIdx]:null;if(idxAcc)count=Math.max(0,number(idxAcc.count));else if(posAcc)count=Math.max(0,number(posAcc.count));triangles+=Math.floor(count/3);if(posAcc&&Array.isArray(posAcc.min)&&Array.isArray(posAcc.max)){for(var a=0;a<3;a++){min[a]=Math.min(min[a],number(posAcc.min[a]));max[a]=Math.max(max[a],number(posAcc.max[a]));}}});});
+    var accessors=Array.isArray(json.accessors)?json.accessors:[],min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],triangles=0,meshes=0,MAX_GLB_PRIMITIVES=50000,invalidGlbBounds=false;
+    (Array.isArray(json.meshes)?json.meshes:[]).forEach(function(mesh){(mesh&&Array.isArray(mesh.primitives)?mesh.primitives:[]).forEach(function(primitive){if(!primitive||typeof primitive!=='object'||meshes>=MAX_GLB_PRIMITIVES)return;meshes++;var mode=primitive.mode==null?4:primitive.mode;if(mode!==4){errors.push(issue('UNSUPPORTED_PRIMITIVE','ERROR','Only triangle primitives are supported.'));return}var count=0;var idxAcc=Number.isInteger(primitive.indices)&&primitive.indices>=0?accessors[primitive.indices]:null;var posIdx=primitive.attributes&&Number.isInteger(primitive.attributes.POSITION)&&primitive.attributes.POSITION>=0?primitive.attributes.POSITION:-1;var posAcc=posIdx>=0?accessors[posIdx]:null;if(idxAcc)count=Math.max(0,number(idxAcc.count));else if(posAcc)count=Math.max(0,number(posAcc.count));triangles+=Math.floor(count/3);if(posAcc&&Array.isArray(posAcc.min)&&Array.isArray(posAcc.max)){for(var a=0;a<3;a++){var lo=Number(posAcc.min[a]),hi=Number(posAcc.max[a]);if(!Number.isFinite(lo)||!Number.isFinite(hi)||lo>hi){invalidGlbBounds=true;}min[a]=Math.min(min[a],lo);max[a]=Math.max(max[a],hi);}}});});
     metrics.triangleCount=triangles;metrics.meshCount=meshes;
-    var scale=clamp(unitMm,.01,100000,1000);if(isFinite(min[0]))metrics.dimensionsMm={width:round((max[0]-min[0])*scale),depth:round((max[2]-min[2])*scale),height:round((max[1]-min[1])*scale)};
+    var scale=clamp(unitMm,.01,100000,1000);if(invalidGlbBounds)metrics.dimensionsMm={width:NaN,depth:NaN,height:NaN};else if(isFinite(min[0]))metrics.dimensionsMm=computeDims(min,max,scale);
     errors.push(issue('GLB_TRANSFORMS_REQUIRE_REVIEW','WARNING','GLB node transforms and scene scale require visual staff review before quoting.'));
     return finalizeMetrics(metrics,p,errors);
   }
 
   function estimateMaterial(report, input) {
     input=input||{};var density=clamp(input.densityGPerCm3,.1,10,1.24),infill=clamp(input.infillPercent,0,100,20)/100,support=clamp(input.supportPercent,0,200,10)/100;
-    var volume=number(report&&report.volumeMm3UpperBound);var effective=volume*(.22+.78*infill)*(1+support),grams=effective/1000*density;
+    var volume=Math.max(0,number(report&&report.volumeMm3UpperBound));var effective=volume*(.22+.78*infill)*(1+support),grams=effective/1000*density;
+    if(!Number.isFinite(grams)||grams<0)grams=0;
     return { estimatedGrams:round(grams,1),infillPercent:round(infill*100),supportPercent:round(support*100),densityGPerCm3:density,method:'advisory-fixed-shell-v2',shellFractionAssumption:0.22,advisory:'Uses an assumed shell fraction, not measured walls. Actual filament use may be higher or lower; compare reviewed slicer runs.' };
   }
   function estimatePointQuote(material,input){
@@ -395,10 +413,12 @@
     var base=clamp(input.basePoints,0,100000,0),setup=clamp(input.setupPoints,0,100000,0),pointsPerGram=clamp(input.pointsPerGram,0,1000,2);
     var pointsPerHour=clamp(input.pointsPerHour,0,100000,0),minutes=clamp(input.estimatedMinutes,0,1000000,0),complexityMultiplier=clamp(input.complexityMultiplier,.25,10,1);
     var complexityPoints=clamp(input.complexityPoints,0,100000,0),minimum=Math.round(clamp(input.minimumPoints,0,100000,10)),increment=Math.max(1,Math.round(clamp(input.roundingIncrement,1,10000,1)));
-    var materialPoints=number(material&&material.estimatedGrams)*pointsPerGram,timePoints=minutes/60*pointsPerHour;
+    var safeGrams=Math.max(0,number(material&&material.estimatedGrams)),materialPoints=safeGrams*pointsPerGram,timePoints=minutes/60*pointsPerHour;
     var subtotal=base+setup+materialPoints+timePoints,complexityAdjustment=subtotal*(complexityMultiplier-1)+complexityPoints,raw=Math.max(minimum,subtotal+complexityAdjustment);
+    if(!Number.isFinite(raw))raw=minimum;
     var total=Math.ceil(raw/increment)*increment;
-    return {version:'point-quote/1',totalPoints:total,rawPoints:round(raw,3),roundingIncrement:increment,minimumPoints:minimum,estimatedMinutes:round(minutes,1),breakdown:{base:round(base,3),setup:round(setup,3),material:round(materialPoints,3),time:round(timePoints,3),complexity:round(complexityAdjustment,3)},inputs:{estimatedGrams:round(number(material&&material.estimatedGrams),2),pointsPerGram:pointsPerGram,pointsPerHour:pointsPerHour,complexityMultiplier:complexityMultiplier},advisory:'This configurable point estimate is not a charge. Staff must approve the final slicer-based quote.'};
+    if(!Number.isFinite(total))total=minimum;
+    return {version:'point-quote/1',totalPoints:total,rawPoints:round(raw,3),roundingIncrement:increment,minimumPoints:minimum,estimatedMinutes:round(minutes,1),breakdown:{base:round(base,3),setup:round(setup,3),material:round(materialPoints,3),time:round(timePoints,3),complexity:round(complexityAdjustment,3)},inputs:{estimatedGrams:round(safeGrams,2),pointsPerGram:pointsPerGram,pointsPerHour:pointsPerHour,complexityMultiplier:complexityMultiplier},advisory:'This configurable point estimate is not a charge. Staff must approve the final slicer-based quote.'};
   }
   function estimateQuote(material,input){return estimatePointQuote(material,input).totalPoints;}
 
@@ -505,7 +525,7 @@
   }
 
   function normalizeTelemetryState(input){
-    input=input||{};return {version:'alloflow-printer-telemetry/1',sequence:Math.max(0,Math.round(number(input.sequence))),jobs:input.jobs&&typeof input.jobs==='object'?clone(input.jobs):{},printers:input.printers&&typeof input.printers==='object'?clone(input.printers):{},lastEvent:input.lastEvent&&typeof input.lastEvent==='object'?clone(input.lastEvent):null};
+    input=input||{};return {version:'alloflow-printer-telemetry/1',sequence:Math.max(0,Math.round(number(input.sequence))),jobs:input.jobs&&typeof input.jobs==='object'&&!Array.isArray(input.jobs)?clone(input.jobs):{},printers:input.printers&&typeof input.printers==='object'&&!Array.isArray(input.printers)?clone(input.printers):{},lastEvent:input.lastEvent&&typeof input.lastEvent==='object'&&!Array.isArray(input.lastEvent)?clone(input.lastEvent):null};
   }
   function reducePrinterTelemetry(previous,event){
     var state=normalizeTelemetryState(previous),raw=event||{},type=String(raw.type||'').toUpperCase();
@@ -538,11 +558,11 @@
   }
 
   function normalizeSimulatorPrinter(printer,index){
-    printer=printer||{};return {key:text(printer.key,60,'simulator-'+(index+1)),materials:Array.isArray(printer.materials)?printer.materials.map(function(item){return text(item,40,'');}).filter(Boolean):[],bedWidthMm:clamp(printer.bedWidthMm,1,100000,220),bedDepthMm:clamp(printer.bedDepthMm,1,100000,220),bedHeightMm:clamp(printer.bedHeightMm,1,100000,250)};
+    printer=printer||{};return {key:safeKey(printer.key,'simulator-'+(index+1)),materials:Array.isArray(printer.materials)?printer.materials.map(function(item){return text(item,40,'');}).filter(Boolean):[],bedWidthMm:clamp(printer.bedWidthMm,1,100000,220),bedDepthMm:clamp(printer.bedDepthMm,1,100000,220),bedHeightMm:clamp(printer.bedHeightMm,1,100000,250)};
   }
 
   function planPrintSchedule(jobs,printers,options){
-    options=options||{};var normalizedPrinters=(Array.isArray(printers)?printers:[]).map(function(printer,index){return {key:text(printer&&printer.key,60,'simulator-'+(index+1)),availableAtMinute:round(clamp(printer&&printer.availableAtMinute,0,100000000,0),2),materials:Array.isArray(printer&&printer.materials)?printer.materials.map(function(x){return text(x,40,'');}):[],bedWidthMm:clamp(printer&&printer.bedWidthMm,1,100000,100000),bedDepthMm:clamp(printer&&printer.bedDepthMm,1,100000,100000),bedHeightMm:clamp(printer&&printer.bedHeightMm,1,100000,100000)};});
+    options=options||{};var normalizedPrinters=(Array.isArray(printers)?printers:[]).map(function(printer,index){return {key:safeKey(printer&&printer.key,'simulator-'+(index+1)),availableAtMinute:round(clamp(printer&&printer.availableAtMinute,0,100000000,0),2),materials:Array.isArray(printer&&printer.materials)?printer.materials.map(function(x){return text(x,40,'');}):[],bedWidthMm:clamp(printer&&printer.bedWidthMm,1,100000,100000),bedDepthMm:clamp(printer&&printer.bedDepthMm,1,100000,100000),bedHeightMm:clamp(printer&&printer.bedHeightMm,1,100000,100000)};});
     if(!normalizedPrinters.length)normalizedPrinters=[{key:'simulator-1',availableAtMinute:0,materials:[],bedWidthMm:100000,bedDepthMm:100000,bedHeightMm:100000}];
     normalizedPrinters.sort(function(a,b){return a.key.localeCompare(b.key);});
     var queue=(Array.isArray(jobs)?jobs:[]).map(function(job,index){var ticket=job&&job.version===JOB_TICKET_VERSION?job:(job&&job.ticket)||{};var checked=validatePrintJobTicket(ticket),value=checked.value,minutes=clamp(job&&job.estimatedMinutes||value.advisoryEstimate.printMinutes,0.1,1000000,1);return {index:index,key:'job-'+(index+1),ticket:value,valid:checked.ok,minutes:minutes,priority:Math.round(clamp(job&&job.priority,0,100,0))};});
@@ -562,8 +582,8 @@
 
   function normalizeSubmission(input) {
     input=input||{};var format=formatOf(input.sourceFormat),ai=String(input.aiUse||'NONE').toUpperCase();if(['NONE','ASSISTED','MOSTLY_AI'].indexOf(ai)<0)ai='NONE';
-    var report=input.preflight&&typeof input.preflight==='object'?clone(input.preflight):null;
-    return { version:VERSION,title:text(input.title,100,'Untitled model'),description:text(input.description,500,''),sourceFormat:format,originalFilename:format==='RECIPE'?'':safeFilename(input.originalFilename||'model'),contentHash:/^[0-9a-f]{64}$/i.test(String(input.contentHash||''))?String(input.contentHash).toLowerCase():'',unitDeclaration:text(input.unitDeclaration,60,''),aiUse:ai,aiDisclosure:text(input.aiDisclosure,300,''),studentNote:text(input.studentNote,300,''),recipe:format==='RECIPE'&&input.recipe?clone(input.recipe):null,preflight:report,createdAt:text(input.createdAt,40,new Date().toISOString())};
+    var report=input.preflight&&typeof input.preflight==='object'&&!Array.isArray(input.preflight)?clone(input.preflight):null;
+    return { version:VERSION,title:text(input.title,100,'Untitled model'),description:text(input.description,500,''),sourceFormat:format,originalFilename:format==='RECIPE'?'':safeFilename(input.originalFilename||'model'),contentHash:/^[0-9a-f]{64}$/i.test(String(input.contentHash||''))?String(input.contentHash).toLowerCase():'',unitDeclaration:text(input.unitDeclaration,60,''),aiUse:ai,aiDisclosure:text(input.aiDisclosure,300,''),studentNote:text(input.studentNote,300,''),recipe:format==='RECIPE'&&input.recipe&&typeof input.recipe==='object'&&!Array.isArray(input.recipe)?clone(input.recipe):null,preflight:report,createdAt:text(input.createdAt,40,new Date().toISOString())};
   }
   function validateSubmission(input) {
     var value=normalizeSubmission(input),errors=[];
@@ -576,12 +596,12 @@
     return {ok:!errors.length,errors:errors,value:value};
   }
   function serializeSubmission(input){var checked=validateSubmission(input);if(!checked.ok)throw new Error(checked.errors.join(' '));return JSON.stringify(checked.value,null,2);}
-  function parseSubmission(textValue){var parsed;try{parsed=safeJsonParse(textValue,10*1024*1024);}catch(_){return {ok:false,errors:['The submission package is not valid JSON.'],value:null};}if(parsed&&parsed.version!==VERSION)return {ok:false,errors:['Unsupported Print Lab package version.'],value:null};return validateSubmission(parsed);}
+  function parseSubmission(textValue){var parsed;try{parsed=safeJsonParse(textValue,10*1024*1024);}catch(_){return {ok:false,errors:['The submission package is not valid JSON.'],value:null};}if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||parsed.version!==VERSION)return {ok:false,errors:['Unsupported Print Lab package version.'],value:null};return validateSubmission(parsed);}
 
   function exportBinaryStl(THREE, object) {
     if(!THREE||!object)return null;var triangles=[];var MAX_STL_TRIANGLES=2000000;var limitError=null;
     if(object.updateMatrixWorld)object.updateMatrixWorld(true);
-    if(object.traverse)object.traverse(function(mesh){if(limitError||!mesh||!mesh.isMesh||!mesh.geometry)return;var geometry=mesh.geometry.index&&mesh.geometry.toNonIndexed?mesh.geometry.toNonIndexed():mesh.geometry;try{var pos=geometry.attributes&&geometry.attributes.position;if(!pos)return;for(var i=0;i+2<pos.count;i+=3){if(triangles.length>=MAX_STL_TRIANGLES){limitError=new Error('Model exceeds the 2,000,000-triangle export limit.');return;}var vs=[];for(var j=0;j<3;j++){var v=new THREE.Vector3(pos.getX(i+j),pos.getY(i+j),pos.getZ(i+j));if(v.applyMatrix4)v.applyMatrix4(mesh.matrixWorld);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z)){limitError=new Error('Model contains non-finite vertex coordinates.');return;}vs.push(v);}triangles.push(vs);}}finally{if(geometry!==mesh.geometry&&typeof geometry.dispose==='function'){try{geometry.dispose();}catch(_){}}}});
+    if(object.traverse)object.traverse(function(mesh){if(limitError||!mesh||!mesh.isMesh||!mesh.geometry)return;var estimatedTris=mesh.geometry.index?Math.floor(number(mesh.geometry.index.count)/3):(mesh.geometry.attributes&&mesh.geometry.attributes.position?Math.floor(number(mesh.geometry.attributes.position.count)/3):0);if(triangles.length+estimatedTris>MAX_STL_TRIANGLES){limitError=new Error('Model exceeds the 2,000,000-triangle export limit.');return;}var geometry=mesh.geometry.index&&mesh.geometry.toNonIndexed?mesh.geometry.toNonIndexed():mesh.geometry;try{var pos=geometry.attributes&&geometry.attributes.position;if(!pos)return;for(var i=0;i+2<pos.count;i+=3){if(triangles.length>=MAX_STL_TRIANGLES){limitError=new Error('Model exceeds the 2,000,000-triangle export limit.');return;}var vs=[];for(var j=0;j<3;j++){var v=new THREE.Vector3(pos.getX(i+j),pos.getY(i+j),pos.getZ(i+j));if(v.applyMatrix4)v.applyMatrix4(mesh.matrixWorld);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z)){limitError=new Error('Model contains non-finite vertex coordinates.');return;}vs.push(v);}triangles.push(vs);}}finally{if(geometry!==mesh.geometry&&typeof geometry.dispose==='function'){try{geometry.dispose();}catch(_){}}}});
     if(limitError)throw limitError;
     var buffer=new ArrayBuffer(84+triangles.length*50),view=new DataView(buffer);view.setUint32(80,triangles.length,true);var offset=84;
     triangles.forEach(function(vs){var converted=vs.map(function(v){return new THREE.Vector3(v.x,-v.z,v.y);});var ab=new THREE.Vector3().subVectors(converted[1],converted[0]),ac=new THREE.Vector3().subVectors(converted[2],converted[0]),normal=new THREE.Vector3().crossVectors(ab,ac).normalize();[normal,converted[0],converted[1],converted[2]].forEach(function(v){view.setFloat32(offset,v.x,true);view.setFloat32(offset+4,v.y,true);view.setFloat32(offset+8,v.z,true);offset+=12;});view.setUint16(offset,0,true);offset+=2;});

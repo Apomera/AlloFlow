@@ -894,7 +894,8 @@ describe('Wave 10 · Full Pack Delivery Actions, Assignment Center & Class Mailb
       t: (_k, f) => (typeof f === 'string' ? f : ''),
     });
 
-    expect(host.textContent).toContain('Check Class Mailbox');
+    // The guidance names the Submission Inbox button by its current label.
+    expect(host.textContent).toContain('Get submissions from Class Mailbox');
     const dueAtInput = host.querySelector('input[type="datetime-local"][aria-label="Optional exact due date and time"]');
     expect(dueAtInput).not.toBeNull();
     act(() => {

@@ -9,7 +9,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 //   - the food database stays Atwater-consistent (kcal ≈ 4c + 4p + 9f)
 //   - the sweat-rate calculator keeps its input guards
 //   - the supplement reference keeps its medical disclaimer
-//   - calories stay framed as information, not goals (NEDA-aligned design)
+//   - calories stay framed as information, not goals (eating-disorder-aware design)
 
 const nut = fs.readFileSync('stem_lab/stem_tool_nutritionlab.js', 'utf8');
 const pub = () => fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_nutritionlab.js', 'utf8');
@@ -89,7 +89,9 @@ describe('clinical-adjacent guardrails', () => {
     const start = nut.indexOf('var NUTRITION_KIT_SYMPTOM_NUTRIENT = [');
     const end = nut.indexOf('\n  ];', start);
     const table = nut.slice(start, end);
-    const escalations = (table.match(/See doctor|See GI|medical eval|Neurological eval|dermatology assessment|Test ferritin|Test vit D|B12 test|Test TSH|TSH/g) || []).length;
+    // 2026-11-24 accuracy audit rewrote the table in plain words ("see a doctor or school nurse", "A doctor can
+    // check B12") and removed self-treatment advice; those phrasings count as escalation too.
+    const escalations = (table.match(/See doctor|See GI|medical eval|Neurological eval|dermatology assessment|Test ferritin|Test vit D|B12 test|Test TSH|TSH|see a doctor|See a doctor|A doctor can|medical check/g) || []).length;
     expect(escalations).toBeGreaterThanOrEqual(8);
   });
 });

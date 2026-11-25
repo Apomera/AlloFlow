@@ -1,7 +1,9 @@
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.UILanguageSelector) { console.log('[CDN] UiLanguageSelectorModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React;
+if (!React) { console.error('[UiLanguageSelector] React not found on window'); return; }
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState;
 var useRef = React.useRef;
@@ -9,7 +11,7 @@ var useContext = React.useContext;
 var useEffect = React.useEffect;
 var _lazyIcon = function (name) {
   return function (props) {
-    var I = window.AlloIcons && window.AlloIcons[name];
+    var I = typeof window !== 'undefined' && window.AlloIcons && window.AlloIcons[name];
     return I ? React.createElement(I, props) : null;
   };
 };
@@ -19,11 +21,12 @@ var FolderOpen = _lazyIcon('FolderOpen');
 var Download = _lazyIcon('Download');
 var ArrowRight = _lazyIcon('ArrowRight');
 const UiLanguageSelector = (props = {}) => {
-  const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
+  const _langCtx = typeof window !== "undefined" && window.AlloLanguageContext || LanguageContext;
+  const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = (_langCtx ? useContext(_langCtx) : null) || {};
   const [manualInput, setManualInput] = useState("");
   const languageCopy = (key, fallback) => {
     try {
-      const value = t(key);
+      const value = typeof t === "function" ? t(key) : "";
       return value && value !== key ? value : fallback;
     } catch (_) {
       return fallback;
@@ -101,7 +104,8 @@ const UiLanguageSelector = (props = {}) => {
   useEffect(() => {
     let cancelled = false;
     let activeCtrl = null;
-    const urls = [
+    const offlineOnly = typeof window !== "undefined" && window.__alloOfflineOnly === true;
+    const urls = offlineOnly ? ["./lang/manifest.json"] : [
       "./lang/manifest.json",
       "https://alloflow-cdn.pages.dev/lang/manifest.json",
       "https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/manifest.json"
@@ -113,15 +117,18 @@ const UiLanguageSelector = (props = {}) => {
         activeCtrl = ctrl;
         const timer = ctrl ? setTimeout(() => ctrl.abort(), 8e3) : null;
         try {
-          const r = await fetch(u, ctrl ? { cache: "no-cache", signal: ctrl.signal } : { cache: "no-cache" });
+          const fetchOpts = { cache: "no-cache", credentials: "omit", referrerPolicy: "no-referrer" };
+          if (ctrl) fetchOpts.signal = ctrl.signal;
+          const r = await fetch(u, fetchOpts);
           if (!r.ok) continue;
           const m = await r.json();
           if (m && Array.isArray(m.available)) {
-            const displays = m.available.filter((e) => e && e.display).map((e) => ({
-              value: e.display,
-              endonym: e.endonym || e.display,
-              provenance: e.provenance || "ai-drafted"
-            })).sort((a, b) => a.value.localeCompare(b.value));
+            const displays = m.available.filter((e) => e && typeof e.display === "string" && e.display.trim()).map((e) => {
+              const display = e.display.trim().slice(0, 200);
+              const endonym = typeof e.endonym === "string" && e.endonym.trim() ? e.endonym.trim().slice(0, 200) : display;
+              const provenance = typeof e.provenance === "string" ? e.provenance : "ai-drafted";
+              return { value: display, endonym, provenance };
+            }).sort((a, b) => a.value.localeCompare(b.value));
             if (!cancelled) setDeployedLanguages(displays);
             return;
           }
@@ -158,14 +165,21 @@ const UiLanguageSelector = (props = {}) => {
     return endonym + " \u2014 " + entry.value + suffix;
   };
   const _langAiUsable = () => {
-    if (typeof window === "undefined") return true;
-    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true) {
+    if (typeof window === "undefined") return false;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true || window.hideStudentAiFeatures === true || window.ALLOFLOW_MANAGED_AI_POLICY != null && (window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false || window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 || !Array.isArray(window.ALLOFLOW_MANAGED_AI_POLICY.connections) || window.ALLOFLOW_MANAGED_AI_POLICY.connections.length === 0)) {
+      return false;
+    }
+    try {
+      const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (sp && typeof sp.isAiHidden === "function" && sp.isAiHidden()) return false;
+    } catch (_) {
       return false;
     }
     if (typeof window.__alloAiUsable === "function") {
       try {
         return Boolean(window.__alloAiUsable("text"));
       } catch (_) {
+        return false;
       }
     }
     return true;
@@ -176,7 +190,7 @@ const UiLanguageSelector = (props = {}) => {
     if (val === "Custom") {
       manualInputRef.current?.focus();
     } else {
-      setUiLanguage(val);
+      if (typeof setUiLanguage === "function") setUiLanguage(val);
       setManualInput("");
     }
   };
@@ -188,7 +202,7 @@ const UiLanguageSelector = (props = {}) => {
       (l) => l.value.toLowerCase() === lower || String(l.endonym || "").toLowerCase() === lower
     );
     if (!matched && !_langAiUsable()) return;
-    setUiLanguage(matched ? matched.value : cleaned);
+    if (typeof setUiLanguage === "function") setUiLanguage(matched ? matched.value : cleaned);
     setManualInput("");
   };
   const handleRegenerate = () => {
@@ -196,13 +210,16 @@ const UiLanguageSelector = (props = {}) => {
     const _setConfirm = typeof props.setConfirmDialog === "function" ? props.setConfirmDialog : typeof window !== "undefined" ? window.setConfirmDialog : null;
     const message = languageCopy("language_selector.confirm_regenerate", "Regenerate language pack?");
     if (typeof _setConfirm === "function") {
-      _setConfirm({ message, onConfirm: () => regenerateLanguage() });
+      _setConfirm({ message, onConfirm: () => {
+        if (typeof regenerateLanguage === "function") regenerateLanguage();
+      } });
     } else if (typeof window !== "undefined" && typeof window.confirm === "function" && window.confirm(message)) {
-      regenerateLanguage();
+      if (typeof regenerateLanguage === "function") regenerateLanguage();
     }
   };
   if (isTranslating) {
-    const clampedProgress = Math.max(0, Math.min(100, Math.round(Number(progress) || 0)));
+    const _rawProgress = Number(progress);
+    const clampedProgress = Number.isFinite(_rawProgress) ? Math.max(0, Math.min(100, Math.round(_rawProgress))) : 0;
     return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col justify-center min-w-[260px] px-4 py-3 select-none bg-white rounded-lg border border-indigo-100 shadow-md animate-in motion-reduce:animate-none fade-in zoom-in-95", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-black text-indigo-800 mb-3 uppercase tracking-wider items-center" }, /* @__PURE__ */ React.createElement("span", { className: "truncate max-w-[180px]" }, statusMessage || "Translating..."), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 ml-2" }, clampedProgress, "%")), /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -256,7 +273,7 @@ const UiLanguageSelector = (props = {}) => {
       onChange: (e) => {
         const file = e.target.files && e.target.files[0];
         e.target.value = "";
-        if (file) importLanguagePack(file);
+        if (file && typeof importLanguagePack === "function") importLanguagePack(file);
       },
       className: "hidden",
       accept: ".json",
@@ -277,7 +294,9 @@ const UiLanguageSelector = (props = {}) => {
     "button",
     {
       type: "button",
-      onClick: exportLanguagePack,
+      onClick: () => {
+        if (typeof exportLanguagePack === "function") exportLanguagePack();
+      },
       className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-700 hover:bg-indigo-50 rounded transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500",
       title: languageCopy("language_selector.download_tooltip", "Export Language Pack"),
       "aria-label": languageCopy("language_selector.download_tooltip", "Export Language Pack"),
@@ -294,9 +313,11 @@ const UiLanguageSelector = (props = {}) => {
       onChange: (e) => setManualInput(e.target.value.slice(0, 60)),
       onKeyDown: (e) => {
         if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         if (e.key === "Enter") handleManualSubmit();
         else if (e.key === "Escape" && manualInput) {
           e.preventDefault();
+          e.stopPropagation();
           setManualInput("");
         }
       },

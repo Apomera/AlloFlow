@@ -63,8 +63,17 @@
     return gct;
   }
 
+  function _safeNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') return Number(v);
+    return NaN;
+  }
+
   function nearestColor(r, g, b) {
-    var ri = Math.round(r / 255 * 5), gi = Math.round(g / 255 * 5), bi = Math.round(b / 255 * 5);
+    var cr = (typeof r === 'number' && Number.isFinite(r)) ? (r > 0 ? (r < 255 ? r : 255) : 0) : 0;
+    var cg = (typeof g === 'number' && Number.isFinite(g)) ? (g > 0 ? (g < 255 ? g : 255) : 0) : 0;
+    var cb = (typeof b === 'number' && Number.isFinite(b)) ? (b > 0 ? (b < 255 ? b : 255) : 0) : 0;
+    var ri = Math.round(cr / 255 * 5), gi = Math.round(cg / 255 * 5), bi = Math.round(cb / 255 * 5);
     return ri * 36 + gi * 6 + bi;
   }
 
@@ -81,7 +90,7 @@
     var writeBits = function (code, size) {
       bitBuf |= (code << bitCount);
       bitCount += size;
-      while (bitCount >= 8) { out.push(bitBuf & 0xFF); bitBuf >>= 8; bitCount -= 8; }
+      while (bitCount >= 8) { out.push(bitBuf & 0xFF); bitBuf >>>= 8; bitCount -= 8; }
     };
     writeBits(clearCode, codeSize);
     var cur = String(indexStream[0]);
@@ -113,7 +122,7 @@
   }
 
   function validateDimensions(width, height, frameCount) {
-    var rawW = Number(width), rawH = Number(height);
+    var rawW = _safeNum(width), rawH = _safeNum(height);
     if (!Number.isFinite(rawW) || !Number.isFinite(rawH) || rawW <= 0 || rawH <= 0) {
       throw new Error('AlloGif: invalid canvas dimensions');
     }
@@ -121,7 +130,7 @@
     if (W > MAX_DIMENSION || H > MAX_DIMENSION || W > Math.floor(MAX_FRAME_PIXELS / H)) {
       throw new Error('AlloGif: canvas dimensions exceed safety limit');
     }
-    if (frameCount > MAX_FRAMES || W * H * frameCount > MAX_TOTAL_PIXELS) {
+    if (!Number.isInteger(frameCount) || frameCount < 1 || frameCount > MAX_FRAMES || W * H * frameCount > MAX_TOTAL_PIXELS) {
       throw new Error('AlloGif: frame count or total pixels exceed safety limit');
     }
     return { W: W, H: H };
@@ -129,10 +138,11 @@
 
   // Core: canvases (or anything with a 2d context) -> GIF bytes.
   function encodeCanvasesToBytes(canvases, width, height, fps) {
-    if (!canvases || !canvases.length) throw new Error('AlloGif: need at least one frame');
-    var dims = validateDimensions(width, height, canvases.length);
+    var frameCount = canvases && typeof canvases.length === 'number' ? canvases.length : 0;
+    if (!Number.isInteger(frameCount) || frameCount < 1) throw new Error('AlloGif: need at least one frame');
+    var dims = validateDimensions(width, height, frameCount);
     var W = dims.W, H = dims.H;
-    var safeFps = Number(fps);
+    var safeFps = _safeNum(fps);
     safeFps = (Number.isFinite(safeFps) && safeFps > 0) ? safeFps : 3;
     var delay = Math.max(2, Math.min(65535, Math.round(100 / safeFps))); // centiseconds
     var parts = [];
@@ -147,7 +157,7 @@
     // Netscape looping extension (infinite loop)
     parts.push(new Uint8Array([0x21, 0xFF, 0x0B, 0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30, 0x03, 0x01, 0x00, 0x00, 0x00]));
 
-    for (var fi = 0; fi < canvases.length; fi++) {
+    for (var fi = 0; fi < frameCount; fi++) {
       // Graphic control extension (per-frame delay, no transparency)
       parts.push(new Uint8Array([0x21, 0xF9, 0x04, 0x00, delay & 0xFF, (delay >> 8) & 0xFF, 0x00, 0x00]));
       var imgDesc = new Uint8Array(10);
@@ -159,7 +169,8 @@
       var canvas = canvases[fi];
       var ctx = canvas && typeof canvas.getContext === 'function' ? canvas.getContext('2d') : null;
       if (!ctx || typeof ctx.getImageData !== 'function') throw new Error('AlloGif: frame lacks 2d canvas context');
-      var fData = ctx.getImageData(0, 0, W, H).data;
+      var imgData = ctx.getImageData(0, 0, W, H);
+      var fData = imgData && imgData.data;
       if (!fData || fData.length < W * H * 4) throw new Error('AlloGif: incomplete frame pixel buffer');
       var indices = new Uint8Array(W * H);
       for (var pi = 0; pi < W * H; pi++) {
@@ -186,13 +197,26 @@
   }
 
   function bytesToDataUrl(bytes) {
-    // 32KB chunks: one String.fromCharCode over a big array stack-overflows.
-    var binary = '';
-    var CHUNK = 0x8000;
-    for (var i = 0; i < bytes.length; i += CHUNK) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + CHUNK, bytes.length)));
+    var u8 = bytes instanceof Uint8Array
+      ? bytes
+      : (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView && ArrayBuffer.isView(bytes)
+        ? new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+        : null);
+    if (!u8) throw new Error('AlloGif: invalid byte buffer');
+    var btoaFn = typeof btoa === 'function' ? btoa : (global && typeof global.btoa === 'function' ? global.btoa : null);
+    if (btoaFn) {
+      // 32KB chunks: one String.fromCharCode over a big array stack-overflows.
+      var binary = '';
+      var CHUNK = 0x8000;
+      for (var i = 0; i < u8.length; i += CHUNK) {
+        binary += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i + CHUNK, u8.length)));
+      }
+      return 'data:image/gif;base64,' + btoaFn(binary);
     }
-    return 'data:image/gif;base64,' + btoa(binary);
+    if (typeof Buffer === 'function') {
+      return 'data:image/gif;base64,' + Buffer.from(u8).toString('base64');
+    }
+    throw new Error('AlloGif: base64 encoder unavailable');
   }
 
   function loadImageToCanvas(src, width, height) {
@@ -203,25 +227,50 @@
         return;
       }
       var url = raw;
-      if (url.indexOf('data:') !== 0) {
+      if (!/^data:/i.test(url)) {
         if (!BARE_B64_RE.test(url)) { reject(new Error('Unsupported frame encoding')); return; }
         url = 'data:image/png;base64,' + url;
       } else if (!SAFE_RASTER_DATA_RE.test(url)) {
         reject(new Error('Unsupported frame data URL type'));
         return;
       }
-      var img = new Image();
+      var ImgCtor = typeof Image === 'function' ? Image : (global && typeof global.Image === 'function' ? global.Image : null);
+      var doc = typeof document !== 'undefined' ? document : (global && global.document);
+      if (!ImgCtor || !doc || typeof doc.createElement !== 'function') {
+        reject(new Error('Image/canvas environment unavailable'));
+        return;
+      }
+      var settled = false;
+      var img = new ImgCtor();
+      var timer = typeof setTimeout === 'function' ? setTimeout(function () {
+        finish(reject, new Error('Frame load timed out'));
+      }, 15000) : null;
+      function finish(fn, val) {
+        if (settled) return;
+        settled = true;
+        if (timer !== null && typeof clearTimeout === 'function') clearTimeout(timer);
+        img.onload = img.onerror = null;
+        fn(val);
+      }
       img.onload = function () {
-        var c = document.createElement('canvas');
-        c.setAttribute('aria-hidden', 'true');
-        c.width = width; c.height = height;
-        var ctx = c.getContext('2d');
-        if (!ctx) { reject(new Error('2d canvas unavailable')); return; }
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(c);
+        try {
+          var c = doc.createElement('canvas');
+          if (typeof c.setAttribute === 'function') c.setAttribute('aria-hidden', 'true');
+          c.width = width; c.height = height;
+          var ctx = c.getContext('2d');
+          if (!ctx) { finish(reject, new Error('2d canvas unavailable')); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          finish(resolve, c);
+        } catch (err) {
+          finish(reject, err || new Error('Frame draw failed'));
+        }
       };
-      img.onerror = function () { reject(new Error('Frame load failed')); };
-      img.src = url;
+      img.onerror = function () { finish(reject, new Error('Frame load failed')); };
+      try {
+        img.src = url;
+      } catch (err) {
+        finish(reject, err || new Error('Frame load failed'));
+      }
     });
   }
 
@@ -244,11 +293,19 @@
       try { dims = validateDimensions(width, height, framesBase64.length); }
       catch (e) { return Promise.reject(e); }
       return Promise.all(framesBase64.map(function (b64) { return loadImageToCanvas(b64, dims.W, dims.H); }))
-        .then(function (canvases) { return bytesToDataUrl(encodeCanvasesToBytes(canvases, dims.W, dims.H, fps || 3)); });
+        .then(function (canvases) {
+          try {
+            return bytesToDataUrl(encodeCanvasesToBytes(canvases, dims.W, dims.H, fps));
+          } finally {
+            canvases.forEach(function (c) { try { if (c) { c.width = 0; c.height = 0; } } catch (_) {} });
+          }
+        });
     },
     bytesToDataUrl: bytesToDataUrl
   });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = AlloGif;
-  if (global) global.AlloGif = AlloGif;
-})(typeof window !== 'undefined' ? window : this);
+  if (typeof module === 'object' && module && module.exports) module.exports = AlloGif;
+  if (global && (typeof global === 'object' || typeof global === 'function')) {
+    try { global.AlloGif = AlloGif; } catch (_) {}
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : (typeof self !== 'undefined' ? self : null)));

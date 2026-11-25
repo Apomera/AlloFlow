@@ -1,6 +1,7 @@
 /** Auto-generated first-wave cold-path CDN module. */
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 var React = window.React;
 if (!React) { console.error('[ColdPathSurfaces] React not found on window'); return; }
 window.AlloModules = window.AlloModules || {};
@@ -24,7 +25,7 @@ function AllobotSearchSettings({
     }
   };
   const managed = typeof window !== 'undefined' ? window.ALLOFLOW_MANAGED_AI_POLICY : null;
-  const managedSearchOff = managed != null && (managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
+  const managedSearchOff = managed != null && (managed.enabled === false || managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
   const [key, setKey] = React.useState(() => isLocked() ? '' : String(read().serperApiKey || ''));
   const [hasSavedKey, setHasSavedKey] = React.useState(() => !isLocked() && Boolean(String(read().serperApiKey || '').trim()));
   const [enabled, setEnabled] = React.useState(() => {
@@ -170,21 +171,40 @@ function AllobotSearchSettings({
 
 // Auto-extracted cold-path view source. Edit this file, then rebuild its CDN module.
 
+function _coldSafeJsonParse(raw) {
+  try {
+    const parsed = JSON.parse(raw || '{}', (k, v) => k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+function _isColdAiSecretsLocked() {
+  if (typeof window === 'undefined') return false;
+  if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true) return true;
+  try {
+    const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+    if (sp && (sp.aiDisabled === true || sp.aiEnabled === false || typeof sp.isStudentAiDisabled === 'function' && sp.isStudentAiDisabled())) return true;
+  } catch (_) {
+    return true;
+  }
+  return false;
+}
 function _useColdSurfaceDialogLock(dialogRef, isOpen) {
   React.useEffect(() => {
     if (!isOpen) return;
     const prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
     const lockState = typeof window !== 'undefined' ? window.__alloScrollLockState = window.__alloScrollLockState || {
       count: 0,
-      overflow: ''
+      prev: ''
     } : null;
     if (lockState && typeof document !== 'undefined' && document.body) {
-      if (lockState.count === 0) lockState.overflow = document.body.style.overflow;
+      if (lockState.count === 0) lockState.prev = document.body.style.overflow;
       lockState.count += 1;
       document.body.style.overflow = 'hidden';
     }
     const hiddenNodes = [];
-    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"]';
+    const liveSel = '[aria-live], [role="status"], [role="alert"], [role="log"], [data-toast-region]';
     if (typeof document !== 'undefined' && dialogRef && dialogRef.current) {
       const rootEl = document.getElementById('root');
       const siblings = rootEl ? Array.from(rootEl.children) : Array.from(document.body?.children || []);
@@ -204,15 +224,26 @@ function _useColdSurfaceDialogLock(dialogRef, isOpen) {
     }
     const focusTimer = setTimeout(() => {
       const el = dialogRef && dialogRef.current;
-      if (!el) return;
+      if (!el || el.isConnected === false) return;
       const target = el.querySelector('[data-autofocus="true"], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])') || el;
       try {
         target.focus();
       } catch (_) {}
     }, 0);
     const onKeyDown = e => {
-      if (e.key !== 'Tab' || !dialogRef || !dialogRef.current) return;
-      const focusables = Array.from(dialogRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(n => !n.closest('[hidden]') && (typeof getComputedStyle !== 'function' || getComputedStyle(n).display !== 'none'));
+      if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey || !dialogRef || !dialogRef.current) return;
+      const focusables = Array.from(dialogRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(n => {
+        if (n.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        if (typeof getComputedStyle === 'function') {
+          let cur = n;
+          while (cur && cur !== dialogRef.current) {
+            const st = getComputedStyle(cur);
+            if (st && (st.display === 'none' || st.visibility === 'hidden')) return false;
+            cur = cur.parentElement;
+          }
+        }
+        return true;
+      });
       if (focusables.length === 0) {
         e.preventDefault();
         try {
@@ -246,15 +277,16 @@ function _useColdSurfaceDialogLock(dialogRef, isOpen) {
         prevHidden
       }) => {
         try {
+          if (!node || node.isConnected === false) return;
           if (!hadInert) node.removeAttribute('inert');
           if (prevHidden === null) node.removeAttribute('aria-hidden');else node.setAttribute('aria-hidden', prevHidden);
         } catch (_) {}
       });
       if (lockState && typeof document !== 'undefined' && document.body) {
         lockState.count = Math.max(0, lockState.count - 1);
-        if (lockState.count === 0) document.body.style.overflow = lockState.overflow;
+        if (lockState.count === 0) document.body.style.overflow = lockState.prev;
       }
-      if (prevFocus && typeof prevFocus.focus === 'function') {
+      if (prevFocus && prevFocus.isConnected !== false && typeof prevFocus.focus === 'function') {
         try {
           prevFocus.focus();
         } catch (_) {}
@@ -289,8 +321,8 @@ function _validateSafeLmsUrl(rawUrl) {
       reason: 'Document URLs containing embedded credentials are blocked.'
     };
   }
-  const host = String(parsed.hostname || '').toLowerCase();
-  if (!host || /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1\]?|\[?fe80:|\[?fc|\[?fd|0\.0\.0\.0)/.test(host) || host.endsWith('.local') || host.endsWith('.localhost')) {
+  const host = String(parsed.hostname || '').toLowerCase().replace(/\.+$/, '');
+  if (!host || /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|\[?::1?\]?|\[?::ffff:|\[?fe80:|\[?fc|\[?fd|0\.0\.0\.0)/.test(host) || host.endsWith('.local') || host.endsWith('.localhost')) {
     return {
       ok: false,
       reason: 'Local or private-network LMS URLs are blocked.'
@@ -319,12 +351,21 @@ function AiBackendSettingsView(props) {
   const localModalRef = React.useRef(null);
   const resolvedModalRef = aiBackendModalRef || localModalRef;
   const backdropDownRef = React.useRef(false);
-  const secretsLocked = typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true);
+  const [secretsLocked, setSecretsLocked] = React.useState(_isColdAiSecretsLocked);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const sync = () => setSecretsLocked(_isColdAiSecretsLocked());
+    const events = ['alloflow:ai-key-lock-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-config-changed', 'storage'];
+    events.forEach(ev => window.addEventListener(ev, sync));
+    return () => {
+      events.forEach(ev => window.removeEventListener(ev, sync));
+    };
+  }, []);
   _useColdSurfaceDialogLock(resolvedModalRef, true);
   return /*#__PURE__*/React.createElement("div", {
     role: "presentation",
     onKeyDown: e => {
-      if (e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+      if (e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
         e.preventDefault();
         setShowAIBackendModal(false);
       }
@@ -370,7 +411,7 @@ function AiBackendSettingsView(props) {
     t: t
   }), !secretsLocked && (() => {
     try {
-      return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || '';
+      return _coldSafeJsonParse(typeof localStorage !== 'undefined' ? localStorage.getItem('alloflow_ai_config') : '{}').wolframAppId || '';
     } catch {
       return '';
     }
@@ -386,15 +427,14 @@ function AiBackendSettingsView(props) {
     placeholder: t('canvas_settings.wolfram_placeholder') || 'XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)',
     defaultValue: (() => {
       try {
-        return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || '';
+        return _coldSafeJsonParse(typeof localStorage !== 'undefined' ? localStorage.getItem('alloflow_ai_config') : '{}').wolframAppId || '';
       } catch {
         return '';
       }
     })(),
     onChange: e => {
       try {
-        const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-        const current = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        const current = _coldSafeJsonParse(typeof localStorage !== 'undefined' ? localStorage.getItem('alloflow_ai_config') : '{}');
         localStorage.setItem('alloflow_ai_config', JSON.stringify({
           ...current,
           wolframAppId: e.target.value
@@ -404,11 +444,11 @@ function AiBackendSettingsView(props) {
     className: "w-full min-h-11 p-2.5 border-2 border-slate-300 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-800"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1"
-  }, t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.')) : null, window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
+  }, t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.')) : null, typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
     t,
     _isCanvasEnv,
     GEMINI_MODELS
-  }), window.AlloModules && window.AlloModules.PlatformDiagnosticsSection && React.createElement(window.AlloModules.PlatformDiagnosticsSection, {
+  }), typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PlatformDiagnosticsSection && React.createElement(window.AlloModules.PlatformDiagnosticsSection, {
     t
   }), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
@@ -431,10 +471,10 @@ function AiBackendSettingsView(props) {
   }, t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
+      if (typeof window === 'undefined' || typeof window.__alloOpenDiagnosticsLog !== 'function') return;
       let hasErrors = false;
       try {
-        hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0;
+        hasErrors = (window.AlloModules?.ErrorReporter?.getBuffer?.() || []).length > 0;
       } catch (e) {}
       window.__alloOpenDiagnosticsLog(hasErrors ? 'errors' : 'tts');
     },
@@ -466,14 +506,20 @@ function LmsAuditBannerView(props) {
     startNewPdfAudit,
     t
   } = props;
+  const safeLmsUrls = Array.isArray(lmsAuditUrls) ? lmsAuditUrls : [];
   const [fetchingUrl, setFetchingUrl] = React.useState('');
-  React.useEffect(() => () => {
-    try {
-      lmsAuditFetchControllerRef?.current?.abort();
-    } catch (_) {}
-    try {
-      if (typeof startNewPdfAudit === 'function') startNewPdfAudit();
-    } catch (_) {}
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      try {
+        lmsAuditFetchControllerRef?.current?.abort();
+      } catch (_) {}
+      try {
+        if (typeof startNewPdfAudit === 'function') startNewPdfAudit();
+      } catch (_) {}
+    };
   }, [lmsAuditFetchControllerRef, startNewPdfAudit]);
   const handleDismiss = () => {
     try {
@@ -485,7 +531,7 @@ function LmsAuditBannerView(props) {
     setFetchingUrl('');
     if (typeof setIsExtracting === 'function') setIsExtracting(false);
     if (typeof setGenerationStep === 'function') setGenerationStep('');
-    setLmsAuditUrls([]);
+    if (typeof setLmsAuditUrls === 'function') setLmsAuditUrls([]);
   };
   return /*#__PURE__*/React.createElement("div", {
     role: "region",
@@ -497,20 +543,20 @@ function LmsAuditBannerView(props) {
     className: "font-bold text-sm"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "\u267F "), t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', {
-    count: lmsAuditUrls.length
-  }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`), /*#__PURE__*/React.createElement("button", {
+  }, "\u267F "), t(safeLmsUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', {
+    count: safeLmsUrls.length
+  }) || `${safeLmsUrls.length} document${safeLmsUrls.length !== 1 ? 's' : ''} queued from LMS`), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleDismiss,
     className: "min-h-11 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-md text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800"
   }, t('lms.dismiss_button') || 'Dismiss')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
-  }, lmsAuditUrls.map((url, i) => {
+  }, safeLmsUrls.map((url, i) => {
     const validation = _validateSafeLmsUrl(url);
     let name = `Document ${i + 1}`;
     let hostLabel = validation.ok ? validation.hostname : '';
     try {
-      const parsedUrl = new URL(url, window.location.href);
+      const parsedUrl = new URL(url, typeof window !== 'undefined' ? window.location.href : 'https://localhost');
       if (!hostLabel) hostLabel = parsedUrl.hostname || '';
       const encodedName = parsedUrl.pathname.split('/').filter(Boolean).pop() || '';
       try {
@@ -531,15 +577,15 @@ function LmsAuditBannerView(props) {
       onClick: async () => {
         const check = _validateSafeLmsUrl(url);
         if (!check.ok) {
-          addToast(t('lms.blocked_url', {
+          if (typeof addToast === 'function') addToast(t('lms.blocked_url', {
             reason: check.reason
           }) || `Blocked unsafe LMS document link: ${check.reason}`, 'error');
           return;
         }
         setFetchingUrl(url);
-        const documentIntakeEpoch = startNewPdfAudit();
+        const documentIntakeEpoch = typeof startNewPdfAudit === 'function' ? startNewPdfAudit() : 0;
         const fetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        lmsAuditFetchControllerRef.current = fetchController;
+        if (lmsAuditFetchControllerRef) lmsAuditFetchControllerRef.current = fetchController;
         let fetchTimedOut = false;
         const fetchTimeout = setTimeout(() => {
           fetchTimedOut = true;
@@ -547,16 +593,16 @@ function LmsAuditBannerView(props) {
             fetchController?.abort();
           } catch (_) {}
         }, 30000);
-        setIsExtracting(true);
-        setGenerationStep(t('status_steps.extracting_text'));
+        if (typeof setIsExtracting === 'function') setIsExtracting(true);
+        if (typeof setGenerationStep === 'function') setGenerationStep(t('status_steps.extracting_text'));
         try {
-          addToast(t('lms.fetching', {
+          if (typeof addToast === 'function') addToast(t('lms.fetching', {
             name
           }) || `Fetching ${name}...`, 'info');
           const resp = await fetch(url, fetchController ? {
             signal: fetchController.signal
           } : undefined);
-          if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
+          if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const responseType = String(resp.headers.get('content-type') || '').toLowerCase();
           if (/text\/html|application\/json/.test(responseType)) throw new Error('The LMS returned a sign-in page instead of a document.');
@@ -570,36 +616,37 @@ function LmsAuditBannerView(props) {
             let received = 0;
             while (true) {
               const part = await streamReader.read();
-              if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) {
+              if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(documentIntakeEpoch)) {
                 try {
                   await streamReader.cancel();
                 } catch (_) {}
                 return;
               }
               if (part.done) break;
-              received += part.value.byteLength;
+              const partBytes = part.value && typeof part.value.byteLength === 'number' ? part.value.byteLength : 0;
+              received += partBytes;
               if (received > maxBytes) {
                 try {
                   await streamReader.cancel();
                 } catch (_) {}
                 throw new Error('The document is larger than the 30 MB safety limit.');
               }
-              chunks.push(part.value);
+              if (part.value) chunks.push(part.value);
             }
             blob = new Blob(chunks, {
               type: responseType || 'application/octet-stream'
             });
           } else blob = await resp.blob();
-          if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
+          if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
           if (blob.size > 30 * 1024 * 1024) throw new Error('The document is larger than the 30 MB safety limit.');
           // The fetch timer owns only network/body acquisition. Once the Blob is complete,
           // FileReader's separate timer below owns conversion and visible error cleanup.
           clearTimeout(fetchTimeout);
           const failLmsRead = message => {
-            if (!isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
-            setIsExtracting(false);
-            setGenerationStep('');
-            addToast(message, 'error');
+            if (typeof isPdfDocumentIntakeCurrent === 'function' && !isPdfDocumentIntakeCurrent(documentIntakeEpoch)) return;
+            if (typeof setIsExtracting === 'function') setIsExtracting(false);
+            if (typeof setGenerationStep === 'function') setGenerationStep('');
+            if (typeof addToast === 'function') addToast(message, 'error');
           };
           await new Promise(resolveRead => {
             const reader = new FileReader();
@@ -698,8 +745,8 @@ function LmsAuditBannerView(props) {
           }) || `Failed to fetch ${name}: ${reason}. The file may require LMS authentication.`, 'error');
         } finally {
           clearTimeout(fetchTimeout);
-          setFetchingUrl(prev => prev === url ? '' : prev);
-          if (lmsAuditFetchControllerRef.current === fetchController) lmsAuditFetchControllerRef.current = null;
+          if (mountedRef.current) setFetchingUrl(prev => prev === url ? '' : prev);
+          if (lmsAuditFetchControllerRef && lmsAuditFetchControllerRef.current === fetchController) lmsAuditFetchControllerRef.current = null;
         }
       },
       className: "min-h-11 bg-white/20 hover:bg-white/30 disabled:opacity-60 disabled:cursor-wait px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800 flex items-center gap-1.5"
@@ -740,23 +787,24 @@ function ReadThisPagePanelView(props) {
     mountedRef.current = false;
     selectionSpeechTokenRef.current += 1;
   }, []);
-  const items = getReadableContent();
-  const typeColors = {
+  const rawItems = typeof getReadableContent === 'function' ? getReadableContent() : [];
+  const items = Array.isArray(rawItems) ? rawItems : [];
+  const typeColors = Object.assign(Object.create(null), {
     heading: '#f59e0b',
     text: '#cbd5e1',
     status: '#a78bfa',
     term: '#38bdf8',
     question: '#f472b6',
     option: '#60a5fa'
-  };
-  const typeIcons = {
+  });
+  const typeIcons = Object.assign(Object.create(null), {
     heading: '\u{1F4E2}',
     text: '\u{1F4C4}',
     status: '\u{1F4CD}',
     term: '\u{1F4D6}',
     question: '\u{2753}',
     option: '\u{1F520}'
-  };
+  });
   const handleReadAll = () => {
     selectionSpeechTokenRef.current += 1;
     setSelectionNote('');
@@ -792,7 +840,8 @@ function ReadThisPagePanelView(props) {
     try {
       stopReadThisPage();
     } catch (_) {}
-    const rate = Number(typeof window !== 'undefined' ? window.__alloPlaybackRate : 1) || 1;
+    const rawRate = typeof window !== 'undefined' ? Number(window.__alloPlaybackRate) : 1;
+    const rate = Number.isFinite(rawRate) && rawRate > 0 ? Math.max(0.5, Math.min(2, rawRate)) : 1;
     const volume = typeof window !== 'undefined' && Number.isFinite(Number(window.__alloVoiceVolume)) ? Math.max(0, Math.min(1, Number(window.__alloVoiceVolume))) : 1;
     const done = () => {
       if (!mountedRef.current || selectionSpeechTokenRef.current !== token) return;
@@ -970,6 +1019,9 @@ function ReadThisPagePanelView(props) {
     }
   }, items.map((item, idx) => {
     const itemText = String(item?.text || '');
+    const itemType = typeof item?.type === 'string' ? item.type : '';
+    const itemColor = itemType && Object.prototype.hasOwnProperty.call(typeColors, itemType) ? typeColors[itemType] : '#cbd5e1';
+    const itemIcon = itemType && Object.prototype.hasOwnProperty.call(typeIcons, itemType) ? typeIcons[itemType] : '\u{1F50A}';
     const isActive = rtpCurrentIndex === idx;
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
@@ -977,7 +1029,7 @@ function ReadThisPagePanelView(props) {
       onClick: () => handleItemClick(idx),
       className: "min-h-11 flex items-start justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
       style: {
-        color: theme === 'contrast' ? '#fbbf24' : typeColors[item.type] || '#cbd5e1',
+        color: theme === 'contrast' ? '#fbbf24' : itemColor,
         lineHeight: 1.5,
         background: isActive ? theme === 'contrast' ? '#333300' : '#7c3aed33' : 'none'
       },
@@ -988,6 +1040,7 @@ function ReadThisPagePanelView(props) {
         text: itemText
       }) || `Click to hear: ${itemText}`,
       onKeyDown: e => {
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleItemClick(idx);
@@ -996,7 +1049,7 @@ function ReadThisPagePanelView(props) {
     }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
       className: "me-1",
       "aria-hidden": "true"
-    }, typeIcons[item.type] || '\u{1F50A}'), itemText), isActive && /*#__PURE__*/React.createElement("span", {
+    }, itemIcon), itemText), isActive && /*#__PURE__*/React.createElement("span", {
       "data-rtp-active-badge": "true",
       className: "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border",
       style: {

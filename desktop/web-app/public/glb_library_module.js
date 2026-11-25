@@ -19,6 +19,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined' || !window) return;
   if (window.AlloModules && window.AlloModules.GlbLibrary) {
     console.log('[GlbLibrary] Already loaded, skipping');
     return;
@@ -57,7 +58,7 @@
   // PURE given a base: safe absolute/data/blob URLs pass through; safe relative paths join the base.
   function resolveGlbUrl(url, base) {
     var u = String(url == null ? '' : url).trim();
-    if (!u) return '';
+    if (!u || /[\u0000-\u001F\u007F]/.test(u)) return '';
     var schemeCheck = u.replace(/[\u0000-\u0020\u007F]/g, '');
     if (/^(?:javascript|vbscript|file):/i.test(schemeCheck)) return '';
     if (/^data:/i.test(schemeCheck)) {
@@ -65,10 +66,11 @@
     }
     if (/^blob:/i.test(schemeCheck)) return u;
     if (/^https?:\/\//i.test(u)) return u;
-    if (/^\/\//.test(u)) return '';
-    if (u.indexOf('..') !== -1 || u.indexOf('\\') !== -1) return '';
+    if (/^\/\//.test(u) || /^[a-z][a-z0-9+.-]*:/i.test(schemeCheck)) return '';
+    if (u.indexOf('..') !== -1 || u.indexOf('\\') !== -1 || /%2e%2e|%5c/i.test(u)) return '';
     var b = (base != null) ? String(base).trim() : _selfBase();
     if (!b) return u;
+    if (/[\u0000-\u001F\u007F]/.test(b) || /^(?:javascript|vbscript|data|file):/i.test(b.replace(/[\u0000-\u0020\u007F]/g, ''))) return '';
     return b.replace(/\/?$/, '/') + u.replace(/^\.?\//, '');
   }
 
@@ -172,7 +174,8 @@
 
   function normalizeItem(raw) {
     if (!raw || typeof raw !== 'object') return null;
-    var id = (typeof raw.id === 'string' && raw.id.trim()) ? raw.id.trim().slice(0, 120) : null;
+    var rawId = typeof raw.id === 'string' ? raw.id.replace(/[\u0000-\u001F\u007F]/g, '').trim() : '';
+    var id = rawId ? rawId.slice(0, 120) : null;
     if (!id) return null;
     var P3D = window.AlloModules && window.AlloModules.Prim3D;
     var recipe = null;
@@ -244,6 +247,14 @@
     } catch (_) { return false; }
   }
 
+  function _isRemoteBlocked() {
+    return window._isDesktopBundledApp === true || window.__alloOfflineOnly === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true;
+  }
+  function _isExternalHttpUrl(url) {
+    var s = String(url || '');
+    return /^https?:/i.test(s) && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(s);
+  }
+
   function loadGLTFLoader(THREE, opts) {
     opts = (opts && typeof opts === 'object') ? opts : {};
     if (THREE && THREE.GLTFLoader) return Promise.resolve(true);
@@ -252,25 +263,38 @@
       // Clear the cached promise on failure so a later call can RE-ATTEMPT the load —
       // otherwise one transient network/CSP hiccup permanently degrades every .glb
       // item to its Prim3D fallback for the whole page session.
-      function fail(err) { try { window.__glbLoaderPromise = null; } catch (e) {} reject(err); }
+      var settled = false;
+      var timer = null;
+      var scriptEl = null;
+      function cleanup(removeEl) {
+        if (timer !== null) { try { clearTimeout(timer); } catch (_) {} timer = null; }
+        if (removeEl && scriptEl && scriptEl.parentNode) { try { scriptEl.parentNode.removeChild(scriptEl); } catch (_) {} }
+      }
+      function ok() { if (settled) return; settled = true; cleanup(false); resolve(true); }
+      function fail(err) { if (settled) return; settled = true; cleanup(true); try { window.__glbLoaderPromise = null; } catch (e) {} reject(err); }
       try {
         var srcUrl = opts.gltfUrl || GLTF_URL;
         if (!_isTrustedLoaderScriptUrl(srcUrl)) {
           return fail(new Error('Untrusted GLTFLoader script URL'));
         }
-        var remoteBlocked = window._isDesktopBundledApp === true || window.__alloOfflineOnly === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true;
-        if (remoteBlocked && /^https?:/i.test(String(srcUrl))
-          && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
+        if (_isRemoteBlocked() && _isExternalHttpUrl(srcUrl)) {
           return fail(new Error('External GLTFLoader CDN disabled in restricted mode'));
         }
+        if (typeof document === 'undefined' || !document.head) {
+          return fail(new Error('DOM unavailable for GLTFLoader'));
+        }
         var s = document.createElement('script');
+        scriptEl = s;
         s.src = srcUrl;
         if (srcUrl === GLTF_URL) s.integrity = 'sha384-RWeB0lX19DV+SMdmyb/S7JBYCAMzaj7/j5QbG93KiBkj9dCoy1Lk8JEDayyBfOL1';
         s.crossOrigin = 'anonymous';
         s.referrerPolicy = 'no-referrer';
         s.async = true;
-        s.onload = function () { THREE.GLTFLoader ? resolve(true) : fail(new Error('GLTFLoader loaded but THREE.GLTFLoader missing')); };
+        s.onload = function () { (THREE && THREE.GLTFLoader) ? ok() : fail(new Error('GLTFLoader loaded but THREE.GLTFLoader missing')); };
         s.onerror = function () { fail(new Error('failed to load GLTFLoader')); };
+        if (typeof setTimeout === 'function') {
+          timer = setTimeout(function () { fail(new Error('GLTFLoader load timed out')); }, 15000);
+        }
         document.head.appendChild(s);
       } catch (e) { fail(e); }
     });
@@ -303,7 +327,7 @@
   // with a graceful Prim3D fallback on any load failure; recipe-only items build
   // directly. Rejects only when nothing renderable exists.
   function loadModel(THREE, item, opts) {
-    opts = opts || {};
+    opts = (opts && typeof opts === 'object') ? opts : {};
     if (!THREE || !item) return Promise.reject(new Error('THREE and item required'));
     var src = resolveSource(item);
     if (src === 'prim3d') {
@@ -311,22 +335,29 @@
       return g ? Promise.resolve(g) : Promise.reject(new Error('recipe did not build'));
     }
     if (src === 'glb') {
-      return loadGLTFLoader(THREE, opts).then(function () {
-        return new Promise(function (resolve, reject) {
-          try {
-            new THREE.GLTFLoader().load(resolveGlbUrl(item.glbUrl, opts.assetBase), function (gltf) {
+      var resolvedUrl = resolveGlbUrl(item.glbUrl, opts.assetBase);
+      var glbPromise = (!resolvedUrl || (_isRemoteBlocked() && _isExternalHttpUrl(resolvedUrl)))
+        ? Promise.reject(new Error('Blocked or invalid glbUrl'))
+        : loadGLTFLoader(THREE, opts).then(function () {
+            return new Promise(function (resolve, reject) {
               try {
-                var obj = gltf.scene || (gltf.scenes && gltf.scenes[0]);
-                if (!obj) { reject(new Error('empty gltf')); return; }
-                if (isNum(opts.unit)) obj.scale.setScalar(opts.unit * num(item.unitScale, 1));
-                _applyTint(THREE, obj, item.tint);
-                obj.userData.glbItemId = item.id;
-                resolve(obj);
+                new THREE.GLTFLoader().load(resolvedUrl, function (gltf) {
+                  try {
+                    var obj = gltf && (gltf.scene || (gltf.scenes && gltf.scenes[0]));
+                    if (!obj) { reject(new Error('empty gltf')); return; }
+                    if (isNum(opts.unit) && opts.unit > 0 && obj.scale && typeof obj.scale.setScalar === 'function') {
+                      obj.scale.setScalar(opts.unit * num(item.unitScale, 1));
+                    }
+                    _applyTint(THREE, obj, item.tint);
+                    obj.userData = obj.userData || {};
+                    obj.userData.glbItemId = item.id;
+                    resolve(obj);
+                  } catch (e) { reject(e); }
+                }, undefined, function () { reject(new Error('gltf load error')); });
               } catch (e) { reject(e); }
-            }, undefined, function () { reject(new Error('gltf load error')); });
-          } catch (e) { reject(e); }
-        });
-      }).catch(function () {
+            });
+          });
+      return glbPromise.catch(function () {
         var fb = _primFallback(THREE, item, opts);   // never leave a purchased item invisible
         if (fb) return fb;
         throw new Error('glb failed and no fallback');

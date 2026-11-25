@@ -353,6 +353,7 @@ function HeaderBar(props) {
   const viewModeAvailable = !isStudentLinkMode && !isIndependentMode;
   const startAppTour = (step) => {
     setShowSetupPathMenu(false);
+    if (isHelpMode && typeof handleToggleIsHelpMode === "function") handleToggleIsHelpMode();
     setSpotlightMessage("");
     setTourStep(step);
     setRunTour(true);
@@ -565,6 +566,10 @@ function HeaderBar(props) {
   const _translateA11yFrameRef = React.useRef(0);
   const _translateObserverRef = React.useRef(null);
   const _exportDialogRef = React.useRef(null);
+  const [showMoreDocFormats, setShowMoreDocFormats] = React.useState(false);
+  React.useEffect(() => {
+    if (!showExportMenu) setShowMoreDocFormats(false);
+  }, [showExportMenu]);
   _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
   React.useEffect(() => {
     if (!showHelpMenu) return void 0;
@@ -619,6 +624,45 @@ function HeaderBar(props) {
   const _liveSignalCurrent = liveStatus && liveStatus.signals && liveStatus.signals.current && Array.isArray(liveStatus.signals.options) ? liveStatus.signals.options.find((opt) => opt.id === liveStatus.signals.current) || null : null;
   const _liveAiLabel = liveStatus && liveStatus.aiConfigured ? t("header.personal_ai_connected") || "Personal AI connected" : liveStatus && liveStatus.aiSetupAllowed ? "Personal AI available" : "AI tools off";
   _headerUseFocusTrap(_exportDialogRef, showExportMenu, handleSetShowExportMenuToFalse);
+  const _docsTriggerRef = React.useRef(null);
+  const _settingsToggleRef = React.useRef(null);
+  const _compactHelpRef = React.useRef(null);
+  const _docsWasOpenRef = React.useRef(false);
+  const _docsOpenedByTriggerRef = React.useRef(false);
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (showExportMenu) {
+      _docsWasOpenRef.current = true;
+      const opener = document.activeElement;
+      _docsOpenedByTriggerRef.current = !!(opener && opener.closest && opener.closest('[data-help-key="header_export"], [data-output-documents-toggle]'));
+      if (_docsOpenedByTriggerRef.current) return;
+      const pullIn = () => {
+        const sheet = _exportDialogRef.current;
+        if (!sheet || !sheet.isConnected || sheet.contains(document.activeElement)) return;
+        const first = sheet.querySelector("button:not([disabled]), [href], input:not([disabled]), select:not([disabled])");
+        try {
+          (first || sheet).focus();
+        } catch (_) {
+        }
+      };
+      const timers = [setTimeout(pullIn, 0), setTimeout(pullIn, 150)];
+      return () => timers.forEach(clearTimeout);
+    }
+    if (!_docsWasOpenRef.current) return;
+    _docsWasOpenRef.current = false;
+    const active = document.activeElement;
+    const lost = !active || active === document.body || !active.isConnected;
+    if (!lost && _docsOpenedByTriggerRef.current) return;
+    if (!lost && active.closest && active.closest('[role="dialog"], [aria-modal="true"]')) return;
+    const usable = (el) => !!el && el.isConnected && typeof el.focus === "function" && !el.disabled && !el.closest('[hidden], [inert], [aria-hidden="true"]');
+    const target = [_docsTriggerRef.current, _settingsToggleRef.current, _compactHelpRef.current].find(usable);
+    if (target) {
+      try {
+        target.focus();
+      } catch (_) {
+      }
+    }
+  }, [showExportMenu]);
   React.useEffect(() => {
     if (!_joinOpenAfterExpandRef.current || headerCollapsed) return;
     _joinOpenAfterExpandRef.current = false;
@@ -797,6 +841,184 @@ function HeaderBar(props) {
       live = false;
     };
   }, [showVoiceSettings, selectedVoice]);
+  const PIPER_NON_EN_CODES = React.useMemo(() => /* @__PURE__ */ new Set([
+    "ar",
+    "ca",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "es",
+    "fi",
+    "fr",
+    "hu",
+    "is",
+    "it",
+    "ka",
+    "kk",
+    "ne",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sr",
+    "sv",
+    "sw",
+    "tr",
+    "uk",
+    "vi",
+    "zh"
+  ]), []);
+  const activeNonEnLangCode = leveledTextLanguage && leveledTextLanguage !== "English" && typeof languageToTTSCode === "function" ? String(languageToTTSCode(leveledTextLanguage) || "").trim().split(/[-_]/)[0].toLowerCase() : "";
+  const piperSupportsActiveLang = !!(activeNonEnLangCode && activeNonEnLangCode !== "en" && (window._piperTTS && typeof window._piperTTS.supportsLanguage === "function" ? window._piperTTS.supportsLanguage(activeNonEnLangCode) : PIPER_NON_EN_CODES.has(activeNonEnLangCode)));
+  const [piperSavedByLang, setPiperSavedByLang] = React.useState({});
+  const [piperDownloadingLang, setPiperDownloadingLang] = React.useState("");
+  const [piperDownloadPct, setPiperDownloadPct] = React.useState(0);
+  const [piperTestingLang, setPiperTestingLang] = React.useState("");
+  const [piperRemovingLang, setPiperRemovingLang] = React.useState("");
+  const piperTestAudioRef = React.useRef(null);
+  const [preferOfflineNonEnglish, setPreferOfflineNonEnglish] = React.useState(() => {
+    try {
+      return _hdrSafeJsonObject(localStorage.getItem("alloflow_ai_config")).preferOfflineNonEnglishVoice === true;
+    } catch (_) {
+      return false;
+    }
+  });
+  const deviceVoiceInstallTip = React.useMemo(() => {
+    const ua = String(typeof navigator !== "undefined" && navigator.userAgent || "");
+    if (/CrOS/i.test(ua)) return "Chromebook tip: Install free on-device voices in Settings \u2192 Accessibility \u2192 Text-to-Speech \u2192 Voice settings.";
+    if (/iPad|iPhone|iPod|Macintosh/i.test(ua)) return "Apple tip: Install free Enhanced on-device voices in Settings \u2192 Accessibility \u2192 Spoken Content \u2192 Voices.";
+    return "Privacy note: On-device voices are preferred automatically so spoken text stays local when available.";
+  }, []);
+  React.useEffect(() => () => {
+    try {
+      if (piperTestAudioRef.current) {
+        piperTestAudioRef.current.pause();
+        piperTestAudioRef.current.src = "";
+      }
+    } catch (_) {
+    }
+    piperTestAudioRef.current = null;
+  }, []);
+  React.useEffect(() => {
+    if (!showVoiceSettings || !piperSupportsActiveLang || !activeNonEnLangCode) return void 0;
+    let live = true;
+    const checkStored = async () => {
+      try {
+        if (!window._piperTTS && typeof window.__loadPiperTTS === "function") {
+          await Promise.resolve(window.__loadPiperTTS());
+        }
+        if (!live || !window._piperTTS) return;
+        if (window._piperTTS.isLanguageReady?.(activeNonEnLangCode)) {
+          setPiperSavedByLang((prev) => prev[activeNonEnLangCode] ? prev : { ...prev, [activeNonEnLangCode]: true });
+          return;
+        }
+        if (typeof window._piperTTS.isLanguageStored === "function") {
+          const saved = await window._piperTTS.isLanguageStored(activeNonEnLangCode);
+          if (live) setPiperSavedByLang((prev) => ({ ...prev, [activeNonEnLangCode]: !!saved }));
+        }
+      } catch (_) {
+      }
+    };
+    checkStored();
+    return () => {
+      live = false;
+    };
+  }, [showVoiceSettings, piperSupportsActiveLang, activeNonEnLangCode]);
+  const piperActiveLangReady = !!(activeNonEnLangCode && (window._piperTTS?.isLanguageReady?.(activeNonEnLangCode) || piperSavedByLang[activeNonEnLangCode] === true));
+  const startPiperLangDownload = async (langCode, langLabel) => {
+    if (!langCode || langCode === "en" || piperDownloadingLang || !kokoroCapability.ok) return;
+    setPiperDownloadingLang(langCode);
+    setPiperDownloadPct(5);
+    addToast(`Downloading offline ${langLabel || langCode} voice (~30\u201360 MB, one time). You can keep working.`, "info");
+    try {
+      if (!window._piperTTS && typeof window.__loadPiperTTS === "function") {
+        await Promise.resolve(window.__loadPiperTTS());
+      }
+      const ok = window._piperTTS && typeof window._piperTTS.preloadLanguage === "function" ? await window._piperTTS.preloadLanguage(langCode, {
+        onProgress: (p) => {
+          const pct = Math.max(5, Math.min(100, Math.round((Number(p && p.pct) || 0) * 100)));
+          setPiperDownloadPct(pct);
+        }
+      }) : false;
+      if (ok) {
+        setPiperSavedByLang((prev) => ({ ...prev, [langCode]: true }));
+        addToast(`Offline ${langLabel || langCode} voice is ready and saved on this device.`, "success");
+      } else {
+        addToast(`Could not download the offline ${langLabel || langCode} voice. Cloud or device voices remain available.`, "error");
+      }
+    } catch (_) {
+      addToast(`Could not download the offline ${langLabel || langCode} voice. Cloud or device voices remain available.`, "error");
+    } finally {
+      setPiperDownloadingLang("");
+      setPiperDownloadPct(0);
+    }
+  };
+  const removePiperLangDownload = async (langCode, langLabel) => {
+    if (!langCode || langCode === "en" || piperRemovingLang) return;
+    setPiperRemovingLang(langCode);
+    try {
+      if (!window._piperTTS && typeof window.__loadPiperTTS === "function") await Promise.resolve(window.__loadPiperTTS());
+      const removed = window._piperTTS && typeof window._piperTTS.removeLanguage === "function" ? await window._piperTTS.removeLanguage(langCode) : false;
+      setPiperSavedByLang((prev) => ({ ...prev, [langCode]: false }));
+      if (removed) addToast(`Removed cached offline ${langLabel || langCode} voice from this device.`, "info");
+    } catch (_) {
+      addToast(`Could not remove the cached ${langLabel || langCode} voice.`, "error");
+    } finally {
+      setPiperRemovingLang("");
+    }
+  };
+  const testPiperOfflineVoice = async (langCode, langLabel) => {
+    if (!langCode || langCode === "en" || piperTestingLang) return;
+    setPiperTestingLang(langCode);
+    const SAMPLES = {
+      es: "Hola, esta es la voz sin conexi\xF3n de AlloFlow.",
+      fr: "Bonjour, voici la voix hors ligne de AlloFlow.",
+      de: "Hallo, das ist die Offline-Stimme von AlloFlow.",
+      it: "Ciao, questa \xE8 la voce offline di AlloFlow.",
+      pt: "Ol\xE1, esta \xE9 a voz offline do AlloFlow.",
+      ar: "\u0645\u0631\u062D\u0628\u0627\u064B\u060C \u0647\u0630\u0627 \u0647\u0648 \u0627\u0644\u0635\u0648\u062A \u063A\u064A\u0631 \u0627\u0644\u0645\u062A\u0635\u0644 \u0628\u0627\u0644\u0625\u0646\u062A\u0631\u0646\u062A.",
+      zh: "\u4F60\u597D\uFF0C\u8FD9\u662F\u79BB\u7EBF\u8BED\u97F3\u6D4B\u8BD5\u3002",
+      vi: "Xin ch\xE0o, \u0111\xE2y l\xE0 gi\u1ECDng \u0111\u1ECDc ngo\u1EA1i tuy\u1EBFn.",
+      ru: "\u041F\u0440\u0438\u0432\u0435\u0442, \u044D\u0442\u043E \u043E\u0444\u043B\u0430\u0439\u043D-\u0433\u043E\u043B\u043E\u0441 AlloFlow.",
+      uk: "\u041F\u0440\u0438\u0432\u0456\u0442, \u0446\u0435 \u043E\u0444\u043B\u0430\u0439\u043D-\u0433\u043E\u043B\u043E\u0441 AlloFlow.",
+      pl: "Cze\u015B\u0107, to jest g\u0142os offline AlloFlow.",
+      tr: "Merhaba, bu AlloFlow \xE7evrimd\u0131\u015F\u0131 sesidir.",
+      nl: "Hallo, dit is de offline stem van AlloFlow.",
+      sw: "Habari, hii ni sauti ya nje ya mtandao."
+    };
+    try {
+      if (piperTestAudioRef.current) {
+        try {
+          piperTestAudioRef.current.pause();
+          piperTestAudioRef.current.src = "";
+        } catch (_) {
+        }
+      }
+      if (!window._piperTTS && typeof window.__loadPiperTTS === "function") await Promise.resolve(window.__loadPiperTTS());
+      const url = window._piperTTS && typeof window._piperTTS.speak === "function" ? await window._piperTTS.speak(SAMPLES[langCode] || `${langLabel || langCode} offline voice preview.`, langCode, voiceSpeed) : null;
+      if (!url) {
+        addToast(`Could not preview the offline ${langLabel || langCode} voice.`, "error");
+        setPiperTestingLang("");
+        return;
+      }
+      const audio = new Audio(url);
+      audio.playbackRate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1));
+      if (typeof voiceVolume === "number" && Number.isFinite(voiceVolume)) audio.volume = Math.max(0, Math.min(1, voiceVolume));
+      piperTestAudioRef.current = audio;
+      const done = () => {
+        if (piperTestAudioRef.current === audio) piperTestAudioRef.current = null;
+        setPiperTestingLang("");
+      };
+      audio.onended = done;
+      audio.onerror = done;
+      await audio.play();
+    } catch (_) {
+      setPiperTestingLang("");
+    }
+  };
   const studentOnDeviceKokoro = studentDeviceVoiceOnly && kokoroCapability.ok && (!!window._kokoroTTS?.ready || kokoroSavedOnDevice === true);
   const studentVoiceValue = studentOnDeviceKokoro && KOKORO_VOICES.some((v) => v.id === selectedVoice) ? selectedVoice : "browser";
   const renderStudentOnDeviceGroup = () => /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} " + (window._kokoroTTS?.ready ? t("header.voice_kokoro_ready_group") || "On-device voice (Kokoro): ready, works offline" : t("header.voice_kokoro_group") || "On-device voice (Kokoro)") }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label)));
@@ -996,34 +1218,51 @@ function HeaderBar(props) {
     setShowHelpMenu((open) => !open);
   };
   const helpDot = helpHasHistory && !isHelpMode ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", "data-help-dot": "", className: "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50" }) : null;
-  const helpMenuRow = "flex w-full min-h-11 flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-start " + (theme === "contrast" ? "text-yellow-400 hover:bg-white/10" : "text-slate-900 hover:bg-slate-100");
+  const helpMenuRow = "flex w-full min-h-11 flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-start transition-colors " + (theme === "contrast" ? "text-yellow-400 hover:bg-yellow-400/15" : theme === "dark" ? "text-slate-100 hover:bg-slate-800" : "text-slate-900 hover:bg-slate-100");
+  const helpMenuDescClass = "text-xs font-medium leading-snug " + (theme === "contrast" ? "text-yellow-200" : theme === "dark" ? "text-slate-300" : "text-slate-600");
   const helpMenu = showHelpMenu && helpMenuAvailable ? /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: _helpMenuRef,
       "data-help-menu": "",
       "data-help-ignore": "true",
+      "data-help-menu-theme": theme || "light",
       role: "group",
       "aria-label": helpMenuTitle,
-      style: { right: -helpMenuShift },
-      className: "absolute top-full mt-2 w-[17rem] max-w-[calc(100vw-1.5rem)] rounded-xl border p-1.5 shadow-xl z-[10999] " + (theme === "contrast" ? "bg-black border-yellow-400" : "bg-white border-slate-200")
+      style: {
+        right: -helpMenuShift,
+        zIndex: 10999,
+        backgroundColor: theme === "contrast" ? "#000000" : theme === "dark" ? "#0f172a" : "#ffffff"
+      },
+      className: "absolute top-full mt-2 w-[17.5rem] max-w-[calc(100vw-1.5rem)] rounded-xl border p-1.5 shadow-xl " + (theme === "contrast" ? "bg-black border-2 border-yellow-400" : theme === "dark" ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200")
     },
     /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-menu-explain": "", onClick: () => {
       setShowHelpMenu(false);
       handleToggleIsHelpMode();
-    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(CircleHelp, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.explain", "What does this do?")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.explain_desc", "Turn this on, then click anything to see what it does."))),
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex w-full items-center justify-between gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CircleHelp, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.explain", "What does this do?")), /* @__PURE__ */ React.createElement("kbd", { "aria-hidden": "true", className: "px-1.5 py-0.5 rounded border text-[10px] font-mono " + (theme === "contrast" ? "border-yellow-400 text-yellow-300" : theme === "dark" ? "border-slate-600 bg-slate-800 text-slate-300" : "border-slate-300 bg-slate-50 text-slate-600") }, "?")), /* @__PURE__ */ React.createElement("span", { className: helpMenuDescClass }, homeToolsText("help_menu.explain_desc", "Turn this on, then click anything to see what it does."))),
     /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "header_tour_start", "data-help-menu-tour": "", onClick: () => {
       setShowHelpMenu(false);
       startAppTour(0);
-    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.tour_take", "Take the app tour")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.tour_desc", "A guided look at each area."))),
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.tour_take", "Take the app tour")), /* @__PURE__ */ React.createElement("span", { className: helpMenuDescClass }, homeToolsText("help_menu.tour_desc", "A guided look at each area."))),
     tourResumeStep > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-menu-tour-resume": "", onClick: () => {
       setShowHelpMenu(false);
       startAppTour(tourResumeStep);
-    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold" }, homeToolsText("toolbar.tour_resume", "Resume the tour where you left off"))),
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold" }, homeToolsText("toolbar.tour_resume", "Resume the tour where you left off"), " (", homeToolsText("toolbar.guided_resume_step", "Step {n}").replace("{n}", String(tourResumeStep + 1)), ")")),
     /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "hints_recall", "data-help-menu-tips": "", onClick: () => {
       setShowHelpMenu(false);
       handleSetShowHintsModalToTrue();
-    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.tips", "Past tips and messages"), helpHasHistory && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-2 h-2 bg-red-500 rounded-full" })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.tips_desc", "Read a tip or notice again after it has gone.")))
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.tips", "Past tips and messages"), helpHasHistory && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-2 h-2 bg-red-500 rounded-full" })), /* @__PURE__ */ React.createElement("span", { className: helpMenuDescClass }, homeToolsText("help_menu.tips_desc", "Read a tip or notice again after it has gone."))),
+    headerCollapsed && isBotVisible === false && /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-menu-bot": "", onClick: () => {
+      setShowHelpMenu(false);
+      handleToggleIsBotVisible();
+      const toggle = document.querySelector("[data-help-menu-toggle]");
+      if (toggle && typeof toggle.focus === "function") {
+        try {
+          toggle.focus();
+        } catch (_) {
+        }
+      }
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Smile, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.show_bot", "Show AI Assistant")))
   ) : null;
   const guidedResumeChip = canUseTeacherGuidedMode && !guidedMode && _guidedHasProgress ? /* @__PURE__ */ React.createElement(
     "button",
@@ -1077,7 +1316,99 @@ function HeaderBar(props) {
       className: "inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-xs font-bold text-white/90 hover:bg-white/20"
     },
     headerCollapsed ? t("common.more_information") || "More" : t("common.collapse") || "Less"
-  ))), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, latestLessonPlan && /* @__PURE__ */ React.createElement(
+  ))), isTeacherMode && showExportMenu && _headerPortal(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { ref: _exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-documents-dialog-title", className: `fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-2 py-1" }, /* @__PURE__ */ React.createElement("h2", { id: "header-documents-dialog-title", className: `text-xs font-black flex items-center gap-1.5 ${_skin.label}` }, "\u{1F4C4}", " ", t("export_menu.section_documents") || "Documents"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowExportMenuToFalse, className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": t("header.open_doc_builder_pdf_aria") || "Open Document Builder for PDF",
+        onClick: () => openExportPreview("print"),
+        "data-help-key": "export_pdf",
+        className: `w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === "contrast" ? "bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300" : "bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white"}`
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, "\u{1F6E0}\uFE0F", " ", t("export_menu.document_builder") || "Document Builder"),
+      /* @__PURE__ */ React.createElement("span", { className: `text-xs font-medium ${theme === "contrast" ? "text-black" : "text-indigo-100"}` }, t("export_menu.pdf_slash_print", { print: t("export_menu.print") }) || `PDF / ${t("export_menu.print")}`, " \xB7 ", t("export_menu.document_builder_subtitle") || "Edit, style & preview all formats")
+    ), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: `text-xs font-medium px-2 mb-1 ${theme === "dark" ? "text-emerald-300" : theme === "contrast" ? "text-yellow-400" : "text-green-700"}` }, "\u2713 ", t("export_menu.custom_style_active") || "Custom style active"), !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, t("export_menu.section_student_qr") || "Student QR"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
+          setShowExportMenu(false);
+        },
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-cyan-50 text-cyan-700" : _skin.ghost}`,
+        "data-help-key": "homework_qr"
+      },
+      /* @__PURE__ */ React.createElement(Share2, { size: 14, "aria-hidden": "true" }),
+      " ",
+      t("export_menu.homework_qr") || "Homework QR"
+    ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: `block text-xs font-bold ${_skin.label}`, htmlFor: "homework-qr-expiry" }, t("export_menu.homework_link_length") || "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: `mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}` }, /* @__PURE__ */ React.createElement("option", { value: 1 }, t("export_menu.expiry_1_day") || "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, t("export_menu.expiry_1_week") || "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, t("export_menu.expiry_2_weeks") || "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, t("export_menu.expiry_30_days") || "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, t("export_menu.expiry_90_days") || "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, t("export_menu.expiry_180_days") || "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, t("export_menu.expiry_365_days") || "365 days (school year)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      if (typeof openRecentQrShares === "function") openRecentQrShares();
+      setShowExportMenu(false);
+    }, title: t("export_menu.setup_activity") || "Set up a poll, sign-up sheet or class activity", className: `mt-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${theme === "light" ? "border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100" : _skin.surface}` }, /* @__PURE__ */ React.createElement(History, { size: 14, "aria-hidden": "true" }), " ", t("export_menu.shared_links") || "Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: `px-3 pb-2 text-xs leading-snug ${theme === "light" ? "text-slate-600" : _skin.muted}` }, studentAiPolicyForShare === "student-byok" ? t("export_menu.share_policy_byok") || "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : t("export_menu.share_policy_ai_off") || "Teacher-prepared resources open for students with AI generation off.")), !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: `border-t mt-1 pt-1 ${_skin.divider}` }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-documents-more-formats": "", "aria-expanded": showMoreDocFormats, onClick: () => setShowMoreDocFormats((open) => !open), className: `flex items-center justify-between gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-slate-50 text-slate-700" : _skin.ghost}` }, /* @__PURE__ */ React.createElement("span", null, t("export_preview.additional_export_formats") || "Additional export formats"), showMoreDocFormats ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" }))), (showMoreDocFormats || isIndependentMode) && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F4C4}", " ", t("export_menu.section_print") || "Print & PDF"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => openExportPreview("worksheet"),
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-slate-50 text-slate-700" : _skin.ghost}`,
+        "data-help-key": "export_worksheet"
+      },
+      /* @__PURE__ */ React.createElement(FileText, { size: 14, "aria-hidden": "true" }),
+      " ",
+      t("export_menu.worksheet")
+    ), /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F4BB}", " ", t("export_menu.section_digital") || "Digital Formats"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => openExportPreview("html"),
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-indigo-50 text-indigo-700" : _skin.ghost}`,
+        "data-help-key": "export_html"
+      },
+      /* @__PURE__ */ React.createElement(Code, { size: 14, "aria-hidden": "true" }),
+      " ",
+      t("export_menu.html")
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => openExportPreview("slides"),
+        disabled: !pptxLoaded,
+        title: t("header.export_slides_tooltip") || "Opens Document Builder in Slides mode",
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === "light" ? "hover:bg-orange-50 text-orange-700" : _skin.ghost}`,
+        "data-help-key": "export_slides"
+      },
+      !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14, "aria-hidden": "true" }),
+      t("export_menu.slides")
+    ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F3EB}", " ", t("export_menu.section_lms") || "LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          handleExportQTI();
+          setShowExportMenu(false);
+        },
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-teal-50 text-teal-700" : _skin.ghost}`,
+        "data-help-key": "export_qti"
+      },
+      /* @__PURE__ */ React.createElement(FolderDown, { size: 14, "aria-hidden": "true" }),
+      " ",
+      t("export_menu.qti")
+    ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          handleExportIMS();
+          setShowExportMenu(false);
+        },
+        className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-yellow-50 text-yellow-800" : _skin.ghost}`,
+        "data-help-key": "export_ims"
+      },
+      /* @__PURE__ */ React.createElement(FolderDown, { size: 14, "aria-hidden": "true" }),
+      " ",
+      t("export_menu.ims")
+    ))), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowExportMenuToFalse }))
+  ), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, latestLessonPlan && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1250,6 +1581,7 @@ function HeaderBar(props) {
     "button",
     {
       type: "button",
+      ref: _compactHelpRef,
       "data-help-ignore": "true",
       "data-compact-help-toggle": "",
       "data-help-menu-toggle": "",
@@ -1278,6 +1610,7 @@ function HeaderBar(props) {
     "button",
     {
       type: "button",
+      ref: _settingsToggleRef,
       onClick: toggleHeaderCollapsed,
       "data-help-key": "header_settings_toggle",
       "aria-expanded": !headerCollapsed,
@@ -1584,6 +1917,7 @@ function HeaderBar(props) {
       "button",
       {
         type: "button",
+        ref: _docsTriggerRef,
         "aria-label": t("header.documents_menu_aria") || "Documents menu",
         "aria-haspopup": "dialog",
         "aria-expanded": showExportMenu,
@@ -1597,98 +1931,6 @@ function HeaderBar(props) {
       /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_documents") || "Documents"),
       " ",
       showExportMenu ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-    ), showExportMenu && _headerPortal(
-      /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { ref: _exportDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-documents-dialog-title", className: `fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-2 py-1" }, /* @__PURE__ */ React.createElement("h2", { id: "header-documents-dialog-title", className: `text-xs font-black flex items-center gap-1.5 ${_skin.label}` }, "\u{1F4C4}", " ", t("export_menu.section_documents") || "Documents"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowExportMenuToFalse, className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": t("header.open_doc_builder_pdf_aria") || "Open Document Builder for PDF",
-          onClick: () => openExportPreview("print"),
-          "data-help-key": "export_pdf",
-          className: `w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === "contrast" ? "bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300" : "bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white"}`
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, "\u{1F6E0}\uFE0F", " ", t("export_menu.document_builder") || "Document Builder"),
-        /* @__PURE__ */ React.createElement("span", { className: `text-xs font-medium ${theme === "contrast" ? "text-black" : "text-indigo-100"}` }, t("export_menu.pdf_slash_print", { print: t("export_menu.print") }) || `PDF / ${t("export_menu.print")}`, " \xB7 ", t("export_menu.document_builder_subtitle") || "Edit, style & preview all formats")
-      ), customExportCSS && /* @__PURE__ */ React.createElement("div", { className: `text-xs font-medium px-2 mb-1 ${theme === "dark" ? "text-emerald-300" : theme === "contrast" ? "text-yellow-400" : "text-green-700"}` }, "\u2713 ", t("export_menu.custom_style_active") || "Custom style active"), /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F4C4}", " ", t("export_menu.section_print") || "Print & PDF"), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => openExportPreview("worksheet"),
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-slate-50 text-slate-700" : _skin.ghost}`,
-          "data-help-key": "export_worksheet"
-        },
-        /* @__PURE__ */ React.createElement(FileText, { size: 14, "aria-hidden": "true" }),
-        " ",
-        t("export_menu.worksheet")
-      ), /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F4BB}", " ", t("export_menu.section_digital") || "Digital Formats"), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => openExportPreview("html"),
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-indigo-50 text-indigo-700" : _skin.ghost}`,
-          "data-help-key": "export_html"
-        },
-        /* @__PURE__ */ React.createElement(Code, { size: 14, "aria-hidden": "true" }),
-        " ",
-        t("export_menu.html")
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => openExportPreview("slides"),
-          disabled: !pptxLoaded,
-          title: t("header.export_slides_tooltip") || "Opens Document Builder in Slides mode",
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === "light" ? "hover:bg-orange-50 text-orange-700" : _skin.ghost}`,
-          "data-help-key": "export_slides"
-        },
-        !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14, "aria-hidden": "true" }),
-        t("export_menu.slides")
-      ), !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, t("export_menu.section_student_qr") || "Student QR"), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
-            setShowExportMenu(false);
-          },
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-cyan-50 text-cyan-700" : _skin.ghost}`,
-          "data-help-key": "homework_qr"
-        },
-        /* @__PURE__ */ React.createElement(Share2, { size: 14, "aria-hidden": "true" }),
-        " ",
-        t("export_menu.homework_qr") || "Homework QR"
-      ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: `block text-xs font-bold ${_skin.label}`, htmlFor: "homework-qr-expiry" }, t("export_menu.homework_link_length") || "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: `mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}` }, /* @__PURE__ */ React.createElement("option", { value: 1 }, t("export_menu.expiry_1_day") || "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, t("export_menu.expiry_1_week") || "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, t("export_menu.expiry_2_weeks") || "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, t("export_menu.expiry_30_days") || "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, t("export_menu.expiry_90_days") || "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, t("export_menu.expiry_180_days") || "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, t("export_menu.expiry_365_days") || "365 days (school year)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-        if (typeof openRecentQrShares === "function") openRecentQrShares();
-        setShowExportMenu(false);
-      }, title: t("export_menu.setup_activity") || "Set up a poll, sign-up sheet or class activity", className: `mt-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${theme === "light" ? "border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100" : _skin.surface}` }, /* @__PURE__ */ React.createElement(History, { size: 14, "aria-hidden": "true" }), " ", t("export_menu.shared_links") || "Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: `px-3 pb-2 text-xs leading-snug ${theme === "light" ? "text-slate-600" : _skin.muted}` }, studentAiPolicyForShare === "student-byok" ? t("export_menu.share_policy_byok") || "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : t("export_menu.share_policy_ai_off") || "Teacher-prepared resources open for students with AI generation off.")), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: `text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}` }, "\u{1F3EB}", " ", t("export_menu.section_lms") || "LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            handleExportQTI();
-            setShowExportMenu(false);
-          },
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-teal-50 text-teal-700" : _skin.ghost}`,
-          "data-help-key": "export_qti"
-        },
-        /* @__PURE__ */ React.createElement(FolderDown, { size: 14, "aria-hidden": "true" }),
-        " ",
-        t("export_menu.qti")
-      ), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            handleExportIMS();
-            setShowExportMenu(false);
-          },
-          className: `flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === "light" ? "hover:bg-yellow-50 text-yellow-800" : _skin.ghost}`,
-          "data-help-key": "export_ims"
-        },
-        /* @__PURE__ */ React.createElement(FolderDown, { size: 14, "aria-hidden": "true" }),
-        " ",
-        t("export_menu.ims")
-      )), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowExportMenuToFalse }))
     )),
     (isParentMode || isIndependentMode || screeningLiveActive) && /* @__PURE__ */ React.createElement(
       "button",
@@ -1922,26 +2164,6 @@ function HeaderBar(props) {
           },
           /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), t("toolbar.rerun_wizard") || "Re-run Setup Wizard"),
           /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-indigo-100 mt-1 leading-relaxed" }, t("toolbar.quickstart_setup_desc") || "Set grade, source material, standards, languages, and personalization.")
-        ), /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => startAppTour(0),
-            "data-help-key": "header_tour_start",
-            "data-setup-tour-start": "",
-            className: "w-full text-start rounded-xl border border-amber-300/30 bg-amber-500/15 hover:bg-amber-500/25 px-4 py-3 transition-colors"
-          },
-          /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.tour_take", "Take the app tour")),
-          /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-amber-100 mt-1 leading-relaxed" }, homeToolsText("toolbar.tour_take_desc", "A guided look at each area of AlloFlow. Jump to any section from the tour card."))
-        ), tourResumeStep > 0 && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => startAppTour(tourResumeStep),
-            "data-setup-tour-resume": "",
-            className: "w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
-          },
-          /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-200" }, homeToolsText("toolbar.tour_resume", "Resume the tour where you left off"))
         ), canUseTeacherGuidedMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -2176,7 +2398,7 @@ function HeaderBar(props) {
            phone loads. This branch used to be cloud voices only. */
         /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
       )
-    ), !studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || "") && (speechProvider === "browser" || speechProvider === "off") && /* @__PURE__ */ React.createElement("p", { role: "status", className: `mt-2 text-xs ${_skin.label}` }, speechProvider === "browser" ? t("header.kokoro_browser_provider") || "The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro." : t("header.kokoro_disabled_provider") || "Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro."), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : kokoroDownloading || window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : kokoroDownloading || window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) is preparing. Try reading again when the voice is ready." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it."), !window._kokoroTTS?.ready && !(kokoroDownloading || window.__kokoroTTSDownloading) && !kokoroSavedOnDevice && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    ), selectedVoice === "browser" && /* @__PURE__ */ React.createElement("p", { "data-device-voice-tip": "true", className: `mt-2 p-2 rounded-lg border text-[11px] leading-snug ${_skin.surface}` }, deviceVoiceInstallTip), !studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || "") && (speechProvider === "browser" || speechProvider === "off") && /* @__PURE__ */ React.createElement("p", { role: "status", className: `mt-2 text-xs ${_skin.label}` }, speechProvider === "browser" ? t("header.kokoro_browser_provider") || "The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro." : t("header.kokoro_disabled_provider") || "Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro."), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}`, "data-kokoro-model-status": window._kokoroTTS?.ready ? "ready" : kokoroDownloading || window.__kokoroTTSDownloading ? "preparing" : kokoroSavedOnDevice ? "saved" : "missing" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS?.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : kokoroDownloading || window.__kokoroTTSDownloading ? t("header.voice_model_preparing") || "Kokoro (~88MB) is preparing. Try reading again when the voice is ready." : kokoroSavedOnDevice ? t("header.voice_model_saved") || "Kokoro (~88MB) is saved on this device. It starts when reading begins." : t("header.voice_model_missing") || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it."), !window._kokoroTTS?.ready && !(kokoroDownloading || window.__kokoroTTSDownloading) && !kokoroSavedOnDevice && window.__loadKokoroTTS && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       startKokoroVoiceDownload();
       setKokoroSavedOnDevice(null);
     }, "data-kokoro-get-voice": true, className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}` }, t("header.voice_model_get") || "Get the voice (88 MB)")), !studentDeviceVoiceOnly && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
@@ -2204,7 +2426,59 @@ function HeaderBar(props) {
         },
         "aria-label": t("header.browser_tts_fallback_aria") || "Use browser voice as fallback when Gemini TTS refuses or fails"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), !studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-xs uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-xs ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-xs ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-speed", className: `text-xs uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_speed") || "Speed", ": ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), !studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}`, "data-piper-lang-status": !piperSupportsActiveLang ? "unsupported" : piperDownloadingLang === activeNonEnLangCode ? "downloading" : piperActiveLangReady ? "ready" : "available" }, /* @__PURE__ */ React.createElement("div", { className: `text-xs uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-xs ${_skin.noteBody} mt-0.5` }, !piperSupportsActiveLang ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : piperDownloadingLang === activeNonEnLangCode ? `Downloading offline ${leveledTextLanguage} voice\u2026 ${piperDownloadPct > 0 ? `${piperDownloadPct}%` : ""}` : piperActiveLangReady ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), piperDownloadingLang === activeNonEnLangCode && /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": `Downloading offline ${leveledTextLanguage} voice`, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": piperDownloadPct, className: "mt-1.5 h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-indigo-600 transition-all duration-200", style: { width: `${Math.max(5, piperDownloadPct)}%` } })), piperSupportsActiveLang && !piperActiveLangReady && piperDownloadingLang !== activeNonEnLangCode && kokoroCapability.ok && (typeof window !== "undefined" && (window._piperTTS || typeof window.__loadPiperTTS === "function")) && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-piper-get-voice": activeNonEnLangCode,
+        onClick: () => startPiperLangDownload(activeNonEnLangCode, leveledTextLanguage),
+        className: `mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`
+      },
+      "Download offline ",
+      leveledTextLanguage,
+      " voice"
+    ), piperSupportsActiveLang && piperActiveLangReady && kokoroCapability.ok && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-piper-test-voice": activeNonEnLangCode,
+        disabled: piperTestingLang === activeNonEnLangCode || piperRemovingLang === activeNonEnLangCode,
+        onClick: () => testPiperOfflineVoice(activeNonEnLangCode, leveledTextLanguage),
+        className: `min-h-9 rounded-lg border px-3 text-xs font-bold disabled:opacity-60 ${_skin.ghost}`
+      },
+      piperTestingLang === activeNonEnLangCode ? "Playing preview\u2026" : `Test offline ${leveledTextLanguage} voice`
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-piper-remove-voice": activeNonEnLangCode,
+        disabled: piperRemovingLang === activeNonEnLangCode || piperTestingLang === activeNonEnLangCode,
+        onClick: () => removePiperLangDownload(activeNonEnLangCode, leveledTextLanguage),
+        className: `min-h-9 rounded-lg border px-2.5 text-xs font-bold disabled:opacity-60 ${_skin.ghost}`
+      },
+      piperRemovingLang === activeNonEnLangCode ? "Removing\u2026" : "Remove"
+    ), window._piperTTS?.voiceMap?.[activeNonEnLangCode]?.name && /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-semibold opacity-80 ${_skin.noteBody}` }, window._piperTTS.voiceMap[activeNonEnLangCode].name)), !piperSupportsActiveLang && /* @__PURE__ */ React.createElement("p", { "data-device-voice-tip": "true", className: `mt-1.5 text-[11px] leading-snug opacity-85 ${_skin.noteBody}` }, deviceVoiceInstallTip), piperSupportsActiveLang && kokoroCapability.ok && /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        id: "header-prefer-offline-non-english",
+        "data-piper-prefer-offline": "true",
+        className: "mt-0.5 accent-indigo-600",
+        checked: preferOfflineNonEnglish,
+        onChange: (e) => {
+          const checked = e.currentTarget.checked;
+          setPreferOfflineNonEnglish(checked);
+          try {
+            const cur = _hdrSafeJsonObject(localStorage.getItem("alloflow_ai_config"));
+            localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...cur, preferOfflineNonEnglishVoice: checked }));
+          } catch (_) {
+            setPreferOfflineNonEnglish(!checked);
+            addToast(t("header.audio_setting_save_failed") || "This audio setting could not be saved. Your previous choice is still active.", "error");
+          }
+        },
+        "aria-label": `Use offline voice (Piper) first for ${leveledTextLanguage}`
+      }
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, "Use offline voice (Piper) first for ", leveledTextLanguage), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, "Keeps non-English read-aloud on-device. English still uses Gemini or Kokoro."))), /* @__PURE__ */ React.createElement("div", { className: `text-xs ${_skin.noteHead} mt-1` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-voice-speed", className: `text-xs uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_speed") || "Speed", ": ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "header-voice-speed",

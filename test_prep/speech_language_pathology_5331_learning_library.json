@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 3,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 16,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -7163,7 +7169,7 @@
       ],
       "formulas": [
         "Core cranial nerves: CN V (mastication/anterior tongue sensation), CN VII (labial seal/facial expression), CN IX (posterior tongue/pharyngeal sensation), CN X (velopharyngeal closure, pharyngeal swallow, intrinsic larynx via SLN/RLN), and CN XII (tongue movement).",
-        "Early speech-language benchmarks: first words near 12 months, 50-plus words and 2-word combinations by 18 to 24 months, and intelligibility to unfamiliar listeners near 50% at age 2, 75% at age 3, and 90 to 100% by age 4.",
+        "Early speech-language benchmarks: first words near 12 months, 50-plus words and 2-word combinations by 18 to 24 months, and contemporary empirical speech intelligibility norms to unfamiliar listeners (Hustad et al., 2021 / ASHA Practice Portal) reaching ~50% around 36 months, ~75% around 48 months, and ~90%+ by 60 months (whereas older clinical rules of thumb cited 50%/75%/90% a year earlier).",
         "Aphasia and motor-speech differentials: Broca (nonfluent, spared comprehension, poor repetition) vs Wernicke (fluent jargon, poor comprehension/repetition) vs Conduction (fluent, spared comprehension, poor repetition); CAS/AOS shows inconsistent errors and prosodic/coarticulatory breakdown without muscle weakness.",
         "Bilingual and legal standards (ASHA & IDEA 34 CFR 300.304): a true language disorder must manifest in both L1 and L2; evaluations must be nondiscriminatory, administered in the student's primary language/mode, and never interpreted by untrained family members."
       ],
@@ -7621,6 +7627,2562 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "speech-language-pathology-5331-session-ch-01",
+      "title": "Anatomy, Physiology, Development, and Scientific Foundations guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Anatomy, Physiology, Development, and Scientific Foundations\" (Foundations and Professional Practice) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-01",
+      "itemIds": [
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-003",
+        "slp5331-b1-004",
+        "slp5331-b1-005",
+        "slp5331-b1-006",
+        "slp5331-b1-007",
+        "slp5331-b1-008",
+        "slp5331-b1-009",
+        "slp5331-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Anatomy, Physiology, Development, and Scientific Foundations\" and the \"Neuroanatomy, Development, Ethics & Differential Foundations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Cranial Nerves (V, VII, IX, X, XII) & Speech-Swallowing Subsystems\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Separating Typical Toddler Speech Variation From Clinical Delay\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Anatomy, Physiology, Development, and Scientific Foundations\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Test across both languages and dynamic modifiability before diagnosing disorder\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-02",
+      "title": "Professional Practice, Ethics, Law, and Interprofessional Care guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Practice, Ethics, Law, and Interprofessional Care\" (Foundations and Professional Practice) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-02",
+      "itemIds": [
+        "slp5331-b1-017",
+        "slp5331-b1-018",
+        "slp5331-b2-010",
+        "slp5331-b2-011",
+        "slp5331-b2-012",
+        "slp5331-b2-013",
+        "slp5331-b2-014",
+        "slp5331-b2-015",
+        "slp5331-b2-016",
+        "slp5331-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Practice, Ethics, Law, and Interprofessional Care\" and the \"Neuroanatomy, Development, Ethics & Differential Foundations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"SLP Ethical Duties, Privacy Laws, IDEA Eligibility & Interprofessional Care\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Supervision Scope Boundaries for an SLPA in School Telepractice\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Practice, Ethics, Law, and Interprofessional Care\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate language, motor programming, and neuromuscular execution\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-03",
+      "title": "Evidence-Based and Culturally Responsive Practice guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Evidence-Based and Culturally Responsive Practice\" (Foundations and Professional Practice) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-03",
+      "itemIds": [
+        "slp5331-b2-025",
+        "slp5331-b2-026",
+        "slp5331-b1-019",
+        "slp5331-b1-020",
+        "slp5331-b1-021",
+        "slp5331-b1-022",
+        "slp5331-b1-023",
+        "slp5331-b1-024",
+        "slp5331-b1-025",
+        "slp5331-b1-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Evidence-Based and Culturally Responsive Practice\" and the \"Neuroanatomy, Development, Ethics & Differential Foundations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Evidence-Based Practice Triad, Study Appraisal & Culturally Responsive Decisions\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Bilingual Dynamic Assessment Ruling Out Developmental Language Disorder\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Evidence-Based and Culturally Responsive Practice\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match dysphagia decisions to instrumental physiology, not bedside guesses\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-04",
+      "title": "Disorder Characteristics, Etiology, and Differential Reasoning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Disorder Characteristics, Etiology, and Differential Reasoning\" (Foundations and Professional Practice) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-04",
+      "itemIds": [
+        "slp5331-b1-032",
+        "slp5331-b1-033",
+        "slp5331-b1-034",
+        "slp5331-b2-027",
+        "slp5331-b2-028",
+        "slp5331-b2-029",
+        "slp5331-b2-030",
+        "slp5331-b2-031",
+        "slp5331-b2-032",
+        "slp5331-b2-033"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Disorder Characteristics, Etiology, and Differential Reasoning\" and the \"Neuroanatomy, Development, Ethics & Differential Foundations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Differential Reasoning Across the Big-Nine SLP Practice Domains\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Silent Aspiration Risk After Lateral Medullary Stroke\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Disorder Characteristics, Etiology, and Differential Reasoning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Secure ENT laryngeal visualization before starting voice therapy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-05",
+      "title": "Assessment Principles, Measurement, and Integrated Diagnosis guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Principles, Measurement, and Integrated Diagnosis\" (Screening, Assessment, Evaluation, and Diagnosis) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-05",
+      "itemIds": [
+        "slp5331-b2-036",
+        "slp5331-b2-037",
+        "slp5331-b2-038",
+        "slp5331-b2-039",
+        "slp5331-b2-040",
+        "slp5331-b2-041",
+        "slp5331-b2-042",
+        "slp5331-b2-043",
+        "slp5331-b1-035",
+        "slp5331-b1-036"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Principles, Measurement, and Integrated Diagnosis\" and the \"Assessment Metrics, Voice/Fluency Cutoffs & Dysphagia Scales\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Multimethod SLP Assessment, Psychometric Interpretation & Integrated Diagnosis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Differential Diagnosis of Fluent Aphasia in an Integrated Report\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Principles, Measurement, and Integrated Diagnosis\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply zero-exclusion AAC feature matching instead of prerequisite gates\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-06",
+      "title": "Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" (Screening, Assessment, Evaluation, and Diagnosis) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-06",
+      "itemIds": [
+        "slp5331-b1-047",
+        "slp5331-b1-048",
+        "slp5331-b1-049",
+        "slp5331-b1-050",
+        "slp5331-b1-051",
+        "slp5331-b2-044",
+        "slp5331-b2-045",
+        "slp5331-b2-046",
+        "slp5331-b2-047",
+        "slp5331-b2-048"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" and the \"Assessment Metrics, Voice/Fluency Cutoffs & Dysphagia Scales\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Voice & Resonance Evaluation & Management Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Separating Acquired Apraxia of Speech From Flaccid Dysarthria\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify all three IDEA eligibility prongs beyond medical labels\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-07",
+      "title": "Assessment of Language, Cognition, Social Communication, AAC, and Hearing guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment of Language, Cognition, Social Communication, AAC, and Hearing\" (Screening, Assessment, Evaluation, and Diagnosis) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-07",
+      "itemIds": [
+        "slp5331-b2-054",
+        "slp5331-b2-055",
+        "slp5331-b2-056",
+        "slp5331-b2-057",
+        "slp5331-b2-058",
+        "slp5331-b2-059",
+        "slp5331-b1-052",
+        "slp5331-b1-053",
+        "slp5331-b1-054",
+        "slp5331-b1-055"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment of Language, Cognition, Social Communication, AAC, and Hearing\" and the \"Assessment Metrics, Voice/Fluency Cutoffs & Dysphagia Scales\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"AAC Feature-Matching & Multi-Tiered Language Intervention Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Unverified Aided Hearing Access Mimicking Primary Language Delay\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment of Language, Cognition, Social Communication, AAC, and Hearing\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Test across both languages and dynamic modifiability before diagnosing disorder\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-08",
+      "title": "Feeding and Swallowing Assessment guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Feeding and Swallowing Assessment\" (Screening, Assessment, Evaluation, and Diagnosis) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-08",
+      "itemIds": [
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-065",
+        "slp5331-b1-066",
+        "slp5331-b1-067",
+        "slp5331-b2-060",
+        "slp5331-b2-061",
+        "slp5331-b2-062"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Feeding and Swallowing Assessment\" and the \"Assessment Metrics, Voice/Fluency Cutoffs & Dysphagia Scales\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Four-Phase Swallowing Physiology & Instrumental Dysphagia Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Interprofessional Triage for Toddler Pediatric Feeding Disorder\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Feeding and Swallowing Assessment\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate language, motor programming, and neuromuscular execution\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-09",
+      "title": "Treatment Planning, Goal Design, Outcomes, and Counseling guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Treatment Planning, Goal Design, Outcomes, and Counseling\" (Planning, Implementation, and Evaluation of Treatment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-09",
+      "itemIds": [
+        "slp5331-b1-070",
+        "slp5331-b1-071",
+        "slp5331-b1-072",
+        "slp5331-b1-073",
+        "slp5331-b1-074",
+        "slp5331-b1-075",
+        "slp5331-b1-076",
+        "slp5331-b2-068",
+        "slp5331-b2-069",
+        "slp5331-b2-070"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Treatment Planning, Goal Design, Outcomes, and Counseling\" and the \"Evidence-Based Therapy Selection, PML & Dysphagia Maneuvers\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Goal Design, Treatment Dosage, Motor Learning & Outcome-Driven Discharge\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Auditing Dosage and Fidelity Before Discharging a Plateaued Student\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Treatment Planning, Goal Design, Outcomes, and Counseling\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match dysphagia decisions to instrumental physiology, not bedside guesses\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-10",
+      "title": "Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" (Planning, Implementation, and Evaluation of Treatment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-10",
+      "itemIds": [
+        "slp5331-b2-084",
+        "slp5331-b1-077",
+        "slp5331-b1-078",
+        "slp5331-b1-079",
+        "slp5331-b1-080",
+        "slp5331-b1-081",
+        "slp5331-b1-082",
+        "slp5331-b1-083",
+        "slp5331-b1-084",
+        "slp5331-b2-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" and the \"Evidence-Based Therapy Selection, PML & Dysphagia Maneuvers\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Pediatric Speech Sound Disorders Differential & Treatment Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Selecting Integral Stimulation Over Non-Speech Exercises for CAS\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Secure ENT laryngeal visualization before starting voice therapy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-11",
+      "title": "Treatment of Language, Cognition, Social Communication, AAC, and Hearing guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Treatment of Language, Cognition, Social Communication, AAC, and Hearing\" (Planning, Implementation, and Evaluation of Treatment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-11",
+      "itemIds": [
+        "slp5331-b1-091",
+        "slp5331-b1-092",
+        "slp5331-b2-085",
+        "slp5331-b2-086",
+        "slp5331-b2-087",
+        "slp5331-b2-088",
+        "slp5331-b2-089",
+        "slp5331-b2-090",
+        "slp5331-b2-091",
+        "slp5331-b2-092"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Treatment of Language, Cognition, Social Communication, AAC, and Hearing\" and the \"Evidence-Based Therapy Selection, PML & Dysphagia Maneuvers\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Adult Aphasia Classification Decision Tree\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Launching Robust AAC Without Cognitive Prerequisite Gating\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Treatment of Language, Cognition, Social Communication, AAC, and Hearing\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply zero-exclusion AAC feature matching instead of prerequisite gates\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-ch-12",
+      "title": "Feeding and Swallowing Treatment guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Feeding and Swallowing Treatment\" (Planning, Implementation, and Evaluation of Treatment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "slp5331-ch-12",
+      "itemIds": [
+        "slp5331-b2-098",
+        "slp5331-b2-099",
+        "slp5331-b2-100",
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-096",
+        "slp5331-b1-097",
+        "slp5331-b1-098",
+        "slp5331-b1-099"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Feeding and Swallowing Treatment\" and the \"Evidence-Based Therapy Selection, PML & Dysphagia Maneuvers\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Physiology-Matched Dysphagia Treatment, Safety Care & Outcome Monitoring\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Pairing Safe NG Tube Nutrition With Responsive Oral Puree Meals\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Feeding and Swallowing Treatment\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify all three IDEA eligibility prongs beyond medical labels\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-trap-repair-sprint",
+      "title": "Praxis Speech-Language Pathology (5331) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "slp5331-b1-035",
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-005",
+        "slp5331-b1-010",
+        "slp5331-b1-036",
+        "slp5331-b1-003",
+        "slp5331-b1-006",
+        "slp5331-b1-012",
+        "slp5331-b1-038",
+        "slp5331-b1-004",
+        "slp5331-b1-037"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Test across both languages and dynamic modifiability before diagnosing disorder\", \"Separate language, motor programming, and neuromuscular execution\", \"Match dysphagia decisions to instrumental physiology, not bedside guesses\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-session-mixed-capstone",
+      "title": "Praxis Speech-Language Pathology (5331) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "slp5331-b1-004",
+        "slp5331-b1-038",
+        "slp5331-b1-071",
+        "slp5331-b1-015",
+        "slp5331-b1-049",
+        "slp5331-b1-082",
+        "slp5331-b1-026",
+        "slp5331-b1-060",
+        "slp5331-b1-093",
+        "slp5331-b2-003",
+        "slp5331-b2-038",
+        "slp5331-b2-071",
+        "slp5331-b2-014",
+        "slp5331-b2-049",
+        "slp5331-b2-082"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied clinical case workshops, outline a response to \"Separate bilingual language transfer from phonological disorder\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-01",
+      "topicId": "slp5331-ch-01",
+      "topicLabel": "1. Anatomy, Physiology, Development, and Scientific Foundations",
+      "unitId": "foundations-professional-practice",
+      "chapterId": "slp5331-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Anatomy, Physiology, Development, and Scientific Foundations\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-02",
+      "topicId": "slp5331-ch-02",
+      "topicLabel": "2. Professional Practice, Ethics, Law, and Interprofessional Care",
+      "unitId": "foundations-professional-practice",
+      "chapterId": "slp5331-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Practice, Ethics, Law, and Interprofessional Care\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-03",
+      "topicId": "slp5331-ch-03",
+      "topicLabel": "3. Evidence-Based and Culturally Responsive Practice",
+      "unitId": "foundations-professional-practice",
+      "chapterId": "slp5331-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Evidence-Based and Culturally Responsive Practice\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-04",
+      "topicId": "slp5331-ch-04",
+      "topicLabel": "4. Disorder Characteristics, Etiology, and Differential Reasoning",
+      "unitId": "foundations-professional-practice",
+      "chapterId": "slp5331-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Disorder Characteristics, Etiology, and Differential Reasoning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-05",
+      "topicId": "slp5331-ch-05",
+      "topicLabel": "5. Assessment Principles, Measurement, and Integrated Diagnosis",
+      "unitId": "screening-assessment-diagnosis",
+      "chapterId": "slp5331-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Principles, Measurement, and Integrated Diagnosis\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-06",
+      "topicId": "slp5331-ch-06",
+      "topicLabel": "6. Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "unitId": "screening-assessment-diagnosis",
+      "chapterId": "slp5331-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-07",
+      "topicId": "slp5331-ch-07",
+      "topicLabel": "7. Assessment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "unitId": "screening-assessment-diagnosis",
+      "chapterId": "slp5331-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment of Language, Cognition, Social Communication, AAC, and Hearing\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-08",
+      "topicId": "slp5331-ch-08",
+      "topicLabel": "8. Feeding and Swallowing Assessment",
+      "unitId": "screening-assessment-diagnosis",
+      "chapterId": "slp5331-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Feeding and Swallowing Assessment\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-09",
+      "topicId": "slp5331-ch-09",
+      "topicLabel": "9. Treatment Planning, Goal Design, Outcomes, and Counseling",
+      "unitId": "treatment-planning-evaluation",
+      "chapterId": "slp5331-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Treatment Planning, Goal Design, Outcomes, and Counseling\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-10",
+      "topicId": "slp5331-ch-10",
+      "topicLabel": "10. Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "unitId": "treatment-planning-evaluation",
+      "chapterId": "slp5331-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-11",
+      "topicId": "slp5331-ch-11",
+      "topicLabel": "11. Treatment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "unitId": "treatment-planning-evaluation",
+      "chapterId": "slp5331-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Treatment of Language, Cognition, Social Communication, AAC, and Hearing\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-spaced-ch-12",
+      "topicId": "slp5331-ch-12",
+      "topicLabel": "12. Feeding and Swallowing Treatment",
+      "unitId": "treatment-planning-evaluation",
+      "chapterId": "slp5331-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Feeding and Swallowing Treatment\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "speech-language-pathology-5331-source-01",
+      "title": "Speech-Language Pathology 5331 diagnostics — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-02",
+      "title": "2020 Certification Standards in Speech-Language Pathology",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/Certification/2020-SLP-Certification-Standards/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-03",
+      "title": "Scope of Practice in Speech-Language Pathology",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/policy/sp2016-00343/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-04",
+      "title": "Code of Ethics",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/code-of-ethics/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-05",
+      "title": "School-Based Service Delivery in Speech-Language Pathology",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/SLP/schools/School-Based-Service-Delivery-in-Speech-Language-Pathology/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-06",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-07",
+      "title": "FERPA | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/ferpa",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-08",
+      "title": "U.S. Department Of Health And Human Services Resource",
+      "organization": "U.S. Department of Health and Human Services",
+      "url": "https://www.hhs.gov/hipaa/for-professionals/privacy/index.html",
+      "credibility": "U.S. Department of Health and Human Services is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-09",
+      "title": "Evidence-Based Practice (EBP)",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/research/ebp/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-10",
+      "title": "ASHA Multicultural Affairs and Resources",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice/multicultural/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-11",
+      "title": "ASHA Practice Portal",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice-portal/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-12",
+      "title": "Speech Sound Disorders: Articulation and Phonology",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice-portal/clinical-topics/articulation-and-phonology/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-13",
+      "title": "Stuttering, Cluttering, and Fluency",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice-portal/clinical-topics/fluency-disorders/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-14",
+      "title": "Voice Disorders",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice-portal/clinical-topics/voice-disorders/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-15",
+      "title": "Dysarthria in Adults",
+      "organization": "American Speech-Language-Hearing Association (ASHA)",
+      "url": "https://www.asha.org/practice-portal/clinical-topics/dysarthria-in-adults/",
+      "credibility": "American Speech-Language-Hearing Association (ASHA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "speech-language-pathology-5331-source-16",
+      "title": "Aphasia: Practice Portal",
+      "organization": "American Speech-Language-Hearing Association",
+      "url": "https://www.asha.org/practice-portal/clinical-topics/aphasia/",
+      "credibility": "ASHA is the national professional and scientific association for speech-language pathology and audiology. Its Practice Portal synthesizes peer-reviewed evidence and professional consensus for differential assessment and treatment planning.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "speech-language-pathology-5331-unit-review-01",
+      "unitId": "foundations-professional-practice",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Anatomy, Physiology, Development, and Scientific Foundations",
+      "chapterId": "slp5331-ch-01",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-01-section-01",
+        "slp5331-ch-01-section-02",
+        "slp5331-ch-01-section-03",
+        "slp5331-ch-01-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-003",
+        "slp5331-b1-004",
+        "slp5331-b1-005",
+        "slp5331-b1-006",
+        "slp5331-b1-007",
+        "slp5331-b1-008",
+        "slp5331-b1-009",
+        "slp5331-b2-001",
+        "slp5331-b2-002",
+        "slp5331-b2-003",
+        "slp5331-b2-004",
+        "slp5331-b2-005",
+        "slp5331-b2-006",
+        "slp5331-b2-007",
+        "slp5331-b2-008",
+        "slp5331-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-003",
+        "slp5331-b1-004",
+        "slp5331-b1-005",
+        "slp5331-b1-006",
+        "slp5331-b1-007",
+        "slp5331-b1-008",
+        "slp5331-b1-009",
+        "slp5331-b2-001",
+        "slp5331-b2-002",
+        "slp5331-b2-003"
+      ],
+      "purpose": "Consolidate \"Anatomy, Physiology, Development, and Scientific Foundations\" (Foundations and Professional Practice) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-02",
+      "unitId": "foundations-professional-practice",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Professional Practice, Ethics, Law, and Interprofessional Care",
+      "chapterId": "slp5331-ch-02",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-02-section-01",
+        "slp5331-ch-02-section-02",
+        "slp5331-ch-02-section-03",
+        "slp5331-ch-02-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-010",
+        "slp5331-b1-011",
+        "slp5331-b1-012",
+        "slp5331-b1-013",
+        "slp5331-b1-014",
+        "slp5331-b1-015",
+        "slp5331-b1-016",
+        "slp5331-b1-017",
+        "slp5331-b1-018",
+        "slp5331-b2-010",
+        "slp5331-b2-011",
+        "slp5331-b2-012",
+        "slp5331-b2-013",
+        "slp5331-b2-014",
+        "slp5331-b2-015",
+        "slp5331-b2-016",
+        "slp5331-b2-017",
+        "slp5331-b2-018"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-010",
+        "slp5331-b1-011",
+        "slp5331-b1-012",
+        "slp5331-b1-013",
+        "slp5331-b1-014",
+        "slp5331-b1-015",
+        "slp5331-b1-016",
+        "slp5331-b1-017",
+        "slp5331-b1-018",
+        "slp5331-b2-010",
+        "slp5331-b2-011",
+        "slp5331-b2-012"
+      ],
+      "purpose": "Consolidate \"Professional Practice, Ethics, Law, and Interprofessional Care\" (Foundations and Professional Practice) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-03",
+      "unitId": "foundations-professional-practice",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Evidence-Based and Culturally Responsive Practice",
+      "chapterId": "slp5331-ch-03",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-03-section-01",
+        "slp5331-ch-03-section-02",
+        "slp5331-ch-03-section-03",
+        "slp5331-ch-03-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-019",
+        "slp5331-b1-020",
+        "slp5331-b1-021",
+        "slp5331-b1-022",
+        "slp5331-b1-023",
+        "slp5331-b1-024",
+        "slp5331-b1-025",
+        "slp5331-b1-026",
+        "slp5331-b2-019",
+        "slp5331-b2-020",
+        "slp5331-b2-021",
+        "slp5331-b2-022",
+        "slp5331-b2-023",
+        "slp5331-b2-024",
+        "slp5331-b2-025",
+        "slp5331-b2-026"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-019",
+        "slp5331-b1-020",
+        "slp5331-b1-021",
+        "slp5331-b1-022",
+        "slp5331-b1-023",
+        "slp5331-b1-024",
+        "slp5331-b1-025",
+        "slp5331-b1-026",
+        "slp5331-b2-019",
+        "slp5331-b2-020",
+        "slp5331-b2-021",
+        "slp5331-b2-022"
+      ],
+      "purpose": "Consolidate \"Evidence-Based and Culturally Responsive Practice\" (Foundations and Professional Practice) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-04",
+      "unitId": "foundations-professional-practice",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Disorder Characteristics, Etiology, and Differential Reasoning",
+      "chapterId": "slp5331-ch-04",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-04-section-01",
+        "slp5331-ch-04-section-02",
+        "slp5331-ch-04-section-03",
+        "slp5331-ch-04-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-027",
+        "slp5331-b1-028",
+        "slp5331-b1-029",
+        "slp5331-b1-030",
+        "slp5331-b1-031",
+        "slp5331-b1-032",
+        "slp5331-b1-033",
+        "slp5331-b1-034",
+        "slp5331-b2-027",
+        "slp5331-b2-028",
+        "slp5331-b2-029",
+        "slp5331-b2-030",
+        "slp5331-b2-031",
+        "slp5331-b2-032",
+        "slp5331-b2-033",
+        "slp5331-b2-034"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-027",
+        "slp5331-b1-028",
+        "slp5331-b1-029",
+        "slp5331-b1-030",
+        "slp5331-b1-031",
+        "slp5331-b1-032",
+        "slp5331-b1-033",
+        "slp5331-b1-034",
+        "slp5331-b2-027",
+        "slp5331-b2-028",
+        "slp5331-b2-029",
+        "slp5331-b2-030"
+      ],
+      "purpose": "Consolidate \"Disorder Characteristics, Etiology, and Differential Reasoning\" (Foundations and Professional Practice) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-05",
+      "unitId": "screening-assessment-diagnosis",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Assessment Principles, Measurement, and Integrated Diagnosis",
+      "chapterId": "slp5331-ch-05",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-05-section-01",
+        "slp5331-ch-05-section-02",
+        "slp5331-ch-05-section-03",
+        "slp5331-ch-05-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-035",
+        "slp5331-b1-036",
+        "slp5331-b1-037",
+        "slp5331-b1-038",
+        "slp5331-b1-039",
+        "slp5331-b1-040",
+        "slp5331-b1-041",
+        "slp5331-b1-042",
+        "slp5331-b1-043",
+        "slp5331-b2-035",
+        "slp5331-b2-036",
+        "slp5331-b2-037",
+        "slp5331-b2-038",
+        "slp5331-b2-039",
+        "slp5331-b2-040",
+        "slp5331-b2-041",
+        "slp5331-b2-042",
+        "slp5331-b2-043"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-035",
+        "slp5331-b1-036",
+        "slp5331-b1-037",
+        "slp5331-b1-038",
+        "slp5331-b1-039",
+        "slp5331-b1-040",
+        "slp5331-b1-041",
+        "slp5331-b1-042",
+        "slp5331-b1-043",
+        "slp5331-b2-035",
+        "slp5331-b2-036",
+        "slp5331-b2-037"
+      ],
+      "purpose": "Consolidate \"Assessment Principles, Measurement, and Integrated Diagnosis\" (Screening, Assessment, Evaluation, and Diagnosis) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-06",
+      "unitId": "screening-assessment-diagnosis",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "chapterId": "slp5331-ch-06",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-06-section-01",
+        "slp5331-ch-06-section-02",
+        "slp5331-ch-06-section-03",
+        "slp5331-ch-06-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-044",
+        "slp5331-b1-045",
+        "slp5331-b1-046",
+        "slp5331-b1-047",
+        "slp5331-b1-048",
+        "slp5331-b1-049",
+        "slp5331-b1-050",
+        "slp5331-b1-051",
+        "slp5331-b2-044",
+        "slp5331-b2-045",
+        "slp5331-b2-046",
+        "slp5331-b2-047",
+        "slp5331-b2-048",
+        "slp5331-b2-049",
+        "slp5331-b2-050",
+        "slp5331-b2-051"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-044",
+        "slp5331-b1-045",
+        "slp5331-b1-046",
+        "slp5331-b1-047",
+        "slp5331-b1-048",
+        "slp5331-b1-049",
+        "slp5331-b1-050",
+        "slp5331-b1-051",
+        "slp5331-b2-044",
+        "slp5331-b2-045",
+        "slp5331-b2-046",
+        "slp5331-b2-047"
+      ],
+      "purpose": "Consolidate \"Assessment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" (Screening, Assessment, Evaluation, and Diagnosis) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-07",
+      "unitId": "screening-assessment-diagnosis",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Assessment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "chapterId": "slp5331-ch-07",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-07-section-01",
+        "slp5331-ch-07-section-02",
+        "slp5331-ch-07-section-03",
+        "slp5331-ch-07-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-052",
+        "slp5331-b1-053",
+        "slp5331-b1-054",
+        "slp5331-b1-055",
+        "slp5331-b1-056",
+        "slp5331-b1-057",
+        "slp5331-b1-058",
+        "slp5331-b1-059",
+        "slp5331-b2-052",
+        "slp5331-b2-053",
+        "slp5331-b2-054",
+        "slp5331-b2-055",
+        "slp5331-b2-056",
+        "slp5331-b2-057",
+        "slp5331-b2-058",
+        "slp5331-b2-059"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-052",
+        "slp5331-b1-053",
+        "slp5331-b1-054",
+        "slp5331-b1-055",
+        "slp5331-b1-056",
+        "slp5331-b1-057",
+        "slp5331-b1-058",
+        "slp5331-b1-059",
+        "slp5331-b2-052",
+        "slp5331-b2-053",
+        "slp5331-b2-054",
+        "slp5331-b2-055"
+      ],
+      "purpose": "Consolidate \"Assessment of Language, Cognition, Social Communication, AAC, and Hearing\" (Screening, Assessment, Evaluation, and Diagnosis) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-08",
+      "unitId": "screening-assessment-diagnosis",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Feeding and Swallowing Assessment",
+      "chapterId": "slp5331-ch-08",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-08-section-01",
+        "slp5331-ch-08-section-02",
+        "slp5331-ch-08-section-03",
+        "slp5331-ch-08-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-060",
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-065",
+        "slp5331-b1-066",
+        "slp5331-b1-067",
+        "slp5331-b2-060",
+        "slp5331-b2-061",
+        "slp5331-b2-062",
+        "slp5331-b2-063",
+        "slp5331-b2-064",
+        "slp5331-b2-065",
+        "slp5331-b2-066",
+        "slp5331-b2-067"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-060",
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-065",
+        "slp5331-b1-066",
+        "slp5331-b1-067",
+        "slp5331-b2-060",
+        "slp5331-b2-061",
+        "slp5331-b2-062",
+        "slp5331-b2-063"
+      ],
+      "purpose": "Consolidate \"Feeding and Swallowing Assessment\" (Screening, Assessment, Evaluation, and Diagnosis) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-09",
+      "unitId": "treatment-planning-evaluation",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Treatment Planning, Goal Design, Outcomes, and Counseling",
+      "chapterId": "slp5331-ch-09",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-09-section-01",
+        "slp5331-ch-09-section-02",
+        "slp5331-ch-09-section-03",
+        "slp5331-ch-09-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-068",
+        "slp5331-b1-069",
+        "slp5331-b1-070",
+        "slp5331-b1-071",
+        "slp5331-b1-072",
+        "slp5331-b1-073",
+        "slp5331-b1-074",
+        "slp5331-b1-075",
+        "slp5331-b1-076",
+        "slp5331-b2-068",
+        "slp5331-b2-069",
+        "slp5331-b2-070",
+        "slp5331-b2-071",
+        "slp5331-b2-072",
+        "slp5331-b2-073",
+        "slp5331-b2-074",
+        "slp5331-b2-075",
+        "slp5331-b2-076"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-068",
+        "slp5331-b1-069",
+        "slp5331-b1-070",
+        "slp5331-b1-071",
+        "slp5331-b1-072",
+        "slp5331-b1-073",
+        "slp5331-b1-074",
+        "slp5331-b1-075",
+        "slp5331-b1-076",
+        "slp5331-b2-068",
+        "slp5331-b2-069",
+        "slp5331-b2-070"
+      ],
+      "purpose": "Consolidate \"Treatment Planning, Goal Design, Outcomes, and Counseling\" (Planning, Implementation, and Evaluation of Treatment) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-10",
+      "unitId": "treatment-planning-evaluation",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech",
+      "chapterId": "slp5331-ch-10",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-10-section-01",
+        "slp5331-ch-10-section-02",
+        "slp5331-ch-10-section-03",
+        "slp5331-ch-10-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-077",
+        "slp5331-b1-078",
+        "slp5331-b1-079",
+        "slp5331-b1-080",
+        "slp5331-b1-081",
+        "slp5331-b1-082",
+        "slp5331-b1-083",
+        "slp5331-b1-084",
+        "slp5331-b2-077",
+        "slp5331-b2-078",
+        "slp5331-b2-079",
+        "slp5331-b2-080",
+        "slp5331-b2-081",
+        "slp5331-b2-082",
+        "slp5331-b2-083",
+        "slp5331-b2-084"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-077",
+        "slp5331-b1-078",
+        "slp5331-b1-079",
+        "slp5331-b1-080",
+        "slp5331-b1-081",
+        "slp5331-b1-082",
+        "slp5331-b1-083",
+        "slp5331-b1-084",
+        "slp5331-b2-077",
+        "slp5331-b2-078",
+        "slp5331-b2-079",
+        "slp5331-b2-080"
+      ],
+      "purpose": "Consolidate \"Treatment of Speech Sound, Fluency, Voice, Resonance, and Motor Speech\" (Planning, Implementation, and Evaluation of Treatment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-11",
+      "unitId": "treatment-planning-evaluation",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Treatment of Language, Cognition, Social Communication, AAC, and Hearing",
+      "chapterId": "slp5331-ch-11",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-11-section-01",
+        "slp5331-ch-11-section-02",
+        "slp5331-ch-11-section-03",
+        "slp5331-ch-11-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-085",
+        "slp5331-b1-086",
+        "slp5331-b1-087",
+        "slp5331-b1-088",
+        "slp5331-b1-089",
+        "slp5331-b1-090",
+        "slp5331-b1-091",
+        "slp5331-b1-092",
+        "slp5331-b2-085",
+        "slp5331-b2-086",
+        "slp5331-b2-087",
+        "slp5331-b2-088",
+        "slp5331-b2-089",
+        "slp5331-b2-090",
+        "slp5331-b2-091",
+        "slp5331-b2-092"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-085",
+        "slp5331-b1-086",
+        "slp5331-b1-087",
+        "slp5331-b1-088",
+        "slp5331-b1-089",
+        "slp5331-b1-090",
+        "slp5331-b1-091",
+        "slp5331-b1-092",
+        "slp5331-b2-085",
+        "slp5331-b2-086",
+        "slp5331-b2-087",
+        "slp5331-b2-088"
+      ],
+      "purpose": "Consolidate \"Treatment of Language, Cognition, Social Communication, AAC, and Hearing\" (Planning, Implementation, and Evaluation of Treatment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-unit-review-12",
+      "unitId": "treatment-planning-evaluation",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Feeding and Swallowing Treatment",
+      "chapterId": "slp5331-ch-12",
+      "topicDiagnosticRouteIds": [
+        "slp5331-ch-12-section-01",
+        "slp5331-ch-12-section-02",
+        "slp5331-ch-12-section-03",
+        "slp5331-ch-12-section-04"
+      ],
+      "itemIds": [
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-096",
+        "slp5331-b1-097",
+        "slp5331-b1-098",
+        "slp5331-b1-099",
+        "slp5331-b1-100",
+        "slp5331-b2-093",
+        "slp5331-b2-094",
+        "slp5331-b2-095",
+        "slp5331-b2-096",
+        "slp5331-b2-097",
+        "slp5331-b2-098",
+        "slp5331-b2-099",
+        "slp5331-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-096",
+        "slp5331-b1-097",
+        "slp5331-b1-098",
+        "slp5331-b1-099",
+        "slp5331-b1-100",
+        "slp5331-b2-093",
+        "slp5331-b2-094",
+        "slp5331-b2-095",
+        "slp5331-b2-096"
+      ],
+      "purpose": "Consolidate \"Feeding and Swallowing Treatment\" (Planning, Implementation, and Evaluation of Treatment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "speech-language-pathology-5331-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Speech-Language Pathology (5331) blueprint domains.",
+      "focus": [
+        "Foundations and Professional Practice",
+        "Screening, Assessment, Evaluation, and Diagnosis",
+        "Planning, Implementation, and Evaluation of Treatment"
+      ],
+      "itemIds": [
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-003",
+        "slp5331-b1-004",
+        "slp5331-b1-005",
+        "slp5331-b1-006",
+        "slp5331-b1-007",
+        "slp5331-b1-008",
+        "slp5331-b1-009",
+        "slp5331-b1-010",
+        "slp5331-b1-011",
+        "slp5331-b1-012",
+        "slp5331-b1-013",
+        "slp5331-b1-014",
+        "slp5331-b1-015",
+        "slp5331-b1-016",
+        "slp5331-b1-017",
+        "slp5331-b1-018",
+        "slp5331-b1-019",
+        "slp5331-b1-020",
+        "slp5331-b1-021",
+        "slp5331-b1-022",
+        "slp5331-b1-023",
+        "slp5331-b1-024",
+        "slp5331-b1-025",
+        "slp5331-b1-026",
+        "slp5331-b1-027",
+        "slp5331-b1-028",
+        "slp5331-b1-029",
+        "slp5331-b1-030",
+        "slp5331-b1-031",
+        "slp5331-b1-032",
+        "slp5331-b1-033",
+        "slp5331-b1-034",
+        "slp5331-b2-001",
+        "slp5331-b2-002",
+        "slp5331-b2-003",
+        "slp5331-b2-004",
+        "slp5331-b2-005",
+        "slp5331-b2-006"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Speech-Language Pathology (5331) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Planning, Implementation, and Evaluation of Treatment",
+        "Foundations and Professional Practice",
+        "Screening, Assessment, Evaluation, and Diagnosis"
+      ],
+      "itemIds": [
+        "slp5331-b1-035",
+        "slp5331-b1-036",
+        "slp5331-b1-037",
+        "slp5331-b1-038",
+        "slp5331-b1-039",
+        "slp5331-b1-040",
+        "slp5331-b1-041",
+        "slp5331-b1-042",
+        "slp5331-b1-043",
+        "slp5331-b1-044",
+        "slp5331-b1-045",
+        "slp5331-b1-046",
+        "slp5331-b1-047",
+        "slp5331-b1-048",
+        "slp5331-b1-049",
+        "slp5331-b1-050",
+        "slp5331-b1-051",
+        "slp5331-b1-052",
+        "slp5331-b1-053",
+        "slp5331-b1-054",
+        "slp5331-b1-055",
+        "slp5331-b1-056",
+        "slp5331-b1-057",
+        "slp5331-b1-058",
+        "slp5331-b1-059",
+        "slp5331-b1-060",
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-065",
+        "slp5331-b1-066",
+        "slp5331-b1-067",
+        "slp5331-b2-035",
+        "slp5331-b2-036",
+        "slp5331-b2-037",
+        "slp5331-b2-038",
+        "slp5331-b2-039",
+        "slp5331-b2-040",
+        "slp5331-b2-041"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Speech-Language Pathology (5331) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Mistaking bilingual language difference or dialectal variation for a disorder",
+        "Conflating Broca aphasia, apraxia of speech, and dysarthria",
+        "Relying on bedside screening to rule out silent aspiration or prescribe diet changes"
+      ],
+      "itemIds": [
+        "slp5331-b1-068",
+        "slp5331-b1-069",
+        "slp5331-b1-070",
+        "slp5331-b1-071",
+        "slp5331-b1-072",
+        "slp5331-b1-073",
+        "slp5331-b1-074",
+        "slp5331-b1-075",
+        "slp5331-b1-076",
+        "slp5331-b1-077",
+        "slp5331-b1-078",
+        "slp5331-b1-079",
+        "slp5331-b1-080",
+        "slp5331-b1-081",
+        "slp5331-b1-082",
+        "slp5331-b1-083",
+        "slp5331-b1-084",
+        "slp5331-b1-085",
+        "slp5331-b1-086",
+        "slp5331-b1-087",
+        "slp5331-b1-088",
+        "slp5331-b1-089",
+        "slp5331-b1-090",
+        "slp5331-b1-091",
+        "slp5331-b1-092",
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-096",
+        "slp5331-b1-097",
+        "slp5331-b1-098",
+        "slp5331-b1-099",
+        "slp5331-b1-100",
+        "slp5331-b2-068",
+        "slp5331-b2-069",
+        "slp5331-b2-070",
+        "slp5331-b2-071",
+        "slp5331-b2-072",
+        "slp5331-b2-073",
+        "slp5331-b2-074"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "speech-language-pathology-5331-form-internal-a",
+      "title": "Internal practice form A (Praxis Speech-Language Pathology (5331))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "slp5331-b1-001",
+        "slp5331-b1-002",
+        "slp5331-b1-003",
+        "slp5331-b1-004",
+        "slp5331-b1-005",
+        "slp5331-b1-006",
+        "slp5331-b1-007",
+        "slp5331-b1-008",
+        "slp5331-b1-009",
+        "slp5331-b1-010",
+        "slp5331-b1-011",
+        "slp5331-b1-012",
+        "slp5331-b1-013",
+        "slp5331-b1-014",
+        "slp5331-b1-015",
+        "slp5331-b1-016",
+        "slp5331-b1-017",
+        "slp5331-b1-018",
+        "slp5331-b1-019",
+        "slp5331-b1-020",
+        "slp5331-b1-021",
+        "slp5331-b1-022",
+        "slp5331-b1-023",
+        "slp5331-b1-024",
+        "slp5331-b1-025",
+        "slp5331-b1-026",
+        "slp5331-b1-027",
+        "slp5331-b1-028",
+        "slp5331-b1-029",
+        "slp5331-b1-030",
+        "slp5331-b1-031",
+        "slp5331-b1-032",
+        "slp5331-b1-033",
+        "slp5331-b1-034",
+        "slp5331-b2-001",
+        "slp5331-b2-002",
+        "slp5331-b2-003",
+        "slp5331-b2-004",
+        "slp5331-b2-005",
+        "slp5331-b2-006",
+        "slp5331-b2-007",
+        "slp5331-b2-008",
+        "slp5331-b2-009",
+        "slp5331-b2-010",
+        "slp5331-b2-011",
+        "slp5331-b2-012",
+        "slp5331-b2-013",
+        "slp5331-b2-014",
+        "slp5331-b2-015",
+        "slp5331-b2-016"
+      ],
+      "topicIds": [
+        "slp5331-ch-01",
+        "slp5331-ch-02",
+        "slp5331-ch-03",
+        "slp5331-ch-04"
+      ],
+      "unitIds": [
+        "foundations-professional-practice"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-form-internal-b",
+      "title": "Internal practice form B (Praxis Speech-Language Pathology (5331))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "slp5331-b1-035",
+        "slp5331-b1-036",
+        "slp5331-b1-037",
+        "slp5331-b1-038",
+        "slp5331-b1-039",
+        "slp5331-b1-040",
+        "slp5331-b1-041",
+        "slp5331-b1-042",
+        "slp5331-b1-043",
+        "slp5331-b1-044",
+        "slp5331-b1-045",
+        "slp5331-b1-046",
+        "slp5331-b1-047",
+        "slp5331-b1-048",
+        "slp5331-b1-049",
+        "slp5331-b1-050",
+        "slp5331-b1-051",
+        "slp5331-b1-052",
+        "slp5331-b1-053",
+        "slp5331-b1-054",
+        "slp5331-b1-055",
+        "slp5331-b1-056",
+        "slp5331-b1-057",
+        "slp5331-b1-058",
+        "slp5331-b1-059",
+        "slp5331-b1-060",
+        "slp5331-b1-061",
+        "slp5331-b1-062",
+        "slp5331-b1-063",
+        "slp5331-b1-064",
+        "slp5331-b1-065",
+        "slp5331-b1-066",
+        "slp5331-b1-067",
+        "slp5331-b2-035",
+        "slp5331-b2-036",
+        "slp5331-b2-037",
+        "slp5331-b2-038",
+        "slp5331-b2-039",
+        "slp5331-b2-040",
+        "slp5331-b2-041",
+        "slp5331-b2-042",
+        "slp5331-b2-043",
+        "slp5331-b2-044",
+        "slp5331-b2-045",
+        "slp5331-b2-046",
+        "slp5331-b2-047",
+        "slp5331-b2-048",
+        "slp5331-b2-049",
+        "slp5331-b2-050",
+        "slp5331-b2-051"
+      ],
+      "topicIds": [
+        "slp5331-ch-05",
+        "slp5331-ch-06",
+        "slp5331-ch-07",
+        "slp5331-ch-08"
+      ],
+      "unitIds": [
+        "screening-assessment-diagnosis"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "speech-language-pathology-5331-form-internal-c",
+      "title": "Internal practice form C (Praxis Speech-Language Pathology (5331))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "slp5331-b1-068",
+        "slp5331-b1-069",
+        "slp5331-b1-070",
+        "slp5331-b1-071",
+        "slp5331-b1-072",
+        "slp5331-b1-073",
+        "slp5331-b1-074",
+        "slp5331-b1-075",
+        "slp5331-b1-076",
+        "slp5331-b1-077",
+        "slp5331-b1-078",
+        "slp5331-b1-079",
+        "slp5331-b1-080",
+        "slp5331-b1-081",
+        "slp5331-b1-082",
+        "slp5331-b1-083",
+        "slp5331-b1-084",
+        "slp5331-b1-085",
+        "slp5331-b1-086",
+        "slp5331-b1-087",
+        "slp5331-b1-088",
+        "slp5331-b1-089",
+        "slp5331-b1-090",
+        "slp5331-b1-091",
+        "slp5331-b1-092",
+        "slp5331-b1-093",
+        "slp5331-b1-094",
+        "slp5331-b1-095",
+        "slp5331-b1-096",
+        "slp5331-b1-097",
+        "slp5331-b1-098",
+        "slp5331-b1-099",
+        "slp5331-b1-100",
+        "slp5331-b2-068",
+        "slp5331-b2-069",
+        "slp5331-b2-070",
+        "slp5331-b2-071",
+        "slp5331-b2-072",
+        "slp5331-b2-073",
+        "slp5331-b2-074",
+        "slp5331-b2-075",
+        "slp5331-b2-076",
+        "slp5331-b2-077",
+        "slp5331-b2-078",
+        "slp5331-b2-079",
+        "slp5331-b2-080",
+        "slp5331-b2-081",
+        "slp5331-b2-082",
+        "slp5331-b2-083",
+        "slp5331-b2-084"
+      ],
+      "topicIds": [
+        "slp5331-ch-09",
+        "slp5331-ch-10",
+        "slp5331-ch-11",
+        "slp5331-ch-12"
+      ],
+      "unitIds": [
+        "treatment-planning-evaluation"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

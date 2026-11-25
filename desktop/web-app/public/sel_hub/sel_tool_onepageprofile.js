@@ -636,7 +636,7 @@
           h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid ' + _opBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _opFg('#a5b4fc'), fontSize: 16 } }, 'Where the format comes from'),
             h('p', { style: { margin: '0 0 10px', color: _opFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'The One-Page Profile format was developed by Helen Sanderson and Helen Sanderson Associates in the United Kingdom, growing out of the broader person-centered planning movement (PATH, MAPS, Essential Lifestyle Planning). It is now used across the UK National Health Service, in US schools as part of IEP and 504 documentation, in supported-living services, and in family-led planning.'
+              'The One-Page Profile format was developed by Helen Sanderson and Helen Sanderson Associates in the United Kingdom, growing out of the broader person-centered planning movement (PATH, MAPS, Essential Lifestyle Planning). It is now used across the UK National Health Service, in US schools alongside IEP and 504 documents, in supported-living services, and in family-led planning.'
             ),
             h('p', { style: { margin: 0, color: _opFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The three-question structure is intentional: it refuses the deficit-first framing that dominates clinical reports. A clinical report begins with what is wrong. A One-Page Profile begins with what is right. Both have a place, but a profile travels with you in ways a report cannot.'

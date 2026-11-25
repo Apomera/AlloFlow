@@ -16,7 +16,16 @@
 // Blending: {display:'b-a-t', answer:'bat', phonemes:['b','a','t']}
 // Rhyming/Spelling: unchanged (no phoneme breakdown needed)
 
-window.BENCHMARK_PROBE_BANKS = {
+(function (rawRoot) {
+'use strict';
+
+function deepFreeze(obj) {
+    if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
+    Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+    return Object.freeze(obj);
+}
+
+var BENCHMARK_PROBE_BANKS = {
 
     'K': {
 
@@ -591,7 +600,7 @@ window.BENCHMARK_PROBE_BANKS = {
 
 };
 
-window.ORF_SCREENING_PASSAGES = {
+var ORF_SCREENING_PASSAGES = {
     "K": {
         "A": [
             {
@@ -1105,3 +1114,21 @@ window.ORF_SCREENING_PASSAGES = {
         ]
     }
 };
+
+deepFreeze(BENCHMARK_PROBE_BANKS);
+deepFreeze(ORF_SCREENING_PASSAGES);
+
+var root = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
+if (root) {
+    try {
+        root.BENCHMARK_PROBE_BANKS = BENCHMARK_PROBE_BANKS;
+        root.ORF_SCREENING_PASSAGES = ORF_SCREENING_PASSAGES;
+    } catch (_) {}
+}
+if (typeof module === 'object' && module !== null && module.exports) {
+    module.exports = Object.freeze({
+        BENCHMARK_PROBE_BANKS: BENCHMARK_PROBE_BANKS,
+        ORF_SCREENING_PASSAGES: ORF_SCREENING_PASSAGES
+    });
+}
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

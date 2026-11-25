@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1680, height: 1000,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -44,6 +45,7 @@ test('instruments fit the available view and display the existing energy model a
   await expect.poll(energyMatches).toBe(true);
   await page.locator('#clab-hud').screenshot({ path: testInfo.outputPath('instruments-after-run.png') });
   await expect(page.locator('#clab-gvTrack')).toHaveAttribute('aria-label', /Vertical seat force: .*Scale from minus 2 to plus 7 g/);
+  await openCoasterSettings(page);
   await page.locator('#clab-btnSceneFocus').click();
   await expect(page.locator('#clab-hud')).toBeHidden();
   await page.locator('#clab-btnSceneFocus').click();

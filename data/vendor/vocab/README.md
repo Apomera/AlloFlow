@@ -13,6 +13,7 @@ loaded by a page; the folder is listed in `.assetsignore`.
 `source.json` gives each download's address, size and sha256, and each extract's sha256.
 
 - Re-make the extracts (needs the downloads): `node dev-tools/prepare_packets_vocab_vendor.cjs --simple ... --wiktionary ... --wordnet ... --nawl ... --units ...`
+  As made on 2026-11-23, add `--builtin-from <the wordlists_en.json of 2026-11-12> --extended-common 40000` (see below).
 - Build the bank: `node dev-tools/build_packets_vocab_bank.cjs` (`--check` fails when the committed output is stale; `--report` prints counts).
 - Corrections: `data/packets_vocab_curation_en.json` (per word: sense order, verdict good / fixed / reject, replacement text, chosen wrong answers, reason).
 
@@ -41,6 +42,17 @@ or promoting 154 math and English language arts headwords (and adding secondary 
 words such as area, mean, negative, positive, origin, range, similar, composite, expression, inequality,
 edge, and mood). Like the earlier passes, the work was checked and corrected with AI assistance and was not
 reviewed by a person.
+
+On November 23, 2026, the extracts were re-cut from the same downloads (their sha256 is unchanged in `source.json`) to
+cover nearly every word a K-12 student meets, toward the goal of a meaning for any such word. Two options keep what students
+already see as it was. `--builtin-from` keeps the built-in Word Sounds list of 2026-11-12: since the bulk recording of
+2026-11-14 nearly every dictionary word has a clip, and the build never trims a built-in word, so the old rule would have
+doubled the core files the vocabulary maker loads first. `--extended-common 40000` keeps the entries of every ranked
+dictionary word for the extended files (`packets_vocab_ext/`) only. The result: the same core size (about 1.68 MB),
+14,592 words with a meaning instead of 8,835 (8,058 of them extended, loaded by first letter when a word needs them),
+and 5,235 phrases instead of 3,932. The checked meanings kept their wrong answers (99% of them unchanged); about a quarter of
+the unchecked meanings got a different automatic set, made by the same rules. The new extended meanings are automatic, not
+checked, and some read as dictionary text a young student would find hard; a checking pass like the earlier ones would fix that.
 
 The bank's text stays under CC BY-SA 4.0; every packet that shows it carries the credits in
 `AlloVocabBank.credits`.

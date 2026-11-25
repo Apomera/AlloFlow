@@ -218,7 +218,9 @@ describe('Optics Lab refinements', () => {
     const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
 
     expect(source).toContain("}, [d.phenoAfterPhase, d.phenoAfterStartedAt, d.phenoAfterTick]);");
-    expect(source).toContain("}, [d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);");
+    // The photon clock also stops when the student leaves the Interference tab, so d.mode is a dependency.
+    expect(source).toContain("if (!d.phenoQuantumPlaying || d.mode !== 'interference') return;");
+    expect(source).toContain("}, [d.mode, d.phenoQuantumPlaying, d.phenoQuantumRate, d.phenoQuantumDots, d.phenoQuantumCount]);");
     expect(source.match(/return function\(\) \{ clearTimeout\(timer\); \};/g).length).toBeGreaterThanOrEqual(2);
     expect(source).not.toContain('Schedule a per-second re-render so the countdown updates');
     expect(source).not.toContain('Auto-fire scheduling (mirrors after-image timer pattern)');

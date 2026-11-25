@@ -28,7 +28,11 @@ describe('AppStyles render boundary and external CSS experiment', () => {
     expect(result.assets).toHaveLength(1);
     expect(result.assets[0].file).toMatch(/^app_styles\.[0-9a-f]{16}\.css$/);
     const tree = load(buildAppStylesModule(source)).type({});
-    const css = tree.props.children.find(child => child?.props?.['data-docsuite-theme'] === 'v1').props.children;
+    // The unconditional sheets render from a memoized child (AppStylesStatic).
+    const flat = (node) => !node || typeof node !== 'object' ? []
+      : node.type?.$$typeof === Symbol.for('react.memo') ? flat(node.type.type(node.props || {}))
+      : [node, ...[].concat(node.props?.children || []).flatMap(flat)];
+    const css = flat(tree).find(child => child?.props?.['data-docsuite-theme'] === 'v1').props.children;
     expect(result.assets[0].content).toBe(css);
     const external = server.renderToStaticMarkup(React.createElement(load(result.module, { document: { currentScript: { src: 'https://example.test/assets/app_styles_module.js?v=123' } } })));
     expect(external).toContain('href="https://example.test/assets/' + result.assets[0].file + '"');

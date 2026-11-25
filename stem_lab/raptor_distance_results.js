@@ -3,7 +3,7 @@
  */
 (function (global) {
   'use strict';
-  if (global.RaptorDistanceResults) return;
+  if (!global || typeof global !== 'object' || global.RaptorDistanceResults) return;
 
   function own(value, key) { return Object.prototype.hasOwnProperty.call(value, key); }
   function plain(value) {
@@ -24,7 +24,8 @@
       var raw = rawTrials[i];
       if (!plain(raw) || !own(raw, 'settings') || !own(raw, 'prediction')) return null;
       var clean = source.trial(raw.settings, raw.prediction);
-      if (!clean || own(distances, clean.settings.distance)) return null;
+      if (!clean || !clean.settings || typeof clean.settings.distance !== 'number' ||
+          !Number.isFinite(clean.settings.distance) || own(distances, clean.settings.distance)) return null;
       distances[clean.settings.distance] = true;
       trials.push({ settings: clean.settings, prediction: clean.prediction });
     }
@@ -53,12 +54,20 @@
     var records = read(rawNamespace), source = fieldwork();
     if (!records || !records.human || !records.eagle || !source) return null;
     var human = source.summarize('human', records.human.trials), eagle = source.summarize('eagle', records.eagle.trials);
-    if (!human || !eagle || !human.complete || !eagle.complete) return null;
+    if (!human || !eagle || human.complete !== true || eagle.complete !== true ||
+        !human.below || !human.above || !eagle.below || !eagle.above ||
+        typeof human.below.distance !== 'number' || !Number.isFinite(human.below.distance) || human.below.distance <= 0 ||
+        typeof human.above.distance !== 'number' || !Number.isFinite(human.above.distance) || human.above.distance <= 0 ||
+        typeof eagle.below.distance !== 'number' || !Number.isFinite(eagle.below.distance) || eagle.below.distance <= 0 ||
+        typeof eagle.above.distance !== 'number' || !Number.isFinite(eagle.above.distance) || eagle.above.distance <= 0) return null;
+    var ratioLow = eagle.below.distance / human.above.distance;
+    var ratioHigh = eagle.above.distance / human.below.distance;
+    if (!Number.isFinite(ratioLow) || !Number.isFinite(ratioHigh)) return null;
     return {
       human: human, eagle: eagle,
-      ratioLow: eagle.below.distance / human.above.distance,
-      ratioHigh: eagle.above.distance / human.below.distance
+      ratioLow: ratioLow,
+      ratioHigh: ratioHigh
     };
   }
   global.RaptorDistanceResults = Object.freeze({ version: 1, capture: capture, read: read, compare: compare });
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

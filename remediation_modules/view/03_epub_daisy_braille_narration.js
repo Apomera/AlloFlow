@@ -297,7 +297,7 @@ function _alloReplaceFormControlsForText(doc, root, blankToken, alloFieldsOnly, 
   const alloSel = 'input[data-allo-field],textarea[data-allo-field],select[data-allo-field],input[data-allo-response-key],textarea[data-allo-response-key],select[data-allo-response-key],.alloflow-response-input,.alloflow-response-select,.interactive-blank,.interactive-textarea,.alloflow-cs-response,.alloflow-venn-response';
   root.querySelectorAll('input,textarea,select').forEach((el) => {
     const tag = (el.tagName || '').toLowerCase();
-    const isHidden = el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true' || (el.style && el.style.display === 'none');
+    const isHidden = el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true' || (el.style && (el.style.display === 'none' || el.style.visibility === 'hidden'));
     const isAlloField = !alloFieldsOnly || (typeof el.matches === 'function' && el.matches(alloSel));
     if (emitEmptyBlank === false && !isAlloField) { el.remove(); return; }
     if (tag === 'input') {
@@ -1678,7 +1678,11 @@ function _alloLinearizeSpeechMath(mathEl) {
     if (t === 'annotation' || t === 'annotation-xml') return '';
     if (t === 'mspace') return ' ';
     const ch = Array.from(node.children || []);
-    if (t === 'mfrac' && ch.length >= 2) return '(' + cleanSp(walkMath(ch[0], nextDepth)) + ')/(' + cleanSp(walkMath(ch[1], nextDepth)) + ')';
+    if (t === 'mfrac' && ch.length >= 2) {
+      const num = cleanSp(walkMath(ch[0], nextDepth));
+      const den = cleanSp(walkMath(ch[1], nextDepth));
+      return (num || den) ? '(' + num + ')/(' + den + ')' : '';
+    }
     if (t === 'msup' && ch.length >= 2) {
       const b = cleanSp(walkMath(ch[0], nextDepth));
       const e = cleanSp(walkMath(ch[1], nextDepth));
@@ -1807,8 +1811,28 @@ function _audioReadyText(html, narrationOptions) {
   // spoken preamble BEFORE removing the visual banner.
   let _preamble = '';
   let preambleRuns = [];
-  const _note = root.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
-  if (_note) { const _nt = (_note.textContent || '').replace(/\s+/g, ' ').trim(); if (_nt) { _preamble = _nt + '. '; if(options.languageRuns)preambleRuns=[..._narrationTextRuns(_note,options.language),{text:'. ',language:_narrationLanguageOf(_note,options.language)}]; } }
+  const _noteParts = [];
+  root.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note]').forEach((_note) => {
+    if (_note.hasAttribute('hidden') || _note.getAttribute('aria-hidden') === 'true' || (_note.style && (_note.style.display === 'none' || _note.style.visibility === 'hidden')) || (_note.closest && _note.closest('[hidden], [aria-hidden="true"]'))) return;
+    const _clone = _note.cloneNode(true);
+    if (_clone.querySelectorAll) {
+      _clone.querySelectorAll('script, style, button, input, select, textarea, [hidden], [aria-hidden="true"]').forEach((el) => el.remove());
+      _clone.querySelectorAll('[style]').forEach((el) => { if (el.style.display === 'none' || el.style.visibility === 'hidden') el.remove(); });
+      if (!options.includeTeacherOnly) {
+        _clone.querySelectorAll(_ALLO_TEACHER_ONLY_SEL).forEach((el) => el.remove());
+      }
+    }
+    const _nt = (_clone.textContent || '').replace(/\s+/g, ' ').trim();
+    if (_nt) {
+      const _punct = /[.!?]$/.test(_nt) ? ' ' : '. ';
+      _noteParts.push(_nt + _punct);
+      if (options.languageRuns) {
+        const _noteLang = _narrationLanguageOf(_note, options.language);
+        preambleRuns.push(..._narrationTextRuns(_clone, _noteLang), { text: _punct, language: _noteLang });
+      }
+    }
+  });
+  _preamble = _noteParts.join('');
   _narrationPrepareDocument(doc, options);
   root.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
   // Preserve author <em> notes inside captions/details in languageRuns mode (MCP narration contract).

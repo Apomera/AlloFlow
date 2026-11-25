@@ -46,7 +46,7 @@ describe('view panel — floating, copyable, live, self-contained', () => {
     expect(view).toContain("rows = warnOnly ? all.filter((e) => e && e.level === 'warn') : all");
   });
   it('repaints live while open and copies the log to the clipboard (execCommand fallback)', () => {
-    expect(view).toContain('setInterval(() => setTick((n) => n + 1), 1000)');
+    expect(view).toContain("setInterval(() => { if (typeof document !== 'undefined' && document.hidden) return; setTick((n) => n + 1); }, 1000)");
     expect(view).toContain('navigator.clipboard.writeText(text)');
     expect(view).toContain("document.execCommand('copy')");
   });

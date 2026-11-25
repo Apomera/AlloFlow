@@ -6,7 +6,8 @@ import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helper
 const require = createRequire(import.meta.url);
 const { act } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
 const paths = ['stem_lab/stem_tool_climateExplorer.js', 'desktop/web-app/public/stem_lab/stem_tool_climateExplorer.js'];
-const correctIds = ['refrigerants', 'wind_onshore', 'tropical_forest', 'wind_onshore', 'silvopasture', 'reduced_waste', 'wind_onshore', 'refrigerants'];
+// Drawdown 2020 Scenario 2 values: each round's largest entry (see DS_ROUNDS).
+const correctIds = ['solar_roof', 'wind_onshore', 'plant_rich', 'girls_education', 'silvopasture', 'reduced_waste', 'solar_farms', 'refrigerants'];
 const disposers = [];
 let frames;
 
@@ -95,21 +96,21 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
 
   it('shows correct feedback and score, then moves focus to the next unanswered question',async () => {
     const view = mountTool(path); await start(view);
-    const answer = view.answer('tropical_forest');
+    const answer = view.answer('plant_rich');
     const labelId = answer.getAttribute('aria-labelledby');
-    expect(view.one('#'+labelId).textContent).toBe('Tropical Forest Restoration');
-    await activate(view.answer('tropical_forest'));
+    expect(view.one('#'+labelId).textContent).toBe('Plant-Rich Diets');
+    await activate(view.answer('plant_rich'));
     expect(answer.getAttribute('aria-labelledby')).toBe(labelId);
-    expect(view.one('#'+labelId).textContent).toBe('Tropical Forest Restoration');
-    expect(view.one('#'+answer.getAttribute('aria-describedby')).textContent).toMatch(/85.*Correct answer.*Your answer/);
+    expect(view.one('#'+labelId).textContent).toBe('Plant-Rich Diets');
+    expect(view.one('#'+answer.getAttribute('aria-describedby')).textContent).toMatch(/91.7.*Correct answer.*Your answer/);
     expect(document.activeElement).toBe(feedback(view));
     expect(view.one('#ce-ds-feedback-title').textContent).toMatch(/correct/i);
-    expect(view.one('#ce-ds-feedback-detail').textContent).toContain('Tropical Forest Restoration');
+    expect(view.one('#ce-ds-feedback-detail').textContent).toContain('Plant-Rich Diets');
     expect(view.one('#ce-ds-feedback-score').textContent).toContain('1');
-    expect(view.state()).toMatchObject({ dsAnswered:true,dsPick:'tropical_forest',dsScore:1,dsRounds:1,dsStreak:1,dsBest:1 });
-    expect(view.answer('tropical_forest').getAttribute('aria-pressed')).toBe('true');
-    expect(view.answer('tropical_forest').textContent).toMatch(/your answer/i);
-    expect(view.answer('tropical_forest').textContent).toMatch(/correct answer/i);
+    expect(view.state()).toMatchObject({ dsAnswered:true,dsPick:'plant_rich',dsScore:1,dsRounds:1,dsStreak:1,dsBest:1 });
+    expect(view.answer('plant_rich').getAttribute('aria-pressed')).toBe('true');
+    expect(view.answer('plant_rich').textContent).toMatch(/your answer/i);
+    expect(view.answer('plant_rich').textContent).toMatch(/correct answer/i);
     const previous = view.state().dsIdx, next = view.one('#ce-ds-next'); await activate(next);
     expect(document.activeElement).toBe(question(view)); expect(next.isConnected).toBe(false);
     expect(view.one('#ce-ds-feedback')).toBeNull(); expect(view.state().dsIdx).not.toBe(previous);
@@ -118,23 +119,23 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
 
   it('identifies a wrong choice and the correct answer in text while resetting only the current streak',async () => {
     const view = mountTool(path,{ dsIdx:2,dsShown:[0,2],dsAnswered:false,dsScore:1,dsRounds:1,dsStreak:1,dsBest:1 });
-    await activate(view.answer('plant_rich'));
+    await activate(view.answer('tropical_forest'));
     expect(document.activeElement).toBe(feedback(view));
     const detail = view.one('#ce-ds-feedback-detail').textContent;
-    expect(detail).toContain('Plant-Rich Diets'); expect(detail).toContain('Tropical Forest Restoration');
-    expect(view.answer('plant_rich').textContent).toMatch(/your answer/i);
-    expect(view.answer('tropical_forest').textContent).toMatch(/correct answer/i);
-    expect(view.answer('plant_rich').getAttribute('aria-pressed')).toBe('true');
-    expect(view.answer('tropical_forest').getAttribute('aria-pressed')).toBe('false');
+    expect(detail).toContain('Tropical Forest Restoration'); expect(detail).toContain('Plant-Rich Diets');
+    expect(view.answer('tropical_forest').textContent).toMatch(/your answer/i);
+    expect(view.answer('plant_rich').textContent).toMatch(/correct answer/i);
+    expect(view.answer('tropical_forest').getAttribute('aria-pressed')).toBe('true');
+    expect(view.answer('plant_rich').getAttribute('aria-pressed')).toBe('false');
     expect(view.state()).toMatchObject({ dsScore:1,dsRounds:2,dsStreak:0,dsBest:1 });
   });
 
   it('keeps answered choices inspectable and rejects repeated or same-batch answer submissions',async () => {
     const view = mountTool(path); await start(view);
-    const correct = view.answer('tropical_forest'), wrong = view.answer('plant_rich');
+    const correct = view.answer('plant_rich'), wrong = view.answer('tropical_forest');
     correct.focus(); act(() => { correct.click(); wrong.click(); }); await settle();
     expect(document.activeElement).toBe(feedback(view));
-    expect(view.state()).toMatchObject({ dsPick:'tropical_forest',dsScore:1,dsRounds:1 });
+    expect(view.state()).toMatchObject({ dsPick:'plant_rich',dsScore:1,dsRounds:1 });
     const answered = { ...view.state() };
     for (const button of view.all('#ce-ds-panel [role="group"] button')) {
       expect(button.disabled).toBe(false); expect(button.getAttribute('aria-disabled')).toBe('true');
@@ -144,13 +145,13 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
   });
 
   it('preserves answered progress while hiding and reopening the game and leaves focus on the toggle',async () => {
-    const view = mountTool(path); await start(view); await activate(view.answer('tropical_forest'));
+    const view = mountTool(path); await start(view); await activate(view.answer('plant_rich'));
     const saved = { ...view.state() }, toggle = view.one('#ce-ds-toggle');
     await activate(toggle);
     expect(view.one('#ce-ds-panel').hidden).toBe(true); expect(document.activeElement).toBe(toggle);
     await activate(toggle);
     expect(view.state()).toMatchObject(saved); expect(view.one('#ce-ds-panel').hidden).toBe(false);
-    expect(document.activeElement).toBe(toggle); expect(feedback(view).textContent).toContain('Tropical Forest Restoration');
+    expect(document.activeElement).toBe(toggle); expect(feedback(view).textContent).toContain('Plant-Rich Diets');
   });
 
   it('plays eight unique rounds and restarts with the best streak retained and focus on Start',async () => {
@@ -174,8 +175,8 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
   it('restores an answered game and unrelated saved-state updates without stealing focus',async () => {
     const outside = document.createElement('button'); document.body.appendChild(outside); outside.focus();
     disposers.push(() => outside.remove());
-    const view = mountTool(path,{ dsIdx:2,dsShown:[2],dsAnswered:true,dsPick:'tropical_forest',dsScore:1,dsRounds:1,dsStreak:1,dsBest:1 }); await settle();
-    expect(feedback(view).textContent).toContain('Tropical Forest Restoration'); expect(document.activeElement).toBe(outside);
+    const view = mountTool(path,{ dsIdx:2,dsShown:[2],dsAnswered:true,dsPick:'plant_rich',dsScore:1,dsRounds:1,dsStreak:1,dsBest:1 }); await settle();
+    expect(feedback(view).textContent).toContain('Plant-Rich Diets'); expect(document.activeElement).toBe(outside);
     view.patch({ exportedReport:'Keep this separate work.' }); await settle();
     expect(document.activeElement).toBe(outside); expect(view.state().exportedReport).toBe('Keep this separate work.');
   });
@@ -191,7 +192,7 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
 
   it.each([{ stale:true },[2,2,99,-1,'1',null]])('repairs malformed or duplicate history %j without skipping the current question',async dsShown => {
     const view = mountTool(path,{ dsIdx:2,dsShown,dsAnswered:false });
-    expect(question(view)).toBeTruthy(); await activate(view.answer('tropical_forest'));
+    expect(question(view)).toBeTruthy(); await activate(view.answer('plant_rich'));
     expect(view.state()).toMatchObject({ dsShown:[2],dsScore:1,dsRounds:1 });
     await activate(view.one('#ce-ds-next'));
     expect(view.state().dsShown).toHaveLength(2); expect(view.state().dsIdx).not.toBe(2);
@@ -200,7 +201,7 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
   it('derives progress from unique valid history and keeps malformed counts finite and bounded',async () => {
     const view = mountTool(path,{ dsIdx:2,dsShown:[0,1,2,2,9,'4'],dsAnswered:false,dsScore:Infinity,dsRounds:99,dsStreak:'bad',dsBest:NaN });
     expect(view.one('#ce-ds-panel').textContent).not.toMatch(/NaN|Infinity/);
-    await activate(view.answer('tropical_forest'));
+    await activate(view.answer('plant_rich'));
     const state = view.state(); expect(state.dsShown).toEqual([0,1,2]); expect(state.dsRounds).toBe(3);
     for (const key of ['dsScore','dsStreak','dsBest']) { expect(Number.isSafeInteger(state[key])).toBe(true); expect(state[key]).toBeGreaterThanOrEqual(0); expect(state[key]).toBeLessThanOrEqual(8); }
     expect(state.dsScore).toBeLessThanOrEqual(state.dsRounds); expect(state.dsStreak).toBeLessThanOrEqual(state.dsScore);
@@ -209,8 +210,8 @@ describe.each(paths)('Drawdown Sleuth accessibility: %s',path => {
   it.each([{ stale:true },'wind_onshore'])('recovers a saved answer outside the current options %j as unanswered',async dsPick => {
     const view = mountTool(path,{ dsIdx:2,dsShown:[2],dsAnswered:true,dsPick,dsScore:8,dsRounds:99,dsStreak:8 });
     expect(question(view)).toBeTruthy(); expect(view.one('#ce-ds-feedback')).toBeNull();
-    await activate(view.answer('tropical_forest'));
-    expect(view.state()).toMatchObject({ dsPick:'tropical_forest',dsAnswered:true,dsRounds:1,dsScore:1 });
+    await activate(view.answer('plant_rich'));
+    expect(view.state()).toMatchObject({ dsPick:'plant_rich',dsAnswered:true,dsRounds:1,dsScore:1 });
     expect(document.activeElement).toBe(feedback(view));
   });
 });

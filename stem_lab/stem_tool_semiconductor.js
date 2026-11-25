@@ -5011,7 +5011,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-lg mb-1' }, currentRound.enemy),
             h('p', { className: 'text-sm text-white mb-3' }, currentRound.desc),
             h('div', { className: 'flex flex-col gap-2' },
-              orderOptions(currentRound.desc, currentRound.opts.map(function(rawOpt) { return BATTLE_OPT_I18N[rawOpt] ? t(BATTLE_OPT_I18N[rawOpt], rawOpt) : rawOpt; }), currentRound.answer).map(function(opt) {
+              orderOptions(currentRound.desc, currentRound.opts, currentRound.answer).map(function(opt) {
+                // Order and grade on the raw English option; translate only the label.
+                var optLabel = BATTLE_OPT_I18N[opt] ? t(BATTLE_OPT_I18N[opt], opt) : opt;
                 var showResult = feedback !== null;
                 var isSelected = d.battleFeedback === opt || (showResult && feedback === 'wrong-' + opt);
                 var isCorrect = opt === currentRound.answer;
@@ -5046,7 +5048,7 @@ window.StemLab = window.StemLab || {
                     }
                   },
                   className: optClass
-                }, opt);
+                }, optLabel);
               })
             )
           ),

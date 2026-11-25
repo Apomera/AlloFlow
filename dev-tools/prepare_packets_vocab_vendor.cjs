@@ -14,6 +14,8 @@
 //     --units   <unit_words.json>                 the hand-made K-8 unit list (science, social, ela)
 //     [--max-common 10000]                        optional cap on common words by reading-library rank (e.g. 40000 for extended shards)
 //     [--phrases]                                 optional: also retain clean 2-3 word multi-word phrases from Wiktionary/WordNet
+//     [--builtin-from <wordlists_en.json>]        optional: take the built-in Word Sounds list from that file (keeps the core as it was)
+//     [--extended-common 40000]                   optional: also keep the entries of that many common words, for the extended files only
 //
 // Writes data/vendor/vocab/{simple_wiktionary_en.json, wiktionary_en.json, wordnet_en.json, wordlists_en.json}.
 // The word list and familiarity numbers come from word_sounds_wordlist_en.js (CYP-LEX Zipf, CC BY 4.0).
@@ -39,7 +41,12 @@ function main() {
   // ---- word lists ----
   const ws = require(path.join(ROOT, 'word_sounds_wordlist_en.js'));
   const rows = ws.rows();
-  const builtin = rows.filter((r) => r.hasClip && !r.blocked && !r.soft).map((r) => r.word);
+  // 2026-11-23: --builtin-from <wordlists_en.json> keeps the built-in list a bank was made with. Since the bulk recording of
+  // 2026-11-14 nearly every dictionary word has a clip, so the rule below now picks ~32,000 words; the bank build never trims a
+  // built-in word, which would put them all in the core files the vocabulary maker loads first.
+  const builtinFrom = arg('--builtin-from');
+  const builtin = builtinFrom ? JSON.parse(fs.readFileSync(builtinFrom, 'utf8')).builtin.slice()
+    : rows.filter((r) => r.hasClip && !r.blocked && !r.soft).map((r) => r.word);
   const common = rows.filter((r) => r.rank > 0 && !r.blocked && !r.soft && /^[a-z]+$/.test(r.word)).sort((a, b) => a.rank - b.rank || (a.word < b.word ? -1 : 1)).slice(0, maxCommon).map((r) => r.word);
   const units = JSON.parse(fs.readFileSync(files.units, 'utf8'));
   const PW = { n: 'noun', v: 'verb', adj: 'adj', adv: 'adv' };
@@ -53,7 +60,11 @@ function main() {
     nawl.push([w, PW[p] || p || '']);
   }
   const blocked = new Set(rows.filter((r) => r.blocked || r.soft).map((r) => r.word));
-  const want = new Set([...builtin, ...common, ...nawl.map((x) => x[0]), ...Object.values(unit).flat().map((x) => x[0])]);
+  // 2026-11-23: --extended-common <N> also keeps the entries of the N most common words, for the extended (lazy) files only:
+  // they are not added to the common list, so the core the vocabulary maker loads first, and its wrong answers, stay as they were.
+  const extendedCommon = Math.max(0, Number(arg('--extended-common')) || 0);
+  const extendedWords = extendedCommon ? rows.filter((r) => r.rank > 0 && !r.blocked && !r.soft && /^[a-z]+$/.test(r.word)).sort((a, b) => a.rank - b.rank || (a.word < b.word ? -1 : 1)).slice(0, extendedCommon).map((r) => r.word) : [];
+  const want = new Set([...builtin, ...common, ...extendedWords, ...nawl.map((x) => x[0]), ...Object.values(unit).flat().map((x) => x[0])]);
 
   // ---- Simple English Wiktionary ----
   const simpleRaw = readMaybeGz(files.simple);

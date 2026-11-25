@@ -86,7 +86,8 @@ describe('audio clock — metronome look-ahead', () => {
   });
 
   it('resumes a suspended context before scheduling into it', () => {
-    expect(block()).toMatch(/if \(actx\.state === 'suspended'\) actx\.resume\(\)/);
+    // resume() is now guarded (try/catch, and a rejected promise is swallowed).
+    expect(block()).toMatch(/if \(actx\.state === 'suspended'\) \{ try \{ var mp = actx\.resume\(\);/);
   });
 });
 

@@ -7,7 +7,9 @@
  */
 (function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var TAU = Math.PI * 2, PERIOD = 44;
+  function own(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
   function clamp(x) { return Math.max(0, Math.min(1, x)); }
   function smooth(x) { x = clamp(x); return x * x * x * (10 + x * (-15 + 6 * x)); }
   function pulse(t, start, duration) {
@@ -16,6 +18,7 @@
   }
 
   function create(THREE, scene, options) {
+    if (!THREE || !THREE.Group) throw new Error('BirdLab3DWildlife.create requires THREE.');
     options = options || {};
     var detailed = options.quality !== 'low', disposed = false, resources = [], mode = 'guided', freeTime = 0;
     var highContrast = !!options.highContrast;
@@ -29,9 +32,11 @@
       } catch (ignore) {}
     }
     var plumeRimStrength = { value: highContrast ? 0.0 : 1.0 };
-    var height = typeof options.groundHeight === 'function' ? options.groundHeight : function () { return 0; };
+    var rawHeight = typeof options.groundHeight === 'function' ? options.groundHeight : null;
+    var height = rawHeight ? function (x, z) { var y = rawHeight(x, z); return Number.isFinite(y) ? y : 0; } : function () { return 0; };
     var blocked = typeof options.isBlocked === 'function' ? options.isBlocked : function () { return false; };
-    var root = new THREE.Group(); root.name = 'birdlab-woodland-residents'; scene.add(root);
+    var root = new THREE.Group(); root.name = 'birdlab-woodland-residents';
+    if (scene && typeof scene.add === 'function') scene.add(root);
     function keep(value) { resources.push(value); return value; }
     function color(hex) { return new THREE.Color(hex).convertSRGBToLinear(); }
     function material(hex, extra) {
@@ -601,7 +606,7 @@
       tracks.mesh.visible=true;trackClock+=dt;root.updateMatrixWorld(true);
       birds.concat(sharedBirds).forEach(function(bird){
         if(absent(bird))return;
-        var feet=bird.model?bird.model.feet:bird.feet,length=TRACK_LENGTH[bird.id]||.026;
+        var feet=bird.model?bird.model.feet:bird.feet,length=own(TRACK_LENGTH,bird.id)?TRACK_LENGTH[bird.id]:.026;
         if(!feet||!feet.length)return;
         if(!bird.track)bird.track=feet.map(function(){return {low:Infinity,x:0,z:0,has:false};});
         var forward=bird.root.rotation.y+(bird.model?0:Math.PI);
@@ -672,8 +677,9 @@
       var start=songClock+(Number.isFinite(delay)?Math.max(0,delay):0),list=[],end=start;
       notes.forEach(function(note){
         var on=Number(note&&note.on),dur=Number(note&&note.dur);
-        if(!Number.isFinite(on)||!Number.isFinite(dur)||dur<=0)return;
-        list.push({on:start+on,dur:dur,freq:Number(note.freq)||2500,trill:Number(note.trill)||0});end=Math.max(end,start+on+dur);
+        if(!Number.isFinite(on)||on<0||!Number.isFinite(dur)||dur<=0)return;
+        var freq=Number(note.freq),trill=Number(note.trill);
+        list.push({on:start+on,dur:dur,freq:Number.isFinite(freq)?freq:2500,trill:Number.isFinite(trill)?trill:0});end=Math.max(end,start+on+dur);
       });
       if(!list.length)return false;
       bird.song={start:start,end:end,notes:list};
@@ -694,7 +700,7 @@
     function updateSharedBird(bird, time) {
       var autonomous = mode === 'free', t = autonomous ? bird.free.elapsed : ((time % PERIOD) + PERIOD) % PERIOD;
       var grouse = bird.id === 'grouse', jay = bird.id === 'blueJay', cardinal = bird.id === 'northernCardinal';
-      var extra = RESIDENT_TUNING[bird.id] || null, hopper = cardinal || !!(extra && extra.hop);
+      var extra = own(RESIDENT_TUNING, bird.id) ? RESIDENT_TUNING[bird.id] : null, hopper = cardinal || !!(extra && extra.hop);
       var course = autonomous ? bird.free.course : bird.course;
       var x=0,z=0,lift=0,opening=0,walking=0,stride=0,bank=0,pitch=0,yaw=bird.baseYaw,behavior='Scanning';
       var effort=grouse?.86:.72,tailFan=0,landing=0,scanReady=1,groundMove=null,groundU=0,startX=0,startZ=0,freeFlight=null;
@@ -1006,9 +1012,9 @@
     var FOOD_SEASON={winter:{cap:{worm:0,insect:.25},grow:{}},autumn:{cap:{},grow:{acorn:2.5,berry:1.5}},
       // Spring: thawed, wet soil and the first insect hatches; last year's berries and acorns are nearly gone.
       spring:{cap:{berry:.3,acorn:.4},grow:{worm:1.6,insect:1.5}}};
-    function foodCap(kind){var entry=FOOD_SEASON[seasonName];return entry&&entry.cap[kind]!=null?entry.cap[kind]:1;}
-    function foodGrow(kind){var entry=FOOD_SEASON[seasonName];return entry&&entry.grow[kind]!=null?entry.grow[kind]:1;}
-    function absent(bird){return !!absentIds[bird.id];}
+    function foodCap(kind){var entry=own(FOOD_SEASON,seasonName)?FOOD_SEASON[seasonName]:null;return entry&&own(entry.cap,kind)&&entry.cap[kind]!=null?entry.cap[kind]:1;}
+    function foodGrow(kind){var entry=own(FOOD_SEASON,seasonName)?FOOD_SEASON[seasonName]:null;return entry&&own(entry.grow,kind)&&entry.grow[kind]!=null?entry.grow[kind]:1;}
+    function absent(bird){return !!(bird&&own(absentIds,bird.id)&&absentIds[bird.id]);}
     sharedBirds.forEach(function(bird){if(absent(bird))bird.root.visible=false;});
     function setSeason(value){
       if(disposed||['spring','summer','autumn','winter'].indexOf(value)<0)return;
@@ -1025,9 +1031,9 @@
         finch.root.traverse(function(node){
           var mat=node.material;if(!mat||!mat.vertexColors||mat.userData.blDrab)return;
           mat.userData.blDrab=true;
-          var previous=mat.onBeforeCompile,previousKey=mat.customProgramCacheKey.call(mat);
+          var previous=mat.onBeforeCompile,previousKey=typeof mat.customProgramCacheKey==='function'?mat.customProgramCacheKey.call(mat):'';
           mat.onBeforeCompile=function(shader,renderer){
-            previous.call(this,shader,renderer);
+            if(typeof previous==='function')previous.call(this,shader,renderer);
             shader.uniforms.blDrab=goldfinchDrab;
             var plumage=shader.fragmentShader.indexOf('awPlumageLocal')>=0;
             shader.fragmentShader='uniform float blDrab;\n'+shader.fragmentShader.replace('#include <lights_physical_fragment>',[
@@ -1075,15 +1081,17 @@
       return residents.some(function(other){return other.id==='blueJay'&&other.free.kind==='forage'&&other.free.food===source;});
     }
     function planFeeding(bird,state,observer){
-      var diet=DIETS[bird.id];if(!diet)return false;
+      var diet=own(DIETS,bird.id)?DIETS[bird.id]:null;if(!diet)return false;
       var here=null,best=null,bestScore=0;
       feeding.sources.forEach(function(source){
         // Earthworms come up on wet ground, so rain draws worm-eaters to the lawn.
-        var weight=(diet[source.kind]||0)*(wet&&source.kind==='worm'?2.2:1);if(!weight||source.amount<.12)return;
+        var baseWeight=own(diet,source.kind)?diet[source.kind]:0;
+        var weight=baseWeight*(wet&&source.kind==='worm'?2.2:1);if(!weight||source.amount<.12)return;
         if(state.avoid&&state.avoid.id===source.id&&freeTime<state.avoid.until)return;
         if(displacedByJay(bird)&&jayFeedingAt(source))return;
         var distance=Math.hypot(bird.originX-source.x,bird.originZ-source.z);
-        if(distance<source.radius&&(!here||weight>(diet[here.kind]||0)))here=source;
+        var hereWeight=here&&own(diet,here.kind)?diet[here.kind]:0;
+        if(distance<source.radius&&(!here||weight>hereWeight))here=source;
         var score=weight*source.amount/(1+distance*.35)*(.75+.5*randomChoice(state));
         if(score>bestScore){bestScore=score;best=source;}
       });
@@ -1108,8 +1116,19 @@
     }
     function setFeedingStudy(sources){
       if(disposed)return;
-      feeding=sources&&sources.length?{sources:sources.map(function(source){return {id:source.id,kind:source.kind,label:source.label,place:source.place,eat:source.eat,
-        x:source.x,z:source.z,radius:source.radius,regrow:source.regrow,amount:foodCap(source.kind)};})}:null;
+      var valid=[];
+      if(Array.isArray(sources)){
+        for(var i=0;i<sources.length;i++){
+          var source=sources[i];
+          if(!source||typeof source!=='object')continue;
+          var sx=Number(source.x),sz=Number(source.z);
+          if(!Number.isFinite(sx)||!Number.isFinite(sz))continue;
+          var sr=Number(source.radius),sg=Number(source.regrow);
+          valid.push({id:source.id,kind:source.kind,label:source.label,place:source.place,eat:source.eat,
+            x:sx,z:sz,radius:Number.isFinite(sr)&&sr>0?sr:.4,regrow:Number.isFinite(sg)&&sg>=0?sg:0,amount:foodCap(source.kind)});
+        }
+      }
+      feeding=valid.length?{sources:valid}:null;
       residents.forEach(function(bird){bird.free.food=null;bird.free.target=null;bird.free.avoid=null;bird.free.displaced=-1;});
     }
     function foodLevels(){
@@ -1404,8 +1423,9 @@
     function update(time,dt,observer) {
       if (disposed) return;
       if (!Number.isFinite(time)) time = 0;
-      if(mode==='free'&&Number.isFinite(dt)&&dt>0)advanceFree(Math.min(dt,.1),observer);
-      if(Number.isFinite(dt)&&dt>0)songClock+=Math.min(dt,.1);
+      var safeDt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, .1) : 0;
+      if(mode==='free'&&safeDt>0)advanceFree(safeDt,observer);
+      if(safeDt>0)songClock+=safeDt;
       birds.forEach(function (bird) {
         var autonomous=mode==='free',t=autonomous?bird.free.elapsed:((time + bird.phase) % PERIOD + PERIOD) % PERIOD, chickadee = bird.id === 'chickadee';
         var course=autonomous?bird.free.course:moves;
@@ -1500,7 +1520,7 @@
           groundMove ? (chickadee ? 'Hopping' : 'Scurrying') : peck > .05 ? 'Foraging' : freeFlight&&wingOpen>.05?'Settling wings':'Scanning';
       });
       sharedBirds.forEach(function(bird) { updateSharedBird(bird,time); });
-      updateTracks(dt);
+      updateTracks(safeDt);
       if(mode==='free')residents.forEach(function(bird) {
         var state=bird.free,course=state.course[0];
         if(state.alarmed&&course&&state.elapsed<course.start)bird.behavior='Alert — preparing to move away';
@@ -1529,18 +1549,23 @@
         alarm:mode==='free'&&(bird.free.kind==='freeze'||bird.free.kind==='mob')&&bird.free.alarm?{at:bird.free.alarm.at,danger:bird.free.alarm.danger,mob:!!bird.free.alarm.mob}:undefined }; });
     }
     function getFocus(id, out) {
-      if (absentIds[id]) return null;
+      if (disposed || (own(absentIds, id) && absentIds[id])) return null;
+      var target = out || new THREE.Vector3();
       for (var i = 0; i < birds.length; i++) if (birds[i].id === id) {
-        root.updateMatrixWorld(true); return birds[i].body.getWorldPosition(out);
+        root.updateMatrixWorld(true); return birds[i].body.getWorldPosition(target);
       }
       for (var j = 0; j < sharedBirds.length; j++) if (sharedBirds[j].id === id) {
-        root.updateMatrixWorld(true); return sharedBirds[j].body.getWorldPosition(out);
+        root.updateMatrixWorld(true); return sharedBirds[j].body.getWorldPosition(target);
       }
       return null;
     }
     function dispose() {
-      if (disposed) return; disposed = true; scene.remove(root);
+      if (disposed) return; disposed = true;
+      if (root.parent) root.parent.remove(root);
+      else if (scene && typeof scene.remove === 'function') scene.remove(root);
       resources.forEach(function (resource) { resource.dispose(); });
+      resources.length = 0;
+      sharedPlumageWrapped.clear();
       sharedBirds.forEach(function(bird) { bird.model.dispose(); });
     }
     update(0);
@@ -1550,15 +1575,15 @@
     // then restores the caller's time. Guided updates hold no history.
     function guidedForageSpots(restoreTime) {
       if(disposed||mode!=='guided')return [];
-      var spots=[],times={};
+      var spots=[],times=Object.create(null);
       sharedBirds.forEach(function(bird){
-        var extra=RESIDENT_TUNING[bird.id];
+        var extra=own(RESIDENT_TUNING,bird.id)?RESIDENT_TUNING[bird.id]:null;
         times[bird.id]=[extra?extra.forage[0]:bird.id==='grouse'?10.1:bird.id==='blueJay'?10.4:8.1,38.2];
       });
       [0,1].forEach(function(slot){
         sharedBirds.forEach(function(bird){
           update(times[bird.id][slot]);
-          var diet=DIETS[bird.id];if(!diet)return;
+          var diet=own(DIETS,bird.id)?DIETS[bird.id]:null;if(!diet)return;
           var kind=Object.keys(diet).sort(function(a,b){return diet[b]-diet[a];})[0];
           var x=bird.root.position.x+Math.sin(bird.root.rotation.y)*.05,z=bird.root.position.z+Math.cos(bird.root.rotation.y)*.05;
           if(!spots.some(function(spot){return Math.hypot(spot.x-x,spot.z-z)<.12;}))spots.push({id:bird.id,kind:kind,x:x,z:z});
@@ -1568,7 +1593,7 @@
       return spots;
     }
     return { root: root, update: update, setMode: setMode, snapshot: snapshot, getFocus: getFocus, isShared: isShared, setExtraContactShadow: setExtraContactShadow,
-      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, setSeason: setSeason, isPresent: function(id){return !absentIds[id];}, setPredator: setPredator, mobbers: mobbers, guidedForageSpots: guidedForageSpots, dispose: dispose };
+      setFeedingStudy: setFeedingStudy, foodLevels: foodLevels, cueSong: cueSong, setWeather: setWeather, setSeason: setSeason, isPresent: function(id){return !(own(absentIds,id)&&absentIds[id]);}, setPredator: setPredator, mobbers: mobbers, guidedForageSpots: guidedForageSpots, dispose: dispose };
   }
   global.BirdLab3DWildlife = { create: create };
-}(window));
+}(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null)));

@@ -16,13 +16,14 @@
 // =============================================================================
 (function () {
   'use strict';
+  if (typeof window === 'undefined' || !window) return;
   if (window.AlloLangMatcher) { return; }
 
   // ─── Endonyms + common misspellings + variants → canonical display name ───
   // Endonym = what speakers call their own language. We accept both endonyms
   // and English names. New entries can be added without touching the matching
   // logic; just add to ALIASES.
-  const ALIASES = {
+  const ALIASES = Object.assign(Object.create(null), {
     // Spanish family
     'spanish': 'Spanish (Latin America)',
     'spanis': 'Spanish (Latin America)',
@@ -387,7 +388,7 @@
     // Sign languages (text descriptions, since UI strings)
     'asl': 'American Sign Language (ASL)',
     'american sign language': 'American Sign Language (ASL)'
-  };
+  });
   Object.freeze(ALIASES);
 
   // Manifest — populated at load time from /lang/manifest.json. Until then,
@@ -408,6 +409,12 @@
   function _normalize(s) {
     return _stripControl(s).slice(0, 160).toLowerCase().trim().replace(/[\s\-_]+/g, ' ').replace(/[^\p{L}\p{N}\s]/gu, '');
   }
+  const NORM_ALIASES = Object.create(null);
+  Object.keys(ALIASES).forEach((k) => {
+    const nk = _normalize(k);
+    if (nk && !NORM_ALIASES[nk]) NORM_ALIASES[nk] = ALIASES[k];
+  });
+  Object.freeze(NORM_ALIASES);
   function _isRemoteManifestBlocked() {
     try {
       return typeof window !== 'undefined' && (
@@ -451,7 +458,7 @@
   }
 
   async function _loadManifest() {
-    if (_isRemoteManifestBlocked()) return;
+    if (_isRemoteManifestBlocked() || typeof fetch !== 'function') return;
     if (_manifestReady) return _manifestReady;
     const pending = (async () => {
       const URLS = [
@@ -467,7 +474,14 @@
           if (ctrl) init.signal = ctrl.signal;
           const r = await fetch(u, init);
           if (!r || !r.ok) continue;
-          const m = typeof r.text === 'function' ? _parseManifestJson(await r.text()) : await r.json();
+          let m = null;
+          if (typeof r.text === 'function') {
+            m = _parseManifestJson(await r.text());
+          } else if (typeof r.json === 'function') {
+            const rawObj = await r.json();
+            const serialized = rawObj && typeof rawObj === 'object' ? JSON.stringify(rawObj) : '';
+            m = serialized && serialized.length <= MAX_MANIFEST_BYTES ? _parseManifestJson(serialized) : null;
+          }
           if (m && Array.isArray(m.available)) {
             const bySlug = Object.create(null);
             const cleanAvailable = [];
@@ -483,8 +497,10 @@
                 }
               }
             });
-            _MANIFEST = { available: cleanAvailable, by_slug: bySlug };
-            return;
+            if (cleanAvailable.length > 0) {
+              _MANIFEST = { available: cleanAvailable, by_slug: bySlug };
+              return;
+            }
           }
         } catch (_) {}
         finally {
@@ -511,6 +527,10 @@
       const display = ALIASES[norm];
       return { slug: _slugify(display), display, confidence: 1.0, source: 'alias-exact' };
     }
+    if (own.call(NORM_ALIASES, norm)) {
+      const display = NORM_ALIASES[norm];
+      return { slug: _slugify(display), display, confidence: 1.0, source: 'alias-exact' };
+    }
 
     // 2) Exact display-name match against the alias VALUES (so user typing
     //    "Spanish (Latin America)" works)
@@ -531,7 +551,7 @@
     // 4) Fuzzy: Levenshtein distance vs (alias keys + alias values + manifest displays).
     //    Threshold: similarity ≥ 0.7 (normalized by length). Returns the best.
     const candidates = new Set();
-    Object.keys(ALIASES).forEach((k) => candidates.add(k));
+    Object.keys(NORM_ALIASES).forEach((k) => candidates.add(k));
     Object.values(ALIASES).forEach((v) => candidates.add(_normalize(v)));
     Object.values(_MANIFEST.by_slug).forEach((e) => { if (e.display) candidates.add(_normalize(e.display)); });
 
@@ -549,17 +569,19 @@
     if (best && bestScore >= 0.7) {
       // Resolve to display name
       let display = null;
+      let slug = null;
       if (own.call(ALIASES, best)) display = ALIASES[best];
+      if (!display && own.call(NORM_ALIASES, best)) display = NORM_ALIASES[best];
       if (!display) {
         const matchVal = Object.values(ALIASES).find((v) => _normalize(v) === best);
         if (matchVal) display = matchVal;
       }
       if (!display) {
         const manEntry = Object.values(_MANIFEST.by_slug).find((e) => _normalize(e.display || '') === best);
-        if (manEntry) display = manEntry.display;
+        if (manEntry) { display = manEntry.display; slug = manEntry.slug; }
       }
       if (!display) display = best;
-      return { slug: _slugify(display), display, confidence: bestScore, source: 'fuzzy' };
+      return { slug: slug || _slugify(display), display, confidence: bestScore, source: 'fuzzy' };
     }
 
     // 5) Nothing matched — return null so the caller falls through to live

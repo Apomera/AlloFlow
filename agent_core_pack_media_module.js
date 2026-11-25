@@ -36,7 +36,13 @@
     }
     return out;
   }
-  function issue(code, path, message) { return { code: code, path: path.slice(0, 600), message: message.slice(0, 2000) }; }
+  function safeStr(v) {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function issue(code, path, message) { return { code: code, path: safeStr(path).slice(0, 600), message: safeStr(message).slice(0, 2000) }; }
   function appendIssue(items, entry) {
     if (items.length < MAX_DIAGNOSTICS - 1) items.push(entry);
     else if (items.length === MAX_DIAGNOSTICS - 1) items.push(issue('diagnostics-truncated', entry.path, 'The diagnostic limit was reached. Correct the reported issues and validate again; additional issues may remain.'));
@@ -222,7 +228,7 @@
     var cap = limits(options);
     try {
       if (typeof value !== 'string') throw ['invalid-image-value', 'Image must be an embedded raster data URL.'];
-      var comma = value.indexOf(','), header = comma < 0 ? '' : value.slice(0, comma);
+      var comma = value.indexOf(','), header = (comma < 0 || comma > 64) ? '' : value.slice(0, comma);
       var native = options && options.profile === 'native';
       if (!(native ? /^data:image\/(png|jpeg|webp|gif);base64$/i : /^data:image\/(png|jpeg|webp);base64$/i).test(header)) throw ['unsupported-image-source', native ? 'Use embedded PNG, JPEG, WebP, or native GIF data; remote, SVG, and other sources are unsupported.' : 'Use an embedded PNG, JPEG, or WebP data URL; remote, SVG, and other sources are unsupported.'];
       result.mimeType = header.slice(5, -7).toLowerCase();
@@ -370,17 +376,17 @@
     eachValidation((pack && Array.isArray(pack.history) ? pack.history : []), errors, function (resource, ri) {
       if (!object(resource) || !object(resource.data)) return;
       var data = resource.data, at = 'pack.history[' + ri + '].data';
-      if (resource.type === 'applied-challenge' && object(data.visual) && data.visual.reviewed !== undefined && typeof data.visual.reviewed !== 'boolean') fail('invalid-visual-review', at + '.visual.reviewed', 'The native illustration review flag must be boolean.');
+      if (resource.type === 'applied-challenge' && object(data.visual) && hasOwn.call(data.visual, 'reviewed') && data.visual.reviewed !== undefined && typeof data.visual.reviewed !== 'boolean') fail('invalid-visual-review', at + '.visual.reviewed', 'The native illustration review flag must be boolean.');
       if (resource.type === 'memory-aid' && Array.isArray(data.cards)) eachValidation(data.cards, errors, function (card, ci) {
         if (!object(card)) return;
         var cardPath = at + '.cards[' + ci + ']';
-        if (card.visualNeedsReview !== undefined && typeof card.visualNeedsReview !== 'boolean') fail('invalid-visual-review', cardPath + '.visualNeedsReview', 'The visual review flag must be boolean.');
-        if (card.visualReview !== undefined) {
+        if (hasOwn.call(card, 'visualNeedsReview') && card.visualNeedsReview !== undefined && typeof card.visualNeedsReview !== 'boolean') fail('invalid-visual-review', cardPath + '.visualNeedsReview', 'The visual review flag must be boolean.');
+        if (hasOwn.call(card, 'visualReview') && card.visualReview !== undefined) {
           var review = card.visualReview;
-          if (!object(review) || ['unreviewed', 'approved', 'needs-revision'].indexOf(review.status) === -1) fail('invalid-visual-review', cardPath + '.visualReview', 'Use a native visual review with an unreviewed, approved, or needs-revision status.');
+          if (!object(review) || !hasOwn.call(review, 'status') || ['unreviewed', 'approved', 'needs-revision'].indexOf(review.status) === -1) fail('invalid-visual-review', cardPath + '.visualReview', 'Use a native visual review with an unreviewed, approved, or needs-revision status.');
           else {
-            if (review.note !== undefined && (typeof review.note !== 'string' || review.note.length > 1000)) fail('invalid-visual-review', cardPath + '.visualReview.note', 'Visual review notes are text up to 1000 characters.');
-            if (review.reviewedAt !== undefined && (typeof review.reviewedAt !== 'string' || review.reviewedAt.length > 60)) fail('invalid-visual-review', cardPath + '.visualReview.reviewedAt', 'The review timestamp is a string up to 60 characters.');
+            if (hasOwn.call(review, 'note') && review.note !== undefined && (typeof review.note !== 'string' || review.note.length > 1000)) fail('invalid-visual-review', cardPath + '.visualReview.note', 'Visual review notes are text up to 1000 characters.');
+            if (hasOwn.call(review, 'reviewedAt') && review.reviewedAt !== undefined && (typeof review.reviewedAt !== 'string' || review.reviewedAt.length > 60)) fail('invalid-visual-review', cardPath + '.visualReview.reviewedAt', 'The review timestamp is a string up to 60 characters.');
           }
         }
       });
@@ -389,17 +395,18 @@
       eachValidation(panels, errors, function (panel, pi) {
         if (!object(panel)) return;
         var path = at + '.visualPlan.panels[' + pi + ']';
-        if (panel.frames !== undefined && !Array.isArray(panel.frames)) fail('invalid-animation-frames', path + '.frames', 'Native frames must be an array of embedded still-image strings.');
-        var frames = Array.isArray(panel.frames) ? panel.frames : [];
+        var rawFrames = hasOwn.call(panel, 'frames') ? panel.frames : undefined;
+        if (rawFrames !== undefined && !Array.isArray(rawFrames)) fail('invalid-animation-frames', path + '.frames', 'Native frames must be an array of embedded still-image strings.');
+        var frames = Array.isArray(rawFrames) ? rawFrames : [];
         eachValidation(frames, errors, function (frame, fi) { if (typeof frame !== 'string' || !frame.trim()) fail('invalid-animation-frame', path + '.frames[' + fi + ']', 'Every native animation frame must be a nonempty embedded still-image string.'); });
         if (frames.length > cap.maxAnimationFrames) fail('animation-budget-exceeded', path + '.frames', 'Animation exceeds the frame-count budget.');
-        if (frames.length || panel.type === 'process_animation') {
+        if (frames.length || (hasOwn.call(panel, 'type') && panel.type === 'process_animation')) {
           if (frames.length < 2) fail('invalid-animation-frames', path + '.frames', 'Provide at least two frames so native pause, reduced-motion, and frame stepping can work.');
-          if (typeof panel.imageUrl !== 'string' || !/^data:image\/gif;base64,/i.test(panel.imageUrl)) fail('missing-animation-playback', path + '.imageUrl', 'Native animation playback needs an encoded GIF plus its individual still frames.');
-          if (typeof panel.motionPrompt !== 'string' || !panel.motionPrompt.trim() || panel.motionPrompt.length > 2000) fail('invalid-motion-description', path + '.motionPrompt', 'Describe the motion in 1–2000 characters.');
-          if (!Array.isArray(panel.motionSteps) || panel.motionSteps.length !== frames.length - 1 || panel.motionSteps.some(function (step) { return typeof step !== 'string' || !step.trim() || step.length > 2000; })) fail('invalid-motion-steps', path + '.motionSteps', 'Describe each change after the first frame; provide one nonempty step per remaining frame.');
-          if (panel.fps !== undefined && !finite(panel.fps, 2, 24)) fail('invalid-animation-fps', path + '.fps', 'Native playback speed must be between 2 and 24 frames per second.');
-          ['frameWidth', 'frameHeight'].forEach(function (key) { if (panel[key] !== undefined && (!Number.isInteger(panel[key]) || !finite(panel[key], 1, cap.maxDimension))) fail('invalid-animation-dimensions', path + '.' + key, 'Frame dimensions must be positive integers within the raster dimension budget.'); });
+          if (!hasOwn.call(panel, 'imageUrl') || typeof panel.imageUrl !== 'string' || !/^data:image\/gif;base64,/i.test(panel.imageUrl)) fail('missing-animation-playback', path + '.imageUrl', 'Native animation playback needs an encoded GIF plus its individual still frames.');
+          if (!hasOwn.call(panel, 'motionPrompt') || typeof panel.motionPrompt !== 'string' || !panel.motionPrompt.trim() || panel.motionPrompt.length > 2000) fail('invalid-motion-description', path + '.motionPrompt', 'Describe the motion in 1–2000 characters.');
+          if (!hasOwn.call(panel, 'motionSteps') || !Array.isArray(panel.motionSteps) || panel.motionSteps.length !== frames.length - 1 || panel.motionSteps.some(function (step) { return typeof step !== 'string' || !step.trim() || step.length > 2000; })) fail('invalid-motion-steps', path + '.motionSteps', 'Describe each change after the first frame; provide one nonempty step per remaining frame.');
+          if (hasOwn.call(panel, 'fps') && panel.fps !== undefined && !finite(panel.fps, 2, 24)) fail('invalid-animation-fps', path + '.fps', 'Native playback speed must be between 2 and 24 frames per second.');
+          ['frameWidth', 'frameHeight'].forEach(function (key) { if (hasOwn.call(panel, key) && panel[key] !== undefined && (!Number.isInteger(panel[key]) || !finite(panel[key], 1, cap.maxDimension))) fail('invalid-animation-dimensions', path + '.' + key, 'Frame dimensions must be positive integers within the raster dimension budget.'); });
         }
       });
       if (data.annotations === undefined) return;
@@ -491,11 +498,14 @@
         stats.pixels += report.pixels;
         stats.animationFrames += slot.kind === 'frame' ? 1 : report.animated ? report.frames : 0;
       }
+      var ownerFrames = hasOwn.call(owner, 'frames') && Array.isArray(owner.frames) ? owner.frames : null;
       if (slot.stillOnly && report.animated) appendIssue(errors, issue('animated-frame-unsupported', slot.path, 'An animation frame or saved replacement must be a still raster.'));
-      if (report.animated && (slot.kind !== 'panel' || !Array.isArray(owner.frames) || owner.frames.length < 2)) appendIssue(errors, issue('animation-controls-required', slot.path, 'Animated GIFs belong in native visual panels with their individual frames for pause and reduced-motion controls.'));
-      if (slot.kind === 'panel' && report.frames && Array.isArray(owner.frames) && owner.frames.length) {
-        if (report.frames !== owner.frames.length) appendIssue(errors, issue('animation-frame-count-mismatch', slot.path, 'The encoded GIF and preserved animation frames must have the same frame count.'));
-        if ((owner.frameWidth !== undefined && owner.frameWidth !== report.width) || (owner.frameHeight !== undefined && owner.frameHeight !== report.height)) appendIssue(errors, issue('animation-canvas-mismatch', slot.path, 'Saved animation canvas dimensions must match the encoded GIF.'));
+      if (report.animated && (slot.kind !== 'panel' || !ownerFrames || ownerFrames.length < 2)) appendIssue(errors, issue('animation-controls-required', slot.path, 'Animated GIFs belong in native visual panels with their individual frames for pause and reduced-motion controls.'));
+      if (slot.kind === 'panel' && report.frames && ownerFrames && ownerFrames.length) {
+        if (report.frames !== ownerFrames.length) appendIssue(errors, issue('animation-frame-count-mismatch', slot.path, 'The encoded GIF and preserved animation frames must have the same frame count.'));
+        var ownFw = hasOwn.call(owner, 'frameWidth') ? owner.frameWidth : undefined;
+        var ownFh = hasOwn.call(owner, 'frameHeight') ? owner.frameHeight : undefined;
+        if ((ownFw !== undefined && ownFw !== report.width) || (ownFh !== undefined && ownFh !== report.height)) appendIssue(errors, issue('animation-canvas-mismatch', slot.path, 'Saved animation canvas dimensions must match the encoded GIF.'));
       }
       if (slot.skipDescription) return;
       var base = slot.descriptionPath || slot.path.slice(0, -f.image.length);
@@ -513,8 +523,11 @@
       if ((requiresHash || (hash !== undefined && hash !== '')) && (typeof describedImage !== 'string' || typeof hash !== 'string' || hash !== hashImage(describedImage))) appendIssue(errors, issue('stale-image-alt', base + f.hash, 'Description hash must match the image described by the native renderer.'));
       if (source !== undefined && ['vision', 'author', 'planning'].indexOf(source) === -1) appendIssue(errors, issue('invalid-image-alt-source', base + f.source, 'Alt source must be vision, author, or planning.'));
       if (!decorative && (!source || source === 'planning')) appendIssue(warnings, issue('image-description-review-required', base + (f.source || f.alt), 'Review this description against the actual image before distribution.'));
-      if (slot.kind === 'challenge' && owner.reviewed !== true) appendIssue(warnings, issue('native-visual-review-pending', slot.path, 'The native challenge keeps this image out of the learner view until its illustration and description are reviewed.'));
-      if (slot.kind === 'memory' && (owner.visualNeedsReview === true || !object(owner.visualReview) || owner.visualReview.status !== 'approved')) appendIssue(warnings, issue('native-visual-review-pending', slot.path, 'The memory cue retains its native visual review state; inspect it before using it for learner practice.'));
+      var challengeReviewed = hasOwn.call(owner, 'reviewed') ? owner.reviewed : undefined;
+      var memNeedsReview = hasOwn.call(owner, 'visualNeedsReview') ? owner.visualNeedsReview : undefined;
+      var memReview = hasOwn.call(owner, 'visualReview') ? owner.visualReview : undefined;
+      if (slot.kind === 'challenge' && challengeReviewed !== true) appendIssue(warnings, issue('native-visual-review-pending', slot.path, 'The native challenge keeps this image out of the learner view until its illustration and description are reviewed.'));
+      if (slot.kind === 'memory' && (memNeedsReview === true || !object(memReview) || !hasOwn.call(memReview, 'status') || memReview.status !== 'approved')) appendIssue(warnings, issue('native-visual-review-pending', slot.path, 'The memory cue retains its native visual review state; inspect it before using it for learner practice.'));
       if (slot.rendererDescription) appendIssue(warnings, issue('native-derived-image-description', slot.path, 'This native renderer uses its adjacent name/title or decorative treatment; review the rendered artwork and surrounding text.'));
     });
     stats.uniqueImages = cache.size;
@@ -523,29 +536,40 @@
     if (stats.animationFrames > cap.maxTotalAnimationFrames) appendIssue(errors, issue('pack-animation-budget-exceeded', 'pack.history', 'Combined encoded animation frames and preserved still frames exceed the pack animation budget.'));
     var visited = new Set();
     var scanNodes = 0;
+    var budgetReported = false;
     var MAX_SCAN_NODES = 100000;
     var allImageKeys = ['image', 'imageUrl', 'iconUrl', 'avatarUrl', 'coverImage', 'portrait', 'sceneImage', 'sceneImagePreview', 'visualImage', 'frayerExampleImage'];
+    function reportBudget(atPath) {
+      if (!budgetReported) {
+        budgetReported = true;
+        appendIssue(errors, issue('media-payload-too-large', atPath, 'Media payload exceeds node traversal budget.'));
+      }
+    }
     function scan(value, path, depth) {
-      if (errors.length >= MAX_DIAGNOSTICS) return;
-      if (++scanNodes > MAX_SCAN_NODES) { appendIssue(errors, issue('media-payload-too-large', path, 'Media payload exceeds node traversal budget.')); return; }
+      if (budgetReported || errors.length >= MAX_DIAGNOSTICS) return;
+      if (++scanNodes > MAX_SCAN_NODES) { reportBudget(path); return; }
       if (typeof value === 'string') {
         if (/data:image\//i.test(value) && !paths.has(path)) appendIssue(errors, issue('unsupported-image-placement', path, 'Embed raster images only in supported native image fields.'));
         return;
       }
       if (!value || typeof value !== 'object') return;
+      if (Array.isArray(value) && value.length > MAX_SCAN_NODES) { reportBudget(path); return; }
       if (depth > cap.maxDepth) { appendIssue(errors, issue('media-payload-too-deep', path, 'Media payload nesting exceeds the supported limit.')); return; }
       if (visited.has(value)) { appendIssue(errors, issue('cyclic-media-payload', path, 'Pack must be acyclic JSON data.')); return; }
       visited.add(value);
       var isImageOverridesMap = /\.annotations\.imageOverrides$/.test(path) && !Array.isArray(value);
       var isFramesList = /\.visualPlan\.panels\[\d+\]\.frames$/.test(path) && Array.isArray(value);
       eachValidation(Object.keys(value), errors, function (key) {
-        if (++scanNodes > MAX_SCAN_NODES) { appendIssue(errors, issue('media-payload-too-large', path, 'Media payload exceeds node traversal budget.')); return; }
+        if (budgetReported) return;
+        if (++scanNodes > MAX_SCAN_NODES) { reportBudget(path); return; }
         var next = Array.isArray(value) ? path + '[' + key + ']' : path + '.' + key;
+        var child;
+        try { child = value[key]; } catch (_) { return; }
         var isImageSlotKey = allImageKeys.indexOf(key) !== -1 || isImageOverridesMap || isFramesList;
-        if (!paths.has(next) && isImageSlotKey && typeof value[key] === 'string' && value[key] && !/data:image\//i.test(value[key])) {
+        if (!paths.has(next) && isImageSlotKey && typeof child === 'string' && child && !/data:image\//i.test(child)) {
           appendIssue(errors, issue('unsupported-image-source', next, 'Native images must use bounded embedded raster data; remote references are not fetched.'));
         }
-        scan(value[key], next, depth + 1);
+        scan(child, next, depth + 1);
       });
       visited.delete(value);
     }
@@ -554,8 +578,11 @@
     if (slots.length) appendIssue(warnings, issue('image-visual-review-required', 'pack.history', 'Container and accessibility metadata checks do not decode every pixel or verify the illustration; inspect the rendered images and descriptions.'));
     return { ok: errors.length === 0, errors: errors, warnings: warnings, stats: stats };
   }
-  var api = { LIMITS: LIMITS, IMAGE_FIELDS: IMAGE_FIELDS, hashImage: hashImage,
-    inspectDataImage: inspectDataImage, getImageSlots: getImageSlots, validateNativeImageState: validateNativeImageState, validatePackMedia: validatePackMedia };
-  if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.AgentCorePackMedia = api; }
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  var api = Object.freeze({ LIMITS: LIMITS, IMAGE_FIELDS: IMAGE_FIELDS, hashImage: hashImage,
+    inspectDataImage: inspectDataImage, getImageSlots: getImageSlots, validateNativeImageState: validateNativeImageState, validatePackMedia: validatePackMedia });
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
+    window.AlloModules.AgentCorePackMedia = api;
+  }
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
 })();

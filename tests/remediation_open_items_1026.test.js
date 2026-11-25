@@ -59,7 +59,9 @@ describe('a rebuilt table claims its own picture', () => {
 function rendererFigureOpen(alt) {
   const code = sliceBetween(RENDERER, 'const _shortAlt = typeof block.alt', "+ `<button type=\"button\" contenteditable=\"false\"", { file: 'doc_builder_renderer_source.jsx', label: 'renderer figure open' })
     .replace(/\n\s*$/, '');
-  const fn = new Function('block', '_imgId', '_attr', code.replace(/return `/, 'return `') + ';');
+  // The opening tag now also carries the placeholder description (_imgDesc), declared just above the slice.
+  expect(RENDERER).toContain("const _imgDesc = (block.description || block.alt || 'Image');");
+  const fn = new Function('block', '_imgId', '_attr', "const _imgDesc = (block.description || block.alt || 'Image');\n" + code.replace(/return `/, 'return `') + ';');
   return fn({ type: 'image', alt, description: 'Decorative clip art of a dollar sign.' }, 'pdf-img-ph-a', (v) => String(v).replace(/"/g, '&quot;'));
 }
 const decCode = sliceBetween(PIPE, '            if (/^<figure\\b[^>]*\\sdata-allo-decorative="true"/i.test(match)) {', '+ _carriedOut;\n            }', { ...F, includeEnd: true, label: 'decorative slot' });
@@ -367,7 +369,8 @@ describe('interleaved exact linking', () => {
     expect(PIPE.includes('{ repeatedTextForms: _repeatedTextForms, splitFont: _splitFont, keepFirstArtifacts: _keepFirstArtifacts, releaseArtifactProse: _releaseArtifactProse, crops: _cropsByPage.get(pi + 1) || null, proseFormFirst: _proseFormFirst }')).toBe(true);
   });
   it('AI-made chart data and image transcripts are left out of the tagged PDF', () => {
-    expect(PIPE.includes("if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext')) {")).toBe(true);
+    // (math source blocks joined the list on 2026-11-19)
+    expect(PIPE.includes("if (el.closest && el.closest('details.allo-chart-data, details.allo-imagetext, details.allo-math-source')) {")).toBe(true);
   });
   it('the tagged-PDF builder runs it before the near-match pass, for paragraphs/headings with a key of 12+ characters', () => {
     const at = PIPE.indexOf("const done = _alloInterleavedExactRun(blockStream, _ilFree, tKey, lf.role === 'LBody');");
@@ -785,11 +788,14 @@ describe('tagged PDF: repeated labels and link placement', () => {
     expect(PIPE.includes("const _subLine = /^\\d{1,3}[a-z][a-z]{3,}/.test(tKey) ? tKey.replace(/^\\d{1,3}/, '') : null;")).toBe(true);
     expect(PIPE.includes('|| (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null)')).toBe(true);
     // (2026-11-03) then a named link's printed address (behaviour: e2e pdf_tagged_rules_and_named_links)
-    expect(PIPE.includes('|| (_urlRun && (_urlRun[_urlRun.length - 1] < hi || (blockStream[hi] && String(blockStream[hi].pageRef) === String(blockStream[_urlRun[0]].pageRef))) ? { start: _urlRun[0], end: _urlRun[_urlRun.length - 1] } : null);')).toBe(true);
+    // (2026-11-19) the address may come from the link href too, so the same in-gap / same-page rule runs per candidate key
+    expect(PIPE.includes('if (r && (r[r.length - 1] < hi || (blockStream[hi] && String(blockStream[hi].pageRef) === String(blockStream[r[0]].pageRef)))) {')).toBe(true);
+    expect(PIPE.includes('|| (_subLine ? _alloBetweenNeighboursRun(blockStream, _bnFree, _subLine, lo, hi, false) : null)\n                // (2026-11-05) Or on the next leaf\'s page: a page may draw its footer before the address printed above it.\n                || _urlHit;')).toBe(true);
   });
   it('child-find: exact printed text wins inside the reworded pass; a footer matching only claimed text is off the page', () => {
     // exact-first over ADJACENT free blocks, starting after the last linked leaf in the forward rounds
-    expect(PIPE.includes("const _exact = _exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null;")).toBe(true);
+    // (2026-11-19) same exact-first run, now also tried with an alternate key
+    expect(PIPE.includes("const _exact = (_exKey.length >= 12 ? _alloAdjacentExactRun(blockStream, (k) => !consumed.has(String(blockStream[k].bRef)), _exKey, lf.role === 'LBody', globalRound ? -1 : prevEnd, 6) : null)")).toBe(true);
     // words printed nowhere -> the rest counts only in unclaimed text
     // (2026-11-04) part of the one "printed" test, which must also hold near the leaf (e2e pdf_vector_chart_and_picture_table_figures)
     expect(PIPE.includes('|| (lw.length === 1 ? uni.has(lw[0]) : (missing ? longestRunFree(lw) : longestRun(lw)) >= need)')).toBe(true);

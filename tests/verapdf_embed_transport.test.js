@@ -74,7 +74,8 @@ describe('anti-drift: the validator page is mode-aware for the visible popup fal
   });
   it('shows progress + the verdict in-window when AlloFlow sends bytes', () => {
     expect(page).toMatch(/setStatus\('⏳ Validating the PDF AlloFlow sent…'\)/);
-    expect(page).toMatch(/render\(r\);[\s\S]{0,200}result sent back to AlloFlow/);
+    // Window widened (11-23): a read-out preview offer now sits between the verdict and the status line.
+    expect(page).toMatch(/render\(r\);[\s\S]{0,400}result sent back to AlloFlow/);
   });
   it('still supports standalone use (the file picker path is intact)', () => {
     expect(page).toMatch(/\$\('pick'\)\.disabled = false;/);

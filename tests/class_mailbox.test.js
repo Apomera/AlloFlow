@@ -763,7 +763,8 @@ describe('ANTI wiring pins', () => {
         expect(sharedActivitySource).toContain('setTerm(current => current || result.own.text)');
         // The poll loop's dependency list may grow (scopeToken joined it), but the
         // typed term must never be in it, or every keystroke restarts the loop.
-        const pollDeps = (/\[activityId, activityScope, [^\]]*\]\);/.exec(sharedActivitySource) || [''])[0];
+        // activityMeta.title (used in the error copy) now sits between the first two names.
+        const pollDeps = (/\[activityId, (?:activityMeta\.title, )?activityScope, [^\]]*\]\);/.exec(sharedActivitySource) || [''])[0];
         const pollDepNames = pollDeps.slice(1, -3).split(',').map(name => name.trim());
         expect(pollDepNames).toEqual(expect.arrayContaining(['activityId', 'applySharedActivitySummary', 'ensureCredential', 'mailboxUrl', 'packId']));
         expect(pollDepNames).not.toContain('term');

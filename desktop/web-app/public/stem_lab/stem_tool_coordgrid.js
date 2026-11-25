@@ -1240,6 +1240,12 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-coordgrid-hc-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"coordinate\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(217, 249, 157)\"],[style*=\"background-color: rgb(217, 249, 157)\"],[style*=\"background: rgba(255, 255, 255, 0.5)\"],[style*=\"background-color: rgba(255, 255, 255, 0.5)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] :is(.allo-cg-bg-explore,.allo-cg-bg-quadrants,.allo-cg-bg-challenges,.allo-cg-bg-maps):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(224, 242, 254)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] [style]:is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(109, 40, 217)\"],[style*=\"; color: rgb(109, 40, 217)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(124, 58, 237)\"],[style*=\"; color: rgb(124, 58, 237)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(147, 51, 234)\"],[style*=\"; color: rgb(147, 51, 234)\"],[style^=\"color: rgb(4, 120, 87)\"],[style*=\"; color: rgb(4, 120, 87)\"],[style^=\"color: rgb(14, 116, 144)\"],[style*=\"; color: rgb(14, 116, 144)\"],[style^=\"color: rgb(109, 40, 217)\"],[style*=\"; color: rgb(109, 40, 217)\"],[style^=\"color: rgb(180, 83, 9)\"],[style*=\"; color: rgb(180, 83, 9)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(217, 249, 157)\"],[style*=\"background-color: rgb(217, 249, 157)\"],[style*=\"background: rgba(255, 255, 255, 0.5)\"],[style*=\"background-color: rgba(255, 255, 255, 0.5)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(245, 243, 255)\"],[style*=\"background-color: rgb(245, 243, 255)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(99, 102, 241)\"],[style*=\"background-color: rgb(99, 102, 241)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(22, 163, 74)\"],[style*=\"background-color: rgb(22, 163, 74)\"],[style*=\"background: rgb(168, 85, 247)\"],[style*=\"background-color: rgb(168, 85, 247)\"],[style*=\"background: rgb(8, 145, 178)\"],[style*=\"background-color: rgb(8, 145, 178)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(160, 130, 109)\"],[style*=\"background-color: rgb(160, 130, 109)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] button[class*=\"bg-gradient-to-\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"coordinate\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-coordgrid-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-coordgrid-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"coordinate\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"coordinate\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end WCAG 1.4.3 high contrast
   (function() {
@@ -1291,7 +1297,9 @@ window.StemLab = window.StemLab || {
       'svg.allo-cg-grid:focus-visible { outline: 3px solid rgba(8,145,178,0.55); outline-offset: 2px; border-radius: 4px; }',
       '.allo-cg-app:focus { outline: 3px solid #c2410c; outline-offset: 3px; }',
       '.allo-cg-app:focus:not(:focus-visible) { outline: none; }',
-      'rect.allo-cg-sq:focus { outline: none; stroke: #1e3a8a; stroke-width: 4px; }',
+      'rect.allo-cg-sq:focus:not(:focus-visible) { outline: none; }',
+      'rect.allo-cg-sq:focus { stroke: #1e3a8a; stroke-width: 4px; }',
+      'rect.allo-cg-sq:focus-visible { outline: 2px solid transparent; stroke: #1e3a8a; stroke-width: 4px; }',
       '@keyframes allo-cg-walk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }',
       '@keyframes allo-cg-walk-show { from { opacity: 0; } to { opacity: 1; } }',
       '@keyframes allo-cg-drop-ripple { 0% { opacity: 0.78; transform: scale(0.55); stroke-width: 2.8; } 100% { opacity: 0; transform: scale(2.35); stroke-width: 0.6; } }',
@@ -3886,24 +3894,24 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
           h('div', { className: 'flex items-center justify-between' },
             h('h4', { className: 'text-sm font-bold text-sky-800' }, t('stem.coordgrid.ai_coordinate_tutor', '\uD83E\uDD16 AI Coordinate Tutor')),
-            h('button', { onClick: function() { updCG({ showAITutor: false }); }, 'aria-label': t('stem.coordgrid.close_ai_tutor', 'Close the AI tutor'), style: { minWidth: 44, minHeight: 44 }, className: 'text-sky-800 hover:text-sky-900 text-lg font-bold' }, '\u00D7')
+            h('button', { type: 'button', onClick: function() { updCG({ showAITutor: false }); }, 'aria-label': t('stem.coordgrid.close_ai_tutor', 'Close the AI tutor'), style: { minWidth: 44, minHeight: 44 }, className: 'text-sky-800 hover:text-sky-900 text-lg font-bold' }, '\u00D7')
           ),
           h('div', { className: 'flex gap-2' },
             h('input', { 'aria-label': t('stem.coordgrid.ai_question_label', 'Ask the coordinate tutor a question'),
               type: 'text', value: aiQuestion,
               onChange: function(e) { updCG({ aiQuestion: e.target.value }); },
-              onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
+              onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
               placeholder: t('stem.coordgrid.ask_about_coordinates', 'Ask about coordinates...'),
               className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
             }),
-            h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
+            h('button', { type: 'button', onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
               className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50'
             }, aiLoading ? t('stem.coordgrid.ai_thinking', 'Thinking') : t('stem.coordgrid.ai_ask', 'Ask'))
           ),
           h('div', { className: 'flex flex-wrap gap-1.5' },
             [t('stem.coordgrid.ai_q_slope', 'What is slope?'), t('stem.coordgrid.ai_q_distance', 'How do I find distance?'), t('stem.coordgrid.ai_q_midpoint', 'What is a midpoint?'), t('stem.coordgrid.ai_q_quadrants', 'What are quadrants?')].map(function(q) {
               return h('button', {
-                key: q, onClick: function() { updCG({ aiQuestion: q }); },
+                key: q, type: 'button', onClick: function() { updCG({ aiQuestion: q }); },
                 className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
@@ -4092,7 +4100,7 @@ window.StemLab = window.StemLab || {
             [quadrants[0], quadrants[1], quadrants[2], quadrants[3]].map(function(q) {
               var active = qtFocusedQuad === q.id;
               return h('button', {
-                key: 'qcard-' + q.id,
+                key: 'qcard-' + q.id, type: 'button',
                 onClick: function() {
                   sfxClick();
                   updCG({ qtFocusedQuad: active ? null : q.id, qtPointX: q.sample.x, qtPointY: q.sample.y, qtWalkPhase: 0 });
@@ -4154,7 +4162,7 @@ window.StemLab = window.StemLab || {
                 className: 'w-16 px-2 py-1 border border-purple-500 rounded text-center font-mono bg-white text-slate-900'
               }),
               h('span', { className: 'text-[0.6875rem] text-purple-700 ml-1 font-bold' }, quadWhere(qtPointX, qtPointY)),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: doWalk,
                 'aria-label': t('stem.coordgrid.animate_walk_from_origin_to_this_point', 'Animate walk from origin to this point'),
                 className: 'ml-auto px-3 py-1 bg-purple-700 text-white text-xs font-bold rounded hover:bg-purple-800 transition-all'
@@ -4494,7 +4502,7 @@ window.StemLab = window.StemLab || {
             !nameChallengeOpen && h('div', { className: 'flex flex-wrap gap-1 text-[0.6875rem]' },
               h('span', { className: 'font-bold text-emerald-800 self-center mr-1' }, t('stem.coordgrid.chess_try', 'Try:')),
               ['a1','e4','h8','d5','g2','b6'].map(function(s) {
-                return h('button', { key: 'cspre-' + s,
+                return h('button', { key: 'cspre-' + s, type: 'button',
                   onClick: function() { activateSquare(s); },
                   style: { minHeight: 32, minWidth: 40 },
                   className: 'px-2 py-0.5 rounded bg-white text-emerald-800 border border-emerald-600 font-mono hover:bg-emerald-50'
@@ -4515,7 +4523,7 @@ window.StemLab = window.StemLab || {
                   fill(t('stem.coordgrid.practice_tally', '{n} solved, streak {s}'), { n: chessSolved, s: chessChallStreak })
                 )
               ),
-              chessPracticeOn && !chessChallenge && h('button', {
+              chessPracticeOn && !chessChallenge && h('button', { type: 'button',
                 onClick: newChessChallenge,
                 className: 'w-full py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
               }, t('stem.coordgrid.start_a_challenge', '▶ Start a challenge')),
@@ -4530,13 +4538,13 @@ window.StemLab = window.StemLab || {
                 chessChallenge.type === 'name' && !chessFeedback && h('div', { className: 'flex items-center gap-2' },
                   h('input', { type: 'text', value: chessChallengeInput, maxLength: 2,
                     onChange: function(e) { updCG({ chessChallengeInput: e.target.value.toLowerCase() }); },
-                    onKeyDown: function(e) { if (e.key === 'Enter') submitChessName(); },
+                    onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') submitChessName(); },
                     placeholder: t('stem.coordgrid.e_g_f6', 'e.g. f6'),
                     'aria-label': t('stem.coordgrid.type_the_chess_notation_for_the_highli', 'Type the chess notation for the highlighted square'),
                     className: 'flex-1 px-3 py-1.5 border-2 border-amber-700 rounded-lg text-sm font-mono uppercase text-center',
                     style: { minHeight: 44 }
                   }),
-                  h('button', { onClick: submitChessName, style: { minHeight: 44 },
+                  h('button', { type: 'button', onClick: submitChessName, style: { minHeight: 44 },
                     className: 'px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'
                   }, t('stem.coordgrid.check', '✔ Check'))
                 ),
@@ -4547,7 +4555,7 @@ window.StemLab = window.StemLab || {
                   updCG({ chessFeedback: Object.assign({}, chessFeedback, { msg: am, revealed: true }), chessSelected: chessChallenge.target });
                   say(am);
                 }, 'chess-reveal'),
-                chessFeedback && h('button', { onClick: newChessChallenge, style: { minHeight: 44 },
+                chessFeedback && h('button', { type: 'button', onClick: newChessChallenge, style: { minHeight: 44 },
                   className: 'text-xs font-bold text-amber-800 hover:underline'
                 }, t('stem.coordgrid.next_challenge', '➡ Next challenge'))
               ),
@@ -4612,7 +4620,7 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-200 text-center' },
                 h('p', { className: 'text-sm font-bold text-emerald-800 mb-2' }, t('stem.coordgrid.ready_to_play', '⚓ Ready to play?')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: startBattleship, style: { minHeight: 44 },
                   className: 'px-4 py-2 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-800 shadow-md transition-all'
                 }, t('stem.coordgrid.start_new_game', '▶ Start new game'))
@@ -4763,7 +4771,7 @@ window.StemLab = window.StemLab || {
                 h('b', {}, t('stem.coordgrid.call_coordinates_to_find_the_ships', 'Call coordinates to find the ships. ')),
                 t('stem.coordgrid.click_any_cell_to_fire_hit_miss_a_ship', 'Click any cell to fire. 💥 = hit, · = miss. A ship is sunk when all its cells are hit.')
               ),
-              h('button', { onClick: startBattleship, style: { minHeight: 44 },
+              h('button', { type: 'button', onClick: startBattleship, style: { minHeight: 44 },
                 className: 'px-3 py-1.5 bg-white text-emerald-800 border border-emerald-600 text-xs font-bold rounded hover:bg-emerald-50'
               }, t('stem.coordgrid.new_game', '🔄 New game'))
             ),
@@ -5069,11 +5077,11 @@ window.StemLab = window.StemLab || {
             h('div', { role: 'group', 'aria-label': t('stem.coordgrid.world_typed_group', 'Place a pin by typing coordinates'), className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200 flex flex-wrap items-end gap-2' },
               h('label', { className: 'flex flex-col text-xs font-bold text-emerald-900' }, t('stem.coordgrid.latitude', 'Latitude'),
                 h('input', { type: 'text', inputMode: 'decimal', value: _cg.worldTypedLat == null ? '' : String(_cg.worldTypedLat), placeholder: '43.7',
-                  onChange: function (e) { updCG({ worldTypedLat: e.target.value }); }, onKeyDown: function (e) { if (e.key === 'Enter') placeTyped(); },
+                  onChange: function (e) { updCG({ worldTypedLat: e.target.value }); }, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') placeTyped(); },
                   className: 'w-24 px-2 py-1 border border-emerald-600 rounded font-mono bg-white text-slate-900', style: { minHeight: 44 } })),
               h('label', { className: 'flex flex-col text-xs font-bold text-emerald-900' }, t('stem.coordgrid.longitude', 'Longitude'),
                 h('input', { type: 'text', inputMode: 'decimal', value: _cg.worldTypedLon == null ? '' : String(_cg.worldTypedLon), placeholder: '-70.3',
-                  onChange: function (e) { updCG({ worldTypedLon: e.target.value }); }, onKeyDown: function (e) { if (e.key === 'Enter') placeTyped(); },
+                  onChange: function (e) { updCG({ worldTypedLon: e.target.value }); }, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') placeTyped(); },
                   className: 'w-24 px-2 py-1 border border-emerald-600 rounded font-mono bg-white text-slate-900', style: { minHeight: 44 } })),
               h('button', { type: 'button', onClick: placeTyped, style: { minHeight: 44 },
                 className: 'px-3 py-1.5 bg-emerald-700 text-white text-sm font-bold rounded-lg hover:bg-emerald-800' },
@@ -5101,7 +5109,7 @@ window.StemLab = window.StemLab || {
             !worldOpen && h('div', { className: 'flex flex-wrap gap-1' },
               h('span', { className: 'text-[0.6875rem] font-bold text-emerald-800 self-center mr-1' }, t('stem.coordgrid.world_cities', 'Cities:')),
               cities.map(function(c) {
-                return h('button', { key: 'wcb-' + c.id, 'aria-pressed': c.id === worldCity, style: { minHeight: 32 },
+                return h('button', { key: 'wcb-' + c.id, type: 'button', 'aria-pressed': c.id === worldCity, style: { minHeight: 32 },
                   onClick: function() { sfxClick(); updCG({ worldCity: c.id, worldClickLat: null, worldClickLon: null }); say(fill(t('stem.coordgrid.world_city_sr', '{city}: latitude {lat}, longitude {lon}.'), { city: c.name, lat: fmt(c.lat), lon: fmt(c.lon) })); },
                   className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold transition-all ' +
                     (c.id === worldCity ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-800 border border-emerald-600 hover:bg-emerald-50')
@@ -5125,7 +5133,7 @@ window.StemLab = window.StemLab || {
                   fill(t('stem.coordgrid.practice_tally', '{n} solved, streak {s}'), { n: worldSolved, s: worldChallStreak })
                 )
               ),
-              worldPracticeOn && !worldChallenge && h('button', {
+              worldPracticeOn && !worldChallenge && h('button', { type: 'button',
                 onClick: newWorldChallenge,
                 className: 'w-full py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-lg text-sm hover:from-amber-700 hover:to-orange-700 transition-all shadow-md'
               }, t('stem.coordgrid.start_a_challenge_2', '▶ Start a challenge')),
@@ -5143,7 +5151,7 @@ window.StemLab = window.StemLab || {
                   updCG({ worldFeedback: Object.assign({}, worldFeedback, { msg: am, revealed: true }), worldCity: worldChallenge.cityId || worldCity });
                   say(am);
                 }, 'world-reveal'),
-                worldFeedback && h('button', { onClick: newWorldChallenge, style: { minHeight: 44 },
+                worldFeedback && h('button', { type: 'button', onClick: newWorldChallenge, style: { minHeight: 44 },
                   className: 'text-xs font-bold text-amber-800 hover:underline'
                 }, t('stem.coordgrid.next_place', '➡ Next place'))
               ),
@@ -5165,6 +5173,7 @@ window.StemLab = window.StemLab || {
         ];
 
         var moveMapScenario = function(event, index) {
+          if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
           var next = index;
           if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % scenarios.length;
           else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + scenarios.length) % scenarios.length;
@@ -5186,7 +5195,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-200', role: 'tablist', 'aria-label': t('stem.coordgrid.real_world_coordinate_scenarios', 'Real-world coordinate scenarios') },
             scenarios.map(function(s, index) {
               return h('button', {
-                key: 'mscen-' + s.id,
+                key: 'mscen-' + s.id, type: 'button',
                 id: 'coordinate-map-tab-' + s.id,
                 onClick: function() { sfxClick(); updCG({ mapScenario: s.id }); },
                 onKeyDown: function(event) { moveMapScenario(event, index); },
@@ -5438,7 +5447,7 @@ window.StemLab = window.StemLab || {
         var o = opts || {};
         return h('label', { key: o.key, style: { display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 700, color: GP.ink } }, label,
           h('input', { type: 'text', inputMode: o.decimal ? 'decimal' : 'numeric', 'aria-label': o.aria || label, 'aria-describedby': o.describedBy, value: value == null ? '' : String(value), disabled: !!o.disabled,
-            onChange: function (e) { onChange(e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter' && !e.repeat && o.onEnter) o.onEnter(); }, style: Object.assign({}, inputStyle, o.wide ? { width: '8rem' } : {}) }));
+            onChange: function (e) { onChange(e.target.value); }, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && !e.repeat && o.onEnter) o.onEnter(); }, style: Object.assign({}, inputStyle, o.wide ? { width: '8rem' } : {}) }));
       };
       var feedbackP = function (fbx, id) {
         return fbx && fbx.msg ? h('p', { id: id, tabIndex: -1, 'data-coordgrid-feedback': fbx.correct ? 'correct' : 'wrong', style: { margin: '8px 0 0', fontWeight: 700, fontSize: 14, color: fbx.correct ? GP.good : (fbx.correct === null ? GP.ink : GP.bad) } }, fbx.msg) : null;
@@ -6072,7 +6081,7 @@ window.StemLab = window.StemLab || {
             return h('td', { style: { padding: '2px 4px' } }, h('input', { type: 'text', inputMode: 'numeric', value: ptVals[which + i] == null ? '' : String(ptVals[which + i]), disabled: !!tk.done,
               'aria-label': fill(which === 'a' ? t('stem.coordgrid.pat_a_term', 'Pattern A, term {n}') : t('stem.coordgrid.pat_b_term', 'Pattern B, term {n}'), { n: i }),
               onChange: function (e) { var nv = Object.assign({}, ptVals); nv[which + i] = e.target.value; updCG({ ptFb: Object.assign({}, ptFb, { vals: nv, msg: null }) }); },
-              onKeyDown: function (e) { if (e.key === 'Enter' && !e.repeat) checkPtFill(); }, style: Object.assign({}, inputStyle, { width: '4.5rem' }) }));
+              onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && !e.repeat) checkPtFill(); }, style: Object.assign({}, inputStyle, { width: '4.5rem' }) }));
           };
           stageBody = h('div', null,
             h('table', { 'data-coordgrid-pattern-table': 'true', style: { borderCollapse: 'collapse', fontSize: 14 } },
@@ -6400,6 +6409,7 @@ window.StemLab = window.StemLab || {
       var activeCoordinateTab = coordinateTabs.filter(function(tab) { return tab.id === cgTab; })[0] || coordinateTabs[0];
       var coordTabLabel = activeCoordinateTab.label;
       var moveCoordinateTab = function(event, index) {
+          if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         var next = index;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % coordinateTabs.length;
         else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + coordinateTabs.length) % coordinateTabs.length;
@@ -6512,7 +6522,7 @@ window.StemLab = window.StemLab || {
         } else if (tp === 'polygon') {
           body = h('div', { className: 'flex gap-2 items-end flex-wrap' },
             h('label', { style: { display: 'flex', flexDirection: 'column', fontSize: 12, fontWeight: 700, color: GP.ink } }, gridChallenge.ask === 'area' ? t('stem.coordgrid.area_units', 'Area (square units)') : t('stem.coordgrid.perimeter_units', 'Perimeter (units)'),
-              h('input', { type: 'text', inputMode: 'decimal', 'aria-describedby': 'coordgrid-task-prompt', 'aria-label': t('stem.coordgrid.your_answer', 'Your answer'), value: fb.ansNum == null ? '' : String(fb.ansNum), disabled: inputsOff, onChange: function (e) { setFb({ ansNum: e.target.value }); }, onKeyDown: function (e) { if (e.key === 'Enter' && !e.repeat) checkGrid(); }, style: inputStyle })),
+              h('input', { type: 'text', inputMode: 'decimal', 'aria-describedby': 'coordgrid-task-prompt', 'aria-label': t('stem.coordgrid.your_answer', 'Your answer'), value: fb.ansNum == null ? '' : String(fb.ansNum), disabled: inputsOff, onChange: function (e) { setFb({ ansNum: e.target.value }); }, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && !e.repeat) checkGrid(); }, style: inputStyle })),
             checkBtn('ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800 disabled:opacity-50'));
         } else if (tp === 'slope') {
           var riseRunFilled = taskHint >= 2;
@@ -6833,7 +6843,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-sm font-bold text-indigo-800 font-mono', 'aria-hidden': 'true' }, t('stem.coordgrid.y', 'y =')),
                 h('input', { type: 'text', value: funcInput,
                   onChange: function(e) { updCG({ funcInput: e.target.value }); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') addFunc(funcInput); },
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') addFunc(funcInput); },
                   placeholder: t('stem.coordgrid.e_g_2x_1_x_2_0_5x_3', 'e.g. 2x+1, x^2, -0.5x+3'),
                   'aria-label': t('stem.coordgrid.function_expression_in_x', 'Function expression in x'),
                   style: { minHeight: 44 },
@@ -6937,7 +6947,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'min-w-0' },
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
-                    h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/25 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', style: { minWidth: 40, minHeight: 40 }, 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                    h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/25 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', style: { minWidth: 40, minHeight: 40 }, 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
                     h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.16em]', style: isContrast ? { backgroundColor: '#000000', color: '#ffff00', border: '1px solid #ffff00' } : { backgroundColor: '#0c4a6e', color: '#cffafe', border: '1px solid rgba(165, 243, 252, 0.35)' } }, t('stem.coordgrid.studio_kicker', 'Spatial reasoning studio')),
                     h('span', { className: 'rounded-full px-2.5 py-1 text-[0.625rem] font-bold uppercase tracking-wider', style: isContrast ? { backgroundColor: '#000000', color: '#ffffff', border: '1px solid #ffffff' } : { backgroundColor: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(255, 255, 255, 0.22)' } }, t('stem.coordgrid.subject_badge', 'Math · Geometry'))
                   ),
@@ -6964,7 +6974,7 @@ window.StemLab = window.StemLab || {
             streak > 0 && h('span', { className: 'text-xs font-bold', style: { color: GP.mystery } }, fill(t('stem.coordgrid.streak_now', '\uD83D\uDD25 Streak {n}'), { n: streak })),
             bestStreak > 0 && h('span', { className: 'text-[0.6875rem]', style: { color: GP.muted } }, fill(t('stem.coordgrid.best_streak', 'Best: {n}'), { n: bestStreak })),
             h('span', { className: 'text-xs font-bold', style: { color: isContrast || isDark ? '#86efac' : '#047857' } }, fill(t('stem.coordgrid.score_of', '{c} of {n} correct'), { c: exploreScore.correct, n: exploreScore.total })),
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
                 var snap = { id: 'snap-' + Date.now(), tool: 'coordinate', label: fill(t('stem.coordgrid.snap_label', 'Grid: {n} points'), { n: gridPoints.length }), data: { points: gridPoints.slice(), lines: gridLines.slice() }, timestamp: Date.now() };
                 if (typeof setToolSnapshots === 'function') setToolSnapshots(function(prev) { return (prev || []).concat([snap]); });
                 sfxClick();
@@ -6975,7 +6985,7 @@ window.StemLab = window.StemLab || {
               style: { minWidth: 44, minHeight: 44 },
               className: 'text-[0.6875rem] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-500 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 var next = !muted;
                 updCG({ muted: next });
@@ -6989,7 +6999,7 @@ window.StemLab = window.StemLab || {
               style: { minWidth: 44, minHeight: 44 },
               className: 'p-1 rounded-md text-base hover:bg-slate-100 transition-colors ' + (muted ? 'text-slate-600' : 'text-cyan-700')
             }, muted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 sfxClick();
                 setGridPoints([]);
@@ -7026,7 +7036,7 @@ window.StemLab = window.StemLab || {
           coordinateTabs.map(function(t2, index) {
             var activeTab = cgTab === t2.id;
             return h('button', {
-              key: 't-' + t2.id,
+              key: 't-' + t2.id, type: 'button',
               id: 'coordinate-section-tab-' + t2.id,
               onClick: function() { sfxClick(); updCG({ cgTab: t2.id }); },
               onKeyDown: function(event) { moveCoordinateTab(event, index); },
@@ -7147,7 +7157,7 @@ window.StemLab = window.StemLab || {
                   h('label', { htmlFor: 'qh-' + s.k, className: 'block text-[0.75rem] font-bold', style: { color: GP.ink } }, s.l + ': ', h('span', { className: 'font-mono', style: { color: GP.accent } }, fmt(iq[s.k]))),
                   h('input', { id: 'qh-' + s.k, type: 'range', min: -10, max: 10, step: 1, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = clampQh(e.target.value, iq[s.k]); setIQ(p); },
-                    className: 'w-full', style: { minHeight: 36 }, 'aria-label': s.l }));
+                    className: 'w-full', style: { minHeight: 44 }, 'aria-label': s.l, 'aria-valuetext': s.l + ': ' + iq[s.k] }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
@@ -7181,7 +7191,7 @@ window.StemLab = window.StemLab || {
         renderBadges(),
 
         // AI Tutor toggle + panel
-        aiAvailable && !showAITutor && h('button', { 'aria-label': t('stem.coordgrid.ai_tutor', 'AI Tutor'), style: { minHeight: 44 },
+        aiAvailable && !showAITutor && h('button', { type: 'button', 'aria-label': t('stem.coordgrid.ai_tutor', 'AI Tutor'), style: { minHeight: 44 },
           onClick: function() { sfxClick(); updCG({ showAITutor: true }); },
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
         }, t('stem.coordgrid.ai_tutor_2', '\uD83E\uDD16 AI Tutor')),

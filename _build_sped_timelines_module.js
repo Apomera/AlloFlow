@@ -45,12 +45,13 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.SpedTimelines) {
-    console.log('[CDN] SpedTimelines already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] SpedTimelines already loaded, skipping');
     return;
   }
   (function() {
-    if (document.getElementById('allo-live-spedtl')) return;
+    if (typeof document !== 'object' || !document || !document.body || document.getElementById('allo-live-spedtl')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-spedtl';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -61,7 +62,7 @@ const outputCode = `/**
     document.body.appendChild(liveRegion);
   })();
   var React = window.React;
-  if (!React) { console.error('[SpedTimelines] React not found on window'); return; }
+  if (!React) { if (typeof console === 'object' && console && typeof console.error === 'function') console.error('[SpedTimelines] React not found on window'); return; }
 
 ${compiled}
 
@@ -80,7 +81,7 @@ ${compiled}
       SPED_TYPES: SPED_TYPES
     }
   };
-  console.log('[CDN] SpedTimelines loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] SpedTimelines loaded');
 })();
 `;
 

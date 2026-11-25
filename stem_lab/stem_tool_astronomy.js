@@ -1873,7 +1873,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     }
     var treeGeometry = own(new THREE.BufferGeometry()); treeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(trees, 3));
     scene.add(new THREE.Mesh(treeGeometry, own(new THREE.MeshBasicMaterial({ color: 0x02060b, side: THREE.DoubleSide }))));
-    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 64;
+    var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = glowCanvas.height = 64;
     var ctx = glowCanvas.getContext('2d'), gradient = ctx.createRadialGradient(32,32,0,32,32,32);
     gradient.addColorStop(0, 'rgba(255,255,255,1)'); gradient.addColorStop(.1,'rgba(235,250,255,.95)'); gradient.addColorStop(.3,'rgba(114,210,255,.3)'); gradient.addColorStop(1,'rgba(90,180,255,0)');
     ctx.fillStyle = gradient; ctx.fillRect(0,0,64,64);
@@ -2374,7 +2374,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         onFocus: function() { editing.current = true; },
         onChange: function(e) { var value = e.target.value; setDraft(value); setError(false); if (valid(value)) props.onChange(Number(value)); },
         onBlur: function() { editing.current = false; setError(!valid(draft)); },
-        onKeyDown: function(e) { if (e.key === 'Escape') { setDraft(String(props.value)); setError(false); } } }),
+        onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { setDraft(String(props.value)); setError(false); } } }),
       h('span', { id: props.id + '-help', role: error ? 'alert' : undefined, style: { fontSize: 11, color: error ? '#fda4af' : '#94a3b8' } },
         error ? t('stem.astronomy.obs_coordinate_error', 'Enter a number in this range; the sky keeps the last valid position.') + ' ' + props.min + ' … ' + props.max + '°' : props.hint));
   }
@@ -3888,7 +3888,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var lines = new THREE.LineSegments(lineGeometry, own(new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.92, depthWrite: false, blending: THREE.AdditiveBlending })));
     lines.frustumCulled = false; lineGroup.add(lines);
 
-    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 64;
+    var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = glowCanvas.height = 64;
     var gctx = glowCanvas.getContext('2d'), gradient = gctx && gctx.createRadialGradient ? gctx.createRadialGradient(32, 32, 0, 32, 32, 32) : null;
     if (gradient && gradient.addColorStop) {
       gradient.addColorStop(0, 'rgba(255,255,255,1)'); gradient.addColorStop(0.12, 'rgba(255,250,240,.95)'); gradient.addColorStop(0.35, 'rgba(255,230,180,.28)'); gradient.addColorStop(1, 'rgba(255,220,160,0)');
@@ -3899,7 +3899,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     var deepTextures = {};
     function makeDeepSkyTexture(kind) {
       if (deepTextures[kind]) return deepTextures[kind];
-      var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+      var cv = document.createElement('canvas'); cv.setAttribute('aria-hidden', 'true'); cv.width = cv.height = 128;
       var ctx = cv.getContext('2d');
       function radialBlob(x, y, r0, r1, stops) {
         if (!ctx || !ctx.createRadialGradient) return;
@@ -3944,7 +3944,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       s.scale.set(size, size, 1); s.renderOrder = 3; scene.add(s); return s;
     }
     var sunSprite = sprite(0xfff1c2, 70), sunDisc = sprite(0xffffff, 26);
-    var moonCanvas = document.createElement('canvas'); moonCanvas.width = moonCanvas.height = 128;
+    var moonCanvas = document.createElement('canvas'); moonCanvas.setAttribute('aria-hidden', 'true'); moonCanvas.width = moonCanvas.height = 128;
     var moonTexture = own(new THREE.CanvasTexture(moonCanvas));
     var moonSprite = sprite(0xffffff, 24, moonTexture), moonHalo = sprite(0xc7d2fe, 60);
     var moonMirror = new THREE.Sprite(own(new THREE.SpriteMaterial({ map: glowTexture, color: 0xbfc8dc, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc, stencilZPass: THREE.KeepStencilOp })));
@@ -4041,10 +4041,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       img.onload = function() {
         if (stopped) return;
         try {
-          var W = 1024, H = 512, src = document.createElement('canvas'); src.width = W; src.height = H;
+          var W = 1024, H = 512, src = document.createElement('canvas'); src.setAttribute('aria-hidden', 'true'); src.width = W; src.height = H;
           var sctx = src.getContext('2d'); sctx.drawImage(img, 0, 0, W, H);
           var data = sctx.getImageData(0, 0, W, H).data;
-          var face = document.createElement('canvas'); face.width = face.height = 128;
+          var face = document.createElement('canvas'); face.setAttribute('aria-hidden', 'true'); face.width = face.height = 128;
           var fctx = face.getContext('2d'), out = fctx.createImageData(128, 128), o = out.data, c = 64, r = 56;
           for (var py = 0; py < 128; py++) for (var px = 0; px < 128; px++) {
             var x = (px - c) / r, y = (c - py) / r, rr = x * x + y * y, idx = (py * 128 + px) * 4;
@@ -4920,7 +4920,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('section', { 'aria-labelledby': 'astronomy-observatory-search-label', style: { marginTop: 12, padding: '12px 14px', borderRadius: 12, border: '1px solid ' + viewBorder('#334155'), background: viewBg('#0c192b') } },
         h('label', { id: 'astronomy-observatory-search-label', htmlFor: 'astronomy-observatory-search', style: { display: 'block', color: '#e2e8f0', fontWeight: 700, fontSize: 14, marginBottom: 6 } }, t('stem.astronomy.obs_search_label', 'Find an object')),
         h('div', { style: { display: 'flex', gap: 8 } },
-          h('input', { id: 'astronomy-observatory-search', ref: searchInput, type: 'search', className: 'astr-focus', value: query, maxLength: 80, autoComplete: 'off', spellCheck: false, disabled: status !== 'ready', placeholder: t('stem.astronomy.obs_search_placeholder', 'Sirius, HIP 32349, Jupiter, or M31'), 'aria-describedby': 'astronomy-observatory-search-help astronomy-observatory-search-count', onChange: function(e) { setQuery(e.target.value); }, onKeyDown: function(e) { if (e.key === 'Escape') { e.preventDefault(); setQuery(''); } else if (e.key === 'Enter' && viewer.current) { e.preventDefault(); var fresh = viewer.current.search(query); if (fresh.length) findObject(viewer.current, fresh[0].kind, fresh[0].id); } }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + viewBorder('#64748b'), background: viewBg('#030b19'), color: '#f8fafc', fontSize: 16 } }),
+          h('input', { id: 'astronomy-observatory-search', ref: searchInput, type: 'search', className: 'astr-focus', value: query, maxLength: 80, autoComplete: 'off', spellCheck: false, disabled: status !== 'ready', placeholder: t('stem.astronomy.obs_search_placeholder', 'Sirius, HIP 32349, Jupiter, or M31'), 'aria-describedby': 'astronomy-observatory-search-help astronomy-observatory-search-count', onChange: function(e) { setQuery(e.target.value); }, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { e.preventDefault(); setQuery(''); } else if (e.key === 'Enter' && viewer.current) { e.preventDefault(); var fresh = viewer.current.search(query); if (fresh.length) findObject(viewer.current, fresh[0].kind, fresh[0].id); } }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + viewBorder('#64748b'), background: viewBg('#030b19'), color: '#f8fafc', fontSize: 16 } }),
           query ? h('button', { type: 'button', className: 'astr-focus', onClick: function() { setQuery(''); if (searchInput.current) searchInput.current.focus(); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + viewBorder('#64748b'), background: viewBg('#0b1628'), color: '#e2e8f0', cursor: 'pointer' } }, t('stem.astronomy.obs_search_clear', 'Clear search')) : null),
         h('p', { id: 'astronomy-observatory-search-help', style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, margin: '7px 0 0' } }, t('stem.astronomy.obs_search_help', 'Search catalog stars, planets, the Sun, Moon, and deep-sky objects. Enter opens the first result. Objects hidden from this sky still have details.')),
         query.trim() ? h('div', null,
@@ -4930,7 +4930,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             function(v) { findObject(v, item.kind, item.id); }, { 'aria-label': t('stem.astronomy.obs_search_select', 'Select') + ' ' + item.name, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '4px 12px', width: '100%', minHeight: 48, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + viewBorder('#475569'), background: viewBg('#101f34'), color: '#f1f5f9', textAlign: 'left', cursor: 'pointer' } })); }))) : h('span', { id: 'astronomy-observatory-search-count' })),
       props.selectionDetails || null,
       props.finders && props.finders.length ? h('div', { role: 'group', 'aria-label': t('stem.astronomy.obs_find_group', 'Find in the sky'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
-        props.finders.map(function(f) { return button('🔎 ' + f.label, function(v) { if (!findObject(v, f.kind, f.id) && !v.target(f.kind, f.id) && props.onFindMiss) props.onFindMiss(f.label); }, { key: f.kind + ':' + f.id }); })) : null,
+        props.finders.map(function(f, fi) { return button('🔎 ' + f.label, function(v) { if (!findObject(v, f.kind, f.id) && !v.target(f.kind, f.id) && props.onFindMiss) props.onFindMiss(f.label); }, { key: f.kind + ':' + f.id + ':' + fi }); })) : null,
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 8 } },
         button(t('stem.astronomy.obs_step_prev', 'Previous object'), function(v) { v.step(-1); }, { 'aria-describedby': 'astronomy-observatory-described' }),
         button(t('stem.astronomy.obs_step_next', 'Next object'), function(v) { v.step(1); }, { 'aria-describedby': 'astronomy-observatory-described' }),
@@ -6509,6 +6509,19 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-astronomy-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-astronomy-a11y-css';
+    st.textContent = [
+      '.selh-astronomy :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [data-stem-tool-shell="astronomy"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '.selh-astronomy :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="astronomy"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2.5px solid #a5b4fc; outline-offset: 2px; }',
+      '@media (forced-colors: active) { .selh-astronomy :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="astronomy"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .selh-astronomy *, [data-stem-tool-shell="astronomy"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   window.StemLab.registerTool('astronomy', {
     icon: '🔭',
     label: 'Night Sky & Astronomy',
@@ -6740,6 +6753,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (selectedTab && typeof selectedTab.scrollIntoView === 'function') selectedTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
       function handleAstronomyTabKey(event) {
+        if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(event.key) === -1) return;
         event.preventDefault();
         var currentIndex = TABS.findIndex(function(tab) { return tab.id === activeTab; });
@@ -7341,7 +7355,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 'aria-label': __alloT('stem.astronomy.a11y_question_for_the_sky_guide', 'Question for the sky guide'),
                 onChange: function(e) { upd({ askInput: typeof e.target.value === 'string' ? e.target.value.slice(0, 500) : '' }); },
                 onKeyDown: function(e) {
-                  if (e.isComposing || e.keyCode === 229) return;
+                  if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
                   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     e.preventDefault();
                     sendAstronomyQuestion(e.currentTarget.value);
@@ -9599,6 +9613,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 type: 'range', min: 0, max: 90, step: 1, value: nodeDeg,
                 onChange: function (e) { upd({ moonNodeDeg: parseInt(e.target.value, 10) }); },
                 'aria-label': __alloT('stem.astronomy.a11y_line_of_nodes_angle_which_controls_eclipse_seas', 'Line of nodes angle, which controls eclipse seasons'),
+                'aria-valuetext': nodeDeg + '\u00b0',
                 style: { width: '100%', accentColor: '#6366f1' }
               }),
               h('div', { style: { fontSize: 10.5, color: '#cbd5e1', lineHeight: 1.5, marginTop: 4 } },
@@ -10656,7 +10671,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       h('strong', { style: { color: '#fde68a' } }, textValue),
                       h('input', { id: 'astr-' + s.key, type: 'range', min: s.min, max: s.max, step: 'any', value: s.value, 'aria-label': s.label, 'aria-valuetext': textValue,
                         onChange: function(e) { change(Number(e.target.value)); },
-                        onKeyDown: function(e) { if (e.altKey || e.ctrlKey || e.metaKey) return; var direction = ['ArrowRight', 'ArrowUp'].indexOf(e.key) >= 0 ? 1 : ['ArrowLeft', 'ArrowDown'].indexOf(e.key) >= 0 ? -1 : 0; if (direction) { e.preventDefault(); change(s.value + s.step * direction * (e.shiftKey ? 10 : 1)); } },
+                        onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return; var direction = ['ArrowRight', 'ArrowUp'].indexOf(e.key) >= 0 ? 1 : ['ArrowLeft', 'ArrowDown'].indexOf(e.key) >= 0 ? -1 : 0; if (direction) { e.preventDefault(); change(s.value + s.step * direction * (e.shiftKey ? 10 : 1)); } },
                         style: { display: 'block', width: '100%', minHeight: 44, margin: '3px 0 0', accentColor: '#fbbf24' } }));
                   })),
                 h('p', { style: { fontSize: 12, color: muted, lineHeight: 1.7, margin: '0 0 12px' } }, __alloT('stem.astronomy.transit_units_plain', 'ppm means parts per million: 10,000 ppm is a 1% brightness drop. Path offset sets how far from the star’s center the planet passes: 0 crosses the center; 1 follows the edge. Astronomers call this the impact parameter.')),
@@ -10838,14 +10853,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       { label: __alloT('stem.astronomy.f_c_fraction_that_communicate', 'f_c: fraction that communicate'), value: fc, min: 0, max: 1, step: 0.05, key: 'drakeFc', sub: 'Unknown' },
                       { label: __alloT('stem.astronomy.l_civ_lifetime_years', 'L: civ. lifetime (years)'), value: dlife, min: 100, max: 1000000, step: 100, key: 'drakeL', sub: 'Unknown — pessimist: 100, optimist: 10⁶+' }
                     ].map(function(s, i) {
+                      var drakeValText = typeof s.value === 'number' && s.step < 0.5 ? s.value.toFixed(2) : s.value.toLocaleString();
                       return h('div', { key: i, style: { padding: 6, borderRadius: 6, background: '#1e293b', border: '1px solid #334155' } },
                         h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } },
                           h('span', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700 } }, s.label),
-                          h('span', { style: { fontSize: 11, color: '#c7d2fe', fontWeight: 800 } }, typeof s.value === 'number' && s.step < 0.5 ? s.value.toFixed(2) : s.value.toLocaleString())
+                          h('span', { style: { fontSize: 11, color: '#c7d2fe', fontWeight: 800 } }, drakeValText)
                         ),
                         h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: s.value,
                           onChange: (function(key) { return function(e) { var p = {}; p[key] = parseFloat(e.target.value); upd(p); }; })(s.key),
                           'aria-label': s.label,
+                          'aria-valuetext': drakeValText,
                           style: { width: '100%', accentColor: '#6366f1' }
                         }),
                         h('div', { style: { fontSize: 9, color: '#94a3b8', marginTop: 2, fontStyle: 'italic' } }, s.sub)
@@ -12751,7 +12768,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   placeholder: __alloT('stem.astronomy.search_stars_sirius_vega', 'Search stars (Sirius, Vega…)'),
                   value: search,
                   onChange: function(e) { upd({ starsSearch: e.target.value.slice(0, 100) }); },
-                  onKeyDown: function(e) { if (e.key === 'Escape' && search) { e.preventDefault(); upd({ starsSearch: '' }); } },
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape' && search) { e.preventDefault(); upd({ starsSearch: '' }); } },
                   maxLength: 100, autoComplete: 'off',
                   'aria-label': __alloT('stem.astronomy.search_stars', 'Search stars'), 'aria-controls': 'astronomy-star-results',
                   className: 'astr-focus',
@@ -13536,7 +13553,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
         }
         function onCCTopicKeyDown(e, index) {
-          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           var nextIndex = null;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -13564,7 +13581,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             props.id = 'astronomy-cc-zoom-' + row.id; props.role = 'button'; props.tabIndex = 0; props.className = 'astr-focus';
             props['aria-pressed'] = active; props['aria-label'] = label + ': ' + number(remaining) + ' ' + text('seconds_before_end', 'cosmic seconds before year end');
             props.onClick = function() { selectCCTopic(row.index, false); };
-            props.onKeyDown = function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCCTopic(row.index, false); } };
+            props.onKeyDown = function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCCTopic(row.index, false); } };
             props.style = { cursor: 'pointer' };
           }
           var range = !lifetime && row.range;
@@ -14306,6 +14323,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               }
               function onDMTopicKeyDown(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -14416,6 +14434,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               }
               function onInfTopicKeyDown(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -14514,6 +14533,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               }
               function onBHTopicKeyDown(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -14612,6 +14632,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               }
               function onGWTopicKeyDown(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -14710,6 +14731,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               }
               function onPSRTopicKeyDown(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
@@ -14975,7 +14997,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     maxLength: 100,
                     autoComplete: 'off',
                     onChange: function(e) { upd({ messierSearch: e.target.value.slice(0, 100) }); },
-                    onKeyDown: function(e) { if (e.key === 'Escape' && search) upd({ messierSearch: '' }); },
+                    onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape' && search) upd({ messierSearch: '' }); },
                     'aria-controls': 'astronomy-messier-results',
                     'aria-describedby': 'astronomy-messier-result-count',
                     className: 'astr-focus',
@@ -16856,7 +16878,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               ['refractor','reflector'].map(function(t) { var active = t === type;
                 return h('button', { id: 'astronomy-scope-tab-'+t, type: 'button', role: 'tab', 'aria-selected': String(active), key: t, tabIndex: active ? 0 : -1,
                   'aria-controls': 'astronomy-scope-diagram-panel', className: 'astr-focus', style: activeStyle(active), onClick: function() { upd({scopeType:t}); },
-                  onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if(['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key)<0)return;e.preventDefault();
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if(['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key)<0)return;e.preventDefault();
                     var nextType = e.key === 'Home' ? 'refractor' : e.key === 'End' ? 'reflector' : t === 'refractor' ? 'reflector' : 'refractor';
                     upd({scopeType:nextType});setTimeout(function(){var target=document.getElementById('astronomy-scope-tab-' + nextType);if(target)target.focus();},0); }
                 }, t === 'refractor' ? __alloT('stem.astronomy.scope_refractor', 'Refractor · lens') : __alloT('stem.astronomy.scope_reflector', 'Reflector · mirror')); })),
@@ -18332,7 +18354,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 h('svg', { id: 'astronomy-hr-plot', viewBox: '0 0 430 440', role: 'group', tabIndex: 0, className: 'astr-focus', 'aria-label': __alloT('stem.astronomy.hr_plot_label', 'Temperature and luminosity diagram'), 'aria-describedby': 'astronomy-hr-help astronomy-hr-classification astronomy-hr-readout',
                   onPointerDown: function(event) { if (event.button !== 0) return; event.preventDefault(); event.currentTarget.focus({ preventScroll: true }); if (event.currentTarget.setPointerCapture) event.currentTarget.setPointerCapture(event.pointerId); setPlot(event); },
                   onPointerMove: function(event) { if (event.buttons === 1 && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) setPlot(event); },
-                  onKeyDown: function(event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; var step = event.shiftKey ? 0.1 : 0.025;
+                  onKeyDown: function(event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; var step = event.shiftKey ? 0.1 : 0.025;
                     if (event.key === 'Home') { event.preventDefault(); setIQ({ tempK: 5772, lumin: 1 }); return; }
                     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(event.key) < 0) return;
                     event.preventDefault();
@@ -18397,7 +18419,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   h('input', { id: 'hr-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.logarithmic ? Math.log10(s.val) : s.val,
                     onChange: function(e) { var p = {}, v = parseFloat(e.target.value); p[s.key] = s.logarithmic ? Number(Math.pow(10, v).toPrecision(5)) : v; setIQ(p); },
                     onKeyDown: function(event) {
-                      if (!s.logarithmic || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+                      if (!s.logarithmic || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                       var delta = { ArrowLeft: -0.05, ArrowDown: -0.05, ArrowRight: 0.05, ArrowUp: 0.05, PageDown: -1, PageUp: 1 }[event.key];
                       if (delta === undefined) return;
                       event.preventDefault(); setIQ({ lumin: Number(Math.pow(10, Math.log10(s.val) + delta).toPrecision(5)) });

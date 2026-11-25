@@ -1,8 +1,8 @@
 /* Google Classroom acquisition and first-roster conversion. No default network or credentials. */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
-    else { root.AlloModules = root.AlloModules || {}; root.AlloModules.GoogleClassroomImport = factory(); }
-}(typeof self !== 'undefined' ? self : this, function () {
+    else if (root && typeof root === 'object') { root.AlloModules = root.AlloModules || {}; root.AlloModules.GoogleClassroomImport = factory(); }
+}(typeof self === 'object' && self ? self : (typeof globalThis === 'object' && globalThis ? globalThis : null), function () {
     'use strict';
 
     const READONLY_SCOPES = Object.freeze([
@@ -23,8 +23,11 @@
     const ID = /^[A-Za-z0-9_-]{1,160}$/;
     const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
-    const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
-        && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
+    const record = value => {
+        if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
+        const proto = Object.getPrototypeOf(value);
+        return proto === null || Object.getPrototypeOf(proto) === null;
+    };
     class ImportError extends Error {
         constructor(code) { super(code); this.name = 'ClassroomImportError'; this.code = code; }
     }
@@ -39,7 +42,7 @@
     }
     function text(value, max, nonempty = false) {
         if (typeof value !== 'string' || [...value].length > max || (nonempty && !value.trim())
-            || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)
+            || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(value)
             || [...value].some(char => /^[\ud800-\udfff]$/.test(char))) fail('MALFORMED_RESPONSE');
         return value;
     }
@@ -158,7 +161,9 @@
                 redirect: 'error', credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer',
                 signal: ctx.controller.signal
             }), ctx, 'NETWORK_ERROR');
-            if (!response || !Number.isInteger(response.status) || !response.headers || typeof response.headers.get !== 'function') fail('MALFORMED_RESPONSE');
+            if (!response || !Number.isInteger(response.status) || !response.headers || typeof response.headers.get !== 'function') {
+                quietlyCancel(response && response.body); fail('MALFORMED_RESPONSE');
+            }
             if (response.redirected || response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)
                 || (response.url && response.url !== url.href)) {
                 quietlyCancel(response.body); fail('REDIRECT_REJECTED');
@@ -177,7 +182,7 @@
                 quietlyCancel(response.body); fail('MALFORMED_RESPONSE');
             }
             const declared = response.headers.get('content-length');
-            if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > limits.maxPageBytes)) {
+            if (declared != null && (!/^\d+$/.test(declared) || Number(declared) > limits.maxPageBytes)) {
                 quietlyCancel(response.body); fail('RESPONSE_TOO_LARGE');
             }
             if (!response.body || typeof response.body.getReader !== 'function') fail('MALFORMED_RESPONSE');
@@ -280,7 +285,9 @@
             }
         }
         return Object.freeze({
-            listTeacherCourses({ signal } = {}) {
+            listTeacherCourses(opts) {
+                if (opts !== undefined && !record(opts)) return Promise.reject(new ImportError('INVALID_REQUEST'));
+                const { signal } = opts || {};
                 return run('listing', signal, async (ctx, token) => {
                     selectedIds.clear();
                     const id = await currentAccount(ctx, token);
@@ -292,7 +299,9 @@
                     return { status: 'complete', courses };
                 });
             },
-            readSelectedCourse({ courseId, signal } = {}) {
+            readSelectedCourse(opts) {
+                if (opts !== undefined && !record(opts)) return Promise.reject(new ImportError('INVALID_SELECTION'));
+                const { courseId, signal } = opts || {};
                 return run('reading', signal, async (ctx, token) => {
                     identifier(courseId, 'INVALID_SELECTION');
                     if (accountId === null || !selectedIds.has(courseId)) fail('INVALID_SELECTION');
@@ -437,12 +446,18 @@
         const compact = String(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]/gu, '');
         return /[\p{L}\p{N}]/u.test(compact) ? compact : '';
     };
-    // Codenames become roster object keys: refuse prototype names and control characters.
+    // Codenames become roster object keys: refuse prototype names, surrogates, and control characters.
+    const FORBIDDEN_CODENAMES = new Set([
+        '__proto__', 'constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty',
+        'tolocalestring', 'isprototypeof', 'propertyisenumerable',
+        '__definegetter__', '__definesetter__', '__lookupgetter__', '__lookupsetter__'
+    ]);
     function checkedCodename(codename) {
         const trimmedLower = typeof codename === 'string' ? codename.trim().toLowerCase() : '';
         if (typeof codename !== 'string' || !trimmedLower || [...codename].length > 80
-            || ['__proto__', 'constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty'].includes(trimmedLower)
-            || /[\u0000-\u001f\u007f]/.test(codename)) fail('MALFORMED_REQUEST');
+            || FORBIDDEN_CODENAMES.has(trimmedLower)
+            || /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/.test(codename)
+            || [...codename].some(char => /^[\ud800-\udfff]$/.test(char))) fail('MALFORMED_REQUEST');
         const key = codenameKey(codename);
         if (!key) fail('MALFORMED_REQUEST');
         return key;

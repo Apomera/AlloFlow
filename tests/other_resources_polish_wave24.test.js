@@ -152,10 +152,12 @@ describe('Other Resources Polish — Wave 24', () => {
     }
   });
 
-  it('polishes index.html landing page with scoped slide-deck keyboard navigation, accessible progressbar, autoplay aria-pressed, reduced-motion stat counters, and zero axe violations', async () => {
+  it('polishes index.html landing page and tour.html with scoped slide-deck keyboard navigation, accessible progressbar, autoplay aria-pressed, reduced-motion stat counters, and zero axe violations', async () => {
     const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
     const doc = new window.DOMParser().parseFromString(html, 'text/html');
-    const sliderSection = doc.querySelector('#slider-container');
+    const tourHtml = readFileSync(resolve(process.cwd(), 'tour.html'), 'utf8');
+    const tourDoc = new window.DOMParser().parseFromString(tourHtml, 'text/html');
+    const sliderSection = tourDoc.querySelector('#slider-container');
     const homeSearch = doc.querySelector('#homeToolSearch');
     expect(sliderSection).toBeTruthy();
     expect(homeSearch).toBeTruthy();
@@ -169,7 +171,7 @@ describe('Other Resources Polish — Wave 24', () => {
     document.body.appendChild(host);
     cleanups.push(async () => { host.remove(); });
 
-    const deckScript = Array.from(doc.querySelectorAll('script')).find((s) => s.textContent.includes("document.querySelectorAll('.slide')"));
+    const deckScript = Array.from(tourDoc.querySelectorAll('script')).find((s) => s.textContent.includes("document.querySelectorAll('.slide')"));
     expect(deckScript).toBeTruthy();
     // Execute the slide-deck script in an isolated function scope against live document
     new Function(deckScript.textContent)();

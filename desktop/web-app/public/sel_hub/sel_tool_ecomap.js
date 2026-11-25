@@ -11,19 +11,27 @@
 // Category: care-of-self
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
+  if (!window.SelHub || typeof window.SelHub !== 'object') {
+    window.SelHub = {
+      _registry: Object.create(null), _order: [],
+      registerTool: function(id, config) {
+        if (!id || typeof id !== 'string' || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+        config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+      },
+      isRegistered: function(id) { return !!(id && Object.prototype.hasOwnProperty.call(this._registry, id)); },
+      renderTool: function(id, ctx) { var tool = (id && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || !tool.render) return null; return tool.render(ctx); }
+    };
+  }
+  if (typeof window.SelHub.isRegistered === 'function' && window.SelHub.isRegistered('ecomap')) return;
 
-  (function() {
-    if (document.getElementById('allo-live-ecomap')) return;
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body) return null;
+    var existing = document.getElementById('allo-live-ecomap');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-ecomap';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -32,10 +40,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
   // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Ecomap
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-ecomap-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || document.getElementById('allo-ecomap-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-ecomap-a11y-css';
     st.textContent = [
@@ -56,6 +65,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
     ].join('\n');
     document.head.appendChild(st);
   })();
+
+  var LOCAL_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|cut\s+myself|self[\s-]?harm|overdose)\b/i;
+
+  function safeNodes(raw) {
+    return (Array.isArray(raw) ? raw : []).filter(function(n) { return n && typeof n === 'object'; });
+  }
 
   // The 12 standard life-system categories from Hartman's ecomap.
   var SYSTEMS = [
@@ -123,68 +138,83 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       var _eco_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _eco_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
       var _eco_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#f59e0b':'#b45309','#ef4444':'#b91c1c','#94a3b8':'#475569','#64748b':'#475569','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _eco_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _eco_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _eco_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
-      var _ecoBg = function(h){ return _ecoHC ? (_eco_BGH[h]||h) : (_ecoL ? (_eco_BGL[h]||h) : h); };
-      var _ecoFg = function(h){ return _ecoHC ? (_eco_FGH[h]||h) : (_ecoL ? (_eco_FGL[h]||h) : h); };
-      var _ecoBd = function(h){ return _ecoHC ? (_eco_BDH[h]||'#ffff00') : (_ecoL ? (_eco_BDL[h]||h) : h); };
+      var _ecoBg = function(h){ return _ecoHC ? (Object.prototype.hasOwnProperty.call(_eco_BGH, h) ? _eco_BGH[h] : h) : (_ecoL ? (Object.prototype.hasOwnProperty.call(_eco_BGL, h) ? _eco_BGL[h] : h) : h); };
+      var _ecoFg = function(h){ return _ecoHC ? (Object.prototype.hasOwnProperty.call(_eco_FGH, h) ? _eco_FGH[h] : h) : (_ecoL ? (Object.prototype.hasOwnProperty.call(_eco_FGL, h) ? _eco_FGL[h] : h) : h); };
+      var _ecoBd = function(h){ return _ecoHC ? (Object.prototype.hasOwnProperty.call(_eco_BDH, h) ? _eco_BDH[h] : '#ffff00') : (_ecoL ? (Object.prototype.hasOwnProperty.call(_eco_BDL, h) ? _eco_BDL[h] : h) : h); };
       // accent text needs AA contrast in Dark, Light, and High Contrast (WCAG 1.4.3)
+      var _ecoInkL = {'#fb7185':'#be123c','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#16a34a':'#15803d','#10b981':'#047857','#f59e0b':'#b45309','#eab308':'#a16207','#84cc16':'#4d7c0f','#fb923c':'#c2410c','#ef4444':'#b91c1c','#6366f1':'#4338ca','#3b82f6':'#1d4ed8','#ec4899':'#be185d','#14b8a6':'#0f766e','#06b6d4':'#0e7490'};
+      var _ecoInkD = {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'};
       var _ecoInk = function(c){
         if (_ecoHC) return '#ffff00';
         var lc = String(c).toLowerCase();
-        if (_ecoL) return {'#fb7185':'#be123c','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#16a34a':'#15803d','#10b981':'#047857','#f59e0b':'#b45309','#eab308':'#a16207','#84cc16':'#4d7c0f','#fb923c':'#c2410c','#ef4444':'#b91c1c','#6366f1':'#4338ca','#3b82f6':'#1d4ed8','#ec4899':'#be185d','#14b8a6':'#0f766e','#06b6d4':'#0e7490'}[lc] || c;
-        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[lc] || c;
+        if (_ecoL) return Object.prototype.hasOwnProperty.call(_ecoInkL, lc) ? _ecoInkL[lc] : c;
+        return Object.prototype.hasOwnProperty.call(_ecoInkD, lc) ? _ecoInkD[lc] : c;
       };
+      if (!ctx || !ctx.React) return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
-      var _ecoBand = (ctx && ctx.gradeBand) || 'high';
+      var _ecoBand = (ctx && typeof ctx.gradeBand === 'string' && ctx.gradeBand) || 'high';
       function isImeComposing(e) {
         return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
       }
       function announceEM(msg) {
         if (!msg) return;
         if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-ecomap');
-          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
-        }
+        var lr = ensureLiveRegion();
+        if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
       }
 
-      var d = labToolData.ecomap || defaultState();
+      var rawD = labToolData.ecomap;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
       function setEM(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.ecomap) || defaultState();
+          var prevObj = (prev && typeof prev === 'object') ? prev : {};
+          var priorRaw = prevObj.ecomap;
+          var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
           var next = Object.assign({}, prior, patch);
           if (patch.nodes || patch.personLabel !== undefined) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { ecomap: next });
+          return Object.assign({}, prevObj, { ecomap: next });
         });
       }
       function scanEcomapText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'ecomap', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          try {
+            var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'ecomap', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          } catch (_) {}
         }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && (scan.hasCrisis || scan.triggered)) {
-            blocked = true;
-            if (typeof onSafetyFlag === 'function') {
-              try { onSafetyFlag({ toolId: 'ecomap', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+        if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          try {
+            var scan = window.SelHub.scanForCrisis(trimmed);
+            if (scan && (scan.hasCrisis || scan.triggered)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'ecomap', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
             }
+          } catch (_) {}
+        }
+        if (!blocked && LOCAL_CRISIS_RE.test(trimmed)) {
+          blocked = true;
+          if (typeof onSafetyFlag === 'function') {
+            try { onSafetyFlag({ toolId: 'ecomap', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
           }
         }
         if (blocked) {
           setEM({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Ecomap', contentSnippet: trimmed });
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Ecomap', contentSnippet: trimmed }); } catch (_) {}
           }
+          announceEM('Support resources are available now: call or text 988, text HOME to 741741, or call 911 in an emergency.');
         }
         return blocked;
       }
@@ -224,7 +254,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           var targetId = tabs[next].id;
           goto(targetId);
           setTimeout(function() {
-            var el = typeof document !== 'undefined' && document.getElementById('eco-tab-' + targetId);
+            var el = (typeof document === 'object' && document) ? document.getElementById('eco-tab-' + targetId) : null;
             if (el && el.focus) el.focus();
           }, 0);
         }
@@ -247,7 +277,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _ecoHC ? '#000000' : (_ecoL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _ecoBd('#334155'), fontSize: 11, color: _ecoFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Your ecomap is private to you. The patterns it shows can be intense; if seeing them stirs something heavy, that is information, bring it to a counselor or trusted adult. Crisis Text Line: text HOME to 741741.'
+          'Your ecomap is private to you. The patterns it shows can be intense; if seeing them stirs something heavy, that is information, bring it to a counselor or trusted adult. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.'
         );
       }
 
@@ -255,7 +285,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // MAP — SVG visualization
       // ═══════════════════════════════════════════════════════════
       function renderMap() {
-        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
+        var nodes = safeNodes(d.nodes);
         // Center coords
         var cx = 320, cy = 320;
         var rOuter = 230;
@@ -381,7 +411,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
                 var sysNodes = nodes.filter(function(n) { return n.systemId === sys.id; });
                 if (sysNodes.length === 0) return null;
                 return h('div', { key: sys.id, style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 12, color: sys.color, fontWeight: 700, marginBottom: 4 } }, sys.icon + ' ' + sys.label + ' (' + sysNodes.length + ')'),
+                  h('div', { style: { fontSize: 12, color: _ecoInk(sys.color), fontWeight: 700, marginBottom: 4 } }, sys.icon + ' ' + sys.label + ' (' + sysNodes.length + ')'),
                   h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _ecoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.6 } },
                     sysNodes.map(function(n) {
                       var strengthLbl = (STRENGTHS.find(function(s) { return s.id === n.strength; }) || {}).label || '';
@@ -441,17 +471,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // LIST / EDIT — add/edit connections via form
       // ═══════════════════════════════════════════════════════════
       function renderList() {
-        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
+        var nodes = safeNodes(d.nodes);
 
         function startAdd(systemId) { setEM({ addingForSystem: systemId, editingNodeId: null }); }
         function startEdit(id) { setEM({ editingNodeId: id, addingForSystem: null }); }
         function cancelForm() { setEM({ addingForSystem: null, editingNodeId: null }); }
         function deleteNode(id) {
           setLabToolData(function(prev) {
-            var prior = (prev && prev.ecomap) || defaultState();
-            var prevNodes = Array.isArray(prior.nodes) ? prior.nodes : [];
-            var nx = prevNodes.filter(function(n) { return n && n.id !== id; });
-            return Object.assign({}, prev, {
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.ecomap;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevNodes = safeNodes(prior.nodes);
+            var nx = prevNodes.filter(function(n) { return n.id !== id; });
+            return Object.assign({}, prevObj, {
               ecomap: Object.assign({}, prior, {
                 nodes: nx,
                 editingNodeId: prior.editingNodeId === id ? null : prior.editingNodeId,
@@ -463,6 +495,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
         }
 
         function saveForm() {
+          if (typeof document !== 'object' || !document) return;
           var lbl = document.getElementById('em-form-label');
           var strength = document.getElementById('em-form-strength');
           var stress = document.getElementById('em-form-stress');
@@ -476,20 +509,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             direction: direction ? direction.value : 'mutual',
             notes: notes ? notes.value.trim() : ''
           };
-          scanEcomapText([entry.label, entry.notes].filter(Boolean).join(' '));
+          var isCrisis = scanEcomapText([entry.label, entry.notes].filter(Boolean).join(' '));
           var wasEditing = !!d.editingNodeId;
           setLabToolData(function(prev) {
-            var prior = (prev && prev.ecomap) || defaultState();
-            var prevNodes = Array.isArray(prior.nodes) ? prior.nodes : [];
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.ecomap;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevNodes = safeNodes(prior.nodes);
+            var tierPatch = isCrisis ? { _crisisTier: 3 } : {};
             if (prior.editingNodeId) {
-              var nx = prevNodes.map(function(n) { return n && n.id === prior.editingNodeId ? Object.assign({}, n, entry) : n; });
-              return Object.assign({}, prev, { ecomap: Object.assign({}, prior, { nodes: nx, editingNodeId: null, lastUpdated: todayISO() }) });
+              var nx = prevNodes.map(function(n) { return n.id === prior.editingNodeId ? Object.assign({}, n, entry) : n; });
+              return Object.assign({}, prevObj, { ecomap: Object.assign({}, prior, tierPatch, { nodes: nx, editingNodeId: null, lastUpdated: todayISO() }) });
             }
             var created = Object.assign({}, entry, { id: uid(), systemId: prior.addingForSystem });
-            return Object.assign({}, prev, { ecomap: Object.assign({}, prior, { nodes: prevNodes.concat([created]), addingForSystem: null, lastUpdated: todayISO() }) });
+            return Object.assign({}, prevObj, { ecomap: Object.assign({}, prior, tierPatch, { nodes: prevNodes.concat([created]), addingForSystem: null, lastUpdated: todayISO() }) });
           });
           if (addToast) addToast(wasEditing ? 'Updated.' : 'Added.', 'success');
-          announceEM(wasEditing ? ('Updated ' + entry.label + '.') : ('Added ' + entry.label + ' to ecomap.'));
+          if (!isCrisis) announceEM(wasEditing ? ('Updated ' + entry.label + '.') : ('Added ' + entry.label + ' to ecomap.'));
         }
 
         function renderForm() {
@@ -504,7 +540,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '2px solid ' + _ecoBd(sys.color), marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
               h('span', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, sys.icon),
-              h('h3', { style: { margin: 0, color: _ecoInk(sys.color), fontSize: 18, fontWeight: 800 } }, (editing ? 'Edit' : 'Add to ') + ' ' + sys.label)
+              h('h3', { style: { margin: 0, color: _ecoInk(sys.color), fontSize: 18, fontWeight: 800 } }, (editing ? 'Edit' : 'Add to') + ' ' + sys.label)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
@@ -592,7 +628,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // REFLECT — pattern questions
       // ═══════════════════════════════════════════════════════════
       function renderReflect() {
-        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
+        var nodes = safeNodes(d.nodes);
         var stressful = nodes.filter(function(n) { return n.stress === 'stressful'; });
         var fromMe = nodes.filter(function(n) { return n.direction === 'fromMe'; });
         var toMe = nodes.filter(function(n) { return n.direction === 'toMe'; });
@@ -608,13 +644,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
             'It is to see what is here, with honesty. Some patterns will be a relief to notice; some will be uncomfortable. Both are useful information.'
           ),
 
-          patternCard('🟢 Strong, supportive connections', strong, '#16a34a',
+          patternCard('🟢 Strong, supportive connections', strong, _ecoInk('#16a34a'),
             'These are the lines that have real energy in them. Notice who and what these are; they are part of how you are still here.'),
           patternCard('🟠 Stressful connections', stressful, _ecoFg('#ef4444'),
             'These are the lines where the stress meter is high. Some are unavoidable (you do not get to pick your immune system or your bus route). Some you have more agency over than you think. Some are work systems can fix, not you.'),
           patternCard('↗ Where my energy flows out', fromMe, _ecoFg('#f59e0b'),
             'These are the people, places, or systems you give to. If this list is long and the in-list is short, that is real information about the season you are in.'),
-          patternCard('↙ Where energy flows toward me', toMe, '#0ea5e9',
+          patternCard('↙ Where energy flows toward me', toMe, _ecoInk('#0ea5e9'),
             'These are who is feeding you. If this list is thin, the question to sit with is: who could be on it, and what is in the way of letting them in?'),
           patternCard('⋯ Tenuous / distant connections', tenuous, _ecoFg('#94a3b8'),
             'Lines that are barely there. Some are barely there on purpose; some are barely there because the relationship has drifted and you miss it. Different question for each.'),
@@ -651,8 +687,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
-        var pl = (d.personLabel || '').trim();
+        var nodes = safeNodes(d.nodes);
+        var pl = String(d.personLabel || '').trim();
         var printTitle = (!pl || pl === 'Me' || pl === 'My') ? 'My Ecomap' : (pl + '’s Ecomap');
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _ecoHC ? '#000000' : (_ecoL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderRadius: 8, border: '1px solid ' + (_ecoHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
@@ -690,7 +726,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               var hdrEdge = _ecoHC ? '1px solid #ffff00' : '1px solid #e2e8f0';
               return h('div', { key: sys.id, style: { marginBottom: 14, pageBreakInside: 'avoid' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _ecoHC ? '#000000' : '#f1f5f9', borderTop: hdrEdge, borderRight: hdrEdge, borderBottom: hdrEdge, borderLeft: '4px solid ' + _ecoBd(sys.color), color: _ecoHC ? '#ffff00' : '#0f172a' } },
-                  h('span', { style: { fontSize: 16 } }, sys.icon),
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, sys.icon),
                   h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, sys.label)
                 ),
                 sysNodes.map(function(n) {
@@ -721,7 +757,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('ecomap', h, ctx) : null),
+          (window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('ecomap', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _ecoBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _ecoFg('#fda4af'), fontSize: 16 } }, 'What an ecomap is'),
             h('p', { style: { margin: '0 0 10px', color: _ecoFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -787,15 +823,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderMap();
 
+      var crisisBanner = null;
+      if (d._crisisTier >= 3) {
+        if (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') {
+          crisisBanner = window.SelHub.renderCrisisResources(h, _ecoBand);
+        } else {
+          crisisBanner = h('div', { role: 'alert', style: { marginBottom: 14, padding: 14, borderRadius: 10, background: _ecoHC ? '#000000' : (_ecoL ? '#fef2f2' : 'rgba(239,68,68,0.14)'), border: '2px solid ' + (_ecoHC ? '#ffff00' : '#dc2626'), color: _ecoFg('#fecdd3'), fontSize: 12.5, lineHeight: 1.6 } },
+            h('strong', null, 'Immediate support is available: '),
+            'Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), call 911 in an emergency, or reach out to a trusted adult.'
+          );
+        }
+      }
+
       return h('div', { className: 'selh-ecomap', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Ecomap' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _ecoBand) : null,
+        crisisBanner,
         h('div', { role: 'tabpanel', id: 'eco-panel-' + view, 'aria-labelledby': 'eco-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

@@ -37,16 +37,17 @@ const path = require('path');
  * touched doc_pipeline_module.js silently truncated the RemediationReview block
  * (~13 KB) and the next real rebuild put it back.
  */
-function wrapSimpleIife({ source, guardKey, footer = '' }) {
+function wrapSimpleIife({ source, guardKey, footer = '', ssrGuard = false }) {
+  const ssrLine = ssrGuard ? 'if(typeof window==="undefined")return;\n' : '';
   return (
 `(function(){"use strict";
-if(window.AlloModules&&window.AlloModules.${guardKey}){console.log("[CDN] ${guardKey} already loaded, skipping"); return;}
+${ssrLine}if(window.AlloModules&&window.AlloModules.${guardKey}){console.log("[CDN] ${guardKey} already loaded, skipping"); return;}
 ${source.trim()}
 ${footer ? footer.trim() + '\n' : ''}})();
 `);
 }
 
-function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile }) {
+function build({ name, guardKey, footer = '', logTag, ssrGuard = false, writeFile = writeBuildFile }) {
   const ROOT = __dirname;
   const SOURCE = path.join(ROOT, name + '_source.jsx');
   const OUTPUT = path.join(ROOT, name + '_module.js');
@@ -60,7 +61,7 @@ function build({ name, guardKey, footer = '', logTag, writeFile = writeBuildFile
 
   const source = fs.readFileSync(SOURCE, 'utf-8');
 
-  const outputCode = wrapSimpleIife({ source, guardKey, footer });
+  const outputCode = wrapSimpleIife({ source, guardKey, footer, ssrGuard });
 
   // --check: compare what this build WOULD write with both shipped copies; never writes.
   // (check_module_freshness.cjs is commit-based, so it cannot see an edited-but-unbuilt source.)

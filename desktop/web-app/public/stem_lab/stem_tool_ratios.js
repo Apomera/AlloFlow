@@ -69,6 +69,12 @@
       ].join('\n');
       document.head.appendChild(ratioMotionStyle);
     }
+    if (!document.getElementById('allo-ratio-a11y-css')) {
+      var ratioA11yStyle = document.createElement('style');
+      ratioA11yStyle.id = 'allo-ratio-a11y-css';
+      ratioA11yStyle.textContent = '[data-stem-tool-shell="ratioLab"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell="ratioLab"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ratioA11yStyle);
+    }
     if (!document.getElementById('allo-live-ratio-lab')) {
       var liveRegion = document.createElement('div');
       liveRegion.id = 'allo-live-ratio-lab';
@@ -2816,6 +2822,7 @@
       }
 
       function moveMode(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         var nextIndex = null;
         if (event.key === 'ArrowRight') nextIndex = (index + 1) % modeOrder.length;
         else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + modeOrder.length) % modeOrder.length;
@@ -5123,6 +5130,7 @@
               'aria-label': fill(isSolved ? t('stem.ratios.dt_case_dot_solved', 'Case {n}, solved') : t('stem.ratios.dt_case_dot', 'Case {n}'), { n: index + 1 }),
               onClick: function() { showCase(index, true); },
               onKeyDown: function(event) {
+                if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                 var to = event.key === 'ArrowRight' ? (index + 1) % total : event.key === 'ArrowLeft' ? (index - 1 + total) % total : event.key === 'Home' ? 0 : event.key === 'End' ? total - 1 : null;
                 if (to == null) return;
                 event.preventDefault();
@@ -5241,6 +5249,7 @@
         announce(fill(t('stem.ratios.mode_opened', '{mode} opened.'), { mode: missionInfo(id).title }));
       }
       function moveMission(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         var next = null;
         if (event.key === 'ArrowRight') next = (index + 1) % missionOrder.length;
         else if (event.key === 'ArrowLeft') next = (index - 1 + missionOrder.length) % missionOrder.length;
@@ -5301,6 +5310,7 @@
           return h('button', { key: id, id: 'ratio-view-tab-' + id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'ratio-view-panel', tabIndex: selected ? 0 : -1, 'data-ratio-view-tab': id,
             onClick: function() { chooseView(id, false); },
             onKeyDown: function(event) {
+              if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
               var next = event.key === 'ArrowRight' || event.key === 'ArrowLeft' ? VIEW_IDS[(index + 1) % 2] : event.key === 'Home' ? VIEW_IDS[0] : event.key === 'End' ? VIEW_IDS[1] : null;
               if (!next) return;
               event.preventDefault();

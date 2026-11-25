@@ -662,7 +662,7 @@ function __alloBrainAtlasVoltageLabel(voltage) {
     '.brainatlas-diagram-key{--ba-purple-soft:color-mix(in srgb,var(--ba-purple) 8%,var(--ba-surface));}@media(max-width:520px){.brainatlas-canvas-shell[data-brainatlas-label-size="large"] .brainatlas-diagram-key-list{grid-template-columns:1fr;}}',
     '.brainatlas-3d-stage{position:relative;display:flex;flex:1 1 auto;min-height:620px;overflow:hidden;background:radial-gradient(circle at 50% 18%,rgba(79,70,229,.30),transparent 42%),radial-gradient(circle at 14% 82%,rgba(14,165,233,.18),transparent 38%),linear-gradient(155deg,#0f172a,#17123f 55%,#0c2841);}',
     '.brainatlas-3d-slice-badge{position:absolute;left:12px;top:10px;z-index:4;display:grid;gap:1px;max-width:calc(100% - 170px);border:1px solid rgba(103,232,249,.40);border-radius:10px;background:rgba(15,23,42,.86);backdrop-filter:blur(8px);color:#e0f2fe;padding:7px 9px;pointer-events:none;box-shadow:0 10px 26px rgba(0,0,0,.22);}.brainatlas-3d-slice-badge strong{font-size:9px;line-height:1.2;}.brainatlas-3d-slice-badge span{color:#a5f3fc;font-size:9px;line-height:1.3;}',
-    '.brainatlas-3d-canvas{display:block;width:100%;height:100%;min-height:620px;touch-action:none;cursor:grab;outline:none;}.brainatlas-3d-canvas:active{cursor:grabbing;}.brainatlas-3d-canvas:focus-visible{box-shadow:inset 0 0 0 4px var(--ba-focus);}',
+    '.brainatlas-3d-canvas{display:block;width:100%;height:100%;min-height:620px;touch-action:none;cursor:grab;}.brainatlas-3d-canvas:focus:not(:focus-visible){outline:none;}.brainatlas-3d-canvas:active{cursor:grabbing;}.brainatlas-3d-canvas:focus-visible{outline:2px solid transparent;box-shadow:inset 0 0 0 4px var(--ba-focus);}',
     '.brainatlas-3d-loading{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none;padding:24px;background:linear-gradient(155deg,rgba(15,23,42,.92),rgba(23,18,63,.88));color:#e2e8f0;text-align:center;}.brainatlas-3d-loading-card{display:grid;justify-items:center;gap:9px;max-width:420px;}.brainatlas-3d-loading-spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,.20);border-top-color:#a78bfa;border-radius:999px;animation:brainatlas-3d-spin .9s linear infinite;}.brainatlas-3d-loading strong{font-size:13px;}.brainatlas-3d-loading span{font-size:10px;line-height:1.5;color:#cbd5e1;}@keyframes brainatlas-3d-spin{to{transform:rotate(360deg);}}',
     '.brainatlas-3d-loading[data-state="ready"]{display:none;}.brainatlas-3d-loading[data-state="error"]{pointer-events:auto;background:linear-gradient(155deg,rgba(69,10,10,.94),rgba(15,23,42,.94));}.brainatlas-3d-loading[data-state="error"] .brainatlas-3d-loading-spinner{display:none;}',
     '.brainatlas-3d-selection{position:absolute;left:16px;bottom:16px;z-index:3;display:grid;gap:2px;max-width:min(390px,calc(100% - 32px));border:1px solid rgba(196,181,253,.44);border-radius:12px;background:rgba(15,23,42,.88);backdrop-filter:blur(10px);color:#f8fafc;padding:10px 12px;box-shadow:0 14px 34px rgba(0,0,0,.28);pointer-events:none;}.brainatlas-3d-selection-eyebrow{color:#a5f3fc;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}.brainatlas-3d-selection strong{font-size:13px;line-height:1.25;overflow-wrap:anywhere;}.brainatlas-3d-selection span:last-child{color:#cbd5e1;font-size:9px;line-height:1.4;overflow-wrap:anywhere;}',
@@ -13392,6 +13392,9 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             } catch (e) { /* fall through to the standalone path */ }
             try {
               var area = document.createElement('textarea');
+              area.id = 'allo-ba-copy-buffer';
+              area.setAttribute('aria-hidden', 'true');
+              area.setAttribute('tabindex', '-1');
               area.value = text;
               area.setAttribute('readonly', 'readonly');
               area.style.position = 'fixed';
@@ -18175,7 +18178,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                   ),
                   React.createElement("p", { className: "brainatlas-mission-copy" }, missionText),
                   React.createElement("div", { className: "brainatlas-action-row", role: "group", "aria-label": t('stem.brainatlas.brain_atlas_modes', 'Brain atlas modes') },
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: function () {
                         var nextAtlasView = brainAtlasViewGroupFor(viewKey) === 'atlas' ? viewKey : 'lateral';
                         if (nextAtlasView !== viewKey) {
@@ -18187,7 +18190,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                       },
                       className: "px-3 py-1.5 text-xs font-black border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-colors active:scale-[0.97]"
                     }, t('stem.brainatlas.atlas_view', 'Atlas view')),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: function () {
                         upd('view', 'neurotransmitters');
                         upd('viewGroup', 'systems');
@@ -18197,12 +18200,12 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                       "aria-pressed": showNtInquiry ? "true" : "false",
                       className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (showNtInquiry ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100')
                     }, t('stem.brainatlas.neurochemistry_lab', 'Neurochemistry')),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: function () { upd('fmOpen', !d.fmOpen); },
                       "aria-pressed": d.fmOpen ? "true" : "false",
                       className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (d.fmOpen ? 'border-violet-500 bg-violet-600 text-white' : 'border-violet-200 bg-violet-50 text-violet-800 hover:bg-violet-100')
                     }, d.fmOpen ? t('stem.brainatlas.hide_function_match', 'Hide Function Match') : t('stem.brainatlas.function_match_2', 'Function Match')),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
                       "aria-pressed": d.quizMode ? "true" : "false",
                       className: "px-3 py-1.5 text-xs font-black border transition-colors active:scale-[0.97] " + (d.quizMode ? 'border-sky-700 bg-sky-700 text-white' : 'border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-100')
@@ -19237,7 +19240,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                       React.createElement("div", { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontSize: 11, fontStyle: 'italic' } }, t('stem.brainatlas.12_function_clinical_syndrome_vignette', '12 function / clinical-syndrome vignettes — pick the brain region.'))
                     )
                   ),
-                  React.createElement("button", {
+                  React.createElement("button", { type: "button",
                     onClick: function() { upd('fmOpen', !fmOpen); },
                     style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #7c3aed', background: '#5b21b6', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                   }, fmOpen ? 'Hide ▴' : 'Play →')
@@ -19246,7 +19249,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                   ? React.createElement("div", { style: { textAlign: 'center', padding: '12px 0' } },
                       React.createElement("p", { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
                         t('stem.brainatlas.for_each_clinical_vignette_pick_the_br', 'For each clinical vignette, pick the brain region most likely involved. Coaching cites the canonical case (HM, Phineas Gage, etc.) and what distinguishes the correct region from look-alikes.')),
-                      React.createElement("button", {
+                      React.createElement("button", { type: "button",
                         onClick: startFm,
                         style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
                       }, t('stem.brainatlas.start_vignette_1_of_12', '🕵️ Start — vignette 1 of 12'))
@@ -19283,7 +19286,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                               bg = r.color + '12'; border = r.color + '60'; color = '#1e293b';
                             }
                             return React.createElement('button', {
-                              key: r.id, role: 'radio',
+                              key: r.id, type: "button", role: 'radio',
                               'aria-checked': picked ? 'true' : 'false',
                               'aria-label': r.label,
                               "aria-disabled": fmAns ? "true" : "false",
@@ -19321,12 +19324,12 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                                   fmScore >= 7 ? ' — solid baseline. Reflexes worth building: telegraphic = Broca\'s (frontal), fluent nonsense = Wernicke\'s (temporal), no new memories = hippocampus, fearless = amygdala, ataxia = cerebellum.' :
                                   ' — these distinctions are what neurology + neuropsych assessments are built on. Re-read the rationales on misses, then retake.'
                                 ),
-                                React.createElement("button", {
+                                React.createElement("button", { type: "button",
                                   onClick: function() { upd('fmIdx', -1); upd('fmShown', []); upd('fmScore', 0); upd('fmRounds', 0); upd('fmStreak', 0); },
                                   style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                                 }, t('stem.brainatlas.restart', '🔄 Restart'))
                               )
-                            : React.createElement("button", {
+                            : React.createElement("button", { type: "button",
                                 onClick: startFm,
                                 style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                               }, t('stem.brainatlas.next_vignette', '➡️ Next vignette'))
@@ -19350,7 +19353,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                   var isActive = simScenario === s.id;
 
-                  return React.createElement("button", { key: s.id,
+                  return React.createElement("button", { key: s.id, type: "button",
 
                     onClick: function () { upd('simScenario', s.id); },
 
@@ -20634,7 +20637,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                     React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.predict_the_effect_of_stimulation', "Predict the effect of stimulation"), className: "grid grid-cols-1 gap-1.5" },
                       sc.options.map(function (optText, oi) {
                         var isCorrect = oi === sc.correctIdx; var wasChosen = show && fb.chosen === oi;
-                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
+                        return React.createElement("button", { key: oi, type: "button", role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
                           onClick: function () { if (show) return; upd('stimFeedback', { chosen: oi, correct: isCorrect }); if (isCorrect) upd('stimScore', (d.stimScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-amber-300 text-slate-600 hover:bg-amber-50 active:scale-[0.97]')
@@ -20645,7 +20648,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                       React.createElement('p', { className: 'font-black ' + (fb.correct ? 'text-green-800' : 'text-amber-800') }, fb.correct ? '\u2705 Correct!' : '\u274C The answer:'),
                       React.createElement('p', { className: 'text-slate-700' }, sc.note)
                     ),
-                    show && React.createElement('button', { 'aria-label': t('stem.brainatlas.next_stimulation', 'Next stimulation'),
+                    show && React.createElement('button', { type: "button", 'aria-label': t('stem.brainatlas.next_stimulation', 'Next stimulation'),
                       onClick: function () { upd('stimIdx', (d.stimIdx || 0) + 1); upd('stimFeedback', null); },
                       className: 'transition-colors w-full py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]' }, t('stem.brainatlas.next', 'Next \u2192'))
                   );
@@ -20662,7 +20665,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                 (function () {
                   var loading = !!d.patientLoading; var text = d.patientText || ""; var opts = d.patientOpts || []; var guess = d.patientGuess;
                   var show = guess !== null && guess !== undefined;
-                  if (!text && !loading) { return React.createElement("button", { onClick: startPatient, className: "transition-colors w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 active:scale-[0.97]" }, t('stem.brainatlas.stimulate_the_patient', "\u26A1 Stimulate the patient")); }
+                  if (!text && !loading) { return React.createElement("button", { type: "button", onClick: startPatient, className: "transition-colors w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 active:scale-[0.97]" }, t('stem.brainatlas.stimulate_the_patient', "\u26A1 Stimulate the patient")); }
                   if (loading) { return React.createElement("p", { className: "text-xs text-sky-700 italic py-2" }, t('stem.brainatlas.the_patient_is_responding', "\u23F3 The patient is responding...")); }
                   return React.createElement("div", { className: "space-y-2" },
                     React.createElement("div", { className: "rounded-lg bg-sky-50 border border-sky-200 p-3" },
@@ -20673,7 +20676,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                     React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.guess_the_stimulated_region', "Guess the stimulated region"), className: "grid grid-cols-1 gap-1.5" },
                       opts.map(function (optTarget, oi) {
                         var isCorrect = optTarget === d.patientCorrect; var wasChosen = show && guess.chosen === optTarget;
-                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
+                        return React.createElement("button", { key: oi, type: "button", role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
                           onClick: function () { if (show) return; upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50 active:scale-[0.97]')
@@ -20684,7 +20687,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
                       React.createElement('p', { className: 'font-black ' + (guess.correct ? 'text-green-800' : 'text-amber-800') }, guess.correct ? '\u2705 Correct!' : '\u274C The answer: ' + d.patientCorrect),
                       React.createElement('p', { className: 'text-slate-700' }, ((STIM_SCENARIOS.filter(function (x) { return x.target === d.patientCorrect; })[0]) || {}).note || '')
                     ),
-                    show && React.createElement('button', { 'aria-label': t('stem.brainatlas.new_patient', 'New patient'),
+                    show && React.createElement('button', { type: "button", 'aria-label': t('stem.brainatlas.new_patient', 'New patient'),
                       onClick: function () { upd('patientIdx', (d.patientIdx || 0) + 1); upd('patientText', ''); upd('patientGuess', null); upd('patientOpts', []); },
                       className: 'transition-colors w-full py-2 rounded-lg text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 active:scale-[0.97]' }, t('stem.brainatlas.new_patient_2', 'New patient \u2192'))
                   );
@@ -20736,7 +20739,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", { key: opt.id, "aria-disabled": showResult ? "true" : "false", "data-brainatlas-quiz-option": opt.id, "data-brainatlas-quiz-option-view": brainAtlasRegionViewKey[opt.id] || "", "data-brainatlas-quiz-answer-view": brainAtlasRegionViewKey[quizQ.id] || "", "data-brainatlas-quiz-result": showResult ? (isCorrect ? "correct" : (wasChosen ? "incorrect" : "neutral")) : undefined,
+                      return React.createElement("button", { key: opt.id, type: "button", "aria-disabled": showResult ? "true" : "false", "data-brainatlas-quiz-option": opt.id, "data-brainatlas-quiz-option-view": brainAtlasRegionViewKey[opt.id] || "", "data-brainatlas-quiz-answer-view": brainAtlasRegionViewKey[quizQ.id] || "", "data-brainatlas-quiz-result": showResult ? (isCorrect ? "correct" : (wasChosen ? "incorrect" : "neutral")) : undefined,
 
                         onClick: function () {
 
@@ -20778,7 +20781,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                   ),
 
-                  quizFeedback && React.createElement("button", { "aria-label": t('stem.brainatlas.next_question', "Next Question"),
+                  quizFeedback && React.createElement("button", { type: "button", "aria-label": t('stem.brainatlas.next_question', "Next Question"),
 
                     onClick: function () { upd('quizIdx', quizIndex + 1); upd('quizFeedback', null); },
 
@@ -20828,7 +20831,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                         var isActive = (d.brainwaveType || 'alpha') === waveType;
 
-                        return React.createElement("button", { key: waveType,
+                        return React.createElement("button", { key: waveType, type: "button",
 
                           onClick: function () { upd('brainwaveType', waveType); },
 
@@ -21583,7 +21586,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                                 return React.createElement("button", {
 
-                                  key: L.id,
+                                  key: L.id, type: "button",
 
                                   onClick: function () { upd(aiLevelKey, L.id); },
 
@@ -21599,7 +21602,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
 
                             ),
 
-                            React.createElement("button", {
+                            React.createElement("button", { type: "button",
 
                               onClick: explain,
 

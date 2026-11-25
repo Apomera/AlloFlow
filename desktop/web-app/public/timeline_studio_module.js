@@ -28,6 +28,18 @@
     console.error('[TimelineStudio] React not found on window');
     return;
   }
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-timelinestudio-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-timelinestudio-a11y-css';
+    st.textContent = [
+      '[aria-labelledby="timeline-studio-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '[aria-labelledby="timeline-studio-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #e11d48; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [aria-labelledby="timeline-studio-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [aria-labelledby="timeline-studio-title"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
 
   var TIMELINE_STUDIO_CDN_URL = 'https://alloflow-cdn.pages.dev/timeline_studio/timeline_studio.html?v=1';
   function companionUrl(path, cdnUrl) {
@@ -664,7 +676,7 @@
     }, []);
 
     function handleDialogKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();

@@ -244,11 +244,16 @@
   function smoothHop(v) { v = clamp(v, 0, 1); return v * v * v * (10 + v * (-15 + 6 * v)); }
   function hopPulse(v) { return v > 0 && v < 1 ? Math.pow(Math.sin(PI * v), 4) : 0; }
   function noise(a, b) { var n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); }
-  function supports(id) { return Object.prototype.hasOwnProperty.call(SPECIES, id); }
+  function supports(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(SPECIES, id); }
 
   function create(THREE, id, options) {
-    if (!supports(id)) throw new RangeError('Unsupported woodland bird: ' + id);
-    options = options || {};
+    if (!supports(id)) {
+      var label = '';
+      try { label = String(id); } catch (ignore) { label = Object.prototype.toString.call(id); }
+      throw new RangeError('Unsupported woodland bird: ' + label);
+    }
+    if (!THREE || typeof THREE.Group !== 'function') throw new TypeError('AvianWoodlandBirds.create requires THREE');
+    options = options && typeof options === 'object' ? options : {};
     var p = SPECIES[id], grouse = id === 'grouse', jay = id === 'blueJay', cardinal = id === 'northernCardinal', high = options.quality !== 'low';
     var dove = id === 'mourningDove', tune = p.tune || null;
     var junco = id === 'darkEyedJunco', titmouse = id === 'tuftedTitmouse', towhee = id === 'easternTowhee';
@@ -620,7 +625,7 @@
     var irisRadius = [tune ? tune.eye[2] : grouse ? .0038 : cardinal ? .0025 : .0029, tune ? tune.eye[3] : grouse ? .0039 : cardinal ? .0026 : .0030];
     var faceProgram = details.onBeforeCompile;
     details.onBeforeCompile = function (shader, renderer) {
-      faceProgram.call(this, shader, renderer);
+      if (typeof faceProgram === 'function') faceProgram.call(this, shader, renderer);
       shader.uniforms.awEyeIris = { value: new THREE.Vector4(irisX, irisY, irisZ, 0) };
       shader.uniforms.awEyeRadius = { value: new THREE.Vector2(irisRadius[0], irisRadius[1]) };
       shader.vertexShader = 'uniform vec4 awEyeIris;\nuniform vec2 awEyeRadius;\nvarying vec3 awEyeNormal;\nvarying float awEyeMask;\n' + shader.vertexShader;
@@ -1767,7 +1772,7 @@
     var previous = { flight: -1, phase: NaN, effort: -1, bank: NaN, yaw: NaN, pitch: NaN, peck: -1, stride: NaN, walking: -1, fan: -1, landing: -1 };
     function update(pose) {
       if (disposed) return;
-      pose = pose || EMPTY_POSE;
+      pose = pose && typeof pose === 'object' ? pose : EMPTY_POSE;
       var flight = clamp(number(pose.flight, 0), 0, 1), phase = number(pose.phase, 0);
       var effort = clamp(number(pose.effort, .6), 0, 1), bank = clamp(number(pose.bank, 0), -PI, PI);
       var yaw = clamp(number(pose.lookYaw, 0), -.95, .95), pitch = clamp(number(pose.lookPitch, 0), -.6, .6);
@@ -2277,7 +2282,7 @@
           // A stopped external foothold still needs its leg attached. Keep the
           // submillimeter idle terrain correction neutral at course boundaries.
           var offsetY = Math.max(0, Math.abs(targets[f].y - p.leg) - .001);
-          var hold = smooth(Math.sqrt(offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ) / .001) * (1 - unfold);
+          var hold = smooth(Math.hypot(offsetX, offsetY, offsetZ) / .001) * (1 - unfold);
           attachment = Math.max(attachment, hold * targetBlend);
         }
         // A hop's continuous envelope replaces walking's thresholded contact
@@ -2375,7 +2380,7 @@
           }
           if (attachment > 0) {
             var legDx = -hipX, legDy = ankleY - hipY, legDz = ankleZ - hipZ;
-            var legDistance = Math.sqrt(Math.max(1e-12, legDx * legDx + legDy * legDy + legDz * legDz));
+            var legDistance = Math.max(1e-6, Math.hypot(legDx, legDy, legDz));
             var lowerLength = Math.sqrt((p.leg + .006) * (p.leg + .006) + .006 * .006);
             var upperLength = tune ? tune.upperLeg : grouse ? .066 : jay ? .044 : cardinal ? .034 : .042;
             var legUx = legDx / legDistance, legUy = legDy / legDistance, legUz = legDz / legDistance;
@@ -2384,7 +2389,7 @@
             var kneeHeight = Math.sqrt(Math.max(0, upperLength * upperLength - kneeAlong * kneeAlong));
             // Project a backward-facing bend direction onto the leg plane.
             var bendX = legUz * legUx, bendY = legUz * legUy, bendZ = -1 + legUz * legUz;
-            var bendLength = Math.sqrt(bendX * bendX + bendY * bendY + bendZ * bendZ);
+            var bendLength = Math.hypot(bendX, bendY, bendZ);
             if (bendLength < 1e-6) { bendX = 0; bendY = 1; bendZ = 0; bendLength = 1; }
             var kneeX = hipX + legUx * kneeAlong + bendX / bendLength * kneeHeight;
             var kneeY = hipY + legUy * kneeAlong + bendY / bendLength * kneeHeight;
@@ -2405,7 +2410,7 @@
               var before = Math.max(0, ring - 1) * 3, after = Math.min(footState.legRings - 1, ring + 1) * 3;
               var tangentX = legCenters[after] - legCenters[before], tangentY = legCenters[after + 1] - legCenters[before + 1];
               var tangentZ = legCenters[after + 2] - legCenters[before + 2];
-              var tangentLength = Math.sqrt(Math.max(1e-12, tangentX * tangentX + tangentY * tangentY + tangentZ * tangentZ));
+              var tangentLength = Math.max(1e-6, Math.hypot(tangentX, tangentY, tangentZ));
               tangentX /= tangentLength; tangentY /= tangentLength; tangentZ /= tangentLength;
               var axisX = oldDy * tangentZ - oldDz * tangentY, axisY = oldDz * tangentX, axisZ = -oldDy * tangentX;
               var rotationDenominator = Math.max(1e-6, 1 + oldDy * tangentY + oldDz * tangentZ), ci = ring * 3;
@@ -2427,10 +2432,13 @@
     function dispose() {
       if (disposed) return; disposed = true;
       if (root.parent) root.parent.remove(root);
-      for (var i = 0; i < resources.length; i++) resources[i].dispose();
+      for (var i = 0; i < resources.length; i++) if (resources[i] && typeof resources[i].dispose === 'function') resources[i].dispose();
+      resources.length = 0;
     }
     update({});
     return { root: root, body: body, head: head, wings: wings, tail: tail, feet: feet, profile: profile, update: update, dispose: dispose };
   }
-  global.AvianWoodlandBirds = { version: '1.0.0', supports: supports, create: create };
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (global && (typeof global === 'object' || typeof global === 'function')) {
+    global.AvianWoodlandBirds = { version: '1.0.0', supports: supports, create: create };
+  }
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

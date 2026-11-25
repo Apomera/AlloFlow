@@ -624,7 +624,412 @@
     };
   }
 
-  var api = { put: put, take: take, clear: clear, redirect: redirect, putDraft: putDraft, takeDraft: takeDraft, redirectDraft: redirectDraft, sanitizeDraft: sanitizeDraft, hostPreview: hostPreview, HASH: HASH, RESULTS_HASH: RESULTS_HASH, DRAFT_HASH: DRAFT_HASH, PREVIEW_CHANNEL: PREVIEW_CHANNEL, DB_NAME: DB_NAME, LIFETIME_MS: LIFETIME_MS, MAX_BYTES: MAX_BYTES, MAX_DRAFT_BYTES: MAX_DRAFT_BYTES };
+  var OWNER_PAGES = {
+    words: { href: 'packets-make.html', name: 'Make Word Sounds practice', hash: HASH },
+    vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice', hash: HASH },
+    symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice', hash: HASH },
+    math: { href: 'packets-math-practice.html', name: 'Make math fact practice', hash: HASH },
+    check: { href: 'packets-check.html', name: 'Make a math check', hash: HASH },
+    read: { href: 'packets-read-along.html', name: 'Make a read-along', hash: HASH },
+    choice: { href: 'packets-choice.html', name: 'Choice, Sort & Write', hash: HASH },
+    maze: { href: 'packets-maze.html', name: 'CBM-Maze Reading', hash: HASH },
+    manipulatives: { href: 'packets-manipulatives.html', name: 'Visual Math Manipulatives', hash: HASH },
+    stem: { href: 'packets-stem-lab.html', name: 'STEM Labs', hash: HASH },
+    life: { href: 'packets-life-skills.html', name: 'Life Skills & Transition', hash: HASH },
+    aac: { href: 'packets-aac.html', name: 'AAC Boards', hash: HASH },
+    sel: { href: 'packets-sel.html', name: 'Focus & UDL Toolkits', hash: HASH },
+    playlist: { href: 'packets-playlist.html', name: 'Unit Playlists', hash: HASH },
+    compile: { href: 'packets-compile.html', name: 'Compile Activity', hash: HASH },
+    results: { href: 'packets-results.html', name: 'Add up results', hash: RESULTS_HASH },
+  };
+
+  function ownerPage(input, verifyCore) {
+    var parts = input;
+    var isPartsObj = !!(parts && typeof parts === 'object' && !Array.isArray(parts) && (typeof parts.ok === 'boolean' || typeof parts.kind === 'string'));
+    if (!isPartsObj) {
+      var vc = verifyCore || (root && root.AlloPacketVerify);
+      if (!vc || typeof vc.readParts !== 'function') return null;
+      parts = vc.readParts(input);
+    }
+    if (!parts || typeof parts !== 'object') return null;
+    if (parts.kind === 'results') {
+      return { kind: 'results', href: OWNER_PAGES.results.href, name: OWNER_PAGES.results.name, hash: OWNER_PAGES.results.hash };
+    }
+    if (!parts.ok || !parts.lesson || typeof parts.lesson !== 'object') return null;
+    var lesson = parts.lesson;
+    var m = (parts.manifest && typeof parts.manifest === 'object' && !Array.isArray(parts.manifest)) ? parts.manifest : {};
+    var blocks = Array.isArray(lesson.blocks) ? lesson.blocks.filter(function (b) { return b && typeof b.activity === 'string' && Array.isArray(b.items); }) : [];
+    if (!blocks.length) return null;
+    var every = function (re) { return blocks.every(function (b) { return re.test(b.activity); }); };
+    var some = function (re) { return blocks.some(function (b) { return re.test(b.activity); }); };
+    var check = !!(m.check || lesson.mode === 'probe');
+    var isPlaylist = some(/^playlist_roadmap$/) || !!(m.builder && typeof m.builder === 'object' && /playlist/i.test(String(m.builder.name || '')));
+    var isCompiled = !!(m.compiled && typeof m.compiled === 'object' && m.compiled.sourceKind) || some(/^(?:compiled_quiz|compiled_cloze|branching_adventure|anchor_study)$/);
+    var kind = isPlaylist ? 'playlist'
+      : isCompiled ? 'compile'
+      : every(/^vocab_/) ? 'vocab'
+      : every(/^symbol_runner$/) ? 'symbol'
+      : every(/^read_along$/) ? 'read'
+      : every(/^maze_reading$/) ? 'maze'
+      : every(/^(?:choice_board|concept_sort|sequence_order|tiered_writing)$/) ? 'choice'
+      : every(/^manip_/) ? 'manipulatives'
+      : every(/^stem_/) ? 'stem'
+      : every(/^life_/) ? 'life'
+      : every(/^aac_board$/) ? 'aac'
+      : every(/^sel_/) ? 'sel'
+      : check ? 'check'
+      : every(/^math_/) ? 'math'
+      : 'words';
+    var entry = OWNER_PAGES[kind];
+    return entry ? { kind: kind, href: entry.href, name: entry.name, hash: entry.hash } : null;
+  }
+
+  var QR_PUB_STORE_KEY = 'alloflow-packets-qr-pubkey:v1';
+
+  function cleanQrText(raw) {
+    return String(raw == null ? '' : raw).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+  }
+
+  function validateQrPublicKey(raw, qrCrypto) {
+    var trimmed = cleanQrText(raw);
+    if (!trimmed) return { ok: false, reason: 'empty', key: '' };
+    if (/^AFSK1[.:]/i.test(trimmed)) return { ok: false, reason: 'secret', key: '' };
+    var cryptoMod = qrCrypto || (root && root.AlloPacketQrCrypto) || null;
+    if (cryptoMod && typeof cryptoMod.parsePublicKey === 'function') {
+      try {
+        var parsed = cryptoMod.parsePublicKey(trimmed);
+        if (parsed) return { ok: true, reason: '', key: trimmed };
+      } catch (_) {}
+      return { ok: false, reason: 'invalid', key: '' };
+    }
+    if (/^AFPK1\.[A-Za-z0-9_-]{40,64}$/.test(trimmed)) return { ok: true, reason: '', key: trimmed };
+    return { ok: false, reason: 'invalid', key: '' };
+  }
+
+  function getSavedQrPublicKey(qrCrypto) {
+    try {
+      var stored = root && root.localStorage ? root.localStorage.getItem(QR_PUB_STORE_KEY) : '';
+      var check = validateQrPublicKey(stored, qrCrypto);
+      return check.ok ? check.key : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function saveQrPublicKey(raw, qrCrypto) {
+    var check = validateQrPublicKey(raw, qrCrypto);
+    if (!check.ok) return check;
+    try {
+      if (root && root.localStorage) root.localStorage.setItem(QR_PUB_STORE_KEY, check.key);
+      return { ok: true, reason: '', key: check.key };
+    } catch (_) {
+      return { ok: false, reason: 'storage', key: '' };
+    }
+  }
+
+  function clearSavedQrPublicKey() {
+    try {
+      if (root && root.localStorage) root.localStorage.removeItem(QR_PUB_STORE_KEY);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function mountQrKeyHelper(inputEl, options) {
+    if (!inputEl || !inputEl.parentNode || !inputEl.ownerDocument) return null;
+    if (inputEl._alloQrHelper && inputEl.parentNode.querySelector('[data-qr-key-bar="1"]')) {
+      inputEl._alloQrHelper.sync();
+      return inputEl._alloQrHelper;
+    }
+    var doc = inputEl.ownerDocument;
+    var o = options || {};
+    var existing = inputEl.parentNode.querySelector('[data-qr-key-bar="1"]');
+    if (existing) existing.remove();
+
+    var bar = doc.createElement('div');
+    bar.className = 'row qr-key-bar';
+    bar.setAttribute('data-qr-key-bar', '1');
+
+    var lbl = doc.createElement('label');
+    lbl.className = 'qr-check-opt';
+    var cb = doc.createElement('input');
+    cb.type = 'checkbox';
+    cb.setAttribute('data-qr-remember', '1');
+    lbl.appendChild(cb);
+    lbl.appendChild(doc.createTextNode(' Remember class public key on this device'));
+
+    var useBtn = doc.createElement('button');
+    useBtn.type = 'button';
+    useBtn.className = 'btn btn-text btn-small';
+    useBtn.setAttribute('data-qr-use', '1');
+    useBtn.textContent = 'Use saved class key';
+    useBtn.hidden = true;
+
+    var forgetBtn = doc.createElement('button');
+    forgetBtn.type = 'button';
+    forgetBtn.className = 'btn btn-text btn-small';
+    forgetBtn.setAttribute('data-qr-forget', '1');
+    forgetBtn.textContent = 'Forget saved key';
+    forgetBtn.hidden = true;
+
+    var said = doc.createElement('span');
+    said.className = 'hint qr-key-said';
+    said.setAttribute('role', 'status');
+    said.setAttribute('data-qr-said', '1');
+
+    bar.appendChild(lbl);
+    bar.appendChild(useBtn);
+    bar.appendChild(forgetBtn);
+    bar.appendChild(said);
+    inputEl.parentNode.insertBefore(bar, inputEl.nextSibling);
+
+    function sync(msg) {
+      var saved = getSavedQrPublicKey(o.qrCrypto);
+      var current = cleanQrText(inputEl.value);
+      cb.checked = !!(saved && current && saved === current);
+      useBtn.hidden = !(saved && current !== saved);
+      forgetBtn.hidden = !saved;
+      if (msg != null) said.textContent = msg;
+    }
+
+    cb.addEventListener('change', function () {
+      if (cb.checked) {
+        var res = saveQrPublicKey(inputEl.value, o.qrCrypto);
+        if (!res.ok) {
+          cb.checked = false;
+          if (res.reason === 'secret') sync('Only a public key (AFPK1.) can be saved here, never a private key.');
+          else sync('Paste a valid class public key (AFPK1.) first.');
+          return;
+        }
+        sync('Class public key saved on this device (private key is never stored).');
+      } else {
+        clearSavedQrPublicKey();
+        sync('Saved class key removed from this device.');
+      }
+    });
+
+    useBtn.addEventListener('click', function () {
+      var saved = getSavedQrPublicKey(o.qrCrypto);
+      if (!saved) { sync(''); return; }
+      inputEl.value = saved;
+      try {
+        var WinEv = (doc.defaultView && doc.defaultView.Event) || Event;
+        inputEl.dispatchEvent(new WinEv('input', { bubbles: true }));
+      } catch (_) {}
+      sync('Filled saved class public key.');
+    });
+
+    forgetBtn.addEventListener('click', function () {
+      clearSavedQrPublicKey();
+      sync('Saved class key removed from this device.');
+    });
+
+    inputEl.addEventListener('input', function () {
+      var val = cleanQrText(inputEl.value);
+      if (/^AFSK1[.:]/i.test(val)) {
+        sync('Only a public key (AFPK1.) belongs here, never a private key.');
+        return;
+      }
+      if (cb.checked && val) {
+        var res = saveQrPublicKey(val, o.qrCrypto);
+        if (res.ok) { sync('Updated saved class public key.'); return; }
+      }
+      sync('');
+    });
+
+    sync('');
+    var ctrl = { node: bar, sync: sync };
+    inputEl._alloQrHelper = ctrl;
+    return ctrl;
+  }
+
+  var BATCH_HEADER_RE = /^(?:student|student[_ ]?code|student[_ ]?name|code|code[_ ]?name|learner|learner[_ ]?code|name|initials)$/i;
+  var MAX_BATCH_FILE_BYTES = 512 * 1024;
+
+  function parseCsvFirstCell(line) {
+    var s = String(line || '').trim();
+    if (!s) return '';
+    if (s.charAt(0) === '"') {
+      var out = '', i = 1;
+      while (i < s.length) {
+        if (s.charAt(i) === '"') {
+          if (s.charAt(i + 1) === '"') { out += '"'; i += 2; continue; }
+          break;
+        }
+        out += s.charAt(i++);
+      }
+      return out.trim();
+    }
+    var comma = s.indexOf(',');
+    var tab = s.indexOf('\t');
+    var cut = comma >= 0 && tab >= 0 ? Math.min(comma, tab) : (comma >= 0 ? comma : tab);
+    return (cut >= 0 ? s.slice(0, cut) : s).trim();
+  }
+
+  function cleanCodeName(raw) {
+    var s = String(raw || ''), out = '';
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      out += c < 32 || c === 127 ? ' ' : s.charAt(i);
+    }
+    return out.replace(/\s+/g, ' ').trim().slice(0, 40);
+  }
+
+  function parseBatchListText(raw, maxNames) {
+    var cap = Number(maxNames) > 0 ? Math.floor(Number(maxNames)) : 40;
+    var text = String(raw || '').replace(/^\uFEFF/, '');
+    var lines = text.split(/\r?\n/);
+    var names = [], seen = Object.create(null);
+    var skippedDuplicates = 0, trimmedCount = 0;
+    var firstNonEmptySeen = false;
+    for (var i = 0; i < lines.length; i++) {
+      var rawLine = String(lines[i] || '').trim();
+      if (!rawLine) continue;
+      var hasDelim = rawLine.indexOf(',') >= 0 || rawLine.indexOf('\t') >= 0 || rawLine.charAt(0) === '"';
+      var cell = cleanCodeName(hasDelim ? parseCsvFirstCell(rawLine) : rawLine);
+      if (!cell) continue;
+      if (!firstNonEmptySeen) {
+        firstNonEmptySeen = true;
+        if (BATCH_HEADER_RE.test(cell)) continue;
+      }
+      var low = cell.toLowerCase();
+      if (seen[low]) { skippedDuplicates++; continue; }
+      seen[low] = true;
+      if (names.length < cap) names.push(cell);
+      else trimmedCount++;
+    }
+    return { names: names, skippedDuplicates: skippedDuplicates, trimmedCount: trimmedCount };
+  }
+
+  function mountBatchListHelper(textareaEl, options) {
+    if (!textareaEl || !textareaEl.parentNode || !textareaEl.ownerDocument) return null;
+    if (textareaEl._alloBatchHelper && textareaEl.parentNode.querySelector('[data-batch-helper="1"]')) {
+      textareaEl._alloBatchHelper.sync();
+      return textareaEl._alloBatchHelper;
+    }
+    var doc = textareaEl.ownerDocument;
+    var o = options || {};
+    var maxNames = Number(o.maxNames) > 0 ? Math.floor(Number(o.maxNames)) : 40;
+    var existing = textareaEl.parentNode.querySelector('[data-batch-helper="1"]');
+    if (existing) existing.remove();
+
+    var bar = doc.createElement('div');
+    bar.className = 'row batch-helper-bar';
+    bar.setAttribute('data-batch-helper', '1');
+
+    var loadBtn = doc.createElement('button');
+    loadBtn.type = 'button';
+    loadBtn.className = 'btn btn-text btn-small';
+    loadBtn.setAttribute('data-batch-load', '1');
+    loadBtn.textContent = 'Load list from .txt or .csv';
+
+    var fileInput = doc.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.txt,.csv,text/plain,text/csv';
+    fileInput.hidden = true;
+    fileInput.setAttribute('aria-label', 'Load student code names from a text or CSV file');
+    fileInput.setAttribute('data-batch-file', '1');
+
+    var clearBtn = doc.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'btn btn-text btn-small';
+    clearBtn.setAttribute('data-batch-clear', '1');
+    clearBtn.textContent = 'Clear list';
+    clearBtn.hidden = true;
+
+    var said = doc.createElement('span');
+    said.className = 'hint batch-helper-said';
+    said.setAttribute('role', 'status');
+    said.setAttribute('data-batch-helper-said', '1');
+
+    bar.appendChild(loadBtn);
+    bar.appendChild(fileInput);
+    bar.appendChild(clearBtn);
+    bar.appendChild(said);
+    textareaEl.parentNode.insertBefore(bar, textareaEl.nextSibling);
+
+    function sync(msg) {
+      var hasText = !!String(textareaEl.value || '').trim();
+      clearBtn.hidden = !hasText;
+      if (msg != null) said.textContent = msg;
+    }
+
+    function dispatchInput() {
+      try {
+        var WinEv = (doc.defaultView && doc.defaultView.Event) || Event;
+        textareaEl.dispatchEvent(new WinEv('input', { bubbles: true }));
+      } catch (_) {}
+    }
+
+    function readText(file) {
+      if (file && typeof file.text === 'function') return file.text();
+      return new Promise(function (resolve, reject) {
+        try {
+          var FR = (doc.defaultView && doc.defaultView.FileReader) || FileReader;
+          var reader = new FR();
+          reader.onload = function () { resolve(String(reader.result || '')); };
+          reader.onerror = function () { reject(new Error('unreadable')); };
+          reader.readAsText(file);
+        } catch (err) { reject(err); }
+      });
+    }
+
+    loadBtn.addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () {
+      var file = fileInput.files && fileInput.files[0];
+      fileInput.value = '';
+      if (!file) return;
+      if (Number(file.size) > MAX_BATCH_FILE_BYTES) {
+        var bigMsg = 'That file is larger than 512 KB. Choose a plain .txt or .csv list of code names.';
+        sync(bigMsg);
+        if (typeof o.announce === 'function') o.announce(bigMsg);
+        return;
+      }
+      readText(file).then(function (text) {
+        var parsed = parseBatchListText(text, maxNames);
+        if (!parsed.names.length) {
+          var emptyMsg = 'No code names were found in that file.';
+          sync(emptyMsg);
+          if (typeof o.announce === 'function') o.announce(emptyMsg);
+          return;
+        }
+        textareaEl.value = parsed.names.join('\n');
+        dispatchInput();
+        var fileName = cleanCodeName(file.name || 'file');
+        var msg = 'Loaded ' + parsed.names.length + ' ' + (parsed.names.length === 1 ? 'code name' : 'code names') + ' from ' + fileName + '.';
+        if (parsed.skippedDuplicates) msg += ' Skipped ' + parsed.skippedDuplicates + ' duplicate' + (parsed.skippedDuplicates === 1 ? '' : 's') + '.';
+        if (parsed.trimmedCount) msg += ' Kept the first ' + maxNames + '.';
+        sync(msg);
+        if (typeof o.announce === 'function') o.announce(msg);
+      }, function () {
+        var errMsg = 'This browser could not read that list file.';
+        sync(errMsg);
+        if (typeof o.announce === 'function') o.announce(errMsg);
+      });
+    });
+
+    clearBtn.addEventListener('click', function () {
+      textareaEl.value = '';
+      dispatchInput();
+      sync('Cleared code name list.');
+      if (typeof o.announce === 'function') o.announce('Cleared code name list.');
+      try { textareaEl.focus(); } catch (_) {}
+    });
+
+    textareaEl.addEventListener('input', function () {
+      var hasText = !!String(textareaEl.value || '').trim();
+      clearBtn.hidden = !hasText;
+      if (!hasText && said.textContent && said.textContent.indexOf('Loaded ') === 0) said.textContent = '';
+    });
+
+    sync('');
+    var ctrl = { node: bar, sync: sync };
+    textareaEl._alloBatchHelper = ctrl;
+    return ctrl;
+  }
+
+  var api = { put: put, take: take, clear: clear, redirect: redirect, putDraft: putDraft, takeDraft: takeDraft, redirectDraft: redirectDraft, sanitizeDraft: sanitizeDraft, hostPreview: hostPreview, ownerPage: ownerPage, validateQrPublicKey: validateQrPublicKey, getSavedQrPublicKey: getSavedQrPublicKey, saveQrPublicKey: saveQrPublicKey, clearSavedQrPublicKey: clearSavedQrPublicKey, mountQrKeyHelper: mountQrKeyHelper, parseBatchListText: parseBatchListText, mountBatchListHelper: mountBatchListHelper, QR_PUB_STORE_KEY: QR_PUB_STORE_KEY, HASH: HASH, RESULTS_HASH: RESULTS_HASH, DRAFT_HASH: DRAFT_HASH, PREVIEW_CHANNEL: PREVIEW_CHANNEL, DB_NAME: DB_NAME, LIFETIME_MS: LIFETIME_MS, MAX_BYTES: MAX_BYTES, MAX_DRAFT_BYTES: MAX_DRAFT_BYTES };
   root.AlloPacketHandoff = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

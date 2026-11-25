@@ -965,7 +965,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       h('button', {
         type: 'button', 'data-op-focusable': 'true', 'data-op-3d-retry': 'true',
         onClick: function() { mod.retry(); onRetry(); },
-        style: { pointerEvents: 'auto', marginLeft: 6, padding: '4px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #38bdf8', background: 'rgba(56,189,248,.12)', color: '#7dd3fc', cursor: 'pointer' }
+        style: { pointerEvents: 'auto', marginLeft: 6, padding: '4px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #38bdf8', background: '#0c4a6e', color: '#e0f2fe', cursor: 'pointer' }
       }, 'Retry 3D'));
   }
   // Materials of a replaced 3D model are disposed only after the next render: disposing

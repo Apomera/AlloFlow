@@ -576,6 +576,7 @@
       // Form controls have no inline background/color — without this they
       // keep the UA's white default and glare inside dark/contrast themes.
       ".da-root input, .da-root textarea, .da-root select { background-color: var(--da-surface); color: var(--da-ink); }",
+      ".da-root button, .da-root input, .da-root select, .da-root textarea, .da-root [role='button'], .da-root [role='checkbox'], .da-root [role='tab'] { touch-action: manipulation; }",
       ".da-root input::placeholder, .da-root textarea::placeholder { color: var(--da-faint); opacity: 1; }",
       ".da-root { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; line-height: 1.55; color: var(--da-ink); }",
       // WCAG 2.4.7/1.4.11 — visible, ≥3:1 focus indicator on EVERY focusable,
@@ -7038,6 +7039,7 @@
     }, []);
     // Tab/Shift+Tab wrap inside the dialog.
     function daTrapTab(e) {
+      if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key !== "Tab") return;
       var root = daShellRef.current;
       if (!root) return;
@@ -7161,7 +7163,7 @@
     function renderDaConfirm() {
       if (!daConfirm) return null;
       function trapConfirmKeys(e) {
-        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Escape" || e.key === "Esc") { e.preventDefault(); e.stopPropagation(); daCloseConfirm(false); return; }
         if (e.key === "Tab") {
           // Two buttons only — wrap between them (and keep the shell's own
@@ -7210,7 +7212,7 @@
       var description = isExport ? daBackupPasswordDescription : daBackupDecryptDescription;
       var passwordType = daBackupDialog.showPassword ? "text" : "password";
       function trapBackupDialogKeys(event) {
-        if (!event || event.isComposing || event.keyCode === 229) return;
+        if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if ((event.key === "Escape" || event.key === "Esc") && !event.ctrlKey && !event.metaKey && !event.altKey && !daBackupDialog.busy) {
           event.preventDefault(); event.stopPropagation(); daCloseBackupDialog(false); return;
         }
@@ -9927,7 +9929,7 @@
       var hasGemini = typeof props.callGemini === "function";
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          props.onClose ? h("button", {
+          props.onClose ? h("button", { type: 'button',
             onClick: daCloseView, "aria-label": "Close Dynamic Assessment Studio",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back") : null,
@@ -9937,25 +9939,25 @@
           ),
           // Phase F + G — top-right utility actions
           h("div", { style: { display: "flex", gap: 6 } },
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { setStartScreenView("sessions"); },
               "aria-label": "View all saved sessions",
               title: "Browse all saved DA sessions, filter by student, see longitudinal patterns",
               style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "📁 Sessions" + ((state.sessions || []).length > 0 ? " · " + state.sessions.length : "")),
-            h("button", {
+            h("button", { type: 'button',
               onClick: startTour,
               "aria-label": "Open the DA methodology tour",
               title: "4-step intro to Dynamic Assessment + this tool's workflow",
               style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "🧭 Tour"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { setStartScreenView("reference"); },
               "aria-label": "Open the clinician interpretation guide",
               title: "MI tier interpretation, when to use DA, reporting framing, citations",
               style: { background: "var(--da-surface)", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "var(--da-ink)" }
             }, "📚 Guide"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { resetCalibration(); setStartScreenView("calibration"); },
               "aria-label": "Open calibration mode — practice scoring sample student responses",
               title: "Train on hand-authored scenarios; check your inter-rater agreement with expert verdicts",
@@ -9985,7 +9987,7 @@
                   (as.paused && as.pausedAt ? " · paused " + formatRelativeTime(as.pausedAt) : ""))
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () {
                     if (as.paused) resumeSession();
                   },
@@ -9995,8 +9997,8 @@
                 h("label", { style: { display: "grid", gap: 3, fontSize: 10.5, color: "var(--da-ink-3)", fontWeight: 700 } }, daIncompleteReasonPromptLabel,
                   h("select", { value: as.incompleteReason || "interrupted", onChange: function (event) { patchSession({ incompleteReason: event.target.value }); }, "aria-label": daIncompleteReasonPromptLabel, style: { padding: "6px 8px", borderRadius: 7, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontFamily: "inherit", fontSize: 11 } }, daIncompleteReasonOptions.map(function (option) { return h("option", { key: option.id, value: option.id }, option.label); }))
                 ),
-                h("button", { onClick: function () { daAskConfirm({ message: daArchiveIncompleteConfirm, confirmLabel: daArchiveIncompleteLabel, onConfirm: function () { if (archiveIncompleteSession(as.incompleteReason || "interrupted")) addToast("Incomplete assessment record saved without interpretation."); } }); }, "aria-label": daArchiveIncompleteLabel, style: { padding: "8px 12px", borderRadius: 8, border: "1px solid var(--da-amber-mid)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" } }, daArchiveIncompleteLabel),
-                h("button", {
+                h("button", { type: 'button', onClick: function () { daAskConfirm({ message: daArchiveIncompleteConfirm, confirmLabel: daArchiveIncompleteLabel, onConfirm: function () { if (archiveIncompleteSession(as.incompleteReason || "interrupted")) addToast("Incomplete assessment record saved without interpretation."); } }); }, "aria-label": daArchiveIncompleteLabel, style: { padding: "8px 12px", borderRadius: 8, border: "1px solid var(--da-amber-mid)", background: "var(--da-amber-tint)", color: "var(--da-amber-text-2)", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" } }, daArchiveIncompleteLabel),
+                h("button", { type: 'button',
                   onClick: function () {
                     daAskConfirm({
                       message: "Discard this in-progress session? Item results will be lost. This cannot be undone.",
@@ -10104,7 +10106,7 @@
                 { id: "language",       label: "🗣️ Language production", desc: "Vocabulary, definition, narration, summarization" }
               ].map(function (opt) {
                 var active = domainDraft === opt.id;
-                return h("button", {
+                return h("button", { type: 'button',
                   key: "da-dom-" + opt.id,
                   onClick: function () { setDomainDraft(opt.id); },
                   "aria-pressed": active,
@@ -10131,7 +10133,7 @@
                 { id: "hard", label: "Hard", grade: "Grades 6–7", desc: "Multi-step / fractions / proportions" }
               ].map(function (opt) {
                 var active = difficultyDraft === opt.id;
-                return h("button", {
+                return h("button", { type: 'button',
                   key: "da-diff-" + opt.id,
                   onClick: function () { setDifficultyDraft(opt.id); },
                   "aria-pressed": active,
@@ -10176,7 +10178,7 @@
               ].map(function (opt) {
                 var active = modeDraft === opt.id;
                 var disabled = opt.id === "ai" && !hasGemini;
-                return h("button", {
+                return h("button", { type: 'button',
                   key: "da-mode-" + opt.id,
                   onClick: function () { if (!disabled) setModeDraft(opt.id); },
                   "aria-pressed": active,
@@ -10276,7 +10278,7 @@
           ),
 
           h("div", { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" } },
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 startSession({
                   studentNickname: getNicknameValue(),
@@ -10289,7 +10291,7 @@
               style: { padding: "10px 22px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }
             }, "Begin pretest →"),
             // Phase A-bis — entry to AI-generated custom probe builder
-            hasGemini ? h("button", {
+            hasGemini ? h("button", { type: 'button',
               onClick: function () {
                 setCustomForm(Object.assign({}, customForm, {
                   mode: modeDraft,
@@ -10320,7 +10322,7 @@
                     h("div", { style: { fontSize: 11, color: "var(--da-muted)", marginTop: 2 } },
                       tpl.domain + " · grade " + tpl.gradeBand + " · " + (tpl.items || []).length + " items · saved " + created)
                   ),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () {
                       startSession({
                         studentNickname: getNicknameValue(),
@@ -10333,7 +10335,7 @@
                     },
                     style: { padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
                   }, "▶ Run again"),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () {
                       daAskConfirm({
                         message: "Delete this template? This cannot be undone.",
@@ -10358,7 +10360,7 @@
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 } },
             h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.06em" } },
               "📁 Recent sessions · " + state.sessions.length + " total"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { setStartScreenView("sessions"); },
               style: { background: "transparent", border: "none", color: "var(--da-accent-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", padding: 0 }
             }, "See all →")
@@ -10369,7 +10371,7 @@
               try { dt = new Date(sn.dateCompleted).toLocaleDateString(); } catch (e) {}
               var idxRec = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : 0);
               var idxColor = daHex(idxRec >= 0.6 ? "#16a34a" : idxRec >= 0.3 ? "#a16207" : idxRec >= 0 ? "#b91c1c" : "#475569");
-              return h("button", {
+              return h("button", { type: 'button',
                 key: "da-prev-" + sn.id,
                 onClick: function () { setViewingSessionId(sn.id); setStartScreenView("session-detail"); },
                 style: { padding: 10, border: "1px solid var(--da-border)", borderRadius: 10, background: "var(--da-surface)", textAlign: "left", cursor: "pointer", fontFamily: "inherit" }
@@ -10418,7 +10420,7 @@
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 900, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("sessions"); },
             "aria-label": "Back to sessions",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -10546,7 +10548,7 @@
             h("p", { style: { margin: 0, fontSize: 11.5, color: "var(--da-muted)", lineHeight: 1.55 } },
               "Per-session CSV with all key fields (MI, tier, pretest/posttest sums, transfer counts). De-identified — only the nickname you chose. Useful for IRB-approved external analysis in R / SPSS / Excel.")
           ),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               try {
                 var csv = buildSessionStatsCsv(state.sessions || []);
@@ -10614,7 +10616,7 @@
           "aria-sort": isActive ? (analyticsState.sortDir === "asc" ? "ascending" : "descending") : undefined,
           style: { textAlign: "left", padding: 0, border: "1px solid var(--da-border-2)", background: isActive ? "var(--da-blue-tint-2)" : "var(--da-surface-3)" }
         },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               updateAnalyticsState({
                 sortBy: key,
@@ -10629,7 +10631,7 @@
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 1000, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("sessions"); },
             "aria-label": "Back to sessions",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -10658,7 +10660,7 @@
               h("div", { style: { display: "flex", gap: 4, flexWrap: "wrap" } },
                 ["all", "math", "reading", "working-memory", "language", "custom"].map(function (d) {
                   var active = analyticsState.filterDomain === d;
-                  return h("button", {
+                  return h("button", { type: 'button',
                     key: "da-aa-d-" + d,
                     onClick: function () { updateAnalyticsState({ filterDomain: d }); },
                     "aria-pressed": active,
@@ -10678,7 +10680,7 @@
                   { id: "non-discriminating", label: "Non-discriminating" }
                 ].map(function (f) {
                   var active = analyticsState.filterFlag === f.id;
-                  return h("button", {
+                  return h("button", { type: 'button',
                     key: "da-aa-f-" + f.id,
                     onClick: function () { updateAnalyticsState({ filterFlag: f.id }); },
                     "aria-pressed": active,
@@ -10689,7 +10691,7 @@
             ),
             h("div", { style: { flex: 1 } }),
             // CSV export
-            allStats.length > 0 ? h("button", {
+            allStats.length > 0 ? h("button", { type: 'button',
               onClick: function () {
                 try {
                   var csv = buildItemAnalyticsCsv(allStats);
@@ -10794,7 +10796,7 @@
       if (!name || sessionsForStudent.length === 0) {
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "No longitudinal data available for this student."),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("sessions"); setLongitudinalStudent(null); },
             style: { padding: "6px 12px", border: "1px solid var(--da-border-2)", borderRadius: 8, background: "var(--da-surface)", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
           }, "← Back to sessions")
@@ -10850,7 +10852,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("sessions"); setLongitudinalStudent(null); },
             "aria-label": "Back to sessions",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -10990,7 +10992,7 @@
                     (idx >= 0 ? "+" : "") + idx.toFixed(2)),
                   h("td", { style: { padding: "6px 8px", border: "1px solid var(--da-border)", fontSize: 11, fontStyle: "italic", color: idxColor } }, tierLabel),
                   h("td", { style: { padding: "4px 8px", border: "1px solid var(--da-border)", textAlign: "center" } },
-                    h("button", {
+                    h("button", { type: 'button',
                       onClick: function () { setViewingSessionId(sn.id); setStartScreenView("session-detail"); },
                       "aria-label": "Open session detail",
                       style: { padding: "3px 8px", borderRadius: 4, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -11048,7 +11050,7 @@
       });
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("start"); },
             "aria-label": "Back to start",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -11079,7 +11081,7 @@
               { id: "language", label: "🗣️ Language · " + (byDomain.language || 0) }
             ].map(function (opt) {
               var active = calibState.filterDomain === opt.id;
-              return h("button", {
+              return h("button", { type: 'button',
                 key: "da-cal-filter-" + opt.id,
                 onClick: function () { updateCalibState({ filterDomain: opt.id, scenarioIdx: 0 }); },
                 "aria-pressed": active,
@@ -11107,7 +11109,7 @@
             })
           ),
           h("div", { style: { marginTop: 14, display: "flex", gap: 8, flexWrap: "wrap" } },
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 updateCalibState({
                   view: "scenario", scenarioIdx: 0, results: [],
@@ -11133,7 +11135,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               daAskConfirm({
                 message: "Exit calibration? Progress will be discarded.",
@@ -11191,12 +11193,12 @@
           h("div", { style: { marginBottom: 10 } },
             h("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--da-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 } }, "Final correct?"),
             h("div", { style: { display: "flex", gap: 6 } },
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () { updateCalibResponse({ finalCorrect: true }); },
                 "aria-pressed": cr.finalCorrect === true,
                 style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === true ? "var(--da-green-mid)" : "var(--da-border-2)"), background: cr.finalCorrect === true ? "var(--da-green-mid)" : "var(--da-surface)", color: cr.finalCorrect === true ? "var(--da-on-accent)" : "var(--da-ink-3)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "✓ Correct"),
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () { updateCalibResponse({ finalCorrect: false }); },
                 "aria-pressed": cr.finalCorrect === false,
                 style: { padding: "6px 16px", borderRadius: 6, border: "1px solid " + (cr.finalCorrect === false ? "var(--da-red-text)" : "var(--da-border-2)"), background: cr.finalCorrect === false ? "var(--da-red-tint)" : "var(--da-surface)", color: cr.finalCorrect === false ? "var(--da-red-text)" : "var(--da-ink-3)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -11217,7 +11219,7 @@
                 { id: "skipped", label: "Skipped" }
               ].map(function (opt) {
                 var active = (cr.supportType || "none") === opt.id;
-                return h("button", {
+                return h("button", { type: 'button',
                   key: "da-cal-sup-" + opt.id,
                   onClick: function () { updateCalibResponse({ supportType: opt.id }); },
                   "aria-pressed": active,
@@ -11232,7 +11234,7 @@
             h("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } },
               OBSERVATION_TAGS.map(function (tag) {
                 var active = (cr.observationTags || []).indexOf(tag.id) >= 0;
-                return h("button", {
+                return h("button", { type: 'button',
                   key: "da-cal-tag-" + tag.id,
                   onClick: function () { toggleCalibTag(tag.id); },
                   "aria-pressed": active,
@@ -11245,7 +11247,7 @@
         ),
         // Submit
         h("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               var agreement = scoreCalibrationAgreement(cr, sc.expertScoring);
               var result = {
@@ -11348,7 +11350,7 @@
         ),
         // Next
         h("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               if (isLast) {
                 updateCalibState({ view: "summary" });
@@ -11441,7 +11443,7 @@
           )
         ) : null,
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               updateCalibState({
                 view: "scenario", scenarioIdx: 0, results: [],
@@ -11450,7 +11452,7 @@
             },
             style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Run again"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { resetCalibration(); setStartScreenView("start"); },
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "Done")
@@ -11488,7 +11490,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 800, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("start"); },
             "aria-label": "Back to start",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -11515,7 +11517,7 @@
             "Jump to"),
           h("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
             SECTIONS.map(function (sec) {
-              return h("button", {
+              return h("button", { type: 'button',
                 key: "ref-nav-" + sec.id,
                 onClick: function () { scrollToSection(sec.id); },
                 style: { padding: "5px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface-2)", color: "var(--da-ink)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -11769,7 +11771,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("start"); setSessionFilter(""); },
             "aria-label": "Back to start",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -11781,14 +11783,14 @@
               "📁 All sessions · " + allSessions.length)
           ),
           // Phase AA — item analytics entry (only meaningful with sessions)
-          sufficientSessionCount >= 1 ? h("button", {
+          sufficientSessionCount >= 1 ? h("button", { type: 'button',
             onClick: function () { setStartScreenView("analytics"); },
             "aria-label": "Open item analytics — psychometric stats across all sessions",
             title: "Per-item pretest pass rate, modifiability sensitivity, scaffold escalation, transfer rate",
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "📊 Item analytics") : null,
           // Phase BB — population stats entry
-          sufficientSessionCount >= 1 ? h("button", {
+          sufficientSessionCount >= 1 ? h("button", { type: 'button',
             onClick: function () { setStartScreenView("population"); },
             "aria-label": "Open population statistics — effect sizes and MI distribution across your caseload",
             title: "Cohen's d, MI distribution, tier breakdown, local-norm reference data",
@@ -11796,14 +11798,14 @@
           }, "📈 Population stats") : null,
           // Authenticated, password-encrypted full-history backup. This includes
           // completed and incomplete records so every locally saved record is recoverable.
-          allSessions.length >= 1 ? h("button", {
+          allSessions.length >= 1 ? h("button", { type: 'button',
             onClick: daOpenEncryptedBackupDialog,
             "aria-label": daBackupEncryptedTitle,
             title: daBackupEncryptedTitle,
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "\uD83D\uDD12 ", daBackupEncryptedLabel) : null,
           // Restore accepts the new encrypted format and older plain JSON backups.
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { importSessionsFromFile(); },
             "aria-label": "Restore sessions from a JSON backup file",
             title: "Load an encrypted or older JSON backup; existing sessions are never overwritten",
@@ -11878,7 +11880,7 @@
                 h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4, flexWrap: "wrap" } },
                   h("div", { style: { fontSize: 13, fontWeight: 800, color: "var(--da-ink)" } },
                     "👤 " + name + " · " + studentSessions.length + " sessions"),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () { setLongitudinalStudent(name); setStartScreenView("longitudinal"); },
                     "aria-label": "Open full longitudinal view for " + name,
                     title: "Full trajectory view with chart, trend interpretation, and per-session comparison",
@@ -11892,7 +11894,7 @@
                     var dt = "";
                     try { dt = new Date(sn.dateCompleted).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch (e) {}
                     return h(window.React.Fragment, { key: "da-trail-" + sn.id },
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { setViewingSessionId(sn.id); setStartScreenView("session-detail"); },
                         title: "View session detail",
                         style: { padding: "4px 8px", border: "1.5px solid " + color, borderRadius: 6, background: color + "11", color: color, fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 56 }
@@ -11939,7 +11941,7 @@
                 ),
                 // Actions
                 h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () {
                       setViewingSessionId(sn.id);
                       setStartScreenView("session-detail");
@@ -11947,14 +11949,14 @@
                     title: "View detail",
                     style: { padding: "5px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, "View"),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () {
                       exportSessionAsJson(sn, "redacted");
                     },
                     title: daExportRedactedTitle,
                     style: { padding: "5px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                   }, daExportRedactedLabel),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () {
                       daAskConfirm({
                         message: "Delete this session? This cannot be undone.",
@@ -11986,7 +11988,7 @@
       if (!sn) {
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "Session not found."),
-          h("button", { onClick: function () { setStartScreenView("sessions"); } }, "← Back to sessions"));
+          h("button", { type: 'button', onClick: function () { setStartScreenView("sessions"); } }, "← Back to sessions"));
       }
       var isIncomplete = sn.recordStatus === "incomplete";
       var idx = (typeof sn.modifiabilityIndex === "number" ? sn.modifiabilityIndex : null);
@@ -12008,7 +12010,7 @@
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("sessions"); setViewingSessionId(null); },
             "aria-label": "Back to sessions",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -12019,7 +12021,7 @@
             h("h1", { style: { margin: "2px 0 0", fontSize: 20, fontWeight: 800, color: "var(--da-ink)" } },
               (sn.studentNickname || "Anonymous") + " · " + sn.domain + " (" + sn.difficulty + ")")
           ),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { exportSessionAsJson(sn, "redacted"); },
             style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, daExportRedactedLabel),
@@ -12289,7 +12291,7 @@
         sn.progressMonitoring ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-indigo-tint)", borderColor: "var(--da-indigo-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
             h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-indigo-text)" } }, "📈 Progress monitoring plan"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { copyTextToClipboard(formatMonitoringPlanForClipboard(sn.progressMonitoring, sn.studentNickname)); },
               "aria-label": "Copy monitoring plan",
               style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -12325,7 +12327,7 @@
         sn.teacherHandoff ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-sky-tint-2)", borderColor: "var(--da-sky-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
             h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-sky-deep)" } }, "🧑‍🏫 Teacher / case manager handoff"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { copyTextToClipboard(formatTeacherHandoffForClipboard(sn.teacherHandoff, sn.studentNickname)); },
               "aria-label": "Copy handoff to clipboard",
               style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -12381,7 +12383,7 @@
         sn.familySummary ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-rose-tint)", borderColor: "var(--da-rose-border)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
             h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-rose-text)" } }, "👨‍👩‍👧 Family-facing summary"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () { copyTextToClipboard(formatFamilySummaryForClipboard(sn.familySummary, sn.studentNickname)); },
               "aria-label": "Copy family letter to clipboard",
               style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -12413,7 +12415,7 @@
         Array.isArray(sn.accommodations) && sn.accommodations.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-green-tint)", borderColor: "var(--da-green-border)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
             h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-green-text-2)" } }, "🛠 UDL accommodations · " + sn.accommodations.length),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 var all = sn.accommodations.map(function (a, i) { return "── " + (i + 1) + ". " + formatAccommodationForClipboard(a); }).join("\n\n");
                 copyTextToClipboard(all);
@@ -12445,7 +12447,7 @@
         Array.isArray(sn.iepGoals) && sn.iepGoals.length > 0 ? h("div", { className: "da-card", style: { marginBottom: 14, background: "var(--da-amber-tint-3)", borderColor: "var(--da-amber-border-2)" } },
           h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, flexWrap: "wrap" } },
             h("h3", { style: { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--da-amber-text-2)" } }, "🎯 Drafted IEP goals · " + sn.iepGoals.length),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 var all = sn.iepGoals.map(function (g, i) { return "── Goal " + (i + 1) + " ──\n" + formatGoalForClipboard(g); }).join("\n\n");
                 copyTextToClipboard(all);
@@ -12724,17 +12726,17 @@
           h("p", { style: { margin: 0, fontSize: 13.5, color: "var(--da-ink-2)", lineHeight: 1.7 } }, step.body),
           // Actions
           h("div", { style: { display: "flex", gap: 8, marginTop: 18, alignItems: "center" } },
-            tourStep > 0 ? h("button", {
+            tourStep > 0 ? h("button", { type: 'button',
               onClick: function () { setTourStep(tourStep - 1); },
               style: { padding: "8px 14px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "← Back") : null,
             h("div", { style: { flex: 1 } }),
-            h("button", {
+            h("button", { type: 'button',
               onClick: closeTour,
               "aria-label": "Skip tour",
               style: { padding: "8px 12px", border: "none", background: "transparent", color: "var(--da-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "Skip"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (isLast) closeTour();
                 else setTourStep(tourStep + 1);
@@ -12762,7 +12764,7 @@
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 720, margin: "0 auto", padding: 20 } },
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14 } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { resetCustomBuilder(); },
             "aria-label": "Back to start",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -12883,7 +12885,7 @@
 
         // Generate button + per-stage progress
         h("div", { style: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { if (canGenerate) generateCustomProbe(customForm); },
             disabled: !canGenerate,
             style: {
@@ -12921,14 +12923,14 @@
           style: { marginTop: 14, padding: "10px 12px", background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, fontSize: 12, color: "var(--da-red-text)", lineHeight: 1.55, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
         },
           h("span", { style: { flex: 1, minWidth: 200 } }, "⚠ " + genError),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               if (canGenerate) generateCustomProbe(customForm);
             },
             "aria-label": "Retry the generation",
             style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-red-text)", background: "var(--da-surface)", color: "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Retry"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setGenError(null); },
             "aria-label": "Dismiss",
             style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "var(--da-red-deep)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -12946,7 +12948,7 @@
 
       return h("div", { className: "da-root da-fade-in", style: { maxWidth: 820, margin: "0 auto", padding: 20 } },
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setStartScreenView("custom-builder"); },
             "aria-label": "Back to builder form",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 13 }
@@ -13004,7 +13006,7 @@
 
         // Actions
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               if (!hasIncluded) return;
               if (saveTemplate) saveProbeTemplate(customForm, includedItems);
@@ -13026,14 +13028,14 @@
               cursor: hasIncluded ? "pointer" : "not-allowed", fontFamily: "inherit"
             }
           }, saveTemplate ? "💾 Save + Run probe →" : "▶ Run probe →"),
-          saveTemplate && hasIncluded ? h("button", {
+          saveTemplate && hasIncluded ? h("button", { type: 'button',
             onClick: function () {
               saveProbeTemplate(customForm, includedItems);
               resetCustomBuilder();
             },
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "💾 Save only (don't run)") : null,
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { resetCustomBuilder(); },
             style: { padding: "10px 16px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "transparent", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "Cancel")
@@ -13655,8 +13657,8 @@
           h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving regenerates the glossary with the new terms + auto-icons. The old glossary entry stays in your resource pack (you can delete it manually if needed)."),
           h("div", { style: { marginTop: 6 } },
-            h("button", { onClick: function () { saveGlossaryEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Regenerate with new terms"),
-            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+            h("button", { type: 'button', onClick: function () { saveGlossaryEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Regenerate with new terms"),
+            h("button", { type: 'button', onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
           )
         );
       }
@@ -13746,8 +13748,8 @@
           h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this manipulative in place — same resource id, same history entry, no re-render of student devices needed."),
           h("div", { style: { marginTop: 6 } },
-            h("button", { onClick: function () { saveManipulativeEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
-            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+            h("button", { type: 'button', onClick: function () { saveManipulativeEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
+            h("button", { type: 'button', onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
           )
         );
       }
@@ -13778,8 +13780,8 @@
           h("div", { style: { marginTop: 8, fontSize: 10, color: "var(--da-amber-text-2)", fontStyle: "italic", lineHeight: 1.4 } },
             "Saving updates this probe in place — same resource id."),
           h("div", { style: { marginTop: 6 } },
-            h("button", { onClick: function () { saveWordSoundsEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
-            h("button", { onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
+            h("button", { type: 'button', onClick: function () { saveWordSoundsEdit(itemIdx, sr, draft); }, style: saveBtnStyle }, "Apply changes"),
+            h("button", { type: 'button', onClick: closeChipEditor, style: cancelBtnStyle }, "Cancel")
           )
         );
       }
@@ -13806,12 +13808,12 @@
             style: { fontSize: 10.5, color: "var(--da-amber-text)", background: "var(--da-amber-tint-2)", padding: "2px 8px", borderRadius: 999, fontWeight: 700 }
           }, "⚠ " + warnings.length + " warning" + (warnings.length === 1 ? "" : "s")) : null,
           h("div", { style: { flex: 1 } }),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { regenerateOneItem(idx); },
             disabled: genBusy,
             style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 11, fontWeight: 700, cursor: genBusy ? "wait" : "pointer", fontFamily: "inherit" }
           }, "↻ Regenerate"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { editGeneratedItem(idx, function (i) { return Object.assign({}, i, { _excluded: !i._excluded }); }); },
             style: { padding: "4px 10px", borderRadius: 6, border: "1px solid " + (isExcluded ? "var(--da-green-mid)" : "var(--da-red-border)"), background: "transparent", color: isExcluded ? "var(--da-green-text-2)" : "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, isExcluded ? "+ Include" : "✕ Exclude")
@@ -13908,7 +13910,7 @@
             h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 4, flexWrap: "wrap" } },
               h("span", { style: { fontWeight: 800, color: "var(--da-indigo-text)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", flex: 1 } },
                 "🔗 Inline supports for this item"),
-              !hasActiveGlossary ? h("button", {
+              !hasActiveGlossary ? h("button", { type: 'button',
                 onClick: function () { addManualGlossaryToItem(idx); },
                 disabled: typeof props.onGenerateGlossary !== "function",
                 title: typeof props.onGenerateGlossary === "function" ? "Generate a glossary for vocabulary in this prompt" : "Host glossary callback not wired",
@@ -13919,7 +13921,7 @@
                   fontFamily: "inherit"
                 }
               }, "+ Add inline glossary") : null,
-              !hasActiveManipulative ? h("button", {
+              !hasActiveManipulative ? h("button", { type: 'button',
                 onClick: function () { addManualManipulativeToItem(idx); },
                 disabled: typeof props.onGenerateManipulative !== "function",
                 title: typeof props.onGenerateManipulative === "function" ? "Attach an interactive math manipulative (number line, fraction bar, or area model)" : "Host manipulative callback not wired",
@@ -13930,7 +13932,7 @@
                   fontFamily: "inherit"
                 }
               }, "+ Add inline manipulative") : null,
-              !hasActiveWordSounds ? h("button", {
+              !hasActiveWordSounds ? h("button", { type: 'button',
                 onClick: function () { addManualWordSoundsProbeToItem(idx); },
                 disabled: typeof props.onGenerateWordSoundsProbe !== "function",
                 title: typeof props.onGenerateWordSoundsProbe === "function" ? "Attach a Word Sounds Studio probe (phoneme counting, segmentation, blending, etc.)" : "Host word-sounds callback not wired",
@@ -13941,7 +13943,7 @@
                   fontFamily: "inherit"
                 }
               }, "+ Add inline phonics probe") : null,
-              !hasActiveVisualOrganizer ? h("button", {
+              !hasActiveVisualOrganizer ? h("button", { type: 'button',
                 onClick: function () { addManualVisualOrganizerToItem(idx); },
                 disabled: typeof props.onGenerateVisualOrganizer !== "function",
                 title: typeof props.onGenerateVisualOrganizer === "function" ? "Attach a graphic organizer (concept map, mind map, outline, timeline, or concept sort)" : "Host visual-organizer callback not wired",
@@ -13952,7 +13954,7 @@
                   fontFamily: "inherit"
                 }
               }, "+ Add inline organizer") : null,
-              !hasActiveSentenceFrames ? h("button", {
+              !hasActiveSentenceFrames ? h("button", { type: 'button',
                 onClick: function () { addManualSentenceFramesToItem(idx); },
                 disabled: typeof props.onGenerateSentenceFrames !== "function",
                 title: typeof props.onGenerateSentenceFrames === "function" ? "Attach fill-in sentence frames that scaffold the student producing a response" : "Host sentence-frames callback not wired",
@@ -13995,16 +13997,16 @@
                         h("option", { value: "4" }, "L4")
                       ) : h("span", { style: { color: "var(--da-muted)", fontSize: 10 } }, "L" + (sr.anchorRung || 1)),
                       h("span", { style: { color: statusColor, fontSize: 10, fontWeight: 700 } }, statusLabel),
-                      sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", {
+                      sr.status === "generated" && sr.resourceId && typeof props.onOpenResource === "function" ? h("button", { type: 'button',
                         onClick: function (e) { try { e.preventDefault(); } catch (_) {} props.onOpenResource(sr.resourceId); },
                         style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-indigo-border)", background: "var(--da-surface)", color: "var(--da-indigo-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "Open") : null,
-                      canEdit ? h("button", {
+                      canEdit ? h("button", { type: 'button',
                         onClick: function () { isEditing ? closeChipEditor() : openChipEditor(idx, sr); },
                         title: "Edit this resource (terms / preset / words)",
                         style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-amber-border)", background: "var(--da-surface)", color: "var(--da-amber-text-2)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, isEditing ? "Cancel" : "✏️ Edit") : null,
-                      canDetach ? h("button", {
+                      canDetach ? h("button", { type: 'button',
                         onClick: function () { detachChipFromItem(idx, sr); },
                         title: "Remove this link from the rung (keeps the resource in your pack)",
                         style: { padding: "1px 8px", borderRadius: 4, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -14058,7 +14060,7 @@
                   // rewrites JUST this rung against the rest of the item — much
                   // cheaper than ↻ Regenerate (whole item) and preserves any
                   // edits already made to the other rungs.
-                  h("button", {
+                  h("button", { type: 'button',
                     "aria-label": "Regenerate " + (labels[step.type] || ("L" + step.level)),
                     title: "Regenerate just this scaffold level (keeps L1-L" + step.level + " edits)",
                     onClick: function () { regenerateOneScaffoldStep(idx, step.level); },
@@ -14118,7 +14120,7 @@
         // Shouldn't happen; safety guard
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "Item not found. Discard session?"),
-          h("button", { onClick: discardSession }, "Discard"));
+          h("button", { type: 'button', onClick: discardSession }, "Discard"));
       }
 
       // ── Phase E — Transfer-phase item swap ──
@@ -14188,13 +14190,13 @@
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" } },
           // Phase U — Pause (preserves session) is the safer primary; Discard becomes secondary
-          h("button", {
+          h("button", { type: 'button',
             onClick: pauseSession,
             "aria-label": "Pause this session — return to start screen, session preserved",
             title: "Pause without losing progress. Resume from the start screen.",
             style: { background: "var(--da-amber-tint-2)", border: "1px solid var(--da-amber-mid)", color: "var(--da-amber-text-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "⏸ Pause"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               daAskConfirm({
                 message: "Discard this session? Progress will be lost.",
@@ -14206,7 +14208,7 @@
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Discard"),
           // Undo — re-present the last recorded item (mis-click insurance)
-          s.itemResults.length > 0 ? h("button", {
+          s.itemResults.length > 0 ? h("button", { type: 'button',
             onClick: undoLastResult,
             "aria-label": "Undo the last recorded item and re-present it",
             title: "Re-presents the most recently recorded item with its response and observations restored.",
@@ -14389,7 +14391,7 @@
                 h("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
                   h("span", { style: { fontSize: 12, fontWeight: 800, color: "var(--da-ink)", minWidth: 30 } }, "L" + step.level),
                   h("span", { style: { flex: 1, fontSize: 12, fontWeight: 700, color: "var(--da-ink)" } }, stepLabel),
-                  h("button", {
+                  h("button", { type: 'button',
                     onClick: function () { setLadderLevel(step.level); },
                     "aria-label": "Reveal level " + step.level + " scaffold",
                     style: {
@@ -14479,7 +14481,7 @@
           "aria-checked": scaffoldLeakedDraft ? "true" : "false",
           "aria-label": "Flag that the current scaffold gave away the answer",
           onClick: function () { setScaffoldLeakedDraft(!scaffoldLeakedDraft); },
-          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setScaffoldLeakedDraft(!scaffoldLeakedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14504,7 +14506,7 @@
           "aria-checked": accessReadAloudDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only when the item was read aloud",
           onClick: function () { setAccessReadAloudDraft(!accessReadAloudDraft); },
-          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessReadAloudDraft(!accessReadAloudDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14525,7 +14527,7 @@
           "aria-checked": accessSimplifiedDraft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only with the simpler-language version",
           onClick: function () { setAccessSimplifiedDraft(!accessSimplifiedDraft); },
-          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessSimplifiedDraft(!accessSimplifiedDraft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14546,7 +14548,7 @@
           "aria-checked": accessL1Draft ? "true" : "false",
           "aria-label": "Flag that the student succeeded only in their home language",
           onClick: function () { setAccessL1Draft(!accessL1Draft); },
-          onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
+          onKeyDown: function (e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setAccessL1Draft(!accessL1Draft); } },
           style: {
             display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8, padding: "6px 10px",
             borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
@@ -14571,7 +14573,7 @@
           ),
           h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
             // Auto-check button (primary — activated by Cmd/Ctrl+Enter)
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 var correct = matchAnswer(item, responseDraft);
                 var level = canScaffold ? (s.currentLadderLevel || 0) : 0;
@@ -14595,7 +14597,7 @@
               style: { padding: "8px 16px", borderRadius: 10, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "✓ Auto-check + record"),
             // Manual override
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 var level = canScaffold ? (s.currentLadderLevel || 0) : 0;
                 submitResponse({
@@ -14614,7 +14616,7 @@
               },
               style: { padding: "8px 16px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark correct"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 var level = canScaffold ? 4 : 0; // Wrong even after direct teach = level 4 with no credit
                 submitResponse({
@@ -14630,7 +14632,7 @@
               style: { padding: "8px 16px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark wrong"),
             // Non-scorable outcomes remain visible but cannot be used as wrong answers.
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 submitResponse({
                   phase: phase, itemId: itemId,
@@ -14645,7 +14647,7 @@
               "aria-label": daSkippedLabel,
               style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, daSkippedLabel),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 submitResponse({
                   phase: phase, itemId: itemId,
@@ -14659,7 +14661,7 @@
               "aria-label": daRefusedLabel,
               style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, daRefusedLabel),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 submitResponse({
                   phase: phase, itemId: itemId,
@@ -14698,7 +14700,7 @@
       if (!item) {
         return h("div", { className: "da-root", style: { padding: 20 } },
           h("p", null, "Item not found. Discard session?"),
-          h("button", { onClick: discardSession }, "Discard"));
+          h("button", { type: 'button', onClick: discardSession }, "Discard"));
       }
       var totalInPhase = s.sessionItemIds.length;
       var pct = Math.round(((idx) / totalInPhase) * 100);
@@ -14719,13 +14721,13 @@
         // Header
         h("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" } },
           // Phase U — Pause first (preserves session); Discard secondary
-          h("button", {
+          h("button", { type: 'button',
             onClick: pauseSession,
             "aria-label": "Pause this session — return to start screen, session preserved",
             title: "Pause without losing progress. Resume from the start screen.",
             style: { background: "var(--da-amber-tint-2)", border: "1px solid var(--da-amber-mid)", color: "var(--da-amber-text-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "⏸ Pause"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               daAskConfirm({
                 message: "Discard this session? Progress will be lost.",
@@ -14737,7 +14739,7 @@
             style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Discard"),
           // Undo — re-present the last recorded item (AI attempts restart)
-          s.itemResults.length > 0 ? h("button", {
+          s.itemResults.length > 0 ? h("button", { type: 'button',
             onClick: undoLastResult,
             "aria-label": "Undo the last recorded item and re-present it",
             title: "Re-presents the most recently recorded item with its response restored. AI mediation attempts restart for that item.",
@@ -14798,7 +14800,7 @@
           style: { marginBottom: 14, padding: "8px 12px", background: "var(--da-red-tint)", border: "1px solid var(--da-red-border)", borderRadius: 8, fontSize: 12, color: "var(--da-red-text)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }
         },
           h("span", { style: { flex: 1, minWidth: 200 } }, aiError),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               setAiError(null);
               if (responseDraft.trim() && !aiBusy) runAiMediate(item, responseDraft);
@@ -14806,7 +14808,7 @@
             "aria-label": "Retry the AI mediation call",
             style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-red-text)", background: "var(--da-surface)", color: "var(--da-red-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
           }, "↻ Retry"),
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () { setAiError(null); },
             "aria-label": "Dismiss this error",
             style: { padding: "4px 8px", borderRadius: 6, border: "none", background: "transparent", color: "var(--da-red-deep)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -14872,7 +14874,7 @@
             alreadyHadL4 ? "Direct teach already delivered. Mark as wrong to advance." :
             "Submit response → AI evaluates → next scaffold appears (if needed)."),
           h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 if (!responseDraft.trim()) return;
@@ -14892,7 +14894,7 @@
             }, aiBusy ? "…" : "Submit to AI mediator"),
             // Manual override — examiner can force-correct or force-wrong
             // without consuming another AI call.
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 finalizeAiItem(item, aiAttempts.concat([{
@@ -14906,7 +14908,7 @@
               disabled: aiBusy,
               style: { padding: "8px 14px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark correct"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 finalizeAiItem(item, aiAttempts.concat([{
@@ -14920,7 +14922,7 @@
               disabled: aiBusy,
               style: { padding: "8px 14px", borderRadius: 10, border: "1px solid var(--da-red-mid)", background: "var(--da-red-tint)", color: "var(--da-red-text)", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, "Mark wrong"),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 finalizeAiItem(item, aiAttempts.concat([{
@@ -14932,7 +14934,7 @@
               "aria-label": daSkippedLabel,
               style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, daSkippedLabel),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 finalizeAiItem(item, aiAttempts.concat([{
@@ -14944,7 +14946,7 @@
               "aria-label": daRefusedLabel,
               style: { padding: "8px 12px", borderRadius: 10, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }
             }, daRefusedLabel),
-            h("button", {
+            h("button", { type: 'button',
               onClick: function () {
                 if (aiBusy) return;
                 finalizeAiItem(item, aiAttempts.concat([{
@@ -15322,7 +15324,7 @@
         role: "presentation",
         onClick: function (event) { if (event.target === event.currentTarget) closeDaAlloReview(); },
         onKeyDown: function (event) {
-          if (!event || event.isComposing || event.keyCode === 229) return;
+          if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
           if (event.key === "Escape" && !event.ctrlKey && !event.metaKey && !event.altKey) {
             event.preventDefault(); event.stopPropagation(); closeDaAlloReview(); return;
           }
@@ -15451,13 +15453,13 @@
           ),
           // Mis-click insurance: step back into the session at the last item
           // (nothing is lost — the item is re-presented for re-scoring).
-          s.itemResults.length > 0 ? h("button", {
+          s.itemResults.length > 0 ? h("button", { type: 'button',
             onClick: undoLastResult,
             "aria-label": "Reopen the session at the last recorded item to re-score it",
             title: "Steps back into the session, re-presenting the most recently recorded item with its response restored.",
             style: { background: "transparent", border: "1px solid var(--da-border-2)", color: "var(--da-ink-3)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12, fontWeight: 700 }
           }, "↩ Reopen last item") : null,
-          evidence.sufficient ? h("button", {
+          evidence.sufficient ? h("button", { type: 'button',
             onClick: openDaAlloReview,
             "aria-label": "Review Dynamic Assessment tables before opening AlloSheet",
             title: "Choose a bounded summary or coded probe transfer. AlloSheet cannot write back to Dynamic Assessment.",
@@ -15675,7 +15677,7 @@
                   + (stats.n < 30 ? " Below ~30 sessions, treat it as exploratory context only." : "")
                 )
               ),
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () { setStartScreenView("population"); },
                 "aria-label": "Open full population statistics view",
                 style: { padding: "6px 12px", borderRadius: 8, border: "1px solid var(--da-violet-mid-2)", background: "var(--da-surface)", color: "var(--da-violet-mid-2)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -15941,7 +15943,7 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 15, fontWeight: 800, color: "var(--da-ink)" } },
                   "📦 " + doneCount + " of " + outputs.length + " ready · " + aiDone + "/" + totalAi + " AI outputs drafted")
               ),
-              aiDone < totalAi ? h("button", {
+              aiDone < totalAi ? h("button", { type: 'button',
                 onClick: function () {
                   if (!iepGoals.length) { setIepPanelOpen(true); generateIepGoalsForSession(sessionForGenW); }
                   if (!accommodations.length) { setAccomPanelOpen(true); generateAccommodationsForSession(sessionForGenW); }
@@ -15972,17 +15974,17 @@
                   ),
                   h("div", { style: { fontSize: 11, color: daHex(o.statusColor), fontWeight: 600, lineHeight: 1.4 } }, o.statusText),
                   o.action ? h("div", { style: { display: "flex", gap: 4, marginTop: 4 } },
-                    o.done && o.anchor ? h("button", {
+                    o.done && o.anchor ? h("button", { type: 'button',
                       onClick: function () { scrollToOutputId(o.anchor); },
                       "aria-label": "Jump to " + o.label,
                       style: { padding: "3px 8px", borderRadius: 4, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                     }, "↓ Jump") : null,
-                    !o.done ? h("button", {
+                    !o.done ? h("button", { type: 'button',
                       onClick: o.action,
                       disabled: o.busy,
                       "aria-label": "Generate " + o.label,
                       style: { padding: "3px 10px", borderRadius: 4, border: "none", background: o.busy ? "var(--da-faint)" : (daTheme === "contrast" ? "#ffff00" : o.statusColor), color: "var(--da-on-accent)", fontSize: 10.5, fontWeight: 800, cursor: o.busy ? "wait" : "pointer", fontFamily: "inherit" }
-                    }, o.busy ? "Drafting…" : "Generate") : h("button", {
+                    }, o.busy ? "Drafting…" : "Generate") : h("button", { type: 'button',
                       onClick: o.action,
                       "aria-label": "Open " + o.label + " panel",
                       style: { padding: "3px 10px", borderRadius: 4, border: "1px solid " + daHex(o.statusColor), background: "transparent", color: daHex(o.statusColor), fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16246,17 +16248,17 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "📈 Progress monitoring plan")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { generateProgressMonitoringForSession(sessionForGen); },
                   disabled: monitoringBusy,
                   "aria-label": pm ? "Regenerate monitoring plan" : "Generate monitoring plan",
                   style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-indigo)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: monitoringBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: monitoringBusy ? 0.7 : 1 }
                 }, monitoringBusy ? "🤖 Drafting…" : (pm ? "Regenerate" : "Generate plan")),
-                pm ? h("button", {
+                pm ? h("button", { type: 'button',
                   onClick: function () { setProgressMonitoring(null); setMonitoringError(null); },
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { setMonitoringPanelOpen(false); },
                   "aria-label": "Close monitoring panel",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16301,7 +16303,7 @@
                           "aria-label": "What's being monitored",
                           style: { flex: 1, padding: "4px 7px", border: "1px solid var(--da-indigo-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box" }
                         }),
-                        h("button", {
+                        h("button", { type: 'button',
                           onClick: function () { removeMonitoringArrayItem("goalMonitoring", gi); },
                           "aria-label": "Remove this monitoring entry",
                           style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16392,7 +16394,7 @@
               ) : null,
               // Footer
               h("div", { style: { paddingTop: 6, display: "flex", justifyContent: "flex-end", gap: 6 } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { copyTextToClipboard(formatMonitoringPlanForClipboard(pm, s.studentNickname)); },
                   "aria-label": "Copy monitoring plan to clipboard",
                   style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16421,17 +16423,17 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🧑‍🏫 Classroom handoff page")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { generateTeacherHandoffForSession(sessionForGen); },
                   disabled: teacherBusy,
                   "aria-label": hh ? "Regenerate teacher handoff" : "Generate teacher handoff",
                   style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-sky)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: teacherBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: teacherBusy ? 0.7 : 1 }
                 }, teacherBusy ? "🤖 Drafting…" : (hh ? "Regenerate" : "Generate handoff")),
-                hh ? h("button", {
+                hh ? h("button", { type: 'button',
                   onClick: function () { setTeacherHandoff(null); setTeacherError(null); },
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { setTeacherPanelOpen(false); },
                   "aria-label": "Close teacher handoff panel",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16476,7 +16478,7 @@
                           "aria-label": "Strategy title",
                           style: { flex: 1, padding: "4px 6px", border: "1px solid var(--da-sky-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12.5, fontWeight: 700, color: "var(--da-ink)", boxSizing: "border-box" }
                         }),
-                        h("button", {
+                        h("button", { type: 'button',
                           onClick: function () { removeTeacherArrayItem("whatWorks", wi); },
                           "aria-label": "Remove strategy",
                           style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16520,7 +16522,7 @@
                         "aria-label": "Avoid item " + (xi + 1),
                         style: { flex: 1, padding: "5px 7px", border: "1px solid var(--da-red-tint-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       }),
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { removeTeacherArrayItem("whatDidNotWork", xi); },
                         "aria-label": "Remove",
                         style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16543,7 +16545,7 @@
                         "aria-label": "Watch for item " + (xi + 1),
                         style: { flex: 1, padding: "5px 7px", border: "1px solid var(--da-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                       }),
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { removeTeacherArrayItem("watchFor", xi); },
                         "aria-label": "Remove",
                         style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16572,7 +16574,7 @@
                           "aria-label": "Probe frequency",
                           style: { width: 100, padding: "4px 6px", border: "1px solid var(--da-sky-border)", borderRadius: 4, fontFamily: "inherit", fontSize: 11, boxSizing: "border-box" }
                         }),
-                        h("button", {
+                        h("button", { type: 'button',
                           onClick: function () { removeTeacherArrayItem("quickProbes", pi); },
                           "aria-label": "Remove probe",
                           style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16611,7 +16613,7 @@
                           "aria-label": "Red flag " + (xi + 1),
                           style: { flex: 1, padding: "4px 7px", border: "1px solid var(--da-red-tint-2)", borderRadius: 4, fontFamily: "inherit", fontSize: 12, lineHeight: 1.5, resize: "vertical", boxSizing: "border-box" }
                         }),
-                        h("button", {
+                        h("button", { type: 'button',
                           onClick: function () { removeTeacherArrayItem("redFlags", xi); },
                           "aria-label": "Remove red flag",
                           style: { padding: "3px 7px", borderRadius: 4, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16623,12 +16625,12 @@
               ),
               // Footer
               h("div", { style: { paddingTop: 6, display: "flex", justifyContent: "flex-end", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { copyTextToClipboard(formatTeacherHandoffForClipboard(hh, s.studentNickname)); },
                   "aria-label": "Copy handoff to clipboard",
                   style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "📋 Copy handoff"),
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () {
                     try {
                       if (!daCanExport("print")) return;
@@ -16667,17 +16669,17 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "👨‍👩‍👧 Plain-language letter for the family")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { generateFamilySummaryForSession(sessionForGen); },
                   disabled: familyBusy,
                   "aria-label": familySummary ? "Regenerate family summary" : "Generate family summary",
                   style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-rose)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: familyBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: familyBusy ? 0.7 : 1 }
                 }, familyBusy ? "🤖 Drafting…" : (familySummary ? "Regenerate" : "Generate summary")),
-                familySummary ? h("button", {
+                familySummary ? h("button", { type: 'button',
                   onClick: function () { setFamilySummary(null); setFamilyError(null); },
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { setFamilyPanelOpen(false); },
                   "aria-label": "Close family summary panel",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16716,14 +16718,14 @@
                             "aria-label": "Family question " + (qi + 1),
                             style: { flex: 1, padding: "5px 8px", border: "1px solid var(--da-border)", borderRadius: 6, fontFamily: "inherit", fontSize: 12.5, lineHeight: 1.55, resize: "vertical", boxSizing: "border-box" }
                           }),
-                          h("button", {
+                          h("button", { type: 'button',
                             onClick: function () { removeFamilyQuestion(qi); },
                             "aria-label": "Remove this question",
                             style: { padding: "3px 7px", borderRadius: 5, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                           }, "✕")
                         );
                       }),
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: addFamilyQuestion,
                         "aria-label": "Add another question",
                         style: { padding: "5px 10px", borderRadius: 5, border: "1px dashed var(--da-rose-border)", background: "transparent", color: "var(--da-rose-text)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", alignSelf: "flex-start" }
@@ -16746,12 +16748,12 @@
             ) : null,
             // Footer actions
             familySummary ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--da-rose-border)", display: "flex", justifyContent: "flex-end", gap: 6, flexWrap: "wrap" } },
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () { copyTextToClipboard(formatFamilySummaryForClipboard(familySummary, s.studentNickname)); },
                 "aria-label": "Copy family letter to clipboard",
                 style: { padding: "6px 12px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
               }, "📋 Copy as letter"),
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () {
                   try {
                     if (!daCanExport("print")) return;
@@ -16797,17 +16799,17 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🛠 Classroom accommodations")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { generateAccommodationsForSession(sessionForGen); },
                   disabled: accomBusy,
                   "aria-label": accommodations.length === 0 ? "Generate accommodations from this session" : "Regenerate all accommodations",
                   style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.7 : 1 }
                 }, accomBusy ? "🤖 Drafting…" : (accommodations.length === 0 ? "Generate accommodations" : "Regenerate all")),
-                accommodations.length > 0 ? h("button", {
+                accommodations.length > 0 ? h("button", { type: 'button',
                   onClick: function () { setAccommodations([]); setAccomError(null); },
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { setAccomPanelOpen(false); },
                   "aria-label": "Close accommodations panel",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16844,18 +16846,18 @@
                               ACCOM_CATEGORY_LABELS[a.category] || a.category)
                           ),
                           h("div", { style: { display: "flex", gap: 4 } },
-                            h("button", {
+                            h("button", { type: 'button',
                               onClick: function () { copyTextToClipboard(formatAccommodationForClipboard(a)); },
                               "aria-label": "Copy accommodation to clipboard",
                               style: { padding: "3px 9px", borderRadius: 5, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                             }, "📋 Copy"),
-                            h("button", {
+                            h("button", { type: 'button',
                               onClick: function () { regenerateOneAccommodation(gi, sessionForGen); },
                               disabled: accomBusy,
                               "aria-label": "Regenerate this accommodation",
                               style: { padding: "3px 9px", borderRadius: 5, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: accomBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: accomBusy ? 0.6 : 1 }
                             }, "🔁"),
-                            h("button", {
+                            h("button", { type: 'button',
                               onClick: function () { removeAccommodation(gi); },
                               "aria-label": "Remove this accommodation",
                               style: { padding: "3px 7px", borderRadius: 5, border: "1px solid var(--da-red-border)", background: "transparent", color: "var(--da-red-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16899,7 +16901,7 @@
             ) : null,
             // Footer: copy-all
             accommodations.length > 1 ? h("div", { style: { marginTop: 12, paddingTop: 10, borderTop: "1px solid var(--da-green-border)", display: "flex", justifyContent: "flex-end", gap: 6 } },
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () {
                   var all = accommodations.map(function (a, i) { return "── " + (i + 1) + ". " + formatAccommodationForClipboard(a); }).join("\n\n");
                   copyTextToClipboard(all);
@@ -16929,18 +16931,18 @@
                 h("h3", { style: { margin: "2px 0 0", fontSize: 16, fontWeight: 800, color: "var(--da-ink)" } }, "🎯 Draft IEP goals from this DA")
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { generateIepGoalsForSession(sessionForGen); },
                   disabled: iepBusy,
                   "aria-label": iepGoals.length === 0 ? "Generate IEP goals from this session" : "Regenerate all IEP goals",
                   style: { padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontSize: 12, fontWeight: 800, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.7 : 1 }
                 }, iepBusy ? "🤖 Drafting…" : (iepGoals.length === 0 ? "Generate goals" : "Regenerate all")),
-                iepGoals.length > 0 ? h("button", {
+                iepGoals.length > 0 ? h("button", { type: 'button',
                   onClick: function () { setIepGoals([]); setIepError(null); },
                   "aria-label": "Clear all generated goals",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                 }, "Clear") : null,
-                h("button", {
+                h("button", { type: 'button',
                   onClick: function () { setIepPanelOpen(false); },
                   "aria-label": "Close IEP goals panel",
                   style: { padding: "6px 10px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
@@ -16967,20 +16969,20 @@
                     h("div", { style: { fontSize: 11, color: "var(--da-amber-text-2)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 800 } },
                       "Goal " + (gi + 1) + " · " + g.domain),
                     h("div", { style: { display: "flex", gap: 4 } },
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { copyTextToClipboard(formatGoalForClipboard(g)); },
                         "aria-label": "Copy goal " + (gi + 1) + " to clipboard",
                         title: "Copy goal + objectives as plain text",
                         style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
                       }, "📋 Copy"),
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { regenerateOneIepGoal(gi, sessionForGen); },
                         disabled: iepBusy,
                         "aria-label": "Regenerate goal " + (gi + 1),
                         title: "Regenerate this single goal",
                         style: { padding: "4px 10px", borderRadius: 6, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink-3)", fontSize: 10.5, fontWeight: 700, cursor: iepBusy ? "wait" : "pointer", fontFamily: "inherit", opacity: iepBusy ? 0.6 : 1 }
                       }, "🔁 Regenerate"),
-                      h("button", {
+                      h("button", { type: 'button',
                         onClick: function () { removeIepGoal(gi); },
                         "aria-label": "Remove goal " + (gi + 1),
                         title: "Drop this goal",
@@ -17048,7 +17050,7 @@
             ) : null,
             // Footer: copy-all-as-one-block
             iepGoals.length > 1 ? h("div", { style: { marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--da-amber-border-2)", display: "flex", justifyContent: "flex-end", gap: 6 } },
-              h("button", {
+              h("button", { type: 'button',
                 onClick: function () {
                   var all = iepGoals.map(function (g, i) { return "── Goal " + (i + 1) + " ──\n" + formatGoalForClipboard(g); }).join("\n\n");
                   copyTextToClipboard(all);
@@ -17062,50 +17064,50 @@
 
         // Action row
         h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-          evidence.sufficient ? h("button", {
+          evidence.sufficient ? h("button", { type: 'button',
             onClick: function () { var saved = finalizeSession(); if (saved) addToast("Session saved."); },
             style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-btn-green)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
-          }, "✓ Save session") : h("button", {
+          }, "✓ Save session") : h("button", { type: 'button',
             onClick: function () { daAskConfirm({ message: daArchiveIncompleteConfirm, confirmLabel: daArchiveIncompleteLabel, onConfirm: function () { if (archiveIncompleteSession(s.incompleteReason || "interrupted")) addToast("Incomplete assessment record saved without interpretation."); } }); },
             style: { padding: "10px 18px", borderRadius: 10, border: "none", background: "var(--da-btn-amber)", color: "var(--da-on-accent)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, daArchiveIncompleteLabel),
           // Phase K — IEP goal generator entry
-          evidence.sufficient && !iepPanelOpen ? h("button", {
+          evidence.sufficient && !iepPanelOpen ? h("button", { type: 'button',
             onClick: function () { setIepPanelOpen(true); },
             "aria-label": "Open the IEP goal generator panel",
             title: "Draft SMART-format annual goals + short-term objectives from this DA session",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-amber-text-2)", background: "var(--da-amber-tint-3)", color: "var(--da-amber-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🎯 Draft IEP goals") : null,
           // Phase Q — UDL accommodations entry
-          evidence.sufficient && !accomPanelOpen ? h("button", {
+          evidence.sufficient && !accomPanelOpen ? h("button", { type: 'button',
             onClick: function () { setAccomPanelOpen(true); },
             "aria-label": "Open the UDL accommodations panel",
             title: "Draft UDL-aligned classroom accommodations from this DA session",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-green-mid)", background: "var(--da-green-tint)", color: "var(--da-green-text-2)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🛠 Accommodations") : null,
           // Phase S — Family-facing summary entry
-          evidence.sufficient && !familyPanelOpen ? h("button", {
+          evidence.sufficient && !familyPanelOpen ? h("button", { type: 'button',
             onClick: function () { setFamilyPanelOpen(true); },
             "aria-label": "Open the family-facing summary panel",
             title: "Draft a plain-language summary to share with the family before an IEP meeting",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-rose-text)", background: "var(--da-rose-tint)", color: "var(--da-rose-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "👨‍👩‍👧 Family letter") : null,
           // Phase T — Teacher handoff entry
-          evidence.sufficient && !teacherPanelOpen ? h("button", {
+          evidence.sufficient && !teacherPanelOpen ? h("button", { type: 'button',
             onClick: function () { setTeacherPanelOpen(true); },
             "aria-label": "Open the teacher / case-manager handoff panel",
             title: "Draft a one-page handoff for the implementing teacher",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-sky-deep)", background: "var(--da-sky-tint-2)", color: "var(--da-sky-deep)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🧑‍🏫 Teacher handoff") : null,
           // Phase X — Monitoring plan entry
-          evidence.sufficient && !monitoringPanelOpen ? h("button", {
+          evidence.sufficient && !monitoringPanelOpen ? h("button", { type: 'button',
             onClick: function () { setMonitoringPanelOpen(true); },
             "aria-label": "Open the progress monitoring plan panel",
             title: "Draft a CBM-anchored progress monitoring plan with decision rules",
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-indigo-text)", background: "var(--da-indigo-tint)", color: "var(--da-indigo-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📈 Monitoring plan") : null,
           // Generate-all convenience button (only if at least one not yet generated)
-          evidence.sufficient && (!iepGoals.length || !accommodations.length || !familySummary || !teacherHandoff || !progressMonitoring) ? h("button", {
+          evidence.sufficient && (!iepGoals.length || !accommodations.length || !familySummary || !teacherHandoff || !progressMonitoring) ? h("button", { type: 'button',
             onClick: function () {
               var pretestResults = (s.itemResults || []).filter(function (r) { return r.phase === "pretest"; });
               var posttestResults = (s.itemResults || []).filter(function (r) { return r.phase === "posttest"; });
@@ -17139,7 +17141,7 @@
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-ink-3)", background: "var(--da-surface)", color: "var(--da-ink)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "🖨 Print packet") : null,
           // Phase D — Export to Report Writer
-          evidence.sufficient ? h("button", {
+          evidence.sufficient ? h("button", { type: 'button',
             onClick: function () {
               // Compose a synthetic session object that includes the
               // computed mod-index + tier (the live activeSession doesn't
@@ -17191,7 +17193,7 @@
             title: __alloT("da.export.send_to_report_writer_title", "Transfer reviewed findings to the protected Report Writer workspace."),
             style: { padding: "10px 18px", borderRadius: 10, border: "1px solid var(--da-accent)", background: "var(--da-blue-tint)", color: "var(--da-accent-text)", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }
           }, "📝 Send to Report Writer") : null,
-          h("button", {
+          h("button", { type: 'button',
             onClick: function () {
               daAskConfirm({
                 message: "Discard this session without saving it?",

@@ -261,7 +261,9 @@ describe('Phase 16 Wave 2 — Feature source modules hardening', () => {
     expect(read('note_taking_templates_source.jsx')).toContain('<th scope="col">');
     expect(read('note_taking_templates_source.jsx')).toContain('Object.prototype.hasOwnProperty.call(connMap, conn.type)');
     expect(read('student_interaction_source.jsx')).toContain('window.getComputedStyle(cur)');
-    expect(read('speech_setup_source.jsx')).toContain('Object.prototype.hasOwnProperty.call(TIER_SIZES_MB, progress.tier)');
+    // Own-key check through a module-level alias of Object.prototype.hasOwnProperty (2026-11-23).
+    expect(read('speech_setup_source.jsx')).toContain('var _SS_HAS_OWN = Object.prototype.hasOwnProperty;');
+    expect(read('speech_setup_source.jsx')).toContain('_SS_HAS_OWN.call(TIER_SIZES_MB, progress.tier) ? TIER_SIZES_MB[progress.tier] : 0');
     expect(read('misc_components_source.jsx')).toContain('e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229');
     expect(read('mtss_triage_source.jsx')).toContain('const map = Object.create(null);');
     expect(read('research_hub_educator_source.jsx')).toContain('var byTp = Object.create(null);');
@@ -312,7 +314,8 @@ describe('Phase 16 Wave 3 — Final views, Arcade modes & Connected Escape Room'
     expect(read('view_adventure_source.jsx')).toContain('window.getComputedStyle(cur)');
 
     const pd = read('view_prompt_dialog_source.jsx');
-    expect(pd).toContain("if (e.target?.closest?.('button')) return;");
+    // Enter on a button (and now also on the choice filter box) never submits through the shortcut.
+    expect(pd).toContain("if (e.target?.closest?.('button') || e.target?.getAttribute?.('data-prompt-choice-filter') === 'true') return;");
     expect(pd).toContain('window.getComputedStyle(cur)');
 
     const an = read('view_analysis_source.jsx');

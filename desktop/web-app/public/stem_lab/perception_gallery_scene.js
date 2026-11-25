@@ -1,9 +1,10 @@
-(function () {
+(function (global) {
   'use strict';
+  if (!global) return;
 
-  var Lab = window.StemLab = window.StemLab || {};
+  var Lab = global.StemLab = global.StemLab || {};
   var EYE_Y = 3.2, EYE_Z = 12;
-  var CENTERS = { room: -11, triangle: 0, shape: 11 };
+  var CENTERS = Object.freeze(Object.assign(Object.create(null), { room: -11, triangle: 0, shape: 11 }));
   var COLORS = { teal: 0x178e89, coral: 0xe57668, gold: 0xf4be43, ink: 0x364d52, floor: 0xe6ebeb };
 
   function clamp(value, min, max) {
@@ -18,7 +19,10 @@
   }
 
   function projectPoint(point, center) {
-    var scale = EYE_Z / (EYE_Z - point.z);
+    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y) || !Number.isFinite(point.z)) return { x: 0, y: 0 };
+    var denom = EYE_Z - point.z;
+    if (Math.abs(denom) < 1e-9) return { x: 0, y: 0 };
+    var scale = EYE_Z / denom;
     return { x: (point.x - (center || 0)) * scale, y: (point.y - EYE_Y) * scale };
   }
 
@@ -251,7 +255,8 @@
     }
 
     function build(THREE, S, m) {
-      var station = CENTERS[m.station] == null ? 'room' : m.station;
+      m = m || {};
+      var station = Object.prototype.hasOwnProperty.call(CENTERS, m.station) ? m.station : 'room';
       var center = CENTERS[station];
       var overview = m.view === 'gallery';
       var open = m.view === 'inspect';
@@ -351,7 +356,9 @@
       function rod(from, to, radius, color, parent) {
         var a = new THREE.Vector3(from.x, from.y, from.z), b = new THREE.Vector3(to.x, to.y, to.z);
         var direction = new THREE.Vector3().subVectors(b, a);
-        var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), 10), material(color));
+        var len = direction.length();
+        if (len < 1e-9) return null;
+        var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 10), material(color));
         mesh.position.copy(a).add(b).multiplyScalar(0.5);
         mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
         (parent || S.model).add(mesh);
@@ -568,7 +575,7 @@
         });
 
         // Subtle sunlit museum air dust motes drifting inside the spotlight cones (GPU ShaderMaterial; bypassed in High-Contrast).
-        if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function' && (overview || open)) {
+        if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function' && (typeof THREE.ShaderMaterial === 'function' || typeof THREE.PointsMaterial === 'function') && (overview || open)) {
           var moteCount = 110;
           var pos = new Float32Array(moteCount * 3);
           var seeds = new Float32Array(moteCount);
@@ -791,7 +798,8 @@
     }
 
     function camera(THREE, S, m) {
-      var center = CENTERS[m.station] == null ? CENTERS.room : CENTERS[m.station];
+      m = m || {};
+      var center = Object.prototype.hasOwnProperty.call(CENTERS, m.station) ? CENTERS[m.station] : CENTERS.room;
       if (m.view !== 'inspect' && m.view !== 'gallery') {
         var angle = (m.station === 'triangle' ? clamp(m.angle, -60, 60) : 0) * Math.PI / 180;
         S.camera.position.set(center + EYE_Z * Math.sin(angle), EYE_Y, EYE_Z * Math.cos(angle));
@@ -810,7 +818,7 @@
       var right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), direction).normalize();
       var up = new THREE.Vector3().crossVectors(direction, right).normalize();
       var tanV = Math.tan(42 * Math.PI / 360), tanH = tanV * Math.max(0.2, S.camera.aspect), fit = 1;
-      S.fitPts.forEach(function (point) {
+      if (Array.isArray(S.fitPts)) S.fitPts.forEach(function (point) {
         var offset = point.clone().sub(S.target), along = offset.dot(direction);
         fit = Math.max(fit, Math.abs(offset.dot(right)) / tanH + along, Math.abs(offset.dot(up)) / tanV + along);
       });
@@ -884,6 +892,7 @@
 
     function statusChanged(next) {
       if (next !== 'ready') publishLayout([]);
+      if (next === 'failed') disposeGalleryTextures();
       if (statusNotify) { try { statusNotify(next); } catch (e) {} }
     }
 
@@ -897,7 +906,7 @@
     viewer.pickStation = function (clientX, clientY) {
       var S = sceneState;
       if (!S || S.disposing || S.failed || S.contextLost || !S.renderer ||
-          !S.data || S.data.view !== 'gallery' || !isFinite(clientX) || !isFinite(clientY) || viewer.status() !== 'ready') return null;
+          !S.data || S.data.view !== 'gallery' || typeof clientX !== 'number' || !Number.isFinite(clientX) || typeof clientY !== 'number' || !Number.isFinite(clientY) || viewer.status() !== 'ready') return null;
       var canvas = S.renderer.domElement, rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height || clientX < rect.left || clientY < rect.top ||
           clientX > rect.left + rect.width || clientY > rect.top + rect.height) return null;
@@ -915,6 +924,7 @@
       attachedHost = host || null;
       sceneState = null;
       publishLayout([]);
+      disposeGalleryTextures();
       subscribeStatus(statusChanged);
       attach(host);
       if (!host) Promise.resolve().then(function () {
@@ -936,4 +946,4 @@
 
   Lab.PerceptionGalleryScene = { createViewer: createViewer, liftPoint: liftPoint, projectPoint: projectPoint,
     roomObjects: roomObjects, triangleParts: triangleParts, starParts: starParts, measurements: measurements };
-}());
+}(typeof window !== 'undefined' && window ? window : (typeof globalThis !== 'undefined' ? globalThis : this)));

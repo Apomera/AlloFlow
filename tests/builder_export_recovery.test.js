@@ -62,7 +62,10 @@ describe('Builder export content preservation', () => {
     d.exportPreviewRef.current.contentDocument.designMode = 'off';
     const win = popup();
     win.document.write.mockImplementation(() => { throw new Error('write failed'); });
-    await expect(window.AlloModules.ExportHandlers.executeExportFromPreview(d)).rejects.toThrow('write failed');
+    // A failed write is now reported (popup notice) and returns false instead of throwing.
+    await expect(window.AlloModules.ExportHandlers.executeExportFromPreview(d)).resolves.toBe(false);
+    expect(win.document.write).toHaveBeenCalled();
+    expect(d.setShowExportPreview).not.toHaveBeenCalled();
     expect(d.exportPreviewRef.current.contentDocument.designMode).toBe('off');
   });
 });

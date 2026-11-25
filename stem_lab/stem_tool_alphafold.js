@@ -55,32 +55,36 @@
       '.af-mission-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}',
       '.af-mission-copy{flex:1 1 320px;min-width:0;}',
       '.af-badge-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}',
-      '.af-eyebrow{margin:0;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;}',
-      '.af-subject-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,118,110,.28);color:#ccfbf1;font-size:10px;font-weight:800;letter-spacing:.05em;}',
+      '.af-eyebrow{margin:0;color:#5eead4;font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;}',
+      '.af-subject-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,118,110,.28);color:#ccfbf1;font-size:12px;font-weight:800;letter-spacing:.05em;}',
       '.af-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,32px);line-height:1.12;letter-spacing:-.015em;}',
       '.af-subtitle{max-width:680px;margin:8px 0 0;color:#cbd5e1;font-size:13px;line-height:1.58;}',
-      '.af-status{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 12px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,23,42,.82);color:#99f6e4;font-size:11px;font-weight:800;white-space:nowrap;}',
+      '.af-status{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:7px 12px;border:1px solid rgba(94,234,212,.35);border-radius:999px;background:rgba(15,23,42,.82);color:#99f6e4;font-size:12px;font-weight:800;white-space:nowrap;}',
       '.af-status-dot{width:8px;height:8px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;flex:0 0 8px;}',
       '.af-status[data-state="blocked"] .af-status-dot{background:#fbbf24;box-shadow:0 0 8px #fbbf24;}',
       '.af-stage-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;padding-bottom:10px;border-bottom:1px solid rgba(148,163,184,.18);}',
       '.af-preset-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;}',
-      '.af-preset-label{color:#94a3b8;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}',
-      '.af-preset-chip{min-height:34px;padding:5px 10px;border:1px solid rgba(148,163,184,.28);border-radius:999px;background:rgba(15,23,42,.72);color:#cbd5e1;font-size:11px;font-weight:750;cursor:pointer;transition:border-color .16s,background .16s,color .16s;}',
+      '.af-preset-label{color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-right:2px;}',
+      '.af-preset-chip{min-height:44px;padding:5px 12px;border:1px solid rgba(148,163,184,.28);border-radius:999px;background:rgba(15,23,42,.72);color:#cbd5e1;font-size:12px;font-weight:750;cursor:pointer;transition:border-color .16s,background .16s,color .16s;}',
       '.af-preset-chip:hover{border-color:#5eead4;color:#f8fafc;}',
       '.af-preset-chip[aria-pressed="true"]{border-color:#2dd4bf;background:rgba(20,184,166,.24);color:#f0fdfa;box-shadow:0 0 0 1px rgba(45,212,191,.35);}',
       '.af-stage-tabs{display:inline-flex;gap:4px;padding:3px;border:1px solid rgba(148,163,184,.24);border-radius:10px;background:rgba(2,6,23,.72);}',
-      '.af-stage-tab{min-height:32px;padding:5px 11px;border:0;border-radius:7px;background:transparent;color:#94a3b8;font-size:11px;font-weight:800;cursor:pointer;transition:background .16s,color .16s;}',
+      '.af-stage-tab{min-height:44px;padding:5px 12px;border:0;border-radius:7px;background:transparent;color:#cbd5e1;font-size:12px;font-weight:800;cursor:pointer;transition:background .16s,color .16s;}',
       '.af-stage-tab:hover{color:#e2e8f0;}',
       '.af-stage-tab[aria-selected="true"]{background:linear-gradient(135deg,#0f766e,#0369a1);color:#ffffff;}',
       '.af-confidence-atlas{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(240px,.55fr);gap:12px;margin-top:12px;align-items:stretch;}',
       '.af-protein-viz{display:flex;flex-direction:column;justify-content:space-between;min-width:0;border:1px solid rgba(94,234,212,.26);border-radius:16px;background:radial-gradient(circle at 30% 42%,rgba(14,165,233,.16),transparent 38%),linear-gradient(150deg,rgba(15,23,42,.92),rgba(2,6,23,.98)) #020617;padding:10px 12px;}',
       '.af-viz-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;}',
-      '.af-viz-label{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid rgba(125,211,252,.28);border-radius:999px;background:rgba(2,6,23,.82);color:#bae6fd;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}',
-      '.af-viz-acc{color:#99f6e4;font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-viz-label{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid rgba(125,211,252,.28);border-radius:999px;background:rgba(2,6,23,.82);color:#bae6fd;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}',
+      '.af-viz-acc{color:#99f6e4;font:800 12px ui-monospace,SFMono-Regular,Menlo,monospace;}',
       '.af-protein-viz svg{display:block;width:100%;height:auto;max-height:224px;}',
       '.af-viz-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid rgba(148,163,184,.14);}',
-      '.af-viz-summary{color:#cbd5e1;font-size:11px;line-height:1.4;}',
-      '.af-viz-note{color:#94a3b8;font-size:10px;font-weight:700;}',
+      '.af-viz-summary{color:#cbd5e1;font-size:13px;line-height:1.4;}',
+      '.af-viz-note{color:#94a3b8;font-size:12px;font-weight:700;}',
+      '.af-ribbon-row{display:flex;justify-content:space-between;gap:8px;margin:2px 4px;}',
+      '.af-ribbon-label{color:#cbd5e1;font-size:12px;font-weight:700;line-height:1.3;}',
+      '.af-ribbon-end{padding:2px 9px;border:1px solid rgba(203,213,225,.5);border-radius:999px;background:rgba(51,65,85,.6);color:#f1f5f9;}',
+      '.theme-contrast .af-ribbon-end,.af-launcher[data-theme="contrast"] .af-ribbon-end{background:#000000;border-color:#ffff00;}',
       '.af-fold-shadow{fill:none;stroke:#020617;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;opacity:.75;}',
       '.af-fold-ribbon{fill:none;stroke:url(#af-confidence-gradient);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);transition:opacity .2s;}',
       '.af-fold-segment{fill:none;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);opacity:.15;transition:opacity .2s,stroke-width .2s;cursor:pointer;}',
@@ -104,16 +108,47 @@
       '.af-pae-cell:hover{opacity:.88;}',
       '.af-confidence-key{display:flex;flex-direction:column;justify-content:space-between;min-width:0;padding:13px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(15,23,42,.82);}',
       '.af-confidence-key h3{margin:0;color:#f8fafc;font-size:13px;}',
-      '.af-confidence-key>p{margin:4px 0 9px;color:#cbd5e1;font-size:11px;line-height:1.45;}',
-      '.af-confidence-row{display:grid;width:100%;grid-template-columns:10px 46px minmax(0,1fr) auto;align-items:center;gap:7px;padding:7px 6px;border:0;border-top:1px solid rgba(148,163,184,.14);border-radius:6px;background:transparent;text-align:left;cursor:pointer;transition:background .15s;}',
+      '.af-confidence-key h3+p{margin:4px 0 9px;color:#cbd5e1;font-size:12px;line-height:1.45;}',
+      '.af-confidence-row{display:grid;width:100%;min-height:44px;grid-template-columns:10px 50px minmax(0,1fr) auto;align-items:center;gap:7px;padding:7px 6px;border:0;border-top:1px solid rgba(148,163,184,.14);border-radius:6px;background:transparent;text-align:left;cursor:pointer;transition:background .15s;}',
       '.af-confidence-row:hover{background:rgba(148,163,184,.1);}',
       '.af-confidence-row[aria-pressed="true"]{background:rgba(56,189,248,.16);box-shadow:inset 3px 0 0 var(--af-confidence-color,currentColor);}',
       '.af-confidence-dot{width:9px;height:9px;border-radius:999px;box-shadow:0 0 8px currentColor;}',
-      '.af-confidence-range{color:#f8fafc;font:800 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
-      '.af-confidence-name{color:#e2e8f0;font-size:11px;font-weight:600;}',
-      '.af-confidence-pct{color:#94a3b8;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
-      '.af-confidence-reading{min-height:40px;margin-top:8px;padding:8px 9px;border-radius:9px;background:rgba(2,6,23,.55);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:11px;line-height:1.45;}',
-      '.af-confidence-caution{margin-top:8px;padding:8px 9px;border:1px solid rgba(251,191,36,.28);border-radius:9px;background:rgba(120,53,15,.22);color:#fde68a;font-size:10px;line-height:1.45;}',
+      '.af-confidence-range{color:#f8fafc;font:800 12px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-confidence-name{color:#e2e8f0;font-size:12px;font-weight:600;}',
+      '.af-confidence-pct{color:#cbd5e1;font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;}',
+      '.af-confidence-reading{min-height:40px;margin-top:8px;padding:8px 9px;border-radius:9px;background:rgba(2,6,23,.55);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:12px;line-height:1.45;}',
+      '.af-confidence-caution{margin-top:8px;padding:8px 9px;border:1px solid rgba(251,191,36,.28);border-radius:9px;background:rgba(120,53,15,.22);color:#fde68a;font-size:12px;line-height:1.45;}',
+      '.af-predict{margin-top:12px;padding:12px 13px;border:1px solid rgba(250,204,21,.4);border-radius:14px;background:rgba(15,23,42,.85);}',
+      '.af-predict-question{margin:0 0 9px;color:#f8fafc;font-size:14px;line-height:1.45;}',
+      '.af-predict-question strong{color:#fde68a;}',
+      '.af-predict-choices{display:flex;flex-wrap:wrap;gap:8px;}',
+      '.af-predict-choice{min-height:44px;padding:8px 14px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:13px;font-weight:800;cursor:pointer;}',
+      '.af-predict-choice:hover:not(:disabled){border-color:#fde68a;}',
+      '.af-predict-choice[aria-pressed="true"]{border-color:#fde68a;background:rgba(250,204,21,.16);color:#fef9c3;}',
+      '.af-predict-choice:disabled{cursor:default;opacity:.6;}',
+      '.af-predict-choice[data-correct="true"]{opacity:1;border-color:#4ade80;}',
+      '.af-predict-result{margin:10px 0 0;padding:9px 11px;border-radius:10px;font-size:13px;line-height:1.5;background:rgba(22,101,52,.38);color:#dcfce7;}',
+      '.af-predict-result[data-correct="false"]{background:rgba(154,52,18,.36);color:#ffedd5;}',
+      '.af-predict-tag{display:block;margin-top:3px;font-size:12px;font-weight:900;}',
+      '.af-predict-choice[data-verdict="match"],.af-predict-choice[data-verdict="answer"]{border:2px solid #4ade80;}',
+      '.af-predict-choice[data-verdict="wrong"]{opacity:1;border:2px dashed #fb923c;}',
+      '.af-predict-result{border:2px solid #4ade80;}.af-predict-result[data-correct="false"]{border:2px dashed #fb923c;}',
+      '.af-predict-mark{font-weight:900;}',
+      '.theme-contrast .af-predict-choice[data-verdict="match"],.af-launcher[data-theme="contrast"] .af-predict-choice[data-verdict="match"],.theme-contrast .af-predict-choice[data-verdict="answer"],.af-launcher[data-theme="contrast"] .af-predict-choice[data-verdict="answer"],.theme-contrast .af-predict-result[data-correct="true"],.af-launcher[data-theme="contrast"] .af-predict-result[data-correct="true"]{border:4px solid #00ff00!important;}',
+      '.theme-contrast .af-predict-choice[data-verdict="wrong"],.af-launcher[data-theme="contrast"] .af-predict-choice[data-verdict="wrong"],.theme-contrast .af-predict-result[data-correct="false"],.af-launcher[data-theme="contrast"] .af-predict-result[data-correct="false"]{border:3px dashed #ffff00!important;}',
+      '.theme-contrast .af-predict-choice[data-verdict="other"],.af-launcher[data-theme="contrast"] .af-predict-choice[data-verdict="other"]{border:1px dotted #ffff00!important;}',
+      '.af-preset-chip:disabled{cursor:not-allowed;opacity:.55;}',
+      '.af-pae-layout{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}',
+      '.af-protein-viz svg.af-pae-matrix{flex:1 1 220px;width:100%;max-width:300px;max-height:none;}',
+      '.af-pae-legend{flex:1 1 220px;min-width:0;color:#e2e8f0;}',
+      '.af-pae-legend-title{margin:0 0 6px;color:#f8fafc;font-size:13px;font-weight:800;}',
+      '.af-pae-scale{height:8px;margin-bottom:8px;border:1px solid #475569;border-radius:999px;}',
+      '.af-pae-legend-row{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px;}',
+      '.af-pae-swatch{flex:0 0 22px;width:22px;height:14px;border:1px solid #64748b;border-radius:3px;}',
+      '.af-pae-legend-note{margin:8px 0 0;padding:8px 10px;border:1px solid rgba(94,234,212,.42);border-radius:8px;background:rgba(15,118,110,.22);color:#cbd5e1;font-size:12px;line-height:1.45;}',
+      '.af-pae-legend-note strong{color:#99f6e4;}',
+      '.af-pae-bins-note{margin:6px 0 0;color:#cbd5e1;font-size:12px;line-height:1.45;font-style:italic;}',
+      '.theme-contrast .af-predict,.af-launcher[data-theme="contrast"] .af-predict,.theme-contrast .af-predict-choice,.af-launcher[data-theme="contrast"] .af-predict-choice,.theme-contrast .af-predict-result,.af-launcher[data-theme="contrast"] .af-predict-result{background:#000000!important;color:#ffff00!important;border:2px solid #ffff00!important;opacity:1!important;}',
       '@keyframes afResiduePulse{0%,100%{opacity:.68;transform:scale(.94)}50%{opacity:1;transform:scale(1.1)}}',
       '@keyframes afSpineFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-20}}',
       '@keyframes afRibbonShimmer{0%{stroke-dashoffset:0;opacity:.16}50%{stroke-dashoffset:-105;opacity:.48}100%{stroke-dashoffset:-210;opacity:.16}}',
@@ -128,16 +163,16 @@
       '.af-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:16px;}',
       '.af-metric{min-width:0;padding:10px 11px;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:rgba(15,23,42,.74);transition:border-color .16s;}',
       '.af-metric[data-active="true"]{border-color:rgba(45,212,191,.5);background:rgba(15,118,110,.16);}',
-      '.af-metric-label{display:block;color:#94a3b8;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}',
+      '.af-metric-label{display:block;color:#94a3b8;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}',
       '.af-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:16px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
-      '.af-metric-note{display:block;margin-top:2px;color:#cbd5e1;font-size:10px;line-height:1.35;}',
+      '.af-metric-note{display:block;margin-top:2px;color:#cbd5e1;font-size:12px;line-height:1.35;}',
       '.af-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px;}',
       '.af-primary{min-height:44px;padding:10px 17px;border:1px solid rgba(153,246,228,.45);border-radius:12px;background:linear-gradient(135deg,#0f766e,#0369a1);color:#ffffff;font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.25);transition:transform .16s,box-shadow .16s;}',
       '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.34);}',
       '.af-sample-launch{min-height:44px;padding:10px 14px;border:1px solid rgba(94,234,212,.38);border-radius:12px;background:rgba(15,23,42,.82);color:#ccfbf1;font-size:12px;font-weight:800;cursor:pointer;transition:border-color .16s,background .16s;}',
       '.af-sample-launch:hover{border-color:#2dd4bf;background:rgba(15,118,110,.3);}',
-      '.af-action-note{color:#cbd5e1;font-size:11px;line-height:1.45;flex:1 1 220px;min-width:0;}',
-      '.af-cross-scale{border-color:rgba(34,211,238,.45);background:linear-gradient(145deg,rgba(8,145,178,.14),rgba(15,23,42,.88) 72%) #0f172a;color:#e2e8f0;}.af-cross-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.af-cross-chip{padding:5px 9px;border:1px solid rgba(103,232,249,.28);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font-size:10px;font-weight:800}.af-evidence-ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:11px}.af-evidence-step{min-width:0;padding:11px;border:1px solid rgba(103,232,249,.22);border-radius:12px;background:rgba(15,23,42,.84)}.af-evidence-step span{color:#67e8f9;font-size:10px;font-weight:900;text-transform:uppercase}.af-evidence-step h4{margin:6px 0 5px;color:#f8fafc;font-size:12px}.af-evidence-step p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.5}.af-cross-evidence{margin-top:10px;padding:10px 12px;border-left:4px solid #22d3ee;border-radius:0 8px 8px 0;background:rgba(8,47,73,.55);color:#cffafe;font-size:11px;line-height:1.5}.af-claim-grid{display:grid;gap:7px;margin-top:9px}.af-claim-choice{width:100%;padding:10px 12px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;text-align:left;font-size:11px;font-weight:700;line-height:1.45;cursor:pointer}.af-claim-choice[aria-pressed=true]{border-color:#22d3ee;background:rgba(8,145,178,.22);color:#ecfeff}.af-cross-feedback{margin-top:9px;padding:10px 12px;border-radius:10px;font-size:11px;font-weight:800;line-height:1.45}.af-cross-feedback[data-correct=true]{background:rgba(22,101,52,.38);color:#bbf7d0}.af-cross-feedback[data-correct=false]{background:rgba(154,52,18,.36);color:#fed7aa}.af-secondary{min-height:40px;padding:9px 13px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer}.af-primary:disabled,.af-secondary:disabled{cursor:not-allowed;opacity:.5;transform:none}.af-evidence-notebook{margin-top:13px;padding:14px;border:1px solid rgba(167,243,208,.32);border-radius:14px;background:rgba(6,78,59,.18)}.af-evidence-notebook h3{font-size:14px;color:#f8fafc;margin:0}.af-evidence-notebook>p{margin:5px 0 10px;color:#a7f3d0;font-size:11px;line-height:1.5}.af-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.af-note-field{min-width:0}.af-note-field label{display:block;margin-bottom:5px;color:#d1fae5;font-size:10px;font-weight:850;text-transform:uppercase}.af-note-field textarea{box-sizing:border-box;width:100%;min-height:82px;resize:vertical;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0;padding:9px;font:inherit;font-size:11px;line-height:1.45}.af-note-field textarea:focus{outline:3px solid #22d3ee;outline-offset:2px}.af-record-checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.af-record-check{padding:4px 8px;border-radius:999px;background:#334155;color:#e2e8f0;font-size:10px;font-weight:850}.af-record-check[data-done=true]{background:#14532d;color:#bbf7d0}.af-record-saved{margin-top:9px;padding:9px 11px;border-radius:9px;background:rgba(22,101,52,.4);color:#bbf7d0;font-size:11px;font-weight:800}',
+      '.af-action-note{color:#cbd5e1;font-size:12px;line-height:1.45;flex:1 1 220px;min-width:0;}',
+      '.af-cross-scale{border-color:rgba(34,211,238,.45);background:linear-gradient(145deg,rgba(8,145,178,.14),rgba(15,23,42,.88) 72%) #0f172a;color:#e2e8f0;}.af-cross-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.af-cross-chip{padding:5px 9px;border:1px solid rgba(103,232,249,.28);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font-size:12px;font-weight:800}.af-evidence-ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:11px}.af-evidence-step{min-width:0;padding:11px;border:1px solid rgba(103,232,249,.22);border-radius:12px;background:rgba(15,23,42,.84)}.af-evidence-step span{color:#67e8f9;font-size:12px;font-weight:900;text-transform:uppercase}.af-evidence-step h4{margin:6px 0 5px;color:#f8fafc;font-size:13px}.af-evidence-step p{margin:0;color:#cbd5e1;font-size:12px;line-height:1.5}.af-cross-evidence{margin-top:10px;padding:10px 12px;border-left:4px solid #22d3ee;border-radius:0 8px 8px 0;background:rgba(8,47,73,.55);color:#cffafe;font-size:12px;line-height:1.5}.af-claim-grid{display:grid;gap:7px;margin-top:9px}.af-claim-choice{width:100%;padding:10px 12px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;text-align:left;font-size:12px;font-weight:700;line-height:1.45;cursor:pointer}.af-claim-choice[aria-pressed=true]{border-color:#22d3ee;background:rgba(8,145,178,.22);color:#ecfeff}.af-cross-feedback{margin-top:9px;padding:10px 12px;border-radius:10px;font-size:12px;font-weight:800;line-height:1.45}.af-cross-feedback[data-correct=true]{background:rgba(22,101,52,.38);color:#bbf7d0}.af-cross-feedback[data-correct=false]{background:rgba(154,52,18,.36);color:#fed7aa}.af-secondary{min-height:40px;padding:9px 13px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer}.af-primary:disabled,.af-secondary:disabled{cursor:not-allowed;opacity:.5;transform:none}.af-evidence-notebook{margin-top:13px;padding:14px;border:1px solid rgba(167,243,208,.32);border-radius:14px;background:rgba(6,78,59,.18)}.af-evidence-notebook h3{font-size:14px;color:#f8fafc;margin:0}.af-evidence-notebook>p{margin:5px 0 10px;color:#a7f3d0;font-size:12px;line-height:1.5}.af-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.af-note-field{min-width:0}.af-note-field label{display:block;margin-bottom:5px;color:#d1fae5;font-size:12px;font-weight:850;text-transform:uppercase}.af-note-field textarea{box-sizing:border-box;width:100%;min-height:82px;resize:vertical;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0;padding:9px;font:inherit;font-size:12px;line-height:1.45}.af-note-field textarea:focus{outline:3px solid #22d3ee;outline-offset:2px}.af-record-checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.af-record-check{padding:4px 8px;border-radius:999px;background:#334155;color:#e2e8f0;font-size:12px;font-weight:850}.af-record-check[data-done=true]{background:#14532d;color:#bbf7d0}.af-record-saved{margin-top:9px;padding:9px 11px;border-radius:9px;background:rgba(22,101,52,.4);color:#bbf7d0;font-size:12px;font-weight:800}',
       '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:#0f172a;color:#e2e8f0;}',
       '.af-launcher[data-theme="light"] .af-section{background:#ffffff;border-color:#cbd5e1;color:#0f172a;box-shadow:0 4px 16px rgba(15,23,42,.05);}',
       '.af-launcher[data-theme="light"] .af-section.af-cross-scale{background:linear-gradient(145deg,#ecfeff,#f8fafc 72%);border-color:#0891b2;color:#0f172a;}',
@@ -174,13 +209,13 @@
       '.af-launcher[data-theme="light"] .af-route-card{background:#f8fafc;border-color:#cbd5e1;}',
       '.af-route-card[data-complete="true"]{border-color:rgba(45,212,191,.6);background:linear-gradient(145deg,rgba(13,148,136,.18),#0f172a 70%) #0f172a;}',
       '.af-launcher[data-theme="light"] .af-route-card[data-complete="true"]{border-color:#0f766e;background:linear-gradient(145deg,#ccfbf1,#ffffff 75%);}',
-      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:12px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
       '.af-launcher[data-theme="light"] .af-route-kicker{color:#0f766e;}',
       '.af-route-card h4{margin:8px 0 5px;color:#f8fafc;font-size:13px;}',
       '.af-launcher[data-theme="light"] .af-route-card h4{color:#0f172a;}',
-      '.af-route-card p{margin:0;color:#cbd5e1;font-size:11px;line-height:1.5;}',
+      '.af-route-card p{margin:0;color:#cbd5e1;font-size:12px;line-height:1.5;}',
       '.af-launcher[data-theme="light"] .af-route-card p{color:#334155;}',
-      '.af-route-state{color:#cbd5e1;font-size:10px;font-weight:800;}',
+      '.af-route-state{color:#cbd5e1;font-size:12px;font-weight:800;}',
       '.af-launcher[data-theme="light"] .af-route-state{color:#334155;}',
       '.af-support-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:10px;}',
       '.af-details,.af-guardrail{border:1px solid #334155;border-radius:14px;background:#0f172a;color:#e2e8f0;}',
@@ -194,17 +229,17 @@
       '.af-launcher[data-theme="light"] .af-guardrail{background:linear-gradient(145deg,#fef3c7,#fffbeb 75%);border-color:#d97706;}',
       '.af-guardrail h3{margin:0 0 7px;color:#fde68a;font-size:13px;}',
       '.af-launcher[data-theme="light"] .af-guardrail h3{color:#92400e;}',
-      '.af-guardrail p{margin:0;color:#e2e8f0;font-size:11px;line-height:1.55;}',
+      '.af-guardrail p{margin:0;color:#e2e8f0;font-size:12px;line-height:1.55;}',
       '.af-launcher[data-theme="light"] .af-guardrail p{color:#451a03;}',
       '.af-guardrail p+p{margin-top:7px;}',
       '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.25);color:#fde68a;font-size:12px;line-height:1.5;}',
       '.af-launcher[data-theme="light"] .af-alert{background:#fef3c7;color:#78350f;border-color:#d97706;}',
       '.af-alert a{color:#fef3c7;text-decoration:underline;font-weight:800;}',
       '.af-launcher[data-theme="light"] .af-alert a{color:#78350f;}',
-      '.af-credit{margin:0;padding:0 4px;color:#94a3b8;font-size:10px;line-height:1.5;}',
+      '.af-credit{margin:0;padding:0 4px;color:#94a3b8;font-size:12px;line-height:1.5;}',
       '.af-launcher[data-theme="light"] .af-credit{color:#475569;}',
       '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:repeat(2,minmax(0,1fr));}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
-      '@media(max-width:520px){.af-launcher{padding:11px;}.af-evidence-ladder,.af-note-grid,.af-route{grid-template-columns:1fr;}.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary,.af-sample-launch{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
+      '@media(max-width:520px){.af-launcher{padding:11px;}.af-evidence-ladder,.af-note-grid,.af-route{grid-template-columns:1fr;}.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-mission-copy{flex:0 0 auto;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary,.af-sample-launch{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
       '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment,.af-route-progress-fill{transition:none;}.af-primary:hover{transform:none;}.af-residue-node,.af-fold-spine,.af-hbond-arc,.af-ribbon-shimmer,.af-emb-shimmer,.af-fold-beacon,.af-bar-glint,.af-spectrum-sheen,.af-pae-diag,.af-pae-sheen,.af-pae-cell-active,.af-status-dot{animation:none!important;}}',
       '.theme-contrast .af-launcher,.af-launcher[data-theme="contrast"],.theme-contrast .af-mission,.af-launcher[data-theme="contrast"] .af-mission,.theme-contrast .af-section,.af-launcher[data-theme="contrast"] .af-section,.theme-contrast .af-route-card,.af-launcher[data-theme="contrast"] .af-route-card,.theme-contrast .af-details,.af-launcher[data-theme="contrast"] .af-details,.theme-contrast .af-guardrail,.af-launcher[data-theme="contrast"] .af-guardrail,.theme-contrast .af-protein-viz,.af-launcher[data-theme="contrast"] .af-protein-viz,.theme-contrast .af-confidence-key,.af-launcher[data-theme="contrast"] .af-confidence-key,.theme-contrast .af-metric,.af-launcher[data-theme="contrast"] .af-metric,.theme-contrast .af-stage-tabs,.af-launcher[data-theme="contrast"] .af-stage-tabs,.theme-contrast .af-preset-chip,.af-launcher[data-theme="contrast"] .af-preset-chip,.theme-contrast .af-status,.af-launcher[data-theme="contrast"] .af-status,.theme-contrast .af-alert,.af-launcher[data-theme="contrast"] .af-alert,.theme-contrast .af-note-field,.af-launcher[data-theme="contrast"] .af-note-field,.theme-contrast .af-note-card,.af-launcher[data-theme="contrast"] .af-note-card,.theme-contrast .af-evidence-step,.af-launcher[data-theme="contrast"] .af-evidence-step,.theme-contrast .af-support-card,.af-launcher[data-theme="contrast"] .af-support-card,.theme-contrast .af-confidence-row,.af-launcher[data-theme="contrast"] .af-confidence-row,.theme-contrast .af-stage-tab,.af-launcher[data-theme="contrast"] .af-stage-tab{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
       '.theme-contrast .af-primary,.af-launcher[data-theme="contrast"] .af-primary,.theme-contrast .af-secondary,.af-launcher[data-theme="contrast"] .af-secondary,.theme-contrast .af-sample-launch,.af-launcher[data-theme="contrast"] .af-sample-launch,.theme-contrast .af-stage-tab[aria-selected="true"],.af-launcher[data-theme="contrast"] .af-stage-tab[aria-selected="true"],.theme-contrast .af-preset-chip[aria-pressed="true"],.af-launcher[data-theme="contrast"] .af-preset-chip[aria-pressed="true"]{background:#000000!important;color:#00ff00!important;border:2px solid #00ff00!important;}',
@@ -353,6 +388,59 @@
     return lines.join('\n');
   }
 
+  // Preview data = AlphaFold DB v6 entries AF-<acc>-F1 (AlphaFold Monomer v2.0 pipeline, modelCreatedDate 2025-08-01),
+  // fetched 2026-11-24 from https://alphafold.ebi.ac.uk/api/prediction/<acc>, -confidence_v6.json and
+  // -predicted_aligned_error_v6.json. frac = the API's fractionPlddtVeryHigh/Confident/Low/VeryLow. bars = mean pLDDT of
+  // 18 equal residue bins. pae = mean PAE (A) of 8x8 equal residue blocks (rows = aligned, columns = scored).
+  // Lengths match UniProt (P69905 142, P42212 238, P01308 110, P04637 393 aa).
+  var AF_PREVIEW_DATA = [
+    { accession: 'P69905', length: 142, plddtMean: 98.06, frac: { 'very-high': 0.993, confident: 0, low: 0.007, 'very-low': 0 },
+      bars: [93, 99, 97, 99, 99, 99, 99, 99, 99, 98, 99, 98, 98, 99, 98, 99, 99, 97],
+      pae: [[1.9, 3.6, 4.6, 3.5, 3, 3.6, 2.8, 2.5], [2.2, 1.2, 1.7, 1.4, 2.4, 2, 1.7, 2.2], [3.1, 1.7, 1.2, 1.8, 2.6, 1.8, 2.5, 2.5], [1.8, 1.1, 1.5, 1, 1.4, 1.7, 1.8, 1.6],
+        [2, 2.1, 2.4, 1.7, 1.1, 1.8, 2.3, 1.5], [2.5, 2, 1.9, 1.9, 1.9, 1.3, 2.3, 1.6], [1.7, 1.7, 2.4, 2, 2.4, 2.1, 1.1, 2], [2.4, 2.5, 2.7, 2.2, 1.7, 1.7, 2.5, 1.5]] },
+    { accession: 'P42212', length: 238, plddtMean: 96.62, frac: { 'very-high': 0.933, confident: 0.055, low: 0.013, 'very-low': 0 },
+      bars: [93, 99, 98, 99, 96, 94, 98, 99, 98, 99, 99, 98, 98, 98, 97, 98, 99, 81],
+      pae: [[2.8, 3, 2.7, 3.1, 3.6, 3.6, 3.3, 4.3], [1.9, 1.4, 2, 2, 1.8, 2.2, 2.1, 2.9], [2.8, 2.7, 2, 2.6, 3.1, 2.9, 2.5, 3.6], [1.9, 1.9, 1.9, 1.5, 1.8, 1.9, 1.9, 3],
+        [2.4, 2, 2.4, 2, 1.6, 2, 2.2, 3.3], [2.8, 2.6, 2.3, 2.2, 2.2, 1.8, 2, 3.5], [2.5, 2.4, 1.9, 2.1, 2.5, 2.1, 1.8, 3.2], [6.5, 6.3, 5.4, 6.8, 6.7, 6.2, 5.8, 5.5]] },
+    { accession: 'P01308', length: 110, plddtMean: 52.91, frac: { 'very-high': 0, confident: 0.127, low: 0.364, 'very-low': 0.509 },
+      bars: [78, 84, 72, 48, 45, 51, 52, 51, 43, 45, 44, 47, 43, 46, 51, 52, 51, 51],
+      pae: [[2.9, 9.5, 19.1, 23.3, 26.5, 27.9, 24.1, 22.6], [16, 8.2, 17.8, 22.7, 26.5, 28.5, 23.8, 21.4], [28.5, 21.6, 9.4, 19.7, 25.5, 28.1, 22, 19], [29.1, 25.5, 18.7, 10, 21.2, 27.3, 24.6, 19.2],
+        [29.7, 29, 26.9, 22.4, 9.1, 21.6, 25, 26.2], [30, 29.9, 29.1, 29.1, 21.2, 10.5, 22.5, 29.3], [29.1, 26.5, 22.1, 26, 24.3, 22.1, 9.6, 22], [27.9, 22.9, 17.1, 19.2, 24.1, 26.7, 20.1, 8.2]] },
+    { accession: 'P04637', length: 393, plddtMean: 75.06, frac: { 'very-high': 0.527, confident: 0.071, low: 0.104, 'very-low': 0.298 },
+      bars: [51, 48, 43, 49, 85, 95, 98, 97, 88, 95, 97, 97, 98, 66, 52, 95, 54, 45],
+      pae: [[17.6, 27.5, 31, 30.8, 30.8, 30.9, 30.1, 30], [27.4, 19.3, 27.6, 26.3, 26.8, 27.3, 29.8, 30.4], [28.9, 22.1, 2.6, 3.8, 3.4, 3.2, 21.9, 25.6], [28.9, 22.4, 5.3, 4.2, 4.4, 5.3, 22.4, 26],
+        [28.8, 22, 3.4, 3.3, 2.7, 3.7, 22.2, 25.9], [29, 22.4, 3.2, 3.7, 3.6, 3, 21, 25.1], [29.4, 29.5, 26, 26.3, 27.2, 24.6, 16.7, 24.4], [29.4, 30, 27.9, 28.2, 28.6, 27.4, 24.7, 18.3]] }
+  ];
+  // pLDDT bands as AlphaFold DB defines them (EMBL-EBI AlphaFold course, "pLDDT: Understanding local confidence").
+  function afBandForScore(score) {
+    if (score > 90) return 'very-high';
+    if (score > 70) return 'confident';
+    if (score > 50) return 'low';
+    return 'very-low';
+  }
+  function afBandPercents(frac) {
+    var out = {};
+    ['very-high', 'confident', 'low', 'very-low'].forEach(function (id) { out[id] = Math.round(((frac && frac[id]) || 0) * 100) + '%'; });
+    return out;
+  }
+  // Predict-first buckets for the share of residues above pLDDT 90.
+  function afPredictionBucket(fracVeryHigh) {
+    if (fracVeryHigh > 0.75) return 'most';
+    if (fracVeryHigh >= 0.25) return 'some';
+    return 'little';
+  }
+  // PAE color levels are this tool's teaching bins, not AFDB's. EMBL-EBI AlphaFold course, "PAE: A measure of global
+  // confidence in AlphaFold2 predictions": "the shade of green indicates the expected distance error in Ångströms (Å)";
+  // "A dark green tile designates a good prediction (low error)". AFDB PAE files cap at max_predicted_aligned_error 31.75.
+  function afPaeLevel(angstroms) {
+    if (angstroms < 5) return 1;
+    if (angstroms < 10) return 2;
+    if (angstroms < 20) return 3;
+    return 4;
+  }
+  function afPaeGroup(level) { return level === 1 ? 'intra' : (level === 4 ? 'inter' : 'boundary'); }
+  window.__alloAlphaFoldPreview = { data: AF_PREVIEW_DATA, bandForScore: afBandForScore, bandPercents: afBandPercents, predictionBucket: afPredictionBucket, paeLevel: afPaeLevel, paeGroup: afPaeGroup };
+
   window.StemLab.registerTool('alphaFoldExplorer', {
     icon: '\u03b1',
     label: 'AlphaFold Explorer',
@@ -360,8 +448,10 @@
     color: 'teal',
     category: 'science',
     questHooks: [
-      { id: 'af_open', label: 'Open AlphaFold Explorer', icon: '\u03b1',
-        check: function (d) { return !!(d && d.opened); } },
+      // Id kept so saved station quests still match; it now needs evidence (a committed prediction that the tool checked
+      // against the AFDB snapshot), not just opening the companion window.
+      { id: 'af_open', label: 'Predict a protein\u2019s confidence, then check it with AlphaFold DB', icon: '\u03b1',
+        check: function (d) { return !!(d && ((d.previewPredictionCount || 0) >= 1 || (d.previewPredictions && typeof d.previewPredictions === 'object' && Object.keys(d.previewPredictions).length >= 1))); } },
       { id: 'af_lookup', label: 'Load a public AlphaFold DB structure', icon: 'AF',
         check: function (d) { return !!(d && (d.lookupCount || 0) >= 1); } },
       { id: 'af_prepare', label: 'Prepare safe AlphaFold Server input', icon: '{}',
@@ -394,114 +484,66 @@
       var _stageState = React.useState('ribbon'); var stageView = _stageState[0], setStageView = _stageState[1];
       var _sampleState = React.useState('P69905'); var sampleAcc = _sampleState[0], setSampleAcc = _sampleState[1];
       var _paeState = React.useState('intra'); var paeRegion = _paeState[0], setPaeRegion = _paeState[1];
+      var _paeCellState = React.useState(null); var paeCell = _paeCellState[0], setPaeCell = _paeCellState[1];
+      var _predState = React.useState(function () {
+        var saved = ctx.toolData && ctx.toolData._alphaFoldExplorer && ctx.toolData._alphaFoldExplorer.previewPredictions;
+        return (saved && typeof saved === 'object') ? Object.assign({}, saved) : {};
+      }); var previewPredictions = _predState[0], setPreviewPredictions = _predState[1];
       var afTheme = (ctx.isContrast || ctx.theme === 'contrast') ? 'contrast' : ((ctx.isDark || ctx.theme === 'dark') ? 'dark' : 'light');
-      var SAMPLE_PROTEINS = [
-        {
-          accession: 'P69905',
+      // Ribbon shapes are drawings; every number and color comes from AF_PREVIEW_DATA (AlphaFold DB v6).
+      // Notes: UniProt P69905/P42212/P01308/P04637 features + Komiyama et al. 1991 Nature 352:349 ("all known vertebrate
+      // alpha globins lack a D helix") + Ormo et al. 1996 Science 273:1392 ("an 11-stranded beta barrel with a coaxial
+      // helix, with the chromophore forming from the central helix"). Low-scoring residues read from -confidence_v6.json.
+      var SAMPLE_TEXT = {
+        P69905: {
           name: t('stem.alphaFold.sample_hba', 'Hemoglobin \u03b1'),
-          length: '142 aa',
-          foldNote: t('stem.alphaFold.sample_hba_note', 'Compact 7-helix globin core with mostly >90 pLDDT confidence.'),
-          pcts: { 'very-high': '82%', confident: '13%', low: '3%', 'very-low': '2%' },
-          path: 'M36 104 C56 36 108 34 134 86 C158 136 206 142 232 82 C256 28 304 28 332 84 C358 136 410 132 438 78 C458 44 494 52 518 76',
-          segs: {
-            'very-high': 'M36 104 C56 36 108 34 134 86 C158 136 206 142 232 82',
-            confident: 'M232 82 C256 28 304 28 332 84',
-            low: 'M332 84 C358 136 410 132 438 78',
-            'very-low': 'M438 78 C458 44 494 52 518 76'
-          },
-          bars: [96, 95, 97, 94, 92, 95, 96, 93, 91, 88, 86, 84, 79, 76, 68, 62, 54, 46],
-          paeBlocks: [
-            [1,1,1,1,2,2,2,3],
-            [1,1,1,1,2,2,2,3],
-            [1,1,1,1,2,2,2,3],
-            [1,1,1,1,2,2,2,3],
-            [2,2,2,2,1,1,1,2],
-            [2,2,2,2,1,1,1,2],
-            [2,2,2,2,1,1,1,2],
-            [3,3,3,3,2,2,2,1]
-          ]
+          foldNote: t('stem.alphaFold.sample_hba_note_v2', 'One compact globin fold made of 7 helices. Almost every residue scores above 90.'),
+          why: t('stem.alphaFold.sample_hba_why', 'Hemoglobin \u03b1 folds into one compact globin shape, so nearly every residue has a well-defined place. Only the first residue scores lower.'),
+          shape: 'M36 104 C56 36 108 34 134 86 C158 136 206 142 232 82 C256 28 304 28 332 84 C358 136 410 132 438 78 C458 44 494 52 518 76'
         },
-        {
-          accession: 'P42212',
+        P42212: {
           name: t('stem.alphaFold.sample_gfp', 'GFP Barrel'),
-          length: '238 aa',
-          foldNote: t('stem.alphaFold.sample_gfp_note', 'Rigid 11-strand \u03b2-barrel housing the chromophore, flanked by short flexible ends.'),
-          pcts: { 'very-high': '74%', confident: '18%', low: '5%', 'very-low': '3%' },
-          path: 'M38 118 C64 42 118 42 142 112 C166 150 212 36 246 86 C276 132 314 38 352 92 C386 140 426 48 462 94 C484 122 504 114 520 88',
-          segs: {
-            'very-high': 'M38 118 C64 42 118 42 142 112 C166 150 212 36 246 86',
-            confident: 'M246 86 C276 132 314 38 352 92',
-            low: 'M352 92 C386 140 426 48 462 94',
-            'very-low': 'M462 94 C484 122 504 114 520 88'
-          },
-          bars: [72, 88, 95, 97, 96, 94, 93, 95, 92, 90, 86, 83, 81, 78, 70, 62, 48, 42],
-          paeBlocks: [
-            [1,1,1,1,1,2,3,4],
-            [1,1,1,1,1,2,3,4],
-            [1,1,1,1,1,2,3,4],
-            [1,1,1,1,1,2,3,4],
-            [1,1,1,1,1,2,3,4],
-            [2,2,2,2,2,1,2,3],
-            [3,3,3,3,3,2,1,2],
-            [4,4,4,4,4,3,2,2]
-          ]
+          foldNote: t('stem.alphaFold.sample_gfp_note_v2', 'An 11-stranded \u03b2-barrel. A few residues score lower: the two ends and residues 65\u201368, where the glowing chromophore forms.'),
+          why: t('stem.alphaFold.sample_gfp_why', 'GFP is one sturdy barrel, so most residues score above 90. The ends and the chromophore residues (65\u201368) score a little lower.'),
+          shape: 'M38 118 C64 42 118 42 142 112 C166 150 212 36 246 86 C276 132 314 38 352 92 C386 140 426 48 462 94 C484 122 504 114 520 88'
         },
-        {
-          accession: 'P01308',
+        P01308: {
           name: t('stem.alphaFold.sample_ins', 'Insulin Precursor'),
-          length: '110 aa',
-          foldNote: t('stem.alphaFold.sample_ins_note', 'Well-folded A/B hormone helices connected by a flexible C-peptide loop.'),
-          pcts: { 'very-high': '48%', confident: '26%', low: '16%', 'very-low': '10%' },
-          path: 'M36 98 C66 36 122 40 148 92 C176 144 226 146 254 88 C282 32 330 28 362 72 C392 114 386 142 434 134 C478 126 488 64 520 56',
-          segs: {
-            'very-high': 'M36 98 C66 36 122 40 148 92',
-            confident: 'M148 92 C176 144 226 146 254 88',
-            low: 'M254 88 C282 32 330 28 362 72',
-            'very-low': 'M362 72 C392 114 386 142 434 134 C478 126 488 64 520 56'
-          },
-          bars: [92, 94, 91, 89, 86, 81, 76, 72, 65, 58, 52, 47, 44, 51, 64, 78, 86, 91],
-          paeBlocks: [
-            [1,1,1,3,4,4,2,2],
-            [1,1,1,3,4,4,2,2],
-            [1,1,1,3,4,4,2,2],
-            [3,3,3,2,3,3,3,3],
-            [4,4,4,3,2,3,4,4],
-            [4,4,4,3,3,2,4,4],
-            [2,2,2,3,4,4,1,1],
-            [2,2,2,3,4,4,1,1]
-          ]
+          foldNote: t('stem.alphaFold.sample_ins_note_v2', 'The uncut precursor chain: signal peptide, B chain, C peptide, A chain. No residue scores above 90, and about half score below 50.'),
+          why: t('stem.alphaFold.sample_ins_why', 'This entry is the uncut one-chain precursor. The cell cuts out the signal peptide and C peptide, and the working hormone is the A and B chains held by disulfide bonds. AlphaFold is unsure about most of this single chain.'),
+          shape: 'M36 98 C66 36 122 40 148 92 C176 144 226 146 254 88 C282 32 330 28 362 72 C392 114 386 142 434 134 C478 126 488 64 520 56'
         },
-        {
-          accession: 'P04637',
+        P04637: {
           name: t('stem.alphaFold.sample_p53', 'p53 Suppressor'),
-          length: '393 aa',
-          foldNote: t('stem.alphaFold.sample_p53_note', 'Ordered DNA-binding core flanked by intrinsically disordered low-pLDDT tails.'),
-          pcts: { 'very-high': '41%', confident: '17%', low: '18%', 'very-low': '24%' },
-          path: 'M36 126 C64 138 92 78 134 94 C172 108 198 34 246 76 C284 110 314 36 352 84 C384 124 424 140 460 112 C486 92 504 54 522 46',
-          segs: {
-            'very-high': 'M172 108 C198 34 246 76 284 110',
-            confident: 'M284 110 C314 36 352 84 374 108',
-            low: 'M36 126 C64 138 92 78 134 94 C150 100 160 106 172 108',
-            'very-low': 'M374 108 C404 136 436 132 460 112 C486 92 504 54 522 46'
-          },
-          bars: [38, 42, 46, 54, 62, 86, 94, 96, 95, 93, 88, 76, 61, 48, 41, 36, 34, 39],
-          paeBlocks: [
-            [2,3,4,4,4,4,4,4],
-            [3,2,3,4,4,4,4,4],
-            [4,3,1,1,1,3,4,4],
-            [4,4,1,1,1,3,4,4],
-            [4,4,1,1,1,3,4,4],
-            [4,4,3,3,3,2,3,4],
-            [4,4,4,4,4,3,2,3],
-            [4,4,4,4,4,4,3,2]
-          ]
+          foldNote: t('stem.alphaFold.sample_p53_note_v2', 'A high-confidence DNA-binding core and a small oligomerization region, with long very-low-confidence tails that UniProt lists as disordered.'),
+          why: t('stem.alphaFold.sample_p53_why', 'p53 has a folded DNA-binding core, but long stretches at both ends are disordered. A disordered region has no single shape, so AlphaFold gives it very low scores.'),
+          shape: 'M36 126 C64 138 92 78 134 94 C172 108 198 34 246 76 C284 110 314 36 352 84 C384 124 424 140 460 112 C486 92 504 54 522 46'
         }
-      ];
+      };
+      var SAMPLE_PROTEINS = AF_PREVIEW_DATA.map(function (d) {
+        var txt = SAMPLE_TEXT[d.accession];
+        return {
+          accession: d.accession,
+          name: txt.name,
+          length: d.length + ' aa',
+          residues: d.length,
+          foldNote: txt.foldNote,
+          why: txt.why,
+          path: txt.shape,
+          frac: d.frac,
+          pcts: afBandPercents(d.frac),
+          bars: d.bars,
+          pae: d.pae,
+          answer: afPredictionBucket(d.frac['very-high'])
+        };
+      });
       var activeSample = SAMPLE_PROTEINS.filter(function (item) { return item.accession === sampleAcc; })[0] || SAMPLE_PROTEINS[0];
+      // PAE meaning: EMBL-EBI AlphaFold course, "PAE: A measure of global confidence": "the expected positional error at
+      // residue X, measured in Ångströms (Å)"; "a high PAE score means that AlphaFold2 is not confident in their relative position".
       var PAE_EXPLANATIONS = {
-        intra: t('stem.alphaFold.pae_intra', 'Dark emerald diagonal blocks (0–5 \u00c5) indicate residues packed closely within one folded domain with high relative-position confidence.'),
-        boundary: t('stem.alphaFold.pae_boundary', 'Medium teal squares (6–15 \u00c5) mark domain boundaries or loops where local contacts are plausible but exact orientation has moderate uncertainty.'),
-        inter: t('stem.alphaFold.pae_inter', 'Pale or dark off-diagonal squares (>20 \u00c5) mean AlphaFold is uncertain how two domains or disordered tails sit relative to one another.')
+        intra: t('stem.alphaFold.pae_low_detail', 'Under 5 Å: AlphaFold is confident about where these two stretches of the chain sit compared with each other.'),
+        boundary: t('stem.alphaFold.pae_mid_detail', '5 to 20 Å: AlphaFold only roughly knows how these two stretches line up. Treat their relative position with caution.'),
+        inter: t('stem.alphaFold.pae_high_detail', '20 Å or more: AlphaFold is not confident how these two stretches sit compared with each other. Check pLDDT too: a disordered part has no fixed place.')
       };
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
       var progress = (ctx.toolData && ctx.toolData._alphaFoldExplorer) || {};
@@ -661,7 +703,39 @@
         { id: 'low', color: '#facc15', range: '50-70', name: t('stem.alphaFold.confidence_low', 'Low'), detail: t('stem.alphaFold.confidence_low_detail', 'Treat this region cautiously. It may be flexible, disordered, or uncertain in this prediction.') },
         { id: 'very-low', color: '#f97316', range: '<50', name: t('stem.alphaFold.confidence_very_low', 'Very low'), detail: t('stem.alphaFold.confidence_very_low_detail', 'This region should not be interpreted as a dependable structure without supporting evidence.') }
       ];
+      // Band meanings checked against the EMBL-EBI AlphaFold course: pLDDT "is a per-residue measure of local confidence";
+      // "a pLDDT above 70 usually corresponds to a correct backbone prediction with misplacement of some side chains";
+      // a disordered region "does not have any well-defined structure" and typically gives "a pLDDT below 50".
       var selectedBand = confidenceBands.filter(function (band) { return band.id === confidenceBand; })[0];
+      var predictionChoices = [
+        { id: 'most', label: t('stem.alphaFold.predict_most', 'Most of it (over 75%)') },
+        { id: 'some', label: t('stem.alphaFold.predict_some', 'Some of it (25% to 75%)') },
+        { id: 'little', label: t('stem.alphaFold.predict_little', 'Little of it (under 25%)') }
+      ];
+      var activePrediction = previewPredictions[activeSample.accession] || '';
+      var previewRevealed = !!activePrediction;
+      var neutralInk = afTheme === 'contrast' ? '#ffffff' : '#64748b';
+      function predictionLabel(id) { var c = predictionChoices.filter(function (x) { return x.id === id; })[0]; return c ? c.label : ''; }
+      function predictionResultText() {
+        var pct = activeSample.pcts['very-high'];
+        var right = activePrediction === activeSample.answer;
+        return (right ? t('stem.alphaFold.predict_right', 'Your prediction matches.') : t('stem.alphaFold.predict_wrong', 'Not this time. The answer is') + ' "' + predictionLabel(activeSample.answer) + '".') + ' ' +
+          t('stem.alphaFold.predict_share_prefix', 'AlphaFold DB scores') + ' ' + pct + ' ' + t('stem.alphaFold.predict_share_suffix', 'of the residues above 90.') + ' ' + activeSample.why;
+      }
+      function makePrediction(choiceId) {
+        if (previewPredictions[activeSample.accession]) return;
+        var nextMap = Object.assign({}, previewPredictions);
+        nextMap[activeSample.accession] = choiceId;
+        setPreviewPredictions(nextMap);
+        var right = choiceId === activeSample.answer;
+        patchProgress({
+          previewPredictions: nextMap,
+          previewPredictionCount: (progress.previewPredictionCount || 0) + 1,
+          previewPredictionCorrect: (progress.previewPredictionCorrect || 0) + (right ? 1 : 0)
+        });
+        if (announceToSR) announceToSR((right ? t('stem.alphaFold.predict_right', 'Your prediction matches.') : t('stem.alphaFold.predict_wrong', 'Not this time. The answer is') + ' "' + predictionLabel(activeSample.answer) + '".') + ' ' +
+          t('stem.alphaFold.predict_share_prefix', 'AlphaFold DB scores') + ' ' + activeSample.pcts['very-high'] + ' ' + t('stem.alphaFold.predict_share_suffix', 'of the residues above 90.'));
+      }
 
       function selectConfidenceBand(id) {
         var next = confidenceBand === id ? 'all' : id;
@@ -989,13 +1063,17 @@
           h('div', { style: { marginTop: '12px' } },
             h('h3', null, t('stem.alphaFold.claim_question', 'Which conclusion respects every evidence boundary?')),
             h('div', { className: 'af-claim-grid', role: 'group', 'aria-label': t('stem.alphaFold.claim_choices_aria', 'Cross-scale claim choices') },
-              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'proof' ? 'true' : 'false', onClick: function () { answerCrossScale('proof'); } }, t('stem.alphaFold.claim_overreach', 'High RNA evidence plus a confident AlphaFold model proves the protein is abundant, correctly localized, and active in this cell.')),
+              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'proof' ? 'true' : 'false', onClick: function () { answerCrossScale('proof'); } }, t('stem.alphaFold.claim_overreach_v2', 'High RNA evidence plus a confident AlphaFold model proves the protein is abundant, sits in the right place in the cell, and is active there, so no further experiment is needed.')),
               h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'separate' ? 'true' : 'false', onClick: function () { answerCrossScale('separate'); } }, t('stem.alphaFold.claim_separate', 'The atlas supports a transcript-level hypothesis, while AlphaFold supplies separate structural-model evidence; protein abundance, localization, and function still require appropriate experiments.')),
-              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'expression' ? 'true' : 'false', onClick: function () { answerCrossScale('expression'); } }, t('stem.alphaFold.claim_expression', 'A low-confidence AlphaFold region would show that the gene was not expressed in the atlas.'))),
+              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'expression' ? 'true' : 'false', onClick: function () { answerCrossScale('expression'); } }, t('stem.alphaFold.claim_expression_v2', 'A low-confidence AlphaFold region would show that the gene was not expressed in these atlas cells, so the RNA measurement and the structure model must disagree about this protein.'))),
             crossScaleAnswer && h('div', { className: 'af-cross-feedback', 'data-correct': correct ? 'true' : 'false', role: 'status' },
               correct
                 ? t('stem.alphaFold.claim_correct', 'Well separated: transcript, protein, structure, and function are connected hypotheses measured by different evidence.')
-                : t('stem.alphaFold.claim_incorrect', 'That claim crosses measurement levels. AlphaFold confidence describes a structural model; it cannot establish RNA expression, protein abundance, localization, or activity.'))),
+                : (crossScaleAnswer === 'expression'
+                  ? t('stem.alphaFold.claim_expression_why', 'pLDDT describes the model, not the cell. A low score means AlphaFold is unsure of that region\'s shape (it may be disordered). It says nothing about whether the gene was expressed.')
+                  : crossScaleAnswer === 'proof'
+                    ? t('stem.alphaFold.claim_overreach_why', 'That claim crosses measurement levels. RNA shows a transcript and AlphaFold shows a predicted shape. Neither measures how much protein is made, where it goes, or whether it works.')
+                    : t('stem.alphaFold.claim_incorrect', 'That claim crosses measurement levels. AlphaFold confidence describes a structural model; it cannot establish RNA expression, protein abundance, localization, or activity.')))),
           h('div', { className: 'af-evidence-notebook', 'aria-labelledby': 'af-evidence-notebook-title' },
             h('h3', { id: 'af-evidence-notebook-title' }, t('stem.alphaFold.record_title', 'Build a cross-scale evidence record')),
             h('p', null, t('stem.alphaFold.record_intro', 'Write only what you actually inspected. AlphaFold model evidence remains separate from the atlas RNA measurement, and no protein sequence is stored in this record.')),
@@ -1045,12 +1123,24 @@
             : t('stem.alphaFold.status_ready', 'Ready to investigate');
 
       var completedRouteSteps = (openedCount > 0 ? 1 : 0) + (lookupCount > 0 ? 1 : 0) + (guidanceCount > 0 ? 1 : 0) + (packetRouteComplete ? 1 : 0);
-      var paeColorScale = { 1: '#059669', 2: '#34d399', 3: '#a7f3d0', 4: '#1e293b' };
-      var paeRegionForLevel = function (lvl) { return lvl === 1 ? 'intra' : (lvl <= 2 ? 'boundary' : 'inter'); };
+      // Dark green = low error, light = high error, as the AlphaFold DB PAE plot draws it.
+      var paeColorScale = { 1: '#047857', 2: '#34d399', 3: '#bbf7d0', 4: '#f8fafc' };
+      var paeCounts = { intra: 0, boundary: 0, inter: 0 };
+      activeSample.pae.forEach(function (row) { row.forEach(function (v) { paeCounts[afPaeGroup(afPaeLevel(v))] += 1; }); });
+      function paeStretch(idx) {
+        var n = activeSample.residues;
+        return (Math.floor(idx * n / 8) + 1) + '–' + Math.floor((idx + 1) * n / 8);
+      }
+      var paeCellText = '';
+      if (paeCell && paeCell.acc === activeSample.accession) {
+        paeCellText = t('stem.alphaFold.pae_cell_prefix', 'Residues') + ' ' + paeStretch(paeCell.r) + ' ' + t('stem.alphaFold.pae_cell_vs', 'vs') + ' ' + paeStretch(paeCell.c) + ': ' +
+          t('stem.alphaFold.pae_cell_avg', 'average') + ' ' + activeSample.pae[paeCell.r][paeCell.c].toFixed(1) + ' Å.';
+      }
       function barColorForScore(score) {
-        if (score >= 90) return '#1d4ed8';
-        if (score >= 70) return '#38bdf8';
-        if (score >= 50) return '#facc15';
+        var band = afBandForScore(score);
+        if (band === 'very-high') return '#1d4ed8';
+        if (band === 'confident') return '#38bdf8';
+        if (band === 'low') return '#facc15';
         return '#f97316';
       }
 
@@ -1096,7 +1186,8 @@
               h('div', { style: { minWidth: 0, flex: 1 } },
                 h('div', { className: 'af-badge-row' },
                   h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
-                  h('span', { className: 'af-subject-pill' }, t('stem.alphaFold.subject_badge', 'Protein Folding \u00b7 pLDDT & PAE'))),
+                  // AlphaFold predicts the final 3D structure, not the folding pathway (Nobel 2024 citation: "for protein structure prediction").
+                  h('span', { className: 'af-subject-pill' }, t('stem.alphaFold.subject_badge_v2', 'Protein Structure · pLDDT & PAE'))),
                 h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
                 h('p', { className: 'af-subtitle' },
                   t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.')))),
@@ -1116,7 +1207,8 @@
                   'aria-pressed': isCur ? 'true' : 'false',
                   onClick: function () {
                     setSampleAcc(sample.accession);
-                    if (announceToSR) announceToSR(sample.name + ' (' + sample.accession + ') ' + sample.foldNote);
+                    setPaeCell(null);
+                    if (announceToSR) announceToSR(sample.name + ' (' + sample.accession + ') ' + (previewPredictions[sample.accession] ? sample.foldNote : t('stem.alphaFold.predict_sr_prompt', 'Make your prediction first.')));
                   }
                 }, sample.name + ' (' + sample.accession + ')');
               })),
@@ -1140,13 +1232,46 @@
                 onClick: function () { setStageView('pae'); }
               }, t('stem.alphaFold.tab_pae', 'PAE Error Matrix')))),
 
+          h('div', { className: 'af-predict', role: 'group', 'aria-labelledby': 'af-predict-question' },
+            h('p', { className: 'af-predict-question', id: 'af-predict-question' },
+              h('strong', null, t('stem.alphaFold.predict_label', 'Predict first:')), ' ',
+              t('stem.alphaFold.predict_question_prefix', 'how much of') + ' ' + activeSample.name + ' ' + t('stem.alphaFold.predict_question_suffix', 'will AlphaFold score above 90 (very high confidence)?')),
+            h('div', { className: 'af-predict-choices' },
+              predictionChoices.map(function (choice) {
+                var chosen = activePrediction === choice.id;
+                var isAnswer = choice.id === activeSample.answer;
+                // Non-color cue (text + border style) so right and wrong differ in high contrast and for color-blind readers.
+                var verdict = !previewRevealed ? undefined : (isAnswer ? (chosen ? 'match' : 'answer') : (chosen ? 'wrong' : 'other'));
+                var tag = verdict === 'match' ? '✓ ' + t('stem.alphaFold.predict_tag_match', 'Your pick matches')
+                  : verdict === 'answer' ? '✓ ' + t('stem.alphaFold.predict_tag_answer', 'AlphaFold DB answer')
+                  : verdict === 'wrong' ? '✗ ' + t('stem.alphaFold.predict_tag_wrong', 'Your pick') : '';
+                return h('button', {
+                  key: choice.id,
+                  type: 'button',
+                  className: 'af-predict-choice',
+                  'aria-pressed': chosen ? 'true' : 'false',
+                  'data-correct': previewRevealed ? (isAnswer ? 'true' : 'false') : undefined,
+                  'data-verdict': verdict,
+                  disabled: previewRevealed && !chosen,
+                  onClick: function () { makePrediction(choice.id); }
+                }, choice.label, tag ? ' ' : null, tag && h('span', { className: 'af-predict-tag' }, tag));
+              })),
+            previewRevealed && h('p', { className: 'af-predict-result', role: 'status', 'data-correct': activePrediction === activeSample.answer ? 'true' : 'false' },
+              h('span', { className: 'af-predict-mark', 'aria-hidden': 'true' }, activePrediction === activeSample.answer ? '✓' : '✗'), ' ',
+              predictionResultText())),
+
           h('div', { className: 'af-confidence-atlas', id: 'af-stage-panel', role: 'tabpanel', 'aria-labelledby': stageView === 'pae' ? 'af-stage-tab-pae' : 'af-stage-tab-ribbon' },
             stageView === 'ribbon'
-              ? h('figure', { className: 'af-protein-viz', role: 'img', 'data-confidence-band': confidenceBand, 'aria-label': t('stem.alphaFold.confidence_preview_aria', 'Illustrative folded protein ribbon colored by AlphaFold pLDDT confidence: deep blue and cyan are higher confidence, while yellow and orange are lower confidence. This is a teaching illustration, not a loaded protein prediction.') },
+              ? h('figure', { className: 'af-protein-viz', role: 'img', 'data-confidence-band': confidenceBand, 'aria-label': previewRevealed
+                ? activeSample.name + ': ' + t('stem.alphaFold.confidence_preview_aria_v2', 'drawn ribbon colored by AlphaFold DB pLDDT scores. Share of residues in each band:') + ' ' + confidenceBands.map(function (band) { return band.name + ' ' + activeSample.pcts[band.id]; }).join(', ') + '. ' + t('stem.alphaFold.confidence_preview_shape_note', 'The shape is a drawing; the colors and bars come from the real prediction.')
+                : activeSample.name + ': ' + t('stem.alphaFold.confidence_preview_hidden_aria', 'gray ribbon. Make your prediction to see the AlphaFold DB confidence colors.') },
                   h('div', { className: 'af-viz-head' },
                     h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_label', 'Prediction confidence preview')),
                     h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession + ' \u00b7 ' + activeSample.length)),
-                  h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
+                  h('div', { className: 'af-ribbon-row', 'aria-hidden': 'true' },
+                    h('span', { className: 'af-ribbon-label af-ribbon-end' }, t('stem.alphaFold.ribbon_nterm', 'N-term (start)')),
+                    h('span', { className: 'af-ribbon-label af-ribbon-end' }, t('stem.alphaFold.ribbon_cterm', 'C-term (end)'))),
+                  h('svg', { viewBox: '0 0 560 202', 'aria-hidden': 'true', focusable: 'false' },
                     h('defs', null,
                       h('radialGradient', { id: 'af-stage-glow', cx: '46%', cy: '38%', r: '58%' },
                         h('stop', { offset: '0%', stopColor: '#0c4a6e', stopOpacity: 0.42 }),
@@ -1188,71 +1313,86 @@
                     [110, 220, 330, 440].map(function (gx) {
                       return h('line', { key: 'gx-' + gx, x1: gx, y1: 14, x2: gx, y2: 144, stroke: afTheme === 'contrast' ? '#333333' : 'rgba(148,163,184,0.11)', strokeWidth: 1, strokeDasharray: '4 4' });
                     }),
-                    // Terminal callouts safely inset inside viewBox
-                    h('rect', { x: 20, y: 16, width: 54, height: 18, rx: 9, fill: afTheme === 'contrast' ? '#000000' : 'rgba(29,78,216,0.42)', stroke: afTheme === 'contrast' ? '#00ff00' : 'rgba(96,165,250,0.75)', strokeWidth: 1 }),
-                    h('text', { x: 47, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#00ff00' : '#dbeafe', fontSize: 9, fontWeight: 'bold' }, 'N-term'),
-                    h('rect', { x: 486, y: 16, width: 54, height: 18, rx: 9, fill: afTheme === 'contrast' ? '#000000' : 'rgba(249,115,22,0.38)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(251,146,60,0.75)', strokeWidth: 1 }),
-                    h('text', { x: 513, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#ffedd5', fontSize: 9, fontWeight: 'bold' }, 'C-term'),
-                    // Fold shadow, residue-contact / H-bond arcs, core ribbon, interactive segments, specular highlight & spine
+                    // N-term / C-term and axis labels are HTML (af-ribbon-label) so they stay 12 px when the SVG shrinks on a phone.
+                    // Decorative contact arcs; the ribbon below is cut into 18 slices that line up with the 18 pLDDT bars, and each
+                    // slice takes the AFDB band color of its bar (gray until the student has made a prediction).
                     ['M68 68 Q101 38 130 82', 'M140 88 Q195 52 248 82', 'M260 80 Q290 42 318 66'].map(function (hd, hi) {
                       return h('path', { key: 'hb-' + hi, className: 'af-hbond-arc', d: hd, stroke: afTheme === 'contrast' ? '#ffff00' : undefined });
                     }),
+                    h('defs', null, activeSample.bars.map(function (score, idx) {
+                      var x0 = idx === 0 ? 0 : 59 + idx * 26;
+                      var x1 = idx === activeSample.bars.length - 1 ? 560 : 59 + (idx + 1) * 26;
+                      return h('clipPath', { key: 'clip-' + idx, id: 'af-bin-clip-' + idx }, h('rect', { x: x0, y: 0, width: x1 - x0, height: 156 }));
+                    })),
                     h('path', { className: 'af-fold-shadow', d: activeSample.path }),
-                    h('path', { className: 'af-fold-ribbon', d: activeSample.path }),
-                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-high' ? 'true' : 'false', d: activeSample.segs['very-high'], stroke: '#1d4ed8', onClick: function () { selectConfidenceBand('very-high'); } }),
-                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'confident' ? 'true' : 'false', d: activeSample.segs.confident, stroke: '#38bdf8', onClick: function () { selectConfidenceBand('confident'); } }),
-                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'low' ? 'true' : 'false', d: activeSample.segs.low, stroke: '#facc15', onClick: function () { selectConfidenceBand('low'); } }),
-                    h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-low' ? 'true' : 'false', d: activeSample.segs['very-low'], stroke: '#f97316', onClick: function () { selectConfidenceBand('very-low'); } }),
-                    afTheme !== 'contrast' && h('path', { className: 'af-ribbon-shimmer', d: activeSample.path }),
+                    h('path', { className: 'af-fold-ribbon', d: activeSample.path, style: { stroke: neutralInk } }),
+                    previewRevealed && activeSample.bars.map(function (score, idx) {
+                      var band = afBandForScore(score);
+                      var on = confidenceBand === 'all' || confidenceBand === band;
+                      return h('path', {
+                        key: 'seg-' + idx,
+                        className: 'af-fold-segment',
+                        'data-band': band,
+                        'data-active': on ? 'true' : 'false',
+                        clipPath: 'url(#af-bin-clip-' + idx + ')',
+                        d: activeSample.path,
+                        stroke: barColorForScore(score),
+                        onClick: function () { selectConfidenceBand(band); }
+                      });
+                    }),
+                    afTheme !== 'contrast' && previewRevealed && h('path', { className: 'af-ribbon-shimmer', d: activeSample.path }),
                     h('path', { className: 'af-fold-spine', d: activeSample.path }),
-                    [[62,68,'#1d4ed8'],[134,86,'#0ea5e9'],[196,120,'#38bdf8'],[254,84,'#7dd3fc'],[322,68,'#facc15'],[378,118,'#fde047'],[448,96,'#fb923c'],[508,68,'#f97316']].map(function (node, i) {
+                    [62, 134, 196, 254, 322, 378, 448, 508].map(function (nx, i) {
+                      var ny = [68, 86, 120, 84, 68, 118, 96, 68][i];
+                      var bin = Math.max(0, Math.min(activeSample.bars.length - 1, Math.floor((nx - 59) / 26)));
+                      var nodeColor = previewRevealed ? barColorForScore(activeSample.bars[bin]) : neutralInk;
                       var rN = i === 3 ? 5.2 : 4.2;
                       return h('g', { key: i },
-                        afTheme !== 'contrast' && i < 4 && h('circle', { className: 'af-fold-beacon', cx: node[0], cy: node[1], r: rN + 4.4, stroke: node[2], style: { animationDelay: (i * 0.55) + 's' } }),
-                        h('circle', { className: 'af-residue-node', cx: node[0], cy: node[1], r: rN, fill: afTheme === 'contrast' ? '#00ff00' : node[2] }),
-                        afTheme !== 'contrast' && h('circle', { cx: node[0] - 1.3, cy: node[1] - 1.3, r: 1.2, fill: '#ffffff', opacity: 0.82 })
+                        afTheme !== 'contrast' && i < 4 && h('circle', { className: 'af-fold-beacon', cx: nx, cy: ny, r: rN + 4.4, stroke: nodeColor, style: { animationDelay: (i * 0.55) + 's' } }),
+                        h('circle', { className: 'af-residue-node', cx: nx, cy: ny, r: rN, fill: nodeColor }),
+                        afTheme !== 'contrast' && h('circle', { cx: nx - 1.3, cy: ny - 1.3, r: 1.2, fill: '#ffffff', opacity: 0.82 })
                       );
                     }),
-                    // Calibrated per-residue pLDDT confidence spectrum bar at bottom
+                    // Per-bin mean pLDDT bars from AlphaFold DB (AF_PREVIEW_DATA)
                     h('rect', { x: 56, y: 158, width: 484, height: 39, rx: 5, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.68)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(148,163,184,0.2)', strokeWidth: 0.9 }),
                     // Threshold lines at 90 and 70 pLDDT
                     [90, 70].map(function (thr) {
                       var ty = 196 - Math.round((thr / 100) * 32);
                       return h('line', { key: 'thr-' + thr, x1: 58, y1: ty, x2: 538, y2: ty, stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(125,211,252,0.26)', strokeWidth: 0.8, strokeDasharray: '3 3' });
                     }),
-                    h('text', { x: 24, y: 181, fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 9, fontWeight: 'bold' }, 'pLDDT'),
                     activeSample.bars.map(function (score, idx) {
                       var bx = 62 + idx * 26;
                       var bh = Math.max(4, Math.round((score / 100) * 32));
-                      var bandMatch = (confidenceBand === 'all') ||
-                        (confidenceBand === 'very-high' && score >= 90) ||
-                        (confidenceBand === 'confident' && score >= 70 && score < 90) ||
-                        (confidenceBand === 'low' && score >= 50 && score < 70) ||
-                        (confidenceBand === 'very-low' && score < 50);
-                      var gradFill = afTheme === 'contrast' ? (score >= 70 ? '#00ff00' : '#ffff00') : (score >= 90 ? 'url(#af-bar-vh)' : score >= 70 ? 'url(#af-bar-c)' : score >= 50 ? 'url(#af-bar-l)' : 'url(#af-bar-vl)');
+                      var band = afBandForScore(score);
+                      var bandMatch = previewRevealed && (confidenceBand === 'all' || confidenceBand === band);
+                      var gradFill = !previewRevealed ? neutralInk : (afTheme === 'contrast' ? (score > 70 ? '#00ff00' : '#ffff00') : (band === 'very-high' ? 'url(#af-bar-vh)' : band === 'confident' ? 'url(#af-bar-c)' : band === 'low' ? 'url(#af-bar-l)' : 'url(#af-bar-vl)'));
                       return h('g', { key: 'b-' + idx },
-                        h('rect', { x: bx, y: 196 - bh, width: 20, height: bh, rx: 2.5, fill: gradFill, opacity: bandMatch ? 0.95 : 0.2 }),
+                        h('rect', { x: bx, y: 196 - (previewRevealed ? bh : 16), width: 20, height: previewRevealed ? bh : 16, rx: 2.5, fill: gradFill, 'data-band': previewRevealed ? band : 'hidden', opacity: !previewRevealed ? 0.35 : (bandMatch ? 0.95 : 0.2) }),
                         afTheme !== 'contrast' && bandMatch && h('line', { className: 'af-bar-glint', x1: bx + 2, y1: 196 - bh + 1, x2: bx + 18, y2: 196 - bh + 1, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', style: { animationDelay: (idx * 0.14) + 's' } })
                       );
                     }),
-                    afTheme !== 'contrast' && h('g', { clipPath: 'url(#af-spectrum-clip)' },
-                      h('rect', { className: 'af-spectrum-sheen', x: 56, y: 158, width: 72, height: 39, fill: 'url(#af-sheen-grad)' })),
-                    h('text', { x: 62, y: 207, fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, 'Res 1'),
-                    h('text', { x: 528, y: 207, textAnchor: 'end', fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, activeSample.length)),
+                    afTheme !== 'contrast' && previewRevealed && h('g', { clipPath: 'url(#af-spectrum-clip)' },
+                      h('rect', { className: 'af-spectrum-sheen', x: 56, y: 158, width: 72, height: 39, fill: 'url(#af-sheen-grad)' }))),
+                  h('div', { className: 'af-ribbon-row af-ribbon-axis', 'aria-hidden': 'true' },
+                    h('span', { className: 'af-ribbon-label' }, t('stem.alphaFold.ribbon_axis_start', 'pLDDT bars: residue 1')),
+                    h('span', { className: 'af-ribbon-label' }, t('stem.alphaFold.ribbon_axis_end', 'residue') + ' ' + activeSample.residues)),
                   h('div', { className: 'af-viz-foot' },
-                    h('span', { className: 'af-viz-summary' }, activeSample.foldNote),
-                    h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note', 'Illustrative model | confidence is not correctness'))))
-              : h('figure', { className: 'af-protein-viz', role: 'group', 'aria-label': t('stem.alphaFold.pae_preview_aria', 'Illustrative Predicted Aligned Error heatmap showing intra-domain low error in dark green along the diagonal and higher inter-domain error off-diagonal.') },
+                    h('span', { className: 'af-viz-summary' }, previewRevealed ? activeSample.foldNote : t('stem.alphaFold.predict_hidden_note', 'Colors stay gray until you predict.')),
+                    h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.confidence_preview_note_v2', 'Drawn shape, real AlphaFold DB scores | confidence is not correctness'))))
+              : h('figure', { className: 'af-protein-viz', role: 'group', 'aria-label': previewRevealed
+                  ? activeSample.name + ': ' + t('stem.alphaFold.pae_preview_aria_v2', 'Predicted Aligned Error map from AlphaFold DB, shown as 8 by 8 average squares.') + ' ' + paeCounts.intra + ' ' + t('stem.alphaFold.pae_count_low', 'of 64 squares are under 5 Å,') + ' ' + paeCounts.boundary + ' ' + t('stem.alphaFold.pae_count_mid', 'are 5 to 20 Å, and') + ' ' + paeCounts.inter + ' ' + t('stem.alphaFold.pae_count_high', 'are 20 Å or more.')
+                  : activeSample.name + ': ' + t('stem.alphaFold.pae_hidden_aria', 'gray Predicted Aligned Error map. Make your prediction to see the AlphaFold DB values.') },
                   h('div', { className: 'af-viz-head' },
                     h('span', { className: 'af-viz-label', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_preview_label', 'Predicted Aligned Error (PAE)')),
-                    h('span', { className: 'af-viz-acc' }, activeSample.name + ' \u00b7 ' + activeSample.accession)),
-                  h('svg', { viewBox: '0 0 560 210', 'aria-hidden': 'true', focusable: 'false' },
+                    h('span', { className: 'af-viz-acc' }, activeSample.name + ' · ' + activeSample.accession)),
+                  h('div', { className: 'af-pae-layout' },
+                  h('svg', { className: 'af-pae-matrix', viewBox: '0 0 250 210', 'aria-hidden': 'true', focusable: 'false' },
                     h('defs', null,
                       h('linearGradient', { id: 'af-pae-scale', x1: '0', y1: '0', x2: '1', y2: '0' },
-                        h('stop', { offset: '0%', stopColor: '#059669' }),
-                        h('stop', { offset: '38%', stopColor: '#34d399' }),
-                        h('stop', { offset: '70%', stopColor: '#a7f3d0' }),
-                        h('stop', { offset: '100%', stopColor: '#1e293b' })),
+                        h('stop', { offset: '0%', stopColor: paeColorScale[1] }),
+                        h('stop', { offset: '33%', stopColor: paeColorScale[2] }),
+                        h('stop', { offset: '66%', stopColor: paeColorScale[3] }),
+                        h('stop', { offset: '100%', stopColor: paeColorScale[4] })),
                       h('linearGradient', { id: 'af-pae-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
                         h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
                         h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.85 }),
@@ -1260,69 +1400,85 @@
                       h('clipPath', { id: 'af-pae-bar-clip' },
                         h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3 }))),
                     // Dark-field matrix viewport frame
-                    h('rect', { x: 4, y: 4, width: 552, height: 202, rx: 10, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.72)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
+                    h('rect', { x: 4, y: 4, width: 242, height: 202, rx: 10, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.72)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
                     h('rect', { x: 74, y: 26, width: 167, height: 167, rx: 5, fill: '#020617', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(94,234,212,0.38)', strokeWidth: 1.2 }),
-                    // 8x8 PAE matrix on the left
-                    h('text', { x: 158, y: 20, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 'bold' }, 'Scored Residue'),
-                    h('text', { x: 30, y: 112, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 10, fontWeight: 'bold', transform: 'rotate(-90 30 112)' }, 'Aligned Residue'),
-                    activeSample.paeBlocks.map(function (row, rIdx) {
-                      return row.map(function (lvl, cIdx) {
-                        var reg = paeRegionForLevel(lvl);
-                        var activeCell = paeRegion === reg;
+                    // 8x8 block means of the AFDB PAE matrix (rows = aligned residue, columns = scored residue, as AFDB plots it)
+                    h('text', { x: 158, y: 20, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 12, fontWeight: 'bold' }, 'Scored residue'),
+                    h('text', { x: 30, y: 112, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 12, fontWeight: 'bold', transform: 'rotate(-90 30 112)' }, 'Aligned residue'),
+                    activeSample.pae.map(function (row, rIdx) {
+                      return row.map(function (value, cIdx) {
+                        var lvl = afPaeLevel(value);
+                        var reg = afPaeGroup(lvl);
+                        var activeCell = previewRevealed && paeRegion === reg;
+                        var picked = previewRevealed && paeCell && paeCell.acc === activeSample.accession && paeCell.r === rIdx && paeCell.c === cIdx;
                         return h('rect', {
                           key: rIdx + '-' + cIdx,
                           className: activeCell ? 'af-pae-cell af-pae-cell-active' : 'af-pae-cell',
+                          'data-pae-level': previewRevealed ? String(lvl) : 'hidden',
                           x: 78 + cIdx * 20,
                           y: 30 + rIdx * 20,
                           width: 19,
                           height: 19,
                           rx: 2.5,
-                          fill: afTheme === 'contrast' ? (lvl === 1 ? '#00ff00' : lvl === 2 ? '#ffff00' : '#000000') : (paeColorScale[lvl] || '#1e293b'),
-                          stroke: activeCell ? '#f8fafc' : (afTheme === 'contrast' ? '#ffff00' : 'rgba(15,23,42,0.55)'),
-                          strokeWidth: activeCell ? 1.5 : 0.7,
-                          onClick: function () { setPaeRegion(reg); }
+                          fill: !previewRevealed ? neutralInk : (afTheme === 'contrast' ? (lvl === 1 ? '#00ff00' : lvl === 2 ? '#ffff00' : lvl === 3 ? '#ffffff' : '#000000') : paeColorScale[lvl]),
+                          opacity: previewRevealed ? 1 : 0.35,
+                          stroke: picked ? '#f97316' : (activeCell ? '#f8fafc' : (afTheme === 'contrast' ? '#ffff00' : 'rgba(15,23,42,0.55)')),
+                          strokeWidth: picked ? 2.5 : (activeCell ? 1.5 : 0.7),
+                          onClick: function () {
+                            if (!previewRevealed) return;
+                            setPaeRegion(reg);
+                            setPaeCell({ acc: activeSample.accession, r: rIdx, c: cIdx });
+                          }
                         });
                       });
                     }),
-                    // Crisp diagonal intra-domain axis guide
-                    h('line', { className: 'af-pae-diag', x1: 78, y1: 30, x2: 237, y2: 189, stroke: afTheme === 'contrast' ? '#ffffff' : 'rgba(255,255,255,0.38)', strokeWidth: 1.1, strokeDasharray: '3 3', pointerEvents: 'none' }),
-                    // Right side: PAE scale legend & domain guide
-                    h('text', { x: 268, y: 34, fill: afTheme === 'contrast' ? '#ffff00' : '#f8fafc', fontSize: 12, fontWeight: 'bold' }, 'Expected position error (\u00c5)'),
-                    !(afTheme === 'contrast') && h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3, fill: 'url(#af-pae-scale)' }),
-                    !(afTheme === 'contrast') && h('g', { clipPath: 'url(#af-pae-bar-clip)' },
-                      h('rect', { className: 'af-pae-sheen', x: 268, y: 40, width: 48, height: 6, fill: 'url(#af-pae-sheen-grad)' })),
-                    h('rect', { x: 268, y: 54, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#00ff00' : '#059669' }),
-                    h('text', { x: 298, y: 65, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '0\u20135 \u00c5  Tightly packed domain'),
-                    h('rect', { x: 268, y: 76, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#ffff00' : '#34d399' }),
-                    h('text', { x: 298, y: 87, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '6\u201312 \u00c5  Moderate local packing'),
-                    h('rect', { x: 268, y: 98, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#000000' : '#a7f3d0', stroke: afTheme === 'contrast' ? '#ffff00' : undefined }),
-                    h('text', { x: 298, y: 109, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '13\u201320 \u00c5  Flexible boundary'),
-                    h('rect', { x: 268, y: 120, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#000000' : '#1e293b', stroke: afTheme === 'contrast' ? '#ffff00' : '#64748b', strokeWidth: 1 }),
-                    h('text', { x: 298, y: 131, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '>22 \u00c5  Uncertain relative position'),
-                    h('rect', { x: 268, y: 148, width: 266, height: 42, rx: 8, fill: afTheme === 'contrast' ? '#000000' : 'rgba(15,118,110,0.22)', stroke: afTheme === 'contrast' ? '#00ff00' : 'rgba(94,234,212,0.42)', strokeWidth: 1 }),
-                    h('text', { x: 280, y: 165, fill: afTheme === 'contrast' ? '#00ff00' : '#99f6e4', fontSize: 10, fontWeight: 'bold' }, 'Click any matrix square to inspect:'),
-                    h('text', { x: 280, y: 181, fill: afTheme === 'contrast' ? '#ffff00' : '#cbd5e1', fontSize: 9.5 }, 'Diagonal = within domain | Off-diagonal = between domains')),
+                    // Diagonal guide: a stretch compared with itself
+                    h('line', { className: 'af-pae-diag', x1: 78, y1: 30, x2: 237, y2: 189, stroke: afTheme === 'contrast' ? '#ffffff' : 'rgba(255,255,255,0.38)', strokeWidth: 1.1, strokeDasharray: '3 3', pointerEvents: 'none' })),
+                  // Legend in HTML so it stays readable on a phone (this tool's four teaching bins).
+                  h('div', { className: 'af-pae-legend' },
+                    h('p', { className: 'af-pae-legend-title' }, t('stem.alphaFold.pae_legend_title', 'Expected position error (Å)')),
+                    afTheme !== 'contrast' && h('div', { className: 'af-pae-scale', 'aria-hidden': 'true', style: { background: 'linear-gradient(90deg,' + paeColorScale[1] + ',' + paeColorScale[2] + ',' + paeColorScale[3] + ',' + paeColorScale[4] + ')' } }),
+                    [
+                      { lvl: 1, text: t('stem.alphaFold.pae_legend_1', '0–5 Å: confident') },
+                      { lvl: 2, text: t('stem.alphaFold.pae_legend_2', '5–10 Å: fairly confident') },
+                      { lvl: 3, text: t('stem.alphaFold.pae_legend_3', '10–20 Å: uncertain') },
+                      { lvl: 4, text: t('stem.alphaFold.pae_legend_4', '20+ Å: position not known') }
+                    ].map(function (row) {
+                      var swatch = afTheme === 'contrast' ? (row.lvl === 1 ? '#00ff00' : row.lvl === 2 ? '#ffff00' : row.lvl === 3 ? '#ffffff' : '#000000') : paeColorScale[row.lvl];
+                      return h('div', { key: 'legend-' + row.lvl, className: 'af-pae-legend-row' },
+                        h('span', { className: 'af-pae-swatch', 'aria-hidden': 'true', style: { background: swatch } }),
+                        h('span', null, row.text));
+                    }),
+                    // Teaching bins vs AFDB's continuous scale: see the EMBL-EBI quote at afPaeLevel.
+                    h('p', { className: 'af-pae-bins-note' }, t('stem.alphaFold.pae_bins_note', 'These 4 color steps are teaching bins made for this tool. AlphaFold DB uses a smooth scale of greens instead: the darker the green, the lower the error.')),
+                    h('p', { className: 'af-pae-legend-note' },
+                      h('strong', null, t('stem.alphaFold.pae_legend_square', 'Each square: one stretch of the chain vs another.')), ' ',
+                      t('stem.alphaFold.pae_legend_diagonal', 'Diagonal squares compare a stretch with itself.')))),
                   h('div', { className: 'af-viz-foot', style: { flexDirection: 'column', alignItems: 'stretch', gap: '8px' } },
                     h('div', { className: 'af-preset-strip', role: 'group', 'aria-label': t('stem.alphaFold.pae_region_aria', 'Inspect PAE error regions') },
                       [
-                        { id: 'intra', label: t('stem.alphaFold.pae_intra', 'Within domain (0–5 Å)') },
-                        { id: 'boundary', label: t('stem.alphaFold.pae_boundary', 'Domain boundary (6–15 Å)') },
-                        { id: 'inter', label: t('stem.alphaFold.pae_inter', 'Between domains (>20 Å)') }
+                        { id: 'intra', label: t('stem.alphaFold.pae_chip_low', 'Low error (under 5 Å)') },
+                        { id: 'boundary', label: t('stem.alphaFold.pae_chip_mid', 'Medium (5 to 20 Å)') },
+                        { id: 'inter', label: t('stem.alphaFold.pae_chip_high', 'High error (20 Å or more)') }
                       ].map(function (reg) {
                         return h('button', {
                           key: reg.id,
                           type: 'button',
                           className: 'af-preset-chip',
-                          'aria-pressed': paeRegion === reg.id ? 'true' : 'false',
+                          disabled: !previewRevealed,
+                          'aria-pressed': previewRevealed && paeRegion === reg.id ? 'true' : 'false',
                           onClick: function () {
                             setPaeRegion(reg.id);
-                            if (announceToSR) announceToSR(PAE_EXPLANATIONS[reg.id]);
+                            setPaeCell(null);
+                            if (announceToSR) announceToSR(PAE_EXPLANATIONS[reg.id] + ' ' + paeCounts[reg.id] + ' ' + t('stem.alphaFold.pae_count_of64', 'of 64 squares.'));
                           }
-                        }, reg.label);
+                        }, reg.label + (previewRevealed ? ' · ' + paeCounts[reg.id] : ''));
                       })),
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
-                      h('span', { className: 'af-viz-summary' }, PAE_EXPLANATIONS[paeRegion]),
-                      h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_note', 'Low PAE = reliable relative domain geometry'))))),
+                      h('span', { className: 'af-viz-summary' }, !previewRevealed
+                        ? t('stem.alphaFold.predict_hidden_note', 'Colors stay gray until you predict.')
+                        : (paeCellText ? paeCellText + ' ' : '') + PAE_EXPLANATIONS[paeRegion]),
+                      h('span', { className: 'af-viz-note', 'aria-hidden': 'true' }, t('stem.alphaFold.pae_note_v2', 'Low PAE = confident relative position'))))),
 
             h('aside', { className: 'af-confidence-key', 'aria-labelledby': 'af-confidence-heading' },
               h('div', null,
@@ -1338,7 +1494,7 @@
                     h('span', { className: 'af-confidence-dot', style: { color: band.color, backgroundColor: band.color }, 'aria-hidden': 'true' }),
                     h('span', { className: 'af-confidence-range' }, band.range),
                     h('span', { className: 'af-confidence-name' }, band.name),
-                    h('span', { className: 'af-confidence-pct' }, activeSample.pcts[band.id] || ''));
+                    h('span', { className: 'af-confidence-pct' }, previewRevealed ? (activeSample.pcts[band.id] || '') : '?'));
                 })),
               h('div', null,
                 h('div', { className: 'af-confidence-reading', role: 'status', 'aria-live': 'polite' },
@@ -1396,6 +1552,7 @@
           h('details', { className: 'af-details' },
             h('summary', null, t('stem.alphaFold.tutorial_title', 'How AlphaFold investigations work (4 steps)')),
             h('ol', null,
+              // nobelprize.org 2024 Chemistry press release: "predicting protein structures from their amino acid sequences".
               h('li', null, t('stem.alphaFold.tutorial_1', 'AlphaFold predicts a protein 3D structure from an amino acid sequence; AlphaFold DB provides public predicted structures.')),
               h('li', null, t('stem.alphaFold.tutorial_2', 'Start from a classroom preset or choose a grade-level tutorial, lesson length, biology context, assignment format, and support level.')),
               h('li', null, t('stem.alphaFold.tutorial_3', 'Use cautious wording: the model suggests evidence, but it is not final proof by itself.')),
@@ -1407,6 +1564,8 @@
               ? t('stem.alphaFold.ai_on', 'AI guidance receives structure metadata, learner context, and student observations or claims—not full protein sequences.')
               : t('stem.alphaFold.ai_off', 'AI hints are off. The explorer still works with built-in inspection prompts.')))),
 
+        // Credit checked 2026-11-24: alphafold.ebi.ac.uk "Developed by" Google DeepMind + EMBL-EBI; github.com/molstar/molstar
+        // license "MIT"; EMBL-EBI AlphaFold course: AlphaFold Server is "available for non-commercial use".
         h('p', { className: 'af-credit' },
           t('stem.alphaFold.credit', 'Data/viewing: AlphaFold Protein Structure Database by Google DeepMind and EMBL-EBI; Mol* viewer under MIT license. AlphaFold Server opens separately for non-commercial research workflows. Internet is required for database lookup and web viewing.'))
       );

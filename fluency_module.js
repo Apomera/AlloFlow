@@ -39,48 +39,89 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.Fluency) {
-    console.log('[CDN] FluencyModule already loaded, skipping');
+  if (typeof window !== 'object' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.Fluency) {
+    try { if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[CDN] FluencyModule already loaded, skipping'); } catch (_) {}
     return;
   }
 
+  function _flStr(v) {
+    if (v === null || v === undefined || typeof v === 'symbol') return '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function _flNum(v) {
+    if (typeof v === 'number') return v;
+    if (v === null || v === undefined || typeof v === 'symbol') return NaN;
+    try { return Number(v); } catch (_) { return NaN; }
+  }
+  function _flSafeParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function _flWarn() {
+    try {
+      var fn = (typeof window === 'object' && window && typeof window.warnLog === 'function')
+        ? window.warnLog
+        : (typeof console !== 'undefined' && console && typeof console.warn === 'function' ? console.warn.bind(console) : null);
+      if (fn) fn.apply(null, arguments);
+    } catch (_) {}
+  }
+  function _isSafeLocalAsrUrl(raw) {
+    if (typeof raw !== 'string') return false;
+    var s = raw.trim();
+    if (!s) return false;
+    if (s.charAt(0) === '/' && s.charAt(1) !== '/') return true;
+    try {
+      var u = new URL(s);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      if (u.username || u.password) return false;
+      return u.hostname === '127.0.0.1' || u.hostname === 'localhost' || u.hostname === '[::1]';
+    } catch (_) {
+      return false;
+    }
+  }
+
   function calculateLocalFluencyMetrics(wordData, durationSeconds, totalReferenceWordCount, insertionsArr) {
-      if (!wordData || wordData.length === 0) return { accuracy: 0, wcpm: 0, correctWords: 0 };
+      if (!Array.isArray(wordData) || wordData.length === 0) return { accuracy: 0, wcpm: 0, correctWords: 0 };
       // A self-correction counts as correct in a running record. Insertions are
       // errors, so subtract them from words-correct rather than allowing an
       // inserted word to leave WCPM/accuracy unchanged.
       var correctCount = wordData.filter(function (w) {
-          return w.status === 'correct' || w.status === 'stumbled' || w.status === 'self_corrected';
+          return w && (w.status === 'correct' || w.status === 'stumbled' || w.status === 'self_corrected');
       }).length;
       var insertionCount = Array.isArray(insertionsArr) ? insertionsArr.length : 0;
       var adjustedCorrectCount = Math.max(0, correctCount - insertionCount);
-      var denominator = (totalReferenceWordCount && totalReferenceWordCount > 0)
-          ? totalReferenceWordCount
+      var refCount = _flNum(totalReferenceWordCount);
+      var denominator = (isFinite(refCount) && refCount > 0)
+          ? refCount
           : wordData.length;
-      if (totalReferenceWordCount > 0 && wordData.length > 0) {
-          var ratio = wordData.length / totalReferenceWordCount;
+      if (isFinite(refCount) && refCount > 0 && wordData.length > 0) {
+          var ratio = wordData.length / refCount;
           if (ratio < 0.8 || ratio > 1.2) {
-              console.warn('[Fluency] Word count mismatch: Gemini returned ' + wordData.length + ' words vs ' + totalReferenceWordCount + ' reference words (ratio: ' + ratio.toFixed(2) + '). Using Gemini count.');
+              _flWarn('[Fluency] Word count mismatch: Gemini returned ' + wordData.length + ' words vs ' + refCount + ' reference words (ratio: ' + ratio.toFixed(2) + '). Using Gemini count.');
               denominator = wordData.length;
           }
       }
       var accuracy = Math.min(100, denominator > 0 ? Math.round((adjustedCorrectCount / denominator) * 100) : 0);
-      var validDuration = Math.max(1, Number(durationSeconds) || 0);
+      var durNum = _flNum(durationSeconds);
+      var validDuration = Math.max(1, isFinite(durNum) ? durNum : 0);
       var minutes = validDuration / 60;
       var wcpm = Math.round(adjustedCorrectCount / minutes);
       return { accuracy: accuracy, wcpm: wcpm, correctWords: adjustedCorrectCount };
   }
 
   function calculateRunningRecordMetrics(wordData, insertionsArr) {
-      if (!wordData || wordData.length === 0) return {
+      if (!Array.isArray(wordData) || wordData.length === 0) return {
           substitutions: 0, omissions: 0, insertions: 0,
           selfCorrections: 0, totalErrors: 0, errorRate: '0',
           scRate: '0', readingLevel: 'frustrational', accuracy: 0, accuracyPct: 0
       };
-      var substitutions = wordData.filter(function (w) { return w.status === 'mispronounced'; }).length;
-      var omissions = wordData.filter(function (w) { return w.status === 'missed'; }).length;
+      var substitutions = wordData.filter(function (w) { return w && w.status === 'mispronounced'; }).length;
+      var omissions = wordData.filter(function (w) { return w && w.status === 'missed'; }).length;
       var insertions = (insertionsArr && Array.isArray(insertionsArr)) ? insertionsArr.length : 0;
-      var selfCorrections = wordData.filter(function (w) { return w.status === 'self_corrected'; }).length;
+      var selfCorrections = wordData.filter(function (w) { return w && w.status === 'self_corrected'; }).length;
       var totalErrors = substitutions + omissions + insertions;
       var totalWords = wordData.length;
       var errorRate = totalErrors > 0 ? (totalWords / totalErrors).toFixed(1) : '∞';
@@ -100,12 +141,12 @@
   }
 
   function _fluencyCsvCell(value) {
-      var raw = String(value == null ? '' : value);
+      var raw = (value == null || typeof value === 'symbol') ? '' : (typeof value === 'string' ? value : (function () { try { return String(value); } catch (_) { return ''; } })());
       var safe = /^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) ? "'" + raw : raw;
       return '"' + safe.replace(/"/g, '""') + '"';
   }
   function _fluencyCsvPlainSafe(value) {
-      var raw = String(value == null ? '' : value);
+      var raw = (value == null || typeof value === 'symbol') ? '' : (typeof value === 'string' ? value : (function () { try { return String(value); } catch (_) { return ''; } })());
       if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(raw) || /[,"\r\n]/.test(raw)) {
           return _fluencyCsvCell(raw);
       }
@@ -124,7 +165,12 @@
       var headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level', 'Review Status', 'Reviewer', 'Review Date', 'Passage ID', 'Calibrated Parallel Form'];
       var formatDate = typeof options.formatDate === 'function'
           ? options.formatDate
-          : function (timestamp) { return new Date(timestamp).toLocaleDateString(); };
+          : function (timestamp) {
+              try {
+                  var d = new Date(timestamp);
+                  return isNaN(d.getTime()) ? '' : d.toLocaleDateString();
+              } catch (_) { return ''; }
+          };
       var rows = fluencyRecords.map(function (record) {
           var data = record.data;
           var metrics = data.metrics;
@@ -132,10 +178,11 @@
           var running = data.wordData
               ? (calculateRunningRecordMetrics(data.wordData, data.insertions || (data.fullAnalysis && data.fullAnalysis.insertions) || []) || fallback)
               : fallback;
-          var passageTitle = (data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
+          var passageTitle = (typeof data.sourceText === 'string' ? data.sourceText : _flStr(data.sourceText)).substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
           var review = data.review || {};
           var passage = data.passageMetadata || {};
-          return [_fluencyCsvPlainSafe(formatDate(record.timestamp)), _fluencyCsvCell(passageTitle), metrics.wcpm || 0, metrics.accuracy || 0, metrics.totalWords || 0, Math.round(metrics.durationSeconds || 0), running.substitutions || 0, running.omissions || 0, running.insertions || 0, running.selfCorrections || 0, '1:' + (running.errorRate || 0), running.readingLevel || 'unknown', _fluencyCsvPlainSafe(review.status || 'unreviewed'), _fluencyCsvCell(review.reviewer || ''), _fluencyCsvPlainSafe(review.reviewedAt || ''), _fluencyCsvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
+          var durNum = _flNum(metrics.durationSeconds);
+          return [_fluencyCsvPlainSafe(formatDate(record.timestamp)), _fluencyCsvCell(passageTitle), _fluencyCsvPlainSafe(metrics.wcpm || 0), _fluencyCsvPlainSafe(metrics.accuracy || 0), _fluencyCsvPlainSafe(metrics.totalWords || 0), Math.round(isFinite(durNum) ? durNum : 0), running.substitutions || 0, running.omissions || 0, running.insertions || 0, running.selfCorrections || 0, _fluencyCsvPlainSafe('1:' + _flStr(running.errorRate || 0)), _fluencyCsvPlainSafe(running.readingLevel || 'unknown'), _fluencyCsvPlainSafe(review.status || 'unreviewed'), _fluencyCsvCell(review.reviewer || ''), _fluencyCsvPlainSafe(review.reviewedAt || ''), _fluencyCsvCell(passage.passageId || ''), passage.calibrated === true ? 'yes' : 'no'].join(',');
       });
       var csv = [headers.join(',')].concat(rows).join('\n');
       var BlobCtor = options.BlobCtor || (typeof Blob !== 'undefined' ? Blob : null);
@@ -145,7 +192,7 @@
       var blob = new BlobCtor([csv.charCodeAt(0) === 0xFEFF ? csv : '\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
       var link = documentRef.createElement('a');
       var href = urlApi.createObjectURL(blob);
-      var now = options.now instanceof Date ? options.now : new Date();
+      var now = (options.now instanceof Date && !isNaN(options.now.getTime())) ? options.now : new Date();
       link.href = href;
       link.download = 'Fluency_Assessments_' + now.toISOString().split('T')[0] + '.csv';
       documentRef.body.appendChild(link);
@@ -159,7 +206,7 @@
   }
 
   function _fluencyScoreSheetEscape(value) {
-      return String(value == null ? '' : value)
+      return _flStr(value)
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
@@ -185,8 +232,10 @@
           errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0,
           readingLevel: 'unknown'
       };
-      var readingLevelMap = { independent: 'Independent', instructional: 'Instructional', frustrational: 'Frustrational' };
-      var readingLevelLabel = readingLevelMap[rrm.readingLevel] || (rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational');
+      var readingLevelMap = Object.assign(Object.create(null), { independent: 'Independent', instructional: 'Instructional', frustrational: 'Frustrational' });
+      var readingLevelLabel = (typeof rrm.readingLevel === 'string' && Object.prototype.hasOwnProperty.call(readingLevelMap, rrm.readingLevel))
+          ? readingLevelMap[rrm.readingLevel]
+          : (rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational');
       var wordMarkup = result.wordData.map(function (word) {
           word = word || {};
           var symbol = (word.status === 'correct' || word.status === 'stumbled') ? '✓' : word.status === 'missed' ? '—' : word.status === 'self_corrected' ? 'SC' : '✗';
@@ -194,7 +243,7 @@
           var said = word.said ? '<br/><span style="font-size:9px;color:#94a3b8;">' + _fluencyScoreSheetEscape(word.said) + '</span>' : '';
           return '<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ' + color + '20;background:' + color + '08;"><span style="font-size:16px;color:#1e293b;">' + _fluencyScoreSheetEscape(word.word) + '</span><br/><span style="font-size:11px;font-weight:800;color:' + color + ';">' + symbol + '</span>' + said + '</span>';
       }).join('');
-      var now = options.now instanceof Date ? options.now : new Date();
+      var now = (options.now instanceof Date && !isNaN(options.now.getTime())) ? options.now : new Date();
       var displayDate = _fluencyScoreSheetEscape(options.displayDate || now.toLocaleDateString());
       var student = _fluencyScoreSheetEscape(options.studentNickname || '________________');
       var benchmarkGrade = _fluencyScoreSheetEscape(options.fluencyBenchmarkGrade || '');
@@ -221,46 +270,48 @@
       return false;
   }
 
-  var _FLUENCY_STATUSES = {
+  var _FLUENCY_STATUSES = Object.assign(Object.create(null), {
     correct: true,
     missed: true,
     stumbled: true,
     self_corrected: true,
     mispronounced: true
-  };
+  });
 
   function _cloneFluencyWords(words) {
     return (Array.isArray(words) ? words : []).map(function (word) {
-      var status = word && _FLUENCY_STATUSES[word.status] ? word.status : 'correct';
+      var status = (word && typeof word.status === 'string' && Object.prototype.hasOwnProperty.call(_FLUENCY_STATUSES, word.status)) ? word.status : 'correct';
       return Object.assign({}, word || {}, {
-        word: String((word && word.word) || ''),
+        word: _flStr(word && word.word),
         status: status,
-        said: word && word.said ? String(word.said) : undefined,
+        said: word && word.said ? _flStr(word.said) : undefined,
         lowConfidence: !!(word && word.lowConfidence),
-        triangulation: word && word.triangulation ? String(word.triangulation) : undefined
+        triangulation: word && word.triangulation ? _flStr(word.triangulation) : undefined
       });
     });
   }
 
   function _cloneInsertions(insertions) {
     return (Array.isArray(insertions) ? insertions : [])
-      .map(function (word) { return String(word || '').trim(); })
+      .map(function (word) { return _flStr(word).trim(); })
       .filter(function (word) { return word.length > 0; });
   }
 
   function _fluencySnapshot(result) {
     result = result || {};
+    var acc = _flNum(result.accuracy);
+    var wc = _flNum(result.wcpm);
     return {
       wordData: _cloneFluencyWords(result.wordData),
       insertions: _cloneInsertions(result.insertions),
-      accuracy: Number(result.accuracy) || 0,
-      wcpm: Number(result.wcpm) || 0,
+      accuracy: isFinite(acc) ? acc : 0,
+      wcpm: isFinite(wc) ? wc : 0,
       timestamp: result.timestamp || null
     };
   }
 
   function _passageHash(text) {
-    var input = String(text || '').trim().replace(/\s+/g, ' ');
+    var input = _flStr(text).trim().replace(/\s+/g, ' ');
     var hash = 2166136261;
     for (var i = 0; i < input.length; i++) {
       hash ^= input.charCodeAt(i);
@@ -276,16 +327,16 @@
     options = options || {};
     var wordCount = _tokenizeReference(referenceText).length;
     return {
-      passageId: String(options.passageId || ('passage-' + _passageHash(referenceText))),
-      sourceResourceId: options.sourceResourceId ? String(options.sourceResourceId) : null,
-      title: options.title ? String(options.title) : null,
-      grade: options.grade ? String(options.grade) : null,
-      language: options.language ? String(options.language) : null,
+      passageId: _flStr(options.passageId) || ('passage-' + _passageHash(referenceText)),
+      sourceResourceId: options.sourceResourceId ? _flStr(options.sourceResourceId) : null,
+      title: options.title ? _flStr(options.title) : null,
+      grade: options.grade ? _flStr(options.grade) : null,
+      language: options.language ? _flStr(options.language) : null,
       wordCount: wordCount,
       calibrated: options.calibrated === true,
-      passageSetId: options.passageSetId ? String(options.passageSetId) : null,
-      formId: options.formId ? String(options.formId) : null,
-      lexile: options.lexile != null ? String(options.lexile) : null
+      passageSetId: options.passageSetId ? _flStr(options.passageSetId) : null,
+      formId: options.formId ? _flStr(options.formId) : null,
+      lexile: options.lexile != null ? _flStr(options.lexile) : null
     };
   }
 
@@ -310,18 +361,19 @@
       totalWords,
       reviewedInsertions
     );
-    var automatedSnapshot = result.automatedSnapshot || _fluencySnapshot(result);
+    var automatedSnapshot = (result.automatedSnapshot && typeof result.automatedSnapshot === 'object') ? result.automatedSnapshot : _fluencySnapshot(result);
+    var automatedWords = Array.isArray(automatedSnapshot.wordData) ? automatedSnapshot.wordData : [];
     var previousSnapshot = _fluencySnapshot(result);
     var priorAudit = Array.isArray(result.reviewAudit) ? result.reviewAudit.slice() : [];
     var reviewedAt = options.reviewedAt || new Date().toISOString();
-    var reviewer = String(options.reviewer || review.reviewer || 'Educator').trim() || 'Educator';
-    var note = String(options.note !== undefined ? options.note : (review.note || '')).trim();
+    var reviewer = _flStr(options.reviewer || review.reviewer || 'Educator').trim() || 'Educator';
+    var note = _flStr(options.note !== undefined ? options.note : (review.note || '')).trim();
     var correctedWordCount = 0;
     for (var i = 0; i < reviewedWords.length; i++) {
-      var originalWord = automatedSnapshot.wordData[i] || {};
+      var originalWord = automatedWords[i] || {};
       var reviewedWord = reviewedWords[i] || {};
       if (originalWord.status !== reviewedWord.status ||
-          String(originalWord.said || '') !== String(reviewedWord.said || '')) correctedWordCount++;
+          _flStr(originalWord.said) !== _flStr(reviewedWord.said)) correctedWordCount++;
     }
     priorAudit.push({
       revision: priorAudit.length + 1,
@@ -403,13 +455,19 @@
         : (sample.length < 3
           ? 'Fewer than three readings are available; treat this as a single-read practice signal.'
           : 'Passages are not documented as calibrated parallel forms; the median is descriptive only.'));
+    var minWcpm = null, maxWcpm = null;
+    for (var wi = 0; wi < wcpmValues.length; wi++) {
+      var wv = wcpmValues[wi];
+      if (minWcpm === null || wv < minWcpm) minWcpm = wv;
+      if (maxWcpm === null || wv > maxWcpm) maxWcpm = wv;
+    }
     return {
       sampleCount: sample.length,
       requestedSampleSize: sampleSize,
       medianWcpm: _median(wcpmValues),
       medianAccuracy: _median(accuracyValues),
-      minWcpm: wcpmValues.length ? Math.min.apply(Math, wcpmValues) : null,
-      maxWcpm: wcpmValues.length ? Math.max.apply(Math, wcpmValues) : null,
+      minWcpm: minWcpm,
+      maxWcpm: maxWcpm,
       evidenceKind: evidenceKind,
       benchmarkReady: benchmarkReady,
       message: message,
@@ -482,11 +540,14 @@
   }
 
   function getBenchmarkComparison(wcpm, grade, season, customNorms) {
-      if (grade === 'custom' && customNorms) {
-          var seasonKey = (season || 'winter').toLowerCase();
-          var target = customNorms[seasonKey] || customNorms.winter || 0;
-          if (target <= 0) return { level: 'unknown', target: 0 };
-          var ratio = wcpm / target;
+      var safeWcpm = _flNum(wcpm);
+      if (!isFinite(safeWcpm)) return { level: 'unknown', target: 0 };
+      var seasonStr = _flStr(season || 'winter').toLowerCase() || 'winter';
+      if (grade === 'custom' && customNorms && typeof customNorms === 'object') {
+          var rawTarget = Object.prototype.hasOwnProperty.call(customNorms, seasonStr) ? customNorms[seasonStr] : customNorms.winter;
+          var target = _flNum(rawTarget);
+          if (!isFinite(target) || target <= 0) return { level: 'unknown', target: 0 };
+          var ratio = safeWcpm / target;
           var level = 'well_below';
           if (ratio >= 1.1) level = 'above';
           else if (ratio >= 0.9) level = 'at';
@@ -496,14 +557,14 @@
       // Read FLUENCY_BENCHMARKS from window.AlloModules.AlloData at call time
       // (AlloData module owns this data table; reading at call time handles any
       // load-order race with allo_data_module.js gracefully).
-      var FLUENCY_BENCHMARKS = (window.AlloModules && window.AlloModules.AlloData && window.AlloModules.AlloData.FLUENCY_BENCHMARKS) || {};
-      var gradeKey = String(grade).replace(/\D/g, '') || 'K';
-      var norms = FLUENCY_BENCHMARKS[gradeKey === '0' ? 'K' : gradeKey];
-      if (!norms) return { level: 'unknown', target: 0 };
-      var seasonKey2 = (season || 'winter').toLowerCase();
-      var target2 = norms[seasonKey2] != null ? norms[seasonKey2] : norms.winter;
+      var FLUENCY_BENCHMARKS = (typeof window === 'object' && window && window.AlloModules && window.AlloModules.AlloData && window.AlloModules.AlloData.FLUENCY_BENCHMARKS) || {};
+      var gradeKey = _flStr(grade).replace(/\D/g, '') || 'K';
+      var lookupKey = gradeKey === '0' ? 'K' : gradeKey;
+      var norms = Object.prototype.hasOwnProperty.call(FLUENCY_BENCHMARKS, lookupKey) ? FLUENCY_BENCHMARKS[lookupKey] : null;
+      if (!norms || typeof norms !== 'object') return { level: 'unknown', target: 0 };
+      var target2 = Object.prototype.hasOwnProperty.call(norms, seasonStr) && norms[seasonStr] != null ? norms[seasonStr] : norms.winter;
       if (target2 == null) return { level: 'unknown', target: 0 };
-      var ratio2 = target2 > 0 ? wcpm / target2 : 1;
+      var ratio2 = target2 > 0 ? safeWcpm / target2 : 1;
       var level2 = 'well_below';
       if (ratio2 >= 1.1) level2 = 'above';
       else if (ratio2 >= 0.9) level2 = 'at';
@@ -513,15 +574,15 @@
 
   function _aiUsable(kind, fn) {
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
+      if (typeof window === 'object' && window && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
     } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window === 'object' && window && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   }
   // Hosts whose callGeminiAudio advertises _alloJsonMaxOutputTokens handle keyless
   // Canvas and long JSON output, so the voice goes through the host transport and
   // its policy (student AI off, audio not approved, managed deployments).
   function _hostAudioTransport() {
-    var fn = typeof window !== 'undefined' ? window.callGeminiAudio : null;
+    var fn = (typeof window === 'object' && window) ? window.callGeminiAudio : null;
     return typeof fn === 'function' && !fn._alloQrBlocked && Number(fn._alloJsonMaxOutputTokens) > 0 ? fn : null;
   }
   // OLD-HOST FALLBACK ONLY. The raw fetch below bypasses the host transport, so
@@ -529,7 +590,7 @@
   // it is not is a missing key (keyless Canvas) and text AI is usable. A policy
   // "no" (student AI off, audio not approved for students) never falls through.
   function _fluencyCloudAllowed() {
-    if (typeof window === 'undefined' || window.__alloStudentAiDisabled === true) return false;
+    if (typeof window !== 'object' || !window || window.__alloStudentAiDisabled === true) return false;
     if (window.__alloAiSecretsLocked === true || window._isDesktopBundledApp === true) return false;
     if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.managedDeployment && window.ALLOFLOW_MANAGED_AI_POLICY.aiAllowed === false) return false;
     if (_aiUsable('audio', window.callGeminiAudio)) return true;
@@ -546,16 +607,17 @@
       // by AlloFlowANTI.txt at file-parse time (lines ~790-792); warnLog is set
       // at line ~2128. By the time anyone triggers a fluency analysis (user
       // action), all three are populated.
-      var apiKey = (typeof window !== 'undefined') ? window.apiKey : '';
-      var GEMINI_MODELS = ((typeof window !== 'undefined') && window.GEMINI_MODELS) || {};
+      var apiKey = (typeof window === 'object' && window) ? window.apiKey : '';
+      var GEMINI_MODELS = ((typeof window === 'object' && window) && window.GEMINI_MODELS) || {};
       var defaultModel = GEMINI_MODELS.default || 'gemini-3-flash-preview';
-      var warnLog = ((typeof window !== 'undefined') && window.warnLog) || function () { console.warn.apply(console, arguments); };
+      var warnLog = ((typeof window === 'object' && window) && typeof window.warnLog === 'function') ? window.warnLog : _flWarn;
+      var safeRefText = (typeof referenceText === 'string' ? referenceText : _flStr(referenceText)).substring(0, 5000);
 
-      var PROMPT = '\n    You are an expert reading tutor AND a critical self-assessor of AI speech recognition accuracy.\n    REFERENCE TEXT:\n    "' + referenceText.substring(0, 5000) + '",\n    INSTRUCTIONS:\n    1. Listen to the student\'s audio recording.\n    2. Compare it strictly word-for-word against the Reference Text.\n    3. Return a JSON object describing the status of every word.\n    STATUS TYPES:\n    - "correct": Pronounced correctly.\n    - "missed": Skipped completely (omission).\n    - "stumbled": Hesitated noticeably but eventually got it right without saying a different word.\n    - "self_corrected": Said a wrong word first, then corrected themselves to the right word.\n    - "mispronounced": Said the wrong word or pronounced it incorrectly and did NOT self-correct.\n    - "insertion": (Optional) If they added a word not in the text.\n    For "mispronounced" and "self_corrected" words, include a "said" field with what the student actually said.\n    For ANY word where you are less than 80% certain of your classification, add "lowConfidence": true.\n    KNOWN BIAS LIMITATIONS — YOU MUST ACCOUNT FOR THESE:\n    - AI speech recognition has documented higher error rates for speakers of African American English (Koenecke et al., 2020, PNAS)\n    - Child speech recognition error rates are 2-5x higher than adult rates (Wu et al., 2020)\n    - Regional accents and L2 English speakers experience higher misrecognition (Tatman, 2017)\n    - Dialectal pronunciations (e.g., "ax" for "ask" in AAE, "gonna" for "going to") are linguistically valid — do NOT mark these as mispronounced\n    - If you detect accent or dialect patterns, err on the side of "correct" rather than "mispronounced"\n    4. CONFIDENCE SELF-ASSESSMENT — After word analysis, evaluate your own accuracy:\n    - Audio quality: noise, clipping, echo, microphone distance\n    - Speaker characteristics: young child, accented speech, dialectal variation\n    - Consistency: did the same word get different classifications in different positions?\n    RETURN JSON ONLY:\n    {\n      "wordData": [\n        { "word": "The", "status": "correct" },\n        { "word": "cat", "status": "missed" },\n        { "word": "horse", "status": "mispronounced", "said": "house" },\n        { "word": "barn", "status": "self_corrected", "said": "band", "lowConfidence": true },\n        { "word": "sat", "status": "correct" }\n      ],\n      "insertions": ["um", "like"],\n      "feedback": "1-2 sentences of encouraging feedback focusing on specific phonics or pacing improvements.",\n      "prosody": {\n        "pacing": 3,\n        "expression": 4,\n        "phrasing": 3,\n        "note": "Brief note on prosody"\n      },\n      "confidence": {\n        "overall": 8,\n        "audioQuality": 9,\n        "speakerClarity": 7,\n        "accentDetected": false,\n        "youngVoiceDetected": false,\n        "dialectalPatternsDetected": false,\n        "lowConfidenceWordCount": 1,\n        "note": "Brief explanation of confidence factors affecting this specific analysis",\n        "limitationsApplied": "Which known limitations from the research literature were relevant, or \'none detected\'"\n      }\n    }\n    PROSODY RATING GUIDE (1-5):\n    - pacing: 1=very slow/labored, 2=slow with many pauses, 3=uneven pace, 4=mostly smooth, 5=natural conversational pace\n    - expression: 1=monotone, 2=little variation, 3=some expression, 4=good variation, 5=expressive and natural\n    - phrasing: 1=word-by-word, 2=two-word groups, 3=some phrase groups, 4=mostly meaningful phrases, 5=smooth phrase reading\n    CONFIDENCE RATING GUIDE (1-10):\n    - 1-3: Low — results should be verified by a human listener\n    - 4-6: Moderate — some words may be inaccurate, especially if accent/dialect/young voice detected\n    - 7-8: Good — minor uncertainty on a few words\n    - 9-10: High — clear audio, standard pronunciation, high consistency\n  ';
+      var PROMPT = '\n    You are an expert reading tutor AND a critical self-assessor of AI speech recognition accuracy.\n    REFERENCE TEXT:\n    "' + safeRefText + '",\n    INSTRUCTIONS:\n    1. Listen to the student\'s audio recording.\n    2. Compare it strictly word-for-word against the Reference Text.\n    3. Return a JSON object describing the status of every word.\n    STATUS TYPES:\n    - "correct": Pronounced correctly.\n    - "missed": Skipped completely (omission).\n    - "stumbled": Hesitated noticeably but eventually got it right without saying a different word.\n    - "self_corrected": Said a wrong word first, then corrected themselves to the right word.\n    - "mispronounced": Said the wrong word or pronounced it incorrectly and did NOT self-correct.\n    - "insertion": (Optional) If they added a word not in the text.\n    For "mispronounced" and "self_corrected" words, include a "said" field with what the student actually said.\n    For ANY word where you are less than 80% certain of your classification, add "lowConfidence": true.\n    KNOWN BIAS LIMITATIONS — YOU MUST ACCOUNT FOR THESE:\n    - AI speech recognition has documented higher error rates for speakers of African American English (Koenecke et al., 2020, PNAS)\n    - Child speech recognition error rates are 2-5x higher than adult rates (Wu et al., 2020)\n    - Regional accents and L2 English speakers experience higher misrecognition (Tatman, 2017)\n    - Dialectal pronunciations (e.g., "ax" for "ask" in AAE, "gonna" for "going to") are linguistically valid — do NOT mark these as mispronounced\n    - If you detect accent or dialect patterns, err on the side of "correct" rather than "mispronounced"\n    4. CONFIDENCE SELF-ASSESSMENT — After word analysis, evaluate your own accuracy:\n    - Audio quality: noise, clipping, echo, microphone distance\n    - Speaker characteristics: young child, accented speech, dialectal variation\n    - Consistency: did the same word get different classifications in different positions?\n    RETURN JSON ONLY:\n    {\n      "wordData": [\n        { "word": "The", "status": "correct" },\n        { "word": "cat", "status": "missed" },\n        { "word": "horse", "status": "mispronounced", "said": "house" },\n        { "word": "barn", "status": "self_corrected", "said": "band", "lowConfidence": true },\n        { "word": "sat", "status": "correct" }\n      ],\n      "insertions": ["um", "like"],\n      "feedback": "1-2 sentences of encouraging feedback focusing on specific phonics or pacing improvements.",\n      "prosody": {\n        "pacing": 3,\n        "expression": 4,\n        "phrasing": 3,\n        "note": "Brief note on prosody"\n      },\n      "confidence": {\n        "overall": 8,\n        "audioQuality": 9,\n        "speakerClarity": 7,\n        "accentDetected": false,\n        "youngVoiceDetected": false,\n        "dialectalPatternsDetected": false,\n        "lowConfidenceWordCount": 1,\n        "note": "Brief explanation of confidence factors affecting this specific analysis",\n        "limitationsApplied": "Which known limitations from the research literature were relevant, or \'none detected\'"\n      }\n    }\n    PROSODY RATING GUIDE (1-5):\n    - pacing: 1=very slow/labored, 2=slow with many pauses, 3=uneven pace, 4=mostly smooth, 5=natural conversational pace\n    - expression: 1=monotone, 2=little variation, 3=some expression, 4=good variation, 5=expressive and natural\n    - phrasing: 1=word-by-word, 2=two-word groups, 3=some phrase groups, 4=mostly meaningful phrases, 5=smooth phrase reading\n    CONFIDENCE RATING GUIDE (1-10):\n    - 1-3: Low — results should be verified by a human listener\n    - 4-6: Moderate — some words may be inaccurate, especially if accent/dialect/young voice detected\n    - 7-8: Good — minor uncertainty on a few words\n    - 9-10: High — clear audio, standard pronunciation, high consistency\n  ';
       if (hostAudio) {
           try {
               var hostText = await hostAudio(PROMPT, audioBase64, { mimeType: mimeType, responseMimeType: 'application/json', maxOutputTokens: Number(hostAudio._alloJsonMaxOutputTokens) });
-              return hostText ? JSON.parse(hostText) : null;
+              return hostText ? _flSafeParse(hostText) : null;
           } catch (hostError) {
               warnLog('Gemini Audio Analysis Failed:', hostError);
               return null;
@@ -590,7 +652,7 @@
           var data = await response.json();
           var resultText = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
           if (!resultText) return null;
-          return JSON.parse(resultText);
+          return _flSafeParse(resultText);
       } catch (error) {
           warnLog('Gemini Audio Analysis Failed:', error);
           return null;
@@ -615,12 +677,12 @@
   // that in the confidence block instead of hiding it.
 
   function _normalizeFluencyWord(w) {
-    return String(w == null ? '' : w).toLowerCase()
+    return _flStr(w).toLowerCase()
       .replace(/[^\p{L}\p{N}']/gu, '')   // drop punctuation, keep letters/digits/apostrophe
       .replace(/^'+|'+$/g, '');
   }
   function _tokenizeReference(text) {
-    return String(text || '').split(/\s+/).map(function (t) { return { raw: t, norm: _normalizeFluencyWord(t) }; })
+    return _flStr(text).split(/\s+/).map(function (t) { return { raw: t, norm: _normalizeFluencyWord(t) }; })
       .filter(function (t) { return t.norm.length > 0; });
   }
 
@@ -635,15 +697,21 @@
     if (hyp.length > 2500) hyp = hyp.slice(0, 2500);
     var n = ref.length, m = hyp.length;
     if (!n) return { wordData: [], insertions: [] };
-    // DP matrix (n+1)x(m+1); store backpointers.
-    var dp = new Array(n + 1);
-    for (var i = 0; i <= n; i++) { dp[i] = new Array(m + 1); for (var j = 0; j <= m; j++) dp[i][j] = 0; }
-    for (var i2 = 0; i2 <= n; i2++) dp[i2][0] = i2;
-    for (var j2 = 0; j2 <= m; j2++) dp[0][j2] = j2;
+    // Flat Int32Array DP matrix (n+1)x(m+1) to keep memory bounded on long passages.
+    var cols = m + 1;
+    var dp = new Int32Array((n + 1) * cols);
+    for (var i2 = 0; i2 <= n; i2++) dp[i2 * cols] = i2;
+    for (var j2 = 0; j2 <= m; j2++) dp[j2] = j2;
     for (var a = 1; a <= n; a++) {
+      var row = a * cols;
+      var prevRow = (a - 1) * cols;
+      var refNorm = ref[a - 1].norm;
       for (var b = 1; b <= m; b++) {
-        var cost = (ref[a - 1].norm === hyp[b - 1].norm) ? 0 : 1;
-        dp[a][b] = Math.min(dp[a - 1][b - 1] + cost, dp[a - 1][b] + 1, dp[a][b - 1] + 1);
+        var cost = (refNorm === hyp[b - 1].norm) ? 0 : 1;
+        var diag = dp[prevRow + b - 1] + cost;
+        var up = dp[prevRow + b] + 1;
+        var left = dp[row + b - 1] + 1;
+        dp[row + b] = diag <= up ? (diag <= left ? diag : left) : (up <= left ? up : left);
       }
     }
     // Backtrace from (n,m) → sequence of ops.
@@ -654,7 +722,7 @@
       if (ci > 0 && cj > 0) {
         var same = ref[ci - 1].norm === hyp[cj - 1].norm;
         var costD = same ? 0 : 1;
-        if (dp[ci][cj] === dp[ci - 1][cj - 1] + costD) {
+        if (dp[ci * cols + cj] === dp[(ci - 1) * cols + (cj - 1)] + costD) {
           if (same) {
             wordData[ci - 1] = { word: ref[ci - 1].raw, status: 'correct' };
           } else {
@@ -663,15 +731,16 @@
           ci--; cj--; continue;
         }
       }
-      if (ci > 0 && dp[ci][cj] === dp[ci - 1][cj] + 1) {
+      if (ci > 0 && dp[ci * cols + cj] === dp[(ci - 1) * cols + cj] + 1) {
         // reference word with no transcript match → omission
         wordData[ci - 1] = { word: ref[ci - 1].raw, status: 'missed', lowConfidence: true };
         ci--; continue;
       }
       // transcript word with no reference match → insertion
-      if (cj > 0) { insertions.unshift(hyp[cj - 1].raw); cj--; continue; }
+      if (cj > 0) { insertions.push(hyp[cj - 1].raw); cj--; continue; }
       break;
     }
+    insertions.reverse();
     return { wordData: wordData, insertions: insertions };
   }
 
@@ -694,11 +763,11 @@
   // the Web Audio API — no server-side ffmpeg needed. Returns a Blob or null.
   async function _audioBase64ToWav16k(base64, mimeType) {
     try {
-      var clean = String(base64 || '').replace(/^data:[^;,]*;base64,/, '');
+      var clean = _flStr(base64).replace(/^data:[^;,]*;base64,/, '');
       var bin = atob(clean);
       var bytes = new Uint8Array(bin.length);
       for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      var AC = window.AudioContext || window.webkitAudioContext;
+      var AC = (typeof window === 'object' && window) ? (window.AudioContext || window.webkitAudioContext) : null;
       if (!AC) return null;
       var tmpCtx = new AC();
       var decoded;
@@ -709,7 +778,7 @@
       }
       var targetRate = 16000;
       var frames = Math.ceil(decoded.duration * targetRate);
-      var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      var OAC = (typeof window === 'object' && window) ? (window.OfflineAudioContext || window.webkitOfflineAudioContext) : null;
       if (!OAC || !frames) return null;
       var offline = new OAC(1, frames, targetRate);
       var src = offline.createBufferSource();
@@ -719,7 +788,7 @@
       var rendered = await offline.startRendering();
       return _floatToWav16k(rendered.getChannelData(0), targetRate);
     } catch (e) {
-      (window.warnLog || console.warn)('[Fluency] audio→WAV conversion failed:', e && e.message);
+      _flWarn('[Fluency] audio→WAV conversion failed:', e && e.message);
       return null;
     }
   }
@@ -732,14 +801,15 @@
     try {
       if (typeof fetch !== 'function') return null;
       var res = await fetch('/api/asr/status', statusCtrl ? { method: 'GET', signal: statusCtrl.signal } : { method: 'GET' });
-      if (!res.ok) return null;
+      if (!res || !res.ok) return null;
       var st = await res.json();
       // Prefer the runtime's SAME-ORIGIN proxy over whisper-server's own
       // port: the direct URL is cross-origin from the app page, which makes
       // the whole feature hostage to whisper-server's CORS headers. Runtimes
       // from 2026-07-06 advertise proxyUrl; older ones fall back to the
       // direct inferenceUrl (pre-existing behavior, unchanged).
-      if (st && st.running && (st.proxyUrl || st.inferenceUrl)) return st.proxyUrl || st.inferenceUrl;
+      var candidate = st && st.running ? (st.proxyUrl || st.inferenceUrl) : null;
+      if (candidate && _isSafeLocalAsrUrl(candidate)) return candidate.trim();
       return null;
     } catch (_) { return null; }
     finally { if (statusTimer) clearTimeout(statusTimer); }
@@ -754,7 +824,7 @@
   async function transcribeAudioLocal(audioBase64, mimeType, opts) {
     opts = opts || {};
     var inferenceUrl = opts.inferenceUrl || await _getLocalAsrInferenceUrl();
-    if (!inferenceUrl) return null;
+    if (!inferenceUrl || !_isSafeLocalAsrUrl(inferenceUrl)) return null;
     var wav = await _audioBase64ToWav16k(audioBase64, mimeType);
     if (!wav) return null;
     var asrCtrl = typeof AbortController === 'function' ? new AbortController() : null;
@@ -764,15 +834,16 @@
       form.append('file', wav, 'reading.wav');
       form.append('response_format', 'json');
       form.append('temperature', '0');
-      if (opts.language && String(opts.language).trim()) form.append('language', String(opts.language).trim());
-      var res = await fetch(inferenceUrl, asrCtrl ? { method: 'POST', body: form, signal: asrCtrl.signal } : { method: 'POST', body: form });
-      if (!res.ok) return null;
+      var langStr = _flStr(opts.language).trim();
+      if (langStr) form.append('language', langStr);
+      var res = await fetch(inferenceUrl.trim(), asrCtrl ? { method: 'POST', body: form, signal: asrCtrl.signal } : { method: 'POST', body: form });
+      if (!res || !res.ok) return null;
       var data = await res.json();
       var text = (data && (data.text || data.transcription)) || '';
-      if (Array.isArray(data && data.segments) && !text) text = data.segments.map(function (s) { return s.text || ''; }).join(' ');
-      return String(text || '').trim() || null;
+      if (Array.isArray(data && data.segments) && !text) text = data.segments.map(function (s) { return (s && s.text) || ''; }).join(' ');
+      return _flStr(text).trim() || null;
     } catch (e) {
-      (window.warnLog || console.warn)('[Fluency] local ASR transcription failed:', e && e.message);
+      _flWarn('[Fluency] local ASR transcription failed:', e && e.message);
       return null;
     } finally {
       if (asrTimer) clearTimeout(asrTimer);
@@ -822,7 +893,7 @@
   // MORE LENIENT status (never over-penalize a reader on a machine disagreement
   // — the documented ASR-bias literature says errors skew against AAE/child/L2
   // speakers) and flag the word + the whole result for a teacher.
-  var _STATUS_LENIENCY = { correct: 0, stumbled: 1, self_corrected: 2, mispronounced: 3, missed: 4 };
+  var _STATUS_LENIENCY = Object.assign(Object.create(null), { correct: 0, stumbled: 1, self_corrected: 2, mispronounced: 3, missed: 4 });
   function triangulateFluency(localResult, geminiResult) {
     if (!localResult || !geminiResult || !Array.isArray(localResult.wordData) || !Array.isArray(geminiResult.wordData)) {
       return geminiResult || localResult || null;
@@ -838,8 +909,8 @@
       divergent++;
       // Pick the more lenient (lower leniency index) of the two disagreeing
       // statuses; carry the loser's word in `said` for the teacher.
-      var lenA = _STATUS_LENIENCY[sa] == null ? 3 : _STATUS_LENIENCY[sa];
-      var lenB = _STATUS_LENIENCY[sb] == null ? 3 : _STATUS_LENIENCY[sb];
+      var lenA = (typeof sa === 'string' && Object.prototype.hasOwnProperty.call(_STATUS_LENIENCY, sa)) ? _STATUS_LENIENCY[sa] : 3;
+      var lenB = (typeof sb === 'string' && Object.prototype.hasOwnProperty.call(_STATUS_LENIENCY, sb)) ? _STATUS_LENIENCY[sb] : 3;
       var keep = lenA <= lenB ? sa : sb;
       merged.push({ word: lb.word || la.word, status: keep, lowConfidence: true, triangulation: 'divergent',
         said: (la.said || lb.said || undefined) });
@@ -886,14 +957,14 @@
     minimumAggregateSessions: 3
   });
   function fluencyAlloText(value, max) {
-    var out = value == null ? '' : String(value);
+    var out = _flStr(value);
     try { if (typeof out.normalize === 'function') out = out.normalize('NFKC'); } catch (err) {}
     out = out.replace(/\r\n?/g, '\n').trim();
     return out.length > (max || FLUENCY_ALLOSHEET_LIMITS.maxCellChars)
       ? out.slice(0, max || FLUENCY_ALLOSHEET_LIMITS.maxCellChars).trim() : out;
   }
   function fluencyAlloNumber(value) {
-    var n = Number(value);
+    var n = _flNum(value);
     return Number.isFinite(n) ? n : null;
   }
   function fluencyAlloInteger(value, fallback) {
@@ -907,9 +978,13 @@
     return Math.round(n * factor) / factor;
   }
   function fluencyAlloDate(value) {
-    if (value == null || value === '') return null;
-    var date = value instanceof Date ? value : new Date(value);
-    return Number.isFinite(date.getTime()) ? date : null;
+    if (value == null || value === '' || typeof value === 'symbol') return null;
+    try {
+      var date = value instanceof Date ? value : new Date(value);
+      return Number.isFinite(date.getTime()) ? date : null;
+    } catch (_) {
+      return null;
+    }
   }
   function fluencyAlloIso(value) {
     var date = fluencyAlloDate(value);
@@ -950,7 +1025,7 @@
     return fallback;
   }
   function fluencyAlloRecordData(item) {
-    return item && item.data && typeof item.data === 'object' ? item.data : (item || {});
+    return item && typeof item === 'object' && item.data && typeof item.data === 'object' ? item.data : ((item && typeof item === 'object') ? item : {});
   }
   function fluencyAlloDateFor(record) {
     return fluencyAlloIso(fluencyAlloPick(record, ['timestamp', 'date', 'createdAt'], null));
@@ -1237,8 +1312,8 @@
       window._upgradeFluency();
   }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.Fluency = {
+  if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
+  window.AlloModules.Fluency = Object.freeze({
       calculateLocalFluencyMetrics: calculateLocalFluencyMetrics,
       calculateRunningRecordMetrics: calculateRunningRecordMetrics,
       exportFluencyCSV: exportFluencyCSV,
@@ -1256,6 +1331,6 @@
       buildFluencyAlloSheetEnvelope: buildFluencyAlloSheetEnvelope,
       tokenizeFluencyPassage: tokenizeFluencyPassage,
       buildPartnerFluencyResult: buildPartnerFluencyResult
-  };
-  console.log('[CDN] Fluency loaded');
+  });
+  try { if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[CDN] Fluency loaded'); } catch (_) {}
 })();

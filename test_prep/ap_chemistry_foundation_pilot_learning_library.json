@@ -3681,13 +3681,13 @@
           "type": "single-choice",
           "prompt": "Which of the following correctly orders the species from smallest to largest radius?",
           "choices": [
-            "Na, Na+, Cl, Cl-",
-            "Cl-, Cl, Na+, Na",
-            "Na+, Cl, Cl-, Na",
-            "Na+, Cl, Na, Cl-"
+            "O2-, F-, Na+, Mg2+",
+            "Na+, Mg2+, O2-, F-",
+            "Mg2+, Na+, F-, O2-",
+            "F-, O2-, Mg2+, Na+"
           ],
           "answerIndex": 2,
-          "rationale": "Na+ has lost its outer shell and is smallest; Cl is smaller than Cl-, which gains an electron; Na, with its lone outer electron far from the nucleus, is largest among these.",
+          "rationale": "All four ions are isoelectronic with 10 electrons (1s2 2s2 2p6). As nuclear charge decreases from Mg2+ (Z = 12) to Na+ (Z = 11), F- (Z = 9), and O2- (Z = 8), Coulombic attraction weakens and the ionic radius increases.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
             "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -6356,8 +6356,8 @@
           "workedExample": {
             "prompt": "In 2 Al(s) + 3 Cl2(g) → 2 AlCl3(s), 5.40 g Al (26.98 g/mol) reacts with 14.2 g Cl2 (70.90 g/mol). Identify the limiting reactant and calculate the theoretical yield of AlCl3 (133.34 g/mol) in grams.",
             "steps": [
-              "Step 1: Convert reactant masses to moles: n(Al) = 5.40 / 26.98 = 0.200 mol Al; n(Cl2) = 14.2 / 70.90 = 0.200 mol Cl2.",
-              "Step 2: Calculate AlCl3 moles each could form: Al gives 0.200 × (2/2) = 0.200 mol, while Cl2 gives 0.200 × (2/3) = 0.1335 mol, so Cl2 is limiting.",
+              "Step 1: Convert reactant masses to moles: n(Al) = 5.40 / 26.98 = 0.200 mol Al; n(Cl2) = 14.2 / 70.90 = 0.2003 mol Cl2.",
+              "Step 2: Calculate AlCl3 moles each could form: Al gives 0.200 × (2/2) = 0.200 mol, while Cl2 gives 0.2003 × (2/3) = 0.1335 mol, so Cl2 is limiting.",
               "Step 3: Convert limiting product moles to grams: 0.1335 mol × 133.34 g/mol = 17.8 g AlCl3 theoretical yield."
             ],
             "original": true
@@ -7728,12 +7728,12 @@
           "prompt": "For the elementary reaction 2 NO2 → N2O4, the rate law is",
           "choices": [
             "rate = k[NO2]",
-            "rate = k[NO2]2",
+            "rate = k[NO2]^2",
             "rate = k[N2O4]",
             "rate = k[NO2]/[N2O4]"
           ],
           "answerIndex": 1,
-          "rationale": "An elementary step involving two NO2 molecules is bimolecular, so the rate is proportional to the square of the NO2 concentration.",
+          "rationale": "For the bimolecular elementary step 2 NO2 -> N2O4, molecularity directly sets the reaction order, so the rate law is rate = k[NO2]^2, proportional to the square of [NO2].",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
             "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -13539,7 +13539,7 @@
       "taskType": "Structure to property argument",
       "title": "Predict polarity from a Lewis structure",
       "prompt": "Plan a response that draws a molecule’s Lewis structure, uses geometry to decide whether it is polar, and connects that decision to an observable property. This is a planning exercise, not an official AP prompt or scored response.",
-      "stimulus": "Original synthetic scenario: Two compounds have the formulas CF4 and CH2F2. A student measures that CH2F2 has a boiling point about 100 degrees higher than CF4 even though CF4 has the greater molar mass, and asks why.",
+      "stimulus": "Original synthetic scenario: Two compounds have the formulas CF4 and CH2F2. A student measures that CH2F2 has a boiling point about 76 degrees higher than CF4 even though CF4 has the greater molar mass, and asks why.",
       "taskParts": [
         "Draw or describe the Lewis structure and molecular geometry of each compound, including the electron-domain arrangement around carbon.",
         "Determine whether each molecule has a net dipole moment and justify the answer from bond polarity and geometry.",
@@ -13731,20 +13731,20 @@
       ],
       "successCriteria": [
         "The net ionic equation is 2 Al + 3 Cu2+ → 2 Al3+ + 3 Cu with six electrons transferred.",
-        "Aluminum is 0.0200 mol and copper ions are 0.0400 mol, and copper ion is identified as limiting by the 2 to 3 ratio.",
-        "The mass of copper formed is about 2.54 grams from 0.0400 mol of copper ions.",
-        "The prediction states that the blue color fades and some aluminum remains, because copper ion is consumed."
+        "Aluminum is 0.0200 mol and copper ions are 0.0400 mol, and aluminum is identified as limiting by the 2 to 3 ratio.",
+        "The mass of copper formed is about 1.91 grams from 0.0300 mol of copper produced by limiting aluminum.",
+        "The prediction states that the aluminum strip is completely consumed and the solution fades to a lighter blue, because excess copper ions remain."
       ],
       "commonPitfalls": [
         "Comparing moles directly without applying the 2 to 3 stoichiometric ratio.",
         "Treating the reactant with fewer moles as limiting without the ratio.",
         "Reporting the electrons per atom of aluminum as the total transferred in the balanced equation.",
-        "Predicting the solution stays blue when the limiting reactant is the copper ion."
+        "Predicting the solution turns completely colorless or that aluminum remains when aluminum is the limiting reactant."
       ],
       "sampleOutline": [
         "Equation: 2 Al + 3 Cu2+ → 2 Al3+ + 3 Cu; aluminum oxidized, copper ion reduced.",
-        "Limiting: 0.0200 mol Al needs 0.0300 mol Cu2+; 0.0400 mol Cu2+ needs 0.0267 mol Al, so Cu2+ limits.",
-        "Outcome: 0.0400 mol Cu, about 2.54 g; blue fades, aluminum strip partly remains."
+        "Limiting: 0.0200 mol Al needs 0.0300 mol Cu2+ (leaving 0.0100 mol Cu2+ excess); 0.0400 mol Cu2+ needs 0.0267 mol Al, so Al limits.",
+        "Outcome: 0.0300 mol Cu, about 1.91 g; aluminum strip is consumed and solution fades to a lighter blue."
       ],
       "unitIds": [
         4
@@ -14037,7 +14037,7 @@
       "taskType": "Titration and buffer analysis",
       "title": "Interpret a weak-acid titration curve",
       "prompt": "Plan a response that extracts an acid’s pKa and concentration from titration data, identifies the buffer region, and calculates the pH at a point within it. This is a planning exercise, not an official AP prompt or scored response.",
-      "stimulus": "Original synthetic data: 25.0 milliliters of a weak monoprotic acid is titrated with 0.100 molar sodium hydroxide. The pH is 2.9 at the start, 4.2 after 10.0 milliliters of base, and rises steeply near 20.0 milliliters, reaching 8.9 at the equivalence point. The half-equivalence pH is 4.2.",
+      "stimulus": "Original synthetic data: 25.0 milliliters of a weak monoprotic acid is titrated with 0.100 molar sodium hydroxide. The pH is 2.7 at the start, 4.2 after 10.0 milliliters of base, and rises steeply near 20.0 milliliters, reaching 8.4 at the equivalence point. The half-equivalence pH is 4.2.",
       "taskParts": [
         "Determine the concentration of the acid from the equivalence volume and the pKa from the half-equivalence point.",
         "Explain why the pH at the equivalence point is above 7, naming the species responsible.",
@@ -14075,7 +14075,7 @@
       ],
       "sampleOutline": [
         "Concentration: 0.0200 L × 0.100 M equals 0.00200 mol acid in 0.0250 L, so 0.0800 M; pKa 4.2 at half-equivalence.",
-        "Equivalence: only the conjugate base remains; it is a weak base, so pH 8.9.",
+        "Equivalence: only the conjugate base remains; it is a weak base, so pH 8.4.",
         "Buffer point: 0.00150 mol base formed, 0.00050 mol acid left; pH equals 4.2 plus log 3, about 4.7."
       ],
       "unitIds": [
@@ -14216,7 +14216,11 @@
     "releaseEligibleRecords": 0,
     "glossaryTerms": 27,
     "quickReferenceCards": 9,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 11,
+    "unitReviewRoutes": 9,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons and single-choice items",
@@ -15187,7 +15191,7 @@
       ],
       "decisionRules": [
         "When you see a potential-energy vs. internuclear-distance curve → read the minimum x-value as equilibrium bond length and depth below zero as bond dissociation energy.",
-        "When you see two ionic solids like MgO and NaF with similar internuclear distances → pick MgO for much higher melting point because (+2)(−2) doubles the charge product.",
+        "When you see two ionic solids like MgO and NaF with similar internuclear distances → pick MgO for much higher melting point because (+2)(−2) quadruples the charge product.",
         "When you see equivalent resonance forms (such as CO3²⁻ or NO3⁻) → state that all C-O or N-O bonds have equal intermediate length and strength, not flipping single/double bonds.",
         "When you see a central atom with polar bonds arranged symmetrically (CO2, BF3, CF4, SF6) → conclude bond dipoles cancel and the overall molecule is nonpolar."
       ],
@@ -15811,6 +15815,2188 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-01",
+      "title": "Unit 1: Atomic Structure and Properties guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 1: Atomic Structure and Properties\" (Atomic Structure and Properties) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-01",
+      "itemIds": [
+        "ap-chem-u1-001",
+        "ap-chem-u1-002",
+        "ap-chem-u1-003",
+        "ap-chem-u1-004",
+        "ap-chem-u1-005",
+        "ap-chem-u1-006",
+        "ap-chem-u1-007",
+        "ap-chem-u1-008",
+        "ap-chem-u1-009",
+        "ap-chem-u1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 1: Atomic Structure and Properties\" and the \"Moles, Mass Spec, PES & Periodic Trends\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Coulombic attraction, electron configuration, and periodic trend flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Atomic models and quantitative composition\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 1: Atomic Structure and Properties\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Using Reaction-Extent Ratios and BCA Tables for Limiting Reactants\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-02",
+      "title": "Unit 2: Compound Structure and Properties guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 2: Compound Structure and Properties\" (Compound Structure and Properties) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-02",
+      "itemIds": [
+        "ap-chem-u2-028",
+        "ap-chem-u2-029",
+        "ap-chem-u2-030",
+        "ap-chem-u2-031",
+        "ap-chem-u2-032",
+        "ap-chem-u2-033",
+        "ap-chem-u2-034",
+        "ap-chem-u2-035",
+        "ap-chem-u2-036",
+        "ap-chem-u2-037"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 2: Compound Structure and Properties\" and the \"Bonding, Lattice Energy, Lewis & VSEPR Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Bonding model, Lewis structure, and VSEPR geometry flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Bonding and molecular structure\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 2: Compound Structure and Properties\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguishing Intermolecular Attractions from Covalent Bonds\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-03",
+      "title": "Unit 3: Properties of Substances and Mixtures guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 3: Properties of Substances and Mixtures\" (Properties of Substances and Mixtures) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-03",
+      "itemIds": [
+        "ap-chem-u3-055",
+        "ap-chem-u3-056",
+        "ap-chem-u3-057",
+        "ap-chem-u3-058",
+        "ap-chem-u3-059",
+        "ap-chem-u3-060",
+        "ap-chem-u3-221",
+        "ap-chem-u3-222",
+        "ap-chem-u3-223",
+        "ap-chem-u3-224"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 3: Properties of Substances and Mixtures\" and the \"IMFs, Gases, Solutions & Spectroscopy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Intermolecular forces, gas behavior, and solution-spectroscopy flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Particles, phases, solutions, and light\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 3: Properties of Substances and Mixtures\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Diagnosing Equilibrium Shifts via Q vs. K Without Mutating K\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-04",
+      "title": "Unit 4: Chemical Reactions guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 4: Chemical Reactions\" (Chemical Reactions) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-04",
+      "itemIds": [
+        "ap-chem-u4-242",
+        "ap-chem-u4-243",
+        "ap-chem-u4-244",
+        "ap-chem-u4-245",
+        "ap-chem-u4-246",
+        "ap-chem-u4-247",
+        "ap-chem-u4-248",
+        "ap-chem-u4-249",
+        "ap-chem-u4-250",
+        "ap-chem-u4-251"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 4: Chemical Reactions\" and the \"Net Ionic Equations, Stoichiometry & Redox\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Net ionic equation, stoichiometry, and redox balancing flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Representing chemical reactions\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 4: Chemical Reactions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Stoichiometric Neutralization from Buffer and Salt Hydrolysis\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-05",
+      "title": "Unit 5: Kinetics guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 5: Kinetics\" (Kinetics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-05",
+      "itemIds": [
+        "ap-chem-u5-269",
+        "ap-chem-u5-270",
+        "ap-chem-u5-271",
+        "ap-chem-u5-272",
+        "ap-chem-u5-273",
+        "ap-chem-u5-274",
+        "ap-chem-u5-275",
+        "ap-chem-u5-276",
+        "ap-chem-u5-277",
+        "ap-chem-u5-278"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 5: Kinetics\" and the \"Rate Laws, Integrated Plots & Reaction Mechanisms\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Rate law determination, collision theory, and mechanism validation flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Reaction rates and mechanisms\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 5: Kinetics\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Decoupling Activation Energy and Rate Laws from ΔG° and ΔH°\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-06",
+      "title": "Unit 6: Thermochemistry guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 6: Thermochemistry\" (Thermochemistry) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-06",
+      "itemIds": [
+        "ap-chem-u6-356",
+        "ap-chem-u6-357",
+        "ap-chem-u6-358",
+        "ap-chem-u6-359",
+        "ap-chem-u6-360",
+        "ap-chem-u6-441",
+        "ap-chem-u6-442",
+        "ap-chem-u6-443",
+        "ap-chem-u6-444",
+        "ap-chem-u6-445"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 6: Thermochemistry\" and the \"Calorimetry, Phase Changes, Hess's Law & Bond Enthalpy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Energy conservation, calorimetry, and enthalpy-calculation flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Energy transfer and enthalpy\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 6: Thermochemistry\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforcing Sign, Unit, and Intensive-Property Discipline in Thermo & Electrochem\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-07",
+      "title": "Unit 7: Equilibrium guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 7: Equilibrium\" (Equilibrium) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-07",
+      "itemIds": [
+        "ap-chem-u7-455",
+        "ap-chem-u7-456",
+        "ap-chem-u7-457",
+        "ap-chem-u7-458",
+        "ap-chem-u7-459",
+        "ap-chem-u7-460",
+        "ap-chem-u7-461",
+        "ap-chem-u7-462",
+        "ap-chem-u7-463",
+        "ap-chem-u7-464"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 7: Equilibrium\" and the \"K, Q, Le Châtelier & Solubility Product (Ksp)\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Reaction quotient Q vs. K, ICE tables, and Le Chatelier flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Dynamic equilibrium and response to stress\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 7: Equilibrium\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Using Reaction-Extent Ratios and BCA Tables for Limiting Reactants\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-08",
+      "title": "Unit 8: Acids and Bases guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 8: Acids and Bases\" (Acids and Bases) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-08",
+      "itemIds": [
+        "ap-chem-u8-475",
+        "ap-chem-u8-476",
+        "ap-chem-u8-477",
+        "ap-chem-u8-478",
+        "ap-chem-u8-479",
+        "ap-chem-u8-480",
+        "ap-chem-u8-481",
+        "ap-chem-u8-482",
+        "ap-chem-u8-483",
+        "ap-chem-u8-484"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 8: Acids and Bases\" and the \"pH, Buffers, Titrations & Molecular Acid Strength\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Acid-base strength, titration curve, and buffer-capacity flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Proton transfer and aqueous equilibria\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 8: Acids and Bases\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguishing Intermolecular Attractions from Covalent Bonds\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-ch-09",
+      "title": "Unit 9: Thermodynamics and Electrochemistry guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 9: Thermodynamics and Electrochemistry\" (Thermodynamics and Electrochemistry) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-chem-ch-09",
+      "itemIds": [
+        "ap-chem-u9-599",
+        "ap-chem-u9-600",
+        "ap-chem-u9-693",
+        "ap-chem-u9-694",
+        "ap-chem-u9-695",
+        "ap-chem-u9-696",
+        "ap-chem-u9-697",
+        "ap-chem-u9-698",
+        "ap-chem-u9-699",
+        "ap-chem-u9-700"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 9: Thermodynamics and Electrochemistry\" and the \"Entropy, Gibbs Free Energy & Electrochemical Cells\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Entropy, Gibbs free energy, equilibrium K, and electrochemical cell flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Free energy and electron transfer\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 9: Thermodynamics and Electrochemistry\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Diagnosing Equilibrium Shifts via Q vs. K Without Mutating K\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-trap-repair-sprint",
+      "title": "AP Chemistry Independent Foundation Study Library misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ap-chem-u4-061",
+        "ap-chem-u2-021",
+        "ap-chem-u7-121",
+        "ap-chem-u8-141",
+        "ap-chem-u5-081",
+        "ap-chem-u6-101",
+        "ap-chem-u4-062",
+        "ap-chem-u2-022",
+        "ap-chem-u7-122",
+        "ap-chem-u8-142",
+        "ap-chem-u5-082",
+        "ap-chem-u6-102"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Using Reaction-Extent Ratios and BCA Tables for Limiting Reactants\", \"Distinguishing Intermolecular Attractions from Covalent Bonds\", \"Diagnosing Equilibrium Shifts via Q vs. K Without Mutating K\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-session-mixed-capstone",
+      "title": "AP Chemistry Independent Foundation Study Library mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ap-chem-u1-004",
+        "ap-chem-u2-024",
+        "ap-chem-u3-044",
+        "ap-chem-u4-064",
+        "ap-chem-u5-084",
+        "ap-chem-u6-104",
+        "ap-chem-u7-124",
+        "ap-chem-u8-144",
+        "ap-chem-u9-164",
+        "ap-chem-u1-015",
+        "ap-chem-u2-035",
+        "ap-chem-u3-055",
+        "ap-chem-u4-075",
+        "ap-chem-u5-095",
+        "ap-chem-u6-115"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Identify an element from a photoelectron spectrum\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-01",
+      "topicId": "ap-chem-ch-01",
+      "topicLabel": "1. Unit 1: Atomic Structure and Properties",
+      "unitId": "atomic-structure-and-properties",
+      "chapterId": "ap-chem-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 1: Atomic Structure and Properties\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-02",
+      "topicId": "ap-chem-ch-02",
+      "topicLabel": "2. Unit 2: Compound Structure and Properties",
+      "unitId": "compound-structure-and-properties",
+      "chapterId": "ap-chem-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 2: Compound Structure and Properties\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-03",
+      "topicId": "ap-chem-ch-03",
+      "topicLabel": "3. Unit 3: Properties of Substances and Mixtures",
+      "unitId": "properties-of-substances-and-mixtures",
+      "chapterId": "ap-chem-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 3: Properties of Substances and Mixtures\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-04",
+      "topicId": "ap-chem-ch-04",
+      "topicLabel": "4. Unit 4: Chemical Reactions",
+      "unitId": "chemical-reactions",
+      "chapterId": "ap-chem-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 4: Chemical Reactions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-05",
+      "topicId": "ap-chem-ch-05",
+      "topicLabel": "5. Unit 5: Kinetics",
+      "unitId": "kinetics",
+      "chapterId": "ap-chem-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 5: Kinetics\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-06",
+      "topicId": "ap-chem-ch-06",
+      "topicLabel": "6. Unit 6: Thermochemistry",
+      "unitId": "thermochemistry",
+      "chapterId": "ap-chem-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 6: Thermochemistry\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-07",
+      "topicId": "ap-chem-ch-07",
+      "topicLabel": "7. Unit 7: Equilibrium",
+      "unitId": "equilibrium",
+      "chapterId": "ap-chem-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 7: Equilibrium\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-08",
+      "topicId": "ap-chem-ch-08",
+      "topicLabel": "8. Unit 8: Acids and Bases",
+      "unitId": "acids-and-bases",
+      "chapterId": "ap-chem-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 8: Acids and Bases\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-spaced-ch-09",
+      "topicId": "ap-chem-ch-09",
+      "topicLabel": "9. Unit 9: Thermodynamics and Electrochemistry",
+      "unitId": "thermodynamics-and-electrochemistry",
+      "chapterId": "ap-chem-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 9: Thermodynamics and Electrochemistry\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-01",
+      "unitId": "atomic-structure-and-properties",
+      "unitNumber": 1,
+      "unitLabel": "Unit 1: Unit 1: Atomic Structure and Properties",
+      "chapterId": "ap-chem-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-01-section-01",
+        "ap-chem-ch-01-section-02",
+        "ap-chem-ch-01-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u1-001",
+        "ap-chem-u1-002",
+        "ap-chem-u1-003",
+        "ap-chem-u1-004",
+        "ap-chem-u1-005",
+        "ap-chem-u1-006",
+        "ap-chem-u1-007",
+        "ap-chem-u1-008",
+        "ap-chem-u1-009",
+        "ap-chem-u1-010",
+        "ap-chem-u1-011",
+        "ap-chem-u1-012",
+        "ap-chem-u1-013",
+        "ap-chem-u1-014",
+        "ap-chem-u1-015",
+        "ap-chem-u1-016",
+        "ap-chem-u1-017",
+        "ap-chem-u1-018",
+        "ap-chem-u1-019",
+        "ap-chem-u1-020",
+        "ap-chem-u1-181",
+        "ap-chem-u1-182",
+        "ap-chem-u1-183",
+        "ap-chem-u1-184",
+        "ap-chem-u1-185",
+        "ap-chem-u1-186",
+        "ap-chem-u1-187",
+        "ap-chem-u1-188",
+        "ap-chem-u1-189",
+        "ap-chem-u1-190",
+        "ap-chem-u1-191",
+        "ap-chem-u1-192",
+        "ap-chem-u1-193",
+        "ap-chem-u1-194",
+        "ap-chem-u1-195",
+        "ap-chem-u1-196",
+        "ap-chem-u1-197",
+        "ap-chem-u1-198",
+        "ap-chem-u1-199",
+        "ap-chem-u1-200",
+        "ap-chem-u1-361",
+        "ap-chem-u1-362",
+        "ap-chem-u1-363",
+        "ap-chem-u1-364",
+        "ap-chem-u1-365"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u1-001",
+        "ap-chem-u1-002",
+        "ap-chem-u1-003",
+        "ap-chem-u1-004",
+        "ap-chem-u1-005",
+        "ap-chem-u1-006",
+        "ap-chem-u1-007",
+        "ap-chem-u1-008",
+        "ap-chem-u1-009",
+        "ap-chem-u1-010",
+        "ap-chem-u1-011",
+        "ap-chem-u1-012"
+      ],
+      "purpose": "Consolidate \"Unit 1: Atomic Structure and Properties\" (Atomic Structure and Properties) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-02",
+      "unitId": "compound-structure-and-properties",
+      "unitNumber": 2,
+      "unitLabel": "Unit 2: Unit 2: Compound Structure and Properties",
+      "chapterId": "ap-chem-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-02-section-01",
+        "ap-chem-ch-02-section-02",
+        "ap-chem-ch-02-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u2-021",
+        "ap-chem-u2-022",
+        "ap-chem-u2-023",
+        "ap-chem-u2-024",
+        "ap-chem-u2-025",
+        "ap-chem-u2-026",
+        "ap-chem-u2-027",
+        "ap-chem-u2-028",
+        "ap-chem-u2-029",
+        "ap-chem-u2-030",
+        "ap-chem-u2-031",
+        "ap-chem-u2-032",
+        "ap-chem-u2-033",
+        "ap-chem-u2-034",
+        "ap-chem-u2-035",
+        "ap-chem-u2-036",
+        "ap-chem-u2-037",
+        "ap-chem-u2-038",
+        "ap-chem-u2-039",
+        "ap-chem-u2-040",
+        "ap-chem-u2-201",
+        "ap-chem-u2-202",
+        "ap-chem-u2-203",
+        "ap-chem-u2-204",
+        "ap-chem-u2-205",
+        "ap-chem-u2-206",
+        "ap-chem-u2-207",
+        "ap-chem-u2-208",
+        "ap-chem-u2-209",
+        "ap-chem-u2-210",
+        "ap-chem-u2-211",
+        "ap-chem-u2-212",
+        "ap-chem-u2-213",
+        "ap-chem-u2-214",
+        "ap-chem-u2-215",
+        "ap-chem-u2-216",
+        "ap-chem-u2-217",
+        "ap-chem-u2-218",
+        "ap-chem-u2-219",
+        "ap-chem-u2-220",
+        "ap-chem-u2-377",
+        "ap-chem-u2-378",
+        "ap-chem-u2-379",
+        "ap-chem-u2-380",
+        "ap-chem-u2-381"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u2-021",
+        "ap-chem-u2-022",
+        "ap-chem-u2-023",
+        "ap-chem-u2-024",
+        "ap-chem-u2-025",
+        "ap-chem-u2-026",
+        "ap-chem-u2-027",
+        "ap-chem-u2-028",
+        "ap-chem-u2-029",
+        "ap-chem-u2-030",
+        "ap-chem-u2-031",
+        "ap-chem-u2-032"
+      ],
+      "purpose": "Consolidate \"Unit 2: Compound Structure and Properties\" (Compound Structure and Properties) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-03",
+      "unitId": "properties-of-substances-and-mixtures",
+      "unitNumber": 3,
+      "unitLabel": "Unit 3: Unit 3: Properties of Substances and Mixtures",
+      "chapterId": "ap-chem-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-03-section-01",
+        "ap-chem-ch-03-section-02",
+        "ap-chem-ch-03-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u3-041",
+        "ap-chem-u3-042",
+        "ap-chem-u3-043",
+        "ap-chem-u3-044",
+        "ap-chem-u3-045",
+        "ap-chem-u3-046",
+        "ap-chem-u3-047",
+        "ap-chem-u3-048",
+        "ap-chem-u3-049",
+        "ap-chem-u3-050",
+        "ap-chem-u3-051",
+        "ap-chem-u3-052",
+        "ap-chem-u3-053",
+        "ap-chem-u3-054",
+        "ap-chem-u3-055",
+        "ap-chem-u3-056",
+        "ap-chem-u3-057",
+        "ap-chem-u3-058",
+        "ap-chem-u3-059",
+        "ap-chem-u3-060",
+        "ap-chem-u3-221",
+        "ap-chem-u3-222",
+        "ap-chem-u3-223",
+        "ap-chem-u3-224",
+        "ap-chem-u3-225",
+        "ap-chem-u3-226",
+        "ap-chem-u3-227",
+        "ap-chem-u3-228",
+        "ap-chem-u3-229",
+        "ap-chem-u3-230",
+        "ap-chem-u3-231",
+        "ap-chem-u3-232",
+        "ap-chem-u3-233",
+        "ap-chem-u3-234",
+        "ap-chem-u3-235",
+        "ap-chem-u3-236",
+        "ap-chem-u3-237",
+        "ap-chem-u3-238",
+        "ap-chem-u3-239",
+        "ap-chem-u3-240",
+        "ap-chem-u3-391",
+        "ap-chem-u3-392",
+        "ap-chem-u3-393",
+        "ap-chem-u3-394",
+        "ap-chem-u3-395"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u3-041",
+        "ap-chem-u3-042",
+        "ap-chem-u3-043",
+        "ap-chem-u3-044",
+        "ap-chem-u3-045",
+        "ap-chem-u3-046",
+        "ap-chem-u3-047",
+        "ap-chem-u3-048",
+        "ap-chem-u3-049",
+        "ap-chem-u3-050",
+        "ap-chem-u3-051",
+        "ap-chem-u3-052"
+      ],
+      "purpose": "Consolidate \"Unit 3: Properties of Substances and Mixtures\" (Properties of Substances and Mixtures) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-04",
+      "unitId": "chemical-reactions",
+      "unitNumber": 4,
+      "unitLabel": "Unit 4: Unit 4: Chemical Reactions",
+      "chapterId": "ap-chem-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-04-section-01",
+        "ap-chem-ch-04-section-02",
+        "ap-chem-ch-04-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u4-061",
+        "ap-chem-u4-062",
+        "ap-chem-u4-063",
+        "ap-chem-u4-064",
+        "ap-chem-u4-065",
+        "ap-chem-u4-066",
+        "ap-chem-u4-067",
+        "ap-chem-u4-068",
+        "ap-chem-u4-069",
+        "ap-chem-u4-070",
+        "ap-chem-u4-071",
+        "ap-chem-u4-072",
+        "ap-chem-u4-073",
+        "ap-chem-u4-074",
+        "ap-chem-u4-075",
+        "ap-chem-u4-076",
+        "ap-chem-u4-077",
+        "ap-chem-u4-078",
+        "ap-chem-u4-079",
+        "ap-chem-u4-080",
+        "ap-chem-u4-241",
+        "ap-chem-u4-242",
+        "ap-chem-u4-243",
+        "ap-chem-u4-244",
+        "ap-chem-u4-245",
+        "ap-chem-u4-246",
+        "ap-chem-u4-247",
+        "ap-chem-u4-248",
+        "ap-chem-u4-249",
+        "ap-chem-u4-250",
+        "ap-chem-u4-251",
+        "ap-chem-u4-252",
+        "ap-chem-u4-253",
+        "ap-chem-u4-254",
+        "ap-chem-u4-255",
+        "ap-chem-u4-256",
+        "ap-chem-u4-257",
+        "ap-chem-u4-258",
+        "ap-chem-u4-259",
+        "ap-chem-u4-260",
+        "ap-chem-u4-414",
+        "ap-chem-u4-415",
+        "ap-chem-u4-416",
+        "ap-chem-u4-417",
+        "ap-chem-u4-418"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u4-061",
+        "ap-chem-u4-062",
+        "ap-chem-u4-063",
+        "ap-chem-u4-064",
+        "ap-chem-u4-065",
+        "ap-chem-u4-066",
+        "ap-chem-u4-067",
+        "ap-chem-u4-068",
+        "ap-chem-u4-069",
+        "ap-chem-u4-070",
+        "ap-chem-u4-071",
+        "ap-chem-u4-072"
+      ],
+      "purpose": "Consolidate \"Unit 4: Chemical Reactions\" (Chemical Reactions) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-05",
+      "unitId": "kinetics",
+      "unitNumber": 5,
+      "unitLabel": "Unit 5: Unit 5: Kinetics",
+      "chapterId": "ap-chem-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-05-section-01",
+        "ap-chem-ch-05-section-02",
+        "ap-chem-ch-05-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u5-081",
+        "ap-chem-u5-082",
+        "ap-chem-u5-083",
+        "ap-chem-u5-084",
+        "ap-chem-u5-085",
+        "ap-chem-u5-086",
+        "ap-chem-u5-087",
+        "ap-chem-u5-088",
+        "ap-chem-u5-089",
+        "ap-chem-u5-090",
+        "ap-chem-u5-091",
+        "ap-chem-u5-092",
+        "ap-chem-u5-093",
+        "ap-chem-u5-094",
+        "ap-chem-u5-095",
+        "ap-chem-u5-096",
+        "ap-chem-u5-097",
+        "ap-chem-u5-098",
+        "ap-chem-u5-099",
+        "ap-chem-u5-100",
+        "ap-chem-u5-261",
+        "ap-chem-u5-262",
+        "ap-chem-u5-263",
+        "ap-chem-u5-264",
+        "ap-chem-u5-265",
+        "ap-chem-u5-266",
+        "ap-chem-u5-267",
+        "ap-chem-u5-268",
+        "ap-chem-u5-269",
+        "ap-chem-u5-270",
+        "ap-chem-u5-271",
+        "ap-chem-u5-272",
+        "ap-chem-u5-273",
+        "ap-chem-u5-274",
+        "ap-chem-u5-275",
+        "ap-chem-u5-276",
+        "ap-chem-u5-277",
+        "ap-chem-u5-278",
+        "ap-chem-u5-279",
+        "ap-chem-u5-280",
+        "ap-chem-u5-427",
+        "ap-chem-u5-428",
+        "ap-chem-u5-429",
+        "ap-chem-u5-430",
+        "ap-chem-u5-431"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u5-081",
+        "ap-chem-u5-082",
+        "ap-chem-u5-083",
+        "ap-chem-u5-084",
+        "ap-chem-u5-085",
+        "ap-chem-u5-086",
+        "ap-chem-u5-087",
+        "ap-chem-u5-088",
+        "ap-chem-u5-089",
+        "ap-chem-u5-090",
+        "ap-chem-u5-091",
+        "ap-chem-u5-092"
+      ],
+      "purpose": "Consolidate \"Unit 5: Kinetics\" (Kinetics) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-06",
+      "unitId": "thermochemistry",
+      "unitNumber": 6,
+      "unitLabel": "Unit 6: Unit 6: Thermochemistry",
+      "chapterId": "ap-chem-ch-06",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-06-section-01",
+        "ap-chem-ch-06-section-02",
+        "ap-chem-ch-06-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u6-101",
+        "ap-chem-u6-102",
+        "ap-chem-u6-103",
+        "ap-chem-u6-104",
+        "ap-chem-u6-105",
+        "ap-chem-u6-106",
+        "ap-chem-u6-107",
+        "ap-chem-u6-108",
+        "ap-chem-u6-109",
+        "ap-chem-u6-110",
+        "ap-chem-u6-111",
+        "ap-chem-u6-112",
+        "ap-chem-u6-113",
+        "ap-chem-u6-114",
+        "ap-chem-u6-115",
+        "ap-chem-u6-116",
+        "ap-chem-u6-117",
+        "ap-chem-u6-118",
+        "ap-chem-u6-119",
+        "ap-chem-u6-120",
+        "ap-chem-u6-341",
+        "ap-chem-u6-342",
+        "ap-chem-u6-343",
+        "ap-chem-u6-344",
+        "ap-chem-u6-345",
+        "ap-chem-u6-346",
+        "ap-chem-u6-347",
+        "ap-chem-u6-348",
+        "ap-chem-u6-349",
+        "ap-chem-u6-350",
+        "ap-chem-u6-351",
+        "ap-chem-u6-352",
+        "ap-chem-u6-353",
+        "ap-chem-u6-354",
+        "ap-chem-u6-355",
+        "ap-chem-u6-356",
+        "ap-chem-u6-357",
+        "ap-chem-u6-358",
+        "ap-chem-u6-359",
+        "ap-chem-u6-360",
+        "ap-chem-u6-441",
+        "ap-chem-u6-442",
+        "ap-chem-u6-443",
+        "ap-chem-u6-444",
+        "ap-chem-u6-445"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u6-101",
+        "ap-chem-u6-102",
+        "ap-chem-u6-103",
+        "ap-chem-u6-104",
+        "ap-chem-u6-105",
+        "ap-chem-u6-106",
+        "ap-chem-u6-107",
+        "ap-chem-u6-108",
+        "ap-chem-u6-109",
+        "ap-chem-u6-110",
+        "ap-chem-u6-111",
+        "ap-chem-u6-112"
+      ],
+      "purpose": "Consolidate \"Unit 6: Thermochemistry\" (Thermochemistry) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-07",
+      "unitId": "equilibrium",
+      "unitNumber": 7,
+      "unitLabel": "Unit 7: Unit 7: Equilibrium",
+      "chapterId": "ap-chem-ch-07",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-07-section-01",
+        "ap-chem-ch-07-section-02",
+        "ap-chem-ch-07-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u7-121",
+        "ap-chem-u7-122",
+        "ap-chem-u7-123",
+        "ap-chem-u7-124",
+        "ap-chem-u7-125",
+        "ap-chem-u7-126",
+        "ap-chem-u7-127",
+        "ap-chem-u7-128",
+        "ap-chem-u7-129",
+        "ap-chem-u7-130",
+        "ap-chem-u7-131",
+        "ap-chem-u7-132",
+        "ap-chem-u7-133",
+        "ap-chem-u7-134",
+        "ap-chem-u7-135",
+        "ap-chem-u7-136",
+        "ap-chem-u7-137",
+        "ap-chem-u7-138",
+        "ap-chem-u7-139",
+        "ap-chem-u7-140",
+        "ap-chem-u7-281",
+        "ap-chem-u7-282",
+        "ap-chem-u7-283",
+        "ap-chem-u7-284",
+        "ap-chem-u7-285",
+        "ap-chem-u7-286",
+        "ap-chem-u7-287",
+        "ap-chem-u7-288",
+        "ap-chem-u7-289",
+        "ap-chem-u7-290",
+        "ap-chem-u7-291",
+        "ap-chem-u7-292",
+        "ap-chem-u7-293",
+        "ap-chem-u7-294",
+        "ap-chem-u7-295",
+        "ap-chem-u7-296",
+        "ap-chem-u7-297",
+        "ap-chem-u7-298",
+        "ap-chem-u7-299",
+        "ap-chem-u7-300",
+        "ap-chem-u7-453",
+        "ap-chem-u7-454",
+        "ap-chem-u7-455",
+        "ap-chem-u7-456",
+        "ap-chem-u7-457"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u7-121",
+        "ap-chem-u7-122",
+        "ap-chem-u7-123",
+        "ap-chem-u7-124",
+        "ap-chem-u7-125",
+        "ap-chem-u7-126",
+        "ap-chem-u7-127",
+        "ap-chem-u7-128",
+        "ap-chem-u7-129",
+        "ap-chem-u7-130",
+        "ap-chem-u7-131",
+        "ap-chem-u7-132"
+      ],
+      "purpose": "Consolidate \"Unit 7: Equilibrium\" (Equilibrium) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-08",
+      "unitId": "acids-and-bases",
+      "unitNumber": 8,
+      "unitLabel": "Unit 8: Unit 8: Acids and Bases",
+      "chapterId": "ap-chem-ch-08",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-08-section-01",
+        "ap-chem-ch-08-section-02",
+        "ap-chem-ch-08-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u8-141",
+        "ap-chem-u8-142",
+        "ap-chem-u8-143",
+        "ap-chem-u8-144",
+        "ap-chem-u8-145",
+        "ap-chem-u8-146",
+        "ap-chem-u8-147",
+        "ap-chem-u8-148",
+        "ap-chem-u8-149",
+        "ap-chem-u8-150",
+        "ap-chem-u8-151",
+        "ap-chem-u8-152",
+        "ap-chem-u8-153",
+        "ap-chem-u8-154",
+        "ap-chem-u8-155",
+        "ap-chem-u8-156",
+        "ap-chem-u8-157",
+        "ap-chem-u8-158",
+        "ap-chem-u8-159",
+        "ap-chem-u8-160",
+        "ap-chem-u8-301",
+        "ap-chem-u8-302",
+        "ap-chem-u8-303",
+        "ap-chem-u8-304",
+        "ap-chem-u8-305",
+        "ap-chem-u8-306",
+        "ap-chem-u8-307",
+        "ap-chem-u8-308",
+        "ap-chem-u8-309",
+        "ap-chem-u8-310",
+        "ap-chem-u8-311",
+        "ap-chem-u8-312",
+        "ap-chem-u8-313",
+        "ap-chem-u8-314",
+        "ap-chem-u8-315",
+        "ap-chem-u8-316",
+        "ap-chem-u8-317",
+        "ap-chem-u8-318",
+        "ap-chem-u8-319",
+        "ap-chem-u8-320",
+        "ap-chem-u8-466",
+        "ap-chem-u8-467",
+        "ap-chem-u8-468",
+        "ap-chem-u8-469",
+        "ap-chem-u8-470"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u8-141",
+        "ap-chem-u8-142",
+        "ap-chem-u8-143",
+        "ap-chem-u8-144",
+        "ap-chem-u8-145",
+        "ap-chem-u8-146",
+        "ap-chem-u8-147",
+        "ap-chem-u8-148",
+        "ap-chem-u8-149",
+        "ap-chem-u8-150",
+        "ap-chem-u8-151",
+        "ap-chem-u8-152"
+      ],
+      "purpose": "Consolidate \"Unit 8: Acids and Bases\" (Acids and Bases) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-unit-review-09",
+      "unitId": "thermodynamics-and-electrochemistry",
+      "unitNumber": 9,
+      "unitLabel": "Unit 9: Unit 9: Thermodynamics and Electrochemistry",
+      "chapterId": "ap-chem-ch-09",
+      "topicDiagnosticRouteIds": [
+        "ap-chem-ch-09-section-01",
+        "ap-chem-ch-09-section-02",
+        "ap-chem-ch-09-section-03"
+      ],
+      "itemIds": [
+        "ap-chem-u9-161",
+        "ap-chem-u9-162",
+        "ap-chem-u9-163",
+        "ap-chem-u9-164",
+        "ap-chem-u9-165",
+        "ap-chem-u9-166",
+        "ap-chem-u9-167",
+        "ap-chem-u9-168",
+        "ap-chem-u9-169",
+        "ap-chem-u9-170",
+        "ap-chem-u9-171",
+        "ap-chem-u9-172",
+        "ap-chem-u9-173",
+        "ap-chem-u9-174",
+        "ap-chem-u9-175",
+        "ap-chem-u9-176",
+        "ap-chem-u9-177",
+        "ap-chem-u9-178",
+        "ap-chem-u9-179",
+        "ap-chem-u9-180",
+        "ap-chem-u9-321",
+        "ap-chem-u9-322",
+        "ap-chem-u9-323",
+        "ap-chem-u9-324",
+        "ap-chem-u9-325",
+        "ap-chem-u9-326",
+        "ap-chem-u9-327",
+        "ap-chem-u9-328",
+        "ap-chem-u9-329",
+        "ap-chem-u9-330",
+        "ap-chem-u9-331",
+        "ap-chem-u9-332",
+        "ap-chem-u9-333",
+        "ap-chem-u9-334",
+        "ap-chem-u9-335",
+        "ap-chem-u9-336",
+        "ap-chem-u9-337",
+        "ap-chem-u9-338",
+        "ap-chem-u9-339",
+        "ap-chem-u9-340",
+        "ap-chem-u9-489",
+        "ap-chem-u9-490",
+        "ap-chem-u9-491",
+        "ap-chem-u9-492",
+        "ap-chem-u9-493"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-chem-u9-161",
+        "ap-chem-u9-162",
+        "ap-chem-u9-163",
+        "ap-chem-u9-164",
+        "ap-chem-u9-165",
+        "ap-chem-u9-166",
+        "ap-chem-u9-167",
+        "ap-chem-u9-168",
+        "ap-chem-u9-169",
+        "ap-chem-u9-170",
+        "ap-chem-u9-171",
+        "ap-chem-u9-172"
+      ],
+      "purpose": "Consolidate \"Unit 9: Thermodynamics and Electrochemistry\" (Thermodynamics and Electrochemistry) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "ap-chemistry-foundation-pilot-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all AP Chemistry Independent Foundation Study Library blueprint domains.",
+      "focus": [
+        "Atomic Structure and Properties",
+        "Compound Structure and Properties",
+        "Properties of Substances and Mixtures",
+        "Chemical Reactions"
+      ],
+      "itemIds": [
+        "ap-chem-u1-001",
+        "ap-chem-u4-061",
+        "ap-chem-u7-121",
+        "ap-chem-u1-002",
+        "ap-chem-u4-062",
+        "ap-chem-u7-122",
+        "ap-chem-u1-003",
+        "ap-chem-u4-063",
+        "ap-chem-u7-123",
+        "ap-chem-u1-004",
+        "ap-chem-u4-064",
+        "ap-chem-u7-124",
+        "ap-chem-u1-005",
+        "ap-chem-u4-065",
+        "ap-chem-u7-125",
+        "ap-chem-u1-006",
+        "ap-chem-u4-066",
+        "ap-chem-u7-126",
+        "ap-chem-u1-007",
+        "ap-chem-u4-067",
+        "ap-chem-u7-127",
+        "ap-chem-u1-008",
+        "ap-chem-u4-068",
+        "ap-chem-u7-128",
+        "ap-chem-u1-009",
+        "ap-chem-u4-069",
+        "ap-chem-u7-129",
+        "ap-chem-u1-010",
+        "ap-chem-u4-070",
+        "ap-chem-u7-130",
+        "ap-chem-u1-011",
+        "ap-chem-u4-071",
+        "ap-chem-u7-131",
+        "ap-chem-u1-012",
+        "ap-chem-u4-072",
+        "ap-chem-u7-132",
+        "ap-chem-u1-013",
+        "ap-chem-u4-073",
+        "ap-chem-u7-133",
+        "ap-chem-u1-014"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply AP Chemistry Independent Foundation Study Library frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Properties of Substances and Mixtures",
+        "Chemical Reactions",
+        "Kinetics",
+        "Thermochemistry"
+      ],
+      "itemIds": [
+        "ap-chem-u2-021",
+        "ap-chem-u5-081",
+        "ap-chem-u8-141",
+        "ap-chem-u2-022",
+        "ap-chem-u5-082",
+        "ap-chem-u8-142",
+        "ap-chem-u2-023",
+        "ap-chem-u5-083",
+        "ap-chem-u8-143",
+        "ap-chem-u2-024",
+        "ap-chem-u5-084",
+        "ap-chem-u8-144",
+        "ap-chem-u2-025",
+        "ap-chem-u5-085",
+        "ap-chem-u8-145",
+        "ap-chem-u2-026",
+        "ap-chem-u5-086",
+        "ap-chem-u8-146",
+        "ap-chem-u2-027",
+        "ap-chem-u5-087",
+        "ap-chem-u8-147",
+        "ap-chem-u2-028",
+        "ap-chem-u5-088",
+        "ap-chem-u8-148",
+        "ap-chem-u2-029",
+        "ap-chem-u5-089",
+        "ap-chem-u8-149",
+        "ap-chem-u2-030",
+        "ap-chem-u5-090",
+        "ap-chem-u8-150",
+        "ap-chem-u2-031",
+        "ap-chem-u5-091",
+        "ap-chem-u8-151",
+        "ap-chem-u2-032",
+        "ap-chem-u5-092",
+        "ap-chem-u8-152",
+        "ap-chem-u2-033",
+        "ap-chem-u5-093",
+        "ap-chem-u8-153",
+        "ap-chem-u2-034"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every AP Chemistry Independent Foundation Study Library domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Stoichiometry and Limiting Reactant Mass Shortcut",
+        "Intermolecular Forces vs. Intramolecular Covalent Bonds",
+        "Reaction Quotient (Q) vs. Equilibrium Constant (K) Shift Confusion"
+      ],
+      "itemIds": [
+        "ap-chem-u3-041",
+        "ap-chem-u6-101",
+        "ap-chem-u9-161",
+        "ap-chem-u3-042",
+        "ap-chem-u6-102",
+        "ap-chem-u9-162",
+        "ap-chem-u3-043",
+        "ap-chem-u6-103",
+        "ap-chem-u9-163",
+        "ap-chem-u3-044",
+        "ap-chem-u6-104",
+        "ap-chem-u9-164",
+        "ap-chem-u3-045",
+        "ap-chem-u6-105",
+        "ap-chem-u9-165",
+        "ap-chem-u3-046",
+        "ap-chem-u6-106",
+        "ap-chem-u9-166",
+        "ap-chem-u3-047",
+        "ap-chem-u6-107",
+        "ap-chem-u9-167",
+        "ap-chem-u3-048",
+        "ap-chem-u6-108",
+        "ap-chem-u9-168",
+        "ap-chem-u3-049",
+        "ap-chem-u6-109",
+        "ap-chem-u9-169",
+        "ap-chem-u3-050",
+        "ap-chem-u6-110",
+        "ap-chem-u9-170",
+        "ap-chem-u3-051",
+        "ap-chem-u6-111",
+        "ap-chem-u9-171",
+        "ap-chem-u3-052",
+        "ap-chem-u6-112",
+        "ap-chem-u9-172",
+        "ap-chem-u3-053",
+        "ap-chem-u6-113",
+        "ap-chem-u9-173",
+        "ap-chem-u3-054"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "ap-chemistry-foundation-pilot-form-internal-a",
+      "title": "Internal practice form A (AP Chemistry Independent Foundation Study Library)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-chem-u1-001",
+        "ap-chem-u4-061",
+        "ap-chem-u7-121",
+        "ap-chem-u1-002",
+        "ap-chem-u4-062",
+        "ap-chem-u7-122",
+        "ap-chem-u1-003",
+        "ap-chem-u4-063",
+        "ap-chem-u7-123",
+        "ap-chem-u1-004",
+        "ap-chem-u4-064",
+        "ap-chem-u7-124",
+        "ap-chem-u1-005",
+        "ap-chem-u4-065",
+        "ap-chem-u7-125",
+        "ap-chem-u1-006",
+        "ap-chem-u4-066",
+        "ap-chem-u7-126",
+        "ap-chem-u1-007",
+        "ap-chem-u4-067",
+        "ap-chem-u7-127",
+        "ap-chem-u1-008",
+        "ap-chem-u4-068",
+        "ap-chem-u7-128",
+        "ap-chem-u1-009",
+        "ap-chem-u4-069",
+        "ap-chem-u7-129",
+        "ap-chem-u1-010",
+        "ap-chem-u4-070",
+        "ap-chem-u7-130",
+        "ap-chem-u1-011",
+        "ap-chem-u4-071",
+        "ap-chem-u7-131",
+        "ap-chem-u1-012",
+        "ap-chem-u4-072",
+        "ap-chem-u7-132",
+        "ap-chem-u1-013",
+        "ap-chem-u4-073",
+        "ap-chem-u7-133",
+        "ap-chem-u1-014",
+        "ap-chem-u4-074",
+        "ap-chem-u7-134",
+        "ap-chem-u1-015",
+        "ap-chem-u4-075",
+        "ap-chem-u7-135",
+        "ap-chem-u1-016",
+        "ap-chem-u4-076",
+        "ap-chem-u7-136",
+        "ap-chem-u1-017",
+        "ap-chem-u4-077"
+      ],
+      "topicIds": [
+        "ap-chem-ch-01",
+        "ap-chem-ch-04",
+        "ap-chem-ch-07"
+      ],
+      "unitIds": [
+        "atomic-structure-and-properties",
+        "chemical-reactions",
+        "equilibrium"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-form-internal-b",
+      "title": "Internal practice form B (AP Chemistry Independent Foundation Study Library)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-chem-u2-021",
+        "ap-chem-u5-081",
+        "ap-chem-u8-141",
+        "ap-chem-u2-022",
+        "ap-chem-u5-082",
+        "ap-chem-u8-142",
+        "ap-chem-u2-023",
+        "ap-chem-u5-083",
+        "ap-chem-u8-143",
+        "ap-chem-u2-024",
+        "ap-chem-u5-084",
+        "ap-chem-u8-144",
+        "ap-chem-u2-025",
+        "ap-chem-u5-085",
+        "ap-chem-u8-145",
+        "ap-chem-u2-026",
+        "ap-chem-u5-086",
+        "ap-chem-u8-146",
+        "ap-chem-u2-027",
+        "ap-chem-u5-087",
+        "ap-chem-u8-147",
+        "ap-chem-u2-028",
+        "ap-chem-u5-088",
+        "ap-chem-u8-148",
+        "ap-chem-u2-029",
+        "ap-chem-u5-089",
+        "ap-chem-u8-149",
+        "ap-chem-u2-030",
+        "ap-chem-u5-090",
+        "ap-chem-u8-150",
+        "ap-chem-u2-031",
+        "ap-chem-u5-091",
+        "ap-chem-u8-151",
+        "ap-chem-u2-032",
+        "ap-chem-u5-092",
+        "ap-chem-u8-152",
+        "ap-chem-u2-033",
+        "ap-chem-u5-093",
+        "ap-chem-u8-153",
+        "ap-chem-u2-034",
+        "ap-chem-u5-094",
+        "ap-chem-u8-154",
+        "ap-chem-u2-035",
+        "ap-chem-u5-095",
+        "ap-chem-u8-155",
+        "ap-chem-u2-036",
+        "ap-chem-u5-096",
+        "ap-chem-u8-156",
+        "ap-chem-u2-037",
+        "ap-chem-u5-097"
+      ],
+      "topicIds": [
+        "ap-chem-ch-02",
+        "ap-chem-ch-05",
+        "ap-chem-ch-08"
+      ],
+      "unitIds": [
+        "compound-structure-and-properties",
+        "kinetics",
+        "acids-and-bases"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-chemistry-foundation-pilot-form-internal-c",
+      "title": "Internal practice form C (AP Chemistry Independent Foundation Study Library)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-chem-u3-041",
+        "ap-chem-u6-101",
+        "ap-chem-u9-161",
+        "ap-chem-u3-042",
+        "ap-chem-u6-102",
+        "ap-chem-u9-162",
+        "ap-chem-u3-043",
+        "ap-chem-u6-103",
+        "ap-chem-u9-163",
+        "ap-chem-u3-044",
+        "ap-chem-u6-104",
+        "ap-chem-u9-164",
+        "ap-chem-u3-045",
+        "ap-chem-u6-105",
+        "ap-chem-u9-165",
+        "ap-chem-u3-046",
+        "ap-chem-u6-106",
+        "ap-chem-u9-166",
+        "ap-chem-u3-047",
+        "ap-chem-u6-107",
+        "ap-chem-u9-167",
+        "ap-chem-u3-048",
+        "ap-chem-u6-108",
+        "ap-chem-u9-168",
+        "ap-chem-u3-049",
+        "ap-chem-u6-109",
+        "ap-chem-u9-169",
+        "ap-chem-u3-050",
+        "ap-chem-u6-110",
+        "ap-chem-u9-170",
+        "ap-chem-u3-051",
+        "ap-chem-u6-111",
+        "ap-chem-u9-171",
+        "ap-chem-u3-052",
+        "ap-chem-u6-112",
+        "ap-chem-u9-172",
+        "ap-chem-u3-053",
+        "ap-chem-u6-113",
+        "ap-chem-u9-173",
+        "ap-chem-u3-054",
+        "ap-chem-u6-114",
+        "ap-chem-u9-174",
+        "ap-chem-u3-055",
+        "ap-chem-u6-115",
+        "ap-chem-u9-175",
+        "ap-chem-u3-056",
+        "ap-chem-u6-116",
+        "ap-chem-u9-176",
+        "ap-chem-u3-057",
+        "ap-chem-u6-117"
+      ],
+      "topicIds": [
+        "ap-chem-ch-03",
+        "ap-chem-ch-06",
+        "ap-chem-ch-09"
+      ],
+      "unitIds": [
+        "properties-of-substances-and-mixtures",
+        "thermochemistry",
+        "thermodynamics-and-electrochemistry"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

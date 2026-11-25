@@ -32,8 +32,10 @@ try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ViewMiscPanelsModule) { console.log('[CDN] ViewMiscPanelsModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) return;
 var ReactDOM = window.ReactDOM;  // PdfDiffViewer uses ReactDOM.createPortal
 var useState = React.useState;
 var useEffect = React.useEffect;

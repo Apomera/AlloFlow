@@ -121,14 +121,12 @@
       "constructedResponseWorkshops": 9,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 7,
+      "spacedReviewPlans": 5,
       "sourceCatalog": 3
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 5,
@@ -136,7 +134,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 480,
+      "checked": 1052,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -196,8 +194,8 @@
     "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "126c0b8f5e9b70dfcb5fc660353924f19d3d1f9bf069046e42ae128256cabc26",
-    "learningLibrarySha256": "b09298db91f62341e637a08080568785ed52d45a99f6ca6e4fd6c2523b40d262",
+    "packSha256": "1019691a727be60572707a91fcd9a12b94fbc7c9e579f77e6cec95d81437bd08",
+    "learningLibrarySha256": "050b421e49db33b0357d6c6f03fc68f8350be11867456807770d2bea903ed918",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"
   },

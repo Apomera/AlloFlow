@@ -75,6 +75,14 @@ async function remount(initial, ctxOverrides) {
   return mount(initial, ctxOverrides);
 }
 
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const click = (element) => act(async () => { element.click(); });
 const launch = () => click(container.querySelector('[data-skatelab-launch="true"]'));
 const announcer = () => container.querySelector('[data-skatelab-announcer]').textContent;
@@ -206,6 +214,7 @@ describe('D2: an estimate earns credit only while the answer is hidden', () => {
 describe('D3: a prediction is counted once', () => {
   it('re-running the same setup does not count the same prediction again', async () => {
     const state = await mount(seed());
+    await toPrompt('hp_moon');
     await click(container.querySelector('#sk-predict-hp_moon-higher'));
     await launch();
     expect(state.latest.skatelab.predictionStats).toEqual({ made: 1, matched: 0 });
@@ -301,6 +310,7 @@ describe('D5: teacher locks and missions', () => {
 describe('D6: "hide answers" also hides the verdict tallies', () => {
   it('the prediction record and the learner report show no matched count or named idea', async () => {
     const state = await mount(seed({ teacher: { hideAnswers: true } }));
+    await toPrompt('hp_moon');
     await click(container.querySelector('#sk-predict-hp_moon-higher'));
     await launch();
     expect(state.latest.skatelab.misconceptionTally).toEqual({ low_gravity_higher: 1 });
@@ -400,7 +410,8 @@ describe('D10: no untranslated English in the landing telemetry and standard lab
     await launch();
     const text = container.textContent;
     expect(text).toContain('⟦stem.skatelab.telemetry_com_drop⟧');
-    expect(text).toContain('⟦stem.skatelab.inv_ngss_range_angle⟧');
+    // 2026-11-23 source audit: the label was corrected (HS-PS2-1 is limited to 1-D motion), so it moved to a _v2 key.
+    expect(text).toContain('⟦stem.skatelab.inv_ngss_range_angle_v2⟧');
     expect(text).not.toMatch(/COM|projectile/);
   });
 });

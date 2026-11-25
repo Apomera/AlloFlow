@@ -1727,7 +1727,7 @@
       "",
       "A practical guide to what this tool is, how student data flows through it, and what you need to set up before you hand it to a class.",
       "",
-      "> **Guide status:** Responsible-use reference, reviewed September 8, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.",
+      "> **Guide status:** Responsible-use reference, reviewed November 23, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.",
       "",
       "---",
       "",
@@ -1754,7 +1754,7 @@
       "",
       "**Understand the active mode:**",
       "- A solo activity can keep answers and progress in the browser tab, while preferences, safety flags, or recovery data may use browser storage. Closing a tab may discard unsaved activity state, but it is not proof of secure deletion.",
-      "- A local solo session does not create an AlloFlow account. Optional AI calls send the current prompt and relevant student text to the configured AI service; a school-hosted live session can send the progress or safety signals described below to the teacher session.",
+      "- A local solo session does not create an AlloFlow account. Optional AI calls send the current prompt and relevant student text to the configured AI service. A school-hosted live session (not available in Gemini Canvas) saves a progress record to the session database about once a minute; it carries no safety-flag information.",
       "- Educators generally cannot retrieve an unsaved solo activity after the fact. Exported files, AI-service records, browser storage, and school-controlled live-session records are separate artifacts and must follow district policy.",
       "",
       "**The sneakernet save/load pattern:**",
@@ -1819,7 +1819,7 @@
       "",
       "**What you, the teacher, can and cannot do:**",
       "- There is no teacher safety summary, and a flag is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.",
-      "- **In every mode, including a live web session**: nothing reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. (The live-session sync once meant to carry a flag count is not delivered.) The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.",
+      "- **In every mode, including a live web session**: nothing about a flag reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. Flags stay on the student's device. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.",
       "- For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. Treat those excerpts as sensitive data on a shared device. Closing the tab does not clear browser storage; review the current Data & privacy controls and your deployment retention procedures.",
       "- The in-app consent screen tells students the same story in every mode: the app **cannot notify an adult on its own**, and they should tell a trusted adult directly.",
       "",
@@ -1832,7 +1832,7 @@
       "",
       "## 5. Parent notification",
       "",
-      "The Hub's data flow depends on the approved mode: solo activity state may stay local, exports create files, optional AI sends the current prompt to the configured service, and live sessions can send progress summaries or safety signals to the teacher session. Families deserve a description of the mode students will actually use. Norms vary by district; this is a starting template, not a substitute for approved district language.",
+      "The Hub's data flow depends on the approved mode: solo activity state may stay local, exports create files, optional AI sends the current prompt to the configured service, and live sessions save progress summaries to the session database (no safety-flag information, and no safety alerts to the teacher). Families deserve a description of the mode students will actually use. Norms vary by district; this is a starting template, not a substitute for approved district language.",
       "",
       "**Sample parent letter (copy and adapt):**",
       "",
@@ -1845,7 +1845,7 @@
       "> - **It is not a test or assessment.** Nothing students do in the Hub is graded or recorded in their school file.",
       "> - **No AlloFlow student account.** The Hub does not create an AlloFlow login for your child. Unsaved solo activity work is normally not recoverable through the classroom workflow; exports, browser storage, AI use, and live sessions are handled as described in our district-approved setup.",
       "> - **Optional AI helper.** Some activities can send the text entered into that activity to our district-approved AI service to suggest words or coping ideas. Our technology team has reviewed the service, account type, data protections, retention, and age requirements. [Replace this sentence with your district's approved description, or state that AI features are turned off.]",
-      "> - **Safety support built in.** Some activities can show support guidance when concerning language is detected. Detection and alerts are not guaranteed or a substitute for telling a trusted adult directly. [Describe the support route and locally appropriate resources verified for your approved setup.]",
+      "> - **Safety support built in.** Some activities can show support guidance when concerning language is detected. Detection is not guaranteed, and the Hub does not alert staff, so it is not a substitute for telling a trusted adult directly. [Describe the support route and locally appropriate resources verified for your approved setup.]",
       ">",
       "> If you'd prefer your child opt out of Hub activities, or if you have questions, please reach out. I'm happy to walk you through what students will see.",
       "",
@@ -2103,7 +2103,7 @@
           })),
           h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: fg('#94a3b8'), marginBottom: 4 } }, 'Read more'),
           h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, fontSize: 13, lineHeight: 1.6 } }, p.links.map(function (l) {
-            return h('li', { key: l.url }, h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer', style: { color: fg('#7dd3fc') } }, l.label, h('span', { className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, ' (opens in a new tab)')));
+            return h('li', { key: l.url }, h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer', style: { color: fg('#7dd3fc'), display: 'inline-block', minHeight: 24 } }, l.label, h('span', { className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, ' (opens in a new tab)')));
           })),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, color: fg('#94a3b8') } }, 'The King pages say what is quoted here; the EL Education pages are linked as the organisation\u2019s own pages on each topic.')
         );
@@ -3188,6 +3188,15 @@
       // survives a re-render; the three signals below still FORCE it open.
       var _stationsPanelOpen = React.useState(false);
       var stationsPanelOpen = _stationsPanelOpen[0], setStationsPanelOpen = _stationsPanelOpen[1];
+      // Same pattern for the catalog's two folds (2026-11-23): "More ways to explore"
+      // (Help me choose, skill areas, pathways), its inner skill-area fold, and the
+      // teacher-only "Teacher tools" fold (launch plans + Custom SEL Stations).
+      var _selMoreWaysOpen = React.useState(false);
+      var selMoreWaysOpen = _selMoreWaysOpen[0], setSelMoreWaysOpen = _selMoreWaysOpen[1];
+      var _selBrowseAreaOpen = React.useState(false);
+      var selBrowseAreaOpen = _selBrowseAreaOpen[0], setSelBrowseAreaOpen = _selBrowseAreaOpen[1];
+      var _selTeacherToolsOpen = React.useState(false);
+      var selTeacherToolsOpen = _selTeacherToolsOpen[0], setSelTeacherToolsOpen = _selTeacherToolsOpen[1];
       var _builderUndo = React.useState([]);
       var builderUndo = _builderUndo[0], setBuilderUndo = _builderUndo[1];
       var _removedStations = React.useState([]);
@@ -3889,6 +3898,11 @@
         pinkText: isContrast ? '#ff7ab6' : '#be185d',
         onPink: isContrast ? '#000000' : '#ffffff'
       };
+      // One look for every hub fold header: native disclosure marker (list-item, flips when open),
+      // palette colours. top = outer fold (More ways to explore, Teacher tools); inset = details pads its sides.
+      function _selFoldSummaryStyle(top, inset) {
+        return { display: 'list-item', minHeight: 44, boxSizing: 'border-box', padding: inset ? '12px 0' : '12px', cursor: 'pointer', fontSize: top ? 15 : 14, fontWeight: top ? 800 : 700, lineHeight: 1.4, color: _t.text, background: _t.bgCard };
+      }
 
       // ══════════════════════════════════════════════════════════════
       // ── Tool Catalog ──
@@ -3915,7 +3929,7 @@
         { id: 'anxietyToolkit', icon: '\uD83E\uDEE7', label: 'Anxiety Toolkit', desc: 'CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time, decatastrophizing, grounding skills, and a personal patterns inventory. From Beck Institute, AACAP, ADAA. Pairs with Window of Tolerance and Stress Bucket.', color: 'cyan', recommendedRange: '5-12' },
         { id: 'sleep',       icon: '\uD83D\uDE34', label: 'Sleep & Rest',        desc: 'Adolescent sleep is a public-health crisis. AAP-recommended 8-10 hours is rarely met. Psychoeducation, self-check, 8 common barriers + what works for each, and a sleep diary. From AAP, CDC, NSF, Carskadon research.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'sensoryRegulation', icon: '\uD83C\uDF08', label: 'Sensory Regulation', desc: 'Neurodiversity-affirming tool for understanding your own sensory processing across the 8 sensory systems. Build a personal profile, plan a sensory diet, identify school accommodations. Identity-first language; built on Ayres / Dunn / autistic-led scholarship.', color: 'orange', recommendedRange: '6-12' },
-        { id: 'bigFeelings', icon: '\uD83D\uDD25', label: 'Big Feelings (Anger)', desc: 'Anger-specific psychoeducation and skill-building. Anger as information, not the problem; reactive aggression as the trap. Built on Lochman\'s Coping Power tradition + the CBT-for-anger evidence base. Hassle log, trigger inventory, the choice point, personalized cool-downs.', color: 'orange', recommendedRange: '6-12' },
+        { id: 'bigFeelings', icon: '\uD83D\uDD25', label: 'Big Feelings (Anger)', desc: 'Anger-specific psychoeducation and skill-building. Anger as information, not the problem; reactive aggression as the trap. Built on the CBT-for-anger tradition (Lochman\'s Coping Power for younger students, Feindler\'s anger-control training for teens). Hassle log, trigger inventory, the choice point, personalized cool-downs.', color: 'orange', recommendedRange: '6-12' },
         { id: 'substancePsychoed', icon: '\u2697\uFE0F', label: 'Substance Use', desc: 'Harm-reduction psychoeducation about substances (alcohol, cannabis, nicotine, opioids, stimulants, benzos, hallucinogens). Adolescent brain risks. Naloxone education. NOT a screener, NOT abstinence-only. Strong SAMHSA referral. MI-aligned reflection space.', color: 'slate', recommendedRange: '6-12' },
         { id: 'behavioralActivation', icon: '\uD83D\uDCC5', label: 'Behavioral Activation', desc: 'Plan small activities, do them, rate them for mastery (felt competent) and pleasure (enjoyed). Notice what fits and choose a manageable next step. This planning activity draws on behavioral activation; it does not deliver or evaluate a course of therapy.', color: 'emerald', recommendedRange: '6-12' },
         // Inner Work (contemplative + reflective practice)
@@ -3925,16 +3939,16 @@
         { id: 'orientations', icon: '\uD83D\uDCDC', label: 'Orientations',      desc: 'Ways of Living, Compared. Eight philosophical traditions (Daoism, Zen, Stoicism, Existentialism, Confucian ethics, Ubuntu, Indigenous relationality, Care Ethics) compared on big life questions. Non-prescriptive; each tradition has an honest "what it cannot do well" panel.', color: 'purple', recommendedRange: '6-12' },
         { id: 'thoughtRecord', icon: '\uD83D\uDCD3', label: 'CBT Thought Record', desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves entries over time. From Beck, Burns, Padesky.', color: 'purple', recommendedRange: '5-12' },
         { id: 'costBenefit', icon: '\uD83E\uDDEE', label: 'Cost-Benefit Grid',  desc: 'A 2x2 decision-making grid from Dialectical Behavior Therapy. Short-term and long-term pros and cons of a decision, side by side. Useful when emotion is pushing for one option. From Linehan.', color: 'purple', recommendedRange: '5-12' },
-        { id: 'sfbt',        icon: '\uD83D\uDD2D', label: 'Solution-Focused',   desc: 'Solution-Focused Brief Therapy: the Miracle Question, Scaling, Exception-finding, and Compliments. Looks forward instead of backward, asks what is already working. The most-used technique in US school counseling. From de Shazer and Berg.', color: 'purple', recommendedRange: '5-12' },
+        { id: 'sfbt',        icon: '\uD83D\uDD2D', label: 'Solution-Focused',   desc: 'Solution-Focused Brief Therapy: the Miracle Question, Scaling, Exception-finding, and Compliments. Looks forward instead of backward, asks what is already working. Widely used in US school counseling. From de Shazer and Berg.', color: 'purple', recommendedRange: '5-12' },
         // Care of Self (self-compassion, relational self-care)
         { id: '_cat_CareOfSelf', icon: '\uD83E\uDD7A', label: 'Care of Self', desc: '', color: 'slate', category: true },
         { id: 'careConstellations', icon: '\uD83C\uDF0C', label: 'Care Constellations', desc: 'A relational map of who cares for you and who you care for. Refuses the individualist or consumerist "self-care" frame. Includes a substantive philosophical view on Care of Self vs Self-Care (Foucault, Greek epimeleia heautou, Audre Lorde, eudaimonic vs hedonic).', color: 'rose', recommendedRange: '5-12' },
-        { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in IEPs, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
+        { id: 'ecomap',      icon: '\uD83D\uDD78\uFE0F', label: 'Ecomap',              desc: 'Person-in-environment relationship map. You at the center; the 12 major life systems around you. Each connection rated for strength, stress, and energy direction. Standard social-work tool since Hartman (1978); used in school social work, family assessment, and personal life inventory.', color: 'rose', recommendedRange: '5-12' },
         { id: 'circlesOfSupport', icon: '\uD83C\uDFAF', label: 'Circles of Support', desc: 'Four concentric rings of relationship: Intimacy, Friendship, Participation, Exchange (paid). Makes visible who is actually close, including when paid people fill the inner rings. From Forest and Snow at Inclusion Press.', color: 'rose', recommendedRange: '3-12' },
         { id: 'genogram',    icon: '\uD83C\uDF33', label: 'Genogram',            desc: 'Three-generation family map using standard family-systems symbols. For personal self-understanding only (NOT clinical assessment). Based on Bowen family systems theory and McGoldrick-Gerson-Petry notation. Includes prominent safe-framing guidance.', color: 'rose', recommendedRange: '8-12' },
         { id: 'griefLoss',   icon: '\uD83D\uDD6F\uFE0F', label: 'Grief & Loss',         desc: 'A guided self-companion for grief. Death of a person or pet, family changes, friend losses, identity losses, ambiguous loss \u2014 all count. Walk through Worden\'s four tasks of mourning, write a letter, plan rituals. Strong safety framing pointing to Crisis Companion / 988 for severe or complicated grief.', color: 'rose', recommendedRange: '5-12' },
         { id: 'traumaPsychoed', icon: '\uD83C\uDF3F', label: 'Understanding Trauma', desc: 'Psychoeducation only (NOT a screener). What trauma is and is not, neurobiology in plain English, common responses reframed as adaptations, SAMHSA\'s 6 principles, evidence-based treatments. For students and educators. Includes prominent safety framing about why screening without follow-up is unsafe.', color: 'emerald', recommendedRange: '6-12' },
-        { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Strong NEDA referral framing for eating disorders.', color: 'rose', recommendedRange: '6-12' },
+        { id: 'bodyStory',   icon: '\uD83E\uDEC2', label: 'Body Story',           desc: 'Body-acceptance and embodiment tool. NOT weight-focused, NOT diet-adjacent, NOT a screener. Built on Tylka body appreciation, intuitive eating principles, and media literacy. Inclusive of all bodies, all genders, all sizes. Refers students to current eating-disorder support lines.', color: 'rose', recommendedRange: '6-12' },
         { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. Explore protective supports inspired by the Sources of Strength program. This self-guided map is an adaptation, not delivery of the evaluated school program.', color: 'amber', recommendedRange: '6-12' },
         { id: 'crisiscompanion', icon: '\uD83E\uDEC2', label: 'Crisis Companion', desc: 'Peer support and suicide-prevention skills: what to do if you or a friend is depressed, in crisis, or thinking about self-harm \u2014 recognizing the signs, what to say (and not say), telling a trusted adult, plus 988 and a personal safety plan. Content-warning gated. Aligned with NEDA, AFSP, Sources of Strength, and 988. The acute-support counterpart to Sources of Strength.', color: 'teal', recommendedRange: '6-12' },
         { id: 'identitySupport', icon: '\uD83C\uDF08', label: 'Identity Support', desc: 'Inclusive, affirming space for gender identity, sexual orientation, romantic orientation, and broader identity questions. Vocabulary, identity development, finding community, safety for trans youth, ally guidance. Built on Trevor Project, GLSEN, PFLAG.', color: 'pink', recommendedRange: '5-12' },
@@ -3947,7 +3961,7 @@
         { id: 'maps',        icon: '\uD83D\uDDFA\uFE0F', label: 'MAPS',         desc: 'Making Action Plans. Eight prompts in sequence (My Story, Dream, Nightmare, Who I Am, Gifts, Needs, Action Plan, First Steps). Person-centered visual from Pearpoint, O\'Brien, and Forest at Inclusion Press; widely used for transition planning.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'path',        icon: '\uD83C\uDF05', label: 'PATH',                desc: 'Planning Alternative Tomorrows with Hope. Futures-planning visual: eight stages from your long-horizon North Star backward to first steps in two weeks. Pearpoint, O\'Brien, and Forest at Inclusion Press; pairs with MAPS.', color: 'indigo', recommendedRange: '5-12' },
         { id: 'valuesCommittedAction', icon: '\uD83D\uDC8E', label: 'Values & Action', desc: 'Sort what matters, name your top values, and turn each into a small concrete action this week. From Acceptance and Commitment Therapy (Hayes); adolescent DNA-V framing. The ACT distinction between values (directions) and goals (destinations).', color: 'indigo', recommendedRange: '5-12' },
-        { id: 'careerCompass', icon: '\uD83D\uDCBC', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 federal Career Clusters, and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '6-12' },
+        { id: 'careerCompass', icon: '\uD83D\uDCBC', label: 'Career Compass', desc: 'Explore careers through your interests. 36-item RIASEC self-check gives a top-three Holland code; browse careers, the 16 Career Clusters (the long-standing national framework; a 2024 update regroups them into 14), and concrete next steps (shadow days, info interviews, CTE, apprenticeships). Built on Holland\'s framework; points to the authoritative O*NET Interest Profiler at mynextmove.org.', color: 'indigo', recommendedRange: '6-12' },
         { id: 'selfAdvocacy', icon: '\uD83D\uDDE3\uFE0F', label: 'Self-Advocacy Studio', desc: 'Build a concrete school-support plan for IEP or 504 questions, accommodations, disclosure choices, and asking trusted adults for help.', color: 'indigo', recommendedRange: '5-12' },
 
         // ── Social Awareness ──
@@ -4073,7 +4087,7 @@
         motivationalInterviewing: { tier: 'strong' },
         valuesCommittedAction: { tier: 'strong', note: 'From Acceptance and Commitment Therapy, a well-supported approach.' },
         sourcesOfStrength: { tier: 'strong', note: 'Upstream suicide-prevention program with randomized-trial support (Wyman et al.).' },
-        bigFeelings: { tier: 'strong', note: "Built on Lochman's Coping Power, a well-supported anger program." },
+        bigFeelings: { tier: 'strong', note: 'Draws on CBT anger-management research and Lochman\'s Coping Power, which was developed and tested with pre-adolescents (grades 4 to 6). This self-guided adaptation for older students has not been evaluated.' },
         identitySupport: { tier: 'strong', note: 'Family and school acceptance is strongly linked to better outcomes for LGBTQ+ youth (Ryan; Trevor Project).' },
         // Emerging: real but limited or mixed evidence
         zones: { tier: 'emerging', note: 'Draws on adjacent research; the Zones curriculum itself has limited outcome studies (the tool says so in its own limitations).' },
@@ -5496,7 +5510,7 @@
             h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 } }, failed ? __alloT('sel.hub.ui.saving_attention', 'Saving needs attention') : __alloT('sel.hub.ui.saving_title', 'Saving and sharing')),
             h('p', null, failed ? __alloT('sel.hub.ui.saving_failed_body', 'The current work remains available in this open hub. A failed local save may leave an older copy on this device.') : __alloT('sel.hub.ui.saving_ok_body', 'Saved stations, station notes, and hub checkpoints are being stored on this device. Individual activities have their own save controls; this status does not confirm every activity input was saved.')),
             h('p', null, __alloT('sel.hub.ui.saving_drafts', 'Station drafts stay on this device for recovery. Saving a station adds it to the project data available to Save / Export; requesting a project save does not confirm that a file was written.')),
-            h('p', null, activeSessionCode ? __alloT('sel.hub.ui.saving_live', 'A live session is connected. It may send progress or safety signals to the host. Optional AI sends activity text to the configured service. Review a Share Packet before choosing to share it.') : __alloT('sel.hub.ui.saving_ai', 'Optional AI sends activity text to the configured service. A Share Packet contains the items and detail levels you select; review its preview before sharing.')),
+            h('p', null, activeSessionCode ? __alloT('sel.hub.ui.saving_live', 'A live session is connected. It saves your progress but does not alert your teacher if something worrying comes up, so tell a trusted adult directly. Optional AI sends activity text to the configured service. Review a Share Packet before choosing to share it.') : __alloT('sel.hub.ui.saving_ai', 'Optional AI sends activity text to the configured service. A Share Packet contains the items and detail levels you select; review its preview before sharing.')),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               failed && h('button', { type: 'button', style: action, onClick: function () {
                 writeLocalSel('alloflow_sel_stations', savedStations); writeLocalSel('alloflow_sel_station_progress', questProgress);
@@ -5506,7 +5520,8 @@
                 else if (recoverableDraft) writeLocalSel('alloflow_sel_builder_draft', recoverableDraft);
                 else writeLocalSel('alloflow_sel_builder_draft', null, true);
               } }, __alloT('sel.hub.ui.saving_retry', 'Retry local saving')),
-              h('button', { type: 'button', style: action, onClick: requestProjectSave }, __alloT('sel.hub.ui.saving_request', 'Request project save'))
+              // One label for the one save action (tool header, unsaved badge and here all call the host save).
+              h('button', { type: 'button', 'data-sel-save-action': 'true', style: action, onClick: requestProjectSave }, __alloT('sel.hub.ui.export_now', 'Export now'))
             ),
             h('p', { role: 'status', style: { margin: '8px 0 0' } }, projectSaveNotice)
           )
@@ -5578,8 +5593,8 @@
         var needLabels = { reset: __alloT('sel.hub.ui.try_a_reset', 'Try a reset'), feelings: __alloT('sel.hub.ui.need_feeling', 'Understand a feeling'), conversation: __alloT('sel.hub.ui.need_conversation', 'Prepare a conversation'), decision: __alloT('sel.hub.ui.need_decision', 'Choose a next step') };
         var options = choices.filter(function (item) { return item.need === chooseNeed && item.min <= Number(chooseTime) && (chooseResponse === 'any' || item.mode === chooseResponse); }).slice(0, 2);
         var control = { minHeight: 44, width: '100%', minWidth: 0, padding: 8, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgInput, color: _t.text, fontSize: 14 };
-        return h('details', { 'aria-label': __alloT('sel.hub.ui.help_choose', 'Help me choose an activity'), style: { marginBottom: 12, padding: 12, border: '1px solid ' + _t.border, borderRadius: 10, background: _t.bgSoft, color: _t.text } },
-          h('summary', { style: { minHeight: 44, padding: '10px 0', cursor: 'pointer', fontSize: 15, fontWeight: 700 } }, __alloT('sel.hub.ui.help_choose', 'Help me choose an activity')),
+        return h('details', { 'aria-label': __alloT('sel.hub.ui.help_choose', 'Help me choose an activity'), style: { marginBottom: 12, padding: '0 12px', border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, color: _t.text } },
+          h('summary', { 'data-sel-fold-summary': 'sub', style: _selFoldSummaryStyle(false, true) }, __alloT('sel.hub.ui.help_choose', 'Help me choose an activity')),
           h('p', { style: { fontSize: 14, lineHeight: 1.5 } }, __alloT('sel.hub.ui.help_choose_intro', 'Choose what you want to try. Suggestions use only these choices; they do not assess your feelings. Times describe a first step, not the full activity.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3,minmax(0,1fr))', gap: 10 } },
             h('label', { style: { fontSize: 14 } }, __alloT('sel.hub.ui.what_would_help', 'What would help?'), h('select', { value: chooseNeed, onChange: function (e) { setChooseNeed(e.target.value); }, style: control }, Object.keys(needLabels).map(function (key) { return h('option', { key: key, value: key }, needLabels[key]); }))),
@@ -5587,7 +5602,7 @@
             h('label', { style: { fontSize: 14 } }, __alloT('sel.hub.ui.how_respond', 'How would you like to respond?'), h('select', { value: chooseResponse, onChange: function (e) { setChooseResponse(e.target.value); }, style: control }, h('option', { value: 'any' }, __alloT('sel.hub.ui.respond_any', 'Any way')), h('option', { value: 'offline' }, __alloT('sel.hub.ui.respond_offline', 'Think, speak, draw, or AAC')), h('option', { value: 'write' }, __alloT('sel.hub.ui.respond_write', 'Write a short response'))))
           ),
           h('p', { role: 'status', style: { fontSize: 14 } }, options.length ? (options.length === 1 ? _selFill(__alloT('sel.hub.ui.options_one', '{count} starting option for your choices.'), { count: options.length }) : _selFill(__alloT('sel.hub.ui.options_many', '{count} starting options for your choices.'), { count: options.length })) : __alloT('sel.hub.ui.options_none', 'No starting option matches yet. Try more time or another response format; the full catalog is still available.')),
-          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2,minmax(0,1fr))', gap: 8 } }, options.map(function (item) {
+          h('div', { style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2,minmax(0,1fr))', gap: 8, paddingBottom: 12 } }, options.map(function (item) {
             var tool = _selToolById(item.tool);
             return h('article', { key: item.tool, style: { padding: 12, border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, fontSize: 14, lineHeight: 1.5 } },
               h('strong', null, tool ? tool.label : item.tool),
@@ -5911,6 +5926,9 @@
         function _selCardDescId(toolId) {
           return 'sel-card-desc-' + String(toolId).replace(/[^A-Za-z0-9_-]/g, '');
         }
+        // Guidance kept on STUDENT cards because it tells the student to involve an adult
+        // (adult facilitator, not a substitute for an adult, trusted-adult steps).
+        var _SEL_STUDENT_SAFETY_GUIDANCE = { restorativeCircle: true, crisiscompanion: true, safety: true };
         function _selCategoryHeaderFor(catId) {
           var cat = _selCategories().find(function (c) { return c.id === catId; });
           if (!cat) return null;
@@ -5941,11 +5959,13 @@
 
         toolGrid = h('div', { role: 'main', 'aria-label': __alloT('sel.hub.ui.tool_selection', 'SEL Hub tool selection'), style: { padding: isCompact ? 12 : 20 } },
           // ── Bypass block (WCAG 2.4.1) ──
-          // Measured on the catalog: 46 tab stops sit between the top of this
-          // panel and the first tool card - quick actions, teacher launch plans,
-          // the search box, eleven need chips, ten category filters, eight
-          // pathways and the station builder. Every one of them is a real
-          // control, so the fix is not fewer stops, it is a way past them.
+          // Counted from the code (2026-11-23, first visit, no recent work or
+          // stations): 20 tab stops for a teacher sit between the top of this
+          // panel and the first tool card (19 for a student) - this skip
+          // control, the research-labels fold, 4 Start-here cards, the search
+          // box, 11 need chips, the "More ways to explore" fold (help me choose,
+          // skill areas, pathways) and the teacher-only "Teacher tools" fold.
+          // Open folds and recent work add more, so a way past them stays.
           // A button rather than an anchor: this panel is a modal surface inside
           // an SPA, and a #hash would change the URL under the host app.
           h('button', {
@@ -6035,7 +6055,6 @@
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 800, color: _t.text } }, __alloT('sel.hub.ui.start_here', 'Start here')),
               h('span', { style: { fontSize: 13, color: _t.textMuted } }, __alloT('sel.hub.ui.quick_route', 'Pick a quick route, or browse below.'))
             ),
-            renderActivityChooser(),
             renderResearchContext(null),
             h('div', {
               style: {
@@ -6088,103 +6107,9 @@
                   )
                 );
               })
-            ),
-            h('div', {
-              role: 'note',
-              style: { marginTop: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 13, lineHeight: 1.4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }
-            },
-              h('span', null, __alloT('sel.hub.ui.storage_notice', 'Some SEL work is stored on this device. AI features use your configured service. Choose what to save or share, especially on a shared device.')),
-              h('button', {
-                onClick: requestProjectSave,
-                title: __alloT('sel.hub.ui.save_now_aria', 'Save or export SEL work now'),
-                style: { border: '1px solid ' + _t.accent, background: _t.accent, color: _t.accentText, borderRadius: 8, padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', minHeight: 44 }
-              }, __alloT('sel.hub.ui.save_now', 'Save now'))
             )
-          ),
-          selTeacherView && !activePathway && !activeStation && h('details', {
-            'aria-label': __alloT('sel.hub.ui.launch_routines_aria', 'Teacher launch routines'),
-            style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
-          },
-            h('summary', {
-              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 14, fontWeight: 800, color: _t.text, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 8 }
-            }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDF93'), __alloT('sel.hub.ui.launch_title', 'Teacher launch')),
-            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid ' + _t.border } },
-              h('div', {
-                role: 'note',
-                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 13, lineHeight: 1.45 }
-              }, __alloT('sel.hub.ui.launch_note', 'Keep practice ungraded and sharing optional. Explain device storage, configured AI features, and sharing before starting. Use fictional examples; invite students to ask for help or pass.')),
-              h('div', {
-                role: 'list',
-                'aria-label': __alloT('sel.hub.ui.launch_guardrails_aria', 'Teacher launch guardrails'),
-                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 }
-              },
-                [
-                  { label: __alloT('sel.hub.ui.launch_step_boundary', 'Set the boundary'), body: __alloT('sel.hub.ui.launch_step_boundary_body', 'Say what is private, what is optional, and how students can pass.') },
-                  { label: __alloT('sel.hub.ui.launch_step_run', 'Run the routine'), body: __alloT('sel.hub.ui.launch_step_run_body', 'Use the tools as practice. Keep reflection formative and ungraded.') },
-                  { label: __alloT('sel.hub.ui.launch_step_close', 'Close with choice'), body: __alloT('sel.hub.ui.launch_step_close_body', 'Students decide whether to save, export, or include a checkpoint later.') }
-                ].map(function(step) {
-                  return h('div', {
-                    key: step.label,
-                    role: 'listitem',
-                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 9, minWidth: 0 }
-                  },
-                    h('div', { style: { color: _t.text, fontSize: 13, fontWeight: 900, marginBottom: 3 } }, step.label),
-                    h('div', { style: { color: _t.textMuted, fontSize: 13, lineHeight: 1.4 } }, step.body)
-                  );
-                })
-              ),
-              h('div', {
-                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
-              },
-                SEL_TEACHER_LAUNCH_PLANS.map(function(planRaw) {
-                  var plan = _selLocFields('sel.hub.launch.' + planRaw.id, planRaw, ['name', 'time', 'format', 'focus', 'studentView', 'teacherMove', 'privacyBoundary', 'note']);
-                  var labels = _teacherPlanToolLabels(plan);
-                  var pendingLabels = _teacherPlanPendingLabels(plan);
-                  var sensitiveLabels = _teacherPlanSensitiveLabels(plan);
-                  var catalogTools = _teacherPlanCatalogTools(plan);
-                  var disabled = catalogTools.length === 0 || pendingLabels.length > 0;
-                  return h('div', {
-                    key: plan.id,
-                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
-                  },
-                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
-                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flex: '0 0 auto' } }, plan.icon),
-                      h('div', { style: { minWidth: 0 } },
-                        h('div', { style: { fontSize: 14, fontWeight: 900, color: _t.text, lineHeight: 1.25 } }, plan.name),
-                        h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.35, marginTop: 2 } }, plan.time + ' | ' + plan.format)
-                      )
-                    ),
-                    h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
-                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft } },
-                      [
-                        { label: __alloT('sel.hub.ui.launch_student_sees', 'Student sees'), body: plan.studentView || __alloT('sel.hub.ui.launch_student_sees_default', 'Students complete a private SEL routine and choose what to share.') },
-                        { label: __alloT('sel.hub.ui.launch_teacher_move', 'Teacher move'), body: plan.teacherMove || __alloT('sel.hub.ui.launch_teacher_move_default', 'Frame this as practice, not assessment.') },
-                        { label: __alloT('sel.hub.ui.launch_sharing_boundary', 'Sharing boundary'), body: plan.privacyBoundary || __alloT('sel.hub.ui.launch_sharing_boundary_default', 'Sharing remains student-controlled.') }
-                      ].map(function(row) {
-                        return h('div', { key: row.label, style: { minWidth: 0 } },
-                          h('span', { style: { display: 'block', color: _t.text, fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', marginBottom: 1 } }, row.label),
-                          h('span', { style: { display: 'block', color: _t.textMuted, fontSize: 13, lineHeight: 1.35, overflowWrap: 'anywhere' } }, row.body)
-                        );
-                      })
-                    ),
-                    h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
-                      labels.length ? labels.join(', ') : __alloT('sel.hub.ui.launch_tools_loading', 'Tools loading...'),
-                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: _t.warningText, fontWeight: 800 } }, _selFill(__alloT('sel.hub.ui.launch_still_loading', 'Still loading: {tools}'), { tools: pendingLabels.join(', ') })) : null
-                    ),
-                    sensitiveLabels.length ? h('div', { style: { fontSize: 13, color: _t.warningText, fontWeight: 900, lineHeight: 1.35 } },
-                      _selFill(__alloT('sel.hub.ui.launch_preview_sensitive', 'Preview sensitive tools first: {tools}'), { tools: sensitiveLabels.join(', ') })
-                    ) : null,
-                    h('button', {
-                      type: 'button',
-                      disabled: disabled || builderOpen || !!recoverableDraft,
-                      onClick: function() { _applyTeacherLaunchPlan(plan); },
-                      'aria-label': _selFill(__alloT('sel.hub.ui.launch_load_aria', 'Load teacher launch plan: {name}'), { name: plan.name }),
-                      style: { marginTop: 'auto', minHeight: 44, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 900, padding: '6px 10px' }
-                    }, builderOpen || recoverableDraft ? __alloT('sel.hub.ui.launch_finish_draft', 'Finish or discard the current draft first') : pendingLabels.length ? __alloT('sel.hub.ui.launch_waiting', 'Waiting for tools') : disabled ? __alloT('sel.hub.ui.launch_loading', 'Loading') : __alloT('sel.hub.ui.launch_load', 'Load into Station Builder'))
-                  );
-                })
-              )
-            )
+            // The storage note and its "Save now" were removed (2026-11-23): the "Saving and
+            // sharing" fold above the catalog says the same and holds the same save action.
           ),
           !activePathway && !activeStation && _recentWorkItems.length > 0 && h('section', {
             'aria-label': __alloT('sel.hub.ui.recent_work', 'Recent SEL work'),
@@ -6381,9 +6306,28 @@
               })
             )
           ),
+          // ── More ways to explore (2026-11-23) ──
+          // "Help me choose an activity", "Browse by skill area" and "SEL Pathways" share ONE
+          // fold so the first view is search, need chips and the grid. It opens itself while
+          // a skill-area filter or a pathway is active, so an applied filter is never hidden.
+          h('details', {
+            'data-sel-more-ways': 'true',
+            open: selMoreWaysOpen || !!selCategoryFilter || !!activePathway,
+            // Toggle events bubble in React: an inner fold closing must not close this one.
+            onToggle: function (e) { if (e.target !== e.currentTarget) return; setSelMoreWaysOpen(!!e.currentTarget.open); },
+            style: { marginBottom: 16, border: '1px solid ' + _t.border, borderRadius: 8, padding: '0 12px', background: _t.bgCard }
+          },
+            h('summary', { 'data-sel-fold-summary': 'top', style: _selFoldSummaryStyle(true, true) }, __alloT('stem.anatomy.scale_more', 'More ways to explore')),
+            h('div', { style: { paddingBottom: 4 } },
+          !activePathway && !activeStation && renderActivityChooser(),
           // CASEL category filter chips
-          h('details', { style: { marginBottom: 16, border: '1px solid ' + _t.border, borderRadius: 8, padding: '0 12px', background: _t.bgCard } },
-            h('summary', { style: { minHeight: 44, padding: '12px 0', fontSize: 14, fontWeight: 700, color: _t.text, cursor: 'pointer' } }, __alloT('sel.hub.ui.browse_by_area', 'Browse by skill area') + (selCategoryFilter ? ': ' + (_selCategories().find(function(cat) { return cat.id === selCategoryFilter; }) || {}).label : '')),
+          h('details', {
+            'data-sel-browse-area': 'true',
+            open: selBrowseAreaOpen || !!selCategoryFilter,
+            onToggle: function (e) { if (e.target !== e.currentTarget) return; setSelBrowseAreaOpen(!!e.currentTarget.open); },
+            style: { marginBottom: 16, border: '1px solid ' + _t.border, borderRadius: 8, padding: '0 12px', background: _t.bgCard }
+          },
+            h('summary', { 'data-sel-fold-summary': 'sub', style: _selFoldSummaryStyle(false, true) }, __alloT('sel.hub.ui.browse_by_area', 'Browse by skill area') + (selCategoryFilter ? ': ' + (_selCategories().find(function(cat) { return cat.id === selCategoryFilter; }) || {}).label : '')),
           h('div', { role: 'group', 'aria-label': __alloT('sel.hub.ui.filter_by_category', 'Filter SEL tools by category'), style: { display: 'flex', flexWrap: isCompact ? 'nowrap' : 'wrap', gap: 6, marginBottom: 16, overflowX: isCompact ? 'auto' : 'visible', paddingBottom: isCompact ? 4 : 0, WebkitOverflowScrolling: 'touch' } },
             h('button', {
               onClick: function() { setSelCategoryFilter(null); announceToSR(__alloT('sel.hub.ui.showing_all_categories', 'Showing all categories')); },
@@ -6410,10 +6354,10 @@
           )),
           // SEL Pathways — curated learning sequences (collapsed by default)
           !activePathway && h('details', {
-            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
           },
             h('summary', {
-              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 14, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
+              'data-sel-fold-summary': 'sub', style: _selFoldSummaryStyle(false, false)
             }, '\uD83D\uDEE4\uFE0F ' + __alloT('sel.hub.ui.pathways_heading', 'SEL Pathways — Curated Learning Sequences')),
             h('div', { style: { padding: '8px 12px', display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 8 } },
               SEL_PATHWAYS.map(function(pwRaw) {
@@ -6446,15 +6390,118 @@
                 );
               })
             )
+          ))),
+          // ── Teacher tools (2026-11-23) ──
+          // "Teacher launch" and "Custom SEL Stations" share ONE teacher-only fold that opens
+          // itself while a station draft is open or recoverable. A student with saved stations
+          // still gets the stations panel on its own (it is their station picker).
+          (function (launch, stations) {
+            if (!(selTeacherView && !activePathway && !activeStation)) return stations || null;
+            return h('details', {
+              'data-sel-teacher-tools': 'true',
+              open: selTeacherToolsOpen || builderOpen || !!recoverableDraft,
+              onToggle: function (e) { if (e.target !== e.currentTarget) return; setSelTeacherToolsOpen(!!e.currentTarget.open); },
+              style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
+            },
+              h('summary', {
+                'data-sel-fold-summary': 'top', style: _selFoldSummaryStyle(true, false)
+              }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, '🎓'), __alloT('simplified.teacher_actions', 'Teacher tools')),
+              h('div', { style: { padding: '10px 12px 0', borderTop: '1px solid ' + _t.border } }, launch, stations)
+            );
+          })(
+          selTeacherView && !activePathway && !activeStation && h('details', {
+            'aria-label': __alloT('sel.hub.ui.launch_routines_aria', 'Teacher launch routines'),
+            style: { marginBottom: 14, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
+          },
+            h('summary', {
+              'data-sel-fold-summary': 'sub', style: _selFoldSummaryStyle(false, false)
+            }, __alloT('sel.hub.ui.launch_title', 'Teacher launch')),
+            h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10, borderTop: '1px solid ' + _t.border } },
+              h('div', {
+                role: 'note',
+                style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft, color: _t.textMuted, fontSize: 13, lineHeight: 1.45 }
+              }, __alloT('sel.hub.ui.launch_note', 'Keep practice ungraded and sharing optional. Explain device storage, configured AI features, and sharing before starting. Use fictional examples; invite students to ask for help or pass.')),
+              h('div', {
+                role: 'list',
+                'aria-label': __alloT('sel.hub.ui.launch_guardrails_aria', 'Teacher launch guardrails'),
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 }
+              },
+                [
+                  { label: __alloT('sel.hub.ui.launch_step_boundary', 'Set the boundary'), body: __alloT('sel.hub.ui.launch_step_boundary_body', 'Say what is private, what is optional, and how students can pass.') },
+                  { label: __alloT('sel.hub.ui.launch_step_run', 'Run the routine'), body: __alloT('sel.hub.ui.launch_step_run_body', 'Use the tools as practice. Keep reflection formative and ungraded.') },
+                  { label: __alloT('sel.hub.ui.launch_step_close', 'Close with choice'), body: __alloT('sel.hub.ui.launch_step_close_body', 'Students decide whether to save, export, or include a checkpoint later.') }
+                ].map(function(step) {
+                  return h('div', {
+                    key: step.label,
+                    role: 'listitem',
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgCard, padding: 9, minWidth: 0 }
+                  },
+                    h('div', { style: { color: _t.text, fontSize: 13, fontWeight: 900, marginBottom: 3 } }, step.label),
+                    h('div', { style: { color: _t.textMuted, fontSize: 13, lineHeight: 1.4 } }, step.body)
+                  );
+                })
+              ),
+              h('div', {
+                style: { display: 'grid', gridTemplateColumns: isCompact ? '1fr' : (isMidWidth ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))'), gap: 8 }
+              },
+                SEL_TEACHER_LAUNCH_PLANS.map(function(planRaw) {
+                  var plan = _selLocFields('sel.hub.launch.' + planRaw.id, planRaw, ['name', 'time', 'format', 'focus', 'studentView', 'teacherMove', 'privacyBoundary', 'note']);
+                  var labels = _teacherPlanToolLabels(plan);
+                  var pendingLabels = _teacherPlanPendingLabels(plan);
+                  var sensitiveLabels = _teacherPlanSensitiveLabels(plan);
+                  var catalogTools = _teacherPlanCatalogTools(plan);
+                  var disabled = catalogTools.length === 0 || pendingLabels.length > 0;
+                  return h('div', {
+                    key: plan.id,
+                    style: { border: '1px solid ' + _t.border, borderRadius: 8, background: _t.bgRaised, padding: 10, display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 18, flex: '0 0 auto' } }, plan.icon),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { fontSize: 14, fontWeight: 900, color: _t.text, lineHeight: 1.25 } }, plan.name),
+                        h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.35, marginTop: 2 } }, plan.time + ' | ' + plan.format)
+                      )
+                    ),
+                    h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.4 } }, plan.focus),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgSoft } },
+                      [
+                        { label: __alloT('sel.hub.ui.launch_student_sees', 'Student sees'), body: plan.studentView || __alloT('sel.hub.ui.launch_student_sees_default', 'Students complete a private SEL routine and choose what to share.') },
+                        { label: __alloT('sel.hub.ui.launch_teacher_move', 'Teacher move'), body: plan.teacherMove || __alloT('sel.hub.ui.launch_teacher_move_default', 'Frame this as practice, not assessment.') },
+                        { label: __alloT('sel.hub.ui.launch_sharing_boundary', 'Sharing boundary'), body: plan.privacyBoundary || __alloT('sel.hub.ui.launch_sharing_boundary_default', 'Sharing remains student-controlled.') }
+                      ].map(function(row) {
+                        return h('div', { key: row.label, style: { minWidth: 0 } },
+                          h('span', { style: { display: 'block', color: _t.text, fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', marginBottom: 1 } }, row.label),
+                          h('span', { style: { display: 'block', color: _t.textMuted, fontSize: 13, lineHeight: 1.35, overflowWrap: 'anywhere' } }, row.body)
+                        );
+                      })
+                    ),
+                    h('div', { style: { fontSize: 13, color: _t.textMuted, lineHeight: 1.35, minHeight: 28 } },
+                      labels.length ? labels.join(', ') : __alloT('sel.hub.ui.launch_tools_loading', 'Tools loading...'),
+                      pendingLabels.length ? h('span', { style: { display: 'block', marginTop: 2, color: _t.warningText, fontWeight: 800 } }, _selFill(__alloT('sel.hub.ui.launch_still_loading', 'Still loading: {tools}'), { tools: pendingLabels.join(', ') })) : null
+                    ),
+                    sensitiveLabels.length ? h('div', { style: { fontSize: 13, color: _t.warningText, fontWeight: 900, lineHeight: 1.35 } },
+                      _selFill(__alloT('sel.hub.ui.launch_preview_sensitive', 'Preview sensitive tools first: {tools}'), { tools: sensitiveLabels.join(', ') })
+                    ) : null,
+                    h('button', {
+                      type: 'button',
+                      disabled: disabled || builderOpen || !!recoverableDraft,
+                      onClick: function() { _applyTeacherLaunchPlan(plan); },
+                      'aria-label': _selFill(__alloT('sel.hub.ui.launch_load_aria', 'Load teacher launch plan: {name}'), { name: plan.name }),
+                      style: { marginTop: 'auto', minHeight: 44, borderRadius: 8, border: disabled ? '1px solid ' + _t.border : '1px solid ' + _t.successText, background: disabled ? _t.bgCard : _t.successText, color: disabled ? _t.textMuted : (isContrast ? '#000000' : '#ffffff'), cursor: disabled ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 900, padding: '6px 10px' }
+                    }, builderOpen || recoverableDraft ? __alloT('sel.hub.ui.launch_finish_draft', 'Finish or discard the current draft first') : pendingLabels.length ? __alloT('sel.hub.ui.launch_waiting', 'Waiting for tools') : disabled ? __alloT('sel.hub.ui.launch_loading', 'Loading') : __alloT('sel.hub.ui.launch_load', 'Load into Station Builder'))
+                  );
+                })
+              )
+            )
           ),
           // Custom SEL Stations — teacher-authored bundles (parallel to STEM Lab Stations)
           (selTeacherView || savedStations.length > 0) && !activeStation && !activePathway && h('details', {
             open: builderOpen || !!recoverableDraft || savedStations.length > 0 || stationsPanelOpen,
-            onToggle: function (e) { setStationsPanelOpen(!!(e.target && e.target.open)); },
-            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden' }
+            onToggle: function (e) { if (e.target !== e.currentTarget) return; setStationsPanelOpen(!!e.currentTarget.open); },
+            style: { marginBottom: 16, borderRadius: 8, border: '1px solid ' + _t.border, overflow: 'hidden', background: _t.bgCard }
           },
             h('summary', {
-              style: { padding: '10px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _t.textMuted, background: _t.bgCard, display: 'flex', alignItems: 'center', gap: 6 }
+              'data-sel-fold-summary': 'sub', style: _selFoldSummaryStyle(false, false)
             }, '📌 ' + __alloT('sel.hub.ui.stations_summary', 'Custom SEL Stations — teacher-authored bundles')),
             h('div', { style: { padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 10 } },
               // Saved stations list
@@ -6791,7 +6838,7 @@
                 );
               })()
             )
-          ),
+          )),
           // Grid
           h('div', {
             id: 'sel-tool-grid',
@@ -6829,6 +6876,10 @@
               var shortDesc = _selShortDesc(tool);
               var teacherCue = _teacherToolCue(tool.id);
               var guidance = _selGuidanceFor(tool.id);
+              // Student cards show icon, name, description, grades and session time; guidance,
+              // evidence labels, format and "Preview first" are teacher view only, except
+              // guidance that tells a student to involve an adult.
+              var _cardShowGuidance = !!guidance.mode && (selTeacherView || !!_SEL_STUDENT_SAFETY_GUIDANCE[tool.id]);
 
               return h('button', {
                 key: tool.id,
@@ -6874,9 +6925,9 @@
                   style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0, padding: 0, margin: '-1px' }
                 }, [
                   shortDesc,
-                  guidance.mode ? _selFill(__alloT('sel.hub.ui.best_for', 'Best for: {mode}.'), { mode: guidance.mode }) + ' ' + (guidance.note || '') : '',
+                  _cardShowGuidance ? _selFill(__alloT('sel.hub.ui.best_for', 'Best for: {mode}.'), { mode: guidance.mode }) + ' ' + (guidance.note || '') : '',
                   guidance.boundary ? __alloT('sel.hub.ui.use_with_care_label', 'Use with care:') + ' ' + guidance.boundary : '',
-                  teacherCue ? _selFill(__alloT('sel.hub.ui.teacher_cue', 'Teacher cue: {time}, {format}. {cue}'), { time: teacherCue.time, format: teacherCue.format, cue: teacherCue.cue }) : ''
+                  teacherCue ? (selTeacherView ? _selFill(__alloT('sel.hub.ui.teacher_cue', 'Teacher cue: {time}, {format}. {cue}'), { time: teacherCue.time, format: teacherCue.format, cue: teacherCue.cue }) : teacherCue.time) : ''
                 ].filter(Boolean).join(' ')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),
@@ -6898,18 +6949,18 @@
                   })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 14, color: _t.textMuted, lineHeight: 1.55 } }, shortDesc),
-                guidance.mode && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 } },
+                _cardShowGuidance && h('div', { 'data-sel-card-guidance': tool.id, style: { display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 } },
                   h('span', { style: { alignSelf: 'flex-start', fontSize: 12, fontWeight: 900, padding: '2px 6px', borderRadius: 4, background: _t.bgSoft, color: _t.accentSoftText, textTransform: 'uppercase', letterSpacing: 0.3 } }, guidance.mode),
                   h('span', { style: { fontSize: 12, color: _t.textMuted, lineHeight: 1.35 } }, guidance.note)
                 ),
-                teacherCue && h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
+                selTeacherView && teacherCue && h('div', { 'data-sel-card-cue': tool.id, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5, marginTop: 2 } },
                   h('span', { style: { fontSize: 12, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time + ' | ' + teacherCue.format),
                   teacherCue.sensitive && h('span', {
                     style: { fontSize: 12, fontWeight: 900, color: isContrast ? '#ffff00' : '#991b1b', background: isContrast ? '#000000' : '#fef2f2', border: '1px solid ' + (isContrast ? '#ffff00' : '#fecaca'), borderRadius: 4, padding: '1px 5px', textTransform: 'uppercase' }
                   }, __alloT('sel.hub.ui.preview_first', 'Preview first'))
                 ),
                 // Evidence-tradition pill (sourced from sel_standards_alignment.js)
-                (function() {
+                selTeacherView && (function() {
                   if (!window.SelHubStandards || !window.SelHubStandards.alignments) return null;
                   var align = window.SelHubStandards.alignments[tool.id];
                   if (!align) return null;
@@ -6927,7 +6978,7 @@
                   }, tag);
                 })(),
                 // Evidence-base badge (honesty signal; see _evidenceBase above)
-                (function() {
+                selTeacherView && (function() {
                   var ev = _evidenceBase[tool.id];
                   if (!ev) return null;
                   var tierMeta = _evidenceTiers[ev.tier];
@@ -6943,9 +6994,18 @@
                   );
                 })(),
                 activePathway && h('span', { style: { fontSize: 12, color: _t.textMuted, fontWeight: 700 } }, _selFill(pathwayProgress[tool.id] ? __alloT('sel.hub.ui.step_opened', 'Step {n} · Opened') : __alloT('sel.hub.ui.step_not_opened', 'Step {n} · Not opened'), { n: activePathway.tools.indexOf(tool.id) + 1 })),
-                tool.recommendedRange && h('span', {
+                selTeacherView && tool.recommendedRange && h('span', {
                   style: { fontSize: 12, color: _t.accentSoftText, fontWeight: 600, marginTop: 4 }
                 }, _selFill(__alloT('sel.hub.ui.suggested_grades', 'Suggested grades {range}'), { range: tool.recommendedRange })),
+                // Student footer: grades and session time on one line, pinned to the card bottom
+                // so cards in a row line up.
+                !selTeacherView && (tool.recommendedRange || teacherCue) && h('div', {
+                  'data-sel-card-meta': tool.id,
+                  style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2px 10px', marginTop: 'auto', paddingTop: 4 }
+                },
+                  tool.recommendedRange && h('span', { style: { fontSize: 12, color: _t.accentSoftText, fontWeight: 600 } }, _selFill(__alloT('sel.hub.ui.suggested_grades', 'Suggested grades {range}'), { range: tool.recommendedRange })),
+                  teacherCue && h('span', { 'data-sel-card-time': tool.id, style: { fontSize: 12, color: _t.textMuted, fontWeight: 800 } }, teacherCue.time)
+                ),
                 // Left accent bar
                 h('div', { style: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 3, borderRadius: 3, background: cardColor } })
               );

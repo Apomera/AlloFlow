@@ -120,6 +120,19 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
     if (document.head) document.head.appendChild(st);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-learninglab-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-learninglab-a11y-css';
+    st.textContent = [
+      '.ll-workbench :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [data-stem-tool-shell="learningLab"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '.ll-workbench :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="learningLab"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; border-radius: 6px; }',
+      '@media (forced-colors: active) { .ll-workbench :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="learningLab"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .ll-workbench *, [data-stem-tool-shell="learningLab"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   function _llIsHC() {
     try {
       if (__alloLLCtx && __alloLLCtx.isContrast) return true;
@@ -3939,7 +3952,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
           type: 'text', autoFocus: true, value: typed, inputMode: 'numeric',
           maxLength: seqLen,
           onChange: function(e) { setTyped(e.target.value.replace(/[^0-9]/g, '')); },
-          onKeyDown: function(e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && typed.length === seqLen) submit(); },
+          onKeyDown: function(e) { if (!e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && typed.length === seqLen) submit(); },
           'aria-label': __alloLLT('stem.learning_lab.a11y_recall_sequence', 'Recall sequence'),
           style: {
             display: 'block', width: '100%', maxWidth: 260, margin: '0 auto 12px',
@@ -4166,6 +4179,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
         hh('input', {
           type: 'range', min: 4, max: 10, step: 0.5, value: hours,
           'aria-label': __alloLLT('stem.learning_lab.a11y_total_sleep_hours', 'Total sleep hours'),
+          'aria-valuetext': hours + 'h ' + Math.round((hours - Math.floor(hours)) * 60) + 'm',
           onChange: function(e) { setHours(parseFloat(e.target.value)); },
           style: { width: '100%', accentColor: '#9333ea' }
         }),
@@ -4527,6 +4541,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
         hh('input', {
           type: 'range', min: 0, max: POSITIONS.length - 1, step: 1, value: pos,
           'aria-label': __alloLLT('stem.learning_lab.a11y_phone_position', 'Phone position'),
+          'aria-valuetext': p.label,
           onChange: function(e) { setPos(parseInt(e.target.value, 10)); },
           style: { width: '100%', accentColor: '#9333ea', direction: 'rtl' }
         }),
@@ -18608,7 +18623,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
           hh('h2', { id: 'learning-lab-day-pattern-form-heading', style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15 } }, 'Add a day reflection'),
           hh('p', { id: 'learning-lab-day-pattern-privacy-note', style: helpStyle }, 'Ratings and notes save in this browser. Avoid private details if other people use this device.'),
           hh('label', { htmlFor: 'learning-lab-day-pattern-rating', style: labelStyle }, 'Personal day rating: ' + form.rating + ' out of 10'),
-          hh('input', { id: 'learning-lab-day-pattern-rating', type: 'range', min: 1, max: 10, step: 1, value: form.rating, onChange: function(event) { setForm(Object.assign({}, form, { rating: Number(event.target.value) })); if (ratingError) setRatingError(''); }, 'aria-invalid': ratingError ? 'true' : undefined, 'aria-describedby': 'learning-lab-day-pattern-rating-help' + (ratingError ? ' learning-lab-day-pattern-rating-error' : ''), style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#fbbf24', marginBottom: 2 } }),
+          hh('input', { id: 'learning-lab-day-pattern-rating', type: 'range', min: 1, max: 10, step: 1, value: form.rating, 'aria-valuetext': form.rating + ' / 10', onChange: function(event) { setForm(Object.assign({}, form, { rating: Number(event.target.value) })); if (ratingError) setRatingError(''); }, 'aria-invalid': ratingError ? 'true' : undefined, 'aria-describedby': 'learning-lab-day-pattern-rating-help' + (ratingError ? ' learning-lab-day-pattern-rating-error' : ''), style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: '#fbbf24', marginBottom: 2 } }),
           hh('output', { htmlFor: 'learning-lab-day-pattern-rating', 'aria-live': 'polite', style: { display: 'block', marginBottom: 4, color: '#fef3c7', fontSize: 12, fontWeight: 800 } }, form.rating + ' out of 10'),
           hh('p', { id: 'learning-lab-day-pattern-rating-help', style: helpStyle }, 'Use 1 through 10. There are no predefined labels for the ends of the scale.'),
           ratingError ? hh('p', { id: 'learning-lab-day-pattern-rating-error', role: 'alert', style: errorStyle }, ratingError) : null,
@@ -18953,7 +18968,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
           hh('ul', { style: { display: 'flex', flexDirection: 'column', gap: 9, margin: 0, padding: 0, listStyle: 'none' } }, DIMENSIONS.map(function(dimension) { var includeId = 'learning-lab-life-map-include-' + dimension.id; var rangeId = 'learning-lab-life-map-rating-' + dimension.id; var value = normalizedRating(form[dimension.id]); return hh('li', { key: dimension.id, style: { padding: 10, borderRadius: 8, border: '1px solid ' + dimension.color, background: 'rgba(15,23,42,0.62)' } },
             hh('label', { htmlFor: includeId, style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, hh('input', { id: includeId, type: 'checkbox', checked: !!included[dimension.id], onChange: function(event) { toggleIncluded(dimension.id, event.target.checked); }, style: { width: 22, height: 22 } }), hh('span', { 'aria-hidden': 'true' }, dimension.icon + ' '), 'Include ' + dimension.label),
             hh('label', { htmlFor: rangeId, style: { display: 'block', margin: '4px 0', color: included[dimension.id] ? '#f8fafc' : '#cbd5e1', fontSize: 12, fontWeight: 800 } }, dimension.label + ' rating: ' + value + ' out of 10'),
-            hh('input', { id: rangeId, type: 'range', min: 0, max: 10, step: 1, value: value, disabled: !included[dimension.id], onChange: function(event) { setRating(dimension.id, Number(event.target.value)); }, 'aria-describedby': 'learning-lab-life-map-scale-help', style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: dimension.color } }),
+            hh('input', { id: rangeId, type: 'range', min: 0, max: 10, step: 1, value: value, 'aria-valuetext': value + ' / 10', disabled: !included[dimension.id], onChange: function(event) { setRating(dimension.id, Number(event.target.value)); }, 'aria-describedby': 'learning-lab-life-map-scale-help', style: { boxSizing: 'border-box', width: '100%', minHeight: 44, accentColor: dimension.color } }),
             hh('output', { htmlFor: rangeId, style: { display: 'block', color: '#f8fafc', fontSize: 12 } }, included[dimension.id] ? value + ' out of 10' : 'Not included')
           ); }))
         ),
@@ -19603,7 +19618,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
     }
     function changeTab(id) { setView(id); setNotice(''); }
     function handleTabKey(event, index) {
-      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var next = index;
       if (event.key === 'ArrowRight') next = (index + 1) % TABS.length;
       else if (event.key === 'ArrowLeft') next = (index - 1 + TABS.length) % TABS.length;
@@ -20241,7 +20256,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
     function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0]; }
     function changeCategory(id) { setCat(categoryFor(id).id); setCopyStatus(null); }
     function handleTabKey(event, index) {
-      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var next = index;
       if (event.key === 'ArrowRight') next = (index + 1) % CATS.length;
       else if (event.key === 'ArrowLeft') next = (index - 1 + CATS.length) % CATS.length;

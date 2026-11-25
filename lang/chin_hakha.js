@@ -12542,8 +12542,7 @@
     "guided_resume_step": "Step {n}"
   },
   "about": {
-    "title": "Kong AlloFlow v1.0",
-    "tab_about": "Kong UDL",
+    "title": "Kong AlloFlow",
     "tab_features": "Feature Guide",
     "approach_header": "The AlloFlow Approach",
     "allo_acronym_label": "ALLO:",
@@ -12553,337 +12552,13 @@
     "what_is_udl": "What si UDL?",
     "udl_definition": "Universal Design caah Learning (UDL) si framework ah improve le optimize teaching le learning caah dihlak people based cung scientific insights into how humans cawn.",
     "how_help_header": "How does hi tool bawmh?",
-    "how_help_desc": "hi tool uses AI ah instantly create diverse entry points caah nangmah curriculum, ensuring nang address three core principles i UDL:",
-    "rep_title": "Representation:",
-    "rep_desc": "Presenting information in different ways (e.g., Adapted Text, Visual Supports, Glossaries).",
-    "action_title": "Action & Expression:",
-    "action_desc": "Providing options caah sianginn caa ah demonstrate what they know (e.g., Scaffolds, Quizzes).",
-    "engage_title": "Engagement:",
-    "engage_desc": "Tapping into interests ah challenge le motivate (e.g., Interest-based analogies).",
-    "ai_guide_tip": "Hman \"AI UDL & Rian buatsaihnak Guide\" button ah sidebar ah chat he expert pedagogical bot caah lakhmi strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
     "reset_wizard": "Tlawmpa pek Quick Thawk Wizard",
     "support_kofi": "Support cung Ko-fi",
-    "features_list": {
-      "categories": {
-        "creation": "Taipuelaknak & Create",
-        "activities": "Engage & Lentecel",
-        "assessment": "Assess & Support",
-        "platform": "Manage & Adapt"
-      },
-      "items": [
-        {
-          "title": "Analyze Source",
-          "icon": "Kawl",
-          "desc": "Extract reading levels, key ruahnak, le a hman checks from any source text.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Leveled Text",
-          "icon": "BookOpen",
-          "desc": "Adapt text complexity caah any grade K-12. Includes bilingual side-by-side views.",
-          "category": "creation",
-          "color": "indigo"
-        },
-        {
-          "title": "cawnnak Taipuelaknak",
-          "icon": "ClipboardList",
-          "desc": "Synthesize dihlak resources into standard-aligned cawnnak taipuelaknak asilole study guide.",
-          "category": "creation",
-          "color": "violet"
-        },
-        {
-          "title": "Visual Organizer",
-          "icon": "Layout",
-          "desc": "Generate Flow Charts, Venn Diagrams, le structured outlines.",
-          "category": "creation",
-          "color": "cyan"
-        },
-        {
-          "title": "Brainstorm",
-          "icon": "Lightbulb",
-          "desc": "Generate hands-cung activity ideas le real-world connections.",
-          "category": "creation",
-          "color": "yellow"
-        },
-        {
-          "title": "FAQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Anticipate sianginn caa misconceptions he auto-tuah Q& lists.",
-          "category": "creation",
-          "color": "teal"
-        },
-        {
-          "title": "Interview Mode",
-          "icon": "History",
-          "desc": "Chat he historical figures, fictional characters, asilole experts. Uncover hidden secrets.",
-          "category": "activities",
-          "color": "amber"
-        },
-        {
-          "title": "Adventure Mode",
-          "icon": "MapIcon",
-          "desc": "Interactive 'Thim nangmah Own Adventure' simulation le roleplay scenarios.",
-          "category": "activities",
-          "color": "purple"
-        },
-        {
-          "title": "lentecel Arcade",
-          "icon": "Gamepad2",
-          "desc": "Auto-generate Bingo, Memory Match, biafang Kawl, le Crosswords.",
-          "category": "activities",
-          "color": "pink"
-        },
-        {
-          "title": "Sequence Builder",
-          "icon": "ListOrdered",
-          "desc": "Drag-le-drop timeline activity caah chronological events asilole process steps.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "Ruahnak Sort",
-          "icon": "Filter",
-          "desc": "Categorize terms le ruahnak into buckets. A ngan caah distinguishing similar ideas.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Socratic Tutor",
-          "icon": "MessageCircleQuestion",
-          "desc": "AI guide mah asks guiding biahalnak instead i giving leihnak.",
-          "category": "activities",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Exit Ticket",
-          "icon": "CheckSquare",
-          "desc": "Create quizzes. Launch 'A nungkho Quiz' mode caah real-caan sianginn results.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "Tialnak Scaffolds",
-          "icon": "Quote",
-          "desc": "biacheo starters le paragraph frames he built-ah rubrics.",
-          "category": "assessment",
-          "color": "orange"
-        },
-        {
-          "title": "Visual Support",
-          "icon": "ImageIcon",
-          "desc": "AI diagrams le illustrations. Hman image editing ah refine asilole lak text.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "A relnak & STEM",
-          "icon": "Calculator",
-          "desc": "Step-by-step solvers, graph chan, le similar practice harnak.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Standard Audit",
-          "icon": "ShieldCheck",
-          "desc": "Verify rian buatsaihnak he lakhmi educational standards le theih khawh rigor gaps.",
-          "category": "assessment",
-          "color": "slate"
-        },
-        {
-          "title": "Oral Fluency",
-          "icon": "Mic",
-          "desc": "Theih ah sianginn caa rel aloud le calculate WCPM le a hman.",
-          "category": "assessment",
-          "color": "rose"
-        },
-        {
-          "title": "sayama Dashboard",
-          "icon": "Layout",
-          "desc": "Track sianginn caa progress, view analytics, le export gradebooks.",
-          "category": "platform",
-          "color": "indigo"
-        },
-        {
-          "title": "A nungkho Sessions",
-          "icon": "Wifi",
-          "desc": "Host synchronized sianginn, run Democracy Mode voting, le manage a nungkho quizzes.",
-          "category": "platform",
-          "color": "rose"
-        },
-        {
-          "title": "sianginn caa Profiles",
-          "icon": "Users",
-          "desc": "Khoh differentiation settings (holh, Interests) caah different phun.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Lutnak ngeih",
-          "icon": "Ear",
-          "desc": "Immersive Reader, Line Focus, Dictation, le Text-ah-Speech tools.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "Export Suite",
-          "icon": "Lakhrak",
-          "desc": "Export ah PDF, PowerPoint, Canvas QTI, asilole HTML Bundles.",
-          "category": "platform",
-          "color": "blue"
-        },
-        {
-          "title": "Gemini Bridge",
-          "icon": "Terminal",
-          "desc": "Generate biapenh ah tuah custom interactive apps ah Gemini Canvas.",
-          "category": "platform",
-          "color": "slate"
-        },
-        {
-          "title": "Smart Glossary",
-          "icon": "BookOpen",
-          "desc": "Visual vocabulary cards he audio, bilingual lehhnak, le 5 vocabulary lentecel (crossword, bingo, memory match, biafang kawl, scramble).",
-          "category": "creation",
-          "color": "purple"
-        },
-        {
-          "title": "Immersive Reader",
-          "icon": "Ear",
-          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Word Sounds Studio",
-          "icon": "Mic",
-          "desc": "Phonemic awareness practice across 8 activity types — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "StoryForge",
-          "icon": "Quote",
-          "desc": "Six-phase scaffolded creative tialnak he AI illustrations, narration, custom rubrics, le 18-holh support.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "AlloBot",
-          "icon": "Sparkles",
-          "desc": "Always-available AI tutor le platform guide. leihnak content biahalnak, navigates AlloFlow, le auto-configures settings cung request.",
-          "category": "activities",
-          "color": "indigo"
-        },
-        {
-          "title": "Escape Room",
-          "icon": "MapIcon",
-          "desc": "Team-based puzzle challenges built from nangmah cawnnak content. sayama-controlled hints, timed escape a zulh, multi-stage rooms.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "SEL Hub",
-          "icon": "Lungthin",
-          "desc": "32 social-emotional learning tools across CASEL competencies — coping cards, restorative circles, mah le mah-advocacy rehearsal, le tampin.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "BehaviorLens",
-          "icon": "ShieldCheck",
-          "desc": "FBA/BIP suite: ABC data collection, frequency/interval a zulh, IOA calculator (5 methods), preference assessments, intervention templates.",
-          "category": "assessment",
-          "color": "indigo"
-        },
-        {
-          "title": "Tlangtlanglam Writer",
-          "icon": "ClipboardList",
-          "desc": "10-step wizard caah psychoeducational reports: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass a hman audit.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Dynamic Assessment",
-          "icon": "Filter",
-          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes he 4-level prompt ladders, modifiability scoring, IEP goal + accommodation chan.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "sianginn caa Analytics",
-          "icon": "Layout",
-          "desc": "Automated RTI Tier 1/2/3 classification he aimline monitoring, CBM probe history, anomaly flagging, sianginn screening reports.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "PDF Lutnak ngeih",
-          "icon": "Lakhrak",
-          "desc": "Thlaktan any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → i ngeih khawh PDF/HTML/audio export.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Symbol Studio",
-          "icon": "ImageIcon",
-          "desc": "Full AAC platform: AI-tuah PCS symbols, board builder, visual schedules, social stories, Symbol Quest lentecel, biafang Garden vocabulary a zulh.",
-          "category": "platform",
-          "color": "fuchsia"
-        },
-        {
-          "title": "STEM Lab",
-          "icon": "Layers",
-          "desc": "95+ browser-based interactive simulations across a relnak, science, CS, engineering, le creative design — from DNA labs ah physics sandboxes.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "DBQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Document-Based biahalnak sets caah source analysis — DOK-tiered biapenh he sourcing/contextualization/corroboration scaffolds + rubric.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "Note Taking Templates",
-          "icon": "ListOrdered",
-          "desc": "Cornell notes, two-column compare/contrast, sketchnote biapenh, mindmaps, le tampin tang scaffolds — pre-filled asilole blank.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Anchor Chart",
-          "icon": "Layout",
-          "desc": "Printable sianginn-poster anchor charts he iconography, color-coded sections, AI imagery, le differentiated complexity levels.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "Annotation Suite",
-          "icon": "Quote",
-          "desc": "Overlay annotations cung any AlloFlow resource — highlights, sticky notes, voice notes, drawings — he color-coded layers le exportable PDFs.",
-          "category": "activities",
-          "color": "purple"
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "title": "Lutnak ngeih Lab"
-        },
-        {
-          "icon": "Kawl"
-        }
-      ]
-    },
     "a11y_title": "Lutnak ngeih",
     "tab_atlas": "Atlas",
     "tab_opensource": "Open Source",
     "atlas_title": "AlloFlow Atlas",
-    "atlas_intro": "AlloFlow catalog hub le launch surface te kha organization in an lang map a si. Visual guide, area, search theih entry le source note dingah region khat thlang rawh.",
-    "atlas_footer": "Registry based section te cu catalog tu te chungin an suak. Curated le mixed section te map chungah an lang. Nambar te cu search theih catalog entry zat an si, tool zat an si lo.",
     "privacy_title": "Privacy le student data",
     "privacy_intro": "AlloFlow cu privacy a ngaih classroom hman dingah tuah a si. Data umnak cu storage, session transport le AI provider na thlangmi he a zirlai.",
     "privacy_footer": "Hi cu product thu fawi in simnak a si, legal advice asilole compliance certificate a si lo. FERPA, privacy, provider agreement, configuration, consent, retention le deletion dingah institution i hna a si.",
@@ -12893,10 +12568,21 @@
     "oss_credits_intro": "AlloFlow cu free le open source (AGPL-3.0) a si, project hna le community hna ih hna chungah a ding. Author hna le community hna cu kan lawm.",
     "oss_featured_header": "Learning tools kan telh",
     "oss_full_list_header": "Library le open resource kan telh",
-    "oss_credits_footer": "Hosted AI feature te cu AI settings chungih provider (Gemini, OpenAI, Claude asilole OpenAI-compatible endpoint) an hman. Service te cu bundled software an si lo; license text zawng zawng cu source he an um.",
     "tab_privacy": "Privacy",
     "media_guardrails_intro": "Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.",
-    "media_guardrails_title": "Open/free media guardrails"
+    "media_guardrails_title": "Open/free media guardrails",
+    "start_heading": "Hika in thawk",
+    "start_atlas_title": "Atlas zoh",
+    "fg_back": "Feature Guide ah hnu kal",
+    "fg_all": "Dihlak ({count})",
+    "atlas_hide": "Thup",
+    "atlas_examples": "Tahchunhnak:",
+    "udl_rep_p2_label": "Lehnak:",
+    "fg": {
+      "translate": {
+        "title": "Lehnak"
+      }
+    }
   },
   "fluency": {
     "title": "Oral Fluency Check",

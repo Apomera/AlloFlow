@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e0f2fe">
 <title>Word Garden — AlloFlow Demo</title>
+<meta name="description" content="Interactive Word Garden vocabulary demo from AlloFlow showing leveled word cards, visual supports, and keyboard-accessible learning beds.">
+<link rel="icon" type="image/svg+xml" href="allobot.svg">
+<link rel="apple-touch-icon" href="allobot.png">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #e0f2fe 0%, #f0fdf4 40%, #fefce8 80%, #fef3c7 100%); min-height: 100vh; color: #1f2937; }
@@ -92,6 +97,9 @@
 <div class="summary" id="summary"></div>
 
 <div class="garden" id="garden"></div>
+<noscript>
+  <p style="max-width:600px;margin:16px auto;padding:16px 20px;background:#fff;border:2px solid #cbd5e1;border-radius:12px;color:#1f2937;text-align:center">Enable JavaScript to interact with the sample 42-word vocabulary garden and hear each word spoken aloud.</p>
+</noscript>
 
 <div class="cta">
   <a href="https://alloflow-cdn.pages.dev/app/" target="_blank" rel="noopener noreferrer">Try AlloFlow Free →</a>

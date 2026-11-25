@@ -865,7 +865,11 @@
     "workedDataExamples": 27,
     "sectionRetrievalChecks": 27,
     "quickReferenceCards": 9,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 11,
+    "unitReviewRoutes": 9,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -1508,7 +1512,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a prompt names a region, connect its ecology to a specific social or economic development before generalizing."
+                  "text": " When a prompt names a region, connect its ecology to a specific social or economic development before generalizing."
                 }
               ]
             }
@@ -1777,7 +1781,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For an exploration source, identify who benefits from the account before accepting its description as complete."
+                  "text": " For an exploration source, identify who benefits from the account before accepting its description as complete."
                 }
               ]
             }
@@ -2046,7 +2050,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a prompt asks for an effect, distinguish biological, demographic, economic, and cultural consequences rather than listing one as universal."
+                  "text": " When a prompt asks for an effect, distinguish biological, demographic, economic, and cultural consequences rather than listing one as universal."
                 }
               ]
             }
@@ -2436,7 +2440,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a regional comparison, link a social difference to labor, migration, environment, or market conditions."
+                  "text": " For a regional comparison, link a social difference to labor, migration, environment, or market conditions."
                 }
               ]
             }
@@ -2705,7 +2709,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When analyzing a trade policy, identify the intended beneficiary and then ask how colonists, merchants, or enslaved people experienced it."
+                  "text": " When analyzing a trade policy, identify the intended beneficiary and then ask how colonists, merchants, or enslaved people experienced it."
                 }
               ]
             }
@@ -2974,7 +2978,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a source describes colonial society, identify which legal or economic institution distributes power before evaluating individual behavior."
+                  "text": " When a source describes colonial society, identify which legal or economic institution distributes power before evaluating individual behavior."
                 }
               ]
             }
@@ -3364,7 +3368,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a causation question, connect the immediate policy to the longer conflict over authority and representation."
+                  "text": " For a causation question, connect the immediate policy to the longer conflict over authority and representation."
                 }
               ]
             }
@@ -3633,7 +3637,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When reading a founding document, distinguish the principle it states from the people and institutions it actually includes."
+                  "text": " When reading a founding document, distinguish the principle it states from the people and institutions it actually includes."
                 }
               ]
             }
@@ -3902,7 +3906,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Name the policy first, then identify which constitutional principle each side used to defend it."
+                  "text": " Name the policy first, then identify which constitutional principle each side used to defend it."
                 }
               ]
             }
@@ -4292,7 +4296,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For an economic change, trace both the new connection and the group that bore its costs."
+                  "text": " For an economic change, trace both the new connection and the group that bore its costs."
                 }
               ]
             }
@@ -4561,7 +4565,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When judging a democratic development, specify the population included and the population excluded."
+                  "text": " When judging a democratic development, specify the population included and the population excluded."
                 }
               ]
             }
@@ -4830,7 +4834,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Connect a reform movement to both its ideas and the institution or practice it sought to change."
+                  "text": " Connect a reform movement to both its ideas and the institution or practice it sought to change."
                 }
               ]
             }
@@ -5220,7 +5224,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For an expansion question, track land, sovereignty, labor, and political balance together."
+                  "text": " For an expansion question, track land, sovereignty, labor, and political balance together."
                 }
               ]
             }
@@ -5267,7 +5271,7 @@
             "prompt": "Explain how the Mexican-American War (1846–1848) and the Kansas-Nebraska Act (1854) turned territorial expansion into an irreconcilable sectional crisis over slavery.",
             "steps": [
               "Step 1: Contextualize Manifest Destiny as an ideology justifying westward expansion across Indigenous and Mexican lands, reopening the dormant federal question of slavery in new territories.",
-              "Step 2: Trace escalation: the Mexican Cession provoked the Wilmot Proviso and fragile Compromise of 1850 (with its harsh Fugitive Slave Act), while the 1854 Kansas-Nebraska Act repealed the Missouri Compromise line via popular sovereignty, triggering \"Bleeding Kansas\" and shattering the Second Party System.",
+              "Step 2: Trace escalation: wartime territorial ambitions provoked the Wilmot Proviso (1846), and the 1848 Mexican Cession forced the fragile Compromise of 1850 (with its harsh Fugitive Slave Act), while the 1854 Kansas-Nebraska Act repealed the Missouri Compromise line via popular sovereignty, triggering \"Bleeding Kansas\" and shattering the Second Party System.",
               "Step 3: Conclude that legislative compromises temporarily postponed secession while inflaming distrust—especially after Dred Scott v. Sandford (1857) denied Congress power to ban slavery in territories and fueled the rise of the Republican Party."
             ],
             "original": true
@@ -5489,7 +5493,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Separate the scope of an executive order from the broader constitutional change that followed."
+                  "text": " Separate the scope of an executive order from the broader constitutional change that followed."
                 }
               ]
             }
@@ -5758,7 +5762,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When analyzing a constitutional change, pair its text or goal with evidence about implementation and resistance."
+                  "text": " When analyzing a constitutional change, pair its text or goal with evidence about implementation and resistance."
                 }
               ]
             }
@@ -6148,7 +6152,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a western development, identify the state policy, the economic incentive, and the population displaced."
+                  "text": " For a western development, identify the state policy, the economic incentive, and the population displaced."
                 }
               ]
             }
@@ -6417,7 +6421,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a question describes a corporation, connect its structure to competition, labor, and public policy."
+                  "text": " When a question describes a corporation, connect its structure to competition, labor, and public policy."
                 }
               ]
             }
@@ -6686,7 +6690,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a labor conflict, identify the immediate workplace issue and the broader economic or legal structure."
+                  "text": " For a labor conflict, identify the immediate workplace issue and the broader economic or legal structure."
                 }
               ]
             }
@@ -7076,7 +7080,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a reform question, identify the problem, the policy mechanism, and who remained outside the reform’s protection."
+                  "text": " For a reform question, identify the problem, the policy mechanism, and who remained outside the reform’s protection."
                 }
               ]
             }
@@ -7345,7 +7349,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When analyzing foreign policy, distinguish the stated justification from the strategic or economic context."
+                  "text": " When analyzing foreign policy, distinguish the stated justification from the strategic or economic context."
                 }
               ]
             }
@@ -7614,7 +7618,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a policy legacy question, separate immediate results, institutional changes, and unresolved inequality."
+                  "text": " For a policy legacy question, separate immediate results, institutional changes, and unresolved inequality."
                 }
               ]
             }
@@ -8004,7 +8008,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a Cold War source, identify the global policy and the local context that the source may understate."
+                  "text": " For a Cold War source, identify the global policy and the local context that the source may understate."
                 }
               ]
             }
@@ -8273,7 +8277,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When analyzing a movement, identify its tactic, target, coalition, and institutional result."
+                  "text": " When analyzing a movement, identify its tactic, target, coalition, and institutional result."
                 }
               ]
             }
@@ -8542,7 +8546,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a late-period question, connect a policy or war to both immediate effects and a change in public trust or party politics."
+                  "text": " For a late-period question, connect a policy or war to both immediate effects and a change in public trust or party politics."
                 }
               ]
             }
@@ -8932,7 +8936,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Compare stated ideology with enacted policy and the institutions that remained in place."
+                  "text": " Compare stated ideology with enacted policy and the institutions that remained in place."
                 }
               ]
             }
@@ -9201,7 +9205,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a contemporary change, identify the scale: household, region, nation, or global system."
+                  "text": " For a contemporary change, identify the scale: household, region, nation, or global system."
                 }
               ]
             }
@@ -9470,7 +9474,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a prompt concerns recent history, state the date range and distinguish documented developments from prediction."
+                  "text": " When a prompt concerns recent history, state the date range and distinguish documented developments from prediction."
                 }
               ]
             }
@@ -9517,7 +9521,7 @@
             "prompt": "Analyze how the end of the Cold War (1989–1991) and the September 11, 2001 attacks altered U.S. foreign policy priorities and domestic debates over national security and civil liberties.",
             "steps": [
               "Step 1: Frame the post-Cold War transition: the Soviet Union's 1991 collapse left the United States the sole superpower, shifting focus from bipolar containment to regional crises (Persian Gulf War, Balkans) and transnational terrorism.",
-              "Step 2: Apply causation to post-9/11 policy: the 2001 attacks triggered the War on Terror—including invasions of Afghanistan (2001) and Iraq (2003)—and domestic legislation like the USA PATRIOT Act expanding surveillance powers and creating the Department of Homeland Security.",
+              "Step 2: Apply causation to post-9/11 policy: the 2001 attacks triggered the War on Terror—including invasions of Afghanistan (2001) and Iraq (2003)—and domestic legislation including the USA PATRIOT Act (2001), which expanded surveillance powers, and the Homeland Security Act (2002), which created the Department of Homeland Security.",
               "Step 3: Conclude that twenty-first-century U.S. history reflects enduring tension between unilateral global intervention versus multilateral limits abroad, and between counterterrorism security and Fourth Amendment privacy rights at home."
             ],
             "original": true
@@ -11349,7 +11353,7 @@
         "Regional Indigenous diversity (pre-1492): maize irrigation among Southwest Pueblo; mobile bison hunting on Great Plains; Three Sisters agriculture & Iroquois Confederacy in Northeast; maritime fishing/plank houses in Pacific Northwest.",
         "Columbian Exchange (post-1492): American maize, potatoes, and cassava fueled European/African population growth; European horses transformed Plains hunting while smallpox/measles caused catastrophic Indigenous mortality.",
         "Spanish colonial labor & hierarchy: encomienda system extracted Indigenous tribute/labor; casta system ranked peninsulares, criollos, mestizos, and mulattoes; declining Indigenous populations spurred the transatlantic African slave trade (asiento).",
-        "Valladolid Debate (1550–1551): Bartolomé de las Casas challenged Juan Ginés de Sepúlveda over Indigenous humanity and harsh encomienda abuses, leading to the New Laws of 1542."
+        "New Laws of 1542 & Valladolid Debate (1550–1551): Bartolomé de las Casas's critique of harsh encomienda abuses spurred the New Laws of 1542, and he later debated Juan Ginés de Sepúlveda at Valladolid (1550–1551) over Indigenous humanity and Spanish conquest."
       ],
       "decisionRules": [
         "When you see an APUSH prompt asking why European populations grew rapidly after 1500 → cite calorie-dense New World crops (potatoes, maize) and silver bullion shifting Europe from feudalism toward capitalism.",
@@ -11482,7 +11486,7 @@
         "Evaluate Reconstruction by weighing real breakthroughs (citizenship, Black officeholders, Freedmen's Bureau schools) against Southern backlash and Northern retreat."
       ],
       "formulas": [
-        "Expansion ignites crisis: Manifest Destiny, Texas annexation (1845), Mexican-American War (1846–1848) & Treaty of Guadalupe Hidalgo → Mexican Cession sparked Wilmot Proviso and Compromise of 1850 (California free, harsh Fugitive Slave Act).",
+        "Expansion ignites crisis: Manifest Destiny, Texas annexation (1845), and the Mexican-American War (1846–1848) sparked the Wilmot Proviso (1846), while the Treaty of Guadalupe Hidalgo (1848) and Mexican Cession forced the Compromise of 1850 (California free, harsh Fugitive Slave Act).",
         "Breakdown of Union (1854–1860): Kansas-Nebraska Act (1854, popular sovereignty repealed 36°30' line → Bleeding Kansas & Republican Party); Dred Scott v. Sandford (1857) denied Black citizenship and voided congressional bans on territorial slavery; Election of 1860 triggered secession.",
         "Civil War (1861–1865): Union advantages in industry, railroads, and manpower; Emancipation Proclamation (1863) redefined war aims to end slavery in rebelling states and blocked British/French intervention; Gettysburg & Vicksburg (1863) shifted momentum.",
         "Reconstruction (1865–1877): 13th (abolition), 14th (birthright citizenship & equal protection), and 15th (Black male voting) Amendments; Radical Reconstruction & Freedmen's Bureau opposed by Black Codes, KKK, and sharecropping until Compromise of 1877 withdrew federal troops."
@@ -12011,6 +12015,2179 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-01",
+      "title": "Period 1: 1491-1607 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 1: 1491-1607\" (Unit 1: Period 1: 1491-1607) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-01",
+      "itemIds": [
+        "apush-foundation-001",
+        "apush-foundation-002",
+        "apush-foundation-003",
+        "apush-foundation-004",
+        "apush-foundation-005",
+        "apush-foundation-051",
+        "apush-foundation-052",
+        "apush-foundation-053",
+        "apush-foundation-054",
+        "apush-foundation-055"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 1: 1491-1607\" and the \"Pre-Columbian Societies & the Columbian Exchange\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 1: Regional societies and Atlantic consequences\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Native societies and regional adaptation\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 1: 1491-1607\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforcing Strict Date Windows and APUSH Periodization Anchors\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-02",
+      "title": "Period 2: 1607-1754 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 2: 1607-1754\" (Unit 2: Period 2: 1607-1754) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-02",
+      "itemIds": [
+        "apush-foundation-059",
+        "apush-foundation-060",
+        "apush-foundation-061",
+        "apush-foundation-062",
+        "apush-foundation-127",
+        "apush-foundation-128",
+        "apush-foundation-129",
+        "apush-foundation-130",
+        "apush-foundation-131",
+        "apush-foundation-225"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 2: 1607-1754\" and the \"Colonial Regions, Labor Shifts & Atlantic Worlds\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 2: Colonial regions and Atlantic connections\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"European colonies and regional development\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 2: 1607-1754\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Causal Mechanisms from Earlier Events and Downstream Effects\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-03",
+      "title": "Period 3: 1754-1800 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 3: 1754-1800\" (Unit 3: Period 3: 1754-1800) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-03",
+      "itemIds": [
+        "apush-foundation-132",
+        "apush-foundation-133",
+        "apush-foundation-134",
+        "apush-foundation-135",
+        "apush-foundation-136",
+        "apush-foundation-137",
+        "apush-foundation-171",
+        "apush-foundation-172",
+        "apush-foundation-173",
+        "apush-foundation-174"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 3: 1754-1800\" and the \"Imperial Crisis, Revolution & the Early Republic\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 3: From imperial crisis to constitutional design\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Imperial conflict and revolutionary resistance\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 3: 1754-1800\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Moving from Excerpt Paraphrase to Purposeful HIPP Sourcing\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-04",
+      "title": "Period 4: 1800-1848 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 4: 1800-1848\" (Unit 4: Period 4: 1800-1848) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-04",
+      "itemIds": [
+        "apush-foundation-177",
+        "apush-foundation-178",
+        "apush-foundation-179",
+        "apush-foundation-180",
+        "apush-foundation-181",
+        "apush-foundation-182",
+        "apush-foundation-183",
+        "apush-foundation-217",
+        "apush-foundation-238",
+        "apush-foundation-239"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 4: 1800-1848\" and the \"Market Revolution, Jacksonian Democracy & Reform\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 4: Connections among markets, politics, and reform\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"The market revolution and regional change\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 4: 1800-1848\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Differentiating Regional Economies and Labor Systems Across Eras\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-05",
+      "title": "Period 5: 1844-1877 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 5: 1844-1877\" (Unit 5: Period 5: 1844-1877) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-05",
+      "itemIds": [
+        "apush-foundation-249",
+        "apush-foundation-250",
+        "apush-foundation-251",
+        "apush-foundation-252",
+        "apush-foundation-293",
+        "apush-foundation-294",
+        "apush-foundation-295",
+        "apush-foundation-296",
+        "apush-foundation-318",
+        "apush-foundation-361"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 5: 1844-1877\" and the \"Manifest Destiny, Civil War & Reconstruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 5: Expansion, war, emancipation, and Reconstruction\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Expansion and the sectional crisis\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 5: 1844-1877\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Balancing Structural Continuity Against Historical Change Across Turning Points\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-06",
+      "title": "Period 6: 1865-1898 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 6: 1865-1898\" (Unit 6: Period 6: 1865-1898) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-06",
+      "itemIds": [
+        "apush-foundation-259",
+        "apush-foundation-260",
+        "apush-foundation-297",
+        "apush-foundation-298",
+        "apush-foundation-299",
+        "apush-foundation-300",
+        "apush-foundation-301",
+        "apush-foundation-372",
+        "apush-foundation-373",
+        "apush-foundation-374"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 6: 1865-1898\" and the \"Gilded Age Industry, Immigration, West & Populism\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 6: Networks of industrial growth and migration\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"The West, railroads, and Indigenous dispossession\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 6: 1865-1898\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Aligning Evidence Strictly to the Prompt’s Claim and Reasoning Task\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-07",
+      "title": "Period 7: 1890-1945 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 7: 1890-1945\" (Unit 7: Period 7: 1890-1945) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-07",
+      "itemIds": [
+        "apush-foundation-306",
+        "apush-foundation-307",
+        "apush-foundation-308",
+        "apush-foundation-319",
+        "apush-foundation-386",
+        "apush-foundation-387",
+        "apush-foundation-388",
+        "apush-foundation-389",
+        "apush-foundation-390",
+        "apush-foundation-391"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 7: 1890-1945\" and the \"Imperialism, Progressivism, New Deal & World Wars\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 7: Reform and global power across crisis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Progressivism and the expanding role of government\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 7: 1890-1945\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforcing Strict Date Windows and APUSH Periodization Anchors\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-08",
+      "title": "Period 8: 1945-1980 guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 8: 1945-1980\" (Unit 8: Period 8: 1945-1980) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-08",
+      "itemIds": [
+        "apush-foundation-403",
+        "apush-foundation-404",
+        "apush-foundation-405",
+        "apush-foundation-406",
+        "apush-foundation-407",
+        "apush-foundation-408",
+        "apush-foundation-409",
+        "apush-foundation-410",
+        "apush-foundation-411",
+        "apush-foundation-412"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 8: 1945-1980\" and the \"Cold War Containment, Civil Rights & Great Society\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 8: Cold War, movements, and public trust\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Cold War policy and global leadership\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 8: 1945-1980\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Causal Mechanisms from Earlier Events and Downstream Effects\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-ch-09",
+      "title": "Period 9: 1980-Present guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Period 9: 1980-Present\" (Unit 9: Period 9: 1980-Present) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "apush-ch-09",
+      "itemIds": [
+        "apush-foundation-277",
+        "apush-foundation-278",
+        "apush-foundation-279",
+        "apush-foundation-280",
+        "apush-foundation-315",
+        "apush-foundation-414",
+        "apush-foundation-415",
+        "apush-foundation-416",
+        "apush-foundation-417",
+        "apush-foundation-418"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Period 9: 1980-Present\" and the \"Conservatism, Globalization & Post-Cold War America\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Period 9: Political, economic, and demographic change\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Conservatism and debates over government\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Period 9: 1980-Present\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Moving from Excerpt Paraphrase to Purposeful HIPP Sourcing\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-trap-repair-sprint",
+      "title": "AP U.S. History Independent Foundation misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "apush-foundation-011",
+        "apush-foundation-023",
+        "apush-foundation-017",
+        "apush-foundation-001",
+        "apush-foundation-080",
+        "apush-foundation-063",
+        "apush-foundation-012",
+        "apush-foundation-024",
+        "apush-foundation-018",
+        "apush-foundation-002",
+        "apush-foundation-081",
+        "apush-foundation-064"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Enforcing Strict Date Windows and APUSH Periodization Anchors\", \"Separating Causal Mechanisms from Earlier Events and Downstream Effects\", \"Moving from Excerpt Paraphrase to Purposeful HIPP Sourcing\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-session-mixed-capstone",
+      "title": "AP U.S. History Independent Foundation mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "apush-foundation-004",
+        "apush-foundation-009",
+        "apush-foundation-014",
+        "apush-foundation-020",
+        "apush-foundation-026",
+        "apush-foundation-032",
+        "apush-foundation-038",
+        "apush-foundation-044",
+        "apush-foundation-049",
+        "apush-foundation-124",
+        "apush-foundation-130",
+        "apush-foundation-132",
+        "apush-foundation-105",
+        "apush-foundation-144",
+        "apush-foundation-149"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Unscored SAQ-style, DBQ-style, and LEQ-style planning workshops, outline a response to \"Source, context, connection: short-answer planning\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-01",
+      "topicId": "apush-ch-01",
+      "topicLabel": "1. Period 1: 1491-1607",
+      "unitId": "period-1-1491-1607",
+      "chapterId": "apush-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 1: 1491-1607\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-02",
+      "topicId": "apush-ch-02",
+      "topicLabel": "2. Period 2: 1607-1754",
+      "unitId": "period-2-1607-1754",
+      "chapterId": "apush-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 2: 1607-1754\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-03",
+      "topicId": "apush-ch-03",
+      "topicLabel": "3. Period 3: 1754-1800",
+      "unitId": "period-3-1754-1800",
+      "chapterId": "apush-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 3: 1754-1800\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-04",
+      "topicId": "apush-ch-04",
+      "topicLabel": "4. Period 4: 1800-1848",
+      "unitId": "period-4-1800-1848",
+      "chapterId": "apush-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 4: 1800-1848\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-05",
+      "topicId": "apush-ch-05",
+      "topicLabel": "5. Period 5: 1844-1877",
+      "unitId": "period-5-1844-1877",
+      "chapterId": "apush-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 5: 1844-1877\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-06",
+      "topicId": "apush-ch-06",
+      "topicLabel": "6. Period 6: 1865-1898",
+      "unitId": "period-6-1865-1898",
+      "chapterId": "apush-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 6: 1865-1898\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-07",
+      "topicId": "apush-ch-07",
+      "topicLabel": "7. Period 7: 1890-1945",
+      "unitId": "period-7-1890-1945",
+      "chapterId": "apush-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 7: 1890-1945\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-08",
+      "topicId": "apush-ch-08",
+      "topicLabel": "8. Period 8: 1945-1980",
+      "unitId": "period-8-1945-1980",
+      "chapterId": "apush-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 8: 1945-1980\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-spaced-ch-09",
+      "topicId": "apush-ch-09",
+      "topicLabel": "9. Period 9: 1980-Present",
+      "unitId": "period-9-1980-present",
+      "chapterId": "apush-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Period 9: 1980-Present\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-01",
+      "unitId": "period-1-1491-1607",
+      "unitNumber": 1,
+      "unitLabel": "Unit 1: Period 1: 1491-1607",
+      "chapterId": "apush-ch-01",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-01-section-01",
+        "apush-ch-01-section-02",
+        "apush-ch-01-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-001",
+        "apush-foundation-002",
+        "apush-foundation-003",
+        "apush-foundation-004",
+        "apush-foundation-005",
+        "apush-foundation-051",
+        "apush-foundation-052",
+        "apush-foundation-053",
+        "apush-foundation-054",
+        "apush-foundation-055",
+        "apush-foundation-056",
+        "apush-foundation-121",
+        "apush-foundation-122",
+        "apush-foundation-123",
+        "apush-foundation-124",
+        "apush-foundation-125",
+        "apush-foundation-126",
+        "apush-foundation-221",
+        "apush-foundation-222",
+        "apush-foundation-223",
+        "apush-foundation-224",
+        "apush-foundation-321",
+        "apush-foundation-322",
+        "apush-foundation-323",
+        "apush-foundation-324",
+        "apush-foundation-325",
+        "apush-foundation-326",
+        "apush-foundation-327",
+        "apush-foundation-421",
+        "apush-foundation-422",
+        "apush-foundation-423",
+        "apush-foundation-424",
+        "apush-foundation-425",
+        "apush-foundation-501",
+        "apush-foundation-502",
+        "apush-foundation-526",
+        "apush-foundation-527",
+        "apush-foundation-541",
+        "apush-foundation-542",
+        "apush-foundation-543",
+        "apush-foundation-544"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-001",
+        "apush-foundation-002",
+        "apush-foundation-003",
+        "apush-foundation-004",
+        "apush-foundation-005",
+        "apush-foundation-051",
+        "apush-foundation-052",
+        "apush-foundation-053",
+        "apush-foundation-054",
+        "apush-foundation-055",
+        "apush-foundation-056",
+        "apush-foundation-121"
+      ],
+      "purpose": "Consolidate \"Period 1: 1491-1607\" (Unit 1: Period 1: 1491-1607) across 3 lessons and 41 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-02",
+      "unitId": "period-2-1607-1754",
+      "unitNumber": 2,
+      "unitLabel": "Unit 2: Period 2: 1607-1754",
+      "chapterId": "apush-ch-02",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-02-section-01",
+        "apush-ch-02-section-02",
+        "apush-ch-02-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-006",
+        "apush-foundation-007",
+        "apush-foundation-008",
+        "apush-foundation-009",
+        "apush-foundation-010",
+        "apush-foundation-057",
+        "apush-foundation-058",
+        "apush-foundation-059",
+        "apush-foundation-060",
+        "apush-foundation-061",
+        "apush-foundation-062",
+        "apush-foundation-127",
+        "apush-foundation-128",
+        "apush-foundation-129",
+        "apush-foundation-130",
+        "apush-foundation-131",
+        "apush-foundation-225",
+        "apush-foundation-226",
+        "apush-foundation-227",
+        "apush-foundation-228",
+        "apush-foundation-229",
+        "apush-foundation-281",
+        "apush-foundation-282",
+        "apush-foundation-283",
+        "apush-foundation-316",
+        "apush-foundation-328",
+        "apush-foundation-329",
+        "apush-foundation-330",
+        "apush-foundation-331",
+        "apush-foundation-332",
+        "apush-foundation-333",
+        "apush-foundation-334",
+        "apush-foundation-426",
+        "apush-foundation-427",
+        "apush-foundation-428",
+        "apush-foundation-429",
+        "apush-foundation-430",
+        "apush-foundation-431",
+        "apush-foundation-503",
+        "apush-foundation-504",
+        "apush-foundation-528",
+        "apush-foundation-529",
+        "apush-foundation-545",
+        "apush-foundation-546",
+        "apush-foundation-547"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-006",
+        "apush-foundation-007",
+        "apush-foundation-008",
+        "apush-foundation-009",
+        "apush-foundation-010",
+        "apush-foundation-057",
+        "apush-foundation-058",
+        "apush-foundation-059",
+        "apush-foundation-060",
+        "apush-foundation-061",
+        "apush-foundation-062",
+        "apush-foundation-127"
+      ],
+      "purpose": "Consolidate \"Period 2: 1607-1754\" (Unit 2: Period 2: 1607-1754) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-03",
+      "unitId": "period-3-1754-1800",
+      "unitNumber": 3,
+      "unitLabel": "Unit 3: Period 3: 1754-1800",
+      "chapterId": "apush-ch-03",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-03-section-01",
+        "apush-ch-03-section-02",
+        "apush-ch-03-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-011",
+        "apush-foundation-012",
+        "apush-foundation-013",
+        "apush-foundation-014",
+        "apush-foundation-015",
+        "apush-foundation-016",
+        "apush-foundation-063",
+        "apush-foundation-064",
+        "apush-foundation-065",
+        "apush-foundation-066",
+        "apush-foundation-067",
+        "apush-foundation-068",
+        "apush-foundation-101",
+        "apush-foundation-102",
+        "apush-foundation-132",
+        "apush-foundation-133",
+        "apush-foundation-134",
+        "apush-foundation-135",
+        "apush-foundation-136",
+        "apush-foundation-137",
+        "apush-foundation-171",
+        "apush-foundation-172",
+        "apush-foundation-173",
+        "apush-foundation-174",
+        "apush-foundation-175",
+        "apush-foundation-176",
+        "apush-foundation-216",
+        "apush-foundation-230",
+        "apush-foundation-231",
+        "apush-foundation-232",
+        "apush-foundation-233",
+        "apush-foundation-234",
+        "apush-foundation-235",
+        "apush-foundation-236",
+        "apush-foundation-237",
+        "apush-foundation-284",
+        "apush-foundation-285",
+        "apush-foundation-286",
+        "apush-foundation-287",
+        "apush-foundation-317",
+        "apush-foundation-335",
+        "apush-foundation-336",
+        "apush-foundation-337",
+        "apush-foundation-338",
+        "apush-foundation-339"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-011",
+        "apush-foundation-012",
+        "apush-foundation-013",
+        "apush-foundation-014",
+        "apush-foundation-015",
+        "apush-foundation-016",
+        "apush-foundation-063",
+        "apush-foundation-064",
+        "apush-foundation-065",
+        "apush-foundation-066",
+        "apush-foundation-067",
+        "apush-foundation-068"
+      ],
+      "purpose": "Consolidate \"Period 3: 1754-1800\" (Unit 3: Period 3: 1754-1800) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-04",
+      "unitId": "period-4-1800-1848",
+      "unitNumber": 4,
+      "unitLabel": "Unit 4: Period 4: 1800-1848",
+      "chapterId": "apush-ch-04",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-04-section-01",
+        "apush-ch-04-section-02",
+        "apush-ch-04-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-017",
+        "apush-foundation-018",
+        "apush-foundation-019",
+        "apush-foundation-020",
+        "apush-foundation-021",
+        "apush-foundation-022",
+        "apush-foundation-069",
+        "apush-foundation-070",
+        "apush-foundation-071",
+        "apush-foundation-072",
+        "apush-foundation-073",
+        "apush-foundation-074",
+        "apush-foundation-103",
+        "apush-foundation-104",
+        "apush-foundation-105",
+        "apush-foundation-138",
+        "apush-foundation-139",
+        "apush-foundation-140",
+        "apush-foundation-141",
+        "apush-foundation-142",
+        "apush-foundation-146",
+        "apush-foundation-177",
+        "apush-foundation-178",
+        "apush-foundation-179",
+        "apush-foundation-180",
+        "apush-foundation-181",
+        "apush-foundation-182",
+        "apush-foundation-183",
+        "apush-foundation-217",
+        "apush-foundation-238",
+        "apush-foundation-239",
+        "apush-foundation-240",
+        "apush-foundation-241",
+        "apush-foundation-242",
+        "apush-foundation-243",
+        "apush-foundation-244",
+        "apush-foundation-245",
+        "apush-foundation-288",
+        "apush-foundation-289",
+        "apush-foundation-290",
+        "apush-foundation-291",
+        "apush-foundation-292",
+        "apush-foundation-347",
+        "apush-foundation-348",
+        "apush-foundation-349"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-017",
+        "apush-foundation-018",
+        "apush-foundation-019",
+        "apush-foundation-020",
+        "apush-foundation-021",
+        "apush-foundation-022",
+        "apush-foundation-069",
+        "apush-foundation-070",
+        "apush-foundation-071",
+        "apush-foundation-072",
+        "apush-foundation-073",
+        "apush-foundation-074"
+      ],
+      "purpose": "Consolidate \"Period 4: 1800-1848\" (Unit 4: Period 4: 1800-1848) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-05",
+      "unitId": "period-5-1844-1877",
+      "unitNumber": 5,
+      "unitLabel": "Unit 5: Period 5: 1844-1877",
+      "chapterId": "apush-ch-05",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-05-section-01",
+        "apush-ch-05-section-02",
+        "apush-ch-05-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-023",
+        "apush-foundation-024",
+        "apush-foundation-025",
+        "apush-foundation-026",
+        "apush-foundation-027",
+        "apush-foundation-028",
+        "apush-foundation-075",
+        "apush-foundation-076",
+        "apush-foundation-077",
+        "apush-foundation-078",
+        "apush-foundation-079",
+        "apush-foundation-106",
+        "apush-foundation-107",
+        "apush-foundation-143",
+        "apush-foundation-144",
+        "apush-foundation-145",
+        "apush-foundation-147",
+        "apush-foundation-148",
+        "apush-foundation-184",
+        "apush-foundation-185",
+        "apush-foundation-186",
+        "apush-foundation-187",
+        "apush-foundation-188",
+        "apush-foundation-189",
+        "apush-foundation-218",
+        "apush-foundation-246",
+        "apush-foundation-247",
+        "apush-foundation-248",
+        "apush-foundation-249",
+        "apush-foundation-250",
+        "apush-foundation-251",
+        "apush-foundation-252",
+        "apush-foundation-293",
+        "apush-foundation-294",
+        "apush-foundation-295",
+        "apush-foundation-296",
+        "apush-foundation-318",
+        "apush-foundation-361",
+        "apush-foundation-362",
+        "apush-foundation-363",
+        "apush-foundation-364",
+        "apush-foundation-365",
+        "apush-foundation-366",
+        "apush-foundation-367",
+        "apush-foundation-368"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-023",
+        "apush-foundation-024",
+        "apush-foundation-025",
+        "apush-foundation-026",
+        "apush-foundation-027",
+        "apush-foundation-028",
+        "apush-foundation-075",
+        "apush-foundation-076",
+        "apush-foundation-077",
+        "apush-foundation-078",
+        "apush-foundation-079",
+        "apush-foundation-106"
+      ],
+      "purpose": "Consolidate \"Period 5: 1844-1877\" (Unit 5: Period 5: 1844-1877) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-06",
+      "unitId": "period-6-1865-1898",
+      "unitNumber": 6,
+      "unitLabel": "Unit 6: Period 6: 1865-1898",
+      "chapterId": "apush-ch-06",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-06-section-01",
+        "apush-ch-06-section-02",
+        "apush-ch-06-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-029",
+        "apush-foundation-030",
+        "apush-foundation-031",
+        "apush-foundation-032",
+        "apush-foundation-033",
+        "apush-foundation-034",
+        "apush-foundation-080",
+        "apush-foundation-081",
+        "apush-foundation-082",
+        "apush-foundation-083",
+        "apush-foundation-084",
+        "apush-foundation-108",
+        "apush-foundation-109",
+        "apush-foundation-110",
+        "apush-foundation-149",
+        "apush-foundation-150",
+        "apush-foundation-151",
+        "apush-foundation-152",
+        "apush-foundation-153",
+        "apush-foundation-190",
+        "apush-foundation-191",
+        "apush-foundation-192",
+        "apush-foundation-193",
+        "apush-foundation-194",
+        "apush-foundation-195",
+        "apush-foundation-196",
+        "apush-foundation-197",
+        "apush-foundation-198",
+        "apush-foundation-219",
+        "apush-foundation-253",
+        "apush-foundation-254",
+        "apush-foundation-255",
+        "apush-foundation-256",
+        "apush-foundation-257",
+        "apush-foundation-258",
+        "apush-foundation-259",
+        "apush-foundation-260",
+        "apush-foundation-297",
+        "apush-foundation-298",
+        "apush-foundation-299",
+        "apush-foundation-300",
+        "apush-foundation-301",
+        "apush-foundation-372",
+        "apush-foundation-373",
+        "apush-foundation-374"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-029",
+        "apush-foundation-030",
+        "apush-foundation-031",
+        "apush-foundation-032",
+        "apush-foundation-033",
+        "apush-foundation-034",
+        "apush-foundation-080",
+        "apush-foundation-081",
+        "apush-foundation-082",
+        "apush-foundation-083",
+        "apush-foundation-084",
+        "apush-foundation-108"
+      ],
+      "purpose": "Consolidate \"Period 6: 1865-1898\" (Unit 6: Period 6: 1865-1898) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-07",
+      "unitId": "period-7-1890-1945",
+      "unitNumber": 7,
+      "unitLabel": "Unit 7: Period 7: 1890-1945",
+      "chapterId": "apush-ch-07",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-07-section-01",
+        "apush-ch-07-section-02",
+        "apush-ch-07-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-035",
+        "apush-foundation-036",
+        "apush-foundation-037",
+        "apush-foundation-038",
+        "apush-foundation-039",
+        "apush-foundation-040",
+        "apush-foundation-085",
+        "apush-foundation-086",
+        "apush-foundation-087",
+        "apush-foundation-088",
+        "apush-foundation-089",
+        "apush-foundation-111",
+        "apush-foundation-112",
+        "apush-foundation-113",
+        "apush-foundation-114",
+        "apush-foundation-115",
+        "apush-foundation-154",
+        "apush-foundation-155",
+        "apush-foundation-156",
+        "apush-foundation-157",
+        "apush-foundation-158",
+        "apush-foundation-159",
+        "apush-foundation-199",
+        "apush-foundation-200",
+        "apush-foundation-201",
+        "apush-foundation-202",
+        "apush-foundation-203",
+        "apush-foundation-204",
+        "apush-foundation-205",
+        "apush-foundation-206",
+        "apush-foundation-261",
+        "apush-foundation-262",
+        "apush-foundation-263",
+        "apush-foundation-264",
+        "apush-foundation-265",
+        "apush-foundation-266",
+        "apush-foundation-267",
+        "apush-foundation-268",
+        "apush-foundation-302",
+        "apush-foundation-303",
+        "apush-foundation-304",
+        "apush-foundation-305",
+        "apush-foundation-306",
+        "apush-foundation-307",
+        "apush-foundation-308"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-035",
+        "apush-foundation-036",
+        "apush-foundation-037",
+        "apush-foundation-038",
+        "apush-foundation-039",
+        "apush-foundation-040",
+        "apush-foundation-085",
+        "apush-foundation-086",
+        "apush-foundation-087",
+        "apush-foundation-088",
+        "apush-foundation-089",
+        "apush-foundation-111"
+      ],
+      "purpose": "Consolidate \"Period 7: 1890-1945\" (Unit 7: Period 7: 1890-1945) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-08",
+      "unitId": "period-8-1945-1980",
+      "unitNumber": 8,
+      "unitLabel": "Unit 8: Period 8: 1945-1980",
+      "chapterId": "apush-ch-08",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-08-section-01",
+        "apush-ch-08-section-02",
+        "apush-ch-08-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-041",
+        "apush-foundation-042",
+        "apush-foundation-043",
+        "apush-foundation-044",
+        "apush-foundation-045",
+        "apush-foundation-090",
+        "apush-foundation-091",
+        "apush-foundation-092",
+        "apush-foundation-093",
+        "apush-foundation-094",
+        "apush-foundation-095",
+        "apush-foundation-116",
+        "apush-foundation-117",
+        "apush-foundation-118",
+        "apush-foundation-119",
+        "apush-foundation-120",
+        "apush-foundation-160",
+        "apush-foundation-161",
+        "apush-foundation-162",
+        "apush-foundation-163",
+        "apush-foundation-164",
+        "apush-foundation-165",
+        "apush-foundation-207",
+        "apush-foundation-208",
+        "apush-foundation-209",
+        "apush-foundation-210",
+        "apush-foundation-211",
+        "apush-foundation-212",
+        "apush-foundation-213",
+        "apush-foundation-214",
+        "apush-foundation-220",
+        "apush-foundation-269",
+        "apush-foundation-270",
+        "apush-foundation-271",
+        "apush-foundation-272",
+        "apush-foundation-273",
+        "apush-foundation-274",
+        "apush-foundation-275",
+        "apush-foundation-276",
+        "apush-foundation-309",
+        "apush-foundation-310",
+        "apush-foundation-311",
+        "apush-foundation-312",
+        "apush-foundation-313",
+        "apush-foundation-314"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-041",
+        "apush-foundation-042",
+        "apush-foundation-043",
+        "apush-foundation-044",
+        "apush-foundation-045",
+        "apush-foundation-090",
+        "apush-foundation-091",
+        "apush-foundation-092",
+        "apush-foundation-093",
+        "apush-foundation-094",
+        "apush-foundation-095",
+        "apush-foundation-116"
+      ],
+      "purpose": "Consolidate \"Period 8: 1945-1980\" (Unit 8: Period 8: 1945-1980) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-unit-review-09",
+      "unitId": "period-9-1980-present",
+      "unitNumber": 9,
+      "unitLabel": "Unit 9: Period 9: 1980-Present",
+      "chapterId": "apush-ch-09",
+      "topicDiagnosticRouteIds": [
+        "apush-ch-09-section-01",
+        "apush-ch-09-section-02",
+        "apush-ch-09-section-03"
+      ],
+      "itemIds": [
+        "apush-foundation-046",
+        "apush-foundation-047",
+        "apush-foundation-048",
+        "apush-foundation-049",
+        "apush-foundation-050",
+        "apush-foundation-096",
+        "apush-foundation-097",
+        "apush-foundation-098",
+        "apush-foundation-099",
+        "apush-foundation-100",
+        "apush-foundation-166",
+        "apush-foundation-167",
+        "apush-foundation-168",
+        "apush-foundation-169",
+        "apush-foundation-170",
+        "apush-foundation-215",
+        "apush-foundation-277",
+        "apush-foundation-278",
+        "apush-foundation-279",
+        "apush-foundation-280",
+        "apush-foundation-315",
+        "apush-foundation-414",
+        "apush-foundation-415",
+        "apush-foundation-416",
+        "apush-foundation-417",
+        "apush-foundation-418",
+        "apush-foundation-419",
+        "apush-foundation-420",
+        "apush-foundation-495",
+        "apush-foundation-496",
+        "apush-foundation-497",
+        "apush-foundation-498",
+        "apush-foundation-499",
+        "apush-foundation-500",
+        "apush-foundation-525",
+        "apush-foundation-540",
+        "apush-foundation-597",
+        "apush-foundation-598",
+        "apush-foundation-599",
+        "apush-foundation-600"
+      ],
+      "mixedPracticeItemIds": [
+        "apush-foundation-046",
+        "apush-foundation-047",
+        "apush-foundation-048",
+        "apush-foundation-049",
+        "apush-foundation-050",
+        "apush-foundation-096",
+        "apush-foundation-097",
+        "apush-foundation-098",
+        "apush-foundation-099",
+        "apush-foundation-100",
+        "apush-foundation-166",
+        "apush-foundation-167"
+      ],
+      "purpose": "Consolidate \"Period 9: 1980-Present\" (Unit 9: Period 9: 1980-Present) across 3 lessons and 40 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "ap-us-history-foundation-pilot-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all AP U.S. History Independent Foundation blueprint domains.",
+      "focus": [
+        "Unit 1: Period 1: 1491-1607",
+        "Unit 2: Period 2: 1607-1754",
+        "Unit 3: Period 3: 1754-1800",
+        "Unit 4: Period 4: 1800-1848"
+      ],
+      "itemIds": [
+        "apush-foundation-001",
+        "apush-foundation-017",
+        "apush-foundation-035",
+        "apush-foundation-002",
+        "apush-foundation-018",
+        "apush-foundation-036",
+        "apush-foundation-003",
+        "apush-foundation-019",
+        "apush-foundation-037",
+        "apush-foundation-004",
+        "apush-foundation-020",
+        "apush-foundation-038",
+        "apush-foundation-005",
+        "apush-foundation-021",
+        "apush-foundation-039",
+        "apush-foundation-051",
+        "apush-foundation-022",
+        "apush-foundation-040",
+        "apush-foundation-052",
+        "apush-foundation-069",
+        "apush-foundation-085",
+        "apush-foundation-053",
+        "apush-foundation-070",
+        "apush-foundation-086",
+        "apush-foundation-054",
+        "apush-foundation-071",
+        "apush-foundation-087",
+        "apush-foundation-055",
+        "apush-foundation-072",
+        "apush-foundation-088",
+        "apush-foundation-056",
+        "apush-foundation-073",
+        "apush-foundation-089",
+        "apush-foundation-121",
+        "apush-foundation-074",
+        "apush-foundation-111",
+        "apush-foundation-122",
+        "apush-foundation-103",
+        "apush-foundation-112",
+        "apush-foundation-123"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply AP U.S. History Independent Foundation frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Unit 3: Period 3: 1754-1800",
+        "Unit 4: Period 4: 1800-1848",
+        "Unit 5: Period 5: 1844-1877",
+        "Unit 6: Period 6: 1865-1898"
+      ],
+      "itemIds": [
+        "apush-foundation-006",
+        "apush-foundation-023",
+        "apush-foundation-041",
+        "apush-foundation-007",
+        "apush-foundation-024",
+        "apush-foundation-042",
+        "apush-foundation-008",
+        "apush-foundation-025",
+        "apush-foundation-043",
+        "apush-foundation-009",
+        "apush-foundation-026",
+        "apush-foundation-044",
+        "apush-foundation-010",
+        "apush-foundation-027",
+        "apush-foundation-045",
+        "apush-foundation-057",
+        "apush-foundation-028",
+        "apush-foundation-090",
+        "apush-foundation-058",
+        "apush-foundation-075",
+        "apush-foundation-091",
+        "apush-foundation-059",
+        "apush-foundation-076",
+        "apush-foundation-092",
+        "apush-foundation-060",
+        "apush-foundation-077",
+        "apush-foundation-093",
+        "apush-foundation-061",
+        "apush-foundation-078",
+        "apush-foundation-094",
+        "apush-foundation-062",
+        "apush-foundation-079",
+        "apush-foundation-095",
+        "apush-foundation-127",
+        "apush-foundation-106",
+        "apush-foundation-116",
+        "apush-foundation-128",
+        "apush-foundation-107",
+        "apush-foundation-117",
+        "apush-foundation-129"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every AP U.S. History Independent Foundation domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Anachronism and Periodization Boundary Drift",
+        "Causation vs. Mere Chronology (Post Hoc Reasoning)",
+        "Primary-Source HIPP Summary vs. Sourcing Analysis"
+      ],
+      "itemIds": [
+        "apush-foundation-011",
+        "apush-foundation-029",
+        "apush-foundation-046",
+        "apush-foundation-012",
+        "apush-foundation-030",
+        "apush-foundation-047",
+        "apush-foundation-013",
+        "apush-foundation-031",
+        "apush-foundation-048",
+        "apush-foundation-014",
+        "apush-foundation-032",
+        "apush-foundation-049",
+        "apush-foundation-015",
+        "apush-foundation-033",
+        "apush-foundation-050",
+        "apush-foundation-016",
+        "apush-foundation-034",
+        "apush-foundation-096",
+        "apush-foundation-063",
+        "apush-foundation-080",
+        "apush-foundation-097",
+        "apush-foundation-064",
+        "apush-foundation-081",
+        "apush-foundation-098",
+        "apush-foundation-065",
+        "apush-foundation-082",
+        "apush-foundation-099",
+        "apush-foundation-066",
+        "apush-foundation-083",
+        "apush-foundation-100",
+        "apush-foundation-067",
+        "apush-foundation-084",
+        "apush-foundation-166",
+        "apush-foundation-068",
+        "apush-foundation-108",
+        "apush-foundation-167",
+        "apush-foundation-101",
+        "apush-foundation-109",
+        "apush-foundation-168",
+        "apush-foundation-102"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "ap-us-history-foundation-pilot-form-internal-a",
+      "title": "Internal practice form A (AP U.S. History Independent Foundation)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "apush-foundation-001",
+        "apush-foundation-017",
+        "apush-foundation-035",
+        "apush-foundation-002",
+        "apush-foundation-018",
+        "apush-foundation-036",
+        "apush-foundation-003",
+        "apush-foundation-019",
+        "apush-foundation-037",
+        "apush-foundation-004",
+        "apush-foundation-020",
+        "apush-foundation-038",
+        "apush-foundation-005",
+        "apush-foundation-021",
+        "apush-foundation-039",
+        "apush-foundation-051",
+        "apush-foundation-022",
+        "apush-foundation-040",
+        "apush-foundation-052",
+        "apush-foundation-069",
+        "apush-foundation-085",
+        "apush-foundation-053",
+        "apush-foundation-070",
+        "apush-foundation-086",
+        "apush-foundation-054",
+        "apush-foundation-071",
+        "apush-foundation-087",
+        "apush-foundation-055",
+        "apush-foundation-072",
+        "apush-foundation-088",
+        "apush-foundation-056",
+        "apush-foundation-073",
+        "apush-foundation-089",
+        "apush-foundation-121",
+        "apush-foundation-074",
+        "apush-foundation-111",
+        "apush-foundation-122",
+        "apush-foundation-103",
+        "apush-foundation-112",
+        "apush-foundation-123",
+        "apush-foundation-104",
+        "apush-foundation-113",
+        "apush-foundation-124",
+        "apush-foundation-105",
+        "apush-foundation-114",
+        "apush-foundation-125",
+        "apush-foundation-138",
+        "apush-foundation-115",
+        "apush-foundation-126",
+        "apush-foundation-139"
+      ],
+      "topicIds": [
+        "apush-ch-01",
+        "apush-ch-04",
+        "apush-ch-07"
+      ],
+      "unitIds": [
+        "period-1-1491-1607",
+        "period-4-1800-1848",
+        "period-7-1890-1945"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-form-internal-b",
+      "title": "Internal practice form B (AP U.S. History Independent Foundation)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "apush-foundation-006",
+        "apush-foundation-023",
+        "apush-foundation-041",
+        "apush-foundation-007",
+        "apush-foundation-024",
+        "apush-foundation-042",
+        "apush-foundation-008",
+        "apush-foundation-025",
+        "apush-foundation-043",
+        "apush-foundation-009",
+        "apush-foundation-026",
+        "apush-foundation-044",
+        "apush-foundation-010",
+        "apush-foundation-027",
+        "apush-foundation-045",
+        "apush-foundation-057",
+        "apush-foundation-028",
+        "apush-foundation-090",
+        "apush-foundation-058",
+        "apush-foundation-075",
+        "apush-foundation-091",
+        "apush-foundation-059",
+        "apush-foundation-076",
+        "apush-foundation-092",
+        "apush-foundation-060",
+        "apush-foundation-077",
+        "apush-foundation-093",
+        "apush-foundation-061",
+        "apush-foundation-078",
+        "apush-foundation-094",
+        "apush-foundation-062",
+        "apush-foundation-079",
+        "apush-foundation-095",
+        "apush-foundation-127",
+        "apush-foundation-106",
+        "apush-foundation-116",
+        "apush-foundation-128",
+        "apush-foundation-107",
+        "apush-foundation-117",
+        "apush-foundation-129",
+        "apush-foundation-143",
+        "apush-foundation-118",
+        "apush-foundation-130",
+        "apush-foundation-144",
+        "apush-foundation-119",
+        "apush-foundation-131",
+        "apush-foundation-145",
+        "apush-foundation-120",
+        "apush-foundation-225",
+        "apush-foundation-147"
+      ],
+      "topicIds": [
+        "apush-ch-02",
+        "apush-ch-05",
+        "apush-ch-08"
+      ],
+      "unitIds": [
+        "period-2-1607-1754",
+        "period-5-1844-1877",
+        "period-8-1945-1980"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-history-foundation-pilot-form-internal-c",
+      "title": "Internal practice form C (AP U.S. History Independent Foundation)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "apush-foundation-011",
+        "apush-foundation-029",
+        "apush-foundation-046",
+        "apush-foundation-012",
+        "apush-foundation-030",
+        "apush-foundation-047",
+        "apush-foundation-013",
+        "apush-foundation-031",
+        "apush-foundation-048",
+        "apush-foundation-014",
+        "apush-foundation-032",
+        "apush-foundation-049",
+        "apush-foundation-015",
+        "apush-foundation-033",
+        "apush-foundation-050",
+        "apush-foundation-016",
+        "apush-foundation-034",
+        "apush-foundation-096",
+        "apush-foundation-063",
+        "apush-foundation-080",
+        "apush-foundation-097",
+        "apush-foundation-064",
+        "apush-foundation-081",
+        "apush-foundation-098",
+        "apush-foundation-065",
+        "apush-foundation-082",
+        "apush-foundation-099",
+        "apush-foundation-066",
+        "apush-foundation-083",
+        "apush-foundation-100",
+        "apush-foundation-067",
+        "apush-foundation-084",
+        "apush-foundation-166",
+        "apush-foundation-068",
+        "apush-foundation-108",
+        "apush-foundation-167",
+        "apush-foundation-101",
+        "apush-foundation-109",
+        "apush-foundation-168",
+        "apush-foundation-102",
+        "apush-foundation-110",
+        "apush-foundation-169",
+        "apush-foundation-132",
+        "apush-foundation-149",
+        "apush-foundation-170",
+        "apush-foundation-133",
+        "apush-foundation-150",
+        "apush-foundation-215",
+        "apush-foundation-134",
+        "apush-foundation-151"
+      ],
+      "topicIds": [
+        "apush-ch-03",
+        "apush-ch-06",
+        "apush-ch-09"
+      ],
+      "unitIds": [
+        "period-3-1754-1800",
+        "period-6-1865-1898",
+        "period-9-1980-present"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

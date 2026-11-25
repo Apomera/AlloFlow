@@ -526,11 +526,24 @@ function MathView(props) {
   var spokenMathSeqRef = React.useRef(0);
   var mathMountedRef = React.useRef(true);
   var editFocusTimerRef = React.useRef(null);
-  var _aiRevState = React.useState(0);
+  var _safeState = function (initial) { return typeof React.useState === 'function' ? React.useState(initial) : [initial, noop]; };
+  var _aiRevState = _safeState(0);
   var setMathAiRev = _aiRevState[1];
-  var _crisisState = React.useState('');
+  var _crisisState = _safeState('');
   var mathCrisisAlert = _crisisState[0];
   var setMathCrisisAlert = _crisisState[1];
+  var _srState = _safeState('');
+  var mathSrAnnouncement = _srState[0];
+  var setMathSrAnnouncement = _srState[1];
+  var announceMath = function (message) {
+    var text = String(message == null ? '' : message).trim();
+    if (!text) return;
+    setMathSrAnnouncement(text);
+    try {
+      if (typeof props.announceToSR === 'function') props.announceToSR(text);
+      else if (typeof window !== 'undefined' && typeof window.announceToSR === 'function') window.announceToSR(text);
+    } catch (_) {}
+  };
   var stopSpokenMathAudio = function () {
     spokenMathSeqRef.current += 1;
     var activeAudio = spokenMathAudioRef.current;
@@ -1342,7 +1355,7 @@ function MathView(props) {
           </button>
         </div>
         {typeof resourceStudentResponses[problem.__viewKey] === 'string' && resourceStudentResponses[problem.__viewKey] && (
-          <div role="status" aria-live="polite" className={`mt-3 text-sm font-bold ${resourceStudentResponses[problem.__viewKey].startsWith('(Manipulative: CORRECT') ? 'text-green-600' : 'text-red-600'}`}>
+          <div role="status" aria-live="polite" className={`mt-3 text-sm font-bold ${resourceStudentResponses[problem.__viewKey].startsWith('(Manipulative: CORRECT') ? 'text-green-700' : 'text-red-600'}`}>
             {resourceStudentResponses[problem.__viewKey]}
           </div>
         )}
@@ -1350,45 +1363,52 @@ function MathView(props) {
     );
   };
   return (
-                    <div className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
-                        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{mathAsyncStatus}</div>
+                    <div data-math-view="true" className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
+                        <style>{`
+[data-math-view="true"] :is(button,a,input,select,textarea,summary){touch-action:manipulation;box-sizing:border-box}
+[data-math-view="true"] :is(button,a,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid #4338ca;outline-offset:2px}
+.theme-contrast [data-math-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){[data-math-view="true"] *{animation:none!important;transition:none!important}}
+@media(forced-colors:active){[data-math-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-math-view="true"] :is(button,a,input,select,textarea,summary){border-color:ButtonText!important}}
+`}</style>
+                        <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{mathAsyncStatus || mathSrAnnouncement}</div>
                         <div className="bg-indigo-50 p-4 sm:p-6 rounded-xl border border-indigo-100 shadow-sm">
                             <div className="flex flex-wrap justify-between items-start gap-3 mb-3">
-                                <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">
+                                <span className="text-xs font-black text-indigo-700 uppercase tracking-widest">
                                     {mathMeta ? mathMeta.split(' - ')[0] : mathSubject}
                                 </span>
                                 <div className="flex flex-wrap gap-2">
                                     {isTeacherMode && !mathSelfGradeMode && (
                                         <button
                                             type="button"
-                                            aria-label={showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers')}
+                                            aria-label={showMathAnswers ? (t('math.display.hide_answers') || 'Hide answers') : (t('math.display.reveal_answers') || 'Reveal answers')}
                                             aria-pressed={showMathAnswers}
-                                            onClick={handleToggleShowMathAnswers}
+                                            onClick={() => { handleToggleShowMathAnswers(); announceMath(showMathAnswers ? 'Answers hidden.' : 'Answers revealed.'); }}
                                             disabled={!canToggleShowMathAnswers}
-                                            className={`flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${showMathAnswers ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`}
+                                            className={`flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${showMathAnswers ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`}
                                             data-help-key="math_toggle_answers"
                                         >
-                                            {showMathAnswers ? <EyeOff size={14}/> : <Eye size={14}/>}
-                                            {showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers')}
+                                            {showMathAnswers ? <EyeOff aria-hidden="true" size={14}/> : <Eye aria-hidden="true" size={14}/>}
+                                            {showMathAnswers ? (t('math.display.hide_answers') || 'Hide answers') : (t('math.display.reveal_answers') || 'Reveal answers')}
                                         </button>
                                     )}
-                                    <button type="button" onClick={handleToggleMathSelfGrade}
+                                    <button type="button" onClick={() => { handleToggleMathSelfGrade(); announceMath(mathSelfGradeMode ? 'Exited self-grade mode.' : 'Entered self-grade mode.'); }}
                                         aria-pressed={mathSelfGradeMode}
                                         disabled={!canToggleMathSelfGrade}
                                         className={`flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-700 border border-emerald-700 hover:bg-emerald-50'}`}>
-                                        ✏️ {mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')}
+                                        <span aria-hidden="true">✏️</span> {mathSelfGradeMode ? (t('math.exit_self_grade') || 'Exit Self-Grade') : (t('math.self_grade') || 'Self-Grade')}
                                     </button>
                                     {mathSelfGradeMode && (
                                         <button type="button" onClick={() => submitMathSelfGrade(mathResourceId, mathProblems)}
                                             aria-describedby={selfGradeHelpId}
                                             disabled={!canSubmitMathSelfGrade || !hasAllSelfGradeAnswers}
                                             className="flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-700 to-teal-700 text-white shadow-md hover:from-emerald-800 hover:to-teal-800 transition-all disabled:cursor-not-allowed disabled:opacity-50">
-                                            📊 Submit Assessment
+                                            <span aria-hidden="true">📊</span> Submit Assessment
                                         </button>
                                     )}
                                     <button
                                         type="button"
-                                        aria-label={t('common.copy')}
+                                        aria-label={t('common.copy') || 'Copy math problems'}
                                         disabled={!canCopyToClipboard}
                                         onClick={() => {
                                             const includeAnswers = isTeacherMode && showMathAnswers;
@@ -1397,11 +1417,12 @@ function MathView(props) {
                                                 return `${i + 1}. ${formatMathQuestion(p)}${answer}`;
                                             }).join('\n\n');
                                             copyToClipboard(text);
+                                            announceMath(_mathT(t, 'math.copied_problems_sr', 'Copied {count} math problems to clipboard.', { count: mathProblems.length }));
                                         }}
-                                        className="min-h-[44px] min-w-[44px] text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
-                                        title={t('math.display.copy_all')}
+                                        className="min-h-[44px] min-w-[44px] text-indigo-700 hover:text-indigo-800 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
+                                        title={t('math.display.copy_all') || 'Copy all problems'}
                                     >
-                                        <Copy size={14}/>
+                                        <Copy aria-hidden="true" size={14}/>
                                     </button>
                                 </div>
                             </div>
@@ -1473,7 +1494,7 @@ function MathView(props) {
                                                             }
                                                         }}
                                                         aria-label={_mathT(t, 'math.jump_to_problem_n', 'Jump to problem {n}', { n: idx + 1 })}
-                                                        className={`min-h-9 min-w-9 inline-flex items-center justify-center px-2 rounded-full border text-xs font-bold no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${pillTone}`}
+                                                        className={`min-h-[44px] min-w-[44px] inline-flex items-center justify-center px-2 rounded-full border text-xs font-bold no-underline transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${pillTone}`}
                                                     >
                                                         {st === 'correct' ? '✓ ' : ''}{idx + 1}
                                                     </a>
@@ -1486,8 +1507,8 @@ function MathView(props) {
                         </div>
                         {graphHtml && (
                             <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
-                                <h4 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <ImageIcon size={14}/> {t('math.display.visual_header')}
+                                <h4 className="text-xs font-black text-purple-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <ImageIcon aria-hidden="true" size={14}/> {t('math.display.visual_header') || 'Visual Diagram'}
                                 </h4>
                                 <div
                                     className="w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-x-auto svg-container focus:outline-none focus:ring-2 focus:ring-indigo-300"
@@ -1527,12 +1548,12 @@ function MathView(props) {
                                                             editFocusTimerRef.current = null;
                                                             if (typeof document !== 'undefined') {
                                                                 var btn = document.getElementById(mathEditButtonId(problem.__viewKey));
-                                                                if (btn && btn.isConnected && typeof btn.focus === 'function') { try { btn.focus(); } catch (_) {} }
+                                                                if (btn && btn.isConnected !== false && typeof btn.focus === 'function') { try { btn.focus(); } catch (_) {} }
                                                             }
                                                         }, 0);
                                                     }
                                                 }}
-                                                placeholder={t('common.placeholder_enter_problem_question')}
+                                                placeholder={t('common.placeholder_enter_problem_question') || 'Enter problem question...'}
                                             />
                                             {mathKeyboardButton(() => openAccessibleMathInput({
                                                 title: `Add math to problem ${pIdx + 1}`,
@@ -1599,7 +1620,7 @@ function MathView(props) {
                                             className={`min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`}
                                             title={isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Done editing" : "Edit this problem"}
                                         >
-                                            {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? <CheckCircle2 size={16} /> : <Pencil size={14} />}
+                                            {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? <CheckCircle2 aria-hidden="true" size={16} /> : <Pencil aria-hidden="true" size={14} />}
                                         </button>
                                     )}
                                 </div>
@@ -1646,14 +1667,14 @@ function MathView(props) {
                                                 renderMathManipulativeResponse(problem)
                                             ) : (
                                                 <div className="relative">
-                                                    <div className="absolute top-3 left-3 text-slate-600">
-                                                        <Pencil size={16} />
+                                                    <div aria-hidden="true" className="absolute top-3 left-3 text-slate-600">
+                                                        <Pencil aria-hidden="true" size={16} />
                                                     </div>
                                                     <textarea
                                                         id={mathResponseInputId(problem.__viewKey)}
                                                         aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
                                                         className="w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
-                                                        placeholder={t('math.display.placeholder_work')}
+                                                        placeholder={t('math.display.placeholder_work') || 'Show your work here...'}
                                                         value={_mathScalarText(resourceStudentResponses[problem.__viewKey])}
                                                         onChange={(e) => handleStudentInput(mathResourceId, problem.__viewKey, e.target.value)}
                                                         disabled={!canHandleStudentInput}
@@ -1744,7 +1765,7 @@ function MathView(props) {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 sm:ml-4 mt-4">
                                                 <div className="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm">
                                                     <h4 className="text-xs font-black text-green-800 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                        <CheckCircle2 size={14}/> {t('math.display.answer_header')}
+                                                        <CheckCircle2 aria-hidden="true" size={14}/> {t('math.display.answer_header') || 'Answer'}
                                                     </h4>
                                                      {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? (
                                                          <>
@@ -1775,7 +1796,7 @@ function MathView(props) {
                                                 {problem.realWorld && (
                                                 <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
                                                     <h4 className="text-xs font-black text-orange-800 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                        <Globe size={14}/> {t('math.display.connection_header')}
+                                                        <Globe aria-hidden="true" size={14}/> {t('math.display.connection_header') || 'Real-World Connection'}
                                                     </h4>
                                                      {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? (
                                                          <textarea
@@ -1802,12 +1823,12 @@ function MathView(props) {
                                                     type="button"
                                                     onClick={handleSetShowMathAnswersToTrue}
                                                     disabled={!canSetShowMathAnswers}
-                                                    className="flex min-h-[44px] items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="flex min-h-[44px] items-center gap-2 text-indigo-700 hover:text-indigo-800 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
-                                                    <Eye size={16} /> {t('math.display.reveal_solution')}
+                                                    <Eye aria-hidden="true" size={16} /> {t('math.display.reveal_solution') || 'Reveal Solution'}
                                                 </button>
                                             ) : (
-                                                <><EyeOff size={14} /> {t('math.display.answer_hidden')}</>
+                                                <><EyeOff aria-hidden="true" size={14} /> {t('math.display.answer_hidden') || 'Answer hidden'}</>
                                             )}
                                         </div>
                                     )}
@@ -1820,8 +1841,8 @@ function MathView(props) {
                                         ) : (
                                         <>
                                         <div className="relative">
-                                            <div className="absolute top-3 left-3 text-slate-600">
-                                                <Pencil size={16} />
+                                            <div aria-hidden="true" className="absolute top-3 left-3 text-slate-600">
+                                                <Pencil aria-hidden="true" size={16} />
                                             </div>
                                             <textarea
                                                 id={mathResponseInputId(problem.__viewKey)}
@@ -1875,7 +1896,7 @@ function MathView(props) {
                                                                 );
                                                             }}
                                                             disabled={!canHandleCheckMathWork || !studentWork.trim() || checkResult?.checking === true}
-                                                            className="flex min-h-[44px] items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]"
+                                                            className="flex min-h-[44px] items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-600 to-purple-700 text-white hover:from-indigo-700 hover:to-purple-800 hover:shadow-md active:scale-[0.98]"
                                                             data-help-key="math_check_work"
                                                         >
                                                             {checkResult?.checking ? (
@@ -1907,12 +1928,12 @@ function MathView(props) {
                         aria-busy={hintInfo.loading}
                         onClick={() => handleGetMathHint(mathResourceId, problem.__viewKey, mathQuestionForGrading(problem), problem.answer, problem.steps)}
                         disabled={!canHandleGetMathHint || hintInfo.loading}
-                        className="flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+                        className="flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-400 text-amber-800 hover:bg-amber-50 hover:border-amber-500 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                     >
                         {hintInfo.loading ? (
-                            <><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> {_mathT(t, 'math.hint.thinking', 'Thinking...')}</>
+                            <><RefreshCw aria-hidden="true" size={14} className="animate-spin motion-reduce:animate-none" /> {_mathT(t, 'math.hint.thinking', 'Thinking...')}</>
                         ) : (
-                            <><span className="text-sm">💡</span> {hintInfo.count === 0 ? _mathT(t, 'math.hint.request_first', 'Give me a hint (-25% XP)') : hintInfo.count === 1 ? _mathT(t, 'math.hint.request_second', 'Another hint (-50% XP)') : _mathT(t, 'math.hint.request_final', 'Final hint (-75% XP)')}</>
+                            <><span aria-hidden="true" className="text-sm">💡</span> {hintInfo.count === 0 ? _mathT(t, 'math.hint.request_first', 'Give me a hint (-25% XP)') : hintInfo.count === 1 ? _mathT(t, 'math.hint.request_second', 'Another hint (-50% XP)') : _mathT(t, 'math.hint.request_final', 'Final hint (-75% XP)')}</>
                         )}
                     </button>
                 )}
@@ -1939,13 +1960,13 @@ function MathView(props) {
                                                                 'bg-red-100'
                                                             }`}>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-xl">
+                                                                    <span aria-hidden="true" className="text-xl">
                                                                         {checkResult.verdict === 'correct' ? '✅' : checkResult.verdict === 'partial' ? '🟡' : '❌'}
                                                                     </span>
                                                                     <span className={`font-black text-sm uppercase tracking-wider ${
-                                                                        checkResult.verdict === 'correct' ? 'text-green-700' :
-                                                                        checkResult.verdict === 'partial' ? 'text-amber-700' :
-                                                                        'text-red-700'
+                                                                        checkResult.verdict === 'correct' ? 'text-green-800' :
+                                                                        checkResult.verdict === 'partial' ? 'text-amber-900' :
+                                                                        'text-red-800'
                                                                     }`}>
                                                                         {checkResult.verdict === 'correct' ? (t('math.check.verdict_correct') || 'Correct!')
                                                                          : checkResult.verdict === 'partial' ? (t('math.check.verdict_partial') || 'Partially Correct')
@@ -1983,7 +2004,7 @@ function MathView(props) {
                                                                             : 'text-indigo-700 hover:bg-indigo-100'
                                                                     }`}
                                                                 >
-                                                                    <RefreshCw size={12} />
+                                                                    <RefreshCw aria-hidden="true" size={12} />
                                                                     {checkResult.verdict === 'correct'
                                                                         ? (t('math.check.try_another') || 'Revise Answer')
                                                                         : (t('math.check.try_again') || 'Try Again')
@@ -1995,10 +2016,10 @@ function MathView(props) {
                                                     {checkResult?.checked && problem.steps && problem.steps.length > 0 && (
                                                         <details className="mt-3 group" onToggle={(e) => { if (e.currentTarget.open && !checkResult.xpAwarded) _markMathSolutionViewed(mathResourceId, problem.__viewKey); }}>
                                                             <summary className="flex min-h-[44px] items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all">
-                                                                <span className="text-sm">📖</span>
-                                                                <span className="text-xs font-bold text-blue-700">{t('math.show_solution_steps') || 'Show Solution Steps'}</span>
+                                                                <span aria-hidden="true" className="text-sm">📖</span>
+                                                                <span className="text-xs font-bold text-blue-800">{t('math.show_solution_steps') || 'Show Solution Steps'}</span>
                                                                 {!checkResult.xpAwarded && <span className="text-xs text-blue-800">{_mathT(t, 'math.solution.xp_note', '(shows the answer: XP for this problem drops to the final-hint level)')}</span>}
-                                                                <ChevronDown size={14} className="text-blue-700 ml-auto group-open:rotate-180 transition-transform" />
+                                                                <ChevronDown aria-hidden="true" size={14} className="text-blue-700 ml-auto group-open:rotate-180 transition-transform" />
                                                             </summary>
                                                             <div className="mt-2 space-y-2 pl-2 border-l-3 border-blue-200">
                                                                 {problem.steps.map((step, sIdx) => (
@@ -2052,17 +2073,17 @@ function MathView(props) {
                                     className="flex min-h-[44px] items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
                                     data-help-key="math_generate_similar"
                                 >
-                                    {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none"/> : <RefreshCw size={18}/>}
-                                    {t('math.display.generate_similar')}
+                                    {isProcessing ? <RefreshCw aria-hidden="true" size={18} className="animate-spin motion-reduce:animate-none"/> : <RefreshCw aria-hidden="true" size={18}/>}
+                                    {t('math.display.generate_similar') || 'Generate Similar Problem'}
                                 </button>
                             </div>
                         )}
                         {isTeacherMode && mathProblems.length > 0 && _mathViewAiUsable() && (
                             <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm">✏️</span>
-                                    <span className="text-xs font-bold text-indigo-700">{t('math.edit_with_allobot')}</span>
-                                    <span className="text-xs text-indigo-700 font-medium">{t('math.edit_helper')}</span>
+                                    <span aria-hidden="true" className="text-sm">✏️</span>
+                                    <span className="text-xs font-bold text-indigo-800">{t('math.edit_with_allobot') || 'Edit with AlloBot'}</span>
+                                    <span className="text-xs text-indigo-700 font-medium">{t('math.edit_helper') || 'Ask for changes to these problems'}</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     <input
@@ -2071,6 +2092,13 @@ function MathView(props) {
                                         onChange={(e) => { if (mathCrisisAlert) setMathCrisisAlert(''); setMathEditInput(e.target.value); }}
                                         onKeyDown={(e) => {
                                             if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+                                            if (e.key === 'Escape' && mathEditInput && canSetMathEditInput) {
+                                                e.preventDefault();
+                                                setMathEditInput('');
+                                                if (mathCrisisAlert) setMathCrisisAlert('');
+                                                announceMath('Cleared math edit prompt.');
+                                                return;
+                                            }
                                             if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcessing || !canHandleMathEdit) return;
                                             e.preventDefault();
                                             var crisis = _mathScreenCrisis(mathEditInput);
@@ -2078,8 +2106,8 @@ function MathView(props) {
                                             handleMathEdit(mathEditInput, mathResourceId);
                                         }}
                                         placeholder={tr('math.edit_placeholder_examples', 'e.g. Make these easier, add 2 more division problems, change to a space theme...')}
-                                        className="flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-500"
-                                        aria-label={t("a11y.edit_math_problems")}
+                                        className="flex-1 min-h-[44px] px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-500"
+                                        aria-label={t("a11y.edit_math_problems") || "Edit math problems with AlloBot"}
                                         aria-busy={isMathEditingChat || isProcessing}
                                         disabled={!canSetMathEditInput || isMathEditingChat || isProcessing}
                                     />
@@ -2103,7 +2131,7 @@ function MathView(props) {
                                         <button key={suggestion} type="button"
                                             onClick={() => { setMathEditInput(suggestion); handleMathEdit(suggestion, mathResourceId); }}
                                             disabled={!canSetMathEditInput || !canHandleMathEdit || isMathEditingChat || isProcessing}
-                                            className="min-h-[44px] px-2 py-1 text-xs font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
+                                            className="min-h-[44px] px-2.5 py-1 text-xs font-bold text-indigo-700 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
                                         >
                                             {suggestion}
                                         </button>

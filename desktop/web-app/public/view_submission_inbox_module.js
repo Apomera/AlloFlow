@@ -5961,6 +5961,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         tabIndex: -1,
         onKeyDown: (event) => {
           event.stopPropagation();
+          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           if (event.key === "Escape") {
             event.preventDefault();
             if (!alloSheetBusyRef.current) closeAlloSheetReview();
@@ -6511,7 +6512,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         /* @__PURE__ */ React.createElement(
           "style",
           null,
-          '[data-si-dialog] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}@media (prefers-reduced-motion:reduce){[data-si-dialog] *{transition-duration:0.01ms !important;animation-duration:0.01ms !important}}'
+          '[data-si-dialog] :is(button,a,input,select,textarea,summary){touch-action:manipulation}[data-si-dialog] :is(button,a,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}@media (forced-colors: active){[data-si-dialog] :is(button,a,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid Highlight;outline-offset:2px}}@media (prefers-reduced-motion:reduce){[data-si-dialog],[data-si-dialog] *,[data-si-dialog] *::before,[data-si-dialog] *::after{transition-duration:0.01ms !important;animation-duration:0.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important}}'
         ),
         // Header
         /* @__PURE__ */ React.createElement(
@@ -6818,7 +6819,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     value: presetNameInput,
                     onChange: (e) => setPresetNameInput(e.target.value),
                     onKeyDown: (e) => {
-                      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                       if (e.key === "Enter") {
                         e.preventDefault();
                         savePreset();
@@ -7524,7 +7525,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   value: queueSearch,
                   onChange: (e) => setQueueSearch(e.target.value),
                   onKeyDown: (e) => {
-                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === "Escape" && queueSearch) {
                       e.preventDefault();
                       e.stopPropagation();
@@ -8271,6 +8272,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 max: 100,
                 step: 5,
                 "aria-label": tr(pendingAnchor.mode === "manual" ? "Manual score slider" : "Anchor score slider"),
+                "aria-valuetext": tr("{score} out of 100", { score: pendingAnchor.score }),
                 value: pendingAnchor.score,
                 onChange: (e) => setPendingAnchor({ ...pendingAnchor, score: e.target.value, scoreTouched: true }),
                 style: { flex: 1 }
@@ -8332,7 +8334,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               onKeyDown: (event) => {
                 event.stopPropagation();
                 if (event.key === "Escape") {
-                  if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                  if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                   event.preventDefault();
                   finishConfirmation(false);
                   return;

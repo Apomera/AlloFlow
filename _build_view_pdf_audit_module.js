@@ -101,8 +101,10 @@ const compiled = transformedCode
 const outputCode =
 `(function() {
 'use strict';
+if (typeof window === 'undefined' || !window || typeof window !== 'object') return;
 if (window.AlloModules && window.AlloModules.PdfAuditView) { console.log('[CDN] ViewPdfAuditModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) return;
 var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;

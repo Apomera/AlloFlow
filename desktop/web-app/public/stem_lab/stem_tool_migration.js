@@ -221,7 +221,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ".migration-tool-shell[data-migration-tool=\"true\"] :is(summary,canvas,[role=\"region\"],[role=\"tabpanel\"],.migration-flight-stage,.migration-disclosure-trigger,.migration-journey-summary,.migration-journey-choice):focus-visible{outline-offset:-4px;}",
       ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{content:\"\";position:absolute;inset:3px;z-index:11;border:3px solid var(--mg-focus);border-radius:10px;box-shadow:0 0 0 2px #071827;pointer-events:none;}",
       ".migration-disclosure-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;min-height:44px;padding:10px 12px;border:0;border-radius:10px;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;}.migration-disclosure-content{margin:0;padding:0 12px 12px;overflow-wrap:anywhere;}",
-      "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] :is(a,button,input,select,textarea,summary,canvas,[tabindex]):focus-visible{outline-color:Highlight;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{border-color:Highlight;box-shadow:none;}.migration-tool-shell[data-migration-tool=\"true\"] :is(button,[role=\"tab\"]):is([aria-pressed=\"true\"],[aria-selected=\"true\"],[aria-current=\"step\"]){border:3px double ButtonText!important;}.migration-tool-shell .migration-route-tab[aria-selected=\"true\"]:not(:focus-visible){outline:none;}}",
+      "@media(forced-colors:active){.migration-tool-shell[data-migration-tool=\"true\"] :is(a,button,input,select,textarea,summary,canvas,[tabindex]):focus-visible{outline-color:Highlight;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-stage:focus-visible::after{border-color:Highlight;box-shadow:none;}.migration-tool-shell[data-migration-tool=\"true\"] :is(button,[role=\"tab\"]):is([aria-pressed=\"true\"],[aria-selected=\"true\"],[aria-current=\"step\"]){border:3px double ButtonText!important;}.migration-tool-shell .migration-route-tab[aria-selected=\"true\"]:not(:focus-visible){outline:0 solid transparent;}}",
       // Functional field boundaries and dropdown cues stay visible in every theme.
       ".migration-tool-shell[data-migration-tool=\"true\"]{--mg-input-border:#64748b;--mg-input-placeholder:#475569;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"dark\"]{--mg-input-border:#94a3b8;--mg-input-placeholder:#cbd5e1;}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-deck{--mg-input-border:#8ca7b8;--mg-input-placeholder:#bfd9e6;}.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"],.migration-tool-shell[data-migration-tool=\"true\"][data-migration-theme=\"contrast\"] .migration-flight-deck{--mg-input-border:#fff;--mg-input-placeholder:#fff;}",
       ".migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace :is(textarea,select){box-sizing:border-box;border-width:2px;border-style:solid;border-color:var(--mg-input-border);}.migration-tool-shell[data-migration-tool=\"true\"] .migration-flight-workspace textarea::placeholder{color:var(--mg-input-placeholder);opacity:1;}",
@@ -4453,7 +4453,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.computeBoundingSphere();
-        var sprite = document.createElement('canvas');
+        var sprite = document.createElement('canvas'); if (sprite.setAttribute) sprite.setAttribute('aria-hidden', 'true');
         sprite.width = sprite.height = 32;
         var context = sprite.getContext('2d');
         var gradient = context.createRadialGradient(16, 16, 0, 16, 16, 15);
@@ -5559,7 +5559,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // is excluded from fog so it stays a sky rather than a fog wall.
           // The dome carries only a smooth gradient. A separate point buffer
           // provides stars without magnifying painted texels into square blocks.
-          var skyCanvas = document.createElement('canvas');
+          var skyCanvas = document.createElement('canvas'); if (skyCanvas.setAttribute) skyCanvas.setAttribute('aria-hidden', 'true');
           skyCanvas.width = 16;
           skyCanvas.height = 512;
           var skyCtx = skyCanvas.getContext('2d');
@@ -5637,7 +5637,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           scene.add(sunDisc);
           // A translucent sphere has a hard silhouette. A feathered billboard
           // gives the sun and moon a soft atmospheric halo from every camera.
-          var glowCanvas = document.createElement('canvas');
+          var glowCanvas = document.createElement('canvas'); if (glowCanvas.setAttribute) glowCanvas.setAttribute('aria-hidden', 'true');
           glowCanvas.width = glowCanvas.height = 128;
           var glowCtx = glowCanvas.getContext('2d');
           var glowGradient = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
@@ -6096,7 +6096,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // frame and the one thing that made altitude legible.
           // Alpha feathering replaces the visible rectangular plane edges.
           // One shared canvas texture keeps this second cloud layer inexpensive.
-          var cirrusCanvas = document.createElement('canvas');
+          var cirrusCanvas = document.createElement('canvas'); if (cirrusCanvas.setAttribute) cirrusCanvas.setAttribute('aria-hidden', 'true');
           cirrusCanvas.width = 256;
           cirrusCanvas.height = 128;
           var cirrusCtx = cirrusCanvas.getContext('2d');
@@ -8897,7 +8897,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ].map(function(control) {
               return h('label', { key: control.key, className: 'migration-study-slider' },
                 h('span', null, control.label, h('strong', null, control.value + control.suffix)),
-                h('input', { type: 'range', min: control.min, max: control.max, step: control.step, value: control.value, 'aria-label': control.aria, onChange: function(event) { clearMigrationMarkedViewRestoreIntent(); var value = parseInt(event.target.value, 10); upd(control.key, control.key === 'flightStudyZoom' ? value / 100 : value); } })
+                h('input', { type: 'range', min: control.min, max: control.max, step: control.step, value: control.value, 'aria-label': control.aria, 'aria-valuetext': control.value + control.suffix, onChange: function(event) { clearMigrationMarkedViewRestoreIntent(); var value = parseInt(event.target.value, 10); upd(control.key, control.key === 'flightStudyZoom' ? value / 100 : value); } })
               );
             }),
             h('div', { className: 'migration-study-actions' },
@@ -9129,7 +9129,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             onLostPointerCapture: function(event) { endStudyDrag(event, false); },
             onKeyDown: function(event) {
               if (event.target !== event.currentTarget) return;
-              if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+              if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if (event.repeat && ['1', '2', '3', '4', ' '].indexOf(event.key) !== -1) {
                 event.preventDefault();
                 return;
@@ -10470,7 +10470,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               className: 'migration-investigation-reset-review', 'data-investigation-reset-review': '', hidden: !resetRequest,
               role: 'group', 'aria-labelledby': migrationDomId('migration-investigation-reset-title'), 'aria-describedby': migrationDomId('migration-investigation-reset-help'),
               onKeyDown: function(event) {
-                if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
+                if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
                 event.preventDefault(); event.stopPropagation(); cancelInvestigationReset(event, true);
               } },
               h('h4', { id: migrationDomId('migration-investigation-reset-title'), 'data-migration-id': 'migration-investigation-reset-title' }, t('stem.migration.experiment_reset_review_title', 'Clear this investigation?')),
@@ -11042,7 +11042,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             dragRef.current.active = false;
             selectFormationBird(index);
           }
-          function onMouseDown(event) { if (event.button === 0) beginDrag(event, 23); }
+          function onMouseDown(event) {
+            if (event.button === 0) beginDrag(event, 23);
+          }
           function onMouseMove(event) { dragTo(event); }
           function onMouseUp() { endDrag(); }
           function onTouchStart(event) {
@@ -11109,7 +11111,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         return h('div', { className: 'space-y-3' },
           // Read aloud button
           callTTS && h('div', { className: 'flex justify-end' },
-            h('button', {
+            h('button', { type: 'button',
               className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-medium ' + btnSecondary,
               'aria-label': t('stem.migration.read_v_formation_explanation_aloud', 'Read V-Formation explanation aloud'),
               onClick: vReadAloud
@@ -11164,7 +11166,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'aria-describedby': 'migration-formation-help-' + formationControlId + ' migration-formation-position-' + formationControlId + ' ' + formationWakeId,
               tabIndex: 0,
               onKeyDown: function(event) {
-                if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+                if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                 var direction = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[event.key];
                 if (direction) { event.preventDefault(); moveFormationBird(direction, event.shiftKey); return; }
                 var key = event.key.toLowerCase();
@@ -11190,7 +11192,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ['x', 'y'].map(function(axis) {
                 return h('label', { key: axis, className: 'text-xs font-bold ' + textPrimary, style: { display: 'grid', gap: 4, flex: '1 1 180px', minWidth: 0 } },
                   (axis === 'x' ? t('stem.migration.formation_horizontal_position', 'Horizontal position') : t('stem.migration.formation_vertical_position', 'Vertical position')) + ': ' + selectedPosition[axis] + '%',
-                  h('input', { type: 'range', min: 0, max: 100, step: 1, value: selectedPosition[axis], 'data-formation-axis': axis, 'aria-describedby': 'migration-formation-position-' + formationControlId, style: { minHeight: 44, width: '100%' }, onChange: function(event) { setFormationAxis(axis, event.target.value); } })
+                  h('input', { type: 'range', min: 0, max: 100, step: 1, value: selectedPosition[axis], 'aria-valuetext': selectedPosition[axis] + '%', 'data-formation-axis': axis, 'aria-describedby': 'migration-formation-position-' + formationControlId, style: { minHeight: 44, width: '100%' }, onChange: function(event) { setFormationAxis(axis, event.target.value); } })
                 );
               })
             ),
@@ -11237,7 +11239,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'flex items-center gap-2 ml-auto' },
               h('label', { className: 'text-xs font-medium ' + textSecondary }, 'Birds:'),
               h('input', {
-                type: 'range', min: 2, max: 30, value: birdCount, 'data-formation-count': 'true',
+                type: 'range', min: 2, max: 30, value: birdCount, 'aria-valuetext': birdCount + ' ' + t('stem.migration.birds_word', 'birds'), 'data-formation-count': 'true',
                 'aria-label': t('stem.migration.aria_flock_size', 'Number of birds in flock') + ': ' + birdCount,
                 className: 'w-20 accent-sky-500',
                 onChange: function(e) {
@@ -11257,6 +11259,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('input', {
                 type: 'range', min: 0.5, max: 3, step: 0.5, value: simSpeed,
                 'aria-label': t('stem.migration.aria_sim_speed', 'Simulation speed') + ': ' + simSpeed + 'x',
+                'aria-valuetext': simSpeed + 'x',
                 className: 'w-16 accent-sky-500',
                 onChange: function(e) { upd('vSpeed', parseFloat(e.target.value)); }
               }),
@@ -11354,6 +11357,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, t('stem.migration.distance_label', 'Distance') + ': ' + ebDist.toLocaleString() + ' ' + t('stem.migration.mi_unit', 'mi')),
                   h('input', { type: 'range', min: 100, max: 7000, step: 100, value: ebDist,
                     'aria-label': t('stem.migration.aria_eb_distance', 'Migration distance') + ': ' + ebDist + ' ' + t('stem.migration.miles_word', 'miles'),
+                    'aria-valuetext': ebDist + ' ' + t('stem.migration.miles_word', 'miles'),
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebDistance', parseInt(e.target.value, 10)); }
                   })
@@ -11363,6 +11367,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, t('stem.migration.bird_weight_label', 'Bird weight') + ': ' + ebWeight + t('stem.migration.g_unit', 'g')),
                   h('input', { type: 'range', min: 5, max: 5000, step: 5, value: ebWeight,
                     'aria-label': t('stem.migration.aria_eb_weight', 'Bird body weight') + ': ' + ebWeight + ' ' + t('stem.migration.grams_word', 'grams'),
+                    'aria-valuetext': ebWeight + ' ' + t('stem.migration.grams_word', 'grams'),
                     className: 'w-full accent-amber-500',
                     onChange: function(e) { upd('ebWeight', parseInt(e.target.value, 10)); }
                   }),
@@ -11373,13 +11378,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, t('stem.migration.headwind', 'Headwind') + ': ' + ebHeadwind + ' ' + t('stem.migration.mph_unit', 'mph')),
                   h('input', { type: 'range', min: 0, max: 25, value: ebHeadwind,
                     'aria-label': t('stem.migration.aria_eb_headwind', 'Headwind speed') + ': ' + ebHeadwind + ' ' + t('stem.migration.mph_word', 'miles per hour'),
+                    'aria-valuetext': ebHeadwind + ' ' + t('stem.migration.mph_word', 'miles per hour'),
                     className: 'w-full accent-red-400',
                     onChange: function(e) { upd('ebHeadwind', parseInt(e.target.value, 10)); }
                   })
                 ),
                 // V-formation toggle
                 h('div', { className: 'flex items-center gap-2' },
-                  h('button', {
+                  h('button', { type: 'button',
                     className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
                     'aria-label': 'V-Form: ' + (ebVForm ? 'ON (-22%). ' + t('stem.migration.on_saving_energy', 'V-formation on, saving 22% energy') : 'OFF. ' + t('stem.migration.off_saving_nothing', 'V-formation off')),
@@ -11429,6 +11435,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'mb-3' },
                 h('label', { className: 'text-[0.6875rem] font-bold ' + textPrimary }, '\u2B06\uFE0F ' + t('stem.migration.altitude_label', 'Altitude') + ': ' + altFeet.toLocaleString() + ' ' + t('stem.migration.ft_unit', 'ft') + ' (' + Math.round(altFeet * 0.3048) + ' m)'),
                 h('input', { type: 'range', min: 0, max: 37000, step: 500, value: altFeet,
+                  'aria-valuetext': altFeet + ' ' + t('stem.migration.feet_word', 'feet'),
                   'aria-label': t('stem.migration.aria_altitude', 'Flight altitude') + ': ' + altFeet + ' ' + t('stem.migration.feet_word', 'feet') + '. ' + t('stem.migration.oxygen_word', 'Oxygen') + ': ' + Math.round(oxygenPercent) + '%. ' + t('stem.migration.temperature_word', 'Temperature') + ': ' + Math.round(tempF) + ' ' + t('stem.migration.degrees_f_word', 'degrees Fahrenheit') + '.',
                   className: 'w-full accent-sky-500',
                   onChange: function(e) { upd('altFeet', parseInt(e.target.value, 10)); }
@@ -11958,7 +11965,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'data-wind-placement-canvas': '',
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.target !== e.currentTarget) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.target !== e.currentTarget) return;
                 var live = _liveVals.current.placingObj;
                 if (live && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                   e.preventDefault();
@@ -11995,7 +12002,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'flex flex-wrap gap-1' },
               PLACEABLE.map(function(obj) {
                 var active = placingObj === obj.id;
-                return h('button', {
+                return h('button', { type: 'button',
                   key: obj.id,
                   className: 'px-2 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'ring-2 ring-sky-400 ' + btnPrimary : btnSecondary),
                   'aria-label': t('stem.migration.place_word', 'Place') + ' ' + obj.label + ': ' + obj.desc,
@@ -12009,7 +12016,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               })
             ),
 
-            h('button', {
+            h('button', { type: 'button',
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
               'aria-label': t('stem.migration.add_bird_short', 'Add Bird') + '. ' + t('stem.migration.add_a_bird_to_ride_the_wind_currents', 'Add a bird to ride the wind currents'),
               onClick: function() {
@@ -12021,7 +12028,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               }
             }, t('stem.migration.add_bird', '\uD83D\uDC26 Add Bird')),
 
-            h('button', {
+            h('button', { type: 'button',
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + btnSecondary,
               'aria-label': t('stem.migration.clear_all_objects_and_birds', 'Clear all objects and birds'),
               onClick: function() {
@@ -12033,7 +12040,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               }
             }, t('stem.migration.clear_all', '\uD83D\uDDD1\uFE0F Clear All')),
 
-            h('button', {
+            h('button', { type: 'button',
               className: 'px-2 py-1.5 rounded-lg text-xs font-bold ' + (showStreamlines ? btnPrimary : btnSecondary),
               'aria-label': showStreamlines
                 ? t('stem.migration.streamlines_word', 'Streamlines') + '. ' + t('stem.migration.switch_to_dot_particles', 'Switch to dot particles')
@@ -12056,6 +12063,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 return h('label', { key: control.key, className: 'text-xs ' + textSecondary, style: { flex: '1 1 180px', minWidth: 0 } },
                   control.label,
                   h('input', { type: 'range', min: 0, max: 100, step: 1, value: placement[control.key],
+                    'aria-valuetext': placement[control.key] + '%',
                     'data-wind-placement-axis': control.key, 'aria-describedby': 'migration-wind-placement-position',
                     style: { width: '100%', minHeight: 44 }, onChange: function(event) {
                       var values = { feedback: '' }; values[control.key] = Math.max(0, Math.min(100, parseInt(event.target.value, 10) || 0));
@@ -12083,7 +12091,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               role: 'radiogroup',
               'aria-label': t('stem.migration.wind_direction', 'Wind direction'),
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var radios = e.currentTarget.querySelectorAll('[role="radio"]');
                 var index = Array.prototype.indexOf.call(radios, e.target), nextIndex = index;
                 if (index < 0) return;
@@ -12099,7 +12107,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             },
               COMPASS_DIRS.map(function(cd) {
                 var active = ((Math.round(windDir / 45) * 45) % 360 + 360) % 360 === cd.angle;
-                return h('button', {
+                return h('button', { type: 'button',
                   key: cd.label,
                   role: 'radio',
                   'aria-checked': active ? 'true' : 'false',
@@ -12116,6 +12124,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('label', { className: 'text-xs font-medium ' + textSecondary }, t('stem.migration.wind_2', '\uD83C\uDF2C\uFE0F Wind:')),
               h('input', {
                 type: 'range', min: 0, max: 50, value: windSpeed,
+                'aria-valuetext': windSpeed + ' ' + t('stem.migration.mph_word', 'miles per hour') + ', ' + getBeaufortForce(windSpeed, t),
                 'aria-label': t('stem.migration.wind_speed_label', 'Wind speed') + ': ' + windSpeed + ' mph, ' + getBeaufortForce(windSpeed, t),
                 className: 'flex-1 accent-sky-500',
                 onChange: function(e) { upd('windSpeed', parseInt(e.target.value, 10)); }
@@ -12946,7 +12955,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'aria-label': t('stem.migration.aria_routes_map', 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific.') + ' ' + (selectedSpecies ? t('stem.migration.currently_tracking', 'Currently tracking') + ' ' + getSpeciesById(selectedSpecies).name : t('stem.migration.select_a_species', 'Select a species to see its route.')),
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 // Arrow keys to cycle species
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                   e.preventDefault();
@@ -12977,7 +12986,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             SPECIES.map(function(sp) {
               var active = selectedSpecies === sp.id;
               var fwColor = FLYWAY_COLORS[sp.flyway];
-              return h('button', {
+              return h('button', { type: 'button',
                 key: sp.id,
                 className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                 'aria-pressed': active ? 'true' : 'false',
@@ -13039,7 +13048,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               // is the gating other tools here already use (angles,
               // allobotsage): `callGemini && h(...)`.
               callGemini && h('div', { className: 'flex items-center gap-2 mt-2' },
-                h('button', {
+                h('button', { type: 'button',
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnPrimary,
                   'aria-label': t('stem.migration.aria_ask_ai', 'Ask AI for more facts about') + ' ' + sp.name,
                   disabled: aiExplorerLoading,
@@ -14046,7 +14055,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'aria-label': t('stem.migration.aria_aero_canvas', 'Aerodynamics lab showing airfoil cross-section with streamlines.') + ' ' + t('stem.migration.aria_aoa', 'Angle of attack') + ': ' + aoa + ' ' + t('stem.migration.degrees_word', 'degrees') + '. ' + (isStalling ? t('stem.migration.wing_is_stalling', 'Wing is stalling, flow separation occurring.') : t('stem.migration.lift_coefficient', 'Lift coefficient') + ': ' + cl.toFixed(2) + ', ' + t('stem.migration.drag_coefficient', 'Drag coefficient') + ': ' + cd.toFixed(3) + ', ' + t('stem.migration.ld_ratio', 'L over D ratio') + ': ' + ldRatio.toFixed(1)),
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowUp' && aoa < 20) { e.preventDefault(); upd('aoa', aoa + 1); }
                 else if (e.key === 'ArrowDown' && aoa > 0) { e.preventDefault(); upd('aoa', aoa - 1); }
               },
@@ -14059,6 +14068,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('label', { className: 'text-xs font-bold ' + textPrimary }, t('stem.migration.angle_of_attack', 'Angle of Attack:')),
             h('input', {
               type: 'range', min: 0, max: 20, value: aoa,
+              'aria-valuetext': aoa + ' ' + t('stem.migration.degrees_word', 'degrees'),
               'aria-label': t('stem.migration.aria_aoa', 'Angle of attack') + ': ' + aoa + ' ' + t('stem.migration.degrees_word', 'degrees') + (isStalling ? '. ' + t('stem.migration.warning_stalling', 'Warning: wing is stalling.') : ''),
               className: 'flex-1 accent-sky-500',
               onChange: function(e) { upd('aoa', parseInt(e.target.value, 10)); }
@@ -14087,7 +14097,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'grid grid-cols-2 gap-2' },
               WING_TYPES.map(function(wt) {
                 var active = selectedWing === wt.id;
-                return h('button', {
+                return h('button', { type: 'button',
                   key: wt.id,
                   className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                   'aria-pressed': active ? 'true' : 'false',
@@ -14788,7 +14798,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'aria-label': t('stem.migration.animated_night_sky_showing_nocturnal_b', 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.'),
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'r' || e.key === 'R') {
                   if (callTTS) callTTS(t('stem.migration.tts_navigation', 'Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.'), undefined, undefined, { force: true });
                 }
@@ -15016,7 +15026,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // ══════════════════════════════════════════
 
       // Back button
-      var backButton = h('button', {
+      var backButton = h('button', { type: 'button',
         className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-700 hover:bg-slate-600 text-slate-200',
         'aria-label': t('stem.migration.back_to_stem_lab_tool_list', 'Back to STEAM Lab tool list'),
         onClick: function() { if (setStemLabTool) setStemLabTool(null); }
@@ -15052,7 +15062,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'aria-label': tb.label,
             tabIndex: active ? 0 : -1,
             onKeyDown: function(e) {
-              if (e.isComposing || e.keyCode === 229 || !currentTabAction(e) || e.target !== e.currentTarget || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || !currentTabAction(e) || e.target !== e.currentTarget || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
               var nextIdx = ti;
               if (e.key === 'ArrowRight') nextIdx = (ti + 1) % TABS.length;
               else if (e.key === 'ArrowLeft') nextIdx = (ti - 1 + TABS.length) % TABS.length;
@@ -15479,19 +15489,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.wingspan', 'Wingspan'), iqVarTag('wingspan')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.wingspan.toFixed(2) + ' m')),
-              h('input', { type: 'range', min: 0.1, max: 3.0, step: 0.05, value: iq.wingspan, onChange: function(e) { setKey('wingspan', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 0.1, max: 3.0, step: 0.05, value: iq.wingspan, 'aria-valuetext': iq.wingspan.toFixed(2) + ' ' + t('stem.migration.vt_meters', 'meters'), onChange: function(e) { setKey('wingspan', parseFloat(e.target.value)); }, style: { width: '100%', minHeight: 44 } })
             ),
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.mass', 'Mass'), iqVarTag('mass')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.mass.toFixed(2) + ' kg')),
-              h('input', { type: 'range', min: 0.05, max: 12, step: 0.05, value: iq.mass, onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 0.05, max: 12, step: 0.05, value: iq.mass, 'aria-valuetext': iq.mass.toFixed(2) + ' ' + t('stem.migration.vt_kilograms', 'kilograms'), onChange: function(e) { setKey('mass', parseFloat(e.target.value)); }, style: { width: '100%', minHeight: 44 } })
             ),
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.headwind', 'Headwind'), iqVarTag('headwind')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.headwind + ' m/s')),
-              h('input', { type: 'range', min: -10, max: 20, step: 1, value: iq.headwind, onChange: function(e) { setKey('headwind', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: -10, max: 20, step: 1, value: iq.headwind, 'aria-valuetext': iq.headwind + ' ' + t('stem.migration.vt_meters_per_sec', 'meters per second'), onChange: function(e) { setKey('headwind', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
             ),
             h('label', null,
               h('div', { style: { fontSize: 11, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, t('stem.migration.distance_3', 'Distance'), iqVarTag('distance')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.distance + ' km')),
-              h('input', { type: 'range', min: 100, max: 15000, step: 100, value: iq.distance, onChange: function(e) { setKey('distance', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 100, max: 15000, step: 100, value: iq.distance, 'aria-valuetext': iq.distance + ' ' + t('stem.migration.vt_kilometers', 'kilometers'), onChange: function(e) { setKey('distance', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
             )
           ),
           h('div', { style: { marginBottom: 10 } },
@@ -15599,7 +15609,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.migration.your_hypothesis_which_parameter_forces', 'Your hypothesis (which parameter forces the most stopovers?)')),
           h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.hypothesis_wind_example', 'e.g., Increasing headwind will lower the reserve ratio when the other variables stay the same.'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: IQ.tile, border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.migration.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },

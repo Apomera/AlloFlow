@@ -115,7 +115,9 @@ function _isPrivateOrLocalHost(hostname) {
 }
 function _safePersonaAvatarUrl(value) {
   if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
+  let trimmed = value.trim();
+  // A line-wrapped base64 payload is still one image: drop its whitespace before the strict checks.
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(trimmed)) trimmed = trimmed.replace(/\s+/g, '');
   if (!trimmed || trimmed.length > 5000000 || /[\u0000-\u001F\u007F]/.test(trimmed)) return null;
   if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) return trimmed;
   if (/^blob:/i.test(trimmed)) {

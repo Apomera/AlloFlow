@@ -42,13 +42,18 @@
 (function () {
   'use strict';
 
-  if (window.AlloModules && window.AlloModules.BrandProfile) {
-    console.log('[CDN] BrandProfile already loaded, skipping');
+  var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  if (_win && _win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.BrandProfile) {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] BrandProfile already loaded, skipping');
+    }
     return;
   }
 
   var warnLog = function () {
-    console.warn.apply(console, ['[BrandProfile]'].concat(Array.prototype.slice.call(arguments)));
+    if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
+      console.warn.apply(console, ['[BrandProfile]'].concat(Array.prototype.slice.call(arguments)));
+    }
   };
 
   // ── Storage constants ────────────────────────────────────────────────────
@@ -63,8 +68,23 @@
   function _isUnsafeKey(key) {
     return key === '__proto__' || key === 'constructor' || key === 'prototype';
   }
+  function _isPlainObj(v) {
+    return !!v && typeof v === 'object' && !Array.isArray(v);
+  }
+  function _safeStr(value) {
+    if (value == null || typeof value === 'symbol') return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+    if (typeof value === 'boolean') return String(value);
+    try { return String(value); } catch (_) { return ''; }
+  }
+  function _safeNum(value) {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string' && value.trim() !== '') return Number(value);
+    return NaN;
+  }
   function _stripCtrl(value) {
-    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+    return _safeStr(value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
   }
   function _safeJsonParse(raw, maxChars) {
     if (typeof raw !== 'string') throw new Error('Expected JSON string');
@@ -78,25 +98,26 @@
   }
 
   // ── Defaults ─────────────────────────────────────────────────────────────
-  var DEFAULT_COLORS = {
+  var DEFAULT_COLORS = Object.freeze({
     heading: '#1e3a5f',
     accent: '#2563eb',
     body: '#1f2937',
     bg: '#ffffff',
     cardBg: '#f8fafc',
     cardBorder: '#e2e8f0'
-  };
+  });
 
-  var DEFAULT_FONTS = {
+  var DEFAULT_FONTS = Object.freeze({
     body: "'Inter', system-ui, sans-serif",
     heading: null  // null = use body font
-  };
+  });
 
   // ── Pure color helpers (WCAG 2.1 luminance + contrast ratio) ─────────────
   // Duplicated from doc_pipeline_module's validateAndFixCssContrast so this
   // module has no load-order dependency. The math is identical.
   function _hexToRgb(hex) {
-    var h = String(hex || '').replace('#', '').trim();
+    if (!isValidHex(hex)) return null;
+    var h = hex.trim().replace(/^#/, '');
     if (h.length === 3) {
       return [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16)];
     }
@@ -133,9 +154,16 @@
     var v = value.trim();
     if (!v || v.length > 200) return null;
     if (!/^[a-zA-Z0-9 ,.'"À-ɏ-]+$/.test(v)) return null;
-    var singleQuotes = (v.match(/'/g) || []).length;
-    var doubleQuotes = (v.match(/"/g) || []).length;
-    if (singleQuotes % 2 !== 0 || doubleQuotes % 2 !== 0) return null;
+    var activeQuote = null;
+    for (var i = 0; i < v.length; i++) {
+      var ch = v.charAt(i);
+      if (ch === "'" || ch === '"') {
+        if (activeQuote === null) activeQuote = ch;
+        else if (activeQuote === ch) activeQuote = null;
+        else return null;
+      }
+    }
+    if (activeQuote !== null) return null;
     return v;
   }
 
@@ -144,7 +172,7 @@
   // (school name, footer credit, alt text) gets escaped before injection.
   function escapeHtml(s) {
     if (s == null) return '';
-    return String(s)
+    return _safeStr(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -156,7 +184,7 @@
   // ── ID generation ────────────────────────────────────────────────────────
   // Slugify the profile name. Falls back to a short random tail if collision.
   function slugify(name) {
-    var base = String(name || '')
+    var base = _safeStr(name)
       .toLowerCase()
       .replace(/['"]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
@@ -226,11 +254,12 @@
   // Take a partial / user-supplied profile and fill in defaults so downstream
   // consumers can rely on the shape. This is the OUTPUT shape; validate first.
   function _normalize(input) {
-    var src = input || {};
+    var src = _isPlainObj(input) ? input : {};
     // Re-enforce hex on EVERY read (not just at save): a profile can reach here via
     // importBrandProfile or a hand-edited localStorage that never passed validation, and
     // the colors are interpolated raw into export CSS. Any non-hex falls back to default.
-    var _mergedColors = Object.assign({}, DEFAULT_COLORS, src.colors || {});
+    var srcColors = _isPlainObj(src.colors) ? src.colors : {};
+    var _mergedColors = Object.assign({}, DEFAULT_COLORS, srcColors);
     var colors = {};
     Object.keys(DEFAULT_COLORS).forEach(function (ck) {
       var rawColor = _mergedColors[ck];
@@ -238,16 +267,17 @@
     });
     // Likewise sanitize the font stacks (see _safeFontStack) so a stored/imported brand
     // can never inject markup through font-family. Unsafe → default (body) / null (heading).
-    var _mergedFonts = Object.assign({}, DEFAULT_FONTS, src.fonts || {});
+    var srcFonts = _isPlainObj(src.fonts) ? src.fonts : {};
+    var _mergedFonts = Object.assign({}, DEFAULT_FONTS, srcFonts);
     var fonts = {
       body: _safeFontStack(_mergedFonts.body) || DEFAULT_FONTS.body,
       heading: (_mergedFonts.heading == null) ? null : (_safeFontStack(_mergedFonts.heading) || null)
     };
-    var header = src.header && typeof src.header === 'object'
-      ? { text: _stripCtrl(src.header.text || '').slice(0, 500), showLogo: !!src.header.showLogo }
+    var header = _isPlainObj(src.header)
+      ? { text: _stripCtrl(src.header.text).slice(0, 500), showLogo: !!src.header.showLogo }
       : { text: '', showLogo: false };
-    var footer = src.footer && typeof src.footer === 'object'
-      ? { text: _stripCtrl(src.footer.text || '').slice(0, 500), showPageNumber: !!src.footer.showPageNumber }
+    var footer = _isPlainObj(src.footer)
+      ? { text: _stripCtrl(src.footer.text).slice(0, 500), showPageNumber: !!src.footer.showPageNumber }
       : { text: '', showPageNumber: false };
     var MAX_LOGO_DATA_CHARS = 750 * 1024;
     function _safeLogoSrc(raw) {
@@ -257,15 +287,15 @@
       return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
     }
     function _safeLogoDim(raw) {
-      var n = Number(raw);
+      var n = _safeNum(raw);
       return (Number.isFinite(n) && n > 0 && n <= 4096) ? Math.round(n) : null;
     }
-    var safeLogoUrl = (src.logo && typeof src.logo === 'object') ? _safeLogoSrc(src.logo.src) : '';
+    var safeLogoUrl = _isPlainObj(src.logo) ? _safeLogoSrc(src.logo.src) : '';
     var logo = null;
     if (safeLogoUrl) {
       logo = {
         src: safeLogoUrl,
-        alt: _stripCtrl(src.logo.alt || '').slice(0, 500),
+        alt: _stripCtrl(src.logo.alt).slice(0, 500),
         width: _safeLogoDim(src.logo.width),
         height: _safeLogoDim(src.logo.height)
       };
@@ -273,7 +303,7 @@
     var cleanId = (typeof src.id === 'string' && src.id && !_isUnsafeKey(src.id) && src.id.length <= 80) ? src.id : null;
     return {
       id: cleanId,  // assigned by saveBrandProfile if missing
-      name: _stripCtrl(src.name || '').slice(0, 80),
+      name: _stripCtrl(src.name).slice(0, 80),
       logo: logo,
       colors: colors,
       fonts: fonts,
@@ -289,7 +319,7 @@
   // Returns { ok, errors, warnings }. Errors block save; warnings don't.
   function validateBrandProfile(profile) {
     var errors = [], warnings = [];
-    if (!profile || typeof profile !== 'object') {
+    if (!_isPlainObj(profile)) {
       return { ok: false, errors: ['Profile is missing or not an object'], warnings: [] };
     }
     var rawName = typeof profile.name === 'string' ? _stripCtrl(profile.name) : '';
@@ -298,7 +328,7 @@
     if (rawName.length > 80) errors.push('Profile name must be 80 characters or fewer');
 
     // Color validity — validate raw supplied colors before _normalize defaults them
-    var rawColors = (profile.colors && typeof profile.colors === 'object') ? profile.colors : {};
+    var rawColors = _isPlainObj(profile.colors) ? profile.colors : {};
     var colorKeys = Object.keys(DEFAULT_COLORS);
     for (var i = 0; i < colorKeys.length; i++) {
       var k = colorKeys[i];
@@ -309,7 +339,7 @@
     }
     // Font validity — fonts are interpolated into export CSS, so reject CSS/markup-bearing
     // values rather than silently swapping them (the user should know their input was rejected).
-    var rawFonts = (profile.fonts && typeof profile.fonts === 'object') ? profile.fonts : {};
+    var rawFonts = _isPlainObj(profile.fonts) ? profile.fonts : {};
     if (rawFonts.body && _safeFontStack(rawFonts.body) === null) errors.push('Body font contains characters that are not allowed in a font name (use letters, digits, spaces, commas, periods, hyphens and quotes only)');
     if (rawFonts.heading && _safeFontStack(rawFonts.heading) === null) errors.push('Heading font contains characters that are not allowed in a font name');
     if (errors.length === 0) {
@@ -400,7 +430,7 @@
     if (!store.activeProfileId) store.activeProfileId = n.id;
     var ok = _writeStore(store);
     if (ok && store.activeProfileId === n.id) _dispatchChange(n.id, n);
-    return { ok: ok, id: n.id, errors: [], warnings: v.warnings };
+    return { ok: ok, id: ok ? n.id : null, errors: ok ? [] : ['Failed to persist brand profile to storage'], warnings: v.warnings };
   }
   function deleteBrandProfile(profileId) {
     if (!profileId || typeof profileId !== 'string') return false;
@@ -433,9 +463,11 @@
   }
   function _dispatchChange(profileId, profile) {
     try {
-      window.dispatchEvent(new CustomEvent('alloflow:brand-profile-changed', {
-        detail: { profileId: profileId, profile: profile }
-      }));
+      if (_win && typeof _win.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        _win.dispatchEvent(new CustomEvent('alloflow:brand-profile-changed', {
+          detail: { profileId: profileId, profile: profile }
+        }));
+      }
     } catch (e) { /* IE legacy — skip */ }
   }
 
@@ -456,12 +488,15 @@
     }
     var parsed;
     try { parsed = _safeJsonParse(jsonString, MAX_IMPORT_JSON_CHARS); }
-    catch (e) { return { ok: false, id: null, errors: ['Not valid JSON: ' + String(e && e.message || 'parse failed').slice(0, 160)] }; }
+    catch (e) { return { ok: false, id: null, errors: ['Not valid JSON: ' + _safeStr(e && e.message || 'parse failed').slice(0, 160)] }; }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || parsed._alloFormat !== 'alloflow.brand-profile') {
       return { ok: false, id: null, errors: ['Not an AlloFlow brand profile export (missing _alloFormat tag)'] };
     }
-    if (parsed._formatVersion && parsed._formatVersion > CURRENT_SCHEMA_VERSION) {
-      return { ok: false, id: null, errors: ['Brand profile was exported from a newer AlloFlow (format v' + parsed._formatVersion + '; this build supports v' + CURRENT_SCHEMA_VERSION + ')'] };
+    if (parsed._formatVersion !== undefined && parsed._formatVersion !== null) {
+      var fmtVer = _safeNum(parsed._formatVersion);
+      if (!Number.isFinite(fmtVer) || fmtVer <= 0 || fmtVer > CURRENT_SCHEMA_VERSION) {
+        return { ok: false, id: null, errors: ['Brand profile was exported from a newer AlloFlow (format v' + _safeStr(parsed._formatVersion).slice(0, 40) + '; this build supports v' + CURRENT_SCHEMA_VERSION + ')'] };
+      }
     }
     // Drop the format tags; the rest is a normal profile. Force a re-mint of the id
     // so an import never overwrites an existing local profile by collision.
@@ -478,7 +513,7 @@
   // Mapping a BrandProfile onto that shape lets the Document Builder + PDF
   // remediation pipeline use a brand wherever they currently consume a seed.
   function brandProfileToCssVars(profile) {
-    if (!profile) return null;
+    if (!_isPlainObj(profile)) return null;
     var n = _normalize(profile);
     return {
       bodyFont: n.fonts.body,
@@ -493,7 +528,7 @@
     };
   }
   function brandProfileToCSS(profile) {
-    if (!profile) return '';
+    if (!_isPlainObj(profile)) return '';
     var n = _normalize(profile);
     var c = n.colors;
     var headingFont = n.fonts.heading || n.fonts.body;
@@ -514,7 +549,7 @@
   // Optional header/footer band HTML. Returns '' if the brand has nothing to show.
   // Escapes all user input. Logo is included only if uploaded AND header.showLogo.
   function brandProfileToHeaderHTML(profile) {
-    if (!profile) return '';
+    if (!_isPlainObj(profile)) return '';
     var n = _normalize(profile);
     var hasText = n.header.text && n.header.text.length > 0;
     var hasLogo = n.header.showLogo && n.logo && n.logo.src;
@@ -532,15 +567,16 @@
     return pieces.join('');
   }
   function brandProfileToFooterHTML(profile, pageNumber) {
-    if (!profile) return '';
+    if (!_isPlainObj(profile)) return '';
     var n = _normalize(profile);
     var hasText = n.footer.text && n.footer.text.length > 0;
-    var showPage = n.footer.showPageNumber && pageNumber != null;
+    var pageStr = pageNumber != null ? _safeStr(pageNumber) : '';
+    var showPage = n.footer.showPageNumber && pageStr !== '';
     if (!hasText && !showPage) return '';
     var pieces = ['<footer class="brand-footer" role="contentinfo">'];
     if (hasText) pieces.push('<span class="brand-footer-text">' + escapeHtml(n.footer.text) + '</span>');
     else        pieces.push('<span></span>');  // flex spacer so page # right-aligns
-    if (showPage) pieces.push('<span class="brand-footer-page">Page ' + escapeHtml(String(pageNumber)) + '</span>');
+    if (showPage) pieces.push('<span class="brand-footer-page">Page ' + escapeHtml(pageStr) + '</span>');
     pieces.push('</footer>');
     return pieces.join('');
   }
@@ -551,15 +587,19 @@
   // that opt in; not invoked by saveBrandProfile (validation is preferred over
   // silent mutation on user input).
   function autoFixBrandColors(profile, targetRatio) {
-    var target = targetRatio || 4.5;
+    var parsedTarget = _safeNum(targetRatio);
+    var target = (Number.isFinite(parsedTarget) && parsedTarget >= 1 && parsedTarget <= 21) ? parsedTarget : 4.5;
     var n = _normalize(profile);
     var fixes = [];
-    function nudge(fgKey, bgKey, minRatio) {
+    function nudge(fgKey, bgKey, minRatio, preserveBgKey) {
       var fg = n.colors[fgKey], bg = n.colors[bgKey];
       if (!isValidHex(fg) || !isValidHex(bg)) return;
       if (contrastRatio(fg, bg) >= minRatio) return;
-      var towardBlack = _luminance.apply(null, _hexToRgb(bg)) > 0.5;
+      var towardBlack = contrastRatio('#000000', bg) >= contrastRatio('#ffffff', bg);
+      var preserveBg = preserveBgKey && isValidHex(n.colors[preserveBgKey]) ? n.colors[preserveBgKey] : null;
+      var beforeMin = preserveBg ? Math.min(contrastRatio(fg, bg), contrastRatio(fg, preserveBg)) : contrastRatio(fg, bg);
       var rgb = _hexToRgb(fg).slice();
+      var chosen = null;
       for (var step = 0; step < 32; step++) {
         for (var i = 0; i < 3; i++) {
           rgb[i] = towardBlack ? Math.max(0, rgb[i] - 8) : Math.min(255, rgb[i] + 8);
@@ -567,24 +607,30 @@
         var candidate = '#' + rgb.map(function (c) {
           var s = c.toString(16); return s.length < 2 ? '0' + s : s;
         }).join('');
-        if (contrastRatio(candidate, bg) >= minRatio) {
-          fixes.push({ key: fgKey, from: fg, to: candidate, ratio: contrastRatio(candidate, bg) });
-          n.colors[fgKey] = candidate;
-          return;
+        if (contrastRatio(candidate, bg) >= minRatio && (!preserveBg || contrastRatio(candidate, preserveBg) >= minRatio)) {
+          chosen = candidate;
+          break;
         }
       }
-      var fallback = towardBlack ? '#000000' : '#ffffff';
-      fixes.push({ key: fgKey, from: fg, to: fallback, ratio: contrastRatio(fallback, bg) });
-      n.colors[fgKey] = fallback;
+      if (!chosen) {
+        var fallback = towardBlack ? '#000000' : '#ffffff';
+        if (!preserveBg || contrastRatio(fallback, preserveBg) >= minRatio || Math.min(contrastRatio(fallback, bg), contrastRatio(fallback, preserveBg)) > beforeMin) {
+          chosen = fallback;
+        }
+      }
+      if (chosen && chosen !== fg) {
+        fixes.push({ key: fgKey, from: fg, to: chosen, ratio: contrastRatio(chosen, bg) });
+        n.colors[fgKey] = chosen;
+      }
     }
-    nudge('heading', 'bg', target);
-    nudge('body', 'bg', target);
-    nudge('body', 'cardBg', target);
+    nudge('heading', 'bg', target, null);
+    nudge('body', 'bg', target, null);
+    nudge('body', 'cardBg', target, 'bg');
     return { profile: n, fixes: fixes };
   }
 
   // ── Expose to AlloFlow shell ─────────────────────────────────────────────
-  var BrandProfile = {
+  var BrandProfile = Object.freeze({
     // Read
     getActiveBrandProfile: getActiveBrandProfile,
     setActiveBrandProfile: setActiveBrandProfile,
@@ -611,10 +657,16 @@
     DEFAULT_COLORS: DEFAULT_COLORS,
     DEFAULT_FONTS: DEFAULT_FONTS,
     STORAGE_KEY: STORAGE_KEY
-  };
+  });
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.BrandProfile = BrandProfile;
-
-  console.log('[CDN] BrandProfile loaded (schema v' + CURRENT_SCHEMA_VERSION + ')');
+  if (typeof module === 'object' && module && module.exports) module.exports = BrandProfile;
+  if (_win) {
+    try {
+      if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+      _win.AlloModules.BrandProfile = BrandProfile;
+      if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+        console.log('[CDN] BrandProfile loaded (schema v' + CURRENT_SCHEMA_VERSION + ')');
+      }
+    } catch (_) {}
+  }
 })();

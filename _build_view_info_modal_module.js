@@ -44,6 +44,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.InfoModal) {
     console.log('[CDN] InfoModal already loaded, skipping');
     return;

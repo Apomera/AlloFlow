@@ -625,7 +625,14 @@ describe('Phase 7 enhancements across Waves 1–4', () => {
       expect(prepPrompt).toContain('<UNTRUSTED_REVISION_REQUEST>');
       expect(prepPrompt.match(/<\/UNTRUSTED_REVISION_REQUEST>/g)).toHaveLength(1);
       expect(prepPrompt.indexOf('<UNTRUSTED_REVISION_REQUEST>')).toBeLessThan(prepPrompt.indexOf('EDIT_REQUEST_JSON:\n'));
-      expect(() => JSON.parse(prepPrompt.split('EDIT_REQUEST_JSON:\n')[1])).not.toThrow();
+      // The JSON payload is now itself fenced as untrusted data (and < > escaped inside it).
+      const fencedJson = (prompt, tag) => {
+        const body = prompt.split(tag + ':\n')[1];
+        expect(body.startsWith('<UNTRUSTED_' + tag + '>\n')).toBe(true);
+        expect(body).toContain('\n</UNTRUSTED_' + tag + '>');
+        return body.slice(('<UNTRUSTED_' + tag + '>\n').length, body.indexOf('\n</UNTRUSTED_' + tag + '>'));
+      };
+      expect(() => JSON.parse(fencedJson(prepPrompt, 'EDIT_REQUEST_JSON'))).not.toThrow();
 
       callGemini.mockClear();
       callGemini.mockImplementationOnce(async () => 'Because it helps students follow steps.');
@@ -635,7 +642,7 @@ describe('Phase 7 enhancements across Waves 1–4', () => {
       expect(explainPrompt).toContain('<UNTRUSTED_EXPLAIN_REQUEST>');
       expect(explainPrompt.match(/<\/UNTRUSTED_EXPLAIN_REQUEST>/g)).toHaveLength(1);
       expect(explainPrompt.indexOf('<UNTRUSTED_EXPLAIN_REQUEST>')).toBeLessThan(explainPrompt.indexOf('PROPOSAL_QUESTION_JSON:\n'));
-      expect(() => JSON.parse(explainPrompt.split('PROPOSAL_QUESTION_JSON:\n')[1])).not.toThrow();
+      expect(() => JSON.parse(fencedJson(explainPrompt, 'PROPOSAL_QUESTION_JSON'))).not.toThrow();
 
       window.__alloAiUsable = () => false;
       const gatedExplain = await LR.explain(prepared.proposal, resources, 'Why?', { callGemini });
@@ -794,8 +801,11 @@ describe('Phase 7 enhancements across Waves 1–4', () => {
       expect(alertDialog.tabIndex).toBe(-1);
 
       // Escape inside nested alertdialog closes alertdialog ONLY and keeps main editor open
-      act(() => Simulate.keyDown(alertDialog, { key: 'Escape', isComposing: false, keyCode: 27 }));
+      // Both traps now listen on document (native keydown, top-of-stack wins), so a
+      // React-synthetic Simulate no longer reaches them: dispatch a real event.
+      act(() => { alertDialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true, cancelable: true })); });
       expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+      expect(window.__alloFocusTrapStack.length).toBe(1);
       expect(onClose).not.toHaveBeenCalled();
 
       // Compact row buttons preserve min-h-6 while action buttons enforce min-h-11; disabled Save uses text-slate-600

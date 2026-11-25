@@ -22,12 +22,15 @@ const OUTPUT = path.join(ROOT, 'walkthrough_script_source_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'walkthrough_script_source_module.js');
 
 if (!fs.existsSync(SOURCE)) { console.error('Not found:', SOURCE); process.exit(1); }
+if (!fs.existsSync(MANIFEST)) { console.error('Not found:', MANIFEST); process.exit(1); }
 
 const script = fs.readFileSync(SOURCE, 'utf-8');
 const manifest = fs.readFileSync(MANIFEST, 'utf-8');
+try { JSON.parse(manifest); } catch (e) { console.error('Invalid appsscript.json manifest:', e.message); process.exit(1); }
 const sha256 = crypto.createHash('sha256').update(script, 'utf8').digest('hex');
 const versionMatch = /var WR_VERSION = (\d+);/.exec(script);
-const version = versionMatch ? Number(versionMatch[1]) : 1;
+if (!versionMatch) { console.error('Missing WR_VERSION in', SOURCE); process.exit(1); }
+const version = Number(versionMatch[1]);
 
 // Steps are data, not prose baked into a component, so the standalone page and
 // the React panel render the same instructions from one source.
@@ -42,7 +45,12 @@ const STEPS = [
   { n: 8, text: 'Copy the Web app URL, which ends in /exec, and paste it below. Connect verifies your existing owner token; public requests cannot claim or reset ownership.' }
 ];
 
-const escaped = JSON.stringify(script);
+const safeJsString = (s) => JSON.stringify(s)
+  .replace(/<\//g, '<\\/')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
+const escaped = safeJsString(script);
+const manifestEscaped = safeJsString(manifest);
 const stepsJson = JSON.stringify(STEPS, null, 2).replace(/\n/g, '\n  ');
 
 const outputCode = `/**
@@ -57,6 +65,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window) return;
   window.AlloModules = window.AlloModules || {};
   var previous = window.AlloModules.WalkthroughScriptSource;
   if (previous && previous.version === ${version} && previous.sha256 === ${JSON.stringify(sha256)}) {
@@ -70,8 +79,8 @@ const outputCode = `/**
     filename: 'Code.gs',
     projectName: 'AlloFlow Walkthrough Records',
     newProjectUrl: 'https://script.new',
-    steps: Object.freeze(${stepsJson}),
-    manifest: ${JSON.stringify(manifest)},
+    steps: Object.freeze(${stepsJson}.map(Object.freeze)),
+    manifest: ${manifestEscaped},
     execUrlPattern: '^https://script\\\\.google\\\\.com/macros/s/[A-Za-z0-9_-]+/exec$',
     source: ${escaped}
   });

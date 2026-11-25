@@ -32,8 +32,10 @@ try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ExportPreviewView) { console.log('[CDN] ViewExportPreviewModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) return;
 var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;

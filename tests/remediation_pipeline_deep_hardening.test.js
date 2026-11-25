@@ -62,14 +62,21 @@ const checkpointHelpers = makeCheckpointRuntime(
 
 describe('remediation deep-dive hardening', () => {
   it('sanitizes every imported remediation HTML lane before commit or Builder preview', () => {
-    expect(pipe).toContain("querySelectorAll('script,iframe,frame,object,embed,base,link,meta,template,svg foreignObject");
+    // The strip list grew on 2026-11-19 (frameset, noscript, MathML/SVG animation vectors); every original entry stays.
+    const stripAt = pipe.indexOf("querySelectorAll('script,iframe,frame,frameset,object,embed,base,link,meta,noscript,template,");
+    expect(stripAt).toBeGreaterThan(-1);
+    const stripList = pipe.slice(stripAt + "querySelectorAll('".length, pipe.indexOf("')", stripAt)).split(',');
+    for (const tag of ['script', 'iframe', 'frame', 'object', 'embed', 'base', 'link', 'meta', 'template', 'svg foreignObject']) expect(stripList).toContain(tag);
     expect(pipe).toContain("if (/^on/i.test(name)");
     expect(pipe).toContain("name === 'ping' || name === 'manifest'");
     expect(pipe).toContain("out._translation = Object.assign({}, out._translation, { html: sanitize(out._translation.html) })");
     expect(pipe).toContain("out._plainLanguage = Object.assign({}, out._plainLanguage, { html: sanitize(out._plainLanguage.html) })");
     expect(pipe).toContain("cleanRange.result = Object.assign({}, cleanRange.result, { accessibleHtml: sanitize(cleanRange.result.accessibleHtml) })");
-    expect(occurrences(view, '_viewSanitizeProjectImport(parsedProject, _docPipeline)')).toBe(2);
-    // Project files enter through the two sanitized view import paths above.
+    // Both view entry points share ONE sanitized loader since 2026-11-21 (_loadProjectFromFileInput).
+    expect(occurrences(view, '_viewSanitizeProjectImport(parsedProject, _docPipeline)')).toBe(1);
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })}');
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
+    // Project files enter through that sanitized view import path.
     // Startup cache restore rehydrates the full saved result instead of reimporting a project.
     expect(host).toContain('rehydrateVerificationHtmlBinding(parsed.pdfFixResult)');
     expect(host).toContain('const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);');
@@ -199,7 +206,7 @@ describe('remediation deep-dive hardening', () => {
     // named elsewhere in the file (a help-registry reference), and slicing from that
     // first hit landed in the diagnostics panel, where the assertion below could only
     // ever fail. Take the occurrence that opens a <button> tag.
-    const makeAccessibleAt = view.indexOf('<button data-help-key="pdf_audit_view_make_accessible_btn"');
+    const makeAccessibleAt = view.indexOf('<button type="button" data-help-key="pdf_audit_view_make_accessible_btn"');
     expect(makeAccessibleAt).toBeGreaterThan(-1);
     const makeAccessible = view.slice(makeAccessibleAt, view.indexOf('</button>', makeAccessibleAt));
     const fixVerify = view.slice(

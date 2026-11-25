@@ -317,7 +317,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       { id: 'ad13', title: 'Your IEP Meeting', setup: 'You\'re sitting in your IEP meeting. The adults \u2014 teachers, specialists, your parent \u2014 are making decisions about your goals and services. They\'re talking over you as if you\'re not in the room. You disagree with a proposed change.',
         who: 'IEP team',
         branches: [
-          { label: 'Let the adults handle it. They know best.', style: 'silent', outcome: 'This is YOUR plan for YOUR education. Federal law (IDEA) gives you the right to participate. When you stay silent, decisions get made without your input \u2014 and you\'re the one who has to live with them.', rating: 1 },
+          { label: 'Let the adults handle it. They know best.', style: 'silent', outcome: 'This is YOUR plan for YOUR education. Federal law (IDEA) says the school must invite you once the team is planning for life after high school, and you can attend earlier whenever appropriate. When you stay silent, decisions get made without your input \u2014 and you\'re the one who has to live with them.', rating: 1 },
           { label: '"This is MY life! Stop talking about me like I\'m not here! I don\'t agree with any of this!"', style: 'aggressive', outcome: 'Your frustration is completely understandable, but an outburst can be used to question your readiness. It gives people an excuse to make decisions "for" you.', rating: 2 },
           { label: '"Excuse me \u2014 I\'d like to share my perspective on this change. I think [current approach] is working because [specific reason]. Can we discuss keeping it?"', style: 'assertive', outcome: 'You interrupted respectfully, used evidence, and requested dialogue. This is exactly what transition planning is designed for: YOUR voice in YOUR plan. The adults should be listening.', rating: 3 }
         ] },
@@ -343,11 +343,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           { label: 'Tell a trusted adult: "My anxiety has been making it really hard to keep up with school. I think I might need some accommodations or support. Who should I talk to about that?"', style: 'assertive', outcome: 'You named the problem specifically, described the impact, and asked for direction. This opens the door to a 504 plan, counseling referrals, or classroom accommodations. Asking for mental health support is one of the bravest forms of self-advocacy.', rating: 3 }
         ] },
       { id: 'ad17', title: 'The Discrimination Report', setup: 'A teacher made a comment about your background that felt discriminatory. Several students laughed. The teacher didn\'t correct it. You felt small.',
-        who: 'Administrator / Title VI coordinator',
+        who: 'Administrator / district civil rights or equity officer',
         branches: [
           { label: 'Let it go. Making a report will just make things awkward.', style: 'silent', outcome: 'The comment stands unchallenged. The teacher learns it\'s acceptable. Other students with your background absorb the same message: you don\'t matter enough to protect.', rating: 1 },
           { label: 'Post about it on social media. Let the court of public opinion judge.', style: 'aggressive', outcome: 'Social media pressure sometimes works, but it also escalates unpredictably, can get YOU in trouble, and bypasses the formal protections designed to help you.', rating: 2 },
-          { label: 'Document what was said, when, and who was there. Report it to an administrator or Title VI coordinator: "I want to report a comment that I believe was discriminatory. Here\'s what happened."', style: 'assertive', outcome: 'Documentation is power. You used the system designed to protect you. Title VI of the Civil Rights Act requires schools to address discrimination. Your report creates accountability.', rating: 3 }
+          { label: 'Document what was said, when, and who was there. Report it to an administrator or the district\'s civil rights or equity officer: "I want to report a comment that I believe was discriminatory. Here\'s what happened."', style: 'assertive', outcome: 'Documentation is power. You used the system designed to protect you. Title VI of the Civil Rights Act requires schools to address discrimination. Your report creates accountability.', rating: 3 }
         ] },
       { id: 'ad18', title: 'Unequal College Guidance', setup: 'Your school counselor isn\'t helping with your college applications the way they help other students. You notice a pattern in who gets support and who doesn\'t.',
         who: 'School counselor / principal',
@@ -905,7 +905,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       notes: 'Doctors get many of these requests. Specificity (what info, deadline, where to send) makes their life easier and gets you the note faster.', age: 'middle-high' },
     { id: 'lt_correction_request', name: 'Correction to your educational record', audience: 'School registrar', purpose: 'Fix an error in your records',
       body: 'Dear {{registrarName}},\n\nUnder FERPA, I am requesting correction of the following information in my educational record: {{specific_inaccuracy}}.\n\nThe correct information should read: {{correct_info}}.\n\nSupporting documentation is attached.\n\nPlease confirm receipt and timeline for correction.\n\nThank you,\n{{studentName}}',
-      notes: 'FERPA gives students (and parents of minors) the right to request correction of inaccurate records. Citing FERPA shows you know your rights.', age: 'high' }
+      notes: 'FERPA gives parents, and students once they turn 18, the right to ask for inaccurate records to be corrected. If you are under 18, have a parent or guardian send this letter.', age: 'high' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -915,7 +915,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   var CASE_STUDIES = [
     { id: 'judyHeumann', name: 'Judy Heumann', years: '1947-2023', area: 'Disability rights',
-      story: 'Denied entry to school in NYC at age 5 because she used a wheelchair — administrators called her a "fire hazard." Her mother fought and won, but the experience shaped Judy\'s life. As a young adult, she sued the NYC Board of Education when they refused to license her as a teacher because of her disability — and won. In 1977 she led the 504 Sit-In: 150 disabled activists occupied the federal HEW building in San Francisco for 26 days, refusing to leave until Section 504 of the Rehabilitation Act was signed. They won.',
+      story: 'Denied entry to school in NYC at age 5 because she used a wheelchair \u2014 administrators called her a "fire hazard." Her mother fought and won, but the experience shaped Judy\'s life. As a young adult, she sued the NYC Board of Education when they refused to license her as a teacher because of her disability. The Board settled and she got her license. In 1977 she helped lead the 504 Sit-In: about 150 disabled activists occupied the federal HEW regional office in San Francisco for 26 days, until the government signed the regulations that put Section 504 (passed in 1973) into force. They won.',
       strategy: 'Coalition-building + direct action + legal pressure. Knew when to talk, when to sue, when to occupy buildings.',
       lesson: 'Self-advocacy at scale: when individual advocacy hits a wall, organize. The 504 Sit-In showed that the disability community had political power; without it, the ADA (1990) doesn\'t exist.',
       youCanDo: 'Find your community. Self-advocacy gets harder solo and easier with allies. Even one ally — a counselor, a parent, a friend — multiplies what one student can do.',
@@ -927,7 +927,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       youCanDo: 'You don\'t have to be famous to use your voice. Writing an op-ed in your school newspaper, speaking at a school board meeting, sharing your experience publicly — these are all forms of advocacy that move the world.',
       identifier: '"I Am Malala" (2013) memoir. Co-authored with Christina Lamb. Accessible to middle-school readers.' },
     { id: 'temple', name: 'Temple Grandin', years: '1947-present', area: 'Autism + animal welfare',
-      story: 'Diagnosed with autism in 1950 when most professionals recommended institutionalization. Her mother refused. Temple became one of the most consequential animal-welfare designers in the world — redesigning livestock handling facilities to reduce suffering. Half of all U.S. cattle pass through systems she designed. She also became one of the most prominent autistic public intellectuals, naming "thinking in pictures" and bringing autistic cognition into public conversation.',
+      story: 'As a toddler around 1950 she was labelled "brain damaged" and doctors recommended an institution; she was later identified as autistic. Her mother refused. Temple became one of the most consequential animal-welfare designers in the world \u2014 redesigning livestock handling facilities to reduce suffering. Half of all U.S. cattle pass through systems she designed. She also became one of the most prominent autistic public intellectuals, naming "thinking in pictures" and bringing autistic cognition into public conversation.',
       strategy: 'Translating her difference into expertise. Used autistic pattern-recognition as her superpower in animal behavior.',
       lesson: 'Difference is not deficit. The same wiring that made school agonizing made her uniquely able to see what other designers couldn\'t. Self-advocacy includes claiming your wiring as wiring, not as defect.',
       youCanDo: 'What does YOUR brain do well? Self-advocacy starts with knowing your own profile. The same trait that\'s a barrier in one context is often an advantage in another.',
@@ -938,9 +938,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       lesson: 'The system is not neutral. It has preferences that often exclude disabled people. Advocacy is sometimes about refusing to accept those preferences as inevitable.',
       youCanDo: 'When an institution tells you "no, you can\'t do that" — ask: is that a real rule, or a habit? Many institutional barriers crumble when someone insists on testing them.',
       identifier: 'Crip Camp again — Ed appears in it. He was a mentor to Judy Heumann.' },
-    { id: 'patrickMcCarthy', name: 'Patrick McCarthy', years: 'present', area: 'Foster care reform',
-      story: 'CEO of the Annie E. Casey Foundation. Was himself in foster care. Has used both lived experience AND institutional position to push foster care reform — emphasizing kinship placements, ending congregate care for young children, and improving outcomes. The combination of "I was in foster care" + "I now run the foundation that funds foster care research" is rare and powerful.',
-      strategy: 'Use lived experience as credential, then use institutional position as leverage.',
+    { id: 'patrickMcCarthy', name: 'Patrick McCarthy', years: 'led AECF 2010-2018', area: 'Foster care reform',
+      story: 'Led the Annie E. Casey Foundation as president and CEO from 2010 to 2018. A former psychiatric social worker, he used that position to push foster care reform: more kinship placements, less group care for young children, and better outcomes for the young people the system serves.',
+      strategy: 'Learn a system from the inside, then use your position as leverage to change it.',
       lesson: 'Don\'t hide who you are. The thing that hurt you may also be the thing that gives you authority to change it for others.',
       youCanDo: 'If you\'ve been through something hard, your perspective on systems serving people like you is genuinely valuable. Don\'t let "I\'m too close to it" be the reason you don\'t weigh in.',
       identifier: 'AECF publishes annually. Their KIDS COUNT data book is widely cited.' },
@@ -949,7 +949,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       strategy: 'Slow institutional climb. Sometimes you can\'t change an institution from outside; sometimes you have to climb INTO it.',
       lesson: 'Some advocacy is fast (a sit-in). Some is slow (a 25-year climb). Both count. The slow advocacy gets less attention but moves more.',
       youCanDo: 'If you want change in an institution, sometimes the right strategy is joining it and changing it from inside. Activist + institutional positions both have power.',
-      identifier: '"Not Without a Struggle" (1996), her memoir.' },
+      identifier: '"Not Without a Struggle" (1996), her book on leadership for women in ministry.' },
     { id: 'lydiaXZ', name: 'Ly Xīnzhèn M. Zhǎngsūn Brown', years: '1991-present', area: 'Disability justice',
       story: 'Autistic disability-rights advocate, lawyer, and writer. Has written extensively on intersectional disability justice — the ways race, gender, sexuality, and disability all intersect. Has organized against guardianship laws that strip autistic adults of decision-making rights. Centers the voices of disabled people of color who are most often left out of mainstream disability advocacy.',
       strategy: 'Intersectional analysis. The thing about advocating for one identity is that identities don\'t exist alone; people have multiple ones at once.',
@@ -969,7 +969,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       youCanDo: 'You don\'t need permission. Greta didn\'t ask anyone if she could skip school. Some forms of advocacy mean stepping outside what\'s allowed.',
       identifier: '"I Am Greta" (2020) documentary. Her TED Talk from 2018 is short and worth watching.' },
     { id: 'fredKorematsu', name: 'Fred Korematsu', years: '1919-2005', area: 'Civil rights — Japanese internment',
-      story: 'Refused to comply with the WWII Japanese-American internment order. Was arrested, convicted, and his case went to the Supreme Court — which ruled against him in 1944. He worked as a welder, raised a family. In the 1980s, decades later, evidence emerged that the government had hidden information in his original case. The conviction was overturned in 1983. He was awarded the Presidential Medal of Freedom in 1998. The legal precedent was reversed.',
+      story: 'Refused to comply with the WWII Japanese-American internment order. Was arrested, convicted, and his case went to the Supreme Court \u2014 which ruled against him in 1944. He worked as a welder, raised a family. In the 1980s, decades later, evidence emerged that the government had hidden information in his original case. His conviction was overturned in 1983. He was awarded the Presidential Medal of Freedom in 1998. The 1944 Supreme Court ruling itself was never formally overturned, but in 2018 the Court called it "gravely wrong the day it was decided."',
       strategy: 'Long-game advocacy. Patience across decades. Refusing to let an unjust ruling stand even when "moving on" was the easier path.',
       lesson: 'Some advocacy plays out over decades. The work you do today may not pay off until you\'re 60. The point is not the timeline; the point is to do the work.',
       youCanDo: 'Document what happens. Even when you can\'t fix something now, the documentation may matter to the next generation.',
@@ -1039,7 +1039,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
     { strand: 'knowSelf', q: 'I know what I want my future to look like, in some specific shape.' },
     // Know Your Rights (10)
     { strand: 'knowRights', q: 'I know what an IEP / 504 plan is and what it does.' },
-    { strand: 'knowRights', q: 'I know that I have the right to attend my own IEP meeting.' },
+    { strand: 'knowRights', q: 'I know that I can attend my own IEP meeting, and that the school must invite me once transition planning starts.' },
     { strand: 'knowRights', q: 'I know what FERPA is and what protections it gives me.' },
     { strand: 'knowRights', q: 'I know the difference between an accommodation and a modification.' },
     { strand: 'knowRights', q: 'I know I have the right to request reasonable accommodations under the ADA.' },
@@ -1114,7 +1114,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       example: '"He has a modified math curriculum, working on multiplication facts when classmates are on algebra."',
       why: 'Important to know if you\'re asking for one or the other. They have different implications for college and post-secondary.' },
     { cat: 'legal', word: 'FERPA (Family Educational Rights and Privacy Act)', def: 'Federal law protecting privacy of student education records. Gives you (or your parents until age 18) the right to inspect, request correction, and limit disclosure.',
-      example: '"Under FERPA, I have the right to see my own file."',
+      example: '"Under FERPA, my parents can ask to see my file, and once I turn 18 that right is mine."',
       why: 'You have privacy rights about your records. Citing FERPA in a request is a power move.' },
     { cat: 'legal', word: 'IDEA (Individuals with Disabilities Education Act)', def: 'Federal law guaranteeing free appropriate public education (FAPE) in least restrictive environment (LRE) to students with disabilities.',
       example: '"IDEA is the law my IEP comes from."',
@@ -1918,7 +1918,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       youCanDo: 'If you have a way to amplify others — social media, a school paper column, a podcast — using it to surface other voices is advocacy.',
       identifier: '"Disability Visibility" (2020) anthology she edited.' },
     { id: 'gauntlett', name: 'Naoki Higashida', years: '1992-present', area: 'Autism communication',
-      story: 'Japanese autistic writer who, despite being largely nonverbal, wrote a bestselling book ("The Reason I Jump") at age 13 explaining autism from the inside. Has continued writing into adulthood, challenging assumptions about what nonverbal autistic people can communicate.',
+      story: 'Japanese autistic writer who, despite being largely nonverbal, wrote a bestselling book ("The Reason I Jump") at age 13 explaining autism from the inside. Has continued writing into adulthood, challenging assumptions about what nonverbal autistic people can communicate. Some researchers have questioned how independently the book was written, because it was produced with an alphabet grid and a helper; Naoki and his family say the words are his.',
       strategy: 'Refused the assumption that "doesn\'t speak" means "can\'t communicate." Used the medium available to him (writing) to do the work speech wouldn\'t.',
       lesson: 'The mode of advocacy you use should match your capacities, not someone else\'s expectations.',
       youCanDo: 'If verbal advocacy is hard for you, find your medium. Writing, drawing, art, video, presence. Your communication doesn\'t have to look like everyone else\'s.',
@@ -3004,7 +3004,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { letter: 'C', text: 'The age when a citizen first becomes eligible to vote in national elections', correct: false },
         { letter: 'D', text: 'The age when a student is required to finish high school', correct: false }
       ],
-      explanation: 'Age of majority is when legal rights transfer from parent to student. In most states this is 18. At that point, the student is the legal IEP signer.',
+      explanation: 'Age of majority is when legal rights transfer from parent to student. In most states this is 18. At that point, in most states, the student becomes the legal IEP signer.',
       followUp: 'Are you 18 yet? If not, when will you be?'
     },
     {
@@ -3428,7 +3428,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
     { id: 'av72', term: 'Resource Room', cat: 'placement', def: 'A special education classroom where students go for part of the day for support.', why: 'Less restrictive than self-contained. Some students benefit; others find it limiting.', example: 'You might go to resource room for math support 30 minutes/day.' },
     { id: 'av73', term: 'Co-Teaching', cat: 'placement', def: 'General and special education teacher teach together in same classroom.', why: 'Allows inclusion plus specialized support.', example: 'Your math class has Mr. Diaz and Ms. Park. Ms. Park supports IEP students within the class.' },
     { id: 'av74', term: 'Functional Skills', cat: 'curriculum', def: 'Skills for daily life: hygiene, cooking, communication, money. Sometimes used as code for "this student does not get academic curriculum."', why: 'All students need both. Watch for tracking.', example: 'Best practice: functional skills woven into academic curriculum, not replacing it.' },
-    { id: 'av75', term: 'Transition Plan', cat: 'process', def: 'IDEA-required plan starting at age 14 (or 16 in some states), with goals for post-school life.', why: 'High school is preparation for what comes next. Transition plan documents what.', example: 'Your transition plan may include career exploration, college visits, life skills.' },
+    { id: 'av75', term: 'Transition Plan', cat: 'process', def: 'IDEA-required plan that must be in place by the IEP in effect when you turn 16 (some states, such as Maine, start at 14), with goals for life after school.', why: 'High school is preparation for what comes next. Transition plan documents what.', example: 'Your transition plan may include career exploration, college visits, life skills.' },
     { id: 'av76', term: 'Self-Direction', cat: 'philosophy', def: 'Disability service model where the individual directs their own services and supports.', why: 'Adult disability services should respect choice, not impose programs.', example: 'In adult Medicaid waiver, you may direct your own staff hiring, scheduling, and goals.' },
     { id: 'av77', term: 'Disability Pride', cat: 'philosophy', def: 'Affirming disability as part of identity worth celebrating, not pitying or curing.', why: 'Counterweight to internalized ableism. Pride is permission.', example: 'Disability Pride Month is July. Parades, art, writing, community.' },
     { id: 'av78', term: 'Crip', cat: 'language', def: 'Reclaimed term in some disability communities. Often used in disability culture, scholarship, and identity.', why: 'Like queer, reclaimed term that some embrace and others do not.', example: 'Crip Camp documentary. Crip studies as academic field.' },
@@ -3586,7 +3586,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       category: 'env',
       name: 'Quiet testing space',
       whoItHelps: 'Students with anxiety, attention, sensory processing, or auditory distractibility.',
-      whyItWorks: 'Background classroom noise consumes 20-30% of cognitive resource. Quiet space restores it.',
+      whyItWorks: 'Background noise makes it harder to listen, read and remember. A quiet space removes that load.',
       whenToAsk: 'Annual review.',
       sampleRequest: 'I would like to take tests in a separate quiet space. The classroom environment is too distracting for me to demonstrate my actual knowledge.',
       commonPitfalls: ['Forgotten on test day', 'No quiet space available'],
@@ -4362,7 +4362,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         '{{parentName}}'
       ],
       tips: [
-        'FERPA gives you the right to all educational records.',
+        'FERPA gives parents, and students once they turn 18, the right to see nearly all of a student\'s education records.',
         '45-day federal limit on response.',
         'Discipline records often reveal patterns that suggest disability-related behavior.',
         'Useful before manifestation determination meetings.'
@@ -4420,7 +4420,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         '- {{impactOne}}',
         '- {{impactTwo}}',
         '',
-        'Under IDEA, the school district has 60 days to complete the evaluation upon receipt of parent consent. I am happy to provide written consent immediately upon receipt of the consent form.',
+        'Under IDEA, the district must complete an initial evaluation within 60 days of receiving parent consent, or within our state\'s own timeline if it sets one. I am happy to provide written consent immediately upon receipt of the consent form.',
         '',
         'Please confirm receipt of this request and let me know the next steps.',
         '',
@@ -4464,7 +4464,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       tips: [
         'Substitute teacher coverage is a common accommodation failure point.',
         'Propose specific solutions, not just complaints.',
-        'A simple "accommodation card" can solve 80% of sub coverage issues.',
+        'A simple "accommodation card" prevents many substitute-teacher problems.',
         'Document pattern, not single incident.'
       ]
     },
@@ -4700,7 +4700,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         '',
         'I am writing to request that the IEP team consider Extended School Year (ESY) services for my child {{studentName}} this summer.',
         '',
-        'Under IDEA, ESY services must be considered when a student would experience regression over an extended break and would not recover within a reasonable period of time (typically 6-8 weeks of school).',
+        'Under IDEA, the IEP team must provide ESY when a student needs it to receive FAPE. Many states look at whether skills are lost over a long break and take too long to regain; the exact standard is set by your state.',
         '',
         'Evidence supporting the need for ESY:',
         '',
@@ -5903,7 +5903,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
     middle: [
       { id: 'rt6', title: 'Right to Participate in Your Education Plan', icon: '\uD83D\uDCCB',
         right: 'If you have an IEP or 504 plan, you can attend your own meetings and share your voice.',
-        explanation: 'Starting around middle school, you have the right to be at your IEP meeting. It\'s about YOUR life and YOUR education. Your perspective matters more than anyone else\'s in that room.',
+        explanation: 'The school must invite you to your IEP meeting whenever the team will talk about your goals for after high school (transition planning, which starts by age 16, or 14 in some states). Before that, you can attend "whenever appropriate", so ask your parent and case manager to include you. It\'s about YOUR life and YOUR education.',
         example: 'You can say at your meeting: "I want to try the regular English class with support" or "This accommodation is really helping me and I want to keep it."',
         source: 'IDEA Section 614(d)(1)(B) \u2014 student participation in IEP development' },
       { id: 'rt7', title: 'Right to Privacy', icon: '\uD83D\uDD12',
@@ -5924,14 +5924,14 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       { id: 'rt10', title: 'Right to Express Yourself', icon: '\uD83D\uDCAC',
         right: '"Students don\'t shed their constitutional rights at the schoolhouse gate."',
         explanation: 'You have free speech rights at school, with reasonable limits. You can wear political clothing, write opinion pieces, start clubs, and express your beliefs.',
-        example: 'You can wear a shirt supporting a cause you believe in, start a student organization, or write an editorial in the school paper \u2014 as long as it doesn\'t substantially disrupt school.',
+        example: 'You can wear a shirt supporting a cause or start a student group, as long as it doesn\'t substantially disrupt school. School-sponsored newspapers are different: a school can edit or remove articles for an educational reason (Hazelwood v. Kuhlmeier, 1988), unless your state has a student press freedom law.',
         source: 'Tinker v. Des Moines (1969) \u2014 landmark Supreme Court case' }
     ],
     high: [
       { id: 'rt11', title: 'Right to Access Your Records', icon: '\uD83D\uDCC2',
         right: 'At 18 (or with parent permission), you can see everything in your school file.',
         explanation: 'You have the right to review all your education records \u2014 grades, evaluations, disciplinary files, special education documents. You can also request corrections.',
-        example: 'If you turn 18 during senior year, FERPA rights transfer to YOU. You can review your file and decide who has access to it, even from your parents.',
+        example: 'If you turn 18 during senior year, FERPA rights transfer to YOU. You can review your file, and the school needs your consent for most sharing, though it may still share with your parents if they claim you as a dependent.',
         source: 'FERPA \u2014 Rights transfer at age 18 or enrollment in postsecondary education' },
       { id: 'rt12', title: 'Right to Accommodations', icon: '\u267F',
         right: 'If you have a disability, you\'re entitled to reasonable accommodations in school and the workplace.',
@@ -5939,7 +5939,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         example: 'Accommodations can include: extended test time, note-taking support, flexible deadlines, a quiet testing space, preferential seating, or modified assignments.',
         source: 'Section 504 of the Rehabilitation Act (1973) & Americans with Disabilities Act (1990)' },
       { id: 'rt13', title: 'Right to Participate in Your IEP', icon: '\uD83C\uDF93',
-        right: 'You have the right to attend, speak, and set goals at your IEP meeting.',
+        right: 'You can attend, speak, and help set goals at your IEP meeting. The school must invite you once transition planning starts (by 16, or 14 in some states).',
         explanation: 'By high school, transition planning is required \u2014 and YOUR goals for after graduation drive the conversation. The team works for YOU, not the other way around.',
         example: 'You can say: "My goal is to attend community college. I need my transition plan to include college preparation, not just life skills."',
         source: 'IDEA transition planning requirements (begins by age 16, some states age 14)' },
@@ -5947,11 +5947,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         right: 'You can report discrimination based on race, sex, disability, or national origin.',
         explanation: 'Federal civil rights laws protect students from discrimination. Your school has a Title IX coordinator and a 504 coordinator who are required to investigate complaints.',
         example: 'If a teacher treats you differently because of your identity, you can file a complaint with the school, the district, or the U.S. Department of Education\'s Office for Civil Rights.',
-        source: 'Title VI (race), Title IX (sex), Section 504 (disability), Title III (language)' },
+        source: 'Title VI (race, color, national origin, including language), Title IX (sex), Section 504 (disability)' },
       { id: 'rt15', title: 'Right to Consent Over Your Data', icon: '\uD83D\uDD10',
         right: 'At 18, you decide who sees your educational records.',
-        explanation: 'Once FERPA rights transfer to you, the school needs YOUR consent to share your records \u2014 with colleges, employers, or anyone else. You control your narrative.',
-        example: 'When colleges request your transcript, YOU sign the release. When employers ask for school records, YOU decide what to share.',
+        explanation: 'Once FERPA rights transfer to you, the school generally needs YOUR written consent to share your records. There are exceptions: a school may send records to a school or college you are applying or transferring to, and may share them with parents who claim you as a tax dependent.',
+        example: 'When an employer asks for school records, YOU decide what to share. A college you apply to can get your transcript from your school, so ask the counseling office how they handle requests.',
         source: 'FERPA \u2014 Consent requirements for disclosure of education records' }
     ]
   };
@@ -7946,7 +7946,7 @@ var DAILY_PRACTICE_PROMPTS = [
     { id: 'dp147', focus: 'self', prompt: 'Pick one form of media that drains you and skip it today.' },
     { id: 'dp148', focus: 'practice', prompt: 'Try the phrase "I am going to think about it overnight." Buy yourself time.' },
     { id: 'dp149', focus: 'reflect', prompt: 'Pick one part of your life where you are NOT advocating. Why? Choose: keep silent, or speak.' },
-    { id: 'dp150', focus: 'rights', prompt: 'Recall: you have a right to be at your IEP meeting. Plan to attend.' },
+    { id: 'dp150', focus: 'rights', prompt: 'Recall: you can be at your IEP meeting, and the school must invite you once transition planning starts. Plan to attend.' },
     { id: 'dp151', focus: 'community', prompt: 'Help one classmate with something today.' },
     { id: 'dp152', focus: 'voice', prompt: 'Make a long-overdue phone call today.' },
     { id: 'dp153', focus: 'self', prompt: 'Notice one body cue you have been ignoring (hunger, thirst, fatigue). Honor it.' },
@@ -7958,7 +7958,7 @@ var DAILY_PRACTICE_PROMPTS = [
     { id: 'dp159', focus: 'self', prompt: 'Choose one part of yourself you have been ashamed of. Tell it: "You are not the enemy."' },
     { id: 'dp160', focus: 'practice', prompt: 'Try one new boundary today. Even tiny.' },
     { id: 'dp161', focus: 'reflect', prompt: 'List the last 3 things you said yes to that you should have said no to. Pattern?' },
-    { id: 'dp162', focus: 'rights', prompt: 'Confirm: who has access to your IEP? Limit it if needed.' },
+    { id: 'dp162', focus: 'rights', prompt: 'Confirm: who has access to your IEP? School staff who work with you can see it; ask how it is shared beyond them.' },
     { id: 'dp163', focus: 'community', prompt: 'Engage with one online community of self-advocates this week.' },
     { id: 'dp164', focus: 'voice', prompt: 'Tell a teacher one thing they could change that would help. Not a complaint. A request.' },
     { id: 'dp165', focus: 'self', prompt: 'Plan one thing you can look forward to. Defend it from interruption.' },
@@ -8002,7 +8002,7 @@ var CRISIS_FIRST_AID = [
     { id: 'cfa1', situation: 'I just got bad news and I am about to lose it in public', plan: ['Step outside. Bathroom, hallway, car.', 'Wash hands in cold water. Push past wrist.', '4-7-8 breath: in 4, hold 7, out 8. Repeat 3x.', 'Text one person. One word: "Tough."', 'Decide: re-enter or go home. Whichever is safer for you.'], whyItHelps: 'Cold water + breath activates parasympathetic. Texting reaches for connection. Decision-making restores agency.' },
     { id: 'cfa2', situation: 'I am about to send an angry message I will regret', plan: ['Write it. Do not send.', 'Save as draft. Walk away.', 'Drink water. 5 deep breaths.', 'Re-read in 24 hours. Edit or delete.', 'If you must respond now, send: "I want to think about this. I will respond by ___."'], whyItHelps: 'Most regret in advocacy comes from hot replies. Cold replies preserve relationships and outcomes.' },
     { id: 'cfa3', situation: 'I cannot breathe normally during a panic attack', plan: ['Name 5 things you can see.', 'Name 4 things you can touch.', 'Name 3 things you can hear.', 'Name 2 things you can smell.', 'Name 1 thing you can taste.'], whyItHelps: 'Grounding pulls you out of catastrophic thinking and into present sensory experience. Slows breath naturally.' },
-    { id: 'cfa4', situation: 'I want to hurt myself', plan: ['Tell someone. Now. Adult. Friend. Crisis line.', 'Crisis Text Line: text HOME to 741741.', 'Suicide and Crisis Lifeline: 988.', 'Stay with someone until the urge passes. Do not be alone.', 'Remove access to means if possible.'], whyItHelps: 'Self-harm urge is not always permanent. Most urges pass within 90 minutes. Connection and time are protective.' },
+    { id: 'cfa4', situation: 'I want to hurt myself', plan: ['Tell someone. Now. Adult. Friend. Crisis line.', 'Crisis Text Line: text HOME to 741741.', 'Suicide and Crisis Lifeline: 988.', 'Stay with someone until the urge passes. Do not be alone.', 'Remove access to means if possible.'], whyItHelps: 'Self-harm urges rise, peak and pass, like a wave. Many ease within minutes to an hour if you can wait them out with someone. Connection and time are protective.' },
     { id: 'cfa5', situation: 'I am thinking about suicide', plan: ['Call 988 NOW.', 'Tell one safe person right now.', 'Stay with them. Do not be alone.', 'Remove access to means.', 'Get to ER if no other support is available.'], whyItHelps: 'Suicide is preventable. Crisis intervention works. You deserve help.' },
     { id: 'cfa6', situation: 'I cannot face going to school today', plan: ['Tell someone honestly. Parent or guardian first.', 'Is it acute (one bad day) or chronic (pattern)?', 'If acute: take 1 day. Plan a soft return tomorrow.', 'If chronic: schedule meeting with counselor THIS WEEK.', 'Do not try to push through chronic without help.'], whyItHelps: 'Distinguishing acute from chronic prevents 1 bad day from becoming a month of avoidance. Builds in support.' },
     { id: 'cfa7', situation: 'I just had a meltdown in front of people', plan: ['Find a quiet place. Recover fully before re-emerging.', 'Drink water. Eat something.', 'Tell yourself: "That was overload, not failure."', 'Decide when to re-engage. Could be hours.', 'Tomorrow: think about what triggered it. Adjust supports.'], whyItHelps: 'Meltdowns are nervous system events, not character flaws. Recovery first, analysis second.' },
@@ -9614,8 +9614,8 @@ var IEP_GLOSSARY_DEEP = [
       id: 'ig12',
       term: 'Age of Majority',
       shortDef: 'Age at which rights transfer from parent to student (18 in most states).',
-      fullDef: 'When student turns 18, IEP rights transfer to them unless court has appointed guardian. School must notify of rights transfer in advance.',
-      whyItMatters: 'You become the legal IEP signer at 18. Most students need to actively learn how to lead their IEP before then.',
+      fullDef: 'When you reach your state\'s age of majority (18 in most states), IDEA rights transfer to you in most states, unless a court has appointed a guardian. The school must tell you and your parents at least one year before.',
+      whyItMatters: 'In most states you become the legal IEP signer at 18. Most students need to actively learn how to lead their IEP before then.',
       keyConsiderations: [
         'You can still want parent input',
         'You can sign waivers to share information with parents',
@@ -9699,7 +9699,7 @@ var ADVOCACY_GLOSSARY_FINAL = [
     { id: 'glo15', term: 'Free Appropriate Public Education (FAPE)', def: 'Federal right under IDEA.', example: 'Schools must provide FAPE at no cost.' },
     { id: 'glo16', term: 'Functional behavior assessment (FBA)', def: 'Structured assessment of behavior.', example: 'FBA precedes BIP.' },
     { id: 'glo17', term: 'Goals', def: 'Specific, measurable targets for the year.', example: 'IEP goals should be ambitious AND attainable.' },
-    { id: 'glo18', term: 'Highly qualified', def: 'Meeting federal qualifications for teaching role.', example: 'IDEA requires highly qualified teachers.' },
+    { id: 'glo18', term: 'Highly qualified', def: 'An older federal label for teacher qualifications. It was removed from IDEA in 2015.', example: 'Today IDEA requires special education teachers to be fully state-certified.' },
     { id: 'glo19', term: 'Inclusion', def: 'Education with non-disabled peers.', example: 'Inclusion is preferred under IDEA.' },
     { id: 'glo20', term: 'Individualized', def: 'Tailored to one student.', example: 'IEP is by definition individualized.' },
     { id: 'glo21', term: 'Initial evaluation', def: 'First special education evaluation.', example: '60-day federal timeline.' },
@@ -10355,16 +10355,16 @@ var ADVOCACY_HISTORY_TIMELINE = [
       location: 'Berkeley, CA',
       significance: 'First student with significant physical disability admitted to UC Berkeley. Required iron lung. Lived in campus hospital because dorms inaccessible.',
       modernRelevance: 'Sparked the Independent Living Movement and the Berkeley Center for Independent Living, which is the model for ILCs nationwide.',
-      remember: 'A counselor told Ed: "We have never had disabled students before." Ed replied: "Now you do."'
+      remember: 'A Berkeley dean said, "We\'ve tried cripples before and it didn\'t work." Ed enrolled anyway.'
     },
     {
       id: 'ht5',
       year: 1970,
-      event: 'Judy Heumann sues NYC Board of Education and wins',
+      event: 'Judy Heumann sues NYC Board of Education and wins her teaching license',
       who: 'Judy Heumann',
       location: 'New York City',
-      significance: 'NYC denied her teaching license because she used a wheelchair. She sued and won. Became the first wheelchair-user teacher in NYC.',
-      modernRelevance: 'Established that disability cannot be sole basis for denying employment. Foundation for ADA Title I.',
+      significance: 'NYC denied her teaching license because she used a wheelchair. She sued, and the Board settled. Became the first wheelchair-user teacher in NYC.',
+      modernRelevance: 'The Board settled and gave her a teaching license. The case drew national attention to job discrimination against disabled people, years before Section 504 and the ADA made it illegal.',
       remember: 'Judy died in 2023. Her memoir is "Being Heumann."'
     },
     {
@@ -10400,10 +10400,10 @@ var ADVOCACY_HISTORY_TIMELINE = [
     {
       id: 'ht9',
       year: 1977,
-      event: '504 sit-in at HEW headquarters',
-      who: 'Judy Heumann, Kitty Cone, others led 28-day sit-in',
+      event: '504 sit-in at the HEW regional office',
+      who: 'Judy Heumann, Kitty Cone, others led 26-day sit-in',
       location: 'San Francisco, CA',
-      significance: 'Disabled activists occupied HEW office for 28 days to force Section 504 regulations to be signed. Longest sit-in at a federal building in U.S. history.',
+      significance: 'Disabled activists occupied the HEW regional office for 26 days to force Section 504 regulations to be signed. Longest sit-in at a federal building in U.S. history.',
       modernRelevance: 'Disability rights movement\'s most iconic protest. Featured in "Crip Camp" documentary.',
       remember: 'The Black Panthers brought food daily. Solidarity across movements made this possible.'
     },
@@ -10423,8 +10423,8 @@ var ADVOCACY_HISTORY_TIMELINE = [
       event: 'Americans with Disabilities Act (ADA) passes',
       who: 'Congress, advocates including Patrisha Wright, Justin Dart, Evan Kemp',
       location: 'Washington, DC',
-      significance: 'Most comprehensive disability civil rights law in the world. Banned discrimination in employment, public services, public accommodations, telecommunications, and transportation.',
-      modernRelevance: 'Every accessibility ramp, every workplace accommodation, every wheelchair-accessible bus traces back to ADA.',
+      significance: 'The most sweeping disability civil rights law the U.S. had passed. Banned discrimination in employment, public services, public accommodations, telecommunications, and transportation.',
+      modernRelevance: 'Many of the ramps, workplace accommodations and wheelchair-accessible buses you see today exist because of the ADA and the laws it built on (the Architectural Barriers Act of 1968 and Section 504).',
       remember: 'President George H.W. Bush signed it July 26, 1990. Considered "the most important civil rights law since 1964."'
     },
     {
@@ -10435,7 +10435,7 @@ var ADVOCACY_HISTORY_TIMELINE = [
       location: 'Washington, DC',
       significance: 'Disabled activists abandoned wheelchairs and crawled up Capitol steps to demand passage of ADA. 8-year-old Jennifer Keelan-Chaffins became iconic image.',
       modernRelevance: 'Showed physical inaccessibility of even the Capitol. ADA passed soon after.',
-      remember: 'Jennifer said: "I want to grow up to be a strong-willed advocate." She did.'
+      remember: 'Climbing the steps, Jennifer said: "I\'ll take all night if I have to."'
     },
     {
       id: 'ht13',
@@ -10524,7 +10524,7 @@ var ADVOCACY_HISTORY_TIMELINE = [
       who: 'Judy Heumann (1947-2023)',
       location: 'Washington, DC',
       significance: 'Mother of the disability rights movement died. Her legacy spans 504 sit-in, ADA, international disability rights.',
-      modernRelevance: 'Her work continues through Heumann Perspective podcast (her sister continues it), Disability Visibility, and every IEP that protects a child today.',
+      modernRelevance: 'Her work continues through the archive of her podcast The Heumann Perspective, her memoir Being Heumann, and every IEP that protects a child today.',
       remember: 'Read "Being Heumann." Watch "Crip Camp." Continue the work.'
     },
     {
@@ -10563,7 +10563,7 @@ var ADVOCACY_HISTORY_TIMELINE = [
       event: 'Autistic Self Advocacy Network (ASAN) founded',
       who: 'Ari Neeman, Scott Robertson',
       location: 'Washington, DC',
-      significance: 'First autistic-led national advocacy organization. Pioneered "Nothing About Us Without Us" autistic representation.',
+      significance: 'The best-known national advocacy organization run by and for autistic people (founded 2006). Pioneered "Nothing About Us Without Us" autistic representation.',
       modernRelevance: 'Center of identity-first language movement. Pushes back against parent-led organizations that speak for autistic people.',
       remember: 'Ari Neeman became the first autistic person appointed to the National Council on Disability.'
     },
@@ -11082,7 +11082,7 @@ var FAMILY_AND_PARENT_EDUCATION = [
       topic: 'Special education and foster youth',
       keyPoints: [
         'Federal law (Fostering Connections Act) protects educational stability',
-        'Foster youth have priority for special education services',
+        'Foster youth with disabilities have the same IDEA rights as any student, and the school must appoint a surrogate parent if no parent is available',
         'You may be the educational advocate, even if not legal guardian',
         'Trauma-informed approach is essential'
       ],
@@ -11670,7 +11670,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
       var heroBand = (function() {
         var TAB_META = {
           scenarios:        { accent: _advFg('#0ea5e9'), soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCE2', title: 'Scenarios \u2014 \u201CHere\u2019s the moment, what do I do?\u201D',  hint: 'Self-advocacy = naming what you need + asking for it. Practice on low-stakes situations builds the muscle for higher-stakes ones (IEP meetings, doctor visits, jobs). The first \u201Cno\u201D is the hardest one.' },
-          scripts:          { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCDD', title: 'Scripts \u2014 borrowed words for hard moments',           hint: 'Pre-written sentences to start a tough ask: \u201CI noticed\u2026\u201D, \u201CCan we talk about\u2026\u201D, \u201CI need\u2026 because\u2026\u201D. Reading off paper IS allowed and counts. Implementation intentions (Gollwitzer 1999) double follow-through.' },
+          scripts:          { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCDD', title: 'Scripts \u2014 borrowed words for hard moments',           hint: 'Pre-written sentences to start a tough ask: \u201CI noticed\u2026\u201D, \u201CCan we talk about\u2026\u201D, \u201CI need\u2026 because\u2026\u201D. Reading off paper IS allowed and counts. Implementation intentions ("if X, then I will Y") make follow-through noticeably more likely (Gollwitzer, 1999).' },
           advocacy_scripts: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFA4', title: 'Practice \u2014 say it out loud first',                  hint: 'Bandura: behavioral rehearsal predicts self-efficacy more than any other variable. Hearing yourself say it makes the real version 10\u00d7 easier. Use the AI partner; the bathroom mirror; record + play back.' },
           rights:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u2696',         title: 'Rights \u2014 the law has your back',                   hint: 'IDEA (FAPE + LRE), Section 504, ADA, FERPA. You have the RIGHT to ask, the right to bring a parent / advocate, the right to a formal complaint. Knowing the rule changes the room. ada.gov + ed.gov are free.' },
           knowquiz:         { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83C\uDF93', title: 'Knowledge Quiz \u2014 do you know your stuff?', hint: '25 questions across rights, self-advocacy, identity, mental health and transition. Each answer comes with the WHY and a follow-up worth sitting with. Knowing the vocabulary and the law is the quiet half of advocacy.' },
@@ -12653,7 +12653,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 id: 'overshare',
                 text: '"I\'ve been really depressed. I tried to hurt myself last summer. I just thought you should know."',
                 outcome: { ok: false, response: 'Teacher is appropriately worried, says they need to loop in counseling, asks if you\'re safe right now. You weren\'t actually in crisis but the disclosure level mandated a check.',
-                  lesson: 'Self-harm history triggers mandatory reporting. Telling a teacher requires they act. That can be the right move OR not — depending on what you want from the conversation. Choose disclosure level intentionally.' }
+                  lesson: 'If you tell a teacher you have hurt yourself, they usually cannot keep it secret: school policy normally has them tell the counselor, and often your parent or guardian. That is about keeping you safe, not getting you in trouble. (This is different from \'mandatory reporting\', which is the law about suspected abuse or neglect.) Choose how much to share knowing that.' }
               }
             ]
           },
@@ -14749,7 +14749,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
                 h('li', { style: { marginBottom: 3 } }, h('strong', null, 'Section 504: '), 'reasonable accommodations for any disability that substantially limits a major life activity, even without special-ed services.'),
                 h('li', { style: { marginBottom: 3 } }, h('strong', null, 'ADA: '), 'protection from disability discrimination in any program receiving federal funds, including all public schools and most private ones.'),
                 h('li', { style: { marginBottom: 3 } }, h('strong', null, 'FERPA: '), 'access to my educational records. At 18, those rights transfer to me from my parents.'),
-                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'Student-led IEP: '), 'I have the right to attend and meaningfully participate in my own IEP meetings.'),
+                h('li', { style: { marginBottom: 3 } }, h('strong', null, 'Student-led IEP: '), 'I can attend and meaningfully participate in my own IEP meetings, and the school must invite me once transition planning starts.'),
                 h('li', null, h('strong', null, 'Advocate or parent at any meeting: '), 'I can bring a parent, family member, friend, or advocate to any school meeting that is about me.')
               )
             ),

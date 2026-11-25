@@ -834,6 +834,8 @@
   var DIVIDE = String.fromCharCode(0xF7);
   var BLANK = /_{2,}/;
   var paperOn = false;
+  var currentPaper = null;
+  var currentPaperHow = '';
   // Numbers and signs as the file shows them on screen (math_computation.js, missing_number.js; 2026-11-13): the minus sign,
   // times and divide, never a hyphen or an x, and a number of 10000 or more in groups of three with a narrow no-break space,
   // which reads the same in every language (a comma is a decimal mark in many).
@@ -992,8 +994,12 @@
   }
   function clearPaper() {
     paperOn = false;
+    currentPaper = null;
+    currentPaperHow = '';
     doc.body.classList.remove('paper-on');
     show('print', false);
+    show('download-docx', false);
+    show('check-docx-options', false);
     show('print-note', false);
     var learner = $('paper-learner');
     if (!learner) return;
@@ -1068,14 +1074,75 @@
       line.appendChild(el('span', 'ka', shown(row.answer)));
       $('paper-key').appendChild(line);
     });
+    currentPaper = paper;
+    currentPaperHow = how;
     paperOn = true;
     doc.body.classList.add('paper-on');
     show('print', true);
+    show('download-docx', true);
+    show('check-docx-options', true);
     show('print-note', true);
   }
   function printPaper() {
     if (!paperOn) return;
     try { window.print(); } catch (_) { /* the browser's own print menu still prints the paper copy */ }
+  }
+  function docxFactsFromPaper(paper) {
+    if (!paper) return [];
+    var all = (paper.samples || []).concat(paper.items || []);
+    return all.map(function (row) {
+      if (paper.kind === 'quantity_discrimination') {
+        return { left: shown(row.left), right: shown(row.right), answer: shown(row.answer), practice: !!row.practice };
+      }
+      if (row.display != null) {
+        return { display: shown(row.display), answer: shown(row.answer), practice: !!row.practice };
+      }
+      return { a: row.a, b: row.b, op: row.op, symbol: row.symbol, word: shown(row.word), answer: shown(row.answer), practice: !!row.practice };
+    });
+  }
+  function docxLayoutFromPaper(paper) {
+    if (!paper || paper.kind !== 'math_computation') return 'horizontal';
+    var all = (paper.samples || []).concat(paper.items || []);
+    if (!all.length) return 'horizontal';
+    var allStackable = all.every(function (row) {
+      return row.display == null && row.a != null && row.b != null && row.symbol !== DIVIDE;
+    });
+    return allStackable ? 'vertical' : 'horizontal';
+  }
+  function downloadDocx() {
+    if (!paperOn || !currentPaper) return;
+    var docxMod = window.AlloPacketDocx;
+    var zipMod = window.AlloPacketZip;
+    if (!docxMod || typeof docxMod.buildMathWorksheetDocx !== 'function' || typeof docxMod.downloadDocx !== 'function') {
+      return problem('This page could not load the part that makes Word files. Load the page again.');
+    }
+    if (!zipMod || typeof zipMod.create !== 'function') {
+      return problem('This page could not load the part that makes .zip files. Load the page again.');
+    }
+    try {
+      var paper = currentPaper;
+      var stem = (built && built.todo && built.todo.name) ? built.todo.name.replace(/\.html$/i, '') : fileStem(paper.title);
+      var denSel = $('f-docx-density');
+      var density = denSel && (denSel.value === 'primary' || denSel.value === 'compact') ? denSel.value : 'standard';
+      var keyBox = $('f-docx-key');
+      var includeKey = keyBox ? !!keyBox.checked : true;
+      var result = docxMod.buildMathWorksheetDocx({
+        title: paper.title,
+        directions: currentPaperHow,
+        timeLimitSeconds: paper.limit || 0,
+        facts: docxFactsFromPaper(paper),
+        layout: docxLayoutFromPaper(paper),
+        density: density,
+        answerKeyOn: includeKey,
+      }, { zip: zipMod, filename: stem + '-math-worksheet.docx', density: density });
+      var ok = docxMod.downloadDocx(result, window, doc);
+      if (!ok) {
+        return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
+      }
+      setText('making-said', 'Downloaded ' + result.filename + '.');
+    } catch (error) {
+      problem('The Word file could not be made (' + said(error) + ').');
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1350,6 +1417,7 @@
     $('code-show').addEventListener('click', function () { showCode(this.getAttribute('aria-pressed') !== 'true'); });
     $('save').addEventListener('click', saveFile);
     $('print').addEventListener('click', printPaper);
+    if ($('download-docx')) $('download-docx').addEventListener('click', downloadDocx);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       resetPreview(true);

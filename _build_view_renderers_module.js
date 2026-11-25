@@ -148,7 +148,9 @@ const iconAliases = ICONS.map(n => `var ${n} = _lazyIcon('${n}');`).join('\n');
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ViewRenderersModule) { console.log('[CDN] ViewRenderersModule already loaded, skipping'); return; }
+if (typeof React === 'undefined') return;
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 var useState = React.useState;
 var useEffect = React.useEffect;
@@ -166,6 +168,7 @@ var _lazyIcon = function (name) {
 };
 ${iconAliases}
 ${compiled}
+window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderersModule = true;
 console.log('[ViewRenderers] Registered (renderFormattedText, renderOutlineContent, renderInteractiveMap, openConceptMap3D)');
 })();

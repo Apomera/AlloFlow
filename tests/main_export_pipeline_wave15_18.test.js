@@ -670,7 +670,9 @@ describe('Wave 18 · H5P Compatibility, NotebookLM (.md) Parity, Fluency Record 
     expect(builderHelpers.h5pCompat(history[1], history)).toMatchObject({ type: 'simplified', ready: true, library: 'Question Set 1.21', unit: 'blank' });
     expect(builderHelpers.h5pCompat(history[2], history)).toMatchObject({ type: 'note-taking', ready: true, unit: 'blank', valid: 1 });
     expect(builderHelpers.h5pCompat(history[3], history)).toMatchObject({ type: 'note-taking', ready: true, unit: 'prompt', manualReview: 1 });
-    expect(builderHelpers.h5pCompat(history[4], history)).toMatchObject({ type: 'note-taking', ready: false });
+    // Cornell notes became H5P-exportable (each cue/note row and the summary as a
+    // manually reviewed prompt; export_source.jsx handles nt.cues/nt.notes).
+    expect(builderHelpers.h5pCompat(history[4], history)).toMatchObject({ type: 'note-taking', ready: true, unit: 'prompt', valid: 1, manualReview: 1 });
     expect(exportPreviewSrc).toContain("item?.data?.templateType || item?.data?.template");
     expect(exportPreviewSrc).toContain("'Cloze reading'");
     expect(exportPreviewSrc).toContain("'Study notes'");

@@ -172,8 +172,10 @@ describe('flash cards: the Aa button', () => {
   it('closing the deck with the panel open closes the panel too (no leftover subscription)', () => {
     const bridge = installBridge();
     const { container, unmount } = mount(flashcards());
+    // The deck itself now follows the settings too (bionic reading hook), so count from what it holds.
+    const deckSubscriptions = bridge.live;
     click(readingButton(container));
-    expect(bridge.live, 'the open panel follows the settings').toBe(1);
+    expect(bridge.live, 'the open panel follows the settings').toBe(deckSubscriptions + 1);
     unmount();
     expect(bridge.live, 'unsubscribed when the deck closed').toBe(0);
     expect(openPanel()).toBeNull();
@@ -203,6 +205,8 @@ describe('flash cards: dictionary sense provenance', () => {
   function backWith(meanings, def = 'A plant part that makes food.') {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     new Function(readFileSync(REPO + '/dictionary_loader.js', 'utf8'))();
+    // The loader freezes its API now; keep its real matchers and swap in a cached entry on a copy.
+    window.AlloDictionary = { ...window.AlloDictionary };
     window.AlloDictionary.getCached = () => ({ word: 'leaf', meanings: [{ partOfSpeech: 'noun', definitions: meanings.map((definition) => ({ definition })) }], source: 'Wiktionary' });
     const data = words().map((w, i) => (i === 0 ? { ...w, def } : w));
     const { container } = mount(flashcards({ isFlashcardFlipped: true, generatedContent: { id: 'deck', type: 'glossary', data }, filteredGlossaryData: data.map((item, i) => ({ ...item, _originalIdx: i })) }));
@@ -261,7 +265,22 @@ const DATA = [
 const BINGO_CARD = Array.from({ length: 25 }, (_, i) => (i === 12 ? { type: 'free' } : { type: 'term', term: DATA[i % 5].term }));
 const classesOf = (el) => (el ? el.className.split(/\s+/) : []);
 const GAMES = {
-  MemoryGame: { props: {}, fullScreen: (c) => click(c.querySelector('[data-help-key="memory_fullscreen_btn"]')), rem: (c) => classesOf(withText(c, 'p', DATA[0].def)) },
+  // Card faces render only once turned over (2026-11-21), so turn cards until the definition shows.
+  MemoryGame: { props: {}, fullScreen: (c) => click(c.querySelector('[data-help-key="memory_fullscreen_btn"]')), rem: (c) => {
+    vi.useFakeTimers();
+    try {
+      const cards = [...c.querySelectorAll('[data-help-key="memory_card_item"]')];
+      let up = 0;
+      for (const card of cards) {
+        act(() => { card.click(); });
+        const face = withText(c, 'p', DATA[0].def);
+        if (face) return classesOf(face);
+        up += 1;
+        if (up === 2) { act(() => { vi.advanceTimersByTime(2000); }); up = 0; }
+      }
+      return [];
+    } finally { vi.useRealTimers(); }
+  } },
   MatchingGame: {
     props: {},
     rem: (c) => {

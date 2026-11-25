@@ -665,7 +665,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
           h('div', { style: { padding: 14, borderRadius: 12, background: _cnsBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', color: _cnsFg('#a78bfa'), fontSize: 16, fontWeight: 800 } }, 'Audre Lorde: care as political warfare'),
             h('p', { style: { margin: '0 0 10px', color: _cnsFg('#cbd5e1'), fontSize: 13, lineHeight: 1.75 } },
-              'Audre Lorde, Black lesbian poet and theorist, wrote in 1988 (while she was dying of cancer):'
+              'Audre Lorde, Black lesbian poet and theorist, wrote in 1988 (while living with cancer):'
             ),
             h('blockquote', { style: { margin: '0 0 10px', padding: '8px 14px', borderLeft: '3px solid #fbbf24', background: 'rgba(251,191,36,0.06)', fontSize: 14, lineHeight: 1.8, color: _cnsFg('#fde68a'), fontStyle: 'italic' } },
               '"Caring for myself is not self-indulgence, it is self-preservation, and that is an act of political warfare."'

@@ -6,12 +6,15 @@
  * adapter can implement the same small provider contract without changing
  * lesson-generation consumers.
  */
-(function registerStandardsProvider(root, factory) {
-    const api = factory(root || (typeof globalThis !== 'undefined' ? globalThis : {}));
-    if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
-        root.AlloModules = root.AlloModules || {};
-        root.AlloModules.StandardsProvider = api;
+(function registerStandardsProvider(rawRoot, factory) {
+    const validRoot = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
+    const api = factory(validRoot || (typeof globalThis === 'object' && globalThis ? globalThis : {}));
+    if (typeof module === 'object' && module !== null && module.exports) module.exports = api;
+    if (validRoot) {
+        try {
+            if (!validRoot.AlloModules || typeof validRoot.AlloModules !== 'object') validRoot.AlloModules = {};
+            validRoot.AlloModules.StandardsProvider = api;
+        } catch (_) {}
     }
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createStandardsProvider(root) {
     'use strict';
@@ -54,7 +57,8 @@
         if (value === null || value === undefined) return '';
         let raw = '';
         if (typeof value === 'string') raw = value;
-        else if (typeof value === 'number' || typeof value === 'boolean') raw = String(value);
+        else if (typeof value === 'number') raw = Number.isFinite(value) ? String(value) : '';
+        else if (typeof value === 'boolean') raw = String(value);
         else return '';
         const maxLen = limit || MAX_TEXT;
         const bounded = raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
@@ -85,7 +89,7 @@
         if (typeof URL === 'function') {
             try {
                 const parsed = new URL(raw);
-                if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+                if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password) return '';
             } catch (_) {
                 return '';
             }
@@ -259,7 +263,8 @@
         if (value == null) return '';
         let out = '';
         if (typeof value === 'string') out = value;
-        else if (typeof value === 'number' || typeof value === 'boolean') out = String(value);
+        else if (typeof value === 'number') out = Number.isFinite(value) ? String(value) : '';
+        else if (typeof value === 'boolean') out = String(value);
         else return '';
         if (out.length > 8192) out = out.slice(0, 8192);
         if (out.indexOf('\\') < 0 && out.indexOf('$') < 0) return out;
@@ -281,20 +286,21 @@
         if (!isObject(input)) {
             return { ok: false, errors: [issue('snapshot-type', '$', 'Snapshot must be an object.')], warnings, value: null };
         }
-        if (input.schemaVersion !== VERSION) {
+        if (own(input, 'schemaVersion') !== VERSION) {
             errors.push(issue('schema-version', '$.schemaVersion', `Expected ${VERSION}.`));
         }
-        const rawDataset = isObject(input.dataset) ? input.dataset : {};
+        const ownDataset = own(input, 'dataset');
+        const rawDataset = isObject(ownDataset) ? ownDataset : {};
         const dataset = {
-            provider: text(rawDataset.provider, 160),
-            datasetVersion: text(rawDataset.datasetVersion, 160),
-            snapshotId: text(rawDataset.snapshotId, 240),
-            generatedAt: text(rawDataset.generatedAt, 80),
-            license: text(rawDataset.license, 600),
-            attribution: text(rawDataset.attribution, 600),
-            contentDigest: text(rawDataset.contentDigest, 80),
-            sourceIntegrity: normalizeSourceIntegrity(rawDataset.sourceIntegrity),
-            sourceUrls: uniqueSafeUrls(rawDataset.sourceUrls, 20)
+            provider: text(own(rawDataset, 'provider'), 160),
+            datasetVersion: text(own(rawDataset, 'datasetVersion'), 160),
+            snapshotId: text(own(rawDataset, 'snapshotId'), 240),
+            generatedAt: text(own(rawDataset, 'generatedAt'), 80),
+            license: text(own(rawDataset, 'license'), 600),
+            attribution: text(own(rawDataset, 'attribution'), 600),
+            contentDigest: text(own(rawDataset, 'contentDigest'), 80),
+            sourceIntegrity: normalizeSourceIntegrity(own(rawDataset, 'sourceIntegrity')),
+            sourceUrls: uniqueSafeUrls(own(rawDataset, 'sourceUrls'), 20)
         };
         for (const field of ['provider', 'datasetVersion', 'snapshotId']) {
             if (!dataset[field]) errors.push(issue('dataset-field-required', `$.dataset.${field}`, `${field} is required.`));
@@ -302,14 +308,15 @@
         if (!dataset.license) warnings.push(issue('dataset-license-missing', '$.dataset.license', 'A license or usage note is recommended.'));
         if (!dataset.attribution) warnings.push(issue('dataset-attribution-missing', '$.dataset.attribution', 'Attribution is recommended.'));
 
-        if (!Array.isArray(input.standards)) {
+        const ownStandards = own(input, 'standards');
+        if (!Array.isArray(ownStandards)) {
             errors.push(issue('standards-type', '$.standards', 'standards must be an array.'));
         }
         const standards = [];
         const ids = new Set();
-        for (let index = 0; index < array(input.standards).length; index += 1) {
+        for (let index = 0; index < array(ownStandards).length; index += 1) {
             const path = `$.standards[${index}]`;
-            const record = normalizeRecord(input.standards[index], path);
+            const record = normalizeRecord(ownStandards[index], path);
             if (!record.id || !record.code || !record.label) {
                 errors.push(issue('standard-field-required', path, 'Each standard requires id, code, and label.'));
                 continue;
@@ -323,13 +330,14 @@
         }
         if (!standards.length) errors.push(issue('standards-empty', '$.standards', 'At least one valid standard is required.'));
 
-        if (!Array.isArray(input.relationships)) {
+        const ownRelationships = own(input, 'relationships');
+        if (!Array.isArray(ownRelationships)) {
             warnings.push(issue('relationships-missing', '$.relationships', 'No relationships were supplied; the graph will contain isolated standards.'));
         }
         const relationships = [];
-        for (let index = 0; index < array(input.relationships).length; index += 1) {
+        for (let index = 0; index < array(ownRelationships).length; index += 1) {
             const path = `$.relationships[${index}]`;
-            const relationship = normalizeRelationship(input.relationships[index], path);
+            const relationship = normalizeRelationship(ownRelationships[index], path);
             const fromExists = ids.has(idToken(relationship.fromId));
             const toExists = ids.has(idToken(relationship.toId));
             if (!relationship.fromId || !relationship.toId || !relationship.type) {
@@ -564,9 +572,10 @@
                 }
             };
             const standardsContext = root && root.AlloModules && root.AlloModules.StandardsContext;
-            let context = standardsContext && typeof standardsContext.resolve === 'function'
-                ? standardsContext.resolve(contextInput)
-                : contextInput;
+            let context = contextInput;
+            if (standardsContext && typeof standardsContext.resolve === 'function') {
+                try { context = standardsContext.resolve(contextInput); } catch (_) { context = contextInput; }
+            }
             const resolved = isObject(context) ? context : contextInput;
             context = Object.assign({}, resolved, {
                 attribution: value.dataset.attribution,
@@ -615,9 +624,9 @@
             const rootRecord = getRecord(id);
             if (!rootRecord) return null;
             const inputOptions = isObject(options) ? options : {};
-            const maxDepth = boundedInt(inputOptions.depth, 1, 0, MAX_DEPTH);
-            const maxNodes = boundedInt(inputOptions.maxNodes, MAX_NODES, 1, MAX_NODES);
-            const maxEdges = boundedInt(inputOptions.maxEdges, MAX_EDGES, 0, MAX_EDGES);
+            const maxDepth = boundedInt(own(inputOptions, 'depth'), 1, 0, MAX_DEPTH);
+            const maxNodes = boundedInt(own(inputOptions, 'maxNodes'), MAX_NODES, 1, MAX_NODES);
+            const maxEdges = boundedInt(own(inputOptions, 'maxEdges'), MAX_EDGES, 0, MAX_EDGES);
             // Component-flooding guard. In --include-components snapshots a single standard can
             // carry dozens of LearningComponents over `supports` edges (L.1.1.h in ccss-ela has
             // 38), and an uncapped BFS spends the whole node budget on them, starving the
@@ -625,7 +634,7 @@
             // Components may take at most a third of the node budget (never fewer than 4)
             // unless the caller overrides with options.maxComponents. Skipped components mark
             // the result truncated, so callers see coverage was bounded rather than complete.
-            const maxComponents = boundedInt(inputOptions.maxComponents, Math.max(4, Math.floor(maxNodes / 3)), 0, MAX_NODES);
+            const maxComponents = boundedInt(own(inputOptions, 'maxComponents'), Math.max(4, Math.floor(maxNodes / 3)), 0, MAX_NODES);
             let componentCount = 0;
             const rootId = idToken(rootRecord.id);
             const depths = new Map([[rootId, 0]]);
@@ -671,7 +680,7 @@
                         truncated = true;
                         break;
                     }
-                    const edgeKey = `${edge.fromId}|${edge.toId}|${edge.type}`;
+                    const edgeKey = `${idToken(edge.fromId)}|${idToken(edge.toId)}|${edge.type}`;
                     if (!edgeKeys.has(edgeKey)) {
                         edgeKeys.add(edgeKey);
                         edges.push(edge);
@@ -709,14 +718,17 @@
         // search, yet they are exactly what getLearningComponents is asked to return.
         function neighborsByType(record, type, direction, maxResults, includeUnresolvable) {
             const out = [];
+            const seen = new Set([idToken(record.id)]);
             let truncated = false;
             for (const entry of adjacency.get(idToken(record.id)) || []) {
                 if (entry.relationship.type !== type) continue;
                 if (direction && entry.direction !== direction) continue;
+                if (seen.has(entry.otherId)) continue;
                 const other = byId.get(entry.otherId);
                 if (!other) continue;
                 if (other.resolvable === false && !includeUnresolvable) continue;
                 if (out.length >= maxResults) { truncated = true; break; }
+                seen.add(entry.otherId);
                 out.push(publicRecord(other));
             }
             out.sort((a, b) => compareRecords({ record: a }, { record: b }));
@@ -725,7 +737,7 @@
 
         function boundedMax(options) {
             const inputOptions = isObject(options) ? options : {};
-            return boundedInt(inputOptions.maxResults, MAX_RESULTS, 1, MAX_RESULTS);
+            return boundedInt(own(inputOptions, 'maxResults'), MAX_RESULTS, 1, MAX_RESULTS);
         }
 
         function getPrerequisites(id, options) {

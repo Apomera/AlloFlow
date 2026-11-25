@@ -9,17 +9,27 @@
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
 (function() {
   'use strict';
-  (function() {
-    if (document.getElementById('allo-live-transitions')) return;
+  if (typeof window !== 'object' || !window) return;
+  if (!window.SelHub || typeof window.SelHub !== 'object') {
+    window.SelHub = {
+      _registry: Object.create(null), _order: [],
+      registerTool: function(id, config) {
+        if (!id || typeof id !== 'string' || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+        config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+      },
+      isRegistered: function(id) { return !!(id && Object.prototype.hasOwnProperty.call(this._registry, id)); },
+      renderTool: function(id, ctx) { var tool = (id && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || !tool.render) return null; return tool.render(ctx); }
+    };
+  }
+  if (typeof window.SelHub.isRegistered === 'function' && window.SelHub.isRegistered('transitions')) return;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body) return null;
+    var existing = document.getElementById('allo-live-transitions');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-transitions';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -28,10 +38,11 @@ window.SelHub = window.SelHub || {
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
 
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-transitions-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || document.getElementById('allo-transitions-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-transitions-a11y-css';
     st.textContent =
@@ -45,6 +56,12 @@ window.SelHub = window.SelHub || {
     return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
   }
 
+  var LOCAL_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|cut\s+myself|self[\s-]?harm|overdose)\b/i;
+
+  function trUid() {
+    return Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+  }
+
   // ── Sound Effects ──
   var _audioCtx = null;
   function getAudioCtx() {
@@ -52,8 +69,13 @@ window.SelHub = window.SelHub || {
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (typeof window === 'object' && window && ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMuted || window._alloGlobalMute)) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
+      if (ac.state === 'suspended' && typeof ac.resume === 'function') {
+        var rp = ac.resume();
+        if (rp && typeof rp.catch === 'function') rp.catch(function() {});
+      }
       var osc = ac.createOscillator(); var gain = ac.createGain();
       osc.type = type || 'sine'; osc.frequency.value = freq;
       gain.gain.setValueAtTime(vol || 0.1, ac.currentTime);
@@ -152,6 +174,7 @@ window.SelHub = window.SelHub || {
       var _TRC_DARK = {'#fff':'#1e293b','#ffffff':'#1e293b','#fef9c3':'#3a3410','#fef2f2':'#2e1414','#fee2e2':'#3a1a1a','#f0fdf4':'#0b2e22','#eff6ff':'#0e1f3a','#e0f2fe':'#0c2840','#f0f9ff':'#0c2840','#0f172a':'#f1f5f9','#1f2937':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#94a3b8':'#94a3b8','#9ca3af':'#cbd5e1','#e5e7eb':'#334155','#e2e8f0':'#334155','#d1d5db':'#475569','#92400e':'#fde68a','#991b1b':'#fca5a5','#7f1d1d':'#fca5a5','#ecfeff':'#0c2e30','#0c4a6e':'#7dd3fc'};
       var _TRC_HC = {'#fff':'#000000','#ffffff':'#000000','#fef9c3':'#000000','#fef2f2':'#000000','#fee2e2':'#000000','#f0fdf4':'#000000','#eff6ff':'#000000','#e0f2fe':'#000000','#f0f9ff':'#000000','#0f172a':'#ffff00','#1f2937':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#94a3b8':'#ffff00','#9ca3af':'#ffff00','#e5e7eb':'#ffff00','#e2e8f0':'#ffff00','#d1d5db':'#ffff00','#92400e':'#ffff00','#991b1b':'#ffff00','#7f1d1d':'#ffff00','#ecfeff':'#000000','#0c4a6e':'#ffff00'};
       var _trC = function(hex){ if (!_trCHC && !_trCDark && hex === '#94a3b8') return '#475569'; return _trCHC ? (_TRC_HC[hex]||hex) : (_trCDark ? (_TRC_DARK[hex]||hex) : hex); };
+      if (!ctx || !ctx.React) return null;
       var React = ctx.React;
       var h = React.createElement;
       var addToast = ctx.addToast;
@@ -160,23 +183,31 @@ window.SelHub = window.SelHub || {
       var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
-      var _trAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
+      var _trAiOn = ctx.aiAvailable !== false && (function (fn) { if (typeof window.__alloAiUsable === 'function') { try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; } } return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
       var onSafetyFlag = ctx.onSafetyFlag || null;
-      var band = ctx.gradeBand || 'elementary';
+      var band = typeof ctx.gradeBand === 'string' && ctx.gradeBand ? ctx.gradeBand : 'elementary';
+      var aliveRef = typeof React.useRef === 'function' ? React.useRef(true) : { current: true };
+      if (typeof React.useEffect === 'function') {
+        React.useEffect(function() {
+          aliveRef.current = true;
+          return function() { aliveRef.current = false; };
+        }, []);
+      }
 
-      var d = (ctx.toolData && ctx.toolData.transitions) || {};
+      var rawD = ctx.toolData && ctx.toolData.transitions;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
       var upd = function(key, val) {
-        if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('transitions', key); }
-        else { if (ctx.update) ctx.update('transitions', key, val); }
+        if (typeof key === 'object') { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('transitions', key); }
+        else { if (typeof ctx.update === 'function') ctx.update('transitions', key, val); }
       };
 
-      var activeTab      = d.activeTab || 'identify';
+      var activeTab      = typeof d.activeTab === 'string' ? d.activeTab : 'identify';
       if (!_trAiOn && activeTab === 'coach') activeTab = 'identify';
-      var soundEnabled   = d.soundEnabled != null ? d.soundEnabled : true;
+      var soundEnabled   = d.soundEnabled != null ? !!d.soundEnabled : true;
 
       // Identify state
-      var selectedChange = d.selectedChange || null;
-      var myChangeNote   = d.myChangeNote || '';
+      var selectedChange = typeof d.selectedChange === 'string' ? d.selectedChange : null;
+      var myChangeNote   = typeof d.myChangeNote === 'string' ? d.myChangeNote : '';
 
       // Curve state
       var curvePhaseIdx  = (Number.isInteger(d.curvePhaseIdx) && d.curvePhaseIdx >= 0 ? d.curvePhaseIdx : 0);
@@ -184,43 +215,54 @@ window.SelHub = window.SelHub || {
 
       // Stories state
       var storyIdx       = (Number.isInteger(d.storyIdx) && d.storyIdx >= 0 ? d.storyIdx : 0);
-      var storiesRead    = d.storiesRead || {};
+      var storiesRead    = (d.storiesRead && typeof d.storiesRead === 'object' && !Array.isArray(d.storiesRead)) ? d.storiesRead : {};
 
       // Anchors state
-      var anchors        = (Array.isArray(d.anchors) ? d.anchors : []);
+      var anchors        = (Array.isArray(d.anchors) ? d.anchors : []).filter(function(a) { return a != null; });
       var newAnchor      = (typeof d.newAnchor === 'string' ? d.newAnchor : '');
 
       // Plan state
-      var planSteps      = (Array.isArray(d.planSteps) ? d.planSteps : []);
+      var planSteps      = (Array.isArray(d.planSteps) ? d.planSteps : []).filter(function(s) { return s != null; });
       var newStep        = (typeof d.newStep === 'string' ? d.newStep : '');
 
       // Coach state
-      var coachInput     = d.coachInput || '';
-      var coachHistory   = Array.isArray(d.coachHistory) ? d.coachHistory : [];
-      var coachLoading   = d.coachLoading || false;
+      var coachInput     = typeof d.coachInput === 'string' ? d.coachInput : '';
+      var coachHistory   = (Array.isArray(d.coachHistory) ? d.coachHistory : []).filter(function(m) { return m && typeof m === 'object'; });
+      var coachLoading   = !!d.coachLoading;
 
       var scanTransitionsText = function(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'transitions', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          try {
+            var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'transitions', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          } catch (_) {}
         }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && (scan.triggered || scan.hasCrisis)) {
-            blocked = true;
-            if (typeof onSafetyFlag === 'function') {
-              try { onSafetyFlag({ toolId: 'transitions', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+        if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          try {
+            var scan = window.SelHub.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'transitions', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
             }
+          } catch (_) {}
+        }
+        if (!blocked && LOCAL_CRISIS_RE.test(trimmed)) {
+          blocked = true;
+          if (typeof onSafetyFlag === 'function') {
+            try { onSafetyFlag({ toolId: 'transitions', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
           }
         }
         if (blocked) {
           upd('_lastTier', 3);
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Transitions & Change', contentSnippet: trimmed });
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Transitions & Change', contentSnippet: trimmed }); } catch (_) {}
           }
+          announceTR('Support resources are available now: call or text 988, text HOME to 741741, or call 911 in an emergency.');
         }
         return blocked;
       };
@@ -250,7 +292,7 @@ window.SelHub = window.SelHub || {
       if (!TABS.some(function(t) { return t.id === activeTab; })) activeTab = 'identify';
 
       // Track explored tabs (no render-time state mutation; persist in tab onClick)
-      var exploredTabs = (d.exploredTabs && typeof d.exploredTabs === 'object') ? d.exploredTabs : {};
+      var exploredTabs = (d.exploredTabs && typeof d.exploredTabs === 'object' && !Array.isArray(d.exploredTabs)) ? d.exploredTabs : {};
       var effExplored = Object.assign({}, exploredTabs);
       effExplored[activeTab] = true;
       var exploredCount = TABS.filter(function(t) { return !!effExplored[t.id]; }).length;
@@ -258,14 +300,12 @@ window.SelHub = window.SelHub || {
       function announceTR(msg) {
         if (!msg) return;
         if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-transitions');
-          if (lr) lr.textContent = msg;
-        }
+        var lr = ensureLiveRegion();
+        if (lr) lr.textContent = msg;
       }
 
       function onTabKeyDown(ev, idx) {
-        if (isImeComposing(ev)) return;
+        if (isImeComposing(ev) || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         var nextIdx = null;
         if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % TABS.length;
         else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + TABS.length) % TABS.length;
@@ -338,7 +378,7 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'identify') {
         identifyContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83C\uDF00'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83C\uDF00'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'What\u2019s Changing?'),
             h('p', { style: { fontSize: '13px', color: _trC('#475569'), margin: 0 } },
               band === 'elementary' ? 'Change is a part of life. Let\u2019s name what\u2019s happening for you.'
@@ -415,7 +455,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var curveContent = null;
       if (activeTab === 'curve') {
-        var phases = CHANGE_CURVE[band] || CHANGE_CURVE.elementary;
+        var phases = Object.prototype.hasOwnProperty.call(CHANGE_CURVE, band) ? CHANGE_CURVE[band] : CHANGE_CURVE.elementary;
         var currentPhase = phases[curvePhaseIdx % phases.length];
 
         curveContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
@@ -489,7 +529,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var storiesContent = null;
       if (activeTab === 'stories') {
-        var stories = CHANGE_STORIES[band] || CHANGE_STORIES.elementary;
+        var stories = Object.prototype.hasOwnProperty.call(CHANGE_STORIES, band) ? CHANGE_STORIES[band] : CHANGE_STORIES.elementary;
         var currentStory = stories[storyIdx % stories.length];
         var storyType = CHANGE_TYPES.find(function(ct) { return ct.id === currentStory.type; });
 
@@ -551,7 +591,7 @@ window.SelHub = window.SelHub || {
 
         anchorsContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\u2693'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\u2693'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'My Anchors'),
             h('p', { style: { fontSize: '13px', color: _trC('#94a3b8'), margin: 0 } },
               band === 'elementary' ? 'When everything is changing, some things stay the same. Let\u2019s find yours.'
@@ -573,13 +613,14 @@ window.SelHub = window.SelHub || {
             h('input', { 'aria-label': 'Add an anchor',
               type: 'text', value: newAnchor,
               onChange: function(ev) { upd('newAnchor', ev.target.value); },
+              onBlur: function(ev) { scanTransitionsText(ev.target.value); },
               onKeyDown: function(ev) {
                 if (isImeComposing(ev)) return;
                 if (ev.key === 'Escape' && newAnchor) { ev.preventDefault(); upd('newAnchor', ''); announceTR('Cleared anchor input.'); return; }
                 if (ev.key === 'Enter' && newAnchor.trim()) {
                   var addedAnchor = newAnchor.trim();
-                  scanTransitionsText(newAnchor);
-                  upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: addedAnchor }]), newAnchor: '' });
+                  if (scanTransitionsText(addedAnchor)) { upd({ newAnchor: '', _lastTier: 3 }); return; }
+                  upd({ anchors: anchors.concat([{ id: trUid(), text: addedAnchor }]), newAnchor: '' });
                   if (soundEnabled) sfxAnchor();
                   announceTR('Added anchor: ' + addedAnchor);
                   if (awardXP) awardXP(5, 'Identified an anchor!');
@@ -593,8 +634,8 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!newAnchor.trim()) return;
                 var addedAnchor = newAnchor.trim();
-                scanTransitionsText(newAnchor);
-                upd({ anchors: anchors.concat([{ id: Date.now().toString(), text: addedAnchor }]), newAnchor: '' });
+                if (scanTransitionsText(addedAnchor)) { upd({ newAnchor: '', _lastTier: 3 }); return; }
+                upd({ anchors: anchors.concat([{ id: trUid(), text: addedAnchor }]), newAnchor: '' });
                 if (soundEnabled) sfxAnchor();
                 announceTR('Added anchor: ' + addedAnchor);
                 if (awardXP) awardXP(5, 'Identified an anchor!');
@@ -606,13 +647,15 @@ window.SelHub = window.SelHub || {
           // Anchors list
           anchors.length > 0
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-                anchors.map(function(anchor) {
-                  return h('div', { key: anchor.id, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: _trC('#fff'), border: '2px solid #bae6fd', borderRadius: '12px' } },
+                anchors.map(function(anchor, aIdx) {
+                  var aId = (anchor && typeof anchor === 'object' && anchor.id) ? anchor.id : ('a_' + aIdx);
+                  var aText = typeof anchor === 'string' ? anchor : String((anchor && anchor.text) || '');
+                  return h('div', { key: aId, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: _trC('#fff'), border: '2px solid #bae6fd', borderRadius: '12px' } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: '20px', flexShrink: 0 } }, '\u2693'),
-                    h('span', { style: { flex: 1, fontSize: '14px', color: _trC('#1f2937'), fontWeight: 500 } }, anchor.text),
+                    h('span', { style: { flex: 1, fontSize: '14px', color: _trC('#1f2937'), fontWeight: 500 } }, aText),
                     h('button', {
                       type: 'button',
-                      onClick: function() { upd('anchors', anchors.filter(function(a) { return a.id !== anchor.id; })); announceTR('Removed anchor.'); },
+                      onClick: function() { upd('anchors', anchors.filter(function(a, i) { return (a && typeof a === 'object' && a.id) ? a.id !== aId : i !== aIdx; })); announceTR('Removed anchor.'); },
                       'aria-label': 'Remove anchor',
                       style: { minWidth: 24, minHeight: 24, background: _trC('#fee2e2'), border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', color: _trC('#991b1b'), fontSize: '10px', padding: '2px 6px' }
                     }, '\u2715')
@@ -642,13 +685,14 @@ window.SelHub = window.SelHub || {
             h('input', { 'aria-label': 'Add a plan step',
               type: 'text', value: newStep,
               onChange: function(ev) { upd('newStep', ev.target.value); },
+              onBlur: function(ev) { scanTransitionsText(ev.target.value); },
               onKeyDown: function(ev) {
                 if (isImeComposing(ev)) return;
                 if (ev.key === 'Escape' && newStep) { ev.preventDefault(); upd('newStep', ''); announceTR('Cleared step input.'); return; }
                 if (ev.key === 'Enter' && newStep.trim()) {
                   var addedStep = newStep.trim();
-                  scanTransitionsText(newStep);
-                  upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: addedStep, done: false }]), newStep: '' });
+                  if (scanTransitionsText(addedStep)) { upd({ newStep: '', _lastTier: 3 }); return; }
+                  upd({ planSteps: planSteps.concat([{ id: trUid(), text: addedStep, done: false }]), newStep: '' });
                   if (soundEnabled) sfxClick();
                   announceTR('Added plan step: ' + addedStep);
                   if (awardXP) awardXP(5, 'Added a step to your Change Plan!');
@@ -662,8 +706,8 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!newStep.trim()) return;
                 var addedStep = newStep.trim();
-                scanTransitionsText(newStep);
-                upd({ planSteps: planSteps.concat([{ id: Date.now().toString(), text: addedStep, done: false }]), newStep: '' });
+                if (scanTransitionsText(addedStep)) { upd({ newStep: '', _lastTier: 3 }); return; }
+                upd({ planSteps: planSteps.concat([{ id: trUid(), text: addedStep, done: false }]), newStep: '' });
                 if (soundEnabled) sfxClick();
                 announceTR('Added plan step: ' + addedStep);
                 if (awardXP) awardXP(5, 'Added a step to your Change Plan!');
@@ -674,38 +718,41 @@ window.SelHub = window.SelHub || {
           ),
           planSteps.length > 0
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-                planSteps.map(function(step) {
+                planSteps.map(function(step, sIdx) {
+                  var sId = (step && typeof step === 'object' && step.id) ? step.id : ('s_' + sIdx);
+                  var sText = typeof step === 'string' ? step : String((step && step.text) || '');
+                  var sDone = !!(step && typeof step === 'object' && step.done);
                   return h('div', {
-                    key: step.id,
-                    style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: step.done ? _trC('#f0fdf4') : _trC('#fff'), border: '2px solid ' + (_trCHC ? '#ffff00' : (step.done ? '#86efac' : _trC('#e5e7eb'))), borderRadius: '12px', transition: 'all 0.15s' }
+                    key: sId,
+                    style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: sDone ? _trC('#f0fdf4') : _trC('#fff'), border: '2px solid ' + (_trCHC ? '#ffff00' : (sDone ? '#86efac' : _trC('#e5e7eb'))), borderRadius: '12px', transition: 'all 0.15s' }
                   },
                     h('button', {
                       type: 'button',
-                      'aria-label': (step.done ? 'Mark incomplete: ' : 'Mark complete: ') + step.text,
-                      'aria-pressed': step.done ? 'true' : 'false',
+                      'aria-label': (sDone ? 'Mark incomplete: ' : 'Mark complete: ') + sText,
+                      'aria-pressed': sDone ? 'true' : 'false',
                       onClick: function() {
-                        upd('planSteps', planSteps.map(function(s) { return s.id === step.id ? Object.assign({}, s, { done: !s.done }) : s; }));
-                        if (!step.done && soundEnabled) sfxComplete();
-                        if (!step.done && awardXP) awardXP(10, 'Completed a step!');
-                        announceTR((step.done ? 'Marked incomplete: ' : 'Completed: ') + step.text);
+                        upd('planSteps', planSteps.map(function(s, i) { var match = (s && typeof s === 'object' && s.id) ? s.id === sId : i === sIdx; return match ? Object.assign({}, typeof s === 'object' ? s : { id: sId, text: sText }, { done: !sDone }) : s; }));
+                        if (!sDone && soundEnabled) sfxComplete();
+                        if (!sDone && awardXP) awardXP(10, 'Completed a step!');
+                        announceTR((sDone ? 'Marked incomplete: ' : 'Completed: ') + sText);
                       },
                       style: { flex: 1, minHeight: '44px', display: 'flex', alignItems: 'center', gap: '10px', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }
                     },
-                      h('span', { 'aria-hidden': 'true', style: { width: '22px', height: '22px', borderRadius: '6px', border: '2px solid ' + (_trCHC ? '#ffff00' : (step.done ? '#15803d' : _trC('#d1d5db'))), background: step.done ? (_trCHC ? '#000000' : '#15803d') : _trC('#fff'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' } },
-                        step.done && h('span', { style: { color: BTN_FG, fontSize: '14px', fontWeight: 800 } }, '\u2713')
+                      h('span', { 'aria-hidden': 'true', style: { width: '22px', height: '22px', borderRadius: '6px', border: '2px solid ' + (_trCHC ? '#ffff00' : (sDone ? '#15803d' : _trC('#d1d5db'))), background: sDone ? (_trCHC ? '#000000' : '#15803d') : _trC('#fff'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' } },
+                        sDone && h('span', { style: { color: BTN_FG, fontSize: '14px', fontWeight: 800 } }, '\u2713')
                       ),
-                      h('span', { style: { flex: 1, fontSize: '14px', color: step.done ? _trC('#475569') : _trC('#1f2937'), textDecoration: step.done ? 'line-through' : 'none' } }, step.text)
+                      h('span', { style: { flex: 1, fontSize: '14px', color: sDone ? _trC('#475569') : _trC('#1f2937'), textDecoration: sDone ? 'line-through' : 'none' } }, sText)
                     ),
                     h('button', {
                       type: 'button',
-                      onClick: function() { upd('planSteps', planSteps.filter(function(s) { return s.id !== step.id; })); announceTR('Removed step.'); },
-                      'aria-label': 'Remove step: ' + step.text,
+                      onClick: function() { upd('planSteps', planSteps.filter(function(s, i) { return (s && typeof s === 'object' && s.id) ? s.id !== sId : i !== sIdx; })); announceTR('Removed step.'); },
+                      'aria-label': 'Remove step: ' + sText,
                       style: { minWidth: 24, minHeight: 24, background: 'none', border: 'none', cursor: 'pointer', color: _trC('#475569'), fontSize: '14px', padding: '2px' }
                     }, '\u2715')
                   );
                 }),
-                planSteps.filter(function(s) { return s.done; }).length > 0 && h('p', { style: { fontSize: '12px', color: _trCHC ? '#ffff00' : (_trCDark ? '#34d399' : '#047857'), fontWeight: 600, textAlign: 'center', marginTop: '8px' } },
-                  '\u2728 ' + planSteps.filter(function(s) { return s.done; }).length + ' of ' + planSteps.length + ' steps completed!'
+                planSteps.filter(function(s) { return s && s.done; }).length > 0 && h('p', { style: { fontSize: '12px', color: _trCHC ? '#ffff00' : (_trCDark ? '#34d399' : '#047857'), fontWeight: 600, textAlign: 'center', marginTop: '8px' } },
+                  '\u2728 ' + planSteps.filter(function(s) { return s && s.done; }).length + ' of ' + planSteps.length + ' steps completed!'
                 )
               )
             : h('div', { style: { textAlign: 'center', padding: '24px', color: _trC('#94a3b8') } },
@@ -719,19 +766,21 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var coachContent = null;
       if (activeTab === 'coach' && _trAiOn) {
-        var hasSafetyLayer = window.SelHub && window.SelHub.hasCoachConsent;
+        var hasSafetyLayer = !!(window.SelHub && typeof window.SelHub.hasCoachConsent === 'function' && typeof window.SelHub.renderConsentScreen === 'function');
         var hasConsent = hasSafetyLayer ? window.SelHub.hasCoachConsent() : true;
         if (hasSafetyLayer && !hasConsent) {
           coachContent = window.SelHub.renderConsentScreen(h, band, function() {
-            window.SelHub.giveCoachConsent();
+            if (window.SelHub && typeof window.SelHub.giveCoachConsent === 'function') window.SelHub.giveCoachConsent();
             upd('_consentRefresh', Date.now());
           }, ctx.activeSessionCode);
         } else {
         var changeContext = selectedChange ? CHANGE_TYPES.find(function(ct) { return ct.id === selectedChange; }) : null;
-        var phaseContext = myPhase != null ? (CHANGE_CURVE[band] || CHANGE_CURVE.elementary)[myPhase] : null;
+        var curveForBand = Object.prototype.hasOwnProperty.call(CHANGE_CURVE, band) ? CHANGE_CURVE[band] : CHANGE_CURVE.elementary;
+        var phaseContext = (myPhase != null && curveForBand[myPhase]) ? curveForBand[myPhase] : null;
         var sendCoachMessage = function() {
           if (!coachInput.trim() || coachLoading || !_trAiOn) return;
           var userMsg = coachInput.trim();
+          var combinedCheck = myChangeNote ? (userMsg + '\n' + myChangeNote) : userMsg;
           var newHist = (coachHistory || []).concat([{ role: 'user', text: userMsg }]);
           upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
 
@@ -751,31 +800,59 @@ window.SelHub = window.SelHub || {
             + '3. One gentle, specific suggestion or coping strategy (1 sentence)\n\n'
             + 'Be warm, concise, age-appropriate. Never minimize their experience. Max 3-4 sentences.';
 
-          var sendSafe = (window.SelHub && window.SelHub.safeCoach)
-            ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
+          var sendSafe = (window.SelHub && typeof window.SelHub.safeCoach === 'function')
+            ? function() { return window.SelHub.safeCoach({ studentMessage: combinedCheck, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
             : function() {
-                var preFallback = (window.SelHub && window.SelHub.safeRehearseCheck)
-                  ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'transitions', onSafetyFlag: onSafetyFlag })
-                  : { action: 'continue' };
-                if (preFallback.action === 'block') {
-                  var blockReply = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
-                    ? window.SelHub.rehearseBreakCharacterText(preFallback.severity)
-                    : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+                var preFallback = { action: 'continue', severity: 'none' };
+                if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+                  try { preFallback = window.SelHub.safeRehearseCheck(combinedCheck, { toolId: 'transitions', onSafetyFlag: onSafetyFlag }) || preFallback; } catch (_) {}
+                }
+                var blockedFallback = preFallback && preFallback.action === 'block';
+                if (!blockedFallback && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+                  try {
+                    var scanFb = window.SelHub.scanForCrisis(combinedCheck);
+                    if (scanFb && (scanFb.triggered || scanFb.hasCrisis)) {
+                      blockedFallback = true;
+                      if (typeof onSafetyFlag === 'function') {
+                        try { onSafetyFlag({ toolId: 'transitions', tier: 3, snippet: userMsg.slice(0, 120) }); } catch (_) {}
+                      }
+                    }
+                  } catch (_) {}
+                }
+                if (!blockedFallback && LOCAL_CRISIS_RE.test(combinedCheck)) {
+                  blockedFallback = true;
+                  if (typeof onSafetyFlag === 'function') {
+                    try { onSafetyFlag({ toolId: 'transitions', tier: 3, snippet: userMsg.slice(0, 120) }); } catch (_) {}
+                  }
+                }
+                if (blockedFallback) {
+                  var blockReply = (window.SelHub && typeof window.SelHub.rehearseBreakCharacterText === 'function')
+                    ? window.SelHub.rehearseBreakCharacterText(preFallback.severity || 'crisis')
+                    : 'Your safety matters. Please reach out to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency.';
+                  if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                    try { window.SelHub.showCrisisModal({ toolName: 'Transitions & Change', contentSnippet: userMsg }); } catch (_) {}
+                  }
                   return Promise.resolve({ response: blockReply, tier: 3, showCrisis: true });
                 }
                 return callGemini(prompt, false).then(function(r) { return { response: r, tier: preFallback.action === 'nudge' ? 2 : 0, showCrisis: false }; });
               };
           sendSafe().then(function(result) {
-            upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 });
-            if (awardXP) awardXP(5, 'Talked with Transition Coach');
+            if (!aliveRef.current) return;
+            var resObj = (result && typeof result === 'object') ? result : {};
+            var replyText = (typeof resObj.response === 'string' && resObj.response.trim())
+              ? resObj.response
+              : 'What you\u2019re going through is real, your feelings are valid, and you do not have to navigate it alone.';
+            upd({ coachHistory: newHist.concat([{ role: 'coach', text: replyText }]), coachLoading: false, _lastTier: resObj.tier || 0 });
+            if (typeof awardXP === 'function' && !(resObj.tier >= 3)) awardXP(5, 'Talked with Transition Coach');
           }).catch(function() {
+            if (!aliveRef.current) return;
             upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting right now. But I want you to know: what you\u2019re going through is real, your feelings about it are valid, and the fact that you\u2019re here talking about it shows remarkable courage.' }]), coachLoading: false });
           });
         };
 
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83E\uDD16'),
+            h('div', { className: 'sel-hero-icon', 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(2,132,199,0.3))' } }, '\uD83E\uDD16'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: SKY_DARK, margin: '0 0 4px' } }, 'AI Support'),
             h('p', { style: { fontSize: '13px', color: _trC('#475569'), margin: 0 } }, 'Talk about what you\u2019re going through.'),
             window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode)
@@ -848,7 +925,7 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         var changeContext = selectedChange ? CHANGE_TYPES.find(function(ct) { return ct.id === selectedChange; }) : null;
-        var phases = (CHANGE_CURVE[band] || CHANGE_CURVE.elementary);
+        var phases = Object.prototype.hasOwnProperty.call(CHANGE_CURVE, band) ? CHANGE_CURVE[band] : CHANGE_CURVE.elementary;
         var phaseContext = (myPhase != null && phases[myPhase]) ? phases[myPhase] : null;
         printContent = h('div', { style: { padding: 16 } },
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _trC('#f0f9ff'), borderTop: '1px solid #bae6fd', borderRight: '1px solid #bae6fd', borderBottom: '1px solid #bae6fd', borderLeft: '3px solid ' + (_trCHC ? '#ffff00' : SKY), marginBottom: 12, fontSize: 12.5, color: SKY_DARK, lineHeight: 1.65 } },
@@ -914,7 +991,7 @@ window.SelHub = window.SelHub || {
             // Crisis
             h('div', { style: { padding: 10, background: _trC('#fef2f2'), border: '1px solid #fecaca', borderRadius: 8, marginBottom: 12, fontSize: 11.5, color: _trC('#7f1d1d'), lineHeight: 1.55 } },
               h('strong', null, 'If a transition crosses into crisis: '),
-              '988 Suicide & Crisis Lifeline (call or text 988) · Crisis Text Line text HOME to 741741 · Trevor Project for LGBTQ+ youth 1-866-488-7386. Transition does not have to be navigated alone.'
+              '988 Suicide & Crisis Lifeline (call or text 988) · Crisis Text Line text HOME to 741741 · Emergency: call 911 · Trevor Project for LGBTQ+ youth 1-866-488-7386. Transition does not have to be navigated alone.'
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid ' + _trC('#0f172a'), fontSize: 10.5, color: _trC('#475569'), lineHeight: 1.5 } },
@@ -926,13 +1003,23 @@ window.SelHub = window.SelHub || {
 
       // ── Final render ──
       var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent || printContent;
+      var crisisPanel = null;
+      if (d._lastTier >= 3) {
+        if (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') {
+          crisisPanel = window.SelHub.renderCrisisResources(h, band);
+        } else {
+          crisisPanel = h('div', { role: 'alert', style: { margin: '10px 12px', padding: '12px 14px', borderRadius: 10, background: _trC('#fef2f2'), border: '2px solid ' + (_trCHC ? '#ffff00' : '#dc2626'), color: _trC('#7f1d1d'), fontSize: 12.5, lineHeight: 1.55 } },
+            h('strong', null, 'Immediate support is available: '),
+            'Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), call 911 in an emergency, or reach out to a trusted adult.'
+          );
+        }
+      }
       return h('div', { className: 'selh-transitions', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-        (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('transitions', h, ctx) : null),
+        (window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('transitions', h, ctx) : null),
         tabBar,
-        (d._lastTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, band) : null,
+        crisisPanel,
         h('div', { id: 'trans-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'trans-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content),
-        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+        window.SelHub && typeof window.SelHub.renderResourceFooter === 'function' && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

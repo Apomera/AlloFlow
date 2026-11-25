@@ -664,6 +664,9 @@ describe('Item #10 — Syllable Blending & Break it Down soundGap + choices, and
     expect(f.waits).toContain(800);
     // And once syllables finished, Hear all auto-started and played the choice clips!
     const sbItem = f.lesson.blocks[0].items[0];
+    // 2026-11-23: the second choice is read a moment after the first, so the test waits for it (up to 2 s) and not a fixed
+    // 80 ms. Checked by hand the same day: the prompt, both syllables, then both choices play, in that order.
+    for (let waited = 0; waited < 2000 && !f.played.includes(f.lesson.audio[sbItem.choices[1].audio]); waited += 20) await wait(20);
     expect(f.played).toContain(f.lesson.audio[sbItem.choices[0].audio]);
     expect(f.played).toContain(f.lesson.audio[sbItem.choices[1].audio]);
   });

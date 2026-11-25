@@ -299,6 +299,17 @@ function offlineGlossaryAttribution(hit) {
     label: hit.label || hit.word || ''
   };
 }
+// The same offline pictures for glossaries made without AI (generate_dispatcher attachOfflineGlossaryPictures):
+// ensure() -> matcher (matchWord), prepare(hit, signal) -> PNG data URL with its credit band, attribution(hit).
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.GlossaryOfflinePictures = Object.freeze({
+    ensure: ensureOfflineGlossaryPictureAssets,
+    prepare: prepareOfflineGlossarySymbol,
+    attribution: offlineGlossaryAttribution,
+    creditBand: 688 - 640
+  });
+}
 // A classroom photo arrives screened, with AI alt text of the photo itself.
 // Credit is drawn in a band under it, as for Mulberry, so it survives exports
 // that copy only the image bytes.
@@ -1748,16 +1759,270 @@ function renderPhonicsDictRow(phonicsData, t, playDictionaryAudio) {
   }, row);
 }
 
+// Dictionary details for English entries (2026-11-23). Syllables are computed at display
+// time from the shared Word Sounds data (never stored); part of speech is the entry's own,
+// else the offline dictionary's only part of speech for the word. Every read is optional.
+function glossarySingleWord(term) {
+  var word = String(term == null ? '' : term).trim();
+  return /^[A-Za-z][A-Za-z'’-]*$/.test(word) ? word : '';
+}
+// The bank's senses for an entry: a single word, or a phrase (dictSense.phrase, or a multi-word term).
+// Indexes match AlloVocabBank.senses()/phraseSenses(), which dictSense.index refers to.
+// dictSense.list 'loader': the meanings came from dictionary_loader.js's own reader (no checked marks),
+// and index counts the flattened lookupOfflineBank(word).meanings[*].definitions[*].
+function glossaryLoaderSenses(word) {
+  var AD = typeof window !== 'undefined' ? window.AlloDictionary : null,
+    entry = null,
+    out = [];
+  try {
+    entry = word && AD && typeof AD.lookupOfflineBank === 'function' ? AD.lookupOfflineBank(word) : null;
+  } catch (_) {
+    entry = null;
+  }
+  (entry && Array.isArray(entry.meanings) ? entry.meanings : []).forEach(function (m) {
+    (m && Array.isArray(m.definitions) ? m.definitions : []).forEach(function (d) {
+      out.push(d && typeof d.definition === 'string' && d.definition.trim() ? {
+        word: word,
+        pos: String(m.partOfSpeech || ''),
+        def: d.definition,
+        example: d.example || '',
+        loader: true
+      } : null);
+    });
+  });
+  return out;
+}
+function glossaryVocabSenses(item) {
+  var bank = typeof window !== 'undefined' ? window.AlloVocabBank : null;
+  var term = String(item && item.term || '').trim(),
+    info = item && item.dictSense;
+  if (term && info && info.list === 'loader') return glossaryLoaderSenses(String(info.word || term).toLowerCase());
+  if (!term || !bank) return [];
+  var list = [];
+  try {
+    if ((info && info.phrase || /\s/.test(term)) && typeof bank.phraseSenses === 'function') list = bank.phraseSenses(info && info.phrase && info.word ? info.word : term) || [];else if (glossarySingleWord(term) && typeof bank.senses === 'function') list = bank.senses(term) || [];
+  } catch (_) {
+    list = [];
+  }
+  return Array.isArray(list) ? list.map(function (s) {
+    return s && typeof s.def === 'string' && s.def.trim() ? s : null;
+  }) : [];
+}
+// About a quarter of dictionary meanings are written around a blank ("A country's ___ is"). Same
+// rule as the dictionary glossary builder (generate_dispatcher fillDictionaryBlank): a/an and capitals.
+function glossaryFillBlank(def, word) {
+  var value = String(def == null ? '' : def).trim(),
+    term = String(word == null ? '' : word).trim();
+  if (!term || !/_{2,}/.test(value)) return value;
+  var article = glossaryArticleOnset(term) === 'vowel' ? 'an' : 'a';
+  try {
+    value = value.replace(/(^|[^\p{L}\p{M}])(an?)(\s+)(?=_{2,})/giu, function (m, before, found, space) {
+      return before + (found[0] === 'A' ? article[0].toUpperCase() + article.slice(1) : article) + space;
+    });
+  } catch (_) {}
+  return value.replace(/_{2,}/g, function (m, offset, whole) {
+    return offset === 0 || /[.!?:]\s*$/.test(whole.slice(0, offset)) ? term.charAt(0).toUpperCase() + term.slice(1) : term;
+  });
+}
+function glossarySyllables(term) {
+  var word = glossarySingleWord(term);
+  var mods = typeof window !== 'undefined' ? window.AlloModules || {} : {};
+  var table = mods.SyllableTableEn;
+  if (!/^[A-Za-z]{2,}$/.test(word) || !table || typeof table.lookup !== 'function') return null;
+  var found = null;
+  try {
+    found = table.lookup(word.toLowerCase());
+  } catch (_) {
+    found = null;
+  }
+  if (!found || found.check || !Array.isArray(found.parts) || found.parts.length < 2 || found.parts.join('').length !== word.length) return null;
+  var parts = [],
+    at = 0;
+  found.parts.forEach(function (part) {
+    parts.push(word.slice(at, at + part.length));
+    at += part.length;
+  });
+  // Stress only when the data gives one pronunciation with one main stress per syllable.
+  var stress = -1,
+    pron = mods.WordSoundsPronunciations,
+    patterns = null;
+  try {
+    patterns = pron && typeof pron.lookup === 'function' ? pron.lookup(word) : null;
+  } catch (_) {
+    patterns = null;
+  }
+  if (Array.isArray(patterns) && patterns.length === 1) {
+    var pattern = String(patterns[0]);
+    if (pattern.length === parts.length && pattern.split('1').length === 2) stress = pattern.indexOf('1');
+  }
+  // The small stress add-on (syllable_stress_en.js) wins; where the two disagree, no stress.
+  var addon = mods.SyllableStressEn,
+    fromAddon = -1;
+  try {
+    if (addon && typeof addon.stressIndex === 'function' && typeof addon.usable === 'function' && addon.usable(table)) {
+      fromAddon = addon.stressIndex(word.toLowerCase(), table);
+      stress = stress >= 0 && stress !== fromAddon ? -1 : fromAddon;
+    }
+  } catch (_) {
+    stress = -1;
+  }
+  return {
+    parts: parts,
+    stress: stress
+  };
+}
+function glossaryEntryPos(item) {
+  var known = /^(noun|verb|adjective|adverb|pronoun|preposition|conjunction|interjection|determiner)$/;
+  var own = String(item && (item.pos || item.partOfSpeech) || '').trim().toLowerCase();
+  if (own) return known.test(own) ? own : '';
+  var word = glossarySingleWord(item && item.term);
+  if (!word) return '';
+  var found = glossaryVocabSenses(item).filter(Boolean).map(function (s) {
+    return String(s.pos || '');
+  });
+  if (!found.length) {
+    try {
+      var AD = window.AlloDictionary;
+      var entry = AD && typeof AD.lookupOfflineBank === 'function' ? AD.lookupOfflineBank(word) : null;
+      found = entry && Array.isArray(entry.meanings) ? entry.meanings.map(function (m) {
+        return String(m && m.partOfSpeech || '');
+      }) : [];
+    } catch (_) {
+      found = [];
+    }
+  }
+  var kinds = found.filter(function (pos, i) {
+    return found.indexOf(pos) === i;
+  });
+  return kinds.length === 1 && known.test(kinds[0]) ? kinds[0] : '';
+}
+function glossaryIsDictionaryEntry(item) {
+  return !!item && (item.defSource === 'dictionary' || item.defSource === 'dictionary-edited');
+}
+// The dictionary's other checked meanings for the card back: never the one shown, no examples.
+function glossaryOtherSenses(item, shownDef) {
+  var term = String(item && item.term || '').trim();
+  var skip = item && item.dictSense && typeof item.dictSense.index === 'number' && glossaryIsDictionaryEntry(item) ? item.dictSense.index : -1;
+  var out = [];
+  glossaryVocabSenses(item).forEach(function (s, i) {
+    if (!s || out.length >= 3 || !s.checked || i === skip) return;
+    var def = glossaryFillBlank(s.def, term);
+    if (glossaryCloseMeaning(def, shownDef) || glossaryCloseMeaning(def, item.def)) return;
+    if (out.some(function (o) {
+      return glossaryCloseMeaning(o.def, def);
+    })) return;
+    out.push({
+      pos: String(s.pos || ''),
+      def: def
+    });
+  });
+  return out;
+}
+// Credit for dictionary text (CC BY-SA 4.0 Wiktionary / CC BY 4.0 Open English WordNet).
+// Sources come from the resource's own dictionary credit (saved by the dictionary glossary builder),
+// else the loaded bank, else these; one line either way.
+function glossaryDictionaryCredits(resource) {
+  var fallback = [{
+    set: 'Wiktionary',
+    license: 'CC BY-SA 4.0',
+    url: 'https://en.wiktionary.org',
+    deed: 'https://creativecommons.org/licenses/by-sa/4.0/'
+  }, {
+    set: 'Open English WordNet',
+    license: 'CC BY 4.0',
+    url: 'https://en-word.net',
+    deed: 'https://creativecommons.org/licenses/by/4.0/'
+  }];
+  var saved = Array.isArray(resource && resource.credits) ? resource.credits.find(function (c) {
+    return c && c.kind === 'dictionary' && Array.isArray(c.sources) && c.sources.length;
+  }) : null;
+  var shared = saved ? saved.sources : typeof window !== 'undefined' && window.AlloVocabBank && Array.isArray(window.AlloVocabBank.credits) ? window.AlloVocabBank.credits : [];
+  return fallback.map(function (credit) {
+    var match = shared.find(function (c) {
+      return c && typeof c.set === 'string' && c.set.indexOf(credit.set === 'Wiktionary' ? 'English Wiktionary' : credit.set) >= 0 && c.license === credit.license;
+    });
+    var safe = function (value, otherwise) {
+      return typeof value === 'string' && /^https:\/\//.test(value) ? value : otherwise;
+    };
+    return match ? {
+      set: credit.set,
+      license: credit.license,
+      url: safe(match.url, credit.url),
+      deed: safe(match.deed, credit.deed)
+    } : credit;
+  });
+}
+// The same line as plain text with its addresses, for files that leave the app (the worksheet here).
+function glossaryDictionaryCreditText(t, resource) {
+  var sources = glossaryDictionaryCredits(resource).map(function (c) {
+    return c.set + ', ' + c.url + ' (' + c.license + ', ' + c.deed + ')';
+  }).join(' · ');
+  var text = dictText(t, 'glossary.dictionary_credit', 'Some definitions are adapted from {sources}.');
+  return text.indexOf('{sources}') >= 0 ? text.split('{sources}').join(sources) : text + ' ' + sources;
+}
+function addGlossaryWorksheetCredit(html, text) {
+  if (typeof html !== 'string' || !text) return html;
+  var line = '<p data-vocab-dictionary-credit="true" style="margin:2px 0;font-size:11px;overflow-wrap:anywhere">' + glossaryWsEscapeHtml(text) + '</p>';
+  var footer = '<footer class="ws-credits">';
+  if (html.indexOf(footer) >= 0) return html.replace(footer, function () {
+    return footer + line;
+  });
+  var at = html.search(/<section class="(?:ws-key|answer-key)"/);
+  if (at < 0) at = html.search(/<\/main>|<\/body>/i);
+  var block = '<footer class="ws-credits" style="margin-top:18px;padding-top:8px;border-top:1px solid #808080">' + line + '</footer>';
+  return at < 0 ? html + block : html.slice(0, at) + block + html.slice(at);
+}
+function renderGlossaryDictionaryCredit(t, className, linkClassName, resource) {
+  var stop = function (e) {
+    e.stopPropagation();
+  };
+  var text = dictText(t, 'glossary.dictionary_credit', 'Some definitions are adapted from {sources}.');
+  var parts = text.split('{sources}');
+  var links = [];
+  glossaryDictionaryCredits(resource).forEach(function (c, i) {
+    if (i) links.push(' · ');
+    links.push(React.createElement('a', {
+      key: 'set' + i,
+      href: c.url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      onClick: stop,
+      onMouseDown: stop,
+      className: linkClassName
+    }, c.set));
+    links.push(' (', React.createElement('a', {
+      key: 'lic' + i,
+      href: c.deed,
+      target: '_blank',
+      rel: 'noopener noreferrer license',
+      onClick: stop,
+      onMouseDown: stop,
+      className: linkClassName
+    }, c.license), ')');
+  });
+  return React.createElement('p', {
+    'data-glossary-dictionary-credit': 'true',
+    className: className
+  }, parts[0], parts.length > 1 ? null : ' ', links, parts.slice(1).join('{sources}'));
+}
+
 // Flashcard-back dictionary enrichment (example + part-of-speech + synonyms + real
 // recording), sense-aligned to the card's lesson definition and read straight from the
 // pre-warmed offline cache — collapsible so it never overloads the card. Returns null
 // when unavailable (non-English / not cached / no aligned sense) so cards render as
 // before. Only added to the English standard deck, not the language deck.
-function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryAudio, resource) {
+function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryAudio, resource, onFoldOpen) {
   if (!item || !item.term || !glossaryEnglishBase(resource, item)) return null;
   var AD = window.AlloDictionary;
   if (!AD || typeof AD.getCached !== 'function') return null;
   var entry = AD.getCached(item.term);
+  if (!entry && glossaryIsDictionaryEntry(item) && typeof AD.lookupOfflineBank === 'function') {
+    try {
+      entry = AD.lookupOfflineBank(item.term);
+    } catch (_) {
+      entry = null;
+    }
+  }
   if (!entry) return null;
   // A sense counts as the lesson's only when it overlaps the lesson definition (not just
   // the word itself) and beats every other sense. Otherwise the first sense is shown,
@@ -1844,6 +2109,27 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
     className: isAudioPlaying ? 'animate-pulse motion-reduce:animate-none' : '',
     'aria-hidden': 'true'
   }), React.createElement('span', null, isAudioPlaying ? t('glossary.popups.playing') || 'Playing...' : t('glossary.popups.real_audio') || 'Recording')));
+  // Display only: activities, the table and exports keep the one lesson definition.
+  var otherSenses = glossaryOtherSenses(item, verifiedDef);
+  if (otherSenses.length) body.push(React.createElement('details', {
+    key: 'other',
+    'data-dict-other-meanings': String(otherSenses.length),
+    className: 'pt-2 mt-2 border-t border-blue-300/40 text-xs leading-relaxed text-blue-50',
+    onClick: stopCardControlEvent,
+    onMouseDown: stopCardControlEvent,
+    onKeyDown: stopCardControlEvent
+  }, React.createElement('summary', {
+    className: 'min-h-11 cursor-pointer py-2 font-bold text-white select-none'
+  }, dictText(t, 'glossary.other_meanings', 'Other meanings ({count})').split('{count}').join(String(otherSenses.length))), React.createElement('ol', {
+    className: 'mt-1 space-y-1 list-decimal ps-5'
+  }, otherSenses.map(function (s, i) {
+    return React.createElement('li', {
+      key: i,
+      'data-dict-other-meaning': 'true'
+    }, s.pos ? React.createElement('span', {
+      className: 'font-semibold text-white me-1'
+    }, s.pos) : null, btDict(s.def));
+  }))));
   body.push(React.createElement('details', {
     key: 'src',
     className: 'pt-2 mt-2 border-t border-blue-300/40 text-[0.6875rem] leading-snug text-blue-50',
@@ -1867,6 +2153,10 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, playDictionaryA
     'aria-label': t('common.more_information') + ': ' + sourceWord
   }, t('common.more_information')) : null));
   return React.createElement('details', {
+    'data-dict-fold': 'true',
+    onToggle: function (e) {
+      if (e.currentTarget.open && typeof onFoldOpen === 'function') onFoldOpen();
+    },
     open: senseMatched || !verifiedDef,
     className: 'mt-3 rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 w-full text-left shadow-inner ring-1 ring-white/10',
     onClick: stopCardControlEvent,
@@ -2186,7 +2476,14 @@ function GlossaryView(props) {
   };
   var history = props.history;
   var selectedLanguages = props.selectedLanguages;
-  var displayLanguages = props.displayLanguages;
+  // Columns a teacher added by hand (resource.addedLanguages) show before any cell is typed.
+  var glossaryAddedLanguages = (Array.isArray(generatedContent?.addedLanguages) ? generatedContent.addedLanguages : []).filter(function (lang, i, all) {
+    return typeof lang === 'string' && lang.trim() && all.indexOf(lang) === i;
+  });
+  var displayLanguages = (Array.isArray(props.displayLanguages) ? props.displayLanguages : []).slice();
+  glossaryAddedLanguages.forEach(function (lang) {
+    if (displayLanguages.indexOf(lang) < 0) displayLanguages.push(lang);
+  });
   // Language tools follow this glossary's own translation columns, not the teacher's current chips.
   var glossaryLanguages = [];
   (Array.isArray(generatedContent?.data) ? generatedContent.data : []).forEach(function (item) {
@@ -2848,6 +3145,7 @@ function GlossaryView(props) {
       if (!html || typeof html !== 'string') {
         html = buildFallbackVocabWorksheetHtml(wsTitle, entries);
       }
+      if (activityWords.some(glossaryIsDictionaryEntry)) html = addGlossaryWorksheetCredit(html, glossaryDictionaryCreditText(t, generatedContent));
       var slug = String(wsTitle || 'vocabulary').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'vocabulary';
       var fname = slug + '-vocabulary-worksheet.html';
       if (typeof window !== 'undefined' && typeof window.Blob === 'function' && window.URL && typeof window.URL.createObjectURL === 'function' && typeof document !== 'undefined' && document.body) {
@@ -3511,6 +3809,460 @@ function GlossaryView(props) {
       "aria-hidden": "true"
     }));
   }
+  // Dictionary details, "Check meaning", "Add a definition" and hand-added language columns.
+  // Shared data loads after the first paint; each load re-renders what it can now show.
+  var [glossaryDictVersion, setGlossaryDictVersion] = React.useState(0);
+  var glossaryDictWarmRef = React.useRef({});
+  var glossaryEnglishWords = (Array.isArray(generatedContent?.data) ? generatedContent.data : []).filter(function (item) {
+    return item && (glossarySingleWord(item.term) || glossaryIsDictionaryEntry(item) && String(item.term || '').trim()) && glossaryEnglishBase(generatedContent, item);
+  }).map(function (item) {
+    return String(item.term).trim().toLowerCase();
+  }).slice(0, 200);
+  var glossaryEnglishWordsKey = glossaryEnglishWords.join('|');
+  // Syllables for every English glossary; the bank (~1.7 MB) only when withBank: the glossary has
+  // dictionary-made entries, or the card back's dictionary fold or "Check meaning" was opened.
+  function warmGlossaryDictionary(words, withBank) {
+    var done = function () {
+      if (glossaryMountedRef.current) setGlossaryDictVersion(function (v) {
+        return v + 1;
+      });
+    };
+    var warm = glossaryDictWarmRef.current,
+      mods = window.AlloModules || {},
+      jobs = [];
+    var load = typeof window.__alloLoadPlugin === 'function' ? window.__alloLoadPlugin : null;
+    // Reuse a copy Word Sounds or the presenter is already fetching instead of starting a second one.
+    var pending = document.querySelector('script[data-allo-syllable-table="1"], script[src*="syllable_table_en.js"]');
+    if (!mods.SyllableTableEn && !warm.syllables && (pending || load)) {
+      warm.syllables = true;
+      jobs.push(pending ? new Promise(function (resolve) {
+        pending.addEventListener('load', resolve);
+        pending.addEventListener('error', resolve);
+      }) : load('syllable_table_en.js'));
+    }
+    // Stress marks: a ~20 KB add-on beside the table. Refused or missing, syllables show unmarked.
+    if (!mods.SyllableStressEn && !warm.stressAddon && load) {
+      warm.stressAddon = true;
+      jobs.push(Promise.resolve(load('syllable_stress_en.js')).catch(function () {
+        return false;
+      }));
+    }
+    // Stress marks only from pronunciation data Word Sounds already has or is fetching: never fetched here.
+    var pronTag = document.querySelector('script[src*="word_sounds_pronunciations.js"]');
+    var pronPending = window.__alloSyllablePronunciationLoad || (pronTag && pronTag.dataset.alloLoaded !== '1' ? new Promise(function (resolve) {
+      pronTag.addEventListener('load', resolve);
+      pronTag.addEventListener('error', resolve);
+    }) : null);
+    if (!mods.WordSoundsPronunciations && !warm.stress && pronPending) {
+      warm.stress = true;
+      jobs.push(pronPending);
+    }
+    var key = words.join('|');
+    if (withBank && words.length && warm.bank !== key) {
+      warm.bank = key;
+      // The same offline bank the dictionary glossary and Packets use (core once, then letter files).
+      // The bank script can be refused by the delivery manifest; the dictionary loader's reader is the fallback.
+      var plugin = function (file, present) {
+        return present || !load ? Promise.resolve(true) : Promise.resolve(load(file)).catch(function () {
+          return false;
+        });
+      };
+      var script = Promise.all([plugin('packets_vocab_bank_en.js', !!window.AlloVocabBank), plugin('dictionary_loader.js', !!window.AlloDictionary)]);
+      warm.bankPending = true;
+      jobs.push(script.then(function () {
+        var bank = window.AlloVocabBank,
+          AD = window.AlloDictionary;
+        if (bank && typeof bank.ensureForWords === 'function') {
+          return Promise.resolve().then(function () {
+            return typeof bank.load === 'function' && !(typeof bank.ready === 'function' && bank.ready()) ? bank.load() : null;
+          }).catch(function () {
+            return null;
+          }).then(function () {
+            return bank.ensureForWords(words);
+          });
+        }
+        return AD && typeof AD.loadOfflineBank === 'function' ? AD.loadOfflineBank() : null;
+      }).then(function () {
+        // The loader route needs the loader's reader even when the full bank arrived.
+        var AD = window.AlloDictionary;
+        return AD && typeof AD.loadOfflineBank === 'function' ? AD.loadOfflineBank() : null;
+      }).catch(function () {
+        return null;
+      }).then(function () {
+        warm.bankPending = false;
+      }));
+    }
+    jobs.forEach(function (job) {
+      Promise.resolve(job).then(done, done);
+    });
+  }
+  var glossaryNeedsBank = (Array.isArray(generatedContent?.data) ? generatedContent.data : []).some(function (item) {
+    return glossaryIsDictionaryEntry(item) || item && (item.senseCheck === true || item.dictMissing === true);
+  });
+  React.useEffect(function () {
+    if (!glossaryEnglishWords.length) return undefined;
+    var timer = setTimeout(function () {
+      warmGlossaryDictionary(glossaryEnglishWords, glossaryNeedsBank);
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [glossaryResourceKey, glossaryEnglishWordsKey, glossaryNeedsBank]);
+  function warmGlossaryBankForFold() {
+    if (glossaryEnglishWords.length) warmGlossaryDictionary(glossaryEnglishWords, true);
+  }
+  // An open dictionary fold on the card back is a request for its other meanings.
+  React.useEffect(function () {
+    var dialog = flashcardDialogRef.current;
+    if (dialog && dialog.querySelector('details[data-dict-fold][open]')) warmGlossaryBankForFold();
+  });
+  // One quiet line: syllables (stress in bold) and part of speech; nothing when neither is known.
+  function renderGlossaryDetails(item, onCard) {
+    if (!item || !glossaryEnglishBase(generatedContent, item)) return null;
+    var syllables = glossarySyllables(item.term),
+      pos = glossaryEntryPos(item);
+    if (!syllables && !pos) return null;
+    return /*#__PURE__*/React.createElement("p", {
+      "data-glossary-details": true,
+      className: onCard ? 'text-sm font-normal text-blue-50 text-center' : 'text-xs font-normal text-slate-600 text-center'
+    }, syllables && /*#__PURE__*/React.createElement("span", _extends({
+      "data-glossary-syllables": true
+    }, glossaryLanguageAttrs('en')), syllables.parts.map(function (part, i) {
+      return /*#__PURE__*/React.createElement(React.Fragment, {
+        key: i
+      }, i > 0 && /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true"
+      }, "·"), /*#__PURE__*/React.createElement("span", {
+        className: i === syllables.stress ? onCard ? 'font-black text-white' : 'font-bold text-slate-800' : undefined
+      }, part));
+    })), syllables && pos && /*#__PURE__*/React.createElement(React.Fragment, null, ' ', /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "·"), ' '), pos && /*#__PURE__*/React.createElement("span", {
+      "data-glossary-pos": true,
+      className: "italic"
+    }, bt(pos)));
+  }
+  var glossaryHasDictionaryEntries = (Array.isArray(generatedContent?.data) ? generatedContent.data : []).some(glossaryIsDictionaryEntry);
+  function updateGlossaryEntry(item, idx, change) {
+    var update = props.onUpdateResource,
+      origin = generatedContent;
+    if (!isTeacherMode || typeof update !== 'function' || !origin || origin.id == null) return false;
+    var key = getGlossaryEntryKey(item, idx);
+    return update(origin.id, function (resource) {
+      var rows = resource && Array.isArray(resource.data) ? resource.data : null;
+      var at = rows ? rows.findIndex(function (row, i) {
+        return row && getGlossaryEntryKey(row, i) === key;
+      }) : -1;
+      if (at < 0) return resource;
+      var next = change({
+        ...rows[at]
+      });
+      if (!next) return resource;
+      var data = rows.slice();
+      data[at] = next;
+      return {
+        ...resource,
+        data: data
+      };
+    }, {
+      instanceId: origin._artifactInstanceId || ''
+    });
+  }
+  var [glossarySenseChoiceKey, setGlossarySenseChoiceKey] = React.useState(null);
+  React.useEffect(function () {
+    setGlossarySenseChoiceKey(null);
+  }, [glossaryResourceKey]);
+  function chooseGlossarySense(item, idx, sense, index, total) {
+    var term = String(item.term || '').trim();
+    var done = updateGlossaryEntry(item, idx, function (row) {
+      var example = String(sense.example || '').trim();
+      row.def = glossaryFillBlank(sense.def, term);
+      row.pos = String(sense.pos || '');
+      if (example) row.example = glossaryFillBlank(example, term);else delete row.example;
+      row.dictSense = {
+        ...(row.dictSense || {}),
+        word: String(row.dictSense && row.dictSense.word || sense.word || term).toLowerCase(),
+        index: index,
+        total: total
+      };
+      row.defSource = 'dictionary';
+      delete row.senseCheck;
+      return row;
+    });
+    if (done === false) return;
+    setGlossarySenseChoiceKey(null);
+    setGlossaryUndoAnnouncement(glossaryText('glossary.meaning_chosen', 'Meaning updated for {term}.', {
+      term: item.term || ''
+    }));
+  }
+  var glossaryDefinitionFocusRef = React.useRef(null);
+  React.useEffect(function () {
+    var key = glossaryDefinitionFocusRef.current,
+      list = glossaryWordListRef.current;
+    if (!key || !isEditingGlossary || !list) return;
+    var row = Array.prototype.find.call(list.querySelectorAll('tr[data-glossary-entry-key]'), function (node) {
+      return node.getAttribute('data-glossary-entry-key') === key;
+    });
+    var field = row && row.querySelector('td[data-glossary-definition] textarea');
+    glossaryDefinitionFocusRef.current = null;
+    if (field) field.focus();
+  });
+  function openGlossaryDefinitionEdit(entryKey) {
+    glossaryDefinitionFocusRef.current = entryKey;
+    if (!isEditingGlossary && typeof handleToggleIsEditingGlossary === 'function') handleToggleIsEditingGlossary();
+  }
+  // A teacher edit of dictionary text keeps its credit: 'dictionary' becomes 'dictionary-edited'.
+  var glossaryDictEditsRef = React.useRef([]);
+  function changeGlossaryDefinition(index, value, item) {
+    handleGlossaryChange(index, 'def', value);
+    if (item && item.defSource === 'dictionary') glossaryDictEditsRef.current.push({
+      item: item,
+      index: index
+    });
+  }
+  React.useEffect(function () {
+    var pending = glossaryDictEditsRef.current;
+    if (!pending.length) return;
+    glossaryDictEditsRef.current = [];
+    pending.forEach(function (edit) {
+      updateGlossaryEntry(edit.item, edit.index, function (row) {
+        return row.defSource === 'dictionary' ? {
+          ...row,
+          defSource: 'dictionary-edited'
+        } : null;
+      });
+    });
+  });
+  function renderGlossaryEntryDictActions(item, idx, entryKey) {
+    if (!isTeacherMode || !item) return null;
+    var pill = 'min-h-11 inline-flex items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 ';
+    var term = String(item.term || '').trim();
+    if (!isEditingGlossary && term && !String(item.def || '').trim() && typeof handleToggleIsEditingGlossary === 'function') {
+      return /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-glossary-add-definition": entryKey,
+        onClick: () => openGlossaryDefinitionEdit(entryKey),
+        className: pill + 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100'
+      }, /*#__PURE__*/React.createElement(Pencil, {
+        size: 14,
+        "aria-hidden": "true"
+      }), glossaryText('glossary.add_definition', 'Add a definition'));
+    }
+    if (item.senseCheck !== true || !glossaryEnglishBase(generatedContent, item) || typeof props.onUpdateResource !== 'function') return null;
+    var open = glossarySenseChoiceKey === entryKey;
+    var word = String(item.dictSense && item.dictSense.word || glossarySingleWord(item.term) || term).toLowerCase();
+    var all = open ? glossaryVocabSenses(item) : [];
+    // The loader route has no checked marks: its meanings are all offered, under a "not checked" note.
+    var unchecked = !!(item.dictSense && item.dictSense.list === 'loader');
+    var choices = all.map(function (sense, index) {
+      return {
+        sense: sense,
+        index: index
+      };
+    }).filter(function (c) {
+      return c.sense && (unchecked || c.sense.checked);
+    }).slice(0, 6);
+    var loading = open && !choices.length && glossaryDictWarmRef.current.bankPending === true;
+    var panelId = 'glossary-sense-choices-' + String(idx);
+    return /*#__PURE__*/React.createElement("div", {
+      "data-glossary-check-meaning-group": true,
+      className: "flex w-full flex-col items-center gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-check-meaning": entryKey,
+      "aria-expanded": open,
+      "aria-controls": open ? panelId : undefined,
+      onClick: () => {
+        if (!open) warmGlossaryDictionary(word ? [word] : [], true);
+        setGlossarySenseChoiceKey(open ? null : entryKey);
+      },
+      className: pill + 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100'
+    }, /*#__PURE__*/React.createElement(AlertCircle, {
+      size: 14,
+      "aria-hidden": "true"
+    }), glossaryText('glossary.check_meaning', 'Check meaning')), open && /*#__PURE__*/React.createElement("div", {
+      id: panelId,
+      role: "group",
+      "aria-label": glossaryText('glossary.choose_meaning_aria', 'Choose the meaning of {term}', {
+        term: term
+      }),
+      "data-glossary-sense-choices": true,
+      className: "w-full rounded-lg border border-amber-200 bg-white p-2 text-start"
+    }, choices.length ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+      className: "mb-2 text-xs text-slate-700"
+    }, glossaryText('glossary.choose_meaning_help', 'Choose the meaning this lesson uses.'), unchecked && /*#__PURE__*/React.createElement(React.Fragment, null, " ", /*#__PURE__*/React.createElement("span", {
+      "data-glossary-senses-unchecked": true
+    }, glossaryText('source_view.check_none', 'Not checked yet.')))), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col gap-1.5"
+    }, choices.map(function (c) {
+      return /*#__PURE__*/React.createElement("button", {
+        key: c.index,
+        type: "button",
+        "data-glossary-sense-choice": c.index,
+        onClick: () => chooseGlossarySense(item, idx, c.sense, c.index, all.length),
+        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-start text-sm text-slate-800 hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      }, c.sense.pos && /*#__PURE__*/React.createElement("span", {
+        className: "me-1 font-semibold italic text-slate-700"
+      }, c.sense.pos), bt(glossaryFillBlank(c.sense.def, term)));
+    }))) : /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "text-xs text-slate-700"
+    }, loading ? glossaryText('glossary.dictionary_loading', 'Loading the dictionary…') : glossaryText('glossary.dictionary_no_meanings', 'The dictionary has no checked meanings for this word. You can edit the definition instead.'))));
+  }
+  // "Add a language": an empty, hand-typed column. Typed cells are ordinary translations.
+  var [glossaryNewLanguage, setGlossaryNewLanguage] = React.useState('');
+  function normalizeGlossaryLanguage(value) {
+    var cleaned = String(value || '').replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var normalize = window.AlloModules?.TextPipelineHelpers?.normalizeLanguageName;
+    try {
+      return (typeof normalize === 'function' ? String(normalize(cleaned) || '') : cleaned).trim();
+    } catch (_) {
+      return cleaned;
+    }
+  }
+  function glossarySameLanguage(a, b) {
+    var x = String(a || '').trim().toLowerCase(),
+      y = String(b || '').trim().toLowerCase();
+    if (!x || !y) return false;
+    var tagA = glossaryLanguageInfo(a).tag.toLowerCase(),
+      tagB = glossaryLanguageInfo(b).tag.toLowerCase();
+    return x === y || !!tagA && tagA === tagB;
+  }
+  function glossaryLanguageHasText(lang) {
+    return (Array.isArray(generatedContent?.data) ? generatedContent.data : []).some(function (item) {
+      return !!String(glossaryTranslationText(item && item.translations && item.translations[lang]) || '').trim();
+    });
+  }
+  function addGlossaryLanguage() {
+    var lang = normalizeGlossaryLanguage(glossaryNewLanguage),
+      origin = generatedContent,
+      update = props.onUpdateResource;
+    if (!lang || !isTeacherMode || typeof update !== 'function' || !origin || origin.id == null) return;
+    if (glossarySameLanguage(lang, glossaryBaseLanguage) || displayLanguages.some(function (existing) {
+      return glossarySameLanguage(existing, lang);
+    })) {
+      setGlossaryUndoAnnouncement(glossaryText('glossary.language_column_exists', 'This glossary already has a {lang} column.', {
+        lang: glossaryLanguageLabel(lang)
+      }));
+      return;
+    }
+    var ok = update(origin.id, function (resource) {
+      var current = Array.isArray(resource && resource.addedLanguages) ? resource.addedLanguages.filter(function (v) {
+        return typeof v === 'string' && v.trim();
+      }) : [];
+      return current.indexOf(lang) >= 0 ? resource : {
+        ...resource,
+        addedLanguages: current.concat([lang])
+      };
+    }, {
+      instanceId: origin._artifactInstanceId || ''
+    });
+    if (ok === false) return;
+    setGlossaryNewLanguage('');
+    setGlossaryUndoAnnouncement(glossaryText('glossary.language_column_added', 'Added a {lang} column. Type each word and its meaning in the new cells.', {
+      lang: glossaryLanguageLabel(lang)
+    }));
+  }
+  function removeGlossaryLanguage(lang) {
+    var origin = generatedContent,
+      update = props.onUpdateResource;
+    if (!isTeacherMode || typeof update !== 'function' || !origin || origin.id == null || glossaryLanguageHasText(lang)) return;
+    var ok = update(origin.id, function (resource) {
+      var rows = Array.isArray(resource && resource.data) ? resource.data : [];
+      if (rows.some(function (item) {
+        return !!String(glossaryTranslationText(item && item.translations && item.translations[lang]) || '').trim();
+      })) return resource;
+      var next = {
+        ...resource,
+        addedLanguages: (Array.isArray(resource.addedLanguages) ? resource.addedLanguages : []).filter(function (v) {
+          return v !== lang;
+        })
+      };
+      if (!next.addedLanguages.length) delete next.addedLanguages;
+      next.data = rows.map(function (item) {
+        if (!item || !item.translations || typeof item.translations !== 'object' || !Object.prototype.hasOwnProperty.call(item.translations, lang)) return item;
+        var translations = {
+          ...item.translations
+        };
+        delete translations[lang];
+        var row = {
+          ...item,
+          translations: translations
+        };
+        if (!Object.keys(translations).length) delete row.translations;
+        return row;
+      });
+      return next;
+    }, {
+      instanceId: origin._artifactInstanceId || ''
+    });
+    if (ok !== false) setGlossaryUndoAnnouncement(glossaryText('glossary.language_column_removed', 'Removed the {lang} column.', {
+      lang: glossaryLanguageLabel(lang)
+    }));
+  }
+  function renderGlossaryRemoveLanguage(lang) {
+    if (!isEditingGlossary || glossaryAddedLanguages.indexOf(lang) < 0 || glossaryLanguageHasText(lang) || typeof props.onUpdateResource !== 'function') return null;
+    var label = glossaryText('glossary.remove_language_column_aria', 'Remove the empty {lang} column', {
+      lang: glossaryLanguageLabel(lang)
+    });
+    return /*#__PURE__*/React.createElement("span", {
+      key: lang,
+      className: "inline-flex min-h-11 items-center gap-1 rounded-full border border-indigo-200 bg-white ps-3 text-xs font-bold text-indigo-800"
+    }, /*#__PURE__*/React.createElement("span", glossaryLanguageAttrs(lang), glossaryLanguageLabel(lang)), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-remove-language": lang,
+      "aria-label": label,
+      title: label,
+      onClick: () => removeGlossaryLanguage(lang),
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-full text-slate-600 hover:bg-red-50 hover:text-red-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 14,
+      "aria-hidden": "true"
+    })));
+  }
+  function renderGlossaryAddLanguage() {
+    if (!isTeacherMode || !isEditingGlossary || typeof props.onUpdateResource !== 'function') return null;
+    var suggestions = (Array.isArray(selectedLanguages) ? selectedLanguages : []).filter(function (lang) {
+      return typeof lang === 'string' && lang.trim() && !glossarySameLanguage(lang, glossaryBaseLanguage) && !displayLanguages.some(function (existing) {
+        return glossarySameLanguage(existing, lang);
+      });
+    });
+    var placeholder = t('universal.language_placeholder');
+    if (!placeholder || placeholder === 'universal.language_placeholder') placeholder = 'Add a language (e.g., Spanish)';
+    return /*#__PURE__*/React.createElement("div", {
+      "data-glossary-add-language": true,
+      className: "flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 print:hidden"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: glossaryNewLanguage,
+      onChange: e => setGlossaryNewLanguage(e.target.value),
+      onKeyDown: e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addGlossaryLanguage();
+        }
+      },
+      list: suggestions.length ? 'glossary-language-suggestions' : undefined,
+      maxLength: 40,
+      placeholder: placeholder,
+      "aria-label": placeholder,
+      className: "min-h-11 min-w-0 flex-[1_1_12rem] rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }), suggestions.length > 0 && /*#__PURE__*/React.createElement("datalist", {
+      id: "glossary-language-suggestions"
+    }, suggestions.map(lang => /*#__PURE__*/React.createElement("option", {
+      key: lang,
+      value: lang
+    }))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-glossary-add-language-submit": true,
+      onClick: addGlossaryLanguage,
+      disabled: !normalizeGlossaryLanguage(glossaryNewLanguage),
+      className: "min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-600"
+    }, /*#__PURE__*/React.createElement(Plus, {
+      size: 14,
+      "aria-hidden": "true"
+    }), glossaryText('common.add', 'Add')), glossaryAddedLanguages.map(renderGlossaryRemoveLanguage));
+  }
   var GLOSSARY_LESSON_ORDER = ['lesson', 'lesson-order', 'lesson_order', 'original', 'default', 'none'];
   function glossaryReorderBlocked() {
     var sort = props.glossarySort;
@@ -4139,7 +4891,7 @@ function GlossaryView(props) {
       className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
     }, flashcardDefinitionLabel), /*#__PURE__*/React.createElement("textarea", _extends({}, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition')), {
       value: currentFlashcardItem.def || '',
-      onChange: e => handleGlossaryChange(flashcardIndex, 'def', e.target.value),
+      onChange: e => changeGlossaryDefinition(flashcardIndex, e.target.value, currentFlashcardItem),
       rows: getRows(currentFlashcardItem.def, 42),
       className: `${fieldClass} text-sm leading-relaxed`
     }))), /*#__PURE__*/React.createElement("label", {
@@ -6081,7 +6833,7 @@ function GlossaryView(props) {
   }, t('flashcards.back_label_def')), /*#__PURE__*/React.createElement("div", {
     "data-flashcard-meaning": true,
     className: "w-full max-w-3xl mx-auto px-1 space-y-4 text-center"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, renderGlossaryDetails(generatedContent?.data[flashcardIndex], true), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 shadow-inner"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[0.625rem] font-black text-white uppercase tracking-widest mb-1"
@@ -6100,7 +6852,7 @@ function GlossaryView(props) {
     "data-flashcard-definition-text": true
   }, glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, currentFlashcardItem, 'definition'))), bt(generatedContent?.data[flashcardIndex].def)))), renderGlossaryContextSentence(generatedContent?.data[flashcardIndex], 'mt-4 border-t border-blue-300/40 pt-3 text-sm md:text-base leading-relaxed text-white text-start', 'font-bold'), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[0.6875rem] leading-snug text-blue-50"
-  }, glossaryStartProvenance(generatedContent, glossaryText))), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
+  }, glossaryStartProvenance(generatedContent, glossaryText)), glossaryIsDictionaryEntry(generatedContent?.data[flashcardIndex]) && renderGlossaryDictionaryCredit(t, 'mt-1 text-[0.6875rem] leading-snug text-blue-50', 'font-bold text-white underline decoration-blue-200 underline-offset-2', generatedContent)), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     "data-flashcard-translation-language": true,
@@ -6139,7 +6891,7 @@ function GlossaryView(props) {
     },
     "aria-label": `${t('common.click_read_aloud')}: ${t('glossary.etymology_label') || 'Word roots'}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-blue-600 focus-visible:ring-offset-2"
-  }, /*#__PURE__*/React.createElement("span", glossaryLanguageAttrs(currentFlashcardOrigin.language), bt(currentFlashcardOrigin.text))))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, playGlossaryDictionaryAudio, generatedContent))) : (() => {
+  }, /*#__PURE__*/React.createElement("span", glossaryLanguageAttrs(currentFlashcardOrigin.language), bt(currentFlashcardOrigin.text))))), renderFlashcardDictBack(generatedContent.data[flashcardIndex], t, flashcardDictAudioKey, playGlossaryDictionaryAudio, generatedContent, warmGlossaryBankForFold))) : (() => {
     const fullTrans = glossaryTranslationText(generatedContent?.data[flashcardIndex].translations?.[flashcardLang]) || glossaryText('glossary.translation_unavailable', 'Translation not available');
     let transTerm = "";
     let transDef = fullTrans;
@@ -6659,7 +7411,7 @@ function GlossaryView(props) {
     className: "border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 print:hidden"
   }, glossaryText('glossary.selection_scope', 'Selection applies to all {total} words, including words hidden by filters.', {
     total: glossaryTotalCount
-  })), isEditingGlossary && typeof props.handleMoveGlossaryItem === 'function' && glossaryReorderBlocked() && /*#__PURE__*/React.createElement("p", {
+  })), renderGlossaryAddLanguage(), isEditingGlossary && typeof props.handleMoveGlossaryItem === 'function' && glossaryReorderBlocked() && /*#__PURE__*/React.createElement("p", {
     id: "glossary-reorder-help",
     className: "border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 print:hidden"
   }, glossaryText('glossary.reorder_blocked_help', 'To move words, clear the search and filters and sort in lesson order.')), /*#__PURE__*/React.createElement("p", {
@@ -6794,7 +7546,7 @@ function GlossaryView(props) {
     }), item.emoji ? /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
       className: "mr-1"
-    }, item.emoji) : null, item.term), /*#__PURE__*/React.createElement("div", {
+    }, item.emoji) : null, item.term), !isEditingGlossary && renderGlossaryDetails(item, false), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 px-1"
     }, item.image ? /*#__PURE__*/React.createElement("div", {
       className: "flex flex-col gap-2"
@@ -6966,7 +7718,7 @@ function GlossaryView(props) {
         term: item.term
       }),
       value: item.def,
-      onChange: e => handleGlossaryChange(idx, 'def', e.target.value),
+      onChange: e => changeGlossaryDefinition(idx, e.target.value, item),
       rows: getRows(item.def, 45),
       className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-start"
     })) : /*#__PURE__*/React.createElement("div", {
@@ -7036,7 +7788,7 @@ function GlossaryView(props) {
     }) : /*#__PURE__*/React.createElement(Download, {
       size: 14,
       "aria-hidden": "true"
-    })))), glossaryWordOrigin(item, glossaryFieldLanguage(generatedContent, item, 'definition')).text ? /*#__PURE__*/React.createElement("details", {
+    }))), renderGlossaryEntryDictActions(item, idx, entryKey)), glossaryWordOrigin(item, glossaryFieldLanguage(generatedContent, item, 'definition')).text ? /*#__PURE__*/React.createElement("details", {
       className: "mt-2 text-xs w-full",
       "data-help-key": "glossary_etymology_info"
     }, /*#__PURE__*/React.createElement("summary", {
@@ -7155,6 +7907,7 @@ function GlossaryView(props) {
           term: item.term
         }),
         value: glossaryTranslationText(item.translations?.[lang]) || "",
+        placeholder: glossaryText('glossary.translation_cell_placeholder', 'Word: meaning'),
         onChange: e => handleGlossaryChange(idx, 'translations', e.target.value, lang),
         rows: getRows(glossaryTranslationText(item.translations?.[lang]), 30),
         className: "w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm text-start"
@@ -7767,7 +8520,7 @@ function GlossaryView(props) {
     type: "button",
     onClick: () => setGlossaryStudyFilter('all'),
     className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-4 py-2 text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, glossaryText('glossary.show_all_study_words', 'Show all words'))))))))), renderGlossaryUndoNotice(),
+  }, glossaryText('glossary.show_all_study_words', 'Show all words')))))))), glossaryHasDictionaryEntries && renderGlossaryDictionaryCredit(t, 'border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700', 'font-semibold text-indigo-800 underline underline-offset-2', generatedContent)), renderGlossaryUndoNotice(),
   // ── Phonics popup (sibling) ──
   // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
   // Renders only when the host has set phonicsData (via handlePhonicsClick),

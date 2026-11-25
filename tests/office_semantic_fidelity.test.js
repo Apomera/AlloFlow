@@ -30,7 +30,8 @@ describe('shared office semantic fidelity', () => {
     expect(runs.find((run) => /const x/.test(run.text))).toMatchObject({ lang: 'es-MX', code: true });
     expect(runs.find((run) => /important/.test(run.text))).toMatchObject({ highlight: true });
     expect(runs.find((run) => /obsolete/.test(run.text))).toMatchObject({ strike: true });
-    expect(runs.find((run) => /fixed spacing/.test(run.text))).toMatchObject({ code: true });
+    // Preformatted text keeps its own spacing and line breaks now (2026-11-21), so both spaces survive.
+    expect(runs.find((run) => /fixed {2}spacing/.test(run.text))).toMatchObject({ text: 'fixed  spacing', code: true });
   });
 
   it('serializes those runs into well-formed ODT and DAISY markup', () => {

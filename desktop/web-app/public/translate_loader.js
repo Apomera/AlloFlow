@@ -30,11 +30,13 @@
  */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloTranslate && typeof window.AlloTranslate.translate === 'function') return;
 
   var hasOwn = Object.prototype.hasOwnProperty;
   var MAX_INPUT_CHARS = 4000;
   var MAX_OUTPUT_CHARS = 8000;
+  var IMPORT_TIMEOUT_MS = 15000;
 
   var TRANSFORMERS_URLS = Object.freeze([
     'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2',
@@ -55,13 +57,18 @@
   var _pipes = Object.create(null); // pair key → memoized pipeline promise
 
   function stripCtl(s) {
-    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    if (s == null) return '';
+    var str;
+    try { str = typeof s === 'string' ? s : String(s); } catch (_) { return ''; }
+    return str.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
   }
 
   function codeOf(lang) {
     if (!lang || typeof lang !== 'string') return '';
     var s = lang.toLowerCase().trim().slice(0, 60);
     if (hasOwn.call(LANG_TO_CODE, s)) return LANG_TO_CODE[s];
+    var base = s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    if (base && hasOwn.call(LANG_TO_CODE, base)) return LANG_TO_CODE[base];
     var m = s.match(/^([a-z]{2})(?:[-_]|$)/);
     return m && hasOwn.call(LANG_TO_CODE, m[1]) ? LANG_TO_CODE[m[1]] : '';
   }
@@ -76,15 +83,30 @@
 
   function remoteCdnBlocked() {
     try {
-      if (typeof window === 'undefined') return true;
+      if (typeof window !== 'object' || !window) return true;
       return window._isDesktopBundledApp === true
         || window.__alloOfflineOnly === true
-        || window.__alloQrStudentMode === true
+        || window.__ALLO_LOCAL_BOX === true
+        || Boolean(window.__alloQrStudentMode)
         || window._alloQrBlocked === true
         || window.__alloStudentAiDisabled === true
         || window.ALLOFLOW_MANAGED_AI_POLICY != null
-        || (typeof navigator !== 'undefined' && navigator.onLine === false);
+        || (typeof navigator !== 'undefined' && navigator && navigator.onLine === false);
     } catch (_) { return true; }
+  }
+
+  function withTimeout(promise, ms, msg) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (!settled) { settled = true; reject(new Error(msg)); }
+      }, ms);
+      Promise.resolve(promise).then(function (val) {
+        if (!settled) { settled = true; clearTimeout(timer); resolve(val); }
+      }, function (err) {
+        if (!settled) { settled = true; clearTimeout(timer); reject(err); }
+      });
+    });
   }
 
   function ensureLib() {
@@ -94,7 +116,7 @@
     if (_libPromise) return _libPromise;
     _libPromise = (function tryAt(i) {
       if (i >= TRANSFORMERS_URLS.length) return Promise.reject(new Error('transformers.js sources failed'));
-      return import(/* webpackIgnore: true */ TRANSFORMERS_URLS[i]).then(function (m) {
+      return withTimeout(import(/* webpackIgnore: true */ TRANSFORMERS_URLS[i]), IMPORT_TIMEOUT_MS, 'timed out loading transformers.js').then(function (m) {
         var lib = m && (m.pipeline ? m : (m.default && m.default.pipeline ? m.default : null));
         if (!lib || typeof lib.pipeline !== 'function') throw new Error('transformers.js: no pipeline export');
         try { if (lib.env) { lib.env.allowLocalModels = false; lib.env.useBrowserCache = true; } } catch (_) {}
@@ -107,7 +129,9 @@
 
   function getPipe(model, onProgress) {
     if (_pipes[model]) return _pipes[model];
-    var progressCb = typeof onProgress === 'function' ? onProgress : undefined;
+    var progressCb = typeof onProgress === 'function'
+      ? function (info) { try { onProgress(info); } catch (_) {} }
+      : undefined;
     _pipes[model] = ensureLib().then(function (lib) {
       return lib.pipeline('translation', model, { quantized: true, progress_callback: progressCb });
     }).catch(function (e) { delete _pipes[model]; throw e; });
@@ -147,5 +171,7 @@
     }
   });
 
-  console.log('[AlloTranslate] translate_loader.js ready — window.AlloTranslate.translate(text, from, to) (lazy opus-mt, on-device)');
+  if (typeof console === 'object' && console && typeof console.log === 'function') {
+    console.log('[AlloTranslate] translate_loader.js ready — window.AlloTranslate.translate(text, from, to) (lazy opus-mt, on-device)');
+  }
 })();

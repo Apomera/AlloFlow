@@ -160,7 +160,8 @@ describe('Pass-5 F-57, F-60, F-63, F-64, F-66 core platform & rules safeguards',
 
     // The names the wipe must respect come from the modules that own them.
     const sensitive = read('sensitive_workspace_module.js');
-    const prefixBlock = sliceBetween(sensitive, 'var PREFIXES = {', 'var clone', { file: 'sensitive_workspace_module.js' });
+    // Only the PREFIXES object itself: helpers declared after it (e.g. _swUnsafeKey) quote other names.
+    const prefixBlock = sliceBetween(sensitive, 'var PREFIXES = {', 'var clone', { file: 'sensitive_workspace_module.js' }).split('};')[0];
     const clinicalPrefixes = Array.from(prefixBlock.matchAll(/'([A-Za-z_]+_)'/g)).map((m) => m[1]);
     expect(clinicalPrefixes.length).toBeGreaterThanOrEqual(6);
     const deviceStore = read('allo_device_storage_module.js');
@@ -290,7 +291,12 @@ describe('Pass-5 F-71, F-72 companion tools, token isolation, HTML hardening, an
     expect(standalone).toContain('window.sessionStorage.removeItem(TOKEN_KEY)');
 
     const domHooks = { app: {}, live: {}, foot: {} };
+    // Since 2026-11-21 loadConnection validates the saved URL with the headless core (window.AlloModules.WalkthroughCopilot).
+    expect(standalone).toContain('var core = window.AlloModules && window.AlloModules.WalkthroughCopilot;');
+    const core = require(resolve(process.cwd(), 'walkthrough_copilot_module.js'));
+    expect(typeof core.validateExecUrl).toBe('function');
     const ctx = vm.createContext({
+      core,
       window: {
         AlloModules: {},
         localStorage,
@@ -377,7 +383,8 @@ describe('Pass-5 F-71, F-72 companion tools, token isolation, HTML hardening, an
     expect(packLib).toContain("credentials: 'omit', referrerPolicy: 'no-referrer'");
     expect(packLib).toContain('25 * 1024 * 1024');
     expect(packLib).toContain('/^[A-Za-z0-9_-]+$/');
-    expect(packLib).toContain('/^[A-Za-z0-9_./-]+\\.json$/');
+    // Pack paths must now sit under allopacks/ and may not climb or double-slash (2026-11-21).
+    expect(packLib).toContain("if (!/^allopacks\\/[A-Za-z0-9_./-]+\\.json$/.test(relPath) || relPath.indexOf('..') !== -1 || relPath.indexOf('//') !== -1) throw new Error('Invalid pack path');");
   });
 });
 

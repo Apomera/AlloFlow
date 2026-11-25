@@ -409,6 +409,12 @@
 .ra-preset-row input[type="text"] {
   flex: 1 1 11rem;
   min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
   margin-top: 0;
 }
 .ra-preview-pos-p { border-bottom: 2px solid #8b5cf6; }

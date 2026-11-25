@@ -26,7 +26,8 @@ const saveStart = loopEnd;
 const saveEnd = src.indexOf('// pdfFixResult effect', saveStart);
 const saveBlock = src.slice(saveStart, saveEnd);
 const loaderSource = readFileSync(resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8');
-const loaderStart = loaderSource.indexOf('const _savedProject = JSON.parse(ev.target.result);');
+// The parse now carries a prototype-key reviver, so anchor on the call itself.
+const loaderStart = loaderSource.indexOf('const _savedProject = JSON.parse(ev.target.result');
 const loaderEnd = loaderSource.indexOf('                     </label>', loaderStart);
 const loaderBlock = loaderSource.slice(loaderStart, loaderEnd);
 

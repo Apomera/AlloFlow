@@ -162,6 +162,55 @@ describe('first-action modules load first', () => {
     expect(pump.dispatched.indexOf('MiscHandlersModule'), 'Load Project waits on MiscHandlers: it goes first').toBe(0);
   });
 
+  // 2026-11-23 (owner): on a capable device (8+ cores, and 8+ GB where reported) input slows
+  // the queue to one at a time instead of stopping it, and the launch pad gets the full budget.
+  const CAPABLE = { hardwareConcurrency: 8, deviceMemory: 8 };
+  it('capable device: the launch pad uses the full budget after the tier, still tier first', () => {
+    const pump = makePump({ classes: LAUNCH_PAD, navigator: CAPABLE });
+    pump.enqueue(SOURCE_ORDER);
+    let maxInFlight = 0;
+    pump.runUntil(20000, () => { maxInFlight = Math.max(maxInFlight, pump.inFlight()); if (pump.inFlight() >= 3) pump.settle(); });
+    pump.runUntil(40000, () => { if (pump.inFlight()) pump.settle(); });
+    expect(pump.dispatched.slice(0, 4).sort()).toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
+    expect(pump.dispatched.length).toBe(SOURCE_ORDER.length);
+    expect(maxInFlight, 'the full budget of three').toBe(3);
+  });
+  it('capable device: input slows the queue to one at a time instead of stopping it', () => {
+    for (const classes of [LAUNCH_PAD, new Set()]) {
+      const pump = makePump({ classes, navigator: CAPABLE });
+      pump.enqueue(SOURCE_ORDER);
+      let maxInFlight = 0;
+      pump.runUntil(30000, () => { pump.fire('pointerdown'); maxInFlight = Math.max(maxInFlight, pump.inFlight()); if (pump.inFlight()) pump.settle(); });
+      expect(pump.dispatched.length, 'it kept loading under input').toBe(SOURCE_ORDER.length);
+      expect(maxInFlight, 'one at a time under input').toBe(1);
+    }
+  });
+  it('capable device: boot, Data Saver, a hidden tab and the splash keep their rules', () => {
+    const boot = makePump({ classes: LAUNCH_PAD, navigator: CAPABLE, bootCritical: new Set(['AlloData']) });
+    boot.registry.AlloData = { status: 'pending' };
+    boot.enqueue(SOURCE_ORDER);
+    boot.runUntil(20000, () => { for (const name of boot.dispatched) boot.registry[name].status = 'loaded'; });
+    expect(boot.dispatched.slice().sort()).toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
+    const saver = makePump({ classes: LAUNCH_PAD, navigator: { ...CAPABLE, connection: { saveData: true } } });
+    saver.enqueue(SOURCE_ORDER);
+    saver.runUntil(20000, () => { if (saver.inFlight()) saver.settle(); });
+    expect(saver.dispatched.sort()).toEqual(['GenDispatcherModule', 'MiscHandlersModule', 'PhaseKHelpersModule', 'PhaseOHandlersModule']);
+    for (const settings of [{ classes: LAUNCH_PAD, hidden: true }, { classes: new Set(['alloflow-workspace-concealed']) }]) {
+      const pump = makePump({ ...settings, navigator: CAPABLE });
+      pump.enqueue(SOURCE_ORDER);
+      pump.runUntil(20000);
+      expect(pump.dispatched).toEqual([]);
+    }
+  });
+  it('a 4 GB or 4-core device keeps the old pauses', () => {
+    for (const nav of [{ hardwareConcurrency: 8, deviceMemory: 4 }, { hardwareConcurrency: 4 }]) {
+      const pump = makePump({ classes: LAUNCH_PAD, navigator: nav });
+      pump.enqueue(SOURCE_ORDER);
+      pump.runUntil(30000, () => pump.fire('pointerdown'));
+      expect(pump.dispatched).toEqual([]);
+    }
+  });
+
   it('leaving the launch pad mid-trickle resumes the full queue', () => {
     const pump = makePump({ classes: new Set(LAUNCH_PAD) });
     pump.enqueue(SOURCE_ORDER);

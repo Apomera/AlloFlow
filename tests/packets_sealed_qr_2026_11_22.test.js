@@ -509,8 +509,9 @@ describe('Offline Sealed QR — teacher collector page (packets-qr.html) static 
 
     // Proof bar names every loaded file accurately
     const proofText = doc.querySelector('details.proof').textContent;
-    expect(proofText).toContain('ten files');
-    for (const f of ['packets.css', 'packets-qr.css', 'packets-page.js', 'packets_qr_crypto.js', 'word_sounds_take_home_loader.js', 'packets_zip.js', 'packets_handoff.js', 'packets-qr.js']) {
+    // 2026-11-23: an eleventh file, the QR reader jsQR (vendor/jsqr-1.4.0.js), for browsers with no reader of their own.
+    expect(proofText).toContain('eleven files');
+    for (const f of ['packets.css', 'packets-qr.css', 'packets-page.js', 'packets_qr_crypto.js', 'word_sounds_take_home_loader.js', 'packets_zip.js', 'packets_handoff.js', 'vendor/jsqr-1.4.0.js', 'packets-qr.js']) {
       expect(proofText).toContain(f);
     }
     expect(doc.body.textContent).toContain('School-managed devices only');
@@ -636,7 +637,8 @@ describe('Offline Sealed QR — teacher collector page (packets-qr.html) static 
     const tam = practiceCode.slice(0, -3) + (practiceCode.slice(-3) === 'AAA' ? 'BBB' : 'AAA');
     doc.getElementById('code-input').value = tam;
     doc.getElementById('code-add').click();
-    expect(doc.getElementById('collect-status').textContent).toContain('changed or cut off');
+    // 2026-11-23: the message was reworded in plain language ("changed or cut short").
+    expect(doc.getElementById('collect-status').textContent).toContain('changed or cut short');
 
     // Open in Add up results hands off a valid ZIP whose CSVs parse with integrity 'ok'
     doc.getElementById('open-results').click();
@@ -692,7 +694,7 @@ describe('Offline Sealed QR — teacher collector page (packets-qr.html) static 
     expect(doc.getElementById('collect-status').textContent).toContain('Wrong teacher key');
 
     doc.getElementById('demo-tamper').click();
-    expect(doc.getElementById('collect-status').textContent).toContain('changed or cut off');
+    expect(doc.getElementById('collect-status').textContent).toContain('changed or cut short');
 
     // 2. Unsaved-key reminder appears after sealing with a fresh unsaved key and clears once saved
     doc.getElementById('clear-key').click();
@@ -746,6 +748,78 @@ describe('Offline Sealed QR — teacher collector page (packets-qr.html) static 
     doc.getElementById('code-input').value = sampleSealedForLead;
     doc.getElementById('code-add').click();
     expect(doc.getElementById('collect-status').textContent).toContain('Public key only is loaded');
+    dom.window.close();
+  });
+
+  it('guards against pending getUserMedia camera leaks and displays Read-Along page counts and comprehension answers', async () => {
+    const html = fs.readFileSync(path.join(ROOT, 'packets-qr.html'), 'utf8');
+    const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'https://alloflow.local/packets-qr.html' });
+    const win = dom.window;
+    const doc = win.document;
+    if (doc.readyState === 'loading') {
+      await new Promise((resolve) => doc.addEventListener('DOMContentLoaded', resolve, { once: true }));
+    }
+    Object.defineProperty(win, 'crypto', { value: globalThis.crypto, configurable: true });
+    win.AlloPacketQrCrypto = Q;
+    win.AlloWordSoundsTakeHome = TH;
+    win.AlloPacketZip = ZIP;
+    win.jsQR = () => null;
+    let resolveCam;
+    let stoppedTracks = 0;
+    Object.defineProperty(win.navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: () => new Promise((resolve) => { resolveCam = resolve; }),
+      },
+    });
+    win.eval(fs.readFileSync(path.join(ROOT, 'packets-qr.js'), 'utf8'));
+
+    // Generate a teacher key first
+    doc.getElementById('make-key').click();
+    const pubKey = doc.getElementById('key-pub').value;
+
+    // 1. Start camera then cancel before getUserMedia resolves — late stream tracks must be stopped immediately
+    const camBtn = doc.getElementById('cam-toggle');
+    camBtn.click();
+    expect(camBtn.textContent).toBe('Stop camera');
+    camBtn.click();
+    expect(camBtn.textContent).toBe('Start camera');
+    resolveCam({ getTracks: () => [{ stop: () => { stoppedTracks++; } }] });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(stoppedTracks).toBe(1);
+    expect(doc.getElementById('cam-box').hidden).toBe(true);
+    expect(camBtn.textContent).toBe('Start camera');
+
+    // 2. Read-Along sealed QR displays read/played breakdown, duration fallback, and comprehension answers
+    const raResult = {
+      kind: 'alloflow-take-home-result',
+      schemaVersion: 3,
+      sessionId: 'ra-qr-1',
+      packet: { id: 'kite-story', version: '1', mode: 'practice' },
+      lessonId: 'kite-story',
+      lessonTitle: 'Kite Story',
+      learner: 'Ana',
+      startedLocal: '2026-11-23T09:00:00-05:00',
+      finishedLocal: '2026-11-23T09:01:31-05:00',
+      durationMs: 91000,
+      summary: { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 3 },
+      items: [
+        { n: 1, itemId: 'read_along-p0', activity: 'read_along', word: 'Page 1', target: null, responses: ['read'], attempts: 0, firstTry: false, correct: false, done: true, ms: 61000, supports: {}, practice: 'read', flag: '' },
+        { n: 2, itemId: 'read_along-p1', activity: 'read_along', word: 'Page 2', target: null, responses: ['played'], attempts: 0, firstTry: false, correct: false, done: true, ms: 0, supports: {}, practice: 'played', flag: '' },
+        { n: 3, itemId: 'read_along-p2', activity: 'read_along', word: 'Page 3', target: null, responses: ['played', '1: Mia (right, try 2)', '2: The kite part'], attempts: 0, firstTry: false, correct: false, done: true, ms: 30000, supports: {}, practice: 'played', flag: '' },
+      ],
+    };
+    const sealedRa = Q.sealResult(raResult, pubKey).code;
+    doc.getElementById('code-input').value = sealedRa;
+    doc.getElementById('code-add').click();
+
+    const row = doc.querySelector('#collected-body tr');
+    expect(row).toBeTruthy();
+    expect(row.textContent).toContain('3 pages (1 read, 2 played) · 2 answers');
+    expect(row.textContent).toContain('2 reading answers');
+    expect(row.textContent).toContain('Page 3 — 1: Mia (right, try 2)');
+    expect(row.textContent).toContain('Page 3 — 2: The kite part');
+    expect(row.textContent).toContain('1m 31s');
     dom.window.close();
   });
 });

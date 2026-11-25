@@ -98,6 +98,14 @@ const click = (element) => act(async () => { element.click(); });
 const launch = () => click(container.querySelector('[data-skatelab-launch="true"]'));
 const launchButton = () => container.querySelector('[data-skatelab-launch="true"]');
 const runBlocked = () => launchButton().disabled || launchButton().getAttribute('aria-disabled') === 'true';
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const buttonByText = (text) => [...container.querySelectorAll('button')].find((button) => button.textContent === text);
 const key = (element, name) => act(async () => {
   element.dispatchEvent(new window.KeyboardEvent('keydown', { key: name, bubbles: true }));
@@ -419,12 +427,12 @@ describe('P3-1 predict first with misconception feedback', () => {
     // Stage C (a): blocked Run stays focusable (aria-disabled) so pressing it can raise the alert.
     expect(runBlocked()).toBe(true);
     const card = container.querySelector('[data-skatelab-predict]');
-    expect(card.textContent).toContain('on the Moon');
-    await click(container.querySelector('#sk-predict-hp_moon-same'));
+    expect(card.textContent).toContain('Watch this run.');
+    await click(container.querySelector('#sk-predict-hp_run-higher'));
     expect(runBlocked()).toBe(false);
     await launch();
     const result = state.latest.skatelab.predictionResult;
-    expect(result.correct).toBe('same');
+    expect(result.correct).toBe('higher');
     expect(result.matched).toBe(true);
     expect(result.misconception).toBeNull();
     expect(container.querySelector('[data-skatelab-predict-feedback="match"]').textContent).toContain('Your prediction matches the model.');
@@ -433,6 +441,7 @@ describe('P3-1 predict first with misconception feedback', () => {
 
   it('tags a wrong answer with its named misconception, keeps a tally, and offers a try-this setup', async () => {
     const state = await mount(seed({ estimateChallenge: true }));
+    await toPrompt('hp_moon');
     await click(container.querySelector('#sk-predict-hp_moon-higher'));
     await launch();
     const saved = state.latest.skatelab;
@@ -462,7 +471,7 @@ describe('P3-1 predict first with misconception feedback', () => {
   it('can switch question, and switching the lock off removes the gate', async () => {
     await mount(seed({ estimateChallenge: true }));
     await click(buttonByText('Ask me a different question'));
-    expect(container.querySelector('[data-skatelab-predict]').textContent).toContain('rider with a');
+    expect(container.querySelector('[data-skatelab-predict]').textContent).toContain('With no pumps on this');
     await act(async () => {
       [...container.querySelectorAll('.sk-check input')].find((input) => input.parentElement.textContent === 'Predict before each run').click();
     });

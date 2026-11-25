@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-5355-learning-library",
@@ -28,7 +29,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 4,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 14,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -6805,7 +6811,7 @@
       "id": "sp5355-idea-timelines-pwn-and-consent",
       "label": "Mixing Up IDEA Timelines, Informed Consent Boundaries, and PWN Triggers",
       "description": "Delaying an initial evaluation until tiered RTI cycles finish, treating parent consent to evaluate as consent to begin special education services, misremembering federal 60-day evaluation and 30-day IEP meeting deadlines, or failing to issue Prior Written Notice (PWN) when refusing a parent request.",
-      "remediationMove": "Track each IDEA procedural safeguard as a separate legal gate: written informed consent for initial evaluation starts the 60-calendar-day clock (unless state law sets a shorter window), separate written consent is required before initial placement, and PWN is mandatory whenever the district proposes or refuses to initiate or change identification, evaluation, placement, or FAPE.",
+      "remediationMove": "Track each IDEA procedural safeguard as a separate legal gate: written informed consent for initial evaluation starts the 60-calendar-day clock (unless the state establishes a different timeframe under 34 CFR § 300.301(c)(1)), separate written consent is required before initial placement, and PWN is mandatory whenever the district proposes or refuses to initiate or change identification, evaluation, placement, or FAPE.",
       "remediationPlaybookId": "sp5355-playbook-idea-timelines-pwn-and-consent",
       "itemIds": [
         "sp5355-b1-082",
@@ -6988,7 +6994,7 @@
           "order": 2,
           "id": "repair",
           "label": "Repair",
-          "instruction": "Map the core federal IDEA clocks and consent rules: 60 calendar days from written consent to initial evaluation completion (unless state law is shorter), 30 calendar days from eligibility to initial IEP meeting, annual IEP review, 3-year re-evaluation, separate written consent for evaluation versus initial services, and parent right to revoke consent in writing (ending services after PWN, with no due-process override for initial services).",
+          "instruction": "Map the core federal IDEA clocks and consent rules: 60 calendar days from written consent to initial evaluation completion (unless the state establishes a different timeframe under 34 CFR § 300.301(c)(1)), 30 calendar days from eligibility to initial IEP meeting, annual IEP review, 3-year re-evaluation, separate written consent for evaluation versus initial services, and parent right to revoke consent in writing (ending services after PWN, with no due-process override for initial services).",
           "requiredOutput": "Create a 4-line procedural reference table pairing each event (parent referral, district refusal, initial placement, parent revocation) with the required notice, consent rule, and deadline."
         },
         {
@@ -7130,6 +7136,2579 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "special-education-5355-session-ch-01",
+      "title": "Development, Context, and Learner Variability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Development, Context, and Learner Variability\" (Human Development and Individual Learning Differences) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-01",
+      "itemIds": [
+        "sp5355-b1-001",
+        "sp5355-b1-002",
+        "sp5355-b1-003",
+        "sp5355-b1-004",
+        "sp5355-b1-005",
+        "sp5355-b1-006",
+        "sp5355-b1-007",
+        "sp5355-b1-008",
+        "sp5355-b1-009",
+        "sp5355-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Development, Context, and Learner Variability\" and the \"Development, IDEA Disability Profiles & Learner Access\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ecological Learner-Task-Environment Analysis & Strengths-Based Planning\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Aligning Functional Math With Age-Respectful Strengths\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Development, Context, and Learner Variability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply the Construct-Preservation Test to Separate Accommodations from Modifications\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-02",
+      "title": "Disability Characteristics and Educational Impact guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Disability Characteristics and Educational Impact\" (Human Development and Individual Learning Differences) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-02",
+      "itemIds": [
+        "sp5355-b1-017",
+        "sp5355-b1-018",
+        "sp5355-b2-010",
+        "sp5355-b2-011",
+        "sp5355-b2-012",
+        "sp5355-b2-013",
+        "sp5355-b2-014",
+        "sp5355-b2-015",
+        "sp5355-b2-016",
+        "sp5355-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Disability Characteristics and Educational Impact\" and the \"Development, IDEA Disability Profiles & Learner Access\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"From IDEA Eligibility Categories to Individualized Educational Impact\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Supporting Co-Occurring Intellectual, Adaptive, and ADHD Needs\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Disability Characteristics and Educational Impact\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Sequence IEP Goals, Supplementary Aids, and the IDEA LRE Continuum Before Placement\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-03",
+      "title": "Adaptive, Sensory, Physical, and Health Supports guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Adaptive, Sensory, Physical, and Health Supports\" (Human Development and Individual Learning Differences) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-03",
+      "itemIds": [
+        "sp5355-b2-025",
+        "sp5355-b2-026",
+        "sp5355-b1-019",
+        "sp5355-b1-020",
+        "sp5355-b1-021",
+        "sp5355-b1-022",
+        "sp5355-b1-023",
+        "sp5355-b1-024",
+        "sp5355-b1-025",
+        "sp5355-b1-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Adaptive, Sensory, Physical, and Health Supports\" and the \"Development, IDEA Disability Profiles & Learner Access\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Sensory, Physical, Health & Assistive Technology Access Framework\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Ensuring Seizure Safety Through Lawful IHP Delegation\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Adaptive, Sensory, Physical, and Health Supports\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lock In IDEA Statutory Clocks, Dual Consent Gates, and Prior Written Notice Rules\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-04",
+      "title": "Individualized Planning, IEPs, LRE, and Transition guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Individualized Planning, IEPs, LRE, and Transition\" (Effective Planning and Instruction and Productive Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-04",
+      "itemIds": [
+        "sp5355-b2-037",
+        "sp5355-b1-027",
+        "sp5355-b1-028",
+        "sp5355-b1-029",
+        "sp5355-b1-030",
+        "sp5355-b1-031",
+        "sp5355-b1-032",
+        "sp5355-b1-033",
+        "sp5355-b1-034",
+        "sp5355-b1-035"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Individualized Planning, IEPs, LRE, and Transition\" and the \"IEP Architecture, LRE, Explicit Instruction & Behavior\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Standards-Aligned IEP Development & Least Restrictive Environment (LRE) Continuum\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Building Measurable Postsecondary Transition Goals From Data\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Individualized Planning, IEPs, LRE, and Transition\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Execute the IDEA 10-Day Change-of-Placement, MDR Two-Prong, and IAES Decision Tree\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-05",
+      "title": "Explicit Instruction and Curriculum Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Explicit Instruction and Curriculum Access\" (Effective Planning and Instruction and Productive Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-05",
+      "itemIds": [
+        "sp5355-b1-044",
+        "sp5355-b1-045",
+        "sp5355-b1-046",
+        "sp5355-b1-047",
+        "sp5355-b1-048",
+        "sp5355-b2-038",
+        "sp5355-b2-039",
+        "sp5355-b2-040",
+        "sp5355-b2-041",
+        "sp5355-b2-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Explicit Instruction and Curriculum Access\" and the \"IEP Architecture, LRE, Explicit Instruction & Behavior\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Explicit Instruction, UDL & Co-Teaching Delivery Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Pairing Access Accommodations With Targeted Decoding SDI\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Explicit Instruction and Curriculum Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Assessment Purpose and Nondiscriminatory Safeguards to IDEA Decisions\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-06",
+      "title": "Behavior, Engagement, and Productive Environments guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Behavior, Engagement, and Productive Environments\" (Effective Planning and Instruction and Productive Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-06",
+      "itemIds": [
+        "sp5355-b2-054",
+        "sp5355-b2-055",
+        "sp5355-b2-056",
+        "sp5355-b2-057",
+        "sp5355-b2-058",
+        "sp5355-b1-049",
+        "sp5355-b1-050",
+        "sp5355-b1-051",
+        "sp5355-b1-052",
+        "sp5355-b1-053"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Behavior, Engagement, and Productive Environments\" and the \"IEP Architecture, LRE, Explicit Instruction & Behavior\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Positive Behavioral Interventions & FBA-to-BIP Decision Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Restoring BIP Implementation Fidelity Before Changing Placement\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Behavior, Engagement, and Productive Environments\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Align PLAAFP Baselines, Measurable IEP Goals, Co-Teaching Models, and Paraprofessional Scope\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-07",
+      "title": "Assessment Purpose, Quality, and Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Purpose, Quality, and Access\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-07",
+      "itemIds": [
+        "sp5355-b2-061",
+        "sp5355-b2-062",
+        "sp5355-b2-063",
+        "sp5355-b2-064",
+        "sp5355-b2-065",
+        "sp5355-b2-066",
+        "sp5355-b1-059",
+        "sp5355-b1-060",
+        "sp5355-b1-061",
+        "sp5355-b1-062"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Purpose, Quality, and Access\" and the \"Psychometric Quality, Evaluation Rules & CBM Data Decisions\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Valid, Reliable & Nondiscriminatory Assessment Decision Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Combining Norm-Referenced Scores With Criterion Probes\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Purpose, Quality, and Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply the Construct-Preservation Test to Separate Accommodations from Modifications\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-08",
+      "title": "Evaluation, Eligibility, and Intervention guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Evaluation, Eligibility, and Intervention\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-08",
+      "itemIds": [
+        "sp5355-b1-068",
+        "sp5355-b1-069",
+        "sp5355-b1-070",
+        "sp5355-b1-071",
+        "sp5355-b1-072",
+        "sp5355-b1-073",
+        "sp5355-b1-074",
+        "sp5355-b2-067",
+        "sp5355-b2-068",
+        "sp5355-b2-069"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Evaluation, Eligibility, and Intervention\" and the \"Psychometric Quality, Evaluation Rules & CBM Data Decisions\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA Referral, Nondiscriminatory Multidisciplinary Evaluation & Eligibility Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing RTI Delays After a Written Parent Evaluation Request\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Evaluation, Eligibility, and Intervention\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Sequence IEP Goals, Supplementary Aids, and the IDEA LRE Continuum Before Placement\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-09",
+      "title": "Progress Monitoring and Data-Based Decisions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Progress Monitoring and Data-Based Decisions\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-09",
+      "itemIds": [
+        "sp5355-b1-075",
+        "sp5355-b1-076",
+        "sp5355-b1-077",
+        "sp5355-b1-078",
+        "sp5355-b1-079",
+        "sp5355-b1-080",
+        "sp5355-b1-081",
+        "sp5355-b2-075",
+        "sp5355-b2-076",
+        "sp5355-b2-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Progress Monitoring and Data-Based Decisions\" and the \"Psychometric Quality, Evaluation Rules & CBM Data Decisions\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Progress Monitoring, Data-Based Individualization & Accommodations vs. Modifications Matrix\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using CBM Error Analysis to Shift an Instructional Target\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Progress Monitoring and Data-Based Decisions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lock In IDEA Statutory Clocks, Dual Consent Gates, and Prior Written Notice Rules\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-10",
+      "title": "Law, Ethics, Safeguards, and Equity guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Law, Ethics, Safeguards, and Equity\" (Professional Learning, Practice, and Collaboration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-10",
+      "itemIds": [
+        "sp5355-b2-082",
+        "sp5355-b2-083",
+        "sp5355-b2-084",
+        "sp5355-b2-085",
+        "sp5355-b2-086",
+        "sp5355-b2-087",
+        "sp5355-b2-088",
+        "sp5355-b1-082",
+        "sp5355-b1-083",
+        "sp5355-b1-084"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Law, Ethics, Safeguards, and Equity\" and the \"IDEA Safeguards, Discipline MDR, Ethics & Co-Teaching\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA vs. Section 504 Entitlements, Safeguards & Equity Governance\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upholding MDR Safeguards and Auditing Discipline Equity\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Law, Ethics, Safeguards, and Equity\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Execute the IDEA 10-Day Change-of-Placement, MDR Two-Prong, and IAES Decision Tree\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-11",
+      "title": "Collaboration with Families and School Teams guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collaboration with Families and School Teams\" (Professional Learning, Practice, and Collaboration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-11",
+      "itemIds": [
+        "sp5355-b2-093",
+        "sp5355-b2-094",
+        "sp5355-b1-089",
+        "sp5355-b1-090",
+        "sp5355-b1-091",
+        "sp5355-b1-092",
+        "sp5355-b1-093",
+        "sp5355-b1-094",
+        "sp5355-b2-089",
+        "sp5355-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collaboration with Families and School Teams\" and the \"IDEA Safeguards, Discipline MDR, Ethics & Co-Teaching\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Shared-Ownership School Team, Paraprofessional & Family Collaboration Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Coordinating Co-Teaching, Paraprofessionals, and Related Services\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collaboration with Families and School Teams\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Assessment Purpose and Nondiscriminatory Safeguards to IDEA Decisions\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-ch-12",
+      "title": "Professional Learning, Advocacy, and Boundaries guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Learning, Advocacy, and Boundaries\" (Professional Learning, Practice, and Collaboration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5355-ch-12",
+      "itemIds": [
+        "sp5355-b1-100",
+        "sp5355-b2-095",
+        "sp5355-b2-096",
+        "sp5355-b2-097",
+        "sp5355-b2-098",
+        "sp5355-b2-099",
+        "sp5355-b2-100",
+        "sp5355-b1-095",
+        "sp5355-b1-096",
+        "sp5355-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Learning, Advocacy, and Boundaries\" and the \"IDEA Safeguards, Discipline MDR, Ethics & Co-Teaching\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Transition Planning, Family Partnership & Ethical Collaboration Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Executing Mandatory Reporting Without Crossing Role Boundaries\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Learning, Advocacy, and Boundaries\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Align PLAAFP Baselines, Measurable IEP Goals, Co-Teaching Models, and Paraprofessional Scope\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-trap-repair-sprint",
+      "title": "Praxis Special Education: Foundational Knowledge (5355) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "sp5355-b1-027",
+        "sp5355-b1-082",
+        "sp5355-b1-007",
+        "sp5355-b1-059",
+        "sp5355-b1-001",
+        "sp5355-b1-028",
+        "sp5355-b1-083",
+        "sp5355-b1-008",
+        "sp5355-b1-060",
+        "sp5355-b1-002",
+        "sp5355-b1-029",
+        "sp5355-b1-084"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Apply the Construct-Preservation Test to Separate Accommodations from Modifications\", \"Sequence IEP Goals, Supplementary Aids, and the IDEA LRE Continuum Before Placement\", \"Lock In IDEA Statutory Clocks, Dual Consent Gates, and Prior Written Notice Rules\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-session-mixed-capstone",
+      "title": "Praxis Special Education: Foundational Knowledge (5355) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "sp5355-b1-004",
+        "sp5355-b1-030",
+        "sp5355-b1-062",
+        "sp5355-b1-085",
+        "sp5355-b1-015",
+        "sp5355-b1-041",
+        "sp5355-b1-073",
+        "sp5355-b1-096",
+        "sp5355-b1-026",
+        "sp5355-b1-052",
+        "sp5355-b2-061",
+        "sp5355-b2-088",
+        "sp5355-b2-011",
+        "sp5355-b2-031",
+        "sp5355-b2-072"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied SPED case workshops, outline a response to \"Separate Second-Language Needs from SLD While Honoring Evaluation Timelines\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "special-education-5355-spaced-ch-01",
+      "topicId": "sp5355-ch-01",
+      "topicLabel": "1. Development, Context, and Learner Variability",
+      "unitId": "development-differences",
+      "chapterId": "sp5355-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Development, Context, and Learner Variability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-02",
+      "topicId": "sp5355-ch-02",
+      "topicLabel": "2. Disability Characteristics and Educational Impact",
+      "unitId": "development-differences",
+      "chapterId": "sp5355-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Disability Characteristics and Educational Impact\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-03",
+      "topicId": "sp5355-ch-03",
+      "topicLabel": "3. Adaptive, Sensory, Physical, and Health Supports",
+      "unitId": "development-differences",
+      "chapterId": "sp5355-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Adaptive, Sensory, Physical, and Health Supports\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-04",
+      "topicId": "sp5355-ch-04",
+      "topicLabel": "4. Individualized Planning, IEPs, LRE, and Transition",
+      "unitId": "planning-instruction-environment",
+      "chapterId": "sp5355-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Individualized Planning, IEPs, LRE, and Transition\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-05",
+      "topicId": "sp5355-ch-05",
+      "topicLabel": "5. Explicit Instruction and Curriculum Access",
+      "unitId": "planning-instruction-environment",
+      "chapterId": "sp5355-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Explicit Instruction and Curriculum Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-06",
+      "topicId": "sp5355-ch-06",
+      "topicLabel": "6. Behavior, Engagement, and Productive Environments",
+      "unitId": "planning-instruction-environment",
+      "chapterId": "sp5355-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Behavior, Engagement, and Productive Environments\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-07",
+      "topicId": "sp5355-ch-07",
+      "topicLabel": "7. Assessment Purpose, Quality, and Access",
+      "unitId": "assessment",
+      "chapterId": "sp5355-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Purpose, Quality, and Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-08",
+      "topicId": "sp5355-ch-08",
+      "topicLabel": "8. Evaluation, Eligibility, and Intervention",
+      "unitId": "assessment",
+      "chapterId": "sp5355-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Evaluation, Eligibility, and Intervention\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-09",
+      "topicId": "sp5355-ch-09",
+      "topicLabel": "9. Progress Monitoring and Data-Based Decisions",
+      "unitId": "assessment",
+      "chapterId": "sp5355-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Progress Monitoring and Data-Based Decisions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-10",
+      "topicId": "sp5355-ch-10",
+      "topicLabel": "10. Law, Ethics, Safeguards, and Equity",
+      "unitId": "professional-practice-collaboration",
+      "chapterId": "sp5355-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Law, Ethics, Safeguards, and Equity\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-11",
+      "topicId": "sp5355-ch-11",
+      "topicLabel": "11. Collaboration with Families and School Teams",
+      "unitId": "professional-practice-collaboration",
+      "chapterId": "sp5355-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collaboration with Families and School Teams\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-spaced-ch-12",
+      "topicId": "sp5355-ch-12",
+      "topicLabel": "12. Professional Learning, Advocacy, and Boundaries",
+      "unitId": "professional-practice-collaboration",
+      "chapterId": "sp5355-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Learning, Advocacy, and Boundaries\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "special-education-5355-source-01",
+      "title": "Special Education 5355 diagnostics — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-02",
+      "title": "Sec. 300.324 Development, review, and revision of IEP - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.324",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-03",
+      "title": "Sec. 300.320 Definition of individualized education program - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.320",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-04",
+      "title": "Sec. 300.114 LRE requirements - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/b/300.114",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-05",
+      "title": "Sec. 300.116 Placements - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/b/300.116",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-06",
+      "title": "Providing Reading Interventions for Students in Grades 4–9",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/29",
+      "credibility": "The WWC and IES developed the guide through expert-panel analysis and a systematic evidence review. Its recommendation-specific evidence ratings should be considered when translating the guidance into instruction.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-07",
+      "title": "WWC | Assisting Students Struggling with Mathematics: Intervention in the Elementary Grades",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/26",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-08",
+      "title": "WWC | Teacher-Delivered Behavioral Interventions in Grades K-5",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/practiceguide/31",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-09",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-10",
+      "title": "Sec. 300.160 Participation in assessments - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/b/300.160",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-11",
+      "title": "WWC | Using Student Achievement Data to Support Instructional Decision Making",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/12",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-12",
+      "title": "Sec. 300.504 Procedural safeguards notice - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/e/300.504",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-13",
+      "title": "U.S. Department Of Education Resource",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/individuals-disabilities/section-504",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-5355-source-14",
+      "title": "Sec. 300.530 Authority of school personnel - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/e/300.530",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "special-education-5355-unit-review-01",
+      "unitId": "development-differences",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Development, Context, and Learner Variability",
+      "chapterId": "sp5355-ch-01",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-01-section-01",
+        "sp5355-ch-01-section-02",
+        "sp5355-ch-01-section-03",
+        "sp5355-ch-01-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-001",
+        "sp5355-b1-002",
+        "sp5355-b1-003",
+        "sp5355-b1-004",
+        "sp5355-b1-005",
+        "sp5355-b1-006",
+        "sp5355-b1-007",
+        "sp5355-b1-008",
+        "sp5355-b1-009",
+        "sp5355-b2-001",
+        "sp5355-b2-002",
+        "sp5355-b2-003",
+        "sp5355-b2-004",
+        "sp5355-b2-005",
+        "sp5355-b2-006",
+        "sp5355-b2-007",
+        "sp5355-b2-008",
+        "sp5355-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-001",
+        "sp5355-b1-002",
+        "sp5355-b1-003",
+        "sp5355-b1-004",
+        "sp5355-b1-005",
+        "sp5355-b1-006",
+        "sp5355-b1-007",
+        "sp5355-b1-008",
+        "sp5355-b1-009",
+        "sp5355-b2-001",
+        "sp5355-b2-002",
+        "sp5355-b2-003"
+      ],
+      "purpose": "Consolidate \"Development, Context, and Learner Variability\" (Human Development and Individual Learning Differences) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-02",
+      "unitId": "development-differences",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Disability Characteristics and Educational Impact",
+      "chapterId": "sp5355-ch-02",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-02-section-01",
+        "sp5355-ch-02-section-02",
+        "sp5355-ch-02-section-03",
+        "sp5355-ch-02-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-010",
+        "sp5355-b1-011",
+        "sp5355-b1-012",
+        "sp5355-b1-013",
+        "sp5355-b1-014",
+        "sp5355-b1-015",
+        "sp5355-b1-016",
+        "sp5355-b1-017",
+        "sp5355-b1-018",
+        "sp5355-b2-010",
+        "sp5355-b2-011",
+        "sp5355-b2-012",
+        "sp5355-b2-013",
+        "sp5355-b2-014",
+        "sp5355-b2-015",
+        "sp5355-b2-016",
+        "sp5355-b2-017",
+        "sp5355-b2-018"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-010",
+        "sp5355-b1-011",
+        "sp5355-b1-012",
+        "sp5355-b1-013",
+        "sp5355-b1-014",
+        "sp5355-b1-015",
+        "sp5355-b1-016",
+        "sp5355-b1-017",
+        "sp5355-b1-018",
+        "sp5355-b2-010",
+        "sp5355-b2-011",
+        "sp5355-b2-012"
+      ],
+      "purpose": "Consolidate \"Disability Characteristics and Educational Impact\" (Human Development and Individual Learning Differences) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-03",
+      "unitId": "development-differences",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Adaptive, Sensory, Physical, and Health Supports",
+      "chapterId": "sp5355-ch-03",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-03-section-01",
+        "sp5355-ch-03-section-02",
+        "sp5355-ch-03-section-03",
+        "sp5355-ch-03-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-019",
+        "sp5355-b1-020",
+        "sp5355-b1-021",
+        "sp5355-b1-022",
+        "sp5355-b1-023",
+        "sp5355-b1-024",
+        "sp5355-b1-025",
+        "sp5355-b1-026",
+        "sp5355-b2-019",
+        "sp5355-b2-020",
+        "sp5355-b2-021",
+        "sp5355-b2-022",
+        "sp5355-b2-023",
+        "sp5355-b2-024",
+        "sp5355-b2-025",
+        "sp5355-b2-026"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-019",
+        "sp5355-b1-020",
+        "sp5355-b1-021",
+        "sp5355-b1-022",
+        "sp5355-b1-023",
+        "sp5355-b1-024",
+        "sp5355-b1-025",
+        "sp5355-b1-026",
+        "sp5355-b2-019",
+        "sp5355-b2-020",
+        "sp5355-b2-021",
+        "sp5355-b2-022"
+      ],
+      "purpose": "Consolidate \"Adaptive, Sensory, Physical, and Health Supports\" (Human Development and Individual Learning Differences) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-04",
+      "unitId": "planning-instruction-environment",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Individualized Planning, IEPs, LRE, and Transition",
+      "chapterId": "sp5355-ch-04",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-04-section-01",
+        "sp5355-ch-04-section-02",
+        "sp5355-ch-04-section-03",
+        "sp5355-ch-04-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-027",
+        "sp5355-b1-028",
+        "sp5355-b1-029",
+        "sp5355-b1-030",
+        "sp5355-b1-031",
+        "sp5355-b1-032",
+        "sp5355-b1-033",
+        "sp5355-b1-034",
+        "sp5355-b1-035",
+        "sp5355-b1-036",
+        "sp5355-b1-037",
+        "sp5355-b2-027",
+        "sp5355-b2-028",
+        "sp5355-b2-029",
+        "sp5355-b2-030",
+        "sp5355-b2-031",
+        "sp5355-b2-032",
+        "sp5355-b2-033",
+        "sp5355-b2-034",
+        "sp5355-b2-035",
+        "sp5355-b2-036",
+        "sp5355-b2-037"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-027",
+        "sp5355-b1-028",
+        "sp5355-b1-029",
+        "sp5355-b1-030",
+        "sp5355-b1-031",
+        "sp5355-b1-032",
+        "sp5355-b1-033",
+        "sp5355-b1-034",
+        "sp5355-b1-035",
+        "sp5355-b1-036",
+        "sp5355-b1-037",
+        "sp5355-b2-027"
+      ],
+      "purpose": "Consolidate \"Individualized Planning, IEPs, LRE, and Transition\" (Effective Planning and Instruction and Productive Learning Environments) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-05",
+      "unitId": "planning-instruction-environment",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Explicit Instruction and Curriculum Access",
+      "chapterId": "sp5355-ch-05",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-05-section-01",
+        "sp5355-ch-05-section-02",
+        "sp5355-ch-05-section-03",
+        "sp5355-ch-05-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-038",
+        "sp5355-b1-039",
+        "sp5355-b1-040",
+        "sp5355-b1-041",
+        "sp5355-b1-042",
+        "sp5355-b1-043",
+        "sp5355-b1-044",
+        "sp5355-b1-045",
+        "sp5355-b1-046",
+        "sp5355-b1-047",
+        "sp5355-b1-048",
+        "sp5355-b2-038",
+        "sp5355-b2-039",
+        "sp5355-b2-040",
+        "sp5355-b2-041",
+        "sp5355-b2-042",
+        "sp5355-b2-043",
+        "sp5355-b2-044",
+        "sp5355-b2-045",
+        "sp5355-b2-046",
+        "sp5355-b2-047",
+        "sp5355-b2-048"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-038",
+        "sp5355-b1-039",
+        "sp5355-b1-040",
+        "sp5355-b1-041",
+        "sp5355-b1-042",
+        "sp5355-b1-043",
+        "sp5355-b1-044",
+        "sp5355-b1-045",
+        "sp5355-b1-046",
+        "sp5355-b1-047",
+        "sp5355-b1-048",
+        "sp5355-b2-038"
+      ],
+      "purpose": "Consolidate \"Explicit Instruction and Curriculum Access\" (Effective Planning and Instruction and Productive Learning Environments) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-06",
+      "unitId": "planning-instruction-environment",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Behavior, Engagement, and Productive Environments",
+      "chapterId": "sp5355-ch-06",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-06-section-01",
+        "sp5355-ch-06-section-02",
+        "sp5355-ch-06-section-03",
+        "sp5355-ch-06-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-049",
+        "sp5355-b1-050",
+        "sp5355-b1-051",
+        "sp5355-b1-052",
+        "sp5355-b1-053",
+        "sp5355-b1-054",
+        "sp5355-b1-055",
+        "sp5355-b1-056",
+        "sp5355-b1-057",
+        "sp5355-b1-058",
+        "sp5355-b2-049",
+        "sp5355-b2-050",
+        "sp5355-b2-051",
+        "sp5355-b2-052",
+        "sp5355-b2-053",
+        "sp5355-b2-054",
+        "sp5355-b2-055",
+        "sp5355-b2-056",
+        "sp5355-b2-057",
+        "sp5355-b2-058"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-049",
+        "sp5355-b1-050",
+        "sp5355-b1-051",
+        "sp5355-b1-052",
+        "sp5355-b1-053",
+        "sp5355-b1-054",
+        "sp5355-b1-055",
+        "sp5355-b1-056",
+        "sp5355-b1-057",
+        "sp5355-b1-058",
+        "sp5355-b2-049",
+        "sp5355-b2-050"
+      ],
+      "purpose": "Consolidate \"Behavior, Engagement, and Productive Environments\" (Effective Planning and Instruction and Productive Learning Environments) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-07",
+      "unitId": "assessment",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Assessment Purpose, Quality, and Access",
+      "chapterId": "sp5355-ch-07",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-07-section-01",
+        "sp5355-ch-07-section-02",
+        "sp5355-ch-07-section-03",
+        "sp5355-ch-07-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-059",
+        "sp5355-b1-060",
+        "sp5355-b1-061",
+        "sp5355-b1-062",
+        "sp5355-b1-063",
+        "sp5355-b1-064",
+        "sp5355-b1-065",
+        "sp5355-b1-066",
+        "sp5355-b2-059",
+        "sp5355-b2-060",
+        "sp5355-b2-061",
+        "sp5355-b2-062",
+        "sp5355-b2-063",
+        "sp5355-b2-064",
+        "sp5355-b2-065",
+        "sp5355-b2-066"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-059",
+        "sp5355-b1-060",
+        "sp5355-b1-061",
+        "sp5355-b1-062",
+        "sp5355-b1-063",
+        "sp5355-b1-064",
+        "sp5355-b1-065",
+        "sp5355-b1-066",
+        "sp5355-b2-059",
+        "sp5355-b2-060",
+        "sp5355-b2-061",
+        "sp5355-b2-062"
+      ],
+      "purpose": "Consolidate \"Assessment Purpose, Quality, and Access\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-08",
+      "unitId": "assessment",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Evaluation, Eligibility, and Intervention",
+      "chapterId": "sp5355-ch-08",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-08-section-01",
+        "sp5355-ch-08-section-02",
+        "sp5355-ch-08-section-03",
+        "sp5355-ch-08-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-067",
+        "sp5355-b1-068",
+        "sp5355-b1-069",
+        "sp5355-b1-070",
+        "sp5355-b1-071",
+        "sp5355-b1-072",
+        "sp5355-b1-073",
+        "sp5355-b1-074",
+        "sp5355-b2-067",
+        "sp5355-b2-068",
+        "sp5355-b2-069",
+        "sp5355-b2-070",
+        "sp5355-b2-071",
+        "sp5355-b2-072",
+        "sp5355-b2-073",
+        "sp5355-b2-074"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-067",
+        "sp5355-b1-068",
+        "sp5355-b1-069",
+        "sp5355-b1-070",
+        "sp5355-b1-071",
+        "sp5355-b1-072",
+        "sp5355-b1-073",
+        "sp5355-b1-074",
+        "sp5355-b2-067",
+        "sp5355-b2-068",
+        "sp5355-b2-069",
+        "sp5355-b2-070"
+      ],
+      "purpose": "Consolidate \"Evaluation, Eligibility, and Intervention\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-09",
+      "unitId": "assessment",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Progress Monitoring and Data-Based Decisions",
+      "chapterId": "sp5355-ch-09",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-09-section-01",
+        "sp5355-ch-09-section-02",
+        "sp5355-ch-09-section-03",
+        "sp5355-ch-09-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-075",
+        "sp5355-b1-076",
+        "sp5355-b1-077",
+        "sp5355-b1-078",
+        "sp5355-b1-079",
+        "sp5355-b1-080",
+        "sp5355-b1-081",
+        "sp5355-b2-075",
+        "sp5355-b2-076",
+        "sp5355-b2-077",
+        "sp5355-b2-078",
+        "sp5355-b2-079",
+        "sp5355-b2-080",
+        "sp5355-b2-081"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-075",
+        "sp5355-b1-076",
+        "sp5355-b1-077",
+        "sp5355-b1-078",
+        "sp5355-b1-079",
+        "sp5355-b1-080",
+        "sp5355-b1-081",
+        "sp5355-b2-075",
+        "sp5355-b2-076",
+        "sp5355-b2-077",
+        "sp5355-b2-078",
+        "sp5355-b2-079"
+      ],
+      "purpose": "Consolidate \"Progress Monitoring and Data-Based Decisions\" (Assessment) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-10",
+      "unitId": "professional-practice-collaboration",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Law, Ethics, Safeguards, and Equity",
+      "chapterId": "sp5355-ch-10",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-10-section-01",
+        "sp5355-ch-10-section-02",
+        "sp5355-ch-10-section-03",
+        "sp5355-ch-10-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-082",
+        "sp5355-b1-083",
+        "sp5355-b1-084",
+        "sp5355-b1-085",
+        "sp5355-b1-086",
+        "sp5355-b1-087",
+        "sp5355-b1-088",
+        "sp5355-b2-082",
+        "sp5355-b2-083",
+        "sp5355-b2-084",
+        "sp5355-b2-085",
+        "sp5355-b2-086",
+        "sp5355-b2-087",
+        "sp5355-b2-088"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-082",
+        "sp5355-b1-083",
+        "sp5355-b1-084",
+        "sp5355-b1-085",
+        "sp5355-b1-086",
+        "sp5355-b1-087",
+        "sp5355-b1-088",
+        "sp5355-b2-082",
+        "sp5355-b2-083",
+        "sp5355-b2-084",
+        "sp5355-b2-085",
+        "sp5355-b2-086"
+      ],
+      "purpose": "Consolidate \"Law, Ethics, Safeguards, and Equity\" (Professional Learning, Practice, and Collaboration) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-11",
+      "unitId": "professional-practice-collaboration",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Collaboration with Families and School Teams",
+      "chapterId": "sp5355-ch-11",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-11-section-01",
+        "sp5355-ch-11-section-02",
+        "sp5355-ch-11-section-03",
+        "sp5355-ch-11-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-089",
+        "sp5355-b1-090",
+        "sp5355-b1-091",
+        "sp5355-b1-092",
+        "sp5355-b1-093",
+        "sp5355-b1-094",
+        "sp5355-b2-089",
+        "sp5355-b2-090",
+        "sp5355-b2-091",
+        "sp5355-b2-092",
+        "sp5355-b2-093",
+        "sp5355-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-089",
+        "sp5355-b1-090",
+        "sp5355-b1-091",
+        "sp5355-b1-092",
+        "sp5355-b1-093",
+        "sp5355-b1-094",
+        "sp5355-b2-089",
+        "sp5355-b2-090",
+        "sp5355-b2-091",
+        "sp5355-b2-092",
+        "sp5355-b2-093",
+        "sp5355-b2-094"
+      ],
+      "purpose": "Consolidate \"Collaboration with Families and School Teams\" (Professional Learning, Practice, and Collaboration) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-unit-review-12",
+      "unitId": "professional-practice-collaboration",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Professional Learning, Advocacy, and Boundaries",
+      "chapterId": "sp5355-ch-12",
+      "topicDiagnosticRouteIds": [
+        "sp5355-ch-12-section-01",
+        "sp5355-ch-12-section-02",
+        "sp5355-ch-12-section-03",
+        "sp5355-ch-12-section-04"
+      ],
+      "itemIds": [
+        "sp5355-b1-095",
+        "sp5355-b1-096",
+        "sp5355-b1-097",
+        "sp5355-b1-098",
+        "sp5355-b1-099",
+        "sp5355-b1-100",
+        "sp5355-b2-095",
+        "sp5355-b2-096",
+        "sp5355-b2-097",
+        "sp5355-b2-098",
+        "sp5355-b2-099",
+        "sp5355-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5355-b1-095",
+        "sp5355-b1-096",
+        "sp5355-b1-097",
+        "sp5355-b1-098",
+        "sp5355-b1-099",
+        "sp5355-b1-100",
+        "sp5355-b2-095",
+        "sp5355-b2-096",
+        "sp5355-b2-097",
+        "sp5355-b2-098",
+        "sp5355-b2-099",
+        "sp5355-b2-100"
+      ],
+      "purpose": "Consolidate \"Professional Learning, Advocacy, and Boundaries\" (Professional Learning, Practice, and Collaboration) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "special-education-5355-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Special Education: Foundational Knowledge (5355) blueprint domains.",
+      "focus": [
+        "Human Development and Individual Learning Differences",
+        "Effective Planning and Instruction and Productive Learning Environments",
+        "Assessment",
+        "Professional Learning, Practice, and Collaboration"
+      ],
+      "itemIds": [
+        "sp5355-b1-001",
+        "sp5355-b1-082",
+        "sp5355-b1-060",
+        "sp5355-b1-029",
+        "sp5355-b1-004",
+        "sp5355-b1-085",
+        "sp5355-b1-063",
+        "sp5355-b1-032",
+        "sp5355-b1-007",
+        "sp5355-b1-088",
+        "sp5355-b1-066",
+        "sp5355-b1-035",
+        "sp5355-b1-010",
+        "sp5355-b1-091",
+        "sp5355-b1-069",
+        "sp5355-b1-038",
+        "sp5355-b1-013",
+        "sp5355-b1-094",
+        "sp5355-b1-072",
+        "sp5355-b1-041",
+        "sp5355-b1-016",
+        "sp5355-b1-097",
+        "sp5355-b1-075",
+        "sp5355-b1-044",
+        "sp5355-b1-019",
+        "sp5355-b1-100",
+        "sp5355-b1-078",
+        "sp5355-b1-047",
+        "sp5355-b1-022",
+        "sp5355-b2-084",
+        "sp5355-b1-081",
+        "sp5355-b1-050",
+        "sp5355-b1-025",
+        "sp5355-b2-087",
+        "sp5355-b2-061",
+        "sp5355-b1-053",
+        "sp5355-b2-002",
+        "sp5355-b2-090",
+        "sp5355-b2-064",
+        "sp5355-b1-056"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Special Education: Foundational Knowledge (5355) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Assessment",
+        "Professional Learning, Practice, and Collaboration",
+        "Human Development and Individual Learning Differences",
+        "Effective Planning and Instruction and Productive Learning Environments"
+      ],
+      "itemIds": [
+        "sp5355-b1-027",
+        "sp5355-b1-002",
+        "sp5355-b1-083",
+        "sp5355-b1-061",
+        "sp5355-b1-030",
+        "sp5355-b1-005",
+        "sp5355-b1-086",
+        "sp5355-b1-064",
+        "sp5355-b1-033",
+        "sp5355-b1-008",
+        "sp5355-b1-089",
+        "sp5355-b1-067",
+        "sp5355-b1-036",
+        "sp5355-b1-011",
+        "sp5355-b1-092",
+        "sp5355-b1-070",
+        "sp5355-b1-039",
+        "sp5355-b1-014",
+        "sp5355-b1-095",
+        "sp5355-b1-073",
+        "sp5355-b1-042",
+        "sp5355-b1-017",
+        "sp5355-b1-098",
+        "sp5355-b1-076",
+        "sp5355-b1-045",
+        "sp5355-b1-020",
+        "sp5355-b2-082",
+        "sp5355-b1-079",
+        "sp5355-b1-048",
+        "sp5355-b1-023",
+        "sp5355-b2-085",
+        "sp5355-b2-059",
+        "sp5355-b1-051",
+        "sp5355-b1-026",
+        "sp5355-b2-088",
+        "sp5355-b2-062",
+        "sp5355-b1-054",
+        "sp5355-b2-003",
+        "sp5355-b2-091",
+        "sp5355-b2-065"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Special Education: Foundational Knowledge (5355) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Conflating Accommodations with Curriculum Modifications",
+        "Equating LRE with Automatic Full Inclusion or Category-Based Placement",
+        "Mixing Up IDEA Timelines, Informed Consent Boundaries, and PWN Triggers"
+      ],
+      "itemIds": [
+        "sp5355-b1-059",
+        "sp5355-b1-028",
+        "sp5355-b1-003",
+        "sp5355-b1-084",
+        "sp5355-b1-062",
+        "sp5355-b1-031",
+        "sp5355-b1-006",
+        "sp5355-b1-087",
+        "sp5355-b1-065",
+        "sp5355-b1-034",
+        "sp5355-b1-009",
+        "sp5355-b1-090",
+        "sp5355-b1-068",
+        "sp5355-b1-037",
+        "sp5355-b1-012",
+        "sp5355-b1-093",
+        "sp5355-b1-071",
+        "sp5355-b1-040",
+        "sp5355-b1-015",
+        "sp5355-b1-096",
+        "sp5355-b1-074",
+        "sp5355-b1-043",
+        "sp5355-b1-018",
+        "sp5355-b1-099",
+        "sp5355-b1-077",
+        "sp5355-b1-046",
+        "sp5355-b1-021",
+        "sp5355-b2-083",
+        "sp5355-b1-080",
+        "sp5355-b1-049",
+        "sp5355-b1-024",
+        "sp5355-b2-086",
+        "sp5355-b2-060",
+        "sp5355-b1-052",
+        "sp5355-b2-001",
+        "sp5355-b2-089",
+        "sp5355-b2-063",
+        "sp5355-b1-055",
+        "sp5355-b2-004",
+        "sp5355-b2-092"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "special-education-5355-form-internal-a",
+      "title": "Internal practice form A (Praxis Special Education: Foundational Knowledge (5355))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5355-b1-001",
+        "sp5355-b1-082",
+        "sp5355-b1-060",
+        "sp5355-b1-029",
+        "sp5355-b1-004",
+        "sp5355-b1-085",
+        "sp5355-b1-063",
+        "sp5355-b1-032",
+        "sp5355-b1-007",
+        "sp5355-b1-088",
+        "sp5355-b1-066",
+        "sp5355-b1-035",
+        "sp5355-b1-010",
+        "sp5355-b1-091",
+        "sp5355-b1-069",
+        "sp5355-b1-038",
+        "sp5355-b1-013",
+        "sp5355-b1-094",
+        "sp5355-b1-072",
+        "sp5355-b1-041",
+        "sp5355-b1-016",
+        "sp5355-b1-097",
+        "sp5355-b1-075",
+        "sp5355-b1-044",
+        "sp5355-b1-019",
+        "sp5355-b1-100",
+        "sp5355-b1-078",
+        "sp5355-b1-047",
+        "sp5355-b1-022",
+        "sp5355-b2-084",
+        "sp5355-b1-081",
+        "sp5355-b1-050",
+        "sp5355-b1-025",
+        "sp5355-b2-087",
+        "sp5355-b2-061",
+        "sp5355-b1-053",
+        "sp5355-b2-002",
+        "sp5355-b2-090",
+        "sp5355-b2-064",
+        "sp5355-b1-056",
+        "sp5355-b2-005",
+        "sp5355-b2-093",
+        "sp5355-b2-067",
+        "sp5355-b2-027",
+        "sp5355-b2-008",
+        "sp5355-b2-096",
+        "sp5355-b2-070",
+        "sp5355-b2-030",
+        "sp5355-b2-011",
+        "sp5355-b2-099"
+      ],
+      "topicIds": [
+        "sp5355-ch-01",
+        "sp5355-ch-10",
+        "sp5355-ch-07",
+        "sp5355-ch-04",
+        "sp5355-ch-02",
+        "sp5355-ch-11",
+        "sp5355-ch-08",
+        "sp5355-ch-05",
+        "sp5355-ch-12",
+        "sp5355-ch-09",
+        "sp5355-ch-03",
+        "sp5355-ch-06"
+      ],
+      "unitIds": [
+        "development-differences",
+        "professional-practice-collaboration",
+        "assessment",
+        "planning-instruction-environment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-form-internal-b",
+      "title": "Internal practice form B (Praxis Special Education: Foundational Knowledge (5355))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5355-b1-027",
+        "sp5355-b1-002",
+        "sp5355-b1-083",
+        "sp5355-b1-061",
+        "sp5355-b1-030",
+        "sp5355-b1-005",
+        "sp5355-b1-086",
+        "sp5355-b1-064",
+        "sp5355-b1-033",
+        "sp5355-b1-008",
+        "sp5355-b1-089",
+        "sp5355-b1-067",
+        "sp5355-b1-036",
+        "sp5355-b1-011",
+        "sp5355-b1-092",
+        "sp5355-b1-070",
+        "sp5355-b1-039",
+        "sp5355-b1-014",
+        "sp5355-b1-095",
+        "sp5355-b1-073",
+        "sp5355-b1-042",
+        "sp5355-b1-017",
+        "sp5355-b1-098",
+        "sp5355-b1-076",
+        "sp5355-b1-045",
+        "sp5355-b1-020",
+        "sp5355-b2-082",
+        "sp5355-b1-079",
+        "sp5355-b1-048",
+        "sp5355-b1-023",
+        "sp5355-b2-085",
+        "sp5355-b2-059",
+        "sp5355-b1-051",
+        "sp5355-b1-026",
+        "sp5355-b2-088",
+        "sp5355-b2-062",
+        "sp5355-b1-054",
+        "sp5355-b2-003",
+        "sp5355-b2-091",
+        "sp5355-b2-065",
+        "sp5355-b1-057",
+        "sp5355-b2-006",
+        "sp5355-b2-094",
+        "sp5355-b2-068",
+        "sp5355-b2-028",
+        "sp5355-b2-009",
+        "sp5355-b2-097",
+        "sp5355-b2-071",
+        "sp5355-b2-031",
+        "sp5355-b2-012"
+      ],
+      "topicIds": [
+        "sp5355-ch-04",
+        "sp5355-ch-01",
+        "sp5355-ch-10",
+        "sp5355-ch-07",
+        "sp5355-ch-11",
+        "sp5355-ch-08",
+        "sp5355-ch-02",
+        "sp5355-ch-05",
+        "sp5355-ch-12",
+        "sp5355-ch-09",
+        "sp5355-ch-03",
+        "sp5355-ch-06"
+      ],
+      "unitIds": [
+        "planning-instruction-environment",
+        "development-differences",
+        "professional-practice-collaboration",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-5355-form-internal-c",
+      "title": "Internal practice form C (Praxis Special Education: Foundational Knowledge (5355))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5355-b1-059",
+        "sp5355-b1-028",
+        "sp5355-b1-003",
+        "sp5355-b1-084",
+        "sp5355-b1-062",
+        "sp5355-b1-031",
+        "sp5355-b1-006",
+        "sp5355-b1-087",
+        "sp5355-b1-065",
+        "sp5355-b1-034",
+        "sp5355-b1-009",
+        "sp5355-b1-090",
+        "sp5355-b1-068",
+        "sp5355-b1-037",
+        "sp5355-b1-012",
+        "sp5355-b1-093",
+        "sp5355-b1-071",
+        "sp5355-b1-040",
+        "sp5355-b1-015",
+        "sp5355-b1-096",
+        "sp5355-b1-074",
+        "sp5355-b1-043",
+        "sp5355-b1-018",
+        "sp5355-b1-099",
+        "sp5355-b1-077",
+        "sp5355-b1-046",
+        "sp5355-b1-021",
+        "sp5355-b2-083",
+        "sp5355-b1-080",
+        "sp5355-b1-049",
+        "sp5355-b1-024",
+        "sp5355-b2-086",
+        "sp5355-b2-060",
+        "sp5355-b1-052",
+        "sp5355-b2-001",
+        "sp5355-b2-089",
+        "sp5355-b2-063",
+        "sp5355-b1-055",
+        "sp5355-b2-004",
+        "sp5355-b2-092",
+        "sp5355-b2-066",
+        "sp5355-b1-058",
+        "sp5355-b2-007",
+        "sp5355-b2-095",
+        "sp5355-b2-069",
+        "sp5355-b2-029",
+        "sp5355-b2-010",
+        "sp5355-b2-098",
+        "sp5355-b2-072",
+        "sp5355-b2-032"
+      ],
+      "topicIds": [
+        "sp5355-ch-07",
+        "sp5355-ch-04",
+        "sp5355-ch-01",
+        "sp5355-ch-10",
+        "sp5355-ch-11",
+        "sp5355-ch-08",
+        "sp5355-ch-02",
+        "sp5355-ch-05",
+        "sp5355-ch-12",
+        "sp5355-ch-09",
+        "sp5355-ch-03",
+        "sp5355-ch-06"
+      ],
+      "unitIds": [
+        "assessment",
+        "planning-instruction-environment",
+        "development-differences",
+        "professional-practice-collaboration"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

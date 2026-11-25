@@ -8,11 +8,13 @@ function LiveSessionDockView(props) {
   const [confirmRemoveGoalId, setConfirmRemoveGoalId] = React.useState('');
   const [rosterFilter, setRosterFilter] = React.useState('all');
   const [rosterSearch, setRosterSearch] = React.useState('');
-  const reviewApi = window.AlloModules?.ViewRenderers;
+  const reviewApi = typeof window !== 'undefined' ? window.AlloModules?.ViewRenderers : null;
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
-  const imageApi = window.AlloModules?.LiveAac;
+  const imageApi = typeof window !== 'undefined' ? window.AlloModules?.LiveAac : null;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
   const fallbackDockRef = React.useRef(null);
+  const seatingTimerRef = React.useRef(null);
+  React.useEffect(() => () => { if (seatingTimerRef.current) clearTimeout(seatingTimerRef.current); }, []);
   const resolvedDockRef = liveDockPanelRef || fallbackDockRef;
   const closeDockRef = React.useRef(setShowLiveDock);
   closeDockRef.current = setShowLiveDock;
@@ -75,7 +77,9 @@ function LiveSessionDockView(props) {
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.type === 'search' && String(activeEl.value || '').length > 0) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof closeDockRef.current === 'function') closeDockRef.current(false);
@@ -170,7 +174,7 @@ function LiveSessionDockView(props) {
                   // session-sync trace, one tap from the full Session log.
                   try {
                     const rosterCount = Object.keys((sessionData && sessionData.roster) || {}).length;
-                    const transportLabel = props.organizerReflectionRequest ? 'LAN' : _alloMbBridgeActive() ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
+                    const transportLabel = props.organizerReflectionRequest ? 'LAN' : (typeof _alloMbBridgeActive === 'function' && _alloMbBridgeActive()) ? (t('live_dock.transport_mailbox') || 'Class Mailbox') : 'Firebase';
                     const trace = ((typeof window !== 'undefined' && window.__alloSessionSyncTrace) || []).filter(ev => ev.detail?.sessionPath === 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode);
                     let lastSync = null; let lastProblem = null;
                     for (let i = trace.length - 1; i >= 0; i--) {
@@ -181,7 +185,8 @@ function LiveSessionDockView(props) {
                       if (lastSync && lastProblem) break;
                     }
                     const problemIsCurrent = lastProblem && (!lastSync || trace.lastIndexOf(lastProblem) > trace.lastIndexOf(lastSync));
-                    const ageSec = lastSync ? Math.max(0, Math.round((Date.now() - lastSync.at) / 1000)) : null;
+                    const syncAtMs = Number(lastSync?.at);
+                    const ageSec = lastSync && Number.isFinite(syncAtMs) ? Math.max(0, Math.round((Date.now() - syncAtMs) / 1000)) : null;
                     return (
                       <button type="button" onClick={() => { try { if (window.__alloOpenDiagnosticsLog) window.__alloOpenDiagnosticsLog('session'); } catch (e) {} }}
                         aria-label={t('live_dock.health_aria') || 'Session health — open the session log'}
@@ -490,10 +495,10 @@ function LiveSessionDockView(props) {
                       {' · ' + havenRewardReceipt.count + ' ' + havenRewardReceipt.scopeLabel}
                       {' · +' + havenRewardReceipt.amount + ' each · ' + havenRewardReceipt.reasonLabel}
                       {havenRewardReceipt.skippedCount ? ' · ' + havenRewardReceipt.skippedCount + ' skipped at session cap' : ''}
-                      {' · ' + new Date(havenRewardReceipt.at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}
+                      {(() => { const _rd = Number.isFinite(Number(havenRewardReceipt.at)) ? new Date(Number(havenRewardReceipt.at)) : null; return _rd && !Number.isNaN(_rd.getTime()) ? (' · ' + _rd.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})) : ''; })()}
                     </div>
                   ) : null}
-                  {recentHavenRecognition.length > 0 ? (
+                  {Array.isArray(recentHavenRecognition) && recentHavenRecognition.length > 0 ? (
                     <div style={{gridColumn:'1 / -1'}}>
                       <button
                         type="button"
@@ -509,7 +514,8 @@ function LiveSessionDockView(props) {
                         <ol id="allohaven-recognition-delivery-audit" aria-label={t('allohaven.recent_deliveries_aria') || 'Recent private AlloHaven recognition deliveries'} style={{listStyle:'none',margin:'0.3rem 0 0',padding:0,display:'flex',flexDirection:'column',gap:3,maxHeight:130,overflowY:'auto'}}>
                           {recentHavenRecognition.map(event => {
                             const hasValidAt = Number.isFinite(Number(event.at));
-                            const eventDate = hasValidAt ? new Date(Number(event.at)) : null;
+                            const rawDate = hasValidAt ? new Date(Number(event.at)) : null;
+                            const eventDate = rawDate && !Number.isNaN(rawDate.getTime()) ? rawDate : null;
                             return (
                             <li key={event.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:4,padding:'0.3rem 0.38rem',borderRadius:6,background:'white',border:'1px solid #bbf7d0',fontSize:'0.64rem',color:'#365314'}}>
                               <span style={{fontWeight:800,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{event.studentName + ' · ' + event.reasonLabel}</span>
@@ -546,9 +552,10 @@ function LiveSessionDockView(props) {
                       {activeGoals.map(goal => {
                         const teamUids = resolveClassGoalTeamUids(goal, rosterEntries, rosterKey);
                         const progress = evaluateClassGoalProgress(goal, teamUids, rosterEntries, sessionData);
+                        const teamGroupId = goal.team.indexOf('group:') === 0 ? goal.team.slice(6) : '';
                         const teamLabel = goal.team === 'class' ? null
-                          : goal.team.indexOf('group:') === 0
-                            ? (((rosterKey && rosterKey.groups && rosterKey.groups[goal.team.slice(6)]) || {}).name || 'Group')
+                          : teamGroupId
+                            ? (((rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, teamGroupId) && rosterKey.groups[teamGroupId]) || {}).name || 'Group')
                             : 'Pod ' + goal.team.slice(4);
                         const independent = goal.mode === 'independent';
                         const checklistOpen = independent && openChecklistGoalId === goal.id;
@@ -576,8 +583,8 @@ function LiveSessionDockView(props) {
                                   type="button"
                                   onClick={() => {
                                     if (checklistOpen) { setOpenChecklistGoalId(null); return; }
-                                    const seeded = {};
-                                    teamUids.forEach(uid => { seeded[uid] = !!(progress && progress.perStudentMet && progress.perStudentMet[uid]); });
+                                    const seeded = Object.create(null);
+                                    teamUids.forEach(uid => { if (uid && uid !== '__proto__' && uid !== 'constructor' && uid !== 'prototype') seeded[uid] = !!(progress && progress.perStudentMet && Object.prototype.hasOwnProperty.call(progress.perStudentMet, uid) && progress.perStudentMet[uid]); });
                                     setChecklistMarks(seeded);
                                     setOpenChecklistGoalId(goal.id);
                                   }}
@@ -697,7 +704,7 @@ function LiveSessionDockView(props) {
                                   <option key={'goal-team-' + gid} value={'group:' + gid}>{(rosterKey.groups[gid] && rosterKey.groups[gid].name) || 'Group'}</option>
                                 ))}
                                 {(() => {
-                                  const SC = window.AlloModules && window.AlloModules.SeatingChart;
+                                  const SC = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart;
                                   if (!SC || typeof SC.listPods !== 'function') return null;
                                   let pods = [];
                                   try { pods = SC.listPods(rosterKey); } catch(_) { pods = []; }
@@ -706,12 +713,13 @@ function LiveSessionDockView(props) {
                               </select>
                             </label>
                           </div>
-                          {(!(window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating) ? (
+                          {(!(typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating) ? (
                             <button
                               type="button"
                               onClick={() => {
-                                if (typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} }
-                                window.setTimeout(() => setClassGoalDraft(current => current ? { ...current } : current), 900);
+                                if (typeof window !== 'undefined' && typeof window.__alloLazySeatingChart === 'function') { try { window.__alloLazySeatingChart(); } catch(_) {} }
+                                if (seatingTimerRef.current) clearTimeout(seatingTimerRef.current);
+                                seatingTimerRef.current = setTimeout(() => setClassGoalDraft(current => current ? { ...current } : current), 900);
                               }}
                               style={{alignSelf:'flex-start',border:'1px dashed #7dd3fc',borderRadius:6,background:'white',color:'#0369a1',padding:'0.2rem 0.4rem',fontSize:'0.6rem',fontWeight:800,cursor:'pointer'}}
                             >Load seating pods as teams…</button>
@@ -776,7 +784,7 @@ function LiveSessionDockView(props) {
                                   return;
                                 }
                                 const requestedGroupId = typeof draft.team === 'string' && draft.team.indexOf('group:') === 0 ? draft.team.slice(6) : '';
-                                const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && rosterKey.groups[requestedGroupId])
+                                const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, requestedGroupId) && rosterKey.groups[requestedGroupId])
                                   ? 'class' : draft.team;
                                 const goal = normalizeClassGoal({
                                   id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
@@ -1021,29 +1029,33 @@ function LiveSessionDockView(props) {
                                       ? (t('word_sounds.audio_teacher_blocked_title') || 'The learner must tap Try sound again on their device.')
                                       : (t('word_sounds.audio_teacher_resend_title') || 'Resend prepared audio to this learner, or open audio review if the source pack is incomplete.')}
                                   onClick={async () => {
-                                    const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
-                                    const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
-                                    if (!resource || resource.type !== 'word-sounds') {
-                                      addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
-                                      return;
+                                    try {
+                                      const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
+                                      const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
+                                      if (!resource || resource.type !== 'word-sounds') {
+                                        if (typeof addToast === 'function') addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
+                                        return;
+                                      }
+                                      const coverage = getWordSoundsPortableAudioCoverage(resource);
+                                      if (coverage && coverage.complete && wsAudioStatus !== 'unsupported') {
+                                        const resendAt = Date.now();
+                                        await Promise.resolve(handleSetStudentResource(uid, resource.id, {
+                                          allowIncompleteAudio: true,
+                                          resourceAt: resendAt,
+                                          wsProgress: { ...entry.wsProgress, audioStatus: 'resending', audioDeliveryAt: resendAt, at: resendAt },
+                                        }));
+                                        return;
+                                      }
+                                      if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
+                                      handleRestoreView(resource, { suppressLiveFollow: true });
+                                      setTimeout(() => {
+                                        setWordSoundsAutoReview(true);
+                                        setIsWordSoundsMode(true);
+                                        setActiveView('word-sounds');
+                                      }, 0);
+                                    } catch (err) {
+                                      if (typeof addToast === 'function') addToast(t('word_sounds.audio_resend_failed_toast') || 'Could not resend audio right now.', 'error');
                                     }
-                                    const coverage = getWordSoundsPortableAudioCoverage(resource);
-                                    if (coverage && coverage.complete && wsAudioStatus !== 'unsupported') {
-                                      const resendAt = Date.now();
-                                      await handleSetStudentResource(uid, resource.id, {
-                                        allowIncompleteAudio: true,
-                                        resourceAt: resendAt,
-                                        wsProgress: { ...entry.wsProgress, audioStatus: 'resending', audioDeliveryAt: resendAt, at: resendAt },
-                                      });
-                                      return;
-                                    }
-                                    if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
-                                    handleRestoreView(resource, { suppressLiveFollow: true });
-                                    setTimeout(() => {
-                                      setWordSoundsAutoReview(true);
-                                      setIsWordSoundsMode(true);
-                                      setActiveView('word-sounds');
-                                    }, 0);
                                   }}
                                   style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:wsAudioBusy?'#1d4ed8':'#9a3412',background:wsAudioBusy?'#dbeafe':'#ffedd5',border:'1px solid '+(wsAudioBusy?'#93c5fd':'#fdba74'),borderRadius:6,padding:'0.05rem 0.3rem',cursor:wsAudioBusy?'wait':'pointer'}}
                                 >{wsAudioPrimaryLabel}</button>

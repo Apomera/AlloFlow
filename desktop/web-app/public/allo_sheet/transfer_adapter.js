@@ -1,9 +1,11 @@
-(function () {
+(function (root) {
   'use strict';
 
-  if (window.AlloSheetTransferAdapter) {
-    window.AlloModules = window.AlloModules || {};
-    window.AlloModules.AlloSheetTransferAdapter = window.AlloSheetTransferAdapter;
+  var target = root && typeof root === 'object' ? root : null;
+  if (target && target.AlloSheetTransferAdapter) {
+    if (!target.AlloModules || typeof target.AlloModules !== 'object') target.AlloModules = {};
+    target.AlloModules.AlloSheetTransferAdapter = target.AlloSheetTransferAdapter;
+    if (typeof module === 'object' && module && module.exports) module.exports = target.AlloSheetTransferAdapter;
     return;
   }
 
@@ -62,9 +64,14 @@
   }
 
   function safeNumber(value) {
-    if (value === '' || value === null || value === undefined) return null;
-    var parsed = typeof value === 'number' ? value : Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
+    if (value === '' || value === null || value === undefined || typeof value === 'boolean' || typeof value === 'symbol') return null;
+    if (typeof value === 'string' && !value.trim()) return null;
+    try {
+      var parsed = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   function safeScalar(value) {
@@ -112,7 +119,17 @@
   }
 
   function byteLength(value) {
-    var text = typeof value === 'string' ? value : JSON.stringify(value);
+    var text = '';
+    if (typeof value === 'string') {
+      text = value;
+    } else {
+      try {
+        var serialized = JSON.stringify(value);
+        text = typeof serialized === 'string' ? serialized : '';
+      } catch (_) {
+        fail('The transferred table data could not be serialized.');
+      }
+    }
     try {
       if (typeof TextEncoder === 'function') return new TextEncoder().encode(text).length;
     } catch (_) {}
@@ -156,7 +173,15 @@
     var limitedRows = sourceRows.slice(0, LIMITS.maxRows);
     var seenRows = Object.create(null);
     var rows = limitedRows.map(function (candidate, index) {
-      var originalId = candidate && candidate.id != null ? String(candidate.id) : tableId + '-' + (index + 1);
+      var originalId;
+      if (candidate && candidate.id != null) {
+        if (typeof candidate.id !== 'string' && !(typeof candidate.id === 'number' && Number.isSafeInteger(candidate.id))) {
+          fail('Table ' + tableId + ' contains an empty, unsafe, oversized, or duplicate row identifier.');
+        }
+        originalId = String(candidate.id);
+      } else {
+        originalId = tableId + '-' + (index + 1);
+      }
       var rowId = safeText(originalId, 120);
       if (!rowId || rowId !== originalId || rowId.trim() !== rowId || BLOCKED_KEYS[rowId] || /[\u0000-\u001f\u007f]/.test(rowId) || seenRows[rowId]) {
         fail('Table ' + tableId + ' contains an empty, unsafe, oversized, or duplicate row identifier.');
@@ -250,10 +275,17 @@
   }
 
   function timestamp(value) {
-    if (value instanceof Date) return value.getTime();
+    if (value instanceof Date) {
+      var dt = value.getTime();
+      return Number.isFinite(dt) ? dt : null;
+    }
     if (typeof value === 'number' && Number.isFinite(value)) return value;
-    var parsed = Date.parse(String(value == null ? '' : value));
-    return Number.isFinite(parsed) ? parsed : null;
+    try {
+      var parsed = Date.parse(String(value == null ? '' : value));
+      return Number.isFinite(parsed) ? parsed : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   function toIsoDate(value) {
@@ -311,7 +343,10 @@
     table: table,
     envelope: envelope
   };
-  window.AlloSheetTransferAdapter = adapter;
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloSheetTransferAdapter = adapter;
-})();
+  if (target) {
+    target.AlloSheetTransferAdapter = adapter;
+    if (!target.AlloModules || typeof target.AlloModules !== 'object') target.AlloModules = {};
+    target.AlloModules.AlloSheetTransferAdapter = adapter;
+  }
+  if (typeof module === 'object' && module && module.exports) module.exports = adapter;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null);

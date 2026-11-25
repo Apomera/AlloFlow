@@ -784,7 +784,8 @@ describe('the page as files: the one page that may reach other websites', () => 
     const said = (id) => doc.getElementById(id).textContent.replace(/\s+/g, ' ').trim();
     // Unlike most pages, it can reach other websites. 2026-11-13 (teacher-journey pass): Look up a word online and Open a practice file
     // can reach one other site each (packets-it.html says which), so "the other pages cannot connect" was no longer true.
-    expect(said('proof-reach')).toBe('This page, unlike most Packets pages, can reach other websites. Most of the other pages cannot connect to any other website: the guide for school IT names the four that can, and what they send. This one can connect to the five addresses listed here, and to nothing else: the rule below names them, and the browser refuses everything the rule does not name.');
+    // 2026-11-23: five, with Send feedback (packets-feedback.html).
+    expect(said('proof-reach')).toBe('This page, unlike most Packets pages, can reach other websites. Most of the other pages cannot connect to any other website: the guide for school IT names the five that can, and what they send. This one can connect to the five addresses listed here, and to nothing else: the rule below names them, and the browser refuses everything the rule does not name.');
     // Every host in the rule is listed by name, and no other.
     expect([...doc.querySelectorAll('#proof-hosts code')].map((code) => code.textContent)).toEqual(ALL_HOSTS);
     expect(said('proof-hosts')).toBe('Global Symbols: globalsymbols.com. Openverse: api.openverse.org. Wikimedia Commons: commons.wikimedia.org, with its picture files at thumb.wikimedia.org and upload.wikimedia.org.');
@@ -864,7 +865,8 @@ describe('the page as files: the one page that may reach other websites', () => 
     expect(doc.querySelector('a.skip').getAttribute('href')).toBe('#main');
     expect(doc.querySelector('header.top') && doc.querySelector('main#main') && doc.querySelector('footer.foot')).toBeTruthy();
     expect(doc.querySelector('meta[name="viewport"]').getAttribute('content')).not.toMatch(/user-scalable|maximum-scale/);
-    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['More from AlloFlow']);
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['Send feedback', 'More from AlloFlow']);
     // Messages are announced: one quiet region for the page, and the line that confirms a save.
     expect(doc.getElementById('said').getAttribute('role')).toBe('status');
     expect(doc.getElementById('said').className).toBe('sr-only');
@@ -882,7 +884,9 @@ describe('the page as files: the one page that may reach other websites', () => 
     const results = new JSDOM(read('packets-results.html')).window.document;
     expect(doc.querySelector('header.top .top-row').outerHTML).toBe(results.querySelector('header.top .top-row').outerHTML);
     expect([...doc.querySelector('header.top').children].map((node) => node.className)).toEqual(['wrap top-row', 'proof']);
-    expect(doc.querySelector('footer.foot').outerHTML).toBe(results.querySelector('footer.foot').outerHTML);
+    // 2026-11-23: the same footer, but for which page Send feedback is opened from.
+    const sameFoot = (node) => node.outerHTML.replace(/#from-[\w-]+/g, '#from-');
+    expect(sameFoot(doc.querySelector('footer.foot'))).toBe(sameFoot(results.querySelector('footer.foot')));
     // Its own stylesheet takes colors, focus and motion from packets.css: no color of its own but white behind a picture.
     const styles = read(STYLES);
     expect([...new Set(styles.match(/#[0-9a-f]{3,8}\b/gi))]).toEqual(['#ffffff']);

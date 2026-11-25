@@ -230,8 +230,8 @@ describe('live collaboration (phases 2-4): section buttons, review queue, watch-
   });
 
   it('the Preview & Edit modal stays gated during runs - its full-document sync would revert rounds', () => {
-    expect(view).toContain('<button onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}');
-    const at = view.indexOf('<button onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}');
+    expect(view).toContain('<button type="button" onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}');
+    const at = view.indexOf('<button type="button" onClick={() => { setPdfPreviewOpen(true); setTimeout(updatePdfPreview, 200); }}');
     expect(view.slice(at, at + 300)).toContain('disabled={_oneClickOperationBusy}');
   });
 });
@@ -277,9 +277,13 @@ describe('reviewed-findings attestation (2026-08-23, #2)', () => {
       expect(src, name + ' cache restore').toContain("rehydrateVerificationHtmlBinding(parsed.pdfFixResult)");
       expect(src, name + ' complete metadata copy').toContain("const restored = Object.assign({}, saved);");
     }
-    // Both view restore sites (drag-drop loader + continue-previous-session).
-    const viewRestores = view.split("reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,").length - 1;
-    expect(viewRestores, 'both view restore sites carry the field').toBe(2);
+    // Both view entry points (start screen + sidebar Load Project) now share ONE loader (2026-11-21,
+    // _loadProjectFromFileInput); the sidebar source panel's own project import is the other restore site.
+    const restoreLine = "reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,";
+    expect(view.split(restoreLine).length - 1, 'the shared view loader carries the field').toBe(1);
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })}');
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
+    expect(fs.readFileSync(path.join(ROOT, 'view_sidebar_panels_source.jsx'), 'utf8').includes(restoreLine), 'the sidebar import carries the field').toBe(true);
   });
 
   it('the report renders the attestation as human attestation, never automated verification', () => {

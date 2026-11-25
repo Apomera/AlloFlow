@@ -982,7 +982,11 @@
     "sectionRetrievalChecks": 15,
     "glossaryTerms": 25,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 7,
+    "unitReviewRoutes": 5,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -1069,7 +1073,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -1082,7 +1086,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -1112,7 +1116,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -1125,7 +1129,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -1174,7 +1178,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -1187,7 +1191,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -1309,7 +1313,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -1322,7 +1326,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -1361,7 +1365,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.When a question gives a family, twin, or adoption pattern, identify the comparison, the measured outcome, and the alternative environmental explanation before selecting a conclusion.",
+              "text": "Transfer move. When a question gives a family, twin, or adoption pattern, identify the comparison, the measured outcome, and the alternative environmental explanation before selecting a conclusion.",
               "runs": [
                 {
                   "type": "strong",
@@ -1374,7 +1378,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a question gives a family, twin, or adoption pattern, identify the comparison, the measured outcome, and the alternative environmental explanation before selecting a conclusion."
+                  "text": " When a question gives a family, twin, or adoption pattern, identify the comparison, the measured outcome, and the alternative environmental explanation before selecting a conclusion."
                 }
               ]
             }
@@ -1442,7 +1446,7 @@
         {
           "id": "ap-psych-ch-01-section-02",
           "heading": "Neural communication, nervous systems, and the brain",
-          "content": "Neurons receive, integrate, and transmit information through connected systems. The central nervous system includes the brain and spinal cord; the peripheral nervous system carries information between the central system and the body. Somatic pathways support voluntary skeletal-muscle movement, while autonomic pathways regulate internal organs through sympathetic and parasympathetic activity. An action potential is an all-or-none event once threshold is reached, but stimulus intensity can be represented by firing frequency. At synapses, neurotransmitter effects depend on receptors, reuptake, and the balance of excitatory and inhibitory signals. Plasticity means that connections and functional patterns can change with development, learning, injury, and experience. Avoid reducing a complex behavior to one structure: brain systems work in networks and context. Examples: After a near collision, sympathetic activity can raise heart rate while temporarily reducing digestive activity; parasympathetic activity helps restore baseline afterward. A stronger stimulus can produce more action potentials per second without making each individual action potential larger. Nonexamples and boundaries: The peripheral nervous system is not a second brain; it connects the central system with receptors, muscles, and organs. An inhibitory postsynaptic potential does not automatically stop all behavior; its effect depends on the combined input reaching the neuron. Common misconception: “All-or-none” applies to the individual action potential, not to the idea that all stimuli produce the same number of spikes or the same behavioral response. Worked data moment: Spike amplitude remains near 2 mV while firing rate rises from 10 to 30 spikes/second. The all-or-none principle is paired with frequency coding. Amplitude alone is not a measure of stimulus intensity. A drug blocks receptor binding at a synapse. The drug may act as an antagonist at that receptor. The label does not by itself identify the full behavioral effect. Retrieval practice: Trace a touch signal from receptor to a coordinated response using central and peripheral terms. Distinguish a neurotransmitter, a receptor, an agonist, and an antagonist. Explain why plasticity makes a strict one-structure explanation incomplete. Transfer move: For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim.",
+          "content": "Neurons receive, integrate, and transmit information through connected systems. The central nervous system includes the brain and spinal cord; the peripheral nervous system carries information between the central system and the body. Somatic pathways support voluntary skeletal-muscle movement, while autonomic pathways regulate internal organs through sympathetic and parasympathetic activity. An action potential is an all-or-none event once threshold is reached, but stimulus intensity can be represented by firing frequency. At synapses, neurotransmitter effects depend on receptors, reuptake, and the balance of excitatory and inhibitory signals. Plasticity means that connections and functional patterns can change with development, learning, injury, and experience. Avoid reducing a complex behavior to one structure: brain systems work in networks and context. Examples: After a near collision, sympathetic activity can raise heart rate while temporarily reducing digestive activity; parasympathetic activity helps restore baseline afterward. A stronger stimulus can produce more action potentials per second without making each individual action potential larger. Nonexamples and boundaries: The peripheral nervous system is not a second brain; it connects the central system with receptors, muscles, and organs. An inhibitory postsynaptic potential does not automatically stop all behavior; its effect depends on the combined input reaching the neuron. Common misconception: “All-or-none” applies to the individual action potential, not to the idea that all stimuli produce the same number of spikes or the same behavioral response. Worked data moment: Spike amplitude remains near 100 mV while firing rate rises from 10 to 30 spikes/second. The all-or-none principle is paired with frequency coding. Amplitude alone is not a measure of stimulus intensity. A drug blocks receptor binding at a synapse. The drug may act as an antagonist at that receptor. The label does not by itself identify the full behavioral effect. Retrieval practice: Trace a touch signal from receptor to a coordinated response using central and peripheral terms. Distinguish a neurotransmitter, a receptor, an agonist, and an antagonist. Explain why plasticity makes a strict one-structure explanation incomplete. Transfer move: For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim.",
           "keyTerms": [
             "action potential",
             "neurotransmitter",
@@ -1469,7 +1473,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -1482,7 +1486,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -1512,7 +1516,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -1525,7 +1529,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -1574,7 +1578,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -1587,7 +1591,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -1635,12 +1639,12 @@
                   "cells": [
                     {
                       "kind": "cell",
-                      "text": "Spike amplitude remains near 2 mV while firing rate rises from 10 to 30 spikes/second.",
+                      "text": "Spike amplitude remains near 100 mV while firing rate rises from 10 to 30 spikes/second.",
                       "columnSpan": 1,
                       "runs": [
                         {
                           "type": "text",
-                          "text": "Spike amplitude remains near 2 mV while firing rate rises from 10 to 30 spikes/second."
+                          "text": "Spike amplitude remains near 100 mV while firing rate rises from 10 to 30 spikes/second."
                         }
                       ]
                     },
@@ -1709,7 +1713,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -1722,7 +1726,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -1761,7 +1765,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim.",
+              "text": "Transfer move. For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim.",
               "runs": [
                 {
                   "type": "strong",
@@ -1774,7 +1778,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim."
+                  "text": " For a nervous-system item, classify the pathway, identify the signal or division involved, and then check whether the wording supports a network-level or a single-structure claim."
                 }
               ]
             }
@@ -1798,7 +1802,7 @@
             ],
             "rows": [
               [
-                "Spike amplitude remains near 2 mV while firing rate rises from 10 to 30 spikes/second.",
+                "Spike amplitude remains near 100 mV while firing rate rises from 10 to 30 spikes/second.",
                 "The all-or-none principle is paired with frequency coding.",
                 "Amplitude alone is not a measure of stimulus intensity."
               ],
@@ -1823,7 +1827,7 @@
             "prompt": "After taking a beta-blocker that binds to adrenergic receptors without activating them, a violinist feels calmer before an audition. Explain the synaptic and autonomic mechanisms involved.",
             "steps": [
               "Step 1: Classify the beta-blocker as a competitive antagonist at postsynaptic receptors normally activated by norepinephrine and epinephrine during sympathetic nervous system arousal.",
-              "Step 2: Trace the neural pathway: blocking receptor binding prevents ligand-gated ion channels from depolarizing target cells to threshold, dampening downstream sympathetic fight-or-flight responses such as elevated heart rate.",
+              "Step 2: Trace the neural pathway: blocking adrenergic receptor binding prevents norepinephrine and epinephrine from activating intracellular signaling in target organs, dampening downstream sympathetic fight-or-flight responses such as elevated heart rate.",
               "Step 3: Conclude that the drug reduces physiological stage fright by inhibiting postsynaptic receptor activation rather than halting presynaptic action potentials altogether."
             ],
             "original": true
@@ -1869,7 +1873,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -1882,7 +1886,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -1912,7 +1916,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -1925,7 +1929,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -1955,7 +1959,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Sensation is not the same as perception. Sensation concerns detection and transduction; perception is the organized interpretation of sensory information.",
+              "text": "Common misconception. Sensation is not the same as perception. Sensation concerns detection and transduction; perception is the organized interpretation of sensory information.",
               "runs": [
                 {
                   "type": "strong",
@@ -1968,13 +1972,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Sensation is not the same as perception. Sensation concerns detection and transduction; perception is the organized interpretation of sensory information."
+                  "text": " Sensation is not the same as perception. Sensation concerns detection and transduction; perception is the organized interpretation of sensory information."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -1987,7 +1991,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -2109,7 +2113,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -2122,7 +2126,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -2161,7 +2165,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.When a prompt gives a detection rate or sensory comparison, state exactly what was measured, under what conditions, and whether the result concerns sensation or interpretation.",
+              "text": "Transfer move. When a prompt gives a detection rate or sensory comparison, state exactly what was measured, under what conditions, and whether the result concerns sensation or interpretation.",
               "runs": [
                 {
                   "type": "strong",
@@ -2174,7 +2178,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a prompt gives a detection rate or sensory comparison, state exactly what was measured, under what conditions, and whether the result concerns sensation or interpretation."
+                  "text": " When a prompt gives a detection rate or sensory comparison, state exactly what was measured, under what conditions, and whether the result concerns sensation or interpretation."
                 }
               ]
             }
@@ -2426,7 +2430,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -2439,7 +2443,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -2469,7 +2473,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -2482,7 +2486,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -2512,7 +2516,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Top-down processing does not mean ignoring sensory evidence. It means using expectations and context to interpret incoming evidence.",
+              "text": "Common misconception. Top-down processing does not mean ignoring sensory evidence. It means using expectations and context to interpret incoming evidence.",
               "runs": [
                 {
                   "type": "strong",
@@ -2525,13 +2529,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Top-down processing does not mean ignoring sensory evidence. It means using expectations and context to interpret incoming evidence."
+                  "text": " Top-down processing does not mean ignoring sensory evidence. It means using expectations and context to interpret incoming evidence."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -2544,7 +2548,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -2666,7 +2670,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -2679,7 +2683,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -2718,7 +2722,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a perception or judgment item, locate the information source: physical features, prior knowledge, attentional selection, or a decision shortcut.",
+              "text": "Transfer move. For a perception or judgment item, locate the information source: physical features, prior knowledge, attentional selection, or a decision shortcut.",
               "runs": [
                 {
                   "type": "strong",
@@ -2731,7 +2735,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a perception or judgment item, locate the information source: physical features, prior knowledge, attentional selection, or a decision shortcut."
+                  "text": " For a perception or judgment item, locate the information source: physical features, prior knowledge, attentional selection, or a decision shortcut."
                 }
               ]
             }
@@ -2827,7 +2831,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -2840,7 +2844,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -2870,7 +2874,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -2883,7 +2887,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -2913,7 +2917,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Memory is not a literal recording. Retrieval can reconstruct an event using stored information, context, expectations, and later suggestions.",
+              "text": "Common misconception. Memory is not a literal recording. Retrieval can reconstruct an event using stored information, context, expectations, and later suggestions.",
               "runs": [
                 {
                   "type": "strong",
@@ -2926,13 +2930,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Memory is not a literal recording. Retrieval can reconstruct an event using stored information, context, expectations, and later suggestions."
+                  "text": " Memory is not a literal recording. Retrieval can reconstruct an event using stored information, context, expectations, and later suggestions."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -2945,7 +2949,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -3067,7 +3071,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -3080,7 +3084,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -3119,7 +3123,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.When a memory scenario includes timing, ask whether the problem occurred before learning, during maintenance, during retrieval, or after misleading information.",
+              "text": "Transfer move. When a memory scenario includes timing, ask whether the problem occurred before learning, during maintenance, during retrieval, or after misleading information.",
               "runs": [
                 {
                   "type": "strong",
@@ -3132,7 +3136,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a memory scenario includes timing, ask whether the problem occurred before learning, during maintenance, during retrieval, or after misleading information."
+                  "text": " When a memory scenario includes timing, ask whether the problem occurred before learning, during maintenance, during retrieval, or after misleading information."
                 }
               ]
             }
@@ -3228,7 +3232,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -3241,7 +3245,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -3271,7 +3275,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -3284,7 +3288,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -3314,7 +3318,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Reliability is necessary for strong measurement but is not sufficient for validity. Consistency cannot guarantee that the intended construct is being measured.",
+              "text": "Common misconception. Reliability is necessary for strong measurement but is not sufficient for validity. Consistency cannot guarantee that the intended construct is being measured.",
               "runs": [
                 {
                   "type": "strong",
@@ -3327,13 +3331,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Reliability is necessary for strong measurement but is not sufficient for validity. Consistency cannot guarantee that the intended construct is being measured."
+                  "text": " Reliability is necessary for strong measurement but is not sufficient for validity. Consistency cannot guarantee that the intended construct is being measured."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -3346,7 +3350,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -3468,7 +3472,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -3481,7 +3485,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -3520,7 +3524,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a measurement question, identify the evidence type first: consistency, construct fit, prediction, comparison with norms, or fairness/context.",
+              "text": "Transfer move. For a measurement question, identify the evidence type first: consistency, construct fit, prediction, comparison with norms, or fairness/context.",
               "runs": [
                 {
                   "type": "strong",
@@ -3533,7 +3537,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a measurement question, identify the evidence type first: consistency, construct fit, prediction, comparison with norms, or fairness/context."
+                  "text": " For a measurement question, identify the evidence type first: consistency, construct fit, prediction, comparison with norms, or fairness/context."
                 }
               ]
             }
@@ -3786,7 +3790,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -3799,7 +3803,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -3829,7 +3833,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -3842,7 +3846,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -3872,7 +3876,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Age-group differences are not automatically developmental change. The design must separate age from cohort and historical experience.",
+              "text": "Common misconception. Age-group differences are not automatically developmental change. The design must separate age from cohort and historical experience.",
               "runs": [
                 {
                   "type": "strong",
@@ -3885,13 +3889,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Age-group differences are not automatically developmental change. The design must separate age from cohort and historical experience."
+                  "text": " Age-group differences are not automatically developmental change. The design must separate age from cohort and historical experience."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -3904,7 +3908,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -4026,7 +4030,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -4039,7 +4043,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -4078,7 +4082,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a development study, identify who is measured, how often they are measured, and whether the design can separate age, cohort, practice, and historical effects.",
+              "text": "Transfer move. For a development study, identify who is measured, how often they are measured, and whether the design can separate age, cohort, practice, and historical effects.",
               "runs": [
                 {
                   "type": "strong",
@@ -4091,7 +4095,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a development study, identify who is measured, how often they are measured, and whether the design can separate age, cohort, practice, and historical effects."
+                  "text": " For a development study, identify who is measured, how often they are measured, and whether the design can separate age, cohort, practice, and historical effects."
                 }
               ]
             }
@@ -4187,7 +4191,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -4200,7 +4204,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -4230,7 +4234,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -4243,7 +4247,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -4273,7 +4277,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.The words positive and negative describe addition and removal, not good and bad. The behavioral effect determines reinforcement versus punishment.",
+              "text": "Common misconception. The words positive and negative describe addition and removal, not good and bad. The behavioral effect determines reinforcement versus punishment.",
               "runs": [
                 {
                   "type": "strong",
@@ -4286,13 +4290,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "The words positive and negative describe addition and removal, not good and bad. The behavioral effect determines reinforcement versus punishment."
+                  "text": " The words positive and negative describe addition and removal, not good and bad. The behavioral effect determines reinforcement versus punishment."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -4305,7 +4309,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -4427,7 +4431,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -4440,7 +4444,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -4479,7 +4483,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For every consequence question, write “behavior went up/down” and “something was added/removed” before naming the schedule or consequence.",
+              "text": "Transfer move. For every consequence question, write “behavior went up/down” and “something was added/removed” before naming the schedule or consequence.",
               "runs": [
                 {
                   "type": "strong",
@@ -4492,7 +4496,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For every consequence question, write “behavior went up/down” and “something was added/removed” before naming the schedule or consequence."
+                  "text": " For every consequence question, write “behavior went up/down” and “something was added/removed” before naming the schedule or consequence."
                 }
               ]
             }
@@ -4588,7 +4592,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -4601,7 +4605,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -4631,7 +4635,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -4644,7 +4648,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -4674,7 +4678,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Observational learning is not passive copying. Attention, memory, capability, motivation, and the consequences observed all influence performance.",
+              "text": "Common misconception. Observational learning is not passive copying. Attention, memory, capability, motivation, and the consequences observed all influence performance.",
               "runs": [
                 {
                   "type": "strong",
@@ -4687,13 +4691,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Observational learning is not passive copying. Attention, memory, capability, motivation, and the consequences observed all influence performance."
+                  "text": " Observational learning is not passive copying. Attention, memory, capability, motivation, and the consequences observed all influence performance."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -4706,7 +4710,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -4828,7 +4832,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -4841,7 +4845,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -4880,7 +4884,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.When a prompt describes a model, identify what the learner attended to, retained, could reproduce, and wanted to do before selecting the explanation.",
+              "text": "Transfer move. When a prompt describes a model, identify what the learner attended to, retained, could reproduce, and wanted to do before selecting the explanation.",
               "runs": [
                 {
                   "type": "strong",
@@ -4893,7 +4897,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When a prompt describes a model, identify what the learner attended to, retained, could reproduce, and wanted to do before selecting the explanation."
+                  "text": " When a prompt describes a model, identify what the learner attended to, retained, could reproduce, and wanted to do before selecting the explanation."
                 }
               ]
             }
@@ -5145,7 +5149,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -5158,7 +5162,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -5188,7 +5192,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -5201,7 +5205,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -5231,7 +5235,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.A behavior can have both dispositional and situational contributors. Naming one possible cause does not prove that other causes are absent.",
+              "text": "Common misconception. A behavior can have both dispositional and situational contributors. Naming one possible cause does not prove that other causes are absent.",
               "runs": [
                 {
                   "type": "strong",
@@ -5244,13 +5248,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "A behavior can have both dispositional and situational contributors. Naming one possible cause does not prove that other causes are absent."
+                  "text": " A behavior can have both dispositional and situational contributors. Naming one possible cause does not prove that other causes are absent."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -5263,7 +5267,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -5385,7 +5389,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -5398,7 +5402,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -5437,7 +5441,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a social-psychology vignette, name the social pressure or information gap before inferring a stable personality characteristic.",
+              "text": "Transfer move. For a social-psychology vignette, name the social pressure or information gap before inferring a stable personality characteristic.",
               "runs": [
                 {
                   "type": "strong",
@@ -5450,7 +5454,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a social-psychology vignette, name the social pressure or information gap before inferring a stable personality characteristic."
+                  "text": " For a social-psychology vignette, name the social pressure or information gap before inferring a stable personality characteristic."
                 }
               ]
             }
@@ -5546,7 +5550,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -5559,7 +5563,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -5589,7 +5593,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -5602,7 +5606,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -5632,7 +5636,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Personality perspectives are not interchangeable labels. They differ in assumptions about unconscious conflict, growth, traits, learning, cognition, and context.",
+              "text": "Common misconception. Personality perspectives are not interchangeable labels. They differ in assumptions about unconscious conflict, growth, traits, learning, cognition, and context.",
               "runs": [
                 {
                   "type": "strong",
@@ -5645,13 +5649,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Personality perspectives are not interchangeable labels. They differ in assumptions about unconscious conflict, growth, traits, learning, cognition, and context."
+                  "text": " Personality perspectives are not interchangeable labels. They differ in assumptions about unconscious conflict, growth, traits, learning, cognition, and context."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -5664,7 +5668,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -5786,7 +5790,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -5799,7 +5803,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -5838,7 +5842,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.When options name personality perspectives, match the proposed mechanism—unconscious conflict, growth, trait dimensions, or person–environment interaction—to the evidence in the vignette.",
+              "text": "Transfer move. When options name personality perspectives, match the proposed mechanism—unconscious conflict, growth, trait dimensions, or person–environment interaction—to the evidence in the vignette.",
               "runs": [
                 {
                   "type": "strong",
@@ -5851,7 +5855,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "When options name personality perspectives, match the proposed mechanism—unconscious conflict, growth, trait dimensions, or person–environment interaction—to the evidence in the vignette."
+                  "text": " When options name personality perspectives, match the proposed mechanism—unconscious conflict, growth, trait dimensions, or person–environment interaction—to the evidence in the vignette."
                 }
               ]
             }
@@ -5946,7 +5950,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -5959,7 +5963,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -5989,7 +5993,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -6002,7 +6006,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -6032,7 +6036,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Theories of emotion are competing models of sequence and mechanism, not interchangeable descriptions of “feeling emotional.”",
+              "text": "Common misconception. Theories of emotion are competing models of sequence and mechanism, not interchangeable descriptions of “feeling emotional.”",
               "runs": [
                 {
                   "type": "strong",
@@ -6045,13 +6049,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Theories of emotion are competing models of sequence and mechanism, not interchangeable descriptions of “feeling emotional.”"
+                  "text": " Theories of emotion are competing models of sequence and mechanism, not interchangeable descriptions of “feeling emotional.”"
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -6064,7 +6068,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -6186,7 +6190,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -6199,7 +6203,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -6238,7 +6242,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For motivation and emotion items, identify the internal state or external goal, then ask whether arousal is being interpreted through the surrounding context.",
+              "text": "Transfer move. For motivation and emotion items, identify the internal state or external goal, then ask whether arousal is being interpreted through the surrounding context.",
               "runs": [
                 {
                   "type": "strong",
@@ -6251,7 +6255,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For motivation and emotion items, identify the internal state or external goal, then ask whether arousal is being interpreted through the surrounding context."
+                  "text": " For motivation and emotion items, identify the internal state or external goal, then ask whether arousal is being interpreted through the surrounding context."
                 }
               ]
             }
@@ -6501,7 +6505,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -6514,7 +6518,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -6544,7 +6548,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -6557,7 +6561,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -6587,7 +6591,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Common misconception.Stress appraisal is not “all in someone’s head.” Appraisal interacts with real demands, resources, biology, relationships, and material conditions.",
+              "text": "Common misconception. Stress appraisal is not “all in someone’s head.” Appraisal interacts with real demands, resources, biology, relationships, and material conditions.",
               "runs": [
                 {
                   "type": "strong",
@@ -6600,13 +6604,13 @@
                 },
                 {
                   "type": "text",
-                  "text": "Stress appraisal is not “all in someone’s head.” Appraisal interacts with real demands, resources, biology, relationships, and material conditions."
+                  "text": " Stress appraisal is not “all in someone’s head.” Appraisal interacts with real demands, resources, biology, relationships, and material conditions."
                 }
               ]
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -6619,7 +6623,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -6741,7 +6745,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -6754,7 +6758,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -6793,7 +6797,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a health vignette, identify demand, appraisal, resources, coping, duration, and measured outcome before judging whether the evidence supports a claim.",
+              "text": "Transfer move. For a health vignette, identify demand, appraisal, resources, coping, duration, and measured outcome before judging whether the evidence supports a claim.",
               "runs": [
                 {
                   "type": "strong",
@@ -6806,7 +6810,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a health vignette, identify demand, appraisal, resources, coping, duration, and measured outcome before judging whether the evidence supports a claim."
+                  "text": " For a health vignette, identify demand, appraisal, resources, coping, duration, and measured outcome before judging whether the evidence supports a claim."
                 }
               ]
             }
@@ -6902,7 +6906,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -6915,7 +6919,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -6945,7 +6949,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -6958,7 +6962,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -7007,7 +7011,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -7020,7 +7024,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -7142,7 +7146,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -7155,7 +7159,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -7194,7 +7198,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a disorder-category question, first list the evidence, duration, impairment, context, and alternatives; only then evaluate whether the answer choice overclaims.",
+              "text": "Transfer move. For a disorder-category question, first list the evidence, duration, impairment, context, and alternatives; only then evaluate whether the answer choice overclaims.",
               "runs": [
                 {
                   "type": "strong",
@@ -7207,7 +7211,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a disorder-category question, first list the evidence, duration, impairment, context, and alternatives; only then evaluate whether the answer choice overclaims."
+                  "text": " For a disorder-category question, first list the evidence, duration, impairment, context, and alternatives; only then evaluate whether the answer choice overclaims."
                 }
               ]
             }
@@ -7304,7 +7308,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Examples.Use these to identify the mechanism rather than matching a surface word.",
+              "text": "Examples. Use these to identify the mechanism rather than matching a surface word.",
               "runs": [
                 {
                   "type": "strong",
@@ -7317,7 +7321,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Use these to identify the mechanism rather than matching a surface word."
+                  "text": " Use these to identify the mechanism rather than matching a surface word."
                 }
               ]
             },
@@ -7347,7 +7351,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Nonexamples and boundaries.These statements sound plausible but overclaim or confuse neighboring concepts.",
+              "text": "Nonexamples and boundaries. These statements sound plausible but overclaim or confuse neighboring concepts.",
               "runs": [
                 {
                   "type": "strong",
@@ -7360,7 +7364,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "These statements sound plausible but overclaim or confuse neighboring concepts."
+                  "text": " These statements sound plausible but overclaim or confuse neighboring concepts."
                 }
               ]
             },
@@ -7409,7 +7413,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Worked data moment.Read the observed pattern, state what it supports, then state the limit.",
+              "text": "Worked data moment. Read the observed pattern, state what it supports, then state the limit.",
               "runs": [
                 {
                   "type": "strong",
@@ -7422,7 +7426,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Read the observed pattern, state what it supports, then state the limit."
+                  "text": " Read the observed pattern, state what it supports, then state the limit."
                 }
               ]
             },
@@ -7544,7 +7548,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Retrieval practice.Answer aloud or in writing before checking the 500-item bank.",
+              "text": "Retrieval practice. Answer aloud or in writing before checking the 500-item bank.",
               "runs": [
                 {
                   "type": "strong",
@@ -7557,7 +7561,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "Answer aloud or in writing before checking the 500-item bank."
+                  "text": " Answer aloud or in writing before checking the 500-item bank."
                 }
               ]
             },
@@ -7596,7 +7600,7 @@
             },
             {
               "type": "paragraph",
-              "text": "Transfer move.For a treatment question, separate the causal design, measured outcome, practical fit, ethical protections, and population limits before accepting a broad conclusion.",
+              "text": "Transfer move. For a treatment question, separate the causal design, measured outcome, practical fit, ethical protections, and population limits before accepting a broad conclusion.",
               "runs": [
                 {
                   "type": "strong",
@@ -7609,7 +7613,7 @@
                 },
                 {
                   "type": "text",
-                  "text": "For a treatment question, separate the causal design, measured outcome, practical fit, ethical protections, and population limits before accepting a broad conclusion."
+                  "text": " For a treatment question, separate the causal design, measured outcome, practical fit, ethical protections, and population limits before accepting a broad conclusion."
                 }
               ]
             }
@@ -10190,7 +10194,7 @@
         "Developmental designs & frameworks: longitudinal (tracks same cohort over time, costly/attrition) vs. cross-sectional (compares ages at once, cohort-effect risk); Bronfenbrenner's ecological systems.",
         "Cognitive & social development: Piaget (sensorimotor/object permanence → preoperational/egocentrism → concrete operational/conservation → formal operational/abstract); Vygotsky ZPD & scaffolding; Ainsworth attachment & Baumrind authoritative vs. authoritarian/permissive parenting.",
         "Classical conditioning: UCS → UCR; pairing NS + UCS yields CS → CR; key phenomena include acquisition, extinction, spontaneous recovery, stimulus generalization/discrimination, and Garcia biological taste aversion.",
-        "Operant schedules: fixed-ratio (scallop pause-run), variable-ratio (highest steady rate, most resistant to extinction), fixed-interval (scalloped ramp near deadline), variable-interval (slow steady rate)."
+        "Operant schedules: fixed-ratio (high rate with post-reinforcement pause), variable-ratio (highest steady rate, most resistant to extinction), fixed-interval (scalloped ramp near deadline), variable-interval (slow steady rate)."
       ],
       "decisionRules": [
         "When you see a driver buckling a seatbelt to stop an annoying dashboard chime → classify as negative reinforcement (removing an aversive stimulus increases buckling).",
@@ -10648,6 +10652,1452 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "ap-psychology-pilot-session-ch-01",
+      "title": "Biological Bases of Behavior guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Biological Bases of Behavior\" (Unit 1: Biological Bases of Behavior) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-psych-ch-01",
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u1-002",
+        "ap-psych-u1-001",
+        "ap-psych-u1-004",
+        "ap-psych-u1-005",
+        "ap-psych-u1-006",
+        "ap-psych-u1-007",
+        "ap-psych-u1-008",
+        "ap-psych-u1-009",
+        "ap-psych-u1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Biological Bases of Behavior\" and the \"Neurobiology, Brain Systems, Sleep & Sensation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"From stimulation to neural interpretation\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Heredity, environment, and research claims\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Biological Bases of Behavior\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Reading Correlation Strength, Direction, and Third-Variable Limits\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-ch-02",
+      "title": "Cognition guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Cognition\" (Unit 2: Cognition) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-psych-ch-02",
+      "itemIds": [
+        "ap-psych-u2-008",
+        "ap-psych-u2-009",
+        "ap-psych-u2-010",
+        "ap-psych-u2-011",
+        "ap-psych-u2-012",
+        "ap-psych-u2-013",
+        "ap-psych-u2-014",
+        "ap-psych-u2-015",
+        "ap-psych-u2-016",
+        "ap-psych-u2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Cognition\" and the \"Perception, Memory Systems, Heuristics & Psychometrics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Memory retrieval and reconstruction cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Perception, attention, and judgment\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Cognition\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Operational Definitions, Random Assignment, and Sampling\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-ch-03",
+      "title": "Development and Learning guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Development and Learning\" (Unit 3: Development and Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-psych-ch-03",
+      "itemIds": [
+        "ap-psych-u3-015",
+        "ap-psych-u3-016",
+        "ap-psych-u3-017",
+        "ap-psych-u3-018",
+        "ap-psych-u3-019",
+        "ap-psych-u3-020",
+        "ap-psych-u3-021",
+        "ap-psych-u3-022",
+        "ap-psych-u3-023",
+        "ap-psych-u3-024"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Development and Learning\" and the \"Lifespan Development, Conditioning & Social Learning\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Operant consequence decision map\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Lifespan development and its evidence\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Development and Learning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Mastering the 2×2 Operant Conditioning Decision Matrix\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-ch-04",
+      "title": "Social Psychology and Personality guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Social Psychology and Personality\" (Unit 4: Social Psychology and Personality) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-psych-ch-04",
+      "itemIds": [
+        "ap-psych-u4-022",
+        "ap-psych-u4-023",
+        "ap-psych-u4-024",
+        "ap-psych-u4-025",
+        "ap-psych-u4-026",
+        "ap-psych-u4-027",
+        "ap-psych-u4-028",
+        "ap-psych-u4-029",
+        "ap-psych-u4-030",
+        "ap-psych-u4-031"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Social Psychology and Personality\" and the \"Social Influence, Attributions, Personality & Motivation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Balanced attribution evidence map\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Attribution, attitudes, and social situations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Social Psychology and Personality\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Sensory Transduction from Schema-Driven Perception\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-ch-05",
+      "title": "Mental and Physical Health guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Mental and Physical Health\" (Unit 5: Mental and Physical Health) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-psych-ch-05",
+      "itemIds": [
+        "ap-psych-u5-029",
+        "ap-psych-u5-030",
+        "ap-psych-u5-031",
+        "ap-psych-u5-032",
+        "ap-psych-u5-033",
+        "ap-psych-u5-034",
+        "ap-psych-u5-035",
+        "ap-psych-u5-036",
+        "ap-psych-u5-037",
+        "ap-psych-u5-038"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Mental and Physical Health\" and the \"Stress, Positive Psych, Disorders & Evidence-Based Care\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Responsible assessment reasoning pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Stress, coping, and well-being\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Mental and Physical Health\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Pinpointing Synaptic Drug Action and Paired Brain-Structure Deficits\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-trap-repair-sprint",
+      "title": "AP Psychology Independent Pilot misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ap-psych-u4-001",
+        "ap-psych-u2-001",
+        "ap-psych-u3-001",
+        "ap-psych-u1-003",
+        "ap-psych-u5-001",
+        "ap-psych-u4-003",
+        "ap-psych-u2-002",
+        "ap-psych-u3-002",
+        "ap-psych-u1-002",
+        "ap-psych-u5-002",
+        "ap-psych-u4-002",
+        "ap-psych-u2-004"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Reading Correlation Strength, Direction, and Third-Variable Limits\", \"Separating Operational Definitions, Random Assignment, and Sampling\", \"Mastering the 2×2 Operant Conditioning Decision Matrix\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-session-mixed-capstone",
+      "title": "AP Psychology Independent Pilot mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ap-psych-u1-004",
+        "ap-psych-u2-003",
+        "ap-psych-u3-004",
+        "ap-psych-u4-004",
+        "ap-psych-u5-004",
+        "ap-psych-u1-015",
+        "ap-psych-u2-015",
+        "ap-psych-u3-015",
+        "ap-psych-u4-015",
+        "ap-psych-u5-015",
+        "ap-psych-u1-026",
+        "ap-psych-u2-026",
+        "ap-psych-u3-026",
+        "ap-psych-u4-026",
+        "ap-psych-u5-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Unscored AAQ-style and EBQ-style planning workshops, outline a response to \"Phone notifications and selective attention\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "ap-psychology-pilot-spaced-ch-01",
+      "topicId": "ap-psych-ch-01",
+      "topicLabel": "1. Biological Bases of Behavior",
+      "unitId": "biological-bases-of-behavior",
+      "chapterId": "ap-psych-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Biological Bases of Behavior\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-spaced-ch-02",
+      "topicId": "ap-psych-ch-02",
+      "topicLabel": "2. Cognition",
+      "unitId": "cognition",
+      "chapterId": "ap-psych-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Cognition\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-spaced-ch-03",
+      "topicId": "ap-psych-ch-03",
+      "topicLabel": "3. Development and Learning",
+      "unitId": "development-and-learning",
+      "chapterId": "ap-psych-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Development and Learning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-spaced-ch-04",
+      "topicId": "ap-psych-ch-04",
+      "topicLabel": "4. Social Psychology and Personality",
+      "unitId": "social-psychology-and-personality",
+      "chapterId": "ap-psych-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Social Psychology and Personality\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-spaced-ch-05",
+      "topicId": "ap-psych-ch-05",
+      "topicLabel": "5. Mental and Physical Health",
+      "unitId": "mental-and-physical-health",
+      "chapterId": "ap-psych-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Mental and Physical Health\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "ap-psychology-pilot-unit-review-01",
+      "unitId": "biological-bases-of-behavior",
+      "unitNumber": 1,
+      "unitLabel": "Unit 1: Biological Bases of Behavior",
+      "chapterId": "ap-psych-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ap-psych-ch-01-section-01",
+        "ap-psych-ch-01-section-02",
+        "ap-psych-ch-01-section-03"
+      ],
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u1-002",
+        "ap-psych-u1-001",
+        "ap-psych-u1-004",
+        "ap-psych-u1-005",
+        "ap-psych-u1-006",
+        "ap-psych-u1-007",
+        "ap-psych-u1-008",
+        "ap-psych-u1-009",
+        "ap-psych-u1-010",
+        "ap-psych-u1-011",
+        "ap-psych-u1-012",
+        "ap-psych-u1-013",
+        "ap-psych-u1-014",
+        "ap-psych-u1-015",
+        "ap-psych-u1-016",
+        "ap-psych-u1-017",
+        "ap-psych-u1-018",
+        "ap-psych-u1-019",
+        "ap-psych-u1-020",
+        "ap-psych-u1-021",
+        "ap-psych-u1-022",
+        "ap-psych-u1-023",
+        "ap-psych-u1-024",
+        "ap-psych-u1-025",
+        "ap-psych-u1-026",
+        "ap-psych-u1-027",
+        "ap-psych-u1-028",
+        "ap-psych-u1-029",
+        "ap-psych-u1-030",
+        "ap-psych-u1-031",
+        "ap-psych-u1-032",
+        "ap-psych-u1-033",
+        "ap-psych-u1-034",
+        "ap-psych-u1-035",
+        "ap-psych-u1-036",
+        "ap-psych-u1-037",
+        "ap-psych-u1-038",
+        "ap-psych-u1-039",
+        "ap-psych-u1-040",
+        "ap-psych-u1-041",
+        "ap-psych-u1-042",
+        "ap-psych-u1-043",
+        "ap-psych-u1-044",
+        "ap-psych-u1-045"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u1-002",
+        "ap-psych-u1-001",
+        "ap-psych-u1-004",
+        "ap-psych-u1-005",
+        "ap-psych-u1-006",
+        "ap-psych-u1-007",
+        "ap-psych-u1-008",
+        "ap-psych-u1-009",
+        "ap-psych-u1-010",
+        "ap-psych-u1-011",
+        "ap-psych-u1-012"
+      ],
+      "purpose": "Consolidate \"Biological Bases of Behavior\" (Unit 1: Biological Bases of Behavior) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-unit-review-02",
+      "unitId": "cognition",
+      "unitNumber": 2,
+      "unitLabel": "Unit 2: Cognition",
+      "chapterId": "ap-psych-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ap-psych-ch-02-section-01",
+        "ap-psych-ch-02-section-02",
+        "ap-psych-ch-02-section-03"
+      ],
+      "itemIds": [
+        "ap-psych-u2-001",
+        "ap-psych-u2-002",
+        "ap-psych-u2-004",
+        "ap-psych-u2-003",
+        "ap-psych-u2-005",
+        "ap-psych-u2-006",
+        "ap-psych-u2-007",
+        "ap-psych-u2-008",
+        "ap-psych-u2-009",
+        "ap-psych-u2-010",
+        "ap-psych-u2-011",
+        "ap-psych-u2-012",
+        "ap-psych-u2-013",
+        "ap-psych-u2-014",
+        "ap-psych-u2-015",
+        "ap-psych-u2-016",
+        "ap-psych-u2-017",
+        "ap-psych-u2-018",
+        "ap-psych-u2-019",
+        "ap-psych-u2-020",
+        "ap-psych-u2-021",
+        "ap-psych-u2-022",
+        "ap-psych-u2-023",
+        "ap-psych-u2-024",
+        "ap-psych-u2-025",
+        "ap-psych-u2-026",
+        "ap-psych-u2-027",
+        "ap-psych-u2-028",
+        "ap-psych-u2-029",
+        "ap-psych-u2-030",
+        "ap-psych-u2-031",
+        "ap-psych-u2-032",
+        "ap-psych-u2-033",
+        "ap-psych-u2-034",
+        "ap-psych-u2-035",
+        "ap-psych-u2-036",
+        "ap-psych-u2-037",
+        "ap-psych-u2-038",
+        "ap-psych-u2-039",
+        "ap-psych-u2-040",
+        "ap-psych-u2-041",
+        "ap-psych-u2-042",
+        "ap-psych-u2-043",
+        "ap-psych-u2-044",
+        "ap-psych-u2-045"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-psych-u2-001",
+        "ap-psych-u2-002",
+        "ap-psych-u2-004",
+        "ap-psych-u2-003",
+        "ap-psych-u2-005",
+        "ap-psych-u2-006",
+        "ap-psych-u2-007",
+        "ap-psych-u2-008",
+        "ap-psych-u2-009",
+        "ap-psych-u2-010",
+        "ap-psych-u2-011",
+        "ap-psych-u2-012"
+      ],
+      "purpose": "Consolidate \"Cognition\" (Unit 2: Cognition) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-unit-review-03",
+      "unitId": "development-and-learning",
+      "unitNumber": 3,
+      "unitLabel": "Unit 3: Development and Learning",
+      "chapterId": "ap-psych-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ap-psych-ch-03-section-01",
+        "ap-psych-ch-03-section-02",
+        "ap-psych-ch-03-section-03"
+      ],
+      "itemIds": [
+        "ap-psych-u3-001",
+        "ap-psych-u3-002",
+        "ap-psych-u3-003",
+        "ap-psych-u3-004",
+        "ap-psych-u3-005",
+        "ap-psych-u3-006",
+        "ap-psych-u3-007",
+        "ap-psych-u3-008",
+        "ap-psych-u3-009",
+        "ap-psych-u3-010",
+        "ap-psych-u3-011",
+        "ap-psych-u3-012",
+        "ap-psych-u3-013",
+        "ap-psych-u3-014",
+        "ap-psych-u3-015",
+        "ap-psych-u3-016",
+        "ap-psych-u3-017",
+        "ap-psych-u3-018",
+        "ap-psych-u3-019",
+        "ap-psych-u3-020",
+        "ap-psych-u3-021",
+        "ap-psych-u3-022",
+        "ap-psych-u3-023",
+        "ap-psych-u3-024",
+        "ap-psych-u3-025",
+        "ap-psych-u3-026",
+        "ap-psych-u3-027",
+        "ap-psych-u3-028",
+        "ap-psych-u3-029",
+        "ap-psych-u3-030",
+        "ap-psych-u3-031",
+        "ap-psych-u3-032",
+        "ap-psych-u3-033",
+        "ap-psych-u3-034",
+        "ap-psych-u3-035",
+        "ap-psych-u3-036",
+        "ap-psych-u3-037",
+        "ap-psych-u3-038",
+        "ap-psych-u3-039",
+        "ap-psych-u3-040",
+        "ap-psych-u3-041",
+        "ap-psych-u3-042",
+        "ap-psych-u3-043",
+        "ap-psych-u3-044",
+        "ap-psych-u3-045"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-psych-u3-001",
+        "ap-psych-u3-002",
+        "ap-psych-u3-003",
+        "ap-psych-u3-004",
+        "ap-psych-u3-005",
+        "ap-psych-u3-006",
+        "ap-psych-u3-007",
+        "ap-psych-u3-008",
+        "ap-psych-u3-009",
+        "ap-psych-u3-010",
+        "ap-psych-u3-011",
+        "ap-psych-u3-012"
+      ],
+      "purpose": "Consolidate \"Development and Learning\" (Unit 3: Development and Learning) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-unit-review-04",
+      "unitId": "social-psychology-and-personality",
+      "unitNumber": 4,
+      "unitLabel": "Unit 4: Social Psychology and Personality",
+      "chapterId": "ap-psych-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ap-psych-ch-04-section-01",
+        "ap-psych-ch-04-section-02",
+        "ap-psych-ch-04-section-03"
+      ],
+      "itemIds": [
+        "ap-psych-u4-001",
+        "ap-psych-u4-003",
+        "ap-psych-u4-002",
+        "ap-psych-u4-004",
+        "ap-psych-u4-005",
+        "ap-psych-u4-006",
+        "ap-psych-u4-007",
+        "ap-psych-u4-008",
+        "ap-psych-u4-009",
+        "ap-psych-u4-010",
+        "ap-psych-u4-011",
+        "ap-psych-u4-012",
+        "ap-psych-u4-013",
+        "ap-psych-u4-014",
+        "ap-psych-u4-015",
+        "ap-psych-u4-016",
+        "ap-psych-u4-017",
+        "ap-psych-u4-018",
+        "ap-psych-u4-019",
+        "ap-psych-u4-020",
+        "ap-psych-u4-021",
+        "ap-psych-u4-022",
+        "ap-psych-u4-023",
+        "ap-psych-u4-024",
+        "ap-psych-u4-025",
+        "ap-psych-u4-026",
+        "ap-psych-u4-027",
+        "ap-psych-u4-028",
+        "ap-psych-u4-029",
+        "ap-psych-u4-030",
+        "ap-psych-u4-031",
+        "ap-psych-u4-032",
+        "ap-psych-u4-033",
+        "ap-psych-u4-034",
+        "ap-psych-u4-035",
+        "ap-psych-u4-036",
+        "ap-psych-u4-037",
+        "ap-psych-u4-038",
+        "ap-psych-u4-039",
+        "ap-psych-u4-040",
+        "ap-psych-u4-041",
+        "ap-psych-u4-042",
+        "ap-psych-u4-043",
+        "ap-psych-u4-044",
+        "ap-psych-u4-045"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-psych-u4-001",
+        "ap-psych-u4-003",
+        "ap-psych-u4-002",
+        "ap-psych-u4-004",
+        "ap-psych-u4-005",
+        "ap-psych-u4-006",
+        "ap-psych-u4-007",
+        "ap-psych-u4-008",
+        "ap-psych-u4-009",
+        "ap-psych-u4-010",
+        "ap-psych-u4-011",
+        "ap-psych-u4-012"
+      ],
+      "purpose": "Consolidate \"Social Psychology and Personality\" (Unit 4: Social Psychology and Personality) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-unit-review-05",
+      "unitId": "mental-and-physical-health",
+      "unitNumber": 5,
+      "unitLabel": "Unit 5: Mental and Physical Health",
+      "chapterId": "ap-psych-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ap-psych-ch-05-section-01",
+        "ap-psych-ch-05-section-02",
+        "ap-psych-ch-05-section-03"
+      ],
+      "itemIds": [
+        "ap-psych-u5-001",
+        "ap-psych-u5-002",
+        "ap-psych-u5-003",
+        "ap-psych-u5-004",
+        "ap-psych-u5-005",
+        "ap-psych-u5-006",
+        "ap-psych-u5-007",
+        "ap-psych-u5-008",
+        "ap-psych-u5-009",
+        "ap-psych-u5-010",
+        "ap-psych-u5-011",
+        "ap-psych-u5-012",
+        "ap-psych-u5-013",
+        "ap-psych-u5-014",
+        "ap-psych-u5-015",
+        "ap-psych-u5-016",
+        "ap-psych-u5-017",
+        "ap-psych-u5-018",
+        "ap-psych-u5-019",
+        "ap-psych-u5-020",
+        "ap-psych-u5-021",
+        "ap-psych-u5-022",
+        "ap-psych-u5-023",
+        "ap-psych-u5-024",
+        "ap-psych-u5-025",
+        "ap-psych-u5-026",
+        "ap-psych-u5-027",
+        "ap-psych-u5-028",
+        "ap-psych-u5-029",
+        "ap-psych-u5-030",
+        "ap-psych-u5-031",
+        "ap-psych-u5-032",
+        "ap-psych-u5-033",
+        "ap-psych-u5-034",
+        "ap-psych-u5-035",
+        "ap-psych-u5-036",
+        "ap-psych-u5-037",
+        "ap-psych-u5-038",
+        "ap-psych-u5-039",
+        "ap-psych-u5-040",
+        "ap-psych-u5-041",
+        "ap-psych-u5-042",
+        "ap-psych-u5-043",
+        "ap-psych-u5-044",
+        "ap-psych-u5-045"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-psych-u5-001",
+        "ap-psych-u5-002",
+        "ap-psych-u5-003",
+        "ap-psych-u5-004",
+        "ap-psych-u5-005",
+        "ap-psych-u5-006",
+        "ap-psych-u5-007",
+        "ap-psych-u5-008",
+        "ap-psych-u5-009",
+        "ap-psych-u5-010",
+        "ap-psych-u5-011",
+        "ap-psych-u5-012"
+      ],
+      "purpose": "Consolidate \"Mental and Physical Health\" (Unit 5: Mental and Physical Health) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "ap-psychology-pilot-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all AP Psychology Independent Pilot blueprint domains.",
+      "focus": [
+        "Unit 1: Biological Bases of Behavior",
+        "Unit 2: Cognition",
+        "Unit 3: Development and Learning",
+        "Unit 4: Social Psychology and Personality"
+      ],
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u4-001",
+        "ap-psych-u2-002",
+        "ap-psych-u5-002",
+        "ap-psych-u3-003",
+        "ap-psych-u1-004",
+        "ap-psych-u4-004",
+        "ap-psych-u2-005",
+        "ap-psych-u5-005",
+        "ap-psych-u3-006",
+        "ap-psych-u1-007",
+        "ap-psych-u4-007",
+        "ap-psych-u2-008",
+        "ap-psych-u5-008",
+        "ap-psych-u3-009",
+        "ap-psych-u1-010",
+        "ap-psych-u4-010",
+        "ap-psych-u2-011",
+        "ap-psych-u5-011",
+        "ap-psych-u3-012",
+        "ap-psych-u1-013",
+        "ap-psych-u4-013",
+        "ap-psych-u2-014",
+        "ap-psych-u5-014",
+        "ap-psych-u3-015",
+        "ap-psych-u1-016",
+        "ap-psych-u4-016",
+        "ap-psych-u2-017",
+        "ap-psych-u5-017",
+        "ap-psych-u3-018",
+        "ap-psych-u1-019",
+        "ap-psych-u4-019",
+        "ap-psych-u2-020",
+        "ap-psych-u5-020",
+        "ap-psych-u3-021",
+        "ap-psych-u1-022",
+        "ap-psych-u4-022",
+        "ap-psych-u2-023",
+        "ap-psych-u5-023",
+        "ap-psych-u3-024"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply AP Psychology Independent Pilot frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Unit 3: Development and Learning",
+        "Unit 4: Social Psychology and Personality",
+        "Unit 5: Mental and Physical Health",
+        "Unit 1: Biological Bases of Behavior"
+      ],
+      "itemIds": [
+        "ap-psych-u2-001",
+        "ap-psych-u5-001",
+        "ap-psych-u3-002",
+        "ap-psych-u1-001",
+        "ap-psych-u4-002",
+        "ap-psych-u2-003",
+        "ap-psych-u5-004",
+        "ap-psych-u3-005",
+        "ap-psych-u1-006",
+        "ap-psych-u4-006",
+        "ap-psych-u2-007",
+        "ap-psych-u5-007",
+        "ap-psych-u3-008",
+        "ap-psych-u1-009",
+        "ap-psych-u4-009",
+        "ap-psych-u2-010",
+        "ap-psych-u5-010",
+        "ap-psych-u3-011",
+        "ap-psych-u1-012",
+        "ap-psych-u4-012",
+        "ap-psych-u2-013",
+        "ap-psych-u5-013",
+        "ap-psych-u3-014",
+        "ap-psych-u1-015",
+        "ap-psych-u4-015",
+        "ap-psych-u2-016",
+        "ap-psych-u5-016",
+        "ap-psych-u3-017",
+        "ap-psych-u1-018",
+        "ap-psych-u4-018",
+        "ap-psych-u2-019",
+        "ap-psych-u5-019",
+        "ap-psych-u3-020",
+        "ap-psych-u1-021",
+        "ap-psych-u4-021",
+        "ap-psych-u2-022",
+        "ap-psych-u5-022",
+        "ap-psych-u3-023",
+        "ap-psych-u1-024",
+        "ap-psych-u4-024"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every AP Psychology Independent Pilot domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Correlation vs. Causation and Third-Variable Blindness",
+        "Operational Definition, Random Assignment, and Confounding Confusion",
+        "Negative Reinforcement vs. Positive Punishment Reversal"
+      ],
+      "itemIds": [
+        "ap-psych-u3-001",
+        "ap-psych-u1-002",
+        "ap-psych-u4-003",
+        "ap-psych-u2-004",
+        "ap-psych-u5-003",
+        "ap-psych-u3-004",
+        "ap-psych-u1-005",
+        "ap-psych-u4-005",
+        "ap-psych-u2-006",
+        "ap-psych-u5-006",
+        "ap-psych-u3-007",
+        "ap-psych-u1-008",
+        "ap-psych-u4-008",
+        "ap-psych-u2-009",
+        "ap-psych-u5-009",
+        "ap-psych-u3-010",
+        "ap-psych-u1-011",
+        "ap-psych-u4-011",
+        "ap-psych-u2-012",
+        "ap-psych-u5-012",
+        "ap-psych-u3-013",
+        "ap-psych-u1-014",
+        "ap-psych-u4-014",
+        "ap-psych-u2-015",
+        "ap-psych-u5-015",
+        "ap-psych-u3-016",
+        "ap-psych-u1-017",
+        "ap-psych-u4-017",
+        "ap-psych-u2-018",
+        "ap-psych-u5-018",
+        "ap-psych-u3-019",
+        "ap-psych-u1-020",
+        "ap-psych-u4-020",
+        "ap-psych-u2-021",
+        "ap-psych-u5-021",
+        "ap-psych-u3-022",
+        "ap-psych-u1-023",
+        "ap-psych-u4-023",
+        "ap-psych-u2-024",
+        "ap-psych-u5-024"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "ap-psychology-pilot-form-internal-a",
+      "title": "Internal practice form A (AP Psychology Independent Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-psych-u1-003",
+        "ap-psych-u4-001",
+        "ap-psych-u2-002",
+        "ap-psych-u5-002",
+        "ap-psych-u3-003",
+        "ap-psych-u1-004",
+        "ap-psych-u4-004",
+        "ap-psych-u2-005",
+        "ap-psych-u5-005",
+        "ap-psych-u3-006",
+        "ap-psych-u1-007",
+        "ap-psych-u4-007",
+        "ap-psych-u2-008",
+        "ap-psych-u5-008",
+        "ap-psych-u3-009",
+        "ap-psych-u1-010",
+        "ap-psych-u4-010",
+        "ap-psych-u2-011",
+        "ap-psych-u5-011",
+        "ap-psych-u3-012",
+        "ap-psych-u1-013",
+        "ap-psych-u4-013",
+        "ap-psych-u2-014",
+        "ap-psych-u5-014",
+        "ap-psych-u3-015",
+        "ap-psych-u1-016",
+        "ap-psych-u4-016",
+        "ap-psych-u2-017",
+        "ap-psych-u5-017",
+        "ap-psych-u3-018",
+        "ap-psych-u1-019",
+        "ap-psych-u4-019",
+        "ap-psych-u2-020",
+        "ap-psych-u5-020",
+        "ap-psych-u3-021",
+        "ap-psych-u1-022",
+        "ap-psych-u4-022",
+        "ap-psych-u2-023",
+        "ap-psych-u5-023",
+        "ap-psych-u3-024",
+        "ap-psych-u1-025",
+        "ap-psych-u4-025",
+        "ap-psych-u2-026",
+        "ap-psych-u5-026",
+        "ap-psych-u3-027",
+        "ap-psych-u1-028",
+        "ap-psych-u4-028",
+        "ap-psych-u2-029",
+        "ap-psych-u5-029",
+        "ap-psych-u3-030"
+      ],
+      "topicIds": [
+        "ap-psych-ch-01",
+        "ap-psych-ch-04",
+        "ap-psych-ch-02",
+        "ap-psych-ch-05",
+        "ap-psych-ch-03"
+      ],
+      "unitIds": [
+        "biological-bases-of-behavior",
+        "social-psychology-and-personality",
+        "cognition",
+        "mental-and-physical-health",
+        "development-and-learning"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-form-internal-b",
+      "title": "Internal practice form B (AP Psychology Independent Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-psych-u2-001",
+        "ap-psych-u5-001",
+        "ap-psych-u3-002",
+        "ap-psych-u1-001",
+        "ap-psych-u4-002",
+        "ap-psych-u2-003",
+        "ap-psych-u5-004",
+        "ap-psych-u3-005",
+        "ap-psych-u1-006",
+        "ap-psych-u4-006",
+        "ap-psych-u2-007",
+        "ap-psych-u5-007",
+        "ap-psych-u3-008",
+        "ap-psych-u1-009",
+        "ap-psych-u4-009",
+        "ap-psych-u2-010",
+        "ap-psych-u5-010",
+        "ap-psych-u3-011",
+        "ap-psych-u1-012",
+        "ap-psych-u4-012",
+        "ap-psych-u2-013",
+        "ap-psych-u5-013",
+        "ap-psych-u3-014",
+        "ap-psych-u1-015",
+        "ap-psych-u4-015",
+        "ap-psych-u2-016",
+        "ap-psych-u5-016",
+        "ap-psych-u3-017",
+        "ap-psych-u1-018",
+        "ap-psych-u4-018",
+        "ap-psych-u2-019",
+        "ap-psych-u5-019",
+        "ap-psych-u3-020",
+        "ap-psych-u1-021",
+        "ap-psych-u4-021",
+        "ap-psych-u2-022",
+        "ap-psych-u5-022",
+        "ap-psych-u3-023",
+        "ap-psych-u1-024",
+        "ap-psych-u4-024",
+        "ap-psych-u2-025",
+        "ap-psych-u5-025",
+        "ap-psych-u3-026",
+        "ap-psych-u1-027",
+        "ap-psych-u4-027",
+        "ap-psych-u2-028",
+        "ap-psych-u5-028",
+        "ap-psych-u3-029",
+        "ap-psych-u1-030",
+        "ap-psych-u4-030"
+      ],
+      "topicIds": [
+        "ap-psych-ch-02",
+        "ap-psych-ch-05",
+        "ap-psych-ch-03",
+        "ap-psych-ch-01",
+        "ap-psych-ch-04"
+      ],
+      "unitIds": [
+        "cognition",
+        "mental-and-physical-health",
+        "development-and-learning",
+        "biological-bases-of-behavior",
+        "social-psychology-and-personality"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psychology-pilot-form-internal-c",
+      "title": "Internal practice form C (AP Psychology Independent Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-psych-u3-001",
+        "ap-psych-u1-002",
+        "ap-psych-u4-003",
+        "ap-psych-u2-004",
+        "ap-psych-u5-003",
+        "ap-psych-u3-004",
+        "ap-psych-u1-005",
+        "ap-psych-u4-005",
+        "ap-psych-u2-006",
+        "ap-psych-u5-006",
+        "ap-psych-u3-007",
+        "ap-psych-u1-008",
+        "ap-psych-u4-008",
+        "ap-psych-u2-009",
+        "ap-psych-u5-009",
+        "ap-psych-u3-010",
+        "ap-psych-u1-011",
+        "ap-psych-u4-011",
+        "ap-psych-u2-012",
+        "ap-psych-u5-012",
+        "ap-psych-u3-013",
+        "ap-psych-u1-014",
+        "ap-psych-u4-014",
+        "ap-psych-u2-015",
+        "ap-psych-u5-015",
+        "ap-psych-u3-016",
+        "ap-psych-u1-017",
+        "ap-psych-u4-017",
+        "ap-psych-u2-018",
+        "ap-psych-u5-018",
+        "ap-psych-u3-019",
+        "ap-psych-u1-020",
+        "ap-psych-u4-020",
+        "ap-psych-u2-021",
+        "ap-psych-u5-021",
+        "ap-psych-u3-022",
+        "ap-psych-u1-023",
+        "ap-psych-u4-023",
+        "ap-psych-u2-024",
+        "ap-psych-u5-024",
+        "ap-psych-u3-025",
+        "ap-psych-u1-026",
+        "ap-psych-u4-026",
+        "ap-psych-u2-027",
+        "ap-psych-u5-027",
+        "ap-psych-u3-028",
+        "ap-psych-u1-029",
+        "ap-psych-u4-029",
+        "ap-psych-u2-030",
+        "ap-psych-u5-030"
+      ],
+      "topicIds": [
+        "ap-psych-ch-03",
+        "ap-psych-ch-01",
+        "ap-psych-ch-04",
+        "ap-psych-ch-02",
+        "ap-psych-ch-05"
+      ],
+      "unitIds": [
+        "development-and-learning",
+        "biological-bases-of-behavior",
+        "social-psychology-and-personality",
+        "cognition",
+        "mental-and-physical-health"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

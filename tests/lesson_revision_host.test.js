@@ -276,6 +276,14 @@ describe('native lesson revision host ownership and mutation', () => {
   });
 });
 
+// The JSON after each marker is now fenced as untrusted data (lesson_revision_service.js _lrFenceJson).
+const fencedPayload = (prompt, tag) => {
+  const body = String(prompt).split(tag + ':\n')[1];
+  const open = '<UNTRUSTED_' + tag + '>\n', close = '\n</UNTRUSTED_' + tag + '>';
+  if (!body || !body.startsWith(open) || body.indexOf(close) < 0) throw new Error('payload for ' + tag + ' is not fenced');
+  return JSON.parse(body.slice(open.length, body.indexOf(close)));
+};
+
 describe('native pending-proposal follow-ups and retained Undo', () => {
   const followup = (f, review, mode, instruction = 'Keep those edits, but shorten the directions.', signal) => f.handlers.prepareLessonRevision({ reviewId: review.id, mode, instruction, signal });
   const bodyReply = body => JSON.stringify({ changes: [{ resourceId: 'directions-1', path: '/data/body', after: body }], unfulfilled: [], removeChangeIds: [] });
@@ -314,11 +322,11 @@ describe('native pending-proposal follow-ups and retained Undo', () => {
     expect((await followup(f, first.review, 'question', longQuestion)).ok).toBe(true);
     f.deps.callGemini.mockResolvedValueOnce('Try one step per sentence.');
     expect((await followup(f, first.review, 'question', 'What would you suggest?')).ok).toBe(true);
-    let payload = JSON.parse(f.deps.callGemini.mock.calls.at(-1)[0].split('PROPOSAL_QUESTION_JSON:\n')[1]);
+    let payload = fencedPayload(f.deps.callGemini.mock.calls.at(-1)[0], 'PROPOSAL_QUESTION_JSON');
     expect(payload.priorDiscussion).toHaveLength(1); expect(payload.priorDiscussion[0].question.length).toBe(1000); expect(payload.priorDiscussion[0].answer.length).toBe(2000); expect(payload.priorDiscussion[0].truncated).toBe(true);
     f.deps.callGemini.mockResolvedValueOnce(bodyReply('Read. Discuss. Explain.'));
     const refined = await followup(f, first.review, 'refine', 'Do what you just suggested.'); expect(refined.ok).toBe(true);
-    payload = JSON.parse(f.deps.callGemini.mock.calls.at(-1)[0].split('EDIT_REQUEST_JSON:\n')[1]);
+    payload = fencedPayload(f.deps.callGemini.mock.calls.at(-1)[0], 'EDIT_REQUEST_JSON');
     expect(payload.priorDiscussion).toHaveLength(2); expect(payload.priorDiscussion[1].answer).toBe('Try one step per sentence.');
     expect(f.handlers.applyLessonRevision(refined.review.id).ok).toBe(true);
   });
@@ -328,11 +336,11 @@ describe('native pending-proposal follow-ups and retained Undo', () => {
     f.deps.callGemini.mockResolvedValueOnce('A valid explanation.'); await followup(f, first.review, 'question', 'Why?');
     f.deps.callGemini.mockRejectedValueOnce(Error('Network failure')); expect((await followup(f, first.review, 'question', 'A failed question')).ok).toBe(false);
     f.deps.callGemini.mockResolvedValueOnce('A second valid explanation.'); await followup(f, first.review, 'question', 'Why again?');
-    let payload = JSON.parse(f.deps.callGemini.mock.calls.at(-1)[0].split('PROPOSAL_QUESTION_JSON:\n')[1]);
+    let payload = fencedPayload(f.deps.callGemini.mock.calls.at(-1)[0], 'PROPOSAL_QUESTION_JSON');
     expect(payload.priorDiscussion).toHaveLength(1); expect(payload.priorDiscussion[0].question).toBe('Why?');
     f.deps.callGemini.mockResolvedValueOnce(bodyReply('Independent draft.')); const next = await f.prepare();
     f.deps.callGemini.mockResolvedValueOnce('Fresh context only.'); await followup(f, next.review, 'question', 'What changed?');
-    payload = JSON.parse(f.deps.callGemini.mock.calls.at(-1)[0].split('PROPOSAL_QUESTION_JSON:\n')[1]); expect(payload.priorDiscussion).toEqual([]);
+    payload = fencedPayload(f.deps.callGemini.mock.calls.at(-1)[0], 'PROPOSAL_QUESTION_JSON'); expect(payload.priorDiscussion).toEqual([]);
   });
 
   it('keeps discussion on a failed refinement and never returns it as authorization or public review metadata', async () => {
@@ -340,7 +348,7 @@ describe('native pending-proposal follow-ups and retained Undo', () => {
     f.deps.callGemini.mockResolvedValueOnce('A remembered explanation.'); await followup(f, first.review, 'question', 'Why this?');
     f.deps.callGemini.mockResolvedValueOnce('not JSON'); expect((await followup(f, first.review, 'refine')).ok).toBe(false);
     f.deps.callGemini.mockResolvedValueOnce(bodyReply('A refined draft.')); const next = await followup(f, first.review, 'refine', 'Use that explanation.');
-    const payload = JSON.parse(f.deps.callGemini.mock.calls.at(-1)[0].split('EDIT_REQUEST_JSON:\n')[1]);
+    const payload = fencedPayload(f.deps.callGemini.mock.calls.at(-1)[0], 'EDIT_REQUEST_JSON');
     expect(payload.priorDiscussion[0].answer).toBe('A remembered explanation.'); expect(next.review.discussion).toBeUndefined();
     expect(JSON.stringify(next.review)).not.toContain('A remembered explanation.'); expect(f.owner.current.history[0].data.body).toBe('Read the passage and discuss.');
   });

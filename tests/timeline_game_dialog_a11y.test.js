@@ -35,7 +35,9 @@ describe('Timeline Game WCAG 2.2 accessibility', () => {
   it('provides visible 44 CSS-pixel actions and persistent mobile reorder controls', () => {
     expect(component.split('min-h-11').length - 1).toBeGreaterThanOrEqual(11);
     expect(component).toContain('focus:ring-offset-2');
-    expect(component).toContain('sm:hidden opacity-100');
+    // Since 11-19 the up/down controls are shown at every width (no longer phone-only), never hover-revealed.
+    expect(component).toContain('absolute -right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-100 ');
+    expect(component).not.toMatch(/-translate-y-1\/2 flex flex-col gap-1 [^"]*\bopacity-0\b/);
     expect(component).toContain('data-help-key="timeline_move_up"');
     expect(component).toContain('data-help-key="timeline_move_down"');
     expect(component).toContain('ref={timelineCloseRef}');

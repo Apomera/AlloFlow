@@ -64,7 +64,9 @@ describe('glossary source quote layout in the browser', () => {
           return { center: Math.abs((box.left + box.right) / 2 - (cell.left + cell.right) / 2), fits: el.scrollWidth <= el.clientWidth + 1 && quote.scrollWidth <= quote.clientWidth + 1,
             separated: q.getBoundingClientRect().top >= label.bottom, direction: getComputedStyle(q).direction, lineHeight: parseFloat(getComputedStyle(quote).lineHeight) / parseFloat(getComputedStyle(quote).fontSize) };
         }));
-        for (const value of values) { expect(value.center).toBeLessThan(1); expect(value.fits).toBe(true); expect(value.separated).toBe(true); expect(value.lineHeight).toBeCloseTo(enlarged ? 2 : 1.5); }
+        for (const value of values) { expect(value.center).toBeLessThan(1); expect(value.fits).toBe(true); expect(value.separated).toBe(true); expect(value.lineHeight).toBeCloseTo(enlarged ? 2 : 1.625); }
+        // Default reading settings (1.5 / 0) no longer force line-height over view utilities
+        // (AppStyles, 2026-11-19), so the quote keeps its own leading-relaxed (1.625).
         expect(values[1].direction).toBe('rtl');
         if (width === 320) { await page.locator('[data-glossary-word-list]').scrollIntoViewIfNeeded(); await page.screenshot({ path: `${output}/list-${width}-${enlarged}.png` }); }
         if ((width === 320 || width === 1280) && !enlarged) {

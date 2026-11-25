@@ -3,7 +3,7 @@
   "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 100,
-  "sourceSha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05",
+  "sourceSha256": "a8f5871361c9df48fad1b39f576372d6256a2cfa28fe17fc292c69af5025736b",
   "verdict": "pass — independently authored Audiology 5343 draft; structurally and editorially ready for integrated QA",
   "blockers": [],
   "correctionsMade": [
@@ -280,7 +280,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "2990cadcad83029bdd413e7330f0ecffe90d5410cdfdf48cdb25f1ac39a90e05"
+    "sha256": "a8f5871361c9df48fad1b39f576372d6256a2cfa28fe17fc292c69af5025736b"
   },
   "integration": {
     "packId": "praxis-audiology-5343",

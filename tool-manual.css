@@ -18,6 +18,7 @@
    shared.css does not paint this page's surfaces. */
 
 :root {
+    color-scheme: light;
     --mn-fs: 1;
     --mn-ink: #0f172a;
     --mn-body: #1e293b;
@@ -33,6 +34,7 @@
 }
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
+        color-scheme: dark;
         --mn-ink: #e8eefc;
         --mn-body: #d3ddf0;
         --mn-soft: #9aa9c4;
@@ -45,11 +47,25 @@
         --mn-accent-bd: #33456e;
         --mn-code-bg: #172033;
     }
-    main.manual-page p a:not(.btn-primary):not(.btn-secondary),
-    main.manual-page li a:not(.btn-primary):not(.btn-secondary),
-    .manual-page a:not(.btn-primary):not(.btn-secondary) {
+    .navbar {
+        background: rgba(13, 20, 36, 0.94);
+        border-bottom-color: var(--mn-line);
+    }
+    .nav-logo,
+    .nav-links a {
+        color: var(--mn-ink);
+    }
+    .nav-links a:hover {
         color: var(--mn-accent);
     }
+}
+
+/* Override shared.css `main p/li a` indigo unconditionally so every Reading Tools theme
+   (including Dark and High Contrast on light-mode systems) gets high-contrast themed links. */
+main.manual-page p a:not(.btn-primary):not(.btn-secondary),
+main.manual-page li a:not(.btn-primary):not(.btn-secondary),
+.manual-page a:not(.btn-primary):not(.btn-secondary) {
+    color: var(--mn-accent);
 }
 
 body {
@@ -127,8 +143,8 @@ body {
     background: var(--mn-bg);
     border: 1px solid var(--mn-line);
     border-radius: 7px;
-    min-height: 36px;
-    padding: 4px 8px;
+    min-height: 44px;
+    padding: 6px 10px;
 }
 .rtools input[type="range"] {
     width: 86px;
@@ -172,21 +188,43 @@ body {
 html[data-allo-ruler="1"] #rtools-ruler {
     display: block;
 }
-html:root[data-allo-theme="warm"]{--mn-bg:#fdf3dd;--mn-panel:#fffcf3;--mn-ink:#432c10;--mn-body:#573a1c;--mn-soft:#7a5a34;--mn-line:#e6d3ae;--mn-code-bg:#f7ecd5;--mn-accent:#9a3412;--mn-accent-ink:#7c2d12;--mn-accent-soft:#fbeadb;--mn-accent-bd:#e4c3a6;}
-html:root[data-allo-theme="sepia"]{--mn-bg:#f4ecd8;--mn-panel:#fdf8ec;--mn-ink:#3f2d18;--mn-body:#5c4033;--mn-soft:#7b5f45;--mn-line:#ddcdb0;--mn-code-bg:#f0e6d0;--mn-accent:#8a4b1e;--mn-accent-ink:#6f3c18;--mn-accent-soft:#f7edda;--mn-accent-bd:#dcc3a2;}
-html:root[data-allo-theme="dark"]{--mn-bg:#12121f;--mn-panel:#1e1e33;--mn-ink:#f1f5fb;--mn-body:#d8e0ee;--mn-soft:#a3b0c8;--mn-line:#343a55;--mn-code-bg:#242440;--mn-accent:#8ab4ff;--mn-accent-ink:#c4d9ff;--mn-accent-soft:#1c2947;--mn-accent-bd:#33507f;}
-html:root[data-allo-theme="highContrast"]{--mn-bg:#000;--mn-panel:#000;--mn-ink:#ff0;--mn-body:#ff0;--mn-soft:#ff0;--mn-line:#ff0;--mn-code-bg:#000;--mn-accent:#ff0;--mn-accent-ink:#ff0;--mn-accent-soft:#000;--mn-accent-bd:#ff0;}
-html:root[data-allo-theme="blue"]{--mn-bg:#d9e9f6;--mn-panel:#f0f7fd;--mn-ink:#0d1f2e;--mn-body:#1b2631;--mn-soft:#41566a;--mn-line:#b2cfe5;--mn-code-bg:#e2eff9;--mn-accent:#0b4f7a;--mn-accent-ink:#083b5c;--mn-accent-soft:#e4f0fa;--mn-accent-bd:#a8c9e2;}
-html:root[data-allo-theme="green"]{--mn-bg:#e6f4e7;--mn-panel:#f4fbf5;--mn-ink:#0f3016;--mn-body:#1b5e20;--mn-soft:#3d6b42;--mn-line:#c0dfc3;--mn-code-bg:#ecf7ed;--mn-accent:#1b5e20;--mn-accent-ink:#12441a;--mn-accent-soft:#e9f6ea;--mn-accent-bd:#b5d8b8;}
-html:root[data-allo-theme="rose"]{--mn-bg:#fbe2ea;--mn-panel:#fef3f7;--mn-ink:#4f0a29;--mn-body:#7c0d47;--mn-soft:#8d4064;--mn-line:#f0c0d2;--mn-code-bg:#fbe8ef;--mn-accent:#9d1148;--mn-accent-ink:#7c0d38;--mn-accent-soft:#fceaf1;--mn-accent-bd:#eebccd;}
-html:root[data-allo-theme="easyread"]{--mn-bg:#faf8ef;--mn-panel:#fffefa;--mn-ink:#18202f;--mn-body:#26324a;--mn-soft:#57637d;--mn-line:#e2ddc8;--mn-code-bg:#f3f0e2;--mn-accent:#1d4ed8;--mn-accent-ink:#1e3a8a;--mn-accent-soft:#eef3fe;--mn-accent-bd:#c6d3f2;}
+html:root[data-allo-theme="warm"]{color-scheme:light;--mn-bg:#fdf3dd;--mn-panel:#fffcf3;--mn-ink:#432c10;--mn-body:#573a1c;--mn-soft:#7a5a34;--mn-line:#e6d3ae;--mn-code-bg:#f7ecd5;--mn-accent:#9a3412;--mn-accent-ink:#7c2d12;--mn-accent-soft:#fbeadb;--mn-accent-bd:#e4c3a6;}
+html:root[data-allo-theme="sepia"]{color-scheme:light;--mn-bg:#f4ecd8;--mn-panel:#fdf8ec;--mn-ink:#3f2d18;--mn-body:#5c4033;--mn-soft:#7b5f45;--mn-line:#ddcdb0;--mn-code-bg:#f0e6d0;--mn-accent:#8a4b1e;--mn-accent-ink:#6f3c18;--mn-accent-soft:#f7edda;--mn-accent-bd:#dcc3a2;}
+html:root[data-allo-theme="dark"]{color-scheme:dark;--mn-bg:#12121f;--mn-panel:#1e1e33;--mn-ink:#f1f5fb;--mn-body:#d8e0ee;--mn-soft:#a3b0c8;--mn-line:#343a55;--mn-code-bg:#242440;--mn-accent:#8ab4ff;--mn-accent-ink:#c4d9ff;--mn-accent-soft:#1c2947;--mn-accent-bd:#33507f;}
+html:root[data-allo-theme="highContrast"]{color-scheme:dark;--mn-bg:#000;--mn-panel:#000;--mn-ink:#ff0;--mn-body:#ff0;--mn-soft:#ff0;--mn-line:#ff0;--mn-code-bg:#000;--mn-accent:#ff0;--mn-accent-ink:#ff0;--mn-accent-soft:#000;--mn-accent-bd:#ff0;}
+html:root[data-allo-theme="blue"]{color-scheme:light;--mn-bg:#d9e9f6;--mn-panel:#f0f7fd;--mn-ink:#0d1f2e;--mn-body:#1b2631;--mn-soft:#41566a;--mn-line:#b2cfe5;--mn-code-bg:#e2eff9;--mn-accent:#0b4f7a;--mn-accent-ink:#083b5c;--mn-accent-soft:#e4f0fa;--mn-accent-bd:#a8c9e2;}
+html:root[data-allo-theme="green"]{color-scheme:light;--mn-bg:#e6f4e7;--mn-panel:#f4fbf5;--mn-ink:#0f3016;--mn-body:#1b5e20;--mn-soft:#3d6b42;--mn-line:#c0dfc3;--mn-code-bg:#ecf7ed;--mn-accent:#1b5e20;--mn-accent-ink:#12441a;--mn-accent-soft:#e9f6ea;--mn-accent-bd:#b5d8b8;}
+html:root[data-allo-theme="rose"]{color-scheme:light;--mn-bg:#fbe2ea;--mn-panel:#fef3f7;--mn-ink:#4f0a29;--mn-body:#7c0d47;--mn-soft:#8d4064;--mn-line:#f0c0d2;--mn-code-bg:#fbe8ef;--mn-accent:#9d1148;--mn-accent-ink:#7c0d38;--mn-accent-soft:#fceaf1;--mn-accent-bd:#eebccd;}
+html:root[data-allo-theme="easyread"]{color-scheme:light;--mn-bg:#faf8ef;--mn-panel:#fffefa;--mn-ink:#18202f;--mn-body:#26324a;--mn-soft:#57637d;--mn-line:#e2ddc8;--mn-code-bg:#f3f0e2;--mn-accent:#1d4ed8;--mn-accent-ink:#1e3a8a;--mn-accent-soft:#eef3fe;--mn-accent-bd:#c6d3f2;}
 html:root[data-allo-theme="dark"] .manual-page .manual-open,
-html:root[data-allo-theme="highContrast"] .manual-page .manual-open {
+html:root[data-allo-theme="dark"] .manual-page .manual-open:visited,
+html:root[data-allo-theme="dark"] .manual-page .manual-open:hover,
+html:root[data-allo-theme="highContrast"] .manual-page .manual-open,
+html:root[data-allo-theme="highContrast"] .manual-page .manual-open:visited,
+html:root[data-allo-theme="highContrast"] .manual-page .manual-open:hover {
     color: #0d1424;
+}
+html:root[data-allo-theme="dark"] .navbar,
+html:root[data-allo-theme="highContrast"] .navbar {
+    background: var(--mn-panel);
+    border-bottom: 1px solid var(--mn-line);
+}
+html:root[data-allo-theme="dark"] .nav-logo,
+html:root[data-allo-theme="dark"] .nav-links a,
+html:root[data-allo-theme="highContrast"] .nav-logo,
+html:root[data-allo-theme="highContrast"] .nav-links a {
+    color: var(--mn-ink);
+}
+html:root[data-allo-theme="dark"] .nav-links a:hover,
+html:root[data-allo-theme="highContrast"] .nav-links a:hover {
+    color: var(--mn-accent);
+}
+html {
+    scroll-padding-top: calc(var(--mn-rtools-offset, 128px) + 14px);
 }
 #manual-main,
 .manual-block {
-    scroll-margin-top: 88px;
+    scroll-margin-top: calc(var(--mn-rtools-offset, 128px) + 14px);
 }
 
 .skip-link {

@@ -4231,6 +4231,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     st.id = 'allo-kitchenlab-hc-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"kitchenLab\"] [style]:is([style*=\"background: rgb(251, 146, 60)\"],[style*=\"background-color: rgb(251, 146, 60)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] [style]:is([style^=\"color: rgb(28, 20, 16)\"],[style*=\"; color: rgb(28, 20, 16)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(8, 47, 73)\"],[style*=\"; color: rgb(8, 47, 73)\"],[style^=\"color: rgb(5, 46, 22)\"],[style*=\"; color: rgb(5, 46, 22)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(28, 20, 16)\"],[style*=\"; color: rgb(28, 20, 16)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(8, 47, 73)\"],[style*=\"; color: rgb(8, 47, 73)\"],[style^=\"color: rgb(5, 46, 22)\"],[style*=\"; color: rgb(5, 46, 22)\"],[style^=\"color: rgb(69, 26, 3)\"],[style*=\"; color: rgb(69, 26, 3)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(251, 146, 60)\"],[style*=\"background-color: rgb(251, 146, 60)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(14, 165, 233)\"],[style*=\"background-color: rgb(14, 165, 233)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] button:has(> span[style^=\"opacity: 0.45\"]) > span[style^=\"opacity: 0.45\"]{opacity:1!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] button:has(> span[style^=\"opacity: 0.45\"]) > span[style^=\"opacity: 1;\"]{text-decoration:underline!important;text-decoration-thickness:2px!important;text-underline-offset:3px!important}.theme-contrast [data-stem-tool-shell=\"kitchenLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-kitchenlab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-kitchenlab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"kitchenLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"kitchenLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end WCAG 1.4.3 high contrast
   // Culinary studio SVG animations (rising steam wisps & calibrated temperature beacons, reduced-motion gated)
@@ -4337,7 +4343,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       }
 
       function trapDialogFocus(e, dialogId, onEscape) {
-        if (e && (e.isComposing || e.keyCode === 229)) return;
+        if (e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229)) return;
         if (e.key === 'Escape') {
           if (e.ctrlKey || e.metaKey || e.altKey) return;
           e.preventDefault();
@@ -4447,7 +4453,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // can move by heading; `id` lets focus land on it when the screen changes.
       function panelHeader(title, subtitle, id) {
         return h('div', { style: { marginBottom: 18 } },
-          h('h2', { id: id || undefined, tabIndex: id ? -1 : undefined, style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em', margin: '0 0 4px', outline: 'none' } }, title),
+          h('h2', { id: id || undefined, tabIndex: id ? -1 : undefined, style: { fontSize: 22, fontWeight: 800, color: '#fde68a', letterSpacing: '-0.01em', margin: '0 0 4px' } }, title),
           subtitle ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, maxWidth: 720 } }, subtitle) : null);
       }
 
@@ -4573,12 +4579,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           TABS.map(function(t, tabIndex) {
             var active = section === t.id;
             return h('button', {
-              key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              key: t.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
               id: 'stem-kitchen-tab-' + t.id,
               'aria-controls': 'stem-kitchen-panel-' + t.id,
               tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var nextIndex = -1;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (tabIndex + 1) % TABS.length;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (tabIndex + TABS.length - 1) % TABS.length;
@@ -4635,7 +4641,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('input', { type: 'range', min: 32, max: 220, step: 1, value: curTemp,
                 onChange: function(e) { setKL({ safetyTemp: parseInt(e.target.value, 10) }); },
                 'aria-label': units === 'C' ? __alloT('stem.kitchenlab.food_temperature_in_celsius', 'Food temperature in Celsius') : __alloT('stem.kitchenlab.food_temperature_in_fahrenheit', 'Food temperature in Fahrenheit'),
-                style: { width: '100%', accentColor: zone.color } }),
+                'aria-valuetext': curTemp + '°F (' + Math.round((curTemp - 32) * 5 / 9) + '°C)',
+                style: { width: '100%', minHeight: 44, accentColor: zone.color } }),
               h('div', { role: 'group', 'aria-label': __alloT('stem.kitchenlab.a11y_temp_presets', 'Quick food temperature presets'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 [
                   { label: __alloT('stem.kitchenlab.preset_fridge', 'Fridge'), f: 38 },
@@ -4708,7 +4715,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('input', { type: 'range', min: 0, max: 8, step: 0.25, value: hoursOut,
                 onChange: function(e) { setKL({ safetyHours: parseFloat(e.target.value) }); },
                 'aria-label': __alloT('stem.kitchenlab.hours_on_the_counter_a11y', 'Hours the food sits at this temperature'),
-                style: { width: '100%', accentColor: clock.overLimit ? '#dc2626' : '#fbbf24', marginBottom: 10 } }),
+                'aria-valuetext': hoursOut.toFixed(2).replace(/\.?0+$/, '') + ' h',
+                style: { width: '100%', minHeight: 44, accentColor: clock.overLimit ? '#dc2626' : '#fbbf24', marginBottom: 10 } }),
               h('button', { type: 'button', 'aria-pressed': hotRoom ? 'true' : 'false', 'data-kl-hot-room': hotRoom ? 'on' : 'off',
                   onClick: function() { setKL({ safetyHotRoom: !hotRoom }); },
                   style: { marginBottom: 10, padding: '8px 12px', minHeight: 44, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
@@ -4877,7 +4885,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               KNIFE_CUTS.map(function(c) {
                 var active = c.id === selectedId;
-                return h('button', { key: c.id,
+                return h('button', { key: c.id, type: 'button',
                   onClick: function() { setKL({ knifeSelectedCut: c.id }); klAnnounce('Selected ' + c.name); },
                   'aria-pressed': active ? 'true' : 'false',
                   style: { padding: '8px 12px',
@@ -4908,7 +4916,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('span', { style: { color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace' } }, panF + '°F')),
               h('input', { type: 'range', min: 250, max: 450, step: 10, value: panF, onChange: function(e) { setKL({ knifePanTempF: parseInt(e.target.value, 10) }); },
                 'aria-label': units === 'C' ? __alloT('stem.kitchenlab.pan_temperature_in_celsius', 'Pan temperature in Celsius') : __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
-                style: { width: '100%', accentColor: '#fb923c', marginBottom: 12 } }),
+                'aria-valuetext': panF + '°F (' + Math.round((panF - 32) * 5 / 9) + '°C)',
+                style: { width: '100%', minHeight: 44, accentColor: '#fb923c', marginBottom: 12 } }),
               h('div', { 'data-kl-cut-times': rows.map(function(r) { return Math.round(r.sec); }).join(','), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
                 rows.map(function(r) {
                   var frac = Math.min(1, r.sec / slowest);
@@ -5071,7 +5080,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 } },
               TECHNIQUES.map(function(t) {
                 var active = t.id === selId;
-                return h('button', { key: t.id,
+                return h('button', { key: t.id, type: 'button',
                   onClick: function() { setKL({ heatTechnique: t.id, heatPanTempF: t.panTempF }); klAnnounce('Selected ' + t.name); },
                   'aria-pressed': active ? 'true' : 'false',
                   style: { padding: '10px 14px',
@@ -5099,7 +5108,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 onChange: function(e) { setKL({ heatPanTempF: parseInt(e.target.value, 10) }); },
                 'aria-label': water ? (units === 'C' ? __alloT('stem.kitchenlab.water_temperature_in_celsius', 'Water temperature in Celsius') : __alloT('stem.kitchenlab.water_temperature_in_fahrenheit', 'Water temperature in Fahrenheit'))
                   : units === 'C' ? __alloT('stem.kitchenlab.pan_temperature_in_celsius', 'Pan temperature in Celsius') : __alloT('stem.kitchenlab.pan_temperature_in_fahrenheit', 'Pan temperature in Fahrenheit'),
-                style: { width: '100%', accentColor: heatVerdict.color } })),
+                'aria-valuetext': panTemp + '°F (' + Math.round((panTemp - 32) * 5 / 9) + '°C)',
+                style: { width: '100%', minHeight: 44, accentColor: heatVerdict.color } })),
             h('div', { style: { background: heatVerdict.color + '18', border: '1px solid ' + heatVerdict.color + '55', borderLeft: '4px solid ' + heatVerdict.color, padding: '10px 12px', borderRadius: 10 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: heatVerdict.ink || heatVerdict.color, marginBottom: 4 } }, heatVerdict.label),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, heatVerdict.note))),
@@ -5260,7 +5270,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('input', { type: 'range', min: 100, max: 500, step: 5, value: surfF,
                 onChange: function(e) { setKL({ maillardSurfaceF: parseInt(e.target.value, 10) }); },
                 'aria-label': units === 'C' ? __alloT('stem.kitchenlab.food_surface_temperature_in_celsius', 'Food surface temperature in Celsius') : __alloT('stem.kitchenlab.food_surface_temperature_in_fahrenheit', 'Food surface temperature in Fahrenheit'),
-                style: { width: '100%', accentColor: '#fb923c' } })),
+                'aria-valuetext': surfF + '°F (' + surfC + '°C)',
+                style: { width: '100%', minHeight: 44, accentColor: '#fb923c' } })),
             // Visual swatch
             h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' } },
               h('div', { 'aria-hidden': 'true',
@@ -6300,11 +6311,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               }))),
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { startTournament(); },
+            h('button', { type: 'button', onClick: function() { startTournament(); },
               style: { padding: '12px 26px', background: '#fbbf24', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.new_tournament', '🏅 New tournament')),
-            h('button', { onClick: function() { exitTournament(); },
+            h('button', { type: 'button', onClick: function() { exitTournament(); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.back_to_recipe_list', '🍽️ Back to recipe list')))
@@ -6380,7 +6391,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { fontSize: 16, fontWeight: 800, color: '#e9d5ff', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.what_should_i_cook_tonight', 'What should I cook tonight?')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 10 } },
                   __alloT('stem.kitchenlab.tell_the_ai_what_you_have_how_much_tim', 'Tell the AI what you have, how much time, or who you\'re feeding — it picks the right recipe from your unlocked list + explains why.')),
-                h('button', { onClick: function() { openSuggester(); },
+                h('button', { type: 'button', onClick: function() { openSuggester(); },
                   style: { padding: '10px 18px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.ask_the_ai_chef', '💡 Ask the AI chef'))))) : null,
@@ -6394,7 +6405,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { fontSize: 18, fontWeight: 900, color: '#fde68a', letterSpacing: '-0.01em', marginBottom: 4 } }, __alloT('stem.kitchenlab.competition_mode', 'Competition Mode')),
                 h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 12 } },
                   __alloT('stem.kitchenlab.chopped_style_challenge_random_recipe_', 'Chopped-style challenge. Random recipe + 2 mystery constraints (time pressure, heat caps, ingredient discipline, restaurant-grade standard, and more). Combine recipe skill + constraint mastery for a score up to 150. Beat your personal best.')),
-                h('button', { onClick: function() { startCompetition(); },
+                h('button', { type: 'button', onClick: function() { startCompetition(); },
                   style: { padding: '12px 22px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
                     boxShadow: '0 2px 6px rgba(251,146,60,0.4)' } },
@@ -6407,7 +6418,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 2 } }, __alloT('stem.kitchenlab.tournament_mode_3_rounds', 'Tournament Mode (3 rounds)')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                   __alloT('stem.kitchenlab.round_1_1_constraint_full_time_round_2', 'Round 1: 1 constraint, full time. Round 2: 2 constraints, 80% time. Round 3: 3 constraints (Restaurant Standard + Speed Demon forced), 60% time. Compete for cumulative score across 450 points.'))),
-              h('button', { onClick: function() { startTournament(); },
+              h('button', { type: 'button', onClick: function() { startTournament(); },
                 style: { padding: '10px 18px', background: 'transparent', color: '#fde68a',
                   border: '2px solid rgba(251,146,60,0.6)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.start_tournament', '🏅 Start tournament')),
@@ -6531,7 +6542,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     hist.lastIssue ? h('span', { style: { color: '#fde68a', flexBasis: '100%' } }, __alloT('stem.kitchenlab.next_time_fix', 'Next time: ') + hist.lastIssue) :
                       h('span', { style: { color: '#86efac', flexBasis: '100%' } }, __alloT('stem.kitchenlab.nothing_flagged_last_time', 'Nothing flagged last time.')));
                 })(),
-                isPlayable ? h('button', {
+                isPlayable ? h('button', { type: 'button',
                   onClick: function() { startRecipe(r.id); },
                   // twelve identical "Start cooking" buttons need the recipe in their names
                   'aria-label': (isCompleted ? 'Cook again: ' : 'Start cooking: ') + r.name,
@@ -7106,7 +7117,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('input', { type: 'range', min: 0, max: 10, step: 1, value: burnerLevel, disabled: isPaused,
                   onChange: function(e) { setBurner(parseInt(e.target.value, 10)); },
                   'aria-label': isOven ? 'Oven temperature dial' : 'Burner level',
-                  style: { width: '100%', accentColor: tempColor } }),
+                  'aria-valuetext': thermal.controlSubLabel(burnerLevel),
+                  style: { width: '100%', minHeight: 44, accentColor: tempColor } }),
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   isOven ? [
                     h('span', { key: 'l1' }, 'OFF'), h('span', { key: 'l2' }, fmtT(175)), h('span', { key: 'l3' }, fmtT(300)),
@@ -7223,7 +7235,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', textAlign: 'center', padding: 12 } }, __alloT('stem.kitchenlab.all_ingredients_are_in_the_pan', 'All ingredients are in the pan.')) :
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 availableItems.map(function(ing) {
-                  return h('button', { key: ing.id, disabled: isPaused,
+                  return h('button', { key: ing.id, disabled: isPaused, type: 'button',
                     onClick: function() { addItem(ing.id); },
                     style: { padding: '10px 14px', background: 'rgba(15,23,42,0.7)',
                       border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8,
@@ -7244,7 +7256,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     background: isPast ? '#22c55e' : isCurrent ? '#fb923c' : 'rgba(100,116,139,0.3)' } });
               })),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              step.completeWhen === 'userClick' ? h('button', { disabled: isPaused,
+              step.completeWhen === 'userClick' ? h('button', { type: 'button', disabled: isPaused,
                 onClick: function() { nextStep(null, __alloT('stem.kitchenlab.sr_step_complete', 'Step complete.')); },
                 style: { padding: '12px 24px', background: '#22c55e', color: '#052e16',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
@@ -7256,7 +7268,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 step.completeWhen === 'boiling' ? '⏳ Auto-advances when the pot boils' :
                 step.completeWhen === 'internalTempReached' ? '⏳ Auto-advances when internal food temperature reaches target — use the readout on the chicken' :
                 step.completeWhen === 'potStateReached' ? '⏳ Auto-advances when the pasta pot reaches the target state — use the pot controls above' : '⏳ Continue when ready'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { openConfirmation('recipe'); },
                 style: { padding: '12px 18px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
@@ -7320,11 +7332,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   borderRadius: 8 } },
                 '"', result.reasoning, '"'),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-                h('button', { onClick: function() { closeSuggester(); startRecipe(result.recipeId); },
+                h('button', { type: 'button', onClick: function() { closeSuggester(); startRecipe(result.recipeId); },
                   style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.cook_this', '🍳 Cook this')),
-                h('button', { onClick: function() { setKL({ suggesterResult: null, suggesterInput: inputVal }); },
+                h('button', { type: 'button', onClick: function() { setKL({ suggesterResult: null, suggesterInput: inputVal }); },
                   style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.ask_again', '🔄 Ask again')))
@@ -7349,11 +7361,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 padding: '8px 12px', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)',
                 borderRadius: 6 } }, '⚠️ ' + err) : null,
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-                h('button', { onClick: function() { runSuggester(inputVal); },
+                h('button', { type: 'button', onClick: function() { runSuggester(inputVal); },
                   style: { padding: '12px 22px', background: '#a78bfa', color: '#1c1410',
                     border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.suggest_a_recipe', '🤔 Suggest a recipe')),
-                h('button', { onClick: closeSuggester,
+                h('button', { type: 'button', onClick: closeSuggester,
                   style: { padding: '12px 18px', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)',
                     border: '1px solid rgba(100,116,139,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.cancel', 'Cancel'))))
@@ -7442,29 +7454,29 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               phase !== 'cold' && phase !== 'drained' ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('label', { htmlFor: 'kl-pot-dial', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Pot burner'),
                 h('input', { id: 'kl-pot-dial', type: 'range', min: 0, max: 10, step: 1, value: d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL, disabled: controlsDisabled, 'data-kl-pot-dial': d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL,
-                  onChange: function(e) { setPotDial(parseInt(e.target.value, 10)); }, 'aria-label': __alloT('stem.kitchenlab.pot_burner_level','Pot burner level'), style: { flex: '1 1 140px', minWidth: 0, accentColor: phaseColor } }),
+                  onChange: function(e) { setPotDial(parseInt(e.target.value, 10)); }, 'aria-label': __alloT('stem.kitchenlab.pot_burner_level','Pot burner level'), 'aria-valuetext': (d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL) + ' / 10', style: { flex: '1 1 140px', minWidth: 0, minHeight: 44, accentColor: phaseColor } }),
                 h('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 52 } }, (d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL) + ' / 10'),
                 (d.potBurnerLevel === 0) ? h('span', { 'data-kl-pot-off': '1', style: { fontSize: 11, color: '#fca5a5' } }, 'off: the water is cooling; once it falls below the boil the pasta stops cooking') : null) : null,
               // Action buttons (vary by phase)
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                phase === 'cold' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'start',
+                phase === 'cold' ? h('button', { type: 'button', disabled: controlsDisabled, 'data-kl-pot': 'start',
                   onClick: function() { startPot(); },
                   style: { padding: '8px 14px', background: '#fb923c', color: '#1c1410',
                     border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   __alloT('stem.kitchenlab.start_pasta_water', '🔥 Start pasta water')) : null,
                 // Pasta can go in before the boil; the button says what that means
-                phase === 'heating' || phase === 'boiling' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drop',
+                phase === 'heating' || phase === 'boiling' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drop', type: 'button',
                   onClick: function() { dropPasta(); },
                   style: { padding: '8px 14px', background: phase === 'boiling' ? '#22c55e' : 'rgba(15,23,42,0.7)', color: phase === 'boiling' ? '#052e16' : '#fde68a',
                     border: phase === 'boiling' ? 'none' : '1px solid rgba(251,146,60,0.45)', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   phase === 'boiling' ? __alloT('stem.kitchenlab.drop_pasta', '🍝 Drop pasta') : '🍝 Drop pasta now (' + Math.round(potTempF) + '°F, not boiling yet)') : null,
                 // Drain any time after the drop: early is chalky, late is gummy, the judge reads the clock
-                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drainKeep',
+                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', { type: 'button', disabled: controlsDisabled, 'data-kl-pot': 'drainKeep',
                   onClick: function() { drainPasta(true); },
                   style: { padding: '8px 14px', background: phase === 'pasta-done' ? '#22c55e' : 'rgba(251,146,60,0.18)', color: phase === 'pasta-done' ? '#052e16' : '#fde68a',
                     border: phase === 'pasta-done' ? 'none' : '1px solid rgba(251,146,60,0.45)', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   phase === 'pasta-done' ? __alloT('stem.kitchenlab.drain_save_water', '✓ Drain (save water)') : '⏱️ Drain early (save water)') : null,
-                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drain',
+                (phase === 'pasta-in' || phase === 'pasta-done') ? h('button', { type: 'button', disabled: controlsDisabled, 'data-kl-pot': 'drain',
                   onClick: function() { drainPasta(false); },
                   style: { padding: '8px 14px', background: 'transparent', color: '#fca5a5',
                     border: '1px solid rgba(220,38,38,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' } },
@@ -7700,7 +7712,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       function renderRecipeResults() {
         var rec = _klRecipe(d.recipeActiveId);
         var j = d.recipeJudgement;
-        if (!rec || !j) return h('div', null, h('button', { onClick: abortRecipe }, __alloT('stem.kitchenlab.back', 'Back')));
+        if (!rec || !j) return h('div', null, h('button', { type: 'button', onClick: abortRecipe }, __alloT('stem.kitchenlab.back', 'Back')));
         var compResult = j.compResult;
         var displayScore = compResult ? compResult.finalScore : j.score;
         var gradeColor = displayScore >= 90 ? '#86efac' : displayScore >= 80 ? '#fbbf24' : displayScore >= 70 ? '#fb923c' : '#fca5a5';
@@ -7916,19 +7928,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
           // Action buttons
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 8 } },
-            inTournament && tRound < 2 ? h('button', { onClick: function() { advanceTournament(); },
+            inTournament && tRound < 2 ? h('button', { type: 'button', onClick: function() { advanceTournament(); },
               style: { padding: '12px 28px', background: '#fbbf24', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               '▶ Continue to Round ' + (tRound + 2)) :
-            inTournament && tRound === 2 ? h('button', { onClick: function() { advanceTournament(); },
+            inTournament && tRound === 2 ? h('button', { type: 'button', onClick: function() { advanceTournament(); },
               style: { padding: '12px 28px', background: '#22c55e', color: '#052e16',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.see_final_standings', '🏆 See final standings')) :
-            compResult ? h('button', { onClick: function() { startCompetition(); },
+            compResult ? h('button', { type: 'button', onClick: function() { startCompetition(); },
               style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.next_challenge', '🎲 Next challenge')) :
-              h('button', { onClick: function() { startRecipe(rec.id); },
+              h('button', { type: 'button', onClick: function() { startRecipe(rec.id); },
                 style: { padding: '12px 24px', background: '#fb923c', color: '#1c1410',
                   border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.cook_again', '🔁 Cook again')),
@@ -7953,12 +7965,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               style: { padding: '12px 20px', background: 'transparent', color: '#bae6fd',
                 border: '1px solid rgba(125,211,252,0.45)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
               d.klReportCopied === 'ok' ? __alloT('stem.kitchenlab.report_copied', '✓ Report copied') : __alloT('stem.kitchenlab.copy_cook_report', '📋 Copy cook report')),
-            !inTournament ? h('button', { onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null, klReportCopied: null,
+            !inTournament ? h('button', { type: 'button', onClick: function() { setKL({ recipePhase: 'idle', recipeActiveId: null, klReportCopied: null,
                 competitionActive: false, competitionConstraints: [], competitionDeadline: null }); },
               style: { padding: '12px 24px', background: 'transparent', color: '#fde68a',
                 border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.back_to_recipe_list_2', '🍽️ Back to recipe list')) :
-              h('button', { onClick: function() { openConfirmation('tournament'); },
+              h('button', { type: 'button', onClick: function() { openConfirmation('tournament'); },
                 style: { padding: '12px 24px', background: 'transparent', color: '#fca5a5',
                   border: '1px solid rgba(220,38,38,0.4)', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.kitchenlab.abandon_tournament', '✕ Abandon tournament')))
@@ -7977,7 +7989,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           { id: 'sources', label: __alloT('stem.kitchenlab.sources', 'Sources'), icon: '📜' }
         ];
         var resourceTabKeyDown = function(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % SUBS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + SUBS.length - 1) % SUBS.length;
@@ -7998,7 +8010,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
             SUBS.map(function(s, subIndex) {
               var active = sub === s.id;
-              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              return h('button', { key: s.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
                 id: 'stem-kitchen-resource-tab-' + s.id,
                 'aria-controls': 'stem-kitchen-resources-panel-' + s.id,
                 tabIndex: active ? 0 : -1,
@@ -8357,8 +8369,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
-            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
+            h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempF, a: iq.aminoPct, s: iq.sugarPct, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.kitchenlab.log', '📋 Log')),
+            h('button', { type: 'button', onClick: function() { setIQ({ tempF: 350, aminoPct: 50, sugarPct: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.kitchenlab.reset', '↺ Reset'))
           ),
           // The student's own trials: evidence to reason from, not an answer
           (iq.log || []).length ? h('table', { 'data-kl-mh-log': iq.log.length, className: 'w-full text-[0.6875rem] text-slate-700 border-collapse' },
@@ -8371,7 +8383,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             }))) : null,
           h('textarea', { id: 'kitchen-maillard-hypothesis', 'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.kitchenlab.hypothesis_both_amino_sugar_needed_or_', 'Hypothesis: Both amino + sugar needed? Or one is enough?'),
             className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.kitchenlab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, __alloT('stem.kitchenlab.what_happens_at_100_amino_but_0_sugar', 'What happens at 100% amino but 0% sugar?')),

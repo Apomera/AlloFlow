@@ -11,7 +11,8 @@ const stylesSource = readFileSync('app_styles_source.jsx','utf8');
 const context = { window: { React }, console: { log() {} } };
 vm.runInNewContext(buildAppStylesModule(stylesSource),context);
 function styles(props={}) {
- const collect=node=>!node || typeof node!=='object' ? '' : node.type==='style' ? '<style>'+node.props.children+'</style>' : React.Children.toArray(node.props?.children).map(collect).join('');
+ // The unconditional sheet lives in a memoized child (AppStylesStatic); render it too.
+ const collect=node=>!node || typeof node!=='object' ? '' : node.type==='style' ? '<style>'+node.props.children+'</style>' : node.type?.$$typeof===Symbol.for('react.memo') ? collect(node.type.type(node.props||{})) : React.Children.toArray(node.props?.children).map(collect).join('');
  return collect(context.window.AlloModules.AppStyles.AppStyles.type(props));
 }
 const utilityCss=readFileSync('app/static/css/'+readdirSync('app/static/css').find(name=>/^main\.[a-z0-9]+\.css$/i.test(name)),'utf8');

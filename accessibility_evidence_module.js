@@ -1,9 +1,10 @@
 (function(){"use strict";
+if(typeof window==="undefined")return;
 if(window.AlloModules&&window.AlloModules.AccessibilityEvidenceModule){console.log("[CDN] AccessibilityEvidenceModule already loaded, skipping"); return;}
 // Shared accessibility evidence contracts for interactive artifacts and
 // document remediation. Pure JavaScript: no React and no pipeline state.
 
-window.AlloModules = window.AlloModules || {};
+if (typeof window !== 'undefined') window.AlloModules = window.AlloModules || {};
 
 var ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION = 1;
 var ACCESSIBILITY_EVIDENCE_PROFILES = {
@@ -46,12 +47,14 @@ function stableSerializeEvidence(value, seen) {
   var type = typeof value;
   if (type === 'string') return JSON.stringify(value);
   if (type === 'number') return Number.isFinite(value) ? String(value) : JSON.stringify(String(value));
+  if (type === 'bigint') return JSON.stringify(String(value));
   if (type === 'boolean') return value ? 'true' : 'false';
   if (type === 'undefined') return '"[undefined]"';
   if (type === 'function' || type === 'symbol') return '"[' + type + ']"';
   if (value instanceof Date) return Number.isFinite(value.getTime()) ? JSON.stringify(value.toISOString()) : '"[invalid-date]"';
   seen = seen || [];
   if (seen.indexOf(value) >= 0) return '"[circular]"';
+  if (seen.length > 32) return '"[max-depth]"';
   var nextSeen = seen.concat([value]);
   if (Array.isArray(value)) {
     return '[' + value.map(function (entry) { return stableSerializeEvidence(entry, nextSeen); }).join(',') + ']';
@@ -180,11 +183,15 @@ function createEvidenceProvenance(input) {
   var rawEvidence = input.evidence && typeof input.evidence === 'object' ? input.evidence : {};
   var lanes = {};
   var timestamps = [input.capturedAt, input.auditAt, input.runAt, input.completedAt, input.updatedAt, input.lastReviewedAt];
+  var _own = function (o, k) { return !!o && Object.prototype.hasOwnProperty.call(o, k); };
   selectedProfile.requiredEvidence.forEach(function (lane) {
     var laneAlias = lane === 'ai' ? 'verificationAudit'
       : (lane === 'axe' ? 'axeAudit'
         : (lane === 'equalAccess' ? 'secondEngineAudit' : null));
-    var raw = rawEvidence[lane] || input[lane] || (laneAlias ? (rawEvidence[laneAlias] || input[laneAlias]) : null) || null;
+    var raw = (_own(rawEvidence, lane) ? rawEvidence[lane] : null)
+      || (_own(input, lane) ? input[lane] : null)
+      || (laneAlias ? ((_own(rawEvidence, laneAlias) ? rawEvidence[laneAlias] : null) || (_own(input, laneAlias) ? input[laneAlias] : null)) : null)
+      || null;
     raw = raw && typeof raw === 'object' ? raw : null;
     if (!raw) {
       lanes[lane] = null;
@@ -362,6 +369,7 @@ function canonicalizeFinding(finding, defaults) {
   var ruleSeverity = Object.prototype.hasOwnProperty.call(ACCESSIBILITY_RULE_SEVERITY, ruleId) ? ACCESSIBILITY_RULE_SEVERITY[ruleId] : '';
   var severity = normalizeSeverity(ruleSeverity || reportedSeverity, 'moderate');
   var description = String(finding.description || finding.issue || finding.message || finding.help || defaults.description || ruleId);
+  var _rawCount = Number(finding.count);
   var normalized = Object.assign({}, finding, {
     schemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
     source: String(finding.source || defaults.source || 'manual'),
@@ -370,7 +378,7 @@ function canonicalizeFinding(finding, defaults) {
     description: description,
     wcag: String(finding.wcag || defaults.wcag || ''),
     severity: severity,
-    count: Math.max(1, Math.floor(Number(finding.count) || 1)),
+    count: Number.isFinite(_rawCount) ? Math.max(1, Math.floor(_rawCount)) : 1,
     status: ['open', 'fix-in-progress', 'ready-to-retest', 'verified', 'accepted-risk'].indexOf(finding.status) >= 0
       ? finding.status
       : String(defaults.status || 'open'),
@@ -440,8 +448,8 @@ function findingKey(issue) {
       return 'family:' + family;
     }
   }
-  var stop = { the: 1, a: 1, an: 1, and: 1, or: 1, to: 1, of: 1, for: 1, in: 1, on: 1, is: 1, are: 1, be: 1, should: 1, document: 1, element: 1, elements: 1 };
-  var tokens = Array.from(new Set(text.split(/\s+/).filter(function (token) { return token.length > 1 && !stop[token]; }))).sort().slice(0, 12);
+  var stop = Object.assign(Object.create(null), { the: 1, a: 1, an: 1, and: 1, or: 1, to: 1, of: 1, for: 1, in: 1, on: 1, is: 1, are: 1, be: 1, should: 1, document: 1, element: 1, elements: 1 });
+  var tokens = Array.from(new Set(text.split(/\s+/).filter(function (token) { return token.length > 1 && !Object.prototype.hasOwnProperty.call(stop, token); }))).sort().slice(0, 12);
   return tokens.length ? ((wcag || 'wcag-unknown') + '|tokens:' + tokens.join('-')) : '';
 }
 
@@ -485,8 +493,12 @@ function normalizeProfile(profile) {
   var base = (typeof profile.id === 'string' && Object.prototype.hasOwnProperty.call(ACCESSIBILITY_EVIDENCE_PROFILES, profile.id))
     ? ACCESSIBILITY_EVIDENCE_PROFILES[profile.id]
     : ACCESSIBILITY_EVIDENCE_PROFILES['accessibility-lab'];
+  var reqRaw = Array.isArray(profile.requiredEvidence) ? profile.requiredEvidence : base.requiredEvidence;
+  var safeReq = reqRaw.filter(function (lane) {
+    return typeof lane === 'string' && lane.length > 0 && lane !== '__proto__' && lane !== 'constructor' && lane !== 'prototype';
+  });
   return Object.assign({}, base, profile, {
-    requiredEvidence: Array.isArray(profile.requiredEvidence) ? profile.requiredEvidence.slice() : base.requiredEvidence.slice(),
+    requiredEvidence: safeReq.length ? safeReq : base.requiredEvidence.slice(),
   });
 }
 
@@ -509,10 +521,11 @@ function evidenceLaneState(lane, evidence) {
 function deriveProfileVerificationState(input, profile) {
   input = input || {};
   var selectedProfile = normalizeProfile(profile || input.profile);
-  var evidence = input.evidence || {};
+  var evidence = input.evidence && typeof input.evidence === 'object' ? input.evidence : {};
   var lanes = {};
   selectedProfile.requiredEvidence.forEach(function (lane) {
-    lanes[lane] = evidenceLaneState(lane, evidence[lane]);
+    var laneEv = Object.prototype.hasOwnProperty.call(evidence, lane) ? evidence[lane] : null;
+    lanes[lane] = evidenceLaneState(lane, laneEv);
   });
   var laneValues = selectedProfile.requiredEvidence.map(function (lane) { return lanes[lane]; });
   var allUnavailable = laneValues.every(function (lane) { return lane.execution === 'unavailable'; });
@@ -582,17 +595,22 @@ function deriveDocumentVerificationState(input) {
     });
 
   var aiStatus = 'unavailable';
-  var aiIssues = Array.isArray(ai && ai.issues)
+  var aiNotExecuted = !!(ai && ai.executed === false);
+  var aiIssues = !aiNotExecuted && Array.isArray(ai && ai.issues)
     ? ai.issues.filter(function (issue) { return issue != null && issue !== ''; })
     : null;
-  var aiFindingCount = aiIssues
-    ? aiIssues.length
-    : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues));
-  var aiReviewCount = aiIssues
-    ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
-    : (_count(ai && ai.reviewCount) !== null ? _count(ai && ai.reviewCount) : (_count(ai && ai.needsReview) !== null ? _count(ai && ai.needsReview) : 0));
+  var aiFindingCount = aiNotExecuted
+    ? null
+    : (aiIssues
+      ? aiIssues.length
+      : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues)));
+  var aiReviewCount = aiNotExecuted
+    ? 0
+    : (aiIssues
+      ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
+      : (_count(ai && ai.reviewCount) !== null ? _count(ai && ai.reviewCount) : (_count(ai && ai.needsReview) !== null ? _count(ai && ai.needsReview) : 0)));
   if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
-  if ((ai && ai.executed === false) || !_finite(ai && ai.score)) {
+  if (aiNotExecuted || !_finite(ai && ai.score)) {
     reasons.push('ai-unavailable');
   } else {
     var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
@@ -796,25 +814,28 @@ function unavailableDocumentVerificationState(reason) {
   return state;
 }
 
-window.AlloModules.AccessibilityEvidence = {
-  schemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
-  profiles: ACCESSIBILITY_EVIDENCE_PROFILES,
-  stableSerialize: stableSerializeEvidence,
-  sha256Hex: sha256Hex,
-  createArtifactBinding: createArtifactBinding,
-  bindingFingerprint: bindingFingerprint,
-  canonicalizeFinding: canonicalizeFinding,
-  findingKey: findingKey,
-  diffFindings: diffFindings,
-  normalizeProfile: normalizeProfile,
-  deriveProfileVerificationState: deriveProfileVerificationState,
-  createEvidenceProvenance: createEvidenceProvenance,
-  attachEvidenceProvenance: attachEvidenceProvenance,
-  compareEvidenceProvenance: compareEvidenceProvenance,
-  createEvidenceManifest: createEvidenceManifest,
-  verifyEvidenceManifest: verifyEvidenceManifest,
-  deriveVerificationState: deriveDocumentVerificationState,
-  unavailableVerificationState: unavailableDocumentVerificationState,
-};
-window.AlloModules.AccessibilityEvidenceModule = true;
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.AccessibilityEvidence = {
+    schemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
+    profiles: ACCESSIBILITY_EVIDENCE_PROFILES,
+    stableSerialize: stableSerializeEvidence,
+    sha256Hex: sha256Hex,
+    createArtifactBinding: createArtifactBinding,
+    bindingFingerprint: bindingFingerprint,
+    canonicalizeFinding: canonicalizeFinding,
+    findingKey: findingKey,
+    diffFindings: diffFindings,
+    normalizeProfile: normalizeProfile,
+    deriveProfileVerificationState: deriveProfileVerificationState,
+    createEvidenceProvenance: createEvidenceProvenance,
+    attachEvidenceProvenance: attachEvidenceProvenance,
+    compareEvidenceProvenance: compareEvidenceProvenance,
+    createEvidenceManifest: createEvidenceManifest,
+    verifyEvidenceManifest: verifyEvidenceManifest,
+    deriveVerificationState: deriveDocumentVerificationState,
+    unavailableVerificationState: unavailableDocumentVerificationState,
+  };
+  window.AlloModules.AccessibilityEvidenceModule = true;
+}
 })();

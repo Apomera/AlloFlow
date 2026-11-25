@@ -23,14 +23,14 @@
   var MAX_EDGE_SOURCE_DETAILS = 16;
   var MAX_EDGE_SOURCE_DETAIL_TEXT = 12000;
   var DEFAULT_SCOPE = 'workspace:default';
-  var GRAPH_KINDS = {
+  var GRAPH_KINDS = Object.freeze({
     ALIGNMENT: 'alignment-map',
     UNIT: 'unit-path',
     CONCEPT: 'concept-map',
     LEXICAL: 'lexical-graph',
     RESOURCES: 'project-resources',
     UNIFIED: 'learning-web'
-  };
+  });
   var listeners = [];
   var defaultRegistry = null;
 
@@ -38,13 +38,29 @@
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
+  function safeStr(value) {
+    if (value === undefined || value === null || typeof value === 'symbol') return '';
+    if (typeof value === 'string') return value;
+    try { return String(value); } catch (_) { return ''; }
+  }
+
+  function safeNum(value) {
+    if (typeof value === 'number') return value;
+    if (value === undefined || value === null || typeof value === 'symbol') return NaN;
+    try { return Number(value); } catch (_) { return NaN; }
+  }
+
   function text(value, limit) {
     if (value === undefined || value === null) return '';
-    return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
+    return safeStr(value).replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
   }
 
   function clone(value) {
-    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return null; }
+    try {
+      var serialized = JSON.stringify(value);
+      if (serialized === undefined) return null;
+      return JSON.parse(serialized, function (k, v) { return BLOCKED_KEYS[k] ? undefined : v; });
+    } catch (_) { return null; }
   }
 
   var BLOCKED_KEYS = Object.assign(Object.create(null), { '__proto__': 1, constructor: 1, prototype: 1 });
@@ -57,12 +73,12 @@
     var opts = options || {};
     var level = depth || 0;
     var state = budget || { items: 0, chars: 0 };
-    var maxDepth = Number(opts.maxDepth) || MAX_METADATA_DEPTH;
-    var maxItems = Number(opts.maxItems) || MAX_METADATA_ITEMS;
-    var maxChars = Number(opts.maxChars) || MAX_GRAPH_TEXT;
-    var stringLimit = Number(opts.stringLimit) || MAX_TEXT;
-    var arrayLimit = Number(opts.arrayLimit) || MAX_METADATA_ARRAY;
-    var keyLimit = Number(opts.keyLimit) || MAX_METADATA_KEYS;
+    var maxDepth = safeNum(opts.maxDepth) || MAX_METADATA_DEPTH;
+    var maxItems = safeNum(opts.maxItems) || MAX_METADATA_ITEMS;
+    var maxChars = safeNum(opts.maxChars) || MAX_GRAPH_TEXT;
+    var stringLimit = safeNum(opts.stringLimit) || MAX_TEXT;
+    var arrayLimit = safeNum(opts.arrayLimit) || MAX_METADATA_ARRAY;
+    var keyLimit = safeNum(opts.keyLimit) || MAX_METADATA_KEYS;
     if (state.items >= maxItems || level > maxDepth) return undefined;
     state.items++;
     if (value === null || typeof value === 'boolean') return value;
@@ -111,19 +127,24 @@
     try {
       var parsed = new URL(candidate);
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) return '';
-      return candidate;
+      return parsed.href;
     } catch (_) {
       return '';
     }
   }
 
   function isoDate(value, fallback) {
-    var parsed = value ? new Date(value) : null;
-    return parsed && Number.isFinite(parsed.getTime()) ? parsed.toISOString() : fallback;
+    if (value === undefined || value === null || typeof value === 'symbol') return fallback;
+    try {
+      var parsed = value instanceof Date ? value : new Date(value);
+      return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : fallback;
+    } catch (_) {
+      return fallback;
+    }
   }
 
   function stableHash(value) {
-    var input = String(value || '');
+    var input = safeStr(value);
     var hash = 2166136261;
     for (var i = 0; i < input.length; i++) {
       hash ^= input.charCodeAt(i);
@@ -274,7 +295,7 @@
   }
 
   function stableSemanticString(value, maxChars) {
-    var limit = Math.max(100, Math.min(Number(maxChars) || 12000, 40000));
+    var limit = Math.max(100, Math.min(safeNum(maxChars) || 12000, 40000));
     var chars = 0;
     function visit(item, depth) {
       if (chars >= limit || depth > MAX_METADATA_DEPTH) return '';
@@ -402,7 +423,7 @@
 
   function identityId(prefix, value) {
     var raw = text(value, 1000);
-    var full = String(prefix || '') + raw;
+    var full = safeStr(prefix) + raw;
     if (full.length <= 240) return full;
     return full.slice(0, 224) + ':' + stableHash(full);
   }
@@ -503,6 +524,7 @@
   function createNodeIdentityAllocator(entries, namespaceForEntry) {
     var canonicalIds = Object.create(null), recordsByComposite = Object.create(null);
     (Array.isArray(entries) ? entries : []).forEach(function (entry) {
+      if (!isObject(entry)) return;
       (entry.graph && Array.isArray(entry.graph.nodes) ? entry.graph.nodes : []).forEach(function (node) {
         var canonical = canonicalNodeBaseId(node, entry);
         if (canonical) { canonicalIds[canonical] = true; return; }
@@ -554,7 +576,7 @@
 
   function boundedLimit(raw, min, max, fallback) {
     if (raw === undefined || raw === null || raw === '') return fallback;
-    var parsed = Number(raw);
+    var parsed = safeNum(raw);
     if (!Number.isFinite(parsed)) return fallback;
     return Math.max(min, Math.min(max, Math.floor(parsed)));
   }
@@ -626,7 +648,7 @@
 
   function nativeUnitToGraph(unit, title) {
     if (!isObject(unit) || !Array.isArray(unit.nodes)) return null;
-    var nodes = unit.nodes.map(function (node, index) {
+    var nodes = unit.nodes.slice(0, MAX_NODES).map(function (node, index) {
       if (!isObject(node)) return null;
       var id = text(node.nodeId || node.id, 240) || ('lesson-' + index);
       return Object.assign({}, node, {
@@ -635,7 +657,7 @@
         type: text(node.type, 100) || 'lesson'
       });
     }).filter(Boolean);
-    var edges = (Array.isArray(unit.edges) ? unit.edges : []).map(function (edge) {
+    var edges = (Array.isArray(unit.edges) ? unit.edges : []).slice(0, MAX_EDGES).map(function (edge) {
       return {
         id: text(edge && edge.id, 240),
         fromId: text(edge && (edge.fromId || edge.from), 240),
@@ -655,17 +677,19 @@
     var nodes = [{ id: 'root', label: text(data.main || title, 320) || 'Main topic', type: 'main', category: null }];
     var edges = [];
     (Array.isArray(data.branches) ? data.branches : []).slice(0, 80).forEach(function (branch, branchIndex) {
+      if (nodes.length >= MAX_NODES) return;
       branch = isObject(branch) ? branch : {};
       var branchId = 'branch-' + branchIndex;
       var branchTitle = text(branch.title, 320) || ('Branch ' + (branchIndex + 1));
       nodes.push({ id: branchId, label: branchTitle, type: 'branch', category: branchTitle, sectionRole: text(branch.sectionRole || branch.role, 100) });
-      edges.push({ fromId: 'root', toId: branchId, type: 'elaborates', relationType: 'elaborates' });
+      if (edges.length < MAX_EDGES) edges.push({ fromId: 'root', toId: branchId, type: 'elaborates', relationType: 'elaborates' });
       (Array.isArray(branch.items) ? branch.items : []).slice(0, 80).forEach(function (item, itemIndex) {
+        if (nodes.length >= MAX_NODES) return;
         var itemId = branchId + '-item-' + itemIndex;
         var label = isObject(item) ? text(item.text || item.label, 320) : text(item, 320);
         if (!label) return;
         nodes.push({ id: itemId, label: label, type: 'item', category: branchTitle });
-        edges.push({ fromId: branchId, toId: itemId, type: 'elaborates', relationType: 'elaborates' });
+        if (edges.length < MAX_EDGES) edges.push({ fromId: branchId, toId: itemId, type: 'elaborates', relationType: 'elaborates' });
       });
     });
     return normalizeGraph({
@@ -678,10 +702,10 @@
     if (!isObject(data) || !Array.isArray(data.nodes) || data.nodes.some(function (node) { return node && node.nodeId !== undefined; })) return null;
     return normalizeGraph({
       version: 'acg/v1', title: text(title, 320),
-      nodes: data.nodes.map(function (node) {
+      nodes: data.nodes.slice(0, MAX_NODES).map(function (node) {
         return isObject(node) ? Object.assign({}, node, { id: text(node.id, 240), label: text(node.label || node.text, 320) }) : node;
       }),
-      edges: Array.isArray(data.edges) ? data.edges : [],
+      edges: Array.isArray(data.edges) ? data.edges.slice(0, MAX_EDGES) : [],
       meta: { conceptMap: { structureType: text(data.structureType, 160) || null } }
     });
   }
@@ -1008,13 +1032,20 @@
     var selected = ordered.slice(0, MAX_EDGE_SOURCE_DETAILS);
     var budget = { items: 0, chars: 0 };
     selected = selected.map(function (detail) {
-      return sanitizeValue(detail, {
+      var cleanDetail = sanitizeValue(detail, {
         maxDepth: 4, maxItems: 1200, maxChars: MAX_EDGE_SOURCE_DETAIL_TEXT,
         stringLimit: MAX_TEXT, arrayLimit: 80, keyLimit: 48
       }, 0, budget);
+      if (!isObject(cleanDetail)) return null;
+      if (!cleanDetail.entryId && detail.entryId) cleanDetail.entryId = text(detail.entryId, 240);
+      if (!cleanDetail.graphKind && detail.graphKind) cleanDetail.graphKind = text(detail.graphKind, 100);
+      return cleanDetail;
     }).filter(isObject);
     var ids = Object.create(null), kinds = Object.create(null);
-    selected.forEach(function (detail) { ids[detail.entryId] = true; kinds[detail.graphKind] = true; });
+    selected.forEach(function (detail) {
+      if (detail.entryId) ids[detail.entryId] = true;
+      if (detail.graphKind) kinds[detail.graphKind] = true;
+    });
     target.learningWeb = Object.assign({}, prior, {
       sourceEntryIds: Object.keys(ids).sort(),
       sourceGraphKinds: Object.keys(kinds).sort(),
@@ -1157,8 +1188,18 @@
         if (addedConnector) mergeEdgeSourceDetails(addedConnector, entry, connector);
       });
     });
-    builder.nodes.forEach(function (node) { if (node.learningWeb) { node.learningWeb.sourceEntryIds.sort(); node.learningWeb.sourceGraphKinds.sort(); } });
-    builder.edges.forEach(function (edge) { if (edge.learningWeb) { edge.learningWeb.sourceEntryIds.sort(); edge.learningWeb.sourceGraphKinds.sort(); } });
+    builder.nodes.forEach(function (node) {
+      if (isObject(node.learningWeb)) {
+        if (Array.isArray(node.learningWeb.sourceEntryIds)) node.learningWeb.sourceEntryIds.sort();
+        if (Array.isArray(node.learningWeb.sourceGraphKinds)) node.learningWeb.sourceGraphKinds.sort();
+      }
+    });
+    builder.edges.forEach(function (edge) {
+      if (isObject(edge.learningWeb)) {
+        if (Array.isArray(edge.learningWeb.sourceEntryIds)) edge.learningWeb.sourceEntryIds.sort();
+        if (Array.isArray(edge.learningWeb.sourceGraphKinds)) edge.learningWeb.sourceGraphKinds.sort();
+      }
+    });
     builder.nodes.sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
     builder.edges.sort(function (a, b) { return (String(a.fromId) + '|' + String(a.toId) + '|' + String(a.type) + '|' + String(a.relationType)).localeCompare(String(b.fromId) + '|' + String(b.toId) + '|' + String(b.type) + '|' + String(b.relationType)); });
     var categories = Object.create(null);
@@ -1217,7 +1258,15 @@
     var opts = isObject(options) ? options : {};
     var storage = opts.storage === undefined ? browserStorage() : opts.storage;
     var storageKey = text(opts.storageKey, 240) || STORAGE_KEY;
-    var clock = typeof opts.now === 'function' ? opts.now : function () { return new Date().toISOString(); };
+    var rawClock = typeof opts.now === 'function' ? opts.now : function () { return new Date().toISOString(); };
+    var clock = function () {
+      try {
+        var val = rawClock();
+        return isoDate(val, new Date().toISOString());
+      } catch (_) {
+        return new Date().toISOString();
+      }
+    };
     var memory = emptySnapshot();
     // `memoryDirty` means at least one explicit entry mutation has not reached
     // durable storage. A per-entry journal prevents a retry from replaying an
@@ -1227,7 +1276,7 @@
     var guardedDeletionConflicts = Object.create(null);
     var generationSequence = 0;
     var generationSeed = stableHash([
-      String(clock()), String(Date.now()), String(Math.random())
+      safeStr(clock()), String(Date.now()), String(Math.random())
     ].join(':'));
 
     function registryEntryKey(id, scopeId) {
@@ -1386,7 +1435,7 @@
 
     function saveGraph(graph, metadata) {
       var snapshot = read();
-      var entry = normalizeEntry({ graph: graph }, Object.assign({}, metadata || {}, {
+      var entry = normalizeEntry({ graph: graph }, Object.assign({}, isObject(metadata) ? metadata : {}, {
         now: clock(), generationId: nextEntryGeneration()
       }));
       if (!entry) return null;
@@ -1401,6 +1450,7 @@
       var mutationResult = result.mutationResults[key];
       var accepted = !mutationResult || mutationResult.status !== 'conflict';
       var saved = clone(entry);
+      if (!saved || typeof saved !== 'object') return null;
       // Runtime delivery status is intentionally not serialized as graph data.
       Object.defineProperty(saved, 'storagePersisted', { value: !!(result.storagePersisted && accepted), enumerable: false });
       Object.defineProperty(saved, 'conflict', { value: !accepted, enumerable: false });
@@ -1518,10 +1568,14 @@
       var wanted = text(id, 240);
       var wantedScope = text(scopeId, 240);
       var snapshot = read();
+      var removed = [];
       var nextGraphs = snapshot.graphs.filter(function (entry) {
-        return entry.id !== wanted || (wantedScope && entry.scopeId !== wantedScope);
+        var keep = entry.id !== wanted || (wantedScope && entry.scopeId !== wantedScope);
+        if (!keep) removed.push(entry);
+        return keep;
       });
-      if (nextGraphs.length === snapshot.graphs.length) return false;
+      if (!removed.length) return false;
+      removed.forEach(function (entry) { delete guardedDeletionConflicts[registryEntryKey(entry.id, entry.scopeId)]; });
       snapshot.graphs = nextGraphs;
       write(snapshot);
       return true;
@@ -1628,6 +1682,7 @@
         return entry.scopeId === wantedScope;
       }).map(function (entry) { return entry.id; });
       if (!removedIds.length) return { removedIds: [], storagePersisted: true };
+      removedIds.forEach(function (id) { delete guardedDeletionConflicts[registryEntryKey(id, wantedScope)]; });
       snapshot.graphs = snapshot.graphs.filter(function (entry) { return entry.scopeId !== wantedScope; });
       var result = write(snapshot);
       return { removedIds: removedIds, storagePersisted: result.storagePersisted };
@@ -1679,15 +1734,15 @@
     };
   }
 
-  var API = {
+  var API = Object.freeze({
     VERSION: VERSION,
     STORAGE_KEY: STORAGE_KEY,
-    LIMITS: {
+    LIMITS: Object.freeze({
       graphs: MAX_GRAPHS, nodes: MAX_NODES, edges: MAX_EDGES, resources: MAX_RESOURCES,
       text: MAX_TEXT, metadataDepth: MAX_METADATA_DEPTH, metadataKeys: MAX_METADATA_KEYS,
       metadataArray: MAX_METADATA_ARRAY, metadataItems: MAX_METADATA_ITEMS, graphText: MAX_GRAPH_TEXT,
       edgeSourceDetails: MAX_EDGE_SOURCE_DETAILS, edgeSourceDetailText: MAX_EDGE_SOURCE_DETAIL_TEXT
-    },
+    }),
     GRAPH_KINDS: GRAPH_KINDS,
     DEFAULT_SCOPE: DEFAULT_SCOPE,
     normalizeGraphKind: normalizeGraphKind,
@@ -1702,11 +1757,11 @@
     createRegistry: createRegistry,
     getDefaultRegistry: getDefaultRegistry,
     subscribe: subscribe
-  };
+  });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.LearningWebRegistry = API;
   }
 })();

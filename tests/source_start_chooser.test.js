@@ -188,11 +188,22 @@ describe('additive source starting points in the compiled source shell', () => {
     expect(button(m, 'Create from topic').disabled).toBe(true);
     await submit(m); expect(m.props.handleGenerate).not.toHaveBeenCalled();
     choose(m, 'From a word list'); typeInto(field(m, 'textarea'), 'river bank');
-    expect(button(m, 'Create glossary').disabled).toBe(true);
+    // With no AI a word-list glossary uses the built-in dictionary (locked on); the other word-list resources still need AI.
+    select(field(m, '[data-source-word-resource]'), 'concept-sort');
+    expect(button(m, 'Create concept sort').disabled).toBe(true);
+    expect(chooser(m).textContent).toContain('Concept Sort and Writing Scaffolds need AI. Choose Glossary to use the built-in dictionary instead.');
     await submit(m); expect(m.props.handleGenerate).not.toHaveBeenCalled();
+    select(field(m, '[data-source-word-resource]'), 'glossary');
+    expect(field(m, '[data-builtin-dictionary-toggle]').checked).toBe(true);
+    expect(field(m, '[data-builtin-dictionary-toggle]').disabled).toBe(true);
+    expect(field(m, '[data-builtin-dictionary-locked-note]').textContent).toContain('No AI is connected, so the built-in dictionary is used.');
+    expect(button(m, 'Create glossary').disabled).toBe(false);
+    await submit(m);
+    expect(m.props.handleGenerate).toHaveBeenLastCalledWith('glossary', null, false, null,
+      { seed: { kind: 'word-list', terms: ['river bank'], termLanguage: 'English', dictionary: true }, rethrowErrors: true });
     choose(m, 'Blank resource');
     expect(button(m, 'Open blank draft').disabled).toBe(false);
-    await submit(m); expect(m.props.handleGenerate).toHaveBeenCalledTimes(1);
+    await submit(m); expect(m.props.handleGenerate).toHaveBeenCalledTimes(2);
     choose(m, 'From a topic');
     window.__alloResolveAiCapability = () => ({ text: true });
     act(() => window.dispatchEvent(new Event('alloflow:ai-config-changed')));
@@ -395,9 +406,9 @@ describe('a word list can start from AI word ideas the teacher then edits', () =
     await run(m);
     const prompt = window.callGemini.mock.calls[0][0];
     expect(window.callGemini.mock.calls[0][1], 'asks for JSON').toBe(true);
-    expect(prompt).toContain('"the water cycle"');
+    expect(prompt).toContain('<UNTRUSTED_TOPIC>the water cycle</UNTRUSTED_TOPIC>');
     expect(prompt).toContain('5th Grade students');
-    expect(prompt).toContain('Write every term in "English"');
+    expect(prompt).toContain('<UNTRUSTED_LANGUAGE>English</UNTRUSTED_LANGUAGE>');
     expect(prompt).toContain('["evaporation","aquifer"]');
     expect(field(m, 'textarea').value, 'kept first, case-insensitive repeat dropped').toBe('evaporation\naquifer\ncondensation\nprecipitation\nrunoff');
     expect(document.activeElement).toBe(field(m, 'textarea'));
@@ -528,13 +539,38 @@ describe('with a passage entered, these options make something separate and star
     sourceUntouched(m);
   });
 
-  it('without a passage it keeps the old title, no fold button, and the choices in view', () => {
+  // 2026-11-23 (M4): with no passage the chooser sits inside the Source panel's "Other ways to start" disclosure.
+  it('without a passage it keeps the old title and no fold button, inside "Other ways to start", in view once that opens', () => {
     for (const inputText of ['', '   \n  ']) {
       const m = mount({ inputText }, { unfold: false });
       expect(chooser(m).querySelector('h3').textContent).toBe('Start without a passage');
       expect(toggle(m)).toBeNull();
       expect(choices(m)).toHaveLength(3);
+      const other = m.el.querySelector('[data-source-other-ways-toggle]');
+      const region = m.el.querySelector('#' + other.getAttribute('aria-controls'));
+      expect(chooser(m).closest('[hidden]'), 'behind the closed disclosure').toBe(region);
+      act(() => other.click());
+      expect(chooser(m).closest('[hidden]'), 'in view').toBeNull();
+      expect(m.el.querySelectorAll('[data-source-start-chooser]'), 'one chooser only').toHaveLength(1);
+      // fix2: compact inside the fold, so the three starts keep one row at desktop width as before.
+      expect(chooser(m).getAttribute('data-source-start-compact')).toBe('true');
+      expect(chooser(m).className).toContain('px-2 py-3');
+      expect(chooser(m).className).not.toContain('p-3');
+      expect(choices(m)[0].parentElement.className).toBe('flex flex-wrap gap-1.5');
+      for (const button of choices(m)) {
+        expect(button.className).toContain('grow px-2.5');
+        expect(button.className).not.toMatch(/\bpx-3\b/);
+      }
     }
+  });
+
+  it('with a passage the chooser keeps its regular padding and spacing', () => {
+    const m = mount({}, { unfold: false });
+    expect(chooser(m).hasAttribute('data-source-start-compact')).toBe(false);
+    expect(chooser(m).className).toContain(' p-3');
+    act(() => toggle(m).click());
+    expect(choices(m)[0].parentElement.className).toBe('flex flex-wrap gap-2');
+    for (const button of choices(m)) expect(button.className).toMatch(/\bpx-3\b/);
   });
 
   it('a request from another tool opens its form even while folded', () => {

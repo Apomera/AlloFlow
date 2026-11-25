@@ -60,8 +60,16 @@
     "50x more",
     "5x more"
   ],
+  "stem_tool_climateExplorer.js": [
+    "about 27 times",
+    "about 28 times",
+    "about 3 times",
+    "nearly 4 times",
+    "roughly 110 times"
+  ],
   "stem_tool_companionplanting.js": [
-    "43x less"
+    "about 50 times",
+    "about 6 times"
   ],
   "stem_tool_coralreef.js": [
     "about 5 times"
@@ -70,7 +78,8 @@
     "about 100,000 times"
   ],
   "stem_tool_echolocation.js": [
-    "4.3x faster"
+    "about 190 times",
+    "about 4.3 times"
   ],
   "stem_tool_epidemic.js": [
     "roughly 70 times"
@@ -80,11 +89,9 @@
     "10x faster"
   ],
   "stem_tool_fireecology.js": [
-    "10x more",
-    "3x larger",
-    "3x more",
-    "50x less",
-    "50x more"
+    "about 100 times",
+    "about 3 times",
+    "about 70 times"
   ],
   "stem_tool_flightsim.js": [
     "10x more",
@@ -98,6 +105,9 @@
     "about 25 times",
     "about 400 times"
   ],
+  "stem_tool_microbiology.js": [
+    "about 1,000 times"
+  ],
   "stem_tool_migration.js": [
     "10x more"
   ],
@@ -109,12 +119,14 @@
     "about 11 times"
   ],
   "stem_tool_nuclearlab.js": [
+    "100x more",
+    "10x smaller",
     "about 21 orders of magnitude"
   ],
   "stem_tool_nutritionlab.js": [
-    "10x faster",
     "3x faster",
-    "3x more",
+    "about 1.8 times",
+    "about 4 times",
     "about 60 times",
     "around 60 times"
   ],
@@ -149,6 +161,10 @@
     "roughly 1,000 times",
     "roughly 32 times"
   ],
+  "stem_tool_playlab.js": [
+    "about 3 times",
+    "about 7 times"
+  ],
   "stem_tool_printingpress.js": [
     "14x larger",
     "3x faster",
@@ -163,7 +179,7 @@
     "about 5 times"
   ],
   "stem_tool_renewables.js": [
-    "3x more"
+    "about 80 times"
   ],
   "stem_tool_roadready.js": [
     "about 2 times",
@@ -191,11 +207,18 @@
     "3x faster",
     "3x larger",
     "3x more",
-    "4x faster",
     "7x larger",
     "80x more",
     "about 1.61 times",
-    "about 4.15 times"
+    "about 3.6 times",
+    "about 4.15 times",
+    "about 7 times"
+  ],
+  "stem_tool_spacecolony.js": [
+    "about 33 times"
+  ],
+  "stem_tool_throwlab.js": [
+    "about 4 times"
   ],
   "stem_tool_unitconvert.js": [
     "about 10 times",

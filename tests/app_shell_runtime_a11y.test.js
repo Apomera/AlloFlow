@@ -24,7 +24,8 @@ describe('application shell accessibility remediation', () => {
     expect(builder).toContain("desktop/web-app', 'public', 'allobot_module.js");
   });
   it('uses AA contrast for the AI settings reset button', () => {
-    expect(modal).toContain('bg-slate-200 text-slate-700 px-4 py-2.5');
+    // slate-800 on slate-200 (darker than the original slate-700 fix).
+    expect(modal).toContain('bg-slate-200 text-slate-800 px-4 py-2.5');
     expect(modal).not.toContain('bg-slate-200 text-slate-600 px-4 py-2.5');
   });
 });

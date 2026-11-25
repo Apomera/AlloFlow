@@ -80,6 +80,8 @@
   // the words whose Change is open, kept open when the rows are drawn again. On a wider screen the buttons are always there.
   var changing = Object.create(null);
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
+  // Meaning recordings of the last make (text -> MP3 address, or null), and its meanings with none: see meaningsFor in make().
+  var meaningClipsNow = null, meaningsMissingNow = [];
   var wordsTimer = 0;
   // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js, word_picture_matcher.js, packets_my_words.js).
   var media = null, symbols = null, art = null, matcher = null, myWords = null, pictureState = 'idle', heard = null, pendingPicWord = '';
@@ -939,6 +941,10 @@
       radio.parentNode.classList.toggle('is-on', radio.checked);
     });
     show('code-panel', state.mode === 'check');
+    // 2026-11-23: the page heading says which kind of file is being made ("Make a vocabulary check" opened a page
+    // headed "Make vocabulary practice", and the choice itself is in step 3).
+    var heading = doc.querySelector('main h1');
+    if (heading) heading.textContent = state.mode === 'check' ? 'Make a vocabulary check' : 'Make vocabulary practice';
     if ($('f-repeat-missed')) $('f-repeat-missed').disabled = state.mode === 'check';
     syncMix();
     drawMoreSummary();
@@ -966,6 +972,7 @@
     show('try', false);
     show('save', false);
     show('download-bundle', false);
+    show('worksheet-audio', false);
     show('after-save', false);
     show('build-problem', false);
   }
@@ -994,6 +1001,7 @@
       : null;
     var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
       voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, diagrams: !!state.diagrams, matcher: matcher, art: art, syllables: sylTbl };
+    if (meaningClipsNow) vocabOpts.meaningClips = meaningClipsNow;
     if (orderMode) vocabOpts.order = orderMode;
     if (orderSeed !== null) vocabOpts.orderSeed = orderSeed;
     if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
@@ -1033,11 +1041,46 @@
     };
     // Recordings made ahead of time, for the words the file says out loud (Read aloud on, recordings not turned off).
     // Teacher recordings in My words are merged with priority over built-in recordings, and work even offline.
-    if (!state.readAloud || !state.voices) return Promise.resolve(go(null));
+    if (!state.readAloud || !state.voices) { meaningClipsNow = null; meaningsMissingNow = []; return Promise.resolve(go(null)); }
     var wordsToHear = typeof builder.wordsToHear === 'function' ? builder.wordsToHear(rows, types) : rows.map(function (r) { return r.word; });
     var canMedia = !!(media && typeof loader.portableAudio === 'function');
-    if (!canMedia && !myWords) return Promise.resolve(go(null));
+    // Meanings recorded ahead of time (2026-11-23), where this site has them: each word's meaning, and with Word to
+    // meaning its 3 wrong answers. A question gets them only when all its choices have one (packet_vocab_builder.js).
+    // Those this site does not have may be in My words, made on the computer-voice page (packets_voice_meanings.js);
+    // the rest are named under the file, with a link to make them there (meaningsMissingNow).
+    var meaningsFor = function () {
+      var texts = [], squeeze = function (t) { return String(t).replace(/\s+/g, ' ').trim(); };
+      meaningsMissingNow = [];
+      if (types.indexOf('meaning') >= 0 || types.indexOf('word') >= 0) {
+        rows.forEach(function (r) {
+          if (!r || !r.def) return;
+          texts.push(squeeze(r.def));
+          if (types.indexOf('meaning') >= 0) (r.wrong || []).forEach(function (c) { if (c && c.def) texts.push(squeeze(c.def)); });
+        });
+      }
+      texts = texts.filter(function (t, i) { return t && texts.indexOf(t) === i; });
+      if (!texts.length) return Promise.resolve(null);
+      var fromSite = media && typeof media.meaningClips === 'function'
+        ? media.meaningClips(texts, function (text) { if (run === buildRun) making(text); }).then(null, function () { return {}; }) : Promise.resolve({});
+      return fromSite.then(function (got) {
+        var have = Object.assign(Object.create(null), isObject(got) ? got : {});
+        var left = texts.filter(function (t) { return !have[t]; });
+        var mine = left.length && myWords && typeof myWords.getMeaningClips === 'function' ? myWords.getMeaningClips(left).then(null, function () { return {}; }) : Promise.resolve({});
+        return mine.then(function (found) {
+          Object.keys(found || {}).forEach(function (t) { var c = found[t]; if (c && typeof c.dataUri === 'string') have[t] = c.dataUri; });
+          meaningsMissingNow = texts.filter(function (t) { return !have[t]; });
+          return Object.keys(have).length ? have : null;
+        });
+      }, function () { return null; });
+    };
     making('Getting the recordings.');
+    return meaningsFor().then(function (gotMeanings) {
+      meaningClipsNow = gotMeanings;
+      if (run !== buildRun) return { html: null, said: 'Cancelled.' };
+      if (!canMedia && !myWords) return go(null);
+      return wordRecordings();
+    });
+    function wordRecordings() {
     return loadMyClipsFor(wordsToHear).then(function (ownClips) {
       if (run !== buildRun) return { html: null, said: 'Cancelled.' };
       var ownKeys = Object.keys(ownClips);
@@ -1057,6 +1100,7 @@
         return go(ownKeys.length ? ownClips : null);
       });
     });
+    }
   }
   function rowForPreviewItem(lesson, t, item) {
     var id = String((item && item.id) || '');
@@ -1242,16 +1286,21 @@
     if (state.mode === 'check') data.push(['Practice first', samples ? count(samples, 'practice question') + ', with right or wrong shown, not scored. Its words are not in your list.' : 'None: every practice question shares a word with your list.']);
     // The recordings in the file: how many words, and what they add to its size.
     var clips = Object.keys(lesson.audio || {}), clipBytes = clips.reduce(function (n, id) { return n + String(lesson.audio[id]).length; }, 0);
+    // Meaning recordings have ids that start with m (packet_vocab_builder.js meaningClipOf); word recordings with w.
+    var meaningIds = clips.filter(function (id) { return id.charAt(0) === 'm'; }), wordIds = clips.filter(function (id) { return id.charAt(0) !== 'm'; });
+    var heardWhat = [wordIds.length ? count(wordIds.length, 'word') : '', meaningIds.length ? count(meaningIds.length, 'meaning') : ''].filter(Boolean).join(' and ');
     var pictureIds = Object.keys(lesson.images || {}), pictureBytes = pictureIds.reduce(function (n, id) { return n + String(lesson.images[id]).length; }, 0);
-    data.push(['Read aloud', !state.readAloud ? 'Off.' : clips.length
-      ? 'On. ' + capital(count(clips.length, 'word')) + ' have a recording made ahead of time (a machine voice), about ' + fileSize(clipBytes) + ' of the file. The device voice reads the rest, where the device has a voice that runs on it.'
-      : 'On, where the device has a voice that runs on it.']);
+    var missingMeanings = state.readAloud && state.voices && myWords && typeof myWords.getMeaningClips === 'function' ? meaningsMissingNow.slice(0, 120) : [];
+    data.push(['Read aloud', (!state.readAloud ? 'Off.' : clips.length
+      ? 'On. ' + capital(heardWhat) + ' have a recording made ahead of time (a machine voice), about ' + fileSize(clipBytes) + ' of the file. The device voice reads the rest, where the device has a voice that runs on it.'
+      : 'On, where the device has a voice that runs on it.')
+      + (missingMeanings.length ? ' ' + capital(count(missingMeanings.length, 'meaning')) + (missingMeanings.length === 1 ? ' has' : ' have') + ' no recording yet: More options has a link to make them with the computer voice.' : '')]);
     if (pictureIds.length) data.push(['Pictures', (!state.diagrams && !hasCustomPictures())
       ? capital(count(pictureIds.length, 'picture')) + ' from the Word Sounds picture set, about ' + fileSize(pictureBytes) + ' of the file. Their credits are under About this file.'
       : capital(count(pictureIds.length, 'picture')) + ', about ' + fileSize(pictureBytes) + ' of the file. Their credits are under About this file.']);
     if (notes && notes.length) data.push(['Note', notes.join(' ')]);
     setText('voices-line', !state.readAloud ? 'Read aloud is off, so the file has no recordings.' : !state.voices ? 'Off: the device voice reads every word.'
-      : clips.length ? capital(count(clips.length, 'word')) + ' in this file have a recording, about ' + fileSize(clipBytes) + '.' : 'No word in this file has a recording made ahead of time.');
+      : clips.length ? capital(heardWhat) + ' in this file have a recording, about ' + fileSize(clipBytes) + '.' : 'No word in this file has a recording made ahead of time.');
     var vLine = $('voices-line');
     if (vLine && vLine.parentNode) {
       var vWrap = $('voices-missing-wrap');
@@ -1281,6 +1330,30 @@
       } else if (vWrap) {
         vWrap.hidden = true;
         vWrap.textContent = '';
+      }
+      // 2026-11-23: meanings of this file with no recording (a teacher's own or changed meaning, a wrong answer written
+      // here, or any meaning where this site has none): made on the computer-voice page, kept in My words, used here by
+      // itself (myWords.onChange below makes the file again). A question plays meaning recordings only when all its
+      // answers have one.
+      var mWrap = $('meanings-missing-wrap');
+      if (missingMeanings.length) {
+        if (!mWrap) {
+          mWrap = el('span', 'hint');
+          mWrap.id = 'meanings-missing-wrap';
+          (vWrap || vLine).parentNode.insertBefore(mWrap, (vWrap || vLine).nextSibling);
+        }
+        mWrap.textContent = capital(count(missingMeanings.length, 'meaning')) + (missingMeanings.length === 1 ? ' in this file has' : ' in this file have') + ' no recording yet. ';
+        var mLink = el('a', '', 'Make them with the computer voice');
+        mLink.id = 'meanings-add-link';
+        mLink.href = VOICE_PAGE + '#meanings=' + encodeURIComponent(JSON.stringify(missingMeanings));
+        mLink.target = '_blank';
+        mLink.rel = 'noopener';
+        mLink.appendChild(el('span', 'sr-only', ' (opens in a new tab)'));
+        mWrap.appendChild(mLink);
+        mWrap.hidden = false;
+      } else if (mWrap) {
+        mWrap.hidden = true;
+        mWrap.textContent = '';
       }
     }
     data.push(['Title', lesson.title]);
@@ -1313,6 +1386,7 @@
     show('summary', true);
     show('save', true);
     show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildVocabWorksheetHtml === 'function'));
+    show('worksheet-audio', !!(clips.length && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.openVocabAudio === 'function'));
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
   }
@@ -1962,10 +2036,14 @@
         syllablesTable: (window.AlloModules && window.AlloModules.SyllableTableEn) || null,
         loadPictures: loadVocabPictures,
         own: ownVocabPictures,
-        creditLine: myWords && typeof myWords.creditLine === 'function' ? myWords.creditLine : null
+        creditLine: myWords && typeof myWords.creditLine === 'function' ? myWords.creditLine : null,
+        lesson: built && built.lesson ? built.lesson : null,
+        wordClips: built && built.clips ? built.clips : myClips,
+        meaningClips: meaningClipsNow || null
       };
     };
     if (cards && typeof cards.wireVocabWorksheet === 'function' && $('print-worksheet')) cards.wireVocabWorksheet($('print-worksheet'), vocabWorksheetState);
+    if (cards && typeof cards.wireVocabAudio === 'function' && $('worksheet-audio')) cards.wireVocabAudio($('worksheet-audio'), vocabWorksheetState);
     if ($('download-bundle')) $('download-bundle').addEventListener('click', function () {
       if (!built || !built.html) return;
       var zipKit = window.AlloPacketZip;
@@ -2124,7 +2202,9 @@
     drawMoreSummary();
     if (myWords) {
       migrateLegacyPictures();
-      if (typeof myWords.onChange === 'function') myWords.onChange(function (change) { if (!change || !change.here) syncMyPictures(); });
+      // A change made in another tab (a recording made on the computer-voice page, 2026-11-23): the file is made again
+      // with it, so the teacher has nothing to press on coming back.
+      if (typeof myWords.onChange === 'function') myWords.onChange(function (change) { if (!change || !change.here) { syncMyPictures(); if (step === 3 && built) makeSoon(300); } });
     }
     startBank();
     if (!(window.AlloModules && window.AlloModules.SyllableTableEn) && doc && doc.createElement && !(doc.querySelector && doc.querySelector('script[data-allo-syllable-table="1"]'))) {

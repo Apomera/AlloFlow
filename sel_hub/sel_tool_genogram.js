@@ -16,19 +16,27 @@
 // Category: care-of-self
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
+  if (!window.SelHub || typeof window.SelHub !== 'object') {
+    window.SelHub = {
+      _registry: Object.create(null), _order: [],
+      registerTool: function(id, config) {
+        if (!id || typeof id !== 'string' || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+        config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+      },
+      isRegistered: function(id) { return !!(id && Object.prototype.hasOwnProperty.call(this._registry, id)); },
+      renderTool: function(id, ctx) { var tool = (id && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || !tool.render) return null; return tool.render(ctx); }
+    };
+  }
+  if (typeof window.SelHub.isRegistered === 'function' && window.SelHub.isRegistered('genogram')) return;
 
-  (function() {
-    if (document.getElementById('allo-live-genogram')) return;
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body) return null;
+    var existing = document.getElementById('allo-live-genogram');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-genogram';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -37,10 +45,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
   // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Genogram
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-genogram-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || document.getElementById('allo-genogram-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-genogram-a11y-css';
     st.textContent = [
@@ -61,6 +70,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
     ].join('\n');
     document.head.appendChild(st);
   })();
+
+  var LOCAL_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|cut\s+myself|self[\s-]?harm|overdose)\b/i;
+
+  function safePeople(raw) {
+    return (Array.isArray(raw) ? raw : []).filter(function(p) { return p && typeof p === 'object'; });
+  }
+  function safeRels(raw) {
+    return (Array.isArray(raw) ? raw : []).filter(function(r) { return r && typeof r === 'object'; });
+  }
 
   // The 3 generations.
   var GENS = [
@@ -116,61 +134,74 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       var _gen_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _gen_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fb7185':'#000000','#be123c':'#000000','#fff':'#000000'};
       var _gen_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#fb7185':'#be123c','#16a34a':'#15803d','#ef4444':'#b91c1c','#94a3b8':'#475569','#64748b':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b','#fcd34d':'#78350f'}, _gen_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#16a34a':'#ffff00','#ef4444':'#ffff00','#fb7185':'#ffff00','#64748b':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00'};
       var _gen_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1'}, _gen_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00'};
-      var _genBg = function(h){ return _genHC ? (_gen_BGH[h]||h) : (_genL ? (_gen_BGL[h]||h) : h); };
-      var _genFg = function(h){ return _genHC ? (_gen_FGH[h]||h) : (_genL ? (_gen_FGL[h]||h) : h); };
-      var _genBd = function(h){ return _genHC ? (_gen_BDH[h]||'#ffff00') : (_genL ? (_gen_BDL[h]||h) : h); };
+      var _genBg = function(h){ return _genHC ? (Object.prototype.hasOwnProperty.call(_gen_BGH, h) ? _gen_BGH[h] : h) : (_genL ? (Object.prototype.hasOwnProperty.call(_gen_BGL, h) ? _gen_BGL[h] : h) : h); };
+      var _genFg = function(h){ return _genHC ? (Object.prototype.hasOwnProperty.call(_gen_FGH, h) ? _gen_FGH[h] : h) : (_genL ? (Object.prototype.hasOwnProperty.call(_gen_FGL, h) ? _gen_FGL[h] : h) : h); };
+      var _genBd = function(h){ return _genHC ? (Object.prototype.hasOwnProperty.call(_gen_BDH, h) ? _gen_BDH[h] : '#ffff00') : (_genL ? (Object.prototype.hasOwnProperty.call(_gen_BDL, h) ? _gen_BDL[h] : h) : h); };
+      if (!ctx || !ctx.React) return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
       var announceToSR = ctx.announceToSR;
       var onSafetyFlag = ctx.onSafetyFlag || null;
-      var _genBand = (ctx && ctx.gradeBand) || 'high';
+      var _genBand = (ctx && typeof ctx.gradeBand === 'string' && ctx.gradeBand) || 'high';
       function isImeComposing(e) {
         return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
       }
       function announceGEN(msg) {
         if (!msg) return;
         if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-genogram');
-          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
-        }
+        var lr = ensureLiveRegion();
+        if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
       }
 
-      var d = labToolData.genogram || defaultState();
+      var rawD = labToolData.genogram;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
       function setGEN(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.genogram) || defaultState();
+          var prevObj = (prev && typeof prev === 'object') ? prev : {};
+          var priorRaw = prevObj.genogram;
+          var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
           var next = Object.assign({}, prior, patch);
           if (patch.people || patch.relationships) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { genogram: next });
+          return Object.assign({}, prevObj, { genogram: next });
         });
       }
       function scanGenogramText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'genogram', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          try {
+            var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'genogram', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          } catch (_) {}
         }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && (scan.hasCrisis || scan.triggered)) {
-            blocked = true;
-            if (typeof onSafetyFlag === 'function') {
-              try { onSafetyFlag({ toolId: 'genogram', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+        if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          try {
+            var scan = window.SelHub.scanForCrisis(trimmed);
+            if (scan && (scan.hasCrisis || scan.triggered)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'genogram', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
             }
+          } catch (_) {}
+        }
+        if (!blocked && LOCAL_CRISIS_RE.test(trimmed)) {
+          blocked = true;
+          if (typeof onSafetyFlag === 'function') {
+            try { onSafetyFlag({ toolId: 'genogram', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
           }
         }
         if (blocked) {
           setGEN({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Genogram', contentSnippet: trimmed });
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Genogram', contentSnippet: trimmed }); } catch (_) {}
           }
+          announceGEN('Support resources are available now: call or text 988, text HOME to 741741, or call 911 in an emergency.');
         }
         return blocked;
       }
@@ -210,7 +241,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           var targetId = tabs[next].id;
           goto(targetId);
           setTimeout(function() {
-            var el = typeof document !== 'undefined' && document.getElementById('gen-tab-' + targetId);
+            var el = (typeof document === 'object' && document) ? document.getElementById('gen-tab-' + targetId) : null;
             if (el && el.focus) el.focus();
           }, 0);
         }
@@ -240,7 +271,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _genHC ? '#000000' : (_genL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _genBd('#334155'), fontSize: 11, color: _genFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Family-of-origin work can stir up a lot. If a memory or pattern surfaces that feels heavy, that is real; bring it to a counselor, school psych, or family therapist. Crisis Text Line: text HOME to 741741. Crisis Companion is in this SEL Hub.'
+          'Family-of-origin work can stir up a lot. If a memory or pattern surfaces that feels heavy, that is real; bring it to a counselor, school psych, or family therapist. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in an emergency. Crisis Companion is in this SEL Hub.'
         );
       }
 
@@ -248,8 +279,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // TREE — SVG visualization
       // ═══════════════════════════════════════════════════════════
       function renderTree() {
-        var people = (Array.isArray(d.people) ? d.people : []);
-        var rels = Array.isArray(d.relationships) ? d.relationships : [];
+        var people = safePeople(d.people);
+        var rels = Array.isArray(d.relationships) ? d.relationships.filter(function(r) { return r && typeof r === 'object'; }) : [];
 
         if (people.length === 0) {
           return h('div', null,
@@ -307,8 +338,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           return h('g', { key: 'p_' + p.id },
             inner,
             deceased,
-            h('text', { x: pos.x, y: pos.y + size/2 + 16, textAnchor: 'middle', fontSize: 11, fill: _genFg('#e2e8f0'), style: { fontWeight: 700 } }, (p.name || '?').slice(0, 14)),
-            p.year ? h('text', { x: pos.x, y: pos.y + size/2 + 30, textAnchor: 'middle', fontSize: 9, fill: _genFg('#94a3b8') }, p.year) : null
+            h('text', { x: pos.x, y: pos.y + size/2 + 16, textAnchor: 'middle', fontSize: 11, fill: _genFg('#e2e8f0'), style: { fontWeight: 700 } }, String(p.name || '?').slice(0, 14)),
+            p.year ? h('text', { x: pos.x, y: pos.y + size/2 + 30, textAnchor: 'middle', fontSize: 9, fill: _genFg('#94a3b8') }, String(p.year).slice(0, 12)) : null
           );
         }
 
@@ -419,29 +450,32 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // PEOPLE — add / edit people
       // ═══════════════════════════════════════════════════════════
       function renderPeople() {
-        var people = (Array.isArray(d.people) ? d.people : []);
+        var people = safePeople(d.people);
 
         function startAdd(gen) { setGEN({ addingForGen: gen, editingPersonId: null }); }
         function startEdit(id) { setGEN({ editingPersonId: id, addingForGen: null }); }
         function cancel() { setGEN({ addingForGen: null, editingPersonId: null }); }
         function deletePerson(id) {
           setLabToolData(function(prev) {
-            var prior = (prev && prev.genogram) || defaultState();
-            var prevPeople = Array.isArray(prior.people) ? prior.people : [];
-            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
-            var nx = prevPeople.filter(function(p) { return p && p.id !== id; });
-            var nextRels = prevRels.filter(function(r) { return r && r.a !== id && r.b !== id; });
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.genogram;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevPeople = safePeople(prior.people);
+            var prevRels = safeRels(prior.relationships);
+            var nx = prevPeople.filter(function(p) { return p.id !== id; });
+            var nextRels = prevRels.filter(function(r) { return r.a !== id && r.b !== id; });
             var next = Object.assign({}, prior, {
               people: nx,
               relationships: nextRels,
               editingPersonId: prior.editingPersonId === id ? null : prior.editingPersonId,
               lastUpdated: todayISO()
             });
-            return Object.assign({}, prev, { genogram: next });
+            return Object.assign({}, prevObj, { genogram: next });
           });
           announceGEN('Person removed from genogram.');
         }
         function saveForm() {
+          if (typeof document !== 'object' || !document) return;
           var nameEl = document.getElementById('gen-name');
           var shapeEl = document.getElementById('gen-shape');
           var yearEl = document.getElementById('gen-year');
@@ -455,20 +489,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             alive: aliveEl ? aliveEl.checked : true,
             notes: notesEl ? notesEl.value.trim() : ''
           };
-          scanGenogramText([entry.name, entry.notes].filter(Boolean).join(' '));
+          var isCrisis = scanGenogramText([entry.name, entry.notes].filter(Boolean).join(' '));
           var wasEditing = !!d.editingPersonId;
           setLabToolData(function(prev) {
-            var prior = (prev && prev.genogram) || defaultState();
-            var prevPeople = Array.isArray(prior.people) ? prior.people : [];
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.genogram;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevPeople = safePeople(prior.people);
+            var tierPatch = isCrisis ? { _crisisTier: 3 } : {};
             var nextPeople;
             if (prior.editingPersonId) {
-              nextPeople = prevPeople.map(function(p) { return p && p.id === prior.editingPersonId ? Object.assign({}, p, entry) : p; });
-              return Object.assign({}, prev, { genogram: Object.assign({}, prior, { people: nextPeople, editingPersonId: null, lastUpdated: todayISO() }) });
+              nextPeople = prevPeople.map(function(p) { return p.id === prior.editingPersonId ? Object.assign({}, p, entry) : p; });
+              return Object.assign({}, prevObj, { genogram: Object.assign({}, prior, tierPatch, { people: nextPeople, editingPersonId: null, lastUpdated: todayISO() }) });
             }
             var created = Object.assign({}, entry, { id: uid(), gen: prior.addingForGen });
-            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { people: prevPeople.concat([created]), addingForGen: null, lastUpdated: todayISO() }) });
+            return Object.assign({}, prevObj, { genogram: Object.assign({}, prior, tierPatch, { people: prevPeople.concat([created]), addingForGen: null, lastUpdated: todayISO() }) });
           });
-          announceGEN(wasEditing ? ('Updated ' + entry.name + '.') : ('Added ' + entry.name + ' to genogram.'));
+          if (!isCrisis) announceGEN(wasEditing ? ('Updated ' + entry.name + '.') : ('Added ' + entry.name + ' to genogram.'));
         }
 
         function renderForm() {
@@ -481,7 +518,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           return h('div', { key: formKey,
             onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape') { e.preventDefault(); cancel(); } },
             style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '2px solid ' + _genBd('#fb7185'), marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 10px', color: _genFg('#fda4af'), fontSize: 16, fontWeight: 800 } }, (editing ? 'Edit person' : 'Add to ') + genLabel),
+            h('h3', { style: { margin: '0 0 10px', color: _genFg('#fda4af'), fontSize: 16, fontWeight: 800 } }, (editing ? 'Edit person — ' : 'Add to ') + genLabel),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'gen-name', style: { display: 'block', fontSize: 11, color: _genFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Name or relation'),
@@ -564,31 +601,44 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // RELATIONSHIPS
       // ═══════════════════════════════════════════════════════════
       function renderRelationships() {
-        var people = (Array.isArray(d.people) ? d.people : []);
-        var rels = Array.isArray(d.relationships) ? d.relationships : [];
+        var people = safePeople(d.people);
+        var rels = safeRels(d.relationships);
 
         function nameOf(id) { var p = people.find(function(x) { return x.id === id; }); return p ? p.name : '?'; }
 
         function addRel() {
+          if (typeof document !== 'object' || !document) return;
           var aEl = document.getElementById('rel-a');
           var bEl = document.getElementById('rel-b');
           var tEl = document.getElementById('rel-t');
           if (!aEl || !bEl || !tEl || !aEl.value || !bEl.value || aEl.value === bEl.value) return;
           var aVal = aEl.value, bVal = bEl.value, tVal = tEl.value;
+          var added = false;
           setLabToolData(function(prev) {
-            var prior = (prev && prev.genogram) || defaultState();
-            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
-            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: prevRels.concat([{ a: aVal, b: bVal, type: tVal }]), lastUpdated: todayISO() }) });
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.genogram;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevRels = safeRels(prior.relationships);
+            var exists = prevRels.some(function(r) {
+              return r.type === tVal && ((r.a === aVal && r.b === bVal) || (r.a === bVal && r.b === aVal));
+            });
+            if (exists) return prevObj;
+            added = true;
+            return Object.assign({}, prevObj, { genogram: Object.assign({}, prior, { relationships: prevRels.concat([{ a: aVal, b: bVal, type: tVal }]), lastUpdated: todayISO() }) });
           });
-          announceGEN('Relationship added.');
+          if (added) announceGEN('Relationship added.');
         }
         function removeRel(i) {
+          if (typeof i !== 'number' || !isFinite(i) || i < 0) return;
           setLabToolData(function(prev) {
-            var prior = (prev && prev.genogram) || defaultState();
-            var prevRels = Array.isArray(prior.relationships) ? prior.relationships : [];
+            var prevObj = (prev && typeof prev === 'object') ? prev : {};
+            var priorRaw = prevObj.genogram;
+            var prior = (priorRaw && typeof priorRaw === 'object' && !Array.isArray(priorRaw)) ? priorRaw : defaultState();
+            var prevRels = safeRels(prior.relationships);
+            if (i >= prevRels.length) return prevObj;
             var nx = prevRels.slice();
             nx.splice(i, 1);
-            return Object.assign({}, prev, { genogram: Object.assign({}, prior, { relationships: nx, lastUpdated: todayISO() }) });
+            return Object.assign({}, prevObj, { genogram: Object.assign({}, prior, { relationships: nx, lastUpdated: todayISO() }) });
           });
           announceGEN('Relationship removed.');
         }
@@ -641,7 +691,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             rels.map(function(r, i) {
               var rt = RELATIONSHIP_TYPES.find(function(x) { return x.id === r.type; }) || RELATIONSHIP_TYPES[2];
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _genBg('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', { style: { width: 12, height: 4, background: _genHC ? '#ffff00' : rt.color, borderRadius: 2 } }),
+                h('span', { 'aria-hidden': 'true', style: { width: 12, height: 4, background: _genHC ? '#ffff00' : rt.color, borderRadius: 2 } }),
                 h('span', { style: { flex: 1, fontSize: 12.5, color: _genFg('#e2e8f0') } }, nameOf(r.a) + '  ↔  ' + nameOf(r.b) + '  ·  ' + rt.label),
                 h('button', { type: 'button', onClick: function() { removeRel(i); }, 'aria-label': 'Remove relationship between ' + nameOf(r.a) + ' and ' + nameOf(r.b),
                   style: { background: 'transparent', border: '1px solid ' + _genBd('#475569'), color: _genFg('#94a3b8'), borderRadius: 6, padding: '6px 10px', minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 } }, '✕')
@@ -657,7 +707,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var people = (Array.isArray(d.people) ? d.people : []);
+        var people = safePeople(d.people);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _genHC ? '#000000' : (_genL ? '#fff1f2' : 'rgba(251,113,133,0.10)'), borderRadius: 8, border: '1px solid ' + (_genHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _genFg('#fecdd3'), lineHeight: 1.55 } },
@@ -731,7 +781,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
             )
           ),
 
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('genogram', h, ctx) : null),
+          (window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('genogram', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _genBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _genFg('#fda4af'), fontSize: 16 } }, 'What a genogram is'),
             h('p', { style: { margin: 0, color: _genFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -794,15 +844,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderTree();
 
+      var crisisBanner = null;
+      if (d._crisisTier >= 3) {
+        if (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') {
+          crisisBanner = window.SelHub.renderCrisisResources(h, _genBand);
+        } else {
+          crisisBanner = h('div', { role: 'alert', style: { marginBottom: 14, padding: 14, borderRadius: 10, background: _genHC ? '#000000' : (_genL ? '#fef2f2' : 'rgba(239,68,68,0.14)'), border: '2px solid ' + (_genHC ? '#ffff00' : '#dc2626'), color: _genFg('#fecdd3'), fontSize: 12.5, lineHeight: 1.6 } },
+            h('strong', null, 'Immediate support is available: '),
+            'Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), call 911 in an emergency, or reach out to a trusted adult.'
+          );
+        }
+      }
+
       return h('div', { className: 'selh-genogram', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Genogram' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _genBand) : null,
+        crisisBanner,
         h('div', { role: 'tabpanel', id: 'gen-panel-' + view, 'aria-labelledby': 'gen-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

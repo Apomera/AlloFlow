@@ -450,7 +450,9 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
     expect(readRepo('host_handlers_source.jsx')).toContain('sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI');
     expect(readRepo('host_handlers_source.jsx')).toContain('MAX_PROFILES_BYTES = 10 * 1024 * 1024');
     expect(readRepo('view_renderers_source.jsx')).toContain('sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H');
-    expect(readRepo('view_session_modal_source.jsx')).toContain("window.open(liveJoinUrl, '_blank', 'noopener,noreferrer')");
+    // The join link is now opened only after _smSafeJoinUrl vets it.
+    expect(readRepo('view_session_modal_source.jsx')).toContain("const safeUrl = _smSafeJoinUrl(liveJoinUrl);");
+    expect(readRepo('view_session_modal_source.jsx')).toContain("window.open(safeUrl, '_blank', 'noopener,noreferrer')");
 
     const lumenDocs = readRepo('stem_lab/stem_lumen_documents.js');
     expect(lumenDocs).toContain('sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG');
@@ -642,7 +644,9 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
   it('scopes Electron subframe IPC, hardens Desktop runtime archives/downloads/providers, and validates MCPB archives (F-140, F-141)', () => {
     const preload = readRepo('desktop/electron/preload.cjs');
     expect(preload).toContain('const isMainFrame = typeof window !== \'undefined\' && window === window.top;');
-    expect(preload).toContain('if (isMainFrame)');
+    // The main-frame bridge now also requires a loopback app origin.
+    expect(preload).toContain('if (isMainFrame && isTrustedLoopbackFrame) {');
+    expect(preload).toContain("return (proto === 'http:' || proto === 'https:') && (host === '127.0.0.1' || host === 'localhost' || host === '::1' || host === '[::1]');");
 
     const main = readRepo('desktop/electron/main.cjs');
     expect(main).toContain('function assertMainWindowSender(event, requireMainFrame = false)');
@@ -793,7 +797,8 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
     expect(readRepo('view_sidebar_panels_source.jsx')).toContain('Number(file.size) > 20 * 1024 * 1024');
     expect(readRepo('view_sidebar_panels_source.jsx')).toContain('Number(blob.size) > 20 * 1024 * 1024');
     expect(readRepo('view_misc_modals_source.jsx')).toContain("credentials: 'omit', referrerPolicy: 'no-referrer'");
-    expect(readRepo('AlloFlowANTI.txt')).toContain('Language pack JSON files are limited to 2 MB.');
+    // Raised from 2 MB: shipped packs are ~13 MB (lang/malayalam.js), so 2 MB refused real packs. Still capped.
+    expect(readRepo('AlloFlowANTI.txt')).toContain("if (Number(file.size) > 32 * 1024 * 1024) {\n      if (window.AlloFlowUX) window.AlloFlowUX.toast('Language pack JSON files are limited to 32 MB.', 'error');");
 
     expect(readRepo('math_fluency_module.js')).toContain('/^data:image\\/(png|jpe?g|gif|webp|avif);base64,/i');
     expect(readRepo('sel_hub/sel_tool_selfadvocacy.js')).toContain('Self-Advocacy Studio export files are limited to 2 MB.');
@@ -1122,7 +1127,9 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
     expect(rw).toContain("validateDiscrepancyPayload(JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v)))");
 
     const sw = readRepo('sensitive_workspace_module.js');
-    expect(sw).toContain("JSON.parse(text, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; })");
+    // The reviver now goes through the module's shared _swUnsafeKey check (same three keys).
+    expect(sw).toContain("var _swUnsafeKey = function (k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; };");
+    expect(sw).toContain("JSON.parse(text, function (k, v) { return _swUnsafeKey(k) ? undefined : v; })");
 
     const vpa = readRepo('view_pdf_audit_source.jsx');
     expect(vpa).toContain("const parsedProject = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v))");
@@ -1186,15 +1193,23 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
       expect(s, rel).not.toContain('target="_blank" rel="noreferrer"');
       expect(s, rel).toContain('rel="noopener noreferrer"');
     }
-    expect(readRepo('view_alignment_report_source.jsx')).toContain('item.sourceUrl && /^https?:\\/\\//i.test(String(item.sourceUrl).trim())');
+    // Source links now go through _arSafeSourceUrl (http/https only, no credentials, no control chars).
+    const alignmentReport = readRepo('view_alignment_report_source.jsx');
+    expect(alignmentReport).toContain("if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';");
+    expect(alignmentReport).toContain('var safeUrl = _arSafeSourceUrl(item && item.sourceUrl);');
+    expect(alignmentReport).toContain('href={safeUrl} target="_blank" rel="noopener noreferre');
 
+    // 11-22: the placeholder's inline onchange/ondrop/onclick handlers became data-attribute
+    // markers handled by one delegated listener in doc_pipeline (same caps and URL checks).
     const dbr = readRepo('doc_builder_renderer_source.jsx');
-    expect(dbr).toContain('f.size>20*1024*1024');
-    expect(dbr).toContain('if(c&&_ok(e.target&&e.target.result))');
+    expect(dbr).toContain('data-allo-placeholder-action="pick" data-allo-placeholder-id="${_imgId}"');
+    expect(dbr).not.toContain('const _uploadHandler = `');
 
     const dp = readRepo('doc_pipeline_source.jsx');
-    expect(dp).toContain('f.size>20*1024*1024');
-    expect(dp).toContain('if(!img||!img.src||!_ok(img.src))return;');
+    expect(dp).toContain("if ((typeof file.size === 'number' && file.size > 20 * 1024 * 1024)\n          || /svg/i.test(String(file.type || ''))\n          || /\\.svg$/i.test(String(file.name || ''))) {\n          return false;");
+    expect(dp).toContain('if (!img || !img.src || !_okSrc(img.src)) return;');
+    expect(dp).toContain('if (c && _okUploadDataUrl(dataUrl)) _insertPlaceholderImage(c, dataUrl, fallbackAlt);');
+    expect(dp).toContain('if (_okSrc(dataUrl)) _insertPlaceholderImage(dz, dataUrl, fallbackAlt);');
 
     const adv = readRepo('adventure_source.jsx');
     expect(adv).toContain('The portrait file exceeds the 20 MB limit.');
@@ -1210,7 +1225,10 @@ describe('Track 4 Pass 8 security, FERPA, and supply-chain hardening (2026-11-19
 
     const tph = readRepo('test_prep_hub_source.jsx');
     expect(tph).toContain('Progress import file exceeds the 10 MB limit.');
-    expect(tph).toContain("JSON.parse(input, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v)");
+    // Progress import now uses the hub's shared prototype-safe parser.
+    expect(tph).toContain("function testPrepUnsafeKey(key) {\n  return key === '__proto__' || key === 'constructor' || key === 'prototype';\n}");
+    expect(tph).toContain('return JSON.parse(raw, (key, value) => (testPrepUnsafeKey(key) ? undefined : value));');
+    expect(tph).toContain('input = testPrepSafeJsonParse(input);');
 
     for (const rel of [
       'access_lens/access_lens.html',

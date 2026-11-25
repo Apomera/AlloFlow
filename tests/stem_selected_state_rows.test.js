@@ -107,8 +107,17 @@ describe('wave', () => {
 
 describe('gameStudio, which had no aria state at all', () => {
   it('Map / Sprites section row', async () => {
+    // The section row is now a WAI-ARIA tablist, so its state is aria-selected
+    // (the right attribute for tabs), not aria-pressed.
     await mount('gamestudio', 'gameStudio', 'gameStudio', { tab: 'map' });
-    await assertRow(['Map', 'Sprites'], 'Map', 'Sprites');
+    const tabs = () => rowOf(['Map', 'Sprites']);
+    expect(tabs(), 'row not rendered: Map / Sprites').not.toBe(null);
+    expect(tabs().map((b) => b.getAttribute('role'))).toEqual(['tab', 'tab']);
+    expect(tabs()[0].parentElement.getAttribute('role')).toBe('tablist');
+    expect(tabs().map((b) => b.getAttribute('aria-selected'))).toEqual(['true', 'false']);
+    await React.act(async () => { tabs()[1].click(); });
+    expect(tabs(), 'row gone after pressing Sprites').not.toBe(null);
+    expect(tabs().map((b) => b.getAttribute('aria-selected'))).toEqual(['false', 'true']);
   });
   it('map drawing tools', async () => {
     await mount('gamestudio', 'gameStudio', 'gameStudio', { tab: 'map', brushTool: 'brush' });
@@ -210,7 +219,7 @@ describe('cephalopodLab', () => {
 describe('solarSystem mini tools (source check)', () => {
   it.each([
     ['isActive', "upd('_keplerBody', body.id);"], ['!!on', "solTouch('orbital'); upd('_keplerShow_' + tog.id, !on);"],
-    ['active', "upd('stellarMass', k);"], ['Math.abs(phase - st.at) < 5', "upd('stellarPhase', st.at);"],
+    ['active', "updMulti({ stellarMass: k, stellarPhase: 0 });"], ['Math.abs(phase - st.at) < 5', "upd('stellarPhase', st.at);"],
     ['active', "upd('moonPhasePos', p.a);"], ['active', "upd('eclipseType', t);"],
     ['active', "upd('spacecraft', Object.assign({}, sc, { [cat]: k }));"], ['active', 'togglePayload(k);'],
     ['picked === k', "upd('constPicked', k);"], ['dest === k', "upd('trajDest', k);"], ['type === k', "upd('galType', k);"],
@@ -347,7 +356,9 @@ describe('galaxy with its strings not loaded', () => {
     expect([...new Set(html.match(/stem\.galaxy\.[a-z0-9_]+/g) || [])]).toEqual([]);
   });
   it('a loaded translation still wins over the English fallback', async () => {
-    await mount('galaxy', 'galaxy', 'galaxy', {}, { t: (k, fb) => (k === 'stem.galaxy.barred_spiral' ? 'Espiral barrada' : (typeof fb === 'string' ? fb : k)) });
+    // The Quick Explorations chip (11-19) names the same galaxy type under its own key.
+    const es = { 'stem.galaxy.barred_spiral': 'Espiral barrada', 'stem.galaxy.starter_barred': '🌌 Espiral barrada' };
+    await mount('galaxy', 'galaxy', 'galaxy', {}, { t: (k, fb) => (es[k] || (typeof fb === 'string' ? fb : k)) });
     expect(document.body.textContent).toContain('Espiral barrada');
     expect(document.body.textContent).not.toContain('Barred Spiral');
   });

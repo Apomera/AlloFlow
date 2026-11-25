@@ -1,6 +1,7 @@
 /** Auto-generated first-wave cold-path CDN module. */
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 var React = window.React;
 if (!React) { console.error('[LiveSessionDockView] React not found on window'); return; }
 window.AlloModules = window.AlloModules || {};
@@ -120,11 +121,15 @@ function LiveSessionDockView(props) {
   const [confirmRemoveGoalId, setConfirmRemoveGoalId] = React.useState('');
   const [rosterFilter, setRosterFilter] = React.useState('all');
   const [rosterSearch, setRosterSearch] = React.useState('');
-  const reviewApi = window.AlloModules?.ViewRenderers;
+  const reviewApi = typeof window !== 'undefined' ? window.AlloModules?.ViewRenderers : null;
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
-  const imageApi = window.AlloModules?.LiveAac;
+  const imageApi = typeof window !== 'undefined' ? window.AlloModules?.LiveAac : null;
   const MailboxImageStatus = imageApi?.MailboxImageStatus;
   const fallbackDockRef = React.useRef(null);
+  const seatingTimerRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (seatingTimerRef.current) clearTimeout(seatingTimerRef.current);
+  }, []);
   const resolvedDockRef = liveDockPanelRef || fallbackDockRef;
   const closeDockRef = React.useRef(setShowLiveDock);
   closeDockRef.current = setShowLiveDock;
@@ -199,7 +204,9 @@ function LiveSessionDockView(props) {
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.type === 'search' && String(activeEl.value || '').length > 0) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof closeDockRef.current === 'function') closeDockRef.current(false);
@@ -387,7 +394,7 @@ function LiveSessionDockView(props) {
     // session-sync trace, one tap from the full Session log.
     try {
       const rosterCount = Object.keys(sessionData && sessionData.roster || {}).length;
-      const transportLabel = props.organizerReflectionRequest ? 'LAN' : _alloMbBridgeActive() ? t('live_dock.transport_mailbox') || 'Class Mailbox' : 'Firebase';
+      const transportLabel = props.organizerReflectionRequest ? 'LAN' : typeof _alloMbBridgeActive === 'function' && _alloMbBridgeActive() ? t('live_dock.transport_mailbox') || 'Class Mailbox' : 'Firebase';
       const trace = (typeof window !== 'undefined' && window.__alloSessionSyncTrace || []).filter(ev => ev.detail?.sessionPath === 'artifacts/' + activeSessionAppId + '/public/data/sessions/' + activeSessionCode);
       let lastSync = null;
       let lastProblem = null;
@@ -399,7 +406,8 @@ function LiveSessionDockView(props) {
         if (lastSync && lastProblem) break;
       }
       const problemIsCurrent = lastProblem && (!lastSync || trace.lastIndexOf(lastProblem) > trace.lastIndexOf(lastSync));
-      const ageSec = lastSync ? Math.max(0, Math.round((Date.now() - lastSync.at) / 1000)) : null;
+      const syncAtMs = Number(lastSync?.at);
+      const ageSec = lastSync && Number.isFinite(syncAtMs) ? Math.max(0, Math.round((Date.now() - syncAtMs) / 1000)) : null;
       return /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: () => {
@@ -1118,10 +1126,13 @@ function LiveSessionDockView(props) {
       lineHeight: 1.4,
       color: havenRewardReceipt.partial ? '#92400e' : '#14532d'
     }
-  }, /*#__PURE__*/React.createElement("strong", null, havenRewardReceipt.partial ? 'Partial delivery' : 'Last delivery confirmed'), ' · ' + havenRewardReceipt.count + ' ' + havenRewardReceipt.scopeLabel, ' · +' + havenRewardReceipt.amount + ' each · ' + havenRewardReceipt.reasonLabel, havenRewardReceipt.skippedCount ? ' · ' + havenRewardReceipt.skippedCount + ' skipped at session cap' : '', ' · ' + new Date(havenRewardReceipt.at).toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit'
-  })) : null, recentHavenRecognition.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, havenRewardReceipt.partial ? 'Partial delivery' : 'Last delivery confirmed'), ' · ' + havenRewardReceipt.count + ' ' + havenRewardReceipt.scopeLabel, ' · +' + havenRewardReceipt.amount + ' each · ' + havenRewardReceipt.reasonLabel, havenRewardReceipt.skippedCount ? ' · ' + havenRewardReceipt.skippedCount + ' skipped at session cap' : '', (() => {
+    const _rd = Number.isFinite(Number(havenRewardReceipt.at)) ? new Date(Number(havenRewardReceipt.at)) : null;
+    return _rd && !Number.isNaN(_rd.getTime()) ? ' · ' + _rd.toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit'
+    }) : '';
+  })()) : null, Array.isArray(recentHavenRecognition) && recentHavenRecognition.length > 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       gridColumn: '1 / -1'
     }
@@ -1160,7 +1171,8 @@ function LiveSessionDockView(props) {
     }
   }, recentHavenRecognition.map(event => {
     const hasValidAt = Number.isFinite(Number(event.at));
-    const eventDate = hasValidAt ? new Date(Number(event.at)) : null;
+    const rawDate = hasValidAt ? new Date(Number(event.at)) : null;
+    const eventDate = rawDate && !Number.isNaN(rawDate.getTime()) ? rawDate : null;
     return /*#__PURE__*/React.createElement("li", {
       key: event.id,
       style: {
@@ -1242,7 +1254,8 @@ function LiveSessionDockView(props) {
     }, "Whole-class goals, earn-only. Goal names stay on this device; students privately receive \u201CClass goal achieved.\u201D", !havenRecognitionConfig.enabled ? ' Enable recognition above to award.' : ''), activeGoals.map(goal => {
       const teamUids = resolveClassGoalTeamUids(goal, rosterEntries, rosterKey);
       const progress = evaluateClassGoalProgress(goal, teamUids, rosterEntries, sessionData);
-      const teamLabel = goal.team === 'class' ? null : goal.team.indexOf('group:') === 0 ? (rosterKey && rosterKey.groups && rosterKey.groups[goal.team.slice(6)] || {}).name || 'Group' : 'Pod ' + goal.team.slice(4);
+      const teamGroupId = goal.team.indexOf('group:') === 0 ? goal.team.slice(6) : '';
+      const teamLabel = goal.team === 'class' ? null : teamGroupId ? (rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, teamGroupId) && rosterKey.groups[teamGroupId] || {}).name || 'Group' : 'Pod ' + goal.team.slice(4);
       const independent = goal.mode === 'independent';
       const checklistOpen = independent && openChecklistGoalId === goal.id;
       const markedUids = checklistOpen ? teamUids.filter(uid => checklistMarks[uid]) : [];
@@ -1292,9 +1305,9 @@ function LiveSessionDockView(props) {
             setOpenChecklistGoalId(null);
             return;
           }
-          const seeded = {};
+          const seeded = Object.create(null);
           teamUids.forEach(uid => {
-            seeded[uid] = !!(progress && progress.perStudentMet && progress.perStudentMet[uid]);
+            if (uid && uid !== '__proto__' && uid !== 'constructor' && uid !== 'prototype') seeded[uid] = !!(progress && progress.perStudentMet && Object.prototype.hasOwnProperty.call(progress.perStudentMet, uid) && progress.perStudentMet[uid]);
           });
           setChecklistMarks(seeded);
           setOpenChecklistGoalId(goal.id);
@@ -1570,7 +1583,7 @@ function LiveSessionDockView(props) {
       key: 'goal-team-' + gid,
       value: 'group:' + gid
     }, rosterKey.groups[gid] && rosterKey.groups[gid].name || 'Group')), (() => {
-      const SC = window.AlloModules && window.AlloModules.SeatingChart;
+      const SC = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart;
       if (!SC || typeof SC.listPods !== 'function') return null;
       let pods = [];
       try {
@@ -1582,15 +1595,16 @@ function LiveSessionDockView(props) {
         key: 'goal-pod-' + pod.index,
         value: 'pod:' + pod.index
       }, pod.label));
-    })()))), !(window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating ? /*#__PURE__*/React.createElement("button", {
+    })()))), !(typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SeatingChart) && rosterKey && rosterKey.seating ? /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
-        if (typeof window.__alloLazySeatingChart === 'function') {
+        if (typeof window !== 'undefined' && typeof window.__alloLazySeatingChart === 'function') {
           try {
             window.__alloLazySeatingChart();
           } catch (_) {}
         }
-        window.setTimeout(() => setClassGoalDraft(current => current ? {
+        if (seatingTimerRef.current) clearTimeout(seatingTimerRef.current);
+        seatingTimerRef.current = setTimeout(() => setClassGoalDraft(current => current ? {
           ...current
         } : current), 900);
       },
@@ -1775,7 +1789,7 @@ function LiveSessionDockView(props) {
           return;
         }
         const requestedGroupId = typeof draft.team === 'string' && draft.team.indexOf('group:') === 0 ? draft.team.slice(6) : '';
-        const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && rosterKey.groups[requestedGroupId]) ? 'class' : draft.team;
+        const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, requestedGroupId) && rosterKey.groups[requestedGroupId]) ? 'class' : draft.team;
         const goal = normalizeClassGoal({
           id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
           label,
@@ -2221,36 +2235,40 @@ function LiveSessionDockView(props) {
         }) || 'Manage Word Sounds audio for ' + (entry.name || 'student'),
         title: wsAudioStatus === 'unsupported' ? t('word_sounds.audio_teacher_unsupported_title') || "This learner's browser cannot play the prepared format. Open audio review and regenerate compatible clips." : wsAudioStatus === 'blocked' && !wsAudioStalled ? t('word_sounds.audio_teacher_blocked_title') || 'The learner must tap Try sound again on their device.' : t('word_sounds.audio_teacher_resend_title') || 'Resend prepared audio to this learner, or open audio review if the source pack is incomplete.',
         onClick: async () => {
-          const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
-          const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
-          if (!resource || resource.type !== 'word-sounds') {
-            addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
-            return;
-          }
-          const coverage = getWordSoundsPortableAudioCoverage(resource);
-          if (coverage && coverage.complete && wsAudioStatus !== 'unsupported') {
-            const resendAt = Date.now();
-            await handleSetStudentResource(uid, resource.id, {
-              allowIncompleteAudio: true,
-              resourceAt: resendAt,
-              wsProgress: {
-                ...entry.wsProgress,
-                audioStatus: 'resending',
-                audioDeliveryAt: resendAt,
-                at: resendAt
-              }
+          try {
+            const resourceId = entry.viewingResourceId || targetId || sessionData?.currentResourceId || null;
+            const resource = (generatedContent?.id === resourceId ? generatedContent : (history || []).find(item => item && item.id === resourceId)) || null;
+            if (!resource || resource.type !== 'word-sounds') {
+              if (typeof addToast === 'function') addToast(t('word_sounds.audio_open_resource_missing_toast') || 'Open the Word Sounds resource, then review its missing audio.', 'info');
+              return;
+            }
+            const coverage = getWordSoundsPortableAudioCoverage(resource);
+            if (coverage && coverage.complete && wsAudioStatus !== 'unsupported') {
+              const resendAt = Date.now();
+              await Promise.resolve(handleSetStudentResource(uid, resource.id, {
+                allowIncompleteAudio: true,
+                resourceAt: resendAt,
+                wsProgress: {
+                  ...entry.wsProgress,
+                  audioStatus: 'resending',
+                  audioDeliveryAt: resendAt,
+                  at: resendAt
+                }
+              }));
+              return;
+            }
+            if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
+            handleRestoreView(resource, {
+              suppressLiveFollow: true
             });
-            return;
+            setTimeout(() => {
+              setWordSoundsAutoReview(true);
+              setIsWordSoundsMode(true);
+              setActiveView('word-sounds');
+            }, 0);
+          } catch (err) {
+            if (typeof addToast === 'function') addToast(t('word_sounds.audio_resend_failed_toast') || 'Could not resend audio right now.', 'error');
           }
-          if (typeof setShowLiveDock === 'function') setShowLiveDock(false);
-          handleRestoreView(resource, {
-            suppressLiveFollow: true
-          });
-          setTimeout(() => {
-            setWordSoundsAutoReview(true);
-            setIsWordSoundsMode(true);
-            setActiveView('word-sounds');
-          }, 0);
         },
         style: {
           whiteSpace: 'nowrap',

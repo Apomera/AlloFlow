@@ -253,7 +253,9 @@ const _pkStartBrowserSpeech = (text, options = {}) => {
             const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
             const prefix = lang.toLowerCase().split('-')[0];
             const sameLanguage = voices.filter(voice => String(voice.lang || '').toLowerCase().split('-')[0] === prefix);
-            utterance.voice = sameLanguage.find(voice => String(voice.name || '').toLowerCase() === String(selectedVoice || '').toLowerCase()) || sameLanguage.find(voice => voice.default) || sameLanguage[0] || null;
+            const localSameLanguage = sameLanguage.filter(voice => voice && voice.localService === true);
+            const preferredPool = localSameLanguage.length ? localSameLanguage : sameLanguage;
+            utterance.voice = sameLanguage.find(voice => String(voice.name || '').toLowerCase() === String(selectedVoice || '').toLowerCase()) || preferredPool.find(voice => voice.default) || preferredPool[0] || null;
         } catch (_) {}
         let started = false;
         let settled = false;
@@ -1854,22 +1856,10 @@ const syncProgressToFirestore = async (deps) => {
               },
               pasteEvents: pasteEvents.slice(-20),
               fluencyHistory: (fluencyAssessments || []).slice(-10).map(a => ({ wcpm: a.wcpm, date: a.timestamp || a.date })),
-              gameScoreHistory: (gameCompletions || []).slice(-10).map(g => ({ score: g.score, game: g.game, date: g.timestamp || g.date })),
-              flagSummary: (() => {
-                  try {
-                      const allText = [];
-                      if (typeof socraticChatHistory !== 'undefined' && socraticChatHistory?.messages) {
-                          socraticChatHistory.messages.filter(m => m.role === 'user').forEach(m => allText.push(m.text || m.content || ''));
-                      }
-                      const flags = allText.flatMap(t => SafetyContentChecker.check(t));
-                      const summary = {};
-                      flags.forEach(f => { summary[f.category] = (summary[f.category] || 0) + 1; });
-                      if (typeof aiSafetyFlags !== 'undefined' && aiSafetyFlags.length > 0) {
-                          aiSafetyFlags.forEach(f => { summary[f.category] = (summary[f.category] || 0) + 1; flags.push(f); });
-                      }
-                      return { total: flags.length, categories: summary, hasCritical: flags.some(f => f.severity === 'critical') };
-                  } catch (e) { return { total: 0, categories: {}, hasCritical: false }; }
-              })()
+              gameScoreHistory: (gameCompletions || []).slice(-10).map(g => ({ score: g.score, game: g.game, date: g.timestamp || g.date }))
+              // No safety-flag data in this record (Aaron, 2026-11-23): no teacher screen reads
+              // it (live dashboard removed 2026-08-23), so flags stay on the student's device.
+              // The educator guide promises this; do not add a flag count back without a screen.
           };
           await setDoc(progressRef, progressData, { merge: true });
           setLastProgressSync(new Date());

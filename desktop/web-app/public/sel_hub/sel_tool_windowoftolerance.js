@@ -9,19 +9,29 @@
 // Category: self-regulation
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfTolerance'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
 
-  (function() {
-    if (document.getElementById('allo-live-wot')) return;
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfTolerance')) return;
+
+  var _wtLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-wot');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-wot';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -30,10 +40,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
 
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wot-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-wot-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-wot-a11y-css';
     st.textContent =
@@ -152,71 +164,89 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       var _wtInk = function(c){ return _wtHC || _wtL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       // white text needs a 700-weight fill (1.4.3)
       var _wtSolid = function(c){ return _wtHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
-      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
+      var onSafetyFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
       var _wtBand = (ctx && ctx.gradeBand) || 'middle';
+      function safeList(v) { return Array.isArray(v) ? v.filter(function(item) { return typeof item === 'string'; }) : []; }
 
-      var d = labToolData.windowOfTolerance || defaultState();
+      var rawWot = labToolData.windowOfTolerance;
+      var d = (rawWot && typeof rawWot === 'object' && !Array.isArray(rawWot)) ? rawWot : defaultState();
       function setWOT(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.windowOfTolerance) || defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevRaw = base.windowOfTolerance;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
           var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          if (!resolved || typeof resolved !== 'object') return base;
           var next = Object.assign({}, prior, resolved);
           if (resolved && (resolved.hyperSigns || resolved.windowSigns || resolved.hypoSigns || resolved.triggers || resolved.practices)) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { windowOfTolerance: next });
+          return Object.assign({}, base, { windowOfTolerance: next });
         });
       }
       function scanWotText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'windowOfTolerance', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
-        }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && (scan.triggered || scan.hasCrisis)) {
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+        try {
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var chk = sh.safeRehearseCheck(trimmed, { toolId: 'windowOfTolerance', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'windowOfTolerance', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _wtLocalCrisisRe.test(trimmed)) {
             blocked = true;
             if (typeof onSafetyFlag === 'function') {
               try { onSafetyFlag({ toolId: 'windowOfTolerance', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
             }
           }
-        }
-        if (blocked) {
-          setWOT({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Window of Tolerance', contentSnippet: trimmed });
+          if (blocked) {
+            setWOT({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'Window of Tolerance', contentSnippet: trimmed });
+            }
+            if (announceToSR) { try { announceToSR('Support resources are shown on screen. Please reach out to a trusted adult, call or text 988, or text HOME to 741741.'); } catch (_) {} }
           }
-          if (announceToSR) announceToSR('Support resources are shown on screen. Please reach out to a trusted adult, call or text 988, or text HOME to 741741.');
-        }
+        } catch (_) {}
         return blocked;
       }
       var WOT_VIEW_LABELS = { window: 'My Window', edit: 'Edit', checkin: 'Check in', print: 'Print view', about: 'About' };
       var view = (d.view && Object.prototype.hasOwnProperty.call(WOT_VIEW_LABELS, d.view)) ? d.view : 'window';
       function announceWOT(msg) {
         if (!msg) return;
-        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-wot');
-          if (lr) lr.textContent = msg;
-        }
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        try {
+          var lr = ensureLiveRegion();
+          if (lr) { lr.textContent = ''; setTimeout(function() { try { lr.textContent = String(msg); } catch (_) {} }, 20); }
+        } catch (_) {}
       }
       function goto(v) {
+        v = (typeof v === 'string' && Object.prototype.hasOwnProperty.call(WOT_VIEW_LABELS, v)) ? v : 'window';
         setWOT({ view: v });
-        if (announceToSR) announceToSR((WOT_VIEW_LABELS[v] || v) + ' section selected');
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-wot');
+        try {
+          if (typeof announceToSR === 'function') { if (announceToSR) announceToSR((WOT_VIEW_LABELS[v] || v) + ' section selected'); return; }
+        } catch (_) {}
+        try {
+          var lr = ensureLiveRegion();
           if (lr) lr.textContent = (WOT_VIEW_LABELS[v] || v) + ' section selected';
-        }
+        } catch (_) {}
       }
-      function printNow() { try { window.print(); } catch (e) {} }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -268,8 +298,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
                   var nextTab = tabs[nextIndex];
                   goto(nextTab.id);
                   setTimeout(function() {
-                    var target = document.querySelector('[data-wot-tab="' + nextTab.id + '"]');
-                    if (target) target.focus();
+                    try {
+                      if (typeof document === 'object' && document && typeof document.querySelector === 'function') {
+                        var target = document.querySelector('[data-wot-tab="' + nextTab.id + '"]');
+                        if (target && typeof target.focus === 'function') target.focus();
+                      }
+                    } catch (_) {}
                   }, 0);
                 },
                 style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + (active ? _wtFg('#14b8a6') : _wtBd('#334155')),
@@ -284,7 +318,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#334155'), fontSize: 11, color: _wtFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Knowing your zones helps you self-regulate; it does not replace adults who can help. If you find yourself stuck outside your window often, that is worth bringing to a counselor or school psych. Crisis Text Line: text HOME to 741741.'
+          'Knowing your zones helps you self-regulate; it does not replace adults who can help. If you find yourself stuck outside your window often, that is worth bringing to a counselor or school psych. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'
         );
       }
 
@@ -373,20 +407,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
         return h('div', null,
           windowCommandPanel(),
-          zone('🔺 Hyperarousal (above the window)', _wtInk(_wtFg('#ef4444')), (Array.isArray(d.hyperSigns) ? d.hyperSigns : []),
+          zone('🔺 Hyperarousal (above the window)', _wtInk(_wtFg('#ef4444')), safeList(d.hyperSigns),
             'Too activated. Fight or flight territory. Hard to think, hard to sit still, snappy, racing.'),
 
-          zone('🪟 In the Window (the regulated zone)', _wtFg('#14b8a6'), (Array.isArray(d.windowSigns) ? d.windowSigns : []),
+          zone('🪟 In the Window (the regulated zone)', _wtFg('#14b8a6'), safeList(d.windowSigns),
             'The zone where you can think and feel at the same time. You can listen, choose, learn, connect.'),
 
-          zone('🔻 Hypoarousal (below the window)', _wtFg('#0ea5e9'), (Array.isArray(d.hypoSigns) ? d.hypoSigns : []),
+          zone('🔻 Hypoarousal (below the window)', _wtFg('#0ea5e9'), safeList(d.hypoSigns),
             'Too shut down. Freeze or collapse territory. Foggy, slow, disconnected, going through motions.'),
 
           h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#1e293b'), marginTop: 10, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#fbbf24'), marginBottom: 8 } }, '⚡ Things that push me out of the window'),
-            ((Array.isArray(d.triggers) ? d.triggers : [])).length > 0
+            safeList(d.triggers).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                  d.triggers.map(function(s, i) {
+                  safeList(d.triggers).map(function(s, i) {
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #fbbf2444', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
                   })
                 )
@@ -395,9 +429,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
           h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + _wtBd('#1e293b'), marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#a78bfa'), marginBottom: 8 } }, '🛟 Things that bring me back to the window'),
-            ((Array.isArray(d.practices) ? d.practices : [])).length > 0
+            safeList(d.practices).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                  d.practices.map(function(s, i) {
+                  safeList(d.practices).map(function(s, i) {
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #a78bfa44', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
                   })
                 )
@@ -425,9 +459,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         function addTo(key, value) {
           var trimmed = String(value || '').trim();
           if (!trimmed) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          scanWotText(trimmed);
+          if (scanWotText(trimmed)) return;
           setWOT(function(prior) {
-            var list = (Array.isArray(prior[key]) ? prior[key] : []).slice();
+            var list = safeList(prior[key]).slice();
             if (list.indexOf(trimmed) === -1) list.push(trimmed);
             var patch = {}; patch[key] = list;
             return patch;
@@ -436,7 +470,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         }
         function removeFrom(key, idx) {
           setWOT(function(prior) {
-            var list = (Array.isArray(prior[key]) ? prior[key] : []).slice();
+            var list = safeList(prior[key]).slice();
+            if (idx < 0 || idx >= list.length) return prior;
             list.splice(idx, 1);
             var patch = {}; patch[key] = list;
             return patch;
@@ -445,9 +480,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
         }
 
         function listEditor(key, title, color, starters, blurb) {
-          var items = Array.isArray(d[key]) ? d[key] : [];
+          var items = safeList(d[key]);
           var inputId = 'wot-input-' + key;
           function submit() {
+            if (typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
             var el = document.getElementById(inputId);
             if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
             addTo(key, el.value);
@@ -473,6 +509,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
               h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add to ' + title),
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
+                onBlur: function(e) { scanWotText(e.target.value); },
                 onKeyDown: function(e) {
                   if (isImeComposing(e)) return;
                   if (e.key === 'Enter') { e.preventDefault(); submit(); }
@@ -654,13 +691,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
         function listBlock(title, color, list) {
+          var cleanList = safeList(list);
           return h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _wtSolid(color), color: _wtFg('#fff') } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 4, marginBottom: 6, background: _wtSolid(color), border: _wtHC ? '1px solid #ffff00' : 'none', color: _wtFg('#fff') } },
               h('span', { style: { fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, title)
             ),
-            Array.isArray(list) && list.length > 0
+            cleanList.length > 0
               ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _wtFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
-                  list.map(function(s, i) { return h('li', { key: i }, s); }))
+                  cleanList.map(function(s, i) { return h('li', { key: i }, s); }))
               : h('div', { style: { fontSize: 11, color: _wtFg('#475569'), fontStyle: 'italic', paddingLeft: 10 } }, '(not filled in)')
           );
         }
@@ -690,8 +728,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #0d9488' } },
               h('div', { style: { fontSize: 10, color: _wtFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Window of Tolerance'),
-              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Window of Tolerance'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _wtFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              h('h3', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Window of Tolerance'),
+              typeof d.lastUpdated === 'string' && d.lastUpdated ? h('div', { style: { fontSize: 12, color: _wtFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             listBlock('Hyperarousal signs (above the window)', _wtFg('#ef4444'), d.hyperSigns),
@@ -715,7 +753,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('windowOfTolerance', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('windowOfTolerance', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _wtFg('#5eead4'), fontSize: 16 } }, 'What the Window of Tolerance is'),
             h('p', { style: { margin: '0 0 10px', color: _wtFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -785,12 +823,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       return h('div', { className: 'selh-wot', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Window of Tolerance' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _wtBand)) : null,
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _wtBand))
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _wtHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_wtHC ? '#ffff00' : '#ef4444'), color: _wtFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
+          : null,
         h('div', { id: 'wot-tab-panel', role: 'tabpanel', 'aria-labelledby': 'wot-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

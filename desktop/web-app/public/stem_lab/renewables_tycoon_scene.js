@@ -1,7 +1,10 @@
 // Renewables Tycoon: illustrative equipment view. All power comes from the campaign engine.
-(function () {
+(function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var nextSceneId = 0;
+  function own(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+  function dict() { return Object.create(null); }
   function clamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
   function n(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
   function formatPower(value) { return Math.abs(n(value)).toFixed(1) + ' kW'; }
@@ -17,22 +20,27 @@
     return ['0,-5 ' + extension + ',' + (droop - 2) + ' ' + extension + ',' + (droop + 3) + ' 0,7', stripe(0.3, 0.49), stripe(0.68, 0.84)];
   }
 
-  window.StemLab = window.StemLab || {};
-  window.StemLab.RenewablesTycoonScene = function RenewablesTycoonScene(props) {
+  global.StemLab = global.StemLab || {};
+  global.StemLab.RenewablesTycoonScene = function RenewablesTycoonScene(props) {
+    if (!props || !props.ctx || !props.ctx.React) return null;
     var React = props.ctx.React, h = React.createElement;
     var t = function (key, fallback) { var value; try { value = typeof props.ctx.t === 'function' ? props.ctx.t(key, fallback) : fallback; } catch (error) { value = fallback; } return value == null ? fallback : value; };
     var uidRef = React.useRef(null);
     if (!uidRef.current) uidRef.current = 'renewables-tycoon-scene-' + (++nextSceneId);
-    var uid = uidRef.current, frame = props.frame || {}, sites = props.sites || [], assets = frame.assets || [];
-    var refs = React.useRef({ rotors: {}, wakes: {}, solarGlints: [], flowPulses: {}, seaRipples: [], glintRows: [], cloudShadows: [], paths: {}, particles: {}, flowGroups: {}, clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: {}, serviceTools: {} });
-    var motion = React.useRef({ rotors: {}, flows: {}, breeze: 0, clouds: 0, flutter: 0, ambient: 0, weatherWind: null, work: {} });
-    var targets = React.useRef({});
+    var uid = uidRef.current, frame = props.frame || {}, sites = Array.isArray(props.sites) ? props.sites : [], assets = Array.isArray(frame.assets) ? frame.assets : [];
+    var refs = React.useRef(null);
+    if (!refs.current) refs.current = { rotors: dict(), wakes: dict(), solarGlints: [], flowPulses: dict(), seaRipples: [], glintRows: [], cloudShadows: [], paths: dict(), particles: dict(), flowGroups: dict(), clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: dict(), serviceTools: dict() };
+    var motion = React.useRef(null);
+    if (!motion.current) motion.current = { rotors: dict(), flows: dict(), breeze: 0, clouds: 0, flutter: 0, ambient: 0, weatherWind: null, work: dict() };
+    var targets = React.useRef(dict());
     var cameraState = React.useState({ zoom: 1, x: 550, y: 345 }), camera = cameraState[0], setCamera = cameraState[1];
     var overlayState = React.useState('power'), overlay = overlayState[0], setOverlay = overlayState[1];
     var focusLabelState = React.useState(null), focusedSiteId = focusLabelState[0], setFocusedSiteId = focusLabelState[1];
-    var mediaState = React.useState(typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches), nativeReduced = mediaState[0], setNativeReduced = mediaState[1];
+    var initialMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    var mediaState = React.useState(!!(initialMedia && initialMedia.matches)), nativeReduced = mediaState[0], setNativeReduced = mediaState[1];
     var drag = React.useRef(null);
-    var hour = frame.hourOfDay == null ? n(frame.hour) % 24 : n(frame.hourOfDay);
+    var rawHour = frame.hourOfDay == null ? n(frame.hour) : n(frame.hourOfDay);
+    var hour = ((rawHour % 24) + 24) % 24;
     // Work is scheduled in the first 48 simulated hours; animation never advances it.
     var serviceElapsed = clamp(frame.hour, 0, 48), serviceRemaining = 48 - serviceElapsed;
     // Stages illustrate the fixed work window; they add no simulation rules.
@@ -77,12 +85,12 @@
     }
     var hcRef = React.useRef(highContrast);
     hcRef.current = highContrast;
-    var liveTargets = {}, assetBySite = {};
+    var liveTargets = dict(), assetBySite = dict();
     refs.current.solarGlints = [];
     refs.current.seaRipples = [];
     refs.current.glintRows = [];
     refs.current.cloudShadows = [];
-    assets.forEach(function (asset) { assetBySite[asset.siteId] = asset; });
+    assets.forEach(function (asset) { if (asset && asset.siteId != null) assetBySite[asset.siteId] = asset; });
     function sitePoint(site, index) { return { x: 130 + clamp(site.x == null ? 18 + (index % 3) * 31 : site.x, 0, 100) * 8.3, y: 220 + clamp(site.y == null ? 20 + Math.floor(index / 3) * 29 : site.y, 0, 100) * 3.6 }; }
     function fitCamera(next) {
       var zoom = clamp(next.zoom, 1, 2.5), halfWidth = 550 / zoom, halfHeight = 345 / zoom;
@@ -109,10 +117,12 @@
       event.preventDefault();
     }
     function beginPan(event) {
-      if (camera.zoom === 1 || event.button !== 0 || event.target.closest('[role="button"]')) return;
+      if (camera.zoom === 1 || event.button !== 0 || (event.target && typeof event.target.closest === 'function' && event.target.closest('[role="button"]'))) return;
       var bounds = event.currentTarget.getBoundingClientRect();
       drag.current = { x: event.clientX, y: event.clientY, camera: camera, scale: 1100 / camera.zoom / Math.max(1, bounds.width) };
-      event.currentTarget.setPointerCapture(event.pointerId);
+      if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+        try { event.currentTarget.setPointerCapture(event.pointerId); } catch (ignore) {}
+      }
     }
     function movePan(event) {
       if (!drag.current) return;
@@ -132,8 +142,12 @@
     function paintFlow(id, flow, power, length) {
       var path = refs.current.paths[id], particles = refs.current.particles[id];
       if (!path || !particles) return;
+      if (typeof path.getTotalLength !== 'function' || typeof path.getPointAtLength !== 'function') return;
       var appearance = flowAppearance(flow.magnitude), moving = power !== 0;
-      if (length == null) length = path.getTotalLength();
+      if (length == null) {
+        try { length = path.getTotalLength(); } catch (ignore) { return; }
+      }
+      if (!Number.isFinite(length) || length < 0) return;
       var group = refs.current.flowGroups[id];
       if (group) {
         group.setAttribute('data-flow-phase', flow.phase.toFixed(6));
@@ -157,7 +171,10 @@
         particle.setAttribute('visibility', moving ? 'visible' : 'hidden');
         particle.setAttribute('opacity', moving ? appearance.opacity.toFixed(4) : '0');
         particle.setAttribute('r', appearance.radius.toFixed(4));
-        var point = path.getPointAtLength(((flow.phase + index / FLOW_SLOTS) % 1) * length);
+        var phasePos = (((flow.phase + index / FLOW_SLOTS) % 1) + 1) % 1;
+        var point;
+        try { point = path.getPointAtLength(phasePos * length); } catch (ignore) { return; }
+        if (!point) return;
         particle.setAttribute('cx', point.x.toFixed(3)); particle.setAttribute('cy', point.y.toFixed(3));
       });
     }
@@ -204,8 +221,10 @@
 
     React.useEffect(function () {
       var alive = true, request = null, previous = null;
-      var media = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-      function canMove() { return alive && requestedMotion && !(media && media.matches) && !document.hidden; }
+      var win = typeof window !== 'undefined' ? window : null;
+      var doc = typeof document !== 'undefined' ? document : null;
+      var media = win && typeof win.matchMedia === 'function' ? win.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function canMove() { return alive && requestedMotion && !(media && media.matches) && !(doc && doc.hidden) && !!(win && typeof win.requestAnimationFrame === 'function'); }
       function tick(time) {
         request = null;
         if (!canMove()) { previous = null; return; }
@@ -239,13 +258,19 @@
             if (tool) tool.setAttribute('transform', 'rotate(' + (Math.sin(work.phase) * 8).toFixed(3) + ')');
           }
           var path = refs.current.paths[id], particles = refs.current.particles[id];
-          if (path && particles) {
+          if (path && particles && typeof path.getTotalLength === 'function') {
             var flow = motion.current.flows[id] || (motion.current.flows[id] = { phase: 0.12, magnitude: 0 });
             var magnitude = Math.abs(target.power), direction = target.power < 0 ? -1 : 1;
             flow.magnitude = magnitude ? flow.magnitude + (magnitude - flow.magnitude) * (1 - Math.exp(-dt / 0.24)) : 0;
-            var length = path.getTotalLength();
-            if (magnitude) flow.phase = (flow.phase + direction * flowAppearance(flow.magnitude).speed * dt / Math.max(1, length) + 1) % 1;
-            paintFlow(id, flow, target.power, length);
+            var length;
+            try { length = path.getTotalLength(); } catch (ignore) { length = -1; }
+            if (Number.isFinite(length) && length >= 0) {
+              if (magnitude) {
+                var nextPhase = flow.phase + direction * flowAppearance(flow.magnitude).speed * dt / Math.max(1, length);
+                flow.phase = ((nextPhase % 1) + 1) % 1;
+              }
+              paintFlow(id, flow, target.power, length);
+            }
           }
         });
         // One response drives the fabric and surrounding air; integrate its travel to avoid frame-rate-dependent drift.
@@ -258,10 +283,10 @@
         motion.current.flutter = (motion.current.flutter + windTravel * 0.8) % (Math.PI * 2);
         motion.current.ambient = (motion.current.ambient + dt) % (Math.PI * 200);
         paintWeather();
-        request = window.requestAnimationFrame(tick);
+        if (canMove()) request = win.requestAnimationFrame(tick);
       }
       function resume() {
-        if (request != null) window.cancelAnimationFrame(request);
+        if (request != null && win && typeof win.cancelAnimationFrame === 'function') win.cancelAnimationFrame(request);
         request = null; previous = null;
         setNativeReduced(!!(media && media.matches));
         if (!requestedMotion || media && media.matches) {
@@ -272,12 +297,19 @@
             if (flow) { flow.magnitude = Math.abs(power); paintFlow(id, flow, power); }
           });
         }
-        if (canMove()) request = window.requestAnimationFrame(tick);
+        if (canMove()) request = win.requestAnimationFrame(tick);
       }
-      document.addEventListener('visibilitychange', resume);
-      if (media && media.addEventListener) media.addEventListener('change', resume);
+      if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('visibilitychange', resume);
+      if (media && typeof media.addEventListener === 'function') media.addEventListener('change', resume);
+      else if (media && typeof media.addListener === 'function') media.addListener(resume);
       resume();
-      return function () { alive = false; if (request != null) window.cancelAnimationFrame(request); document.removeEventListener('visibilitychange', resume); if (media && media.removeEventListener) media.removeEventListener('change', resume); };
+      return function () {
+        alive = false;
+        if (request != null && win && typeof win.cancelAnimationFrame === 'function') win.cancelAnimationFrame(request);
+        if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('visibilitychange', resume);
+        if (media && typeof media.removeEventListener === 'function') media.removeEventListener('change', resume);
+        else if (media && typeof media.removeListener === 'function') media.removeListener(resume);
+      };
     }, [requestedMotion]);
 
     // Reposition static packets after a manual hour change, including while motion is paused.
@@ -442,9 +474,10 @@
         h('g', { transform: 'translate(54 -28)' }, h('rect', { x: -25, y: -10, width: 50, height: 18, rx: 5, fill: '#294a4c', stroke: '#dfc38e', strokeWidth: 1 }), h('text', { y: 0, textAnchor: 'middle', fill: '#ffe5ad', fontSize: 9, fontWeight: 700 }, serviceElapsed + '/48h'), h('rect', { x: -19, y: 3, width: 38, height: 2, rx: 1, fill: '#78918a' }), h('rect', { x: -19, y: 3, width: 38 * serviceElapsed / 48, height: 2, rx: 1, fill: '#ffe1a0' })));
     }
     function buildOpening(siteId) {
-      var planned = (campaign.assets || []).find(function (asset) { return asset.siteId === siteId; });
-      var readyMonth = planned && planned.readyMonth, engine = window.StemLab.renewablesTycoonEngine;
-      return { month: readyMonth, label: engine && engine.months && engine.months[readyMonth] || t('renewables.tycoon.scene.nextMonth', 'next month') };
+      var planned = (Array.isArray(campaign.assets) ? campaign.assets : []).find(function (asset) { return asset && asset.siteId === siteId; });
+      var readyMonth = planned && planned.readyMonth, engine = global.StemLab && global.StemLab.renewablesTycoonEngine;
+      var monthLabel = engine && Array.isArray(engine.months) && Number.isInteger(readyMonth) && readyMonth >= 0 && readyMonth < engine.months.length ? engine.months[readyMonth] : null;
+      return { month: readyMonth, label: monthLabel || t('renewables.tycoon.scene.nextMonth', 'next month') };
     }
     function construction(site) {
       var groundwork = buildStage === 'groundwork', assembly = buildStage === 'assembly';
@@ -515,7 +548,7 @@
     var serviceStageContext = props.state && props.state.phase !== 'planning' ? t('renewables.tycoon.scene.stagesReplay', 'Illustrative work stages · replay hour') : t('renewables.tycoon.scene.stagesForecast', 'Illustrative work stages · forecast hour');
     // Labels occupy a fixed amount of screen space; equipment alone grows with the camera.
     // Close-ups prioritize the selected or keyboard-focused site and keep its equipment clear.
-    var labelLayouts = {}, labelSubjectId = focusedSiteId || props.selectedId;
+    var labelLayouts = dict(), labelSubjectId = focusedSiteId || props.selectedId;
     var cameraLeft = camera.x - 550 / camera.zoom, cameraTop = camera.y - 345 / camera.zoom;
     var subjectIndex = sites.findIndex(function (site) { return site.id === labelSubjectId; });
     var subjectSite = subjectIndex >= 0 ? sites[subjectIndex] : null;
@@ -542,7 +575,7 @@
     var siteGroups = sites.slice().sort(function (a, b) { return sitePoint(a, 0).y - sitePoint(b, 0).y; }).map(function (site, index) {
       var point = sitePoint(site, index), asset = assetBySite[site.id], selected = props.selectedId === site.id;
       var status = asset ? asset.status || 'idle' : 'available', power = asset ? n(asset.power) : 0;
-      var statusLabel = asset ? statusText[status] || statusText.idle : t('renewables.tycoon.scene.available', 'Available site');
+      var statusLabel = asset ? (own(statusText, status) ? statusText[status] : statusText.idle) : t('renewables.tycoon.scene.available', 'Available site');
       var localWind = windSpeed * (n(site.resource) || 1);
       if (asset && asset.type === 'wind' && status === 'idle') statusLabel = localWind >= 25 ? t('renewables.tycoon.scene.cutOut', 'High-wind shutdown') : localWind < 3 ? t('renewables.tycoon.scene.cutIn', 'Below starting wind') : statusLabel;
       if (asset && asset.type === 'solar' && status === 'idle' && irradiance <= 0) statusLabel = t('renewables.tycoon.scene.noSun', 'Waiting for sunlight');
@@ -580,14 +613,14 @@
         status === 'fault' ? h('g', { transform: 'translate(61 -47)' }, h('circle', { r: 15, fill: '#763b36', stroke: '#ffc4a3', strokeWidth: 2 }), h('text', { y: 6, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#ffdfbd' }, '!')) : null);
     });
     return h('div', { className: 'rn-tycoon-scene ' + (props.className || ''), style: { borderRadius: 20, overflow: 'hidden', background: night ? '#173642' : '#b7d9d6', border: '1px solid ' + (dark ? '#426969' : '#9fbdb4'), position: 'relative' } },
-      h('style', null, '.rn-tycoon-scene svg{display:block;width:100%;height:auto;aspect-ratio:1100/690}.rn-tycoon-site{cursor:pointer;outline:none}.rn-tycoon-site:focus .rn-tycoon-focus,.rn-tycoon-site:focus-visible .rn-tycoon-focus{stroke:#fff7bb;stroke-width:5;fill:#ffefb52a}.rn-tycoon-site:hover .rn-tycoon-focus{stroke:#c9ffe8;stroke-width:3}.rn-tycoon-map-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px 12px;background:#173e48;color:#e5f1e5;font:12px/1.4 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button{min-height:38px;min-width:38px;border:1px solid #7aa69c;border-radius:8px;padding:7px 10px;background:#244c53;color:#f0f8e9;font:600 12px/1.3 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button:hover:not(:disabled){background:#356367;border-color:#b4e7d3}.rn-tycoon-scene .rn-tycoon-map-controls button:disabled{opacity:.45}.rn-tycoon-map-zoom{min-width:37px;text-align:center;font-variant-numeric:tabular-nums}.rn-tycoon-map-pan{display:flex;gap:6px;align-items:center}.rn-tycoon-map-weather{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;background:#204750;color:#e5f1e5;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-weather strong{color:#fff1ba}.rn-tycoon-map-hint{width:100%;font-size:11px;color:#c7e0d6}.rn-tycoon-map-key{display:flex;flex-wrap:wrap;gap:7px 16px;padding:11px 16px;background:#173e48;color:#e5f1e5;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-key span{display:inline-flex;align-items:center;gap:7px}.rn-tycoon-map-key i{display:inline-block;width:22px;height:3px;border-radius:3px;flex-shrink:0}.rn-tycoon-map-note{margin-left:auto;opacity:.85}@media(max-width:420px){.rn-tycoon-map-key{padding:10px;gap:6px 12px;font-size:11px}.rn-tycoon-map-note{width:100%;margin-left:0}.rn-tycoon-map-controls{padding:8px;gap:5px}.rn-tycoon-scene .rn-tycoon-map-controls button{padding:7px 8px}.rn-tycoon-map-weather{padding:8px 10px}}'),
+      h('style', null, '.rn-tycoon-scene svg{display:block;width:100%;height:auto;aspect-ratio:1100/690}.rn-tycoon-site{cursor:pointer;outline:none}.rn-tycoon-site:focus .rn-tycoon-focus,.rn-tycoon-site:focus-visible .rn-tycoon-focus{stroke:#fff7bb;stroke-width:5;fill:#ffefb52a}.rn-tycoon-site:hover .rn-tycoon-focus{stroke:#c9ffe8;stroke-width:3}.rn-tycoon-map-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px 12px;background:#173e48;color:#e5f1e5;font:12px/1.4 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button{min-height:44px;min-width:44px;border:1px solid #7aa69c;border-radius:8px;padding:7px 10px;background:#244c53;color:#f0f8e9;font:600 12px/1.3 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button:hover:not(:disabled){background:#356367;border-color:#b4e7d3}.rn-tycoon-scene .rn-tycoon-map-controls button:disabled{opacity:.45}.rn-tycoon-map-zoom{min-width:37px;text-align:center;font-variant-numeric:tabular-nums}.rn-tycoon-map-pan{display:flex;gap:6px;align-items:center}.rn-tycoon-map-weather{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;background:#204750;color:#e5f1e5;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-weather strong{color:#fff1ba}.rn-tycoon-map-hint{width:100%;font-size:11px;color:#c7e0d6}.rn-tycoon-map-key{display:flex;flex-wrap:wrap;gap:7px 16px;padding:11px 16px;background:#173e48;color:#e5f1e5;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-key span{display:inline-flex;align-items:center;gap:7px}.rn-tycoon-map-key i{display:inline-block;width:22px;height:3px;border-radius:3px;flex-shrink:0}.rn-tycoon-map-note{margin-left:auto;opacity:.85}@media(max-width:420px){.rn-tycoon-map-key{padding:10px;gap:6px 12px;font-size:11px}.rn-tycoon-map-note{width:100%;margin-left:0}.rn-tycoon-map-controls{padding:8px;gap:5px}.rn-tycoon-scene .rn-tycoon-map-controls button{padding:7px 8px}.rn-tycoon-map-weather{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-map-overlays{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-right:5px}.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"],.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"]:hover:not(:disabled){background:#d6f5e6;color:#153e45;border-color:#d6f5e6;box-shadow:inset 0 -3px 0 #4d8c76}.rn-tycoon-scene .rn-tycoon-map-overlays button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-scene svg{user-select:none;-webkit-user-select:none}.rn-tycoon-map-condition{display:flex;flex-wrap:wrap;gap:3px 16px;padding:8px 14px;background:#173e48;border-top:1px solid #426b69;color:#edf7e9;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-condition strong{color:#d6f5e6}.rn-tycoon-map-condition span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-overlays{width:100%;margin-right:0}.rn-tycoon-map-overlays button{flex:1}.rn-tycoon-map-condition{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-map-service{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#3b433b;border-top:1px solid #8f895f;color:#ffefcc;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-service strong{font-weight:700;color:#fff0ca}.rn-tycoon-map-service span{font-variant-numeric:tabular-nums}.rn-tycoon-service-progress{width:100%;height:4px;margin-top:2px;background:#697267;border-radius:3px;overflow:hidden}.rn-tycoon-service-progress>span{display:block;height:100%;background:#ffe1a0;border-radius:3px}@media(max-width:420px){.rn-tycoon-map-service{padding:8px 10px;gap:3px 8px}}'),
       h('style', null, '.rn-tycoon-map-connection{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;padding:8px 14px;border-top:1px solid #50766d;background:#1c4549;color:#e8f5e7;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-connection strong{font-size:12px;color:#f0f9e8}.rn-tycoon-map-connection span{font-variant-numeric:tabular-nums}.rn-tycoon-map-connection[data-state=isolated]{background:#414738;border-color:#8f895f;color:#ffefcc}.rn-tycoon-map-connection[data-state=isolated] strong{color:#fff0ca}.rn-tycoon-map-connection[data-reason=fault]{background:#513e3b;border-color:#aa7b67;color:#ffe5d4}.rn-tycoon-map-connection[data-reason=fault] strong{color:#ffe8d6}@media(max-width:420px){.rn-tycoon-map-connection{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-service-stage{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;width:100%;margin-top:2px}.rn-tycoon-service-stage strong{display:inline-block;border:1px solid #b3a274;border-radius:5px;padding:1px 6px;background:#54523d;font-size:10px;line-height:1.5}.rn-tycoon-service-stage span{font-size:10px}'),
       h('style', null, '.rn-tycoon-map-build{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#354842;border-top:1px solid #8e9d7d;color:#f2efd6;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-build strong{color:#fff0ca}.rn-tycoon-map-build span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-build{padding:8px 10px;gap:3px 8px}}'),
       h('style', null, '.rn-tycoon-battery-gauge{display:grid;gap:5px;padding:9px 14px;background:#204750;border-top:1px solid #52776c;color:#e6f5e9;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-battery-reading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px}.rn-tycoon-battery-reading strong{color:#eaffdf;font-size:12px;font-variant-numeric:tabular-nums}.rn-tycoon-battery-track{position:relative;height:9px;border:1px solid #70978b;border-radius:5px;background:#12333d;overflow:hidden}.rn-tycoon-battery-level{height:100%;background:#7ce2b5}.rn-tycoon-battery-reserve{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #ffe0a0;transform:translateX(-1px)}.rn-tycoon-battery-note{font-size:10px;color:#d2e9dd}@media(max-width:420px){.rn-tycoon-battery-gauge{padding:9px 10px}}'),
-      h('style', null, '.rn-tycoon-network{display:grid;gap:6px;padding:8px 14px;background:#183e47;border-top:1px solid #50766d;color:#e9f4e8;font:11px/1.4 system-ui,sans-serif}.rn-tycoon-network-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}.rn-tycoon-network-heading strong{font-size:11px}.rn-tycoon-network-readings{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px}.rn-tycoon-network-readings span{display:block;color:#c9e0d5;font-size:10px}.rn-tycoon-network-readings strong{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#f2f8e7}.rn-tycoon-network-unused{border-left:4px solid #d5b577;padding-left:6px;background:repeating-linear-gradient(135deg,transparent,transparent 5px,#e4c58a0e 5px,#e4c58a0e 7px)}.rn-tycoon-scene .rn-tycoon-network button{min-height:32px;padding:5px 9px;border:1px solid #81b3a0;border-radius:7px;background:#28575a;color:#eff8e7;font:600 11px/1.4 system-ui,sans-serif;cursor:pointer}.rn-tycoon-network button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-substation{outline:none;cursor:pointer}.rn-tycoon-substation:hover .rn-tycoon-substation-focus{stroke:#baf1da;fill:#baf1da12}.rn-tycoon-substation:focus .rn-tycoon-substation-focus,.rn-tycoon-substation:focus-visible .rn-tycoon-substation-focus{stroke:#fff1b0;fill:#fff1b01f;stroke-width:4}@media(max-width:420px){.rn-tycoon-network{padding:8px 10px}.rn-tycoon-network-readings{gap:5px}.rn-tycoon-network-readings strong{font-size:11px}.rn-tycoon-network-readings span{font-size:9px}}'),
+      h('style', null, '.rn-tycoon-network{display:grid;gap:6px;padding:8px 14px;background:#183e47;border-top:1px solid #50766d;color:#e9f4e8;font:11px/1.4 system-ui,sans-serif}.rn-tycoon-network-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}.rn-tycoon-network-heading strong{font-size:11px}.rn-tycoon-network-readings{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px}.rn-tycoon-network-readings span{display:block;color:#c9e0d5;font-size:10px}.rn-tycoon-network-readings strong{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#f2f8e7}.rn-tycoon-network-unused{border-left:4px solid #d5b577;padding-left:6px;background:repeating-linear-gradient(135deg,transparent,transparent 5px,#e4c58a0e 5px,#e4c58a0e 7px)}.rn-tycoon-scene .rn-tycoon-network button{min-height:44px;padding:5px 9px;border:1px solid #81b3a0;border-radius:7px;background:#28575a;color:#eff8e7;font:600 11px/1.4 system-ui,sans-serif;cursor:pointer}.rn-tycoon-network button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-substation{outline:none;cursor:pointer}.rn-tycoon-substation:hover .rn-tycoon-substation-focus{stroke:#baf1da;fill:#baf1da12}.rn-tycoon-substation:focus .rn-tycoon-substation-focus,.rn-tycoon-substation:focus-visible .rn-tycoon-substation-focus{stroke:#fff1b0;fill:#fff1b01f;stroke-width:4}@media(max-width:420px){.rn-tycoon-network{padding:8px 10px}.rn-tycoon-network-readings{gap:5px}.rn-tycoon-network-readings strong{font-size:11px}.rn-tycoon-network-readings span{font-size:9px}}'),
       h('div', { className: 'rn-tycoon-map-controls', role: 'group', 'aria-label': t('renewables.tycoon.scene.mapControls', 'Map view controls') },
         h('div', { className: 'rn-tycoon-map-overlays', role: 'group', 'aria-label': t('renewables.tycoon.scene.overlayControls', 'Map information') },
           h('button', { type: 'button', 'data-tycoon-overlay': 'power', 'aria-pressed': overlay === 'power', onClick: function () { setOverlay('power'); } }, t('renewables.tycoon.scene.powerOverlay', 'Power flow')),
@@ -612,7 +645,7 @@
           h('div', { className: 'rn-tycoon-network-unused' }, h('strong', null, formatPower(networkCurtailed)), h('span', null, t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used'))))),
       selectedConnection && selectedSite ? h('div', { className: 'rn-tycoon-map-connection', 'data-tycoon-connection-summary': true, 'data-site': selectedSite.id, 'data-state': selectedConnection.state, 'data-reason': selectedConnection.reason },
         h('strong', null, selectedSite.name + ' · ' + selectedConnection.label), h('span', null, selectedConnection.detail + ' · ' + serviceContext)) : null,
-      selectedBattery ? h('div', { className: 'rn-tycoon-battery-gauge', 'data-tycoon-battery-gauge': selectedSite.id, 'data-stored': selectedStored, 'data-capacity': selectedCapacity, 'data-fraction': selectedFill, 'data-reserve': reserveFraction },
+      selectedBattery && selectedSite ? h('div', { className: 'rn-tycoon-battery-gauge', 'data-tycoon-battery-gauge': selectedSite.id, 'data-stored': selectedStored, 'data-capacity': selectedCapacity, 'data-fraction': selectedFill, 'data-reserve': reserveFraction },
         h('div', { className: 'rn-tycoon-battery-reading' }, h('span', { id: uid + '-battery-stored' }, t('renewables.tycoon.scene.storedEndHour', 'Stored at end of selected hour')), h('strong', null, selectedStored.toFixed(1) + ' / ' + selectedCapacity.toFixed(1) + ' kWh · ' + (selectedFill * 100).toFixed(1) + '%')),
         h('div', { className: 'rn-tycoon-battery-track', role: 'meter', 'aria-labelledby': uid + '-battery-stored', 'aria-valuemin': 0, 'aria-valuemax': selectedCapacity, 'aria-valuenow': selectedStored, 'aria-valuetext': selectedStored.toFixed(1) + ' ' + t('renewables.tycoon.scene.kwhStored', 'kWh stored') }, h('div', { className: 'rn-tycoon-battery-level', 'data-tycoon-battery-level': selectedSite.id, style: { width: selectedFill * 100 + '%' } }), h('span', { className: 'rn-tycoon-battery-reserve', 'data-tycoon-battery-reserve': selectedSite.id, 'data-reserve': reserveFraction, style: { left: reserveFraction * 100 + '%' }, 'aria-hidden': true })),
         h('span', { className: 'rn-tycoon-battery-note' }, t('renewables.tycoon.scene.reserveTarget', 'Reserve target') + ': ' + (selectedCapacity * reserveFraction).toFixed(1) + ' kWh · ' + t('renewables.tycoon.scene.reserveRelease', 'Essential needs may draw on the reserve.'))) : null,
@@ -621,7 +654,7 @@
         h('span', null, (campaign.phase && campaign.phase !== 'planning' ? t('renewables.tycoon.scene.buildReplay', 'Illustrative stages · replay hour') : t('renewables.tycoon.scene.buildForecast', 'Illustrative stages · forecast hour')) + ' · ' + t('renewables.tycoon.scene.buildOffline', 'Offline for the entire construction month'))) : null,
       overlay === 'condition' ? h('div', { className: 'rn-tycoon-map-condition', 'data-tycoon-condition-summary': true, 'aria-live': 'polite', 'aria-atomic': true },
         h('strong', null, conditionHeading),
-        h('span', null, selectedAsset && selectedSite ? selectedSite.name + ': ' + Math.round(clamp(selectedAsset.condition, 0, 100)) + '% · ' + (statusText[selectedAsset.status] || statusText.idle) : t('renewables.tycoon.scene.selectCondition', 'Select owned equipment to inspect its condition.'))) : null,
+        h('span', null, selectedAsset && selectedSite ? selectedSite.name + ': ' + Math.round(clamp(selectedAsset.condition, 0, 100)) + '% · ' + (own(statusText, selectedAsset.status) ? statusText[selectedAsset.status] : statusText.idle) : t('renewables.tycoon.scene.selectCondition', 'Select owned equipment to inspect its condition.'))) : null,
       selectedAsset && selectedSite && selectedAsset.status === 'service' ? h('div', { className: 'rn-tycoon-map-service', 'data-tycoon-service-summary': true, 'data-site': selectedSite.id, 'data-stage': serviceStage, 'data-elapsed': serviceElapsed, 'data-remaining': serviceRemaining },
         h('strong', null, selectedSite.name + ' · ' + serviceContext), h('span', null, serviceElapsedText + ' · ' + serviceRemainingText), h('span', null, t('renewables.tycoon.scene.serviceOffline', 'Offline for service') + ' · ' + serviceReturnText),
         h('div', { className: 'rn-tycoon-service-stage' }, h('strong', { 'data-tycoon-service-stage': serviceStage }, serviceStageLabel), h('span', null, serviceStageContext)),
@@ -759,4 +792,4 @@
           h('text', { x: 36, y: 101, fill: '#f4dfb1', fontSize: 11.5 }, formatPower(networkCurtailed) + ' ' + t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used')))),
       h('div', { className: 'rn-tycoon-map-key' }, h('span', null, h('i', { style: { background: '#ffe5a0' } }), t('renewables.tycoon.scene.delivering', 'Delivering electricity')), h('span', null, h('i', { style: { background: '#c5a5ff' } }), t('renewables.tycoon.scene.charging', 'Charging')), h('span', null, h('i', { style: { background: '#8bb0a0', border: '1px dashed #d2e4cd', height: 8 } }), t('renewables.tycoon.scene.available', 'Available site')), h('span', { className: 'rn-tycoon-map-note' }, t('renewables.tycoon.scene.illustrative', 'Illustrative motion · simulated hourly power'))));
   };
-})();
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

@@ -37,6 +37,15 @@
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: true },
     check: { href: 'packets-check.html', name: 'Make a math check', reopens: true },
     read: { href: 'packets-read-along.html', name: 'Make a read-along', reopens: true },
+    choice: { href: 'packets-choice.html', name: 'Choice, Sort & Write', reopens: true },
+    maze: { href: 'packets-maze.html', name: 'CBM-Maze Reading', reopens: true },
+    manipulatives: { href: 'packets-manipulatives.html', name: 'Visual Math Manipulatives', reopens: true },
+    stem: { href: 'packets-stem-lab.html', name: 'STEM Labs', reopens: true },
+    life: { href: 'packets-life-skills.html', name: 'Life Skills & Transition', reopens: true },
+    aac: { href: 'packets-aac.html', name: 'AAC Boards', reopens: true },
+    sel: { href: 'packets-sel.html', name: 'Focus & UDL Toolkits', reopens: true },
+    playlist: { href: 'packets-playlist.html', name: 'Unit Playlists', reopens: true },
+    compile: { href: 'packets-compile.html', name: 'Compile Activity', reopens: true },
   };
 
   var verify = null, handoff = null;
@@ -139,15 +148,55 @@
     return Promise.resolve().then(function () { return subtle.digest('SHA-256', bytes); }).then(hex, slow);
   }
 
+  var HOME_LANG_NAMES = {
+    es: 'Spanish',
+    pt: 'Portuguese',
+    fr: 'French',
+    ar: 'Arabic',
+    vi: 'Vietnamese',
+    zh: 'Simplified Chinese',
+  };
+
   // What kind of file it is, from its two JSON blocks (as packets_reopen.js tells them apart).
   function describe(parts) {
     var m = parts.manifest || {}, lesson = isObject(parts.lesson) ? parts.lesson : {};
     var packet = isObject(m.packet) ? m.packet : {};
     var blocks = (Array.isArray(lesson.blocks) ? lesson.blocks : []).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var every = function (pattern) { return blocks.length > 0 && blocks.every(function (block) { return pattern.test(block.activity); }); };
+    var some = function (pattern) { return blocks.some(function (block) { return pattern.test(block.activity); }); };
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
-    var kind = every(/^vocab_/) ? 'vocab' : every(/^symbol_runner$/) ? 'symbol' : every(/^read_along$/) ? 'read' : check ? 'check' : every(/^math_/) ? 'math' : 'words';
-    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice') : kind === 'symbol' ? (check ? 'Symbol naming check' : 'Symbol Runner practice') : kind === 'check' ? 'A check' : kind === 'math' ? 'Math fact practice' : kind === 'read' ? 'A read-along' : 'Word Sounds practice';
+    var isPlaylist = some(/^playlist_roadmap$/) || (isObject(m.builder) && /playlist/i.test(String(m.builder.name || '')));
+    var isCompiled = (isObject(m.compiled) && !!m.compiled.sourceKind) || some(/^(?:compiled_quiz|compiled_cloze|branching_adventure|anchor_study)$/);
+    var kind = isPlaylist ? 'playlist'
+      : isCompiled ? 'compile'
+      : every(/^vocab_/) ? 'vocab'
+      : every(/^symbol_runner$/) ? 'symbol'
+      : every(/^read_along$/) ? 'read'
+      : every(/^maze_reading$/) ? 'maze'
+      : every(/^(?:choice_board|concept_sort|sequence_order|tiered_writing)$/) ? 'choice'
+      : every(/^manip_/) ? 'manipulatives'
+      : every(/^stem_/) ? 'stem'
+      : every(/^life_/) ? 'life'
+      : every(/^aac_board$/) ? 'aac'
+      : every(/^sel_/) ? 'sel'
+      : check ? 'check'
+      : every(/^math_/) ? 'math'
+      : 'words';
+    var label = kind === 'vocab' ? (check ? 'Vocabulary check' : 'Vocabulary practice')
+      : kind === 'symbol' ? (check ? 'Symbol naming check' : 'Symbol Runner practice')
+      : kind === 'maze' ? (check ? 'CBM-Maze reading check' : 'CBM-Maze reading practice')
+      : kind === 'choice' ? (check ? 'Choice, Sort & Write check' : 'Choice, Sort & Write practice')
+      : kind === 'manipulatives' ? (check ? 'Visual Math Manipulatives check' : 'Visual Math Manipulatives practice')
+      : kind === 'stem' ? (check ? 'STEM Lab check' : 'STEM Lab practice')
+      : kind === 'life' ? (check ? 'Life Skills check' : 'Life Skills practice')
+      : kind === 'aac' ? 'AAC communication board'
+      : kind === 'sel' ? 'Focus & UDL toolkit'
+      : kind === 'playlist' ? 'Unit playlist'
+      : kind === 'compile' ? (check ? 'Compiled activity check' : 'Compiled activity')
+      : kind === 'check' ? 'A check'
+      : kind === 'math' ? 'Math fact practice'
+      : kind === 'read' ? 'A read-along'
+      : 'Word Sounds practice';
     var all = blocks.reduce(function (list, block) { return list.concat(block.items); }, []);
     var items = isObject(m.check) && Number(m.check.items) > 0 ? Number(m.check.items) : all.filter(function (item) { return !(isObject(item) && item.practice); }).length;
     var title = String(m.title || lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
@@ -157,9 +206,25 @@
       ? KEY_PREFIX + lesson.lessonId + ':' + lesson.revision : '';
     var base = named.indexOf(KEY_PREFIX) === 0 && named.length <= 300 ? named
       : (fallbackBase.length <= 300 ? fallbackBase : '');
+    var homeLanguages = [];
+    if (isObject(lesson.bilingual) && Array.isArray(lesson.bilingual.codes)) {
+      lesson.bilingual.codes.forEach(function (code) {
+        var key = String(code || '').trim().toLowerCase();
+        var name = Object.prototype.hasOwnProperty.call(HOME_LANG_NAMES, key) ? HOME_LANG_NAMES[key] : '';
+        if (name && homeLanguages.indexOf(name) < 0) homeLanguages.push(name);
+      });
+    }
+    var stationMode = lesson.stationMode === true;
+    var sealedQr = isObject(m.qr) || (isObject(lesson.qr) && typeof lesson.qr.k === 'string' && lesson.qr.k.length > 0);
+    var stageCount = 0;
+    if (kind === 'playlist') {
+      if (isObject(lesson.playlist) && Array.isArray(lesson.playlist.stages)) stageCount = lesson.playlist.stages.length;
+      else stageCount = blocks.filter(function (b) { return b.activity !== 'playlist_roadmap'; }).length;
+    }
+    var nonScored = kind === 'aac' || kind === 'sel';
     // A read-along has pages to listen to, not questions.
-    if (kind === 'read') return { kind: kind, label: label, check: false, items: 0, pages: all.length, title: title, learner: learner, base: base };
-    return { kind: kind, label: label, check: check, items: items, title: title, learner: learner, base: base };
+    if (kind === 'read') return { kind: kind, label: label, check: false, items: 0, pages: all.length, title: title, learner: learner, base: base, homeLanguages: homeLanguages, stationMode: stationMode, sealedQr: sealedQr, stageCount: 0, nonScored: false };
+    return { kind: kind, label: label, check: check, items: items, title: title, learner: learner, base: base, homeLanguages: homeLanguages, stationMode: stationMode, sealedQr: sealedQr, stageCount: stageCount, nonScored: nonScored };
   }
 
   function problem(line, link) {
@@ -266,6 +331,11 @@
     if (about.items) line.push(count(about.items, 'question', 'questions') + '.');
     if (about.pages) line.push(count(about.pages, 'page', 'pages') + ' to listen to.');
     if (about.learner) line.push('Made for ' + about.learner + '.');
+    if (about.stageCount) line.push(count(about.stageCount, 'stage', 'stages') + '.');
+    if (about.nonScored) line.push('Not scored \u2014 support toolkit.');
+    if (about.homeLanguages && about.homeLanguages.length) line.push('Home languages: ' + about.homeLanguages.join(', ') + '.');
+    if (about.stationMode) line.push('Shared device station mode.');
+    if (about.sealedQr) line.push('Sealed QR results enabled.');
     setText('found-line', line.join(' '));
     show('found-line', line.length > 0);
     drawPlace();

@@ -1694,7 +1694,7 @@ const gamesTextAiOff = () => {
   if (typeof window === 'undefined') return true;
   try { if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return true; } catch (_) { return true; }
   if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
-  if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return true;
+  if (window.hideStudentAiFeatures === true) return true;
   if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return true;
   if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled()) return true;
   return false;
@@ -5246,6 +5246,8 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const isConnectedTo = (nodeId) => connections.some(c => c.toId === nodeId);
 
   if (shuffledSteps.length < 2) {
+    // First render, before the effect shuffles real steps: no false "need two steps" alert.
+    if (Array.isArray(data?.steps) && data.steps.length >= 2) return null;
     return (
       <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className="fixed inset-0 z-[200] bg-slate-50 flex flex-col">
         <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md">

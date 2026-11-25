@@ -9,9 +9,15 @@ const React = require('../desktop/web-app/node_modules/react');
 const { buildAppStylesModule } = require('../_build_app_styles_module.js');
 const context = { window: { React }, console: { log() {} } };
 vm.runInNewContext(buildAppStylesModule(readFileSync('app_styles_source.jsx', 'utf8')), context);
-const collectStyles = node => !node || typeof node !== 'object' ? '' : node.type === 'style'
-  ? '<style>' + node.props.children + '</style>'
-  : React.Children.toArray(node.props?.children).map(collectStyles).join('');
+// The large static block lives in a memoized child (AppStylesStatic, 2026-11-19), so expand
+// function and memo components the way the renderer would instead of reading only <style> children.
+const collectStyles = node => {
+  if (!node || typeof node !== 'object') return '';
+  if (node.type === 'style') return '<style>' + node.props.children + '</style>';
+  const render = typeof node.type === 'function' ? node.type : (node.type && typeof node.type.type === 'function' ? node.type.type : null);
+  if (render) return collectStyles(render(node.props || {}));
+  return React.Children.toArray(node.props?.children).map(collectStyles).join('');
+};
 const styles = collectStyles(context.window.AlloModules.AppStyles.AppStyles.type({}));
 const utilityCss = readFileSync('app/static/css/' + readdirSync('app/static/css').find(name => /^main\.[a-z0-9]+\.css$/i.test(name)), 'utf8');
 const themes = ['default', 'warm', 'sepia', 'blue', 'green', 'rose', 'dyslexia', 'dim', 'dark', 'highContrast'];

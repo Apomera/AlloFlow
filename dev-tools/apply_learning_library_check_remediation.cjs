@@ -52,6 +52,11 @@ function main() {
       }
     }
   }
+  const accuracyFixesPath = path.join(__dirname, 'item_quality_patches', 'stem_math_knowledge_check_fixes.cjs');
+  const accuracyFixesByStem = fs.existsSync(accuracyFixesPath) ? require(accuracyFixesPath) : {};
+  for (const stem of Object.keys(accuracyFixesByStem)) {
+    if (!byStem[stem]) byStem[stem] = {};
+  }
 
   const problems = [];
   let totalLibs = 0;
@@ -115,6 +120,15 @@ function main() {
         }
         if (balanceAnswers) {
           next = rotateChoicesToTarget(next, globalIdx % 4);
+        }
+        const accFix = accuracyFixesByStem[stem] && accuracyFixesByStem[stem][ck.id];
+        if (accFix) {
+          if (typeof accFix.prompt === 'string' && accFix.prompt.trim()) next.prompt = accFix.prompt.trim();
+          if (Array.isArray(accFix.choices) && accFix.choices.length === 4) {
+            next.choices = accFix.choices.map((c) => String(c).trim());
+          }
+          if (Number.isInteger(accFix.answerIndex)) next.answerIndex = accFix.answerIndex;
+          if (typeof accFix.rationale === 'string' && accFix.rationale.trim()) next.rationale = accFix.rationale.trim();
         }
         globalIdx += 1;
 

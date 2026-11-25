@@ -60,7 +60,10 @@ describe('I2: learner annotations never edit the teacher annotations', () => {
       handleUpdateVisualPanel: () => {}, learnerAnnotations: { drawings: { 1: [ARROW] } },
     }));
     expect(onUpdateResource).not.toHaveBeenCalled();
+    // Clearing existing drawings is two-tap now: the first tap only arms the confirm.
     act(() => button('Clear').click());
+    expect(onLearnerAnnotationsChange).not.toHaveBeenCalled();
+    act(() => button('Confirm clear?').click());
     expect(onUpdateResource).not.toHaveBeenCalled();
     expect(onLearnerAnnotationsChange).toHaveBeenCalledTimes(1);
     expect(onLearnerAnnotationsChange.mock.calls[0]).toEqual(['img-1', { drawings: {}, userLabels: {} }]);

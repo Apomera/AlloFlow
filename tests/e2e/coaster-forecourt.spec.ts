@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({toolFile:'stem_lab/stem_tool_coasterlab.js',toolId:'coasterLab',width:1440,height:960,
  probes: "document.head.insertAdjacentHTML('beforeend','<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');"});
 test.beforeAll(async()=>{await harness.start();});test.afterAll(async()=>{await harness.stop();});
@@ -15,6 +16,7 @@ test('station forecourt stays grounded and frames across themes and layout edits
  const framed=()=>page.evaluate(()=>(document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.stationPresentation().projected.every((p:any)=>Math.abs(p.x)<=1 && Math.abs(p.y)<=1 && p.z>=-1 && p.z<=1));
  await expect.poll(framed).toBe(true);
  expect(await state()).toMatchObject({benches:2,finite:true,details:true});
+ await openCoasterSettings(page);
  for(const theme of ['daylight','dusk','neon','blueprint']){
   await page.locator('#clab-visualTheme').selectOption(theme);
   expect((await state()).planting).toBe(theme!=='blueprint');
@@ -37,6 +39,7 @@ test('station forecourt stays grounded and frames across themes and layout edits
  expect(model.heading).toBeCloseTo(model.stationHeading,6);expect(model.finite).toBe(true);
  expect(model.stairs.top).toBeCloseTo(model.stationPosition[1]+0.55,6);expect(model.stairs.flights).toBeGreaterThan(1);
  await page.locator('#clab-visualTheme').selectOption('daylight');
+ await closeCoasterSettings(page); // the phone drawer drops over the build panel
  await page.setViewportSize({width:390,height:844});await page.locator('#clab-btnStationView').click();
  await expect.poll(framed).toBe(true);await expect(page.locator('#clab-btnSceneFocus')).toBeInViewport();
  await page.screenshot({path:testInfo.outputPath('forecourt-phone-elevated.png')});

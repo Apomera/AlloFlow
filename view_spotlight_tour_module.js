@@ -32,9 +32,9 @@
 }
 `;
 
-// Student AI off: callTTS returns no cloud voice; read with the device voice instead of silence.
+// Device-voice fallback whenever cloud TTS is unavailable, offline, or disabled for students.
 function spotlightStudentDeviceVoice(text, onEnd) {
-  if (typeof window === 'undefined' || window.__alloStudentAiDisabled !== true) return false;
+  if (typeof window === 'undefined') return false;
   try {
     if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false;
   } catch (e) {}
@@ -48,6 +48,17 @@ function spotlightStudentDeviceVoice(text, onEnd) {
     var u = new SpeechSynthesisUtterance(phrase);
     u.rate = Math.max(0.5, Math.min(2, Number(window.__alloPlaybackRate) || 1));
     if (typeof window.__alloVoiceVolume === 'number' && isFinite(window.__alloVoiceVolume)) u.volume = Math.max(0, Math.min(1, window.__alloVoiceVolume));
+    try {
+      var langTag = String(typeof document !== 'undefined' && document.documentElement && document.documentElement.lang || typeof navigator !== 'undefined' && navigator.language || 'en').toLowerCase();
+      var baseLang = langTag.split('-')[0];
+      var voices = typeof synth.getVoices === 'function' ? synth.getVoices() || [] : [];
+      var localMatch = voices.find(function (v) {
+        return v && v.localService === true && String(v.lang || '').toLowerCase() === langTag;
+      }) || voices.find(function (v) {
+        return v && v.localService === true && String(v.lang || '').toLowerCase().split('-')[0] === baseLang;
+      });
+      if (localMatch) u.voice = localMatch;
+    } catch (_) {}
     if (typeof onEnd === 'function') {
       u.onend = onEnd;
       u.onerror = onEnd;
@@ -66,11 +77,34 @@ function SpotlightTourView(props) {
   var spotlightMessage = props.spotlightMessage;
   var spotlightOpenTimeRef = props.spotlightOpenTimeRef;
   var setIsSpotlightMode = props.setIsSpotlightMode;
+  var setSpotlightMessage = props.setSpotlightMessage;
+  var onOpenInTour = props.onOpenInTour;
+  var isBotVisible = props.isBotVisible;
+  var themeProp = props.theme;
+  var resolvedTheme = function () {
+    if (themeProp === 'contrast' || themeProp === 'dark' || themeProp === 'light') return themeProp;
+    try {
+      var root = typeof document !== 'undefined' ? document.documentElement : null;
+      var body = typeof document !== 'undefined' ? document.body : null;
+      if (root && root.classList && root.classList.contains('theme-contrast') || body && body.classList && body.classList.contains('theme-contrast')) return 'contrast';
+      if (root && root.classList && root.classList.contains('theme-dark') || body && body.classList && body.classList.contains('theme-dark')) return 'dark';
+    } catch (_) {}
+    return 'light';
+  }();
+  var isContrast = resolvedTheme === 'contrast';
+  var isDark = resolvedTheme === 'dark';
+  var isLight = !isContrast && !isDark;
+  var canReadAloud = typeof window !== 'undefined' && (typeof window.callTTS === 'function' || typeof window.speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance === 'function');
+  var dismissSpotlight = React.useCallback(function () {
+    if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+    if (typeof setSpotlightMessage === 'function') setSpotlightMessage('');
+  }, [setIsSpotlightMode, setSpotlightMessage]);
   // Move focus to the popup's Close action so keyboard users land on a visible focus target.
   // The popup intentionally remains non-modal so the highlighted control is still operable.
   // On close, return focus to the control that opened it. Escape is handled by the host.
   var panelRef = React.useRef(null);
   var closeButtonRef = React.useRef(null);
+  var playAloudRef = React.useRef(null);
   React.useEffect(function () {
     if (typeof document === 'undefined') return undefined;
     var onDocumentKeyDown = function (e) {
@@ -78,7 +112,17 @@ function SpotlightTourView(props) {
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+        dismissSpotlight();
+        return;
+      }
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'r' || e.key === 'R')) {
+        var target = e.target;
+        if (target && typeof target.closest === 'function' && target.closest('input, textarea, select, [contenteditable="true"]')) return;
+        if (typeof playAloudRef.current === 'function') {
+          e.preventDefault();
+          e.stopPropagation();
+          playAloudRef.current();
+        }
       }
     };
     var onDocumentPointerDown = function (e) {
@@ -94,7 +138,7 @@ function SpotlightTourView(props) {
         }
       }
       if (typeof debugLog === 'function') debugLog('Backdrop Dismiss');
-      if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+      dismissSpotlight();
     };
     document.addEventListener('keydown', onDocumentKeyDown);
     document.addEventListener('pointerdown', onDocumentPointerDown);
@@ -102,7 +146,7 @@ function SpotlightTourView(props) {
       document.removeEventListener('keydown', onDocumentKeyDown);
       document.removeEventListener('pointerdown', onDocumentPointerDown);
     };
-  }, [setIsSpotlightMode, debugLog, spotlightOpenTimeRef, tourRect]);
+  }, [dismissSpotlight, debugLog, spotlightOpenTimeRef, tourRect]);
   React.useEffect(function () {
     var prevFocus = typeof document !== 'undefined' ? document.activeElement : null;
     try {
@@ -206,10 +250,26 @@ function SpotlightTourView(props) {
       _stopTts();
       return;
     } // toggle: a second click stops
-    if (typeof window === 'undefined' || typeof window.callTTS !== 'function') return;
+    if (typeof window === 'undefined') return;
     var plain = String((_msgTitle ? _msgTitle + '. ' : '') + _msgText).replace(/[#*`_>]/g, '').replace(/\s+/g, ' ').trim();
     if (!plain) return;
     var myGen = ++_ttsGenRef.current;
+    var tryDeviceVoice = function () {
+      if (spotlightStudentDeviceVoice(plain, function () {
+        if (myGen === _ttsGenRef.current) _stopTts();
+      })) {
+        _ttsAudioRef.current = 'device-voice';
+        setTtsState('playing');
+        _startReadingHighlight(myGen);
+        return true;
+      }
+      setTtsState('idle');
+      return false;
+    };
+    if (typeof window.callTTS !== 'function') {
+      tryDeviceVoice();
+      return;
+    }
     setTtsState('loading');
     Promise.resolve(window.callTTS(plain, window.__alloSelectedVoice || 'Puck', window.__alloPlaybackRate || 1, {
       maxRetries: 2
@@ -225,32 +285,30 @@ function SpotlightTourView(props) {
         return;
       } // superseded
       if (!url) {
-        if (spotlightStudentDeviceVoice(plain, function () {
-          if (myGen === _ttsGenRef.current) _stopTts();
-        })) {
-          _ttsAudioRef.current = 'device-voice';
-          setTtsState('playing');
-          _startReadingHighlight(myGen);
-          return;
-        }
-        setTtsState('idle');
+        tryDeviceVoice();
         return;
       }
       _ttsUrlRef.current = url;
       var audio = new Audio(url);
       _ttsAudioRef.current = audio;
       audio.onended = _stopTts;
-      audio.onerror = _stopTts;
+      audio.onerror = function () {
+        if (myGen === _ttsGenRef.current) {
+          _ttsAudioRef.current = null;
+          tryDeviceVoice();
+        }
+      };
       Promise.resolve(audio.play()).then(function () {
         if (myGen === _ttsGenRef.current) {
           setTtsState('playing');
           _startReadingHighlight(myGen);
         } else _stopTts();
       }).catch(function () {
-        _stopTts();
+        if (myGen === _ttsGenRef.current) tryDeviceVoice();else _stopTts();
       });
     });
   };
+  playAloudRef.current = canReadAloud ? playAloud : null;
   var _viewportState = React.useState(function () {
     return {
       width: typeof window !== 'undefined' && window.innerWidth || 1024,
@@ -288,10 +346,135 @@ function SpotlightTourView(props) {
   var viewportWidth = viewport.width;
   var viewportHeight = viewport.height;
   var popupWidth = Math.max(0, Math.min(380, viewportWidth - 32));
-  var preferredLeft = _rect.left > viewportWidth / 2 ? _rect.left - popupWidth - 24 : _rect.right + 24;
-  var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
-  var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
-  var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), _rect.top));
+  var estimatedHeight = Math.min(380, Math.max(200, viewportHeight - 104));
+  var leftClearance = Math.max(0, _rect.left);
+  var rightClearance = Math.max(0, viewportWidth - _rect.right);
+  var canDockSide = viewportWidth >= 640 && (leftClearance >= popupWidth + 36 || rightClearance >= popupWidth + 36);
+  var spotlightDock = 'right';
+  var popupLeft = 16;
+  var popupTop = 72;
+  if (canDockSide) {
+    var placeLeft = leftClearance > rightClearance;
+    spotlightDock = placeLeft ? 'left' : 'right';
+    var preferredLeft = placeLeft ? _rect.left - popupWidth - 24 : _rect.right + 24;
+    popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
+    popupTop = Math.max(72, Math.min(Math.max(72, viewportHeight - estimatedHeight - 16), _rect.top));
+  } else {
+    var spaceBelow = Math.max(0, viewportHeight - _rect.bottom);
+    var spaceAbove = Math.max(0, _rect.top - 72);
+    var placeBelow = spaceBelow >= spaceAbove;
+    spotlightDock = placeBelow ? 'below' : 'above';
+    var centeredLeft = _rect.left + (_rect.width || 0) / 2 - popupWidth / 2;
+    popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), centeredLeft));
+    popupTop = placeBelow ? Math.max(72, Math.min(Math.max(72, viewportHeight - estimatedHeight - 16), _rect.bottom + 18)) : Math.max(72, Math.min(Math.max(72, viewportHeight - estimatedHeight - 16), _rect.top - estimatedHeight - 18));
+  }
+  var _muzzleState = React.useState(null);
+  var liveMuzzle = _muzzleState[0],
+    setLiveMuzzle = _muzzleState[1];
+  React.useEffect(function () {
+    if (isBotVisible === false || isContrast) {
+      setLiveMuzzle(null);
+      return undefined;
+    }
+    var timer = null;
+    var stopped = false;
+    var tick = function () {
+      if (stopped) return;
+      try {
+        var m = typeof window !== 'undefined' ? window.__alloBotMuzzle : null;
+        if (m && m.asleep) {
+          setLiveMuzzle(function (prev) {
+            return prev && prev.asleep ? prev : {
+              asleep: true
+            };
+          });
+        } else if (m && typeof m.x === 'number' && typeof m.y === 'number') {
+          setLiveMuzzle(function (prev) {
+            return !prev || prev.asleep || Math.abs(prev.x - m.x) > 0.75 || Math.abs(prev.y - m.y) > 0.75 ? {
+              x: m.x,
+              y: m.y
+            } : prev;
+          });
+        } else {
+          setLiveMuzzle(function (prev) {
+            return prev ? null : prev;
+          });
+        }
+      } catch (e) {}
+      timer = setTimeout(tick, 60);
+    };
+    tick();
+    return function () {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [isBotVisible, isContrast]);
+  var _helpBeam = function () {
+    if (isBotVisible === false || isContrast || !_rect.width || !_rect.height) return null;
+    var m = typeof window !== 'undefined' && window.__alloBotMuzzle ? window.__alloBotMuzzle : liveMuzzle;
+    if (!m || m.asleep || typeof m.x !== 'number' || typeof m.y !== 'number') return null;
+    var ax = m.x,
+      ay = m.y;
+    var left = Math.max(0, Math.min(viewportWidth, _rect.left));
+    var top = Math.max(0, Math.min(viewportHeight, _rect.top));
+    var right = Math.max(left, Math.min(viewportWidth, _rect.right));
+    var bottom = Math.max(top, Math.min(viewportHeight, _rect.bottom));
+    if (right <= left || bottom <= top) return null;
+    if (ax >= left && ax <= right && ay >= top && ay <= bottom) return null;
+    var cx = (left + right) / 2,
+      cy = (top + bottom) / 2;
+    var corners = [{
+      x: left,
+      y: top
+    }, {
+      x: right,
+      y: top
+    }, {
+      x: right,
+      y: bottom
+    }, {
+      x: left,
+      y: bottom
+    }];
+    var toCentre = Math.atan2(cy - ay, cx - ax);
+    var far = Math.max.apply(null, corners.map(function (c) {
+      return Math.hypot(c.x - ax, c.y - ay);
+    }));
+    var APERTURE = 4.5;
+    var px = -Math.sin(toCentre) * APERTURE;
+    var py = Math.cos(toCentre) * APERTURE;
+    var cross = function (o, a, b) {
+      return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    };
+    var src = corners.concat([{
+      x: ax + px,
+      y: ay + py
+    }, {
+      x: ax - px,
+      y: ay - py
+    }]).sort(function (a, b) {
+      return a.x - b.x || a.y - b.y;
+    });
+    var lower = [];
+    for (var i = 0; i < src.length; i++) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], src[i]) <= 0) lower.pop();
+      lower.push(src[i]);
+    }
+    var upper = [];
+    for (var j = src.length - 1; j >= 0; j--) {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], src[j]) <= 0) upper.pop();
+      upper.push(src[j]);
+    }
+    var ring = lower.slice(0, -1).concat(upper.slice(0, -1));
+    return {
+      ax: ax,
+      ay: ay,
+      far: far,
+      path: 'M ' + ring.map(function (p) {
+        return p.x + ' ' + p.y;
+      }).join(' L ') + ' Z'
+    };
+  }();
   var _label = function (key, fallback) {
     var val = typeof t === 'function' ? t(key, {
       defaultValue: fallback
@@ -312,19 +495,22 @@ function SpotlightTourView(props) {
       e.stopPropagation();
       if (spotlightOpenTimeRef && spotlightOpenTimeRef.current && Date.now() - spotlightOpenTimeRef.current < 500) return;
       if (typeof debugLog === 'function') debugLog("Backdrop Dismiss");
-      if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+      dismissSpotlight();
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "fixed z-[11000] animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none",
+    className: "fixed animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none",
     style: {
       top: popupTop + 'px',
       left: popupLeft + 'px',
       right: 'auto',
-      width: popupWidth + 'px'
+      width: popupWidth + 'px',
+      zIndex: 11060
     }
   }, /*#__PURE__*/React.createElement("div", {
     id: "spotlight-message-panel",
     ref: panelRef,
+    "data-spotlight-theme": resolvedTheme,
+    "data-spotlight-dock": spotlightDock,
     role: "dialog",
     "aria-modal": "false",
     "aria-labelledby": "spotlight-message-title",
@@ -334,15 +520,15 @@ function SpotlightTourView(props) {
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+        dismissSpotlight();
       }
     },
-    className: "bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-visible group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none",
+    className: `p-6 rounded-2xl relative overflow-visible group transition-all duration-300 motion-reduce:transition-none ${isContrast ? 'bg-black border-4 border-yellow-400 text-yellow-300' : isDark ? 'bg-slate-900/95 backdrop-blur-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 text-slate-100' : 'bg-white backdrop-blur-xl shadow-2xl border-2 border-indigo-200 text-slate-900'}`,
     style: {
-      backgroundColor: 'rgba(15, 23, 42, 0.96)',
-      color: '#f8fafc'
+      backgroundColor: isContrast ? '#000000' : isDark ? 'rgba(15, 23, 42, 0.96)' : 'rgba(255, 255, 255, 0.98)',
+      color: isContrast ? '#fde047' : isDark ? '#f8fafc' : '#0f172a'
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, isDark && /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 overflow-hidden rounded-2xl pointer-events-none",
     "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement("div", {
@@ -356,17 +542,17 @@ function SpotlightTourView(props) {
     className: "flex items-start justify-between mb-4 relative z-10"
   }, /*#__PURE__*/React.createElement("h3", {
     id: "spotlight-message-title",
-    className: `font-bold text-white flex items-center gap-3 text-lg tracking-tight rounded-xl transition-colors duration-300 motion-reduce:transition-none ${_isReadingTitle ? 'bg-amber-300/15 ring-1 ring-amber-300/30 px-2 py-1 -mx-2' : ''}`
+    className: `font-bold flex items-center gap-3 text-lg tracking-tight rounded-xl transition-colors duration-300 motion-reduce:transition-none ${isContrast ? 'text-yellow-400' : isDark ? 'text-white' : 'text-indigo-950'} ${_isReadingTitle ? isLight ? 'bg-amber-100 ring-1 ring-amber-400 px-2 py-1 -mx-2' : 'bg-amber-300/15 ring-1 ring-amber-300/30 px-2 py-1 -mx-2' : ''}`
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
-    className: "p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg shadow-lg shadow-violet-500/20"
+    className: `p-2 rounded-lg shadow-sm ${isContrast ? 'bg-yellow-400 text-black' : 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-violet-500/20'}`
   }, /*#__PURE__*/React.createElement(Sparkles, {
     "aria-hidden": "true",
     size: 18,
-    className: "text-white fill-white/20"
+    className: isContrast ? 'text-black' : 'text-white fill-white/20'
   })), _msgTitle || _helpTitleFallback), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 shrink-0"
-  }, typeof window !== 'undefined' && typeof window.callTTS === 'function' && /*#__PURE__*/React.createElement("button", {
+  }, canReadAloud && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: e => {
       e.preventDefault();
@@ -379,9 +565,9 @@ function SpotlightTourView(props) {
     "data-help-ignore": "true",
     "aria-label": ttsState === 'playing' ? _label('common.stop_reading', 'Stop reading aloud') : _label('common.read_aloud', 'Read this aloud'),
     title: ttsState === 'playing' ? _label('common.stop_reading', 'Stop reading aloud') : _label('common.read_aloud', 'Read this aloud'),
-    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${ttsState === 'playing' ? 'text-white bg-violet-600/60 hover:bg-violet-600/80' : 'text-slate-100 bg-white/10 hover:text-white hover:bg-white/20'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`,
+    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-full border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 ${isContrast ? ttsState === 'playing' ? 'border-yellow-400 bg-yellow-400 text-black focus-visible:ring-yellow-300' : 'border-yellow-400 bg-black text-yellow-400 hover:bg-yellow-400 hover:text-black focus-visible:ring-yellow-300' : isDark ? ttsState === 'playing' ? 'border-violet-400 text-white bg-violet-600/70 hover:bg-violet-600 focus-visible:ring-white' : 'border-white/15 text-slate-100 bg-white/10 hover:text-white hover:bg-white/20 focus-visible:ring-white' : ttsState === 'playing' ? 'border-indigo-700 bg-indigo-700 text-white focus-visible:ring-indigo-700' : 'border-slate-300 bg-slate-100 text-slate-800 hover:bg-indigo-50 hover:text-indigo-900 focus-visible:ring-indigo-700'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`,
     style: {
-      color: '#f8fafc'
+      color: isContrast ? ttsState === 'playing' ? '#000000' : '#facc15' : isDark ? '#f8fafc' : ttsState === 'playing' ? '#ffffff' : '#1e293b'
     }
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
@@ -398,19 +584,19 @@ function SpotlightTourView(props) {
     "aria-label": _label('common.close', 'Close'),
     onClick: e => {
       e.stopPropagation();
-      if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
+      dismissSpotlight();
     },
     "data-help-ignore": "true",
-    className: "text-slate-100 bg-white/10 hover:text-white hover:bg-white/20 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-full border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 ${isContrast ? 'border-yellow-400 bg-black text-yellow-400 hover:bg-yellow-400 hover:text-black focus-visible:ring-yellow-300' : isDark ? 'border-white/15 text-slate-100 bg-white/10 hover:text-white hover:bg-white/20 focus-visible:ring-white' : 'border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200 hover:text-slate-950 focus-visible:ring-indigo-700'}`,
     style: {
-      color: '#f8fafc'
+      color: isContrast ? '#facc15' : isDark ? '#f8fafc' : '#1e293b'
     }
   }, /*#__PURE__*/React.createElement(X, {
     "aria-hidden": "true",
     size: 20
   })))), /*#__PURE__*/React.createElement("div", {
     id: "spotlight-message-body",
-    className: "text-slate-200 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark"
+    className: `text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 ${isDark ? 'text-slate-200 custom-scrollbar-dark' : isContrast ? 'text-yellow-200' : 'text-slate-700'}`
   }, _msgText.split(/\r?\n/).map((line, i) => {
     const cleanLine = line.trim();
     if (!cleanLine) return /*#__PURE__*/React.createElement("div", {
@@ -419,21 +605,21 @@ function SpotlightTourView(props) {
     });
     const lineReadIndex = ++_readableLineCounter;
     const isActiveReadLine = ttsState === 'playing' && readingLineIndex === lineReadIndex;
-    const readLineClass = isActiveReadLine ? 'bg-amber-300/15 text-white ring-1 ring-amber-300/30 shadow-[0_0_18px_rgba(252,211,77,0.18)]' : '';
+    const readLineClass = isActiveReadLine ? isContrast ? 'bg-yellow-400/20 text-yellow-200 ring-1 ring-yellow-400' : isLight ? 'bg-amber-100 text-slate-950 ring-1 ring-amber-400' : 'bg-amber-300/15 text-white ring-1 ring-amber-300/30 shadow-[0_0_18px_rgba(252,211,77,0.18)]' : '';
     const formatText = text => {
       if (!text) return null;
       return text.split('**').map((part, bIdx) => {
         if (bIdx % 2 === 1) {
           return /*#__PURE__*/React.createElement("strong", {
             key: `b-${bIdx}`,
-            className: "font-bold text-white bg-violet-700/20 px-1.5 py-0.5 rounded border border-violet-500/30 box-decoration-clone shadow-[0_0_10px_rgba(139,92,246,0.2)]"
+            className: isContrast ? 'font-bold text-black bg-yellow-400 px-1 rounded box-decoration-clone' : isDark ? 'font-bold text-white bg-violet-700/25 px-1.5 py-0.5 rounded border border-violet-500/30 box-decoration-clone' : 'font-bold text-slate-900 bg-indigo-50 px-1 py-0.5 rounded border border-indigo-200 box-decoration-clone'
           }, part);
         }
         return part.split('*').map((sub, iIdx) => {
           if (iIdx % 2 === 1) {
             return /*#__PURE__*/React.createElement("em", {
               key: `i-${bIdx}-${iIdx}`,
-              className: "italic text-indigo-200 font-serif"
+              className: isContrast ? 'italic text-yellow-300 font-serif' : isDark ? 'italic text-indigo-200 font-serif' : 'italic text-slate-600 font-serif'
             }, sub);
           }
           return sub;
@@ -444,7 +630,7 @@ function SpotlightTourView(props) {
       const headerText = cleanLine.replace(/^###\s*/, '').trim();
       return /*#__PURE__*/React.createElement("h5", {
         key: i,
-        className: `text-violet-200 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1 rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
+        className: `font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b pb-1 rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${isContrast ? 'text-yellow-400 border-yellow-400/60' : isDark ? 'text-violet-200 border-white/10' : 'text-indigo-700 border-indigo-100'} ${readLineClass}`
       }, formatText(headerText));
     }
     const isBullet = cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('* ');
@@ -456,56 +642,115 @@ function SpotlightTourView(props) {
         className: `grid grid-cols-[16px_1fr] gap-2 mb-1.5 items-start rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
       }, /*#__PURE__*/React.createElement("div", {
         "aria-hidden": "true",
-        className: "mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0"
+        className: `mt-2 h-1.5 w-1.5 rounded-full mx-auto shrink-0 ${isContrast ? 'bg-yellow-400' : isDark ? 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)]' : 'bg-indigo-500'}`
       }), /*#__PURE__*/React.createElement("span", {
-        className: "text-slate-200 text-sm font-medium"
+        className: `text-sm font-medium ${isContrast ? 'text-yellow-200' : isDark ? 'text-slate-200' : 'text-slate-800'}`
       }, formatText(bulletText)));
     }
     return /*#__PURE__*/React.createElement("p", {
       key: i,
-      className: `text-slate-200 text-sm leading-relaxed rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`
+      className: `text-sm leading-relaxed rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${isContrast ? 'text-yellow-200' : isDark ? 'text-slate-200' : 'text-slate-700'} ${readLineClass}`
     }, formatText(cleanLine));
   })), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 pt-2.5 border-t border-white/10 flex items-center justify-between gap-3 text-xs text-slate-300 relative z-10"
-  }, /*#__PURE__*/React.createElement("span", {
+    className: `mt-4 pt-2.5 border-t flex flex-wrap items-center justify-between gap-2 text-xs relative z-10 ${isContrast ? 'border-yellow-400/60 text-yellow-300' : isDark ? 'border-white/10 text-slate-300' : 'border-slate-200 text-slate-600'}`
+  }, typeof onOpenInTour === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-help-ignore": "true",
+    "data-spotlight-open-tour": "true",
+    onClick: e => {
+      e.preventDefault();
+      e.stopPropagation();
+      _stopTts();
+      onOpenInTour();
+    },
+    className: `min-h-9 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 ${isContrast ? 'border-yellow-400 bg-yellow-400 text-black hover:bg-yellow-300 focus-visible:ring-yellow-300' : isDark ? 'border-indigo-400/60 bg-indigo-950/80 text-indigo-200 hover:bg-indigo-900 hover:text-white focus-visible:ring-white' : 'border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 hover:text-indigo-950 focus-visible:ring-indigo-700'}`
+  }, /*#__PURE__*/React.createElement("span", null, "View in Guided Tour"), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "→")), /*#__PURE__*/React.createElement("span", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     "data-spotlight-tts-status": ttsState,
-    className: "inline-flex items-center gap-1.5 text-slate-200 font-medium min-h-[1rem]"
+    className: `inline-flex items-center gap-1.5 font-medium min-h-[1rem] ${isContrast ? 'text-yellow-300' : isDark ? 'text-slate-200' : 'text-slate-700'}`
   }, _ttsStatusText ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
-    className: `w-1.5 h-1.5 rounded-full ${ttsState === 'playing' ? 'bg-amber-300 animate-pulse motion-reduce:animate-none' : 'bg-violet-300'}`
+    className: `w-1.5 h-1.5 rounded-full ${ttsState === 'playing' ? 'bg-amber-400 animate-pulse motion-reduce:animate-none' : 'bg-indigo-400'}`
   }), /*#__PURE__*/React.createElement("span", null, _ttsStatusText)) : null), /*#__PURE__*/React.createElement("span", {
-    className: "ml-auto inline-flex items-center gap-1.5 text-slate-300 shrink-0"
-  }, /*#__PURE__*/React.createElement("kbd", {
-    className: "px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[11px] font-mono text-slate-100"
-  }, "Esc"), /*#__PURE__*/React.createElement("span", null, "to close"))), /*#__PURE__*/React.createElement("svg", {
-    className: "absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95",
+    className: `ml-auto inline-flex items-center gap-1.5 shrink-0 ${isContrast ? 'text-yellow-300' : isDark ? 'text-slate-300' : 'text-slate-600'}`
+  }, canReadAloud && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("kbd", {
+    className: `px-1.5 py-0.5 rounded border text-[11px] font-mono ${isContrast ? 'bg-black border-yellow-400 text-yellow-300' : isDark ? 'bg-white/10 border-white/20 text-slate-100' : 'bg-slate-100 border-slate-300 text-slate-800'}`
+  }, "R"), /*#__PURE__*/React.createElement("span", null, "read ·")), /*#__PURE__*/React.createElement("kbd", {
+    className: `px-1.5 py-0.5 rounded border text-[11px] font-mono ${isContrast ? 'bg-black border-yellow-400 text-yellow-300' : isDark ? 'bg-white/10 border-white/20 text-slate-100' : 'bg-slate-100 border-slate-300 text-slate-800'}`
+  }, "Esc"), /*#__PURE__*/React.createElement("span", null, "close"))), /*#__PURE__*/React.createElement("svg", {
+    className: "absolute w-8 h-8 pointer-events-none filter drop-shadow opacity-95",
     "aria-hidden": "true",
-    style: {
-      top: '24px',
-      [_rect.left > viewportWidth / 2 ? 'right' : 'left']: '-24px',
-      transform: _rect.left > viewportWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)'
+    style: spotlightDock === 'below' ? {
+      top: '-22px',
+      left: Math.max(20, Math.min(popupWidth - 52, Math.round(_rect.left + (_rect.width || 0) / 2 - popupLeft - 16))) + 'px',
+      color: isContrast ? '#facc15' : isDark ? 'rgba(15, 23, 42, 0.96)' : '#ffffff',
+      transform: 'rotate(180deg)'
+    } : spotlightDock === 'above' ? {
+      bottom: '-22px',
+      left: Math.max(20, Math.min(popupWidth - 52, Math.round(_rect.left + (_rect.width || 0) / 2 - popupLeft - 16))) + 'px',
+      color: isContrast ? '#facc15' : isDark ? 'rgba(15, 23, 42, 0.96)' : '#ffffff',
+      transform: 'rotate(0deg)'
+    } : {
+      top: Math.max(18, Math.min(240, Math.round(_rect.top + (_rect.height || 0) / 2 - popupTop - 16))) + 'px',
+      color: isContrast ? '#facc15' : isDark ? 'rgba(15, 23, 42, 0.96)' : '#ffffff',
+      [spotlightDock === 'left' ? 'right' : 'left']: '-24px',
+      transform: spotlightDock === 'left' ? 'rotate(-90deg)' : 'rotate(90deg)'
     },
     viewBox: "0 0 24 24",
     fill: "currentColor"
   }, /*#__PURE__*/React.createElement("path", {
     d: "M12 21l-12-18h24z"
-  }))), /*#__PURE__*/React.createElement("div", {
+  })))), _helpBeam && /*#__PURE__*/React.createElement("svg", {
+    "data-spotlight-help-beam": "true",
+    className: "fixed inset-0 pointer-events-none",
+    style: {
+      overflow: 'visible',
+      zIndex: 11050
+    },
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("radialGradient", {
+    id: "helpBeamGradient",
+    gradientUnits: "userSpaceOnUse",
+    cx: _helpBeam.ax,
+    cy: _helpBeam.ay,
+    r: _helpBeam.far * 1.05
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: "rgba(254, 240, 138, 0.48)"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "35%",
+    stopColor: "rgba(250, 204, 21, 0.22)"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "75%",
+    stopColor: "rgba(167, 139, 250, 0.10)"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: "rgba(167, 139, 250, 0)"
+  }))), /*#__PURE__*/React.createElement("path", {
+    d: _helpBeam.path,
+    fill: "url(#helpBeamGradient)",
+    style: {
+      mixBlendMode: isDark ? 'screen' : 'normal'
+    }
+  })), /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     "data-spotlight-glow-ring": "true",
-    className: "fixed pointer-events-none z-[10999] motion-reduce:!animate-none",
+    className: "fixed pointer-events-none motion-reduce:!animate-none",
     style: {
-      top: _rect.top - 6,
-      left: _rect.left - 6,
-      width: _rect.width + 12,
-      height: _rect.height + 12,
+      top: Math.max(2, _rect.top - 6),
+      left: Math.max(2, _rect.left - 6),
+      width: Math.max(12, Math.min(viewportWidth - Math.max(2, _rect.left - 6) - 2, _rect.width + 12)),
+      height: Math.max(12, Math.min(viewportHeight - Math.max(2, _rect.top - 6) - 2, _rect.height + 12)),
+      zIndex: 11051,
       borderRadius: '12px',
       animation: 'spotlight-tour-glow-ring 2s ease-in-out infinite',
-      boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1)'
+      boxShadow: isContrast ? '0 0 0 3px #facc15' : '0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1)'
     }
-  })));
+  }));
 }
 
   window.AlloModules = window.AlloModules || {};

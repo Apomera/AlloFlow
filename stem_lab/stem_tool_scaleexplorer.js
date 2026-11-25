@@ -365,7 +365,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     return Promise.resolve().then(function () {
       if (typeof window.alloCopyText === 'function') return window.alloCopyText(text);
       if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text).then(function () { return true; });
-      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.setAttribute('aria-hidden', 'true'); ta.setAttribute('aria-label', 'Copy to clipboard');
       ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0'; document.body.appendChild(ta); ta.select();
       var ok = false; try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
       ta.remove(); return ok;
@@ -848,12 +848,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     if (Object.prototype.hasOwnProperty.call(glyphImages, id)) return glyphImages[id];
     var url = null;
     try {
-      var size = 128, cv = document.createElement('canvas'); cv.width = cv.height = size;
+      var size = 128, cv = document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true'); cv.width = cv.height = size;
       var g = cv.getContext && cv.getContext('2d');
       if (g && chartGlyph(g, id, size / 2, size / 2, size * .92)) {
         var box = glyphPaintedBox(g.getImageData(0, 0, size, size).data, size);
         if (box) {
-          var out = document.createElement('canvas'); out.width = box.w; out.height = box.h;
+          var out = document.createElement('canvas');if(out.setAttribute)out.setAttribute('aria-hidden','true'); out.width = box.w; out.height = box.h;
           out.getContext('2d').drawImage(cv, box.x, box.y, box.w, box.h, 0, 0, box.w, box.h);
           url = out.toDataURL('image/png'); glyphAspects[id] = box.w / box.h;
         }
@@ -947,7 +947,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   function earthIsWater(r,g,b){return b>r+8&&b>=g&&r+g+b<420;}
   function earthOceanRoughness(T,image){
     try{
-      var w=1024,h=512,c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(image,0,0,w,h);
+      var w=1024,h=512,c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(image,0,0,w,h);
       var px=x.getImageData(0,0,w,h),d=px.data;
       for(var i=0;i<d.length;i+=4){d[i]=d[i+1]=d[i+2]=earthIsWater(d[i],d[i+1],d[i+2])?105:235;}
       x.putImageData(px,0,0);return new T.CanvasTexture(c);
@@ -1254,7 +1254,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
   function everestMapImage(data) {
     if(!data)return '';
-    var n=data.width,cv=document.createElement('canvas');cv.width=cv.height=n;
+    var n=data.width,cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=n;
     var ctx=cv.getContext('2d');if(!ctx)return '';
     var pixels=ctx.createImageData(n,n),values=data.elevations;
     for(var row=0;row<n;row++)for(var col=0;col<n;col++){
@@ -4777,7 +4777,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     };
     function skyGradient(key){
       if(skies[key])return skies[key];
-      var c=document.createElement('canvas');c.width=4;c.height=256;var x=c.getContext('2d'),grad=x.createLinearGradient(0,0,0,256);
+      var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=4;c.height=256;var x=c.getContext('2d'),grad=x.createLinearGradient(0,0,0,256);
       SKY_GRADIENTS[key].forEach(function(s){grad.addColorStop(s[0],s[1]);});
       x.fillStyle=grad;x.fillRect(0,0,4,256);var tex=track(new T.CanvasTexture(c));tex.encoding=T.sRGBEncoding;skies[key]=tex;return tex;
     }
@@ -4846,7 +4846,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       var hairs=new T.LineSegments(geo,mat);g.add(hairs);return hairs;
     }
     function giraffeTexture() {
-      var cv=document.createElement('canvas');cv.width=cv.height=256;
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=256;
       var context=cv.getContext('2d'),pixels=context.createImageData(256,256),rng=random(121),seeds=[],cells=7,unit=256/cells;
       for(var i=0;i<cells*cells;i++)seeds.push([.2+rng()*.6,.2+rng()*.6,rng()]);
       for(var y=0;y<256;y++)for(var x=0;x<256;x++) {
@@ -4864,7 +4864,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       context.putImageData(pixels,0,0);var tex=track(new T.CanvasTexture(cv));tex.encoding=T.sRGBEncoding;tex.wrapS=tex.wrapT=T.RepeatWrapping;return tex;
     }
     function beeAbdomenTexture() {
-      var cv=document.createElement('canvas');cv.width=64;cv.height=512;
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=64;cv.height=512;
       var context=cv.getContext('2d'),pixels=context.createImageData(cv.width,cv.height),rng=random(54);
       for(var y=0;y<cv.height;y++)for(var x=0;x<cv.width;x++) {
         var t=1-y/(cv.height-1),phase=(t*5.5)%1;
@@ -4898,7 +4898,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       wing.rotation.x=side*-.15;if(back){wing.scale.set(.7,.7,.72);wing.rotation.y=side*-.2;}return wing;
     }
     function relief(seed, pattern) {
-      var cv=document.createElement('canvas');cv.width=cv.height=256;var c=cv.getContext('2d'),rng=random(seed),pixels=c.createImageData(256,256);
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=256;var c=cv.getContext('2d'),rng=random(seed),pixels=c.createImageData(256,256);
       for(var y=0;y<256;y++)for(var x=0;x<256;x++){var n=rng(),v=pattern==='wrinkle'?128+34*Math.sin(x*.3+Math.sin(y*.075)*4)+n*40:pattern==='cloth'?110+35*(x%3===0||y%3===0)+n*40:110+n*90;var at=(y*256+x)*4;pixels.data[at]=pixels.data[at+1]=pixels.data[at+2]=v;pixels.data[at+3]=255;}
       c.putImageData(pixels,0,0);var tex=track(new T.CanvasTexture(cv));tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(3,3);return tex;
     }
@@ -4927,7 +4927,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     }
     // Soft light is generated locally; there are no image downloads or GPU
     // post-processing buffers to delay a classroom's first frame.
-    var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 128;
+    var glowCanvas = document.createElement('canvas');if(glowCanvas.setAttribute)glowCanvas.setAttribute('aria-hidden','true'); glowCanvas.width = glowCanvas.height = 128;
     var gc = glowCanvas.getContext('2d'), gradient = gc.createRadialGradient(64, 64, 0, 64, 64, 64);
     gradient.addColorStop(0, 'rgba(255,255,255,0.9)'); gradient.addColorStop(0.18, 'rgba(255,255,255,0.45)'); gradient.addColorStop(1, 'rgba(255,255,255,0)');
     gc.fillStyle = gradient; gc.fillRect(0, 0, 128, 128);
@@ -4978,7 +4978,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     mesh(garden,grassGeo,material('#ffffff',{vertexColors:true,side:T.DoubleSide,roughness:1}));
     // A centimetre-scale habitat: its dimensions share the atlas scale axis.
     var leafWorld=new T.Group();leafWorld.name='atlasLeafCanopy';scene.add(leafWorld);leafWorld.visible=false;
-    var leafCanvas=document.createElement('canvas');leafCanvas.width=leafCanvas.height=256;
+    var leafCanvas=document.createElement('canvas');if(leafCanvas.setAttribute)leafCanvas.setAttribute('aria-hidden','true');leafCanvas.width=leafCanvas.height=256;
     var lc=leafCanvas.getContext('2d'),leafGradient=lc.createLinearGradient(0,0,256,0);
     leafGradient.addColorStop(0,'#263e20');leafGradient.addColorStop(.48,'#698644');leafGradient.addColorStop(1,'#2f572c');lc.fillStyle=leafGradient;lc.fillRect(0,0,256,256);
     lc.strokeStyle='rgba(185,200,115,.48)';lc.lineWidth=2;lc.beginPath();lc.moveTo(128,0);lc.lineTo(128,256);lc.stroke();
@@ -5019,7 +5019,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
     }
 
     function planetTexture(id) {
-      var cv = document.createElement('canvas'); cv.width = 512; cv.height = 256;
+      var cv = document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true'); cv.width = 512; cv.height = 256;
       var c = cv.getContext('2d'), r = random(37), i;
       c.fillStyle = id === 'earth' ? '#174b83' : id === 'moon' ? '#969b9f' : '#cbad82'; c.fillRect(0, 0, 512, 256);
       if (id === 'earth') {
@@ -5080,7 +5080,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
       var bounds=humanStudyLocalBounds(g,body);
       bounds.min.y=-.5;bounds.max.y=.5;
       // A fading studio floor provides contact shadows without a hard horizon.
-      var floorCanvas=document.createElement('canvas');floorCanvas.width=floorCanvas.height=128;
+      var floorCanvas=document.createElement('canvas');if(floorCanvas.setAttribute)floorCanvas.setAttribute('aria-hidden','true');floorCanvas.width=floorCanvas.height=128;
       var floorContext=floorCanvas.getContext('2d'),fade=floorContext.createRadialGradient(64,64,20,64,64,63);
       fade.addColorStop(0,'#ffffff');fade.addColorStop(.55,'#999999');fade.addColorStop(1,'#000000');
       floorContext.fillStyle=fade;floorContext.fillRect(0,0,128,128);
@@ -6309,7 +6309,7 @@ var RIBOSOME_STRUCTURE = {"provenance":{"pdb":"4V5D","title":"Thermus thermophil
         indices.push(a,at,b,b,at,at+1);
       }
       var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new T.Float32BufferAttribute(colors,3));geo.setAttribute('canyonCover',new T.Float32BufferAttribute(covers,1));geo.setIndex(indices);geo.computeVertexNormals();
-      var cv=document.createElement('canvas');cv.width=128;cv.height=1024;var ctx=cv.getContext('2d'),pixels=ctx.createImageData(128,1024);
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=128;cv.height=1024;var ctx=cv.getContext('2d'),pixels=ctx.createImageData(128,1024);
       // Named formations, river to rim (texture v = level*.84+.12): Vishnu
       // Schist, Tapeats, Bright Angel, Muav, Redwall, Supai, Hermit, Coconino,
       // Toroweap, Kaibab. Thicknesses follow the stepped profile, not a section.
@@ -9011,7 +9011,7 @@ return plaza;
     // Skeletal proportions inform the hull; colour and soft tissue are interpreted.
     function trexModel(g){
       var parts=[],jaw=new T.Group();jaw.position.set(-.354,.153,0);g.add(jaw);
-      var image=document.createElement('canvas');image.width=image.height=256;
+      var image=document.createElement('canvas');if(image.setAttribute)image.setAttribute('aria-hidden','true');image.width=image.height=256;
       var ctx=image.getContext('2d'),pixels=ctx.createImageData(256,256);
       for(var y=0;y<256;y++)for(var x=0;x<256;x++){
         var row=Math.floor(y/13),cx=(x+(row%2)*7)%14-7,cy=y%13-6.5;
@@ -9019,7 +9019,7 @@ return plaza;
         pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=Math.max(0,Math.min(255,h+noise));pixels.data[i+3]=255;
       }
       ctx.putImageData(pixels,0,0);var scaleMap=track(new T.CanvasTexture(image));scaleMap.wrapS=scaleMap.wrapT=T.RepeatWrapping;
-      var tint=document.createElement('canvas');tint.width=tint.height=256;var tintCtx=tint.getContext('2d'),tintPixels=tintCtx.createImageData(256,256);
+      var tint=document.createElement('canvas');if(tint.setAttribute)tint.setAttribute('aria-hidden','true');tint.width=tint.height=256;var tintCtx=tint.getContext('2d'),tintPixels=tintCtx.createImageData(256,256);
       for(var j=0;j<tintPixels.data.length;j+=4){var value=239+(pixels.data[j]-128)*.30;tintPixels.data[j]=value;tintPixels.data[j+1]=value;tintPixels.data[j+2]=value-2;tintPixels.data[j+3]=255;}
       tintCtx.putImageData(tintPixels,0,0);var colourMap=track(new T.CanvasTexture(tint));colourMap.encoding=T.sRGBEncoding;colourMap.wrapS=colourMap.wrapT=T.RepeatWrapping;
       var skin=material('#ffffff',{vertexColors:true,map:colourMap,roughness:.88,bumpMap:scaleMap,bumpScale:.0015});
@@ -9111,7 +9111,7 @@ return plaza;
       // Every region receives a separately seeded periodic polygon pattern.
       // Surface UVs use arc distance, keeping patches similar in physical size.
       function patchTexture(seed,legRegion) {
-        var cv=document.createElement('canvas');cv.width=cv.height=512;
+        var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=512;
         var ctx=cv.getContext('2d'),im=ctx.createImageData(512,512),pixels=im.data,r=random(seed),cells=8,seeds=[],neighbors=[],
           sin=Math.sin,sqrt=Math.sqrt,floor=Math.floor,min=Math.min,max=Math.max,xSine=[];
         for(var k=0;k<cells*cells;k++)seeds.push([.23+r()*.54,.23+r()*.54,r()]);
@@ -9432,7 +9432,7 @@ return plaza;
     // A composed 13 mm Apis mellifera worker. Body length excludes antennae,
     // spread study wings, legs and hairs; every anatomical surface is local.
     function honeybeeModel(g){
-      var facetTexture=null;if(typeof document!=='undefined'){var canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;var context=canvas.getContext('2d');context.fillStyle='#848484';context.fillRect(0,0,512,256);var facet=4;for(var row=-1;row<40;row++)for(var column=-1;column<77;column++){var cx=column*facet*1.5,cy=row*facet*Math.sqrt(3)+(column%2)*facet*Math.sqrt(3)/2;context.beginPath();for(var corner=0;corner<6;corner++){var angle=corner*Math.PI/3,x=cx+Math.cos(angle)*facet,y=cy+Math.sin(angle)*facet;if(!corner)context.moveTo(x,y);else context.lineTo(x,y);}context.closePath();context.fillStyle='rgb('+(131+(row*7+column*11)%11)+','+(131+(row*7+column*11)%11)+','+(131+(row*7+column*11)%11)+')';context.fill();context.strokeStyle='#747474';context.lineWidth=.65;context.stroke();}facetTexture=track(new T.CanvasTexture(canvas));facetTexture.wrapS=facetTexture.wrapT=T.RepeatWrapping;}
+      var facetTexture=null;if(typeof document!=='undefined'){var canvas=document.createElement('canvas');if(canvas.setAttribute)canvas.setAttribute('aria-hidden','true');canvas.width=512;canvas.height=256;var context=canvas.getContext('2d');context.fillStyle='#848484';context.fillRect(0,0,512,256);var facet=4;for(var row=-1;row<40;row++)for(var column=-1;column<77;column++){var cx=column*facet*1.5,cy=row*facet*Math.sqrt(3)+(column%2)*facet*Math.sqrt(3)/2;context.beginPath();for(var corner=0;corner<6;corner++){var angle=corner*Math.PI/3,x=cx+Math.cos(angle)*facet,y=cy+Math.sin(angle)*facet;if(!corner)context.moveTo(x,y);else context.lineTo(x,y);}context.closePath();context.fillStyle='rgb('+(131+(row*7+column*11)%11)+','+(131+(row*7+column*11)%11)+','+(131+(row*7+column*11)%11)+')';context.fill();context.strokeStyle='#747474';context.lineWidth=.65;context.stroke();}facetTexture=track(new T.CanvasTexture(canvas));facetTexture.wrapS=facetTexture.wrapT=T.RepeatWrapping;}
       var pieces=[],hairs=[],dark=material('#302a20',{roughness:.76,bumpMap:grainTexture,bumpScale:.00030}),skin=material('#ffffff',{vertexColors:true,roughness:.79,bumpMap:grainTexture,bumpScale:.00028}),eye=material('#171b17',{roughness:.38,bumpMap:facetTexture,bumpScale:.00024}),ocellus=material('#111a17',{roughness:.24}),vein=material('#7a684b',{roughness:.68}),membrane=material('#bac7c0',{transparent:true,opacity:.27,depthWrite:false,side:T.DoubleSide,roughness:.43}),pollen=material('#a37a25',{roughness:.94,bumpMap:grainTexture,bumpScale:.0005});
       function tag(m,id){m.userData.specimenKind='honeybee';if(id)m.userData.specimenDetailId=id;pieces.push(m);return m;}
       function geometry(p,n,uv,ix,color){for(var i=0;i<ix.length;i+=3){var a=ix[i]*3,b=ix[i+1]*3,c=ix[i+2]*3,ux=p[b]-p[a],uy=p[b+1]-p[a+1],uz=p[b+2]-p[a+2],vx=p[c]-p[a],vy=p[c+1]-p[a+1],vz=p[c+2]-p[a+2],dot=(uy*vz-uz*vy)*(n[a]+n[b]+n[c])+(uz*vx-ux*vz)*(n[a+1]+n[b+1]+n[c+1])+(ux*vy-uy*vx)*(n[a+2]+n[b+2]+n[c+2]);if(dot<0){var old=ix[i+1];ix[i+1]=ix[i+2];ix[i+2]=old;}}
@@ -9870,7 +9870,7 @@ return plaza;
       // share the complete shell's 57 mm reference; no displaced exploded parts.
       var full=new T.Group(),section=new T.Group();g.add(full,section);
       var parts=[],batches=[],pi=Math.PI,thickness=.006;
-      var cv=document.createElement('canvas');cv.width=cv.height=512;
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=512;
       var ctx=cv.getContext('2d'),pixels=ctx.createImageData(512,512),rng=random(5713);
       for(var i=0;i<512*512;i++){
         var x=i%512,y=Math.floor(i/512),shade=244+2.3*Math.sin(x*.037)*Math.sin(y*.041)+(rng()-.5)*5;
@@ -10329,7 +10329,7 @@ return plaza;
         // Fill each mask once, then blur in script: three box passes approximate
         // a Gaussian. Canvas blur filters downsample large radii into blocks.
         function mask(test){
-          var c=document.createElement('canvas');c.width=W;c.height=H;var x=c.getContext&&c.getContext('2d');if(!x||!x.getImageData)return null;x.fillStyle='#ffffff';
+          var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=W;c.height=H;var x=c.getContext&&c.getContext('2d');if(!x||!x.getImageData)return null;x.fillStyle='#ffffff';
           map.features.forEach(function(f){if(!test(f))return;x.beginPath();reefPolygons(f.rings).forEach(function(poly){[poly.outer].concat(poly.holes).forEach(function(ring){ring.forEach(function(p,i){var v=reefProject(p[0],p[1]),px=(v[0]-minX)/(maxX-minX)*W,py=(v[2]-minZ)/(maxZ-minZ)*H;if(i)x.lineTo(px,py);else x.moveTo(px,py);});x.closePath();});});x.fill('evenodd');});
           var rgba=x.getImageData(0,0,W,H).data,out=new Float32Array(W*H);for(var i=0;i<W*H;i++)out[i]=rgba[i*4]/255;return out;
         }
@@ -10341,14 +10341,14 @@ return plaza;
         function blurred(source,sigma){var a=Float32Array.from(source),b=new Float32Array(a.length),r=Math.max(1,Math.round(sigma));for(var pass=0;pass<3;pass++){boxPass(a,b,r,true);boxPass(b,a,r,false);}return a;}
         var landMask=mask(function(f){return f.type!=='Reef';}),reefMask=mask(function(f){return f.type==='Reef';});if(!landMask||!reefMask)return null;
         var coastNear=blurred(landMask,14),coastWide=blurred(landMask,44),reefNear=blurred(reefMask,5),reefWide=blurred(reefMask,30);
-        var out=document.createElement('canvas');out.width=W;out.height=H;var ctx=out.getContext('2d'),img=ctx.createImageData(W,H),deep=[7,26,48],shelf=[13,58,76],lagoon=[24,90,100],halo=[44,116,124];
+        var out=document.createElement('canvas');if(out.setAttribute)out.setAttribute('aria-hidden','true');out.width=W;out.height=H;var ctx=out.getContext('2d'),img=ctx.createImageData(W,H),deep=[7,26,48],shelf=[13,58,76],lagoon=[24,90,100],halo=[44,116,124];
         for(var i=0;i<W*H;i++){var k=i*4,s=Math.min(1,Math.max(coastWide[i]*1.6,reefWide[i]*2.2)),l=Math.min(1,coastNear[i]*1.4+coastWide[i]*.5),h=Math.min(1,reefNear[i]*1.8);
           for(var c=0;c<3;c++){var v=deep[c]+(shelf[c]-deep[c])*canyonSmooth(.05,.5,s);v+=(lagoon[c]-v)*canyonSmooth(.15,.7,l);v+=(halo[c]-v)*h*.7;img.data[k+c]=v;}img.data[k+3]=255;}
         ctx.putImageData(img,0,0);var texture=track(new T.CanvasTexture(out));texture.encoding=T.sRGBEncoding;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
         // An illustrative land tint, not a vegetation map: greener along the wet
         // coast, savanna inland, with soft mottling so the plain does not read flat.
         var rng=random(4417),grain=new Float32Array(W*H);for(i=0;i<W*H;i++)grain[i]=rng();var broad=blurred(grain,9),fine=blurred(grain,2);
-        var landOut=document.createElement('canvas');landOut.width=W;landOut.height=H;var lctx=landOut.getContext('2d'),limg=lctx.createImageData(W,H),wet=[44,84,54],savanna=[86,96,58],dry=[110,104,70];
+        var landOut=document.createElement('canvas');if(landOut.setAttribute)landOut.setAttribute('aria-hidden','true');landOut.width=W;landOut.height=H;var lctx=landOut.getContext('2d'),limg=lctx.createImageData(W,H),wet=[44,84,54],savanna=[86,96,58],dry=[110,104,70];
         for(i=0;i<W*H;i++){var lk=i*4,inland=canyonSmooth(.55,.97,coastWide[i]),far=canyonSmooth(.9,1,coastWide[i]),tone=.82+.5*(broad[i]-.5)*6+.3*(fine[i]-.5)*4;tone=Math.min(1.12,Math.max(.72,tone));
           for(c=0;c<3;c++){var lv=wet[c]+(savanna[c]-wet[c])*inland;lv+=(dry[c]-lv)*far;limg.data[lk+c]=Math.min(255,lv*tone);}limg.data[lk+3]=255;}
         lctx.putImageData(limg,0,0);var landTexture=track(new T.CanvasTexture(landOut));landTexture.encoding=T.sRGBEncoding;landTexture.anisotropy=texture.anisotropy;
@@ -10417,7 +10417,7 @@ return plaza;
 
     function footballModel(g){
       var f=FOOTBALL_FIELD,unit=1/f.length,paintY=.016*unit;
-      var cv=document.createElement('canvas');cv.width=1024;cv.height=512;
+      var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=1024;cv.height=512;
       var ctx=cv.getContext('2d'),pixels=ctx.createImageData(cv.width,cv.height),rng=random(713);
       for(var y=0;y<cv.height;y++)for(var x=0;x<cv.width;x++){
         var stripe=Math.floor(x/cv.width*20)%2,tone=(rng()-.5)*20+Math.sin(y*.41+x*.17)*2,at=(y*cv.width+x)*4;
@@ -10540,7 +10540,7 @@ return plaza;
     // and drifting particles (marine snow). Illustrative, outside the measured body.
     function buildWhaleWater(){
       var water=new T.Group();water.name='whale open-water context';water.userData.whaleWater=true;
-      var c=document.createElement('canvas');c.width=64;c.height=256;var x=c.getContext('2d');
+      var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=64;c.height=256;var x=c.getContext('2d');
       var across=x.createLinearGradient(0,0,64,0);across.addColorStop(0,'rgba(255,255,255,0)');across.addColorStop(.5,'rgba(255,255,255,1)');across.addColorStop(1,'rgba(255,255,255,0)');
       x.fillStyle=across;x.fillRect(0,0,64,256);x.globalCompositeOperation='destination-in';
       var down=x.createLinearGradient(0,0,0,256);down.addColorStop(0,'rgba(0,0,0,1)');down.addColorStop(.55,'rgba(0,0,0,.45)');down.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=down;x.fillRect(0,0,64,256);
@@ -10565,7 +10565,7 @@ return plaza;
       var geo=track(new T.BufferGeometry());geo.setAttribute('position',new T.BufferAttribute(new Float32Array(CHART_LINES*6),3));geo.setAttribute('color',new T.BufferAttribute(new Float32Array(CHART_LINES*6),3));
       var lines=new T.LineSegments(geo,track(new T.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.55,depthWrite:false})));lines.frustumCulled=false;lines.name='height chart lines';grid.add(lines);
       var labels=[];
-      for(var i=0;i<CHART_LINES;i++){var c=document.createElement('canvas');c.width=160;c.height=32;var sp=new T.Sprite(track(new T.SpriteMaterial({map:track(new T.CanvasTexture(c)),transparent:true,depthWrite:false,depthTest:false})));sp.center.set(1,.5);sp.renderOrder=20;sp.userData.canvas=c;sp.userData.text='';sp.visible=false;grid.add(sp);labels.push(sp);}
+      for(var i=0;i<CHART_LINES;i++){var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=160;c.height=32;var sp=new T.Sprite(track(new T.SpriteMaterial({map:track(new T.CanvasTexture(c)),transparent:true,depthWrite:false,depthTest:false})));sp.center.set(1,.5);sp.renderOrder=20;sp.userData.canvas=c;sp.userData.text='';sp.visible=false;grid.add(sp);labels.push(sp);}
       grid.userData={lines:lines,labels:labels,count:0};return grid;
     }
     function layoutComparisonGrid(grid,big,bounds,contrast){
@@ -11573,7 +11573,7 @@ return plaza;
       var valence=new T.Group(),sea=new T.Group(),field=new T.Group();valence.name='proton-valence-charge-diagram';sea.name='proton-sea-pair-diagram';field.name='proton-gluon-illustration';context.add(valence,sea,field);
       var labelTextures={};
       function label(parent,text,color,p,size){
-        var key=text+color,texture=labelTextures[key];if(!texture){var c=document.createElement('canvas');c.width=512;c.height=192;var ctx=c.getContext('2d');ctx.clearRect(0,0,512,192);ctx.fillStyle='rgba(8,18,33,.88)';ctx.fillRect(2,2,508,188);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.strokeRect(2,2,508,188);ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='500 84px system-ui';ctx.fillText(text,256,97);texture=track(new T.CanvasTexture(c));texture.encoding=T.sRGBEncoding;texture.minFilter=T.LinearFilter;texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;labelTextures[key]=texture;}
+        var key=text+color,texture=labelTextures[key];if(!texture){var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=512;c.height=192;var ctx=c.getContext('2d');ctx.clearRect(0,0,512,192);ctx.fillStyle='rgba(8,18,33,.88)';ctx.fillRect(2,2,508,188);ctx.strokeStyle=color;ctx.lineWidth=4;ctx.strokeRect(2,2,508,188);ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='500 84px system-ui';ctx.fillText(text,256,97);texture=track(new T.CanvasTexture(c));texture.encoding=T.sRGBEncoding;texture.minFilter=T.LinearFilter;texture.magFilter=T.LinearFilter;texture.generateMipmaps=false;labelTextures[key]=texture;}
         var sprite=new T.Sprite(track(new T.SpriteMaterial({map:texture,transparent:true,depthWrite:false,depthTest:false})));sprite.position.fromArray(p);sprite.scale.set(size,size*.375,1);sprite.renderOrder=10;parent.add(sprite);return sprite;
       }
       function marker(parent,p,color,size,text){var m=ball(parent,track(new T.MeshPhysicalMaterial({color:color,emissive:color,emissiveIntensity:.3,roughness:.25,metalness:.08,transparent:true,opacity:.93})),p[0],p[1],p[2],size);var halo=glow(parent,color,size*2.5,.32);halo.position.fromArray(p);if(text)label(parent,text,color,[p[0],p[1]+size*.65+.032,p[2]],size*2.9);return m;}
@@ -11829,7 +11829,7 @@ return plaza;
       var shadow=material('#293239',{roughness:.8}),wall=material('#9ea89e',{roughness:.95,bumpMap:grainTexture,bumpScale:.00035});
       var envFaces=[];
       for(var face=0;face<6;face++){
-        var c=document.createElement('canvas');c.width=c.height=64;var ctx=c.getContext('2d'),gradient=ctx.createLinearGradient(0,0,64,64);
+        var c=document.createElement('canvas');if(c.setAttribute)c.setAttribute('aria-hidden','true');c.width=c.height=64;var ctx=c.getContext('2d'),gradient=ctx.createLinearGradient(0,0,64,64);
         gradient.addColorStop(0,face===2?'#f3ebd8':'#687681');gradient.addColorStop(.40,'#a3afb5');gradient.addColorStop(.46,'#e4e8e3');gradient.addColorStop(.63,'#465660');gradient.addColorStop(1,'#273d43');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);envFaces.push(c);
       }
       var studio=track(new T.CubeTexture(envFaces));studio.encoding=T.sRGBEncoding;studio.needsUpdate=true;
@@ -11911,7 +11911,7 @@ return plaza;
       });
       bevel(context,wall,0,.529,-.008,.454,.092,.077,.0015);
       var floorBase=material('#5d4e3d',{roughness:.75});box(context,floorBase,0,-.511,.02,1.08,.022,.88);
-      var rng=random(497),woodCanvas=document.createElement('canvas');woodCanvas.width=256;woodCanvas.height=512;var wc=woodCanvas.getContext('2d');wc.fillStyle='#a58a65';wc.fillRect(0,0,256,512);
+      var rng=random(497),woodCanvas=document.createElement('canvas');if(woodCanvas.setAttribute)woodCanvas.setAttribute('aria-hidden','true');woodCanvas.width=256;woodCanvas.height=512;var wc=woodCanvas.getContext('2d');wc.fillStyle='#a58a65';wc.fillRect(0,0,256,512);
       for(var line=0;line<280;line++){var x=rng()*256;wc.strokeStyle='rgba(56,37,20,'+(.02+rng()*.07)+')';wc.lineWidth=.4+rng()*.6;wc.beginPath();wc.moveTo(x,0);wc.bezierCurveTo(x+Math.sin(line)*8,180,x+Math.cos(line)*7,330,x+2,512);wc.stroke();}
       var woodMap=track(new T.CanvasTexture(woodCanvas));woodMap.encoding=T.sRGBEncoding;woodMap.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
       var boards=[];for(var tone=0;tone<4;tone++)boards.push(material(['#ddd0b7','#cfc0a6','#d9c6a6','#c6b393'][tone],{map:woodMap,bumpMap:woodMap,bumpScale:.00015,roughness:.65}));
@@ -11953,7 +11953,7 @@ return plaza;
       // A small procedural studio environment gives the fracture surfaces readable reflections.
       var faces=[];
       for(var side=0;side<6;side++){
-        var cv=document.createElement('canvas');cv.width=cv.height=128;var ctx=cv.getContext('2d'),light=ctx.createLinearGradient(0,0,128,128);
+        var cv=document.createElement('canvas');if(cv.setAttribute)cv.setAttribute('aria-hidden','true');cv.width=cv.height=128;var ctx=cv.getContext('2d'),light=ctx.createLinearGradient(0,0,128,128);
         light.addColorStop(0,side===2?'#eee7d8':'#a6b9bd');light.addColorStop(.35,'#5f717a');light.addColorStop(.62,'#27343d');light.addColorStop(1,'#111d25');ctx.fillStyle=light;ctx.fillRect(0,0,128,128);
         if(side===0||side===4){ctx.fillStyle='#dddacc';ctx.fillRect(18,8,13,104);ctx.fillStyle='#84959a';ctx.fillRect(100,0,7,128);}faces.push(cv);
       }
@@ -12120,7 +12120,7 @@ return plaza;
       function surface(color,options){var value=material(color,options);materials.push(value);return value;}
       function node(parent,name,geo,mat,radius){var value=mesh(parent,geo,mat);value.name=name;if(radius)value.scale.setScalar(radius);value.castShadow=false;value.receiveShadow=false;return value;}
       var width=2048,height=1024,rng=random(24107);
-      var coverCanvas=document.createElement('canvas'),bumpCanvas=document.createElement('canvas');
+      var coverCanvas=document.createElement('canvas'),bumpCanvas=document.createElement('canvas');if(coverCanvas.setAttribute)coverCanvas.setAttribute('aria-hidden','true');if(bumpCanvas.setAttribute)bumpCanvas.setAttribute('aria-hidden','true');
       coverCanvas.width=bumpCanvas.width=width;coverCanvas.height=bumpCanvas.height=height;
       var ctx=coverCanvas.getContext('2d'),bctx=bumpCanvas.getContext('2d');
       bctx.fillStyle='#595959';bctx.fillRect(0,0,width,height);
@@ -13685,7 +13685,7 @@ return plaza;
       if(!volume||!image||!nebulaPosition)return;
       var preview=nebulaLayerHeight(state.nebulaLayerHeight),height=preview===null?nebulaPosition.y:preview,key=Math.abs(height)>NEBULA_SPAN/2?'outside':Math.round(height*10)/10,cache=volume.slice;
       if(!cache){
-        var buffer=document.createElement('canvas');buffer.width=buffer.height=96;var context=buffer.getContext('2d');
+        var buffer=document.createElement('canvas');if(buffer.setAttribute)buffer.setAttribute('aria-hidden','true');buffer.width=buffer.height=96;var context=buffer.getContext('2d');
         if(!context)return;
         cache=volume.slice={canvas:buffer,context:context,frame:context.createImageData(96,96),key:null,url:''};
       }
@@ -14290,6 +14290,7 @@ return plaza;
               'aria-selected': workspace === 'all' ? undefined : active, 'aria-controls': descId + '-workspace-' + key,
               tabIndex: workspace === 'all' || active ? 0 : -1, style: active ? goBtn : btn, onClick: function () { selectWorkspace(key); },
               onKeyDown: function (event) {
+                if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
                 var next = event.key === 'ArrowRight' ? (index + 1) % WORKSPACE_VIEWS.length : event.key === 'ArrowLeft' ? (index + WORKSPACE_VIEWS.length - 1) % WORKSPACE_VIEWS.length : event.key === 'Home' ? 0 : event.key === 'End' ? WORKSPACE_VIEWS.length - 1 : -1;
                 if (next < 0) return;
                 event.preventDefault(); selectWorkspace(WORKSPACE_VIEWS[next]);
@@ -14829,6 +14830,7 @@ return plaza;
         if(featureButtonRef.current)featureButtonRef.current.focus({preventScroll:true});
       }
       function onFeatureKey(ev){
+        if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.altKey||ev.ctrlKey||ev.metaKey)return;
         if(ev.key==='ArrowRight'||ev.key==='ArrowLeft'){ev.preventDefault();stepFeature(ev.key==='ArrowRight'?1:-1);}
         else if(ev.key==='Escape'){
           ev.preventDefault();
@@ -14889,7 +14891,7 @@ return plaza;
       function riverNavigator() {
         if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='grand-canyon'||detailId!=='river-journey')return null;
         var point=canyonRoutePoint(riverKm),route=CANYON_PATH.points.map(function(p,i){return(i?'L':'M')+(18+(p[0]+.5)*464).toFixed(2)+','+(38-p[1]*340).toFixed(2);}).join(' ');
-        return h('section',{className:'sx-river-nav','aria-label':S('atlas_river_controls', 'Navigate the river'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveRiver();}}},
+        return h('section',{className:'sx-river-nav','aria-label':S('atlas_river_controls', 'Navigate the river'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveRiver();}}},
           h('div',{className:'sx-river-title'},
             h('div',null,h('strong',null,S('atlas_river_journey', 'River journey')),h('span',null,S('atlas_river_position', '{n} of 446 km · illustrated course',{n:riverKm}))),
             h('button',{type:'button',className:'sx-river-leave',onClick:leaveRiver},S('atlas_river_leave', 'Whole landscape'))),
@@ -14949,6 +14951,7 @@ return plaza;
         else{say(S('atlas_air_waypoint_cleared', 'Terrain waypoint cleared.'));var map=terrainFlightHudRef.current&&terrainFlightHudRef.current.querySelector('.sx-air-map svg');if(map)map.focus({preventScroll:true});}
       }
       function flightWaypointKey(ev){
+        if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.altKey||ev.ctrlKey||ev.metaKey)return;
         var point=terrainFlightWaypoint||everestPosition(),step=ev.shiftKey?1000:250;
         point={east:point.east,north:point.north};
         if(ev.key==='ArrowLeft')point.east-=step;else if(ev.key==='ArrowRight')point.east+=step;
@@ -15090,7 +15093,7 @@ return plaza;
             onPointerUp:function(ev){releaseNebulaButton(ev,true);},onPointerCancel:function(ev){releaseNebulaButton(ev,false);},onLostPointerCapture:function(ev){releaseNebulaButton(ev,false);},onClick:function(ev){if(ev.detail===0&&atlasRef.current)atlasRef.current.flightStep(direction[0]);}},direction[1]);}),
             [[-15,'↶',S('atlas_air_turn_left', 'Turn left')],[15,'↷',S('atlas_air_turn_right', 'Turn right')]].map(function(turn){return h('button',{key:turn[0],type:'button',className:turn[0]<0?'sx-air-turn-left':'sx-air-turn-right','aria-label':turn[2],title:turn[2],onClick:function(){if(atlasRef.current)atlasRef.current.flightLook(turn[0],0);}},turn[1]);})),
           h('div',{className:'sx-nebula-bearing'},
-            h('div',{className:'sx-nebula-compass','aria-hidden':'true'},h('svg',{viewBox:'0 0 60 60'},h('circle',{cx:30,cy:30,r:27,fill:'none',stroke:'#786a81',strokeWidth:1}),h('path',{d:'M30 1V8 M59 30H52 M30 59V52 M1 30H8',stroke:'#d2b994',strokeWidth:1}),h('circle',{cx:30,cy:30,r:3,fill:'#eee0bd'}),h('path',{'data-nebula-compass-arrow':true,d:'M30 10L35 21 30 18 25 21Z',fill:'#e7c697'}))),
+            h('div',{className:'sx-nebula-compass','aria-hidden':'true'},h('svg',{viewBox:'0 0 60 60','aria-hidden':'true',focusable:'false'},h('circle',{cx:30,cy:30,r:27,fill:'none',stroke:'#786a81',strokeWidth:1}),h('path',{d:'M30 1V8 M59 30H52 M30 59V52 M1 30H8',stroke:'#d2b994',strokeWidth:1}),h('circle',{cx:30,cy:30,r:3,fill:'#eee0bd'}),h('path',{'data-nebula-compass-arrow':true,d:'M30 10L35 21 30 18 25 21Z',fill:'#e7c697'}))),
             h('div',{className:'sx-nebula-bearing-readout'},h('strong',null,S('atlas_nebula_bearing_title', 'Find the Trapezium')),h('output',{'data-nebula-bearing-cue':true,id:descId+'-nebula-bearing','aria-live':'off'},'—'),h('span',{'data-nebula-heading':true},'—')),
             h('div',{className:'sx-nebula-bearing-actions'},h('button',{type:'button','aria-describedby':descId+'-nebula-bearing',onClick:function(){focusNebulaCamera();if(atlasRef.current)atlasRef.current.nebulaFaceStars();}},S('atlas_nebula_bearing_face', 'Look toward the stars')),
               h('button',{type:'button','aria-pressed':nebulaLocator,onClick:function(){setNebulaLocator(!nebulaLocator);focusNebulaCamera();}},S('atlas_nebula_bearing_locator', 'Star locator')))),
@@ -15181,7 +15184,7 @@ return plaza;
           else if(ev.key==='Home')point=everestPosition();else return;
           ev.preventDefault();moveAcrossTerrain(point);
         }
-        return h('section',{className:'sx-terrain-nav','aria-label':S('atlas_terrain_navigate', 'Navigate the mountain'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveTerrain();}}},
+        return h('section',{className:'sx-terrain-nav','aria-label':S('atlas_terrain_navigate', 'Navigate the mountain'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveTerrain();}}},
           h('div',{className:'sx-terrain-map-wrap'},
             h('svg',{ref:terrainMapRef,className:'sx-terrain-map',viewBox:'0 0 241 241',tabIndex:0,role:'group',
               'aria-label':S('atlas_terrain_map', 'Interactive terrain map'),'aria-describedby':descId+'-terrain-help',onKeyDown:key,
@@ -15228,7 +15231,7 @@ return plaza;
       function dnaNavigator(){
         var n=dnaDetailPair(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='dna'||!n)return null;
         var p=dnaPairView(n),names={A:'Adenine',T:'Thymine',C:'Cytosine',G:'Guanine'};
-        return h('section',{className:'sx-dna-nav','aria-label':S('atlas_dna_navigation', 'DNA base-pair navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveDna();}}},
+        return h('section',{className:'sx-dna-nav','aria-label':S('atlas_dna_navigation', 'DNA base-pair navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveDna();}}},
           h('div',{className:'sx-dna-nav-heading'},h('div',null,h('span',null,S('atlas_dna_strand_direction', 'Strand A 5′ → 3′ · strand B 3′ → 5′')),h('strong',null,S('atlas_dna_pair_label', 'Base pair {n} · {a}–{b}',{n:n,a:p.a,b:p.b}))),h('button',{type:'button',onClick:leaveDna},S('atlas_dna_whole', 'Whole molecule'))),
           h('div',{className:'sx-dna-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_dna_previous', 'Previous pair'),onClick:function(){goDnaPair(n-1);}},'←'),
             h('label',null,h('span',{className:'sx-dna-nav-caption'},S('atlas_dna_pair_names', '{a} ↔ {b}',{a:names[p.a],b:names[p.b]}),h('span',null,n+' / 12')),h('input',{type:'range',min:1,max:12,step:1,value:n,'aria-label':S('atlas_dna_pair_slider', 'Base pair'),'aria-valuetext':selectedDetail?selectedDetail.label:n,onChange:function(ev){goDnaPair(Number(ev.target.value));}})),
@@ -15261,7 +15264,7 @@ return plaza;
       }
       function mitoNavigator(){
         var n=mitoDetailFold(detailId),energy=mitoEnergyIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='mitochondrion'||(!n&&!energy))return null;
-        return h('section',{className:'sx-mito-nav','aria-label':n?S('atlas_mito_navigation', 'Crista navigation'):S('atlas_mito_energy_navigation', 'Energy pathway navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveMito();}}},
+        return h('section',{className:'sx-mito-nav','aria-label':n?S('atlas_mito_navigation', 'Crista navigation'):S('atlas_mito_energy_navigation', 'Energy pathway navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveMito();}}},
           h('div',{className:'sx-mito-nav-heading'},h('div',null,h('span',null,n?S('atlas_mito_fold_kicker', 'Inside the inner membrane'):S('atlas_mito_energy_kicker', 'Energy pathway · {n} of 4',{n:energy})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveMito},S('atlas_mito_whole', 'Whole mitochondrion'))),
           n?h('div',{className:'sx-mito-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_mito_previous', 'Previous fold'),onClick:function(){goMitoFold(n-1);}},'←'),h('label',null,h('span',null,S('atlas_mito_fold_caption', 'Rounded membrane pouch'),h('b',null,n+' / 7')),h('input',{type:'range',min:1,max:7,step:1,value:n,'aria-label':S('atlas_mito_fold_slider', 'Crista'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goMitoFold(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===7,'aria-label':S('atlas_mito_next', 'Next fold'),onClick:function(){goMitoFold(n+1);}},'→')):
           h('div',{className:'sx-mito-energy-nav'},h('button',{type:'button',disabled:energy===1,'aria-label':S('atlas_mito_energy_previous', 'Previous energy step'),onClick:function(){goMitoEnergy(MITO_ENERGY[energy-2].id);}},'←'),h('p',null,S('atlas_mito_energy_caption_'+energy,MITO_ENERGY[energy-1].caption)),h('button',{type:'button',disabled:energy===4,'aria-label':S('atlas_mito_energy_next', 'Next energy step'),onClick:function(){goMitoEnergy(MITO_ENERGY[energy].id);}},'→')));
@@ -15289,7 +15292,7 @@ return plaza;
       function leaveRibo(){wholeSpecimen();setCutaway(false);if(atlasRef.current)atlasRef.current.reset();if(riboEntryRef.current)riboEntryRef.current.focus({preventScroll:true});}
       function riboNavigator(){
         var n=riboRouteIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='ribosome'||!n)return null;
-        return h('section',{className:'sx-ribo-nav','aria-label':S('atlas_ribo_navigation', 'Ribosome navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveRibo();}}},
+        return h('section',{className:'sx-ribo-nav','aria-label':S('atlas_ribo_navigation', 'Ribosome navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveRibo();}}},
           h('div',{className:'sx-ribo-nav-heading'},h('div',null,h('span',null,S('atlas_ribo_nav_kicker', 'Between the subunits · {n} of 5',{n:n})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveRibo},S('atlas_ribo_whole', 'Whole ribosome'))),
           h('div',{className:'sx-ribo-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_ribo_previous', 'Previous site'),onClick:function(){goRiboSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_ribo_site_slider', 'Translation landmark'),h('b',null,n+' / 5')),h('input',{type:'range',min:1,max:5,step:1,value:n,'aria-label':S('atlas_ribo_site_slider', 'Translation landmark'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goRiboSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===5,'aria-label':S('atlas_ribo_next', 'Next site'),onClick:function(){goRiboSite(n+1);}},'→')),
           h('p',null,S('atlas_ribo_route_caption_'+n,RIBO_CAPTIONS[n-1])),n===4&&cutaway?h('p',{className:'sx-ribo-slice-note'},S('atlas_ribo_slice_note', 'Inspection slice · the front scaffold is clipped to reveal this RNA region.')):null);
@@ -15318,7 +15321,7 @@ return plaza;
       function changePollenGrowth(value){arriveNow();stopJourney();setPollenGrowth(pollenGrowthValue(value));}
       function pollenNavigator(){
         var n=pollenRouteIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='pollen'||!n)return null;
-        return h('section',{className:'sx-pollen-nav','aria-label':S('atlas_pollen_navigation', 'Pollen navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leavePollen();}}},
+        return h('section',{className:'sx-pollen-nav','aria-label':S('atlas_pollen_navigation', 'Pollen navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leavePollen();}}},
           h('div',{className:'sx-pollen-nav-heading'},h('div',null,h('span',null,S('atlas_pollen_nav_kicker', 'A botanical close-up · {n} of 8',{n:n})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leavePollen},S('atlas_pollen_whole', 'Whole pollen grain'))),
           h('div',{className:'sx-pollen-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_pollen_previous', 'Previous structure'),onClick:function(){goPollenSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_pollen_structure_slider', 'Botanical landmark'),h('b',null,n+' / 8')),h('input',{type:'range',min:1,max:8,step:1,value:n,'aria-label':S('atlas_pollen_structure_slider', 'Botanical landmark'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goPollenSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===8,'aria-label':S('atlas_pollen_next', 'Next structure'),onClick:function(){goPollenSite(n+1);}},'→')),
           h('p',null,S('atlas_pollen_caption_'+n,POLLEN_CAPTIONS[n-1])),n===8?h('label',{className:'sx-pollen-growth-mini'},h('span',null,S('atlas_pollen_extension', 'Illustrated tube extension'),h('b',null,Math.round(pollenGrowth*100)+'%')),h('input',{type:'range',min:0,max:100,step:1,value:Math.round(pollenGrowth*100),'aria-label':S('atlas_pollen_extension', 'Illustrated tube extension'),'aria-valuetext':S('atlas_pollen_extension_value', '{n}% of this illustrated path',{n:Math.round(pollenGrowth*100)}),onChange:function(ev){changePollenGrowth(Number(ev.target.value)/100);}})):null);
@@ -15344,7 +15347,7 @@ return plaza;
       function virusNavigator(){
         var n=virusRouteIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='virus'||!n)return null;
         var bundle=n>=6&&n<=13?n-5:0;
-        return h('section',{className:'sx-virus-nav','aria-label':S('atlas_virus_navigation', 'Virus navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveVirus();}}},
+        return h('section',{className:'sx-virus-nav','aria-label':S('atlas_virus_navigation', 'Virus navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveVirus();}}},
           h('div',{className:'sx-virus-nav-heading'},h('div',null,h('span',null,S('atlas_virus_nav_kicker', 'A molecular journey · {n} of 14',{n:n})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveVirus},S('atlas_virus_whole', 'Whole particle'))),
           h('div',{className:'sx-virus-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_virus_previous', 'Previous structure'),onClick:function(){goVirusSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_virus_structure_slider', 'Virion landmark'),h('b',null,n+' / 14')),h('input',{type:'range',min:1,max:14,step:1,value:n,'aria-label':S('atlas_virus_structure_slider', 'Virion landmark'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goVirusSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===14,'aria-label':S('atlas_virus_next', 'Next structure'),onClick:function(){goVirusSite(n+1);}},'→')),
           h('p',null,S('atlas_virus_caption_'+n,VIRUS_CAPTIONS[n-1]),bundle?' '+S('atlas_virus_selected_bundle', 'Neighbors become translucent to reveal the selected bundle.'):''),bundle?h('div',{ role: 'group',className:'sx-virus-cargo','aria-label':S('atlas_virus_cargo', 'Eight RNA bundles')},Array.from({length:8},function(_,i){return h('button',{key:i,type:'button','aria-label':S('atlas_virus_bundle_choice', 'Inspect RNA bundle {n}',{n:i+1}),'aria-pressed':bundle===i+1,onClick:function(){goVirusSite(i+6);},className:bundle===i+1?'sx-virus-cargo-selected':''},String(i+1));})):null);
@@ -15370,7 +15373,7 @@ return plaza;
       function craterNavigator(){
         var n=craterRouteIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='chicxulub')return null;
         if(!n)return h('section',{className:'sx-crater-entry','aria-label':S('atlas_crater_entry', 'Enter the buried crater')},h('div',null,h('span',null,S('atlas_crater_entry_kicker', 'Beneath the quiet surface')),h('strong',null,S('atlas_crater_entry_title', 'Explore a buried geological archive'))),h('button',{type:'button',onClick:function(){goCraterSite(3);}},S('atlas_crater_open', 'Reveal the buried crater')));
-        return h('section',{className:'sx-crater-nav','aria-label':S('atlas_crater_navigation', 'Crater navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveCrater();}}},
+        return h('section',{className:'sx-crater-nav','aria-label':S('atlas_crater_navigation', 'Crater navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveCrater();}}},
           h('div',{className:'sx-crater-nav-heading'},h('div',null,h('span',null,S('atlas_crater_nav_kicker', 'Beneath the Yucatán · {n} of 7',{n:n})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveCrater},S('atlas_crater_whole', 'Whole crater'))),
           h('div',{className:'sx-crater-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_crater_previous', 'Previous layer'),onClick:function(){goCraterSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_crater_structure_slider', 'Geological landmark'),h('b',null,n+' / 7')),h('input',{type:'range',min:1,max:7,step:1,value:n,'aria-label':S('atlas_crater_structure_slider', 'Geological landmark'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goCraterSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===7,'aria-label':S('atlas_crater_next', 'Next layer'),onClick:function(){goCraterSite(n+1);}},'→')),
           h('p',null,S('atlas_crater_caption_'+n,CRATER_CAPTIONS[n-1])),h('small',null,S('atlas_crater_vertical', 'Vertical scale enlarged 15× · horizontal diameter 180 km')));
@@ -15399,7 +15402,7 @@ return plaza;
       function whaleNavigator(){
         var n=whaleRouteIndex(detailId);if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='blue-whale')return null;
         if(!n)return h('section',{className:'sx-whale-entry','aria-label':S('atlas_whale_entry', 'Enter the whale journey')},h('div',null,h('span',null,S('atlas_whale_entry_kicker', 'Ocean giants · 25 metres')),h('strong',null,S('atlas_whale_entry_title', 'Meet the animal at its own scale'))),h('button',{type:'button',onClick:function(){goWhaleSite(1);}},S('atlas_whale_swim', 'Swim beside the whale')));
-        return h('section',{className:'sx-whale-nav','aria-label':S('atlas_whale_navigation', 'Whale navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveWhale();}}},
+        return h('section',{className:'sx-whale-nav','aria-label':S('atlas_whale_navigation', 'Whale navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveWhale();}}},
           h('div',{className:'sx-whale-nav-heading'},h('div',null,h('span',null,S('atlas_whale_nav_kicker', 'Around a blue whale · {n} of 9',{n:n})),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveWhale},S('atlas_whale_whole', 'Whole whale'))),
           h('div',{className:'sx-whale-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_whale_previous', 'Previous feature'),onClick:function(){goWhaleSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_whale_landmark', 'Whale landmark'),h('b',null,n+' / 9')),h('input',{type:'range',min:1,max:9,step:1,value:n,'aria-label':S('atlas_whale_landmark', 'Whale landmark'),'aria-valuetext':selectedDetail.label,onChange:function(ev){goWhaleSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===9,'aria-label':S('atlas_whale_next', 'Next feature'),onClick:function(){goWhaleSite(n+1);}},'→')),
           h('div',{className:'sx-whale-nav-caption'},h('p',null,S('atlas_whale_caption_'+n,WHALE_CAPTIONS[n-1])),whaleMouthControl()),h('small',null,S('atlas_whale_nav_scale', '25 m from snout to fluke notch · anatomy is illustrative')));
@@ -15428,7 +15431,7 @@ return plaza;
         var point=sequoiaPoint(detailId);
         if(!point)return h('section',{className:'sx-sequoia-entry','aria-label':S('atlas_sequoia_entry','Enter the sequoia grove')},h('div',null,h('span',null,S('atlas_sequoia_entry_kicker','Giant sequoia · 84 metres')),h('strong',null,S('atlas_sequoia_entry_title','Rise from the roots into the crown'))),h('button',{type:'button',onClick:function(){goSequoia('ascent-2');}},S('atlas_sequoia_begin','Begin the ascent')));
         var meters=point.meters,previous=SEQUOIA_SITES.filter(function(s){return s.meters<meters;}).pop(),next=SEQUOIA_SITES.filter(function(s){return s.meters>meters;})[0],n=sequoiaRouteIndex(detailId);
-        return h('section',{className:'sx-sequoia-nav','aria-label':S('atlas_sequoia_navigation','Sequoia navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveSequoia();}}},
+        return h('section',{className:'sx-sequoia-nav','aria-label':S('atlas_sequoia_navigation','Sequoia navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveSequoia();}}},
           h('div',{className:'sx-sequoia-nav-heading'},h('div',null,h('span',null,S('atlas_sequoia_nav_kicker','From the forest floor')),h('strong',null,selectedDetail.label)),h('button',{type:'button',onClick:leaveSequoia},S('atlas_sequoia_whole','Whole tree'))),
           h('div',{className:'sx-sequoia-height'},h('b',null,meters,h('small',null,' m')),h('span',null,S('atlas_sequoia_height','Height above the ground'))),
           h('div',{className:'sx-sequoia-nav-track'},h('button',{type:'button',disabled:!previous,'aria-label':S('atlas_sequoia_previous','Previous landmark'),onClick:function(){if(previous)goSequoia(previous.id);}},'↓'),h('input',{type:'range',min:0,max:84,step:1,value:meters,'aria-label':S('atlas_sequoia_height','Height above the ground'),'aria-valuetext':S('atlas_sequoia_height_value','{meters} metres above the ground',{meters:meters}),onChange:function(ev){goSequoia('ascent-'+sequoiaMeters(Number(ev.target.value)));}}),h('button',{type:'button',disabled:!next,'aria-label':S('atlas_sequoia_next','Next landmark'),onClick:function(){if(next)goSequoia(next.id);}},'↑')),
@@ -15479,7 +15482,7 @@ return plaza;
           h('button',{type:'button',onClick:function(){setEiffelHeight(2);}},S('atlas_eiffel_begin','Begin the ascent')));
         var meters=point.meters,previous=EIFFEL_SITES.filter(function(s){return s.meters<meters;}).pop(),next=EIFFEL_SITES.filter(function(s){return s.meters>meters;})[0],exterior=meters>276;
         var nativeIndex=eiffelRouteIndex(detailId),nativeCaption=nativeIndex?S('atlas_eiffel_caption_'+nativeIndex,EIFFEL_CAPTIONS[nativeIndex-1]):'';
-        return h('section',{className:'sx-eiffel-nav'+(exterior?' sx-eiffel-nav-exterior':''),'aria-label':S('atlas_eiffel_navigation','Tower navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveEiffel();}}},
+        return h('section',{className:'sx-eiffel-nav'+(exterior?' sx-eiffel-nav-exterior':''),'aria-label':S('atlas_eiffel_navigation','Tower navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveEiffel();}}},
           h('div',{className:'sx-eiffel-nav-heading'},
             h('div',null,h('span',null,exterior?S('atlas_eiffel_exterior','Exterior antenna inspection'):S('atlas_eiffel_lift_path','Illustrated lift path')),h('strong',null,selectedDetail?selectedDetail.label:S('atlas_eiffel_nav_label','Tower ascent'))),
             h('button',{type:'button',onClick:leaveEiffel},S('atlas_eiffel_whole','Whole tower'))),
@@ -15582,7 +15585,7 @@ return plaza;
         if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='liberty')return null;
         var n=libertyRouteIndex(detailId);
         if(!n)return h('section',{className:'sx-liberty-entry','aria-label':S("atlas_liberty_entry","Enter the Statue of Liberty study")},h('div',null,h('span',null,S("atlas_liberty_entry_kicker","New York Harbor · 93 metre reference")),h('strong',null,S("atlas_liberty_entry_title","Approach the face, crown and gilded flame"))),h('button',{type:'button',onClick:function(){goLibertySite(7);}},S("atlas_liberty_explore","Explore the sculpture")));
-        return h('section',{className:'sx-liberty-nav','aria-label':S("atlas_liberty_navigation","Statue of Liberty navigation"),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leaveLiberty();}}},
+        return h('section',{className:'sx-liberty-nav','aria-label':S("atlas_liberty_navigation","Statue of Liberty navigation"),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leaveLiberty();}}},
           h('div',{className:'sx-liberty-nav-heading'},h('div',null,h('span',null,S("atlas_liberty_mode","Copper sculpture · exterior study")),h('strong',null,selectedDetail?selectedDetail.label:'')),h('button',{type:'button',onClick:leaveLiberty},S("atlas_liberty_whole","Whole monument"))),
           h('div',{className:'sx-liberty-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S("atlas_liberty_previous","Previous Liberty landmark"),onClick:function(){goLibertySite(n-1);}},'←'),h('label',null,h('span',null,S("atlas_liberty_landmark","Liberty landmark"),h('b',null,n,' / 10')),h('input',{type:'range',min:1,max:10,step:1,value:n,'aria-label':S("atlas_liberty_landmark","Liberty landmark"),'aria-valuetext':selectedDetail?selectedDetail.label:'',onChange:function(ev){goLibertySite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===10,'aria-label':S("atlas_liberty_next","Next Liberty landmark"),onClick:function(){goLibertySite(n+1);}},'→')),
           h('p',null,S('atlas_liberty_caption_'+n,LIBERTY_CAPTIONS[n-1])),h('small',null,S("atlas_liberty_reference_note","93 m reference · sculpture, pedestal and foundation")));
@@ -15606,7 +15609,7 @@ return plaza;
         if(viewMode!=='atlas'||comparisonActive||scaleFlight||focusId!=='pyramid')return null;
         var n=pyramidRouteIndex(detailId);
         if(!n)return h('section',{className:'sx-pyramid-entry','aria-label':S('atlas_pyramid_entry','Enter the pyramid study')},h('div',null,h('span',null,S('atlas_pyramid_entry_kicker','Giza · 230 metre base')),h('strong',null,S('atlas_pyramid_entry_title','From weathered stone to hidden architecture'))),h('button',{type:'button',onClick:function(){goPyramidSite(3);}},S('atlas_pyramid_explore','Explore the passages')));
-        return h('section',{className:'sx-pyramid-nav','aria-label':S('atlas_pyramid_navigation','Pyramid navigation'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();leavePyramid();}}},
+        return h('section',{className:'sx-pyramid-nav','aria-label':S('atlas_pyramid_navigation','Pyramid navigation'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();leavePyramid();}}},
           h('div',{className:'sx-pyramid-nav-heading'},h('div',null,h('span',null,cutaway?S('atlas_pyramid_section_mode','Known passages · interior section'):S('atlas_pyramid_exterior_mode','Limestone exterior')),h('strong',null,selectedDetail?selectedDetail.label:'')),h('button',{type:'button',onClick:leavePyramid},S('atlas_pyramid_whole','Whole pyramid'))),
           h('div',{className:'sx-pyramid-nav-track'},h('button',{type:'button',disabled:n===1,'aria-label':S('atlas_pyramid_previous','Previous landmark'),onClick:function(){goPyramidSite(n-1);}},'←'),h('label',null,h('span',null,S('atlas_pyramid_landmark','Pyramid landmark'),h('b',null,n,' / 9')),h('input',{type:'range',min:1,max:9,step:1,value:n,'aria-label':S('atlas_pyramid_landmark','Pyramid landmark'),'aria-valuetext':selectedDetail?selectedDetail.label:'',onChange:function(ev){goPyramidSite(Number(ev.target.value));}})),h('button',{type:'button',disabled:n===9,'aria-label':S('atlas_pyramid_next','Next landmark'),onClick:function(){goPyramidSite(n+1);}},'→')),
           h('p',null,S('atlas_pyramid_caption_'+n,PYRAMID_CAPTIONS[n-1])),h('small',null,S('atlas_pyramid_reference_note','Base side = 230 m · architecture retains its proportions')));
@@ -15815,7 +15818,7 @@ return plaza;
                 h('input', { type: 'number', min: 50, max: 250, step: 1, inputMode: 'numeric', value: heightDraft, placeholder: yourCm ? String(yourCm) : '170',
                   'aria-label': S('you_input_aria', 'Your height in centimetres'),
                   onChange: function (e) { setHeightDraft(e.target.value); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); submitHeight(); } },
+                  onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); submitHeight(); } },
                   style: { width: 64, padding: '4px 6px', borderRadius: 6, border: '1px solid ' + P.line, background: P.bg, color: P.text, fontSize: '0.75rem' } }),
                 S('you_cm', 'cm')),
               h('button', { type: 'button', onClick: submitHeight, style: Object.assign({}, btn, { padding: '4px 8px', fontSize: '0.6875rem' }) }, S('you_apply', 'Use my height')),
@@ -16178,7 +16181,7 @@ return plaza;
       }
       function flightPanel(){
         if(!scaleFlight||viewMode!=='atlas')return null;
-        return h('section',{ref:flightPanelRef,className:'sx-descent','aria-label':S('atlas_flight_region', 'Scale approach'),onKeyDown:function(ev){if(ev.key==='Escape'){ev.preventDefault();arriveNow();}}},
+        return h('section',{ref:flightPanelRef,className:'sx-descent','aria-label':S('atlas_flight_region', 'Scale approach'),onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229)return;if(ev.key==='Escape'){ev.preventDefault();arriveNow();}}},
           h('div',{className:'sx-descent-meta'},h('span',null,S('atlas_flight_readout', 'Current scale')),
             h('strong',{'data-flight-length':true},lengthText(Math.pow(10,scaleFlight.from)))),
           h('div',{className:'sx-descent-track','aria-hidden':'true'},h('i',{'data-flight-fill':true})),
@@ -18309,7 +18312,7 @@ return plaza;
                   h('input', { type: 'number', inputMode: 'decimal', step: '.1', min: '0', max: ESTIMATE_MAX, value: guess, disabled: revealed,
                     'aria-invalid': guess !== '' && prediction === null ? 'true' : undefined, 'aria-describedby': descId + '-prediction-help',
                     onChange: function (e) { setGuess(e.target.value); },
-                    onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); lockInEstimate(); } },
+                    onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); lockInEstimate(); } },
                     style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) })),
                 h('p', { id: descId + '-prediction-help', style: { margin: 0, fontSize: '.6875rem', color: guess !== '' && prediction === null ? P.warn : P.dim, lineHeight: 1.5 } },
                   S('atlas_inquiry_help', 'Enter a number from 0 to 45. One power of ten is a tenfold ratio; decimal predictions are welcome.')),

@@ -107,10 +107,10 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
-  if (typeof document !== 'undefined' && document.head && !document.getElementById("concept-pictionary-module-a11y")) {
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("concept-pictionary-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "concept-pictionary-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; }";
+    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; } [data-pictionary-surface] button, [data-pictionary-surface] input, [data-pictionary-surface] select, [data-pictionary-surface] textarea, [data-pictionary-surface] [role=\\"radio\\"], [data-pictionary-surface] [role=\\"button\\"] { touch-action: manipulation; } [data-pictionary-surface] button:focus-visible, [data-pictionary-surface] input:focus-visible, [data-pictionary-surface] select:focus-visible, [data-pictionary-surface] textarea:focus-visible, [data-pictionary-surface] [tabindex]:focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; } @media (forced-colors: active) { [data-pictionary-surface] button:focus-visible, [data-pictionary-surface] input:focus-visible, [data-pictionary-surface] select:focus-visible, [data-pictionary-surface] textarea:focus-visible, [data-pictionary-surface] [tabindex]:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }";
     document.head.appendChild(_s);
   }
   (function() {

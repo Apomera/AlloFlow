@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-reading-specialist-5302-learning-library",
@@ -31,7 +32,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 3,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 11,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -1638,7 +1644,7 @@
         },
         {
           "id": "read5302-ch-07-check-05",
-          "prompt": "Why do sensitivity and specificity matter in screening?",
+          "prompt": "When a reading specialist evaluates a universal screening tool, what do sensitivity and specificity measure?",
           "choices": [
             "The percentile rank and grade-equivalent score that the screener reports for each individual student.",
             "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward.",
@@ -1785,7 +1791,7 @@
       "knowledgeChecks": [
         {
           "id": "read5302-ch-08-check-01",
-          "prompt": "What does a phoneme-analysis error reveal?",
+          "prompt": "A first grader blends spoken phonemes into words accurately but struggles to break three- and four-phoneme words apart during decoding and spelling checks. Which instructional next step best addresses this pattern?",
           "choices": [
             "Instruction in advanced figurative language such as metaphor and idiom within grade-level poetry.",
             "Longer silent-reading sessions designed to build stamina with self-selected chapter books each day.",
@@ -1851,7 +1857,7 @@
         },
         {
           "id": "read5302-ch-08-check-04",
-          "prompt": "How should spelling errors be analyzed?",
+          "prompt": "After administering a developmental spelling inventory, a reading specialist sees missed words across several early-grade skills. What is the most informative way to analyze those student responses?",
           "choices": [
             "Assess reading comprehension instead of spelling, since comprehension better explains writing difficulties.",
             "Correct each misspelled word on the paper without identifying which spelling patterns caused the errors.",
@@ -1873,7 +1879,7 @@
         },
         {
           "id": "read5302-ch-08-check-05",
-          "prompt": "How should an oral-reading-fluency score be interpreted?",
+          "prompt": "A third grader meets the fall words-correct-per-minute benchmark on a timed passage, yet moves through the text in a monotone, ignores punctuation, and struggles to retell key events. Which interpretation is best?",
           "choices": [
             "The student is fully fluent because the words-correct-per-minute score meets the grade-level benchmark.",
             "The passage was understood because the student missed very few words during the timed oral reading.",
@@ -7540,6 +7546,2529 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "reading-specialist-5302-session-ch-01",
+      "title": "Literacy Foundations, Development, and Learner Profiles guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Literacy Foundations, Development, and Learner Profiles\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-01",
+      "itemIds": [
+        "read5302-b1-001",
+        "read5302-b1-002",
+        "read5302-b1-003",
+        "read5302-b1-004",
+        "read5302-b1-005",
+        "read5302-b1-006",
+        "read5302-b1-007",
+        "read5302-b1-008",
+        "read5302-b2-001",
+        "read5302-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Literacy Foundations, Development, and Learner Profiles\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Interacting P–12 Literacy Models, Component Learner Profiles, & Curriculum Coherence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Resolving Core-to-Intervention Curriculum Misalignment Across Grades K-5\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Literacy Foundations, Development, and Learner Profiles\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Triangulate Screening Risk with Diagnostic Probes and Measurement Error\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-02",
+      "title": "Phonological Awareness, Print Concepts, and the Alphabetic Principle guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phonological Awareness, Print Concepts, and the Alphabetic Principle\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-02",
+      "itemIds": [
+        "read5302-b1-016",
+        "read5302-b2-009",
+        "read5302-b2-010",
+        "read5302-b2-011",
+        "read5302-b2-012",
+        "read5302-b2-013",
+        "read5302-b2-014",
+        "read5302-b2-015",
+        "read5302-b2-016",
+        "read5302-b1-009"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phonological Awareness, Print Concepts, and the Alphabetic Principle\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Spoken-Sound Continuum, Alphabetic Principle, & Phoneme–Grapheme Bridge\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Bridging Oral Phonemic Drills to Grapheme Mapping in First Grade\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phonological Awareness, Print Concepts, and the Alphabetic Principle\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect MTSS Tier 1 Health, Intervention Dosage, and Fidelity Before Escalating\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-03",
+      "title": "Phonics, Word Recognition, Spelling, and Morphology guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phonics, Word Recognition, Spelling, and Morphology\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-03",
+      "itemIds": [
+        "read5302-b2-022",
+        "read5302-b2-023",
+        "read5302-b2-024",
+        "read5302-b2-025",
+        "read5302-b1-017",
+        "read5302-b1-018",
+        "read5302-b1-019",
+        "read5302-b1-020",
+        "read5302-b1-021",
+        "read5302-b1-022"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phonics, Word Recognition, Spelling, and Morphology\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Systematic Phonics, Orthographic Mapping, Multisyllabic Morphology, & Feature Error Analysis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using Feature-Based Spelling Analysis to Prevent Misplaced Intervention\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phonics, Word Recognition, Spelling, and Morphology\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead Non-Evaluative, Job-Embedded Literacy Coaching Cycles\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-04",
+      "title": "Fluency, Vocabulary, Comprehension, and Knowledge Building guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Fluency, Vocabulary, Comprehension, and Knowledge Building\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-04",
+      "itemIds": [
+        "read5302-b1-031",
+        "read5302-b1-032",
+        "read5302-b1-033",
+        "read5302-b2-026",
+        "read5302-b2-027",
+        "read5302-b2-028",
+        "read5302-b2-029",
+        "read5302-b2-030",
+        "read5302-b2-031",
+        "read5302-b2-032"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Fluency, Vocabulary, Comprehension, and Knowledge Building\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Fluency, Robust Vocabulary, Strategic Comprehension, & Knowledge-Building Ecosystem\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Shifting Middle School Comprehension from Skill Drills to Knowledge Building\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Fluency, Vocabulary, Comprehension, and Knowledge Building\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Differentiate Word-Recognition and Language-Comprehension Breakdowns\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-05",
+      "title": "Writing, Disciplinary Literacy, and Digital Texts guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Writing, Disciplinary Literacy, and Digital Texts\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-05",
+      "itemIds": [
+        "read5302-b2-038",
+        "read5302-b2-039",
+        "read5302-b2-040",
+        "read5302-b2-041",
+        "read5302-b1-034",
+        "read5302-b1-035",
+        "read5302-b1-036",
+        "read5302-b1-037",
+        "read5302-b1-038",
+        "read5302-b1-039"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Writing, Disciplinary Literacy, and Digital Texts\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Adolescent & Disciplinary Literacy Reasoning Framework\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Teaching Lateral Reading and Multimodal Verification in Secondary Inquiry\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Writing, Disciplinary Literacy, and Digital Texts\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguish Multilingual Transfer and Test Bias from Reading Disability\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-06",
+      "title": "Instructional Design, Differentiation, Intervention, and Engagement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Instructional Design, Differentiation, Intervention, and Engagement\" (Curriculum and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-06",
+      "itemIds": [
+        "read5302-b1-045",
+        "read5302-b1-046",
+        "read5302-b1-047",
+        "read5302-b1-048",
+        "read5302-b1-049",
+        "read5302-b2-042",
+        "read5302-b2-043",
+        "read5302-b2-044",
+        "read5302-b2-045",
+        "read5302-b2-046"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Instructional Design, Differentiation, Intervention, and Engagement\" and the \"K–12 Structured Literacy, MTSS & Disciplinary Instruction\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Curriculum Alignment, Text Selection & Equitable Literacy Program Design\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Auditing Intervention Fidelity Before Escalating to Special Education\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Instructional Design, Differentiation, Intervention, and Engagement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Evaluate Schoolwide Literacy Programs with Coherent Outcome and Fidelity Data\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-07",
+      "title": "Assessment Purposes, Measurement, Selection, and Fairness guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Purposes, Measurement, Selection, and Fairness\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-07",
+      "itemIds": [
+        "read5302-b1-052",
+        "read5302-b1-053",
+        "read5302-b1-054",
+        "read5302-b1-055",
+        "read5302-b1-056",
+        "read5302-b1-057",
+        "read5302-b1-058",
+        "read5302-b1-059",
+        "read5302-b2-050",
+        "read5302-b2-051"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Purposes, Measurement, Selection, and Fairness\" and the \"Diagnostic Triangulation, Psychometrics & MTSS Data Rules\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Comprehensive P–12 Literacy Assessment System & Diagnostic Decision Tree\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting Construct Validity and Tool-Purpose Fit in K-2 Assessment\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Purposes, Measurement, Selection, and Fairness\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Triangulate Screening Risk with Diagnostic Probes and Measurement Error\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-08",
+      "title": "Diagnostic Literacy Assessment, Error Analysis, and Case Integration guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Diagnostic Literacy Assessment, Error Analysis, and Case Integration\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-08",
+      "itemIds": [
+        "read5302-b1-065",
+        "read5302-b1-066",
+        "read5302-b1-067",
+        "read5302-b1-068",
+        "read5302-b1-069",
+        "read5302-b1-070",
+        "read5302-b2-060",
+        "read5302-b2-061",
+        "read5302-b2-062",
+        "read5302-b2-063"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Diagnostic Literacy Assessment, Error Analysis, and Case Integration\" and the \"Diagnostic Triangulation, Psychometrics & MTSS Data Rules\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Diagnostic Error Analysis, Differential Evidence, & Case-Formulation Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Distinguishing Second-Language Acquisition from Dyslexia in Case Review\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Diagnostic Literacy Assessment, Error Analysis, and Case Integration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect MTSS Tier 1 Health, Intervention Dosage, and Fidelity Before Escalating\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-09",
+      "title": "Progress Monitoring, Instructional Decisions, and MTSS Data guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Progress Monitoring, Instructional Decisions, and MTSS Data\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-09",
+      "itemIds": [
+        "read5302-b2-077",
+        "read5302-b2-078",
+        "read5302-b2-079",
+        "read5302-b2-080",
+        "read5302-b1-071",
+        "read5302-b1-072",
+        "read5302-b1-073",
+        "read5302-b1-074",
+        "read5302-b1-075",
+        "read5302-b1-076"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Progress Monitoring, Instructional Decisions, and MTSS Data\" and the \"Diagnostic Triangulation, Psychometrics & MTSS Data Rules\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Multi-Tiered Literacy Intervention (MTSS/DBI) Intensification Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Public Fluency Rankings with Ethical Family Data Communication\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Progress Monitoring, Instructional Decisions, and MTSS Data\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead Non-Evaluative, Job-Embedded Literacy Coaching Cycles\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-10",
+      "title": "Diverse Learners, Family Partnership, Equity, and Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Diverse Learners, Family Partnership, Equity, and Access\" (Professional Leadership and Specialized Roles) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-10",
+      "itemIds": [
+        "read5302-b2-081",
+        "read5302-b2-082",
+        "read5302-b2-083",
+        "read5302-b2-084",
+        "read5302-b2-085",
+        "read5302-b2-086",
+        "read5302-b2-087",
+        "read5302-b1-081",
+        "read5302-b1-082",
+        "read5302-b1-083"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Diverse Learners, Family Partnership, Equity, and Access\" and the \"Literacy Coaching, Program Leadership & Ethical Boundaries\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Equitable P–12 Literacy Access: Multilingual Transfer, Representation, & Assistive Supports\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Balancing Assistive Access and Intensive Remediation for Twice-Exceptional Youth\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Diverse Learners, Family Partnership, Equity, and Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Differentiate Word-Recognition and Language-Comprehension Breakdowns\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-11",
+      "title": "Coaching, Professional Learning, Collaboration, and Conflict Resolution guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Coaching, Professional Learning, Collaboration, and Conflict Resolution\" (Professional Leadership and Specialized Roles) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-11",
+      "itemIds": [
+        "read5302-b1-088",
+        "read5302-b1-089",
+        "read5302-b1-090",
+        "read5302-b1-091",
+        "read5302-b1-092",
+        "read5302-b1-093",
+        "read5302-b1-094",
+        "read5302-b2-088",
+        "read5302-b2-089",
+        "read5302-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Coaching, Professional Learning, Collaboration, and Conflict Resolution\" and the \"Literacy Coaching, Program Leadership & Ethical Boundaries\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Adult Learning & Collaborative Literacy Coaching Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Navigating Instructional Conflict Through Disciplined Coaching Inquiry\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Coaching, Professional Learning, Collaboration, and Conflict Resolution\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguish Multilingual Transfer and Test Bias from Reading Disability\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-ch-12",
+      "title": "Program Leadership, MTSS, Ethics, Privacy, and Advocacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Program Leadership, MTSS, Ethics, Privacy, and Advocacy\" (Professional Leadership and Specialized Roles) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "read5302-ch-12",
+      "itemIds": [
+        "read5302-b1-100",
+        "read5302-b2-095",
+        "read5302-b2-096",
+        "read5302-b2-097",
+        "read5302-b2-098",
+        "read5302-b2-099",
+        "read5302-b2-100",
+        "read5302-b1-095",
+        "read5302-b1-096",
+        "read5302-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Program Leadership, MTSS, Ethics, Privacy, and Advocacy\" and the \"Literacy Coaching, Program Leadership & Ethical Boundaries\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Systemic Literacy Leadership, Family Partnership & Ethical Practice Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Advocating for Equitable Core Investment Over Unvalidated Vendor Software\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Program Leadership, MTSS, Ethics, Privacy, and Advocacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Evaluate Schoolwide Literacy Programs with Coherent Outcome and Fidelity Data\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-trap-repair-sprint",
+      "title": "Praxis Reading Specialist (5302) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "read5302-b1-050",
+        "read5302-b1-001",
+        "read5302-b1-081",
+        "read5302-b1-008",
+        "read5302-b1-007",
+        "read5302-b1-051",
+        "read5302-b1-004",
+        "read5302-b1-084",
+        "read5302-b1-002",
+        "read5302-b1-057",
+        "read5302-b1-052",
+        "read5302-b1-006"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Triangulate Screening Risk with Diagnostic Probes and Measurement Error\", \"Protect MTSS Tier 1 Health, Intervention Dosage, and Fidelity Before Escalating\", \"Lead Non-Evaluative, Job-Embedded Literacy Coaching Cycles\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-session-mixed-capstone",
+      "title": "Praxis Reading Specialist (5302) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "read5302-b1-004",
+        "read5302-b1-053",
+        "read5302-b1-084",
+        "read5302-b1-015",
+        "read5302-b1-064",
+        "read5302-b1-095",
+        "read5302-b1-026",
+        "read5302-b1-075",
+        "read5302-b2-086",
+        "read5302-b1-037",
+        "read5302-b2-055",
+        "read5302-b2-097",
+        "read5302-b1-048",
+        "read5302-b2-066",
+        "read5302-b1-088"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Professional Learning Plan From Schoolwide Evidence\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "reading-specialist-5302-spaced-ch-01",
+      "topicId": "read5302-ch-01",
+      "topicLabel": "1. Literacy Foundations, Development, and Learner Profiles",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Literacy Foundations, Development, and Learner Profiles\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-02",
+      "topicId": "read5302-ch-02",
+      "topicLabel": "2. Phonological Awareness, Print Concepts, and the Alphabetic Principle",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phonological Awareness, Print Concepts, and the Alphabetic Principle\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-03",
+      "topicId": "read5302-ch-03",
+      "topicLabel": "3. Phonics, Word Recognition, Spelling, and Morphology",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phonics, Word Recognition, Spelling, and Morphology\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-04",
+      "topicId": "read5302-ch-04",
+      "topicLabel": "4. Fluency, Vocabulary, Comprehension, and Knowledge Building",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Fluency, Vocabulary, Comprehension, and Knowledge Building\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-05",
+      "topicId": "read5302-ch-05",
+      "topicLabel": "5. Writing, Disciplinary Literacy, and Digital Texts",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Writing, Disciplinary Literacy, and Digital Texts\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-06",
+      "topicId": "read5302-ch-06",
+      "topicLabel": "6. Instructional Design, Differentiation, Intervention, and Engagement",
+      "unitId": "curriculum-instruction",
+      "chapterId": "read5302-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Instructional Design, Differentiation, Intervention, and Engagement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-07",
+      "topicId": "read5302-ch-07",
+      "topicLabel": "7. Assessment Purposes, Measurement, Selection, and Fairness",
+      "unitId": "assessment",
+      "chapterId": "read5302-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Purposes, Measurement, Selection, and Fairness\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-08",
+      "topicId": "read5302-ch-08",
+      "topicLabel": "8. Diagnostic Literacy Assessment, Error Analysis, and Case Integration",
+      "unitId": "assessment",
+      "chapterId": "read5302-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Diagnostic Literacy Assessment, Error Analysis, and Case Integration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-09",
+      "topicId": "read5302-ch-09",
+      "topicLabel": "9. Progress Monitoring, Instructional Decisions, and MTSS Data",
+      "unitId": "assessment",
+      "chapterId": "read5302-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Progress Monitoring, Instructional Decisions, and MTSS Data\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-10",
+      "topicId": "read5302-ch-10",
+      "topicLabel": "10. Diverse Learners, Family Partnership, Equity, and Access",
+      "unitId": "professional-leadership",
+      "chapterId": "read5302-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Diverse Learners, Family Partnership, Equity, and Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-11",
+      "topicId": "read5302-ch-11",
+      "topicLabel": "11. Coaching, Professional Learning, Collaboration, and Conflict Resolution",
+      "unitId": "professional-leadership",
+      "chapterId": "read5302-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Coaching, Professional Learning, Collaboration, and Conflict Resolution\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-spaced-ch-12",
+      "topicId": "read5302-ch-12",
+      "topicLabel": "12. Program Leadership, MTSS, Ethics, Privacy, and Advocacy",
+      "unitId": "professional-leadership",
+      "chapterId": "read5302-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Program Leadership, MTSS, Ethics, Privacy, and Advocacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "reading-specialist-5302-source-01",
+      "title": "Reading Specialist 5302 diagnostics — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-02",
+      "title": "Standards for the Preparation of Literacy Professionals 2017",
+      "organization": "International Literacy Association (ILA)",
+      "url": "https://www.literacyworldwide.org/get-resources/standards-for-the-preparation-of-literacy-professionals",
+      "credibility": "International Literacy Association (ILA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-03",
+      "title": "Standards for the Preparation of Literacy Professionals 2017 — Appendix A",
+      "organization": "International Literacy Association (ILA)",
+      "url": "https://www.literacyworldwide.org/docs/default-source/resource-documents/standards-appendix-A.pdf",
+      "credibility": "ILA developed and publishes its literacy-professional preparation standards, making the appendix a primary source for that framework. It is professional guidance rather than an official Praxis specification or psychometric validity study.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-04",
+      "title": "Knowledge and Practice Standards for Teachers of Reading",
+      "organization": "International Dyslexia Association (IDA)",
+      "url": "https://dyslexiaida.org/knowledge-and-practices/",
+      "credibility": "IDA is the publisher of these professional knowledge and practice standards. They are a primary source for the IDA framework but do not independently establish a learner’s diagnosis, eligibility, or the content of an ETS exam.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-05",
+      "title": "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/Docs/PracticeGuide/wwc_foundationalreading_070516.pdf",
+      "credibility": "WWC and IES developed the guide through an expert panel and systematic evidence review. Recommendation-specific evidence ratings and stated limitations should remain attached when educators apply the guidance.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-06",
+      "title": "WWC | Improving Adolescent Literacy: Effective Classroom and Intervention Practices",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/WWC/PracticeGuide/8/Published",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-07",
+      "title": "WIDA unveils new edition of the English Language Development Standards Framework | WIDA",
+      "organization": "WIDA, Wisconsin Center for Education Research",
+      "url": "https://wida.wisc.edu/news/wida-unveils-new-edition-english-language-development-standards-framework",
+      "credibility": "WIDA, Wisconsin Center for Education Research is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-08",
+      "title": "Tools Chart Overview",
+      "organization": "National Center on Intensive Intervention",
+      "url": "https://intensiveintervention.org/tools-charts/overview",
+      "credibility": "NCII’s external technical review committees rate voluntarily submitted tools against published criteria; the charts do not rank products and inclusion is not an endorsement. This is the primary NCII explanation of appropriate chart use.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-09",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-10",
+      "title": "Progress Monitoring Within Data-Based Individualization",
+      "organization": "National Center on Intensive Intervention",
+      "url": "https://intensiveintervention.org/data-based-individualization/progress-monitoring",
+      "credibility": "NCII is a federally supported technical-assistance center specializing in intensive intervention. Its guidance is authoritative for the NCII DBI model, while local teams must select technically adequate measures and follow current requirements.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "reading-specialist-5302-source-11",
+      "title": "FERPA | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/ferpa",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "reading-specialist-5302-unit-review-01",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Literacy Foundations, Development, and Learner Profiles",
+      "chapterId": "read5302-ch-01",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-01-section-01",
+        "read5302-ch-01-section-02",
+        "read5302-ch-01-section-03",
+        "read5302-ch-01-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-001",
+        "read5302-b1-002",
+        "read5302-b1-003",
+        "read5302-b1-004",
+        "read5302-b1-005",
+        "read5302-b1-006",
+        "read5302-b1-007",
+        "read5302-b1-008",
+        "read5302-b2-001",
+        "read5302-b2-002",
+        "read5302-b2-003",
+        "read5302-b2-004",
+        "read5302-b2-005",
+        "read5302-b2-006",
+        "read5302-b2-007",
+        "read5302-b2-008"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-001",
+        "read5302-b1-002",
+        "read5302-b1-003",
+        "read5302-b1-004",
+        "read5302-b1-005",
+        "read5302-b1-006",
+        "read5302-b1-007",
+        "read5302-b1-008",
+        "read5302-b2-001",
+        "read5302-b2-002",
+        "read5302-b2-003",
+        "read5302-b2-004"
+      ],
+      "purpose": "Consolidate \"Literacy Foundations, Development, and Learner Profiles\" (Curriculum and Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-02",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Phonological Awareness, Print Concepts, and the Alphabetic Principle",
+      "chapterId": "read5302-ch-02",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-02-section-01",
+        "read5302-ch-02-section-02",
+        "read5302-ch-02-section-03",
+        "read5302-ch-02-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-009",
+        "read5302-b1-010",
+        "read5302-b1-011",
+        "read5302-b1-012",
+        "read5302-b1-013",
+        "read5302-b1-014",
+        "read5302-b1-015",
+        "read5302-b1-016",
+        "read5302-b2-009",
+        "read5302-b2-010",
+        "read5302-b2-011",
+        "read5302-b2-012",
+        "read5302-b2-013",
+        "read5302-b2-014",
+        "read5302-b2-015",
+        "read5302-b2-016"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-009",
+        "read5302-b1-010",
+        "read5302-b1-011",
+        "read5302-b1-012",
+        "read5302-b1-013",
+        "read5302-b1-014",
+        "read5302-b1-015",
+        "read5302-b1-016",
+        "read5302-b2-009",
+        "read5302-b2-010",
+        "read5302-b2-011",
+        "read5302-b2-012"
+      ],
+      "purpose": "Consolidate \"Phonological Awareness, Print Concepts, and the Alphabetic Principle\" (Curriculum and Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-03",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Phonics, Word Recognition, Spelling, and Morphology",
+      "chapterId": "read5302-ch-03",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-03-section-01",
+        "read5302-ch-03-section-02",
+        "read5302-ch-03-section-03",
+        "read5302-ch-03-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-017",
+        "read5302-b1-018",
+        "read5302-b1-019",
+        "read5302-b1-020",
+        "read5302-b1-021",
+        "read5302-b1-022",
+        "read5302-b1-023",
+        "read5302-b1-024",
+        "read5302-b1-025",
+        "read5302-b2-017",
+        "read5302-b2-018",
+        "read5302-b2-019",
+        "read5302-b2-020",
+        "read5302-b2-021",
+        "read5302-b2-022",
+        "read5302-b2-023",
+        "read5302-b2-024",
+        "read5302-b2-025"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-017",
+        "read5302-b1-018",
+        "read5302-b1-019",
+        "read5302-b1-020",
+        "read5302-b1-021",
+        "read5302-b1-022",
+        "read5302-b1-023",
+        "read5302-b1-024",
+        "read5302-b1-025",
+        "read5302-b2-017",
+        "read5302-b2-018",
+        "read5302-b2-019"
+      ],
+      "purpose": "Consolidate \"Phonics, Word Recognition, Spelling, and Morphology\" (Curriculum and Instruction) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-04",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Fluency, Vocabulary, Comprehension, and Knowledge Building",
+      "chapterId": "read5302-ch-04",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-04-section-01",
+        "read5302-ch-04-section-02",
+        "read5302-ch-04-section-03",
+        "read5302-ch-04-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-026",
+        "read5302-b1-027",
+        "read5302-b1-028",
+        "read5302-b1-029",
+        "read5302-b1-030",
+        "read5302-b1-031",
+        "read5302-b1-032",
+        "read5302-b1-033",
+        "read5302-b2-026",
+        "read5302-b2-027",
+        "read5302-b2-028",
+        "read5302-b2-029",
+        "read5302-b2-030",
+        "read5302-b2-031",
+        "read5302-b2-032",
+        "read5302-b2-033"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-026",
+        "read5302-b1-027",
+        "read5302-b1-028",
+        "read5302-b1-029",
+        "read5302-b1-030",
+        "read5302-b1-031",
+        "read5302-b1-032",
+        "read5302-b1-033",
+        "read5302-b2-026",
+        "read5302-b2-027",
+        "read5302-b2-028",
+        "read5302-b2-029"
+      ],
+      "purpose": "Consolidate \"Fluency, Vocabulary, Comprehension, and Knowledge Building\" (Curriculum and Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-05",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Writing, Disciplinary Literacy, and Digital Texts",
+      "chapterId": "read5302-ch-05",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-05-section-01",
+        "read5302-ch-05-section-02",
+        "read5302-ch-05-section-03",
+        "read5302-ch-05-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-034",
+        "read5302-b1-035",
+        "read5302-b1-036",
+        "read5302-b1-037",
+        "read5302-b1-038",
+        "read5302-b1-039",
+        "read5302-b1-040",
+        "read5302-b1-041",
+        "read5302-b2-034",
+        "read5302-b2-035",
+        "read5302-b2-036",
+        "read5302-b2-037",
+        "read5302-b2-038",
+        "read5302-b2-039",
+        "read5302-b2-040",
+        "read5302-b2-041"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-034",
+        "read5302-b1-035",
+        "read5302-b1-036",
+        "read5302-b1-037",
+        "read5302-b1-038",
+        "read5302-b1-039",
+        "read5302-b1-040",
+        "read5302-b1-041",
+        "read5302-b2-034",
+        "read5302-b2-035",
+        "read5302-b2-036",
+        "read5302-b2-037"
+      ],
+      "purpose": "Consolidate \"Writing, Disciplinary Literacy, and Digital Texts\" (Curriculum and Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-06",
+      "unitId": "curriculum-instruction",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Instructional Design, Differentiation, Intervention, and Engagement",
+      "chapterId": "read5302-ch-06",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-06-section-01",
+        "read5302-ch-06-section-02",
+        "read5302-ch-06-section-03",
+        "read5302-ch-06-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-042",
+        "read5302-b1-043",
+        "read5302-b1-044",
+        "read5302-b1-045",
+        "read5302-b1-046",
+        "read5302-b1-047",
+        "read5302-b1-048",
+        "read5302-b1-049",
+        "read5302-b2-042",
+        "read5302-b2-043",
+        "read5302-b2-044",
+        "read5302-b2-045",
+        "read5302-b2-046",
+        "read5302-b2-047",
+        "read5302-b2-048",
+        "read5302-b2-049"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-042",
+        "read5302-b1-043",
+        "read5302-b1-044",
+        "read5302-b1-045",
+        "read5302-b1-046",
+        "read5302-b1-047",
+        "read5302-b1-048",
+        "read5302-b1-049",
+        "read5302-b2-042",
+        "read5302-b2-043",
+        "read5302-b2-044",
+        "read5302-b2-045"
+      ],
+      "purpose": "Consolidate \"Instructional Design, Differentiation, Intervention, and Engagement\" (Curriculum and Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-07",
+      "unitId": "assessment",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Assessment Purposes, Measurement, Selection, and Fairness",
+      "chapterId": "read5302-ch-07",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-07-section-01",
+        "read5302-ch-07-section-02",
+        "read5302-ch-07-section-03",
+        "read5302-ch-07-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-050",
+        "read5302-b1-051",
+        "read5302-b1-052",
+        "read5302-b1-053",
+        "read5302-b1-054",
+        "read5302-b1-055",
+        "read5302-b1-056",
+        "read5302-b1-057",
+        "read5302-b1-058",
+        "read5302-b1-059",
+        "read5302-b2-050",
+        "read5302-b2-051",
+        "read5302-b2-052",
+        "read5302-b2-053",
+        "read5302-b2-054",
+        "read5302-b2-055",
+        "read5302-b2-056",
+        "read5302-b2-057",
+        "read5302-b2-058",
+        "read5302-b2-059"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-050",
+        "read5302-b1-051",
+        "read5302-b1-052",
+        "read5302-b1-053",
+        "read5302-b1-054",
+        "read5302-b1-055",
+        "read5302-b1-056",
+        "read5302-b1-057",
+        "read5302-b1-058",
+        "read5302-b1-059",
+        "read5302-b2-050",
+        "read5302-b2-051"
+      ],
+      "purpose": "Consolidate \"Assessment Purposes, Measurement, Selection, and Fairness\" (Assessment) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-08",
+      "unitId": "assessment",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Diagnostic Literacy Assessment, Error Analysis, and Case Integration",
+      "chapterId": "read5302-ch-08",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-08-section-01",
+        "read5302-ch-08-section-02",
+        "read5302-ch-08-section-03",
+        "read5302-ch-08-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-060",
+        "read5302-b1-061",
+        "read5302-b1-062",
+        "read5302-b1-063",
+        "read5302-b1-064",
+        "read5302-b1-065",
+        "read5302-b1-066",
+        "read5302-b1-067",
+        "read5302-b1-068",
+        "read5302-b1-069",
+        "read5302-b1-070",
+        "read5302-b2-060",
+        "read5302-b2-061",
+        "read5302-b2-062",
+        "read5302-b2-063",
+        "read5302-b2-064",
+        "read5302-b2-065",
+        "read5302-b2-066",
+        "read5302-b2-067",
+        "read5302-b2-068",
+        "read5302-b2-069",
+        "read5302-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-060",
+        "read5302-b1-061",
+        "read5302-b1-062",
+        "read5302-b1-063",
+        "read5302-b1-064",
+        "read5302-b1-065",
+        "read5302-b1-066",
+        "read5302-b1-067",
+        "read5302-b1-068",
+        "read5302-b1-069",
+        "read5302-b1-070",
+        "read5302-b2-060"
+      ],
+      "purpose": "Consolidate \"Diagnostic Literacy Assessment, Error Analysis, and Case Integration\" (Assessment) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-09",
+      "unitId": "assessment",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Progress Monitoring, Instructional Decisions, and MTSS Data",
+      "chapterId": "read5302-ch-09",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-09-section-01",
+        "read5302-ch-09-section-02",
+        "read5302-ch-09-section-03",
+        "read5302-ch-09-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-071",
+        "read5302-b1-072",
+        "read5302-b1-073",
+        "read5302-b1-074",
+        "read5302-b1-075",
+        "read5302-b1-076",
+        "read5302-b1-077",
+        "read5302-b1-078",
+        "read5302-b1-079",
+        "read5302-b1-080",
+        "read5302-b2-071",
+        "read5302-b2-072",
+        "read5302-b2-073",
+        "read5302-b2-074",
+        "read5302-b2-075",
+        "read5302-b2-076",
+        "read5302-b2-077",
+        "read5302-b2-078",
+        "read5302-b2-079",
+        "read5302-b2-080"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-071",
+        "read5302-b1-072",
+        "read5302-b1-073",
+        "read5302-b1-074",
+        "read5302-b1-075",
+        "read5302-b1-076",
+        "read5302-b1-077",
+        "read5302-b1-078",
+        "read5302-b1-079",
+        "read5302-b1-080",
+        "read5302-b2-071",
+        "read5302-b2-072"
+      ],
+      "purpose": "Consolidate \"Progress Monitoring, Instructional Decisions, and MTSS Data\" (Assessment) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-10",
+      "unitId": "professional-leadership",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Diverse Learners, Family Partnership, Equity, and Access",
+      "chapterId": "read5302-ch-10",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-10-section-01",
+        "read5302-ch-10-section-02",
+        "read5302-ch-10-section-03",
+        "read5302-ch-10-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-081",
+        "read5302-b1-082",
+        "read5302-b1-083",
+        "read5302-b1-084",
+        "read5302-b1-085",
+        "read5302-b1-086",
+        "read5302-b1-087",
+        "read5302-b2-081",
+        "read5302-b2-082",
+        "read5302-b2-083",
+        "read5302-b2-084",
+        "read5302-b2-085",
+        "read5302-b2-086",
+        "read5302-b2-087"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-081",
+        "read5302-b1-082",
+        "read5302-b1-083",
+        "read5302-b1-084",
+        "read5302-b1-085",
+        "read5302-b1-086",
+        "read5302-b1-087",
+        "read5302-b2-081",
+        "read5302-b2-082",
+        "read5302-b2-083",
+        "read5302-b2-084",
+        "read5302-b2-085"
+      ],
+      "purpose": "Consolidate \"Diverse Learners, Family Partnership, Equity, and Access\" (Professional Leadership and Specialized Roles) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-11",
+      "unitId": "professional-leadership",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Coaching, Professional Learning, Collaboration, and Conflict Resolution",
+      "chapterId": "read5302-ch-11",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-11-section-01",
+        "read5302-ch-11-section-02",
+        "read5302-ch-11-section-03",
+        "read5302-ch-11-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-088",
+        "read5302-b1-089",
+        "read5302-b1-090",
+        "read5302-b1-091",
+        "read5302-b1-092",
+        "read5302-b1-093",
+        "read5302-b1-094",
+        "read5302-b2-088",
+        "read5302-b2-089",
+        "read5302-b2-090",
+        "read5302-b2-091",
+        "read5302-b2-092",
+        "read5302-b2-093",
+        "read5302-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-088",
+        "read5302-b1-089",
+        "read5302-b1-090",
+        "read5302-b1-091",
+        "read5302-b1-092",
+        "read5302-b1-093",
+        "read5302-b1-094",
+        "read5302-b2-088",
+        "read5302-b2-089",
+        "read5302-b2-090",
+        "read5302-b2-091",
+        "read5302-b2-092"
+      ],
+      "purpose": "Consolidate \"Coaching, Professional Learning, Collaboration, and Conflict Resolution\" (Professional Leadership and Specialized Roles) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-unit-review-12",
+      "unitId": "professional-leadership",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Program Leadership, MTSS, Ethics, Privacy, and Advocacy",
+      "chapterId": "read5302-ch-12",
+      "topicDiagnosticRouteIds": [
+        "read5302-ch-12-section-01",
+        "read5302-ch-12-section-02",
+        "read5302-ch-12-section-03",
+        "read5302-ch-12-section-04"
+      ],
+      "itemIds": [
+        "read5302-b1-095",
+        "read5302-b1-096",
+        "read5302-b1-097",
+        "read5302-b1-098",
+        "read5302-b1-099",
+        "read5302-b1-100",
+        "read5302-b2-095",
+        "read5302-b2-096",
+        "read5302-b2-097",
+        "read5302-b2-098",
+        "read5302-b2-099",
+        "read5302-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "read5302-b1-095",
+        "read5302-b1-096",
+        "read5302-b1-097",
+        "read5302-b1-098",
+        "read5302-b1-099",
+        "read5302-b1-100",
+        "read5302-b2-095",
+        "read5302-b2-096",
+        "read5302-b2-097",
+        "read5302-b2-098",
+        "read5302-b2-099",
+        "read5302-b2-100"
+      ],
+      "purpose": "Consolidate \"Program Leadership, MTSS, Ethics, Privacy, and Advocacy\" (Professional Leadership and Specialized Roles) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "reading-specialist-5302-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Reading Specialist (5302) blueprint domains.",
+      "focus": [
+        "Curriculum and Instruction",
+        "Assessment",
+        "Professional Leadership and Specialized Roles"
+      ],
+      "itemIds": [
+        "read5302-b1-001",
+        "read5302-b1-002",
+        "read5302-b1-003",
+        "read5302-b1-004",
+        "read5302-b1-005",
+        "read5302-b1-006",
+        "read5302-b1-007",
+        "read5302-b1-008",
+        "read5302-b1-009",
+        "read5302-b1-010",
+        "read5302-b1-011",
+        "read5302-b1-012",
+        "read5302-b1-013",
+        "read5302-b1-014",
+        "read5302-b1-015",
+        "read5302-b1-016",
+        "read5302-b1-017",
+        "read5302-b1-018",
+        "read5302-b1-019",
+        "read5302-b1-020",
+        "read5302-b1-021",
+        "read5302-b1-022",
+        "read5302-b1-023",
+        "read5302-b1-024",
+        "read5302-b1-025",
+        "read5302-b1-026",
+        "read5302-b1-027",
+        "read5302-b1-028",
+        "read5302-b1-029",
+        "read5302-b1-030",
+        "read5302-b1-031",
+        "read5302-b1-032",
+        "read5302-b1-033",
+        "read5302-b1-034",
+        "read5302-b1-035",
+        "read5302-b1-036",
+        "read5302-b1-037",
+        "read5302-b1-038",
+        "read5302-b1-039",
+        "read5302-b1-040"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Reading Specialist (5302) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Professional Leadership and Specialized Roles",
+        "Curriculum and Instruction",
+        "Assessment"
+      ],
+      "itemIds": [
+        "read5302-b1-050",
+        "read5302-b1-051",
+        "read5302-b1-052",
+        "read5302-b1-053",
+        "read5302-b1-054",
+        "read5302-b1-055",
+        "read5302-b1-056",
+        "read5302-b1-057",
+        "read5302-b1-058",
+        "read5302-b1-059",
+        "read5302-b1-060",
+        "read5302-b1-061",
+        "read5302-b1-062",
+        "read5302-b1-063",
+        "read5302-b1-064",
+        "read5302-b1-065",
+        "read5302-b1-066",
+        "read5302-b1-067",
+        "read5302-b1-068",
+        "read5302-b1-069",
+        "read5302-b1-070",
+        "read5302-b1-071",
+        "read5302-b1-072",
+        "read5302-b1-073",
+        "read5302-b1-074",
+        "read5302-b1-075",
+        "read5302-b1-076",
+        "read5302-b1-077",
+        "read5302-b1-078",
+        "read5302-b1-079",
+        "read5302-b1-080",
+        "read5302-b2-050",
+        "read5302-b2-051",
+        "read5302-b2-052",
+        "read5302-b2-053",
+        "read5302-b2-054",
+        "read5302-b2-055",
+        "read5302-b2-056",
+        "read5302-b2-057",
+        "read5302-b2-058"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Reading Specialist (5302) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Over-Interpreting a Single Screener Without Diagnostic Triangulation",
+        "Misaligning Tier 1 Core, Tier 2/3 Dosage, and Implementation Fidelity",
+        "Directive Evaluative Mandates Instead of Collaborative Literacy Coaching"
+      ],
+      "itemIds": [
+        "read5302-b1-081",
+        "read5302-b1-082",
+        "read5302-b1-083",
+        "read5302-b1-084",
+        "read5302-b1-085",
+        "read5302-b1-086",
+        "read5302-b1-087",
+        "read5302-b1-088",
+        "read5302-b1-089",
+        "read5302-b1-090",
+        "read5302-b1-091",
+        "read5302-b1-092",
+        "read5302-b1-093",
+        "read5302-b1-094",
+        "read5302-b1-095",
+        "read5302-b1-096",
+        "read5302-b1-097",
+        "read5302-b1-098",
+        "read5302-b1-099",
+        "read5302-b1-100",
+        "read5302-b2-081",
+        "read5302-b2-082",
+        "read5302-b2-083",
+        "read5302-b2-084",
+        "read5302-b2-085",
+        "read5302-b2-086",
+        "read5302-b2-087",
+        "read5302-b2-088",
+        "read5302-b2-089",
+        "read5302-b2-090",
+        "read5302-b2-091",
+        "read5302-b2-092",
+        "read5302-b2-093",
+        "read5302-b2-094",
+        "read5302-b2-095",
+        "read5302-b2-096",
+        "read5302-b2-097",
+        "read5302-b2-098",
+        "read5302-b2-099",
+        "read5302-b2-100"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "reading-specialist-5302-form-internal-a",
+      "title": "Internal practice form A (Praxis Reading Specialist (5302))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "read5302-b1-001",
+        "read5302-b1-002",
+        "read5302-b1-003",
+        "read5302-b1-004",
+        "read5302-b1-005",
+        "read5302-b1-006",
+        "read5302-b1-007",
+        "read5302-b1-008",
+        "read5302-b1-009",
+        "read5302-b1-010",
+        "read5302-b1-011",
+        "read5302-b1-012",
+        "read5302-b1-013",
+        "read5302-b1-014",
+        "read5302-b1-015",
+        "read5302-b1-016",
+        "read5302-b1-017",
+        "read5302-b1-018",
+        "read5302-b1-019",
+        "read5302-b1-020",
+        "read5302-b1-021",
+        "read5302-b1-022",
+        "read5302-b1-023",
+        "read5302-b1-024",
+        "read5302-b1-025",
+        "read5302-b1-026",
+        "read5302-b1-027",
+        "read5302-b1-028",
+        "read5302-b1-029",
+        "read5302-b1-030",
+        "read5302-b1-031",
+        "read5302-b1-032",
+        "read5302-b1-033",
+        "read5302-b1-034",
+        "read5302-b1-035",
+        "read5302-b1-036",
+        "read5302-b1-037",
+        "read5302-b1-038",
+        "read5302-b1-039",
+        "read5302-b1-040",
+        "read5302-b1-041",
+        "read5302-b2-060",
+        "read5302-b1-044",
+        "read5302-b2-063",
+        "read5302-b1-047",
+        "read5302-b2-066",
+        "read5302-b2-001",
+        "read5302-b2-069",
+        "read5302-b2-004",
+        "read5302-b2-072"
+      ],
+      "topicIds": [
+        "read5302-ch-01",
+        "read5302-ch-02",
+        "read5302-ch-03",
+        "read5302-ch-04",
+        "read5302-ch-05",
+        "read5302-ch-08",
+        "read5302-ch-06",
+        "read5302-ch-09"
+      ],
+      "unitIds": [
+        "curriculum-instruction",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-form-internal-b",
+      "title": "Internal practice form B (Praxis Reading Specialist (5302))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "read5302-b1-050",
+        "read5302-b1-051",
+        "read5302-b1-052",
+        "read5302-b1-053",
+        "read5302-b1-054",
+        "read5302-b1-055",
+        "read5302-b1-056",
+        "read5302-b1-057",
+        "read5302-b1-058",
+        "read5302-b1-059",
+        "read5302-b1-060",
+        "read5302-b1-061",
+        "read5302-b1-062",
+        "read5302-b1-063",
+        "read5302-b1-064",
+        "read5302-b1-065",
+        "read5302-b1-066",
+        "read5302-b1-067",
+        "read5302-b1-068",
+        "read5302-b1-069",
+        "read5302-b1-070",
+        "read5302-b1-071",
+        "read5302-b1-072",
+        "read5302-b1-073",
+        "read5302-b1-074",
+        "read5302-b1-075",
+        "read5302-b1-076",
+        "read5302-b1-077",
+        "read5302-b1-078",
+        "read5302-b1-079",
+        "read5302-b1-080",
+        "read5302-b2-050",
+        "read5302-b2-051",
+        "read5302-b2-052",
+        "read5302-b2-053",
+        "read5302-b2-054",
+        "read5302-b2-055",
+        "read5302-b2-056",
+        "read5302-b2-057",
+        "read5302-b2-058",
+        "read5302-b2-059",
+        "read5302-b1-043",
+        "read5302-b2-062",
+        "read5302-b1-046",
+        "read5302-b2-065",
+        "read5302-b1-049",
+        "read5302-b2-068",
+        "read5302-b2-003",
+        "read5302-b2-071",
+        "read5302-b2-006"
+      ],
+      "topicIds": [
+        "read5302-ch-07",
+        "read5302-ch-08",
+        "read5302-ch-09",
+        "read5302-ch-06",
+        "read5302-ch-01"
+      ],
+      "unitIds": [
+        "assessment",
+        "curriculum-instruction"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "reading-specialist-5302-form-internal-c",
+      "title": "Internal practice form C (Praxis Reading Specialist (5302))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "read5302-b1-081",
+        "read5302-b1-082",
+        "read5302-b1-083",
+        "read5302-b1-084",
+        "read5302-b1-085",
+        "read5302-b1-086",
+        "read5302-b1-087",
+        "read5302-b1-088",
+        "read5302-b1-089",
+        "read5302-b1-090",
+        "read5302-b1-091",
+        "read5302-b1-092",
+        "read5302-b1-093",
+        "read5302-b1-094",
+        "read5302-b1-095",
+        "read5302-b1-096",
+        "read5302-b1-097",
+        "read5302-b1-098",
+        "read5302-b1-099",
+        "read5302-b1-100",
+        "read5302-b2-081",
+        "read5302-b2-082",
+        "read5302-b2-083",
+        "read5302-b2-084",
+        "read5302-b2-085",
+        "read5302-b2-086",
+        "read5302-b2-087",
+        "read5302-b2-088",
+        "read5302-b2-089",
+        "read5302-b2-090",
+        "read5302-b2-091",
+        "read5302-b2-092",
+        "read5302-b2-093",
+        "read5302-b2-094",
+        "read5302-b2-095",
+        "read5302-b2-096",
+        "read5302-b2-097",
+        "read5302-b2-098",
+        "read5302-b2-099",
+        "read5302-b2-100",
+        "read5302-b1-042",
+        "read5302-b2-061",
+        "read5302-b1-045",
+        "read5302-b2-064",
+        "read5302-b1-048",
+        "read5302-b2-067",
+        "read5302-b2-002",
+        "read5302-b2-070",
+        "read5302-b2-005",
+        "read5302-b2-073"
+      ],
+      "topicIds": [
+        "read5302-ch-10",
+        "read5302-ch-11",
+        "read5302-ch-12",
+        "read5302-ch-06",
+        "read5302-ch-08",
+        "read5302-ch-01",
+        "read5302-ch-09"
+      ],
+      "unitIds": [
+        "professional-leadership",
+        "curriculum-instruction",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

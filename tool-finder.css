@@ -202,6 +202,24 @@
     background: rgba(15, 23, 42, .45);
     border: 1px solid rgba(165, 180, 252, .35);
     border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+}
+main .home-tool-empty a.home-tool-empty-link,
+.home-tool-empty a.home-tool-empty-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #fde68a;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+main .home-tool-empty a.home-tool-empty-link:hover,
+.home-tool-empty a.home-tool-empty-link:hover {
+    color: #ffffff;
 }
 .tool-clear-button:focus-visible,
 .tool-filter-field select:focus-visible,
@@ -222,9 +240,172 @@
     outline: 2px solid var(--indigo);
     outline-offset: 2px;
 }
+
+/* Interactive filter bar for the 152-tool STEM link directory */
+.tool-dir-controls {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 auto 22px;
+    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.tool-dir-search-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.tool-dir-search-row input[type="search"] {
+    flex: 1 1 260px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #94a3b8;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 0.95rem;
+    color: #0f172a;
+    background: #f8fafc;
+}
+.tool-dir-clear {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #1e293b;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.tool-dir-clear:hover {
+    background: #e2e8f0;
+}
+.tool-dir-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tool-dir-pill {
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.tool-dir-pill:hover {
+    border-color: #6366f1;
+    background: #f8fafc;
+}
+.tool-dir-pill.is-active {
+    background: #3730a3;
+    border-color: #3730a3;
+    color: #ffffff;
+}
+.tool-dir-status {
+    margin: 0;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #475569;
+}
+.tool-dir-empty {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 28px 20px;
+    text-align: center;
+    margin: 0 auto 24px;
+    max-width: 640px;
+}
+.tool-dir-empty p {
+    color: #475569;
+    margin: 0 0 14px;
+    font-weight: 600;
+}
+.tool-stem-bridge {
+    margin: 0 0 22px;
+    padding: 16px 20px;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-left: 4px solid #3730a3;
+    border-radius: 12px;
+}
+.tool-stem-bridge[hidden] {
+    display: none;
+}
+.tool-stem-bridge-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    margin-bottom: 12px;
+}
+.tool-stem-bridge-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1e1b4b;
+}
+.tool-stem-bridge-jump {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #3730a3;
+    background: #3730a3;
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.tool-stem-bridge-jump:hover {
+    background: #312e81;
+}
+.tool-stem-bridge-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tool-stem-bridge-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #a5b4fc;
+    color: #3730a3;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+.tool-stem-bridge-chip:hover {
+    background: #e0e7ff;
+    text-decoration: underline;
+}
+@media print {
+    .tool-dir-controls,
+    .tool-dir-empty,
+    .tool-stem-bridge {
+        display: none !important;
+    }
+}
 @media (prefers-reduced-motion: reduce) {
     .tool-result-card,
-    .home-tool-result {
+    .home-tool-result,
+    .tool-dir-pill {
         transition: none;
     }
     .tool-result-card:hover,
@@ -240,6 +421,9 @@
     .tool-empty-state,
     .tool-access-card,
     .tool-directory-jump,
+    .tool-dir-controls,
+    .tool-dir-empty,
+    .tool-stem-bridge,
     .home-tool-finder-section,
     .home-tool-finder-note,
     .home-tool-form,
@@ -251,10 +435,19 @@
     }
     .tool-launch-link,
     .tool-clear-button,
+    .tool-dir-clear,
+    .tool-dir-pill,
+    .tool-stem-bridge-jump,
+    .tool-stem-bridge-chip,
     .home-tool-form button {
         background: ButtonFace;
         color: ButtonText;
         border: 1px solid ButtonText;
+    }
+    .tool-dir-pill.is-active {
+        background: Highlight;
+        color: HighlightText;
+        border-color: Highlight;
     }
     .tool-finder-hero :focus-visible,
     .tool-finder-section :focus-visible,

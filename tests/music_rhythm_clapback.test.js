@@ -192,7 +192,9 @@ describe('Rhythm Clap-Back — wiring', () => {
   it('clears its schedule on unmount and on leaving the tool', () => {
     const source = read();
     expect(source).toContain('function stopRhythm()');
-    const unmountAt = source.indexOf('React.useEffect(function () { return function () { stopSequencer()');
+    // The unmount teardown now shares the effect that also handles global mute.
+    const unmountAt = source.indexOf("window.removeEventListener('alloflow-mute-changed', onMuteChanged);");
+    expect(unmountAt).toBeGreaterThan(-1);
     expect(source.slice(unmountAt, source.indexOf('}, []);', unmountAt))).toContain('stopRhythm()');
     const backAt = source.indexOf('setStemLabTool(null); stopSequencer()');
     expect(source.slice(backAt, backAt + 220)).toContain('stopRhythm()');

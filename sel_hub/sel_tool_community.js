@@ -17,14 +17,30 @@ window.SelHub = window.SelHub || {
 (function() {
   'use strict';
 
-  // ── Live region (WCAG 4.1.3) ──
+  // ── Live region & scoped a11y styles (WCAG 2.2 AA) ──
   (function() {
-    if (document.getElementById('allo-live-community')) return;
-    var lr = document.createElement('div');
-    lr.id = 'allo-live-community'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
-    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(lr);
+    if (typeof document === 'undefined') return;
+    if (document.body && !document.getElementById('allo-live-community')) {
+      var lr = document.createElement('div');
+      lr.id = 'allo-live-community'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+      lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(lr);
+    }
+    if (document.head && !document.getElementById('allo-community-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-community-a11y-css';
+      st.textContent =
+        '.selh-community button,.selh-community [role="tab"],.selh-community [role="button"],.selh-community input,.selh-community textarea{touch-action:manipulation;}' +
+        '.selh-community button:focus-visible,.selh-community [role="tab"]:focus-visible,.selh-community [role="button"]:focus-visible,.selh-community [role="tabpanel"]:focus-visible,.selh-community input:focus-visible,.selh-community textarea:focus-visible{outline:2px solid #06b6d4;outline-offset:2px;}' +
+        '@media (prefers-reduced-motion:reduce){.selh-community,.selh-community *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}' +
+        '@media (forced-colors:active){.selh-community button,.selh-community [role="tab"],.selh-community [role="button"]{border:1px solid ButtonText !important;}.selh-community [aria-selected="true"]{outline:2px solid Highlight !important;outline-offset:2px;}}';
+      document.head.appendChild(st);
+    }
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -600,11 +616,12 @@ window.SelHub = window.SelHub || {
       var _comT = (ctx && ctx.theme) || {};
       var _comHC = !!_comT.isContrast, _comL = !_comHC && !_comT.isDark;
       var _com_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc','#334155':'#e2e8f0'}, _com_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#334155':'#000000','#ec4899':'#000000'};
-      var _com_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b'}, _com_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#ec4899':'#ffff00','#06b6d4':'#ffff00','#8b5cf6':'#ffff00','#a855f7':'#ffff00','#f43f5e':'#ffff00','#14b8a6':'#ffff00','#d946ef':'#ffff00','#0ea5e9':'#ffff00','#fb923c':'#ffff00','#facc15':'#ffff00'};
-      var _com_BDL = {'#334155':'#e2e8f0'}, _com_BDH = {'#334155':'#ffff00','#fff':'#ffff00'};
+      var _com_FGL = {'#94a3b8':'#475569','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#06b6d4':'#0e7490','#22c55e':'#15803d','#f59e0b':'#b45309','#ef4444':'#b91c1c','#ec4899':'#be185d','#a855f7':'#7e22ce','#8b5cf6':'#6d28d9','#0ea5e9':'#0369a1','#14b8a6':'#0f766e','#f43f5e':'#be123c','#d946ef':'#a21caf','#fb923c':'#c2410c','#facc15':'#854d0e'}, _com_FGH = {'#94a3b8':'#ffff00','#fff':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#e2e8f0':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#ec4899':'#ffff00','#06b6d4':'#ffff00','#8b5cf6':'#ffff00','#a855f7':'#ffff00','#f43f5e':'#ffff00','#14b8a6':'#ffff00','#d946ef':'#ffff00','#0ea5e9':'#ffff00','#fb923c':'#ffff00','#facc15':'#ffff00'};
+      var _com_BDL = {'#334155':'#cbd5e1'}, _com_BDH = {'#334155':'#ffff00','#fff':'#ffff00'};
       var _comBg = function(h){ return _comHC ? (_com_BGH[h]||h) : (_comL ? (_com_BGL[h]||h) : h); };
       var _comFg = function(h){ return _comHC ? (_com_FGH[h]||h) : (_comL ? (_com_FGL[h]||h) : h); };
       var _comBd = function(h){ return _comHC ? (_com_BDH[h]||h) : (_comL ? (_com_BDL[h]||h) : h); };
+      var _comSoftBg = function(darkTint, lightTint){ return _comHC ? '#000000' : (_comL ? (lightTint || '#f1f5f9') : darkTint); };
       // white text needs a 700-weight fill (1.4.3)
       var _comSolid = function(c){ return _comHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var _comBtnFg = _comHC ? '#000000' : '#ffffff';
@@ -979,6 +996,15 @@ window.SelHub = window.SelHub || {
           return true;
         });
 
+        var announceCOM = function(msg) {
+          if (!msg) return;
+          if (typeof announceToSR === 'function') announceToSR(msg);
+          try {
+            var lr = typeof document !== 'undefined' && document.getElementById('allo-live-community');
+            if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 10); }
+          } catch (_) {}
+        };
+
         var selectCommunityTab = function(nextTab) {
           var next = tabs.find(function(item) { return item.id === nextTab; });
           if (!next) return;
@@ -986,24 +1012,25 @@ window.SelHub = window.SelHub || {
           nextVisited[next.id] = true;
           upd({ activeTab: next.id, visitedTabs: nextVisited });
           if (soundEnabled) sfxClick();
-          if (announceToSR) announceToSR(next.label + ' tab selected');
+          announceCOM(next.label + ' tab selected');
           checkBadges({ visitedTabs: nextVisited });
         };
 
         var tabBar = h('div', {
-          style: { display: 'flex', alignItems: 'center', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'hidden' }
+          style: { display: 'flex', alignItems: 'center', gap: 4, padding: '10px 12px', borderBottom: '1px solid ' + _comBd('#334155'), overflowX: 'hidden' }
         },
           h('div', { role: 'tablist', 'aria-label': 'Community Building tabs',
-            style: { display: 'flex', flex: 1, gap: 2, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
+            style: { display: 'flex', flex: 1, gap: 4, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
           },
           tabs.map(function(t) {
             var isActive = activeTab === t.id;
-            return h('button', { 'aria-label': t.label,
+            return h('button', { type: 'button', 'aria-label': t.label,
               key: t.id,
               id: 'community-tab-' + t.id,
               'data-community-tab': t.id,
               onClick: function() { selectCommunityTab(t.id); },
               onKeyDown: function(e) {
+                if (isImeComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
                 if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
                 e.preventDefault();
                 var currentIdx = tabs.findIndex(function(item) { return item.id === t.id; });
@@ -1013,24 +1040,27 @@ window.SelHub = window.SelHub || {
                 else nextIdx = (currentIdx + ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : 1) + tabs.length) % tabs.length;
                 var nextTab = tabs[nextIdx];
                 selectCommunityTab(nextTab.id);
-                var nextButton = e.currentTarget && e.currentTarget.parentNode && e.currentTarget.parentNode.querySelector ? e.currentTarget.parentNode.querySelector('[data-community-tab="' + nextTab.id + '"]') : null;
-                if (nextButton && nextButton.focus) nextButton.focus();
+                var listEl = e.currentTarget && e.currentTarget.parentNode;
+                setTimeout(function() {
+                  var nextButton = (listEl && listEl.querySelector ? listEl.querySelector('[data-community-tab="' + nextTab.id + '"]') : null) || (typeof document !== 'undefined' ? document.getElementById('community-tab-' + nextTab.id) : null);
+                  if (nextButton && nextButton.focus) nextButton.focus();
+                }, 0);
               },
               'aria-selected': isActive,
               'aria-controls': 'community-tab-panel',
               'tabIndex': isActive ? 0 : -1,
               role: 'tab',
               style: {
-                padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
+                minHeight: 44, padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500, whiteSpace: 'nowrap',
                 background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? ACCENT : _comFg('#94a3b8'), transition: 'all 0.15s'
               }
             }, t.label);
           })
           ),
-          h('button', { 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled, onClick: function() { upd({ soundEnabled: !soundEnabled }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-          h('button', { 'aria-label': 'Show community badges', 'aria-expanded': showBadgesPanel, onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _comFg('#94a3b8'), position: 'relative' } },
+          h('button', { type: 'button', 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled, onClick: function() { upd({ soundEnabled: !soundEnabled }); announceCOM(soundEnabled ? 'Sound muted' : 'Sound unmuted'); }, style: { marginLeft: 'auto', minWidth: 44, minHeight: 44, background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 15, padding: '6px', color: _comFg('#94a3b8'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+          h('button', { type: 'button', 'aria-label': 'Show community badges', 'aria-expanded': showBadgesPanel, onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 15, padding: '6px', color: _comFg('#94a3b8'), position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } },
             '\uD83C\uDFC5',
-            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 0, right: 0, background: _comSolid(ACCENT), color: _comBtnFg, borderRadius: '50%', width: 14, height: 14, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
+            Object.keys(earnedBadges).length > 0 && h('span', { style: { position: 'absolute', top: 4, right: 4, background: _comSolid(ACCENT), color: _comBtnFg, borderRadius: '50%', width: 16, height: 16, fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, Object.keys(earnedBadges).length)
           )
         );
 
@@ -1071,7 +1101,9 @@ window.SelHub = window.SelHub || {
               padding: '12px 14px',
               borderRadius: 12,
               background: _comHC ? '#000000' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, ' + (_comL ? 'rgba(248,250,252,0)' : 'rgba(15,23,42,0)') + ' 100%), ' + _comBg('#0f172a')),
-              border: '1px solid ' + (_comHC ? '#ffff00' : (meta.accent + '55')),
+              borderTop: '1px solid ' + (_comHC ? '#ffff00' : (meta.accent + '55')),
+              borderRight: '1px solid ' + (_comHC ? '#ffff00' : (meta.accent + '55')),
+              borderBottom: '1px solid ' + (_comHC ? '#ffff00' : (meta.accent + '55')),
               borderLeft: '4px solid ' + (_comHC ? '#ffff00' : meta.accent),
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
@@ -1091,7 +1123,7 @@ window.SelHub = window.SelHub || {
           if (popBadge) {
             badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badge-earned-title', 'aria-describedby': 'community-badge-earned-desc', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
               h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-                h('button', { 'aria-label': 'Close badge announcement', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+                h('button', { type: 'button', 'aria-label': 'Close badge announcement', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
                 h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
                 h('h3', { id: 'community-badge-earned-title', style: { fontSize: 18, fontWeight: 700, color: _comFg('#f1f5f9'), margin: '0 0 6px' } }, 'Badge earned: ' + popBadge.name),
                 h('div', { id: 'community-badge-earned-desc', style: { fontSize: 12, color: _comFg('#94a3b8') } }, popBadge.desc)
@@ -1101,8 +1133,8 @@ window.SelHub = window.SelHub || {
         }
         if (showBadgesPanel) {
           badgePopup = h('div', { ref: communityBadgeDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'community-badges-panel-title', tabIndex: -1, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function(e) { if (e.target === e.currentTarget) closeCommunityBadgeDialogs(); } },
-            h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
-              h('button', { 'aria-label': 'Close badges panel', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+            h('div', { style: { position: 'relative', background: _comBg('#1e293b'), border: '1px solid ' + _comBd('#334155'), borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+              h('button', { type: 'button', 'aria-label': 'Close badges panel', onClick: closeCommunityBadgeDialogs, style: { position: 'absolute', top: 8, right: 8, width: 44, height: 44, borderRadius: 22, background: _comBg('#334155'), color: _comFg('#cbd5e1'), border: 'none', cursor: 'pointer', fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
               h('h3', { id: 'community-badges-panel-title', style: { textAlign: 'center', color: _comFg('#f1f5f9'), marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + shownBadges.length + ')'),
               h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
                 shownBadges.map(function(b) {
@@ -1141,8 +1173,8 @@ window.SelHub = window.SelHub || {
               items.map(function(item) {
                 var isExpanded = expandedItem === item.id;
                 var isExplored = !!exploredItems[item.id];
-                return h('div', { key: item.id, style: { borderRadius: 14, background: isExpanded ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isExplored ? ACCENT_MED : _comBg('#334155')), overflow: 'hidden', transition: 'all 0.2s' } },
-                  h('button', { 'aria-label': item.name + (isExpanded ? ' collapse' : ' expand'), 'aria-expanded': isExpanded,
+                return h('div', { key: item.id, style: { borderRadius: 14, background: isExpanded ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isExplored ? ACCENT_MED : _comBd('#334155')), overflow: 'hidden', transition: 'all 0.2s' } },
+                  h('button', { type: 'button', 'aria-label': item.name + (isExpanded ? ' collapse' : ' expand'), 'aria-expanded': isExpanded,
                     onClick: function() {
                       if (soundEnabled) sfxClick();
                       upd({ expandedItem: isExpanded ? null : item.id });
@@ -1156,20 +1188,20 @@ window.SelHub = window.SelHub || {
                         checkBadges({ exploredItems: newExplored });
                       }
                     },
-                    style: { width: '100%', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }
+                    style: { width: '100%', minHeight: 44, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }
                   },
-                    h('span', { style: { fontSize: 26 } }, item.emoji),
+                    h('span', { style: { fontSize: 26 }, 'aria-hidden': 'true' }, item.emoji),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 14, fontWeight: 600, color: _comFg('#f1f5f9') } }, item.name),
                       !isExpanded && h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 2 } }, item.desc.slice(0, 60) + '...')
                     ),
-                    isExplored && h('span', { style: { fontSize: 12, color: ACCENT } }, '\u2713'),
-                    h('span', { style: { fontSize: 12, color: _comFg('#94a3b8'), transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' } }, '\u25BC')
+                    isExplored && h('span', { style: { fontSize: 12, color: ACCENT }, 'aria-hidden': 'true' }, '\u2713'),
+                    h('span', { style: { fontSize: 12, color: _comFg('#94a3b8'), transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }, 'aria-hidden': 'true' }, '\u25BC')
                   ),
                   isExpanded && h('div', { style: { padding: '0 16px 16px 16px' } },
                     h('p', { style: { fontSize: 13, color: _comFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 12 } }, item.desc),
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                      h('button', { 'aria-label': learnedItems[item.id] ? 'Marked as learned' : 'I didn’t know that!',
+                      h('button', { type: 'button', 'aria-label': learnedItems[item.id] ? 'Marked as learned' : 'I didn’t know that!',
                         disabled: !!learnedItems[item.id],
                         onClick: function() {
                           if (learnedItems[item.id]) return;
@@ -1183,9 +1215,9 @@ window.SelHub = window.SelHub || {
                           logPractice('learn', item.id);
                           checkBadges();
                         },
-                        style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: learnedItems[item.id] ? 'default' : 'pointer', fontWeight: 600, opacity: learnedItems[item.id] ? 0.65 : 1 }
+                        style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: learnedItems[item.id] ? 'default' : 'pointer', fontWeight: 600, opacity: learnedItems[item.id] ? 0.65 : 1 }
                       }, learnedItems[item.id] ? '\u2713 Learned!' : '\uD83D\uDCA1 I didn\'t know that!'),
-                      callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(item.name + '. ' + item.desc); }, style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                      callTTS ? h('button', { type: 'button', 'aria-label': 'Read aloud', onClick: function() { speak(item.name + '. ' + item.desc); }, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: 'transparent', color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
                     )
                   )
                 );
@@ -1254,9 +1286,9 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Progress
-            h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid #334155' } },
+            h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid ' + _comBd('#334155') } },
               h('div', { style: { fontSize: 12, color: _comFg('#94a3b8'), marginBottom: 4 } }, 'Identity Map Progress'),
-              h('div', { style: { height: 6, borderRadius: 3, background: _comBg('#334155'), overflow: 'hidden' } },
+              h('div', { role: 'progressbar', 'aria-label': 'Identity Map Progress', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': filledCount, 'aria-valuetext': filledCount + ' of 8 areas explored', style: { height: 6, borderRadius: 3, background: _comBg('#334155'), overflow: 'hidden' } },
                 h('div', { style: { height: '100%', width: (filledCount / 8 * 100) + '%', background: ACCENT, borderRadius: 3, transition: 'width 0.3s' } })
               ),
               h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 4 } }, filledCount + ' of 8 areas explored')
@@ -1264,7 +1296,7 @@ window.SelHub = window.SelHub || {
             // Cultural Superpower
             h('div', { style: { padding: 16, borderRadius: 14, background: _comBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
               h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', null, '\u26A1'),
+                h('span', { 'aria-hidden': 'true' }, '\u26A1'),
                 'My Cultural Superpower'
               ),
               h('p', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginBottom: 10, lineHeight: 1.5 } },
@@ -1277,9 +1309,9 @@ window.SelHub = window.SelHub || {
                 'aria-label': 'Community superpower reflection',
                 onChange: function(e) { upd({ superpower: e.target.value }); },
                 placeholder: band === 'elementary' ? 'My cultural superpower is...' : 'My unique cultural strength is...',
-                style: { width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
+                style: { width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
               }),
-              h('button', { 
+              h('button', { type: 'button',
                 onClick: function() {
                   if (!superpower.trim()) { addToast('Write your cultural superpower first!', 'error'); return; }
                   var blockedMsg = _syncSafetyBlock(superpower);
@@ -1292,13 +1324,13 @@ window.SelHub = window.SelHub || {
                   checkBadges({ superpower: superpower, superpowerSaved: true });
                 },
                 disabled: superpowerSaved,
-                style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : _comSolid(ACCENT), color: superpowerSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
+                style: { minHeight: 44, padding: '10px 20px', borderRadius: 8, border: 'none', background: superpowerSaved ? _comBg('#334155') : _comSolid(ACCENT), color: superpowerSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: superpowerSaved ? 'default' : 'pointer' }
               }, superpowerSaved ? '\u2713 Saved' : 'Save My Superpower')
             ),
             // ── Allyship Action Cards ──
             h('div', { style: { marginTop: 24 } },
               h('h4', { style: { fontSize: 14, color: ACCENT, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 } },
-                h('span', null, '\uD83E\uDD1D'),
+                h('span', { 'aria-hidden': 'true' }, '\uD83E\uDD1D'),
                 'Allyship Action Cards'
               ),
               h('p', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginBottom: 14, lineHeight: 1.5 } },
@@ -1309,16 +1341,16 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 (ALLYSHIP_ACTIONS[band] || ALLYSHIP_ACTIONS.elementary).map(function(card) {
                   var isDone = !!allyActions[card.id];
-                  return h('div', { key: card.id, style: { padding: 14, borderRadius: 12, background: isDone ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isDone ? '#22c55e44' : _comBg('#334155')), transition: 'all 0.2s' } },
+                  return h('div', { key: card.id, style: { padding: 14, borderRadius: 12, background: isDone ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isDone ? '#22c55e44' : _comBd('#334155')), transition: 'all 0.2s' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                      h('span', { style: { fontSize: 22 } }, card.icon),
+                      h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, card.icon),
                       h('div', { style: { flex: 1 } },
                         h('div', { style: { fontSize: 13, fontWeight: 600, color: isDone ? _comFg('#22c55e') : _comFg('#f1f5f9') } }, card.action),
                         h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 2, lineHeight: 1.4 } }, card.detail)
                       ),
-                      isDone && h('span', { style: { fontSize: 16, color: _comFg('#22c55e') } }, '\u2713')
+                      isDone && h('span', { style: { fontSize: 16, color: _comFg('#22c55e') }, 'aria-hidden': 'true' }, '\u2713')
                     ),
-                    !isDone && h('button', { 'aria-label': 'Mark action complete',
+                    !isDone && h('button', { type: 'button', 'aria-label': 'Mark action complete',
                       onClick: function() {
                         var newAlly = Object.assign({}, allyActions);
                         newAlly[card.id] = Date.now();
@@ -1329,7 +1361,7 @@ window.SelHub = window.SelHub || {
                         logPractice('ally_action', card.id);
                         checkBadges({ allyActions: newAlly });
                       },
-                      style: { marginTop: 8, padding: '6px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 11, cursor: 'pointer', fontWeight: 600 }
+                      style: { marginTop: 8, minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, cursor: 'pointer', fontWeight: 600 }
                     }, '\u2713 I did this!')
                   );
                 })
@@ -1356,10 +1388,10 @@ window.SelHub = window.SelHub || {
               'Scenario ' + ((scIdx % scenarios.length) + 1) + ' of ' + scenarios.length
             ),
             // Scenario card
-            h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+            h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + _comBd('#334155'), marginBottom: 16 } },
               h('h4', { style: { fontSize: 16, fontWeight: 700, color: ACCENT, marginBottom: 10 } }, scenario.title),
               h('p', { style: { fontSize: 13, color: _comFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 16 } }, scenario.setup),
-              callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(scenario.setup); }, style: { marginBottom: 12, background: 'none', border: 'none', color: _comFg('#94a3b8'), fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null,
+              callTTS ? h('button', { type: 'button', 'aria-label': 'Read aloud', onClick: function() { speak(scenario.setup); }, style: { minHeight: 44, marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'none', border: '1px solid ' + _comBd('#334155'), color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null,
               // Choices
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 scenario.branches.map(function(branch, bi) {
@@ -1368,7 +1400,7 @@ window.SelHub = window.SelHub || {
                   var starStr = '';
                   for (var si = 0; si < 3; si++) { starStr += si < branch.rating ? '\u2B50' : '\u2606'; }
                   return h('div', { key: bi },
-                    h('button', { 'aria-label': branch.label,
+                    h('button', { type: 'button', 'aria-label': branch.label,
                       onClick: function() {
                         if (scChoice != null) return;
                         upd({ scChoice: bi });
@@ -1392,13 +1424,13 @@ window.SelHub = window.SelHub || {
                         checkBadges({ scCompleted: newCompleted, scTopRatings: newTopRatings });
                       },
                       style: {
-                        width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (branch.rating === 3 ? _comFg('#22c55e') : branch.rating === 2 ? _comFg('#f59e0b') : _comFg('#ef4444')) : _comBg('#334155')),
+                        width: '100%', minHeight: 44, padding: '12px 14px', borderRadius: 10, border: '1px solid ' + (isChosen ? (branch.rating === 3 ? _comFg('#22c55e') : branch.rating === 2 ? _comFg('#f59e0b') : _comFg('#ef4444')) : _comBd('#334155')),
                         background: isChosen ? (branch.rating === 3 ? '#22c55e11' : branch.rating === 2 ? '#f59e0b11' : '#ef444411') : _comBg('#0f172a'),
                         color: _comFg('#e2e8f0'), fontSize: 12, textAlign: 'left', cursor: scChoice != null ? 'default' : 'pointer', lineHeight: 1.5, transition: 'all 0.2s',
                         opacity: isRevealed && !isChosen ? 0.5 : 1
                       }
                     }, branch.label),
-                    isChosen && h('div', { style: { padding: '10px 14px', marginTop: 4, borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid #334155' } },
+                    isChosen && h('div', { style: { padding: '10px 14px', marginTop: 4, borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid ' + _comBd('#334155') } },
                       h('div', { style: { fontSize: 12, marginBottom: 4 } }, starStr),
                       h('p', { style: { fontSize: 12, color: _comFg('#cbd5e1'), lineHeight: 1.5 } }, branch.feedback)
                     )
@@ -1408,22 +1440,22 @@ window.SelHub = window.SelHub || {
             ),
             // Navigation
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-              h('button', { 'aria-label': 'Previous',
+              h('button', { type: 'button', 'aria-label': 'Previous',
                 onClick: function() {
                   var newIdx = scIdx > 0 ? scIdx - 1 : scenarios.length - 1;
                   upd({ scIdx: newIdx, scChoice: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
               }, '\u2190 Previous'),
               h('span', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, scCompleted + ' completed'),
-              h('button', { 'aria-label': 'Next',
+              h('button', { type: 'button', 'aria-label': 'Next',
                 onClick: function() {
                   var newIdx = (scIdx + 1) % scenarios.length;
                   upd({ scIdx: newIdx, scChoice: null });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1452,7 +1484,7 @@ window.SelHub = window.SelHub || {
               h('span', { style: { color: _comFg('#f59e0b'), fontWeight: 600 } }, '\u2B50 Best: ' + quizBest + '/' + quizItems.length)
             ),
             !quizFinished ? h('div', null,
-              h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + _comBd('#334155'), marginBottom: 16 } },
                 h('div', { role: 'status', style: { fontSize: 11, color: _comFg('#94a3b8'), marginBottom: 8 } }, 'Question ' + ((quizIdx % quizItems.length) + 1) + ' of ' + quizItems.length),
                 h('p', { style: { fontSize: 14, color: _comFg('#f1f5f9'), fontWeight: 600, lineHeight: 1.5, marginBottom: 16 } }, currentQ.q),
                 h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -1460,7 +1492,7 @@ window.SelHub = window.SelHub || {
                     var isCorrect = opt === currentQ.a;
                     var wasChosen = quizAnswered[qKey] === opt;
                     var showResult = isQAnswered;
-                    return h('button', { 'aria-label': opt,
+                    return h('button', { type: 'button', 'aria-label': opt,
                       key: opt,
                       onClick: function() {
                         if (isQAnswered) return;
@@ -1487,8 +1519,8 @@ window.SelHub = window.SelHub || {
                         checkBadges({ quizScore: newScore, quizBest: nextBest });
                       },
                       style: {
-                        width: '100%', padding: '12px 14px', borderRadius: 10, textAlign: 'left', fontSize: 13, cursor: isQAnswered ? 'default' : 'pointer',
-                        border: '1px solid ' + (showResult && isCorrect ? _comFg('#22c55e') : showResult && wasChosen && !isCorrect ? _comFg('#ef4444') : _comBg('#334155')),
+                        width: '100%', minHeight: 44, padding: '12px 14px', borderRadius: 10, textAlign: 'left', fontSize: 13, cursor: isQAnswered ? 'default' : 'pointer',
+                        border: '1px solid ' + (showResult && isCorrect ? _comFg('#22c55e') : showResult && wasChosen && !isCorrect ? _comFg('#ef4444') : _comBd('#334155')),
                         background: showResult && isCorrect ? '#22c55e11' : showResult && wasChosen && !isCorrect ? '#ef444411' : _comBg('#0f172a'),
                         color: showResult && isCorrect ? _comFg('#22c55e') : showResult && wasChosen && !isCorrect ? _comFg('#ef4444') : _comFg('#e2e8f0'),
                         fontWeight: showResult && (isCorrect || wasChosen) ? 600 : 400,
@@ -1500,27 +1532,27 @@ window.SelHub = window.SelHub || {
                 )
               ),
               isQAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
-                h('button', { 'aria-label': 'Next',
+                h('button', { type: 'button', 'aria-label': 'Next',
                   onClick: function() {
                     var nextIdx = quizIdx + 1;
                     upd({ quizIdx: nextIdx });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '10px 20px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (quizIdx % quizItems.length) + 1 >= quizItems.length ? 'See Results' : 'Next Question \u2192')
               )
             ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + ACCENT_MED } },
-              h('div', { style: { fontSize: 48, marginBottom: 12 } }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
+              h('div', { style: { fontSize: 48, marginBottom: 12 }, 'aria-hidden': 'true' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\uD83C\uDF1F' : '\uD83D\uDCA1'),
               h('div', { style: { fontSize: 22, fontWeight: 700, color: _comFg('#f1f5f9'), marginBottom: 6 } }, 'Quiz Complete!'),
               h('div', { style: { fontSize: 16, color: ACCENT, fontWeight: 600, marginBottom: 4 } }, 'Score: ' + quizScore + ' / ' + quizItems.length),
               h('div', { style: { fontSize: 13, color: _comFg('#94a3b8'), marginBottom: 16 } }, quizScore >= 8 ? 'Outstanding cultural knowledge!' : quizScore >= 5 ? 'Great job! Keep exploring to learn more.' : 'Keep learning! Every question you missed is a chance to grow.'),
               h('div', { style: { fontSize: 12, color: _comFg('#f59e0b'), marginBottom: 16 } }, '\u2B50 Personal Best: ' + quizBest + '/' + quizItems.length),
-              h('button', { 'aria-label': 'Try Again',
+              h('button', { type: 'button', 'aria-label': 'Try Again',
                 onClick: function() {
                   upd({ quizIdx: 0, quizScore: 0, quizAnswered: {}, quizFinished: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Try Again')
             )
           );
@@ -1556,18 +1588,18 @@ window.SelHub = window.SelHub || {
                 )
               ),
               // Visual position bar
-              h('div', { style: { position: 'relative', height: 8, borderRadius: 4, background: _comBg('#334155'), marginBottom: 20, overflow: 'visible' } },
+              h('div', { role: 'progressbar', 'aria-label': 'Privilege walk position', 'aria-valuemin': -totalPW, 'aria-valuemax': totalPW, 'aria-valuenow': pwPosition, 'aria-valuetext': (pwPosition > 0 ? '+' : '') + pwPosition + ' steps', style: { position: 'relative', height: 8, borderRadius: 4, background: _comBg('#334155'), marginBottom: 20, overflow: 'visible' } },
                 h('div', { style: {
                   position: 'absolute', top: -4, width: 16, height: 16, borderRadius: '50%', background: ACCENT, border: '2px solid #fff',
                   left: 'calc(50% + ' + (pwPosition * 3) + '% - 8px)', transition: 'left 0.4s ease'
                 } })
               ),
               // Statement card
-              h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
+              h('div', { style: { padding: 20, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid ' + _comBd('#334155'), marginBottom: 16 } },
                 h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginBottom: 8 } }, 'Statement ' + (pwIdx + 1) + ' of ' + totalPW),
                 h('p', { style: { fontSize: 15, color: _comFg('#f1f5f9'), fontWeight: 600, lineHeight: 1.6, marginBottom: 16, textAlign: 'center', minHeight: 50 } }, currentPW ? currentPW.text : ''),
-                !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { style: { display: 'flex', gap: 12, justifyContent: 'center' } },
-                  h('button', { 
+                !pwAnswers[currentPW ? currentPW.id : ''] ? h('div', { style: { display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' } },
+                  h('button', { type: 'button',
                     onClick: function() {
                       if (!currentPW) return;
                       var newAns = Object.assign({}, pwAnswers);
@@ -1582,9 +1614,9 @@ window.SelHub = window.SelHub || {
                         addToast('\uD83D\uDCA1 Privilege Walk complete. Take a moment to reflect.', 'info');
                       }
                     },
-                    style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #22c55e44', background: '#22c55e11', color: _comFg('#22c55e'), fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
+                    style: { minHeight: 44, padding: '10px 24px', borderRadius: 10, border: '1px solid #22c55e44', background: '#22c55e11', color: _comFg('#22c55e'), fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
                   }, '\u2191 Step Forward'),
-                  h('button', { 
+                  h('button', { type: 'button',
                     onClick: function() {
                       if (!currentPW) return;
                       var newAns = Object.assign({}, pwAnswers);
@@ -1599,7 +1631,7 @@ window.SelHub = window.SelHub || {
                         addToast('\uD83D\uDCA1 Privilege Walk complete. Take a moment to reflect.', 'info');
                       }
                     },
-                    style: { padding: '10px 24px', borderRadius: 10, border: '1px solid #f59e0b44', background: '#f59e0b11', color: _comFg('#f59e0b'), fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
+                    style: { minHeight: 44, padding: '10px 24px', borderRadius: 10, border: '1px solid #f59e0b44', background: '#f59e0b11', color: _comFg('#f59e0b'), fontSize: 13, fontWeight: 600, cursor: 'pointer', minWidth: 140 }
                   }, '\u2193 Step Back')
                 ) : h('div', { style: { textAlign: 'center', fontSize: 12, color: pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? _comFg('#22c55e') : _comFg('#f59e0b'), fontWeight: 600 } },
                   pwAnswers[currentPW ? currentPW.id : ''] === 'forward' ? '\u2191 Stepped Forward' : '\u2193 Stepped Back'
@@ -1610,16 +1642,16 @@ window.SelHub = window.SelHub || {
               ),
               // Navigation
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-                h('button', { 'aria-label': 'Previous',
+                h('button', { type: 'button', 'aria-label': 'Previous',
                   onClick: function() { if (pwIdx > 0) { upd({ pwIdx: pwIdx - 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx === 0,
-                  style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: pwIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
+                  style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: pwIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: pwIdx === 0 ? 'default' : 'pointer' }
                 }, '\u2190 Previous'),
                 h('span', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, answeredPWCount + '/' + totalPW + ' answered'),
-                h('button', { 'aria-label': 'Next',
+                h('button', { type: 'button', 'aria-label': 'Next',
                   onClick: function() { if (pwIdx < totalPW - 1) { upd({ pwIdx: pwIdx + 1 }); if (soundEnabled) sfxClick(); } },
                   disabled: pwIdx >= totalPW - 1,
-                  style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: pwIdx >= totalPW - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: pwIdx >= totalPW - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
+                  style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: 'none', background: pwIdx >= totalPW - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: pwIdx >= totalPW - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: pwIdx >= totalPW - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: pwIdx >= totalPW - 1 ? 'default' : 'pointer' }
                 }, 'Next \u2192')
               )
             ) : h('div', null,
@@ -1649,7 +1681,7 @@ window.SelHub = window.SelHub || {
                   placeholder: 'Write your reflection here. What stood out to you? What did you learn about yourself or about different experiences?',
                   style: { width: '100%', minHeight: 100, padding: '10px 12px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 10 }
                 }),
-                h('button', { 'aria-label': pwReflectionSaved ? 'Reflection saved' : 'Save privilege walk reflection',
+                h('button', { type: 'button', 'aria-label': pwReflectionSaved ? 'Reflection saved' : 'Save privilege walk reflection',
                   onClick: function() {
                     if (!pwReflection.trim()) { addToast('Write a reflection before saving.', 'error'); return; }
                     var blockedMsg = _syncSafetyBlock(pwReflection);
@@ -1662,17 +1694,17 @@ window.SelHub = window.SelHub || {
                     checkBadges({ pwFinished: true, pwReflectionSaved: true });
                   },
                   disabled: pwReflectionSaved,
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : _comSolid(ACCENT), color: pwReflectionSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
+                  style: { minHeight: 44, padding: '10px 20px', borderRadius: 8, border: 'none', background: pwReflectionSaved ? _comBg('#334155') : _comSolid(ACCENT), color: pwReflectionSaved ? _comFg('#94a3b8') : _comBtnFg, fontSize: 12, fontWeight: 600, cursor: pwReflectionSaved ? 'default' : 'pointer' }
                 }, pwReflectionSaved ? '\u2713 Reflection Saved' : 'Save Reflection')
               ),
               // Reset button
               h('div', { style: { textAlign: 'center' } },
-                h('button', { 'aria-label': 'Walk Again',
+                h('button', { type: 'button', 'aria-label': 'Walk Again',
                   onClick: function() {
                     upd({ pwIdx: 0, pwAnswers: {}, pwPosition: 0, pwFinished: false, pwReflection: '', pwReflectionSaved: false });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '10px 20px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
                 }, '\uD83D\uDD04 Walk Again')
               )
             )
@@ -1731,7 +1763,7 @@ window.SelHub = window.SelHub || {
                       placeholder: 'Practice writing what you would say as a bystander...',
                       style: { width: '100%', minHeight: 60, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 11, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 8 }
                     }),
-                    h('button', { onClick: function() {
+                    h('button', { type: 'button', onClick: function() {
                         var respText = (maResponses[currentMA.id] || '').trim();
                         if (!respText) { addToast('Write a response first.', 'error'); return; }
                         var blockedMsg = _syncSafetyBlock(respText);
@@ -1742,10 +1774,10 @@ window.SelHub = window.SelHub || {
                         if (soundEnabled) sfxCorrect();
                         awardXP(8);
                       },
-                      style: { padding: '6px 14px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 11, fontWeight: 600, cursor: 'pointer' }
+                      style: { minHeight: 44, padding: '8px 16px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                     }, 'Submit My Response')
                   ) : h('div', null,
-                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid #334155', fontSize: 12, color: _comFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.5 } },
+                    h('div', { style: { padding: '8px 12px', borderRadius: 8, background: _comBg('#0f172a'), border: '1px solid ' + _comBd('#334155'), fontSize: 12, color: _comFg('#cbd5e1'), marginBottom: 8, lineHeight: 1.5 } },
                       h('div', { style: { fontSize: 10, color: _comFg('#94a3b8'), marginBottom: 4 } }, 'Your response:'),
                       maResponses[currentMA.id] || ''
                     ),
@@ -1756,7 +1788,7 @@ window.SelHub = window.SelHub || {
                   )
                 ),
                 // Mark as reviewed
-                !maReviewed[currentMA.id] && h('button', {
+                !maReviewed[currentMA.id] && h('button', { type: 'button',
                   onClick: function() {
                     var newRev = Object.assign({}, maReviewed);
                     newRev[currentMA.id] = true;
@@ -1767,23 +1799,23 @@ window.SelHub = window.SelHub || {
                     logPractice('microagg', currentMA.id);
                     checkBadges({ maReviewed: newRev });
                   },
-                  style: { width: '100%', padding: '10px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { width: '100%', minHeight: 44, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: ACCENT_DIM, color: ACCENT, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, '\uD83D\uDCA1 I understand this \u2014 mark as reviewed'),
                 maReviewed[currentMA.id] && h('div', { style: { textAlign: 'center', fontSize: 12, color: _comFg('#22c55e'), fontWeight: 600, padding: '8px 0' } }, '\u2713 Reviewed')
               )
             ),
             // Navigation
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-              h('button', { 'aria-label': 'Previous',
+              h('button', { type: 'button', 'aria-label': 'Previous',
                 onClick: function() { if (maIdx > 0) { upd({ maIdx: maIdx - 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx === 0,
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: maIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
+                style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#94a3b8'), opacity: maIdx === 0 ? 0.5 : 1, fontSize: 12, cursor: maIdx === 0 ? 'default' : 'pointer' }
               }, '\u2190 Previous'),
               h('span', { style: { fontSize: 12, color: _comFg('#94a3b8') } }, maReviewedCount + '/' + MICROAGGRESSIONS.length + ' reviewed'),
-              h('button', { 'aria-label': 'Next',
+              h('button', { type: 'button', 'aria-label': 'Next',
                 onClick: function() { if (maIdx < MICROAGGRESSIONS.length - 1) { upd({ maIdx: maIdx + 1 }); if (soundEnabled) sfxClick(); } },
                 disabled: maIdx >= MICROAGGRESSIONS.length - 1,
-                style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: maIdx >= MICROAGGRESSIONS.length - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: maIdx >= MICROAGGRESSIONS.length - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
+                style: { minHeight: 44, padding: '10px 16px', borderRadius: 8, border: 'none', background: maIdx >= MICROAGGRESSIONS.length - 1 ? _comBg('#334155') : _comSolid(ACCENT), color: maIdx >= MICROAGGRESSIONS.length - 1 ? _comFg('#94a3b8') : _comBtnFg, opacity: maIdx >= MICROAGGRESSIONS.length - 1 ? 0.65 : 1, fontSize: 12, fontWeight: 600, cursor: maIdx >= MICROAGGRESSIONS.length - 1 ? 'default' : 'pointer' }
               }, 'Next \u2192')
             )
           );
@@ -1845,9 +1877,9 @@ window.SelHub = window.SelHub || {
               })
             ),
             // Progress
-            h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid #334155' } },
+            h('div', { style: { textAlign: 'center', marginBottom: 16, padding: '8px 16px', borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid ' + _comBd('#334155') } },
               h('div', { style: { fontSize: 12, color: _comFg('#94a3b8'), marginBottom: 4 } }, 'My Cultural Map'),
-              h('div', { style: { height: 6, borderRadius: 3, background: _comBg('#334155'), overflow: 'hidden' } },
+              h('div', { role: 'progressbar', 'aria-label': 'Cultural Map Progress', 'aria-valuemin': 0, 'aria-valuemax': HERITAGE_SECTIONS.length, 'aria-valuenow': hFilled, 'aria-valuetext': hFilled + ' of ' + HERITAGE_SECTIONS.length + ' sections completed', style: { height: 6, borderRadius: 3, background: _comBg('#334155'), overflow: 'hidden' } },
                 h('div', { style: { height: '100%', width: (hFilled / HERITAGE_SECTIONS.length * 100) + '%', background: ACCENT, borderRadius: 3, transition: 'width 0.3s' } })
               ),
               h('div', { style: { fontSize: 11, color: _comFg('#94a3b8'), marginTop: 4 } }, hFilled + ' of ' + HERITAGE_SECTIONS.length + ' sections completed')
@@ -1859,8 +1891,8 @@ window.SelHub = window.SelHub || {
                 HERITAGE_SECTIONS.map(function(sec) {
                   var val = heritageData[sec.id] || '';
                   var filled = val.trim().length > 0;
-                  return h('div', { key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? _comBg('#0f172a') : '#0f172a55', border: '1px solid ' + (filled ? ACCENT_MED : '#33415555'), textAlign: 'center', opacity: filled ? 1 : 0.4 } },
-                    h('div', { style: { fontSize: 24 } }, sec.icon),
+                  return h('div', { key: sec.id, style: { padding: 12, borderRadius: 10, background: filled ? _comBg('#0f172a') : _comSoftBg('#0f172a55', '#f1f5f9'), border: '1px solid ' + (filled ? ACCENT_MED : _comBd('#334155')), textAlign: 'center', opacity: filled ? 1 : 0.65 } },
+                    h('div', { style: { fontSize: 24 }, 'aria-hidden': 'true' }, sec.icon),
                     h('div', { style: { fontSize: 10, fontWeight: 600, color: filled ? _comFg('#f1f5f9') : _comFg('#94a3b8'), marginTop: 4 } }, sec.label),
                     filled && h('div', { style: { fontSize: 10, color: _comFg('#94a3b8'), marginTop: 4, lineHeight: 1.4, maxHeight: 42, overflow: 'hidden', textOverflow: 'ellipsis' } }, val.slice(0, 80) + (val.length > 80 ? '...' : ''))
                   );
@@ -1869,7 +1901,7 @@ window.SelHub = window.SelHub || {
             ),
             // Export button
             hFilled >= 2 && h('div', { style: { textAlign: 'center' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   var lines = ['=== MY CULTURAL HERITAGE PROJECT ===', ''];
                   HERITAGE_SECTIONS.forEach(function(sec) {
@@ -1921,7 +1953,7 @@ window.SelHub = window.SelHub || {
                     }
                   } catch(e) { addToast('Could not copy. Try again.', 'error'); }
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 24px', borderRadius: 8, border: 'none', background: _comSolid(ACCENT), color: _comBtnFg, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDCCB Export as Text (Copy)')
             )
           );
@@ -1952,7 +1984,7 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: tip.id,
                   role: 'button', tabIndex: isRead ? -1 : 0,
                   'aria-pressed': isRead ? 'true' : 'false',
-                  onKeyDown: function(ev) { if (!isRead && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                  onKeyDown: function(ev) { if (isImeComposing(ev)) return; if (!isRead && (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar')) { ev.preventDefault(); ev.currentTarget.click(); } },
                   onClick: function() {
                     if (!isRead) {
                       var newRead = Object.assign({}, icRead);
@@ -1964,7 +1996,7 @@ window.SelHub = window.SelHub || {
                       checkBadges({ icRead: newRead });
                     }
                   },
-                  style: { padding: 16, borderRadius: 14, background: isRead ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isRead ? ACCENT_MED : _comBg('#334155')), cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }
+                  style: { padding: 16, borderRadius: 14, background: isRead ? _comBg('#1e293b') : _comBg('#0f172a'), border: '1px solid ' + (isRead ? ACCENT_MED : _comBd('#334155')), cursor: isRead ? 'default' : 'pointer', transition: 'all 0.2s' }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
                     h('span', { style: { fontSize: 22 } }, tip.icon),
@@ -2014,7 +2046,7 @@ window.SelHub = window.SelHub || {
                     var isCorrect = opt === currentB.a;
                     var wasChosen = battleAnswered[bKey] === opt;
                     var showResult = isBAnswered;
-                    return h('button', { 'aria-label': opt,
+                    return h('button', { type: 'button', 'aria-label': opt,
                       key: opt,
                       onClick: function() {
                         if (isBAnswered) return;
@@ -2040,7 +2072,7 @@ window.SelHub = window.SelHub || {
                         checkBadges({ battleScore: newBScore, battleBest: nextBBest });
                       },
                       style: {
-                        flex: currentB.options.length <= 2 ? 1 : 'none', padding: '12px 14px', borderRadius: 10, textAlign: 'center', fontSize: 13, cursor: isBAnswered ? 'default' : 'pointer',
+                        flex: currentB.options.length <= 2 ? 1 : 'none', minHeight: 44, padding: '12px 14px', borderRadius: 10, textAlign: 'center', fontSize: 13, cursor: isBAnswered ? 'default' : 'pointer',
                         border: '1px solid ' + (showResult && isCorrect ? _comFg('#22c55e') : showResult && wasChosen && !isCorrect ? _comFg('#ef4444') : '#ec489944'),
                         background: showResult && isCorrect ? '#22c55e11' : showResult && wasChosen && !isCorrect ? '#ef444411' : _comBg('#0f172a'),
                         color: showResult && isCorrect ? _comFg('#22c55e') : showResult && wasChosen && !isCorrect ? _comFg('#ef4444') : _comFg('#e2e8f0'),
@@ -2053,27 +2085,27 @@ window.SelHub = window.SelHub || {
                 )
               ),
               isBAnswered && h('div', { style: { display: 'flex', justifyContent: 'center' } },
-                h('button', { 'aria-label': 'Next',
+                h('button', { type: 'button', 'aria-label': 'Next',
                   onClick: function() {
                     var nextBIdx = battleIdx + 1;
                     upd({ battleIdx: nextBIdx });
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '10px 20px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
                 }, (battleIdx % battleItems.length) + 1 >= battleItems.length ? 'See Results' : 'Next \u2192')
               )
             ) : h('div', { style: { textAlign: 'center', padding: 30, borderRadius: 16, background: _comBg('#1e293b'), border: '1px solid #ec489944' } },
-              h('div', { style: { fontSize: 48, marginBottom: 12 } }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
+              h('div', { style: { fontSize: 48, marginBottom: 12 }, 'aria-hidden': 'true' }, battleScore >= 4 ? '\u2694\uFE0F' : '\uD83D\uDCA1'),
               h('div', { style: { fontSize: 22, fontWeight: 700, color: _comFg('#f1f5f9'), marginBottom: 6 } }, 'Battle Complete!'),
               h('div', { style: { fontSize: 16, color: _comFg('#ec4899'), fontWeight: 600, marginBottom: 4 } }, 'Score: ' + battleScore + ' / ' + battleItems.length),
               h('div', { style: { fontSize: 13, color: _comFg('#94a3b8'), marginBottom: 16 } }, battleScore >= 4 ? 'Battle Victor! Impressive quick thinking!' : 'Keep training! Try again to improve your score.'),
               h('div', { style: { fontSize: 12, color: _comFg('#f59e0b'), marginBottom: 16 } }, '\u2B50 Personal Best: ' + battleBest + '/' + battleItems.length),
-              h('button', { 'aria-label': 'Battle Again',
+              h('button', { type: 'button', 'aria-label': 'Battle Again',
                 onClick: function() {
                   upd({ battleIdx: 0, battleScore: 0, battleAnswered: {}, battleFinished: false });
                   if (soundEnabled) sfxClick();
                 },
-                style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 24px', borderRadius: 8, border: 'none', background: _comBg(_comSolid('#ec4899')), color: _comFg('#fff'), fontSize: 13, fontWeight: 600, cursor: 'pointer' }
               }, '\uD83D\uDD04 Battle Again')
             )
           );
@@ -2143,9 +2175,9 @@ window.SelHub = window.SelHub || {
               ),
               h('div', { role: 'region', 'aria-label': 'Community AI response', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': aiLoading ? 'true' : 'false' },
                 (_communityTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
-                aiResponse && h('div', { style: { padding: 12, borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid #334155', marginBottom: 10, fontSize: 12, color: _comFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
+                aiResponse && h('div', { style: { padding: 12, borderRadius: 10, background: _comBg('#0f172a'), border: '1px solid ' + _comBd('#334155'), marginBottom: 10, fontSize: 12, color: _comFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
                   aiResponse,
-                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer', display: 'block' } }, '\uD83D\uDD0A Read aloud') : null
+                  callTTS ? h('button', { type: 'button', 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 8, minHeight: 44, padding: '8px 12px', borderRadius: 8, background: 'none', border: '1px solid ' + _comBd('#334155'), color: ACCENT, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' } }, '\uD83D\uDD0A Read aloud') : null
                 )
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
@@ -2184,20 +2216,27 @@ window.SelHub = window.SelHub || {
                       'aria-label': 'Ask the community AI coach',
                       onChange: function(e) { upd({ aiPrompt: e.target.value }); },
                       onKeyDown: function(e) {
+                        if (isImeComposing(e)) return;
+                        if (e.key === 'Escape' && aiPrompt) {
+                          e.preventDefault();
+                          upd({ aiPrompt: '' });
+                          return;
+                        }
                         if (e.key === 'Enter' && aiPrompt.trim()) {
                           e.preventDefault();
                           submitCommunityCoach();
                         }
                       },
                       placeholder: 'Ask a question about culture — please don’t share personal info like your name, school, or where you live.',
-                      style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12 }
+                      style: { flex: 1, minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12, boxSizing: 'border-box' }
                     }),
                     h('button', {
                       key: 'cm-ai-send',
+                      type: 'button',
                       'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
                       onClick: submitCommunityCoach,
                       disabled: aiLoading,
-                      style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comBtnFg, border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
+                      style: { minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comBtnFg, border: 'none', fontWeight: 'bold', fontSize: 14, cursor: aiLoading ? 'wait' : 'pointer' }
                     }, aiLoading ? '\u23F3' : '\u2191')
                   ];
                 })()
@@ -2206,8 +2245,8 @@ window.SelHub = window.SelHub || {
                 (band === 'elementary' ? ['What is Diwali?', 'Why do people speak different languages?', 'How can I be a good friend to everyone?', 'Why is my name important?'] :
                  band === 'middle' ? ['What is a microaggression?', 'How do I be a better ally?', 'What is code-switching?', 'How do stereotypes form?'] :
                  ['What is intersectionality?', 'How does systemic bias work?', 'What is cultural humility?', 'How can I take action for equity?']).map(function(q) {
-                  return h('button', { key: q, onClick: function() { upd({ aiPrompt: q }); },
-                    style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 10, cursor: 'pointer' }
+                  return h('button', { key: q, type: 'button', onClick: function() { upd({ aiPrompt: q }); },
+                    style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _comBd('#334155'), background: _comBg('#0f172a'), color: _comFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
                   }, q);
                 })
               )
@@ -2247,14 +2286,14 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var content = exploreContent || identityContent || scenariosContent || privilegeContent || microaggContent || heritageContent || commtipsContent || quizContent || battleContent || badgesContent;
 
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+        return h('div', { className: 'selh-community', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('community', h, ctx) : null),
           tabBar,
           heroBand,
           (_communityTier >= 3 && activeTab !== 'badges' && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { padding: '0 12px 8px' } }, window.SelHub.renderCrisisResources(h, band)) : null,
           badgePopup,
-          h('div', { id: 'community-tab-panel', role: 'tabpanel', 'aria-labelledby': 'community-tab-' + activeTab, style: { flex: 1, overflow: 'auto' } }, content)
+          h('div', { id: 'community-tab-panel', role: 'tabpanel', 'aria-labelledby': 'community-tab-' + activeTab, tabIndex: 0, style: { flex: 1, overflow: 'auto' } }, content)
         );
       })();
     }

@@ -442,7 +442,8 @@ describe('7. minimum content', () => {
     expect(deps.setHistory).not.toHaveBeenCalled();
     const interactive = quizDeps([]);
     await Dispatcher.handleGenerate('quiz', null, false, null, { quizMcqCount: 2 }, true, interactive);
-    expect(interactive.addToast).toHaveBeenCalledWith(expect.stringContaining('came back with no content'), 'error');
+    // addToast now takes a third options argument (an "Open AI settings" action for auth/quota failures; null here).
+    expect(interactive.addToast).toHaveBeenCalledWith(expect.stringContaining('came back with no content'), 'error', null);
     expect(interactive.setHistory).not.toHaveBeenCalled();
   });
 

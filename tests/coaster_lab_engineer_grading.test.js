@@ -76,7 +76,11 @@ function looperAnalysis(G0) {
 // same ids makes rootEl.querySelector('#clab-problems') return null in every
 // later test — one failure would cascade into unrelated ones.
 const mounted = [];
-afterEach(() => { while (mounted.length) mounted.pop().remove(); });
+afterEach(() => {
+  while (mounted.length) mounted.pop().remove();
+  // 2026-11-23 r2: tries persist per answer; one test must not spend the next one's
+  try { localStorage.removeItem('coaster_lab_calc_tries'); } catch (_e) { /* no storage */ }
+});
 
 function mount(file, analysisFor = looperAnalysis) {
   const { src, make } = loadEngineerPanel(file);
@@ -143,14 +147,17 @@ describe('coaster lab — Engineer concept checks grade what students type', () 
     rootEl.remove();
   });
 
-  it.each(TOOL_PATHS)('%s: a wrong answer is marked off with its error, a blank one asks for a value', (p) => {
+  // 2026-11-23 r2: the verdict no longer says "off by N%" (a student could home
+  // in on the number by guessing); 25% high is beyond "close", so it reads "not yet".
+  it.each(TOOL_PATHS)('%s: a wrong answer is marked not yet (no percent), a blank one asks for a value', (p) => {
     const { rootEl, panel, G0 } = mount(p);
     const g = readGivens(rootEl);
     const vB = Math.sqrt(g.vA ** 2 + 2 * G0 * (g.hA - g.hB));
     type(rootEl, 'inP1', (vB * 1.25).toFixed(1));
     panel.checkPredictions();
 
-    expect(verdict(rootEl, 'vP1')).toMatch(/^✗ off by 2[45]% — recheck$/);
+    expect(verdict(rootEl, 'vP1')).toBe('✗ not yet, rework it');
+    expect(verdict(rootEl, 'vP1')).not.toMatch(/%/);
     expect(panel.preds().p1.ok).toBe(false);
     expect(verdict(rootEl, 'vP3')).toBe('enter a value');
     expect(panel.preds().p3).toBe(null);

@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-school-psychologist-5403-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 4,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 9,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -6725,7 +6731,7 @@
         "Select the consultation model (Behavioral, Conjoint Behavioral, Mental Health, or Instructional) that best matches whether the barrier is skill-based, ecological, or home-school aligned."
       ],
       "formulas": [
-        "Score scales and reliability: Standard Scores (M=100, SD=15), T-scores (M=50, SD=10; BASC-3 60 to 69 At-Risk, 70+ Clinically Significant), Scaled Scores (M=10, SD=3); Salvia/Ysseldyke benchmarks require r at least 0.80 for screening and 0.90 for high-stakes eligibility.",
+        "Score scales and reliability: Standard Scores (M=100, SD=15), T-scores (M=50, SD=10; BASC-3 Clinical scales: 60 to 69 At-Risk, 70+ Clinically Significant; Adaptive scales inverted: 31 to 40 At-Risk, <=30 Clinically Significant), Scaled Scores (M=10, SD=3); Salvia/Ysseldyke benchmarks require r at least 0.80 for screening and 0.90 for high-stakes eligibility.",
         "RIOT/ICEL and SEM: combine Review, Interview, Observe, and Test across Instruction, Curriculum, Environment, and Learner; compute SEM as SD times square root of (1 minus r) to report 95% confidence bands (±1.96 SEM).",
         "Behavioral Consultation (Bergan & Kratochwill) 4 stages: Problem Identification, Problem Analysis, Plan Implementation, and Plan Evaluation; Conjoint Behavioral Consultation (CBC) partners parents and teachers jointly across settings.",
         "Cummins ELL proficiency benchmarks: BICS (conversational fluency) develops in roughly 1 to 3 years, whereas CALP (academic language) requires 5 to 7 or more years—never mistake fluent BICS for academic English readiness."
@@ -7219,6 +7225,2634 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "school-psychologist-5403-session-ch-01",
+      "title": "Problem Solving and Multimethod Data Integration guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Problem Solving and Multimethod Data Integration\" (Professional Practices That Permeate Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-01",
+      "itemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-002",
+        "sp5403-b1-003",
+        "sp5403-b1-004",
+        "sp5403-b1-005",
+        "sp5403-b1-006",
+        "sp5403-b1-007",
+        "sp5403-b1-008",
+        "sp5403-b1-009",
+        "sp5403-b1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Problem Solving and Multimethod Data Integration\" and the \"RIOT/ICEL Assessment, Psychometrics & Consultation Models\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"RIOT Ecological Problem-Solving and Multimethod Integration Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Divergent RIOT/ICEL Attention and Reading Data in Grade 4\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Problem Solving and Multimethod Data Integration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Triangulate across RIOT methods and ICEL domains before concluding\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-02",
+      "title": "Measurement and Assessment of Diverse Learners guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Measurement and Assessment of Diverse Learners\" (Professional Practices That Permeate Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-02",
+      "itemIds": [
+        "sp5403-b1-019",
+        "sp5403-b1-020",
+        "sp5403-b1-021",
+        "sp5403-b1-022",
+        "sp5403-b2-012",
+        "sp5403-b2-013",
+        "sp5403-b2-014",
+        "sp5403-b2-015",
+        "sp5403-b2-016",
+        "sp5403-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Measurement and Assessment of Diverse Learners\" and the \"RIOT/ICEL Assessment, Psychometrics & Consultation Models\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Psychoeducational Assessment Validity, Reliability, and Cross-Battery Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Nondiscriminatory SLD Evaluation for an Emergent Bilingual Learner\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Measurement and Assessment of Diverse Learners\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Check Tier 1 health and intervention fidelity—without delaying IDEA rights\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-03",
+      "title": "Consultation and Collaborative Problem Solving guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Consultation and Collaborative Problem Solving\" (Professional Practices That Permeate Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-03",
+      "itemIds": [
+        "sp5403-b2-027",
+        "sp5403-b2-028",
+        "sp5403-b2-029",
+        "sp5403-b2-030",
+        "sp5403-b2-031",
+        "sp5403-b2-032",
+        "sp5403-b3-023",
+        "sp5403-b3-024",
+        "sp5403-b3-025",
+        "sp5403-b3-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Consultation and Collaborative Problem Solving\" and the \"RIOT/ICEL Assessment, Psychometrics & Consultation Models\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ecological Consultation and Ethical-Legal Safeguards Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Interagency Consultation Boundaries and Attendance Outcome Tracking\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Consultation and Collaborative Problem Solving\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match every BIP component to behavior function, never surface topography\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-04",
+      "title": "Academic Interventions and Instructional Supports guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Academic Interventions and Instructional Supports\" (Student-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-04",
+      "itemIds": [
+        "sp5403-b3-038",
+        "sp5403-b3-039",
+        "sp5403-b3-040",
+        "sp5403-b1-033",
+        "sp5403-b1-034",
+        "sp5403-b1-035",
+        "sp5403-b1-036",
+        "sp5403-b1-037",
+        "sp5403-b1-038",
+        "sp5403-b1-039"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Academic Interventions and Instructional Supports\" and the \"Academic Supports, FBA/BIP, MDR & Student Crisis Response\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Skill-Matched Academic Intervention, Access Support, and Progress Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"MTSS Reading CBM Goal-Line Decision Rule After High-Fidelity Tier 2\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Academic Interventions and Instructional Supports\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Audit linguistic, sensory, and psychometric validity before interpreting scores\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-05",
+      "title": "Mental and Behavioral Health Services guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Mental and Behavioral Health Services\" (Student-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-05",
+      "itemIds": [
+        "sp5403-b1-045",
+        "sp5403-b1-046",
+        "sp5403-b1-047",
+        "sp5403-b1-048",
+        "sp5403-b2-041",
+        "sp5403-b2-042",
+        "sp5403-b2-043",
+        "sp5403-b2-044",
+        "sp5403-b2-045",
+        "sp5403-b2-046"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Mental and Behavioral Health Services\" and the \"Academic Supports, FBA/BIP, MDR & Student Crisis Response\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Tiered School Mental Health Continuum and Mechanism-Matched Care\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Differential Screening for Somatic Complaints and Withdrawal in Grade 8\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Mental and Behavioral Health Services\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match PREPaRE crisis tiers, threat assessment, and contagion-safe postvention\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-06",
+      "title": "Behavior Analysis, Counseling, and Student Crisis Response guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Behavior Analysis, Counseling, and Student Crisis Response\" (Student-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-06",
+      "itemIds": [
+        "sp5403-b3-049",
+        "sp5403-b3-050",
+        "sp5403-b3-051",
+        "sp5403-b3-052",
+        "sp5403-b3-053",
+        "sp5403-b3-054",
+        "sp5403-b3-055",
+        "sp5403-b1-049",
+        "sp5403-b1-050",
+        "sp5403-b1-051"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Behavior Analysis, Counseling, and Student Crisis Response\" and the \"Academic Supports, FBA/BIP, MDR & Student Crisis Response\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Functional Behavior Assessment (FBA) to Function-Based BIP Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Imminent Suicide Risk Disclosure During a High School FBA Follow-Up\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Behavior Analysis, Counseling, and Student Crisis Response\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply NASP ethical boundaries, consent rules, and IDEA IEE timelines\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-07",
+      "title": "Schoolwide Learning, MTSS, and Systems Change guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Schoolwide Learning, MTSS, and Systems Change\" (Systems-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-07",
+      "itemIds": [
+        "sp5403-b1-056",
+        "sp5403-b1-057",
+        "sp5403-b1-058",
+        "sp5403-b1-059",
+        "sp5403-b1-060",
+        "sp5403-b1-061",
+        "sp5403-b1-062",
+        "sp5403-b2-056",
+        "sp5403-b2-057",
+        "sp5403-b2-058"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Schoolwide Learning, MTSS, and Systems Change\" and the \"MTSS/PBIS Tiers, PREPaRE Crisis Systems & Threat Triage\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"NASP Practice Model and MTSS Data-Based Decision-Making Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Disaggregated PBIS Fidelity Audit After Aggregate Referral Gains\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Schoolwide Learning, MTSS, and Systems Change\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Triangulate across RIOT methods and ICEL domains before concluding\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-08",
+      "title": "Safe and Supportive Schools and Crisis Systems guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Safe and Supportive Schools and Crisis Systems\" (Systems-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-08",
+      "itemIds": [
+        "sp5403-b2-063",
+        "sp5403-b2-064",
+        "sp5403-b2-065",
+        "sp5403-b2-066",
+        "sp5403-b2-067",
+        "sp5403-b2-068",
+        "sp5403-b2-069",
+        "sp5403-b3-063",
+        "sp5403-b3-064",
+        "sp5403-b3-065"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Safe and Supportive Schools and Crisis Systems\" and the \"MTSS/PBIS Tiers, PREPaRE Crisis Systems & Threat Triage\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"School Crisis Prevention, PREPaRE Triage, and Suicide Risk Protocol\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Multidisciplinary Behavioral Threat Assessment Versus Zero-Tolerance Removal\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Safe and Supportive Schools and Crisis Systems\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Check Tier 1 health and intervention fidelity—without delaying IDEA rights\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-09",
+      "title": "Family, School, and Community Collaboration guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Family, School, and Community Collaboration\" (Systems-Level Services) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-09",
+      "itemIds": [
+        "sp5403-b1-072",
+        "sp5403-b1-073",
+        "sp5403-b1-074",
+        "sp5403-b1-075",
+        "sp5403-b2-070",
+        "sp5403-b2-071",
+        "sp5403-b2-072",
+        "sp5403-b2-073",
+        "sp5403-b2-074",
+        "sp5403-b2-075"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Family, School, and Community Collaboration\" and the \"MTSS/PBIS Tiers, PREPaRE Crisis Systems & Threat Triage\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Reciprocal Family-School-Community Partnership and Wraparound Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Family-Driven Wraparound Reentry After Residential Placement\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Family, School, and Community Collaboration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match every BIP component to behavior function, never surface topography\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-10",
+      "title": "Equitable and Culturally Responsive Practice guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Equitable and Culturally Responsive Practice\" (Foundations of School Psychological Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-10",
+      "itemIds": [
+        "sp5403-b2-076",
+        "sp5403-b2-077",
+        "sp5403-b2-078",
+        "sp5403-b2-079",
+        "sp5403-b2-080",
+        "sp5403-b2-081",
+        "sp5403-b2-082",
+        "sp5403-b2-083",
+        "sp5403-b2-084",
+        "sp5403-b3-076"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Equitable and Culturally Responsive Practice\" and the \"IDEA Law, NASP Ethics, Equity & Research Evaluation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Culturally Responsive Equity Safeguards Across Assessment and System Decision Points\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upstream Equity Audit for Emotional Disturbance Disproportionality\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Equitable and Culturally Responsive Practice\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Audit linguistic, sensory, and psychometric validity before interpreting scores\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-11",
+      "title": "Research, Evidence-Based Practice, and Program Evaluation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Research, Evidence-Based Practice, and Program Evaluation\" (Foundations of School Psychological Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-11",
+      "itemIds": [
+        "sp5403-b3-091",
+        "sp5403-b3-092",
+        "sp5403-b1-085",
+        "sp5403-b1-086",
+        "sp5403-b1-087",
+        "sp5403-b1-088",
+        "sp5403-b1-089",
+        "sp5403-b1-090",
+        "sp5403-b1-091",
+        "sp5403-b1-092"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Research, Evidence-Based Practice, and Program Evaluation\" and the \"IDEA Law, NASP Ethics, Equity & Research Evaluation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Research Appraisal, Evidence-Based Integration, and Program Evaluation Pipeline\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Appraising External Validity of a Commercial Cognitive Training App\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Research, Evidence-Based Practice, and Program Evaluation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match PREPaRE crisis tiers, threat assessment, and contagion-safe postvention\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-ch-12",
+      "title": "Legal, Ethical, and Professional Practice guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Legal, Ethical, and Professional Practice\" (Foundations of School Psychological Service Delivery) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sp5403-ch-12",
+      "itemIds": [
+        "sp5403-b1-098",
+        "sp5403-b1-099",
+        "sp5403-b1-100",
+        "sp5403-b2-093",
+        "sp5403-b2-094",
+        "sp5403-b2-095",
+        "sp5403-b2-096",
+        "sp5403-b2-097",
+        "sp5403-b2-098",
+        "sp5403-b2-099"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Legal, Ethical, and Professional Practice\" and the \"IDEA Law, NASP Ethics, Equity & Research Evaluation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA Special Education Eligibility vs. Section 504 Accommodations Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Mandated Child-Abuse Reporting Despite Administrative Delay Request\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Legal, Ethical, and Professional Practice\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply NASP ethical boundaries, consent rules, and IDEA IEE timelines\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-trap-repair-sprint",
+      "title": "Praxis School Psychologist (5403) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-004",
+        "sp5403-b1-012",
+        "sp5403-b1-041",
+        "sp5403-b1-003",
+        "sp5403-b1-002",
+        "sp5403-b1-005",
+        "sp5403-b1-034",
+        "sp5403-b1-043",
+        "sp5403-b1-011",
+        "sp5403-b1-007",
+        "sp5403-b1-009"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Triangulate across RIOT methods and ICEL domains before concluding\", \"Check Tier 1 health and intervention fidelity—without delaying IDEA rights\", \"Match every BIP component to behavior function, never surface topography\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-session-mixed-capstone",
+      "title": "Praxis School Psychologist (5403) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "sp5403-b1-004",
+        "sp5403-b1-036",
+        "sp5403-b1-059",
+        "sp5403-b1-079",
+        "sp5403-b1-015",
+        "sp5403-b1-047",
+        "sp5403-b1-070",
+        "sp5403-b1-090",
+        "sp5403-b1-026",
+        "sp5403-b2-035",
+        "sp5403-b2-061",
+        "sp5403-b2-076",
+        "sp5403-b2-005",
+        "sp5403-b2-046",
+        "sp5403-b2-072"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied practice case workshops, outline a response to \"Differentiate Language Acquisition from Specific Learning Disability\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "school-psychologist-5403-spaced-ch-01",
+      "topicId": "sp5403-ch-01",
+      "topicLabel": "1. Problem Solving and Multimethod Data Integration",
+      "unitId": "permeating-practices",
+      "chapterId": "sp5403-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Problem Solving and Multimethod Data Integration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-02",
+      "topicId": "sp5403-ch-02",
+      "topicLabel": "2. Measurement and Assessment of Diverse Learners",
+      "unitId": "permeating-practices",
+      "chapterId": "sp5403-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Measurement and Assessment of Diverse Learners\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-03",
+      "topicId": "sp5403-ch-03",
+      "topicLabel": "3. Consultation and Collaborative Problem Solving",
+      "unitId": "permeating-practices",
+      "chapterId": "sp5403-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Consultation and Collaborative Problem Solving\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-04",
+      "topicId": "sp5403-ch-04",
+      "topicLabel": "4. Academic Interventions and Instructional Supports",
+      "unitId": "student-level-services",
+      "chapterId": "sp5403-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Academic Interventions and Instructional Supports\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-05",
+      "topicId": "sp5403-ch-05",
+      "topicLabel": "5. Mental and Behavioral Health Services",
+      "unitId": "student-level-services",
+      "chapterId": "sp5403-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Mental and Behavioral Health Services\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-06",
+      "topicId": "sp5403-ch-06",
+      "topicLabel": "6. Behavior Analysis, Counseling, and Student Crisis Response",
+      "unitId": "student-level-services",
+      "chapterId": "sp5403-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Behavior Analysis, Counseling, and Student Crisis Response\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-07",
+      "topicId": "sp5403-ch-07",
+      "topicLabel": "7. Schoolwide Learning, MTSS, and Systems Change",
+      "unitId": "systems-level-services",
+      "chapterId": "sp5403-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Schoolwide Learning, MTSS, and Systems Change\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-08",
+      "topicId": "sp5403-ch-08",
+      "topicLabel": "8. Safe and Supportive Schools and Crisis Systems",
+      "unitId": "systems-level-services",
+      "chapterId": "sp5403-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Safe and Supportive Schools and Crisis Systems\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-09",
+      "topicId": "sp5403-ch-09",
+      "topicLabel": "9. Family, School, and Community Collaboration",
+      "unitId": "systems-level-services",
+      "chapterId": "sp5403-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Family, School, and Community Collaboration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-10",
+      "topicId": "sp5403-ch-10",
+      "topicLabel": "10. Equitable and Culturally Responsive Practice",
+      "unitId": "foundations",
+      "chapterId": "sp5403-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Equitable and Culturally Responsive Practice\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-11",
+      "topicId": "sp5403-ch-11",
+      "topicLabel": "11. Research, Evidence-Based Practice, and Program Evaluation",
+      "unitId": "foundations",
+      "chapterId": "sp5403-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Research, Evidence-Based Practice, and Program Evaluation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-spaced-ch-12",
+      "topicId": "sp5403-ch-12",
+      "topicLabel": "12. Legal, Ethical, and Professional Practice",
+      "unitId": "foundations",
+      "chapterId": "sp5403-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Legal, Ethical, and Professional Practice\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "school-psychologist-5403-source-01",
+      "title": "School Psychologist 5403 diagnostics — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-02",
+      "title": "The Professional Standards of the National Association of School Psychologists",
+      "organization": "National Association of School Psychologists (NASP)",
+      "url": "https://www.nasponline.org/x55315.xml",
+      "credibility": "NASP developed and publishes these professional standards, making this a primary source for the association’s model and ethical expectations. State credential rules and the ETS 5403 blueprint remain separate authorities.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-03",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-04",
+      "title": "NASP 2020 Domains of Practice",
+      "organization": "National Association of School Psychologists (NASP)",
+      "url": "https://www.nasponline.org/standards-and-certification/nasp-2020-professional-standards-adopted/nasp-2020-domains-of-practice",
+      "credibility": "National Association of School Psychologists (NASP) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-05",
+      "title": "WWC | Using Student Achievement Data to Support Instructional Decision Making",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/12",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-06",
+      "title": "Professional Ethics",
+      "organization": "National Association of School Psychologists (NASP)",
+      "url": "https://www.nasponline.org/standards-and-certification/professional-ethics",
+      "credibility": "National Association of School Psychologists (NASP) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-07",
+      "title": "Sec. 300.502 Independent educational evaluation - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/e/300.502",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-08",
+      "title": "FERPA | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/ferpa",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-psychologist-5403-source-09",
+      "title": "U.S. Department Of Education Resource",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/individuals-disabilities/section-504",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "school-psychologist-5403-unit-review-01",
+      "unitId": "permeating-practices",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Problem Solving and Multimethod Data Integration",
+      "chapterId": "sp5403-ch-01",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-01-section-01",
+        "sp5403-ch-01-section-02",
+        "sp5403-ch-01-section-03",
+        "sp5403-ch-01-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-002",
+        "sp5403-b1-003",
+        "sp5403-b1-004",
+        "sp5403-b1-005",
+        "sp5403-b1-006",
+        "sp5403-b1-007",
+        "sp5403-b1-008",
+        "sp5403-b1-009",
+        "sp5403-b1-010",
+        "sp5403-b1-011",
+        "sp5403-b2-001",
+        "sp5403-b2-002",
+        "sp5403-b2-003",
+        "sp5403-b2-004",
+        "sp5403-b2-005",
+        "sp5403-b2-006",
+        "sp5403-b2-007",
+        "sp5403-b2-008",
+        "sp5403-b2-009",
+        "sp5403-b2-010",
+        "sp5403-b2-011",
+        "sp5403-b3-001",
+        "sp5403-b3-002",
+        "sp5403-b3-003",
+        "sp5403-b3-004",
+        "sp5403-b3-005",
+        "sp5403-b3-006",
+        "sp5403-b3-007",
+        "sp5403-b3-008",
+        "sp5403-b3-009",
+        "sp5403-b3-010",
+        "sp5403-b3-011"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-002",
+        "sp5403-b1-003",
+        "sp5403-b1-004",
+        "sp5403-b1-005",
+        "sp5403-b1-006",
+        "sp5403-b1-007",
+        "sp5403-b1-008",
+        "sp5403-b1-009",
+        "sp5403-b1-010",
+        "sp5403-b1-011",
+        "sp5403-b2-001"
+      ],
+      "purpose": "Consolidate \"Problem Solving and Multimethod Data Integration\" (Professional Practices That Permeate Service Delivery) across 4 lessons and 33 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-02",
+      "unitId": "permeating-practices",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Measurement and Assessment of Diverse Learners",
+      "chapterId": "sp5403-ch-02",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-02-section-01",
+        "sp5403-ch-02-section-02",
+        "sp5403-ch-02-section-03",
+        "sp5403-ch-02-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-012",
+        "sp5403-b1-013",
+        "sp5403-b1-014",
+        "sp5403-b1-015",
+        "sp5403-b1-016",
+        "sp5403-b1-017",
+        "sp5403-b1-018",
+        "sp5403-b1-019",
+        "sp5403-b1-020",
+        "sp5403-b1-021",
+        "sp5403-b1-022",
+        "sp5403-b2-012",
+        "sp5403-b2-013",
+        "sp5403-b2-014",
+        "sp5403-b2-015",
+        "sp5403-b2-016",
+        "sp5403-b2-017",
+        "sp5403-b2-018",
+        "sp5403-b2-019",
+        "sp5403-b2-020",
+        "sp5403-b2-021",
+        "sp5403-b2-022",
+        "sp5403-b3-012",
+        "sp5403-b3-013",
+        "sp5403-b3-014",
+        "sp5403-b3-015",
+        "sp5403-b3-016",
+        "sp5403-b3-017",
+        "sp5403-b3-018",
+        "sp5403-b3-019",
+        "sp5403-b3-020",
+        "sp5403-b3-021",
+        "sp5403-b3-022"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-012",
+        "sp5403-b1-013",
+        "sp5403-b1-014",
+        "sp5403-b1-015",
+        "sp5403-b1-016",
+        "sp5403-b1-017",
+        "sp5403-b1-018",
+        "sp5403-b1-019",
+        "sp5403-b1-020",
+        "sp5403-b1-021",
+        "sp5403-b1-022",
+        "sp5403-b2-012"
+      ],
+      "purpose": "Consolidate \"Measurement and Assessment of Diverse Learners\" (Professional Practices That Permeate Service Delivery) across 4 lessons and 33 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-03",
+      "unitId": "permeating-practices",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Consultation and Collaborative Problem Solving",
+      "chapterId": "sp5403-ch-03",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-03-section-01",
+        "sp5403-ch-03-section-02",
+        "sp5403-ch-03-section-03",
+        "sp5403-ch-03-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-023",
+        "sp5403-b1-024",
+        "sp5403-b1-025",
+        "sp5403-b1-026",
+        "sp5403-b1-027",
+        "sp5403-b1-028",
+        "sp5403-b1-029",
+        "sp5403-b1-030",
+        "sp5403-b1-031",
+        "sp5403-b1-032",
+        "sp5403-b2-023",
+        "sp5403-b2-024",
+        "sp5403-b2-025",
+        "sp5403-b2-026",
+        "sp5403-b2-027",
+        "sp5403-b2-028",
+        "sp5403-b2-029",
+        "sp5403-b2-030",
+        "sp5403-b2-031",
+        "sp5403-b2-032",
+        "sp5403-b3-023",
+        "sp5403-b3-024",
+        "sp5403-b3-025",
+        "sp5403-b3-026",
+        "sp5403-b3-027",
+        "sp5403-b3-028",
+        "sp5403-b3-029",
+        "sp5403-b3-030",
+        "sp5403-b3-031",
+        "sp5403-b3-032"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-023",
+        "sp5403-b1-024",
+        "sp5403-b1-025",
+        "sp5403-b1-026",
+        "sp5403-b1-027",
+        "sp5403-b1-028",
+        "sp5403-b1-029",
+        "sp5403-b1-030",
+        "sp5403-b1-031",
+        "sp5403-b1-032",
+        "sp5403-b2-023",
+        "sp5403-b2-024"
+      ],
+      "purpose": "Consolidate \"Consultation and Collaborative Problem Solving\" (Professional Practices That Permeate Service Delivery) across 4 lessons and 30 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-04",
+      "unitId": "student-level-services",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Academic Interventions and Instructional Supports",
+      "chapterId": "sp5403-ch-04",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-04-section-01",
+        "sp5403-ch-04-section-02",
+        "sp5403-ch-04-section-03",
+        "sp5403-ch-04-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-033",
+        "sp5403-b1-034",
+        "sp5403-b1-035",
+        "sp5403-b1-036",
+        "sp5403-b1-037",
+        "sp5403-b1-038",
+        "sp5403-b1-039",
+        "sp5403-b1-040",
+        "sp5403-b2-033",
+        "sp5403-b2-034",
+        "sp5403-b2-035",
+        "sp5403-b2-036",
+        "sp5403-b2-037",
+        "sp5403-b2-038",
+        "sp5403-b2-039",
+        "sp5403-b2-040",
+        "sp5403-b3-033",
+        "sp5403-b3-034",
+        "sp5403-b3-035",
+        "sp5403-b3-036",
+        "sp5403-b3-037",
+        "sp5403-b3-038",
+        "sp5403-b3-039",
+        "sp5403-b3-040"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-033",
+        "sp5403-b1-034",
+        "sp5403-b1-035",
+        "sp5403-b1-036",
+        "sp5403-b1-037",
+        "sp5403-b1-038",
+        "sp5403-b1-039",
+        "sp5403-b1-040",
+        "sp5403-b2-033",
+        "sp5403-b2-034",
+        "sp5403-b2-035",
+        "sp5403-b2-036"
+      ],
+      "purpose": "Consolidate \"Academic Interventions and Instructional Supports\" (Student-Level Services) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-05",
+      "unitId": "student-level-services",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Mental and Behavioral Health Services",
+      "chapterId": "sp5403-ch-05",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-05-section-01",
+        "sp5403-ch-05-section-02",
+        "sp5403-ch-05-section-03",
+        "sp5403-ch-05-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-041",
+        "sp5403-b1-042",
+        "sp5403-b1-043",
+        "sp5403-b1-044",
+        "sp5403-b1-045",
+        "sp5403-b1-046",
+        "sp5403-b1-047",
+        "sp5403-b1-048",
+        "sp5403-b2-041",
+        "sp5403-b2-042",
+        "sp5403-b2-043",
+        "sp5403-b2-044",
+        "sp5403-b2-045",
+        "sp5403-b2-046",
+        "sp5403-b2-047",
+        "sp5403-b2-048",
+        "sp5403-b3-041",
+        "sp5403-b3-042",
+        "sp5403-b3-043",
+        "sp5403-b3-044",
+        "sp5403-b3-045",
+        "sp5403-b3-046",
+        "sp5403-b3-047",
+        "sp5403-b3-048"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-041",
+        "sp5403-b1-042",
+        "sp5403-b1-043",
+        "sp5403-b1-044",
+        "sp5403-b1-045",
+        "sp5403-b1-046",
+        "sp5403-b1-047",
+        "sp5403-b1-048",
+        "sp5403-b2-041",
+        "sp5403-b2-042",
+        "sp5403-b2-043",
+        "sp5403-b2-044"
+      ],
+      "purpose": "Consolidate \"Mental and Behavioral Health Services\" (Student-Level Services) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-06",
+      "unitId": "student-level-services",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Behavior Analysis, Counseling, and Student Crisis Response",
+      "chapterId": "sp5403-ch-06",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-06-section-01",
+        "sp5403-ch-06-section-02",
+        "sp5403-ch-06-section-03",
+        "sp5403-ch-06-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-049",
+        "sp5403-b1-050",
+        "sp5403-b1-051",
+        "sp5403-b1-052",
+        "sp5403-b1-053",
+        "sp5403-b1-054",
+        "sp5403-b1-055",
+        "sp5403-b2-049",
+        "sp5403-b2-050",
+        "sp5403-b2-051",
+        "sp5403-b2-052",
+        "sp5403-b2-053",
+        "sp5403-b2-054",
+        "sp5403-b2-055",
+        "sp5403-b3-049",
+        "sp5403-b3-050",
+        "sp5403-b3-051",
+        "sp5403-b3-052",
+        "sp5403-b3-053",
+        "sp5403-b3-054",
+        "sp5403-b3-055"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-049",
+        "sp5403-b1-050",
+        "sp5403-b1-051",
+        "sp5403-b1-052",
+        "sp5403-b1-053",
+        "sp5403-b1-054",
+        "sp5403-b1-055",
+        "sp5403-b2-049",
+        "sp5403-b2-050",
+        "sp5403-b2-051",
+        "sp5403-b2-052",
+        "sp5403-b2-053"
+      ],
+      "purpose": "Consolidate \"Behavior Analysis, Counseling, and Student Crisis Response\" (Student-Level Services) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-07",
+      "unitId": "systems-level-services",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Schoolwide Learning, MTSS, and Systems Change",
+      "chapterId": "sp5403-ch-07",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-07-section-01",
+        "sp5403-ch-07-section-02",
+        "sp5403-ch-07-section-03",
+        "sp5403-ch-07-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-056",
+        "sp5403-b1-057",
+        "sp5403-b1-058",
+        "sp5403-b1-059",
+        "sp5403-b1-060",
+        "sp5403-b1-061",
+        "sp5403-b1-062",
+        "sp5403-b2-056",
+        "sp5403-b2-057",
+        "sp5403-b2-058",
+        "sp5403-b2-059",
+        "sp5403-b2-060",
+        "sp5403-b2-061",
+        "sp5403-b2-062",
+        "sp5403-b3-056",
+        "sp5403-b3-057",
+        "sp5403-b3-058",
+        "sp5403-b3-059",
+        "sp5403-b3-060",
+        "sp5403-b3-061",
+        "sp5403-b3-062"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-056",
+        "sp5403-b1-057",
+        "sp5403-b1-058",
+        "sp5403-b1-059",
+        "sp5403-b1-060",
+        "sp5403-b1-061",
+        "sp5403-b1-062",
+        "sp5403-b2-056",
+        "sp5403-b2-057",
+        "sp5403-b2-058",
+        "sp5403-b2-059",
+        "sp5403-b2-060"
+      ],
+      "purpose": "Consolidate \"Schoolwide Learning, MTSS, and Systems Change\" (Systems-Level Services) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-08",
+      "unitId": "systems-level-services",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Safe and Supportive Schools and Crisis Systems",
+      "chapterId": "sp5403-ch-08",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-08-section-01",
+        "sp5403-ch-08-section-02",
+        "sp5403-ch-08-section-03",
+        "sp5403-ch-08-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-063",
+        "sp5403-b1-064",
+        "sp5403-b1-065",
+        "sp5403-b1-066",
+        "sp5403-b1-067",
+        "sp5403-b1-068",
+        "sp5403-b1-069",
+        "sp5403-b2-063",
+        "sp5403-b2-064",
+        "sp5403-b2-065",
+        "sp5403-b2-066",
+        "sp5403-b2-067",
+        "sp5403-b2-068",
+        "sp5403-b2-069",
+        "sp5403-b3-063",
+        "sp5403-b3-064",
+        "sp5403-b3-065",
+        "sp5403-b3-066",
+        "sp5403-b3-067",
+        "sp5403-b3-068",
+        "sp5403-b3-069"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-063",
+        "sp5403-b1-064",
+        "sp5403-b1-065",
+        "sp5403-b1-066",
+        "sp5403-b1-067",
+        "sp5403-b1-068",
+        "sp5403-b1-069",
+        "sp5403-b2-063",
+        "sp5403-b2-064",
+        "sp5403-b2-065",
+        "sp5403-b2-066",
+        "sp5403-b2-067"
+      ],
+      "purpose": "Consolidate \"Safe and Supportive Schools and Crisis Systems\" (Systems-Level Services) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-09",
+      "unitId": "systems-level-services",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Family, School, and Community Collaboration",
+      "chapterId": "sp5403-ch-09",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-09-section-01",
+        "sp5403-ch-09-section-02",
+        "sp5403-ch-09-section-03",
+        "sp5403-ch-09-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-070",
+        "sp5403-b1-071",
+        "sp5403-b1-072",
+        "sp5403-b1-073",
+        "sp5403-b1-074",
+        "sp5403-b1-075",
+        "sp5403-b2-070",
+        "sp5403-b2-071",
+        "sp5403-b2-072",
+        "sp5403-b2-073",
+        "sp5403-b2-074",
+        "sp5403-b2-075",
+        "sp5403-b3-070",
+        "sp5403-b3-071",
+        "sp5403-b3-072",
+        "sp5403-b3-073",
+        "sp5403-b3-074",
+        "sp5403-b3-075"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-070",
+        "sp5403-b1-071",
+        "sp5403-b1-072",
+        "sp5403-b1-073",
+        "sp5403-b1-074",
+        "sp5403-b1-075",
+        "sp5403-b2-070",
+        "sp5403-b2-071",
+        "sp5403-b2-072",
+        "sp5403-b2-073",
+        "sp5403-b2-074",
+        "sp5403-b2-075"
+      ],
+      "purpose": "Consolidate \"Family, School, and Community Collaboration\" (Systems-Level Services) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-10",
+      "unitId": "foundations",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Equitable and Culturally Responsive Practice",
+      "chapterId": "sp5403-ch-10",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-10-section-01",
+        "sp5403-ch-10-section-02",
+        "sp5403-ch-10-section-03",
+        "sp5403-ch-10-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-076",
+        "sp5403-b1-077",
+        "sp5403-b1-078",
+        "sp5403-b1-079",
+        "sp5403-b1-080",
+        "sp5403-b1-081",
+        "sp5403-b1-082",
+        "sp5403-b1-083",
+        "sp5403-b1-084",
+        "sp5403-b2-076",
+        "sp5403-b2-077",
+        "sp5403-b2-078",
+        "sp5403-b2-079",
+        "sp5403-b2-080",
+        "sp5403-b2-081",
+        "sp5403-b2-082",
+        "sp5403-b2-083",
+        "sp5403-b2-084",
+        "sp5403-b3-076",
+        "sp5403-b3-077",
+        "sp5403-b3-078",
+        "sp5403-b3-079",
+        "sp5403-b3-080",
+        "sp5403-b3-081",
+        "sp5403-b3-082",
+        "sp5403-b3-083",
+        "sp5403-b3-084"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-076",
+        "sp5403-b1-077",
+        "sp5403-b1-078",
+        "sp5403-b1-079",
+        "sp5403-b1-080",
+        "sp5403-b1-081",
+        "sp5403-b1-082",
+        "sp5403-b1-083",
+        "sp5403-b1-084",
+        "sp5403-b2-076",
+        "sp5403-b2-077",
+        "sp5403-b2-078"
+      ],
+      "purpose": "Consolidate \"Equitable and Culturally Responsive Practice\" (Foundations of School Psychological Service Delivery) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-11",
+      "unitId": "foundations",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Research, Evidence-Based Practice, and Program Evaluation",
+      "chapterId": "sp5403-ch-11",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-11-section-01",
+        "sp5403-ch-11-section-02",
+        "sp5403-ch-11-section-03",
+        "sp5403-ch-11-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-085",
+        "sp5403-b1-086",
+        "sp5403-b1-087",
+        "sp5403-b1-088",
+        "sp5403-b1-089",
+        "sp5403-b1-090",
+        "sp5403-b1-091",
+        "sp5403-b1-092",
+        "sp5403-b2-085",
+        "sp5403-b2-086",
+        "sp5403-b2-087",
+        "sp5403-b2-088",
+        "sp5403-b2-089",
+        "sp5403-b2-090",
+        "sp5403-b2-091",
+        "sp5403-b2-092",
+        "sp5403-b3-085",
+        "sp5403-b3-086",
+        "sp5403-b3-087",
+        "sp5403-b3-088",
+        "sp5403-b3-089",
+        "sp5403-b3-090",
+        "sp5403-b3-091",
+        "sp5403-b3-092"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-085",
+        "sp5403-b1-086",
+        "sp5403-b1-087",
+        "sp5403-b1-088",
+        "sp5403-b1-089",
+        "sp5403-b1-090",
+        "sp5403-b1-091",
+        "sp5403-b1-092",
+        "sp5403-b2-085",
+        "sp5403-b2-086",
+        "sp5403-b2-087",
+        "sp5403-b2-088"
+      ],
+      "purpose": "Consolidate \"Research, Evidence-Based Practice, and Program Evaluation\" (Foundations of School Psychological Service Delivery) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-unit-review-12",
+      "unitId": "foundations",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Legal, Ethical, and Professional Practice",
+      "chapterId": "sp5403-ch-12",
+      "topicDiagnosticRouteIds": [
+        "sp5403-ch-12-section-01",
+        "sp5403-ch-12-section-02",
+        "sp5403-ch-12-section-03",
+        "sp5403-ch-12-section-04"
+      ],
+      "itemIds": [
+        "sp5403-b1-093",
+        "sp5403-b1-094",
+        "sp5403-b1-095",
+        "sp5403-b1-096",
+        "sp5403-b1-097",
+        "sp5403-b1-098",
+        "sp5403-b1-099",
+        "sp5403-b1-100",
+        "sp5403-b2-093",
+        "sp5403-b2-094",
+        "sp5403-b2-095",
+        "sp5403-b2-096",
+        "sp5403-b2-097",
+        "sp5403-b2-098",
+        "sp5403-b2-099",
+        "sp5403-b2-100",
+        "sp5403-b3-093",
+        "sp5403-b3-094",
+        "sp5403-b3-095",
+        "sp5403-b3-096",
+        "sp5403-b3-097",
+        "sp5403-b3-098",
+        "sp5403-b3-099",
+        "sp5403-b3-100"
+      ],
+      "mixedPracticeItemIds": [
+        "sp5403-b1-093",
+        "sp5403-b1-094",
+        "sp5403-b1-095",
+        "sp5403-b1-096",
+        "sp5403-b1-097",
+        "sp5403-b1-098",
+        "sp5403-b1-099",
+        "sp5403-b1-100",
+        "sp5403-b2-093",
+        "sp5403-b2-094",
+        "sp5403-b2-095",
+        "sp5403-b2-096"
+      ],
+      "purpose": "Consolidate \"Legal, Ethical, and Professional Practice\" (Foundations of School Psychological Service Delivery) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "school-psychologist-5403-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis School Psychologist (5403) blueprint domains.",
+      "focus": [
+        "Professional Practices That Permeate Service Delivery",
+        "Student-Level Services",
+        "Systems-Level Services",
+        "Foundations of School Psychological Service Delivery"
+      ],
+      "itemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-076",
+        "sp5403-b1-057",
+        "sp5403-b1-035",
+        "sp5403-b1-004",
+        "sp5403-b1-079",
+        "sp5403-b1-060",
+        "sp5403-b1-038",
+        "sp5403-b1-007",
+        "sp5403-b1-082",
+        "sp5403-b1-063",
+        "sp5403-b1-041",
+        "sp5403-b1-010",
+        "sp5403-b1-085",
+        "sp5403-b1-066",
+        "sp5403-b1-044",
+        "sp5403-b1-013",
+        "sp5403-b1-088",
+        "sp5403-b1-069",
+        "sp5403-b1-047",
+        "sp5403-b1-016",
+        "sp5403-b1-091",
+        "sp5403-b1-072",
+        "sp5403-b1-050",
+        "sp5403-b1-019",
+        "sp5403-b1-094",
+        "sp5403-b1-075",
+        "sp5403-b1-053",
+        "sp5403-b1-022",
+        "sp5403-b1-097",
+        "sp5403-b2-058",
+        "sp5403-b2-033",
+        "sp5403-b1-025",
+        "sp5403-b1-100",
+        "sp5403-b2-061",
+        "sp5403-b2-036",
+        "sp5403-b1-028",
+        "sp5403-b2-078",
+        "sp5403-b2-064",
+        "sp5403-b2-039"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis School Psychologist (5403) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Systems-Level Services",
+        "Foundations of School Psychological Service Delivery",
+        "Professional Practices That Permeate Service Delivery",
+        "Student-Level Services"
+      ],
+      "itemIds": [
+        "sp5403-b1-033",
+        "sp5403-b1-002",
+        "sp5403-b1-077",
+        "sp5403-b1-058",
+        "sp5403-b1-036",
+        "sp5403-b1-005",
+        "sp5403-b1-080",
+        "sp5403-b1-061",
+        "sp5403-b1-039",
+        "sp5403-b1-008",
+        "sp5403-b1-083",
+        "sp5403-b1-064",
+        "sp5403-b1-042",
+        "sp5403-b1-011",
+        "sp5403-b1-086",
+        "sp5403-b1-067",
+        "sp5403-b1-045",
+        "sp5403-b1-014",
+        "sp5403-b1-089",
+        "sp5403-b1-070",
+        "sp5403-b1-048",
+        "sp5403-b1-017",
+        "sp5403-b1-092",
+        "sp5403-b1-073",
+        "sp5403-b1-051",
+        "sp5403-b1-020",
+        "sp5403-b1-095",
+        "sp5403-b2-056",
+        "sp5403-b1-054",
+        "sp5403-b1-023",
+        "sp5403-b1-098",
+        "sp5403-b2-059",
+        "sp5403-b2-034",
+        "sp5403-b1-026",
+        "sp5403-b2-076",
+        "sp5403-b2-062",
+        "sp5403-b2-037",
+        "sp5403-b1-029",
+        "sp5403-b2-079",
+        "sp5403-b2-065"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis School Psychologist (5403) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Over-relying on a single IQ or screening score instead of RIOT-ICEL triangulation",
+        "Blaming the student or rushing to special education before verifying Tier 1–2 fidelity",
+        "Designing a BIP around behavior topography instead of hypothesized function"
+      ],
+      "itemIds": [
+        "sp5403-b1-056",
+        "sp5403-b1-034",
+        "sp5403-b1-003",
+        "sp5403-b1-078",
+        "sp5403-b1-059",
+        "sp5403-b1-037",
+        "sp5403-b1-006",
+        "sp5403-b1-081",
+        "sp5403-b1-062",
+        "sp5403-b1-040",
+        "sp5403-b1-009",
+        "sp5403-b1-084",
+        "sp5403-b1-065",
+        "sp5403-b1-043",
+        "sp5403-b1-012",
+        "sp5403-b1-087",
+        "sp5403-b1-068",
+        "sp5403-b1-046",
+        "sp5403-b1-015",
+        "sp5403-b1-090",
+        "sp5403-b1-071",
+        "sp5403-b1-049",
+        "sp5403-b1-018",
+        "sp5403-b1-093",
+        "sp5403-b1-074",
+        "sp5403-b1-052",
+        "sp5403-b1-021",
+        "sp5403-b1-096",
+        "sp5403-b2-057",
+        "sp5403-b1-055",
+        "sp5403-b1-024",
+        "sp5403-b1-099",
+        "sp5403-b2-060",
+        "sp5403-b2-035",
+        "sp5403-b1-027",
+        "sp5403-b2-077",
+        "sp5403-b2-063",
+        "sp5403-b2-038",
+        "sp5403-b1-030",
+        "sp5403-b2-080"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "school-psychologist-5403-form-internal-a",
+      "title": "Internal practice form A (Praxis School Psychologist (5403))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5403-b1-001",
+        "sp5403-b1-076",
+        "sp5403-b1-057",
+        "sp5403-b1-035",
+        "sp5403-b1-004",
+        "sp5403-b1-079",
+        "sp5403-b1-060",
+        "sp5403-b1-038",
+        "sp5403-b1-007",
+        "sp5403-b1-082",
+        "sp5403-b1-063",
+        "sp5403-b1-041",
+        "sp5403-b1-010",
+        "sp5403-b1-085",
+        "sp5403-b1-066",
+        "sp5403-b1-044",
+        "sp5403-b1-013",
+        "sp5403-b1-088",
+        "sp5403-b1-069",
+        "sp5403-b1-047",
+        "sp5403-b1-016",
+        "sp5403-b1-091",
+        "sp5403-b1-072",
+        "sp5403-b1-050",
+        "sp5403-b1-019",
+        "sp5403-b1-094",
+        "sp5403-b1-075",
+        "sp5403-b1-053",
+        "sp5403-b1-022",
+        "sp5403-b1-097",
+        "sp5403-b2-058",
+        "sp5403-b2-033",
+        "sp5403-b1-025",
+        "sp5403-b1-100",
+        "sp5403-b2-061",
+        "sp5403-b2-036",
+        "sp5403-b1-028",
+        "sp5403-b2-078",
+        "sp5403-b2-064",
+        "sp5403-b2-039",
+        "sp5403-b1-031",
+        "sp5403-b2-081",
+        "sp5403-b2-067",
+        "sp5403-b2-042",
+        "sp5403-b2-002",
+        "sp5403-b2-084",
+        "sp5403-b2-070",
+        "sp5403-b2-045",
+        "sp5403-b2-005",
+        "sp5403-b2-087"
+      ],
+      "topicIds": [
+        "sp5403-ch-01",
+        "sp5403-ch-10",
+        "sp5403-ch-07",
+        "sp5403-ch-04",
+        "sp5403-ch-08",
+        "sp5403-ch-05",
+        "sp5403-ch-11",
+        "sp5403-ch-02",
+        "sp5403-ch-09",
+        "sp5403-ch-06",
+        "sp5403-ch-12",
+        "sp5403-ch-03"
+      ],
+      "unitIds": [
+        "permeating-practices",
+        "foundations",
+        "systems-level-services",
+        "student-level-services"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-form-internal-b",
+      "title": "Internal practice form B (Praxis School Psychologist (5403))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5403-b1-033",
+        "sp5403-b1-002",
+        "sp5403-b1-077",
+        "sp5403-b1-058",
+        "sp5403-b1-036",
+        "sp5403-b1-005",
+        "sp5403-b1-080",
+        "sp5403-b1-061",
+        "sp5403-b1-039",
+        "sp5403-b1-008",
+        "sp5403-b1-083",
+        "sp5403-b1-064",
+        "sp5403-b1-042",
+        "sp5403-b1-011",
+        "sp5403-b1-086",
+        "sp5403-b1-067",
+        "sp5403-b1-045",
+        "sp5403-b1-014",
+        "sp5403-b1-089",
+        "sp5403-b1-070",
+        "sp5403-b1-048",
+        "sp5403-b1-017",
+        "sp5403-b1-092",
+        "sp5403-b1-073",
+        "sp5403-b1-051",
+        "sp5403-b1-020",
+        "sp5403-b1-095",
+        "sp5403-b2-056",
+        "sp5403-b1-054",
+        "sp5403-b1-023",
+        "sp5403-b1-098",
+        "sp5403-b2-059",
+        "sp5403-b2-034",
+        "sp5403-b1-026",
+        "sp5403-b2-076",
+        "sp5403-b2-062",
+        "sp5403-b2-037",
+        "sp5403-b1-029",
+        "sp5403-b2-079",
+        "sp5403-b2-065",
+        "sp5403-b2-040",
+        "sp5403-b1-032",
+        "sp5403-b2-082",
+        "sp5403-b2-068",
+        "sp5403-b2-043",
+        "sp5403-b2-003",
+        "sp5403-b2-085",
+        "sp5403-b2-071",
+        "sp5403-b2-046",
+        "sp5403-b2-006"
+      ],
+      "topicIds": [
+        "sp5403-ch-04",
+        "sp5403-ch-01",
+        "sp5403-ch-10",
+        "sp5403-ch-07",
+        "sp5403-ch-08",
+        "sp5403-ch-05",
+        "sp5403-ch-11",
+        "sp5403-ch-02",
+        "sp5403-ch-09",
+        "sp5403-ch-06",
+        "sp5403-ch-12",
+        "sp5403-ch-03"
+      ],
+      "unitIds": [
+        "student-level-services",
+        "permeating-practices",
+        "foundations",
+        "systems-level-services"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-psychologist-5403-form-internal-c",
+      "title": "Internal practice form C (Praxis School Psychologist (5403))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sp5403-b1-056",
+        "sp5403-b1-034",
+        "sp5403-b1-003",
+        "sp5403-b1-078",
+        "sp5403-b1-059",
+        "sp5403-b1-037",
+        "sp5403-b1-006",
+        "sp5403-b1-081",
+        "sp5403-b1-062",
+        "sp5403-b1-040",
+        "sp5403-b1-009",
+        "sp5403-b1-084",
+        "sp5403-b1-065",
+        "sp5403-b1-043",
+        "sp5403-b1-012",
+        "sp5403-b1-087",
+        "sp5403-b1-068",
+        "sp5403-b1-046",
+        "sp5403-b1-015",
+        "sp5403-b1-090",
+        "sp5403-b1-071",
+        "sp5403-b1-049",
+        "sp5403-b1-018",
+        "sp5403-b1-093",
+        "sp5403-b1-074",
+        "sp5403-b1-052",
+        "sp5403-b1-021",
+        "sp5403-b1-096",
+        "sp5403-b2-057",
+        "sp5403-b1-055",
+        "sp5403-b1-024",
+        "sp5403-b1-099",
+        "sp5403-b2-060",
+        "sp5403-b2-035",
+        "sp5403-b1-027",
+        "sp5403-b2-077",
+        "sp5403-b2-063",
+        "sp5403-b2-038",
+        "sp5403-b1-030",
+        "sp5403-b2-080",
+        "sp5403-b2-066",
+        "sp5403-b2-041",
+        "sp5403-b2-001",
+        "sp5403-b2-083",
+        "sp5403-b2-069",
+        "sp5403-b2-044",
+        "sp5403-b2-004",
+        "sp5403-b2-086",
+        "sp5403-b2-072",
+        "sp5403-b2-047"
+      ],
+      "topicIds": [
+        "sp5403-ch-07",
+        "sp5403-ch-04",
+        "sp5403-ch-01",
+        "sp5403-ch-10",
+        "sp5403-ch-08",
+        "sp5403-ch-05",
+        "sp5403-ch-02",
+        "sp5403-ch-11",
+        "sp5403-ch-09",
+        "sp5403-ch-06",
+        "sp5403-ch-12",
+        "sp5403-ch-03"
+      ],
+      "unitIds": [
+        "systems-level-services",
+        "student-level-services",
+        "permeating-practices",
+        "foundations"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

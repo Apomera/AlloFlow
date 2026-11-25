@@ -7,12 +7,54 @@ function _useColdPathDialogLock(dialogRef, onEscape) {
     ? window.__alloHooks.useFocusTrap
     : null;
   const fallbackNoop = React.useCallback(() => {}, []);
+  const onEscapeRef = React.useRef(onEscape);
+  onEscapeRef.current = onEscape;
   // Always call the same number of hooks per render.
   if (hostHook) {
     hostHook(dialogRef, true, onEscape);
   } else {
     fallbackNoop();
   }
+  React.useEffect(() => {
+    if (hostHook || typeof document === 'undefined') return undefined;
+    const dialog = dialogRef && dialogRef.current;
+    if (!dialog) return undefined;
+    const prevFocus = document.activeElement;
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
+    const initial = dialog.querySelector('[data-autofocus="true"]') || getFocusable()[0] || dialog;
+    try { initial.focus(); } catch (_) {}
+    const onKeyDown = (event) => {
+      if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape') {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof onEscapeRef.current === 'function') onEscapeRef.current();
+        return;
+      }
+      if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
+      const items = getFocusable();
+      if (!items.length) { event.preventDefault(); try { dialog.focus(); } catch (_) {} return; }
+      const first = items[0], last = items[items.length - 1];
+      if (!dialog.contains(document.activeElement) || document.activeElement === dialog) {
+        event.preventDefault();
+        try { (event.shiftKey ? last : first).focus(); } catch (_) {}
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        try { last.focus(); } catch (_) {}
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        try { first.focus(); } catch (_) {}
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      if (prevFocus && prevFocus !== document.body && prevFocus !== document.documentElement && prevFocus.isConnected && typeof prevFocus.focus === 'function') {
+        try { prevFocus.focus(); } catch (_) {}
+      }
+    };
+  }, [dialogRef, Boolean(hostHook)]);
   React.useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined' || !document.body) return undefined;
     const lock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
@@ -26,12 +68,30 @@ function _useColdPathDialogLock(dialogRef, onEscape) {
     };
   }, []);
 }
+function _safeColdImageUrl(raw) {
+  if (typeof raw !== 'string') return '';
+  const s = raw.trim();
+  if (!s || /[\u0000-\u001f\u007f]/.test(s)) return '';
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,/i.test(s)) return s;
+  if (/^(?:blob:|https:\/\/)/i.test(s)) return s;
+  return '';
+}
+function _cleanColdPromptText(raw, maxLen) {
+  return String(raw == null ? '' : raw).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, maxLen || 200);
+}
 function _coldPathAiUsable(kind, fn) {
-  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true)) return false;
+  if (typeof window !== 'undefined') {
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true || window.hideStudentAiFeatures === true) return false;
+    try {
+      const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (sp && (sp.aiDisabled === true || sp.aiEnabled === false || (typeof sp.isStudentAiDisabled === 'function' && sp.isStudentAiDisabled()) || (typeof sp.hideStudentAiFeatures === 'function' && sp.hideStudentAiFeatures()))) return false;
+    } catch (_) { return false; }
+    if (window.ALLOFLOW_MANAGED_AI_POLICY && (window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false || kind === 'images' || kind === 'imageEdit')) return false;
+  }
   if (fn && fn._alloQrBlocked === true) return false;
   if ((kind === 'images' || kind === 'imageEdit') && typeof window !== 'undefined' && window.AlloImageGeneration && typeof window.AlloImageGeneration.isEnabled === 'function' && !window.AlloImageGeneration.isEnabled()) return false;
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
-    try { return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) {}
+    try { return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) { return false; }
   }
   return fn == null ? true : typeof fn === 'function';
 }
@@ -125,7 +185,8 @@ function SavedMathAssessmentView(props) {
                     const saved = generatedContent || {};
                     const data = saved.data && typeof saved.data === 'object' ? saved.data : {};
                     const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-                    const label = (key, fallback) => { const value = t(key); return typeof value === 'string' && value.trim() && value !== key ? value : fallback; };
+                    const label = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value.trim() && value !== key ? value : fallback; };
+                    const safeFormatInline = (val, arg) => (typeof formatInlineText === 'function' ? formatInlineText(val, arg) : val);
                     const results = Array.isArray(data.results) ? data.results.filter(row => row && typeof row === 'object') : null;
                     const blocks = Array.isArray(data.blocks) ? data.blocks.filter(block => block && typeof block === 'object') : [];
                     const title = label(results ? 'math.saved_results' : 'math.saved_plan', results ? 'Submitted assessment results' : 'Assessment plan');
@@ -166,8 +227,8 @@ function SavedMathAssessmentView(props) {
                                             ? 'bg-rose-50 border-rose-300 text-rose-900'
                                             : 'bg-slate-100 border-slate-300 text-slate-800';
                                     return <li key={index} className="rounded-xl border border-slate-300 bg-white p-4 space-y-2">
-                                        <h3 className="font-semibold text-slate-900 break-words">{index + 1}. {formatInlineText(text(row.question), false)}</h3>
-                                        <p className="text-slate-800 break-words"><strong>{label('math.saved_response', 'Your submitted answer')}: </strong>{formatInlineText(text(row.response), false)}</p>
+                                        <h3 className="font-semibold text-slate-900 break-words">{index + 1}. {safeFormatInline(text(row.question), false)}</h3>
+                                        <p className="text-slate-800 break-words"><strong>{label('math.saved_response', 'Your submitted answer')}: </strong>{safeFormatInline(text(row.response), false)}</p>
                                         <p data-saved-math-verdict={verdict} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${verdictClass}`}>
                                             <span aria-hidden="true">{verdictSymbol}</span>
                                             <span>{verdict === 'correct' ? label('math.saved_correct', 'Correct') : verdict === 'incorrect' ? label('math.saved_incorrect', 'Incorrect') : label('math.saved_ungraded', 'Not graded')}</span>
@@ -181,7 +242,7 @@ function SavedMathAssessmentView(props) {
                             <ol className="space-y-3">
                                 {blocks.map((block, index) => <li key={index} className="rounded-xl border border-slate-300 bg-white p-4">
                                     <h3 className="font-bold text-slate-900">{index + 1}. {text(block.type).replace(/_/g, ' ')} · {text(block.quantity)} {label('math.saved_problems', 'problems')}</h3>
-                                    <p className="text-slate-800 break-words">{formatInlineText(text(block.directive), false)}</p>
+                                    <p className="text-slate-800 break-words">{safeFormatInline(text(block.directive), false)}</p>
                                 </li>)}
                             </ol>
                             {isTeacherMode && <button type="button" className="min-h-[44px] rounded-lg bg-indigo-700 text-white px-4 py-2 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700" onClick={() => {
@@ -199,9 +260,10 @@ function SavedMathAssessmentView(props) {
 // Extracted from AlloFlowANTI.txt (adventure-cast-lobby).
 function AdventureCastLobbyView(props) {
   const { CastLobby, adventureArtStyle, adventureCustomArtStyle, adventureState, callGeminiImageEdit, callImagen, generateAdventureImage, setAdventureState, t, universalImageStyle, warnLog } = props;
+  const safeAdventureState = adventureState && typeof adventureState === 'object' ? adventureState : {};
   return (
 <CastLobby
-                        characters={adventureState.characters}
+                        characters={Array.isArray(safeAdventureState.characters) ? safeAdventureState.characters : []}
                         t={t}
                         onAddCharacter={(newChar) => {
                             setAdventureState(prev => ({
@@ -217,15 +279,21 @@ function AdventureCastLobbyView(props) {
                             });
                         }}
                         onUpdateCharacter={(idx, updates) => {
+                            const safeUpdates = {};
+                            if (updates && typeof updates === 'object') {
+                                Object.keys(updates).forEach((k) => {
+                                    if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') safeUpdates[k] = updates[k];
+                                });
+                            }
                             setAdventureState(prev => {
                                 const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                 if (idx < 0 || idx >= chars.length) return prev;
-                                chars[idx] = { ...chars[idx], ...updates };
+                                chars[idx] = { ...chars[idx], ...safeUpdates };
                                 return { ...prev, characters: chars };
                             });
                         }}
                         onGeneratePortrait={async (idx) => {
-                            const targetChar = adventureState.characters?.[idx];
+                            const targetChar = safeAdventureState.characters?.[idx];
                             if (!targetChar) return;
                             if (!_coldPathAiUsable('images', callImagen)) {
                                 if (typeof props.addToast === 'function') props.addToast(t('errors.ai_unavailable') || 'AI image generation is currently unavailable.', 'warning');
@@ -249,20 +317,23 @@ function AdventureCastLobbyView(props) {
                                 return { ...prev, characters: chars };
                             });
                             try {
-                                const portraitStyleMap = {
+                                const portraitStyleMap = Object.assign(Object.create(null), {
                                 'auto': 'Digital painting style',
                                 'storybook': 'Soft watercolor storybook style',
                                 'pixel': '16-bit pixel art retro game style',
                                 'cinematic': 'Cinematic digital painting, dramatic lighting',
                                 'anime': 'Anime-style illustration, clean linework',
                                 'crayon': "Children's crayon hand-drawn style",
-                            };
+                            });
                                 const portraitStyle = adventureArtStyle === 'custom' && adventureCustomArtStyle
-                                    ? adventureCustomArtStyle
+                                    ? _cleanColdPromptText(adventureCustomArtStyle, 160)
                                     : (adventureArtStyle === 'universal'
-                                        ? (String(universalImageStyle || '').trim() || 'Digital painting style')
-                                        : (portraitStyleMap[adventureArtStyle] || 'Digital painting style'));
-                                const prompt = `Character portrait: ${targetChar.name}, ${targetChar.role}. ${targetChar.appearance || 'fantasy character'}. Bust portrait, centered face, soft lighting, detailed, no text, no labels. ${portraitStyle}.`;
+                                        ? (_cleanColdPromptText(universalImageStyle, 160) || 'Digital painting style')
+                                        : ((typeof adventureArtStyle === 'string' && Object.prototype.hasOwnProperty.call(portraitStyleMap, adventureArtStyle)) ? portraitStyleMap[adventureArtStyle] : 'Digital painting style'));
+                                const safeName = _cleanColdPromptText(targetChar.name, 80);
+                                const safeRole = _cleanColdPromptText(targetChar.role, 80);
+                                const safeAppearance = _cleanColdPromptText(targetChar.appearance, 240) || 'fantasy character';
+                                const prompt = `Character portrait: ${safeName}, ${safeRole}. ${safeAppearance}. Bust portrait, centered face, soft lighting, detailed, no text, no labels. ${portraitStyle}.`;
                                 const url = await callImagen(prompt, 400, 0.85);
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
@@ -290,8 +361,9 @@ function AdventureCastLobbyView(props) {
                             }
                         }}
                         onRefinePortrait={async (idx, editText) => {
-                            const targetChar = adventureState.characters?.[idx];
-                            if (!targetChar || !targetChar.portrait) return;
+                            const targetChar = safeAdventureState.characters?.[idx];
+                            const cleanEdit = _cleanColdPromptText(editText, 240);
+                            if (!targetChar || !targetChar.portrait || !cleanEdit) return;
                             if (!_coldPathAiUsable('imageEdit', callGeminiImageEdit)) {
                                 if (typeof props.addToast === 'function') props.addToast(t('errors.ai_unavailable') || 'AI image editing is currently unavailable.', 'warning');
                                 return;
@@ -316,14 +388,14 @@ function AdventureCastLobbyView(props) {
                             try {
                                 const rawBase64 = String(targetChar.portrait).split(',')[1];
                                 const refined = rawBase64
-                                    ? await callGeminiImageEdit(`Modify this character portrait: ${editText}. Keep the character recognizable. No text.`, rawBase64, 400, 0.85)
+                                    ? await callGeminiImageEdit(`Modify this character portrait: ${cleanEdit}. Keep the character recognizable. No text.`, rawBase64, 400, 0.85)
                                     : null;
                                 setAdventureState(prev => {
                                     const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                     const pos = resolveIdx(chars);
                                     if (pos < 0 || chars[pos].portraitGenToken !== genToken) return prev;
                                     const nextAppearance = refined
-                                        ? ((chars[pos].appearance || '') ? `${chars[pos].appearance}, ${editText}` : editText)
+                                        ? ((chars[pos].appearance || '') ? `${chars[pos].appearance}, ${cleanEdit}` : cleanEdit)
                                         : chars[pos].appearance;
                                     chars[pos] = { ...chars[pos], portrait: refined || chars[pos].portrait, appearance: nextAppearance, isGenerating: false, portraitGenToken: null };
                                     return { ...prev, characters: chars };
@@ -341,6 +413,7 @@ function AdventureCastLobbyView(props) {
                             }
                         }}
                         onUploadPortrait={(idx, dataUrl) => {
+                            if (!_safeColdImageUrl(dataUrl)) return;
                             setAdventureState(prev => {
                                 const chars = Array.isArray(prev.characters) ? [...prev.characters] : [];
                                 if (idx < 0 || idx >= chars.length) return prev;
@@ -349,10 +422,14 @@ function AdventureCastLobbyView(props) {
                             });
                         }}
                         onConfirm={() => {
-                            const sceneText = adventureState.currentScene?.text;
+                            const sceneText = safeAdventureState.currentScene?.text;
                             if (!sceneText) {
                                 warnLog("CastLobby onConfirm: currentScene.text is null, skipping image generation");
                                 setAdventureState(prev => ({ ...prev, isReviewingCharacters: false }));
+                                return;
+                            }
+                            if (!_coldPathAiUsable('images', generateAdventureImage)) {
+                                setAdventureState(prev => ({ ...prev, isReviewingCharacters: false, isImageLoading: false }));
                                 return;
                             }
                             setAdventureState(prev => ({ ...prev, isReviewingCharacters: false, isImageLoading: true }));
@@ -369,8 +446,12 @@ function StemArtworkHandoffView(props) {
   const stemArtworkHandoffRef = React.useRef(null);
   const backdropDownRef = React.useRef(null);
   _useColdPathDialogLock(stemArtworkHandoffRef, () => setStemArtworkHandoff(null));
-        const boards = _alloReadVisualSupportCollection('alloSymbolBoards');
-        const schedules = _alloReadVisualSupportCollection('alloSchedules');
+        const rawBoards = typeof _alloReadVisualSupportCollection === 'function' ? _alloReadVisualSupportCollection('alloSymbolBoards') : [];
+        const rawSchedules = typeof _alloReadVisualSupportCollection === 'function' ? _alloReadVisualSupportCollection('alloSchedules') : [];
+        const boards = Array.isArray(rawBoards) ? rawBoards : [];
+        const schedules = Array.isArray(rawSchedules) ? rawSchedules : [];
+        const safeHandoff = stemArtworkHandoff && typeof stemArtworkHandoff === 'object' ? stemArtworkHandoff : {};
+        const safeImgSrc = _safeColdImageUrl(safeHandoff.src);
         const safeLabel = String(stemArtworkLabel || '');
         return (
           <div
@@ -393,8 +474,8 @@ function StemArtworkHandoffView(props) {
               </div>
               <div className="mt-4 grid gap-5 sm:grid-cols-[180px_1fr] items-start">
                 <div className="rounded-xl border border-slate-300 bg-slate-100 p-2">
-                  <img src={stemArtworkHandoff.src} alt={stemArtworkHandoff.altText || stemArtworkHandoff.title || 'Art Studio artwork preview'} className="w-full aspect-square object-contain rounded-lg bg-white" />
-                  <p className="text-[11px] text-slate-700 mt-2">Created in Art Studio{stemArtworkHandoff.sourceTab ? ' · ' + stemArtworkHandoff.sourceTab : ''}</p>
+                  {safeImgSrc && <img src={safeImgSrc} alt={safeHandoff.altText || safeHandoff.title || 'Art Studio artwork preview'} className="w-full aspect-square object-contain rounded-lg bg-white" />}
+                  <p className="text-[11px] text-slate-700 mt-2">Created in Art Studio{safeHandoff.sourceTab ? ' · ' + safeHandoff.sourceTab : ''}</p>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -402,7 +483,7 @@ function StemArtworkHandoffView(props) {
                       <label htmlFor="stem-artwork-label" className="block text-sm font-bold text-slate-800">Short label</label>
                       <span data-stem-artwork-label-count="true" className="text-xs font-semibold tabular-nums text-slate-600">{safeLabel.length} / 80</span>
                     </div>
-                    <input id="stem-artwork-label" type="text" value={safeLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Enter' && safeLabel.trim()) { event.preventDefault(); saveStemArtworkAsVisualSupport(); } }} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" placeholder={t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern'} data-autofocus="true" />
+                    <input id="stem-artwork-label" type="text" value={safeLabel} maxLength={80} onChange={event => setStemArtworkLabel(event.target.value)} onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return; if (event.key === 'Enter' && safeLabel.trim()) { event.preventDefault(); saveStemArtworkAsVisualSupport(); } }} className="mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" placeholder={t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern'} data-autofocus="true" />
                     <p className="text-[11px] text-slate-600 mt-1">This is the label students will see and hear.</p>
                   </div>
                   <div>
@@ -475,15 +556,27 @@ function TranslateModalView(props) {
   // The dialog owns its focus trap: it starts when this view mounts and ends when it leaves.
   const translateModalRef = React.useRef(null);
   const backdropDownRef = React.useRef(null);
+  const [, setPolicyTick] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const sync = () => setPolicyTick(v => v + 1);
+    const events = ['alloflow:ai-config-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-key-lock-changed', 'storage'];
+    events.forEach(ev => window.addEventListener(ev, sync));
+    return () => { events.forEach(ev => window.removeEventListener(ev, sync)); };
+  }, []);
   _useColdPathDialogLock(translateModalRef, props.onTrapEscape || handleSetIsTranslateModalOpenToFalse);
         const safeLangInput = String(targetTranslationLang || '');
         const primaryLanguage = safeLangInput.trim();
         const aiTextUsable = _coldPathAiUsable('text');
-        const companionChoices = translationTargetChoices(primaryLanguage, currentUiLanguage, selectedLanguages);
-        const companionPolicy = resolveTranslationPolicy(headerTranslationMode ?? translationMode, primaryLanguage, currentUiLanguage, companionChoices);
-        const batchHandlers = _alloHostHandlersOptional();
-        const batch = batchHandlers?.getTranslationBatchItems?.('pack') || { items: [], kind: 'workspace' };
-        const currentBatch = batchHandlers?.getTranslationBatchItems?.('single') || { items: [] };
+        const rawChoices = typeof translationTargetChoices === 'function' ? translationTargetChoices(primaryLanguage, currentUiLanguage, selectedLanguages) : [];
+        const companionChoices = Array.isArray(rawChoices) ? rawChoices : [];
+        const rawPolicy = typeof resolveTranslationPolicy === 'function' ? resolveTranslationPolicy(headerTranslationMode ?? translationMode, primaryLanguage, currentUiLanguage, companionChoices) : null;
+        const companionPolicy = rawPolicy && typeof rawPolicy === 'object' ? rawPolicy : { mode: 'off', enabled: false, target: '' };
+        const batchHandlers = typeof _alloHostHandlersOptional === 'function' ? _alloHostHandlersOptional() : null;
+        const rawBatch = batchHandlers?.getTranslationBatchItems?.('pack');
+        const batch = { items: Array.isArray(rawBatch?.items) ? rawBatch.items : [], kind: rawBatch?.kind || 'workspace' };
+        const rawCurrentBatch = batchHandlers?.getTranslationBatchItems?.('single');
+        const currentBatch = { items: Array.isArray(rawCurrentBatch?.items) ? rawCurrentBatch.items : [] };
         const scopeLabel = batch.kind === 'pack'
           ? (t('translate.action_pack', { count: batch.items.length }) || `Translate pack (${batch.items.length})`)
           : (t('translate.action_workspace', { count: batch.items.length }) || `Translate workspace (${batch.items.length})`);
@@ -537,7 +630,7 @@ function TranslateModalView(props) {
                         </select>
                         <p id="header-translate-companion-hint" className="text-xs text-slate-700 mt-1" aria-live="polite">
                             {companionPolicy.enabled
-                                ? (t('translate.companion_on') || 'Include a second version in {language}.').replace('{language}', companionPolicy.target)
+                                ? (t('translate.companion_on') || 'Include a second version in {language}.').replace('{language}', String(companionPolicy.target || ''))
                                 : (t('translate.companion_off') || 'No companion version will be attached.')}
                         </p>
                     </div>

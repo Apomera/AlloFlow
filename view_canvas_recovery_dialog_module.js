@@ -1,6 +1,7 @@
 /** Auto-generated first-wave cold-path CDN module. */
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 var React = window.React;
 if (!React) { console.error('[CanvasRecoveryDialogView] React not found on window'); return; }
 window.AlloModules = window.AlloModules || {};
@@ -32,6 +33,8 @@ function CanvasRecoveryDialogView(props) {
     continueWithoutCanvasRecovery,
     deleteCachedPdfRemediation,
     deleteCachedPdfRemediationEntry,
+    deleteDictionaryCache,
+    dictionaryCacheSummary,
     downloadKokoroModel,
     downloadWhisperModel,
     eraseCanvasRecoverySnapshot,
@@ -76,10 +79,28 @@ function CanvasRecoveryDialogView(props) {
       return fallback;
     }
   };
+  const _formatSavedDate = (value, fallback) => {
+    if (value == null || value === '') return fallback || '';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? fallback || '' : d.toLocaleString();
+  };
+  const safeRecoverySnapshots = Array.isArray(canvasRecoveryStore?.snapshots) ? canvasRecoveryStore.snapshots : [];
+  const safeStorageInventory = storageManagerInventory && typeof storageManagerInventory === 'object' ? storageManagerInventory : {};
+  const safeManagedRows = Array.isArray(safeStorageInventory.managed) ? safeStorageInventory.managed : [];
+  const safeDeviceNamespaces = Array.isArray(safeStorageInventory.deviceNamespaces) ? safeStorageInventory.deviceNamespaces : [];
+  const safePdfCacheEntries = Array.isArray(pdfRemediationCacheEntries) ? pdfRemediationCacheEntries : [];
+  const safeModelStatus = alloModelStatus && typeof alloModelStatus === 'object' ? alloModelStatus : {};
+  const safeVaultState = canvasRecoveryVaultState && typeof canvasRecoveryVaultState === 'object' ? canvasRecoveryVaultState : {};
+  const safeLastPdfAudit = lastPdfAuditResultRef ? lastPdfAuditResultRef.current : null;
   const fallbackRecoveryRef = React.useRef(null);
   const activeRecoveryDialogRef = canvasRecoveryDialogRef || fallbackRecoveryRef;
   const [snapshotQuery, setSnapshotQuery] = React.useState('');
   const [snapshotFilter, setSnapshotFilter] = React.useState('all');
+  const [dictionaryDeleteConfirm, setDictionaryDeleteConfirm] = React.useState(false);
+  const dictionaryCache = dictionaryCacheSummary && dictionaryCacheSummary.count > 0 ? dictionaryCacheSummary : null;
+  React.useEffect(() => {
+    if (!dictionaryCache) setDictionaryDeleteConfirm(false);
+  }, [Boolean(dictionaryCache)]);
   const _focusRing = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const recoveryStateRef = React.useRef({
     canvasRecoveryDecisionMade,
@@ -93,7 +114,8 @@ function CanvasRecoveryDialogView(props) {
     setCanvasRecoveryRemoveMediaId,
     setPdfRemediationDeleteConfirm,
     snapshotQuery,
-    setSnapshotQuery
+    setSnapshotQuery,
+    dictionaryDeleteConfirm
   });
   recoveryStateRef.current = {
     canvasRecoveryDecisionMade,
@@ -107,7 +129,8 @@ function CanvasRecoveryDialogView(props) {
     setCanvasRecoveryRemoveMediaId,
     setPdfRemediationDeleteConfirm,
     snapshotQuery,
-    setSnapshotQuery
+    setSnapshotQuery,
+    dictionaryDeleteConfirm
   };
   React.useEffect(() => {
     const dialog = activeRecoveryDialogRef && activeRecoveryDialogRef.current;
@@ -191,30 +214,41 @@ function CanvasRecoveryDialogView(props) {
       if (event.defaultPrevented) return;
       if (!dialog.isConnected || !isTopTrap()) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
         const latest = recoveryStateRef.current;
         if (latest.canvasRecoveryEraseId && typeof latest.setCanvasRecoveryEraseId === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setCanvasRecoveryEraseId(null);
           return;
         }
         if (latest.canvasRecoveryRemoveMediaId && typeof latest.setCanvasRecoveryRemoveMediaId === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setCanvasRecoveryRemoveMediaId(null);
           return;
         }
         if (latest.pdfRemediationDeleteConfirm && typeof latest.setPdfRemediationDeleteConfirm === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setPdfRemediationDeleteConfirm(null);
+          return;
+        }
+        if (latest.dictionaryDeleteConfirm) {
+          event.preventDefault();
+          event.stopPropagation();
+          setDictionaryDeleteConfirm(false);
           return;
         }
         if (latest.snapshotQuery && typeof latest.setSnapshotQuery === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setSnapshotQuery('');
           return;
         }
         if (latest.canvasRecoveryDecisionMade && latest.vaultMode !== 'confirm-recovery-code' && !latest.canvasRecoveryBusyId && typeof latest.closeCanvasRecoveryDialog === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.closeCanvasRecoveryDialog();
         }
         return;
@@ -362,7 +396,7 @@ function CanvasRecoveryDialogView(props) {
   }, t('storage.work_without_recovery') || 'Work without device recovery')), /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-xs leading-relaxed text-slate-600"
   }, needsStorageApproval ? 'Gemini Canvas requires a brief device-storage approval window. Continuing leaves unknown saved data untouched and recovery saving paused.' : 'Continuing leaves unknown saved data untouched. AlloFlow will retry reading it before any later device write.')) : canvasRecoveryDialogMode === 'choice' ? (() => {
-    const latest = canvasRecoveryStore.snapshots[0];
+    const latest = safeRecoverySnapshots[0];
     if (!latest) return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
       className: "rounded-xl bg-slate-50 p-4 text-sm text-slate-700"
     }, t('storage.no_restorable') || 'No restorable workspace was found.'), /*#__PURE__*/React.createElement("button", {
@@ -372,14 +406,14 @@ function CanvasRecoveryDialogView(props) {
       className: `mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white hover:bg-indigo-800 ${_focusRing}`
     }, t('storage.start_fresh') || 'Start a fresh workspace'));
     const choiceRetention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
-    const savedDate = new Date(latest.savedAt);
+    const savedDateText = _formatSavedDate(latest.savedAt, 'recently');
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "font-black text-slate-900"
     }, latest.title), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 text-sm text-slate-600"
-    }, latest.resourceCount, " ", latest.resourceCount === 1 ? 'resource' : 'resources', " \xB7 ", t('storage.saved_label') || 'Saved', " ", savedDate.toLocaleString()), latest.assetPolicy === 'text-only' && /*#__PURE__*/React.createElement("div", {
+    }, latest.resourceCount, " ", latest.resourceCount === 1 ? 'resource' : 'resources', " \xB7 ", t('storage.saved_label') || 'Saved', " ", savedDateText), latest.assetPolicy === 'text-only' && /*#__PURE__*/React.createElement("div", {
       className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900"
     }, t('storage.saved_summary') || 'Resource history and settings are saved.', " ", t('storage.omitted_assets', {
       n: latest.omittedAssets || t('storage.some') || 'Some'
@@ -402,12 +436,12 @@ function CanvasRecoveryDialogView(props) {
       onClick: openCanvasRecoveryManager,
       className: `min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100 ${_focusRing}`
     }, t('storage.manage_saved', {
-      n: canvasRecoveryStore.snapshots.length,
+      n: safeRecoverySnapshots.length,
       max: choiceRetention.maxSnapshots
-    }) || 'Manage saved work (' + canvasRecoveryStore.snapshots.length + ' of ' + choiceRetention.maxSnapshots + ')'), /*#__PURE__*/React.createElement("button", {
+    }) || 'Manage saved work (' + safeRecoverySnapshots.length + ' of ' + choiceRetention.maxSnapshots + ')'), isCanvas && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: Boolean(canvasRecoveryBusyId),
-      onClick: () => canvasRecoveryImportInputRef.current?.click(),
+      onClick: () => canvasRecoveryImportInputRef?.current?.click(),
       className: `min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`
     }, t('storage.import_project') || 'Import project file')), /*#__PURE__*/React.createElement("p", {
       className: "mt-3 text-xs text-slate-600"
@@ -417,7 +451,7 @@ function CanvasRecoveryDialogView(props) {
       used: _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore))
     }) || 'AlloFlow keeps up to ' + choiceRetention.maxSnapshots + ' recent device workspaces under the ' + choiceRetention.effectivePolicyId + ' policy (' + _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) + ' used). Saving beyond that removes the oldest, so export anything you want to keep for good.'), /*#__PURE__*/React.createElement("p", {
       className: "mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950"
-    }, canvasRecoveryVaultState.enabled ? 'Shared computer? Protected workspace contents are unreadable after you lock this tab or reload. They remain visible while this tab is unlocked.' : 'Shared computer? Saved work can be opened by another person using this browser profile. Enable optional protection or export and erase important work.'));
+    }, safeVaultState.enabled ? 'Shared computer? Protected workspace contents are unreadable after you lock this tab or reload. They remain visible while this tab is unlocked.' : 'Shared computer? Saved work can be opened by another person using this browser profile. Enable optional protection or export and erase important work.'));
   })() : /*#__PURE__*/React.createElement(React.Fragment, null, typeof renderCanvasRecoveryProtectionSection === 'function' ? renderCanvasRecoveryProtectionSection() : null, typeof renderEducatorAccessCodeSection === 'function' ? renderEducatorAccessCodeSection() : null, (() => {
     const retention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
     const policyOptions = [{
@@ -433,16 +467,18 @@ function CanvasRecoveryDialogView(props) {
       name: t('storage.preset_standard') || 'Standard',
       detail: t('storage.preset_standard_detail') || 'Current behavior: targets 20 workspaces / 150 MB and 50 offline resources.'
     }];
-    const origin = storageManagerInventory.origin || {};
-    const deviceFacts = storageManagerInventory.deviceEstimate;
+    const origin = safeStorageInventory.origin || {};
+    const deviceFacts = safeStorageInventory.deviceEstimate;
     const physicalFacts = isCanvas ? deviceFacts || {
       persisted: null,
       usage: null,
       quota: null
     } : origin;
     const persistence = physicalFacts.persisted;
-    const capacityMax = Math.max(1, Number(retention.maxSnapshots) || 1);
-    const capacityCurrent = Math.max(0, Number(retention.count) || 0);
+    const _rawMax = Number(retention?.maxSnapshots);
+    const _rawCount = Number(retention?.count);
+    const capacityMax = Number.isFinite(_rawMax) && _rawMax >= 1 ? _rawMax : 1;
+    const capacityCurrent = Number.isFinite(_rawCount) && _rawCount >= 0 ? _rawCount : 0;
     const capacityPct = Math.min(100, Math.round(capacityCurrent / capacityMax * 100));
     const capacityNearLimit = retention.overTarget || capacityCurrent >= capacityMax;
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
@@ -457,10 +493,10 @@ function CanvasRecoveryDialogView(props) {
       className: "mt-1 text-xs leading-relaxed text-slate-600"
     }, t('storage.status_note') || 'Browser totals are physical estimates. AlloFlow categories and Canvas namespaces are approximate breakdowns and are not added to that total.')), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      disabled: storageManagerInventory.loading,
+      disabled: safeStorageInventory.loading,
       onClick: () => void refreshStorageManagerInventory(),
       className: `min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`
-    }, storageManagerInventory.loading || alloModelStatus.loading ? 'Refreshing…' : 'Refresh status')), /*#__PURE__*/React.createElement("div", {
+    }, safeStorageInventory.loading || safeModelStatus.loading ? 'Refreshing…' : 'Refresh status')), /*#__PURE__*/React.createElement("div", {
       className: "mt-4 grid gap-3 sm:grid-cols-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "rounded-xl bg-slate-50 p-3"
@@ -513,14 +549,14 @@ function CanvasRecoveryDialogView(props) {
       key: 'whisper',
       label: t('storage.model_whisper_label') || 'Speech recognition (Whisper)',
       desc: t('storage.model_whisper_desc') || 'Understands what you say, on this device',
-      have: alloModelStatus.whisper,
+      have: safeModelStatus.whisper,
       size: '~40 MB',
       onGet: downloadWhisperModel
     }, {
       key: 'kokoro',
       label: t('storage.model_kokoro_label') || 'Natural voice (Kokoro)',
       desc: t('storage.model_kokoro_desc') || 'Reads text aloud in a natural voice',
-      have: alloModelStatus.kokoro,
+      have: safeModelStatus.kokoro,
       size: '~88 MB',
       onGet: downloadKokoroModel
     }].map(m => /*#__PURE__*/React.createElement("div", {
@@ -537,21 +573,21 @@ function CanvasRecoveryDialogView(props) {
     }, '✓ ', t('storage.model_on_device') || 'On this device') : /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: m.onGet,
-      disabled: !!alloModelStatus.busy,
+      disabled: !!safeModelStatus.busy,
       className: `shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 ${_focusRing}`
-    }, alloModelStatus.busy === m.key ? t('storage.model_downloading') || 'Downloading…' : t('storage.model_download', {
+    }, safeModelStatus.busy === m.key ? t('storage.model_downloading') || 'Downloading…' : t('storage.model_download', {
       size: m.size
-    }) || 'Download ' + m.size)))), alloModelStatus.bytes > 0 && /*#__PURE__*/React.createElement("p", {
+    }) || 'Download ' + m.size)))), safeModelStatus.bytes > 0 && /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-xs text-slate-600"
     }, t('storage.model_cache', {
-      size: _alloFormatWorkspaceBytes(alloModelStatus.bytes)
-    }) || 'Model cache on this device: ~' + _alloFormatWorkspaceBytes(alloModelStatus.bytes))), storageManagerInventory.managed.length > 0 && /*#__PURE__*/React.createElement("div", {
+      size: _alloFormatWorkspaceBytes(safeModelStatus.bytes)
+    }) || 'Model cache on this device: ~' + _alloFormatWorkspaceBytes(safeModelStatus.bytes))), (safeManagedRows.length > 0 || dictionaryCache) && /*#__PURE__*/React.createElement("div", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-slate-900"
     }, t('storage.managed_data_title') || 'AlloFlow-managed browser data'), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200"
-    }, storageManagerInventory.managed.map(row => /*#__PURE__*/React.createElement("div", {
+    }, safeManagedRows.map(row => /*#__PURE__*/React.createElement("div", {
       key: row.id,
       className: "flex items-center justify-between gap-3 px-3 py-2 text-sm"
     }, /*#__PURE__*/React.createElement("span", {
@@ -560,13 +596,55 @@ function CanvasRecoveryDialogView(props) {
       className: "text-xs font-normal text-slate-600"
     }, "(", row.count, ")")), /*#__PURE__*/React.createElement("span", {
       className: "font-bold text-slate-900"
-    }, "~", _alloFormatWorkspaceBytes(row.approximateBytes)))))), isCanvas && storageManagerInventory.deviceNamespaces.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, "~", _alloFormatWorkspaceBytes(row.approximateBytes)))), dictionaryCache && /*#__PURE__*/React.createElement("div", {
+      "data-storage-dictionary-row": "true",
+      className: "px-3 py-2 text-sm"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center justify-between gap-3"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold text-slate-700"
+    }, t('storage.dictionary_cache_label') || 'Word data for glossaries', " ", /*#__PURE__*/React.createElement("span", {
+      className: "text-xs font-normal text-slate-600"
+    }, "(", dictionaryCache.count, ")")), /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-normal text-slate-600"
+    }, t('storage.dictionary_cache_hint') || 'Word meanings looked up for glossaries, kept so they work offline. Safe to delete; they are fetched again when needed.')), /*#__PURE__*/React.createElement("span", {
+      className: "flex shrink-0 flex-wrap items-center justify-end gap-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-slate-900"
+    }, "~", _alloFormatWorkspaceBytes(dictionaryCache.approximateBytes)), typeof deleteDictionaryCache === 'function' && (dictionaryDeleteConfirm ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-storage-dictionary-confirm": "true",
+      onClick: () => {
+        deleteDictionaryCache();
+        setDictionaryDeleteConfirm(false);
+        try {
+          activeRecoveryDialogRef.current && activeRecoveryDialogRef.current.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      },
+      className: `min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 ${_focusRing}`
+    }, t('storage.remediation_delete_confirm_one') || 'Confirm delete'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => setDictionaryDeleteConfirm(false),
+      className: `min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 ${_focusRing}`
+    }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-storage-dictionary-delete": "true",
+      onClick: () => setDictionaryDeleteConfirm(true),
+      className: `min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`
+    }, t('storage.remediation_delete') || 'Delete')))), dictionaryDeleteConfirm && /*#__PURE__*/React.createElement("p", {
+      role: "alert",
+      className: "mt-2 text-xs font-semibold text-red-800"
+    }, t('storage.dictionary_cache_delete_warning') || 'Delete the saved word data from this device? Your glossaries are not changed.')))), isCanvas && safeDeviceNamespaces.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "text-sm font-black text-slate-900"
     }, t('storage.canvas_namespaces_title') || 'Canvas durable-device namespaces'), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200"
-    }, storageManagerInventory.deviceNamespaces.map(row => /*#__PURE__*/React.createElement("div", {
+    }, safeDeviceNamespaces.map(row => /*#__PURE__*/React.createElement("div", {
       key: row.ns,
       className: "flex items-center justify-between gap-3 px-3 py-2 text-sm"
     }, /*#__PURE__*/React.createElement("span", {
@@ -575,10 +653,10 @@ function CanvasRecoveryDialogView(props) {
       className: "text-xs font-normal text-slate-600"
     }, "(", row.count, ")")), /*#__PURE__*/React.createElement("span", {
       className: "font-bold text-slate-900"
-    }, "~", _alloFormatWorkspaceBytes(row.bytes)))))), storageManagerInventory.error && /*#__PURE__*/React.createElement("p", {
+    }, "~", _alloFormatWorkspaceBytes(row.bytes)))))), safeStorageInventory.error && /*#__PURE__*/React.createElement("p", {
       role: "alert",
       className: "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900"
-    }, storageManagerInventory.error)), /*#__PURE__*/React.createElement("section", {
+    }, safeStorageInventory.error)), /*#__PURE__*/React.createElement("section", {
       "aria-labelledby": "storage-policy-title",
       className: "mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4"
     }, /*#__PURE__*/React.createElement("h3", {
@@ -615,8 +693,8 @@ function CanvasRecoveryDialogView(props) {
     type: "button",
     disabled: Boolean(canvasRecoveryBusyId),
     onClick: retryCanvasRecoveryStorage,
-    className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60"
-  }, canvasRecoveryBusyId === 'storage-retry' ? t('storage.checking_short') || 'Checking…' : t('storage.retry_device_storage') || 'Retry device storage')), !pdfAuditResult && (pdfRemediationCacheEntries.length > 0 || pdfFixResult || lastPdfAuditResultRef.current || canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft)) && /*#__PURE__*/React.createElement("section", {
+    className: `mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 ${_focusRing}`
+  }, canvasRecoveryBusyId === 'storage-retry' ? t('storage.checking_short') || 'Checking…' : t('storage.retry_device_storage') || 'Retry device storage')), !pdfAuditResult && (safePdfCacheEntries.length > 0 || pdfFixResult || safeLastPdfAudit || safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft)) && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "storage-local-documents-title",
     className: "mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -628,14 +706,14 @@ function CanvasRecoveryDialogView(props) {
     className: "mt-1 max-w-2xl text-xs leading-relaxed text-slate-700"
   }, t('storage.local_documents_hint') || 'Accessibility remediations can be resumed independently below. Document Hub drafts are marked in their saved workspaces and can be opened directly. Nothing new is retained merely by viewing this list.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 text-xs font-black uppercase tracking-wide"
-  }, (pdfRemediationCacheEntries.length > 0 || pdfFixResult || lastPdfAuditResultRef.current) && /*#__PURE__*/React.createElement("span", {
+  }, (safePdfCacheEntries.length > 0 || pdfFixResult || safeLastPdfAudit) && /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-emerald-200 px-2.5 py-1 text-emerald-950"
-  }, pdfRemediationCacheEntries.length || 1, " remediation", (pdfRemediationCacheEntries.length || 1) === 1 ? '' : 's'), canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && /*#__PURE__*/React.createElement("span", {
+  }, safePdfCacheEntries.length || 1, " remediation", (safePdfCacheEntries.length || 1) === 1 ? '' : 's'), safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft) && /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-indigo-100 px-2.5 py-1 text-indigo-900"
-  }, canvasRecoveryStore.snapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length, " Document Hub draft", canvasRecoveryStore.snapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length === 1 ? '' : 's'))), /*#__PURE__*/React.createElement("div", {
+  }, safeRecoverySnapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length, " Document Hub draft", safeRecoverySnapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length === 1 ? '' : 's'))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 space-y-2"
-  }, pdfRemediationCacheEntries.map(entry => {
-    const isActive = entry.storageKey === pdfActiveRemediationStorageKey && Boolean(pdfFixResult || lastPdfAuditResultRef.current);
+  }, safePdfCacheEntries.map(entry => {
+    const isActive = entry.storageKey === pdfActiveRemediationStorageKey && Boolean(pdfFixResult || safeLastPdfAudit);
     return /*#__PURE__*/React.createElement("article", {
       key: entry.storageKey,
       className: "rounded-xl border border-emerald-200 bg-white p-3"
@@ -651,7 +729,7 @@ function CanvasRecoveryDialogView(props) {
       className: "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-emerald-900"
     }, "Current")), /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-xs text-slate-600"
-    }, entry.savedAt ? new Date(entry.savedAt).toLocaleString() : 'Saved on this device', entry.pageCount ? ` · ${entry.pageCount} page${entry.pageCount === 1 ? '' : 's'}` : '', entry.approximateBytes > 0 ? ' · ~' + _alloFormatWorkspaceBytes(entry.approximateBytes) : ''), /*#__PURE__*/React.createElement("p", {
+    }, _formatSavedDate(entry.savedAt, 'Saved on this device'), entry.pageCount ? ` · ${entry.pageCount} page${entry.pageCount === 1 ? '' : 's'}` : '', entry.approximateBytes > 0 ? ' · ~' + _alloFormatWorkspaceBytes(entry.approximateBytes) : ''), /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-xs font-semibold text-emerald-900"
     }, Number.isFinite(entry.beforeScore) ? `Audit ${entry.beforeScore}/100` : 'Audit score unavailable', Number.isFinite(entry.afterScore) ? ` → remediation ${entry.afterScore}/100` : ' · verification required')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
@@ -677,7 +755,7 @@ function CanvasRecoveryDialogView(props) {
       role: "alert",
       className: "mt-2 text-xs font-semibold text-red-800"
     }, "Delete this remediation from this device? Exported files and other local documents will not be affected."));
-  }), pdfRemediationCacheEntries.length === 0 && (pdfFixResult || lastPdfAuditResultRef.current) && /*#__PURE__*/React.createElement("div", {
+  }), safePdfCacheEntries.length === 0 && (pdfFixResult || safeLastPdfAudit) && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-emerald-200 bg-white p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-black text-slate-900"
@@ -687,9 +765,9 @@ function CanvasRecoveryDialogView(props) {
     type: "button",
     onClick: () => openCachedPdfRemediation(true),
     className: `mt-2 min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800 ${_focusRing}`
-  }, "Resume")), pdfRemediationCacheEntries.length === 0 && !pdfFixResult && !lastPdfAuditResultRef.current && canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && /*#__PURE__*/React.createElement("div", {
+  }, "Resume")), safePdfCacheEntries.length === 0 && !pdfFixResult && !safeLastPdfAudit && safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft) && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-indigo-200 bg-white p-3 text-xs leading-relaxed text-slate-700"
-  }, "Document Hub drafts are stored with their saved workspaces below. Choose ", /*#__PURE__*/React.createElement("strong", null, "Open document"), " to restore that workspace and continue editing its draft.")), pdfRemediationCacheEntries.length > 1 && pdfRemediationDeleteConfirm !== 'all' && /*#__PURE__*/React.createElement("button", {
+  }, "Document Hub drafts are stored with their saved workspaces below. Choose ", /*#__PURE__*/React.createElement("strong", null, "Open document"), " to restore that workspace and continue editing its draft.")), safePdfCacheEntries.length > 1 && pdfRemediationDeleteConfirm !== 'all' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setPdfRemediationDeleteConfirm('all'),
     className: `mt-3 min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`
@@ -708,7 +786,7 @@ function CanvasRecoveryDialogView(props) {
     type: "button",
     onClick: () => setPdfRemediationDeleteConfirm(null),
     className: `min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 ${_focusRing}`
-  }, t('common.cancel') || 'Cancel')))), canvasRecoveryStore.snapshots.length > 0 && (() => {
+  }, t('common.cancel') || 'Cancel')))), safeRecoverySnapshots.length > 0 && (() => {
     const retention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
     return /*#__PURE__*/React.createElement("p", {
       className: "mb-3 rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-700"
@@ -812,7 +890,7 @@ function CanvasRecoveryDialogView(props) {
       className: "rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-violet-900"
     }, "Document Hub draft")), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 text-xs text-slate-600"
-    }, snapshot.resourceCount, " ", snapshot.resourceCount === 1 ? 'resource' : 'resources', " \xB7 ", new Date(snapshot.savedAt).toLocaleString(), snapshot.approximateBytes > 0 && ' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes)), /*#__PURE__*/React.createElement("div", {
+    }, snapshot.resourceCount, " ", snapshot.resourceCount === 1 ? 'resource' : 'resources', " \xB7 ", _formatSavedDate(snapshot.savedAt, 'Saved on this device'), snapshot.approximateBytes > 0 && ' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes)), /*#__PURE__*/React.createElement("div", {
       className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')
     }, snapshot.assetPolicy === 'full' ? 'Resource pack saved with supported media' : 'Resource history and settings saved; omissions recorded')), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
@@ -856,7 +934,7 @@ function CanvasRecoveryDialogView(props) {
       type: "button",
       onClick: () => exportCanvasRecoverySnapshot(snapshot),
       className: `min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`
-    }, canvasRecoveryVaultState.enabled ? 'Export readable copy' : 'Export'), canvasRecoveryEraseId === snapshot.id ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    }, safeVaultState.enabled ? 'Export readable copy' : 'Export'), canvasRecoveryEraseId === snapshot.id ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-recovery-confirm": snapshot.id,
       disabled: Boolean(canvasRecoveryBusyId),
@@ -886,7 +964,7 @@ function CanvasRecoveryDialogView(props) {
   }, "Close"), isCanvas && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: Boolean(canvasRecoveryBusyId),
-    onClick: () => canvasRecoveryImportInputRef.current?.click(),
+    onClick: () => canvasRecoveryImportInputRef?.current?.click(),
     className: `min-h-11 flex-1 rounded-xl bg-indigo-50 px-4 py-3 text-center font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-60 ${_focusRing}`
   }, "Import project file"))), isCanvas && /*#__PURE__*/React.createElement("input", {
     ref: canvasRecoveryImportInputRef,

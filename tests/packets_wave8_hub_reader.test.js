@@ -714,7 +714,9 @@ describe('Wave 8 Track B: Hub, Results Reader, Handoff, Preview & My Words (F1â€
     const narrowBlock = css.slice(css.indexOf('@media (max-width: 29.99rem)'));
     const narrowEnd = narrowBlock.indexOf('\n}\n');
     const narrow = narrowBlock.slice(0, narrowEnd);
-    expect(narrow).toContain('.top-menu > nav { left: 0; right: auto; }');
+    // 2026-11-23: at 360 px the menu ran off the screen (the page became 463 px wide). It is now as wide as the header row.
+    expect(narrow).toContain('.top-menu { position: static; }');
+    expect(narrow).toContain('.top-menu > nav { left: 1rem; right: 1rem; top: 100%; min-width: 0; max-width: none; }');
     expect(narrow).toContain('.foot a { display: inline-flex; align-items: center; min-height: 2.75rem; }');
 
     // Forced-colors active pressed/primary visibility

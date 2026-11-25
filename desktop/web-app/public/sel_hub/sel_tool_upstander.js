@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
       { icon: '🧠', title: 'The neurobiology of "hurt people hurt people"',
         body: 'Chronic stress dysregulates the systems your brain uses to inhibit impulses and read others\' emotions accurately. When you are hyper-aroused from your own trauma, you over-read threat in neutral faces, you under-read distress in people you are harming, and you have less capacity to brake on aggressive impulses. None of this excuses harming others. ALL of it should change how the systems around you respond.' },
       { icon: '⚖️', title: 'Why zero-tolerance fails this group hardest',
-        body: 'APA review (2008): zero-tolerance policies disproportionately push out bully-victims — exactly the students most in need of clinical support. Suspending you for behaviors that emerged from your own untreated trauma is not justice. It is the system passing the harm further down the chain. The research on this is unambiguous.' },
+        body: 'The APA Zero Tolerance Task Force (2008) found zero-tolerance policies did not make schools safer, were linked to higher dropout, and fell hardest on students of color and students with disabilities. Suspending you for behaviors that emerged from your own untreated trauma is not justice. It is the system passing the harm further down the chain.' },
       { icon: '🤝', title: 'What good support looks like',
         body: 'Trauma-informed care. Skilled clinical support (school psychologist, therapist with trauma training). Restorative — not just punitive — accountability. Real address of whatever is happening at home, online, or in earlier relationships that started the pattern. A safety plan that holds the people you have hurt AND your own wellbeing as both real.' },
       { icon: '🌱', title: 'Becoming a cycle breaker is your work',
@@ -999,7 +999,7 @@ window.SelHub = window.SelHub || {
     { n: 3, icon: '🧭', title: 'Make a shared plan, not an ask',
       body: 'Bad version: "Can you back me up if I say something?" (puts the cost on them in the moment). Good version: "What if next time it happens, we both say something? Even just one sentence each — I will go first, you go second." A specific plan two people agreed to ahead of time is wildly different from "I hope someone backs me up."' },
     { n: 4, icon: '➕', title: 'Add one more — keep adding',
-      body: 'Two is better than one. Three is better than two. Each additional coalition member roughly doubles the safety AND impact of intervention. Three peers saying "this is not okay" together breaks the consensus the bully relies on. Four or five makes the room actually shift.' },
+      body: 'Two is better than one. Three is better than two. Acting with others is safer and more effective than acting alone; even one ally changes what the group sees as normal. Three peers saying "this is not okay" together breaks the consensus the bully relies on. Four or five makes the room actually shift.' },
     { n: 5, icon: '🎯', title: 'Coordinate the move',
       body: 'When the moment comes, you do not all have to do the same thing. One can name what is happening. One can walk over to the target. One can go get an adult. One can just stand close. Different moves, same coalition. The fact that you are coordinated is the thing the bully reads.' },
     { n: 6, icon: '🛡️', title: 'Watch each other\'s backs after',
@@ -1017,7 +1017,7 @@ window.SelHub = window.SelHub || {
       { icon: '🎯', title: 'It is not "just" personal',
         body: 'When someone gets bullied for who they ARE — race, gender, sexuality, religion, disability, language, body, family — the harm hits differently. It tells the target they do not belong, not just that one person dislikes them. That message lands in a deeper place and stays longer.' },
       { icon: '⚖️', title: 'It is often illegal',
-        body: 'Identity-based harassment in U.S. schools falls under federal civil rights law (Title VI for race / national origin / religion, Title IX for sex / gender / sexuality, Section 504 and ADA for disability). Schools have specific obligations once they know. Most do not.' },
+        body: 'Identity-based harassment in U.S. schools can fall under federal civil rights law (Title VI for race, color and national origin, including shared ancestry; Title IX for sex; Section 504 and ADA for disability). Many state laws also cover religion, sexual orientation and gender identity. Schools have specific obligations once they know. Most do not.' },
       { icon: '🛡️', title: 'How to support a targeted peer',
         body: 'Ask what they actually want. Some want public allyship. Some want quiet company. Some want help reporting. Some want you to not bring it up at all. Following their lead IS the support.' },
       { icon: '📝', title: 'If you are the target',
@@ -1027,7 +1027,7 @@ window.SelHub = window.SelHub || {
       { icon: '🎯', title: 'Why identity-based harassment hurts differently',
         body: 'Research is consistent: identity-based bullying is associated with significantly higher rates of depression, anxiety, and suicidal ideation than non-identity-based bullying (CDC, GLSEN, Trevor Project). The mechanism is "minority stress" — chronic exposure to messages that you do not belong takes a measurable physiological toll on top of the specific incident.' },
       { icon: '⚖️', title: 'Federal protections',
-        body: 'Title VI (race, color, national origin, religion since 2010 guidance), Title IX (sex, gender identity, sexual orientation), Section 504 / ADA (disability) — all create specific school obligations once the school is on notice. Once the school knows, it MUST investigate and take steps to stop the harassment. Failure to do so can trigger an OCR complaint.' },
+        body: 'Title VI covers race, color and national origin, including harassment of students from religious groups when it is based on shared ancestry or ethnic characteristics. Title IX covers sex-based harassment; whether it also covers sexual orientation and gender identity is disputed and depends on where you live, though many state laws protect these directly. Section 504 / ADA cover disability. All create specific school obligations once the school is on notice. Once the school knows, it MUST investigate and take steps to stop the harassment. Failure to do so can trigger an OCR complaint.' },
       { icon: '🗂️', title: 'Documenting strategically',
         body: 'For an OCR complaint or civil rights claim, what matters: dates, words used, who said them, who witnessed, what you reported to the school, when, to whom, and what (if anything) the school did. Email is better evidence than verbal conversations. Save screenshots of any digital harassment with timestamps visible.' },
       { icon: '🛡️', title: 'Allyship that does not center yourself',
@@ -1069,7 +1069,7 @@ window.SelHub = window.SelHub || {
       { n: 1, icon: '🪞', title: 'Moral injury is a real clinical thing',
         body: 'When you witness harm and do not act on your values, the gap between "who I think I am" and "what I did" creates something psychologists call moral injury. It is studied in combat veterans, healthcare workers, and witnesses to atrocity. The shame is not a sign of weakness. It is a sign that your values are intact AND that they got crossed.' },
       { n: 2, icon: '🧠', title: 'The freeze was not a choice',
-        body: 'The fight-flight-freeze calculation happens in your amygdala in 50-200 milliseconds, before your conscious mind has access. People who freeze in crisis are not less brave than people who fight. Their nervous systems made a different read about what was safer. Hannah Arendt called this "the banality of evil" — but a more accurate read is "the predictable freeze of ordinary humans in conditions they were not prepared for." Preparation matters. So does practice.' },
+        body: 'Your brain\'s threat response starts faster than conscious thought, so freezing is a common automatic reaction. People who freeze in crisis are not less brave than people who fight. Their nervous systems made a different read about what was safer. Call it the predictable freeze of ordinary humans in conditions they were not prepared for. Preparation matters. So does practice.' },
       { n: 3, icon: '🔗', title: 'Unaddressed witness harm becomes ambient',
         body: 'Unhealed moral injury does not just sit there. It often shows up as low-grade depression, cynicism about your own goodness, avoidance of similar situations, or a self-image of "I am not actually someone who shows up." Naming what happened — to yourself first, then to others — is what starts to interrupt the pattern.' },
       { n: 4, icon: '💬', title: 'Reach out, with the right framing',
@@ -1201,7 +1201,7 @@ window.SelHub = window.SelHub || {
       what: 'Foundational work establishing bullying as a researchable phenomenon. Source for the finding that students who bully are significantly more likely to have experienced abuse or been bullied themselves.' },
     { name: 'Hawkins, Pepler & Craig (2001). Naturalistic observations of peer interventions in bullying.',
       who: 'York University / University of Toronto',
-      what: 'Source for the "57% of bullying stops within 10 seconds when one bystander intervenes" finding. One of the most-cited pieces of bystander research in the field.' },
+      what: 'Source for the finding that peers stepped in during about 1 in 5 playground bullying episodes, and when they did, the bullying stopped within 10 seconds 57% of the time. One of the most-cited pieces of bystander research in the field.' },
     { name: 'Copeland, W. E. et al. (2013). Adult psychiatric outcomes of bullying.',
       who: 'JAMA Psychiatry',
       what: 'Longitudinal study showing that childhood bullying victimization is associated with increased risk of depression, anxiety, and self-harm into adulthood. Source for "bullying is not a rite of passage."' },
@@ -1213,7 +1213,7 @@ window.SelHub = window.SelHub || {
       what: 'Foundational text on the social-ecological model of bullying. Source for the finding that school environment factors (hierarchy, supervision, reward structures) predict bullying more than individual student characteristics do.' },
     { name: 'Restorative Justice in U.S. Schools (Fronius et al., WestEd 2019)',
       who: 'WestEd Justice & Prevention Research Center',
-      what: 'Meta-review of restorative-practices research in K-12 settings. Source for the 40-60% reduction in repeat offenses with restorative vs. punitive approaches.' },
+      what: 'Review of restorative-practices research in K-12 settings. It describes restorative practices as promising, with several studies reporting fewer suspensions and repeat incidents, while noting the evidence is still limited.' },
     { name: 'StopBullying.gov',
       who: 'U.S. Department of Health & Human Services',
       what: 'Federal resource hub with state-by-state bullying laws, reporting paths, and school obligations. Useful when you need to know what your school is legally required to do.' },
@@ -1224,7 +1224,7 @@ window.SelHub = window.SelHub || {
 
   var US_EDUCATORS = [
     { icon: '🎯', title: 'Punishment alone is the least effective intervention',
-      body: 'The APA Zero Tolerance Task Force (2008) review is unambiguous: zero-tolerance policies do not reduce bullying. What works: restorative conferencing, social-emotional skill-building, addressing root causes. If your school still relies primarily on suspension, the research is on your side to push for change.' },
+      body: 'The APA Zero Tolerance Task Force (2008) found zero-tolerance policies did not make schools safer and were linked to higher dropout. More promising: restorative conferencing, social-emotional skill-building, addressing root causes. If your school still relies primarily on suspension, the research is on your side to push for change.' },
     { icon: '🕵️', title: 'Adults usually miss it',
       body: 'Self-report studies consistently find that adults are aware of only a small fraction of the bullying that students experience. Believe the kid who tells you something happened. The cost of being wrong is small. The cost of dismissing a true report is enormous.' },
     { icon: '🧭', title: 'Bully-victims need the most help',
@@ -1234,22 +1234,22 @@ window.SelHub = window.SelHub || {
     { icon: '🛡️', title: 'Marginalized students bear disproportionate cost',
       body: 'LGBTQ+ students, students of color, students with disabilities, and English-language learners experience higher bullying rates AND less institutional response when they report. Any anti-bullying program that does not name identity-based harassment is incomplete.' },
     { icon: '🤝', title: 'Restorative practice is not "letting them off easy"',
-      body: 'Restorative conferencing is harder than suspension, not easier. The person who caused harm has to face the person they harmed, hear the impact, and make a concrete plan for repair. Done well, it has the highest reduction in repeat offenses of any intervention (Fronius et al., 2019). Done poorly — performatively, without follow-through — it can re-harm. Quality matters.' }
+      body: 'Restorative conferencing is harder than suspension, not easier. The person who caused harm has to face the person they harmed, hear the impact, and make a concrete plan for repair. Done well, several studies report fewer repeat incidents, though the evidence is still limited (Fronius et al., 2019). Done poorly \u2014 performatively, without follow-through \u2014 it can re-harm. Quality matters.' }
   ];
 
   // ── "If You Report" — demystifying the school-discipline + restorative process ──
   var US_REPORT_STEPS = [
     { icon: '📝', title: 'You make the report',
-      body: 'You tell a teacher, counselor, school psychologist, dean, or fill out a school form. Most states’ anti-bullying laws REQUIRE schools to accept reports (including anonymous ones) and respond within a set timeframe. You do not need proof to make a report. Your account is enough to start the process.',
+      body: 'You tell a teacher, counselor, school psychologist, dean, or fill out a school form. Every state has an anti-bullying law or policy, and most require schools to have a reporting and investigation procedure; details such as anonymous reports and deadlines vary by state. You do not need proof to make a report. Your account is enough to start the process.',
       tip: 'Bring screenshots, dates, names of witnesses if you have them — but do not delay reporting because you do not have a full case. Schools have an obligation to investigate.' },
     { icon: '🔍', title: 'The school investigates',
       body: 'Usually within a few school days. They may interview you, the person who allegedly caused harm, and any witnesses. Investigators are supposed to keep accounts separate (so you and the other person are not in the room together against your wishes). You should not be punished for reporting — that is retaliation, which is itself prohibited.',
       tip: 'If you feel pressured to drop the report, that is a red flag. Document the pressure and tell another adult (a parent, another counselor, a school board member).' },
     { icon: '⚖️', title: 'The school decides on a response',
-      body: 'Outcomes vary widely. Punitive responses: warning, detention, suspension, expulsion in extreme cases. Restorative responses: a structured conference where the person who caused harm hears the impact and makes a plan for repair. Most evidence-based programs use restorative as the primary response, with discipline as the backstop.',
+      body: 'Outcomes vary widely. Punitive responses: warning, detention, suspension, expulsion in extreme cases. Restorative responses: a structured conference where the person who caused harm hears the impact and makes a plan for repair. Many schools now pair consequences with restorative steps.',
       tip: 'You usually do not get veto power over the outcome, but you should be told what it is. If the school will not tell you, that is also a red flag.' },
     { icon: '🤝', title: 'If restorative conferencing is offered',
-      body: 'A trained facilitator brings the people involved together (often separately first) to hear each other and plan repair. You do NOT have to participate if you do not want to. Restorative conferencing only works when everyone consents to it. Done well, research shows 40-60% reduction in repeat offenses. Done poorly — rushed, performative, no follow-through — it can re-harm. Quality of facilitation matters.',
+      body: 'A trained facilitator brings the people involved together (often separately first) to hear each other and plan repair. You do NOT have to participate if you do not want to. Restorative conferencing only works when everyone consents to it. Done well, several studies report fewer repeat incidents. Done poorly \u2014 rushed, performative, no follow-through \u2014 it can re-harm. Quality of facilitation matters.',
       tip: 'Ask: who is the facilitator, what is their training, what happens if it does not go well? You have every right to those answers.' },
     { icon: '🛡️', title: 'Safety planning',
       body: 'Whatever the outcome, the school should make a safety plan with you: changed seating, monitored hallways, separate lunch periods if needed, check-ins with a counselor, who you can go to if it escalates. This is your right — push for it explicitly if it does not happen automatically.',
@@ -1304,11 +1304,11 @@ window.SelHub = window.SelHub || {
     { term: 'Bystander effect', def: 'The well-documented finding that the more people who witness a harmful situation, the less likely any one person intervenes. It is environmental — not a personal failing. Specific upstander skills counteract it.' },
     { term: 'Diffusion of responsibility', def: 'The cognitive process behind the bystander effect: when many people see something, each individual assumes someone else will act, so no one does. Naming this in the moment ("everyone is waiting for someone else") can break it.' },
     { term: 'Harm cycle', def: 'The pattern by which hurt flows from person to person — someone is hurt, they pass the hurt downward, that person passes it further. The "cycle breaker" is the person who absorbs the harm instead of passing it on.' },
-    { term: 'Identity-based harassment', def: 'Bullying targeting someone for race, gender, sexuality, disability, religion, or other identity. Falls under federal civil rights law (Title VI, Title IX, Section 504) and creates specific legal obligations for schools once reported.' },
+    { term: 'Identity-based harassment', def: 'Bullying targeting someone for race, gender, sexuality, disability, religion, or other identity. Often falls under federal civil rights law (Title VI, Title IX, Section 504) or state law, which create specific legal obligations for schools once reported.' },
     { term: 'Restorative practice', def: 'An approach to harm that asks "who was harmed and what do they need?" rather than "what rule was broken and how do we punish it?" Centers the person harmed; holds the person who caused harm accountable through repair; involves community.' },
     { term: 'Target', def: 'The person being bullied. Preferred over "victim" by many practitioners because "victim" can become an identity rather than a circumstance. The person was targeted; they are not defined by it.' },
     { term: 'Upstander', def: 'A bystander who acts. The term was coined to give a name to the alternative to silence. Upstander moves range from low-risk (proximity) to high-risk (direct confrontation) — the courage is in moving from passive to active, however small the step.' },
-    { term: 'Zero tolerance', def: 'A discipline policy that mandates predetermined consequences (usually suspension or expulsion) for specific infractions, regardless of context. APA review (2008) found this approach increases dropout, disproportionately affects marginalized students, and does not reduce bullying.' }
+    { term: 'Zero tolerance', def: 'A discipline policy that mandates predetermined consequences (usually suspension or expulsion) for specific infractions, regardless of context. The APA Zero Tolerance Task Force (2008) found this approach did not make schools safer, was linked to higher dropout, and fell hardest on students of color and students with disabilities.' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -4293,7 +4293,7 @@ var BYSTANDER_PSYCHOLOGY_DEEP = [
       explanation: 'When witnesses are present, individuals are less likely to intervene. The more witnesses, the less likely any single one acts.',
       mechanisms: ['Diffusion of responsibility', 'Pluralistic ignorance', 'Social inhibition'],
       counter: 'Awareness alone increases intervention rates. Training specifically increases more.',
-      schoolApplication: 'In a hallway with 20 students, intervention is rarer than with 2 students. Awareness reverses this.'
+      schoolApplication: 'In a hallway with 20 students, intervention is rarer than with 2 students. Knowing about the bystander effect makes people somewhat more likely to help.'
     },
     {
       id: 'bpd2',
@@ -5799,10 +5799,10 @@ var UPSTANDER_HISTORY_TIMELINE = [
     },
     {
       id: 'uht2',
-      year: 1957,
-      event: 'Klaus Kinkel - Holocaust history',
+      year: 1963,
+      event: 'Righteous Among the Nations',
       whoWasInvolved: 'Various witnesses and rescuers',
-      whatHappened: 'Some non-Jews risked their lives to save Jewish neighbors and strangers from Nazi persecution.',
+      whatHappened: 'Some non-Jews risked their lives to save Jewish neighbors and strangers from Nazi persecution. In 1963 Yad Vashem began formally honoring them.',
       whyItMatters: 'These rescuers, called Righteous Among the Nations, represent the upstander tradition in its most consequential form.',
       lesson: 'Even in the most dangerous moments, upstander action is possible.'
     },
@@ -5821,7 +5821,7 @@ var UPSTANDER_HISTORY_TIMELINE = [
       event: 'Stonewall riots',
       whoWasInvolved: 'Marsha P. Johnson, Sylvia Rivera, Stormé DeLarverie, many trans women of color',
       whatHappened: 'After police raid on Stonewall Inn, LGBTQ patrons fought back. Sparked modern Pride movement.',
-      whyItMatters: 'Trans women of color led upstander action that benefited entire LGBTQ community.',
+      whyItMatters: 'Many kinds of people fought back, including trans women of color, street youth and lesbians. Marsha P. Johnson and Sylvia Rivera became leading organizers in the movement that followed.',
       lesson: 'The most marginalized often lead the most transformative movements.'
     },
     {
@@ -5829,7 +5829,7 @@ var UPSTANDER_HISTORY_TIMELINE = [
       year: 1977,
       event: '504 Sit-in',
       whoWasInvolved: 'Judy Heumann, Kitty Cone, Brad Lomax, Black Panthers (food support), many others',
-      whatHappened: 'Disabled activists occupied federal building for 28 days to force enforcement of Section 504.',
+      whatHappened: 'Disabled activists occupied a San Francisco federal building for 26 days (5 to 30 April 1977) to force enforcement of Section 504.',
       whyItMatters: 'Showed cross-movement solidarity. Black Panthers fed disabled protesters daily.',
       lesson: 'Coalition across movements multiplies power.'
     },
@@ -5844,7 +5844,7 @@ var UPSTANDER_HISTORY_TIMELINE = [
     },
     {
       id: 'uht7',
-      year: 2010,
+      year: 2016,
       event: 'Pulse Nightclub aftermath',
       whoWasInvolved: 'First responders, family members of victims, LGBTQ community',
       whatHappened: 'After mass shooting at LGBTQ club, community organized to support survivors and families.',
@@ -5920,9 +5920,9 @@ var UPSTANDER_HISTORY_EXTENDED = [
       id: 'uhe5',
       year: 1969,
       event: 'Stonewall riots',
-      whoWasInvolved: 'Marsha P. Johnson, Sylvia Rivera, Stormé DeLarverie, Pulitzer-eligible trans, queer, and street community',
+      whoWasInvolved: 'Marsha P. Johnson, Sylvia Rivera, Storm\u00E9 DeLarverie, and the trans, queer, and street community',
       whatHappened: 'After police raid on Stonewall Inn, LGBTQ patrons fought back. Sparked Pride movement.',
-      whyItMatters: 'Trans women of color led upstander action that benefited all LGBTQ people.',
+      whyItMatters: 'Many kinds of people fought back, including trans women of color, street youth and lesbians. Johnson and Rivera became leading organizers afterward.',
       lessons: ['Most marginalized often lead', 'Sometimes resistance is right', 'Pride is political']
     },
     {
@@ -5930,7 +5930,7 @@ var UPSTANDER_HISTORY_EXTENDED = [
       year: 1971,
       event: 'Attica Prison uprising',
       whoWasInvolved: 'Incarcerated men, supporters outside',
-      whatHappened: 'Incarcerated men at Attica took over the prison, demanding better conditions and rights. Forty-three killed when state retook prison.',
+      whatHappened: 'Incarcerated men at Attica took over the prison, demanding better conditions and rights. Forty-three people died in all, 39 of them when the state retook the prison.',
       whyItMatters: 'Some upstander work is for those society has dismissed entirely.',
       lessons: ['Voice from those most marginalized', 'Cost is real', 'Allies on the outside matter']
     },
@@ -5957,7 +5957,7 @@ var UPSTANDER_HISTORY_EXTENDED = [
       year: 1977,
       event: '504 sit-in',
       whoWasInvolved: 'Disabled activists, Black Panthers, allies',
-      whatHappened: 'Disabled activists occupied federal building for 28 days to force enforcement of Section 504.',
+      whatHappened: 'Disabled activists occupied a San Francisco federal building for 26 days (5 to 30 April 1977) to force enforcement of Section 504.',
       whyItMatters: 'Cross-movement solidarity (Black Panthers fed disabled protesters daily).',
       lessons: ['Disability rights matter', 'Cross-movement solidarity', 'Sustained action wins']
     },
@@ -5990,7 +5990,7 @@ var UPSTANDER_HISTORY_EXTENDED = [
     },
     {
       id: 'uhe13',
-      year: 1992,
+      year: 1991,
       event: 'Anita Hill testimony',
       whoWasInvolved: 'Anita Hill, Sen. Joseph Biden\'s Judiciary Committee',
       whatHappened: 'Anita Hill testified about sexual harassment by Supreme Court nominee Clarence Thomas. Despite testimony, Thomas was confirmed.',
@@ -7308,8 +7308,8 @@ var UPSTANDER_MENTOR_QUOTES = [
     { id: 'umq7', mentor: 'Howard Zinn', quote: 'You cannot be neutral on a moving train.', useWhen: 'When you opt out of choosing.', followup: 'Choose a direction.' },
     { id: 'umq8', mentor: 'Cesar Chavez', quote: 'You are never strong enough that you do not need help.', useWhen: 'When you think you must intervene alone.', followup: 'Bring others.' },
     { id: 'umq9', mentor: 'Dolores Huerta', quote: 'Every moment is an organizing opportunity.', useWhen: 'When the situation feels too small to matter.', followup: 'Small acts build movements.' },
-    { id: 'umq10', mentor: 'Maya Angelou', quote: 'I have learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.', useWhen: 'When you wonder what you can offer.', followup: 'Presence is enough. Care is enough.' },
-    { id: 'umq11', mentor: 'Ruby Bridges', quote: 'Don\'t follow the path. Go where there is no path and begin the trail.', useWhen: 'When no one else is intervening.', followup: 'Be the first.' },
+    { id: 'umq10', mentor: 'Often credited to Maya Angelou', quote: 'I have learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.', useWhen: 'When you wonder what you can offer.', followup: 'Presence is enough. Care is enough.' },
+    { id: 'umq11', mentor: 'Ruby Bridges (attributed)', quote: 'Don\'t follow the path. Go where there is no path and begin the trail.', useWhen: 'When no one else is intervening.', followup: 'Be the first.' },
     { id: 'umq12', mentor: 'Fred Rogers', quote: 'Look for the helpers. You will always find people who are helping.', useWhen: 'When everything feels hopeless.', followup: 'You can be the helper.' },
     { id: 'umq13', mentor: 'Anne Frank', quote: 'No one has ever become poor by giving.', useWhen: 'When you weigh the cost of helping.', followup: 'The cost is real. So is the reward.' },
     { id: 'umq14', mentor: 'Nelson Mandela', quote: 'A good head and a good heart are always a formidable combination.', useWhen: 'When you wonder if caring is enough.', followup: 'Care + strategy = change.' },
@@ -7324,13 +7324,13 @@ var UPSTANDER_MENTOR_QUOTES = [
     { id: 'umq23', mentor: 'Glennon Doyle', quote: 'We can do hard things.', useWhen: 'When the intervention feels too hard.', followup: 'You can.' },
     { id: 'umq24', mentor: 'Toni Morrison', quote: 'If there is a book that you want to read, but it has not been written yet, you must be the one to write it.', useWhen: 'When the change you want does not exist.', followup: 'Make it.' },
     { id: 'umq25', mentor: 'Audre Lorde', quote: 'I am deliberate and afraid of nothing.', useWhen: 'When you want to claim your power.', followup: 'You can be both afraid and deliberate.' },
-    { id: 'umq26', mentor: 'Bell Hooks', quote: 'The function of art is to do more than tell it like it is; it is to imagine what is possible.', useWhen: 'When you cannot see how to change.', followup: 'Imagine first.' },
+    { id: 'umq26', mentor: 'bell hooks', quote: 'The function of art is to do more than tell it like it is; it is to imagine what is possible.', useWhen: 'When you cannot see how to change.', followup: 'Imagine first.' },
     { id: 'umq27', mentor: 'Octavia Butler', quote: 'All that you touch you change.', useWhen: 'When you wonder if your action matters.', followup: 'It matters.' },
     { id: 'umq28', mentor: 'Ella Baker', quote: 'Strong people do not need strong leaders.', useWhen: 'When you wait for someone else to start.', followup: 'Start yourself.' },
     { id: 'umq29', mentor: 'Fannie Lou Hamer', quote: 'Nobody is free until everybody is free.', useWhen: 'When you advocate only for those like you.', followup: 'Everyone or no one.' },
     { id: 'umq30', mentor: 'Frederick Douglass', quote: 'Power concedes nothing without a demand.', useWhen: 'When you hope politely waiting will work.', followup: 'Make the demand.' },
     { id: 'umq31', mentor: 'Sojourner Truth', quote: 'Truth is powerful and it prevails.', useWhen: 'When the lie is winning.', followup: 'Tell the truth anyway.' },
-    { id: 'umq32', mentor: 'Harriet Tubman', quote: 'Every great dream begins with a dreamer.', useWhen: 'When you doubt your vision.', followup: 'Dream big.' },
+    { id: 'umq32', mentor: 'Harriet Tubman', quote: 'I never ran my train off the track and I never lost a passenger.', useWhen: 'When the work feels too risky to finish.', followup: 'Bring everyone through.' },
     { id: 'umq33', mentor: 'Yuri Kochiyama', quote: 'Remember that consciousness is power.', useWhen: 'When you wonder what to do.', followup: 'Stay awake.' },
     { id: 'umq34', mentor: 'Bayard Rustin', quote: 'We are all one, and if we do not know it, we will learn it the hard way.', useWhen: 'When others seem separate from you.', followup: 'We are one.' },
     { id: 'umq35', mentor: 'James Baldwin', quote: 'Children have never been very good at listening to their elders, but they have never failed to imitate them.', useWhen: 'When you wonder what young people are watching.', followup: 'They are watching you.' },
@@ -7338,7 +7338,7 @@ var UPSTANDER_MENTOR_QUOTES = [
     { id: 'umq37', mentor: 'Howard Zinn', quote: 'Small acts, when multiplied by millions of people, can transform the world.', useWhen: 'When your action feels too small.', followup: 'You are one of millions.' },
     { id: 'umq38', mentor: 'Jane Addams', quote: 'The good we secure for ourselves is precarious and uncertain until it is secured for all of us and incorporated into our common life.', useWhen: 'When you keep your good for yourself.', followup: 'Share it.' },
     { id: 'umq39', mentor: 'Pauli Murray', quote: 'Hope is a song in a weary throat.', useWhen: 'When you cannot find your voice.', followup: 'Sing anyway.' },
-    { id: 'umq40', mentor: 'Bryan Stevenson', quote: 'Just mercy is something we believe in, not something we do until we are tired.', useWhen: 'When you want to stop.', followup: 'Mercy is a discipline.' }
+    { id: 'umq40', mentor: 'Bryan Stevenson', quote: 'The opposite of poverty is not wealth; the opposite of poverty is justice.', useWhen: 'When charity feels like enough.', followup: 'Ask what justice would look like.' }
   ];
 var QUOTES_FROM_THE_MOVEMENT = [
     { id: 'qfm1', quote: 'If we could change ourselves, the tendencies in the world would also change.', author: 'Mahatma Gandhi, Indian Opinion (1913)', context: 'Active responsibility. The popular version of this line — \'be the change you wish to see in the world\' — is a later paraphrase that Gandhi never actually said or wrote.' },
@@ -7349,7 +7349,7 @@ var QUOTES_FROM_THE_MOVEMENT = [
     { id: 'qfm6', quote: 'Caring for myself is not self-indulgence, it is self-preservation, and that is an act of political warfare.', author: 'Audre Lorde', context: 'Self-care as political' },
     { id: 'qfm7', quote: 'Nobody is free until everybody is free.', author: 'Fannie Lou Hamer', context: 'Universal liberation' },
     { id: 'qfm8', quote: 'I am sick and tired of being sick and tired.', author: 'Fannie Lou Hamer', context: 'Exhaustion as data' },
-    { id: 'qfm9', quote: 'Until you do right by me, everything you even think about gonna fail.', author: 'Sojourner Truth (paraphrase)', context: 'Accountability' },
+    { id: 'qfm9', quote: 'Until you do right by me, everything you even think about gonna fail.', author: 'Celie, in The Color Purple (1985 film)', context: 'Accountability' },
     { id: 'qfm10', quote: 'I am only one, but I am one. I cannot do everything, but I can do something.', author: 'Edward Everett Hale', context: 'Individual responsibility' },
     { id: 'qfm11', quote: 'I have decided to stick with love. Hate is too great a burden to bear.', author: 'Martin Luther King Jr.', context: 'Love as choice' },
     { id: 'qfm12', quote: 'There is more than enough room in the world for everyone to be your friend.', author: 'Fred Rogers', context: 'Abundance' },
@@ -7363,8 +7363,8 @@ var QUOTES_FROM_THE_MOVEMENT = [
     { id: 'qfm20', quote: 'A right is not what someone gives you; it is what no one can take from you.', author: 'Ramsey Clark', context: 'Rights as inherent' },
     { id: 'qfm21', quote: 'The arc of the moral universe is long, but it bends toward justice.', author: 'Theodore Parker / MLK Jr.', context: 'Long view' },
     { id: 'qfm22', quote: 'I refuse to look away.', author: 'Common upstander', context: 'Witness' },
-    { id: 'qfm23', quote: 'Speak the truth, even if your voice shakes.', author: 'Maggie Kuhn', context: 'Truth-telling' },
-    { id: 'qfm24', quote: 'You may shoot me with your words, you may cut me with your eyes, but still, like air, I rise.', author: 'Maya Angelou', context: 'Resilience' },
+    { id: 'qfm23', quote: 'Speak your mind, even if your voice shakes.', author: 'Maggie Kuhn', context: 'Truth-telling' },
+    { id: 'qfm24', quote: 'You may shoot me with your words, / You may cut me with your eyes, / You may kill me with your hatefulness, / But still, like air, I\'ll rise.', author: 'Maya Angelou', context: 'Resilience' },
     { id: 'qfm25', quote: 'Diversity is being invited to the party. Inclusion is being asked to dance.', author: 'Verna Myers', context: 'Inclusion' },
     { id: 'qfm26', quote: 'Each generation must do its part.', author: 'Coretta Scott King', context: 'Generational' },
     { id: 'qfm27', quote: 'Strong people do not need strong leaders.', author: 'Ella Baker', context: 'Grassroots power' },

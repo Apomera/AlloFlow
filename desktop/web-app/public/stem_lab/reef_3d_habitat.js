@@ -10,9 +10,10 @@
  */
 (function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var TAU = Math.PI * 2;
   var FORMS = ['branching', 'massive', 'plate', 'encrusting'];
-  var CORAL = { hard_coral: true, bleached_coral: true, recently_dead_coral: true };
+  var CORAL = Object.assign(Object.create(null), { hard_coral: true, bleached_coral: true, recently_dead_coral: true });
   var warnings = [];
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -94,6 +95,7 @@
     var r = stream(seed, 101), p1 = r() * TAU, p2 = r() * TAU, p3 = r() * TAU, p4 = r() * 40;
     var edge = belt + 0.6;
     return function (x, z) {
+      x = num(x, 0); z = num(z, 0);
       var h = 0.045 * Math.sin(x * 0.42 + 0.6) * Math.cos(z * 0.37) + 0.02 * Math.sin(x * 1.13 - z * 0.71 + 1.3);
       var w = smooth(edge, edge + 7, Math.abs(z));
       if (w === 0) return h;
@@ -697,7 +699,7 @@
   function inject(src, anchor, code, where) {
     if (src.indexOf(anchor) < 0) {
       var message = 'Reef3DHabitat: missing shader anchor ' + anchor + ' (' + where + ')';
-      warnings.push(message);
+      if (warnings.length < 200) warnings.push(message);
       if (global.console && global.console.warn) global.console.warn(message);
       return src;
     }
@@ -901,11 +903,18 @@
       return material;
     }
     // Puts another module's standard material (the engine's fish) in the same water.
+    var immersedMaterials = typeof WeakSet === 'function' ? new WeakSet() : null;
     function immerse(material) {
       if (!material || !(material.isMeshStandardMaterial || material.isMeshPhysicalMaterial)) return material;
-      var original = material.onBeforeCompile, originalKey = material.customProgramCacheKey();
+      if (immersedMaterials) {
+        if (immersedMaterials.has(material)) return material;
+        immersedMaterials.add(material);
+      }
+      if (derivatives) material.extensions = Object.assign({}, material.extensions, { derivatives: true });
+      var original = material.onBeforeCompile;
+      var originalKey = typeof material.customProgramCacheKey === 'function' ? material.customProgramCacheKey.call(material) : '';
       material.onBeforeCompile = function (shader, renderer) {
-        if (original) original.call(this, shader, renderer);
+        if (typeof original === 'function') original.call(this, shader, renderer);
         var parts = shaderParts(); commonFragment(parts, false); bindCaustics(shader);
         parts.fColor.push(ABSORB);
         applyParts(shader, parts, 'immerse');
@@ -1174,7 +1183,7 @@
     // Reef patches and sand channels: a seeded density field (two fixed draws).
     function patchField(x, z) { return noise2(x * 0.16 + o1, z * 0.16 + o2) * 0.78 + noise2(x * 0.46 - o2, z * 0.46 + o1) * 0.22; }
     function patchiness(x, z) { return smooth(0.33, 0.68, patchField(x, z)); }
-    var SURVEY_GROUND = { sand: [1, 0], rubble: [0.4, 1], rock: [0, 0], macroalgae: [0, 0.15] };
+    var SURVEY_GROUND = Object.assign(Object.create(null), { sand: [1, 0], rubble: [0.4, 1], rock: [0, 0], macroalgae: [0, 0.15] });
     function surveyGround(x) {
       // The nearest point's bottom type, blended over a few centimetres at each boundary.
       if (!pts.length || x < pts[0].distanceM - 0.5 || x > pts[pts.length - 1].distanceM + 0.5) return null;
@@ -1217,7 +1226,7 @@
 
     // ---- Survey objects (layout only) ------------------------------------------
     var surveyRoot = new T.Group(); surveyRoot.name = 'reef-survey-points'; root.add(surveyRoot);
-    var surveyObjects = [], colonyMaterials = {}, pieces = [];
+    var surveyObjects = [], colonyMaterials = Object.create(null), pieces = [];
     // Neighbouring points on one colony (same colony id, category and form) join.
     pts.forEach(function (p, i) {
       var prev = i > 0 ? pts[i - 1] : null;
@@ -1350,6 +1359,7 @@
     // below the tape at the point (computed on demand; survey objects never move).
     var ray = new T.Raycaster(), rayDown = new T.Vector3(0, -1, 0), rayFrom = new T.Vector3(), contactCache = [], CONTACT_OFFSETS = [[0, 0.0013], [0.009, 0.0013], [-0.009, 0.0013], [0, 0.0103], [0, -0.0077]];
     function contactHeight(i) {
+      if (disposed || !Number.isInteger(i) || i < 0 || i >= pts.length) return null;
       var p = pts[i]; if (!p) return null;
       if (contactCache[i] !== undefined) return contactCache[i];
       root.updateMatrixWorld(true);
@@ -1394,7 +1404,7 @@
         for (i = 0; i < n; i++) { var s = 0; for (k = -4; k <= 4; k++) s += dil[clamp(i + k, 0, n - 1)]; out[i] = Math.max(s / 9, top[i]); }
         dil.set(out);
       }
-      return { step: stepX, heights: out, at: function (x) { var f = clamp(x / stepX, 0, n - 1), a = Math.floor(f), b = Math.min(n - 1, a + 1); return out[a] + (out[b] - out[a]) * (f - a); } };
+      return { step: stepX, heights: out, at: function (x) { x = num(x, 0); var f = clamp(x / stepX, 0, n - 1), a = Math.floor(f), b = Math.min(n - 1, a + 1); return out[a] + (out[b] - out[a]) * (f - a); } };
     }
     (function buildTape() {
       var n = Math.max(2, Math.ceil(L / 0.04)), half = 0.017, p = [], nrm = [], idx = [];
@@ -1430,7 +1440,7 @@
     // ---- Decorative reef (seeded; draw counts fixed per slot) ----------------
     var decor = buildDecor();
     function buildDecor() {
-      var lists = {}, bommies = [], rb = stream(seed, 202), rd = stream(seed, 201), corridor = 0.45, cover = bg.coralCover, rt = stream(seed, 204);
+      var lists = Object.create(null), bommies = [], rb = stream(seed, 202), rd = stream(seed, 201), corridor = 0.45, cover = bg.coralCover, rt = stream(seed, 204);
       function push(kind, x, y, z, yaw, sx, sy, sz, color, tilt, light) { (lists[kind] = lists[kind] || []).push([x, y, z, yaw, sx, sy, sz, color, tilt || 0, !!light]); }
       // Tissue colours by kind (Coral look guide); neighbours share a pigment field.
       var PIGMENT = {
@@ -1568,7 +1578,7 @@
       var mtx = new T.Matrix4(), q = new T.Quaternion(), e = new T.Euler(), pv = new T.Vector3(), sv = new T.Vector3(), color = new T.Color(), meshes = [], instances = 0;
       Object.keys(bases).forEach(function (kind) {
         var list = lists[kind]; if (!list || !list.length) return;
-        var lod = high && bases[kind][2], forms = { f: G(bases[kind][0](false)), n: lod ? G(bases[kind][0](true)) : null }, chunks = {};
+        var lod = high && bases[kind][2], forms = { f: G(bases[kind][0](false)), n: lod ? G(bases[kind][0](true)) : null }, chunks = Object.create(null);
         // Chunks (10 m; 20 m on low, where draw calls cost most) share the GPU buffers
         // but carry their own bounds, so the diver view culls distant decoration.
         list.forEach(function (it) {
@@ -1771,12 +1781,14 @@
       });
     }
     // The engine's water palette: output-space fog colours, extinction per metre.
+    function finiteColor(c) { return !!(c && typeof c === 'object' && Number.isFinite(c.r) && Number.isFinite(c.g) && Number.isFinite(c.b)); }
+    function finiteVec3(v) { return !!(v && typeof v === 'object' && Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z)); }
     function setWater(o) {
-      o = o || {};
-      if (o.scatter) U.scatter.value.copy(o.scatter);
-      if (o.extinction) U.extinction.value.copy(o.extinction);
-      if (o.top) U.top.value.copy(o.top);
-      if (o.deep) U.deep.value.copy(o.deep);
+      if (disposed || !o || typeof o !== 'object') return;
+      if (finiteColor(o.scatter)) U.scatter.value.copy(o.scatter);
+      if (finiteVec3(o.extinction)) U.extinction.value.copy(o.extinction);
+      if (finiteColor(o.top)) U.top.value.copy(o.top);
+      if (finiteColor(o.deep)) U.deep.value.copy(o.deep);
     }
     function dispose() {
       if (disposed) return; disposed = true;
@@ -1785,7 +1797,7 @@
       geometries.forEach(function (g) { g.dispose(); });
       materials.forEach(function (m) { m.dispose(); });
       textures.forEach(function (t) { t.dispose(); });
-      geometries.length = 0; materials.length = 0; textures.length = 0; plantMotions.length = 0; shafts.length = 0;
+      geometries.length = 0; materials.length = 0; textures.length = 0; plantMotions.length = 0; shafts.length = 0; contactCache.length = 0;
       root.clear();
     }
     update(0, 0);
@@ -1901,4 +1913,4 @@
     categories: ['hard_coral', 'bleached_coral', 'recently_dead_coral', 'macroalgae', 'rock', 'rubble', 'sand'],
     coralForms: FORMS.slice(), shaderWarnings: warnings
   };
-})(window);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

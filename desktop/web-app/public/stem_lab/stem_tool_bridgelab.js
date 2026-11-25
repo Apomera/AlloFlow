@@ -2904,6 +2904,12 @@
     st.id = 'allo-bridgelab-hc-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(248, 250, 252)\"],[style*=\"background-color: rgb(248, 250, 252)\"],[style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(125, 211, 252)\"],[style*=\"background-color: rgb(125, 211, 252)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(94, 234, 212)\"],[style*=\"background-color: rgb(94, 234, 212)\"],[style*=\"background: rgb(253, 164, 175)\"],[style*=\"background-color: rgb(253, 164, 175)\"],[style*=\"background: rgb(56, 189, 248)\"],[style*=\"background-color: rgb(56, 189, 248)\"],[style*=\"background: rgb(196, 181, 253)\"],[style*=\"background-color: rgb(196, 181, 253)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(134, 239, 172)\"],[style*=\"background-color: rgb(134, 239, 172)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(252, 165, 165)\"],[style*=\"background-color: rgb(252, 165, 165)\"],[style*=\"background: rgb(147, 197, 253)\"],[style*=\"background-color: rgb(147, 197, 253)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(220, 38, 38)\"],[style*=\"; color: rgb(220, 38, 38)\"],[style^=\"color: rgb(37, 99, 235)\"],[style*=\"; color: rgb(37, 99, 235)\"],[style^=\"color: rgb(15, 23, 42)\"],[style*=\"; color: rgb(15, 23, 42)\"],[style^=\"color: rgb(161, 98, 7)\"],[style*=\"; color: rgb(161, 98, 7)\"],[style^=\"color: rgb(30, 64, 175)\"],[style*=\"; color: rgb(30, 64, 175)\"],[style^=\"color: rgb(71, 85, 105)\"],[style*=\"; color: rgb(71, 85, 105)\"],[style^=\"color: rgb(6, 95, 70)\"],[style*=\"; color: rgb(6, 95, 70)\"],[style^=\"color: rgb(120, 53, 15)\"],[style*=\"; color: rgb(120, 53, 15)\"],[style^=\"color: rgb(127, 29, 29)\"],[style*=\"; color: rgb(127, 29, 29)\"],[style^=\"color: rgb(100, 116, 139)\"],[style*=\"; color: rgb(100, 116, 139)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(248, 250, 252)\"],[style*=\"background-color: rgb(248, 250, 252)\"],[style*=\"background: rgb(226, 232, 240)\"],[style*=\"background-color: rgb(226, 232, 240)\"],[style*=\"background: rgb(251, 191, 36)\"],[style*=\"background-color: rgb(251, 191, 36)\"],[style*=\"background: rgb(125, 211, 252)\"],[style*=\"background-color: rgb(125, 211, 252)\"],[style*=\"background: rgb(236, 253, 245)\"],[style*=\"background-color: rgb(236, 253, 245)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(254, 242, 242)\"],[style*=\"background-color: rgb(254, 242, 242)\"],[style*=\"background: rgb(203, 213, 225)\"],[style*=\"background-color: rgb(203, 213, 225)\"],[style*=\"background: rgb(94, 234, 212)\"],[style*=\"background-color: rgb(94, 234, 212)\"],[style*=\"background: rgb(253, 164, 175)\"],[style*=\"background-color: rgb(253, 164, 175)\"],[style*=\"background: rgb(56, 189, 248)\"],[style*=\"background-color: rgb(56, 189, 248)\"],[style*=\"background: rgb(196, 181, 253)\"],[style*=\"background-color: rgb(196, 181, 253)\"],[style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(134, 239, 172)\"],[style*=\"background-color: rgb(134, 239, 172)\"],[style*=\"background: rgb(241, 245, 249)\"],[style*=\"background-color: rgb(241, 245, 249)\"],[style*=\"background: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background: rgb(252, 165, 165)\"],[style*=\"background-color: rgb(252, 165, 165)\"],[style*=\"background: rgb(147, 197, 253)\"],[style*=\"background-color: rgb(147, 197, 253)\"],[style*=\"background: rgb(253, 230, 138)\"],[style*=\"background-color: rgb(253, 230, 138)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(167, 139, 250)\"],[style*=\"background-color: rgb(167, 139, 250)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"bridgeLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-bridgelab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-bridgelab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"bridgeLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"bridgeLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end WCAG 1.4.3 high contrast
   window.StemLab.registerTool('bridgeLab', {
@@ -3344,7 +3350,7 @@
       var visibleBridgeTabs = showFullBridgeNav ? TABS : TABS.filter(function(tab) { return BRIDGE_CORE_TABS.indexOf(tab.id) !== -1; });
       var currentBridgeTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
       var bridgeTabKeyDown = function(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % visibleBridgeTabs.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + visibleBridgeTabs.length - 1) % visibleBridgeTabs.length;
@@ -3397,7 +3403,7 @@
         visibleBridgeTabs.map(function(t, tabIndex) {
           var active = d.tab === t.id;
           return h('button', {
-            key: t.id, role: 'tab', 'aria-selected': active,
+            key: t.id, type: 'button', role: 'tab', 'aria-selected': active,
             id: 'stem-bridgelab-tab-' + t.id,
             'aria-controls': 'stem-bridgelab-panel-' + t.id,
             'aria-label': t.label,
@@ -4032,7 +4038,7 @@
         ];
         function shape(id, percent) {
           return h('svg', { key: id, 'data-motion-marker': id, 'data-motion-position-percent': percent,
-            viewBox: '0 0 16 16', width: 16, height: 16, focusable: 'false',
+            'aria-hidden': 'true', viewBox: '0 0 16 16', width: 16, height: 16, focusable: 'false',
             style: { display: 'block', position: 'absolute', left: percent + '%', top: '50%', transform: 'translate(-50%,-50%)' } },
             id === 'ground' ? h('circle', { cx: 8, cy: 8, r: 6, fill: '#0f172a', stroke: '#5eead4', strokeWidth: 2 })
               : h('path', { d: 'M8 2 l6 6 -6 6 -6 -6 Z', fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 }));
@@ -8149,7 +8155,8 @@
             h('input', { type: 'range', min: min, max: max, step: step, value: value,
               onChange: function(e) { onChange(parseFloat(e.target.value)); },
               'aria-label': label,
-              style: { width: '100%', accentColor: accent }
+              'aria-valuetext': label + ': ' + value,
+              style: { width: '100%', minHeight: 44, accentColor: accent }
             }),
             hint ? h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 5, lineHeight: 1.5 } }, hint) : null
           );
@@ -8601,7 +8608,7 @@
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                     MATERIALS.map(function(m) {
                       var active = bMatId === m.id;
-                      return h('button', { key: m.id,
+                      return h('button', { key: m.id, type: 'button',
                         onClick: function() { upd({ beamMatId: m.id }); },
                         style: { padding: '5px 10px', borderRadius: 6, background: active ? 'rgba(245,158,11,0.25)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                       }, m.name.split(' ')[0]);
@@ -8873,7 +8880,7 @@
               RAIL.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedRail: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -8951,7 +8958,7 @@
               TUN.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedTunnel: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9025,7 +9032,7 @@
               MOV.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedMov: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9103,7 +9110,7 @@
               ACC.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedAcc: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9236,7 +9243,7 @@
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   TECHNIQUES.map(function(t) {
                     var active = (d.selectedRepair || TECHNIQUES[0].id) === t.id;
-                    return h('button', { key: t.id,
+                    return h('button', { key: t.id, type: 'button',
                       onClick: function() { upd({ selectedRepair: t.id }); },
                       style: { padding: '8px 12px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, t.name);
@@ -9431,7 +9438,7 @@
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   SOILS.map(function(s) {
                     var active = soilId === s.id;
-                    return h('button', { key: s.id,
+                    return h('button', { key: s.id, type: 'button',
                       onClick: function() { upd({ selectedSoil: s.id }); },
                       style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '55' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
@@ -9737,7 +9744,7 @@
               DEMO.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedDemo: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9807,7 +9814,7 @@
               SHM.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedSHM: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9880,7 +9887,7 @@
               EXT.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedExt: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -9941,7 +9948,7 @@
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             FORCES.map(function(f) {
               var active = d.selectedForce === f.id;
-              return h('button', { key: f.id,
+              return h('button', { key: f.id, type: 'button',
                 onClick: function() { upd({ selectedForce: f.id }); },
                 style: { padding: '6px 12px', borderRadius: 8, background: active ? f.color + '33' : '#1e293b', border: '1px solid ' + (active ? f.color : '#94a3b8'), color: active ? bridgeReadableInk(f.color, bridgeMixHex(f.color, '#1e293b', 0x33 / 255)) : 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, f.icon + ' ' + f.name);
@@ -10090,7 +10097,7 @@
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   SENSORS.map(function(s) {
                     var active = (d.selectedSensor || SENSORS[0].id) === s.id;
-                    return h('button', { key: s.id,
+                    return h('button', { key: s.id, type: 'button',
                       onClick: function() { upd({ selectedSensor: s.id }); },
                       style: { padding: '8px 12px', borderRadius: 8, background: active ? s.color + '33' : '#1e293b', border: '1px solid ' + (active ? s.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, s.name);
@@ -10137,7 +10144,7 @@
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
                 CONNECTIONS.map(function(c) {
                   var active = conn === c.id;
-                  return h('button', { key: c.id,
+                  return h('button', { key: c.id, type: 'button',
                     onClick: function() { upd({ selectedConnection: c.id }); },
                     style: { padding: '6px 14px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                   }, c.name);
@@ -10298,7 +10305,7 @@
               WT.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedWT: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10368,7 +10375,7 @@
               STEPS.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedSpin: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10545,7 +10552,7 @@
               ANC.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedAnc: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10626,7 +10633,7 @@
               MIL.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedMil: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10700,7 +10707,7 @@
               ICONIC.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedIcon: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.name + ' (' + t.year + ')');
@@ -10744,7 +10751,7 @@
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             DESIGN_STEPS.map(function(s, i) {
               var active = d.selectedStep === s.id;
-              return h('button', { key: s.id,
+              return h('button', { key: s.id, type: 'button',
                 onClick: function() { upd({ selectedStep: s.id }); },
                 style: { padding: '8px 14px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.25)' : '#1e293b', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, s.icon + ' ' + (i + 1) + '. ' + s.name);
@@ -10815,7 +10822,7 @@
               FIN.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedFin: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10885,7 +10892,7 @@
               ABC.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedABC: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -10947,7 +10954,7 @@
               FEA_TOPICS.map(function(t) {
                 var on = t.id === sel;
                 return h('button', {
-                  key: t.id,
+                  key: t.id, type: 'button',
                   onClick: function() { upd({ selectedFea: t.id }); },
                   style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fbbf24' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fbbf24' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
@@ -11014,7 +11021,7 @@
                 q.source ? h('a', { href: q.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', marginTop: 6, color: '#7dd3fc', fontSize: 12 } }, q.source.label) : null
               );
             }),
-            h('button', { onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.retake_quiz', 'Retake quiz'))
+            h('button', { type: 'button', onClick: reset, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: AMBER, color: '#0f172a', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.retake_quiz', 'Retake quiz'))
           );
         }
 
@@ -11032,7 +11039,7 @@
               })
             );
           }),
-          h('button', {
+          h('button', { type: 'button',
             onClick: submit,
             disabled: !allAnswered,
             style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: allAnswered ? AMBER : '#475569', color: allAnswered ? '#0f172a' : '#fff', fontWeight: 800, fontSize: 14, cursor: allAnswered ? 'pointer' : 'not-allowed' }
@@ -11131,7 +11138,7 @@
               h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
                 MATERIALS.map(function(m) {
                   var active = iq.materialId === m.id;
-                  return h('button', { key: m.id, 'aria-pressed': active,
+                  return h('button', { key: m.id, type: 'button', 'aria-pressed': active,
                     onClick: function() { setIQ({ materialId: m.id }); },
                     style: { padding: '4px 10px', borderRadius: 4, border: '1px solid ' + (active ? '#fbbf24' : 'rgba(100,116,139,0.4)'), background: active ? 'rgba(245,158,11,0.25)' : 'transparent', color: active ? '#fbbf24' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, m.name);
                 })
@@ -11145,8 +11152,8 @@
                 style: { width: '100%', boxSizing: 'border-box', padding: 8, background: '#0a1525', color: '#e2e8f0', border: '1px solid #64748b', borderRadius: 4, fontSize: 12, fontFamily: 'inherit' } })),
             // Log + reset
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 12 } },
-              h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.log_observation', '📋 Log observation')),
-              h('button', { onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel' }); },
+              h('button', { type: 'button', onClick: logObs, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.bridgelab.log_observation', '📋 Log observation')),
+              h('button', { type: 'button', onClick: function() { setIQ({ spanM: 18, areaMm2: 1500, materialId: 'steel' }); },
                 style: { padding: '4px 10px', background: '#0a1525', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer' } }, __alloT('stem.bridgelab.inquiry_reset_controls', '↺ Reset controls')),
               observations.length > 0 && h('span', { role: 'status', style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, observations.length + ' observations logged')
             ),
@@ -11187,7 +11194,7 @@
             ),
             // Opt-in questions
             h('div', { style: { marginBottom: 12 } },
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+              !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
                 style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                 __alloT('stem.bridgelab.i_m_stuck_show_me_questions_to_think_a', '🤔 I\'m stuck — show me questions to think about (no answers)')),
               iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } },
@@ -11260,7 +11267,7 @@
             __alloT('stem.bridgelab.print_evidence_portfolio', 'An engineering portfolio with the current design, saved trial comparisons, and your Inquiry evidence. Print or save as PDF to keep the inputs, calculations, predictions, observations, and explanations together.')
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} },
+            h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} },
               style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #c2410c 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.bridgelab.print_save_as_pdf', '🖨 Print / Save as PDF'))
           ),
           h('style', null,

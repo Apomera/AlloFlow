@@ -1,0 +1,533 @@
+/* Illustrated Architecture & Feature Tour styles (split from promo-home.css so index.html loads only homepage styles). */
+/* Slider-scoped styles, do NOT use global selectors here */
+
+#slider-container {
+    width: 100%;
+    max-width: 1200px;
+    height: auto;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #090e17 0%, #0f1629 40%, #151a2a 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 120px rgba(99, 102, 241, 0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+#slides-viewport {
+    flex: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2rem 3rem;
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
+.slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+}
+
+.slide.prev {
+    transform: translateX(-50px);
+}
+
+.slide-content {
+    flex: 1;
+}
+
+.slide-visual {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.slide-visual::before {
+    content: '';
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.slide-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.slide h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e2e8f0, #64748b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.slide p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #64748b;
+    margin-bottom: 18px;
+    max-width: 560px;
+}
+
+.info-box {
+    position: relative;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.info-box:hover {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.info-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), transparent);
+    pointer-events: none;
+}
+
+.info-box:hover::before {
+    opacity: 1;
+}
+
+.info-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.stat-callout {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 10px;
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s;
+}
+
+.slide.active .stat-callout {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.stat-callout .stat-number {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a5b4fc, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-callout .stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.slide-tag::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    50%, 100% { left: 150%; }
+}
+
+#controls {
+    padding: 14px 32px;
+    background: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid rgba(99, 102, 241, 0.12);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    z-index: 10;
+}
+
+.controls-center {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.slide-dots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+}
+
+/* WCAG 2.5.8: the visible dot stays 5px, drawn by ::before, while the button
+   itself is a 24x24 pointer target. Centres land 24px apart, which also
+   satisfies the spacing rule. */
+.slide-dots .dot {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.slide-dots .dot::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #64748b;
+    transition: all 0.3s ease;
+}
+
+.slide-dots .dot.active::before {
+    background: #818cf8;
+    box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
+    transform: scale(1.3);
+}
+
+.slide-dots .dot:hover:not(.active)::before {
+    background: #94a3b8;
+    transform: scale(1.15);
+}
+
+.slide-title-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    min-height: 1.1em;
+    transition: opacity 0.3s;
+}
+
+.slide-counter {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    color: #cbd5e1;
+    letter-spacing: 0.05em;
+    margin-left: 4px;
+}
+
+.slide-progress {
+    width: 100%;
+    height: 2px;
+    background: #1e293b;
+    border-radius: 1px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.slide-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #818cf8, #06b6d4);
+    border-radius: 1px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #f8fafc;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: #818cf8;
+    color: #818cf8;
+    transform: scale(1.1);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.2);
+}
+
+#indicator {
+    font-family: 'Outfit';
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: 0.1em;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    padding: 4px 14px;
+    border-radius: 999px;
+}
+
+/* Custom Visuals SVG styles */
+.svg-container {
+    width: 100%;
+    height: 100%;
+    max-height: 400px;
+}
+
+.node-box {
+    fill: #0f172a;
+    stroke: #334155;
+    stroke-width: 2;
+    rx: 12;
+}
+
+.node-text {
+    fill: #f8fafc;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+
+.node-subtext {
+    fill: #cbd5e1;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    text-anchor: middle;
+}
+
+.path-line {
+    fill: none;
+    stroke: #475569;
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    animation: march 20s linear infinite;
+}
+
+.path-solid {
+    fill: none;
+    stroke: #6366f1;
+    stroke-width: 3;
+}
+
+@keyframes march {
+    from { stroke-dashoffset: 200; }
+    to { stroke-dashoffset: 0; }
+}
+
+.pulse-circle {
+    animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+}
+
+.svg-container rect,
+.svg-container circle {
+    transition: filter 0.3s ease;
+}
+
+.svg-container rect:hover,
+.svg-container circle:hover {
+    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide.active .info-box:nth-child(1) { animation: fadeInUp 0.5s ease-out 0.15s both; }
+.slide.active .info-box:nth-child(2) { animation: fadeInUp 0.5s ease-out 0.3s both; }
+.slide.active .info-box:nth-child(3) { animation: fadeInUp 0.5s ease-out 0.45s both; }
+
+#progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+#progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #818cf8, #6366f1);
+    border-radius: 0 2px 2px 0;
+    transition: width 0.1s linear;
+}
+
+@keyframes orbit {
+    0% { transform: rotate(0deg) translateX(8px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(8px) rotate(-360deg); }
+}
+
+/* Keep complete tour slides in normal flow; inactive slides leave the tab order. */
+#slider-container .slide { position: relative; display: none; height: auto; min-height: 720px; transform: none; }
+#slider-container .slide.active { display: flex; }
+#slider-container .slide-content { min-width: 0; }
+#slider-container .slide-visual { height: 400px; }
+#slider-container .slide p, #slider-container .info-desc, #slider-container .stat-label, #slider-container .slide-title-label { color: #cbd5e1; }
+#slider-container svg text[fill="#64748b"] { fill: #cbd5e1; }
+#slider-container :focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+#slider-container .slide-visual::before { max-width: 100%; max-height: 100%; }
+
+/* Solid light text stays legible where gradient text is too dark to read. */
+#slider-container .slide h3, #slider-container .stat-callout .stat-number { color: #e2e8f0!important; -webkit-text-fill-color: #e2e8f0; background: none!important; }
+
+@media (max-width: 768px) {
+    #slider-container {
+        height: auto;
+        min-height: 0;
+    }
+
+    .slide {
+        flex-direction: column;
+        padding: 1.5rem 1.2rem;
+        gap: 1.5rem;
+    }
+
+    #slider-container .slide { min-height: 0; }
+    #slider-container .slide-content { flex: none; width: 100%; }
+    #slider-container .slide-visual { flex: none; width: 100%; height: 240px; max-height: 220px; }
+
+    .slide h3 { font-size: 1.6rem; }
+    .slide p { font-size: 0.9rem; }
+    #controls { padding: 10px 16px; }
+    .slide-title-label { font-size: 0.65rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slide,
+    .info-box,
+    .info-box::before,
+    .stat-callout,
+    .slide-dots .dot::before,
+    .slide-title-label,
+    .slide-progress-bar,
+    .btn,
+    #progress-bar,
+    .svg-container rect,
+    .svg-container circle {
+        transition: none;
+    }
+
+    .slide-tag::after,
+    .path-line,
+    .pulse-circle,
+    .slide.active .info-box:nth-child(1),
+    .slide.active .info-box:nth-child(2),
+    .slide.active .info-box:nth-child(3) {
+        animation: none;
+    }
+
+    .info-box:hover,
+    .btn:hover,
+    .slide-dots .dot.active::before,
+    .slide-dots .dot:hover:not(.active)::before {
+        transform: none;
+    }
+}
+
+@media (forced-colors: active) {
+    #slider-container, #controls { background: Canvas; color: CanvasText; border-color: CanvasText; }
+    #slider-container .btn { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+    .slide-dots .dot::before { background: CanvasText; }
+    .slide-dots .dot.active::before { background: Highlight; }
+    #slider-container :focus-visible { outline: 3px solid Highlight!important; outline-offset: 2px; }
+}
+
+i[data-lucide] { display: inline-block; flex-shrink: 0; vertical-align: middle; }

@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-esol-5362-learning-library",
@@ -30,8 +31,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "27f1ba767fd2772b533dcfb57387d8cc0538c7027d91bad3d77f0321ec467d6f",
-    "learningLibrarySha256": "b3a23d4d7fe2712aa5c6983d7a1b5b75f3440a6977afe749cea8a74f2152243b",
+    "sourceItemsSha256": "6a3fe3107289465d334047bb44077ffa80ea5159324525be2b7d156e460c63c7",
+    "learningLibrarySha256": "274a3944ffd814be2a69dac921a8b93abded684f1fb2a0ed16c85f592c52795c",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

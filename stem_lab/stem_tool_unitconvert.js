@@ -41,6 +41,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       '@media (prefers-reduced-motion: reduce){[data-stem-tool-shell="unitConvert"] .uc-scale-beam,[data-stem-tool-shell="unitConvert"] .uc-meniscus-wave,[data-stem-tool-shell="unitConvert"] .uc-thermal-col,[data-stem-tool-shell="unitConvert"] .uc-bridge-dash,[data-stem-tool-shell="unitConvert"] .uc-speed-wake{animation:none!important;filter:none!important}}'
     ].join('');
     document.head.appendChild(st);
+    if (!document.getElementById('allo-unitconvert-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-unitconvert-a11y-css';
+      a11ySt.textContent = '[data-stem-tool-shell="unitConvert"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell="unitConvert"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(a11ySt);
+    }
   })();
 
   // ── Zero-GC Metric-Prefix Canvas Static Tables & Pre-Allocated Scratch Pools ──
@@ -3739,7 +3745,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         // ── Keyboard: digits switch activities, but only from the tab strip
         // or the tool frame itself, never from a focused button or field.
         function handleKey(e) {
-          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
           var target = e.target || {};
           if (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName || '')) return;
           var role = target.getAttribute ? target.getAttribute('role') : null;
@@ -3768,6 +3774,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes ucFactSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}' +
           '@keyframes spin{to{transform:rotate(360deg)}}' + (isDarkUI ? unitConvertDarkCss() : '');
         var unitConvertTabKeyDown = function(e, index) {
+          if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % UNIT_CONVERT_TAB_ORDER.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + UNIT_CONVERT_TAB_ORDER.length - 1) % UNIT_CONVERT_TAB_ORDER.length;
@@ -4284,7 +4291,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     autoComplete: 'off', spellCheck: false,
                     onChange: function(e) { updateConversionValueDraft(e.target.value); },
                     onBlur: reportConversionValueError,
-                    onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
+                    onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') e.currentTarget.blur(); },
                     style: { backgroundColor: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#ffffff' : '#0f172a' },
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight'
                   }),
@@ -4634,7 +4641,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     autoComplete: 'off', spellCheck: false,
                     onChange: function(e) { updateConversionValueDraft(e.target.value); },
                     onBlur: function() { if (!temperatureCheck.valid) say(temperatureCheck.message); },
-                    onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
+                    onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') e.currentTarget.blur(); },
                     className: 'w-24 min-h-[2.75rem] text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500'
                   }),
                   h('span', { className: 'text-xs font-bold text-slate-700' }, unitShort(d.fromUnit)),
@@ -4694,7 +4701,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     className: 'flex-1 min-h-[2.75rem] px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
                     value: d.quizDraft === undefined || d.quizDraft === null ? '' : d.quizDraft,
                     onChange: function(e) { upd({ quizDraft: e.target.value, quizDraftError: '' }); },
-                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
+                    onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
                   }),
                   h('span', { className: 'text-xs text-slate-700 shrink-0' }, item.unit),
                   h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'min-h-[2.75rem] px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, t('stem.unitconvert.check_answer', 'Check answer')),
@@ -4812,13 +4819,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('input', { key: 'hi', id: idp + '-answer-h', disabled: needsPrediction, type: 'text', inputMode: 'numeric', autoComplete: 'off', 'aria-describedby': idp + '-feedback',
                   className: 'w-20 ' + inputCls, value: d[cfg.draft + 'H'] == null ? '' : d[cfg.draft + 'H'],
                   onChange: function(e) { setDraft(cfg.draft + 'H', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
                 h('span', { key: 'sep', 'aria-hidden': 'true', className: 'text-lg font-black text-slate-700' }, item.answerType === 'clock' ? ':' : 'h'),
                 h('label', { key: 'ml', htmlFor: idp + '-answer-m', className: 'text-sm font-bold text-slate-800' }, t('stem.unitconvert.answer_minutes', 'Minutes')),
                 h('input', { key: 'mi', id: idp + '-answer-m', disabled: needsPrediction, type: 'text', inputMode: 'numeric', autoComplete: 'off', 'aria-describedby': idp + '-feedback',
                   className: 'w-20 ' + inputCls, value: d[cfg.draft + 'M'] == null ? '' : d[cfg.draft + 'M'],
                   onChange: function(e) { setDraft(cfg.draft + 'M', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, readTimeInputs()); } } }),
                 item.answerType === 'hm' && h('span', { key: 'mu', className: 'text-sm font-bold text-slate-700' }, 'min')
               ]
             : [
@@ -4833,7 +4840,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   className: 'flex-1 min-w-[8rem] ' + inputCls,
                   value: d[cfg.draft] === undefined || d[cfg.draft] === null ? '' : d[cfg.draft],
                   onChange: function(e) { setDraft(cfg.draft, e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, e.currentTarget.value); } }
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); gradeSlotAnswer(slot, e.currentTarget.value); } }
                 }),
                 h('span', { key: 'u', className: 'text-sm font-bold text-slate-700 shrink-0' }, unitText)
               ];
@@ -5000,7 +5007,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     type: 'text', inputMode: 'decimal',
                     value: d.wordProblemAttempt == null ? '' : d.wordProblemAttempt,
                     onChange: function(event) { upd({ wordProblemAttempt: event.target.value, wordProblemInputError: '' }); },
-                    onKeyDown: function(event) { if (event.key === 'Enter') { event.preventDefault(); gradeWordProblemAttempt(); } },
+                    onKeyDown: function(event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); gradeWordProblemAttempt(); } },
                     'aria-label': t('stem.unitconvert.word_problem_numeric_answer', 'Numeric answer for the word problem'),
                     className: 'min-w-0 flex-1 min-h-[2.75rem] rounded-lg border-2 border-cyan-600 px-3 py-2 font-mono text-sm outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-300'
                   }),
@@ -5347,6 +5354,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               { unit: unitOf(toR), n: Math.abs(places), value: fmtN(st.value), start: unitOf(startR), result: fmtN(valueAt(id)) }));
           }
           function onRungKey(e, i) {
+            if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
             var next = -1;
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = Math.min(rungs.length - 1, i + 1);
             else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = Math.max(0, i - 1);

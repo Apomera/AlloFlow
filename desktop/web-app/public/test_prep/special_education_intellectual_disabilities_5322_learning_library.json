@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-intellectual-disabilities-5322-learning-library",
@@ -30,7 +31,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 4,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -2294,7 +2300,7 @@
             "Defer assessing hearing, motor, or language concerns until eligibility is confirmed at the next annual review."
           ],
           "answerIndex": 0,
-          "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual individual support profile. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
+          "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual disability category. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
@@ -2531,7 +2537,7 @@
             "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants.",
             "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms.",
             "Section 504 bars discrimination due to impairment and can require accommodations and aids for equal access.",
-            "Section 504 protections become available after a student first qualifies under an IDEA individual support profile."
+            "Section 504 protections become available after a student first qualifies under an IDEA individualized support profile."
           ],
           "answerIndex": 2,
           "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified students from disability discrimination and can require an appropriate plan of access supports. For 5322 preparation, connect intellectual and adaptive evidence to individualized, age-respectful instruction; presume competence; integrate communication, functional, academic, social, self-determination, and transition goals; fade support toward agency; and monitor meaningful participation and generalization.",
@@ -7406,6 +7412,2492 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-01",
+      "title": "Development, Adaptive Behavior, Context, and Learner Variability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Development, Adaptive Behavior, Context, and Learner Variability\" (Development and Characteristics of Students with Intellectual Disabilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-01",
+      "itemIds": [
+        "id5322-b1-001",
+        "id5322-b1-002",
+        "id5322-b1-003",
+        "id5322-b1-004",
+        "id5322-b1-005",
+        "id5322-b1-006",
+        "id5322-b1-007",
+        "id5322-b1-008",
+        "id5322-b1-009",
+        "id5322-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Development, Adaptive Behavior, Context, and Learner Variability\" and the \"AAIDD Three-Prong Criteria, Etiologies & Supports Paradigm\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Intellectual Disability Identification: Intellectual Functioning, Adaptive Behavior & Support-Intensity Model\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Applying the AAIDD Supports Paradigm Over IQ-Only Ceilings\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Development, Adaptive Behavior, Context, and Learner Variability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify All Three AAIDD Diagnostic Prongs and Plan by Intensity of Supports\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-02",
+      "title": "Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs\" (Development and Characteristics of Students with Intellectual Disabilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-02",
+      "itemIds": [
+        "id5322-b1-017",
+        "id5322-b1-018",
+        "id5322-b2-010",
+        "id5322-b2-011",
+        "id5322-b2-012",
+        "id5322-b2-013",
+        "id5322-b2-014",
+        "id5322-b2-015",
+        "id5322-b2-016",
+        "id5322-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs\" and the \"AAIDD Three-Prong Criteria, Etiologies & Supports Paradigm\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Coexisting Sensory, Motor, Communication & Health Support Coordination\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing Diagnostic Overshadowing of Coexisting Health Needs\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Rule Out Medical, Sensory, and Mental Health Causes Before Attributing Changes to ID\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-03",
+      "title": "Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-03",
+      "itemIds": [
+        "id5322-b2-022",
+        "id5322-b2-023",
+        "id5322-b2-024",
+        "id5322-b2-025",
+        "id5322-b2-026",
+        "id5322-b2-027",
+        "id5322-b2-028",
+        "id5322-b2-029",
+        "id5322-b1-019",
+        "id5322-b1-020"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition\" and the \"Person-Centered IEPs, Self-Determination, Transition & AAC\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Person-Centered Secondary Transition, Self-Determination & Supported Employment Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Leading Person-Centered Transition Planning by Age Sixteen\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Validated Task Analyses to Forward, Backward, or Total-Task Chaining\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-04",
+      "title": "Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-04",
+      "itemIds": [
+        "id5322-b1-035",
+        "id5322-b1-036",
+        "id5322-b1-037",
+        "id5322-b2-030",
+        "id5322-b2-031",
+        "id5322-b2-032",
+        "id5322-b2-033",
+        "id5322-b2-034",
+        "id5322-b2-035",
+        "id5322-b2-036"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access\" and the \"Person-Centered IEPs, Self-Determination, Transition & AAC\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"AAC, Multimodal Communication & Functional Behavior Replacement Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting AAC Access, Dysphagia Safety, and Lift Protocols\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Transfer Stimulus Control to Natural Cues Through Systematic Prompt Fading\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-05",
+      "title": "Positive Environments, Behavior Support, Inclusion, and Daily Routines guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Positive Environments, Behavior Support, Inclusion, and Daily Routines\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-05",
+      "itemIds": [
+        "id5322-b1-038",
+        "id5322-b1-039",
+        "id5322-b1-040",
+        "id5322-b1-041",
+        "id5322-b1-042",
+        "id5322-b1-043",
+        "id5322-b1-044",
+        "id5322-b2-038",
+        "id5322-b2-039",
+        "id5322-b2-040"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Positive Environments, Behavior Support, Inclusion, and Daily Routines\" and the \"Person-Centered IEPs, Self-Determination, Transition & AAC\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ecological Inventory, Community-Based Instruction (CBI) & Independent Living Progression\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Permanent 1:1 Hovering and Earned Inclusion Rules\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Positive Environments, Behavior Support, Inclusion, and Daily Routines\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Strict AA-AAS Participation Criteria and Protect General-Curriculum Access\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-06",
+      "title": "Functional and Academic Literacy, Language, Vocabulary, and Comprehension guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Functional and Academic Literacy, Language, Vocabulary, and Comprehension\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-06",
+      "itemIds": [
+        "id5322-b2-050",
+        "id5322-b2-051",
+        "id5322-b2-052",
+        "id5322-b2-053",
+        "id5322-b2-054",
+        "id5322-b1-045",
+        "id5322-b1-046",
+        "id5322-b1-047",
+        "id5322-b1-048",
+        "id5322-b1-049"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Functional and Academic Literacy, Language, Vocabulary, and Comprehension\" and the \"Systematic Instruction, Chaining, Functional Literacy & Math\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Functional Academics, Standards-Aligned Alternate Access & UDL Integration\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Delivering Comprehensive Age-Respectful Literacy for AAC Users\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Functional and Academic Literacy, Language, Vocabulary, and Comprehension\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Design Age-Appropriate CBI, Generalization Plans, and Student-Led Transition\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-07",
+      "title": "Writing, Communication, Self-Advocacy, and Expression guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Writing, Communication, Self-Advocacy, and Expression\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-07",
+      "itemIds": [
+        "id5322-b2-057",
+        "id5322-b2-058",
+        "id5322-b2-059",
+        "id5322-b2-060",
+        "id5322-b2-061",
+        "id5322-b2-062",
+        "id5322-b1-055",
+        "id5322-b1-056",
+        "id5322-b1-057",
+        "id5322-b1-058"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Writing, Communication, Self-Advocacy, and Expression\" and the \"Systematic Instruction, Chaining, Functional Literacy & Math\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Accessible Writing, Multimodal Expression & Self-Advocacy Instruction Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Presuming Authorship and Honoring Nonverbal Refusal in Writing\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Writing, Communication, Self-Advocacy, and Expression\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify All Three AAIDD Diagnostic Prongs and Plan by Intensity of Supports\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-08",
+      "title": "Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-08",
+      "itemIds": [
+        "id5322-b1-064",
+        "id5322-b1-065",
+        "id5322-b1-066",
+        "id5322-b1-067",
+        "id5322-b1-068",
+        "id5322-b1-069",
+        "id5322-b1-070",
+        "id5322-b2-063",
+        "id5322-b2-064",
+        "id5322-b2-065"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization\" and the \"Systematic Instruction, Chaining, Functional Literacy & Math\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Explicit Systematic Instruction, Task Analysis & Prompt-Fading Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Fading Prompts and Programming Generalization in Functional Math\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Rule Out Medical, Sensory, and Mental Health Causes Before Attributing Changes to ID\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-09",
+      "title": "Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-09",
+      "itemIds": [
+        "id5322-b2-071",
+        "id5322-b2-072",
+        "id5322-b2-073",
+        "id5322-b2-074",
+        "id5322-b2-075",
+        "id5322-b2-076",
+        "id5322-b2-077",
+        "id5322-b2-078",
+        "id5322-b1-071",
+        "id5322-b1-072"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility\" and the \"Adaptive Scales, Ecological Inventories & ESSA 1% AA-AAS Rules\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Nondiscriminatory ID Eligibility, Adaptive Evidence & Accessible Assessment Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing IQ-Cutoff and Language-Difference Eligibility Errors\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Validated Task Analyses to Forward, Backward, or Total-Task Chaining\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-10",
+      "title": "Progress Monitoring, FBA, Alternate Assessment, and Program Decisions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Progress Monitoring, FBA, Alternate Assessment, and Program Decisions\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-10",
+      "itemIds": [
+        "id5322-b2-086",
+        "id5322-b1-079",
+        "id5322-b1-080",
+        "id5322-b1-081",
+        "id5322-b1-082",
+        "id5322-b1-083",
+        "id5322-b1-084",
+        "id5322-b1-085",
+        "id5322-b1-086",
+        "id5322-b2-079"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Progress Monitoring, FBA, Alternate Assessment, and Program Decisions\" and the \"Adaptive Scales, Ecological Inventories & ESSA 1% AA-AAS Rules\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Task-Analytic Progress Monitoring, FBA-to-BIP & AA-AAS Decision Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Enforcing AA-AAS Eligibility Rules and BIP Fidelity Monitoring\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Progress Monitoring, FBA, Alternate Assessment, and Program Decisions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Transfer Stimulus Control to Natural Cues Through Systematic Prompt Fading\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-11",
+      "title": "Law, Ethics, Rights, Family Partnership, and Safeguards guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Law, Ethics, Rights, Family Partnership, and Safeguards\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-11",
+      "itemIds": [
+        "id5322-b1-093",
+        "id5322-b1-094",
+        "id5322-b2-087",
+        "id5322-b2-088",
+        "id5322-b2-089",
+        "id5322-b2-090",
+        "id5322-b2-091",
+        "id5322-b2-092",
+        "id5322-b2-093",
+        "id5322-b2-094"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Law, Ethics, Rights, Family Partnership, and Safeguards\" and the \"Disability Rights, Supported Decision-Making & Team Supervision\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA/FERPA/ADA Safeguards, Dignity of Risk & Supported Decision-Making Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting Adult Rights, Family Co-Creation, and Restraint Safety\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Law, Ethics, Rights, Family Partnership, and Safeguards\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Strict AA-AAS Participation Criteria and Protect General-Curriculum Access\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-ch-12",
+      "title": "Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "id5322-ch-12",
+      "itemIds": [
+        "id5322-b1-100",
+        "id5322-b2-095",
+        "id5322-b2-096",
+        "id5322-b2-097",
+        "id5322-b2-098",
+        "id5322-b2-099",
+        "id5322-b2-100",
+        "id5322-b1-095",
+        "id5322-b1-096",
+        "id5322-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning\" and the \"Disability Rights, Supported Decision-Making & Team Supervision\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Interdisciplinary Teaming, Paraprofessional Supervision & Evidence-Based Advocacy Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Maintaining Teacher Supervision, Medical Scope, and Evidence-Based AAC\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Design Age-Appropriate CBI, Generalization Plans, and Student-Led Transition\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-trap-repair-sprint",
+      "title": "Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "id5322-b1-001",
+        "id5322-b1-007",
+        "id5322-b1-045",
+        "id5322-b1-019",
+        "id5322-b1-071",
+        "id5322-b1-087",
+        "id5322-b1-002",
+        "id5322-b1-008",
+        "id5322-b1-046",
+        "id5322-b1-020",
+        "id5322-b1-072",
+        "id5322-b1-088"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Verify All Three AAIDD Diagnostic Prongs and Plan by Intensity of Supports\", \"Rule Out Medical, Sensory, and Mental Health Causes Before Attributing Changes to ID\", \"Match Validated Task Analyses to Forward, Backward, or Total-Task Chaining\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-session-mixed-capstone",
+      "title": "Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "id5322-b1-004",
+        "id5322-b1-022",
+        "id5322-b1-048",
+        "id5322-b1-074",
+        "id5322-b1-090",
+        "id5322-b1-015",
+        "id5322-b1-033",
+        "id5322-b1-059",
+        "id5322-b1-085",
+        "id5322-b2-087",
+        "id5322-b2-008",
+        "id5322-b1-044",
+        "id5322-b1-070",
+        "id5322-b2-080",
+        "id5322-b2-098"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied ID case workshops, outline a response to \"Prevent misidentification and diagnostic overshadowing in an ID referral\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-01",
+      "topicId": "id5322-ch-01",
+      "topicLabel": "1. Development, Adaptive Behavior, Context, and Learner Variability",
+      "unitId": "development-characteristics-intellectual-disabilities",
+      "chapterId": "id5322-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Development, Adaptive Behavior, Context, and Learner Variability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-02",
+      "topicId": "id5322-ch-02",
+      "topicLabel": "2. Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs",
+      "unitId": "development-characteristics-intellectual-disabilities",
+      "chapterId": "id5322-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-03",
+      "topicId": "id5322-ch-03",
+      "topicLabel": "3. Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "id5322-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-04",
+      "topicId": "id5322-ch-04",
+      "topicLabel": "4. Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "id5322-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-05",
+      "topicId": "id5322-ch-05",
+      "topicLabel": "5. Positive Environments, Behavior Support, Inclusion, and Daily Routines",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "id5322-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Positive Environments, Behavior Support, Inclusion, and Daily Routines\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-06",
+      "topicId": "id5322-ch-06",
+      "topicLabel": "6. Functional and Academic Literacy, Language, Vocabulary, and Comprehension",
+      "unitId": "instruction",
+      "chapterId": "id5322-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Functional and Academic Literacy, Language, Vocabulary, and Comprehension\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-07",
+      "topicId": "id5322-ch-07",
+      "topicLabel": "7. Writing, Communication, Self-Advocacy, and Expression",
+      "unitId": "instruction",
+      "chapterId": "id5322-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Writing, Communication, Self-Advocacy, and Expression\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-08",
+      "topicId": "id5322-ch-08",
+      "topicLabel": "8. Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization",
+      "unitId": "instruction",
+      "chapterId": "id5322-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-09",
+      "topicId": "id5322-ch-09",
+      "topicLabel": "9. Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility",
+      "unitId": "assessment",
+      "chapterId": "id5322-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-10",
+      "topicId": "id5322-ch-10",
+      "topicLabel": "10. Progress Monitoring, FBA, Alternate Assessment, and Program Decisions",
+      "unitId": "assessment",
+      "chapterId": "id5322-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Progress Monitoring, FBA, Alternate Assessment, and Program Decisions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-11",
+      "topicId": "id5322-ch-11",
+      "topicLabel": "11. Law, Ethics, Rights, Family Partnership, and Safeguards",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "id5322-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Law, Ethics, Rights, Family Partnership, and Safeguards\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-spaced-ch-12",
+      "topicId": "id5322-ch-12",
+      "topicLabel": "12. Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "id5322-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-source-01",
+      "title": "Teaching Students with Intellectual Disabilities (5322) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5322.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-source-02",
+      "title": "Teaching Students with Intellectual Disabilities (5322) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/special-education-teaching-students-with-intellectual-disabilities-5322.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-source-03",
+      "title": "Part 300 (Part B) — Assistance To States For The Education Of Children With Disabilities - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-source-04",
+      "title": "American Association On Intellectual And Developmental Disabilities (AAIDD) Resource",
+      "organization": "American Association on Intellectual and Developmental Disabilities (AAIDD)",
+      "url": "https://www.aaidd.org/intellectual-disability/definition",
+      "credibility": "American Association on Intellectual and Developmental Disabilities (AAIDD) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-01",
+      "unitId": "development-characteristics-intellectual-disabilities",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Development, Adaptive Behavior, Context, and Learner Variability",
+      "chapterId": "id5322-ch-01",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-01-section-01",
+        "id5322-ch-01-section-02",
+        "id5322-ch-01-section-03",
+        "id5322-ch-01-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-001",
+        "id5322-b1-002",
+        "id5322-b1-003",
+        "id5322-b1-004",
+        "id5322-b1-005",
+        "id5322-b1-006",
+        "id5322-b1-007",
+        "id5322-b1-008",
+        "id5322-b1-009",
+        "id5322-b2-001",
+        "id5322-b2-002",
+        "id5322-b2-003",
+        "id5322-b2-004",
+        "id5322-b2-005",
+        "id5322-b2-006",
+        "id5322-b2-007",
+        "id5322-b2-008",
+        "id5322-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-001",
+        "id5322-b1-002",
+        "id5322-b1-003",
+        "id5322-b1-004",
+        "id5322-b1-005",
+        "id5322-b1-006",
+        "id5322-b1-007",
+        "id5322-b1-008",
+        "id5322-b1-009",
+        "id5322-b2-001",
+        "id5322-b2-002",
+        "id5322-b2-003"
+      ],
+      "purpose": "Consolidate \"Development, Adaptive Behavior, Context, and Learner Variability\" (Development and Characteristics of Students with Intellectual Disabilities) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-02",
+      "unitId": "development-characteristics-intellectual-disabilities",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs",
+      "chapterId": "id5322-ch-02",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-02-section-01",
+        "id5322-ch-02-section-02",
+        "id5322-ch-02-section-03",
+        "id5322-ch-02-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-010",
+        "id5322-b1-011",
+        "id5322-b1-012",
+        "id5322-b1-013",
+        "id5322-b1-014",
+        "id5322-b1-015",
+        "id5322-b1-016",
+        "id5322-b1-017",
+        "id5322-b1-018",
+        "id5322-b2-010",
+        "id5322-b2-011",
+        "id5322-b2-012",
+        "id5322-b2-013",
+        "id5322-b2-014",
+        "id5322-b2-015",
+        "id5322-b2-016",
+        "id5322-b2-017",
+        "id5322-b2-018"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-010",
+        "id5322-b1-011",
+        "id5322-b1-012",
+        "id5322-b1-013",
+        "id5322-b1-014",
+        "id5322-b1-015",
+        "id5322-b1-016",
+        "id5322-b1-017",
+        "id5322-b1-018",
+        "id5322-b2-010",
+        "id5322-b2-011",
+        "id5322-b2-012"
+      ],
+      "purpose": "Consolidate \"Intellectual-Disability Characteristics and Coexisting Communication, Sensory, Motor, and Health Needs\" (Development and Characteristics of Students with Intellectual Disabilities) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-03",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition",
+      "chapterId": "id5322-ch-03",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-03-section-01",
+        "id5322-ch-03-section-02",
+        "id5322-ch-03-section-03",
+        "id5322-ch-03-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-019",
+        "id5322-b1-020",
+        "id5322-b1-021",
+        "id5322-b1-022",
+        "id5322-b1-023",
+        "id5322-b1-024",
+        "id5322-b1-025",
+        "id5322-b1-026",
+        "id5322-b1-027",
+        "id5322-b1-028",
+        "id5322-b1-029",
+        "id5322-b2-019",
+        "id5322-b2-020",
+        "id5322-b2-021",
+        "id5322-b2-022",
+        "id5322-b2-023",
+        "id5322-b2-024",
+        "id5322-b2-025",
+        "id5322-b2-026",
+        "id5322-b2-027",
+        "id5322-b2-028",
+        "id5322-b2-029"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-019",
+        "id5322-b1-020",
+        "id5322-b1-021",
+        "id5322-b1-022",
+        "id5322-b1-023",
+        "id5322-b1-024",
+        "id5322-b1-025",
+        "id5322-b1-026",
+        "id5322-b1-027",
+        "id5322-b1-028",
+        "id5322-b1-029",
+        "id5322-b2-019"
+      ],
+      "purpose": "Consolidate \"Person-Centered IEPs, Measurable Goals, Self-Determination, and Transition\" (Planning and Managing the Learning Environment) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-04",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access",
+      "chapterId": "id5322-ch-04",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-04-section-01",
+        "id5322-ch-04-section-02",
+        "id5322-ch-04-section-03",
+        "id5322-ch-04-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-030",
+        "id5322-b1-031",
+        "id5322-b1-032",
+        "id5322-b1-033",
+        "id5322-b1-034",
+        "id5322-b1-035",
+        "id5322-b1-036",
+        "id5322-b1-037",
+        "id5322-b2-030",
+        "id5322-b2-031",
+        "id5322-b2-032",
+        "id5322-b2-033",
+        "id5322-b2-034",
+        "id5322-b2-035",
+        "id5322-b2-036",
+        "id5322-b2-037"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-030",
+        "id5322-b1-031",
+        "id5322-b1-032",
+        "id5322-b1-033",
+        "id5322-b1-034",
+        "id5322-b1-035",
+        "id5322-b1-036",
+        "id5322-b1-037",
+        "id5322-b2-030",
+        "id5322-b2-031",
+        "id5322-b2-032",
+        "id5322-b2-033"
+      ],
+      "purpose": "Consolidate \"Adaptive Skills, Communication, Assistive Technology, Health, and Safe Access\" (Planning and Managing the Learning Environment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-05",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Positive Environments, Behavior Support, Inclusion, and Daily Routines",
+      "chapterId": "id5322-ch-05",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-05-section-01",
+        "id5322-ch-05-section-02",
+        "id5322-ch-05-section-03",
+        "id5322-ch-05-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-038",
+        "id5322-b1-039",
+        "id5322-b1-040",
+        "id5322-b1-041",
+        "id5322-b1-042",
+        "id5322-b1-043",
+        "id5322-b1-044",
+        "id5322-b2-038",
+        "id5322-b2-039",
+        "id5322-b2-040",
+        "id5322-b2-041",
+        "id5322-b2-042",
+        "id5322-b2-043",
+        "id5322-b2-044"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-038",
+        "id5322-b1-039",
+        "id5322-b1-040",
+        "id5322-b1-041",
+        "id5322-b1-042",
+        "id5322-b1-043",
+        "id5322-b1-044",
+        "id5322-b2-038",
+        "id5322-b2-039",
+        "id5322-b2-040",
+        "id5322-b2-041",
+        "id5322-b2-042"
+      ],
+      "purpose": "Consolidate \"Positive Environments, Behavior Support, Inclusion, and Daily Routines\" (Planning and Managing the Learning Environment) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-06",
+      "unitId": "instruction",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Functional and Academic Literacy, Language, Vocabulary, and Comprehension",
+      "chapterId": "id5322-ch-06",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-06-section-01",
+        "id5322-ch-06-section-02",
+        "id5322-ch-06-section-03",
+        "id5322-ch-06-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-045",
+        "id5322-b1-046",
+        "id5322-b1-047",
+        "id5322-b1-048",
+        "id5322-b1-049",
+        "id5322-b1-050",
+        "id5322-b1-051",
+        "id5322-b1-052",
+        "id5322-b1-053",
+        "id5322-b1-054",
+        "id5322-b2-045",
+        "id5322-b2-046",
+        "id5322-b2-047",
+        "id5322-b2-048",
+        "id5322-b2-049",
+        "id5322-b2-050",
+        "id5322-b2-051",
+        "id5322-b2-052",
+        "id5322-b2-053",
+        "id5322-b2-054"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-045",
+        "id5322-b1-046",
+        "id5322-b1-047",
+        "id5322-b1-048",
+        "id5322-b1-049",
+        "id5322-b1-050",
+        "id5322-b1-051",
+        "id5322-b1-052",
+        "id5322-b1-053",
+        "id5322-b1-054",
+        "id5322-b2-045",
+        "id5322-b2-046"
+      ],
+      "purpose": "Consolidate \"Functional and Academic Literacy, Language, Vocabulary, and Comprehension\" (Instruction) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-07",
+      "unitId": "instruction",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Writing, Communication, Self-Advocacy, and Expression",
+      "chapterId": "id5322-ch-07",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-07-section-01",
+        "id5322-ch-07-section-02",
+        "id5322-ch-07-section-03",
+        "id5322-ch-07-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-055",
+        "id5322-b1-056",
+        "id5322-b1-057",
+        "id5322-b1-058",
+        "id5322-b1-059",
+        "id5322-b1-060",
+        "id5322-b1-061",
+        "id5322-b1-062",
+        "id5322-b2-055",
+        "id5322-b2-056",
+        "id5322-b2-057",
+        "id5322-b2-058",
+        "id5322-b2-059",
+        "id5322-b2-060",
+        "id5322-b2-061",
+        "id5322-b2-062"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-055",
+        "id5322-b1-056",
+        "id5322-b1-057",
+        "id5322-b1-058",
+        "id5322-b1-059",
+        "id5322-b1-060",
+        "id5322-b1-061",
+        "id5322-b1-062",
+        "id5322-b2-055",
+        "id5322-b2-056",
+        "id5322-b2-057",
+        "id5322-b2-058"
+      ],
+      "purpose": "Consolidate \"Writing, Communication, Self-Advocacy, and Expression\" (Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-08",
+      "unitId": "instruction",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization",
+      "chapterId": "id5322-ch-08",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-08-section-01",
+        "id5322-ch-08-section-02",
+        "id5322-ch-08-section-03",
+        "id5322-ch-08-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-063",
+        "id5322-b1-064",
+        "id5322-b1-065",
+        "id5322-b1-066",
+        "id5322-b1-067",
+        "id5322-b1-068",
+        "id5322-b1-069",
+        "id5322-b1-070",
+        "id5322-b2-063",
+        "id5322-b2-064",
+        "id5322-b2-065",
+        "id5322-b2-066",
+        "id5322-b2-067",
+        "id5322-b2-068",
+        "id5322-b2-069",
+        "id5322-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-063",
+        "id5322-b1-064",
+        "id5322-b1-065",
+        "id5322-b1-066",
+        "id5322-b1-067",
+        "id5322-b1-068",
+        "id5322-b1-069",
+        "id5322-b1-070",
+        "id5322-b2-063",
+        "id5322-b2-064",
+        "id5322-b2-065",
+        "id5322-b2-066"
+      ],
+      "purpose": "Consolidate \"Functional Mathematics, Task Analysis, Strategy Instruction, and Generalization\" (Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-09",
+      "unitId": "assessment",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility",
+      "chapterId": "id5322-ch-09",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-09-section-01",
+        "id5322-ch-09-section-02",
+        "id5322-ch-09-section-03",
+        "id5322-ch-09-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-071",
+        "id5322-b1-072",
+        "id5322-b1-073",
+        "id5322-b1-074",
+        "id5322-b1-075",
+        "id5322-b1-076",
+        "id5322-b1-077",
+        "id5322-b1-078",
+        "id5322-b2-071",
+        "id5322-b2-072",
+        "id5322-b2-073",
+        "id5322-b2-074",
+        "id5322-b2-075",
+        "id5322-b2-076",
+        "id5322-b2-077",
+        "id5322-b2-078"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-071",
+        "id5322-b1-072",
+        "id5322-b1-073",
+        "id5322-b1-074",
+        "id5322-b1-075",
+        "id5322-b1-076",
+        "id5322-b1-077",
+        "id5322-b1-078",
+        "id5322-b2-071",
+        "id5322-b2-072",
+        "id5322-b2-073",
+        "id5322-b2-074"
+      ],
+      "purpose": "Consolidate \"Assessment Quality, Eligibility, Adaptive Evidence, and Accessibility\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-10",
+      "unitId": "assessment",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Progress Monitoring, FBA, Alternate Assessment, and Program Decisions",
+      "chapterId": "id5322-ch-10",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-10-section-01",
+        "id5322-ch-10-section-02",
+        "id5322-ch-10-section-03",
+        "id5322-ch-10-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-079",
+        "id5322-b1-080",
+        "id5322-b1-081",
+        "id5322-b1-082",
+        "id5322-b1-083",
+        "id5322-b1-084",
+        "id5322-b1-085",
+        "id5322-b1-086",
+        "id5322-b2-079",
+        "id5322-b2-080",
+        "id5322-b2-081",
+        "id5322-b2-082",
+        "id5322-b2-083",
+        "id5322-b2-084",
+        "id5322-b2-085",
+        "id5322-b2-086"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-079",
+        "id5322-b1-080",
+        "id5322-b1-081",
+        "id5322-b1-082",
+        "id5322-b1-083",
+        "id5322-b1-084",
+        "id5322-b1-085",
+        "id5322-b1-086",
+        "id5322-b2-079",
+        "id5322-b2-080",
+        "id5322-b2-081",
+        "id5322-b2-082"
+      ],
+      "purpose": "Consolidate \"Progress Monitoring, FBA, Alternate Assessment, and Program Decisions\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-11",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Law, Ethics, Rights, Family Partnership, and Safeguards",
+      "chapterId": "id5322-ch-11",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-11-section-01",
+        "id5322-ch-11-section-02",
+        "id5322-ch-11-section-03",
+        "id5322-ch-11-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-087",
+        "id5322-b1-088",
+        "id5322-b1-089",
+        "id5322-b1-090",
+        "id5322-b1-091",
+        "id5322-b1-092",
+        "id5322-b1-093",
+        "id5322-b1-094",
+        "id5322-b2-087",
+        "id5322-b2-088",
+        "id5322-b2-089",
+        "id5322-b2-090",
+        "id5322-b2-091",
+        "id5322-b2-092",
+        "id5322-b2-093",
+        "id5322-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-087",
+        "id5322-b1-088",
+        "id5322-b1-089",
+        "id5322-b1-090",
+        "id5322-b1-091",
+        "id5322-b1-092",
+        "id5322-b1-093",
+        "id5322-b1-094",
+        "id5322-b2-087",
+        "id5322-b2-088",
+        "id5322-b2-089",
+        "id5322-b2-090"
+      ],
+      "purpose": "Consolidate \"Law, Ethics, Rights, Family Partnership, and Safeguards\" (Foundations and Professional Responsibilities) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-unit-review-12",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning",
+      "chapterId": "id5322-ch-12",
+      "topicDiagnosticRouteIds": [
+        "id5322-ch-12-section-01",
+        "id5322-ch-12-section-02",
+        "id5322-ch-12-section-03",
+        "id5322-ch-12-section-04"
+      ],
+      "itemIds": [
+        "id5322-b1-095",
+        "id5322-b1-096",
+        "id5322-b1-097",
+        "id5322-b1-098",
+        "id5322-b1-099",
+        "id5322-b1-100",
+        "id5322-b2-095",
+        "id5322-b2-096",
+        "id5322-b2-097",
+        "id5322-b2-098",
+        "id5322-b2-099",
+        "id5322-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "id5322-b1-095",
+        "id5322-b1-096",
+        "id5322-b1-097",
+        "id5322-b1-098",
+        "id5322-b1-099",
+        "id5322-b1-100",
+        "id5322-b2-095",
+        "id5322-b2-096",
+        "id5322-b2-097",
+        "id5322-b2-098",
+        "id5322-b2-099",
+        "id5322-b2-100"
+      ],
+      "purpose": "Consolidate \"Collaboration, Related Services, Paraprofessional Supervision, Advocacy, and Professional Learning\" (Foundations and Professional Responsibilities) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) blueprint domains.",
+      "focus": [
+        "Development and Characteristics of Students with Intellectual Disabilities",
+        "Planning and Managing the Learning Environment",
+        "Instruction",
+        "Assessment"
+      ],
+      "itemIds": [
+        "id5322-b1-001",
+        "id5322-b1-071",
+        "id5322-b1-020",
+        "id5322-b1-088",
+        "id5322-b1-047",
+        "id5322-b1-004",
+        "id5322-b1-074",
+        "id5322-b1-023",
+        "id5322-b1-091",
+        "id5322-b1-050",
+        "id5322-b1-007",
+        "id5322-b1-077",
+        "id5322-b1-026",
+        "id5322-b1-094",
+        "id5322-b1-053",
+        "id5322-b1-010",
+        "id5322-b1-080",
+        "id5322-b1-029",
+        "id5322-b1-097",
+        "id5322-b1-056",
+        "id5322-b1-013",
+        "id5322-b1-083",
+        "id5322-b1-032",
+        "id5322-b1-100",
+        "id5322-b1-059",
+        "id5322-b1-016",
+        "id5322-b1-086",
+        "id5322-b1-035",
+        "id5322-b2-089",
+        "id5322-b1-062",
+        "id5322-b2-001",
+        "id5322-b2-073",
+        "id5322-b1-038",
+        "id5322-b2-092",
+        "id5322-b1-065",
+        "id5322-b2-004",
+        "id5322-b2-076",
+        "id5322-b1-041",
+        "id5322-b2-095",
+        "id5322-b1-068"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Instruction",
+        "Assessment",
+        "Foundations and Professional Responsibilities",
+        "Development and Characteristics of Students with Intellectual Disabilities"
+      ],
+      "itemIds": [
+        "id5322-b1-019",
+        "id5322-b1-087",
+        "id5322-b1-046",
+        "id5322-b1-003",
+        "id5322-b1-073",
+        "id5322-b1-022",
+        "id5322-b1-090",
+        "id5322-b1-049",
+        "id5322-b1-006",
+        "id5322-b1-076",
+        "id5322-b1-025",
+        "id5322-b1-093",
+        "id5322-b1-052",
+        "id5322-b1-009",
+        "id5322-b1-079",
+        "id5322-b1-028",
+        "id5322-b1-096",
+        "id5322-b1-055",
+        "id5322-b1-012",
+        "id5322-b1-082",
+        "id5322-b1-031",
+        "id5322-b1-099",
+        "id5322-b1-058",
+        "id5322-b1-015",
+        "id5322-b1-085",
+        "id5322-b1-034",
+        "id5322-b2-088",
+        "id5322-b1-061",
+        "id5322-b1-018",
+        "id5322-b2-072",
+        "id5322-b1-037",
+        "id5322-b2-091",
+        "id5322-b1-064",
+        "id5322-b2-003",
+        "id5322-b2-075",
+        "id5322-b1-040",
+        "id5322-b2-094",
+        "id5322-b1-067",
+        "id5322-b2-006",
+        "id5322-b2-078"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Special Education: Teaching Students with Intellectual Disabilities (5322) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Diagnosing Intellectual Disability by IQ Cutoff Alone Instead of the AAIDD Three-Prong Criteria",
+        "Diagnostic Overshadowing That Attributes Medical, Sensory, or Emotional Changes to ID",
+        "Mismatching Task Analysis with Forward, Backward, or Total-Task Chaining"
+      ],
+      "itemIds": [
+        "id5322-b1-045",
+        "id5322-b1-002",
+        "id5322-b1-072",
+        "id5322-b1-021",
+        "id5322-b1-089",
+        "id5322-b1-048",
+        "id5322-b1-005",
+        "id5322-b1-075",
+        "id5322-b1-024",
+        "id5322-b1-092",
+        "id5322-b1-051",
+        "id5322-b1-008",
+        "id5322-b1-078",
+        "id5322-b1-027",
+        "id5322-b1-095",
+        "id5322-b1-054",
+        "id5322-b1-011",
+        "id5322-b1-081",
+        "id5322-b1-030",
+        "id5322-b1-098",
+        "id5322-b1-057",
+        "id5322-b1-014",
+        "id5322-b1-084",
+        "id5322-b1-033",
+        "id5322-b2-087",
+        "id5322-b1-060",
+        "id5322-b1-017",
+        "id5322-b2-071",
+        "id5322-b1-036",
+        "id5322-b2-090",
+        "id5322-b1-063",
+        "id5322-b2-002",
+        "id5322-b2-074",
+        "id5322-b1-039",
+        "id5322-b2-093",
+        "id5322-b1-066",
+        "id5322-b2-005",
+        "id5322-b2-077",
+        "id5322-b1-042",
+        "id5322-b2-096"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "special-education-intellectual-disabilities-5322-form-internal-a",
+      "title": "Internal practice form A (Praxis Special Education: Teaching Students with Intellectual Disabilities (5322))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "id5322-b1-001",
+        "id5322-b1-071",
+        "id5322-b1-020",
+        "id5322-b1-088",
+        "id5322-b1-047",
+        "id5322-b1-004",
+        "id5322-b1-074",
+        "id5322-b1-023",
+        "id5322-b1-091",
+        "id5322-b1-050",
+        "id5322-b1-007",
+        "id5322-b1-077",
+        "id5322-b1-026",
+        "id5322-b1-094",
+        "id5322-b1-053",
+        "id5322-b1-010",
+        "id5322-b1-080",
+        "id5322-b1-029",
+        "id5322-b1-097",
+        "id5322-b1-056",
+        "id5322-b1-013",
+        "id5322-b1-083",
+        "id5322-b1-032",
+        "id5322-b1-100",
+        "id5322-b1-059",
+        "id5322-b1-016",
+        "id5322-b1-086",
+        "id5322-b1-035",
+        "id5322-b2-089",
+        "id5322-b1-062",
+        "id5322-b2-001",
+        "id5322-b2-073",
+        "id5322-b1-038",
+        "id5322-b2-092",
+        "id5322-b1-065",
+        "id5322-b2-004",
+        "id5322-b2-076",
+        "id5322-b1-041",
+        "id5322-b2-095",
+        "id5322-b1-068",
+        "id5322-b2-007",
+        "id5322-b2-079",
+        "id5322-b1-044",
+        "id5322-b2-098",
+        "id5322-b2-045",
+        "id5322-b2-010",
+        "id5322-b2-082",
+        "id5322-b2-021",
+        "id5322-b2-012",
+        "id5322-b2-084"
+      ],
+      "topicIds": [
+        "id5322-ch-01",
+        "id5322-ch-09",
+        "id5322-ch-03",
+        "id5322-ch-11",
+        "id5322-ch-06",
+        "id5322-ch-02",
+        "id5322-ch-10",
+        "id5322-ch-12",
+        "id5322-ch-07",
+        "id5322-ch-04",
+        "id5322-ch-05",
+        "id5322-ch-08"
+      ],
+      "unitIds": [
+        "development-characteristics-intellectual-disabilities",
+        "assessment",
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities",
+        "instruction"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-form-internal-b",
+      "title": "Internal practice form B (Praxis Special Education: Teaching Students with Intellectual Disabilities (5322))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "id5322-b1-019",
+        "id5322-b1-087",
+        "id5322-b1-046",
+        "id5322-b1-003",
+        "id5322-b1-073",
+        "id5322-b1-022",
+        "id5322-b1-090",
+        "id5322-b1-049",
+        "id5322-b1-006",
+        "id5322-b1-076",
+        "id5322-b1-025",
+        "id5322-b1-093",
+        "id5322-b1-052",
+        "id5322-b1-009",
+        "id5322-b1-079",
+        "id5322-b1-028",
+        "id5322-b1-096",
+        "id5322-b1-055",
+        "id5322-b1-012",
+        "id5322-b1-082",
+        "id5322-b1-031",
+        "id5322-b1-099",
+        "id5322-b1-058",
+        "id5322-b1-015",
+        "id5322-b1-085",
+        "id5322-b1-034",
+        "id5322-b2-088",
+        "id5322-b1-061",
+        "id5322-b1-018",
+        "id5322-b2-072",
+        "id5322-b1-037",
+        "id5322-b2-091",
+        "id5322-b1-064",
+        "id5322-b2-003",
+        "id5322-b2-075",
+        "id5322-b1-040",
+        "id5322-b2-094",
+        "id5322-b1-067",
+        "id5322-b2-006",
+        "id5322-b2-078",
+        "id5322-b1-043",
+        "id5322-b2-097",
+        "id5322-b1-070",
+        "id5322-b2-009",
+        "id5322-b2-081",
+        "id5322-b2-020",
+        "id5322-b2-100",
+        "id5322-b2-047",
+        "id5322-b2-022",
+        "id5322-b2-013"
+      ],
+      "topicIds": [
+        "id5322-ch-03",
+        "id5322-ch-11",
+        "id5322-ch-06",
+        "id5322-ch-01",
+        "id5322-ch-09",
+        "id5322-ch-10",
+        "id5322-ch-12",
+        "id5322-ch-07",
+        "id5322-ch-02",
+        "id5322-ch-04",
+        "id5322-ch-08",
+        "id5322-ch-05"
+      ],
+      "unitIds": [
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities",
+        "instruction",
+        "development-characteristics-intellectual-disabilities",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-intellectual-disabilities-5322-form-internal-c",
+      "title": "Internal practice form C (Praxis Special Education: Teaching Students with Intellectual Disabilities (5322))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "id5322-b1-045",
+        "id5322-b1-002",
+        "id5322-b1-072",
+        "id5322-b1-021",
+        "id5322-b1-089",
+        "id5322-b1-048",
+        "id5322-b1-005",
+        "id5322-b1-075",
+        "id5322-b1-024",
+        "id5322-b1-092",
+        "id5322-b1-051",
+        "id5322-b1-008",
+        "id5322-b1-078",
+        "id5322-b1-027",
+        "id5322-b1-095",
+        "id5322-b1-054",
+        "id5322-b1-011",
+        "id5322-b1-081",
+        "id5322-b1-030",
+        "id5322-b1-098",
+        "id5322-b1-057",
+        "id5322-b1-014",
+        "id5322-b1-084",
+        "id5322-b1-033",
+        "id5322-b2-087",
+        "id5322-b1-060",
+        "id5322-b1-017",
+        "id5322-b2-071",
+        "id5322-b1-036",
+        "id5322-b2-090",
+        "id5322-b1-063",
+        "id5322-b2-002",
+        "id5322-b2-074",
+        "id5322-b1-039",
+        "id5322-b2-093",
+        "id5322-b1-066",
+        "id5322-b2-005",
+        "id5322-b2-077",
+        "id5322-b1-042",
+        "id5322-b2-096",
+        "id5322-b1-069",
+        "id5322-b2-008",
+        "id5322-b2-080",
+        "id5322-b2-019",
+        "id5322-b2-099",
+        "id5322-b2-046",
+        "id5322-b2-011",
+        "id5322-b2-083",
+        "id5322-b2-048",
+        "id5322-b2-023"
+      ],
+      "topicIds": [
+        "id5322-ch-06",
+        "id5322-ch-01",
+        "id5322-ch-09",
+        "id5322-ch-03",
+        "id5322-ch-11",
+        "id5322-ch-12",
+        "id5322-ch-02",
+        "id5322-ch-10",
+        "id5322-ch-04",
+        "id5322-ch-07",
+        "id5322-ch-08",
+        "id5322-ch-05"
+      ],
+      "unitIds": [
+        "instruction",
+        "development-characteristics-intellectual-disabilities",
+        "assessment",
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

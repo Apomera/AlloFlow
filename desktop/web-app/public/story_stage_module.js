@@ -28,10 +28,11 @@
     document.body.appendChild(lr);
   })();
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('litlab-a11y-styles')) return;
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('litlab-a11y-styles')) return;
     var style = document.createElement('style');
     style.id = 'litlab-a11y-styles';
     style.textContent = [
+      '.litlab-dialog :where(button,input,select,textarea,a,summary,[role="button"],[role="tab"]){touch-action:manipulation}',
       '.litlab-dialog button,.litlab-dialog input,.litlab-dialog select,.litlab-dialog textarea{min-height:24px}',
       '.litlab-dialog button{min-width:24px}',
       '.litlab-dialog,.litlab-dialog *{box-sizing:border-box}',
@@ -91,14 +92,14 @@
       var initial = initialFocusRef.current || focusable()[0] || dialog;
       if (initial && typeof initial.focus === 'function') initial.focus();
       function onKeyDown(event) {
-        if (!event || event.isComposing || event.keyCode === 229) return;
+        if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (stack[stack.length - 1] !== trap) return;
         if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.preventDefault();
           if (onEscapeRef.current) onEscapeRef.current();
           return;
         }
-        if (event.key !== 'Tab') return;
+        if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
         var items = focusable();
         if (!items.length) {
           event.preventDefault();
@@ -2105,7 +2106,7 @@
             )
           ),
           e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
-            phase !== 'input' && e('button', { onClick: function () {
+            phase !== 'input' && e('button', { type: 'button', onClick: function () {
               if (phase === 'assign') setPhase('input');
               else if (phase === 'perform') { stopPlayback(); setPhase('assign'); }
               else if (phase === 'analyze') setPhase('perform');
@@ -2166,7 +2167,7 @@
                 e('option', { value: '' }, tr('— Animal —')),
                 CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
               ),
-              e('button', { onClick: function () { setPerformerName(CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]); },
+              e('button', { type: 'button', onClick: function () { setPerformerName(CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]); },
                 style: { fontSize: '11px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': tr('Randomize codename') }, '🎲')
             ),
             e('div', { style: { textAlign: 'center', marginBottom: '24px' } },
@@ -2201,7 +2202,7 @@
               e('p', { 'data-litlab-config-script': script ? 'ready' : 'none', style: { fontSize: '12px', color: '#1e3a8a', margin: '10px 0 0', lineHeight: 1.5 } },
                 script ? tr('Script included: {c} characters, {l} lines. Students can perform it without AI.', { c: script.characters.length, l: script.lines.length })
                   : tr('No script yet. Create the script first so it is saved with the assignment; students without AI cannot make one.')),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: saveAsAssignment,
                 disabled: saving || (!sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() && !script),
                 'aria-busy': saving,
@@ -2213,7 +2214,7 @@
             // Mode selector
             e('div', { className: 'litlab-mode-picker', role: 'group', 'aria-label': tr('Story source'), style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
               (llStudentAiOff ? [['paste', tr('📋 Paste Text')]] : [['paste', tr('📋 Paste Text')], ['generate', tr('✨ AI Generate')]]).map(function (pair) {
-                return e('button', { key: pair[0], 'aria-pressed': inputMode === pair[0], disabled: isLoading, onClick: function () { setInputMode(pair[0]); },
+                return e('button', { type: 'button', key: pair[0], 'aria-pressed': inputMode === pair[0], disabled: isLoading, onClick: function () { setInputMode(pair[0]); },
                   style: Object.assign({}, S.btn(inputMode === pair[0] ? PURPLE : '#f1f5f9', inputMode === pair[0] ? '#fff' : '#374151', false), { padding: '10px 20px' })
                 }, pair[1]);
               })
@@ -2281,7 +2282,7 @@
                 configScript && !onSaveConfig && e('button', { type: 'button', 'data-litlab-open-config-script': 'true', disabled: isLoading, onClick: function () { loadScript({ script: configScript, title: storyTitle || configScript.title, sourceText: sourceText, storyLanguage: storyLanguage }); }, style: S.btn(PURPLE, '#fff', isLoading) }, tr('🎭 Open the script from your teacher')),
                 llTeacherAiOff && llAiDoor(),
                 llStudentAiOff && !configScript && savedScripts.length === 0 && e('p', { role: 'note', 'data-litlab-ai-off': 'true', style: { flexBasis: '100%', fontSize: '13px', lineHeight: 1.5, color: '#374151', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', margin: 0 } }, tr('Making a script needs AI, which is not available here. Your teacher can prepare the script for you.')),
-                !llStudentAiOff && !llTeacherAiOff && e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
+                !llStudentAiOff && !llTeacherAiOff && e('button', { type: 'button', onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
                   'aria-busy': isLoading ? 'true' : 'false',
                   'aria-label': isLoading ? tr('Creating script, please wait') : tr('Create Script from text'),
@@ -2289,7 +2290,7 @@
                 // URL import
                 e('button', { type: 'button', onClick: requestUrlImport, style: S.btn('#f1f5f9', '#374151', false) }, tr('🔗 Import URL')),
                 // File upload
-                e('button', { onClick: function () {
+                e('button', { type: 'button', onClick: function () {
                   var input = document.createElement('input');
                   input.setAttribute('aria-label', tr('Upload story source file'));
                   input.type = 'file';
@@ -2341,7 +2342,7 @@
               e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'block' } }, tr('Genre')),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', marginBottom: '12px' } },
                 GENRES.map(function (g) {
-                  return e('button', { key: g.id, 'aria-pressed': genGenre === g.id, onClick: function () { setGenGenre(g.id); },
+                  return e('button', { type: 'button', key: g.id, 'aria-pressed': genGenre === g.id, onClick: function () { setGenGenre(g.id); },
                     style: { padding: '8px', borderRadius: '10px', border: '2px solid ' + (genGenre === g.id ? PURPLE : '#e5e7eb'), background: genGenre === g.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                   },
                     e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + tr(g.label)),
@@ -2357,7 +2358,7 @@
               e('div', { className: 'litlab-options', style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' } },
                 e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, tr('Characters:')),
                 [2, 3, 4, 5, 6].map(function (n) {
-                  return e('button', { key: n, 'aria-pressed': genCharCount === n, 'aria-label': n + ' ' + tr('characters'), onClick: function () { setGenCharCount(n); },
+                  return e('button', { type: 'button', key: n, 'aria-pressed': genCharCount === n, 'aria-label': n + ' ' + tr('characters'), onClick: function () { setGenCharCount(n); },
                     style: { width: '32px', height: '32px', borderRadius: '50%', border: '2px solid ' + (genCharCount === n ? PURPLE : '#d1d5db'), background: genCharCount === n ? PURPLE : '#fff', color: genCharCount === n ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
                   }, n);
                 })
@@ -2376,7 +2377,7 @@
               e('div', { className: 'litlab-options', style: { display: 'flex', gap: '6px', marginBottom: '12px' } },
                 e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, tr('Length:')),
                 LENGTH_OPTIONS.map(function (lo) {
-                  return e('button', { key: lo.id, 'aria-pressed': genLength === lo.id, onClick: function () { setGenLength(lo.id); },
+                  return e('button', { type: 'button', key: lo.id, 'aria-pressed': genLength === lo.id, onClick: function () { setGenLength(lo.id); },
                     'aria-label': tr(lo.label) + ' story' + (lo.words ? ': ' + lo.words + ' words' : ''),
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
@@ -2394,7 +2395,7 @@
                   'aria-label': tr('Custom word count'), 'aria-invalid': !customWordCountValid, 'aria-describedby': 'litlab-word-count-help' }),
                 e('span', { id: 'litlab-word-count-help', style: { fontSize: '12px', color: customWordCountValid ? '#64748b' : '#b91c1c' } }, tr('Enter a whole number from 50 to 5000 words.'))
               ),
-              llTeacherAiOff ? llAiDoor() : e('button', { onClick: generateStory, disabled: isLoading || (genLength === 'custom' && !customWordCountValid),
+              llTeacherAiOff ? llAiDoor() : e('button', { type: 'button', onClick: generateStory, disabled: isLoading || (genLength === 'custom' && !customWordCountValid),
                 'aria-busy': isLoading ? 'true' : 'false',
                 'aria-label': isLoading ? tr('Generating story, please wait') : tr('Generate Story with AI'),
                 style: S.btn(PURPLE, '#fff', isLoading || (genLength === 'custom' && !customWordCountValid)) }, isLoading ? '⏳ ' + loadingMsg : tr('✨ Generate Story')),
@@ -2407,7 +2408,7 @@
               e('h4', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, tr('📂 Saved Scripts (') + savedScripts.length + ')'),
               e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '150px', overflowY: 'auto' } },
                 savedScripts.map(function (s) {
-                  return e('button', { key: s.id, onClick: function () { loadScript(s); },
+                  return e('button', { type: 'button', key: s.id, onClick: function () { loadScript(s); },
                     style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', fontSize: '12px' }
                   },
                     e('span', { style: { fontWeight: 600, color: '#1e293b' } }, s.title),
@@ -2435,7 +2436,7 @@
                       e('div', { style: { fontWeight: 800, fontSize: '14px', color: '#1e293b' } }, ch.name),
                       e('div', { style: { fontSize: '11px', color: '#475569' } }, ch.description || '')
                     ),
-                    canImgAi && !ch.portrait && e('button', { onClick: function () { generatePortrait(ch.id); },
+                    canImgAi && !ch.portrait && e('button', { type: 'button', onClick: function () { generatePortrait(ch.id); },
                       style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
                       'aria-label': tr('Generate portrait') }, '🎨')
                   ),
@@ -2450,7 +2451,7 @@
                     e('option', { value: '' }, tr('— Select Voice —')),
                     allVoices.map(function (v) { return e('option', { key: v.id, value: v.id }, v.label || v.id); })
                   ),
-                  e('button', { disabled: preparing || previewingVoice === ch.id, onClick: function () {
+                  e('button', { type: 'button', disabled: preparing || previewingVoice === ch.id, onClick: function () {
                     setPreviewingVoice(ch.id);
                     speakLine('Hello, I am ' + ch.name + '.', ch.voice).then(function () { setPreviewingVoice(null); });
                   },
@@ -2461,7 +2462,7 @@
             ),
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
 
-              e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); setCurrentPage(0); }, style: S.btn(PURPLE, '#fff', false) }, tr('🎭 Start Performance →'))
+              e('button', { type: 'button', onClick: function () { setPhase('perform'); setCurrentLine(0); setCurrentPage(0); }, style: S.btn(PURPLE, '#fff', false) }, tr('🎭 Start Performance →'))
             )
           ),
 
@@ -2470,16 +2471,16 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, disabled: preparing, autoFocus: true, style: S.btn('#15803d', '#fff', false) }, tr('▶ Play'))
+                ? e('button', { type: 'button', onClick: function () { playFromLine(currentLine); }, disabled: preparing, autoFocus: true, style: S.btn('#15803d', '#fff', false) }, tr('▶ Play'))
                 : null,
               isPlaying && (isPaused
-                ? e('button', { onClick: resumePlayback, style: S.btn('#15803d', '#fff', false) }, tr('▶ Resume'))
-                : e('button', { onClick: pausePlayback, style: S.btn('#92400e', '#fff', false) }, tr('⏸ Pause'))),
-              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': tr('Stop playback'), style: S.btn('#b91c1c', '#fff', false) }, tr('⏹ Stop')),
+                ? e('button', { type: 'button', onClick: resumePlayback, style: S.btn('#15803d', '#fff', false) }, tr('▶ Resume'))
+                : e('button', { type: 'button', onClick: pausePlayback, style: S.btn('#92400e', '#fff', false) }, tr('⏸ Pause'))),
+              isPlaying && e('button', { type: 'button', onClick: stopPlayback, 'aria-label': tr('Stop playback'), style: S.btn('#b91c1c', '#fff', false) }, tr('⏹ Stop')),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
                 e('span', null, tr('Speed:')),
                 [0.75, 1, 1.25, 1.5].map(function (spd) {
-                  return e('button', { key: spd, disabled: isPlaying, onClick: function () { setPlaybackSpeed(spd); },
+                  return e('button', { type: 'button', key: spd, disabled: isPlaying, onClick: function () { setPlaybackSpeed(spd); },
                     'aria-pressed': playbackSpeed === spd ? 'true' : 'false',
                     'aria-label': 'Playback speed ' + spd + ' times',
                     style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid ' + (playbackSpeed === spd ? PURPLE : '#d1d5db'), background: playbackSpeed === spd ? LIGHT_PURPLE : '#fff', color: playbackSpeed === spd ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
@@ -2487,7 +2488,7 @@
                 })
               ),
               // Reading-friendly text toggle (WCAG 1.4.4 / 1.4.12)
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () {
                   var next = !largeText;
                   setLargeText(next);
@@ -2511,25 +2512,25 @@
                 )
               ),
               !isRecording
-                ? e('button', { onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏺ Record'))
-                : e('button', { onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏹ Stop Recording')),
+                ? e('button', { type: 'button', onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏺ Record'))
+                : e('button', { type: 'button', onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏹ Stop Recording')),
               recordingUrl && e('a', { href: recordingUrl, download: (storyTitle || 'LitLab').replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').slice(0, 80) + '-recording.' + ((recordedChunks[0] && recordedChunks[0].type || recordingUrl).indexOf('mp4') !== -1 ? 'm4a' : (recordedChunks[0] && recordedChunks[0].type || recordingUrl).indexOf('ogg') !== -1 ? 'ogg' : 'webm'), style: Object.assign({}, S.btn('#f1f5f9', '#374151', false), { display: 'inline-flex', alignItems: 'center', minHeight: '40px', textDecoration: 'none' }) }, tr('Download recording')),
               recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': tr('Your recording') }),
-              e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('🖨️ Script')),
-              e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, tr('📖 Storybook')),
-              canImgAi && !sceneImage && e('button', { onClick: generateSceneImage, disabled: sceneImageLoading,
+              e('button', { type: 'button', onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('🖨️ Script')),
+              e('button', { type: 'button', onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, tr('📖 Storybook')),
+              canImgAi && !sceneImage && e('button', { type: 'button', onClick: generateSceneImage, disabled: sceneImageLoading,
                 'aria-busy': sceneImageLoading ? 'true' : 'false',
                 'aria-label': sceneImageLoading ? 'Generating cover, please wait' : tr('Generate cover image with AI'),
                 style: S.btn('#f1f5f9', '#374151', sceneImageLoading) }, sceneImageLoading ? '⏳ Cover…' : tr('🎨 Cover')),
-              canImgAi && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, tr('🎨 All Art')),
-              e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('📝 Analyze →'))
+              canImgAi && e('button', { type: 'button', onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, tr('🎨 All Art')),
+              e('button', { type: 'button', onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('📝 Analyze →'))
             ),
             // Page navigation bar
             totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
-              e('button', { onClick: function () { cancelSpeech(); setCurrentPage(Math.max(0, currentPage - 1)); setCurrentLine(Math.max(0, currentPage - 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage === 0,
+              e('button', { type: 'button', onClick: function () { cancelSpeech(); setCurrentPage(Math.max(0, currentPage - 1)); setCurrentLine(Math.max(0, currentPage - 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage === 0,
                 style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': tr('Previous page') }, '◀'),
               e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, tr('Page ') + (currentPage + 1) + ' of ' + totalPages),
-              e('button', { onClick: function () { cancelSpeech(); setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); setCurrentLine(Math.min(totalPages - 1, currentPage + 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage >= totalPages - 1,
+              e('button', { type: 'button', onClick: function () { cancelSpeech(); setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); setCurrentLine(Math.min(totalPages - 1, currentPage + 1) * LINES_PER_PAGE); }, disabled: isPlaying || currentPage >= totalPages - 1,
                 style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': tr('Next page') }, '▶')
             ),
             // Cover image (for storybook export header)
@@ -2537,7 +2538,7 @@
               e('div', { style: { borderRadius: '50%', overflow: 'hidden', border: '3px solid #e5e7eb', width: '120px', height: '120px' } },
                 e('img', { src: sceneImage, alt: 'Story cover illustration', style: { width: '100%', height: '100%', objectFit: 'cover' } })
               ),
-              canImgEditAi && e('button', { onClick: requestSceneImageRefinement, disabled: sceneImageLoading,
+              canImgEditAi && e('button', { type: 'button', onClick: requestSceneImageRefinement, disabled: sceneImageLoading,
                 'aria-busy': sceneImageLoading ? 'true' : 'false',
                 'aria-label': sceneImageLoading ? 'Refining cover, please wait' : tr('Refine cover image with a custom instruction'),
                 style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: sceneImageLoading ? 'wait' : 'pointer' }
@@ -2546,13 +2547,13 @@
             // Page illustration
             pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb', position: 'relative' } },
               e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' } }),
-              canImgEditAi && e('button', { onClick: function (event) { requestPageImageRefinement(currentPage, event); }, disabled: pageImgLoading[currentPage],
+              canImgEditAi && e('button', { type: 'button', onClick: function (event) { requestPageImageRefinement(currentPage, event); }, disabled: pageImgLoading[currentPage],
                 'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
                 'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : tr('Refine this page illustration with a custom instruction'),
                 style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #94a3b8', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
               }, pageImgLoading[currentPage] ? '⏳' : '✨ Refine')
             ),
-            !pageImages[currentPage] && canImgAi && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
+            !pageImages[currentPage] && canImgAi && e('button', { type: 'button', onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
               'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
               'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : tr('Illustrate this page with AI'),
               style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
@@ -2608,7 +2609,7 @@
                         (isCurrent || idx < currentLine) && e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px', marginTop: '4px' } },
                           EMOTIONS.map(function (em) {
                             var isSelected = emotionLog[line.id] === em;
-                            return e('button', { key: em, onClick: function (ev) { ev.stopPropagation(); invalidateFeedback(); setEmotionLog(function (prev) { var n = Object.assign({}, prev); n[line.id] = isSelected ? null : em; return n; }); },
+                            return e('button', { type: 'button', key: em, onClick: function (ev) { ev.stopPropagation(); invalidateFeedback(); setEmotionLog(function (prev) { var n = Object.assign({}, prev); n[line.id] = isSelected ? null : em; return n; }); },
                               style: { fontSize: '14px', padding: '1px 3px', borderRadius: '4px', border: 'none', background: isSelected ? '#fef3c7' : 'transparent', cursor: 'pointer', opacity: isSelected ? 1 : 0.4, transition: 'all 0.1s' },
                               'aria-pressed': isSelected, 'aria-label': 'React with ' + em, title: tr('How does this line make you feel?') }, em);
                           })
@@ -2710,7 +2711,7 @@
                   ),
                   e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own performance + analysis on 5 criteria before the AI does. Builds reflection.')
                 ),
-                e('button', {
+                e('button', { type: 'button',
                   onClick: function () { invalidatePlan(); setSelfAssessmentSubmitted(true); announceLitLab(tr('Self-assessment skipped.')); },
                   'aria-label': tr('Skip self-assessment'),
                   style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
@@ -2732,13 +2733,14 @@
                         setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
                       },
                       'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      'aria-valuetext': val + ' / 5',
                       style: { width: '110px', accentColor: '#7c3aed' }
                     }),
                     e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
                   );
                 })
               ),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () {
                   var filled = {};
                   LITLAB_RUBRIC.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
@@ -2759,7 +2761,7 @@
                   return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < LITLAB_RUBRIC.length - 1 ? ' · ' : '');
                 }).join('')
               ),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { invalidatePlan(); setSelfAssessmentSubmitted(false); },
                 'aria-label': tr('Edit self-assessment'),
                 style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
@@ -2768,12 +2770,12 @@
             feedbackNotice && e('p', { role: 'status', style: { fontSize: '13px', color: '#92400e', lineHeight: 1.5, padding: '12px', background: '#fffbeb', borderRadius: '10px' } }, feedbackNotice),
             // Submit for feedback
             e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '16px' } },
-              canTextAi && e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
+              canTextAi && e('button', { type: 'button', onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
                 'aria-busy': analysisFeedback === 'loading' ? 'true' : 'false',
                 'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : tr('Get AI feedback on your analysis'),
                 style: S.btn('#047857', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
               }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : tr('✨ Get Feedback')),
-              e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('← Back to Performance'))
+              e('button', { type: 'button', onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('← Back to Performance'))
             ),
             // Feedback display
             analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error && e('div', { style: { marginTop: '16px', background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)', border: '2px solid #86efac', borderRadius: '14px', padding: '20px' } },
@@ -2803,7 +2805,7 @@
                   ),
                   e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, tr('Try these three steps, then mark each one complete as you practice.'))
                 ),
-                canTextAi && e('button', {
+                canTextAi && e('button', { type: 'button',
                   onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
                   'aria-busy': revisionPlanLoading ? 'true' : 'false',
                   'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? tr('Re-synthesize revision plan') : tr('Build a revision plan')),

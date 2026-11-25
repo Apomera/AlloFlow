@@ -297,7 +297,7 @@
 
   function nativeLanguageList(settings) {
     var source = isObject(settings) ? settings : {};
-    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    var helpers = typeof window === 'object' && window && window.AlloModules && window.AlloModules.TextPipelineHelpers;
     var selected = Array.isArray(source.selectedLanguages) ? source.selectedLanguages.slice(0, MAX_LANGUAGES) : [];
     // Reviewed jobs retain their concrete list even if the app locale changes.
     if (Array.isArray(source.effectiveLanguageList) && source.effectiveLanguageList.length) {
@@ -334,7 +334,7 @@
   }
   function nativeLanguageName(value, fallback) {
     var normalized = normalizeLanguageValue(value, fallback);
-    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    var helpers = typeof window === 'object' && window && window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (helpers && typeof helpers.normalizeLanguageName === 'function') {
       try {
         var resolved = helpers.normalizeLanguageName(normalized);
@@ -517,7 +517,7 @@
       var protocol = fold(raw.protocol);
       config.protocol = ['think-pair-share', 'socratic-seminar', 'fishbowl', 'gallery-walk'].indexOf(protocol) !== -1 ? protocol : 'think-pair-share';
     } else if (mode === 'jigsaw') {
-      var size = Number(raw.groupSize);
+      var size = safeNumber(raw.groupSize);
       config.groupSize = Number.isFinite(size) && size >= 2 && size <= 6 ? Math.floor(size) : 4;
     }
     return { activityMode: mode, activityConfig: config };
@@ -613,7 +613,7 @@
         ? effective('reflectionCount') : effective('quizReflectionCount'));
     } else if (type === 'faq') {
       var faqItems = effective('itemCount') !== undefined ? effective('itemCount') : effective('faqCount');
-      if (isLocalBackend) faqItems = Math.max(3, Math.min(Number(faqItems) || 5, 6));
+      if (isLocalBackend) { var faqNum = safeNumber(faqItems); faqItems = Math.max(3, Math.min((Number.isFinite(faqNum) && faqNum) || 5, 6)); }
       setField('itemCount', faqItems);
     } else if (type === 'timeline') {
       setField('mode', effective('mode') || effective('timelineMode') || 'auto');
@@ -626,13 +626,13 @@
       var conceptItems = effective('itemCount') !== undefined
         ? effective('itemCount') : effective('conceptItemCount');
       if (conceptItems === undefined || conceptItems === null || conceptItems === '') conceptItems = 'auto';
-      else if (isLocalBackend) conceptItems = Math.max(6, Math.min(Number(conceptItems) || 10, 12));
+      else if (isLocalBackend) { var cNum = safeNumber(conceptItems); conceptItems = Math.max(6, Math.min((Number.isFinite(cNum) && cNum) || 10, 12)); }
       setField('itemCount', conceptItems);
       setField('imageStyle', effective('imageStyle') || effective('universalImageStyle'));
     } else if (type === 'gemini-bridge') {
       setField('simulationType', effective('simulationType') || effective('bridgeSimType'));
       var steps = effective('stepCount') !== undefined ? effective('stepCount') : effective('bridgeStepCount');
-      if (isLocalBackend) steps = Math.max(3, Math.min(Number(steps) || 5, 6));
+      if (isLocalBackend) { var sNum = safeNumber(steps); steps = Math.max(3, Math.min((Number.isFinite(sNum) && sNum) || 5, 6)); }
       setField('stepCount', steps);
     } else if (type === 'note-taking') {
       setField('templateType', effective('templateType') || effective('noteTakingTemplateType') || 'cornell-notes');
@@ -720,7 +720,7 @@
     var interests = uniqueStrings(Array.isArray(interestInput)
       ? interestInput : (clean(interestInput) ? [interestInput] : []))
       .map(fold).sort();
-    var native = Number(settings && settings.nativeLanguageDefaultsVersion) >= 1;
+    var native = safeNumber(settings && settings.nativeLanguageDefaultsVersion) >= 1;
     var companion = native ? resolvedCompanionLanguage(settings) : '';
     return {
       standardsFingerprint: clean(settings && settings.standardsFingerprint),
@@ -768,7 +768,7 @@
   function buildFrozenGenerationSettings(settings) {
     var source = isObject(settings) ? settings : {};
     var gradeLevel = clean(source.gradeLevel || source.grade);
-    var language = Number(source.nativeLanguageDefaultsVersion) >= 1
+    var language = safeNumber(source.nativeLanguageDefaultsVersion) >= 1
       ? nativeLanguageName(source.language || source.leveledTextLanguage, source.appLanguage || source.currentUiLanguage || 'English')
       : normalizeLanguageValue(source.language || source.leveledTextLanguage, 'English');
     var selectedLanguages = normalizeLanguageValues(source.selectedLanguages);
@@ -802,8 +802,8 @@
       gradeLevel: gradeLevel,
       language: language,
       selectedLanguages: selectedLanguages,
-      nativeLanguageDefaultsVersion: Number(source.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
-      appLanguage: Number(source.nativeLanguageDefaultsVersion) >= 1
+      nativeLanguageDefaultsVersion: safeNumber(source.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+      appLanguage: safeNumber(source.nativeLanguageDefaultsVersion) >= 1
         ? nativeLanguageName(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English')
         : normalizeLanguageValue(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English'),
       effectiveLanguageList: nativeLanguageList(source),
@@ -1124,8 +1124,9 @@
   function hasAnalysisFindings(report) {
     if (!report || typeof report !== 'object' || isLegacyAnalysisFormatError(report)) return false;
     const meaningful = value => {
-      if (typeof value !== 'string' && typeof value !== 'number') return false;
-      const text = String(value).trim();
+      if (typeof value === 'number') return Number.isFinite(value);
+      if (typeof value !== 'string') return false;
+      const text = value.trim();
       return /[\p{L}\p{N}]/u.test(text) && !/^(?:n\/?a|unknown|none|undetermined|not (?:available|applicable|verified|assessed|provided)|(?:unable to|could not) determine(?: (?:the )?level)?|could not verify accuracy|AI did not provide detailed explanation)[.!]?$/i.test(text);
     };
     const lists = [report.concepts, report.grammar, report.accuracy?.verifiedFacts, report.accuracy?.unsourcedFacts, report.accuracy?.discrepancies,
@@ -1182,7 +1183,7 @@
   function isCompletedAnalysis(artifact) {
     return !!(artifact && getResourceType(artifact) === 'analysis' && artifactId(artifact)
       && !artifact.error && artifact.data?.analysisNeedsRecheck !== true && !isIncompleteSourceAnalysis(artifact)
-      && !/^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(artifact.status || ''));
+      && !(typeof artifact.status === 'string' && /^(pending|running|incomplete|failed|interrupted|cancelled|canceled)$/i.test(artifact.status)));
   }
 
   function findExistingSourceAnalysis(artifacts, sourceText) {
@@ -1625,9 +1626,9 @@
     resolvePlanRows: resolvePlanRows
   });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.GenerationMatrix = API;
   }
 })();

@@ -46,7 +46,6 @@
     'local-preview': 'Local Preview Only',
     'district-server': 'District Server',
     'byo-firebase': 'Bring Your Own Firebase',
-    'alloflow-demo-cloud': 'AlloFlow Demo Cloud',
   };
 
   let appFocusIdleTimer = null;
@@ -820,7 +819,6 @@
     if (liveSession.mode === 'local-preview') return 'This device only';
     if (liveSession.mode === 'district-server') return 'Future district mode';
     if (liveSession.mode === 'byo-firebase') return 'Shared through school Firebase';
-    if (liveSession.mode === 'alloflow-demo-cloud') return 'Demo only';
     return '-';
   }
 
@@ -1547,8 +1545,14 @@
       ? (status.model.name || 'not set') + (status.model.present ? ' (downloaded)' : ' (will download)') +
         (status.capability && status.capability.contextSize ? ' - ctx ' + status.capability.contextSize : '')
       : '-');
+    const hwBadges = [];
+    if (status.engine) {
+      if (Number(status.engine.gpuLayers) > 0) hwBadges.push('GPU');
+      if (String(status.engine.kvCacheType || '').toLowerCase() === 'q8_0') hwBadges.push('q8_0 KV');
+      if (status.engine.flashAttention) hwBadges.push('FA');
+    }
     setText('#engine-context', status.capability
-      ? 'ctx ' + status.capability.contextSize + ' (' + status.capability.contextSource + '), input ' + status.capability.safeInputTokens + ', JSON ' + status.capability.safeJsonOutputTokens
+      ? 'ctx ' + status.capability.contextSize + ' (' + status.capability.contextSource + '), input ' + status.capability.safeInputTokens + ', JSON ' + status.capability.safeJsonOutputTokens + (hwBadges.length ? ' [' + hwBadges.join(', ') + ']' : '')
       : '-');
     setText('#engine-fallback-state', summarizeLocalFallback(status));
     setText('#engine-disk', status.diskFreeBytes != null ? (status.diskFreeBytes / 1073741824).toFixed(1) + ' GB' : '-');
@@ -1577,6 +1581,34 @@
     const dirInput = $('#engine-model-dir');
     if (dirInput && document.activeElement !== dirInput && status.engine) {
       dirInput.value = status.engine.modelDirectory || '';
+    }
+    if (status.engine) {
+      const ctxSelect = $('#engine-context-select');
+      if (ctxSelect && document.activeElement !== ctxSelect) {
+        const rawCtx = String(Number(status.engine.contextSize) || 0);
+        const hasCtxOpt = Array.from(ctxSelect.options).some((opt) => opt.value === rawCtx);
+        ctxSelect.value = hasCtxOpt ? rawCtx : '0';
+      }
+      const gpuSelect = $('#engine-gpu-layers');
+      if (gpuSelect && document.activeElement !== gpuSelect) {
+        gpuSelect.value = Number(status.engine.gpuLayers) > 0 ? '999' : '0';
+      }
+      const kvQ8 = $('#engine-kv-q8');
+      if (kvQ8 && document.activeElement !== kvQ8) {
+        kvQ8.checked = String(status.engine.kvCacheType || '').toLowerCase() === 'q8_0';
+      }
+      const flashAttn = $('#engine-flash-attn');
+      if (flashAttn && document.activeElement !== flashAttn) {
+        flashAttn.checked = Boolean(status.engine.flashAttention);
+      }
+      const binUrl = $('#engine-binary-url');
+      if (binUrl && document.activeElement !== binUrl) {
+        binUrl.value = status.engine.binaryUrl || '';
+      }
+      const binSha = $('#engine-binary-sha256');
+      if (binSha && document.activeElement !== binSha) {
+        binSha.value = status.engine.binarySha256 || '';
+      }
     }
     return status;
   }
@@ -1634,6 +1666,37 @@
       await refreshEngineStatus();
     } catch (error) {
       if (result) result.textContent = error.message || 'Could not save the model folder.';
+    }
+  }
+  async function saveEngineHardwareSettings() {
+    const result = $('#engine-result');
+    const ctxSelect = $('#engine-context-select');
+    const gpuSelect = $('#engine-gpu-layers');
+    const kvQ8 = $('#engine-kv-q8');
+    const flashAttn = $('#engine-flash-attn');
+    const binUrl = $('#engine-binary-url');
+    const binSha = $('#engine-binary-sha256');
+    const contextSize = Number(ctxSelect && ctxSelect.value) || 0;
+    const gpuLayers = Number(gpuSelect && gpuSelect.value) || 0;
+    const kvCacheType = kvQ8 && kvQ8.checked ? 'q8_0' : '';
+    const flashAttention = Boolean(flashAttn && flashAttn.checked);
+    const binaryUrl = binUrl && binUrl.value ? binUrl.value.trim() : '';
+    const binarySha256 = binSha && binSha.value ? binSha.value.trim().toLowerCase() : '';
+    try {
+      await api('/api/config', {
+        method: 'POST',
+        body: JSON.stringify({
+          localEngine: { contextSize, gpuLayers, kvCacheType, flashAttention, binaryUrl, binarySha256 },
+        }),
+      });
+      const status = await refreshEngineStatus();
+      if (result) {
+        result.textContent = status && status.running
+          ? 'Hardware settings saved. Stop and start the engine to apply them.'
+          : 'Hardware settings saved. They will apply on the next engine start.';
+      }
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Could not save hardware settings.';
     }
   }
   async function toggleEngineCloudFallback(event) {
@@ -2690,6 +2753,8 @@
     $('#engine-custom-apply').addEventListener('click', applyCustomEngineModel);
     $('#engine-custom-cancel').addEventListener('click', cancelCustomEngineModel);
     $('#engine-model-dir-save').addEventListener('click', saveEngineModelDir);
+    const hwSaveBtn = $('#engine-hardware-save');
+    if (hwSaveBtn) hwSaveBtn.addEventListener('click', saveEngineHardwareSettings);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
       if (!state.appBridgeReady) resetAppBridge();

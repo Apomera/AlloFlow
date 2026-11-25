@@ -1,7 +1,9 @@
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ExportPreviewView) { console.log('[CDN] ViewExportPreviewModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) return;
 var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;
@@ -845,9 +847,25 @@ function _builderTrackedChangeType(marker) {
 function _builderCurrentReviewer(doc) {
   return _builderNormalizeReviewerName(doc?.body?.getAttribute?.("data-allo-reviewer-name"), "You");
 }
+function _epSafeJsonReviver(k, v) {
+  return k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
+}
+function _epCheckCrisisText(rawText) {
+  const s = String(rawText || "").trim();
+  if (!s) return false;
+  try {
+    const checker = typeof window !== "undefined" && (window.AlloModules?.SafetyContentChecker || window.SafetyContentChecker);
+    if (checker && typeof checker.check === "function") {
+      const res = checker.check(s);
+      if (res && (res.blocked || res.crisis || res.level === "critical" || res.severity === "critical")) return true;
+    }
+  } catch (_) {
+  }
+  return /\b(kill\s+my\s*self|suicid\w*|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[\s-]*harm|cut\s+my\s*self)\b/i.test(s);
+}
 function _builderRevisionSnapshotDecode(value) {
   try {
-    const parsed = JSON.parse(String(value || "null"));
+    const parsed = JSON.parse(String(value || "null"), _epSafeJsonReviver);
     return parsed && typeof parsed === "object" ? parsed : null;
   } catch (_) {
     return null;
@@ -892,7 +910,13 @@ function _builderApplyElementRevisionSnapshot(element, snapshot, options = {}) {
     if (attributeMode === "all" || attributeMode === "presentation" && allowed.has(name)) element.removeAttribute(name);
   });
   Object.entries(snapshot.attributes || {}).forEach(([name, value]) => {
-    if (!_BUILDER_TRACKED_META_ATTRIBUTES.has(name)) element.setAttribute(name, String(value));
+    const lower = String(name || "").toLowerCase();
+    if (!lower || _BUILDER_TRACKED_META_ATTRIBUTES.has(name) || /^on/.test(lower) || lower === "srcdoc" || lower === "formaction" || lower === "autofocus" || lower === "srcset") return;
+    const rawVal = String(value);
+    const compact = rawVal.replace(/[\u0000-\u0020]+/g, "").toLowerCase();
+    if (/^(?:href|src|xlink:href|action|poster|data)$/.test(lower) && (/^(?:javascript|vbscript):/.test(compact) || /^data:/.test(compact) && !/^data:image\/(?:png|jpeg|jpg|gif|webp);base64,/i.test(compact))) return;
+    if (lower === "style" && /(?:expression\s*\(|javascript:|vbscript:|url\s*\()/i.test(rawVal)) return;
+    element.setAttribute(name, rawVal);
   });
   if (Object.prototype.hasOwnProperty.call(snapshot, "html") && options.content !== false) element.innerHTML = String(snapshot.html || "");
   if (!element.getAttribute("style")) element.removeAttribute("style");
@@ -3226,7 +3250,8 @@ function _builderSanitizeTemplateHtml(doc, html) {
       const value = String(attribute.value || "").replace(/[\u0000-\u0020]+/g, "").toLowerCase();
       const isUrlAttr = /^(?:href|src|xlink:href|action|formaction|poster|data)$/.test(name);
       const isSafeDataImg = (name === "src" || name === "poster") && /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,/i.test(value);
-      if (/^on/.test(name) || name === "srcdoc" || /^data-allo-(change|comment)-/.test(name)) node.removeAttribute(attribute.name);
+      if (/^on/.test(name) || name === "srcdoc" || name === "srcset" || name === "autofocus" || name === "formaction" || name === "action" || /^data-allo-(change|comment)-/.test(name)) node.removeAttribute(attribute.name);
+      else if (name === "style" && /(?:expression\s*\(|javascript:|vbscript:|url\s*\()/i.test(String(attribute.value || ""))) node.removeAttribute(attribute.name);
       else if (isUrlAttr && (/^(?:javascript|vbscript):/.test(value) || /^data:/.test(value) && !isSafeDataImg)) node.removeAttribute(attribute.name);
     });
     node.removeAttribute("contenteditable");
@@ -4631,6 +4656,12 @@ const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
 .allo-docsuite .builder-header-menu { position:relative; }
 .allo-docsuite .builder-export-panel { position:absolute; top:calc(100% + .5rem); right:0; width:21rem; max-width:calc(100vw - 1.5rem); max-height:calc(100dvh - 8rem); overflow:auto; overscroll-behavior:contain; padding:.75rem; display:flex; flex-direction:column; gap:.65rem; }
 .allo-docsuite .builder-export-panel .allo-builder-export-formats { position:static; width:100%; max-width:100%; max-height:none; overflow:visible; }
+.allo-docsuite .builder-export-primary { display:none; }
+@media(min-width:1024px) {
+  .allo-docsuite .builder-export-primary { display:inline-flex; border-radius:.5rem 0 0 .5rem; margin-right:calc(1px - .35rem); }
+  .allo-docsuite .builder-export-primary:focus-visible { position:relative; z-index:1; }
+  .allo-docsuite .builder-export-primary + .builder-header-menu > summary { border-radius:0 .5rem .5rem 0; padding-left:.75rem; padding-right:.75rem; }
+}
 .allo-docsuite .builder-status-popover { width:22rem; max-width:calc(100vw - 1.5rem); z-index:95; max-height:50dvh; overflow:auto; }
 .allo-docsuite .builder-dialog [hidden] { display:none !important; }
 .allo-docsuite .builder-dialog[data-builder-focus="true"] #document-builder-navigation,
@@ -10199,6 +10230,8 @@ ${pageCss}
       if (mountedRef.current) setExportActionBusy(false);
     }
   }, [executeExportFromPreview, exportPreviewRef, runBuilderPreflight, exportPreviewMode, refreshTrackedChanges, refreshReviewComments, refreshDocumentStats, addToast, onExportSuccess]);
+  const exportActionLabel = exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF";
+  const exportActionDisabled = exportActionBusy || !!altExportBusy || exportPreviewMode === "slides" && !pptxLoaded;
   const handleRadioGroupKeyDown = React.useCallback((e) => {
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
     const radios = Array.from(e.currentTarget.querySelectorAll('[role="radio"]:not([disabled])'));
@@ -10345,13 +10378,28 @@ ${pageCss}
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isFocusMode ? "\u2199" : "\u2197"),
       " ",
       isFocusMode ? "Exit focus" : "Focus mode"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-builder-export-primary": true,
+        "data-help-key": "doc_builder_export_action",
+        onClick: runExportFromPreview,
+        disabled: exportActionDisabled,
+        "aria-busy": exportActionBusy,
+        title: exportPreviewMode === "slides" && !pptxLoaded ? "Slides library still loading..." : void 0,
+        className: "builder-export-primary min-h-9 items-center gap-1.5 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50"
+      },
+      /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }),
+      " ",
+      exportActionLabel
     ), /* @__PURE__ */ React.createElement("details", { id: "builder-export-menu", className: "builder-header-menu", onKeyDownCapture: handleBuilderMenuEscape }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-9 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 cursor-pointer list-none" }, exportActionBusy || altExportBusy ? "Preparing export\u2026" : "Export", " ", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "builder-export-panel bg-white border border-slate-300 rounded-xl shadow-xl", role: "region", "aria-label": t("export_preview.accessibility.export_document") || "Export document" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-800" }, "Export document"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (event) => closeBuilderMenu(event.currentTarget.closest("details")), className: "min-h-8 rounded px-2 text-xs font-bold text-slate-600 hover:bg-slate-100", "aria-label": t("export_preview.accessibility.close_export_menu") || "Close export menu" }, "Close")), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         "data-help-key": "doc_builder_export_action",
         onClick: runExportFromPreview,
-        disabled: exportActionBusy || !!altExportBusy || exportPreviewMode === "slides" && !pptxLoaded,
+        disabled: exportActionDisabled,
         "aria-busy": exportActionBusy,
         "aria-label": exportActionBusy ? "Export in progress" : void 0,
         className: "bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
@@ -10359,7 +10407,7 @@ ${pageCss}
       },
       /* @__PURE__ */ React.createElement(Download, { size: 14 }),
       " ",
-      exportActionBusy ? "Preparing export..." : exportPreviewMode === "worksheet" || exportPreviewMode === "print" ? t("export_preview.action_print_pdf") || "Print / Save as PDF" : exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF"
+      exportActionBusy ? "Preparing export..." : exportActionLabel
     ), exportPreviewMode === "slides" && typeof openInAlloStudio === "function" && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -12901,10 +12949,13 @@ ${pageCss}
             } else {
               const P = { goldFoil: "background:linear-gradient(135deg,#b45309 0%,#f59e0b 30%,#fde68a 50%,#f59e0b 70%,#92400e 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;", neonGlow: "color:#0891b2;text-shadow:0 0 4px #06b6d4,0 0 8px #06b6d4,0 0 15px #0e7490;font-weight:900;", retroArcade: "color:#fef2f2;text-shadow:3px 3px 0 #dc2626,6px 6px 0 #1e3a8a;font-weight:900;font-family:Impact,'Arial Black',sans-serif;letter-spacing:0.03em;", chalkboard: "color:#fef3c7;text-shadow:0 0 2px #fbbf24,2px 2px 0 rgba(0,0,0,0.2);font-family:'Caveat','Comic Sans MS',cursive;font-weight:700;letter-spacing:0.05em;", embossed: "color:#475569;text-shadow:-1px -1px 0 rgba(255,255,255,0.8),1px 1px 0 rgba(0,0,0,0.35),2px 2px 4px rgba(0,0,0,0.2);font-weight:900;", rainbow: "background:linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0891b2,#4f46e5,#9333ea);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;" };
               const sz = { S: "1.5rem", M: "2.5rem", L: "4rem", XL: "6rem" };
+              const safePreset = Object.prototype.hasOwnProperty.call(P, preset) ? preset : "goldFoil";
+              const safeSize = Object.prototype.hasOwnProperty.call(sz, size) ? size : "L";
+              const safeAlign = /^(?:left|center|right)$/.test(String(align || "")) ? String(align) : "center";
               const safe = String(text).replace(/[<>&]/g, (c) => c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;");
-              const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ";line-height:1.1;" + (P[preset] || P.goldFoil) + '">' + safe + "</span>";
-              const wrapped = preset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
-              html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
+              const inner = '<span style="display:inline-block;font-size:' + sz[safeSize] + ";line-height:1.1;" + P[safePreset] + '">' + safe + "</span>";
+              const wrapped = safePreset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
+              html = '<div class="alloflow-wordart" data-wa-preset="' + safePreset + '" data-wa-size="' + safeSize + '" data-wa-align="' + safeAlign + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + safeAlign + '">' + wrapped + "</div>";
             }
             if (!html) {
               addToast("Could not render word art", "error");
@@ -13071,7 +13122,16 @@ ${pageCss}
         );
       })))))),
       (() => {
-        const epTextAiReady = typeof window !== "undefined" && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", window.callGemini) : Boolean(typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked));
+        const _epPolicyBlocked = typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true || window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled() || window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled());
+        const epTextAiReady = typeof window !== "undefined" && !_epPolicyBlocked && (typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("text", window.callGemini) : Boolean(typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked));
+        const runSafeCustomStyle = () => {
+          if (!epTextAiReady || isGeneratingStyle || !String(exportStylePrompt || "").trim()) return;
+          if (_epCheckCrisisText(exportStylePrompt)) {
+            if (typeof addToast === "function") addToast("You matter, and help is available right now. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 in an emergency.", "warning");
+            return;
+          }
+          generateCustomExportStyle();
+        };
         return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "\u2728 AI Style Studio"), !epTextAiReady && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900" }, "AI is off \u2014 connect an AI provider in Settings to generate custom styles."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
           { label: "\u{1F3A8} Auto-Beautify", prompt: "Make this document visually stunning and professional with a modern color scheme, elegant typography, subtle gradients, well-spaced sections with rounded cards, and a cohesive design system. Use a sophisticated palette." },
           { label: "\u{1F3EB} Academic", prompt: "Professional academic style with serif headings (Georgia or similar), clean layout, navy/gold color scheme, formal table styling, proper margins, and a scholarly appearance suitable for university submissions." },
@@ -13102,7 +13162,7 @@ ${pageCss}
             disabled: !epTextAiReady || isGeneratingStyle,
             onKeyDown: (e) => {
               if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-              if (e.key === "Enter" && epTextAiReady && !isGeneratingStyle && exportStylePrompt.trim()) generateCustomExportStyle();
+              if (e.key === "Enter" && epTextAiReady && !isGeneratingStyle && exportStylePrompt.trim()) runSafeCustomStyle();
             },
             placeholder: t("placeholders.describe_style_preset"),
             className: "flex-1 text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300 disabled:bg-slate-50",
@@ -13112,7 +13172,7 @@ ${pageCss}
           "button",
           {
             type: "button",
-            onClick: generateCustomExportStyle,
+            onClick: runSafeCustomStyle,
             "aria-label": isGeneratingStyle ? "Generating custom style" : "Generate custom style",
             disabled: !epTextAiReady || !exportStylePrompt.trim() || isGeneratingStyle,
             className: "px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -14976,14 +15036,16 @@ ${_pageCss}
         };
         pic.onload = () => {
           try {
-            const prev = JSON.parse(img.getAttribute("data-allo-crop") || "null");
-            if (prev && prev.nw === pic.naturalWidth && prev.nh === pic.naturalHeight) {
+            const prev = JSON.parse(img.getAttribute("data-allo-crop") || "null", _epSafeJsonReviver);
+            if (prev && Number.isFinite(prev.nw) && prev.nw > 0 && Number.isFinite(prev.nh) && prev.nh > 0 && prev.nw === pic.naturalWidth && prev.nh === pic.naturalHeight && Number.isFinite(prev.x) && Number.isFinite(prev.y) && Number.isFinite(prev.w) && Number.isFinite(prev.h)) {
               const kx = pic.clientWidth / prev.nw, ky = pic.clientHeight / prev.nh;
-              sel.style.left = prev.x * kx + "px";
-              sel.style.top = prev.y * ky + "px";
-              sel.style.width = prev.w * kx + "px";
-              sel.style.height = prev.h * ky + "px";
-              sel.style.display = "block";
+              if (Number.isFinite(kx) && Number.isFinite(ky)) {
+                sel.style.left = prev.x * kx + "px";
+                sel.style.top = prev.y * ky + "px";
+                sel.style.width = prev.w * kx + "px";
+                sel.style.height = prev.h * ky + "px";
+                sel.style.display = "block";
+              }
             }
           } catch (_) {
           }

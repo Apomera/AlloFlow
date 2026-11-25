@@ -151,24 +151,28 @@
     var closing = isYoung
       ? 'A grown-up can only help if a person tells them. You can always ask a trusted adult for help \u2014 about anything.'
       : 'We tell you this up front so you can make an informed choice about what to share \u2014 and so you never assume an adult has been told when they haven\u2019t.';
+    var _flags = (window.SelHub && window.SelHub._themeFlags) || {};
+    var _rootCls = (typeof document !== 'undefined' && document.documentElement && document.documentElement.className) ? document.documentElement.className : '';
+    var _isContrast = !!_flags.isContrast || _rootCls.indexOf('theme-contrast') !== -1;
     // Light-designed card: give it its own white surface, or its dark ink lands on the tool's dark shell (1.22:1).
-    return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center', background: '#ffffff', borderRadius: '16px' } },
-      h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83D\uDD12'),
-      h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#1e293b', margin: '0 0 12px' } }, 'Before We Start'),
-      h('div', { style: { background: '#f0f9ff', borderRadius: '14px', padding: '18px', border: '1px solid #bae6fd', textAlign: 'left', marginBottom: '16px' } },
-        h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#1e293b', margin: '0 0 10px' } }, intro),
-        h('div', { style: { background: '#fffbeb', borderRadius: '10px', padding: '12px', borderLeft: '4px solid #f59e0b', marginBottom: '10px' } },
-          h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#78350f', margin: 0 } }, safetyBox)
+    return h('div', { style: { padding: '24px', maxWidth: '520px', margin: '0 auto', textAlign: 'center', background: _isContrast ? '#000000' : '#ffffff', borderRadius: '16px', border: _isContrast ? '2px solid #ffff00' : 'none', color: _isContrast ? '#ffff00' : '#1e293b' } },
+      h('div', { 'aria-hidden': 'true', style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83D\uDD12'),
+      h('h3', { style: { fontSize: '18px', fontWeight: 800, color: _isContrast ? '#ffff00' : '#1e293b', margin: '0 0 12px' } }, 'Before We Start'),
+      h('div', { style: { background: _isContrast ? '#000000' : '#f0f9ff', borderRadius: '14px', padding: '18px', border: _isContrast ? '1px solid #ffff00' : '1px solid #bae6fd', textAlign: 'left', marginBottom: '16px' } },
+        h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _isContrast ? '#ffffff' : '#1e293b', margin: '0 0 10px' } }, intro),
+        h('div', { style: { background: _isContrast ? '#000000' : '#fffbeb', borderRadius: '10px', padding: '12px', border: _isContrast ? '1px solid #ffff00' : 'none', borderLeft: _isContrast ? '4px solid #ffff00' : '4px solid #f59e0b', marginBottom: '10px' } },
+          h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: _isContrast ? '#ffff00' : '#78350f', margin: 0 } }, safetyBox)
         ),
-        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: '#475569', margin: 0 } }, closing)
+        h('p', { style: { fontSize: '13px', lineHeight: 1.7, color: _isContrast ? '#ffffff' : '#475569', margin: 0 } }, closing)
       ),
       h('button', {
+        type: 'button',
         onClick: onConsent,
         autoFocus: true,
         'aria-label': 'I understand the safety guidelines',
-        style: { padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(37,99,235,0.3)' }
+        style: { minHeight: '44px', padding: '12px 32px', background: _isContrast ? '#ffff00' : '#2563eb', color: _isContrast ? '#000000' : '#fff', border: _isContrast ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', touchAction: 'manipulation', boxShadow: _isContrast ? 'none' : '0 2px 8px rgba(37,99,235,0.3)' }
       }, isYoung ? 'I Understand \u2014 Let\u2019s Talk' : 'I Understand the Guidelines'),
-      h('p', { style: { fontSize: '11px', color: '#64748b', marginTop: '10px' } }, 'This appears once per session for your awareness.')
+      h('p', { style: { fontSize: '11px', color: _isContrast ? '#ffff00' : '#475569', marginTop: '10px' } }, 'This appears once per session for your awareness.')
     );
   };
 
@@ -514,21 +518,21 @@
         h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, '\u26A0\uFE0F'),
         h('span', { style: { fontSize: '13px', fontWeight: 700, color: titleColor } }, _sT('sel.safety.banner_title', 'You matter. Help is available.'))
       ),
-      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: bodyColor } },
-        h('div', null,
-          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDE '),
-          h('a', { href: 'tel:988', style: { color: linkColor, fontWeight: 700, textDecoration: 'underline' } }, _sT('sel.safety.banner_988', '988 Suicide & Crisis Lifeline \u2014 call or text 988'))
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '12px', color: bodyColor } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDE'),
+          h('a', { href: 'tel:988', style: { display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '6px 4px', color: linkColor, fontWeight: 700, textDecoration: 'underline', touchAction: 'manipulation' } }, _sT('sel.safety.banner_988', '988 Suicide & Crisis Lifeline \u2014 call or text 988'))
         ),
-        h('div', null,
-          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCF1 '),
-          h('a', { href: 'sms:741741?&body=HOME', style: { color: linkColor, fontWeight: 700, textDecoration: 'underline' } }, _sT('sel.safety.banner_741741', 'Crisis Text Line \u2014 text HOME to 741741'))
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCF1'),
+          h('a', { href: 'sms:741741?&body=HOME', style: { display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '6px 4px', color: linkColor, fontWeight: 700, textDecoration: 'underline', touchAction: 'manipulation' } }, _sT('sel.safety.banner_741741', 'Crisis Text Line \u2014 text HOME to 741741'))
         ),
-        h('div', null,
-          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEA8 '),
-          h('a', { href: 'tel:911', style: { color: linkColor, fontWeight: 700, textDecoration: 'underline' } }, _sT('sel.safety.banner_911', 'Immediate danger: call 911'))
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+          h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEA8'),
+          h('a', { href: 'tel:911', style: { display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '6px 4px', color: linkColor, fontWeight: 700, textDecoration: 'underline', touchAction: 'manipulation' } }, _sT('sel.safety.banner_911', 'Immediate danger: call 911'))
         ),
-        h('div', null,
-          h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFEB '),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 0' } },
+          h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFEB'),
           _sT('sel.safety.banner_adult', 'Talk to a trusted adult at your school')
         )
       )
@@ -636,7 +640,7 @@
       ? 'Your teacher is hosting a live session. Anything you save or submit here can be seen by them. Your words are sent to the AI service to write its replies. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.'
       : 'Your words are sent to the AI service to write its replies, and your conversation is saved with your project on this device. No adult is notified automatically. If something serious comes up, help resources appear right away. For real safety concerns, please talk to a trusted adult.';
     var flags = (window.SelHub && window.SelHub._themeFlags) || {};
-    var ink = flags.isContrast ? '#ffff00' : (flags.isDark !== false ? '#94a3b8' : '#64748b');   // shell is dark by default
+    var ink = flags.isContrast ? '#ffff00' : (flags.isDark !== false ? '#cbd5e1' : '#475569');   // shell is dark by default
     return h('p', {
       style: { fontSize: '11px', color: ink, margin: '4px 0 0', lineHeight: 1.5 }
     }, body);
@@ -720,7 +724,7 @@
       closeBtn.type = 'button';
       closeBtn.textContent = 'Dismiss';
       closeBtn.setAttribute('aria-label', 'Dismiss print pop-up notice');
-      closeBtn.style.cssText = 'flex-shrink:0;background:#1e293b;color:#f8fafc;border:1px solid #94a3b8;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;min-height:32px';
+      closeBtn.style.cssText = 'flex-shrink:0;background:#1e293b;color:#f8fafc;border:1px solid #94a3b8;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:44px;min-width:44px;touch-action:manipulation';
       var timerId = null;
       var dismiss = function() {
         if (timerId != null) { clearTimeout(timerId); timerId = null; }
@@ -842,23 +846,34 @@
       + '.sel-cf-heart{display:block;margin:0 auto 10px;width:36px;height:36px;color:#64748b}'
       + '.sel-cf-title{font-size:17px;font-weight:700;line-height:1.4;margin:0 0 12px;text-align:center;color:#0f172a}'
       + '.sel-cf-body{font-size:14px;line-height:1.6;margin:0 0 18px;color:#334155}'
-      + '.sel-cf-btn{display:block;width:100%;box-sizing:border-box;padding:13px 16px;'
+      + '.sel-cf-btn{display:block;width:100%;box-sizing:border-box;min-height:44px;padding:13px 16px;'
       + 'border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;'
       + 'text-align:center;text-decoration:none;margin-bottom:10px;line-height:1.4;'
-      + 'font-family:inherit}'
+      + 'font-family:inherit;touch-action:manipulation}'
       + '.sel-cf-btn-primary{background:#2563eb;color:#fff;box-shadow:0 2px 8px rgba(37,99,235,0.25)}'
-      + '.sel-cf-btn-primary:focus{outline:3px solid #93c5fd;outline-offset:2px}'
+      + '.sel-cf-btn-primary:focus,.sel-cf-btn-primary:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}'
       + '.sel-cf-btn-secondary{background:#e0f2fe;color:#075985;border:1px solid #bae6fd}'
-      + '.sel-cf-btn-secondary:focus{outline:3px solid #7dd3fc;outline-offset:2px}'
+      + '.sel-cf-btn-secondary:focus,.sel-cf-btn-secondary:focus-visible{outline:3px solid #0284c7;outline-offset:2px}'
       + '.sel-cf-btn-save{background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1}'
-      + '.sel-cf-btn-save:focus{outline:3px solid #94a3b8;outline-offset:2px}'
+      + '.sel-cf-btn-save:focus,.sel-cf-btn-save:focus-visible{outline:3px solid #475569;outline-offset:2px}'
       + '.sel-cf-btn-close{background:transparent;color:#475569;text-decoration:underline;'
       + 'padding:10px 16px;font-weight:500}'
-      + '.sel-cf-btn-close:focus{outline:2px solid #64748b;outline-offset:2px;border-radius:6px}'
-      + '.sel-cf-tertiary{font-size:13px;line-height:1.6;color:#475569;background:#f8fafc;'
+      + '.sel-cf-btn-close:focus,.sel-cf-btn-close:focus-visible{outline:3px solid #475569;outline-offset:2px;border-radius:6px}'
+      + '.sel-cf-tertiary{font-size:13px;line-height:1.6;color:#334155;background:#f8fafc;'
       + 'border-radius:10px;padding:12px 14px;margin:0 0 12px}'
-      + '.sel-cf-sub{font-size:12px;color:#94a3b8;text-align:center;margin:6px 0 0;line-height:1.5}'
-      + '.sel-cf-btn-sub{display:block;font-size:11px;font-weight:400;opacity:0.85;margin-top:3px}'
+      + '.sel-cf-sub{font-size:12px;color:#475569;text-align:center;margin:6px 0 0;line-height:1.5}'
+      + '.sel-cf-btn-sub{display:block;font-size:11px;font-weight:400;opacity:0.9;margin-top:3px}'
+      + '.theme-contrast .sel-cf-card{background:#000;color:#ffff00;border:2px solid #ffff00;box-shadow:none}'
+      + '.theme-contrast .sel-cf-heart,.theme-contrast .sel-cf-title,.theme-contrast .sel-cf-sub{color:#ffff00}'
+      + '.theme-contrast .sel-cf-body,.theme-contrast .sel-cf-tertiary{color:#fff;background:#000;border:1px solid #ffff00}'
+      + '.theme-contrast .sel-cf-btn-primary{background:#ffff00;color:#000;border:2px solid #ffff00;box-shadow:none}'
+      + '.theme-contrast .sel-cf-btn-secondary,.theme-contrast .sel-cf-btn-save,.theme-contrast .sel-cf-btn-close{background:#000;color:#ffff00;border:2px solid #ffff00}'
+      + '.theme-contrast .sel-cf-btn:focus,.theme-contrast .sel-cf-btn:focus-visible{outline:3px solid #00ff00;outline-offset:2px}'
+      + '@media (forced-colors:active){'
+      + '  .sel-cf-card{border:2px solid CanvasText}'
+      + '  .sel-cf-btn{border:2px solid ButtonText}'
+      + '  .sel-cf-btn:focus,.sel-cf-btn:focus-visible{outline:3px solid Highlight;outline-offset:2px}'
+      + '}'
       + '@keyframes sel-cf-fade{from{opacity:0}to{opacity:1}}'
       + '@keyframes sel-cf-pop{from{opacity:0;transform:translateY(8px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}'
       + '@media (prefers-reduced-motion: reduce){'
@@ -919,6 +934,7 @@
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'cf-title');
+    overlay.setAttribute('aria-describedby', 'cf-body');
 
     var card = document.createElement('div');
     card.className = 'sel-cf-card';
@@ -940,6 +956,7 @@
     card.appendChild(title);
 
     var body = document.createElement('p');
+    body.id = 'cf-body';
     body.className = 'sel-cf-body';
     body.textContent = _sT('sel.safety.modal_body',
       'What you’re feeling is real, and you don’t have to handle it alone. The people below are trained to listen — they won’t judge you, and you don’t need a reason to reach out. If you can, tell an adult you trust today, even if it feels hard. You matter, and this moment is not the whole story.');

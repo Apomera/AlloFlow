@@ -3774,13 +3774,13 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
             [-1,0,1].forEach(function(side){bladePositions.push(side*width,t*2-1,bend+(side===0?Math.sin(Math.PI*t)*0.13:0));bladeUV.push((side+1)/2,t);});
             if(leafSection<10)for(var half=0;half<2;half++){var at=leafSection*3+half;bladeIndices.push(at,at+3,at+1,at+1,at+3,at+4);}
           }bladeGeometry.setAttribute('position',new T.Float32BufferAttribute(bladePositions,3));bladeGeometry.setAttribute('uv',new T.Float32BufferAttribute(bladeUV,2));bladeGeometry.setIndex(bladeIndices);bladeGeometry.computeVertexNormals();
-          var plantCanvas=document.createElement('canvas');plantCanvas.width=64;plantCanvas.height=128;var plantContext=plantCanvas.getContext('2d');
+          var plantCanvas=document.createElement('canvas');plantCanvas.setAttribute('aria-hidden','true');plantCanvas.width=64;plantCanvas.height=128;var plantContext=plantCanvas.getContext('2d');
           var leafGradient=plantContext.createLinearGradient(0,0,0,128);leafGradient.addColorStop(0,'#aeb59b');leafGradient.addColorStop(0.5,'#e5e9d4');leafGradient.addColorStop(1,'#ccd8b4');plantContext.fillStyle=leafGradient;plantContext.fillRect(0,0,64,128);
           plantContext.strokeStyle='rgba(105,125,79,0.40)';plantContext.lineWidth=0.7;
           for(var vein=0;vein<10;vein++)[-1,1].forEach(function(side){plantContext.beginPath();plantContext.moveTo(32,vein*12+6);plantContext.quadraticCurveTo(32+side*12,vein*12+12,32+side*29,vein*12+25);plantContext.stroke();});
           plantContext.strokeStyle='#f0efd3';plantContext.lineWidth=1.2;plantContext.beginPath();plantContext.moveTo(32,0);plantContext.lineTo(32,128);plantContext.stroke();
           var plantTexture=new T.CanvasTexture(plantCanvas);plantTexture.encoding=T.sRGBEncoding;textures.push(plantTexture);
-          var insectGeometry=geometry(new T.SphereGeometry(1,18,12)),insectCanvas=document.createElement('canvas');insectCanvas.width=128;insectCanvas.height=64;var insectContext=insectCanvas.getContext('2d');insectContext.fillStyle='#e4e7ce';insectContext.fillRect(0,0,128,64);
+          var insectGeometry=geometry(new T.SphereGeometry(1,18,12)),insectCanvas=document.createElement('canvas');insectCanvas.setAttribute('aria-hidden','true');insectCanvas.width=128;insectCanvas.height=64;var insectContext=insectCanvas.getContext('2d');insectContext.fillStyle='#e4e7ce';insectContext.fillRect(0,0,128,64);
           for(var pore=0;pore<320;pore++){insectContext.fillStyle=pore%3?'rgba(111,131,68,0.18)':'rgba(255,250,215,0.4)';insectContext.beginPath();insectContext.arc((pore*43.27)%128,(pore*17.61)%64,0.35+pore%3*0.14,0,Math.PI*2);insectContext.fill();}
           var insectTexture=new T.CanvasTexture(insectCanvas);insectTexture.encoding=T.sRGBEncoding;textures.push(insectTexture);
           var cone = geometry(new T.ConeGeometry(1, 1, 5));
@@ -3801,7 +3801,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           // Small procedural surface maps are shared across all representatives.
           // They add coat/feather detail without external assets or extra meshes.
           function coatTexture(feathers) {
-            var canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;
+            var canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');canvas.width=256;canvas.height=128;
             var ctx=canvas.getContext('2d'),seed=feathers?817:401;
             function noise(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
             ctx.fillStyle='#ecebe7';ctx.fillRect(0,0,256,128);
@@ -3823,7 +3823,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           // Short, overlapping guard hairs follow each skin's UV direction.
           // Four shared maps cover both mammals; there are no per-animal maps.
           function mammalCoatMaps(id,upright){
-            var canvas=document.createElement('canvas'),relief=document.createElement('canvas');canvas.width=relief.width=512;canvas.height=relief.height=256;
+            var canvas=document.createElement('canvas'),relief=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');relief.setAttribute('aria-hidden','true');canvas.width=relief.width=512;canvas.height=relief.height=256;
             var ctx=canvas.getContext('2d'),bump=relief.getContext('2d'),seed=id==='foxes'?2371:5479;
             function random(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
             ctx.fillStyle=id==='foxes'?'#f4f0e8':'#e9e5da';ctx.fillRect(0,0,512,256);bump.fillStyle='#808080';bump.fillRect(0,0,512,256);
@@ -3843,7 +3843,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           var mammalCoats={foxes:{along:mammalCoatMaps('foxes',false),upright:mammalCoatMaps('foxes',true)},rabbits:{along:mammalCoatMaps('rabbits',false),upright:mammalCoatMaps('rabbits',true)}};
           // Small overlapping contour feathers avoid long fur-like streaks on
           // bird bodies. The stronger shaft/bar map remains on flight feathers.
-          var birdCanvas=document.createElement('canvas');birdCanvas.width=256;birdCanvas.height=128;
+          var birdCanvas=document.createElement('canvas');birdCanvas.setAttribute('aria-hidden','true');birdCanvas.width=256;birdCanvas.height=128;
           var birdContext=birdCanvas.getContext('2d');birdContext.fillStyle='#eeece5';birdContext.fillRect(0,0,256,128);
           for(var row=0;row<13;row++)for(var col=0;col<27;col++){
             var bx=col*10+(row%2)*5,by=row*10;
@@ -4079,7 +4079,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           var groundTexture=new T.DataTexture(groundPixels,256,256,T.RGBAFormat);groundTexture.wrapS=groundTexture.wrapT=T.RepeatWrapping;groundTexture.magFilter=T.LinearFilter;groundTexture.needsUpdate=true;textures.push(groundTexture);
           // A small, seamless floor texture adds leaf fragments and fine twigs.
           // Its independent seed keeps every existing vegetation site unchanged.
-          var floorCanvas=document.createElement('canvas');floorCanvas.width=floorCanvas.height=512;
+          var floorCanvas=document.createElement('canvas');floorCanvas.setAttribute('aria-hidden','true');floorCanvas.width=floorCanvas.height=512;
           var floorContext=floorCanvas.getContext('2d'),floorSeed=9721;
           function floorRandom(){floorSeed=(floorSeed*1664525+1013904223)>>>0;return floorSeed/4294967296;}
           floorContext.fillStyle='#ece8dc';floorContext.fillRect(0,0,512,512);
@@ -4136,7 +4136,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           }
           var trunkGeometry=geometry(new T.CylinderGeometry(0.57,1,1,9));
           // Cutout foliage gives the canopy a leafy silhouette instead of solid balls.
-          var leafCanvas=document.createElement('canvas');leafCanvas.width=leafCanvas.height=512;var leafCtx=leafCanvas.getContext('2d');leafCtx.scale(2,2);
+          var leafCanvas=document.createElement('canvas');leafCanvas.setAttribute('aria-hidden','true');leafCanvas.width=leafCanvas.height=512;var leafCtx=leafCanvas.getContext('2d');leafCtx.scale(2,2);
           for(var sprig=0;sprig<32;sprig++){
             var sa=forestRandom()*Math.PI*2,sr=Math.sqrt(forestRandom())*83,sx=128+Math.cos(sa)*sr,sy=128+Math.sin(sa)*sr;
             leafCtx.strokeStyle='rgba(180,180,170,0.85)';leafCtx.lineWidth=1.4;leafCtx.beginPath();leafCtx.moveTo(128,140);leafCtx.quadraticCurveTo(sx,140,sx,sy);leafCtx.stroke();
@@ -4163,7 +4163,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
             leafUV.push(0,0,1,0,1,1,0,1);leafIndices.push(base,base+1,base+2,base,base+2,base+3);
           }
           var foliageGeometry=geometry(new T.BufferGeometry());foliageGeometry.setAttribute('position',new T.Float32BufferAttribute(leafVertices,3));foliageGeometry.setAttribute('uv',new T.Float32BufferAttribute(leafUV,2));foliageGeometry.setIndex(leafIndices);foliageGeometry.computeVertexNormals();
-          var barkCanvas=document.createElement('canvas');barkCanvas.width=64;barkCanvas.height=256;var barkCtx=barkCanvas.getContext('2d');barkCtx.fillStyle='#6b5a48';barkCtx.fillRect(0,0,64,256);
+          var barkCanvas=document.createElement('canvas');barkCanvas.setAttribute('aria-hidden','true');barkCanvas.width=64;barkCanvas.height=256;var barkCtx=barkCanvas.getContext('2d');barkCtx.fillStyle='#6b5a48';barkCtx.fillRect(0,0,64,256);
           for(var stripe=0;stripe<170;stripe++){var bx=forestRandom()*64,by=forestRandom()*256;barkCtx.strokeStyle= stripe%3===0?'#8c7960':'#483f35';barkCtx.lineWidth=0.4+forestRandom()*1.4;barkCtx.beginPath();barkCtx.moveTo(bx,by);barkCtx.lineTo(bx+(forestRandom()-0.5)*3,by+8+forestRandom()*36);barkCtx.stroke();}
           var barkTexture=new T.CanvasTexture(barkCanvas);barkTexture.encoding=T.sRGBEncoding;barkTexture.wrapT=T.RepeatWrapping;barkTexture.repeat.y=3;textures.push(barkTexture);
           var barkMaterial=new T.MeshStandardMaterial({color:0xffffff,map:barkTexture,bumpMap:barkTexture,bumpScale:0.025,roughness:1});materials.push(barkMaterial);
@@ -4408,7 +4408,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
             var from=new T.Vector3(0.12,y,i?0.11:-0.10),to=new T.Vector3(0.34,y+0.06,i?0.17:-0.17),axis=new T.Vector3().subVectors(to,from);
             var stub=new T.Mesh(stubGeometry,barkMaterial);stub.position.copy(from).add(to).multiplyScalar(0.5);stub.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),axis.normalize());stub.castShadow=true;stub.receiveShadow=true;log.add(stub);
           });
-          var endCanvas=document.createElement('canvas');endCanvas.width=endCanvas.height=128;
+          var endCanvas=document.createElement('canvas');endCanvas.setAttribute('aria-hidden','true');endCanvas.width=endCanvas.height=128;
           var endContext=endCanvas.getContext('2d');endContext.fillStyle='#bda077';endContext.fillRect(0,0,128,128);
           for(var growthRing=1;growthRing<16;growthRing++){
             endContext.beginPath();
@@ -4712,7 +4712,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
             }instances.instanceMatrix.needsUpdate=true;
           });
           // Feather humus into the terrain instead of drawing a hard-edged disc.
-          var humusCanvas=document.createElement('canvas');humusCanvas.width=humusCanvas.height=128;
+          var humusCanvas=document.createElement('canvas');humusCanvas.setAttribute('aria-hidden','true');humusCanvas.width=humusCanvas.height=128;
           var humusContext=humusCanvas.getContext('2d'),humusImage=humusContext.createImageData(128,128);
           for(var hp=0;hp<128*128;hp++){
             var hx=(hp%128-64)/64,hz=(Math.floor(hp/128)-64)/64,noise=(Math.sin(hp*127.1)*43758.5453)%1,grain=Math.abs(noise);
@@ -4731,7 +4731,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           var dryLeafUV=[],dryLeafVertices=dryLeafGeometry.getAttribute('position');
           for(var lv=0;lv<dryLeafVertices.count;lv++)dryLeafUV.push((dryLeafVertices.getX(lv)+1)/2,(dryLeafVertices.getZ(lv)+1)/2);
           dryLeafGeometry.setAttribute('uv',new T.Float32BufferAttribute(dryLeafUV,2));
-          var dryLeafCanvas=document.createElement('canvas');dryLeafCanvas.width=128;dryLeafCanvas.height=64;
+          var dryLeafCanvas=document.createElement('canvas');dryLeafCanvas.setAttribute('aria-hidden','true');dryLeafCanvas.width=128;dryLeafCanvas.height=64;
           var dryLeafContext=dryLeafCanvas.getContext('2d');dryLeafContext.fillStyle='#e3d6b9';dryLeafContext.fillRect(0,0,128,64);
           for(var blemish=0;blemish<180;blemish++){var lx=(blemish*47.31)%128,ly=(blemish*19.77)%64;dryLeafContext.fillStyle=blemish%3?'rgba(111,81,42,0.09)':'rgba(244,228,192,0.25)';dryLeafContext.beginPath();dryLeafContext.ellipse(lx,ly,1+blemish%4,0.6+blemish%3,blemish,0,Math.PI*2);dryLeafContext.fill();}
           dryLeafContext.strokeStyle='#9b835e';dryLeafContext.lineWidth=1.1;dryLeafContext.beginPath();dryLeafContext.moveTo(0,32);dryLeafContext.bezierCurveTo(40,29,85,35,128,32);dryLeafContext.stroke();
@@ -4748,7 +4748,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
           }soilLeaves.instanceMatrix.needsUpdate=true;soilLeaves.instanceColor.needsUpdate=true;
           var capGeometry=geometry(new T.LatheGeometry([[0,0.105],[0.04,0.102],[0.085,0.088],[0.13,0.048],[0.16,0.007],[0.156,-0.006],[0.105,0.003],[0.03,0.015],[0,0.016]].map(function(p){return new T.Vector2(p[0],p[1]);}),28));
           // Shared, deterministic surface maps keep the added detail inexpensive.
-          var capCanvas=document.createElement('canvas');capCanvas.width=256;capCanvas.height=128;
+          var capCanvas=document.createElement('canvas');capCanvas.setAttribute('aria-hidden','true');capCanvas.width=256;capCanvas.height=128;
           var capContext=capCanvas.getContext('2d'),capImage=capContext.createImageData(256,128);
           for(var cp=0;cp<256*128;cp++){
             var cu=cp%256,cv=Math.floor(cp/256),grain=Math.abs(Math.sin(cp*93.71)*43758.5453)%1;
@@ -5397,7 +5397,7 @@ function createVigilanceTraceAnnotation(T,scene,geometry,materials,groundHeight)
         h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(0.12); } }, 'Raise view'),
         h('button', { type: 'button', onClick: function() { cameraControls.current.tiltBy(-0.12); } }, 'Lower view'),
         h('button', { type: 'button', onClick: function() { setOrbit(0.65); setObservationElevation(0.42); setZoom(19); setLift(0); setCameraMode('habitat');setIsolate(false);setShowTrail(false);setShowInteraction(false);setCameraTracking('steady');setRepresentative({id:props.focus,index:0}); } }, 'Reset camera'),
-        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 8, max: 30, value: zoom, step: 'any', 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), onChange: function(e) { setZoom(Number(e.target.value)); } }))),
+        h('label', { style: { flex: '1 1 180px' } }, 'Camera distance', h('input', { type: 'range', min: 8, max: 30, value: zoom, step: 'any', 'aria-label': __alloT('stem.ecosystem.meadow_camera_distance','Meadow camera distance'), 'aria-valuetext': Number(zoom).toFixed(1) + ' camera units', onChange: function(e) { setZoom(Number(e.target.value)); } }))),
       h('div', { className: 'efw-meadow-species', role: 'group', 'aria-label': __alloT('stem.ecosystem.meadow_species_selection','Meadow species selection') }, ECO_WEB_SPECIES.filter(function(sp){return !sp.optional||props.config.enabled[sp.id];}).map(function(sp) { return h('button', { type: 'button', key: sp.id, 'aria-pressed': props.focus === sp.id, onClick: function() { props.onFocus(sp.id); } }, sp.icon + ' ' + sp.name, h('strong', { style: { display: 'block' } }, props.config.enabled[sp.id] ? ecoWebFormat(sample[sp.id]) + ' biomass' : 'Not included')); })),
       !props.result && !reduced && status === 'ready' && h('div', { className: 'efw-row', 'data-efw-live-preview': 'true' },
         h('button', { type: 'button', 'aria-pressed': previewing, onClick: function() { setPreviewing(!previewing); } }, previewing ? 'Stop live behavior' : 'Watch live behavior'),
@@ -5699,7 +5699,7 @@ function ecoMeadowMovementEvidence(study,branch,state,footfallPlan) {
         h('label',null,'My planted-paw comparison',h('select',{ref:choiceRef,'aria-label':__alloT("stem.ecosystem.a11y_planted_paw_comparison_choice", "Planted-paw comparison choice"),value:matches&&Object.prototype.hasOwnProperty.call(labels,s.choice)?s.choice:'',onChange:function(e){change({choice:e.target.value,checked:false});}},h('option',{value:''},'Choose which traveled farther'),Object.keys(labels).map(function(key){return h('option',{key:key,value:key},labels[key]);}))),
         h('div',{className:'efw-row'},h('button',{type:'button',onClick:function(){inspect(first);}},'Inspect stance start'),h('button',{type:'button',onClick:function(){inspect(last);}},'Inspect stance end')),
         h('p',{'data-efw-stance-progress':'true',role:'status'},[first,last].filter(function(step){return visited.indexOf(step)>=0;}).length+' of 2 interval endpoints inspected.'),
-        h('label',null,'Inspect each recorded stance sample',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_planted_paw_inspection_time", "Planted-paw inspection time"),min:first,max:last,step:1,value:Math.max(first,Math.min(last,props.cursor)),onChange:function(e){inspect(Number(e.target.value));}})),
+        h('label',null,'Inspect each recorded stance sample',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_planted_paw_inspection_time", "Planted-paw inspection time"),'aria-valuetext':'time '+(Math.max(first,Math.min(last,props.cursor))/10).toFixed(1),min:first,max:last,step:1,value:Math.max(first,Math.min(last,props.cursor)),onChange:function(e){inspect(Number(e.target.value));}})),
         h('button',{type:'button',className:'efw-primary',disabled:!check,onClick:submit},s.firstChoice!=null?'Recheck planted-paw comparison':'Check planted-paw comparison'),
         shown&&h('figure',{className:'efw-stance-plot','data-efw-stance-plot':'true'},
           h('figcaption',null,h('strong',null,'Trace the body beside a held paw'),h('p',null,'Blue circles trace the body. The gold diamond marks '+ECO_FOOTFALL_PAWS[plan.paw].name.toLowerCase()+'. Both use the same fixed ground coordinates and scale; the map does not follow the camera.')),
@@ -5944,7 +5944,7 @@ function EcoMammalSequence(props) {
         verdictButtons(),
         !started?h(props.React.Fragment,null,h('button',{type:'button',className:'efw-primary',disabled:!Object.prototype.hasOwnProperty.call(verdicts,s.verdict),onClick:function(){change({started:true,firstVerdict:s.verdict,visited:[],pins:[],sorts:[],firstSorts:null,checked:false});}},'Commit verdict and investigate'),h('small',null,'Commit an initial expectation before inspecting evidence. It stays beside your later verdict.')):h(props.React.Fragment,null,
           h('p',null,'First verdict: '+verdicts[s.firstVerdict]+'. Pin three distinct adjacent intervals. For each one, inspect both endpoints, then decide whether it supports or challenges the every-step headline.'),
-          h('div',{className:'efw-headline-workbench','data-efw-headline-workbench':'true'},h('label',null,'Choose an interval · time '+((draft-1)/10).toFixed(1)+' → '+(draft/10).toFixed(1),h('input',{type:'range',min:trial.before+1,max:trial.after,step:1,value:draft,'aria-label':__alloT("stem.ecosystem.a11y_headline_evidence_interval", "Headline evidence interval"),onChange:function(e){change({draftStep:Number(e.target.value)});}})),
+          h('div',{className:'efw-headline-workbench','data-efw-headline-workbench':'true'},h('label',null,'Choose an interval · time '+((draft-1)/10).toFixed(1)+' → '+(draft/10).toFixed(1),h('input',{type:'range',min:trial.before+1,max:trial.after,step:1,value:draft,'aria-label':__alloT("stem.ecosystem.a11y_headline_evidence_interval", "Headline evidence interval"),'aria-valuetext':'interval '+((draft-1)/10).toFixed(1)+' to '+(draft/10).toFixed(1),onChange:function(e){change({draftStep:Number(e.target.value)});}})),
             h('div',{className:'efw-row'},h('button',{type:'button',onClick:function(){inspect(draft-1);}},'Inspect interval start'),h('button',{type:'button',onClick:function(){inspect(draft);}},'Inspect interval end')),
             h('p',null,'Gap '+number(card.start.gap)+' → '+number(card.end.gap)+'; change '+number(card.delta)+' scene units.'),
             h('small',null,'Selected animal: '+card.start.actor.state+' → '+card.end.actor.state+'. Partner: '+card.start.cue.state+' → '+card.end.cue.state+'.'),
@@ -6040,7 +6040,7 @@ function EcoMammalSequence(props) {
             [0,path.actor.length-1].map(function(k){var a=path.actor[k],b=path.cue[k];return h('g',{key:k},h('circle',{cx:a.px,cy:a.py,r:3.5,fill:'#facc15',stroke:'#102a30',strokeWidth:1}),h('path',{d:'M '+b.px+' '+(b.py-5)+' l 5 5 l -5 5 l -5 -5 Z',fill:'#67e8f9',stroke:'#102a30',strokeWidth:1}));}),
             path.active!==null&&h('g',{'data-efw-pair-path-active':String(path.step)},h('line',{'data-efw-pair-path-gap':'true',x1:path.actor[path.active].px,y1:path.actor[path.active].py,x2:path.cue[path.active].px,y2:path.cue[path.active].py,stroke:'#fff',strokeWidth:1.5,strokeDasharray:'4 4'}),h('circle',{cx:path.actor[path.active].px,cy:path.actor[path.active].py,r:6,fill:'#facc15',stroke:'#fff',strokeWidth:2}),h('path',{d:'M '+path.cue[path.active].px+' '+(path.cue[path.active].py-8)+' l 8 8 l -8 8 l -8 -8 Z',fill:'#67e8f9',stroke:'#fff',strokeWidth:2}))),
           h('p',{'data-efw-pair-path-time':'true',role:'status'},path.active===null?'Choose a recorded time to highlight both animals and their gap.':'Highlighted time '+(path.step/10).toFixed(1)+' · gap '+path.gaps[path.active].toFixed(4)+' scene units.'),
-          h('label',null,'Inspect every recorded pair position',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_recorded_pair_path_time", "Recorded pair path time"),min:path.from,max:path.to,step:1,value:path.active===null?path.from:path.step,onChange:function(event){inspectPath(Number(event.target.value));}})),
+          h('label',null,'Inspect every recorded pair position',h('input',{type:'range','aria-label':__alloT("stem.ecosystem.a11y_recorded_pair_path_time", "Recorded pair path time"),'aria-valuetext':'time '+((path.active===null?path.from:path.step)/10).toFixed(1),min:path.from,max:path.to,step:1,value:path.active===null?path.from:path.step,onChange:function(event){inspectPath(Number(event.target.value));}})),
           h('div',{className:'efw-row',role:'group','aria-label':__alloT("stem.ecosystem.a11y_inspect_mapped_pair_checkpoints", "Inspect mapped pair checkpoints")},[path.from,Math.floor((path.from+path.to)/2),path.to].filter(function(time,k,times){return times.indexOf(time)===k;}).map(function(time){return h('button',{key:time,type:'button','aria-pressed':path.step===time,onClick:function(){inspectPath(time);}},'Inspect pair path time '+(time/10).toFixed(1));})),
           path.active!==null&&h('div',{className:'efw-pair-path-coordinates'},h('table',{'data-efw-pair-path-coordinates':'true'},h('caption',null,'Original coordinates at highlighted time (scene units)'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Animal'),h('th',{scope:'col'},'x'),h('th',{scope:'col'},'z'))),h('tbody',null,['actor','cue'].map(function(kind){var p=path[kind][path.active];return h('tr',{key:kind,'data-efw-pair-path-animal':kind},h('th',{scope:'row'},kind==='actor'?'Selected · circle':'Partner · diamond'),h('td',null,p.x.toFixed(4)),h('td',null,p.z.toFixed(4)));})))),
           h('p',null,'Move forward one recorded sample at a time. Do the animals move in similar directions, turn, or separate? Compare those positions with the net gap change above; traveled path length alone cannot tell you the direction.'),
@@ -6080,7 +6080,7 @@ function EcoPairMeasurement(props) {
       h('div',{className:'efw-stack'},
         h('p',null,'Collect three moments of the same pair. Move the time slider, inspect both animals, then record samples A, B and C in time order. The ruler measures their simultaneous ground positions.'),
         props.onPlanView&&h('button',{type:'button',onClick:props.onPlanView},'View measured pair from above'),
-        h('label',null,'Pair measurement time · '+(props.cursor/10).toFixed(1),h('input',{type:'range',min:encounter.before,max:encounter.after,step:1,value:Math.max(encounter.before,Math.min(encounter.after,props.cursor)),'aria-label':__alloT("stem.ecosystem.a11y_pair_measurement_time", "Pair measurement time"),onChange:function(e){props.onInspect(Number(e.target.value));}})),
+        h('label',null,'Pair measurement time · '+(props.cursor/10).toFixed(1),h('input',{type:'range',min:encounter.before,max:encounter.after,step:1,value:Math.max(encounter.before,Math.min(encounter.after,props.cursor)),'aria-label':__alloT("stem.ecosystem.a11y_pair_measurement_time", "Pair measurement time"),'aria-valuetext':'time '+(Math.max(encounter.before,Math.min(encounter.after,props.cursor))/10).toFixed(1),onChange:function(e){props.onInspect(Number(e.target.value));}})),
         h('p',{'data-efw-pair-current':'true',role:'status'},current?'Current pair gap: '+current.gap.toFixed(3)+' scene units. Selected animal: '+current.actor.state+'; partner: '+current.cue.state+'.':'Both representatives must be present to measure this sample.'),
         h('div',{className:'efw-pair-samples'},letters.map(function(letter,k){var sample=samples[k];return h('div',{key:letter,'data-efw-pair-sample':letter},h('strong',null,'Sample '+letter),h('button',{type:'button',disabled:!current||steps.some(function(step,i){return i!==k&&step===props.cursor;}),onClick:function(){record(k);}},'Record current sample as '+letter),sample?h(props.React.Fragment,null,h('button',{type:'button',onClick:function(){props.onInspect(sample.step,true);}},'Inspect '+letter+' · time '+(sample.step/10).toFixed(1)),h('b',null,sample.gap.toFixed(3)+' scene units'),h('small',null,'Selected: '+sample.actor.state+' · partner: '+sample.cue.state),h('button',{type:'button',onClick:function(){clear(k);}},'Clear sample '+letter)):h('small',null,'No valid sample recorded.'));})),
         samples.every(Boolean)&&!evidence&&h('p',{className:'efw-result',role:'status','data-efw-pair-order-error':'true'},steps[0]<steps[1]&&steps[1]<steps[2]?'Both representatives must remain present throughout your interval. Choose checkpoints without a missing or invalid animal between them.':'Keep A before B and B before C. Clear or replace a sample to put your evidence in time order.'),
@@ -6146,8 +6146,8 @@ function EcoPairMeasurement(props) {
         !props.hasRun?h('p',null,'Run a food-web comparison, then select an animal in the meadow to make a sampling plan.'):h(props.React.Fragment,null,
           h('p',null,'Plan for '+(identity.name||identity.id||'the selected animal')+' · representative '+((identity.index||0)+1)+' · '+props.branch+' branch.'),
           h('div',{className:'efw-ethogram-plan'},
-            h('label',null,'Start time · '+(draftStart/10).toFixed(1),h('input',{type:'range',min:0,max:Math.max(0,frames.length-5),step:1,value:draftStart,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_start_time", "Ethogram start time"),disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='interval'||s.comparison.committed)),onChange:function(e){change({draftStart:Number(e.target.value)});}})),
-            h('label',null,'Sampling interval · '+(draftInterval/10).toFixed(1)+' model time units',h('input',{type:'range',min:1,max:Math.max(1,Math.min(60,Math.floor((frames.length-1)/4))),step:1,value:draftInterval,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_sampling_interval", "Ethogram sampling interval"),disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='start'||s.comparison.committed)),onChange:function(e){change({draftInterval:Number(e.target.value)});}}))),
+            h('label',null,'Start time · '+(draftStart/10).toFixed(1),h('input',{type:'range',min:0,max:Math.max(0,frames.length-5),step:1,value:draftStart,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_start_time", "Ethogram start time"),'aria-valuetext':'start time '+(draftStart/10).toFixed(1),disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='interval'||s.comparison.committed)),onChange:function(e){change({draftStart:Number(e.target.value)});}})),
+            h('label',null,'Sampling interval · '+(draftInterval/10).toFixed(1)+' model time units',h('input',{type:'range',min:1,max:Math.max(1,Math.min(60,Math.floor((frames.length-1)/4))),step:1,value:draftInterval,'aria-label':__alloT("stem.ecosystem.a11y_ethogram_sampling_interval", "Ethogram sampling interval"),'aria-valuetext':(draftInterval/10).toFixed(1)+' model time units',disabled:!!(s.reference&&s.comparison&&(s.comparison.variable==='start'||s.comparison.committed)),onChange:function(e){change({draftInterval:Number(e.target.value)});}}))),
           proposed?h('p',{'data-efw-ethogram-preview':'true'},'Planned times: '+proposed.samples.map(function(sample){return (sample.step/10).toFixed(1);}).join(' · ')+'.'):h('p',{role:'status','data-efw-ethogram-plan-error':'true'},'Choose an animal and a window in which that representative stays present. Reduce the interval or move the start earlier if the plan runs beyond the recording.'),
           !s.reference&&h('button',{type:'button',disabled:!proposed,onClick:setPlan},plan?'Replace with this sampling plan':'Set sampling plan'),
           h('details',null,h('summary',null,'Behavior coding key'),h('ul',null,ECO_MEADOW_ETHOGRAM_CATEGORIES.map(function(category){return h('li',{key:category.id},h('strong',null,category.name+': '),category.description,h('small',{style:{display:'block'}},'Recorded labels: '+category.states.join(', ')+'.'));}))),
@@ -6620,7 +6620,7 @@ function EcoPairMeasurement(props) {
         props.onInspect&&h('button',{type:'button',onClick:function(){props.onInspect(context.step);}},'Inspect the original cue decision'),
         h('div',{className:'efw-cue-probe-layout'},plan,h('div',{className:'efw-stack'},
           h('label',null,'One input to test',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_variable", "Cue test variable"),value:variable,disabled:paired,onChange:function(e){configure({variable:e.target.value});}},h('option',{value:'distance'},'Neighbor distance'),h('option',{value:'feeding'},'Neighbor feeding action'))),
-          variable==='distance'?h('label',null,'Hypothetical neighbor distance · '+value.toFixed(3)+' scene units',h('input',{type:'range',min:0,max:2.5,step:'any',value:value,'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_distance", "Cue test neighbor distance"),onChange:function(e){configure({distance:Number(e.target.value)});}})):h('label',null,'Hypothetical neighbor action',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_action", "Cue test neighbor action"),value:value?'feeding':'resting',onChange:function(e){configure({feeding:e.target.value==='feeding'});}},h('option',{value:'feeding'},'Grazing as recorded'),h('option',{value:'resting'},'Resting instead'))),
+          variable==='distance'?h('label',null,'Hypothetical neighbor distance · '+value.toFixed(3)+' scene units',h('input',{type:'range',min:0,max:2.5,step:'any',value:value,'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_distance", "Cue test neighbor distance"),'aria-valuetext':value.toFixed(3)+' scene units',onChange:function(e){configure({distance:Number(e.target.value)});}})):h('label',null,'Hypothetical neighbor action',h('select',{'aria-label':__alloT("stem.ecosystem.a11y_cue_test_neighbor_action", "Cue test neighbor action"),value:value?'feeding':'resting',onChange:function(e){configure({feeding:e.target.value==='feeding'});}},h('option',{value:'feeding'},'Grazing as recorded'),h('option',{value:'resting'},'Resting instead'))),
           h('button',{type:'button',onClick:function(){configure({distance:context.recorded.decisionDistance,feeding:true});}},'Use original neighbor input'),
           !paired&&h('button',{type:'button',disabled:!ecoMeadowSpacingProbeContextKey(context,props.branch),onClick:collectControl},'Collect control for a paired test'),
           !paired&&h('small',null,'Collecting keeps an actual unchanged-input run and starts a new working pair. Saved observations stay as recorded.'),
@@ -7570,7 +7570,7 @@ function EcoPairMeasurement(props) {
           result&&h('p',{className:'efw-overview-delta'},'Difference: '+ecoWebDelta(experiment[key]-baseline[key])));
       })),
       result&&h('div',{className:'efw-overview-legend'},h('span',null,'Baseline · dashed'),h('span',null,'Experiment · solid'),h('span',null,'Yellow · disturbance'),h('span',null,'Purple · inspected time')),
-      result&&h('label',null,'Inspect soil time: '+(cursor/10).toFixed(1),h('input',{type:'range',min:0,max:240,value:cursor,'aria-label':t('stem.ecosystem.soil_cycle_timeline','Soil cycle timeline'),onChange:function(e){props.onCursor(Number(e.target.value));}})),
+      result&&h('label',null,'Inspect soil time: '+(cursor/10).toFixed(1),h('input',{type:'range',min:0,max:240,value:cursor,'aria-label':t('stem.ecosystem.soil_cycle_timeline','Soil cycle timeline'),'aria-valuetext':'time '+(cursor/10).toFixed(1),onChange:function(e){props.onCursor(Number(e.target.value));}})),
       h('small',{'data-efw-soil-exported':'true'},'Nutrients removed from the ecosystem: baseline '+ecoWebFormat(baseline.exported)+' · experiment '+ecoWebFormat(experiment.exported)+'. Organic matter and nutrients use a nutrient-content index; decomposers use a biomass index. Charts have separate vertical scales.'),
       h('details',null,h('summary',null,'How the soil cycle is modeled'),h('p',null,'One biomass unit contains 0.1 nutrient units. Plant growth draws from available nutrients; mortality and unassimilated food return nutrients to organic matter. Decomposers process that matter, retaining 18% of its nutrients and releasing 82%. The tracked nutrient total is conserved, including any material removed from the ecosystem.'),h('p',null,'These are illustrative rates and a fixed nutrient quota, not measurements of a particular forest. The combined fungi-and-bacteria pool has no species diversity, carbon budget, weather, nutrient leaching or fungal fruiting season. Plant capacity still limits growth.')));
   }
@@ -7927,15 +7927,15 @@ function EcoPairMeasurement(props) {
               h('label',null,h('input',{type:'checkbox',checked:config.soil.enabled,'aria-label':t('stem.ecosystem.enable_soil_nutrient_cycle','Enable soil nutrient cycle'),onChange:function(e){draft({soil:Object.assign({},config.soil,{enabled:e.target.checked}),event:!e.target.checked&&['decomposerDecline','clearLitter'].indexOf(config.event)>=0?'none':config.event});}}),' Enable soil nutrient cycle'),
               h('small',null,'Add fungi and bacteria as a combined decomposer group. Nutrient availability then limits plant growth.'),
               config.soil.enabled&&[['detritus','Starting organic matter',160],['decomposers','Starting decomposer biomass',80],['nutrients','Starting available nutrients',160]].map(function(pool){return h('label',{key:pool[0],className:'efw-species'},pool[1],h('input',{type:'number',min:0,max:pool[2],step:1,value:config.soil[pool[0]],'aria-label':pool[1],onChange:function(e){var soil=Object.assign({},config.soil);soil[pool[0]]=ecoWebNumber(e.target.value,0,0,pool[2]);draft({soil:soil});}}));})),
-            h('label', null, 'Plant capacity: ' + config.capacity, h('input', { type: 'range', min: 40, max: 240, step: 10, value: config.capacity, 'aria-label': t('stem.ecosystem.food_web_plant_capacity','Food-web plant capacity'), onChange: function(e) { draft({ capacity: Number(e.target.value) }); } })),
-            h('label', null, 'Starting refuge cover: ' + config.cover + '%', h('input', { type: 'range', min: 0, max: 80, step: 10, value: config.cover, 'aria-label': t('stem.ecosystem.starting_refuge_cover','Starting refuge cover'), onChange: function(e) { draft({ cover: Number(e.target.value) }); } })),
+            h('label', null, 'Plant capacity: ' + config.capacity, h('input', { type: 'range', min: 40, max: 240, step: 10, value: config.capacity, 'aria-label': t('stem.ecosystem.food_web_plant_capacity','Food-web plant capacity'), 'aria-valuetext': config.capacity + ' plant capacity', onChange: function(e) { draft({ capacity: Number(e.target.value) }); } })),
+            h('label', null, 'Starting refuge cover: ' + config.cover + '%', h('input', { type: 'range', min: 0, max: 80, step: 10, value: config.cover, 'aria-label': t('stem.ecosystem.starting_refuge_cover','Starting refuge cover'), 'aria-valuetext': config.cover + ' percent refuge cover', onChange: function(e) { draft({ cover: Number(e.target.value) }); } })),
             h('small', null, 'Cover limits how much herbivore biomass predators can access. It is separate from food plants and their capacity; more cover does not guarantee that every group benefits.')),
           h('div', { className: 'efw-card efw-stack' },
             h('h4', null, '2. Change one thing'),
             h('label', null, 'Disturbance', h('select', { 'data-efw-mission-disturbance':'true', 'aria-label': t('stem.ecosystem.disturbance','Disturbance'), value: config.event, onChange: function(e) { draft({ event: e.target.value }); } },
               [['remove', 'Remove one group'], ['reduce', 'Reduce one group by 80%'], ['drought', 'Drought: halve plant capacity'], ['restoreCover', 'Restore cover: add 40 percentage points'], ['clearCover', 'Clear all refuge cover'], ['none', 'No disturbance (control)']].concat(config.soil.enabled?[['decomposerDecline','Decomposer mortality: lose 80%'],['clearLitter','Remove organic matter']]:[]).map(function(o) { return h('option', { key: o[0], value: o[0] }, o[1]); }))),
             (config.event === 'remove' || config.event === 'reduce') && h('label', null, 'Affected group', h('select', { 'aria-label': t('stem.ecosystem.affected_group','Affected group'), value: config.target, onChange: function(e) { draft({ target: e.target.value }); } }, ECO_WEB_SPECIES.map(function(sp) { return h('option', { key: sp.id, value: sp.id }, sp.name); }))),
-            config.event !== 'none' && h('label', null, 'Event at modeled time ' + (config.eventStep / 10).toFixed(1), h('input', { type: 'range', min: 10, max: 200, step: 10, value: config.eventStep, 'aria-label': t('stem.ecosystem.food_web_event_time','Food-web event time'), onChange: function(e) { draft({ eventStep: Number(e.target.value) }); } })),
+            config.event !== 'none' && h('label', null, 'Event at modeled time ' + (config.eventStep / 10).toFixed(1), h('input', { type: 'range', min: 10, max: 200, step: 10, value: config.eventStep, 'aria-label': t('stem.ecosystem.food_web_event_time','Food-web event time'), 'aria-valuetext': 'time ' + (config.eventStep / 10).toFixed(1), onChange: function(e) { draft({ eventStep: Number(e.target.value) }); } })),
             ((config.event === 'clearCover' && config.cover === 0) || (config.event === 'restoreCover' && config.cover === 80)) && h('p', { role: 'status' }, 'This setup leaves cover unchanged. Adjust starting cover to test a habitat change.'),
             h('label', null, result ? 'Prediction recorded for this run' : 'Your prediction (optional)', h('textarea', { 'aria-label': t('stem.ecosystem.your_prediction_optional','Your prediction (optional)'), value: result ? state.run.prediction || '' : state.prediction || '', disabled: !!result, maxLength: 1200, placeholder: t('stem.ecosystem.which_group_will_change_indirectly_and_why','Which group will change indirectly, and why?'), onChange: function(e) { update({ prediction: e.target.value }); } })),
             result && h('button', { type: 'button', onClick: function() { draft({ prediction: '', forecast: '' }); } }, 'Plan another comparison'),
@@ -9270,7 +9270,7 @@ function EcoPairMeasurement(props) {
         if (analysisViews[aai].id === effectiveAnalysisView) activeAnalysisView = analysisViews[aai];
       }
       var onAnalysisTabKeyDown = function(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % analysisViews.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + analysisViews.length - 1) % analysisViews.length;
@@ -12681,7 +12681,7 @@ function EcoPairMeasurement(props) {
       var ecoTabNames = { foodweb: __alloT('stem.ecosystem.foodweb', 'Food web'), explore: __alloT('stem.ecosystem.explore', 'Explore'), sandbox: __alloT('stem.ecosystem.sandbox', 'Sandbox'), conserve: __alloT('stem.ecosystem.conservation', 'Conservation'), inquiry: __alloT('stem.ecosystem.inquiry', 'Inquiry'), quiz: __alloT('stem.ecosystem.quiz', 'Quiz'), badges: __alloT('stem.ecosystem.badges', 'Badges') };
       var ECO_TAB_ORDER = ['explore', 'sandbox', 'foodweb', 'conserve', 'inquiry', 'quiz', 'badges'];
       var ecoTabKeyDown = function(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECO_TAB_ORDER.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ECO_TAB_ORDER.length - 1) % ECO_TAB_ORDER.length;
@@ -12702,7 +12702,7 @@ function EcoPairMeasurement(props) {
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true', 'data-ecosystem-profile': displayProfile },
         h('style', null,
           '.eco-header{flex-wrap:wrap}:root:not(.theme-dark):not(.theme-contrast) [data-ecosystem-tool],.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool]{--eco-choice-ink:#14532d;--eco-choice-soft:#166534}[data-ecosystem-tool] #eco-live-telemetry .grid{gap:8px}[data-ecosystem-tool] #eco-live-telemetry .grid>div{padding:10px 4px;border-radius:8px}' +
-          "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool],.theme-dark [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:36px}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
+          "\n[data-ecosystem-tool]{--eco-copy:#e2e8f0;--eco-prey:#86efac;--eco-pred:#fda4af;--eco-capacity:#fcd34d;--eco-axis:#94a3b8;min-width:0;width:100%;font-family:system-ui,sans-serif;line-height:1.5}\n.theme-default [data-ecosystem-tool],.theme-light [data-ecosystem-tool],.theme-dark [data-ecosystem-tool]{--eco-copy:#1e293b;--eco-prey:#166534;--eco-pred:#9f1239;--eco-capacity:#854d0e;--eco-axis:#64748b}\n.theme-contrast [data-ecosystem-tool]{--eco-copy:#ffff00;--eco-prey:#ffff00;--eco-pred:#fff;--eco-capacity:#67e8f9;--eco-axis:#fff}\n[data-ecosystem-tool] [class*=\"text-[0.625rem]\"],[data-ecosystem-tool] [class*=\"text-[0.6875rem]\"]{font-size:12px;line-height:1.5}\n[data-ecosystem-tool] button{min-height:44px}\n[data-ecosystem-tool] :is(button,input,select,textarea,summary){touch-action:manipulation;box-sizing:border-box}\n[data-ecosystem-tool] :is(button,input,select,textarea,canvas):focus-visible{outline:3px solid var(--eco-prey);outline-offset:3px}\n.theme-contrast [data-ecosystem-tool] :is(button,input,select,textarea,canvas,summary):focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}\n@media(prefers-reduced-motion:reduce){[data-ecosystem-tool] *,[data-ecosystem-tool] *::before,[data-ecosystem-tool] *::after{animation-duration:0.001ms!important;animation-iteration-count:1!important;transition-duration:0.001ms!important}}\n@media(forced-colors:active){[data-ecosystem-tool] :is(button,input,select,textarea,canvas,summary):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-ecosystem-tool] :is(button,input,select,textarea,summary,[role=\"progressbar\"]){border-color:ButtonText!important}}\n.eco-scene{height:420px;background:#0f172a;box-shadow:0 8px 24px #0f172a18}\n.eco-scene-caption{position:absolute;bottom:0;left:0;right:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 12px;background:#0f172a;color:#f8fafc;font-size:12px}\n.eco-scene-caption span{color:#f8fafc!important}\n.eco-scene-controls{flex-wrap:wrap}\n.eco-scene-controls input{min-width:60px}\n#eco-live-telemetry{padding:16px}\n#eco-live-telemetry .font-bold{font-variant-numeric:tabular-nums}\n#eco-live-graph-panel>div{flex-wrap:wrap}\n@media(max-width:600px){.eco-scene{height:360px}.eco-scene-caption span:last-child{display:none}[data-ecosystem-tool] [role=\"tablist\"] button{min-height:44px}.eco-scene-controls>div{min-width:160px}}\n" +
           '[data-ecosystem-profile="beginner"] [data-eco-advanced="true"]{display:none!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-panel="true"]{padding:16px!important;}' +
           '[data-ecosystem-profile="projection"] [data-eco-projection-text="true"]{font-size:14px!important;line-height:1.55!important;}' +
@@ -12712,6 +12712,7 @@ function EcoPairMeasurement(props) {
         // ── Header ──
         h('div', { className: 'eco-header flex items-center gap-2 mb-2' },
           h('button', {
+            type: 'button',
             className: 'transition-colors p-2 rounded-lg hover:bg-slate-200 active:scale-[0.97]',
             style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
             onClick: function() {
@@ -12720,7 +12721,7 @@ function EcoPairMeasurement(props) {
               setStemLabTool(null);
             },
             'aria-label': __alloT('stem.ecosystem.back', 'Back')
-          }, h(ArrowLeft, { size: 18 })),
+          }, h(ArrowLeft, { size: 18, 'aria-hidden': 'true' })),
           h('span', { className: 'text-lg font-bold tracking-tight' }, activeScenario.emoji + ' ' + __alloT('stem.ecosystem.title', 'Ecosystem Simulator')),
           h('span', { className: 'ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 text-[0.6875rem] font-bold bg-emerald-700 text-white rounded-full' }, h('span', { 'aria-hidden': 'true', className: 'h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none' }), tab === 'foodweb' ? 'MODEL' : simPaused ? __alloT('stem.ecosystem.paused_caps', 'PAUSED') : __alloT('stem.ecosystem.live', 'LIVE')),
           h('span', { className: 'text-xs font-bold text-amber-800 ml-1', style: onHostStyle }, '\u2B50 ' + researchPoints + ' RP'),
@@ -12861,6 +12862,7 @@ function EcoPairMeasurement(props) {
             else if (t2 === 'quiz') tabLabel = '\u2753 ' + __alloT('stem.ecosystem.quiz', 'Quiz');
             else tabLabel = '\uD83C\uDFC5 ' + __alloT('stem.ecosystem.badges', 'Badges') + ' (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', { key: t2,
+              type: 'button',
               id: 'stem-ecosystem-tab-' + t2,
               role: 'tab', 'aria-selected': tab === t2,
               'aria-controls': 'stem-ecosystem-panel-' + t2,
@@ -13084,7 +13086,7 @@ function EcoPairMeasurement(props) {
 
           // ── NEW: Canvas control bar: pause/resume + speed slider ──
           h('div', { className: 'eco-scene-controls flex items-center gap-3 bg-slate-100 rounded-lg px-3 py-2' },
-            h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
+            h('button', { type: 'button', 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]'
                   : 'transition-colors bg-slate-300 text-slate-700 hover:bg-slate-200 active:scale-[0.97]'),
@@ -13132,6 +13134,7 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'flex gap-1 flex-wrap' },
             eventDefs.map(function(ev) {
               return h('button', { key: ev.id,
+                type: 'button',
                 className: 'flex-1 px-1.5 py-1.5 text-[0.6875rem] font-bold rounded-lg text-white transition-all hover:opacity-90 active:scale-95 ' + ev.color,
                 style: { minWidth: 100 },
                 onClick: function() { triggerEvent(ev.id); },
@@ -13234,6 +13237,7 @@ function EcoPairMeasurement(props) {
               type: 'range', min: activeModelRanges.carryingCapacity.min, max: activeModelRanges.carryingCapacity.max, step: activeModelRanges.carryingCapacity.step, value: carryingCapacity,
               disabled: experimentControlsLocked,
               'aria-label': __alloT('stem.ecosystem.aria_carrying_capacity', 'Carrying capacity'),
+              'aria-valuetext': carryingCapacity + ' carrying capacity',
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
                 var newK = parseInt(e.target.value, 10);
@@ -13250,7 +13254,7 @@ function EcoPairMeasurement(props) {
 
           // ── Live Population Graph Panel ──
           h('div', { className: 'bg-slate-50 rounded-xl border border-slate-400 overflow-hidden' },
-            h('button', { 'aria-expanded': ecoGraphOpen, 'aria-controls': 'eco-live-graph-panel', className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:scale-[0.97]',
+            h('button', { type: 'button', 'aria-expanded': ecoGraphOpen, 'aria-controls': 'eco-live-graph-panel', className: 'transition-colors w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:scale-[0.97]',
               onClick: function() { upd('ecoGraphOpen', !ecoGraphOpen); }
             },
               h('span', null, '\uD83D\uDCCA ' + __alloT('stem.ecosystem.live_pop_graph', 'Live Population Graph')),
@@ -13259,12 +13263,12 @@ function EcoPairMeasurement(props) {
             ecoGraphOpen && h('div', { id: 'eco-live-graph-panel', className: 'px-3 pb-3 space-y-2' },
               // View tabs
               h('div', { className: 'flex gap-1' },
-                h('button', { 'aria-label': __alloT('stem.ecosystem.populations', 'Populations'), 'aria-pressed': ecoGraphView === 'population',
+                h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.populations', 'Populations'), 'aria-pressed': ecoGraphView === 'population',
                   className: 'flex-1 px-2 py-1 text-[0.6875rem] font-semibold rounded ' +
                     (ecoGraphView === 'population' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600' + onHostInk),
                   onClick: function() { switchGraphView('population'); }
                 }, __alloT('stem.ecosystem.populations', 'Populations')),
-                h('button', { 'aria-label': __alloT('stem.ecosystem.environment', 'Environment'), 'aria-pressed': ecoGraphView === 'environment',
+                h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.environment', 'Environment'), 'aria-pressed': ecoGraphView === 'environment',
                   className: 'flex-1 px-2 py-1 text-[0.6875rem] font-semibold rounded ' +
                     (ecoGraphView === 'environment' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-600' + onHostInk),
                   onClick: function() { switchGraphView('environment'); }
@@ -13419,7 +13423,7 @@ function EcoPairMeasurement(props) {
             h('p', { className: 'text-xs text-slate-600 flex-1' + onHostInk },
               'Explore a logistic extension of the Lotka-Volterra predator-prey model for the ' + activeScenario.name + ' scenario. The deterministic graph uses fourth-order Runge-Kutta integration; the animated scene uses separate stochastic teaching rules.'
             ),
-            callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
+            callTTS && h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
               className: 'transition-colors p-1 rounded hover:bg-slate-200 text-slate-600 active:scale-[0.97]',
               onClick: function() { speakText(activeScenario.question + ' Adjust starting ' + activeScenario.prey.plural + ', starting ' + activeScenario.predator.plural + ', and interaction rates to compare model outcomes.'); },
               title: __alloT('stem.ecosystem.read_aloud', 'Read aloud')
@@ -13430,7 +13434,7 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'flex gap-1 flex-wrap' },
             h('p', { className: 'w-full text-[0.625rem] text-slate-600' + onHostInk }, 'Guided cases are outcome-labeled examples for learning the model, not blind inquiry trials. Set your own values for an open investigation.'),
             presetNames.map(function(name, idx) {
-              return h('button', { 'aria-label': __alloT('stem.ecosystem.aria_apply_pre', 'Apply ') + presetLabels[idx] + __alloT('stem.ecosystem.aria_preset_suffix', ' preset'),
+              return h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.aria_apply_pre', 'Apply ') + presetLabels[idx] + __alloT('stem.ecosystem.aria_preset_suffix', ' preset'),
                 key: name,
                 disabled: experimentControlsLocked,
                 className: 'flex-1 px-2 py-1.5 text-[0.6875rem] font-semibold rounded-lg border transition-all disabled:opacity-60 ' +
@@ -13472,6 +13476,7 @@ function EcoPairMeasurement(props) {
                 type: 'range', min: activeModelRanges.prey0.min, max: activeModelRanges.prey0.max, step: activeModelRanges.prey0.step, value: prey0,
                 disabled: experimentControlsLocked,
                 'aria-label': __alloT('stem.ecosystem.aria_prey_start_pop', 'Prey start population'),
+                'aria-valuetext': prey0 + ' starting prey',
                 className: 'w-full h-1.5 accent-emerald-500',
                 onChange: function(e) { updMulti({ prey0: parseInt(e.target.value, 10), uncertaintyResult: null, interventionResult: null }); }
               })
@@ -13486,6 +13491,7 @@ function EcoPairMeasurement(props) {
                 type: 'range', min: activeModelRanges.pred0.min, max: activeModelRanges.pred0.max, step: activeModelRanges.pred0.step, value: pred0,
                 disabled: experimentControlsLocked,
                 'aria-label': __alloT('stem.ecosystem.aria_pred_start_pop', 'Predator start population'),
+                'aria-valuetext': pred0 + ' starting predators',
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { updMulti({ pred0: parseInt(e.target.value, 10), uncertaintyResult: null, interventionResult: null }); }
               })
@@ -13497,7 +13503,7 @@ function EcoPairMeasurement(props) {
                 h('span', { className: 'text-green-800 font-bold', style: onHostStyle }, preyBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_prey_growth_r', 'prey intrinsic growth rate r'), min: activeModelRanges.preyBirth.min, max: activeModelRanges.preyBirth.max, step: activeModelRanges.preyBirth.step, value: preyBirth,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_prey_growth_r', 'prey intrinsic growth rate r'), 'aria-valuetext': preyBirth.toFixed(3) + ' growth rate', min: activeModelRanges.preyBirth.min, max: activeModelRanges.preyBirth.max, step: activeModelRanges.preyBirth.step, value: preyBirth,
                 disabled: experimentControlsLocked,
                 className: 'w-full h-1.5 accent-green-500',
                 onChange: function(e) { updMulti({ preyBirth: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
@@ -13510,7 +13516,7 @@ function EcoPairMeasurement(props) {
                 h('span', { className: 'text-red-600 font-bold' }, predDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_mortality_d', 'predator mortality coefficient d'), min: activeModelRanges.predDeath.min, max: activeModelRanges.predDeath.max, step: activeModelRanges.predDeath.step, value: predDeath,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_mortality_d', 'predator mortality coefficient d'), 'aria-valuetext': predDeath.toFixed(3) + ' mortality rate', min: activeModelRanges.predDeath.min, max: activeModelRanges.predDeath.max, step: activeModelRanges.predDeath.step, value: predDeath,
                 disabled: experimentControlsLocked,
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { updMulti({ predDeath: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
@@ -13523,7 +13529,7 @@ function EcoPairMeasurement(props) {
                 h('span', { className: 'text-orange-800 font-bold', style: onHostStyle }, preyDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_predation_coeff_a', 'predation coefficient a'), min: activeModelRanges.preyDeath.min, max: activeModelRanges.preyDeath.max, step: activeModelRanges.preyDeath.step, value: preyDeath,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_predation_coeff_a', 'predation coefficient a'), 'aria-valuetext': preyDeath.toFixed(3) + ' predation rate', min: activeModelRanges.preyDeath.min, max: activeModelRanges.preyDeath.max, step: activeModelRanges.preyDeath.step, value: preyDeath,
                 disabled: experimentControlsLocked,
                 className: 'w-full h-1.5 accent-orange-500',
                 onChange: function(e) { updMulti({ preyDeath: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
@@ -13536,7 +13542,7 @@ function EcoPairMeasurement(props) {
                 h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_conversion_b', 'predator conversion coefficient b'), min: activeModelRanges.predBirth.min, max: activeModelRanges.predBirth.max, step: activeModelRanges.predBirth.step, value: predBirth,
+                type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_pred_conversion_b', 'predator conversion coefficient b'), 'aria-valuetext': predBirth.toFixed(3) + ' conversion rate', min: activeModelRanges.predBirth.min, max: activeModelRanges.predBirth.max, step: activeModelRanges.predBirth.step, value: predBirth,
                 disabled: experimentControlsLocked,
                 className: 'w-full h-1.5 accent-blue-500',
                 onChange: function(e) { updMulti({ predBirth: parseFloat(e.target.value), uncertaintyResult: null, interventionResult: null }); }
@@ -13649,7 +13655,7 @@ function EcoPairMeasurement(props) {
             h('div', { role: 'tablist', 'aria-label': __alloT('stem.ecosystem.a11y_ecosystem_analysis_views', 'Ecosystem analysis views'), className: 'flex flex-wrap gap-1' },
               analysisViews.map(function(view, index) {
                 var selected = effectiveAnalysisView === view.id;
-                return h('button', { key: view.id, id: 'eco-analysis-tab-' + view.id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'eco-analysis-panel-' + view.id, onClick: function() { upd('analysisView', view.id); }, onKeyDown: function(e) { onAnalysisTabKeyDown(e, index); }, className: 'min-h-9 rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, view.label);
+                return h('button', { key: view.id, id: 'eco-analysis-tab-' + view.id, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'eco-analysis-panel-' + view.id, tabIndex: selected ? 0 : -1, onClick: function() { upd('analysisView', view.id); }, onKeyDown: function(e) { onAnalysisTabKeyDown(e, index); }, className: 'min-h-11 rounded-lg border px-3 py-1.5 text-[0.6875rem] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500 bg-white text-slate-700 hover:border-emerald-500') }, view.label);
               })
             ),
             analysisViews.filter(function(view) { return view.id !== effectiveAnalysisView; }).map(function(view) {
@@ -13859,11 +13865,11 @@ function EcoPairMeasurement(props) {
               ),
               h('label', { htmlFor: 'eco-intervention-step', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Event step'), h('span', { className: 'font-mono text-orange-800' }, interventionStep)),
-                h('input', { id: 'eco-intervention-step', type: 'range', min: 5, max: 95, step: 5, value: interventionStep, onChange: function(e) { updMulti({ interventionStep: parseInt(e.target.value, 10), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
+                h('input', { id: 'eco-intervention-step', type: 'range', min: 5, max: 95, step: 5, value: interventionStep, 'aria-valuetext': 'step ' + interventionStep, onChange: function(e) { updMulti({ interventionStep: parseInt(e.target.value, 10), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
               ),
               h('label', { htmlFor: 'eco-intervention-intensity', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Intensity'), h('span', { className: 'font-mono text-orange-800' }, Math.round(interventionIntensity * 100) + '%')),
-                h('input', { id: 'eco-intervention-intensity', type: 'range', min: 0.1, max: 0.7, step: 0.1, value: interventionIntensity, onChange: function(e) { updMulti({ interventionIntensity: parseFloat(e.target.value), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
+                h('input', { id: 'eco-intervention-intensity', type: 'range', min: 0.1, max: 0.7, step: 0.1, value: interventionIntensity, 'aria-valuetext': Math.round(interventionIntensity * 100) + ' percent intensity', onChange: function(e) { updMulti({ interventionIntensity: parseFloat(e.target.value), interventionResult: null }); }, className: 'w-full h-2 accent-orange-600' })
               ),
               h('button', { type: 'button', onClick: runInterventionScenario, className: 'min-h-10 rounded-lg bg-orange-700 px-3 py-2 text-[0.6875rem] font-bold text-white hover:bg-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500' }, 'Run event scenario')
             ),
@@ -13911,7 +13917,7 @@ function EcoPairMeasurement(props) {
               ),
               h('label', { htmlFor: 'eco-uncertainty-variation', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'flex justify-between gap-2 mb-1' }, h('span', null, 'Environmental variability'), h('span', { className: 'font-mono text-teal-800' }, Math.round(uncertaintyVariation * 100) + '%')),
-                h('input', { id: 'eco-uncertainty-variation', type: 'range', min: 0, max: 0.5, step: 0.05, value: uncertaintyVariation, onChange: function(e) { updMulti({ uncertaintyVariation: parseFloat(e.target.value), uncertaintyResult: null }); }, className: 'w-full h-2 accent-teal-600' })
+                h('input', { id: 'eco-uncertainty-variation', type: 'range', min: 0, max: 0.5, step: 0.05, value: uncertaintyVariation, 'aria-valuetext': Math.round(uncertaintyVariation * 100) + ' percent variability', onChange: function(e) { updMulti({ uncertaintyVariation: parseFloat(e.target.value), uncertaintyResult: null }); }, className: 'w-full h-2 accent-teal-600' })
               ),
               h('label', { htmlFor: 'eco-uncertainty-seed', className: 'block text-[0.6875rem] font-bold text-slate-700' },
                 h('span', { className: 'block mb-1' }, 'Reproducible seed'),
@@ -13976,11 +13982,11 @@ function EcoPairMeasurement(props) {
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
                   h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Rotate view'), h('span', { className: 'font-mono text-indigo-700' }, Math.round(trajectoryAzimuth) + '\u00B0')),
-                  h('input', { type: 'range', min: -70, max: 70, step: 5, value: trajectoryAzimuth, 'aria-label': __alloT('stem.ecosystem.a11y_rotate_3d_trajectory_view', 'Rotate 3D trajectory view'), onChange: function(e) { upd('trajectoryAzimuth', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
+                  h('input', { type: 'range', min: -70, max: 70, step: 5, value: trajectoryAzimuth, 'aria-label': __alloT('stem.ecosystem.a11y_rotate_3d_trajectory_view', 'Rotate 3D trajectory view'), 'aria-valuetext': Math.round(trajectoryAzimuth) + ' degrees', onChange: function(e) { upd('trajectoryAzimuth', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
                 ),
                 h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
                   h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'View elevation'), h('span', { className: 'font-mono text-indigo-700' }, Math.round(trajectoryElevation) + '\u00B0')),
-                  h('input', { type: 'range', min: 10, max: 50, step: 2, value: trajectoryElevation, 'aria-label': __alloT('stem.ecosystem.a11y_change_3d_trajectory_elevation', 'Change 3D trajectory elevation'), onChange: function(e) { upd('trajectoryElevation', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
+                  h('input', { type: 'range', min: 10, max: 50, step: 2, value: trajectoryElevation, 'aria-label': __alloT('stem.ecosystem.a11y_change_3d_trajectory_elevation', 'Change 3D trajectory elevation'), 'aria-valuetext': Math.round(trajectoryElevation) + ' degrees', onChange: function(e) { upd('trajectoryElevation', parseFloat(e.target.value)); }, className: 'w-full h-2 accent-indigo-600' })
                 ),
                 h('label', { className: 'block text-[0.6875rem] font-bold text-slate-700' },
                   h('span', { className: 'flex justify-between gap-2' }, h('span', null, 'Trajectory time'), h('span', { className: 'font-mono text-indigo-700' }, replayCursor + ' / ' + replayMax)),
@@ -14048,35 +14054,36 @@ function EcoPairMeasurement(props) {
 
 
           // ── Snapshot button ──
-          h('button', { 'aria-label': __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot'),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot'),
             className: 'w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400 text-slate-600 hover:bg-slate-100 transition-all active:scale-[0.97]' + onHostInk,
             onClick: takeSnapshot
           }, '\uD83D\uDCF7 ' + __alloT('stem.ecosystem.take_snapshot', 'Take Snapshot')),
-          h('button', { 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.export_csv', 'Export CSV'), onClick: function() { try { var _d = (typeof d !== 'undefined' && d && d.data) ? d.data : []; if (!_d.length) return; var _csv = 'step,prey,predator\n' + _d.map(function(p,i){ return i + ',' + (p.prey||0) + ',' + (p.pred||0); }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'ecosystem_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('CSV saved!', 'success'); } catch(e){} }, className: 'w-full py-1.5 mt-1 rounded-lg text-xs font-semibold border border-emerald-500 text-emerald-700', style: { cursor: 'pointer' } }, __alloT('stem.ecosystem.export_csv', 'Export CSV')),
 
           // ── AI Tutor ──
           callGemini && h('div', { className: 'bg-indigo-50 rounded-xl p-3 border border-indigo-200 space-y-2' },
-            h('button', { className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700',
+            h('button', { type: 'button', 'aria-expanded': showAI, className: 'w-full flex items-center justify-between text-xs font-bold text-indigo-700',
               onClick: function() { upd('showAI', !showAI); }
             },
               h('span', null, '\uD83E\uDD16 ' + __alloT('stem.ecosystem.ai_ecology_tutor', 'AI Ecology Tutor')),
-              h('span', null, showAI ? '\u25B2' : '\u25BC')
+              h('span', { 'aria-hidden': 'true' }, showAI ? '\u25B2' : '\u25BC')
             ),
             showAI && h('div', { className: 'space-y-2' },
               h('div', { className: 'flex gap-1 flex-wrap' },
                 [__alloT('stem.ecosystem.q_what_lotka_volterra', 'What is Lotka-Volterra?'), __alloT('stem.ecosystem.q_why_oscillate', 'Why do populations oscillate?'), __alloT('stem.ecosystem.q_what_carrying_capacity', 'What is carrying capacity?'), __alloT('stem.ecosystem.q_explain_food_webs', 'Explain food webs')].map(function(question) {
                   return h('button', { key: question,
-                    className: 'transition-colors px-2 py-1 text-[0.6875rem] rounded-full border border-indigo-600 text-indigo-600 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]',
+                    type: 'button',
+                    className: 'transition-colors px-2 py-1 text-[0.6875rem] rounded-full border border-indigo-600 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]',
                     onClick: function() { askAI(question); },
                     disabled: aiLoading
                   }, question);
                 })
               ),
-              aiLoading && h('p', { className: 'text-xs text-indigo-500 animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
+              aiLoading && h('p', { className: 'text-xs text-indigo-700 animate-pulse motion-reduce:animate-none' }, __alloT('stem.ecosystem.thinking', 'Thinking...')),
               aiResponse && h('div', { className: 'bg-white rounded-lg p-2 text-xs text-slate-700 border border-indigo-100' },
                 h('p', null, aiResponse),
-                callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
-                  className: 'transition-colors mt-1 text-[0.6875rem] text-indigo-500 hover:text-indigo-700',
+                callTTS && h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.read_aloud', 'Read aloud'),
+                  className: 'transition-colors mt-1 text-[0.6875rem] text-indigo-700 hover:text-indigo-800',
                   onClick: function() { speakText(aiResponse); }
                 }, '\uD83D\uDD0A ' + __alloT('stem.ecosystem.read_aloud', 'Read aloud'))
               )
@@ -14137,6 +14144,8 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'flex gap-1' },
             sandboxTools.map(function(tool) {
               return h('button', { key: tool.id,
+                type: 'button',
+                'aria-pressed': sandboxTool === tool.id,
                 className: 'flex-1 px-1.5 py-2 text-[0.6875rem] font-bold rounded-lg border-2 transition-all text-center ' +
                   (sandboxTool === tool.id
                     ? 'border-teal-400 bg-teal-50 text-teal-700 shadow'
@@ -14167,7 +14176,7 @@ function EcoPairMeasurement(props) {
           h('div', { className: 'flex items-center justify-between bg-teal-50 rounded-lg px-3 py-2' },
             h('span', { className: 'text-xs font-semibold text-teal-700' }, __alloT('stem.ecosystem.entities_placed', 'Entities Placed:')),
             h('span', { className: 'text-sm font-bold text-teal-700' }, sandboxPlaceCount),
-            h('button', { 'aria-label': __alloT('stem.ecosystem.sync_count', 'Sync Count'),
+            h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.sync_count', 'Sync Count'),
               className: 'transition-colors text-[0.6875rem] text-teal-700 hover:text-teal-800 underline',
               onClick: syncSandboxCount
             }, __alloT('stem.ecosystem.sync_count', 'Sync Count'))
@@ -14175,7 +14184,7 @@ function EcoPairMeasurement(props) {
 
           // ── Pause/Speed controls (shared) ──
           h('div', { className: 'flex items-center gap-3 bg-slate-100 rounded-lg px-3 py-2' },
-            h('button', { 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
+            h('button', { type: 'button', 'aria-pressed': simPaused, 'aria-label': simPaused ? __alloT('stem.ecosystem.resume_simulation', 'Resume simulation') : __alloT('stem.ecosystem.pause_simulation', 'Pause simulation'), className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
                   ? 'transition-colors bg-teal-700 text-white hover:bg-teal-800 active:scale-[0.97]'
                   : 'transition-colors bg-slate-300 text-slate-700 hover:bg-slate-200 active:scale-[0.97]'),
@@ -14210,7 +14219,7 @@ function EcoPairMeasurement(props) {
             h('p', { className: 'text-[0.6875rem] font-bold text-teal-700' }, '\u26A1 ' + __alloT('stem.ecosystem.inject_events', 'Inject Events')),
             h('div', { className: 'flex gap-1 flex-wrap' },
               eventDefs.map(function(ev) {
-                return h('button', { 'aria-label': __alloT('stem.ecosystem.trigger_event', 'Trigger Event'),
+                return h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.trigger_event', 'Trigger Event'),
                   key: 'sb-' + ev.id,
                   className: 'flex-1 min-w-[55px] px-1 py-1 text-[0.6875rem] font-bold rounded-lg text-white transition-all hover:opacity-90 active:scale-95 ' + ev.color,
                   onClick: function() { triggerEvent(ev.id); },
@@ -14227,7 +14236,7 @@ function EcoPairMeasurement(props) {
               h('span', { className: 'text-amber-800 font-bold', style: onHostStyle }, carryingCapacity)
             ),
             h('input', {
-              type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_carrying_capacity_lc', 'carrying capacity'), min: 30, max: 200, step: 5, value: carryingCapacity,
+              type: 'range', 'aria-label': __alloT('stem.ecosystem.aria_carrying_capacity_lc', 'carrying capacity'), 'aria-valuetext': carryingCapacity + ' carrying capacity', min: 30, max: 200, step: 5, value: carryingCapacity,
               disabled: experimentControlsLocked,
               className: 'w-full h-1.5 accent-amber-500',
               onChange: function(e) {
@@ -14526,9 +14535,9 @@ function EcoPairMeasurement(props) {
                 h('span', { style: { fontSize: 20 } }, '🔍'),
                 h('strong', { style: { color: consInk('#38bdf8'), fontSize: 14 } }, __alloT('stem.ecosystem.ai_cons_reading', 'AI Conservation Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
-                  h('button', { onClick: readEcosystem, 'aria-label': __alloT('stem.ecosystem.read_again', 'Read again'),
+                  h('button', { type: 'button', onClick: readEcosystem, 'aria-label': __alloT('stem.ecosystem.read_again', 'Read again'),
                     style: { background: 'transparent', border: '1px solid #38bdf8', color: consInk('#38bdf8'), borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.re_read', 'Re-read')),
-                  h('button', { onClick: dismissConservAIRead, 'aria-label': __alloT('stem.ecosystem.dismiss_reading', 'Dismiss reading'),
+                  h('button', { type: 'button', onClick: dismissConservAIRead, 'aria-label': __alloT('stem.ecosystem.dismiss_reading', 'Dismiss reading'),
                     style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '✕')
                 )
               ),
@@ -14711,7 +14720,7 @@ function EcoPairMeasurement(props) {
                   h('h3', { id: 'ecosystem-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: isContrast ? '#fff' : 'var(--allo-stem-text, #fff)', fontSize: 20 } }, def.name),
                   h('div', { style: { fontSize: 13, marginTop: 4, fontStyle: 'italic', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' }, def.role)
                 ),
-                h('button', { onClick: closeConservDeepDive,
+                h('button', { type: 'button', onClick: closeConservDeepDive,
                   style: { background: isContrast ? 'rgba(15,23,42,0.6)' : 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ ' + __alloT('stem.ecosystem.close', 'Close'))
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
@@ -14941,7 +14950,7 @@ function EcoPairMeasurement(props) {
                     ),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.ecosystem.' + (s.id) + '_desc', s.desc)),
-                    h('button', { onClick: function() { openConservDeepDive(s.id); },
+                    h('button', { type: 'button', onClick: function() { openConservDeepDive(s.id); },
                       'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + s.name,
                       className: 'eco-accent',
                       style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid currentColor', background: s.color + '22', '--eco-acc-light': ecoAccentOnLight(s.color), '--eco-acc-dark': ecoAccentOnDark(s.color), cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
@@ -14958,6 +14967,7 @@ function EcoPairMeasurement(props) {
                     var df = CONSERVATION_DIFFICULTIES[dkey];
                     var picked = (conserve.difficulty || 'manager') === dkey;
                     return h('button', { key: dkey,
+                      type: 'button',
                       onClick: function() { setConserve({ difficulty: dkey }); },
                       'aria-pressed': picked,
                       style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', // The unpicked border was slate-700, 1.72:1 against this panel's hardcoded
@@ -14971,7 +14981,7 @@ function EcoPairMeasurement(props) {
                 )
               ),
 
-              h('button', { onClick: function() { startConserve(); },
+              h('button', { type: 'button', onClick: function() { startConserve(); },
                 style: { width: '100%', padding: '14px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 6px 14px rgba(21,128,61,0.35)' }
               }, '🌲 ' + __alloT('stem.ecosystem.begin_campaign', 'Begin 10-year Conservation Campaign'))
             );
@@ -15003,7 +15013,7 @@ function EcoPairMeasurement(props) {
                   return h('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, borderRadius: 10, padding: 12, fontSize: 12 } },
                     h('div', { style: { fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' },
                       h('span', null, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
-                      def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive', 'Deep-dive'), title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
+                      def.deepDive ? h('button', { type: 'button', onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive', 'Deep-dive'), title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
                         className: 'eco-accent', style: { marginLeft: 'auto', background: 'transparent', border: '1px solid currentColor', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
                     ),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
@@ -15045,8 +15055,8 @@ function EcoPairMeasurement(props) {
                 )
               ),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                h('button', { onClick: resetConserve, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.new_campaign', 'New campaign')),
-                h('button', { onClick: function() { startConserve({ seed: conserve.seed, difficulty: conserve.difficulty }); },
+                h('button', { type: 'button', onClick: resetConserve, style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700 } }, '↻ ' + __alloT('stem.ecosystem.new_campaign', 'New campaign')),
+                h('button', { type: 'button', onClick: function() { startConserve({ seed: conserve.seed, difficulty: conserve.difficulty }); },
                   style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: consTint('rgba(56,189,248,0.15)'), color: consInk('#bae6fd'), fontWeight: 700 } }, '🔁 ' + __alloT('stem.ecosystem.replay_same', 'Replay same conditions'))
               ),
               h('div', { style: { marginTop: 8, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
@@ -15104,7 +15114,7 @@ function EcoPairMeasurement(props) {
                 })
               ),
 
-              h('button', { onClick: advanceConserveFromReview,
+              h('button', { type: 'button', onClick: advanceConserveFromReview,
                 style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + T_GREEN + ' 0%, #166534 100%)', color: '#fff', fontWeight: 700, fontSize: 14 }
               }, conserve.year >= conserve.maxYears ? __alloT('stem.ecosystem.see_final_outcome', 'See final outcome →') : __alloT('stem.ecosystem.begin_year_pre', 'Begin Year ') + (conserve.year + 1) + ' →')
             );
@@ -15122,7 +15132,7 @@ function EcoPairMeasurement(props) {
                 h('span', { style: { color: consInk('#fde68a') } }, coachingTip.priority),
                 h('div', { style: { marginTop: 4, color: consInk('#e9d5ff') } }, coachingTip.text)
               ),
-              h('button', { onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': __alloT('stem.ecosystem.dismiss_tip', 'Dismiss tip'),
+              h('button', { type: 'button', onClick: function() { setConserve({ firstTipDismissed: true }); }, 'aria-label': __alloT('stem.ecosystem.dismiss_tip', 'Dismiss tip'),
                 style: { background: 'transparent', border: 'none', color: consHue('#a855f7'), cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 } }, '✕')
             ) : null,
             // HUD
@@ -15140,12 +15150,12 @@ function EcoPairMeasurement(props) {
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: consInk('#38bdf8') } }, diff2 ? diff2.label : __alloT('stem.ecosystem.manager', 'Manager'))
               ),
               h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-                callGemini ? h('button', { onClick: readEcosystem, disabled: conserve.aiReadLoading,
+                callGemini ? h('button', { type: 'button', onClick: readEcosystem, disabled: conserve.aiReadLoading,
                   'aria-label': __alloT('stem.ecosystem.aria_ask_ai_read', 'Ask AI conservation biologist to read your ecosystem state'),
                   title: __alloT('stem.ecosystem.title_ai_reads_state', 'AI conservation educator reads your current state'),
                   style: { padding: '8px 12px', borderRadius: 10, border: '1px solid #38bdf8', cursor: conserve.aiReadLoading ? 'wait' : 'pointer', background: consTint('rgba(56,189,248,0.10)'), color: consInk('#38bdf8'), fontWeight: 700, fontSize: 12, opacity: conserve.aiReadLoading ? 0.6 : 1 }
                 }, conserve.aiReadLoading ? '⏳ ' + __alloT('stem.ecosystem.reading_status', 'Reading...') : '🔍 ' + __alloT('stem.ecosystem.read_ecosystem_ai', 'Read the ecosystem (AI)')) : null,
-                h('button', { onClick: endConserveYear, 'aria-label': __alloT('stem.ecosystem.aria_end_year', 'End this year'),
+                h('button', { type: 'button', onClick: endConserveYear, 'aria-label': __alloT('stem.ecosystem.aria_end_year', 'End this year'),
                   style: { padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#dc2626', color: '#fff', fontWeight: 700, fontSize: 13 } }, __alloT('stem.ecosystem.end_year', 'End Year →'))
               )
             ),
@@ -15173,7 +15183,7 @@ function EcoPairMeasurement(props) {
                       h('div', { style: { fontWeight: 700, fontSize: 14, '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' }, def.name),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                     ),
-                    def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive_for_pre', 'Deep-dive for ') + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
+                    def.deepDive ? h('button', { type: 'button', onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive_for_pre', 'Deep-dive for ') + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
                       className: 'eco-accent', style: { background: 'transparent', border: '1px solid currentColor', '--eco-acc-light': ecoAccentOnLight(def.color), '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
@@ -15195,6 +15205,7 @@ function EcoPairMeasurement(props) {
                         if (s.habitat < 60 || s.support < 50 || conserve.wolfReintroduced) disabled = true;
                       }
                       return h('button', { key: t.id,
+                        type: 'button',
                         onClick: function() { applyTech(t.id, s.id); },
                         disabled: disabled,
                         title: t.desc,
@@ -15292,7 +15303,7 @@ function EcoPairMeasurement(props) {
                       s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.mapped + ' (' + s.val + '%)')),
                     h('input', { id: 'eq-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
                       onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                      className: 'w-full', 'aria-label': s.label }));
+                      className: 'w-full', 'aria-label': s.label, 'aria-valuetext': s.mapped + ' (' + s.val + ' percent)' }));
                 })
               ),
               h('figure', { className: 'mb-3 space-y-2', 'aria-labelledby': 'eco-sweep-map-title' },
@@ -15324,8 +15335,8 @@ function EcoPairMeasurement(props) {
               ),
               // Log + reset
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-500 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
-                h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                h('button', { type: 'button', onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-500 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
+                h('button', { type: 'button', onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                   className: 'transition-colors px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.ecosystem.observations_logged_suffix', ' observations logged'))
               ),
@@ -15356,7 +15367,7 @@ function EcoPairMeasurement(props) {
               ),
               // Opt-in
               h('div', { className: 'mb-3' },
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
                   className: 'transition-colors px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-700 active:scale-[0.97]' },
                   '🤔 ' + __alloT('stem.ecosystem.iq_stuck_btn', 'I\'m stuck — show me questions to think about (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
@@ -15420,7 +15431,7 @@ function EcoPairMeasurement(props) {
               h('span', { className: 'text-xs text-emerald-700 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
             h('p', { className: 'text-sm font-semibold text-slate-800' }, currentQ.q),
-            callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_question', 'Read question'),
+            callTTS && h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.read_question', 'Read question'),
               className: 'transition-colors text-[0.6875rem] text-slate-600 hover:text-slate-700',
               onClick: function() { speakText(currentQ.q); }
             }, '\uD83D\uDD0A ' + __alloT('stem.ecosystem.read_question', 'Read question')),
@@ -15437,7 +15448,7 @@ function EcoPairMeasurement(props) {
                 } else if (showResult && isCorrectChoice) {
                   bgClass = 'border-green-400 bg-green-50/50';
                 }
-                return h('button', { 'aria-label': __alloT('stem.ecosystem.answer_prefix', 'Answer ') + String.fromCharCode(65 + idx) + ': ' + choice,
+                return h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.answer_prefix', 'Answer ') + String.fromCharCode(65 + idx) + ': ' + choice,
                   key: idx,
                   className: 'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ' + bgClass,
                   disabled: quizAnswer !== -1,
@@ -15466,6 +15477,7 @@ function EcoPairMeasurement(props) {
                   h('div', { className: 'flex items-center justify-between' },
                     h('span', { className: 'text-xs font-bold text-orange-700' }, '🔍 ' + __alloT('stem.ecosystem.concept_prefix', 'Concept: ') + currentQ.concept),
                     !lookedUp && h('button', {
+                      type: 'button',
                       onClick: function() {
                         var newList = (vocabLookedUp || []).slice();
                         if (newList.indexOf(currentQ.concept) === -1) {
@@ -15484,7 +15496,7 @@ function EcoPairMeasurement(props) {
                 );
               })(),
 
-              h('button', { 'aria-label': __alloT('stem.ecosystem.next_question', 'Next Question'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.ecosystem.next_question', 'Next Question'),
                 className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all active:scale-[0.97]',
                 onClick: nextQuiz
               }, __alloT('stem.ecosystem.next_question', 'Next Question') + ' ➔')

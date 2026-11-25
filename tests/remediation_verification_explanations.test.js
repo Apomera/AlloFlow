@@ -99,7 +99,9 @@ describe('readable reason details', () => {
   });
   it('explains AI manual-review counts that the shared formatter does not yet cover', () => {
     const root = render(Reasons, { reasons: ['ai-manual-review:1'], verificationState: 'review-required' });
-    expect(root.querySelector('li').textContent).toBe('1 AI finding needs human review.');
+    // Since 2026-11-21 the shared policy formatter covers this code itself, so its wording wins;
+    // the view keeps its own fallback for when the policy module is missing.
+    expect(root.querySelector('li').textContent).toBe('1 AI semantic finding needs manual review.');
   });
   it('looks up the formatter dynamically so a late-loaded module is used', () => {
     window.AlloModules.VerificationPolicy = { formatVerificationReason: () => 'Loaded presentation formatter.' };

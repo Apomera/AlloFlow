@@ -28,14 +28,21 @@
  */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') return;
 
   var API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
   var CACHE_PREFIX = 'allo_dict_';
   var CACHE_MAX = 1200; // cap the cached-word count so localStorage can't grow unbounded
 
+  function safeStr(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return ''; }
+  }
+
   function normalizeWord(w) {
-    return String(w == null ? '' : w)
+    return safeStr(w)
       .replace(/[\u0000-\u001F\u007F]/g, '')
       .slice(0, 120)
       .toLowerCase()
@@ -53,11 +60,11 @@
   function dictionaryRecord(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
   function dictionaryList(value) { return Array.isArray(value) ? value : []; }
   function dictionarySourceUrl(value) {
-    var url = dictionaryText(value), lower = url.toLowerCase();
+    var url = dictionaryText(value).replace(/[\t\r\n]+/g, '').trim(), lower = url.toLowerCase();
     return lower.startsWith('https://') || lower.startsWith('http://') ? url : '';
   }
   function dictionaryAudioUrl(value) {
-    var url = dictionaryText(value);
+    var url = dictionaryText(value).replace(/[\t\r\n]+/g, '').trim();
     if (!url || url.indexOf('//') === 0 || url.indexOf('\\') !== -1) return '';
     if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) {
       var lower = url.toLowerCase();
@@ -111,20 +118,42 @@
   }
 
   function readCache(word) {
+    if (!word) return undefined;
     try {
       var raw = localStorage.getItem(CACHE_PREFIX + word);
       if (!raw) return undefined; // undefined = not cached; null = cached "not found"
       return normalizeCachedEntry(safeJsonParse(raw), word);
     } catch (_) { return undefined; }
   }
+  function _evictDictKeys(targetKey, count) {
+    var keys = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf(CACHE_PREFIX) === 0 && k !== targetKey) keys.push(k);
+    }
+    var toRemove = count != null ? Math.min(count, keys.length) : Math.max(0, keys.length + 1 - CACHE_MAX);
+    for (var j = 0; j < toRemove; j++) {
+      try { localStorage.removeItem(keys[j]); } catch (_) {}
+    }
+    return toRemove;
+  }
   function writeCache(word, value) {
+    if (!word) return;
+    var targetKey = CACHE_PREFIX + word;
+    var serialized;
+    try { serialized = JSON.stringify(value); } catch (_) { return; }
     try {
-      localStorage.setItem(CACHE_PREFIX + word, JSON.stringify(value));
-      // Best-effort cap: if we're over the limit, drop the oldest-ish dict keys.
-      var keys = [];
-      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(CACHE_PREFIX) === 0) keys.push(k); }
-      if (keys.length > CACHE_MAX) { for (var j = 0; j < keys.length - CACHE_MAX; j++) { try { localStorage.removeItem(keys[j]); } catch (_) {} } }
-    } catch (_) { /* storage full / disabled — cache is best-effort */ }
+      localStorage.setItem(targetKey, serialized);
+      // Best-effort cap: if we're over the limit, drop the oldest-ish other dict keys.
+      _evictDictKeys(targetKey, null);
+    } catch (_) {
+      // Retry once after evicting a batch of older dict entries (e.g. QuotaExceededError).
+      try {
+        if (_evictDictKeys(targetKey, 25) > 0) {
+          localStorage.setItem(targetKey, serialized);
+        }
+      } catch (_2) { /* storage full / disabled — cache is best-effort */ }
+    }
   }
 
   // dictionaryapi.dev entry[] → the popup-friendly shape.
@@ -154,7 +183,7 @@
   var STOPWORDS = Object.assign(Object.create(null), { the:1, a:1, an:1, of:1, to:1, in:1, and:1, or:1, is:1, are:1, for:1, that:1, with:1, as:1, by:1, on:1, at:1, from:1, it:1, its:1, this:1, which:1, be:1, been:1, being:1, was:1, were:1, has:1, have:1, had:1, not:1, but:1, can:1, may:1, one:1, used:1, using:1, into:1, when:1, such:1, more:1, most:1, some:1, any:1, etc:1 });
   function _tokens(s) {
     var out = [], seen = Object.create(null);
-    String(s == null ? '' : s).toLowerCase().split(/[^a-z]+/).forEach(function (w) {
+    safeStr(s).toLowerCase().split(/[^a-z]+/).forEach(function (w) {
       if (w.length >= 4 && !STOPWORDS[w] && !seen[w]) { seen[w] = 1; out.push(w); }
     });
     return out;
@@ -171,7 +200,9 @@
     var ctx = _tokens(contextText);
     var first = null, best = null, bestScore = 0;
     entry.meanings.forEach(function (m) {
-      (m.definitions || []).forEach(function (d) {
+      if (!m || !Array.isArray(m.definitions)) return;
+      m.definitions.forEach(function (d) {
+        if (!d || typeof d !== 'object') return;
         var cand = { partOfSpeech: m.partOfSpeech || '', definition: d.definition || '', example: d.example || '' };
         if (!first) first = cand;
         if (ctx.length) {
@@ -192,12 +223,14 @@
   // A conservative suggestion, not a claim of semantic certainty. Ignore the
   // queried word itself and decline ties instead of silently choosing by order.
   function matchPassageSense(entry, contextText) {
-    var excluded = _tokens(entry?.word || '');
+    if (!entry || !Array.isArray(entry.meanings) || !entry.meanings.length) return null;
+    var excluded = _tokens(entry.word || '');
     var context = _tokens(contextText).filter(token => !excluded.includes(token));
     var senses = [];
-    (entry?.meanings || []).forEach(function (meaning, mi) {
-      (meaning.definitions || []).forEach(function (definition, di) {
-        if (typeof definition.definition !== 'string' || !definition.definition.trim()) return;
+    entry.meanings.forEach(function (meaning, mi) {
+      if (!meaning || !Array.isArray(meaning.definitions)) return;
+      meaning.definitions.forEach(function (definition, di) {
+        if (!definition || typeof definition.definition !== 'string' || !definition.definition.trim()) return;
         var tokens = _tokens(definition.definition).filter(token => !excluded.includes(token));
         senses.push({ partOfSpeech: meaning.partOfSpeech || '', definition: definition.definition, example: definition.example || '', meaningIndex: mi, definitionIndex: di,
           score: tokens.filter(token => context.includes(token)).length });
@@ -210,7 +243,6 @@
 
   // Detailed outcomes are optional; lookup() retains its entry-or-null API.
   var pendingBankLoad = null;
-  var pendingBankSignal = null;
   var internalVocabBank = null;
   var VOCAB_SHARDS = ['en-1.json', 'en-2.json'];
   var VOCAB_POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' };
@@ -232,7 +264,7 @@
           var p = r[0].charAt(0);
           list.push({ pos: ownKey(VOCAB_POS, p) ? VOCAB_POS[p] : '', def: r[1], example: typeof r[2] === 'string' ? r[2] : '' });
         });
-        heads[w] = list;
+        if (list.length) heads[w] = list;
       });
       if (typeof d.forms === 'string' && d.forms) {
         d.forms.split(',').forEach(function (x) {
@@ -386,8 +418,19 @@
     var thisLoad;
     var sharedOpts = Object.assign({}, opts);
     delete sharedOpts.signal;
+    var withShardTimeout = function (promise, ms) {
+      var timerId = null;
+      var timeout = new Promise(function (_, reject) {
+        timerId = setTimeout(function () { reject(new Error('AlloVocabBank: shard timeout')); }, ms);
+      });
+      return Promise.race([promise, timeout]).finally(function () {
+        if (timerId !== null) clearTimeout(timerId);
+      });
+    };
     if (typeof window !== 'undefined' && window.AlloVocabBank && typeof window.AlloVocabBank.load === 'function') {
-      thisLoad = Promise.resolve(window.AlloVocabBank.load(sharedOpts)).catch(function (err) {
+      thisLoad = Promise.resolve().then(function () {
+        return window.AlloVocabBank.load(sharedOpts);
+      }).catch(function (err) {
         if (opts.base == null) {
           return window.AlloVocabBank.load(Object.assign({}, sharedOpts, { base: '../' }));
         }
@@ -397,7 +440,7 @@
       var f = opts.fetch || (typeof window !== 'undefined' && typeof window.fetch === 'function' ? window.fetch.bind(window) : (typeof fetch === 'function' ? fetch : null));
       if (typeof f !== 'function') return Promise.resolve(false);
       var normalizeBase = function (b) {
-        var s = String(b == null ? '' : b);
+        var s = safeStr(b);
         return s && s.charAt(s.length - 1) !== '/' ? s + '/' : s;
       };
       var bases = opts.base != null ? [normalizeBase(opts.base)] : ['./packets_vocab/', '../packets_vocab/'];
@@ -406,10 +449,13 @@
         var base = bases[idx];
         var fetchOpts = { credentials: 'omit' };
         return Promise.all(VOCAB_SHARDS.map(function (file) {
-          return Promise.resolve(f(base + file, fetchOpts)).then(function (r) {
-            if (!r || !r.ok) throw new Error('AlloVocabBank: ' + file + ' ' + (r ? r.status : 'error'));
-            return r.json();
-          }).then(function (data) {
+          return withShardTimeout(
+            Promise.resolve().then(function () { return f(base + file, fetchOpts); }).then(function (r) {
+              if (!r || !r.ok) throw new Error('AlloVocabBank: ' + file + ' ' + (r ? r.status : 'error'));
+              return r.json();
+            }),
+            15000
+          ).then(function (data) {
             if (!isValidVocabShard(data)) throw new Error('AlloVocabBank: invalid shard ' + file);
             return data;
           });
@@ -424,11 +470,9 @@
     }
     if (!opts.fetch && opts.base == null) {
       pendingBankLoad = thisLoad;
-      pendingBankSignal = null;
       thisLoad.then(function () {
         if (pendingBankLoad === thisLoad) {
           pendingBankLoad = null;
-          pendingBankSignal = null;
         }
       });
     }
@@ -468,6 +512,7 @@
           if (activeBank && typeof activeBank.loadLetter === 'function' && !(typeof activeBank.extReady === 'function' && activeBank.extReady(letter))) {
             try {
               var ok = await activeBank.loadLetter(letter);
+              if (options.signal?.aborted) return 'cancelled';
               if (!ok && typeof activeBank.loadLetter === 'function') {
                 await activeBank.loadLetter(letter, { base: '../' });
               }
@@ -533,16 +578,42 @@
       if (bankHit) return finishBankHit(bankHit);
       return result(null, reason);
     };
-    let controller = null;
-    let timeoutId = null;
+    const timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0
+      ? Math.min(options.timeoutMs, 60000)
+      : 6000;
+    const enforceTimeout = !options.signal || Number.isFinite(options.timeoutMs);
+    let activeTimer = null;
+    const withTimeout = (promise) => {
+      if (!enforceTimeout) return promise;
+      return new Promise((resolve, reject) => {
+        let settled = false;
+        const timerId = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          if (activeTimer === timerId) activeTimer = null;
+          reject(new Error('Dictionary request timed out'));
+        }, timeoutMs);
+        activeTimer = timerId;
+        Promise.resolve(promise).then(
+          (val) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timerId);
+            if (activeTimer === timerId) activeTimer = null;
+            resolve(val);
+          },
+          (err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timerId);
+            if (activeTimer === timerId) activeTimer = null;
+            reject(err);
+          }
+        );
+      });
+    };
     try {
-      const timeoutMs = Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : 6000;
-      if (!options.signal && typeof AbortController !== 'undefined') {
-        controller = new AbortController();
-        timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-      }
-      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal || (controller ? controller.signal : undefined), credentials: 'omit' });
-      if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+      const response = await withTimeout(fetch(API + encodeURIComponent(w), { signal: options.signal, credentials: 'omit' }));
       if (options.signal?.aborted) return result(null, 'cancelled');
       // A concurrent caller may have cached a usable entry while this request waited.
       // readCache validates it; a late miss must not erase successful offline help.
@@ -561,11 +632,13 @@
         const bankHit = await ensureAndLookupBank();
         if (bankHit === 'cancelled') return result(null, 'cancelled');
         if (bankHit) return finishBankHit(bankHit);
+        const lateRecoveredCache = readCache(w);
+        if (lateRecoveredCache) return result(lateRecoveredCache);
         writeCache(w, null); return result(null, 'not_found');
       }
       if (!response.ok) return recoverFailure('request_failed');
       let rows;
-      try { rows = await response.json(); }
+      try { rows = await withTimeout(response.json()); }
       catch (_) { return recoverFailure('invalid_response'); }
       if (options.signal?.aborted) return result(null, 'cancelled');
       let entry;
@@ -583,7 +656,7 @@
       if (options.signal?.aborted) return result(null, 'cancelled');
       return recoverFailure('request_failed');
     } finally {
-      if (timeoutId) clearTimeout(timeoutId);
+      if (activeTimer !== null) { clearTimeout(activeTimer); activeTimer = null; }
     }
   }
 
@@ -613,5 +686,7 @@
     _normalizeEntry: normalizeEntry
   });
 
-  console.log('[AlloDictionary] dictionary_loader.js ready — window.AlloDictionary.lookup(word) (authoritative + offline-cached)');
+  if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+    console.log('[AlloDictionary] dictionary_loader.js ready — window.AlloDictionary.lookup(word) (authoritative + offline-cached)');
+  }
 })();

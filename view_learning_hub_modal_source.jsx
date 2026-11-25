@@ -8,6 +8,19 @@
  * Extracted from AlloFlowANTI.txt lines 23409-23465 (May 2026).
  * 57 lines, 11 deps (mostly navigation setters).
  */
+function _ensureLearningHubA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-learning-hub-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-learning-hub-a11y-css';
+  st.textContent =
+    '[data-learning-hub-modal="true"] button,[data-learning-hub-modal="true"] a,[data-learning-hub-modal="true"] input,[data-learning-hub-modal="true"] select,[data-learning-hub-modal="true"] summary{touch-action:manipulation;}' +
+    '[data-learning-hub-modal="true"] button:focus-visible,[data-learning-hub-modal="true"] a:focus-visible,[data-learning-hub-modal="true"] input:focus-visible,[data-learning-hub-modal="true"] select:focus-visible,[data-learning-hub-modal="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-learning-hub-modal="true"] button:focus-visible,[data-learning-hub-modal="true"] a:focus-visible,[data-learning-hub-modal="true"] input:focus-visible,[data-learning-hub-modal="true"] select:focus-visible,[data-learning-hub-modal="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-learning-hub-modal="true"],[data-learning-hub-modal="true"] *,[data-learning-hub-modal="true"] *::before,[data-learning-hub-modal="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub = (() => {}), setShowLitLab,
@@ -92,16 +105,18 @@ function LearningHubModal(props) {
         return true;
       });
     };
+    _ensureLearningHubA11yCss();
     const first = getFocusable()[0];
     (first || dialog).focus();
     const onKeyDown = function (event) {
+      if (event.defaultPrevented) return;
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(false); return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
@@ -345,7 +360,7 @@ function LearningHubModal(props) {
               dark mode. Adding the scope class opts the modal into the existing, tested dark
               remap (from-*-50 gradients -> dark tints, text-*-800/600 -> light). No-op in light
               mode: every .allo-docsuite rule is prefixed .theme-dark / .theme-contrast. */}
-          <div ref={dialogRef} tabIndex={-1} className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="learning-hub-title" aria-describedby="learning-hub-subtitle" onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} data-learning-hub-modal="true" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="learning-hub-title" aria-describedby="learning-hub-subtitle" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 id="learning-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">{'\uD83E\uDDE9'}</span> {t('learning_hub.title') || 'Learning Tools'}</h2>
@@ -368,7 +383,7 @@ function LearningHubModal(props) {
                   value={hubQuery}
                   onChange={(event) => setHubQuery(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                     if (event.key === 'Enter') {
                       event.preventDefault();
                       launchSingleVisibleHubMatch();

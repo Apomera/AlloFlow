@@ -84,7 +84,10 @@ describe('pending mailbox share dismissal controls', () => {
       setMbUrlInput: vi.fn(value => order.push(['url', value])),
       setMbStatus: vi.fn(value => order.push(['status', value])),
     });
+    // Forget asks for confirmation first (2026-11-21); nothing is cleared until it is confirmed.
     await render(viewProps); await click('Forget mailbox');
+    expect(order).toEqual([]);
+    await click('Confirm forget mailbox');
     expect(order).toEqual(['cancel', ['persist', null], ['config', null], ['url', ''], ['status', expect.stringContaining('Mailbox forgotten')]]);
     expect(viewProps.cancelPendingMailboxShare).toHaveBeenCalledOnce();
     expect(viewProps.connectMailbox).not.toHaveBeenCalled();
@@ -106,7 +109,8 @@ describe('pending mailbox share dismissal controls', () => {
   });
 
   it('routes the canonical mailbox backdrop to the cancellation-aware close', () => {
-    expect(shell).toMatch(/<div\s+ref=\{mailboxPanelRef\}[^>]*onClick=\{closeMailboxSetup\}/);
+    // A press that starts on the backdrop itself closes it (onMouseDown on the target), so a drag out of the panel does not.
+    expect(shell).toMatch(/<div\s+ref=\{mailboxPanelRef\}[^>]*onMouseDown=\{e => \{ if \(e\.target === e\.currentTarget\) closeMailboxSetup\(\); \}\}/);
   });
 
   it('routes lazy fallback dismissal and the loaded mailbox view through the same close callback', () => {

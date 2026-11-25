@@ -59,7 +59,8 @@ describe('standalone accessible HTML reader', () => {
     // Same sanitise-then-wrap change in the edited-preview lane: the result is
     // still committed as the edited html, but the DOWNLOADED file is built from
     // the sanitised copy rather than the raw preview markup.
-    expect(source).toMatch(/setPdfFixResult\(prev => \(\{ \.\.\.prev, accessibleHtml: html \}\)\);\s+let _editedReaderHtml;\s+try \{ _editedReaderHtml = _viewSanitizeMarkupForExport\(html, _docPipeline\); \}/);
+    // (the commit now also re-binds verification to the edited html, 2026-11-19)
+    expect(source).toMatch(/setPdfFixResult\(prev => prev \? _withHtmlVerificationBinding\(\{ \.\.\.prev, accessibleHtml: html \}, 'preview-edited-modified-html'\) : prev\);\s+let _editedReaderHtml;\s+try \{ _editedReaderHtml = _viewSanitizeMarkupForExport\(html, _docPipeline\); \}/);
     expect(source).toContain("const blob = new Blob([_wrapAsReaderApp(_editedReaderHtml)], { type: 'text/html' });");
   });
 });

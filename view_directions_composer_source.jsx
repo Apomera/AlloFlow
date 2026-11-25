@@ -120,10 +120,11 @@ function DirectionsComposerView({
       doc.body.style.overflow = 'hidden';
     }
     const stack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : [];
+    _ensureDirectionsComposerA11yCss();
     const trap = { root: dialog };
     stack.push(trap);
     const onKeyDown = e => {
-      if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+      if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (!isTrapActive(stack, trap, dialog)) return;
       if (previewOpenRef.current) return;
       if (e.key === 'Escape') {
@@ -185,7 +186,7 @@ function DirectionsComposerView({
     const initial = focusable[0] || dialog;
     if (initial && typeof initial.focus === 'function') initial.focus();
     const onKeyDown = e => {
-      if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+      if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (!isTrapActive(stack, trap, dialog)) return;
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -265,8 +266,8 @@ function DirectionsComposerView({
     }, 0);
   };
   return (
-<div role="presentation" className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; const expectedRoot = showDirectionsChoicePreview ? previewDialogRef.current : composerDialogRef.current; if (Array.isArray(stack) && stack.length > 0 && expectedRoot && stack[stack.length - 1]?.root !== expectedRoot) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (showDirectionsChoicePreview) { setShowDirectionsChoicePreview(false); } else { setShowDirectionsComposer(false); } } }}>
-          <div ref={composerDialogRef} tabIndex={-1} data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="allo-docsuite bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+<div role="presentation" className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; const expectedRoot = showDirectionsChoicePreview ? previewDialogRef.current : composerDialogRef.current; if (Array.isArray(stack) && stack.length > 0 && expectedRoot && stack[stack.length - 1]?.root !== expectedRoot) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (showDirectionsChoicePreview) { setShowDirectionsChoicePreview(false); } else { setShowDirectionsComposer(false); } } }}>
+          <div ref={composerDialogRef} tabIndex={-1} data-directions-composer="true" data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="allo-docsuite bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
               <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Lesson Directions'}</h2>
@@ -496,8 +497,8 @@ function DirectionsComposerView({
                       <div role="presentation" className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4"
                         onMouseDown={e => { previewBackdropDownRef.current = (e.target === e.currentTarget); }}
                         onClick={e => { const allow = previewBackdropDownRef.current !== false; previewBackdropDownRef.current = null; if (e.target === e.currentTarget && allow) setShowDirectionsChoicePreview(false); }}
-                        onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; if (Array.isArray(stack) && stack.length > 0 && previewDialogRef.current && stack[stack.length - 1]?.root !== previewDialogRef.current) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowDirectionsChoicePreview(false); } }}>
-                        <div ref={previewDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="allo-docsuite max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                        onKeyDown={e => { if (e.defaultPrevented || e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null; if (Array.isArray(stack) && stack.length > 0 && previewDialogRef.current && stack[stack.length - 1]?.root !== previewDialogRef.current) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowDirectionsChoicePreview(false); } }}>
+                        <div ref={previewDialogRef} tabIndex={-1} data-directions-composer="true" role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="allo-docsuite max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
                           <div className="mb-3 flex items-start gap-3">
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-bold uppercase tracking-wide text-indigo-700">{tr('directions.student_preview_badge', 'Student preview')}</p>
@@ -678,4 +679,17 @@ function DirectionsComposerView({
           </div>
         </div>
   );
+}
+
+function _ensureDirectionsComposerA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-directions-composer-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-directions-composer-a11y-css';
+  st.textContent =
+    '[data-directions-composer="true"] button,[data-directions-composer="true"] a,[data-directions-composer="true"] input,[data-directions-composer="true"] select,[data-directions-composer="true"] textarea,[data-directions-composer="true"] summary{touch-action:manipulation;}' +
+    '[data-directions-composer="true"] button:focus-visible,[data-directions-composer="true"] a:focus-visible,[data-directions-composer="true"] input:focus-visible,[data-directions-composer="true"] select:focus-visible,[data-directions-composer="true"] textarea:focus-visible,[data-directions-composer="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-directions-composer="true"] button:focus-visible,[data-directions-composer="true"] a:focus-visible,[data-directions-composer="true"] input:focus-visible,[data-directions-composer="true"] select:focus-visible,[data-directions-composer="true"] textarea:focus-visible,[data-directions-composer="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-directions-composer="true"],[data-directions-composer="true"] *,[data-directions-composer="true"] *::before,[data-directions-composer="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
 }

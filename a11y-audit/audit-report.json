@@ -1,16 +1,75 @@
 {
-  "timestamp": "2026-11-21T23:36:17.673Z",
+  "timestamp": "2026-11-25T12:28:01.520Z",
   "summary": {
-    "total": 0,
-    "actionable": 0,
-    "coveredByGlobalBaseline": 0,
+    "total": 3,
+    "actionable": 2,
+    "coveredByGlobalBaseline": 1,
     "notInAccessibilityTree": 0,
     "critical": 0,
-    "major": 0,
+    "major": 2,
     "minor": 0,
     "filesScanned": 1,
     "checksRun": 14
   },
-  "byCheck": [],
-  "findings": []
+  "byCheck": [
+    {
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "count": 1,
+      "actionable": 0,
+      "coveredByGlobalBaseline": 1,
+      "notInAccessibilityTree": 0,
+      "files": [
+        "stem_lab\\stem_tool_numberline.js"
+      ]
+    },
+    {
+      "checkId": "SVG-001",
+      "name": "SVG element without accessible name",
+      "wcag": "1.1.1 Non-text Content",
+      "severity": "major",
+      "count": 2,
+      "actionable": 2,
+      "coveredByGlobalBaseline": 0,
+      "notInAccessibilityTree": 0,
+      "files": [
+        "stem_lab\\stem_tool_numberline.js"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "file": "stem_lab\\stem_tool_numberline.js",
+      "line": 88,
+      "checkId": "FOCUS-001",
+      "name": "outline:none without visible focus replacement",
+      "wcag": "2.4.7 Focus Visible",
+      "severity": "critical",
+      "snippet": "'[data-lp-cell]:focus { outline: none; } [data-lp-cell]:focus-visible { stroke: #c2410c; stroke-width: 4px; fill-opacity",
+      "fix": "Replace with outline-none focus:ring-2 focus:ring-[color]-500, or add boxShadow on :focus.",
+      "coveredByGlobalBaseline": true
+    },
+    {
+      "file": "stem_lab\\stem_tool_numberline.js",
+      "line": 3268,
+      "checkId": "SVG-001",
+      "name": "SVG element without accessible name",
+      "wcag": "1.1.1 Non-text Content",
+      "severity": "major",
+      "snippet": "return h('svg', props, kids);",
+      "fix": "Add role=\"img\" and aria-label describing the visualization."
+    },
+    {
+      "file": "stem_lab\\stem_tool_numberline.js",
+      "line": 5709,
+      "checkId": "SVG-001",
+      "name": "SVG element without accessible name",
+      "wcag": "1.1.1 Non-text Content",
+      "severity": "major",
+      "snippet": "return h('svg', props, kids);",
+      "fix": "Add role=\"img\" and aria-label describing the visualization."
+    }
+  ]
 }

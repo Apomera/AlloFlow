@@ -66,7 +66,7 @@ var AlloNarrationText = (() => {
     const alloSel = "input[data-allo-field],textarea[data-allo-field],select[data-allo-field],input[data-allo-response-key],textarea[data-allo-response-key],select[data-allo-response-key],.alloflow-response-input,.alloflow-response-select,.interactive-blank,.interactive-textarea,.alloflow-cs-response,.alloflow-venn-response";
     root.querySelectorAll("input,textarea,select").forEach((el) => {
       const tag = (el.tagName || "").toLowerCase();
-      const isHidden = el.hasAttribute("hidden") || el.getAttribute("aria-hidden") === "true" || el.style && el.style.display === "none";
+      const isHidden = el.hasAttribute("hidden") || el.getAttribute("aria-hidden") === "true" || el.style && (el.style.display === "none" || el.style.visibility === "hidden");
       const isAlloField = !alloFieldsOnly || typeof el.matches === "function" && el.matches(alloSel);
       if (emitEmptyBlank === false && !isAlloField) {
         el.remove();
@@ -153,7 +153,11 @@ var AlloNarrationText = (() => {
       if (t === "annotation" || t === "annotation-xml") return "";
       if (t === "mspace") return " ";
       const ch = Array.from(node.children || []);
-      if (t === "mfrac" && ch.length >= 2) return "(" + cleanSp(walkMath(ch[0], nextDepth)) + ")/(" + cleanSp(walkMath(ch[1], nextDepth)) + ")";
+      if (t === "mfrac" && ch.length >= 2) {
+        const num = cleanSp(walkMath(ch[0], nextDepth));
+        const den = cleanSp(walkMath(ch[1], nextDepth));
+        return num || den ? "(" + num + ")/(" + den + ")" : "";
+      }
       if (t === "msup" && ch.length >= 2) {
         const b = cleanSp(walkMath(ch[0], nextDepth));
         const e = cleanSp(walkMath(ch[1], nextDepth));
@@ -292,14 +296,30 @@ var AlloNarrationText = (() => {
     if (!root) return options.languageRuns ? [] : "";
     let _preamble = "";
     let preambleRuns = [];
-    const _note = root.querySelector("[data-allo-translation-note], [data-allo-plain-note]");
-    if (_note) {
-      const _nt = (_note.textContent || "").replace(/\s+/g, " ").trim();
-      if (_nt) {
-        _preamble = _nt + ". ";
-        if (options.languageRuns) preambleRuns = [..._narrationTextRuns(_note, options.language), { text: ". ", language: _narrationLanguageOf(_note, options.language) }];
+    const _noteParts = [];
+    root.querySelectorAll("[data-allo-translation-note], [data-allo-plain-note]").forEach((_note) => {
+      if (_note.hasAttribute("hidden") || _note.getAttribute("aria-hidden") === "true" || _note.style && (_note.style.display === "none" || _note.style.visibility === "hidden") || _note.closest && _note.closest('[hidden], [aria-hidden="true"]')) return;
+      const _clone = _note.cloneNode(true);
+      if (_clone.querySelectorAll) {
+        _clone.querySelectorAll('script, style, button, input, select, textarea, [hidden], [aria-hidden="true"]').forEach((el) => el.remove());
+        _clone.querySelectorAll("[style]").forEach((el) => {
+          if (el.style.display === "none" || el.style.visibility === "hidden") el.remove();
+        });
+        if (!options.includeTeacherOnly) {
+          _clone.querySelectorAll(_ALLO_TEACHER_ONLY_SEL).forEach((el) => el.remove());
+        }
       }
-    }
+      const _nt = (_clone.textContent || "").replace(/\s+/g, " ").trim();
+      if (_nt) {
+        const _punct = /[.!?]$/.test(_nt) ? " " : ". ";
+        _noteParts.push(_nt + _punct);
+        if (options.languageRuns) {
+          const _noteLang = _narrationLanguageOf(_note, options.language);
+          preambleRuns.push(..._narrationTextRuns(_clone, _noteLang), { text: _punct, language: _noteLang });
+        }
+      }
+    });
+    _preamble = _noteParts.join("");
     _narrationPrepareDocument(doc, options);
     root.querySelectorAll("[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
     if (!options.languageRuns) {
@@ -359,7 +379,8 @@ var AlloNarrationText = (() => {
     if (!node) return fallback || "en";
     let el = node.nodeType === 1 ? node : node.parentElement;
     while (el) {
-      if (el.lang) return el.lang;
+      const l = (el.lang || el.getAttribute && (el.getAttribute("lang") || el.getAttribute("xml:lang")) || "").trim();
+      if (l) return l;
       el = el.parentElement;
     }
     return fallback || "en";
@@ -381,8 +402,8 @@ var AlloNarrationText = (() => {
   }
   function _narrationTextRuns(node, fallback) {
     const runs = [];
-    const visit = (n) => {
-      if (!n) return;
+    const visit = (n, depth = 0) => {
+      if (!n || depth > 64) return;
       const language = _narrationLanguageOf(n, fallback);
       if (n.nodeType === 3) {
         runs.push({ text: n.textContent, language });
@@ -401,9 +422,9 @@ var AlloNarrationText = (() => {
         if (description) runs.push({ text: description + ". ", language });
         return;
       }
-      Array.from(n.childNodes).forEach(visit);
+      Array.from(n.childNodes).forEach((child) => visit(child, depth + 1));
     };
-    visit(node);
+    visit(node, 0);
     if (runs.length) {
       runs[0].text = runs[0].text.trimStart();
       runs[runs.length - 1].text = runs[runs.length - 1].text.trimEnd();
@@ -439,14 +460,14 @@ var AlloNarrationText = (() => {
         if (Number(n) === 1 && isSafeKey(oneKey) && hasOwn.call(local, oneKey) && typeof local[oneKey] === "string") phrase = local[oneKey];
         else if (isSafeKey(key) && hasOwn.call(local, key) && typeof local[key] === "string") phrase = local[key];
       }
-      return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
+      return phrase ? n !== void 0 ? phrase.replace(/\{n\}/g, String(n)) : phrase : fallback;
     };
     const Parser = typeof DOMParser === "function" ? DOMParser : typeof window !== "undefined" && typeof window.DOMParser === "function" ? window.DOMParser : null;
     if (!Parser) return options.languageRuns ? [] : "";
     const doc = new Parser().parseFromString(html || "", "text/html");
     _narrationPrepareDocument(doc, options);
-    const inlineText = (node) => {
-      if (!node) return "";
+    const inlineText = (node, depth = 0) => {
+      if (!node || depth > 64) return "";
       if (node.nodeType === 3) return node.textContent || "";
       if (node.nodeType !== 1) return "";
       if (node.tagName.toLowerCase() === "img") {
@@ -455,19 +476,19 @@ var AlloNarrationText = (() => {
         const alt = (node.getAttribute("alt") || "").trim();
         return alt ? " " + alt + " " : "";
       }
-      return Array.from(node.childNodes).map(inlineText).join("");
+      return Array.from(node.childNodes).map((child) => inlineText(child, depth + 1)).join("");
     };
-    const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!inlineText(node).trim();
+    const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!inlineText(node, 0).trim();
     const out = [], runs = [];
     const add = (node, ...parts) => {
-      out.push(parts.map((part) => typeof part === "string" ? part : inlineText(part).replace(/\s+/g, " ").trim()).join(""));
+      out.push(parts.map((part) => typeof part === "string" ? part : inlineText(part, 0).replace(/\s+/g, " ").trim()).join(""));
       if (options.languageRuns) {
         if (runs.length) runs.push({ text: "\n\n", language: _narrationLanguageOf(node, options.language) });
         for (const part of parts) runs.push(...typeof part === "string" ? [{ text: part, language: _narrationLanguageOf(node, options.language) }] : _narrationTextRuns(part, options.language));
       }
     };
-    const walk = (el) => {
-      if (!el || !el.childNodes) return;
+    const walk = (el, depth = 0) => {
+      if (!el || !el.childNodes || depth > 64) return;
       for (const node of Array.from(el.childNodes)) {
         if (node.nodeType !== 1) {
           if (node.nodeType === 3 && node.textContent.trim()) add(el, node);
@@ -487,7 +508,8 @@ var AlloNarrationText = (() => {
           continue;
         }
         if (tag === "ul" || tag === "ol") {
-          const emitList = (listEl) => {
+          const emitList = (listEl, listDepth = 0) => {
+            if (!listEl || listDepth > 64) return;
             const lTag = listEl.tagName.toLowerCase();
             const items = Array.from(listEl.children).filter((c) => c.tagName && c.tagName.toLowerCase() === "li");
             add(listEl, say(listEl, lTag === "ul" ? "list" : "numbered", (lTag === "ul" ? "List, " : "Numbered list, ") + items.length + " item" + (items.length === 1 ? "" : "s"), items.length) + ".");
@@ -501,21 +523,21 @@ var AlloNarrationText = (() => {
               const ownClone = li.cloneNode(true);
               ownClone.querySelectorAll("ul,ol").forEach((sub) => sub.remove());
               if (readable(ownClone)) add(li, prefix, ownClone, ".");
-              nestedLists.forEach(emitList);
+              nestedLists.forEach((sub) => emitList(sub, listDepth + 1));
             });
             add(listEl, say(listEl, "listEnd", "List end") + ".");
           };
-          emitList(node);
+          emitList(node, 0);
           continue;
         }
         if (tag === "table") {
-          const rows = Array.from(node.querySelectorAll("tr"));
+          const rows = Array.from(node.querySelectorAll("tr")).filter((tr) => !tr.closest || tr.closest("table") === node);
           let cols = 0;
           for (let ri = 0; ri < rows.length; ri++) {
-            const rowCols = Array.from(rows[ri].children).reduce((sum, c) => sum + Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1), 0);
+            const rowCols = Array.from(rows[ri].children).reduce((sum, c) => sum + Math.min(100, Math.max(1, parseInt(c.getAttribute && c.getAttribute("colspan"), 10) || 1)), 0);
             if (rowCols > cols) cols = rowCols;
           }
-          const cap = node.querySelector("caption");
+          const cap = Array.from(node.children || []).find((c) => c.tagName && c.tagName.toLowerCase() === "caption") || null;
           add(node, say(node, "table", "Table"), ...cap && cap.textContent.trim() ? [", ", cap] : [], ", " + say(node, "rows", rows.length + " row" + (rows.length === 1 ? "" : "s"), rows.length) + ", " + say(node, "columns", cols + " column" + (cols === 1 ? "" : "s"), cols) + ".");
           rows.forEach((row, i) => {
             const cells = Array.from(row.children).filter((c) => readable(c));
@@ -534,16 +556,16 @@ var AlloNarrationText = (() => {
           continue;
         }
         if (tag === "details") {
-          const sum = node.querySelector("summary");
+          const sum = Array.from(node.children || []).find((c) => c.tagName && c.tagName.toLowerCase() === "summary") || null;
           if (sum && sum.textContent.trim()) add(node, say(node, "disclosure", "Disclosure section") + ", ", sum, ".");
-          walk(node);
+          walk(node, depth + 1);
           continue;
         }
-        if (tag === "summary" && node.parentElement?.tagName === "DETAILS") continue;
-        walk(node);
+        if (tag === "summary" && (node.parentElement?.tagName || "").toLowerCase() === "details") continue;
+        walk(node, depth + 1);
       }
     };
-    walk(doc.body || doc.documentElement);
+    walk(doc.body || doc.documentElement, 0);
     return options.languageRuns ? _narrationMergeRuns(runs, false) : out.join("\n\n");
   }
   return __toCommonJS(tmp_narration_text_exports);

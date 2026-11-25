@@ -4,12 +4,32 @@
 <meta charset="utf-8">
   <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
 <title>School Rewards &amp; Store: Quick Cards | AlloFlow</title>
 <meta name="description" content="Two printable one-page quick cards for AlloFlow School Rewards: one for staff awarding points, one for cashiers at the register.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://apomera.github.io/AlloFlow/school-rewards-quick-cards.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="AlloFlow">
+<meta property="og:title" content="School Rewards &amp; Store: Quick Cards | AlloFlow">
+<meta property="og:description" content="Two printable one-page quick cards for AlloFlow School Rewards: one for staff awarding points, one for cashiers at the register.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/school-rewards-quick-cards.html">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="School Rewards &amp; Store: Quick Cards | AlloFlow">
+<meta name="twitter:description" content="Two printable one-page quick cards for AlloFlow School Rewards: one for staff awarding points, one for cashiers at the register.">
+<meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+<meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+<link rel="icon" type="image/svg+xml" href="allobot.svg">
+<link rel="apple-touch-icon" href="allobot.png">
 <style>
 :root{
+  color-scheme:light;
   /* Text-size multiplier for the Reading tools bar. Every prose font-size below
      is calc(<px> * var(--fs)) so the slider scales text without scaling images
      or the controls themselves; the manual's sizes are absolute px, so setting
@@ -23,6 +43,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
+    color-scheme:dark;
     --ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;
     --accent:#8ab4ff;--accent-ink:#bcd4ff;--accent-soft:#152340;--accent-bd:#2c4470;
     --warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;
@@ -100,8 +121,8 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
    aria-label, so dropping the visible word costs nothing to a screen reader.
    Deliberately not hidden-until-hover, which would be mouse-only. */
 .listen{margin:2px 0 8px;display:inline-flex;align-items:center;
-  justify-content:center;min-width:28px;min-height:28px;padding:2px;flex:none;
-  font:400 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;
+  justify-content:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;flex:none;
+  font:400 15px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;
   color:var(--soft);background:var(--panel);border:1px solid var(--line);
   border-radius:50%;cursor:pointer;transition:background .15s,border-color .15s;}
 .listen:hover{background:var(--accent-soft);border-color:var(--accent-bd);}
@@ -123,7 +144,7 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
   flex-wrap:wrap;gap:8px 14px;align-items:center;}
 .rtools-toggle{font:700 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);
   background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:999px;
-  padding:6px 12px;cursor:pointer;}
+  min-height:44px;padding:8px 14px;cursor:pointer;}
 .rtools-toggle:hover{border-color:var(--accent);}
 .rtools-panel{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
   font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--soft);}
@@ -131,10 +152,10 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
 .rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
 .rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);
-  border-radius:7px;padding:3px 5px;}
+  border-radius:7px;min-height:44px;padding:6px 10px;}
 .rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
 .rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);
-  border-radius:7px;padding:5px 9px;cursor:pointer;}
+  border-radius:7px;min-height:44px;padding:6px 11px;cursor:pointer;}
 .rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);
   border-color:var(--accent);color:var(--accent-ink);}
 .rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
@@ -147,14 +168,14 @@ html[data-allo-ruler="1"] #rtools-ruler{display:block;}
    table, callout and code span stranded on the new background. `html:root[…]`
    is (0,2,1), which outranks the (0,2,0) dark-mode block above; plain
    `[data-allo-theme]` would lose to it whenever the OS is in dark mode. */
-html:root[data-allo-theme="warm"]{--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--th:#f7ecd5;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;--shadow:0 1px 3px rgba(87,58,28,.13);}
-html:root[data-allo-theme="sepia"]{--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--th:#f0e6d0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;--shadow:0 1px 3px rgba(92,64,51,.13);}
-html:root[data-allo-theme="dark"]{--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--th:#242440;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;--shadow:0 1px 3px rgba(0,0,0,.45);}
-html:root[data-allo-theme="highContrast"]{--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--th:#000;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;--ok-bg:#000;--ok-bd:#ff0;--ok-ink:#ff0;--shadow:none;}
-html:root[data-allo-theme="blue"]{--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--th:#e2eff9;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;--shadow:0 1px 3px rgba(27,38,49,.13);}
-html:root[data-allo-theme="green"]{--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--th:#ecf7ed;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;--shadow:0 1px 3px rgba(27,94,32,.13);}
-html:root[data-allo-theme="rose"]{--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--th:#fbe8ef;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;--shadow:0 1px 3px rgba(124,13,71,.13);}
-html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--th:#f3f0e2;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;--shadow:0 1px 3px rgba(38,50,74,.11);}
+html:root[data-allo-theme="warm"]{color-scheme:light;--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--th:#f7ecd5;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;--shadow:0 1px 3px rgba(87,58,28,.13);}
+html:root[data-allo-theme="sepia"]{color-scheme:light;--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--th:#f0e6d0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;--shadow:0 1px 3px rgba(92,64,51,.13);}
+html:root[data-allo-theme="dark"]{color-scheme:dark;--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--th:#242440;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;--shadow:0 1px 3px rgba(0,0,0,.45);}
+html:root[data-allo-theme="highContrast"]{color-scheme:dark;--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--th:#000;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;--ok-bg:#000;--ok-bd:#ff0;--ok-ink:#ff0;--shadow:none;}
+html:root[data-allo-theme="blue"]{color-scheme:light;--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--th:#e2eff9;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;--shadow:0 1px 3px rgba(27,38,49,.13);}
+html:root[data-allo-theme="green"]{color-scheme:light;--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--th:#ecf7ed;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;--shadow:0 1px 3px rgba(27,94,32,.13);}
+html:root[data-allo-theme="rose"]{color-scheme:light;--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--th:#fbe8ef;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;--shadow:0 1px 3px rgba(124,13,71,.13);}
+html:root[data-allo-theme="easyread"]{color-scheme:light;--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--th:#f3f0e2;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;--shadow:0 1px 3px rgba(38,50,74,.11);}
 @media print{
   /* A chosen reading theme must not reach paper: dark or high-contrast would
      print light text on white. Same (0,2,1) specificity as the theme rules but

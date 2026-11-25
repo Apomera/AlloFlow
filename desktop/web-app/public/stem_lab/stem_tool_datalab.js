@@ -75,6 +75,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       "[data-datalab-theme=\"contrast\"] :focus-visible{outline:3px solid #00ff00!important;outline-offset:2px}"
     ].join('\n');
     document.head.appendChild(st);
+    if (!document.getElementById('allo-datalab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-datalab-a11y-css';
+      a11ySt.textContent = '[data-datalab-launcher] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-datalab-launcher] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(a11ySt);
+    }
   })();
 
   // Phone width: CODAP needs a laptop-size screen to be usable.

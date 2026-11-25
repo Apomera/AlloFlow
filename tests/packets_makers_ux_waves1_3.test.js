@@ -161,13 +161,14 @@ describe('Wave 1-3: shared .top-menu switcher across all 6 makers', () => {
       const nav = menu.querySelector('nav[aria-label="Other Packets tools"]');
       expect(nav, file).toBeTruthy();
       const links = [...nav.querySelectorAll('a[href]')];
-      expect(links.length, file).toBe(8);
+      // 2026-11-24: Switch maker expanded from 8 to 18 tools after adding the 10 zero-AI expansion makers/libraries.
+      expect(links.length, file).toBe(18);
       const current = links.filter((a) => a.getAttribute('aria-current') === 'page');
       expect(current.map((a) => [a.getAttribute('href'), a.textContent.trim()]), file).toEqual([[file, label]]);
     }
-    // Check & Math Practice file counts remain strictly untouched.
+    // Check & Math Practice file counts (Wave 42: packets-check.html adds packets_docx.js -> 16; Math Practice lazy-loads -> 13).
     const checkDoc = parse('packets-check.html');
-    expect(1 + checkDoc.querySelectorAll('link').length + checkDoc.querySelectorAll('script[src]').length).toBe(15);
+    expect(1 + checkDoc.querySelectorAll('link').length + checkDoc.querySelectorAll('script[src]').length).toBe(16);
     const mpDoc = parse('packets-math-practice.html');
     expect(1 + mpDoc.querySelectorAll('link').length + mpDoc.querySelectorAll('script[src]').length).toBe(13);
   });

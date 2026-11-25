@@ -18,6 +18,7 @@
 <script src="packets_my_words.js" defer></script>
 <script src="packets_voice_engine.js" defer></script>
 <script src="packets-voice.js" defer></script>
+<script src="packets_voice_meanings.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to the main part</a>
@@ -31,12 +32,26 @@
     <details class="top-menu">
       <summary>Switch maker</summary>
       <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
         <a href="packets-make.html">Word Sounds</a>
         <a href="packets-vocab.html">Vocabulary</a>
         <a href="packets-math-practice.html">Math Fact Practice</a>
         <a href="packets-check.html">Math Check</a>
         <a href="packets-read-along.html">Read-Along</a>
         <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
         <a href="packets-present-export.html">Present &amp; print</a>
         <a href="packets-results.html">Add up results</a>
       </nav>
@@ -76,7 +91,7 @@
       <p id="no-storage-text">This browser is not keeping your words, so a recording made here could not be kept. Try a window that is not private.</p>
     </div>
 
-    <section class="sheet" aria-labelledby="words-title">
+    <section class="sheet" id="words-step" aria-labelledby="words-title">
       <p class="kicker">Step 1</p>
       <h2 id="words-title">Your words</h2>
       <div class="field block">
@@ -145,7 +160,20 @@
       <p id="voice-problem" class="actions-note" role="alert"></p>
     </section>
 
-    <section class="sheet" aria-labelledby="make-title">
+    <section class="sheet" id="meanings" aria-labelledby="meanings-title" hidden>
+      <p class="kicker" id="meanings-kicker">Step 3</p>
+      <h2 id="meanings-title">Meanings from the vocabulary maker</h2>
+      <p class="sheet-intro"><span id="meanings-count"></span> They have no recording yet. They are said with the voice of the meaning recordings that come with Packets (Heart), whatever voice is chosen above, so every answer of a question sounds the same. Each recording is kept in My words on this device, and the vocabulary maker uses it by itself.</p>
+      <ul id="meaning-rows" class="voice-rows" aria-label="The meanings and their recordings"></ul>
+      <p class="row">
+        <button type="button" class="btn btn-primary" id="make-meanings" disabled>Make recordings for the meanings that have none</button>
+        <button type="button" class="btn" id="stop-meanings" hidden>Stop</button>
+      </p>
+      <p id="meanings-said" class="result-sub" role="status"></p>
+      <p id="meanings-problem" class="actions-note" role="alert"></p>
+    </section>
+
+    <section class="sheet" id="make-step" aria-labelledby="make-title">
       <p class="kicker">Step 3</p>
       <h2 id="make-title">Make the recordings</h2>
       <p class="sheet-intro">Listen to each one. A computer voice can say a word wrong: make it again, or record the word yourself in the maker with Edit this word.</p>
@@ -163,7 +191,7 @@
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">
     <p>Free to use. Open source, license AGPL-3.0. Kokoro is licensed Apache-2.0.</p>
-    <p><a href="./">More from AlloFlow</a></p>
+    <p><a href="packets-feedback.html#from-packets-voice">Send feedback</a> <a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
 </body>

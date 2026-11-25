@@ -98,6 +98,15 @@
     });
     var ref = object(d.comparison);
     if (EXPERIMENTS.some(function (meta) { return meta.id === ref.experiment; })) out.comparison = { experiment: ref.experiment, model: normalizeModel(ref.experiment, ref.model) };
+    var xpRaw = object(d._xpCredited), xpKeys = Object.keys(xpRaw), xpClean = {}, xpCount = 0;
+    for (var xi = 0; xi < xpKeys.length && xpCount < 64; xi++) {
+      var xk = text(xpKeys[xi], 64).trim();
+      if (xk && xk !== '__proto__' && xk !== 'constructor' && xk !== 'prototype' && xpRaw[xpKeys[xi]] === true) {
+        xpClean[xk] = true;
+        xpCount++;
+      }
+    }
+    if (xpCount > 0) out._xpCredited = xpClean;
     return out;
   }
   function measurements(id, raw) {
@@ -563,6 +572,277 @@
     return nodes;
   }
   function format(value, model) { return value.replace(/\{(\w+)\}/g, function (_, key) { return String(model[key]); }); }
+  function isPerceptionGlobalMuted() {
+    var fnMuted = false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function') {
+        fnMuted = !!window.__alloIsGlobalMuted();
+      }
+    } catch (_) { fnMuted = false; }
+    return fnMuted || (typeof window !== 'undefined' && !!window._alloGlobalMute);
+  }
+  function signedNum(value) {
+    var rounded = Number(Number(value || 0).toFixed(1));
+    return (rounded > 0 ? '+' : '') + rounded;
+  }
+  function diagnosePerceptionImpression(experimentId, rawModel, choice) {
+    var meta = experiment(experimentId);
+    var m = normalizeModel(meta.id, rawModel);
+    var chosen = (typeof choice === 'string' && meta.choices.indexOf(choice) >= 0) ? choice : m.prediction;
+    var mechanism = '', physicalTruth = '', quantitativeDelta = '', whyNot = '', nextTest = '';
+    if (meta.id === 'brightness') {
+      mechanism = 'Simultaneous brightness contrast (lateral inhibition)';
+      var diff = m.contrast * 1.12;
+      var dark = Math.round(128 - diff), light = Math.round(128 + diff), bgSpan = light - dark;
+      var measured = measurements('brightness', m);
+      var darkSide = m.swap ? 'Right' : 'Left';
+      var lightSide = m.swap ? 'Left' : 'Right';
+      physicalTruth = m.matching
+        ? 'Reference center square: RGB ' + measured.reference + '; comparison square: RGB ' + measured.comparison + ' (' + signedNum(measured.difference) + ' RGB steps).'
+        : 'Both center squares share exact fill RGB ' + m.target + ', ' + m.target + ', ' + m.target + ' (0 RGB physical difference).';
+      quantitativeDelta = m.context
+        ? 'Surround fields differ by ' + bgSpan + ' RGB steps (' + darkSide.toLowerCase() + ' surround RGB ' + dark + ' vs ' + lightSide.toLowerCase() + ' surround RGB ' + light + ', ' + m.contrast + '% difference)' + (m.matching ? '; your visual match offset is ' + signedNum(measured.difference) + ' RGB steps.' : '; physical center delta is 0 RGB steps.')
+        : 'Surroundings are removed (0 RGB background difference)' + (m.matching ? '; your visual match offset is ' + signedNum(measured.difference) + ' RGB steps.' : '; both center squares sit on identical white ground.');
+      if (chosen === darkSide && m.context && m.contrast > 0) {
+        whyNot = 'Retinal ganglion cells compute local contrast via lateral inhibition: the darker surround (RGB ' + dark + ') sends weaker inhibitory signals than the brighter surround (RGB ' + light + '), boosting the apparent brightness of the ' + darkSide.toLowerCase() + ' center even though the drawn target is ' + (m.matching ? 'offset by ' + signedNum(measured.difference) + ' RGB steps.' : 'physically identical (RGB ' + m.target + ').');
+      } else if (chosen === lightSide) {
+        whyNot = m.context && m.contrast > 0
+          ? 'A lighter surround (RGB ' + light + ') typically suppresses apparent brightness via lateral inhibition, so seeing the ' + lightSide.toLowerCase() + ' square as brighter often reflects gaze adaptation, display viewing angle, or a comparison match offset (' + signedNum(measured.difference) + ' RGB steps).'
+          : 'With surroundings removed or equalized (0% contrast), neither background induces lateral inhibition; any apparent difference comes from local adaptation or comparison offset.';
+      } else if (chosen === 'Same') {
+        whyNot = m.matching
+          ? 'Your impression marks them as matched with a physical offset of ' + signedNum(measured.difference) + ' RGB steps (reference RGB ' + measured.reference + ' vs comparison RGB ' + measured.comparison + '). Comparing this offset with surroundings on versus off isolates the induced brightness shift.'
+          : 'Physically, both centers are indeed identical (RGB ' + m.target + ', 0 RGB difference). Even so, a ' + bgSpan + '-step surround difference induces lateral inhibition that makes the dark-field square appear lighter for many observers.';
+      } else {
+        whyNot = 'Apparent brightness shifts smoothly with surrounding luminance rather than reading raw RGB values directly. Because the eye adapts to local contrast (' + bgSpan + ' RGB steps across the two fields), equal targets can look ambiguous until surroundings are removed.';
+      }
+      nextTest = m.context
+        ? 'Toggle Remove surroundings or slide Background difference to 0% while keeping Center gray fixed at RGB ' + m.target + '.'
+        : 'Restore surroundings and raise Background difference to 95% to measure how strongly lateral inhibition shifts your impression.';
+    } else if (meta.id === 'ebbinghaus') {
+      mechanism = 'Ebbinghaus size contrast (contextual spatial comparison)';
+      var largeDia = m.surround * 2, smallDia = 20;
+      var measuredE = measurements('ebbinghaus', m);
+      var smallRingSide = m.swap ? 'Left' : 'Right';
+      var largeRingSide = m.swap ? 'Right' : 'Left';
+      physicalTruth = m.matching
+        ? 'Reference orange disk: ' + measuredE.reference + ' units; comparison disk: ' + measuredE.comparison + ' units (' + signedNum(measuredE.difference) + ' units, ' + signedNum(measuredE.percent) + '%).'
+        : 'Both orange center circles measure exactly 48 drawing units in diameter (0-unit physical difference).';
+      quantitativeDelta = m.context
+        ? 'Inducer diameters are ' + smallDia + ' units (' + smallRingSide.toLowerCase() + ' ring) vs ' + largeDia + ' units (' + largeRingSide.toLowerCase() + ' ring) with a ' + m.gap + '-unit gap' + (m.matching ? '; match offset is ' + signedNum(measuredE.difference) + ' units (' + signedNum(measuredE.percent) + '%).' : '; center diameter delta is 0 units.')
+        : 'Surrounding rings are removed; ' + (m.matching ? 'match offset is ' + signedNum(measuredE.difference) + ' units (' + signedNum(measuredE.percent) + '%).' : 'both isolated centers have diameter 48 units.');
+      if (chosen === smallRingSide && m.context) {
+        whyNot = 'Size-contrast circuits judge the 48-unit orange center relative to its immediate neighbors: next to 8 small ' + smallDia + '-unit rings at a ' + m.gap + '-unit gap, the ' + smallRingSide.toLowerCase() + ' center appears expanded compared with the identical center framed by ' + largeDia + '-unit rings.';
+      } else if (chosen === largeRingSide) {
+        whyNot = m.context
+          ? 'Large ' + largeDia + '-unit surrounding disks usually induce apparent shrinkage through size contrast. Widening the gap (' + m.gap + ' units) weakens that contrast and can reduce or invert the effect.'
+          : 'Without surrounding rings, size-contrast cues are absent; any apparent difference reflects viewing angle or a matching adjustment (' + signedNum(measuredE.difference) + ' units).';
+      } else if (chosen === 'Same') {
+        whyNot = m.matching
+          ? 'You judged them equal at a physical difference of ' + signedNum(measuredE.difference) + ' units (' + signedNum(measuredE.percent) + '%). Swapping or removing the rings tests how much of that offset came from contextual size contrast.'
+          : 'Both orange disks physically measure 48 units across (0-unit difference). Tight gaps (' + m.gap + ' units) and large surround rings (' + largeDia + ' units) amplify relative-size contrast for most viewers.';
+      } else {
+        whyNot = 'Contextual size judgments depend heavily on the gap between center and ring (' + m.gap + ' units). When the gap widens, the visual system treats the orange disk more independently from its neighbors.';
+      }
+      nextTest = m.context
+        ? 'Keep Large surrounding radius at ' + m.surround + ' units and step Gap around center from 4 to 28 units, or click Remove surroundings.'
+        : 'Turn surroundings back on and compare Gap = 8 units versus Gap = 26 units.';
+    } else if (meta.id === 'mullerLyer') {
+      mechanism = 'M\u00FCller-Lyer perspective/depth cues and centroid shift';
+      var proj = Math.round(Math.cos(m.angle * Math.PI / 180) * m.fin * 2);
+      var measuredM = measurements('mullerLyer', m);
+      var outwardShaft = m.swap ? 'Top' : 'Bottom';
+      var inwardShaft = m.swap ? 'Bottom' : 'Top';
+      physicalTruth = m.matching
+        ? 'Reference shaft: ' + measuredM.reference + ' units; comparison shaft: ' + measuredM.comparison + ' units (' + signedNum(measuredM.difference) + ' units, ' + signedNum(measuredM.percent) + '%).'
+        : 'Both horizontal shafts measure exactly 400 drawing units between endpoints (0-unit physical difference).';
+      quantitativeDelta = m.context
+        ? 'Fin angle ' + m.angle + '\u00B0 and fin length ' + m.fin + ' units add ' + proj + ' units of horizontal fin span to the ' + outwardShaft.toLowerCase() + ' outward-wing figure (outer span ' + (400 + proj) + ' vs 400 units)' + (m.matching ? '; match offset is ' + signedNum(measuredM.difference) + ' units (' + signedNum(measuredM.percent) + '%).' : '; physical shaft delta is 0 units.')
+        : 'Arrowhead fins are removed; ' + (m.matching ? 'match offset is ' + signedNum(measuredM.difference) + ' units (' + signedNum(measuredM.percent) + '%).' : 'both bare shafts measure 400 units.');
+      if (chosen === outwardShaft && m.context) {
+        whyNot = 'Outward-splaying wings on the ' + outwardShaft.toLowerCase() + ' shaft extend the figure envelope by ' + proj + ' horizontal units and resemble an inside room corner receding in depth. Both low-spatial-frequency centroid pooling and carpentered-world depth scaling pull the perceived shaft outward.';
+      } else if (chosen === inwardShaft) {
+        whyNot = m.context
+          ? 'Inward arrowheads on the ' + inwardShaft.toLowerCase() + ' shaft normally compress apparent length by pulling endpoint centroids inward. Steep fin angles (' + m.angle + '\u00B0) or short fins (' + m.fin + ' units) weaken that compression.'
+          : 'With fins removed, perspective and centroid cues vanish; any remaining length impression reflects eye-movement bias or a matching offset (' + signedNum(measuredM.difference) + ' units).';
+      } else if (chosen === 'Same') {
+        whyNot = m.matching
+          ? 'You matched the shafts as equal with a physical offset of ' + signedNum(measuredM.difference) + ' units (' + signedNum(measuredM.percent) + '%). Swapping fins tests whether the offset reverses direction.'
+          : 'Both shafts are physically 400 drawing units long (0-unit difference). Narrower fin angles toward 15\u00B0 increase horizontal projection (' + proj + ' units currently) and strengthen the apparent length bias.';
+      } else {
+        whyNot = 'Because the arrowheads attach directly to the endpoints, visual attention can blend fin span (' + proj + ' horizontal units) with shaft span (400 units). The vertical reveal guides isolate the true endpoints.';
+      }
+      nextTest = m.context
+        ? 'Compare Fin angle 20\u00B0 against 70\u00B0 while holding Fin length fixed, or toggle Remove surroundings.'
+        : 'Restore surroundings and test sharp 20\u00B0 fins versus wide 70\u00B0 fins.';
+    } else if (meta.id === 'cafeWall') {
+      mechanism = 'Caf\u00E9 Wall luminance-polarity phase tilt';
+      var shiftUnits = Math.round(60 * m.offset / 100);
+      physicalTruth = 'All horizontal mortar guides have exact 0\u00B0 slope and parallel start/end heights across the 800-unit width.';
+      quantitativeDelta = m.context
+        ? 'Row stagger is ' + m.offset + '% (' + shiftUnits + ' of 60 tile units) with ' + m.mortar + '-unit intermediate gray mortar; physical mortar tilt is 0\u00B0.'
+        : 'Tiles are removed, leaving uniform gray ground with 0\u00B0 horizontal reference guides.';
+      if (chosen === 'Tilted' && m.context) {
+        whyNot = 'Intermediate gray mortar (' + m.mortar + ' units wide) bridges high-contrast dark and light corners staggered by ' + m.offset + '% (' + shiftUnits + ' units). Local orientation-selective neurons in early visual cortex (V1) integrate those asymmetric luminance wedges into tiny tilted segments that chain into an apparent slope, even though physical tilt is 0\u00B0.';
+      } else if (chosen === 'Level') {
+        whyNot = m.context && m.offset > 0 && m.offset < 100
+          ? 'Physically every mortar band is strictly level (0\u00B0 tilt). Thick mortar (' + m.mortar + ' units) or small/zero stagger (' + m.offset + '%) breaks the luminance-polarity bridges so lines look straighter.'
+          : 'With aligned columns (' + m.offset + '% offset) or tiles removed, opposing dark/light corners never form asymmetric contrast wedges, so the parallel 0\u00B0 lines look level.';
+      } else if (chosen === 'Mixed') {
+        whyNot = 'The phase-tilt signal is strongest at intermediate spatial frequencies along staggered high-contrast borders (' + m.offset + '% offset, ' + m.mortar + '-unit mortar), so foveal fixation can straighten one line while peripheral rows still appear wedged.';
+      } else {
+        whyNot = 'Apparent tilt depends on both tile stagger (' + m.offset + '%) and mortar thickness (' + m.mortar + ' units). Comparing 0% alignment against 50% stagger isolates the contrast-wedge mechanism.';
+      }
+      nextTest = 'Use Try one change to capture a 50% stagger starting view, then adjust only Alternate row offset to 0% or Mortar width to 12 units.';
+    } else if (meta.id === 'necker') {
+      mechanism = 'Necker cube bistable perceptual reversal';
+      physicalTruth = 'The unshaded 2D wireframe contains 12 identical-stroke edges (depth offset ' + m.depth + ' units) with 0 monocular occlusion cues and no single mathematically correct front face.';
+      quantitativeDelta = 'Projected offset is ' + m.depth + ' units horizontal / ' + Math.round(m.depth * 0.64) + ' units vertical; face cue is ' + (m.context && m.cue !== 'none' ? (m.cue === 'front' ? 'lower-left shaded' : 'upper-right shaded') : 'none (fully ambiguous)') + '.';
+      if (chosen === 'Lower left') {
+        whyNot = 'Human depth perception carries a mild "view-from-above" prior: when orthographic lines lack perspective taper or occlusion, the brain frequently stabilizes on the lower-left face in front' + (m.context && m.cue === 'front' ? ' — reinforced here by the lower-left face cue.' : ', even though the opposite 3D orientation fits every vertex identically.');
+      } else if (chosen === 'Upper right') {
+        whyNot = 'Seeing the upper-right face as closest reflects the equally valid "view-from-below" 3D solution of the same 2D wireframe' + (m.context && m.cue === 'back' ? ', supported by the upper-right face cue.' : '. Fixing gaze near the upper-right vertex often favors this reversal.');
+      } else if (chosen === 'It changes') {
+        whyNot = 'Spontaneous flipping is classic perceptual multistability: neural populations representing the two competing 3D states gradually adapt while you stare at the static ' + m.depth + '-unit wireframe, allowing the rival interpretation to take over.';
+      } else {
+        whyNot = 'Because orthographic projection discards distance scaling and occlusion, both 3D cubes project onto the exact same 2D edges, making depth genuinely ambiguous.';
+      }
+      nextTest = 'Use Try one change to compare No cue against Lower-left cue and Upper-right cue while keeping Projected depth offset at ' + m.depth + ' units.';
+    } else if (meta.id === 'moire') {
+      mechanism = 'Moir\u00E9 spatial-frequency beat interference';
+      var halfRad = (m.angle * Math.PI) / 360;
+      var beatPeriod = (m.context && m.angle > 0) ? Math.round(m.spacing / (2 * Math.sin(halfRad))) : null;
+      physicalTruth = 'Component grids share exact spacing of ' + m.spacing + ' drawing units rotated by ' + m.angle + '\u00B0' + (beatPeriod ? '; their combined overlap physically forms low-frequency beat bands spaced about ' + beatPeriod + ' units apart.' : '.');
+      quantitativeDelta = m.context
+        ? (beatPeriod ? 'Base grid spacing ' + m.spacing + ' units at ' + m.angle + '\u00B0 crossing angle produces emergent beat spacing ~' + beatPeriod + ' drawing units.' : 'Crossing angle is 0\u00B0, so both ' + m.spacing + '-unit grids align with no low-frequency beat bands.')
+        : 'Overlay grid is hidden; only the single ' + m.spacing + '-unit base grid is drawn (no interference beats).';
+      if (chosen === 'Broad bands' && beatPeriod) {
+        whyNot = 'Superimposing two periodic ' + m.spacing + '-unit grids at a small angle (' + m.angle + '\u00B0) creates real spatial-frequency beat modulation (wavelength ~' + beatPeriod + ' units) where dark bars alternate between overlapping and filling the gaps — a physical property of the combined image.';
+      } else if (chosen === 'Fine lines') {
+        whyNot = beatPeriod && m.angle < 12
+          ? 'The underlying grids are indeed ' + m.spacing + '-unit fine lines, though at ' + m.angle + '\u00B0 their overlap also generates ~' + beatPeriod + '-unit broad bands. Stepping back or lowering angle toward 3\u00B0 makes the broad beat envelope stand out.'
+          : 'With the overlay hidden or crossed at a steep angle (' + m.angle + '\u00B0), beat spacing shrinks toward the base ' + m.spacing + '-unit spacing so individual fine lines dominate.';
+      } else if (chosen === 'Both') {
+        whyNot = beatPeriod
+          ? 'Both structures coexist in the combined pattern: the high-frequency ' + m.spacing + '-unit line grids and the lower-frequency ~' + beatPeriod + '-unit Moir\u00E9 beat bands created by their ' + m.angle + '\u00B0 phase shift.'
+          : 'Without a nonzero crossing angle between two visible grids, only the base ' + m.spacing + '-unit fine lines are present; rotate the overlay a few degrees to generate broad beat bands.';
+      } else {
+        whyNot = 'Moir\u00E9 beat spacing scales inversely with crossing angle: tiny angles produce wide bands, while steep angles compress beats back toward the base ' + m.spacing + '-unit grid.';
+      }
+      nextTest = m.context
+        ? 'Compare Fine 3\u00B0 bands against Steep 18\u00B0 grid (or Remove surroundings) while holding Line spacing fixed at ' + m.spacing + ' units.'
+        : 'Restore surroundings and test crossing angles of 3\u00B0 versus 18\u00B0 to see beat spacing contract.';
+    } else {
+      mechanism = 'Ponzo linear-perspective size constancy';
+      var topGap = 600 - 4.6 * m.convergence;
+      var upperSpan = topGap + (600 - topGap) * ((m.upperY - 40) / 400);
+      var lowerSpan = topGap + (600 - topGap) * ((350 - 40) / 400);
+      var upperPct = Math.round((240 / upperSpan) * 100);
+      var lowerPct = Math.round((240 / lowerSpan) * 100);
+      physicalTruth = 'Both horizontal orange bars measure exactly 240 drawing units wide with aligned horizontal endpoints (x = 280 to 520; 0-unit difference).';
+      quantitativeDelta = m.context
+        ? 'At ' + m.convergence + '% convergence, the 240-unit upper bar spans ' + upperPct + '% of the rail opening (y = ' + m.upperY + ') while the identical 240-unit lower bar spans ' + lowerPct + '% (y = 350); physical bar delta is 0 units.'
+        : 'Perspective rails are removed; both 240-unit bars sit on bare ground with 0-unit physical difference.';
+      if (chosen === 'Upper' && m.context && m.convergence > 0) {
+        whyNot = 'Converging rails (' + m.convergence + '% convergence) act as linear-perspective depth cues signaling that the upper bar is farther away. Because the upper bar occupies ' + upperPct + '% of the narrowing rail gap versus ' + lowerPct + '% below, size-constancy scaling interprets equal retinal width at greater implied distance as a physically longer bar.';
+      } else if (chosen === 'Lower') {
+        whyNot = m.context && m.convergence > 0
+          ? 'Converging rails normally expand the upper bar via size constancy; perceiving the lower bar as longer can occur when convergence is low, the upper bar is positioned lower (y = ' + m.upperY + '), or you attend to each bar independently.'
+          : 'With parallel rails (0% convergence) or rails removed, linear-perspective depth scaling disappears so neither bar receives an implied-distance boost.';
+      } else if (chosen === 'Same') {
+        whyNot = 'Physically both bars are identical at 240 drawing units (0-unit difference) with vertically aligned endpoints. Even knowing they match, ' + m.convergence + '% convergence (' + upperPct + '% vs ' + lowerPct + '% rail fill) often still creates a size-constancy pull.';
+      } else {
+        whyNot = 'Apparent length depends on how strongly the rails converge (' + m.convergence + '%) and how high the upper bar sits inside the narrowing corridor (y = ' + m.upperY + ').';
+      }
+      nextTest = m.context
+        ? 'Capture a starting view in Try one change, then reduce Rail convergence to 0% (parallel rails) or toggle Remove surroundings.'
+        : 'Restore perspective rails and compare 0% parallel rails against 95% strong convergence.';
+    }
+    return {
+      experimentId: meta.id,
+      mechanism: mechanism,
+      choice: chosen,
+      physicalTruth: physicalTruth,
+      quantitativeDelta: quantitativeDelta,
+      whyNot: whyNot,
+      nextTest: nextTest,
+      revealedSafe: true
+    };
+  }
+  function buildOfflinePsychophysicsBrief(experimentId, rawModel, rawStudies) {
+    var meta = experiment(experimentId);
+    var m = normalizeModel(meta.id, rawModel);
+    var diag = diagnosePerceptionImpression(meta.id, m, m.prediction);
+    var concealed = !m.reveal;
+    var matchingHidden = !!(m.matching && !m.reveal);
+    var paramParts = [];
+    meta.controls.forEach(function (ctrl) {
+      if (meta.id === 'brightness' && matchingHidden && ctrl.key === 'target') {
+        paramParts.push(ctrl.label + ': hidden until reveal');
+      } else {
+        paramParts.push(ctrl.label + ': ' + m[ctrl.key] + ctrl.unit);
+      }
+    });
+    paramParts.push(m.context ? 'Surroundings: visible' : 'Surroundings: removed');
+    if (meta.cue) paramParts.push('Face cue: ' + m.cue);
+    if (own(MATCHING, meta.id)) {
+      paramParts.push(m.matching ? 'Mode: Match by eye' : 'Mode: Observe');
+      if (m.swap && m.context) paramParts.push('Surroundings: swapped');
+    }
+    var revealedForExp = Array.isArray(rawStudies) ? rawStudies.filter(function (rec) {
+      return rec && rec.experiment === meta.id && rec.model && rec.model.reveal === true;
+    }) : [];
+    var withCtx = revealedForExp.filter(function (rec) { return rec.model.context !== false; });
+    var noCtx = revealedForExp.filter(function (rec) { return rec.model.context === false; });
+    var controlVsTest = '';
+    if (!revealedForExp.length) {
+      controlVsTest = 'No revealed ' + meta.title + ' observations are saved yet. Save one run with surroundings visible (test) and one with surroundings removed (control) to compare them here.';
+    } else if (own(MATCHING, meta.id)) {
+      var avgDiff = function (list) {
+        var diffs = list.filter(function (rec) { return rec.model.matching === true; }).map(function (rec) {
+          var meas = measurements(meta.id, rec.model);
+          return meas ? meas.difference : 0;
+        });
+        if (!diffs.length) return null;
+        var sum = diffs.reduce(function (acc, val) { return acc + val; }, 0);
+        return Number((sum / diffs.length).toFixed(1));
+      };
+      var testDiff = avgDiff(withCtx), ctrlDiff = avgDiff(noCtx);
+      var unit = MATCHING[meta.id].unit;
+      if (testDiff !== null && ctrlDiff !== null) {
+        controlVsTest = 'Across ' + revealedForExp.length + ' revealed ' + meta.title + ' records: mean match offset with surroundings visible is ' + signedNum(testDiff) + ' ' + unit + ' vs ' + signedNum(ctrlDiff) + ' ' + unit + ' with surroundings removed (net context shift ' + signedNum(testDiff - ctrlDiff) + ' ' + unit + ').';
+      } else if (testDiff !== null) {
+        controlVsTest = 'Across ' + withCtx.length + ' revealed test record(s) with surroundings visible, mean match offset is ' + signedNum(testDiff) + ' ' + unit + '. Add a control run with Remove surroundings to isolate baseline bias.';
+      } else {
+        controlVsTest = revealedForExp.length + ' revealed ' + meta.title + ' observation(s) saved (' + withCtx.length + ' with surroundings, ' + noCtx.length + ' control without surroundings).';
+      }
+    } else {
+      controlVsTest = revealedForExp.length + ' revealed ' + meta.title + ' observation(s) saved (' + withCtx.length + ' with context visible, ' + noCtx.length + ' without context). Compare how your impression changes when only one setting moves.';
+    }
+    var summary = concealed
+      ? (matchingHidden
+          ? 'Active setup (' + paramParts.join(' \u00B7 ') + '). Drawing target values stay concealed until you click Reveal measurements so you can judge purely by eye.'
+          : 'Active setup (' + paramParts.join(' \u00B7 ') + '). Record your impression first, then click Reveal measurements to compare physical geometry with what you saw.')
+      : 'Active setup (' + paramParts.join(' \u00B7 ') + '). ' + diag.quantitativeDelta;
+    var designTips = [
+      'Change one independent variable at a time while holding the target and viewing distance steady.',
+      own(MATCHING, meta.id)
+        ? 'Use Match by eye and Start three matches from varied starting points to measure median perceptual bias instead of relying on one trial.'
+        : 'Open Try one change to freeze a starting view and test a single parameter change side by side.',
+      'Compare a Surroundings visible test condition against a Remove surroundings control condition before drawing a conclusion.'
+    ];
+    var spokenText = meta.title + '. ' + diag.mechanism + '. ' + summary + ' ' + controlVsTest + ' ' + designTips[0];
+    return {
+      experimentId: meta.id,
+      title: meta.title,
+      mechanism: diag.mechanism,
+      summary: summary,
+      controlVsTest: controlVsTest,
+      designTips: designTips,
+      spokenText: spokenText,
+      concealed: concealed
+    };
+  }
   var CSS = [
     '.perception-precision-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.perception-precision-value{display:flex;align-items:center;gap:8px;flex:1 1 12em}.perception-precision-value input[type=number]{width:100%;min-width:64px;min-height:44px;padding:8px 10px;border:1px solid var(--pl-control);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;color:var(--pl-ink);background:var(--pl-panel)}.perception-precision-value input:disabled{opacity:.55;cursor:default}.perception-precision-value input[aria-invalid=true]{border:2px solid var(--pl-accent)}.perception-precision-unit{flex:none;max-width:7em;overflow-wrap:anywhere;color:var(--pl-soft);font-size:.8125rem}.perception-precision-hint{display:block;color:var(--pl-soft);font-size:.75rem;line-height:1.5;margin-top:6px}.perception-adjustment .perception-precision-error{color:var(--pl-ink);border-left:3px solid var(--pl-accent);padding-left:8px;margin:8px 0 0}.perception-adjustment>label{display:block}.perception-adjustment .perception-precision-row button{flex:none}',
     '.perception-drawing-viewer .perception-viewer-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:24px;align-items:start;margin-top:16px}.perception-drawing-viewer .perception-viewer-pair[data-stacked=true]{grid-template-columns:1fr}.perception-drawing-viewer .perception-viewer-pair .perception-recorded-preview{margin:0;padding:12px;border:1px solid var(--pl-border)}.perception-drawing-viewer .perception-viewer-pair h3{font-size:1rem;line-height:1.5;margin:0 0 8px}.perception-drawing-viewer .perception-viewer-pair svg{min-height:0}.perception-viewer-layout{margin:12px 0}',
@@ -675,7 +955,9 @@
     '[data-perception-theme=contrast] .perception-pair-range-mark,[data-perception-theme=contrast] .perception-slide-divider,.theme-contrast [data-perception-lab] .perception-pair-range-mark,.theme-contrast [data-perception-lab] .perception-slide-divider{box-shadow:0 0 0 1px #fff}',
     '[data-perception-theme=contrast] [data-perception-camera-window],.theme-contrast [data-perception-lab] [data-perception-camera-window]{filter:none!important}',
     '@media(forced-colors:active){.perception-camera-viewport::after{display:none!important}.perception-reading,.perception-context-explanation,.perception-pair-dot,.perception-pair-median-mark{animation:none!important;background-image:none!important;box-shadow:none!important}[data-perception-camera-window]{filter:none!important}}',
-    '@media(prefers-reduced-motion:reduce){.perception-capacity-fill,.perception-camera-layer,[data-perception-lab] .perception-experiments button,.perception-slide-divider{transition:none}.perception-camera-viewport::after,.perception-reading,.perception-context-explanation,.perception-pair-dot,.perception-pair-median-mark{animation:none!important;background-image:none!important}}'
+    '@media(prefers-reduced-motion:reduce){.perception-capacity-fill,.perception-camera-layer,[data-perception-lab] .perception-experiments button,.perception-slide-divider{transition:none}.perception-camera-viewport::after,.perception-reading,.perception-context-explanation,.perception-pair-dot,.perception-pair-median-mark{animation:none!important;background-image:none!important}}',
+    '[data-perception-reduce-motion=true] .perception-capacity-fill,[data-perception-reduce-motion=true] .perception-camera-layer,[data-perception-reduce-motion=true] .perception-experiments button,[data-perception-reduce-motion=true] .perception-slide-divider{transition:none}[data-perception-reduce-motion=true] .perception-camera-viewport::after,[data-perception-reduce-motion=true] .perception-reading,[data-perception-reduce-motion=true] .perception-context-explanation,[data-perception-reduce-motion=true] .perception-pair-dot,[data-perception-reduce-motion=true] .perception-pair-median-mark{animation:none!important;background-image:none!important}',
+    '.perception-reading-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.perception-tts-btn{flex:0 0 auto;min-height:36px;padding:6px 12px;font-size:.8125rem;border-color:var(--pl-accent);color:var(--pl-ink);background:var(--pl-panel)}.perception-diagnosis{margin:10px 0;padding:10px 12px;border:1px solid var(--pl-border);border-radius:8px;background:var(--pl-panel);color:var(--pl-ink)}.perception-diagnosis p{margin:6px 0;font-size:.875rem;line-height:1.5;color:var(--pl-ink)}.perception-diagnosis p:first-child{margin-top:0}.perception-diagnosis p:last-child{margin-bottom:0}.perception-coach{margin-top:14px;padding:12px 14px;border:1px solid var(--pl-border);border-inline-start:4px solid var(--pl-accent);border-radius:10px;background:var(--pl-ground);color:var(--pl-ink)}.perception-coach>summary{cursor:pointer;min-height:44px;display:list-item;padding:8px 0;font-weight:700;font-size:.9375rem;color:var(--pl-ink)}.perception-coach-body{margin-top:8px;display:grid;gap:8px}.perception-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.perception-coach-body p{margin:0;font-size:.875rem;line-height:1.55;color:var(--pl-ink)}.perception-coach-tips{margin:4px 0 0;padding-left:20px;font-size:.8125rem;line-height:1.55;color:var(--pl-soft)}.perception-coach-tips li{margin:4px 0}@media(forced-colors:active){.perception-diagnosis,.perception-coach,.perception-tts-btn{border-color:CanvasText;background:Canvas;color:CanvasText}}'
   ].join('\n');
   var studySerial = 0;
   function PerceptionAdjustment(props) {
@@ -720,11 +1002,42 @@
   }
   function PerceptionLab(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, state = normalize((ctx.toolData || {}).perceptionLab), meta = experiment(state.experiment), model = state.models[meta.id];
+    var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+    var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
     var experimentThumbnails = React.useMemo(function () {
-      function miniature(item, key) { if (typeof item === 'string') return item; var attrs = { key: key }; Object.keys(item.props).forEach(function (name) { if (name.indexOf('data-') !== 0) attrs[name] = item.props[name]; }); return h(item.tag, attrs, item.children.map(function (child, index) { return miniature(child, key + '-' + index); })); }
+      function miniature(item, key) { if (typeof item === 'string') return item; var attrs = { key: key }; Object.keys(item.props).forEach(function (name) { if (name.indexOf('data-') !== 0) attrs[name] = item.props[name]; }); if (item.tag === 'rect' && Number(attrs.width) >= 700) attrs.style = Object.assign({ maxWidth: '100%' }, attrs.style); return h(item.tag, attrs, item.children.map(function (child, index) { return miniature(child, key + '-' + index); })); }
       return EXPERIMENTS.map(function (item) { return h('svg', { key: item.id, className: 'perception-experiment-thumbnail', viewBox: '0 0 800 480', 'aria-hidden': true, focusable: 'false', 'data-perception-thumbnail': item.id }, scene(item.id, normalizeModel(item.id, {})).map(miniature)); });
     }, []);
-    function t(key, fallback) { var value; try { value = typeof ctx.t === 'function' ? ctx.t('stem.perception.' + key, fallback) : fallback; } catch (_) {} return typeof value === 'string' && value !== 'stem.perception.' + key ? value : fallback; }
+    var t = (ctx.t && function (k, fb) { var full = typeof k === 'string' && k.indexOf('stem.perception.') === 0 ? k : 'stem.perception.' + k; var v; try { v = (typeof ctx.t === 'function') ? ctx.t(full, fb) : null; } catch (_) { v = null; } return (v == null || v === full || v === k || v === '' || typeof v !== 'string') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var xpCreditedRef = React.useRef({ profile: ctx.activeProfileId, keys: Object.create(null) });
+    if (xpCreditedRef.current.profile !== ctx.activeProfileId) xpCreditedRef.current = { profile: ctx.activeProfileId, keys: Object.create(null) };
+    function canCreditXP(xpKey) {
+      if (!xpKey) return false;
+      if (state._xpCredited && state._xpCredited[xpKey] === true) return false;
+      if (xpCreditedRef.current.keys[xpKey] === true) return false;
+      return true;
+    }
+    function markXPInState(nextState, xpKey) {
+      if (!xpKey || !nextState || typeof nextState !== 'object') return nextState;
+      var existing = object(nextState._xpCredited);
+      if (existing[xpKey] === true) return nextState;
+      var merged = Object.assign({}, existing);
+      merged[xpKey] = true;
+      nextState._xpCredited = merged;
+      return nextState;
+    }
+    function creditXPMilestone(xpKey, points, reason, skipStateCheck) {
+      if (!xpKey) return false;
+      if (!skipStateCheck && state._xpCredited && state._xpCredited[xpKey] === true) return false;
+      if (xpCreditedRef.current.keys[xpKey] === true) return false;
+      xpCreditedRef.current.keys[xpKey] = true;
+      if (typeof ctx.awardXP === 'function') { try { ctx.awardXP('perceptionLab', points, reason); } catch (_) {} }
+      return true;
+    }
+    function speakPerception(message) {
+      if (!message || typeof ctx.callTTS !== 'function' || isPerceptionGlobalMuted()) return false;
+      try { ctx.callTTS(String(message), undefined, undefined, { force: true }); return true; } catch (_) { return false; }
+    }
     var uid = React.useId(), stageRef = React.useRef(null), statusPair = React.useState(''), status = statusPair[0], setStatus = statusPair[1];
     var deletedPair = React.useState(null), deleted = deletedPair[0], setDeleted = deletedPair[1];
     var groupDeletePair = React.useState(null), groupDelete = groupDeletePair[0], setGroupDelete = groupDeletePair[1], groupDeleteSelection = React.useRef(null), groupDeleteFocus = React.useRef(false), groupDeleteFocusWithin = React.useRef(false);
@@ -844,6 +1157,7 @@
         var valid = operation.revision === notebookRevision.current;
         if (operation.kind === 'save') {
           if (deleted && undoRevision.current !== notebookRevision.current) setDeleted(null);
+          if (valid && operation.saved && operation.xpKey) creditXPMilestone(operation.xpKey, operation.xpPoints, operation.xpReason, true);
           announce(valid && operation.saved ? t('observation_saved', 'Observation saved in your notebook.') : operation.capacity ? capacityMessage(1) : t('notebook_action_expired', 'The notebook changed. That observation action is no longer available.'));
         } else if (operation.kind === 'delete' && valid && operation.undo) {
           undoRevision.current = notebookRevision.current; focusUndo.current = true; setDeleted(operation.undo);
@@ -862,6 +1176,7 @@
         pendingStudy.current = null; studyBusyRef.current = false; setStudyBusy(false);
         var repeatValid = repeatOperation.revisions.notebook === notebookRevision.current && repeatOperation.revisions.experiment === experimentRevision.current && repeatOperation.study && repeatOperation.study.experiment === meta.id && sameStudySettings(meta.id, repeatOperation.study.base, model) && studyRecordsPresent(state, repeatOperation.study) && guidedSourcePresent(state, repeatOperation.guide);
         if (repeatValid && repeatOperation.success && repeatOperation.study) {
+          if (repeatOperation.kind === 'record' && repeatOperation.xpKey) creditXPMilestone(repeatOperation.xpKey, 15, repeatOperation.xpReason, true);
           studyRevisions.current = repeatOperation.revisions; setActiveStudy(repeatOperation.study);
           if (repeatOperation.kind === 'start') {
             guidedRun.current = repeatOperation.guide || null; setControlsOpen(true); clearGuidePlan();
@@ -915,7 +1230,9 @@
     var visibleAngle = React.useRef(activeModel.angle); visibleAngle.current = activeModel.angle;
     var motionRun = React.useRef(null);
     var motionMedia = React.useMemo(function () { return typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null; }, []);
-    var reducedPair = React.useState(function () { return !!(motionMedia && motionMedia.matches); }), reducedMotion = reducedPair[0], setReducedMotion = reducedPair[1];
+    var reducedPair = React.useState(function () { return !!(motionMedia && motionMedia.matches); }), mediaReducedMotion = reducedPair[0], setReducedMotion = reducedPair[1];
+    var ctxReduceMotion = !!(ctx && ctx.reduceMotion);
+    var reducedMotion = mediaReducedMotion || ctxReduceMotion;
     var stopCurrent = React.useRef(null);
     function announce(message) { setStatus(message); if (typeof ctx.announceToSR === 'function') ctx.announceToSR(message); }
     function update(fn, editsNotebook) { if (typeof ctx.setToolData !== 'function') return;
@@ -948,6 +1265,7 @@
       if (motionMedia && motionMedia.addEventListener) motionMedia.addEventListener('change', preference);
       return function () { if (motionMedia && motionMedia.removeEventListener) motionMedia.removeEventListener('change', preference); };
     }, [motionMedia]);
+    React.useEffect(function () { if (ctxReduceMotion) stopCurrent.current(); }, [ctxReduceMotion]);
     React.useEffect(function () { setPlaying(false); setAnimatedAngle(null); }, [meta.id, ctx.activeProfileId]);
     React.useEffect(function () {
       if (!playing || meta.id !== 'moire' || !model.context || reducedMotion) return;
@@ -967,7 +1285,7 @@
     }, [playing, meta.id, model.context, model.angle, reducedMotion]);
     function button(label, handler, attrs) { return h('button', Object.assign({ type: 'button', onClick: handler }, attrs), label); }
     function selectExperiment(id) { if (experiment(id).id !== meta.id) { inquiryReportSession.current = null; setInquirySession(null); } cancelMatchStart(); stop(); endStudy(true); setStatus(''); update(function (next) { next.experiment = experiment(id).id; return next; }); }
-    function renderNode(item, key) { if (typeof item === 'string') return item; return h(item.tag, Object.assign({ key: key }, item.props), item.children.map(function (child, i) { return renderNode(child, key + '-' + i); })); }
+    function renderNode(item, key) { if (typeof item === 'string') return item; var attrs = Object.assign({ key: key }, item.props); if (item.tag === 'rect' && Number(attrs.width) >= 700) attrs.style = Object.assign({ maxWidth: '100%' }, attrs.style); return h(item.tag, attrs, item.children.map(function (child, i) { return renderNode(child, key + '-' + i); })); }
     function signed(value) { var rounded = Number(value.toFixed(2)); return (rounded > 0 ? '+' : '') + rounded; }
     function resultText(id, settings) {
       var data = experiment(id), measured = measurements(id, settings);
@@ -1171,10 +1489,17 @@
       if (!model.prediction) { announce(t('choose_observation_first', 'Choose an observation before saving.')); return; }
       if (notebookCapacity((ctx.toolData || {}).perceptionLab).free < 1) { announce(capacityMessage(1)); return; }
       stop();
-      var saved = normalizeModel(meta.id, activeModel), operation = { kind: 'save', done: false, profile: ctx.activeProfileId }, recordId = Date.now().toString(36) + '-' + (++studySerial), date = new Date().toISOString(); pendingNotebook.current = operation;
+      var saved = normalizeModel(meta.id, activeModel);
+      var candidateKey = saved.matching ? ('match:' + meta.id) : ('inquiry:' + meta.id);
+      var saveXpKey = canCreditXP(candidateKey) ? candidateKey : '';
+      var saveXpReason = saved.matching ? t('stem.perception.xp_match_reason', 'Completed a visual matching trial') : t('stem.perception.xp_inquiry_reason', 'Logged a controlled perception observation');
+      var operation = { kind: 'save', done: false, profile: ctx.activeProfileId, xpKey: saveXpKey, xpPoints: 15, xpReason: saveXpReason }, recordId = Date.now().toString(36) + '-' + (++studySerial), date = new Date().toISOString(); pendingNotebook.current = operation;
       update(function (next) {
         var free = notebookCapacity(next).free, valid = studyAlive.current && operation.profile === importProfile.current && free > 0 && !next.studies.some(function (record) { return record.id === recordId; });
-        if (valid) next.studies.push({ id: recordId, experiment: meta.id, model: saved, date: date });
+        if (valid) {
+          next.studies.push({ id: recordId, experiment: meta.id, model: saved, date: date });
+          if (saveXpKey) markXPInState(next, saveXpKey);
+        }
         if (pendingNotebook.current === operation) { operation.done = true; operation.saved = valid; operation.capacity = free < 1; operation.revision = notebookRevision.current; }
         return next;
       }, true);
@@ -1713,12 +2038,15 @@
     }
     function recordMatch() {
       if (!activeStudy || !collecting || !model.prediction || studyBusyRef.current) return;
+      var matchXpKey = canCreditXP('match:' + meta.id) ? ('match:' + meta.id) : '';
+      var matchXpReason = t('stem.perception.xp_match_reason', 'Completed a visual matching trial');
       studyBusyRef.current = true; setStudyBusy(true);
-      var operation = { kind: 'record', done: false, guide: guidedRun.current }, study = activeStudy, trial = study.trials.length + 1, recordId = Date.now().toString(36) + '-' + (++studySerial), date = new Date().toISOString(); pendingStudy.current = operation;
+      var operation = { kind: 'record', done: false, guide: guidedRun.current, xpKey: matchXpKey, xpReason: matchXpReason }, study = activeStudy, trial = study.trials.length + 1, recordId = Date.now().toString(36) + '-' + (++studySerial), date = new Date().toISOString(); pendingStudy.current = operation;
       update(function (next) {
         if (!studyAlive.current || pendingStudy.current !== operation) return next;
         var valid = studyRevisions.current && studyRevisions.current.notebook === notebookRevision.current && studyRevisions.current.experiment === experimentRevision.current && guidedSourcePresent(next, operation.guide);
         var result = valid ? recordStudyTrial(next, study, trial, recordId, date) : { state: next, study: study, recorded: false };
+        if (result.recorded && matchXpKey) markXPInState(result.state, matchXpKey);
         operation.done = true; operation.success = result.recorded; operation.capacity = notebookCapacity(next).free < 1 && !result.recorded; operation.study = result.study; operation.revisions = { notebook: notebookRevision.current, experiment: experimentRevision.current };
         return result.state;
       }, true);
@@ -2725,9 +3053,9 @@
                 onReset: function () { stop(); if (activeModel[control.key] !== control.value) { var changeSet = {}; changeSet[control.key] = control.value; change(changeSet); } announce(format(t('setting_reset', '{setting} reset to {value}{unit}.'), { setting: name, value: control.value, unit: control.unit })); } });
             }),
             meta.cue && h('label', { className: 'perception-field', htmlFor: 'perception-cue' }, t('depth_cue', 'Face cue'), h('select', { id: 'perception-cue', value: model.cue, disabled: controlsBusy, onChange: function (event) { change({ cue: event.target.value }); } }, h('option', { value: 'none' }, t('no_cue', 'No cue')), h('option', { value: 'front' }, t('lower_left_face', 'Lower left face')), h('option', { value: 'back' }, t('upper_right_face', 'Upper right face')))),
-            h('div', { className: 'perception-actions' }, button(t('remove_surroundings', 'Remove surroundings'), function () { stop(); change({ context: !model.context }); }, { id: uid + '-context-toggle', 'data-perception-context-toggle': true, 'aria-pressed': !model.context, disabled: studyLocked || controlsBusy }), button(t('reveal_measurements', 'Reveal measurements'), function () { stop(); change({ reveal: !model.reveal }); }, { 'aria-pressed': model.reveal, disabled: studyLocked || controlsBusy })),
+            h('div', { className: 'perception-actions' }, button(t('remove_surroundings', 'Remove surroundings'), function () { stop(); change({ context: !model.context }); }, { id: uid + '-context-toggle', 'data-perception-context-toggle': true, 'aria-pressed': !model.context, disabled: studyLocked || controlsBusy }), button(t('reveal_measurements', 'Reveal measurements'), function () { stop(); if (focusBrowse.current || matchStart.current || inquiryRequest.current) return; var revealing = !model.reveal; var revealXpKey = (revealing && !!model.prediction && canCreditXP('reveal:' + meta.id)) ? ('reveal:' + meta.id) : ''; if (revealXpKey) creditXPMilestone(revealXpKey, 10, t('stem.perception.xp_reveal_reason', 'Revealed measurement after recording an impression')); update(function (next) { next.models[meta.id] = normalizeModel(meta.id, Object.assign({}, next.models[meta.id], { reveal: revealing })); return revealXpKey ? markXPInState(next, revealXpKey) : next; }); }, { 'aria-pressed': model.reveal, disabled: studyLocked || controlsBusy })),
             own(MATCHING, meta.id) && button(t('swap_surroundings', 'Swap surroundings'), function () { change({ swap: !model.swap }); }, { 'aria-pressed': model.swap, disabled: studyLocked || controlsBusy || !model.context }),
-            meta.id === 'moire' && button(playing ? t('pause_rotation', 'Pause rotation') : t('play_rotation', 'Play slow rotation'), function () { if (focusBrowse.current || inquiryRequest.current) return; if (playing || (motionMedia && motionMedia.matches)) stop(); else setPlaying(true); }, { disabled: !model.context || reducedMotion || controlsBusy, 'aria-pressed': playing }),
+            meta.id === 'moire' && button(playing ? t('pause_rotation', 'Pause rotation') : t('play_rotation', 'Play slow rotation'), function () { if (focusBrowse.current || inquiryRequest.current) return; if (playing || reducedMotion || (motionMedia && motionMedia.matches)) stop(); else setPlaying(true); }, { disabled: !model.context || reducedMotion || controlsBusy, 'aria-pressed': playing }),
             meta.id === 'moire' && reducedMotion && h('p', null, t('reduced_motion_hint', 'Reduced motion is enabled. Use the crossing-angle slider to compare still frames.')),
             button(t('reset_experiment', 'Reset this experiment'), function () { stop(); change(normalizeModel(meta.id, {})); announce(t('experiment_reset', 'This experiment was reset.')); }, { disabled: studyLocked || controlsBusy })),
           h('div', null,
@@ -2803,6 +3131,36 @@
       if (slidePosition === 0 || slidePosition === 100) return format(t('slide_entire', '{view} fills the drawing area.'), { view: slidePosition === 100 ? slideCurrentLabel : slideReferenceLabel });
       return format(t('slide_share', '{current}: {currentPercent}% · {reference}: {referencePercent}%'), { current: slideCurrentLabel, currentPercent: slidePosition, reference: slideReferenceLabel, referencePercent: 100 - slidePosition });
     }
+    function renderRevealReading(heading) {
+      if (!model.reveal) return null;
+      var diagnosis = diagnosePerceptionImpression(meta.id, activeModel, model.prediction);
+      var spokenReveal = resultText(meta.id, activeModel) + ' ' + explanationText(meta.id, model) + ' ' + diagnosis.mechanism + '. ' + diagnosis.whyNot + ' ' + diagnosis.quantitativeDelta;
+      return h('div', { className: 'perception-reading', 'data-perception-result': 'true' },
+        heading && h('h4', null, heading),
+        h('div', { className: 'perception-reading-header' },
+          h('strong', null, resultText(meta.id, activeModel)),
+          typeof ctx.callTTS === 'function' && button(t('stem.perception.read_aloud', 'Read aloud'), function () { speakPerception(spokenReveal); }, { className: 'perception-tts-btn', 'data-perception-read-reveal': 'true', 'aria-label': t('stem.perception.read_reveal_aria', 'Read measurement explanation aloud') })),
+        h('p', null, explanationText(meta.id, model)),
+        h('div', { className: 'perception-diagnosis', 'data-perception-diagnosis': meta.id },
+          h('p', { 'data-perception-mechanism': 'true' }, h('strong', null, t('stem.perception.mechanism_label', 'Visual mechanism') + ': '), diagnosis.mechanism),
+          h('p', { 'data-perception-delta-summary': 'true' }, h('strong', null, t('stem.perception.delta_label', 'Physical vs. context measure') + ': '), diagnosis.quantitativeDelta),
+          h('p', { 'data-perception-why-not': 'true' }, h('strong', null, diagnosis.choice ? format(t('stem.perception.why_impression_label', 'Why "{choice}" can look that way'), { choice: impressionText(activeModel) }) + ': ' : t('stem.perception.why_generic_label', 'Why this effect happens') + ': '), diagnosis.whyNot),
+          h('p', { 'data-perception-next-test': 'true' }, h('strong', null, t('stem.perception.next_test_label', 'Next controlled test') + ': '), diagnosis.nextTest)),
+        h('a', { href: meta.source, target: '_blank', rel: 'noopener noreferrer' }, t('reference', 'Scientific reference: Michael Bach')));
+    }
+    function renderOfflineCoach() {
+      if (maskStudyViews || (activeStudy && !activeStudy.revealed)) return null;
+      var brief = buildOfflinePsychophysicsBrief(meta.id, activeModel, state.studies);
+      return h('details', { className: 'perception-coach', 'data-perception-coach': meta.id },
+        h('summary', null, t('stem.perception.coach_heading', 'Offline psychophysics coach')),
+        h('div', { className: 'perception-coach-body' },
+          h('div', { className: 'perception-coach-head' },
+            h('strong', null, brief.mechanism),
+            typeof ctx.callTTS === 'function' && button(t('stem.perception.read_coach', 'Read brief aloud'), function () { speakPerception(brief.spokenText); }, { className: 'perception-tts-btn', 'data-perception-read-coach': 'true', 'aria-label': t('stem.perception.read_coach_aria', 'Read psychophysics brief aloud') })),
+          h('p', { 'data-perception-coach-summary': 'true' }, brief.summary),
+          h('p', { 'data-perception-coach-control': 'true' }, brief.controlVsTest),
+          h('ul', { className: 'perception-coach-tips' }, brief.designTips.map(function (tip, idx) { return h('li', { key: 'tip-' + idx }, tip); }))));
+    }
     function slideComparison() {
       return h('section', { className: 'perception-card perception-slide-comparison', 'data-perception-slide-comparison': true, 'aria-label': t('comparison_slide', 'Slide drawings') },
         h('figure', { className: 'perception-slide-figure' },
@@ -2823,7 +3181,7 @@
           button(t('slide_reference_only', 'Comparison only'), function () { setSlidePosition(0); }, { 'data-perception-slide-show': 'reference', 'aria-pressed': slidePosition === 0, 'aria-controls': uid + '-live-pair', disabled: controlsBusy || importBusy }),
           button(t('slide_center', 'Center divider'), function () { setSlidePosition(50); }, { 'data-perception-slide-show': 'center', 'aria-pressed': slidePosition === 50, 'aria-controls': uid + '-live-pair', disabled: controlsBusy || importBusy })),
         (model.reveal || liveReference.model.reveal) && h('div', { className: 'perception-slide-readings' },
-          model.reveal && h('div', { className: 'perception-reading', 'data-perception-result': 'true' }, h('h4', null, slideCurrentLabel), h('strong', null, resultText(meta.id, activeModel)), h('p', null, explanationText(meta.id, model)), h('a', { href: meta.source, target: '_blank', rel: 'noopener noreferrer' }, t('reference', 'Scientific reference: Michael Bach'))),
+          renderRevealReading(slideCurrentLabel),
           liveReference.model.reveal && h('div', { className: 'perception-reading' }, h('h4', null, slideReferenceLabel), h('p', null, resultText(liveReference.experiment, liveReference.model)))));
     }
     var workspace = h('div', { className: 'perception-workspace' }, controls,
@@ -2932,14 +3290,15 @@
           ),
           figure(meta.id, activeModel, false, contextComparing ? contextHeading(activeModel) : undefined),
            impressionPrompt(),
-          model.reveal && h('div', { className: 'perception-reading', 'data-perception-result': 'true' }, h('strong', null, resultText(meta.id, activeModel)), h('p', null, explanationText(meta.id, model)), h('a', { href: meta.source, target: '_blank', rel: 'noopener noreferrer' }, t('reference', 'Scientific reference: Michael Bach')))),
+          renderOfflineCoach(),
+          renderRevealReading(null)),
           hasComparison && h('div', { className: 'perception-card perception-comparison', 'data-comparison-inactive': String(liveLayout === 'switch' && !showingPinned), 'aria-hidden': liveLayout === 'switch' && !showingPinned ? true : undefined, inert: liveLayout === 'switch' && !showingPinned ? '' : undefined },
             figure(liveReference.experiment, liveReference.model, true, inquiryComparing ? t('inquiry_starting_view', 'Starting view') : contextComparing ? contextHeading(liveReference.model) : undefined),
             liveReference.model.reveal && h('p', null, resultText(liveReference.experiment, liveReference.model))))), sceneSupplement));
     var focusBrowseLocked = studyLocked || studyBusy || importBusy || focusBrowseBusy || matchStartBusy || inquiryBusy;
     var focusExperimentIndex = EXPERIMENTS.indexOf(meta), previousExperiment = EXPERIMENTS[(focusExperimentIndex + EXPERIMENTS.length - 1) % EXPERIMENTS.length], nextExperiment = EXPERIMENTS[(focusExperimentIndex + 1) % EXPERIMENTS.length];
     var statusView = h('div', { className: 'perception-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, status);
-    return h('section', { 'data-perception-lab': 'true', 'data-perception-theme': ctx.isContrast || ctx.theme === 'contrast' ? 'contrast' : ctx.isDark || ctx.theme === 'dark' ? 'dark' : 'light', 'data-perception-expanded': String(state.expanded), onKeyDown: function (event) { if (event.key === 'Escape') { stop(); if (state.expanded) { update(function (next) { next.expanded = false; return next; }); setControlsOpen(true); } } } },
+    return h('section', { 'data-perception-lab': 'true', 'data-perception-theme': isContrast ? 'contrast' : isDark ? 'dark' : 'light', 'data-perception-expanded': String(state.expanded), 'data-perception-reduce-motion': String(reducedMotion), onKeyDown: function (event) { if (event.key === 'Escape') { stop(); if (state.expanded) { update(function (next) { next.expanded = false; return next; }); setControlsOpen(true); } } } },
       h('style', null, CSS),
       h('header', { className: 'perception-heading' },
         h('div', { className: 'perception-hero-brand' },
@@ -2966,7 +3325,7 @@
             )
           )
         ),
-        h('div', { className: 'perception-actions' }, props.onOpenGallery && button(t('open_gallery', '3D gallery'), function () { stop(); props.onOpenGallery(); }, { 'data-perception-open-gallery': true, disabled: focusBrowseLocked }), button(t('all_tools', 'All tools'), function () { openTool(null); }), button(t('open_art', 'Open Art Studio'), function () { openTool('artStudio'); }), button(t('open_optics', 'Open Optics Lab'), function () { openTool('opticsLab'); }))),
+        h('div', { className: 'perception-actions' }, props.onOpenGallery && button(t('open_gallery', '3D gallery'), function () { stop(); props.onOpenGallery(); }, { 'data-perception-open-gallery': true, disabled: focusBrowseLocked }), !ctx.embedded && button(t('all_tools', 'All tools'), function () { openTool(null); }), button(t('open_art', 'Open Art Studio'), function () { openTool('artStudio'); }), button(t('open_optics', 'Open Optics Lab'), function () { openTool('opticsLab'); }))),
       h('nav', { className: 'perception-experiments', 'aria-label': t('choose_experiment', 'Choose an experiment') }, EXPERIMENTS.map(function (item, index) { return button(h(React.Fragment, null, experimentThumbnails[index], h('span', { className: 'perception-experiment-copy' }, h('strong', null, t(item.id + '_title', item.title)), h('small', null, t(item.id + '_family', item.family)))), function () { selectExperiment(item.id); }, { key: item.id, 'aria-pressed': item.id === meta.id, 'data-perception-experiment': item.id }); })),
       h('label', { className: 'perception-mobile-picker', htmlFor: 'perception-experiment-picker' }, t('choose_experiment', 'Choose an experiment'), h('select', { id: 'perception-experiment-picker', value: meta.id, onChange: function (event) { selectExperiment(event.target.value); } }, EXPERIMENTS.map(function (item) { return h('option', { key: item.id, value: item.id }, t(item.id + '_title', item.title)); }))),
       h('details', { ref: mobileGalleryRef, className: 'perception-mobile-gallery', 'data-perception-mobile-gallery': true, open: mobileGalleryOpen, onToggle: function (event) { setMobileGalleryOpen(event.currentTarget.open); } },
@@ -3029,6 +3388,8 @@
             recordedPreview(viewer.groupId, viewer.slot, viewer.heading, true))));
   }
   window.StemLab.PerceptionEngine = { normalize: normalize, normalizeModel: normalizeModel, scene: scene, experiments: EXPERIMENTS, matching: MATCHING, measurements: measurements, newMatchStart: newMatchStart, notebookCapacity: notebookCapacity, deleteSavedStudy: deleteSavedStudy, restoreDeletedStudy: restoreDeletedStudy, deleteStudy: deleteStudy, restoreDeleted: restoreDeleted, parseNotebook: parseNotebook, planNotebookImport: planNotebookImport, notebookView: notebookView, comparisonChanges: comparisonChanges, inquiryChanges: inquiryChanges, planInquiryRestore: planInquiryRestore, planInquiryReport: planInquiryReport, createStudy: createStudy, normalizeStudy: normalizeStudy, studyModel: studyModel, sameStudySettings: sameStudySettings, recordStudyTrial: recordStudyTrial, studySummary: studySummary, revealStudy: revealStudy, savedStudy: savedStudy, revealSavedStudy: revealSavedStudy, recordedTrial: recordedTrial, planObservationReview: planObservationReview, planStudyReport: planStudyReport, guidedSettings: guidedSettings, planRepeat: planRepeat, savedStudies: savedStudies, compareStudies: compareStudies, defaults: function () { return normalize({}); } };
+  var PerceptionLabPure = Object.freeze({ normalize: normalize, normalizeModel: normalizeModel, scene: scene, experiments: EXPERIMENTS, matching: MATCHING, measurements: measurements, newMatchStart: newMatchStart, comparisonChanges: comparisonChanges, inquiryChanges: inquiryChanges, studySummary: studySummary, compareStudies: compareStudies, isGlobalMuted: isPerceptionGlobalMuted, diagnosePerceptionImpression: diagnosePerceptionImpression, buildOfflinePsychophysicsBrief: buildOfflinePsychophysicsBrief });
+  window.PerceptionLabPure = PerceptionLabPure;
   function PerceptionWorkspace(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, pair = React.useState(false), gallery = pair[0], setGallery = pair[1];
     var loadPair = React.useState('idle'), loading = loadPair[0], setLoading = loadPair[1], retryPair = React.useState(0), retry = retryPair[0], setRetry = retryPair[1];
@@ -3056,5 +3417,5 @@
         h('section', { className: 'perception-gallery-loading', style: { padding: 24 }, 'aria-label': walk ? t('a11y_walk_through_challenges', 'Walk-through challenges') : t('a11y_3d_perception_gallery', '3D perception gallery') }, h('h2', null, walk ? 'Walk-through challenges' : '3D perception gallery'), h('p', { role: 'status' }, loading === 'failed' ? 'This space could not load. Your experiments and observations are saved.' : 'Opening the space...'),
           loading === 'failed' && h('button', { type: 'button', onClick: function () { setRetry(retry + 1); }, style: { minHeight: 44, marginRight: 12 } }, 'Retry'), h('button', { type: 'button', onClick: close, style: { minHeight: 44 } }, walk ? 'Back to gallery' : 'Back to experiments')));
   }
-  window.StemLab.registerTool('perceptionLab', { icon: '👁', label: 'Perception Lab', desc: 'Seven visual experiments and a 3D illusion gallery with puzzles, geometry reveals, and saved observations.', color: 'cyan', category: 'science', render: function (ctx) { return ctx.React.createElement(PerceptionWorkspace, { ctx: ctx, key: ctx.activeProfileId || 'default' }); } });
+  window.StemLab.registerTool('perceptionLab', { icon: '👁', label: 'Perception Lab', desc: 'Seven visual experiments and a 3D illusion gallery with puzzles, geometry reveals, and saved observations.', color: 'cyan', category: 'science', _engine: PerceptionLabPure, render: function (ctx) { return ctx.React.createElement(PerceptionWorkspace, { ctx: ctx, key: ctx.activeProfileId || 'default' }); } });
 })();

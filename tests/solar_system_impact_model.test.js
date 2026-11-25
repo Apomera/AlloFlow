@@ -104,9 +104,14 @@ describe('asteroid impact model reproduces measured impacts', () => {
       expect(from, 'the consequence bands must exist').toBeGreaterThan(-1);
       const bands = source.slice(from, statementEnd(source, from) + 1);
       // eslint-disable-next-line no-new-func
-      const describe_ = new Function('size', bands + ' return consequence;');
+      // The bands now also read the composition picker and whether the body reaches the ground.
+      // eslint-disable-next-line no-new-func
+      const band = new Function('size', 'impComp', 'reachesGround', 'adjCraterKm', bands + ' return consequence;');
+      const describe_ = (size) => band(size, 'stony', false, 1.2);
       expect(describe_(20)).toMatch(/airburst/i);
       expect(describe_(60)).toMatch(/city|crater/i);
+      expect(band(60, 'stony', true, 1.2)).toMatch(/crater/i);
+      expect(band(20, 'iron', true, 0.2)).toMatch(/iron crater/i);
       expect(describe_(5000)).toMatch(/extinction|global/i);
       // Every step up the slider must be a different sentence at some point.
       const said = [0.5, 20, 60, 500, 1500, 5000].map(describe_);

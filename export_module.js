@@ -1020,14 +1020,20 @@ const createExport = deps => {
     const options = [];
     const origIndices = [];
     const origToClean = new Map();
+    // A picture-only choice has no text but is a real choice: keep it, labelled by its alt text.
+    const pics = q && Array.isArray(q.optionImageUrls) ? q.optionImageUrls : [];
+    const picAlts = q && Array.isArray(q.optionImageAltTexts) ? q.optionImageAltTexts : [];
+    const blankPictureIdx = [];
     for (let i = 0; i < src.length; i++) {
       const rawItem = src[i];
       const txt = rawItem && typeof rawItem === 'object' ? toText(rawItem.text ?? rawItem.label ?? rawItem.value ?? rawItem) : toText(rawItem);
       rawStrings.push(txt);
-      if (txt) {
+      const pictureOnly = !txt && typeof pics[i] === 'string' && !!pics[i].trim();
+      if (txt || pictureOnly) {
         origToClean.set(i, options.length);
         origIndices.push(i);
-        options.push(txt);
+        options.push(txt || String(picAlts[i] == null ? '' : picAlts[i]).trim() || 'Choice ' + (i + 1));
+        if (pictureOnly) blankPictureIdx.push(i);
       }
     }
     return {
@@ -1035,7 +1041,8 @@ const createExport = deps => {
       origIndices,
       origToClean,
       rawStrings,
-      isTf
+      isTf,
+      blankPictureIdx
     };
   };
   const _resolveExportMcqIdx = (q, opts) => {
@@ -1056,6 +1063,11 @@ const createExport = deps => {
     if (cleaned.isTf && cleaned.options.length === 2) {
       const boolCand = [q.correctIndex, q.correct, q.correctAnswer, q.answer].find(v => typeof v === 'boolean');
       if (typeof boolCand === 'boolean') return boolCand ? 0 : 1;
+    }
+    // The quiz grades by text, so an empty key names the first picture-only choice.
+    if (cleaned.blankPictureIdx && cleaned.blankPictureIdx.length) {
+      const keyCand = [q.correctIndex, q.correct, q.correctAnswer, q.answer].find(v => v !== undefined && v !== null);
+      if (typeof keyCand === 'string' && !keyCand.trim()) return cleaned.origToClean.get(cleaned.blankPictureIdx[0]);
     }
     return -1;
   };
@@ -7595,6 +7607,12 @@ const createExport = deps => {
       const creditLabel = uiLabel('flashcards.picture_credits', 'Picture credits');
       htmlBody += '<section class="picture-credits" data-picture-credits style="page-break-before: always;"><h2' + creditLabel.attrs + '>' + _escapeExportText(creditLabel.text) + '</h2><ul>' + creditEntries.map(line => '<li>' + _escapeExportText(line) + '</li>').join('') + '</ul></section>';
     }
+    const dictionaryCredits = _gxDictionaryCredits(generatedContent, cards);
+    if (dictionaryCredits) {
+      // Printed like the picture credits: addresses written out.
+      const creditLabel = uiLabel('glossary.dictionary_credit', 'Some definitions are adapted from {sources}.');
+      htmlBody += '<section class="picture-credits" data-dictionary-credits><p' + creditLabel.attrs + '>' + _escapeExportText(_gxCreditLine(dictionaryCredits)) + '</p></section>';
+    }
     const fullHtml = `
             <!DOCTYPE html>
             <html lang="${_escapeExportText(_exportLanguage())}" dir="${_exportDirection()}">
@@ -7974,6 +7992,43 @@ const createExport = deps => {
     });
   };
 
+  // Licence credit (CC BY-SA 4.0 / CC BY 4.0) for definitions from the offline dictionary
+  // (defSource 'dictionary' or 'dictionary-edited'), with the glossary view's wording. Sources come
+  // from the resource's saved dictionary credit, else the loaded bank, else these. Null without such entries.
+  const _gxDictionaryCredits = (resource, entries) => {
+    const isDictionary = item => item && (item.defSource === 'dictionary' || item.defSource === 'dictionary-edited');
+    if (!(Array.isArray(entries) ? entries : []).some(isDictionary)) return null;
+    const saved = Array.isArray(resource && resource.credits) ? resource.credits.find(c => c && c.kind === 'dictionary' && Array.isArray(c.sources) && c.sources.length) : null;
+    const bank = typeof window !== 'undefined' ? window.AlloVocabBank : null;
+    const shared = saved ? saved.sources : bank && Array.isArray(bank.credits) ? bank.credits : [];
+    const https = (value, otherwise) => typeof value === 'string' && /^https:\/\//.test(value) ? value : otherwise;
+    return [{
+      set: 'Wiktionary',
+      find: 'English Wiktionary',
+      license: 'CC BY-SA 4.0',
+      url: 'https://en.wiktionary.org',
+      deed: 'https://creativecommons.org/licenses/by-sa/4.0/'
+    }, {
+      set: 'Open English WordNet',
+      find: 'Open English WordNet',
+      license: 'CC BY 4.0',
+      url: 'https://en-word.net',
+      deed: 'https://creativecommons.org/licenses/by/4.0/'
+    }].map(credit => {
+      const match = shared.find(c => c && typeof c.set === 'string' && c.set.indexOf(credit.find) >= 0 && c.license === credit.license);
+      return {
+        set: credit.set,
+        license: credit.license,
+        url: https(match && match.url, credit.url),
+        deed: https(match && match.deed, credit.deed)
+      };
+    });
+  };
+  const _gxCreditLine = credits => {
+    const text = _gxText('glossary.dictionary_credit', 'Some definitions are adapted from {sources}.');
+    const list = credits.map(c => c.set + ', ' + c.url + ' (' + c.license + ', ' + c.deed + ')').join(' · ');
+    return text.indexOf('{sources}') >= 0 ? text.split('{sources}').join(list) : text + ' ' + list;
+  };
   // ─── handleExportGlossaryFile ─────────────────────────────────────
   // Word lists: a spreadsheet (CSV), Quizlet (paste-based import) and Anki
   // (text import). 'chooser' opens a small in-page dialog to pick one.
@@ -8066,9 +8121,10 @@ const createExport = deps => {
     if (/^[\s]*[=+\-@|]|^[\t\r\n]/.test(text)) text = "'" + text;
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   };
-  const _gxCsv = (entries, languages) => {
-    const rows = [[_gxText('output.col_term', 'Term'), _gxText('output.col_def', 'Definition'), _gxText('export.word_list_col_tier', 'Tier')].concat(languages)];
-    entries.forEach(item => rows.push([_gxTerm(item), _gxDefinition(item), item.tier].concat(languages.map(lang => _gxTranslation(item, lang)))));
+  // A spreadsheet has no comment line, so dictionary-made rows carry the credit in a last Source column.
+  const _gxCsv = (entries, languages, credit = '') => {
+    const rows = [[_gxText('output.col_term', 'Term'), _gxText('output.col_def', 'Definition'), _gxText('export.word_list_col_tier', 'Tier')].concat(languages, credit ? [_gxText('flashcards.credit_source', 'Source')] : [])];
+    entries.forEach(item => rows.push([_gxTerm(item), _gxDefinition(item), item.tier].concat(languages.map(lang => _gxTranslation(item, lang)), credit ? [item.defSource === 'dictionary' || item.defSource === 'dictionary-edited' ? credit : ''] : [])));
     return String.fromCharCode(0xFEFF) + rows.map(row => row.map(_gxCsvCell).join(',')).join('\r\n') + '\r\n';
   };
   const _gxPairs = (entries, back, resource = liveRef.current?.generatedContent) => entries.map(item => ({
@@ -8082,7 +8138,7 @@ const createExport = deps => {
   // Anki ignores raw # comment records. Quoting preserves valid #include or
   // #hashtag terms, in addition to escaping quotes already inside a field.
   const _gxAnkiField = text => text.includes('"') || text.startsWith('#') ? '"' + text.replace(/"/g, '""') + '"' : text;
-  const _gxAnki = pairs => '#separator:tab\n#html:false\n#columns:Front\tBack\tTags\n#tags column:3\n' + pairs.map(pair => [pair.front, pair.back, pair.tags].map(_gxAnkiField).join('\t')).join('\n') + '\n';
+  const _gxAnki = (pairs, credit = '') => '#separator:tab\n#html:false\n#columns:Front\tBack\tTags\n#tags column:3\n' + pairs.map(pair => [pair.front, pair.back, pair.tags].map(_gxAnkiField).join('\t')).join('\n') + '\n' + (credit ? '# ' + credit.replace(/[\r\n\t]+/g, ' ') + '\n' : '');
   const _gxFileName = (kind, extension) => {
     const {
       generatedContent
@@ -8264,6 +8320,12 @@ const createExport = deps => {
   const _gxQuizletDialog = (text, count, opener, exportOptions = {}) => _gxDialog(_gxText('export.word_list_quizlet_title', 'Copy for Quizlet'), opener, ui => {
     ui.el('p', 'agx-note', _gxText('export.word_list_quizlet_help', 'In Quizlet, create a set, choose Import, and paste this text. Keep Tab between term and definition and New line between cards.'), ui.dialog);
     ui.el('p', 'agx-note', _gxText('export.word_list_scope', 'Words to export') + ': ' + _gxScopeLabel(exportOptions.scope, exportOptions.scopeCount), ui.dialog);
+    // Every line of the import text becomes a card, so the credit stays out of it and is shown here.
+    if (exportOptions.credit) {
+      const creditNote = ui.el('p', 'agx-note', _gxText('export.word_list_credit_quizlet', 'Paste this credit into the description of your Quizlet set:') + ' ', ui.dialog);
+      creditNote.setAttribute('data-agx-dictionary-credit', '');
+      ui.el('span', '', exportOptions.credit, creditNote);
+    }
     const raw = ui.el('details', 'agx-raw', '', null);
     ui.el('summary', '', _gxText('export.word_list_show_import_text', 'View import text'), raw);
     const label = ui.el('label', 'agx-label', _gxText('export.word_list_quizlet_text', 'Text to paste into Quizlet'), raw);
@@ -8532,6 +8594,8 @@ const createExport = deps => {
     }
     const back = languages.includes(opts.back) ? opts.back : 'definition';
     const pairs = format === 'quizlet' || format === 'anki' ? _gxPairs(entries, back) : [];
+    const dictionaryCredits = format === 'csv' || back === 'definition' ? _gxDictionaryCredits(liveRef.current?.generatedContent, entries) : null;
+    const credit = dictionaryCredits ? _gxCreditLine(dictionaryCredits) : '';
     const reportSkipped = () => {
       const count = entries.length - pairs.length;
       if (count && typeof addToast === 'function') addToast(count === 1 ? _gxText('export.word_list_skipped_back_one', '1 card was skipped because its selected back is missing.') : _gxText('export.word_list_skipped_back', '{count} cards were skipped because their selected backs are missing.', {
@@ -8547,7 +8611,7 @@ const createExport = deps => {
       }
     };
     if (format === 'csv') {
-      _gxDownload(_gxCsv(entries, languages), 'text/csv;charset=utf-8', _gxFileName('word-list', 'csv'));
+      _gxDownload(_gxCsv(entries, languages, credit), 'text/csv;charset=utf-8', _gxFileName('word-list', 'csv'));
       downloaded();
       return true;
     }
@@ -8556,7 +8620,7 @@ const createExport = deps => {
       return false;
     }
     if (format === 'anki') {
-      _gxDownload(_gxAnki(pairs), 'text/plain;charset=utf-8', _gxFileName('anki', 'txt'));
+      _gxDownload(_gxAnki(pairs, credit), 'text/plain;charset=utf-8', _gxFileName('anki', 'txt'));
       downloaded();
       reportSkipped();
       return true;
@@ -8569,7 +8633,8 @@ const createExport = deps => {
         scope,
         scopeCount: entries.length,
         filename: _gxFileName('quizlet', 'txt'),
-        preview: pairs.slice(0, 3)
+        preview: pairs.slice(0, 3),
+        credit
       });
       reportSkipped();
       return true;

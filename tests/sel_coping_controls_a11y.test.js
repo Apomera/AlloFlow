@@ -14,7 +14,8 @@ describe('Coping Skills control accessibility', () => {
   it('names both searches and the role-play response', () => {
     const text = source();
     expect(text).toContain("'aria-label': 'Search coping skills library'");
-    expect(text).toContain("'aria-label': 'Search sample plans and guided scripts'");
+    // Localizable now, with the same English as its fallback.
+    expect(text).toContain("'aria-label': __alloT('sel.coping.search_plans_aria', 'Search sample plans and guided scripts')");
     expect(text).toContain("'aria-label': 'Your coping role-play response'");
   });
 

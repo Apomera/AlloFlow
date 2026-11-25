@@ -91,7 +91,7 @@ async function main() {
             assert(overflow <= 1, `${file} has ${overflow}px desktop overflow`);
             assert(await page.locator('[data-site-nav="primary"] a').count() === 7, `${file} primary navigation is not compact`);
             const axeIncludes = {
-                'index.html': [['.navbar'], ['.home-page-nav'], ['#teaching-workflow'], ['#slider-container'], ['#classroom-example'], ['#homeEntryPaths'], ['.home-tool-finder-section'], ['#homeRemediation'], ['.community-feedback-band'], ['.footer']],
+                'index.html': [['.navbar'], ['.home-page-nav'], ['#teaching-workflow'], ['#classroom-example'], ['#homePrinciples'], ['#homeEntryPaths'], ['.home-tool-finder-section'], ['#homeRemediation'], ['.community-feedback-band'], ['.footer']],
                 'about.html': [['body']],
                 'tools.html': [['.navbar'], ['main#main-content'], ['.footer']],
                 'feedback.html': [['body']]
@@ -189,21 +189,25 @@ async function main() {
             if (width === 1025) assert(desktopVisible && !mobileVisible, '1025px breakpoint should show compact desktop navigation');
             if (width === 1024) assert(!desktopVisible && mobileVisible, '1024px breakpoint should show mobile navigation trigger');
             if (width === 390 || width === 1025) {
-                const tourDots = page.locator('.slide-dots .dot');
-                const totalSlides = await page.locator('#slides-viewport .slide').count();
+                const tourPage = await context.newPage();
+                await tourPage.setViewportSize({ width, height: width <= 390 ? 800 : 900 });
+                await tourPage.goto(origin + '/tour.html', { waitUntil: 'networkidle' });
+                const tourDots = tourPage.locator('.slide-dots .dot');
+                const totalSlides = await tourPage.locator('#slides-viewport .slide').count();
                 assert(await tourDots.count() === totalSlides, 'tour controls do not cover every slide');
                 for (let index = 0; index < totalSlides; index++) {
                     await tourDots.nth(index).click();
-                    const active = page.locator('#slides-viewport .slide.active');
+                    const active = tourPage.locator('#slides-viewport .slide.active');
                     const layout = await active.evaluate((slide) => ({
                         title: slide.querySelector('h3').textContent.replace(/\s+/g, ' ').trim(),
                         clipped: slide.scrollHeight > slide.clientHeight + 2,
                         overflow: document.documentElement.scrollWidth - innerWidth
                     }));
                     assert(!layout.clipped && layout.overflow <= 1, 'tour clips content at ' + width + 'px, slide ' + (index + 1));
-                    assert((await page.locator('#slide-title').textContent()).includes(layout.title), 'tour title does not match visible slide ' + (index + 1));
+                    assert((await tourPage.locator('#slide-title').textContent()).includes(layout.title), 'tour title does not match visible slide ' + (index + 1));
                     assert(await tourDots.nth(index).getAttribute('aria-current') === 'step', 'tour current slide is not identified');
                 }
+                await tourPage.close();
             }
             const privacyShortcut = page.locator('.home-page-nav a[href="#privacy"]');
             await privacyShortcut.focus();

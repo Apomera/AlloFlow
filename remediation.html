@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
     <title>Document Remediation Pipeline | AlloFlow</title>
     <meta name="description"
         content="See how AlloFlow rebuilds and verifies more accessible documents, explains privacy boundaries and current deadlines, and distributes its portable Skill.">
@@ -30,13 +31,27 @@
     <meta name="twitter:image:alt" content="AlloFlow. Open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <link rel="stylesheet" href="promotion-wave2.css">
     <script src="site.js" defer></script>
-    <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://apomera.github.io/AlloFlow/remediation.html#page",
+      "url": "https://apomera.github.io/AlloFlow/remediation.html",
+      "name": "Document Remediation Pipeline | AlloFlow",
+      "description": "See how AlloFlow rebuilds and verifies more accessible documents, explains privacy boundaries and current deadlines, and distributes its portable Skill.",
+      "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" },
+      "about": { "@id": "https://apomera.github.io/AlloFlow/#software" }
+    }
+    </script>
 </head>
 
 <body class="promo-page">
@@ -66,20 +81,32 @@
     <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html">Features</a>
-        <a href="manuals.html">Manuals</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html" aria-current="page">Remediation</a>
-        <a href="accessibility_demo.html">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html">For Districts</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html" aria-current="page">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -401,11 +428,11 @@
             <p>Open-source tools for access, learning, and evidence-aware document remediation.</p>
             <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html" aria-current="page">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
         </div>
@@ -438,10 +465,26 @@
                         setTimeout(function () { btn.textContent = orig; }, 2200);
                     }
                 };
+                var fallbackCopy = function () {
+                    try {
+                        var ta = document.createElement('textarea');
+                        ta.value = sha;
+                        ta.setAttribute('readonly', '');
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        var ok = document.execCommand && document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        done(Boolean(ok));
+                    } catch (_) {
+                        done(false);
+                    }
+                };
                 if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-                    navigator.clipboard.writeText(sha).then(function () { done(true); }).catch(function () { done(false); });
+                    navigator.clipboard.writeText(sha).then(function () { done(true); }).catch(fallbackCopy);
                 } else {
-                    done(false);
+                    fallbackCopy();
                 }
             });
         });

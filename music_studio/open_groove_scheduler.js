@@ -32,6 +32,7 @@
   }
 
   function finiteOr(value, fallback) {
+    if (value == null || value === '' || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return fallback;
     var n = Number(value);
     return Number.isFinite(n) ? n : fallback;
   }
@@ -75,7 +76,7 @@
     var swing = Math.max(0, Math.min(0.75, finiteOr(project.swing, 0)));
     if (!swing) return 0;
     var stepTicks = ogStepTicks(project, stepsPerBar || 16);
-    var rawStep = finiteOr(event.startTick, 0) / stepTicks;
+    var rawStep = Math.max(0, finiteOr(event.startTick, 0)) / stepTicks;
     var step = Math.round(rawStep);
     if (Math.abs(rawStep - step) > 0.01) return 0;
     return step % 2 === 1 ? Math.round(stepTicks * swing * 0.5) : 0;
@@ -399,7 +400,7 @@
   };
 
   root.OpenGrooveScheduler = api;
-  root.AlloModules = root.AlloModules || {};
+  if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
   root.AlloModules.OpenGrooveScheduler = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

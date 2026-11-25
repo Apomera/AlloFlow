@@ -70,7 +70,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
     { id: 'developmental', label: 'Developmental trauma', icon: '🌱',
       what: 'Trauma in early childhood that shapes brain development. Bessel van der Kolk and others have argued this deserves its own diagnostic category because adverse experiences in the first years of life affect the developing brain differently than later trauma.' },
     { id: 'intergenerational', label: 'Intergenerational trauma', icon: '🧬',
-      what: 'Trauma that is passed across generations: families whose grandparents survived genocide, families with patterns of abuse, families navigating the long shadows of slavery, war, displacement. Research is increasingly showing epigenetic mechanisms in addition to learned patterns.' },
+      what: 'Trauma that is passed across generations: families whose grandparents survived genocide, families with patterns of abuse, families navigating the long shadows of slavery, war, displacement. Researchers are studying whether biological (epigenetic) changes play a part alongside learned patterns; in humans that evidence is still early and debated.' },
     { id: 'historical', label: 'Historical / collective trauma', icon: '🌍',
       what: 'Trauma carried by entire peoples through generations: the Indigenous experience of colonization, the African-American experience of slavery and its aftermath, the Holocaust, refugee experiences, the trauma of poverty across generations.' },
     { id: 'systemic', label: 'Systemic / racialized trauma', icon: '⚖️',
@@ -328,8 +328,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _traFg('#c4b5fd'), marginBottom: 10 } }, '🧠 The three players in a trauma response'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _traFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: _traFg('#c4b5fd') } }, 'Amygdala'), ': the brain\'s smoke alarm. Scans for threat. Fires fast. Does NOT think; it just sounds the alarm.'),
-              h('li', null, h('strong', { style: { color: _traFg('#c4b5fd') } }, 'Hippocampus'), ': files memories with context — "this happened in 2019, at school, in the cafeteria, and I am safe now." After trauma, the hippocampus can stop filing properly, which is why traumatic memories often feel like they\'re happening NOW.'),
-              h('li', null, h('strong', { style: { color: _traFg('#c4b5fd') } }, 'Prefrontal cortex'), ': the brain\'s CEO. Plans, decides, thinks calmly. When the amygdala is screaming, the prefrontal cortex goes OFFLINE. This is why "just think about it differently" does not work mid-flashback.')
+              h('li', null, h('strong', { style: { color: _traFg('#c4b5fd') } }, 'Hippocampus'), ': files memories with context \u2014 "this happened in 2019, at school, in the cafeteria, and I am safe now." One widely used explanation is that after trauma the hippocampus can stop filing properly, which may be why traumatic memories often feel like they\'re happening NOW.'),
+              h('li', null, h('strong', { style: { color: _traFg('#c4b5fd') } }, 'Prefrontal cortex'), ': the brain\'s CEO. Plans, decides, thinks calmly. When the amygdala is screaming, the prefrontal cortex is much harder to reach. This is why "just think about it differently" does not work mid-flashback.')
             )
           ),
 
@@ -354,7 +354,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           h('div', { style: { padding: 14, borderRadius: 10, background: _traBg('#0f172a'), borderTop: '1px solid ' + _traBd('#1e293b'), borderRight: '1px solid ' + _traBd('#1e293b'), borderBottom: '1px solid ' + _traBd('#1e293b'), borderLeft: '3px solid ' + _traBd('#a855f7'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _traFg('#c4b5fd'), marginBottom: 10 } }, '🔁 Why trauma memories are weird'),
             h('p', { style: { margin: 0, color: _traFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'When the hippocampus does not file a memory correctly (because the amygdala was too loud), the memory gets stored as fragments: a smell, a feeling in the body, a sound, an image. Those fragments are not tagged with time. So when a similar fragment shows up in the present, the body responds AS IF the trauma is happening now. This is what flashbacks, intrusive memories, and trauma triggers actually are. They are not malfunctions; they are the system trying to keep you safe based on incomplete information.'
+              'One widely used explanation is this: when the hippocampus does not file a memory correctly (because the amygdala was too loud), the memory gets stored as fragments: a smell, a feeling in the body, a sound, an image. Those fragments are not tagged with time. So when a similar fragment shows up in the present, the body responds AS IF the trauma is happening now. This is what flashbacks, intrusive memories, and trauma triggers actually are. They are not malfunctions; they are the system trying to keep you safe based on incomplete information.'
             )
           ),
 
@@ -441,10 +441,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
           { name: 'TF-CBT (Trauma-Focused CBT)', icon: '🧩', evidence: 'Strong evidence base for children and adolescents with PTSD. Manualized treatment, typically 8-16 sessions.',
             for: 'Children and adolescents who have experienced specific traumatic events.', from: 'Cohen, Mannarino, Deblinger.' },
           { name: 'EMDR (Eye Movement Desensitization and Reprocessing)', icon: '👁️', evidence: 'Strong evidence for adult PTSD; growing evidence for adolescents.',
-            for: 'Single-incident PTSD, especially adults. The bilateral stimulation seems to help the hippocampus refile the memory.', from: 'Francine Shapiro.' },
+            for: 'Single-incident PTSD, especially adults. EMDR works about as well as other trauma-focused therapies; researchers still debate what the eye movements add.', from: 'Francine Shapiro.' },
           { name: 'Somatic / body-based therapies', icon: '🌊', evidence: 'Growing evidence for complex trauma where talk-based treatment has not been enough.',
             for: 'People for whom trauma lives in the body. Often complex trauma survivors. Includes Sensorimotor Psychotherapy (Pat Ogden), Somatic Experiencing (Peter Levine).', from: 'Ogden, Levine, van der Kolk.' },
-          { name: 'IFS (Internal Family Systems)', icon: '👨‍👩‍👧', evidence: 'Newer evidence base; designated evidence-based by SAMHSA for depression and some trauma applications.',
+          { name: 'IFS (Internal Family Systems)', icon: '👨‍👩‍👧', evidence: 'Newer and still limited evidence base: a few small studies for PTSD and depression. Popular with clinicians, but not yet supported by large trials.',
             for: 'Complex trauma especially. Works with the "parts" of self that carry different aspects of the trauma.', from: 'Richard Schwartz.' },
           { name: 'Narrative therapy', icon: '📖', evidence: 'Less RCT-style evidence; strong tradition in family therapy and adolescent work.',
             for: 'People who need to externalize the problem ("the trauma" is not "me") and reauthor their story.', from: 'Michael White, David Epston.' },

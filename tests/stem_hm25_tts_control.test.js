@@ -53,8 +53,15 @@ async function mount(tool) {
   await flush();
 }
 const ctx = (id) => ctxs[id || 'base10'];
-const narrBtn = () => host.querySelector('[aria-label="Toggle canvas narration TTS"]');
 const click = async (el) => { await act(async () => { el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })); }); await flush(); };
+// 2026-11-23: the narration switch is an item in the top bar's "More" menu (menuitemcheckbox,
+// aria-checked, state shown as On / Off). narrBtn opens the menu when it is closed.
+const narrBtn = async () => {
+  const sel = '[data-stem-more-item="narration"]';
+  if (!host.querySelector(sel)) await click(host.querySelector('[data-stem-more-toggle]'));
+  return host.querySelector(sel);
+};
+const narrState = (b) => b.querySelector('.stem-lab-more-state').textContent;
 function deferred() { let res; const p = new Promise((r) => { res = r; }); return { p, res }; }
 const setMuted = (m) => { window.__alloIsGlobalMuted = () => m; };
 const fireMute = async (m) => { setMuted(m); await act(async () => { window.dispatchEvent(new CustomEvent('alloflow-mute-changed', { detail: { muted: m } })); }); };
@@ -155,51 +162,51 @@ describe('Fix 1: the hub honours the app mute, __alloIsGlobalMuted()', () => {
 });
 
 describe('Fix 2: the header narration button describes what will happen', () => {
-  it('never pressed, ordinary tool: off ("Mute"), and one press turns narration on', async () => {
+  it('never pressed, ordinary tool: off, and one press turns narration on', async () => {
     await mount();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('false');
-    expect(narrBtn().textContent).toContain('Mute');
-    await click(narrBtn());
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('false');
+    expect(narrState(await narrBtn())).toBe('Off');
+    await click(await narrBtn());
     expect(localStorage.getItem('alloflow_canvas_narrate')).toBe('on');
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('true');
-    expect(narrBtn().textContent).toContain('TTS');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('true');
+    expect(narrState(await narrBtn())).toBe('On');
   });
   it('never pressed, tool with its own voice: shows on, and ONE press writes off and stops its audio', async () => {
     toolVoice.base10 = true;
     await mount();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('true');
-    expect(narrBtn().textContent).toContain('TTS');
-    expect(narrBtn().getAttribute('title')).toBe('This tool reads aloud by default — click to turn narration off');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('true');
+    expect(narrState(await narrBtn())).toBe('On');
+    expect((await narrBtn()).getAttribute('title')).toBe('This tool reads aloud by default — click to turn narration off');
     await ctx().callTTS('Instructor line', null, 1, { force: true });
     expect(audios).toHaveLength(1);
-    await click(narrBtn());
+    await click(await narrBtn());
     expect(localStorage.getItem('alloflow_canvas_narrate')).toBe('off');
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('false');
-    expect(narrBtn().textContent).toContain('Mute');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('false');
+    expect(narrState(await narrBtn())).toBe('Off');
     expect(audios[0].pause).toHaveBeenCalled();
-    await click(narrBtn());
+    await click(await narrBtn());
     expect(localStorage.getItem('alloflow_canvas_narrate')).toBe('on');
   });
   it('the tool voice counts only while the switch is unset, and only for the open tool', async () => {
     toolVoice.base10 = true;
     await mount();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('true');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('true');
     await act(async () => api.setStemLabTool('fractions'));
     await flush();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('false'); // base10 unmounted and cleared it
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('false'); // base10 unmounted and cleared it
     await act(async () => api.setStemLabTool('base10'));
     await flush();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('true');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('true');
     await act(async () => ctx().setToolVoice(false)); // the tool's own switch turned off
     await flush();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('false');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('false');
   });
   it('switch set to off by someone: a tool voice does not make it read on', async () => {
     localStorage.setItem('alloflow_canvas_narrate', 'off');
     toolVoice.base10 = true;
     await mount();
-    expect(narrBtn().getAttribute('aria-pressed')).toBe('false');
-    expect(narrBtn().textContent).toContain('Mute');
+    expect((await narrBtn()).getAttribute('aria-checked')).toBe('false');
+    expect(narrState(await narrBtn())).toBe('Off');
   });
   it('the new title is a literal _stemTxt key with an English fallback', () => {
     const src = readFileSync(HUB, 'utf8');

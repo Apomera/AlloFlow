@@ -3411,7 +3411,7 @@
         "Courts can remove any elected official from office without legal process."
       ],
       "answerIndex": 2,
-      "rationale": "Judicial review allows courts to determine whether statutes or executive actions violate the Constitution.",
+      "rationale": "Affirmed in Marbury v. Madison (1803) and grounded in Federalist No. 78, judicial review empowers federal courts to declare acts of Congress or executive actions unconstitutional, serving as the judiciary's primary constitutional check.",
       "choiceRationales": [
         "The constitutional power of the purse belongs exclusively to Congress through taxing and appropriations legislation, leaving federal courts with no authority to draft or enact a national budget.",
         "Executive officers are appointed by the president, many with Senate consent; courts do not appoint them.",
@@ -5609,7 +5609,7 @@
         "To replace the Constitution with a set of ordinary congressional statutes"
       ],
       "answerIndex": 0,
-      "rationale": "The first ten amendments identify rights and freedoms that constrain government power.",
+      "rationale": "Ratified in 1791 to address Anti-Federalist concerns, the first ten amendments enumerate core individual civil liberties and procedural protections—such as speech, religion, and due process—that limit federal and, via incorporation, state authority.",
       "choiceRationales": [
         "The first ten amendments identify rights and freedoms that constrain government power.",
         "State elections are governed by state constitutions and laws; the Bill of Rights says nothing about them.",
@@ -8309,7 +8309,7 @@
         "The Twenty-Sixth Amendment"
       ],
       "answerIndex": 3,
-      "rationale": "The Twenty-Sixth Amendment expanded participation by lowering the voting age to eighteen.",
+      "rationale": "Ratified in 1971 amid Vietnam-era debates over drafting eighteen-year-olds who could not vote, the Twenty-Sixth Amendment constitutionally lowered the minimum voting age in federal and state elections to eighteen.",
       "choiceRationales": [
         "Direct election of senators is established by the Seventeenth Amendment rather than changing the voting age.",
         "Ratified in 1920, the Nineteenth Amendment prohibited states and the federal government from denying the right to vote on the basis of sex, rather than changing the minimum voting age.",
@@ -8605,7 +8605,7 @@
         "A platform change eliminates the need for the party to run candidates or court voters."
       ],
       "answerIndex": 2,
-      "rationale": "Parties adapt to demographic change, issue salience, electoral incentives, and coalition-building pressures.",
+      "rationale": "Because political party platforms are nonbinding strategic documents rather than constitutional rules, major parties periodically revise their policy stances after electoral shifts to assemble broader winning coalitions and retain voter support.",
       "choiceRationales": [
         "Party platforms carry no constitutional status and are revised every four years at national conventions as party leaders adapt to evolving voter priorities.",
         "Federal courts do not dictate partisan agendas; parties adjust their platforms strategically to respond to demographic shifts, primary voters, and emerging electoral coalitions.",
@@ -8905,7 +8905,7 @@
         "A small group routinely controls the outcome of every election that is held in its state."
       ],
       "answerIndex": 1,
-      "rationale": "Resources, expertise, intensity, organization, and access can matter in addition to membership size.",
+      "rationale": "Under pluralist and elite theories of interest-group politics, even a small organization can wield substantial policy clout when it concentrates financial resources, specialized technical expertise, intense member commitment, and institutional lobbying access.",
       "choiceRationales": [
         "While large memberships can signal electoral clout, smaller organizations often exert substantial policy influence through financial resources, specialized expertise, high member intensity, and insider access.",
         "Resources, expertise, intensity, organization, and access can matter in addition to membership size.",
@@ -9101,7 +9101,7 @@
         "Name recognition, constituent service, donor networks, and media visibility help them."
       ],
       "answerIndex": 3,
-      "rationale": "Incumbency provides institutional and electoral resources, although it does not guarantee reelection.",
+      "rationale": "Members of Congress running for reelection benefit from the incumbency advantage—high name recognition, franking and constituent casework, established PAC and donor networks, and media visibility—though electoral waves can still unseat them.",
       "choiceRationales": [
         "No law shields members of Congress from intraparty competition, and sitting incumbents regularly face primary challengers from rival factions within their own party.",
         "The Constitution does not mention political parties or compel party-line voting, leaving citizens free to split their tickets or vote against an incumbent of their own party.",
@@ -9594,7 +9594,7 @@
         "Elite appointment"
       ],
       "answerIndex": 0,
-      "rationale": "Retrospective voting looks backward at the recent performance of the party or candidate in power.",
+      "rationale": "Retrospective voting occurs when voters look backward to judge an incumbent or governing party on recent economic conditions and policy performance, rewarding perceived success and punishing perceived failure at the polls.",
       "choiceRationales": [
         "Retrospective voting looks backward at the recent performance of the party or candidate in power.",
         "Prospective voting looks at what candidates promise to do; judging a record already compiled is retrospective.",
@@ -9981,7 +9981,7 @@
       "difficulty": "intermediate",
       "cognitiveDemand": "argumentation",
       "cognitiveProcess": "apply",
-      "prompt": "A third-party candidate wins enough votes to deny either major candidate a plurality in a state. What possible effect is illustrated?",
+      "prompt": "A third-party candidate wins enough votes to deny either major candidate a majority in a state. What possible effect is illustrated?",
       "choices": [
         "Drawing votes away may act as a spoiler and alter the state outcome.",
         "The candidate automatically receives all of the electoral votes in every state.",
@@ -9989,12 +9989,12 @@
         "The candidate proves that plurality rules favor every third party in the race equally."
       ],
       "answerIndex": 0,
-      "rationale": "In a plurality system, a third-party candidate can alter the distribution of votes enough to affect the major-party winner without winning the office.",
+      "rationale": "In a plurality voting system, a third-party candidate can draw votes away from a major-party rival, denying either major candidate a majority and altering who wins the state without winning the office.",
       "choiceRationales": [
-        "In a plurality system, a third-party candidate can alter the distribution of votes enough to affect the major-party winner without winning the office.",
-        "Electoral votes go to the plurality winner in each state; denying a plurality wins the third party nothing.",
+        "In a plurality voting system, a third-party candidate can draw votes away from a major-party rival, denying either major candidate a majority and altering who wins the state without winning the office.",
+        "Winner-take-all electoral votes go to the statewide plurality winner; denying both major-party nominees a majority wins the third-party candidate no electoral votes unless that candidate actually finishes first.",
         "The third-party vote split occurs inside the state’s general election itself, so a minor candidate’s presence never cancels or replaces the constitutional general election.",
-        "Plurality rules generally disadvantage third parties; a spoiler effect is not a favorable outcome for them."
+        "Single-member plurality rules generally disadvantage third parties rather than favoring them equally, because a spoiler impact alters which major nominee wins without helping minor parties capture office."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -14316,7 +14316,7 @@
         "Party unity shifts with issue prominence and floor context."
       ],
       "answerIndex": 3,
-      "rationale": "The chart supports a conditional pattern rather than an absolute claim about congressional behavior.",
+      "rationale": "Higher party-line unity on salient floor votes than on routine legislation shows that congressional voting behavior is conditional—shaped by issue visibility, leadership whipping, and constituency stakes—rather than absolute party lockstep.",
       "choiceRationales": [
         "Lower unity on routine measures proves lawmakers sometimes cross party lines depending on constituency interests and bill visibility rather than voting strictly by party label.",
         "Roll-call patterns cannot rule out constituent influence, and lower cohesion on routine bills leaves room for it.",
@@ -18615,7 +18615,7 @@
         "The party has eliminated the need for candidates or campaign organizations."
       ],
       "answerIndex": 2,
-      "rationale": "Parties adapt to coalition changes, issue salience, demographic shifts, and electoral competition.",
+      "rationale": "When an emerging demographic bloc gains pivotal weight in swing states, office-seeking parties strategically adjust their platform rhetoric and policy priorities to court those voters and expand their competitive electoral coalition.",
       "choiceRationales": [
         "Party platforms are nonbinding political statements drafted and revised at national conventions every four years, whereas constitutional amendments require formal Article V approval.",
         "Adjusting a platform to attract an emerging group of swing-state voters demonstrates responsiveness to the electorate rather than indifference to voter preferences.",
@@ -22511,7 +22511,7 @@
         "The judiciary is writing a party platform for a congressional caucus."
       ],
       "answerIndex": 1,
-      "rationale": "Courts resolve legal disputes by interpreting authoritative texts and applying law to the facts before them.",
+      "rationale": "Resolving statutory ambiguity by analyzing legislative text, statutory structure, and congressional purpose in a live controversy is a core judicial function of Article III courts—distinct from legislative lawmaking or executive administration.",
       "choiceRationales": [
         "Diplomatic treaty negotiation is an executive responsibility vested in the president under Article II, whereas construing statutory text to decide a case is core judicial work.",
         "Courts resolve legal disputes by interpreting authoritative texts and applying law to the facts before them.",
@@ -23499,7 +23499,7 @@
       "difficulty": "intermediate",
       "cognitiveDemand": "analysis",
       "cognitiveProcess": "analyze",
-      "prompt": "A newspaper publishes leaked evidence of official misconduct, and the government seeks to stop publication before it occurs. Which issue is presented?",
+      "prompt": "A newspaper prepares to publish leaked evidence of official misconduct, and the government seeks to stop publication before it occurs. Which issue is presented?",
       "choices": [
         "The dispute centers strictly on Senate confirmation of federal judges.",
         "The dispute proves that leaked records are categorically barred from publication.",
@@ -23507,12 +23507,12 @@
         "Strong constitutional presumption against prior restraint on press publication"
       ],
       "answerIndex": 3,
-      "rationale": "Prior restraint prevents publication in advance and is generally subject to especially demanding constitutional scrutiny, though the facts and legal standard matter.",
+      "rationale": "Prior restraint occurs when government attempts to block publication in advance, which under First Amendment precedent such as New York Times Co. v. United States carries a heavy constitutional presumption against validity.",
       "choiceRationales": [
         "Seeking a court order to block a newspaper from publishing leaked material raises a classic First Amendment prior-restraint question (as in New York Times Co. v. United States), not judicial confirmation.",
-        "The presumption against prior restraint is strong but not absolute; it does not make every leak protected.",
+        "Under First Amendment precedent such as New York Times Co. v. United States, leaked records are not categorically barred from publication; instead, the government bears a heavy burden to justify halting the press in advance.",
         "Local school boards oversee public K–12 districts and hold no regulatory authority over independent newspapers; the dispute concerns federal censorship before publication.",
-        "Prior restraint prevents publication in advance and is generally subject to especially demanding constitutional scrutiny, though the facts and legal standard matter."
+        "Prior restraint occurs when government attempts to block publication in advance, which under First Amendment precedent such as New York Times Co. v. United States carries a heavy constitutional presumption against validity."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",
@@ -25799,7 +25799,7 @@
         "Party adaptation removes every remaining disagreement among the members of the party."
       ],
       "answerIndex": 2,
-      "rationale": "Parties revise messages and priorities as coalitions, issues, institutions, and electoral incentives change.",
+      "rationale": "Revising a party platform as new voter groups enter the coalition and a high-salience issue rises to the agenda demonstrates party adaptation—how linkage institutions continuously realign their messages to shifting voter demands and incentives.",
       "choiceRationales": [
         "The U.S. Constitution neither establishes political parties nor freezes their platforms, leaving party conventions free to update policy positions as voter coalitions evolve.",
         "Revising platform planks to welcome newly mobilized groups and address an urgent issue does not imply that longtime loyalists abandoned all of their previous political convictions.",
@@ -26287,7 +26287,7 @@
       "difficulty": "intermediate",
       "cognitiveDemand": "analysis",
       "cognitiveProcess": "interpret",
-      "prompt": "A data table shows that open-seat House contests have lower incumbent success than contests in which a sitting representative runs again. What pattern is indicated?",
+      "prompt": "A data table shows that the incumbent party retains a lower share of House seats in open-seat contests than in contests where a sitting representative runs again. What pattern is indicated?",
       "choices": [
         "The table proves that incumbents can never lose reelection.",
         "The table proves that open-seat contests have no campaign spending.",
@@ -26295,12 +26295,12 @@
         "The figures align with an incumbency edge in those races."
       ],
       "answerIndex": 3,
-      "rationale": "Higher success for sitting representatives than for open-seat candidates is evidence of an incumbency advantage, not a permanent guarantee or complete causal explanation.",
+      "rationale": "A higher seat-retention rate when a sitting representative seeks reelection than when the same party defends an open seat is evidence of an incumbency advantage, though it is neither a permanent guarantee nor a complete causal explanation.",
       "choiceRationales": [
-        "Higher average win rates for sitting representatives compared with open seats indicate a statistical advantage, not invincibility—incumbents still lose in competitive cycles or scandals.",
-        "Comparing candidate success rates provides zero financial data, and in reality open-seat congressional races frequently attract heavy spending from both parties and outside groups.",
-        "Incumbent reelection patterns reflect visibility, constituency service, and partisan district leanings rather than proving that citizens are incapable of assessing candidates.",
-        "Higher success for sitting representatives than for open-seat candidates is evidence of an incumbency advantage, not a permanent guarantee or complete causal explanation."
+        "Higher same-party seat retention when sitting representatives run rather than in open-seat contests indicates a statistical incumbency edge, not invincibility—incumbents still lose in competitive cycles or scandals.",
+        "Comparing seat-retention rates across incumbent and open-seat races provides zero financial data, and in reality open-seat House contests frequently attract heavy spending from both parties and outside groups.",
+        "Higher retention rates when incumbents seek reelection reflect visibility, constituency service, and partisan district leanings rather than proving that citizens are incapable of assessing candidates.",
+        "A higher seat-retention rate when a sitting representative seeks reelection than when the same party defends an open seat is evidence of an incumbency advantage, though it is neither a permanent guarantee nor a complete causal explanation."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-government-and-politics-course-and-exam-description.pdf",

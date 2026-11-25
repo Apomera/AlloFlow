@@ -151,7 +151,26 @@
     };
   }
 
+  function attachRealmBuilderA11yCSS() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('ah-realm-builder-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-realm-builder-a11y-css';
+    st.textContent = [
+      '[data-arcade-mode="realm-builder"] button, [data-arcade-mode="realm-builder"] [role="button"], [data-arcade-mode="realm-builder"] summary, [data-arcade-mode="realm-builder"] a, [data-arcade-mode="realm-builder"] input, [data-arcade-mode="realm-builder"] select, [data-arcade-mode="realm-builder"] textarea, [data-arcade-mode="class-memory-palace"] button, [data-arcade-mode="class-memory-palace"] [role="button"], [data-arcade-mode="class-memory-palace"] summary, [data-arcade-mode="class-memory-palace"] a, [data-arcade-mode="class-memory-palace"] input, [data-arcade-mode="class-memory-palace"] select, [data-arcade-mode="class-memory-palace"] textarea { touch-action: manipulation; }',
+      '[data-arcade-mode="realm-builder"] button:focus-visible, [data-arcade-mode="realm-builder"] [role="button"]:focus-visible, [data-arcade-mode="realm-builder"] summary:focus-visible, [data-arcade-mode="realm-builder"] a:focus-visible, [data-arcade-mode="realm-builder"] input:focus-visible, [data-arcade-mode="realm-builder"] select:focus-visible, [data-arcade-mode="realm-builder"] textarea:focus-visible, [data-arcade-mode="class-memory-palace"] button:focus-visible, [data-arcade-mode="class-memory-palace"] [role="button"]:focus-visible, [data-arcade-mode="class-memory-palace"] summary:focus-visible, [data-arcade-mode="class-memory-palace"] a:focus-visible, [data-arcade-mode="class-memory-palace"] input:focus-visible, [data-arcade-mode="class-memory-palace"] select:focus-visible, [data-arcade-mode="class-memory-palace"] textarea:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }',
+      '@media (forced-colors: active) {',
+      '  [data-arcade-mode="realm-builder"] button:focus-visible, [data-arcade-mode="realm-builder"] [role="button"]:focus-visible, [data-arcade-mode="realm-builder"] summary:focus-visible, [data-arcade-mode="realm-builder"] a:focus-visible, [data-arcade-mode="realm-builder"] input:focus-visible, [data-arcade-mode="realm-builder"] select:focus-visible, [data-arcade-mode="realm-builder"] textarea:focus-visible, [data-arcade-mode="class-memory-palace"] button:focus-visible, [data-arcade-mode="class-memory-palace"] [role="button"]:focus-visible, [data-arcade-mode="class-memory-palace"] summary:focus-visible, [data-arcade-mode="class-memory-palace"] a:focus-visible, [data-arcade-mode="class-memory-palace"] input:focus-visible, [data-arcade-mode="class-memory-palace"] select:focus-visible, [data-arcade-mode="class-memory-palace"] textarea:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  [data-arcade-mode="realm-builder"] *, [data-arcade-mode="realm-builder"] *::before, [data-arcade-mode="realm-builder"] *::after, [data-arcade-mode="class-memory-palace"] *, [data-arcade-mode="class-memory-palace"] *::before, [data-arcade-mode="class-memory-palace"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
   function register() {
+    attachRealmBuilderA11yCSS();
     window.AlloHavenArcade.registerMode('realm-builder', {
       // Every card play adds a zone whatever its score, so building still means
       // something with AI off: self-rated solo, teacher-scored in class.
@@ -163,16 +182,14 @@
       partnerRequired: false,
       ready: true,
       render: function (ctx) {
+        attachRealmBuilderA11yCSS();
         var React = ctx.React || window.React;
         var session = ctx.session;
         var inActiveSession = !!(session && session.modeId === 'realm-builder');
-        if (inActiveSession) {
-          return React.createElement(RealmBuilderMain, {
-            key: 'rb-' + session.startedAt,
-            ctx: ctx
-          });
-        }
-        return React.createElement(RealmLauncherCard, { ctx: ctx });
+        var body = inActiveSession
+          ? React.createElement(RealmBuilderMain, { key: 'rb-' + session.startedAt, ctx: ctx })
+          : React.createElement(RealmLauncherCard, { ctx: ctx });
+        return React.createElement('div', { 'data-arcade-mode': 'realm-builder' }, body);
       }
     });
   }
@@ -335,6 +352,7 @@
               h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginBottom: '6px' } },
                 'Students in session ' + ctx.sessionCode + ' can now join from their AlloHaven Arcades.'),
               h('button', {
+            type: 'button',
                 onClick: handleStartClassRealm,
                 disabled: disabled || deckSize < MIN_DECK_FOR_LAUNCH,
                 'aria-label': 'Re-enter your active class realm',
@@ -350,6 +368,7 @@
           }
           // Host, no active class realm — Start CTA
           return h('button', {
+            type: 'button',
             onClick: handleStartClassRealm,
             disabled: disabled || deckSize < MIN_DECK_FOR_LAUNCH,
             'aria-label': 'Start a class realm for session ' + ctx.sessionCode,
@@ -379,6 +398,7 @@
         // Student
         if (hasOpenClassRealm) {
           return h('button', {
+            type: 'button',
             onClick: handleJoinClassRealm,
             disabled: disabled || deckSize < MIN_DECK_FOR_LAUNCH,
             'aria-label': 'Join class realm: ' + (classRealm.topic || 'untitled'),
@@ -421,6 +441,7 @@
       })() : null,
       // Resume row, only when there's an in-progress local realm
       resumable ? h('button', {
+            type: 'button',
         onClick: handleResume,
         disabled: disabled || !canAfford,
         'aria-label': 'Continue your realm: ' + (resumable.name || resumable.topic || 'untitled'),
@@ -448,6 +469,7 @@
         )
       ) : null,
       h('button', {
+            type: 'button',
         onClick: handleLaunch,
         disabled: disabled || !canAfford,
         'aria-label': 'Start a new realm (solo)',
@@ -1657,11 +1679,13 @@
         // when status flips to 'closed' their phase becomes 'complete'
         // automatically and they see the recap screen.
         (phase === 'play' && !isClassStudent) ? h('button', {
+            type: 'button',
           onClick: endRealm,
           'aria-label': isClassHost ? 'Wrap up this class realm (saves to your room and rewards students)' : 'Wrap up this realm',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
         }, 'Wrap up') : null,
         h('button', {
+            type: 'button',
           onClick: closeArcade,
           'aria-label': 'Close arcade',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -1697,6 +1721,7 @@
             style: { width: '100%', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', color: palette.text || '#e2e8f0', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px', boxSizing: 'border-box', marginBottom: '14px' }
           }),
           h('button', {
+            type: 'button',
             onClick: startNewRealm,
             disabled: topicDraft.trim().length < 2,
             style: { padding: '8px 16px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: topicDraft.trim().length < 2 ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: topicDraft.trim().length < 2 ? 0.6 : 1 }
@@ -1730,6 +1755,7 @@
       // the corner so students see why a card is in their hand.
       var tierShort = card.tier ? String(card.tier).replace(/^Tier\s*/i, 'T') : '';
       return h('button', {
+            type: 'button',
         key: 'card-' + card.id + (opts.suffix || ''),
         onClick: onClick,
         className: 'ah-arcade-card' + (picked ? ' is-picked' : ''),
@@ -1867,6 +1893,7 @@
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute || '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             h('span', null, '1. Pick a card'),
             h('button', {
+            type: 'button',
               onClick: refreshHand,
               'aria-label': 'Shuffle hand',
               style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px', padding: '2px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit', textTransform: 'none', letterSpacing: 0 }
@@ -1894,6 +1921,7 @@
             verbs.map(function (v) {
               var active = pickedVerb && pickedVerb.id === v.id;
               return h('button', {
+            type: 'button',
                 key: 'verb-' + v.id,
                 className: 'ah-arcade-verb' + (active ? ' is-active' : ''),
                 role: 'radio',
@@ -1975,11 +2003,13 @@
               }
               return h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
                 voiceMode === 'recording' ? h('button', {
+            type: 'button',
                   onClick: cancelVoice,
                   'aria-label': 'Cancel voice recording',
                   style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '999px', padding: '3px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
                 }, 'Cancel') : null,
                 h('button', {
+            type: 'button',
                   onClick: click || function () {},
                   disabled: !click,
                   'aria-label': voiceMode === 'idle' ? 'Speak your justification' : label,
@@ -2028,6 +2058,7 @@
         // Submit
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
           h('button', {
+            type: 'button',
             onClick: submitZone,
             disabled: !canSubmit,
             'aria-busy': submitting ? 'true' : 'false',
@@ -2131,11 +2162,13 @@
             + '. Reopen this realm any time from the Memory Overview to keep building.'),
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
             canPrint ? h('button', {
+            type: 'button',
               onClick: printRealm,
               'aria-label': 'Print this realm',
               style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: 'transparent', color: palette.text || '#e2e8f0', border: '1.5px solid ' + (palette.border || '#334155'), borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
             }, '🖨 Print this realm') : null,
             h('button', {
+            type: 'button',
               onClick: closeArcade,
               style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Back to your room')
@@ -2412,11 +2445,13 @@
       partnerRequired: true,
       ready: true,
       render: function(ctx) {
+        attachRealmBuilderA11yCSS();
         var React = ctx.React || window.React;
         var active = !!(ctx.session && ctx.session.modeId === 'class-memory-palace');
-        return active
+        var body = active
           ? React.createElement(ClassMemoryPalaceMain, { key: 'cmp-' + ctx.session.startedAt, ctx: ctx })
           : React.createElement(ClassMemoryPalaceLauncher, { ctx: ctx });
+        return React.createElement('div', { 'data-arcade-mode': 'class-memory-palace' }, body);
       }
     });
   }
@@ -2456,12 +2491,14 @@
         'Start or join a Live Session to build a palace together.');
     } else if (ctx.isHost) {
       action = h('button', {
+            type: 'button',
         onClick: function() { launch('host'); }, disabled: disabled,
         'aria-label': open ? 'Reopen the class memory palace as teacher' : 'Set up a class memory palace',
         style: cmpButton(palette, true, disabled)
       }, open ? 'Reopen class palace' : 'Set up class palace');
     } else if (open) {
       action = h('button', {
+            type: 'button',
         onClick: function() { launch('student'); }, disabled: disabled,
         'aria-label': 'Join ' + (shared.title || 'the class memory palace'),
         style: cmpButton(palette, true, disabled)
@@ -3035,8 +3072,8 @@
         cmpLabeledField(h, palette, 'cmp-groups', 'Small groups (one per line)', h('textarea', { id: 'cmp-groups', value: groupsDraft, maxLength: 600, rows: 4, onChange: function(e) { setGroupsDraft(e.target.value); }, style: cmpField(palette) })),
         cmpLabeledField(h, palette, 'cmp-rooms', 'Starter rooms (one per line)', h('textarea', { id: 'cmp-rooms', value: roomsDraft, maxLength: 600, rows: 4, onChange: function(e) { setRoomsDraft(e.target.value); }, style: cmpField(palette) })),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-          h('button', { onClick: startPalace, disabled: busy, style: cmpButton(palette, true, busy) }, busy ? 'Opening…' : 'Open palace to students'),
-          h('button', { onClick: leaveLocal, disabled: busy, style: cmpButton(palette, false, busy) }, 'Cancel')
+          h('button', { type: 'button', onClick: startPalace, disabled: busy, style: cmpButton(palette, true, busy) }, busy ? 'Opening…' : 'Open palace to students'),
+          h('button', { type: 'button', onClick: leaveLocal, disabled: busy, style: cmpButton(palette, false, busy) }, 'Cancel')
         )
       );
     }
@@ -3045,7 +3082,7 @@
       return h('section', { role: 'status', style: { padding: '20px', color: palette.text || '#e2e8f0', textAlign: 'center' } },
         h('div', { style: { fontSize: '40px' } }, '🏛'),
         h('p', null, 'Waiting for the teacher to open the class memory palace.'),
-        h('button', { onClick: leaveLocal, style: cmpButton(palette, false, false) }, 'Leave activity')
+        h('button', { type: 'button', onClick: leaveLocal, style: cmpButton(palette, false, false) }, 'Leave activity')
       );
     }
 
@@ -3068,10 +3105,10 @@
           !isHost && participant ? h('div', { style: { marginTop: '5px', color: palette.accent || '#60a5fa', fontSize: '11px', fontWeight: 700 } },
             'Your assignment: ' + (activeGroup ? activeGroup.title : 'Group') + ' · ' + cmpRoleLabel(participant.role)) : null
         ),
-        h('button', { onClick: walkPalace, disabled: !activeLoci.length, style: cmpButton(palette, true, !activeLoci.length) }, 'Walk in 3D'),
+        h('button', { type: 'button', onClick: walkPalace, disabled: !activeLoci.length, style: cmpButton(palette, true, !activeLoci.length) }, 'Walk in 3D'),
         isHost
-          ? h('button', { onClick: closeSharedPalace, disabled: busy, style: cmpButton(palette, false, busy) }, 'Close for everyone')
-          : h('button', { onClick: leaveLocal, style: cmpButton(palette, false, false) }, 'Leave')
+          ? h('button', { type: 'button', onClick: closeSharedPalace, disabled: busy, style: cmpButton(palette, false, busy) }, 'Close for everyone')
+          : h('button', { type: 'button', onClick: leaveLocal, style: cmpButton(palette, false, false) }, 'Leave')
       ),
 
       isHost ? h('section', { 'aria-label': 'Manage palace groups', style: { border: '1px solid ' + (palette.border || '#334155'), borderRadius: '10px', padding: '12px', marginBottom: '14px' } },
@@ -3109,7 +3146,7 @@
                   h('strong', null, locus.label),
                   h('div', { style: { color: palette.textDim || '#cbd5e1' } }, locus.mnemonic),
                   h('div', { style: { color: palette.textMute || '#94a3b8', fontSize: '10px' } }, cmpRoleLabel(locus.role) + ' · ' + (locus.contributorNickname || 'the class')),
-                  isHost ? h('button', { onClick: function() { removeLocus(locus.id); }, disabled: busy, 'aria-label': 'Remove ' + locus.label, style: Object.assign({}, cmpButton(palette, false, busy), { minHeight: '36px', marginTop: '4px', padding: '4px 8px', fontSize: '11px' }) }, 'Remove') : null
+                  isHost ? h('button', { type: 'button', onClick: function() { removeLocus(locus.id); }, disabled: busy, 'aria-label': 'Remove ' + locus.label, style: Object.assign({}, cmpButton(palette, false, busy), { minHeight: '36px', marginTop: '4px', padding: '4px 8px', fontSize: '11px' }) }, 'Remove') : null
                 );
               })
             ) : h('p', { style: { color: palette.textMute || '#94a3b8', fontSize: '11px', margin: 0 } }, 'Waiting for a memory anchor.')
@@ -3145,7 +3182,7 @@
           h('span', { role: 'status', 'aria-live': 'polite', style: { color: palette.textMute || '#94a3b8', fontSize: '11px' } },
             voiceMode === 'listening' ? 'Listening… your words will be added above.' : 'Optional — typed text always stays editable.')
         ),
-        h('button', { onClick: submitContribution, disabled: contributionDisabled, style: cmpButton(palette, true, contributionDisabled) },
+        h('button', { type: 'button', onClick: submitContribution, disabled: contributionDisabled, style: cmpButton(palette, true, contributionDisabled) },
           busy ? 'Saving…' : (openLimitReached ? 'Waiting for teacher review' : (isHost ? 'Add to palace' : (editingSubmissionId ? 'Send revised contribution' : 'Send for teacher review'))))
       ),
 
@@ -3176,7 +3213,7 @@
             h('strong', { style: { fontSize: '12px' } }, returned.label),
             h('div', { style: { color: palette.textDim || '#cbd5e1', fontSize: '11px', margin: '4px 0' } }, returned.mnemonic),
             h('div', { role: 'note', style: { color: palette.accent || '#60a5fa', fontSize: '11px', fontWeight: 700, marginBottom: '7px' } }, 'Teacher feedback: ' + returned.feedback),
-            h('button', { onClick: function() { reviseReturnedSubmission(key); }, disabled: busy, style: cmpButton(palette, true, busy) }, 'Revise and resubmit')
+            h('button', { type: 'button', onClick: function() { reviseReturnedSubmission(key); }, disabled: busy, style: cmpButton(palette, true, busy) }, 'Revise and resubmit')
           );
         })
       ) : null,
@@ -3199,8 +3236,8 @@
               style: Object.assign({}, cmpField(palette), { marginBottom: '7px' })
             }),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', { onClick: function() { approveSubmission(key); }, disabled: busy, style: cmpButton(palette, true, busy) }, 'Approve'),
-              h('button', { onClick: function() { returnSubmission(key); }, disabled: busy || !cmpText(feedbackDrafts[key], 360), style: cmpButton(palette, false, busy || !cmpText(feedbackDrafts[key], 360)) }, 'Return with feedback')
+              h('button', { type: 'button', onClick: function() { approveSubmission(key); }, disabled: busy, style: cmpButton(palette, true, busy) }, 'Approve'),
+              h('button', { type: 'button', onClick: function() { returnSubmission(key); }, disabled: busy || !cmpText(feedbackDrafts[key], 360), style: cmpButton(palette, false, busy || !cmpText(feedbackDrafts[key], 360)) }, 'Return with feedback')
             )
           );
         }) : h('p', { style: { margin: 0, color: palette.textMute || '#94a3b8', fontSize: '11px' } }, 'New student proposals will appear here before entering the shared walk.')

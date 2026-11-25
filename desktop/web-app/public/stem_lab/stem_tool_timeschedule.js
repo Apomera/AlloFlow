@@ -406,7 +406,8 @@
         '.time-schedule-lab--rm *{animation:none!important;transition:none!important}.time-schedule-lab--rm .ts-crystal-glint,.time-schedule-lab--rm .ts-sheen-bar{display:none!important}',
         '.theme-contrast .time-schedule-lab *,.time-schedule-lab--contrast *{animation:none!important;transition:none!important}',
         '.theme-contrast .time-schedule-lab .ts-decor-only,.time-schedule-lab--contrast .ts-decor-only{display:none!important}',
-        '@media (forced-colors:active){.time-schedule-lab *{animation:none!important;transition:none!important}.time-schedule-lab .ts-decor-only{display:none!important}}',
+        '.time-schedule-lab :is(button,input,select,summary){touch-action:manipulation}',
+        '@media (forced-colors:active){.time-schedule-lab *{animation:none!important;transition:none!important}.time-schedule-lab .ts-decor-only{display:none!important}.time-schedule-lab :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}',
         '.time-schedule-lab--dark,.time-schedule-lab--contrast{padding:14px;border-radius:18px}',
         '.time-schedule-lab--dark{background:#020617;color:#f8fafc;border:1px solid #1e293b}',
         '.time-schedule-lab--dark [class*="bg-white"],.time-schedule-lab--dark [class*="bg-slate-50"],.time-schedule-lab--dark [class*="bg-sky-50"],.time-schedule-lab--dark [class*="bg-cyan-50"],.time-schedule-lab--dark [class*="bg-indigo-50"],.time-schedule-lab--dark [class*="bg-amber-50"],.time-schedule-lab--dark [class*="bg-violet-50"],.time-schedule-lab--dark [class*="bg-emerald-50"],.time-schedule-lab--dark [class*="bg-rose-50"],.time-schedule-lab--dark [class*="bg-slate-100"],.time-schedule-lab--dark [class*="from-sky-50"],.time-schedule-lab--dark [class*="from-cyan-50"],.time-schedule-lab--dark [class*="from-amber-50"],.time-schedule-lab--dark [class*="from-indigo-50"]{background-color:#0f172a!important;background-image:none!important}',
@@ -506,6 +507,7 @@
         announce(item[1] + t('stem.timeschedule.opened', " opened."));
       }
       function handleTabKeyDown(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         var nextIndex = index;
         if (event.key === 'ArrowRight') nextIndex = (index + 1) % TABS.length;
         else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + TABS.length) % TABS.length;
@@ -1136,7 +1138,7 @@
                   sq.answerFormat === '12' ? t('stem.timeschedule.your_time_12_hour', "Your time (12-hour)") : t('stem.timeschedule.your_time', "Your time")) : t('stem.timeschedule.your_elapsed_time', "Your elapsed time"),
                 h('input', { id: 'ts-schedule-answer', type: 'text', value: d.scheduleAnswer || '',
                   onChange: function (e) { upd({ scheduleAnswer: e.target.value, scheduleFeedback: null }); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') check(); },
+                  onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') check(); },
                   'aria-invalid': !!(feedback && !feedback.ok),
                   'aria-describedby': 'ts-schedule-prompt' + (feedback ? ' ts-schedule-feedback' : ''),
                   placeholder: sq.answerFormat === '24' ? t('stem.timeschedule.example_13_25', "Example: 13:25") :
@@ -1401,7 +1403,7 @@
                   challengeAnswer, disabled: !!locked,
                   onChange: function (event) { upd({ challengeId: challengeId,
                     challengeAnswer: event.target.value, challengeFeedback: null }); },
-                  onKeyDown: function (event) { if (event.key === 'Enter') check(); },
+                  onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Enter') check(); },
                   'aria-invalid': !!(feedback && !feedback.ok),
                   'aria-describedby': 'ts-challenge-prompt' + (feedback ? ' ts-challenge-feedback' : ''),
                   placeholder: challenge.answerFormat === '24' ? t('stem.timeschedule.example_18_40', "Example: 18:40") :

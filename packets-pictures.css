@@ -69,11 +69,46 @@
   .mine-list .btn { grid-column: 3; grid-row: 1 / span 2; }
 }
 
+[data-packets-pictures-root] button,
+[data-packets-pictures-root] a,
+[data-packets-pictures-root] input,
+[data-packets-pictures-root] select,
+[data-packets-pictures-root] summary {
+  touch-action: manipulation;
+}
+[data-packets-pictures-root] button:focus-visible,
+[data-packets-pictures-root] a:focus-visible,
+[data-packets-pictures-root] input:focus-visible,
+[data-packets-pictures-root] select:focus-visible,
+[data-packets-pictures-root] summary:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .pic { transition: border-color 0.12s ease, opacity 0.12s ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-packets-pictures-root] *,
+  [data-packets-pictures-root] *::before,
+  [data-packets-pictures-root] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media (forced-colors: active) {
   .saved { border-width: 3px; border-color: Highlight; }
   .pic { border-color: CanvasText; }
+  [data-packets-pictures-root] button:focus-visible,
+  [data-packets-pictures-root] a:focus-visible,
+  [data-packets-pictures-root] input:focus-visible,
+  [data-packets-pictures-root] select:focus-visible,
+  [data-packets-pictures-root] summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }

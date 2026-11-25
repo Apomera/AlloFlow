@@ -176,7 +176,8 @@ test.describe('UI localization audit (differential render)', () => {
     if (canOpenDocs) {
       await docs.click();
       await page.waitForTimeout(1200);
-      enDocs = await visibleStrings(page, '[role="menu"]');
+      await page.locator('[data-documents-more-formats]').click().catch(() => {});
+      enDocs = await visibleStrings(page, '[aria-labelledby="header-documents-dialog-title"]');
       await page.keyboard.press('Escape');
       await page.waitForTimeout(600);
     }
@@ -215,7 +216,8 @@ test.describe('UI localization audit (differential render)', () => {
       if (await d.isVisible().catch(() => false)) {
         await d.click();
         await page.waitForTimeout(1200);
-        esDocs = await visibleStrings(page, '[role="menu"]');
+        await page.locator('[data-documents-more-formats]').click().catch(() => {});
+        esDocs = await visibleStrings(page, '[aria-labelledby="header-documents-dialog-title"]');
         await page.keyboard.press('Escape');
         await page.waitForTimeout(600);
       }

@@ -87,7 +87,9 @@ describe('the builder', () => {
       const script = [...new JSDOM(made.html).window.document.querySelectorAll('script')].find((node) => !node.type).textContent;
       expect(script).not.toMatch(/https?:\/\/|fetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|speechSynthesis|getUserMedia/);
       // Re-pinned 2026-11-22 (Show my teacher) from 305000: Waves 1-6 + deskside conferencing fold & coded check focus box (~316.5 KB).
-      expect(Buffer.byteLength(made.html, 'utf8')).toBeLessThan(322000);
+      expect(Buffer.byteLength(made.html, 'utf8')).// Re-pinned 2026-11-23 from 322000 (322,063 B): the start screen clears what the last reader kept in memory, a Symbol Runner
+      // check shows its task line on Get ready, and three label lines were added.
+      toBeLessThan(326000);
     }
   });
 
@@ -277,7 +279,8 @@ describe('the Get ready screen of a check that carries its directions', () => {
     const t = open(PC.buildCheckPacket({ lesson: form('quantity_discrimination', 'K'), loader: TH }).html);
     expect(t.toReady()).toBe('Get ready');
     expect(t.q('[data-check-hear]')).toBe(null);
-    expect(t.q('[data-check-adult]').textContent).toBe('For a young student: a grown-up reads this page aloud before the student presses Begin.');
+    // 2026-11-23: "presses Start", the word on the button (it said "presses Begin").
+    expect(t.q('[data-check-adult]').textContent).toBe('For a young student: a grown-up reads this page aloud before the student presses Start.');
     t.q('[data-check-begin]').click();
     t.tick(400); t.q('#app [data-choice]').click();
     t.endEarly();

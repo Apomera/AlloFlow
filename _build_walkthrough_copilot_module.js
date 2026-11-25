@@ -75,12 +75,14 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.WalkthroughCopilot
       && window.AlloModules.WalkthroughCopilot.WalkthroughCopilotPanel) {
     console.log('[CDN] WalkthroughCopilot already loaded, skipping');
     return;
   }
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-wcop')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-wcop';
@@ -119,7 +121,7 @@ ${compiled}
     WCOP_STEPS: WCOP_STEPS,
     WCOP_ADVISORY_QUESTIONS: WCOP_ADVISORY_QUESTIONS
   };
-  window.AlloModules.WalkthroughCopilot = wcopMerged;
+  window.AlloModules.WalkthroughCopilot = Object.freeze(wcopMerged);
   console.log('[CDN] WalkthroughCopilot loaded');
 })();
 `;

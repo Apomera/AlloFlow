@@ -10,7 +10,7 @@
   'use strict';
   if (typeof window === 'undefined') return;
   // WCAG 2.2 AA: Accessibility CSS
-  if (typeof document !== 'undefined' && document.head && !document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 2px !important; } .label-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; } @media (forced-colors: active) { .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline-color: Highlight !important; } }"; document.head.appendChild(_s); }
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("visual-panel-a11y")) { var _s = document.createElement("style"); _s.id = "visual-panel-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .visual-panel-grid :where(button, input, select, textarea, a, [role='button']), .visual-panel-actions button, .visual-grid-controls button, .visual-label button { touch-action: manipulation; } .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 2px !important; } .label-delete-btn { min-width: 32px; min-height: 32px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; } @media (forced-colors: active) { .visual-label:focus-visible, .visual-label input:focus-visible, .visual-label button:focus-visible, .visual-panel-actions button:focus-visible, .visual-grid-controls button:focus-visible, .visual-panel-add-label-target:focus-visible { outline-color: Highlight !important; } }"; document.head.appendChild(_s); }
 
   // ── Duplicate-load guard ──
   if (window.__visualPanelModuleLoaded) {
@@ -169,6 +169,7 @@ async function encodeFramesToGif(framesBase64, width, height, fps = 3) {
     const img = new Image();
     img.onload = () => {
       const c = document.createElement("canvas");
+      if (c.setAttribute) c.setAttribute("aria-hidden", "true");
       c.width = safeWidth;
       c.height = safeHeight;
       c.getContext("2d").drawImage(img, 0, 0, safeWidth, safeHeight);
@@ -2018,7 +2019,7 @@ Return ONLY valid JSON:
         setShowComparison(false);
         return;
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== "Tab" || _vpIsImeComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (!focusable.length) {
         event.preventDefault();
@@ -2334,7 +2335,7 @@ Return ONLY valid JSON:
           onMouseDown: (e) => e.stopPropagation(),
           onBlur: (e) => handleLabelChange(panelIdx, labelIdx, e.target.value),
           onKeyDown: (e) => {
-            if (_vpIsImeComposing(e)) return;
+            if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
             if (e.key === "Enter") handleLabelChange(panelIdx, labelIdx, e.target.value);
           },
           "aria-label": `Edit label ${labelIdx + 1} on panel ${panelIdx + 1}`
@@ -2415,7 +2416,7 @@ Return ONLY valid JSON:
             setEditingLabel(null);
           },
           onKeyDown: (e) => {
-            if (_vpIsImeComposing(e)) return;
+            if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
             if (e.key === "Enter") e.target.blur();
           },
           "aria-label": `Edit user label on panel ${panelIdx + 1}`,
@@ -2588,7 +2589,7 @@ Return ONLY valid JSON:
         setEditingCaptionIdx(null);
       },
       onKeyDown: (e) => {
-        if (_vpIsImeComposing(e)) return;
+        if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           e.target.blur();
@@ -2649,7 +2650,7 @@ Return ONLY valid JSON:
       onChange: (e) => setRefineInput(e.target.value),
       placeholder: `Describe changes for Panel ${panelIdx + 1}...`,
       onKeyDown: (e) => {
-        if (_vpIsImeComposing(e)) return;
+        if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter") handleRefineSubmit(panelIdx);
       },
       autoFocus: true,
@@ -2681,7 +2682,7 @@ Return ONLY valid JSON:
       onChange: (e) => setAnimateInput(e.target.value),
       placeholder: t("common.animate_input_placeholder") || 'What should animate? e.g. "cell divides" or "water cycles"',
       onKeyDown: (e) => {
-        if (_vpIsImeComposing(e)) return;
+        if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter") handleAnimateSubmit(panelIdx);
       },
       autoFocus: true,
@@ -2812,6 +2813,7 @@ Return ONLY valid JSON:
         const _v = t("common.speed_aria");
         return _v && !/\$\{/.test(_v) ? _v : `Animation speed in frames per second, currently ${panel.fps || 3}`;
       })(),
+      "aria-valuetext": `${panel.fps || 3} fps`,
       style: { flex: 1, accentColor: "#7c3aed" }
     }
   ), /* @__PURE__ */ React.createElement("span", { style: { fontVariantNumeric: "tabular-nums", minWidth: 36, textAlign: "right" } }, panel.fps || 3, " fps")), regenFrame && regenFrame.panelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, marginTop: 6 } }, regenFrame.frameIdx === 0 && /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#92400e", margin: "0 2px", lineHeight: 1.4, background: "#fef3c7", padding: "4px 8px", borderRadius: 4 } }, t("common.anchor_cascade_warning") || "\u2693 Editing the anchor cascades through every frame \u2014 the whole animation will rebuild."), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
@@ -2824,7 +2826,7 @@ Return ONLY valid JSON:
         return _v && !/\$\{/.test(_v) ? _v : `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`;
       })(),
       onKeyDown: (e) => {
-        if (_vpIsImeComposing(e)) return;
+        if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter") handleRegenFrameSubmit();
       },
       autoFocus: true,

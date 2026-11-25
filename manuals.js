@@ -26,7 +26,36 @@
         return String(value || '').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
     }
 
-    function update() {
+    function syncUrl() {
+        if (!window.history || typeof window.history.replaceState !== 'function' || typeof URLSearchParams !== 'function') return;
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            const q = search.value.trim();
+            if (q) params.set('q', q); else params.delete('q');
+            if (activeAudience && activeAudience !== 'all') params.set('audience', activeAudience); else params.delete('audience');
+            const qs = params.toString();
+            window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + (window.location.hash || ''));
+        } catch (_) {}
+    }
+
+    function applyInitialQuery() {
+        if (typeof URLSearchParams !== 'function') return;
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            const q = params.get('q');
+            if (q) search.value = String(q).slice(0, 120);
+            const aud = normalize(params.get('audience'));
+            const matchingBtn = aud ? filters.find(function (b) { return normalize(b.dataset.manualFilter) === aud; }) : null;
+            if (matchingBtn) {
+                activeAudience = matchingBtn.dataset.manualFilter;
+                filters.forEach(function (candidate) {
+                    candidate.setAttribute('aria-pressed', String(candidate === matchingBtn));
+                });
+            }
+        } catch (_) {}
+    }
+
+    function update(skipUrlSync) {
         const query = normalize(search.value);
         const queryTokens = query.split(' ').filter(Boolean);
         let visibleCount = 0;
@@ -53,6 +82,7 @@
         status.textContent = visibleCount === 0
             ? 'No guides match that search. Use Reset search & filters or choose another audience.'
             : 'Showing ' + visibleCount + ' of ' + cards.length + ' guides for ' + audienceLabel + '.';
+        if (!skipUrlSync) syncUrl();
     }
 
     filters.forEach(function (button) {
@@ -61,7 +91,7 @@
             filters.forEach(function (candidate) {
                 candidate.setAttribute('aria-pressed', String(candidate === button));
             });
-            update();
+            update(false);
         });
     });
 
@@ -71,21 +101,22 @@
         filters.forEach(function (candidate) {
             candidate.setAttribute('aria-pressed', String(candidate.dataset.manualFilter === 'all'));
         });
-        update();
+        update(false);
         search.focus();
     });
 
-    search.addEventListener('input', update);
+    search.addEventListener('input', function () { update(false); });
     search.addEventListener('keydown', function (event) {
         if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Escape' && search.value) {
             event.preventDefault();
             search.value = '';
-            update();
+            update(false);
         }
     });
     controls.hidden = false;
-    update();
+    applyInitialQuery();
+    update(true);
 
     const backBtn = document.querySelector('.back-to-top');
     if (backBtn) {

@@ -230,9 +230,11 @@ describe('Pass-6 F-81, F-82, F-83 & F-95: Identity scoping, Fluency/Dictionary g
     ];
     for (const page of pages) {
       const html = read(page);
-      expect(html, page).toContain('vendor/lucide-1.31.0.umd.min.js');
+      expect(html, page).toContain('vendor/lucide-promo-subset.min.js');
       expect(html, page).not.toContain('unpkg.com/lucide');
     }
+    expect(existsSync(resolve(ROOT, 'vendor/lucide-promo-subset.min.js'))).toBe(true);
+    expect(readBytes('vendor/lucide-promo-subset.min.js').equals(readBytes('desktop/web-app/public/vendor/lucide-promo-subset.min.js'))).toBe(true);
     expect(existsSync(resolve(ROOT, 'vendor/lucide-1.31.0.umd.min.js'))).toBe(true);
     expect(readBytes('vendor/lucide-1.31.0.umd.min.js').equals(readBytes('desktop/web-app/public/vendor/lucide-1.31.0.umd.min.js'))).toBe(true);
   });

@@ -109,7 +109,7 @@
     getOwnPropertyDescriptor: function(target, prop) {
       if (_isBlockedProp(prop)) return undefined;
       if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _toNullMap(_LOAD_LETTER_NAME_AUDIO_RAW());
-      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_LETTER_NAME_AUDIO, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
+      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_LETTER_NAME_AUDIO, prop); if (desc) { desc.configurable = true; if ('value' in desc) desc.writable = true; } return desc;
     },
     set: function(target, prop, value) {
       if (_isBlockedProp(prop)) return false;
@@ -118,11 +118,18 @@
       return true;
     },
     defineProperty: function(target, prop, descriptor) {
-      if (_isBlockedProp(prop)) return false;
+      if (_isBlockedProp(prop) || !descriptor || typeof descriptor !== 'object' || 'get' in descriptor || 'set' in descriptor || descriptor.configurable === false) return false;
       if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _toNullMap(_LOAD_LETTER_NAME_AUDIO_RAW());
       Object.defineProperty(_CACHE_LETTER_NAME_AUDIO, prop, descriptor);
       return true;
-    }
+    },
+    deleteProperty: function(target, prop) {
+      if (_isBlockedProp(prop)) return false;
+      if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _toNullMap(_LOAD_LETTER_NAME_AUDIO_RAW());
+      delete _CACHE_LETTER_NAME_AUDIO[prop];
+      return true;
+    },
+    setPrototypeOf: function() { return false; }
   });
 
   var _CACHE_INSTRUCTION_AUDIO = null;
@@ -241,7 +248,7 @@
     getOwnPropertyDescriptor: function(target, prop) {
       if (_isBlockedProp(prop)) return undefined;
       if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _toNullMap(_LOAD_INSTRUCTION_AUDIO_RAW());
-      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_INSTRUCTION_AUDIO, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
+      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_INSTRUCTION_AUDIO, prop); if (desc) { desc.configurable = true; if ('value' in desc) desc.writable = true; } return desc;
     },
     set: function(target, prop, value) {
       if (_isBlockedProp(prop)) return false;
@@ -250,11 +257,18 @@
       return true;
     },
     defineProperty: function(target, prop, descriptor) {
-      if (_isBlockedProp(prop)) return false;
+      if (_isBlockedProp(prop) || !descriptor || typeof descriptor !== 'object' || 'get' in descriptor || 'set' in descriptor || descriptor.configurable === false) return false;
       if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _toNullMap(_LOAD_INSTRUCTION_AUDIO_RAW());
       Object.defineProperty(_CACHE_INSTRUCTION_AUDIO, prop, descriptor);
       return true;
-    }
+    },
+    deleteProperty: function(target, prop) {
+      if (_isBlockedProp(prop)) return false;
+      if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _toNullMap(_LOAD_INSTRUCTION_AUDIO_RAW());
+      delete _CACHE_INSTRUCTION_AUDIO[prop];
+      return true;
+    },
+    setPrototypeOf: function() { return false; }
   });
 
   var _CACHE_ISOLATION_AUDIO = null;
@@ -302,7 +316,7 @@
     getOwnPropertyDescriptor: function(target, prop) {
       if (_isBlockedProp(prop)) return undefined;
       if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _toNullMap(_LOAD_ISOLATION_AUDIO_RAW());
-      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_ISOLATION_AUDIO, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
+      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_ISOLATION_AUDIO, prop); if (desc) { desc.configurable = true; if ('value' in desc) desc.writable = true; } return desc;
     },
     set: function(target, prop, value) {
       if (_isBlockedProp(prop)) return false;
@@ -311,11 +325,18 @@
       return true;
     },
     defineProperty: function(target, prop, descriptor) {
-      if (_isBlockedProp(prop)) return false;
+      if (_isBlockedProp(prop) || !descriptor || typeof descriptor !== 'object' || 'get' in descriptor || 'set' in descriptor || descriptor.configurable === false) return false;
       if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _toNullMap(_LOAD_ISOLATION_AUDIO_RAW());
       Object.defineProperty(_CACHE_ISOLATION_AUDIO, prop, descriptor);
       return true;
-    }
+    },
+    deleteProperty: function(target, prop) {
+      if (_isBlockedProp(prop)) return false;
+      if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _toNullMap(_LOAD_ISOLATION_AUDIO_RAW());
+      delete _CACHE_ISOLATION_AUDIO[prop];
+      return true;
+    },
+    setPrototypeOf: function() { return false; }
   });
 
   var _CACHE_PHONEME_AUDIO_BANK = null;
@@ -404,7 +425,7 @@
     getOwnPropertyDescriptor: function(target, prop) {
       if (_isBlockedProp(prop)) return undefined;
       if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _toNullMap(_LOAD_PHONEME_AUDIO_BANK_RAW());
-      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_PHONEME_AUDIO_BANK, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
+      var desc = Reflect.getOwnPropertyDescriptor(_CACHE_PHONEME_AUDIO_BANK, prop); if (desc) { desc.configurable = true; if ('value' in desc) desc.writable = true; } return desc;
     },
     set: function(target, prop, value) {
       if (_isBlockedProp(prop)) return false;
@@ -413,11 +434,18 @@
       return true;
     },
     defineProperty: function(target, prop, descriptor) {
-      if (_isBlockedProp(prop)) return false;
+      if (_isBlockedProp(prop) || !descriptor || typeof descriptor !== 'object' || 'get' in descriptor || 'set' in descriptor || descriptor.configurable === false) return false;
       if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _toNullMap(_LOAD_PHONEME_AUDIO_BANK_RAW());
       Object.defineProperty(_CACHE_PHONEME_AUDIO_BANK, prop, descriptor);
       return true;
-    }
+    },
+    deleteProperty: function(target, prop) {
+      if (_isBlockedProp(prop)) return false;
+      if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _toNullMap(_LOAD_PHONEME_AUDIO_BANK_RAW());
+      delete _CACHE_PHONEME_AUDIO_BANK[prop];
+      return true;
+    },
+    setPrototypeOf: function() { return false; }
   });
 
   // ── Eager phoneme augmentation + fallback chains (originally
@@ -457,13 +485,19 @@
 
   // Cache invalidation when audio_bank.json finishes loading (originally
   // AlloFlowANTI.txt:434-440 host-scope listener).
-  window.addEventListener('audio_bank_loaded', function () {
-    _CACHE_PHONEME_AUDIO_BANK = null;
-    _CACHE_INSTRUCTION_AUDIO = null;
-    _CACHE_LETTER_NAME_AUDIO = null;
-    _CACHE_ISOLATION_AUDIO = null;
-    try { _finalizePhonemeBank(); } catch (e) { console.warn('[AudioBanks] post-load finalize failed:', e && e.message); }
-  });
+  if (typeof window.addEventListener === 'function') {
+    if (typeof window.__alloAudioBanksLoadedHandler === 'function' && typeof window.removeEventListener === 'function') {
+      try { window.removeEventListener('audio_bank_loaded', window.__alloAudioBanksLoadedHandler); } catch (_) {}
+    }
+    window.__alloAudioBanksLoadedHandler = function () {
+      _CACHE_PHONEME_AUDIO_BANK = null;
+      _CACHE_INSTRUCTION_AUDIO = null;
+      _CACHE_LETTER_NAME_AUDIO = null;
+      _CACHE_ISOLATION_AUDIO = null;
+      try { _finalizePhonemeBank(); } catch (e) { console.warn('[AudioBanks] post-load finalize failed:', e && e.message); }
+    };
+    window.addEventListener('audio_bank_loaded', window.__alloAudioBanksLoadedHandler);
+  }
 
   // Window mirrors — match host-scope window.* assignments at original
   // AlloFlowANTI.txt:1114-1116 and 1136. Plus the four bare names so any

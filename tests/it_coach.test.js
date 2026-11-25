@@ -264,7 +264,9 @@ describe('bridge transport', () => {
     expect(moduleText).toContain('function vsIsKnownBridgeWindow(source)');
     expect(moduleText).toContain('if (!vsIsKnownBridgeWindow(ev.source)) return;');
     expect(moduleText).toContain("if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;");
-    expect(moduleText).toContain('if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;');
+    // Stricter now: a missing origin is refused as well as a foreign one.
+    expect(moduleText).toContain('if (!ev.origin || (ev.origin && ev.origin !== STUDIO_ORIGIN)) return;');
+    expect(moduleText).not.toContain('if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;');
   });
 
   it('derives posture from the exact app-held coach session, never the request body', () => {
@@ -415,9 +417,12 @@ describe('canvas hardening', () => {
   // an unrecognised site before every first Send.
   it('recognises the Canvas hosts the rest of the repo already knows', () => {
     const fn = popup.slice(popup.indexOf('function openerOriginRecognised'), popup.indexOf('var unknownOriginSendApproved'));
-    for (const host of ['usercontent', 'idx.google', 'run.app', 'googleusercontent']) {
+    for (const host of ['usercontent', 'idx.google', 'googleusercontent']) {
       expect(fn, `openerOriginRecognised is missing ${host}`).toContain(host);
     }
+    // run.app (any Cloud Run tenant) was dropped on 2026-11-14 with the other
+    // multi-tenant suffixes; allo_sheet's list dropped it too.
+    expect(fn).not.toContain('run.app');
     // Same set the sheet bridge enumerates.
     const sheet = readFileSync(resolve(process.cwd(), 'allo_sheet/allo_sheet.js'), 'utf-8');
     expect(sheet).toContain('usercontent.goog');
@@ -542,7 +547,14 @@ describe('bridge token stays out of the request line', () => {
     for (const [name, src] of [['coach page', html], ['studio popup', popup]]) {
       expect(src, `${name} does not read the fragment`).toContain("new URLSearchParams(String(window.location.hash || '').replace(/^#/, '')).get('allo_bridge')");
       // A window opened by an app build that predates the move still works.
-      expect(src, `${name} dropped the legacy fallback`).toContain("get('allo_bridge') || '';   // legacy");
+      // The studio popup now also scrubs a legacy query token from the address bar.
+      if (name === 'studio popup') {
+        expect(src, `${name} dropped the legacy fallback`).toContain("var fromQuery = bridgeParams.get('allo_bridge') || '';");
+        expect(src, `${name} dropped the legacy fallback`).toContain('return fromQuery;   // legacy');
+        expect(src).toContain("cleanParams.delete('allo_bridge');");
+      } else {
+        expect(src, `${name} dropped the legacy fallback`).toContain("get('allo_bridge') || '';   // legacy");
+      }
     }
   });
 

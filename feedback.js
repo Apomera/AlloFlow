@@ -117,6 +117,16 @@
         );
     }
 
+    function syncFeedbackUrl(tool) {
+        if (!window.history || typeof window.history.replaceState !== 'function' || typeof URLSearchParams !== 'function') return;
+        try {
+            var params = new URLSearchParams(window.location.search || '');
+            if (tool) params.set('tool', tool); else params.delete('tool');
+            var qs = params.toString();
+            window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + (window.location.hash || ''));
+        } catch (_) {}
+    }
+
     function configureFeedbackLinks() {
         var params = new URLSearchParams(window.location.search);
         var initialTool = normalizedToolName(params.get('tool'));
@@ -128,7 +138,9 @@
 
         if (input) {
             input.addEventListener('input', function () {
-                applyFeedbackTool(input.value);
+                var next = normalizedToolName(input.value);
+                applyFeedbackTool(next);
+                syncFeedbackUrl(next);
             });
             input.addEventListener('keydown', function (event) {
                 if (event.isComposing || event.keyCode === 229) return;
@@ -136,6 +148,7 @@
                     event.preventDefault();
                     input.value = '';
                     applyFeedbackTool('');
+                    syncFeedbackUrl('');
                 }
             });
         }
@@ -143,6 +156,7 @@
             clearBtn.addEventListener('click', function () {
                 input.value = '';
                 applyFeedbackTool('');
+                syncFeedbackUrl('');
                 input.focus();
             });
         }

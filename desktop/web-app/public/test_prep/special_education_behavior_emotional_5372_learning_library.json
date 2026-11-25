@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-behavior-emotional-5372-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 4,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -2293,7 +2299,7 @@
             "Defer assessing hearing, motor, or language concerns until eligibility is confirmed at the next annual review."
           ],
           "answerIndex": 0,
-          "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual individual support profile. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
+          "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual disability category. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
@@ -2530,7 +2536,7 @@
             "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants.",
             "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms.",
             "Section 504 bars disability discrimination and can require accommodations and aids for equal opportunity.",
-            "Section 504 protections become available after a student first qualifies under an IDEA individual support profile."
+            "Section 504 protections become available after a student first qualifies under an IDEA individualized support profile."
           ],
           "answerIndex": 2,
           "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified students from disability discrimination and can require an appropriate plan of access supports. For 5372 preparation, define behavior observably, examine ecological and instructional context, distinguish correlation from function, teach a usable replacement skill, use the least intensive effective response, preserve dignity and belonging, and monitor both outcomes and implementation.",
@@ -7326,6 +7332,2527 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-01",
+      "title": "Development, Context, Culture, and Learner Variability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Development, Context, Culture, and Learner Variability\" (Development and Characteristics of Students with EBD) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-01",
+      "itemIds": [
+        "ebd5372-b1-001",
+        "ebd5372-b1-002",
+        "ebd5372-b1-003",
+        "ebd5372-b1-004",
+        "ebd5372-b1-005",
+        "ebd5372-b1-006",
+        "ebd5372-b1-007",
+        "ebd5372-b1-008",
+        "ebd5372-b1-009",
+        "ebd5372-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Development, Context, Culture, and Learner Variability\" and the \"IDEA Emotional Disturbance Criteria, Profiles & Trauma Context\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Emotional and Behavioral Disorders: Ecological, Trauma-Informed & Cultural Lens\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Distinguishing Cultural Discourse Norms From Oppositional Behavior\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Development, Context, Culture, and Learner Variability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Trace ABC Contingencies to Function Before Designing Any BIP Intervention\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-02",
+      "title": "EBD Characteristics, Social-Emotional Development, and Coexisting Needs guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"EBD Characteristics, Social-Emotional Development, and Coexisting Needs\" (Development and Characteristics of Students with EBD) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-02",
+      "itemIds": [
+        "ebd5372-b1-017",
+        "ebd5372-b1-018",
+        "ebd5372-b2-010",
+        "ebd5372-b2-011",
+        "ebd5372-b2-012",
+        "ebd5372-b2-013",
+        "ebd5372-b2-014",
+        "ebd5372-b2-015",
+        "ebd5372-b2-016",
+        "ebd5372-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"EBD Characteristics, Social-Emotional Development, and Coexisting Needs\" and the \"IDEA Emotional Disturbance Criteria, Profiles & Trauma Context\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"EBD Skill-vs.-Performance Deficit & Co-Regulation Decision Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Balancing Trauma Setting Events, Function, and Clinical Referral\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"EBD Characteristics, Social-Emotional Development, and Coexisting Needs\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Select the Exact Differential Reinforcement Schedule and Pair Extinction with FCT\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-03",
+      "title": "Individualized Curriculum, IEP Goals, and Longitudinal Programming guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Individualized Curriculum, IEP Goals, and Longitudinal Programming\" (Planning and Managing the Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-03",
+      "itemIds": [
+        "ebd5372-b2-022",
+        "ebd5372-b2-023",
+        "ebd5372-b2-024",
+        "ebd5372-b2-025",
+        "ebd5372-b2-026",
+        "ebd5372-b2-027",
+        "ebd5372-b2-028",
+        "ebd5372-b2-029",
+        "ebd5372-b1-019",
+        "ebd5372-b1-020"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Individualized Curriculum, IEP Goals, and Longitudinal Programming\" and the \"SWPBIS Prevention, Acting-Out Cycle & Safe De-Escalation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Longitudinal EBD IEP Goals, Grade-Level Curriculum Access & LRE Integrity\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting LRE Rigor Against Unilateral Removal After Outbursts\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Individualized Curriculum, IEP Goals, and Longitudinal Programming\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match De-Escalation to the Acting-Out Cycle and Enforce Restraint Safety Limits\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-04",
+      "title": "Positive Environments, Prevention, Expectations, and Daily Routines guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Positive Environments, Prevention, Expectations, and Daily Routines\" (Planning and Managing the Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-04",
+      "itemIds": [
+        "ebd5372-b1-031",
+        "ebd5372-b1-032",
+        "ebd5372-b1-033",
+        "ebd5372-b1-034",
+        "ebd5372-b1-035",
+        "ebd5372-b1-036",
+        "ebd5372-b1-037",
+        "ebd5372-b1-038",
+        "ebd5372-b1-039",
+        "ebd5372-b2-030"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Positive Environments, Prevention, Expectations, and Daily Routines\" and the \"SWPBIS Prevention, Acting-Out Cycle & Safe De-Escalation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Multi-Tiered PBIS & Classroom Prevention Architecture\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Eliminating Public Clip Charts to Break Power Struggles\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Positive Environments, Prevention, Expectations, and Daily Routines\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Identify Internalizing EBD, Trauma Triggers, and IDEA Social-Maladjustment Nuances\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-05",
+      "title": "Access, Self-Regulation, Sensory and Health Considerations, and Safety guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Access, Self-Regulation, Sensory and Health Considerations, and Safety\" (Planning and Managing the Learning Environments) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-05",
+      "itemIds": [
+        "ebd5372-b2-043",
+        "ebd5372-b2-044",
+        "ebd5372-b1-040",
+        "ebd5372-b1-041",
+        "ebd5372-b1-042",
+        "ebd5372-b1-043",
+        "ebd5372-b1-044",
+        "ebd5372-b2-040",
+        "ebd5372-b2-041",
+        "ebd5372-b2-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Access, Self-Regulation, Sensory and Health Considerations, and Safety\" and the \"SWPBIS Prevention, Acting-Out Cycle & Safe De-Escalation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Acting-Out Cycle & Safe Nonviolent De-Escalation Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Teaching Interoceptive Self-Regulation Before Sensory Overload\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Access, Self-Regulation, Sensory and Health Considerations, and Safety\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Integrate High-Engagement Instruction with Self-Monitoring and Generalization\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-06",
+      "title": "Explicit Academic Instruction and Responsive Feedback guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Explicit Academic Instruction and Responsive Feedback\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-06",
+      "itemIds": [
+        "ebd5372-b2-050",
+        "ebd5372-b2-051",
+        "ebd5372-b2-052",
+        "ebd5372-b2-053",
+        "ebd5372-b2-054",
+        "ebd5372-b1-045",
+        "ebd5372-b1-046",
+        "ebd5372-b1-047",
+        "ebd5372-b1-048",
+        "ebd5372-b1-049"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Explicit Academic Instruction and Responsive Feedback\" and the \"Academic Instruction, Social Skills, Self-Monitoring & Generalization\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Academic-Behavior Reciprocity: Explicit Instruction & Escape-Cycle Interruption\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Interrupting Academic Escape Cycles While Retaining Rigor\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Explicit Academic Instruction and Responsive Feedback\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Choose Exact Direct-Observation Metrics and Verify BIP Fidelity Before Placement Changes\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-07",
+      "title": "Communication, Written Expression, Self-Advocacy, and Generalization guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Communication, Written Expression, Self-Advocacy, and Generalization\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-07",
+      "itemIds": [
+        "ebd5372-b2-057",
+        "ebd5372-b2-058",
+        "ebd5372-b2-059",
+        "ebd5372-b2-060",
+        "ebd5372-b2-061",
+        "ebd5372-b2-062",
+        "ebd5372-b1-055",
+        "ebd5372-b1-056",
+        "ebd5372-b1-057",
+        "ebd5372-b1-058"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Communication, Written Expression, Self-Advocacy, and Generalization\" and the \"Academic Instruction, Social Skills, Self-Monitoring & Generalization\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Functional Communication Training, Writing Scaffolds & Self-Advocacy Transfer\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preserving Communication Access Through Functional Communication Training\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Communication, Written Expression, Self-Advocacy, and Generalization\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Trace ABC Contingencies to Function Before Designing Any BIP Intervention\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-08",
+      "title": "Strategy Instruction, Task Analysis, Self-Monitoring, and Independence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Strategy Instruction, Task Analysis, Self-Monitoring, and Independence\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-08",
+      "itemIds": [
+        "ebd5372-b1-064",
+        "ebd5372-b1-065",
+        "ebd5372-b1-066",
+        "ebd5372-b1-067",
+        "ebd5372-b1-068",
+        "ebd5372-b1-069",
+        "ebd5372-b1-070",
+        "ebd5372-b2-063",
+        "ebd5372-b2-064",
+        "ebd5372-b2-065"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Strategy Instruction, Task Analysis, Self-Monitoring, and Independence\" and the \"Academic Instruction, Social Skills, Self-Monitoring & Generalization\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Task Analysis, SRSD Strategy Instruction & Prompt-Fading Independence Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Fading Prompt Dependence With Private Self-Monitoring Logs\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Strategy Instruction, Task Analysis, Self-Monitoring, and Independence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Select the Exact Differential Reinforcement Schedule and Pair Extinction with FCT\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-09",
+      "title": "Assessment Quality, Direct Observation, and Multiple-Source Evidence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Quality, Direct Observation, and Multiple-Source Evidence\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-09",
+      "itemIds": [
+        "ebd5372-b2-071",
+        "ebd5372-b2-072",
+        "ebd5372-b2-073",
+        "ebd5372-b2-074",
+        "ebd5372-b2-075",
+        "ebd5372-b2-076",
+        "ebd5372-b2-077",
+        "ebd5372-b2-078",
+        "ebd5372-b1-071",
+        "ebd5372-b1-072"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Quality, Direct Observation, and Multiple-Source Evidence\" and the \"Direct Observation Systems, FBA Functions & BIP Design\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Direct Behavioral Observation, IOA Verification & Multi-Source Triangulation\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing Single-Score Bias in EBD Eligibility Assessment\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Quality, Direct Observation, and Multiple-Source Evidence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match De-Escalation to the Acting-Out Cycle and Enforce Restraint Safety Limits\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-10",
+      "title": "FBA, Eligibility, Progress Monitoring, and Data-Based Decisions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"FBA, Eligibility, Progress Monitoring, and Data-Based Decisions\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-10",
+      "itemIds": [
+        "ebd5372-b2-079",
+        "ebd5372-b2-080",
+        "ebd5372-b2-081",
+        "ebd5372-b2-082",
+        "ebd5372-b2-083",
+        "ebd5372-b2-084",
+        "ebd5372-b2-085",
+        "ebd5372-b2-086",
+        "ebd5372-b2-087",
+        "ebd5372-b1-079"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"FBA, Eligibility, Progress Monitoring, and Data-Based Decisions\" and the \"Direct Observation Systems, FBA Functions & BIP Design\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Functional Behavior Assessment (FBA) & Replacement-Skill Engineering Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Applying the Social Maladjustment Rule With Equity Safeguards\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"FBA, Eligibility, Progress Monitoring, and Data-Based Decisions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Identify Internalizing EBD, Trauma Triggers, and IDEA Social-Maladjustment Nuances\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-11",
+      "title": "Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-11",
+      "itemIds": [
+        "ebd5372-b1-088",
+        "ebd5372-b1-089",
+        "ebd5372-b1-090",
+        "ebd5372-b1-091",
+        "ebd5372-b1-092",
+        "ebd5372-b1-093",
+        "ebd5372-b1-094",
+        "ebd5372-b2-088",
+        "ebd5372-b2-089",
+        "ebd5372-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards\" and the \"IDEA Discipline, MDR, Restrictive Safeguards & Interagency Care\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA Disciplinary Protections & Manifestation Determination Review (MDR) Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Stopping Unlawful Seclusion and Enforcing Crisis Safeguards\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Integrate High-Engagement Instruction with Self-Monitoring and Generalization\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-ch-12",
+      "title": "Family Partnership, Collaboration, Professional Learning, and Advocacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Family Partnership, Collaboration, Professional Learning, and Advocacy\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ebd5372-ch-12",
+      "itemIds": [
+        "ebd5372-b1-100",
+        "ebd5372-b2-095",
+        "ebd5372-b2-096",
+        "ebd5372-b2-097",
+        "ebd5372-b2-098",
+        "ebd5372-b2-099",
+        "ebd5372-b2-100",
+        "ebd5372-b1-095",
+        "ebd5372-b1-096",
+        "ebd5372-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Family Partnership, Collaboration, Professional Learning, and Advocacy\" and the \"IDEA Discipline, MDR, Restrictive Safeguards & Interagency Care\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Social-Emotional Learning (SEL), Cognitive-Behavioral Self-Regulation & Family-Agency Wraparound Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Partnering With Families Through Interpreters and Clear Boundaries\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Family Partnership, Collaboration, Professional Learning, and Advocacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Choose Exact Direct-Observation Metrics and Verify BIP Fidelity Before Placement Changes\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-trap-repair-sprint",
+      "title": "Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ebd5372-b1-071",
+        "ebd5372-b1-019",
+        "ebd5372-b1-088",
+        "ebd5372-b1-001",
+        "ebd5372-b1-045",
+        "ebd5372-b1-072",
+        "ebd5372-b1-020",
+        "ebd5372-b1-089",
+        "ebd5372-b1-002",
+        "ebd5372-b1-046",
+        "ebd5372-b1-073",
+        "ebd5372-b1-021"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Trace ABC Contingencies to Function Before Designing Any BIP Intervention\", \"Select the Exact Differential Reinforcement Schedule and Pair Extinction with FCT\", \"Match De-Escalation to the Acting-Out Cycle and Enforce Restraint Safety Limits\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-session-mixed-capstone",
+      "title": "Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ebd5372-b1-004",
+        "ebd5372-b1-022",
+        "ebd5372-b1-048",
+        "ebd5372-b1-074",
+        "ebd5372-b1-091",
+        "ebd5372-b1-015",
+        "ebd5372-b1-033",
+        "ebd5372-b1-059",
+        "ebd5372-b1-085",
+        "ebd5372-b2-089",
+        "ebd5372-b2-008",
+        "ebd5372-b1-044",
+        "ebd5372-b1-070",
+        "ebd5372-b2-079",
+        "ebd5372-b2-100"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied EBD case workshops, outline a response to \"Separate Escape and Attention Functions Across Morning and Afternoon Routines\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-01",
+      "topicId": "ebd5372-ch-01",
+      "topicLabel": "1. Development, Context, Culture, and Learner Variability",
+      "unitId": "development-characteristics-ebd",
+      "chapterId": "ebd5372-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Development, Context, Culture, and Learner Variability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-02",
+      "topicId": "ebd5372-ch-02",
+      "topicLabel": "2. EBD Characteristics, Social-Emotional Development, and Coexisting Needs",
+      "unitId": "development-characteristics-ebd",
+      "chapterId": "ebd5372-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"EBD Characteristics, Social-Emotional Development, and Coexisting Needs\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-03",
+      "topicId": "ebd5372-ch-03",
+      "topicLabel": "3. Individualized Curriculum, IEP Goals, and Longitudinal Programming",
+      "unitId": "planning-managing-learning-environments",
+      "chapterId": "ebd5372-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Individualized Curriculum, IEP Goals, and Longitudinal Programming\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-04",
+      "topicId": "ebd5372-ch-04",
+      "topicLabel": "4. Positive Environments, Prevention, Expectations, and Daily Routines",
+      "unitId": "planning-managing-learning-environments",
+      "chapterId": "ebd5372-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Positive Environments, Prevention, Expectations, and Daily Routines\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-05",
+      "topicId": "ebd5372-ch-05",
+      "topicLabel": "5. Access, Self-Regulation, Sensory and Health Considerations, and Safety",
+      "unitId": "planning-managing-learning-environments",
+      "chapterId": "ebd5372-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Access, Self-Regulation, Sensory and Health Considerations, and Safety\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-06",
+      "topicId": "ebd5372-ch-06",
+      "topicLabel": "6. Explicit Academic Instruction and Responsive Feedback",
+      "unitId": "instruction",
+      "chapterId": "ebd5372-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Explicit Academic Instruction and Responsive Feedback\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-07",
+      "topicId": "ebd5372-ch-07",
+      "topicLabel": "7. Communication, Written Expression, Self-Advocacy, and Generalization",
+      "unitId": "instruction",
+      "chapterId": "ebd5372-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Communication, Written Expression, Self-Advocacy, and Generalization\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-08",
+      "topicId": "ebd5372-ch-08",
+      "topicLabel": "8. Strategy Instruction, Task Analysis, Self-Monitoring, and Independence",
+      "unitId": "instruction",
+      "chapterId": "ebd5372-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Strategy Instruction, Task Analysis, Self-Monitoring, and Independence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-09",
+      "topicId": "ebd5372-ch-09",
+      "topicLabel": "9. Assessment Quality, Direct Observation, and Multiple-Source Evidence",
+      "unitId": "assessment",
+      "chapterId": "ebd5372-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Quality, Direct Observation, and Multiple-Source Evidence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-10",
+      "topicId": "ebd5372-ch-10",
+      "topicLabel": "10. FBA, Eligibility, Progress Monitoring, and Data-Based Decisions",
+      "unitId": "assessment",
+      "chapterId": "ebd5372-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"FBA, Eligibility, Progress Monitoring, and Data-Based Decisions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-11",
+      "topicId": "ebd5372-ch-11",
+      "topicLabel": "11. Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "ebd5372-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-spaced-ch-12",
+      "topicId": "ebd5372-ch-12",
+      "topicLabel": "12. Family Partnership, Collaboration, Professional Learning, and Advocacy",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "ebd5372-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Family Partnership, Collaboration, Professional Learning, and Advocacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "special-education-behavior-emotional-5372-source-01",
+      "title": "Behavioral Disorders and Emotional Disturbances (5372) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5372.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-source-02",
+      "title": "Behavioral Disorders and Emotional Disturbances (5372) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/special-education-teaching-students-with-behavioral-disorders-and-emotional-disturbances-5372.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-source-03",
+      "title": "Sec. 300.530 Authority of school personnel - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/e/300.530",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-source-04",
+      "title": "WWC | Teacher-Delivered Behavioral Interventions in Grades K-5",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/31",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-01",
+      "unitId": "development-characteristics-ebd",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Development, Context, Culture, and Learner Variability",
+      "chapterId": "ebd5372-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-01-section-01",
+        "ebd5372-ch-01-section-02",
+        "ebd5372-ch-01-section-03",
+        "ebd5372-ch-01-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-001",
+        "ebd5372-b1-002",
+        "ebd5372-b1-003",
+        "ebd5372-b1-004",
+        "ebd5372-b1-005",
+        "ebd5372-b1-006",
+        "ebd5372-b1-007",
+        "ebd5372-b1-008",
+        "ebd5372-b1-009",
+        "ebd5372-b2-001",
+        "ebd5372-b2-002",
+        "ebd5372-b2-003",
+        "ebd5372-b2-004",
+        "ebd5372-b2-005",
+        "ebd5372-b2-006",
+        "ebd5372-b2-007",
+        "ebd5372-b2-008",
+        "ebd5372-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-001",
+        "ebd5372-b1-002",
+        "ebd5372-b1-003",
+        "ebd5372-b1-004",
+        "ebd5372-b1-005",
+        "ebd5372-b1-006",
+        "ebd5372-b1-007",
+        "ebd5372-b1-008",
+        "ebd5372-b1-009",
+        "ebd5372-b2-001",
+        "ebd5372-b2-002",
+        "ebd5372-b2-003"
+      ],
+      "purpose": "Consolidate \"Development, Context, Culture, and Learner Variability\" (Development and Characteristics of Students with EBD) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-02",
+      "unitId": "development-characteristics-ebd",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: EBD Characteristics, Social-Emotional Development, and Coexisting Needs",
+      "chapterId": "ebd5372-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-02-section-01",
+        "ebd5372-ch-02-section-02",
+        "ebd5372-ch-02-section-03",
+        "ebd5372-ch-02-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-010",
+        "ebd5372-b1-011",
+        "ebd5372-b1-012",
+        "ebd5372-b1-013",
+        "ebd5372-b1-014",
+        "ebd5372-b1-015",
+        "ebd5372-b1-016",
+        "ebd5372-b1-017",
+        "ebd5372-b1-018",
+        "ebd5372-b2-010",
+        "ebd5372-b2-011",
+        "ebd5372-b2-012",
+        "ebd5372-b2-013",
+        "ebd5372-b2-014",
+        "ebd5372-b2-015",
+        "ebd5372-b2-016",
+        "ebd5372-b2-017",
+        "ebd5372-b2-018"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-010",
+        "ebd5372-b1-011",
+        "ebd5372-b1-012",
+        "ebd5372-b1-013",
+        "ebd5372-b1-014",
+        "ebd5372-b1-015",
+        "ebd5372-b1-016",
+        "ebd5372-b1-017",
+        "ebd5372-b1-018",
+        "ebd5372-b2-010",
+        "ebd5372-b2-011",
+        "ebd5372-b2-012"
+      ],
+      "purpose": "Consolidate \"EBD Characteristics, Social-Emotional Development, and Coexisting Needs\" (Development and Characteristics of Students with EBD) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-03",
+      "unitId": "planning-managing-learning-environments",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Individualized Curriculum, IEP Goals, and Longitudinal Programming",
+      "chapterId": "ebd5372-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-03-section-01",
+        "ebd5372-ch-03-section-02",
+        "ebd5372-ch-03-section-03",
+        "ebd5372-ch-03-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-020",
+        "ebd5372-b1-021",
+        "ebd5372-b1-022",
+        "ebd5372-b1-023",
+        "ebd5372-b1-024",
+        "ebd5372-b1-025",
+        "ebd5372-b1-026",
+        "ebd5372-b1-027",
+        "ebd5372-b1-028",
+        "ebd5372-b1-029",
+        "ebd5372-b2-019",
+        "ebd5372-b2-020",
+        "ebd5372-b2-021",
+        "ebd5372-b2-022",
+        "ebd5372-b2-023",
+        "ebd5372-b2-024",
+        "ebd5372-b2-025",
+        "ebd5372-b2-026",
+        "ebd5372-b2-027",
+        "ebd5372-b2-028",
+        "ebd5372-b2-029"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-020",
+        "ebd5372-b1-021",
+        "ebd5372-b1-022",
+        "ebd5372-b1-023",
+        "ebd5372-b1-024",
+        "ebd5372-b1-025",
+        "ebd5372-b1-026",
+        "ebd5372-b1-027",
+        "ebd5372-b1-028",
+        "ebd5372-b1-029",
+        "ebd5372-b2-019"
+      ],
+      "purpose": "Consolidate \"Individualized Curriculum, IEP Goals, and Longitudinal Programming\" (Planning and Managing the Learning Environments) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-04",
+      "unitId": "planning-managing-learning-environments",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Positive Environments, Prevention, Expectations, and Daily Routines",
+      "chapterId": "ebd5372-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-04-section-01",
+        "ebd5372-ch-04-section-02",
+        "ebd5372-ch-04-section-03",
+        "ebd5372-ch-04-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-030",
+        "ebd5372-b1-031",
+        "ebd5372-b1-032",
+        "ebd5372-b1-033",
+        "ebd5372-b1-034",
+        "ebd5372-b1-035",
+        "ebd5372-b1-036",
+        "ebd5372-b1-037",
+        "ebd5372-b1-038",
+        "ebd5372-b1-039",
+        "ebd5372-b2-030",
+        "ebd5372-b2-031",
+        "ebd5372-b2-032",
+        "ebd5372-b2-033",
+        "ebd5372-b2-034",
+        "ebd5372-b2-035",
+        "ebd5372-b2-036",
+        "ebd5372-b2-037",
+        "ebd5372-b2-038",
+        "ebd5372-b2-039"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-030",
+        "ebd5372-b1-031",
+        "ebd5372-b1-032",
+        "ebd5372-b1-033",
+        "ebd5372-b1-034",
+        "ebd5372-b1-035",
+        "ebd5372-b1-036",
+        "ebd5372-b1-037",
+        "ebd5372-b1-038",
+        "ebd5372-b1-039",
+        "ebd5372-b2-030",
+        "ebd5372-b2-031"
+      ],
+      "purpose": "Consolidate \"Positive Environments, Prevention, Expectations, and Daily Routines\" (Planning and Managing the Learning Environments) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-05",
+      "unitId": "planning-managing-learning-environments",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Access, Self-Regulation, Sensory and Health Considerations, and Safety",
+      "chapterId": "ebd5372-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-05-section-01",
+        "ebd5372-ch-05-section-02",
+        "ebd5372-ch-05-section-03",
+        "ebd5372-ch-05-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-020",
+        "ebd5372-b1-021",
+        "ebd5372-b1-022",
+        "ebd5372-b1-023",
+        "ebd5372-b1-024",
+        "ebd5372-b1-025",
+        "ebd5372-b1-026",
+        "ebd5372-b1-027",
+        "ebd5372-b1-028",
+        "ebd5372-b1-029",
+        "ebd5372-b1-030",
+        "ebd5372-b1-031",
+        "ebd5372-b1-032",
+        "ebd5372-b1-033",
+        "ebd5372-b1-034",
+        "ebd5372-b1-035",
+        "ebd5372-b1-036",
+        "ebd5372-b1-037",
+        "ebd5372-b1-038",
+        "ebd5372-b1-039",
+        "ebd5372-b1-040",
+        "ebd5372-b1-041",
+        "ebd5372-b1-042",
+        "ebd5372-b1-043",
+        "ebd5372-b1-044",
+        "ebd5372-b2-019",
+        "ebd5372-b2-020",
+        "ebd5372-b2-021",
+        "ebd5372-b2-022",
+        "ebd5372-b2-023",
+        "ebd5372-b2-024",
+        "ebd5372-b2-025",
+        "ebd5372-b2-026",
+        "ebd5372-b2-027",
+        "ebd5372-b2-028",
+        "ebd5372-b2-029",
+        "ebd5372-b2-030",
+        "ebd5372-b2-031",
+        "ebd5372-b2-032",
+        "ebd5372-b2-033",
+        "ebd5372-b2-034",
+        "ebd5372-b2-035",
+        "ebd5372-b2-036",
+        "ebd5372-b2-037"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-020",
+        "ebd5372-b1-021",
+        "ebd5372-b1-022",
+        "ebd5372-b1-023",
+        "ebd5372-b1-024",
+        "ebd5372-b1-025",
+        "ebd5372-b1-026",
+        "ebd5372-b1-027",
+        "ebd5372-b1-028",
+        "ebd5372-b1-029",
+        "ebd5372-b1-030"
+      ],
+      "purpose": "Consolidate \"Access, Self-Regulation, Sensory and Health Considerations, and Safety\" (Planning and Managing the Learning Environments) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-06",
+      "unitId": "instruction",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Explicit Academic Instruction and Responsive Feedback",
+      "chapterId": "ebd5372-ch-06",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-06-section-01",
+        "ebd5372-ch-06-section-02",
+        "ebd5372-ch-06-section-03",
+        "ebd5372-ch-06-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-045",
+        "ebd5372-b1-046",
+        "ebd5372-b1-047",
+        "ebd5372-b1-048",
+        "ebd5372-b1-049",
+        "ebd5372-b1-050",
+        "ebd5372-b1-051",
+        "ebd5372-b1-052",
+        "ebd5372-b1-053",
+        "ebd5372-b1-054",
+        "ebd5372-b2-045",
+        "ebd5372-b2-046",
+        "ebd5372-b2-047",
+        "ebd5372-b2-048",
+        "ebd5372-b2-049",
+        "ebd5372-b2-050",
+        "ebd5372-b2-051",
+        "ebd5372-b2-052",
+        "ebd5372-b2-053",
+        "ebd5372-b2-054"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-045",
+        "ebd5372-b1-046",
+        "ebd5372-b1-047",
+        "ebd5372-b1-048",
+        "ebd5372-b1-049",
+        "ebd5372-b1-050",
+        "ebd5372-b1-051",
+        "ebd5372-b1-052",
+        "ebd5372-b1-053",
+        "ebd5372-b1-054",
+        "ebd5372-b2-045",
+        "ebd5372-b2-046"
+      ],
+      "purpose": "Consolidate \"Explicit Academic Instruction and Responsive Feedback\" (Instruction) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-07",
+      "unitId": "instruction",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Communication, Written Expression, Self-Advocacy, and Generalization",
+      "chapterId": "ebd5372-ch-07",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-07-section-01",
+        "ebd5372-ch-07-section-02",
+        "ebd5372-ch-07-section-03",
+        "ebd5372-ch-07-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-055",
+        "ebd5372-b1-056",
+        "ebd5372-b1-057",
+        "ebd5372-b1-058",
+        "ebd5372-b1-059",
+        "ebd5372-b1-060",
+        "ebd5372-b1-061",
+        "ebd5372-b1-062",
+        "ebd5372-b2-055",
+        "ebd5372-b2-056",
+        "ebd5372-b2-057",
+        "ebd5372-b2-058",
+        "ebd5372-b2-059",
+        "ebd5372-b2-060",
+        "ebd5372-b2-061",
+        "ebd5372-b2-062"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-055",
+        "ebd5372-b1-056",
+        "ebd5372-b1-057",
+        "ebd5372-b1-058",
+        "ebd5372-b1-059",
+        "ebd5372-b1-060",
+        "ebd5372-b1-061",
+        "ebd5372-b1-062",
+        "ebd5372-b2-055",
+        "ebd5372-b2-056",
+        "ebd5372-b2-057",
+        "ebd5372-b2-058"
+      ],
+      "purpose": "Consolidate \"Communication, Written Expression, Self-Advocacy, and Generalization\" (Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-08",
+      "unitId": "instruction",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Strategy Instruction, Task Analysis, Self-Monitoring, and Independence",
+      "chapterId": "ebd5372-ch-08",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-08-section-01",
+        "ebd5372-ch-08-section-02",
+        "ebd5372-ch-08-section-03",
+        "ebd5372-ch-08-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-063",
+        "ebd5372-b1-064",
+        "ebd5372-b1-065",
+        "ebd5372-b1-066",
+        "ebd5372-b1-067",
+        "ebd5372-b1-068",
+        "ebd5372-b1-069",
+        "ebd5372-b1-070",
+        "ebd5372-b2-063",
+        "ebd5372-b2-064",
+        "ebd5372-b2-065",
+        "ebd5372-b2-066",
+        "ebd5372-b2-067",
+        "ebd5372-b2-068",
+        "ebd5372-b2-069",
+        "ebd5372-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-063",
+        "ebd5372-b1-064",
+        "ebd5372-b1-065",
+        "ebd5372-b1-066",
+        "ebd5372-b1-067",
+        "ebd5372-b1-068",
+        "ebd5372-b1-069",
+        "ebd5372-b1-070",
+        "ebd5372-b2-063",
+        "ebd5372-b2-064",
+        "ebd5372-b2-065",
+        "ebd5372-b2-066"
+      ],
+      "purpose": "Consolidate \"Strategy Instruction, Task Analysis, Self-Monitoring, and Independence\" (Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-09",
+      "unitId": "assessment",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Assessment Quality, Direct Observation, and Multiple-Source Evidence",
+      "chapterId": "ebd5372-ch-09",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-09-section-01",
+        "ebd5372-ch-09-section-02",
+        "ebd5372-ch-09-section-03",
+        "ebd5372-ch-09-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-071",
+        "ebd5372-b1-072",
+        "ebd5372-b1-073",
+        "ebd5372-b1-074",
+        "ebd5372-b1-075",
+        "ebd5372-b1-076",
+        "ebd5372-b1-077",
+        "ebd5372-b1-078",
+        "ebd5372-b2-071",
+        "ebd5372-b2-072",
+        "ebd5372-b2-073",
+        "ebd5372-b2-074",
+        "ebd5372-b2-075",
+        "ebd5372-b2-076",
+        "ebd5372-b2-077",
+        "ebd5372-b2-078"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-071",
+        "ebd5372-b1-072",
+        "ebd5372-b1-073",
+        "ebd5372-b1-074",
+        "ebd5372-b1-075",
+        "ebd5372-b1-076",
+        "ebd5372-b1-077",
+        "ebd5372-b1-078",
+        "ebd5372-b2-071",
+        "ebd5372-b2-072",
+        "ebd5372-b2-073",
+        "ebd5372-b2-074"
+      ],
+      "purpose": "Consolidate \"Assessment Quality, Direct Observation, and Multiple-Source Evidence\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-10",
+      "unitId": "assessment",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: FBA, Eligibility, Progress Monitoring, and Data-Based Decisions",
+      "chapterId": "ebd5372-ch-10",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-10-section-01",
+        "ebd5372-ch-10-section-02",
+        "ebd5372-ch-10-section-03",
+        "ebd5372-ch-10-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-079",
+        "ebd5372-b1-080",
+        "ebd5372-b1-081",
+        "ebd5372-b1-082",
+        "ebd5372-b1-083",
+        "ebd5372-b1-084",
+        "ebd5372-b1-085",
+        "ebd5372-b1-086",
+        "ebd5372-b1-087",
+        "ebd5372-b2-079",
+        "ebd5372-b2-080",
+        "ebd5372-b2-081",
+        "ebd5372-b2-082",
+        "ebd5372-b2-083",
+        "ebd5372-b2-084",
+        "ebd5372-b2-085",
+        "ebd5372-b2-086",
+        "ebd5372-b2-087"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-079",
+        "ebd5372-b1-080",
+        "ebd5372-b1-081",
+        "ebd5372-b1-082",
+        "ebd5372-b1-083",
+        "ebd5372-b1-084",
+        "ebd5372-b1-085",
+        "ebd5372-b1-086",
+        "ebd5372-b1-087",
+        "ebd5372-b2-079",
+        "ebd5372-b2-080",
+        "ebd5372-b2-081"
+      ],
+      "purpose": "Consolidate \"FBA, Eligibility, Progress Monitoring, and Data-Based Decisions\" (Assessment) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-11",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards",
+      "chapterId": "ebd5372-ch-11",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-11-section-01",
+        "ebd5372-ch-11-section-02",
+        "ebd5372-ch-11-section-03",
+        "ebd5372-ch-11-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-088",
+        "ebd5372-b1-089",
+        "ebd5372-b1-090",
+        "ebd5372-b1-091",
+        "ebd5372-b1-092",
+        "ebd5372-b1-093",
+        "ebd5372-b1-094",
+        "ebd5372-b2-088",
+        "ebd5372-b2-089",
+        "ebd5372-b2-090",
+        "ebd5372-b2-091",
+        "ebd5372-b2-092",
+        "ebd5372-b2-093",
+        "ebd5372-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-088",
+        "ebd5372-b1-089",
+        "ebd5372-b1-090",
+        "ebd5372-b1-091",
+        "ebd5372-b1-092",
+        "ebd5372-b1-093",
+        "ebd5372-b1-094",
+        "ebd5372-b2-088",
+        "ebd5372-b2-089",
+        "ebd5372-b2-090",
+        "ebd5372-b2-091",
+        "ebd5372-b2-092"
+      ],
+      "purpose": "Consolidate \"Law, Ethics, Rights, Equity, and Restrictive-Procedure Safeguards\" (Foundations and Professional Responsibilities) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-unit-review-12",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Family Partnership, Collaboration, Professional Learning, and Advocacy",
+      "chapterId": "ebd5372-ch-12",
+      "topicDiagnosticRouteIds": [
+        "ebd5372-ch-12-section-01",
+        "ebd5372-ch-12-section-02",
+        "ebd5372-ch-12-section-03",
+        "ebd5372-ch-12-section-04"
+      ],
+      "itemIds": [
+        "ebd5372-b1-095",
+        "ebd5372-b1-096",
+        "ebd5372-b1-097",
+        "ebd5372-b1-098",
+        "ebd5372-b1-099",
+        "ebd5372-b1-100",
+        "ebd5372-b2-095",
+        "ebd5372-b2-096",
+        "ebd5372-b2-097",
+        "ebd5372-b2-098",
+        "ebd5372-b2-099",
+        "ebd5372-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "ebd5372-b1-095",
+        "ebd5372-b1-096",
+        "ebd5372-b1-097",
+        "ebd5372-b1-098",
+        "ebd5372-b1-099",
+        "ebd5372-b1-100",
+        "ebd5372-b2-095",
+        "ebd5372-b2-096",
+        "ebd5372-b2-097",
+        "ebd5372-b2-098",
+        "ebd5372-b2-099",
+        "ebd5372-b2-100"
+      ],
+      "purpose": "Consolidate \"Family Partnership, Collaboration, Professional Learning, and Advocacy\" (Foundations and Professional Responsibilities) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "special-education-behavior-emotional-5372-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372) blueprint domains.",
+      "focus": [
+        "Development and Characteristics of Students with EBD",
+        "Planning and Managing the Learning Environments",
+        "Instruction",
+        "Assessment"
+      ],
+      "itemIds": [
+        "ebd5372-b1-001",
+        "ebd5372-b1-071",
+        "ebd5372-b1-020",
+        "ebd5372-b1-089",
+        "ebd5372-b1-047",
+        "ebd5372-b1-004",
+        "ebd5372-b1-074",
+        "ebd5372-b1-023",
+        "ebd5372-b1-092",
+        "ebd5372-b1-050",
+        "ebd5372-b1-007",
+        "ebd5372-b1-077",
+        "ebd5372-b1-026",
+        "ebd5372-b1-095",
+        "ebd5372-b1-053",
+        "ebd5372-b1-010",
+        "ebd5372-b1-080",
+        "ebd5372-b1-029",
+        "ebd5372-b1-098",
+        "ebd5372-b1-056",
+        "ebd5372-b1-013",
+        "ebd5372-b1-083",
+        "ebd5372-b1-032",
+        "ebd5372-b2-088",
+        "ebd5372-b1-059",
+        "ebd5372-b1-016",
+        "ebd5372-b1-086",
+        "ebd5372-b1-035",
+        "ebd5372-b2-091",
+        "ebd5372-b1-062",
+        "ebd5372-b2-001",
+        "ebd5372-b2-072",
+        "ebd5372-b1-038",
+        "ebd5372-b2-094",
+        "ebd5372-b1-065",
+        "ebd5372-b2-004",
+        "ebd5372-b2-075",
+        "ebd5372-b1-041",
+        "ebd5372-b2-097",
+        "ebd5372-b1-068"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Instruction",
+        "Assessment",
+        "Foundations and Professional Responsibilities",
+        "Development and Characteristics of Students with EBD"
+      ],
+      "itemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-088",
+        "ebd5372-b1-046",
+        "ebd5372-b1-003",
+        "ebd5372-b1-073",
+        "ebd5372-b1-022",
+        "ebd5372-b1-091",
+        "ebd5372-b1-049",
+        "ebd5372-b1-006",
+        "ebd5372-b1-076",
+        "ebd5372-b1-025",
+        "ebd5372-b1-094",
+        "ebd5372-b1-052",
+        "ebd5372-b1-009",
+        "ebd5372-b1-079",
+        "ebd5372-b1-028",
+        "ebd5372-b1-097",
+        "ebd5372-b1-055",
+        "ebd5372-b1-012",
+        "ebd5372-b1-082",
+        "ebd5372-b1-031",
+        "ebd5372-b1-100",
+        "ebd5372-b1-058",
+        "ebd5372-b1-015",
+        "ebd5372-b1-085",
+        "ebd5372-b1-034",
+        "ebd5372-b2-090",
+        "ebd5372-b1-061",
+        "ebd5372-b1-018",
+        "ebd5372-b2-071",
+        "ebd5372-b1-037",
+        "ebd5372-b2-093",
+        "ebd5372-b1-064",
+        "ebd5372-b2-003",
+        "ebd5372-b2-074",
+        "ebd5372-b1-040",
+        "ebd5372-b2-096",
+        "ebd5372-b1-067",
+        "ebd5372-b2-006",
+        "ebd5372-b2-077"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Intervening on Behavior Topography Instead of FBA-Identified Function",
+        "Confusing DRA, DRI, DRO, and Functional Communication Training (FCT)",
+        "Escalating Crisis Cycles or Misusing Seclusion and Restraint as Behavior Plans"
+      ],
+      "itemIds": [
+        "ebd5372-b1-045",
+        "ebd5372-b1-002",
+        "ebd5372-b1-072",
+        "ebd5372-b1-021",
+        "ebd5372-b1-090",
+        "ebd5372-b1-048",
+        "ebd5372-b1-005",
+        "ebd5372-b1-075",
+        "ebd5372-b1-024",
+        "ebd5372-b1-093",
+        "ebd5372-b1-051",
+        "ebd5372-b1-008",
+        "ebd5372-b1-078",
+        "ebd5372-b1-027",
+        "ebd5372-b1-096",
+        "ebd5372-b1-054",
+        "ebd5372-b1-011",
+        "ebd5372-b1-081",
+        "ebd5372-b1-030",
+        "ebd5372-b1-099",
+        "ebd5372-b1-057",
+        "ebd5372-b1-014",
+        "ebd5372-b1-084",
+        "ebd5372-b1-033",
+        "ebd5372-b2-089",
+        "ebd5372-b1-060",
+        "ebd5372-b1-017",
+        "ebd5372-b1-087",
+        "ebd5372-b1-036",
+        "ebd5372-b2-092",
+        "ebd5372-b1-063",
+        "ebd5372-b2-002",
+        "ebd5372-b2-073",
+        "ebd5372-b1-039",
+        "ebd5372-b2-095",
+        "ebd5372-b1-066",
+        "ebd5372-b2-005",
+        "ebd5372-b2-076",
+        "ebd5372-b1-042",
+        "ebd5372-b2-098"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "special-education-behavior-emotional-5372-form-internal-a",
+      "title": "Internal practice form A (Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ebd5372-b1-001",
+        "ebd5372-b1-071",
+        "ebd5372-b1-020",
+        "ebd5372-b1-089",
+        "ebd5372-b1-047",
+        "ebd5372-b1-004",
+        "ebd5372-b1-074",
+        "ebd5372-b1-023",
+        "ebd5372-b1-092",
+        "ebd5372-b1-050",
+        "ebd5372-b1-007",
+        "ebd5372-b1-077",
+        "ebd5372-b1-026",
+        "ebd5372-b1-095",
+        "ebd5372-b1-053",
+        "ebd5372-b1-010",
+        "ebd5372-b1-080",
+        "ebd5372-b1-029",
+        "ebd5372-b1-098",
+        "ebd5372-b1-056",
+        "ebd5372-b1-013",
+        "ebd5372-b1-083",
+        "ebd5372-b1-032",
+        "ebd5372-b2-088",
+        "ebd5372-b1-059",
+        "ebd5372-b1-016",
+        "ebd5372-b1-086",
+        "ebd5372-b1-035",
+        "ebd5372-b2-091",
+        "ebd5372-b1-062",
+        "ebd5372-b2-001",
+        "ebd5372-b2-072",
+        "ebd5372-b1-038",
+        "ebd5372-b2-094",
+        "ebd5372-b1-065",
+        "ebd5372-b2-004",
+        "ebd5372-b2-075",
+        "ebd5372-b1-041",
+        "ebd5372-b2-097",
+        "ebd5372-b1-068",
+        "ebd5372-b2-007",
+        "ebd5372-b2-078",
+        "ebd5372-b1-044",
+        "ebd5372-b2-100",
+        "ebd5372-b2-045",
+        "ebd5372-b2-020",
+        "ebd5372-b2-011",
+        "ebd5372-b2-082",
+        "ebd5372-b2-048",
+        "ebd5372-b2-023"
+      ],
+      "topicIds": [
+        "ebd5372-ch-01",
+        "ebd5372-ch-09",
+        "ebd5372-ch-03",
+        "ebd5372-ch-11",
+        "ebd5372-ch-06",
+        "ebd5372-ch-12",
+        "ebd5372-ch-02",
+        "ebd5372-ch-10",
+        "ebd5372-ch-07",
+        "ebd5372-ch-04",
+        "ebd5372-ch-08",
+        "ebd5372-ch-05"
+      ],
+      "unitIds": [
+        "development-characteristics-ebd",
+        "assessment",
+        "planning-managing-learning-environments",
+        "foundations-professional-responsibilities",
+        "instruction"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-form-internal-b",
+      "title": "Internal practice form B (Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ebd5372-b1-019",
+        "ebd5372-b1-088",
+        "ebd5372-b1-046",
+        "ebd5372-b1-003",
+        "ebd5372-b1-073",
+        "ebd5372-b1-022",
+        "ebd5372-b1-091",
+        "ebd5372-b1-049",
+        "ebd5372-b1-006",
+        "ebd5372-b1-076",
+        "ebd5372-b1-025",
+        "ebd5372-b1-094",
+        "ebd5372-b1-052",
+        "ebd5372-b1-009",
+        "ebd5372-b1-079",
+        "ebd5372-b1-028",
+        "ebd5372-b1-097",
+        "ebd5372-b1-055",
+        "ebd5372-b1-012",
+        "ebd5372-b1-082",
+        "ebd5372-b1-031",
+        "ebd5372-b1-100",
+        "ebd5372-b1-058",
+        "ebd5372-b1-015",
+        "ebd5372-b1-085",
+        "ebd5372-b1-034",
+        "ebd5372-b2-090",
+        "ebd5372-b1-061",
+        "ebd5372-b1-018",
+        "ebd5372-b2-071",
+        "ebd5372-b1-037",
+        "ebd5372-b2-093",
+        "ebd5372-b1-064",
+        "ebd5372-b2-003",
+        "ebd5372-b2-074",
+        "ebd5372-b1-040",
+        "ebd5372-b2-096",
+        "ebd5372-b1-067",
+        "ebd5372-b2-006",
+        "ebd5372-b2-077",
+        "ebd5372-b1-043",
+        "ebd5372-b2-099",
+        "ebd5372-b1-070",
+        "ebd5372-b2-009",
+        "ebd5372-b2-080",
+        "ebd5372-b2-046",
+        "ebd5372-b2-021",
+        "ebd5372-b2-012",
+        "ebd5372-b2-083",
+        "ebd5372-b2-049"
+      ],
+      "topicIds": [
+        "ebd5372-ch-03",
+        "ebd5372-ch-11",
+        "ebd5372-ch-06",
+        "ebd5372-ch-01",
+        "ebd5372-ch-09",
+        "ebd5372-ch-10",
+        "ebd5372-ch-12",
+        "ebd5372-ch-07",
+        "ebd5372-ch-02",
+        "ebd5372-ch-04",
+        "ebd5372-ch-08",
+        "ebd5372-ch-05"
+      ],
+      "unitIds": [
+        "planning-managing-learning-environments",
+        "foundations-professional-responsibilities",
+        "instruction",
+        "development-characteristics-ebd",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-behavior-emotional-5372-form-internal-c",
+      "title": "Internal practice form C (Praxis Special Education: Behavioral Disorders and Emotional Disturbances (5372))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ebd5372-b1-045",
+        "ebd5372-b1-002",
+        "ebd5372-b1-072",
+        "ebd5372-b1-021",
+        "ebd5372-b1-090",
+        "ebd5372-b1-048",
+        "ebd5372-b1-005",
+        "ebd5372-b1-075",
+        "ebd5372-b1-024",
+        "ebd5372-b1-093",
+        "ebd5372-b1-051",
+        "ebd5372-b1-008",
+        "ebd5372-b1-078",
+        "ebd5372-b1-027",
+        "ebd5372-b1-096",
+        "ebd5372-b1-054",
+        "ebd5372-b1-011",
+        "ebd5372-b1-081",
+        "ebd5372-b1-030",
+        "ebd5372-b1-099",
+        "ebd5372-b1-057",
+        "ebd5372-b1-014",
+        "ebd5372-b1-084",
+        "ebd5372-b1-033",
+        "ebd5372-b2-089",
+        "ebd5372-b1-060",
+        "ebd5372-b1-017",
+        "ebd5372-b1-087",
+        "ebd5372-b1-036",
+        "ebd5372-b2-092",
+        "ebd5372-b1-063",
+        "ebd5372-b2-002",
+        "ebd5372-b2-073",
+        "ebd5372-b1-039",
+        "ebd5372-b2-095",
+        "ebd5372-b1-066",
+        "ebd5372-b2-005",
+        "ebd5372-b2-076",
+        "ebd5372-b1-042",
+        "ebd5372-b2-098",
+        "ebd5372-b1-069",
+        "ebd5372-b2-008",
+        "ebd5372-b2-079",
+        "ebd5372-b2-019",
+        "ebd5372-b2-010",
+        "ebd5372-b2-081",
+        "ebd5372-b2-047",
+        "ebd5372-b2-022",
+        "ebd5372-b2-013",
+        "ebd5372-b2-084"
+      ],
+      "topicIds": [
+        "ebd5372-ch-06",
+        "ebd5372-ch-01",
+        "ebd5372-ch-09",
+        "ebd5372-ch-03",
+        "ebd5372-ch-11",
+        "ebd5372-ch-12",
+        "ebd5372-ch-02",
+        "ebd5372-ch-10",
+        "ebd5372-ch-04",
+        "ebd5372-ch-07",
+        "ebd5372-ch-08",
+        "ebd5372-ch-05"
+      ],
+      "unitIds": [
+        "instruction",
+        "development-characteristics-ebd",
+        "assessment",
+        "planning-managing-learning-environments",
+        "foundations-professional-responsibilities"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

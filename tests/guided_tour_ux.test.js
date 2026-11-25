@@ -41,12 +41,36 @@ describe('Feature tour navigation',()=>{
   it('names Back, Next, Finish and Exit accurately without submitting forms',()=>{
     const h=mount({tourStep:1});
     const buttons=Array.from(container.querySelectorAll('button'));
-    expect(buttons.map(b=>b.textContent.trim())).toEqual(['Exit tour','Back','Finish']);
-    expect(buttons[1].getAttribute('aria-label')).toBe('Back');
-    expect(buttons[2].getAttribute('aria-label')).toBe('Finish');
     expect(buttons.every(b=>b.type==='button')).toBe(true);
-    act(()=>buttons[1].click());expect(h.previous).toHaveBeenCalledTimes(1);
-    act(()=>buttons[2].click());expect(h.next).toHaveBeenCalledTimes(1);
+    expect(buttons.every(b=>b.getAttribute('data-help-ignore')==='true')).toBe(true);
+    const closeTop=container.querySelector('button[data-tour-close="true"]');
+    expect(closeTop?.getAttribute('aria-label')).toBe('Close');
+    const navButtons=Array.from(container.querySelectorAll('.allo-tour-controls button'));
+    expect(navButtons.map(b=>b.textContent.trim())).toEqual(['Exit tour','Back','Finish']);
+    expect(navButtons[1].getAttribute('aria-label')).toBe('Back');
+    expect(navButtons[2].getAttribute('aria-label')).toBe('Finish');
+    act(()=>navButtons[1].click());expect(h.previous).toHaveBeenCalledTimes(1);
+    act(()=>navButtons[2].click());expect(h.next).toHaveBeenCalledTimes(1);
+    act(()=>closeTop.click());expect(h.close).toHaveBeenCalledTimes(1);
+  });
+  it('supports dark and high-contrast themes, cutout click-through, and Read Aloud toggle',async ()=>{
+    const callTTS=vi.fn().mockResolvedValue(null);
+    window.callTTS=callTTS;
+    try {
+      mount({theme:'contrast'});
+      const root=container.querySelector('[role="presentation"]');
+      const dialog=container.querySelector('[role="dialog"]');
+      expect(root.className).toContain('pointer-events-none');
+      expect(Number(root.style.zIndex)).toBe(11050);
+      expect(Number(dialog.style.zIndex)).toBe(11060);
+      expect(dialog.getAttribute('data-tour-theme')).toBe('contrast');
+      expect(dialog.getAttribute('data-help-ignore')).toBe('true');
+      const ttsBtn=container.querySelector('button[data-tour-read-aloud="true"]');
+      expect(ttsBtn).not.toBeNull();
+      expect(ttsBtn.getAttribute('data-help-ignore')).toBe('true');
+      await act(async ()=>{ ttsBtn.click(); await Promise.resolve(); });
+      expect(callTTS).toHaveBeenCalledTimes(1);
+    } finally { delete window.callTTS; }
   });
   it('closes once when Escape bubbles through the dialog',()=>{
     const h=mount(), keyboard=shortcut();

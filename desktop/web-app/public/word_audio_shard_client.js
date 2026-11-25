@@ -1,11 +1,11 @@
 (function (root, factory) {
   'use strict';
   var api = factory(root);
-  if (typeof module === 'object' && module.exports) {
+  if (typeof module === 'object' && module && module.exports) {
     module.exports = api;
   }
-  if (root && typeof root === 'object') {
-    root.AlloWordAudioShards = api;
+  if (root && (typeof root === 'object' || typeof root === 'function')) {
+    try { root.AlloWordAudioShards = api; } catch (_) {}
   }
 }(typeof globalThis !== 'undefined' ? globalThis : (typeof self !== 'undefined' ? self : this), function (root) {
   'use strict';
@@ -176,7 +176,7 @@
     if (typeof rawUrl !== 'string') return false;
     try {
       var parsed = new URL(rawUrl);
-      if (parsed.username || parsed.password) return false;
+      if (parsed.username || parsed.password || parsed.search || parsed.hash) return false;
       if (parsed.protocol === 'https:') return true;
       if (allowLocalHttp && parsed.protocol === 'http:' && (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1')) return true;
       return false;
@@ -258,11 +258,11 @@
   }
 
   function decodeBase64ToUint8Array(b64) {
-    if (typeof b64 !== 'string') {
+    if (typeof b64 !== 'string' || b64.length > MAX_JSON_BYTES) {
       throw new Error('Invalid base64 audio payload.');
     }
     var cleaned = b64.replace(/\s+/g, '');
-    if (!cleaned || cleaned.length % 4 === 1 || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) {
+    if (!cleaned || cleaned.length > MAX_JSON_BYTES || cleaned.length % 4 === 1 || (cleaned.indexOf('=') >= 0 && cleaned.length % 4 !== 0) || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) {
       throw new Error('Invalid base64 audio payload.');
     }
     if (typeof atob === 'function') {
@@ -288,16 +288,19 @@
     if (typeof Buffer === 'function' && typeof btoa !== 'function') {
       return Buffer.from(bytes).toString('base64');
     }
-    var chunks = [];
-    var step = 0x4000;
-    for (var i = 0; i < bytes.length; i += step) {
-      var sub = bytes.subarray(i, Math.min(i + step, bytes.length));
-      chunks.push(String.fromCharCode.apply(null, sub));
-    }
     if (typeof btoa === 'function') {
+      var chunks = [];
+      var step = 0x4000;
+      for (var i = 0; i < bytes.length; i += step) {
+        var sub = bytes.subarray(i, Math.min(i + step, bytes.length));
+        chunks.push(String.fromCharCode.apply(null, sub));
+      }
       return btoa(chunks.join(''));
     }
-    return Buffer.from(bytes).toString('base64');
+    if (typeof Buffer === 'function') {
+      return Buffer.from(bytes).toString('base64');
+    }
+    throw new Error('Base64 encoder unavailable.');
   }
 
   function parseAudioDataUri(dataUri) {
@@ -361,7 +364,10 @@
     for (var i = 0; i < length; i++) {
       var sum = 0;
       for (var c = 0; c < activeChannels; c++) {
-        sum += channels[c][i] || 0;
+        var rawSample = channels[c][i];
+        if (typeof rawSample === 'number' && Number.isFinite(rawSample)) {
+          sum += rawSample;
+        }
       }
       var sample = activeChannels > 0 ? Math.max(-1, Math.min(1, sum / activeChannels)) : 0;
       view.setInt16(pos, sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7fff), true);
@@ -384,12 +390,17 @@
     }
   }
 
-  function invokeDecodeAudioData(ctx, arrayBuf) {
+  function invokeDecodeAudioData(ctx, arrayBuf, timeoutMs) {
     return new Promise(function (resolve, reject) {
       var settled = false;
+      var ms = typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0 ? Math.min(60000, timeoutMs) : 15000;
+      var timer = typeof setTimeout === 'function' ? setTimeout(function () {
+        done(reject, new Error('Audio decode timed out.'));
+      }, ms) : null;
       function done(fn, val) {
         if (settled) return;
         settled = true;
+        if (timer !== null && typeof clearTimeout === 'function') clearTimeout(timer);
         fn(val);
       }
       try {
@@ -419,14 +430,17 @@
         || (typeof OfflineAudioContext === 'function' ? OfflineAudioContext : null)
         || (typeof webkitOfflineAudioContext === 'function' ? webkitOfflineAudioContext : null);
       if (typeof OfflineCtx === 'function') {
-        var offline = new OfflineCtx(1, 1, 24000);
-        return invokeDecodeAudioData(offline, arrayBuf);
+        try {
+          var offline = new OfflineCtx(1, 1, 24000);
+          return invokeDecodeAudioData(offline, arrayBuf);
+        } catch (_) {}
       }
       var AudioCtx = (envRoot && (envRoot.AudioContext || envRoot.webkitAudioContext))
         || (typeof AudioContext === 'function' ? AudioContext : null)
         || (typeof webkitAudioContext === 'function' ? webkitAudioContext : null);
       if (typeof AudioCtx === 'function') {
-        var ctx = new AudioCtx();
+        var ctx;
+        try { ctx = new AudioCtx(); } catch (_) { return null; }
         return invokeDecodeAudioData(ctx, arrayBuf).then(
           function (decoded) {
             if (typeof ctx.close === 'function') {
@@ -446,11 +460,17 @@
     };
   }
 
+  function safeErrorText(err, fallback) {
+    if (err && typeof err === 'object' && typeof err.message === 'string' && err.message) return err.message;
+    if (typeof err === 'string' && err) return err;
+    try { return err != null ? String(err) : fallback; } catch (_) { return fallback; }
+  }
+
   /**
    * Create a standalone cached client for AlloFlow's 31,973-word sharded Kokoro audio store.
    */
   function createWordAudioShardClient(defaultOptions) {
-    var defaults = defaultOptions || {};
+    var defaults = isPlainObject(defaultOptions) ? defaultOptions : {};
     var envRoot = defaults.envRoot || root;
     var failCooldownMs = typeof defaults.failCooldownMs === 'number' && Number.isFinite(defaults.failCooldownMs) && defaults.failCooldownMs >= 0
       ? defaults.failCooldownMs
@@ -467,6 +487,7 @@
     var uncachedBlobUrls = new Set();
 
     var inFlightShards = new Map();
+    var inFlightWav = new Map();
     var shardCache = createLruCache(
       typeof defaults.maxShards === 'number' ? defaults.maxShards : DEFAULT_MAX_SHARDS
     );
@@ -495,14 +516,14 @@
     };
 
     function mergedOpts(options) {
-      if (!options) return defaults;
+      if (!isPlainObject(options)) return defaults;
       var out = {};
       var k;
       for (k in defaults) {
-        if (k !== '__proto__' && own(defaults, k)) out[k] = defaults[k];
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype' && own(defaults, k)) out[k] = defaults[k];
       }
       for (k in options) {
-        if (k !== '__proto__' && own(options, k)) out[k] = options[k];
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype' && own(options, k)) out[k] = options[k];
       }
       return out;
     }
@@ -517,7 +538,9 @@
 
     async function fetchJsonAcrossBases(relPath, bases, opts, validator, signal) {
       var fetchImpl = getFetch(opts);
-      var timeoutMs = typeof opts.timeoutMs === 'number' && Number.isFinite(opts.timeoutMs) && opts.timeoutMs > 0 ? opts.timeoutMs : 15000;
+      var timeoutMs = typeof opts.timeoutMs === 'number' && Number.isFinite(opts.timeoutMs) && opts.timeoutMs > 0
+        ? Math.max(100, Math.min(300000, Math.floor(opts.timeoutMs)))
+        : 15000;
       var lastErr = null;
       for (var i = 0; i < bases.length; i++) {
         checkNotAborted(signal);
@@ -538,6 +561,13 @@
           if (!res || !res.ok) {
             lastErr = new Error('HTTP ' + (res ? res.status : 'error') + ' fetching ' + url);
             continue;
+          }
+          if (res.headers && typeof res.headers.get === 'function') {
+            var cl = Number(res.headers.get('content-length'));
+            if (Number.isFinite(cl) && cl > MAX_JSON_BYTES) {
+              lastErr = new Error('JSON payload exceeds safety limit.');
+              continue;
+            }
           }
           var parsed;
           if (typeof res.text === 'function') {
@@ -595,6 +625,7 @@
         return raceWithSignal(inFlightIndex, signal);
       }
 
+      if (force) indexEpoch += 1;
       var bases = resolveBaseUrls(opts);
       var reqIndexEpoch = indexEpoch;
       var reqPromise = (async function () {
@@ -613,7 +644,7 @@
           }
           if (reqIndexEpoch === indexEpoch) {
             lastIndexFailAt = Date.now();
-            lastIndexError = err ? String(err.message || err) : 'Index load failed';
+            lastIndexError = safeErrorText(err, 'Index load failed');
           }
           return null;
         } finally {
@@ -686,7 +717,7 @@
             throw err;
           }
           if (reqEpoch === cacheEpoch) {
-            lastShardError = err ? String(err.message || err) : 'Shard load failed';
+            lastShardError = safeErrorText(err, 'Shard load failed');
           }
           return null;
         } finally {
@@ -711,6 +742,10 @@
         return rawUri;
       }
 
+      if (!opts.decodeAudioData && inFlightWav.has(normWord)) {
+        return raceWithSignal(inFlightWav.get(normWord), opts.signal);
+      }
+
       var decoder = createAudioDecoder(envRoot, opts.decodeAudioData);
       var bytes;
       try {
@@ -727,15 +762,26 @@
         return rawUri;
       }
       var reqEpoch = cacheEpoch;
-      var audioBuffer = await raceWithSignal(Promise.resolve(maybeDecoded), opts.signal);
-      checkNotAborted(opts.signal);
-      var wavBytes = encodeMonoPcm16Wav(audioBuffer);
-      var wavUri = 'data:audio/wav;base64,' + encodeUint8ArrayToBase64(wavBytes);
-      counters.wavTranscodes += 1;
-      if (reqEpoch === cacheEpoch) {
-        wavCache.set(normWord, wavUri);
+      var workPromise = (async function () {
+        var audioBuffer = await Promise.resolve(maybeDecoded);
+        var wavBytes = encodeMonoPcm16Wav(audioBuffer);
+        var wavUri = 'data:audio/wav;base64,' + encodeUint8ArrayToBase64(wavBytes);
+        counters.wavTranscodes += 1;
+        if (reqEpoch === cacheEpoch) {
+          wavCache.set(normWord, wavUri);
+        }
+        return wavUri;
+      }());
+      if (!opts.decodeAudioData) {
+        inFlightWav.set(normWord, workPromise);
+        workPromise.then(
+          function () { if (inFlightWav.get(normWord) === workPromise) inFlightWav.delete(normWord); },
+          function () { if (inFlightWav.get(normWord) === workPromise) inFlightWav.delete(normWord); }
+        );
       }
-      return wavUri;
+      var result = await raceWithSignal(workPromise, opts.signal);
+      checkNotAborted(opts.signal);
+      return result;
     }
 
     function toBlobUrl(cacheKey, dataUri) {
@@ -822,9 +868,20 @@
       var signal = opts.signal;
       checkNotAborted(signal);
 
-      var list = Array.isArray(words)
-        ? words
-        : (words && typeof words !== 'string' && typeof words[Symbol.iterator] === 'function' ? Array.from(words) : []);
+      var list = [];
+      if (Array.isArray(words)) {
+        list = words.slice(0, 5000);
+      } else if (words && typeof words !== 'string' && typeof words[Symbol.iterator] === 'function') {
+        try {
+          var iter = words[Symbol.iterator]();
+          var step;
+          while (list.length < 5000 && !(step = iter.next()).done) {
+            list.push(step.value);
+          }
+        } catch (_) {
+          list = [];
+        }
+      }
       var idx = await loadIndex(opts);
       if (!idx) {
         return { loaded: 0, missing: list.length, shardsFetched: 0, ok: false };
@@ -889,6 +946,7 @@
     function clearCache(options) {
       cacheEpoch += 1;
       inFlightShards.clear();
+      inFlightWav.clear();
       shardCache.clear();
       wavCache.clear();
       blobUrlCache.clear();

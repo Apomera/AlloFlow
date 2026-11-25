@@ -3,13 +3,13 @@
 
   var api = factory();
   if (typeof module === 'object' && module && module.exports) module.exports = api;
-  if (root) {
+  if (root && typeof root === 'object') {
     root.AlloSheetCasebook = api;
-    root.AlloModules = root.AlloModules || {};
+    if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
     root.AlloModules.AlloSheetCasebook = api;
   }
 })(
-  typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this),
+  typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null,
   function () {
     'use strict';
 
@@ -493,12 +493,12 @@
             id: obsId,
             caseId: caseId,
             orphaned: !knownCases[caseId],
-            observedAt: String(fieldByKey(observationsTable, record, 'observed_at') || ''),
+            observedAt: String(fieldByKey(observationsTable, record, 'observed_at', observationMap) || ''),
             values: values,
             cellIssues: rowIssues,
-            note: String(fieldByKey(observationsTable, record, 'qualitative_note') || ''),
-            interpretation: String(fieldByKey(observationsTable, record, 'interpretation') || ''),
-            source: String(fieldByKey(observationsTable, record, 'capture_source') || '')
+            note: String(fieldByKey(observationsTable, record, 'qualitative_note', observationMap) || ''),
+            interpretation: String(fieldByKey(observationsTable, record, 'interpretation', observationMap) || ''),
+            source: String(fieldByKey(observationsTable, record, 'capture_source', observationMap) || '')
           };
         });
         return {
@@ -719,7 +719,7 @@
     }
 
     function createObservation(book, input) {
-      if (!book || !book.definition || !book.tables || !book.tables.observations) fail('Open a valid casebook first.');
+      if (!book || !book.definition || !book.tables || !book.tables.observations || !Array.isArray(book.cases) || !Array.isArray(book.parameters)) fail('Open a valid casebook first.');
       if (!isPlainObject(input)) fail('The observation draft is invalid.');
       var caseId = safeString(input.caseId, 'Case', 120, { required: true, singleLine: true });
       if (!book.cases.some(function (item) { return item.id === caseId; })) fail('Choose a valid case.');
@@ -758,7 +758,7 @@
     }
 
     function createCase(book, name) {
-      if (!book || !book.tables || !book.tables.cases) fail('Open a valid casebook first.');
+      if (!book || !book.tables || !book.tables.cases || !Array.isArray(book.cases)) fail('Open a valid casebook first.');
       if (book.cases.length >= LIMITS.maxCases) fail('This casebook already contains ' + LIMITS.maxCases + ' cases.');
       var cleanName = safeString(name, 'Case name', LIMITS.maxCaseNameChars, { required: true, singleLine: true });
       if (book.cases.some(function (item) { return item.name.toLowerCase() === cleanName.toLowerCase(); })) {
@@ -798,7 +798,8 @@
     }
 
     function valueMissing(value) {
-      return value === null || value === undefined || String(value).trim() === '';
+      if (value === null || value === undefined) return true;
+      try { return String(value).trim() === ''; } catch (_) { return true; }
     }
 
     function valueText(parameter, value) {
@@ -830,15 +831,16 @@
     }
 
     function buildComparison(book, parameterKey) {
-      var parameter = book && book.parameters && book.parameters.find(function (item) { return item.key === parameterKey; });
+      var parameter = book && Array.isArray(book.parameters) && book.parameters.find(function (item) { return item && item.key === parameterKey; });
       if (!parameter) fail('Choose a valid comparison parameter.');
+      var cases = Array.isArray(book.cases) ? book.cases : [];
       return {
         parameter: parameter,
-        rows: book.cases.map(function (caseItem) {
+        rows: cases.map(function (caseItem) {
           var latest = caseTimeline(book, caseItem.id).find(function (observation) {
-            return !valueMissing(observation.values[parameter.key]);
+            return observation && observation.values && hasOwn(observation.values, parameter.key) && !valueMissing(observation.values[parameter.key]);
           }) || null;
-          var value = latest ? latest.values[parameter.key] : null;
+          var value = latest && latest.values && hasOwn(latest.values, parameter.key) ? latest.values[parameter.key] : null;
           return {
             caseId: caseItem.id,
             caseName: caseItem.name,
@@ -936,10 +938,11 @@
         var latestValue = latestPoint.value;
         if (typeof firstValue === 'number' && Number.isFinite(firstValue)
           && typeof latestValue === 'number' && Number.isFinite(latestValue)) {
-          firstToLatest.difference = latestValue - firstValue;
-          firstToLatest.kind = firstToLatest.difference === 0
+          var diff = latestValue - firstValue;
+          firstToLatest.difference = Number.isFinite(diff) ? diff : null;
+          firstToLatest.kind = latestValue === firstValue
             ? 'same'
-            : firstToLatest.difference > 0 ? 'higher' : 'lower';
+            : latestValue > firstValue ? 'higher' : 'lower';
         } else {
           firstToLatest.kind = String(firstValue) === String(latestValue) ? 'same' : 'changed';
         }
@@ -1017,8 +1020,9 @@
       var latest = timeline[0];
       var previous = timeline[1] || null;
       var prompts = [];
-      book.parameters.forEach(function (parameter) {
-        var latestValue = latest.values[parameter.key];
+      (book && Array.isArray(book.parameters) ? book.parameters : []).forEach(function (parameter) {
+        if (!parameter) return;
+        var latestValue = latest.values && hasOwn(latest.values, parameter.key) ? latest.values[parameter.key] : null;
         if (valueMissing(latestValue)) {
           if (prompts.length < 5) prompts.push('What would help capture ' + parameter.label + ' during the next observation?');
           return;
@@ -1027,7 +1031,7 @@
         if (range && prompts.length < 5) {
           prompts.push('Could the ' + parameter.label + ' reading be repeated or checked with a second source before drawing a conclusion?');
         }
-        if (!previous || valueMissing(previous.values[parameter.key]) || prompts.length >= 5) return;
+        if (!previous || !previous.values || !hasOwn(previous.values, parameter.key) || valueMissing(previous.values[parameter.key]) || prompts.length >= 5) return;
         var previousValue = previous.values[parameter.key];
         if (parameter.type === 'number' && typeof latestValue === 'number' && typeof previousValue === 'number' && latestValue !== previousValue) {
           prompts.push(parameter.label + ' changed from ' + valueText(parameter, previousValue) + ' to ' + valueText(parameter, latestValue) + '. What conditions or measurement differences should be checked?');

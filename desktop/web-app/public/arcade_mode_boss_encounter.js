@@ -652,18 +652,24 @@
   // Wrapped in prefers-reduced-motion: no-preference so the animations
   // are skipped for vestibular-sensitive users.
   function attachSharedArcadeCSS() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
     if (document.getElementById('ah-arcade-css')) return;
     var st = document.createElement('style');
     st.id = 'ah-arcade-css';
     st.textContent = [
+      '[data-arcade-mode="boss-encounter"] button, [data-arcade-mode="boss-encounter"] [role="button"], [data-arcade-mode="boss-encounter"] summary, [data-arcade-mode="boss-encounter"] a, [data-arcade-mode="boss-encounter"] input, [data-arcade-mode="boss-encounter"] select, [data-arcade-mode="boss-encounter"] textarea, .ah-arcade-card, .ah-arcade-verb, .ah-boss-control { touch-action: manipulation; }',
+      '[data-arcade-mode="boss-encounter"] button:focus-visible, [data-arcade-mode="boss-encounter"] [role="button"]:focus-visible, [data-arcade-mode="boss-encounter"] summary:focus-visible, [data-arcade-mode="boss-encounter"] a:focus-visible, [data-arcade-mode="boss-encounter"] input:focus-visible, [data-arcade-mode="boss-encounter"] select:focus-visible, [data-arcade-mode="boss-encounter"] textarea:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }',
       // Cards: subtle lift on hover, tighter shadow on focus, scale +
       // accent shadow when picked. Transition kept short (140ms) to feel
       // responsive without being twitchy.
       '.ah-arcade-card { transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease; }',
       '.ah-arcade-card:focus-visible, .ah-arcade-verb:focus-visible, .ah-boss-control:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
       '@media (forced-colors: active) {',
+      '  [data-arcade-mode="boss-encounter"] button:focus-visible, [data-arcade-mode="boss-encounter"] [role="button"]:focus-visible, [data-arcade-mode="boss-encounter"] summary:focus-visible, [data-arcade-mode="boss-encounter"] a:focus-visible, [data-arcade-mode="boss-encounter"] input:focus-visible, [data-arcade-mode="boss-encounter"] select:focus-visible, [data-arcade-mode="boss-encounter"] textarea:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }',
       '  .ah-arcade-card:focus-visible, .ah-arcade-verb:focus-visible, .ah-boss-control:focus-visible { outline-color: Highlight; box-shadow: none; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  [data-arcade-mode="boss-encounter"] *, [data-arcade-mode="boss-encounter"] *::before, [data-arcade-mode="boss-encounter"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
       '}',
       '@media (prefers-reduced-motion: no-preference) {',
       '  .ah-arcade-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(96,165,250,0.18); }',
@@ -785,20 +791,16 @@
       partnerRequired: false,
       ready: true,
       render: function (ctx) {
+        attachSharedArcadeCSS();
         var React = ctx.React || window.React;
         var session = ctx.session;
         // If THIS mode's session is active, show the active encounter UI.
         // Otherwise the launcher card.
         var inActiveSession = !!(session && session.modeId === 'boss-encounter');
-        if (inActiveSession) {
-          // Pass session.startedAt as a key so the encounter component
-          // remounts (resetting its state) on every fresh launch.
-          return React.createElement(BossEncounterMain, {
-            key: 'be-' + session.startedAt,
-            ctx: ctx
-          });
-        }
-        return React.createElement(BossLauncherCard, { ctx: ctx });
+        var body = inActiveSession
+          ? React.createElement(BossEncounterMain, { key: 'be-' + session.startedAt, ctx: ctx })
+          : React.createElement(BossLauncherCard, { ctx: ctx });
+        return React.createElement('div', { 'data-arcade-mode': 'boss-encounter' }, body);
       }
     });
   }
@@ -948,6 +950,7 @@
           }
           // Host, no active encounter — Start CTA
           return h('button', {
+            type: 'button',
             onClick: handleStartClassEncounter,
             disabled: disabled || deckSize < 3,
             'aria-label': 'Start a class-vs-AI encounter for session ' + ctx.sessionCode,
@@ -977,6 +980,7 @@
         // Student
         if (hasOpenClassEncounter) {
           return h('button', {
+            type: 'button',
             onClick: handleJoinClassEncounter,
             disabled: disabled || deckSize < 3,
             'aria-label': 'Join the class encounter on ' + (classEncounter.topic || 'untitled'),
@@ -1036,6 +1040,7 @@
                 + ' (decorations or glossary) to start')
         ),
         h('button', {
+            type: 'button',
           onClick: handleLaunch,
           disabled: disabled || !canAfford,
           'aria-label': 'Start a Boss Encounter (' + minutesAsked + ' minutes, ' + tokensCost + ' tokens)',
@@ -2251,6 +2256,7 @@
           phase === 'play' ? ('Round ' + round + ' of ' + MAX_ROUNDS) : phase)
       ),
       h('button', {
+            type: 'button',
         onClick: exitEncounter,
         'aria-label': 'Exit encounter',
         style: {
@@ -2278,7 +2284,7 @@
           type: 'text',
           value: topic,
           onChange: function (e) { setTopic(e.target.value); },
-          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') beginEncounter(); },
+          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') beginEncounter(); },
           placeholder: 'e.g. photosynthesis, the bill of rights, a character from your story…',
           'aria-label': 'Encounter topic',
           style: {
@@ -2296,6 +2302,7 @@
         }),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
           h('button', {
+            type: 'button',
             onClick: exitEncounter,
             style: {
               background: 'transparent', color: palette.textDim,
@@ -2305,6 +2312,7 @@
             }
           }, 'Cancel'),
           h('button', {
+            type: 'button',
             onClick: beginEncounter,
             disabled: (topic || '').trim().length < 3,
             style: {
@@ -2384,6 +2392,7 @@
           'Sparks landed: ' + history.length + ' · Total damage: ' + history.reduce(function (s, e) { return s + (e.damage || 0); }, 0)),
         h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: '14px' } },
           h('button', {
+            type: 'button',
             onClick: exitEncounter,
             style: {
               background: palette.accent, color: palette.onAccent,
@@ -2661,6 +2670,7 @@
                 }, '↑ adjusted') : null,
                 // Host-only edit affordance
                 isClassHost && !isEditing ? h('button', {
+            type: 'button',
                   onClick: function () {
                     setEditingSubId(s.id);
                     setEditingScore(s.score || 1);
@@ -2721,6 +2731,7 @@
                 h('span', { style: { fontSize: '9px', color: palette.textMute, fontStyle: 'italic' } },
                   'Upgrade-only · floor ' + (s.score || 1) + ', max 20'),
                 h('button', {
+            type: 'button',
                   onClick: function () {
                     var parsedScore = parseInt(editingScore, 10);
                     if (!isFinite(parsedScore) || parsedScore <= (s.score || 1)) {
@@ -2737,6 +2748,7 @@
                   }
                 }, 'Save'),
                 h('button', {
+            type: 'button',
                   onClick: function () { setEditingSubId(null); },
                   style: {
                     background: 'transparent', color: palette.textDim,
@@ -2805,6 +2817,7 @@
             var picked = pickedCard && pickedCard.id === card.id;
             var isUnit = card.source === 'glossary';
             return h('button', {
+            type: 'button',
               key: 'hc-' + card.id,
               className: 'ah-arcade-card' + (picked ? ' is-picked' : ''),
               onClick: function () { setPickedCard(picked ? null : card); },
@@ -2857,6 +2870,7 @@
           SPARK_VERBS.map(function (v) {
             var picked = pickedVerb && pickedVerb.id === v.id;
             return h('button', {
+            type: 'button',
               key: 'sv-' + v.id,
               className: 'ah-arcade-verb' + (picked ? ' is-active' : ''),
               onClick: function () { setPickedVerb(v); },
@@ -2939,6 +2953,7 @@
           },
             // Primary mic button — toggles based on current voice mode
             voiceMode === 'idle' ? h('button', {
+            type: 'button',
               onClick: startVoice,
               disabled: submitting,
               style: {
@@ -2955,6 +2970,7 @@
               }
             }, idleLabel)
             : voiceMode === 'webspeech-live' ? h('button', {
+            type: 'button',
               onClick: stopVoiceLive,
               'aria-label': 'Stop voice capture',
               style: {
@@ -2967,6 +2983,7 @@
             }, '⏹ Stop · listening live')
             : voiceMode === 'recording' ? h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
               h('button', {
+            type: 'button',
                 onClick: stopVoice,
                 'aria-label': 'Stop and transcribe',
                 style: {
@@ -2978,6 +2995,7 @@
                 }
               }, '⏹ Stop & transcribe'),
               h('button', {
+            type: 'button',
                 onClick: cancelVoice,
                 'aria-label': 'Cancel recording',
                 style: {
@@ -3024,6 +3042,7 @@
                 ? '✨ Spark cast this round — waiting for round ' + ((classView.currentRound || 1) + 1)
                 : (justification || '').trim().length + ' chars'),
             h('button', {
+            type: 'button',
               onClick: submitSpark,
               disabled: disabled,
               style: {

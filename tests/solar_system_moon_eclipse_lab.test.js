@@ -68,8 +68,10 @@ describe('Solar System Moon phases and eclipses lab', () => {
     expect(source).toContain('data-solarsystem-moon-lab');
     expect(source).toContain("id: 'solar-moon-phase-angle'");
     expect(source).toContain("id: 'solar-moon-node-offset'");
-    expect(source).toContain("'aria-valuetext': phaseName");
-    expect(source).toContain("role: 'img', 'aria-label': phaseName");
+    // The slider value text is localized now; it still leads with the phase name.
+    expect(source).toContain("'aria-valuetext': __alloFill(__alloT('stem.solarsystem.a11y_percent_illuminated_2', '{phaseName}, {value1} percent illuminated'), { phaseName: phaseName, value1: Math.round(illuminatedFraction * 100) })");
+    // The diagram's name is localized now and still leads with the phase name, then the outcome.
+    expect(source).toContain("role: 'img', 'aria-label': __alloFillExact(__alloT('stem.solarsystem.a11y_percent_illuminated_model_lunar_latitude_degrees', '{phaseName}. {moonDiagramOutcome}. {moonViewLabel}. {value1} percent illuminated; model lunar latitude {value2} degrees.'), { phaseName: phaseName, moonDiagramOutcome: moonDiagramOutcome,");
     expect(source).toContain("'aria-live': 'polite'");
     expect(source).toContain('var moonOutcomeVisible = !!predictionChoice;');
     expect(source).toContain("'data-moon-alignment-result': moonOutcomeVisible ? eclipseAlignment : 'hidden'");

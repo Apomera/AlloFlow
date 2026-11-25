@@ -286,6 +286,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var s = document.createElement('style');
     s.id = 'fisherlab-css';
     s.textContent = [
+      '.fl-fisherlab-root :is(button,input,select,summary) { touch-action: manipulation; }',
       '.fl-btn:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '.fl-fisherlab-root .fl-brief-grid { display:grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap:24px; align-items:center; }',
       '.fl-fisherlab-root .fl-brief-visual { display:grid; grid-template-columns:minmax(0,1fr); gap:12px; min-width:0; }',
@@ -14698,7 +14699,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     // Small repeating normal texture adds capillary-scale highlights without
     // another mesh, draw call, remote asset, or extra floating-body displacement.
     try {
-      var rippleCanvas = document.createElement('canvas'); rippleCanvas.width = rippleCanvas.height = 64;
+      var rippleCanvas = document.createElement('canvas'); if (rippleCanvas.setAttribute) rippleCanvas.setAttribute('aria-hidden', 'true'); rippleCanvas.width = rippleCanvas.height = 64;
       var rippleContext = rippleCanvas.getContext('2d');
       var rippleImage = rippleContext.createImageData(64, 64);
       for (var ry = 0; ry < 64; ry++) for (var rx = 0; rx < 64; rx++) {
@@ -20109,7 +20110,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('span', null, s.label),
                 h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
               ),
-              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], 'aria-label': s.label + ' (' + s.unit + ')', onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: s.min, max: s.max, step: s.step, value: iq[s.k], 'aria-label': s.label + ' (' + s.unit + ')', 'aria-valuetext': (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit, onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%', minHeight: 44 } })
             );
           })
         ),
@@ -21595,7 +21596,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           sim.threeError ? h('div', { style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine failed to load or initialize'),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'You can still use Chart Mode (2D fallback) — switch to the "Chart Room" tab. The full curriculum (Buoyage, COLREGS, Species ID, Regs, Glossary, Quiz) is unaffected.'),
-            h('button', {
+            h('button', { type: 'button',
               className: 'fl-btn',
               onClick: function() {
                 var retryCheckpoint = pendingCheckpointRef.current || savedVoyageCheckpoint;
@@ -21619,7 +21620,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { ref: simBarRef, className: 'fl-sim-bar', style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
               h('span', { className: 'fl-pill', style: { background: 'rgba(251,191,36,0.16)', color: '#fde68a' } }, modeProfile.label + ' · ' + modeProfile.scoreMultiplier + 'x'),
               voyageSaveIndicator(),
-              h('button', {
+              h('button', { type: 'button',
                 className: 'fl-btn',
                 onClick: function() { setSoundOn(!soundOn); },
                 style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
@@ -21628,7 +21629,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 CAMERA_VIEWS.map(function(view) {
                   var isSel = cameraView === view.id;
                   return h('button', {
-                    key: view.id,
+                    key: view.id, type: 'button',
                     className: 'fl-btn',
                     'aria-pressed': isSel,
                     title: view.hint,
@@ -21645,7 +21646,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   var isSel = timeOfDay === tod;
                   var labels = { day: '☀️ Day', sunset: '🌅 Sunset', night: '🌙 Night' };
                   return h('button', {
-                    key: tod,
+                    key: tod, type: 'button',
                     className: 'fl-btn',
                     'aria-pressed': isSel,
                     disabled: voyageMode !== 'guided',
@@ -21662,7 +21663,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   var isSel = weather === w;
                   var labels = { clear: '☀️ Clear', foggy: '🌫️ Foggy', rainy: '🌧️ Rainy' };
                   return h('button', {
-                    key: w,
+                    key: w, type: 'button',
                     className: 'fl-btn',
                     'aria-pressed': isSel,
                     disabled: voyageMode !== 'guided',
@@ -21672,15 +21673,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 })
               ),
               h('button', { type: 'button', className: 'fl-btn', 'aria-pressed': !!hud.paused, disabled: graphicsContextLost, title: graphicsContextLost ? 'Resume is unavailable while graphics recover' : (hud.paused ? 'Resume the voyage' : 'Pause the voyage'), onClick: toggleSimulatorPause, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: graphicsContextLost ? 'not-allowed' : 'pointer', opacity: graphicsContextLost ? 0.62 : 1 } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
-              h('button', {
+              h('button', { type: 'button',
                 className: 'fl-btn',
                 'aria-pressed': !!stageExpanded,
                 title: stageExpanded ? 'Return the simulator to its normal size' : 'Give the simulator the whole window',
                 onClick: toggleStageExpanded,
                 style: { padding: '6px 10px', background: stageExpanded ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: stageExpanded ? '#04141f' : '#cbd5e1', border: '1px solid ' + (stageExpanded ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
               }, stageExpanded ? '⤡ Exit full screen' : '⛶ Full screen'),
-              h('button', { className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }, title: __alloT('stem.fisherlab.shut_down_the_3d_simulator_and_return_to_the','Shut down the 3D simulator and return to the briefing') }, '✕ Leave sim'),
-              hud.closestTrapId && !hud.closestTrapHauled ? h('button', {
+              h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { padding: '6px 10px', background: 'rgba(127,29,29,0.78)', color: '#fee2e2', border: '1px solid rgba(248,113,113,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }, title: __alloT('stem.fisherlab.shut_down_the_3d_simulator_and_return_to_the','Shut down the 3D simulator and return to the briefing') }, '✕ Leave sim'),
+              hud.closestTrapId && !hud.closestTrapHauled ? h('button', { type: 'button',
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
                 style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
@@ -21974,7 +21975,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       flCastArcSvg(h, activeFishing.castMeter),
                       h('label', { style: { display: 'block', color: castPlace.inside ? '#a7f3d0' : '#fde68a', fontSize: 12, fontWeight: 800 } },
                         'Cast placement: ' + Math.round(castPlace.meter) + '% · target water ' + castPlace.lo + '–' + castPlace.hi + '% · ' + (castPlace.inside ? 'on the fish' : castPlace.short ? 'falling short' : 'thrown past'),
-                        h('input', { ref: decisionFocusRef, type: 'range', min: 0, max: 100, step: 1, value: activeFishing.castMeter, onChange: function(e) { updateFishingSession({ castMeter: Number(e.target.value) }); }, style: { width: '100%', marginTop: 10, marginBottom: 12, accentColor: castPlace.inside ? '#34d399' : '#fbbf24' } })),
+                        h('input', { ref: decisionFocusRef, type: 'range', min: 0, max: 100, step: 1, value: activeFishing.castMeter, 'aria-valuetext': Math.round(castPlace.meter) + '% (' + castPlace.lo + '–' + castPlace.hi + '%)', onChange: function(e) { updateFishingSession({ castMeter: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, marginTop: 10, marginBottom: 12, accentColor: castPlace.inside ? '#34d399' : '#fbbf24' } })),
                       h('button', { type: 'button', className: 'fl-btn', onClick: releaseFishingCast, style: actionStyle }, 'Release cast')
                     );
                   })() : null,
@@ -22569,6 +22570,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         type: 'range',
                         disabled: !!shellfishDecisionResult,
                         'aria-label': __alloT('stem.fisherlab.a11y_caliper_measurement_in_inches', 'Caliper measurement in inches'),
+                        'aria-valuetext': __alloT('stem.fisherlab.a11y_caliper_measurement_in_inches', 'Caliper measurement in inches') + ': ' + caliperVal.toFixed(2),
                         min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
                         step: 0.05,
@@ -22576,7 +22578,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         ref: decisionFocusRef,
                         'aria-describedby': 'fl-caliper-feedback',
                         onChange: function(e) { setCaliperVal(parseFloat(e.target.value)); setCaliperCheck(null); },
-                        style: { width: '100%', cursor: 'ew-resize', accentColor: '#f59e0b' }
+                        style: { width: '100%', minHeight: 44, cursor: 'ew-resize', accentColor: '#f59e0b' }
                       }),
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 8 } },
                         h('button', { type: 'button', className: 'fl-btn', disabled: !!shellfishDecisionResult, onClick: function() { var checked = evaluateCoreCaliperReading(activeLobster.length, caliperVal); setCaliperCheck(checked); flAnnounce(checked.message); }, style: { padding: '8px 12px', border: '1px solid rgba(251,191,36,0.55)', borderRadius: 6, background: shellfishDecisionResult ? '#475569' : '#78350f', color: '#fef3c7', fontWeight: 900, cursor: shellfishDecisionResult ? 'not-allowed' : 'pointer' } }, 'Lock reading'),

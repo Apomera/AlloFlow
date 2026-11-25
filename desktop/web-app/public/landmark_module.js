@@ -16,8 +16,11 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.Landmark) {
-    console.log('[Landmark] Already loaded, skipping');
+  var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  if (_win && _win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.Landmark) {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[Landmark] Already loaded, skipping');
+    }
     return;
   }
 
@@ -106,7 +109,12 @@
   // Deterministic pick from a seed (string or number) — a room's "signature"
   // landmark stays stable across sessions without any stored state.
   function _hash(seed) {
-    var s = String(seed == null ? '' : seed).slice(0, 500), h = 0;
+    var s = '';
+    if (seed != null && typeof seed !== 'symbol') {
+      try { s = String(seed); } catch (_) { s = ''; }
+    }
+    s = s.slice(0, 500);
+    var h = 0;
     for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0; }
     return h;
   }
@@ -118,14 +126,13 @@
   // Convenience: key → giant THREE.Group via Prim3D (null if Prim3D absent).
   function buildLandmark(THREE, key, opts) {
     opts = (opts && typeof opts === 'object') ? opts : {};
-    var P3D = window.AlloModules && window.AlloModules.Prim3D;
+    var P3D = _win && _win.AlloModules && _win.AlloModules.Prim3D;
     var recipe = getLandmark(key);
-    if (!THREE || !P3D || typeof P3D.buildObject !== 'function' || !recipe) return null;
+    if (!THREE || (typeof THREE !== 'object' && typeof THREE !== 'function') || !P3D || typeof P3D.buildObject !== 'function' || !recipe) return null;
     return P3D.buildObject(THREE, recipe, { unit: isSafeUnit(opts.unit) ? opts.unit : DEFAULT_UNIT });
   }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.Landmark = Object.freeze({
+  var API = Object.freeze({
     version: VERSION,
     DEFAULT_UNIT: DEFAULT_UNIT,
     listLandmarks: listLandmarks,
@@ -133,5 +140,14 @@
     pickLandmark: pickLandmark,
     buildLandmark: buildLandmark
   });
-  console.log('[Landmark] Registered (landmark/1 — ' + KEYS.length + ' giant primitive structures)');
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (_win) {
+    try {
+      if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+      _win.AlloModules.Landmark = API;
+      if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+        console.log('[Landmark] Registered (landmark/1 — ' + KEYS.length + ' giant primitive structures)');
+      }
+    } catch (_) {}
+  }
 })();

@@ -10,20 +10,27 @@
  * payload works through Firestore and the Google Mailbox session adapter.
  */
 (function(root, factory) {
+  var target = root && typeof root === 'object' ? root : null;
   var api = factory();
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root) {
-    root.AlloModules = root.AlloModules || {};
-    root.AlloModules.ConceptQuestEngine = api;
-    root.AlloModules.ConceptQuestEngineModule = true;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (target) {
+    if (!target.AlloModules || typeof target.AlloModules !== 'object') target.AlloModules = {};
+    target.AlloModules.ConceptQuestEngine = api;
+    target.AlloModules.ConceptQuestEngineModule = true;
   }
-})(typeof window !== 'undefined' ? window : null, function() {
+})(typeof window === 'object' && window ? window : null, function() {
   'use strict';
 
   var VERSION = 2;
   var logSequence = 0;
   function _hasOwn(obj, key) { return !!obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key); }
   function _isBlockedKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
+  function _safeStr(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
   function _safeImageUrl(raw) {
     if (typeof raw !== 'string') return '';
     var s = raw.trim();
@@ -56,23 +63,23 @@
     support_encourage_name: 'Encourage',
     support_encourage_description: 'A correct response restores 1 party HP for your teammate.'
   };
-  var ABILITIES = [
-    { id: 'analyze', nameKey: 'ability_analyze_name', descriptionKey: 'ability_analyze_description', name: LOCALIZED_LABELS.ability_analyze_name, emoji: '\uD83D\uDD0E', description: LOCALIZED_LABELS.ability_analyze_description, damage: 3 },
-    { id: 'explain', nameKey: 'ability_explain_name', descriptionKey: 'ability_explain_description', name: LOCALIZED_LABELS.ability_explain_name, emoji: '\uD83D\uDCA1', description: LOCALIZED_LABELS.ability_explain_description, damage: 2, heal: 1 },
-    { id: 'connect', nameKey: 'ability_connect_name', descriptionKey: 'ability_connect_description', name: LOCALIZED_LABELS.ability_connect_name, emoji: '\uD83D\uDD17', description: LOCALIZED_LABELS.ability_connect_description, damage: 2, shield: 1 },
-    { id: 'question', nameKey: 'ability_question_name', descriptionKey: 'ability_question_description', name: LOCALIZED_LABELS.ability_question_name, emoji: '\u2753', description: LOCALIZED_LABELS.ability_question_description, damage: 2, missDamage: 1 }
-  ];
-  var ROLES = [
-    { id: 'analyst', nameKey: 'role_analyst_name', descriptionKey: 'role_analyst_description', name: LOCALIZED_LABELS.role_analyst_name, emoji: '\uD83D\uDD0E', abilityId: 'analyze', description: LOCALIZED_LABELS.role_analyst_description },
-    { id: 'explainer', nameKey: 'role_explainer_name', descriptionKey: 'role_explainer_description', name: LOCALIZED_LABELS.role_explainer_name, emoji: '\uD83D\uDCA1', abilityId: 'explain', description: LOCALIZED_LABELS.role_explainer_description },
-    { id: 'connector', nameKey: 'role_connector_name', descriptionKey: 'role_connector_description', name: LOCALIZED_LABELS.role_connector_name, emoji: '\uD83D\uDD17', abilityId: 'connect', description: LOCALIZED_LABELS.role_connector_description },
-    { id: 'investigator', nameKey: 'role_investigator_name', descriptionKey: 'role_investigator_description', name: LOCALIZED_LABELS.role_investigator_name, emoji: '\u2753', abilityId: 'question', description: LOCALIZED_LABELS.role_investigator_description }
-  ];
-  var SUPPORTS = [
-    { id: 'clarify', nameKey: 'support_clarify_name', descriptionKey: 'support_clarify_description', name: LOCALIZED_LABELS.support_clarify_name, emoji: '\uD83E\uDDE0', description: LOCALIZED_LABELS.support_clarify_description },
-    { id: 'guard', nameKey: 'support_guard_name', descriptionKey: 'support_guard_description', name: LOCALIZED_LABELS.support_guard_name, emoji: '\uD83D\uDEE1\uFE0F', description: LOCALIZED_LABELS.support_guard_description },
-    { id: 'encourage', nameKey: 'support_encourage_name', descriptionKey: 'support_encourage_description', name: LOCALIZED_LABELS.support_encourage_name, emoji: '\uD83D\uDE4C', description: LOCALIZED_LABELS.support_encourage_description }
-  ];
+  var ABILITIES = Object.freeze([
+    Object.freeze({ id: 'analyze', nameKey: 'ability_analyze_name', descriptionKey: 'ability_analyze_description', name: LOCALIZED_LABELS.ability_analyze_name, emoji: '\uD83D\uDD0E', description: LOCALIZED_LABELS.ability_analyze_description, damage: 3 }),
+    Object.freeze({ id: 'explain', nameKey: 'ability_explain_name', descriptionKey: 'ability_explain_description', name: LOCALIZED_LABELS.ability_explain_name, emoji: '\uD83D\uDCA1', description: LOCALIZED_LABELS.ability_explain_description, damage: 2, heal: 1 }),
+    Object.freeze({ id: 'connect', nameKey: 'ability_connect_name', descriptionKey: 'ability_connect_description', name: LOCALIZED_LABELS.ability_connect_name, emoji: '\uD83D\uDD17', description: LOCALIZED_LABELS.ability_connect_description, damage: 2, shield: 1 }),
+    Object.freeze({ id: 'question', nameKey: 'ability_question_name', descriptionKey: 'ability_question_description', name: LOCALIZED_LABELS.ability_question_name, emoji: '\u2753', description: LOCALIZED_LABELS.ability_question_description, damage: 2, missDamage: 1 })
+  ]);
+  var ROLES = Object.freeze([
+    Object.freeze({ id: 'analyst', nameKey: 'role_analyst_name', descriptionKey: 'role_analyst_description', name: LOCALIZED_LABELS.role_analyst_name, emoji: '\uD83D\uDD0E', abilityId: 'analyze', description: LOCALIZED_LABELS.role_analyst_description }),
+    Object.freeze({ id: 'explainer', nameKey: 'role_explainer_name', descriptionKey: 'role_explainer_description', name: LOCALIZED_LABELS.role_explainer_name, emoji: '\uD83D\uDCA1', abilityId: 'explain', description: LOCALIZED_LABELS.role_explainer_description }),
+    Object.freeze({ id: 'connector', nameKey: 'role_connector_name', descriptionKey: 'role_connector_description', name: LOCALIZED_LABELS.role_connector_name, emoji: '\uD83D\uDD17', abilityId: 'connect', description: LOCALIZED_LABELS.role_connector_description }),
+    Object.freeze({ id: 'investigator', nameKey: 'role_investigator_name', descriptionKey: 'role_investigator_description', name: LOCALIZED_LABELS.role_investigator_name, emoji: '\u2753', abilityId: 'question', description: LOCALIZED_LABELS.role_investigator_description })
+  ]);
+  var SUPPORTS = Object.freeze([
+    Object.freeze({ id: 'clarify', nameKey: 'support_clarify_name', descriptionKey: 'support_clarify_description', name: LOCALIZED_LABELS.support_clarify_name, emoji: '\uD83E\uDDE0', description: LOCALIZED_LABELS.support_clarify_description }),
+    Object.freeze({ id: 'guard', nameKey: 'support_guard_name', descriptionKey: 'support_guard_description', name: LOCALIZED_LABELS.support_guard_name, emoji: '\uD83D\uDEE1\uFE0F', description: LOCALIZED_LABELS.support_guard_description }),
+    Object.freeze({ id: 'encourage', nameKey: 'support_encourage_name', descriptionKey: 'support_encourage_description', name: LOCALIZED_LABELS.support_encourage_name, emoji: '\uD83D\uDE4C', description: LOCALIZED_LABELS.support_encourage_description })
+  ]);
   var ROOM_LAYOUT = [
     { x: 8, y: 48 }, { x: 23, y: 22 }, { x: 39, y: 48 }, { x: 54, y: 20 },
     { x: 54, y: 76 }, { x: 70, y: 48 }, { x: 84, y: 22 }, { x: 92, y: 62 }
@@ -139,8 +146,8 @@
 
   function interpolate(text, params) {
     return Object.keys(params || {}).reduce(function(result, name) {
-      return result.split('{' + name + '}').join(String(params[name]));
-    }, String(text == null ? '' : text));
+      return result.split('{' + name + '}').join(_safeStr(params[name]));
+    }, _safeStr(text));
   }
 
   function createLocalizedStrings(translate) {
@@ -156,7 +163,7 @@
   function textFromStrings(strings, key, params) {
     var template = (_hasOwn(strings, key) && typeof strings[key] === 'string' && strings[key])
       || (_hasOwn(LOCALIZED_DEFAULTS, key) ? LOCALIZED_DEFAULTS[key] : '')
-      || String(key == null ? '' : key);
+      || _safeStr(key);
     return interpolate(template, params);
   }
 
@@ -169,35 +176,37 @@
   }
 
   function clamp(value, min, max) {
-    var number = Number(value);
+    var number;
+    try { number = Number(value); } catch (_) { number = NaN; }
     return Math.max(min, Math.min(max, Number.isFinite(number) ? number : min));
   }
 
   function cleanText(value, fallback, maxLength) {
-    var text = String(value == null ? '' : value).replace(/[<>]/g, '').trim();
+    var text = _safeStr(value).replace(/[<>]/g, '').trim();
     if (!text) text = fallback || '';
     return text.slice(0, maxLength || 500);
   }
 
   function isAnswerKeyDisputed(question) {
-    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    if (!question || typeof question !== 'object' || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(_safeStr(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
     var review = question.keyCheck;
-    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    var key = question.correctAnswer != null ? _safeStr(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? _safeStr(question.options[question.correctIndex]) : '';
     if (review && typeof review === 'object') {
-      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (review.checkedKey != null && _safeStr(review.checkedKey) !== key) return false;
       if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
     }
-    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+    var fc = _safeStr(question.factCheck);
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(fc) || /correction\s*\/\s*warning/i.test(fc.replace(/\*/g, ''));
   }
 
   function questionAnswerIndex(question) {
     if (!question || typeof question !== 'object') return -1;
     if (isAnswerKeyDisputed(question)) return -1;
-    var type = String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-');
+    var type = _safeStr(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) < 0) return -1;
     var options = question.options || question.choices;
     if (!Array.isArray(options) || options.length < 2 || options.length > 6) return -1;
-    var text = function(value) { return String(value && typeof value === 'object' ? value.text || value.label || '' : value == null ? '' : value).normalize('NFC').trim().toLowerCase(); };
+    var text = function(value) { return _safeStr(value && typeof value === 'object' ? value.text || value.label || '' : value).normalize('NFC').trim().toLowerCase(); };
     if (options.some(function(value) { return !text(value); })) return -1;
     if (Number.isInteger(question.correctIndex)) return question.correctIndex >= 0 && question.correctIndex < options.length ? question.correctIndex : -1;
     var answer = question.correctAnswer;
@@ -216,16 +225,16 @@
     var challenge = room && room.challenge || {};
     if (challenge.correctIndex == null && quest && typeof quest.turnKey === 'string' && quest.turnKey) return quest.turnKey;
     var value = '';
-    try { value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]); } catch (_) { value = String(challenge.id || ''); }
+    try { value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]); } catch (_) { value = _safeStr(challenge.id); }
     var hash = 2166136261;
     for (var i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
-    return (quest && quest.sessionId ? quest.sessionId + ':' : '') + String(quest && quest.turn || 0) + ':' + String(quest && quest.currentRoomId || '') + ':' + (hash >>> 0).toString(36);
+    return (quest && quest.sessionId ? _safeStr(quest.sessionId) + ':' : '') + _safeStr(quest && quest.turn || 0) + ':' + _safeStr(quest && quest.currentRoomId) + ':' + (hash >>> 0).toString(36);
   }
 
   function currentActions(quest, actions) {
-    if (!quest) return {};
+    if (!quest || typeof quest !== 'object') return {};
     var room = getRoom(quest, quest && quest.currentRoomId);
-    var options = room && room.challenge && room.challenge.options || [];
+    var options = room && room.challenge && Array.isArray(room.challenge.options) ? room.challenge.options : [];
     var key = getTurnKey(quest);
     var filtered = {};
     Object.keys(actions || {}).slice(0, 250).forEach(function(uid) {
@@ -242,14 +251,14 @@
   }
 
   function currentVotes(quest, votes, turns) {
-    if (!quest) return {};
+    if (!quest || typeof quest !== 'object') return {};
     var room = getRoom(quest, quest && quest.currentRoomId);
     var filtered = {};
     Object.keys(votes || {}).slice(0, 250).forEach(function(uid) {
       if (uid === '__proto__' || uid === 'constructor' || uid === 'prototype') return;
-      if (quest.actionSchema === 1 && (!turns || turns[uid] !== getTurnKey(quest))) return;
+      if (quest.actionSchema === 1 && (!turns || !_hasOwn(turns, uid) || turns[uid] !== getTurnKey(quest))) return;
       var target = getRoom(quest, votes[uid]);
-      if (!room || !target || (room.neighbors || []).indexOf(target.id) < 0) return;
+      if (!room || !target || !Array.isArray(room.neighbors) || room.neighbors.indexOf(target.id) < 0) return;
       if (target.kind === 'boss' && (quest.sigils || []).length < requiredSigils(quest)) return;
       filtered[uid] = target.id;
     });
@@ -257,8 +266,11 @@
   }
 
   function requiredSigils(quest) {
-    var available = new Set((quest && quest.rooms || []).filter(function(room) { return room.kind !== 'start' && room.kind !== 'treasure' && room.kind !== 'boss'; }).map(function(room) { return room.concept; }));
-    return Math.max(1, Math.min(Number(quest && quest.sigilsRequired) || 3, available.size || 1));
+    var rooms = quest && Array.isArray(quest.rooms) ? quest.rooms : [];
+    var available = new Set(rooms.filter(function(room) { return room && typeof room === 'object' && room.kind !== 'start' && room.kind !== 'treasure' && room.kind !== 'boss'; }).map(function(room) { return room.concept; }));
+    var req;
+    try { req = Number(quest && quest.sigilsRequired); } catch (_) { req = NaN; }
+    return Math.max(1, Math.min((Number.isFinite(req) && req > 0) ? req : 3, available.size || 1));
   }
 
   function recoveredPhase(quest, party) {
@@ -340,14 +352,20 @@
   function coverage(quest) {
     var bank = classAssessmentBank(quest);
     if (!bank) return null;
-    var attempted = bank.items.filter(function(item) { return !!(bank.attempts && bank.attempts[item.sourceIndex] && bank.attempts[item.sourceIndex].rounds > 0); }).length;
+    var attempts = bank.attempts && typeof bank.attempts === 'object' ? bank.attempts : null;
+    var attempted = bank.items.filter(function(item) {
+      var k = item != null ? String(item.sourceIndex) : '';
+      return !!(attempts && _hasOwn(attempts, k) && attempts[k] && attempts[k].rounds > 0);
+    }).length;
     return { total: bank.items.length, attempted: attempted, remaining: bank.items.length - attempted, complete: attempted === bank.items.length, excluded: quest.excludedQuestions || 0 };
   }
 
   function nextAssessmentIndex(bank, start) {
+    var attempts = bank.attempts && typeof bank.attempts === 'object' ? bank.attempts : null;
     for (var offset = 0; offset < bank.items.length; offset++) {
       var index = (start + offset) % bank.items.length;
-      if (!bank.attempts[bank.items[index].sourceIndex]) return index;
+      var k = String(bank.items[index].sourceIndex);
+      if (!attempts || !_hasOwn(attempts, k) || !attempts[k]) return index;
     }
     return start % bank.items.length;
   }
@@ -357,8 +375,10 @@
   }
 
   function addLearningRound(totals, round, quest) {
+    if (!round || typeof round !== 'object') return totals;
     var concepts = Object.assign(Object.create(null), totals.concepts || {});
     var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
+    if (_isBlockedKey(concept)) concept = 'concept-' + concept;
     var previous = concepts[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
     concepts[concept] = { concept: concept, correct: previous.correct + (round.correct || 0), total: previous.total + (round.total || 0), rounds: previous.rounds + 1 };
     var cleared = (totals.conceptsCleared || []).slice();
@@ -532,7 +552,7 @@
   }
 
   function getRoom(quest, roomId) {
-    return quest && Array.isArray(quest.rooms) ? quest.rooms.find(function(room) { return room.id === roomId; }) : null;
+    return quest && Array.isArray(quest.rooms) ? quest.rooms.find(function(room) { return room && typeof room === 'object' && room.id === roomId; }) : null;
   }
 
   function tallyVotes(votes, allowedRoomIds) {
@@ -543,13 +563,13 @@
       var roomId = votes[uid];
       if (typeof roomId === 'string' && !_isBlockedKey(roomId) && allowedRoomIds.indexOf(roomId) >= 0) counts[roomId] = (counts[roomId] || 0) + 1;
     });
-    return allowedRoomIds.filter(function(id) { return counts[id] > 0; }).sort(function(a, b) {
+    return allowedRoomIds.filter(function(id) { return typeof id === 'string' && counts[id] > 0; }).sort(function(a, b) {
       return (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b);
     })[0] || null;
   }
 
   function resolveTravel(quest, votes, selectedRoomId) {
-    if (!quest || typeof quest !== 'object') return questError(quest, 'travel_not_ready');
+    if (!quest || typeof quest !== 'object' || !Array.isArray(quest.rooms)) return questError(quest, 'travel_not_ready');
     var current = getRoom(quest, quest.currentRoomId);
     if (!current || quest.phase !== 'explore') return questError(quest, 'travel_not_ready');
     var destinationId = selectedRoomId || tallyVotes(votes, current.neighbors || []);
@@ -559,17 +579,19 @@
     if (destination.kind === 'boss' && (quest.sigils || []).length < requiredSigils(quest)) {
       return questError(quest, 'travel_gate_locked', { count: requiredSigils(quest) - (quest.sigils || []).length });
     }
-    if (destination.reward && (quest.inventory || []).length >= 12 && !(quest.inventory || []).some(function(item) { return item.id === destination.reward.id; })) return questError(quest, 'inventory_full');
+    if (destination.reward && (quest.inventory || []).length >= 12 && !(quest.inventory || []).some(function(item) { return item && item.id === destination.reward.id; })) return questError(quest, 'inventory_full');
     var visited = (quest.visited || []).indexOf(destinationId) >= 0 ? (quest.visited || []).slice() : (quest.visited || []).concat([destinationId]);
     var rooms = quest.rooms.map(function(room) {
+      if (!room || typeof room !== 'object') return room;
       var bank = classAssessmentBank(quest);
       if (room.id !== destinationId) return bank && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? Object.assign({}, room, { challenge: sourceChallengePreview(room.challenge) }) : room;
       var scheduled = bank && room.enemy && room.enemy.hp > 0 && Number.isInteger(room.challenge && room.challenge.sourceIndex) ? bank.items[bank.cursor] : null;
       return Object.assign({}, room, room.reward ? { reward: null } : {}, scheduled ? { challenge: scheduled } : {});
     });
     var inventory = (quest.inventory || []).slice();
-    if (destination.reward && !inventory.some(function(item) { return item.id === destination.reward.id; })) inventory.push(destination.reward);
+    if (destination.reward && !inventory.some(function(item) { return item && item.id === destination.reward.id; })) inventory.push(destination.reward);
     var nextPhase = destination.enemy && destination.enemy.hp > 0 ? 'battle' : 'explore';
+    var nextTurn = (Number.isFinite(quest.turn) ? quest.turn : 0) + 1;
     return { quest: Object.assign({}, quest, {
       currentRoomId: destinationId,
       gmUndo: null,
@@ -579,8 +601,8 @@
       inventory: inventory.slice(0, 12),
       phase: nextPhase,
       activeEvent: null,
-      turn: quest.turn + 1,
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn + 1, text: destination.reward ? questText(quest, 'log_travel_found', { room: destination.name, item: destination.reward.name }) : questText(quest, 'log_travel', { room: destination.name }) }]).slice(-30)
+      turn: nextTurn,
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: nextTurn, text: destination.reward ? questText(quest, 'log_travel_found', { room: destination.name, item: destination.reward.name }) : questText(quest, 'log_travel', { room: destination.name }) }]).slice(-30)
     }) };
   }
 
@@ -667,12 +689,13 @@
     var sourceIndex = bank ? bank.items.findIndex(function(item) { return item.sourceIndex === challenge.sourceIndex; }) : -1;
     if (sourceIndex >= 0) {
       var attempts = Object.assign(Object.create(null), bank.attempts);
-      var previous = attempts[challenge.sourceIndex] || { rounds: 0, correct: 0, total: 0 };
-      attempts[challenge.sourceIndex] = { rounds: previous.rounds + 1, correct: previous.correct + correct, total: previous.total + total };
+      var srcKey = String(challenge.sourceIndex);
+      var previous = _hasOwn(attempts, srcKey) && attempts[srcKey] ? attempts[srcKey] : { rounds: 0, correct: 0, total: 0 };
+      attempts[srcKey] = { rounds: previous.rounds + 1, correct: previous.correct + correct, total: previous.total + total };
       bank = Object.assign({}, bank, { attempts: attempts });
       bank.cursor = nextAssessmentIndex(bank, sourceIndex + 1);
     }
-    var remaining = bank ? bank.items.filter(function(item) { return !bank.attempts[item.sourceIndex]; }).length : 0;
+    var remaining = bank ? bank.items.filter(function(item) { return !bank.attempts || !_hasOwn(bank.attempts, String(item.sourceIndex)) || !bank.attempts[item.sourceIndex]; }).length : 0;
     var enemyHp = Math.max(0, room.enemy.hp - damage);
     var barrierHeld = !!(bank && room.kind === 'boss' && remaining > 0 && enemyHp === 0);
     if (barrierHeld) {
@@ -723,7 +746,8 @@
       roundRecord.learnerEvidence = Object.keys(actions).map(function(uid) {
         var peerSupportReceived = Object.keys(actions).some(function(helperUid) {
           var helper = actions[helperUid];
-          return helperUid !== uid && helper.supportTargetUid === uid && helper.answerIndex === challenge.correctIndex && (helper.supportId === 'guard' || helper.supportId === 'encourage' || helper.supportId === 'clarify' && actions[uid].answerIndex !== challenge.correctIndex);
+          var helperTarget = cleanText(helper.supportTargetUid, '', 128);
+          return helperUid !== uid && helperTarget === uid && helper.answerIndex === challenge.correctIndex && (helper.supportId === 'guard' || helper.supportId === 'encourage' || helper.supportId === 'clarify' && actions[uid].answerIndex !== challenge.correctIndex);
         });
         return { uid: uid, correct: actions[uid].answerIndex === challenge.correctIndex, peerSupportReceived: peerSupportReceived };
       });
@@ -739,7 +763,7 @@
       lastRound: {
         turn: quest.turn,
         prompt: challenge.prompt,
-        correctAnswer: challenge.options[challenge.correctIndex],
+        correctAnswer: Array.isArray(challenge.options) ? challenge.options[challenge.correctIndex] : undefined,
         correct: correct,
         total: total,
         damage: damage,
@@ -774,10 +798,13 @@
   }
 
   function useItem(quest, itemIndex) {
-    var index = Number(itemIndex);
-    if (!Number.isInteger(index) || index < 0 || index >= (quest.inventory || []).length) return questError(quest, 'item_unavailable');
+    if (!quest || typeof quest !== 'object' || !quest.party || !Array.isArray(quest.inventory)) return questError(quest, 'item_unavailable');
+    var index;
+    try { index = Number(itemIndex); } catch (_) { index = NaN; }
+    if (!Number.isInteger(index) || index < 0 || index >= quest.inventory.length) return questError(quest, 'item_unavailable');
     var inventory = quest.inventory.slice();
     var item = inventory.splice(index, 1)[0];
+    if (!item || typeof item !== 'object') return questError(quest, 'item_unavailable');
     var effect = item.effect || {};
     if ((effect.type === 'heal' && quest.party.hp >= quest.party.maxHp) || (effect.type === 'shield' && quest.party.shield >= 8) || (effect.type === 'clue' && quest.phase !== 'battle')) return questError(quest, 'item_no_effect');
     var party = Object.assign({}, quest.party);
@@ -838,9 +865,10 @@
   }
 
   function publishGmDraft(quest, rawDraft) {
+    if (!quest || typeof quest !== 'object' || !Array.isArray(quest.rooms)) throw new Error(questText(quest, 'encounter_none'));
     var draft = normalizeGmDraft(rawDraft, quest && quest.localizedStrings);
-    var party = Object.assign({}, quest.party);
-    var inventory = (quest.inventory || []).slice();
+    var party = Object.assign({}, quest.party || { hp: 0, maxHp: 0, shield: 0, xp: 0 });
+    var inventory = Array.isArray(quest.inventory) ? quest.inventory.slice() : [];
     var rooms = quest.rooms.slice();
     var phase = quest.phase;
     if (draft.type === 'item') {
@@ -850,7 +878,7 @@
       // Publishing awards the item. Its effect applies once, when the party uses it.
     } else if (draft.type === 'challenge') {
       rooms = rooms.map(function(room) {
-        if (room.id !== quest.currentRoomId) return room;
+        if (!room || room.id !== quest.currentRoomId) return room;
         var gate = room.enemy && room.enemy.hp > 0 ? room.enemy : {
           id: 'gm-challenge-' + Date.now(), name: questText(quest, 'challenge_gate'), emoji: '\uD83E\uDDE9', hp: 4, maxHp: 4, attack: 1
         };
@@ -858,7 +886,7 @@
       });
       phase = 'battle';
     } else if (draft.type === 'enemy') {
-      rooms = rooms.map(function(room) { return room.id === quest.currentRoomId ? Object.assign({}, room, { enemy: draft.enemy, challenge: draft.challenge, challenges: [draft.challenge], challengeIndex: 0 }) : room; });
+      rooms = rooms.map(function(room) { return room && room.id === quest.currentRoomId ? Object.assign({}, room, { enemy: draft.enemy, challenge: draft.challenge, challenges: [draft.challenge], challengeIndex: 0 }) : room; });
       phase = 'battle';
     }
     return Object.assign({}, quest, {
@@ -866,7 +894,7 @@
       party: party,
       inventory: inventory,
       phase: party.hp <= 0 ? 'defeat' : phase,
-      turn: quest.turn + (draft.type === 'challenge' || draft.type === 'enemy' ? 1 : 0),
+      turn: (Number.isFinite(quest.turn) ? quest.turn : 0) + (draft.type === 'challenge' || draft.type === 'enemy' ? 1 : 0),
       gmUndo: gmSnapshot(quest),
       gmHistory: gmHistoryWithCurrent(quest),
       activeEvent: { type: draft.type, title: draft.title, description: draft.description, publishedAt: Date.now() },
@@ -875,9 +903,10 @@
   }
 
   function undoLastGmChange(quest) {
-    var history = quest && Array.isArray(quest.gmHistory) ? quest.gmHistory.slice() : [];
-    var snapshot = history.length ? history.pop() : (quest && quest.gmUndo);
-    if (!snapshot || snapshot.currentRoomId !== quest.currentRoomId || snapshot.roundCount !== (quest.roundHistory || []).length) return questError(quest, 'gm_undo_unavailable');
+    if (!quest || typeof quest !== 'object') return questError(quest, 'gm_undo_unavailable');
+    var history = Array.isArray(quest.gmHistory) ? quest.gmHistory.slice() : [];
+    var snapshot = history.length ? history.pop() : quest.gmUndo;
+    if (!snapshot || typeof snapshot !== 'object' || snapshot.currentRoomId !== quest.currentRoomId || snapshot.roundCount !== (quest.roundHistory || []).length) return questError(quest, 'gm_undo_unavailable');
     if (snapshot.learningRoundCount != null && snapshot.learningRoundCount !== learningTotals(quest).rounds) return questError(quest, 'gm_undo_unavailable');
     var restoredLog = (quest.log || []).slice(0, Math.max(0, snapshot.logLength || 0));
     restoredLog.push({ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_gm_undo') });
@@ -895,7 +924,7 @@
   }
 
   function adjustEncounter(quest, kind, amount) {
-    if (!quest || ['heal', 'shield', 'enemy'].indexOf(kind) < 0) return questError(quest, 'pacing_invalid');
+    if (!quest || typeof quest !== 'object' || !quest.party || !Array.isArray(quest.rooms) || ['heal', 'shield', 'enemy'].indexOf(kind) < 0) return questError(quest, 'pacing_invalid');
     amount = clamp(amount, -6, 6);
     var party = Object.assign({}, quest.party);
     var rooms = quest.rooms.slice();
@@ -907,7 +936,7 @@
       if (!currentRoom || !currentRoom.enemy || currentRoom.enemy.hp <= 0 || quest.phase !== 'battle') return questError(quest, 'pacing_no_encounter');
       var nextEnemyHp = clamp(currentRoom.enemy.hp + amount, 1, currentRoom.enemy.maxHp);
       rooms = rooms.map(function(room) {
-        return room.id === currentRoom.id ? Object.assign({}, room, { enemy: Object.assign({}, room.enemy, { hp: nextEnemyHp }) }) : room;
+        return room && room.id === currentRoom.id ? Object.assign({}, room, { enemy: Object.assign({}, room.enemy, { hp: nextEnemyHp }) }) : room;
       });
     }
     phase = recoveredPhase(quest, party);
@@ -924,6 +953,7 @@
   }
 
   function dismissEvent(quest) {
+    if (!quest || typeof quest !== 'object') return quest;
     return Object.assign({}, quest, { activeEvent: null });
   }
 
@@ -949,7 +979,7 @@
       roleSynergies: totals.roleSynergies,
       peerAssists: totals.peerAssists,
       puzzlesSolved: totals.puzzlesSolved,
-      sigils: (quest && quest.sigils || []).slice(),
+      sigils: (quest && Array.isArray(quest.sigils) ? quest.sigils : []).slice(),
       conceptsCleared: totals.conceptsCleared,
       conceptBreakdown: conceptBreakdown,
       needsReview: conceptBreakdown.length && conceptBreakdown[0].accuracy < 70 ? conceptBreakdown[0] : null,
@@ -992,33 +1022,64 @@
   if (!React) return;
   /** Solo-only assessment coverage and grading for Concept Quest. Live rules stay in concept_quest_engine.js. */
 (function(root, factory) {
+  var target = root && typeof root === 'object' ? root : null;
   var api = factory();
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.ConceptQuestSoloEngine = api; }
-})(typeof window !== 'undefined' ? window : null, function() {
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (target) {
+    if (!target.AlloModules || typeof target.AlloModules !== 'object') target.AlloModules = {};
+    target.AlloModules.ConceptQuestSoloEngine = api;
+  }
+})(typeof window === 'object' && window ? window : null, function() {
   'use strict';
-  var TYPES = ['mcq', 'multi-select', 'fill-blank', 'numeric-response', 'sequence-sense', 'relation-mismatch', 'answer-evidence', 'short-answer', 'self-explanation'];
-  function text(value) { return String(value == null ? '' : value); }
+  var hasOwn = Object.prototype.hasOwnProperty;
+  var TYPES = Object.freeze(['mcq', 'multi-select', 'fill-blank', 'numeric-response', 'sequence-sense', 'relation-mismatch', 'answer-evidence', 'short-answer', 'self-explanation']);
+  function text(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+    try { return String(value); } catch (_) { return ''; }
+  }
   function optionText(value) { return text(value && typeof value === 'object' ? value.text != null ? value.text : value.label : value); }
   function norm(value) { return optionText(value).normalize('NFC').trim().toLowerCase().replace(/\s+/g, ' '); }
-  function copy(value) { return JSON.parse(JSON.stringify(value)); }
+  function copy(value, seen, depth) {
+    if (value === null || typeof value !== 'object') return value;
+    var d = depth || 0;
+    if (d > 20) return Array.isArray(value) ? [] : {};
+    var visited = seen || new Set();
+    if (visited.has(value)) return Array.isArray(value) ? [] : {};
+    visited.add(value);
+    try {
+      if (Array.isArray(value)) return value.map(function(el) { return copy(el, visited, d + 1); });
+      var out = {};
+      Object.keys(value).forEach(function(k) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+        out[k] = copy(value[k], visited, d + 1);
+      });
+      return out;
+    } finally {
+      visited.delete(value);
+    }
+  }
   function finiteNumber(value) { return (typeof value === 'number' || typeof value === 'string') && String(value).trim() !== '' && Number.isFinite(Number(value)); }
   function typeOf(item) {
-    var type = text(item.itemType || item.type || 'mcq').toLowerCase().replace(/_/g, '-');
+    var type = text(item && (item.itemType || item.type) || 'mcq').toLowerCase().replace(/_/g, '-');
     if (['multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) >= 0) return 'mcq';
     return type;
   }
   function indexFor(options, value, explicitIndex) {
+    if (!Array.isArray(options)) return -1;
     if (Number.isInteger(explicitIndex)) return explicitIndex >= 0 && explicitIndex < options.length ? explicitIndex : -1;
-    var exact = options.findIndex(function(option) { return norm(option) === norm(value) && norm(value) !== ''; });
+    var target = norm(value);
+    var exact = target !== '' ? options.findIndex(function(option) { return norm(option) === target; }) : -1;
     if (exact >= 0) return exact;
     if (Number.isInteger(value)) return value >= 0 && value < options.length ? value : -1;
     if (typeof value === 'string' && /^[A-Z]$/i.test(value.trim())) { var letter = value.trim().toUpperCase().charCodeAt(0) - 65; return letter < options.length ? letter : -1; }
     return -1;
   }
   function correctMultiIndices(item) {
-    if (Array.isArray(item.correctIndices)) return Array.from(new Set(item.correctIndices)).filter(function(index) { return Number.isInteger(index) && index >= 0 && index < item.options.length; });
-    return item.options.map(function(option, index) { return (Array.isArray(item.correctAnswers) ? item.correctAnswers : []).some(function(answer) { return norm(option) === norm(answer); }) ? index : -1; }).filter(function(index) { return index >= 0; });
+    var options = item && Array.isArray(item.options) ? item.options : [];
+    if (item && Array.isArray(item.correctIndices)) return Array.from(new Set(item.correctIndices)).filter(function(index) { return Number.isInteger(index) && index >= 0 && index < options.length; });
+    return options.map(function(option, index) { return (item && Array.isArray(item.correctAnswers) ? item.correctAnswers : []).some(function(answer) { return norm(option) === norm(answer); }) ? index : -1; }).filter(function(index) { return index >= 0; });
   }
   // Sequence Sense answer key. The author supplies one "intentionallyWrongIndex",
   // but an adjacent swap leaves BOTH items out of place, so the accepted set is
@@ -1028,21 +1089,26 @@
   // removal can repair falls back to the authored index, else every position
   // (all are out of place). Returns { orderIsCorrect, misplaced: [positions] }.
   function sequenceSenseTruth(presentedOrder, intentionallyWrongIndex, itemCount) {
-    var n = Number(itemCount) || 0;
+    var n = (typeof itemCount === 'number' || typeof itemCount === 'string') ? (Number(itemCount) || 0) : 0;
     var valid = n > 0 && Array.isArray(presentedOrder) && presentedOrder.length === n
       && presentedOrder.every(function (value) { return Number.isInteger(value) && value >= 0 && value < n; })
       && new Set(presentedOrder).size === n;
     if (!valid || presentedOrder.every(function (value, index) { return value === index; })) return { orderIsCorrect: true, misplaced: [] };
+    var prefixSorted = new Array(n);
+    prefixSorted[0] = true;
+    for (var p = 1; p < n; p++) {
+      prefixSorted[p] = prefixSorted[p - 1] && (p === 1 || presentedOrder[p - 2] < presentedOrder[p - 1]);
+    }
+    var suffixSorted = new Array(n);
+    suffixSorted[n - 1] = true;
+    for (var s = n - 2; s >= 0; s--) {
+      suffixSorted[s] = suffixSorted[s + 1] && (s === n - 2 || presentedOrder[s + 1] < presentedOrder[s + 2]);
+    }
     var misplaced = [];
     for (var skip = 0; skip < n; skip++) {
-      var previous = -1;
-      var sorted = true;
-      for (var j = 0; j < n && sorted; j++) {
-        if (j === skip) continue;
-        if (presentedOrder[j] < previous) sorted = false;
-        previous = presentedOrder[j];
+      if (prefixSorted[skip] && suffixSorted[skip] && (skip === 0 || skip === n - 1 || presentedOrder[skip - 1] < presentedOrder[skip + 1])) {
+        misplaced.push(skip);
       }
-      if (sorted) misplaced.push(skip);
     }
     if (!misplaced.length) {
       misplaced = Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < n
@@ -1060,14 +1126,15 @@
     return 'items ' + numbers.slice(0, -1).join(', ') + ' and ' + numbers[numbers.length - 1] + ' were out of place';
   }
   function isAnswerKeyDisputed(question) {
-    if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
+    if (!question || typeof question !== 'object' || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(text(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
     var review = question.keyCheck;
-    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    var key = question.correctAnswer != null ? text(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? text(question.options[question.correctIndex]) : '';
     if (review && typeof review === 'object') {
-      if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
+      if (review.checkedKey != null && text(review.checkedKey) !== key) return false;
       if (['confirmed', 'disputed', 'unclear', 'stale'].indexOf(review.status) >= 0) return review.status === 'disputed';
     }
-    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(String(question.factCheck || '')) || /correction\s*\/\s*warning/i.test(String(question.factCheck || '').replace(/\*/g, ''));
+    var fc = text(question.factCheck);
+    return /\[\[\s*KEY\s*:\s*DISPUTED\b/i.test(fc) || /correction\s*\/\s*warning/i.test(fc.replace(/\*/g, ''));
   }
 
   function hasKey(item) {
@@ -1110,7 +1177,7 @@
       if (Array.isArray(item.pairs)) item.pairs = item.pairs.map(function(pair) { return pair && typeof pair === 'object' ? Object.assign({}, pair, {left:optionText(pair.left),right:optionText(pair.right)}) : pair; });
       item.correctIndex = indexFor(item.options, item.correctAnswer, item.correctIndex);
       item.concept = text(item.conceptLabel || item.concept || item.standard || item.topic || item.skill || item.category || 'Question ' + (sourceIndex + 1));
-      item.explanation = isAnswerKeyDisputed(item) ? '' : text(item.keyCheck && item.keyCheck.checkedKey != null && String(item.keyCheck.checkedKey) !== String(item.correctAnswer) ? item.explanation || item.feedback || item.rationale : item.factCheck || item.explanation || item.feedback || item.rationale);
+      item.explanation = isAnswerKeyDisputed(item) ? '' : text(item.keyCheck && item.keyCheck.checkedKey != null && text(item.keyCheck.checkedKey) !== text(item.correctAnswer) ? item.explanation || item.feedback || item.rationale : item.factCheck || item.explanation || item.feedback || item.rationale);
       item.imageUrl = text(item.imageUrl);
       item.imageAltText = text(item.imageAltText);
       item.optionImageUrls = Array.isArray(item.optionImageUrls) ? item.optionImageUrls : [];
@@ -1123,6 +1190,7 @@
     return result;
   }
   function initialResponse(item) {
+    if (!item || typeof item !== 'object') return { text: '', unit: '' };
     if (item.selfReviewRequired || isAnswerKeyDisputed(item) || ['short-answer', 'self-explanation'].indexOf(item.type) >= 0) return { text: '', guideRevealed: false, selfReview: '' };
     if (item.type === 'mcq') return { answerIndex: null };
     if (item.type === 'multi-select') return { selectedIndices: [] };
@@ -1132,17 +1200,19 @@
     return { text: '', unit: '' };
   }
   function answerGuide(item) {
+    if (!item || typeof item !== 'object') return 'No answer guide was supplied. Explain your reasoning and mark what you need to review.';
     if (isAnswerKeyDisputed(item)) return 'Answer key under review. Discuss your reasoning with your teacher; no answer is being marked correct.';
     var answer;
-    if (item.type === 'mcq') answer = item.options && item.options[item.correctIndex] || item.correctAnswer || item.expectedAnswer;
-    else if (item.type === 'multi-select') answer = correctMultiIndices(item).map(function(index) { return item.options[index]; }).join('; ');
-    else if (item.type === 'fill-blank') answer = text(item.expectedFill) + (Array.isArray(item.acceptableAlternatives) && item.acceptableAlternatives.length ? '\nAlso accept: ' + item.acceptableAlternatives.join(', ') : '');
-    else if (item.type === 'numeric-response') answer = finiteNumber(item.correctValue) ? text(item.correctValue) + (item.unit ? ' ' + item.unit : '') + (Number(item.tolerance) > 0 ? ' (±' + item.tolerance + ')' : '') + (Array.isArray(item.acceptableUnits) && item.acceptableUnits.length ? '\nAlso accept units: ' + item.acceptableUnits.join(', ') : '') : '';
+    if (item.type === 'mcq') answer = (Array.isArray(item.options) && item.options[item.correctIndex]) || item.correctAnswer || item.expectedAnswer;
+    else if (item.type === 'multi-select') answer = correctMultiIndices(item).map(function(index) { return Array.isArray(item.options) ? item.options[index] : ''; }).join('; ');
+    else if (item.type === 'fill-blank') answer = text(item.expectedFill) + (Array.isArray(item.acceptableAlternatives) && item.acceptableAlternatives.length ? '\nAlso accept: ' + item.acceptableAlternatives.map(text).join(', ') : '');
+    else if (item.type === 'numeric-response') answer = finiteNumber(item.correctValue) ? text(item.correctValue) + (item.unit ? ' ' + text(item.unit) : '') + (finiteNumber(item.tolerance) && Number(item.tolerance) > 0 ? ' (±' + text(item.tolerance) + ')' : '') + (Array.isArray(item.acceptableUnits) && item.acceptableUnits.length ? '\nAlso accept units: ' + item.acceptableUnits.map(text).join(', ') : '') : '';
     else if (item.type === 'sequence-sense') {
-      var sequenceTruth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, (item.items || []).length);
-      answer = (sequenceTruth.orderIsCorrect ? 'The displayed order is correct.' : 'Displayed ' + describeSequenceMisplaced(sequenceTruth.misplaced) + '.') + '\nCorrect order: ' + (item.items || []).join(' → ') + '\nOrdering principle: ' + text(item.orderingPrinciple);
+      var seqItems = Array.isArray(item.items) ? item.items : [];
+      var sequenceTruth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, seqItems.length);
+      answer = (sequenceTruth.orderIsCorrect ? 'The displayed order is correct.' : 'Displayed ' + describeSequenceMisplaced(sequenceTruth.misplaced) + '.') + '\nCorrect order: ' + seqItems.map(text).join(' → ') + '\nOrdering principle: ' + text(item.orderingPrinciple);
     }
-    else if (item.type === 'relation-mismatch') { var pair = (item.pairs || [])[item.wrongPairIndex] || {}; answer = 'Mismatched pair: ' + text(pair.left) + ' ↔ ' + text(pair.right) + '\nRepair: ' + text(pair.left) + ' → ' + text(item.correctPartnerForWrong); }
+    else if (item.type === 'relation-mismatch') { var pair = (Array.isArray(item.pairs) ? item.pairs[item.wrongPairIndex] : null) || {}; answer = 'Mismatched pair: ' + text(pair.left) + ' ↔ ' + text(pair.right) + '\nRepair: ' + text(pair.left) + ' → ' + text(item.correctPartnerForWrong); }
     else if (item.type === 'answer-evidence') answer = 'Answer: ' + text(item.correctAnswer) + '\nEvidence: ' + text(item.correctEvidence);
     else answer = item.rubric || item.expectedAnswer || item.sampleAnswer || item.correctAnswer;
     return text(answer || 'No answer guide was supplied. Explain your reasoning and mark what you need to review.');
@@ -1153,9 +1223,14 @@
     return Object.assign({ complete: true, correct: score === maximum, gradable: true, status: score === maximum ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect', score: score, maxScore: maximum }, parts || {});
   }
   function parseNumeric(raw) {
-    var value = text(raw).trim().replace(/,/g, '');
+    var value = text(raw).trim().slice(0, 500).replace(/,/g, '');
     var fraction = value.match(/^([+-]?\d+)\s*\/\s*(\d+)(?:\s+(.+))?$/);
-    if (fraction) return Number(fraction[2]) !== 0 ? { value: Number(fraction[1]) / Number(fraction[2]), unit: text(fraction[3]).trim() } : null;
+    if (fraction) {
+      var denom = Number(fraction[2]);
+      if (denom === 0) return null;
+      var q = Number(fraction[1]) / denom;
+      return Number.isFinite(q) ? { value: q, unit: text(fraction[3]).trim() } : null;
+    }
     var decimal = value.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:\s*(.*))?$/i);
     return decimal && Number.isFinite(Number(decimal[1])) ? { value: Number(decimal[1]), unit: text(decimal[2]).trim() } : null;
   }
@@ -1169,13 +1244,16 @@
       return { complete: true, correct: null, gradable: false, status: 'self-reviewed', score: null, maxScore: null, selfReview: response.selfReview };
     }
     if (item.type === 'mcq') {
-      if (!Number.isInteger(response.answerIndex) || response.answerIndex < 0 || response.answerIndex >= item.options.length) return incomplete('Choose an answer.');
+      var mcqOptions = Array.isArray(item.options) ? item.options : [];
+      if (!Number.isInteger(response.answerIndex) || response.answerIndex < 0 || response.answerIndex >= mcqOptions.length) return incomplete('Choose an answer.');
       return result(item, response.answerIndex === item.correctIndex ? 1 : 0, 1);
     }
     if (item.type === 'multi-select') {
-      if (!Array.isArray(response.selectedIndices) || !response.selectedIndices.length || response.selectedIndices.some(function(index) { return !Number.isInteger(index) || index < 0 || index >= item.options.length; })) return incomplete('Select at least one valid answer.');
+      var msOptions = Array.isArray(item.options) ? item.options : [];
+      if (!Array.isArray(response.selectedIndices) || !response.selectedIndices.length || response.selectedIndices.some(function(index) { return !Number.isInteger(index) || index < 0 || index >= msOptions.length; })) return incomplete('Select at least one valid answer.');
       var selected = Array.from(new Set(response.selectedIndices));
       var expected = correctMultiIndices(item);
+      if (!expected.length) return incomplete('Compare this item with its answer guide.');
       var right = selected.filter(function(index) { return expected.indexOf(index) >= 0; }).length;
       var wrong = selected.length - right;
       return result(item, Math.round(100 * Math.max(0, right - wrong) / expected.length), 100, { selectedCorrect: right, selectedWrong: wrong });
@@ -1191,39 +1269,44 @@
       if (response.unit && parsed.unit && unitNorm(response.unit) !== unitNorm(parsed.unit)) return incomplete('Use the same unit in the answer and unit fields.');
       var actualUnit = text(response.unit || parsed.unit);
       var units = [item.unit || ''].concat(Array.isArray(item.acceptableUnits) ? item.acceptableUnits : []).map(unitNorm).filter(Boolean);
-      var valueCorrect = Math.abs(parsed.value - Number(item.correctValue)) <= Math.max(0, Number(item.tolerance) || 0) + 1e-9;
+      var tol = finiteNumber(item.tolerance) ? Math.max(0, Number(item.tolerance)) : 0;
+      var valueCorrect = Math.abs(parsed.value - Number(item.correctValue)) <= tol + 1e-9;
       var unitCorrect = !units.length || units.indexOf(unitNorm(actualUnit)) >= 0;
       var numericScore = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && units.length > 0 ? 50 : 0;
       return result(item, numericScore, 100, { valueCorrect: valueCorrect, unitCorrect: unitCorrect, numericValue: parsed.value, unit: actualUnit });
     }
     if (item.type === 'sequence-sense') {
-      if (['yes', 'no'].indexOf(response.verifyAnswer) < 0 || !norm(response.principleAnswer)) return incomplete('Check the order and choose its ordering principle.');
-      if (response.verifyAnswer === 'no' && (!Number.isInteger(response.wrongIndex) || response.wrongIndex < 0 || response.wrongIndex >= item.items.length)) return incomplete('Choose the misplaced displayed item.');
-      var truth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, item.items.length);
+      var seqList = Array.isArray(item.items) ? item.items : [];
+      if (!seqList.length || ['yes', 'no'].indexOf(response.verifyAnswer) < 0 || !norm(response.principleAnswer)) return incomplete('Check the order and choose its ordering principle.');
+      if (response.verifyAnswer === 'no' && (!Number.isInteger(response.wrongIndex) || response.wrongIndex < 0 || response.wrongIndex >= seqList.length)) return incomplete('Choose the misplaced displayed item.');
+      var truth = sequenceSenseTruth(item.presentedOrder, item.intentionallyWrongIndex, seqList.length);
       var verify = (response.verifyAnswer === 'yes') === truth.orderIsCorrect;
       var diagnose = response.verifyAnswer === 'yes' ? verify : truth.misplaced.indexOf(response.wrongIndex) >= 0;
       // response.order is the student's arrangement (canonical indices); null
       // means "left as displayed", which is only right when the display was.
-      var arranged = Array.isArray(response.order) ? response.order : Array.isArray(item.presentedOrder) ? item.presentedOrder : item.items.map(function(_, index) { return index; });
-      var arrange = arranged.length === item.items.length && arranged.every(function(value, index) { return value === index; });
+      var arranged = Array.isArray(response.order) ? response.order : Array.isArray(item.presentedOrder) ? item.presentedOrder : seqList.map(function(_, index) { return index; });
+      var arrange = arranged.length === seqList.length && arranged.every(function(value, index) { return value === index; });
       var principle = norm(response.principleAnswer) === norm(item.orderingPrinciple);
       return result(item, Number(verify) + Number(diagnose) + Number(arrange) + Number(principle), 4, { step1Correct: verify, step2Correct: diagnose, arrangeCorrect: arrange, step3Correct: principle });
     }
     if (item.type === 'relation-mismatch') {
-      if (!Number.isInteger(response.pairIndex) || response.pairIndex < 0 || response.pairIndex >= item.pairs.length || !norm(response.partnerAnswer)) return incomplete('Choose a mismatched pair and its replacement partner.');
+      var relPairs = Array.isArray(item.pairs) ? item.pairs : [];
+      if (!Number.isInteger(response.pairIndex) || response.pairIndex < 0 || response.pairIndex >= relPairs.length || !norm(response.partnerAnswer)) return incomplete('Choose a mismatched pair and its replacement partner.');
       var pairCorrect = response.pairIndex === item.wrongPairIndex;
       var partnerCorrect = norm(response.partnerAnswer) === norm(item.correctPartnerForWrong);
       return result(item, Number(pairCorrect) + Number(partnerCorrect), 2, { step1Correct: pairCorrect, step2Correct: partnerCorrect });
     }
     if (item.type === 'answer-evidence') {
-      if (!Number.isInteger(response.answerIndex) || response.answerIndex < 0 || response.answerIndex >= item.answerOptions.length || !Number.isInteger(response.evidenceIndex) || response.evidenceIndex < 0 || response.evidenceIndex >= item.evidenceOptions.length) return incomplete('Choose both an answer and supporting evidence.');
-      var answerCorrect = response.answerIndex === indexFor(item.answerOptions, item.correctAnswer);
-      var evidenceCorrect = response.evidenceIndex === indexFor(item.evidenceOptions, item.correctEvidence);
+      var ansOpts = Array.isArray(item.answerOptions) ? item.answerOptions : [];
+      var evOpts = Array.isArray(item.evidenceOptions) ? item.evidenceOptions : [];
+      if (!Number.isInteger(response.answerIndex) || response.answerIndex < 0 || response.answerIndex >= ansOpts.length || !Number.isInteger(response.evidenceIndex) || response.evidenceIndex < 0 || response.evidenceIndex >= evOpts.length) return incomplete('Choose both an answer and supporting evidence.');
+      var answerCorrect = response.answerIndex === indexFor(ansOpts, item.correctAnswer);
+      var evidenceCorrect = response.evidenceIndex === indexFor(evOpts, item.correctEvidence);
       return result(item, Number(answerCorrect) + Number(evidenceCorrect), 2, { answerCorrect: answerCorrect, evidenceCorrect: evidenceCorrect });
     }
     return incomplete('Compare this item with its answer guide.');
   }
-  function currentItem(quest) { return quest && quest.solo && quest.solo.bank[quest.solo.currentIndex] || null; }
+  function currentItem(quest) { return quest && quest.solo && Array.isArray(quest.solo.bank) && quest.solo.bank[quest.solo.currentIndex] || null; }
   function seal(base, quest) { return Object.assign({}, quest, { turnKey: base.getTurnKey(quest) }); }
   function schedule(base, quest) {
     var item = currentItem(quest);
@@ -1255,23 +1338,26 @@
   }
   function error(quest, message) { return { quest: quest, error: message }; }
   function travel(base, quest, roomId) {
-    if (!quest || !quest.solo) return error(quest, 'Start a solo adventure first.');
+    if (!base || typeof base.resolveTravel !== 'function' || !quest || !quest.solo) return error(quest, 'Start a solo adventure first.');
     var outcome = base.resolveTravel(quest, {}, roomId);
     if (outcome.error) return outcome;
     return Object.assign({}, outcome, { quest: schedule(base, outcome.quest) });
   }
   function resolveTurn(base, quest, action) {
-    if (!quest || !quest.solo || quest.phase !== 'battle') return error(quest, 'There is no active solo encounter.');
-    action = action || {};
+    if (!base || typeof base.resolveBattle !== 'function' || typeof base.getRoom !== 'function' || !quest || !quest.solo || !Array.isArray(quest.solo.bank) || !quest.solo.bank.length || quest.phase !== 'battle') return error(quest, 'There is no active solo encounter.');
+    action = action && typeof action === 'object' ? action : {};
     if (!(base.ABILITIES || []).some(function(ability) { return ability.id === action.abilityId; }) || !(base.ROLES || []).some(function(role) { return role.id === action.roleId; })) return error(quest, 'Choose an adventurer role and ability.');
     var item = currentItem(quest);
     var evaluated = grade(item, action.response);
     if (!evaluated.complete) return Object.assign(error(quest, evaluated.error), { grade: evaluated });
     var room = base.getRoom(quest, quest.currentRoomId);
-    var previous = quest.solo.attempts[item.sourceIndex];
+    if (!room) return error(quest, 'There is no active solo encounter.');
+    var soloAttempts = quest.solo.attempts && typeof quest.solo.attempts === 'object' ? quest.solo.attempts : {};
+    var srcKey = String(item.sourceIndex);
+    var previous = hasOwn.call(soloAttempts, srcKey) ? soloAttempts[srcKey] : undefined;
     var firstAttempt = !previous;
-    var attempts = Object.assign({}, quest.solo.attempts);
-    attempts[item.sourceIndex] = { count: (previous && previous.count || 0) + 1, firstCorrect: previous ? previous.firstCorrect : evaluated.correct, lastCorrect: evaluated.correct, firstStatus: previous ? previous.firstStatus : evaluated.status, firstSelfReview: previous ? previous.firstSelfReview || null : evaluated.selfReview || null, status: evaluated.status, selfReview: evaluated.selfReview || null };
+    var attempts = Object.assign({}, soloAttempts);
+    attempts[srcKey] = { count: (previous && previous.count || 0) + 1, firstCorrect: previous ? previous.firstCorrect : evaluated.correct, lastCorrect: evaluated.correct, firstStatus: previous ? previous.firstStatus : evaluated.status, firstSelfReview: previous ? previous.firstSelfReview || null : evaluated.selfReview || null, status: evaluated.status, selfReview: evaluated.selfReview || null };
     var cursor = quest.solo.cursor + (firstAttempt && quest.solo.currentIndex === quest.solo.cursor ? 1 : 0);
     var remaining = quest.solo.bank.length - cursor;
     // Project the already-graded result into live battle mechanics. No generated
@@ -1284,7 +1370,7 @@
     var updatedRoom = base.getRoom(next, room.id);
     var enemy = Object.assign({}, updatedRoom.enemy);
     var party = Object.assign({}, next.party);
-    var sigils = next.sigils.slice();
+    var sigils = Array.isArray(next.sigils) ? next.sigils.slice() : [];
     var damage = outcome.summary.damage;
     var incoming = outcome.summary.incoming;
     var encounterRule = next.lastRound.encounterRule || '';
@@ -1311,13 +1397,13 @@
     var repeatCursor = quest.solo.repeatCursor;
     var currentIndex = cursor;
     if (cursor >= quest.solo.bank.length) {
-      var retryIndices = quest.solo.bank.map(function(entry, index) { var attempt = attempts[entry.sourceIndex]; return attempt && attempt.lastCorrect === false ? index : -1; }).filter(function(index) { return index >= 0; });
+      var retryIndices = quest.solo.bank.map(function(entry, index) { var k = String(entry.sourceIndex); var attempt = hasOwn.call(attempts, k) ? attempts[k] : null; return attempt && attempt.lastCorrect === false ? index : -1; }).filter(function(index) { return index >= 0; });
       if (!retryIndices.length) retryIndices = quest.solo.bank.map(function(_, index) { return index; });
       currentIndex = retryIndices[repeatCursor % retryIndices.length];
       repeatCursor += 1;
     }
     var record = { sourceIndex: item.sourceIndex, type: item.type, roomId: room.id, roomKind: room.kind, turn: quest.turn, response: copy(action.response), status: evaluated.status, correct: evaluated.correct, gradable: evaluated.gradable, firstAttempt: firstAttempt, score: evaluated.score, maxScore: evaluated.maxScore, answerGuide: answerGuide(item), prompt: item.prompt, concept: item.concept, explanation: item.explanation, damage: damage, incoming: incoming, xp: evaluated.gradable ? party.xp - quest.party.xp : 0, selfReview: evaluated.selfReview || null, enemyDefeated: enemy.hp === 0, encounterRule: encounterRule, regrouped: regrouped };
-    var history = quest.solo.history.concat([record]);
+    var history = (Array.isArray(quest.solo.history) ? quest.solo.history : []).concat([record]);
     var solo = Object.assign({}, quest.solo, { cursor: cursor, currentIndex: currentIndex, repeatCursor: repeatCursor, attempts: attempts, history: history });
     var lastRound = Object.assign({}, next.lastRound, record, { correctAnswer: record.answerGuide, total: evaluated.gradable ? 1 : 0 });
     next = Object.assign({}, next, { solo: solo, party: party, sigils: sigils, phase: phase, activeEvent: null, lastRound: lastRound,
@@ -1329,8 +1415,9 @@
   }
   function coverage(quest) {
     var solo = quest && quest.solo;
-    if (!solo) return { total: 0, attempted: 0, remaining: 0, graded: 0, correct: 0, incorrect: 0, selfReviewed: 0, needsPractice: 0, accuracy: null, firstAttemptAccuracy: null, complete: false, items: [], missedItems: [] };
-    var items = solo.bank.map(function(item) { var attempt = solo.attempts[item.sourceIndex]; return Object.assign({}, item, { attempted: !!attempt, attempts: attempt && attempt.count || 0, firstCorrect: attempt ? attempt.firstCorrect : null, lastCorrect: attempt ? attempt.lastCorrect : null, status: attempt ? attempt.status : 'unseen', firstStatus: attempt ? attempt.firstStatus : 'unseen', firstSelfReview: attempt && attempt.firstSelfReview || null, selfReview: attempt && attempt.selfReview || null }); });
+    if (!solo || !Array.isArray(solo.bank)) return { total: 0, attempted: 0, remaining: 0, graded: 0, correct: 0, incorrect: 0, selfReviewed: 0, needsPractice: 0, accuracy: null, firstAttemptAccuracy: null, complete: false, items: [], missedItems: [] };
+    var attemptsMap = solo.attempts && typeof solo.attempts === 'object' ? solo.attempts : {};
+    var items = solo.bank.map(function(item) { var k = String(item.sourceIndex); var attempt = hasOwn.call(attemptsMap, k) ? attemptsMap[k] : null; return Object.assign({}, item, { attempted: !!attempt, attempts: attempt && attempt.count || 0, firstCorrect: attempt ? attempt.firstCorrect : null, lastCorrect: attempt ? attempt.lastCorrect : null, status: attempt ? attempt.status : 'unseen', firstStatus: attempt ? attempt.firstStatus : 'unseen', firstSelfReview: attempt && attempt.firstSelfReview || null, selfReview: attempt && attempt.selfReview || null }); });
     var attempted = items.filter(function(item) { return item.attempted; }).length;
     var graded = items.filter(function(item) { return item.attempted && item.firstCorrect !== null; }).length;
     var firstCorrect = items.filter(function(item) { return item.firstCorrect === true; }).length;
@@ -1342,7 +1429,7 @@
   }
   function createDebrief(quest) {
     var summary = coverage(quest);
-    var history = quest && quest.solo && quest.solo.history || [];
+    var history = quest && quest.solo && Array.isArray(quest.solo.history) ? quest.solo.history : [];
     var groups = Object.create(null);
     summary.items.forEach(function(item) {
       if (!item.attempted) return;
@@ -1353,9 +1440,9 @@
       groups[item.concept] = group;
     });
     var breakdown = Object.keys(groups).map(function(key) { var entry = groups[key]; return Object.assign({}, entry, { accuracy: entry.total ? Math.round(100 * entry.correct / entry.total) : null, firstAttemptAccuracy: entry.total ? Math.round(100 * entry.firstCorrect / entry.total) : null }); });
-    return Object.assign({}, summary, { outcome: quest && quest.phase === 'complete' ? 'victory' : quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress', rounds: history.length, history: history, conceptBreakdown: breakdown, sigils: quest && quest.sigils || [], missedItems: summary.missedItems });
+    return Object.assign({}, summary, { outcome: quest && quest.phase === 'complete' ? 'victory' : quest && quest.phase === 'defeat' ? 'regroup' : 'in-progress', rounds: history.length, history: history, conceptBreakdown: breakdown, sigils: quest && Array.isArray(quest.sigils) ? quest.sigils : [], missedItems: summary.missedItems });
   }
-  return { VERSION: 1, TYPES: TYPES, isAnswerKeyDisputed: isAnswerKeyDisputed, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief };
+  return Object.freeze({ VERSION: 1, TYPES: TYPES, isAnswerKeyDisputed: isAnswerKeyDisputed, normalizeItems: normalizeItems, initialResponse: initialResponse, answerGuide: answerGuide, parseNumeric: parseNumeric, grade: grade, currentItem: currentItem, createSession: createSession, resolveTurn: resolveTurn, travel: travel, coverage: coverage, createDebrief: createDebrief });
 });
 
   /* Local-only, account-scoped save slots for Solo Concept Quest. No network writes. */

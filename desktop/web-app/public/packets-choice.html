@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Make choice, sort, and writing packets</title>
+<meta name="description" content="Make Concept Sort, Sequence Order, Tiered Writing, and UDL Choice Board packets in three steps. Built in your browser without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-choice.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packet_sort_write_adapters.js" defer></script>
+<script src="packet_choice_builder.js" defer></script>
+<script src="packets_station_bilingual.js" defer></script>
+<script src="packets_qr_crypto.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets-choice.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html" aria-current="page">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
+    <a class="top-link" href="packets-results.html">Add up results</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>Nothing is generated when you make a file or when a student uses it. Templates are curated plain text lists, and every score uses deterministic comparison.</li>
+      <li>The file is put together in this browser tab. Your choices, prompts, cards, and passages are not sent anywhere. The page scripts ask the network for nothing, and the rule below tells the browser to refuse them if they tried.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>This page loads <span id="file-count">fifteen</span> files, all from this site: the page itself, three stylesheets, ten scripts, and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page source. It loads no fonts, no trackers, and nothing from another site. Try it opens this site's preview page in a new tab.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>On this device the page keeps your last choices. It never keeps a student's code name. The button that removes your choices is under About this page, at the bottom.</li>
+      <li>Open a file I made reads a packet file you saved before, on this device only. Nothing in it is run.</li>
+    </ul>
+    <p id="can-title">A packet file can:</p>
+    <ul aria-labelledby="can-title">
+      <li>Run Concept Sort, Sequence Order, Tiered Writing (with 3 scaffold levels), or a multi-path UDL Choice Board offline in one file.</li>
+      <li>Show optional home-language directions, reading tools, and a printable writing sheet.</li>
+      <li>Keep the student's place on that device, and save results as CSV, JSON, or an optional sealed QR code.</li>
+    </ul>
+    <p id="cannot-title">A packet file cannot:</p>
+    <ul aria-labelledby="cannot-title">
+      <li>Run AI. Nothing is generated when you make a file or when a student uses it.</li>
+      <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>Read other files on the student's device or send data without the student saving or sharing results.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Make choice, sort, and writing packets</h1>
+    <p class="scope">Create Concept Sort, Sequence Order, Tiered Writing, or multi-path UDL Choice Board packets that run offline in one file.</p>
+
+    <div id="reopen" class="reopen" hidden>
+      <p class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
+        <span class="hint" id="reopen-hint">Start from a packet file you saved before, or drop one here.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
+      </p>
+      <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A packet file you made before">
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="reopen-line" class="reopen-line"></p>
+        <ul id="reopen-list"></ul>
+        <p class="row reopen-actions"><a class="btn btn-small" id="reopen-page" href="packets.html" hidden>Open that page</a><button type="button" class="btn btn-text btn-small" id="reopen-close">Close</button></p>
+      </div>
+    </div>
+
+    <nav aria-label="Steps">
+      <ol class="steps">
+        <li><button type="button" class="step-tab" data-go="1" aria-current="step"><span class="step-n" aria-hidden="true">1</span><span class="step-label"><span class="sr-only">Step 1: </span>Choose activity</span></button></li>
+        <li><button type="button" class="step-tab" data-go="2"><span class="step-n" aria-hidden="true">2</span><span class="step-label"><span class="sr-only">Step 2: </span>Edit content &amp; supports</span></button></li>
+        <li><button type="button" class="step-tab" data-go="3"><span class="step-n" aria-hidden="true">3</span><span class="step-label"><span class="sr-only">Step 3: </span>Make the file</span></button></li>
+      </ol>
+    </nav>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to put the file together. Nothing is sent anywhere.</p></noscript>
+
+    <div id="loading" class="sheet">
+      <p class="count-line" role="status">Getting the parts of the page, about 1.4 MB.</p>
+      <p class="hint">If this line is still here after a minute, load the page again.</p>
+    </div>
+
+    <div id="load-problem" class="sheet" hidden>
+      <p class="count-line">The page could not load all of its parts.</p>
+      <p class="sheet-intro" id="load-problem-text">Check the connection, then load the page again. Nothing has been lost.</p>
+      <p class="actions"><a class="btn btn-primary" href="packets-choice.html">Load the page again</a></p>
+    </div>
+
+    <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    <!-- STEP 1 -->
+    <section id="step-1" class="sheet" aria-labelledby="step-1-title" hidden>
+      <p class="kicker">Step 1 of 3</p>
+      <h2 id="step-1-title" tabindex="-1">Choose an activity or starter template</h2>
+
+      <div class="block">
+        <h3>Start from a K-12 template</h3>
+        <p class="hint">Load a ready-to-edit ELA, Science, or Social Studies packet, then adjust any text in Step 2.</p>
+        <div class="row filter-row" role="group" aria-label="Filter templates by subject" id="subject-filters">
+          <button type="button" class="btn btn-small" data-subject="all" aria-pressed="true">All subjects</button>
+          <button type="button" class="btn btn-small" data-subject="Science" aria-pressed="false">Science</button>
+          <button type="button" class="btn btn-small" data-subject="ELA" aria-pressed="false">ELA</button>
+          <button type="button" class="btn btn-small" data-subject="Social Studies" aria-pressed="false">Social Studies</button>
+        </div>
+        <div id="template-list" class="template-grid"></div>
+      </div>
+
+      <fieldset class="block">
+        <legend>Activity type</legend>
+        <div class="choices" id="activity-radios">
+          <label class="choice">
+            <input type="radio" name="activity" value="choice_board">
+            <span class="choice-name">UDL Choice Board (One Goal, Multi-Path)</span>
+            <span class="choice-line">Bundle 2 or 3 pathways (Concept Sort, Sequence Order, Cloze, or Tiered Writing) in one file. Students choose their path and results record both mastery and chosen modality.</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="activity" value="concept_sort">
+            <span class="choice-name">Concept Sort</span>
+            <span class="choice-line">Students sort cards into 2 to 4 categories by dragging, tapping, or using the keyboard menu. Results log per-card accuracy and misconceptions.</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="activity" value="sequence_order">
+            <span class="choice-name">Sequence Order / Timeline</span>
+            <span class="choice-line">Students arrange 3 to 8 steps, story events, or processes from first to last using Up/Down buttons and click-to-place slots.</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="activity" value="tiered_writing">
+            <span class="choice-name">Tiered Writing</span>
+            <span class="choice-line">Passage and prompt with 3 student-toggleable scaffold levels (Sentence Frames + Word Bank, Sentence Starters + Checklist, or Independent + Checklist), live word count, and print sheet.</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="block" id="mode-block" hidden>
+        <legend>Practice or Check mode</legend>
+        <p class="hint">Concept Sort and Sequence Order can run as Practice (with instant feedback and a second try) or as a one-try Check.</p>
+        <div class="radios">
+          <label class="radio"><input type="radio" name="mode" value="practice"> <span>Practice (feedback and retry)</span></label>
+          <label class="radio"><input type="radio" name="mode" value="probe"> <span>Check (one try, answers hidden until finished)</span></label>
+        </div>
+        <div id="check-extra" class="check-extra" hidden>
+          <div class="field">
+            <label for="f-check-form">Form label</label>
+            <input type="text" id="f-check-form" maxlength="40" autocomplete="off" value="Form A">
+          </div>
+          <div class="field">
+            <label for="f-check-time">Optional time limit (minutes, leave blank for untimed)</label>
+            <input type="number" id="f-check-time" min="0" max="60" step="1" autocomplete="off">
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary push" id="next-1">Next: edit content &amp; supports</button>
+        <p id="step-1-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
+      <p class="kicker">Step 2 of 3</p>
+      <h2 id="step-2-title" tabindex="-1">Edit content and student supports</h2>
+
+      <!-- Concept Sort Editor -->
+      <div id="ed-sort" class="editor-panel" hidden>
+        <h3>Concept Sort content</h3>
+        <div class="field">
+          <label for="f-cs-topic">Topic name</label>
+          <input type="text" id="f-cs-topic" maxlength="60" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-cs-prompt">Student directions</label>
+          <input type="text" id="f-cs-prompt" maxlength="220" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-cs-hint">Optional hint (hidden behind Show hint)</label>
+          <input type="text" id="f-cs-hint" maxlength="220" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-cs-cats">Categories (2 to 4 lines: <code>Label | Optional description</code>)</label>
+          <textarea id="f-cs-cats" rows="4" spellcheck="true"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-cs-cards">Cards (2 to 12 lines: <code>Card text | Category label | Optional detail | Optional icon</code>)</label>
+          <span class="hint" id="cs-cards-hint">Match each card's category label to one of the categories above. Optional icon can be an emoji or blank.</span>
+          <textarea id="f-cs-cards" rows="7" aria-describedby="cs-cards-hint" spellcheck="true"></textarea>
+        </div>
+        <p id="cs-parse-note" class="result-sub" role="status"></p>
+      </div>
+
+      <!-- Sequence Order Editor -->
+      <div id="ed-seq" class="editor-panel" hidden>
+        <h3>Sequence Order content</h3>
+        <div class="field">
+          <label for="f-sq-topic">Topic name</label>
+          <input type="text" id="f-sq-topic" maxlength="60" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-sq-prompt">Student directions</label>
+          <input type="text" id="f-sq-prompt" maxlength="220" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-sq-hint">Optional hint (hidden behind Show hint)</label>
+          <input type="text" id="f-sq-hint" maxlength="220" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-sq-steps">Steps in exact order from first to last (3 to 8 lines: <code>Short label | Description</code> or plain text)</label>
+          <span class="hint" id="sq-steps-hint">The student file automatically shuffles the starting order deterministically.</span>
+          <textarea id="f-sq-steps" rows="6" aria-describedby="sq-steps-hint" spellcheck="true"></textarea>
+        </div>
+        <p id="sq-parse-note" class="result-sub" role="status"></p>
+      </div>
+
+      <!-- Tiered Writing Editor -->
+      <div id="ed-write" class="editor-panel" hidden>
+        <h3>Tiered Writing content</h3>
+        <div class="field">
+          <label for="f-tw-topic">Topic name</label>
+          <input type="text" id="f-tw-topic" maxlength="60" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-tw-prompt">Writing prompt</label>
+          <textarea id="f-tw-prompt" rows="2" maxlength="280"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-tw-ptitle">Optional reading note title</label>
+          <input type="text" id="f-tw-ptitle" maxlength="100" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-tw-passage">Optional reading note or primary source</label>
+          <textarea id="f-tw-passage" rows="4" maxlength="1800"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-tw-minwords">Word-count goal</label>
+            <input type="number" id="f-tw-minwords" min="3" max="250" step="1" value="14">
+          </div>
+          <div class="field">
+            <label for="f-tw-default">Starting scaffold level</label>
+            <select id="f-tw-default">
+              <option value="frames">Level 1: Full Sentence Frames + Word Bank</option>
+              <option value="starters">Level 2: Sentence Starters + Checklist</option>
+              <option value="independent">Level 3: Independent + Checklist</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-tw-bank">Word bank (comma-separated terms)</label>
+          <input type="text" id="f-tw-bank" maxlength="320" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-tw-frames">Level 1: Full sentence frames (one per line, use <code>___</code> for each blank)</label>
+          <textarea id="f-tw-frames" rows="4"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-tw-starters">Level 2: Sentence starters (one per line)</label>
+          <textarea id="f-tw-starters" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-tw-checklist">Self-check rubric items (one per line)</label>
+          <textarea id="f-tw-checklist" rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Choice Board Editor -->
+      <div id="ed-choice" class="editor-panel" hidden>
+        <h3>UDL Choice Board pathways</h3>
+        <div class="field">
+          <label for="f-cb-topic">Packet goal title</label>
+          <input type="text" id="f-cb-topic" maxlength="60" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-cb-goal">Shared learning goal (shown to every student)</label>
+          <textarea id="f-cb-goal" rows="2" maxlength="240"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-cb-prompt">Chooser directions</label>
+          <input type="text" id="f-cb-prompt" maxlength="220" autocomplete="off">
+        </div>
+
+        <fieldset class="pill-group">
+          <legend>Choose 2 or 3 pathways to include</legend>
+          <span class="hint">Students pick one pathway to complete. Results record both mastery and the pathway chosen.</span>
+          <div class="pill-list" id="cb-path-toggles">
+            <label class="pill"><input type="checkbox" id="cb-on-sort" value="concept_sort"> <span class="pill-name">Concept Sort</span></label>
+            <label class="pill"><input type="checkbox" id="cb-on-seq" value="sequence_order"> <span class="pill-name">Sequence Order</span></label>
+            <label class="pill"><input type="checkbox" id="cb-on-cloze" value="cloze_short"> <span class="pill-name">Cloze / Short-Answer</span></label>
+            <label class="pill"><input type="checkbox" id="cb-on-write" value="tiered_writing"> <span class="pill-name">Tiered Writing</span></label>
+          </div>
+        </fieldset>
+        <p id="cb-path-note" class="result-sub" role="status"></p>
+
+        <details class="more pathway-fold" id="cb-fold-sort" open>
+          <summary><span class="more-name">Pathway: Concept Sort</span></summary>
+          <div class="more-body">
+            <div class="field"><label for="f-cbs-title">Card title</label><input type="text" id="f-cbs-title" maxlength="60"></div>
+            <div class="field"><label for="f-cbs-summary">Short description for student chooser</label><input type="text" id="f-cbs-summary" maxlength="160"></div>
+            <div class="field"><label for="f-cbs-cats">Categories (<code>Label | Description</code>, one per line)</label><textarea id="f-cbs-cats" rows="3"></textarea></div>
+            <div class="field"><label for="f-cbs-cards">Cards (<code>Card text | Category label | Optional detail</code>, one per line)</label><textarea id="f-cbs-cards" rows="5"></textarea></div>
+          </div>
+        </details>
+
+        <details class="more pathway-fold" id="cb-fold-seq">
+          <summary><span class="more-name">Pathway: Sequence Order</span></summary>
+          <div class="more-body">
+            <div class="field"><label for="f-cbq-title">Card title</label><input type="text" id="f-cbq-title" maxlength="60"></div>
+            <div class="field"><label for="f-cbq-summary">Short description for student chooser</label><input type="text" id="f-cbq-summary" maxlength="160"></div>
+            <div class="field"><label for="f-cbq-steps">Steps in order (<code>Label | Step</code> or plain text, 3 to 8 lines)</label><textarea id="f-cbq-steps" rows="4"></textarea></div>
+          </div>
+        </details>
+
+        <details class="more pathway-fold" id="cb-fold-cloze">
+          <summary><span class="more-name">Pathway: Cloze / Short-Answer</span></summary>
+          <div class="more-body">
+            <div class="field"><label for="f-cbc-title">Card title</label><input type="text" id="f-cbc-title" maxlength="60"></div>
+            <div class="field"><label for="f-cbc-summary">Short description for student chooser</label><input type="text" id="f-cbc-summary" maxlength="160"></div>
+            <div class="field"><label for="f-cbc-bank">Word bank (comma-separated)</label><input type="text" id="f-cbc-bank" maxlength="260"></div>
+            <div class="field"><label for="f-cbc-qs">Questions (one per line: <code>Sentence with ___ blank | answer1, answer2</code>)</label><textarea id="f-cbc-qs" rows="4"></textarea></div>
+          </div>
+        </details>
+
+        <details class="more pathway-fold" id="cb-fold-write">
+          <summary><span class="more-name">Pathway: Tiered Writing</span></summary>
+          <div class="more-body">
+            <div class="field"><label for="f-cbw-title">Card title</label><input type="text" id="f-cbw-title" maxlength="60"></div>
+            <div class="field"><label for="f-cbw-summary">Short description for student chooser</label><input type="text" id="f-cbw-summary" maxlength="160"></div>
+            <div class="field"><label for="f-cbw-prompt">Writing prompt</label><textarea id="f-cbw-prompt" rows="2" maxlength="280"></textarea></div>
+            <div class="field"><label for="f-cbw-passage">Optional reading note</label><textarea id="f-cbw-passage" rows="3" maxlength="1800"></textarea></div>
+            <div class="field"><label for="f-cbw-bank">Word bank (comma-separated)</label><input type="text" id="f-cbw-bank" maxlength="260"></div>
+            <div class="field"><label for="f-cbw-frames">Level 1 frames (one per line with <code>___</code>)</label><textarea id="f-cbw-frames" rows="3"></textarea></div>
+            <div class="field"><label for="f-cbw-starters">Level 2 starters (one per line)</label><textarea id="f-cbw-starters" rows="3"></textarea></div>
+            <div class="field"><label for="f-cbw-checklist">Self-check checklist (one per line)</label><textarea id="f-cbw-checklist" rows="3"></textarea></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Optional Bilingual & Classroom Supports -->
+      <details class="more" id="more-supports">
+        <summary>
+          <span class="more-name">Bilingual directions, Station Mode &amp; Sealed QR</span>
+          <span class="more-now" id="supports-now">English only</span>
+        </summary>
+        <div class="more-body">
+          <fieldset class="pill-group">
+            <legend>Home-language directions toggle</legend>
+            <span class="hint">Students can toggle translated task directions (including right-to-left Arabic) alongside English.</span>
+            <div class="pill-list" id="bilingual-langs"></div>
+          </fieldset>
+          <div class="field">
+            <label for="f-glossary">Optional bilingual glossary (one per line: <code>English term | es:Spanish | ar:Arabic</code>)</label>
+            <textarea id="f-glossary" rows="3" spellcheck="false"></textarea>
+          </div>
+          <div class="field">
+            <label class="radio"><input type="checkbox" id="f-station-mode"> <span>Enable Station Mode (shared-device kiosk reset between students)</span></label>
+          </div>
+          <div class="field">
+            <label for="f-qr-key">Optional Sealed QR public key (<code>AFPK1...</code>)</label>
+            <span class="hint" id="qr-key-hint">Paste your public key from <a href="packets-qr.html">Sealed QR setup</a> so students can show an encrypted results QR code offline.</span>
+            <input type="text" id="f-qr-key" maxlength="120" autocomplete="off" spellcheck="false" aria-describedby="qr-key-hint">
+          </div>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button type="button" class="btn" id="back-2">Back</button>
+        <button type="button" class="btn btn-primary push" id="next-2">Next: make the file</button>
+        <p id="step-2-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section id="step-3" class="sheet" aria-labelledby="step-3-title" hidden>
+      <p class="kicker">Step 3 of 3</p>
+      <h2 id="step-3-title" tabindex="-1">Make the file</h2>
+
+      <div id="making" class="making" hidden>
+        <p id="making-line" class="making-line"></p>
+      </div>
+      <p id="making-said" class="sr-only" role="status"></p>
+
+      <div id="build-problem" class="note note-problem" hidden>
+        <p id="build-problem-text"></p>
+        <p>
+          <button type="button" class="btn btn-small" id="retry">Try again</button>
+          <button type="button" class="btn btn-small" id="fix-choices">Change the choices</button>
+        </p>
+      </div>
+
+      <div id="summary" class="summary" hidden>
+        <h3>The file is ready</h3>
+        <p id="summary-facts" class="summary-facts"></p>
+      </div>
+
+      <div class="field block" id="title-field">
+        <label for="f-title">Title</label>
+        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file name starts with it.</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <div class="actions actions-file">
+        <button type="button" class="btn" id="back-3">Back</button>
+        <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+      </div>
+
+      <div id="after-save" class="next" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Send the file to students through your learning platform, a shared drive, or a USB drive. From Google Drive or Google Classroom, students download the file first because the preview does not run it.</li>
+          <li>Each student opens the file in a browser, completes their activity or chosen pathway, and presses <strong id="csv-label">Save my work</strong>.</li>
+          <li>Review accuracy, misconceptions, writing scaffold levels, and chosen modalities on <a href="packets-results.html">Add up results</a>, or inspect the file on <a href="packets-verify.html">Look inside a file</a>.</li>
+        </ol>
+        <p class="after-phone">If a device will not open downloaded files directly, a student can open the file on <a href="packets-open.html">Open a practice file or check</a>.</p>
+      </div>
+
+      <div class="summary summary-list" id="summary-list">
+        <h3>What is in the file</h3>
+        <dl id="summary-rows"></dl>
+      </div>
+
+      <details class="paper-choice-fold no-print" id="paper-choice-fold">
+        <summary>Print paper worksheet &amp; organizer</summary>
+        <div class="paper-choice-controls">
+          <p class="hint">Print a clean black-and-white paper backup with no grade label matching your Concept Sort, Sequencing timeline, Tiered Writing organizer, or UDL Choice Board.</p>
+          <div class="paper-choice-bar">
+            <label class="choice-check"><input type="checkbox" id="f-paper-choice-key" checked> <span>Include teacher answer key on Page 2</span></label>
+            <label class="choice-check"><span>Print size</span> <select id="f-docx-density"><option value="standard" selected>Standard</option><option value="primary">Large print (K-1)</option><option value="compact">Compact</option></select></label>
+            <button type="button" class="btn btn-small" id="print-paper-choice">Print paper worksheet</button>
+            <button type="button" class="btn btn-small" id="download-docx" hidden>Download Word (.docx)</button>
+          </div>
+        </div>
+      </details>
+
+      <section class="paper-choice-sheet" id="paper-choice-sheet" aria-label="Printable paper worksheet" hidden></section>
+
+      <details class="batch" id="batch">
+        <summary>Put student code names in the file</summary>
+        <div class="batch-body">
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one file per student in a .zip.</p>
+          <div class="field">
+            <label for="f-batch-names">Code names, one on each line</label>
+            <span class="hint" id="batch-names-hint">Use code names or first names only, never full names. At most 40 at a time.</span>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+          </div>
+          <p id="batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
+          </p>
+          <p id="batch-problem" class="actions-note" role="alert"></p>
+        </div>
+      </details>
+    </section>
+
+    <details class="about" id="about-page">
+      <summary>About this page</summary>
+      <div class="about-body">
+        <h2 id="keeps-title">What this page keeps</h2>
+        <p>Your last choices and draft content are kept in this browser so that the page opens where you left off. A student's code name is never kept. Nothing is sent anywhere.</p>
+        <p class="row">
+          <button type="button" class="btn btn-small" id="forget">Forget my choices</button>
+          <span id="forget-said" role="status"></span>
+        </p>
+        <h2 id="sources-title">How these packets work</h2>
+        <ul>
+          <li>Every packet is assembled in this browser tab as one standalone HTML file with a strict zero-network policy.</li>
+          <li>UDL Choice Boards hold 2 to 3 pathways aligned to one learning goal so students can choose how to demonstrate understanding while teachers receive both mastery and chosen-modality records.</li>
+          <li>Tiered Writing includes 3 student-toggleable scaffold levels, live word counting, a self-check rubric, and a clean print view.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="packets-feedback.html#from-packets-choice">Send feedback</a> <a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

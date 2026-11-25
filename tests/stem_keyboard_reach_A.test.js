@@ -65,11 +65,18 @@ describe('Play Lab: move a player without a pointer', () => {
     act(() => { right.click(); });
     const first = out.state.playlab.customPositions.QB;
     expect(first).toBeTruthy();
+    // Since 2026-11-23 the field is drawn with the offense at the bottom, and the arrows
+    // follow the SCREEN: right is toward the right sideline (y - 1), down is back toward
+    // the offense's own goal (x - 1). Before, right meant downfield.
+    const sim0 = window.StemLab.PlayLabModel.simulate({ playId: 'slant', coverageId: 'cover1' });
+    const qb0 = sim0.offense.find((p) => p.id === 'QB');
+    expect(first.x).toBe(Math.round(qb0.x));
+    expect(first.y).toBe(Math.round(qb0.y - 1));
     const down = host.querySelector('[data-playlab-key-move-dir="down"]');
     act(() => { down.click(); });
     const second = out.state.playlab.customPositions.QB;
-    expect(second.x).toBe(first.x);
-    expect(second.y).toBe(first.y + 1);
+    expect(second.x).toBe(first.x - 1);
+    expect(second.y).toBe(first.y);
   });
 
   it('is not offered for soccer, where customPositions are ignored', () => {

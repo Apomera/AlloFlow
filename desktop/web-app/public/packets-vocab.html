@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Make vocabulary practice</title>
@@ -42,12 +42,26 @@
     <details class="top-menu">
       <summary>Switch maker</summary>
       <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
         <a href="packets-make.html">Word Sounds</a>
         <a href="packets-vocab.html" aria-current="page">Vocabulary</a>
         <a href="packets-math-practice.html">Math Fact Practice</a>
         <a href="packets-check.html">Math Check</a>
         <a href="packets-read-along.html">Read-Along</a>
         <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
         <a href="packets-present-export.html">Present &amp; print</a>
         <a href="packets-results.html">Add up results</a>
       </nav>
@@ -62,7 +76,7 @@
   </summary>
   <div class="wrap wrap-narrow proof-body">
     <ul>
-      <li>Nothing is generated when you make a file or when a student uses it. The meanings come from a word list that was prepared ahead of time from open dictionaries. Some meanings were checked and corrected ahead of time with AI help, not by a person. The recordings of words were made ahead of time with an AI voice (Kokoro). Where they come from is under About this page.</li>
+      <li>Nothing is generated when you make a file or when a student uses it. The meanings come from a word list that was prepared ahead of time from open dictionaries. Some meanings were checked and corrected ahead of time with AI help, not by a person. The recordings of words were made ahead of time with an AI voice (Kokoro). Where this site has recordings of meanings, they were made the same way. Where they come from is under About this page.</li>
       <li>The file is put together in this browser tab. Your words, your changes and the teacher code are not sent anywhere.</li>
       <li>The page gets the word list from this site, all of it at once: the same files whatever words you type. For a file with pictures it gets all the picture files from this site, also the same files whatever words you type. For a file with recordings it gets, from this site, the small files that hold the recordings of your words, about 40 words in each. It asks the network for nothing else, and the rule below tells the browser to refuse anything else.</li>
       <li>A word that is not in the word list can be looked up online, but not on this page: Look it up online opens a page of its own, which asks before it sends that one word to a free online dictionary.</li>
@@ -73,7 +87,7 @@
     <p id="can-title">A file made here can:</p>
     <ul aria-labelledby="can-title">
       <li>Ask each question with four answers to choose from, in an order that is different for each question.</li>
-      <li>Read the word, the question and each answer aloud with the voice that is built into the student's device, when the student presses a button, or one after the other with Hear all. It uses only a voice that runs on the device. A word with a recording made ahead of time (a machine voice) plays that recording instead.</li>
+      <li>Read the word, the question and each answer aloud with the voice that is built into the student's device, when the student presses a button, or one after the other with Hear all. It uses only a voice that runs on the device. A word with a recording made ahead of time (a machine voice) plays that recording instead, and so do the answers of a question when every answer has one.</li>
       <li>Show pictures, in picture questions you choose. They are in the file, with their credits.</li>
       <li>Keep the student's place on that device, and save a results file to that device when the student presses the save button.</li>
     </ul>
@@ -288,7 +302,7 @@
       </div>
 
       <details class="more" id="more">
-        <summary><span class="more-name">More choices</span><span class="more-now" id="more-now"></span></summary>
+        <summary><span class="more-name">More options</span><span class="more-now" id="more-now"></span></summary>
         <div class="more-body">
           <div class="block">
             <label class="radio"><input type="checkbox" id="f-read" aria-describedby="read-hint"> <span>Read aloud buttons</span></label>
@@ -296,7 +310,7 @@
           </div>
           <div class="block">
             <label class="radio"><input type="checkbox" id="f-voices" aria-describedby="voices-hint voices-line"> <span>Recordings of the words</span></label>
-            <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
+            <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. Where this site has them, meanings have recordings too; the answers of a question play them only when every answer has one, so no answer sounds different. The device voice reads the rest. Recordings make the file bigger.</span>
             <span class="hint" id="voices-line" role="status"></span>
           </div>
           <div class="block" id="repeat-block">
@@ -317,6 +331,7 @@
         <p class="row paper-row">
           <button type="button" class="btn btn-small" id="print-cards" hidden>Print word cards</button>
           <button type="button" class="btn btn-small" id="print-worksheet" hidden>Print vocabulary worksheet</button>
+          <button type="button" class="btn btn-small" id="worksheet-audio" hidden>Worksheet audio player</button>
           <button type="button" class="btn btn-small" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
           <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-vocab" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
           <a class="btn btn-small" id="open-symbol-runner" href="packets-symbol-runner.html" target="_blank" rel="noopener" hidden>Practice in Symbol Runner <span class="sr-only">(opens in a new tab)</span></a>
@@ -366,6 +381,7 @@
           <li>The meanings come from open dictionaries. They were shortened and cleaned up by a program when the word list was prepared, ahead of time. A file names its sources and their licenses under About this file.</li>
           <li>Some meanings were checked and corrected with AI help when the word list was prepared, not by a person. They show AI-checked. Read the others first, and read every question before you give the file to students.</li>
           <li>The recordings of words were made ahead of time with an AI voice (Kokoro). They come from the same store of recordings as Word Sounds practice.</li>
+          <li>Where this site has them, the recordings of meanings were made the same way, from the meanings in the word list. No person has listened to each one.</li>
           <li>The wrong answers are meanings of other words: related words from the word list, or the other words of your list. Fill the blank uses only words from your list, because related words often fit the sentence too.</li>
         </ul>
         <ul id="credits"></ul>
@@ -377,7 +393,7 @@
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">
     <p>Free to use. Open source, license AGPL-3.0.</p>
-    <p><a href="./">More from AlloFlow</a></p>
+    <p><a href="packets-feedback.html#from-packets-vocab">Send feedback</a> <a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
 </body>

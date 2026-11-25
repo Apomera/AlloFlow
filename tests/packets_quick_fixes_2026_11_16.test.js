@@ -105,7 +105,8 @@ describe('Present: the Word Sounds maker hands over the title the teacher typed'
   const reader = (saved) => new Function('root', body + '\n  }\n  return readWordSoundsMakerSaved();')({ localStorage: { getItem: (key) => (key === 'alloflow-packets-maker/1' ? JSON.stringify(saved) : null) } });
 
   it('uses the saved title, and the stand-in only when there is none', () => {
-    expect(reader({ v: 1, title: '  Room 12 short a words ', words: ['Cat', 'sun'] })).toEqual({ title: 'Room 12 short a words', words: [{ word: 'cat' }, { word: 'sun' }] });
+    expect(reader({ v: 1, title: '  Room 12 short a words ', words: ['Cat', 'sun'] })).// 2026-11-23: the hand-over also carries the maker's activities and its Letter Trace choice (added 11-22); the title rule is unchanged.
+      toEqual({ title: 'Room 12 short a words', words: [{ word: 'cat' }, { word: 'sun' }], activities: null, tracing: 'both' });
     expect(reader({ v: 1, title: '', words: ['cat'] }).title).toBe('Word Sounds packet words');
     expect(reader({ v: 1, title: 7, words: ['cat'] }).title).toBe('Word Sounds packet words');
     expect(reader({ v: 1, title: 'x'.repeat(200), words: ['cat'] }).title).toHaveLength(80);

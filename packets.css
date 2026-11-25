@@ -18,6 +18,12 @@
   --bar-bg: #0f172a;
   --bar-ink: #ffffff;
   --scroll-shadow: rgba(20, 24, 60, 0.22);
+  --aac-pronoun: #9e6c00;
+  --aac-verb: #1c743a;
+  --aac-noun: #b85000;
+  --aac-descriptor: #1a5a9e;
+  --aac-social: #a82460;
+  --aac-question: #663a99;
   --radius: 10px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
@@ -40,6 +46,12 @@
     --bar-bg: #070c18;
     --bar-ink: #f8fafc;
     --scroll-shadow: rgba(0, 0, 0, 0.55);
+    --aac-pronoun: #ffd84d;
+    --aac-verb: #5ae38a;
+    --aac-noun: #ff9e4a;
+    --aac-descriptor: #78b7ff;
+    --aac-social: #ff85bc;
+    --aac-question: #c79bff;
   }
 }
 
@@ -106,10 +118,15 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .top-menu > summary::after { content: ""; width: 0.45rem; height: 0.45rem; margin-top: -0.15rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
 .top-menu[open] > summary::after { margin-top: 0.2rem; transform: rotate(-135deg); }
 .top-menu > summary:hover { border-color: var(--accent); color: var(--accent); }
-.top-menu > nav { position: absolute; right: 0; top: calc(100% + 0.35rem); z-index: 25; min-width: 15.5rem; max-width: min(19rem, calc(100vw - 2rem)); padding: 0.35rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: 0 8px 24px var(--scroll-shadow); display: flex; flex-direction: column; gap: 0.1rem; }
-.top-menu > nav a { display: flex; align-items: center; min-height: 2.75rem; padding: 0.4rem 0.75rem; border-radius: 6px; color: var(--ink); font-size: 0.9375rem; font-weight: 600; text-decoration: none; }
+.top-menu > nav { position: absolute; right: 0; top: calc(100% + 0.35rem); z-index: 25; min-width: 15.5rem; max-width: min(19rem, calc(100vw - 2rem)); max-height: min(75vh, 34rem); overflow-y: auto; padding: 0.35rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: 0 8px 24px var(--scroll-shadow); display: flex; flex-direction: column; gap: 0.1rem; }
+@media (min-width: 44rem) {
+  .top-menu > nav { right: auto; left: 50%; transform: translateX(-50%); width: min(35rem, calc(100vw - 2rem)); max-width: none; max-height: min(82vh, 38rem); padding: 0.5rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.15rem 0.35rem; }
+}
+.top-menu > nav a { display: flex; align-items: center; min-width: 0; min-height: 2.75rem; padding: 0.4rem 0.75rem; border-radius: 6px; color: var(--ink); font-size: 0.9375rem; font-weight: 600; text-decoration: none; }
 .top-menu > nav a:hover { background: var(--accent-soft); color: var(--accent); }
 .top-menu > nav a[aria-current="page"] { background: var(--note); color: var(--accent); }
+.top-menu-label { grid-column: 1 / -1; padding: 0.35rem 0.75rem 0.1rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.top-menu-label:not(:first-child) { margin-top: 0.3rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
 
 /* The proof line: always on the page, opens the exact details. It sits inside the header (so it is in a landmark);
    the header's own bottom line closes it. */
@@ -145,6 +162,8 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .card h2, .card h3 { font-size: 1.4rem; letter-spacing: -0.015em; }
 .student-door { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; margin-bottom: 2rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
 .student-door p { flex: 1 1 22rem; margin: 0; }
+.starter-door { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; margin: 1rem 0 1.25rem; padding: 0.95rem 1.2rem; background: var(--note); border: 1px solid var(--line-strong); border-left: 4px solid var(--accent); border-radius: var(--radius); }
+.starter-door p { flex: 1 1 22rem; margin: 0; font-size: 0.96rem; }
 .voice-door { margin: -1.25rem 0 clamp(2.25rem, 5vw, 3.5rem); padding: 1.15rem 1.25rem; background: var(--note); border: 1px dashed var(--line-strong); border-radius: var(--radius); }
 .voice-door-title { font-size: 1.0625rem; color: var(--ink); margin: 0; }
 .voice-door-intro { margin: 0.35rem 0 0.9rem; max-width: none; }
@@ -184,6 +203,58 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .card .card-links a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
 .tag { display: inline-block; padding: 0.1rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); background: var(--surface); }
 
+/* The front door, 2026-11-23: four subject boxes whose links are buttons (Practice, Check), and closed folds (details) for
+   the rest. Every class here starts with "door-" and is used by packets.html only, so no other Packets page changes. */
+.door-line strong { color: var(--ink); }
+.door-subjects { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 1.25rem; }
+.door-subject { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.15rem 1.25rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.door-subject h3 { font-size: 1.3rem; letter-spacing: -0.015em; }
+.door-subject p { color: var(--muted); }
+.door-btns { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: auto; padding-top: 0.5rem; }
+.door-btns .btn { flex: 1 1 6rem; padding-left: 0.9rem; padding-right: 0.9rem; }
+/* A fold: the whole summary row is the control. The arrow points right when closed and down when open. */
+.door-fold { margin-bottom: clamp(2rem, 5vw, 3rem); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.door-fold > summary, .door-band > summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 0.85rem; align-items: center; min-height: 3.25rem; cursor: pointer; list-style: none; color: var(--ink); }
+.door-fold > summary::-webkit-details-marker, .door-band > summary::-webkit-details-marker { display: none; }
+.door-fold > summary::before, .door-band > summary::before { content: ""; grid-row: 1 / span 2; width: 0.6rem; height: 0.6rem; margin: 0 0.15rem 0 0.2rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+.door-fold[open] > summary::before, .door-band[open] > summary::before { margin-top: -0.3rem; transform: rotate(45deg); }
+.door-fold > summary:hover > h2, .door-band > summary:hover > h2 { text-decoration: underline; text-underline-offset: 0.18em; }
+.door-fold > summary { padding: 0.7rem 1.25rem; border-radius: var(--radius); }
+.door-fold > summary > h2 { font-size: 1.2rem; }
+.door-fold-hint { grid-column: 2; color: var(--muted); font-size: 0.9375rem; }
+.door-fold-body { padding: 0.35rem 1.25rem 1.25rem; }
+.door-fold-body h3 { font-size: 1.0625rem; }
+.door-fold-body > h3 { margin-top: 1.1rem; }
+.door-voice { padding: 0.9rem 1rem 0.6rem; background: var(--note); border: 1px dashed var(--line-strong); border-radius: var(--radius); }
+.door-more-note { margin-top: 0.3rem; max-width: 46rem; color: var(--muted); font-size: 0.9375rem; }
+.door-more-list { display: grid; gap: 0.2rem 1.5rem; grid-template-columns: 1fr; margin-top: 0.25rem; }
+.door-more-list a { display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 700; }
+.door-more-list span { display: block; margin-top: -0.3rem; padding-bottom: 0.35rem; color: var(--muted); font-size: 0.9375rem; }
+.door-results { margin-bottom: 0.75rem; padding: 1.15rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.door-results-main { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1.5rem; }
+.door-results-main p { flex: 1 1 22rem; }
+.door-results-main .btn { flex: 1 1 100%; }
+.door-or { margin-top: 0.6rem; padding-top: 0.35rem; border-top: 1px solid var(--line); color: var(--muted); }
+.door-also { margin: 0 0 clamp(2.25rem, 5vw, 3.5rem); color: var(--muted); }
+/* A link in a line of its own words: tall enough to press (44 px). */
+.door-or a, .door-also a { display: inline-block; padding: 0.55rem 0; font-weight: 600; }
+.door-sizes { margin-top: 2rem; max-width: 46rem; font-weight: 400; color: var(--muted); }
+/* A band that is a fold: the band's own top line stays, its tall padding goes to the summary row and the opened body. */
+.band.door-band { padding: 0; }
+.door-band > summary { padding-top: 1.1rem; padding-bottom: 1.1rem; }
+.band.door-band > summary > h2 { font-size: clamp(1.3rem, 1.15rem + 0.7vw, 1.6rem); }
+.door-band-body { padding-bottom: clamp(2rem, 5vw, 3.5rem); }
+.door-band-body > .band-intro, .door-band-body > .today { margin-top: 0.25rem; }
+.door-foot-links { display: flex; flex-wrap: wrap; gap: 0 1.5rem; margin-top: -0.6rem; margin-bottom: -0.6rem; }
+.door-foot-links a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+@media (min-width: 40rem) {
+  .door-subjects, .door-more-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .door-results-main .btn { flex: 0 1 auto; }
+}
+@media (min-width: 62rem) {
+  .door-subjects { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
 .band { padding: clamp(2.5rem, 6vw, 4.5rem) 0; border-top: 1px solid var(--line); }
 .band-plain { background: var(--surface); }
 .band > .wrap > h2 { font-size: clamp(1.6rem, 1.3rem + 1.2vw, 2.1rem); letter-spacing: -0.02em; }
@@ -214,6 +285,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 
 .foot { border-top: 1px solid var(--line); background: var(--surface); padding: 1.75rem 0 2.5rem; font-size: 0.9375rem; color: var(--muted); }
 .foot-row { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; justify-content: space-between; }
+.foot-row p:last-child { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; }
 .foot a { color: var(--muted); }
 .foot a:hover { color: var(--ink); }
 
@@ -253,6 +325,10 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 3rem; padding: 0.55rem 1.3rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font-weight: 600; line-height: 1.25; text-decoration: none; cursor: pointer; }
 .btn:hover { border-color: var(--ink); color: var(--ink); }
+/* 2026-11-23: a button that is off looks off on every page (it looked live on Collect by sealed QR and on math fact practice). */
+.btn:disabled, button:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn:disabled:hover { border-color: var(--line-strong); color: var(--ink); }
+@media (forced-colors: active) { .btn:disabled, button:disabled { color: GrayText; border-color: GrayText; opacity: 1; } }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); color: var(--on-accent); }
 .btn-small { min-height: 2.75rem; padding: 0.35rem 0.9rem; font-size: 0.9375rem; }
@@ -410,7 +486,10 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 @media (max-width: 29.99rem) {
   .actions .btn-primary { flex: 1 1 100%; }
   .actions .push { margin-left: auto; }
-  .top-menu > nav { left: 0; right: auto; }
+  /* 2026-11-23: on a narrow screen the menu is as wide as the header row, so it cannot run off the side (at 360 px it made the page 463 px wide). */
+  .top-row { position: relative; }
+  .top-menu { position: static; }
+  .top-menu > nav { left: 1rem; right: 1rem; top: 100%; min-width: 0; max-width: none; }
   .foot a { display: inline-flex; align-items: center; min-height: 2.75rem; }
   .hero { padding: 1.25rem 0 1rem; }
   .hero .lead { margin-top: 0.85rem; }
@@ -471,3 +550,10 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
   .card-main { background: #ffffff; border: 2px solid #000000; color: #000000; }
   .card-main h2, .card-main h3, .card-main p, .card-main .card-foot, .card-main .card-links li, .card-main .card-links span { color: #000000; }
 }
+
+/* 2026-11-23: "What will be sent" on Send feedback (packets-feedback.html): every word that leaves the device, as text. */
+.fb-sent { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; margin: 0.75rem 0; padding: 0.85rem 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--note); }
+.fb-sent dt { font-weight: 600; }
+.fb-sent dd { margin: 0; min-width: 0; }
+.fb-sent-message { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 29.99rem) { .fb-sent { grid-template-columns: 1fr; } .fb-sent dd { margin-bottom: 0.4rem; } }

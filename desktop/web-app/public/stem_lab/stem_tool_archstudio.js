@@ -32,6 +32,12 @@ function __alloAST(k, fb) {
     st.id = 'allo-archstudio-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"archStudio\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}.theme-contrast #arch-studio-region .arch-subject-pill{background:#000!important;border-color:#ffff00!important;color:#ffff00!important}.theme-contrast #arch-studio-region .arch-studio-stat{background:#000!important;border-color:#fff!important}.theme-contrast #arch-studio-region .arch-studio-coach{background:#000!important;border-top-color:#fff!important;border-left-color:#ffff00!important;color:#fff!important}.theme-contrast #arch-studio-region .arch-elevation-telemetry{background:#000!important;border-color:#00ffff!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-archstudio-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-archstudio-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"archStudio\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"archStudio\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   (function() {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -795,7 +801,7 @@ function __alloAST(k, fb) {
 
     function makeArchPlinthTexture() {
       if (typeof document === 'undefined') return null;
-      var c = document.createElement('canvas'); c.width = 256; c.height = 256;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 256; c.height = 256;
       var g = null; try { g = c.getContext('2d'); } catch (e) { return null; }
       if (!g) return null;
       var grad = g.createRadialGradient(128, 128, 12, 128, 128, 124);
@@ -900,7 +906,7 @@ function __alloAST(k, fb) {
     function cachedTexture(look) {
       if (Object.prototype.hasOwnProperty.call(textureCache, look)) return textureCache[look];
       if (typeof document === 'undefined') { textureCache[look] = null; return null; }
-      var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 128;
       var g = null; try { g = c.getContext('2d'); } catch (e) { textureCache[look] = null; return null; }
       if (!g) { textureCache[look] = null; return null; }
       g.fillStyle = '#f8fafc'; g.fillRect(0, 0, 128, 128);
@@ -7366,13 +7372,13 @@ function __alloAST(k, fb) {
           { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', toggleFilterPanel) },
           { id: 'badges', node: pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }) },
           { id: 'floorplans', node: pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', toggleFloorExplorer) },
-          { id: 'gravity', node: el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity') },
+          { id: 'gravity', node: el('button', { type: 'button', onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity') },
           { id: 'screenshot', node: el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8') },
-          { id: 'sound', node: el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07') },
-          { id: 'topsvg', node: el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG') },
-          { id: 'sidesvg', node: el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG') },
+          { id: 'sound', node: el('button', { type: 'button', onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07') },
+          { id: 'topsvg', node: el('button', { type: 'button', onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG') },
+          { id: 'sidesvg', node: el('button', { type: 'button', onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG') },
           { id: 'printlab', node: el('button', { type: 'button', onClick: sendToPrintLab, disabled: !blocks.length, 'aria-label': t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), title: t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_lab', 'Print Lab')) },
-          { id: 'stl', node: el('button', { onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL') }
+          { id: 'stl', node: el('button', { type: 'button', onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL') }
         ])
       ),
 
@@ -7538,7 +7544,7 @@ function __alloAST(k, fb) {
             el('div', { style: { display: 'flex', gap: 3 } },
               el('button', { type: 'button', onClick: mirrorBuildX, disabled: showReplay || !blocks.length, 'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_x_axis', 'Mirror entire build across the X axis'), title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the X axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
               el('button', { type: 'button', onClick: mirrorBuildZ, disabled: showReplay || !blocks.length, 'aria-label': __alloAST('stem.archstudio.a11y_mirror_entire_build_across_the_z_axis', 'Mirror entire build across the Z axis'), title: showReplay ? 'Exit construction replay to mirror the build' : 'Mirror entire build across the Z axis', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: !showReplay && blocks.length ? '#94a3b8' : '#475569', cursor: !showReplay && blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
-              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': __alloAST('stem.archstudio.a11y_symmetry_mirror_edits_across_x_equals_zero', 'Symmetry: mirror edits across X equals zero'), title: t('stem.archstudio.mirror_place_paint_and_erase_edits_across_x','Mirror place, paint, and erase edits across X=0'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
+              el('button', { type: 'button', onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': __alloAST('stem.archstudio.a11y_symmetry_mirror_edits_across_x_equals_zero', 'Symmetry: mirror edits across X equals zero'), title: t('stem.archstudio.mirror_place_paint_and_erase_edits_across_x','Mirror place, paint, and erase edits across X=0'), style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
           ),
 
@@ -7567,7 +7573,7 @@ function __alloAST(k, fb) {
             // Budget slider
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 } },
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, '\uD83D\uDCB2' + budget),
-              el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_budget', 'budget'), min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#f59e0b' } })
+              el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_budget', 'budget'), 'aria-valuetext': '$' + budget, min: 50, max: 500, step: 25, value: budget, onChange: function (e) { upd('budget', parseInt(e.target.value)); }, style: { flex: 1, minHeight: 44, accentColor: '#f59e0b' } })
             )
           ),
 
@@ -7602,7 +7608,7 @@ function __alloAST(k, fb) {
               challenges.map(function (chItem) {
                 var done = !!completedChallenges[chItem.id];
                 var isActive = activeChallenge === chItem.id;
-                return el('button', { key: chItem.id, onClick: function () { if (!done) upd('activeChallenge', isActive ? -1 : chItem.id); }, style: {
+                return el('button', { key: chItem.id, type: 'button', onClick: function () { if (!done) upd('activeChallenge', isActive ? -1 : chItem.id); }, style: {
                   display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', fontSize: 11, fontWeight: 600,
                   border: done ? '1px solid #22c55e' : isActive ? '2px solid #f59e0b' : '1px solid #334155',
                   borderRadius: 8, background: done ? 'rgba(34,197,94,.1)' : isActive ? 'rgba(245,158,11,.1)' : 'transparent',
@@ -7617,7 +7623,7 @@ function __alloAST(k, fb) {
                 );
               })
             ),
-            justCompleted && challengeProgress && el('button', { onClick: completeChallenge, style: {
+            justCompleted && challengeProgress && el('button', { type: 'button', onClick: completeChallenge, style: {
               marginTop: 6, width: '100%', padding: '7px 10px', borderRadius: 10, border: 'none',
               background: 'linear-gradient(135deg,#b45309,#92400e)', color: '#fff',
               fontWeight: 700, fontSize: 11, cursor: 'pointer', animation: 'pulse 1.5s ease-in-out 2'
@@ -7648,9 +7654,9 @@ function __alloAST(k, fb) {
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDF0B Earthquake Test'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 } },
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', minWidth: 20 } }, quakeIntensity + '/10'),
-              el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, minWidth: 0, height: 44, accentColor: '#ef4444' } })
+              el('input', { type: 'range', 'aria-label': t('stem.archstudio.quake_intensity', 'quake intensity'), 'aria-valuetext': quakeIntensity + '/10', min: 1, max: 10, value: quakeIntensity, onChange: function (e) { upd('quakeIntensity', parseInt(e.target.value)); }, style: { flex: 1, minWidth: 0, height: 44, accentColor: '#ef4444' } })
             ),
-            el('button', { onClick: runEarthquake, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to run an earthquake test' : 'Run earthquake test', style: {
+            el('button', { type: 'button', onClick: runEarthquake, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to run an earthquake test' : 'Run earthquake test', style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none',
               background: !showReplay && blocks.length ? 'linear-gradient(135deg,#b91c1c,#991b1b)' : 'rgba(71,85,105,.3)',
               color: !showReplay && blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: !showReplay && blocks.length ? 'pointer' : 'default'
@@ -7723,7 +7729,7 @@ function __alloAST(k, fb) {
           // Share / Import-Export
           showShare && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCE4 Share Build'),
-            el('button', { onClick: exportShareCode, disabled: !blocks.length, style: {
+            el('button', { type: 'button', onClick: exportShareCode, disabled: !blocks.length, style: {
               width: '100%', padding: '6px 10px', borderRadius: 8, border: 'none', marginBottom: 4,
               background: blocks.length ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(71,85,105,.3)',
               color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
@@ -7741,7 +7747,7 @@ function __alloAST(k, fb) {
                 onChange: function (e) { upd('importCode', e.target.value); },
                 style: { flex: 1, padding: '5px 8px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),
-              el('button', { onClick: function () { importShareCode(d.importCode); }, disabled: showReplay, title: showReplay ? 'Exit construction replay to import a build' : 'Import build', style: {
+              el('button', { type: 'button', onClick: function () { importShareCode(d.importCode); }, disabled: showReplay, title: showReplay ? 'Exit construction replay to import a build' : 'Import build', style: {
                 padding: '5px 10px', borderRadius: 6, border: 'none',
                 background: showReplay ? 'rgba(71,85,105,.3)' : 'linear-gradient(135deg,#15803d,#166534)', color: showReplay ? '#475569' : '#fff', fontWeight: 700, fontSize: 11, cursor: showReplay ? 'default' : 'pointer'
               } }, '\u21E9')
@@ -7765,7 +7771,7 @@ function __alloAST(k, fb) {
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFB2 Random Generator'),
             el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
               randomPresets.map(function (preset) {
-                return el('button', { key: preset.id, disabled: showReplay, title: showReplay ? 'Exit construction replay to generate a build' : preset.name, onClick: function () { generateRandom(preset.id); }, style: {
+                return el('button', { key: preset.id, type: 'button', disabled: showReplay, title: showReplay ? 'Exit construction replay to generate a build' : preset.name, onClick: function () { generateRandom(preset.id); }, style: {
                   display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', borderRadius: 8,
                   background: 'rgba(30,41,59,.5)', border: '1px solid var(--allo-stem-border, #334155)', cursor: showReplay ? 'default' : 'pointer', opacity: showReplay ? 0.55 : 1, width: '100%', textAlign: 'left'
                 } },
@@ -8147,16 +8153,16 @@ function __alloAST(k, fb) {
                 el('label', { htmlFor: 'gr-' + s.k, style: { display: 'block', fontSize: 10, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 2 } }, s.l + ': ', el('span', { style: { color: '#a78bfa', fontFamily: 'monospace' } }, iq[s.k])),
                 el('input', { id: 'gr-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                   onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                  style: { width: '100%' }, 'aria-label': s.l }));
+                  style: { width: '100%', minHeight: 44 }, 'aria-label': s.l, 'aria-valuetext': s.l + ': ' + iq[s.k] }));
             })
           ),
           el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-            el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ g: iq.gravMult, r: iq.rigidity, m: iq.mass, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#0f172a', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-            el('button', { onClick: function() { setIQ({ gravMult: 1, rigidity: 80, mass: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺ Reset')
+            el('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ g: iq.gravMult, r: iq.rigidity, m: iq.mass, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#0f172a', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+            el('button', { type: 'button', onClick: function() { setIQ({ gravMult: 1, rigidity: 80, mass: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺ Reset')
           ),
           el('textarea', { 'aria-label': t('stem.archstudio.hypothesis', 'Structural stability hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.archstudio.hypothesis_when_does_rigidity_rescue_a', 'Hypothesis: When does rigidity rescue an overloaded structure?'),
             style: { width: '100%', minHeight: 50, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-          !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+          !iq.stuckRevealed && el('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
           iq.stuckRevealed && el('div', { style: { padding: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 10, color: '#cbd5e1', marginBottom: 8 } },
             el('ul', { style: { margin: 0, paddingLeft: 14 } },
               el('li', null, 'Find a setting where doubling rigidity moves you up one state.'),

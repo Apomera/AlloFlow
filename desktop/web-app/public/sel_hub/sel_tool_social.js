@@ -147,7 +147,7 @@ window.SelHub = window.SelHub || {
       meaning: { elementary: 'This person might not want to talk right now, or they might be feeling uncomfortable.', middle: 'Closed body language often means someone feels defensive, uncomfortable, or disengaged.', high: 'Barrier behaviors (crossed arms, gaze aversion, postural withdrawal) may indicate discomfort, defensiveness, or cognitive load — not necessarily hostility.' } },
     { id: 'nervous', label: 'Nervous & Anxious', emoji: '\uD83D\uDE2C', color: '#f59e0b',
       signs: ['Fidgeting with hands or objects', 'Looking around the room frequently', 'Touching face or hair', 'Shifting weight or bouncing leg', 'Speaking quickly or quietly'],
-      meaning: { elementary: 'This person is probably feeling worried or nervous about something.', middle: 'Nervous body language shows anxiety or discomfort — they may need reassurance.', high: 'Self-soothing behaviors (self-touch, object manipulation) and hypervigilance indicate sympathetic nervous system activation — approach with gentleness.' } },
+      meaning: { elementary: 'This person is probably feeling worried or nervous about something.', middle: 'Nervous body language shows anxiety or discomfort — they may need reassurance.', high: 'Self-soothing behaviors (self-touch, object manipulation) and scanning the room often go with stress arousal (the body\'s fight-or-flight response), though some people fidget simply to focus — approach with gentleness.' } },
     { id: 'bored', label: 'Bored & Disengaged', emoji: '\uD83D\uDE34', color: '#94a3b8',
       signs: ['Slouching in chair', 'Looking at phone or window', 'Yawning or sighing', 'Doodling or tapping', 'Minimal facial expressions'],
       meaning: { elementary: 'This person isn\'t very interested right now. Maybe the topic isn\'t exciting for them.', middle: 'Disengagement cues mean someone has mentally checked out — the conversation may need a shift.', high: 'Attentional withdrawal (gaze diversion, postural collapse) signals cognitive disengagement — a cue to recalibrate the interaction.' } },
@@ -163,16 +163,16 @@ window.SelHub = window.SelHub || {
   // ── Body Language Quiz ──
   // ══════════════════════════════════════════════════════════════
   var BL_QUIZ = [
-    { desc: 'They\'re sitting with arms crossed, looking away from the speaker, and their foot is tapping impatiently.', answer: 'closed', options: ['open', 'closed', 'nervous', 'interested'] },
-    { desc: 'They\'re leaning forward, nodding, and asking questions about what you just said.', answer: 'interested', options: ['bored', 'angry', 'interested', 'nervous'] },
-    { desc: 'They keep checking their phone, slumped in the chair, and yawning every few minutes.', answer: 'bored', options: ['open', 'nervous', 'angry', 'bored'] },
-    { desc: 'They\'re fidgeting with their pencil, glancing around the room, and biting their lip.', answer: 'nervous', options: ['nervous', 'bored', 'open', 'closed'] },
-    { desc: 'They\'re smiling, making eye contact, and their body is turned toward you.', answer: 'open', options: ['angry', 'open', 'closed', 'nervous'] },
-    { desc: 'Their fists are clenched, jaw is tight, and they\'re speaking in a low, controlled voice.', answer: 'angry', options: ['nervous', 'closed', 'bored', 'angry'] },
-    { desc: 'They mirror your gestures, lean in when you speak, and their eyes are bright.', answer: 'interested', options: ['interested', 'open', 'nervous', 'angry'] },
-    { desc: 'They\'re hunched over, avoiding all eye contact, giving one-word answers.', answer: 'closed', options: ['bored', 'interested', 'closed', 'open'] },
-    { desc: 'They\'re touching their hair repeatedly, voice is shaky, and they keep swallowing.', answer: 'nervous', options: ['angry', 'nervous', 'closed', 'bored'] },
-    { desc: 'They stand too close, voice rises, and they point their finger while talking.', answer: 'angry', options: ['open', 'interested', 'angry', 'nervous'] }
+    { desc: 'They\'re sitting with arms crossed, looking away from the speaker, and their foot is tapping impatiently.', why: 'Three clues point the same way: crossed arms, looking away and a tapping foot. One clue alone would not be enough. They could also be cold or tired, so a quick "Are you okay?" beats a guess.', answer: 'closed', options: ['open', 'closed', 'nervous', 'interested'] },
+    { desc: 'They\'re leaning forward, nodding, and asking questions about what you just said.', why: 'Asking questions about what you said is the strongest clue, because it shows they were listening. Leaning in and nodding back it up.', answer: 'interested', options: ['bored', 'angry', 'interested', 'nervous'] },
+    { desc: 'They keep checking their phone, slumped in the chair, and yawning every few minutes.', why: 'Phone-checking, slumping and yawning together suggest low interest. Yawning can also just mean tired, so try not to take it personally.', answer: 'bored', options: ['open', 'nervous', 'angry', 'bored'] },
+    { desc: 'They\'re fidgeting with their pencil, glancing around the room, and biting their lip.', why: 'Fidgeting, glancing around and lip-biting often go with worry. Some people fidget to help themselves focus, so it does not always mean nervous.', answer: 'nervous', options: ['nervous', 'bored', 'open', 'closed'] },
+    { desc: 'They\'re smiling, making eye contact, and their body is turned toward you.', why: 'A smile and a body turned toward you say "I am glad to talk". Eye contact is a helpful clue, but plenty of friendly people look away while they listen.', answer: 'open', options: ['angry', 'open', 'closed', 'nervous'] },
+    { desc: 'Their fists are clenched, jaw is tight, and they\'re speaking in a low, controlled voice.', why: 'Clenched fists and a tight jaw show a body holding in a strong feeling. A low, controlled voice can mean someone is working hard to stay calm. Give space first.', answer: 'angry', options: ['nervous', 'closed', 'bored', 'angry'] },
+    { desc: 'They mirror your gestures, lean in when you speak, and their eyes are bright.', why: 'People often copy the movements of someone they feel in tune with, without noticing. Add leaning in, and interest is the best read.', answer: 'interested', options: ['interested', 'open', 'nervous', 'angry'] },
+    { desc: 'They\'re hunched over, avoiding all eye contact, giving one-word answers.', why: 'One-word answers and a hunched body suggest they do not want to talk right now. They could be sad, shy or worn out, which is different from being rude.', answer: 'closed', options: ['bored', 'interested', 'closed', 'open'] },
+    { desc: 'They\'re touching their hair repeatedly, voice is shaky, and they keep swallowing.', why: 'A shaky voice and lots of swallowing are body signs of nerves. A kind word or a slower pace can help.', answer: 'nervous', options: ['angry', 'nervous', 'closed', 'bored'] },
+    { desc: 'They stand too close, voice rises, and they point their finger while talking.', why: 'A rising voice, pointing and moving into your space are warning signs of anger. Step back and keep your own voice low.', answer: 'angry', options: ['open', 'interested', 'angry', 'nervous'] }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -631,7 +631,7 @@ window.SelHub = window.SelHub || {
       { id: 'ms_eye_hold', emoji: '\uD83D\uDC41\uFE0F', cue: 'Sustained eye contact (3+ seconds)', meaning: 'Engaged, confident, or trying to establish connection', tip: 'Match their eye contact level. Too much can feel intense; too little feels dismissive.' },
       { id: 'ms_eye_dart', emoji: '\uD83D\uDC40', cue: 'Darting eyes, looking around room', meaning: 'Anxious, looking for escape, or overstimulated', tip: 'Lower the social pressure. Move to a quieter spot or change topics.' },
       { id: 'ms_slouch', emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBB', cue: 'Slouched posture, chin in hand', meaning: 'Bored, checked out, or low energy/mood', tip: 'Don\u2019t take it personally \u2014 ask what\u2019s going on or suggest something active.' },
-      { id: 'ms_mirror', emoji: '\uD83E\uDD1D', cue: 'Mirroring your gestures', meaning: 'Subconscious rapport \u2014 they feel connected to you', tip: 'Mirroring is a great sign! The conversation is flowing naturally.' },
+      { id: 'ms_mirror', emoji: '\uD83E\uDD1D', cue: 'Mirroring your gestures', meaning: 'Often a sign of rapport: people tend to copy those they feel in sync with, without noticing', tip: 'Mirroring is usually a good sign that the conversation is flowing.' },
       { id: 'ms_micro_smile', emoji: '\uD83D\uDE0F', cue: 'Quick micro-smile then neutral face', meaning: 'Amused but trying to hide it, or being polite', tip: 'They may be enjoying the conversation more than they show. Keep going!' },
       { id: 'ms_lip_press', emoji: '\uD83E\uDEE4', cue: 'Pressed lips, tight jaw', meaning: 'Holding back words, disagreeing silently', tip: 'They might have something to say. Ask: "What are you thinking?"' },
       { id: 'ms_space', emoji: '\uD83D\uDEB6', cue: 'Stepping back or creating distance', meaning: 'Feeling crowded or uncomfortable with closeness', tip: 'Respect the distance. Everyone has different comfort zones.' },
@@ -640,46 +640,46 @@ window.SelHub = window.SelHub || {
     high: [
       { id: 'hs_cultural_bow', emoji: '\uD83C\uDF0D', cue: 'Bowing slightly vs. offering handshake', meaning: 'Different cultures have different greeting norms', tip: 'Follow the other person\u2019s lead. If unsure, a warm nod and smile are universally safe.' },
       { id: 'hs_cultural_eye', emoji: '\uD83D\uDC41\uFE0F', cue: 'Avoiding eye contact out of respect', meaning: 'In some cultures, direct eye contact with elders/authority is disrespectful', tip: 'Don\u2019t assume lack of eye contact means disinterest \u2014 it may mean deep respect.' },
-      { id: 'hs_power_pose', emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBC', cue: 'Open stance, expansive gestures', meaning: 'Professional confidence, asserting presence', tip: 'In professional settings, open posture signals credibility. Practice "power posing" before presentations.' },
+      { id: 'hs_power_pose', emoji: '\uD83E\uDDD1\u200D\uD83D\uDCBC', cue: 'Open stance, expansive gestures', meaning: 'Professional confidence, asserting presence', tip: 'In professional settings, an open, upright posture tends to read as confident. Standing tall before a presentation may help you feel readier. The old claim that "power posing" changes your hormones did not hold up when other researchers repeated the study.' },
       { id: 'hs_casual_lean', emoji: '\uD83E\uDDD1', cue: 'Casual lean, relaxed shoulders', meaning: 'Comfortable, informal, treating you as an equal', tip: 'Match their casual energy in social settings. In formal ones, stay slightly more upright.' },
-      { id: 'hs_contempt', emoji: '\uD83D\uDE12', cue: 'One-sided lip raise (contempt micro-expression)', meaning: 'Feeling superior or dismissive \u2014 the most damaging facial expression in relationships', tip: 'If you notice this in yourself, pause. Contempt corrodes connections faster than anger.' },
-      { id: 'hs_genuine_fake', emoji: '\uD83C\uDFAD', cue: 'Smile without eye involvement (social smile)', meaning: 'Politeness without genuine warmth \u2014 performing connection', tip: 'Real smiles (Duchenne smiles) engage the eyes. If you see only mouth smiles, the warmth may be surface-level.' },
-      { id: 'hs_touch_barrier', emoji: '\u270B', cue: 'Touching neck, ear, or creating object barriers', meaning: 'Self-soothing under stress or creating unconscious shields', tip: 'These are pacifying behaviors. The person may need reassurance or a lower-stakes environment.' },
-      { id: 'hs_feet', emoji: '\uD83E\uDDB6', cue: 'Feet pointed toward exit', meaning: 'Subconsciously ready to leave, even if words say otherwise', tip: 'Feet are the most honest body part \u2014 people control their face but forget their feet.' }
+      { id: 'hs_contempt', emoji: '\uD83D\uDE12', cue: 'One-sided lip raise (often read as contempt)', meaning: 'Can signal feeling superior or dismissive. In John Gottman\'s research on couples, contempt (sneering, eye-rolling, mockery) was the strongest predictor of a relationship ending', tip: 'If you notice contempt in yourself, pause. A single quick expression is easy to misread in someone else, so check it against their words and tone.' },
+      { id: 'hs_genuine_fake', emoji: '\uD83C\uDFAD', cue: 'Smile without eye involvement (social smile)', meaning: 'Often a polite or social smile rather than a strong feeling', tip: 'Smiles that reach the eyes (Duchenne smiles) tend to be read as warmer. People can also produce them on purpose, and some faces move less around the eyes, so a mouth-only smile is not proof that someone is being fake.' },
+      { id: 'hs_touch_barrier', emoji: '\u270B', cue: 'Touching neck, ear, or creating object barriers', meaning: 'Often self-soothing under stress. Sometimes just habit', tip: 'These are pacifying behaviors. The person may need reassurance or a lower-stakes environment.' },
+      { id: 'hs_feet', emoji: '\uD83E\uDDB6', cue: 'Feet pointed toward exit', meaning: 'They may be ready to leave, even if their words say otherwise', tip: 'Body angle is a hint, not a lie detector. No body part reliably gives away what someone thinks. If words and body disagree, ask: "Is now a good time?"' }
     ]
   };
 
   // Body Language Reader Quiz (matching game)
   var BL_READER_QUIZ = {
     elementary: [
-      { cue: 'Your friend has their arms crossed tight and is looking at the ground.', answer: 'el_crossed', options: ['el_crossed', 'el_smile', 'el_bouncing', 'el_leaning'] },
-      { cue: 'The new kid is smiling at you with their whole face and waving.', answer: 'el_smile', options: ['el_fists', 'el_smile', 'el_lookaway', 'el_hiding'] },
-      { cue: 'During storytime, your classmate keeps looking out the window and yawning.', answer: 'el_lookaway', options: ['el_leaning', 'el_hands_hips', 'el_lookaway', 'el_bouncing'] },
-      { cue: 'After losing the game, a kid is standing with fists clenched and face red.', answer: 'el_fists', options: ['el_hiding', 'el_fists', 'el_smile', 'el_hands_hips'] },
-      { cue: 'During your presentation, everyone is leaning forward in their chairs.', answer: 'el_leaning', options: ['el_lookaway', 'el_crossed', 'el_leaning', 'el_bouncing'] },
-      { cue: 'A classmate pulls their hoodie over their face when the teacher calls on them.', answer: 'el_hiding', options: ['el_hiding', 'el_fists', 'el_smile', 'el_crossed'] },
-      { cue: 'Your friend is jumping up and down and waving their hands around.', answer: 'el_bouncing', options: ['el_bouncing', 'el_hands_hips', 'el_leaning', 'el_lookaway'] },
-      { cue: 'A kid stands with hands on hips and chin up, looking at the playground.', answer: 'el_hands_hips', options: ['el_crossed', 'el_fists', 'el_smile', 'el_hands_hips'] }
+      { cue: 'Your friend has their arms crossed tight and is looking at the ground.', why: 'Arms crossed tight and eyes on the ground can mean a friend feels upset or wants space. They might also just be cold. Ask kindly, "Are you okay?"', answer: 'el_crossed', options: ['el_crossed', 'el_smile', 'el_bouncing', 'el_leaning'] },
+      { cue: 'The new kid is smiling at you with their whole face and waving.', why: 'A whole-face smile and a wave are a clear "hello, come over!" You can smile and wave back.', answer: 'el_smile', options: ['el_fists', 'el_smile', 'el_lookaway', 'el_hiding'] },
+      { cue: 'During storytime, your classmate keeps looking out the window and yawning.', why: 'Looking out the window and yawning can mean bored or tired. It can also mean they are thinking about something else. It is probably not about you.', answer: 'el_lookaway', options: ['el_leaning', 'el_hands_hips', 'el_lookaway', 'el_bouncing'] },
+      { cue: 'After losing the game, a kid is standing with fists clenched and face red.', why: 'Tight fists and a red face show big, angry feelings after losing. Give them space and time before you talk.', answer: 'el_fists', options: ['el_hiding', 'el_fists', 'el_smile', 'el_hands_hips'] },
+      { cue: 'During your presentation, everyone is leaning forward in their chairs.', why: 'When people lean forward, they want to see and hear more. Your presentation is going well!', answer: 'el_leaning', options: ['el_lookaway', 'el_crossed', 'el_leaning', 'el_bouncing'] },
+      { cue: 'A classmate pulls their hoodie over their face when the teacher calls on them.', why: 'Pulling a hood over your face is a way to hide when you feel shy or embarrassed. A quiet, kind hello helps more than pointing it out.', answer: 'el_hiding', options: ['el_hiding', 'el_fists', 'el_smile', 'el_crossed'] },
+      { cue: 'Your friend is jumping up and down and waving their hands around.', why: 'Jumping and waving hands show lots of energy. For many kids that means excited. Some kids also move this way when they are happy or just need to move.', answer: 'el_bouncing', options: ['el_bouncing', 'el_hands_hips', 'el_leaning', 'el_lookaway'] },
+      { cue: 'A kid stands with hands on hips and chin up, looking at the playground.', why: 'Hands on hips with chin up often shows a kid who feels sure of themselves. Check the face too: a frown could mean they are getting frustrated.', answer: 'el_hands_hips', options: ['el_crossed', 'el_fists', 'el_smile', 'el_hands_hips'] }
     ],
     middle: [
-      { cue: 'In a group conversation, one person keeps copying your hand gestures and posture.', answer: 'ms_mirror', options: ['ms_mirror', 'ms_slouch', 'ms_eye_hold', 'ms_phone'] },
-      { cue: 'Someone in your group keeps glancing at the door and shifting in their seat.', answer: 'ms_eye_dart', options: ['ms_eye_dart', 'ms_lip_press', 'ms_slouch', 'ms_mirror'] },
-      { cue: 'During the meeting, they press their lips tight and clench their jaw when you share your idea.', answer: 'ms_lip_press', options: ['ms_phone', 'ms_lip_press', 'ms_micro_smile', 'ms_space'] },
-      { cue: 'Every time you lean in to talk, they take a small step backward.', answer: 'ms_space', options: ['ms_space', 'ms_eye_hold', 'ms_slouch', 'ms_mirror'] },
-      { cue: 'They maintain strong eye contact and nod slowly as you speak.', answer: 'ms_eye_hold', options: ['ms_eye_dart', 'ms_eye_hold', 'ms_micro_smile', 'ms_phone'] },
-      { cue: 'While you\u2019re talking, they keep picking up their phone, glancing at it, and putting it down.', answer: 'ms_phone', options: ['ms_slouch', 'ms_phone', 'ms_eye_dart', 'ms_space'] },
-      { cue: 'Their head is propped up on one hand, eyelids half-closed.', answer: 'ms_slouch', options: ['ms_mirror', 'ms_lip_press', 'ms_slouch', 'ms_eye_hold'] },
-      { cue: 'A quick flash of a smile crosses their face before they look neutral again.', answer: 'ms_micro_smile', options: ['ms_micro_smile', 'ms_space', 'ms_phone', 'ms_eye_dart'] }
+      { cue: 'In a group conversation, one person keeps copying your hand gestures and posture.', why: 'People often copy the posture of someone they feel in sync with, usually without noticing. Researchers call this the chameleon effect. It is a good sign, not a guarantee.', answer: 'ms_mirror', options: ['ms_mirror', 'ms_slouch', 'ms_eye_hold', 'ms_phone'] },
+      { cue: 'Someone in your group keeps glancing at the door and shifting in their seat.', why: 'Glancing at the door and shifting around suggest they want out or feel overloaded. They may also be waiting for someone. Lower the pressure and check in.', answer: 'ms_eye_dart', options: ['ms_eye_dart', 'ms_lip_press', 'ms_slouch', 'ms_mirror'] },
+      { cue: 'During the meeting, they press their lips tight and clench their jaw when you share your idea.', why: 'Pressed lips and a tight jaw often mean someone is holding words back. You cannot know what the words are, so ask: "What do you think?"', answer: 'ms_lip_press', options: ['ms_phone', 'ms_lip_press', 'ms_micro_smile', 'ms_space'] },
+      { cue: 'Every time you lean in to talk, they take a small step backward.', why: 'Stepping back each time you lean in means they want more room. Comfortable distance differs by person, family and culture. Give the space without taking offense.', answer: 'ms_space', options: ['ms_space', 'ms_eye_hold', 'ms_slouch', 'ms_mirror'] },
+      { cue: 'They maintain strong eye contact and nod slowly as you speak.', why: 'Steady eye contact with slow nods usually shows attention. Some people listen best while looking away, so less eye contact does not prove less interest.', answer: 'ms_eye_hold', options: ['ms_eye_dart', 'ms_eye_hold', 'ms_micro_smile', 'ms_phone'] },
+      { cue: 'While you\u2019re talking, they keep picking up their phone, glancing at it, and putting it down.', why: 'Picking the phone up again and again shows their attention is split. It may be about a worry on the phone, not about you. Offer to talk later.', answer: 'ms_phone', options: ['ms_slouch', 'ms_phone', 'ms_eye_dart', 'ms_space'] },
+      { cue: 'Their head is propped up on one hand, eyelids half-closed.', why: 'Head on hand and heavy eyelids point to low energy. That could be boredom, or it could be a short night of sleep. Ask before you decide.', answer: 'ms_slouch', options: ['ms_mirror', 'ms_lip_press', 'ms_slouch', 'ms_eye_hold'] },
+      { cue: 'A quick flash of a smile crosses their face before they look neutral again.', why: 'A smile that flashes and disappears can mean they were amused and hid it, or were just being polite. Quick expressions are easy to misread, so treat this as a weak clue.', answer: 'ms_micro_smile', options: ['ms_micro_smile', 'ms_space', 'ms_phone', 'ms_eye_dart'] }
     ],
     high: [
-      { cue: 'During a job interview, the interviewer leans back with arms spread wide across the chair.', answer: 'hs_power_pose', options: ['hs_power_pose', 'hs_casual_lean', 'hs_contempt', 'hs_touch_barrier'] },
-      { cue: 'Your international classmate looks down when the teacher praises them.', answer: 'hs_cultural_eye', options: ['hs_cultural_eye', 'hs_genuine_fake', 'hs_casual_lean', 'hs_feet'] },
-      { cue: 'Someone smiles at your joke but their eyes stay flat and unchanged.', answer: 'hs_genuine_fake', options: ['hs_genuine_fake', 'hs_contempt', 'hs_casual_lean', 'hs_power_pose'] },
-      { cue: 'While saying "I\u2019m happy to help," their feet are pointed straight at the exit.', answer: 'hs_feet', options: ['hs_feet', 'hs_touch_barrier', 'hs_cultural_bow', 'hs_casual_lean'] },
-      { cue: 'When you share your plan, one corner of their mouth lifts slightly while the other stays flat.', answer: 'hs_contempt', options: ['hs_genuine_fake', 'hs_contempt', 'hs_power_pose', 'hs_cultural_eye'] },
-      { cue: 'They keep touching the back of their neck and holding their coffee cup like a shield.', answer: 'hs_touch_barrier', options: ['hs_touch_barrier', 'hs_feet', 'hs_contempt', 'hs_casual_lean'] },
-      { cue: 'A new colleague greets you with a slight bow and a two-handed card presentation.', answer: 'hs_cultural_bow', options: ['hs_cultural_bow', 'hs_power_pose', 'hs_genuine_fake', 'hs_cultural_eye'] },
-      { cue: 'At a casual gathering, they lean against the wall with one hand in their pocket, relaxed shoulders.', answer: 'hs_casual_lean', options: ['hs_casual_lean', 'hs_power_pose', 'hs_touch_barrier', 'hs_feet'] }
+      { cue: 'During a job interview, the interviewer leans back with arms spread wide across the chair.', why: 'Leaning back and taking up space usually reads as feeling at ease or in charge of the room. It tells you about their comfort, not about what they think of you.', answer: 'hs_power_pose', options: ['hs_power_pose', 'hs_casual_lean', 'hs_contempt', 'hs_touch_barrier'] },
+      { cue: 'Your international classmate looks down when the teacher praises them.', why: 'In many families and cultures, looking down when an adult speaks to you shows respect. Reading it as shyness or dishonesty would be a mistake.', answer: 'hs_cultural_eye', options: ['hs_cultural_eye', 'hs_genuine_fake', 'hs_casual_lean', 'hs_feet'] },
+      { cue: 'Someone smiles at your joke but their eyes stay flat and unchanged.', why: 'A smile that stays in the mouth is often a polite, social smile. That is not the same as fake: people smile politely all day, and some faces move less around the eyes.', answer: 'hs_genuine_fake', options: ['hs_genuine_fake', 'hs_contempt', 'hs_casual_lean', 'hs_power_pose'] },
+      { cue: 'While saying "I\u2019m happy to help," their feet are pointed straight at the exit.', why: 'Their words say yes while their body angles toward the door. When words and body disagree, treat it as a question to ask ("Is now a bad time?"), not as proof of what they think.', answer: 'hs_feet', options: ['hs_feet', 'hs_touch_barrier', 'hs_cultural_bow', 'hs_casual_lean'] },
+      { cue: 'When you share your plan, one corner of their mouth lifts slightly while the other stays flat.', why: 'A one-sided lip raise is the expression researchers link to contempt. It is brief and easy to confuse with a smirk or a facial habit, so check it against their words and tone.', answer: 'hs_contempt', options: ['hs_genuine_fake', 'hs_contempt', 'hs_power_pose', 'hs_cultural_eye'] },
+      { cue: 'They keep touching the back of their neck and holding their coffee cup like a shield.', why: 'Touching the neck and holding an object in front of the body are common self-soothing habits under stress. They can also be plain habit. Lowering the stakes helps either way.', answer: 'hs_touch_barrier', options: ['hs_touch_barrier', 'hs_feet', 'hs_contempt', 'hs_casual_lean'] },
+      { cue: 'A new colleague greets you with a slight bow and a two-handed card presentation.', why: 'A slight bow and offering a card with both hands are formal, respectful greetings in several East Asian cultures, including Japan and Korea. Follow their lead and return the courtesy.', answer: 'hs_cultural_bow', options: ['hs_cultural_bow', 'hs_power_pose', 'hs_genuine_fake', 'hs_cultural_eye'] },
+      { cue: 'At a casual gathering, they lean against the wall with one hand in their pocket, relaxed shoulders.', why: 'Leaning on a wall with relaxed shoulders shows someone at ease in a casual setting. Match the setting: relaxed here, a little more upright somewhere formal.', answer: 'hs_casual_lean', options: ['hs_casual_lean', 'hs_power_pose', 'hs_touch_barrier', 'hs_feet'] }
     ]
   };
 
@@ -883,9 +883,9 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _socT = (ctx && ctx.theme) || {};
       var _socHC = !!_socT.isContrast, _socL = !_socHC && !_socT.isDark;
-      var _soc_BGL = {'#334155':'#e2e8f0','#0f172a':'#f8fafc','#1e293b':'#ffffff','#0ea5e9':'#0369a1'}, _soc_BGH = {'#334155':'#000000','#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#8b5cf6':'#000000','#b45309':'#000000','#15803d':'#000000'};
+      var _soc_BGL = {'#334155':'#e2e8f0','#0f172a':'#f8fafc','#1e293b':'#ffffff','#0ea5e9':'#0369a1','#8b5cf6':'#6d28d9'}, _soc_BGH = {'#334155':'#000000','#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#8b5cf6':'#000000','#b45309':'#000000','#15803d':'#000000'};
       var _soc_FGL = {'#94a3b8':'#64748b','#38bdf8':'#0369a1','#f1f5f9':'#0f172a','#a78bfa':'#6d28d9','#e2e8f0':'#1e293b','#cbd5e1':'#334155'}, _soc_FGH = {'#94a3b8':'#ffff00','#38bdf8':'#ffff00','#f1f5f9':'#ffff00','#0ea5e9':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#22c55e':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#8b5cf6':'#ffff00','#06b6d4':'#ffff00','#10b981':'#ffff00','#d97706':'#ffff00','#ec4899':'#ffff00','#f472b6':'#ffff00','#475569':'#ffff00'};
-      var _soc_BGD = {'#0ea5e9':'#0369a1'}, _soc_BDL = {'#334155':'#e2e8f0'}, _soc_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00'};
+      var _soc_BGD = {'#0ea5e9':'#0369a1','#8b5cf6':'#6d28d9'}, _soc_BDL = {'#334155':'#e2e8f0'}, _soc_BDH = {'#334155':'#ffff00','#0ea5e9':'#ffff00'};
       var _socBg = function(h){ return _socHC ? (_soc_BGH[h]||h) : (_socL ? (_soc_BGL[h]||h) : (_soc_BGD[h]||h)); };
       var _socFg = function(h){ return _socHC ? (_soc_FGH[h]||h) : (_socL ? (_soc_FGL[h]||h) : h); };
       var _socBd = function(h){ return _socHC ? (_soc_BDH[h]||h) : (_socL ? (_soc_BDL[h]||h) : h); };
@@ -1439,7 +1439,7 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { textAlign: 'center', color: _socFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
               band === 'elementary' ? 'People say a LOT without using words! Learn to read body clues.' :
-              'Over 70% of communication is non-verbal. Learn to read the signals.'
+              'A lot of meaning travels through tone, face and body. Learn to read the signals, and to check them.'
             ),
             blToggle,
 
@@ -1500,7 +1500,7 @@ window.SelHub = window.SelHub || {
           bodyContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: _socFg('#f1f5f9'), fontSize: 18, marginBottom: 4 } }, '\uD83E\uDDE9 Body Language Quiz'),
             h('p', { style: { color: _socFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
-              'Read the description and identify the body language type.'
+              'Read the clues and pick the most likely read. Body language is a clue, not proof.'
             ),
             blToggle,
             h('p', { style: { color: _socFg('#94a3b8'), fontSize: 11, marginBottom: 20 } },
@@ -1539,7 +1539,9 @@ window.SelHub = window.SelHub || {
                     ),
                     blQuizAnswer !== currentQuiz.answer && h('p', { style: { fontSize: 13, color: _socFg('#94a3b8') } },
                       'The answer was: ' + (BODY_LANGUAGE.find(function(b) { return b.id === currentQuiz.answer; }) || {}).label
-                    )
+                    ),
+                    // Teach on every answer, right or wrong: why this read fits and what else it could be.
+                    currentQuiz.why && h('p', { role: 'status', style: { fontSize: 13, color: _socFg('#cbd5e1'), marginTop: 8, lineHeight: 1.55, textAlign: 'left' } }, currentQuiz.why)
                   ),
                   h('button', { 'aria-label': 'Next Question',
                     onClick: function() { upd({ blQuizIdx: blQuizIdx + 1, blQuizAnswer: null, blQuizRevealed: false }); },
@@ -1853,8 +1855,13 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { textAlign: 'center', color: _socFg('#94a3b8'), fontSize: 12, marginBottom: 4 } },
               band === 'elementary' ? 'Learn what people\u2019s bodies are telling you!' :
-              band === 'middle' ? 'Decode non-verbal cues to understand what people really mean.' :
-              'Advanced non-verbal communication: cultural context, professional signals, and micro-expressions.'
+              band === 'middle' ? 'Learn common non-verbal cues and what they often mean.' :
+              'Advanced non-verbal communication: cultural context, professional signals, and quick expressions.'
+            ),
+            h('p', { style: { textAlign: 'center', color: _socFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5, maxWidth: 460, margin: '0 auto 8px' } },
+              band === 'elementary'
+                ? 'A body clue is a hint, not a sure thing. The same clue can mean different things for different people. When it matters, ask!'
+                : 'Treat every cue as a hint, not proof. The same signal can mean different things across people, cultures and neurotypes. When it matters, ask.'
             ),
             h('p', { style: { textAlign: 'center', color: _socFg('#94a3b8'), fontSize: 11, marginBottom: 16 } },
               Object.keys(blrStudied).length + '/' + blrCues.length + ' cues studied'
@@ -1913,7 +1920,7 @@ window.SelHub = window.SelHub || {
 
           blReaderContent = h('div', { style: { padding: 20, maxWidth: 500, margin: '0 auto', textAlign: 'center' } },
             h('h3', { style: { color: _socFg('#f1f5f9'), fontSize: 18, marginBottom: 4 } }, '\uD83E\uDDE9 Body Language Matching Quiz'),
-            h('p', { style: { color: _socFg('#94a3b8'), fontSize: 12, marginBottom: 4 } }, 'Match the scenario to the body language cue!'),
+            h('p', { style: { color: _socFg('#94a3b8'), fontSize: 12, marginBottom: 4 } }, 'Match the scenario to the body language cue. After you answer, read why, and what else it could mean.'),
             blrToggle,
             h('p', { style: { color: _socFg('#94a3b8'), fontSize: 11, marginBottom: 16 } }, 'Score: ' + blrQuizScore + '/' + blrQuizTotal),
             h('div', { style: { padding: 20, borderRadius: 14, background: _socBg('#0f172a'), border: '1px solid #8b5cf644', marginBottom: 16 } },
@@ -1948,7 +1955,8 @@ window.SelHub = window.SelHub || {
                     ),
                     blrCueMap[blrQ.answer] && h('p', { style: { fontSize: 12, color: _socFg('#cbd5e1'), marginTop: 8, lineHeight: 1.5 } },
                       blrCueMap[blrQ.answer].meaning
-                    )
+                    ),
+                    blrQ.why && h('p', { role: 'status', style: { fontSize: 13, color: _socFg('#cbd5e1'), marginTop: 8, lineHeight: 1.55, textAlign: 'left' } }, blrQ.why)
                   ),
                   h('button', { 'aria-label': 'Next Question',
                     onClick: function() { upd({ blrQuizIdx: blrQuizIdx + 1, blrQuizAnswer: null, blrQuizShow: false }); },

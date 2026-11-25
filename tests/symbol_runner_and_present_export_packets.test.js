@@ -1260,7 +1260,10 @@ describe('14. Wave 3: Symbol Runner bimodal audio anchors, confusion pairs, Resu
     // 2026-11-18 (owner): the front door names Symbol Runner in plain words ('5x8 sheet', 'Stroop' were jargon there) and gives the check its own card.
     expect(hubHtml).not.toMatch(/5x8|Stroop|flanker/);
     expect(hubHtml).toContain('1-minute naming check');
-    expect(hubHtml).toContain('Works offline.');
+    // 2026-11-23 (owner, front-door review): the cards lost their feet ("Three steps. Works offline."); the one line of
+    // file sizes says it for every file, Symbol Runner's by name. The check is the "Check" button of the Quick naming box.
+    expect(hubHtml).toContain('Math and Symbol Runner files are about 150 to 300 KB. Works with no internet.');
+    expect(hubHtml).toContain('<a class="btn btn-primary" href="packets-symbol-runner.html#check-mode" aria-label="Make a 1-minute naming check">Check</a>');
   });
 });
 
@@ -1772,6 +1775,8 @@ describe('20. Wave 5: Symbol Runner .zip batch export, preview handoff, and lett
     expect(d.getElementById('sr-batch-make').hidden).toBe(false);
     expect(d.getElementById('sr-batch-make').textContent).toBe('Save .zip for 2 students');
     d.getElementById('sr-batch-make').click();
+    // 2026-11-23: the .zip is made after the page has looked for recordings and My words, so it is saved a moment later, not in the same step.
+    for (let waited = 0; waited < 3000 && !clickedLinks.some((c) => c.download && /__2-students\.zip$/.test(c.download)); waited += 25) await new Promise((r) => setTimeout(r, 25));
     const zipClick = clickedLinks.find((c) => c.download && /__2-students\.zip$/.test(c.download));
     expect(zipClick).toBeTruthy();
     expect(zipClick.blob.type).toBe('application/zip');

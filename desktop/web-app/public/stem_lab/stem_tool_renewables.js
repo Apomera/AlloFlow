@@ -1091,7 +1091,7 @@ if (typeof window !== 'undefined') {
     try {
       if (typeof raw === 'string') {
         if (raw.length > 120000) return null;
-        raw = JSON.parse(raw, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+        raw = JSON.parse(raw);
       }
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
       if (JSON.stringify(raw).length > 120000) return null;
@@ -1199,9 +1199,12 @@ if (typeof window !== 'undefined') {
 
 // Source: stem_lab/renewables_tycoon_scene.js
 // Renewables Tycoon: illustrative equipment view. All power comes from the campaign engine.
-(function () {
+(function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var nextSceneId = 0;
+  function own(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+  function dict() { return Object.create(null); }
   function clamp(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); }
   function n(value) { return Number.isFinite(Number(value)) ? Number(value) : 0; }
   function formatPower(value) { return Math.abs(n(value)).toFixed(1) + ' kW'; }
@@ -1217,23 +1220,27 @@ if (typeof window !== 'undefined') {
     return ['0,-5 ' + extension + ',' + (droop - 2) + ' ' + extension + ',' + (droop + 3) + ' 0,7', stripe(0.3, 0.49), stripe(0.68, 0.84)];
   }
 
-  if (typeof window === 'undefined') return;
-  window.StemLab = window.StemLab || {};
-  window.StemLab.RenewablesTycoonScene = function RenewablesTycoonScene(props) {
+  global.StemLab = global.StemLab || {};
+  global.StemLab.RenewablesTycoonScene = function RenewablesTycoonScene(props) {
+    if (!props || !props.ctx || !props.ctx.React) return null;
     var React = props.ctx.React, h = React.createElement;
     var t = function (key, fallback) { var value; try { value = typeof props.ctx.t === 'function' ? props.ctx.t(key, fallback) : fallback; } catch (error) { value = fallback; } return value == null ? fallback : value; };
     var uidRef = React.useRef(null);
     if (!uidRef.current) uidRef.current = 'renewables-tycoon-scene-' + (++nextSceneId);
-    var uid = uidRef.current, frame = props.frame || {}, sites = props.sites || [], assets = frame.assets || [];
-    var refs = React.useRef({ rotors: {}, paths: {}, particles: {}, flowGroups: {}, clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: {}, serviceTools: {} });
-    var motion = React.useRef({ rotors: {}, flows: {}, breeze: 0, clouds: 0, flutter: 0, weatherWind: null, work: {} });
-    var targets = React.useRef({});
+    var uid = uidRef.current, frame = props.frame || {}, sites = Array.isArray(props.sites) ? props.sites : [], assets = Array.isArray(frame.assets) ? frame.assets : [];
+    var refs = React.useRef(null);
+    if (!refs.current) refs.current = { rotors: dict(), wakes: dict(), solarGlints: [], flowPulses: dict(), seaRipples: [], glintRows: [], cloudShadows: [], paths: dict(), particles: dict(), flowGroups: dict(), clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: dict(), serviceTools: dict() };
+    var motion = React.useRef(null);
+    if (!motion.current) motion.current = { rotors: dict(), flows: dict(), breeze: 0, clouds: 0, flutter: 0, ambient: 0, weatherWind: null, work: dict() };
+    var targets = React.useRef(dict());
     var cameraState = React.useState({ zoom: 1, x: 550, y: 345 }), camera = cameraState[0], setCamera = cameraState[1];
     var overlayState = React.useState('power'), overlay = overlayState[0], setOverlay = overlayState[1];
     var focusLabelState = React.useState(null), focusedSiteId = focusLabelState[0], setFocusedSiteId = focusLabelState[1];
-    var mediaState = React.useState(typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches), nativeReduced = mediaState[0], setNativeReduced = mediaState[1];
+    var initialMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    var mediaState = React.useState(!!(initialMedia && initialMedia.matches)), nativeReduced = mediaState[0], setNativeReduced = mediaState[1];
     var drag = React.useRef(null);
-    var hour = frame.hourOfDay == null ? n(frame.hour) % 24 : n(frame.hourOfDay);
+    var rawHour = frame.hourOfDay == null ? n(frame.hour) : n(frame.hourOfDay);
+    var hour = ((rawHour % 24) + 24) % 24;
     // Work is scheduled in the first 48 simulated hours; animation never advances it.
     var serviceElapsed = clamp(frame.hour, 0, 48), serviceRemaining = 48 - serviceElapsed;
     // Stages illustrate the fixed work window; they add no simulation rules.
@@ -1256,7 +1263,7 @@ if (typeof window !== 'undefined') {
     var canInspectDispatch = typeof props.onInspectDispatch === 'function';
     var inspectDispatchLabel = t('renewables.tycoon.scene.inspectDispatch', 'Inspect network dispatch');
     function inspectDispatch() { if (canInspectDispatch) props.onInspectDispatch(); }
-    function dispatchKey(event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (canInspectDispatch && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.stopPropagation(); inspectDispatch(); } }
+    function dispatchKey(event) { if (canInspectDispatch && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); event.stopPropagation(); inspectDispatch(); } }
     function networkAttributes(surface) { return { 'data-tycoon-network-board': surface, 'data-mode': networkMode, 'data-served': networkServed, 'data-demand': networkDemand, 'data-unserved': networkGap, 'data-curtailed': networkCurtailed }; }
     var windowColor = night ? 'rgb(' + Math.round(45 + servedFraction * 210) + ',' + Math.round(73 + servedFraction * 151) + ',' + Math.round(85 + servedFraction * 80) + ')' : '#6b9dab';
     var windSpeed = n(frame.windSpeed), irradiance = n(frame.irradiance);
@@ -1267,8 +1274,23 @@ if (typeof window !== 'undefined') {
     var active = requestedMotion && !nativeReduced;
     if (motion.current.weatherWind == null || !active) motion.current.weatherWind = clamp(windSpeed, 0, 25);
     var theme = props.theme || {}, dark = !!(theme.dark || theme.isDark);
-    var liveTargets = {}, assetBySite = {};
-    assets.forEach(function (asset) { assetBySite[asset.siteId] = asset; });
+    var highContrast = !!(theme.contrast || theme.highContrast);
+    if (!highContrast) {
+      try {
+        var docRoot = typeof document !== 'undefined' && document.documentElement;
+        if (docRoot && (docRoot.classList.contains('theme-contrast') || docRoot.getAttribute('data-theme') === 'contrast' || docRoot.getAttribute('data-theme') === 'high-contrast')) highContrast = true;
+        else if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) highContrast = true;
+        else if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) highContrast = true;
+      } catch (e) {}
+    }
+    var hcRef = React.useRef(highContrast);
+    hcRef.current = highContrast;
+    var liveTargets = dict(), assetBySite = dict();
+    refs.current.solarGlints = [];
+    refs.current.seaRipples = [];
+    refs.current.glintRows = [];
+    refs.current.cloudShadows = [];
+    assets.forEach(function (asset) { if (asset && asset.siteId != null) assetBySite[asset.siteId] = asset; });
     function sitePoint(site, index) { return { x: 130 + clamp(site.x == null ? 18 + (index % 3) * 31 : site.x, 0, 100) * 8.3, y: 220 + clamp(site.y == null ? 20 + Math.floor(index / 3) * 29 : site.y, 0, 100) * 3.6 }; }
     function fitCamera(next) {
       var zoom = clamp(next.zoom, 1, 2.5), halfWidth = 550 / zoom, halfHeight = 345 / zoom;
@@ -1284,7 +1306,6 @@ if (typeof window !== 'undefined') {
     }
     function mapKey(event) {
       if (event.target !== event.currentTarget) return;
-      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === '+' || event.key === '=') zoomMap(0.5);
       else if (event.key === '-') zoomMap(-0.5);
       else if (event.key === 'Home' || event.key === 'Escape') setCamera({ zoom: 1, x: 550, y: 345 });
@@ -1296,10 +1317,12 @@ if (typeof window !== 'undefined') {
       event.preventDefault();
     }
     function beginPan(event) {
-      if (camera.zoom === 1 || event.button !== 0 || event.target.closest('[role="button"]')) return;
+      if (camera.zoom === 1 || event.button !== 0 || (event.target && typeof event.target.closest === 'function' && event.target.closest('[role="button"]'))) return;
       var bounds = event.currentTarget.getBoundingClientRect();
       drag.current = { x: event.clientX, y: event.clientY, camera: camera, scale: 1100 / camera.zoom / Math.max(1, bounds.width) };
-      event.currentTarget.setPointerCapture(event.pointerId);
+      if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+        try { event.currentTarget.setPointerCapture(event.pointerId); } catch (ignore) {}
+      }
     }
     function movePan(event) {
       if (!drag.current) return;
@@ -1319,8 +1342,12 @@ if (typeof window !== 'undefined') {
     function paintFlow(id, flow, power, length) {
       var path = refs.current.paths[id], particles = refs.current.particles[id];
       if (!path || !particles) return;
+      if (typeof path.getTotalLength !== 'function' || typeof path.getPointAtLength !== 'function') return;
       var appearance = flowAppearance(flow.magnitude), moving = power !== 0;
-      if (length == null) length = path.getTotalLength();
+      if (length == null) {
+        try { length = path.getTotalLength(); } catch (ignore) { return; }
+      }
+      if (!Number.isFinite(length) || length < 0) return;
       var group = refs.current.flowGroups[id];
       if (group) {
         group.setAttribute('data-flow-phase', flow.phase.toFixed(6));
@@ -1329,35 +1356,75 @@ if (typeof window !== 'undefined') {
         group.setAttribute('data-flow-cycle-rate', (appearance.speed / Math.max(1, length)).toFixed(6));
         group.setAttribute('data-path-length', length.toFixed(3));
       }
+      var pulseLine = refs.current.flowPulses[id];
+      if (pulseLine) {
+        var isHcFlow = !!hcRef.current;
+        pulseLine.setAttribute('visibility', moving && !isHcFlow ? 'visible' : 'hidden');
+        if (moving && !isHcFlow) {
+          var dirSign = power < 0 ? 1 : -1;
+          pulseLine.setAttribute('stroke-dashoffset', (dirSign * flow.phase * Math.max(24, length)).toFixed(2));
+          pulseLine.setAttribute('opacity', clamp(0.24 + appearance.opacity * 0.42, 0.16, 0.68).toFixed(3));
+        }
+      }
       particles.forEach(function (particle, index) {
         if (!particle) return;
         particle.setAttribute('visibility', moving ? 'visible' : 'hidden');
         particle.setAttribute('opacity', moving ? appearance.opacity.toFixed(4) : '0');
         particle.setAttribute('r', appearance.radius.toFixed(4));
-        var point = path.getPointAtLength(((flow.phase + index / FLOW_SLOTS) % 1) * length);
+        var phasePos = (((flow.phase + index / FLOW_SLOTS) % 1) + 1) % 1;
+        var point;
+        try { point = path.getPointAtLength(phasePos * length); } catch (ignore) { return; }
+        if (!point) return;
         particle.setAttribute('cx', point.x.toFixed(3)); particle.setAttribute('cy', point.y.toFixed(3));
       });
     }
 
     function paintWeather() {
       var breeze = motion.current.weatherWind, shape = windsockShape(breeze);
+      var amb = motion.current.ambient || 0, isHc = !!hcRef.current;
       refs.current.windsockFabric.forEach(function (node, index) { if (node) node.setAttribute('points', shape[index]); });
       if (refs.current.weatherResponse) {
         refs.current.weatherResponse.setAttribute('data-visual-wind', breeze.toFixed(6));
         refs.current.weatherResponse.setAttribute('data-target-wind', clamp(weather.current.wind, 0, 25).toFixed(6));
       }
       if (refs.current.ribbons) {
-        refs.current.ribbons.setAttribute('stroke-dashoffset', -motion.current.breeze);
-        refs.current.ribbons.setAttribute('opacity', clamp(breeze / 20, 0, 0.5).toFixed(4));
+        refs.current.ribbons.setAttribute('stroke-dashoffset', (-motion.current.breeze).toFixed(2));
+        refs.current.ribbons.setAttribute('opacity', isHc ? '0' : clamp(breeze / 20, 0, 0.5).toFixed(4));
       }
-      refs.current.clouds.forEach(function (node, index) { if (node) node.setAttribute('transform', 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')'); });
+      refs.current.clouds.forEach(function (node, index) {
+        var cx = (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130);
+        if (node) node.setAttribute('transform', 'translate(' + cx.toFixed(2) + ' ' + (102 + index % 2 * 26) + ')');
+        var shadowNode = refs.current.cloudShadows[index];
+        if (shadowNode) shadowNode.setAttribute('transform', 'translate(' + (cx + 28).toFixed(2) + ' ' + (292 + (index % 3) * 78) + ')');
+      });
       if (refs.current.windsock) refs.current.windsock.setAttribute('transform', 'rotate(' + (Math.sin(motion.current.flutter) * Math.min(breeze, 12) * 0.3).toFixed(2) + ')');
+      refs.current.seaRipples.forEach(function (node, index) {
+        if (!node) return;
+        var shift = Math.sin(amb * 1.15 + index * 1.35) * 6.5;
+        node.setAttribute('transform', 'translate(' + shift.toFixed(2) + ' 0)');
+        node.setAttribute('opacity', isHc ? '0' : (0.28 + 0.18 * Math.sin(amb * 1.4 + index * 1.9)).toFixed(3));
+      });
+      refs.current.glintRows.forEach(function (node, index) {
+        if (!node) return;
+        var shimmer = Math.sin(amb * 1.9 + index * 1.25);
+        node.setAttribute('transform', 'translate(' + (shimmer * 4.5).toFixed(2) + ' 0)');
+        node.setAttribute('opacity', isHc ? '0' : (0.55 + 0.45 * Math.sin(amb * 2.3 + index * 1.6)).toFixed(3));
+      });
+      refs.current.solarGlints.forEach(function (node, index) {
+        if (!node) return;
+        var pulse = 0.5 + 0.5 * Math.sin(amb * 2.1 + index * 0.95);
+        var tx = Math.sin(amb * 0.9 + index * 0.7) * 4.2;
+        node.setAttribute('transform', 'translate(' + tx.toFixed(2) + ' ' + (-tx * 0.42).toFixed(2) + ')');
+        node.setAttribute('opacity', isHc ? '0' : (0.14 + pulse * 0.38).toFixed(3));
+      });
     }
 
     React.useEffect(function () {
       var alive = true, request = null, previous = null;
-      var media = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-      function canMove() { return alive && requestedMotion && !(media && media.matches) && !document.hidden; }
+      var win = typeof window !== 'undefined' ? window : null;
+      var doc = typeof document !== 'undefined' ? document : null;
+      var media = win && typeof win.matchMedia === 'function' ? win.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      function canMove() { return alive && requestedMotion && !(media && media.matches) && !(doc && doc.hidden) && !!(win && typeof win.requestAnimationFrame === 'function'); }
       function tick(time) {
         request = null;
         if (!canMove()) { previous = null; return; }
@@ -1376,6 +1443,12 @@ if (typeof window !== 'undefined') {
             rotorNode.setAttribute('transform', 'rotate(' + rotor.phase.toFixed(3) + ')');
             rotorNode.setAttribute('data-motion-rate', rotor.speed.toFixed(3));
             rotorNode.setAttribute('data-motion-mode', target.rotor ? rotor.speed < target.rotor * 0.9 ? 'starting' : 'generating' : rotor.speed > 0 ? target.stopMode : 'parked');
+            var wakeNode = refs.current.wakes[id];
+            if (wakeNode) {
+              var wakeStrength = hcRef.current ? 0 : clamp(rotor.speed / 80, 0, 1);
+              wakeNode.setAttribute('opacity', (wakeStrength * 0.48).toFixed(3));
+              wakeNode.setAttribute('stroke-dashoffset', (-(motion.current.breeze * 1.45 + rotor.phase * 0.25)).toFixed(2));
+            }
           }
           var beacon = refs.current.serviceBeacons[id], tool = refs.current.serviceTools[id];
           if (target.service && (beacon || tool)) {
@@ -1385,13 +1458,19 @@ if (typeof window !== 'undefined') {
             if (tool) tool.setAttribute('transform', 'rotate(' + (Math.sin(work.phase) * 8).toFixed(3) + ')');
           }
           var path = refs.current.paths[id], particles = refs.current.particles[id];
-          if (path && particles) {
+          if (path && particles && typeof path.getTotalLength === 'function') {
             var flow = motion.current.flows[id] || (motion.current.flows[id] = { phase: 0.12, magnitude: 0 });
             var magnitude = Math.abs(target.power), direction = target.power < 0 ? -1 : 1;
             flow.magnitude = magnitude ? flow.magnitude + (magnitude - flow.magnitude) * (1 - Math.exp(-dt / 0.24)) : 0;
-            var length = path.getTotalLength();
-            if (magnitude) flow.phase = (flow.phase + direction * flowAppearance(flow.magnitude).speed * dt / Math.max(1, length) + 1) % 1;
-            paintFlow(id, flow, target.power, length);
+            var length;
+            try { length = path.getTotalLength(); } catch (ignore) { length = -1; }
+            if (Number.isFinite(length) && length >= 0) {
+              if (magnitude) {
+                var nextPhase = flow.phase + direction * flowAppearance(flow.magnitude).speed * dt / Math.max(1, length);
+                flow.phase = ((nextPhase % 1) + 1) % 1;
+              }
+              paintFlow(id, flow, target.power, length);
+            }
           }
         });
         // One response drives the fabric and surrounding air; integrate its travel to avoid frame-rate-dependent drift.
@@ -1402,11 +1481,12 @@ if (typeof window !== 'undefined') {
         motion.current.breeze = (motion.current.breeze + windTravel * 1.8) % 70;
         motion.current.clouds = (motion.current.clouds + windTravel * 0.32) % 1360;
         motion.current.flutter = (motion.current.flutter + windTravel * 0.8) % (Math.PI * 2);
+        motion.current.ambient = (motion.current.ambient + dt) % (Math.PI * 200);
         paintWeather();
-        request = window.requestAnimationFrame(tick);
+        if (canMove()) request = win.requestAnimationFrame(tick);
       }
       function resume() {
-        if (request != null) window.cancelAnimationFrame(request);
+        if (request != null && win && typeof win.cancelAnimationFrame === 'function') win.cancelAnimationFrame(request);
         request = null; previous = null;
         setNativeReduced(!!(media && media.matches));
         if (!requestedMotion || media && media.matches) {
@@ -1417,12 +1497,19 @@ if (typeof window !== 'undefined') {
             if (flow) { flow.magnitude = Math.abs(power); paintFlow(id, flow, power); }
           });
         }
-        if (canMove()) request = window.requestAnimationFrame(tick);
+        if (canMove()) request = win.requestAnimationFrame(tick);
       }
-      document.addEventListener('visibilitychange', resume);
-      if (media && media.addEventListener) media.addEventListener('change', resume);
+      if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('visibilitychange', resume);
+      if (media && typeof media.addEventListener === 'function') media.addEventListener('change', resume);
+      else if (media && typeof media.addListener === 'function') media.addListener(resume);
       resume();
-      return function () { alive = false; if (request != null) window.cancelAnimationFrame(request); document.removeEventListener('visibilitychange', resume); if (media && media.removeEventListener) media.removeEventListener('change', resume); };
+      return function () {
+        alive = false;
+        if (request != null && win && typeof win.cancelAnimationFrame === 'function') win.cancelAnimationFrame(request);
+        if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('visibilitychange', resume);
+        if (media && typeof media.removeEventListener === 'function') media.removeEventListener('change', resume);
+        else if (media && typeof media.removeListener === 'function') media.removeListener(resume);
+      };
     }, [requestedMotion]);
 
     // Reposition static packets after a manual hour change, including while motion is paused.
@@ -1459,7 +1546,9 @@ if (typeof window !== 'undefined') {
         polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#c7dfe2', strokeWidth: 1.3 }),
         h('g', { opacity: night ? 0.58 : 0.78, 'data-tycoon-cell-grid': true }, cells),
         polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.19, 0.035, 0.24) }),
-        !night && irradiance > 0.12 ? polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.32, 0.06, 0.34) }) : null,
+        !night && !highContrast && irradiance > 0.12 ? h('g', { ref: function (node) { if (node) refs.current.solarGlints.push(node); }, opacity: clamp(irradiance * 0.34, 0.12, 0.42), pointerEvents: 'none' },
+          polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.42, 0.10, 0.46) }),
+          irradiance > 0.32 ? polygon('-2,-14 0.5,-11.5 -2,-9 -4.5,-11.5', '#fffef0', { opacity: clamp((irradiance - 0.2) * 0.9, 0.18, 0.85) }) : null) : null,
         !night && irradiance > 0.35 ? line(-19, 1, 11, -12, '#f0fffc', 1.1, { opacity: clamp((irradiance - 0.25) * 0.48, 0.08, 0.38) }) : null,
         line(-7, 13, 29, -2, '#dcebe5', 1.25), line(-29, -2, -7, 13, '#8eabb3', 1));
     }
@@ -1487,7 +1576,11 @@ if (typeof window !== 'undefined') {
         line(6, -102, 24, -108, '#e1eee0', 0.75),
         h('circle', { cx: 19, cy: -115.5, r: 2.2, fill: night ? '#ff8b7b' : '#e06c60', opacity: night ? 0.95 : 0.75 }),
         h('g', { transform: 'translate(0 -103)' },
-          spinArc > 0 ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
+          !highContrast ? h('g', { ref: function (node) { refs.current.wakes[site.id] = node; }, fill: 'none', stroke: night ? '#9ad7df' : '#eefcf6', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: '14 14 7 15', opacity: (spinArc * 0.46).toFixed(3), pointerEvents: 'none', 'data-tycoon-wind-wake': site.id },
+            h('path', { d: 'M 22 -28 Q 52 -36 88 -26 T 142 -22' }),
+            h('path', { d: 'M 26 -2 Q 58 -8 96 0 T 154 -3', strokeWidth: 1.8 }),
+            h('path', { d: 'M 22 24 Q 54 32 90 22 T 144 26' })) : null,
+          spinArc > 0 && !highContrast ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
           h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' },
             spinArc > 0 ? h('path', { d: 'M 4 -69 A 69 69 0 0 1 24 -64', fill: 'none', stroke: '#eefcf9', strokeWidth: 1.5, strokeLinecap: 'round', opacity: (0.14 + spinArc * 0.2).toFixed(3) }) : null,
             h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#f3f8ee', stroke: '#9aafb0', strokeWidth: 0.9 }),
@@ -1581,9 +1674,10 @@ if (typeof window !== 'undefined') {
         h('g', { transform: 'translate(54 -28)' }, h('rect', { x: -25, y: -10, width: 50, height: 18, rx: 5, fill: '#294a4c', stroke: '#dfc38e', strokeWidth: 1 }), h('text', { y: 0, textAnchor: 'middle', fill: '#ffe5ad', fontSize: 9, fontWeight: 700 }, serviceElapsed + '/48h'), h('rect', { x: -19, y: 3, width: 38, height: 2, rx: 1, fill: '#78918a' }), h('rect', { x: -19, y: 3, width: 38 * serviceElapsed / 48, height: 2, rx: 1, fill: '#ffe1a0' })));
     }
     function buildOpening(siteId) {
-      var planned = (campaign.assets || []).find(function (asset) { return asset.siteId === siteId; });
-      var readyMonth = planned && planned.readyMonth, engine = window.StemLab.renewablesTycoonEngine;
-      return { month: readyMonth, label: engine && engine.months && engine.months[readyMonth] || t('renewables.tycoon.scene.nextMonth', 'next month') };
+      var planned = (Array.isArray(campaign.assets) ? campaign.assets : []).find(function (asset) { return asset && asset.siteId === siteId; });
+      var readyMonth = planned && planned.readyMonth, engine = global.StemLab && global.StemLab.renewablesTycoonEngine;
+      var monthLabel = engine && Array.isArray(engine.months) && Number.isInteger(readyMonth) && readyMonth >= 0 && readyMonth < engine.months.length ? engine.months[readyMonth] : null;
+      return { month: readyMonth, label: monthLabel || t('renewables.tycoon.scene.nextMonth', 'next month') };
     }
     function construction(site) {
       var groundwork = buildStage === 'groundwork', assembly = buildStage === 'assembly';
@@ -1622,11 +1716,12 @@ if (typeof window !== 'undefined') {
       var glowLevel = moving ? clamp(Math.sqrt(Math.abs(power) / 100), 0.2, 1) : 0;
       return h('g', { key: 'flow-' + id, ref: function (node) { refs.current.flowGroups[id] = node; }, 'data-tycoon-flow': id, 'data-power': power, 'data-direction': !power ? 'idle' : power < 0 ? 'to-storage' : id === 'town' ? 'to-community' : 'to-grid', 'data-slot-count': FLOW_SLOTS, 'data-selected': selected, 'data-flow-phase': cached ? cached.phase : 0.12, 'data-visual-magnitude': visualMagnitude, 'data-flow-speed': appearance.speed, 'aria-hidden': true },
         selected ? h('path', { d: path, fill: 'none', stroke: '#c6f7e0', strokeWidth: 12, opacity: 0.32, 'data-tycoon-selected-cable': id }) : null,
-        moving && installed ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
+        moving && installed && !highContrast ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
         h('path', { d: path, fill: 'none', stroke: installed ? '#2b5a59' : '#73948a', strokeWidth: installed ? 7 : 2, strokeDasharray: installed ? undefined : '3 7', opacity: installed ? 0.65 : 0.45 }),
         h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#a17be6' : '#e0ba5e' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
+        installed ? h('path', { ref: function (node) { refs.current.flowPulses[id] = node; }, d: path, fill: 'none', stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: selected ? 2.8 : 2.1, strokeDasharray: '10 24', strokeLinecap: 'round', visibility: moving && !highContrast ? 'visible' : 'hidden', opacity: moving && !highContrast ? (0.28 + glowLevel * 0.36).toFixed(3) : '0', filter: !highContrast ? 'url(#' + uid + '-energy-glow)' : undefined, style: { pointerEvents: 'none' } }) : null,
         directionCues,
-        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
+        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving && !highContrast ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
     }
     var skyTop = night ? '#10283b' : overcast ? '#658997' : dawn ? '#b9adad' : '#8cc7d2';
     var skyBottom = night ? '#274858' : overcast ? '#afc9c7' : dawn ? '#f0d1ae' : '#deeee1';
@@ -1653,7 +1748,7 @@ if (typeof window !== 'undefined') {
     var serviceStageContext = props.state && props.state.phase !== 'planning' ? t('renewables.tycoon.scene.stagesReplay', 'Illustrative work stages · replay hour') : t('renewables.tycoon.scene.stagesForecast', 'Illustrative work stages · forecast hour');
     // Labels occupy a fixed amount of screen space; equipment alone grows with the camera.
     // Close-ups prioritize the selected or keyboard-focused site and keep its equipment clear.
-    var labelLayouts = {}, labelSubjectId = focusedSiteId || props.selectedId;
+    var labelLayouts = dict(), labelSubjectId = focusedSiteId || props.selectedId;
     var cameraLeft = camera.x - 550 / camera.zoom, cameraTop = camera.y - 345 / camera.zoom;
     var subjectIndex = sites.findIndex(function (site) { return site.id === labelSubjectId; });
     var subjectSite = subjectIndex >= 0 ? sites[subjectIndex] : null;
@@ -1680,7 +1775,7 @@ if (typeof window !== 'undefined') {
     var siteGroups = sites.slice().sort(function (a, b) { return sitePoint(a, 0).y - sitePoint(b, 0).y; }).map(function (site, index) {
       var point = sitePoint(site, index), asset = assetBySite[site.id], selected = props.selectedId === site.id;
       var status = asset ? asset.status || 'idle' : 'available', power = asset ? n(asset.power) : 0;
-      var statusLabel = asset ? statusText[status] || statusText.idle : t('renewables.tycoon.scene.available', 'Available site');
+      var statusLabel = asset ? (own(statusText, status) ? statusText[status] : statusText.idle) : t('renewables.tycoon.scene.available', 'Available site');
       var localWind = windSpeed * (n(site.resource) || 1);
       if (asset && asset.type === 'wind' && status === 'idle') statusLabel = localWind >= 25 ? t('renewables.tycoon.scene.cutOut', 'High-wind shutdown') : localWind < 3 ? t('renewables.tycoon.scene.cutIn', 'Below starting wind') : statusLabel;
       if (asset && asset.type === 'solar' && status === 'idle' && irradiance <= 0) statusLabel = t('renewables.tycoon.scene.noSun', 'Waiting for sunlight');
@@ -1695,7 +1790,7 @@ if (typeof window !== 'undefined') {
       var labelLine = status === 'operating' || status === 'idle' && power ? power < 0 ? t('renewables.tycoon.scene.charging', 'Charging') + ' ' + formatPower(power) : formatPower(power) : statusLabel;
       if (showCondition) labelLine = statusLabel;
       function select() { if (props.onSelect) props.onSelect(site.id); }
-      function keySelect(event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } }
+      function keySelect(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } }
       var labelLayout = labelLayouts[site.id];
       siteLabels.push(h('g', { key: 'label-' + site.id, transform: 'translate(' + point.x + ' ' + (point.y + 49) + ') scale(' + (1 / camera.zoom) + ')', visibility: labelLayout.visible ? 'visible' : 'hidden', role: 'button', tabIndex: -1, 'aria-label': label, 'aria-pressed': selected, 'data-tycoon-site-label': site.id, 'data-visible': labelLayout.visible, 'data-priority': labelLayout.priority, 'data-label-scale': 1 / camera.zoom, onClick: select, onKeyDown: keySelect, style: { cursor: 'pointer' } },
         h('rect', { x: -80, y: -2, width: 160, height: 43, rx: 10, fill: selected ? '#173e48' : '#244c53', stroke: selected ? '#a5f3ce' : '#8eb4a3', strokeWidth: selected ? 2 : 0.8, opacity: 0.98 }),
@@ -1718,14 +1813,14 @@ if (typeof window !== 'undefined') {
         status === 'fault' ? h('g', { transform: 'translate(61 -47)' }, h('circle', { r: 15, fill: '#763b36', stroke: '#ffc4a3', strokeWidth: 2 }), h('text', { y: 6, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#ffdfbd' }, '!')) : null);
     });
     return h('div', { className: 'rn-tycoon-scene ' + (props.className || ''), style: { borderRadius: 20, overflow: 'hidden', background: night ? '#173642' : '#b7d9d6', border: '1px solid ' + (dark ? '#426969' : '#9fbdb4'), position: 'relative' } },
-      h('style', null, '.rn-tycoon-scene svg{display:block;width:100%;height:auto;aspect-ratio:1100/690}.rn-tycoon-site{cursor:pointer;outline:none}.rn-tycoon-site:focus .rn-tycoon-focus,.rn-tycoon-site:focus-visible .rn-tycoon-focus{stroke:#fff7bb;stroke-width:5;fill:#ffefb52a}.rn-tycoon-site:hover .rn-tycoon-focus{stroke:#c9ffe8;stroke-width:3}.rn-tycoon-map-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px 12px;background:#173e48;color:#e5f1e5;font:12px/1.4 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button{min-height:38px;min-width:38px;border:1px solid #7aa69c;border-radius:8px;padding:7px 10px;background:#244c53;color:#f0f8e9;font:600 12px/1.3 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button:hover:not(:disabled){background:#356367;border-color:#b4e7d3}.rn-tycoon-scene .rn-tycoon-map-controls button:disabled{opacity:.45}.rn-tycoon-map-zoom{min-width:37px;text-align:center;font-variant-numeric:tabular-nums}.rn-tycoon-map-pan{display:flex;gap:6px;align-items:center}.rn-tycoon-map-weather{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;background:#204750;color:#e5f1e5;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-weather strong{color:#fff1ba}.rn-tycoon-map-hint{width:100%;font-size:11px;color:#c7e0d6}.rn-tycoon-map-key{display:flex;flex-wrap:wrap;gap:7px 16px;padding:11px 16px;background:#173e48;color:#e5f1e5;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-key span{display:inline-flex;align-items:center;gap:7px}.rn-tycoon-map-key i{display:inline-block;width:22px;height:3px;border-radius:3px;flex-shrink:0}.rn-tycoon-map-note{margin-left:auto;opacity:.85}@media(max-width:420px){.rn-tycoon-map-key{padding:10px;gap:6px 12px;font-size:11px}.rn-tycoon-map-note{width:100%;margin-left:0}.rn-tycoon-map-controls{padding:8px;gap:5px}.rn-tycoon-scene .rn-tycoon-map-controls button{padding:7px 8px}.rn-tycoon-map-weather{padding:8px 10px}}'),
+      h('style', null, '.rn-tycoon-scene svg{display:block;width:100%;height:auto;aspect-ratio:1100/690}.rn-tycoon-site{cursor:pointer;outline:none}.rn-tycoon-site:focus .rn-tycoon-focus,.rn-tycoon-site:focus-visible .rn-tycoon-focus{stroke:#fff7bb;stroke-width:5;fill:#ffefb52a}.rn-tycoon-site:hover .rn-tycoon-focus{stroke:#c9ffe8;stroke-width:3}.rn-tycoon-map-controls{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px 12px;background:#173e48;color:#e5f1e5;font:12px/1.4 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button{min-height:44px;min-width:44px;border:1px solid #7aa69c;border-radius:8px;padding:7px 10px;background:#244c53;color:#f0f8e9;font:600 12px/1.3 system-ui,sans-serif}.rn-tycoon-scene .rn-tycoon-map-controls button:hover:not(:disabled){background:#356367;border-color:#b4e7d3}.rn-tycoon-scene .rn-tycoon-map-controls button:disabled{opacity:.45}.rn-tycoon-map-zoom{min-width:37px;text-align:center;font-variant-numeric:tabular-nums}.rn-tycoon-map-pan{display:flex;gap:6px;align-items:center}.rn-tycoon-map-weather{display:flex;flex-wrap:wrap;gap:5px 14px;padding:8px 14px;background:#204750;color:#e5f1e5;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-weather strong{color:#fff1ba}.rn-tycoon-map-hint{width:100%;font-size:11px;color:#c7e0d6}.rn-tycoon-map-key{display:flex;flex-wrap:wrap;gap:7px 16px;padding:11px 16px;background:#173e48;color:#e5f1e5;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-key span{display:inline-flex;align-items:center;gap:7px}.rn-tycoon-map-key i{display:inline-block;width:22px;height:3px;border-radius:3px;flex-shrink:0}.rn-tycoon-map-note{margin-left:auto;opacity:.85}@media(max-width:420px){.rn-tycoon-map-key{padding:10px;gap:6px 12px;font-size:11px}.rn-tycoon-map-note{width:100%;margin-left:0}.rn-tycoon-map-controls{padding:8px;gap:5px}.rn-tycoon-scene .rn-tycoon-map-controls button{padding:7px 8px}.rn-tycoon-map-weather{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-map-overlays{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-right:5px}.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"],.rn-tycoon-scene .rn-tycoon-map-overlays button[aria-pressed="true"]:hover:not(:disabled){background:#d6f5e6;color:#153e45;border-color:#d6f5e6;box-shadow:inset 0 -3px 0 #4d8c76}.rn-tycoon-scene .rn-tycoon-map-overlays button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-scene svg{user-select:none;-webkit-user-select:none}.rn-tycoon-map-condition{display:flex;flex-wrap:wrap;gap:3px 16px;padding:8px 14px;background:#173e48;border-top:1px solid #426b69;color:#edf7e9;font:12px/1.5 system-ui,sans-serif}.rn-tycoon-map-condition strong{color:#d6f5e6}.rn-tycoon-map-condition span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-overlays{width:100%;margin-right:0}.rn-tycoon-map-overlays button{flex:1}.rn-tycoon-map-condition{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-map-service{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#3b433b;border-top:1px solid #8f895f;color:#ffefcc;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-service strong{font-weight:700;color:#fff0ca}.rn-tycoon-map-service span{font-variant-numeric:tabular-nums}.rn-tycoon-service-progress{width:100%;height:4px;margin-top:2px;background:#697267;border-radius:3px;overflow:hidden}.rn-tycoon-service-progress>span{display:block;height:100%;background:#ffe1a0;border-radius:3px}@media(max-width:420px){.rn-tycoon-map-service{padding:8px 10px;gap:3px 8px}}'),
       h('style', null, '.rn-tycoon-map-connection{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;padding:8px 14px;border-top:1px solid #50766d;background:#1c4549;color:#e8f5e7;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-connection strong{font-size:12px;color:#f0f9e8}.rn-tycoon-map-connection span{font-variant-numeric:tabular-nums}.rn-tycoon-map-connection[data-state=isolated]{background:#414738;border-color:#8f895f;color:#ffefcc}.rn-tycoon-map-connection[data-state=isolated] strong{color:#fff0ca}.rn-tycoon-map-connection[data-reason=fault]{background:#513e3b;border-color:#aa7b67;color:#ffe5d4}.rn-tycoon-map-connection[data-reason=fault] strong{color:#ffe8d6}@media(max-width:420px){.rn-tycoon-map-connection{padding:8px 10px}}'),
       h('style', null, '.rn-tycoon-service-stage{display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;width:100%;margin-top:2px}.rn-tycoon-service-stage strong{display:inline-block;border:1px solid #b3a274;border-radius:5px;padding:1px 6px;background:#54523d;font-size:10px;line-height:1.5}.rn-tycoon-service-stage span{font-size:10px}'),
       h('style', null, '.rn-tycoon-map-build{display:flex;flex-wrap:wrap;gap:3px 13px;padding:8px 14px;background:#354842;border-top:1px solid #8e9d7d;color:#f2efd6;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-map-build strong{color:#fff0ca}.rn-tycoon-map-build span{font-variant-numeric:tabular-nums}@media(max-width:420px){.rn-tycoon-map-build{padding:8px 10px;gap:3px 8px}}'),
       h('style', null, '.rn-tycoon-battery-gauge{display:grid;gap:5px;padding:9px 14px;background:#204750;border-top:1px solid #52776c;color:#e6f5e9;font:11px/1.5 system-ui,sans-serif}.rn-tycoon-battery-reading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px}.rn-tycoon-battery-reading strong{color:#eaffdf;font-size:12px;font-variant-numeric:tabular-nums}.rn-tycoon-battery-track{position:relative;height:9px;border:1px solid #70978b;border-radius:5px;background:#12333d;overflow:hidden}.rn-tycoon-battery-level{height:100%;background:#7ce2b5}.rn-tycoon-battery-reserve{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed #ffe0a0;transform:translateX(-1px)}.rn-tycoon-battery-note{font-size:10px;color:#d2e9dd}@media(max-width:420px){.rn-tycoon-battery-gauge{padding:9px 10px}}'),
-      h('style', null, '.rn-tycoon-network{display:grid;gap:6px;padding:8px 14px;background:#183e47;border-top:1px solid #50766d;color:#e9f4e8;font:11px/1.4 system-ui,sans-serif}.rn-tycoon-network-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}.rn-tycoon-network-heading strong{font-size:11px}.rn-tycoon-network-readings{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px}.rn-tycoon-network-readings span{display:block;color:#c9e0d5;font-size:10px}.rn-tycoon-network-readings strong{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#f2f8e7}.rn-tycoon-network-unused{border-left:4px solid #d5b577;padding-left:6px;background:repeating-linear-gradient(135deg,transparent,transparent 5px,#e4c58a0e 5px,#e4c58a0e 7px)}.rn-tycoon-scene .rn-tycoon-network button{min-height:32px;padding:5px 9px;border:1px solid #81b3a0;border-radius:7px;background:#28575a;color:#eff8e7;font:600 11px/1.4 system-ui,sans-serif;cursor:pointer}.rn-tycoon-network button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-substation{outline:none;cursor:pointer}.rn-tycoon-substation:hover .rn-tycoon-substation-focus{stroke:#baf1da;fill:#baf1da12}.rn-tycoon-substation:focus .rn-tycoon-substation-focus,.rn-tycoon-substation:focus-visible .rn-tycoon-substation-focus{stroke:#fff1b0;fill:#fff1b01f;stroke-width:4}@media(max-width:420px){.rn-tycoon-network{padding:8px 10px}.rn-tycoon-network-readings{gap:5px}.rn-tycoon-network-readings strong{font-size:11px}.rn-tycoon-network-readings span{font-size:9px}}'),
+      h('style', null, '.rn-tycoon-network{display:grid;gap:6px;padding:8px 14px;background:#183e47;border-top:1px solid #50766d;color:#e9f4e8;font:11px/1.4 system-ui,sans-serif}.rn-tycoon-network-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}.rn-tycoon-network-heading strong{font-size:11px}.rn-tycoon-network-readings{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:6px}.rn-tycoon-network-readings span{display:block;color:#c9e0d5;font-size:10px}.rn-tycoon-network-readings strong{display:block;font-size:12px;font-variant-numeric:tabular-nums;color:#f2f8e7}.rn-tycoon-network-unused{border-left:4px solid #d5b577;padding-left:6px;background:repeating-linear-gradient(135deg,transparent,transparent 5px,#e4c58a0e 5px,#e4c58a0e 7px)}.rn-tycoon-scene .rn-tycoon-network button{min-height:44px;padding:5px 9px;border:1px solid #81b3a0;border-radius:7px;background:#28575a;color:#eff8e7;font:600 11px/1.4 system-ui,sans-serif;cursor:pointer}.rn-tycoon-network button:focus-visible{outline:3px solid #fff1b0;outline-offset:2px}.rn-tycoon-substation{outline:none;cursor:pointer}.rn-tycoon-substation:hover .rn-tycoon-substation-focus{stroke:#baf1da;fill:#baf1da12}.rn-tycoon-substation:focus .rn-tycoon-substation-focus,.rn-tycoon-substation:focus-visible .rn-tycoon-substation-focus{stroke:#fff1b0;fill:#fff1b01f;stroke-width:4}@media(max-width:420px){.rn-tycoon-network{padding:8px 10px}.rn-tycoon-network-readings{gap:5px}.rn-tycoon-network-readings strong{font-size:11px}.rn-tycoon-network-readings span{font-size:9px}}'),
       h('div', { className: 'rn-tycoon-map-controls', role: 'group', 'aria-label': t('renewables.tycoon.scene.mapControls', 'Map view controls') },
         h('div', { className: 'rn-tycoon-map-overlays', role: 'group', 'aria-label': t('renewables.tycoon.scene.overlayControls', 'Map information') },
           h('button', { type: 'button', 'data-tycoon-overlay': 'power', 'aria-pressed': overlay === 'power', onClick: function () { setOverlay('power'); } }, t('renewables.tycoon.scene.powerOverlay', 'Power flow')),
@@ -1750,7 +1845,7 @@ if (typeof window !== 'undefined') {
           h('div', { className: 'rn-tycoon-network-unused' }, h('strong', null, formatPower(networkCurtailed)), h('span', null, t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used'))))),
       selectedConnection && selectedSite ? h('div', { className: 'rn-tycoon-map-connection', 'data-tycoon-connection-summary': true, 'data-site': selectedSite.id, 'data-state': selectedConnection.state, 'data-reason': selectedConnection.reason },
         h('strong', null, selectedSite.name + ' · ' + selectedConnection.label), h('span', null, selectedConnection.detail + ' · ' + serviceContext)) : null,
-      selectedBattery ? h('div', { className: 'rn-tycoon-battery-gauge', 'data-tycoon-battery-gauge': selectedSite.id, 'data-stored': selectedStored, 'data-capacity': selectedCapacity, 'data-fraction': selectedFill, 'data-reserve': reserveFraction },
+      selectedBattery && selectedSite ? h('div', { className: 'rn-tycoon-battery-gauge', 'data-tycoon-battery-gauge': selectedSite.id, 'data-stored': selectedStored, 'data-capacity': selectedCapacity, 'data-fraction': selectedFill, 'data-reserve': reserveFraction },
         h('div', { className: 'rn-tycoon-battery-reading' }, h('span', { id: uid + '-battery-stored' }, t('renewables.tycoon.scene.storedEndHour', 'Stored at end of selected hour')), h('strong', null, selectedStored.toFixed(1) + ' / ' + selectedCapacity.toFixed(1) + ' kWh · ' + (selectedFill * 100).toFixed(1) + '%')),
         h('div', { className: 'rn-tycoon-battery-track', role: 'meter', 'aria-labelledby': uid + '-battery-stored', 'aria-valuemin': 0, 'aria-valuemax': selectedCapacity, 'aria-valuenow': selectedStored, 'aria-valuetext': selectedStored.toFixed(1) + ' ' + t('renewables.tycoon.scene.kwhStored', 'kWh stored') }, h('div', { className: 'rn-tycoon-battery-level', 'data-tycoon-battery-level': selectedSite.id, style: { width: selectedFill * 100 + '%' } }), h('span', { className: 'rn-tycoon-battery-reserve', 'data-tycoon-battery-reserve': selectedSite.id, 'data-reserve': reserveFraction, style: { left: reserveFraction * 100 + '%' }, 'aria-hidden': true })),
         h('span', { className: 'rn-tycoon-battery-note' }, t('renewables.tycoon.scene.reserveTarget', 'Reserve target') + ': ' + (selectedCapacity * reserveFraction).toFixed(1) + ' kWh · ' + t('renewables.tycoon.scene.reserveRelease', 'Essential needs may draw on the reserve.'))) : null,
@@ -1759,7 +1854,7 @@ if (typeof window !== 'undefined') {
         h('span', null, (campaign.phase && campaign.phase !== 'planning' ? t('renewables.tycoon.scene.buildReplay', 'Illustrative stages · replay hour') : t('renewables.tycoon.scene.buildForecast', 'Illustrative stages · forecast hour')) + ' · ' + t('renewables.tycoon.scene.buildOffline', 'Offline for the entire construction month'))) : null,
       overlay === 'condition' ? h('div', { className: 'rn-tycoon-map-condition', 'data-tycoon-condition-summary': true, 'aria-live': 'polite', 'aria-atomic': true },
         h('strong', null, conditionHeading),
-        h('span', null, selectedAsset && selectedSite ? selectedSite.name + ': ' + Math.round(clamp(selectedAsset.condition, 0, 100)) + '% · ' + (statusText[selectedAsset.status] || statusText.idle) : t('renewables.tycoon.scene.selectCondition', 'Select owned equipment to inspect its condition.'))) : null,
+        h('span', null, selectedAsset && selectedSite ? selectedSite.name + ': ' + Math.round(clamp(selectedAsset.condition, 0, 100)) + '% · ' + (own(statusText, selectedAsset.status) ? statusText[selectedAsset.status] : statusText.idle) : t('renewables.tycoon.scene.selectCondition', 'Select owned equipment to inspect its condition.'))) : null,
       selectedAsset && selectedSite && selectedAsset.status === 'service' ? h('div', { className: 'rn-tycoon-map-service', 'data-tycoon-service-summary': true, 'data-site': selectedSite.id, 'data-stage': serviceStage, 'data-elapsed': serviceElapsed, 'data-remaining': serviceRemaining },
         h('strong', null, selectedSite.name + ' · ' + serviceContext), h('span', null, serviceElapsedText + ' · ' + serviceRemainingText), h('span', null, t('renewables.tycoon.scene.serviceOffline', 'Offline for service') + ' · ' + serviceReturnText),
         h('div', { className: 'rn-tycoon-service-stage' }, h('strong', { 'data-tycoon-service-stage': serviceStage }, serviceStageLabel), h('span', null, serviceStageContext)),
@@ -1816,10 +1911,11 @@ if (typeof window !== 'undefined') {
             : (function () {
                 var sunX = 130 + hour / 24 * 800, sunY = 110 - daylight * 55;
                 return h('g', null,
-                  !overcast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
+                  !overcast && !highContrast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
                     polygon((sunX - 18) + ',' + (sunY + 18) + ' ' + (sunX + 18) + ',' + (sunY + 18) + ' ' + (sunX + 130) + ',232 ' + (sunX - 95) + ',232', '#fff7cc'),
                     polygon((sunX - 8) + ',' + (sunY + 16) + ' ' + (sunX + 10) + ',' + (sunY + 16) + ' ' + (sunX + 62) + ',228 ' + (sunX - 38) + ',228', '#ffffff')) : null,
-                  h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }),
+                  !highContrast ? h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }) : null,
+                  !overcast && !highContrast ? h('circle', { cx: sunX, cy: sunY, r: 46, fill: 'none', stroke: dawn ? '#ffd99e' : '#fff8cf', strokeWidth: 1.5, opacity: clamp(daylight * 0.28, 0.08, 0.28) }) : null,
                   h('circle', { cx: sunX, cy: sunY, r: 25, fill: overcast ? '#d9dfc9' : '#fff4bc', opacity: overcast ? 0.55 : 0.96 }),
                   !overcast ? h('circle', { cx: sunX, cy: sunY, r: 17, fill: '#fffdf0', opacity: 0.72 }) : null);
               })(),
@@ -1829,19 +1925,28 @@ if (typeof window !== 'undefined') {
           h('rect', { x: 0, y: 172, width: 1100, height: 68, fill: 'url(#' + uid + '-horizon-mist)' }),
           h('path', { d: 'M 0 222 Q 145 204 298 222 T 610 219 T 945 221 T 1100 211 V 690 H 0 Z', fill: 'url(#' + uid + '-sea)' }),
           (function () {
+            if (highContrast) return null;
             var glintX = night ? 900 : 130 + hour / 24 * 800;
-            return h('g', { opacity: night ? 0.22 : overcast ? 0.1 : clamp(irradiance * 0.34, 0.12, 0.36) },
-              [0, 1, 2, 3, 4].map(function (row) {
-                var ry = 232 + row * 19, half = 34 - row * 3.5;
-                return h('line', { key: row, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : '#fff5c4', strokeWidth: 2.4 - row * 0.25, strokeLinecap: 'round' });
+            return h('g', { opacity: night ? 0.24 : overcast ? 0.12 : clamp(irradiance * 0.38, 0.14, 0.42) },
+              [0, 1, 2, 3, 4, 5].map(function (row) {
+                var ry = 230 + row * 18, half = 36 - row * 3.4;
+                return h('line', { key: row, ref: function (node) { if (node) refs.current.glintRows.push(node); }, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : dawn ? '#ffdfa8' : '#fff5c4', strokeWidth: 2.5 - row * 0.22, strokeLinecap: 'round' });
               }));
           })(),
-          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
+          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: highContrast ? 0 : overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
             h('ellipse', { cy: 5, rx: overcast ? 104 : 69, ry: 12, fill: night ? '#56727c' : overcast ? '#b6c7c9' : '#d3e4df' }),
             h('ellipse', { rx: overcast ? 102 : 67, ry: 13, fill: night ? '#769298' : '#f3f5ea' }),
             h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19, fill: night ? '#829ea4' : '#fafbf2' }),
             h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17, fill: night ? '#7c989e' : '#f5f7ed' })); }),
-          h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', opacity: 0.42 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          !highContrast ? h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' },
+            [
+              'M 21 333 q 29 -8 51 0 M 1000 288 q 26 -5 60 1',
+              'M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2',
+              'M 19 566 q 37 -7 65 -2 M 957 626 q 47 -8 94 1',
+              'M 230 651 q 42 -10 77 -3 M 728 656 q 34 -7 66 0'
+            ].map(function (d, idx) {
+              return h('path', { key: idx, ref: function (node) { if (node) refs.current.seaRipples.push(node); }, d: d, opacity: 0.42 });
+            })) : null,
           h('path', { d: 'M 94 398 Q 92 478 168 516 L 458 654 Q 518 682 590 666 L 845 616 Q 918 596 946 558 L 1014 422 Q 1034 345 984 316', fill: 'none', stroke: night ? '#7db3be' : '#e6fcf6', strokeWidth: 3.5, strokeDasharray: '18 12 7 14', opacity: night ? 0.24 : 0.46, strokeLinecap: 'round' }),
           h('g', { opacity: night ? 0.28 : 0.56 },
             h('path', { d: 'M 150 518 Q 178 538 205 533 Q 230 551 258 548', fill: 'none', stroke: night ? '#8bc6cf' : '#eefefb', strokeWidth: 2.2, strokeLinecap: 'round' }),
@@ -1851,12 +1956,17 @@ if (typeof window !== 'undefined') {
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: '#c6c9a4' }),
           h('path', { d: 'M 99 424 Q 107 468 166 497 L 463 637 Q 520 663 587 649 L 838 601 Q 916 579 939 542', fill: 'none', stroke: night ? '#86b4aa' : '#e7e5c0', strokeWidth: 2.2, opacity: 0.45 }),
           h('path', { d: 'M 130 286 L 273 234 L 469 181 Q 569 169 667 198 L 965 315 Q 1002 338 987 402 L 921 529 Q 891 564 829 581 L 584 629 Q 519 642 465 619 L 177 486 Q 106 453 104 391 Z', fill: 'url(#' + uid + '-grass)' }),
+          !highContrast ? h('g', { pointerEvents: 'none' },
+            [0,1,2,3].map(function (index) {
+              var cx = (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130);
+              return h('ellipse', { key: 'cshadow-' + index, ref: function (node) { refs.current.cloudShadows[index] = node; }, transform: 'translate(' + (cx + 28).toFixed(2) + ' ' + (292 + (index % 3) * 78) + ')', rx: overcast ? 88 : 58, ry: 18, fill: night ? '#0c222e' : '#1b473e', opacity: night ? 0.14 : overcast ? 0.12 : 0.065 });
+            })) : null,
           h('path', { d: 'M 145 322 Q 255 278 367 289 T 598 295 T 866 361 M 169 434 Q 282 388 420 409 M 671 473 Q 807 464 942 412', stroke: night ? '#7ea58b' : '#d0dbac', strokeWidth: 2, opacity: 0.28, fill: 'none' }),
           h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#9ea993', strokeWidth: 17, strokeLinejoin: 'round' }),
           h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#e2dbb6', strokeWidth: 12, strokeLinejoin: 'round' }),
           [[146,366,.9],[203,285,.75],[348,228,.75],[504,204,.8],[681,228,.85],[936,353,.8],[973,414,.7],[192,460,.9],[342,545,.85],[779,589,.6],[930,481,.6],[113,412,.7]].map(function (item) { return tree(item[0],item[1],item[2]); }),
           windsock(),
-          h('g', { ref: function (node) { refs.current.ribbons = node; }, stroke: night ? '#8bb9c6' : '#e7fff0', strokeWidth: 2, fill: 'none', strokeDasharray: '16 54', opacity: clamp(motion.current.weatherWind / 20, 0, 0.5) }, h('path', { d: 'M 31 241 Q 96 215 182 227 T 329 215 M 754 162 Q 822 143 900 160 T 1079 159' }))),
+          h('g', { ref: function (node) { refs.current.ribbons = node; }, stroke: night ? '#8bb9c6' : '#e7fff0', strokeWidth: 2, fill: 'none', strokeDasharray: '16 54', opacity: highContrast ? 0 : clamp(motion.current.weatherWind / 20, 0, 0.5) }, h('path', { d: 'M 31 241 Q 96 215 182 227 T 329 215 M 754 162 Q 822 143 900 160 T 1079 159' }))),
         h('g', null, sites.map(function (site, index) { var point = sitePoint(site, index), asset = assetBySite[site.id], cable = { x0: point.x, y0: point.y + 12, x1: point.x * 0.55 + 575 * 0.45, y1: point.y + 49, x2: 575, y2: 428 }; return flow(site.id, 'M ' + cable.x0 + ' ' + cable.y0 + ' Q ' + cable.x1 + ' ' + cable.y1 + ' ' + cable.x2 + ' ' + cable.y2, asset ? n(asset.power) : 0, !!asset, cable); }), flow('town', 'M 575 428 Q 569 505 606 552', Math.max(0,n(frame.served)), true)),
         h('g', null,
           h('g', { className: canInspectDispatch ? 'rn-tycoon-substation' : undefined, role: canInspectDispatch ? 'button' : undefined, tabIndex: canInspectDispatch ? 0 : undefined, 'aria-label': canInspectDispatch ? inspectDispatchLabel : undefined, 'aria-hidden': canInspectDispatch ? undefined : true, 'data-tycoon-inspect-dispatch': canInspectDispatch ? 'substation' : undefined, onClick: canInspectDispatch ? inspectDispatch : undefined, onKeyDown: canInspectDispatch ? dispatchKey : undefined, onFocus: canInspectDispatch ? function () { setFocusedSiteId(null); if (camera.zoom > 1) setCamera(function (old) { return fitCamera({ zoom: old.zoom, x: 575, y: 425 }); }); } : undefined },
@@ -1882,28 +1992,29 @@ if (typeof window !== 'undefined') {
           h('text', { x: 36, y: 101, fill: '#f4dfb1', fontSize: 11.5 }, formatPower(networkCurtailed) + ' ' + t('renewables.tycoon.scene.curtailedUnused', 'Curtailed · not used')))),
       h('div', { className: 'rn-tycoon-map-key' }, h('span', null, h('i', { style: { background: '#ffe5a0' } }), t('renewables.tycoon.scene.delivering', 'Delivering electricity')), h('span', null, h('i', { style: { background: '#c5a5ff' } }), t('renewables.tycoon.scene.charging', 'Charging')), h('span', null, h('i', { style: { background: '#8bb0a0', border: '1px dashed #d2e4cd', height: 8 } }), t('renewables.tycoon.scene.available', 'Available site')), h('span', { className: 'rn-tycoon-map-note' }, t('renewables.tycoon.scene.illustrative', 'Illustrative motion · simulated hourly power'))));
   };
-})();
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));
 
 // Source: stem_lab/renewables_tycoon_view.js
-(function () {
+(function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
 
-  if (typeof window === 'undefined') return;
-  window.StemLab = window.StemLab || {};
+  global.StemLab = global.StemLab || {};
+  function own(map, key, fallback) { return map && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : fallback; }
   var CSS = [
     '.rn-tycoon{--ty-bg:#eef5f1;--ty-card:#fff;--ty-soft:#f3f7f4;--ty-ink:#153c32;--ty-muted:#4c665e;--ty-line:#bdcec5;--ty-green:#116444;--ty-green-ink:#fff;--ty-gold:#7d5410;--ty-gold-bg:#fff1d4;--ty-bad:#a63532;--ty-blue:#245e86;color:var(--ty-ink);background:var(--ty-bg);border:1px solid var(--ty-line);border-radius:20px;padding:clamp(12px,2.3vw,28px);font-family:inherit;line-height:1.5;isolation:isolate}',
     '.rn-tycoon[data-theme=dark]{--ty-bg:#0c211c;--ty-card:#142f26;--ty-soft:#1a392f;--ty-ink:#effbf4;--ty-muted:#b3cec0;--ty-line:#507566;--ty-green:#a5e6bf;--ty-green-ink:#123c28;--ty-gold:#ffdb8c;--ty-gold-bg:#443717;--ty-bad:#ffb2aa;--ty-blue:#a4d6fa}',
     '.rn-tycoon[data-contrast=true]{--ty-bg:#000;--ty-card:#000;--ty-soft:#111;--ty-ink:#fff;--ty-muted:#fff;--ty-line:#fff;--ty-green:#ffff00;--ty-green-ink:#000;--ty-gold:#ffff00;--ty-gold-bg:#000;--ty-bad:#ffb2aa;--ty-blue:#00ffff}',
-    '.rn-tycoon *{box-sizing:border-box}.rn-tycoon h1,.rn-tycoon h2,.rn-tycoon h3,.rn-tycoon p{margin:0}.rn-tycoon h1{font-size:clamp(26px,3.5vw,42px);line-height:1.12;letter-spacing:-.035em}.rn-tycoon h2{font-size:21px;line-height:1.3;letter-spacing:-.025em}.rn-tycoon h3{font-size:17px;line-height:1.35}.rn-tycoon button,.rn-tycoon input,.rn-tycoon select{font:inherit}.rn-tycoon button,.rn-tycoon select{min-height:42px}.rn-tycoon button{border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);color:var(--ty-ink);padding:9px 13px;cursor:pointer;font-weight:650;line-height:1.3}.rn-tycoon button:hover:not(:disabled){border-color:var(--ty-green);background:var(--ty-soft)}.rn-tycoon button:disabled{cursor:not-allowed;opacity:.65}.rn-tycoon :focus-visible{outline:3px solid var(--ty-blue);outline-offset:3px}.rn-tycoon .ty-primary{background:var(--ty-green);color:var(--ty-green-ink);border-color:var(--ty-green)}.rn-tycoon .ty-primary:hover:not(:disabled){background:var(--ty-green);filter:brightness(1.08)}.rn-tycoon input[type=text],.rn-tycoon select{width:100%;border:1px solid var(--ty-line);border-radius:8px;padding:9px 10px;color:var(--ty-ink);background:var(--ty-card);min-width:0}.rn-tycoon input[type=range]{width:100%;accent-color:var(--ty-green);min-height:28px;margin:0}.rn-tycoon input[type=checkbox],.rn-tycoon input[type=radio]{accent-color:var(--ty-green);width:19px;height:19px;flex:0 0 19px}.rn-tycoon label{cursor:pointer}.rn-tycoon small{font-size:12px;color:var(--ty-muted)}',
+    '.rn-tycoon *{box-sizing:border-box}.rn-tycoon h1,.rn-tycoon h2,.rn-tycoon h3,.rn-tycoon p{margin:0}.rn-tycoon h1{font-size:clamp(26px,3.5vw,42px);line-height:1.12;letter-spacing:-.035em}.rn-tycoon h2{font-size:21px;line-height:1.3;letter-spacing:-.025em}.rn-tycoon h3{font-size:17px;line-height:1.35}.rn-tycoon button,.rn-tycoon input,.rn-tycoon select{font:inherit}.rn-tycoon button,.rn-tycoon select,.rn-tycoon input[type=text]{min-height:44px}.rn-tycoon button{border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);color:var(--ty-ink);padding:9px 13px;cursor:pointer;font-weight:650;line-height:1.3}.rn-tycoon button:hover:not(:disabled){border-color:var(--ty-green);background:var(--ty-soft)}.rn-tycoon button:disabled{cursor:not-allowed;opacity:.65}.rn-tycoon :focus-visible{outline:3px solid var(--ty-blue);outline-offset:3px}.rn-tycoon .ty-primary{background:var(--ty-green);color:var(--ty-green-ink);border-color:var(--ty-green)}.rn-tycoon .ty-primary:hover:not(:disabled){background:var(--ty-green);filter:brightness(1.08)}.rn-tycoon input[type=text],.rn-tycoon select{width:100%;border:1px solid var(--ty-line);border-radius:8px;padding:9px 10px;color:var(--ty-ink);background:var(--ty-card);min-width:0}.rn-tycoon input[type=range]{width:100%;accent-color:var(--ty-green);min-height:44px;margin:0}.rn-tycoon input[type=checkbox],.rn-tycoon input[type=radio]{accent-color:var(--ty-green);width:19px;height:19px;flex:0 0 19px}.rn-tycoon label{cursor:pointer}.rn-tycoon small{font-size:12px;color:var(--ty-muted)}',
     '.ty-topline,.ty-row,.ty-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ty-topline{margin-bottom:22px}.ty-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.ty-eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:800;color:var(--ty-muted)}.ty-brand{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:750;letter-spacing:.025em}.ty-brand-mark{background:var(--ty-green);color:var(--ty-green-ink);width:31px;height:31px;border-radius:9px;display:grid;place-items:center;font-size:20px}.ty-subtitle{color:var(--ty-muted);font-size:14px;max-width:65ch;margin-top:9px!important}.ty-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:end;margin-bottom:24px}.ty-hero-stats{display:flex;gap:10px;flex-wrap:wrap}.ty-hero-stat{background:var(--ty-card);border:1px solid var(--ty-line);border-radius:13px;padding:13px 17px;min-width:125px}.ty-hero-stat strong{display:block;font-size:23px;line-height:1.3;letter-spacing:-.04em}.ty-hero-stat span{font-size:11px;color:var(--ty-muted)}.ty-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:750;border:1px solid var(--ty-line);background:var(--ty-soft)}.ty-chip-gold{background:var(--ty-gold-bg);border-color:var(--ty-gold);color:var(--ty-gold)}.ty-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;margin:14px 0 3px}.ty-months span{height:5px;background:var(--ty-line);border-radius:6px}.ty-months span[data-past=true]{background:var(--ty-green)}.ty-months span[data-current=true]{background:var(--ty-gold)}',
-    '.ty-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr);gap:18px;align-items:start}.ty-stack{display:grid;gap:18px;min-width:0}.ty-card{border:1px solid var(--ty-line);background:var(--ty-card);border-radius:16px;padding:18px;min-width:0}.ty-section-head{margin-bottom:15px}.ty-section-head h2{font-size:18px}.ty-section-head p{font-size:12px;color:var(--ty-muted);margin-top:3px}.ty-scene-card{padding:0;overflow:hidden}.ty-scene-head{padding:17px 18px 0}.ty-map{position:relative;background:#dcece6;overflow:hidden}.ty-map>svg{display:block;width:100%;height:auto;max-height:550px}.ty-scene-footer{padding:15px 18px 17px;border-top:1px solid var(--ty-line);display:grid;gap:14px}.ty-time-controls{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}.ty-clock{font-size:25px;font-variant-numeric:tabular-nums;font-weight:750;letter-spacing:-.03em;min-width:82px}.ty-clock small{display:block;font-size:11px;font-weight:400;letter-spacing:0}.ty-time-controls label{font-size:11px;color:var(--ty-muted);font-weight:650}.ty-time-controls select{padding:5px 8px;min-height:34px;width:auto}.ty-flow-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ty-flow-stat{border-left:2px solid var(--ty-line);padding-left:9px;min-width:0}.ty-flow-stat strong{display:block;font-size:17px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.ty-flow-stat span{font-size:10px;color:var(--ty-muted);display:block}.ty-flow-stat[data-color=green]{border-color:var(--ty-green)}.ty-flow-stat[data-color=blue]{border-color:var(--ty-blue)}.ty-flow-stat[data-color=gold]{border-color:var(--ty-gold)}.ty-flow-stat[data-color=bad]{border-color:var(--ty-bad)}.ty-source-bar{display:flex;width:100%;height:8px;border-radius:8px;overflow:hidden;background:var(--ty-line)}.ty-source-bar span{min-width:0;transition:width .3s ease}.ty-source-bar .ty-solar{background:#b87905}.ty-source-bar .ty-wind{background:#27886a}.ty-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--ty-muted);font-size:11px;margin-top:5px}.ty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;background:currentColor}',
-    '.ty-detail{border-top:1px solid var(--ty-line);padding-top:13px;display:grid;gap:11px}.ty-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ty-detail-grid div{font-size:12px;color:var(--ty-muted)}.ty-detail-grid strong{display:block;color:var(--ty-ink);font-size:14px}.ty-meter{height:6px;background:var(--ty-line);border-radius:6px;overflow:hidden}.ty-meter>span{display:block;height:100%;background:var(--ty-green);border-radius:6px;transition:width .3s ease}.ty-acquisition-list{display:grid;gap:10px}.ty-acquisition{border:1px solid var(--ty-line);background:var(--ty-soft);border-radius:11px;padding:12px;display:grid;gap:9px}.ty-acquisition h3{font-size:14px}.ty-acquisition p{font-size:12px;color:var(--ty-muted)}.ty-acquisition .ty-row{align-items:start}.ty-acquisition .ty-icon{font-size:22px;width:35px;height:35px;border-radius:9px;background:var(--ty-card);display:grid;place-items:center}.ty-acquisition-name{display:flex;gap:9px;align-items:center}.ty-price{font-weight:750;font-size:16px;white-space:nowrap}.ty-acquisition button{font-size:12px;min-height:36px;padding:8px 10px}.ty-muted{color:var(--ty-muted)}.ty-small{font-size:12px}.ty-body{font-size:13px;line-height:1.6}.ty-field{display:grid;gap:7px;font-size:13px}.ty-policy{display:grid;gap:16px}.ty-check{display:flex;gap:9px;align-items:flex-start;font-size:13px}.ty-check input{margin-top:2px}.ty-check small{display:block;margin-top:3px}.ty-event{border-color:var(--ty-gold);background:var(--ty-card)}.ty-event-mark{color:var(--ty-gold);font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.ty-event h3{font-size:20px;margin-top:7px}.ty-event-description{font-size:13px;color:var(--ty-muted);margin-top:8px!important}.ty-choices{border:0;padding:0;margin:15px 0;display:grid;gap:8px;min-width:0}.ty-choices legend{padding:0;font-size:12px;font-weight:700;margin-bottom:8px}.ty-choice{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid var(--ty-line);border-radius:10px;cursor:pointer;background:var(--ty-soft)}.ty-choice[data-selected=true]{border-color:var(--ty-green);box-shadow:inset 0 0 0 1px var(--ty-green)}.ty-choice input{margin:2px 0 0}.ty-choice strong{display:block;font-size:13px}.ty-choice small{display:block;line-height:1.5;margin-top:4px}.ty-choice-cost{display:block;font-size:11px;font-weight:700;margin-top:6px;color:var(--ty-ink)}.ty-committed{font-size:12px;color:var(--ty-green);font-weight:700}.ty-advance{background:var(--ty-soft);display:grid;gap:13px}.ty-advance .ty-primary{width:100%;padding:14px;font-size:15px}.ty-projection{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ty-projection span{display:block;color:var(--ty-muted);font-size:11px}.ty-projection strong{font-size:19px;font-variant-numeric:tabular-nums}.ty-goals{display:grid;gap:14px}.ty-goal .ty-row{font-size:12px;margin-bottom:6px;gap:6px}.ty-goal strong{font-size:12px}.ty-goal small{display:block;margin-top:4px}.ty-alert{border:1px solid var(--ty-bad);color:var(--ty-bad);background:var(--ty-card);padding:12px 15px;border-radius:10px;margin-bottom:16px;overflow-wrap:anywhere}.ty-notice{font-size:13px;margin:0 0 15px;min-height:0;color:var(--ty-green)}.ty-notice:empty{display:none}',
-    '.ty-report{margin-top:18px}.ty-report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.ty-report-stat{background:var(--ty-soft);border-radius:10px;padding:12px}.ty-report-stat span{font-size:11px;color:var(--ty-muted);display:block}.ty-report-stat strong{font-size:20px;display:block;letter-spacing:-.03em}.ty-report-stat small{font-size:10px}.ty-ledger{width:100%;border-collapse:collapse;font-size:12px}.ty-ledger th,.ty-ledger td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--ty-line);white-space:nowrap;font-variant-numeric:tabular-nums}.ty-ledger th:first-child,.ty-ledger td:first-child{text-align:left}.ty-table-scroll{overflow:auto;max-width:100%;border:1px solid var(--ty-line);border-radius:10px}.ty-history{margin-top:18px}.ty-history summary{font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;min-height:35px}.ty-chart{display:grid;gap:7px;margin:16px 0}.ty-chart-row{display:grid;grid-template-columns:34px minmax(0,1fr) 75px;gap:9px;align-items:center;font-size:11px}.ty-chart-track{height:15px;background:var(--ty-soft);border-radius:3px;overflow:hidden}.ty-chart-track span{display:block;height:100%;border-radius:3px;background:var(--ty-green)}.ty-chart-row[data-negative=true] .ty-chart-track span{background:var(--ty-bad)}.ty-chart-row strong{text-align:right;font-size:11px;font-variant-numeric:tabular-nums}.ty-footer{margin-top:20px;padding-top:15px;border-top:1px solid var(--ty-line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ty-footer p{font-size:11px;color:var(--ty-muted);max-width:75ch}.ty-file{font-size:12px;display:grid;gap:5px}.ty-file input{font-size:11px;max-width:100%;width:235px}.ty-file input::file-selector-button{font:inherit;border:1px solid var(--ty-line);color:var(--ty-ink);background:var(--ty-card);padding:8px;border-radius:7px;cursor:pointer}.ty-save-panel{margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.ty-reset{margin-bottom:18px;border-color:var(--ty-bad);display:grid;gap:12px}.ty-onboard{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,1fr);gap:25px;align-items:center;padding:20px 0}.ty-onboard h1{font-size:clamp(34px,5vw,62px);max-width:11ch}.ty-onboard-copy{display:grid;gap:18px}.ty-onboard-copy p{max-width:50ch;font-size:14px;color:var(--ty-muted)}.ty-onboard-steps{display:grid;gap:12px;margin:0;padding:0;list-style:none}.ty-onboard-steps li{display:flex;gap:12px;font-size:13px}.ty-step-number{width:26px;height:26px;border-radius:50%;background:var(--ty-green);color:var(--ty-green-ink);display:grid;place-items:center;flex-shrink:0;font-size:11px;font-weight:800}.ty-onboard-steps strong{display:block}.ty-onboard-steps span:not(.ty-step-number){color:var(--ty-muted)}.ty-start-form{display:grid;gap:14px;padding-top:16px;border-top:1px solid var(--ty-line)}.ty-start-form button{padding:13px}.ty-final{background:var(--ty-soft);border:1px solid var(--ty-green);margin-bottom:18px;display:grid;gap:13px}.ty-final h2{font-size:27px}.ty-final ul{padding-left:20px;font-size:13px;margin:0}.ty-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}',
+    '.ty-grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(270px,1fr);gap:18px;align-items:start}.ty-stack{display:grid;gap:18px;min-width:0}.ty-card{border:1px solid var(--ty-line);background:var(--ty-card);border-radius:16px;padding:18px;min-width:0}.ty-section-head{margin-bottom:15px}.ty-section-head h2{font-size:18px}.ty-section-head p{font-size:12px;color:var(--ty-muted);margin-top:3px}.ty-scene-card{padding:0;overflow:hidden}.ty-scene-head{padding:17px 18px 0}.ty-map{position:relative;background:#dcece6;overflow:hidden}.ty-map>svg{display:block;width:100%;height:auto;max-height:550px}.ty-scene-footer{padding:15px 18px 17px;border-top:1px solid var(--ty-line);display:grid;gap:14px}.ty-time-controls{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px}.ty-clock{font-size:25px;font-variant-numeric:tabular-nums;font-weight:750;letter-spacing:-.03em;min-width:82px}.ty-clock small{display:block;font-size:11px;font-weight:400;letter-spacing:0}.ty-time-controls label{font-size:11px;color:var(--ty-muted);font-weight:650}.ty-time-controls select{padding:5px 8px;min-height:44px;width:auto}.ty-flow-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ty-flow-stat{border-left:2px solid var(--ty-line);padding-left:9px;min-width:0}.ty-flow-stat strong{display:block;font-size:17px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.ty-flow-stat span{font-size:10px;color:var(--ty-muted);display:block}.ty-flow-stat[data-color=green]{border-color:var(--ty-green)}.ty-flow-stat[data-color=blue]{border-color:var(--ty-blue)}.ty-flow-stat[data-color=gold]{border-color:var(--ty-gold)}.ty-flow-stat[data-color=bad]{border-color:var(--ty-bad)}.ty-source-bar{display:flex;width:100%;height:8px;border-radius:8px;overflow:hidden;background:var(--ty-line)}.ty-source-bar span{min-width:0;transition:width .3s ease}.ty-source-bar .ty-solar{background:#b87905}.ty-source-bar .ty-wind{background:#27886a}.ty-legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--ty-muted);font-size:11px;margin-top:5px}.ty-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;background:currentColor}',
+    '.ty-detail{border-top:1px solid var(--ty-line);padding-top:13px;display:grid;gap:11px}.ty-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ty-detail-grid div{font-size:12px;color:var(--ty-muted)}.ty-detail-grid strong{display:block;color:var(--ty-ink);font-size:14px}.ty-meter{height:6px;background:var(--ty-line);border-radius:6px;overflow:hidden}.ty-meter>span{display:block;height:100%;background:var(--ty-green);border-radius:6px;transition:width .3s ease}.ty-acquisition-list{display:grid;gap:10px}.ty-acquisition{border:1px solid var(--ty-line);background:var(--ty-soft);border-radius:11px;padding:12px;display:grid;gap:9px}.ty-acquisition h3{font-size:14px}.ty-acquisition p{font-size:12px;color:var(--ty-muted)}.ty-acquisition .ty-row{align-items:start}.ty-acquisition .ty-icon{font-size:22px;width:35px;height:35px;border-radius:9px;background:var(--ty-card);display:grid;place-items:center}.ty-acquisition-name{display:flex;gap:9px;align-items:center}.ty-price{font-weight:750;font-size:16px;white-space:nowrap}.ty-acquisition button{font-size:12px;min-height:44px;padding:8px 10px}.ty-muted{color:var(--ty-muted)}.ty-small{font-size:12px}.ty-body{font-size:13px;line-height:1.6}.ty-field{display:grid;gap:7px;font-size:13px}.ty-policy{display:grid;gap:16px}.ty-check{display:flex;gap:9px;align-items:flex-start;font-size:13px;min-height:44px;padding-top:4px}.ty-check input{margin-top:2px}.ty-check small{display:block;margin-top:3px}.ty-event{border-color:var(--ty-gold);background:var(--ty-card)}.ty-event-mark{color:var(--ty-gold);font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.ty-event h3{font-size:20px;margin-top:7px}.ty-event-description{font-size:13px;color:var(--ty-muted);margin-top:8px!important}.ty-choices{border:0;padding:0;margin:15px 0;display:grid;gap:8px;min-width:0}.ty-choices legend{padding:0;font-size:12px;font-weight:700;margin-bottom:8px}.ty-choice{display:flex;align-items:flex-start;gap:9px;padding:11px;border:1px solid var(--ty-line);border-radius:10px;cursor:pointer;background:var(--ty-soft)}.ty-choice[data-selected=true]{border-color:var(--ty-green);box-shadow:inset 0 0 0 1px var(--ty-green)}.ty-choice input{margin:2px 0 0}.ty-choice strong{display:block;font-size:13px}.ty-choice small{display:block;line-height:1.5;margin-top:4px}.ty-choice-cost{display:block;font-size:11px;font-weight:700;margin-top:6px;color:var(--ty-ink)}.ty-committed{font-size:12px;color:var(--ty-green);font-weight:700}.ty-advance{background:var(--ty-soft);display:grid;gap:13px}.ty-advance .ty-primary{width:100%;padding:14px;font-size:15px}.ty-projection{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ty-projection span{display:block;color:var(--ty-muted);font-size:11px}.ty-projection strong{font-size:19px;font-variant-numeric:tabular-nums}.ty-goals{display:grid;gap:14px}.ty-goal .ty-row{font-size:12px;margin-bottom:6px;gap:6px}.ty-goal strong{font-size:12px}.ty-goal small{display:block;margin-top:4px}.ty-alert{border:1px solid var(--ty-bad);color:var(--ty-bad);background:var(--ty-card);padding:12px 15px;border-radius:10px;margin-bottom:16px;overflow-wrap:anywhere}.ty-notice{font-size:13px;margin:0 0 15px;min-height:0;color:var(--ty-green)}.ty-notice:empty{display:none}',
+    '.ty-report{margin-top:18px}.ty-report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.ty-report-stat{background:var(--ty-soft);border-radius:10px;padding:12px}.ty-report-stat span{font-size:11px;color:var(--ty-muted);display:block}.ty-report-stat strong{font-size:20px;display:block;letter-spacing:-.03em}.ty-report-stat small{font-size:10px}.ty-ledger{width:100%;border-collapse:collapse;font-size:12px}.ty-ledger th,.ty-ledger td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--ty-line);white-space:nowrap;font-variant-numeric:tabular-nums}.ty-ledger th:first-child,.ty-ledger td:first-child{text-align:left}.ty-table-scroll{overflow:auto;max-width:100%;border:1px solid var(--ty-line);border-radius:10px}.ty-history{margin-top:18px}.ty-history summary{font-size:13px;font-weight:700;cursor:pointer;padding:6px 0;min-height:44px;display:flex;align-items:center}.ty-chart{display:grid;gap:7px;margin:16px 0}.ty-chart-row{display:grid;grid-template-columns:34px minmax(0,1fr) 75px;gap:9px;align-items:center;font-size:11px}.ty-chart-track{height:15px;background:var(--ty-soft);border-radius:3px;overflow:hidden}.ty-chart-track span{display:block;height:100%;border-radius:3px;background:var(--ty-green)}.ty-chart-row[data-negative=true] .ty-chart-track span{background:var(--ty-bad)}.ty-chart-row strong{text-align:right;font-size:11px;font-variant-numeric:tabular-nums}.ty-footer{margin-top:20px;padding-top:15px;border-top:1px solid var(--ty-line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.ty-footer p{font-size:11px;color:var(--ty-muted);max-width:75ch}.ty-file{font-size:12px;display:grid;gap:5px}.ty-file input{font-size:11px;max-width:100%;width:235px}.ty-file input::file-selector-button{font:inherit;border:1px solid var(--ty-line);color:var(--ty-ink);background:var(--ty-card);padding:8px;border-radius:7px;cursor:pointer}.ty-save-panel{margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.ty-reset{margin-bottom:18px;border-color:var(--ty-bad);display:grid;gap:12px}.ty-onboard{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,1fr);gap:25px;align-items:center;padding:20px 0}.ty-onboard h1{font-size:clamp(34px,5vw,62px);max-width:11ch}.ty-onboard-copy{display:grid;gap:18px}.ty-onboard-copy p{max-width:50ch;font-size:14px;color:var(--ty-muted)}.ty-onboard-steps{display:grid;gap:12px;margin:0;padding:0;list-style:none}.ty-onboard-steps li{display:flex;gap:12px;font-size:13px}.ty-step-number{width:26px;height:26px;border-radius:50%;background:var(--ty-green);color:var(--ty-green-ink);display:grid;place-items:center;flex-shrink:0;font-size:11px;font-weight:800}.ty-onboard-steps strong{display:block}.ty-onboard-steps span:not(.ty-step-number){color:var(--ty-muted)}.ty-start-form{display:grid;gap:14px;padding-top:16px;border-top:1px solid var(--ty-line)}.ty-start-form button{padding:13px}.ty-final{background:var(--ty-soft);border:1px solid var(--ty-green);margin-bottom:18px;display:grid;gap:13px}.ty-final h2{font-size:27px}.ty-final ul{padding-left:20px;font-size:13px;margin:0}.ty-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important}',
     '.ty-grid{grid-template-areas:"scene event" "scene fleet" "scene advance" "acquisition goals" "acquisition policy"}.ty-grid>[data-tycoon-panel=scene]{grid-area:scene}.ty-grid>[data-tycoon-panel=event]{grid-area:event}.ty-grid>[data-tycoon-panel=fleet]{grid-area:fleet}.ty-grid>[data-tycoon-panel=advance]{grid-area:advance}.ty-grid>[data-tycoon-panel=policy]{grid-area:policy}.ty-grid>[data-tycoon-panel=acquisition]{grid-area:acquisition}.ty-grid>[data-tycoon-panel=goals]{grid-area:goals}.ty-grid[data-terminal=true]{grid-template-areas:"scene goals"}.ty-grid[data-terminal=true]>[data-tycoon-panel=scene]{grid-row:auto}',
     '.ty-fleet-list{list-style:none;margin:15px 0 0;padding:0;display:grid;gap:12px}.ty-fleet-item{border-top:1px solid var(--ty-line);padding-top:12px;display:grid;gap:7px;min-width:0}.ty-fleet-item[data-status=fault]{border-top:3px solid var(--ty-bad)}.ty-fleet-item[data-status=worn]{border-top:3px solid var(--ty-gold)}.ty-fleet-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px}.ty-fleet-status{font-size:11px;color:var(--ty-muted)}.ty-fleet-item[data-status=fault] .ty-fleet-status{color:var(--ty-bad)}.ty-fleet-item[data-status=worn] .ty-fleet-status{color:var(--ty-gold)}.ty-condition-track{height:5px;background:var(--ty-line);border-radius:4px;overflow:hidden}.ty-condition-track span{display:block;height:100%;background:var(--ty-green);transition:width .3s ease}.ty-fleet-item[data-status=fault] .ty-condition-track span{background:var(--ty-bad)}.ty-fleet-item[data-status=worn] .ty-condition-track span{background:var(--ty-gold)}.ty-fleet-actions{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-fleet-actions button{font-size:12px;padding:7px 10px}.ty-crew-note{padding:10px 12px;background:var(--ty-soft);border:1px solid var(--ty-line);border-radius:10px;font-size:12px}.ty-crew-note strong{display:block}.ty-fleet-method{margin-top:13px!important;font-size:11px;color:var(--ty-muted)}',
     '.ty-recap{border-block:1px solid var(--ty-line);padding:18px 0;margin-top:20px;display:grid;gap:15px}.ty-recap-trust{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ty-recap-trust div{background:var(--ty-soft);padding:10px 12px;border-radius:9px;min-width:0}.ty-recap-trust strong{display:block;font-size:21px;font-variant-numeric:tabular-nums}.ty-recap-trust span{display:block;font-size:11px;color:var(--ty-muted)}.ty-recap-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.ty-recap-group{border:1px solid var(--ty-line);padding:13px;border-radius:12px;min-width:0}.ty-recap-group h3{font-size:14px;margin-bottom:9px}.ty-recap-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}.ty-recap-list li{display:grid;gap:4px;font-size:12px}.ty-recap-list strong{font-size:13px}.ty-recap-list p{color:var(--ty-muted)}.rn-tycoon .ty-recap-list button{font-size:11px;padding:6px 8px;justify-self:start}.ty-recap-group[data-kind=faults]{border-top:3px solid var(--ty-bad)}.ty-recap-group[data-kind=service]{border-top:3px solid var(--ty-blue)}.ty-recap-group[data-kind=commissioned]{border-top:3px solid var(--ty-green)}',
     '.ty-service-plan{border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-soft);overflow:hidden}.ty-service-plan>summary{padding:13px 14px;cursor:pointer;font-size:13px;font-weight:750;min-height:44px}.ty-service-plan[open]>summary{border-bottom:1px solid var(--ty-line)}.ty-service-plan-body{display:grid;gap:13px;padding:14px}.ty-service-plan-body h3{font-size:16px}.ty-service-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ty-service-scenario{border:1px solid var(--ty-line);border-radius:10px;padding:11px;background:var(--ty-card);min-width:0}.ty-service-scenario[data-tycoon-service-scenario=proposed]{border-top:3px solid var(--ty-blue)}.ty-service-scenario h4{margin:0 0 10px;font-size:13px}.ty-service-scenario dl{margin:0;display:grid;gap:3px}.ty-service-scenario dt{font-size:11px;color:var(--ty-muted)}.ty-service-scenario dd{margin:0 0 8px;font-size:20px;font-weight:750;letter-spacing:-.025em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-service-scenario dd:last-child{margin-bottom:0}.ty-service-delta{font-size:12px;border-left:3px solid var(--ty-blue);padding-left:10px}.ty-service-outage{padding:11px;border:1px solid var(--ty-line);border-radius:10px;display:grid;gap:8px}.ty-service-outage h4{margin:0;font-size:13px}.ty-service-outage-readings{display:flex;gap:10px 24px;flex-wrap:wrap;font-size:12px}.ty-service-outage-readings strong{display:block}.ty-work-order{padding:14px;border:1px solid var(--ty-line);border-left:4px solid var(--ty-gold);border-radius:12px;display:grid;gap:11px;background:var(--ty-soft)}.ty-work-order[data-complete=true]{border-left-color:var(--ty-green)}.ty-work-order h3{font-size:16px}.ty-work-order progress{width:100%;height:8px;accent-color:var(--ty-green);border:0;border-radius:5px;overflow:hidden;background:var(--ty-line)}.ty-work-order progress::-webkit-progress-bar{background:var(--ty-line)}.ty-work-order progress::-webkit-progress-value{background:var(--ty-green)}.ty-work-order progress::-moz-progress-bar{background:var(--ty-green)}.ty-work-stage-buttons{display:flex;flex-wrap:wrap;gap:7px}.rn-tycoon .ty-work-stage-buttons button{flex:1;font-size:12px;min-width:92px}.rn-tycoon .ty-work-stage-buttons button[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}',
-    '.ty-inspection{display:grid;gap:10px;border:1px solid var(--ty-line);border-left:3px solid var(--ty-blue);border-radius:11px;background:var(--ty-soft);padding:12px}.ty-inspection[data-isolated=true]{border-left-color:var(--ty-gold)}.ty-inspection[data-fault=true]{border-left-color:var(--ty-bad)}.ty-inspection h4{font-size:14px;margin:0}.ty-inspector>summary{cursor:pointer;font-size:12px;font-weight:700;padding:5px 0;min-height:34px}.ty-inspector-body{display:grid;gap:12px;padding-top:10px}.ty-energy-route{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:center;gap:4px}.rn-tycoon .ty-energy-node{padding:9px 5px;font-size:11px;display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;height:100%;min-height:86px;overflow-wrap:anywhere;background:var(--ty-card)}.rn-tycoon .ty-energy-node[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue);color:var(--ty-ink)}.rn-tycoon .ty-energy-node:hover{color:var(--ty-ink)}.ty-energy-node svg{width:39px;height:34px;display:block;color:var(--ty-blue)}.ty-energy-arrow{text-align:center;font-size:21px;font-weight:700;color:var(--ty-green)}.ty-energy-arrow[data-idle=true]{color:var(--ty-muted);font-size:16px}.ty-component-note{padding:10px 12px;background:var(--ty-card);border:1px solid var(--ty-line);border-radius:9px;display:grid;gap:4px;font-size:12px}.ty-component-note strong{font-size:13px}.ty-component-note p{color:var(--ty-muted)}.ty-inspection-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}.ty-inspection-readings div{min-width:0}.ty-inspection-readings dt{font-size:10px;color:var(--ty-muted)}.ty-inspection-readings dd{font-size:16px;font-weight:750;margin:2px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.rn-tycoon .ty-inspector-next{justify-self:start;font-size:12px;max-width:100%}.ty-inspector-footnote{font-size:11px;color:var(--ty-muted)}',
+    '.ty-inspection{display:grid;gap:10px;border:1px solid var(--ty-line);border-left:3px solid var(--ty-blue);border-radius:11px;background:var(--ty-soft);padding:12px}.ty-inspection[data-isolated=true]{border-left-color:var(--ty-gold)}.ty-inspection[data-fault=true]{border-left-color:var(--ty-bad)}.ty-inspection h4{font-size:14px;margin:0}.ty-inspector>summary{cursor:pointer;font-size:12px;font-weight:700;padding:5px 0;min-height:44px;display:flex;align-items:center}.ty-inspector-body{display:grid;gap:12px;padding-top:10px}.ty-energy-route{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:center;gap:4px}.rn-tycoon .ty-energy-node{padding:9px 5px;font-size:11px;display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;height:100%;min-height:86px;overflow-wrap:anywhere;background:var(--ty-card)}.rn-tycoon .ty-energy-node[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue);color:var(--ty-ink)}.rn-tycoon .ty-energy-node:hover{color:var(--ty-ink)}.ty-energy-node svg{width:39px;height:34px;display:block;color:var(--ty-blue)}.ty-energy-arrow{text-align:center;font-size:21px;font-weight:700;color:var(--ty-green)}.ty-energy-arrow[data-idle=true]{color:var(--ty-muted);font-size:16px}.ty-component-note{padding:10px 12px;background:var(--ty-card);border:1px solid var(--ty-line);border-radius:9px;display:grid;gap:4px;font-size:12px}.ty-component-note strong{font-size:13px}.ty-component-note p{color:var(--ty-muted)}.ty-inspection-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}.ty-inspection-readings div{min-width:0}.ty-inspection-readings dt{font-size:10px;color:var(--ty-muted)}.ty-inspection-readings dd{font-size:16px;font-weight:750;margin:2px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.rn-tycoon .ty-inspector-next{justify-self:start;font-size:12px;max-width:100%}.ty-inspector-footnote{font-size:11px;color:var(--ty-muted)}',
     '@media(max-width:420px){.ty-inspection{padding:10px}.ty-energy-route{gap:2px;grid-template-columns:minmax(0,1fr) 13px minmax(0,1fr) 13px minmax(0,1fr)}.rn-tycoon .ty-energy-node{font-size:10px;padding:8px 3px}.ty-energy-arrow{font-size:17px}.ty-inspection-readings{grid-template-columns:1fr 1fr}.ty-inspection-readings dd{font-size:15px}}',
     '.ty-equipment-record{border:1px solid var(--ty-line);border-radius:11px;background:var(--ty-soft);overflow:hidden}.ty-equipment-record>summary{padding:12px;min-height:44px;cursor:pointer;font-size:13px;font-weight:700}.ty-equipment-record[open]>summary{border-bottom:1px solid var(--ty-line)}.ty-record-body{padding:13px;display:grid;gap:13px}.ty-record-body h4{font-size:14px;margin:0}.ty-record-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0}.ty-record-stats div{border:1px solid var(--ty-line);border-radius:9px;background:var(--ty-card);padding:9px;min-width:0}.ty-record-stats dt{font-size:11px;color:var(--ty-muted)}.ty-record-stats dd{margin:2px 0 0;font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-record-timeline{width:100%;height:auto;display:block;color:var(--ty-ink)}.ty-record-timeline text{font:14px system-ui,sans-serif;fill:var(--ty-muted)}.ty-record-intervals{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-record-intervals button{font-size:11px;padding:8px 10px;flex:1;min-width:120px}.rn-tycoon .ty-record-intervals button[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}.ty-record-legend{display:flex;gap:7px 14px;flex-wrap:wrap;font-size:11px;color:var(--ty-muted)}.ty-record-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}.ty-record-history{border-top:1px solid var(--ty-line);padding-top:12px;display:grid;gap:10px}.ty-condition-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.rn-tycoon .ty-condition-month{padding:7px 3px;font-size:11px;display:grid;gap:4px;text-align:center;min-width:0;position:relative;overflow:hidden}.ty-condition-month strong{font-size:14px;font-variant-numeric:tabular-nums}.ty-condition-month i{height:4px;background:var(--ty-line);border-radius:3px;overflow:hidden;display:block;margin-top:3px}.ty-condition-month i span{height:100%;display:block;background:var(--ty-green)}.rn-tycoon .ty-condition-month[aria-pressed=true]{border-color:var(--ty-blue);box-shadow:inset 0 -3px 0 var(--ty-blue)}.ty-condition-month[data-fault=true] i span{background:var(--ty-bad)}.ty-condition-month small{font-size:9px;color:var(--ty-bad)}.ty-record-selected{border-left:3px solid var(--ty-blue);padding:8px 11px;background:var(--ty-card);font-size:12px}.ty-record-empty{border:1px dashed var(--ty-line);padding:12px;border-radius:9px;font-size:12px;color:var(--ty-muted)}.ty-work-phase{border:1px solid var(--ty-line);border-radius:9px;padding:11px;background:var(--ty-card);font-size:12px;display:grid;gap:4px}.ty-work-phase strong{font-size:14px}.ty-work-phase p{color:var(--ty-muted)}.ty-work-stage-buttons button span{display:block;font-weight:400;font-size:10px;margin-top:4px}.ty-record-body .ty-inspector-footnote{line-height:1.6}',
     '@media(max-width:420px){.ty-condition-months{grid-template-columns:repeat(3,minmax(0,1fr))}.ty-record-body{padding:10px}.ty-record-stats dd{font-size:17px}.ty-record-timeline text{font-size:20px}.rn-tycoon .ty-record-intervals button{min-width:95px}}',
@@ -1913,7 +2024,7 @@ if (typeof window !== 'undefined') {
     '@media(max-width:1050px){.ty-hero{grid-template-columns:1fr}.ty-hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.ty-hero-stat{min-width:0}.ty-grid{grid-template-columns:minmax(0,1.4fr) minmax(250px,1fr)}}',
     '@media(max-width:760px){.ty-grid{grid-template-columns:1fr;grid-template-areas:"scene" "event" "fleet" "advance" "policy" "acquisition" "goals"}.ty-grid[data-terminal=true]{grid-template-areas:"scene" "goals"}.ty-onboard{grid-template-columns:1fr}.ty-onboard h1{max-width:none}.ty-report-grid,.ty-recap-trust{grid-template-columns:repeat(2,minmax(0,1fr))}.ty-recap-events{grid-template-columns:1fr}.ty-topline{margin-bottom:18px}.ty-card{padding:15px}.ty-scene-card{padding:0}.ty-scene-head,.ty-scene-footer{padding:14px}.ty-hero{margin-bottom:18px}.ty-hero-stat{padding:10px}.ty-hero-stat strong{font-size:20px}}',
     '@media(max-width:380px){.rn-tycoon{padding:10px;border-radius:13px}.ty-hero-stats{gap:5px}.ty-hero-stat{padding:8px 6px;border-radius:9px}.ty-hero-stat strong{font-size:18px}.ty-hero-stat span{font-size:10px}.ty-flow-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ty-actions{gap:5px}.ty-actions button{font-size:11px;padding:8px}.ty-time-controls{gap:8px}.ty-clock{font-size:21px;min-width:66px}.ty-scene-head,.ty-scene-footer{padding:12px}.ty-report-stat strong{font-size:18px}.ty-card{padding:13px}.ty-scene-card{padding:0}.ty-onboard{padding:8px 0}.ty-onboard h1{font-size:34px}}',
-    '.ty-dispatch{display:grid;gap:12px;border-top:1px solid var(--ty-line);padding-top:16px}.ty-dispatch-heading{display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap}.ty-dispatch-heading h3{font-size:15px}.ty-dispatch-plot{display:block;width:100%;height:auto;min-height:155px;border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-soft);cursor:crosshair;overflow:visible}.ty-dispatch-plot text{font-family:inherit;fill:var(--ty-muted);font-size:16px}.ty-dispatch-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--ty-muted)}.ty-dispatch-legend span{display:inline-flex;gap:5px;align-items:center}.ty-dispatch-swatch{width:14px;height:8px;border-radius:2px;background:var(--ty-green);display:inline-block}.ty-dispatch-swatch[data-source=solar]{background:var(--ty-gold)}.ty-dispatch-swatch[data-source=battery]{background:var(--ty-blue)}.ty-dispatch-swatch[data-source=gap]{background:var(--ty-bad)}.ty-dispatch-swatch[data-source=demand]{height:0;border-top:2px dashed var(--ty-ink);border-radius:0;background:none}.ty-day-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ty-day-summary strong{display:block;font-size:15px}.ty-day-summary span{display:block;font-size:10px;color:var(--ty-muted)}.ty-hour-explanation{border-left:3px solid var(--ty-green);border-radius:0 9px 9px 0;padding:11px 13px;background:var(--ty-soft);display:grid;gap:4px;font-size:12px}.ty-hour-explanation[data-mode=gap]{border-color:var(--ty-bad)}.ty-hour-explanation[data-mode=surplus]{border-color:var(--ty-gold)}.ty-hour-explanation[data-mode=battery]{border-color:var(--ty-blue)}.ty-hour-explanation p{color:var(--ty-muted)}.ty-gap-actions{display:flex;flex-wrap:wrap;gap:7px}.ty-gap-actions button{font-size:11px;padding:8px 10px}.ty-day-table{font-size:12px}.ty-day-table summary{cursor:pointer;color:var(--ty-muted);padding:5px 0}.ty-day-table table{font-size:11px;white-space:nowrap}.ty-day-table tr[data-current=true]{background:var(--ty-soft)}.ty-day-table button{min-height:32px;padding:5px;font-size:11px}.ty-response-preview{margin:14px 0;padding:13px;border-radius:11px;border:1px solid var(--ty-line);background:var(--ty-soft);display:grid;gap:10px}.ty-response-preview h4{font-size:12px;margin:0}.ty-response-preview .ty-projection{margin:0;gap:10px}.ty-response-preview .ty-projection strong{font-size:20px}.ty-response-preview .ty-projection small{display:block;margin-top:3px}.ty-response-preview p{font-size:11px;color:var(--ty-muted)}',
+    '.ty-dispatch{display:grid;gap:12px;border-top:1px solid var(--ty-line);padding-top:16px}.ty-dispatch-heading{display:flex;justify-content:space-between;gap:10px;align-items:start;flex-wrap:wrap}.ty-dispatch-heading h3{font-size:15px}.ty-dispatch-plot{display:block;width:100%;height:auto;min-height:155px;border:1px solid var(--ty-line);border-radius:12px;background:var(--ty-soft);cursor:crosshair;overflow:visible}.ty-dispatch-plot text{font-family:inherit;fill:var(--ty-muted);font-size:16px}.ty-dispatch-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:var(--ty-muted)}.ty-dispatch-legend span{display:inline-flex;gap:5px;align-items:center}.ty-dispatch-swatch{width:14px;height:8px;border-radius:2px;background:var(--ty-green);display:inline-block}.ty-dispatch-swatch[data-source=solar]{background:var(--ty-gold)}.ty-dispatch-swatch[data-source=battery]{background:var(--ty-blue)}.ty-dispatch-swatch[data-source=gap]{background:var(--ty-bad)}.ty-dispatch-swatch[data-source=demand]{height:0;border-top:2px dashed var(--ty-ink);border-radius:0;background:none}.ty-day-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ty-day-summary strong{display:block;font-size:15px}.ty-day-summary span{display:block;font-size:10px;color:var(--ty-muted)}.ty-hour-explanation{border-left:3px solid var(--ty-green);border-radius:0 9px 9px 0;padding:11px 13px;background:var(--ty-soft);display:grid;gap:4px;font-size:12px}.ty-hour-explanation[data-mode=gap]{border-color:var(--ty-bad)}.ty-hour-explanation[data-mode=surplus]{border-color:var(--ty-gold)}.ty-hour-explanation[data-mode=battery]{border-color:var(--ty-blue)}.ty-hour-explanation p{color:var(--ty-muted)}.ty-gap-actions{display:flex;flex-wrap:wrap;gap:7px}.ty-gap-actions button{font-size:11px;padding:8px 10px}.ty-day-table{font-size:12px}.ty-day-table summary{cursor:pointer;color:var(--ty-muted);padding:5px 0;min-height:44px;display:flex;align-items:center}.ty-day-table table{font-size:11px;white-space:nowrap}.ty-day-table tr[data-current=true]{background:var(--ty-soft)}.ty-day-table button{min-height:44px;padding:5px 8px;font-size:11px}.ty-response-preview{margin:14px 0;padding:13px;border-radius:11px;border:1px solid var(--ty-line);background:var(--ty-soft);display:grid;gap:10px}.ty-response-preview h4{font-size:12px;margin:0}.ty-response-preview .ty-projection{margin:0;gap:10px}.ty-response-preview .ty-projection strong{font-size:20px}.ty-response-preview .ty-projection small{display:block;margin-top:3px}.ty-response-preview p{font-size:11px;color:var(--ty-muted)}',
     '@media(max-width:420px){.ty-dispatch-plot{min-height:130px}.ty-dispatch-plot text{font-size:24px}.ty-day-summary{gap:5px}.ty-day-summary strong{font-size:13px}.ty-response-preview .ty-projection{grid-template-columns:1fr}.ty-dispatch-legend{gap:7px 10px}}',
     '.ty-policy-trial{margin-top:17px;border-top:1px solid var(--ty-line);padding-top:9px}.ty-policy-trial>summary{cursor:pointer;font-size:13px;font-weight:750;min-height:44px;padding:10px 0}.ty-trial-body{display:grid;gap:14px}.ty-trial-inputs{display:grid;gap:14px;padding:12px;border:1px solid var(--ty-blue);border-radius:10px;background:var(--ty-soft)}.ty-trial-scenarios{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ty-trial-scenario{min-width:0;border:1px solid var(--ty-line);border-radius:10px;padding:10px;background:var(--ty-soft)}.ty-trial-scenario[data-tycoon-trial-scenario=proposed]{border-top:3px solid var(--ty-blue)}.ty-trial-scenario h4{font-size:13px;margin:0 0 6px}.ty-trial-scenario h5{font-size:11px;margin:12px 0 6px}.ty-trial-scenario dl,.ty-battery-ledger dl{margin:0;display:grid;gap:8px}.ty-trial-scenario dt,.ty-battery-ledger dt{font-size:10px;color:var(--ty-muted);overflow-wrap:anywhere}.ty-trial-scenario dd,.ty-battery-ledger dd{font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;margin:0;overflow-wrap:anywhere}.ty-trial-time{display:grid;gap:9px;border-block:1px solid var(--ty-line);padding:12px 0}.ty-trial-time select{width:auto}.ty-trial-scenario [data-tycoon-trial-month]{border-bottom:1px solid var(--ty-line);padding-bottom:10px}.ty-battery-ledger{border:1px solid var(--ty-line);border-radius:10px;padding:12px;background:var(--ty-card);display:grid;gap:11px}.ty-battery-ledger h5{font-size:13px;margin:0}.ty-battery-ledger dl{grid-template-columns:repeat(3,minmax(0,1fr))}.ty-battery-track{height:13px;background:var(--ty-line);border-radius:3px;position:relative}.ty-battery-fill{display:block;height:100%;background:var(--ty-blue);border-radius:3px;transition:width .24s ease}.ty-battery-threshold{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--ty-gold);border-inline:1px solid var(--ty-card)}.ty-battery-ledger .ty-actions button{font-size:11px;flex:1;min-width:100px}.ty-trial-body .ty-actions button{font-size:12px;flex:1;min-width:110px}@media(max-width:420px){.ty-battery-ledger dl{grid-template-columns:repeat(2,minmax(0,1fr))}.ty-trial-scenario{padding:8px}.ty-trial-scenario dd{font-size:12px}.ty-trial-inputs{padding:10px}}',
     '.ty-operating-limits{padding:12px;border:1px solid var(--ty-line);border-radius:10px;background:var(--ty-card);display:grid;gap:11px}.ty-operating-limits h5{font-size:13px;margin:0}.ty-limit-bindings{display:flex;flex-wrap:wrap;gap:6px}.ty-limit-bindings span{border:1px solid var(--ty-gold);border-radius:6px;background:var(--ty-gold-bg);color:var(--ty-gold);padding:4px 7px;font-size:11px;font-weight:700}.ty-limit-breakdown{display:flex;height:16px;overflow:hidden;border-radius:4px;background:var(--ty-line)}.ty-limit-breakdown span{height:100%;min-width:0;transition:width .24s ease}.ty-limit-breakdown [data-part=output]{background:var(--ty-green)}.ty-limit-breakdown [data-part=weather]{background:var(--ty-muted);opacity:.45}.ty-limit-breakdown [data-part=condition]{background:var(--ty-gold)}.ty-limit-breakdown [data-part=isolation]{background:var(--ty-bad)}.ty-limit-breakdown[data-charging=true] [data-part=output]{background:var(--ty-blue)}.ty-limit-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0}.ty-limit-readings dt{font-size:10px;color:var(--ty-muted);overflow-wrap:anywhere}.ty-limit-readings dd{margin:0;font-size:13px;font-weight:750;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ty-limit-legend{display:flex;flex-wrap:wrap;gap:5px 12px;font-size:10px;color:var(--ty-muted)}.ty-limit-legend i{display:inline-block;width:8px;height:8px;margin-right:4px;border:1px solid currentColor}.ty-limit-actions{display:flex;gap:7px;flex-wrap:wrap}.rn-tycoon .ty-limit-actions button{flex:1;min-width:120px;font-size:11px}.ty-limit-status{border-left:3px solid var(--ty-blue);padding-left:9px;font-size:12px}.ty-operating-limits[data-pressure=shortage] .ty-limit-status{border-color:var(--ty-bad)}.ty-operating-limits[data-pressure=surplus] .ty-limit-status{border-color:var(--ty-gold)}@media(max-width:420px){.ty-limit-readings{grid-template-columns:repeat(2,minmax(0,1fr))}}',
@@ -1934,8 +2045,10 @@ if (typeof window !== 'undefined') {
   function monthSeason(month) { return month < 2 || month === 11 ? 'Winter' : month < 5 ? 'Spring' : month < 8 ? 'Summer' : 'Autumn'; }
 
   function RenewablesTycoon(props) {
-    var React = props.ctx.React, h = React.createElement, engine = window.StemLab.renewablesTycoonEngine;
-    var Scene = window.StemLab.RenewablesTycoonScene;
+    if (!props || !props.ctx || !props.ctx.React) return null;
+    var React = props.ctx.React, h = React.createElement, engine = global.StemLab && global.StemLab.renewablesTycoonEngine;
+    var Scene = global.StemLab && global.StemLab.RenewablesTycoonScene;
+    if (!engine) return null;
     var state = React.useMemo(function () { return props.state ? engine.restore(props.state) : null; }, [props.state]);
     var invalidHostSave = !!props.state && !state;
     var id = React.useId().replace(/:/g, '') + 'tycoon';
@@ -1944,7 +2057,10 @@ if (typeof window !== 'undefined') {
     var hourState = React.useState(12), hour = hourState[0], setHour = hourState[1];
     var clockState = React.useState(false), playing = clockState[0], setPlaying = clockState[1];
     var motionState = React.useState(true), motion = motionState[0], setMotion = motionState[1];
-    var reduceState = React.useState(function () { return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches; });
+    var reduceState = React.useState(function () {
+      var mq = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+      return !!(mq && mq.matches);
+    });
     var reduced = reduceState[0], setReduced = reduceState[1];
     var choiceState = React.useState(state && state.eventChoice || ''), pendingChoice = choiceState[0], setPendingChoice = choiceState[1];
     var errorState = React.useState(''), error = errorState[0], setError = errorState[1];
@@ -2004,16 +2120,17 @@ if (typeof window !== 'undefined') {
     }, [active, state, outlook, pendingChoice]);
 
     React.useEffect(function () {
-      if (document.getElementById('renewables-tycoon-css')) return;
+      if (typeof document === 'undefined' || !document.head || document.getElementById('renewables-tycoon-css')) return;
       var style = document.createElement('style'); style.id = 'renewables-tycoon-css'; style.textContent = CSS; document.head.appendChild(style);
     }, []);
     React.useEffect(function () { return function () { importRequest.current += 1; }; }, []);
     React.useEffect(function () { if (acquisitionOpen && focusAcquisition.current === acquisitionKey && acquisitionSummaryRef.current) { focusAcquisition.current = null; acquisitionSummaryRef.current.focus(); } }, [acquisitionOpen, acquisitionKey]);
     React.useEffect(function () { if (resetOpen && resetTitleRef.current) resetTitleRef.current.focus(); }, [resetOpen]);
     React.useEffect(function () {
-      if (!window.matchMedia) return;
+      if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
       var query = window.matchMedia('(prefers-reduced-motion: reduce)');
-      var change = function () { setReduced(query.matches); if (query.matches) setPlaying(false); };
+      if (!query) return;
+      var change = function () { setReduced(!!query.matches); if (query.matches) setPlaying(false); };
       if (query.addEventListener) query.addEventListener('change', change); else if (query.addListener) query.addListener(change);
       return function () { if (query.removeEventListener) query.removeEventListener('change', change); else if (query.removeListener) query.removeListener(change); };
     }, []);
@@ -2022,9 +2139,16 @@ if (typeof window !== 'undefined') {
       if (focusReport.current && reportRef.current) { reportRef.current.focus(); focusReport.current = false; }
     }, [state && state.month, state && state.seed]);
     React.useEffect(function () {
-      if (!playing || reduced || !forecast.hours.length) return;
-      var timer = window.setInterval(function () { if (typeof document !== 'undefined' && document.hidden) return; setHour(function (value) { return (value + 1) % forecast.hours.length; }); }, 750);
-      return function () { window.clearInterval(timer); };
+      if (!playing || reduced || !forecast.hours.length || typeof window === 'undefined') return;
+      var doc = typeof document !== 'undefined' ? document : null;
+      if (doc && doc.hidden) { setPlaying(false); return; }
+      var onVisibility = function () { if (doc && doc.hidden) setPlaying(false); };
+      if (doc && typeof doc.addEventListener === 'function') doc.addEventListener('visibilitychange', onVisibility);
+      var timer = window.setInterval(function () { setHour(function (value) { return (value + 1) % forecast.hours.length; }); }, 750);
+      return function () {
+        window.clearInterval(timer);
+        if (doc && typeof doc.removeEventListener === 'function') doc.removeEventListener('visibilitychange', onVisibility);
+      };
     }, [playing, reduced, forecast.hours.length]);
 
     function commit(action, message) {
@@ -2042,11 +2166,14 @@ if (typeof window !== 'undefined') {
       catch (failure) { setError(failure && failure.message || 'Please enter a campaign seed.'); }
     }
     function exportSave() {
+      if (!state || typeof document === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return;
       try {
         var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
         var url = URL.createObjectURL(blob), link = document.createElement('a');
         link.href = url; link.download = 'north-harbor-month-' + state.month + '.json'; document.body.appendChild(link); link.click(); link.remove();
-        window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+          window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (ignore) {} }, 1000);
+        }
         setNotice('Campaign save exported.'); setError('');
       } catch (failure) { setError('The save could not be exported. Your campaign is still available here.'); }
     }
@@ -2115,7 +2242,12 @@ if (typeof window !== 'undefined') {
           frame && renderDispatch()));
     }
 
-    function inspectHour(value) { setPlaying(false); setHour(Math.max(0, Math.min(forecast.hours.length - 1, value))); }
+    function inspectHour(value) {
+      setPlaying(false);
+      if (!forecast.hours.length) return;
+      var n = number(value);
+      setHour(Math.max(0, Math.min(forecast.hours.length - 1, Math.round(n))));
+    }
     function inspectDispatch() { setPlaying(false); if (dispatchRef.current) dispatchRef.current.focus(); }
     function inspectEquipment() {
       if (!selectedAsset || !sceneRef.current) return;
@@ -2149,8 +2281,8 @@ if (typeof window !== 'undefined') {
       return h('section', { className: 'ty-dispatch', 'aria-labelledby': id + 'dispatch-title' },
         h('div', { className: 'ty-dispatch-heading' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'Follow the energy'), h('h3', { id: id + 'dispatch-title' }, forecast.monthName + ' ' + frame.day + ' · 24-hour dispatch')), badge((daily ? daily.gapHours : 0) + ' hours with a supply gap', !!(daily && daily.gapHours))),
         h('svg', { ref: dispatchRef, viewBox: '0 0 744 314', className: 'ty-dispatch-plot', role: 'slider', tabIndex: 0, 'data-tycoon-dispatch-chart': true, 'data-plot-left': left, 'data-plot-width': width, 'aria-label': t('stem.renewables.tycoon.dispatch_hour', 'Inspect daily dispatch hour'), 'aria-valuemin': 0, 'aria-valuemax': 23, 'aria-valuenow': frame.hourOfDay, 'aria-valuetext': timeLabel(frame.hourOfDay) + ', ' + power(frame.generation) + ' generated, ' + power(frame.demand) + ' demand, ' + power(frame.unserved) + ' unmet', 'aria-describedby': id + 'dispatch-help',
-          onClick: function (event) { var rect = event.currentTarget.getBoundingClientRect(); if (!rect || !rect.width) return; var index = Math.floor(((event.clientX - rect.left) / rect.width * 744 - left) / step); inspectHour(start + Math.max(0, Math.min(23, index))); event.currentTarget.focus({ preventScroll: true }); },
-          onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; var value = frame.hourOfDay; if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') value -= 1; else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') value += 1; else if (event.key === 'Home') value = 0; else if (event.key === 'End') value = 23; else if (event.key === 'PageDown') value -= 6; else if (event.key === 'PageUp') value += 6; else return; event.preventDefault(); inspectHour(start + Math.max(0, Math.min(23, value))); } },
+          onClick: function (event) { var rect = event.currentTarget.getBoundingClientRect(); if (!(rect.width > 0)) return; var index = Math.floor(((event.clientX - rect.left) / rect.width * 744 - left) / step); inspectHour(start + Math.max(0, Math.min(23, index))); event.currentTarget.focus({ preventScroll: true }); },
+          onKeyDown: function (event) { var value = frame.hourOfDay; if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') value -= 1; else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') value += 1; else if (event.key === 'Home') value = 0; else if (event.key === 'End') value = 23; else if (event.key === 'PageDown') value -= 6; else if (event.key === 'PageUp') value += 6; else return; event.preventDefault(); inspectHour(start + Math.max(0, Math.min(23, value))); } },
           h('g', { 'aria-hidden': true },
             [0, .5, 1].map(function (share) { return h('g', { key: share }, h('line', { x1: left, x2: left + width, y1: y(maximum * share), y2: y(maximum * share), stroke: 'var(--ty-line)', strokeWidth: 1 }), h('text', { x: left - 8, y: y(maximum * share) + 5, textAnchor: 'end' }, Math.round(maximum * share))); }),
             h('text', { x: 12, y: 22 }, 'kW'),
@@ -2176,7 +2308,8 @@ if (typeof window !== 'undefined') {
     }
 
     function renderSiteDetail() {
-      var spec = engine.catalog[selectedSite.type];
+      var spec = own(engine.catalog, selectedSite.type, null);
+      if (!spec) return null;
       if (!selectedAsset) {
         var totalCost = spec.cost + selectedSite.landCost;
         return h(React.Fragment, null, h('div', { className: 'ty-row' }, h('h3', null, selectedSite.name), badge('Available site', false)),
@@ -2187,7 +2320,7 @@ if (typeof window !== 'undefined') {
       var building = selectedAsset.readyMonth > state.month;
       var service = selectedAsset.serviceMonth === state.month;
       var displayedStatus = selectedFrame ? selectedFrame.status : building ? 'building' : service ? 'service' : selectedAsset.fault ? 'fault' : 'operating';
-      var status = { building: 'Under construction', service: 'Crew on site', fault: 'Fault · repair needed', idle: 'Idle', operating: 'Operating' }[displayedStatus] || 'Operating';
+      var status = own({ building: 'Under construction', service: 'Crew on site', fault: 'Fault · repair needed', idle: 'Idle', operating: 'Operating' }, displayedStatus, 'Operating');
       var displayedCondition = selectedFrame && typeof selectedFrame.condition === 'number' ? selectedFrame.condition : selectedAsset.condition;
       var serviceDisabled = !active || building || service || !outlook.crewAvailable || state.cash < spec.serviceCost;
       var serviceReason = building ? 'Available after construction' : service ? 'Crew assigned this month' : !outlook.crewAvailable ? 'Crew already assigned' : state.cash < spec.serviceCost ? 'Insufficient cash for service' : 'Schedule service · ' + money(spec.serviceCost);
@@ -2222,7 +2355,7 @@ if (typeof window !== 'undefined') {
           h('label', { className: 'ty-field', htmlFor: id + 'compare-site' }, 'Compare another available site', h('select', { id: id + 'compare-site', value: selectedSite.id, 'data-tycoon-acquisition-candidate': true, onChange: function (event) { var siteId = event.target.value; chooseSite(siteId); setAcquisitionPlanId(JSON.stringify([state.seed, state.month, siteId])); } }, engine.sites.filter(function (site) { return !state.assets.some(function (asset) { return asset.siteId === site.id; }); }).map(function (site) { return h('option', { value: site.id, key: site.id }, site.name + ' · ' + money(engine.catalog[site.type].cost + site.landCost)); }))),
           h('div', null, h('p', { className: 'ty-eyebrow' }, 'Acquisition budget'), h('h4', null, selectedSite.name)),
           h('dl', { className: 'ty-build-budget' }, [['equipmentCost', 'Equipment'], ['landCost', 'Site rights'], ['totalCost', 'Total paid on acquisition'], ['monthlyCost', 'Monthly operating cost after opening']].map(function (item) { return h('div', { key: item[0], 'data-tycoon-acquisition-cost': item[0], 'data-value': plan[item[0]] }, h('dt', null, item[1]), h('dd', null, money(plan[item[0]]))); })),
-          !plan.eligible ? h('p', { className: 'ty-small', 'data-tycoon-acquisition-blocked': plan.acquisitionBlock }, reasons[plan.acquisitionBlock] || 'This site cannot be acquired in the current plan.') : h(React.Fragment, null,
+          !plan.eligible ? h('p', { className: 'ty-small', 'data-tycoon-acquisition-blocked': plan.acquisitionBlock }, own(reasons, plan.acquisitionBlock, 'This site cannot be acquired in the current plan.')) : h(React.Fragment, null,
             h('p', { className: 'ty-small' }, 'Acquire during ' + engine.months[state.month] + ' · opens in ' + plan.readyMonthName + '. No electricity is produced or stored by the new equipment during construction.'),
             h('dl', { className: 'ty-build-budget' }, h('div', { 'data-tycoon-acquisition-cost': 'cashAfterPurchase', 'data-value': plan.cashAfterPurchase }, h('dt', null, 'Cash immediately after purchase'), h('dd', null, money(plan.cashAfterPurchase))), h('div', { 'data-tycoon-acquisition-cost': 'constructionCost', 'data-value': plan.constructionCost }, h('dt', null, 'This month’s construction overhead'), h('dd', null, money(plan.constructionCost)))),
             h('div', { className: 'ty-fit-grid' }, ['current', 'proposed'].map(function (scenario) { var values = plan.currentMonth[scenario]; return h('div', Object.assign({ key: scenario, className: 'ty-fit-case' }, dataAttributes('data-tycoon-acquisition-scenario', scenario, values)), h('h5', null, scenario === 'current' ? 'Keep current plan' : 'Acquire this site'), h('strong', { style: { fontSize: 20 } }, money(values.endingCash)), h('small', null, engine.months[state.month] + ' closing cash')); })),
@@ -2272,7 +2405,7 @@ if (typeof window !== 'undefined') {
       return h('section', { className: 'ty-operating-limits', 'data-tycoon-operating-limits': limits.assetId, 'data-hour': limits.hour, 'data-context': limits.context, 'data-pressure': limits.pressure, 'data-type': limits.type },
         h('h5', null, battery ? 'What limits this battery?' : 'From rated power to actual production'),
         h('p', { className: 'ty-limit-status' }, pressureText),
-        limits.binding.length ? h('div', { className: 'ty-limit-bindings', 'aria-label': t('stem.renewables.tycoon.operating_limits', 'Observed equipment limits at this hour') }, limits.binding.map(function (kind) { return h('span', { key: kind, 'data-tycoon-limit-binding': kind }, labels[kind]); })) : h('p', { className: 'ty-small ty-muted', 'data-tycoon-limit-clear': true }, limits.pressure === 'balanced' ? 'No limit is leaving demand unmet or surplus unused at this hour. The readings below show the equipment’s power and energy limits.' : 'This equipment has no diagnosed limit responsible for the remaining network imbalance. Inspect the other sites and the daily dispatch.'),
+        limits.binding.length ? h('div', { className: 'ty-limit-bindings', 'aria-label': t('stem.renewables.tycoon.operating_limits', 'Observed equipment limits at this hour') }, limits.binding.map(function (kind) { return h('span', { key: kind, 'data-tycoon-limit-binding': kind }, own(labels, kind, String(kind))); })) : h('p', { className: 'ty-small ty-muted', 'data-tycoon-limit-clear': true }, limits.pressure === 'balanced' ? 'No limit is leaving demand unmet or surplus unused at this hour. The readings below show the equipment’s power and energy limits.' : 'This equipment has no diagnosed limit responsible for the remaining network imbalance. Inspect the other sites and the daily dispatch.'),
         h('div', { className: 'ty-limit-breakdown', 'data-tycoon-limit-utilization': limits.ratedPower > 0 ? Math.abs(limits.actualPower) / limits.ratedPower : 0, 'data-charging': battery && limits.actualPower < 0, 'aria-hidden': true }, parts.map(function (part) { return h('span', { key: part.id, 'data-part': part.id, 'data-value': part.value, style: { width: Math.max(0, Math.min(100, part.value / Math.max(1, limits.ratedPower) * 100)) + '%' } }); })),
         h('div', { className: 'ty-limit-legend', 'aria-hidden': true }, parts.map(function (part) { return h('span', { key: part.id }, h('i', { style: { background: part.color } }), part.label); }), battery && h('span', null, power(Math.abs(limits.actualPower)) + ' / ' + power(limits.ratedPower) + ' converter power')),
         h('dl', { className: 'ty-limit-readings' }, readings.map(function (item) { return h('div', { key: item[0], 'data-tycoon-limit-metric': item[0], 'data-value': item[2] }, h('dt', null, item[1]), h('dd', null, power(item[2]))); })),
@@ -2309,16 +2442,15 @@ if (typeof window !== 'undefined') {
       if (!equipmentDay) return null;
       var day = equipmentDay, battery = day.type === 'battery', current = day.rows[displayHour - day.startHour];
       if (!current) return null;
-      var left = 56, width = 624, step = width / 24, zero = battery ? 140 : 230, unit = (battery ? 90 : 180) / day.ratedPower;
+      var left = 56, width = 624, step = width / 24, zero = battery ? 140 : 230, unit = (battery ? 90 : 180) / Math.max(1e-6, number(day.ratedPower));
       var clockText = String(current.hourOfDay).padStart(2, '0') + ':00';
       var direction = current.flow === 'isolated' ? 'isolated' : current.flow === 'idle' ? 'connected idle' : current.flow === 'charge' ? 'charging' : battery ? 'to network' : 'generated';
       var currentText = clockText + ' · ' + current.title + ' · ' + power(Math.abs(current.power)) + ' ' + direction;
       var colors = { export: 'var(--ty-green)', charge: 'var(--ty-blue)', idle: 'var(--ty-muted)', isolated: 'var(--ty-gold)', fault: 'var(--ty-bad)' };
-      function color(row) { return colors[row.reason === 'fault' ? 'fault' : row.flow]; }
+      function color(row) { return own(colors, row.reason === 'fault' ? 'fault' : row.flow, 'var(--ty-muted)'); }
       function symbol(row) { return row.reason === 'fault' ? '!' : row.flow === 'isolated' ? '×' : row.flow === 'charge' ? '−' : row.flow === 'export' ? '+' : '·'; }
       function select(index) { inspectHour(day.startHour + Math.max(0, Math.min(23, index))); }
       function keyDown(event) {
-        if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         var next = current.hourOfDay;
         if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next -= 1;
         else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next += 1;
@@ -2428,7 +2560,7 @@ if (typeof window !== 'undefined') {
         var values = servicePlan.outage[scenario];
         return h('div', { 'data-tycoon-service-outage': scenario, 'data-coverage': values.coverage, 'data-served': values.served, 'data-unserved': values.unserved, 'data-generation': values.generation }, h('span', null, label), h('strong', null, energy(values.unserved) + ' unserved'));
       }
-      var reason = { building: 'This equipment is still under construction. Service becomes available after commissioning.', booked: 'The crew is already assigned this month. Inspect the booked equipment to explore its repair timeline.', cash: 'Available cash does not cover the ' + money(selectedCare.serviceCost) + ' service cost.', ended: 'This campaign is complete.', scheduled: 'This equipment already has a service booking.', unknown: 'Select owned equipment to compare a service plan.' }[selectedCare.serviceBlock];
+      var reason = own({ building: 'This equipment is still under construction. Service becomes available after commissioning.', booked: 'The crew is already assigned this month. Inspect the booked equipment to explore its repair timeline.', cash: 'Available cash does not cover the ' + money(selectedCare.serviceCost) + ' service cost.', ended: 'This campaign is complete.', scheduled: 'This equipment already has a service booking.', unknown: 'Select owned equipment to compare a service plan.' }, selectedCare.serviceBlock, null);
       var delta = servicePlan && servicePlan.eligible ? servicePlan.delta : null;
       var coverageChange = delta ? (Math.abs(delta.coverage) * 100).toFixed(1) : null;
       var coverageText = !delta ? '' : Math.abs(delta.coverage) < .0005 ? 'Demand coverage changes by less than 0.1 percentage points.' : 'Demand coverage ' + (delta.coverage > 0 ? 'increases' : 'decreases') + ' by ' + coverageChange + ' percentage points.';
@@ -2468,19 +2600,19 @@ if (typeof window !== 'undefined') {
           h('dl', { className: 'ty-record-stats' }, durationFields.map(function (field) { return h('div', { key: field[0], 'data-tycoon-record-stat': field[0], 'data-value': record[field[0]] }, h('dt', null, field[1]), h('dd', null, record[field[0]] + ' h')); })),
           h('svg', { className: 'ty-record-timeline', viewBox: '0 0 600 96', role: 'img', 'aria-label': t('stem.renewables.tycoon.availability_timeline', 'Equipment availability timeline for the selected month'), 'aria-describedby': id + 'record-timeline-description' },
             h('rect', { x: timelineStart, y: 27, width: timelineWidth, height: 25, rx: 4, fill: 'var(--ty-line)' }),
-            record.segments.map(function (segment) { return h('rect', { key: segment.startHour, x: x(segment.startHour), y: 27, width: (segment.endHour - segment.startHour) / record.hours * timelineWidth, height: 25, fill: colors[segment.status] }); }),
+            record.segments.map(function (segment) { return h('rect', { key: segment.startHour, x: x(segment.startHour), y: 27, width: (segment.endHour - segment.startHour) / Math.max(1, number(record.hours)) * timelineWidth, height: 25, fill: own(colors, segment.status, 'var(--ty-muted)') }); }),
             h('line', { x1: x(displayHour + .5), x2: x(displayHour + .5), y1: 19, y2: 59, stroke: 'var(--ty-ink)', strokeWidth: 3 }),
             h('path', { d: 'M' + (x(displayHour + .5) - 5) + ' 11h10l-5 7z', fill: 'var(--ty-ink)' }),
             [0, Math.floor(record.hours / 48) * 24, record.hours - 24].map(function (hour, index) { return h('text', { key: index, x: x(hour), y: 81, textAnchor: index === 0 ? 'start' : index === 2 ? 'end' : 'middle' }, 'Day ' + (Math.floor(hour / 24) + 1)); })),
-          h('p', { id: id + 'record-timeline-description', className: 'ty-small', 'data-tycoon-record-cursor': displayHour }, when(displayHour) + ' · ' + (current ? labels[current.status] : 'No reading')),
-          h('div', { className: 'ty-record-legend' }, Object.keys(labels).filter(function (status) { return record.segments.some(function (segment) { return segment.status === status; }); }).map(function (status) { return h('span', { key: status }, h('i', { style: { background: colors[status] }, 'aria-hidden': true }), labels[status]); })),
-          h('div', { className: 'ty-record-intervals' }, record.segments.map(function (segment) { return h('button', { key: segment.startHour, type: 'button', 'data-tycoon-record-segment': segment.startHour, 'data-end-hour': segment.endHour, 'data-status': segment.status, 'aria-pressed': current === segment, onClick: function () { inspectHour(segment.startHour); } }, labels[segment.status] + ' · ' + (segment.endHour - segment.startHour) + ' h', h('span', { style: { display: 'block', fontWeight: 400, marginTop: 3 } }, 'Inspect from ' + when(segment.startHour))); })),
+          h('p', { id: id + 'record-timeline-description', className: 'ty-small', 'data-tycoon-record-cursor': displayHour }, when(displayHour) + ' · ' + (current ? own(labels, current.status, 'No reading') : 'No reading')),
+          h('div', { className: 'ty-record-legend' }, Object.keys(labels).filter(function (status) { return record.segments.some(function (segment) { return segment.status === status; }); }).map(function (status) { return h('span', { key: status }, h('i', { style: { background: own(colors, status, 'var(--ty-muted)') }, 'aria-hidden': true }), own(labels, status, status)); })),
+          h('div', { className: 'ty-record-intervals' }, record.segments.map(function (segment) { return h('button', { key: segment.startHour, type: 'button', 'data-tycoon-record-segment': segment.startHour, 'data-end-hour': segment.endHour, 'data-status': segment.status, 'aria-pressed': current === segment, onClick: function () { inspectHour(segment.startHour); } }, own(labels, segment.status, segment.status) + ' · ' + (segment.endHour - segment.startHour) + ' h', h('span', { style: { display: 'block', fontWeight: 400, marginTop: 3 } }, 'Inspect from ' + when(segment.startHour))); })),
           h('p', { className: 'ty-inspector-footnote' }, 'Connected hours include darkness, calm weather, and idle storage. Availability measures whether equipment can operate; it is separate from the share of community demand served.'),
           h('dl', { className: 'ty-record-stats' }, energyFields.map(function (field) { return h('div', { key: field[0], 'data-tycoon-record-stat': field[0], 'data-value': record[field[0]] }, h('dt', null, field[1]), h('dd', null, energy(record[field[0]]))); })),
           h('div', { className: 'ty-record-history' }, h('h4', null, 'Recorded month-end condition'),
             history.length ? h(React.Fragment, null,
               h('p', { className: 'ty-small ty-muted' }, 'Select a completed month to review its condition and fault status. This does not change the map’s selected hour.'),
-              h('div', { className: 'ty-condition-months' }, history.map(function (point) { return h('button', { type: 'button', key: point.month, className: 'ty-condition-month', 'data-tycoon-record-month': point.month, 'data-condition': point.condition, 'data-fault': point.fault, 'aria-pressed': selected.month === point.month, 'aria-controls': id + 'record-month-detail', onClick: function () { setRecordMonth(point.month); }, 'aria-label': point.monthName + ', ' + Math.round(point.condition) + '% ' + t('stem.renewables.tycoon.condition', 'condition') + ', ' + (point.fault ? t('stem.renewables.tycoon.month_end_fault', 'fault at month end') : t('stem.renewables.tycoon.month_end_no_fault', 'no fault at month end')) }, point.monthName.slice(0, 3), h('strong', null, Math.round(point.condition) + '%'), h('i', { 'aria-hidden': true }, h('span', { style: { width: point.condition + '%' } })), point.fault && h('small', null, 'Fault')); })),
+              h('div', { className: 'ty-condition-months' }, history.map(function (point) { return h('button', { type: 'button', key: point.month, className: 'ty-condition-month', 'data-tycoon-record-month': point.month, 'data-condition': point.condition, 'data-fault': point.fault, 'aria-pressed': selected.month === point.month, 'aria-controls': id + 'record-month-detail', onClick: function () { setRecordMonth(point.month); }, 'aria-label': point.monthName + ', ' + Math.round(point.condition) + '% ' + t('stem.renewables.tycoon.condition', 'condition') + ', ' + (point.fault ? t('stem.renewables.tycoon.month_end_fault', 'fault at month end') : t('stem.renewables.tycoon.month_end_no_fault', 'no fault at month end')) }, point.monthName.slice(0, 3), h('strong', null, Math.round(point.condition) + '%'), h('i', { 'aria-hidden': true }, h('span', { style: { width: Math.max(0, Math.min(100, number(point.condition))) + '%' } })), point.fault && h('small', null, 'Fault')); })),
               h('p', { className: 'ty-record-selected', id: id + 'record-month-detail', 'data-tycoon-record-month-detail': selected.month, 'data-condition': selected.condition, 'data-fault': selected.fault }, h('strong', null, selected.monthName + ' · ' + selected.condition.toFixed(1) + '% condition'), h('span', { style: { display: 'block' } }, selected.fault ? 'A fault remained at the end of this month.' : 'No unresolved fault at the end of this month.')))
               : h('p', { className: 'ty-record-empty', 'data-tycoon-record-empty': true }, selectedAsset.readyMonth > state.month ? 'This equipment is under construction. Its condition record starts after its first operating month.' : 'No operating month has been recorded for this equipment yet. Resolve a month to start its condition record.')),
           h('p', { className: 'ty-inspector-footnote' }, record.context === 'forecast' ? 'Availability and energy above describe the current plan, including known faults and booked service. New faults can change the result when you resolve the month. The condition history contains completed months only.' : 'Availability and energy above come from the actual final-month replay. The condition history contains completed months only.')));
@@ -2550,7 +2682,7 @@ if (typeof window !== 'undefined') {
 
     function renderPolicy() {
       return h('section', { className: 'ty-card', 'data-tycoon-panel': 'policy' }, sectionHead('Cooperative policy', 'Set the operating priorities', 'Balance flexibility, storage reserves, and community needs.'),
-        h('div', { className: 'ty-policy' }, h('label', { className: 'ty-field', htmlFor: id + 'reserve' }, h('span', { className: 'ty-row' }, h('span', null, 'Battery reserve for essential demand'), h('strong', null, percent(state.policy.reserve))), h('input', { type: 'range', id: id + 'reserve', min: 0, max: 50, step: 5, value: Math.round(state.policy.reserve * 100), 'data-tycoon-reserve': true, onChange: function (event) { commit({ type: 'policy', reserve: Number(event.target.value) / 100, flex: state.policy.flex }, 'Battery reserve updated. The forecast now reflects your plan.'); } }), h('small', null, 'Protect this share of stored energy for essential demand. The reserve can still discharge to cover essential needs when other supply is insufficient.')),
+        h('div', { className: 'ty-policy' }, h('label', { className: 'ty-field', htmlFor: id + 'reserve' }, h('span', { className: 'ty-row' }, h('span', null, 'Battery reserve for essential demand'), h('strong', null, percent(state.policy.reserve))), h('input', { type: 'range', id: id + 'reserve', min: 0, max: 50, step: 5, value: Math.round(state.policy.reserve * 100), 'data-tycoon-reserve': true, 'aria-valuetext': percent(state.policy.reserve) + ' protected for essential demand', onChange: function (event) { commit({ type: 'policy', reserve: Number(event.target.value) / 100, flex: state.policy.flex }, 'Battery reserve updated. The forecast now reflects your plan.'); } }), h('small', null, 'Protect this share of stored energy for essential demand. The reserve can still discharge to cover essential needs when other supply is insufficient.')),
           h('label', { className: 'ty-check', htmlFor: id + 'flex' }, h('input', { type: 'checkbox', id: id + 'flex', checked: state.policy.flex, 'data-tycoon-flex': true, onChange: function (event) { commit({ type: 'policy', reserve: state.policy.reserve, flex: event.target.checked }, 'Flexible-demand policy updated.'); } }), h('span', null, 'Offer flexible-demand agreements', h('small', null, 'For $130 per month, shift some evening electricity use into solar hours while preserving daily energy demand.')))), renderPolicyTrial());
     }
 
@@ -2590,8 +2722,14 @@ if (typeof window !== 'undefined') {
 
     function previewService(siteId, previewHour) {
       inspectHour(previewHour); chooseSite(siteId);
-      var equipment = sceneRef.current && sceneRef.current.querySelector('[data-tycoon-site="' + siteId + '"]');
-      if (equipment) equipment.focus();
+      var equipment = null;
+      if (sceneRef.current && typeof sceneRef.current.querySelectorAll === 'function') {
+        var nodes = sceneRef.current.querySelectorAll('[data-tycoon-site]');
+        for (var i = 0; i < nodes.length; i++) {
+          if (nodes[i].getAttribute('data-tycoon-site') === String(siteId)) { equipment = nodes[i]; break; }
+        }
+      }
+      if (equipment && typeof equipment.focus === 'function') equipment.focus();
     }
 
     function renderFleet() {
@@ -2607,9 +2745,9 @@ if (typeof window !== 'undefined') {
           var serviceText = asset.serviceBlock === 'scheduled' ? 'Paid · ' + money(asset.serviceCost) + ' · resumes day 3' : asset.serviceBlock === 'building' ? 'Ready in ' + engine.months[asset.readyMonth] : asset.serviceBlock === 'booked' ? 'Crew already assigned this month' : asset.serviceBlock === 'cash' ? 'Service needs ' + money(asset.serviceCost) + ' cash' : null;
           var riskText = asset.faultRisk == null ? null : (asset.faultRisk * 100).toFixed(1) + '% chance of a new fault this month';
           return h('li', { className: 'ty-fleet-item', key: asset.id, 'data-tycoon-fleet-asset': asset.id, 'data-status': asset.status, 'data-condition': asset.condition, 'data-service-block': asset.serviceBlock || 'none' },
-            h('div', { className: 'ty-fleet-title' }, h('strong', null, asset.name), h('span', { className: 'ty-fleet-status' }, labels[asset.status])),
+            h('div', { className: 'ty-fleet-title' }, h('strong', null, asset.name), h('span', { className: 'ty-fleet-status' }, own(labels, asset.status, 'Ready to operate'))),
             h('div', { className: 'ty-row ty-small' }, h('span', null, 'Condition'), h('strong', null, Math.round(asset.condition) + '%')),
-            h('div', { className: 'ty-condition-track', 'aria-hidden': true }, h('span', { style: { width: asset.condition + '%' } })),
+            h('div', { className: 'ty-condition-track', 'aria-hidden': true }, h('span', { style: { width: Math.max(0, Math.min(100, number(asset.condition))) + '%' } })),
             riskText && h('p', { className: 'ty-small ty-muted' }, riskText + (asset.outputFactor == null ? '.' : ' · ' + percent(asset.outputFactor) + ' of healthy generation at the same weather.')),
             serviceText && h('p', { className: 'ty-small ty-muted' }, serviceText),
             asset.status === 'service' && h('div', { className: 'ty-fleet-actions' }, [[0, 'Inspect downtime'], [fleet.serviceHours, 'Preview return · day 3']].map(function (preview) { return h('button', { type: 'button', key: preview[0], 'data-tycoon-fleet-preview': asset.id, 'data-preview-hour': preview[0], onClick: function () { previewService(asset.siteId, preview[0]); } }, preview[1]); })),
@@ -2672,7 +2810,7 @@ if (typeof window !== 'undefined') {
       error && h('div', { className: 'ty-alert', role: 'alert', 'data-tycoon-error': true }, error), h('div', { className: 'ty-notice', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, notice),
       invalidHostSave && h('div', { className: 'ty-alert', role: 'alert', 'data-tycoon-invalid-save': true }, 'The saved campaign could not be validated. Your saved data has not been changed. Import a valid campaign below, or explicitly start a new campaign to replace it.'),
       state && savesOpen && h('div', { className: 'ty-card ty-save-panel', id: id + 'saves' }, h('div', null, h('h3', null, 'Keep your campaign'), h('p', { className: 'ty-small ty-muted' }, 'Progress saves with the lab. Export a file to keep another copy.')), h('button', { type: 'button', onClick: exportSave, 'data-tycoon-export': true }, 'Export campaign JSON'), importControl()),
-      state && resetOpen && h('section', { className: 'ty-card ty-reset', id: id + 'reset', 'aria-labelledby': id + 'reset-title' }, h('h3', { id: id + 'reset-title', ref: resetTitleRef, tabIndex: -1 }, 'Start a new cooperative?'), h('p', { className: 'ty-body' }, 'This replaces the current campaign. Export your save first if you want to return to it.'), h('form', { className: 'ty-start-form', onSubmit: begin }, h('label', { className: 'ty-field', htmlFor: id + 'restart-seed' }, 'Campaign seed', h('input', { id: id + 'restart-seed', type: 'text', value: seed, maxLength: 64, required: true, onChange: function (event) { setSeed(event.target.value); } })), h('div', { className: 'ty-actions' }, h('button', { type: 'button', onClick: function () { setResetOpen(false); } }, 'Keep current campaign'), h('button', { type: 'submit', 'data-tycoon-reset-confirm': true }, 'Replace and start again')))),
+      state && resetOpen && h('section', { className: 'ty-card ty-reset', id: id + 'reset', 'aria-labelledby': id + 'reset-title', onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); setResetOpen(false); } } }, h('h3', { id: id + 'reset-title', ref: resetTitleRef, tabIndex: -1 }, 'Start a new cooperative?'), h('p', { className: 'ty-body' }, 'This replaces the current campaign. Export your save first if you want to return to it.'), h('form', { className: 'ty-start-form', onSubmit: begin }, h('label', { className: 'ty-field', htmlFor: id + 'restart-seed' }, 'Campaign seed', h('input', { id: id + 'restart-seed', type: 'text', value: seed, maxLength: 64, required: true, onChange: function (event) { setSeed(event.target.value); } })), h('div', { className: 'ty-actions' }, h('button', { type: 'button', onClick: function () { setResetOpen(false); } }, 'Keep current campaign'), h('button', { type: 'submit', 'data-tycoon-reset-confirm': true }, 'Replace and start again')))),
       !state ? renderOnboarding() : h(React.Fragment, null,
         h('header', { className: 'ty-hero' }, h('div', null, h('p', { className: 'ty-eyebrow' }, 'North Harbor · island energy cooperative'), h('h1', null, active ? outlook.monthName + ' at the harbor' : state.phase === 'insolvent' ? 'Your campaign, reviewed.' : 'A year of decisions.'), h('p', { className: 'ty-subtitle' }, active ? 'Month ' + (state.month + 1) + ' of 12 · ' + monthSeason(state.month) + ' · Acquire, maintain, and plan a reliable renewable network.' : state.phase === 'insolvent' ? 'The cooperative ran out of operating cash. Review the ledger and try a different plan.' : 'Review the network you built and the community you powered.'), h('div', { className: 'ty-months', 'aria-hidden': true }, engine.months.map(function (month, index) { return h('span', { key: month, 'data-past': index < state.month, 'data-current': active && index === state.month }); }))),
           h('div', { className: 'ty-hero-stats' }, h('div', { className: 'ty-hero-stat' }, h('span', null, 'Available cash'), h('strong', { 'data-tycoon-cash': true }, money(state.cash))), h('div', { className: 'ty-hero-stat' }, h('span', null, 'Community trust'), h('strong', null, Math.round(state.trust) + '/100')), h('div', { className: 'ty-hero-stat' }, h('span', null, 'Fleet assets'), h('strong', null, state.assets.length)))),
@@ -2681,8 +2819,8 @@ if (typeof window !== 'undefined') {
         h('footer', { className: 'ty-footer' }, h('p', null, 'Educational game · fictional prices and policies · simplified hourly energy model. Renewable generation supplies the island; batteries shift energy through time. Seed: ' + state.seed + '.'), h('span', { className: 'ty-chip' }, active ? 'Plan → resolve → reflect' : state.history.length + ' months completed'))));
   }
 
-  window.StemLab.RenewablesTycoon = RenewablesTycoon;
-})();
+  global.StemLab.RenewablesTycoon = RenewablesTycoon;
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));
 // END GENERATED RENEWABLES TYCOON MODULES
 
 if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'))) {
@@ -2752,7 +2890,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     ],
     sourceSpecific: [
       { name: 'BOEM — Bureau of Ocean Energy Management', contact: 'boem.gov',
-        desc: 'Offshore wind leasing. Gulf of Maine planning area covers 13.7 million acres.',
+        desc: 'Offshore wind leasing in federal waters, including the Gulf of Maine.',
         url: 'https://www.boem.gov', icon: '🌊' },
       { name: 'AWEA / ACP — American Clean Power', contact: 'cleanpower.org',
         desc: 'US wind + solar industry data. Project map, capacity by state.',
@@ -2778,7 +2916,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         desc: 'Rebates for heat pumps, solar, EVs, weatherization. Maine’s ratepayer-funded efficiency utility.',
         url: 'https://www.efficiencymaine.com', icon: '🌲' },
       { name: 'University of Maine Composites Center', contact: 'composites.umaine.edu',
-        desc: 'Floating offshore wind research. Built VolturnUS, the first US floating wind turbine.',
+        desc: 'Floating offshore wind research. Its VolturnUS model was the first grid-connected floating offshore wind turbine in the Americas (2013).',
         url: 'https://composites.umaine.edu', icon: '🌊' },
       { name: 'ORPC (Ocean Renewable Power Co.)', contact: 'orpc.co',
         desc: 'Eastport, ME tidal energy pioneer. RivGen / TidGen turbine projects.',
@@ -2797,79 +2935,110 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     ]
   };
 
-  // Maine-specific reality (mirrors the firstresponse MAINE_EMS pattern).
+  // Maine-specific reality. Source audit 2026-11-24 (claims with no source found were cut):
+  //  offshore: US DOE Wind Energy Technologies Office: VolturnUS 1:8 began sending power to the grid June 13, 2013,
+  //    "the first grid-connected floating offshore wind turbine in the Americas" (energy.gov/cmei/systems/articles/
+  //    first-us-grid-connected-offshore-wind-turbine-installed-coast-maine).
+  //  tidal: NOAA tide table, Eastport ME, "mean range 18.35 ft"; DOE/EERE news, July 2012 (archived): Cobscook Bay
+  //    project is "the nation's first commercial, grid-connected tidal energy project".
+  //  hydro, biomass: Maine Dept of Energy Resources energy profile, 2024: natural gas about 44% of in-state
+  //    generation; hydropower, wind, wood and solar most of the rest (maine.gov/energy/about/energy-profile).
+  //  heat pumps: Maine Governor's Office, Jul 2023: 100,000 goal passed two years early; new goal 175,000 more by 2027.
+  //  Removed: "13.7M acre 2024 lease area", "~104 dams, most per capita", "leads the US per capita", "100,000+ since 2019".
   var MAINE_RENEWABLES = {
-    offshore: 'The Gulf of Maine has some of the strongest, steadiest offshore winds in the US. Water is too deep for fixed-bottom turbines, so Maine pioneered floating turbines (UMaine’s VolturnUS, deployed 2013). BOEM’s 2024 lease area covers 13.7M acres.',
-    tidal: 'Eastport / Cobscook Bay has the largest tides in the Lower 48 (~6 m / 20 ft range). Ocean Renewable Power Co. tested the TidGen turbine here — the first grid-connected tidal generator in US waters.',
-    hydro: 'Maine has ~104 hydroelectric dams, the most per capita of any US state. Most are small (<10 MW). Many are 100+ years old, originally built for paper mills.',
-    heatPumps: 'Maine leads the US in heat-pump adoption per capita. 100,000+ ground-source + air-source units installed since 2019, driven by Efficiency Maine rebates + heating-oil prices.',
-    solar: 'Despite winters, Maine produces solar competitively — cold + sun = high panel efficiency. Net-metering policy debates have been intense; check current rules at the PUC.',
-    biomass: 'Maine’s wood-pellet + cordwood heating tradition is one of the densest in the US. Several biomass power plants run on logging residues, though some have closed as utility-scale solar undercut them.'
+    offshore: 'Much of the Gulf of Maine is too deep for turbines fixed to the seabed, so Maine engineers work on floating ones. In 2013 UMaine’s VolturnUS, a one-eighth-size model, became the first grid-connected floating offshore wind turbine in the Americas (US Department of Energy).',
+    tidal: 'Eastport and Cobscook Bay have some of the biggest tides in the US: about 18 feet (5.6 m) from low to high tide on average (NOAA). In 2012 Ocean Renewable Power Company sent tidal power to the grid there, the first commercial grid-connected tidal project in the US (US Department of Energy).',
+    hydro: 'Hydropower is one of Maine’s main clean sources. In 2024 natural gas made about 44% of the electricity generated in Maine, and hydropower, wind, wood and solar made most of the rest (Maine Department of Energy Resources).',
+    heatPumps: 'Maine passed its goal of 100,000 new heat pumps in 2023, two years early, and set a new goal of 175,000 more by 2027 (Maine Governor’s Office, 2023).',
+    solar: 'Solar cells work a little better when they are cold, so clear winter days can be good for output. Short days and snow still cut winter energy. Net-metering rules in Maine have changed several times, so check the Maine Public Utilities Commission for current rules.',
+    biomass: 'Wood is one of the fuels that makes electricity in Maine (Maine Department of Energy Resources, 2024). Burning wood only counts as low-carbon if the forest grows back.'
   };
 
   // ─────────────────────────────────────────────────────────
   // SECTION 2: SOURCE-SPECIFIC FACT BANKS
   // Each renewable has a card stack with the science + a sim/quiz prompt.
-  // Numbers verified against NREL ATB 2024 + IEA 2024 unless noted.
+  // Source audit 2026-11-24. Every number below has its source here:
+  //  Capacity factor, US fleet 2024: EIA Electric Power Monthly Tables 6.07.A and 6.07.B (annual 2024): solar
+  //    photovoltaic 23.2%, wind 34.3%, hydroelectric 34.6%, geothermal 64.6%, solar thermal 25.0%, wood 55.8%,
+  //    nuclear 90.8%, natural gas combined cycle 60.5%, coal 42.6%.
+  //  US new-build cost: Lazard LCOE+ July 2026 (LCOE v19.0), unsubsidized $/MWh: "Solar PV--Utility $40 ... $98",
+  //    "Wind--Onshore $37 ... $99", "Wind--Offshore $105 ... $167", "Geothermal $67 ... $111", "Gas Combined Cycle
+  //    $51 ... $129", "Coal $72 ... $177", "U.S. Nuclear $175 ... $255" (Vogtle 3 and 4; geothermal and coal are
+  //    Lazard v14.0 inflation-adjusted, per its footnote).
+  //  World average cost of new projects, 2024: IRENA, Renewable Power Generation Costs in 2024 (2025): "solar PV
+  //    (USD 0.043/kWh)", "new hydropower (USD 0.057/kWh)", "Geothermal power averaged USD 0.060/kWh", CSP "reaching
+  //    USD 0.092/kWh", bioenergy "rising to USD 0.087/kWh".
+  //  Share of world electricity, 2024: Ember Global Electricity Review 2025: hydro "14.3%", wind "8.1%", solar "6.9%".
+  //  US generation share, 2023: EIA FAQ 427: wind 10.2%, the largest renewable (hydropower 5.7%, solar 3.9%).
+  //  Storage: EIA Today in Energy, 12 Feb 2021: in 2019 "the U.S. utility-scale battery fleet operated with an
+  //    average monthly round-trip efficiency of 82%" and "pumped-storage facilities ... 79%". IHA, 24 Jun 2026:
+  //    "Pumped storage capacity surpassed 200 GW globally for the first time"; "the world's dominant form of
+  //    large-scale energy storage". BNEF, 9 Dec 2025: pack prices fell "to a record low of $108 per kilowatt-hour";
+  //    "Battery pack prices for stationary storage dropped to $70/kWh in 2025".
+  //  Ground temperature: NREL (nrel.gov/research/re-geo-heat-pumps): the upper 10 feet of the earth stays "between
+  //    50 and 60°F (10-16°C)". Geothermal gradient: IPCC SRREN (2011) ch. 4, about 25-30 °C per km on average.
+  //  Tidal first: DOE/EERE July 2012 (see MAINE_RENEWABLES).
   // ─────────────────────────────────────────────────────────
 
   // Per-source quick-reference card (used at top of each module view).
+  // EIA Electric Power Monthly Tables 6.07.A/B, annual 2024 capacity factors (%), US fleet.
+  var RN_CF_US_2024 = { solar: 23.2, wind: 34.3, hydro: 34.6, geothermal: 64.6, gasCC: 60.5, nuclear: 90.8 };
   var SOURCE_CARDS = {
     solarPv: {
       icon: '☀️', name: 'Solar PV', principle: 'The photovoltaic effect',
       oneLiner: 'Photons knock electrons loose in a silicon semiconductor; the electrons flow as DC current through an external circuit.',
-      capacityFactor: '15–27% (varies by latitude + tracking)',
-      lcoe: '$28–41 / MWh utility-scale (NREL ATB 2024)',
-      growth: 'Global solar capacity doubled every ~3 years through the 2020s. Now the cheapest electricity ever produced.'
+      capacityFactor: '23% for US solar farms in 2024 (EIA)',
+      lcoe: '$40–98 per MWh for new US solar farms, no subsidies (Lazard, 2026)',
+      growth: 'Solar made 6.9% of the world’s electricity in 2024 (Ember). Utility solar is one of the cheapest kinds of new power in the US (Lazard, 2026).'
     },
     wind: {
-      icon: '🌬️', name: 'Wind', principle: 'Betz’s law + cube-of-wind-speed',
+      icon: '🌬️', name: 'Wind', principle: 'Betz’s law + how power grows with wind speed',
       oneLiner: 'Spinning blades convert kinetic energy of moving air into rotational shaft power, driving a generator. Theoretical max efficiency: 59.3% (Betz limit).',
-      capacityFactor: '35–45% onshore, 45–55% offshore',
-      lcoe: '$24–75 / MWh land-based (NREL ATB 2024)',
-      growth: 'Land-based wind is the cheapest form of new bulk electricity in most US states. Offshore is scaling fast.'
+      capacityFactor: '34% for US wind farms in 2024 (EIA)',
+      lcoe: '$37–99 per MWh onshore; $105–167 offshore (new US projects, no subsidies, Lazard 2026)',
+      growth: 'Wind made 8.1% of the world’s electricity in 2024 (Ember). In the US it makes more electricity than any other renewable source (EIA, 2023).'
     },
     hydro: {
       icon: '🌊', name: 'Hydropower', principle: 'P = ρ·g·h·Q·η',
-      oneLiner: 'Falling water spins a turbine. Power scales linearly with HEAD (vertical drop) and FLOW (volume per second). Efficiency η typically 0.85–0.95.',
-      capacityFactor: '35–60% (varies wildly by season + dam type)',
-      lcoe: '$50–150 / MWh (existing dams: $5–20 / MWh)',
-      growth: 'Largest single source of renewable electricity worldwide (~16% of global supply, IEA 2024). Most US sites already developed.'
+      oneLiner: 'Falling water spins a turbine. Power scales linearly with HEAD (vertical drop) and FLOW (volume per second). Efficiency η is the share of the water’s energy the turbine and generator keep; it is always less than 1.',
+      capacityFactor: '35% for US hydro plants in 2024 (EIA); it rises and falls with rain and snowmelt',
+      lcoe: 'About $57 per MWh, the world average for new hydro in 2024 (IRENA)',
+      growth: 'The largest clean source: 14.3% of the world’s electricity in 2024 (Ember).'
     },
     geothermal: {
       icon: '🌋', name: 'Geothermal', principle: 'Earth’s thermal gradient',
-      oneLiner: 'Heat from radioactive decay + planetary cooling raises rock temperature ~25–30°C per km of depth. Drill deep enough to reach steam or hot water; pipe it to a turbine. Or use the constant ~10°C shallow ground temp for home heating/cooling (GSHP).',
-      capacityFactor: '70–95% (highest of any electricity source)',
-      lcoe: '$60–110 / MWh utility-scale geothermal',
-      growth: 'Underused. Enhanced Geothermal Systems (EGS) could unlock terawatts. Heat-pump (GSHP) market is growing fast.'
+      oneLiner: 'Heat from radioactive decay + Earth’s leftover heat warms rock as you go down, about 25–30°C per km in many places (IPCC). Drill deep enough to reach steam or hot water; pipe it to a turbine. Or use the steady ground temperature a few meters down (about 10–16°C, NREL) to heat and cool homes (GSHP).',
+      capacityFactor: '65% for US geothermal plants in 2024 (EIA), among the highest of any renewable',
+      lcoe: '$67–111 per MWh new US (Lazard, 2026); about $60 world average for new plants in 2024 (IRENA)',
+      growth: 'Enhanced geothermal systems try to reach hot rock where there is no natural hot water. Heat pumps use shallow ground heat almost anywhere.'
     },
     solarThermal: {
       icon: '🔆', name: 'Solar Thermal (CSP)', principle: 'Concentrated heat → steam → turbine',
-      oneLiner: 'Mirrors focus sunlight onto a fluid (oil or molten salt). The hot fluid boils water; steam spins a conventional turbine. Molten-salt storage lets a CSP plant run for 6–10 hours after sunset.',
-      capacityFactor: '25–55% (with storage)',
-      lcoe: '$75–130 / MWh (more expensive than PV, but storage included)',
-      growth: 'Niche — PV got cheaper faster. CSP’s edge is built-in thermal storage, useful in deserts (Spain, Morocco, US Southwest).'
+      oneLiner: 'Mirrors focus sunlight onto a fluid (oil or molten salt). The hot fluid boils water; steam spins a conventional turbine. Molten-salt storage lets a CSP plant keep making power for hours after sunset.',
+      capacityFactor: '25% for US solar thermal plants in 2024 (EIA); plants with big heat storage run more hours',
+      lcoe: 'About $92 per MWh, the world average for new CSP in 2024 (IRENA), above solar PV',
+      growth: 'Small: PV got cheaper faster. CSP’s edge is built-in heat storage, useful in sunny deserts (Spain, Morocco, US Southwest).'
     },
     waveTidal: {
       icon: '🌀', name: 'Wave & Tidal', principle: 'Marine kinetic + potential energy',
-      oneLiner: 'Wave: bobbing buoys / oscillating water columns capture surface motion. Tidal stream: underwater turbines spin in tidal currents. Tidal barrage: dam an estuary, run hydro both ways. Predictable to the minute, decades ahead.',
-      capacityFactor: '20–45% (highly site-specific)',
-      lcoe: '$130–280 / MWh (early tech, expected to fall)',
-      growth: 'Pre-commercial. UK / France / Canada / Maine leading R&D. Eastport, ME hosts the first US grid-connected tidal generator.'
+      oneLiner: 'Wave: bobbing buoys / oscillating water columns capture surface motion. Tidal stream: underwater turbines spin in tidal currents. Tidal barrage: dam an estuary and run water through turbines as the tide moves. Tides can be predicted years ahead.',
+      capacityFactor: 'No reliable average yet: only a few full-size plants exist',
+      lcoe: 'No reliable cost figure yet: most projects are still tests',
+      growth: 'Mostly tests and pilots. Eastport, Maine, hosted the first commercial grid-connected tidal project in the US (2012, US Department of Energy).'
     },
     biomass: {
       icon: '🌾', name: 'Biomass & Biogas', principle: 'Combustion or anaerobic digestion',
-      oneLiner: 'Burn wood / pellets / crop residue (combustion) OR let bacteria break down food/manure waste with no oxygen, producing methane (anaerobic digestion). Both yield heat + electricity. Counts as renewable IF feedstock regrows on a similar timescale.',
-      capacityFactor: '70–85% (dispatchable like a fossil plant)',
-      lcoe: '$60–140 / MWh',
-      growth: 'Niche, controversial. Competes with food + forests. Anaerobic digestion of waste streams (dairy, food scraps) is the strongest case.'
+      oneLiner: 'Burn wood / pellets / crop residue (combustion) OR let bacteria break down food/manure waste with no oxygen, producing methane (anaerobic digestion). Both yield heat + electricity. Counts as low-carbon only IF the feedstock regrows on a similar timescale.',
+      capacityFactor: '56% for US wood-fired plants in 2024 (EIA); can run on demand',
+      lcoe: 'About $87 per MWh, the world average for new bioenergy in 2024 (IRENA)',
+      growth: 'Niche, debated. Competes with food + forests. Digesting waste (dairy manure, food scraps) is the strongest case.'
     },
     storage: {
       icon: '🔋', name: 'Storage (the answer to intermittency)', principle: 'Move energy across time',
-      oneLiner: 'Sun and wind don’t run on demand — storage shifts surplus midday solar or windy-night wind to evening peak. Lithium-ion dominates new builds. Pumped hydro is 95% of installed storage globally.',
-      capacityFactor: 'N/A — measured in round-trip efficiency (see Storage view)',
-      lcoe: 'Adds $20–80 / MWh to paired generation (battery, 2024)',
-      growth: 'Battery prices fell ~90% in the 2010s. Grid-scale battery deployments doubled annually 2020–2024.'
+      oneLiner: 'Sun and wind don’t run on demand — storage shifts surplus midday solar or windy-night wind to the evening peak. Pumped hydro is the world’s dominant form of large-scale storage (International Hydropower Association, 2026); batteries are growing fast.',
+      capacityFactor: 'N/A — storage is judged by round-trip efficiency: about 82% for US grid batteries and 79% for pumped hydro in 2019 (EIA)',
+      lcoe: 'Lithium-ion battery packs averaged $108 per kWh in 2025; packs for grid storage, $70 (BloombergNEF)',
+      growth: 'Pumped hydro passed 200 GW worldwide in 2025 (International Hydropower Association).'
     }
   };
 
@@ -2915,79 +3084,109 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // ─────────────────────────────────────────────────────────
   // SECTION 4: QUIZ BANK — 10 questions across all sources
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24. q10: EIA Today in Energy 12 Feb 2021 (pumped storage 79% round trip, 2019); IHA 24 Jun
+  // 2026 (over 200 GW). q13: IEA Global Hydrogen Review 2024, "unabated natural gas, which emits 10-12 kg CO2-eq/kg H2";
+  // IEA Global Hydrogen Review 2025, low-emissions hydrogen "still accounts for less than 1% of global production".
+  // q14: ENERGY STAR cold-climate criterion "COP at 5° F >= 1.75" (the old "COP 3 at -15 °C" had no source).
+  // q15: ACEEE Sep 2020 (2017 data): median household burden 3.1%; low-income households "8.1% of their income on
+  // energy costs, on average"; ACEEE 2024 brief: top quarter of low-income households "average energy burdens exceed
+  // 15%". q16: GE Haliade-X, 107 m blades / 220 m rotor. q17: BLS Occupational Outlook Handbook, wind turbine
+  // technicians: "$64,120 per year" (May 2025), "30%" growth 2025-35, entry education "Postsecondary nondegree award".
+  // q18 / q8: NREL (2024) molten-salt tank report: hot tanks at "565°C" are the current state of the art. q8 cost:
+  // IRENA 2024 (CSP USD 0.092/kWh vs solar PV USD 0.043/kWh). q7: NREL ground 10-16 °C; DOE consumer guide to
+  // geothermal heat pumps: "300%-600%" efficiency on the coldest winter nights.
+  // miss[i] explains why choice i (authored order) is wrong; null on the correct choice. Rotated with choices below.
   var QUIZ = [
     { id: 'q1', icon: '☀️',
       stem: 'A solar panel works because of the photovoltaic effect. What does sunlight knock loose to create electric current?',
       choices: ['Protons inside the nucleus of each silicon atom', 'Electrons in the silicon’s outer shell', 'Helium atoms inside the panel', 'Photons from the cell itself'],
-      correct: 1, why: 'Photons hit silicon atoms and give energy to outer-shell electrons. The freed electrons flow through an external circuit — that flow is the electric current.' },
+      correct: 1, why: 'Photons hit silicon atoms and give energy to outer-shell electrons. The freed electrons flow through an external circuit — that flow is the electric current.',
+      miss: ['Protons sit deep in the nucleus. Sunlight does not carry nearly enough energy to knock them out.', null, 'There is no helium in a silicon solar cell. The current is made of electrons from the silicon itself.', 'Photons come from the Sun, not from the cell. They deliver the energy; electrons carry the current.'] },
     { id: 'q2', icon: '🌬️',
       stem: 'A wind turbine’s power output is proportional to wind speed CUBED (v³). If wind speed doubles from 5 m/s to 10 m/s, the power output multiplies by approximately:',
       choices: ['2×', '4×', '8×', '16×'],
-      correct: 2, why: '2³ = 8. That’s why turbine sites are picked obsessively for wind speed — a small increase in average wind makes a huge difference in lifetime energy output.' },
+      correct: 2, why: '2³ = 8. That’s why turbine sites are picked so carefully for wind speed — a small increase in average wind makes a huge difference in lifetime energy output.',
+      miss: ['That would be true if power grew in step with speed. It grows with speed cubed: 2 × 2 × 2.', '4× is speed squared. Power has one more factor of v, because faster wind also pushes more air through each second.', null, '16× would be speed to the fourth power. The formula has v³.'] },
     { id: 'q3', icon: '🌬️',
       stem: 'The Betz limit says no wind turbine can extract more than ~59.3% of the kinetic energy in the wind passing through its rotor. Why is this not just an engineering problem we could solve with better blades?',
       choices: ['It’s a manufacturing limit — carbon fiber blades simply cannot be made stiff enough to survive spinning any faster', 'It’s a physics limit — if you extracted 100%, the air behind the rotor would have zero velocity and pile up', 'It’s a financial limit — utilities cap how much wind power they will purchase from any one site', 'It’s a noise limit — aviation regulators cap how fast the rotor tips are allowed to move'],
-      correct: 1, why: 'If a turbine took ALL the air’s energy, the air would stop dead behind the blades and no more air could flow through. Real turbines hit ~35–45% efficiency — close to but below Betz.' },
+      correct: 1, why: 'If a turbine took ALL the air’s energy, the air would stop dead behind the blades and no more air could flow through. Real turbines stay below the 59.3% limit.',
+      miss: ['Blade strength matters, but the limit holds even for a perfect, unbreakable rotor. It comes from how the air must keep flowing.', null, 'Contracts can cap sales, but they cannot change how much energy a rotor can pull from moving air.', 'Tip-speed rules affect noise, but the 59.3% limit comes from the physics of slowing the air down.'] },
     { id: 'q4', icon: '🌊',
       stem: 'A hydroelectric plant’s power output depends on HEAD (the vertical drop) and FLOW (volume of water per second). If you double the head AND keep the same flow, the power output:',
       choices: ['Stays the same', 'Doubles', 'Quadruples', 'Falls in half'],
-      correct: 1, why: 'P = ρ·g·h·Q·η — head and flow each appear once (linear). Double either one and you double the power.' },
+      correct: 1, why: 'P = ρ·g·h·Q·η — head and flow each appear once (linear). Double either one and you double the power.',
+      miss: ['Head is in the formula P = ρ·g·h·Q·η, so changing it must change the power.', null, 'Quadrupling needs head AND flow both doubled. Here only head doubles.', 'A bigger drop gives each kilogram of water more energy, so power goes up, not down.'] },
     { id: 'q5', icon: '🌊',
       stem: 'You’re designing a small hydro plant for a high mountain stream with very little water but a 200 m drop. Which turbine type is best?',
       choices: ['Pelton (high head, low flow)', 'Francis (medium head, medium flow)', 'Kaplan (low head, high flow)', 'A wind turbine'],
-      correct: 0, why: 'Pelton wheels use buckets struck by jets of high-velocity water — perfect for tall drops and small streams. Francis is the all-rounder; Kaplan is for big rivers with little drop.' },
+      correct: 0, why: 'Pelton wheels use buckets struck by jets of high-velocity water — perfect for tall drops and small streams. Francis is the all-rounder; Kaplan is for big rivers with little drop.',
+      miss: [null, 'Francis turbines suit medium drops with more water. This site has a big drop and very little water.', 'Kaplan turbines need lots of water and a small drop, the opposite of this stream.', 'A wind turbine ignores the 200 m drop, which is this site’s main resource.'] },
     { id: 'q6', icon: '🌋',
       stem: 'The Earth’s temperature increases roughly 25–30°C for every kilometer you drill down. To reach 200°C (suitable for a flash-steam geothermal plant) starting from a 10°C surface, you’d need to drill approximately:',
       choices: ['~600 m (0.6 km)', '~3 km', '~6.3 km', '~30 km'],
-      correct: 2, why: '(200 − 10) / 30 ≈ 6.3 km. That’s deeper than most oil wells — which is why utility-scale geothermal usually targets natural hot zones (volcanic regions like Iceland, Italy, the Western US) where the gradient is much steeper.' },
+      correct: 2, why: '(200 − 10) / 30 ≈ 6.3 km. That’s very deep — which is why geothermal power plants usually go where the rock is hot closer to the surface, in volcanic regions like Iceland, Italy and the western US.',
+      miss: ['0.6 km × 30°C per km only adds about 18°C, so the rock would be about 28°C.', 'At 3 km the rock is about 10 + 3 × 30 = 100°C, only half of what is needed.', null, 'At 30 km the rock would be about 910°C — far hotter than needed and far deeper than anyone drills.'] },
     { id: 'q7', icon: '🌋',
       stem: 'A ground-source heat pump (GSHP) for a Maine home does NOT generate electricity — it MOVES heat. In winter, where does the heat come from?',
-      choices: ['It is created inside the heat pump itself by resistance heating from electricity', 'It is pulled from the ~10°C ground 1–2 m below the surface and concentrated', 'It is pulled from sunlight hitting the panels', 'It is recycled from the home’s exhaust air'],
-      correct: 1, why: 'Below the frost line the soil stays a near-constant ~10°C year-round. A GSHP uses electricity to RUN a refrigeration cycle that concentrates that ground heat into your house. For each unit of electricity in, you typically get 3–5 units of heat out (COP 3–5).' },
+      choices: ['It is created inside the heat pump itself by resistance heating from electricity', 'It is pulled from the ground a few meters down, which stays at a steady temperature', 'It is pulled from sunlight hitting the panels', 'It is recycled from the home’s exhaust air'],
+      correct: 1, why: 'A few meters down, the ground stays about 10–16°C all year (NREL). A GSHP uses electricity to RUN a refrigeration cycle that moves that ground heat into the house. The US Department of Energy says these systems reach 300%–600% efficiency (COP 3–6).',
+      miss: ['Resistance heating turns 1 unit of electricity into 1 unit of heat. A heat pump moves extra heat in from outside, so it gets several units out.', null, 'A GSHP has no panels. Its pipes are buried in the ground.', 'Some systems recover heat from exhaust air, but a GSHP gets its heat from the ground loop.'] },
     { id: 'q8', icon: '🔆',
       stem: 'Concentrated Solar Power (CSP) plants have one major advantage over photovoltaic (PV) panels for utility-scale generation. What is it?',
-      choices: ['CSP generates at night even without any storage attached', 'CSP can store the captured heat in molten salt for 6–10 hours', 'CSP produces cheaper electricity per MWh than photovoltaics', 'CSP keeps working under full cloud cover, with no direct sunlight'],
-      correct: 1, why: 'PV converts photons → electrons instantly; you can’t store electrons cheaply. CSP heats molten salt to 565°C, then runs the steam turbine on stored heat for hours after sunset — effectively built-in storage.' },
+      choices: ['CSP generates at night even without any storage attached', 'CSP can store the captured heat in tanks of molten salt for hours', 'CSP produces cheaper electricity per MWh than photovoltaics', 'CSP keeps working under full cloud cover, with no direct sunlight'],
+      correct: 1, why: 'PV turns light into electricity right away; storing electricity needs batteries. A CSP tower heats molten salt to about 565°C (NREL) and can run its steam turbine on that stored heat for hours after sunset.',
+      miss: ['Without storage, a CSP plant stops when the sun sets, just like PV.', null, 'It is the other way around: new CSP averaged about $92 per MWh worldwide in 2024, solar PV about $43 (IRENA).', 'Mirrors can only focus direct sunlight. Clouds scatter the light, so CSP output drops sharply.'] },
     { id: 'q9', icon: '🌊',
       stem: 'Tidal energy has one big advantage over wind and solar that critics often overlook. What is it?',
       choices: ['Tides deliver more total power than wind and solar combined', 'Tides are predictable decades in advance from astronomy', 'Tidal turbines are cheaper to build', 'Tides work in shallow water everywhere'],
-      correct: 1, why: 'Tides are driven by the Moon’s and Sun’s gravity — we can predict them to the minute, years out. That predictability is enormously valuable for grid operators trying to plan around weather-dependent solar and wind.' },
+      correct: 1, why: 'Tides are driven by the Moon’s and Sun’s gravity, so they can be predicted years ahead. That predictability is very valuable for grid operators planning around weather-dependent solar and wind.',
+      miss: ['Tidal power is a small resource next to wind and solar. Its big strength is timing, not size.', null, 'Tidal turbines are still expensive: they must survive salt water and strong currents.', 'Tidal turbines need strong currents, which only some narrow channels and bays have.'] },
     { id: 'q10', icon: '🔋',
       stem: 'Pumped hydro storage works by pumping water UP to a high reservoir when electricity is cheap (excess solar/wind) and letting it flow DOWN through a turbine when electricity is expensive (evening peak). What round-trip efficiency does it typically achieve?',
-      choices: ['~30%', '~50%', '~75–85%', '~95–99%'],
-      correct: 2, why: 'Pumped hydro recovers about 75–85% of the electricity used to pump water up. It’s old tech (1890s) and still ~95% of the world’s installed grid storage — batteries are catching up fast but pumped hydro dwarfs them in total MWh stored.' },
+      choices: ['~30%', '~50%', '~80%', '~95–99%'],
+      correct: 2, why: 'US pumped-storage plants averaged 79% round-trip efficiency in 2019 (EIA). Pumped hydro is still the world’s dominant form of large-scale storage: over 200 GW in 2025 (International Hydropower Association).',
+      miss: ['That is closer to turning electricity into hydrogen and back. Pumps and turbines lose much less.', 'Pumps and turbines are efficient machines; losing half would make a poor plant.', null, 'Some energy is always lost to friction and heat in pumps, turbines and pipes, so it cannot be that close to 100%.'] },
     { id: 'q11', icon: '🌐',
       stem: 'The North American grid operates near a nominal 60 Hz. If demand suddenly spikes and generation lags, what initially happens to grid frequency?',
       choices: ['It stays at 60 Hz — the grid auto-corrects instantly', 'It drops below 60 Hz', 'It rises above 60 Hz', 'It oscillates between 50 and 70 Hz'],
-      correct: 1, why: 'When demand exceeds supply, synchronized rotating machines initially slow and frequency tends to drop. Controls, reserves, storage, and sometimes load shedding respond on different timescales.' },
+      correct: 1, why: 'When demand exceeds supply, synchronized rotating machines initially slow and frequency tends to drop. Controls, reserves, storage, and sometimes load shedding respond on different timescales.',
+      miss: ['Nothing corrects instantly. For a moment, spinning machines give up some of their energy and slow down.', null, 'Frequency rises when generation is MORE than demand. Here demand jumped.', 'Grid frequency stays very close to 60 Hz. A swing to 50 or 70 Hz would trip equipment.'] },
     { id: 'q12', icon: '🦆',
       stem: 'In a high-solar grid like California\'s, the daytime "net load" curve looks like a duck — solar floods the grid mid-day, then drops out at sunset just as demand peaks. What is this called and what fixes it?',
       choices: ['The "swan song" — fixed by more nuclear', 'The "duck curve" — fixed by storage, demand response, and load-shifting', 'The "death spiral" — fixed by removing solar', 'The "sunset wall" — fixed by building far more long-distance transmission'],
-      correct: 1, why: 'The "duck curve" is the textbook bug of solar-heavy grids. Solutions: batteries charged at noon and discharged at evening, demand response, and shifting loads (EV charging, heat-pump pre-heating) into the solar belly.' },
+      correct: 1, why: 'The "duck curve" is the textbook problem of solar-heavy grids. Solutions: batteries charged at noon and discharged in the evening, demand response, and shifting loads (EV charging, heat-pump pre-heating) into the solar belly.',
+      miss: ['Nuclear runs steadily and cannot easily follow a fast evening ramp, so it does not fix the shape.', null, 'Removing solar throws away cheap daytime power. The fix is to move energy or demand in time.', 'Transmission helps, but the main problem is timing: solar fades just as demand rises. Storage and shifting demand fix the timing.'] },
     { id: 'q13', icon: '💨',
-      stem: 'Roughly 95% of hydrogen produced in the world today is "gray." What does that mean?',
+      stem: 'Most hydrogen made in the world today is "gray." What does that mean?',
       choices: ['Made by electrolysis powered by coal', 'Made from natural gas with NO carbon capture', 'A new color code for unverified hydrogen sources', 'Hydrogen mixed with sulfur impurities'],
-      correct: 1, why: 'Gray hydrogen comes from steam methane reforming of natural gas with no CCS, releasing ~9–11 kg of CO₂ for every kg of H₂. The "hydrogen economy" pitch usually means switching to GREEN hydrogen, which today is a small fraction of supply.' },
+      correct: 1, why: 'Gray hydrogen is made from natural gas without capturing the CO₂: about 10–12 kg of CO₂-equivalent for every kg of hydrogen (IEA, 2024). Low-emissions hydrogen was still less than 1% of production in 2024 (IEA, 2025).',
+      miss: ['Hydrogen made with coal power is usually called brown or black, not gray.', null, 'Gray is not about unverified sources. Hydrogen color names describe how it was made.', 'Gray has nothing to do with impurities. It means made from natural gas, with the CO₂ released.'] },
     { id: 'q14', icon: '🏠',
-      stem: 'A modern cold-climate air-source heat pump in Maine can hit a COP of 3 even at −15°C. What does COP 3 mean?',
+      stem: 'On a mild winter day, a heat pump in Maine might run at a COP of 3. What does COP 3 mean?',
       choices: ['The heat pump is 3 times louder than the older models it replaces', 'For every 1 unit of electricity, the heat pump MOVES 3 units of heat into your home', 'On the coldest days, the compressor has to spin 3 times faster to keep up with heating demand', 'The unit costs 3 times the price of a comparable gas furnace'],
-      correct: 1, why: 'COP (Coefficient of Performance) = heat moved ÷ electricity used. A COP of 3 means 300% efficient compared to electric resistance heat. The trick: you\'re NOT making heat from electricity, you\'re moving heat from outside (or the ground) into the house.' },
+      correct: 1, why: 'COP (Coefficient of Performance) = heat moved ÷ electricity used. COP 3 means 3 units of heat for each unit of electricity, 3 times what electric resistance heat gives. COP drops in very cold weather; ENERGY STAR cold-climate models must still reach at least 1.75 at 5°F (−15°C).',
+      miss: ['COP measures heat moved per unit of electricity, not loudness.', null, 'COP compares heat out to electricity in. It does not measure compressor speed.', 'COP is an efficiency number, not a price.'] },
     { id: 'q15', icon: '⚖️',
-      stem: 'The US average household spends about 3% of income on energy. What is the average for low-income households (≤200% of the federal poverty line)?',
-      choices: ['1.5% — they use less so it costs less', '3% — same as everyone', '8.6% — almost 3× the national average', '15% — almost the entire monthly budget'],
-      correct: 2, why: '"Energy burden" is the % of income spent on energy. Low-income households average 8.6%; the highest-burden households spend 30%+. They typically live in older, leakier housing with electric resistance heat. Weatherization + heat pumps cut this faster than any other intervention.' },
+      stem: 'The median US household spends about 3% of its income on home energy. What is the average for low-income households (≤200% of the federal poverty line)?',
+      choices: ['1.5% — they use less so it costs less', '3% — same as everyone', '8.1% — almost 3× the national median', '15% — about one dollar in every seven'],
+      correct: 2, why: '"Energy burden" is the share of income spent on home energy. ACEEE (2020, using 2017 data) found a 3.1% national median and an 8.1% average for low-income households. Among the quarter of low-income households with the highest burdens, the average tops 15% (ACEEE, 2024).',
+      miss: ['Low-income households often live in older, leakier homes, so they can use as much energy while earning much less.', 'Bills do not shrink in step with income, so the share of income is higher for low-income households.', null, 'Only the most-burdened quarter of low-income households averages above 15% (ACEEE, 2024). The average for all of them is lower.'] },
     { id: 'q16', icon: '🌬️',
       stem: 'Why are offshore wind turbines so much bigger than land-based ones?',
       choices: ['Saltwater spray makes blades less efficient as they age, so offshore designs need far more swept area to deliver the same electricity as an identical turbine on land', 'Offshore wind is steadier + stronger, and transport / installation costs are dominated by the boat — so making bigger turbines spreads that cost over more MW', 'Offshore turbines need to be tall enough to be visible to ships', 'Bigger blades reduce noise pollution underwater'],
-      correct: 1, why: 'Once you\'ve paid for the specialized installation vessel and the seabed work, doubling turbine size barely doubles cost but does double output. So offshore turbines are massive (12–18 MW each, blades 100m+).' },
+      correct: 1, why: 'Once you\'ve paid for the special installation ship and the seabed work, a bigger turbine adds output without adding as much cost. Today\'s big offshore turbines have blades over 100 m long (GE’s Haliade-X: 107 m).',
+      miss: ['Salt spray does wear equipment, but turbine size is set by wind and cost, not by making up for worn blades.', null, 'Ships use lights, radar and charts to avoid turbines; height is not for visibility.', 'Size is driven by wind and cost, not underwater noise.'] },
     { id: 'q17', icon: '🧰',
-      stem: 'Wind turbine technician was projected by the Bureau of Labor Statistics 2022–2032 outlook as one of the fastest-growing US occupations. What\'s the typical training pathway?',
+      stem: 'The US Bureau of Labor Statistics projects wind turbine technician jobs to grow 30% from 2025 to 2035, much faster than average. What\'s the typical training pathway?',
       choices: ['A 4-year university degree in electrical engineering with a professional license', '2-year technical college program OR military electronics + on-the-job training', 'A PhD in fluid dynamics or aerospace engineering', 'High school diploma — no further training needed'],
-      correct: 1, why: 'A 2-year program at a technical college (or equivalent military training) is the typical entry point. Median pay $61K. Must be willing to climb 80–120m and work in weather. Many programs in TX, IA, and increasingly the Northeast.' },
+      correct: 1, why: 'BLS lists the typical entry education as a postsecondary nondegree award, such as a technical-school certificate, plus on-the-job training. Median pay was $64,120 in May 2025 (BLS). The job means climbing tall towers in all kinds of weather.',
+      miss: ['An engineering degree leads to designing turbines. Technicians who fix them usually train for a year or two.', null, 'A PhD is for research. Technician work is hands-on repair and maintenance.', 'BLS says technicians usually need training after high school, plus on-the-job training.'] },
     { id: 'q18', icon: '🔆',
-      stem: 'A Concentrated Solar Power (CSP) tower can run for 6–10 hours after sunset on stored heat. How is that heat stored?',
-      choices: ['In giant banks of lithium-ion batteries', 'In a tank of molten salt at ~565°C', 'In compressed air underground', 'In a large reservoir of hot water'],
-      correct: 1, why: 'CSP\'s edge over photovoltaic (PV) panels is that the working fluid (molten salt) IS the storage. Insulated tanks hold the salt at 565°C; flowing it through a heat exchanger when needed makes steam to spin the same turbine that runs during daytime. Heat is much cheaper to store than electrons.' }
+      stem: 'A Concentrated Solar Power (CSP) tower can keep running for hours after sunset on stored heat. How is that heat stored?',
+      choices: ['In giant banks of lithium-ion batteries', 'In insulated tanks of very hot molten salt', 'In compressed air underground', 'In a large reservoir of hot water'],
+      correct: 1, why: 'In a CSP tower the working fluid, molten salt, IS the storage. Insulated tanks hold the hot salt (about 565°C, NREL); when power is needed it flows through a heat exchanger to make steam for the same turbine used in the daytime.',
+      miss: ['Batteries store electricity. A CSP plant stores heat, which it later turns into steam.', null, 'Compressed-air storage exists, but CSP plants keep their energy as heat in salt.', 'Water would boil away at these temperatures unless kept under very high pressure; molten salt stays liquid.'] }
   ];
 
   // The authored bank put 72% of correct answers in slot 2 (measured
@@ -3007,6 +3206,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       for (var i = 0; i < n; i++) moved[(i + shift) % n] = q.choices[i];
       q.choices = moved;
       q.correct = (q.correct + shift) % n;
+      if (Array.isArray(q.miss) && q.miss.length === n) {
+        var movedMiss = new Array(n);
+        for (var mi = 0; mi < n; mi++) movedMiss[(mi + shift) % n] = q.miss[mi];
+        q.miss = movedMiss;
+      }
     }
   })();
 
@@ -3014,220 +3218,252 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // SECTION 5: TURBINE / PLANT TYPE DICTIONARIES
   // ─────────────────────────────────────────────────────────
 
+  // Source audit 2026-11-24. Turbine families: US DOE Water Power Technologies Office, "Types of Hydropower
+  // Turbines" (Pelton = impulse turbine for high heads; Francis and Kaplan = reaction turbines; Kaplan = propeller
+  // type). Hoover Dam: US Bureau of Reclamation, 17 main Francis turbines, 2,080 MW. Head ranges, per-type efficiency
+  // percentages and the Bieudron head record were removed (no primary source found in this audit).
   var HYDRO_TURBINES = [
     { id: 'pelton', name: 'Pelton wheel', icon: '⛲',
-      head: 'High (50–1800 m)', flow: 'Low',
+      head: 'High', flow: 'Low',
       how: 'Free-spinning wheel with cup-shaped buckets. High-velocity water JET strikes the buckets, transferring momentum.',
-      use: 'Mountain streams, alpine valleys. Famous installs: Bieudron (Switzerland) at 1869 m head.',
-      eff: '~90–93%' },
+      use: 'Mountain streams and alpine valleys with tall drops.',
+      eff: 'High when matched to its site' },
     { id: 'francis', name: 'Francis turbine', icon: '🌀',
-      head: 'Medium (10–350 m)', flow: 'Medium–high',
-      how: 'Water enters radially, exits axially through a spiral casing. Most common turbine type worldwide.',
+      head: 'Medium', flow: 'Medium–high',
+      how: 'Water enters from the side through a spiral casing and leaves out the bottom. A very common turbine type.',
       use: 'Workhorse of large dams: Hoover Dam, Three Gorges, Itaipú.',
-      eff: '~90–95%' },
+      eff: 'High when matched to its site' },
     { id: 'kaplan', name: 'Kaplan turbine', icon: '🌪️',
-      head: 'Low (1.5–20 m)', flow: 'Very high',
+      head: 'Low', flow: 'Very high',
       how: 'Looks like a propeller. Adjustable blade pitch lets it stay efficient as river flow varies.',
       use: 'Large slow rivers and run-of-river plants.',
-      eff: '~90–93%' }
+      eff: 'High when matched to its site' }
   ];
 
+  // Geothermal plant types: US DOE Geothermal Technologies Office, "Electricity Generation": flash plants use
+  // "Fluids at temperatures greater than 182°C/360°F"; binary plants use "Low-temperature (below 182°C/360°F)
+  // geothermal fluids". Dry steam plants use steam straight from the reservoir. The Geysers: geysers.com (Calpine)
+  // "the world's largest operating geothermal complex". Larderello 1904: Enel Green Power (first electric light
+  // from geothermal steam). GSHP: NREL ground 10-16 °C; DOE consumer guide "300%-600%" efficiency.
   var GEO_PLANT_TYPES = [
     { id: 'drySteam', name: 'Dry steam', icon: '💨',
-      tempReq: '≥ 235°C natural steam',
+      tempReq: 'Needs a reservoir of natural steam',
       how: 'Pure steam comes up the well, drives a turbine directly. Simplest design.',
-      where: 'The Geysers (California) — the world’s largest geothermal complex; Larderello (Italy, 1904, the first ever).' },
+      where: 'The Geysers (California), which its operator calls the world’s largest operating geothermal complex; Larderello (Italy), where geothermal steam first lit electric lights in 1904.' },
     { id: 'flash', name: 'Flash steam', icon: '💧',
-      tempReq: '≥ 180°C high-pressure hot water',
+      tempReq: 'Hot water above 182°C (DOE)',
       how: 'High-pressure hot water is sprayed into a low-pressure tank — most of it instantly “flashes” to steam.',
-      where: 'Most utility geothermal plants worldwide. Iceland (Krafla, Hellisheidi); Philippines, Kenya, US.' },
+      where: 'Common in hot volcanic areas such as Iceland (Hellisheiði), the Philippines, Kenya and the western US.' },
     { id: 'binary', name: 'Binary cycle', icon: '♻️',
-      tempReq: '57–182°C moderate hot water',
+      tempReq: 'Hot water below 182°C (DOE)',
       how: 'Hot water heats a SECOND fluid (isobutane or pentane) with a lower boiling point. The secondary fluid vaporizes and drives the turbine.',
-      where: 'Best for moderate-temperature resources. Most new geothermal plants are binary.' },
+      where: 'Best for moderate-temperature resources.' },
     { id: 'gshp', name: 'Ground-source heat pump (GSHP)', icon: '🏠',
-      tempReq: '~10°C constant ground temp',
-      how: 'NOT electricity generation — a refrigeration cycle that MOVES heat between the constant-temperature ground and your house. COP 3–5 (3–5× more heat out than electricity in).',
-      where: 'Maine leads the US in heat-pump adoption. Efficiency Maine offers rebates up to $8,000.' }
+      tempReq: 'Steady ground, about 10–16°C (NREL)',
+      how: 'NOT electricity generation — a refrigeration cycle that MOVES heat between the steady-temperature ground and your house. The US Department of Energy says these systems reach 300%–600% efficiency (COP 3–6).',
+      where: 'Works almost anywhere with room for a ground loop. Rebates change often; check Efficiency Maine for current offers.' }
   ];
 
+  // Storage: EIA Today in Energy 12 Feb 2021 (2019 round trip: batteries 82%, pumped storage 79%); BNEF 9 Dec 2025
+  // ($108/kWh average pack); IHA 24 Jun 2026 (pumped storage over 200 GW, "dominant"); IEA Global Hydrogen Review 2025
+  // (supply "dominated by fossil fuels"). Old figures with no source found (Li-ion 85-95%, $1100/kWh 2010, flow
+  // 70-80% and 20+ yr, pumped "95% of storage" and 50-100 yr life, hydrogen 30-40%, thermal 50%/95%) were removed.
   var STORAGE_TYPES = [
     { id: 'liion', name: 'Lithium-ion battery', icon: '🔋',
-      duration: '1–6 hours typical', rte: '85–95% round-trip',
+      duration: 'Usually a few hours', rte: 'About 82% for US grid batteries (2019, EIA)',
       how: 'Lithium ions shuttle between graphite anode and metal-oxide cathode through a liquid electrolyte. Same chemistry as your phone, scaled up.',
-      pros: 'Fast response, modular, dropping cost (~$140/kWh in 2024 vs $1100/kWh in 2010).',
-      cons: 'Short duration (hours, not days). Mining lithium + cobalt has labor + ecological costs.' },
+      pros: 'Fast response, modular. Average pack price fell to $108 per kWh in 2025 (BloombergNEF).',
+      cons: 'Holds hours, not days. Mining lithium and other metals has labor + ecological costs.' },
     { id: 'flow', name: 'Vanadium flow battery', icon: '🛢️',
-      duration: '4–12+ hours', rte: '70–80% round-trip',
+      duration: 'Several hours or more', rte: 'Lower than lithium-ion',
       how: 'Two tanks of liquid electrolyte (different vanadium oxidation states) pumped past a membrane. Energy capacity = tank size; power = membrane area — they scale independently.',
-      pros: '20+ year lifespan, no degradation from cycling, non-flammable.',
+      pros: 'Energy and power can be sized separately. The water-based liquid does not burn.',
       cons: 'Lower energy density than Li-ion (bigger footprint). Higher upfront cost.' },
     { id: 'pumpedHydro', name: 'Pumped hydro storage', icon: '⛰️',
-      duration: '4–100+ hours', rte: '75–85% round-trip',
+      duration: 'Hours to days', rte: '79% for US plants (2019, EIA)',
       how: 'Pump water UP to a high reservoir when electricity is cheap, let it flow DOWN through a turbine when expensive. The reservoir IS the battery.',
-      pros: '95% of world’s installed grid storage. 50–100 year asset life.',
-      cons: 'Geographically limited (need two reservoirs at different elevations). Decade-long permitting.' },
+      pros: 'The world’s dominant form of large-scale storage: over 200 GW in 2025 (International Hydropower Association). Plants run for decades.',
+      cons: 'Needs two reservoirs at different heights. Permits can take many years.' },
     { id: 'hydrogen', name: 'Green hydrogen', icon: '⚛️',
-      duration: 'Days to seasons', rte: '30–40% round-trip',
+      duration: 'Days to seasons', rte: 'Low: most of the energy is lost going electricity → hydrogen → electricity',
       how: 'Use surplus renewable electricity to electrolyze water (H₂O → H₂ + ½ O₂). Store H₂ in tanks or salt caverns. Burn it in a turbine, react in a fuel cell, or use it as industrial feedstock (steel, fertilizer).',
-      pros: 'Only economic option for week+ storage. Already used to decarbonize steel and ammonia.',
-      cons: 'Low round-trip efficiency. Most current H₂ is “gray” (made from natural gas).' },
+      pros: 'Can hold energy for weeks or months. Also useful in industry (steel, fertilizer).',
+      cons: 'Low round-trip efficiency. Almost all hydrogen made today comes from fossil fuels (IEA, 2025).' },
     { id: 'thermal', name: 'Thermal storage (molten salt)', icon: '🌡️',
-      duration: '6–15 hours', rte: '~50% (heat → elec) but 95%+ (heat in / heat out)',
-      how: 'Heat molten salt or stones to 500–600°C with surplus electricity or concentrated sunlight. Insulate. Run a steam cycle when needed.',
-      pros: 'Cheap material (sodium nitrate). Long duration. Pairs perfectly with CSP.',
+      duration: 'Hours', rte: 'Heat in → heat out loses little; turning the heat back into electricity loses much more',
+      how: 'Heat molten salt or stones with surplus electricity or concentrated sunlight. Insulate. Run a steam cycle when needed.',
+      pros: 'Cheap materials (salts, rock). Pairs well with CSP.',
       cons: 'Needs insulation engineering. Limited to high-temperature applications.' }
   ];
 
+  // Marine: EDF, La Rance (1966, 240 MW, still operating); MeyGen phase 1A (SIMEC Atlantis, 4 turbines, 6 MW);
+  // DOE 2012 (ORPC Cobscook Bay). Old superlatives ("first commercial", "world's largest tidal array") were cut.
   var WAVE_TIDAL_TECH = [
     { id: 'owc', name: 'Oscillating water column', icon: '🌊',
       family: 'Wave',
       how: 'A partly-submerged chamber traps a column of air above the rising and falling water surface. The trapped air pumps in and out through a turbine at the top.',
-      where: 'Mutriku (Spain), LIMPET (Scotland — first commercial). Quiet and shore-based.' },
+      where: 'Mutriku (Spain) and LIMPET (Scotland). Shore-based.' },
     { id: 'pointAbsorber', name: 'Point absorber buoy', icon: '🎊',
       family: 'Wave',
       how: 'A floating buoy bobs up and down with the waves; that motion drives a hydraulic pump or linear generator anchored to the seabed.',
       where: 'PowerBuoy (US), CorPower (Sweden). Compact and modular.' },
     { id: 'tidalStream', name: 'Tidal stream turbine', icon: '🌀',
       family: 'Tidal',
-      how: 'Looks like an underwater wind turbine. Spins in tidal currents. Predictable to the minute from astronomy.',
-      where: 'MeyGen (Scotland) — world’s largest tidal array. ORPC TidGen tested at Eastport, ME.' },
+      how: 'Looks like an underwater wind turbine. Spins in tidal currents, which can be predicted years ahead.',
+      where: 'MeyGen (Scotland), one of the largest tidal stream projects. ORPC tested its TidGen turbine at Eastport, ME.' },
     { id: 'tidalBarrage', name: 'Tidal barrage', icon: '🌊',
       family: 'Tidal',
       how: 'A dam across a tidal estuary with low-head Kaplan-style turbines. Lets tide flow in and out through the turbines.',
-      where: 'La Rance (France, 1966 — still operating). Massive ecological impact — not built much anymore.' }
+      where: 'La Rance (France, 1966) is still running (EDF). A barrage changes how water, mud and wildlife move in an estuary, so few have been built.' }
   ];
 
+  // Biomass: EIA "Biomass explained: biogas" (biogas is mostly methane and carbon dioxide). Methane 20-year warming:
+  // IPCC AR6 WG1 Table 7.15, GWP-20 79.7 (non-fossil) and 82.5 (fossil), so "about 80 times". The old "~84x" (AR5)
+  // and all efficiency percentages and gasification temperatures were removed (no primary source found).
   var BIO_PATHS = [
     { id: 'combust', name: 'Direct combustion', icon: '🔥',
       what: 'Wood, pellets, crop residue, or municipal solid waste burned to make steam → turbine → electricity. Same Rankine cycle as a coal plant, swapped fuel.',
-      eff: '20–40% electrical (75–85% if heat is also used — combined heat and power)',
-      caveat: 'Carbon-neutral ONLY if the feedstock regrows on a timescale similar to combustion. Burning old-growth forests is decidedly NOT carbon-neutral.' },
+      eff: 'Much higher if the leftover heat is also used (combined heat and power)',
+      caveat: 'Low-carbon ONLY if the feedstock regrows on a timescale similar to combustion. Burning old-growth forests is NOT carbon-neutral.' },
     { id: 'anaerobic', name: 'Anaerobic digestion (biogas)', icon: '💩',
-      what: 'Bacteria break down food waste, manure, or sewage in an oxygen-free tank, producing biogas (~60% methane). Burn the methane in a generator or scrub it to pipeline-grade renewable natural gas.',
-      eff: '25–40% electrical from generator; the leftover digestate is fertilizer.',
-      caveat: 'BEST circular case: capturing methane that would otherwise leak from manure lagoons or landfills (methane is ~84× worse than CO₂ over 20 years).' },
+      what: 'Bacteria break down food waste, manure, or sewage in an oxygen-free tank, producing biogas, which is mostly methane plus carbon dioxide (EIA). Burn the methane in a generator or clean it up to pipeline-grade renewable natural gas.',
+      eff: 'Makes electricity in a generator; the leftover digestate can be used as fertilizer.',
+      caveat: 'BEST circular case: capturing methane that would otherwise leak from manure lagoons or landfills. Over 20 years, methane traps about 80 times as much heat as the same mass of CO₂ (IPCC AR6).' },
     { id: 'gasification', name: 'Gasification', icon: '⚛️',
-      what: 'Heat biomass to ~700–900°C with limited oxygen → produces syngas (CO + H₂). Syngas runs a turbine or is upgraded to liquid fuels.',
-      eff: '40–55% electrical (combined cycle)',
-      caveat: 'Higher efficiency than direct combustion. Still developing for biomass at commercial scale.' }
+      what: 'Heat biomass with limited oxygen → produces syngas (CO + H₂). Syngas runs a turbine or is upgraded to liquid fuels.',
+      eff: 'Can beat direct combustion, but rare at large scale for biomass',
+      caveat: 'Still developing for biomass at commercial scale.' }
   ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 5.5: COMPARISON TABLE — all sources, side by side
-  // Numbers reconciled across NREL ATB 2024, IEA 2024, IRENA Costs 2024.
-  // Land use figures: Hertwich 2015 + DOE Land-Use studies (m² per MWh annual).
-  // Lifecycle gCO₂/kWh: IPCC AR6 WG3 Annex III median values.
-  // Dispatchability: 0 (none) – 5 (fully dispatchable like a peaker plant).
+  // Source audit 2026-11-24:
+  //  cf = US fleet, 2024: EIA Electric Power Monthly Tables 6.07.A/B (see SECTION 2 header).
+  //  lcoe = $/MWh, unsubsidized new US build, Lazard LCOE+ July 2026 (v19.0); where Lazard has no figure, the
+  //    IRENA world average for new projects in 2024 (Renewable Power Generation Costs in 2024).
+  //  co2 = IPCC AR5 WGIII Annex III, Table A.III.2, lifecycle medians (g CO2eq/kWh): Coal--PC 820, Gas--Combined
+  //    Cycle 490, Biomass--dedicated 230, Geothermal 38, Hydropower 24 (min/max 1.0/2200), Nuclear 12, Concentrated
+  //    Solar Power 27, Solar PV--rooftop 41, Solar PV--utility 48, Wind onshore 11, Wind offshore 12, Ocean 17.
+  //    (The old label said "AR6 Annex III"; AR6 has no such table. Ocean was 8 g; the AR5 median is 17 g.)
+  //  land / water / dispatch = rough teaching ratings, not measurements.
   // ─────────────────────────────────────────────────────────
   var COMPARE_TABLE = [
-    { id: 'solarPv',      icon: '☀️', name: 'Solar PV',       cf: '15–27%', lcoe: '$28–41', land: 'Med',     water: 'Very low', co2: '40 g',  dispatch: 1, intermittent: true },
-    { id: 'wind',         icon: '🌬️', name: 'Wind',           cf: '35–55%', lcoe: '$24–75', land: 'High*',    water: 'Very low', co2: '11 g',  dispatch: 1, intermittent: true,
-      note: '* Land BENEATH wind turbines is still farmable / grazable; only ~3% is permanently used. The footprint number includes setbacks.' },
-    { id: 'hydro',        icon: '🌊', name: 'Hydro',          cf: '35–60%', lcoe: '$50–150', land: 'Very high', water: 'Very high', co2: '24 g', dispatch: 4, intermittent: false,
-      note: 'Reservoirs flood land + alter rivers. Run-of-river plants have far smaller footprint. Tropical reservoirs can emit methane from rotting vegetation.' },
-    { id: 'geothermal',   icon: '🌋', name: 'Geothermal',     cf: '70–95%', lcoe: '$60–110', land: 'Low',      water: 'Med',       co2: '38 g',  dispatch: 5, intermittent: false },
-    { id: 'solarThermal', icon: '🔆', name: 'CSP (with storage)', cf: '25–55%', lcoe: '$75–130', land: 'High',     water: 'Med–high',  co2: '27 g',  dispatch: 4, intermittent: false },
-    { id: 'waveTidal',    icon: '🌀', name: 'Wave / Tidal',   cf: '20–45%', lcoe: '$130–280', land: 'None',     water: 'N/A',       co2: '8 g',   dispatch: 3, intermittent: false,
-      note: 'Tidal is predictable to the minute decades out; wave is variable but can be forecasted hours ahead.' },
-    { id: 'biomass',      icon: '🌾', name: 'Biomass',        cf: '70–85%', lcoe: '$60–140', land: 'Very high', water: 'High',      co2: '230 g', dispatch: 5, intermittent: false,
-      note: 'CO₂ value assumes sustainably-harvested feedstock. Old-growth combustion can hit 1000+ g/kWh.' },
-    { id: 'nuclear',      icon: '⚛️', name: 'Nuclear (low-C, not renew.)', cf: '90–95%', lcoe: '$31–82 (existing) / $130–200 (new US)', land: 'Very low', water: 'Very high', co2: '12 g', dispatch: 5, intermittent: false,
+    { id: 'solarPv',      icon: '☀️', name: 'Solar PV',       cf: '23%', lcoe: '$40–98', land: 'Med',     water: 'Very low', co2: '41–48 g',  dispatch: 1, intermittent: true },
+    { id: 'wind',         icon: '🌬️', name: 'Wind',           cf: '34%', lcoe: '$37–99 onshore', land: 'High*',    water: 'Very low', co2: '11–12 g',  dispatch: 1, intermittent: true,
+      note: '* Most land between turbines can still be farmed or grazed. The land rating counts the spacing between turbines.' },
+    { id: 'hydro',        icon: '🌊', name: 'Hydro',          cf: '35%', lcoe: '~$57 world', land: 'Very high', water: 'Very high', co2: '24 g', dispatch: 4, intermittent: false,
+      note: 'Reservoirs flood land + alter rivers. Run-of-river plants have a far smaller footprint. Some reservoirs give off methane from rotting plants; the IPCC range for hydro runs from about 1 to 2,200 g/kWh.' },
+    { id: 'geothermal',   icon: '🌋', name: 'Geothermal',     cf: '65%', lcoe: '$67–111', land: 'Low',      water: 'Med',       co2: '38 g',  dispatch: 5, intermittent: false },
+    { id: 'solarThermal', icon: '🔆', name: 'CSP (solar thermal)', cf: '25%', lcoe: '~$92 world', land: 'High',     water: 'Med–high',  co2: '27 g',  dispatch: 4, intermittent: false },
+    { id: 'waveTidal',    icon: '🌀', name: 'Wave / Tidal',   cf: 'No data', lcoe: 'No data', land: 'None',     water: 'N/A',       co2: '17 g',   dispatch: 3, intermittent: false,
+      note: 'Tidal is predictable years ahead; wave power can be forecast hours to days ahead. Too few plants exist for reliable cost or capacity-factor figures.' },
+    { id: 'biomass',      icon: '🌾', name: 'Biomass',        cf: '56% (wood)', lcoe: '~$87 world', land: 'Very high', water: 'High',      co2: '230 g', dispatch: 5, intermittent: false,
+      note: 'The CO₂ value assumes the feedstock regrows. If forests are cut faster than they grow back, emissions are higher.' },
+    { id: 'nuclear',      icon: '⚛️', name: 'Nuclear (low-C, not renew.)', cf: '91%', lcoe: '$175–255 (new US)', land: 'Very low', water: 'Very high', co2: '12 g', dispatch: 5, intermittent: false,
       note: 'Included for honest comparison. Not renewable (uranium is finite) but very low-carbon and dispatchable. Waste + cost are real challenges.' },
     // Reference rows (NOT renewables — included so students can see the gap)
-    { id: 'gas',          icon: '🔥', name: '(Reference) Natural gas', cf: '55–87%', lcoe: '$45–73', land: 'Low',  water: 'Med', co2: '490 g', dispatch: 5, intermittent: false, ref: true },
-    { id: 'coal',         icon: '🏭', name: '(Reference) Coal',         cf: '40–80%', lcoe: '$65–152', land: 'Med', water: 'High', co2: '820 g', dispatch: 5, intermittent: false, ref: true }
+    { id: 'gas',          icon: '🔥', name: '(Reference) Natural gas', cf: '61% (combined cycle)', lcoe: '$51–129', land: 'Low',  water: 'Med', co2: '490 g', dispatch: 5, intermittent: false, ref: true },
+    { id: 'coal',         icon: '🏭', name: '(Reference) Coal',         cf: '43%', lcoe: '$72–177', land: 'Med', water: 'High', co2: '820 g', dispatch: 5, intermittent: false, ref: true }
   ];
   // Column legend (rendered alongside the table):
-  //   cf = capacity factor; lcoe = unsubsidized $/MWh from NREL ATB 2024
+  //   cf = capacity factor (US fleet 2024, EIA); lcoe = unsubsidized $/MWh (Lazard 2026, or IRENA 2024 world average)
   //   land = qualitative footprint per MWh annual generation
-  //   water = lifecycle water consumption (Macknick 2012 + NREL)
-  //   co2 = IPCC AR6 lifecycle median in grams CO2-equivalent per kWh
+  //   water = qualitative lifecycle water use
+  //   co2 = IPCC AR5 lifecycle median in grams CO2-equivalent per kWh
   //   dispatch = 0–5 ability to ramp up on demand (5 = fully dispatchable)
 
   // ─────────────────────────────────────────────────────────
   // SECTION 5.6: GLOSSARY — terms students see throughout
+  // Sources: EIA (capacity factor 2024; round trip 2019), DOE consumer guide (GSHP 300%-600%), BNEF Dec 2025 ($108/kWh).
   // ─────────────────────────────────────────────────────────
   var GLOSSARY = [
     { term: 'kW vs kWh', def: 'kW is POWER (rate of energy use, like mph). kWh is ENERGY (total amount, like total miles driven). A 5 kW solar array running for 4 hours produces 20 kWh.' },
-    { term: 'Capacity factor', def: 'Actual annual energy output divided by what the plant would produce if it ran at 100% rated power 24/7/365. Solar can\'t exceed ~25% in most US locations because of nighttime + weather.' },
-    { term: 'LCOE (Levelized Cost of Energy)', def: 'The total lifetime cost of building and running a plant divided by the total energy it produces, expressed in $/MWh. The single best apples-to-apples cost comparison.' },
+    { term: 'Capacity factor', def: 'Actual annual energy output divided by what the plant would produce if it ran at 100% rated power 24/7/365. US solar farms averaged 23% in 2024, because of night and weather (EIA).' },
+    { term: 'LCOE (Levelized Cost of Energy)', def: 'The total lifetime cost of building and running a plant divided by the total energy it produces, expressed in $/MWh. A common way to compare costs, though it leaves out WHEN the power arrives.' },
     { term: 'Dispatchable', def: 'A plant that can ramp output up or down on demand within minutes. Hydro, geothermal, biomass, gas, and nuclear are dispatchable. Solar and wind are NOT — they generate when the resource is available.' },
     { term: 'Baseload', def: 'Generation that runs steadily 24/7. Old framing. Modern grids care less about baseload and more about FLEXIBILITY + STORAGE.' },
     { term: 'Intermittent', def: 'A source that can\'t generate on demand because it depends on weather (solar, wind). Better word: "variable." Still useful — just needs storage or backup.' },
-    { term: 'Curtailment', def: 'When a renewable plant is told to STOP producing because the grid can\'t use the surplus and storage is full. Common in California spring afternoons. A signal that more storage or transmission is needed.' },
+    { term: 'Curtailment', def: 'When a renewable plant is told to STOP producing because the grid can\'t use the surplus and storage is full. A signal that more storage or transmission is needed.' },
     { term: 'Grid (transmission vs distribution)', def: 'Transmission = high-voltage long-distance lines (think highway). Distribution = the lower-voltage lines that deliver power to homes (think local roads).' },
-    { term: 'AC vs DC', def: 'Solar panels and batteries produce DIRECT current (DC) — flows one way. The grid uses ALTERNATING current (AC) — switches direction 60 times per second. Inverters convert DC → AC.' },
-    { term: 'Inverter', def: 'The box that converts DC from solar panels or batteries into AC for the grid. Often the first part of a solar system to fail (10–15 year lifespan vs 25+ for panels).' },
+    { term: 'AC vs DC', def: 'Solar panels and batteries produce DIRECT current (DC) — flows one way. The North American grid uses ALTERNATING current (AC) — it switches direction back and forth 60 times per second (60 Hz). Inverters convert DC → AC.' },
+    { term: 'Inverter', def: 'The box that converts DC from solar panels or batteries into AC for the grid. It often needs replacing before the panels do.' },
     { term: 'Net metering', def: 'A billing arrangement where home solar exports to the grid run your meter BACKWARDS. Rules vary by state and have been heavily contested in Maine.' },
-    { term: 'Power Purchase Agreement (PPA)', def: 'A contract where a utility (or company) agrees to buy a project\'s output at a fixed price for 15–25 years. The financial backbone of utility-scale renewables.' },
-    { term: 'Betz limit', def: 'The maximum 59.3% of wind kinetic energy that ANY rotor can extract. A physics limit, not engineering. Real turbines: 35–45%.' },
-    { term: 'COP (Coefficient of Performance)', def: 'For heat pumps: heat moved per unit of electricity used. Maine ground-source units typically run COP 3–5 — 3 to 5 units of heat for every unit of electricity.' },
-    { term: 'Round-trip efficiency', def: 'For storage: energy you get OUT divided by energy you put IN. Li-ion: 85–95%. Pumped hydro: 75–85%. Green hydrogen: 30–40%.' },
+    { term: 'Power Purchase Agreement (PPA)', def: 'A contract where a utility (or company) agrees to buy a project\'s output at a fixed price for many years. The financial backbone of utility-scale renewables.' },
+    { term: 'Betz limit', def: 'The maximum 59.3% (16/27) of wind kinetic energy that ANY rotor can extract. A physics limit, not engineering. Real turbines stay below it.' },
+    { term: 'COP (Coefficient of Performance)', def: 'For heat pumps: heat moved per unit of electricity used. The US Department of Energy says ground-source heat pumps reach 300%–600% efficiency, a COP of 3 to 6.' },
+    { term: 'Round-trip efficiency', def: 'For storage: energy you get OUT divided by energy you put IN. In 2019 US grid batteries averaged 82% and pumped hydro 79% (EIA). Hydrogen storage loses much more.' },
     { term: 'Behind-the-meter', def: 'Generation or storage on the customer side of the utility meter (your rooftop solar, your home battery). The utility doesn\'t see the kWh — only the net.' },
     { term: 'Frequency regulation', def: 'Rapid adjustments that keep grid frequency close to its nominal value. Batteries can respond quickly, alongside other controls and resources.' },
-    { term: 'Cost-per-kWh-stored', def: 'For batteries: $/kWh of capacity. Li-ion fell from ~$1100/kWh (2010) to ~$140/kWh (2024) — driving the storage boom.' }
+    { term: 'Cost-per-kWh-stored', def: 'For batteries: $ per kWh of capacity. Average lithium-ion pack prices fell to $108 per kWh in 2025 (BloombergNEF).' }
   ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 5.7: COMMON MYTHS — corrected with sources
+  // Source audit 2026-11-24: USFWS "Threats to Birds" (2017 medians: cats 2,400,000,000; building glass 599,000,000;
+  // vehicles 214,500,000; power line collisions 25,500,000; land-based wind turbines 234,012). Lazard LCOE+ 2026.
+  // IPCC AR5 Annex III (solar 41/48, coal 820, hydro 24 with max 2200). Removed: "~500K birds", "Germany at Maine's
+  // latitude leads Europe", "4-8 h covers 80-90%", "payback 1-2 yr", "demand doubles", "grid grew 4x 1950-2000"
+  // (US use grew far more than 4x in that time), all with no source found.
   // ─────────────────────────────────────────────────────────
   var MYTHS = [
     { myth: '"Solar panels don\'t work in winter / cold climates."',
-      truth: 'Cold improves PV efficiency (semiconductors lose voltage as they heat up). Maine\'s winter sun is weaker (low angle, short days), but the cold is a BENEFIT. Snow that slides off bifacial panels can even reflect extra light. Germany — at Maine\'s latitude — leads Europe in solar production.',
-      source: 'NREL Solar Resource Assessment' },
+      truth: 'Solar cells lose a little efficiency as they get hotter, so cold, sunny days are good for output. Maine\'s winter sun is lower and days are shorter, so winter energy is lower, but panels still work. Snow on the ground can reflect extra light onto two-sided (bifacial) panels.',
+      source: 'Solar cell physics (temperature coefficient); US DOE Solar Energy Technologies Office' },
     { myth: '"Wind turbines kill more birds than fossil fuels."',
-      truth: 'US Fish & Wildlife estimates wind turbines kill ~500K birds/yr. Cats kill ~2.4 BILLION. Buildings kill ~600M. Power lines (existing infrastructure for ALL energy) kill ~25M. Fossil fuel air pollution + climate change kill far more birds in aggregate. Wind is bad for individual raptors near siting errors, addressable by careful site selection + radar deterrents.',
-      source: 'USFWS + Smithsonian Migratory Bird Center 2014' },
+      truth: 'US Fish & Wildlife Service estimates (2017): cats kill about 2.4 BILLION birds a year, building glass about 599 million, cars about 215 million, power-line collisions about 25 million, and land-based wind turbines about 234,000. Turbines at badly chosen sites can still harm birds, so careful siting matters.',
+      source: 'US Fish & Wildlife Service, Threats to Birds (2017 estimates)' },
     { myth: '"Renewables are too expensive."',
-      truth: 'Out of date. Onshore wind ($24–75/MWh) and utility solar ($28–41/MWh) are now the CHEAPEST forms of new bulk electricity in most US states — cheaper than natural gas ($45–73/MWh) and far cheaper than new coal or nuclear. The challenge has shifted from cost to grid integration + storage.',
-      source: 'NREL Annual Technology Baseline 2024' },
+      truth: 'Out of date. Without subsidies, new US onshore wind ($37–99/MWh) and utility solar ($40–98/MWh) are usually cheaper than new gas combined-cycle plants ($51–129/MWh) and far cheaper than new nuclear ($175–255/MWh). The hard part now is fitting variable power into the grid: storage, transmission and backup.',
+      source: 'Lazard LCOE+ 2026 (version 19.0)' },
     { myth: '"You need 100% storage to go 100% renewable."',
-      truth: 'Modeling studies (Princeton Net-Zero America, NREL Solar Futures, IEA Net-Zero) suggest 4–8 hours of battery storage covers ~80–90% of the variability problem. Long-duration storage (pumped hydro + hydrogen) handles the rest. Geographic diversity (transmission across time zones) further reduces storage needs.',
+      truth: 'Clean-grid studies, like NREL\'s Solar Futures Study, use a mix: batteries for daily swings, plus more transmission, flexible demand, other clean sources and some long-duration storage. Storing every kWh is not the plan.',
       source: 'NREL Solar Futures Study 2021' },
     { myth: '"Manufacturing solar panels emits more CO₂ than the panels save."',
-      truth: 'Energy payback time for modern PV is 1–2 years; lifetime is 25–30 years. So a panel produces 12–25× the energy used to make it. Lifecycle CO₂ is ~40 g/kWh — vs ~820 g/kWh for coal. Studies that claim otherwise are typically using 1990s data.',
-      source: 'IEA PVPS Task 12 + Fthenakis 2021' },
+      truth: 'Counting mining, manufacturing, building and taking apart, solar makes about 41–48 g of CO₂ per kWh over its life, compared with about 820 g for coal (IPCC medians). So a panel saves far more CO₂ than it took to make.',
+      source: 'IPCC AR5 WGIII Annex III (2014)' },
     { myth: '"Hydro is always carbon-free."',
-      truth: 'Operationally, yes — water moving through a turbine emits nothing. But TROPICAL reservoirs (Brazil, Southeast Asia) flooded over rainforest can emit methane for decades from decomposing biomass. Temperate-climate reservoirs (Maine, Norway) are very low-carbon — IPCC median 24 g/kWh. Run-of-river plants with no reservoir are even lower.',
-      source: 'IPCC AR6 WG3 + Deemer 2016' },
+      truth: 'Water moving through a turbine emits nothing, and most reservoirs are low-carbon (IPCC median 24 g/kWh). But some reservoirs, often over flooded tropical forest, give off methane from rotting plants for years; the IPCC range for hydro reaches about 2,200 g/kWh. Run-of-river plants with no big reservoir avoid most of this.',
+      source: 'IPCC AR5 WGIII Annex III; Deemer et al. 2016 (BioScience)' },
     { myth: '"We can\'t electrify everything — the grid couldn\'t handle it."',
-      truth: 'NREL\'s 2018 Electrification Futures Study modeled it: full electrification of vehicles + heat would roughly DOUBLE US electricity demand by 2050. That sounds huge, but the grid grew 4× from 1950 to 2000. The challenge is transmission siting + permitting, not generation capacity.',
+      truth: 'NREL\'s 2018 Electrification Futures Study modeled widespread electric cars and heating. US electricity use could rise a lot by 2050, so more generation and transmission are needed. The biggest hold-up is building and permitting new power lines.',
       source: 'NREL Electrification Futures Study 2018' }
   ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 5.8: NUCLEAR — included for honest comparison
   // Not renewable (uranium is finite) but is low-carbon + dispatchable.
-  // Many student questions about clean-energy futures involve nuclear.
+  // Source audit 2026-11-24: EIA EPM 6.07.B (nuclear 90.8% in 2024); Lazard LCOE+ 2026 (U.S. Nuclear $175-$255, based
+  // on Vogtle 3 and 4); IPCC AR5 Annex III (12 g); NRC (NuScale design certification, 2023); LLNL (ignition at NIF,
+  // 5 Dec 2022); EPA (abandoned uranium mines on the Navajo Nation). Removed with no source found: "1-4 km2",
+  // "1 kg U = 3 million kg coal", "$10-15B per GW", "65% of reactors", "150 atm / 320 °C", "2040s+".
   // ─────────────────────────────────────────────────────────
   var NUCLEAR_BASICS = {
     icon: '⚛️',
     principle: 'Controlled fission of U-235 / Pu-239',
     oneLiner: 'Heavy uranium nuclei split when struck by a neutron, releasing energy + 2-3 more neutrons that split more nuclei (chain reaction). The heat boils water → steam → turbine. Same Rankine cycle as coal, swapped fuel.',
-    capacityFactor: '90–95% (highest of any large-scale source)',
-    lcoe: '$31–82 / MWh (existing US fleet, paid-off), $130–200+ / MWh (new US builds)',
-    co2: '~12 g CO₂ / kWh lifecycle (IPCC AR6 median)',
+    capacityFactor: '91% for US plants in 2024 (EIA), the highest of any source',
+    lcoe: '$175–255 per MWh for a new US plant, based on Vogtle 3 and 4 (Lazard, 2026)',
+    co2: '~12 g CO₂ / kWh lifecycle (IPCC AR5 median)',
     why: 'Included here because (a) every honest "clean energy" conversation includes it; (b) it complements renewables — dispatchable + low-carbon + small footprint; (c) students ask, and a renewables tool that ignores nuclear is incomplete.',
     pros: [
       'Lowest-carbon dispatchable source.',
-      'Tiny land footprint (1000 MW plant ≈ 1–4 km²).',
-      '90%+ capacity factor — highest of any source.',
-      'Fuel is energy-dense (1 kg uranium ≈ 3 million kg coal in energy content).'
+      'Small land footprint for the energy it makes.',
+      'Runs almost all the time: 91% capacity factor in the US in 2024 (EIA).',
+      'Fuel is extremely energy-dense: a little uranium replaces a lot of coal.'
     ],
     cons: [
-      'New US builds are extraordinarily expensive ($10–15B per GW, decade-long construction).',
-      'Long-lived radioactive waste with no permanent US disposal site (interim storage at every plant).',
-      'Catastrophic-but-rare accident risk (Chernobyl, Fukushima — both addressable by modern designs but still public-trust issues).',
-      'Uranium mining + enrichment have water + community impacts (often on Indigenous lands).'
+      'New US plants have been very expensive and slow to build; Vogtle 3 and 4 in Georgia are the most recent.',
+      'Long-lived radioactive waste with no permanent US disposal site; spent fuel is stored at the plants.',
+      'Rare but serious accidents (Chernobyl, Fukushima) still shape public trust.',
+      'Uranium mining has harmed water and communities, including on the Navajo Nation (EPA).'
     ],
     designs: [
-      { name: 'PWR (Pressurized Water Reactor)', what: 'The dominant design — water pressurized to 150 atm so it stays liquid at 320°C. ~65% of world reactors.' },
+      { name: 'PWR (Pressurized Water Reactor)', what: 'The most common design worldwide. Water is kept under high pressure so it stays liquid while very hot.' },
       { name: 'BWR (Boiling Water Reactor)', what: 'Water boils directly inside the reactor vessel. Simpler but radioactive steam runs the turbine. Fukushima units were BWRs.' },
-      { name: 'SMR (Small Modular Reactor)', what: 'Factory-built units of 50–300 MW. NuScale received first US design certification 2023. Promise: lower upfront cost + faster build. None operating commercially yet in the US.' },
+      { name: 'SMR (Small Modular Reactor)', what: 'Smaller, factory-built units. NuScale received the first US small modular reactor design certification in 2023 (NRC). None operates commercially in the US yet.' },
       { name: 'Gen-IV (sodium-cooled, molten-salt, etc.)', what: 'Demonstration phase. Promise inherent safety + fuel-cycle efficiency + ability to consume existing nuclear waste. TerraPower, X-energy, Kairos prototypes underway.' }
     ],
-    fusion: 'Nuclear FUSION (combining light nuclei, like the Sun does) is fundamentally different — no long-lived waste, no meltdown risk, fuel from seawater. Net-energy gain demonstrated at NIF (Lawrence Livermore) in Dec 2022. Commercial deployment: 2040s+ optimistic; later more likely. Worth tracking, not yet on the planning horizon.'
+    fusion: 'Nuclear FUSION (combining light nuclei, like the Sun does) is fundamentally different — no long-lived waste, no meltdown risk, fuel from seawater. In December 2022 the National Ignition Facility (Lawrence Livermore) got more fusion energy out than laser energy in, for the first time. Power plants are still far off. Worth tracking, not yet on the planning horizon.'
   };
 
   // ─────────────────────────────────────────────────────────
@@ -3249,14 +3485,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         'Addresses backup heat / generator for extended dead-calm + overcast',
         'Mentions ground-source heat pump or wood backup to slash electric heating load'
       ],
-      hint: 'Solar alone fails in mid-winter Maine — clouds + short days. Real off-grid Maine homes pair solar with wind or microhydro and significant battery storage, plus a fuel backup.' },
+      hint: 'Solar alone struggles in mid-winter Maine — clouds + short days. Off-grid homes with dark winters often pair solar with wind or microhydro and a big battery, plus a fuel backup.' },
     { id: 'school', icon: '🏫',
       title: 'School cafeteria carbon-neutral target',
       prompt: 'A 700-student middle school in Portland, ME wants its cafeteria to be carbon-neutral by 2030. The cafeteria uses ~400 kWh/day for refrigeration, ovens, lighting, dishwashing. The school has a flat 1,200 m² roof and ~50 tons/year of food waste. Design a plan.',
       rubric: [
         'Sizes rooftop solar reasonably (1200 m² × 20% × ~1300 kWh/m²/yr ≈ 312 MWh/yr — ~2× cafeteria load)',
         'Considers an on-site battery to reduce afternoon-peak grid import',
-        'Mentions anaerobic digestion of food waste (50 tons/yr → ~3 MWh of biogas + fertilizer)',
+        'Mentions anaerobic digestion of food waste (biogas + fertilizer, and less food waste in the landfill)',
         'Addresses cooking electrification — induction stoves vs gas',
         'Notes net-metering and PPA financing as ways to skip upfront cost'
       ],
@@ -3307,17 +3543,22 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       hint: 'Dairy manure is gold for biogas — methane already wants to come out, you just capture and burn it. The digestate is higher-quality fertilizer than raw manure too.' }
   ];
   // Ground-truth list constrains AI critiques: never hallucinate beyond these.
+  // Source audit 2026-11-24: every line is sourced in SECTION 2 / 5.5 / 5.6 headers; IRS (residential clean energy
+  // credit): "The credit is not available for any property placed in service after December 31, 2025." The hydro line
+  // is computed from hydroPowerWatts (the old "~3.5 kW gross" did not match the formula: 1000 x 9.81 x 5 x 0.1 = 4.9 kW).
+  // Removed: "text-to-911" (unrelated), "Maine solar CF 16-20%" (no source), "ITC 30% through 2032" (ended 2025).
+  // EIA FAQ 97: in 2022 the average US residential customer used 10,791 kWh a year (about 29.6 kWh a day).
+  var RN_US_HOME_KWH_YR = 10791;
   var AI_GROUND_TRUTH = [
-    'Solar PV capacity factor in Maine: ~16–20%. Useful sun in mid-winter: ~3–4 hr/day.',
-    'Onshore wind capacity factor: ~35–45%. Cube law: power scales with v³.',
-    'Hydro: P = ρ·g·h·Q·η. Small streams (Q ~0.1 m³/s) at 5 m head produce only ~3.5 kW gross.',
-    'Lifecycle CO₂ medians (g/kWh): solar 40, wind 11, hydro 24, geo 38, nuclear 12, gas 490, coal 820.',
-    'Battery (Li-ion) cost ~$140/kWh in 2024. Round-trip efficiency 85–95%.',
-    'Pumped hydro round-trip: 75–85%. Green hydrogen: 30–40%.',
-    'Maine has text-to-911 statewide (irrelevant here, but a Maine constant).',
-    'Anaerobic digestion of food/manure: ~60% methane biogas. Fits dairy farms + cafeterias.',
-    'Heat pumps (ground-source) move ~3–5 units of heat per unit electricity (COP 3–5).',
-    'Federal ITC for solar: 30% through 2032 under current law.',
+    'Capacity factors, US fleet 2024 (EIA): solar 23%, wind 34%, hydro 35%, geothermal 65%, nuclear 91%.',
+    'Wind power scales with v³. Betz limit: no rotor can capture more than 59.3% of the wind’s energy.',
+    'Hydro: P = ρ·g·h·Q·η. A stream with Q = 0.1 m³/s and 5 m of head carries about ' + (Math.round(hydroPowerWatts(5, 0.1, 1) / 100) / 10) + ' kW before losses.',
+    'Lifecycle CO₂ medians (g/kWh, IPCC AR5): rooftop solar 41, utility solar 48, wind 11, hydro 24, geothermal 38, nuclear 12, gas 490, coal 820.',
+    'Lithium-ion battery packs averaged $108/kWh in 2025 (BloombergNEF). US grid batteries: about 82% round trip (EIA, 2019).',
+    'Pumped hydro round trip: about 79% (EIA, 2019). Hydrogen storage loses much more.',
+    'Anaerobic digestion makes biogas (mostly methane + CO₂). Fits dairy farms + cafeterias.',
+    'Ground-source heat pumps: 300%–600% efficient, COP 3–6 (US Department of Energy).',
+    'The 30% federal tax credit for home solar, batteries and geothermal heat pumps ended for systems placed in service after December 31, 2025 (IRS).',
     'NEVER promise specific $/payback unless the question gives all needed data.',
     'NEVER recommend behind-the-meter installation choices that require professional design (electrical safety).'
   ];
@@ -3327,30 +3568,34 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // The often-skipped half of "renewable transition" — generation is only
   // half the problem; the grid has to absorb it second by second.
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24: CAISO (duck curve); ISO-NE Forward Capacity Market (demand capacity resources);
+  // EIA FAQ 97 (10,791 kWh per home per year) for the EV comparison, which is computed below. The old "4-7 days"
+  // was wrong: 60-100 kWh is about 2-3 days of an average US home. Removed with no source found: "60 +/- 0.05 Hz",
+  // "4-9 PM", "parked ~95%", named EV models, "~2 TW queue", "7-15 years", "every major utility", "ERCOT daily".
   var SMART_GRID_CONCEPTS = [
     { id: 'frequency', icon: '〰️', title: '60 Hz frequency regulation',
-      what: 'In North America the grid runs at exactly 60 cycles per second. If demand jumps and generation lags, frequency drops below 60 Hz; if generation exceeds demand, it rises. Either case is bad — equipment can fail, generators can desync.',
-      who: 'Grid operators (in New England: ISO-NE) constantly balance generation against demand to keep frequency at 60 ± 0.05 Hz.',
-      why: 'Batteries are uniquely good at this — they respond in milliseconds. Grid-scale Li-ion frequency regulation is one of the highest-value uses of storage.' },
+      what: 'In North America the grid runs at very close to 60 cycles per second. If demand jumps and generation lags, frequency drops below 60 Hz; if generation exceeds demand, it rises. Either case is bad — equipment can fail, generators can desync.',
+      who: 'Grid operators (in New England: ISO-NE) constantly balance generation against demand to keep frequency close to 60 Hz.',
+      why: 'Batteries can respond very fast, so frequency regulation is one of the most valuable jobs for grid storage.' },
     { id: 'tou', icon: '⏰', title: 'Time-of-use (TOU) pricing',
-      what: 'Electricity costs more to generate at peak demand (hot summer afternoons) than at low demand (3 AM). TOU rates pass that variation to customers — high prices 4–9 PM, low prices overnight.',
-      who: 'Increasingly common in California, Hawaii, parts of New England. Maine residential customers can opt in via CMP / Versant.',
-      why: 'TOU rates make rooftop solar + home battery economics work — you store cheap midday solar, use it during expensive evening peak. Without TOU, batteries pay back much slower.' },
+      what: 'Electricity costs more to make at peak demand (hot summer afternoons, winter evenings) than at low demand (3 AM). TOU rates pass that difference to customers — higher prices at the peak, lower prices overnight.',
+      who: 'Some utilities offer TOU rates. Check your utility for current options.',
+      why: 'TOU rates help rooftop solar + home battery economics — you store cheap midday solar and use it during the expensive evening peak.' },
     { id: 'dr', icon: '🎚️', title: 'Demand response (DR)',
       what: 'Utility programs that PAY customers to reduce or shift load during peak events. Typical: AC pre-cool / set back; pool pumps off; EV charging delayed; large industrial loads dialed down for an hour.',
-      who: 'Most US utilities have residential + commercial DR programs. ISO-NE\'s Forward Capacity Market explicitly counts demand-side resources.',
-      why: 'Cheaper than building a new peaker plant. A "negawatt" (avoided demand) is functionally identical to a megawatt of generation but with zero emissions.' },
+      who: 'Many utilities have residential + commercial DR programs. ISO-NE\'s Forward Capacity Market counts demand-side resources.',
+      why: 'Often cheaper than building a new peaker plant. A "negawatt" (avoided demand) does the same job as a megawatt of generation, with zero emissions.' },
     { id: 'v2g', icon: '🔌', title: 'Vehicle-to-grid (V2G)',
-      what: 'Electric vehicles spend ~95% of their time parked. With bidirectional charging, the EV battery can feed power BACK to the grid (or your home) during peak — then recharge overnight when it\'s cheap.',
-      who: 'Ford F-150 Lightning + Nissan Leaf already support it. Real V2G fleet pilots in California, Massachusetts, the UK. Maine starting to roll out compatible charging stations.',
-      why: 'A typical EV battery (60–100 kWh) is roughly 4–7 days of average home electricity. Imagine 100 million EVs as distributed storage — that\'s a grid-scale resource without building a single new battery.' },
+      what: 'Cars spend most of their time parked. With two-way charging, an EV battery can feed power BACK to the grid (or your home) during peaks — then recharge when power is cheap.',
+      who: 'Some EVs and chargers already support two-way charging, and utilities are running pilot programs.',
+      why: 'A 60–100 kWh EV battery holds about ' + Math.round(60 / (RN_US_HOME_KWH_YR / 365)) + '–' + Math.round(100 / (RN_US_HOME_KWH_YR / 365)) + ' days of an average US home\'s electricity (' + RN_US_HOME_KWH_YR.toLocaleString('en-US') + ' kWh a year, EIA). Millions of parked EVs could act like one big spread-out battery.' },
     { id: 'transmission', icon: '🗼', title: 'Transmission as the bottleneck',
       what: 'The best wind sites are the Great Plains; the best solar is the Southwest; the load is on the coasts. Long-distance high-voltage transmission lines are the cheapest way to bridge that gap.',
-      who: 'Permitting takes 7–15 years per project. The "interconnection queue" of pending US generation projects is now ~2 TW (more than current US generating capacity) — almost all stuck waiting for transmission upgrades.',
-      why: 'NREL and others routinely conclude transmission siting + permitting is now a bigger barrier than generation cost. Expect more federal-vs-state legal battles.' },
+      who: 'A long new power line can take many years of permits and court fights. Many new power projects wait in a long "interconnection queue" for grid upgrades.',
+      why: 'NREL and others conclude transmission siting + permitting is now a bigger barrier than generation cost.' },
     { id: 'derms', icon: '🧠', title: 'DERMS / smart meters',
       what: 'Distributed Energy Resource Management Systems — software that sees and orchestrates millions of small generators, batteries, EVs, and smart appliances on the distribution grid in real time.',
-      who: 'Every major US utility is building one. CMP (Maine) and Versant Power are mid-deployment.',
+      who: 'Many utilities are building these systems.',
       why: 'Without DERMS, distributed solar + storage is invisible to the grid operator. With it, the grid can use small assets the way it used to use a few big plants.' },
     { id: 'inertia', icon: '🌀', title: 'Grid inertia (the under-appreciated problem)',
       what: 'Big spinning steam turbines (coal, gas, nuclear, hydro) literally have rotational inertia — when demand suddenly spikes, they slow slightly and provide stabilizing energy for ~seconds before controls kick in.',
@@ -3358,109 +3603,113 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       why: 'This is one of the genuine technical concerns about high-renewable grids. It\'s solvable — it just isn\'t free.' },
     { id: 'duckcurve', icon: '🦆', title: 'The "duck curve"',
       what: 'In high-solar grids (California is the textbook example), the daytime net-load chart looks like a duck — solar floods the grid midday (deep belly), then drops out at sunset just as demand peaks (steep neck up). Operators have to ramp dispatchable plants up FAST to fill the gap.',
-      who: 'CAISO + ERCOT see this daily. New England hasn\'t hit the same scale yet but is heading there.',
+      who: 'California\'s grid operator (CAISO) made the duck curve famous. Other grids with lots of solar see the same shape.',
       why: 'The duck curve is the "obvious bug" of solar-heavy grids — and it\'s fixable with batteries (charge midday, discharge evening), demand response, and shifting loads (EV charging, heat-pump pre-heating) into the belly.' }
   ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 5.11: CAREER PATHWAYS — where this curriculum can lead
   // 14 careers spanning trades + technical + analytical + policy.
-  // Salary medians from BLS OEWS 2024 where available.
+  // Source audit 2026-11-24: BLS Occupational Outlook Handbook (pay = median, May 2025; growth = projected 2025-35):
+  //  wind turbine technicians $64,120, 30%; solar photovoltaic installers $53,140, 37%; electrical power-line
+  //  installers $95,320, 10%; HVAC mechanics and installers $61,010, 11%; electrical engineers $120,630, 10%;
+  //  atmospheric scientists $99,070, 3%. Jobs BLS does not track separately now say so instead of a made-up median.
+  //  Removed: old 2022-32 / 2024 figures, "+60%", company names, union local addresses, "IRA hiring" claims.
   // ─────────────────────────────────────────────────────────
   var CAREER_PATHS = [
     { id: 'windtech', icon: '🌬️', title: 'Wind turbine technician',
-      salary: '$61,770 median (2024 BLS)',
-      growth: 'Fastest-growing occupation 2022–2032 per BLS — projected +60%',
-      edu: '2-yr technical college program OR military electronics + on-the-job training. Must be willing to climb 80–120 m and work in weather.',
-      where: 'Maine: emerging — early offshore-wind training programs. Today most jobs are land-based in TX, IA, OK, KS, IL.',
+      salary: '$64,120 median (May 2025, BLS)',
+      growth: '+30% projected 2025–2035, much faster than average (BLS)',
+      edu: 'Usually a postsecondary nondegree award (technical-school certificate) plus on-the-job training (BLS). The job means climbing tall towers and working in weather.',
+      where: 'Most US jobs are near land-based wind farms. Offshore wind work is just starting in the Northeast.',
       tags: ['trade', 'apprenticeship', 'field'] },
     { id: 'solarinst', icon: '☀️', title: 'Solar PV installer',
-      salary: '$48,180 median',
-      growth: 'High demand — projected +22% through 2032',
-      edu: 'NABCEP entry-level certificate (~6 weeks) or community college solar program. Often paired with electrical apprenticeship.',
-      where: 'Maine: ReVision Energy, Sundog Solar, Maine Solar Solutions among many. Efficiency Maine maintains an installer registry.',
+      salary: '$53,140 median (May 2025, BLS)',
+      growth: '+37% projected 2025–2035, much faster than average (BLS)',
+      edu: 'BLS lists a high school diploma plus on-the-job training. Many take a community-college solar course or an NABCEP certificate.',
+      where: 'Maine has many solar installers; Efficiency Maine keeps a list of registered vendors.',
       tags: ['trade', 'OJT possible', 'field'] },
     { id: 'lineworker', icon: '⚡', title: 'Electrical lineworker',
-      salary: '$85,420 median',
-      growth: 'Steady — wage growth driven by grid expansion + storm hardening',
-      edu: '4-year IBEW apprenticeship (paid earn-while-you-learn). Highly competitive entry. ~6,000 hours OJT + classroom.',
-      where: 'Maine: IBEW Local 567 (Lewiston) and Local 1837 (Bangor) run apprenticeships. CMP, Versant, contractor companies.',
+      salary: '$95,320 median (May 2025, BLS)',
+      growth: '+10% projected 2025–2035 (BLS)',
+      edu: 'Paid apprenticeship (earn while you learn), often several years long, through utilities or unions like the IBEW. Highly competitive entry.',
+      where: 'Utilities and line contractors everywhere, including Maine.',
       tags: ['trade', 'apprenticeship', 'field', 'union'] },
     { id: 'hvac', icon: '🏠', title: 'HVAC / heat pump installer',
-      salary: '$50,590 median',
-      growth: 'Heat-pump boom in Maine + Northeast = strong demand',
-      edu: 'EPA 608 cert + NATE cert. Community college HVAC program (~12 months) or apprenticeship.',
-      where: 'Maine: Efficiency Maine maintains a registered installer list. Year-round work because of the heat-pump push.',
+      salary: '$61,010 median (May 2025, BLS)',
+      growth: '+11% projected 2025–2035, much faster than average (BLS)',
+      edu: 'EPA 608 certification for handling refrigerants. Community college HVAC program or apprenticeship.',
+      where: 'Maine: Efficiency Maine keeps a list of registered heat-pump installers.',
       tags: ['trade', 'cert-driven', 'field'] },
     { id: 'auditor', icon: '🔍', title: 'Energy auditor',
-      salary: '$52,260 median (varies a lot)',
-      growth: 'Steady — every weatherization grant program needs auditors',
-      edu: 'BPI Building Analyst cert (1-2 weeks) OR HERS Rater cert. Often paired with construction or HVAC background.',
-      where: 'Maine: Efficiency Maine + private firms. Federal IRA $$$ flowing to home weatherization is creating jobs.',
+      salary: 'BLS does not track this job on its own',
+      growth: 'Depends on weatherization and efficiency programs',
+      edu: 'BPI Building Analyst cert OR HERS Rater cert. Often paired with construction or HVAC background.',
+      where: 'Maine: Efficiency Maine programs + private firms.',
       tags: ['cert-driven', 'field+desk'] },
     { id: 'battery', icon: '🔋', title: 'Battery storage technician',
-      salary: '~$60,000 (emerging, less BLS data)',
-      growth: 'Brand-new field — grid-scale battery installs doubling annually',
-      edu: 'Electrician background + manufacturer-specific training (Tesla, Fluence, Powin). Some 2-yr energy storage programs starting to appear.',
-      where: 'Following the battery sites — currently CA, TX, AZ. Maine: small but coming.',
+      salary: 'BLS does not track this job on its own',
+      growth: 'New field; depends on how fast grid batteries are built',
+      edu: 'Electrician background + training from equipment makers. Some 2-yr energy storage programs are starting to appear.',
+      where: 'Wherever grid batteries are being built.',
       tags: ['trade', 'emerging', 'field'] },
     { id: 'offshorewind', icon: '🌊', title: 'Offshore wind specialist',
-      salary: '$70,000–120,000 (skilled trades + GWO certified)',
-      growth: 'Just starting US-side — Maine + Massachusetts + RI leasing rounds 2024-2030',
-      edu: 'GWO (Global Wind Organisation) Basic Safety Training + Sea Survival. Often offshore O&G crossover.',
-      where: 'Maine: UMaine Composites Center is the US-side R&D leader. Eventual O&M jobs in Searsport, Eastport, Portland.',
+      salary: 'BLS does not track this job on its own',
+      growth: 'Just starting in the US; depends on new projects and leases',
+      edu: 'GWO (Global Wind Organisation) Basic Safety Training + Sea Survival. Often offshore oil-and-gas crossover.',
+      where: 'Maine: UMaine’s Composites Center does floating offshore wind research.',
       tags: ['trade', 'emerging', 'maritime', 'maine-relevant'] },
     { id: 'engr', icon: '📐', title: 'Power systems / electrical engineer',
-      salary: '$103,320 median',
-      growth: 'Steady; grid modernization is a permanent driver',
+      salary: '$120,630 median for electrical engineers (May 2025, BLS)',
+      growth: '+10% projected 2025–2035 for electrical engineers (BLS)',
       edu: 'BS Electrical Engineering minimum. PE license for senior roles. Many specialize in renewables / power electronics in grad school.',
-      where: 'Utilities (CMP, Versant), ISO-NE, equipment makers (GE, Siemens, ABB), consulting firms.',
+      where: 'Utilities, grid operators like ISO-NE, equipment makers, consulting firms.',
       tags: ['professional', 'BS+', 'office+field'] },
     { id: 'civil', icon: '🛠️', title: 'Civil / structural engineer (renewables)',
-      salary: '$95,000 median in renewables',
-      growth: 'Strong — every solar farm + wind project needs site engineering',
+      salary: 'Pay varies; see BLS civil engineers',
+      growth: 'Every solar farm + wind project needs site engineering',
       edu: 'BS Civil Engineering. PE license for stamping plans.',
       where: 'EPC (engineering-procurement-construction) firms; project developers; consulting.',
       tags: ['professional', 'BS+', 'office+field'] },
     { id: 'analyst', icon: '📊', title: 'Energy analyst / modeler',
-      salary: '$78,000 median',
-      growth: 'High — every utility, ISO, lab, advocacy group, and investor needs them',
+      salary: 'Pay varies by employer',
+      growth: 'Utilities, grid operators, labs, advocacy groups and investors all hire analysts',
       edu: 'BS in econ, engineering, statistics, or environmental science. Strong skills in Python / R / Excel modeling. MS often preferred.',
-      where: 'Labs (NREL, LBNL), utilities, ISO-NE, NGOs (RMI, Acadia Center), investment / consulting firms.',
+      where: 'Labs (NREL, LBNL), utilities, ISO-NE, nonprofits, investment / consulting firms.',
       tags: ['professional', 'BS+', 'office', 'analytic'] },
     { id: 'policy', icon: '📜', title: 'Energy policy / regulator',
-      salary: '$70,000–120,000',
-      growth: 'Steady — IRA + state climate laws driving hiring',
+      salary: 'Pay varies (public and private jobs)',
+      growth: 'Depends on state and federal policy',
       edu: 'BS or MS / JD in policy, law, energy, environmental science. Public-service experience matters more than the degree.',
-      where: 'Maine PUC, GEO, Department of Environmental Protection. Federal: FERC, DOE, EPA.',
+      where: 'Maine PUC, Department of Energy Resources, Department of Environmental Protection. Federal: FERC, DOE, EPA.',
       tags: ['professional', 'office', 'public-service'] },
     { id: 'climate', icon: '🌎', title: 'Climate scientist / atmospheric researcher',
-      salary: '$98,940 median',
-      growth: 'Funded by IRA + DOE + NOAA + NASA',
+      salary: '$99,070 median for atmospheric scientists (May 2025, BLS)',
+      growth: '+3% projected 2025–2035, about average (BLS)',
       edu: 'PhD typical for research; MS for some applied roles.',
-      where: 'Universities (UMaine Climate Change Institute), labs, NGOs, federal science agencies.',
+      where: 'Universities (UMaine Climate Change Institute), labs, nonprofits, federal science agencies.',
       tags: ['research', 'PhD-track', 'academic'] },
     { id: 'sustain', icon: '🌱', title: 'Sustainability manager (corporate)',
-      salary: '$85,000 median, $100k+ for senior',
-      growth: 'High — every public company has scope 1–3 reporting requirements',
-      edu: 'BS + 5-10 yr experience. MBA helps for senior roles. LEED / BREEAM cert common.',
-      where: 'Corporate offices everywhere; growing demand from manufacturers, real estate, retailers.',
+      salary: 'Pay varies by employer',
+      growth: 'Many companies now measure and report their emissions',
+      edu: 'BS + several years of experience. MBA helps for senior roles. LEED / BREEAM cert common.',
+      where: 'Corporate offices everywhere; manufacturers, real estate, retailers.',
       tags: ['professional', 'BS+', 'office'] },
     { id: 'driller', icon: '🌋', title: 'Geothermal / GSHP driller',
-      salary: '$64,720 median',
-      growth: 'Emerging with heat-pump boom; deep geothermal still niche',
+      salary: 'Pay varies; see BLS well and earth drillers',
+      growth: 'Grows with ground-source heat pumps; deep geothermal still niche',
       edu: 'OJT or 2-yr drilling tech program. CDL helps.',
-      where: 'Maine: a handful of GSHP-specialty drilling firms; deep geothermal still mostly Western US.',
+      where: 'Maine: a handful of GSHP drilling firms; deep geothermal is mostly in the western US.',
       tags: ['trade', 'OJT possible', 'field'] }
   ];
 
   // Maine-specific training pipeline — pulled out so it's prominently displayed.
   var MAINE_TRAINING = [
-    { name: 'Maine Community College System — Energy Programs', what: 'Wind/solar/HVAC/electrical at Northern Maine CC, Eastern Maine CC, Kennebec Valley CC, Southern Maine CC.', url: 'https://www.mccs.me.edu' },
-    { name: 'UMaine Advanced Structures and Composites Center', what: 'US-leading offshore-wind composites research; undergrad + grad pathways.', url: 'https://composites.umaine.edu' },
-    { name: 'IBEW Local 567 (Lewiston)', what: 'Inside electrician + lineworker apprenticeships. Earn-while-you-learn.', url: 'https://www.ibew567.org' },
-    { name: 'IBEW Local 1837 (Bangor)', what: 'Outside lineworker apprenticeship. Covers Maine, NH, VT.', url: 'https://www.ibew1837.org' },
-    { name: 'Efficiency Maine — Registered Vendors', what: 'Find existing solar/heat-pump installers; many take entry-level apprentices.', url: 'https://www.efficiencymaine.com' },
+    { name: 'Maine Community College System — Energy Programs', what: 'Wind/solar/HVAC/electrical programs at several Maine community colleges.', url: 'https://www.mccs.me.edu' },
+    { name: 'UMaine Advanced Structures and Composites Center', what: 'Floating offshore-wind research; undergrad + grad pathways.', url: 'https://composites.umaine.edu' },
+    { name: 'IBEW Local 567', what: 'Electrician apprenticeships. Earn while you learn.', url: 'https://www.ibew567.org' },
+    { name: 'IBEW Local 1837', what: 'Utility and lineworker apprenticeships.', url: 'https://www.ibew1837.org' },
+    { name: 'Efficiency Maine — Registered Vendors', what: 'Find solar and heat-pump installers; some hire entry-level apprentices.', url: 'https://www.efficiencymaine.com' },
     { name: 'Maine Apprenticeship Program', what: 'State-run program connecting apprentices to registered employers across trades.', url: 'https://www.maine.gov/labor/jobs_training/apprenticeship' }
   ];
 
@@ -3470,52 +3719,63 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // across Geothermal + Career; deserves its own page so the Maine-relevant
   // tech gets the depth it warrants.
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24: ENERGY STAR cold-climate air-source heat pumps, "COP at 5° F >= 1.75"; DOE consumer guide
+  // to geothermal heat pumps, "300%-600%" efficiency on the coldest winter nights; NREL ground 10-16 °C; IRS 25C and
+  // 25D (credits end for property placed in service after Dec 31, 2025); Maine Governor's Office Jul 2023 (100,000
+  // passed, 175,000 more by 2027); ISO-NE key stats: New England generation and imports, 2024 CO2 rate "560"
+  // lbs/MWh (254 g/kWh); EPA GHG Emission Factors Hub, distillate fuel oil No. 2: 73.96 kg CO2 per mmBtu; EIA,
+  // heating oil 138,500 Btu per gallon. The CO2 per kWh of heat below is computed from those numbers.
+  // Removed with no source found: install costs, rebate amounts, brand names, "-25 °C", Maine 2024 cost example,
+  // "leading the US per capita", "one of the cleanest grids", HPWH payback.
+  var RN_HP_GRID_G_PER_KWH = 560 * 453.59237 / 1000;          // ISO-NE 2024, g CO2 per kWh of electricity
+  var RN_OIL_G_PER_KWH_FUEL = 73.96 * 1000 / 293.07107;       // EPA, g CO2 per kWh of oil burned (1 mmBtu = 293.07 kWh)
+  var RN_HP_EXAMPLE_COP = 2.5, RN_OIL_BOILER_EFF = 0.85;
   var HEAT_PUMP_FACTS = {
     intro: 'A heat pump does NOT generate heat — it MOVES heat. It uses a refrigeration cycle (the same one in your fridge, run "in reverse") to move thermal energy between two places. In winter it pulls heat from outside (cold air or ground) into your home; in summer it pushes heat from inside to outside.',
-    cop: 'Coefficient of Performance (COP) measures heat moved ÷ electricity used. A COP of 4 means 4 units of heat are moved for every 1 unit of electricity consumed — 400% efficient compared to electric resistance heat. The trick: you\'re NOT making heat from electricity, you\'re moving it.',
+    cop: 'Coefficient of Performance (COP) measures heat moved ÷ electricity used. A COP of 4 means 4 units of heat are moved for every 1 unit of electricity consumed — 4 times what electric resistance heat gives. The trick: you\'re NOT making heat from electricity, you\'re moving it.',
     types: [
       { id: 'ashp', name: 'Air-source heat pump (ASHP)',
         how: 'Outdoor unit + indoor air handler(s). Pulls heat from outdoor air (yes, even in winter — cold air still has thermal energy above absolute zero).',
-        cop: '2.5–4.0 typical; modern cold-climate models stay above 2.0 down to −15 °C',
-        cost: '$3,000–8,000 per zone (single mini-split) up to $15,000+ for whole-home',
+        cop: 'Drops as it gets colder outside. ENERGY STAR cold-climate models must still reach a COP of at least 1.75 at 5°F (−15°C).',
+        cost: 'Varies a lot by home and number of zones; get several quotes',
         best: 'Most retrofits in Maine. Quick to install; modular zone-by-zone.' },
       { id: 'gshp', name: 'Ground-source heat pump (GSHP)',
-        how: 'Loops of pipe buried in the ground (horizontal trench) or drilled wells (vertical bores) circulate water/antifreeze. Below the frost line the ground stays a near-constant ~10 °C year-round.',
-        cop: '3.5–5.5 typical; rarely drops below 3.0',
-        cost: '$20,000–45,000 installed (ground loop is the expensive part)',
-        best: 'New construction or major retrofit on a property with land. Lower lifetime operating cost; longest equipment life (30+ yr indoor, 50+ yr ground loop).' },
+        how: 'Loops of pipe buried in the ground (horizontal trench) or drilled wells (vertical bores) circulate water/antifreeze. A few meters down, the ground stays about 10–16 °C all year (NREL).',
+        cop: '300%–600% efficient, a COP of 3 to 6, even on the coldest nights (US Department of Energy)',
+        cost: 'Costs more up front than air-source; the ground loop is the expensive part',
+        best: 'New construction or major retrofit on a property with land. Lower running cost; ground loops last for decades.' },
       { id: 'wshp', name: 'Water-source heat pump',
         how: 'Same as GSHP but uses a pond, lake, or well water as the thermal source instead of ground loops.',
-        cop: '4.0–5.5 typical',
+        cop: 'Similar to ground-source when the water source fits',
         cost: 'Variable — depends entirely on water source proximity',
         best: 'Lakefront / waterfront properties. Niche but very efficient when the geography fits.' },
       { id: 'hpwh', name: 'Heat pump water heater (HPWH)',
         how: 'Standalone water heater that uses a small heat pump to heat water from ambient air heat. Bonus: cools + dehumidifies the room (a basement is ideal).',
-        cop: '2.5–4.0 typical',
-        cost: '$1,500–3,500 installed; ~$700 federal tax credit + Efficiency Maine rebate',
-        best: 'Replacing an electric resistance water heater. Pays back in ~3–5 years on Maine electric rates.' }
+        cop: 'Much more efficient than an electric-resistance water heater',
+        cost: 'Costs more than a standard tank; check for current rebates',
+        best: 'Replacing an electric resistance water heater.' }
     ],
     myths: [
       { myth: '"Heat pumps don\'t work below freezing."',
-        truth: 'Old myth. Modern cold-climate ASHPs (Mitsubishi Hyper-Heat, Fujitsu Halcyon, Daikin Aurora etc.) maintain rated capacity down to −15 °C and still output heat at −25 °C. NEEP keeps a list of cold-climate verified models.' },
+        truth: 'Old myth. Cold-climate air-source heat pumps keep heating well below freezing. ENERGY STAR requires a COP of at least 1.75 at 5°F (−15°C) for its cold-climate label, and NEEP keeps a list of cold-climate models.' },
       { myth: '"They cost more to run than oil/gas in winter."',
-        truth: 'Depends on local prices. In Maine 2024: ASHP at COP 2.5 costs ~$0.084/kWh-thermal at $0.21/kWh electric; oil at $4/gal heating value 138K BTU/gal at 85% boiler efficiency costs ~$0.115/kWh-thermal. Heat pump wins by ~25%.' },
+        truth: 'It depends on local prices and the COP. Cost of 1 kWh of heat from a heat pump = electricity price ÷ COP. For oil: a gallon holds about 138,500 Btu, or 40.6 kWh (EIA); multiply by the boiler efficiency, then divide the price per gallon by that. Plug in today\'s prices to compare.' },
       { myth: '"You still need a backup oil/gas system."',
-        truth: 'Whole-home ASHPs sized correctly handle Maine winters without backup. Some homeowners keep their old oil burner as backup for the very coldest nights, but it\'s a comfort decision not a necessity.' },
+        truth: 'Many Maine homes now heat with heat pumps alone when they are sized and installed well. Some families keep an old boiler as backup for the coldest nights; that is a comfort choice.' },
       { myth: '"Geothermal is too expensive."',
-        truth: 'Upfront, yes. But the federal 30% ITC + Efficiency Maine rebate ($8,000+) + 20-year operating savings often beats oil/propane on lifetime cost. New construction is the sweet spot — drill the wells before pouring the foundation.' }
+        truth: 'Up front, yes. Lower running costs can pay it back over time. The federal 30% tax credit for home geothermal heat pumps ended for systems placed in service after December 31, 2025 (IRS), so check current state rebates. New construction is the sweet spot — drill the wells before pouring the foundation.' }
     ],
     integration: [
-      'Solar + heat pump: pair them. Summer solar surplus runs the AC; shoulder-season solar runs the heat pump. Heat pump is the biggest electric load in a Maine home — sizing solar to match it makes the math work.',
+      'Solar + heat pump: pair them. Summer solar surplus runs the AC; shoulder-season solar runs the heat pump. A heat pump can be the biggest electric load in a Maine home — sizing solar to match it makes the math work.',
       'Smart thermostat: pre-cool during midday solar peak; pre-heat during cheap overnight (TOU rates). Reduces grid stress and saves money.',
-      'Battery: a small home battery (10 kWh) covers heat pump demand for ~3–6 hours, useful for brief outages.',
+      'Battery: a home battery can run a heat pump for a few hours in an outage, depending on its size and how cold it is.',
       'Weatherize FIRST: a leaky house wastes any heating system. Air seal + insulate before sizing your heat pump — you\'ll need a smaller (cheaper) unit.'
     ],
     maine: [
-      'Maine has installed 100,000+ heat pumps since 2019 — leading the US per capita. Goal: 100,000 more by 2027.',
-      'Efficiency Maine rebates: $1,200/zone for ASHP, up to $8,000 for GSHP, plus federal 30% ITC for GSHP + ~$2,000 federal for ASHP.',
-      'Maine\'s electric grid is one of the cleanest in the lower 48 (lots of NEPOOL hydro + nuclear), so a heat pump in Maine is also low-carbon.',
-      'NEEP (Northeast Energy Efficiency Partnerships) maintains the cold-climate verified list — neep.org/heating-cooling/cchpgz.'
+      'Maine passed 100,000 new heat pumps in 2023, two years early, and set a goal of 175,000 more by 2027 (Maine Governor’s Office, 2023).',
+      'Rebates change often: check Efficiency Maine for current offers. The federal heat-pump tax credits ended after 2025 (IRS).',
+      'A heat pump is as clean as its electricity. New England\'s power averaged about ' + Math.round(RN_HP_GRID_G_PER_KWH) + ' g of CO₂ per kWh in 2024 (ISO New England). At a COP of ' + RN_HP_EXAMPLE_COP + ' that is about ' + Math.round(RN_HP_GRID_G_PER_KWH / RN_HP_EXAMPLE_COP / 10) * 10 + ' g per kWh of heat; an ' + Math.round(RN_OIL_BOILER_EFF * 100) + '%-efficient oil boiler makes about ' + Math.round(RN_OIL_G_PER_KWH_FUEL / RN_OIL_BOILER_EFF / 10) * 10 + ' g (EPA emission factor for heating oil).',
+      'NEEP (Northeast Energy Efficiency Partnerships) keeps the cold-climate heat pump list.'
     ]
   };
 
@@ -3524,62 +3784,74 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // 16 famous installations with capacity, year, story.
   // Filterable by source type. Builds geographic intuition.
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24: China Three Gorges Corp (22.5 GW, world's largest hydropower station); Itaipu Binacional
+  // (14,000 MW, first unit 1984); US Bureau of Reclamation (Hoover 2,080 MW, 17 main turbines, Lake Mead levels cut
+  // capacity); Orsted (Hornsea 1: 174 turbines of 7 MW, 1.2 GW, first offshore farm over 1 GW; Hornsea 2: 165
+  // Siemens Gamesa 8 MW turbines, 1.3 GW, "the world's largest offshore wind farm"); Orsted (Block Island, 5 turbines,
+  // 30 MW, 2016); geysers.com / Calpine 2025 fact sheet (13 plants, up to 725 MW net, recycled-water recharge);
+  // Enel Green Power (Larderello 1904); ON Power (Hellisheidi 303 MW); EDF (La Rance 1966, 240 MW, 24 turbines);
+  // SIMEC Atlantis (MeyGen 1A, 4 turbines, 6 MW); DOE 2012 (ORPC first commercial grid-connected US tidal project);
+  // NOAA (Eastport mean range 18.35 ft); NREL SolarPACES (Ivanpah 392 MW, 173,500 heliostats; Noor Ouarzazate).
+  // Removed with no source found: TWh/yr and reservoir length, supply shares, "visible from Yorkshire" (wrong: it is
+  // far offshore), "8 MW" for Hornsea 1 (they are 7 MW), Gansu MW, Block Island diesel volume, Bhadla temperatures,
+  // Tengger "visible from space" and CSP pairing, "world's largest CSP" (newer plants are bigger), Geysers 1,517 MW
+  // and 22 plants, Larderello 800 MW and 80 °C/km, Hellisheidi heat MW, MeyGen "world's largest" and 5 m/s.
   var WORLD_PLANTS = [
     // Hydro
     { id: 'threegorges', tag: 'hydro', icon: '🌊', name: 'Three Gorges Dam',
-      where: 'Hubei, China · 2003 (final 2012) · 22,500 MW',
-      story: 'World\'s largest power plant by capacity. Generates ~95 TWh/yr. Displaced 1.3 million people. Reservoir is 660 km long.' },
+      where: 'Hubei, China · finished 2012 · 22,500 MW',
+      story: 'The world\'s largest power plant by capacity. Its huge reservoir flooded towns and farmland along the Yangtze River.' },
     { id: 'itaipu', tag: 'hydro', icon: '🌊', name: 'Itaipu',
-      where: 'Brazil/Paraguay border · 1984 · 14,000 MW',
-      story: 'Until Three Gorges, the world\'s biggest. Runs on the Paraná river. Supplies ~10% of Brazil\'s + ~90% of Paraguay\'s electricity. Joint Brazil-Paraguay binational project.' },
+      where: 'Brazil/Paraguay border · first power 1984 · 14,000 MW',
+      story: 'The world\'s biggest hydro plant until Three Gorges. Runs on the Paraná river. Brazil and Paraguay built it together and share its power.' },
     { id: 'hoover', tag: 'hydro', icon: '🌊', name: 'Hoover Dam',
       where: 'Nevada/Arizona, USA · 1936 · 2,080 MW',
-      story: 'Built during the Great Depression in 5 years. 17 Francis turbines. Lake Mead reservoir; declining water level since 2000 has cut output significantly.' },
+      story: 'Built during the Great Depression. 17 main Francis turbines. Low water in Lake Mead has cut how much power it can make (US Bureau of Reclamation).' },
     // Wind
-    { id: 'hornsea', tag: 'wind', icon: '🌬️', name: 'Hornsea Wind Farm',
-      where: 'North Sea, UK · 2019–ongoing · 1,200 MW (H-1) + expansions',
-      story: 'World\'s largest offshore wind farm. 174 turbines, each 8 MW, Siemens Gamesa. Visible from Yorkshire on a clear day. Hornsea 2 (1,386 MW) operating; H-3 + H-4 in development.' },
+    { id: 'hornsea', tag: 'wind', icon: '🌬️', name: 'Hornsea 1 and 2',
+      where: 'North Sea, UK · 2019–2022 · 1,200 MW + 1,300 MW',
+      story: 'Hornsea 1 has 174 turbines of 7 MW each and was the first offshore wind farm over 1 GW. Its owner, Ørsted, calls Hornsea 2 (165 turbines of 8 MW) the world\'s largest offshore wind farm.' },
     { id: 'gansu', tag: 'wind', icon: '🌬️', name: 'Gansu Wind Farm',
-      where: 'Gansu province, China · 2009–ongoing · ~8,000+ MW',
-      story: 'World\'s largest land-based wind farm. Built in the Gobi Desert. Curtailment problems early — built faster than transmission to coastal demand. Now better integrated.' },
+      where: 'Gansu province, China · from 2009',
+      story: 'A huge cluster of wind farms in the Gobi Desert, far from China\'s big coastal cities. Early on, much of its power was wasted because power lines to the cities lagged behind.' },
     { id: 'block', tag: 'wind', icon: '🌬️', name: 'Block Island Wind Farm',
       where: 'Off Block Island, RI · 2016 · 30 MW',
-      story: 'First commercial offshore wind in the US. Just 5 turbines but a watershed moment. Replaced 1 million gal/yr of diesel that the island used to burn for power.' },
+      story: 'The first commercial offshore wind farm in the US. Just 5 turbines, but a watershed moment. The island had made its power with diesel generators.' },
     // Solar
     { id: 'bhadla', tag: 'solar', icon: '☀️', name: 'Bhadla Solar Park',
       where: 'Rajasthan, India · 2018–2020 · 2,245 MW',
-      story: 'World\'s largest single solar farm by some measures. ~57 km² of panels in the Thar desert. Surface temps hit 55 °C — robotic dry cleaners replace water washing.' },
+      story: 'One of the world\'s largest solar parks, spread over about 57 km² of the Thar desert.' },
     { id: 'tengger', tag: 'solar', icon: '☀️', name: 'Tengger Desert Solar Park',
-      where: 'Ningxia, China · 2017 · 1,547 MW',
-      story: 'Nicknamed the "Great Wall of Solar." 43 km² of panels visible from space. Pairs with a small CSP plant for storage.' },
+      where: 'Ningxia, China · 2017',
+      story: 'Nicknamed the "Great Wall of Solar." One of China\'s biggest desert solar parks.' },
     // CSP
     { id: 'noor', tag: 'csp', icon: '🔆', name: 'Noor Ouarzazate',
-      where: 'Morocco · 2016–2018 · 580 MW',
-      story: 'World\'s largest concentrated solar (CSP) complex. Combines parabolic trough + power tower + PV. 7+ hours molten-salt storage means it dispatches into the evening peak.' },
+      where: 'Morocco · 2016–2018 · about 580 MW',
+      story: 'One of the world\'s largest concentrated solar (CSP) complexes. Combines parabolic trough + power tower + PV. Molten-salt storage lets it keep supplying power into the evening.' },
     { id: 'ivanpah', tag: 'csp', icon: '🔆', name: 'Ivanpah Solar Power Facility',
       where: 'Mojave Desert, California · 2014 · 392 MW',
-      story: 'Three power towers, 173,500 heliostats. Has been controversial — bird kills from solar flux, lower-than-projected output, no thermal storage means it doesn\'t outperform PV.' },
+      story: 'Three power towers, 173,500 heliostats. Controversial — birds have been burned flying through its focused sunlight, it made less power than first planned, and with no heat storage it stops at sunset like PV.' },
     // Geothermal
     { id: 'geysers', tag: 'geothermal', icon: '🌋', name: 'The Geysers',
-      where: 'Sonoma & Lake counties, CA · since 1960 · 1,517 MW',
-      story: 'World\'s largest geothermal complex by capacity. 22 dry-steam plants. Output declining since the 90s — operators inject treated wastewater to keep the reservoir alive.' },
+      where: 'Sonoma & Lake counties, CA · since 1960 · up to 725 MW (13 Calpine plants)',
+      story: 'Its operator calls it the world\'s largest operating geothermal complex. Its steam ran low, so treated wastewater is now piped in to refill the reservoir (Calpine).' },
     { id: 'larderello', tag: 'geothermal', icon: '🌋', name: 'Larderello',
-      where: 'Tuscany, Italy · 1904 (first ever) · 800 MW',
-      story: 'The original. First geothermal plant ever, opened 1904 with a single dynamo. Still operating after 120+ years. Volcanic gradient ~80 °C/km — exceptional resource.' },
+      where: 'Tuscany, Italy · since 1904',
+      story: 'The original. In 1904 geothermal steam here first lit electric light bulbs, and the field still makes power today (Enel Green Power).' },
     { id: 'hellisheidi', tag: 'geothermal', icon: '🌋', name: 'Hellisheiði',
-      where: 'Iceland · 2006 · 303 MW + 400 MW thermal',
+      where: 'Iceland · 2006 · 303 MW electric, plus hot water',
       story: 'Combined heat + power for greater Reykjavík. Hosts the Climeworks/CarbFix CO₂ capture experiment that mineralizes carbon dioxide into rock.' },
     // Tidal / Wave
     { id: 'rance', tag: 'wave', icon: '🌀', name: 'Rance Tidal Power Station',
       where: 'Brittany, France · 1966 · 240 MW',
-      story: 'World\'s first tidal power plant; ran for 50+ years. A 750 m barrage across the Rance estuary with 24 reversible bulb turbines. Massive ecological impact — not built much anymore.' },
+      story: 'The first large tidal power station, and still running (EDF). A 750 m barrage across the Rance estuary holds 24 turbines. Barrages change estuaries a lot, so few have been built.' },
     { id: 'meygen', tag: 'wave', icon: '🌀', name: 'MeyGen',
-      where: 'Pentland Firth, Scotland · 2016–ongoing · 6 MW (Phase 1, scaling to 86 MW)',
-      story: 'World\'s largest tidal stream array. Underwater turbines spin in 5 m/s currents. World\'s first commercial-scale demonstration of underwater wind-style turbines for tides.' },
+      where: 'Pentland Firth, Scotland · 2016–ongoing · 6 MW built (4 turbines)',
+      story: 'One of the largest tidal stream projects. Underwater turbines spin in fast tidal currents, like wind turbines under the sea.' },
     // Maine
     { id: 'orpc', tag: 'wave', icon: '🌀', name: 'ORPC TidGen (Eastport, ME)',
-      where: 'Cobscook Bay, Maine · 2012 · 180 kW (test)',
-      story: 'First grid-connected tidal generator in US waters. Tested by Ocean Renewable Power Co. Cobscook Bay sees 6 m / 20 ft tides — among the largest in the lower 48.' }
+      where: 'Cobscook Bay, Maine · 2012 · pilot project',
+      story: 'The first commercial grid-connected tidal project in the US (US Department of Energy). Eastport\'s tides average about 18 feet (5.6 m) from low to high (NOAA).' }
   ];
   var PLANT_FILTERS = [
     { id: 'all', label: 'All' },
@@ -3597,75 +3869,84 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // are jargon worth decoding; production routes have very different climate
   // impacts; end uses are limited but important.
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24: IEA Global Hydrogen Review 2024 ("unabated natural gas, which emits 10-12 kg CO2-eq/kg
+  // H2"); IEA Global Hydrogen Review 2025 (demand "almost 100 million tonnes" in 2024; low-emissions hydrogen "less than
+  // 1% of global production"; supply "dominated by fossil fuels"); DOE Hydrogen Shot (2021): $1 per 1 kg in 1 decade;
+  // DOE Hydrogen Program: 1 kg H2 = 33.3 kWh (LHV), about 3x gasoline per kg; IRS 45V (up to $3/kg); One Big Beautiful
+  // Bill Act (2025): 45V only for facilities that begin construction before 2028; Erisman et al. 2008 (Nature
+  // Geoscience): synthetic nitrogen fertilizer feeds about half the world's people; worldsteel: steel is 7-9% of
+  // direct fossil-fuel CO2; Rosenow 2022 (Joule): 32 independent studies do not support hydrogen for heating homes.
+  // Removed with no source found: color cost ranges, blue/turquoise/gold CO2 ranges, "~95% gray", use shares
+  // (~40% / ~30%), France + Mali finds, named projects.
   var HYDROGEN_COLORS = [
     { id: 'green', label: 'Green', emoji: '🟢',
       how: 'Electrolysis powered by renewable electricity. Water → H₂ + ½ O₂.',
-      co2: '~0–1 kg CO₂ / kg H₂',
-      cost: '$3–6 / kg today, target $1–2 / kg by 2030 (DOE Hydrogen Shot)',
+      co2: 'Near zero at the plant',
+      cost: 'Costs more than gray today. DOE\'s Hydrogen Shot goal (2021): $1 per kg within a decade.',
       verdict: 'The goal. Truly low-carbon. Cost-limited today.' },
     { id: 'blue', label: 'Blue', emoji: '🔵',
       how: 'Steam methane reforming (SMR) of natural gas + carbon capture & storage (CCS).',
-      co2: '~2–4 kg CO₂ / kg H₂ (assuming ~85–95% capture)',
-      cost: '$1.5–3 / kg',
-      verdict: 'Cheaper than green, but only as clean as the CCS performs. Methane leaks upstream are the real wildcard.' },
+      co2: 'Lower than gray; depends on how much CO₂ is captured and how much methane leaks',
+      cost: 'Between gray and green',
+      verdict: 'Only as clean as the carbon capture performs. Methane leaks upstream are the real wildcard.' },
     { id: 'gray', label: 'Gray', emoji: '⚫',
-      how: 'Steam methane reforming WITHOUT carbon capture. The default H₂ today (~95% of global production).',
-      co2: '~9–11 kg CO₂ / kg H₂',
-      cost: '$1–2 / kg',
-      verdict: 'NOT clean. This is the elephant in the room — most "hydrogen" today is gray.' },
+      how: 'Steam methane reforming WITHOUT carbon capture. Fossil fuels make almost all hydrogen today; low-emissions hydrogen was less than 1% in 2024 (IEA).',
+      co2: '10–12 kg CO₂-eq / kg H₂ (IEA, 2024)',
+      cost: 'Usually the cheapest today',
+      verdict: 'NOT clean. This is the elephant in the room — most "hydrogen" today comes from fossil fuels.' },
     { id: 'pink', label: 'Pink (a.k.a. Purple/Red)', emoji: '🌸',
       how: 'Electrolysis powered by nuclear electricity.',
-      co2: '~0–1 kg CO₂ / kg H₂',
-      cost: '$2–5 / kg',
-      verdict: 'Low-carbon and dispatchable. Several US nuclear plants exploring this for revenue diversification.' },
+      co2: 'Near zero at the plant',
+      cost: 'Depends on the price of nuclear power',
+      verdict: 'Low-carbon and steady.' },
     { id: 'turquoise', label: 'Turquoise', emoji: '💎',
       how: 'Methane pyrolysis. Methane → H₂ + solid carbon (no CO₂ emitted, byproduct is graphite or carbon black).',
-      co2: '~0–2 kg CO₂ / kg H₂ if powered by renewables',
-      cost: '$2–4 / kg (early-stage)',
+      co2: 'Low if the heat is clean and the carbon stays solid',
+      cost: 'Early-stage',
       verdict: 'Promising — solid carbon byproduct can be sold. Still pre-commercial scale.' },
     { id: 'white', label: 'White (Natural / Geologic)', emoji: '⚪',
-      how: 'Hydrogen extracted from natural underground reservoirs (only recently confirmed at exploitable scale, e.g. Mali).',
+      how: 'Hydrogen found in natural underground deposits.',
       co2: 'Near-zero direct emissions',
-      cost: '$1–2 / kg projected if scalable',
-      verdict: 'Wildcard. Big finds in France + Mali 2023–24. Could be transformative if it scales — "the new fossil fuel" except it\'s renewable on geological timescales.' },
+      cost: 'Unknown: still being explored',
+      verdict: 'Wildcard. Scientists are still measuring how much exists and how much can be reached.' },
     { id: 'gold', label: 'Gold (a.k.a. Orange)', emoji: '🟡',
       how: 'In-situ from depleted oil/gas wells — inject water, microbes/heat strip H₂ from residual hydrocarbons.',
-      co2: '~1–3 kg CO₂ / kg H₂',
+      co2: 'Not yet measured well',
       cost: 'Pilot stage',
-      verdict: 'Speculative — could valorize abandoned wells, but real climate accounting is still being worked out.' }
+      verdict: 'Speculative — could reuse abandoned wells, but real climate accounting is still being worked out.' }
   ];
   var HYDROGEN_USES = [
     { id: 'fertilizer', icon: '🌾', name: 'Ammonia / fertilizer',
-      pct: '~40% of global H₂ today',
-      what: 'NH₃ for nitrogen fertilizer (Haber-Bosch process). Feeds ~50% of humanity. Also used for explosives + refrigerants.',
-      verdict: 'Highest-impact decarbonization target. Green ammonia plants under construction in Saudi Arabia, Australia, Texas.' },
+      pct: 'One of the biggest uses today',
+      what: 'NH₃ for nitrogen fertilizer (Haber-Bosch process). Synthetic fertilizer helps feed about half of the world\'s people (Erisman et al., 2008). Also used for explosives + refrigerants.',
+      verdict: 'A top target for clean hydrogen.' },
     { id: 'refining', icon: '🏭', name: 'Oil refining',
-      pct: '~30% of global H₂ today',
+      pct: 'One of the biggest uses today',
       what: 'Hydrocracking + desulfurization in petroleum refining.',
-      verdict: 'Use shrinks as oil demand falls. Replacing gray with green here is a quick win.' },
+      verdict: 'Use shrinks if oil demand falls. Switching from gray to clean hydrogen here cuts emissions quickly.' },
     { id: 'steel', icon: '🔩', name: 'Steel-making (DRI)',
-      pct: 'Currently ~0%; potentially huge',
+      pct: 'Tiny today; could grow',
       what: 'Direct Reduced Iron (DRI) using H₂ instead of coke. Iron oxide + H₂ → iron + H₂O. Fundamentally replaces coal in steel.',
-      verdict: 'Hot area — SSAB / HYBRIT (Sweden), H2 Green Steel, ArcelorMittal pilots. Steel = 7–9% of global CO₂.' },
+      verdict: 'Pilot plants are running, such as HYBRIT in Sweden. Steel makes 7–9% of direct CO₂ from fossil fuels (worldsteel).' },
     { id: 'transport', icon: '🚛', name: 'Heavy transport',
       pct: 'Niche today',
       what: 'Long-haul trucking, shipping, aviation, trains where batteries are too heavy. Fuel cells convert H₂ + O₂ → electricity + water.',
-      verdict: 'Battle with battery EVs ongoing. Likely outcome: batteries win light-duty + most trucking; H₂ wins shipping + aviation + some heavy industrial.' },
+      verdict: 'Batteries vs hydrogen is still debated. Many experts expect batteries for cars and most trucks, and hydrogen-based fuels for some ships and planes.' },
     { id: 'storage', icon: '🔋', name: 'Long-duration grid storage',
       pct: 'Pilot stage',
-      what: 'Convert surplus summer solar to H₂; store in salt caverns or tanks; burn in turbine in winter. Round-trip ~30–40%.',
-      verdict: 'Only economic option for >100-hr storage. Round-trip efficiency is bad but cost-per-kWh-stored gets attractive at long durations.' },
+      what: 'Convert surplus summer solar to H₂; store in salt caverns or tanks; burn in a turbine in winter. Most of the energy is lost on the round trip.',
+      verdict: 'One of the few ways to store energy for weeks or seasons; efficiency is low.' },
     { id: 'buildings', icon: '🏠', name: 'Heating buildings',
       pct: 'Tiny',
       what: 'Burning H₂ in modified gas boilers. Some UK + EU pilots.',
-      verdict: 'Probably the WORST use. Heat pumps deliver 3-5× more useful heat per unit of low-carbon energy. Hydrogen gas industry pushes hard for this; most independent analyses are skeptical.' }
+      verdict: 'Probably the WORST use. A heat pump gives several units of heat per unit of electricity; making hydrogen and burning it gives less than one. A 2022 review of 32 independent studies found none that supported hydrogen for heating homes widely (Rosenow, Joule).' }
   ];
   var HYDROGEN_KEYS = [
-    'Round-trip efficiency for green H₂ as storage: 30–40%. Compare to 85–95% for batteries.',
-    '1 kg H₂ ≈ 33 kWh of energy (LHV) — about 3× the energy density of gasoline by mass, but H₂ is so light it has poor VOLUMETRIC energy density.',
-    'Most hydrogen today is gray. Saying "hydrogen is clean" without specifying color is meaningless.',
-    'Hydrogen + heat-pumps fight for the same molecule of clean electricity. Heat pumps win for buildings; hydrogen wins for steel + ammonia + ships.',
-    'IRA Section 45V: production tax credit up to $3/kg for green H₂ — the biggest US hydrogen subsidy ever. Final rules contested through 2024–25.'
+    'Hydrogen storage loses most of its energy on the round trip; US grid batteries averaged 82% (EIA, 2019).',
+    '1 kg H₂ ≈ 33.3 kWh of energy (lower heating value, US DOE) — about 3× the energy per kg of gasoline, but H₂ is so light it takes up a lot of space.',
+    'Most hydrogen today is made from fossil fuels. Saying "hydrogen is clean" without saying how it was made means little.',
+    'Hydrogen + heat-pumps fight for the same clean electricity. Heat pumps win for buildings; hydrogen may win for steel + ammonia + ships.',
+    '45V tax credit: up to $3 per kg for the cleanest hydrogen (IRS). A 2025 law limited it to projects that start construction before 2028.'
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3673,37 +3954,44 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // The energy transition is technical AND political. Who pays, who profits,
   // who loses, who decides — these matter as much as kWh.
   // ─────────────────────────────────────────────────────────
+  // Source audit 2026-11-24: ACEEE Sep 2020 report (2017 data: national median 3.1%; low-income 8.1% average; higher
+  // burdens for Black, Hispanic, Native American, older and rural households); ACEEE 2024 brief (top quarter of
+  // low-income households "average energy burdens exceed 15%"); Justice40 ended Jan 2025 (GAO-25-107516, as in
+  // Climate Explorer); Tessum et al. 2021, Science Advances; BIA (574 federally recognized tribes; about 56.2 million
+  // acres held in trust). Removed with no source found: "30%+", coal/oil job counts, "offshore wind in WV port towns"
+  // (West Virginia has no coast), "250+ MW Navajo solar", Penobscot offshore-wind claim, "100 million acres", Maine
+  // program percentages, named-state equity rules.
   var JUSTICE_TOPICS = [
     { id: 'burden', icon: '💸', title: 'Energy burden',
-      what: 'Energy burden = % of household income spent on energy bills. The US average is ~3%. Low-income households (≤200% federal poverty line) average 8.6%; the highest-burden households spend 30%+.',
-      who: 'Hits hardest in old housing stock — leaky, electric-resistance heat, no AC during heat waves. Predominantly Black, Latino, rural, and elderly households.',
-      action: 'Weatherization + heat pumps cut energy burden faster than any other intervention. Federal WAP + IRA HOMES rebates explicitly target low-income households. Maine: Efficiency Maine\'s low-income programs cover 100% of weatherization for qualifying homes.',
-      source: 'ACEEE Energy Burden Report 2022; DOE WAP' },
+      what: 'Energy burden = the share of household income spent on home energy bills. The median US household spent 3.1%; low-income households (≤200% of the federal poverty line) averaged 8.1% (ACEEE 2020, using 2017 data). The most-burdened quarter of low-income households average over 15% (ACEEE, 2024).',
+      who: 'ACEEE found higher burdens for Black, Hispanic, Native American, older and rural households, often in older, leakier housing.',
+      action: 'Weatherization and efficient heating lower energy bills. The federal Weatherization Assistance Program serves low-income households. Maine programs change, so check current offers.',
+      source: 'ACEEE Energy Burden reports (2020, 2024); DOE WAP' },
     { id: 'frontline', icon: '🏘️', title: 'Front-line communities',
       what: 'Communities that bear the worst pollution from fossil-fuel infrastructure — oil refineries, gas plants, coal-ash dumps, petrochemical complexes. "Cancer Alley" along the lower Mississippi. The Navajo Nation coal plant. Appalachian coal regions.',
-      who: 'Disproportionately Black, Latino, Indigenous, and low-income — the result of decades of zoning + redlining + tribal-land policy. Higher rates of asthma, cancer, cardiovascular disease.',
-      action: 'A real transition shuts these plants AND invests in the communities — IRA Justice40 mandates 40% of climate dollars go to disadvantaged communities. Implementation is ongoing and contested.',
-      source: 'EPA EJScreen; Tessum 2021 (Science); Justice40 Initiative' },
+      who: 'Disproportionately Black, Latino, Indigenous, and low-income — the result of decades of zoning + redlining + tribal-land policy.',
+      action: 'A just transition closes polluting plants AND invests in the communities around them. The federal Justice40 goal (2021) aimed 40% of some climate benefits at disadvantaged communities; it was ended in January 2025 (GAO).',
+      source: 'EPA; Tessum et al. 2021 (Science Advances); GAO-25-107516' },
     { id: 'transition', icon: '⛏️', title: 'Just transition for fossil-fuel workers',
       what: 'A coal miner in West Virginia or an oil worker in Louisiana can\'t simply "learn to code." Real just transition means jobs of comparable pay, in the same region, with health benefits and pension protection.',
-      who: 'Coal employment ~40K (down from 90K in 2010). Oil & gas ~135K direct, hundreds of thousands of contractors. Heavily concentrated geographically.',
-      action: 'IRA contains the largest US labor + community-investment package in decades — bonus tax credits for projects in former coal communities, prevailing-wage requirements on most clean-energy projects, apprenticeship requirements. Working in some places (offshore wind in WV port towns), uneven elsewhere.',
+      who: 'Fossil-fuel jobs are concentrated in a few regions, so a closure can hit one town very hard.',
+      action: 'The 2022 Inflation Reduction Act added bonus tax credits for clean-energy projects in "energy communities," plus wage and apprenticeship rules for the full credits. A 2025 law cut many of these credits back.',
       source: 'IRA Energy Communities provisions; BlueGreen Alliance' },
     { id: 'siting', icon: '⚖️', title: 'Siting fights',
-      what: 'Renewable projects get sited where land is cheap and politically powerless to refuse. Wind farms on tribal land or near reservation borders. Solar on prime farmland. Lithium mining in Indigenous water-rights areas (Thacker Pass, NV). Offshore wind vs commercial fishing.',
+      what: 'Renewable projects often get sited where land is cheap and communities have little power to refuse. Wind farms on or near tribal land. Solar on prime farmland. Lithium mining in Indigenous water-rights areas (Thacker Pass, NV). Offshore wind vs commercial fishing.',
       who: 'Indigenous nations, working-class rural areas, fishing communities — the same groups historically forced to host fossil infrastructure now sometimes asked to host renewable infrastructure too.',
       action: 'Real procedural justice: free, prior, and informed consent (FPIC) for tribal projects; community benefit agreements; co-ownership models where the host community gets equity, not just royalties.',
       source: 'Sovereign Energy (Powless 2022); Native American Rights Fund' },
     { id: 'indigenous', icon: '🪶', title: 'Indigenous leadership',
-      what: 'Indigenous nations are NOT just affected parties — they are increasingly project leaders. Navajo Nation deploying 250+ MW of solar on reclaimed coal-plant land. Standing Rock Sioux fighting AND building. Maine: Penobscot Nation involved in offshore-wind discussions.',
-      who: '574 federally-recognized tribes in the US, ~100 million acres of tribal land — much of it with strong renewable resources.',
-      action: 'Tribal-owned utilities + microgrids. Tribal-priority transmission queues. The Department of Energy\'s Office of Indian Energy supports tribal projects.',
-      source: 'Native Renewables; Office of Indian Energy (energy.gov/indianenergy)' },
+      what: 'Indigenous nations are NOT just affected parties — many lead their own energy projects, such as solar farms on Navajo Nation land.',
+      who: 'There are 574 federally recognized tribes in the US. About 56 million acres are held in trust for tribes and individual Native Americans (Bureau of Indian Affairs).',
+      action: 'Tribal-owned utilities + microgrids. The Department of Energy\'s Office of Indian Energy supports tribal projects.',
+      source: 'Bureau of Indian Affairs; Office of Indian Energy (energy.gov/indianenergy)' },
     { id: 'procedural', icon: '🗳️', title: 'Procedural justice — who\'s at the table',
       what: 'When state PUCs, regional grid operators, and utility boards make billion-dollar decisions, who\'s in the room? Historically: utility execs, large industrial customers, big-NGO lawyers. Often missing: residential ratepayers, small-business owners, Indigenous nations, environmental-justice orgs.',
-      who: 'Most US PUCs are appointed; some are elected (Georgia, Oklahoma). State PUCs vary wildly in how seriously they treat justice considerations.',
-      action: 'Maine PUC has begun including equity in rate-case docket questions. Several states (NY, CA, IL, NJ) now require justice analysis in major proceedings. Citizen intervenor funding (where available) lets advocacy groups participate professionally.',
-      source: 'NARUC Equity Issues Group; Maine Office of the Public Advocate' }
+      who: 'Most state utility commissioners are appointed; a few states elect them (for example, Georgia).',
+      action: 'Some states now ask utility regulators to weigh equity. Intervenor funding, where it exists, helps community groups take part in cases.',
+      source: 'NARUC; Maine Office of the Public Advocate' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3750,7 +4038,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   var HANDS_ON_ACTIVITIES = [
     { id: 'kidwind', name: 'KidWind Challenge: build a wind turbine',
       grade: '5–12',
-      what: 'Students design and build small wind turbines with provided generator + materials. Annual KidWind Challenge competition (regional + national). $50–200 / kit.',
+      what: 'Students design and build small wind turbines with provided generator + materials. Annual KidWind Challenge competition (regional + national).',
       url: 'https://www.kidwind.org' },
     { id: 'lemon', name: 'Lemon battery + voltmeter',
       grade: 'K–5',
@@ -3798,33 +4086,33 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     home: [
       { id: 'audit', icon: '🔍', what: 'Audit your home energy use',
         how: 'Walk through your home with the DOE\'s DIY audit checklist. Note every always-on device (router, fridge, idle TVs); read your meter at the start + end of a week. Compare to your bill.',
-        impact: 'Most homes find 10–25% of usage in "phantom load" — eliminating it is a $200–500/yr saver with zero behavior change.',
+        impact: 'Finding always-on devices is the first step to cutting waste.',
         url: 'https://www.energy.gov/energysaver/diy-home-energy-assessments' },
       { id: 'phantom', icon: '🔌', what: 'Kill phantom loads',
-        how: 'Smart power strips ($15–30) for entertainment + computer setups. Unplug chargers when not in use. Switch off the basement freezer if half-empty.',
-        impact: 'Phantom load = ~5–10% of US residential electricity. Free hardware-store fix.',
+        how: 'Smart power strips for entertainment + computer setups. Unplug chargers when not in use. Switch off the basement freezer if half-empty.',
+        impact: 'Smart power strips cut standby power with no change in habits.',
         url: null },
       { id: 'leds', icon: '💡', what: 'Replace any remaining incandescent / halogen bulbs with LED',
-        how: 'Hardware store LEDs are $2–4 each, last 15–25 years, use ~85% less power than incandescents.',
-        impact: 'Each LED swap saves ~$5–10/yr per bulb. 20-bulb home: $100–200/yr.',
+        how: 'LEDs use at least 75% less energy and last up to 25 times longer than incandescent bulbs (US Department of Energy).',
+        impact: 'Each swap cuts that bulb\'s electricity use by three-quarters or more.',
         url: null },
       { id: 'thermostat', icon: '🌡️', what: 'Get a smart / programmable thermostat',
-        how: 'ENERGY STAR-certified models start at ~$80. Set back 5–10°F at night and when away. Time-of-use rates? Pre-cool / pre-heat in the cheap window.',
-        impact: 'Programmable thermostat saves ~10% on heating + cooling. Smart thermostat with TOU rates can save 20%+.',
+        how: 'Set the thermostat back 7–10°F at night and when away. Time-of-use rates? Pre-cool / pre-heat in the cheap window.',
+        impact: 'Turning the thermostat back 7–10°F for 8 hours a day can save up to 10% a year on heating and cooling (US Department of Energy).',
         url: 'https://www.energystar.gov/products/heating_cooling/programmable_thermostats' }
     ],
     school: [
       { id: 'energyclub', icon: '👥', what: 'Start (or join) an energy / environment club',
         how: 'Track the school\'s monthly utility bills. Identify top energy hogs. Propose a pilot — solar panel demo, lighting upgrade, school garden, bike-to-school day.',
-        impact: 'Visible, low-cost, builds civic muscle. Many schools have unused EE budgets students can unlock.',
+        impact: 'Visible, low-cost, builds civic muscle.',
         url: null },
       { id: 'auditschool', icon: '📋', what: 'Audit ONE school system',
         how: 'Pick the cafeteria, the gym lights, or computer lab. Use a Kill-A-Watt meter ($25 from a library or buy-and-share). Document. Present findings to admin.',
         impact: 'Real numbers move admin where vague concerns don\'t.',
         url: 'https://www.energy.gov/eere/femp/operations-and-maintenance' },
       { id: 'kidwind', icon: '🌬️', what: 'Run a KidWind challenge',
-        how: 'Order or build a KidWind kit ($50–200). Compete in regional + national challenges (in-person + virtual divisions).',
-        impact: 'Hands-on engineering. Looks great on transcripts. Some students go to NYC / DC for nationals.',
+        how: 'Order or build a KidWind kit. Compete in regional + national challenges.',
+        impact: 'Hands-on engineering and teamwork.',
         url: 'https://www.kidwind.org' },
       { id: 'climate-action-plan', icon: '🎯', what: 'Help your school write a Climate Action Plan',
         how: 'Many districts are required to have one but few do it well. Volunteer to review. Bring data + ideas, not just outrage.',
@@ -3833,12 +4121,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     ],
     community: [
       { id: 'eff-maine', icon: '🌲', what: '(Maine) Get an Efficiency Maine home assessment',
-        how: 'Free or low-cost professional energy audit. Available to renters with landlord permission. Includes thermal imaging.',
-        impact: 'Identifies the biggest fixes for YOUR house. Often qualifies for $1,000–8,000+ in rebates.',
+        how: 'Efficiency Maine runs home energy programs, including help finding energy fixes. Check its site for current offers.',
+        impact: 'Identifies the biggest fixes for YOUR house; some fixes qualify for rebates.',
         url: 'https://www.efficiencymaine.com/at-home/home-energy-savings-program' },
       { id: 'community-solar', icon: '☀️', what: 'Subscribe to community solar',
         how: 'You don\'t need a roof. Subscribe to a local community solar farm; your share offsets your electric bill.',
-        impact: '5–15% bill reduction with no upfront cost. Available in 22 US states + DC.',
+        impact: 'Can lower your bill with no panels on your roof. Availability depends on your state.',
         url: 'https://www.energysage.com/community-solar/' },
       { id: 'tool-library', icon: '🛠️', what: 'Start or use a tool library',
         how: 'Many cities have free / borrow-fee tool libraries. Saves households from buying expensive tools they use once.',
@@ -3846,7 +4134,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         url: 'https://localtools.org' },
       { id: 'mutual-aid', icon: '🤝', what: 'Connect to a mutual-aid network',
         how: 'During heat waves, ice storms, blackouts — neighbors helping neighbors saves lives. Find or join your local network.',
-        impact: 'Maine winters + an aging electric grid = real need. Resilience is local.',
+        impact: 'Maine winter storms and outages make neighbor help matter. Resilience is local.',
         url: 'https://www.mutualaidhub.org' }
     ],
     civic: [
@@ -3855,16 +4143,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         impact: 'PUCs decide rate cases, transmission projects, net-metering rules. Few citizens comment — yours stands out.',
         url: 'https://www.maine.gov/mpuc' },
       { id: 'school-board', icon: '🪑', what: 'Speak at a school-board meeting',
-        how: 'Open public-comment periods are required by law. Sign up to speak (3 min typical). Bring a single specific ask: "Approve the solar feasibility study," "Adopt a Climate Action Plan."',
+        how: 'Many boards hold a public-comment period. Sign up to speak (a few minutes). Bring a single specific ask: "Approve the solar feasibility study," "Adopt a Climate Action Plan."',
         impact: 'Local boards often hear from very few students. One specific, sourced request can shift a vote.',
         url: null },
       { id: 'rep', icon: '✉️', what: 'Write to your state legislator',
         how: 'Find your Maine rep at legislature.maine.gov/house. Hand-written letters or phone calls weighted heavier than form emails. Be specific about the bill or issue.',
-        impact: 'Most Maine legislators get only a few constituent contacts per week. You will be heard.',
+        impact: 'A personal, specific message from a constituent stands out.',
         url: 'https://legislature.maine.gov' },
       { id: 'vote', icon: '🗳️', what: 'When eligible, vote in EVERY election',
-        how: 'Federal, state, AND local. Local PUC commissioners + town council members make ~70% of the energy decisions that affect your bill, even if national news barely covers them.',
-        impact: 'Maine has ranked-choice voting + same-day registration. Voting infrastructure is excellent.',
+        how: 'Federal, state, AND local. State utility regulators and local officials shape many energy decisions that affect your bill, even if national news barely covers them.',
+        impact: 'Maine has ranked-choice voting + same-day registration.',
         url: 'https://www.maine.gov/sos/cec/elec' }
     ]
   };
@@ -3946,7 +4234,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         parts.push('</tr>');
       });
       parts.push('</tbody></table>');
-      parts.push('<div class="dim">Sources: NREL ATB 2024, IPCC AR6 WG3, Macknick 2012, Hertwich 2015.</div>');
+      parts.push('<div class="dim">Sources: EIA Electric Power Monthly (capacity factor, 2024); Lazard LCOE+ 2026 and IRENA 2024 (cost); IPCC AR5 WGIII Annex III (lifecycle CO₂). Land, water and dispatch are rough teaching ratings.</div>');
     }
 
     // Glossary
@@ -4017,7 +4305,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
 
     parts.push('<hr style="margin-top:32px;border:none;border-top:1px solid #ccc;">');
-    parts.push('<div class="dim" style="text-align:center;">Renewables Lab — part of AlloFlow STEAM Lab. Sources cited: NREL, IEA, IRENA, EIA, BOEM, IPCC. Educational only.</div>');
+    parts.push('<div class="dim" style="text-align:center;">Renewables Lab — part of AlloFlow STEAM Lab. Sources cited: EIA, Lazard, IRENA, IEA, IPCC, Ember, BLS, NREL, US DOE. Educational only.</div>');
     parts.push('</body></html>');
     return parts.join('');
   }
@@ -9632,7 +9920,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // Maine home solar payback calc
       var mhRoofM2 = (typeof d.mhRoofM2 === 'number' && isFinite(d.mhRoofM2)) ? d.mhRoofM2 : 30;       // m² of usable south-facing roof
       var mhBillMo = (typeof d.mhBillMo === 'number' && isFinite(d.mhBillMo)) ? d.mhBillMo : 150;     // monthly electric bill ($)
-      var mhRebatePct = (typeof d.mhRebatePct === 'number' && isFinite(d.mhRebatePct)) ? d.mhRebatePct : 30; // federal ITC % (currently 30 through 2032)
+      var mhRebatePct = (typeof d.mhRebatePct === 'number' && isFinite(d.mhRebatePct)) ? d.mhRebatePct : 0; // federal credit %; IRS: ended for systems placed in service after Dec 31, 2025
       // AI Practice state
       var aiScenarioId = d.aiScenarioId || null;
       var aiResponse = d.aiResponse || '';
@@ -9814,6 +10102,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('a', { href: 'https://www.irena.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'IRENA'),
           ' · ',
           h('a', { href: 'https://www.eia.gov', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'EIA'),
+          ' · ',
+          h('a', { href: 'https://www.lazard.com/research-insights/levelized-cost-of-energyplus-lcoeplus/', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'Lazard'),
+          ' · ',
+          h('a', { href: 'https://www.ipcc.ch/report/ar5/wg3/', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'IPCC'),
           __alloT('stem.renewables.sims_are_simplified_real_plants_involv', '. Sims are simplified — real plants involve additional losses (wake, transmission, parasitic load).')
         );
       }
@@ -10263,7 +10555,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { style: { marginTop: 4 } }, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.daily_energy_clear_sky', 'Daily energy (clear sky): ')),
                 h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, dayCurve.totalKWh.toFixed(2) + ' kWh')),
               h('div', { style: { marginTop: 4, fontSize: 11, color: T.dim } },
-                __alloT('stem.renewables.note_real_world_output_is_lower_becaus', 'Note: real-world output is lower because of clouds + soiling + system losses. Annual capacity factor in Maine: 16–20%.'))
+                __alloT('stem.renewables.note_real_world_output_is_lower_becaus_v2', 'Note: real-world output is lower because of clouds, dirt and system losses. US solar farms averaged a 23% capacity factor in 2024 (EIA).'))
             )
           ),
           solarPvMode === 'calc' && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -10281,22 +10573,22 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 10 } },
               __alloT('stem.renewables.power_irradiance_area_efficiency_cos_t', 'Power = Irradiance × Area × Efficiency × cos(tilt error). Drag the sliders to see how each factor changes output.')),
             slider({ id: 'sl-irr', label: __alloT('stem.renewables.sunlight_intensity_irradiance', 'Sunlight intensity (irradiance)'), value: simSolarIrr, min: 100, max: 1000, step: 50, unit: 'W/m²',
-              hint: __alloT('stem.renewables.1000_w_m_at_solar_noon_on_a_clear_summ', '~1000 W/m² at solar noon on a clear summer day. ~200 W/m² on overcast days.'),
+              hint: __alloT('stem.renewables.1000_w_m_at_solar_noon_on_a_clear_summ_v2', '~1000 W/m² is the standard test value for strong, clear sun. Thick clouds cut it to a small fraction of that.'),
               onChange: function(v) { upd('simSolarIrr', v); } }),
             slider({ id: 'sl-area', label: __alloT('stem.renewables.total_panel_area', 'Total panel area'), value: simSolarArea, min: 1, max: 200, step: 1, unit: 'm²',
               hint: __alloT('stem.renewables.a_typical_home_rooftop_array_20_40_m_a', 'A typical home rooftop array: 20–40 m². A megawatt utility array: ~5,000 m².'),
               onChange: function(v) { upd('simSolarArea', v); } }),
             slider({ id: 'sl-eff', label: __alloT('stem.renewables.module_efficiency', 'Module efficiency'), value: Math.round(simSolarEff * 100), min: 10, max: 28, step: 1, unit: '%',
-              hint: __alloT('stem.renewables.commercial_panels_18_23_lab_record_mul', 'Commercial panels: 18–23%. Lab record (multi-junction): 47%. Cheap thin-film: 10–12%.'),
+              hint: __alloT('stem.renewables.commercial_panels_18_23_lab_record_mul_v2', 'Home-panel efficiency has risen about 0.4 percentage points a year (Berkeley Lab, 2026). The lab record for any solar cell is 47.6%: a stacked multi-junction cell under concentrated light (Fraunhofer ISE, 2022).'),
               onChange: function(v) { upd('simSolarEff', v / 100); } }),
             slider({ id: 'sl-tilt', label: __alloT('stem.renewables.tilt_error_from_optimal', 'Tilt error from optimal'), value: simSolarTilt, min: 0, max: 80, step: 5, unit: '°',
               hint: __alloT('stem.renewables.0_perfectly_aimed_at_the_sun_90_parall', '0° = perfectly aimed at the sun. 90° = parallel to sunlight (zero output). Trackers cut this to near-zero.'),
               onChange: function(v) { upd('simSolarTilt', v); } }),
             powerBar('Instantaneous power output', fracOfPeak, kW.toFixed(2) + ' kW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              __alloT('stem.renewables.a_home_consumes_1_kw_continuous_on_ave', 'A home consumes ~1 kW continuous on average. So this array could power roughly '),
-              h('strong', { style: { color: T.accentHi } }, kW.toFixed(1) + ' homes'),
-              __alloT('stem.renewables.at_this_instant_annual_energy_depends_', ' at this instant. Annual energy depends on capacity factor (typically 15–27%).'))
+              __alloT('stem.renewables.a_home_consumes_1_kw_continuous_on_ave_v2', 'An average US home uses about 1.2 kW around the clock (10,791 kWh a year, EIA). So this array could power roughly '),
+              h('strong', { style: { color: T.accentHi } }, (kW / (RN_US_HOME_KWH_YR / 8760)).toFixed(1) + ' homes'),
+              __alloT('stem.renewables.at_this_instant_annual_energy_depends__v2', ' at this instant. Over a year, output depends on capacity factor (US solar farms: 23% in 2024, EIA).'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.series_vs_parallel_wiring', '🔌 Series vs parallel wiring')),
@@ -10316,7 +10608,50 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // ─────────────────────────────────────────
       // WIND
       // ─────────────────────────────────────────
+      // Predict-first: doubling wind speed. Feedback for each pick; the ratio itself comes from windPowerWatts.
+      var RN_WIND_PREDICT_CHOICES = [
+        { id: 2, label: '×2', why: 'Power is not in step with speed. Faster wind carries more energy in each kilogram AND pushes more kilograms through the rotor each second.' },
+        { id: 4, label: '×4', why: 'That counts only one effect: each kilogram of air carries v² energy. Doubling speed also doubles how much air passes each second, so it is 4 × 2.' },
+        { id: 8, label: '×8', why: 'Right. Energy per kilogram grows with v², and the air flowing through each second grows with v, so power grows with v³: 2 × 2 × 2 = 8.' },
+        { id: 16, label: '×16', why: 'That would be v to the fourth power. Power grows with v³ — v² from the energy in each kilogram, times v from how fast air flows through.' }
+      ];
+      function renderWindPredict() {
+        var pick = (typeof d.windPredict === 'number') ? d.windPredict : null;
+        var p5 = windPowerWatts(5, simWindR, simWindCp), p10 = windPowerWatts(10, simWindR, simWindCp);
+        var ratio = p5 > 0 ? p10 / p5 : 0;
+        var chosen = null;
+        RN_WIND_PREDICT_CHOICES.forEach(function(c) { if (c.id === pick) chosen = c; });
+        var right = chosen && Math.abs(chosen.id - ratio) < 0.01;
+        return h('div', { 'data-rn-wind-predict': pick == null ? 'open' : 'answered', style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+          h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.wind_predict_title', '🤔 Predict first')),
+          h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+            __alloT('stem.renewables.wind_predict_q', 'The wind speeds up from 5 m/s to 10 m/s — twice as fast. About how many times more power can the same turbine catch?')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.renewables.wind_predict_group', 'Your prediction'), style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            RN_WIND_PREDICT_CHOICES.map(function(c) {
+              var on = pick === c.id;
+              // A wrong pick is marked in amber (not the green used for right answers).
+              var onBg = Math.abs(c.id - ratio) < 0.01 ? T.accent : T.warm;
+              var onText = (isDark || isContrast) ? '#06281f' : '#ffffff';
+              return h('button', { key: c.id, type: 'button', 'data-rn-focusable': true, 'aria-pressed': on ? 'true' : 'false', disabled: pick != null,
+                onClick: function() {
+                  upd('windPredict', c.id);
+                  rnAnnounce((Math.abs(c.id - ratio) < 0.01 ? 'Correct. ' : 'Not quite. ') + c.why + ' The model gives ' + ratio.toFixed(1) + ' times.');
+                },
+                style: btn({ minWidth: 64, minHeight: 44, fontSize: 15, fontWeight: 700, background: on ? onBg : T.cardAlt, color: on ? onText : T.text, border: '1px solid ' + (on ? onBg : T.border), cursor: pick != null ? 'default' : 'pointer', opacity: 1 })
+              }, c.label);
+            })),
+          chosen && h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + (right ? T.accent : T.warm), fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+            h('div', { style: { fontWeight: 700, color: T.text, marginBottom: 4 } },
+              __alloFill(__alloT('stem.renewables.wind_predict_model', 'The model says ×{ratio}: {p5} kW at 5 m/s becomes {p10} kW at 10 m/s with your rotor.'),
+                { ratio: ratio.toFixed(1), p5: (p5 / 1000).toFixed(p5 < 10000 ? 1 : 0), p10: (p10 / 1000).toFixed(p10 < 10000 ? 1 : 0) })),
+            h('div', null, chosen.why),
+            h('button', { type: 'button', 'data-rn-focusable': true, onClick: function() { upd('windPredict', null); },
+              style: btn({ marginTop: 8, minHeight: 44, fontSize: 12 }) }, __alloT('stem.renewables.wind_predict_again', 'Predict again')))
+        );
+      }
+
       function renderWind() {
+        var windPredicted = typeof d.windPredict === 'number';
         var watts = windPowerWatts(simWindV, simWindR, simWindCp);
         var MW = watts / 1e6;
         var swept = Math.PI * simWindR * simWindR;
@@ -10325,9 +10660,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var fracOfBetz = betzMaxW > 0 ? watts / betzMaxW : 0;
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌬️ Wind'),
+          renderWindPredict(),
           sourceCard('wind'),
-          goalBanner('Goal: see how wind speed cubes (v³) drives turbine output. The Betz limit (Cp = 0.593) is a hard physics ceiling. Even a perfect blade cannot extract more than 59.3% of the wind\'s kinetic energy.'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+          goalBanner(windPredicted
+            ? 'Goal: see how wind speed cubes (v³) drives turbine output. The Betz limit (Cp = 0.593) is a hard physics ceiling. Even a perfect blade cannot extract more than 59.3% of the wind\'s kinetic energy.'
+            : 'Goal: predict first, then test with the sliders. The Betz limit (Cp = 0.593) is a hard physics ceiling. Even a perfect blade cannot extract more than 59.3% of the wind\'s kinetic energy.'),
+          !windPredicted && h('p', { style: { margin: '0 0 14px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.muted, fontSize: 13 } },
+            __alloT('stem.renewables.wind_predict_locked', 'The explanation of the wind power formula opens after you make a prediction above.')),
+          windPredicted && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.why_wind_power_scales_with_v', 'Why wind power scales with v³')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               __alloT('stem.renewables.kinetic_energy_of_moving_air_m_v_the_m', 'Kinetic energy of moving air = ½ m v². The mass passing through a rotor per second is ρ·A·v (density × area × speed). Multiply: '),
@@ -10337,7 +10677,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('strong', { style: { color: T.text } }, __alloT('stem.renewables.betz_s_law', 'Betz’s law:')),
               __alloT('stem.renewables.the_absolute_maximum_power_any_rotor_c', ' the absolute maximum power any rotor can extract is '),
               h('strong', { style: { color: T.accentHi } }, '59.3%'),
-              __alloT('stem.renewables.of_the_wind_s_kinetic_energy_if_you_to', ' of the wind’s kinetic energy. If you took 100%, the air behind would be motionless and no more air could flow through. Real turbines hit Cp ≈ 0.35–0.45.'))
+              __alloT('stem.renewables.of_the_wind_s_kinetic_energy_if_you_to_v2', ' of the wind’s kinetic energy. If you took 100%, the air behind would be motionless and no more air could flow through. Real turbines get less than that.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_wind_turbine_power', '🔬 Try it: wind turbine power')),
@@ -10348,7 +10688,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               hint: __alloT('stem.renewables.small_wind_2_5_m_modern_utility_onshor', 'Small wind: 2–5 m. Modern utility onshore: 50–80 m. Offshore giants: 100–120 m+ (Haliade-X: 110 m).'),
               onChange: function(v) { upd('simWindR', v); } }),
             slider({ id: 'sl-wcp', label: __alloT('stem.renewables.power_coefficient_cp', 'Power coefficient (Cp)'), value: Math.round(simWindCp * 100), min: 10, max: 59, step: 1, unit: '%',
-              hint: __alloT('stem.renewables.real_turbines_35_45_betz_limit_59_3_hi', 'Real turbines: 35–45%. Betz limit: 59.3%. Higher Cp = better blade aerodynamics + control.'),
+              hint: __alloT('stem.renewables.real_turbines_35_45_betz_limit_59_3_hi_v2', 'Real turbines stay below the Betz limit of 59.3%. Higher Cp = better blade aerodynamics + control.'),
               onChange: function(v) { upd('simWindCp', v / 100); } }),
             powerBar('Power output (vs same rotor at Betz max)', fracOfBetz, MW.toFixed(3) + ' MW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
@@ -10359,9 +10699,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.onshore_vs_offshore', '🗼 Onshore vs offshore')),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Onshore:'), __alloT('stem.renewables.cheaper_to_install_maintain_land_confl', ' cheaper to install + maintain. Land conflicts (viewsheds, wildlife). Capacity factor 35–45%.')),
+              h('strong', { style: { color: T.text } }, 'Onshore:'), __alloT('stem.renewables.cheaper_to_install_maintain_land_confl_v2', ' cheaper to install + maintain. Land conflicts (viewsheds, wildlife). US wind farms averaged a 34% capacity factor in 2024 (EIA).')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.text } }, 'Offshore:'), __alloT('stem.renewables.steadier_wind_larger_rotors_saltwater_', ' steadier wind + larger rotors. Saltwater corrosion + installation cost. Capacity factor 45–55%. Deep water (Gulf of Maine) requires '),
+                h('strong', { style: { color: T.text } }, 'Offshore:'), __alloT('stem.renewables.steadier_wind_larger_rotors_saltwater__v2', ' stronger, steadier wind + larger rotors, so they run more of the time. Saltwater corrosion + installation cost. Deep water (Gulf of Maine) requires '),
                 h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.floating_platforms', 'floating platforms')),
                 __alloT('stem.renewables.a_maine_specialty', ' — a Maine specialty.'))
           ),
@@ -10394,7 +10734,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('li', null, h('strong', { style: { color: T.text } }, 'g'), __alloT('stem.renewables.gravity_9_81_m_s', ' = gravity = 9.81 m/s²')),
               h('li', null, h('strong', { style: { color: T.text } }, 'h'), __alloT('stem.renewables.head_vertical_drop_in_meters', ' = head = vertical drop in meters')),
               h('li', null, h('strong', { style: { color: T.text } }, 'Q'), __alloT('stem.renewables.flow_rate_in_m_s', ' = flow rate in m³/s')),
-              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.eta', 'η (eta)')), __alloT('stem.renewables.turbine_efficiency_typically_0_85_0_95', ' = turbine efficiency, typically 0.85–0.95'))
+              h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.eta', 'η (eta)')), __alloT('stem.renewables.turbine_efficiency_typically_0_85_0_95_v2', ' = efficiency: the share of the water’s energy the turbine and generator keep (always less than 1)'))
             ),
             h('p', { style: { margin: '8px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
               __alloT('stem.renewables.notice_both_head_and_flow_appear_once_', 'Notice both head and flow appear ONCE — power is linear in each. Doubling either doubles the power; doubling both quadruples it.'))
@@ -10402,17 +10742,17 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_hydro_plant_calculator', '🔬 Try it: hydro plant calculator')),
             slider({ id: 'sl-hh', label: __alloT('stem.renewables.head_vertical_drop', 'Head (vertical drop)'), value: simHydroHead, min: 1, max: 800, step: 1, unit: 'm',
-              hint: __alloT('stem.renewables.run_of_river_dam_5_20_m_medium_dam_30_', 'Run-of-river dam: 5–20 m. Medium dam: 30–100 m. High alpine plant: 500–1800 m.'),
+              hint: __alloT('stem.renewables.run_of_river_dam_5_20_m_medium_dam_30__v2', 'Low river dams: a few meters. Big dams: 100 m or more. Some mountain plants drop water more than 1,000 m.'),
               onChange: function(v) { upd('simHydroHead', v); } }),
             slider({ id: 'sl-hq', label: __alloT('stem.renewables.flow_rate', 'Flow rate'), value: simHydroFlow, min: 0.1, max: 200, step: 0.1, unit: 'm³/s',
-              hint: __alloT('stem.renewables.mountain_stream_0_5_5_m_s_mid_sized_ri', 'Mountain stream: 0.5–5 m³/s. Mid-sized river: 50–100 m³/s. Mississippi: ~17,000 m³/s.'),
+              hint: __alloT('stem.renewables.mountain_stream_0_5_5_m_s_mid_sized_ri_v2', 'A mountain stream: under 1 to a few m³/s. Big rivers: thousands of m³/s.'),
               onChange: function(v) { upd('simHydroFlow', v); } }),
             slider({ id: 'sl-he', label: __alloT('stem.renewables.turbine_efficiency', 'Turbine efficiency (η)'), value: Math.round(simHydroEff * 100), min: 60, max: 95, step: 1, unit: '%',
-              hint: __alloT('stem.renewables.modern_turbines_90_95_older_or_poorly_', 'Modern turbines: 90–95%. Older or poorly matched: 75–85%.'),
+              hint: __alloT('stem.renewables.modern_turbines_90_95_older_or_poorly__v2', 'Big modern turbines keep most of the water’s energy; small, old or badly matched ones keep less.'),
               onChange: function(v) { upd('simHydroEff', v / 100); } }),
             powerBar('Power output (scale: small–mid plant)', fracOfRef, MW.toFixed(3) + ' MW'),
             h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              __alloT('stem.renewables.for_comparison_hoover_dam_2_080_mw_a_t', 'For comparison: Hoover Dam = 2,080 MW. A typical Maine hydro: 1–20 MW. A microhydro on a farm stream: 5–50 kW.'))
+              __alloT('stem.renewables.for_comparison_hoover_dam_2_080_mw_a_t_v2', 'For comparison: Hoover Dam = 2,080 MW (US Bureau of Reclamation). A microhydro on a small farm stream makes only kilowatts.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.three_turbine_families_pick_by_site', 'Three turbine families — pick by site')),
@@ -10453,24 +10793,24 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🌋 Geothermal'),
           sourceCard('geothermal'),
-          goalBanner('Goal: find the depth that gets you to flash-steam temperature (above 150°C). Below that, you fall back to binary cycle or ground-source heat pumps. Surface temp + thermal gradient + depth set the available energy.'),
+          goalBanner('Goal: find the depth that gets you to flash-steam temperature (about 180°C). Below that, you fall back to binary cycle or ground-source heat pumps. Surface temp + thermal gradient + depth set the available energy.'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.where_does_the_heat_come_from', 'Where does the heat come from?')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.renewables.two_sources_leftover_heat_from_earth_s', 'Two sources: leftover heat from Earth’s formation 4.5 billion years ago, and ongoing radioactive decay of uranium, thorium, and potassium-40 in the mantle. The result: temperature climbs roughly '),
+              __alloT('stem.renewables.two_sources_leftover_heat_from_earth_s_v2', 'Two sources: leftover heat from Earth’s formation 4.5 billion years ago, and ongoing radioactive decay of uranium, thorium, and potassium-40 in Earth’s crust and mantle. The result: temperature climbs roughly '),
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.25_30_c_per_kilometer', '25–30°C per kilometer')),
-              __alloT('stem.renewables.as_you_go_down_in_volcanic_regions_ice', ' as you go down. In volcanic regions (Iceland, Yellowstone, Italy) the gradient is much steeper — 60–200°C/km.'))
+              __alloT('stem.renewables.as_you_go_down_in_volcanic_regions_ice_v2', ' as you go down in many places (IPCC). In volcanic regions (Iceland, Yellowstone, Italy) it climbs much faster.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.try_it_how_deep_before_you_reach_steam', '🔬 Try it: how deep before you reach steam?')),
             slider({ id: 'sl-gs', label: __alloT('stem.renewables.surface_temperature', 'Surface temperature'), value: simGeoSurfC, min: -10, max: 35, step: 1, unit: '°C',
-              hint: __alloT('stem.renewables.maine_annual_avg_7_c_death_valley_summ', 'Maine annual avg ~7°C. Death Valley summer ~45°C. Antarctic interior − 50°C.'),
+              hint: __alloT('stem.renewables.maine_annual_avg_7_c_death_valley_summ_v2', 'Use the yearly average air temperature where you live. Maine’s is cool: a few degrees above freezing.'),
               onChange: function(v) { upd('simGeoSurfC', v); } }),
             slider({ id: 'sl-gg', label: __alloT('stem.renewables.geothermal_gradient', 'Geothermal gradient'), value: simGeoGrad, min: 15, max: 200, step: 5, unit: '°C/km',
-              hint: __alloT('stem.renewables.25_30_c_km_is_normal_continental_crust', '25–30°C/km is normal continental crust. 60–100 in volcanic zones. 200+ at Iceland’s rift.'),
+              hint: __alloT('stem.renewables.25_30_c_km_is_normal_continental_crust_v2', 'About 25–30°C/km is typical (IPCC). Volcanic areas can be much steeper.'),
               onChange: function(v) { upd('simGeoGrad', v); } }),
             slider({ id: 'sl-gd', label: __alloT('stem.renewables.drill_depth', 'Drill depth'), value: simGeoDepth, min: 0.1, max: 10, step: 0.1, unit: 'km',
-              hint: __alloT('stem.renewables.most_us_oil_wells_1_3_km_deepest_geoth', 'Most US oil wells: 1–3 km. Deepest geothermal: ~5 km. Kola Superdeep (research): 12.3 km.'),
+              hint: __alloT('stem.renewables.most_us_oil_wells_1_3_km_deepest_geoth_v2', 'The deepest hole ever drilled, Russia’s Kola Superdeep research well, reached about 12 km.'),
               onChange: function(v) { upd('simGeoDepth', v); } }),
             powerBar('Resource temperature reached (vs 350°C max)', fracOfMax, tempC.toFixed(0) + ' °C'),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + plant.color } },
@@ -10525,7 +10865,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               h('strong', { style: { color: T.text } }, __alloT('stem.renewables.pv_photovoltaic', 'PV (Photovoltaic):')), __alloT('stem.renewables.photons_electrons_directly_instantly_c', ' photons → electrons directly, instantly. Cheaper. But you can’t store electrons in bulk — need separate batteries.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.csp_concentrated_solar_power', 'CSP (Concentrated Solar Power):')), __alloT('stem.renewables.photons_heat_steam_electricity_more_ex', ' photons → heat → steam → electricity. More expensive. But heat is CHEAP to store in molten salt at 565°C — a CSP plant can run 6–10 hours after sunset on stored heat.'))
+              h('strong', { style: { color: T.text } }, __alloT('stem.renewables.csp_concentrated_solar_power', 'CSP (Concentrated Solar Power):')), __alloT('stem.renewables.photons_heat_steam_electricity_more_ex_v2', ' photons → heat → steam → electricity. More expensive. But heat is easier to store than electricity: tanks of molten salt at about 565°C (NREL) let a CSP plant keep running for hours after sunset.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.four_csp_designs', 'Four CSP designs')),
@@ -10544,7 +10884,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
               __alloT('stem.renewables.csp_needs', 'CSP needs '),
               h('strong', { style: { color: T.text } }, 'direct'),
-              __alloT('stem.renewables.sunlight_mirrors_can_t_focus_diffuse_c', ' sunlight — mirrors can’t focus diffuse cloudy light. The economic threshold is ~2000 kWh/m²/year of direct normal irradiance (DNI). Maine averages 1000–1400 kWh/m²/year DNI, well below the cutoff. Spain, Morocco, Nevada, Arizona, Australian outback get 2200–2800 — ideal CSP territory.'))
+              __alloT('stem.renewables.sunlight_mirrors_can_t_focus_diffuse_c_v2', ' sunlight — mirrors can’t focus scattered, cloudy light. That is why CSP plants are built in sunny deserts such as Spain, Morocco, Nevada and Arizona, and not in cloudier places like Maine.'))
           ),
           footer()
         );
@@ -10617,7 +10957,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               __alloT('stem.renewables.carbon_neutral_but_if_you_cut_faster_t', ' carbon-neutral. But if you cut faster than regrowth, it’s a net emitter for decades.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.the_strongest_renewable_case_is_anaero', 'The strongest renewable case is anaerobic digestion of waste streams')),
-              __alloT('stem.renewables.dairy_manure_food_waste_sewage_landfil', ' — dairy manure, food waste, sewage, landfill gas. That methane was going to be released anyway; capturing and burning it converts CH₂ into CO₂ (much weaker greenhouse gas) AND yields useful electricity + heat.'))
+              __alloT('stem.renewables.dairy_manure_food_waste_sewage_landfil_v2', ' — dairy manure, food waste, sewage, landfill gas. That methane was going to be released anyway; burning it turns methane (CH₄) into CO₂, a much weaker greenhouse gas, AND yields useful electricity + heat.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
             h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_reality_6', '🌲 Maine reality')),
@@ -10638,7 +10978,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_intermittency_problem_and_why_stor', 'The intermittency problem — and why storage solves it')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.renewables.sun_and_wind_don_t_generate_on_demand_', 'Sun and wind don’t generate on demand. Solar peaks at noon; demand peaks 6–10 PM. Wind is windy when it’s windy. Without storage, a 100% wind-and-solar grid has hours of surplus and hours of nothing.')),
+              __alloT('stem.renewables.sun_and_wind_don_t_generate_on_demand__v2', 'Sun and wind don’t generate on demand. Solar peaks at midday; demand often peaks in the evening. Wind is windy when it’s windy. Without storage, a 100% wind-and-solar grid has hours of surplus and hours of nothing.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               __alloT('stem.renewables.storage_moves_energy_across_time_absor', 'Storage moves energy across time — absorb the midday solar surplus, release it at the evening peak. Different storage tech handles different durations: batteries for hours, pumped hydro for days, hydrogen for seasons.'))
           ),
@@ -10663,7 +11003,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
               h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.hours_1_6_h', 'Hours (1–6 h):')), __alloT('stem.renewables.lithium_ion_batteries_daily_solar_shif', ' Lithium-ion batteries. Daily solar shifting, peak shaving, frequency regulation.')),
               h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.days_10_100_h', 'Days (10–100 h):')), __alloT('stem.renewables.pumped_hydro_flow_batteries_compressed', ' Pumped hydro, flow batteries, compressed air.')),
-              h('li', null, h('strong', { style: { color: T.text } }, 'Seasons:'), __alloT('stem.renewables.green_hydrogen_only_economic_option_fo', ' Green hydrogen. Only economic option for storing summer solar to use in winter.')),
+              h('li', null, h('strong', { style: { color: T.text } }, 'Seasons:'), __alloT('stem.renewables.green_hydrogen_only_economic_option_fo_v2', ' Green hydrogen: one of the few ways to store summer energy for winter, though much is lost.')),
               h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.renewables.heat_for_buildings', 'Heat for buildings:')), __alloT('stem.renewables.hot_water_tanks_ice_storage_building_t', ' Hot-water tanks, ice storage, building thermal mass. Cheap, mature, underused.'))
             )
           ),
@@ -10734,8 +11074,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               var correct = q.correct === i;
               var bg = T.cardAlt, bd = T.border;
               if (quizState.answered) {
-                if (correct) { bg = '#064e3b'; bd = T.accent; }
-                else if (picked) { bg = '#7f1d1d'; bd = T.danger; }
+                // Light theme text is dark green, so the answered tints must be light there.
+                if (correct) { bg = (isDark || isContrast) ? '#064e3b' : '#d1fae5'; bd = T.accent; }
+                else if (picked) { bg = (isDark || isContrast) ? '#7f1d1d' : '#fee2e2'; bd = T.danger; }
               } else if (picked) { bg = T.cardAlt; bd = T.accentHi; }
               return h('button', { key: i, 'data-rn-focusable': true,
                 disabled: quizState.answered,
@@ -10775,11 +11116,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     }
                     upd('quizMastery', nextMastery);
                   }
-                  rnAnnounce(isCorrect ? 'Correct!' : 'Not quite. ' + q.why);
+                  var missWhy = (!isCorrect && Array.isArray(q.miss) && q.miss[i]) ? q.miss[i] + ' ' : '';
+                  rnAnnounce(isCorrect ? 'Correct! ' + q.why : 'Not quite. ' + missWhy + q.why);
                 },
                 style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: bg, border: '2px solid ' + bd, color: T.text, fontSize: 13, cursor: quizState.answered ? 'default' : 'pointer' }
               }, c);
             }),
+            quizState.answered && quizState.lastChoice !== q.correct && Array.isArray(q.miss) && q.miss[quizState.lastChoice] && h('div', { 'data-rn-quiz-miss': 'true', style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.danger } },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } }, __alloT('stem.renewables.quiz_why_your_pick', 'Why your pick is off:')),
+              h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, q.miss[quizState.lastChoice])),
             quizState.answered && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.accent } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, 'Why:'),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, q.why))
@@ -10803,13 +11148,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       function renderSiteSelector() {
         var SOURCES = [
           { id: 'roofPv',      label: __alloT('stem.renewables.rooftop_solar_pv', 'Rooftop solar PV'),     color: '#f59e0b', icon: '☀️',
-            def: 'Distributed, residential or commercial rooftop. ~5 kW typical. Payback 6-12 yrs. Limited by roof area + orientation.' },
+            def: 'Distributed, residential or commercial rooftop. A few kW on a home. Limited by roof area + orientation.' },
           { id: 'utilPv',      label: __alloT('stem.renewables.utility_solar_farm', 'Utility solar farm'),   color: '#fbbf24', icon: '🌞',
-            def: 'Centralized PV at scale (10-500 MW+). Needs flat open land + grid interconnect. Cheapest electricity in history per kWh.' },
+            def: 'Centralized PV at scale (10-500 MW+). Needs flat open land + grid interconnect. One of the cheapest kinds of new power (Lazard, 2026).' },
           { id: 'onshore',     label: __alloT('stem.renewables.onshore_wind', 'Onshore wind'),         color: '#22c55e', icon: '🌬️',
-            def: 'Land turbines, typically 2-5 MW each. Needs sustained 6-9 m/s winds + open terrain. Largest cumulative renewable installed in US.' },
+            def: 'Land turbines, several MW each. Needs strong, steady winds + open terrain. Wind makes more US electricity than any other renewable (EIA, 2023).' },
           { id: 'offshore',    label: __alloT('stem.renewables.offshore_wind', 'Offshore wind'),        color: '#0284c7', icon: '🌊',
-            def: 'Marine turbines, typically 8-15 MW each. Higher capacity factor than onshore (~50% vs 35%); higher install cost. Continental shelf siting.' },
+            def: 'Marine turbines, bigger than land ones. Stronger, steadier wind, so they run more of the time; higher install cost. Continental shelf siting.' },
           { id: 'hydro',       label: __alloT('stem.renewables.hydropower_2', 'Hydropower'),           color: '#0ea5e9', icon: '💧',
             def: 'Stored gravitational energy of water via dam or run-of-river. Needs vertical drop + steady flow. Dispatchable (unlike most renewables).' },
           { id: 'geothermal',  label: __alloT('stem.renewables.geothermal_2', 'Geothermal'),           color: '#dc2626', icon: '🌋',
@@ -10821,25 +11166,25 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         ];
         var V = [
           { id: 1, location: 'Aroostook County potato farm in northern Maine. Large flat fields, regular winds 6-9 m/s, no major rivers nearby, good (but not exceptional) sunlight. Looking for utility-scale generation that can be sited on existing farmland with minimal disruption.', correct: 'onshore',
-            why: 'Open flat land + sustained wind speeds in the right range = canonical onshore wind. Aroostook is part of Maine\'s wind-energy expansion plans. Farms can lease land to wind developers and continue farming around the turbines (~99% of land remains usable). Solar would also work but uses more land per MW.' },
+            why: 'Open flat land + steady wind in the right range = classic onshore wind. Farms can lease land to wind developers and keep farming around the turbines, because the towers and roads take up only a small part of the land. Solar would also work but uses more land per MW.' },
           { id: 2, location: 'Coastal Bath, Maine. Strong tidal currents twice daily through narrow inlet (Kennebec River mouth). Existing maritime industrial infrastructure (Bath Iron Works). Looking for a pilot-scale dispatchable renewable.', correct: 'waveTidal',
-            why: 'Tidal currents are highly predictable (decades in advance) — a major advantage for grid integration. Narrow inlets concentrate current speeds. Maine is one of a few US states with viable tidal-current resources. Existing maritime infrastructure (BIW) means trained workforce + dock access. Still pre-commercial in most US markets but Bath is a leading pilot site.' },
-          { id: 3, location: 'Reykjavík metropolitan area, Iceland. Active volcanic geology, abundant hot springs at 200°C+. ~80% of homes already heated this way. Looking to expand power generation capacity.', correct: 'geothermal',
-            why: 'Iceland sits on the Mid-Atlantic Ridge — one of the most geothermally active places on Earth. ~30% of Iceland\'s electricity is geothermal; ~85% of homes use geothermal heat. The high-temperature volcanic-zone resource enables both power generation (flash steam) and direct-use heating. Geothermal heat pumps work everywhere; full geothermal POWER plants need this kind of resource.' },
+            why: 'Tidal currents can be predicted years ahead — a major advantage for grid integration. Narrow inlets speed up the current. Existing maritime industry means a trained workforce + dock access. Tidal power is still mostly at the pilot stage in the US; Maine\'s first grid-connected tidal project was in Cobscook Bay (2012, US Department of Energy).' },
+          { id: 3, location: 'Reykjavík metropolitan area, Iceland. Active volcanic geology, abundant hot springs at 200°C+. Most homes already heated this way. Looking to expand power generation capacity.', correct: 'geothermal',
+            why: 'Iceland sits on the Mid-Atlantic Ridge — one of the most geothermally active places on Earth. About a quarter of its electricity came from geothermal plants in 2015, and most of the rest from hydro (Government of Iceland). The hot volcanic-zone resource gives both power (flash steam) and direct heating. Geothermal heat pumps work almost anywhere; geothermal POWER plants need this kind of resource.' },
           { id: 4, location: 'Single-family home in Phoenix, Arizona. South-facing roof with 600 sq ft of usable area. ~300 sunny days/yr. Homeowner wants to reduce a $250/mo electric bill. Wants distributed (own-the-equipment) solution.', correct: 'roofPv',
-            why: 'Hot dry climate + south-facing roof + high electric bill = textbook rooftop solar PV case. ~6 kW system covers most household consumption; payback 5-8 years in Arizona with current incentives. Compared to utility solar: rooftop is more expensive per kWh but the homeowner captures the savings directly + has resilience.' },
+            why: 'Sunny dry climate + south-facing roof + high electric bill = textbook rooftop solar PV case. A system of several kW can cover much of the household\'s use. Compared to utility solar: rooftop costs more per kWh but the homeowner keeps the savings directly + gains resilience.' },
           { id: 5, location: 'Maine paper mill with year-round wood-product byproducts (sawdust, bark, scrap chips). Existing steam-turbine infrastructure for process heat. Looking to displace fuel oil currently used for boiler.', correct: 'biomass',
-            why: 'Co-located waste stream + existing combustion infrastructure = ideal biomass case. The mill already burns fuel; switching to wood waste turns a disposal cost into an energy revenue. Maine paper industry has been doing this since the 1980s. Net carbon benefit depends on whether the wood is genuine waste vs grown for fuel.' },
+            why: 'Co-located waste stream + existing combustion infrastructure = ideal biomass case. The mill already burns fuel; switching to wood waste turns a disposal cost into energy. Net carbon benefit depends on whether the wood is genuine waste vs grown for fuel.' },
           { id: 6, location: 'Mountain canyon in Pacific Northwest. Steady year-round flow from snowmelt. Existing reservoir 200 ft above downstream powerhouse site. Project will be dispatchable and serve grid balancing.', correct: 'hydro',
-            why: 'Vertical drop (head) + steady flow = classic hydropower. The dispatchability is the key advantage: unlike wind/solar, hydro can be ramped up/down in minutes to balance grid demand. PNW hydro is ~60% of regional electricity. New dam construction is rare now (environmental impact + best sites already taken); pumped-storage hydro retrofits are growing.' },
+            why: 'Vertical drop (head) + steady flow = classic hydropower. The dispatchability is the key advantage: unlike wind/solar, hydro can be ramped up/down in minutes to balance grid demand. Hydropower makes more than half of Washington state\'s electricity (EIA). New big dams are rare now because of their environmental impact.' },
           { id: 7, location: 'Mojave Desert, southern California. Several thousand acres of flat undeveloped land. 320+ sunny days per year. Existing 500 kV transmission line crosses the property. Investor seeks utility-scale clean generation.', correct: 'utilPv',
-            why: 'Best solar resource in the contiguous US + cheap flat land + transmission interconnect = utility-scale solar farm. Modern utility PV beats every other generation source on cost per MWh. Mojave hosts some of the largest solar installations in the world. Compare to rooftop: utility PV is ~50% cheaper per kWh but the homeowner captures none of the savings.' },
+            why: 'One of the best solar resources in the US + cheap flat land + transmission interconnect = utility-scale solar farm. New utility solar is one of the cheapest kinds of new power (Lazard, 2026). Compared to rooftop: utility PV costs much less per kWh, but no homeowner keeps the savings.' },
           { id: 8, location: 'North Sea continental shelf, 30 km off the UK coast. Constant strong winds (10+ m/s annual average). Water depth ~30 m (within fixed-foundation range). Existing offshore-wind installation expanding capacity.', correct: 'offshore',
-            why: 'Strong sustained winds (much higher than onshore averages) + shallow continental shelf = offshore wind heartland. Capacity factors are 50%+ vs ~35% for onshore. The North Sea hosts the world\'s largest offshore wind installations. Higher CapEx than onshore wind (marine construction is expensive) but higher output per turbine offsets it.' },
+            why: 'Strong, steady winds + shallow continental shelf = offshore wind heartland. Steadier wind means offshore turbines run more of the time than land turbines. The North Sea hosts some of the world\'s largest offshore wind farms, such as Hornsea. Higher building cost than onshore wind (marine construction is expensive), but more output per turbine helps make up for it.' },
           { id: 9, location: 'Vermont single-family home. Existing electric baseboard heat costs $400/mo in winter. Modest sunshine (lower than Arizona). Homeowner has $30k budget for a renewable + heat-pump combo.', correct: 'roofPv',
-            why: 'Even in lower-sun climates, rooftop solar makes sense when paired with a heat pump (replacing inefficient electric resistance heat). The combo: solar PV (~5 kW) + air-source heat pump can cut heating costs by 60-70% AND offset most household electricity. Vermont and Maine both have strong policy incentives for this stack. Geothermal heat pumps (GSHPs) are even better but cost 2-3x more upfront.' },
+            why: 'Even in lower-sun climates, rooftop solar makes sense when paired with a heat pump that replaces electric resistance heat: a heat pump gives several units of heat per unit of electricity, resistance heat gives one. Geothermal heat pumps (GSHPs) are even more efficient but cost more upfront.' },
           { id: 10, location: 'Pacific Northwest sawmill complex producing 50,000 tons/year of wood-product residues. Currently paying landfill fees to dispose of bark + sawdust. Local utility offers $0.08/kWh purchase contract for renewable power.', correct: 'biomass',
-            why: 'Existing waste stream that costs money to dispose of + utility willing to buy the resulting power = biomass economics work. Sawmills, paper mills, and lumber operations are the canonical US biomass sites. Pellet exports to Europe + on-site power generation are both common. Like #5, the carbon math depends on whether the wood is genuine waste.' }
+            why: 'Existing waste stream that costs money to dispose of + utility willing to buy the resulting power = biomass economics work. Sawmills, paper mills, and lumber operations are classic US biomass sites. Like #5, the carbon math depends on whether the wood is genuine waste.' }
         ];
 
         var rsIdx = d.rsIdx == null ? -1 : d.rsIdx;
@@ -11042,11 +11387,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('strong', { style: { color: T.text } }, __alloT('stem.renewables.capacity_factor_2', 'Capacity factor')),
               __alloT('stem.renewables.actual_annual_energy_output_what_the_p', ' = actual annual energy output ÷ what the plant would produce at 100% rated power 24/7/365.')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.renewables.example_a_1_mw_solar_farm_in_maine_gen', 'Example: a 1 MW solar farm in Maine generates ~1.7 GWh per year. If it ran flat-out 24/7 it would produce 8.76 GWh. So its capacity factor is 1.7 / 8.76 ≈ '),
-              h('strong', { style: { color: T.accentHi } }, '19%'),
+              __alloFill(__alloT('stem.renewables.example_cf_solar_us_2024', 'Example: a 1 MW solar farm with the 2024 US average capacity factor makes about {gwh} GWh in a year (EIA). If it ran flat-out 24/7 it would make 8.76 GWh. So its capacity factor is {gwh} / 8.76 ≈ '), { gwh: (8.76 * RN_CF_US_2024.solar / 100).toFixed(2) }),
+              h('strong', { style: { color: T.accentHi } }, Math.round(RN_CF_US_2024.solar) + '%'),
               '.'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.renewables.this_is_why_1_gw_of_solar_and_1_gw_of_', 'This is why "1 GW of solar" and "1 GW of nuclear" are NOT equivalent — the nuclear plant runs near 90% CF, the solar farm near 20%. To match annual energy from 1 GW nuclear, you need ~4–5 GW of solar (plus storage to match dispatchability).'))
+              __alloFill(__alloT('stem.renewables.this_is_why_1_gw_of_solar_and_1_gw_v2', 'This is why "1 GW of solar" and "1 GW of nuclear" are NOT equivalent — in 2024 US nuclear plants ran at {nuc}% and solar farms at {sol}% (EIA). To match a year of energy from 1 GW of nuclear, you need about {gw} GW of solar (plus storage to match the timing).'), { nuc: Math.round(RN_CF_US_2024.nuclear), sol: Math.round(RN_CF_US_2024.solar), gw: (RN_CF_US_2024.nuclear / RN_CF_US_2024.solar).toFixed(1) }))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.side_by_side_comparison', 'Side-by-side comparison')),
@@ -11061,7 +11406,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ),
               h('tbody', null,
                 COMPARE_TABLE.map(function(row, i) {
-                  return h('tr', { key: row.id, style: { background: row.ref ? '#3a1a1a' : (i % 2 === 0 ? T.cardAlt : T.card), borderBottom: '1px solid ' + T.border } },
+                  // Reference rows: dark red tint on dark themes, light red tint in light theme (text there is dark).
+                  return h('tr', { key: row.id, style: { background: row.ref ? ((isDark || isContrast) ? '#3a1a1a' : '#fee2e2') : (i % 2 === 0 ? T.cardAlt : T.card), borderBottom: '1px solid ' + T.border } },
                     h('td', { style: { padding: '8px 10px', color: T.text, fontWeight: 600 } },
                       h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, row.icon),
                       row.name),
@@ -11077,7 +11423,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               )
             ),
             h('div', { style: { marginTop: 10, fontSize: 10, color: T.dim, lineHeight: 1.5 } },
-              __alloT('stem.renewables.sources_nrel_annual_technology_baselin', 'Sources: NREL Annual Technology Baseline 2024 (LCOE, capacity factor); IPCC AR6 WG3 Annex III (lifecycle CO₂ medians); Macknick 2012 + NREL (water); Hertwich 2015 + DOE (land use). The two reference rows (red) are NOT renewables — included for honest comparison.'))
+              __alloT('stem.renewables.sources_nrel_annual_technology_baselin_v2', 'Sources: capacity factor = US fleet in 2024 (EIA Electric Power Monthly). Cost = new US plants without subsidies (Lazard LCOE+ 2026), or the 2024 world average for new projects where Lazard has none (IRENA, marked "world"). CO₂ = lifecycle medians (IPCC AR5, 2014). Land, water and dispatch are rough teaching ratings. The two reference rows (red) are NOT renewables — included for honest comparison.'))
           ),
           // Footnotes for rows that have a note
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -11093,18 +11439,18 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // values (consistent with the cf column ranges above; sources cited in the table footer).
           (function() {
             var CF = [
-              { icon: '☀️', name: __alloT('stem.renewables.solar_pv_3', 'Solar PV'), cf: 23, color: '#fbbf24' },
-              { icon: '🌬️', name: __alloT('stem.renewables.wind_2', 'Wind'), cf: 35, color: '#38bdf8' },
-              { icon: '🌊', name: __alloT('stem.renewables.hydro', 'Hydro'), cf: 40, color: '#22d3ee' },
-              { icon: '🌋', name: __alloT('stem.renewables.geothermal_3', 'Geothermal'), cf: 74, color: '#f97316' },
-              { icon: '🔥', name: __alloT('stem.renewables.gas_combined_cycle', 'Gas (combined-cycle)'), cf: 57, color: '#94a3b8' },
-              { icon: '⚛️', name: __alloT('stem.renewables.nuclear', 'Nuclear'), cf: 93, color: '#a78bfa' }
+              { icon: '☀️', name: __alloT('stem.renewables.solar_pv_3', 'Solar PV'), cf: Math.round(RN_CF_US_2024.solar), color: '#fbbf24' },
+              { icon: '🌬️', name: __alloT('stem.renewables.wind_2', 'Wind'), cf: Math.round(RN_CF_US_2024.wind), color: '#38bdf8' },
+              { icon: '🌊', name: __alloT('stem.renewables.hydro', 'Hydro'), cf: Math.round(RN_CF_US_2024.hydro), color: '#22d3ee' },
+              { icon: '🌋', name: __alloT('stem.renewables.geothermal_3', 'Geothermal'), cf: Math.round(RN_CF_US_2024.geothermal), color: '#f97316' },
+              { icon: '🔥', name: __alloT('stem.renewables.gas_combined_cycle', 'Gas (combined-cycle)'), cf: Math.round(RN_CF_US_2024.gasCC), color: '#94a3b8' },
+              { icon: '⚛️', name: __alloT('stem.renewables.nuclear', 'Nuclear'), cf: Math.round(RN_CF_US_2024.nuclear), color: '#a78bfa' }
             ];
             var W = 290, rowH = 20, padT = 8, barX = 120, barW = 150;
             var Hh = padT + CF.length * rowH + 4;
             var sx = function(p) { return (p / 100) * barW; };
             return h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 } }, __alloT('stem.renewables.capacity_factor_typical_of_nameplate_a', 'Capacity factor — typical % of nameplate actually delivered')),
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 } }, __alloT('stem.renewables.capacity_factor_us_2024_eia', 'Capacity factor — % of nameplate actually delivered, US fleet in 2024 (EIA)')),
               h('div', { style: { fontSize: 10, color: T.muted, marginBottom: 6, lineHeight: 1.45 } }, __alloT('stem.renewables.a_1_mw_solar_farm_and_a_1_mw_nuclear_p', 'A 1 MW solar farm and a 1 MW nuclear plant have the same nameplate — but very different annual output. This is why nameplate MW alone is misleading.')),
               h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Capacity factor by source: ' + CF.map(function(s) { return s.name + ' ' + s.cf + '%'; }).join(', ') + '.' },
                 CF.map(function(s, i) {
@@ -11339,7 +11685,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
                 }),
                 h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
-                  __alloT('stem.renewables.0_h_no_storage_4_h_typical_tesla_power', '0 h = no storage. 4 h ≈ typical Tesla Powerwall stack. 8+ h needed for high-renewable grids.'))
+                  __alloT('stem.renewables.0_h_no_storage_4_h_typical_tesla_power_v2', '0 h = no storage. More hours let the battery carry more of the evening and night.'))
               ),
               h('div', { style: { marginBottom: 12, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
                 h('label', { htmlFor: 'grid-batt-soc', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
@@ -11457,13 +11803,26 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // Concrete + personal. Uses Efficiency Maine + federal ITC numbers.
       // ─────────────────────────────────────────
       function renderHomePayback() {
-        // Maine sun: ~1200–1400 kWh/m²/yr global tilted irradiation. Use 1300.
-        var SUN_MAINE = 1300;       // kWh/m²/yr
+        // Source audit 2026-11-24.
+        // SUN_MAINE: rough teaching estimate of yearly sunlight on a south roof (no primary source found in this
+        //   audit; the screen says so and points to NREL PVWatts for a real address).
+        // ELECTRIC_RATE: EIA Electric Power Monthly Table 5.6.B, Maine residential, January-August 2026 YTD:
+        //   30.23 cents/kWh (preliminary). Was 0.21 with no source.
+        // COST_PER_W: Berkeley Lab, Distributed Solar & Storage 2026 Data Update: "Median prices across the
+        //   top-100 residential installers in 2025 ranged from $2.4 to $6.3/W"; "Roughly 60% had median prices
+        //   below $4/W". $3.50/W is a middle teaching value. Was $350/m2 (= $1.75/W at 20%), with no source.
+        // Efficiency Maine: "Efficiency Maine is not currently offering rebates for solar projects" (2026), so the
+        //   old $800 rebate is gone. Federal credit: IRS, not available for property placed in service after
+        //   Dec 31, 2025, so the slider now starts at 0%.
+        // CO2: ISO New England key stats, 2024 New England generation and imports, 560 lbs CO2 per MWh (254 g/kWh).
+        //   EPA: a typical passenger vehicle emits about 4.6 metric tons of CO2 per year.
+        var SUN_MAINE = 1300;       // kWh/m²/yr (teaching estimate)
         var EFF = 0.20;             // panel efficiency
         var PERF_RATIO = 0.80;      // system losses (inverter, wiring, soiling)
-        var ELECTRIC_RATE = 0.21;   // $/kWh CMP residential ~2024
-        var INSTALL_COST_PER_M2 = 350; // ~$350/m² installed Maine 2024
-        var EFFICIENCY_MAINE_REBATE = 800; // flat residential rebate (illustrative)
+        var ELECTRIC_RATE = 0.30;   // $/kWh, Maine residential 2026 YTD (EIA)
+        var COST_PER_W = 3.5;       // $/W installed (Berkeley Lab 2026 range $2.4-6.3)
+        var INSTALL_COST_PER_M2 = COST_PER_W * 1000 * EFF; // W per m² at 1000 W/m² sun × efficiency
+        var EFFICIENCY_MAINE_REBATE = 0; // no current solar rebate (Efficiency Maine, 2026)
 
         var annualKWh = mhRoofM2 * SUN_MAINE * EFF * PERF_RATIO;
         var annualSavings = annualKWh * ELECTRIC_RATE;
@@ -11475,24 +11834,24 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var paybackYrs = annualSavings > 0 ? afterMaine / annualSavings : 99;
         // Lifetime savings over 25 years (after payback)
         var lifetime = annualSavings * 25 - afterMaine;
-        // CO₂ avoided per year (CMP grid: ~280 gCO₂/kWh thanks to Maine hydro + nuclear via NEPOOL)
-        var co2Avoided = (annualKWh * 280) / 1000; // kg/yr
+        // CO₂ avoided per year at the 2024 New England average (ISO-NE: 560 lb/MWh = 254 g/kWh)
+        var co2Avoided = (annualKWh * (560 * 453.59237 / 1000)) / 1000; // kg/yr
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🏠 Maine Home Solar Calculator'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.renewables.rough_estimate_for_a_maine_rooftop_rea', 'Rough estimate for a Maine rooftop. Real quotes vary by orientation, shading, and contractor. Numbers below assume CMP territory + south-facing roof + 2024–25 incentive levels. Always get 3 quotes.'))
+              __alloT('stem.renewables.rough_estimate_for_a_maine_rooftop_rea_v2', 'Rough estimate for a south-facing Maine rooftop. It assumes about 1,300 kWh of sunlight per m² per year (a rough estimate; NREL’s PVWatts tool gives a number for a real address), $3.50 per watt installed (Berkeley Lab found most installers between $2.40 and $6.30 in 2025), and 30 cents per kWh (Maine, 2026, EIA). Real quotes vary. Get several.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             slider({ id: 'mh-roof', label: __alloT('stem.renewables.usable_south_facing_roof_area', '🏠 Usable south-facing roof area'), value: mhRoofM2, min: 5, max: 100, step: 1, unit: 'm²',
-              hint: __alloT('stem.renewables.a_typical_maine_2_story_has_30_60_m_of', 'A typical Maine 2-story has 30–60 m² of usable south slope. 1 m² ≈ 10.8 ft².'),
+              hint: __alloT('stem.renewables.a_typical_maine_2_story_has_30_60_m_of_v2', 'Count only the sunny, south-facing part of the roof. 1 m² ≈ 10.8 ft².'),
               onChange: function(v) { upd('mhRoofM2', v); } }),
             slider({ id: 'mh-bill', label: __alloT('stem.renewables.average_monthly_electric_bill', '💵 Average monthly electric bill'), value: mhBillMo, min: 50, max: 500, step: 10, unit: '$/mo',
-              hint: __alloT('stem.renewables.maine_residential_average_130_mo_2024_', 'Maine residential average ~$130/mo (2024). Heat-pump homes run $200–400/mo in winter.'),
+              hint: __alloT('stem.renewables.maine_residential_average_130_mo_2024__v2', 'Use your own bill. At 30 cents per kWh, every $30 is about 100 kWh.'),
               onChange: function(v) { upd('mhBillMo', v); } }),
             slider({ id: 'mh-itc', label: __alloT('stem.renewables.federal_investment_tax_credit', '🇺🇸 Federal Investment Tax Credit'), value: mhRebatePct, min: 0, max: 30, step: 1, unit: '%',
-              hint: __alloT('stem.renewables.30_through_2032_under_current_law_26_i', '30% through 2032 under current law. 26% if installed before 2022 or if law changes.'),
+              hint: __alloT('stem.renewables.30_through_2032_under_current_law_26_i_v2', 'The 30% federal credit for home solar ended for systems placed in service after December 31, 2025 (IRS). Leave it at 0% for a new system; try 30% to see what the old credit did.'),
               onChange: function(v) { upd('mhRebatePct', v); } })
           ),
           h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
@@ -11512,7 +11871,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.after_incentive_cost', 'After-incentive cost')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: T.warm, fontFamily: 'monospace' } },
                   '$' + afterMaine.toFixed(0)),
-                h('div', { style: { fontSize: 10, color: T.dim } }, 'Gross $' + grossCost.toFixed(0) + ' − ITC − $800 EM rebate')),
+                h('div', { style: { fontSize: 10, color: T.dim } }, 'Gross $' + grossCost.toFixed(0) + (mhRebatePct > 0 ? ' − ' + mhRebatePct + '% credit' : ' (no credit)'))),
               h('div', null,
                 h('div', { style: { fontSize: 11, color: T.dim } }, __alloT('stem.renewables.payback_time', 'Payback time')),
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: paybackYrs < 10 ? T.accent : paybackYrs < 15 ? T.warm : T.danger, fontFamily: 'monospace' } },
@@ -11534,17 +11893,17 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.maine_specific_notes', '🌲 Maine-specific notes')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: T.muted, lineHeight: 1.6 } },
               h('li', null, __alloT('stem.renewables.cold_sun_high_efficiency_maine_winter_', 'Cold + sun = high efficiency. Maine winter sun is short but the cold actually boosts panel output.')),
-              h('li', null, __alloT('stem.renewables.net_metering_rules_in_maine_have_shift', 'Net metering rules in Maine have shifted multiple times. Current law gives ~retail rate credit; check the PUC for the current arrangement before signing.')),
-              h('li', null, __alloT('stem.renewables.snow_on_panels_tilt_30_lets_snow_slide', 'Snow on panels: tilt ≥ 30° lets snow slide off. Bifacial panels can pick up reflected light from snow on the ground.')),
+              h('li', null, __alloT('stem.renewables.net_metering_rules_in_maine_have_shift_v2', 'Net metering rules in Maine have changed several times. Check the Maine PUC for the current rules before signing.')),
+              h('li', null, __alloT('stem.renewables.snow_on_panels_tilt_30_lets_snow_slide_v2', 'Snow slides off steep, smooth panels more easily. Bifacial panels can pick up light reflected from snow on the ground.')),
               h('li', null, __alloT('stem.renewables.pair_with_a_heat_pump_for_biggest_impa', 'Pair with a heat pump for biggest impact: summer solar runs the heat pump in shoulder seasons; you also free up oil dollars.')),
-              h('li', null, __alloT('stem.renewables.efficiency_maine_offers_0_loans_up_to_', 'Efficiency Maine offers 0% loans up to $15,000 for solar + heat pump combos.'))
+              h('li', null, __alloT('stem.renewables.efficiency_maine_offers_0_loans_up_to__v2', 'Efficiency Maine is not offering rebates for solar right now (2026). Check its site for loans and other programs.'))
             )
           ),
           h('div', { style: { marginTop: 12, padding: 10, borderRadius: 10, background: T.card, border: '1px dashed ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
             h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.adding_an_ev', '🔗 Adding an EV?')),
             __alloT('stem.renewables.layer_in_ev_charging_math_from_alloflo', ' Layer in EV charging math from AlloFlow '),
             h('strong', { style: { color: T.text } }, 'RoadReady'),
-            __alloT('stem.renewables.a_typical_maine_commute_30_mi_day_adds', '. A typical Maine commute (~30 mi/day) adds ~7–10 kWh/day to your home load — significant for solar sizing, and EVs unlock V2G later.')),
+            __alloT('stem.renewables.a_typical_maine_commute_30_mi_day_adds_v2', '. An EV driven 30 miles a day uses roughly 7–10 kWh (about 0.25–0.35 kWh per mile) — significant for solar sizing, and EVs unlock V2G later.')),
           footer()
         );
       }
@@ -11904,7 +12263,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 )
               ),
               h('p', { style: { margin: 0, fontSize: 12, color: T.dim, lineHeight: 1.55, fontStyle: 'italic' } },
-                __alloT('stem.renewables.numbers_are_maine_realistic_panel_cost', 'Numbers are Maine-realistic: panel cost ~$1.50 to $2.20/W wholesale, installs sold at $3 to $4/W, typical firm does 50 to 200 installs/yr. Carries some randomness (events, win-rolls) so two runs are not identical.'))
+                __alloT('stem.renewables.numbers_are_maine_realistic_panel_cost_v2', 'Game numbers are simplified for play, not real prices. Carries some randomness (events, win-rolls) so two runs are not identical.'))
             ),
             // ── Area picker ──
             h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, __alloT('stem.renewables.pick_your_service_area', '🗺 Pick your service area')),
@@ -12569,7 +12928,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           role: 'img', 'aria-labelledby': 'svg-gshp-title svg-gshp-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
           h('title', { id: 'svg-gshp-title' }, __alloT('stem.renewables.ground_source_heat_pump_cycle', 'Ground-source heat pump cycle')),
-          h('desc', { id: 'svg-gshp-desc' }, __alloT('stem.renewables.a_refrigeration_cycle_that_moves_heat_', 'A refrigeration cycle that moves heat between the constant-temperature ground and a home. In winter, evaporator absorbs heat from the ground loop; compressor raises temperature; condenser releases heat to the home; expansion valve resets the cycle. COP 3 to 5 means 3 to 5 units of heat moved per unit of electricity used.')),
+          h('desc', { id: 'svg-gshp-desc' }, __alloT('stem.renewables.a_refrigeration_cycle_that_moves_heat__v2', 'A refrigeration cycle that moves heat between the steady-temperature ground and a home. In winter, evaporator absorbs heat from the ground loop; compressor raises temperature; condenser releases heat to the home; expansion valve resets the cycle. COP 3 to 6 means 3 to 6 units of heat moved per unit of electricity used.')),
           // House outline
           h('polygon', { points: '60,160 60,80 110,40 160,80 160,160', fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 2 }),
           h('rect', { x: 80, y: 100, width: 60, height: 60, fill: '#334155' }),
@@ -12615,7 +12974,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('text', { x: 330, y: 50, fill: '#facc15', fontSize: 11 }, __alloT('stem.renewables.electricity_in', '⚡ Electricity in')),
           // Caption
           h('text', { x: 300, y: 25, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.heat_pump_moves_heat_it_does_not_gener', 'Heat pump MOVES heat — it does not generate it')),
-          h('text', { x: 300, y: 360, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.cop_3_5_every_1_unit_of_electricity_mo', 'COP 3–5: every 1 unit of electricity moves 3–5 units of heat into the home'))
+          h('text', { x: 300, y: 360, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.cop_3_5_every_1_unit_of_electricity_mo_v2', 'COP 3–6: every 1 unit of electricity moves 3–6 units of heat into the home'))
         );
       }
 
@@ -12730,7 +13089,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('text', { x: 120, y: 262, fill: '#facc15', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.to_grid_4', 'To grid')),
           // Caption
           h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.csp_power_tower_with_thermal_energy_st', 'CSP power tower with thermal energy storage')),
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.hot_salt_can_run_the_turbine_for_6_10_', 'Hot salt can run the turbine for 6–10 hours after sunset'))
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.hot_salt_can_run_the_turbine_for_6_10__v2', 'Hot salt can run the turbine for hours after sunset'))
         );
       }
 
@@ -12841,7 +13200,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('text', { x: 30, y: 76, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.3_biogas_generator_or_upgrade_to_pipel', '3. Biogas → generator OR upgrade to pipeline gas')),
           h('text', { x: 30, y: 90, fill: '#cbe8e0', fontSize: 11 }, __alloT('stem.renewables.4_digestate_out_as_fertilizer', '4. Digestate out as fertilizer')),
           // Caption
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.methane_is_84_worse_than_co_over_20_yr', 'Methane is ~84× worse than CO₂ over 20 yr — burning it is a NET WIN'))
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.methane_is_84_worse_than_co_over_20_yr_v2', 'Methane traps ~80× more heat than CO₂ over 20 yr — burning it is a NET WIN'))
         );
       }
 
@@ -12851,7 +13210,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           role: 'img', 'aria-labelledby': 'svg-ph-title svg-ph-desc',
           style: { background: '#0b1426', borderRadius: 8 } },
           h('title', { id: 'svg-ph-title' }, __alloT('stem.renewables.pumped_hydro_energy_storage', 'Pumped hydro energy storage')),
-          h('desc', { id: 'svg-ph-desc' }, __alloT('stem.renewables.pumped_hydro_stores_electricity_by_pum', 'Pumped hydro stores electricity by pumping water from a low reservoir up to a high reservoir when power is cheap. When power is needed, the water flows back down through a reversible pump-turbine that drives a generator. Round-trip efficiency 75 to 85 percent. About 95 percent of the world installed grid storage is pumped hydro.')),
+          h('desc', { id: 'svg-ph-desc' }, __alloT('stem.renewables.pumped_hydro_stores_electricity_by_pum_v2', 'Pumped hydro stores electricity by pumping water from a low reservoir up to a high reservoir when power is cheap. When power is needed, the water flows back down through a reversible pump-turbine that drives a generator. US plants averaged 79 percent round-trip efficiency in 2019. Pumped hydro is the world’s dominant form of large-scale storage.')),
           // Sky
           h('rect', { x: 0, y: 0, width: 600, height: 360, fill: '#0f172a' }),
           // Mountain (the geographic asset)
@@ -12891,7 +13250,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('text', { x: 555, y: 280, fill: '#fde047', fontSize: 11 }, __alloT('stem.renewables.grid', 'Grid')),
           // Caption
           h('text', { x: 300, y: 30, fill: '#cbe8e0', fontSize: 13, textAnchor: 'middle', fontWeight: 700 }, __alloT('stem.renewables.pumped_hydro_storage_the_original_grid', 'Pumped hydro storage — the original grid battery')),
-          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.round_trip_efficiency_75_85_95_of_the_', 'Round-trip efficiency 75–85%. ~95% of the world\'s installed grid storage.'))
+          h('text', { x: 300, y: 350, fill: '#cbe8e0', fontSize: 11, textAnchor: 'middle' }, __alloT('stem.renewables.round_trip_efficiency_75_85_95_of_the__v2', 'Round trip ~79% (US, 2019, EIA). The world\'s main large-scale storage.'))
         );
       }
 
@@ -13032,7 +13391,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           backBar('🧰 Career Pathways'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.renewables.renewable_energy_spans_every_level_of_', 'Renewable energy spans every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year engineering degrees, graduate research, policy work. Salaries from BLS OEWS 2024 medians; growth projections from BLS 2022–2032 outlook. Local Maine pipelines highlighted.'))
+              __alloT('stem.renewables.renewable_energy_spans_every_level_of__v2', 'Renewable energy spans every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year engineering degrees, graduate research, policy work. Pay is the BLS median for May 2025 and growth is the BLS projection for 2025–2035, where BLS tracks the job. Local Maine pipelines highlighted.'))
           ),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 } },
@@ -13199,7 +13558,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               __alloT('stem.renewables.you_spend_energy_to_make_it_you_get_en', '. You spend energy to make it; you get energy back when you burn it or run it through a fuel cell. Whether that\'s clean depends entirely on HOW you made it — hence the color codes.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.critical_fact', 'Critical fact: ')),
-              __alloT('stem.renewables.95_of_hydrogen_produced_today_is_gray_', '~95% of hydrogen produced today is "gray" — made from natural gas with NO carbon capture. The "hydrogen economy" pitch usually means switching to GREEN hydrogen, which is a much smaller current reality.'))
+              __alloT('stem.renewables.95_of_hydrogen_produced_today_is_gray__v2', 'Almost all hydrogen made today comes from fossil fuels, mostly "gray" hydrogen from natural gas with NO carbon capture. Low-emissions hydrogen was less than 1% in 2024 (IEA). The "hydrogen economy" pitch usually means switching to GREEN hydrogen.'))
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_color_taxonomy', '🎨 The color taxonomy')),

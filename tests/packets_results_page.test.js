@@ -21,7 +21,7 @@ new Function('window', read('word_sounds_take_home_loader.js')).call(lender, len
 const loader = lender.AlloWordSoundsTakeHome;
 
 const PAGE = 'packets-results.html';
-const SCRIPTS = ['packets_results_reader.js', 'packets-results.js'];
+const SCRIPTS = ['packets_results_reader.js', 'packets_followup.js', 'packets-results.js'];
 const NEW_FILES = [PAGE, ...SCRIPTS, 'packets-results.css'];
 const NAME = 'AlloFlow Packets';
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'";
@@ -971,9 +971,9 @@ describe('the page as files', () => {
       else expect(existsSync(address === './' ? 'index.html' : address.replace(/#.*$/, '')), address).toBe(true);
       if (node.tagName !== 'A') loaded.push(address);
     }
-    expect(loaded).toEqual(['packets-mark.svg', 'packets.css', 'packets-results.css', 'packets-page.js', 'packets_handoff.js', 'packets_results_reader.js', 'packets-results.js']);
+    expect(loaded).toEqual(['packets-mark.svg', 'packets.css', 'packets-results.css', 'packets-page.js', 'packets_handoff.js', 'packets_results_reader.js', 'packets_followup.js', 'packets-results.js']);
     const said = [...doc.querySelectorAll('details.proof li')].find((item) => item.textContent.startsWith('This page loads'));
-    expect(said.textContent).toContain('This page loads eight files, all from this site');
+    expect(said.textContent).toContain('This page loads nine files, all from this site');
     expect([...said.querySelectorAll('code')].map((node) => node.textContent)).toEqual(loaded.filter((file) => /\.(?:css|js)$/.test(file)));
     for (const file of SCRIPTS) for (const quoted of read(file).match(/'[\w./-]+\.(?:json|html|js|css|svg)'/g) || []) expect(existsSync(quoted.slice(1, -1)), file + ' -> ' + quoted).toBe(true);
   });
@@ -1043,7 +1043,8 @@ describe('the page as files', () => {
     expect([...doc.querySelectorAll('link[rel="icon"]')].map((link) => link.getAttribute('href'))).toEqual(['packets-mark.svg']);
     expect(doc.querySelector('a.skip').getAttribute('href')).toBe('#main');
     expect(doc.querySelector('header') && doc.querySelector('main#main') && doc.querySelector('footer')).toBeTruthy();
-    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['More from AlloFlow']);
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['Send feedback', 'More from AlloFlow']);
     expect(doc.querySelector('.brand').getAttribute('href')).toBe('packets.html');
     // Only what packets.css lacks: the colors and the font are its own, used by name. Outside the print sheet no color is written out.
     const css = read('packets-results.css');
@@ -1689,7 +1690,7 @@ describe('the page: files that are not what they seem', () => {
     // 2026-11-17: the page's own "Practice missed ..." links (a.nav-new-tab, made by the page to open a maker in a new tab) are the only links.
     expect(page.d.querySelectorAll('main img, main script, main b, main iframe, main a:not(.nav-new-tab)').length).toBe(0);
     for (const link of page.d.querySelectorAll('main a.nav-new-tab')) expect(link.getAttribute('href')).toMatch(/^packets-[a-z-]+\.html#[a-z]+=/);
-    expect(page.d.querySelectorAll('script').length).toBe(4);
+    expect(page.d.querySelectorAll('script').length).toBe(5);
     expect(page.reached).toEqual([]);
     expect(({}).polluted).toBeUndefined();
     page.dom.window.close();

@@ -4,6 +4,8 @@
 //     is a machine voice made ahead of time (Kokoro-82M, voice af_heart). Only the files that hold the wanted words are
 //     fetched. A clip is turned into WAV here, which every browser plays (iPad and older Safari do not play WebM), with
 //     the take-home loader's own converter (portableAudio), which decodes with an offline context: no sound device opens.
+//   - meaning recordings (2026-11-23): packets_meaning_audio/ (see meaningClips), the same voice, as MP3. Only on the
+//     Packets site; where they are not, nothing changes;
 //   - pictures: the data files of the Word Sounds picture set (word_sounds_symbols_en.js names them), all of them, the
 //     same files whatever words are chosen, as the Word Sounds maker fetches them.
 // Plain script: window.AlloVocabMedia. Nothing here runs until the page asks.
@@ -39,7 +41,11 @@
         return reply.text();
       }).then(function (text) {
         if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
-        resolve(safeJsonParse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text));
+        // 2026-11-23: text that is not JSON (a host may send a page in place of a missing file, as Cloudflare Pages
+        // sends index.html) rejects; before, the error went nowhere and the page waited for ever.
+        var data;
+        try { data = safeJsonParse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text); } catch (_) { reject(new Error(url + ' is not a JSON file')); return; }
+        resolve(data);
       }, function (err) {
         if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
         reject(err);
@@ -134,6 +140,66 @@
         return out;
       });
     });
+  }
+  // Meanings recorded ahead of time (2026-11-23): packets_meaning_audio/ on the Packets site only, made by
+  // dev-tools/build_packets_meaning_audio.cjs and not kept in git, so a copy of these pages without it reads meanings
+  // with the device voice. A meaning is found by its shown text (spaces squeezed): key = the first 16 hex digits of
+  // sha256("alloflow-meaning|" + text), in file m-XXXX by the key. Each clip carries its text, and only an exact match is
+  // used. MP3, kept as it is. Resolves to { text: data address } ({} when there are none); never rejects.
+  var MEANING_INDEX = 'packets_meaning_audio/index.json', MEANING_FORMAT = 'alloflow-meaning-audio-index/1', MEANING_SHARD = 'alloflow-meaning-audio-shard/1';
+  var MEANING_BUCKETS = 8192, MEANING_NAME = /^m-[0-9a-f]{4}$/, MEANING_AUDIO = /^data:audio\/mpeg;base64,[A-Za-z0-9+/]+={0,2}$/;
+  var meaningIndex = null, meaningFiles = Object.create(null);
+  var squeeze = function (t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); };
+  function meaningKey(subtle, text) {
+    return subtle.digest('SHA-256', new root.TextEncoder().encode('alloflow-meaning|' + text)).then(function (d) {
+      var b = new Uint8Array(d), s = '';
+      for (var i = 0; i < 8; i++) s += (b[i] < 16 ? '0' : '') + b[i].toString(16);
+      return s;
+    });
+  }
+  function meaningBucket(key) { var n = (parseInt(key.slice(0, 4), 16) % MEANING_BUCKETS).toString(16); while (n.length < 4) n = '0' + n; return 'm-' + n; }
+  function meaningClips(texts, onProgress) {
+    var tell = function (text) { if (typeof onProgress === 'function') { try { onProgress(text); } catch (_) {} } };
+    var subtle = root.crypto && root.crypto.subtle;
+    var wanted = [];
+    (texts || []).forEach(function (t) { var k = squeeze(t); if (k && wanted.indexOf(k) < 0) wanted.push(k); });
+    if (!wanted.length || !subtle || typeof subtle.digest !== 'function' || typeof root.TextEncoder !== 'function') return Promise.resolve({});
+    var gotIndex = meaningIndex ? Promise.resolve(meaningIndex) : getJson(MEANING_INDEX).then(function (data) {
+      if (!isObject(data) || data.format !== MEANING_FORMAT || !isObject(data.buckets)) throw new Error(MEANING_INDEX + ' is not a meaning store index');
+      meaningIndex = data;
+      return data;
+    });
+    return gotIndex.then(function (index) {
+      return Promise.all(wanted.map(function (t) { return meaningKey(subtle, t).then(function (k) { return { text: t, key: k, file: meaningBucket(k) }; }); })).then(function (keyed) {
+        var urls = [];
+        keyed.forEach(function (x) {
+          var url = MEANING_INDEX.replace(/[^/]*$/, '') + x.file + '.json';
+          x.url = url;
+          if (MEANING_NAME.test(x.file) && own(index.buckets, x.file) && !own(meaningFiles, url) && urls.indexOf(url) < 0) urls.push(url);
+        });
+        var done = 0, cursor = 0;
+        var workers = Array.from({ length: Math.min(CONCURRENCY, urls.length) }, function () {
+          return (function next() {
+            if (cursor >= urls.length) return Promise.resolve();
+            var url = urls[cursor++];
+            // A file that does not arrive only means those meanings use the device voice.
+            return getJson(url).then(function (data) {
+              meaningFiles[url] = isObject(data) && data.format === MEANING_SHARD && isObject(data.clips) ? data.clips : {};
+            }, function () { meaningFiles[url] = {}; }).then(function () {
+              tell('Getting the meaning recordings: ' + (++done) + ' of ' + urls.length + ' small files.');
+            }).then(next);
+          })();
+        });
+        return Promise.all(workers).then(function () {
+          var out = {};
+          keyed.forEach(function (x) {
+            var clips = own(meaningFiles, x.url) ? meaningFiles[x.url] : null, clip = clips && own(clips, x.key) ? clips[x.key] : null;
+            if (isObject(clip) && clip.text === x.text && typeof clip.audio === 'string' && clip.audio.length <= 2 * 1024 * 1024 && MEANING_AUDIO.test(clip.audio)) out[x.text] = clip.audio;
+          });
+          return out;
+        });
+      });
+    }).then(null, function () { return {}; });
   }
   // The shared sound helpers and the app's MP3 encoder (packets_audio_kit.js, lame.min.js), from this site, once. null when they cannot be had.
   // Loading starts the first time recordings are asked for; wait briefly (up to 1.5 s) so even the first build encodes MP3 instead of caching WAV.
@@ -240,5 +306,5 @@
     return loadingPictures;
   }
 
-  root.AlloVocabMedia = { INDEX: INDEX, store: store, plan: plan, clips: clips, pictures: pictures, pictureExtras: pictureExtras, ready: function () { return !!index; } };
+  root.AlloVocabMedia = { INDEX: INDEX, MEANING_INDEX: MEANING_INDEX, store: store, plan: plan, clips: clips, meaningClips: meaningClips, pictures: pictures, pictureExtras: pictureExtras, ready: function () { return !!index; } };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -186,6 +186,12 @@
   // Inject War Room keyframe animations + focus-visible a11y styles (respects prefers-reduced-motion)
   (function() {
     if (typeof document === 'undefined' || !document.head) return;
+    if (!document.getElementById('allo-cyberdefense-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-cyberdefense-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"cyberDefense\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"cyberDefense\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
     if (document.getElementById('allo-cyberd-keyframes')) return;
     var style = document.createElement('style');
     style.id = 'allo-cyberd-keyframes';
@@ -3429,6 +3435,7 @@
             }, 0);
           }
           function handleCyberTabKeyDown(event, index) {
+            if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
             var next = index;
             if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % cyberTabs.length;
             else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + cyberTabs.length) % cyberTabs.length;
@@ -3467,7 +3474,7 @@
               '.theme-contrast #cyber-defense-region .cyberd-xp{background:#000!important;border:1px solid #ffff00;color:#ffff00!important;box-shadow:none!important;}'),
             // Header
             el('div', { className: 'cyberd-shell-header', style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-              el('button', { onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
+              el('button', { type: 'button', onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
               el('div', { className: 'cyberd-header-icon', 'aria-hidden': true },
                 el('svg', { viewBox: '0 0 64 64', width: 38, height: 38, 'aria-hidden': 'true', focusable: 'false' },
                   el('defs', null,
@@ -3526,7 +3533,7 @@
                 cyberTab === 'phish' && el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.phishing_difficulty', 'Phishing case difficulty'), style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
                   el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Email level:'),
                   ['easy', 'medium', 'hard'].map(function(dl) {
-                    return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: TRIAGE_SECONDS, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
+                    return el('button', { key: dl, type: 'button', onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: TRIAGE_SECONDS, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
                       style: { padding: '4px 10px', minHeight: 30, borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
                   })),
                 el('div', { 'aria-label': ctx.getXP('cyberDefense') + ' Cyber Defense experience points', className: 'cyberd-xp', style: { marginLeft: cyberTab === 'phish' ? 4 : 'auto', padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)', whiteSpace: 'nowrap' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
@@ -3540,7 +3547,7 @@
                 var moduleProgress = cyberModuleProgress[tab.id] || {};
                 var progressState = moduleProgress.complete ? 'complete' : (isActive ? 'active' : (moduleProgress.started ? 'started' : 'idle'));
                 var progressLabel = moduleProgress.complete ? 'module ready' : (moduleProgress.started ? 'module in progress' : 'module not started');
-                return el('button', { key: tab.id, id: 'cyber-tab-' + tab.id, className: 'cyberd-tab', 'data-progress': progressState, role: 'tab', 'aria-label': tab.label + ', ' + progressLabel, 'aria-selected': isActive, 'aria-controls': 'cyber-panel-' + tab.id, tabIndex: isActive ? 0 : -1, onClick: function() { selectCyberTab(tab.id); }, onKeyDown: function(event) { handleCyberTabKeyDown(event, tabIndex); },
+                return el('button', { key: tab.id, type: 'button', id: 'cyber-tab-' + tab.id, className: 'cyberd-tab', 'data-progress': progressState, role: 'tab', 'aria-label': tab.label + ', ' + progressLabel, 'aria-selected': isActive, 'aria-controls': 'cyber-panel-' + tab.id, tabIndex: isActive ? 0 : -1, onClick: function() { selectCyberTab(tab.id); }, onKeyDown: function(event) { handleCyberTabKeyDown(event, tabIndex); },
                   style: { padding: '12px 20px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
                   el('span', { className: 'cyberd-tab-icon', 'aria-hidden': true }, tab.icon), el('span', { className: 'cyberd-tab-label' }, tab.label), el('span', { className: 'cyberd-tab-progress', 'aria-hidden': true, title: moduleProgress.complete ? 'Module ready' : moduleProgress.started ? 'Module in progress' : 'Module not started' }));
               })
@@ -3556,7 +3563,7 @@
                   return el('span', { key: tab.id, className: 'cyberd-readiness-step', 'data-state': state, title: tab.label + ': ' + state });
                 })
               ),
-              cyberContinueTab && el('button', {
+              cyberContinueTab && el('button', { type: 'button',
                 className: 'cyberd-readiness__action',
                 onClick: function() {
                   selectCyberTab(cyberContinueTab.id);
@@ -3620,14 +3627,14 @@
 
                 // Mode Toggle
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'investigate',
+                  el('button', { type: 'button', onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'investigate',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
-                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'triage',
+                  el('button', { type: 'button', onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: TRIAGE_SECONDS }); }, 'aria-pressed': phishMode === 'triage',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button (hidden when the host has no usable text AI)
-                  !!(ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked) && el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
+                  !!(ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked) && el('button', { type: 'button', onClick: generateAIEmail, disabled: aiEmailLoading,
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: aiGeneratedEmail ? '2px solid #a855f7' : '2px solid rgba(168,85,247,0.3)', background: aiGeneratedEmail ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.08))', color: aiGeneratedEmail ? '#c084fc' : '#a78bfa', fontSize: 12, fontWeight: 800, cursor: aiEmailLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', opacity: aiEmailLoading ? 0.6 : 1, animation: aiEmailLoading ? 'pulse 1.5s ease-in-out infinite' : 'none' } },
                     el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? 'New AI Case' : 'AI Case'))
                 ),
@@ -3680,7 +3687,7 @@
                           phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
                             if (clue.zone !== 'sender') return null;
                             var found = cluesFound.indexOf(ci) !== -1;
-                            return el('button', { key: 'clue-s-' + ci, onClick: function() { handleClueClick(ci); },
+                            return el('button', { key: 'clue-s-' + ci, type: 'button', onClick: function() { handleClueClick(ci); },
                               title: t('stem.cyberdefense.investigate_sender', 'Investigate sender'),
                               'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in sender', 'aria-pressed': found,
                               style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
@@ -3689,7 +3696,7 @@
                         ),
                         el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontFamily: 'monospace' } }, '<' + activeEmail.from + '>'),
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
-                          el('button', {
+                          el('button', { type: 'button',
                             onClick: function() { upd('showHeaders', !showHeaders); },
                             'aria-expanded': showHeaders,
                             'aria-controls': 'cyber-email-headers',
@@ -3713,7 +3720,7 @@
                           phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
                             if (clue.zone !== 'headers') return null;
                             var found = cluesFound.indexOf(ci) !== -1;
-                            return el('button', { key: 'clue-h-' + ci, onClick: function() { handleClueClick(ci); },
+                            return el('button', { key: 'clue-h-' + ci, type: 'button', onClick: function() { handleClueClick(ci); },
                               title: t('stem.cyberdefense.investigate_email_headers', 'Investigate email headers'),
                               'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in email headers', 'aria-pressed': found,
                               style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
@@ -3728,7 +3735,7 @@
                       phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
                         if (clue.zone !== 'subject') return null;
                         var found = cluesFound.indexOf(ci) !== -1;
-                        return el('button', { key: 'clue-sub-' + ci, onClick: function() { handleClueClick(ci); },
+                        return el('button', { key: 'clue-sub-' + ci, type: 'button', onClick: function() { handleClueClick(ci); },
                           title: t('stem.cyberdefense.investigate_subject', 'Investigate subject'),
                           'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in subject', 'aria-pressed': found,
                           style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
@@ -3801,7 +3808,7 @@
                     phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
                       if (clue.zone !== 'body') return null;
                       var found = cluesFound.indexOf(ci) !== -1;
-                      return el('button', { key: 'clue-b-' + ci, onClick: function() { handleClueClick(ci); },
+                      return el('button', { key: 'clue-b-' + ci, type: 'button', onClick: function() { handleClueClick(ci); },
                         title: t('stem.cyberdefense.investigate_this', 'Investigate this'),
                         'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in message body', 'aria-pressed': found,
                         style: { marginLeft: 6, minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
@@ -3813,7 +3820,7 @@
                       phishMode === 'investigate' && !phishAnswer && (activeEmail.clues || []).map(function(clue, ci) {
                         if (clue.zone !== 'link') return null;
                         var found = cluesFound.indexOf(ci) !== -1;
-                        return el('button', { key: 'clue-l-' + ci, onClick: function() { handleClueClick(ci); },
+                        return el('button', { key: 'clue-l-' + ci, type: 'button', onClick: function() { handleClueClick(ci); },
                           title: t('stem.cyberdefense.investigate_link', 'Investigate link'),
                           'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in displayed link', 'aria-pressed': found,
                           style: { marginLeft: 'auto', minWidth: 36, minHeight: 36, flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
@@ -3847,10 +3854,10 @@
 
                 // Verdict Buttons
                 !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { className: 'cyberd-verdict-actions', role: 'group', 'aria-label': t('stem.cyberdefense.choose_your_email_verdict','Choose your email verdict'), style: { display: 'flex', gap: 12, marginTop: 12 } },
-                  el('button', { onClick: function() { handleVerdict(true); },
+                  el('button', { type: 'button', onClick: function() { handleVerdict(true); },
                     style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                     '\u2705', ' Safe Email'),
-                  el('button', { onClick: function() { handleVerdict(false); },
+                  el('button', { type: 'button', onClick: function() { handleVerdict(false); },
                     style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                     '\uD83D\uDEA8', ' Phishing!')
                 ),
@@ -3906,7 +3913,7 @@
                     phishMode === 'investigate' && el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                       '\uD83D\uDCCB Evidence collected: ' + cluesFound.length + '/' + (activeEmail.clues || []).length + ' clues'),
                     // Next case button
-                    el('button', { onClick: advanceCase,
+                    el('button', { type: 'button', onClick: advanceCase,
                       style: { marginTop: 14, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                       '\uD83D\uDD75\uFE0F Next Case \u2192')
                   )
@@ -3928,29 +3935,29 @@
                           placeholder: t('stem.cyberdefense.type_a_password_to_analyze', 'Invent a sample or generate one...'),
                           'aria-describedby': 'cyber-password-safety-note',
                           style: { width: '100%', padding: '12px 64px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
-                        el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
+                        el('button', { type: 'button', onClick: function() { upd('pwShowPassword', !pwShowPassword); },
                           'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
                           style: { position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', minWidth: 48, minHeight: 32, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.24)', borderRadius: 7, cursor: 'pointer', color: '#cbd5e1', fontSize: 11, fontWeight: 800, padding: '5px 8px' } },
                           pwShowPassword ? 'Hide' : 'Show')
                       ),
-                      el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); if (!gp) { if (ctx.addToast) ctx.addToast('Secure random generation is unavailable in this browser.', 'warning'); return; } setPasswordSample(gp, { pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
+                      el('button', { type: 'button', onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); if (!gp) { if (ctx.addToast) ctx.addToast('Secure random generation is unavailable in this browser.', 'warning'); return; } setPasswordSample(gp, { pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
                         style: { padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' } },
                         '\uD83C\uDFB2 Secure sample'),
-                      pwInput && el('button', { onClick: function() { setPasswordSample('', { pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); },
+                      pwInput && el('button', { type: 'button', onClick: function() { setPasswordSample('', { pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); },
                         style: { padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.08)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Clear')
                     ),
                     // Generator config
                     el('div', { style: { display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' } },
                       el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
                       [15, 16, 20, 24, 32].map(function(len) {
-                        return el('button', { key: len, onClick: function() { upd('pwGenLength', len); }, 'aria-pressed': pwGenLength === len,
+                        return el('button', { key: len, type: 'button', onClick: function() { upd('pwGenLength', len); }, 'aria-pressed': pwGenLength === len,
                           style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
                       }),
                       el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', margin: '0 4px' } }, '|'),
                       ['upper', 'lower', 'digits', 'symbols'].map(function(cat) {
                         var labels = { upper: 'A-Z', lower: 'a-z', digits: '0-9', symbols: '!@#' };
                         var on = pwGenInclude[cat];
-                        return el('button', { key: cat, onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); }, 'aria-pressed': on,
+                        return el('button', { key: cat, type: 'button', onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); }, 'aria-pressed': on,
                           style: { padding: '3px 8px', borderRadius: 6, border: on ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.08)', background: on ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', color: on ? '#4ade80' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, labels[cat]);
                       })
                     )
@@ -4067,10 +4074,10 @@
                   ),
                   // Action buttons
                   pwInput && el('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
-                    el('button', { onClick: startBruteForce,
+                    el('button', { type: 'button', onClick: startBruteForce,
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       '\u26A1 Brute Force Sim'),
-                    el('button', { onClick: function() { upd('pwBreachResult', checkBreach(pwInput)); },
+                    el('button', { type: 'button', onClick: function() { upd('pwBreachResult', checkBreach(pwInput)); },
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.1)', color: '#c084fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       '\uD83D\uDD0D Demo Blocklist Check')
                   ),
@@ -4115,7 +4122,7 @@
                   !pwChallengeDone && pwStrength.score >= 4 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
                     el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your made-up sample is 15+ characters, avoids this lesson\'s blocklist and has no predictable pattern dragging it down.'),
-                    el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR(__alloT('stem.cyberdefense.sr_password_challenge_complete_plus_5_xp', 'Password challenge complete! Plus 5 XP.')); },
+                    el('button', { type: 'button', onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR(__alloT('stem.cyberdefense.sr_password_challenge_complete_plus_5_xp', 'Password challenge complete! Plus 5 XP.')); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
                   // Tips
@@ -4140,7 +4147,7 @@
                 // Cipher type selector
                 el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.cipher_type', 'Cipher type'), style: { display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' } },
                   [{ id: 'caesar', label: t('stem.cyberdefense.caesar_cipher', 'Caesar Cipher'), icon: '\uD83D\uDD04' }, { id: 'atbash', label: t('stem.cyberdefense.atbash_cipher', 'Atbash Cipher'), icon: '\uD83D\uDD00' }, { id: 'xor', label: t('stem.cyberdefense.xor_cipher', 'XOR Cipher'), icon: '\u2295' }].map(function(c) {
-                    return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); }, 'aria-pressed': cipherMode === c.id,
+                    return el('button', { key: c.id, type: 'button', onClick: function() { upd('cipherMode', c.id); }, 'aria-pressed': cipherMode === c.id,
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       el('span', null, c.icon), c.label);
                   })
@@ -4148,15 +4155,15 @@
                 // Encode/Decode toggle
                 el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
                   el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.operation', 'Operation'), style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
-                    el('button', { onClick: function() { upd('cipherEncode', true); }, 'aria-pressed': cipherEncode, style: { padding: '8px 18px', border: 'none', background: cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
-                    el('button', { onClick: function() { upd('cipherEncode', false); }, 'aria-pressed': !cipherEncode, style: { padding: '8px 18px', border: 'none', background: !cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                    el('button', { type: 'button', onClick: function() { upd('cipherEncode', true); }, 'aria-pressed': cipherEncode, style: { padding: '8px 18px', border: 'none', background: cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { type: 'button', onClick: function() { upd('cipherEncode', false); }, 'aria-pressed': !cipherEncode, style: { padding: '8px 18px', border: 'none', background: !cipherEncode ? '#4f46e5' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
                   )
                 ),
                 // Caesar shift control
                 cipherMode === 'caesar' && el('div', { style: { marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 } },
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600 } }, 'Shift:'),
-                  el('input', { type: 'range', 'aria-label': t('stem.cyberdefense.caesar_shift', 'caesar shift'), min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
-                    style: { width: 180, accentColor: '#6366f1' } }),
+                  el('input', { type: 'range', 'aria-label': t('stem.cyberdefense.caesar_shift', 'caesar shift'), 'aria-valuetext': t('stem.cyberdefense.caesar_shift', 'caesar shift') + ': ' + caesarShift, min: 1, max: 25, value: caesarShift, onChange: function(e) { upd('caesarShift', parseInt(e.target.value)); },
+                    style: { width: 180, minHeight: 44, accentColor: '#6366f1' } }),
                   el('span', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, fontFamily: 'monospace', minWidth: 28, textAlign: 'center' } }, caesarShift)
                 ),
                 // Letter mapping visualization + Interactive Dual-Ring Cipher Wheel SVG
@@ -4303,7 +4310,7 @@
                   ),
                   el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + netScore + ' correct'),
-                    el('button', { onClick: function() { var pkts = generateNetRound(); upd({ netPackets: pkts, netFlagged: [], netShowAnswer: false, netRound: netRound + 1 }); },
+                    el('button', { type: 'button', onClick: function() { var pkts = generateNetRound(); upd({ netPackets: pkts, netFlagged: [], netShowAnswer: false, netRound: netRound + 1 }); },
                       style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       netPackets.length === 0 ? '\uD83D\uDCE1 Start Capture' : '\uD83D\uDD04 New Capture')
                   )
@@ -4455,7 +4462,7 @@
                     var protoColors = { HTTPS: '#22c55e', HTTP: '#f97316', DNS: '#60a5fa', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#94a3b8' };
                     var pColor = protoColors[pkt.proto] || '#94a3b8';
                     var packetLabel = pkt.proto + ' packet from ' + pkt.src + ' to ' + pkt.dst + ', port ' + pkt.port + ', payload ' + pkt.payload + '. ' + (netShowAnswer ? (pkt.suspicious ? 'Suspicious. ' : 'Expected. ') + pkt.reason : (isFlagged ? 'Flagged for investigation.' : 'Not flagged.'));
-                    return el('div', { key: pi, role: netShowAnswer ? 'group' : 'button', tabIndex: netShowAnswer ? -1 : 0, 'aria-pressed': netShowAnswer ? undefined : isFlagged, 'aria-label': packetLabel, onClick: function() { toggleNetPacket(pkt); }, onKeyDown: function(event) { if (!netShowAnswer && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleNetPacket(pkt); } },
+                    return el('div', { key: pi, role: netShowAnswer ? 'group' : 'button', tabIndex: netShowAnswer ? -1 : 0, 'aria-pressed': netShowAnswer ? undefined : isFlagged, 'aria-label': packetLabel, onClick: function() { toggleNetPacket(pkt); }, onKeyDown: function(event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (!netShowAnswer && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleNetPacket(pkt); } },
                       style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px minmax(180px,1fr)', minWidth: 600, gap: 0, padding: '8px 12px', cursor: netShowAnswer ? 'default' : 'pointer', background: netShowAnswer ? (pkt.suspicious ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.03)') : isFlagged ? 'rgba(244,63,94,0.08)' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
                         isFlagged && el('span', { style: { color: '#f43f5e', fontSize: 10 } }, '\u26A0\uFE0F'),
@@ -4476,7 +4483,7 @@
                 // Submit / Results
                 netPackets.length > 0 && !netShowAnswer && el('div', { style: { marginTop: 14, textAlign: 'center' } },
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } }, 'When your evidence review is complete, submit your analysis.'),
-                  el('button', { onClick: function() {
+                  el('button', { type: 'button', onClick: function() {
                       var correct = 0;
                       netPackets.forEach(function(pkt) {
                         var flagged = netFlagged.indexOf(pkt.id) !== -1;
@@ -4553,7 +4560,7 @@
                   var borderColor = showResult ? (isCorrect ? 'rgba(34,197,94,0.5)' : isSelected ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.06)') : isSelected ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.1)';
                   var bgColor = showResult ? (isCorrect ? 'rgba(34,197,94,0.08)' : isSelected ? 'rgba(239,68,68,0.06)' : 'rgba(255,255,255,0.02)') : 'rgba(255,255,255,0.04)';
                   return el('div', { key: oi, style: { marginBottom: 10 } },
-                    el('button', { onClick: function() {
+                    el('button', { type: 'button', onClick: function() {
                         if (seQuizAnswer) return;
                         var correct = opt.id === activeSeScenario.correct;
                         var xp = correct ? 8 : 2;
@@ -4579,7 +4586,7 @@
                     el('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA Did You Know?'),
                     el('div', { style: { color: '#fcd34d', fontSize: 12, lineHeight: 1.6 } }, activeSeScenario.lesson)
                   ),
-                  el('button', { onClick: function() { upd({ seQuizAnswer: null, seQuizIdx: seQuizIdx + 1 }); },
+                  el('button', { type: 'button', onClick: function() { upd({ seQuizAnswer: null, seQuizIdx: seQuizIdx + 1 }); },
                     style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 } },
                     '\uD83C\uDFAD Next Scenario \u2192')
                 ),
@@ -4587,7 +4594,7 @@
                 _cyberAiUsable(ctx, ctx.aiChat) && el('div', { style: { marginTop: 20, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.15)' } },
                   el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                     el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800 } }, '\uD83E\uDD16 AI Threat Briefing'),
-                    el('button', { onClick: function() {
+                    el('button', { type: 'button', onClick: function() {
                         if (threatLoading || !_cyberAiUsable(ctx, ctx.aiChat)) return;
                         upd('threatLoading', true);
                         ctx.aiChat('You are a cybersecurity educator. Generate a brief, engaging "Daily Threat Briefing" for a student. Include: 1) A real-world attack type (name it), 2) How it works in 2-3 sentences, 3) One defense tip. Keep it under 120 words. Use a serious but approachable tone. Format with line breaks.', function(resp) {
@@ -4644,7 +4651,7 @@
                         el('div', { style: { fontSize: 11, color: '#f9a8d4', fontWeight: 800, letterSpacing: 0.5 } }, 'QUICK QUIZ \u2014 ' + warRoomQuizCorrect + ' / ' + warRoomQuizTotal + ' correct (' + pct + '%)' + (warRoomQuizStreak >= 2 ? ' \u2022 \uD83D\uDD25 ' + warRoomQuizStreak + '-streak' : '')),
                         el('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700 } }, 'Stage: ' + stage.icon + ' ' + stage.name)
                       ),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() { warTtsStop(); upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
                         'aria-label': t('stem.cyberdefense.close_quiz', 'Close quiz'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
@@ -4654,7 +4661,7 @@
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM MOVE'),
                         mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
-                        warRoomTtsAvailable && el('button', {
+                        warRoomTtsAvailable && el('button', { type: 'button',
                           onClick: function() {
                             var title = redCard.title || '';
                             var desc = (warRoomPlainLanguage && plainRedDescriptions[redCard.id]) || redCard.description || '';
@@ -4682,7 +4689,7 @@
                         else if (isCorrect) { bg = warOutcomeColors.mitigated + '1f'; bd = warOutcomeColors.mitigated + '80'; color = warOutcomeColors.mitigatedSoft; }
                         else if (isPicked) { bg = warOutcomeColors.succeeded + '1a'; bd = warOutcomeColors.succeeded + '59'; color = warOutcomeColors.succeededSoft; }
                         else { bg = 'rgba(30,41,59,0.4)'; bd = 'rgba(148,163,184,0.15)'; color = '#94a3b8'; }
-                        return el('button', { key: i, onClick: function() { submitQuizAnswer(i); }, disabled: answered,
+                        return el('button', { key: i, type: 'button', onClick: function() { submitQuizAnswer(i); }, disabled: answered,
                           'aria-label': (i + 1) + '. ' + card.label + (answered ? (isCorrect ? ' — correct answer' : (isPicked ? ' — your answer (wrong)' : '')) : ''),
                           style: { display: 'flex', alignItems: 'center', gap: 8, padding: 10, borderRadius: 6, border: '1px solid ' + bd, background: bg, color: color, cursor: answered ? 'default' : 'pointer', textAlign: 'left' } },
                           el('span', { style: { fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 3, background: 'rgba(148,163,184,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace', minWidth: 16, textAlign: 'center' } }, String(i + 1)),
@@ -4719,13 +4726,13 @@
                     })(),
                     // Controls
                     el('div', { style: { display: 'flex', gap: 8 } },
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() { upd({ warRoomQuizCurrent: generateQuizQuestion() }); sfxCyberdClick(); },
                         disabled: !answered,
                         'aria-label': t('stem.cyberdefense.next_question', 'Next question'),
                         style: { flex: 1, padding: '10px 14px', borderRadius: 6, border: 'none', background: !answered ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #ec4899, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: !answered ? 'not-allowed' : 'pointer' } },
                         answered ? 'Next Question \u2192' : 'Pick an answer above'),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() { upd({ warRoomQuizOpen: false, warRoomQuizCurrent: null }); sfxCyberdClick(); },
                         style: { padding: '10px 14px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                         'Done')
@@ -4755,7 +4762,7 @@
                         el('div', { style: { fontSize: 11, color: '#f9a8d4', fontWeight: 800, letterSpacing: 0.5 } }, 'REPLAY \u2022 Campaign #' + (hist.id || '????') + ' \u2022 ' + ((campaignThemes[hist.theme] && campaignThemes[hist.theme].label) || hist.theme) + ' \u2022 ' + hist.difficulty),
                         el('div', { style: { fontSize: 15, fontWeight: 900, color: stage.color } }, 'Round ' + (idx + 1) + ' / ' + chain.length + ' \u2014 ' + stage.icon + ' ' + stage.name)
                       ),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() { warTtsStop(); upd('warRoomReplay', null); sfxCyberdClick(); },
                         'aria-label': t('stem.cyberdefense.close_replay', 'Close replay'),
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(30,41,59,0.6)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\u2715 Close')
@@ -4765,7 +4772,7 @@
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' } },
                         el('span', { style: { fontSize: 10, fontWeight: 900, color: '#fca5a5', background: 'rgba(244,63,94,0.2)', padding: '2px 7px', borderRadius: 3 } }, 'RED TEAM'),
                         mitre && el('span', { title: mitre.name, style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 3, fontFamily: 'monospace' } }, mitre.id),
-                        warRoomTtsAvailable && el('button', {
+                        warRoomTtsAvailable && el('button', { type: 'button',
                           onClick: function() {
                             var title = (step.red && step.red.title) || '';
                             var desc = (step.red && step.red.description) || '';
@@ -4794,14 +4801,14 @@
                     ),
                     // Transport controls
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                      el('button', { onClick: function() { if (idx > 0) goStep(idx - 1); }, disabled: idx === 0, 'aria-label': t('stem.cyberdefense.previous_round', 'Previous round'),
+                      el('button', { type: 'button', onClick: function() { if (idx > 0) goStep(idx - 1); }, disabled: idx === 0, 'aria-label': t('stem.cyberdefense.previous_round', 'Previous round'),
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx === 0 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx === 0 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx === 0 ? 'not-allowed' : 'pointer' } }, '\u23EE Prev'),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() { upd('warRoomReplay', Object.assign({}, warRoomReplay, { playing: !warRoomReplay.playing })); sfxCyberdClick(); },
                         'aria-label': warRoomReplay.playing ? 'Pause auto-advance' : 'Play auto-advance',
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(236,72,153,0.35)', background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minWidth: 80 } },
                         warRoomReplay.playing ? '\u23F8 Pause' : '\u25B6 Play'),
-                      el('button', { onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': t('stem.cyberdefense.next_round', 'Next round'),
+                      el('button', { type: 'button', onClick: function() { if (idx < chain.length - 1) goStep(idx + 1); }, disabled: idx >= chain.length - 1, 'aria-label': t('stem.cyberdefense.next_round', 'Next round'),
                         style: { padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(148,163,184,0.3)', background: idx >= chain.length - 1 ? 'rgba(30,41,59,0.3)' : 'rgba(30,41,59,0.6)', color: idx >= chain.length - 1 ? '#475569' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: idx >= chain.length - 1 ? 'not-allowed' : 'pointer' } }, 'Next \u23ED'),
                       el('div', { style: { flex: 1, fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right', letterSpacing: 0.5 } }, warRoomReplay.playing ? 'Auto-playing \u2014 2.6s per round' : 'Paused')
                     )
@@ -4812,12 +4819,12 @@
                 !warRoomActive && warRoomWelcomeSeen && !d.warRoomPlaybookSeen && warRoomCampaignsCompleted < 3 && el('div', { style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(236,72,153,0.08)', border: '1px dashed rgba(236,72,153,0.3)', marginBottom: 10, fontSize: 11, color: '#f9a8d4', display: 'flex', alignItems: 'center', gap: 6 } },
                   el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCA1'),
                   el('span', null, 'New tip: the '),
-                  el('button', {
+                  el('button', { type: 'button',
                     onClick: function() { upd({ warRoomPlaybookOpen: true, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     style: { padding: 0, background: 'none', border: 'none', color: '#f9a8d4', fontWeight: 800, textDecoration: 'underline', cursor: 'pointer', fontSize: 11 } },
                     '\uD83D\uDCD2 Playbook'),
                   el('span', null, ' button above shows which defenses stop which attacks at each kill-chain stage.'),
-                  el('button', {
+                  el('button', { type: 'button',
                     onClick: function() { upd('warRoomPlaybookSeen', true); sfxCyberdClick(); },
                     'aria-label': t('stem.cyberdefense.dismiss_playbook_tip', 'Dismiss Playbook tip'),
                     style: { marginLeft: 'auto', padding: '2px 6px', background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(148,163,184,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, cursor: 'pointer', borderRadius: 3 } },
@@ -4849,7 +4856,7 @@
                     })
                   ),
                   el('div', { style: { textAlign: 'center' } },
-                    el('button', { onClick: function() { upd('warRoomWelcomeSeen', true); sfxCyberdClick(); },
+                    el('button', { type: 'button', onClick: function() { upd('warRoomWelcomeSeen', true); sfxCyberdClick(); },
                       'aria-label': t('stem.cyberdefense.dismiss_welcome_and_continue', 'Dismiss welcome and continue'),
                       style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #9333ea)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       'Let\'s Begin \u2192')
@@ -4857,25 +4864,25 @@
                 ),
                 // Floating toolbar (glossary + teacher dashboard + help) — hidden during active Focus Mode
                 !(warRoomFocusMode && warRoomActive && !warRoomVerdict) && el('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 6, marginBottom: 8 } },
-                  warRoomCampaignHistory.length > 0 && el('button', { onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  warRoomCampaignHistory.length > 0 && el('button', { type: 'button', onClick: function() { upd({ warRoomTeacherDashOpen: !warRoomTeacherDashOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomTeacherDashOpen, 'aria-controls': 'warroom-teacher-dash',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(34,197,94,0.3)', background: warRoomTeacherDashOpen ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.12)', color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomTeacherDashOpen ? '\u2715 Close' : '\uD83D\uDCCA Open') + ' Teacher Dashboard'),
-                  (warRoomCampaignHistory.length > 0 || warRoomQuizTotal > 0) && el('button', { onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
+                  (warRoomCampaignHistory.length > 0 || warRoomQuizTotal > 0) && el('button', { type: 'button', onClick: function() { upd({ warRoomStatsOpen: !warRoomStatsOpen, warRoomGlossaryOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomTeacherDashOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomStatsOpen, 'aria-controls': 'warroom-stats-panel',
                     title: t('stem.cyberdefense.your_personal_performance_stats', 'Your personal performance stats'),
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(59,130,246,0.3)', background: warRoomStatsOpen ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)', color: '#93c5fd', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomStatsOpen ? '\u2715 Close' : '\uD83D\uDCC8 My') + ' Stats'),
-                  el('button', { onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomGlossaryFilter: warRoomGlossaryOpen ? '' : warRoomGlossaryFilter, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  el('button', { type: 'button', onClick: function() { upd({ warRoomGlossaryOpen: !warRoomGlossaryOpen, warRoomGlossaryFilter: warRoomGlossaryOpen ? '' : warRoomGlossaryFilter, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomGlossaryOpen, 'aria-controls': 'warroom-glossary-panel',
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: warRoomGlossaryOpen ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomGlossaryOpen ? '\u2715 Close' : '\uD83D\uDCD6 Open') + ' Glossary'),
-                  el('button', { onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  el('button', { type: 'button', onClick: function() { upd({ warRoomPlaybookOpen: !warRoomPlaybookOpen, warRoomPlaybookSeen: true, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomHelpOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomPlaybookOpen, 'aria-controls': 'warroom-playbook-panel',
                     title: t('stem.cyberdefense.strategy_guide_which_defenses_work_aga', 'Strategy guide — which defenses work against which stages'),
                     style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(236,72,153,0.3)', background: warRoomPlaybookOpen ? 'rgba(236,72,153,0.25)' : 'rgba(236,72,153,0.12)', color: '#f9a8d4', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                     (warRoomPlaybookOpen ? '\u2715 Close' : '\uD83D\uDCD2 Open') + ' Playbook'),
-                  el('button', { onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
+                  el('button', { type: 'button', onClick: function() { upd({ warRoomHelpOpen: !warRoomHelpOpen, warRoomGlossaryOpen: false, warRoomTeacherDashOpen: false, warRoomPlaybookOpen: false, warRoomStatsOpen: false }); sfxCyberdClick(); },
                     'aria-expanded': warRoomHelpOpen, 'aria-controls': 'warroom-help-panel',
                     title: t('stem.cyberdefense.keyboard_shortcuts_shortcut', 'Keyboard shortcuts (shortcut: ?)'),
                     style: { padding: '6px 10px', borderRadius: 6, border: '1px solid rgba(245,158,11,0.3)', background: warRoomHelpOpen ? 'rgba(245,158,11,0.25)' : 'rgba(245,158,11,0.12)', color: '#fcd34d', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
@@ -5242,6 +5249,7 @@
                     el('div', { style: { color: '#86efac', fontSize: 12, fontWeight: 800, letterSpacing: 0.5 } }, '\uD83D\uDCCA TEACHER DASHBOARD \u2014 CAMPAIGN HISTORY (' + warRoomCampaignHistory.length + ' of last 20)'),
                     el('div', { style: { display: 'flex', gap: 6 } },
                       el('button', {
+                        type: 'button',
                         onClick: function() {
                           var header = ['timestamp','campaign_id','mode','theme','difficulty','verdict','detections','mitigations','data_remaining','combos','achievements','rank','hot_seat','players','reflection'];
                           var rows = warRoomCampaignHistory.map(function(h) {
@@ -5280,7 +5288,7 @@
                         },
                         style: { padding: '4px 10px', borderRadius: 5, border: '1px solid rgba(34,197,94,0.35)', background: 'rgba(34,197,94,0.15)', color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCC4 Export CSV'),
                       // Export all War Room data as JSON backup
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() {
                           try {
                             var payload = {
@@ -5358,7 +5366,7 @@
                           }
                         })
                       ),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: async function() {
                           if (!(await askCyberDefenseConfirmation('Clear campaign history? This cannot be undone. Achievements are kept.', {
                             title: 'Clear campaign history', confirmText: 'Clear history'
@@ -5426,7 +5434,7 @@
                             el('td', { style: { padding: '4px 6px', color: '#d8b4fe' } }, h.hotSeat && h.players ? h.players.join(', ') : '\u2014'),
                             el('td', { style: { padding: '4px 6px' } },
                               el('div', { style: { display: 'flex', gap: 4 } },
-                                h.chain && h.chain.length > 0 && el('button', {
+                                h.chain && h.chain.length > 0 && el('button', { type: 'button',
                                   onClick: function() {
                                     upd({ warRoomTeacherDashOpen: false, warRoomReplay: { historyIdx: i, stepIdx: 0, playing: true } });
                                     sfxCyberdClick();
@@ -5434,7 +5442,7 @@
                                   'aria-label': 'Watch replay of campaign #' + h.id,
                                   title: t('stem.cyberdefense.watch_a_step_by_step_playback_of_this_', 'Watch a step-by-step playback of this campaign'),
                                   style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(236,72,153,0.35)', background: 'rgba(236,72,153,0.15)', color: '#f9a8d4', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, '\uD83D\uDCFD\uFE0F'),
-                                canReplay && el('button', {
+                                canReplay && el('button', { type: 'button',
                                   onClick: async function() {
                                     if (warRoomActive && !warRoomVerdict && !(await askCyberDefenseConfirmation('Start this campaign? Your current in-progress campaign will be reset.', {
                                       title: 'Replay saved campaign', confirmText: 'Reset and replay'
@@ -5476,7 +5484,7 @@
                       el('div', { style: { marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(239,68,68,0.2)', color: '#fbbf24', fontSize: 10.5, fontStyle: 'italic' } },
                         '\uD83D\uDCA1 Try: click "Sample Pack" to load a working example, fix the highlighted fields, then Validate & Save again.')),
                     el('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() {
                           var res = validateCustomCardsJson(warRoomCustomCardsDraft || '[]');
                           if (res.error) { upd('warRoomCustomCardsError', res.error); return; }
@@ -5484,7 +5492,7 @@
                           if (ctx.addToast) ctx.addToast('\u2705 Saved ' + res.cards.length + ' custom card(s)', 'success');
                         },
                         style: { padding: '6px 14px', borderRadius: 5, border: '1px solid rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.15)', color: '#86efac', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, '\u2705 Validate & Save'),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() {
                           upd({ warRoomCustomCardsDraft: JSON.stringify(warRoomCustomCards, null, 2), warRoomCustomCardsError: null });
                         },
@@ -5510,7 +5518,7 @@
                           ]
                         };
                         var mkPackButton = function(key, label, color) {
-                          return el('button', { key: key,
+                          return el('button', { key: key, type: 'button',
                             onClick: function() {
                               upd({ warRoomCustomCardsDraft: JSON.stringify(packs[key], null, 2), warRoomCustomCardsError: null });
                               if (ctx.addToast) ctx.addToast(label + ' pack loaded \u2014 review and Save', 'info');
@@ -5525,7 +5533,7 @@
                           mkPackButton('high', 'High School', '#a855f7')
                         );
                       })(),
-                      warRoomCustomCards.length > 0 && el('button', {
+                      warRoomCustomCards.length > 0 && el('button', { type: 'button',
                         onClick: async function() {
                           if (!(await askCyberDefenseConfirmation('Remove all ' + warRoomCustomCards.length + ' custom card(s)?', {
                             title: 'Clear custom cards', confirmText: 'Remove all cards'
@@ -5546,7 +5554,7 @@
                       onChange: function(ev) { upd('warRoomGlossaryFilter', (ev.target.value || '').slice(0, 40)); },
                       'aria-label': t('stem.cyberdefense.filter_glossary_terms', 'Filter glossary terms'),
                       style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, boxSizing: 'border-box' } }),
-                    warRoomGlossaryFilter && el('button', {
+                    warRoomGlossaryFilter && el('button', { type: 'button',
                       onClick: function() { upd('warRoomGlossaryFilter', ''); },
                       'aria-label': t('stem.cyberdefense.clear_glossary_filter', 'Clear glossary filter'),
                       style: { padding: '2px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(30,41,59,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, '\u2715')
@@ -5581,7 +5589,7 @@
                   ),
                   // Story Mode toggle
                   el('div', { style: { padding: 10, borderRadius: 8, background: warRoomStoryMode ? 'rgba(34,197,94,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomStoryMode ? 'rgba(34,197,94,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 10, display: 'flex', alignItems: 'center', gap: 10 } },
-                    el('button', { onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
+                    el('button', { type: 'button', onClick: function() { upd('warRoomStoryMode', !warRoomStoryMode); sfxCyberdClick(); },
                       role: 'switch', 'aria-checked': warRoomStoryMode, 'aria-label': t('stem.cyberdefense.toggle_story_mode', 'Toggle Story Mode'),
                       style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomStoryMode ? '#15803d' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
                       warRoomStoryMode ? 'ON' : 'OFF'),
@@ -5606,7 +5614,7 @@
                         { id: 'warRoomSoundMuted',    label: t('stem.cyberdefense.mute_war_room_sounds', '\uD83D\uDD07 Mute War Room Sounds'), desc: t('stem.cyberdefense.silence_the_click_outcome_tones', 'Silence the click / outcome tones.'), val: warRoomSoundMuted }
                       ].filter(Boolean).map(function(opt) {
                         var isOn = !!opt.val;
-                        return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
+                        return el('button', { key: opt.id, type: 'button', role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
                           onClick: function() {
                             if (opt.id === 'warRoomPlainLanguage') { upd('warRoomPlainLanguage', !isOn); }
                             else if (opt.id === 'warRoomSoundMuted') { upd('warRoomSoundMuted', !isOn); }
@@ -5627,7 +5635,7 @@
                       })
                     ),
                     // Reset settings — restores UDL/accessibility defaults without touching progress
-                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto || warRoomA11y.noShortcuts || warRoomA11y.noTimerAutoResolve) ? el('button', {
+                    ((warRoomPlainLanguage || warRoomSoundMuted || warRoomA11y.dyslexiaFont || warRoomA11y.largeText || warRoomA11y.highContrast || warRoomA11y.colorBlind || warRoomA11y.ttsAuto || warRoomA11y.noShortcuts || warRoomA11y.noTimerAutoResolve) ? el('button', { type: 'button',
                       onClick: async function() {
                         if (!(await askCyberDefenseConfirmation('Reset UDL and accessibility options to defaults? Achievements and history are kept.', {
                           title: 'Reset access options', confirmText: 'Reset options'
@@ -5649,13 +5657,13 @@
                     el('div', { style: { color: warRoomLiveMode !== 'off' ? '#fca5a5' : '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 6, letterSpacing: 0.5 } }, '\uD83D\uDCE1 LIVE SESSION \u2014 session ' + warLive.sessionCode + (warRoomLiveMode === 'hosting' ? ' \u2022 YOU ARE BROADCASTING' : warRoomLiveMode === 'observing' ? ' \u2022 YOU ARE OBSERVING' : '')),
                     el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, lineHeight: 1.4 } }, 'Broadcast your live campaign to every student in this session. Observers see the action in real time but can\'t play. Only one broadcaster per session.'),
                     el('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                      warRoomLiveMode === 'off' && el('button', { onClick: warLiveStartHosting,
+                      warRoomLiveMode === 'off' && el('button', { type: 'button', onClick: warLiveStartHosting,
                         style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.12)', color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\uD83D\uDD34 Start Broadcasting'),
-                      warRoomLiveMode === 'off' && el('button', { onClick: warLiveStartObserving,
+                      warRoomLiveMode === 'off' && el('button', { type: 'button', onClick: warLiveStartObserving,
                         style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\uD83D\uDC41\uFE0F Observe This Session'),
-                      warRoomLiveMode !== 'off' && el('button', { onClick: warLiveStop,
+                      warRoomLiveMode !== 'off' && el('button', { type: 'button', onClick: warLiveStop,
                         style: { padding: '6px 12px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\u23F9\uFE0F End Live Session')
                     )
@@ -5663,7 +5671,7 @@
                   // Hot Seat (classroom pass-and-play)
                   el('div', { style: { padding: 10, borderRadius: 8, background: warRoomHotSeatEnabled ? 'rgba(168,85,247,0.08)' : 'rgba(15,23,42,0.4)', border: '1px solid ' + (warRoomHotSeatEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(148,163,184,0.15)'), marginBottom: 16 } },
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: warRoomHotSeatEnabled ? 10 : 0 } },
-                      el('button', { onClick: function() { upd('warRoomHotSeatEnabled', !warRoomHotSeatEnabled); sfxCyberdClick(); },
+                      el('button', { type: 'button', onClick: function() { upd('warRoomHotSeatEnabled', !warRoomHotSeatEnabled); sfxCyberdClick(); },
                         role: 'switch', 'aria-checked': warRoomHotSeatEnabled, 'aria-label': t('stem.cyberdefense.toggle_hot_seat_classroom_mode', 'Toggle Hot Seat classroom mode'),
                         style: { padding: '4px 10px', borderRadius: 20, border: 'none', background: warRoomHotSeatEnabled ? '#a855f7' : '#475569', color: 'white', fontSize: 11, fontWeight: 800, cursor: 'pointer', minWidth: 50 } },
                         warRoomHotSeatEnabled ? 'ON' : 'OFF'),
@@ -5686,7 +5694,7 @@
                                 upd('warRoomHotSeatPlayers', newList);
                               },
                               style: { flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 } }),
-                            warRoomHotSeatPlayers.length > 2 && el('button', {
+                            warRoomHotSeatPlayers.length > 2 && el('button', { type: 'button',
                               onClick: function() {
                                 if (warRoomHotSeatPlayers.length <= 2) return; // never drop below 2
                                 var newList = warRoomHotSeatPlayers.slice();
@@ -5700,7 +5708,7 @@
                           );
                         })
                       ),
-                      warRoomHotSeatPlayers.length < 6 && el('button', {
+                      warRoomHotSeatPlayers.length < 6 && el('button', { type: 'button',
                         onClick: function() {
                           var newList = warRoomHotSeatPlayers.concat(['Player ' + (warRoomHotSeatPlayers.length + 1)]);
                           upd('warRoomHotSeatPlayers', newList);
@@ -5736,7 +5744,7 @@
                         ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Result: ' + (todayCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + todayCompletion.detections + '/6 detections \u2022 Every student who plays today gets the SAME scenario. Play again to improve your score.')
                         : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'A new challenge drops every day (UTC). Every student gets the exact same scenario \u2014 compare scores with classmates!')
                     ),
-                    el('button', { onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
+                    el('button', { type: 'button', onClick: function() { startCampaign(todaysChallenge.difficulty, todaysChallenge.theme, todaysChallenge.id); },
                       'aria-label': t('stem.cyberdefense.start_today_s_challenge', 'Start today\'s challenge'),
                       style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: todayCompletion ? 'linear-gradient(135deg, #2563eb, #4f46e5)' : 'linear-gradient(135deg, #b45309, #be123c)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       todayCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
@@ -5751,7 +5759,7 @@
                         ? el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Result: ' + (weekCompletion.verdict === 'won' ? '\uD83C\uDFC6 WON' : '\u26A0\uFE0F LOST') + ' \u2022 ' + weekCompletion.detections + ' detections \u2022 Runs all week \u2014 replay for a better score.')
                         : el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 3 } }, 'Toughest challenge of the week (Threat Hunter). Same seed every day until Sunday.')
                     ),
-                    el('button', { onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
+                    el('button', { type: 'button', onClick: function() { startCampaign(thisWeeksChallenge.difficulty, thisWeeksChallenge.theme, thisWeeksChallenge.id); },
                       'aria-label': t('stem.cyberdefense.start_this_week_s_challenge', 'Start this week\'s challenge'),
                       style: { padding: '10px 18px', borderRadius: 8, border: 'none', background: weekCompletion ? 'linear-gradient(135deg, #2563eb, #4f46e5)' : 'linear-gradient(135deg, #9333ea, #be185d)', color: 'white', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
                       weekCompletion ? '\uD83D\uDD04 Replay' : '\u25B6 Play')
@@ -5764,7 +5772,7 @@
                         var t = campaignThemes[tid];
                         var isLocked = t.locked && !(t.unlockCondition && t.unlockCondition(d));
                         var selected = warRoomCampaignTheme === tid && !isLocked;
-                        return el('button', { key: tid, role: 'radio', 'aria-checked': selected, disabled: isLocked,
+                        return el('button', { key: tid, type: 'button', role: 'radio', 'aria-checked': selected, disabled: isLocked,
                           'aria-label': t.label + (isLocked ? ' (locked — ' + (t.unlockHint || 'keep playing to unlock') + ')' : ''),
                           onClick: function() { if (!isLocked) { upd('warRoomCampaignTheme', tid); sfxCyberdClick(); } },
                           style: { padding: '10px 12px', borderRadius: 8, border: '1px solid ' + (selected ? 'rgba(99,102,241,0.6)' : 'rgba(148,163,184,0.2)'), background: selected ? 'rgba(99,102,241,0.12)' : 'rgba(15,23,42,0.45)', color: selected ? '#a5b4fc' : (isLocked ? '#94a3b8' : '#cbd5e1'), cursor: isLocked ? 'not-allowed' : 'pointer', textAlign: 'left', opacity: isLocked ? 0.55 : 1 } },
@@ -5812,7 +5820,7 @@
                         { id: 'analyst',      label: t('stem.cyberdefense.analyst', 'Analyst'),       sub: 'Some noise \u2022 14 budget', color: '#60a5fa', help: 'Mid-tier challenge. Alerts include one noise signal per round. Tighter 14-budget forces you to prioritize.' },
                         { id: 'threatHunter', label: t('stem.cyberdefense.threat_hunter', 'Threat Hunter'), sub: 'Adaptive red team \u2022 10 budget \u2022 90s/round', color: '#fb7185', help: 'Expert mode. 90-second clock per round auto-resolves when time expires. Red team adapts to your successes. Only 10 starting budget.' }
                       ].map(function(tier) {
-                        return el('button', { key: tier.id, onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
+                        return el('button', { key: tier.id, type: 'button', onClick: function() { startCampaign(tier.id, warRoomCampaignTheme); },
                           'aria-label': 'Start ' + tier.label + ' campaign against ' + campaignThemes[warRoomCampaignTheme].label + '. ' + tier.help,
                           title: tier.help,
                           style: { flex: '1 1 200px', padding: '14px 16px', borderRadius: 10, border: '1px solid ' + tier.color + '55', background: 'linear-gradient(135deg, ' + tier.color + '1a, ' + tier.color + '05)', color: tier.color, cursor: 'pointer', textAlign: 'left' } },
@@ -5833,7 +5841,7 @@
                         { id: 'noCombos', label: t('stem.cyberdefense.no_combos', 'No Combos'), desc: t('stem.cyberdefense.combo_bonuses_are_suppressed', 'Combo bonuses are suppressed.') }
                       ].map(function(opt) {
                         var isOn = !!(warRoomHouseRulesDraft && warRoomHouseRulesDraft[opt.id]);
-                        return el('button', { key: opt.id, role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
+                        return el('button', { key: opt.id, type: 'button', role: 'switch', 'aria-checked': isOn, 'aria-label': opt.label + (isOn ? ', on' : ', off'),
                           onClick: function() {
                             var next = Object.assign({}, warRoomHouseRulesDraft || {});
                             next[opt.id] = !isOn;
@@ -5852,14 +5860,14 @@
                   ),
                   // Boss Mode + Quick Match + Quick Quiz launchers
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: openQuiz,
                       'aria-label': t('stem.cyberdefense.open_quick_quiz_flashcard_drill', 'Open quick-quiz flashcard drill'),
                       style: { padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(236,72,153,0.4)', background: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(168,85,247,0.06))', color: '#f9a8d4', fontSize: 12, fontWeight: 800, cursor: 'pointer', textAlign: 'left' } },
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\u2753 Quick Quiz'),
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'Rapid-fire drill \u2014 pick the best defense for each attack. Earn +1 XP per correct answer.' + (warRoomQuizTotal > 0 ? ' (' + warRoomQuizCorrect + '/' + warRoomQuizTotal + ' lifetime)' : ''))
                     ),
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: function() {
                         // Quick Match: random theme (unlocked), random difficulty, fresh seed
                         var unlockedThemes = Object.keys(campaignThemes).filter(function(tid) {
@@ -5875,7 +5883,7 @@
                       el('div', { style: { fontSize: 15, marginBottom: 3 } }, '\uD83C\uDFB2 Quick Match'),
                       el('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.35 } }, 'One-click random theme + difficulty. Great for warmup.')
                     ),
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: async function() {
                         if (!(await askCyberDefenseConfirmation('Boss Mode has 3 rounds (Exploitation \u2192 C2 \u2192 Actions), a tight 10-budget cap, an APT adversary, and tougher scoring.', {
                           title: 'Start Boss Mode?', confirmText: 'Start Boss Mode'
@@ -5901,7 +5909,7 @@
                           upd('warRoomSeedInput', v);
                         },
                         style: { flex: 1, padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(15,23,42,0.7)', color: '#fcd34d', fontSize: 15, fontWeight: 800, letterSpacing: 4, fontFamily: 'monospace', textAlign: 'center' } }),
-                      el('button', {
+                      el('button', { type: 'button',
                         onClick: function() {
                           var seed = (d.warRoomSeedInput || '').toUpperCase();
                           if (seed.length !== 4) { if (ctx.addToast) ctx.addToast('Enter a 4-character Campaign ID', 'info'); return; }
@@ -6107,7 +6115,7 @@
                       var isExpanded = d[expandedKey];
                       var ideals = idealPlaysFor(r.red);
                       return el('div', { key: i, style: { borderBottom: i < warRoomKillChain.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' } },
-                        el('button', { onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
+                        el('button', { type: 'button', onClick: function() { var o = {}; o[expandedKey] = !isExpanded; upd(o); sfxCyberdClick(); },
                           'aria-expanded': !!isExpanded, 'aria-controls': 'round-detail-' + i,
                           style: { width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' } },
                           el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, isExpanded ? '\u25BC' : '\u25B6'),
@@ -6159,7 +6167,7 @@
                   el('div', { style: { padding: 12, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.04))', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 14 } },
                     el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                       el('div', { style: { color: '#a5b4fc', fontSize: 12, fontWeight: 800 } }, '\uD83D\uDCCB After-Action Report'),
-                      !warRoomAAR && el('button', { onClick: requestAAR, disabled: warRoomAARLoading,
+                      !warRoomAAR && el('button', { type: 'button', onClick: requestAAR, disabled: warRoomAARLoading,
                         style: { padding: '4px 12px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 11, fontWeight: 700, cursor: warRoomAARLoading ? 'wait' : 'pointer' } },
                         warRoomAARLoading ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate Debrief')
                     ),
@@ -6168,7 +6176,7 @@
                   ),
                   // Share summary + new campaign buttons
                   el('div', { style: { display: 'flex', gap: 10 } },
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: function() {
                         var hotSeatLine = '';
                         if (warRoomHotSeatEnabled) {
@@ -6204,12 +6212,13 @@
                       'aria-label': t('stem.cyberdefense.copy_campaign_summary_to_clipboard', 'Copy campaign summary to clipboard'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.12)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCCB Copy Summary'),
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: function() { startCampaign(warRoomDifficulty, warRoomCampaignTheme); },
                       'aria-label': t('stem.cyberdefense.replay_the_same_setup_with_a_fresh_rol', 'Replay the same setup with a fresh roll of cards'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.35)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDD04 Replay Same Setup'),
                     el('button', {
+                      type: 'button',
                       onClick: function() {
                         try {
                           var w = window.open('', '_blank', 'width=720,height=900');
@@ -6289,7 +6298,7 @@
                       'aria-label': t('stem.cyberdefense.print_campaign_report', 'Print campaign report'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDDA8\uFE0F Print Report'),
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: function() {
                         try {
                           var lines = [];
@@ -6373,7 +6382,7 @@
                       title: t('stem.cyberdefense.download_txt_transcript_easy_to_share_', 'Download .txt transcript \u2014 easy to share or paste into a gradebook'),
                       style: { flex: '0 0 auto', padding: '12px 16px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                       '\uD83D\uDCDD Transcript'),
-                    el('button', { onClick: function() { warTtsStop(); upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
+                    el('button', { type: 'button', onClick: function() { warTtsStop(); upd({ warRoomActive: false, warRoomVerdict: null, warRoomAAR: null, warRoomCampaignId: null }); sfxCyberdClick(); },
                       style: { flex: 1, padding: '12px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white', fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
                       '\u2694\uFE0F New Campaign')
                   )
@@ -6387,7 +6396,7 @@
                   el('div', { style: { fontSize: 24, fontWeight: 900, color: '#d8b4fe', marginBottom: 8 } }, warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] || ('Player ' + (warRoomHotSeatCurrentIdx + 1))),
                   el('div', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, 'Your turn \u2014 Round ' + warRoomRound + ' of 6'),
                   el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 20 } }, warRoomCurrentStage.icon + ' ' + warRoomCurrentStage.name),
-                  el('button', { onClick: function() { upd('warRoomHotSeatPassScreen', false); sfxCyberdClick(); if (ctx.announceToSR) ctx.announceToSR(warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] + ' is now playing. Round ' + warRoomRound + '.'); },
+                  el('button', { type: 'button', onClick: function() { upd('warRoomHotSeatPassScreen', false); sfxCyberdClick(); if (ctx.announceToSR) ctx.announceToSR(warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx] + ' is now playing. Round ' + warRoomRound + '.'); },
                     'aria-label': 'Ready to play, ' + warRoomHotSeatPlayers[warRoomHotSeatCurrentIdx],
                     style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: 'white', fontSize: 15, fontWeight: 800, cursor: 'pointer' } },
                     '\uD83D\uDC4A I\'m Ready'),
@@ -6405,7 +6414,7 @@
                       el('div', { style: { fontSize: 12, fontWeight: 800, color: warLiveIsHosting ? '#fca5a5' : '#a5b4fc' } }, warLiveIsHosting ? 'BROADCASTING LIVE' : 'OBSERVING LIVE — ' + (warRoomLiveHostName || 'Host')),
                       el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Session ' + warLive.sessionCode + (warLiveIsObserving ? ' • Buttons disabled in observer mode.' : ''))
                     ),
-                    el('button', { onClick: warLiveStop, style: { padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'End')
+                    el('button', { type: 'button', onClick: warLiveStop, style: { padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(15,23,42,0.5)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, 'End')
                   ),
 
                   // Observer suggestion compose (only when observing)
@@ -6419,7 +6428,7 @@
                         onChange: function(ev) { upd('warRoomChatDraft', (ev.target.value || '').slice(0, 140)); },
                         onKeyDown: function(ev) { if (!ev.isComposing && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key === 'Enter') { ev.preventDefault(); warLiveSendSuggestion(warRoomChatDraft); } },
                         style: { flex: 1, padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontFamily: 'inherit', boxSizing: 'border-box' } }),
-                      el('button', { onClick: function() { warLiveSendSuggestion(warRoomChatDraft); },
+                      el('button', { type: 'button', onClick: function() { warLiveSendSuggestion(warRoomChatDraft); },
                         disabled: !warRoomChatDraft.trim(),
                         'aria-label': t('stem.cyberdefense.send_suggestion', 'Send suggestion'),
                         style: { padding: '6px 14px', borderRadius: 5, border: 'none', background: warRoomChatDraft.trim() ? 'linear-gradient(135deg, #6366f1, #a855f7)' : 'rgba(100,116,139,0.3)', color: 'white', fontSize: 12, fontWeight: 800, cursor: warRoomChatDraft.trim() ? 'pointer' : 'not-allowed' } },
@@ -6433,7 +6442,7 @@
                     style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', marginBottom: 10, maxHeight: 160, overflowY: 'auto' } },
                     el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#d8b4fe', fontSize: 10, fontWeight: 800, letterSpacing: 0.5, marginBottom: 6 } },
                       el('span', null, '\uD83D\uDCAC OBSERVER SUGGESTIONS (' + warRoomChatMessages.length + ')'),
-                      el('button', { onClick: function() {
+                      el('button', { type: 'button', onClick: function() {
                           var ref = warLiveChatDocRef();
                           if (!ref) return;
                           try { warLive.fb.setDoc(ref, { messages: [] }); upd('warRoomChatMessages', []); } catch(e) {}
@@ -6459,7 +6468,7 @@
                       el('div', null,
                         el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' } },
                           el('span', null, 'Round ' + warRoomRound + ' / ' + warRoomRoundsTotal + ' \u2022 ' + (warRoomIsBossMode ? '\uD83D\uDC79 BOSS ' : '') + (campaignThemes[warRoomCampaignTheme] ? campaignThemes[warRoomCampaignTheme].icon + ' ' + campaignThemes[warRoomCampaignTheme].label : '')),
-                          warRoomCampaignId && el('button', {
+                          warRoomCampaignId && el('button', { type: 'button',
                             onClick: function() {
                               try {
                                 if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -6518,7 +6527,7 @@
                         warRoomAssets.users + 'u \u2022 ' + warRoomAssets.servers + 's \u2022 ' + warRoomAssets.data + 'd')
                     ),
                     // Focus Mode toggle
-                    el('button', {
+                    el('button', { type: 'button',
                       onClick: function() { upd('warRoomFocusMode', !warRoomFocusMode); sfxCyberdClick(); },
                       'aria-pressed': warRoomFocusMode, 'aria-label': warRoomFocusMode ? 'Exit focus mode' : 'Enter focus mode (hide panels and decorations)',
                       title: warRoomFocusMode ? 'Exit focus mode' : 'Focus mode \u2014 hide extras, keep the game',
@@ -6642,7 +6651,7 @@
                           (warRoomPlainLanguage && plainStageLessons[warRoomCurrentStage.id]) || res.stageLesson)
                       ),
                       // Try Again (only on lost rounds, once per round, unless observing or final campaign verdict)
-                      res.outcome === 'succeeded' && !warRoomRetryUsedThisRound && !warLiveIsObserving && el('button', {
+                      res.outcome === 'succeeded' && !warRoomRetryUsedThisRound && !warLiveIsObserving && el('button', { type: 'button',
                         onClick: tryAgainRound, 'aria-label': t('stem.cyberdefense.try_this_round_again_with_the_same_sce', 'Try this round again with the same scenario'),
                         title: t('stem.cyberdefense.revert_this_round_and_replay_it_from_s', 'Revert this round and replay it from scratch (once per round).'),
                         style: { width: '100%', marginBottom: 8, padding: '10px 16px', borderRadius: 10, border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(234,179,8,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
@@ -6666,7 +6675,7 @@
                         );
                       })(),
                       // Advance button (observers see it but can't act)
-                      el('button', { onClick: advanceFromDebrief, disabled: warLiveIsObserving,
+                      el('button', { type: 'button', onClick: advanceFromDebrief, disabled: warLiveIsObserving,
                         'aria-label': warRoomRound >= warRoomRoundsTotal ? 'View final report' : 'Advance to next round',
                         style: { width: '100%', padding: '12px 20px', borderRadius: 10, border: 'none', background: warLiveIsObserving ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, ' + oc.c + ', #6366f1)', color: 'white', fontSize: 13, fontWeight: 800, cursor: warLiveIsObserving ? 'not-allowed' : 'pointer' } },
                         warLiveIsObserving ? '\u231B Waiting for host\u2026' : (warRoomRound >= warRoomRoundsTotal ? '\uD83C\uDFC1 View Final Report \u2192' : '\u25B6 Advance to Round ' + (warRoomRound + 1) + ' (' + ((warRoomActiveStages[warRoomRound] && warRoomActiveStages[warRoomRound].name) || '') + ')'))
@@ -6705,7 +6714,7 @@
                             style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text, #fcd34d)', background: 'rgba(234,179,8,0.12)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3, fontFamily: 'monospace' } },
                             mitreTechniques[warRoomRedAction.id].id),
                           warRoomRedAction && warRoomRedAction._aiGenerated && el('span', { style: { fontSize: 9, fontWeight: 800, color: '#a5b4fc', background: 'rgba(99,102,241,0.2)', padding: '2px 6px', borderRadius: 4, letterSpacing: 0.3 } }, '\uD83E\uDD16 AI'),
-                          warRoomTtsAvailable && el('button', {
+                          warRoomTtsAvailable && el('button', { type: 'button',
                             onClick: function() {
                               var title = (warRoomRedAction && warRoomRedAction.title) || '';
                               var desc = (warRoomPlainLanguage && warRoomRedAction && plainRedDescriptions[warRoomRedAction.id]) || (warRoomRedAction && warRoomRedAction.description) || '';
@@ -6715,7 +6724,7 @@
                             title: t('stem.cyberdefense.read_aloud_text_to_speech', 'Read aloud (text-to-speech)'),
                             style: { padding: '3px 8px', borderRadius: 4, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.12)', color: '#d8b4fe', fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                             '\uD83D\uDD0A Read'),
-                          ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', {
+                          ctx.aiAvailable !== false && ctx.callGemini && !ctx.callGemini._alloQrBlocked && !warLiveIsObserving && !warRoomRoundResolved && warRoomBluePlays.length === 0 && el('button', { type: 'button',
                             onClick: generateAIRedCard, disabled: warRoomAICardLoading,
                             'aria-label': t('stem.cyberdefense.generate_a_new_ai_red_team_scenario', 'Generate a new AI red team scenario'),
                             title: t('stem.cyberdefense.ask_the_ai_to_generate_a_fresh_scenari', 'Ask the AI to generate a fresh scenario for this stage. Only available before playing any defenses.'),
@@ -6739,7 +6748,7 @@
                             el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
                               el('span', null, seen ? (a.real ? '\uD83D\uDD34' : '\u26AA') : '\u2754'),
                               el('span', { style: { flex: 1 } }, seen ? a.text : 'Unreviewed signal #' + (i + 1)),
-                              !seen && el('button', { onClick: function() {
+                              !seen && el('button', { type: 'button', onClick: function() {
                                   if (!investigated && warRoomBluePlays.indexOf('investigate') === -1) {
                                     if (ctx.addToast) ctx.addToast('Play Investigate Alert to review signals', 'info');
                                     return;
@@ -6763,7 +6772,7 @@
                       ),
                       // Scratchpad — jot notes during play; carries into the reflection at end
                       el('div', { style: { padding: 8, borderRadius: 8, background: 'rgba(15,23,42,0.4)', border: '1px dashed rgba(234,179,8,0.25)' } },
-                        el('button', {
+                        el('button', { type: 'button',
                           onClick: function() { upd('warRoomScratchOpen', !warRoomScratchOpen); sfxCyberdClick(); },
                           'aria-expanded': warRoomScratchOpen, 'aria-controls': 'warroom-scratchpad-input',
                           style: { width: '100%', textAlign: 'left', padding: '4px 6px', borderRadius: 4, border: 'none', background: 'transparent', color: '#fcd34d', fontSize: 11, fontWeight: 800, cursor: 'pointer', letterSpacing: 0.4 } },
@@ -6798,7 +6807,7 @@
                         var ruleBlocked = card.id === 'escalate' && warRoomHouseRulesActive && warRoomHouseRulesActive.noEscalate;
                         var disabled = ruleBlocked || warLiveIsObserving || warRoomRoundResolved || played || effectiveCost > warRoomBudget || (card.id === 'escalate' && warRoomEscalateUsed);
                         var hint = ruleBlocked ? '(house rule: no escalate)' : (card.id === 'escalate' && warRoomEscalateUsed ? '(already used)' : (played ? '(played)' : ''));
-                        return el('button', { key: card.id, onClick: function() { if (!disabled) playBlueCard(card.id); },
+                        return el('button', { key: card.id, type: 'button', onClick: function() { if (!disabled) playBlueCard(card.id); },
                           disabled: disabled, 'aria-pressed': played, 'aria-keyshortcuts': String(cardIdx + 1),
                           'aria-label': card.label + ', shortcut ' + (cardIdx + 1) + ', cost ' + effectiveCost + ' budget' + (isFreeAvail ? ' (free first use)' : '') + '. ' + card.description,
                           style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + (played ? 'rgba(34,197,94,0.4)' : (isFreeAvail ? 'rgba(34,197,94,0.4)' : 'rgba(148,163,184,0.2)')), background: played ? 'rgba(34,197,94,0.1)' : (disabled ? 'rgba(30,41,59,0.4)' : 'rgba(30,41,59,0.7)'), color: played ? '#86efac' : (disabled ? '#475569' : '#cbd5e1'), cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left', marginBottom: 6, opacity: disabled && !played ? 0.55 : 1 } },
@@ -6826,13 +6835,13 @@
                         );
                       })(),
                       // Undo Last Play (only when at least one play exists and round not resolved)
-                      warRoomPlayLog.length > 0 && !warRoomRoundResolved && !warLiveIsObserving && el('button', {
+                      warRoomPlayLog.length > 0 && !warRoomRoundResolved && !warLiveIsObserving && el('button', { type: 'button',
                         onClick: undoLastPlay, 'aria-label': t('stem.cyberdefense.undo_the_last_defense_you_played', 'Undo the last defense you played'),
                         style: { width: '100%', marginTop: 6, padding: '7px 10px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.1)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
                         '\u21A9\uFE0F Undo Last Play (' + (function() { var last = warRoomPlayLog[warRoomPlayLog.length - 1]; var c = blueTeamCards.filter(function(b){return b.id===last.cardId;})[0]; return c ? c.label : last.cardId; })() + ')'),
                       // Hint button (costs 1 budget, once per round, reveals category of ideal play)
                       el('div', { style: { marginTop: 6, padding: 8, borderRadius: 8, background: 'rgba(234,179,8,0.06)', border: '1px dashed rgba(234,179,8,0.3)' } },
-                        !warRoomHintRevealed && el('button', { onClick: requestHint, disabled: warLiveIsObserving || warRoomRoundResolved || warRoomBudget < 1,
+                        !warRoomHintRevealed && el('button', { type: 'button', onClick: requestHint, disabled: warLiveIsObserving || warRoomRoundResolved || warRoomBudget < 1,
                           'aria-label': t('stem.cyberdefense.request_a_hint_for_1_budget', 'Request a hint for 1 budget'),
                           style: { width: '100%', padding: '8px 12px', borderRadius: 6, border: 'none', background: 'rgba(234,179,8,0.18)', color: '#fbbf24', fontSize: 11, fontWeight: 700, cursor: (warLiveIsObserving || warRoomBudget < 1) ? 'not-allowed' : 'pointer', opacity: (warLiveIsObserving || warRoomBudget < 1) ? 0.55 : 1 } },
                           '\uD83D\uDCA1 Request Hint (\u2212 1 budget)'),
@@ -6851,13 +6860,13 @@
                       // Resolve button
                       (function() {
                         var resolveDisabled = warLiveIsObserving || warRoomRoundResolved || warRoomBluePlays.length === 0;
-                        return el('button', { onClick: resolveCurrentRound, disabled: resolveDisabled,
+                        return el('button', { type: 'button', onClick: resolveCurrentRound, disabled: resolveDisabled,
                           'aria-label': 'Resolve round ' + warRoomRound,
                           style: { width: '100%', padding: '12px 16px', borderRadius: 10, border: 'none', background: resolveDisabled ? 'rgba(100,116,139,0.3)' : 'linear-gradient(135deg, #f43f5e, #a855f7)', color: 'white', fontSize: 13, fontWeight: 800, cursor: resolveDisabled ? 'not-allowed' : 'pointer', marginTop: 8 } },
                           warLiveIsObserving ? '\uD83D\uDC41\uFE0F Observer Mode' : (warRoomBluePlays.length === 0 ? '\u2026 Play at least one defense' : '\u25B6 Resolve Round ' + warRoomRound));
                       })(),
                       // Quit Campaign (abandon mid-run; confirms first)
-                      !warLiveIsObserving && el('button', {
+                      !warLiveIsObserving && el('button', { type: 'button',
                         onClick: async function() {
                           if (!(await askCyberDefenseConfirmation('Your progress in this run will be lost and it will not appear in your history.', {
                             title: 'Quit this campaign?', confirmText: 'Quit campaign'
@@ -6909,12 +6918,12 @@
                           el('label', { htmlFor: 'dh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#a5b4fc', fontFamily: 'monospace' } }, iq[s.k])),
                           el('input', { id: 'dh-' + s.k, type: 'range', min: 0, max: 100, step: 1, value: iq[s.k],
                             onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                            style: { width: '100%' }, 'aria-label': s.l }));
+                            style: { width: '100%', minHeight: 44 }, 'aria-label': s.l, 'aria-valuetext': s.l + ': ' + iq[s.k] }));
                       })
                     ),
                     el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                      el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); if (announceToSR) announceToSR('Observation logged: detection ' + iq.detection + ', response ' + iq.response + ', training ' + iq.training + ', outcome ' + state + '.'); }, style: { minHeight: 36, padding: '6px 12px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log observation'),
-                      el('button', { onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: 36, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset experiment')
+                      el('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); if (announceToSR) announceToSR('Observation logged: detection ' + iq.detection + ', response ' + iq.response + ', training ' + iq.training + ', outcome ' + state + '.'); }, style: { minHeight: 36, padding: '6px 12px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log observation'),
+                      el('button', { type: 'button', onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: 36, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset experiment')
                     ),
                     (iq.log || []).length > 0 && el('div', { style: { marginBottom: 10, padding: 10, borderRadius: 6, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(100,116,139,0.3)' } },
                       el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Observation log (' + iq.log.length + '/8)'),
@@ -6926,7 +6935,7 @@
                     el('label', { htmlFor: 'dh-hypothesis', style: { display: 'block', color: '#cbd5e1', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, 'Your hypothesis'),
                     el('textarea', { id: 'dh-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.cyberdefense.hypothesis_which_is_the_strongest_defe', 'Predict what happens when one capability becomes the weakest link.'),
                       style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-                    !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
+                    !iq.stuckRevealed && el('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
                     iq.stuckRevealed && el('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
                       el('ul', { style: { margin: 0, paddingLeft: 18 } },
                         el('li', null, 'Hold two controls at 80, lower the third, and log where the outcome changes.'),

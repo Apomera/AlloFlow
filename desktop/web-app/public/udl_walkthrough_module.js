@@ -34,6 +34,14 @@ const UDLWALK_ROSTER_KEY = "allo_udlwalk_roster_v1";
 const UDLWALK_SESSIONS_KEY = "allo_udlwalk_sessions_v1";
 const UDLWALK_DRAFT_KEY = "allo_udlwalk_draft_v1";
 const UDLWALK_FRAMEWORK = "udl-3.0";
+function _ensureUdlWalkthroughA11yCss() {
+  if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+  if (document.getElementById("allo-udlwalk-a11y-css")) return;
+  const st = document.createElement("style");
+  st.id = "allo-udlwalk-a11y-css";
+  st.textContent = '[data-udl-walkthrough="true"] button,[data-udl-walkthrough="true"] a,[data-udl-walkthrough="true"] input,[data-udl-walkthrough="true"] select,[data-udl-walkthrough="true"] textarea,[data-udl-walkthrough="true"] summary{touch-action:manipulation;}[data-udl-walkthrough="true"] button:focus-visible,[data-udl-walkthrough="true"] a:focus-visible,[data-udl-walkthrough="true"] input:focus-visible,[data-udl-walkthrough="true"] select:focus-visible,[data-udl-walkthrough="true"] textarea:focus-visible,[data-udl-walkthrough="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){[data-udl-walkthrough="true"] button:focus-visible,[data-udl-walkthrough="true"] a:focus-visible,[data-udl-walkthrough="true"] input:focus-visible,[data-udl-walkthrough="true"] select:focus-visible,[data-udl-walkthrough="true"] textarea:focus-visible,[data-udl-walkthrough="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-udl-walkthrough="true"],[data-udl-walkthrough="true"] *,[data-udl-walkthrough="true"] *::before,[data-udl-walkthrough="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 const UDLWALK_PRINCIPLES = [
   { id: "engagement", label: "Engagement", hint: 'the "why" of learning', color: "amber" },
   { id: "representation", label: "Representation", hint: 'the "what" of learning', color: "sky" },
@@ -909,11 +917,12 @@ function UdlWalkthroughPanel(props) {
       const st = typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(el) : null;
       return !st || st.display !== "none" && st.visibility !== "hidden";
     });
+    _ensureUdlWalkthroughA11yCss();
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
       if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
-      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
@@ -1255,7 +1264,7 @@ function UdlWalkthroughPanel(props) {
         if (allow && e.target === e.currentTarget) onClose();
       }
     },
-    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-udl-walkthrough": "true", "data-help-key": "udlwalk_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "udlwalk-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "udlwalk-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🚪"), " ", tt("udlwalk.title", "UDL Walkthrough")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("udlwalk.subtitle", "Growth-framed classroom visits through a UDL lens — data stays on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("udlwalk.close_aria", "Close UDL Walkthrough") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("udlwalk.tabs_aria", "Walkthrough sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: tb.id,
@@ -1271,7 +1280,7 @@ function UdlWalkthroughPanel(props) {
           if (tb.id !== "sessions") setViewSessionId(null);
         },
         onKeyDown: (e) => {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           let next = null;
           if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (tbIdx + 1) % tabs.length;
           else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -1298,7 +1307,7 @@ function UdlWalkthroughPanel(props) {
         value: rosterQuery,
         onChange: (e) => setRosterQuery(e.target.value),
         onKeyDown: (e) => {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Escape" && rosterQuery) {
             e.preventDefault();
             e.stopPropagation();
@@ -1447,7 +1456,7 @@ function UdlWalkthroughPanel(props) {
         value: visitQuery,
         onChange: (e) => setVisitQuery(e.target.value),
         onKeyDown: (e) => {
-          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === "Escape" && visitQuery) {
             e.preventDefault();
             e.stopPropagation();

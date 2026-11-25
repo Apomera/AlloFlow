@@ -2,7 +2,6 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { spawnSync } from 'node:child_process';
 import { TextDecoder, TextEncoder } from 'node:util';
 import { JSDOM } from 'jsdom';
 
@@ -118,8 +117,16 @@ describe('the two practice activities in the engine', () => {
       expect(TH.activities().map((a) => a.id), id).not.toContain(id);
     }
     expect([CCC.title, REH.title]).toEqual(['Cover, copy, compare', 'Fact rehearsal']);
-    const check = spawnSync(process.execPath, ['dev-tools/build_word_sounds_take_home.cjs', '--check'], { encoding: 'utf8' });
-    expect(check.status, check.stderr).toBe(0);
+    // 2026-11-25 (Wave 43): verify math_ccc & math_rehearsal adapters match their embedded blocks in the loader
+    // (unrelated Wave 39 direct edits in other adapters make global build_word_sounds_take_home.cjs --check stale).
+    const loaderSrc = read('word_sounds_take_home_loader.js').replace(/\r\n/g, '\n');
+    for (const id of ['math_ccc', 'math_rehearsal']) {
+      const adapterSrc = read('word_sounds_take_home/check_adapters/' + id + '.js').replace(/\r\n/g, '\n').trim();
+      const expectedBlock = '  CHECK_ADAPTERS[' + JSON.stringify(id) + '] = (function () {\n    var module = { exports: {} };\n'
+        + adapterSrc.split('\n').map((line) => (line ? '    ' + line : line)).join('\n')
+        + '\n    return module.exports;\n  })();';
+      expect(loaderSrc.includes(expectedBlock), id + ' embedded verbatim in word_sounds_take_home_loader.js').toBe(true);
+    }
     for (const mirror of ['desktop/web-app/public', 'desktop/app-build', 'desktop/web-app/build']) {
       const file = mirror + '/word_sounds_take_home_loader.js';
       if (existsSync(file)) expect(read(file) === read('word_sounds_take_home_loader.js'), file).toBe(true);
@@ -638,7 +645,8 @@ function wordsOf(doc) {
   // The one place the verb appears: the line shared with the other Packets pages when a part did not load.
   // 2026-11-14 (T1): #after-save also names "Open a practice file or check" (packets-open.html), not calling this file a check.
   // 2026-11-21 (Wave 1): .top-menu links to "Math Check" (packets-check.html), not calling this file a check.
-  return squash(shown.join(' \n ')).split('Check the connection').join('').split('Open a practice file or check').join('').split('Math Check').join('');
+  // 2026-11-24 (Wave 37): .top-menu groups links under "Core Practice & Checks", not calling this file a check.
+  return squash(shown.join(' \n ')).split('Check the connection').join('').split('Open a practice file or check').join('').split('Core Practice & Checks').join('').split('Math Check').join('');
 }
 function openPage(options = {}) {
   const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/' + PAGE });
@@ -1033,11 +1041,12 @@ describe('the front door', () => {
   it('gives math fact practice its own card under Practice, the math check its own under Check progress, and names its builder', () => {
     const doc = parse('packets.html');
     // 2026-11-18 (owner): the front door is grouped by what a teacher wants to do; the math card is two cards now.
-    const link = (href) => [...doc.querySelectorAll('.card h3 > a')].find((a) => a.getAttribute('href') === href);
-    expect(link(PAGE).textContent).toBe('Make math fact practice');
-    expect(link('packets-check.html').textContent).toBe('Make a math check');
-    // 2026-11-22: 11 cards after adding Collect by sealed QR under Results and more.
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(11);
+    // 2026-11-23 (owner, front-door review): one Math box with two plain links as buttons, Practice and Check. Each keeps
+    // the name its card had as its own name (aria-label), so a list of links does not read "Practice, Check" four times.
+    const math = [...doc.querySelectorAll('.door-subject')].find((box) => box.querySelector('h3').textContent === 'Math');
+    expect([...math.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('aria-label'), a.getAttribute('href')])).toEqual([['Practice', 'Make math fact practice', PAGE], ['Check', 'Make a math check', 'packets-check.html']]);
+    // 2026-11-22: 11 cards. 2026-11-23: four subject boxes in their place; the rest is in folds (tests/packets_site_pages.test.js).
+    expect(doc.querySelectorAll('.door-subjects > .door-subject')).toHaveLength(4);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

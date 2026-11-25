@@ -211,7 +211,8 @@ describe('lesson plan view: guides read-only for students and families', () => {
     })));
   }
   const teacherActions = () => ({
-    edit: !!host.querySelector('button[aria-pressed]'),
+    // The Listen toggle (everyone gets it) is also aria-pressed now; the Edit toggle is the other one.
+    edit: !!host.querySelector('button[aria-pressed]:not([data-lesson-plan-listen])'),
     progression: [...host.querySelectorAll('button[aria-busy]')].length,
     station: host.textContent.includes('Create Station'),
     extensionGuide: host.textContent.includes('EXTENSION_TEACHER_GUIDE'),

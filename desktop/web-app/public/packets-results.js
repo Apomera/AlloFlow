@@ -31,23 +31,28 @@
     score_unreadable: 'the score line in the file could not be read',
     no_score_line: 'the file has no score line',
     finished_early: 'finished before the time was up, so the score is for the time used',
+    // 2026-11-23: a note only; the score is as counted (packets_results_reader.js sameAnswerOf).
+    same_answer: 'at least 8 in 10 answers were the same answer, and most of those were not right, so some answers may be guesses; the score is as counted',
     score_differs: 'the score line in the file does not match its answers; the score shown is counted from the answers',
     file_changed: 'this file was changed after it was saved',
     no_check_value: 'an older file, with no check value in it',
     not_checked: 'this browser could not check the file for changes',
+    // 2026-11-23: a result that came in through Collect by sealed QR with details left out to fit one code.
+    qr_short: 'collected by QR code: every question is counted, but some details did not fit in the code (the time on each question, or the words of some questions); add the student\'s saved results file to see them',
     date_from_file: 'the date comes from the file, not from the results',
     no_date: 'no date in the file',
     untimed: 'untimed (an accommodation): kept apart from timed results and never compared with them',
     untimed_no_rate: 'no clock, so there is no score per minute; the answers right are in the table',
   };
   // Notes that say how to read a result. They do not put a ring on a chart dot.
-  var QUIET = { finished_early: true, no_check_value: true, untimed: true, untimed_no_rate: true };
+  var QUIET = { finished_early: true, no_check_value: true, untimed: true, untimed_no_rate: true, qr_short: true };
   var TOOL_NAMES = { textLarger: 'larger text', textLargest: 'largest text', textExtraLarge: 'extra large text', contrastHigh: 'high contrast',
     contrastSoft: 'soft contrast', colorsDark: 'dark colors', colorsOcean: 'ocean colors', colorsSunny: 'sunny colors',
     colorsForest: 'forest colors', colorsRose: 'rose colors', spacingWide: 'wider spacing', lettersLexend: 'Lexend letters', lettersAtkinson: 'Atkinson letters', lettersBook: 'book letters', lettersRounded: 'rounded letters', lettersMono: 'monospace letters', lettersOpenDyslexic: 'OpenDyslexic letters', readingFocus: 'reading focus line',
     magnifier: 'magnifier', readChoices: 'read choices aloud' };
 
   var reader = window.AlloPacketResults;
+  var followupKit = window.AlloPacketFollowup;
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
   var el = function (tag, className, text) {
@@ -192,6 +197,8 @@
     var out = s.flags.map(function (flag) {
       if (flag === 'left_the_page' && s.score && s.score.hiddenS >= 1) return NOTES.left_the_page + ' (' + count(Math.round(s.score.hiddenS), 'second') + ' away in all)';
       if (flag === 'paused' && s.score && s.score.pausedS >= 1) return NOTES.paused + ' (' + count(Math.round(s.score.pausedS), 'second') + ' paused in all)';
+      // 2026-11-23: which answer, and how often (the answer is the child's own text: shown as text only, by the caller).
+      if (flag === 'same_answer' && s.sameAnswer) return NOTES.same_answer + ' (' + s.sameAnswer.count + ' of ' + s.sameAnswer.of + ' answers were "' + s.sameAnswer.answer + '", ' + s.sameAnswer.wrong + ' of them not right)';
       return own(NOTES, flag) ? NOTES[flag] : flag.replace(/_/g, ' ');
     });
     if (s.score && Array.isArray(s.score.tools) && s.score.tools.length) {
@@ -230,6 +237,83 @@
     var r = s.recall;
     if (r && r.items && r.medianMs !== null && r.medianMs !== undefined) lines.push('Typical time to answer from memory: ' + tenths(r.medianMs) + ' (' + count(r.items, 'fact') + ' right on the first try).');
     return lines;
+  }
+  // 2026-11-23: a read-along result (readAlong from the reader; nothing in it is scored, so nothing is added up to a percent).
+  // One line: the pages the student read, the pages the file only played, the time on the pages.
+  function readAlongLine(ra) {
+    var line = 'Read ' + ra.read + ' of ' + count(ra.pages, 'page') + '.';
+    if (ra.played) line += ' ' + (ra.played === 1 ? '1 page was only played: the file read it aloud by itself.' : ra.played + ' pages were only played: the file read them aloud by itself.');
+    var rest = ra.pages - ra.read - ra.played;
+    if (rest > 0) line += ' ' + (rest === 1 ? '1 page was neither read nor played.' : rest + ' pages were neither read nor played.');
+    return line + ' ' + timeTaken(Math.round(ra.timeMs / 1000)) + ' on the pages.';
+  }
+  // The answers to the pages' "Check your understanding" questions, each under its page, in one closed fold; null when
+  // there are none. A typed answer is a child's own words: text only, 240 characters at most. Right and not right are
+  // said in words.
+  var READ_ALONG_SHOWN = 240;
+  function readAlongFold(ra) {
+    if (!ra.answers) return null;
+    var fold = el('details', 'ra-fold');
+    add(fold, el('summary', '', 'Answers to Check your understanding (' + ra.answers + ')'));
+    ra.byPage.forEach(function (page) {
+      var word = String(page.word || '').trim();
+      var list = el('ul', 'ra-answers');
+      page.answers.forEach(function (answer) {
+        var mark = answer.result === 'right' ? ' (right' + (answer.tries > 1 ? ', on try ' + answer.tries : '') + ')'
+          : answer.result === 'not_right' ? ' (not right' + (answer.tries > 1 ? ', after ' + count(answer.tries, 'try', 'tries') : '') + ')' : '';
+        list.appendChild(add(el('li'), answer.question ? el('span', 'ra-question', 'Question ' + answer.question + ': ') : null,
+          el('span', 'ra-said', String(answer.text == null ? '' : answer.text).slice(0, READ_ALONG_SHOWN)), mark ? el('span', 'ra-mark', mark) : null));
+      });
+      // The page's own words in the file are the start of its first sentence (40 characters at most).
+      add(fold, el('p', 'ra-page', 'Page ' + page.page + (word ? ': ' + word + (word.length >= 40 ? '...' : '') : '')), list);
+    });
+    return fold;
+  }
+  // 2026-11-24 (Wave 5C): surface UDL Choice Board chosen pathway/modality without touching other activity lines.
+  var CHOICE_PATHWAY_NAMES = {
+    concept_sort: 'Concept Sort',
+    sequence_order: 'Sequencing & Timeline',
+    tiered_writing: 'Tiered Writing',
+    cloze_short: 'Fill-in-the-Blank',
+  };
+  function choiceModalityInfo(s) {
+    if (!s || !Array.isArray(s.items)) return { picked: [], switched: false };
+    var picked = [], switched = false;
+    var pushKind = function (k) {
+      var clean = String(k || '').toLowerCase();
+      if (!clean || clean === 'switch') return;
+      var label = own(CHOICE_PATHWAY_NAMES, clean) ? CHOICE_PATHWAY_NAMES[clean] : clean.replace(/_/g, ' ');
+      if (picked.indexOf(label) < 0) picked.push(label);
+    };
+    s.items.forEach(function (it) {
+      if (!it || it.activity !== 'choice_board') return;
+      var parseSupKey = function (k, val) {
+        if (val != null && !(Number(val) > 0)) return;
+        if (k === 'modality_switch') { switched = true; return; }
+        var m = /^modality_([a-z0-9_]+)$/.exec(k);
+        if (m) pushKind(m[1]);
+      };
+      if (typeof it.supports === 'string' && it.supports.trim()) {
+        it.supports.split(/[;,]+/).forEach(function (tok) {
+          var m = /^([a-z0-9_]+)(?:\s*[:=]\s*(\d+))?$/i.exec(tok.trim());
+          if (m) parseSupKey(m[1].toLowerCase(), m[2]);
+        });
+      } else if (it.supports && typeof it.supports === 'object') {
+        Object.keys(it.supports).forEach(function (k) { parseSupKey(k.toLowerCase(), it.supports[k]); });
+      }
+      if (Array.isArray(it.responses)) {
+        it.responses.forEach(function (raw) {
+          var rm = /^mod:([a-z0-9_]+)\b/i.exec(String(raw || '').trim());
+          if (rm) pushKind(rm[1]);
+        });
+      }
+    });
+    return { picked: picked, switched: switched };
+  }
+  function choiceModalityLine(s) {
+    var info = choiceModalityInfo(s);
+    if (!info.picked.length) return '';
+    return (info.picked.length === 1 ? 'Chosen pathway: ' : 'Chosen pathways: ') + info.picked.join(', ') + (info.switched ? ' (switched pathway)' : '') + '.';
   }
   function learnerNamed(key) { return model ? model.learners.filter(function (row) { return row.key === key; })[0] || null : null; }
   // Follow state.merges chains with cycle protection (matches reader.addUp).
@@ -314,8 +398,11 @@
     var have = state.byId[s.sessionId];
     if (have) {
       // Of two copies of one result, the one that was not changed is the one kept, and the list says which (2026-11-13).
-      var swap = have.integrity !== 'ok' && s.integrity === 'ok';
-      var note = swap && have.integrity === 'changed' ? ' That copy was changed after it was saved, so this one is counted.'
+      // 2026-11-23: the student's own results file also replaces a copy collected by QR code that left details out.
+      var fuller = !!have.qrShort && !s.qrShort && s.integrity === 'ok';
+      var swap = (have.integrity !== 'ok' && s.integrity === 'ok') || fuller;
+      var note = fuller && have.integrity === 'ok' ? ' The copy collected by QR code left some details out, so this one is used.'
+        : swap && have.integrity === 'changed' ? ' That copy was changed after it was saved, so this one is counted.'
         : !swap && s.integrity === 'changed' && have.integrity === 'ok' ? ' This copy was changed after it was saved; the one that was not is counted.' : '';
       if (fromFile) { state.duplicates.push({ file: s.sourceFile, first: have.sourceFile, note: note }); drop.look++; }
       if (swap) {
@@ -647,7 +734,7 @@
     var list = model && Array.isArray(model.learners) ? model.learners : [];
     var idx = -1;
     for (var i = 0; i < list.length; i++) if (list[i].key === state.learner) { idx = i; break; }
-    var prev = $('prev-learner'), next = $('next-learner'), printBtn = $('print-learner'), copyBtn = $('copy-summary');
+    var prev = $('prev-learner'), next = $('next-learner'), printBtn = $('print-learner'), copyBtn = $('copy-summary'), mtssBtn = $('export-mtss'), studentDocxBtn = $('export-student-docx');
     if (prev) prev.disabled = !(list.length > 1 && idx > 0);
     if (next) next.disabled = !(list.length > 1 && idx >= 0 && idx < list.length - 1);
     var cur = idx >= 0 ? list[idx] : null;
@@ -660,12 +747,19 @@
       if (cur) copyBtn.setAttribute('aria-label', 'Copy student summary for ' + cur.label);
       else copyBtn.removeAttribute('aria-label');
     }
+    if (studentDocxBtn) {
+      studentDocxBtn.hidden = !cur;
+      studentDocxBtn.disabled = !cur;
+      studentDocxBtn.textContent = cur ? ('Conference handout for ' + cur.label + ' (.docx)') : 'Student conference handout (.docx)';
+    }
+    if (mtssBtn) mtssBtn.disabled = !(list.length > 0 && followupKit && typeof followupKit.buildMtssTriageExport === 'function');
   }
   function hideSummaryBox() {
     var box = $('copy-summary-box');
     if (box) { box.textContent = ''; box.hidden = true; }
   }
   function drawView() {
+    clearOnePagePrint();
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="view"]'), function (radio) {
       radio.checked = radio.value === state.view;
       radio.parentNode.classList.toggle('is-on', radio.checked);
@@ -677,7 +771,9 @@
     $('middles').textContent = '';
     if ($('group-filter')) $('group-filter').remove();
     $('group-table').textContent = '';
+    if ($('group-udl')) { $('group-udl').textContent = ''; $('group-udl').hidden = true; }
     if ($('group-missed')) { $('group-missed').textContent = ''; $('group-missed').hidden = true; }
+    if ($('group-followup')) { $('group-followup').textContent = ''; $('group-followup').hidden = true; }
     $('learner-body').textContent = '';
     if (state.view === 'group') drawGroup(); else drawLearner();
     setPrintHead();
@@ -701,9 +797,13 @@
     var row = el('div', 'middles');
     model.middles.forEach(function (mid) {
       var card = el('div', 'middle');
+      var mazeLine = mid.mazeNet
+        ? el('p', 'middle-range middle-maze-net', 'Maze net median: ' + mid.mazeNet.median + (mid.mazeNet.q1 !== null ? ' (middle half: ' + mid.mazeNet.q1 + ' to ' + mid.mazeNet.q3 + ')' : '') + '.')
+        : null;
       add(card, el('p', 'middle-name', mid.label + (formText(mid.form) ? ', version ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
         add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + unitFor(mid.median, mid.unitName))),
-        el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
+        el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'),
+        mazeLine);
       row.appendChild(card);
     });
     add(host, row, el('p', 'honest', HONEST),
@@ -769,10 +869,33 @@
     tables.forEach(function (table, i) { table.columns = (i ? base.slice(0, 1) : base).concat(table.columns); });
     return tables;
   }
+  var lastTierByKey = Object.create(null);
+  var TIER_FILTER_LABELS = {
+    tier3: 'Tier 3 — intensive review',
+    tier2: 'Tier 2 — targeted review',
+    tier1: 'Tier 1 — on-track',
+    unscored: 'Unscored support or practice only',
+  };
+  function syncTierIndex(payload) {
+    lastTierByKey = Object.create(null);
+    if (!payload || !Array.isArray(payload.students) || !model || !Array.isArray(model.learners)) return;
+    var byLabel = Object.create(null);
+    model.learners.forEach(function (l) { if (l && l.label) byLabel[l.label] = l.key; });
+    payload.students.forEach(function (st) {
+      var key = byLabel[st.studentCode];
+      if (!key) return;
+      lastTierByKey[key] = st.suggestedTier === null || st.suggestedTier === undefined ? 'unscored' : ('tier' + st.suggestedTier);
+    });
+  }
   function filteredLearners() {
+    var list = model ? model.learners.slice() : [];
+    var tier = String(state.groupTier || '').trim();
+    if (tier && Object.keys(lastTierByKey).length) {
+      list = list.filter(function (row) { return lastTierByKey[row.key] === tier; });
+    }
     var q = String(state.groupQuery || '').trim().toLowerCase();
-    if (!q || !model || model.learners.length < 8) return model ? model.learners.slice() : [];
-    return model.learners.filter(function (row) {
+    if (!q || !model || model.learners.length < 8) return list;
+    return list.filter(function (row) {
       if (String(row.label || '').toLowerCase().indexOf(q) >= 0) return true;
       return Array.isArray(row.labels) && row.labels.some(function (alt) { return String(alt || '').toLowerCase().indexOf(q) >= 0; });
     });
@@ -886,6 +1009,27 @@
   }
   function isSrSpecialMode(mode) { return !!mode && SR_SPECIAL_MODE.test(mode); }
 
+  var MAZE_STOP_WORDS = {
+    that: true, with: true, from: true, this: true, they: true, them: true,
+    when: true, what: true, into: true, have: true, were: true, been: true,
+    will: true, just: true, some: true, more: true, than: true, very: true,
+    also: true, then: true, only: true, each: true, about: true, after: true,
+    before: true, while: true, where: true, which: true, their: true, there: true,
+    these: true, those: true, would: true, could: true, should: true, other: true,
+    over: true, under: true, through: true, between: true, because: true,
+    without: true, around: true, across: true, during: true, every: true,
+    many: true, much: true, most: true, both: true, such: true, here: true,
+    your: true, does: true, done: true, make: true, made: true, said: true,
+    went: true, come: true, came: true, like: true, back: true, down: true,
+    even: true, still: true, well: true, good: true, long: true, away: true,
+    onto: true, upon: true, until: true,
+  };
+  function mazeContentWord(it) {
+    var raw = String((it && (it.word || it.target)) || '').trim().toLowerCase();
+    if (!raw || !/^[a-z]{4,20}$/.test(raw) || own(MAZE_STOP_WORDS, raw)) return '';
+    return raw;
+  }
+
   function drawGroupMissed() {
     var viewGroup = $('view-group');
     var groupTable = $('group-table');
@@ -968,6 +1112,10 @@
             var vw = String(it.word || it.target || '').trim();
             if (!vw) return;
             recordMiss(learnerSeen, 'vocab:' + vw.toLowerCase(), vw, 'vocab', it);
+          } else if (act === 'maze_reading') {
+            var mw = mazeContentWord(it);
+            if (!mw) return;
+            recordMiss(learnerSeen, 'maze:' + mw, mw, 'maze', it);
           } else if (act === 'quantity_discrimination') {
             var qdDisp = String(it.word || it.target || '').trim();
             if (!qdDisp) return;
@@ -976,6 +1124,26 @@
             var mnDisp = String(it.word || it.target || '').trim();
             if (!mnDisp) return;
             recordMiss(learnerSeen, 'mn:' + mnDisp.toLowerCase(), mnDisp, 'mn', it);
+          } else if (/^manip_/i.test(act)) {
+            var mDisp = String(it.word || it.target || '').trim();
+            if (!mDisp) return;
+            recordMiss(learnerSeen, 'manip:' + act + ':' + mDisp.toLowerCase(), mDisp, 'manip', it);
+          } else if (/^stem_/i.test(act)) {
+            var stDisp = String(it.word || it.target || '').trim();
+            if (!stDisp) return;
+            recordMiss(learnerSeen, 'stem:' + act + ':' + stDisp.toLowerCase(), stDisp, 'stem', it);
+          } else if (/^life_/i.test(act)) {
+            var lsDisp = String(it.word || it.target || '').trim();
+            if (!lsDisp) return;
+            recordMiss(learnerSeen, 'life:' + act + ':' + lsDisp.toLowerCase(), lsDisp, 'life', it);
+          } else if (act === 'concept_sort' || act === 'sequence_order') {
+            var chDisp = String(it.word || it.target || '').trim();
+            if (!chDisp) return;
+            recordMiss(learnerSeen, 'choice:' + act + ':' + chDisp.toLowerCase(), chDisp, 'choice', it);
+          } else if (act === 'compiled_quiz' || act === 'compiled_cloze') {
+            var cpDisp = String(it.word || it.target || '').trim();
+            if (!cpDisp) return;
+            recordMiss(learnerSeen, 'compiled:' + act + ':' + cpDisp.toLowerCase(), cpDisp, 'compiled', it);
           } else if (reader && reader.ACTIVITIES && own(reader.ACTIVITIES, act)) {
             var ww = String(it.word || it.target || '').trim();
             if (!ww || !/^[a-z]{2,16}$/i.test(ww)) return;
@@ -1068,10 +1236,16 @@
       }
     });
     var vocabList = list.filter(function (e) { return e.kind === 'vocab'; }).slice(0, 12).map(function (e) { return e.display; });
+    var mazeList = list.filter(function (e) { return e.kind === 'maze'; }).slice(0, 12).map(function (e) { return e.display; });
+    var groupVocabAll = mergeWordLists(vocabList, mazeList, 12);
     var wsList = list.filter(function (e) { return e.kind === 'ws'; }).slice(0, 12).map(function (e) { return e.display; });
     var mathList = list.filter(function (e) { return e.kind === 'math'; }).slice(0, 12).map(function (e) { return e.display; });
     var hasQd = list.some(function (e) { return e.kind === 'qd'; });
     var hasMn = list.some(function (e) { return e.kind === 'mn'; });
+    var hasManip = list.some(function (e) { return e.kind === 'manip'; });
+    var hasStem = list.some(function (e) { return e.kind === 'stem'; });
+    var hasLife = list.some(function (e) { return e.kind === 'life'; });
+    var hasChoice = list.some(function (e) { return e.kind === 'choice'; });
 
     var groupLinks = [];
     if (srList.length || srModes.length) {
@@ -1080,13 +1254,16 @@
         groupLinks.push(navButton('Practice group ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
       });
     }
-    if (vocabList.length) {
-      groupLinks.push(navButton('Practice group missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabList.join(','))));
+    if (groupVocabAll.length) {
+      var groupVocabLabel = (!vocabList.length && mazeList.length)
+        ? 'Practice group missed Maze words in Vocabulary'
+        : 'Practice group missed words in Vocabulary';
+      groupLinks.push(navButton(groupVocabLabel, 'packets-vocab.html#rehearse=' + encodeURIComponent(groupVocabAll.join(','))));
     }
     if (wsList.length) {
       groupLinks.push(navButton('Practice group missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsList.join(','))));
     }
-    var groupWordCards = mergeWordLists(vocabList, wsList, 24);
+    var groupWordCards = mergeWordLists(groupVocabAll, wsList, 24);
     if (groupWordCards.length) {
       groupLinks.push(navButton('Open group missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(groupWordCards.join(','))));
     }
@@ -1109,6 +1286,10 @@
       if (hasQd) groupLinks.push(navButton('Practice group number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
       if (hasMn) groupLinks.push(navButton('Practice group teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
     }
+    if (hasManip) groupLinks.push(navButton('Practice group missed items in Visual Math Manipulatives', 'packets-manipulatives.html'));
+    if (hasStem) groupLinks.push(navButton('Practice group missed items in STEM Labs', 'packets-stem-lab.html'));
+    if (hasLife) groupLinks.push(navButton('Practice group missed scenarios in Life Skills & Transition', 'packets-life-skills.html'));
+    if (hasChoice) groupLinks.push(navButton('Practice group missed items in Choice, Sort & Write', 'packets-choice.html'));
     add(host, nextPracticeCard(groupLinks));
   }
 
@@ -1181,10 +1362,350 @@
       add(host, title, warn, add(scroll, add(table, add(el('thead'), headRow), body)),
         el('p', 'hint', spec.hint + (n === tables.length - 1 ? ' Choose a name to see that student over time.' : '')));
     });
+    // 2026-11-23: a read-along is never scored, so it has no column in the tables: say where it is shown.
+    if (tables.length && shown.length && state.sessions.some(function (s) { return s.mode !== 'probe' && !!s.readAlong; })) {
+      add(host, el('p', 'hint group-read-along', 'A read-along is not scored, so it is not in these tables. Choose a name to see what that student read and answered.'));
+    }
     measureCues();
+  }
+  function launchFollowupSpec(spec) {
+    if (!followupKit || typeof followupKit.launchFollowupDraft !== 'function') {
+      return Promise.reject(new Error('Follow-up handoff is not available right now.'));
+    }
+    return followupKit.launchFollowupDraft(spec, window.AlloPacketHandoff, { openNewTab: true });
+  }
+  function drawGroupFollowup() {
+    var viewGroup = $('view-group');
+    if (!viewGroup || !followupKit || typeof followupKit.analyzeFollowup !== 'function' || typeof followupKit.renderFollowupCard !== 'function') return;
+    var host = $('group-followup');
+    if (!host) {
+      host = el('div', 'group-followup');
+      host.id = 'group-followup';
+      viewGroup.appendChild(host);
+    }
+    host.textContent = '';
+    var shown = filteredLearners();
+    if (!shown.length) { host.hidden = true; return; }
+    var analysis = followupKit.analyzeFollowup({
+      scope: 'group',
+      learners: shown,
+      totalLearners: model ? model.learners.length : shown.length,
+      query: state.groupQuery || '',
+    }, { reader: reader });
+    var card = followupKit.renderFollowupCard(doc, analysis, { onLaunch: launchFollowupSpec, say: say });
+    if (!card) { host.hidden = true; return; }
+    host.hidden = false;
+    host.appendChild(card);
+  }
+  function drawGroupUdlSummary() {
+    var viewGroup = $('view-group');
+    if (!viewGroup) return;
+    var host = $('group-udl');
+    if (!host) {
+      host = el('div', 'group-udl');
+      host.id = 'group-udl';
+      var anchor = $('group-missed') || $('group-followup') || null;
+      if (anchor && anchor.parentNode === viewGroup) viewGroup.insertBefore(host, anchor);
+      else viewGroup.appendChild(host);
+    }
+    host.textContent = '';
+    var shown = filteredLearners();
+    if (!shown.length) { host.hidden = true; return; }
+
+    var pathwayCounts = Object.create(null);
+    var pathwayStudents = Object.create(null);
+    var switchStudents = 0;
+    var supportCounts = Object.create(null);
+    var toolCounts = Object.create(null);
+    var untimedStudents = 0;
+
+    var bumpSupport = function (seen, label) {
+      if (!label || seen[label]) return;
+      seen[label] = true;
+      supportCounts[label] = (supportCounts[label] || 0) + 1;
+    };
+
+    shown.forEach(function (learner) {
+      var lPathways = Object.create(null);
+      var lSwitched = false;
+      var lUntimed = false;
+      var lTools = Object.create(null);
+      var lSupports = Object.create(null);
+
+      (learner.sessions || []).forEach(function (s) {
+        if (!s) return;
+        var info = choiceModalityInfo(s);
+        if (info.picked.length) {
+          pathwayStudents[learner.key] = true;
+          info.picked.forEach(function (lbl) {
+            if (!lPathways[lbl]) { lPathways[lbl] = true; pathwayCounts[lbl] = (pathwayCounts[lbl] || 0) + 1; }
+          });
+          if (info.switched) lSwitched = true;
+        }
+        if (Array.isArray(s.flags) && s.flags.indexOf('untimed') >= 0) lUntimed = true;
+        if (s.score && Array.isArray(s.score.tools)) {
+          s.score.tools.forEach(function (t) {
+            var label = own(TOOL_NAMES, t) ? TOOL_NAMES[t] : String(t || '').trim();
+            if (label && !lTools[label]) { lTools[label] = true; toolCounts[label] = (toolCounts[label] || 0) + 1; }
+          });
+        }
+        (s.items || []).forEach(function (it) {
+          if (!it || !it.supports) return;
+          var keys = [];
+          if (typeof it.supports === 'string') {
+            it.supports.split(/[;,]+/).forEach(function (tok) {
+              var m = /^([a-z0-9_]+)(?:\s*[:=]\s*(\d+))?$/i.exec(tok.trim());
+              if (m && (m[2] == null || Number(m[2]) > 0)) keys.push(m[1].toLowerCase());
+            });
+          } else if (typeof it.supports === 'object') {
+            Object.keys(it.supports).forEach(function (k) {
+              if (it.supports[k] && Number(it.supports[k]) !== 0) keys.push(k.toLowerCase());
+            });
+          }
+          keys.forEach(function (k) {
+            if (/^(?:bilingual|lang_|home_lang)/.test(k)) bumpSupport(lSupports, 'Bilingual home-language support');
+            else if (/^(?:hint|hint_shown|adaptive|scaffold|tier_)/.test(k)) bumpSupport(lSupports, 'Hints & adaptive scaffolds');
+            else if (/^stretch/.test(k)) bumpSupport(lSupports, 'Stretch challenge items');
+            else if (/^(?:efchecklist|ef_checklist|calm|focustimer|focus_timer|sel_|playlistroadmap)/.test(k)) bumpSupport(lSupports, 'Focus & self-regulation tools');
+            else if (/^(?:lab_|manip_|regroup|balancestep)/.test(k)) bumpSupport(lSupports, 'Interactive math or STEM lab tools');
+            else if (k === 'aac_scan_used') bumpSupport(lSupports, 'Switch scanning (AAC)');
+            else if (/^aac_/.test(k)) bumpSupport(lSupports, 'AAC communication board');
+          });
+        });
+      });
+
+      if (lSwitched) switchStudents++;
+      if (lUntimed) untimedStudents++;
+    });
+
+    var pathwayRows = Object.keys(pathwayCounts).map(function (k) { return { label: k, count: pathwayCounts[k] }; })
+      .sort(function (a, b) { return (b.count - a.count) || a.label.localeCompare(b.label); });
+    var toolRows = Object.keys(toolCounts).map(function (k) { return { label: k, count: toolCounts[k] }; })
+      .sort(function (a, b) { return (b.count - a.count) || a.label.localeCompare(b.label); });
+    var supportRows = Object.keys(supportCounts).map(function (k) { return { label: k, count: supportCounts[k] }; })
+      .sort(function (a, b) { return (b.count - a.count) || a.label.localeCompare(b.label); });
+
+    if (!pathwayRows.length && !toolRows.length && !supportRows.length && !untimedStudents) {
+      host.hidden = true;
+      return;
+    }
+
+    host.hidden = false;
+    var card = el('section', 'udl-group-card');
+    var head = el('div', 'udl-group-head');
+    var heading = el('h4', 'udl-group-title', 'UDL pathways and supports used across this group');
+    heading.id = 'group-udl-title';
+    card.setAttribute('aria-labelledby', heading.id);
+    head.appendChild(heading);
+
+    var copyUdlBtn = button('btn btn-small no-print', 'Copy group UDL notes');
+    copyUdlBtn.id = 'copy-group-udl';
+    var udlCopySaid = el('p', 'hint udl-group-copy-said no-print', '');
+    udlCopySaid.id = 'copy-group-udl-said';
+    udlCopySaid.setAttribute('role', 'status');
+    udlCopySaid.hidden = true;
+    var udlCopyBox = el('div', 'udl-group-copy-box no-print');
+    udlCopyBox.id = 'copy-group-udl-box';
+    udlCopyBox.hidden = true;
+
+    copyUdlBtn.addEventListener('click', function () {
+      var lines = [];
+      lines.push('UDL pathways and supports summary (' + count(shown.length, 'student') + ')');
+      if (model && (model.firstDate || model.lastDate)) {
+        var span = dateRange(model.firstDate, model.lastDate);
+        if (span) lines.push('Dates: ' + span);
+      }
+      if (pathwayRows.length) {
+        lines.push('');
+        lines.push('UDL Choice Board pathways (' + count(Object.keys(pathwayStudents).length, 'student') + '):');
+        pathwayRows.forEach(function (r) { lines.push('- ' + r.label + ': ' + count(r.count, 'student')); });
+        if (switchStudents) lines.push('- Tried more than one pathway before finishing: ' + count(switchStudents, 'student'));
+      }
+      if (toolRows.length || supportRows.length || untimedStudents) {
+        lines.push('');
+        lines.push('Reading tools, scaffolds and accommodations:');
+        supportRows.forEach(function (r) { lines.push('- ' + r.label + ': ' + count(r.count, 'student')); });
+        toolRows.slice(0, 8).forEach(function (r) { lines.push('- Reading tool (' + r.label + '): ' + count(r.count, 'student')); });
+        if (untimedStudents) lines.push('- Untimed check accommodation: ' + count(untimedStudents, 'student'));
+      }
+      lines.push('');
+      lines.push('Counts show unique students in the current view. Supports are noted for instructional planning, never penalized.');
+      var text = lines.join('\n');
+      var manual = function () {
+        udlCopyBox.textContent = '';
+        var area = el('textarea', 'copy-summary-box');
+        area.readOnly = true;
+        area.rows = 8;
+        area.setAttribute('aria-label', 'Group UDL pathways and supports notes');
+        area.value = text;
+        udlCopyBox.appendChild(area);
+        udlCopyBox.hidden = false;
+        udlCopySaid.textContent = 'This browser did not let the page copy. Select all of the text below and copy it.';
+        udlCopySaid.hidden = false;
+        area.focus();
+        area.select();
+        say(udlCopySaid.textContent);
+      };
+      try {
+        window.navigator.clipboard.writeText(text).then(function () {
+          udlCopyBox.hidden = true;
+          udlCopySaid.textContent = 'Copied group UDL notes for ' + count(shown.length, 'student') + '.';
+          udlCopySaid.hidden = false;
+          say(udlCopySaid.textContent);
+        }, manual);
+      } catch (_) { manual(); }
+    });
+    head.appendChild(copyUdlBtn);
+    card.appendChild(head);
+    card.appendChild(udlCopySaid);
+    card.appendChild(udlCopyBox);
+
+    var grid = el('div', 'udl-group-grid');
+    if (pathwayRows.length) {
+      var pBlock = el('div', 'udl-group-block');
+      var cbTotal = Object.keys(pathwayStudents).length;
+      pBlock.appendChild(el('p', 'udl-group-sub', 'UDL Choice Board pathways (' + count(cbTotal, 'student') + ')'));
+      var pList = el('ul', 'udl-group-list');
+      pathwayRows.forEach(function (r) {
+        pList.appendChild(el('li', '', r.label + ': ' + count(r.count, 'student')));
+      });
+      pBlock.appendChild(pList);
+      if (switchStudents) {
+        pBlock.appendChild(el('p', 'hint udl-group-note', count(switchStudents, 'student') + ' tried more than one pathway before finishing.'));
+      }
+      grid.appendChild(pBlock);
+    }
+
+    if (toolRows.length || supportRows.length || untimedStudents) {
+      var sBlock = el('div', 'udl-group-block');
+      sBlock.appendChild(el('p', 'udl-group-sub', 'Reading tools, scaffolds and accommodations'));
+      var sList = el('ul', 'udl-group-list');
+      supportRows.forEach(function (r) {
+        sList.appendChild(el('li', '', r.label + ': ' + count(r.count, 'student')));
+      });
+      toolRows.slice(0, 8).forEach(function (r) {
+        sList.appendChild(el('li', '', 'Reading tool (' + r.label + '): ' + count(r.count, 'student')));
+      });
+      if (untimedStudents) {
+        sList.appendChild(el('li', '', 'Untimed check accommodation: ' + count(untimedStudents, 'student')));
+      }
+      sBlock.appendChild(sList);
+      grid.appendChild(sBlock);
+    }
+
+    card.appendChild(grid);
+    card.appendChild(el('p', 'hint udl-group-foot', 'Counts show unique students in the current view who chose each pathway or support. Supports are noted for instructional planning, never penalized.'));
+    host.appendChild(card);
+  }
+  function buildMtssPayload() {
+    if (!model || !model.learners.length || !followupKit || typeof followupKit.buildMtssTriageExport !== 'function') return null;
+    return followupKit.buildMtssTriageExport(model, {
+      reader: reader,
+      goals: state.goals,
+      goalDates: state.goalDates,
+      paper: state.paper,
+      canonKey: canonKey,
+      nowLocal: nowLocal(),
+      today: today(),
+      sample: state.sample,
+    });
+  }
+  function drawGroupTierBar() {
+    var viewGroup = $('view-group');
+    var groupTable = $('group-table');
+    if (!viewGroup || !groupTable) return;
+    var bar = $('group-tier-bar');
+    var tier = String(state.groupTier || '').trim();
+    if (!tier || !model || !model.learners.length) {
+      if (bar) bar.remove();
+      return;
+    }
+    if (!bar) {
+      bar = el('p', 'save-nudge group-tier-bar no-print');
+      bar.id = 'group-tier-bar';
+      bar.setAttribute('role', 'status');
+      viewGroup.insertBefore(bar, groupTable);
+    }
+    bar.textContent = '';
+    var shown = filteredLearners();
+    var tierName = own(TIER_FILTER_LABELS, tier) ? TIER_FILTER_LABELS[tier] : tier;
+    bar.appendChild(el('span', '', 'Filtered to ' + tierName + ' (' + shown.length + ' of ' + count(model.learners.length, 'student') + ').'));
+    var clearBtn = button('btn btn-small', 'Show all students');
+    clearBtn.id = 'group-tier-clear';
+    clearBtn.addEventListener('click', function () {
+      state.groupTier = '';
+      drawGroup();
+      say('Showing all ' + count(model.learners.length, 'student') + '.');
+      if ($('group-title')) $('group-title').focus();
+    });
+    bar.appendChild(clearBtn);
+  }
+  function drawGroupMtssHuddle(existingPayload) {
+    var viewGroup = $('view-group');
+    if (!viewGroup) return;
+    var host = $('group-mtss-host');
+    if (!host) {
+      host = el('div', 'group-mtss-host');
+      host.id = 'group-mtss-host';
+      var anchor = $('group-followup-card');
+      if (anchor && anchor.parentNode === viewGroup) viewGroup.insertBefore(host, anchor);
+      else viewGroup.appendChild(host);
+    }
+    var prevFold = $('group-mtss-fold');
+    var wasOpen = !!(prevFold && prevFold.open);
+    host.textContent = '';
+    if (!followupKit || typeof followupKit.renderMtssHuddleCard !== 'function') {
+      host.hidden = true;
+      return;
+    }
+    var payload = existingPayload || buildMtssPayload();
+    if (!payload || !payload.summary || !payload.summary.totalStudents) {
+      host.hidden = true;
+      return;
+    }
+    var tierFollowups = typeof followupKit.buildTierFollowupSpecs === 'function'
+      ? followupKit.buildTierFollowupSpecs(payload, model.learners, { reader: reader })
+      : null;
+    var node = followupKit.renderMtssHuddleCard(doc, payload, {
+      activeTier: String(state.groupTier || ''),
+      onFilterTier: function (nextTier, label) {
+        state.groupTier = nextTier || '';
+        drawGroup();
+        say(state.groupTier ? ('Filtered group table to ' + (label || state.groupTier) + '.') : 'Showing all students in group table.');
+      },
+      onSelectStudent: function (studentCode) {
+        if (!model || !model.learners) return;
+        var match = model.learners.filter(function (l) { return l.label === studentCode || l.key === studentCode; })[0];
+        if (!match) return;
+        state.learner = match.key;
+        if ($('pick-learner')) $('pick-learner').value = match.key;
+        state.view = 'learner';
+        drawView();
+        if ($('learner-title')) $('learner-title').focus();
+      },
+      tierFollowups: tierFollowups,
+      onLaunchFollowup: launchFollowupSpec,
+      onSaveCodeList: function (name, text) { return saveFile(name, text, 'text/plain;charset=utf-8'); },
+      onPrintHuddle: function () { printMtssHuddle(); },
+      onExportCsv: function (p) { exportMtssCsv(p); },
+      onExportJson: function () { exportMtssTriage(); },
+      say: say,
+    });
+    if (!node) {
+      host.hidden = true;
+      return;
+    }
+    host.hidden = false;
+    host.appendChild(node);
+    if (wasOpen && $('group-mtss-fold')) $('group-mtss-fold').open = true;
   }
   function drawGroup() {
     drawMiddles();
+    var mtssPayload = buildMtssPayload();
+    syncTierIndex(mtssPayload);
+    if (state.groupTier && !model.learners.some(function (l) { return lastTierByKey[l.key] === state.groupTier; })) {
+      state.groupTier = '';
+    }
     var viewGroup = $('view-group');
     var groupTable = $('group-table');
     var existing = $('group-filter');
@@ -1201,7 +1722,10 @@
         input.value = state.groupQuery || '';
         input.addEventListener('input', function () {
           state.groupQuery = input.value;
+          drawGroupTierBar();
           drawGroupTables();
+          drawGroupUdlSummary();
+          drawGroupFollowup();
         });
         var countSpan = el('span', 'group-filter-count', '');
         countSpan.id = 'group-filter-count';
@@ -1215,8 +1739,12 @@
       state.groupQuery = '';
       if (existing) existing.remove();
     }
+    drawGroupTierBar();
     drawGroupTables();
+    drawGroupUdlSummary();
+    drawGroupMtssHuddle(mtssPayload);
     drawGroupMissed();
+    drawGroupFollowup();
   }
 
   // ---------------------------------------------------------------------------
@@ -1496,6 +2024,7 @@
       markEdited();
       persist();
       redraw();
+      refreshProgressSummary();
       if (value !== null) offerSave();
     });
     // The goal date (2026-11-17): with a goal, it draws the aim line. A date field; typed as year-month-day where there is no picker.
@@ -1520,6 +2049,7 @@
       markEdited();
       persist();
       redraw();
+      refreshProgressSummary();
       if (day) offerSave();
     };
     dateInput.addEventListener('input', onDate);
@@ -1546,7 +2076,7 @@
     var foldBody = el('div', 'paper-fold-body');
     add(fold, add(el('summary'), title), foldBody);
     add(box, fold);
-    add(foldBody, el('p', 'hint', 'For a check given on paper, such as the printed version the check maker makes. A paper score is kept apart from the scores in the files: it has its own row in the table and its own mark on the chart, labeled "paper", and it is never averaged with them.'));
+    add(foldBody, el('p', 'hint', 'For a check given on paper, such as a printed Math Check or printed CBM-Maze probe. A paper score is kept apart from the scores in the files: it has its own row in the table and its own mark on the chart, labeled "paper", and it is never averaged with them.'));
     var checksHere = seriesList.filter(function (s) { return s.kind === 'check' || s.kind === 'paper'; });
     var field = function (labelText, input, id) {
       input.id = id;
@@ -1640,6 +2170,7 @@
     return box;
   }
   function drawLearner() {
+    clearOnePagePrint();
     var body = $('learner-body');
     body.textContent = '';
     hideSummaryBox();
@@ -1671,10 +2202,12 @@
     }
     var srSeen = Object.create(null), srMissed = [], srModes = [];
     var vocabSeen = Object.create(null), vocabMissed = [];
+    var mazeSeen = Object.create(null), mazeMissed = [];
     var wsSeen = Object.create(null), wsMissed = [];
     var mathSeen = Object.create(null), mathMissed = [];
     var mathKnownSeen = Object.create(null), mathKnownCandidates = [];
     var qdMissedCount = 0, mnMissedCount = 0;
+    var manipMissedCount = 0, stemMissedCount = 0, lifeMissedCount = 0, choiceMissedCount = 0;
     var mathBlocked = Object.create(null);
     learner.sessions.forEach(function (s) {
       var sMode = srModeOf(s);
@@ -1717,10 +2250,23 @@
           if (!vw || vocabSeen[vKey] || vocabMissed.length >= 12) return;
           vocabSeen[vKey] = true;
           vocabMissed.push(vw);
+        } else if (act === 'maze_reading') {
+          var mw = mazeContentWord(it);
+          if (!mw || mazeSeen[mw] || mazeMissed.length >= 12) return;
+          mazeSeen[mw] = true;
+          mazeMissed.push(mw);
         } else if (act === 'quantity_discrimination') {
           qdMissedCount += 1;
         } else if (act === 'missing_number') {
           mnMissedCount += 1;
+        } else if (/^manip_/i.test(act)) {
+          manipMissedCount += 1;
+        } else if (/^stem_/i.test(act)) {
+          stemMissedCount += 1;
+        } else if (/^life_/i.test(act)) {
+          lifeMissedCount += 1;
+        } else if (act === 'concept_sort' || act === 'sequence_order') {
+          choiceMissedCount += 1;
         } else if (reader && reader.ACTIVITIES && own(reader.ACTIVITIES, act)) {
           var ww = String(it.word || it.target || '').trim();
           var wKey = ww.toLowerCase();
@@ -1752,13 +2298,17 @@
         learnerLinks.push(navButton('Practice ' + srModeLabel(modeId) + ' in Symbol Runner', 'packets-symbol-runner.html#mode=' + encodeURIComponent(modeId)));
       });
     }
-    if (vocabMissed.length) {
-      learnerLinks.push(navButton('Practice missed words in Vocabulary', 'packets-vocab.html#rehearse=' + encodeURIComponent(vocabMissed.join(','))));
+    var learnerVocabAll = mergeWordLists(vocabMissed, mazeMissed, 12);
+    if (learnerVocabAll.length) {
+      var learnerVocabLabel = (!vocabMissed.length && mazeMissed.length)
+        ? 'Practice missed Maze words in Vocabulary'
+        : 'Practice missed words in Vocabulary';
+      learnerLinks.push(navButton(learnerVocabLabel, 'packets-vocab.html#rehearse=' + encodeURIComponent(learnerVocabAll.join(','))));
     }
     if (wsMissed.length) {
       learnerLinks.push(navButton('Practice missed words in Word Sounds', 'packets-make.html#rehearse=' + encodeURIComponent(wsMissed.join(','))));
     }
-    var learnerWordCards = mergeWordLists(vocabMissed, wsMissed, 24);
+    var learnerWordCards = mergeWordLists(learnerVocabAll, wsMissed, 24);
     if (learnerWordCards.length) {
       learnerLinks.push(navButton('Open missed words in Present & print word cards', 'packets-present-export.html#words=' + encodeURIComponent(learnerWordCards.join(','))));
     }
@@ -1775,7 +2325,16 @@
       if (qdMissedCount) learnerLinks.push(navButton('Practice number comparison in Symbol Runner', 'packets-symbol-runner.html#mode=number_size_stroop'));
       if (mnMissedCount) learnerLinks.push(navButton('Practice teen and decade numbers in Symbol Runner', 'packets-symbol-runner.html#mode=digits_teen_decade'));
     }
+    if (manipMissedCount) learnerLinks.push(navButton('Practice missed items in Visual Math Manipulatives', 'packets-manipulatives.html'));
+    if (stemMissedCount) learnerLinks.push(navButton('Practice missed items in STEM Labs', 'packets-stem-lab.html'));
+    if (lifeMissedCount) learnerLinks.push(navButton('Practice missed scenarios in Life Skills & Transition', 'packets-life-skills.html'));
+    if (choiceMissedCount) learnerLinks.push(navButton('Practice missed items in Choice, Sort & Write', 'packets-choice.html'));
     add(body, nextPracticeCard(learnerLinks));
+    if (followupKit && typeof followupKit.analyzeFollowup === 'function' && typeof followupKit.renderFollowupCard === 'function') {
+      var learnerFollowup = followupKit.analyzeFollowup({ scope: 'student', learner: learner }, { reader: reader });
+      add(body, followupKit.renderFollowupCard(doc, learnerFollowup, { onLaunch: launchFollowupSpec, say: say }));
+    }
+    add(body, buildProgressSummaryNode(learner));
     var showSessionControls = learner.sessions.length >= 6;
     if (!showSessionControls) {
       state.sessionNewest = false;
@@ -1799,8 +2358,18 @@
         var what = probe ? s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
         var more = (probe ? [] : newFactsLines(s.newFacts)).concat(extraLines(s));
+        if (probe && s.mazeNet) {
+          more = more.concat(['Maze net: ' + s.mazeNet.net + ' (' + s.mazeNet.correct + ' right, ' + s.mazeNet.incorrect + ' wrong)']);
+        }
+        // 2026-11-23: a read-along says its pages and its time in one line; the answers to its questions are in a fold under it.
+        var ra = probe ? null : s.readAlong;
+        if (ra) more = more.concat([readAlongLine(ra)], readAlongFold(ra) || []);
+        var cbLine = choiceModalityLine(s);
+        if (cbLine) more = more.concat([cbLine]);
         // Practice that is never scored (Letter Trace alone): how much was done, not "0 of 0".
         var answered = !probe && !s.summary.given ? s.summary.done + ' done (practice, not scored)' : s.summary.attempted + ' of ' + s.summary.given;
+        // A read-along and nothing else: its pages read, in place of "N done".
+        if (ra && !s.summary.given && ra.pages === s.items.length) answered = ra.read + ' of ' + count(ra.pages, 'page') + ' read (practice, not scored)';
         var rem = button('btn btn-text btn-small no-print row-remove', 'Remove');
         rem.setAttribute('aria-label', 'Remove ' + what + ' from ' + showDate(s.date));
         rem.addEventListener('click', function () {
@@ -1896,11 +2465,74 @@
     setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) { /* already gone */ } }, 15000);
     return true;
   }
+  function csvCellEsc(value) {
+    var s = value === null || value === undefined ? '' : String(value);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
   function saveSummary() {
     var rows = [];
     model.learners.forEach(function (learner) { learner.sessions.forEach(function (session) { rows.push({ learner: learner.label, session: session }); }); });
     var name = (state.sample ? 'sample-' : '') + 'results-summary__' + today() + '.csv';
     if (saveFile(name, reader.summaryCsv(rows), 'text/csv;charset=utf-8')) setText('take-said', 'Saved ' + name + ': ' + count(rows.length, 'row') + ', one for each result.');
+  }
+  function saveUdlCsv() {
+    if (!model || !model.learners.length || !followupKit || typeof followupKit.buildStudentProgressSummary !== 'function') return '';
+    var header = [
+      'student_code',
+      'sessions',
+      'date_range',
+      'choice_pathways',
+      'pathway_switch_sessions',
+      'maze_net_latest',
+      'reading_tools',
+      'scaffolds_and_supports',
+      'untimed_checks',
+      'directions_heard_sessions',
+      'next_focus',
+    ];
+    var lines = [header];
+    model.learners.forEach(function (learner) {
+      var summary = followupKit.buildStudentProgressSummary(learner, model, {
+        reader: reader,
+        goals: state.goals,
+        goalDates: state.goalDates,
+        paper: state.paper,
+        canonKey: canonKey,
+        today: today(),
+        sample: state.sample,
+      });
+      var udl = summary.udlSupports || {};
+      var pathways = (udl.choicePathways || []).map(function (cp) { return cp.label + ' (' + cp.sessions + ')'; }).join('; ');
+      var mazeSessions = (learner.sessions || []).filter(function (s) { return !!(s && s.mazeNet); });
+      var lastMaze = mazeSessions.length ? mazeSessions[mazeSessions.length - 1].mazeNet : null;
+      var mazeNetStr = lastMaze ? (lastMaze.net + ' (' + lastMaze.correct + '/' + (lastMaze.correct + lastMaze.incorrect) + ')') : '';
+      var tools = (udl.readingTools || []).map(function (t) { return t.label + ' (' + t.sessions + ')'; }).join('; ');
+      var supports = (udl.itemSupports || []).map(function (it) { return it.label + ' (' + it.uses + ')'; }).join('; ');
+      var focus = (summary.nextFocus || []).slice(0, 3).map(function (f) { return f.area; }).join('; ');
+      lines.push([
+        learner.label,
+        String(learner.count || 0),
+        (summary.student && summary.student.dateRangeText) || '',
+        pathways,
+        String(udl.pathwaySwitchSessions || 0),
+        mazeNetStr,
+        tools,
+        supports,
+        String(udl.untimedChecks || 0),
+        String(udl.directionsHeardSessions || 0),
+        focus,
+      ]);
+    });
+    var csv = String.fromCharCode(0xFEFF) + lines.map(function (cells) { return cells.map(csvCellEsc).join(','); }).join('\r\n') + '\r\n';
+    var name = (state.sample ? 'sample-' : '') + 'results-udl-supports__' + today() + '.csv';
+    if (saveFile(name, csv, 'text/csv;charset=utf-8')) {
+      var msg = 'Saved ' + name + ': ' + count(model.learners.length, 'student') + ' with UDL pathways and supports.';
+      setText('take-said', msg);
+      say(msg);
+      return name;
+    }
+    return '';
   }
   function saveBundle() {
     var name = (state.sample ? 'sample-' : '') + 'results-all__' + today() + '.json';
@@ -1910,6 +2542,511 @@
       return name;
     }
     return '';
+  }
+  function exportMtssCsv(existingPayload) {
+    var payload = existingPayload || buildMtssPayload();
+    if (!payload || !followupKit || typeof followupKit.buildMtssCsv !== 'function') return '';
+    var csv = followupKit.buildMtssCsv(payload);
+    if (!csv) return '';
+    var name = (state.sample ? 'sample-' : '') + 'mtss-screening__' + today() + '.csv';
+    if (saveFile(name, csv, 'text/csv;charset=utf-8')) {
+      var msg = 'Saved ' + name + ': ' + count(payload.summary.totalStudents, 'student')
+        + ' (Tier 3: ' + payload.summary.tier3 + ', Tier 2: ' + payload.summary.tier2 + ', Tier 1: ' + payload.summary.tier1 + ').';
+      setText('take-said', msg);
+      say(msg);
+      return name;
+    }
+    return '';
+  }
+  function exportMtssTriage() {
+    var payload = buildMtssPayload();
+    if (!payload) return '';
+    var name = (state.sample ? 'sample-' : '') + 'mtss-triage__' + today() + '.json';
+    if (saveFile(name, JSON.stringify(payload, null, 2), 'application/json')) {
+      var msg = 'Saved ' + name + ': ' + count(payload.summary.totalStudents, 'student')
+        + ' (Tier 1: ' + payload.summary.tier1 + ', Tier 2: ' + payload.summary.tier2 + ', Tier 3: ' + payload.summary.tier3 + ').';
+      setText('take-said', msg);
+      say(msg);
+      return name;
+    }
+    return '';
+  }
+  var lazyScriptPromises = Object.create(null);
+  function loadLocalScript(file, attr, isReady) {
+    if (isReady()) return Promise.resolve(true);
+    if (lazyScriptPromises[file]) return lazyScriptPromises[file];
+    if (!doc || typeof doc.createElement !== 'function') return Promise.resolve(false);
+    lazyScriptPromises[file] = new Promise(function (resolve) {
+      var settled = false;
+      var finish = function () {
+        if (settled) return;
+        settled = true;
+        var ok = !!isReady();
+        if (!ok) delete lazyScriptPromises[file];
+        resolve(ok);
+      };
+      try {
+        var existing = doc.querySelector && doc.querySelector('script[' + attr + '="1"]');
+        if (existing) {
+          existing.addEventListener('load', finish);
+          existing.addEventListener('error', finish);
+          if (typeof window.setTimeout === 'function') window.setTimeout(finish, 4000);
+          return;
+        }
+        var sc = doc.createElement('script');
+        sc.setAttribute('src', file);
+        sc.async = true;
+        sc.setAttribute(attr, '1');
+        sc.onload = finish;
+        sc.onerror = finish;
+        (doc.head || doc.documentElement || doc.body).appendChild(sc);
+      } catch (_) {
+        delete lazyScriptPromises[file];
+        resolve(false);
+      }
+    });
+    return lazyScriptPromises[file];
+  }
+  function ensureDocxTools() {
+    var hasZip = function () {
+      return !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function');
+    };
+    var hasDocx = function () {
+      return !!(window.AlloPacketDocx
+        && typeof window.AlloPacketDocx.buildProgressReportDocx === 'function'
+        && typeof window.AlloPacketDocx.downloadDocx === 'function');
+    };
+    return loadLocalScript('packets_zip.js', 'data-allo-zip', hasZip).then(function (zipOk) {
+      if (!zipOk) return null;
+      return loadLocalScript('packets_docx.js', 'data-allo-docx', hasDocx).then(function (docxOk) {
+        return docxOk ? window.AlloPacketDocx : null;
+      });
+    });
+  }
+  function sessionSupportsList(s) {
+    var out = [];
+    var seen = Object.create(null);
+    var pushUnique = function (text) {
+      var clean = String(text || '').trim();
+      if (!clean || seen[clean]) return;
+      seen[clean] = true;
+      out.push(clean);
+    };
+    var cb = choiceModalityInfo(s);
+    if (cb.picked.length) pushUnique('Choice pathway: ' + cb.picked.join(', ') + (cb.switched ? ' (switched)' : ''));
+    if (s && s.score && Array.isArray(s.score.tools)) {
+      s.score.tools.forEach(function (t) {
+        pushUnique(own(TOOL_NAMES, t) ? TOOL_NAMES[t] : String(t || ''));
+      });
+    }
+    if (s && Array.isArray(s.flags) && s.flags.indexOf('untimed') >= 0) pushUnique('untimed check');
+    if (s && s.score && s.score.directionsHeard) pushUnique('heard directions');
+    if (followupKit && typeof followupKit.analyzeUdlSupports === 'function') {
+      var udl = followupKit.analyzeUdlSupports([s]);
+      (udl && Array.isArray(udl.itemSupports) ? udl.itemSupports : []).forEach(function (it) {
+        pushUnique(it.label);
+      });
+    }
+    return out;
+  }
+  function buildProgressReportModel(onlyLearner) {
+    var singleMode = !!(onlyLearner && onlyLearner.key);
+    var learners = singleMode
+      ? [onlyLearner]
+      : ((model && Array.isArray(model.learners)) ? model.learners : []);
+    var paperList = Array.isArray(state.paper) ? state.paper : [];
+    if (singleMode) {
+      paperList = paperList.filter(function (p) { return canonKey(p.learner) === onlyLearner.key; });
+    }
+    var rows = [];
+    var studentFocus = [];
+    var pctSum = 0;
+    var pctCount = 0;
+    var learnerKeySet = Object.create(null);
+
+    learners.forEach(function (learner) {
+      learnerKeySet[learner.key] = true;
+      (learner.sessions || []).forEach(function (s) {
+        var probe = s.mode === 'probe';
+        var actTitle = probe
+          ? (s.measureName + (formText(s.form) ? ', version ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : ''))
+          : (s.title || s.packetId || 'Practice');
+        var actKind = probe
+          ? 'Check'
+          : (Array.isArray(s.byActivity) && s.byActivity.length
+            ? s.byActivity.map(function (a) { return a.name; }).slice(0, 3).join(', ')
+            : 'Practice');
+        var scoreText = '';
+        var pctVal = null;
+        if (probe) {
+          if (s.value === null || s.value === undefined) {
+            scoreText = 'No score' + (s.score && s.score.noScore ? ' (' + noScoreShort(s.score.noScore) + ')' : '');
+          } else {
+            scoreText = s.value + ' ' + unitFor(s.value, s.unitName) + (s.mazeNet ? ' (Maze net ' + s.mazeNet.net + ')' : '');
+          }
+          if (s.summary && s.summary.accuracyPct !== null && s.summary.accuracyPct !== undefined) pctVal = s.summary.accuracyPct;
+        } else if (s.readAlong && (!s.summary || !s.summary.given)) {
+          scoreText = s.readAlong.read + ' of ' + count(s.readAlong.pages, 'page') + ' read';
+        } else if (s.summary && s.summary.firstTryPct !== null && s.summary.firstTryPct !== undefined) {
+          scoreText = s.summary.firstTryPct + '% (' + s.summary.firstTry + '/' + s.summary.given + ')';
+          pctVal = s.summary.firstTryPct;
+        } else {
+          scoreText = s.summary && s.summary.done ? (s.summary.done + ' done (not scored)') : 'Not scored';
+        }
+        if (typeof pctVal === 'number' && isFinite(pctVal)) {
+          pctSum += pctVal;
+          pctCount += 1;
+        }
+        var tc = timeCell(s);
+        var timeText = Array.isArray(tc) ? tc.filter(Boolean).join(' \u2014 ') : String(tc || '');
+        var sups = sessionSupportsList(s);
+        var rowNotes = notesOf(s).filter(function (line) {
+          return String(line || '').indexOf('reading tools used:') !== 0;
+        });
+        rows.push({
+          learner: learner.label,
+          title: actTitle,
+          activity: actKind,
+          date: s.date ? showDate(s.date) : 'No date',
+          scoreText: scoreText,
+          percent: pctVal,
+          correct: s.summary ? (probe ? s.summary.correct : s.summary.firstTry) : null,
+          total: s.summary ? s.summary.given : null,
+          timeText: timeText,
+          supports: sups,
+          notes: rowNotes,
+        });
+      });
+
+      var seriesList = (reader && typeof reader.learnerSeries === 'function' && model)
+        ? reader.learnerSeries(learner, model)
+        : [];
+      var haveSeries = Object.create(null);
+      seriesList.forEach(function (sr) { haveSeries[sr.key] = true; });
+      paperList.forEach(function (p) {
+        if (canonKey(p.learner) !== learner.key || haveSeries[p.measure]) return;
+        haveSeries[p.measure] = true;
+        seriesList.push({ key: p.measure, kind: 'paper', name: p.name, unitName: '', percent: false, points: [], dates: 0, formKey: '' });
+      });
+
+      var goals = [];
+      seriesList.forEach(function (sr) {
+        var gv = mergedMapValue(state.goals, learner.key, sr.key);
+        if (gv === undefined || gv === null) return;
+        var gd = mergedMapValue(state.goalDates, learner.key, sr.key);
+        goals.push({
+          measure: sr.name,
+          target: amountText(gv, sr),
+          date: gd ? ('by ' + showDate(gd)) : '',
+        });
+      });
+
+      var learnerPaper = paperList
+        .filter(function (p) { return canonKey(p.learner) === learner.key; })
+        .sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; })
+        .map(function (p) {
+          return {
+            name: p.name || 'Paper check',
+            value: String(p.value),
+            date: p.date ? showDate(p.date) : '',
+            note: p.note || '',
+          };
+        });
+
+      var missedItems = [];
+      var missedSeen = Object.create(null);
+      var checkMissed = (reader && typeof reader.checkMissedItems === 'function')
+        ? reader.checkMissedItems(learner.sessions, 8)
+        : [];
+      checkMissed.forEach(function (row) {
+        var k = 'c:' + row.item + '|' + row.check;
+        if (missedSeen[k]) return;
+        missedSeen[k] = true;
+        missedItems.push({
+          item: row.item + (row.check ? ' (' + row.check + ')' : ''),
+          count: row.times,
+          wrong: Array.isArray(row.answers) && row.answers.length ? row.answers.join('/') : '',
+        });
+      });
+      var wrongList = (reader && typeof reader.wrongAnswers === 'function')
+        ? reader.wrongAnswers(learner.sessions, 8)
+        : [];
+      wrongList.forEach(function (row) {
+        var k = 'w:' + row.word + '|' + row.answer;
+        if (missedSeen[k]) return;
+        missedSeen[k] = true;
+        missedItems.push({
+          word: row.word,
+          count: row.times,
+          wrong: row.answer,
+        });
+      });
+
+      var focusNotes = [];
+      var learnerSupports = [];
+      var learnerStrengths = [];
+      if (followupKit && typeof followupKit.buildStudentProgressSummary === 'function') {
+        var prog = followupKit.buildStudentProgressSummary(learner, model, {
+          reader: reader,
+          goals: state.goals,
+          goalDates: state.goalDates,
+          paper: paperList,
+          canonKey: canonKey,
+          today: today(),
+          sample: state.sample,
+        });
+        if (prog && Array.isArray(prog.strengths)) {
+          prog.strengths.forEach(function (st) {
+            var line = typeof st === 'string' ? st : (st && (st.text || st.label || st.area || ''));
+            if (line) learnerStrengths.push(String(line));
+          });
+        }
+        if (prog && Array.isArray(prog.nextFocus)) {
+          prog.nextFocus.forEach(function (nf) {
+            if (nf && nf.area) focusNotes.push(nf.area + (nf.detail ? ': ' + nf.detail : ''));
+          });
+        }
+        var udlInfo = prog && prog.udlSupports ? prog.udlSupports : null;
+        if (udlInfo) {
+          (udlInfo.choicePathways || []).forEach(function (cp) {
+            learnerSupports.push('Choice pathway: ' + cp.label + ' (' + cp.sessions + ')');
+          });
+          (udlInfo.readingTools || []).forEach(function (rt) {
+            learnerSupports.push(rt.label + ' (' + rt.sessions + ')');
+          });
+          (udlInfo.itemSupports || []).forEach(function (isup) {
+            learnerSupports.push(isup.label + ' (' + isup.uses + ')');
+          });
+          if (udlInfo.untimedChecks > 0) learnerSupports.push('Untimed checks (' + udlInfo.untimedChecks + ')');
+        }
+      }
+
+      var tierCode = lastTierByKey[learner.key] || '';
+      var tierLabel = tierCode && own(TIER_FILTER_LABELS, tierCode) ? TIER_FILTER_LABELS[tierCode] : '';
+
+      if (singleMode || missedItems.length || goals.length || learnerPaper.length || learnerSupports.length || learnerStrengths.length || focusNotes.length || tierLabel) {
+        studentFocus.push({
+          learner: learner.label,
+          tier: tierLabel,
+          strengths: learnerStrengths,
+          missedItems: missedItems.slice(0, 12),
+          goals: goals,
+          paperScores: learnerPaper,
+          supports: learnerSupports,
+          notes: focusNotes.join(' '),
+        });
+      }
+    });
+
+    // Include any paper scores whose student has no loaded session file (class report only).
+    var orphanPaperByKey = Object.create(null);
+    if (!singleMode) {
+      paperList.forEach(function (p) {
+        var ck = canonKey(p.learner);
+        if (learnerKeySet[ck]) return;
+        var label = labelFor(ck) || p.learner || 'Student';
+        if (!orphanPaperByKey[ck]) orphanPaperByKey[ck] = { label: label, scores: [] };
+        orphanPaperByKey[ck].scores.push(p);
+        rows.push({
+          learner: label,
+          title: p.name || 'Paper check',
+          activity: 'Paper score',
+          date: p.date ? showDate(p.date) : 'No date',
+          scoreText: String(p.value),
+          timeText: '',
+          supports: [],
+          notes: p.note ? [p.note] : ['Paper score typed on this page'],
+        });
+      });
+      Object.keys(orphanPaperByKey).forEach(function (ck) {
+        var grp = orphanPaperByKey[ck];
+        studentFocus.push({
+          learner: grp.label,
+          paperScores: grp.scores.map(function (p) {
+            return { name: p.name || 'Paper check', value: String(p.value), date: p.date ? showDate(p.date) : '', note: p.note || '' };
+          }),
+        });
+      });
+    }
+
+    var measures = [];
+    if (singleMode) {
+      var sList = (reader && typeof reader.learnerSeries === 'function' && model)
+        ? reader.learnerSeries(onlyLearner, model)
+        : [];
+      sList.forEach(function (sr) {
+        var scored = (sr.points || []).filter(function (pt) { return pt.value !== null && pt.value !== undefined; });
+        var latest = scored[scored.length - 1];
+        if (latest) {
+          measures.push(sr.name + ': latest ' + amountText(latest.value, sr) + (latest.date ? ' (' + showDate(latest.date) + ')' : ''));
+        }
+      });
+    } else if (model && Array.isArray(model.middles) && model.middles.length) {
+      model.middles.forEach(function (mid) {
+        measures.push({
+          label: mid.label + (formText(mid.form) ? ', version ' + mid.form : ''),
+          median: mid.median,
+          unit: unitFor(mid.median, mid.unitName),
+          count: mid.n,
+          summary: mid.mazeNet ? ('Maze net median ' + mid.mazeNet.median) : '',
+        });
+      });
+    } else if (model) {
+      (model.checks || []).forEach(function (chk) {
+        measures.push(chk.label + (chk.unitName ? ' (' + chk.unitName + ')' : ''));
+      });
+      (model.strands || []).forEach(function (st) {
+        measures.push(st[1] + ' (practice)');
+      });
+    }
+
+    var totalStudents = learners.length + Object.keys(orphanPaperByKey).length;
+    var span = '';
+    if (singleMode) {
+      var dated = (onlyLearner.sessions || []).filter(function (s) { return s.date; });
+      span = dated.length ? dateRange(dated[0].date, onlyLearner.lastDate || dated[dated.length - 1].date) : '';
+    } else {
+      span = model ? dateRange(model.firstDate, model.lastDate) : '';
+    }
+    var reportTitle = singleMode
+      ? ((state.sample ? 'Sample ' : '') + onlyLearner.label + ' \u2014 Student Progress & Conference Handout')
+      : ((state.sample ? 'Sample ' : '') + (totalStudents === 1 && learners[0]
+        ? (learners[0].label + ' \u2014 Progress Report')
+        : 'Class & Student Progress Report'));
+
+    return {
+      title: reportTitle,
+      subtitle: state.sample ? 'Sample results with made-up code names and scores.' : '',
+      singleStudent: singleMode,
+      studentName: singleMode ? onlyLearner.label : undefined,
+      learner: singleMode ? onlyLearner.label : undefined,
+      generatedDate: showDate(today()),
+      dateRange: span,
+      summary: {
+        students: totalStudents,
+        files: singleMode ? (onlyLearner.sessions ? onlyLearner.sessions.length : rows.length) : state.sessions.length,
+        avgPercent: pctCount > 0 ? Math.round(pctSum / pctCount) : null,
+        paperCount: paperList.length,
+        dateRange: span,
+        measures: measures,
+      },
+      rows: rows,
+      studentFocus: studentFocus,
+      notesPrompt: true,
+      notesLines: 5,
+      credits: [HONEST],
+    };
+  }
+  function exportProgressDocx() {
+    var hasSessions = !!(model && Array.isArray(model.learners) && model.learners.length > 0);
+    var hasPaper = Array.isArray(state.paper) && state.paper.length > 0;
+    if (!hasSessions && !hasPaper) {
+      var emptyMsg = 'Load student results or add a paper score first to download a Word progress report.';
+      setText('take-said', emptyMsg);
+      say(emptyMsg);
+      return Promise.resolve('');
+    }
+    var btn = $('export-docx');
+    if (btn) btn.disabled = true;
+    var waitMsg = 'Preparing Word progress report (.docx)...';
+    setText('take-said', waitMsg);
+    say(waitMsg);
+    return ensureDocxTools().then(function (docxLib) {
+      if (!docxLib || !window.AlloPacketZip) {
+        var failMsg = 'Could not load the Word report builder. Load the page again.';
+        setText('take-said', failMsg);
+        say(failMsg);
+        return '';
+      }
+      var reportModel = buildProgressReportModel();
+      var fname = (state.sample ? 'sample-' : '') + 'progress-report__' + today() + '.docx';
+      var res = docxLib.buildProgressReportDocx(reportModel, { zip: window.AlloPacketZip, filename: fname });
+      if (docxLib.downloadDocx(res, window, doc)) {
+        var okMsg = 'Saved ' + res.filename + ': ' + count(reportModel.rows.length, 'row') + ' across ' + count(reportModel.summary.students, 'student') + '.';
+        setText('take-said', okMsg);
+        say(okMsg);
+        return res.filename;
+      }
+      var dlFail = 'This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.';
+      setText('take-said', dlFail);
+      say(dlFail);
+      return '';
+    }, function () {
+      var errMsg = 'Could not create the Word progress report.';
+      setText('take-said', errMsg);
+      say(errMsg);
+      return '';
+    }).then(function (out) {
+      if (btn) btn.disabled = false;
+      return out;
+    });
+  }
+  function exportStudentConferenceDocx() {
+    var learner = learnerNamed(state.learner);
+    if (!learner) {
+      var emptyMsg = 'Select a student with results first to download a student conference handout.';
+      setText('take-said', emptyMsg);
+      say(emptyMsg);
+      return Promise.resolve('');
+    }
+    var btn = $('export-student-docx');
+    if (btn) btn.disabled = true;
+    var waitMsg = 'Preparing conference handout for ' + learner.label + ' (.docx)...';
+    setText('take-said', waitMsg);
+    say(waitMsg);
+    return ensureDocxTools().then(function (docxLib) {
+      if (!docxLib || !window.AlloPacketZip) {
+        var failMsg = 'Could not load the Word conference handout builder. Load the page again.';
+        setText('take-said', failMsg);
+        say(failMsg);
+        return '';
+      }
+      var studentModel = buildProgressReportModel(learner);
+      var res = docxLib.buildProgressReportDocx(studentModel, { zip: window.AlloPacketZip, singleStudent: true });
+      if (docxLib.downloadDocx(res, window, doc)) {
+        var okMsg = 'Saved ' + res.filename + ' for ' + learner.label + ' (' + count(studentModel.rows.length, 'result') + ').';
+        setText('take-said', okMsg);
+        say(okMsg);
+        return res.filename;
+      }
+      var dlFail = 'This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.';
+      setText('take-said', dlFail);
+      say(dlFail);
+      return '';
+    }, function () {
+      var errMsg = 'Could not create the student conference handout.';
+      setText('take-said', errMsg);
+      say(errMsg);
+      return '';
+    }).then(function (out) {
+      if (btn) btn.disabled = !learnerNamed(state.learner);
+      return out;
+    });
+  }
+  function buildProgressSummaryNode(learner) {
+    if (!learner || !model || !followupKit || typeof followupKit.buildStudentProgressSummary !== 'function' || typeof followupKit.renderProgressSummaryCard !== 'function') return null;
+    var summary = followupKit.buildStudentProgressSummary(learner, model, {
+      reader: reader,
+      goals: state.goals,
+      goalDates: state.goalDates,
+      paper: state.paper,
+      canonKey: canonKey,
+      today: today(),
+      sample: state.sample,
+    });
+    return followupKit.renderProgressSummaryCard(doc, summary, { onPrint: printProgressSummary });
+  }
+  function refreshProgressSummary() {
+    if (state.view !== 'learner') return;
+    var existing = $('student-progress-summary');
+    var learner = learnerNamed(state.learner);
+    if (!existing || !existing.parentNode || !learner) return;
+    var wasOpen = !!($('progress-sheet-fold') && $('progress-sheet-fold').open);
+    var nextNode = buildProgressSummaryNode(learner);
+    if (!nextNode) return;
+    existing.parentNode.replaceChild(nextNode, existing);
+    var nextFold = $('progress-sheet-fold');
+    if (nextFold && wasOpen) nextFold.open = true;
   }
   function studentSummaryText(learner) {
     var lines = [];
@@ -1949,6 +3086,7 @@
       var head = '- ' + series.name + ': ';
       if (latest) {
         head += 'latest ' + amountText(latest.value, series) + ' on ' + showDate(latest.date);
+        if (latest.session && latest.session.mazeNet) head += ', Maze net ' + latest.session.mazeNet.net;
         if (scored.length > 1) head += ' (' + count(scored.length, 'scored result') + ')';
         head += '.';
       } else if (series.kind === 'paper') {
@@ -1999,9 +3137,24 @@
       }
       if (Array.isArray(s.flags) && s.flags.indexOf('untimed') >= 0) untimedCount++;
     });
-    if (toolsUsed.length || untimedCount) {
+    var udlInfo = (followupKit && typeof followupKit.analyzeUdlSupports === 'function')
+      ? followupKit.analyzeUdlSupports(learner.sessions)
+      : null;
+    var choicePaths = udlInfo && Array.isArray(udlInfo.choicePathways) ? udlInfo.choicePathways : [];
+    var itemSups = udlInfo && Array.isArray(udlInfo.itemSupports) ? udlInfo.itemSupports : [];
+    if (choicePaths.length || toolsUsed.length || itemSups.length || untimedCount) {
       lines.push('');
+      if (choicePaths.length) {
+        lines.push('UDL Choice Board pathways: ' + choicePaths.map(function (p) {
+          return p.label + ' (' + count(p.sessions, 'session') + ')';
+        }).join(', ') + (udlInfo && udlInfo.pathwaySwitchSessions > 0 ? '; switched pathway in ' + count(udlInfo.pathwaySwitchSessions, 'session') : '') + '.');
+      }
       if (toolsUsed.length) lines.push('Reading tools used: ' + toolsUsed.join(', ') + '.');
+      if (itemSups.length) {
+        lines.push('Activity supports used: ' + itemSups.map(function (it) {
+          return it.label + ' (' + count(it.items, 'item') + ')';
+        }).join(', ') + '.');
+      }
       if (untimedCount) lines.push('Untimed check accommodation recorded on ' + count(untimedCount, 'check') + ' (kept apart from timed scores).');
     }
 
@@ -2056,13 +3209,76 @@
       }, manual);
     } catch (_) { manual(); }
   }
+  var restoreOnePagePrint = null;
+  function clearOnePagePrint() {
+    if (typeof restoreOnePagePrint === 'function') {
+      var fn = restoreOnePagePrint;
+      restoreOnePagePrint = null;
+      fn();
+    } else {
+      doc.body.classList.remove('print-one-page-summary');
+      doc.body.classList.remove('print-mtss-huddle');
+    }
+  }
   function printView(view) {
     if (!model || !model.learners.length) return;
+    clearOnePagePrint();
     state.view = view;
     drawView();
     if (typeof window.print === 'function') window.print();
   }
+  function printProgressSummary() {
+    if (!model || !model.learners.length) return;
+    clearOnePagePrint();
+    if (state.view !== 'learner') {
+      state.view = 'learner';
+      drawView();
+    }
+    var fold = $('progress-sheet-fold');
+    var wasOpen = !!(fold && fold.open);
+    if (fold) fold.open = true;
+    setPrintHead();
+    doc.body.classList.add('print-one-page-summary');
+    var donePrint = false;
+    var restore = function () {
+      if (donePrint) return;
+      donePrint = true;
+      if (restoreOnePagePrint === restore) restoreOnePagePrint = null;
+      doc.body.classList.remove('print-one-page-summary');
+      if (fold && !wasOpen) fold.open = false;
+      window.removeEventListener('afterprint', restore);
+    };
+    restoreOnePagePrint = restore;
+    window.addEventListener('afterprint', restore);
+    if (typeof window.print === 'function') window.print();
+  }
+  function printMtssHuddle() {
+    if (!model || !model.learners.length) return;
+    clearOnePagePrint();
+    if (state.view !== 'group') {
+      state.view = 'group';
+      drawView();
+    }
+    var fold = $('group-mtss-fold');
+    var wasOpen = !!(fold && fold.open);
+    if (fold) fold.open = true;
+    setPrintHead();
+    doc.body.classList.add('print-mtss-huddle');
+    var donePrint = false;
+    var restore = function () {
+      if (donePrint) return;
+      donePrint = true;
+      if (restoreOnePagePrint === restore) restoreOnePagePrint = null;
+      doc.body.classList.remove('print-mtss-huddle');
+      if (fold && !wasOpen) fold.open = false;
+      window.removeEventListener('afterprint', restore);
+    };
+    restoreOnePagePrint = restore;
+    window.addEventListener('afterprint', restore);
+    if (typeof window.print === 'function') window.print();
+  }
   function startOver() {
+    clearOnePagePrint();
     forgetStored();
     state = fresh();
     model = null;
@@ -2072,6 +3288,10 @@
     drawUndo();
     hideSummaryBox();
     if ($('group-filter')) $('group-filter').remove();
+    if ($('group-tier-bar')) $('group-tier-bar').remove();
+    lastTierByKey = Object.create(null);
+    if ($('group-mtss-host')) { $('group-mtss-host').textContent = ''; $('group-mtss-host').hidden = true; }
+    if ($('group-udl-host')) { $('group-udl-host').textContent = ''; $('group-udl-host').hidden = true; }
     $('files').value = '';
     go('empty', false);
     syncLearnerControls();
@@ -2148,7 +3368,11 @@
     $('print-learner').addEventListener('click', function () { printView('learner'); });
     if ($('copy-summary')) $('copy-summary').addEventListener('click', copyStudentSummary);
     $('save-csv').addEventListener('click', saveSummary);
+    if ($('save-udl-csv')) $('save-udl-csv').addEventListener('click', saveUdlCsv);
     $('save-bundle').addEventListener('click', function () { if (saveBundle()) endNudge(); });
+    if ($('export-mtss')) $('export-mtss').addEventListener('click', exportMtssTriage);
+    if ($('export-docx')) $('export-docx').addEventListener('click', function () { exportProgressDocx(); });
+    if ($('export-student-docx')) $('export-student-docx').addEventListener('click', function () { exportStudentConferenceDocx(); });
     // The same action from the quiet line near the top. The line goes once the file is saved, and the page says so there.
     $('save-nudge-go').addEventListener('click', function () {
       var name = saveBundle();
@@ -2210,6 +3434,9 @@
       handoff.take().then(function (handed) {
         if (handed && handed.bytes) {
           takeFiles([{ name: handed.name || 'results.csv', size: handed.bytes.byteLength, lastModified: Date.now(), _bytes: handed.bytes }]);
+          // 2026-11-23: results handed over from Collect by sealed QR exist in no file yet, so leaving this page asks first
+          // (unless "Keep these results" is on, as for typed goals).
+          markEdited();
         } else {
           say('The results file was no longer waiting. Choose or drop it here.');
         }

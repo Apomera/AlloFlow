@@ -188,6 +188,19 @@ const getContentDirection = (languageName) => {
 // LanguageContext is mirrored at window.AlloLanguageContext (build-script preamble
 // aliases it). Icons resolved lazily via window.AlloIcons.
 
+function _ensureErrorBoundaryA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-error-boundary-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-error-boundary-a11y-css';
+  st.textContent =
+    '[data-allo-error-boundary] button,[data-allo-error-boundary] summary,[data-allo-error-boundary] a{touch-action:manipulation;}' +
+    '[data-allo-error-boundary] button:focus-visible,[data-allo-error-boundary] summary:focus-visible,[data-allo-error-boundary] a:focus-visible{outline:2px solid #b91c1c;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-allo-error-boundary] button:focus-visible,[data-allo-error-boundary] summary:focus-visible,[data-allo-error-boundary] a:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-allo-error-boundary],[data-allo-error-boundary] *,[data-allo-error-boundary] *::before,[data-allo-error-boundary] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 class ErrorBoundary extends React.Component {
   static contextType = LanguageContext;
   constructor(props) {
@@ -213,8 +226,9 @@ class ErrorBoundary extends React.Component {
           return 'Unknown error';
         }
       })();
+      _ensureErrorBoundaryA11yCss();
       return (
-        <div className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
+        <div data-allo-error-boundary="true" className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
           <div className="bg-red-100 p-4 rounded-full text-red-700 mb-4 shadow-sm">
              <AlertCircle size={48} aria-hidden="true" />
           </div>

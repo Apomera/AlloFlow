@@ -9471,12 +9471,12 @@
                     },
                     {
                       "kind": "cell",
-                      "text": "Congress can alter appellate jurisdiction, pass constitutional amendments, or reshape courts via Senate confirmation of nominees.",
+                      "text": "Congress can alter appellate jurisdiction, propose constitutional amendments, or reshape courts via Senate confirmation of nominees.",
                       "columnSpan": 1,
                       "runs": [
                         {
                           "type": "text",
-                          "text": "Congress can alter appellate jurisdiction, pass constitutional amendments, or reshape courts via Senate confirmation of nominees."
+                          "text": "Congress can alter appellate jurisdiction, propose constitutional amendments, or reshape courts via Senate confirmation of nominees."
                         }
                       ]
                     }
@@ -9565,7 +9565,7 @@
               ],
               [
                 "Supreme Court judicial review",
-                "Congress can alter appellate jurisdiction, pass constitutional amendments, or reshape courts via Senate confirmation of nominees."
+                "Congress can alter appellate jurisdiction, propose constitutional amendments, or reshape courts via Senate confirmation of nominees."
               ]
             ]
           },
@@ -9776,11 +9776,11 @@
                   ]
                 },
                 {
-                  "text": "A House oversight committee subpoenas agency officials and cuts discretionary funding when an independent regulatory commission misses statutory deadlines.",
+                  "text": "A House oversight committee subpoenas agency officials and Congress cuts discretionary funding when an independent regulatory commission misses statutory deadlines.",
                   "runs": [
                     {
                       "type": "text",
-                      "text": "A House oversight committee subpoenas agency officials and cuts discretionary funding when an independent regulatory commission misses statutory deadlines."
+                      "text": "A House oversight committee subpoenas agency officials and Congress cuts discretionary funding when an independent regulatory commission misses statutory deadlines."
                     }
                   ]
                 }
@@ -10030,7 +10030,7 @@
           ],
           "examples": [
             "After Congress passes clean-air legislation, the EPA uses discretionary authority and notice-and-comment rulemaking to set enforceable emissions thresholds.",
-            "A House oversight committee subpoenas agency officials and cuts discretionary funding when an independent regulatory commission misses statutory deadlines."
+            "A House oversight committee subpoenas agency officials and Congress cuts discretionary funding when an independent regulatory commission misses statutory deadlines."
           ],
           "nonExamples": [
             "Do not confuse agency expertise with independence from law.",
@@ -16106,7 +16106,11 @@
     "releaseEligibleRecords": 0,
     "glossaryTerms": 25,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 7,
+    "unitReviewRoutes": 5,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons, single-choice items, and plain-text planning workshops",
@@ -16969,7 +16973,7 @@
         "Identify the specific constitutional check each branch can exercise over a bureaucratic agency or federal court ruling."
       ],
       "formulas": [
-        "Redistricting SCOTUS cases: Baker v. Carr (1962) made malapportionment justiciable (\"one person, one vote\"); Shaw v. Reno (1993) struck down racial gerrymandering under the 14th Amendment Equal Protection Clause.",
+        "Redistricting SCOTUS cases: Baker v. Carr (1962) made malapportionment justiciable (\"one person, one vote\"); Shaw v. Reno (1993) subjected predominantly racial gerrymandering to strict scrutiny under the 14th Amendment Equal Protection Clause.",
         "Executive & Judicial documents: Federalist No. 70 (Hamilton) defends an energetic single executive for accountability and decisiveness; Federalist No. 78 (Hamilton) defends judicial independence via life tenure and judicial review.",
         "Marbury v. Madison (1803): established judicial review empowering federal courts to declare acts of Congress or the executive unconstitutional.",
         "Bureaucracy & oversight: civil service merit system (Pendleton Act), delegated discretionary rulemaking authority, iron triangles (agency + congressional committee + interest group) vs. fluid issue networks, checked via congressional oversight hearings and power of the purse."
@@ -17464,6 +17468,1439 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "ap-us-government-foundation-pilot-session-ch-01",
+      "title": "Unit 1: Foundations of American Democracy guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 1: Foundations of American Democracy\" (Foundations of American Democracy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-usg-ch-01",
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-004",
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-009",
+        "ap-usg-u1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 1: Foundations of American Democracy\" and the \"Constitutional Foundations, Factions & Federalism\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Constitutional separation of powers, checks and balances, and federalism flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Democratic ideals and models\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 1: Foundations of American Democracy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Mapping Vertical Federalism Clauses and Fiscal Grant Leverage\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-ch-02",
+      "title": "Unit 2: Interactions Among Branches of Government guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 2: Interactions Among Branches of Government\" (Interactions Among Branches of Government) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-usg-ch-02",
+      "itemIds": [
+        "ap-usg-u2-026",
+        "ap-usg-u2-027",
+        "ap-usg-u2-028",
+        "ap-usg-u2-029",
+        "ap-usg-u2-030",
+        "ap-usg-u2-031",
+        "ap-usg-u2-032",
+        "ap-usg-u2-033",
+        "ap-usg-u2-034",
+        "ap-usg-u2-035"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 2: Interactions Among Branches of Government\" and the \"Congress, Presidency, Judiciary & Federal Bureaucracy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Lawmaking, executive implementation, bureaucratic rulemaking, and judicial review flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Congress and legislative behavior\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 2: Interactions Among Branches of Government\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Tracking Branch Powers, Checks, and House vs. Senate Procedures\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-ch-03",
+      "title": "Unit 3: Civil Liberties and Civil Rights guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 3: Civil Liberties and Civil Rights\" (Civil Liberties and Civil Rights) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-usg-ch-03",
+      "itemIds": [
+        "ap-usg-u3-063",
+        "ap-usg-u3-149",
+        "ap-usg-u3-150",
+        "ap-usg-u3-151",
+        "ap-usg-u3-152",
+        "ap-usg-u3-153",
+        "ap-usg-u3-154",
+        "ap-usg-u3-155",
+        "ap-usg-u3-156",
+        "ap-usg-u3-157"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 3: Civil Liberties and Civil Rights\" and the \"Bill of Rights, Selective Incorporation & Equal Protection\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Bill of Rights, selective incorporation, and equal protection scrutiny flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Bill of Rights and religious liberty\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 3: Civil Liberties and Civil Rights\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguishing Bill of Rights Incorporation from Equal Protection Civil Rights\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-ch-04",
+      "title": "Unit 4: American Political Ideologies and Beliefs guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 4: American Political Ideologies and Beliefs\" (American Political Ideologies and Beliefs) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-usg-ch-04",
+      "itemIds": [
+        "ap-usg-u4-173",
+        "ap-usg-u4-174",
+        "ap-usg-u4-175",
+        "ap-usg-u4-238",
+        "ap-usg-u4-239",
+        "ap-usg-u4-240",
+        "ap-usg-u4-241",
+        "ap-usg-u4-242",
+        "ap-usg-u4-243",
+        "ap-usg-u4-244"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 4: American Political Ideologies and Beliefs\" and the \"Political Socialization, Polling & Economic Policy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Political socialization, opinion polling quality, and ideological policy alignment flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Political culture and socialization\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 4: American Political Ideologies and Beliefs\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Checking Margins of Error, Sampling Bias, and Subgroup Evidence in Polls\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-ch-05",
+      "title": "Unit 5: Political Participation guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 5: Political Participation\" (Political Participation) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-usg-ch-05",
+      "itemIds": [
+        "ap-usg-u5-179",
+        "ap-usg-u5-180",
+        "ap-usg-u5-181",
+        "ap-usg-u5-182",
+        "ap-usg-u5-183",
+        "ap-usg-u5-184",
+        "ap-usg-u5-185",
+        "ap-usg-u5-186",
+        "ap-usg-u5-187",
+        "ap-usg-u5-188"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 5: Political Participation\" and the \"Voting, Parties, Interest Groups, Campaigns & Media\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Voting models, linkage institutions, campaign finance, and electoral outcomes flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Voting and participation\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 5: Political Participation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separating Campaign-Finance Rules, Primaries, and Winner-Take-All Math\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-trap-repair-sprint",
+      "title": "AP U.S. Government and Politics Foundation Pilot misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u2-019",
+        "ap-usg-u3-049",
+        "ap-usg-u5-076",
+        "ap-usg-u4-064",
+        "ap-usg-u1-002",
+        "ap-usg-u2-020",
+        "ap-usg-u3-050",
+        "ap-usg-u5-077",
+        "ap-usg-u4-065",
+        "ap-usg-u1-003",
+        "ap-usg-u2-021"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Mapping Vertical Federalism Clauses and Fiscal Grant Leverage\", \"Tracking Branch Powers, Checks, and House vs. Senate Procedures\", \"Distinguishing Bill of Rights Incorporation from Equal Protection Civil Rights\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-session-mixed-capstone",
+      "title": "AP U.S. Government and Politics Foundation Pilot mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ap-usg-u1-004",
+        "ap-usg-u2-022",
+        "ap-usg-u3-052",
+        "ap-usg-u4-067",
+        "ap-usg-u5-079",
+        "ap-usg-u1-015",
+        "ap-usg-u2-033",
+        "ap-usg-u3-063",
+        "ap-usg-u4-166",
+        "ap-usg-u5-090",
+        "ap-usg-u1-108",
+        "ap-usg-u2-044",
+        "ap-usg-u3-159",
+        "ap-usg-u4-239",
+        "ap-usg-u5-176"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Unscored AP Government response-planning workshops, outline a response to \"Explain the constitutional mechanism before the conclusion\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "ap-us-government-foundation-pilot-spaced-ch-01",
+      "topicId": "ap-usg-ch-01",
+      "topicLabel": "1. Unit 1: Foundations of American Democracy",
+      "unitId": "foundations-of-american-democracy",
+      "chapterId": "ap-usg-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 1: Foundations of American Democracy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-spaced-ch-02",
+      "topicId": "ap-usg-ch-02",
+      "topicLabel": "2. Unit 2: Interactions Among Branches of Government",
+      "unitId": "interactions-among-branches",
+      "chapterId": "ap-usg-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 2: Interactions Among Branches of Government\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-spaced-ch-03",
+      "topicId": "ap-usg-ch-03",
+      "topicLabel": "3. Unit 3: Civil Liberties and Civil Rights",
+      "unitId": "civil-liberties-and-civil-rights",
+      "chapterId": "ap-usg-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 3: Civil Liberties and Civil Rights\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-spaced-ch-04",
+      "topicId": "ap-usg-ch-04",
+      "topicLabel": "4. Unit 4: American Political Ideologies and Beliefs",
+      "unitId": "american-political-ideologies-and-beliefs",
+      "chapterId": "ap-usg-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 4: American Political Ideologies and Beliefs\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-spaced-ch-05",
+      "topicId": "ap-usg-ch-05",
+      "topicLabel": "5. Unit 5: Political Participation",
+      "unitId": "political-participation",
+      "chapterId": "ap-usg-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 5: Political Participation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "ap-us-government-foundation-pilot-unit-review-01",
+      "unitId": "foundations-of-american-democracy",
+      "unitNumber": 1,
+      "unitLabel": "Unit 1: Unit 1: Foundations of American Democracy",
+      "chapterId": "ap-usg-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ap-usg-ch-01-section-01",
+        "ap-usg-ch-01-section-02",
+        "ap-usg-ch-01-section-03"
+      ],
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-004",
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-009",
+        "ap-usg-u1-010",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012",
+        "ap-usg-u1-013",
+        "ap-usg-u1-014",
+        "ap-usg-u1-015",
+        "ap-usg-u1-016",
+        "ap-usg-u1-017",
+        "ap-usg-u1-018",
+        "ap-usg-u1-101",
+        "ap-usg-u1-102",
+        "ap-usg-u1-103",
+        "ap-usg-u1-104",
+        "ap-usg-u1-105",
+        "ap-usg-u1-106",
+        "ap-usg-u1-107",
+        "ap-usg-u1-108",
+        "ap-usg-u1-109",
+        "ap-usg-u1-110",
+        "ap-usg-u1-111",
+        "ap-usg-u1-112",
+        "ap-usg-u1-113",
+        "ap-usg-u1-114",
+        "ap-usg-u1-115",
+        "ap-usg-u1-116",
+        "ap-usg-u1-117",
+        "ap-usg-u1-118",
+        "ap-usg-u1-201",
+        "ap-usg-u1-202",
+        "ap-usg-u1-203",
+        "ap-usg-u1-204",
+        "ap-usg-u1-205",
+        "ap-usg-u1-206",
+        "ap-usg-u1-207",
+        "ap-usg-u1-208",
+        "ap-usg-u1-209"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u1-002",
+        "ap-usg-u1-003",
+        "ap-usg-u1-004",
+        "ap-usg-u1-005",
+        "ap-usg-u1-006",
+        "ap-usg-u1-007",
+        "ap-usg-u1-008",
+        "ap-usg-u1-009",
+        "ap-usg-u1-010",
+        "ap-usg-u1-011",
+        "ap-usg-u1-012"
+      ],
+      "purpose": "Consolidate \"Unit 1: Foundations of American Democracy\" (Foundations of American Democracy) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-unit-review-02",
+      "unitId": "interactions-among-branches",
+      "unitNumber": 2,
+      "unitLabel": "Unit 2: Unit 2: Interactions Among Branches of Government",
+      "chapterId": "ap-usg-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ap-usg-ch-02-section-01",
+        "ap-usg-ch-02-section-02",
+        "ap-usg-ch-02-section-03"
+      ],
+      "itemIds": [
+        "ap-usg-u2-019",
+        "ap-usg-u2-020",
+        "ap-usg-u2-021",
+        "ap-usg-u2-022",
+        "ap-usg-u2-023",
+        "ap-usg-u2-024",
+        "ap-usg-u2-025",
+        "ap-usg-u2-026",
+        "ap-usg-u2-027",
+        "ap-usg-u2-028",
+        "ap-usg-u2-029",
+        "ap-usg-u2-030",
+        "ap-usg-u2-031",
+        "ap-usg-u2-032",
+        "ap-usg-u2-033",
+        "ap-usg-u2-034",
+        "ap-usg-u2-035",
+        "ap-usg-u2-036",
+        "ap-usg-u2-037",
+        "ap-usg-u2-038",
+        "ap-usg-u2-039",
+        "ap-usg-u2-040",
+        "ap-usg-u2-041",
+        "ap-usg-u2-042",
+        "ap-usg-u2-043",
+        "ap-usg-u2-044",
+        "ap-usg-u2-045",
+        "ap-usg-u2-046",
+        "ap-usg-u2-047",
+        "ap-usg-u2-048",
+        "ap-usg-u2-119",
+        "ap-usg-u2-120",
+        "ap-usg-u2-121",
+        "ap-usg-u2-122",
+        "ap-usg-u2-123",
+        "ap-usg-u2-124",
+        "ap-usg-u2-125",
+        "ap-usg-u2-126",
+        "ap-usg-u2-127",
+        "ap-usg-u2-128",
+        "ap-usg-u2-129",
+        "ap-usg-u2-130",
+        "ap-usg-u2-131",
+        "ap-usg-u2-132",
+        "ap-usg-u2-133"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-usg-u2-019",
+        "ap-usg-u2-020",
+        "ap-usg-u2-021",
+        "ap-usg-u2-022",
+        "ap-usg-u2-023",
+        "ap-usg-u2-024",
+        "ap-usg-u2-025",
+        "ap-usg-u2-026",
+        "ap-usg-u2-027",
+        "ap-usg-u2-028",
+        "ap-usg-u2-029",
+        "ap-usg-u2-030"
+      ],
+      "purpose": "Consolidate \"Unit 2: Interactions Among Branches of Government\" (Interactions Among Branches of Government) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-unit-review-03",
+      "unitId": "civil-liberties-and-civil-rights",
+      "unitNumber": 3,
+      "unitLabel": "Unit 3: Unit 3: Civil Liberties and Civil Rights",
+      "chapterId": "ap-usg-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ap-usg-ch-03-section-01",
+        "ap-usg-ch-03-section-02",
+        "ap-usg-ch-03-section-03"
+      ],
+      "itemIds": [
+        "ap-usg-u3-049",
+        "ap-usg-u3-050",
+        "ap-usg-u3-051",
+        "ap-usg-u3-052",
+        "ap-usg-u3-053",
+        "ap-usg-u3-054",
+        "ap-usg-u3-055",
+        "ap-usg-u3-056",
+        "ap-usg-u3-057",
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060",
+        "ap-usg-u3-061",
+        "ap-usg-u3-062",
+        "ap-usg-u3-063",
+        "ap-usg-u3-149",
+        "ap-usg-u3-150",
+        "ap-usg-u3-151",
+        "ap-usg-u3-152",
+        "ap-usg-u3-153",
+        "ap-usg-u3-154",
+        "ap-usg-u3-155",
+        "ap-usg-u3-156",
+        "ap-usg-u3-157",
+        "ap-usg-u3-158",
+        "ap-usg-u3-159",
+        "ap-usg-u3-160",
+        "ap-usg-u3-161",
+        "ap-usg-u3-162",
+        "ap-usg-u3-163",
+        "ap-usg-u3-225",
+        "ap-usg-u3-226",
+        "ap-usg-u3-227",
+        "ap-usg-u3-228",
+        "ap-usg-u3-229",
+        "ap-usg-u3-230",
+        "ap-usg-u3-231",
+        "ap-usg-u3-232",
+        "ap-usg-u3-233",
+        "ap-usg-u3-234",
+        "ap-usg-u3-235",
+        "ap-usg-u3-236",
+        "ap-usg-u3-237"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-usg-u3-049",
+        "ap-usg-u3-050",
+        "ap-usg-u3-051",
+        "ap-usg-u3-052",
+        "ap-usg-u3-053",
+        "ap-usg-u3-054",
+        "ap-usg-u3-055",
+        "ap-usg-u3-056",
+        "ap-usg-u3-057",
+        "ap-usg-u3-058",
+        "ap-usg-u3-059",
+        "ap-usg-u3-060"
+      ],
+      "purpose": "Consolidate \"Unit 3: Civil Liberties and Civil Rights\" (Civil Liberties and Civil Rights) across 3 lessons and 43 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-unit-review-04",
+      "unitId": "american-political-ideologies-and-beliefs",
+      "unitNumber": 4,
+      "unitLabel": "Unit 4: Unit 4: American Political Ideologies and Beliefs",
+      "chapterId": "ap-usg-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ap-usg-ch-04-section-01",
+        "ap-usg-ch-04-section-02",
+        "ap-usg-ch-04-section-03"
+      ],
+      "itemIds": [
+        "ap-usg-u4-064",
+        "ap-usg-u4-065",
+        "ap-usg-u4-066",
+        "ap-usg-u4-067",
+        "ap-usg-u4-068",
+        "ap-usg-u4-069",
+        "ap-usg-u4-070",
+        "ap-usg-u4-071",
+        "ap-usg-u4-072",
+        "ap-usg-u4-073",
+        "ap-usg-u4-074",
+        "ap-usg-u4-075",
+        "ap-usg-u4-164",
+        "ap-usg-u4-165",
+        "ap-usg-u4-166",
+        "ap-usg-u4-167",
+        "ap-usg-u4-168",
+        "ap-usg-u4-169",
+        "ap-usg-u4-170",
+        "ap-usg-u4-171",
+        "ap-usg-u4-172",
+        "ap-usg-u4-173",
+        "ap-usg-u4-174",
+        "ap-usg-u4-175",
+        "ap-usg-u4-238",
+        "ap-usg-u4-239",
+        "ap-usg-u4-240",
+        "ap-usg-u4-241",
+        "ap-usg-u4-242",
+        "ap-usg-u4-243",
+        "ap-usg-u4-244",
+        "ap-usg-u4-245",
+        "ap-usg-u4-246",
+        "ap-usg-u4-247"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-usg-u4-064",
+        "ap-usg-u4-065",
+        "ap-usg-u4-066",
+        "ap-usg-u4-067",
+        "ap-usg-u4-068",
+        "ap-usg-u4-069",
+        "ap-usg-u4-070",
+        "ap-usg-u4-071",
+        "ap-usg-u4-072",
+        "ap-usg-u4-073",
+        "ap-usg-u4-074",
+        "ap-usg-u4-075"
+      ],
+      "purpose": "Consolidate \"Unit 4: American Political Ideologies and Beliefs\" (American Political Ideologies and Beliefs) across 3 lessons and 34 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-unit-review-05",
+      "unitId": "political-participation",
+      "unitNumber": 5,
+      "unitLabel": "Unit 5: Unit 5: Political Participation",
+      "chapterId": "ap-usg-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ap-usg-ch-05-section-01",
+        "ap-usg-ch-05-section-02",
+        "ap-usg-ch-05-section-03"
+      ],
+      "itemIds": [
+        "ap-usg-u5-076",
+        "ap-usg-u5-077",
+        "ap-usg-u5-078",
+        "ap-usg-u5-079",
+        "ap-usg-u5-080",
+        "ap-usg-u5-081",
+        "ap-usg-u5-082",
+        "ap-usg-u5-083",
+        "ap-usg-u5-084",
+        "ap-usg-u5-085",
+        "ap-usg-u5-086",
+        "ap-usg-u5-087",
+        "ap-usg-u5-088",
+        "ap-usg-u5-089",
+        "ap-usg-u5-090",
+        "ap-usg-u5-091",
+        "ap-usg-u5-092",
+        "ap-usg-u5-093",
+        "ap-usg-u5-094",
+        "ap-usg-u5-095",
+        "ap-usg-u5-096",
+        "ap-usg-u5-097",
+        "ap-usg-u5-098",
+        "ap-usg-u5-099",
+        "ap-usg-u5-100",
+        "ap-usg-u5-176",
+        "ap-usg-u5-177",
+        "ap-usg-u5-178",
+        "ap-usg-u5-179",
+        "ap-usg-u5-180",
+        "ap-usg-u5-181",
+        "ap-usg-u5-182",
+        "ap-usg-u5-183",
+        "ap-usg-u5-184",
+        "ap-usg-u5-185",
+        "ap-usg-u5-186",
+        "ap-usg-u5-187",
+        "ap-usg-u5-188",
+        "ap-usg-u5-189",
+        "ap-usg-u5-190",
+        "ap-usg-u5-191",
+        "ap-usg-u5-192",
+        "ap-usg-u5-193",
+        "ap-usg-u5-194",
+        "ap-usg-u5-195"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-usg-u5-076",
+        "ap-usg-u5-077",
+        "ap-usg-u5-078",
+        "ap-usg-u5-079",
+        "ap-usg-u5-080",
+        "ap-usg-u5-081",
+        "ap-usg-u5-082",
+        "ap-usg-u5-083",
+        "ap-usg-u5-084",
+        "ap-usg-u5-085",
+        "ap-usg-u5-086",
+        "ap-usg-u5-087"
+      ],
+      "purpose": "Consolidate \"Unit 5: Political Participation\" (Political Participation) across 3 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "ap-us-government-foundation-pilot-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all AP U.S. Government and Politics Foundation Pilot blueprint domains.",
+      "focus": [
+        "Foundations of American Democracy",
+        "Interactions Among Branches of Government",
+        "Civil Liberties and Civil Rights",
+        "American Political Ideologies and Beliefs"
+      ],
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u4-064",
+        "ap-usg-u2-020",
+        "ap-usg-u5-077",
+        "ap-usg-u3-051",
+        "ap-usg-u1-004",
+        "ap-usg-u4-067",
+        "ap-usg-u2-023",
+        "ap-usg-u5-080",
+        "ap-usg-u3-054",
+        "ap-usg-u1-007",
+        "ap-usg-u4-070",
+        "ap-usg-u2-026",
+        "ap-usg-u5-083",
+        "ap-usg-u3-057",
+        "ap-usg-u1-010",
+        "ap-usg-u4-073",
+        "ap-usg-u2-029",
+        "ap-usg-u5-086",
+        "ap-usg-u3-060",
+        "ap-usg-u1-013",
+        "ap-usg-u4-164",
+        "ap-usg-u2-032",
+        "ap-usg-u5-089",
+        "ap-usg-u3-063",
+        "ap-usg-u1-016",
+        "ap-usg-u4-167",
+        "ap-usg-u2-035",
+        "ap-usg-u5-092",
+        "ap-usg-u3-151",
+        "ap-usg-u1-101",
+        "ap-usg-u4-170",
+        "ap-usg-u2-038",
+        "ap-usg-u5-095",
+        "ap-usg-u3-154",
+        "ap-usg-u1-104",
+        "ap-usg-u4-173",
+        "ap-usg-u2-041",
+        "ap-usg-u5-098",
+        "ap-usg-u3-157"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply AP U.S. Government and Politics Foundation Pilot frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Civil Liberties and Civil Rights",
+        "American Political Ideologies and Beliefs",
+        "Political Participation",
+        "Foundations of American Democracy"
+      ],
+      "itemIds": [
+        "ap-usg-u2-019",
+        "ap-usg-u5-076",
+        "ap-usg-u3-050",
+        "ap-usg-u1-003",
+        "ap-usg-u4-066",
+        "ap-usg-u2-022",
+        "ap-usg-u5-079",
+        "ap-usg-u3-053",
+        "ap-usg-u1-006",
+        "ap-usg-u4-069",
+        "ap-usg-u2-025",
+        "ap-usg-u5-082",
+        "ap-usg-u3-056",
+        "ap-usg-u1-009",
+        "ap-usg-u4-072",
+        "ap-usg-u2-028",
+        "ap-usg-u5-085",
+        "ap-usg-u3-059",
+        "ap-usg-u1-012",
+        "ap-usg-u4-075",
+        "ap-usg-u2-031",
+        "ap-usg-u5-088",
+        "ap-usg-u3-062",
+        "ap-usg-u1-015",
+        "ap-usg-u4-166",
+        "ap-usg-u2-034",
+        "ap-usg-u5-091",
+        "ap-usg-u3-150",
+        "ap-usg-u1-018",
+        "ap-usg-u4-169",
+        "ap-usg-u2-037",
+        "ap-usg-u5-094",
+        "ap-usg-u3-153",
+        "ap-usg-u1-103",
+        "ap-usg-u4-172",
+        "ap-usg-u2-040",
+        "ap-usg-u5-097",
+        "ap-usg-u3-156",
+        "ap-usg-u1-106",
+        "ap-usg-u4-175"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every AP U.S. Government and Politics Foundation Pilot domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Federalism: Enumerated, Implied, Concurrent, and Reserved Powers Mix-Up",
+        "Separation of Powers vs. Checks and Balances and Chamber Roles",
+        "Civil Liberties, Selective Incorporation, vs. Civil Rights Conflation"
+      ],
+      "itemIds": [
+        "ap-usg-u3-049",
+        "ap-usg-u1-002",
+        "ap-usg-u4-065",
+        "ap-usg-u2-021",
+        "ap-usg-u5-078",
+        "ap-usg-u3-052",
+        "ap-usg-u1-005",
+        "ap-usg-u4-068",
+        "ap-usg-u2-024",
+        "ap-usg-u5-081",
+        "ap-usg-u3-055",
+        "ap-usg-u1-008",
+        "ap-usg-u4-071",
+        "ap-usg-u2-027",
+        "ap-usg-u5-084",
+        "ap-usg-u3-058",
+        "ap-usg-u1-011",
+        "ap-usg-u4-074",
+        "ap-usg-u2-030",
+        "ap-usg-u5-087",
+        "ap-usg-u3-061",
+        "ap-usg-u1-014",
+        "ap-usg-u4-165",
+        "ap-usg-u2-033",
+        "ap-usg-u5-090",
+        "ap-usg-u3-149",
+        "ap-usg-u1-017",
+        "ap-usg-u4-168",
+        "ap-usg-u2-036",
+        "ap-usg-u5-093",
+        "ap-usg-u3-152",
+        "ap-usg-u1-102",
+        "ap-usg-u4-171",
+        "ap-usg-u2-039",
+        "ap-usg-u5-096",
+        "ap-usg-u3-155",
+        "ap-usg-u1-105",
+        "ap-usg-u4-174",
+        "ap-usg-u2-042",
+        "ap-usg-u5-099"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "ap-us-government-foundation-pilot-form-internal-a",
+      "title": "Internal practice form A (AP U.S. Government and Politics Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-usg-u1-001",
+        "ap-usg-u4-064",
+        "ap-usg-u2-020",
+        "ap-usg-u5-077",
+        "ap-usg-u3-051",
+        "ap-usg-u1-004",
+        "ap-usg-u4-067",
+        "ap-usg-u2-023",
+        "ap-usg-u5-080",
+        "ap-usg-u3-054",
+        "ap-usg-u1-007",
+        "ap-usg-u4-070",
+        "ap-usg-u2-026",
+        "ap-usg-u5-083",
+        "ap-usg-u3-057",
+        "ap-usg-u1-010",
+        "ap-usg-u4-073",
+        "ap-usg-u2-029",
+        "ap-usg-u5-086",
+        "ap-usg-u3-060",
+        "ap-usg-u1-013",
+        "ap-usg-u4-164",
+        "ap-usg-u2-032",
+        "ap-usg-u5-089",
+        "ap-usg-u3-063",
+        "ap-usg-u1-016",
+        "ap-usg-u4-167",
+        "ap-usg-u2-035",
+        "ap-usg-u5-092",
+        "ap-usg-u3-151",
+        "ap-usg-u1-101",
+        "ap-usg-u4-170",
+        "ap-usg-u2-038",
+        "ap-usg-u5-095",
+        "ap-usg-u3-154",
+        "ap-usg-u1-104",
+        "ap-usg-u4-173",
+        "ap-usg-u2-041",
+        "ap-usg-u5-098",
+        "ap-usg-u3-157",
+        "ap-usg-u1-107",
+        "ap-usg-u4-238",
+        "ap-usg-u2-044",
+        "ap-usg-u5-176",
+        "ap-usg-u3-160",
+        "ap-usg-u1-110",
+        "ap-usg-u4-241",
+        "ap-usg-u2-047",
+        "ap-usg-u5-179",
+        "ap-usg-u3-163"
+      ],
+      "topicIds": [
+        "ap-usg-ch-01",
+        "ap-usg-ch-04",
+        "ap-usg-ch-02",
+        "ap-usg-ch-05",
+        "ap-usg-ch-03"
+      ],
+      "unitIds": [
+        "foundations-of-american-democracy",
+        "american-political-ideologies-and-beliefs",
+        "interactions-among-branches",
+        "political-participation",
+        "civil-liberties-and-civil-rights"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-form-internal-b",
+      "title": "Internal practice form B (AP U.S. Government and Politics Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-usg-u2-019",
+        "ap-usg-u5-076",
+        "ap-usg-u3-050",
+        "ap-usg-u1-003",
+        "ap-usg-u4-066",
+        "ap-usg-u2-022",
+        "ap-usg-u5-079",
+        "ap-usg-u3-053",
+        "ap-usg-u1-006",
+        "ap-usg-u4-069",
+        "ap-usg-u2-025",
+        "ap-usg-u5-082",
+        "ap-usg-u3-056",
+        "ap-usg-u1-009",
+        "ap-usg-u4-072",
+        "ap-usg-u2-028",
+        "ap-usg-u5-085",
+        "ap-usg-u3-059",
+        "ap-usg-u1-012",
+        "ap-usg-u4-075",
+        "ap-usg-u2-031",
+        "ap-usg-u5-088",
+        "ap-usg-u3-062",
+        "ap-usg-u1-015",
+        "ap-usg-u4-166",
+        "ap-usg-u2-034",
+        "ap-usg-u5-091",
+        "ap-usg-u3-150",
+        "ap-usg-u1-018",
+        "ap-usg-u4-169",
+        "ap-usg-u2-037",
+        "ap-usg-u5-094",
+        "ap-usg-u3-153",
+        "ap-usg-u1-103",
+        "ap-usg-u4-172",
+        "ap-usg-u2-040",
+        "ap-usg-u5-097",
+        "ap-usg-u3-156",
+        "ap-usg-u1-106",
+        "ap-usg-u4-175",
+        "ap-usg-u2-043",
+        "ap-usg-u5-100",
+        "ap-usg-u3-159",
+        "ap-usg-u1-109",
+        "ap-usg-u4-240",
+        "ap-usg-u2-046",
+        "ap-usg-u5-178",
+        "ap-usg-u3-162",
+        "ap-usg-u1-112",
+        "ap-usg-u4-243"
+      ],
+      "topicIds": [
+        "ap-usg-ch-02",
+        "ap-usg-ch-05",
+        "ap-usg-ch-03",
+        "ap-usg-ch-01",
+        "ap-usg-ch-04"
+      ],
+      "unitIds": [
+        "interactions-among-branches",
+        "political-participation",
+        "civil-liberties-and-civil-rights",
+        "foundations-of-american-democracy",
+        "american-political-ideologies-and-beliefs"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-us-government-foundation-pilot-form-internal-c",
+      "title": "Internal practice form C (AP U.S. Government and Politics Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-usg-u3-049",
+        "ap-usg-u1-002",
+        "ap-usg-u4-065",
+        "ap-usg-u2-021",
+        "ap-usg-u5-078",
+        "ap-usg-u3-052",
+        "ap-usg-u1-005",
+        "ap-usg-u4-068",
+        "ap-usg-u2-024",
+        "ap-usg-u5-081",
+        "ap-usg-u3-055",
+        "ap-usg-u1-008",
+        "ap-usg-u4-071",
+        "ap-usg-u2-027",
+        "ap-usg-u5-084",
+        "ap-usg-u3-058",
+        "ap-usg-u1-011",
+        "ap-usg-u4-074",
+        "ap-usg-u2-030",
+        "ap-usg-u5-087",
+        "ap-usg-u3-061",
+        "ap-usg-u1-014",
+        "ap-usg-u4-165",
+        "ap-usg-u2-033",
+        "ap-usg-u5-090",
+        "ap-usg-u3-149",
+        "ap-usg-u1-017",
+        "ap-usg-u4-168",
+        "ap-usg-u2-036",
+        "ap-usg-u5-093",
+        "ap-usg-u3-152",
+        "ap-usg-u1-102",
+        "ap-usg-u4-171",
+        "ap-usg-u2-039",
+        "ap-usg-u5-096",
+        "ap-usg-u3-155",
+        "ap-usg-u1-105",
+        "ap-usg-u4-174",
+        "ap-usg-u2-042",
+        "ap-usg-u5-099",
+        "ap-usg-u3-158",
+        "ap-usg-u1-108",
+        "ap-usg-u4-239",
+        "ap-usg-u2-045",
+        "ap-usg-u5-177",
+        "ap-usg-u3-161",
+        "ap-usg-u1-111",
+        "ap-usg-u4-242",
+        "ap-usg-u2-048",
+        "ap-usg-u5-180"
+      ],
+      "topicIds": [
+        "ap-usg-ch-03",
+        "ap-usg-ch-01",
+        "ap-usg-ch-04",
+        "ap-usg-ch-02",
+        "ap-usg-ch-05"
+      ],
+      "unitIds": [
+        "civil-liberties-and-civil-rights",
+        "foundations-of-american-democracy",
+        "american-political-ideologies-and-beliefs",
+        "interactions-among-branches",
+        "political-participation"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

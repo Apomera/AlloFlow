@@ -18,3 +18,18 @@ OCR-only local copy; readers open the complete designed edition at Book Dash.
 
 The importer fails closed if an edition page no longer exposes both its creator
 credits and source-file link.
+
+## Automated access (checked 2026-11-23)
+
+`bookdash.org/robots.txt` disallows automated access to `/book-source-files/`
+and to every `?view-file=`, `?download=` and `?download-folder=` link. Its CDN
+also answers scripted file downloads with HTTP 403. The importer therefore
+reads only the public WordPress API (`/wp-json/wp/v2/books`) and each
+edition's own book page. It records the source-file link for people to follow
+but never fetches it, and `assertCrawlAllowed` fails closed on a disallowed
+URL. Earlier versions listed work keys from the `/book-source-files/` index;
+that step was removed.
+
+The license allows hosting the complete books. Getting their text into AlloFlow
+needs either Book Dash's agreement to bulk access, or text taken from the page
+images that the public book pages show.

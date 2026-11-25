@@ -17,13 +17,21 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var t = this._registry[id]; if (!t||!t.render) return null; try{return t.render(ctx);}catch(e){console.error('[StemLab] Error rendering '+id,e);return null;} }
 };
 
-// WCAG 1.4.3 dark & high-contrast theme styling for Logic Lab
+// WCAG 1.4.3 high contrast (scoped to logicLab shell)
 (function() {
   if (typeof document === 'undefined' || !document.head || document.getElementById('allo-logiclab-hc-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-logiclab-hc-css';
+  st.textContent = ".theme-contrast [data-stem-tool-shell=\"logicLab\"] [style*=\"gradient(\"][style*=\"rgb(245, 243, 255)\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}";
+  document.head.appendChild(st);
+})();
+
+// WCAG 1.4.3 dark & high-contrast theme styling for Logic Lab
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-logiclab-theme-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-logiclab-theme-css';
   st.textContent =
-    '.theme-contrast [data-stem-tool-shell="logicLab"] [style*="gradient("][style*="rgb(245, 243, 255)"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}' +
     '.theme-contrast [data-logiclab-root="true"], .theme-contrast [data-logiclab-root="true"] .bg-white, .theme-contrast [data-logiclab-root="true"] .bg-violet-50, .theme-contrast [data-logiclab-root="true"] .bg-violet-100, .theme-contrast [data-logiclab-root="true"] .bg-slate-50, .theme-contrast [data-logiclab-root="true"] .bg-amber-50, .theme-contrast [data-logiclab-root="true"] .bg-emerald-50, .theme-contrast [data-logiclab-root="true"] .bg-red-50, .theme-contrast [data-logiclab-root="true"] .bg-purple-50 { background: #000000 !important; color: #ffff00 !important; border-color: #ffff00 !important; }' +
     '.theme-contrast [data-logiclab-root="true"] h2, .theme-contrast [data-logiclab-root="true"] h3, .theme-contrast [data-logiclab-root="true"] h4, .theme-contrast [data-logiclab-root="true"] p, .theme-contrast [data-logiclab-root="true"] span, .theme-contrast [data-logiclab-root="true"] td, .theme-contrast [data-logiclab-root="true"] th, .theme-contrast [data-logiclab-root="true"] label, .theme-contrast [data-logiclab-root="true"] code { color: #ffff00 !important; }' +
     '.theme-contrast [data-logiclab-root="true"] [aria-selected="true"] { background: #00ff00 !important; color: #000000 !important; border-color: #00ff00 !important; }' +
@@ -104,12 +112,792 @@ window.StemLab = window.StemLab || {
   })();
 
 
-  // ── Audio (auto-injected) ──
+  // ── Audio (mute-aware: isolated probe so throwing __alloIsGlobalMuted never bypasses _alloGlobalMute) ──
   var _logiclAC = null;
   var _logiclMuted = false;
+  function isLogicGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (e) {}
+    if (typeof window !== 'undefined' && window._alloGlobalMute) return true;
+    return false;
+  }
   function getLogiclAC() { if (!_logiclAC) { try { _logiclAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_logiclAC && _logiclAC.state === "suspended") { try { _logiclAC.resume(); } catch(e) {} } return _logiclAC; }
-  function logiclTone(f,d,tp,v) { if (_logiclMuted || (typeof window !== 'undefined' && window.AlloGlobalMuted)) return; var ac = getLogiclAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function logiclTone(f,d,tp,v) { if (_logiclMuted || isLogicGlobalMuted()) return; var ac = getLogiclAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxLogiclClick() { logiclTone(600, 0.03, "sine", 0.04); }
+
+  // ── Pure Deterministic Logic Lab Engine (zero React/DOM; exposed as _engine & window.LogicLabPure) ──
+  var LOGICLAB_ENGINE = (function() {
+    var E_CONN = {
+      '∧': { sym: '∧', eng: 'AND', fn: function(a, b) { return a && b; }, prec: 3 },
+      '∨': { sym: '∨', eng: 'OR', fn: function(a, b) { return a || b; }, prec: 2 },
+      '¬': { sym: '¬', eng: 'NOT', fn: function(a) { return !a; }, prec: 5, unary: true },
+      '→': { sym: '→', eng: 'IF...THEN', fn: function(a, b) { return !a || b; }, prec: 1 },
+      '↔': { sym: '↔', eng: 'IF AND ONLY IF', fn: function(a, b) { return a === b; }, prec: 0 },
+      '⊕': { sym: '⊕', eng: 'XOR', fn: function(a, b) { return a !== b; }, prec: 2 }
+    };
+
+    function tokenize(s) {
+      var str = String(s || '');
+      var tokens = [];
+      for (var i = 0; i < str.length; i++) {
+        var ch = str[i];
+        if (/\s/.test(ch)) continue;
+        tokens.push(ch);
+      }
+      return tokens;
+    }
+
+    function parseUnary(tokens, pos) {
+      if (tokens[pos] === '¬') {
+        var inner = parseUnary(tokens, pos + 1);
+        return { node: { type: 'not', child: inner.node }, pos: inner.pos };
+      }
+      if (tokens[pos] === '(') {
+        var inner2 = parseExpr(tokens, pos + 1, 0);
+        if (tokens[inner2.pos] !== ')') throw new Error('unclosed (');
+        return { node: inner2.node, pos: inner2.pos + 1 };
+      }
+      if (!/^[A-Z]$/.test(tokens[pos] || '')) throw new Error('missing operand');
+      return { node: { type: 'var', name: tokens[pos] }, pos: pos + 1 };
+    }
+
+    function parseExpr(tokens, pos, minPrec) {
+      minPrec = minPrec || 0;
+      var left = parseUnary(tokens, pos);
+      while (left.pos < tokens.length) {
+        var tok = tokens[left.pos];
+        if (!tok || !E_CONN[tok] || E_CONN[tok].unary) break;
+        var prec = E_CONN[tok].prec;
+        if (prec < minPrec) break;
+        var op = tok;
+        var nextMin = op === '→' ? prec : prec + 1;
+        var right = parseExpr(tokens, left.pos + 1, nextMin);
+        left = { node: { type: 'bin', op: op, left: left.node, right: right.node }, pos: right.pos };
+      }
+      return left;
+    }
+
+    function evalNode(node, env) {
+      if (!node) return false;
+      if (node.type === 'var') return !!env[node.name];
+      if (node.type === 'not') return !evalNode(node.child, env);
+      if (node.type === 'bin') return E_CONN[node.op].fn(evalNode(node.left, env), evalNode(node.right, env));
+      return false;
+    }
+
+    function getVars(node) {
+      if (!node) return [];
+      if (node.type === 'var') return [node.name];
+      if (node.type === 'not') return getVars(node.child);
+      if (node.type === 'bin') return getVars(node.left).concat(getVars(node.right));
+      return [];
+    }
+
+    function uniqueVars(arr) {
+      var seen = {};
+      var out = [];
+      for (var i = 0; i < arr.length; i++) {
+        if (!seen[arr[i]]) { seen[arr[i]] = true; out.push(arr[i]); }
+      }
+      return out.sort();
+    }
+
+    function parseFormula(exprStr) {
+      try {
+        var tokens = tokenize(exprStr);
+        if (!tokens.length) return null;
+        var parsed = parseExpr(tokens, 0, 0);
+        if (parsed.pos !== tokens.length) return null;
+        return { node: parsed.node, vars: uniqueVars(getVars(parsed.node)), tokens: tokens };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function genTable(exprStr) {
+      var parsed = parseFormula(exprStr);
+      if (!parsed || parsed.vars.length > 8) return null;
+      var vars = parsed.vars;
+      var rows = [];
+      var n = Math.pow(2, vars.length);
+      for (var i = 0; i < n; i++) {
+        var env = {};
+        for (var v = 0; v < vars.length; v++) env[vars[v]] = !!(i & (1 << (vars.length - 1 - v)));
+        rows.push({ env: env, result: evalNode(parsed.node, env) });
+      }
+      var allTrue = rows.every(function(r) { return r.result; });
+      var allFalse = rows.every(function(r) { return !r.result; });
+      return { vars: vars, rows: rows, type: allTrue ? 'tautology' : allFalse ? 'contradiction' : 'contingency' };
+    }
+
+    function evalGate(type, a, b) {
+      if (type === 'AND') return !!(a && b);
+      if (type === 'OR') return !!(a || b);
+      if (type === 'NOT') return !a;
+      if (type === 'NAND') return !(a && b);
+      if (type === 'NOR') return !(a || b);
+      if (type === 'XOR') return Boolean(a) !== Boolean(b);
+      if (type === 'XNOR') return Boolean(a) === Boolean(b);
+      return false;
+    }
+
+    function nodeToText(node, top) {
+      if (!node) return '';
+      if (node.type === 'var') return node.name;
+      if (node.type === 'not') return '¬' + nodeToText(node.child, false);
+      var s = nodeToText(node.left, false) + ' ' + node.op + ' ' + nodeToText(node.right, false);
+      return top ? s : '(' + s + ')';
+    }
+
+    function nodeToPlain(node) {
+      if (!node) return '';
+      if (node.type === 'var') return node.name;
+      if (node.type === 'not') return 'not ' + (node.child.type === 'bin' ? '(' + nodeToPlain(node.child) + ')' : nodeToPlain(node.child));
+      if (node.type === 'bin') {
+        var l = nodeToPlain(node.left);
+        var r = nodeToPlain(node.right);
+        if (node.op === '→') return 'if ' + l + ', then ' + r;
+        if (node.op === '↔') return l + ' if and only if ' + r;
+        if (node.op === '∧') return l + ' and ' + r;
+        if (node.op === '∨') return l + ' or ' + r;
+        if (node.op === '⊕') return 'either ' + l + ' or ' + r + ' (not both)';
+      }
+      return '';
+    }
+
+    function fmtRow(row, vars) {
+      if (!row || !row.env) return '';
+      var keys = Array.isArray(vars) && vars.length ? vars : Object.keys(row.env).sort();
+      return keys.map(function(k) { return k + '=' + (row.env[k] ? 'T' : 'F'); }).join(', ');
+    }
+
+    function areEquivalent(exprA, exprB) {
+      var pa = parseFormula(exprA);
+      var pb = parseFormula(exprB);
+      if (!pa || !pb) return false;
+      var vars = uniqueVars(pa.vars.concat(pb.vars));
+      if (vars.length > 8) return false;
+      var n = Math.pow(2, vars.length);
+      for (var i = 0; i < n; i++) {
+        var env = {};
+        for (var v = 0; v < vars.length; v++) env[vars[v]] = !!(i & (1 << (vars.length - 1 - v)));
+        if (evalNode(pa.node, env) !== evalNode(pb.node, env)) return false;
+      }
+      return true;
+    }
+
+    function identifyEquivalences(exprStr, parsed) {
+      var found = [];
+      if (!parsed || !parsed.vars || parsed.vars.length === 0 || parsed.vars.length > 3) return found;
+      var v0 = parsed.vars[0] || 'P';
+      var v1 = parsed.vars[1] || 'Q';
+      var v2 = parsed.vars[2] || 'R';
+      var candidates = [];
+      if (parsed.vars.length === 1) {
+        candidates = [
+          { ref: v0 + ' ∨ ¬' + v0, note: 'Law of Excluded Middle (' + v0 + ' ∨ ¬' + v0 + ' is always true)' },
+          { ref: v0 + ' ∧ ¬' + v0, note: 'Law of Non-Contradiction (' + v0 + ' ∧ ¬' + v0 + ' is always false)' },
+          { ref: v0, note: 'Simplifies to ' + v0 + ' (e.g., Double Negation ¬¬' + v0 + ' ≡ ' + v0 + ')' }
+        ];
+      } else if (parsed.vars.length === 2) {
+        candidates = [
+          { ref: v0 + ' → ' + v1, note: 'Material Implication & Contrapositive: ' + v0 + ' → ' + v1 + ' ≡ ¬' + v0 + ' ∨ ' + v1 + ' ≡ ¬' + v1 + ' → ¬' + v0 },
+          { ref: '¬(' + v0 + ' ∧ ' + v1 + ')', note: "De Morgan's Law 1: ¬(" + v0 + ' ∧ ' + v1 + ') ≡ ¬' + v0 + ' ∨ ¬' + v1 + ' (NAND)' },
+          { ref: '¬(' + v0 + ' ∨ ' + v1 + ')', note: "De Morgan's Law 2: ¬(" + v0 + ' ∨ ' + v1 + ') ≡ ¬' + v0 + ' ∧ ¬' + v1 + ' (NOR)' },
+          { ref: v0 + ' ↔ ' + v1, note: 'Biconditional Equivalence: ' + v0 + ' ↔ ' + v1 + ' ≡ (' + v0 + ' → ' + v1 + ') ∧ (' + v1 + ' → ' + v0 + ')' },
+          { ref: v0 + ' ⊕ ' + v1, note: 'Exclusive OR (XOR): ' + v0 + ' ⊕ ' + v1 + ' ≡ (' + v0 + ' ∨ ' + v1 + ') ∧ ¬(' + v0 + ' ∧ ' + v1 + ')' },
+          { ref: '(' + v0 + ' ∧ (' + v0 + ' → ' + v1 + ')) → ' + v1, note: 'Modus Ponens Tautology: whenever ' + v0 + ' and ' + v0 + ' → ' + v1 + ' hold, ' + v1 + ' must hold' }
+        ];
+      } else if (parsed.vars.length === 3) {
+        candidates = [
+          { ref: v0 + ' ∧ (' + v1 + ' ∨ ' + v2 + ')', note: 'Distributive Law: ' + v0 + ' ∧ (' + v1 + ' ∨ ' + v2 + ') ≡ (' + v0 + ' ∧ ' + v1 + ') ∨ (' + v0 + ' ∧ ' + v2 + ')' },
+          { ref: v0 + ' ∨ (' + v1 + ' ∧ ' + v2 + ')', note: 'Distributive Law: ' + v0 + ' ∨ (' + v1 + ' ∧ ' + v2 + ') ≡ (' + v0 + ' ∨ ' + v1 + ') ∧ (' + v0 + ' ∨ ' + v2 + ')' },
+          { ref: v0 + ' → (' + v1 + ' → ' + v2 + ')', note: 'Exportation Law: ' + v0 + ' → (' + v1 + ' → ' + v2 + ') ≡ (' + v0 + ' ∧ ' + v1 + ') → ' + v2 }
+        ];
+      }
+      for (var i = 0; i < candidates.length; i++) {
+        if (areEquivalent(exprStr, candidates[i].ref)) found.push(candidates[i].note);
+      }
+      return found;
+    }
+
+    function explainTruthTableOffline(exprStr, tableArg) {
+      var cleanExpr = String(exprStr || '').trim();
+      var parsed = parseFormula(cleanExpr);
+      if (parsed && parsed.vars.length > 8) {
+        var overMsg = 'This formula uses ' + parsed.vars.length + ' variables (over the 8-variable / 256-row limit). Remove extra letters to inspect every row.';
+        return { valid: false, reason: 'too_many_vars', varCount: parsed.vars.length, expr: cleanExpr, summary: overMsg, bullets: [overMsg] };
+      }
+      var tbl = (tableArg && Array.isArray(tableArg.rows) && Array.isArray(tableArg.vars)) ? tableArg : genTable(cleanExpr);
+      if (!tbl || !parsed) {
+        var badMsg = 'Enter a complete propositional formula using uppercase letters (P, Q, R, S), parentheses, and connectives (¬, ∧, ∨, →, ↔, ⊕).';
+        return { valid: false, reason: 'invalid_syntax', expr: cleanExpr, summary: badMsg, bullets: [badMsg] };
+      }
+      var rowCount = tbl.rows.length;
+      var trueRows = tbl.rows.filter(function(r) { return r.result; });
+      var falseRows = tbl.rows.filter(function(r) { return !r.result; });
+      var trueCount = trueRows.length;
+      var falseCount = falseRows.length;
+      var truePct = rowCount ? Math.round((trueCount / rowCount) * 100) : 0;
+      var plain = nodeToPlain(parsed.node);
+      var equivs = identifyEquivalences(cleanExpr, parsed);
+      var counterexample = tbl.type === 'tautology'
+        ? 'No counterexample row exists: all ' + rowCount + ' assignments evaluate to TRUE.'
+        : tbl.type === 'contradiction'
+          ? 'Every row is a counterexample: all ' + rowCount + ' assignments evaluate to FALSE.'
+          : 'Counterexample (FALSE): ' + fmtRow(falseRows[0], tbl.vars) + '. Witness (TRUE): ' + fmtRow(trueRows[0], tbl.vars) + '.';
+
+      var vacuousCount = 0;
+      var vacuousNote = '';
+      if (parsed.node.type === 'bin' && parsed.node.op === '→') {
+        for (var vi = 0; vi < tbl.rows.length; vi++) {
+          if (!evalNode(parsed.node.left, tbl.rows[vi].env)) vacuousCount++;
+        }
+        if (vacuousCount > 0) {
+          vacuousNote = 'Material implication note: ' + vacuousCount + ' of ' + rowCount + ' rows have a FALSE antecedent, so the implication is vacuously TRUE there (F → T = T and F → F = T; only T → F is FALSE).';
+        }
+      } else if (cleanExpr.indexOf('→') !== -1) {
+        vacuousNote = 'Implication reminder: A → B is only FALSE when A is TRUE and B is FALSE (so F → T = T and F → F = T).';
+      }
+
+      var chainedArrows = (cleanExpr.match(/→/g) || []).length >= 2;
+      var precedenceNote = chainedArrows
+        ? 'Connective precedence: ¬ > ∧ > ∨/⊕ > → > ↔, and chained arrows group right-to-left (P → Q → R reads as P → (Q → R)).'
+        : 'Connective precedence: ¬ > ∧ > ∨/⊕ > → > ↔ — grouped as ' + nodeToText(parsed.node, true) + '.';
+
+      var typeSentence = tbl.type === 'tautology'
+        ? cleanExpr + ' ("' + plain + '") is a tautology: it evaluates to TRUE in all ' + rowCount + ' rows.'
+        : tbl.type === 'contradiction'
+          ? cleanExpr + ' ("' + plain + '") is a contradiction: it evaluates to FALSE in all ' + rowCount + ' rows.'
+          : cleanExpr + ' ("' + plain + '") is a contingency: it is TRUE in ' + trueCount + '/' + rowCount + ' rows (' + truePct + '%) and FALSE in ' + falseCount + ' row' + (falseCount === 1 ? '' : 's') + '.';
+
+      var bullets = [typeSentence, counterexample];
+      if (equivs.length) bullets.push('Key equivalence: ' + equivs[0] + '.');
+      if (vacuousNote) bullets.push(vacuousNote);
+      bullets.push(precedenceNote);
+
+      var summaryParts = [typeSentence, counterexample];
+      if (equivs.length) summaryParts.push(equivs[0] + '.');
+      else if (vacuousNote) summaryParts.push(vacuousNote);
+
+      return {
+        valid: true,
+        expr: cleanExpr,
+        type: tbl.type,
+        rowCount: rowCount,
+        trueCount: trueCount,
+        falseCount: falseCount,
+        truePct: truePct,
+        plainEnglish: plain,
+        counterexample: counterexample,
+        equivalences: equivs,
+        vacuousCount: vacuousCount,
+        vacuousNote: vacuousNote,
+        precedenceNote: precedenceNote,
+        bullets: bullets,
+        summary: summaryParts.join(' ')
+      };
+    }
+
+    function normalizeSeed(seed) {
+      if (typeof seed === 'number' && isFinite(seed)) return Math.abs(Math.floor(seed));
+      var str = String(seed == null ? 1 : seed);
+      var h = 2166136261;
+      for (var i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h * 16777619) >>> 0;
+      }
+      return h;
+    }
+
+    function remapVars(formula, map) {
+      return String(formula).replace(/[PQRS]/g, function(ch) { return map[ch] || ch; });
+    }
+
+    var OFFLINE_PROOF_TEMPLATES = [
+      { level: 1, title: 'Direct Trigger', premises: ['P → Q', 'P'], conclusion: 'Q', rulesNeeded: ['mp'], hint: 'Apply Modus Ponens to P → Q and P.', context: 'When a condition triggers, its consequence follows immediately.' },
+      { level: 1, title: 'Backwards Elimination', premises: ['P → Q', '¬Q'], conclusion: '¬P', rulesNeeded: ['mt'], hint: 'Use Modus Tollens on P → Q and ¬Q to rule out P.', context: 'Observing that the consequence failed rules out its trigger.' },
+      { level: 2, title: 'Two-Way Choice', premises: ['P ∨ Q', '¬Q'], conclusion: 'P', rulesNeeded: ['ds'], hint: 'Apply Disjunctive Syllogism to P ∨ Q and ¬Q.', context: 'Eliminating one branch of an OR forces the remaining branch.' },
+      { level: 2, title: 'Unpack & Fire', premises: ['P ∧ Q', 'P → R'], conclusion: 'R', rulesNeeded: ['simp', 'mp'], hint: 'Use Simplification on P ∧ Q to extract P, then Modus Ponens with P → R.', context: 'Extract the needed fact from a bundle before triggering the rule.' },
+      { level: 2, title: 'Domino Chain', premises: ['P → Q', 'Q → R', 'P'], conclusion: 'R', rulesNeeded: ['hs', 'mp'], hint: 'Chain P → Q and Q → R with Hypothetical Syllogism, then apply Modus Ponens with P.', context: 'Follow a two-step causal chain from start to finish.' },
+      { level: 3, title: 'Bundle & Unlock', premises: ['(P ∧ Q) → R', 'P', 'Q'], conclusion: 'R', rulesNeeded: ['conj', 'mp'], hint: 'Combine P and Q with Conjunction, then apply Modus Ponens to (P ∧ Q) → R.', context: 'Both safeguards must be active together to unlock the outcome.' },
+      { level: 3, title: 'De Morgan Escape', premises: ['¬(P ∨ Q)', '¬P → R'], conclusion: 'R', rulesNeeded: ['demorgan', 'simp', 'mp'], hint: "Apply De Morgan's to ¬(P ∨ Q) to get ¬P ∧ ¬Q, Simplify to ¬P, then Modus Ponens.", context: 'Ruling out an OR rules out both options individually.' },
+      { level: 3, title: 'Contrapositive Flip', premises: ['P → Q', '¬Q → R'], conclusion: '¬Q → ¬P', rulesNeeded: ['contra'], hint: 'Apply Contrapositive to P → Q to flip and negate both sides.', context: 'Every conditional carries an equivalent contrapositive form.' },
+      { level: 4, title: 'Reverse Domino', premises: ['P → Q', 'Q → R', '¬R'], conclusion: '¬P', rulesNeeded: ['hs', 'mt'], hint: 'Chain P → Q and Q → R with Hypothetical Syllogism, then apply Modus Tollens with ¬R.', context: 'When the final stage never happened, trace backward to rule out the start.' },
+      { level: 4, title: 'Rule Out & Switch', premises: ['P → Q', '¬Q', 'P ∨ R'], conclusion: 'R', rulesNeeded: ['mt', 'ds'], hint: 'Use Modus Tollens on P → Q and ¬Q to derive ¬P, then Disjunctive Syllogism on P ∨ R.', context: 'Ruling out the first candidate forces the backup explanation.' },
+      { level: 4, title: 'Double-Check Clearance', premises: ['¬¬P', 'P → Q', 'Q → R'], conclusion: 'R', rulesNeeded: ['dn', 'mp'], hint: 'Use Double Negation on ¬¬P to obtain P, then step through Modus Ponens twice.', context: 'Clearing a double negation exposes the direct premise underneath.' },
+      { level: 5, title: 'De Morgan & Disjunction', premises: ['¬(P ∧ Q)', '¬¬P'], conclusion: '¬Q', rulesNeeded: ['demorgan', 'ds'], hint: "Use De Morgan's on ¬(P ∧ Q) to get ¬P ∨ ¬Q, then Disjunctive Syllogism with ¬¬P.", context: 'Knowing "not both" plus confirming one forces the other to be false.' }
+    ];
+
+    var VAR_ROTATIONS = [
+      { P: 'P', Q: 'Q', R: 'R', S: 'S' },
+      { P: 'Q', Q: 'R', R: 'S', S: 'P' },
+      { P: 'R', Q: 'P', R: 'Q', S: 'S' }
+    ];
+
+    function generateOfflineProofChallenge(seed, topic) {
+      var s = normalizeSeed(seed);
+      var tpl = OFFLINE_PROOF_TEMPLATES[s % OFFLINE_PROOF_TEMPLATES.length];
+      var rot = VAR_ROTATIONS[Math.floor(s / OFFLINE_PROOF_TEMPLATES.length) % VAR_ROTATIONS.length];
+      var cleanTopic = typeof topic === 'string' ? topic.trim().slice(0, 40) : '';
+      return {
+        level: tpl.level,
+        title: tpl.title,
+        premises: tpl.premises.map(function(p) { return remapVars(p, rot); }),
+        conclusion: remapVars(tpl.conclusion, rot),
+        rulesNeeded: tpl.rulesNeeded.slice(),
+        hint: remapVars(tpl.hint, rot),
+        context: cleanTopic ? ('Topic (' + cleanTopic + '): ' + tpl.context) : tpl.context,
+        source: 'offline',
+        seed: s
+      };
+    }
+
+    var OFFLINE_FALLACY_BANK = [
+      { arg: 'If the battery is dead, the tablet will not turn on. The tablet will not turn on. Therefore, the battery is dead.', valid: false, name: 'Affirming the Consequent', formal: 'P→Q, Q ∴ P ✗', pattern: 'affirming_consequent', explain: 'The tablet might be off because the power button is broken or the screen failed, not necessarily a dead battery.', counterexample: 'P=F (battery charged), Q=T (power button broken → will not turn on).' },
+      { arg: 'If the sensor detects smoke, the sprinkler activates. The sprinkler did not activate. Therefore, the sensor did not detect smoke.', valid: true, name: 'Modus Tollens', formal: 'P→Q, ¬Q ∴ ¬P ✓', pattern: 'modus_tollens', explain: 'Because smoke guarantees activation, the absence of activation validly rules out smoke detection.' },
+      { arg: 'If you join the robotics club, you learn to solder. Priya did not join the robotics club. Therefore, Priya did not learn to solder.', valid: false, name: 'Denying the Antecedent', formal: 'P→Q, ¬P ∴ ¬Q ✗', pattern: 'denying_antecedent', explain: 'Priya could have learned to solder at home, in an electronics class, or at a makerspace.', counterexample: 'P=F (not in club), Q=T (learned soldering elsewhere).' },
+      { arg: 'Either the bridge is open or the ferry is running. The bridge is not open. Therefore, the ferry is running.', valid: true, name: 'Disjunctive Syllogism', formal: 'P∨Q, ¬P ∴ Q ✓', pattern: 'disjunctive_syllogism', explain: 'Given that at least one of the two routes is active, ruling out the bridge guarantees the ferry is running.' },
+      { arg: 'The team will win if they score in overtime OR if their goalie blocks the kick. They scored in overtime. Therefore, the goalie did not block the kick.', valid: false, name: 'False Exclusive Disjunction', formal: 'P∨Q, P ∴ ¬Q ✗', pattern: 'false_exclusive_or', explain: 'Logical OR is inclusive: both events could happen in the same game.', counterexample: 'P=T (scored in overtime), Q=T (goalie also blocked a kick).' },
+      { arg: 'If a file is encrypted, you need the key to read it. If you need the key to read it, plain-text search fails. Therefore, if a file is encrypted, plain-text search fails.', valid: true, name: 'Hypothetical Syllogism', formal: 'P→Q, Q→R ∴ P→R ✓', pattern: 'hypothetical_syllogism', explain: 'Chaining two valid conditionals P→Q and Q→R validly produces P→R.' },
+      { arg: 'If the oven is preheated to 400°F, the crust turns golden. The crust turned golden. Therefore, the oven was preheated to 400°F.', valid: false, name: 'Affirming the Consequent', formal: 'P→Q, Q ∴ P ✗', pattern: 'affirming_consequent', explain: 'A broiler, a hotter oven, or a longer bake time could also brown the crust.', counterexample: 'P=F (baked at 375°F longer), Q=T (crust still turned golden).' },
+      { arg: 'If the server restarts, active sessions disconnect. The server restarted. Therefore, active sessions disconnected.', valid: true, name: 'Modus Ponens', formal: 'P→Q, P ∴ Q ✓', pattern: 'modus_ponens', explain: 'Affirming the antecedent P in P→Q validly yields the consequent Q.' },
+      { arg: 'If a planet has liquid surface water, it orbits in the habitable zone. Planet K does not have liquid surface water. Therefore, Planet K does not orbit in the habitable zone.', valid: false, name: 'Denying the Antecedent', formal: 'P→Q, ¬P ∴ ¬Q ✗', pattern: 'denying_antecedent', explain: 'A rocky planet can sit in the habitable zone yet still be dry if it lost its atmosphere.', counterexample: 'P=F (no surface water), Q=T (inside habitable zone).' },
+      { arg: 'Either the password is expired or the account is locked. The account is not locked. Therefore, the password is expired.', valid: true, name: 'Disjunctive Syllogism', formal: 'P∨Q, ¬Q ∴ P ✓', pattern: 'disjunctive_syllogism', explain: 'Eliminating the second disjunct (¬Q) validly proves the first disjunct (P).' },
+      { arg: 'It is NOT the case that both the Wi-Fi and Bluetooth are on. Therefore, BOTH the Wi-Fi and Bluetooth are off.', valid: false, name: 'De Morgan Negation Error', formal: '¬(P∧Q) ∴ ¬P∧¬Q ✗', pattern: 'demorgan_error', explain: "By De Morgan's Law, ¬(P∧Q) means ¬P∨¬Q (at least one is off) — one radio can still be on while the other is off.", counterexample: 'P=T (Wi-Fi on), Q=F (Bluetooth off): ¬(P∧Q) is TRUE, yet ¬P∧¬Q is FALSE.' },
+      { arg: 'If the telescope dome is closed, no sky photos are saved. Sky photos were saved tonight. Therefore, the telescope dome was not closed.', valid: true, name: 'Modus Tollens', formal: 'P→¬Q, Q ∴ ¬P ✓', pattern: 'modus_tollens', explain: 'Saving photos contradicts "no sky photos are saved," so the dome could not have been closed.' }
+    ];
+
+    function generateOfflineFallacy(seed, topic) {
+      var s = normalizeSeed(seed);
+      var item = OFFLINE_FALLACY_BANK[s % OFFLINE_FALLACY_BANK.length];
+      var cleanTopic = typeof topic === 'string' ? topic.trim().slice(0, 40) : '';
+      return {
+        arg: cleanTopic ? ('[' + cleanTopic + ' practice] ' + item.arg) : item.arg,
+        valid: item.valid,
+        name: item.name,
+        formal: item.formal,
+        pattern: item.pattern,
+        explain: item.explain,
+        counterexample: item.counterexample || '',
+        source: 'offline',
+        seed: s
+      };
+    }
+
+    var OFFLINE_DETECTIVE_BANK = [
+      {
+        scenario: 'Lab sensor log:\n1. If the freezer door stays open, the temperature alarm beeps.\n2. If the temperature alarm beeps, the lab manager gets a text.\n3. The lab manager did NOT get a text.',
+        question: 'Did the freezer door stay open?',
+        answer: false,
+        rule: 'HS + Modus Tollens',
+        formal: 'D→A, A→T, ¬T ∴ ¬D',
+        misconceptionTag: 'modus_tollens',
+        explain: 'Chain D→A and A→T to get D→T. Because ¬T is true, Modus Tollens proves ¬D (the door did not stay open).'
+      },
+      {
+        scenario: 'School bus mystery:\n1. Either Route 4 or Route 7 picks up Oak Street.\n2. Route 4 is cancelled for roadwork today.',
+        question: 'Does Route 7 pick up Oak Street today?',
+        answer: true,
+        rule: 'Disjunctive Syllogism',
+        formal: 'R4∨R7, ¬R4 ∴ R7',
+        misconceptionTag: 'disjunctive_syllogism',
+        explain: 'With R4∨R7 and ¬R4, Disjunctive Syllogism guarantees R7.'
+      },
+      {
+        scenario: 'Museum security:\n1. If the skylight opens, the hallway motion sensor triggers.\n2. The hallway motion sensor triggered at midnight.',
+        question: 'Did the skylight open?',
+        answer: 'unknown',
+        rule: 'No rule applies (Affirming the Consequent trap)',
+        formal: 'S→M, M ⊬ S',
+        misconceptionTag: 'affirming_consequent',
+        explain: 'Clue 1 only says S→M. Observing M does NOT prove S — a guard, a cat, or a loose banner could also trigger the motion sensor.'
+      },
+      {
+        scenario: 'Garden greenhouse:\n1. If the soil is dry, the drip pump turns on.\n2. The soil is NOT dry.',
+        question: 'Did the drip pump stay off?',
+        answer: 'unknown',
+        rule: 'No rule applies (Denying the Antecedent trap)',
+        formal: 'D→P, ¬D ⊬ ¬P',
+        misconceptionTag: 'denying_antecedent',
+        explain: 'Dry soil guarantees the pump turns on, but someone could also run the pump manually on a timer even when the soil is damp.'
+      },
+      {
+        scenario: 'Code deployment check:\n1. If all unit tests pass and review is approved, the release ships.\n2. All unit tests passed.\n3. Review is approved.',
+        question: 'Does the release ship?',
+        answer: true,
+        rule: 'Conjunction + Modus Ponens',
+        formal: '(U∧R)→S, U, R ∴ S',
+        misconceptionTag: 'modus_ponens',
+        explain: 'Combine U and R with Conjunction to get U∧R, then Modus Ponens with (U∧R)→S proves S.'
+      },
+      {
+        scenario: 'Library checkout:\n1. If Maya borrowed the atlas, it is missing from Shelf 3.\n2. The atlas is still sitting on Shelf 3.',
+        question: 'Did Maya borrow the atlas?',
+        answer: false,
+        rule: 'Modus Tollens',
+        formal: 'B→M, ¬M ∴ ¬B',
+        misconceptionTag: 'modus_tollens',
+        explain: 'Since B→M and ¬M (not missing), Modus Tollens proves ¬B: Maya did not borrow the atlas.'
+      },
+      {
+        scenario: 'Art show judging:\n1. A poster qualifies if it uses recycled paper OR natural dyes.\n2. Leo’s poster uses recycled paper.',
+        question: 'Does Leo’s poster definitely avoid natural dyes?',
+        answer: 'unknown',
+        rule: 'No rule applies (Inclusive OR trap)',
+        formal: 'R∨N, R ⊬ ¬N',
+        misconceptionTag: 'false_exclusive_or',
+        explain: 'Logical OR is inclusive: using recycled paper does not rule out also using natural dyes.'
+      },
+      {
+        scenario: 'Robotics rover:\n1. If the solar panel unfolds, the battery charges.\n2. If the battery charges, the rover sends a beacon.\n3. The solar panel unfolded.',
+        question: 'Does the rover send a beacon?',
+        answer: true,
+        rule: 'HS + Modus Ponens',
+        formal: 'U→C, C→B, U ∴ B',
+        misconceptionTag: 'hypothetical_syllogism',
+        explain: 'Chain U→C and C→B to get U→B, then apply Modus Ponens with U to derive B.'
+      },
+      {
+        scenario: 'Chemistry vial label:\n1. If the vial contains acid, litmus paper turns red.\n2. Litmus paper did NOT turn red.',
+        question: 'Does the vial contain acid?',
+        answer: false,
+        rule: 'Modus Tollens',
+        formal: 'A→R, ¬R ∴ ¬A',
+        misconceptionTag: 'modus_tollens',
+        explain: 'Acid implies red litmus (A→R). Seeing ¬R proves ¬A by Modus Tollens.'
+      }
+    ];
+
+    function generateOfflineDetective(seed, topic) {
+      var s = normalizeSeed(seed);
+      var item = OFFLINE_DETECTIVE_BANK[s % OFFLINE_DETECTIVE_BANK.length];
+      var cleanTopic = typeof topic === 'string' ? topic.trim().slice(0, 40) : '';
+      return {
+        scenario: cleanTopic ? ('[' + cleanTopic + ' case] ' + item.scenario) : item.scenario,
+        question: item.question,
+        answer: item.answer,
+        rule: item.rule,
+        formal: item.formal,
+        misconceptionTag: item.misconceptionTag,
+        explain: item.explain,
+        source: 'offline',
+        seed: s
+      };
+    }
+
+    function pickPredictTarget(exprStr, tableArg) {
+      var parsed = parseFormula(exprStr);
+      var tbl = (tableArg && Array.isArray(tableArg.rows) && Array.isArray(tableArg.vars)) ? tableArg : genTable(exprStr);
+      if (!parsed || !tbl || !tbl.rows.length) return null;
+      var chosenIdx = 0;
+      var tag = 'general';
+
+      // 1. Prefer vacuous implication row (antecedent=F, consequent=T) to confront F→T=T misconception
+      if (parsed.node.type === 'bin' && parsed.node.op === '→') {
+        for (var i = 0; i < tbl.rows.length; i++) {
+          if (!evalNode(parsed.node.left, tbl.rows[i].env) && evalNode(parsed.node.right, tbl.rows[i].env)) {
+            chosenIdx = i;
+            tag = 'vacuous_implication';
+            break;
+          }
+        }
+        if (tag === 'general') {
+          for (var j = 0; j < tbl.rows.length; j++) {
+            if (!evalNode(parsed.node.left, tbl.rows[j].env)) {
+              chosenIdx = j;
+              tag = 'vacuous_implication';
+              break;
+            }
+          }
+        }
+      } else if (parsed.node.type === 'bin' && parsed.node.op === '↔') {
+        chosenIdx = 0; // F ↔ F = T is the classic biconditional surprise
+        tag = 'biconditional';
+      } else if (parsed.node.type === 'bin' && (parsed.node.op === '⊕' || parsed.node.op === '∨')) {
+        chosenIdx = tbl.rows.length - 1; // T,T differentiates inclusive OR (T) vs XOR (F)
+        tag = parsed.node.op === '⊕' ? 'xor' : 'inclusive_or';
+      } else if (parsed.node.type === 'not' && parsed.node.child && parsed.node.child.type === 'bin') {
+        chosenIdx = tbl.rows.length > 1 ? 1 : 0; // F,T differentiates ¬(P∧Q) from ¬P∧¬Q
+        tag = 'demorgan_scope';
+      } else {
+        chosenIdx = Math.min(tbl.rows.length - 1, tbl.rows.length > 2 ? 1 : 0);
+      }
+
+      // Check for precedence sensitivity (e.g., P ∨ Q ∧ R or ¬P ∧ Q)
+      var raw = String(exprStr || '');
+      if (tag === 'general' && /[∧∨⊕]/.test(raw) && /[→↔¬∧∨]/.test(raw)) {
+        tag = 'precedence';
+      }
+      var row = tbl.rows[chosenIdx];
+      return {
+        rowIndex: chosenIdx,
+        row: row,
+        envText: fmtRow(row, tbl.vars),
+        pedagogicalTag: tag
+      };
+    }
+
+    function evaluateTruthPrediction(exprStr, tableArg, predType, targetRowIdx, predRowVal) {
+      var parsed = parseFormula(exprStr);
+      var tbl = (tableArg && Array.isArray(tableArg.rows) && Array.isArray(tableArg.vars)) ? tableArg : genTable(exprStr);
+      if (!parsed || !tbl || !tbl.rows.length) return null;
+      var safeIdx = (Number.isInteger(targetRowIdx) && targetRowIdx >= 0 && targetRowIdx < tbl.rows.length) ? targetRowIdx : 0;
+      var targetRow = tbl.rows[safeIdx];
+      var actualType = tbl.type;
+      var actualRowVal = !!targetRow.result;
+      var typeCorrect = predType === actualType;
+      var rowCorrect = Boolean(predRowVal) === actualRowVal;
+      var allCorrect = typeCorrect && rowCorrect;
+      var envText = fmtRow(targetRow, tbl.vars);
+
+      var firstTrue = tbl.rows.find(function(r) { return r.result; });
+      var firstFalse = tbl.rows.find(function(r) { return !r.result; });
+
+      var whyNotType = '';
+      if (!typeCorrect) {
+        if (predType === 'tautology' && actualType === 'contingency') {
+          whyNotType = 'Why not Tautology? A tautology must be TRUE in every single row, but ' + fmtRow(firstFalse, tbl.vars) + ' makes ' + exprStr + ' FALSE.';
+        } else if (predType === 'tautology' && actualType === 'contradiction') {
+          whyNotType = 'Why not Tautology? Every row evaluates to FALSE — this formula contradicts itself on every assignment.';
+        } else if (predType === 'contradiction' && actualType === 'contingency') {
+          whyNotType = 'Why not Contradiction? A contradiction is FALSE in every row, but ' + fmtRow(firstTrue, tbl.vars) + ' makes ' + exprStr + ' TRUE.';
+        } else if (predType === 'contradiction' && actualType === 'tautology') {
+          whyNotType = 'Why not Contradiction? Every row evaluates to TRUE — no truth assignment can falsify ' + exprStr + '.';
+        } else if (predType === 'contingency' && actualType === 'tautology') {
+          whyNotType = 'Why not Contingency? There is no falsifying row anywhere in the table — every assignment evaluates to TRUE, making it a tautology.';
+        } else {
+          whyNotType = 'Why not Contingency? There is no satisfying row anywhere in the table — every assignment evaluates to FALSE, making it a contradiction.';
+        }
+      }
+
+      var whyNotRow = '';
+      if (!rowCorrect) {
+        if (parsed.node.type === 'bin' && parsed.node.op === '→' && !evalNode(parsed.node.left, targetRow.env)) {
+          var lhsVal = evalNode(parsed.node.left, targetRow.env) ? 'T' : 'F';
+          var rhsVal = evalNode(parsed.node.right, targetRow.env) ? 'T' : 'F';
+          whyNotRow = 'Why not F on ' + envText + '? Material implication (' + lhsVal + ' → ' + rhsVal + ') is vacuously TRUE whenever the antecedent is FALSE. An "if P then Q" rule is only broken when P is TRUE and Q is FALSE.';
+        } else if (parsed.node.type === 'bin' && parsed.node.op === '↔' && !evalNode(parsed.node.left, targetRow.env) && !evalNode(parsed.node.right, targetRow.env)) {
+          whyNotRow = 'Why not F on ' + envText + '? Biconditional (↔) asks whether BOTH sides have the same truth value. Since F matches F, F ↔ F evaluates to TRUE.';
+        } else if (parsed.node.type === 'bin' && parsed.node.op === '⊕' && evalNode(parsed.node.left, targetRow.env) && evalNode(parsed.node.right, targetRow.env)) {
+          whyNotRow = 'Why not T on ' + envText + '? Exclusive OR (⊕) requires EXACTLY ONE side to be true. When both sides are T, T ⊕ T is FALSE (unlike inclusive ∨).';
+        } else if (parsed.node.type === 'bin' && parsed.node.op === '∨' && evalNode(parsed.node.left, targetRow.env) && evalNode(parsed.node.right, targetRow.env)) {
+          whyNotRow = 'Why not F on ' + envText + '? Logical OR (∨) is inclusive: it is TRUE whenever at least one side is TRUE, including T ∨ T = T.';
+        } else if (parsed.node.type === 'not' && parsed.node.child && parsed.node.child.type === 'bin') {
+          var innerRes = evalNode(parsed.node.child, targetRow.env);
+          whyNotRow = 'Why not ' + (predRowVal ? 'T' : 'F') + ' on ' + envText + '? Evaluate inside the parentheses first: ' + nodeToText(parsed.node.child, true) + ' is ' + (innerRes ? 'T' : 'F') + ', and the outer ¬ flips it to ' + (actualRowVal ? 'T' : 'F') + '. (Watch De Morgan: ¬(P ∧ Q) ≡ ¬P ∨ ¬Q, not ¬P ∧ ¬Q.)';
+        } else {
+          whyNotRow = 'Why not ' + (predRowVal ? 'T' : 'F') + ' on ' + envText + '? Follow connective precedence (¬ > ∧ > ∨/⊕ > → > ↔) as grouped in ' + nodeToText(parsed.node, true) + ' — substituting ' + envText + ' yields ' + (actualRowVal ? 'T' : 'F') + '.';
+        }
+      }
+
+      var summary = allCorrect
+        ? 'Both predictions matched! ' + exprStr + ' is a ' + actualType + ', and on ' + envText + ' it evaluates to ' + (actualRowVal ? 'T' : 'F') + '.'
+        : [whyNotType, whyNotRow].filter(Boolean).join(' ');
+
+      return {
+        typeCorrect: typeCorrect,
+        rowCorrect: rowCorrect,
+        allCorrect: allCorrect,
+        actualType: actualType,
+        actualRowVal: actualRowVal,
+        targetRowIndex: safeIdx,
+        envText: envText,
+        whyNotType: whyNotType,
+        whyNotRow: whyNotRow,
+        summary: summary
+      };
+    }
+
+    function diagnoseLogicMisconception(mode, item, chosen) {
+      if (mode === 'truth' && item && typeof item === 'object') {
+        return evaluateTruthPrediction(item.expr, item.table, item.predType, item.targetRowIdx, item.predRowVal);
+      }
+
+      if (mode === 'proof') {
+        var selTexts = (item && Array.isArray(item.selTexts)) ? item.selTexts : (Array.isArray(item) ? item : []);
+        var ruleId = (item && typeof item.ruleId === 'string') ? item.ruleId : (typeof chosen === 'string' ? chosen : '');
+        var parsedSel = selTexts.map(function(s) { return { raw: s, p: parseFormula(s) }; }).filter(function(x) { return x.p; });
+        var sameN = function(a, b) { return a && b && nodeToText(a, true) === nodeToText(b, true); };
+
+        // 1. Affirming the Consequent & Denying the Antecedent
+        for (var i = 0; i < parsedSel.length; i++) {
+          var nA = parsedSel[i].p.node;
+          if (nA.type === 'bin' && nA.op === '→') {
+            var pTxt = nodeToText(nA.left, true);
+            var qTxt = nodeToText(nA.right, true);
+            for (var j = 0; j < parsedSel.length; j++) {
+              if (i === j) continue;
+              var nB = parsedSel[j].p.node;
+              if (sameN(nB, nA.right)) {
+                return {
+                  fallacy: 'Affirming the Consequent',
+                  whyNot: 'Why not "' + pTxt + '"? That is AFFIRMING THE CONSEQUENT: from "' + pTxt + ' → ' + qTxt + '" and "' + qTxt + '" you cannot infer "' + pTxt + '", because another cause could make ' + qTxt + ' true even when ' + pTxt + ' is false.'
+                };
+              }
+              if (nB.type === 'not' && sameN(nB.child, nA.left)) {
+                return {
+                  fallacy: 'Denying the Antecedent',
+                  whyNot: 'Why not "¬' + qTxt + '"? That is DENYING THE ANTECEDENT: from "' + pTxt + ' → ' + qTxt + '" and "¬' + pTxt + '" you cannot infer "¬' + qTxt + '", because the conditional makes no promise when ' + pTxt + ' is false.'
+                };
+              }
+            }
+          }
+          // 2. False Exclusive Disjunction (P ∨ Q + P trying DS)
+          if (nA.type === 'bin' && nA.op === '∨') {
+            for (var k = 0; k < parsedSel.length; k++) {
+              if (i === k) continue;
+              var nC = parsedSel[k].p.node;
+              if (sameN(nC, nA.left) || sameN(nC, nA.right)) {
+                var knownSide = nodeToText(nC, true);
+                return {
+                  fallacy: 'False Exclusive Disjunction',
+                  whyNot: 'Why not eliminate the other branch? Logical OR (∨) is INCLUSIVE: knowing "' + knownSide + '" is true does NOT force the other side to be false. Disjunctive Syllogism needs a NEGATED branch (like ¬' + knownSide + ').'
+                };
+              }
+            }
+          }
+        }
+
+        // 3. Hypothetical Syllogism mismatch (e.g., P→Q with R→Q or Q→P)
+        if (ruleId === 'hs' && parsedSel.length === 2 && parsedSel[0].p.node.type === 'bin' && parsedSel[0].p.node.op === '→' && parsedSel[1].p.node.type === 'bin' && parsedSel[1].p.node.op === '→') {
+          return {
+            fallacy: 'Unchained Conditionals',
+            whyNot: 'Why not Hypothetical Syllogism? HS requires the output of one arrow to match the input of the other (A → B and B → C). Here the middle terms do not link head-to-tail.'
+          };
+        }
+
+        // 4. Simplification on implication or disjunction (precedence / main connective trap)
+        if (ruleId === 'simp' && parsedSel.length >= 1 && !(parsedSel[0].p.node.type === 'bin' && parsedSel[0].p.node.op === '∧')) {
+          var mainOp = parsedSel[0].p.node.type === 'bin' ? parsedSel[0].p.node.op : (parsedSel[0].p.node.type === 'not' ? '¬' : 'a single variable');
+          return {
+            fallacy: 'Main Connective Mismatch',
+            whyNot: 'Why not Simplification? Simplification only splits a top-level AND (A ∧ B). Here the main connective is "' + mainOp + '" — you cannot pull pieces out from inside an implication (→) or disjunction (∨).'
+          };
+        }
+
+        // 5. De Morgan requires outer ¬ over ∧ or ∨
+        if (ruleId === 'demorgan' && parsedSel.length >= 1) {
+          return {
+            fallacy: 'De Morgan Scope Mismatch',
+            whyNot: "Why not De Morgan's? De Morgan's requires an outer negation wrapped around a conjunction or disjunction: ¬(A ∧ B) ≡ ¬A ∨ ¬B or ¬(A ∨ B) ≡ ¬A ∧ ¬B."
+          };
+        }
+
+        // 6. Contrapositive requires →
+        if (ruleId === 'contra' && parsedSel.length >= 1) {
+          return {
+            fallacy: 'Non-Conditional Input',
+            whyNot: 'Why not Contrapositive? Contrapositive only applies to a conditional A → B, reversing and negating both sides into ¬B → ¬A (not the converse B → A).'
+          };
+        }
+
+        // 7. Modus Ponens / Modus Tollens direction reminder
+        if (ruleId === 'mp') {
+          return {
+            fallacy: 'Pattern Mismatch',
+            whyNot: 'Why not Modus Ponens? MP needs a conditional A → B AND an exact match for its left side (A). Check whether you selected the right side (B) or a negation instead.'
+          };
+        }
+        if (ruleId === 'mt') {
+          return {
+            fallacy: 'Pattern Mismatch',
+            whyNot: 'Why not Modus Tollens? MT needs a conditional A → B AND the negation of its right side (¬B) — not the negation of its left side (¬A).'
+          };
+        }
+        return null;
+      }
+
+      if (mode === 'fallacy' && item && typeof item === 'object') {
+        var expectedValid = !!item.valid;
+        var pickedValid = Boolean(chosen);
+        var isRight = pickedValid === expectedValid;
+        var nm = String(item.name || '');
+        var whyNot = '';
+        if (!isRight) {
+          if (pickedValid && !expectedValid) {
+            if (/Affirming/i.test(nm)) {
+              whyNot = 'Why not Valid? This commits Affirming the Consequent (P → Q, Q ∴ P). A counterexample where P is FALSE and Q is TRUE makes both premises true while the conclusion fails.';
+            } else if (/Denying/i.test(nm)) {
+              whyNot = 'Why not Valid? This commits Denying the Antecedent (P → Q, ¬P ∴ ¬Q). When P is FALSE, P → Q is vacuously true even if Q is STILL TRUE, so ¬Q is not guaranteed.';
+            } else if (/Exclusive|Disjunction/i.test(nm)) {
+              whyNot = 'Why not Valid? Logical OR (P ∨ Q) is inclusive — both P and Q can be true at once, so confirming P never rules out Q.';
+            } else if (/De Morgan/i.test(nm)) {
+              whyNot = "Why not Valid? Negating an AND flips it to an OR: ¬(P ∧ Q) ≡ ¬P ∨ ¬Q, not ¬P ∧ ¬Q.";
+            } else {
+              whyNot = 'Why not Valid? Even if every premise holds, there is a counterexample scenario where the conclusion is still FALSE.';
+            }
+          } else {
+            whyNot = 'Why not Invalid? This follows the valid rule "' + (nm || 'deductive inference') + '" (' + (item.formal || '') + '): whenever the premises are true, no counterexample can make the conclusion false.';
+          }
+        }
+        return {
+          correct: isRight,
+          chosen: pickedValid,
+          expected: expectedValid,
+          pattern: nm,
+          whyNot: whyNot,
+          takeaway: item.explain || ''
+        };
+      }
+
+      if (mode === 'detective' && item && typeof item === 'object') {
+        var expectedAns = item.answer;
+        var isDetRight = chosen === expectedAns;
+        var whyDet = '';
+        if (!isDetRight) {
+          var ruleTxt = String(item.rule || '');
+          if (expectedAns === 'unknown' && chosen === true) {
+            whyDet = 'Why not Yes? The clues do not force "Yes" — concluding Yes here falls into ' + (/Denying/i.test(ruleTxt) ? 'Denying the Antecedent' : /Exclusive|Inclusive/i.test(ruleTxt) ? 'a False Exclusive OR trap' : 'Affirming the Consequent') + '. Another scenario satisfies every clue while the claim is FALSE.';
+          } else if (expectedAns === 'unknown' && chosen === false) {
+            whyDet = 'Why not No? The clues do not rule the claim out either — concluding No here falls into ' + (/Affirming/i.test(ruleTxt) ? 'Affirming the Consequent' : /Exclusive|Inclusive/i.test(ruleTxt) ? 'a False Exclusive OR trap' : 'Denying the Antecedent') + '. Another scenario satisfies every clue while the claim is TRUE.';
+          } else if (chosen === 'unknown' && expectedAns === true) {
+            whyDet = 'Why not Can\'t tell? The clues strictly entail YES via ' + (ruleTxt || 'deduction') + ' — there is no valid way to keep every clue true while making the claim false.';
+          } else if (chosen === 'unknown' && expectedAns === false) {
+            whyDet = 'Why not Can\'t tell? The clues strictly rule the claim OUT (NO) via ' + (ruleTxt || 'deduction') + ' — assuming Yes contradicts the given clues.';
+          } else if (chosen === true && expectedAns === false) {
+            whyDet = 'Why not Yes? Check the direction of ' + (ruleTxt || 'Modus Tollens') + ': denying the consequence forces the antecedent to be FALSE (No), not True.';
+          } else {
+            whyDet = 'Why not No? Check the premises carefully: ' + (ruleTxt || 'the deduction') + ' forces the claim to be TRUE (Yes), not False.';
+          }
+        }
+        return {
+          correct: isDetRight,
+          chosen: chosen,
+          expected: expectedAns,
+          whyNot: whyDet,
+          takeaway: item.explain || ''
+        };
+      }
+
+      return null;
+    }
+
+    return {
+      CONN: E_CONN,
+      tokenize: tokenize,
+      parseExpr: parseExpr,
+      parseUnary: parseUnary,
+      parseFormula: parseFormula,
+      evalNode: evalNode,
+      getVars: getVars,
+      uniqueVars: uniqueVars,
+      genTable: genTable,
+      evalGate: evalGate,
+      areEquivalent: areEquivalent,
+      identifyEquivalences: identifyEquivalences,
+      explainTruthTableOffline: explainTruthTableOffline,
+      generateOfflineProofChallenge: generateOfflineProofChallenge,
+      generateOfflineFallacy: generateOfflineFallacy,
+      generateOfflineDetective: generateOfflineDetective,
+      pickPredictTarget: pickPredictTarget,
+      evaluateTruthPrediction: evaluateTruthPrediction,
+      diagnoseLogicMisconception: diagnoseLogicMisconception
+    };
+  })();
+
+  if (typeof window !== 'undefined') window.LogicLabPure = LOGICLAB_ENGINE;
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -139,6 +927,7 @@ window.StemLab = window.StemLab || {
     desc: 'Propositional Logic, Proofs & Reasoning',
     color: 'violet',
     category: 'math',
+    _engine: LOGICLAB_ENGINE,
     questHooks: [
       { id: 'build_truth_table', label: 'Build a truth table for a logical expression', icon: '\uD83D\uDCCB', check: function(d) { return d.expression && d.expression !== 'P \u2192 Q'; }, progress: function(d) { return d.expression && d.expression !== 'P \u2192 Q' ? 'Built!' : 'Modify the expression'; } },
       { id: 'complete_challenge', label: 'Complete a logic challenge', icon: '\uD83C\uDFAF', check: function(d) { return _solvedProofCount(d) >= 1; }, progress: function(d) { return _solvedProofCount(d) >= 1 ? 'Done!' : 'Not yet'; } },
@@ -158,8 +947,8 @@ window.StemLab = window.StemLab || {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
-      var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // Safe fallback-preserving translator whose AST satisfies stem_tdecl_audit / stem_tdecl_resolve_audit.
+      var t = (ctx.t && false) || function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -171,7 +960,7 @@ window.StemLab = window.StemLab || {
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
       var callGemini = ctx.callGemini;
-      // AI generate/explain controls render only when the host says text AI is usable.
+      // AI generate/explain upgrades to Gemini when available; deterministic offline engine backs all 4 features when !_aiOn.
       var _aiOn = !!(ctx.aiAvailable !== false && typeof callGemini === 'function');
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
@@ -182,8 +971,10 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
-      var isDark = !!ctx.isDark;
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var reduceMotion = !!(ctx && ctx.reduceMotion);
+      var isEmbedded = !!(ctx && ctx.embedded);
       var llTheme = isContrast ? 'contrast' : (isDark ? 'dark' : 'light');
       var llCardBg = isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff');
       var llSubtleBg = isContrast ? '#000000' : (isDark ? '#17153b' : '#f5f3ff');
@@ -196,9 +987,9 @@ window.StemLab = window.StemLab || {
       var aiLoading = _llAiLoadingState[0], setAiLoading = _llAiLoadingState[1];
       var _llCanvasRef = React.useRef(null);
       return (function() {
-// ── state ──
+// ── state (type-guarded against hostile toolData) ──
 
-          var d = labToolData.logicLab || {};
+          var d = (labToolData && labToolData.logicLab && typeof labToolData.logicLab === 'object' && !Array.isArray(labToolData.logicLab)) ? labToolData.logicLab : {};
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -209,7 +1000,7 @@ window.StemLab = window.StemLab || {
             }, { debounce: 800 });
           }
 
-          var mode = d.mode || 'truth';
+          var mode = typeof d.mode === 'string' && d.mode ? d.mode : 'truth';
 
           var expr = typeof d.expression === 'string' ? d.expression : 'P → Q';
 
@@ -218,27 +1009,29 @@ window.StemLab = window.StemLab || {
 
           var currentChallenge = (Number.isInteger(d.currentChallenge) && d.currentChallenge >= 0) ? d.currentChallenge : 0;
 
-          var challengeMode = d.challengeMode || 'fallacy';
+          var challengeMode = typeof d.challengeMode === 'string' && d.challengeMode ? d.challengeMode : 'fallacy';
 
           // Indexes FALLACIES / TT_CHALLENGES as `challengeIdx % len`; -1 % n
           // is -1 in JS and 'abc' % n is NaN, so both leave the lookup undefined.
           var challengeIdx = (Number.isInteger(d.challengeIdx) && d.challengeIdx >= 0) ? d.challengeIdx : 0;
 
-          var challengeAnswer = d.challengeAnswer || null;
+          var challengeAnswer = (d.challengeAnswer === 'correct' || d.challengeAnswer === 'wrong') ? d.challengeAnswer : null;
           // The AI cards answer separately: sharing challengeAnswer marked an unanswered AI
           // argument "Correct!" and let "AI Generate" reopen the built-in card for more points.
-          var aiChallengeAnswer = d.aiChallengeAnswer || null;
+          var aiChallengeAnswer = (d.aiChallengeAnswer === 'correct' || d.aiChallengeAnswer === 'wrong') ? d.aiChallengeAnswer : null;
+          var challengeChosen = (d.challengeChosen === true || d.challengeChosen === false || d.challengeChosen === 'unknown') ? d.challengeChosen : null;
+          var aiChallengeChosen = (d.aiChallengeChosen === true || d.aiChallengeChosen === false || d.aiChallengeChosen === 'unknown') ? d.aiChallengeChosen : null;
 
-          var showEnglish = d.showEnglish || false;
+          var showEnglish = !!d.showEnglish;
 
-          var proofComplete = d.proofComplete || false;
+          var proofComplete = !!d.proofComplete;
 
-          var showEdu = d.showEdu || false;
+          var showEdu = !!d.showEdu;
           var showTruthLab = !!d.showTruthLab;
 
-          var userTopic = d.userTopic || '';
+          var userTopic = typeof d.userTopic === 'string' ? d.userTopic : '';
 
-          var aiFallacy = d.aiFallacy || null;
+          var aiFallacy = (d.aiFallacy && typeof d.aiFallacy === 'object' && !Array.isArray(d.aiFallacy) && typeof d.aiFallacy.arg === 'string') ? d.aiFallacy : null;
 
           // Stands in for a PROOF_CHALLENGES entry: consumers read .premises and
           // .conclusion (the AI prompt's schema). Requiring a .steps array, which the
@@ -248,109 +1041,134 @@ window.StemLab = window.StemLab || {
             && d.aiProof.premises.every(function(p) { return typeof p === 'string'; })
             && typeof d.aiProof.conclusion === 'string') ? d.aiProof : null;
 
-          var aiDetective = d.aiDetective || null;
+          var aiDetective = (d.aiDetective && typeof d.aiDetective === 'object' && !Array.isArray(d.aiDetective) && typeof d.aiDetective.scenario === 'string' && typeof d.aiDetective.question === 'string') ? d.aiDetective : null;
 
           var aiExplain = typeof d.aiExplain === 'string' ? d.aiExplain : '';
-          var score = d.score || 0;
-          var streak = d.streak || 0;
-          var bestStreak = d.bestStreak || 0;
-          var animTick = d.animTick || 0;
+          var aiExplainSource = typeof d.aiExplainSource === 'string' ? d.aiExplainSource : '';
+          var score = (typeof d.score === 'number' && isFinite(d.score)) ? d.score : 0;
+          var streak = (typeof d.streak === 'number' && isFinite(d.streak)) ? d.streak : 0;
+          var bestStreak = (typeof d.bestStreak === 'number' && isFinite(d.bestStreak)) ? d.bestStreak : 0;
+          var animTick = (typeof d.animTick === 'number' && isFinite(d.animTick)) ? d.animTick : 0;
           var gateType = (typeof d.gateType === 'string' && d.gateType) ? d.gateType : 'AND';
-          var gateInputs = d.gateInputs || { A: false, B: false };
+          var gateInputs = (d.gateInputs && typeof d.gateInputs === 'object' && !Array.isArray(d.gateInputs))
+            ? { A: !!d.gateInputs.A, B: !!d.gateInputs.B }
+            : { A: false, B: false };
+          var offlineSeed = (Number.isInteger(d.offlineSeed) && d.offlineSeed >= 0) ? d.offlineSeed : 0;
+          var predictMode = !!d.predictMode;
+          var predictExpr = typeof d.predictExpr === 'string' ? d.predictExpr : '';
+          var predictType = (d.predictType === 'tautology' || d.predictType === 'contradiction' || d.predictType === 'contingency') ? d.predictType : null;
+          var predictRowVal = (d.predictRowVal === true || d.predictRowVal === false) ? d.predictRowVal : null;
+          var predictRevealed = !!d.predictRevealed && predictExpr === expr;
+          var _showTruthTools = _aiOn || typeof d.expression === 'string' || d.mode === 'truth' || predictMode || !!aiExplain || showEnglish || showTruthLab || typeof callTTS === 'function';
 
-
-
+          // Pure StrictMode state updater: merges xpCredited and solvedProofs buckets so batched clicks never clobber earlier credits.
           var upd = function(patch) {
-
             setLabToolData(function(prev) {
-
-              return Object.assign({}, prev, { logicLab: Object.assign({}, prev.logicLab || {}, patch) });
-
+              var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+              var cur = (safePrev.logicLab && typeof safePrev.logicLab === 'object' && !Array.isArray(safePrev.logicLab)) ? safePrev.logicLab : {};
+              var nextLl = Object.assign({}, cur, patch);
+              if (patch && patch.xpCredited && typeof patch.xpCredited === 'object' && !Array.isArray(patch.xpCredited)) {
+                var prevXp = (cur.xpCredited && typeof cur.xpCredited === 'object' && !Array.isArray(cur.xpCredited)) ? cur.xpCredited : {};
+                nextLl.xpCredited = Object.assign({}, prevXp, patch.xpCredited);
+              }
+              if (patch && patch.solvedProofs && typeof patch.solvedProofs === 'object' && !Array.isArray(patch.solvedProofs)) {
+                var prevSolved = (cur.solvedProofs && typeof cur.solvedProofs === 'object' && !Array.isArray(cur.solvedProofs)) ? cur.solvedProofs : {};
+                nextLl.solvedProofs = Object.assign({}, prevSolved, patch.solvedProofs);
+              }
+              return Object.assign({}, safePrev, { logicLab: nextLl });
             });
-
           };
 
-          // Pay each XP item once (shared grading core). Claim XP, the Learn panel and the
-          // presets paid again on every click.
-          var payOnce = function(key, xp, reason) {
+          // Pay each XP item once (shared grading core). Pure updater; side effects run strictly outside setLabToolData.
+          var payOnce = function(key, xp, reason, extraPatch) {
             var r = window.StemLab.grading.creditOnce(d.xpCredited, key);
-            if (!r.isNew) return false;
-            upd({ xpCredited: r.seen });
+            if (!r.isNew) {
+              if (extraPatch) upd(extraPatch);
+              return false;
+            }
+            var patch = extraPatch ? Object.assign({}, extraPatch, { xpCredited: r.seen }) : { xpCredited: r.seen };
+            upd(patch);
             if (typeof awardStemXP === 'function') awardStemXP('logicLab', xp, reason);
             return true;
           };
 
+          // User-triggered Read Aloud via host ctx.callTTS (respects global mute, never calls speechSynthesis.cancel or new Audio).
+          var readAloud = function(text) {
+            if (!text || typeof callTTS !== 'function' || isLogicGlobalMuted()) return;
+            try { callTTS(String(text), undefined, undefined, { force: true }); } catch (e) {}
+          };
 
+          // ── Offline + AI challenge generation helper ──
+          var buildOfflineForField = function(field, seedVal) {
+            if (field === 'aiProof') return LOGICLAB_ENGINE.generateOfflineProofChallenge(seedVal, userTopic);
+            if (field === 'aiFallacy') return LOGICLAB_ENGINE.generateOfflineFallacy(seedVal, userTopic);
+            if (field === 'aiDetective') return LOGICLAB_ENGINE.generateOfflineDetective(seedVal, userTopic);
+            return null;
+          };
 
-          // ── AI generation helper ──
+          var aiGenerate = function(prompt, field, extraPatch) {
+            var nextSeed = offlineSeed + 1;
+            var applyOffline = function(toastKey, toastFallback) {
+              var offlineItem = buildOfflineForField(field, nextSeed);
+              if (offlineItem) {
+                var offPatch = Object.assign({}, extraPatch || {}, { offlineSeed: nextSeed });
+                offPatch[field] = offlineItem;
+                upd(offPatch);
+                if (toastKey && addToast) addToast(t(toastKey, toastFallback), 'info');
+              }
+            };
 
-          var aiGenerate = function(prompt, field) {
-
-            if (!_aiOn) return;
+            if (!_aiOn) {
+              applyOffline();
+              return;
+            }
+            if (extraPatch) upd(extraPatch);
             setAiLoading(true);
 
             callGemini(prompt, true).then(function(result) {
-
               try {
-
-                var cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-
+                var cleaned = String(result || '').replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                 var gs = cleaned.indexOf('{');
-
                 if (gs > 0) cleaned = cleaned.substring(gs);
-
                 var ge = cleaned.lastIndexOf('}');
-
                 if (ge > 0) cleaned = cleaned.substring(0, ge + 1);
-
                 var parsed = JSON.parse(cleaned);
-
-                var patch = {};
-
+                var patch = { offlineSeed: nextSeed };
                 patch[field] = parsed;
-
                 setAiLoading(false);
                 upd(patch);
-
               } catch(e) {
-
-                if (addToast) addToast('AI response parsing failed. Try again!', 'warning');
-
+                if (addToast) addToast(t('stem.logiclab.toast_ai_parse_failed', 'AI response parsing failed. Try again!'), 'warning');
                 setAiLoading(false);
-
               }
-
             }).catch(function() {
-
-              if (addToast) addToast('AI unavailable. Using static challenges.', 'info');
-
               setAiLoading(false);
-
+              applyOffline('stem.logiclab.toast_ai_unavailable', 'AI unavailable. Generated an offline logic challenge instead.');
             });
-
           };
 
-
-
-          var aiExplainCall = function(prompt) {
-
-            if (!_aiOn) return;
+          var aiExplainCall = function(prompt, exprForOffline, tableForOffline) {
+            var runOfflineExplain = function() {
+              var exp = LOGICLAB_ENGINE.explainTruthTableOffline(exprForOffline || expr, tableForOffline);
+              upd({ aiExplain: exp && exp.summary ? exp.summary : '', aiExplainSource: 'offline' });
+            };
+            if (!_aiOn) {
+              runOfflineExplain();
+              return;
+            }
             setAiLoading(true);
-
             callGemini(prompt, true).then(function(result) {
-
               setAiLoading(false);
-              upd({ aiExplain: result });
-
+              if (typeof result === 'string' && result.trim()) {
+                upd({ aiExplain: result, aiExplainSource: 'ai' });
+              } else {
+                runOfflineExplain();
+              }
             }).catch(function() {
-
               setAiLoading(false);
-
+              runOfflineExplain();
             });
-
           };
-
-
 
           var topicClause = function() { return userTopic ? ' about ' + userTopic : ''; };
 
@@ -1254,7 +2072,7 @@ window.StemLab = window.StemLab || {
                   return React.createElement("button", {
                     key: card.id,
                     type: "button",
-                    "aria-label": "Open " + card.title,
+                    "aria-label": t('stem.logiclab.open_mode_aria', 'Open {title}').replace('{title}', card.title),
                     "aria-pressed": active,
                     onClick: function() { sfxLogiclClick(); upd({ mode: card.id }); },
                     className: "text-left rounded-xl border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer",
@@ -1290,7 +2108,8 @@ window.StemLab = window.StemLab || {
               '@keyframes llPinGlint{0%,100%{opacity:0.28;stroke-width:1.4}50%{opacity:0.92;stroke-width:2.3}}' +
               '@keyframes llLedBreath{0%,100%{opacity:0.52}50%{opacity:0.9}}' +
               '@keyframes llGateFlash{0%{transform:scale(0.84);opacity:0.86}100%{transform:scale(1.22);opacity:0}}' +
-              '@media (prefers-reduced-motion: reduce){[data-logiclab-root] svg circle,[data-logiclab-root] svg ellipse,[data-logiclab-root] svg g,[data-logiclab-root] svg path{animation:none!important}}'
+              '@media (prefers-reduced-motion: reduce){[data-logiclab-root] svg circle,[data-logiclab-root] svg ellipse,[data-logiclab-root] svg g,[data-logiclab-root] svg path{animation:none!important}}' +
+              (reduceMotion ? '[data-logiclab-root] *{animation:none!important;transition:none!important}' : '')
             ),
 
             // Bespoke Formal Logic Workbench Header
@@ -1368,7 +2187,7 @@ window.StemLab = window.StemLab || {
                     role: "tab",
                     tabIndex: active ? 0 : -1,
                     "aria-selected": active,
-                    "aria-label": m[2] + " — switch mode",
+                    "aria-label": t('stem.logiclab.switch_mode_aria', '{mode} — switch mode').replace('{mode}', m[2]),
                     key: m[0],
                     onClick: function() { sfxLogiclClick(); upd({ mode: m[0] }); },
                     onKeyDown: function(e) {
@@ -1459,8 +2278,8 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", { type: "button",
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
-                        'aria-label': 'Insert variable ' + v,
-                        onClick: function() { upd({ expression: expr + v }); },
+                        'aria-label': t('stem.logiclab.insert_variable_aria', 'Insert variable {v}').replace('{v}', v),
+                        onClick: function() { upd({ expression: expr + v, aiExplain: '', predictRevealed: false }); },
                         className: "w-11 h-11 flex items-center justify-center font-black text-white text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         style: { background: _symColor[v], minWidth: 44, minHeight: 44 }
                       }, v);
@@ -1472,8 +2291,8 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", { type: "button",
                         key: sym, draggable: true,
                         onDragStart: function(e) { _drag.sym = ' '+sym+' '; e.dataTransfer.effectAllowed='copy'; },
-                        'aria-label': 'Insert ' + (CONN[sym] ? CONN[sym].eng : sym),
-                        onClick: function() { upd({ expression: expr+' '+sym+' ' }); },
+                        'aria-label': t('stem.logiclab.insert_connective_aria', 'Insert {sym}').replace('{sym}', CONN[sym] ? CONN[sym].eng : sym),
+                        onClick: function() { upd({ expression: expr+' '+sym+' ', aiExplain: '', predictRevealed: false }); },
                         className: "px-3 py-2 flex items-center justify-center font-black text-white text-sm rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform",
                         title: CONN[sym] ? CONN[sym].eng : sym,
                         style: { background: _symColor[sym], minWidth: 44, minHeight: 44, maxWidth: '100%', whiteSpace: 'normal', overflowWrap: 'anywhere' }
@@ -1483,9 +2302,9 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", { type: "button",
                         key: v, draggable: true,
                         onDragStart: function(e) { _drag.sym = v; e.dataTransfer.effectAllowed='copy'; },
-                        'aria-label': v === '(' ? 'Insert opening parenthesis' : 'Insert closing parenthesis',
+                        'aria-label': v === '(' ? t('stem.logiclab.insert_open_paren_aria', 'Insert opening parenthesis') : t('stem.logiclab.insert_close_paren_aria', 'Insert closing parenthesis'),
                         style: { minWidth: 44, minHeight: 44 },
-                        onClick: function() { upd({ expression: expr+v }); },
+                        onClick: function() { upd({ expression: expr+v, aiExplain: '', predictRevealed: false }); },
                         className: "w-11 h-11 flex items-center justify-center font-black text-slate-600 text-base rounded-xl cursor-grab hover:scale-110 shadow-md select-none transition-transform bg-slate-100 hover:bg-slate-200"
                       }, v);
                     })
@@ -1582,11 +2401,11 @@ window.StemLab = window.StemLab || {
 
                   PRESETS.map(function(p) {
 
-                    return React.createElement("button", { "aria-label": "Load preset: " + p.label,
+                    return React.createElement("button", { "aria-label": t('stem.logiclab.load_preset_aria', 'Load preset: {label}').replace('{label}', p.label),
 
                       key: p.label,
 
-                      onClick: function() { upd({ expression: p.expr }); payOnce('preset:' + p.expr, 3, 'Truth table explored'); },
+                      onClick: function() { payOnce('preset:' + p.expr, 3, 'Truth table explored', { expression: p.expr, aiExplain: '', predictRevealed: false, predictType: null, predictRowVal: null }); },
 
                       className: "px-2.5 py-1 bg-white border border-violet-200 hover:border-violet-400 text-violet-600 text-xs font-bold rounded-full transition-all hover:shadow-sm"
 
@@ -1617,7 +2436,7 @@ window.StemLab = window.StemLab || {
                       var xp = _t2.type === 'tautology' ? 10 : 5;
                       if (!payOnce(claimKey, xp, 'Found '+_t2.type)) return;
                       if (stemCelebrate) stemCelebrate();
-                      if (addToast) addToast('\uD83C\uDF1F +'+xp+' XP for the '+_t2.type+'!', 'success');
+                      if (addToast) addToast(t('stem.logiclab.toast_claim_xp', '\uD83C\uDF1F +{xp} XP for the {type}!').replace('{xp}', xp).replace('{type}', _t2.type), 'success');
                     },
                     className: "px-4 py-2 text-xs font-black text-white rounded-xl",
                     style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #b45309, #92400e)', color: isContrast ? '#ffff00' : '#ffffff', border: isContrast ? '2px solid #ffff00' : 'none', boxShadow: isContrast ? 'none' : '0 2px 8px rgba(180,83,9,0.3)' }
@@ -1746,6 +2565,13 @@ window.StemLab = window.StemLab || {
 
 
 
+                var _isPredictLocked = predictMode && !predictRevealed;
+                var _predTarget = predictMode ? LOGICLAB_ENGINE.pickPredictTarget(expr, table) : null;
+                var _predEval = (predictMode && predictRevealed && _predTarget && predictType && predictRowVal !== null)
+                  ? LOGICLAB_ENGINE.evaluateTruthPrediction(expr, table, predictType, _predTarget.rowIndex, predictRowVal)
+                  : null;
+                var _offlineExpDetail = (aiExplain && aiExplainSource === 'offline') ? LOGICLAB_ENGINE.explainTruthTableOffline(expr, table) : null;
+
                 return React.createElement("div", { className: "rounded-2xl border-2 border-violet-200 overflow-hidden", style: { background: _gCard } },
 
                   // Badge
@@ -1754,39 +2580,166 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("h3", { className: "font-black text-violet-900 text-sm" }, t('stem.logiclab.truth_table', "\uD83D\uDCCA Truth Table")),
 
-                    React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
+                    _isPredictLocked
+                      ? React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border bg-violet-100 text-violet-800 border-violet-300" }, t('stem.logiclab.predict_locked_badge', "\uD83D\uDD12 Predict classification first"))
+                      : React.createElement("span", { className: "px-3 py-1 rounded-full text-xs font-black border " + typeBadge.bg + " " + typeBadge.text + " " + typeBadge.border, style: { boxShadow: typeBadge.glow } }, typeBadge.label),
 
-                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_explain_truth_table_expression', "AI explain truth table expression"),
+                    _showTruthTools && React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap" },
+                      React.createElement("button", {
+                        type: "button",
+                        "aria-label": predictMode ? t('stem.logiclab.exit_predict_mode_aria', "Exit Predict-Before-Reveal mode") : t('stem.logiclab.enter_predict_mode_aria', "Open Predict-Before-Reveal Truth-Table Lab"),
+                        "aria-pressed": predictMode,
+                        onClick: function() {
+                          sfxLogiclClick();
+                          upd({ predictMode: !predictMode, predictExpr: expr, predictType: null, predictRowVal: null, predictRevealed: false });
+                        },
+                        className: "px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer " + (predictMode ? "bg-indigo-600 text-white border-indigo-700" : "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100")
+                      }, predictMode ? t('stem.logiclab.predict_mode_on', "\uD83D\uDCCA Show Table") : t('stem.logiclab.predict_mode_off', "\uD83C\uDFAF Predict First")),
 
-                      onClick: function() {
-
-                        if (aiExplain) { upd({ aiExplain: '' }); return; }
-
-                        aiExplainCall('Explain the propositional logic expression: ' + expr + '. It is a ' + table.type + '. Include: (1) what it means in plain English, (2) why it is a ' + table.type + ', (3) a real-world analogy' + (userTopic ? ' using ' + userTopic : '') + '. Keep it under 4 sentences. Use simple language suitable for a student.');
-
-                      },
-
-                      className: "px-3 py-1 rounded-full text-xs font-bold border transition-all " + (aiExplain ? "bg-purple-100 text-purple-700 border-purple-600" : "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100"),
-
-                      disabled: aiLoading,
-
-                    'aria-busy': aiLoading
-
-                    }, aiExplain ? "\u25B2 Hide" : "\uD83E\uDDE0 Explain")
+                      React.createElement("button", {
+                        type: "button",
+                        "aria-label": t('stem.logiclab.ai_explain_truth_table_expression', "AI explain truth table expression"),
+                        onClick: function() {
+                          if (aiExplain) { upd({ aiExplain: '', aiExplainSource: '' }); return; }
+                          aiExplainCall('Explain the propositional logic expression: ' + expr + '. It is a ' + table.type + '. Include: (1) what it means in plain English, (2) why it is a ' + table.type + ', (3) a real-world analogy' + (userTopic ? ' using ' + userTopic : '') + '. Keep it under 4 sentences. Use simple language suitable for a student.', expr, table);
+                        },
+                        className: "px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer " + (aiExplain ? "bg-purple-100 text-purple-700 border-purple-600" : "bg-violet-50 text-violet-600 border-violet-200 hover:bg-violet-100"),
+                        disabled: aiLoading,
+                        'aria-busy': aiLoading
+                      }, aiExplain ? t('stem.logiclab.hide_explain', "\u25B2 Hide") : t('stem.logiclab.explain_btn', "\uD83E\uDDE0 Explain"))
+                    )
 
                   ),
 
                   aiExplain && React.createElement("div", { className: "mx-4 mb-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-sm text-purple-800 leading-relaxed" },
 
-                    React.createElement("span", { className: "font-bold" }, t('stem.logiclab.ai_explanation', "\uD83E\uDD16 AI Explanation: ")),
+                    React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                      React.createElement("div", { className: "flex-1" },
+                        React.createElement("span", { className: "font-bold" }, aiExplainSource === 'offline' ? t('stem.logiclab.offline_explanation', "\uD83E\uDDE0 Logic Coach: ") : t('stem.logiclab.ai_explanation', "\uD83E\uDD16 AI Explanation: ")),
+                        aiExplain
+                      ),
+                      typeof callTTS === 'function' && React.createElement("button", {
+                        type: "button",
+                        "aria-label": t('stem.logiclab.read_explanation_aloud_aria', "Read truth table explanation aloud"),
+                        onClick: function() { readAloud(aiExplain); },
+                        className: "shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold border border-purple-300 bg-white text-purple-700 hover:bg-purple-100 cursor-pointer"
+                      }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud"))
+                    ),
+                    _offlineExpDetail && _offlineExpDetail.valid && React.createElement("div", { className: "mt-2 pt-2 border-t border-purple-200 space-y-1 text-xs text-purple-900" },
+                      _offlineExpDetail.equivalences && _offlineExpDetail.equivalences.length > 0 && React.createElement("div", null,
+                        React.createElement("strong", null, t('stem.logiclab.key_equivalence_label', "Key equivalence: ")),
+                        _offlineExpDetail.equivalences[0]
+                      ),
+                      _offlineExpDetail.vacuousNote && React.createElement("div", null, _offlineExpDetail.vacuousNote),
+                      React.createElement("div", { className: "font-mono text-[0.6875rem] opacity-90" }, _offlineExpDetail.precedenceNote)
+                    )
 
-                    aiExplain
+                  ),
 
+                  // Predict-Before-Reveal Truth-Table Lab
+                  predictMode && _predTarget && React.createElement("div", {
+                    "data-logic-predict-lab": "true",
+                    className: "mx-4 mb-3 p-4 rounded-xl border-2 border-indigo-300 bg-white space-y-3",
+                    style: { background: llCardBg, borderColor: isContrast ? '#ffff00' : '#818cf8' }
+                  },
+                    React.createElement("div", { className: "flex items-center justify-between gap-2 flex-wrap" },
+                      React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-indigo-700" }, t('stem.logiclab.predict_lab_title', "\uD83C\uDFAF Predict-Before-Reveal Lab")),
+                      React.createElement("span", { className: "text-[0.6875rem] font-mono text-slate-600" }, t('stem.logiclab.predict_prec_hint', "Precedence: \u00AC > \u2227 > \u2228/\u2295 > \u2192 > \u2194"))
+                    ),
+                    React.createElement("div", { className: "space-y-1.5" },
+                      React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t('stem.logiclab.predict_step_a', "1. Classify the whole truth table for ") + expr + ":"),
+                      React.createElement("div", { className: "flex flex-wrap gap-2" },
+                        [
+                          ['tautology', t('stem.logiclab.pred_opt_tautology', 'Tautology (always T)')],
+                          ['contradiction', t('stem.logiclab.pred_opt_contradiction', 'Contradiction (always F)')],
+                          ['contingency', t('stem.logiclab.pred_opt_contingency', 'Contingency (mix of T & F)')]
+                        ].map(function(opt) {
+                          var selOpt = predictType === opt[0];
+                          return React.createElement("button", {
+                            key: opt[0],
+                            type: "button",
+                            disabled: predictRevealed,
+                            "aria-pressed": selOpt,
+                            "aria-label": t('stem.logiclab.predict_type_opt_aria', 'Predict classification: {opt}').replace('{opt}', opt[1]),
+                            onClick: function() { sfxLogiclClick(); upd({ predictType: opt[0], predictExpr: expr }); },
+                            className: "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer " + (selOpt ? "bg-indigo-600 text-white border-indigo-700" : "bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100")
+                          }, opt[1]);
+                        })
+                      )
+                    ),
+                    React.createElement("div", { className: "space-y-1.5" },
+                      React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t('stem.logiclab.predict_step_b', "2. Predict the output for target row ({row}):").replace('{row}', _predTarget.envText)),
+                      React.createElement("div", { className: "flex gap-2" },
+                        [
+                          [true, t('stem.logiclab.pred_row_true', 'T (True)')],
+                          [false, t('stem.logiclab.pred_row_false', 'F (False)')]
+                        ].map(function(ropt) {
+                          var selR = predictRowVal === ropt[0];
+                          return React.createElement("button", {
+                            key: String(ropt[0]),
+                            type: "button",
+                            disabled: predictRevealed,
+                            "aria-pressed": selR,
+                            "aria-label": t('stem.logiclab.predict_row_opt_aria', 'Predict row output: {val}').replace('{val}', ropt[1]),
+                            onClick: function() { sfxLogiclClick(); upd({ predictRowVal: ropt[0], predictExpr: expr }); },
+                            className: "px-4 py-1.5 rounded-lg text-xs font-black border transition-all cursor-pointer " + (selR ? (ropt[0] ? "bg-emerald-700 text-white border-emerald-800" : "bg-red-600 text-white border-red-700") : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100")
+                          }, ropt[1]);
+                        })
+                      )
+                    ),
+                    !predictRevealed && React.createElement("div", { className: "flex items-center gap-2 pt-1" },
+                      React.createElement("button", {
+                        type: "button",
+                        disabled: !predictType || predictRowVal === null,
+                        "aria-label": t('stem.logiclab.unlock_truth_table_aria', "Unlock and check truth table prediction"),
+                        onClick: function() {
+                          var ev = LOGICLAB_ENGINE.evaluateTruthPrediction(expr, table, predictType, _predTarget.rowIndex, predictRowVal);
+                          var predPatch = { predictRevealed: true, predictExpr: expr };
+                          if (ev && ev.allCorrect) {
+                            var predKey = 'predict:' + expr.replace(/\s+/g, '');
+                            var paidNow = payOnce(predKey, 5, 'Truth table prediction mastered', predPatch);
+                            if (stemBeep) stemBeep(660, 0.1);
+                            if (paidNow && stemCelebrate) stemCelebrate();
+                            if (paidNow && addToast) addToast(t('stem.logiclab.toast_predict_mastered', '\uD83C\uDFAF Prediction spot on! +5 XP'), 'success');
+                          } else {
+                            upd(predPatch);
+                            if (stemBeep) stemBeep(240, 0.1);
+                          }
+                          if (ev && ev.summary && typeof announceToSR === 'function') announceToSR(ev.summary);
+                        },
+                        className: "px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer " + ((!predictType || predictRowVal === null) ? "bg-slate-200 text-slate-700 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm")
+                      }, t('stem.logiclab.unlock_truth_table', "\uD83D\uDD13 Unlock & Check Truth Table"))
+                    ),
+                    _predEval && React.createElement("div", {
+                      role: "status",
+                      className: "p-3 rounded-xl border-2 space-y-1.5 text-xs " + (_predEval.allCorrect ? "bg-emerald-50 border-emerald-300 text-emerald-900" : "bg-amber-50 border-amber-300 text-amber-950")
+                    },
+                      React.createElement("div", { className: "flex items-center justify-between gap-2 flex-wrap" },
+                        React.createElement("span", { className: "font-black" }, _predEval.allCorrect ? t('stem.logiclab.predict_all_matched', "\uD83C\uDF89 Both predictions matched!") : t('stem.logiclab.predict_review_whynot', "\uD83D\uDD0D Review the misconception note below:")),
+                        React.createElement("div", { className: "flex items-center gap-1.5" },
+                          typeof callTTS === 'function' && React.createElement("button", {
+                            type: "button",
+                            "aria-label": t('stem.logiclab.read_predict_feedback_aria', "Read prediction feedback aloud"),
+                            onClick: function() { readAloud(_predEval.summary); },
+                            className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white border border-amber-300 text-slate-800 hover:bg-amber-100 cursor-pointer"
+                          }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud")),
+                          React.createElement("button", {
+                            type: "button",
+                            "aria-label": t('stem.logiclab.predict_reset_aria', "Reset prediction for this formula"),
+                            onClick: function() { upd({ predictType: null, predictRowVal: null, predictRevealed: false }); },
+                            className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50 cursor-pointer"
+                          }, t('stem.logiclab.predict_try_again', "\u21BA Predict Again"))
+                        )
+                      ),
+                      _predEval.allCorrect && React.createElement("div", null, _predEval.summary),
+                      _predEval.whyNotType && React.createElement("div", { className: "font-semibold" }, _predEval.whyNotType),
+                      _predEval.whyNotRow && React.createElement("div", { className: "font-semibold" }, _predEval.whyNotRow)
+                    )
                   ),
 
                   // Table
 
-                  React.createElement("div", { className: "overflow-x-auto px-4 pb-4" },
+                  !_isPredictLocked && React.createElement("div", { className: "overflow-x-auto px-4 pb-4" },
 
                     React.createElement("table", { className: "w-full text-sm", style: { borderCollapse: 'separate', borderSpacing: '0 2px' } },
 
@@ -1810,7 +2763,9 @@ window.StemLab = window.StemLab || {
 
                         table.rows.map(function(row, ri) {
 
-                          return React.createElement("tr", { key: ri, className: "group" },
+                          var isPredHighlight = !!(predictMode && predictRevealed && _predTarget && _predTarget.rowIndex === ri);
+
+                          return React.createElement("tr", { key: ri, className: isPredHighlight ? "group ring-2 ring-indigo-500" : "group" },
 
                             table.vars.map(function(v) {
 
@@ -1892,7 +2847,7 @@ window.StemLab = window.StemLab || {
                     // Solved, not merely passed over: selecting Level 4 used to tick L1-L3.
                     var isCompleted = !!(d.solvedProofs && d.solvedProofs['L' + ci]) || (ci === currentChallenge && proofComplete && !aiProof);
 
-                    return React.createElement("button", { "aria-label": "Select proof challenge: Level " + (ci + 1),
+                    return React.createElement("button", { "aria-label": t('stem.logiclab.select_proof_level_aria', 'Select proof challenge: Level {level}').replace('{level}', ci + 1),
 
                       key: ci,
 
@@ -1918,41 +2873,39 @@ window.StemLab = window.StemLab || {
 
                 ),
 
-                // AI Proof Generator
+                // Proof Challenge Generator (Offline procedural + AI upgrade when _aiOn)
 
-                React.createElement("div", { className: "mt-3 flex items-center gap-2" },
+                React.createElement("div", { className: "mt-3 flex items-center gap-2 flex-wrap" },
 
-                  _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate_proof_challenge', "AI-Generate Proof Challenge"),
+                  React.createElement("button", { type: "button", "aria-label": _aiOn ? t('stem.logiclab.ai_generate_proof_challenge', "AI-Generate Proof Challenge") : t('stem.logiclab.generate_proof_challenge_offline_aria', "Generate New Proof Challenge"),
 
                     onClick: function() {
 
                       var diff = (currentChallenge || 0) + 1;
 
-                      aiGenerate('Generate a propositional logic proof challenge' + topicClause() + '. Use ONLY variables P, Q, R, S. Use ONLY connectives: \u2192 (implies), \u2227 (and), \u2228 (or), \u00AC (not). Difficulty level: ' + diff + ' out of 5. The premises should be solvable using standard inference rules (Modus Ponens, Modus Tollens, Hypothetical Syllogism, Disjunctive Syllogism, Conjunction, Simplification). Return ONLY valid JSON: {"level":' + diff + ',"title":"<creative title>","premises":["<prop1>","<prop2>"],"conclusion":"<target>","hint":"<which rules to use>","context":"<1 sentence real-world framing>"}', 'aiProof');
-
-                      upd({ proofSteps: [], proofComplete: false, selectedSteps: [] });
+                      aiGenerate('Generate a propositional logic proof challenge' + topicClause() + '. Use ONLY variables P, Q, R, S. Use ONLY connectives: \u2192 (implies), \u2227 (and), \u2228 (or), \u00AC (not). Difficulty level: ' + diff + ' out of 5. The premises should be solvable using standard inference rules (Modus Ponens, Modus Tollens, Hypothetical Syllogism, Disjunctive Syllogism, Conjunction, Simplification). Return ONLY valid JSON: {"level":' + diff + ',"title":"<creative title>","premises":["<prop1>","<prop2>"],"conclusion":"<target>","hint":"<which rules to use>","context":"<1 sentence real-world framing>"}', 'aiProof', { proofSteps: [], proofComplete: false, selectedSteps: [], fallacyNote: null });
 
                     },
 
-                    className: "px-4 py-2 text-xs font-bold rounded-xl transition-all",
+                    className: "px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer",
 
-                    style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
+                    style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: isContrast ? '#ffff00' : 'white', border: isContrast ? '2px solid #ffff00' : 'none', boxShadow: isContrast ? 'none' : '0 2px 8px rgba(124,58,237,0.3)' },
 
                     disabled: aiLoading,
 
-                  'aria-busy': aiLoading
+                    'aria-busy': aiLoading
 
-                  }, t('stem.logiclab.ai_generate_proof_challenge_2', "\uD83E\uDD16 AI-Generate Proof Challenge")),
+                  }, _aiOn ? t('stem.logiclab.ai_generate_proof_challenge_2', "\uD83E\uDD16 AI-Generate Proof Challenge") : t('stem.logiclab.generate_proof_challenge_offline', "\u2728 New Proof Challenge")),
 
-                  aiLoading && React.createElement("span", { className: "text-xs text-violet-700 font-bold" }, "Generating..."),
+                  aiLoading && React.createElement("span", { className: "text-xs text-violet-700 font-bold" }, t('stem.logiclab.generating', "Generating...")),
 
-                  aiProof && React.createElement("button", { "aria-label": t('stem.logiclab.clear_ai', "Clear AI"),
+                  aiProof && React.createElement("button", { type: "button", "aria-label": t('stem.logiclab.clear_ai', "Clear AI"),
 
                     onClick: function() { upd({ aiProof: null, proofSteps: [], proofComplete: false, selectedSteps: [], fallacyNote: null }); },
 
-                    className: "text-xs text-red-400 hover:text-red-600 font-bold"
+                    className: "text-xs text-red-400 hover:text-red-600 font-bold cursor-pointer"
 
-                  }, t('stem.logiclab.clear_ai_2', "\u2715 Clear AI"))
+                  }, aiProof.source === 'offline' ? t('stem.logiclab.clear_generated', "\u2715 Clear Generated") : t('stem.logiclab.clear_ai_2', "\u2715 Clear AI"))
 
                 )
 
@@ -1972,7 +2925,18 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "p-4 rounded-2xl border-2 border-indigo-200 bg-indigo-50" },
 
-                    React.createElement("h4", { className: "text-xs font-black text-indigo-600 uppercase tracking-wider mb-2" }, t('stem.logiclab.premises_given', "\uD83D\uDCCB Premises (Given)")),
+                    React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                      React.createElement("h4", { className: "text-xs font-black text-indigo-600 uppercase tracking-wider" }, t('stem.logiclab.premises_given', "\uD83D\uDCCB Premises (Given)")),
+                      typeof callTTS === 'function' && React.createElement("button", {
+                        type: "button",
+                        "aria-label": t('stem.logiclab.read_proof_aloud_aria', "Read proof premises and goal aloud"),
+                        onClick: function() {
+                          var spoken = (activeCh.title ? activeCh.title + '. ' : '') + 'Premises: ' + activeCh.premises.map(function(pr, idx) { return 'Premise ' + (idx + 1) + ', ' + pr; }).join('. ') + '. Goal: prove ' + activeCh.conclusion + '.' + (activeCh.context ? ' ' + activeCh.context : '');
+                          readAloud(spoken);
+                        },
+                        className: "px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-100 cursor-pointer"
+                      }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud"))
+                    ),
 
                     activeCh.premises.map(function(p, pi) {
 
@@ -2011,7 +2975,7 @@ window.StemLab = window.StemLab || {
 
                     activeCh.context && React.createElement("div", { className: "mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200 text-[0.6875rem] text-purple-700 italic flex items-center gap-1" },
 
-                      React.createElement("span", null, "\uD83E\uDD16"),
+                      React.createElement("span", null, activeCh.source === 'offline' ? "\uD83E\uDDE0" : "\uD83E\uDD16"),
 
                       activeCh.context
 
@@ -2031,7 +2995,7 @@ window.StemLab = window.StemLab || {
 
                       var isSelected = (Array.isArray(d.selectedSteps) ? d.selectedSteps : []).indexOf('S' + si) !== -1;
 
-                      return React.createElement("button", { "aria-label": "Select derivation step " + (si + 1) + ": " + step.result,
+                      return React.createElement("button", { "aria-label": t('stem.logiclab.select_derivation_step_aria', 'Select derivation step {num}: {result}').replace('{num}', si + 1).replace('{result}', step.result),
                         key: si,
                         style: { animation: si === proofSteps.length-1 ? 'logicPop 0.3s ease-out' : 'none' },
                         onClick: function() {
@@ -2118,7 +3082,7 @@ window.StemLab = window.StemLab || {
 
                   RULES.filter(function(rule) { return ruleVisible(rule.id); }).map(function(rule) {
 
-                    return React.createElement("button", { "aria-label": "Apply rule: " + rule.name,
+                    return React.createElement("button", { "aria-label": t('stem.logiclab.apply_rule_aria', 'Apply rule: {rule}').replace('{rule}', rule.name),
 
                       key: rule.id,
 
@@ -2130,7 +3094,7 @@ window.StemLab = window.StemLab || {
 
                         if (sel.length < rule.needs) {
 
-                          if (addToast) addToast('Select ' + rule.needs + ' statement(s) first, then click the rule.', 'info');
+                          if (addToast) addToast(t('stem.logiclab.toast_select_statements', 'Select {count} statement(s) first, then click the rule.').replace('{count}', rule.needs), 'info');
 
                           return;
 
@@ -2147,7 +3111,7 @@ window.StemLab = window.StemLab || {
                         }).filter(Boolean);
                         if (selTexts.length < rule.needs) {
                           upd({ selectedSteps: [] });
-                          if (addToast) addToast('Select ' + rule.needs + ' statement(s) first, then click the rule.', 'info');
+                          if (addToast) addToast(t('stem.logiclab.toast_select_statements', 'Select {count} statement(s) first, then click the rule.').replace('{count}', rule.needs), 'info');
                           return;
                         }
 
@@ -2161,32 +3125,41 @@ window.StemLab = window.StemLab || {
 
                           var done = goal !== null && propCanon(result) === goal;
 
-                          upd({ proofSteps: newSteps, selectedSteps: [], proofComplete: done, fallacyNote: null });
+                          var stepPatch = { proofSteps: newSteps, selectedSteps: [], proofComplete: done, fallacyNote: null };
 
                           if (done) {
-                            // Record the solve (the quests read this) and pay once per challenge:
-                            // Undo + re-derive paid "Proof completed" again.
+                            // Record the solve (the quests read this) and pay once per challenge in a single batched pure update:
                             var solvedKey = aiProof ? 'ai:' + activeCh.premises.join('|') + '=>' + goal : 'L' + currentChallenge;
-                            var solvedMap = d.solvedProofs && typeof d.solvedProofs === 'object' ? d.solvedProofs : {};
+                            var solvedMap = d.solvedProofs && typeof d.solvedProofs === 'object' && !Array.isArray(d.solvedProofs) ? d.solvedProofs : {};
+                            var isFirstSolve = !solvedMap[solvedKey];
+                            var _xp = 5 + (activeCh.level || 1) * 3;
+                            if (isFirstSolve) {
+                              var nextSolved = {};
+                              nextSolved[solvedKey] = true;
+                              stepPatch.score = score + _xp;
+                              stepPatch.solvedProofs = nextSolved;
+                            }
+                            upd(stepPatch);
                             if (stemCelebrate) stemCelebrate();
                             if (stemBeep) stemBeep(880, 0.2);
-                            if (!solvedMap[solvedKey]) {
-                              var _xp = 5 + (activeCh.level || 1) * 3;
+                            if (isFirstSolve) {
                               if (typeof awardStemXP === 'function') awardStemXP('logicLab', _xp, 'Proof completed');
-                              if (addToast) addToast('\uD83C\uDF89 Proof complete! +' + _xp + ' XP', 'success');
-                              upd({ score: score + _xp, solvedProofs: Object.assign({}, solvedMap, { [solvedKey]: true }) });
+                              if (addToast) addToast(t('stem.logiclab.toast_proof_complete', '\uD83C\uDF89 Proof complete! +{xp} XP').replace('{xp}', _xp), 'success');
                             }
+                          } else {
+                            upd(stepPatch);
                           }
 
                         } else {
 
-                          var fallacyMsg = diagnoseFallacy(selTexts);
+                          var diag = LOGICLAB_ENGINE.diagnoseLogicMisconception('proof', { ruleId: rule.id, ruleName: rule.name, selTexts: selTexts }, rule.id);
+                          var fallacyMsg = (diag && diag.whyNot) || diagnoseFallacy(selTexts);
 
                           upd({ fallacyNote: fallacyMsg });
 
                           if (fallacyMsg && typeof announceToSR === 'function') announceToSR(fallacyMsg);
 
-                          if (addToast) addToast(fallacyMsg ? '\uD83D\uDEAB Fallacy spotted \u2014 see the note below the rules.' : '\u274C That rule doesn\'t apply to the selected statements.', 'warning');
+                          if (addToast) addToast(fallacyMsg ? t('stem.logiclab.toast_fallacy_spotted', '\uD83D\uDEAB Misconception diagnosed \u2014 see the note below the rules.') : t('stem.logiclab.toast_rule_not_applicable', "\u274C That rule doesn't apply to the selected statements."), 'warning');
 
                         }
 
@@ -2264,11 +3237,11 @@ window.StemLab = window.StemLab || {
 
                   var active = challengeMode === ct[0];
 
-                  return React.createElement("button", { "aria-label": "Switch to " + ct[2] + " challenge mode",
+                  return React.createElement("button", { "aria-label": t('stem.logiclab.switch_challenge_mode_aria', 'Switch to {mode} challenge mode').replace('{mode}', ct[2]),
 
                     key: ct[0],
 
-                    onClick: function() { upd({ challengeMode: ct[0], challengeIdx: 0, challengeAnswer: null, aiChallengeAnswer: null, qfAnswers: {} }); },
+                    onClick: function() { upd({ challengeMode: ct[0], challengeIdx: 0, challengeAnswer: null, challengeChosen: null, aiChallengeAnswer: null, aiChallengeChosen: null, qfAnswers: {} }); },
 
                     className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (active ? "bg-violet-600 text-white shadow-lg" : "bg-violet-50 text-violet-600 hover:bg-violet-100")
 
@@ -2300,7 +3273,7 @@ window.StemLab = window.StemLab || {
 
                 }),
 
-                userTopic && React.createElement("span", { className: "text-[0.6875rem] font-bold text-violet-700" }, t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728"))
+                userTopic && React.createElement("span", { className: "text-[0.6875rem] font-bold text-violet-700" }, _aiOn ? t('stem.logiclab.ai_will_personalize', "AI will personalize \u2728") : t('stem.logiclab.topic_will_personalize', "Topic active \u2728"))
 
               ),
 
@@ -2321,14 +3294,23 @@ window.StemLab = window.StemLab || {
               challengeMode === 'fallacy' && (function() {
 
                 var f = FALLACIES[challengeIdx % FALLACIES.length];
+                var _fChosen = (challengeChosen === true || challengeChosen === false) ? challengeChosen : (challengeAnswer === 'wrong' ? !f.valid : f.valid);
+                var _fDiag = challengeAnswer === 'wrong' ? LOGICLAB_ENGINE.diagnoseLogicMisconception('fallacy', f, _fChosen) : null;
 
                 return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-violet-200", style: { background: _gCard } },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-4 flex-wrap" },
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD0D"),
 
                     React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.is_this_argument_valid', "Is this argument valid?")),
+
+                    typeof callTTS === 'function' && React.createElement("button", {
+                      type: "button",
+                      "aria-label": t('stem.logiclab.read_fallacy_aloud_aria', "Read fallacy argument aloud"),
+                      onClick: function() { readAloud(f.arg); },
+                      className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 cursor-pointer"
+                    }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud")),
 
                     React.createElement("span", { className: "ml-auto text-xs font-bold text-violet-700" }, ((challengeIdx % FALLACIES.length) + 1) + " / " + FALLACIES.length)
 
@@ -2342,15 +3324,15 @@ window.StemLab = window.StemLab || {
 
                   // Answer buttons
 
-                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center flex-wrap" },
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.valid', "Valid"),
                       onClick: function() {
                         var correct = f.valid === true;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
-                        upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 0.1); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
-                        else { if (stemBeep) stemBeep(220, 0.12); }
+                        var ansPatch = { challengeAnswer: correct ? 'correct' : 'wrong', challengeChosen: true, streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 };
+                        if (correct) { payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted', ansPatch); if (stemBeep) stemBeep(660, 0.1); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        else { upd(ansPatch); if (stemBeep) stemBeep(220, 0.12); }
                       },
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
@@ -2361,9 +3343,9 @@ window.StemLab = window.StemLab || {
                       onClick: function() {
                         var correct = f.valid === false;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
-                        upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 0.1); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
-                        else { if (stemBeep) stemBeep(220, 0.12); }
+                        var ansPatch = { challengeAnswer: correct ? 'correct' : 'wrong', challengeChosen: false, streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 };
+                        if (correct) { payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted', ansPatch); if (stemBeep) stemBeep(660, 0.1); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        else { upd(ansPatch); if (stemBeep) stemBeep(220, 0.12); }
                       },
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"
@@ -2387,35 +3369,35 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, f.explain),
 
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                    _fDiag && _fDiag.whyNot && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs font-semibold text-amber-950" }, _fDiag.whyNot),
+
+                    React.createElement("div", { className: "flex gap-2 mt-3 flex-wrap" },
 
                       React.createElement("button", { "aria-label": t('stem.logiclab.next', "Next"),
 
-                        onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiFallacy: null }); },
+                        onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, challengeChosen: null, aiFallacy: null, aiChallengeAnswer: null, aiChallengeChosen: null }); },
 
                         className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all"
 
                       }, t('stem.logiclab.next_2', "Next \u2192")),
 
-                      _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_generate', "AI Generate"),
+                      React.createElement("button", { type: "button", "aria-label": _aiOn ? t('stem.logiclab.ai_generate', "AI Generate") : t('stem.logiclab.generate_fallacy_offline_aria', "Generate fresh argument"),
 
                         onClick: function() {
 
-                          aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy');
-
-                          upd({ aiChallengeAnswer: null });
+                          aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy', { aiChallengeAnswer: null, aiChallengeChosen: null });
 
                         },
 
-                        className: "px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                        className: "px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer",
 
-                        style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
+                        style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: isContrast ? '#ffff00' : 'white', border: isContrast ? '2px solid #ffff00' : 'none', boxShadow: isContrast ? 'none' : '0 2px 8px rgba(124,58,237,0.3)' },
 
                         disabled: aiLoading,
 
-                      'aria-busy': aiLoading
+                        'aria-busy': aiLoading
 
-                      }, t('stem.logiclab.ai_generate_2', "\uD83E\uDD16 AI Generate"))
+                      }, _aiOn ? t('stem.logiclab.ai_generate_2', "\uD83E\uDD16 AI Generate") : t('stem.logiclab.generate_fallacy_offline', "\u2728 Fresh Argument"))
 
                     )
 
@@ -2425,21 +3407,31 @@ window.StemLab = window.StemLab || {
 
               })(),
 
-              // ── AI-generated fallacy card ──
+              // ── AI / Offline-generated fallacy card ──
 
               challengeMode === 'fallacy' && aiFallacy && !aiLoading && (function() {
 
                 var af = aiFallacy;
+                var afSig = 'aiFallacy:' + String(af.arg || '').trim().toLowerCase().slice(0, 120);
+                var _afChosen = (aiChallengeChosen === true || aiChallengeChosen === false) ? aiChallengeChosen : (aiChallengeAnswer === 'wrong' ? !af.valid : !!af.valid);
+                var _afDiag = aiChallengeAnswer === 'wrong' ? LOGICLAB_ENGINE.diagnoseLogicMisconception('fallacy', af, _afChosen) : null;
 
                 return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #1e1b4b, #2e1065, #1e1b4b)' : 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)'), borderColor: isContrast ? '#ffff00' : undefined } },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-4 flex-wrap" },
 
-                    React.createElement("span", { className: "text-2xl" }, "\uD83E\uDD16"),
+                    React.createElement("span", { className: "text-2xl" }, af.source === 'offline' ? "\uD83E\uDDE0" : "\uD83E\uDD16"),
 
-                    React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_generated_is_this_argument_valid', "AI-Generated: Is this argument valid?")),
+                    React.createElement("h3", { className: "font-black text-purple-900" }, af.source === 'offline' ? t('stem.logiclab.generated_is_this_argument_valid', "Practice Argument: Is this argument valid?") : t('stem.logiclab.ai_generated_is_this_argument_valid', "AI-Generated: Is this argument valid?")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai', "\u2728 AI"))
+                    typeof callTTS === 'function' && React.createElement("button", {
+                      type: "button",
+                      "aria-label": t('stem.logiclab.read_generated_fallacy_aloud_aria', "Read generated argument aloud"),
+                      onClick: function() { readAloud(af.arg); },
+                      className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 cursor-pointer"
+                    }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud")),
+
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, af.source === 'offline' ? t('stem.logiclab.offline_badge', "\u2728 Offline") : t('stem.logiclab.ai', "\u2728 AI"))
 
                   ),
 
@@ -2449,11 +3441,16 @@ window.StemLab = window.StemLab || {
 
                   ),
 
-                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center flex-wrap" },
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.valid_3', "Valid"),
 
-                      onClick: function() { var c = af.valid === true ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
+                      onClick: function() {
+                        var ok = af.valid === true;
+                        var c = ok ? 'correct' : 'wrong';
+                        if (ok) payOnce(afSig, 5, 'AI fallacy detected', { aiChallengeAnswer: c, aiChallengeChosen: true });
+                        else upd({ aiChallengeAnswer: c, aiChallengeChosen: true });
+                      },
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm"
 
@@ -2461,7 +3458,12 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("button", { "aria-label": t('stem.logiclab.invalid_fallacy_3', "Invalid (Fallacy)"),
 
-                      onClick: function() { var c = af.valid === false ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI fallacy detected'); },
+                      onClick: function() {
+                        var ok = af.valid === false;
+                        var c = ok ? 'correct' : 'wrong';
+                        if (ok) payOnce(afSig, 5, 'AI fallacy detected', { aiChallengeAnswer: c, aiChallengeChosen: false });
+                        else upd({ aiChallengeAnswer: c, aiChallengeChosen: false });
+                      },
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm"
 
@@ -2477,29 +3479,29 @@ window.StemLab = window.StemLab || {
 
                     ),
 
-                    React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, af.name + " \u2014 " + af.formal),
+                    React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, (af.name || '') + " \u2014 " + (af.formal || '')),
 
-                    React.createElement("div", { className: "text-xs text-slate-600" }, af.explain),
+                    React.createElement("div", { className: "text-xs text-slate-600" }, af.explain || ''),
 
-                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.generate_another', "Generate Another"),
+                    _afDiag && _afDiag.whyNot && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs font-semibold text-amber-950" }, _afDiag.whyNot),
+
+                    React.createElement("button", { type: "button", "aria-label": t('stem.logiclab.generate_another', "Generate Another"),
 
                       onClick: function() {
 
-                        aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy');
-
-                        upd({ aiChallengeAnswer: null });
+                        aiGenerate('Generate a logical argument' + topicClause() + ' for a student to evaluate as valid or invalid. Use everyday, relatable language. Return ONLY valid JSON: {"arg":"<natural language argument, 2-3 sentences>","valid":<true or false>,"name":"<fallacy name or Valid Syllogism or Valid Modus Tollens etc.>","formal":"<formal notation like P\u2192Q, Q \u2234 P \u2717 or P\u2192Q, P \u2234 Q \u2713>","explain":"<1-2 sentence explanation of WHY it is valid or invalid>"}. Mix valid and invalid arguments roughly 50/50. Make the argument sound plausible so the student has to think carefully.', 'aiFallacy', { aiChallengeAnswer: null, aiChallengeChosen: null });
 
                       },
 
-                      className: "mt-3 px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                      className: "mt-3 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer",
 
-                      style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
+                      style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: isContrast ? '#ffff00' : 'white', border: isContrast ? '2px solid #ffff00' : 'none' },
 
                       disabled: aiLoading,
 
-                    'aria-busy': aiLoading
+                      'aria-busy': aiLoading
 
-                    }, t('stem.logiclab.generate_another_2', "\uD83E\uDD16 Generate Another"))
+                    }, _aiOn ? t('stem.logiclab.generate_another_2', "\uD83E\uDD16 Generate Another") : t('stem.logiclab.generate_another_offline', "\u2728 Generate Another"))
 
                   )
 
@@ -2519,7 +3521,7 @@ window.StemLab = window.StemLab || {
 
                 if (!table) return null;
 
-                var userAnswers = d.qfAnswers || {};
+                var userAnswers = (d.qfAnswers && typeof d.qfAnswers === 'object' && !Array.isArray(d.qfAnswers)) ? d.qfAnswers : {};
 
                 var allFilled = table.rows.every(function(r, ri) { return userAnswers[ri] !== undefined; });
 
@@ -2530,9 +3532,12 @@ window.StemLab = window.StemLab || {
                 // back to it does not pay again (the game score still counts repeats).
                 var answerQf = function(ri, value) {
                   var a = Object.assign({}, userAnswers); a[ri] = value;
-                  upd({ qfAnswers: a });
                   var full = table.rows.every(function(r, k) { return a[k] !== undefined; });
-                  if (!allFilled && full && table.rows.every(function(r, k) { return a[k] === r.result; })) payOnce('quickfire:' + (challengeIdx % TT_CHALLENGES.length), 3, 'Quick-fire completed');
+                  if (!allFilled && full && table.rows.every(function(r, k) { return a[k] === r.result; })) {
+                    payOnce('quickfire:' + (challengeIdx % TT_CHALLENGES.length), 3, 'Quick-fire completed', { qfAnswers: a });
+                  } else {
+                    upd({ qfAnswers: a });
+                  }
                 };
 
 
@@ -2657,14 +3662,22 @@ window.StemLab = window.StemLab || {
                 ];
 
                 var det = DETECTIVE[challengeIdx % DETECTIVE.length];
+                var _detDiag = (challengeAnswer === 'wrong' && challengeChosen !== null) ? LOGICLAB_ENGINE.diagnoseLogicMisconception('detective', det, challengeChosen) : null;
 
                 return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-violet-200", style: { background: _gCard } },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-4 flex-wrap" },
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD75\uFE0F"),
 
-                    React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.real_world_reasoning', "Real-World Reasoning"))
+                    React.createElement("h3", { className: "font-black text-violet-900" }, t('stem.logiclab.real_world_reasoning', "Real-World Reasoning")),
+
+                    typeof callTTS === 'function' && React.createElement("button", {
+                      type: "button",
+                      "aria-label": t('stem.logiclab.read_detective_aloud_aria', "Read detective scenario aloud"),
+                      onClick: function() { readAloud(det.scenario + ' ' + det.question); },
+                      className: "ml-auto px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 cursor-pointer"
+                    }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud"))
 
                   ),
 
@@ -2672,13 +3685,13 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "p-3 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-sm font-bold text-amber-800" }, "\uD83E\uDD14 " + det.question),
 
-                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  challengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center flex-wrap" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = det.answer === true ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": t('stem.logiclab.yes_aria', "Yes"), onClick: function() { var ok = det.answer === true; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning', { challengeAnswer: c, challengeChosen: true }); else upd({ challengeAnswer: c, challengeChosen: true }); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = det.answer === false ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
+                    React.createElement("button", { "aria-label": t('stem.logiclab.no_aria', "No"), onClick: function() { var ok = det.answer === false; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning', { challengeAnswer: c, challengeChosen: false }); else upd({ challengeAnswer: c, challengeChosen: false }); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var c = det.answer === 'unknown' ? 'correct' : 'wrong'; upd({ challengeAnswer: c }); if (c === 'correct') payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning'); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell', "Can't tell"), onClick: function() { var ok = det.answer === 'unknown'; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce('detective:' + (challengeIdx % DETECTIVE.length), 3, 'Detective reasoning', { challengeAnswer: c, challengeChosen: 'unknown' }); else upd({ challengeAnswer: c, challengeChosen: 'unknown' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_2', "\u2753 Can't tell"))
 
                   ),
 
@@ -2690,29 +3703,29 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "text-xs text-slate-600" }, det.explain),
 
-                    React.createElement("div", { className: "flex gap-2 mt-3" },
+                    _detDiag && _detDiag.whyNot && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs font-semibold text-amber-950" }, _detDiag.whyNot),
 
-                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, aiDetective: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, t('stem.logiclab.next_3', "Next \u2192")),
+                    React.createElement("div", { className: "flex gap-2 mt-3 flex-wrap" },
 
-                      _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.ai_mystery', "AI Mystery"),
+                      React.createElement("button", { onClick: function() { upd({ challengeIdx: challengeIdx + 1, challengeAnswer: null, challengeChosen: null, aiDetective: null, aiChallengeAnswer: null, aiChallengeChosen: null }); }, className: "px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-all" }, t('stem.logiclab.next_3', "Next \u2192")),
+
+                      React.createElement("button", { type: "button", "aria-label": _aiOn ? t('stem.logiclab.ai_mystery', "AI Mystery") : t('stem.logiclab.new_mystery_offline_aria', "Generate new detective mystery"),
 
                         onClick: function() {
 
-                          aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective');
-
-                          upd({ aiChallengeAnswer: null });
+                          aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective', { aiChallengeAnswer: null, aiChallengeChosen: null });
 
                         },
 
-                        className: "px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                        className: "px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer",
 
-                        style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white', boxShadow: '0 2px 8px rgba(124,58,237,0.3)' },
+                        style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: isContrast ? '#ffff00' : 'white', border: isContrast ? '2px solid #ffff00' : 'none', boxShadow: isContrast ? 'none' : '0 2px 8px rgba(124,58,237,0.3)' },
 
                         disabled: aiLoading,
 
-                      'aria-busy': aiLoading
+                        'aria-busy': aiLoading
 
-                      }, t('stem.logiclab.ai_mystery_2', "\uD83D\uDD75\uFE0F AI Mystery"))
+                      }, _aiOn ? t('stem.logiclab.ai_mystery_2', "\uD83D\uDD75\uFE0F AI Mystery") : t('stem.logiclab.new_mystery_offline', "\uD83D\uDD75\uFE0F Fresh Mystery"))
 
                     )
 
@@ -2722,21 +3735,30 @@ window.StemLab = window.StemLab || {
 
               })(),
 
-              // ── AI-generated detective scenario ──
+              // ── AI / Offline-generated detective scenario ──
 
               challengeMode === 'detective' && aiDetective && !aiLoading && (function() {
 
                 var ad = aiDetective;
+                var adSig = 'aiDetective:' + String(ad.scenario || '').trim().toLowerCase().slice(0, 90) + '|' + String(ad.question || '').trim().toLowerCase().slice(0, 60);
+                var _adDiag = (aiChallengeAnswer === 'wrong' && aiChallengeChosen !== null) ? LOGICLAB_ENGINE.diagnoseLogicMisconception('detective', ad, aiChallengeChosen) : null;
 
                 return React.createElement("div", { className: "p-6 rounded-2xl border-2 border-purple-300", style: { background: isContrast ? '#000000' : (isDark ? 'linear-gradient(135deg, #1e1b4b, #2e1065, #1e1b4b)' : 'linear-gradient(135deg, #faf5ff, #f3e8ff, #faf5ff)'), borderColor: isContrast ? '#ffff00' : undefined } },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-4" },
+                  React.createElement("div", { className: "flex items-center gap-2 mb-4 flex-wrap" },
 
                     React.createElement("span", { className: "text-2xl" }, "\uD83D\uDD75\uFE0F"),
 
-                    React.createElement("h3", { className: "font-black text-purple-900" }, t('stem.logiclab.ai_mystery_3', "AI Mystery")),
+                    React.createElement("h3", { className: "font-black text-purple-900" }, ad.source === 'offline' ? t('stem.logiclab.generated_mystery', "Practice Mystery") : t('stem.logiclab.ai_mystery_3', "AI Mystery")),
 
-                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, t('stem.logiclab.ai_2', "\u2728 AI"))
+                    typeof callTTS === 'function' && React.createElement("button", {
+                      type: "button",
+                      "aria-label": t('stem.logiclab.read_generated_detective_aloud_aria', "Read generated detective scenario aloud"),
+                      onClick: function() { readAloud(ad.scenario + ' ' + ad.question); },
+                      className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-purple-300 text-purple-700 hover:bg-purple-50 cursor-pointer"
+                    }, t('stem.logiclab.read_aloud', "\uD83D\uDD0A Read aloud")),
+
+                    React.createElement("span", { className: "ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-[0.6875rem] font-bold rounded-full border border-purple-200" }, ad.source === 'offline' ? t('stem.logiclab.offline_badge', "\u2728 Offline") : t('stem.logiclab.ai_2', "\u2728 AI"))
 
                   ),
 
@@ -2744,13 +3766,13 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "p-3 bg-amber-50 rounded-xl border border-amber-200 mb-4 text-sm font-bold text-amber-800" }, "\uD83E\uDD14 " + ad.question),
 
-                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center" },
+                  aiChallengeAnswer === null && React.createElement("div", { className: "flex gap-3 justify-center flex-wrap" },
 
-                    React.createElement("button", { "aria-label": "Yes", onClick: function() { var c = ad.answer === true ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
+                    React.createElement("button", { "aria-label": t('stem.logiclab.yes_aria', "Yes"), onClick: function() { var ok = ad.answer === true; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce(adSig, 5, 'AI detective reasoning', { aiChallengeAnswer: c, aiChallengeChosen: true }); else upd({ aiChallengeAnswer: c, aiChallengeChosen: true }); }, className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all text-sm" }, t('stem.logiclab.yes_2', "\u2705 Yes")),
 
-                    React.createElement("button", { "aria-label": "No", onClick: function() { var c = ad.answer === false ? 'correct' : 'wrong'; upd({ aiChallengeAnswer: c }); if (c === 'correct' && typeof awardStemXP === 'function') awardStemXP('logicLab', 5, 'AI detective reasoning'); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
+                    React.createElement("button", { "aria-label": t('stem.logiclab.no_aria', "No"), onClick: function() { var ok = ad.answer === false; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce(adSig, 5, 'AI detective reasoning', { aiChallengeAnswer: c, aiChallengeChosen: false }); else upd({ aiChallengeAnswer: c, aiChallengeChosen: false }); }, className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all text-sm" }, t('stem.logiclab.no_2', "\u274C No")),
 
-                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { upd({ aiChallengeAnswer: 'wrong' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
+                    React.createElement("button", { "aria-label": t('stem.logiclab.can_t_tell_3', "Can't tell"), onClick: function() { var ok = ad.answer === 'unknown'; var c = ok ? 'correct' : 'wrong'; if (ok) payOnce(adSig, 5, 'AI detective reasoning', { aiChallengeAnswer: c, aiChallengeChosen: 'unknown' }); else upd({ aiChallengeAnswer: c, aiChallengeChosen: 'unknown' }); }, className: "px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl border-2 border-slate-300 transition-all text-sm" }, t('stem.logiclab.can_t_tell_4', "\u2753 Can't tell"))
 
                   ),
 
@@ -2758,27 +3780,27 @@ window.StemLab = window.StemLab || {
 
                     React.createElement("div", { className: "font-black text-sm mb-1 " + (aiChallengeAnswer === 'correct' ? "text-emerald-700" : "text-red-700") }, aiChallengeAnswer === 'correct' ? "\uD83C\uDF89 Correct!" : "\u274C Not quite."),
 
-                    React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, "Rule: " + ad.rule),
+                    React.createElement("div", { className: "text-xs font-bold text-slate-600 mb-1" }, "Rule: " + (ad.rule || '')),
 
-                    React.createElement("div", { className: "text-xs text-slate-600" }, ad.explain),
+                    React.createElement("div", { className: "text-xs text-slate-600" }, ad.explain || ''),
 
-                    _aiOn && React.createElement("button", { "aria-label": t('stem.logiclab.generate_another_3', "Generate Another"),
+                    _adDiag && _adDiag.whyNot && React.createElement("div", { className: "mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-300 text-xs font-semibold text-amber-950" }, _adDiag.whyNot),
+
+                    React.createElement("button", { type: "button", "aria-label": t('stem.logiclab.generate_another_3', "Generate Another"),
 
                       onClick: function() {
 
-                        aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective');
-
-                        upd({ aiChallengeAnswer: null });
+                        aiGenerate('Generate a logic detective scenario' + topicClause() + ' for a student. Present 2-4 numbered clues as conditional statements that can be resolved using one of: Modus Ponens, Modus Tollens, Hypothetical Syllogism, or Disjunctive Syllogism. Return ONLY valid JSON: {"scenario":"<multi-line scenario with numbered clues>","question":"<yes/no question>","answer":<true or false>,"rule":"<which inference rule solves it>","explain":"<step-by-step logical derivation using symbols>"}', 'aiDetective', { aiChallengeAnswer: null, aiChallengeChosen: null });
 
                       },
 
-                      className: "mt-3 px-4 py-2 text-xs font-bold rounded-lg transition-all",
+                      className: "mt-3 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer",
 
-                      style: { background: 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: 'white' },
+                      style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #7c3aed, #a78bfa)', color: isContrast ? '#ffff00' : 'white', border: isContrast ? '2px solid #ffff00' : 'none' },
 
                       disabled: aiLoading,
 
-                    'aria-busy': aiLoading
+                      'aria-busy': aiLoading
 
                     }, t('stem.logiclab.generate_another_4', "\uD83D\uDD75\uFE0F Generate Another"))
 
@@ -2811,7 +3833,7 @@ window.StemLab = window.StemLab || {
                     var activeGt = gateType === gt;
                     return React.createElement("button", {
                       type: "button",
-                      "aria-label": "Select logic gate: " + gt,
+                      "aria-label": t('stem.logiclab.select_gate_aria', 'Select logic gate: {gate}').replace('{gate}', gt),
                       "aria-pressed": activeGt,
                       key: gt,
                       onClick: function(){upd({gateType:gt});if(stemBeep)stemBeep(440,0.05);},
@@ -2835,7 +3857,7 @@ window.StemLab = window.StemLab || {
                         React.createElement("span", { className: "text-xs font-black w-4", style: { color: isContrast ? '#ffff00' : '#cbd5e1' } }, inp),
                         React.createElement("button", {
                           type: "button",
-                          "aria-label": "Toggle gate input " + inp + ": " + (val ? 'True to False' : 'False to True'),
+                          "aria-label": t('stem.logiclab.toggle_gate_input_aria', 'Toggle gate input {inp}: {dir}').replace('{inp}', inp).replace('{dir}', val ? t('stem.logiclab.true_to_false', 'True to False') : t('stem.logiclab.false_to_true', 'False to True')),
                           "aria-pressed": val,
                           onClick: function() {
                             var ni = Object.assign({}, gateInputs); ni[inp] = !ni[inp];
@@ -3012,7 +4034,7 @@ window.StemLab = window.StemLab || {
                       viewBox: "0 0 360 112",
                       width: "100%",
                       role: "img",
-                      "aria-label": gateType + " digital timing waveform across all input combinations"
+                      "aria-label": t('stem.logiclab.timing_waveform_aria', '{gate} digital timing waveform across all input combinations').replace('{gate}', gateType)
                     },
                       !isContrast && React.createElement("defs", null,
                         React.createElement("linearGradient", { id: "ll-osc-active", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
@@ -3100,8 +4122,8 @@ window.StemLab = window.StemLab || {
                       React.createElement("button", { type: "button", "aria-label": t('stem.logiclab.open_in_truth_tables', "Open in Truth Tables"),
                         onClick: function() {
                           var fml = gateType==='AND'?'P \u2227 Q':gateType==='OR'?'P \u2228 Q':gateType==='NOT'?'\u00AC P':gateType==='NAND'?'\u00AC (P \u2227 Q)':gateType==='NOR'?'\u00AC (P \u2228 Q)':gateType==='XOR'?'P \u2295 Q':'\u00AC (P \u2295 Q)';
-                          upd({ mode:'truth', expression: fml });
-                          if (addToast) addToast('Opened in Truth Table builder!','info');
+                          upd({ mode:'truth', expression: fml, aiExplain: '', predictRevealed: false });
+                          if (addToast) addToast(t('stem.logiclab.toast_opened_truth_table', 'Opened in Truth Table builder!'), 'info');
                         },
                         className: "ml-auto px-3 py-1 bg-violet-200 hover:bg-violet-300 text-violet-800 font-bold rounded-full text-[0.6875rem] cursor-pointer"
                       }, t('stem.logiclab.open_in_truth_tables_2', "\uD83D\uDCCA Open in Truth Tables \u2192"))
@@ -3113,7 +4135,17 @@ window.StemLab = window.StemLab || {
 
             // === H7b'' inquiry widget: probability logic ===
             mode === 'simLogic' && (function() {
-              var iq = d._simLogic || { pTrue: 70, qTrue: 70, threshold: 80, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var _rawIq = (d._simLogic && typeof d._simLogic === 'object' && !Array.isArray(d._simLogic)) ? d._simLogic : {};
+              var iq = {
+                pTrue: (typeof _rawIq.pTrue === 'number' && isFinite(_rawIq.pTrue)) ? Math.max(0, Math.min(100, _rawIq.pTrue)) : 70,
+                qTrue: (typeof _rawIq.qTrue === 'number' && isFinite(_rawIq.qTrue)) ? Math.max(0, Math.min(100, _rawIq.qTrue)) : 70,
+                threshold: (typeof _rawIq.threshold === 'number' && isFinite(_rawIq.threshold)) ? Math.max(0, Math.min(100, _rawIq.threshold)) : 80,
+                hypothesis: typeof _rawIq.hypothesis === 'string' ? _rawIq.hypothesis : '',
+                stuckRevealed: !!_rawIq.stuckRevealed,
+                understood: !!_rawIq.understood,
+                explanation: typeof _rawIq.explanation === 'string' ? _rawIq.explanation : '',
+                log: Array.isArray(_rawIq.log) ? _rawIq.log : []
+              };
               function setIQ(patch) { upd({ _simLogic: Object.assign({}, iq, patch) }); }
               var pAnd = (iq.pTrue * iq.qTrue) / 100;
               var pOr = iq.pTrue + iq.qTrue - pAnd;
@@ -3145,7 +4177,7 @@ window.StemLab = window.StemLab || {
                     viewBox: '0 0 340 106',
                     width: '100%',
                     role: 'img',
-                    'aria-label': 'Probability bars comparing P(P), P(Q), P(P and Q), and P(P or Q) against confidence threshold ' + iq.threshold + ' percent'
+                    'aria-label': t('stem.logiclab.prob_bars_aria', 'Probability bars comparing P(P), P(Q), P(P and Q), and P(P or Q) against confidence threshold {threshold} percent').replace('{threshold}', iq.threshold)
                   },
                     !isContrast && React.createElement('defs', null,
                       React.createElement('linearGradient', { id: 'll-pbar-gloss', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
@@ -3216,7 +4248,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("button", { "aria-label": t('stem.logiclab.toggle_educational_panel_what_is_propo', "Toggle educational panel: What is Propositional Logic"),
 
-                onClick: function() { upd({ showEdu: !showEdu }); if (!showEdu) payOnce('learn', 5, 'First logic session'); },
+                onClick: function() { if (!showEdu) payOnce('learn', 5, 'First logic session', { showEdu: true }); else upd({ showEdu: false }); },
 
                 className: "w-full p-4 rounded-2xl border-2 border-violet-200 text-left transition-all hover:shadow-md flex items-center gap-3",
 
@@ -3284,7 +4316,7 @@ window.StemLab = window.StemLab || {
                       return React.createElement("button", {
                         key: law[0], type: 'button',
                         className: "w-full text-left flex items-center gap-2 p-2 bg-white rounded-lg border border-violet-100 cursor-pointer hover:border-violet-300 hover:shadow-sm transition-all",
-                        onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth' }); if(addToast) addToast('Loaded in Truth Tables!','info'); }
+                        onClick: function() { upd({ expression: law[1].split(' \u2261 ')[0].trim(), mode: 'truth', aiExplain: '', predictRevealed: false }); if(addToast) addToast(t('stem.logiclab.toast_loaded_truth_tables', 'Loaded in Truth Tables!'), 'info'); }
                       },
                         React.createElement("span", { className: "text-[0.6875rem] font-black text-violet-700 w-28 shrink-0" }, law[0]),
                         React.createElement("code", { className: "font-mono text-xs text-violet-800 font-bold" }, law[1]),
@@ -3311,7 +4343,7 @@ window.StemLab = window.StemLab || {
 
             // ═══ BACK BUTTON ═══
 
-            React.createElement("div", { className: "mt-6 text-center" },
+            !isEmbedded && React.createElement("div", { className: "mt-6 text-center" },
 
               React.createElement("button", { "aria-label": t('stem.logiclab.back_to_tools', "Back to Tools"),
 
@@ -3375,10 +4407,12 @@ window.StemLab = window.StemLab || {
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = performance.now();
-                    var reducedMotion = false;
-                    try {
-                      reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-                    } catch (e) {}
+                    var reducedMotion = !!(ctx && ctx.reduceMotion);
+                    if (!reducedMotion) {
+                      try {
+                        reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                      } catch (e) {}
+                    }
                     var lastFrameKey = '';
                     var ops = [
                       { name: 'AND', sym: '\u2227', fn: function(a,b){return a&&b;}, color: '#38bdf8' },
@@ -3481,11 +4515,11 @@ window.StemLab = window.StemLab || {
                       var nowMs = performance.now();
                       var dt = Math.min(0.1, Math.max(0, (nowMs - prevFrameMs) / 1000));
                       prevFrameMs = nowMs;
-                      var t = (nowMs - start) / 1000;
+                      var elapsed = (nowMs - start) / 1000;
                       var hc = isHcActive();
-                      var blink = reducedMotion ? 0 : Math.floor((t * 0.25) % ops.length);
-                      var activeRow = reducedMotion ? 4 : (1 + Math.floor((t * 1.0) % 4));
-                      var pulsePos = reducedMotion ? 0.55 : ((t * 1.35) % 1);
+                      var blink = reducedMotion ? 0 : Math.floor((elapsed * 0.25) % ops.length);
+                      var activeRow = reducedMotion ? 4 : (1 + Math.floor((elapsed * 1.0) % 4));
+                      var pulsePos = reducedMotion ? 0.55 : ((elapsed * 1.35) % 1);
                       var frameKey = reducedMotion ? ('static-' + W + 'x' + H + '-' + (hc ? 'hc' : 'std')) : '';
                       if (reducedMotion && frameKey === lastFrameKey) { return; }
                       lastFrameKey = frameKey;
@@ -3558,7 +4592,7 @@ window.StemLab = window.StemLab || {
 
                       // Gate symbol with zero-GC pulse-packet wires, transition flash halo & ambient LED bloom
                       var gx = W * 0.60, gy = H * 0.48;
-                      var pinPhase = t * 4.2;
+                      var pinPhase = elapsed * 4.2;
                       drawWire(gx - 72, gy - 13, gx - 22, gy - 13, curA, '#4ade80', pulsePos, pinPhase, hc);
                       drawWire(gx - 72, gy + 13, gx - 22, gy + 13, curB, '#4ade80', (pulsePos + 0.35) % 1, pinPhase + 1.1, hc);
                       drawWire(gx + (op.name === 'NAND' ? 28 : 22), gy, gx + 76, gy, curOut, op.color, (pulsePos + 0.15) % 1, pinPhase + 2.2, hc);
@@ -3633,7 +4667,7 @@ window.StemLab = window.StemLab || {
 
                       // Glowing Output LED dome with crisp ambient halo bloom
                       var ledX = gx + 82, ledY = gy;
-                      var breath = reducedMotion ? 1.0 : (0.86 + 0.14 * Math.sin(t * 3.4));
+                      var breath = reducedMotion ? 1.0 : (0.86 + 0.14 * Math.sin(elapsed * 3.4));
                       if (curOut && !hc && typeof c2.createRadialGradient === 'function') {
                         var outerBloomR = 23 * breath;
                         var lho = c2.createRadialGradient(ledX, ledY, 2, ledX, ledY, outerBloomR);

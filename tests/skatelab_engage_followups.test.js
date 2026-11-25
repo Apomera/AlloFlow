@@ -119,6 +119,14 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const footerTexts = () => {
   // Every fillText the canvas received, newest last.
   const ctx = HTMLCanvasElement.prototype.getContext.mock.results.map((r) => r.value);
@@ -129,6 +137,7 @@ const lastFooter = () => footerTexts().filter((s) => /guess/.test(s)).slice(-1)[
 describe('an estimate after a what-if ghost has shown that setup', () => {
   const revealThenMoon = async (awardXP) => {
     const state = await mount(seed({ activeMission: 'moon_hang' }), { awardXP });
+    await toPrompt('hp_moon');
     await chooseFirstAnswer();
     await launch();
     expect(state.latest.skatelab.moonSeen.length, 'the ghost showed the Moon setup').toBe(1);
@@ -157,7 +166,7 @@ describe('an estimate after a what-if ghost has shown that setup', () => {
 
   it('a ghost for another change (the rider\'s mass) counts the same way', async () => {
     const awardXP = vi.fn();
-    const state = await mount(seed({ predictionStats: { made: 1 } }), { awardXP });
+    const state = await mount(seed({ predictionStats: { made: 3 } }), { awardXP });
     await chooseFirstAnswer();
     await launch();
     const ghost = container.querySelector('[data-skatelab-ghost]').getAttribute('data-skatelab-ghost');

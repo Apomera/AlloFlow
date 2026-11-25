@@ -75,6 +75,7 @@ function buildFirstWaveModule(key, sourceOverride) {
     '/** Auto-generated first-wave cold-path CDN module. */',
     '(function() {',
     "'use strict';",
+    "if (typeof window === 'undefined') return;",
     'var React = window.React;',
     `if (!React) { console.error('[${key}] React not found on window'); return; }`,
     'window.AlloModules = window.AlloModules || {};',

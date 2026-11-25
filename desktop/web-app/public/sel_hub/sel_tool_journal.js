@@ -10,27 +10,39 @@
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
+  if (!window.SelHub || typeof window.SelHub !== 'object') {
+    window.SelHub = {
+      _registry: Object.create(null), _order: [],
+      registerTool: function(id, config) {
+        if (!id || typeof id !== 'string' || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+        config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+      },
+      isRegistered: function(id) { return !!(id && Object.prototype.hasOwnProperty.call(this._registry, id)); },
+      renderTool: function(id, ctx) { var tool = (id && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || !tool.render) return null; return tool.render(ctx); }
+    };
+  }
+  if (typeof window.SelHub.isRegistered === 'function' && window.SelHub.isRegistered('journal')) return;
+
+  var LOCAL_CRISIS_RE = /\b(?:kill\s+myself|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|suicidal|hurt\s+myself|cut\s+myself|self[\s-]?harm|overdose)\b/i;
 
   // ── Live region (WCAG 4.1.3) ──
-  (function() {
-    if (document.getElementById('allo-live-journal')) return;
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body) return null;
+    var existing = document.getElementById('allo-live-journal');
+    if (existing) return existing;
     var lr = document.createElement('div');
     lr.id = 'allo-live-journal'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
-  })();
+    return lr;
+  }
   // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Feelings Journal
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-journal-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || document.getElementById('allo-journal-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-journal-a11y-css';
     st.textContent = [
@@ -63,8 +75,13 @@ window.SelHub = window.SelHub || {
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (typeof window === 'object' && window && ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMuted || window._alloGlobalMute)) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
+      if (ac.state === 'suspended' && typeof ac.resume === 'function') {
+        var rp = ac.resume();
+        if (rp && typeof rp.catch === 'function') rp.catch(function() {});
+      }
       var osc = ac.createOscillator();
       var gain = ac.createGain();
       osc.type = type || 'sine';
@@ -387,34 +404,36 @@ window.SelHub = window.SelHub || {
   }
 
   function calcStreak(checkIns) {
-    if (!checkIns || checkIns.length === 0) return 0;
-    var days = {};
-    checkIns.forEach(function(ci) { days[dateKey(ci.timestamp)] = true; });
-    var sorted = Object.keys(days).sort().reverse();
-    var today = dateKey(Date.now());
-    var yesterday = dateKey(Date.now() - 86400000);
+    if (!Array.isArray(checkIns) || checkIns.length === 0) return 0;
+    var days = Object.create(null);
+    checkIns.forEach(function(ci) { if (ci && typeof ci === 'object' && ci.timestamp != null) days[dateKey(ci.timestamp)] = true; });
+    var now = new Date();
+    var today = dateKey(now.getTime());
+    var yest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    var yesterday = dateKey(yest.getTime());
     if (!days[today] && !days[yesterday]) return 0;
     var streak = 0;
-    var cur = days[today] ? new Date() : new Date(Date.now() - 86400000);
-    while (true) {
+    var cur = days[today] ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) : yest;
+    while (streak < 3660) {
       var key = dateKey(cur.getTime());
       if (!days[key]) break;
       streak++;
-      cur = new Date(cur.getTime() - 86400000);
+      cur.setDate(cur.getDate() - 1);
     }
     return streak;
   }
 
   function uniqueMoods(checkIns) {
-    var seen = {};
-    (checkIns || []).forEach(function(ci) { seen[ci.mood] = true; });
+    var seen = Object.create(null);
+    (checkIns || []).forEach(function(ci) { if (ci && typeof ci === 'object' && ci.mood != null) seen[ci.mood] = true; });
     return Object.keys(seen).length;
   }
 
   function uniqueTriggers(checkIns) {
-    var seen = {};
+    var seen = Object.create(null);
     (checkIns || []).forEach(function(ci) {
-      (ci.triggers || []).forEach(function(t) { seen[t] = true; });
+      if (!ci || typeof ci !== 'object') return;
+      (Array.isArray(ci.triggers) ? ci.triggers : []).forEach(function(t) { if (t) seen[t] = true; });
     });
     return Object.keys(seen).length;
   }
@@ -422,22 +441,23 @@ window.SelHub = window.SelHub || {
   function gratitudeCount(checkIns) {
     var count = 0;
     (checkIns || []).forEach(function(ci) {
-      if (ci.gratitude && ci.gratitude.trim()) count++;
+      if (ci && typeof ci === 'object' && typeof ci.gratitude === 'string' && ci.gratitude.trim()) count++;
     });
     return count;
   }
 
   function uniquePromptsUsed(journalEntries) {
-    var seen = {};
+    var seen = Object.create(null);
     (journalEntries || []).forEach(function(je) {
-      if (je.prompt) seen[je.prompt] = true;
+      if (je && typeof je === 'object' && je.prompt) seen[je.prompt] = true;
     });
     return Object.keys(seen).length;
   }
 
   function countUniqueEmotionWords(checkIns) {
-    var seen = {};
+    var seen = Object.create(null);
     (checkIns || []).forEach(function(ci) {
+      if (!ci || typeof ci !== 'object') return;
       if (ci.subEmotion) seen[ci.subEmotion] = true;
       if (ci.expandedEmotion) seen[ci.expandedEmotion] = true;
     });
@@ -445,8 +465,9 @@ window.SelHub = window.SelHub || {
   }
 
   function getEmotionWordsList(checkIns) {
-    var seen = {};
+    var seen = Object.create(null);
     (checkIns || []).forEach(function(ci) {
+      if (!ci || typeof ci !== 'object') return;
       if (ci.subEmotion) seen[ci.subEmotion] = true;
       if (ci.expandedEmotion) seen[ci.expandedEmotion] = true;
     });
@@ -461,7 +482,9 @@ window.SelHub = window.SelHub || {
   }
 
   function generateMoodPatternAnalysis(checkIns) {
-    if (!checkIns || checkIns.length < 5) return null;
+    var valid = (Array.isArray(checkIns) ? checkIns : []).filter(function(ci) { return ci && typeof ci === 'object' && typeof ci.mood === 'number' && isFinite(ci.mood); });
+    if (valid.length < 5) return null;
+    checkIns = valid;
     var analysis = [];
 
     // 1. Weekday vs weekend comparison
@@ -485,9 +508,10 @@ window.SelHub = window.SelHub || {
     }
 
     // 2. Trigger correlation
-    var trigMoods = {};
+    var trigMoods = Object.create(null);
     checkIns.forEach(function(ci) {
-      (ci.triggers || []).forEach(function(t) {
+      (Array.isArray(ci.triggers) ? ci.triggers : []).forEach(function(t) {
+        if (!t) return;
         if (!trigMoods[t]) trigMoods[t] = { total: 0, count: 0 };
         trigMoods[t].total += ci.mood;
         trigMoods[t].count++;
@@ -517,13 +541,15 @@ window.SelHub = window.SelHub || {
       var olderAvg = 0;
       older.forEach(function(ci) { olderAvg += ci.mood; });
       olderAvg = olderAvg / older.length;
-      var changePct = Math.round((recentAvg - olderAvg) / olderAvg * 100);
-      if (changePct > 5) {
-        analysis.push({ icon: '\uD83D\uDCC8', text: 'Your mood has improved ' + changePct + '% over the last 2 weeks. Keep it up!' });
-      } else if (changePct < -5) {
-        analysis.push({ icon: '\uD83D\uDCC9', text: 'Your mood has dipped ' + Math.abs(changePct) + '% over the last 2 weeks. Be extra kind to yourself.' });
-      } else {
-        analysis.push({ icon: '\u2696\uFE0F', text: 'Your mood has been steady over the last 2 weeks \u2014 stability is a strength.' });
+      if (olderAvg > 0) {
+        var changePct = Math.round((recentAvg - olderAvg) / olderAvg * 100);
+        if (changePct > 5) {
+          analysis.push({ icon: '\uD83D\uDCC8', text: 'Your mood has improved ' + changePct + '% over the last 2 weeks. Keep it up!' });
+        } else if (changePct < -5) {
+          analysis.push({ icon: '\uD83D\uDCC9', text: 'Your mood has dipped ' + Math.abs(changePct) + '% over the last 2 weeks. Be extra kind to yourself.' });
+        } else {
+          analysis.push({ icon: '\u2696\uFE0F', text: 'Your mood has been steady over the last 2 weeks \u2014 stability is a strength.' });
+        }
       }
     }
 
@@ -595,12 +621,12 @@ window.SelHub = window.SelHub || {
     var totalMood = 0;
     var totalEnergy = 0;
     var energyCount = 0;
-    var trigCount = {};
+    var trigCount = Object.create(null);
     weekEntries.forEach(function(ci) {
       totalMood += ci.mood;
       var energy = recordedEnergy(ci);
       if (energy != null) { totalEnergy += energy; energyCount++; }
-      (ci.triggers || []).forEach(function(t) { trigCount[t] = (trigCount[t] || 0) + 1; });
+      (Array.isArray(ci.triggers) ? ci.triggers : []).forEach(function(t) { if (t) trigCount[t] = (trigCount[t] || 0) + 1; });
     });
     var avgMood = Math.round(totalMood / weekEntries.length * 10) / 10;
     var avgEnergy = energyCount ? Math.round(totalEnergy / energyCount * 10) / 10 : null;
@@ -672,61 +698,70 @@ window.SelHub = window.SelHub || {
       var _jouFg = function(h){ return _jouHC ? (_jou_FGH[h]||'#ffff00') : (_jouL ? (_jou_FGL[h]||h) : (_jou_FGD[h]||h)); };
       var _jouBd = function(h){ return _jouHC ? (_jou_BDH[h]||h) : (_jouL ? (_jou_BDL[h]||h) : h); };
       return (function() {
+        if (!ctx || !ctx.React) return null;
         var React = ctx.React;
         var h = React.createElement;
-        var addToast = ctx.addToast;
-        var awardXP = ctx.awardXP;
-        var announceToSR = ctx.announceToSR;
+        var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
+        var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
+        var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
         var a11yClick = ctx.a11yClick;
-        var celebrate = ctx.celebrate;
+        var celebrate = typeof ctx.celebrate === 'function' ? ctx.celebrate : null;
         var callGemini = ctx.callGemini;
-        var _jrAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
-        var callTTS = ctx.callTTS;
-        var band = ctx.gradeBand || 'elementary';
+        var _jrAiOn = ctx.aiAvailable !== false && (function (fn) { if (typeof window.__alloAiUsable === 'function') { try { return !!window.__alloAiUsable('text', fn); } catch (_) { return false; } } return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
+        var callTTS = typeof ctx.callTTS === 'function' ? ctx.callTTS : null;
+        var band = typeof ctx.gradeBand === 'string' && ctx.gradeBand ? ctx.gradeBand : 'elementary';
         var onSafetyFlag = ctx.onSafetyFlag || null;
+        var aliveRef = typeof React.useRef === 'function' ? React.useRef(true) : { current: true };
+        if (typeof React.useEffect === 'function') {
+          React.useEffect(function() {
+            aliveRef.current = true;
+            return function() { aliveRef.current = false; };
+          }, []);
+        }
 
         // ── Tool-scoped state ──
-        var d = (ctx.toolData && ctx.toolData.journal) || {};
+        var rawD = ctx.toolData && ctx.toolData.journal;
+        var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
         var upd = function(key, val) {
-          if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('journal', key); }
-          else { if (ctx.update) ctx.update('journal', key, val); }
+          if (typeof key === 'object') { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('journal', key); }
+          else { if (typeof ctx.update === 'function') ctx.update('journal', key, val); }
         };
 
-        var activeTab     = d.activeTab || 'checkin';
-        var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
+        var activeTab     = typeof d.activeTab === 'string' ? d.activeTab : 'checkin';
+        var soundEnabled  = d.soundEnabled != null ? !!d.soundEnabled : true;
 
         // Check-in state
-        var checkIns       = (Array.isArray(d.checkIns) ? d.checkIns : []);
+        var checkIns       = (Array.isArray(d.checkIns) ? d.checkIns : []).filter(function(ci) { return ci && typeof ci === 'object'; });
         var ciMood         = d.ciMood != null ? d.ciMood : null;
         var ciEnergy       = recordedEnergy({ energy: d.ciEnergy });
-        var ciThoughts     = d.ciThoughts || '';
-        var ciTriggers     = (Array.isArray(d.ciTriggers) ? d.ciTriggers : []);
-        var ciGratitude    = d.ciGratitude || '';
+        var ciThoughts     = typeof d.ciThoughts === 'string' ? d.ciThoughts : '';
+        var ciTriggers     = (Array.isArray(d.ciTriggers) ? d.ciTriggers : []).filter(function(t) { return typeof t === 'string'; });
+        var ciGratitude    = typeof d.ciGratitude === 'string' ? d.ciGratitude : '';
 
         // Journal state
-        var journalEntries = d.journalEntries || [];
-        var jPromptIdx     = d.jPromptIdx || 0;
+        var journalEntries = (Array.isArray(d.journalEntries) ? d.journalEntries : []).filter(function(je) { return je && typeof je === 'object'; });
+        var jPromptIdx     = (typeof d.jPromptIdx === 'number' && isFinite(d.jPromptIdx) && d.jPromptIdx >= 0) ? Math.floor(d.jPromptIdx) : 0;
         var jText          = (typeof d.jText === 'string' ? d.jText : '');
-        var jViewingPast   = d.jViewingPast || false;
-        var jRevision      = d.jRevision || null;
+        var jViewingPast   = !!d.jViewingPast;
+        var jRevision      = (d.jRevision && typeof d.jRevision === 'object') ? d.jRevision : null;
         var journalFocusRequest = React.useRef(null);
         var journalFocus = function(id) { journalFocusRequest.current = id; };
         // Wait for React to commit the destination before moving focus.
         React.useEffect(function() {
           var id = journalFocusRequest.current;
-          if (!id) return;
+          if (!id || typeof document !== 'object' || !document) return;
           var node = document.getElementById(id);
           if (node) { journalFocusRequest.current = null; node.focus(); }
         });
         var journalButton = { minHeight: 44, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + _jouBd('#475569'), background: _jouBg('#1e293b'), color: _jouFg('#e2e8f0'), fontSize: 14, fontWeight: 600, cursor: 'pointer' };
 
         // Insights state
-        var aiInsight      = d.aiInsight || '';
-        var _journalTier   = d._journalTier || 0;
-        var aiLoading      = d.aiLoading || false;
+        var aiInsight      = typeof d.aiInsight === 'string' ? d.aiInsight : '';
+        var _journalTier   = typeof d._journalTier === 'number' ? d._journalTier : 0;
+        var aiLoading      = !!d.aiLoading;
 
         // Badges state
-        var earnedBadges   = d.earnedBadges || {};
+        var earnedBadges   = (d.earnedBadges && typeof d.earnedBadges === 'object' && !Array.isArray(d.earnedBadges)) ? d.earnedBadges : {};
         // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
         var shownBadges = BADGES.filter(function(b) { return _jrAiOn || !b.aiOnly || earnedBadges[b.id]; });
         var showBadgePopup = d.showBadgePopup || null;
@@ -737,7 +772,7 @@ window.SelHub = window.SelHub || {
         var badgeOpenerRef = React.useRef(null);
         var badgeDialogOpen = !!showBadgePopup;
         React.useEffect(function() {
-          if (!badgeDialogOpen) return undefined;
+          if (!badgeDialogOpen || typeof document !== 'object' || !document) return undefined;
           // Captured BEFORE focus moves. autoFocus would defeat this: it runs during
           // commit, so the "opener" would come out as the dialog's own button.
           var opener = document.activeElement;
@@ -758,34 +793,34 @@ window.SelHub = window.SelHub || {
             }
           };
         }, [badgeDialogOpen]);
-        var showBadgesPanel = d.showBadgesPanel || false;
+        var showBadgesPanel = !!d.showBadgesPanel;
 
         // Sub-emotion state
         var ciSubEmotion   = d.ciSubEmotion || null;
 
         // Coping state
         var showCoping     = d.showCoping || false;
-        var copingTapped   = d.copingTapped || {};
+        var copingTapped   = (d.copingTapped && typeof d.copingTapped === 'object' && !Array.isArray(d.copingTapped)) ? d.copingTapped : {};
 
         // Calendar state
-        var calYear        = d.calYear != null ? d.calYear : new Date().getFullYear();
-        var calMonth       = d.calMonth != null ? d.calMonth : new Date().getMonth();
+        var calYear        = (typeof d.calYear === 'number' && isFinite(d.calYear)) ? Math.floor(d.calYear) : new Date().getFullYear();
+        var calMonth       = (typeof d.calMonth === 'number' && isFinite(d.calMonth) && d.calMonth >= 0 && d.calMonth <= 11) ? Math.floor(d.calMonth) : new Date().getMonth();
 
         // Weekly summary state
-        var showWeekly     = d.showWeekly || false;
+        var showWeekly     = !!d.showWeekly;
 
         // Expanded emotion vocabulary state
         var ciExpandedEmotion = d.ciExpandedEmotion || null;
 
         // Mood playlist state
-        var playlistCompleted = d.playlistCompleted || {};
+        var playlistCompleted = (d.playlistCompleted && typeof d.playlistCompleted === 'object' && !Array.isArray(d.playlistCompleted)) ? d.playlistCompleted : {};
 
         // Letter to Self state
         var letterMode       = d.letterMode || null; // 'future' | 'past' | null
-        var letterText       = d.letterText || '';
+        var letterText       = typeof d.letterText === 'string' ? d.letterText : '';
         var letterTimePeriod = d.letterTimePeriod || '1month';
-        var letterEntries    = d.letterEntries || [];
-        var letterViewingPast = d.letterViewingPast || false;
+        var letterEntries    = (Array.isArray(d.letterEntries) ? d.letterEntries : []).filter(function(le) { return le && typeof le === 'object'; });
+        var letterViewingPast = !!d.letterViewingPast;
 
         // Mood pattern analysis state
         var moodPatterns     = d.moodPatterns || null;
@@ -817,32 +852,57 @@ window.SelHub = window.SelHub || {
           if (!s) return false;
           var hit = false;
           if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
-            var chk = window.SelHub.safeRehearseCheck(s, { toolId: 'journal', onSafetyFlag: onSafetyFlag });
-            if (chk && chk.action === 'block') hit = true;
+            try {
+              var chk = window.SelHub.safeRehearseCheck(s, { toolId: 'journal', onSafetyFlag: onSafetyFlag });
+              if (chk && chk.action === 'block') hit = true;
+            } catch (_) {}
           }
           if (!hit && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
-            var scan = window.SelHub.scanForCrisis(s);
-            if (scan && scan.hasCrisis) {
-              hit = true;
-              if (onSafetyFlag) {
+            try {
+              var scan = window.SelHub.scanForCrisis(s);
+              if (scan && (scan.triggered || scan.hasCrisis)) {
+                hit = true;
+                if (typeof onSafetyFlag === 'function') {
+                  try {
+                    onSafetyFlag({
+                      category: 'crisis_journal_entry',
+                      match: scan.matchedTerm || scan.matched || 'crisis language',
+                      severity: 'critical',
+                      source: 'sel_journal',
+                      context: s.substring(0, 100),
+                      timestamp: new Date().toISOString(),
+                      tier: 3
+                    });
+                  } catch (_) {}
+                }
+              }
+            } catch (_) {}
+          }
+          if (!hit && LOCAL_CRISIS_RE.test(s)) {
+            hit = true;
+            if (typeof onSafetyFlag === 'function') {
+              try {
                 onSafetyFlag({
                   category: 'crisis_journal_entry',
-                  match: scan.matched || 'crisis language',
+                  match: 'crisis language',
                   severity: 'critical',
                   source: 'sel_journal',
                   context: s.substring(0, 100),
                   timestamp: new Date().toISOString(),
                   tier: 3
                 });
-              }
+              } catch (_) {}
             }
           }
           if (hit) {
             upd('_journalTier', 3);
             if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
-              window.SelHub.showCrisisModal({ toolName: 'Feelings Journal', contentSnippet: s });
+              try { window.SelHub.showCrisisModal({ toolName: 'Feelings Journal', contentSnippet: s }); } catch (_) {}
             }
-            if (announceToSR) announceToSR('Support resources are shown on screen. Please reach out to a trusted adult, call or text 988, or text HOME to 741741.');
+            var srMsg = 'Support resources are shown on screen. Please reach out to a trusted adult, call or text 988, text HOME to 741741, or call 911 in an emergency.';
+            if (announceToSR) announceToSR(srMsg);
+            var lr = ensureLiveRegion();
+            if (lr) lr.textContent = srMsg;
           }
           return hit;
         }
@@ -932,7 +992,7 @@ window.SelHub = window.SelHub || {
             badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Badges record activity in this tool. They do not measure emotional skills or wellbeing. You can take breaks and use only the activities that fit you.' }
           };
           var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
-          var meta = TAB_META[activeTab] || TAB_META.checkin;
+          var meta = Object.prototype.hasOwnProperty.call(TAB_META, activeTab) ? TAB_META[activeTab] : TAB_META.checkin;
           var heroEdge = _jouHC ? '1px solid #ffff00' : ('1px solid ' + meta.accent + '55');
           return h('div', {
             style: {
@@ -1243,6 +1303,7 @@ window.SelHub = window.SelHub || {
                 id: 'sel-checkin-thoughts', value: ciThoughts,
                 'aria-label': 'Check-in thoughts',
                 onChange: function(e) { upd('ciThoughts', e.target.value); },
+                onBlur: function(e) { checkCrisisText(e.target.value); },
                 placeholder: band === 'elementary' ? 'I feel this way because... Don\'t share personal info (like your full name).' : 'Describe what\u2019s going on... Don\'t share personal info (names, school, etc.).',
                 rows: 3,
                 style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }
@@ -1283,6 +1344,7 @@ window.SelHub = window.SelHub || {
                 id: 'sel-checkin-gratitude', type: 'text', value: ciGratitude,
                 'aria-label': 'Gratitude entry',
                 onChange: function(e) { upd('ciGratitude', e.target.value); },
+                onBlur: function(e) { checkCrisisText(e.target.value); },
                 onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && ciGratitude) { e.preventDefault(); upd('ciGratitude', ''); } },
                 placeholder: band === 'elementary' ? 'I\u2019m thankful for... Don\'t share personal info (like full names).' : 'Something I appreciate... Don\'t share personal info (names, school, etc.).',
                 style: { width: '100%', padding: '10px 12px', borderRadius: 10, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, minHeight: 44, boxSizing: 'border-box' }
@@ -1292,7 +1354,7 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#cbd5e1') } }, 'Save Check-In adds one record to this activity. Use the Hub save/export controls to keep a project copy.'),
             // Save button
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
                 if (ciMood == null) { addToast('Please select a mood first!', 'warning'); return; }
                 var entry = {
                   timestamp: Date.now(),
@@ -1305,10 +1367,11 @@ window.SelHub = window.SelHub || {
                   expandedEmotion: ciExpandedEmotion || null
                 };
                 var ciScanText = (ciThoughts || '') + ' ' + (ciGratitude || '');
-                checkCrisisText(ciScanText);
+                var ciCrisis = checkCrisisText(ciScanText);
                 var newCheckIns = checkIns.concat([entry]);
                 upd({
                   checkIns: newCheckIns,
+                  _journalTier: ciCrisis ? 3 : _journalTier,
                   ciMood: null, ciEnergy: null, ciNotice: 'Check-in added to this activity. You can stop here or choose an optional next step.', ciThoughts: '', ciTriggers: [], ciGratitude: '',
                   ciSubEmotion: null, ciExpandedEmotion: null, showCoping: ciMood
                 });
@@ -1454,7 +1517,7 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         var journalContent = null;
         if (activeTab === 'journal') {
-          var prompts = PROMPTS[band] || PROMPTS.elementary;
+          var prompts = Object.prototype.hasOwnProperty.call(PROMPTS, band) ? PROMPTS[band] : PROMPTS.elementary;
           var currentPrompt = prompts[jPromptIdx % prompts.length];
           var draftPrompt = d.jDraftPrompt || currentPrompt;
 
@@ -1551,15 +1614,16 @@ window.SelHub = window.SelHub || {
                 value: letterText,
                 'aria-label': 'Letter to self',
                 onChange: function(e) { upd('letterText', e.target.value); },
+                onBlur: function(e) { checkCrisisText(e.target.value); },
                 placeholder: isFuture ? 'Dear future me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)' : 'Dear younger me,... (Tip: keep it general — don\'t share personal info like full names, addresses, or your school)',
                 rows: 10,
                 style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + letterColor + '44', background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
-              h('button', { 'aria-label': isFuture ? 'Seal and save letter' : 'Save letter',
+              h('button', { type: 'button', 'aria-label': isFuture ? 'Seal and save letter' : 'Save letter',
                 onClick: function() {
                   if (!letterText.trim()) { addToast('Write your letter first!', 'warning'); return; }
-                  checkCrisisText(letterText);
+                  var letterCrisis = checkCrisisText(letterText);
                   var readDate = null;
                   if (isFuture) {
                     var now = new Date();
@@ -1576,7 +1640,7 @@ window.SelHub = window.SelHub || {
                   };
                   var newLetters = letterEntries.concat([letterEntry]);
                   var totalJournalCount = journalEntries.length + newLetters.length;
-                  upd({ letterEntries: newLetters, letterText: '', letterMode: null });
+                  upd({ letterEntries: newLetters, letterText: '', letterMode: null, _journalTier: letterCrisis ? 3 : _journalTier });
                   if (soundEnabled) sfxSave();
                   awardXP(20);
                   addToast(isFuture ? 'Letter sealed for future you!' : 'Letter to your past self saved!', 'success');
@@ -1693,20 +1757,21 @@ window.SelHub = window.SelHub || {
                 value: jText,
                 'aria-label': 'Journal entry',
                 onChange: function(e) { upd({ jText: e.target.value, jDraftPrompt: jText.trim() ? draftPrompt : currentPrompt, jNotice: '' }); },
+                onBlur: function(e) { checkCrisisText(e.target.value); },
                 placeholder: band === 'elementary' ? 'Start writing here... You can use the prompt above or write about anything! Don\'t share personal info (like your full name).' : 'Write freely. Use the prompt above as a starting point, or write about whatever is on your mind... Don\'t share personal info (names, school, etc.).',
                 rows: 8,
                 style: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '1px solid ' + ACCENT_MED, background: _jouBg('#0f172a'), color: _jouFg('#e2e8f0'), fontSize: 16, lineHeight: 1.7, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 12 }
               }),
 
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 } },
-                h('button', { 'aria-label': 'Save Entry',
+                h('button', { type: 'button', 'aria-label': 'Save Entry',
                   onClick: function() {
                     if (!jText.trim()) { addToast('Write something first!', 'warning'); return; }
-                    checkCrisisText(jText);
+                    var jCrisis = checkCrisisText(jText);
                     var entry = { timestamp: Date.now(), prompt: draftPrompt, text: jText };
                     var newEntries = journalEntries.concat([entry]);
                     var totalJournalCount = newEntries.length + letterEntries.length;
-                    upd({ journalEntries: newEntries, jText: '', jDraftPrompt: '', jNotice: 'Entry added to this activity. You can review or revise it in Saved entries.', jPromptIdx: (jPromptIdx + 1) % prompts.length });
+                    upd({ journalEntries: newEntries, _journalTier: jCrisis ? 3 : _journalTier, jText: '', jDraftPrompt: '', jNotice: 'Entry added to this activity. You can review or revise it in Saved entries.', jPromptIdx: (jPromptIdx + 1) % prompts.length });
                     if (soundEnabled) sfxSave();
                     awardXP(15);
                     addToast('Journal entry saved!', 'success');
@@ -1751,15 +1816,15 @@ window.SelHub = window.SelHub || {
                     h('textarea', { id: editId + '-text', value: jRevision.text, rows: 6, onChange: function(e) { upd('jRevision', Object.assign({}, jRevision, { text: e.target.value })); }, style: { display: 'block', width: '100%', margin: '8px 0', padding: 12, fontFamily: 'inherit', fontSize: 16, lineHeight: 1.6, borderRadius: 10, border: '1px solid ' + _jouBd('#475569'), background: _jouBg('#1e293b'), color: _jouFg('#e2e8f0'), resize: 'vertical' } }),
                     h('p', { style: { fontSize: 14, color: _jouFg('#cbd5e1') } }, 'Your saved entry stays unchanged until you save this revision. Revisions do not earn extra points.'),
                     h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                      h('button', { style: journalButton, disabled: !jRevision.text.trim(), onClick: function() {
+                      h('button', { type: 'button', style: journalButton, disabled: !jRevision.text.trim(), onClick: function() {
                         if (!jRevision.text.trim()) return;
                         if (entry.timestamp !== jRevision.timestamp || entry.text !== jRevision.originalText) {
                           upd('jNotice', 'This entry changed while you were revising. Copy your revision before canceling and reopening the entry.'); return;
                         }
-                        checkCrisisText(jRevision.text);
+                        var revCrisis = checkCrisisText(jRevision.text);
                         var revised = journalEntries.slice();
                         revised[index] = Object.assign({}, entry, { text: jRevision.text, updatedAt: Date.now() });
-                        upd({ journalEntries: revised, jRevision: null, jNotice: 'Revision saved in this activity. Use the Hub save/export controls to update your project copy.' });
+                        upd({ journalEntries: revised, _journalTier: revCrisis ? 3 : _journalTier, jRevision: null, jNotice: 'Revision saved in this activity. Use the Hub save/export controls to update your project copy.' });
                         journalFocus(editId);
                       } }, 'Save revision'),
                       h('button', { style: journalButton, onClick: function() { upd({ jRevision: null, jNotice: 'Revision canceled. The saved entry is unchanged.' }); journalFocus(editId); } }, 'Cancel revision')
@@ -1992,16 +2057,16 @@ window.SelHub = window.SelHub || {
           }
 
           // Trigger frequency
-          var triggerFreq = {};
+          var triggerFreq = Object.create(null);
           checkIns.forEach(function(ci) {
-            (ci.triggers || []).forEach(function(t) { triggerFreq[t] = (triggerFreq[t] || 0) + 1; });
+            (Array.isArray(ci.triggers) ? ci.triggers : []).forEach(function(t) { if (t) triggerFreq[t] = (triggerFreq[t] || 0) + 1; });
           });
           var sortedTriggers = Object.keys(triggerFreq).sort(function(a, b) { return triggerFreq[b] - triggerFreq[a]; });
 
           // Mood distribution
-          var moodDist = {};
+          var moodDist = Object.create(null);
           MOODS.forEach(function(m) { moodDist[m.id] = 0; });
-          checkIns.forEach(function(ci) { moodDist[ci.mood] = (moodDist[ci.mood] || 0) + 1; });
+          checkIns.forEach(function(ci) { if (ci.mood != null) moodDist[ci.mood] = (moodDist[ci.mood] || 0) + 1; });
 
           insightsContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 16, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCCA Mood Insights'),
@@ -2169,27 +2234,42 @@ window.SelHub = window.SelHub || {
                     // Run insight generation + triangulated safety assessment in parallel.
                     // The mood summary may include user-entered trigger text, so we
                     // assess it the same way coping/upstander/crisiscompanion do.
-                    var safetyP = (window.SelHub && window.SelHub.assessSafety)
-                      ? window.SelHub.assessSafety(moodSummary, band, 'journal', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    var safetyP = (window.SelHub && typeof window.SelHub.assessSafety === 'function')
+                      ? window.SelHub.assessSafety(preflightText, band, 'journal', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
                       : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
                     Promise.all([
                       callGemini(prompt, false, false, 0.8),
                       safetyP
                     ]).then(function(results) {
+                      if (!aliveRef.current) return;
                       var resp = results[0];
                       var safety = results[1] || { tier: 0 };
-                      if (safety.tier >= 2 && onSafetyFlag) {
-                        onSafetyFlag({
-                          category: 'ai_journal_' + (safety.category || 'concerning'),
-                          match: safety.rationale || 'SEL journal safety concern',
-                          severity: safety.tier >= 3 ? 'critical' : 'medium',
-                          source: 'sel_journal',
-                          context: moodSummary.substring(0, 100),
-                          timestamp: new Date().toISOString(),
-                          aiGenerated: true,
-                          confidence: safety.tier >= 3 ? 0.9 : 0.7,
-                          tier: safety.tier
+                      if (safety.tier >= 2 && typeof onSafetyFlag === 'function') {
+                        try {
+                          onSafetyFlag({
+                            category: 'ai_journal_' + (safety.category || 'concerning'),
+                            match: safety.rationale || 'SEL journal safety concern',
+                            severity: safety.tier >= 3 ? 'critical' : 'medium',
+                            source: 'sel_journal',
+                            context: preflightText.substring(0, 100),
+                            timestamp: new Date().toISOString(),
+                            aiGenerated: true,
+                            confidence: safety.tier >= 3 ? 0.9 : 0.7,
+                            tier: safety.tier
+                          });
+                        } catch (_) {}
+                      }
+                      if (safety.tier >= 3) {
+                        if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+                          try { window.SelHub.showCrisisModal({ toolName: 'Feelings Journal', contentSnippet: preflightText.slice(0, 120) }); } catch (_) {}
+                        }
+                        upd({
+                          aiLoading: false,
+                          _journalTier: 3,
+                          aiInsight: 'I noticed something in your entries that I want to make sure you have support for. Please reach out to a trusted adult, call or text 988, text HOME to 741741, or call 911 in an emergency. You are not alone.'
                         });
+                        addToast('Please talk to a trusted adult.', 'warning');
+                        return;
                       }
                       if (typeof resp !== 'string' || !resp.trim()) throw new Error('empty AI reply');
                       upd({ aiInsight: resp, aiLoading: false, _journalTier: safety.tier || 0 });
@@ -2197,6 +2277,7 @@ window.SelHub = window.SelHub || {
                       tryAwardBadge('ai_reflector');
                       addToast('Insight generated!', 'success');
                     }).catch(function() {
+                      if (!aliveRef.current) return;
                       upd('aiLoading', false);
                       addToast('Could not generate insight. Try again.', 'error');
                     });
@@ -2218,7 +2299,8 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         var badgesContent = null;
         if (activeTab === 'badges') {
-          var earnedCount = Object.keys(earnedBadges).length;
+          var earnedCount = shownBadges.filter(function(b) { return !!earnedBadges[b.id]; }).length;
+          var badgePct = shownBadges.length > 0 ? Math.round(Math.min(1, earnedCount / shownBadges.length) * 100) : 0;
 
           badgesContent = h('div', { style: { padding: 20, maxWidth: 520, margin: '0 auto' } },
             h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _jouFg('#f1f5f9'), fontSize: 18 } }, '\uD83C\uDFC5 Badges'),
@@ -2227,7 +2309,7 @@ window.SelHub = window.SelHub || {
             ),
             h('div', { style: { textAlign: 'center', marginBottom: 20 } },
               h('div', { role: 'progressbar', 'aria-label': 'Badges earned progress', 'aria-valuenow': earnedCount, 'aria-valuemin': 0, 'aria-valuemax': shownBadges.length, 'aria-valuetext': earnedCount + ' of ' + shownBadges.length + ' badges earned', style: { width: '100%', height: 8, borderRadius: 4, background: _jouBg('#1e293b'), overflow: 'hidden' } },
-                h('div', { style: { width: Math.round(Math.min(1, earnedCount / shownBadges.length) * 100) + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
+                h('div', { style: { width: badgePct + '%', height: '100%', borderRadius: 4, background: ACCENT, transition: 'width 0.3s' } })
               )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
@@ -2254,8 +2336,20 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════
         var content = checkinContent || journalContent || calendarContent || insightsContent || badgesContent;
 
+        var crisisBanner = null;
+        if (_journalTier >= 3) {
+          if (window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') {
+            crisisBanner = h('div', { style: { margin: '0 12px 12px' } }, window.SelHub.renderCrisisResources(h, band));
+          } else {
+            crisisBanner = h('div', { role: 'alert', style: { margin: '0 12px 12px', padding: 14, borderRadius: 10, background: _jouHC ? '#000000' : (_jouL ? '#fef2f2' : 'rgba(239,68,68,0.14)'), border: '2px solid ' + (_jouHC ? '#ffff00' : '#dc2626'), color: _jouFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.6 } },
+              h('strong', null, 'Immediate support is available: '),
+              'Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741 (Crisis Text Line), call 911 in an emergency, or reach out to a trusted adult.'
+            );
+          }
+        }
+
         return h('div', { className: 'selh-journal', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('journal', h, ctx) : null),
+          (window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('journal', h, ctx) : null),
           tabBar,
           heroBand,
           activeTab === 'checkin' && h('details', { 'aria-label': 'Journal overview and shortcuts' },
@@ -2263,9 +2357,9 @@ window.SelHub = window.SelHub || {
             journalCommandPanel()
           ),
           badgePopup,
-          (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { margin: '0 12px 12px' } }, window.SelHub.renderCrisisResources(h, band)) : null,
+          crisisBanner,
           h('div', { id: 'sel-journal-content', role: 'tabpanel', 'aria-labelledby': 'journal-tab-' + activeTab, tabIndex: -1, style: { flex: 1, overflow: 'auto' } }, content),
-          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+          window.SelHub && typeof window.SelHub.renderResourceFooter === 'function' && window.SelHub.renderResourceFooter(h, band)
         );
       })();
     }

@@ -839,7 +839,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
             'Social Skills Lab practices pragmatic language and social communication skills targeted in ASD intervention. ',
             'Scenario Practice (Tier 1) works without AI for structured discrete-trial-style practice. ',
             'AI Roleplay (Tier 2) provides dynamic conversation practice for generalization. ',
-            'Both modes support IEP goals like "Student will use appropriate social greetings in 4/5 opportunities."'
+            'Both modes give practice toward IEP goals like "Student will use appropriate social greetings in 4/5 opportunities." Measure progress on the goal itself through real-world observation, not through this tool.'
           )
         );
       }

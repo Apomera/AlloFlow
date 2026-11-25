@@ -386,24 +386,9 @@ function ImageView(props) {
                             ) : _imgSafeImageUrl(generatedContent?.data?.imageUrl) ? (
                                 <div style={{position:'relative'}}>
                                 <img src={_imgSafeImageUrl(generatedContent?.data?.imageUrl)} alt={imageDescription} aria-describedby={descriptionNeedsAttention ? descriptionId : undefined} role={generatedContent?.data?.decorative ? 'presentation' : undefined} className="w-full h-auto rounded" loading="lazy" decoding="async"/>
-                                {isTeacherMode && (
-                                  <div style={{position:'absolute',top:'8px',right:'8px',display:'flex',flexWrap:'wrap',justifyContent:'flex-end',gap:'6px',maxWidth:'calc(100% - 16px)'}}>
-                                    <button
-                                      type="button"
-                                      aria-label={t('visuals.upload_image') || 'Upload your own image'}
-                                      title={t('visuals.upload_image') || 'Upload your own image'}
-                                      onClick={() => singleImageFileRef?.current?.click()}
-                                      className="min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-                                    ><span aria-hidden="true">📷</span> {t('visuals.replace_image') || 'Replace'}</button>
-                                    <button
-                                      type="button"
-                                      aria-label={t('visuals.find_picture') || 'Find a symbol or photo'}
-                                      title={t('visuals.find_picture') || 'Find a symbol or photo'}
-                                      aria-expanded={findOpen}
-                                      onClick={toggleFind}
-                                      className="min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-800 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
-                                    ><span aria-hidden="true">🔎</span> {imageText('visuals.find_short', 'Find')}</button>
-                                    {generatedContent?.data?.originalImage && (
+                                {/* Upload and Find live once, in the toolbar under the picture; only Restore is laid over it. */}
+                                {isTeacherMode && generatedContent?.data?.originalImage && (
+                                  <div data-image-overlay-actions style={{position:'absolute',top:'8px',right:'8px',display:'flex',flexWrap:'wrap',justifyContent:'flex-end',gap:'6px',maxWidth:'calc(100% - 16px)'}}>
                                       <button
                                         type="button"
                                         aria-label={t('visuals.restore_ai_image') || 'Restore AI image'}
@@ -411,7 +396,6 @@ function ImageView(props) {
                                         onClick={() => updateImageResource(restoreSingleImage)}
                                         className="min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-400 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                       ><span aria-hidden="true">↩️</span> {t('visuals.restore_original') || 'Restore'}</button>
-                                    )}
                                   </div>
                                 )}
                                 {generatedContent?.data?.imageAttribution && window.AlloModules && window.AlloModules.AltText && (
@@ -617,15 +601,15 @@ function ImageView(props) {
                         </div>
                         )}
                         {isTeacherMode && (
-                        <div className="flex gap-3 w-full max-w-2xl" style={{flexWrap:'wrap'}}>
+                        <div data-image-actions className="flex gap-3 w-full max-w-2xl pb-20" style={{flexWrap:'wrap'}}>
                             <button type="button" onClick={handleDownloadImage} data-help-key="visuals_download" style={{flexBasis:'16rem'}} className="min-w-0 min-h-11 flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors motion-reduce:transition-none font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><Download size={18} aria-hidden="true" /> {t('visuals.download')}</button>
                             <button
                               type="button"
                               aria-label={t('visuals.upload_image') || 'Upload your own image'}
                               title={t('visuals.upload_image') || 'Upload your own image'}
                               onClick={() => singleImageFileRef?.current?.click()}
-                              className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
-                            ><span aria-hidden="true" style={{fontSize:'1.125rem'}}>📷</span></button>
+                              className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-3 sm:px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
+                            ><span aria-hidden="true" style={{fontSize:'1.125rem'}}>📷</span> {t('visuals.replace_image') || 'Replace'}</button>
                             {!usesVisualPanelGrid && (
                             <button
                               type="button"
@@ -633,10 +617,13 @@ function ImageView(props) {
                               title={t('visuals.find_picture') || 'Find a symbol or photo'}
                               aria-expanded={findOpen}
                               onClick={toggleFind}
-                              className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors motion-reduce:transition-none font-medium border border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
-                            ><span aria-hidden="true" style={{fontSize:'1.125rem'}}>🔎</span></button>
+                              className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-3 sm:px-4 rounded-lg hover:bg-sky-100 transition-colors motion-reduce:transition-none font-medium border border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+                            ><span aria-hidden="true" style={{fontSize:'1.125rem'}}>🔎</span> {imageText('visuals.find_short', 'Find')}</button>
                             )}
-                            <button type="button" aria-label={t('common.regenerate')} onClick={handleRestoreImage} disabled={isProcessing || !!imageGenDoor?.disabled} aria-busy={isProcessing} title={imageGenDoor?.title || t('common.regenerate') || 'Regenerate'} data-help-key="visuals_regenerate" className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors motion-reduce:transition-none font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"><RefreshCw size={18} aria-hidden="true" /></button>
+                            {/* A picture that was not saved already shows its own Regenerate button in the empty state above. */}
+                            {(usesVisualPanelGrid || _imgSafeImageUrl(generatedContent?.data?.imageUrl)) && (
+                            <button type="button" aria-label={t('common.regenerate')} onClick={handleRestoreImage} disabled={isProcessing || !!imageGenDoor?.disabled} aria-busy={isProcessing} title={imageGenDoor?.title || t('common.regenerate') || 'Regenerate'} data-help-key="visuals_regenerate" className="min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-3 sm:px-4 rounded-lg hover:bg-amber-100 transition-colors motion-reduce:transition-none font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"><RefreshCw size={18} aria-hidden="true" /></button>
+                            )}
                         </div>
                         )}
                     </div>

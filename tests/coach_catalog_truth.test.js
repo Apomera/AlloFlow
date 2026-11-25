@@ -61,6 +61,10 @@ beforeAll(() => {
     extras: [lpCopy('launch_pad.voice_device_title'), lpCopy('launch_pad.report_problem'), 'AI Backend Settings'],
     aiGuide,
     openLinkCalls: linkBody.match(/\b[A-Za-z_]\w*\(/g),
+    closePanelCalls: (() => {
+      const at = coach.indexOf('var closePanel = function () {');
+      return at < 0 ? null : coach.slice(at + 'var closePanel = function () {'.length, coach.indexOf('};', at)).match(/\b[A-Za-z_]\w*\(/g);
+    })(),
   };
 });
 beforeEach(() => { localStorage.clear(); delete window.__alloAiUsable; answerText = 'ok'; });
@@ -71,7 +75,9 @@ describe.each([['roles'], [undefined]])('catalog for layout %s matches the code'
     expect(facts.help).toEqual(['What does this do?', 'Take the app tour', 'Past tips and messages']);
     expect(facts.helpAudience).toBe('!!isTeacherMode');
     expect(facts.aiGuide).toBe('AI Guide & Assistant');
-    expect(facts.openLinkCalls).toEqual(['setIsOpen(']);
+    // The chip calls the panel's own close helper, which only closes the panel.
+    expect(facts.openLinkCalls).toEqual(['closePanel(']);
+    expect(facts.closePanelCalls).toEqual(['handleCancel(', 'setConfirmReset(', 'setIsOpen(']);
     const { prompt } = await ask(layout);
     expect(prompt).not.toMatch(/No keyboard shortcuts/i);
     expect(prompt).not.toMatch(/"Help menu" dropdown/);

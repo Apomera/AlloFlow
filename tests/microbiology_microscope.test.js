@@ -9,8 +9,9 @@ const { act, Simulate } = require(resolve('desktop/web-app/node_modules/react-do
 const source = fs.readFileSync('stem_lab/stem_tool_microbiology.js', 'utf8');
 const start = source.indexOf('  var MicroMeasurements =');
 const end = source.indexOf('  // Plugin registration', start);
-const VirtualMicroscope = new Function('R', 'hh', 'microInkFor', '__alloMBT', source.slice(start, end) + '\nreturn VirtualMicroscope;')(
-  React, React.createElement, value => value, (_key, fallback) => fallback
+// The slice publishes the measurement core through the file's guarded `_mbWin` window alias, so pass the real window.
+const VirtualMicroscope = new Function('R', 'hh', 'microInkFor', '__alloMBT', '_mbWin', source.slice(start, end) + '\nreturn VirtualMicroscope;')(
+  React, React.createElement, value => value, (_key, fallback) => fallback, window
 );
 const measurementsCore = window.__MicrobiologyCore.measurements;
 let root;

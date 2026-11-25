@@ -53,6 +53,9 @@ async function render(role) {
   document.body.append(host);
   root = createRoot(host);
   await act(async () => root.render(React.createElement(Harness, { role })));
+  // 2026-11-23: Math Studio and the AI setup pill are items in the top bar's More menu; open it.
+  const more = host.querySelector('[data-stem-more-toggle]');
+  if (more) await act(async () => { more.click(); });
 }
 const buttonText = () => [...host.querySelectorAll('button')].map((b) => b.textContent);
 const controls = () => ({

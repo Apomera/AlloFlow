@@ -24,17 +24,23 @@
   var MIN_KNOWN = 3;         // known facts a rehearsal file needs
   var STEPS = 3;             // times a new fact is asked in its own run
   // short: the end of a file's title, so that a set's two kinds of file never save results under the same name.
-  var METHODS = {
-    ccc: { activity: 'math_ccc', name: 'Cover, copy, compare', short: 'cover, copy, compare' },
-    rehearsal: { activity: 'math_rehearsal', name: 'Rehearsal with known facts', short: 'new and known facts' },
-  };
-  var OPS = { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' };
+  var METHODS = Object.freeze({
+    ccc: Object.freeze({ activity: 'math_ccc', name: 'Cover, copy, compare', short: 'cover, copy, compare' }),
+    rehearsal: Object.freeze({ activity: 'math_rehearsal', name: 'Rehearsal with known facts', short: 'new and known facts' }),
+  });
+  var OPS = Object.assign(Object.create(null), { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' });
   OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0x2013)] = 'sub'; OPS[String.fromCharCode(0x2014)] = 'sub';
   OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xB7)] = 'mul'; OPS[String.fromCharCode(0x22C5)] = 'mul';
   OPS[String.fromCharCode(0xF7)] = 'div';
-  var OP_NAMES = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' };
+  Object.freeze(OPS);
+  var OP_NAMES = Object.freeze(Object.assign(Object.create(null), { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' }));
 
-  function text(value) { return value == null ? '' : String(value); }
+  function text(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+    try { return String(value); } catch (_) { return ''; }
+  }
   function own(object, key) { return !!object && Object.prototype.hasOwnProperty.call(object, key); }
   function fnv(value) {
     var h = 2166136261 >>> 0;
@@ -43,15 +49,22 @@
   }
   function range(from, to) { var out = []; for (var n = from; n <= to; n++) out.push(n); return out; }
   function fact(a, b, op) { return { a: a, b: b, op: op }; }
-  function keyOf(f) { return f.op + ':' + f.a + ':' + f.b; }
+  function keyOf(f) {
+    if (!f || typeof f !== 'object') return '';
+    return text(f.op) + ':' + text(f.a) + ':' + text(f.b);
+  }
   // The same fact with its two numbers swapped (3 + 7 for 7 + 3). Only + and × have one.
-  function turnaround(f) { return f.op === 'add' || f.op === 'mul' ? fact(f.b, f.a, f.op) : null; }
+  function turnaround(f) {
+    if (!f || typeof f !== 'object') return null;
+    return f.op === 'add' || f.op === 'mul' ? fact(f.b, f.a, f.op) : null;
+  }
   // The other take-away of the same fact family (7 − 3 for 7 − 4; 56 ÷ 7 for 56 ÷ 8). Only − and ÷ have one; a fact
   // that is its own (8 − 4, 0 ÷ 5) has none. Used only for which facts the teaching order counts as known (knownByOrder):
   // a student who knows 14 ÷ 2 = 7 knows the fact family of 14 ÷ 7. 2026-11-13.
   function related(f) {
-    if (f.op === 'sub') return f.a - f.b !== f.b ? fact(f.a, f.a - f.b, 'sub') : null;
-    if (f.op === 'div') return f.a > 0 && f.b > 0 && f.a / f.b !== f.b ? fact(f.a, f.a / f.b, 'div') : null;
+    if (!f || typeof f !== 'object') return null;
+    if (f.op === 'sub') return typeof f.a === 'number' && typeof f.b === 'number' && f.a - f.b !== f.b ? fact(f.a, f.a - f.b, 'sub') : null;
+    if (f.op === 'div') return typeof f.a === 'number' && typeof f.b === 'number' && f.a > 0 && f.b > 0 && f.a % f.b === 0 && f.a / f.b !== f.b ? fact(f.a, f.a / f.b, 'div') : null;
     return null;
   }
   // A fixed mix of a list: the same seed text gives the same order (xorshift32 seeded by FNV-1a).
@@ -126,8 +139,9 @@
     [3, 4, 9, 6, 7, 8].forEach(function (n) { div('div-' + n, divide + ' ' + n, n + ' ' + divide + ' ' + n + ' to ' + (10 * n) + ' ' + divide + ' ' + n + '.', over(n)); });
     return rows;
   })();
-  var ORDER = {};
-  ['add', 'sub', 'mul', 'div'].forEach(function (op) { ORDER[op] = FAMILIES.filter(function (f) { return f.op === op; }).map(function (f) { return f.id; }); });
+  var ORDER = Object.create(null);
+  ['add', 'sub', 'mul', 'div'].forEach(function (op) { ORDER[op] = Object.freeze(FAMILIES.filter(function (f) { return f.op === op; }).map(function (f) { return f.id; })); });
+  Object.freeze(ORDER);
   function family(id) {
     for (var i = 0; i < FAMILIES.length; i++) if (FAMILIES[i].id === id) return FAMILIES[i];
     return null;
@@ -140,7 +154,12 @@
   function checkFact(raw, n) {
     var p = raw && typeof raw === 'object' ? raw : {};
     var fail = function (reason) { throw new Error('Fact ' + n + ': ' + reason); };
-    var whole = function (v) { return v != null && v !== '' && typeof v !== 'boolean' && Number.isSafeInteger(Number(v)) && Number(v) >= 0 && Number(v) <= MAX_NUMBER; };
+    var whole = function (v) {
+      if (v == null || typeof v === 'boolean' || typeof v === 'symbol' || typeof v === 'object') return false;
+      if (typeof v === 'string' && !v.trim()) return false;
+      var num = Number(v);
+      return Number.isSafeInteger(num) && num >= 0 && num <= MAX_NUMBER;
+    };
     if (!whole(p.a) || !whole(p.b)) fail('both numbers must be whole numbers from 0 to ' + MAX_NUMBER + '.');
     var op = own(OPS, text(p.op)) ? OPS[text(p.op)] : '';
     if (!op) fail('the operation must be +, -, x or /.');
@@ -173,12 +192,18 @@
       return f;
     });
   }
-  function answerOf(f) { return f.op === 'add' ? f.a + f.b : f.op === 'sub' ? f.a - f.b : f.op === 'mul' ? f.a * f.b : f.a / f.b; }
+  function answerOf(f) {
+    if (!f || typeof f !== 'object') return NaN;
+    return f.op === 'add' ? f.a + f.b : f.op === 'sub' ? f.a - f.b : f.op === 'mul' ? f.a * f.b : (f.op === 'div' && f.b !== 0) ? f.a / f.b : NaN;
+  }
   // A fact in a reason ("3 + 4"), with the signs the file shows (math_computation.js).
   function sayFact(f) { return f.a + ' ' + (f.op === 'add' ? '+' : String.fromCharCode(f.op === 'sub' ? 0x2212 : f.op === 'mul' ? 0xD7 : 0xF7)) + ' ' + f.b; }
 
   // A fact as the take-home loader writes it ("7 × 8"), by the loader's own math check adapter.
   function factWord(f, loader) {
+    if (!f || typeof f !== 'object' || !loader || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS.math_computation || typeof loader.CHECK_ADAPTERS.math_computation.prepare !== 'function') {
+      throw new Error('A fact cannot be written: ' + keyOf(f));
+    }
     var made = loader.CHECK_ADAPTERS.math_computation.prepare({ a: f.a, b: f.b, op: f.op });
     if (!made || !made.item) throw new Error('A fact cannot be written: ' + (made && made.missing ? made.missing.join(', ') : keyOf(f)));
     return made.item;
@@ -361,7 +386,9 @@
   function lessonFromMathPractice(input) {
     var o = input || {};
     var loader = o.loader;
-    if (!loader || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS.math_computation || !loader.CHECK_ADAPTERS.math_ccc || !loader.CHECK_ADAPTERS.math_rehearsal) {
+    if (!loader || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS.math_computation || typeof loader.CHECK_ADAPTERS.math_computation.prepare !== 'function'
+      || !loader.CHECK_ADAPTERS.math_ccc || typeof loader.CHECK_ADAPTERS.math_ccc.prepare !== 'function'
+      || !loader.CHECK_ADAPTERS.math_rehearsal || typeof loader.CHECK_ADAPTERS.math_rehearsal.prepare !== 'function') {
       throw new Error('lessonFromMathPractice needs loader (AlloWordSoundsTakeHome, with the math practice activities)');
     }
     var plan = planMathPractice(o);
@@ -389,9 +416,9 @@
   // A practice file's answers are whole numbers. buildHtml embeds core.soundAnswerMatches in every
   // practice file as its answer matcher (ctx.matches); WS_CORE's compares sounds, which a math fact
   // does not need, so a math practice file is given this one: the same whole number.
-  var WHOLE_NUMBER_ANSWERS = {
+  var WHOLE_NUMBER_ANSWERS = Object.freeze({
     soundAnswerMatches: function (given, answer) { var t = String(given == null ? '' : given).trim(); return /^[0-9]+$/.test(t) && Number(t) === Number(answer); },
-  };
+  });
 
   // The file. buildMathPracticePacket({ lesson, loader, title, labels, learner }) -> { html, manifest, sha256 }
   // labels: the file's words in another language (the loader's keys); the start screen's line is the
@@ -401,15 +428,27 @@
     var loader = o.loader;
     if (!loader || typeof loader.buildHtml !== 'function' || !loader.CHECK_ADAPTERS || typeof loader.sha256 !== 'function') throw new Error('buildMathPracticePacket needs loader (AlloWordSoundsTakeHome)');
     var given = o.lesson;
-    var activity = given && Array.isArray(given.blocks) && given.blocks.length === 1 ? text(given.blocks[0].activity) : '';
+    var firstBlock = given && Array.isArray(given.blocks) && given.blocks.length === 1 ? given.blocks[0] : null;
+    var activity = firstBlock && typeof firstBlock === 'object' ? text(firstBlock.activity) : '';
     if (!given || given.mode !== 'practice' || (activity !== 'math_ccc' && activity !== 'math_rehearsal') || !loader.CHECK_ADAPTERS[activity]) {
       throw new Error('buildMathPracticePacket needs a lesson from lessonFromMathPractice');
     }
-    var lesson = JSON.parse(JSON.stringify(given));
+    var lesson;
+    try {
+      lesson = JSON.parse(JSON.stringify(given), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+    } catch (_) {
+      throw new Error('buildMathPracticePacket needs a plain JSON-serializable lesson');
+    }
     var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120);
     if (title) { lesson.title = title; lesson.revision = 'r' + fnv(JSON.stringify([lesson.title, lesson.blocks])); }
-    var labels = Object.assign({}, o.labels || {});
-    if (!labels.intro) labels.intro = labels[activity + '_intro'] || loader.CHECK_ADAPTERS[activity].labels[activity + '_intro'];
+    var labels = {};
+    if (o.labels && typeof o.labels === 'object' && !Array.isArray(o.labels)) {
+      Object.keys(o.labels).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') labels[k] = o.labels[k];
+      });
+    }
+    var adapterLabels = loader.CHECK_ADAPTERS[activity] && typeof loader.CHECK_ADAPTERS[activity].labels === 'object' ? loader.CHECK_ADAPTERS[activity].labels : {};
+    if (!labels.intro) labels.intro = labels[activity + '_intro'] || adapterLabels[activity + '_intro'];
     var html = loader.buildHtml(lesson, { core: WHOLE_NUMBER_ANSWERS, labels: labels });
     // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
     if (o.learner) html = withCodeName(html, o.learner);
@@ -443,9 +482,9 @@
     return html.slice(0, from) + json + html.slice(to);
   }
 
-  var api = { VERSION: VERSION, METHODS: METHODS, FAMILIES: FAMILIES.map(copyFamily), MAX_FACTS: MAX_FACTS, MAX_NEW: MAX_NEW, MIN_KNOWN: MIN_KNOWN, STEPS: STEPS,
+  var api = Object.freeze({ VERSION: VERSION, METHODS: METHODS, FAMILIES: FAMILIES.map(copyFamily), MAX_FACTS: MAX_FACTS, MAX_NEW: MAX_NEW, MIN_KNOWN: MIN_KNOWN, STEPS: STEPS,
     factKey: keyOf, turnaround: turnaround, related: related, answerOf: answerOf, factWord: factWord, checkFact: checkFact, parseFacts: parseFacts, knownByOrder: knownByOrder,
-    planMathPractice: planMathPractice, lessonFromMathPractice: lessonFromMathPractice, buildMathPracticePacket: buildMathPracticePacket, codeName: codeName, withCodeName: withCodeName };
-  root.AlloPacketMathPractice = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+    planMathPractice: planMathPractice, lessonFromMathPractice: lessonFromMathPractice, buildMathPracticePacket: buildMathPracticePacket, codeName: codeName, withCodeName: withCodeName });
+  if (root && typeof root === 'object') root.AlloPacketMathPractice = api;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null));

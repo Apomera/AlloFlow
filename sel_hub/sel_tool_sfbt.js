@@ -541,14 +541,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
               'Solution-Focused Brief Therapy (SFBT) is a counseling approach that flips most clinical scripts. Instead of asking "what is wrong, and how did it get this way?", SFBT asks "what would it look like if it was better, and when does the problem not happen?" The questions sound small but they are doing real work: they point the brain forward instead of backward, and they make the goal concrete enough to recognize when you take a step toward it.'
             ),
             h('p', { style: { margin: 0, color: _sfFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'SFBT was designed to be brief on purpose. The original research was on 1-to-5-session interventions. That is part of why it has become the most-used technique in US school counseling: counselors often only see a student once or twice, and SFBT is built for that.'
+              'SFBT was designed to be brief on purpose. The original research was on 1-to-5-session interventions. That is part of why it is one of the most widely used approaches in US school counseling: counselors often only see a student once or twice, and SFBT is built for that.'
             )
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _sfBg('#0f172a'), border: '1px solid ' + _sfBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _sfFg('#c4b5fd'), fontSize: 16 } }, 'Where SFBT comes from'),
             h('p', { style: { margin: 0, color: _sfFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'Solution-Focused Brief Therapy was developed by Steve de Shazer, Insoo Kim Berg, and colleagues at the Brief Family Therapy Center in Milwaukee starting in the late 1970s. They were puzzled by clients who came in with serious problems and got better quickly with what looked like very little therapy. Studying what was actually helping, they identified specific questioning patterns (the Miracle Question, Scaling, Exception-finding, Coping Questions) that consistently moved clients forward. SFBT was formalized in the 1980s and has been extensively evaluated since. It is the foundation of most US school counseling practice today.'
+              'Solution-Focused Brief Therapy was developed by Steve de Shazer, Insoo Kim Berg, and colleagues at the Brief Family Therapy Center in Milwaukee starting in the late 1970s. They were puzzled by clients who came in with serious problems and got better quickly with what looked like very little therapy. Studying what was actually helping, they identified specific questioning patterns (the Miracle Question, Scaling, Exception-finding, Coping Questions) that consistently moved clients forward. SFBT was formalized in the 1980s and has been extensively evaluated since. It is widely taught in school counselor training today.'
             )
           ),
 
@@ -559,7 +559,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sfbt'))) {
             sourceCard('Berg, I. K. and Steiner, T. (2003)', 'Children\'s Solution Work, W. W. Norton', 'Co-founder Berg\'s book on SFBT specifically with children and adolescents.', null),
             sourceCard('Murphy, J. J. (2015)', 'Solution-Focused Counseling in Schools (3rd ed.), American Counseling Association', 'The school-counselor standard text. Widely used in US school counseling training.', null),
             sourceCard('Solution Focused Brief Therapy Association', 'sfbta.org', 'Professional organization. Open-access training and research.', 'https://www.sfbta.org/'),
-            sourceCard('Franklin, C. et al. (2017)', '"Solution-Focused Brief Therapy in Schools: A Review of the Outcome Literature," Research on Social Work Practice', 'Meta-analytic review of SFBT in school settings.', null)
+            sourceCard('Kim, J. S. and Franklin, C. (2009)', '"Solution-Focused Brief Therapy in Schools: A Review of the Outcome Literature," Children and Youth Services Review, 31(4), 464-470', 'Systematic review of SFBT outcome studies in school settings.', null)
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _sfHC ? '#000000' : (_sfL ? '#fffbeb' : 'rgba(245,158,11,0.08)'), borderTop: '1px solid ' + (_sfHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_sfHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_sfHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _sfBd('#f59e0b'), marginBottom: 12 } },

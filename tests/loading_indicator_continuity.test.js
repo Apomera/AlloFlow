@@ -11,7 +11,7 @@ const source = read('AlloFlowANTI.txt');
 const start = source.indexOf('{isAppReady && (moduleLoadInfo.pending.length');
 const end = source.indexOf('{showSessionModal &&', start);
 const pill = source.slice(start, end).trim();
-const compiled = transformSync(`window.LoadingPill = function ({isAppReady, moduleLoadInfo}) {
+const compiled = transformSync(`window.LoadingPill = function ({isAppReady, moduleLoadInfo, hasSelectedMode = true, isTeacherMode = true}) {
   const t = () => '';
   return <>${pill}</>;
 };`, { plugins: [transformJsx], configFile: false, babelrc: false }).code;
@@ -26,9 +26,9 @@ function mount() {
   const reactRoot = win.ReactDOM.createRoot(host);
   return {
     win, host,
-    render(pending, queued, failed = [], isAppReady = true) {
+    render(pending, queued, failed = [], isAppReady = true, extra = {}) {
       win.ReactDOM.flushSync(() => reactRoot.render(win.React.createElement(win.LoadingPill, {
-        isAppReady, moduleLoadInfo: { pending, queued, failed },
+        isAppReady, moduleLoadInfo: { pending, queued, failed }, ...extra,
       })));
     },
     close() { reactRoot.unmount(); win.close(); },
@@ -73,6 +73,24 @@ describe('initial loading indicators', () => {
       app.render([], ['queued'], ['failed']);
       expect(app.host.textContent).toContain('1 left');
       expect(app.host.querySelector('button')).not.toBeNull();
+    } finally { app.close(); }
+  });
+
+  // 2026-11-23 (owner): the count is not shown before a workspace is open (the queue mostly
+  // waits there) or to students; a failed tool's retry still shows for everyone.
+  it('hides the count on the launch pad and for students, but keeps the failed retry', () => {
+    const app = mount();
+    try {
+      app.render(['active'], ['queued'], [], true, { hasSelectedMode: false });
+      expect(app.host.childElementCount, 'launch pad').toBe(0);
+      app.render(['active'], ['queued'], [], true, { isTeacherMode: false });
+      expect(app.host.childElementCount, 'student').toBe(0);
+      app.render(['active'], ['queued'], ['failed'], true, { isTeacherMode: false });
+      expect(app.host.textContent).toContain('1 failed');
+      expect(app.host.textContent).not.toContain('left');
+      expect(app.host.querySelector('.animate-spin')).toBeNull();
+      app.render(['active'], ['queued'], [], true, { hasSelectedMode: true, isTeacherMode: true });
+      expect(app.host.textContent).toContain('2 left');
     } finally { app.close(); }
   });
 

@@ -64,7 +64,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       territory: 'Penobscot River watershed (central + northern Maine)',
       languageNote: 'Penobscot language, in active revitalization through the Penobscot Cultural and Historic Preservation Department',
       learnFrom: ['Penobscot Cultural and Historic Preservation Department', 'Penobscot Nation website (penobscotnation.org)', 'Maulian Bryant\'s public scholarship'],
-      knownFor: 'Led the Penobscot River Restoration Project (Veazie Dam removal 2012, Great Works Dam removal 2013). Indian Island is the seat of government.'
+      knownFor: 'A founding partner in the Penobscot River Restoration Project (Great Works Dam removed 2012, Veazie Dam removed 2013). Indian Island is the seat of government.'
     },
     {
       id: 'passamaquoddy', name: 'Passamaquoddy Tribe',
@@ -548,7 +548,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               h('li', null, 'Visit the Abbe Museum in Bar Harbor (Wabanaki-curated, the only Smithsonian-affiliated tribal museum in the Northeast).'),
               h('li', null, 'Donate to a Wabanaki-led organization on a recurring basis. Recurring matters more than amount.'),
               h('li', null, 'Learn one specific Wabanaki language word and what it means in context. Welimanal (sweetgrass). Wikp (brown ash). Sata (blueberry).'),
-              h('li', null, 'Advocate for full tribal sovereignty in Maine state law. Maine is the only state where federally recognized tribes still operate under restricted sovereignty.'),
+              h('li', null, 'Advocate for full tribal sovereignty in Maine state law. Under the 1980 Maine Indian Claims Settlement Act, the Wabanaki Nations have less sovereignty than most of the other federally recognized tribes in the United States.'),
               h('li', null, 'Support land-back work and treaty rights, including in your professional and civic capacity.'),
               h('li', null, 'If you are an educator: champion Wabanaki Studies (LD 291) being actually taught at your school, not just nominally on the books.')
             )

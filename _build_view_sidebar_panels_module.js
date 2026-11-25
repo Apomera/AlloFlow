@@ -33,8 +33,10 @@ function buildSidebarPanelsModule(source) {
 
 const outputCode = `(function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ViewSidebarPanelsModule) { console.log('[CDN] ViewSidebarPanelsModule already loaded, skipping'); return; }
-var React = window.React || React;
+var React = window.React || (typeof React !== 'undefined' ? React : null);
+if (!React) return;
 var ReactDOM = window.ReactDOM;
 var useState = React.useState;
 var useEffect = React.useEffect;

@@ -185,6 +185,15 @@ function offlineGlossaryAttribution(hit) {
   if (hit?.set === 'openmoji') return { set: 'OpenMoji', author: 'OpenMoji', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', url: 'https://openmoji.org/', label: hit.label || hit.word || '' };
   return { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', via: 'Offline Bundle', label: hit.label || hit.word || '' };
 }
+// The same offline pictures for glossaries made without AI (generate_dispatcher attachOfflineGlossaryPictures):
+// ensure() -> matcher (matchWord), prepare(hit, signal) -> PNG data URL with its credit band, attribution(hit).
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.GlossaryOfflinePictures = Object.freeze({
+    ensure: ensureOfflineGlossaryPictureAssets, prepare: prepareOfflineGlossarySymbol,
+    attribution: offlineGlossaryAttribution, creditBand: 688 - 640,
+  });
+}
 // A classroom photo arrives screened, with AI alt text of the photo itself.
 // Credit is drawn in a band under it, as for Mulberry, so it survives exports
 // that copy only the image bytes.

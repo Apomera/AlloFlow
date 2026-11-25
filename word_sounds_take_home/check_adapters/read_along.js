@@ -1,6 +1,10 @@
 // Practice adapter: a passage read aloud, one sentence at a time (read_along). Made by
 // packet_read_along_builder.js on "Make a read-along". Listening practice, never scored: the student
 // presses "I have read this page" and the item is recorded as practice "read".
+// 2026-11-23: a page the file turned to and read out by itself (Auto-advance, or Auto pace in One sentence) is
+// recorded as practice "played"; "read" is kept for a page the child turned to, or started something on (Read to me,
+// a sentence pressed, Next sentence). The answers to "Check your understanding" are kept with the place
+// (ctx.checkNote) and go into the saved results; they are never scored.
 // One item is one page of the passage: its sentences, each with a recording that was made ahead of
 // time on the teacher's device. This file makes no speech: it only plays those recordings.
 // "Read to me" reads the page from the top (or from the sentence last pressed), marking the sentence
@@ -55,13 +59,16 @@ module.exports = {
     read_along_checks_heading: 'Check your understanding',
     read_along_checks_right: 'Nice work!',
     read_along_checks_retry: 'Try another choice.',
-    read_along_checks_open_note: 'Stays on this device only.',
+    // 2026-11-23: the answers are kept with the place and written into the saved results (ctx.checkNote), and the note
+    // says so (it said "Stays on this device only.", and the answers were lost on a page turn).
+    read_along_checks_open_note: 'Your answers are saved with your results. Your teacher sees them when you hand in your work.',
     read_along_rec: 'Record my voice',
     read_along_rec_stop: 'Stop recording',
     read_along_rec_play: 'Play my voice',
     read_along_rec_save: 'Save my recording',
     read_along_rec_clear: 'Clear',
-    read_along_rec_note: 'Stays on this device only. Nothing is saved or sent.',
+    // 2026-11-23: true beside "Save my recording", which saves a file (it said "Nothing is saved or sent.").
+    read_along_rec_note: 'Your recording stays in this browser and is never sent. It is saved only if you press Save my recording, and then only to this device.',
     read_along_rec_recording: 'Recording sentence {n}...',
     read_along_rec_ready: 'Your recording for sentence {n} is ready to play back.',
     read_along_rec_denied: 'Microphone permission was refused.',
@@ -72,6 +79,28 @@ module.exports = {
     read_along_finish: 'Finish',
     read_along_prev: 'Previous page',
     read_along_done_said: 'Good reading.',
+    // 2026-11-23: a file made to read with the device's own voice, on a device that has none for the passage.
+    read_along_device_read: 'Read with device voice',
+    // 2026-11-23: words that are always on the page were written in the code, so a translated file showed them in English.
+    read_along_jump: 'Jump to page',
+    read_along_page_n: 'Page {n}',
+    read_along_bookmark: 'Bookmark',
+    read_along_bookmarked: 'Bookmarked',
+    read_along_bookmark_go: 'Go to bookmark',
+    read_along_bookmark_go_n: 'Go to bookmark (Page {n})',
+    read_along_tap: 'Tap:',
+    read_along_tap_group: 'Tap a word mode',
+    read_along_tap_sentence: 'Sentence',
+    read_along_tap_speak: 'Speak word',
+    read_along_tap_define: 'Define',
+    read_along_tap_sounds: 'Sounds',
+    read_along_more_tools: 'More tools',
+    read_along_fewer_tools: 'Fewer tools',
+    read_along_helpers: 'Reading helpers',
+    read_along_keys: 'Keyboard shortcuts',
+    read_along_keys_text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.',
+    read_along_no_voice: 'This device has no voice of its own, so it cannot read this aloud. You can still read the words yourself.',
+    read_along_no_voice_lang: 'This device has no voice for the language of this passage, so it cannot read it aloud. You can still read the words yourself.',
   },
   // p: { lines: [{ text, audio: clip id or '', syl: the text with a dot at each syllable break, pos: compact "i:tag,...", para: true when a new paragraph starts here }], heading, page, pages, pageMode, lang }
   // A clip id names a recording in lesson.audio. A line with no clip is shown and skipped by "Read to me".
@@ -209,6 +238,18 @@ module.exports = {
     supports.forEach(function (s) { if (s && s.id) { supportById[s.id] = s; (supportsByLine[String(s.line)] = supportsByLine[String(s.line)] || []).push(s); } });
     var hasSupportAudio = supports.some(function (s) { return !!s.audio; });
     var devVoice = typeof ctx.deviceVoice === 'function' ? ctx.deviceVoice(item.lang) : null, hasDevVoice = !!(devVoice && devVoice.available && devVoice.available());
+    // Why the file's device voice cannot read this page: 'language' (no voice for this language) or 'none'.
+    var noVoiceWhy = (devVoice && !hasDevVoice) ? (typeof devVoice.why === 'function' ? (devVoice.why() || 'none') : 'none') : '';
+    // A page the file turned to by itself (Auto-advance, Auto pace) is the child's own once they start something on it.
+    var ownPage = !(ctx.nav && typeof ctx.nav === 'object' && ctx.nav.autoPlay);
+    var own = function () { ownPage = true; };
+    // The page is over: 'read' (the child's own page) or 'played'. A 'played' page read later becomes 'read'.
+    var record = function (text, options) {
+      var kind = ownPage ? 'read' : 'played';
+      if (ctx.isDone() && !(kind === 'read' && typeof ctx.practiceKind === 'function' && ctx.practiceKind() === 'played')) return false;
+      ctx.practice(kind, kind === 'read' ? text : '', options);
+      return true;
+    };
     var readWithSupports = hasSupports && (hasSupportAudio || hasDevVoice) && readPref('withSupports', 'with-supports', false);
     var showBold = readPref('bold', 'bold', false);
     var showPosLabels = readPref('posLabels', 'pos-labels', false);
@@ -241,9 +282,9 @@ module.exports = {
       var pageLabel = ctx.el('p', { class: 'muted', style: 'margin:0', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) });
       var pageBarItems = [pageLabel];
       if (isMultiPage && typeof ctx.goto === 'function') {
-        jumpSel = ctx.el('select', { class: 'ra-page-jump', 'aria-label': 'Jump to page', 'data-read-along-jump': '' }, allPages.map(function (pg, pi) {
+        jumpSel = ctx.el('select', { class: 'ra-page-jump', 'aria-label': L.read_along_jump || 'Jump to page', 'data-read-along-jump': '' }, allPages.map(function (pg, pi) {
           var hLine = Array.isArray(pg.lines) ? pg.lines.filter(function (l) { return l && l.heading; })[0] : null;
-          var lbl = 'Page ' + (pi + 1) + (hLine ? (' \u2014 ' + String(hLine.text || '').slice(0, 28)) : (pg.heading ? (' \u2014 ' + String(pg.heading).slice(0, 28)) : ''));
+          var lbl = ctx.fmt(L.read_along_page_n || 'Page {n}', { n: pi + 1 }) + (hLine ? (' \u2014 ' + String(hLine.text || '').slice(0, 28)) : (pg.heading ? (' \u2014 ' + String(pg.heading).slice(0, 28)) : ''));
           return ctx.el('option', { value: String(pi), text: lbl });
         }));
         jumpSel.value = String(pageIdx);
@@ -256,16 +297,16 @@ module.exports = {
         });
         pageBarItems.push(jumpSel);
         if (typeof ctx.bookmark === 'function') {
-          bmBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark': '', 'aria-pressed': 'false', text: 'Bookmark' });
-          bmGoBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark-go': '', hidden: true, text: 'Go to bookmark' });
+          bmBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark': '', 'aria-pressed': 'false', text: L.read_along_bookmark || 'Bookmark' });
+          bmGoBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark-go': '', hidden: true, text: L.read_along_bookmark_go || 'Go to bookmark' });
           var syncBookmark = function () {
             var bm = ctx.bookmark();
             var here = !!(bm && bm.page === pageIdx);
             bmBtn.setAttribute('aria-pressed', String(here));
-            bmBtn.textContent = here ? 'Bookmarked' : 'Bookmark';
+            bmBtn.textContent = here ? (L.read_along_bookmarked || 'Bookmarked') : (L.read_along_bookmark || 'Bookmark');
             if (bm && bm.page !== pageIdx && bm.page >= 0 && bm.page < allPages.length) {
               bmGoBtn.hidden = false;
-              bmGoBtn.textContent = 'Go to bookmark (Page ' + (bm.page + 1) + ')';
+              bmGoBtn.textContent = ctx.fmt(L.read_along_bookmark_go_n || 'Go to bookmark (Page {n})', { n: bm.page + 1 });
             } else {
               bmGoBtn.hidden = true;
             }
@@ -551,7 +592,8 @@ module.exports = {
         if (from < item.lines.length - 1) { setActiveSentence(from + 1, true); return true; }
         if (isMultiPage && pageIdx < allPages.length - 1 && typeof ctx.goto === 'function') {
           if (cache) { cache.chunkPaceMs = chunkPaceMs; cache.chunkMood = chunkMood; }
-          if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+          if (!keepAuto) own();
+          record('', { quiet: true });
           ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: keepAuto ? 'chunk' : false });
           return true;
         }
@@ -652,7 +694,7 @@ module.exports = {
       if (index >= 0 && nodes[index] && typeof nodes[index].scrollIntoView === 'function') { try { nodes[index].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
     };
     var playButton = hasAudio ? B({ class: 'primary', 'data-read-along-play': '', text: L.read_along_play }) : null;
-    var devReadButton = (!hasAudio && hasDevVoice) ? B({ class: 'primary', 'data-read-along-device-read': '', text: 'Read with device voice' }) : null;
+    var devReadButton = (!hasAudio && hasDevVoice) ? B({ class: 'primary', 'data-read-along-device-read': '', text: L.read_along_device_read || 'Read with device voice' }) : null;
     var restartButton = (hasAudio || hasDevVoice || showMultiSent) ? B({ 'data-read-along-restart': '', text: L.read_along_restart || 'Restart' }) : null;
     var autoButton = ((hasAudio || hasDevVoice) && showMultiSent) ? B({ 'data-read-along-auto': '', text: L.read_along_auto || 'Auto-advance' }) : null;
     var sylButton = hasSyl ? B({ 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
@@ -742,7 +784,7 @@ module.exports = {
     var setPlaying = function (on) {
       playing = on;
       if (playButton) playButton.textContent = on ? L.read_along_stop : L.read_along_play;
-      if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : 'Read with device voice';
+      if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : (L.read_along_device_read || 'Read with device voice');
     };
     var haltPlaybackOnly = function (keepPause) {
       if (pageTurnTimer && win.clearTimeout) { win.clearTimeout(pageTurnTimer); pageTurnTimer = 0; }
@@ -827,6 +869,7 @@ module.exports = {
       setPlaying(false);
       setActiveSentence(i, true);
       playedAny = true;
+      own();
       if (countSupport !== false) ctx.support('lineReplays');
       mark(i);
       var finishOne = function (ok) {
@@ -850,7 +893,7 @@ module.exports = {
       pageTurnTimer = win.setTimeout(function () {
         pageTurnTimer = 0;
         if (mine !== run || guardMic()) { setPlaying(false); return; }
-        if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+        record('', { quiet: true });
         ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: mode });
       }, 700);
       return true;
@@ -893,6 +936,7 @@ module.exports = {
     if (playButton) playButton.addEventListener('click', function () {
       if (guardMic()) return;
       if (playing) { halt(true); return; }
+      own();
       ctx.support('readThroughs');
       var startAt = finishedRun ? 0 : from;
       finishedRun = false;
@@ -930,6 +974,7 @@ module.exports = {
     if (devReadButton) devReadButton.addEventListener('click', function () {
       if (guardMic()) return;
       if (playing) { halt(false); return; }
+      own();
       ctx.support('readThroughs');
       var startAt = finishedRun ? 0 : from;
       finishedRun = false;
@@ -987,6 +1032,18 @@ module.exports = {
     if (restartButton && !item.simpleBar) mainControls.push(restartButton);
     if (autoButton && !item.simpleBar) mainControls.push(autoButton);
     if (mainControls.length) dock.appendChild(ctx.el('div', { class: 'ra-bar-main', 'data-read-along-main-bar': '' }, mainControls));
+    // The file was made to read with the device's own voice, and this device has none for this page: say so plainly.
+    if (noVoiceWhy && !hasAudio) dock.appendChild(ctx.el('p', { class: 'muted', style: 'margin:6px 0 0', 'data-read-along-no-voice': noVoiceWhy, text: noVoiceWhy === 'language' ? L.read_along_no_voice_lang : L.read_along_no_voice }));
+    // Chrome hands over its voices a moment after the page opens: the page is drawn again when one for this language is there.
+    if (noVoiceWhy && typeof devVoice.watch === 'function' && typeof ctx.goto === 'function') {
+      devVoice.watch(function redraw() {
+        if (!ctx.root.isConnected) return;
+        // Not under a child who is listening or recording: once they have stopped.
+        if (playing || (mic && typeof mic.isRecording === 'function' && mic.isRecording())) { if (win.setTimeout) win.setTimeout(redraw, 1500); return; }
+        halt(false);
+        ctx.goto(pageIdx, { fromLine: from });
+      });
+    }
     var coreStudy = [], extraStudy = [];
     if (sylButton) coreStudy.push(sylButton);
     if (posButton) coreStudy.push(posButton);
@@ -998,12 +1055,12 @@ module.exports = {
     if (chunkButton) extraStudy.push(chunkButton);
     extraStudy.push(rsvpButton, crawlButton);
     var tapChoices = [];
-    if (hasAudio) tapChoices.push(['sentence', 'Sentence']);
-    if (hasDevVoice) tapChoices.push(['speak', 'Speak word']);
-    if (hasDef) tapChoices.push(['define', 'Define']);
-    if (hasSyl) tapChoices.push(['sounds', 'Sounds']);
+    if (hasAudio) tapChoices.push(['sentence', L.read_along_tap_sentence || 'Sentence']);
+    if (hasDevVoice) tapChoices.push(['speak', L.read_along_tap_speak || 'Speak word']);
+    if (hasDef) tapChoices.push(['define', L.read_along_tap_define || 'Define']);
+    if (hasSyl) tapChoices.push(['sounds', L.read_along_tap_sounds || 'Sounds']);
     if (tapChoices.length >= 2) {
-      var tapNodes = [ctx.el('span', { text: 'Tap:' })];
+      var tapNodes = [ctx.el('span', { text: L.read_along_tap || 'Tap:' })];
       tapChoices.forEach(function (tc) {
         var b = B({ 'data-tap-mode': tc[0], text: tc[1] });
         press(b, tc[0] === tapMode);
@@ -1011,21 +1068,21 @@ module.exports = {
         tapBtns[tc[0]] = b;
         tapNodes.push(b);
       });
-      extraStudy.push(ctx.el('div', { class: 'ra-tap-bar', role: 'group', 'aria-label': 'Tap a word mode', 'data-read-along-tap-bar': '' }, tapNodes));
+      extraStudy.push(ctx.el('div', { class: 'ra-tap-bar', role: 'group', 'aria-label': L.read_along_tap_group || 'Tap a word mode', 'data-read-along-tap-bar': '' }, tapNodes));
     }
     if (item.simpleBar) {
       var extraWrap = ctx.el('div', { class: 'ra-extra-tools', 'data-read-along-extra-tools': '', hidden: true }, extraStudy);
-      var moreBtn = B({ 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: 'More tools' });
+      var moreBtn = B({ 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: L.read_along_more_tools || 'More tools' });
       moreBtn.addEventListener('click', function () {
         var open = extraWrap.hidden;
         extraWrap.hidden = !open;
         moreBtn.setAttribute('aria-expanded', String(open));
-        moreBtn.textContent = open ? 'Fewer tools' : 'More tools';
+        moreBtn.textContent = open ? (L.read_along_fewer_tools || 'Fewer tools') : (L.read_along_more_tools || 'More tools');
       });
       coreStudy.push(moreBtn);
-      ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat([extraWrap])));
+      ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': L.read_along_helpers || 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat([extraWrap])));
     } else {
-      ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat(extraStudy)));
+      ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': L.read_along_helpers || 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat(extraStudy)));
     }
     if (posLegend) ctx.root.appendChild(posLegend);
     var handleWordClick = function (ev) {
@@ -1144,11 +1201,12 @@ module.exports = {
         ctx.el('option', { value: 'pulse', text: 'Pulse' }),
       ]);
       chunkMoodSel.value = chunkMood;
-      sentPrevBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(-1, false); });
-      sentNextBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(1, false); });
+      sentPrevBtn.addEventListener('click', function () { if (guardMic()) return; own(); halt(false); stepChunk(-1, false); });
+      sentNextBtn.addEventListener('click', function () { if (guardMic()) return; own(); halt(false); stepChunk(1, false); });
       chunkAutoBtn.addEventListener('click', function () {
         if (guardMic()) return;
         chunkAutoOn = !chunkAutoOn;
+        if (chunkAutoOn) own();
         press(chunkAutoBtn, chunkAutoOn);
         if (chunkAutoOn) scheduleChunkTimer(); else stopChunkTimers();
       });
@@ -1174,35 +1232,50 @@ module.exports = {
     else if (hasPos) applyPosTheme();
     applyChunkView();
     if (Array.isArray(item.questions) && item.questions.length) {
+      var keepNote = typeof ctx.checkNote === 'function';
       var qNodes = item.questions.map(function (q, qi) {
         var qid = q.id || ('q' + (qi + 1));
         var card = ctx.el('div', { class: 'ra-chk-q', 'data-check-q': qid }, [
           ctx.el('p', { class: 'ra-chk-p', text: (qi + 1) + '. ' + q.prompt }),
         ]);
+        // What was given before (a page turned back to, or the file opened again) is shown again.
+        var kept = keepNote ? ctx.checkNote(qid) : null;
         if (q.kind === 'mc' && Array.isArray(q.choices)) {
           var fb = ctx.el('p', { class: 'ra-chk-fb', 'aria-live': 'polite', 'data-check-feedback': qid });
-          var optBtns = [];
+          var optBtns = [], picks = kept && kept.n > 0 ? kept.n : 0;
+          var showPick = function (ci) {
+            optBtns.forEach(function (b, bi) { b.setAttribute('aria-pressed', String(bi === ci)); });
+            var ok = typeof q.answer === 'number' ? ci === q.answer : true;
+            fb.textContent = ok ? (L.read_along_checks_right || 'Nice work!') : (L.read_along_checks_retry || 'Try another choice.');
+            fb.setAttribute('data-ok', ok ? '1' : '0');
+          };
           q.choices.forEach(function (ch, ci) {
             var ob = B({ 'data-check-choice': String(ci), 'aria-pressed': 'false', text: ch });
             ob.addEventListener('click', function () {
-              optBtns.forEach(function (b, bi) { b.setAttribute('aria-pressed', String(bi === ci)); });
-              var ok = typeof q.answer === 'number' ? ci === q.answer : true;
-              fb.textContent = ok ? (L.read_along_checks_right || 'Nice work!') : (L.read_along_checks_retry || 'Try another choice.');
-              fb.setAttribute('data-ok', ok ? '1' : '0');
+              showPick(ci);
+              picks++;
+              if (keepNote) ctx.checkNote(qid, { c: ci, n: picks });
               use('comprehensionCheck');
             });
             optBtns.push(ob);
           });
           card.appendChild(ctx.el('div', { class: 'ra-chk-opts', role: 'group', 'aria-label': q.prompt }, optBtns));
           card.appendChild(fb);
+          if (kept && typeof kept.c === 'number' && kept.c >= 0 && kept.c < optBtns.length) showPick(kept.c);
         } else {
-          card.appendChild(ctx.el('textarea', { class: 'ra-chk-open', rows: '3', 'aria-label': q.prompt, 'data-check-open': qid }));
-          card.appendChild(ctx.el('p', { class: 'muted', style: 'margin:4px 0 0;font-size:.86rem', text: L.read_along_checks_open_note || 'Stays on this device only.' }));
+          var openBox = ctx.el('textarea', { class: 'ra-chk-open', rows: '3', maxlength: '240', 'aria-label': q.prompt, 'data-check-open': qid });
+          if (kept && typeof kept.t === 'string') openBox.value = kept.t;
+          openBox.addEventListener('input', function () {
+            if (keepNote) ctx.checkNote(qid, { t: String(openBox.value || '').slice(0, 240) });
+            if (String(openBox.value || '').trim()) use('comprehensionCheck');
+          });
+          card.appendChild(openBox);
         }
         return card;
       });
       ctx.root.appendChild(ctx.el('section', { class: 'ra-checks', 'aria-label': L.read_along_checks_heading || 'Check your understanding', 'data-read-along-checks': '' }, [
         ctx.el('h3', { text: L.read_along_checks_heading || 'Check your understanding' }),
+        keepNote ? ctx.el('p', { class: 'muted', style: 'margin:0 0 6px;font-size:.86rem', 'data-check-note': '', text: L.read_along_checks_open_note }) : null,
       ].concat(qNodes)));
     }
     if (mic && mic.el) {
@@ -1220,14 +1293,13 @@ module.exports = {
     done.addEventListener('click', function () {
       if (guardMic()) return;
       halt(false);
-      if (!ctx.isDone()) ctx.practice('read', L.read_along_done_said, { advance: true });
-      else if (typeof ctx.goNext === 'function') ctx.goNext();
+      if (!record(L.read_along_done_said, { advance: true }) && typeof ctx.goNext === 'function') ctx.goNext();
     });
     navButtons.push(done);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, navButtons));
     ctx.root.appendChild(ctx.el('details', { class: 'ra-keys-hint', 'data-read-along-keys-hint': '' }, [
-      ctx.el('summary', { text: 'Keyboard shortcuts' }),
-      ctx.el('p', { text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
+      ctx.el('summary', { text: L.read_along_keys || 'Keyboard shortcuts' }),
+      ctx.el('p', { text: L.read_along_keys_text || 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
     ]));
     var printAll = null;
     var renderPrintAll = function () {
@@ -1778,6 +1850,7 @@ module.exports = {
           if (guardMic()) return true;
           if (playing) halt(hasAudio);
           else {
+            own();
             ctx.support('readThroughs');
             var startAt = finishedRun ? 0 : from;
             finishedRun = false;
@@ -1800,7 +1873,7 @@ module.exports = {
         if (key === 'ArrowRight') {
           if (guardMic()) return true;
           if (chunkMode || !hasAudio) {
-            if (canNextSent()) { halt(false); stepChunk(1, false); return true; }
+            if (canNextSent()) { own(); halt(false); stepChunk(1, false); return true; }
           } else {
             var nextIdx = playedAny ? findAudio(from + 1, 1) : findAudio(0, 1);
             if (nextIdx >= 0) { playLine(nextIdx, true); return true; }
@@ -1809,7 +1882,7 @@ module.exports = {
         if (key === 'ArrowLeft') {
           if (guardMic()) return true;
           if (chunkMode || !hasAudio) {
-            if (canPrevSent()) { halt(false); stepChunk(-1, false); return true; }
+            if (canPrevSent()) { own(); halt(false); stepChunk(-1, false); return true; }
           } else {
             var prevIdx = playedAny ? findAudio(from - 1, -1) : findAudio(item.lines.length - 1, -1);
             if (prevIdx >= 0) { playLine(prevIdx, true); return true; }
@@ -1837,6 +1910,7 @@ module.exports = {
       allowRevisit: true,
       reveal: function () { halt(false); },
       stop: function () {
+        if (devVoice && typeof devVoice.unwatch === 'function') devVoice.unwatch();
         halt(false, true);
         if (printAll && win.removeEventListener) win.removeEventListener('beforeprint', renderPrintAll);
       },

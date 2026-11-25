@@ -587,7 +587,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           h('div', { style: { padding: 16, borderRadius: 12, background: _cirBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _cirFg('#fda4af'), fontSize: 16 } }, 'Where it comes from'),
             h('p', { style: { margin: 0, color: _cirFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'The Circle of Friends format was developed by Marsha Forest and Judith Snow at Inclusion Press in the 1980s, originally as a way to help disabled children build community in school settings where they had been isolated. Snow, who was a brilliant disabled activist and writer, observed that her own closest ring as an adult was almost entirely populated by paid staff, which she described as a kind of structural loneliness produced by how community is built (or not) around disabled people. The tool now spans far beyond disability work, but its origin matters: it was a tool of love and protest.'
+              'The Circle of Friends format was developed by Marsha Forest and Judith Snow at Inclusion Press in the 1980s, originally as a way to help disabled children build community in school settings where they had been isolated. Snow, who was a brilliant disabled activist and writer, observed that many disabled people\u2019s circles are filled mostly with paid staff and hold few freely chosen friends, a kind of structural loneliness produced by how community is built (or not) around disabled people. The tool now spans far beyond disability work, but its origin matters: it was a tool of love and protest.'
             )
           ),
 

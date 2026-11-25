@@ -211,7 +211,7 @@ if (typeof window !== 'undefined') {
       id: 'gratitude_pause', name: 'Gratitude Pause', emoji: '\uD83D\uDE4F', duration: '2 min', category: 'wellbeing',
       color: '#22c55e',
       desc: { elementary: 'Think of 3 things that make you say "thank you!" today.', middle: 'Pause and name three specific things you\'re grateful for right now.', high: 'Deliberate gratitude practice — a well-evidenced positive psychology intervention.' },
-      steps: { elementary: ['Close your eyes and smile', 'Think of one thing that made you happy today. What was it?', 'Think of one person who was kind to you. Who was it?', 'Think of one thing about your body that works great!', 'Say "thank you" to each one inside your heart', 'Open your eyes. Do you feel a little warmer inside?'], middle: ['Take a moment of stillness', 'Name one specific thing today you\'re grateful for (not generic — specific)', 'Name one person and what they did that you appreciate', 'Name one quality about yourself you\'re grateful for', 'Sit with the feeling of appreciation for 30 seconds', 'Notice: does gratitude change how your body feels?'], high: ['Engage in deliberate gratitude reflection', 'Identify something specific from today — not a generality, but a particular moment', 'Identify an interpersonal connection you value — what specifically about it?', 'Identify a personal capacity or resource you often take for granted', 'Research shows regular gratitude practice increases well-being by ~25%', 'Hold the composite feeling of appreciation. Where do you feel it somatically?'] }
+      steps: { elementary: ['Close your eyes and smile', 'Think of one thing that made you happy today. What was it?', 'Think of one person who was kind to you. Who was it?', 'Think of one thing about your body that works great!', 'Say "thank you" to each one inside your heart', 'Open your eyes. Do you feel a little warmer inside?'], middle: ['Take a moment of stillness', 'Name one specific thing today you\'re grateful for (not generic — specific)', 'Name one person and what they did that you appreciate', 'Name one quality about yourself you\'re grateful for', 'Sit with the feeling of appreciation for 30 seconds', 'Notice: does gratitude change how your body feels?'], high: ['Engage in deliberate gratitude reflection', 'Identify something specific from today — not a generality, but a particular moment', 'Identify an interpersonal connection you value — what specifically about it?', 'Identify a personal capacity or resource you often take for granted', 'Research links regular gratitude practice with small improvements in well-being', 'Hold the composite feeling of appreciation. Where do you feel it somatically?'] }
     }
   ];
 
@@ -436,7 +436,7 @@ if (typeof window !== 'undefined') {
         { step: 2, text: 'Close your eyes or look downward.', detail: 'Reducing visual input helps you focus on the bilateral rhythm.' },
         { step: 3, text: 'Gently tap your left shoulder with your right hand. Then your right shoulder with your left hand.', detail: 'Alternate sides slowly and rhythmically, like butterfly wings gently flapping.' },
         { step: 4, text: 'Continue tapping, alternating sides. Keep a slow, steady rhythm.', detail: 'Tap at a pace that feels comfortable \u2014 roughly one tap per second on each side.' },
-        { step: 5, text: 'While tapping, think of a safe, calm place or simply focus on your breathing.', detail: 'The bilateral stimulation helps both hemispheres of your brain process and integrate.' },
+        { step: 5, text: 'While tapping, think of a safe, calm place or simply focus on your breathing.', detail: 'The slow left-right rhythm gives your attention something steady and soothing to follow.' },
         { step: 6, text: 'Continue for 1-2 minutes. When you feel calmer, slow the tapping and gently stop.', detail: 'Take a few deep breaths. Notice how you feel compared to when you started.' }
       ]
     },
@@ -1216,7 +1216,7 @@ var TRAUMA_ADAPTATIONS = [
         'Crisis: call or text 988, text HOME to 741741'
       ],
       facilitatorNote: 'Retreat staff: have pre-screening protocols, have on-call mental health support, have clear opt-out and exit pathways. Watch for participants who are deteriorating, not deepening, and intervene early. Do not pressure participants to stay through difficulty.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Cheetah House at Brown (clinical resources for meditation-related difficulties).'
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB (2019). Cheetah House, a nonprofit founded by Willoughby Britton (resources for meditation-related difficulties).'
     },
     {
       id: 'adapt_pelvic_body_scan',
@@ -1390,7 +1390,7 @@ var TRAUMA_ADAPTATIONS = [
         'Eat at your normal pace; do not slow down further',
         'Stop the formal exercise',
         'Speak with a therapist or ED-informed clinician',
-        'Crisis or relapse risk: call NEDA at 1-800-931-2237 or text NEDA to 741741',
+        'Crisis or relapse risk: call or text 988, or text HOME to 741741. Eating-disorder support: National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays)',
         'Do not continue mindful eating exercises if they reliably activate ED thoughts'
       ],
       facilitatorNote: 'Be very cautious offering mindful eating in any group, especially groups likely to include eating disorder history (women, athletes, dancers, perfectionist students). Frame as optional. Do not use mindful eating as a weight-management framing.',
@@ -1992,7 +1992,7 @@ var AWE_PRACTICES = [
         'Urban awe walk noticing architecture and human ingenuity.',
         'Group awe walk in silence with debrief at the end.'
       ],
-      example: 'A 75-year-old participant in Sturm et al. (2020) reported feeling "smaller and more connected" after eight weekly awe walks, with measurable mood improvement.',
+      example: 'Older adults in Sturm et al. (2020) who took eight weekly awe walks reported more awe, and more daily compassion and gratitude, than control walkers.',
       cautions: 'Adapt for mobility — awe rolls, awe sits, awe-from-a-window all work; the practice is in attention, not pace.',
       research: 'Sturm, Datta, Roy, Sible, Kosik, Veziris, Chow, Morris, Neuhaus, Kramer, Miller, Holley, and Keltner (2020), Emotion — eight weekly awe walks produced significant increases in daily positive emotions and decreases in daily distress versus control walks.'
     },
@@ -2115,7 +2115,7 @@ var AWE_PRACTICES = [
         'Stay at least 30 minutes.'
       ],
       whatItDoes: 'Produces awe through felt connection to deep time and the long human or natural story.',
-      whyItWorks: 'Temporal vastness (Bai et al., 2017) is one of the strongest awe elicitors; old places extend the felt timeline beyond personal lifespan.',
+      whyItWorks: 'Old places can evoke the vastness Keltner and Haidt (2003) describe, stretched across time; they extend the felt timeline beyond a personal lifespan.',
       bestFrequency: 'spontaneous',
       variations: [
         'Old-tree version (a 300-year-old oak does the work).',
@@ -2124,7 +2124,7 @@ var AWE_PRACTICES = [
       ],
       example: 'Tenth grader visits an old cemetery and sits with the gravestone of a child who died at 7 in 1841; reports a long quiet afterward.',
       cautions: 'Respect sacred spaces and ongoing community use; some religious sites have dress or behavior expectations.',
-      research: 'Bai, Maruskin, Chen, Gordon, Stellar, McNeil, Peng, and Keltner (2017), JPSP — temporal awe distinct from physical-vastness awe.'
+      research: 'Bai, Maruskin, Chen, Gordon, Stellar, McNeil, Peng, and Keltner (2017), JPSP: awe produces a "small self" and a stronger sense of connection to others, across cultures.'
     },
     {
       id: 'listen_to_music_in_awe',
@@ -2167,7 +2167,7 @@ var AWE_PRACTICES = [
         'Write one sentence about what shifted.'
       ],
       whatItDoes: 'Demonstrates that awe is portable through language and accessible without travel.',
-      whyItWorks: 'Verbal awe-elicitors (great poems, philosophical passages, sacred texts) trigger the same physiological responses as direct awe experiences (Shiota, Keltner, and Mossman, 2007).',
+      whyItWorks: 'Great poems, philosophical passages and sacred texts can evoke awe for many readers. Awe is often set off by information-rich experiences such as nature, art and others\' achievements (Shiota, Keltner, and Mossman, 2007).',
       bestFrequency: 'weekly',
       variations: [
         'Poem-of-the-week version.',
@@ -2176,7 +2176,7 @@ var AWE_PRACTICES = [
       ],
       example: 'A class reads the Pale Blue Dot passage aloud; the room goes quiet for a minute after.',
       cautions: 'Choose passages that align with your community\'s values; awe-inducing does not mean ideologically neutral.',
-      research: 'Shiota, Keltner, and Mossman (2007), Cognition and Emotion — verbal stimuli reliably elicit awe.'
+      research: 'Shiota, Keltner, and Mossman (2007), Cognition and Emotion: awe is evoked by information-rich experiences such as nature, art and others\' achievements.'
     },
     {
       id: 'watch_ocean_waves',
@@ -2219,7 +2219,7 @@ var AWE_PRACTICES = [
         'Stay at least 20 minutes total.'
       ],
       whatItDoes: 'Produces a deeply ancient awe experience that activates a primordial attentional state.',
-      whyItWorks: 'Human nervous systems have evolved with fire for at least 400,000 years; fire-gazing activates a parasympathetic relaxation response distinct from screen-watching.',
+      whyItWorks: 'People have gathered around fire for hundreds of thousands of years; watching a fire with its sound lowered blood pressure in one study.',
       bestFrequency: 'weekly',
       variations: [
         'Candle-only version (safe indoors).',
@@ -2228,7 +2228,7 @@ var AWE_PRACTICES = [
       ],
       example: 'A camp counselor structures every night around a 20-minute silent fire-watch; campers report sleeping better.',
       cautions: 'Fire safety, smoke inhalation, supervision for younger students; indoor candles need stable surfaces.',
-      research: 'Lynn (2014), Evolutionary Anthropology — fire-watching produces measurable blood-pressure decreases.'
+      research: 'Lynn (2014), Evolutionary Psychology: watching a fire with sound lowered blood pressure.'
     },
     {
       id: 'observe_baby_or_child',
@@ -2453,7 +2453,7 @@ var AWE_PRACTICES = [
         'Pick one quality of theirs to carry today.'
       ],
       whatItDoes: 'Produces temporal-vastness awe and a felt sense of being part of a long chain.',
-      whyItWorks: 'Ancestral reflection is one of the most robustly cross-cultural awe practices (Bai et al., 2017); it expands identity beyond the individual.',
+      whyItWorks: 'Reflecting on ancestors can evoke awe at the long chain of lives behind you; it expands identity beyond the individual.',
       bestFrequency: 'monthly',
       variations: [
         'Letter-to-ancestor version.',
@@ -2462,7 +2462,7 @@ var AWE_PRACTICES = [
       ],
       example: 'A student writes to her great-grandmother who left a country during a war; reports feeling held while applying to colleges.',
       cautions: 'For students with painful family lineages, allow chosen-ancestors (mentors, cultural figures, fictional characters); do not require biological.',
-      research: 'Bai et al. (2017) on temporal awe; consistent with intergenerational-meaning research (McAdams, 2001).'
+      research: 'Awe and the small self (Bai et al., 2017); intergenerational-meaning research (McAdams, 2001).'
     },
     {
       id: 'future_time_perspective',
@@ -2488,7 +2488,7 @@ var AWE_PRACTICES = [
       ],
       example: 'A senior teaches her little brother to bake bread the way their grandmother taught her; says "this might still exist in 2126."',
       cautions: 'For students experiencing climate or existential anxiety, do not force optimism about the future; allow ambiguity.',
-      research: 'Hershfield (2011) future-self continuity; Bai et al. (2017) temporal awe.'
+      research: 'Hershfield (2011) future-self continuity; Bai et al. (2017) on awe and the small self.'
     },
     {
       id: 'collective_effervescence',
@@ -2541,7 +2541,7 @@ var AWE_PRACTICES = [
       ],
       example: 'A class watches a 4-minute video of a master calligrapher; afterward students hold their pens differently for the rest of the period.',
       cautions: 'Pair with realism — most mastery comes from boring practice, not dramatic genius; avoid genius-narrative that discourages effort.',
-      research: 'Keltner (2023) Awe — "wonder of wisdom and skill" as one of the eight awe domains.'
+      research: 'Keltner (2023) Awe: wonder at another person\'s wisdom and skill falls under two of his eight wonders, moral beauty and epiphany.'
     },
     {
       id: 'awe_in_mathematics',
@@ -2796,7 +2796,7 @@ var SENSORY_ANCHORS = [
         'Try to locate one bird in space (without looking).',
         'Pair with slow walking and listen as you move.'
       ],
-      research: 'Hammoud et al. (2022) found exposure to birdsong reduced anxiety and paranoia in healthy adults.'
+      research: 'Stobbe et al. (2022) found listening to birdsong reduced anxiety and paranoia in healthy adults; Hammoud et al. (2022) found everyday encounters with birds were followed by better mood.'
     },
     {
       id: 'rain',
@@ -2895,7 +2895,7 @@ var SENSORY_ANCHORS = [
         'Imagine sitting just above the tide line as it rolls in.',
         'Add seagulls or distant boat horn sparingly.'
       ],
-      research: 'Ocean-wave audio in clinical relaxation training (Benson 1976; reproduced widely since).'
+      research: 'Steady natural sound is widely used in relaxation training.'
     },
     {
       id: 'singing_bowl',
@@ -3304,8 +3304,8 @@ var SENSORY_ANCHORS = [
       category: 'temperature',
       description: {
         elementary: 'Run cool water over your hands and feel the temperature change. It wakes you up gently.',
-        middle: 'Cool water on the hands or wrists is one of the fastest physiological resets, activating the dive reflex when applied to the face.',
-        high: 'Cold-water exposure to face or wrists triggers the mammalian dive reflex, dropping heart rate within 30 seconds (DBT TIPP).'
+        middle: 'Cool water on the hands or wrists is a quick sensory reset. Cold water on the face goes further: it can trigger the dive reflex, which slows the heart.',
+        high: 'Cold water on the face, with a brief breath-hold, triggers the dive reflex and slows the heart within about half a minute (DBT TIP skill). Cool water on hands or wrists does not trigger that reflex but can still be a calming sensory anchor.'
       },
       howToUseAsAnchor: [
         'Go to a sink and run cool (not icy) water.',
@@ -3322,13 +3322,13 @@ var SENSORY_ANCHORS = [
         'Mid-meditation if drowsy',
         'Quick reset between classes'
       ],
-      whenItDoesntHelp: 'Students with Raynaud\'s syndrome, severe cold sensitivity, or who have water-related trauma.',
+      whenItDoesntHelp: 'Students with Raynaud\'s syndrome, severe cold sensitivity, or who have water-related trauma. Students with a heart condition, on heart-slowing medicine, or with an eating disorder should check with a doctor before cooling the face.',
       variations: [
         'Use a cool wet cloth on the face instead.',
         'Hold an ice cube briefly (TIPP).',
         'Splash water on the face (more intense dive reflex).'
       ],
-      research: 'Linehan (1993) DBT TIPP skill uses cold-water face immersion as crisis-survival tool.'
+      research: 'Linehan (2015) DBT Skills Training Manual, 2nd ed.: the TIP skills use cold water on the face as a crisis-survival tool.'
     },
     {
       id: 'warm_tea_cup',
@@ -3338,7 +3338,7 @@ var SENSORY_ANCHORS = [
       description: {
         elementary: 'Hold a warm cup in your hands and feel the heat. The warmth feels like a hug.',
         middle: 'Holding a warm cup of tea or hot cocoa provides sustained warmth, weight, and ritual all at once.',
-        high: 'Physical warmth has been shown to increase felt social warmth (Williams & Bargh 2008); excellent for self-compassion practice.'
+        high: 'A warm object feels comforting to many people, which makes it a good anchor for self-compassion practice. The well-known study linking physical warmth to social warmth (Williams & Bargh, 2008) did not replicate.'
       },
       howToUseAsAnchor: [
         'Prepare a warm beverage in a sturdy cup.',
@@ -3361,7 +3361,7 @@ var SENSORY_ANCHORS = [
         'Add gentle herbal scents (chamomile, mint).',
         'Pair with a phrase: \'I am giving myself warmth.\''
       ],
-      research: 'Williams & Bargh (2008) Science paper: physical warmth elevates felt social warmth.'
+      research: 'Williams & Bargh (2008) linked physical warmth to felt social warmth, but large replications failed (Lynott et al., 2014; Chabris et al., 2019). Treat warmth as a comfort cue, not a proven effect.'
     },
     {
       id: 'soft_blanket',
@@ -3394,7 +3394,7 @@ var SENSORY_ANCHORS = [
         'Drape a shawl over shoulders for upper-body input.',
         'Add a heated rice bag for added warmth.'
       ],
-      research: 'Deep pressure touch (DPT) is foundational in sensory integration therapy (Ayres 1972; Mullen et al. 2008 weighted-blanket RCT).'
+      research: 'Deep pressure touch (DPT) is foundational in sensory integration therapy (Ayres 1972; Mullen et al. 2008, a small exploratory weighted-blanket study).'
     },
     {
       id: 'tongue_to_palate',
@@ -3639,7 +3639,7 @@ var SENSORY_ANCHORS = [
       description: {
         elementary: 'Smell a coffee bean to wake up your nose. It is a strong, dark smell.',
         middle: 'A single coffee bean held to the nose offers a powerful, alerting scent without requiring caffeine intake.',
-        high: 'Coffee aroma alone (no ingestion) is shown to increase alertness and analytic cognition (Lee 2013).'
+        high: 'A coffee-like scent improved performance on an analytical test in one study, partly because people expected it to (Madzharov 2018).'
       },
       howToUseAsAnchor: [
         'Hold a fresh coffee bean (or freshly ground coffee) to the nose.',
@@ -3662,7 +3662,7 @@ var SENSORY_ANCHORS = [
         'Compare to chocolate or vanilla.',
         'Pair with morning sunlight.'
       ],
-      research: 'Lee et al. (2013) reported improved performance on analytical tasks after coffee-aroma exposure (no caffeine).'
+      research: 'Madzharov et al. (2018): a coffee-like scent (no caffeine) improved analytical test performance, partly through expectation.'
     },
     {
       id: 'bread',
@@ -3672,7 +3672,7 @@ var SENSORY_ANCHORS = [
       description: {
         elementary: 'Fresh bread smells warm and yeasty. It is a comforting smell that means food and home.',
         middle: 'Baking or just-baked bread is one of the most universally comforting scents, associated with family and safety.',
-        high: 'Bakery-aroma exposure increases prosocial behavior (Gueguen 2012); strong association with hearth and home.'
+        high: 'Pleasant food smells were linked with more helping in one mall study (Baron 1997); strong association with hearth and home.'
       },
       howToUseAsAnchor: [
         'Sit near fresh bread or a bakery scent.',
@@ -3695,7 +3695,7 @@ var SENSORY_ANCHORS = [
         'Use a bread-scented candle (test for safety).',
         'Pair with a small piece of bread mindfully eaten.'
       ],
-      research: 'Gueguen (2012) found bakery aromas increased helping behavior in shoppers.'
+      research: 'Baron (1997) found shoppers near pleasant food smells were more likely to help a stranger.'
     },
     {
       id: 'citrus_peel',
@@ -3705,7 +3705,7 @@ var SENSORY_ANCHORS = [
       description: {
         elementary: 'Peel an orange or lemon and smell the skin. The oil sprays out and smells bright and fresh.',
         middle: 'Citrus peel oils (limonene) are uplifting and clarifying; squeezing a peel releases a burst of scent.',
-        high: 'D-limonene from citrus peel has documented mood-elevating and anti-anxiety effects (Komori 1995).'
+        high: 'Many people rate citrus scents as pleasant and mildly uplifting. Evidence for clinical effects is very limited.'
       },
       howToUseAsAnchor: [
         'Tear a piece of citrus peel.',
@@ -3728,7 +3728,7 @@ var SENSORY_ANCHORS = [
         'Pair with eating a citrus segment mindfully.',
         'Use a tea version (Earl Grey for bergamot).'
       ],
-      research: 'Komori et al. (1995) citrus aromatherapy reduced antidepressant medication needs.'
+      research: 'Citrus scent and mood: small early studies only (Komori et al., 1995, 12 patients); not a substitute for treatment.'
     },
     {
       id: 'lavender',
@@ -3738,7 +3738,7 @@ var SENSORY_ANCHORS = [
       description: {
         elementary: 'Lavender flowers and oil smell soft and sweet. It helps people feel sleepy and calm.',
         middle: 'Lavender is the most-studied calming scent. It works for many but not all people.',
-        high: 'Linalool, the primary terpene in lavender, has measurable anxiolytic effect (Koulivand 2013 meta-analysis).'
+        high: 'Linalool, the primary terpene in lavender, shows calming effects in several small studies (Koulivand 2013 review).'
       },
       howToUseAsAnchor: [
         'Hold a dried lavender sprig or a drop of lavender oil.',
@@ -3761,7 +3761,7 @@ var SENSORY_ANCHORS = [
         'Use lavender salt foot soak in evening.',
         'Combine with deep slow breathing.'
       ],
-      research: 'Koulivand et al. (2013) meta-analysis confirms anxiolytic and sleep-promoting effects of lavender.'
+      research: 'Koulivand et al. (2013) review: several small studies report calming and sleep-promoting effects of lavender.'
     },
 
     // ============================================================
@@ -3832,7 +3832,7 @@ var SENSORY_ANCHORS = [
         'Pair with a sip of warm water.',
         'Try ceremonial cacao at low dose.'
       ],
-      research: 'Mindful chocolate eating reduces stress and increases self-compassion in some studies (Meier 2017).'
+      research: 'Eating chocolate mindfully raised positive mood more than eating it without attention (Meier et al., 2017).'
     },
     {
       id: 'raisin_mbsr',
@@ -3967,7 +3967,7 @@ var SENSORY_ANCHORS = [
         'Wasabi or hot sauce in extreme cases (supervised).',
         'A fresh lemon slice bitten directly.'
       ],
-      research: 'Linehan (1993) DBT TIPP skill set; sensory shock as crisis-survival intervention.'
+      research: 'Linehan (2015) DBT TIP skills; a strong sensation as a crisis-survival tool.'
     },
 
     // ============================================================
@@ -4478,7 +4478,7 @@ var SENSORY_ANCHORS = [
       category: 'breath',
       description: {
         elementary: 'Put a hand on your belly. When you breathe in, it goes out. When you breathe out, it goes in.',
-        middle: 'Belly (diaphragmatic) breathing is the most regulating breath; it activates the parasympathetic system.',
+        middle: 'Belly (diaphragmatic) breathing is slow and deep, which helps the body shift toward rest.',
         high: 'Diaphragmatic breathing increases vagal tone and is the foundation of most clinical breath-based interventions.'
       },
       howToUseAsAnchor: [
@@ -5771,7 +5771,7 @@ var VISUAL_ANCHORS = [
       setup: 'Anywhere, any position. Can be done in a hallway, bathroom, or seat.',
       contraindications: ['Generally safe; reduce intensity if recent rib injury'],
       script: [
-        { type: 'intro', text: 'This is the fastest way scientists know to calm your body. It takes one minute.' },
+        { type: 'intro', text: 'This is a quick, well-studied way to help your body settle. It takes one minute.' },
         { type: 'instruction', text: 'Take a normal breath in through your nose.', pauseSec: 3 },
         { type: 'instruction', text: 'Now, without breathing out, take a second small sip of air in through your nose. Fill up extra.', pauseSec: 3 },
         { type: 'instruction', text: 'Now let it all out through your mouth, slow and long, like a sigh.', pauseSec: 6 },
@@ -5781,7 +5781,7 @@ var VISUAL_ANCHORS = [
         { type: 'instruction', text: 'Long sigh out through mouth.', pauseSec: 7 },
         { type: 'pause', durationSec: 5 },
         { type: 'instruction', text: 'One more. In, top off, sigh.', pauseSec: 12 },
-        { type: 'reflection', text: 'You just reset your CO2 and oxygen balance. Your nervous system has shifted in under a minute.' },
+        { type: 'reflection', text: 'You just slowed your breathing on purpose. Notice how your body feels now compared with a minute ago.' },
         { type: 'close', text: 'Use this anytime, anywhere. Three sighs is often enough.' }
       ],
       variations: [
@@ -5803,7 +5803,7 @@ var VISUAL_ANCHORS = [
       setup: 'Seated upright, eyes soft or closed. A timer with five-second cues helps.',
       contraindications: ['Slow if dizzy', 'May be too slow for active panic; use physiological sigh instead'],
       script: [
-        { type: 'intro', text: 'Coherent breathing is exactly six breaths per minute. Five seconds in, five seconds out. It is the rhythm at which heart, lungs, and brain synchronize.' },
+        { type: 'intro', text: 'Coherent breathing is slow, even breathing at about six breaths per minute: five seconds in, five seconds out. Near this pace your heart rate rises and falls in step with your breath.' },
         { type: 'instruction', text: 'Settle your spine. Let your shoulders drop.', pauseSec: 5 },
         { type: 'instruction', text: 'Inhale through your nose, two, three, four, five.', pauseSec: 5 },
         { type: 'instruction', text: 'Exhale through your nose, two, three, four, five.', pauseSec: 5 },
@@ -5869,7 +5869,7 @@ var VISUAL_ANCHORS = [
       setup: 'Seated upright. Right hand free. Left hand on left knee.',
       contraindications: ['Skip with congested nose or sinus infection', 'Slow if dizzy'],
       script: [
-        { type: 'intro', text: 'Nadi Shodhana means channel-cleansing. It balances the two hemispheres of breath and brain.' },
+        { type: 'intro', text: 'Nadi Shodhana means channel-cleansing. The slow, even alternation gives the mind one steady thing to follow.' },
         { type: 'instruction', text: 'Bring your right hand up. Fold your index and middle fingers into your palm. Thumb and ring finger active.', pauseSec: 8 },
         { type: 'instruction', text: 'Close your right nostril with your thumb. Inhale slowly through the left nostril.', pauseSec: 5 },
         { type: 'instruction', text: 'Close left nostril with ring finger. Release thumb. Exhale through right nostril.', pauseSec: 5 },
@@ -5919,7 +5919,7 @@ var VISUAL_ANCHORS = [
         { id: 'two_part', name: 'Two-Part', change: 'Combine belly and ribs only if three feels overwhelming.' },
         { id: 'sound', name: 'With Sound', change: 'Add a soft ocean sound in the back of the throat (ujjayi).' }
       ],
-      whyItWorks: 'Full diaphragmatic and thoracic expansion engages all three lobes of the lungs, improves vagal tone, and increases oxygen efficiency.',
+      whyItWorks: 'Breathing into the belly, ribs and upper chest in turn uses the full range of the breathing muscles and slows the breath.',
       research: 'Iyengar yoga tradition; Brown & Gerbarg breath research.'
     },
     {
@@ -6009,8 +6009,8 @@ var VISUAL_ANCHORS = [
         { id: 'eyes', name: 'Eye Smile', change: 'Smile only with your eyes if a mouth smile feels forced.' },
         { id: 'imagine', name: 'Imagine a Loved One', change: 'Picture someone you love smiling at you as you breathe.' }
       ],
-      whyItWorks: 'Facial feedback theory suggests the act of smiling sends calming signals to the brain. Combined with conscious breath, mood lifts measurably.',
-      research: 'Thich Nhat Hanh, Plum Village tradition; Strack et al. 1988 facial feedback.'
+      whyItWorks: 'A gentle half-smile may nudge mood slightly. Paired with a slow breath, many people find it softening.',
+      research: 'Thich Nhat Hanh, Plum Village tradition; facial-feedback effects are small with a mixed replication record (Wagenmakers et al., 2016; Coles et al., 2022).'
     },
     {
       id: 'breath_crisis_circuit',
@@ -6038,7 +6038,7 @@ var VISUAL_ANCHORS = [
         { id: 'six', name: 'Six Breaths', change: 'Do six breaths if three was not enough.' },
         { id: 'with_phrase', name: 'With Phrase', change: 'Add silently: in, I am here. Out, I am safe enough right now.' }
       ],
-      whyItWorks: 'The double inhale plus extended exhale is the fastest known voluntary path to parasympathetic activation.',
+      whyItWorks: 'A double inhale followed by a long exhale slows the breath. In one Stanford study, five minutes a day improved mood more than other breathing styles or meditation (Balban et al., 2023).',
       research: 'Balban et al. 2023; trauma-informed first-aid breathing protocols.'
     },
     {
@@ -6085,9 +6085,9 @@ var VISUAL_ANCHORS = [
       forContext: 'low-energy',
       voiceTone: 'bright, awake, energizing',
       setup: 'Seated upright. Hands on knees. Empty stomach preferred.',
-      contraindications: ['Skip if pregnant', 'Skip with high blood pressure or recent abdominal surgery', 'Skip during active panic attack'],
+      contraindications: ['Skip if pregnant', 'Skip with high blood pressure, a heart condition, asthma, seizures, a hernia or recent abdominal surgery', 'Skip during a panic attack. Stay seated and stop at once if you feel dizzy or tingly'],
       script: [
-        { type: 'intro', text: 'Kapalabhati means skull-shining breath. It wakes you up faster than coffee.' },
+        { type: 'intro', text: 'Kapalabhati means skull-shining breath. Many people find it energizing.' },
         { type: 'instruction', text: 'Sit tall. Place one hand on your belly to feel the action.', pauseSec: 5 },
         { type: 'instruction', text: 'Take a normal breath in. Then sharply pull your belly in toward your spine and let the air shoot out your nose.', pauseSec: 5 },
         { type: 'instruction', text: 'The inhale happens automatically and passively. Only the exhale is active.', pauseSec: 5 },
@@ -6614,7 +6614,7 @@ var VISUAL_ANCHORS = [
       variations: [
         { id: 'team', name: 'Whole Class', change: 'Do as a group before a hard task.' }
       ],
-      whyItWorks: 'Expansive posture briefly increases confidence-related hormones and decreases cortisol in young students.',
+      whyItWorks: 'Standing tall can help some people feel a little steadier and more ready. The claim that it changes hormones did not hold up, so treat it as a feeling to notice.',
       research: 'Somatic confidence literature.'
     },
     {
@@ -6984,7 +6984,7 @@ var VISUAL_ANCHORS = [
         { id: 'short', name: 'Two Phrases', change: 'Use only may I be safe and may I be at peace if four feels long.' }
       ],
       whyItWorks: 'Self-compassion practices increase activation in caregiving neural circuits and reduce shame and self-criticism.',
-      research: 'Salzburg, Loving-Kindness; Hofmann et al. 2011 meta-analysis on LKM.'
+      research: 'Salzberg, Lovingkindness; Hofmann et al. 2011 review of loving-kindness and compassion meditation.'
     },
     {
       id: 'lk_friend',
@@ -7544,7 +7544,7 @@ var VISUAL_ANCHORS = [
         { id: 'tent', name: 'Pillow Tent', change: 'Build an actual pillow tent for younger students.' }
       ],
       whyItWorks: 'Sensory imagery of safe enclosure can downregulate sympathetic arousal in sensory-overloaded students.',
-      research: 'Sensory processing literature; weighted blanket research (Mullen et al. 2008).'
+      research: 'Sensory processing literature; a small exploratory weighted-blanket study (Mullen et al. 2008).'
     },
     {
       id: 'vis_bubble_shield',
@@ -7941,7 +7941,7 @@ var VISUAL_ANCHORS = [
       setup: 'Quiet path. Shoes off if possible.',
       contraindications: ['Check terrain for safety if barefoot'],
       script: [
-        { type: 'intro', text: 'This practice is from dialectical behavior therapy. It is one of the fastest grounding tools.' },
+        { type: 'intro', text: 'This practice comes from Soles of the Feet, a mindfulness exercise developed by Nirbhay Singh and colleagues. It is a quick grounding tool.' },
         { type: 'instruction', text: 'Walk at a slow pace. Bring all your attention to the soles of your feet.', pauseSec: 30 },
         { type: 'instruction', text: 'Feel the heel touch first. Then the outside of the foot. Then the ball. Then the toes lifting.', pauseSec: 30 },
         { type: 'instruction', text: 'Pressure, texture, temperature. Anything you can feel underfoot.', pauseSec: 30 },
@@ -8305,7 +8305,7 @@ var VISUAL_ANCHORS = [
       setup: 'Safe space. Tools removed or secured if possible.',
       contraindications: ['Pair with professional support; this is not a standalone treatment'],
       script: [
-        { type: 'intro', text: 'Urges to self-harm rise and fall like waves. They peak in about sixteen minutes if you do not act on them. We will surf this wave together.' },
+        { type: 'intro', text: 'Urges to self-harm rise and fall like waves. Most urges ease within minutes to half an hour if you do not act on them. We will surf this wave together.' },
         { type: 'instruction', text: 'If you have tools or means nearby, can you move them now? Lock them away. Give them to someone else.', pauseSec: 30 },
         { type: 'instruction', text: 'Find your breath. In through the nose, out long through the mouth.', pauseSec: 20 },
         { type: 'instruction', text: 'Notice the urge as a sensation. Where in your body is it strongest?', pauseSec: 30 },
@@ -8452,7 +8452,7 @@ var VISUAL_ANCHORS = [
       variations: [
         { id: 'face', name: 'Hand on Cheek', change: 'Some find a hand on the cheek more soothing than chest.' }
       ],
-      whyItWorks: 'Self-touch activates calming caregiving circuitry and oxytocin release, even without another person present.',
+      whyItWorks: 'Gentle self-touch is soothing even without another person present. In one study it lowered cortisol after a stress task (Dreisoerner et al., 2021).',
       research: 'Dreisoerner et al. 2021 self-soothing touch reduces cortisol.'
     },
     {
@@ -9155,7 +9155,7 @@ var VISUAL_ANCHORS = [
       variations: [
         { id: '3_3_6', name: '3-3-6', change: 'Use 3-3-6 if eight feels too long.' }
       ],
-      whyItWorks: 'Doubled exhale relative to inhale is the most reliable voluntary parasympathetic switch.',
+      whyItWorks: 'An exhale twice as long as the inhale slows the breath and helps the body settle.',
       research: 'Slow-breathing reviews (Zaccaro et al. 2018).'
     },
     {
@@ -9414,7 +9414,7 @@ var VISUAL_ANCHORS = [
         'Boredom — try to notice ONE new sensation each time you brush.'
       ],
       pairsWithScripts: ['sensory_awareness_5_4_3_2_1', 'present_moment_anchoring', 'routine_anchor_meditation'],
-      research: 'Habit-stacking onto established daily routines shows 3x adherence vs. standalone practice (Lally et al., 2010; Wood & Neal, 2007).'
+      research: 'Attaching a new habit to an existing routine makes it easier to remember and keep (Lally et al., 2010; Wood & Neal, 2007).'
     },
     {
       id: 'morning_first_sip',
@@ -9753,8 +9753,8 @@ var VISUAL_ANCHORS = [
       trigger: 'The moment the test is handed to you, before you write your name.',
       practice: {
         elementary: 'Before you start your test, take three big breaths. Smile a little if you can. Tell your brain: I know things. I can do this.',
-        middle: 'Right before a test, your brain is flooded with stress chemicals. Take 60 seconds to breathe slowly. It does not waste time — it improves your score.',
-        high: 'Pre-test anxiety narrows working memory by up to 30%. A 60-second deep-breathing pause before starting can recover most of that capacity. It is not wasted time; it is performance enhancement.'
+        middle: 'Right before a test, your body is in stress mode. Take 60 seconds to breathe slowly. It is not wasted time. It helps you settle and think more clearly.',
+        high: 'Test anxiety takes up working memory. A minute of slow breathing before you start can help you settle. It is not wasted time; it is preparation.'
       },
       steps: [
         'Receive the test and place it face down (or do not look yet).',
@@ -9770,7 +9770,7 @@ var VISUAL_ANCHORS = [
         'Catastrophic thoughts — acknowledge and let pass.',
         'Whether your breath is shallow or deep.'
       ],
-      whyItHelps: 'Test anxiety triggers the same stress response as physical threat, narrowing working memory and slowing recall. Slow breathing activates the vagal brake and partially restores cognitive function within 60 seconds.',
+      whyItHelps: 'Test anxiety sets off the body\'s stress response and takes up working memory, which slows recall. Slow breathing helps the body settle so more attention is free for the test.',
       whenItHelpsMost: 'Before any high-stakes test, especially if you tend to blank out or rush.',
       obstacles: [
         'Feeling like you are wasting time — you are not; this raises scores.',
@@ -9778,7 +9778,7 @@ var VISUAL_ANCHORS = [
         'Catastrophizing — name it ("there is the catastrophe again"), then breathe.'
       ],
       pairsWithScripts: ['box_breathing_4_4_4_4', 'test_anxiety_reset', 'grounding_5_senses'],
-      research: 'Brief mindfulness before high-stakes testing improves GRE scores and reduces anxiety (Mrazek et al., 2013; Bellinger et al., 2015).'
+      research: 'A two-week mindfulness course improved GRE reading scores in one study (Mrazek et al., 2013), and more mindful students report less test anxiety (Bellinger et al., 2015).'
     },
     {
       id: 'school_mindful_reading',
@@ -9850,7 +9850,7 @@ var VISUAL_ANCHORS = [
         'Habit of writing everything — takes 2-3 weeks to break.'
       ],
       pairsWithScripts: ['attention_training', 'deep_focus_pomodoro', 'present_moment_anchoring'],
-      research: 'Generative note-taking (in own words) outperforms verbatim notes for conceptual learning (Mueller & Oppenheimer, 2014; Kiewra, 1989).'
+      research: 'Putting notes in your own words may help conceptual learning more than copying word for word (Mueller & Oppenheimer, 2014; Kiewra, 1989); later replications are mixed.'
     },
     {
       id: 'school_mindful_listening_teacher',
@@ -9922,7 +9922,7 @@ var VISUAL_ANCHORS = [
         'Shyness — the breath helps with that too.'
       ],
       pairsWithScripts: ['urge_surfing', 'one_breath_reset', 'pause_before_speak'],
-      research: 'Impulse-control training generalizes from low-stakes to high-stakes decisions (Diamond, 2013; Moffitt et al., 2011).'
+      research: 'Self-control in childhood is linked with later life outcomes (Moffitt et al., 2011), and executive functions can be strengthened with practice (Diamond, 2013).'
     },
     {
       id: 'school_asking_question',
@@ -10102,7 +10102,7 @@ var VISUAL_ANCHORS = [
         'Tiredness — try 10 minutes; you can always stop.'
       ],
       pairsWithScripts: ['deep_focus_pomodoro', 'procrastination_breakdown', 'one_breath_reset'],
-      research: 'Implementation intentions and short timers reduce procrastination by up to 50% (Gollwitzer, 1999; Ariely & Wertenbroch, 2002).'
+      research: 'If-then plans and self-set deadlines help people start and finish tasks (Gollwitzer, 1999; Ariely & Wertenbroch, 2002).'
     },
     {
       id: 'school_turn_in_ritual',
@@ -10259,7 +10259,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'If you have a phone or tablet, take a breath before turning it on. Ask: what do I really need to do?',
         middle: 'Most phone pickups are unconscious. One breath between pickup and opening the app is the single highest-leverage mindfulness practice for your generation.',
-        high: 'You pick up your phone 100-200 times a day. Adding a one-breath pause to each pickup is hours of practice with zero added time. It also breaks the dopamine loop that drives compulsive checking.'
+        high: 'Many teens pick up their phone dozens of times a day, some more than a hundred. Adding a one-breath pause to each pickup is a lot of practice with zero added time. It also interrupts the automatic checking habit.'
       },
       steps: [
         'Notice your hand reaching for the phone.',
@@ -10274,7 +10274,7 @@ var VISUAL_ANCHORS = [
         'How often boredom triggers a pickup.',
         'How often you put the phone back down without using it.'
       ],
-      whyItHelps: 'Compulsive phone-checking is driven by intermittent reward (dopamine), the same mechanism as slot machines. Breaking the auto-pickup loop is the most effective phone-discipline practice.',
+      whyItHelps: 'Apps are built around unpredictable rewards, which makes checking a habit. Breaking the auto-pickup loop gives you the choice back.',
       whenItHelpsMost: 'When your screen time is spiraling, or when you cannot focus on anything for more than 5 minutes.',
       obstacles: [
         'Habit is faster than awareness — if you notice mid-scroll, that still counts; close the app.',
@@ -10282,7 +10282,7 @@ var VISUAL_ANCHORS = [
         'Social pressure to be responsive — most people are not actually waiting on you.'
       ],
       pairsWithScripts: ['urge_surfing', 'tech_boundary_practice', 'one_breath_reset'],
-      research: 'Phone-pickup pause interventions reduce screen time by 20-40% in adolescents (Hofmann et al., 2017; Twenge & Campbell, 2018).'
+      research: 'Adding a short pause before opening an app cut app-opening substantially in one study of adults (Gr\u00FCning et al., 2023).'
     },
     {
       id: 'transition_computer_wake',
@@ -10317,7 +10317,7 @@ var VISUAL_ANCHORS = [
         'Browser tabs already open — close everything before starting.'
       ],
       pairsWithScripts: ['intention_setting_morning', 'deep_focus_pomodoro', 'tech_boundary_practice'],
-      research: 'Intention-setting before digital sessions reduces off-task time by 40% (Mark et al., 2008).'
+      research: 'Naming your purpose before you open a device helps you notice when you drift.'
     },
     {
       id: 'transition_sit_to_stand',
@@ -10535,7 +10535,7 @@ var VISUAL_ANCHORS = [
         'Habit — takes a few weeks to stick.'
       ],
       pairsWithScripts: ['mindful_eating_raisin', 'sensory_awareness_5_4_3_2_1', 'taste_meditation'],
-      research: 'Hedonic adaptation accelerates with rapid eating (Wansink, 2014); slow eating preserves enjoyment.'
+      research: 'Eating while distracted makes it harder to notice taste and fullness (Robinson et al., 2013); slowing down preserves enjoyment.'
     },
     {
       id: 'eating_fork_down',
@@ -10546,8 +10546,8 @@ var VISUAL_ANCHORS = [
       trigger: 'After each bite throughout a meal.',
       practice: {
         elementary: 'Try putting your fork down between bites. Chew. Swallow. Then pick the fork up again.',
-        middle: 'Putting your fork down between bites adds 10 minutes to a meal. Your stomach has time to tell your brain you are full. You eat less but feel more satisfied.',
-        high: 'The "fork down" technique is one of the highest-evidence mindful-eating interventions. It slows eating below the 20-minute threshold required for satiety signaling to register.'
+        middle: 'Putting your fork down between bites slows the meal, so you notice taste and fullness more.',
+        high: 'Pausing between bites is a simple way to slow down. Fullness signals build gradually over a meal, so a slower pace gives you time to notice them.'
       },
       steps: [
         'Take a bite.',
@@ -10571,7 +10571,7 @@ var VISUAL_ANCHORS = [
         'Anxiety eating — the slow pace also calms anxiety.'
       ],
       pairsWithScripts: ['mindful_eating_raisin', 'interoception_basic', 'urge_surfing'],
-      research: 'Slow eating reduces caloric intake by 10-20% without restriction (Andrade et al., 2008; Robinson et al., 2014).'
+      research: 'Slower eating helps people notice fullness (Andrade et al., 2008; Robinson et al., 2014).'
     },
     {
       id: 'eating_mindful_snacking',
@@ -10607,7 +10607,7 @@ var VISUAL_ANCHORS = [
         'Hard day — emotional eating is normal; just be conscious of it.'
       ],
       pairsWithScripts: ['emotional_eating_check', 'urge_surfing', 'interoception_basic'],
-      research: 'Mindful snacking interventions reduce unconscious calorie intake by 30-50% (Wansink, 2014).'
+      research: 'Eating while distracted makes it harder to notice fullness (Robinson et al., 2013).'
     },
     {
       id: 'eating_gum_chewing',
@@ -10713,7 +10713,7 @@ var VISUAL_ANCHORS = [
         'Sugar overload — try a less-sweet version sometimes.'
       ],
       pairsWithScripts: ['water_meditation', 'sensory_awareness_5_4_3_2_1', 'present_moment_anchoring'],
-      research: 'Warm beverages increase social warmth perception and parasympathetic activity (Williams & Bargh, 2008; Norup et al., 2018).'
+      research: 'A warm drink is a comfort cue for many people. The study linking physical warmth to social warmth (Williams & Bargh, 2008) did not replicate.'
     },
     {
       id: 'eating_hunger_fullness_check',
@@ -10749,7 +10749,7 @@ var VISUAL_ANCHORS = [
         'Numb to hunger — takes weeks to rebuild signal.'
       ],
       pairsWithScripts: ['interoception_basic', 'intuitive_eating', 'body_scan_full'],
-      research: 'Hunger-awareness training improves eating behavior and weight regulation (Tribole & Resch, 2020; Daubenmier et al., 2016).'
+      research: 'Noticing hunger and fullness cues supports a steadier relationship with food (Tribole & Resch, 2020).'
     },
 
     // ═══════════════════════════════════════════════════════
@@ -10789,7 +10789,7 @@ var VISUAL_ANCHORS = [
         'Feeling silly — nobody can tell.'
       ],
       pairsWithScripts: ['walking_meditation_basic', 'moving_meditation', 'body_scan_full'],
-      research: 'Stair descent injuries are the leading mechanism for school-aged falls; mindful pace reduces incidence (Templer, 1992).'
+      research: 'Stairs are a common place for falls; a steady pace and a hand on the rail help.'
     },
     {
       id: 'movement_stairs_up',
@@ -11015,7 +11015,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'After playing hard, stretch slowly. Feel how your body feels different from before.',
         middle: 'Cool-down is when most kids check out. Mindful stretching here speeds recovery and is a built-in body-check-in moment.',
-        high: 'Post-exercise mindful stretching combines parasympathetic activation (transitioning out of sympathetic exercise state) with body awareness, dramatically speeding recovery and reducing soreness.'
+        high: 'Post-exercise mindful stretching combines parasympathetic activation (transitioning out of sympathetic exercise state) with body awareness. It is a good moment to wind down; it does not reduce next-day soreness.'
       },
       steps: [
         'Sit or lie down post-workout.',
@@ -11039,7 +11039,7 @@ var VISUAL_ANCHORS = [
         'Boredom — the body check-in is interesting.'
       ],
       pairsWithScripts: ['body_scan_full', 'moving_meditation', 'recovery_meditation'],
-      research: 'Mindful cool-down improves recovery and reduces delayed-onset muscle soreness (Olsen et al., 2012).'
+      research: 'Post-exercise stretching is a good moment for body awareness and winding down. It does not reduce next-day soreness (Olsen et al., 2012; Herbert et al., 2011).'
     },
 
     // ═══════════════════════════════════════════════════════
@@ -11055,7 +11055,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'If you have a phone or tablet, before you pick it up, take one breath. Ask: do I really need this right now?',
         middle: 'You pick up your phone over 100 times a day. One breath before each pickup is the single biggest mindfulness practice for your generation.',
-        high: 'Compulsive phone-checking is driven by variable-reward dopamine loops. A one-breath interrupt is the most effective behavioral intervention for breaking the cycle.'
+        high: 'Apps are built around unpredictable rewards, which makes checking a habit. A one-breath interrupt is a simple way to break the cycle.'
       },
       steps: [
         'Notice the hand reaching.',
@@ -11070,7 +11070,7 @@ var VISUAL_ANCHORS = [
         'How often it is just boredom.',
         'How often you actually put it back down.'
       ],
-      whyItHelps: 'Interrupting the dopamine pickup loop is the highest-leverage tech-discipline practice.',
+      whyItHelps: 'Interrupting the automatic pickup gives you a moment to choose.',
       whenItHelpsMost: 'When screen time is spiraling, or focus is shot.',
       obstacles: [
         'Habit is faster than awareness — mid-scroll catches still count.',
@@ -11078,7 +11078,7 @@ var VISUAL_ANCHORS = [
         'FOMO — nothing on the phone is more important than your attention.'
       ],
       pairsWithScripts: ['urge_surfing', 'tech_boundary_practice', 'one_breath_reset'],
-      research: 'Phone-pickup interventions reduce daily screen time by 20-40% (Hofmann et al., 2017; Twenge & Campbell, 2018).'
+      research: 'Adding a short pause before opening an app cut app-opening substantially in one study of adults (Gr\u00FCning et al., 2023).'
     },
     {
       id: 'tech_notification_pause',
@@ -11113,7 +11113,7 @@ var VISUAL_ANCHORS = [
         'Specific apps — the worst offenders should be muted.'
       ],
       pairsWithScripts: ['attention_training', 'tech_boundary_practice', 'urge_surfing'],
-      research: 'Even silenced notifications reduce focus by 20%; deliberate pause restores agency (Stothart et al., 2015).'
+      research: 'Just receiving a notification, even without checking it, hurts attention on a task (Stothart et al., 2015); a deliberate pause restores agency.'
     },
     {
       id: 'tech_scroll_pause',
@@ -11149,7 +11149,7 @@ var VISUAL_ANCHORS = [
         'FOMO on missing content — algorithm will surface it again.'
       ],
       pairsWithScripts: ['tech_boundary_practice', 'urge_surfing', 'attention_training'],
-      research: 'Time-aware social media use reduces depressive symptoms in adolescents (Hunt et al., 2018).'
+      research: 'Limiting social media to about 30 minutes a day reduced loneliness and depressive symptoms in a study of university students (Hunt et al., 2018).'
     },
     {
       id: 'tech_game_pause',
@@ -11258,7 +11258,7 @@ var VISUAL_ANCHORS = [
         'Forgetting — the lock-screen sound can be the cue.'
       ],
       pairsWithScripts: ['arrival_practice', 'one_breath_reset', 'transition_pause'],
-      research: 'Phone-trance recovery time documented as 2-4 minutes; ritual interruption shortens (Ophir et al., 2009).'
+      research: 'Heavy media multitaskers are more easily distracted (Ophir et al., 2009); a short ritual helps you re-enter the room.'
     },
     {
       id: 'tech_should_i_post',
@@ -11294,7 +11294,7 @@ var VISUAL_ANCHORS = [
         'Speed culture — nothing requires immediate posting.'
       ],
       pairsWithScripts: ['urge_surfing', 'pause_before_speak', 'tech_boundary_practice'],
-      research: 'Pre-post pause interventions reduce regretted social media posts by 60% (Sleeper et al., 2013).'
+      research: 'Many people regret posts made in the heat of the moment (Sleeper et al., 2013); a pause before posting gives you a chance to reconsider.'
     },
     {
       id: 'tech_should_i_send_dm',
@@ -11441,7 +11441,7 @@ var VISUAL_ANCHORS = [
         'Discomfort with silence — silence is part of listening.'
       ],
       pairsWithScripts: ['pure_listening', 'compassion_for_others', 'open_awareness'],
-      research: 'Active listening is the strongest predictor of relationship quality and conflict resolution (Bodie, 2011).'
+      research: 'Feeling listened to is closely tied to relationship quality and to working through conflict (Bodie, 2011).'
     },
     {
       id: 'social_hug',
@@ -11453,7 +11453,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you hug someone, hug for a few seconds longer than usual. Feel the warmth.',
         middle: 'A real hug lasts at least 20 seconds. Most are 2-3 seconds. Try a long one with someone you love today.',
-        high: 'Hugs of 20+ seconds release oxytocin and reduce cortisol. Mindful hugs are one of the highest-yield social practices for both people.'
+        high: 'Warm, wanted hugs are linked with lower stress responses. A mindful hug is a simple way for two people to settle together.'
       },
       steps: [
         'Approach the person (or pet).',
@@ -11469,7 +11469,7 @@ var VISUAL_ANCHORS = [
         'Your own urge to break early.',
         'The warmth and contact.'
       ],
-      whyItHelps: 'Long hugs release oxytocin and reduce stress hormones in both people. Among the most efficient social-bonding practices.',
+      whyItHelps: 'Warm, wanted hugs are linked with lower stress in both people. A simple, efficient bonding practice.',
       whenItHelpsMost: 'When you or the other person have had a hard day.',
       obstacles: [
         'Awkward family — start small with people who hug back.',
@@ -11477,7 +11477,7 @@ var VISUAL_ANCHORS = [
         'Social context — read the room.'
       ],
       pairsWithScripts: ['compassion_for_others', 'loving_kindness_basic', 'body_scan_full'],
-      research: 'Hugs of 20+ seconds release oxytocin and reduce stress (Light et al., 2005; Grewen et al., 2003).'
+      research: 'Warm, wanted hugs are linked with lower stress responses (Grewen et al., 2003; Light et al., 2005). No specific number of seconds is established.'
     },
     {
       id: 'social_handshake_fistbump',
@@ -11525,7 +11525,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you feel angry, count to 10 before you talk. Take 3 big breaths.',
         middle: 'Anger makes you say things you regret. The pause between feeling angry and acting on it is where wisdom lives. Build that pause.',
-        high: 'Anger triggers amygdala activation and frontal-lobe suppression. A 60-second pause allows frontal cortex to come back online for nuanced response.'
+        high: 'Strong anger makes careful thinking harder. A short pause gives the first surge time to ease so you can choose your response.'
       },
       steps: [
         'Notice the anger.',
@@ -11561,7 +11561,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When someone says something nice to you, do not say "no I am not." Just say "thank you" and feel the nice thing.',
         middle: 'Most people deflect compliments. Try this: take one breath, let it land, say "thank you" and stop. That is it.',
-        high: 'Compliment deflection is a common self-worth pattern. Letting compliments land literally rewires self-concept over time.'
+        high: 'Compliment deflection is a common self-worth pattern. Letting compliments land can gradually shift how you see yourself.'
       },
       steps: [
         'Receive the compliment.',
@@ -11577,7 +11577,7 @@ var VISUAL_ANCHORS = [
         'How the compliment giver responds when you accept it.',
         'Whether the praise actually lands in your body.'
       ],
-      whyItHelps: 'Compliment deflection blocks self-worth updating. Letting praise land rewires self-concept and strengthens relationships.',
+      whyItHelps: 'Compliment deflection blocks self-worth updating. Letting praise land can gradually shift how you see yourself and strengthens relationships.',
       whenItHelpsMost: 'When you have a hard time accepting good things, or when you deflect everything positive.',
       obstacles: [
         'Reflex deflection — takes practice.',
@@ -11585,7 +11585,7 @@ var VISUAL_ANCHORS = [
         'Cultural norm of modesty — "thank you" is still modest.'
       ],
       pairsWithScripts: ['self_compassion_after_effort', 'gratitude_micro_practice', 'compassion_for_self'],
-      research: 'Compliment acceptance correlates with self-esteem and relationship quality (Marigold et al., 2014).'
+      research: 'Compliment acceptance correlates with self-esteem and relationship quality (Marigold, Holmes & Ross, 2007).'
     },
     {
       id: 'social_criticism_pause',
@@ -11709,7 +11709,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you feed your pet, look at them. Notice how excited they are. Pour the food slowly.',
         middle: 'Pet feeding is one of the few interspecies moments in your day. Be present for it. Notice your pet noticing you.',
-        high: 'Animal interaction releases oxytocin in both species. A mindful feeding ritual deepens the human-animal bond and is good for both of you.'
+        high: 'Time with a pet is linked to lower stress. A mindful feeding ritual deepens the human-animal bond and is good for both of you.'
       },
       steps: [
         'Greet the pet by name.',
@@ -11725,7 +11725,7 @@ var VISUAL_ANCHORS = [
         'How they look at you.',
         'The bond in the moment.'
       ],
-      whyItHelps: 'Mindful pet care releases oxytocin in both species, reduces stress, and deepens the bond that pets contribute to wellbeing.',
+      whyItHelps: 'Mindful pet care is linked to lower stress and deepens the bond that pets contribute to wellbeing.',
       whenItHelpsMost: 'When you are stressed, lonely, or rushing through life.',
       obstacles: [
         'Hurry — 30 seconds is enough.',
@@ -12108,7 +12108,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'Before you fall asleep, think of one person you are grateful for. Send them a quiet thank you in your mind.',
         middle: 'Bedtime gratitude is a 60-second mood reset. Name one thing or person you are grateful for. Even on hard days, find one.',
-        high: 'Pre-sleep gratitude is among the most evidence-based wellbeing interventions. Three weeks of consistent practice produces measurable mood improvement.'
+        high: 'Pre-sleep gratitude is a well-studied wellbeing practice with small but real benefits. A few weeks of consistent practice can lift mood.'
       },
       steps: [
         'Settle into bed.',
@@ -12291,7 +12291,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you feel sad, that is okay. Put a hand on your chest. Take slow breaths. Tell yourself: "I am here with this sadness."',
         middle: 'Sadness is not a problem to fix. The practice is to let it be there without making it bigger or pushing it away.',
-        high: 'Sadness allowed is sadness that moves through. Suppressed sadness becomes depression. Touch and breath are the most evidence-based supports.'
+        high: 'Sadness allowed is sadness that moves through. Pushing feelings away over and over is linked with feeling worse over time. A hand on the chest and slow breathing can help you stay with it.'
       },
       steps: [
         'Notice the sadness — heaviness in chest, tears, low energy.',
@@ -12327,7 +12327,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you feel lonely, find an adult who cares about you. Talk to them. Loneliness goes away with people.',
         middle: 'Loneliness is one of the most painful feelings. Naming it helps. Reaching out, even with one text, helps more.',
-        high: 'Loneliness is processed in the same brain regions as physical pain. Naming it and taking even small connection action interrupts the spiral.'
+        high: 'Social pain and physical pain share some brain circuitry, which is one reason loneliness hurts. Naming it and taking even small connection action interrupts the spiral.'
       },
       steps: [
         'Notice the ache of loneliness.',
@@ -12351,7 +12351,7 @@ var VISUAL_ANCHORS = [
         'Chronic loneliness — the practice is one part; therapy and community-building help more.'
       ],
       pairsWithScripts: ['loving_kindness_basic', 'self_compassion_after_effort', 'connection_meditation'],
-      research: 'Loneliness activates pain processing networks; small connection actions interrupt (Cacioppo & Hawkley, 2009).'
+      research: 'Social pain and physical pain share some brain circuitry (Eisenberger et al., 2003); small connection actions interrupt the spiral (Cacioppo & Hawkley, 2009).'
     },
     {
       id: 'emotion_mindful_crying',
@@ -12363,7 +12363,7 @@ var VISUAL_ANCHORS = [
       practice: {
         elementary: 'When you cry, just let yourself cry. Tears are how your body lets sadness out. Find a quiet spot if you can.',
         middle: 'Suppressing tears makes feelings stay longer. Letting them come, with breath and gentleness, lets them pass.',
-        high: 'Tears contain stress hormones; crying is physical emotional release. Allowed crying is more efficient than suppressed crying for emotional processing.'
+        high: 'Crying often brings relief, especially when someone supportive is there. Letting tears come is usually easier on you than holding them back.'
       },
       steps: [
         'Notice tears coming.',
@@ -12387,7 +12387,7 @@ var VISUAL_ANCHORS = [
         'Cannot stop crying — the practice helps; if persistent, seek support.'
       ],
       pairsWithScripts: ['self_compassion_after_effort', 'loving_kindness_basic', 'body_scan_full'],
-      research: 'Emotional crying releases stress hormones and improves mood (Bylsma et al., 2008; Frey, 1985).'
+      research: 'Crying often brings relief, especially with support from others (Bylsma et al., 2008). The idea that tears flush out stress hormones is not supported.'
     },
     {
       id: 'emotion_mindful_laughing',
@@ -13317,7 +13317,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: false,
       visibleness: 'visible',
-      research: 'Postural support reduces meditation drop-out rates (Holzel et al., 2011).'
+      research: 'Comfortable support makes it easier to keep sitting.'
     },
     {
       id: 'lotus',
@@ -13621,7 +13621,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: true,
       visibleness: 'moderate',
-      research: 'Spinal rotation maintains intervertebral disc health (Adams & Roughley, 2006).'
+      research: 'Gentle twists keep the spine mobile.'
     },
     {
       id: 'seated_cat_cow',
@@ -13865,7 +13865,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: false,
       visibleness: 'subtle',
-      research: 'Mindfulness meditation reduces anxiety and improves attention (Goyal et al., 2014, meta-analysis).'
+      research: 'Mindfulness meditation programs show small to moderate benefits for anxiety, depression and pain (Goyal et al., 2014).'
     },
     {
       id: 'childs_pose',
@@ -14917,7 +14917,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: false,
       visibleness: 'visible',
-      research: 'Cross-body postures activate inter-hemispheric coordination (Dennison, 1989).'
+      research: 'Eagle pose challenges balance and concentration. Claims that cross-body poses integrate the brain hemispheres are not supported by research.'
     },
     {
       id: 'half_moon',
@@ -15592,7 +15592,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: false,
       visibleness: 'visible',
-      research: 'Aerobic exercise reduces depression symptoms with effect sizes comparable to medication (Schuch et al., 2016).'
+      research: 'Aerobic exercise meaningfully reduces depression symptoms (Schuch et al., 2016) and works alongside other treatment.'
     },
     {
       id: 'walking_labyrinth',
@@ -15963,7 +15963,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: true,
       visibleness: 'moderate',
-      research: 'Spinal rotation maintains disc health (Adams & Roughley, 2006).'
+      research: 'Gentle twists keep the spine mobile.'
     },
     {
       id: 'chair_cat_cow',
@@ -16775,7 +16775,7 @@ var VISUAL_ANCHORS = [
       ],
       classroomFriendly: true,
       visibleness: 'subtle',
-      research: 'Self-soothing touch reduces cortisol and increases oxytocin (Neff & Germer, 2013; MSC research).'
+      research: 'Self-soothing touch lowered cortisol after a stress task (Dreisoerner et al., 2021); a core practice in Mindful Self-Compassion (Neff & Germer, 2013).'
     },
     {
       id: 'lions_breath',
@@ -17713,7 +17713,7 @@ var VISUAL_ANCHORS = [
         'Then begin the day.'
       ],
       whatItDoes: 'Sets the default emotional tone for the day toward openness rather than reactivity.',
-      whyItWorks: 'The first 30 minutes after waking shape the day\'s baseline cortisol curve; replacing phone-checking with appreciative attention reduces morning stress reactivity.',
+      whyItWorks: 'How you start the day sets its tone; replacing phone-checking with appreciative attention makes for a calmer morning.',
       bestFrequency: 'daily',
       variations: [
         'Sticky note on the mirror with the three prompts.',
@@ -17722,7 +17722,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Grateful for: the warm shower last night. Looking forward to: lunch with Aria. Body: my legs feel rested.',
       cautions: 'Skip on mornings of genuine distress; forcing it makes it hollow.',
-      research: 'Consistent with cortisol-awakening-response research (Adam et al., 2017) on the importance of the first waking minutes.'
+      research: 'Practice wisdom; research on screens and mood is mixed (Orben & Przybylski, 2019).'
     },
     {
       id: 'mealtime_gratitude',
@@ -17869,7 +17869,7 @@ var VISUAL_ANCHORS = [
         'End by looking up at the sky for one full minute.'
       ],
       whatItDoes: 'Cultivates a felt sense of belonging to the wider living world, which research links to reduced loneliness and increased well-being.',
-      whyItWorks: 'Combines nature exposure (which lowers cortisol per Hunter et al., 2019) with appreciative attention, doubling the regulatory effect.',
+      whyItWorks: 'Combines nature exposure (which lowered cortisol in Hunter et al., 2019) with appreciative attention.',
       bestFrequency: 'weekly',
       variations: [
         'Urban version: thank a single tree, a pigeon, a patch of sky.',
@@ -17878,7 +17878,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Thanked the oak by the gym door for shade in May. Thanked a moss patch for being soft. Thanked a crow for being loud.',
       cautions: 'For students with limited outdoor access (safety, mobility), bring nature in: a window view, a leaf on the desk, a video of a forest.',
-      research: 'Hunter, Gillespie, and Chen (2019) — 20-minute "nature pills" significantly lowered cortisol; gratitude framing amplifies the effect (Howell et al., 2011).'
+      research: 'Hunter, Gillespie, and Chen (2019) \u2014 20-minute "nature pills" significantly lowered cortisol; feeling connected to nature is linked with wellbeing (Howell et al., 2011).'
     },
     {
       id: 'gratitude_for_strangers',
@@ -17895,7 +17895,7 @@ var VISUAL_ANCHORS = [
         'Notice how interdependence feels in the body.'
       ],
       whatItDoes: 'Expands the felt circle of gratitude beyond personal relationships, reducing the illusion of self-sufficiency.',
-      whyItWorks: 'Awareness of interdependence is linked to reduced entitlement and increased prosocial behavior (Piff et al., 2010).',
+      whyItWorks: 'Noticing how much we depend on others is consistent with research linking a sense of connection to more generous behavior (Piff et al., 2010).',
       bestFrequency: 'weekly',
       variations: [
         'Specific-object version: trace one item (your shoe, your phone) back through everyone who touched it.',
@@ -17904,7 +17904,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'The crossing guard at 7:42 am. The person who paved this sidewalk before I was born. The chemist who figured out my asthma inhaler.',
       cautions: 'Avoid romanticizing labor; pair this practice with awareness of fair wages and conditions for the workers being thanked.',
-      research: 'Piff, Stancato, Martinez, Kraus, and Keltner (2010); consistent with awe-and-humility research (Stellar et al., 2017).'
+      research: 'Piff, Kraus, C\u00F4t\u00E9, Cheng, and Keltner (2010); consistent with awe-and-humility research (Stellar et al., 2017).'
     },
     {
       id: 'gratitude_for_difficulties',
@@ -17956,7 +17956,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'After 15 minutes: noticed the chest soften, eyes water briefly when I thought of my grandmother, an unhurried quality afterward.',
       cautions: 'For students with trauma history, focus on neutral objects (breath, body) before relational objects; let images come, do not force.',
-      research: 'Consistent with loving-kindness meditation research (Fredrickson, Cohn, Coffey, Pek, and Finkel, 2008) showing measurable changes in positive emotions and vagal tone over eight weeks.'
+      research: 'Consistent with loving-kindness meditation research (Fredrickson, Cohn, Coffey, Pek, and Finkel, 2008) showing measurable changes in positive emotions over seven weeks.'
     },
     {
       id: 'gratitude_chanting',
@@ -18112,7 +18112,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Text to history teacher: "Thank you for slowing down on the WWI lecture today; the part about the trenches finally made the chapter make sense."',
       cautions: 'Do not text people who have a restraining order against you, or who have asked you not to contact them.',
-      research: 'Algoe, Haidt, and Gable (2008) "Find-remind-and-bind theory of gratitude"; effects measurable in close relationships within weeks.'
+      research: 'Algoe, Haidt, and Gable (2008) "Beyond reciprocity"; Algoe (2012) find-remind-and-bind theory of gratitude.'
     },
     {
       id: 'group_gratitude_circle',
@@ -18164,7 +18164,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Mom: the parking spot opened up. Dad: my coworker brought donuts. Kid 1: Mr. Lin gave us free time. Kid 2: I beat my swim time.',
       cautions: 'Do not force participation from a child who is dysregulated; offer to come back to them at the end.',
-      research: 'Fiese (2006) The Importance of Family Rituals; family-mealtime research (Eisenberg et al., 2004).'
+      research: 'Fiese (2006) Family Routines and Rituals; family-mealtime research (Eisenberg et al., 2004).'
     },
     {
       id: 'compliment_as_gratitude',
@@ -18285,7 +18285,7 @@ var VISUAL_ANCHORS = [
         'Set one intention for receiving gratitude next week.'
       ],
       whatItDoes: 'Creates a wider lens than daily practice, surfacing patterns invisible at the day level.',
-      whyItWorks: 'Weekly review aligns with hedonic-adaptation research (Lyubomirsky, 2010) suggesting periodic rather than daily practice better resists the wear-out effect.',
+      whyItWorks: 'Weekly review aligns with hedonic-adaptation research (Lyubomirsky, Sheldon & Schkade, 2005) suggesting periodic rather than daily practice better resists the wear-out effect.',
       bestFrequency: 'weekly',
       variations: [
         'Visual version (week-in-five-photos).',
@@ -18294,7 +18294,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Week of Oct 21: Sara every day at lunch, the new playlist, the math test I actually understood, Saturday rain, Mom asking how I really was.',
       cautions: 'For students whose weeks contain real hardship, do not pretend; pair with hassles-noting if needed.',
-      research: 'Lyubomirsky (2010) The How of Happiness on optimal intervention frequency.'
+      research: 'Lyubomirsky, Sheldon & Schkade (2005) on how often to practice; Lyubomirsky (2007) The How of Happiness.'
     },
     {
       id: 'gratitude_for_the_year',
@@ -18649,7 +18649,7 @@ var VISUAL_ANCHORS = [
         'Then get up.'
       ],
       whatItDoes: 'Sets a baseline of appreciation before the day\'s demands begin.',
-      whyItWorks: 'The first cognitive content of the day disproportionately shapes the day\'s tone; choosing gratitude over scrolling alters the cortisol-awakening response.',
+      whyItWorks: 'Starting the day with something you appreciate, not a feed, sets a calmer tone.',
       bestFrequency: 'daily',
       variations: [
         'Bed-stretch version with five named gratitudes during stretching.',
@@ -18658,7 +18658,7 @@ var VISUAL_ANCHORS = [
       ],
       example: 'Eyes still closed: "I rested. Thank you." Then stretched arms overhead and got up.',
       cautions: 'For students with insomnia or sleep disorders, do not force this; appreciation cannot replace adequate sleep.',
-      research: 'Adam et al. (2017) on cortisol-awakening response and morning routines.'
+      research: 'Practice wisdom; gratitude interventions show small but real effects on well-being (Cregg & Cheavens, 2021).'
     },
     {
       id: 'gratitude_after_exercise',
@@ -18727,7 +18727,7 @@ var VISUAL_ANCHORS = [
         'Rest more.'
       ],
       whatItDoes: 'Marks the recovery period as a meaningful chapter rather than only time lost.',
-      whyItWorks: 'Patients who frame illness with meaning recover faster on average and report higher quality of life (Park, 2010).',
+      whyItWorks: 'Finding meaning in illness is linked with better adjustment for some people (Park, 2010).',
       bestFrequency: 'daily',
       variations: [
         'Chronic-illness version with smaller increments.',
@@ -19652,14 +19652,14 @@ var VISUAL_ANCHORS = [
       institution: 'Massachusetts General Hospital / Harvard Medical School',
       forBand: 'all',
       thePicture: {
-        elementary: 'Scientists used a special camera that takes pictures of the brain. They looked at peoples brains before and after they practiced mindfulness for two months. They saw real changes in the parts of the brain that help us remember things and stay calm.',
-        middle: 'Researchers gave brain scans to people before and after an eight-week mindfulness program. They found measurable changes in brain regions linked to memory, learning, and emotion control. This was one of the first studies to show that short-term meditation practice could be linked to physical changes in brain tissue.',
-        high: 'Using voxel-based morphometry on MRI scans before and after an 8-week MBSR program, researchers found increased gray matter concentration in the left hippocampus (learning and memory) and decreased gray matter in the amygdala (threat detection). The amygdala change correlated with reported stress reduction. Effect sizes were modest but statistically significant in a sample of 16 participants vs. 17 controls.'
+        elementary: 'Scientists used a special camera that takes pictures of the brain. They looked at peoples brains before and after they practiced mindfulness for two months. They saw real changes in the parts of the brain that help us remember things and stay calm. Later, bigger studies did not find the same changes, so scientists are not sure.',
+        middle: 'Researchers gave brain scans to people before and after an eight-week mindfulness program. They found measurable changes in brain regions linked to memory, learning, and emotion control. This was one of the first studies to show that short-term meditation practice could be linked to physical changes in brain tissue. A larger 2022 study did not find these changes, so the question is still open.',
+        high: 'Using voxel-based morphometry on MRI scans before and after an 8-week MBSR program, researchers found increased gray matter concentration in the left hippocampus (learning and memory) and several other regions, in a sample of 16 participants vs. 17 controls. A separate 2010 study by the same group linked reduced stress to a decrease in amygdala gray matter. A 2022 replication combining two randomized trials found no structural changes.'
       },
       whatTheyDid: 'Sixteen people who had never meditated before completed an 8-week Mindfulness-Based Stress Reduction (MBSR) program. They received structural MRI brain scans before and after the program. Their scans were compared to a control group of 17 people on a waitlist. The team measured gray matter density across the whole brain.',
-      whatTheyFound: 'The MBSR group showed increases in gray matter concentration in the left hippocampus, posterior cingulate cortex, temporo-parietal junction, and cerebellum, regions involved in learning, memory, perspective-taking, and emotion regulation. The amygdala, a region central to stress and threat detection, showed decreased gray matter density, and this decrease was correlated with self-reported stress reduction. The control group showed no comparable changes.',
+      whatTheyFound: 'The MBSR group showed increases in gray matter concentration in the left hippocampus, posterior cingulate cortex, temporo-parietal junction, and cerebellum, regions involved in learning, memory, perspective-taking, and emotion regulation. In a separate 2010 study by the same group, the amygdala, a region central to stress and threat detection, showed decreased gray matter density, and this decrease was correlated with self-reported stress reduction.',
       whyItMatters: 'This was among the first studies to suggest that a short course of meditation training, not decades of monastic practice, is associated with measurable brain changes. For students, it means that practice is not just a feeling, it appears to shape the brain in ways linked to attention and stress.',
-      caveat: 'The sample size was small (16 vs 17), and structural MRI changes do not directly prove that meditation caused improved cognition or wellbeing. Replications have produced mixed effect sizes, and a 2022 large-scale replication attempt (Kral et al.) found weaker effects than the original.',
+      caveat: 'The sample size was small (16 vs 17), and structural MRI changes do not directly prove that meditation caused improved cognition or wellbeing. A 2022 replication combining two randomized trials (Kral et al.) found no structural brain changes from MBSR.',
       practiceTakeaway: 'Eight weeks of regular practice is a reasonable starting commitment if you want measurable change, not just one session.',
       citation: 'Holzel, B. K., Carmody, J., Vangel, M., Congleton, C., Yerramsetti, S. M., Gard, T., & Lazar, S. W. (2011). Mindfulness practice leads to increases in regional brain gray matter density. Psychiatry Research: Neuroimaging, 191(1), 36-43.',
       furtherReading: 'See the 2022 Kral et al. replication in Science Advances for a more cautious follow-up. Tang, Holzel, & Posner (2015) in Nature Reviews Neuroscience provides a broader review.'
@@ -19780,7 +19780,7 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'Scientists studied monks who had meditated for thousands of hours. When they heard someone in pain, the parts of their brain that respond to feelings worked differently than non-meditators.',
         middle: 'Researchers studied expert meditators who had practiced compassion for many years. When they heard distressed sounds (like a person crying), their brains showed stronger activity in regions linked to empathy and emotional processing, especially during compassion meditation.',
-        high: 'Using fMRI, researchers studied 16 Tibetan Buddhist monks (avg 34,000 hours of meditation) and 16 novices while they heard emotional vocalizations. During compassion meditation, expert meditators showed greater activation in the insula and anterior cingulate cortex (regions involved in empathy and emotional awareness) compared to novices. The difference was greater for negative valence sounds, suggesting heightened sensitivity to distress.'
+        high: 'Using fMRI, researchers studied 16 long-term Buddhist meditators (roughly 10,000 to 50,000 hours of practice) and 16 novices while they heard emotional vocalizations. During compassion meditation, expert meditators showed greater activation in the insula and anterior cingulate cortex (regions involved in empathy and emotional awareness) compared to novices. The difference was greater for negative valence sounds, suggesting heightened sensitivity to distress.'
       },
       whatTheyDid: 'The researchers scanned the brains of 16 Tibetan Buddhist monks with extensive compassion meditation experience and 16 age-matched novice controls. Participants heard emotional vocal sounds (positive, negative, neutral) while either resting or doing compassion meditation. Researchers measured activation in regions linked to empathy.',
       whatTheyFound: 'During compassion meditation, expert meditators showed greater activation in the insula and anterior cingulate cortex when hearing distress sounds. The difference was strongest for negative-valence sounds. This pattern suggests that compassion training heightens, rather than dampens, sensitivity to others suffering.',
@@ -20158,10 +20158,10 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'People with long-lasting sleep problems took a class that mixed mindfulness with sleep tips. Most of them slept much better.',
         middle: 'Jason Ong developed Mindfulness-Based Therapy for Insomnia (MBTI), which combines mindfulness practice with proven behavioral sleep strategies. In randomized trials, it produced strong reductions in insomnia symptoms, comparable to cognitive behavioral therapy.',
-        high: 'Ong et al. randomized 54 adults with chronic insomnia to MBTI, MBSR, or a self-monitoring control. Both MBTI and MBSR groups improved on insomnia severity, but MBTI showed greater reductions in pre-sleep arousal and sleep effort. At 6-month follow-up, MBTI participants showed sustained improvements with remission rates of ~75%.'
+        high: 'Ong et al. randomized 54 adults with chronic insomnia to MBTI, MBSR, or a self-monitoring control. Both MBTI and MBSR groups improved on insomnia severity, but MBTI showed greater reductions in pre-sleep arousal and sleep effort. At 6-month follow-up, MBTI participants showed sustained improvements with about 79% responding to treatment and about half in remission.'
       },
       whatTheyDid: 'Fifty-four adults with chronic insomnia were randomly assigned to MBTI (mindfulness + behavioral sleep strategies), generic MBSR, or a self-monitoring control. All groups completed 8-week programs. Researchers measured insomnia severity, pre-sleep arousal, and sleep effort at multiple time points including 6-month follow-up.',
-      whatTheyFound: 'Both mindfulness groups showed reductions in insomnia severity. The MBTI group (which integrated specific sleep-focused practices) showed greater improvements in pre-sleep arousal and sleep effort. At 6-month follow-up, ~75% of MBTI participants no longer met criteria for chronic insomnia.',
+      whatTheyFound: 'Both mindfulness groups showed reductions in insomnia severity. The MBTI group (which integrated specific sleep-focused practices) showed greater improvements in pre-sleep arousal and sleep effort. At 6-month follow-up, about 79% of MBTI participants had responded to treatment and about half were in remission.',
       whyItMatters: 'For students with persistent sleep problems, generic meditation is helpful, but mindfulness combined with sleep-specific behavioral changes (sleep restriction, stimulus control) is more powerful.',
       caveat: 'MBTI is a structured therapy program. Solo app meditation will not replicate the full effect.',
       practiceTakeaway: 'Pair your mindfulness with simple sleep behaviors: same wake time daily, no screens 1 hour before bed, bedroom for sleep only.',
@@ -20199,11 +20199,11 @@ var VISUAL_ANCHORS = [
       forBand: 'high',
       thePicture: {
         elementary: 'For people who have lived through scary things, regular mindfulness sometimes makes them feel worse. There are special versions made just for them.',
-        middle: 'Veterans with PTSD who tried standard mindfulness sometimes got worse, not better, when intrusive memories came up during silent practice. Researchers developed adapted protocols (shorter sits, more grounding, more teacher support) that worked better. Standard meditation is not one-size-fits-all.',
-        high: 'King et al. studied mindfulness-based cognitive therapy adaptations for combat veterans with PTSD. They documented that long silent sits could trigger intrusive memories and dissociation. Their adapted protocol used shorter practice durations, more frequent grounding exercises, and explicit attention to body anchoring. Outcomes improved compared to standard MBCT. The paper also emphasized that all instructors needed trauma-specific training.'
+        middle: 'Researchers tried a mindfulness group adapted for veterans with PTSD (shorter sits, more grounding, more teacher support) and compared it with the clinic\'s usual group treatment. The mindfulness group improved more. Standard meditation is not one-size-fits-all.',
+        high: 'King et al. piloted group MBCT adapted for combat veterans with PTSD (20 veterans) and compared it with the clinic\'s usual group treatment (17 veterans). The MBCT group showed greater improvement in PTSD symptoms. The study did not test adapted against unmodified MBCT; advice to shorten sits and add grounding comes from clinical experience (Treleaven, 2018).'
       },
       whatTheyDid: 'King and colleagues developed and tested an adapted mindfulness-based cognitive therapy protocol specifically for combat veterans with PTSD. They modified standard MBCT with shorter practice durations, more grounding, explicit body awareness instructions, and trauma-informed teacher training. They compared outcomes to standard treatment.',
-      whatTheyFound: 'The adapted protocol produced better outcomes than the unmodified version. Standard long silent sits frequently triggered intrusive memories, hyperarousal, or dissociation in this population. The adapted approach allowed veterans to benefit from mindfulness without re-triggering trauma symptoms.',
+      whatTheyFound: 'The adapted MBCT group showed greater improvement in PTSD symptoms than the usual-treatment groups. Because this was a small pilot, it shows the approach is promising and acceptable to veterans, not that it is proven.',
       whyItMatters: 'For any student who has experienced trauma (including community violence, abuse, loss, or major medical events), this study is a reminder that generic mindfulness instruction can backfire. Trauma-sensitive teachers and adapted practices matter.',
       caveat: 'The sample was specific (combat veterans). Findings may differ for other trauma populations. The field still lacks fully standardized trauma-sensitive protocols.',
       practiceTakeaway: 'If you have experienced significant trauma, look for trauma-sensitive mindfulness teachers or programs. If a practice feels overwhelming, stop, open your eyes, ground in the room.',
@@ -20284,19 +20284,19 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'Fourth and fifth graders who did a special program with mindfulness and kindness lessons got better at paying attention, math, and being nice to each other.',
         middle: 'Researchers studied 99 4th and 5th grade students who completed the MindUP program (12 weeks of mindfulness + social-emotional learning + acts of kindness). Compared to a control class, they showed better attention, math achievement, social skills, and stress regulation. The improvements were measured by teachers, peers, and a stress hormone (cortisol).',
-        high: 'Schonert-Reichl et al. conducted a quasi-experimental trial with 99 4th-5th graders in 4 classrooms. MindUP combined 12 weeks of mindfulness-based exercises (3 daily 3-minute "core practices") with prosocial behavior curricula. Outcomes included cortisol diurnal rhythm, executive function (BRIEF), math achievement, peer-rated empathy, prosocial behavior, and depressive symptoms. The MindUP group showed significant improvements across all domains.'
+        high: 'Schonert-Reichl et al. conducted a small randomized trial with 99 4th-5th graders in 4 classrooms. MindUP combined 12 weeks of mindfulness-based exercises (3 daily 3-minute "core practices") with prosocial behavior curricula. Outcomes included cortisol diurnal rhythm, executive function (computer tasks), math achievement, peer-rated empathy, prosocial behavior, and depressive symptoms. The MindUP group showed significant improvements across all domains.'
       },
       whatTheyDid: 'Researchers studied 99 students in 4 classrooms (4th and 5th grade) where teachers implemented the MindUP program. The program included 12 weekly lessons combining mindfulness, brain science, and prosocial activities, plus three daily 3-minute "core practices." A matched control group completed a different social-emotional learning program. Researchers measured cortisol (stress hormone), executive function, math achievement, peer ratings of empathy and prosocial behavior, and depression symptoms.',
-      whatTheyFound: 'MindUP students showed significant improvements across multiple domains: better cortisol regulation (a biological stress marker), improved executive function as rated by teachers, higher math achievement, more peer-rated empathy and prosocial behavior, and lower depression scores. The control group showed smaller or no improvements on these measures.',
-      whyItMatters: 'For elementary students, this is one of the strongest studies showing that mindfulness-based programs can improve both academic and social outcomes when integrated into school. The math achievement effect is particularly notable, attention training appears to transfer to academic skills.',
-      caveat: 'The study was quasi-experimental (classes were not randomly assigned) and small (4 classrooms). Replications with larger samples have shown mixed results.',
+      whatTheyFound: 'MindUP students showed significant improvements across multiple domains: better cortisol regulation (a biological stress marker), better performance on computer tasks of executive function, a trend toward higher math grades, more peer-rated empathy and prosocial behavior, and lower depression scores. The control group showed smaller or no improvements on these measures.',
+      whyItMatters: 'For elementary students, this is one of the best-known studies suggesting that mindfulness-based programs can improve both academic and social outcomes when integrated into school.',
+      caveat: 'Only four classrooms were randomized (two per arm), so class and teacher effects cannot be separated from the program. The math result was a trend, not a firm finding. Larger replications have been mixed.',
       practiceTakeaway: 'Three short 3-minute practices spread throughout the school day appear to work as well as one longer session.',
       citation: 'Schonert-Reichl, K. A., Oberle, E., Lawlor, M. S., Abbott, D., Thomson, K., Oberlander, T. F., & Diamond, A. (2015). Enhancing cognitive and social-emotional development through a simple-to-administer mindfulness-based school program for elementary school children: A randomized controlled trial. Developmental Psychology, 51(1), 52-66.',
       furtherReading: 'MindUP.org has free teacher resources; see also Felver et al. (2016) for a meta-analysis of school-based mindfulness programs.'
     },
     {
       id: 'felver_2016_youth_meta',
-      title: 'Meta-Analysis: Mindfulness Programs for Youth',
+      title: 'Systematic Review: Mindfulness Programs in Schools',
       field: 'education',
       studyYear: 2016,
       primaryAuthor: 'Felver, J.',
@@ -20304,11 +20304,11 @@ var VISUAL_ANCHORS = [
       forBand: 'middle',
       thePicture: {
         elementary: 'A team looked at many studies of mindfulness for kids and teens. They found small but real benefits.',
-        middle: 'Researchers reviewed 28 studies of mindfulness-based interventions for school-age youth. They found small to moderate improvements in attention, stress, anxiety, and behavior. Effects were larger for older students and for programs led by experienced mindfulness teachers.',
-        high: 'Felver et al. analyzed 28 studies of youth mindfulness interventions (3,800+ participants ages 6-21). Pooled effect sizes were modest (g=0.20-0.40) for cognitive performance, social-emotional outcomes, and behavioral outcomes. Effects were larger for adolescents than for younger children, and for programs delivered by experienced instructors compared to classroom teachers. The authors flagged methodological concerns including weak control conditions and inconsistent fidelity reporting.'
+        middle: 'Researchers reviewed 28 studies of mindfulness programs in schools. Most reported some benefit for attention, stress or behavior, but many of the studies were small or had weak comparison groups, so the results are not certain.',
+        high: 'Felver et al. reviewed 28 studies of school-based mindfulness programs. Most reported some benefit, but the authors did not pool the results and flagged weak control conditions and inconsistent fidelity reporting. For pooled estimates see Zenner et al. (2014) and Carsley et al. (2018), which found small to moderate effects.'
       },
-      whatTheyDid: 'The authors searched the literature for studies of mindfulness-based interventions delivered to school-age youth. They identified 28 eligible studies with over 3,800 participants ages 6-21. They calculated effect sizes for cognitive, social-emotional, and behavioral outcomes, and analyzed moderators including age, program duration, and instructor expertise.',
-      whatTheyFound: 'Mindfulness programs for youth produced small to moderate benefits across multiple domains. Effects were stronger for older students and for programs delivered by experienced mindfulness teachers. Many studies had methodological weaknesses (weak control groups, inconsistent fidelity), limiting the strength of conclusions.',
+      whatTheyDid: 'The authors searched the literature for studies of mindfulness-based interventions delivered in schools and identified 28 eligible studies. They described each study\'s design, sample, program and outcomes and rated common methodological problems. They did not calculate pooled effect sizes.',
+      whatTheyFound: 'Most of the reviewed studies reported some benefit across cognitive, social-emotional or behavioral outcomes. Many had methodological weaknesses (weak control groups, inconsistent fidelity), limiting the strength of conclusions.',
       whyItMatters: 'For students considering whether mindfulness is worth trying in school, the answer is yes, but with realistic expectations. The benefits are real but modest, and depend heavily on the quality of instruction.',
       caveat: 'Effect sizes are small, and the field has serious methodological problems. Adolescent mindfulness research is still developing.',
       practiceTakeaway: 'If your school offers a mindfulness program, give it an honest try, but do not expect dramatic transformation.',
@@ -20380,7 +20380,7 @@ var VISUAL_ANCHORS = [
     },
     {
       id: 'kuyken_2017_myriad_trial',
-      title: 'MYRIAD Trial: Large UK School Mindfulness Study with Mixed Results',
+      title: 'MYRIAD Trial: No Overall Benefit in a Large UK School Mindfulness Trial',
       field: 'education',
       studyYear: 2017,
       primaryAuthor: 'Kuyken, W.',
@@ -20389,9 +20389,9 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'A huge study in many schools tried to see if mindfulness helped teenagers. It did not help as much as people hoped. This is important to know.',
         middle: 'A large UK trial called MYRIAD tested mindfulness training in 85 secondary schools with thousands of students. After three years of data, the program did NOT show significant improvements in mental health overall, and for some students with prior mental health difficulties, it may have made things slightly worse. This is a major reality check for school-based programs.',
-        high: 'The MYRIAD trial randomized 84 schools (5,981 students ages 11-14) to either a 10-lesson mindfulness curriculum (SBMT) or teaching-as-usual social-emotional learning. Primary outcomes were depression, social-emotional functioning, and wellbeing at 1-year follow-up. Despite a well-designed protocol, the SBMT group showed no significant advantage on primary outcomes. Subgroup analyses suggested possible harm for some at-risk students. The investigators have published an honest critique of their own findings.'
+        high: 'The MYRIAD trial randomized 85 schools (84 analysed; 8,376 students ages 11-14) to either a 10-lesson mindfulness curriculum (SBMT) or teaching-as-usual social-emotional learning. Primary outcomes were depression, social-emotional functioning, and wellbeing at 1-year follow-up. Despite a well-designed protocol, the SBMT group showed no significant advantage on primary outcomes. Subgroup analyses suggested possible harm for some at-risk students. The investigators have published an honest critique of their own findings.'
       },
-      whatTheyDid: 'The MYRIAD project enrolled 5,981 students ages 11-14 across 84 schools in a cluster-randomized trial. Schools were assigned to either a 10-lesson school-based mindfulness curriculum (SBMT) or teaching-as-usual social-emotional learning. Researchers measured depression, anxiety, social-emotional functioning, and wellbeing through 1-year follow-up. The trial included rigorous fidelity monitoring and pre-registered analyses.',
+      whatTheyDid: 'The MYRIAD project enrolled 8,376 students ages 11-14 across 85 schools (84 analysed) in a cluster-randomized trial. Schools were assigned to either a 10-lesson school-based mindfulness curriculum (SBMT) or teaching-as-usual social-emotional learning. Researchers measured depression, anxiety, social-emotional functioning, and wellbeing through 1-year follow-up. The trial included rigorous fidelity monitoring and pre-registered analyses.',
       whatTheyFound: 'At 1-year follow-up, there was no significant difference between groups on the primary mental health outcomes. Subgroup analyses suggested that for adolescents with pre-existing mental health vulnerabilities, the mindfulness program may have produced slightly worse outcomes than the control. Teacher and student engagement with the program was lower than expected.',
       whyItMatters: 'This is one of the most important honest results in the field. It suggests that simply rolling out mindfulness curricula in schools is not enough, and that some adolescents may not benefit (or may even be harmed). The field is now reckoning with how to do school-based mindfulness more thoughtfully.',
       caveat: 'This is one trial of one specific curriculum. Other school-based programs with different designs may produce different results. But the size and rigor of MYRIAD make it impossible to ignore.',
@@ -20502,7 +20502,7 @@ var VISUAL_ANCHORS = [
       caveat: 'The framework is theoretical and based on emerging evidence. Specific predictions about individual risk are not yet well-validated.',
       practiceTakeaway: 'Before starting an intensive practice (retreats, long daily sessions), ask: do I have a teacher who knows me? Do I have a support system? Have I been screened for risk factors?',
       citation: 'Britton, W. B. (2019). Can mindfulness be too much of a good thing? The value of a middle way. Current Opinion in Psychology, 28, 159-165.',
-      furtherReading: 'Britton, W. B. (2021). Inadvertent harms in mindfulness: A scoping review.'
+      furtherReading: 'Britton, W. B., et al. (2021). Defining and measuring meditation-related adverse effects in mindfulness-based programs. Clinical Psychological Science.'
     },
     {
       id: 'schlosser_2019_distress_prevalence',
@@ -20515,7 +20515,7 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'When researchers asked many meditators if they had ever had distressing experiences from practice, about one in four said yes.',
         middle: 'A large online survey of meditators (mostly mindfulness practitioners) found that about 25% reported some meditation-related distress at some point. Most distress was not severe enough to require professional help, but it was widespread enough that the field needs to take it seriously.',
-        high: 'Schlosser et al. surveyed 1,232 regular meditators (with at least 4 months of practice) about meditation-related distress. They found that 25.6% reported having experienced unpleasant meditation-related experiences. Higher risk was associated with deconstructive practices (vs. concentrative), longer retreats, and male gender. Most experiences resolved without intervention; a smaller subset required professional support.'
+        high: 'Schlosser et al. surveyed 1,232 regular meditators (with at least 2 months of practice) about meditation-related distress. They found that 25.6% reported having experienced unpleasant meditation-related experiences. Higher risk was associated with deconstructive practices (vs. concentrative), longer retreats, and male gender. Most experiences resolved without intervention; a smaller subset required professional support.'
       },
       whatTheyDid: 'The team conducted a large online survey of regular meditators (n=1,232) recruited through mindfulness teacher networks and online platforms. They asked detailed questions about meditation experiences, focusing on whether participants had experienced distressing or unpleasant effects, and what the predictors and consequences were.',
       whatTheyFound: 'About 25.6% of regular meditators reported at least one meditation-related distressing experience. Risk factors included engaging in deconstructive practices (those that aim to break apart usual experience), participating in longer retreats, and being male. Most distress was self-limiting, but some practitioners required professional support to recover.',
@@ -20586,7 +20586,7 @@ var VISUAL_ANCHORS = [
       caveat: 'The paper is itself a perspective piece, not a meta-analysis. Not all mindfulness research is equally weak, and the strongest evidence remains real and useful.',
       practiceTakeaway: 'Be skeptical of dramatic claims ("mindfulness rewires your brain in 8 weeks"). Trust the modest, replicable findings (small but real benefits for stress and attention).',
       citation: 'Van Dam, N. T., van Vugt, M. K., Vago, D. R., Schmalzl, L., Saron, C. D., Olendzki, A., et al. (2018). Mind the hype: A critical evaluation and prescriptive agenda for research on mindfulness and meditation. Perspectives on Psychological Science, 13(1), 36-61.',
-      furtherReading: 'Davidson & Dahl (2017) Outstanding Questions in Contemplative Neuroscience is a similarly honest assessment from leading researchers.'
+      furtherReading: 'Davidson & Dahl (2018), Outstanding Challenges in Scientific Research on Mindfulness and Meditation, is a similarly honest assessment from leading researchers.'
     },
     {
       id: 'coronado_montoya_2016_publication_bias',
@@ -20599,10 +20599,10 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'When scientists try mindfulness in a study, they almost always find good results. That seems suspicious to other scientists who wonder if some studies that did not work were never published.',
         middle: 'Researchers analyzed 124 published trials of mindfulness-based interventions. Studies reporting positive results were dramatically over-represented compared to what would be expected statistically. This suggests publication bias: studies that found nothing may not have been published, making the field look more effective than it actually is.',
-        high: 'Coronado-Montoya et al. analyzed 124 RCTs of mindfulness-based interventions and registered trial protocols. Of registered trials with primary endpoints, 87% reported significant positive effects, compared to roughly 50% expected based on statistical power. The discrepancy strongly suggests publication bias, selective outcome reporting, and possibly p-hacking. This pattern inflates apparent effect sizes and overstates the evidence base.'
+        high: 'Coronado-Montoya et al. analyzed 124 published RCTs of mindfulness-based interventions, plus registered trial protocols. Of the 124 published trials, 87% reported positive results, compared to roughly 53% expected based on statistical power. The discrepancy strongly suggests publication bias, selective outcome reporting, and possibly p-hacking. This pattern inflates apparent effect sizes and overstates the evidence base.'
       },
       whatTheyDid: 'The team analyzed published trials of mindfulness-based interventions and compared them to pre-registered trial protocols. They looked at the proportion of trials reporting positive primary outcomes versus what would be expected based on statistical power calculations.',
-      whatTheyFound: 'About 87% of registered trials reported significant positive primary outcomes, far more than the ~50% expected statistically. This pattern strongly suggests publication bias (negative results not published), selective outcome reporting (reporting only what worked), and possibly p-hacking. The implication is that mindfulness effects in the published literature are likely overstated.',
+      whatTheyFound: 'About 87% of the published trials reported positive results, far more than the roughly 53% expected statistically. This pattern strongly suggests publication bias (negative results not published), selective outcome reporting (reporting only what worked), and possibly p-hacking. The implication is that mindfulness effects in the published literature are likely overstated.',
       whyItMatters: 'For students, this is a critical reality check: when you see "studies show mindfulness helps X," remember that we may not be seeing the studies where it did not. The actual effect sizes are likely smaller than published.',
       caveat: 'Publication bias affects many fields, not just mindfulness. The pattern is concerning but not unique. Pre-registered trials are increasingly common and will improve future evidence.',
       practiceTakeaway: 'When evaluating claims about mindfulness benefits, look for systematic reviews that account for publication bias, not single studies.',
@@ -20611,7 +20611,7 @@ var VISUAL_ANCHORS = [
     },
     {
       id: 'davidson_dahl_2017_outstanding_questions',
-      title: 'Outstanding Questions in Contemplative Neuroscience',
+      title: 'Outstanding Challenges in Mindfulness and Meditation Research',
       field: 'neuroscience',
       studyYear: 2017,
       primaryAuthor: 'Davidson, R.',
@@ -20627,7 +20627,7 @@ var VISUAL_ANCHORS = [
       whyItMatters: 'For students, this is a model of intellectual honesty. Two researchers who have spent decades studying meditation acknowledge how much we still do not know, while pointing to what is best supported.',
       caveat: 'The paper is a perspective piece, not new empirical research. The authors are deeply invested in the field, but also have a track record of acknowledging limitations.',
       practiceTakeaway: 'Treat your own practice as an experiment. What works for you may differ from what works for others, and that is the most important data.',
-      citation: 'Davidson, R. J., & Dahl, C. J. (2017). Varieties of contemplative practice. JAMA Psychiatry, 74(2), 121-123. See also Davidson & Dahl (2018) Outstanding questions in contemplative neuroscience. Mindfulness, 9(3), 783-786.',
+      citation: 'Davidson, R. J., & Dahl, C. J. (2017). Varieties of contemplative practice. JAMA Psychiatry, 74(2), 121-123. See also Davidson & Dahl (2018). Outstanding challenges in scientific research on mindfulness and meditation. Perspectives on Psychological Science, 13(1), 62-65.',
       furtherReading: 'Pair with Tang, Holzel, & Posner (2015) for the comprehensive review, and Van Dam et al. (2018) for the deepest critique.'
     },
     {
@@ -20641,9 +20641,9 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'When people learn to make room for anxious feelings instead of fighting them, their anxiety often gets less powerful over time.',
         middle: 'Roemer and Orsillo developed Acceptance-Based Behavior Therapy for generalized anxiety disorder, which combines mindfulness with values-based action. In randomized trials, it produced significant improvements in worry, anxiety, and quality of life, comparable to traditional cognitive behavioral therapy.',
-        high: 'Roemer et al. randomized 81 adults with generalized anxiety disorder to either ABBT (Acceptance-Based Behavior Therapy) or a waitlist. The ABBT group showed significant improvements in worry severity (PSWQ), anxiety (DASS), depression, and quality of life. Effects were maintained at 9-month follow-up. The approach integrates mindfulness, acceptance, and values clarification, sharing common ground with ACT (Acceptance and Commitment Therapy).'
+        high: 'Roemer et al. randomized 31 adults with generalized anxiety disorder to either ABBT (Acceptance-Based Behavior Therapy) or a waitlist. The ABBT group showed significant improvements in worry severity (PSWQ), anxiety (DASS), depression, and quality of life. Effects were maintained at 9-month follow-up. The approach integrates mindfulness, acceptance, and values clarification, sharing common ground with ACT (Acceptance and Commitment Therapy).'
       },
-      whatTheyDid: 'Eighty-one adults with generalized anxiety disorder were randomly assigned to either 16 weeks of Acceptance-Based Behavior Therapy or a waitlist control. ABBT integrates mindfulness, acceptance of difficult internal experiences, and values-based action. Outcomes included worry severity, anxiety, depression, and quality of life.',
+      whatTheyDid: 'Thirty-one adults with generalized anxiety disorder were randomly assigned to either 16 weeks of Acceptance-Based Behavior Therapy or a waitlist control. ABBT integrates mindfulness, acceptance of difficult internal experiences, and values-based action. Outcomes included worry severity, anxiety, depression, and quality of life.',
       whatTheyFound: 'The ABBT group showed significant improvements across all outcomes compared to waitlist. Effects were maintained at 9-month follow-up. The improvements were comparable to those seen with traditional cognitive behavioral therapy for GAD.',
       whyItMatters: 'For students with anxiety, this study supports an alternative to trying to argue with anxious thoughts. Sometimes making room for the feeling (while still doing what matters) is more effective than challenging it.',
       caveat: 'The study compared ABBT only to waitlist, not to other active treatments. Direct comparisons would be more informative.',
@@ -20662,10 +20662,10 @@ var VISUAL_ANCHORS = [
       thePicture: {
         elementary: 'For people who have had depression before, a mindfulness class helps stop it from coming back as often.',
         middle: 'Mindfulness-Based Cognitive Therapy (MBCT) was developed specifically to prevent depression relapse. In multiple randomized trials, it reduced relapse rates by about 50% in people with three or more prior episodes, an effect comparable to staying on antidepressants long-term.',
-        high: 'Segal, Williams, and Teasdale developed MBCT by integrating MBSR practices with cognitive therapy principles specifically for depression relapse prevention. Multiple RCTs and a 2016 individual patient data meta-analysis (Kuyken et al.) showed that MBCT reduced relapse rates by approximately 24-31% over 60 weeks compared to usual care, with particularly strong effects for patients with 3+ prior episodes. Effects were comparable to maintenance antidepressant medication.'
+        high: 'Segal, Williams, and Teasdale developed MBCT by integrating MBSR practices with cognitive therapy principles specifically for depression relapse prevention. Multiple RCTs and a 2016 individual patient data meta-analysis (Kuyken et al.) showed that MBCT reduced relapse rates by about 31% over 60 weeks compared with those who did not receive MBCT, with the most benefit for people with more residual symptoms. Effects were comparable to maintenance antidepressant medication.'
       },
       whatTheyDid: 'Segal, Williams, and Teasdale developed Mindfulness-Based Cognitive Therapy (MBCT) by combining MBSR practices with cognitive therapy principles. They tested MBCT in multiple randomized trials with adults who had recovered from depression but were at risk of relapse. The 8-week program teaches mindfulness alongside specific cognitive skills for recognizing depressive thinking.',
-      whatTheyFound: 'MBCT reduced depression relapse rates by approximately 50% in patients with 3 or more prior episodes, compared to usual care. Effects were comparable to maintenance antidepressant medication. The 2016 individual patient data meta-analysis (Kuyken et al.) confirmed these findings across 9 trials and 1,258 participants.',
+      whatTheyFound: 'Early trials found MBCT roughly halved relapse in people with three or more prior episodes. The 2016 pooled analysis (Kuyken et al.; 9 trials, 1,258 participants) found about a 31% lower relapse risk over 60 weeks, with the most benefit for people with more residual symptoms.',
       whyItMatters: 'For students with a history of depression, this is one of the strongest evidence-based applications of mindfulness. It is approved as a relapse-prevention treatment in the UK National Health Service guidelines.',
       caveat: 'MBCT was designed for relapse prevention, not for treating an active depressive episode. Its effects on currently depressed patients are smaller and less clear.',
       practiceTakeaway: 'If you have struggled with depression in the past, an MBCT course (8 weeks, structured) may be more useful than self-guided meditation.',
@@ -20765,7 +20765,7 @@ var VISUAL_ANCHORS = [
       id: 'increased_anxiety_sitting',
       experience: 'Increased anxiety during sitting',
       category: 'emotional',
-      prevalence: 'Reported by roughly 25 to 33 percent of meditators at some point per Lindahl 2017; especially common in the first 4 to 8 weeks of practice',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes when you sit still and try to be quiet, your body feels MORE jumpy, not less. That is your nervous system noticing things it was too busy to notice before.',
         middle: 'It is common for anxiety to go UP when you first start meditating, not down. When the outside noise stops, your internal noise gets louder. This is not a sign that meditation is bad for you, but it is a sign that you might need a different kind of practice for now.',
@@ -20809,7 +20809,7 @@ var VISUAL_ANCHORS = [
       id: 'panic_attack_long_sit',
       experience: 'Panic attack triggered by long sit',
       category: 'somatic',
-      prevalence: 'Documented in approximately 7 to 14 percent of intensive retreat participants per Britton 2019; rarer in 10 to 20 minute daily practice',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known; rarer in 10 to 20 minute daily practice',
       description: {
         elementary: 'Sometimes when you sit very still for a long time, your body can have a big fear feeling all at once, even though nothing scary is happening. This is called a panic attack. It is not dangerous, but it feels very real.',
         middle: 'A panic attack during meditation comes on suddenly. You might feel like you cannot breathe, your heart pounds, you feel dizzy or like you are going to die. It can be scary, but it cannot actually hurt you, and it always ends. Long silent sits make this more likely than short daily sits.',
@@ -20853,7 +20853,7 @@ var VISUAL_ANCHORS = [
       id: 'dissociation_outside_body',
       experience: 'Dissociation: feeling outside body or unreal',
       category: 'perceptual',
-      prevalence: 'Dissociative experiences reported by 14 to 25 percent of meditators per Lindahl 2017; more common in trauma survivors and in intensive practice',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known; more common in trauma survivors and in intensive practice',
       description: {
         elementary: 'Sometimes during meditation people feel like they are floating outside their body, or like the world is not real, or like they are watching themselves from far away. This is called dissociation, and it can be your brain trying to keep you safe from something hard.',
         middle: 'Dissociation during meditation can feel like you are not in your body, or like a glass wall is between you and the world, or like nothing is really real. If you have a trauma history, this is your nervous system doing what it learned to do when things felt unsafe. It is a sign to STOP the practice and ground yourself, not to go deeper.',
@@ -20897,7 +20897,7 @@ var VISUAL_ANCHORS = [
       id: 'hyperarousal_more_wired',
       experience: 'Hyperarousal: feeling MORE wired, not calmer',
       category: 'somatic',
-      prevalence: 'Reported by 10 to 20 percent of practitioners, particularly with mantra and concentration practices per Britton 2019',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation makes you feel BUZZY instead of calm, like you drank too much soda. Your hands might shake, you might have trouble sitting still, and you might not be able to sleep that night.',
         middle: 'Hyperarousal after meditation means your nervous system is more activated, not less. You might feel jittery, have racing thoughts, lose your appetite, or be unable to sleep. Certain practices (especially long mantra practice or very intense focus) can do this. It is not what most people expect from meditation.',
@@ -20935,13 +20935,13 @@ var VISUAL_ANCHORS = [
       ],
       whenToSeekHelp: 'If insomnia from practice lasts more than 3 nights, if you cannot function during the day, or if hyperarousal feels like mania (grandiosity, no need for sleep, rapid speech), stop all practice and see a clinician. Mania-like states require evaluation.',
       normalizingMessage: 'Some practices wake the nervous system up rather than settle it. Switching to a different practice is a wise choice, not a failure.',
-      research: 'Britton WB (2019). Current Opinion in Psychology. Lindahl JR, et al. (2017). PLOS ONE. Brown University Cheetah House clinical resources.'
+      research: 'Britton WB (2019). Current Opinion in Psychology. Lindahl JR, et al. (2017). PLOS ONE. Cheetah House (nonprofit founded by Willoughby Britton) resources.'
     },
     {
       id: 'hyperemotionality_wave',
       experience: 'Hyper-emotionality: wave of strong feelings without warning',
       category: 'emotional',
-      prevalence: 'Common; reported by approximately 30 to 50 percent of practitioners at some point per Lindahl 2017',
+      prevalence: 'Among the more commonly described difficulties in interview and survey research (Lindahl et al., 2017). No reliable rate is known',
       description: {
         elementary: 'Sometimes when you stop being busy and sit quietly, a big wave of feelings comes up all at once: sadness, anger, love, grief. It can be confusing because nothing happened to cause it.',
         middle: 'Hyper-emotionality means feelings come up bigger and faster than usual during or after practice. You might cry for no reason, feel sudden grief about something old, or feel overwhelming love or rage. This is your nervous system releasing what it had been holding. It is normal but can be a lot to handle.',
@@ -20985,7 +20985,7 @@ var VISUAL_ANCHORS = [
       id: 'numbness_shutdown',
       experience: 'Numbness or shutdown: disconnection from body and emotion',
       category: 'somatic',
-      prevalence: 'Reported in approximately 15 to 20 percent of practitioners, especially with prolonged practice per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation makes you feel nothing at all, not in a calm way but in a flat way, like the colors are turned down. You might not feel hungry, sad, or happy.',
         middle: 'Numbness or emotional shutdown after meditation feels different from calm. Calm is alive and aware. Numbness is flat, gray, and disconnected. It can be your nervous system going into a freeze response. This is a signal to change what you are doing, not to keep going.',
@@ -21029,7 +21029,7 @@ var VISUAL_ANCHORS = [
       id: 'insomnia_too_much_practice',
       experience: 'Insomnia from too much practice (counterintuitive)',
       category: 'somatic',
-      prevalence: 'Reported in approximately 10 to 15 percent of regular practitioners per Britton 2019; higher in retreat settings',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known; higher in retreat settings',
       description: {
         elementary: 'You might think meditation helps you sleep, but sometimes if you do TOO much, it can keep you awake at night.',
         middle: 'Some kinds of meditation can wake your brain up, not put it to sleep. Long sits, intense focus, or evening practice can keep you up at night. If your sleep is getting worse since you started meditating more, that is a sign to do less.',
@@ -21073,7 +21073,7 @@ var VISUAL_ANCHORS = [
       id: 'fear_during_meditation',
       experience: 'Fear during meditation (dread without cause)',
       category: 'emotional',
-      prevalence: 'Reported by approximately 25 percent of meditators at some point per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes during meditation a scary feeling comes up even though nothing scary is happening. It might feel like something bad is about to happen, but it is not.',
         middle: 'Fear or dread during meditation can come from nowhere. You might feel like something terrible is about to happen, like you are in danger, or like the world is not safe. These feelings can be your nervous system noticing fear that was always there but usually drowned out.',
@@ -21116,7 +21116,7 @@ var VISUAL_ANCHORS = [
       id: 'spiritual_identity_disturbance',
       experience: 'Spiritual identity disturbance (who am I really?)',
       category: 'self-related',
-      prevalence: 'Reported by approximately 25 to 40 percent of long-term practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation makes you wonder who you really are deep down. That can feel interesting or it can feel scary, like you are not sure of yourself anymore.',
         middle: 'Spiritual identity disturbance happens when practice makes you question who you are at a fundamental level. You might feel like the old you was fake, or that you do not know what is real anymore. This can be a growth phase, but it can also be destabilizing, especially if it lasts.',
@@ -21152,15 +21152,15 @@ var VISUAL_ANCHORS = [
         'Do not assume that more deconstructive practice will resolve the disturbance',
         'Do not dismiss the experience as imaginary or pathologize it entirely either'
       ],
-      whenToSeekHelp: 'If identity disturbance is causing significant distress, dysfunction, or thoughts of self-harm, seek a therapist familiar with spiritual or religious problems. The Spiritual Emergence Network and Cheetah House (Brown University) maintain referral lists.',
+      whenToSeekHelp: 'If identity disturbance is causing significant distress, dysfunction, or thoughts of self-harm, seek a therapist familiar with spiritual or religious problems. The Spiritual Emergence Network and Cheetah House (a nonprofit founded by researcher Willoughby Britton) maintain referral lists.',
       normalizingMessage: 'Questioning who you are is part of many serious practice paths. Doing it with support and slow integration is wise. You are not crazy, and you do not have to navigate this alone.',
-      research: 'Lindahl JR, et al. (2017). PLOS ONE. DSM-5-TR V62.89 religious or spiritual problem. Lukoff D, et al. (1998). From spiritual emergency to spiritual problem.'
+      research: 'Lindahl JR, et al. (2017). PLOS ONE. DSM-5-TR Z65.8 religious or spiritual problem. Lukoff D, et al. (1998). From spiritual emergency to spiritual problem.'
     },
     {
       id: 'loss_of_meaning_depressive',
       experience: 'Loss of meaning (depressive realization)',
       category: 'cognitive',
-      prevalence: 'Reported in approximately 15 to 25 percent of sustained practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation can make things you used to care about feel empty or pointless. That feeling is hard, and it is important to talk to a grown-up about it.',
         middle: 'After sustained practice, some people experience a loss of meaning, where things that used to matter feel pointless. This can be a temporary phase as you reorganize your priorities, or it can be depression that practice did not heal and may have made more visible. Either way, it is worth taking seriously.',
@@ -21204,7 +21204,7 @@ var VISUAL_ANCHORS = [
       id: 'trauma_memory_surfacing',
       experience: 'Trauma memory surfacing unexpectedly',
       category: 'emotional',
-      prevalence: 'In trauma survivors, surfacing happens in 30 to 50 percent of practitioners at some point per Treleaven 2018',
+      prevalence: 'Described as common among trauma survivors in clinical writing (Treleaven, 2018); no reliable rate is known',
       description: {
         elementary: 'Sometimes during meditation, an old memory of something hard or scary that happened to you can pop up out of nowhere. This is your body telling you it needs help with that memory.',
         middle: 'Old trauma memories can surface during meditation because the stillness lets your nervous system show you what it has been carrying. This is not a failure of practice. It IS a sign that you need to stop the silent sitting and get trauma-informed support.',
@@ -21248,7 +21248,7 @@ var VISUAL_ANCHORS = [
       id: 'body_sensations_intensifying',
       experience: 'Body sensations intensifying (chronic pain becomes louder)',
       category: 'somatic',
-      prevalence: 'Reported by 20 to 30 percent of chronic pain patients using mindfulness per Cherkin 2016 and Garland 2014',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'When you pay attention to your body, sometimes pain or other feelings can feel bigger because you are noticing them more.',
         middle: 'Meditation can sometimes make chronic pain feel worse, especially at first, because you are removing your usual distractions and really feeling what is there. With the right approach this often shifts, but it can be alarming at first and is not always sustainable for everyone.',
@@ -21292,7 +21292,7 @@ var VISUAL_ANCHORS = [
       id: 'sensory_hypersensitivity',
       experience: 'Sensory hypersensitivity (sounds louder, lights brighter)',
       category: 'perceptual',
-      prevalence: 'Reported by approximately 15 to 25 percent of intensive practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes after meditation everything feels LOUDER, BRIGHTER, or MORE. Lights are too bright, sounds are too loud, clothes feel scratchy. Your senses are turned up.',
         middle: 'Sensory hypersensitivity after sustained practice can feel like the world has been turned up too loud. Sounds, lights, smells, and textures become overwhelming. This is documented but disruptive, especially if you have a job, school, or family demands that do not pause for sensory recovery.',
@@ -21336,7 +21336,7 @@ var VISUAL_ANCHORS = [
       id: 'time_distortion',
       experience: 'Time distortion (5 minutes felt like an hour or vice versa)',
       category: 'perceptual',
-      prevalence: 'Common; reported by 30 to 50 percent of practitioners at some point per Lindahl 2017',
+      prevalence: 'Among the more commonly described difficulties in interview and survey research (Lindahl et al., 2017). No reliable rate is known',
       description: {
         elementary: 'Sometimes during meditation, time feels different. Five minutes can feel like an hour, or an hour can feel like five minutes. That is normal.',
         middle: 'Time distortion during meditation is common and usually harmless. Your sense of time depends on how your brain is processing, and stillness can speed it up, slow it down, or make it feel weird. As long as it does not stay weird after the sit, it is not a problem.',
@@ -21379,7 +21379,7 @@ var VISUAL_ANCHORS = [
       id: 'feeling_stuck_in_state',
       experience: 'Feeling stuck in a state that will not shift',
       category: 'cognitive',
-      prevalence: 'Reported by approximately 10 to 20 percent of practitioners post-retreat per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes a feeling from meditation stays with you and will not go away. It can be a good feeling or a bad feeling, but feeling stuck in any state for too long is hard.',
         middle: 'Feeling stuck in a meditative state after practice is common after retreats or intensive sessions. You might keep feeling spacious, or fuzzy, or detached for hours or days. If it does not shift, it can interfere with school, work, or relationships. This is a sign to ground deeply, not to keep practicing.',
@@ -21415,7 +21415,7 @@ var VISUAL_ANCHORS = [
         'Do not isolate from people, work, or ordinary life',
         'Do not skip food, sleep, or social contact'
       ],
-      whenToSeekHelp: 'If the stuck state lasts more than 2 weeks, interferes with functioning, or is accompanied by depression, see a clinician familiar with spiritual or meditation-related issues. Brown University Cheetah House and Spiritual Emergence Network are resources.',
+      whenToSeekHelp: 'If the stuck state lasts more than 2 weeks, interferes with functioning, or is accompanied by depression, see a clinician familiar with spiritual or meditation-related issues. Cheetah House (a nonprofit founded by researcher Willoughby Britton) and Spiritual Emergence Network are resources.',
       normalizingMessage: 'Coming back fully to ordinary life is part of practice, not the opposite of it. If a state lingers, gentle re-integration is the path.',
       research: 'Lindahl JR, et al. (2017). PLOS ONE. Britton WB, et al. (2014). Awakening is not a metaphor: The effects of Buddhist meditation practices on basic wakefulness. Annals NY Acad Sci.'
     },
@@ -21423,7 +21423,7 @@ var VISUAL_ANCHORS = [
       id: 'compulsion_to_meditate',
       experience: 'Compulsion to meditate (using meditation to avoid life)',
       category: 'cognitive',
-      prevalence: 'Less studied but clinically observed in 5 to 15 percent of dedicated practitioners per Britton 2019',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation can become a way to hide from your life instead of helping you live it. If you feel like you HAVE to meditate or something bad will happen, that is a sign.',
         middle: 'Compulsive meditation is when you feel driven to practice not because it helps but because you cannot tolerate not practicing. You might use meditation to avoid hard conversations, school, work, or relationships. This is a form of spiritual bypassing, and it does not actually help.',
@@ -21467,7 +21467,7 @@ var VISUAL_ANCHORS = [
       id: 'social_withdrawal_deepening',
       experience: 'Social withdrawal as practice deepens',
       category: 'social',
-      prevalence: 'Reported by approximately 20 to 30 percent of long-term practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation can make you want to be alone all the time. A little alone time is good, but if you are skipping friends and family, that is a problem.',
         middle: 'As practice deepens, some people feel like they need more silence and less social contact. Up to a point this is fine, but if you start cutting off friends, family, school, or community, the practice may be turning into hiding. People are part of what meditation is for, not the opposite of it.',
@@ -21511,7 +21511,7 @@ var VISUAL_ANCHORS = [
       id: 'hyper_vigilance_normal_interactions',
       experience: 'Hyper-vigilance in normal interactions',
       category: 'social',
-      prevalence: 'Reported in approximately 10 to 15 percent of practitioners after intensive practice per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes after meditating a lot, you might notice every little thing people do or say, and it can feel like too much information.',
         middle: 'Hyper-vigilance in conversations after meditation can feel like you are catching every micro-expression, every shift in tone, every implication. While this can feel insightful, it can also be exhausting and intrusive. It is often a sign that the nervous system is over-tuned, not that you are more perceptive.',
@@ -21555,7 +21555,7 @@ var VISUAL_ANCHORS = [
       id: 'spiritual_bypassing',
       experience: 'Bypassing: using meditation to avoid hard emotions',
       category: 'cognitive',
-      prevalence: 'Estimated at 20 to 40 percent of practitioners by clinicians familiar with the pattern (Welwood, Masters); under-researched',
+      prevalence: 'Described by clinicians familiar with the pattern; not yet measured in research, so no reliable rate is known; under-researched',
       description: {
         elementary: 'Sometimes people use meditation to skip over feelings instead of dealing with them. Pretending to be calm is not the same as being calm.',
         middle: 'Spiritual bypassing is when you use meditation, philosophy, or spiritual ideas to avoid dealing with real problems or real feelings. You might tell yourself it is all just thinking when really you are hurt, or that you should rise above your anger instead of looking at what made you angry.',
@@ -21599,7 +21599,7 @@ var VISUAL_ANCHORS = [
       id: 'spiritual_narcissism',
       experience: 'Spiritual one-upmanship and spiritual narcissism',
       category: 'self-related',
-      prevalence: 'Clinically observed; estimated at 10 to 25 percent of long-term practitioners by clinicians; under-researched empirically',
+      prevalence: 'Described by clinicians familiar with the pattern; not yet measured in research, so no reliable rate is known',
       description: {
         elementary: 'Sometimes meditation can make people think they are better than other people. That is not what meditation is supposed to do, but it happens.',
         middle: 'Spiritual narcissism is when meditation makes you feel superior to others. You might think you are more enlightened, more aware, or more spiritually advanced than other people. This pattern is opposite to what serious practice is supposed to develop, but it is very common.',
@@ -21643,7 +21643,7 @@ var VISUAL_ANCHORS = [
       id: 'mania_like_elevation',
       experience: 'Mania-like elevation (rare but documented)',
       category: 'emotional',
-      prevalence: 'Rare; documented in approximately 1 to 5 percent of intensive practitioners, especially during or after retreats per Lindahl 2017 and Yorston 2001',
+      prevalence: 'Rare. Documented in interview and case research (Lindahl et al., 2017); how common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation can make a person feel SUPER happy and full of energy in a way that is too much, like a balloon that might pop. That is a sign to stop and tell a grown-up.',
         middle: 'A small number of meditators have a manic episode triggered or worsened by intensive practice. You might feel super-elevated, not need sleep, have racing thoughts, talk fast, or believe you have had a huge spiritual breakthrough. This is a medical emergency, not enlightenment.',
@@ -21687,7 +21687,7 @@ var VISUAL_ANCHORS = [
       id: 'visual_phenomena',
       experience: 'Visual phenomena (lights, shadows, hypnagogic imagery)',
       category: 'perceptual',
-      prevalence: 'Reported by approximately 30 to 50 percent of intensive practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes during meditation, people see flashes of light, colors, or pictures with their eyes closed. Most of the time this is just your brain doing what brains do.',
         middle: 'Visual phenomena during meditation are common: flashes, colors, geometric patterns, dream-like imagery, sometimes faces or scenes. Most of this is benign hypnagogic or hypnopompic activity that the relaxed brain produces. It does not have to mean anything special.',
@@ -21730,7 +21730,7 @@ var VISUAL_ANCHORS = [
       id: 'auditory_phenomena',
       experience: 'Auditory phenomena (hearing sounds not physically there)',
       category: 'perceptual',
-      prevalence: 'Reported by approximately 20 to 30 percent of intensive practitioners per Lindahl 2017',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes during meditation people hear sounds or even voices that are not really there. Most of the time this is just the brain making noise.',
         middle: 'Auditory phenomena during meditation include hums, tones, bells, or sometimes voices. Most are benign artifacts of a relaxed brain (similar to the noises you hear when falling asleep). When they include clear voices speaking to you, or when they continue outside practice, they need evaluation.',
@@ -21773,7 +21773,7 @@ var VISUAL_ANCHORS = [
       id: 'sleep_paralysis_post_practice',
       experience: 'Sleep paralysis experiences after deep practice',
       category: 'perceptual',
-      prevalence: 'Reported in approximately 10 to 20 percent of intensive practitioners per Lindahl 2017; common generally',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known; common generally',
       description: {
         elementary: 'Sometimes after lots of meditation, you might wake up and not be able to move for a few seconds or a minute. It feels scary but it always ends and is not dangerous.',
         middle: 'Sleep paralysis is when you wake up and your body is still paralyzed (a normal thing in REM sleep) for a few seconds or minutes. It can feel terrifying, sometimes with a sense of a presence or pressure on the chest. Intensive meditation can make it more likely. It is benign but disturbing.',
@@ -21817,7 +21817,7 @@ var VISUAL_ANCHORS = [
       id: 'existential_dread_dark_night',
       experience: 'Existential dread (the dark night)',
       category: 'self-related',
-      prevalence: 'Documented across contemplative traditions; surveys of long-term practitioners estimate 20 to 40 percent per Lindahl 2017 and Ingram',
+      prevalence: 'Documented in interview and survey research (Lindahl et al., 2017; Britton, 2019). How common it is among meditators in general is not known',
       description: {
         elementary: 'Sometimes meditation can bring up very big, sad, or scary feelings about life, the world, or being a person. Those feelings are real and important, and a grown-up needs to know.',
         middle: 'The dark night is a documented phase in many serious practice paths. It can include deep dread, despair, loss of meaning, feeling that nothing is real, or sense of being annihilated. It can last weeks to years. It is not necessarily pathology, but it often co-occurs with clinical depression that does need treatment.',
@@ -21901,7 +21901,7 @@ var VISUAL_ANCHORS = [
       // lighter shade of the SAME hue; backgrounds and borders are untouched.
       var _min_FGD = {'#ec4899':'#f472b6','#ea580c':'#f97316','#3b82f6':'#60a5fa'};
       var _minFg = function(h){ return _minHC ? (_min_FGH[h]||h) : (_minL ? (_min_FGL[h]||h) : (_min_FGD[h]||h)); };
-      var _minBd = function(h){ return _minHC ? (_min_BDH[h]||h) : (_minL ? (_min_BDL[h]||h) : h); };
+      var _minBd = function(h){ return _minHC ? (_min_BDH[h]||h) : (_minL ? (_min_BDL[h]||h) : h); }; var _minSolid = function(c){ return _minHC ? c : ({'#3b82f6':'#1d4ed8','#22c55e':'#15803d','#f59e0b':'#b45309','#ec4899':'#be185d','#8b5cf6':'#6d28d9'}[c] || c); }; // white text needs a 700-weight fill (1.4.3)
       var React = ctx.React;
       var h = React.createElement;
       var _minIcons = (ctx && ctx.icons) || {};
@@ -22218,13 +22218,13 @@ var VISUAL_ANCHORS = [
       // ══════════════════════════════════════════════════════════
       var heroBand = (function() {
         var TAB_META = {
-          breathe:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF2C', title: 'Breathe \u2014 the slowest lever you have',                  hint: 'Slow + diaphragmatic breathing flips the parasympathetic switch in seconds. Box breathing (4-4-4-4) is what Navy SEALs use under fire. The ratio matters more than the count: longer exhale than inhale tells the vagus nerve \u201Csafe.\u201D' },
-          meditate:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDDD8', title: 'Meditate \u2014 attention training, not emptying',         hint: 'The skill isn\u2019t a quiet mind \u2014 it\u2019s noticing when you\u2019ve drifted and returning gently. 10-12 minutes/day for 8 weeks shows measurable structural changes (Hölzel 2011 fMRI of MBSR participants).' },
+          breathe:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF2C', title: 'Breathe \u2014 the slowest lever you have',                  hint: 'Slow + diaphragmatic breathing helps the body settle, often within a minute or two. Box breathing (4-4-4-4) is what Navy SEALs use under fire. The ratio matters more than the count: longer exhale than inhale tells the vagus nerve \u201Csafe.\u201D' },
+          meditate:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDDD8', title: 'Meditate \u2014 attention training, not emptying',         hint: 'The skill isn\u2019t a quiet mind \u2014 it\u2019s noticing when you\u2019ve drifted and returning gently. One early brain-scan study of an 8-week course reported structural changes, but a larger 2022 replication found none. The dependable benefits are modest gains in stress and attention.' },
           scan:       { accent: _minFg('#ec4899'), soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDEC0', title: 'Body Scan \u2014 sweep attention head-to-toe',             hint: 'Noticing without changing. Tension you didn\u2019t know was there comes up first; just observing it often releases it. Foundational practice in MBSR (Kabat-Zinn 1979) and now in trauma-informed therapy.' },
-          ground:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF0D', title: 'Grounding \u2014 5-4-3-2-1 senses',                          hint: '5 things you see, 4 hear, 3 touch, 2 smell, 1 taste. Pulls anxious attention out of the future + past and into the present sensory reality. The fastest research-backed way to shorten a panic spiral.' },
+          ground:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF0D', title: 'Grounding \u2014 5-4-3-2-1 senses',                          hint: '5 things you see, 4 hear, 3 touch, 2 smell, 1 taste. Pulls anxious attention out of the future + past and into the present sensory reality. A widely used grounding tool for anxious spirals.' },
           techniques: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\u2693',         title: 'Techniques \u2014 the toolkit beyond breathing',         hint: 'Loving-kindness (metta), open monitoring, focused attention, walking meditation, RAIN (recognize / allow / investigate / nurture). Different practices target different states; matching technique to need is the skill.' },
           movement:   { accent: _minFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDEB6', title: 'Movement \u2014 mindfulness for non-sitters',              hint: 'Walking meditation, gentle yoga, qigong, simple stretches \u2014 same brain effects, less still. ADHD + anxious bodies often regulate BETTER while moving than seated. \u201CYou don\u2019t have to sit cross-legged\u201D is liberating to many.' },
-          gratitude:  { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDE4F', title: 'Gratitude \u2014 attention training with a twist',         hint: 'Emmons + McCullough 2003: 3-times-a-week gratitude journaling \u2192 measurable mood + sleep + relationship gains in 10 weeks. Specifics work better than \u201CI\u2019m grateful for my family\u201D \u2014 name the moment, the gesture, the why.' },
+          gratitude:  { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDE4F', title: 'Gratitude \u2014 attention training with a twist',         hint: 'Emmons + McCullough 2003: listing things you are grateful for once a week for 10 weeks (or daily for 2-3 weeks) led to better mood, and in one study better sleep. Specifics work better than \u201CI\u2019m grateful for my family\u201D \u2014 name the moment, the gesture, the why.' },
           moments:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83C\uDF3F', title: 'Moments \u2014 micro-mindfulness in the day',              hint: 'Bell rings? Breathe. Door opens? Notice the air. STOP technique: Stop / Take a breath / Observe / Proceed. 30-second resets, ten times a day, beat one 30-minute session most weeks. Frequency wins.' },
           log:        { accent: _minFg('#475569'), soft: 'rgba(71,85,105,0.14)',  icon: '\uD83D\uDCCA', title: 'Log \u2014 streaks + what worked',                          hint: 'What you measured shows up; what you didn\u2019t fades. Track which practices actually helped, on which days, in which moods. Builds your personalized toolkit \u2014 not the one a book or app prescribed.' },
           breath_studio:    { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDFB5', title: 'Breath Studio \u2014 9 patterns with live visual',     hint: 'Box, 4-7-8, coherent 5-5, physiological sigh (Huberman), 1:2 ratio, bee breath, sleep breath, and more. The circle expands on inhale and contracts on exhale \u2014 match your breath to the visual. Cycle counter for daily streak.' },
@@ -22893,7 +22893,7 @@ var VISUAL_ANCHORS = [
                     logPractice('grounding', '54321');
                   }
                 },
-                style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: sense.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
+                style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: _minBg(_minSolid(sense.color)), color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
               }, groundStep < 4 ? 'Next Sense \u2192' : '\u2705 Complete Grounding!')
             );
           })(),
@@ -22932,8 +22932,8 @@ var VISUAL_ANCHORS = [
           ),
           h('p', { style: { textAlign: 'center', color: _minFg('#94a3b8'), fontSize: 12, marginBottom: 20 } },
             band === 'elementary' ? 'Write down things that make you feel thankful. Even small things count!' :
-            band === 'middle' ? 'Regular gratitude practice is scientifically proven to increase happiness.' :
-            'Gratitude interventions show robust effects on subjective well-being (Emmons & McCullough, 2003).'
+            band === 'middle' ? 'Regular gratitude practice gives many people a small lift in mood.' :
+            'Gratitude interventions show small but real effects on well-being (Emmons & McCullough, 2003; Cregg & Cheavens, 2021).'
           ),
 
           // Prompt inspiration
@@ -24107,7 +24107,7 @@ if (activeTab === 'breath_studio') {
     { id: 'box',           name: 'Box 4-4-4-4',          phases: [{name:'Inhale',sec:4},{name:'Hold',sec:4},{name:'Exhale',sec:4},{name:'Hold',sec:4}], color: _minFg('#3b82f6'), desc: 'Used by Navy SEALs for acute stress. Even rhythm grounds the nervous system.', best: 'pre-test, before performance, after activation' },
     { id: '478',           name: '4-7-8 sleep breath',   phases: [{name:'Inhale',sec:4},{name:'Hold',sec:7},{name:'Exhale',sec:8}],                       color: _minFg('#8b5cf6'), desc: 'Andrew Weil. Long held inhale + extended exhale activates parasympathetic.', best: 'before sleep, after panic, evening wind-down' },
     { id: 'coherent',      name: 'Coherent 5-5',         phases: [{name:'Inhale',sec:5},{name:'Exhale',sec:5}],                                            color: _minFg('#22c55e'), desc: 'Lehrer & Gevirtz HRV research. ~6 breaths/min maximizes heart rate variability.', best: 'sustained calm focus, anxiety baseline reduction' },
-    { id: 'sigh',          name: 'Physiological sigh',   phases: [{name:'Quick inhale',sec:2},{name:'Top-up inhale',sec:1},{name:'Long exhale',sec:6}],   color: _minFg('#06b6d4'), desc: 'Huberman / Balban 2023. Double inhale + extended exhale reduces stress fastest of any single-breath intervention.', best: 'in-the-moment stress, quick reset' },
+    { id: 'sigh',          name: 'Physiological sigh',   phases: [{name:'Quick inhale',sec:2},{name:'Top-up inhale',sec:1},{name:'Long exhale',sec:6}],   color: _minFg('#06b6d4'), desc: 'Balban et al. 2023. Double inhale + extended exhale; five minutes a day improved mood more than other breathing styles or meditation.', best: 'in-the-moment stress, quick reset' },
     { id: 'long_exhale',   name: '1:2 ratio',            phases: [{name:'Inhale',sec:4},{name:'Exhale',sec:8}],                                            color: _minFg('#10b981'), desc: 'Longer exhale than inhale activates the vagal brake.', best: 'general anxiety, calming down' },
     { id: 'three_three',   name: '3-3-3 starter',        phases: [{name:'Inhale',sec:3},{name:'Hold',sec:3},{name:'Exhale',sec:3}],                       color: _minFg('#fbbf24'), desc: 'Gentle starter pattern for beginners.', best: 'first time trying breath practice' },
     { id: 'bee',           name: 'Bee breath (humming)', phases: [{name:'Inhale',sec:4},{name:'Hum exhale',sec:8}],                                        color: _minFg('#f59e0b'), desc: 'Bhramari pranayama. Hum on exhale lengthens it and adds vagal nerve stimulation.', best: 'tension headache, racing thoughts' },
@@ -25434,7 +25434,7 @@ if (activeTab === 'mudra') {
     { id: 'prana',   name: 'Prana Mudra (Life Force)',              sanskrit: 'Prāṇa', tradition: 'Hindu / Yoga', desc: 'Tip of thumb touches tips of ring AND little finger together; index and middle fingers extended. Said to activate prana (life energy).', forWhat: 'Energy, vitality, before challenging tasks' },
     { id: 'surya',   name: 'Surya Mudra (Sun)',                     sanskrit: 'Sūrya', tradition: 'Ayurvedic', desc: 'Bend ring finger to base of thumb; press lightly with thumb. Other fingers extended. Said to activate the fire element in the body.', forWhat: 'Energizing, warming up, sluggish mornings' },
     { id: 'open',    name: 'Open Palms (Receiving)',                sanskrit: 'N/A', tradition: 'Universal', desc: 'Hands resting on thighs, palms facing UP. The simple gesture of openness — to whatever this moment brings.', forWhat: 'Receptive meditation, vulnerability practice, openness to experience' },
-    { id: 'heart',   name: 'Hand on Heart',                         sanskrit: 'N/A', tradition: 'Self-compassion (modern)', desc: 'One hand or both hands resting gently over the heart space (Kristin Neff self-compassion practice). The physical touch releases oxytocin and calms the nervous system.', forWhat: 'Self-compassion, soothing, when you need kindness toward yourself' }
+    { id: 'heart',   name: 'Hand on Heart',                         sanskrit: 'N/A', tradition: 'Self-compassion (modern)', desc: 'One hand or both hands resting gently over the heart space (Kristin Neff self-compassion practice). The touch is comforting and can help the body settle.', forWhat: 'Self-compassion, soothing, when you need kindness toward yourself' }
   ];
   var selected = MUDRAS.find(function(m) { return m.id === mrSelected; }) || MUDRAS[0];
   // Simple SVG illustration per mudra
@@ -25772,7 +25772,7 @@ if (activeTab === 'research') {
       h('div', { style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), marginBottom: 12 } },
         h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 13, lineHeight: 1.55 } },
           h('strong', { style: { color: _minFg('#fbbf24') } }, 'Research Library: '),
-          RESEARCH_SUMMARIES.length + ' studies — what they found, what they didn\'t, and how it applies. Includes the limitations and critiques (Van Dam "Mind the Hype", Britton on adverse effects, mixed MYRIAD trial). Honest science.'
+          RESEARCH_SUMMARIES.length + ' studies \u2014 what they found, what they didn\'t, and how it applies. Includes the limitations and critiques (Van Dam "Mind the Hype", Britton on adverse effects, the null MYRIAD school trial). Honest science.'
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },

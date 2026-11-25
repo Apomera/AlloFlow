@@ -66,7 +66,22 @@
     register();
   });
 
+  function attachSageLauncherA11yCSS() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('ah-sage-launcher-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-sage-launcher-a11y-css';
+    st.textContent = [
+      '[data-arcade-mode="sage-launcher"] button, [data-arcade-mode="sage-launcher"] select, [data-arcade-mode="sage-launcher"] a { touch-action: manipulation; }',
+      '[data-arcade-mode="sage-launcher"] button:focus-visible, [data-arcade-mode="sage-launcher"] select:focus-visible, [data-arcade-mode="sage-launcher"] a:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [data-arcade-mode="sage-launcher"] button:focus-visible, [data-arcade-mode="sage-launcher"] select:focus-visible, [data-arcade-mode="sage-launcher"] a:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; } }',
+      '@media (prefers-reduced-motion: reduce) { [data-arcade-mode="sage-launcher"] *, [data-arcade-mode="sage-launcher"] *::before, [data-arcade-mode="sage-launcher"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
   function register() {
+  attachSageLauncherA11yCSS();
   window.AlloHavenArcade.registerMode('sage-launcher', {
     label: 'AlloBot Sage',
     icon: '⚔️',
@@ -139,8 +154,10 @@
         }
       }
 
+      attachSageLauncherA11yCSS();
       // Card wrapper
       return h('div', {
+        'data-arcade-mode': 'sage-launcher',
         'aria-labelledby': 'sage-launcher-title',
         style: {
           padding: '12px 14px',

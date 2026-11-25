@@ -122,7 +122,8 @@ describe('Companion Planting garden gameplay', () => {
     expect(panel.props.children[0].props.children[0].props.children).toBe('How Beans fits here');
     expect(first.map(card=>card.props['data-preview-pair-plot'])).toEqual([1,4]);
     expect(first.every(card=>card.props['data-preview-relationship']==='conflict')).toBe(true);
-    expect(find('data-preview-pairs-net').props.children).toBe('+43% net pair effect');
+    // 2026-11-24 accuracy pass: potato+beans 10->6, marigold+beans 8->5, yarrow+beans 10->6 (evidence-graded pairs).
+    expect(find('data-preview-pairs-net').props.children).toBe('+32% net pair effect');
     const more=find('data-preview-pair-more','simulation');
     expect(more.type).toBe('details');expect(more.props.children[0].props.children).toBe('Show 6 more relationships · 1 more conflict');
     expect(more.props.children[1].props.children.map(card=>card.props['data-preview-pair-plot'])).toEqual([10,0,2,6,9,8]);
@@ -542,22 +543,20 @@ describe('Companion Planting garden gameplay', () => {
     app.patch({budget:0});expect(()=>app.find('data-starter-preview','salad')).toThrow();
     expect(app.find('data-play-primary').props.disabled).toBe(false);expect(app.find('data-play-primary').props.children).toContain('free');
   });
-  it('plants a costed starter and awards growth XP only on the first start', () => {
+  // Round 2 (2026-11-24): routine actions (starter plan, starting growth) no longer award XP; XP is for evidence.
+  it('plants a costed starter and starts growing without awarding routine-action XP', () => {
     const app=harness({grid:emptyGrid(),budget:50});
     app.click('data-play-primary');
     expect(app.state().grid.filter(c=>c.plantId).length).toBeGreaterThan(4);
     expect(app.state().budget).toBeCloseTo(46.2,2);
     expect(app.state().phase).toBe('plan');
-    app.awardXP.mockClear();
     app.click('data-play-primary');
     expect(app.state().phase).toBe('grow');
     expect(app.state().hasStartedGrowing).toBe(true);
-    const firstAwards=app.awardXP.mock.calls.length;
-    expect(firstAwards).toBeGreaterThan(0);
     app.click('data-play-edit');
     app.click('data-play-primary');
     expect(app.state().phase).toBe('grow');
-    expect(app.awardXP).toHaveBeenCalledTimes(firstAwards);
+    expect(app.awardXP).not.toHaveBeenCalled();
   });
 
 
@@ -824,9 +823,10 @@ describe('Companion Planting crop inspection and harvest feedback', () => {
     const grid=emptyGrid();
     for(const [index,plantId] of [[0,'corn'],[1,'onion'],[2,'squash'],[4,'onion'],[5,'beans'],[6,'potato'],[8,'marigold'],[9,'yarrow'],[10,'onion'],[15,'corn']])grid[index]={...grid[index],plantId,growthDay:index===1?0:100,health:index===4?25:95};
     const app=harness(garden({grid,relationshipFocus:5})),before=structuredClone(app.state());
-    expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+58%');
+    // 2026-11-24 accuracy pass: evidence-graded pair values (18+12+6+5+6 helpful, three onion -5 conflicts).
+    expect(app.find('data-inspector-pair-contribution','helpful').props.children).toBe('+47%');
     expect(app.find('data-inspector-pair-contribution','conflict').props.children).toBe('-15%');
-    expect(app.find('data-play-neighbor-total',43)).toBeTruthy();
+    expect(app.find('data-play-neighbor-total',32)).toBeTruthy();
     expect(app.find('data-inspector-pair-art',1).props.children.props['data-botanical-stage']).toBe('seed');
     expect(app.find('data-inspector-pair-art',4).props.children.props['data-botanical-condition']).toBe('low');
     expect(app.find('data-inspector-pair-art',0).props.children.props['data-botanical-stage']).toBe('mature');

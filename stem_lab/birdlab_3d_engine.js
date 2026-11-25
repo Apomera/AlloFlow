@@ -6,6 +6,7 @@
  */
 (function(global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var TAU = Math.PI * 2, DURATION = 44;
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
   function smooth(a, b, t) { var x = clamp((t-a)/(b-a), 0, 1); return x*x*(3-2*x); }
@@ -255,6 +256,7 @@
   // Follow framing uses the horizontal heading, so a climbing bird does not
   // pull the camera below its tail. Reuse the output in the render loop.
   function sampleFollowFrame(flight,out) {
+    flight=flight||{};
     out=out||{positionOffset:[0,0,0],targetOffset:[0,0,0]};
     var yaw=Number.isFinite(flight.yaw)?flight.yaw:0;
     var pace=smooth(0,6,Number.isFinite(flight.airspeed)?flight.airspeed:0);
@@ -284,7 +286,7 @@
     return courses;
   })();
   function advanceResidentObservation(time,elapsed,id) {
-    var windows=residentRepeatWindows[id];
+    var windows=Object.prototype.hasOwnProperty.call(residentRepeatWindows,id)?residentRepeatWindows[id]:null;
     if(!windows||!(elapsed>0))return time+elapsed;
     var remaining=elapsed,phase=((time%DURATION)+DURATION)%DURATION;
     while(remaining>1e-12){
@@ -370,6 +372,8 @@
   // Free observation uses decisions and destinations, not the study timeline.
   // A retained state keeps each departure, glide and arrival continuous.
   function createFreeHawk(perches,footOffset) {
+    perches=Array.isArray(perches)&&perches.length?perches:[{x:0,y:0,z:0}];
+    footOffset=Number.isFinite(footOffset)?footOffset:0;
     var seed=724193,age=0,elapsed=0,current=0,next=0,duration=1,wait=9,stage='perched',gaze=0,gazeAge=0,heading=0,curve=0;
     var vigilance=0,cooldown=0,escapeFlight=false,observerX=0,observerZ=0,hasObserver=false,watchYaw=0,watchPitch=0,harassed=0;
     var state={time:0,phase:'perched',label:'Perched · watching the woodland',position:[0,0,0],velocity:[0,0,0],yaw:0,pitch:0,bank:0,
@@ -526,6 +530,7 @@
   // Static solid occluders use a broad phase so the large woodland instance
   // batches do not need to be raycast in full on every rendered frame.
   function createFieldObserver(THREE,habitatRoot,subjects) {
+    subjects=Array.isArray(subjects)?subjects:[];
     var solids=[],raycaster=new THREE.Raycaster(),hits=[],point=new THREE.Vector3(),projected=new THREE.Vector3();
     var origin=new THREE.Vector3(),direction=new THREE.Vector3(),previousDirection=new THREE.Vector3(),targetDirection=new THREE.Vector3();
     var matrix=new THREE.Matrix4(),world=new THREE.Matrix4(),candidate=null,observation=null,held=0,scanAge=1,hasDirection=false;
@@ -681,13 +686,19 @@
   }
 
   function mount(canvas,options) {
+    if(!canvas||typeof canvas!=='object') throw new Error('BirdLab3D.mount requires a canvas element.');
     options=options||{};
+    var doc=global.document||(typeof document!=='undefined'?document:null);
     var THREE=global.THREE;
     if(!THREE||!global.BirdLab3DBird||!global.BirdLab3DHabitat||!global.BirdLab3DWildlife||!global.AvianWoodlandBirds||typeof global.AvianWoodlandBirds.create!=='function'||typeof global.AvianWoodlandBirds.supports!=='function'||!global.AvianWoodlandBirds.supports('mourningDove')||!global.AvianWoodlandBirds.supports('grouse')) throw new Error('The 3D scene did not finish loading. Please retry.');
     if(canvas._birdlab3d) canvas._birdlab3d.dispose();
     var scene=new THREE.Scene(), camera=new THREE.PerspectiveCamera(40,1,.03,240), renderer;
     var disposed=false, contextLost=false, raf=0, lastStamp=null, time=0, wingPhase=0, frames=0;
-    var paused=!!options.reducedMotion, speed=1, cameraMode='orbit', lighting='daylight', season='summer', stateStamp=-1, dirty=true, repeatFlights=false;
+    var initialReduced=options.reducedMotion;
+    if(initialReduced===undefined){
+      try{var mq=typeof global.matchMedia==='function'?global.matchMedia('(prefers-reduced-motion: reduce)'):null;initialReduced=!!(mq&&mq.matches);}catch(ignore){initialReduced=false;}
+    }
+    var paused=!!initialReduced, speed=1, cameraMode='orbit', lighting='daylight', season='summer', stateStamp=-1, dirty=true, repeatFlights=false;
     var studyOverlay=false, flightStudy=null, wingbeatStudy=null;
     var wingtipPaths=false,wingtipTrace=null;
     var wingtipPinned=null,wingbeatView='free';
@@ -715,7 +726,11 @@
     var birdTarget=new THREE.Vector3(), ground=0, attitude=new THREE.Quaternion(), habitatWind=new THREE.Vector3();
     var wingCameraDirection=new THREE.Vector3(),wingCameraUp=new THREE.Vector3();
     var followFrame={positionOffset:[0,0,0],targetOffset:[0,0,0]};
-    function listen(target,name,fn,opts) { target.addEventListener(name,fn,opts); listeners.push(function(){target.removeEventListener(name,fn,opts);}); }
+    function listen(target,name,fn,opts) {
+      if(!target||typeof target.addEventListener!=='function') return;
+      target.addEventListener(name,fn,opts);
+      listeners.push(function(){if(typeof target.removeEventListener==='function')target.removeEventListener(name,fn,opts);});
+    }
     function releaseResources(root) {
       var geometries=new Set(), materials=new Set(), textures=new Set();
       root.traverse(function(obj){
@@ -723,16 +738,21 @@
         var list=Array.isArray(obj.material)?obj.material:obj.material?[obj.material]:[];
         list.forEach(function(mat){
           materials.add(mat);Object.keys(mat).forEach(function(key){if(mat[key]&&mat[key].isTexture)textures.add(mat[key]);});
-          if(mat.uniforms)Object.keys(mat.uniforms).forEach(function(key){var value=mat.uniforms[key].value;if(value&&value.isTexture)textures.add(value);});
+          if(mat.uniforms)Object.keys(mat.uniforms).forEach(function(key){var entry=mat.uniforms[key];var value=entry&&entry.value;if(value&&value.isTexture)textures.add(value);});
         });
       });
-      geometries.forEach(function(g){g.dispose();}); textures.forEach(function(t){t.dispose();}); materials.forEach(function(m){m.dispose();});
+      geometries.forEach(function(g){if(g&&typeof g.dispose==='function'){try{g.dispose();}catch(ignore){}}});
+      textures.forEach(function(t){if(t&&typeof t.dispose==='function'){try{t.dispose();}catch(ignore){}}});
+      materials.forEach(function(m){if(m&&typeof m.dispose==='function'){try{m.dispose();}catch(ignore){}}});
     }
     function dispose() {
       if(disposed) return; disposed=true;
       leaveSurfaceRuler();
       anatomyPin=null;anatomyFrozenData=null;residentPin=null;restoreAnatomyVisibility();
-      global.cancelAnimationFrame(raf); listeners.forEach(function(fn){fn();});
+      if(raf&&global.cancelAnimationFrame) global.cancelAnimationFrame(raf);
+      raf=0;
+      listeners.forEach(function(fn){try{fn();}catch(ignore){}});
+      listeners.length=0;
       if(resizeObserver) resizeObserver.disconnect();
       if(visibilityObserver) visibilityObserver.disconnect();
       clearMovement();exitPointerLock();
@@ -741,13 +761,16 @@
       if(bird&&bird.dispose) bird.dispose();
       if(wildlife&&wildlife.dispose) wildlife.dispose();
       if(mammals&&mammals.dispose) mammals.dispose();
-      residentSilhouettes.forEach(function(material){material.dispose();});residentSilhouettes.clear();
-      Object.keys(residentStudioBackdrops).forEach(function(key){residentStudioBackdrops[key].dispose();});residentStudioBackdrops={};
+      residentSilhouettes.forEach(function(material){if(material&&typeof material.dispose==='function'){try{material.dispose();}catch(ignore){}}});residentSilhouettes.clear();
+      Object.keys(residentStudioBackdrops).forEach(function(key){if(residentStudioBackdrops[key]&&typeof residentStudioBackdrops[key].dispose==='function'){try{residentStudioBackdrops[key].dispose();}catch(ignore){}}});residentStudioBackdrops={};
       releaseResources(scene);
-      if(renderer) { renderer.dispose(); if(!contextLost) renderer.forceContextLoss(); }
+      if(renderer) {
+        try{renderer.dispose();}catch(ignore){}
+        try{if(!contextLost&&typeof renderer.forceContextLoss==='function') renderer.forceContextLoss();}catch(ignore){}
+      }
       scene.clear();
       if(canvas._birdlab3d===controller) delete canvas._birdlab3d;
-      canvas.removeAttribute('data-birdlab-3d-ready');
+      if(typeof canvas.removeAttribute==='function') canvas.removeAttribute('data-birdlab-3d-ready');
     }
     try {
       renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
@@ -928,15 +951,15 @@
       }
       return {ready:!disposed&&!contextLost,canSelectBird:canSelectSceneBird(),canMeasureSurfaces:canUseSurfaceRuler(),surfaceRuler:surfaceRuler,surfaceMeasurement:surfaceSnapshot(),phase:phase.phase,label:phase.label,paused:paused,speed:speed,camera:cameraMode,time:time,lighting:lighting,weather:raining?'rain':'clear',season:season,lightingDirectionCustom:lightingDirectionCustom,lightStudy:lightStudy,lightInvestigation:lightSnapshot(),perspectiveStudy:perspectiveStudy,perspectiveInvestigation:perspectiveSnapshot(),anatomyStudy:anatomyStudy,anatomyInvestigation:anatomySnapshot(),repeatFlights:repeatFlights,studyOverlay:studyOverlay,studyOverlayVisible:!!(flightStudy&&flightStudy.root.visible),courseLens:courseLens,courseStudy:courseSnapshot(),attitudeLens:attitudeLens,attitudeStudy:attitudeSnapshot(),
         wingbeatStudy:beat,wingtipPaths:wingtipPaths,wingtipPathsVisible:!!(wingtipTrace&&wingtipTrace.root.visible),wingtipStudy:beat&&wingtipTrace?{paths:wingtipTrace.sides.map(function(side){return Array.from(side.line.geometry.attributes.position.array);}),current:wingtipTrace.sides.map(function(side){return side.marker.position.toArray();}),pinned:wingtipPinned?{progress:wingtipPinned.progress,points:wingtipPinned.points.map(function(point){return point.slice();})}:null,radius:wingtipTrace.radius}:null,wingbeatView:beat?wingbeatView:'free',canInspectWingbeat:mode==='guided'&&!isResidentCamera(cameraMode)&&!!sampleWingbeatWindow(time),
-        mode:mode,binoculars:binoculars,crouching:observer.crouching,fieldVisitTime:fieldVisitTime,observation:fieldObserver?fieldObserver.getObservation():null,sightings:sightings.map(function(entry){return Object.assign({},entry);}),observerPosition:observer.position.toArray(),observerSpeed:observer.speed,fieldOfView:camera.fov,pointerLocked:document.pointerLockElement===canvas,
+        mode:mode,binoculars:binoculars,crouching:observer.crouching,fieldVisitTime:fieldVisitTime,observation:fieldObserver?fieldObserver.getObservation():null,sightings:sightings.map(function(entry){return Object.assign({},entry);}),observerPosition:observer.position.toArray(),observerSpeed:observer.speed,fieldOfView:camera.fov,pointerLocked:!!(doc&&doc.pointerLockElement===canvas),
         altitude:bird.root.position.y-terrain(bird.root.position.x,bird.root.position.z),
         airspeed:phase.airspeed,wingbeat:phase.wingbeat,position:bird.root.position.toArray(),orientation:bird.root.quaternion.toArray(),wind:phase.wind.slice(),
         cameraPosition:camera.position.toArray(),cameraTarget:followTarget.toArray(),pose:Object.assign({},phase.pose,{flapPhase:wingPhase}),
         wildlife:wildlife.snapshot(),feedingStudy:feedingStudy,foodSources:feedingStudy&&wildlife.foodLevels?wildlife.foodLevels():[],residentInspection:residentInspectionSnapshot(),animals:mammals&&mode==='free'?mammals.snapshot():[],
-        frames:frames,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:quality,hidden:!!document.hidden};
+        frames:frames,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,quality:quality,hidden:!!(doc&&doc.hidden)};
     }
     function notify(force) { if(disposed)return;updateWingtipPaths();updateSurfaceRuler();updateAnatomyFrozenSurface();updateResidentFrozenSurface();if(force){updateCourseLens();updateAttitudeGuide();}if(!options.onState) return; if(force||time-stateStamp>=.2||stateStamp<0){stateStamp=time;options.onState(snapshot());} }
-    function setWingtipPaths(value){wingtipPaths=!!value;notify(true);refresh();}
+    function setWingtipPaths(value){if(disposed)return;wingtipPaths=!!value;notify(true);refresh();}
     function createWingtipPaths(){
       var root=new THREE.Group();root.name='birdlab-wingtip-paths';root.visible=false;scene.add(root);
       var cylinder=new THREE.CylinderGeometry(1,1,1,6,1,true),sphere=new THREE.SphereGeometry(.014,10,8);
@@ -995,14 +1018,14 @@
       }
       trace.sides.forEach(function(side){readWingtip(side.vane,side.marker.position);});
     }
-    function requestFrame() { if(!disposed&&!contextLost&&!document.hidden&&!raf) raf=global.requestAnimationFrame(tick); }
+    function requestFrame() { if(!disposed&&!contextLost&&!(doc&&doc.hidden)&&!raf&&global.requestAnimationFrame) raf=global.requestAnimationFrame(tick); }
     function refresh() { dirty=true; requestFrame(); }
-    function setPaused(value) { paused=!!value;if(!paused){wingbeatStudy=null;if(residentLensVisible()){resetResidentLens();updateCamera(1,true);}if(mode==='guided'&&anatomyStudy){leaveAnatomy();updateCamera(1,true);}}if(paused)clearMovement();lastStamp=null;notify(true);refresh(); }
+    function setPaused(value) { if(disposed)return;paused=!!value;if(!paused){wingbeatStudy=null;if(residentLensVisible()){resetResidentLens();updateCamera(1,true);}if(mode==='guided'&&anatomyStudy){leaveAnatomy();updateCamera(1,true);}}if(paused)clearMovement();lastStamp=null;notify(true);refresh(); }
     function pinWingtipPose(){
       if(disposed||!wingbeatStudy)return;
       updateWingtipPaths();wingtipPinned={progress:clamp(wingbeatClock(time)-wingbeatStudy.cycle,0,1),points:wingtipTrace.sides.map(function(side){return side.marker.position.toArray();})};notify(true);refresh();
     }
-    function clearWingtipPose(){wingtipPinned=null;notify(true);refresh();}
+    function clearWingtipPose(){if(disposed)return;wingtipPinned=null;notify(true);refresh();}
     function setWingbeatView(value){
       if(disposed||!wingbeatStudy||['front','side','above','free'].indexOf(value)<0)return;
       wingbeatView=value;cameraMode='orbit';updateCamera(1,true);notify(true);refresh();
@@ -1025,8 +1048,8 @@
       time=wingbeatTime(wingbeatStudy.cycle+progress,wingbeatStudy.start,wingbeatStudy.end);
       paused=true;lastStamp=null;stateStamp=-1;updateBird(0,true);updateCamera(1,true);notify(true);refresh();
     }
-    function closeWingbeat(){wingbeatStudy=null;wingtipPinned=null;wingbeatView='free';updateCamera(1,true);notify(true);refresh();}
-    function setStudyOverlay(value){var wasAnatomy=anatomyVisible();if(value)leaveAnatomy();studyOverlay=!!value;if(wasAnatomy)updateCamera(1,true);updateStudyOverlay();notify(true);refresh();}
+    function closeWingbeat(){if(disposed)return;wingbeatStudy=null;wingtipPinned=null;wingbeatView='free';updateCamera(1,true);notify(true);refresh();}
+    function setStudyOverlay(value){if(disposed)return;var wasAnatomy=anatomyVisible();if(value)leaveAnatomy();studyOverlay=!!value;if(wasAnatomy)updateCamera(1,true);updateStudyOverlay();notify(true);refresh();}
     function updateStudyOverlay(){
       if(!flightStudy)return;
       flightStudy.root.visible=studyOverlay&&mode==='guided'&&!isResidentCamera(cameraMode);
@@ -1062,7 +1085,7 @@
       flightStudy.heading.visible=flightStudy.direction.lengthSq()>.04;
       if(flightStudy.heading.visible){flightStudy.heading.position.copy(position);flightStudy.heading.setDirection(flightStudy.direction.normalize());}
     }
-    function setSpeed(value) {if(mode==='free')return;var next=Number(value); if([.25,.5,1].indexOf(next)>=0) speed=next; notify(true); }
+    function setSpeed(value) {if(disposed||mode==='free')return;var next=Number(value); if([.25,.5,1].indexOf(next)>=0) speed=next; notify(true); }
     var SHARED_RESIDENT_CAMERAS=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow','chippingSparrow','americanTreeSparrow','hermitThrush','purpleFinch'];
     function isResidentCamera(mode) { return mode==='robin'||mode==='chickadee'||SHARED_RESIDENT_CAMERAS.indexOf(mode)>=0; }
     function residentLensVisible(){return !disposed&&mode==='guided'&&isResidentCamera(cameraMode)&&residentActive;}
@@ -1098,7 +1121,7 @@
       var center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3()),radius=Math.max(.004,size.length()*.5);
       residentCache={root:root,shared:shared,min:bounds.min.toArray(),max:bounds.max.toArray(),center:center,size:size.toArray(),radius:radius,meshes:meshes,vertices:vertices};return residentCache;
     }
-    function residentMinimumDistance(data){var half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return Math.max(camera.near+data.radius+.01,data.radius*1.10/Math.sin(half));}
+    function residentMinimumDistance(data){var half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return Math.max(camera.near+data.radius+.01,data.radius*1.10/Math.max(1e-4,Math.sin(half)));}
     function residentPinMatches(){return !!residentPin&&residentPin.species===cameraMode&&residentPin.part===residentPart;}
     function residentFrameGeometry(data){
       if(!data||!residentFrozenEnabled||!residentPinMatches())return data;
@@ -1244,10 +1267,13 @@
       rig.add(fill,key,key.target,edge,edge.target);scene.add(rig);
       residentStudioRig={root:rig,key:key,fill:fill,edge:edge,forward:new THREE.Vector3(),right:new THREE.Vector3(),up:new THREE.Vector3()};
       ['teal','paper'].forEach(function(id){
-        var plate=document.createElement('canvas');plate.width=plate.height=128;var ctx=plate.getContext('2d');
-        var wash=ctx.createRadialGradient(64,52,5,64,64,90);
-        wash.addColorStop(0,id==='paper'?'#f8f3e7':'#315865');wash.addColorStop(1,id==='paper'?'#c4d0cd':'#0a212c');
-        ctx.fillStyle=wash;ctx.fillRect(0,0,128,128);
+        if(!doc||typeof doc.createElement!=='function') return;
+        var plate=doc.createElement('canvas');plate.width=plate.height=128;var ctx=plate.getContext&&plate.getContext('2d');
+        if(ctx){
+          var wash=ctx.createRadialGradient(64,52,5,64,64,90);
+          wash.addColorStop(0,id==='paper'?'#f8f3e7':'#315865');wash.addColorStop(1,id==='paper'?'#c4d0cd':'#0a212c');
+          ctx.fillStyle=wash;ctx.fillRect(0,0,128,128);
+        }
         var texture=new THREE.CanvasTexture(plate);texture.encoding=THREE.sRGBEncoding;texture.name='birdlab-resident-backdrop-'+id;residentStudioBackdrops[id]=texture;
       });
     }
@@ -1338,7 +1364,7 @@
       residentCache=null;updateCamera(1,true);notify(true);refresh();
     }
     function clearMovement(){Object.keys(moveKeys).forEach(function(key){delete moveKeys[key];});observer.speed=0;pointerMap.clear();}
-    function exitPointerLock(){if(document.pointerLockElement===canvas&&document.exitPointerLock)document.exitPointerLock();}
+    function exitPointerLock(){if(doc&&doc.pointerLockElement===canvas&&doc.exitPointerLock)doc.exitPointerLock();}
     function terrain(x,z){var sampler=habitat.groundSurfaceHeight||habitat.groundHeight;return sampler?sampler(x,z):0;}
     function courseVisible(){return courseLens&&mode==='guided'&&!isResidentCamera(cameraMode)&&!wingbeatStudy;}
     function courseTime(){var value=((time%DURATION)+DURATION)%DURATION;return paused&&time>0&&value<.000001?DURATION:value;}
@@ -1410,8 +1436,8 @@
       if(courseLens){leaveAnatomy();leavePerspective();createCourseReview();ensureCourseSamples();wingbeatStudy=null;attitudeLens=false;lightStudy=false;paused=true;repeatFlights=false;lastStamp=null;studyOverlay=true;cameraMode='wide';updateBird(0,true);updateCamera(1,true);}
       updateCourseLens();notify(true);refresh();
     }
-    function pinCourseStation(){if(!courseVisible())return;coursePin=courseTime();updateCourseLens();notify(true);refresh();}
-    function clearCourseStation(){coursePin=null;updateCourseLens();notify(true);refresh();}
+    function pinCourseStation(){if(disposed||!courseVisible())return;coursePin=courseTime();updateCourseLens();notify(true);refresh();}
+    function clearCourseStation(){if(disposed)return;coursePin=null;updateCourseLens();notify(true);refresh();}
     function attitudeVisible(){return attitudeLens&&mode==='guided'&&!isResidentCamera(cameraMode)&&!wingbeatStudy&&!courseLens;}
     function attitudeSnapshot(){
       if(!attitudeVisible())return null;
@@ -1481,9 +1507,9 @@
       sun.position.set(Math.sin(azimuth)*Math.cos(elevation),Math.sin(elevation),Math.cos(azimuth)*Math.cos(elevation)).multiplyScalar(distance).add(sun.target.position);
       sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();syncSunbeams();lightingDirectionCustom=true;notify(true);refresh();
     }
-    function pinLightDirection(){if(!lightVisible())return;lightPin=lightDirection();notify(true);}
-    function clearLightDirection(){lightPin=null;notify(true);}
-    function restoreLightDirection(){if(lightPin)setLightDirection({azimuth:lightPin.azimuth,elevation:lightPin.elevation});}
+    function pinLightDirection(){if(disposed||!lightVisible())return;lightPin=lightDirection();notify(true);}
+    function clearLightDirection(){if(disposed)return;lightPin=null;notify(true);}
+    function restoreLightDirection(){if(disposed||!lightPin)return;setLightDirection({azimuth:lightPin.azimuth,elevation:lightPin.elevation});}
     function perspectiveVisible(){return perspectiveStudy&&mode==='guided'&&cameraMode==='orbit'&&!wingbeatStudy&&!courseLens&&!attitudeLens&&!lightStudy;}
     function perspectiveBounds(){
       if(!perspectiveLinked)return {distance:[1.8,10],fov:[25,70]};
@@ -1564,7 +1590,7 @@
       var corners=anatomyCorners(bounds),center=new THREE.Vector3((bounds.min[0]+bounds.max[0])/2,(bounds.min[1]+bounds.max[1])/2,(bounds.min[2]+bounds.max[2])/2).applyMatrix4(bird.root.matrixWorld),radius=0;
       corners.forEach(function(point){radius=Math.max(radius,point.distanceTo(center));});return {bounds:bounds,center:center,corners:corners,radius:Math.max(.005,radius)};
     }
-    function anatomyFit(){var data=anatomyFrameGeometry(),half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return {center:data.center.toArray(),radius:data.radius,minimumDistance:Math.max(camera.near+data.radius+.01,data.radius*1.08/Math.sin(half))};}
+    function anatomyFit(){var data=anatomyFrameGeometry(),half=Math.min(camera.fov*Math.PI/360,Math.atan(Math.tan(camera.fov*Math.PI/360)*camera.aspect));return {center:data.center.toArray(),radius:data.radius,minimumDistance:Math.max(camera.near+data.radius+.01,data.radius*1.08/Math.max(1e-4,Math.sin(half)))};}
     function anatomySnapshot(){
       if(!anatomyVisible())return null;
       var data=anatomyGeometry(),frame=anatomyFrameGeometry(),fit=anatomyFit(),pin=null,change=null;camera.updateMatrixWorld(true);fit.distance=camera.position.distanceTo(frame.center);
@@ -1704,11 +1730,11 @@
       observer.position.y=terrain(observer.position.x,observer.position.z)+walk.eyeHeight;
       observer.speed=Math.hypot(observer.position.x-beforeX,observer.position.z-beforeZ)/dt;
     }
-    function stepMove(direction){if(mode!=='free'||paused)return;moveObserver(direction==='forward'?1:direction==='back'?-1:0,direction==='right'?1:direction==='left'?-1:0,.18);refresh();notify(true);}
-    function lockPointer(){if(mode!=='free'||!canvas.requestPointerLock)return;try{var result=canvas.requestPointerLock();if(result&&result.catch)result.catch(function(){});}catch(ignore){}}
+    function stepMove(direction){if(disposed||mode!=='free'||paused)return;moveObserver(direction==='forward'?1:direction==='back'?-1:0,direction==='right'?1:direction==='left'?-1:0,.18);refresh();notify(true);}
+    function lockPointer(){if(disposed||mode!=='free'||!canvas.requestPointerLock)return;try{var result=canvas.requestPointerLock();if(result&&result.catch)result.catch(function(){});}catch(ignore){}}
     function setRepeatFlights(value) {
       if(disposed||mode==='free')return;
-      var next=!!value&&!!residentRepeatWindows[cameraMode];
+      var next=!!value&&Object.prototype.hasOwnProperty.call(residentRepeatWindows,cameraMode);
       if(next&&!repeatFlights){
         time=cameraMode==='grouse'?17.58:11.58;stateStamp=-1;lastStamp=null;
         updateBird(0,true);updateCamera(1,true);
@@ -1716,7 +1742,7 @@
       repeatFlights=next;notify(true);refresh();
     }
     function setCamera(mode) {
-      if(cameraMode==='walk'||(['orbit','follow','wide'].indexOf(mode)===-1&&!isResidentCamera(mode)))return;
+      if(disposed||cameraMode==='walk'||(['orbit','follow','wide'].indexOf(mode)===-1&&!isResidentCamera(mode)))return;
       if(isResidentCamera(mode)&&wildlife.isPresent&&!wildlife.isPresent(mode))return;
       if(mode!==cameraMode)resetResidentLens();
       var wasPerspective=perspectiveVisible(),wasAnatomy=anatomyVisible();if(mode==='follow'||mode==='wide'){leavePerspective();leaveAnatomy();}
@@ -1730,7 +1756,7 @@
       if(isResidentCamera(mode))wingbeatStudy=null;
       cameraMode=mode;pointerMap.clear();applyAnatomyVisibility();if(wasPerspective||perspectiveVisible()||wasAnatomy||anatomyVisible())updateCamera(1,true);updateStudyOverlay();notify(true);refresh();
     }
-    function resetView() {if(anatomyVisible()){anatomyZoom=1;setAnatomyView('oblique');return;}if(mode==='guided')resetResidentLens();wingbeatView='free';if(attitudeLens)attitudeView='oblique';if(mode==='free'){clearMovement();resetObserver();binoculars=false;fieldObserver.reset();observationKey='';}else{orbit.yaw=2.4;orbit.pitch=.21;orbit.distance=2.65;cameraMode='orbit';repeatFlights=false;}updateStudyOverlay();notify(true);refresh(); }
+    function resetView() {if(disposed)return;if(anatomyVisible()){anatomyZoom=1;setAnatomyView('oblique');return;}if(mode==='guided')resetResidentLens();wingbeatView='free';if(attitudeLens)attitudeView='oblique';if(mode==='free'){clearMovement();resetObserver();binoculars=false;fieldObserver.reset();observationKey='';}else{orbit.yaw=2.4;orbit.pitch=.21;orbit.distance=2.65;cameraMode='orbit';repeatFlights=false;}updateStudyOverlay();notify(true);refresh(); }
     function seek(value) {
       if(disposed||mode==='free'||!Number.isFinite(Number(value)))return;
       leaveSurfaceRuler();
@@ -1826,7 +1852,7 @@
       if(custom){sun.position.copy(direction);sky.material.uniforms.sunDirection.value.copy(sun.position).sub(sun.target.position).normalize();syncSunbeams();lightingDirectionCustom=true;}
       notify(true);refresh();
     }
-    function restart() {if(mode==='free')return;leaveSurfaceRuler();wingbeatStudy=null;coursePin=null;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
+    function restart() {if(disposed||mode==='free')return;leaveSurfaceRuler();wingbeatStudy=null;coursePin=null;time=repeatFlights?(cameraMode==='grouse'?17.58:11.58):0;wingPhase=0;stateStamp=-1;lastStamp=null;updateBird(0,true);updateCamera(1,true);notify(true);refresh(); }
     var controller={inspectWingbeat:inspectWingbeat,seekWingbeat:seekWingbeat,closeWingbeat:closeWingbeat,pinWingtipPose:pinWingtipPose,clearWingtipPose:clearWingtipPose,setWingbeatView:setWingbeatView,setStudyOverlay:setStudyOverlay,setMode:setMode,setBinoculars:setBinoculars,setCrouching:setCrouching,recordSighting:recordSighting,setMove:setMove,stepMove:stepMove,lockPointer:lockPointer,setPaused:setPaused,setSpeed:setSpeed,setCamera:setCamera,setLighting:setLighting,setRepeatFlights:setRepeatFlights,seek:seek,resetView:resetView,restart:restart,dispose:dispose,getState:snapshot};
     controller.setResidentStudio=setResidentStudio;controller.setResidentExplore=setResidentExplore;
     controller.setResidentPart=setResidentPart;controller.setResidentView=setResidentView;controller.setResidentAngle=setResidentAngle;
@@ -1921,7 +1947,7 @@
       if(attitudeVisible()&&attitudeView!=='free'){
         // Fixed world viewpoints make the changing body frame comparable.
         var attitudeHalfVertical=camera.fov*Math.PI/360,attitudeHalfHorizontal=Math.atan(Math.tan(attitudeHalfVertical)*camera.aspect);
-        var attitudeDistance=1.7*1.12/Math.sin(Math.min(attitudeHalfVertical,attitudeHalfHorizontal));
+        var attitudeDistance=1.7*1.12/Math.max(1e-4,Math.sin(Math.min(attitudeHalfVertical,attitudeHalfHorizontal)));
         targetGoal.copy(bird.root.position);followTarget.copy(targetGoal);
         var attitudeDirection=new THREE.Vector3();
         if(attitudeView==='x')attitudeDirection.set(1,0,0);else if(attitudeView==='z')attitudeDirection.set(0,0,1);else if(attitudeView==='above')attitudeDirection.set(0,1,0);else attitudeDirection.set(1,.65,1.5).normalize();
@@ -1933,7 +1959,7 @@
         // These viewpoints follow the bird's body axes, including its bank.
         var wingRadius=(wingtipTrace?wingtipTrace.radius:.9)*Math.max(bird.root.scale.x,bird.root.scale.y,bird.root.scale.z);
         var wingHalfVertical=camera.fov*Math.PI/360,wingHalfHorizontal=Math.atan(Math.tan(wingHalfVertical)*camera.aspect);
-        var wingDistance=wingRadius*1.08/Math.sin(Math.min(wingHalfVertical,wingHalfHorizontal));
+        var wingDistance=wingRadius*1.08/Math.max(1e-4,Math.sin(Math.min(wingHalfVertical,wingHalfHorizontal)));
         targetGoal.copy(bird.root.position);followTarget.copy(targetGoal);
         wingCameraDirection.set(wingbeatView==='side'?1:0,wingbeatView==='above'?1:0,wingbeatView==='front'?-1:0).applyQuaternion(bird.root.quaternion);
         wingCameraUp.set(0,wingbeatView==='above'?0:1,wingbeatView==='above'?-1:0).applyQuaternion(bird.root.quaternion);
@@ -1946,7 +1972,9 @@
       var desiredFar=240;
       if(isResidentCamera(cameraMode)) {
         wildlife.getFocus(cameraMode,targetGoal);
-        var viewingDistance=({robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75,darkEyedJunco:.66,tuftedTitmouse:.66,easternTowhee:.80,americanGoldfinch:.62,easternBluebird:.76,whiteThroatedSparrow:.72,chippingSparrow:.62,americanTreeSparrow:.68,hermitThrush:.74,purpleFinch:.68}[cameraMode])*orbit.distance/2.65;
+        var residentDistances={robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75,darkEyedJunco:.66,tuftedTitmouse:.66,easternTowhee:.80,americanGoldfinch:.62,easternBluebird:.76,whiteThroatedSparrow:.72,chippingSparrow:.62,americanTreeSparrow:.68,hermitThrush:.74,purpleFinch:.68};
+        var baseResidentDistance=Object.prototype.hasOwnProperty.call(residentDistances,cameraMode)?residentDistances[cameraMode]:.85;
+        var viewingDistance=baseResidentDistance*orbit.distance/2.65;
         var viewingPitch=clamp(orbit.pitch+.17,-.35,1.35);
         cameraGoal.set(Math.sin(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance,Math.sin(viewingPitch)*viewingDistance,Math.cos(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance).add(targetGoal);
       } else if(cameraMode==='wide') {
@@ -1955,7 +1983,7 @@
           // existing habitat camera remains unchanged when guides are off.
           var halfVertical=camera.fov*Math.PI/360,halfHorizontal=Math.atan(Math.tan(halfVertical)*camera.aspect);
           var radius=(flightStudy.courseBounds.radius+1.5)*1.12;
-          var distance=radius/Math.sin(Math.min(halfVertical,halfHorizontal));
+          var distance=radius/Math.max(1e-4,Math.sin(Math.min(halfVertical,halfHorizontal)));
           targetGoal.copy(flightStudy.courseBounds.center);
           cameraGoal.set(23,24,36).normalize().multiplyScalar(distance).add(targetGoal);
           desiredFar=Math.max(240,distance+radius*2);
@@ -1992,7 +2020,7 @@
       renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(perspectiveVisible()||anatomyVisible()||residentLensVisible()){updateCamera(1,true);notify(true);}refresh();
     }
     function tick(stamp) {
-      raf=0;if(disposed||contextLost||document.hidden)return;
+      raf=0;if(disposed||contextLost||(doc&&doc.hidden))return;
       var dt=lastStamp==null?0:clamp((stamp-lastStamp)/1000,0,.1);lastStamp=stamp;
       if(!paused) {
         if(mode==='free'){fieldVisitTime+=dt;moveObserver((moveKeys.forward?1:0)-(moveKeys.back?1:0),(moveKeys.right?1:0)-(moveKeys.left?1:0),dt);}
@@ -2009,8 +2037,8 @@
       }
       if(!paused||dirty)requestFrame();
     }
-    function orbitBy(dx,dy) {wingbeatView='free';if(residentLensVisible()){releaseResidentView();orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,-Math.PI/2+.001,Math.PI/2-.001);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible())releaseAnatomyCamera();if(attitudeLens)releaseAttitudeCamera();if(mode==='free'){var sensitivity=binoculars?.0014:.0035;walk.yaw-=dx*sensitivity;walk.pitch=clamp(walk.pitch-dy*sensitivity,-1.25,1.25);}else{if(!isResidentCamera(cameraMode))cameraMode='orbit';orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,anatomyVisible()?-Math.PI/2+.001:-.55,anatomyVisible()?Math.PI/2-.001:1.25);}if(anatomyVisible())updateCamera(1,true);refresh();}
-    function zoomBy(amount) {if(mode==='free')return;if(residentLensVisible()){residentZoom=clamp(residentZoom*Math.exp(amount),.65,3);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible()){anatomyZoom=clamp(anatomyZoom*Math.exp(amount),1,3);updateCamera(1,true);notify(true);refresh();return;}if(perspectiveVisible()){setPerspectiveDistance(perspectiveDistance*Math.exp(amount));return;}wingbeatView='free';if(attitudeLens)releaseAttitudeCamera();orbit.distance=clamp(orbit.distance*Math.exp(amount),1.1,12);if(!isResidentCamera(cameraMode))cameraMode='orbit';refresh();}
+    function orbitBy(dx,dy) {if(disposed||!Number.isFinite(dx)||!Number.isFinite(dy))return;wingbeatView='free';if(residentLensVisible()){releaseResidentView();orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,-Math.PI/2+.001,Math.PI/2-.001);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible())releaseAnatomyCamera();if(attitudeLens)releaseAttitudeCamera();if(mode==='free'){var sensitivity=binoculars?.0014:.0035;walk.yaw-=dx*sensitivity;walk.pitch=clamp(walk.pitch-dy*sensitivity,-1.25,1.25);}else{if(!isResidentCamera(cameraMode))cameraMode='orbit';orbit.yaw-=dx*.006;orbit.pitch=clamp(orbit.pitch+dy*.005,anatomyVisible()?-Math.PI/2+.001:-.55,anatomyVisible()?Math.PI/2-.001:1.25);}if(anatomyVisible())updateCamera(1,true);refresh();}
+    function zoomBy(amount) {if(disposed||mode==='free'||!Number.isFinite(amount))return;if(residentLensVisible()){residentZoom=clamp(residentZoom*Math.exp(amount),.65,3);updateCamera(1,true);notify(true);refresh();return;}if(anatomyVisible()){anatomyZoom=clamp(anatomyZoom*Math.exp(amount),1,3);updateCamera(1,true);notify(true);refresh();return;}if(perspectiveVisible()){setPerspectiveDistance(perspectiveDistance*Math.exp(amount));return;}wingbeatView='free';if(attitudeLens)releaseAttitudeCamera();orbit.distance=clamp(orbit.distance*Math.exp(amount),1.1,12);if(!isResidentCamera(cameraMode))cameraMode='orbit';refresh();}
     function canUseSurfaceRuler(){return !disposed&&!contextLost&&mode==='guided'&&!studyOverlay&&!courseLens&&!attitudeLens&&!lightStudy&&!perspectiveStudy&&!anatomyStudy&&!wingbeatStudy;}
     function canSelectSceneBird(){return canUseSurfaceRuler()&&!surfaceRuler;}
     function surfaceSnapshot(){
@@ -2170,7 +2198,7 @@
       if(pointerMap.size===2){var pts=Array.from(pointerMap.values());pinchDistance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);}
     }
     function pointerMove(event) {
-      if(mode==='free'&&document.pointerLockElement===canvas){orbitBy(event.movementX||0,event.movementY||0);return;}
+      if(mode==='free'&&doc&&doc.pointerLockElement===canvas){orbitBy(event.movementX||0,event.movementY||0);return;}
       var old=pointerMap.get(event.pointerId);if(!old)return;
       var dx=event.clientX-old.x,dy=event.clientY-old.y;old.x=event.clientX;old.y=event.clientY;old.moved+=Math.hypot(dx,dy);
       if(pointerMap.size>1){var pts=Array.from(pointerMap.values()),distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);if(pinchDistance>0&&distance>0)zoomBy(Math.log(pinchDistance/distance));pinchDistance=distance;}
@@ -2178,14 +2206,15 @@
       notify(true);
     }
     function pointerUp(event) {var point=pointerMap.get(event.pointerId),tap=event.type==='pointerup'&&point&&point.solo&&point.moved<=6&&pointerMap.size===1;pointerMap.delete(event.pointerId);pinchDistance=0;try{canvas.releasePointerCapture(event.pointerId);}catch(ignore){}if(tap){if(surfaceRuler)placeSurfacePoint(event.clientX,event.clientY);else if(residentExploreVisible())selectResidentPartAt(event.clientX,event.clientY);else selectSceneBird(event.clientX,event.clientY);}}
+    var MOVE_KEY_MAP={KeyW:'forward',KeyS:'back',KeyA:'left',KeyD:'right'};
     listen(canvas,'pointerdown',pointerDown);listen(canvas,'pointermove',pointerMove);listen(canvas,'pointerup',pointerUp);listen(canvas,'pointercancel',pointerUp);listen(canvas,'lostpointercapture',pointerUp);
-    listen(canvas,'wheel',function(event){event.preventDefault();zoomBy(clamp(event.deltaY,-180,180)*.0016);notify(true);},{passive:false});
+    listen(canvas,'wheel',function(event){event.preventDefault();var dy=Number.isFinite(event.deltaY)?event.deltaY:0;zoomBy(clamp(dy,-180,180)*.0016);notify(true);},{passive:false});
     listen(canvas,'keydown',function(event){
       if(surfaceRuler&&(event.key==='Enter'||event.key==='Escape'||event.key==='Backspace')){if(event.key==='Enter')placeSurfaceCenter();else if(event.key==='Backspace')undoSurfacePoint();else setSurfaceRuler(false);event.preventDefault();return;}
       if(residentExploreVisible()&&(event.key==='Enter'||event.key==='Escape')){if(event.key==='Escape')setResidentExplore(false);else{var bounds=canvas.getBoundingClientRect();selectResidentPartAt(bounds.left+bounds.width/2,bounds.top+bounds.height/2);}event.preventDefault();return;}
       if(event.key==='Enter'&&canSelectSceneBird()){var rect=canvas.getBoundingClientRect();selectSceneBird(rect.left+rect.width/2,rect.top+rect.height/2);event.preventDefault();return;}
       if(mode==='free'){
-        var direction={KeyW:'forward',KeyS:'back',KeyA:'left',KeyD:'right'}[event.code];
+        var direction=Object.prototype.hasOwnProperty.call(MOVE_KEY_MAP,event.code)?MOVE_KEY_MAP[event.code]:null;
         if(direction){setMove(direction,true);event.preventDefault();return;}
         if(event.code==='KeyB'&&!event.repeat){setBinoculars(!binoculars);event.preventDefault();return;}
         if(event.code==='KeyC'&&!event.repeat){setCrouching(!observer.crouching);event.preventDefault();return;}
@@ -2194,22 +2223,26 @@
       if(event.key==='ArrowLeft')orbitBy(-18,0);else if(event.key==='ArrowRight')orbitBy(18,0);else if(event.key==='ArrowUp')orbitBy(0,-15);else if(event.key==='ArrowDown')orbitBy(0,15);else if(event.key==='+'||event.key==='=')zoomBy(-.13);else if(event.key==='-'||event.key==='_')zoomBy(.13);else return;
       event.preventDefault();notify(true);
     });
-    listen(global,'keyup',function(event){var direction={KeyW:'forward',KeyS:'back',KeyA:'left',KeyD:'right'}[event.code];if(direction)moveKeys[direction]=false;});
+    listen(global,'keyup',function(event){var direction=Object.prototype.hasOwnProperty.call(MOVE_KEY_MAP,event.code)?MOVE_KEY_MAP[event.code]:null;if(direction)moveKeys[direction]=false;});
     listen(canvas,'blur',clearMovement);
-    listen(document,'pointerlockchange',function(){if(document.pointerLockElement!==canvas)clearMovement();notify(true);});
-    listen(document,'visibilitychange',function(){lastStamp=null;if(document.hidden){global.cancelAnimationFrame(raf);raf=0;clearMovement();exitPointerLock();}else refresh();});
+    listen(doc,'pointerlockchange',function(){if(doc&&doc.pointerLockElement!==canvas)clearMovement();notify(true);});
+    listen(doc,'visibilitychange',function(){lastStamp=null;if(doc&&doc.hidden){if(raf&&global.cancelAnimationFrame)global.cancelAnimationFrame(raf);raf=0;clearMovement();exitPointerLock();}else refresh();});
     listen(global,'blur',function(){clearMovement();lastStamp=null;exitPointerLock();});
-    listen(canvas,'webglcontextlost',function(event){event.preventDefault();contextLost=true;paused=true;clearMovement();exitPointerLock();global.cancelAnimationFrame(raf);raf=0;if(options.onError)options.onError('The graphics connection was interrupted. Retry the 3D view or return to the 2D lab.');});
+    listen(canvas,'webglcontextlost',function(event){event.preventDefault();contextLost=true;paused=true;clearMovement();exitPointerLock();if(raf&&global.cancelAnimationFrame)global.cancelAnimationFrame(raf);raf=0;if(options.onError)options.onError('The graphics connection was interrupted. Retry the 3D view or return to the 2D lab.');});
     if(global.matchMedia) {
       var reduce=global.matchMedia('(prefers-reduced-motion: reduce)');
-      if(reduce.addEventListener)listen(reduce,'change',function(event){if(event.matches)setPaused(true);});
+      if(reduce){
+        var onReduceChange=function(event){if(event&&event.matches)setPaused(true);};
+        if(reduce.addEventListener)listen(reduce,'change',onReduceChange);
+        else if(typeof reduce.addListener==='function'){reduce.addListener(onReduceChange);listeners.push(function(){if(typeof reduce.removeListener==='function')reduce.removeListener(onReduceChange);});}
+      }
     }
-    if(global.ResizeObserver){resizeObserver=new ResizeObserver(resize);resizeObserver.observe(canvas);}else listen(global,'resize',resize);
+    if(global.ResizeObserver){resizeObserver=new global.ResizeObserver(resize);resizeObserver.observe(canvas);}else listen(global,'resize',resize);
     // Browsers may discard a paused WebGL surface while its canvas is offscreen.
     // Repaint once on re-entry, without resuming the authored movement.
-    if(global.IntersectionObserver){visibilityObserver=new global.IntersectionObserver(function(entries){if(entries.some(function(entry){return entry.isIntersecting;}))refresh();});visibilityObserver.observe(canvas);}
+    if(global.IntersectionObserver){visibilityObserver=new global.IntersectionObserver(function(entries){if(entries&&entries.some(function(entry){return entry.isIntersecting;}))refresh();});visibilityObserver.observe(canvas);}
     updateBird(0,true);updateCamera(1,true);setLighting('daylight');resize();renderResidentScene();frames++;notify(true);requestFrame();
     return controller;
   }
   global.BirdLab3D={mount:mount,sampleFlight:sampleFlight,sampleWingPhase:sampleWingPhase,sampleWingbeatWindow:sampleWingbeatWindow,sampleFollowFrame:sampleFollowFrame,createFreeHawk:createFreeHawk,createFieldObserver:createFieldObserver,courseDuration:DURATION};
-})(window);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

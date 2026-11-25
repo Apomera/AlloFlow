@@ -39,6 +39,22 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
 
   var TOOL_ID = 'somaticReset';
 
+  function ensureSomaticPolishCss() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-somatic-reset-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-somatic-reset-polish-css';
+    st.textContent = [
+      '[data-sel-tool="somaticReset"] button,[data-sel-tool="somaticReset"] select,[data-sel-tool="somaticReset"] input,[data-sel-tool="somaticReset"] summary{touch-action:manipulation;box-sizing:border-box}',
+      '[data-sel-tool="somaticReset"] button:focus-visible,[data-sel-tool="somaticReset"] select:focus-visible,[data-sel-tool="somaticReset"] input:focus-visible,[data-sel-tool="somaticReset"] summary:focus-visible,[data-sel-tool="somaticReset"] [tabindex="-1"]:focus-visible{outline:3px solid #0f766e;outline-offset:2px}',
+      '.theme-dark [data-sel-tool="somaticReset"] button:focus-visible,.theme-dark [data-sel-tool="somaticReset"] select:focus-visible,.theme-dark [data-sel-tool="somaticReset"] input:focus-visible,.theme-dark [data-sel-tool="somaticReset"] summary:focus-visible{outline:3px solid #5eead4;outline-offset:2px}',
+      '.theme-contrast [data-sel-tool="somaticReset"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}',
+      '@media (forced-colors:active){[data-sel-tool="somaticReset"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-sel-tool="somaticReset"] button,[data-sel-tool="somaticReset"] select,[data-sel-tool="somaticReset"] [role="progressbar"]{border:1px solid ButtonText}}',
+      '@media (prefers-reduced-motion:reduce){[data-sel-tool="somaticReset"] *,[data-sel-tool="somaticReset"] *::before,[data-sel-tool="somaticReset"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  }
+  ensureSomaticPolishCss();
+
   var ZONES = [
     { id: 'head_face', label: 'Head & face', icon: '\u25CB', prompt: 'jaw, eyes, forehead, or face' },
     { id: 'neck_shoulders', label: 'Neck & shoulders', icon: '\u2312', prompt: 'neck, shoulders, or upper back' },
@@ -484,6 +500,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
+      ensureSomaticPolishCss();
       var _rawSlot = ctx && ctx.toolData && ctx.toolData[TOOL_ID];
       var rawState = (_rawSlot && typeof _rawSlot === 'object' && !Array.isArray(_rawSlot)) ? _rawSlot : {};
       var d = Object.assign({}, defaultState(), rawState);
@@ -519,7 +536,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
         panelAlt: isContrast ? '#000000' : (isDark ? '#172033' : '#f0fdfa'),
         input: isContrast ? '#000000' : (palette.bgInput || (isDark ? '#0b1220' : '#ffffff')),
         text: isContrast ? '#ffff00' : (palette.text || (isDark ? '#f8fafc' : '#0f172a')),
-        muted: isContrast ? '#ffff00' : (palette.textMuted || (isDark ? '#cbd5e1' : '#64748b')),
+        muted: isContrast ? '#ffff00' : (palette.textMuted || (isDark ? '#cbd5e1' : '#475569')),
         border: isContrast ? '#ffff00' : (palette.border || (isDark ? '#334155' : '#cbd5e1')),
         accent: isContrast ? '#ffff00' : (isDark ? '#5eead4' : '#0f766e'),
         accentStrong: isContrast ? '#ffff00' : (isDark ? '#0f766e' : '#0f766e'),
@@ -920,7 +937,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
       }
 
       function handleRemovalDialogKeyDown(event) {
-        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
+        if (event.isComposing || (event.nativeEvent && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           closeRemovalConfirm();
@@ -981,7 +998,8 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
           padding: '10px 16px',
           fontSize: 14,
           fontWeight: 800,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          touchAction: 'manipulation'
         }, extra || {});
       }
 
@@ -993,11 +1011,12 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
           background: colors.input,
           color: colors.text,
           borderRadius: 10,
-          minHeight: 42,
+          minHeight: 44,
           padding: '9px 14px',
           fontSize: 13,
           fontWeight: 750,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          touchAction: 'manipulation'
         }, extra || {});
       }
 
@@ -1098,7 +1117,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
             value: value,
             onChange: function(event) { onChange(clampRating(event.target.value)); },
             'aria-valuetext': value + ' out of 10',
-            style: { width: '100%', accentColor: colors.accentStrong, minHeight: 34, cursor: 'pointer' }
+            style: { width: '100%', accentColor: colors.accentStrong, minHeight: 44, cursor: 'pointer', touchAction: 'manipulation' }
           }),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', color: colors.muted, fontSize: 11, fontWeight: 700 } },
             h('span', null, '0 - none noticed'),
@@ -1181,7 +1200,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
                 h('button', {
                   type: 'button',
                   onClick: function() { setToolState({ repeatProtocol: null }); },
-                  style: secondaryButton({ minHeight: 36, padding: '7px 11px' })
+                  style: secondaryButton({ minHeight: 44, padding: '8px 12px' })
                 }, 'Choose something else')
               )
             : recentProtocol && h('aside', { style: cardStyle({ padding: 14 }) },
@@ -1350,7 +1369,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
               },
               style: {
                 width: '100%',
-                minHeight: 42,
+                minHeight: 44,
                 padding: '8px 30px 8px 5px',
                 border: 0,
                 background: colors.input,
@@ -1385,7 +1404,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
               announce('Visual motion set to ' + next.label.toLowerCase() + '.');
             },
             style: {
-              minHeight: 42,
+              minHeight: 44,
               padding: '8px 30px 8px 10px',
               borderRadius: 10,
               border: '1px solid ' + colors.border,
@@ -1419,7 +1438,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
               announce('Visual tone set to ' + next.label.toLowerCase() + '.');
             },
             style: {
-              minHeight: 42,
+              minHeight: 44,
               padding: '8px 30px 8px 10px',
               borderRadius: 10,
               border: '1px solid ' + colors.border,
@@ -1457,7 +1476,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
             disabled: !!unavailable,
             'aria-pressed': previewing,
             'aria-describedby': unavailable ? reasonId : undefined,
-            style: secondaryButton(Object.assign({ minHeight: 42 }, previewing
+            style: secondaryButton(Object.assign({ minHeight: 44 }, previewing
               ? { borderColor: colors.accent, color: colors.accent }
               : (unavailable ? { opacity: 0.62, cursor: 'not-allowed' } : {})))
           }, previewing ? 'Stop preview' : 'Preview one breath'),
@@ -1467,6 +1486,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
             'aria-valuemin': 0,
             'aria-valuemax': 100,
             'aria-valuenow': visualPreviewProgress,
+            'aria-valuetext': visualPreviewProgress + '% complete',
             'data-visual-preview-progress': 'true',
             style: {
               width: 'min(176px, 78vw)',
@@ -1514,9 +1534,9 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
           'aria-pressed': quietView,
           'aria-keyshortcuts': quietView ? 'Escape' : undefined,
           style: secondaryButton({
-            minHeight: 36,
-            padding: '6px 10px',
-            fontSize: 11,
+            minHeight: 44,
+            padding: '8px 12px',
+            fontSize: 12,
             borderColor: quietView ? colors.accent : colors.border,
             color: quietView ? colors.accent : colors.text
           })
@@ -1577,7 +1597,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
               else announce('Guidance words hidden. Screen-reader phase cues remain on.');
             },
             style: {
-              minHeight: 42,
+              minHeight: 44,
               padding: '8px 30px 8px 10px',
               borderRadius: 10,
               border: '1px solid ' + colors.border,
@@ -1598,7 +1618,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
       }
 
       function handlePracticeKeyDown(event) {
-        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
+        if (event.isComposing || (event.nativeEvent && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
         if (!quietView || event.key !== 'Escape') return;
         event.preventDefault();
         setQuietView(false);
@@ -3285,7 +3305,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
             )
           ),
           !quietView && h('details', { style: cardStyle({ padding: 12 }) },
-            h('summary', { style: { color: colors.text, cursor: 'pointer', fontSize: 13, fontWeight: 850 } }, 'Still option and safety'),
+            h('summary', { style: { color: colors.text, cursor: 'pointer', fontSize: 13, fontWeight: 850, minHeight: 44, display: 'flex', alignItems: 'center' } }, 'Still option and safety'),
             h('p', { style: { color: colors.muted, fontSize: 13, lineHeight: 1.55, margin: '10px 0' } }, selectedProtocol.still),
             safetyNote(true)
           )
@@ -3336,7 +3356,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
                 type: 'button',
                 onClick: function() { setToolState({ response: option.id }); },
                 'aria-pressed': selected,
-                style: secondaryButton(selected ? { borderWidth: 2, borderColor: colors.accent, background: colors.soft, color: colors.accent } : { minHeight: 54 })
+                style: secondaryButton(selected ? { minHeight: 54, borderWidth: 2, borderColor: colors.accent, background: colors.soft, color: colors.accent } : { minHeight: 54 })
               }, h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, option.icon), option.label);
             }))
           ),
@@ -3493,7 +3513,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
                       h('button', {
                         type: 'button',
                         onClick: function() { prepareRepeat(log); },
-                        style: secondaryButton({ minHeight: 34, padding: '6px 10px', fontSize: 11 })
+                        style: secondaryButton({ minHeight: 44, padding: '8px 12px', fontSize: 12 })
                       }, 'Use for a new check-in'),
                       h('button', {
                         type: 'button',
@@ -3506,7 +3526,7 @@ if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegister
                           });
                         },
                         'aria-label': 'Remove ' + (log.protocolName || 'body reset') + ' history entry',
-                        style: secondaryButton({ minHeight: 34, padding: '6px 10px', fontSize: 11, borderColor: colors.danger, color: colors.danger })
+                        style: secondaryButton({ minHeight: 44, padding: '8px 12px', fontSize: 12, borderColor: colors.danger, color: colors.danger })
                       }, 'Remove')
                     )
                   )

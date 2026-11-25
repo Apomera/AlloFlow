@@ -9,7 +9,20 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   var bfPlain=false;
   function plain(full,simple){return bfPlain&&simple?simple:full;}
   var bfHostT=null;
-  function __alloT(key,fallback){var v=null;try{v=bfHostT?bfHostT(key,fallback):null;}catch(_){v=null;}return v==null?fallback:v;}
+  function __alloT(key,fallback){var v=null;try{v=bfHostT?bfHostT(key,fallback):null;}catch(_){v=null;}return (v==null||v===key||v==='')?(fallback!=null?fallback:key):v;}
+  function bfText(key,fallback){var v=null;try{v=bfHostT?bfHostT(key,fallback):null;}catch(_){v=null;}return (v==null||v===key||v==='')?(fallback!=null?fallback:key):v;}
+  function isButterflyGlobalMuted(){
+    var fnMuted=false;
+    try{if(typeof window!=='undefined'&&typeof window.__alloIsGlobalMuted==='function')fnMuted=!!window.__alloIsGlobalMuted();}catch(_){fnMuted=false;}
+    return fnMuted||!!(typeof window!=='undefined'&&window._alloGlobalMute);
+  }
+  function isSafeKey(k){return typeof k==='string'&&k.length>0&&k.length<=64&&/^[a-z0-9:_-]+$/.test(k)&&k!=='__proto__'&&k!=='constructor'&&k!=='prototype';}
+  function cleanXpLedger(value){
+    var out={};if(!value||typeof value!=='object'||Array.isArray(value))return out;
+    var keys=Object.keys(value),count=0;
+    for(var i=0;i<keys.length&&count<40;i++){var k=keys[i];if(isSafeKey(k)&&value[k]===true){out[k]=true;count++;}}
+    return out;
+  }
   var __alloFill=function(template,values){return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g,function(m,k){return Object.prototype.hasOwnProperty.call(values,k)?String(values[k]):m;}));};
   // Adult visitors share this summer habitat; the learner's life-cycle model
   // remains monarch-specific. Motion profiles are illustrative, not measured rates.
@@ -161,6 +174,79 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   // The joining space stays outside the keys so a translation cannot lose it.
   function matchWords(matched){return (matched?plain(__alloT('stem.butterfly.msg_prediction_matched','Prediction matched.'),__alloT('stem.butterfly.msg_prediction_matched_simple','Your guess matched.')):plain(__alloT('stem.butterfly.msg_prediction_differed','Different from your prediction.'),__alloT('stem.butterfly.msg_prediction_differed_simple','Your guess was different.')))+' ';}
   function trialFeedback(record){var d=design(record.design);return matchWords(resources(d)===record.prediction)+d.note;}
+  // Optional pre-trial restoration outcome hypotheses for Predict-Before-Restore.
+  // Never leaks a design's actual outcome before the learner records evidence.
+  var RESTORE_OUTCOME_HYPOTHESES=Object.freeze([
+    Object.freeze({id:'no-brood-no-pollination',key:'stem.butterfly.restore_hyp_none',fallback:'No flower visits and no monarch generation can finish'}),
+    Object.freeze({id:'visits-only',key:'stem.butterfly.restore_hyp_visits',fallback:'Adults can sip nectar and transfer pollen, but caterpillars still stall'}),
+    Object.freeze({id:'brood-if-uncut',key:'stem.butterfly.restore_hyp_brood',fallback:'Both flower visits and a full generation can finish if mowing waits'})
+  ]);
+  function cleanRestoreCommitments(value){
+    var out={};if(!value||typeof value!=='object'||Array.isArray(value))return out;
+    DESIGNS.forEach(function(d){
+      if(!Object.prototype.hasOwnProperty.call(value,d.id))return;
+      var hId=value[d.id];
+      if(typeof hId==='string'&&RESTORE_OUTCOME_HYPOTHESES.some(function(x){return x.id===hId;}))out[d.id]=hId;
+    });
+    return out;
+  }
+  function compareRestorePrediction(state,designId,hypothesisId){
+    var d=design(designId),hyp=RESTORE_OUTCOME_HYPOTHESES.find(function(x){return x.id===hypothesisId;});
+    if(!d||!hyp)return null;
+    var safe=state&&typeof state==='object'?state:freshState();
+    var trials=safe.restoration&&Array.isArray(safe.restoration.trials)?safe.restoration.trials:[];
+    var broods=safe.lifecycle&&Array.isArray(safe.lifecycle.broods)?safe.lifecycle.broods:[];
+    var seasons=safe.season&&Array.isArray(safe.season.runs)?safe.season.runs:[];
+    var visits=cleanPollination(safe.pollination).visits.filter(function(v){return v.patch==='restoration'&&v.plan===d.id;});
+    var trial=trials.find(function(x){return x&&x.design===d.id;})||null;
+    var brood=broods.find(function(b){return b&&b.patch==='restoration'&&b.plan===d.id;})||null;
+    var planSeasons=seasons.filter(function(r){return r&&r.patch==='restoration'&&r.plan===d.id;});
+    var seasonCompleteCount=planSeasons.filter(function(r){return r.result==='complete';}).length;
+    var seasonCutCount=planSeasons.filter(function(r){return r.result==='stop';}).length;
+    var pollinationContact=visits.some(function(v){return v.contact===true;});
+    var observed={examined:!!trial,nectar:trial?d.nectar:null,host:trial?d.host:null,broodResult:brood?brood.result:null,
+      pollinationVisits:visits.length,pollinationContact:pollinationContact,seasonRuns:planSeasons.length,seasonCompleteCount:seasonCompleteCount,seasonCutCount:seasonCutCount};
+    var hasEvidence=!!(trial||brood||visits.length||planSeasons.length);
+    if(!hasEvidence){
+      return {status:'pending',designId:d.id,hypothesisId:hyp.id,expectedOutcomeId:null,matchesObserved:null,observed:observed,whyNot:'',
+        summary:bfText('stem.butterfly.restore_cmp_pending','Expectation recorded before testing. Visit and examine the restoration plot, then test a generation, flower visit, or mowing plan to compare against your records.')};
+    }
+    var actualId=d.host?'brood-if-uncut':d.nectar?'visits-only':'no-brood-no-pollination';
+    var matches=hyp.id===actualId;
+    var whyNot='';
+    if(!matches){
+      if(actualId==='visits-only'&&hyp.id==='brood-if-uncut'){
+        whyNot=bfText('stem.butterfly.restore_whynot_bergamot_brood','Wild bergamot provides generalist adult nectar and flower-visit pollen transfer, but monarch caterpillars are obligate milkweed specialists — without milkweed leaves, the brood stalls before pupation even if never mown.');
+      }else if(actualId==='visits-only'&&hyp.id==='no-brood-no-pollination'){
+        whyNot=bfText('stem.butterfly.restore_whynot_bergamot_none','Wild bergamot blooms do support adult nectar feeding and flower-to-flower pollen transfer when contact occurs, even though caterpillars still lack milkweed host leaves.');
+      }else if(actualId==='no-brood-no-pollination'&&hyp.id==='visits-only'){
+        whyNot=bfText('stem.butterfly.restore_whynot_lawn_visits','Short mown grass has no nectar flowers for adults to sip or transfer pollen from, and no milkweed leaves for caterpillars.');
+      }else if(actualId==='no-brood-no-pollination'&&hyp.id==='brood-if-uncut'){
+        whyNot=bfText('stem.butterfly.restore_whynot_lawn_brood','Leaving short mown grass uncut cannot carry a monarch generation without planting milkweed host leaves for larvae and nectar flowers for adults.');
+      }else if(actualId==='brood-if-uncut'&&hyp.id==='visits-only'){
+        whyNot=bfText('stem.butterfly.restore_whynot_mixed_visits','Adding milkweed alongside bergamot supplies both adult nectar for pollination visits and obligate milkweed leaves for caterpillars, allowing a full brood to emerge if mowing stays outside the ~30-day development window.');
+      }else{
+        whyNot=bfText('stem.butterfly.restore_whynot_mixed_none','The mixed milkweed + bergamot planting provides both nectar flowers and caterpillar host leaves, supporting flower visits and a complete generation when uncut through emergence.');
+      }
+    }
+    var parts=[];
+    if(trial){
+      parts.push(d.host?bfText('stem.butterfly.restore_obs_both','Examined plot: nectar and milkweed host leaves present.'):d.nectar?bfText('stem.butterfly.restore_obs_nectar','Examined plot: adult nectar present, no milkweed host leaves.'):bfText('stem.butterfly.restore_obs_none','Examined plot: neither nectar nor milkweed host leaves.'));
+    }
+    if(brood){
+      parts.push(brood.result==='complete'?bfText('stem.butterfly.restore_obs_brood_complete','Brood record: reached the adult stage.'):bfText('stem.butterfly.restore_obs_brood_stalls','Brood record: stopped at the caterpillar stage.'));
+    }
+    if(visits.length){
+      parts.push(pollinationContact
+        ?(visits.length===1?bfText('stem.butterfly.restore_obs_poll_contact_one','Pollination record: 1 recorded flower visit (including pollen transfer on contact).'):__alloFill(bfText('stem.butterfly.restore_obs_poll_contact','Pollination record: {value1} recorded flower visits (including pollen transfer on contact).'),{value1:visits.length}))
+        :(visits.length===1?bfText('stem.butterfly.restore_obs_poll_miss_one','Pollination record: 1 recorded flower visit (missed contact only so far).'):__alloFill(bfText('stem.butterfly.restore_obs_poll_miss','Pollination record: {value1} recorded flower visits (missed contact only so far).'),{value1:visits.length})));
+    }
+    if(planSeasons.length){
+      parts.push(__alloFill(bfText('stem.butterfly.restore_obs_mow','Mowing record: {value1} completed, {value2} stopped early.'),{value1:seasonCompleteCount,value2:seasonCutCount}));
+    }
+    var summary=(matches?bfText('stem.butterfly.restore_cmp_aligned_prefix','Your pre-trial expectation aligns with your recorded evidence.'):bfText('stem.butterfly.restore_cmp_diff_prefix','Your recorded evidence points to a different ecological outcome than your pre-trial expectation.'))+' '+parts.join(' ');
+    return {status:'observed',designId:d.id,hypothesisId:hyp.id,expectedOutcomeId:actualId,matchesObserved:matches,observed:observed,whyNot:whyNot,summary:summary};
+  }
 
   // Eggs may only be placed where the learner has already gathered evidence:
   // the investigation builds on the field journal rather than replacing it.
@@ -1045,9 +1131,81 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     s.cases=cleanCases(s.cases);s.cases.answers[id]={stop:stop,reason:reason};
     return Object.assign({ok:true},caseFeedback(c,s.cases.answers[id]));
   }
+  // Per-distractor ecological diagnosis for field cases: explains specifically
+  // why the learner's chosen blocked stage or mechanism does not fit the site.
+  function diagnoseCaseChoice(c,a){
+    if(!c||!a||typeof a!=='object')return '';
+    var key=caseAnswer(c),hab=caseHabitat(c),mow=mowing(c.mowing);
+    if(!key||!hab||!mow)return '';
+    var stopRight=a.stop===key.stop,reasonRight=a.reason===key.reason;
+    if(stopRight&&reasonRight)return '';
+    var stageLabel=key.stop==='complete'?'':(stage(key.stop)?stage(key.stop).inline:key.stop);
+    var stagePart='';
+    if(!stopRight){
+      if(a.stop==='egg'){
+        stagePart=bfText('stem.butterfly.case_whynot_stop_egg','An egg does not feed yet and hatches in days 0–4 before mowing or leaf shortages act; even without milkweed, the bottleneck arrives later when larvae must eat or pupate.');
+      }else if(a.stop==='complete'){
+        if(key.reason==='missing'&&hab.nectar&&!hab.host){
+          stagePart=bfText('stem.butterfly.case_whynot_complete_nectar_only','Generalist adult nectar flowers such as wild bergamot fuel flight and sun-warmed basking stops, but monarch caterpillars are obligate milkweed specialists — nectar cannot feed larvae, so the cycle cannot finish.');
+        }else if(key.reason==='missing'){
+          stagePart=bfText('stem.butterfly.case_whynot_complete_lawn','Short mown grass lacks both obligate milkweed host leaves for caterpillars and nectar flowers for adults, so green cover alone cannot carry a generation through.');
+        }else{
+          stagePart=__alloFill(bfText('stem.butterfly.case_whynot_complete_cut','Egg-to-adult development takes about 30 summer days (egg days 0–4, caterpillar days 4–18, chrysalis days 18–30). Cutting in week {value1} falls inside that window and interrupts the {value2} stage.'),{value1:mow.week,value2:stageLabel});
+        }
+      }else if(a.stop==='caterpillar'){
+        if(key.stop==='chrysalis'&&key.reason==='cut'){
+          stagePart=__alloFill(bfText('stem.butterfly.case_whynot_cat_when_chrys_cut','Milkweed stays standing through the caterpillar feeding window (days 4–18). The midsummer week {value1} cut arrives during days 18–30, removing standing chrysalis shelter and support rather than larval food.'),{value1:mow.week});
+        }else{
+          stagePart=bfText('stem.butterfly.case_whynot_cat_when_complete','Milkweed host leaves are present and stay uncut past the caterpillar feeding window (days 4–18) and the full ~30-day cycle, so caterpillars do not run out of food here.');
+        }
+      }else if(a.stop==='chrysalis'){
+        if(key.stop==='caterpillar'&&key.reason==='missing'){
+          stagePart=hab.nectar
+            ?bfText('stem.butterfly.case_whynot_chrys_nectar_missing','Even though flowering stems offer shade, shelter, and generalist adult nectar, monarch caterpillars cannot grow without obligate milkweed leaves — none reaches the chrysalis stage.')
+            :bfText('stem.butterfly.case_whynot_chrys_lawn_missing','Without milkweed host leaves, caterpillars starve during days 4–18 and never form a chrysalis.');
+        }else if(key.stop==='caterpillar'&&key.reason==='cut'){
+          stagePart=__alloFill(bfText('stem.butterfly.case_whynot_chrys_early_cut','The early week {value1} cut removes milkweed during larval feeding (days 4–18), before caterpillars can finish growing and form a chrysalis (days 18–30).'),{value1:mow.week});
+        }else{
+          stagePart=bfText('stem.butterfly.case_whynot_chrys_complete','Milkweed and standing pupation shelter remain intact through the chrysalis window (days 18–30) and the full ~30-day development span.');
+        }
+      }else if(a.stop==='adult'){
+        if(key.stop==='complete'){
+          stagePart=bfText('stem.butterfly.case_whynot_adult_complete','Blooming milkweed (and bergamot in mixed plots) supplies generalist adult nectar and sun-warmed basking spots after emergence, and remains standing past day 30.');
+        }else if(key.reason==='missing'&&hab.nectar){
+          stagePart=bfText('stem.butterfly.case_whynot_adult_bergamot','Adults can drink generalist nectar from wild bergamot here; the cycle actually fails earlier at the caterpillar stage because larvae require milkweed leaves.');
+        }else if(key.reason==='missing'){
+          stagePart=bfText('stem.butterfly.case_whynot_adult_lawn','Short grass lacks adult nectar too, but the generation stops earlier at the caterpillar stage (days 4–18) because no milkweed leaves exist to feed larvae.');
+        }else{
+          stagePart=__alloFill(bfText('stem.butterfly.case_whynot_adult_cut','The week {value1} cut interrupts the {value2} stage before day 30, so no new adult emerges from this patch to face a nectar shortage.'),{value1:mow.week,value2:stageLabel});
+        }
+      }
+    }
+    var reasonPart='';
+    if(!reasonRight){
+      if(a.reason==='cut'&&key.reason==='missing'){
+        reasonPart=mow.day===null
+          ?bfText('stem.butterfly.case_whynot_reason_cut_never_mown','This site is never mown at all — the missing factor is obligate milkweed host plants, not cutting, because generalist nectar flowers feed adults rather than caterpillars.')
+          :__alloFill(bfText('stem.butterfly.case_whynot_reason_cut_no_milkweed','Even though the lawn is cut in week {value1}, mowing did not remove caterpillar food because no milkweed was growing there to begin with.'),{value1:mow.week});
+      }else if(a.reason==='cut'&&key.reason==='none'){
+        reasonPart=mow.day===null
+          ?bfText('stem.butterfly.case_whynot_reason_cut_uncut','This milkweed patch is left uncut all summer, protecting larval leaves, pupation shelter, and blooms across the entire ~30-day cycle.')
+          :__alloFill(bfText('stem.butterfly.case_whynot_reason_cut_late','Mowing in week {value1} (day {value2}) occurs after the ~30-day egg-to-adult window finishes, once the adult has emerged and can fly to sun-warmed nectar patches elsewhere.'),{value1:mow.week,value2:mow.day});
+      }else if(a.reason==='missing'&&key.reason==='cut'){
+        reasonPart=__alloFill(bfText('stem.butterfly.case_whynot_reason_missing_was_cut','Milkweed host leaves and standing stem shelter were present here; it was the week {value1} cut inside the ~30-day development window that stopped the {value2} stage.'),{value1:mow.week,value2:stageLabel});
+      }else if(a.reason==='missing'&&key.reason==='none'){
+        reasonPart=bfText('stem.butterfly.case_whynot_reason_missing_all_present','Milkweed supplies both obligate caterpillar leaves and adult nectar — along with stem shelter and sun-warmed flower heads for basking — through the full generation.');
+      }else if(a.reason==='none'&&key.reason==='missing'){
+        reasonPart=bfText('stem.butterfly.case_whynot_reason_none_missing','Not every stage had what it needed: generalist nectar or green grass cannot substitute for obligate milkweed host leaves during larval feeding.');
+      }else if(a.reason==='none'&&key.reason==='cut'){
+        reasonPart=__alloFill(bfText('stem.butterfly.case_whynot_reason_none_cut','Having milkweed is not enough on its own when a week {value1} cut lands inside the ~30-day egg-to-adult window before the {value2} stage finishes.'),{value1:mow.week,value2:stageLabel});
+      }
+    }
+    return [stagePart,reasonPart].filter(Boolean).join(' ');
+  }
   function caseFeedback(c,a){
     var key=caseAnswer(c),stopRight=a.stop===key.stop,reasonRight=a.reason===key.reason;
     var explain=key.outcome.reason+seasonNote(key.outcome,mowing(c.mowing));
+    var whyNot=diagnoseCaseChoice(c,a);
     // key.stop is 'complete' or a STAGES id (seasonOutcome's blocked stage).
     var template=stopRight&&reasonRight?__alloT('stem.butterfly.case_fb_matched','Your reasoning matches the model. {value1}'):
       stopRight?__alloT('stem.butterfly.case_fb_right_stage','Right stage, different reason. {value1}'):
@@ -1056,7 +1214,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       key.stop==='caterpillar'?__alloT('stem.butterfly.case_fb_model_stops_caterpillar','The model shows that it stops at the caterpillar stage. {value1}'):
       key.stop==='chrysalis'?__alloT('stem.butterfly.case_fb_model_stops_chrysalis','The model shows that it stops at the chrysalis stage. {value1}'):
       __alloT('stem.butterfly.case_fb_model_stops_adult','The model shows that it stops at the adult stage. {value1}');
-    return {stopRight:stopRight,reasonRight:reasonRight,matched:stopRight&&reasonRight,explain:explain,
+    return {stopRight:stopRight,reasonRight:reasonRight,matched:stopRight&&reasonRight,explain:explain,whyNot:whyNot,
       message:__alloFill(template,{value1:explain})};
   }
   function casesSummary(s){
@@ -5083,7 +5241,23 @@ function buildWorld(T,kit) {
     .bfl[data-contrast="true"] .bf-telemetry-pill,.theme-contrast .bfl .bf-telemetry-pill{background:#000;color:#fff;border-color:#ffff00}
     .bfl[data-contrast="true"] .bf-telemetry-pill strong,.theme-contrast .bfl .bf-telemetry-pill strong{color:#ffff00}
     .bfl[data-contrast="true"] .bf-quick-chip,.theme-contrast .bfl .bf-quick-chip{background:#000;color:#ffff00;border-color:#ffff00}
-    @media(forced-colors:active){.bf-scene-motion,.bf-subject-badge,.bf-telemetry-pill,.bfl .bf-quick-chip{background:Canvas;color:CanvasText;border-color:CanvasText}}
+    .bf-case-whynot{margin-top:8px;padding:8px 10px;border-radius:8px;border:1px solid var(--bf-line);border-left:3px solid var(--bf-gold);background:var(--bf-wash);color:var(--bf-ink);font-size:12.5px;line-height:1.55;overflow-wrap:anywhere}
+    .bf-case-whynot strong{display:inline;font-size:12.5px}
+    .bf-restore-check{margin:14px 0 0;padding:12px 14px;border:1px solid var(--bf-line);border-radius:12px;background:var(--bf-wash);min-width:0}
+    .bf-restore-check legend{font-size:13px;font-weight:750;color:var(--bf-ink);padding:0 4px}
+    .bf-restore-choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .bfl .bf-restore-choices button{min-height:44px;font-size:12px;padding:8px 12px;text-align:left;flex:1 1 200px;min-width:0;overflow-wrap:anywhere}
+    .bf-restore-comparison{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid var(--bf-line);border-left:4px solid var(--bf-accent);background:var(--bf-bg);font-size:13px;line-height:1.55;min-width:0}
+    .bf-restore-comparison[data-aligned="false"]{border-left-color:var(--bf-gold)}
+    .bf-restore-comparison-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+    .bf-restore-badge{display:inline-block;padding:2px 9px;border-radius:999px;border:1px solid var(--bf-line);background:var(--bf-panel);color:var(--bf-ink);font-size:11px;font-weight:750}
+    .bf-restore-metrics{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:0;list-style:none}
+    .bf-restore-metrics li{padding:3px 9px;border-radius:999px;border:1px solid var(--bf-line);background:var(--bf-panel);color:var(--bf-ink);font-size:11.5px;font-weight:650}
+    .bf-restore-whynot{margin-top:6px;padding:8px 10px;border-radius:8px;border:1px solid var(--bf-line);border-left:3px solid var(--bf-gold);background:var(--bf-panel);color:var(--bf-ink);font-size:12.5px}
+    .bfl[data-contrast="true"] .bf-case-whynot,.theme-contrast .bfl .bf-case-whynot,.bfl[data-contrast="true"] .bf-restore-check,.theme-contrast .bfl .bf-restore-check,.bfl[data-contrast="true"] .bf-restore-comparison,.theme-contrast .bfl .bf-restore-comparison,.bfl[data-contrast="true"] .bf-restore-whynot,.theme-contrast .bfl .bf-restore-whynot{background:#000;color:#fff;border-color:#ffff00}
+    .bfl[data-contrast="true"] .bf-restore-badge,.theme-contrast .bfl .bf-restore-badge,.bfl[data-contrast="true"] .bf-restore-metrics li,.theme-contrast .bfl .bf-restore-metrics li{background:#000;color:#ffff00;border-color:#ffff00}
+    .bfl[data-reduced-motion="true"] button{transition:none}.bfl[data-reduced-motion="true"] .bf-badges li,.bfl[data-reduced-motion="true"] .bf-mission-stamp{animation:none}.bfl[data-reduced-motion="true"] .bf-stick-thumb{transition:none}
+    @media(forced-colors:active){.bf-scene-motion,.bf-subject-badge,.bf-telemetry-pill,.bfl .bf-quick-chip,.bf-case-whynot,.bf-restore-check,.bf-restore-comparison,.bf-restore-badge,.bf-restore-metrics li,.bf-restore-whynot{background:Canvas;color:CanvasText;border-color:CanvasText}}
     @media(forced-colors:active){.bf-scene-dock{--bf-panel:Canvas;--bf-ink:CanvasText;--bf-muted:CanvasText;--bf-line:CanvasText;--bf-accent:LinkText}.bfl .bf-scene-dock .bf-lens-caption{border-left-color:CanvasText}}
 `;
 
@@ -5139,7 +5313,7 @@ function buildWorld(T,kit) {
           offset+=duration+.08+Math.random()*.12;
         }
       }
-      function tick(){if(!active||disposed||audio.state!=='running')return;if(audio.currentTime+.15>=nextBird){birds(audio.currentTime+.08);nextBird=audio.currentTime+4.5+Math.random()*6;}}
+      function tick(){if(!active||disposed||audio.state!=='running'||isButterflyGlobalMuted())return;if(audio.currentTime+.15>=nextBird){birds(audio.currentTime+.08);nextBird=audio.currentTime+4.5+Math.random()*6;}}
       function fail(){if(disposed)return;dispose();if(onFailure)onFailure();}
       function report(){
         if(disposed)return;var state=!active?'silent':audio.state==='running'?'running':(resumePending||suspendPending)?'starting':'waiting';
@@ -5147,24 +5321,25 @@ function buildWorld(T,kit) {
       }
       // Share a pending resume across volume changes and quick mute/unmute actions.
       function resumeAudio(){
-        if(disposed||!active)return;if(audio.state==='closed'){fail();return;}
+        if(disposed||!active)return;if(isButterflyGlobalMuted()){report();return;}if(audio.state==='closed'){fail();return;}
         if(audio.state==='running'||resumePending){report();return;}
         resumePending=true;report();
         try{audio.resume().then(function(){
           resumePending=false;if(disposed)return;
-          if(!active){clearTimeout(suspendTimer);suspendTimer=setTimeout(suspend,160);}report();
+          if(!active||isButterflyGlobalMuted()){clearTimeout(suspendTimer);if(isButterflyGlobalMuted())suspend();else suspendTimer=setTimeout(suspend,160);}report();
         },function(){resumePending=false;fail();});}catch(_){resumePending=false;fail();}
       }
       function set(wanted,volume){
         if(disposed)return;if(audio.state==='closed'){fail();return;}
-        var nextLevel=clamp(Number(volume)||0,0,1)*.75,wants=!!wanted&&nextLevel>0,changed=wants!==active;active=wants;
-        if(level!==nextLevel||changed){level=nextLevel;smooth(master.gain,active?level:0,active?.55:.12);}
+        var globalMuted=isButterflyGlobalMuted();
+        var nextLevel=clamp(Number(volume)||0,0,1)*.75,wants=!!wanted&&!globalMuted&&nextLevel>0,changed=wants!==active;active=wants;
+        if(level!==nextLevel||changed){level=nextLevel;smooth(master.gain,active?level:0,active?.55:(globalMuted?.02:.12));}
         clearTimeout(suspendTimer);suspendTimer=0;
         if(active){
           if(!timer)timer=setInterval(tick,350);resumeAudio();tick();
         }else{
           clearInterval(timer);timer=0;
-          if(audio.state==='running'&&!suspendPending)suspendTimer=setTimeout(suspend,160);
+          if(audio.state==='running'&&!suspendPending){if(globalMuted)suspend();else suspendTimer=setTimeout(suspend,160);}
         }
         report();
       }
@@ -5172,7 +5347,7 @@ function buildWorld(T,kit) {
         suspendTimer=0;if(disposed||active||audio.state!=='running'||suspendPending)return;
         suspendPending=true;
         try{audio.suspend().then(function(){
-          suspendPending=false;if(disposed)return;if(active)resumeAudio();else report();
+          suspendPending=false;if(disposed)return;if(active&&!isButterflyGlobalMuted())resumeAudio();else report();
         },function(){suspendPending=false;fail();});}catch(_){suspendPending=false;fail();}
       }
       function dispose(){
@@ -5192,12 +5367,19 @@ function buildWorld(T,kit) {
 
   function ButterflyLab(props) {
     var ctx=props.ctx,R=ctx.React,h=R.createElement;
-    // This tool had NO translator: every accessible name shipped English in
-    // all 63 packs, and for the flight canvas the aria-label is the only
-    // description a screen-reader user gets. ctx.t is the host contract every
-    // other STEM tool uses; honour its 2-arg fallback form.
-    bfHostT=typeof ctx.t==='function'?function(k,fb){return ctx.t(k,fb);}:null;
-    var stateRef=R.useRef(null);if(!stateRef.current)stateRef.current=freshState((ctx.toolData||{}).butterfly);
+    // Safe single-arg ctx.t wrapper: applies English fallback when host ctx.t
+    // returns null/undefined, echoes the raw key, returns empty string, or throws.
+    var t=(ctx.t&&function(k,fb){var v;try{v=(typeof ctx.t==='function')?ctx.t(k,fb):null;}catch(e){v=null;}return (v==null||v===k||v==='')?(fb!=null?fb:k):v;})||function(k,fb){return fb!=null?fb:k;};
+    bfHostT=typeof ctx.t==='function'?t:null;
+    var savedBf=ctx.toolData&&typeof ctx.toolData==='object'&&!Array.isArray(ctx.toolData)&&ctx.toolData.butterfly&&typeof ctx.toolData.butterfly==='object'&&!Array.isArray(ctx.toolData.butterfly)?ctx.toolData.butterfly:null;
+    var stateRef=R.useRef(null);if(!stateRef.current)stateRef.current=freshState(savedBf);
+    var xpCreditedRef=R.useRef(null);if(!xpCreditedRef.current)xpCreditedRef.current=cleanXpLedger(savedBf&&savedBf._xpCredited);
+    var restoreCommitmentsRef=R.useRef(null);if(!restoreCommitmentsRef.current)restoreCommitmentsRef.current=cleanRestoreCommitments(savedBf&&savedBf._restoreCommitments);
+    var restoreCommitPair=R.useState(function(){return cleanRestoreCommitments(savedBf&&savedBf._restoreCommitments);}),restoreCommitments=restoreCommitPair[0],setRestoreCommitments=restoreCommitPair[1];
+    var restoreHypPair=R.useState(''),restoreHyp=restoreHypPair[0],setRestoreHyp=restoreHypPair[1];
+    var ownSpeechRef=R.useRef(false);
+    var reduceMotionRef=R.useRef(!!(ctx&&ctx.reduceMotion));reduceMotionRef.current=!!(ctx&&ctx.reduceMotion);
+    function isMotionReduced(){return !!(reduceMotionRef.current||(typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches));}
     var s=stateRef.current,api=R.useRef(null),stage=R.useRef(null),map=R.useRef(null),keys=R.useRef({});
     var flightPad=R.useRef({node:null,pointer:null,cx:0,cy:0,radius:1});
     var holdBlockedClicks=R.useRef(new WeakSet());
@@ -5290,13 +5472,45 @@ function buildWorld(T,kit) {
     // Once offered, keep the manual-copy field mounted while its feedback changes.
     var manualCopyPair=R.useState(false),manualCopy=manualCopyPair[0],setManualCopy=manualCopyPair[1];
     function choosePlan(id){
-      if(id===plan)return;var hadPrediction=!!guess;setPlan(id);setGuess('');
+      if(id===plan)return;var hadPrediction=!!guess;setPlan(id);setGuess('');setRestoreHyp('');
       var message=__alloFill(hadPrediction?__alloT('stem.butterfly.ui_plan_prediction_cleared','Planting plan selected: {value1}. Previous prediction cleared. Choose a prediction for this plan before applying it.'):__alloT('stem.butterfly.ui_plan_selected','Planting plan selected: {value1}. Choose a prediction for this plan before applying it.'),{value1:design(id).name});setDesignFeedback(message);announce(message);
     }
-    function applyDesign(){var result=applyPlan(s,plan,guess);if(result.ok){closeFeed();closeLens();lifeMotion.current.playing=false;if(!lifecycleVisual(s))closeLife();if(!evidenceRecorded(s,patch('restoration',s))){if(seasonSite==='restoration'){setSeasonSite('');setSeasonGuess('');setSeasonFeedback('');}if(eggSite==='restoration'){setEggSite('');setBroodGuess('');}}clearFlightInput();persist();setCycleFeedback('');}setDesignFeedback(result.message);announce(result.message);}
+    function applyDesign(){
+      var result=applyPlan(s,plan,guess);
+      if(result.ok){
+        closeFeed();closeLens();lifeMotion.current.playing=false;if(!lifecycleVisual(s))closeLife();
+        if(!evidenceRecorded(s,patch('restoration',s))){if(seasonSite==='restoration'){setSeasonSite('');setSeasonGuess('');setSeasonFeedback('');}if(eggSite==='restoration'){setEggSite('');setBroodGuess('');}}
+        if(restoreHyp&&RESTORE_OUTCOME_HYPOTHESES.some(function(x){return x.id===restoreHyp;})){
+          var nextCommits=Object.assign({},restoreCommitmentsRef.current);
+          nextCommits[plan]=restoreHyp;
+          restoreCommitmentsRef.current=cleanRestoreCommitments(nextCommits);
+          setRestoreCommitments(restoreCommitmentsRef.current);
+          setRestoreHyp('');
+        }
+        clearFlightInput();persist(null,restoreCommitmentsRef.current);setCycleFeedback('');
+      }
+      setDesignFeedback(result.message);announce(result.message);
+    }
     function startBrood(){var result=layEggs(s,eggSite,broodGuess);if(result.ok){persist();showLife(true,true);}setCycleFeedback(result.message);announce(result.message);}
     function nextStage(event){var origin=lifecycleActionTarget(event),result=advanceStage(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,trigger:event.currentTarget,action:'next'};persist();showLife(true,false);}setCycleFeedback(result.message);announce(result.message);}
-    function recordBrood(event){var origin=lifecycleActionTarget(event),result=broodResult(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,action:'record'};lifeMotion.current.playing=false;lifeMotion.current.progress=1;persist();setBroodGuess('');}setCycleFeedback(result.message);announce(result.message);}
+    function recordBrood(event){
+      var origin=lifecycleActionTarget(event),result=broodResult(s);
+      if(result.ok){
+        if(origin)lifeActionFocus.current={scope:origin,action:'record'};
+        lifeMotion.current.playing=false;lifeMotion.current.progress=1;
+        var milestones=[];
+        var lastBrood=s.lifecycle.broods.length?s.lifecycle.broods[s.lifecycle.broods.length-1]:null;
+        if(lastBrood&&lastBrood.result==='complete'){
+          milestones.push({key:'brood:complete',pts:15,reason:t('stem.butterfly.xp_brood_complete','Completed a monarch lifecycle brood to adulthood')});
+        }
+        if(s.notebook&&s.notebook.claim){
+          var cv=judgeClaim(s,s.notebook.claim);
+          if(cv&&cv.tested)milestones.push({key:'claim:'+s.notebook.claim,pts:10,reason:t('stem.butterfly.xp_claim_verified','Verified a habitat claim with recorded evidence')});
+        }
+        persistWithMilestones(milestones);setBroodGuess('');
+      }
+      setCycleFeedback(result.message);announce(result.message);
+    }
     function dropBrood(event){var origin=lifecycleActionTarget(event),result=abandonBrood(s);if(result.ok){if(origin)lifeActionFocus.current={scope:origin,action:'restart'};lifeMotion.current.playing=false;lifeMotion.current.progress=1;if(!lifecycleVisual(s))closeLife();persist();setBroodGuess('');setEggSite('');}setCycleFeedback(result.message);announce(result.message);}
     function reportCopyFeedback(state){
       if(state==='pending')return __alloT('stem.butterfly.ui_report_copy_pending','Copying your field report. You can keep working.');
@@ -5326,13 +5540,30 @@ function buildWorld(T,kit) {
       setCopyState(result);announce(reportCopyFeedback(result));
     }
     function draftCase(id,key,value){var next=Object.assign({},caseDraft),row=Object.assign({},next[id]);row[key]=value;next[id]=row;setCaseDraft(next);}
-    function submitCase(id){var d=caseDraft[id]||{},result=checkCase(s,id,d.stop,d.reason);if(result.ok){caseFocus.current={id:id,result:true};persist();}announce(result.message);}
+    function submitCase(id){
+      var d=caseDraft[id]||{},result=checkCase(s,id,d.stop,d.reason);
+      if(result.ok){
+        caseFocus.current={id:id,result:true};
+        var milestones=[];
+        if(result.matched)milestones.push({key:'case:'+id,pts:10,reason:t('stem.butterfly.xp_case_matched','Matched a field case to the monarch habitat model')});
+        persistWithMilestones(milestones);
+      }
+      announce(result.message);
+    }
     function retryCase(id){caseFocus.current={id:id,result:false};s.cases=cleanCases(s.cases);delete s.cases.answers[id];var next=Object.assign({},caseDraft);delete next[id];setCaseDraft(next);persist();announce(__alloT('stem.butterfly.ui_case_cleared','Case cleared. Make a new prediction.'));}
     var canSpeak=typeof ctx.callTTS==='function'||!!(typeof window!=='undefined'&&window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function');
     function speak(text,what){
       if(!text)return;
       var retryingMessage=speechFeedback&&speechFeedback.what===what&&text===speechFeedback.message;
       if(retryingMessage)text=speechFeedback.text;
+      if(isButterflyGlobalMuted()){
+        if(typeof window!=='undefined'&&window.speechSynthesis&&typeof window.speechSynthesis.cancel==='function'){
+          try{window.speechSynthesis.cancel();}catch(_){}
+        }
+        ownSpeechRef.current=false;
+        var mutedNote=t('stem.butterfly.ui_listen_muted','AlloFlow sound is muted. Unmute app sound to listen aloud.');
+        setSpeechFeedback({what:what,message:mutedNote,text:text});announce(mutedNote);return;
+      }
       var request=++speechRequest.current,reported=false;
       if(speechFeedback&&message===speechFeedback.message)setMessage(retryingMessage?text:'');setSpeechFeedback(null);
       // A replaced or detached request must not interrupt the learner with old feedback.
@@ -5346,9 +5577,9 @@ function buildWorld(T,kit) {
           Promise.resolve(ctx.callTTS(text,null,null,{force:true})).then(function(result){if(result===null||result===false)failed();},failed);return;
         }
         if(window.speechSynthesis&&typeof window.SpeechSynthesisUtterance==='function'){
-          window.speechSynthesis.cancel();var u=new window.SpeechSynthesisUtterance(text);u.rate=.95;u.onerror=failed;window.speechSynthesis.speak(u);
+          window.speechSynthesis.cancel();var u=new window.SpeechSynthesisUtterance(text);u.rate=.95;ownSpeechRef.current=true;u.onend=function(){ownSpeechRef.current=false;};u.onerror=function(err){ownSpeechRef.current=false;failed(err);};window.speechSynthesis.speak(u);
         }else failed();
-      }catch(error){failed(error);}
+      }catch(error){ownSpeechRef.current=false;failed(error);}
     }
     function listen(text,what){
       if(!canSpeak)return null;var feedback=speechFeedback&&speechFeedback.what===what?speechFeedback.message:'';
@@ -5358,7 +5589,15 @@ function buildWorld(T,kit) {
     function startSeason(event){
       s.season.mowing=mowPlan;s.season.prediction=seasonGuess||null;
       var result=runSeason(s,seasonSite,mowPlan,seasonGuess);
-      if(result.ok){queueWorkflowFocus(event,'.bf-season','.bf-weeks');persist();setSeasonGuess('');}
+      if(result.ok){
+        queueWorkflowFocus(event,'.bf-season','.bf-weeks');
+        var milestones=[];
+        if(s.notebook&&s.notebook.claim){
+          var cv=judgeClaim(s,s.notebook.claim);
+          if(cv&&cv.tested)milestones.push({key:'claim:'+s.notebook.claim,pts:10,reason:t('stem.butterfly.xp_claim_verified','Verified a habitat claim with recorded evidence')});
+        }
+        persistWithMilestones(milestones);setSeasonGuess('');
+      }
       setSeasonFeedback(result.message);announce(result.message);
     }
 
@@ -5404,10 +5643,22 @@ function buildWorld(T,kit) {
     }
     function update(){refresh(function(n){return n+1;});if(api.current)api.current.draw();}
     function announce(text){statusRevision.current++;setMessage(text);update();}
-    function syncMeadowSound(){var sound=meadowSound.current;if(sound.engine)sound.engine.set(sound.enabled&&!sound.muted&&!sceneMotion.current.paused&&!document.hidden,sound.volume/100);}
+    function syncMeadowSound(){var sound=meadowSound.current;if(sound.engine)sound.engine.set(sound.enabled&&!sound.muted&&!isButterflyGlobalMuted()&&!sceneMotion.current.paused&&!document.hidden,sound.volume/100);}
+    R.useEffect(function(){
+      function onMuteChanged(){
+        syncMeadowSound();
+        if(isButterflyGlobalMuted()&&ownSpeechRef.current&&typeof window!=='undefined'&&window.speechSynthesis&&typeof window.speechSynthesis.cancel==='function'){
+          ownSpeechRef.current=false;try{window.speechSynthesis.cancel();}catch(_){}
+        }
+        update();
+      }
+      if(typeof window!=='undefined'&&typeof window.addEventListener==='function')window.addEventListener('alloflow-mute-changed',onMuteChanged);
+      return function(){if(typeof window!=='undefined'&&typeof window.removeEventListener==='function')window.removeEventListener('alloflow-mute-changed',onMuteChanged);};
+    },[]);
     function toggleMeadowSound(){
       var sound=meadowSound.current;
       if(!sound.engine){
+        if(isButterflyGlobalMuted()){announce(t('stem.butterfly.sound_global_muted','AlloFlow sound is muted. Unmute app sound to listen to the meadow.'));return;}
         var engine;
         try{engine=createMeadowSound(function(){
           if(sound.engine!==engine||!stage.current||!stage.current.isConnected)return;
@@ -5441,8 +5692,61 @@ function buildWorld(T,kit) {
       syncMeadowSound();
       announce(sceneMotion.current.paused?__alloT('stem.butterfly.ui_all_motion_paused','All motion paused. Explore the controls and your journal, then resume when you are ready.'):__alloT('stem.butterfly.ui_all_motion_resumed','Motion resumed. The meadow moves on its own; flight stays under your control.'));
     }
-    function persist(){setCopyState('');if(ctx.updateMulti)ctx.updateMulti('butterfly',save(s));else if(ctx.setToolData)ctx.setToolData(function(prev){return Object.assign({},prev,{butterfly:save(s)});});}
-    function writeNotebook(changes){s.notebook=cleanNotebook(Object.assign({},s.notebook,changes));if(Object.prototype.hasOwnProperty.call(changes,'claim'))setPickedClaim(s.notebook.claim);persist();update();}
+    function persist(newXpKeys,nextCommitments){
+      setCopyState('');
+      var snapshot=save(s);
+      var ledgerSnapshot=cleanXpLedger(xpCreditedRef.current);
+      if(Array.isArray(newXpKeys)){newXpKeys.forEach(function(k){if(isSafeKey(k))ledgerSnapshot[k]=true;});}
+      else if(isSafeKey(newXpKeys)){ledgerSnapshot[newXpKeys]=true;}
+      var commitsSnapshot=cleanRestoreCommitments(nextCommitments!==undefined?nextCommitments:restoreCommitmentsRef.current);
+      var hasLedger=Object.keys(ledgerSnapshot).length>0,hasCommits=Object.keys(commitsSnapshot).length>0;
+      if(typeof ctx.setToolData==='function'){
+        ctx.setToolData(function(prev){
+          var safePrev=prev&&typeof prev==='object'&&!Array.isArray(prev)?prev:{};
+          var prevBf=safePrev.butterfly&&typeof safePrev.butterfly==='object'&&!Array.isArray(safePrev.butterfly)?safePrev.butterfly:{};
+          var mergedLedger=cleanXpLedger(prevBf._xpCredited);
+          Object.keys(ledgerSnapshot).forEach(function(k){mergedLedger[k]=true;});
+          var mergedCommits=Object.assign(cleanRestoreCommitments(prevBf._restoreCommitments),commitsSnapshot);
+          var nextBf=Object.assign({},snapshot);
+          if(Object.keys(mergedLedger).length>0)nextBf._xpCredited=mergedLedger;
+          if(Object.keys(mergedCommits).length>0)nextBf._restoreCommitments=mergedCommits;
+          return Object.assign({},safePrev,{butterfly:nextBf});
+        });
+      }else if(typeof ctx.updateMulti==='function'){
+        var nextBf2=Object.assign({},snapshot);
+        if(hasLedger)nextBf2._xpCredited=ledgerSnapshot;
+        if(hasCommits)nextBf2._restoreCommitments=commitsSnapshot;
+        ctx.updateMulti('butterfly',nextBf2);
+      }
+    }
+    function persistWithMilestones(milestones,nextCommitments){
+      var earned=[];
+      if(Array.isArray(milestones)){
+        for(var i=0;i<milestones.length;i++){
+          var m=milestones[i];
+          if(m&&isSafeKey(m.key)&&!xpCreditedRef.current[m.key]){
+            xpCreditedRef.current[m.key]=true;
+            earned.push(m);
+          }
+        }
+      }
+      persist(earned.map(function(m){return m.key;}),nextCommitments);
+      if(typeof ctx.awardXP==='function'){
+        for(var j=0;j<earned.length;j++){
+          ctx.awardXP('butterfly',earned[j].pts,earned[j].reason);
+        }
+      }
+    }
+    function writeNotebook(changes){
+      s.notebook=cleanNotebook(Object.assign({},s.notebook,changes));
+      if(Object.prototype.hasOwnProperty.call(changes,'claim'))setPickedClaim(s.notebook.claim);
+      var milestones=[];
+      if(s.notebook&&s.notebook.claim){
+        var cv=judgeClaim(s,s.notebook.claim);
+        if(cv&&cv.tested)milestones.push({key:'claim:'+s.notebook.claim,pts:10,reason:t('stem.butterfly.xp_claim_verified','Verified a habitat claim with recorded evidence')});
+      }
+      persistWithMilestones(milestones);update();
+    }
     function jumpTo(id){var node=id==='explore'?stage.current:sections.current[id];if(!node)return;feedMotion.current.playing=false;s.paused=true;s.target=null;stopFlight(s);lifeMotion.current.playing=false;clearFlightInput();update();if(id==='explore')queueSceneFocus('start');else{node.focus({preventScroll:true});node.scrollIntoView({block:'start',behavior:'auto'});}}
     function closeLens(){lensRef.current=null;setLens(null);}
     function closeFeed(){feedRef.current=false;setFeedWatch(false);feedMotion.current.playing=false;}
@@ -5450,7 +5754,7 @@ function buildWorld(T,kit) {
       var visual=feedingVisual(s);if(!visual)return;var previous=feedMotion.current,reset=focusScene||!feedRef.current||restart;
       if(restart)resumeMotion();
       closeLife();closeLens();s.paused=true;s.target=null;stopFlight(s);clearFlightInput();feedRef.current=true;setFeedWatch(true);
-      var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var reduced=isMotionReduced();
       feedMotion.current={phase:feedingPhase(phase).id,progress:reduced?1:0,playing:!reduced,signature:visual.patch+':'+(visual.plan||''),contact:reset?true:previous.contact,focus:reset?'whole':previous.focus,speed:reset?1:previous.speed};
       announce(__alloFill(__alloT('stem.butterfly.ui_feed_opened','{value1}. Read the observation and controls below the scene.'),{value1:feedingPhase(phase,feedMotion.current.contact).title}));
       if(focusScene)queueSceneFocus('center');
@@ -5458,7 +5762,7 @@ function buildWorld(T,kit) {
     function stillFeed(){var motion=feedMotion.current;motion.progress=1;motion.playing=false;announce(feedingOutcome(feedingVisual(s),motion.phase,1,motion.contact).summary);}
     function pauseFeed(){feedMotion.current.playing=false;update();}
     function seekFeed(event){feedMotion.current.progress=clamp(Number(event.target.value)/100,0,1);feedMotion.current.playing=false;update();}
-    function continueFeed(){if(!feedRef.current||window.matchMedia('(prefers-reduced-motion: reduce)').matches||feedMotion.current.progress>=1)return;resumeMotion();feedMotion.current.playing=true;update();}
+    function continueFeed(){if(!feedRef.current||isMotionReduced()||feedMotion.current.progress>=1)return;resumeMotion();feedMotion.current.playing=true;update();}
     function focusFeed(focus){feedMotion.current.focus=focus;update();}
     function contactFeed(contact){feedMotion.current.contact=contact;feedMotion.current.playing=false;announce(contact?__alloT('stem.butterfly.ui_feed_contact_on','The receptive surface is in the pollen path. Inspect the transfer.'):__alloT('stem.butterfly.ui_feed_contact_off','The receptive surface is outside the pollen path. The butterfly can still feed.'));}
     function speedFeed(event){var speed=Number(event.target.value);if([.5,1,2].indexOf(speed)<0)return;feedMotion.current.speed=speed;update();}
@@ -5466,14 +5770,23 @@ function buildWorld(T,kit) {
       var visual=feedingVisual(s),motion=feedMotion.current;
       if(!feedRef.current||!visual||motion.signature!==visual.patch+':'+(visual.plan||'')){announce(__alloT('stem.butterfly.ui_feed_open_visit_first','Open a flower visit at this patch before recording it.'));return;}
       var result=recordPollination(s,motion.phase,motion.progress,motion.contact);
-      if(result.ok){queueWorkflowFocus(event,'.bf-feed-watch','.bf-feed-contact');persist();}announce(result.message);
+      if(result.ok){
+        queueWorkflowFocus(event,'.bf-feed-watch','.bf-feed-contact');
+        var milestones=[];
+        if(s.notebook&&s.notebook.claim){
+          var cv=judgeClaim(s,s.notebook.claim);
+          if(cv&&cv.tested)milestones.push({key:'claim:'+s.notebook.claim,pts:10,reason:t('stem.butterfly.xp_claim_verified','Verified a habitat claim with recorded evidence')});
+        }
+        persistWithMilestones(milestones);
+      }
+      announce(result.message);
     }
     function explainPollination(){writeNotebook({claim:'feeding-always-pollinates'});jumpTo('notebook');}
     function closeLife(){lifeRef.current=false;setLifeWatch(false);lifeMotion.current.playing=false;lifeMotion.current.progress=1;}
     function showLife(animate,focusScene){leavePollinatorView();
       var visual=lifecycleVisual(s);if(!visual)return;var previous=lifeMotion.current,key=visual.patch+':'+(visual.plan||'')+':'+visual.stage+':'+visual.recorded,reset=focusScene||!lifeRef.current||previous.signature!==key;closeFeed();
       s.paused=true;s.target=null;stopFlight(s);clearFlightInput();closeLens();lifeRef.current=true;setLifeWatch(true);
-      var focus=reset?'context':previous.focus,moving=animate&&!visual.blocked&&(visual.stage==='caterpillar'||visual.stage==='adult'||visual.stage==='chrysalis'&&focus==='maturation')&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var focus=reset?'context':previous.focus,moving=animate&&!visual.blocked&&(visual.stage==='caterpillar'||visual.stage==='adult'||visual.stage==='chrysalis'&&focus==='maturation')&&!isMotionReduced();
       lifeMotion.current={progress:moving?0:1,playing:moving,signature:key,focus:focus,speed:reset?1:previous.speed};update();
       if(focusScene)queueSceneFocus('center');
     }
@@ -5491,7 +5804,7 @@ function buildWorld(T,kit) {
       else update();
     }
     function stillLife(){showLifeMoment(1);}
-    function continueLife(){var visual=lifecycleVisual(s);if(!lifeRef.current||!visual||visual.blocked||(['caterpillar','adult'].indexOf(visual.stage)<0&&!(visual.stage==='chrysalis'&&lifeMotion.current.focus==='maturation'))||window.matchMedia('(prefers-reduced-motion: reduce)').matches||lifeMotion.current.progress>=1)return;resumeMotion();lifeMotion.current.playing=true;update();}
+    function continueLife(){var visual=lifecycleVisual(s);if(!lifeRef.current||!visual||visual.blocked||(['caterpillar','adult'].indexOf(visual.stage)<0&&!(visual.stage==='chrysalis'&&lifeMotion.current.focus==='maturation'))||isMotionReduced()||lifeMotion.current.progress>=1)return;resumeMotion();lifeMotion.current.playing=true;update();}
     function focusLife(focus){if(['context','specimen','detail','feeding','maturation'].indexOf(focus)<0)return;var visual=lifecycleVisual(s);if(focus==='feeding'&&!larvalFeeding(visual,lifeMotion.current.progress).active||focus==='maturation'&&!chrysalisMaturation(visual,lifeMotion.current.progress).active)return;if(visual&&visual.stage==='chrysalis'&&focus!=='maturation')lifeMotion.current.playing=false;lifeMotion.current.focus=focus;update();}
     function speedLife(event){var speed=Number(event.target.value);if([.5,1,2].indexOf(speed)<0)return;lifeMotion.current.speed=speed;update();}
     function chooseLens(kind){leavePollinatorView();
@@ -5504,18 +5817,33 @@ function buildWorld(T,kit) {
     function travel(id){leavePollinatorView();closeFeed();closeLife();closeLens();resumeMotion();stopFlight(s);s.landed=null;s.y=Math.max(6,s.y);s.target=id;s.paused=false;clearFlightInput();announce(__alloFill(__alloT('stem.butterfly.ui_guided_flight_to','Guided flight to {value1}. You will slow down near the patch. Steer to take control.'),{value1:patch(id,s).name}));}
     function visitDirect(id){leavePollinatorView();var p=patch(id,s);if(!p)return;closeFeed();closeLife();closeLens();clearFlightInput();stopFlight(s);s.target=null;s.landed=null;s.paused=true;s.x=p.x;s.z=p.z;s.y=6;announce(__alloFill(__alloT('stem.butterfly.ui_arrived_without_flying','Arrived at {value1} without flying. Choose Land here, then Examine patch to record your evidence.'),{value1:p.name}));queueSceneFocus('center');}
     function landing(){leavePollinatorView();closeFeed();closeLife();closeLens();clearFlightInput();if(s.landed){resumeMotion();stopFlight(s);s.landed=null;s.y=Math.max(6,s.y);s.paused=false;announce(__alloT('stem.butterfly.ui_airborne','Airborne. Choose your next habitat.'));}else announce(land(s).message);}
-    function examine(){var result=observe(s);if(result.ok)persist();if(s.landed==='restoration')setDesignFeedback(result.message);announce(result.message);}
+    function examine(){
+      var wasRestorationTrial=s.landed==='restoration'&&!!s.restoration.prediction;
+      var result=observe(s);
+      if(result.ok){
+        var milestones=[];
+        if(wasRestorationTrial&&s.restoration.trials.length>0){
+          milestones.push({key:'restoration:first',pts:15,reason:t('stem.butterfly.xp_restoration_trial','Recorded first restoration plot trial')});
+        }
+        persistWithMilestones(milestones);
+      }
+      if(s.landed==='restoration')setDesignFeedback(result.message);
+      announce(result.message);
+    }
     R.useEffect(function(){
       var alive=true,world=null,gl=null,camera=null,raf=0,last=0,lastUI=0,lastAmbientDraw=0,observer=null;
-      var node=stage.current,viewport=node.querySelector('.bf-viewport'),cv=map.current,reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+      var node=stage.current,viewport=node.querySelector('.bf-viewport'),cv=map.current;
+      var reduced=(typeof window!=='undefined'&&typeof window.matchMedia==='function')?window.matchMedia('(prefers-reduced-motion: reduce)'):{matches:false,addEventListener:function(){},removeEventListener:function(){}};
+      function motionIsReduced(){return !!(reduceMotionRef.current||reduced.matches);}
       var width=1,height=1,lastMapMode=mapModeRef.current,lastView=viewRef.current,lastLens=lensRef.current,lastLifeWatch=lifeRef.current,lastFeedWatch=feedRef.current;
-      var lastMotionReduced=reduced.matches,pendingSceneFocus=null,returnNeedsDisabled=true,returnWaitsForMap=false,committedRenderer='loading',returnReady=false,returnTimer=0;
+      var lastMotionReduced=motionIsReduced(),pendingSceneFocus=null,returnNeedsDisabled=true,returnWaitsForMap=false,committedRenderer='loading',returnReady=false,returnTimer=0;
       var tracking={id:'',clock:0,x:0,y:0,z:0};
       function paintMap(){
         var g=cv.getContext('2d');if(!g)return;
         var dpr=Math.min(window.devicePixelRatio||1,2);g.setTransform(dpr,0,0,dpr,0,0);
-        var feeding=feedRef.current?feedingVisual(s):null;if(feeding){paintFeedingDiagram(g,width,height,feeding,feedMotion.current.phase,feedMotion.current.progress,reduced.matches,feedMotion.current.contact,feedMotion.current.focus);return;}
-        var specimen=lifeRef.current?lifecycleVisual(s):null;if(specimen){paintLifecycleDiagram(g,width,height,specimen,lifeMotion.current.progress,reduced.matches,lifeMotion.current.focus);return;}
+        var isRed=motionIsReduced();
+        var feeding=feedRef.current?feedingVisual(s):null;if(feeding){paintFeedingDiagram(g,width,height,feeding,feedMotion.current.phase,feedMotion.current.progress,isRed,feedMotion.current.contact,feedMotion.current.focus);return;}
+        var specimen=lifeRef.current?lifecycleVisual(s):null;if(specimen){paintLifecycleDiagram(g,width,height,specimen,lifeMotion.current.progress,isRed,lifeMotion.current.focus);return;}
         paintHabitatMap(g,width,height,s,!!lensRef.current);
         var scale=Math.min(width,height)/240;
         habitats(s).forEach(function(p){var label=placeLabels.current[p.id];if(!label)return;label.dataset.map='true';label.style.visibility='visible';label.style.left=(width/2+(p.x-15)*scale)+'px';label.style.top=(height/2+(p.z-15)*scale)+'px';});
@@ -5543,15 +5871,16 @@ function buildWorld(T,kit) {
       }
       function draw(){
         if(!alive)return;
+        var isRed=motionIsReduced();
         lastMapMode=mapModeRef.current;lastView=viewRef.current;lastLens=lensRef.current;lastLifeWatch=lifeRef.current;lastFeedWatch=feedRef.current;
         var generation=lifecycleVisual(s),watched=lifeRef.current&&generation,feeding=feedRef.current?feedingVisual(s):null;
         if(feeding&&feedMotion.current.signature!==feeding.patch+':'+(feeding.plan||'')){feeding=null;feedMotion.current.playing=false;}
-        if(reduced.matches)feedMotion.current.playing=false;
+        if(isRed)feedMotion.current.playing=false;
         node.dataset.bfFeeding=feeding?feedMotion.current.phase:'';node.dataset.bfFeedingProgress=feedMotion.current.progress.toFixed(3);node.dataset.bfFeedingContact=String(feedMotion.current.contact);node.dataset.bfFeedingFocus=feedMotion.current.focus;
         var observing=!!(watched||feeding);
         var lifeKey=generation?generation.patch+':'+(generation.plan||'')+':'+generation.stage+':'+generation.recorded:'';
         if(lifeMotion.current.signature!==lifeKey){lifeMotion.current.signature=lifeKey;lifeMotion.current.progress=1;lifeMotion.current.playing=false;}
-        if(reduced.matches)lifeMotion.current.playing=false;
+        if(isRed)lifeMotion.current.playing=false;
         node.dataset.bfLifeStage=generation?generation.stage:'';node.dataset.bfLifeWatch=String(!!watched);node.dataset.bfLifeProgress=lifeMotion.current.progress.toFixed(3);node.dataset.bfLifeFocus=lifeMotion.current.focus;
         node.dataset.clock=s.clock.toFixed(3);node.dataset.position=[s.x,s.y,s.z].map(function(v){return v.toFixed(2);}).join(',');
         node.dataset.bfMeadowClock=sceneMotion.current.clock.toFixed(3);node.dataset.bfMotionPaused=String(sceneMotion.current.paused);node.dataset.bfPaused=String(s.paused||sceneMotion.current.paused);
@@ -5564,29 +5893,29 @@ function buildWorld(T,kit) {
         cv.style.visibility=useMap?'visible':'hidden';if(gl)gl.domElement.style.visibility=useMap?'hidden':'visible';
         Object.keys(feedLabels.current).forEach(function(id){var pair=feedLabels.current[id];if(pair)pair.style.visibility=useMap?'hidden':'visible';});
         if(useMap){wayfinding(null,false);paintMap();return;}
-        var T=window.THREE,p=world.player.root,time=reduced.matches?0:sceneMotion.current.clock,pose=flightPose(s,reduced.matches);
+        var T=window.THREE,p=world.player.root,time=isRed?0:sceneMotion.current.clock,pose=flightPose(s,isRed);
         world.setLight(lightRef.current);
-        if(s.paused&&!s.landed&&!reduced.matches){pose=flutterPose(time*17,time,0,0);pose.bank=0;}
-        p.visible=!observing&&!watchingVisitor;world.syncLifecycle(generation,lifeMotion.current.progress,reduced.matches,watched?lifeMotion.current.focus:'context');world.feeding.sync(feeding,feedMotion.current.phase,feedMotion.current.progress,reduced.matches,feedMotion.current.contact);
+        if(s.paused&&!s.landed&&!isRed){pose=flutterPose(time*17,time,0,0);pose.bank=0;}
+        p.visible=!observing&&!watchingVisitor;world.syncLifecycle(generation,lifeMotion.current.progress,isRed,watched?lifeMotion.current.focus:'context');world.feeding.sync(feeding,feedMotion.current.phase,feedMotion.current.progress,isRed,feedMotion.current.contact);
         p.position.set(s.x,s.y+pose.bob,s.z);p.rotation.set(pose.pitch,s.yaw,pose.bank,'YXZ');
         world.player.wings[0].rotation.z=pose.leftWing;world.player.wings[1].rotation.z=pose.rightWing;
         if(world.player.hindWings)world.player.hindWings.forEach(function(wing,i){wing.rotation.z=(i?1:-1)*pose.hindLag;});
-        if(world.updatePlayerWingFlex)world.updatePlayerWingFlex(s,reduced.matches,time,pose,!p.visible);
+        if(world.updatePlayerWingFlex)world.updatePlayerWingFlex(s,isRed,time,pose,!p.visible);
         var nectarPatches=habitats(s).filter(function(patch){return patch.nectar;});
         if(world.showOuterBlooms)world.showOuterBlooms(!observing);
-        if(world.animate)world.animate(time,reduced.matches,observing||!!detail||!!s.landed&&!watchingVisitor);
-        if(world.animateVisitors)world.animateVisitors(time,reduced.matches,nectarPatches,observing);
-        if(world.animateBees)world.animateBees(time,reduced.matches,s.restoration.design,observing);
+        if(world.animate)world.animate(time,isRed,observing||!!detail||!!s.landed&&!watchingVisitor);
+        if(world.animateVisitors)world.animateVisitors(time,isRed,nectarPatches,observing);
+        if(world.animateBees)world.animateBees(time,isRed,s.restoration.design,observing);
         if(world.playerShadow){world.playerShadow.visible=!observing&&!watchingVisitor;world.playerShadow.position.set(s.x+s.y*.18,.045,s.z+s.y*.11);world.playerShadow.scale.set(6+s.y*.18,4.2+s.y*.13,1);world.playerShadow.material.uniforms.opacity.value=Math.max(.035,.2-s.y*.006);}
         world.restoration.children.forEach(function(group){group.visible=group.name==='restoration-'+s.restoration.design;});
         world.ring.position.set(s.x,.09,s.z);world.ring.visible=!observing&&viewRef.current==='meadow';var dest=patch(s.target,s);world.targetRing.visible=!observing&&!!dest;if(dest)world.targetRing.position.set(dest.x,.08,dest.z);
         world.focusHalo.visible=!!detail;
-        var cameraView=feeding?feedingCamera(feeding,feedMotion.current.phase,width/height,feedMotion.current.focus,feedMotion.current.progress,reduced.matches,feedMotion.current.contact):watched?lifecycleCamera(generation,width/height,lifeMotion.current.focus,lifeMotion.current.progress,reduced.matches):cameraPose(s,viewRef.current,detail,reduced.matches);
+        var cameraView=feeding?feedingCamera(feeding,feedMotion.current.phase,width/height,feedMotion.current.focus,feedMotion.current.progress,isRed,feedMotion.current.contact):watched?lifecycleCamera(generation,width/height,lifeMotion.current.focus,lifeMotion.current.progress,isRed):cameraPose(s,viewRef.current,detail,isRed);
         if(watchingVisitor){
           var subject=world.visitors[watchedVisitorIndex(nectarPatches,watchPatchRef.current,watchSpeciesRef.current)];
           if(subject){
             node.dataset.bfWatchPatch=subject.root.userData.patch;node.dataset.bfWatchingSpecies=subject.speciesId;node.dataset.bfWatchingVisitor=subject.root.name;
-            var position=subject.root.position,identity=subject.root.name+':'+subject.root.userData.patch,elapsed=Math.max(0,time-tracking.clock),blend=tracking.id!==identity||reduced.matches?1:1-Math.exp(-elapsed*5);
+            var position=subject.root.position,identity=subject.root.name+':'+subject.root.userData.patch,elapsed=Math.max(0,time-tracking.clock),blend=tracking.id!==identity||isRed?1:1-Math.exp(-elapsed*5);
             tracking.x+=(position.x-tracking.x)*blend;tracking.y+=(position.y-tracking.y)*blend;tracking.z+=(position.z-tracking.z)*blend;tracking.id=identity;tracking.clock=time;
             cameraView=pollinatorCamera(tracking,width/height,meadowSpecies(subject.speciesId).scale);node.dataset.bfWatchingPhase=subject.root.userData.behavior;
             world.watchVisitor(subject,cameraView,width/height);
@@ -5663,16 +5992,16 @@ function buildWorld(T,kit) {
         else if(active!==pendingSceneFocus&&!neutralFocus(active))pendingSceneFocus=null;
         sceneMotion.current.paused=true;sceneMotion.current.reset=true;syncMeadowSound();lifeMotion.current.playing=false;feedMotion.current.playing=false;s.paused=true;s.target=null;stopFlight(s);setMessage(__alloT('stem.butterfly.ui_all_paused_while_away','All motion paused while you were away. Resume motion when you are ready.'));refresh(function(n){return n+1;});clearFlightInput();last=0;draw();}
       function hidden(){if(document.hidden)pauseForFocus();else returned();}
-      function motionPreferenceChanged(){if(lastMotionReduced===reduced.matches)return;lastMotionReduced=reduced.matches;sceneMotion.current.reset=true;if(reduced.matches){lifeMotion.current.playing=false;feedMotion.current.playing=false;feedMotion.current.progress=1;}draw();refresh(function(n){return n+1;});}
+      function motionPreferenceChanged(){var curRed=motionIsReduced();if(lastMotionReduced===curRed)return;lastMotionReduced=curRed;sceneMotion.current.reset=true;if(curRed){lifeMotion.current.playing=false;feedMotion.current.playing=false;feedMotion.current.progress=1;}draw();refresh(function(n){return n+1;});}
       var keyMap={ArrowUp:'forward',KeyW:'forward',ArrowDown:'back',KeyS:'back',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',KeyE:'rise',KeyQ:'lower'};
       function keydown(e){if(!flightShortcut(e)||!node.contains(document.activeElement)||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName))return;if(keyMap[e.code]){e.preventDefault();if(!sceneMotion.current.paused&&!lifeRef.current&&!feedRef.current)keys.current[keyMap[e.code]]=true;}if(e.code==='Space'&&!e.repeat){e.preventDefault();toggleSceneMotion();}if(e.code==='KeyG'&&!e.repeat){e.preventDefault();toggleGlide();}}
       function keyup(e){if(keyMap[e.code])delete keys.current[keyMap[e.code]];}
       // Keep idle controls current even when a browser delays the preference notification.
-      function frame(now){if(!alive)return;if(lastMotionReduced!==reduced.matches)motionPreferenceChanged();var wasPaused=s.paused,scenery=sceneMotion.current,halted=scenery.paused||document.hidden,dt=last&&!scenery.reset?Math.max(0,(now-last)/1000):0,motion=lifeMotion.current,wasMoving=motion.playing,feedingMotion=feedMotion.current,wasFeeding=feedingMotion.playing;
-        if(!halted&&motion.playing){if(!lifeRef.current||reduced.matches){motion.playing=false;}else{motion.progress=Math.min(1,motion.progress+dt*motion.speed/3.6);if(motion.progress>=1)motion.playing=false;}}
-        if(!halted&&feedingMotion.playing){if(!feedRef.current||reduced.matches){feedingMotion.playing=false;feedingMotion.progress=1;}else{feedingMotion.progress=Math.min(1,feedingMotion.progress+dt*feedingMotion.speed/5);if(feedingMotion.progress>=1)feedingMotion.playing=false;}}
+      function frame(now){if(!alive)return;var isRed=motionIsReduced();if(lastMotionReduced!==isRed)motionPreferenceChanged();var wasPaused=s.paused,scenery=sceneMotion.current,halted=scenery.paused||document.hidden,dt=last&&!scenery.reset?Math.max(0,(now-last)/1000):0,motion=lifeMotion.current,wasMoving=motion.playing,feedingMotion=feedMotion.current,wasFeeding=feedingMotion.playing;
+        if(!halted&&motion.playing){if(!lifeRef.current||isRed){motion.playing=false;}else{motion.progress=Math.min(1,motion.progress+dt*motion.speed/3.6);if(motion.progress>=1)motion.playing=false;}}
+        if(!halted&&feedingMotion.playing){if(!feedRef.current||isRed){feedingMotion.playing=false;feedingMotion.progress=1;}else{feedingMotion.progress=Math.min(1,feedingMotion.progress+dt*feedingMotion.speed/5);if(feedingMotion.progress>=1)feedingMotion.playing=false;}}
         if(!halted)advanceFrame(s,dt,keys.current);
-        var ambient=!halted&&!reduced.matches&&!!gl&&!mapModeRef.current&&!lifeRef.current&&!feedRef.current&&!lensRef.current;
+        var ambient=!halted&&!isRed&&!!gl&&!mapModeRef.current&&!lifeRef.current&&!feedRef.current&&!lensRef.current;
         if(ambient)scenery.clock+=Math.min(dt,.1);
         last=now;scenery.reset=false;
         if(s.paused&&!wasPaused){
@@ -5702,17 +6031,21 @@ function buildWorld(T,kit) {
       raf=requestAnimationFrame(frame);
       return function(){alive=false;cancelReturnFocus();cancelAnimationFrame(raf);lifeMotion.current.playing=false;feedMotion.current.playing=false;observer.disconnect();window.removeEventListener('blur',pauseForFocus);window.removeEventListener('focus',returned);document.removeEventListener('visibilitychange',hidden);document.removeEventListener('focusin',focusChanged);document.removeEventListener('pointerdown',cancelReturnFocus,true);node.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);reduced.removeEventListener('change',motionPreferenceChanged);disposeWorld();api.current=null;clearFlightInput();s.paused=true;};
     },[retry]);
+    R.useEffect(function(){
+      if(ctx&&ctx.reduceMotion){lifeMotion.current.playing=false;feedMotion.current.playing=false;if(feedRef.current)feedMotion.current.progress=1;}
+      if(api.current)api.current.draw();
+    },[!!(ctx&&ctx.reduceMotion)]);
     R.useEffect(function(){if(api.current&&api.current.checkReturnFocus)api.current.checkReturnFocus(renderer);});
     var near=nearest(s),landed=patch(s.landed,s),remaining=s.observations.length,detail=fieldDetail(s,lens),recorded=evidenceRecorded(s,landed);
     var specimen=lifecycleVisual(s),watching=lifeWatch&&specimen,specimenStage=specimen?STAGES.find(function(st){return st.id===specimen.stage;}):null;
     var feeding=feedWatch?feedingVisual(s):null,feedingStep=feedingPhase(feedMotion.current.phase,feedMotion.current.contact),feedResult=feedingOutcome(feeding,feedMotion.current.phase,feedMotion.current.progress,feedMotion.current.contact),observing=!!(watching||feeding);
     var flowerVisits=cleanPollination(s.pollination).visits,feedVisits=feeding?currentPollinationVisits(s).filter(function(row){return row.patch===feeding.patch&&(row.plan||null)===(feeding.plan||null)&&row.species===feeding.species;}):[];
     var feedSaved=feedVisits.some(function(row){return row.contact===feedMotion.current.contact;}),feedPairReady=feedVisits.length===2;
-    var allMotionPaused=sceneMotion.current.paused,motionReduced=typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var allMotionPaused=sceneMotion.current.paused,motionReduced=isMotionReduced();
     var watchingPollinators=view==='pollinators'&&!observing&&!detail&&!mapMode&&renderer==='three';
     var habitatMapVisible=(mapMode||renderer!=='three')&&!observing;
-    var sound=meadowSound.current,soundSupported=!!(window.AudioContext||window.webkitAudioContext),soundQuiet=sound.muted||!sound.enabled;
-    var soundStatus=!soundSupported?__alloT('stem.butterfly.sound_unavailable','Meadow sounds are unavailable in this browser.'):sound.error?__alloT('stem.butterfly.sound_failed','Sound could not start. Try enabling it again.'):!sound.enabled?__alloT('stem.butterfly.sound_off','Off until you choose to listen.'):sound.muted?__alloT('stem.butterfly.sound_muted','Muted · your volume is saved.'):allMotionPaused?__alloT('stem.butterfly.sound_paused','Paused with the meadow.'):sound.volume===0?__alloT('stem.butterfly.sound_zero','Volume is at zero.'):sound.playback==='running'?__alloT('stem.butterfly.sound_playing','Listening · soft rustles and distant birds.'):sound.playback==='starting'?__alloT('stem.butterfly.sound_starting','Sound is starting. You can mute while you wait.'):__alloT('stem.butterfly.sound_interrupted','Sound is paused by the browser. Mute and unmute to try again.');
+    var sound=meadowSound.current,soundSupported=!!(window.AudioContext||window.webkitAudioContext),globalMuted=isButterflyGlobalMuted(),soundQuiet=sound.muted||!sound.enabled||globalMuted;
+    var soundStatus=!soundSupported?__alloT('stem.butterfly.sound_unavailable','Meadow sounds are unavailable in this browser.'):sound.error?__alloT('stem.butterfly.sound_failed','Sound could not start. Try enabling it again.'):globalMuted?t('stem.butterfly.sound_global_muted_status','Muted by AlloFlow sound control.'):!sound.enabled?__alloT('stem.butterfly.sound_off','Off until you choose to listen.'):sound.muted?__alloT('stem.butterfly.sound_muted','Muted · your volume is saved.'):allMotionPaused?__alloT('stem.butterfly.sound_paused','Paused with the meadow.'):sound.volume===0?__alloT('stem.butterfly.sound_zero','Volume is at zero.'):sound.playback==='running'?__alloT('stem.butterfly.sound_playing','Listening · soft rustles and distant birds.'):sound.playback==='starting'?__alloT('stem.butterfly.sound_starting','Sound is starting. You can mute while you wait.'):__alloT('stem.butterfly.sound_interrupted','Sound is paused by the browser. Mute and unmute to try again.');
     var lifeDetail=specimen?lifecycleInspection(specimen,lifeMotion.current.focus,lifeMotion.current.progress,motionReduced):null,lifeCanAnimate=!!(specimen&&!specimen.blocked&&(specimen.stage==='caterpillar'||specimen.stage==='adult'||specimen.stage==='chrysalis'&&lifeMotion.current.focus==='maturation'));
     var larvalMeal=larvalFeeding(specimen,lifeMotion.current.progress),watchingMeal=!!(watching&&larvalMeal.active&&lifeMotion.current.focus==='feeding');
     var maturity=chrysalisMaturation(specimen,lifeMotion.current.progress),watchingMaturation=!!(watching&&maturity.active&&lifeMotion.current.focus==='maturation');
@@ -5758,7 +6091,10 @@ function buildWorld(T,kit) {
       onPointerUp:function(){delete keys.current[key];},onPointerCancel:function(){clearFlightInput();stopFlight(s);update();},onLostPointerCapture:function(){delete keys.current[key];},
       onKeyDown:function(e){if(e.key!==' '&&e.key!=='Enter')return;if(e.repeat&&holdBlockedClicks.current.has(e.currentTarget))return;if(!flightShortcut(e)){holdBlockedClicks.current.add(e.currentTarget);return;}holdBlockedClicks.current.delete(e.currentTarget);if(!sceneMotion.current.paused&&!s.paused&&!s.landed){e.preventDefault();keys.current[key]=true;}},
       onKeyUp:function(e){if(e.key!==' '&&e.key!=='Enter')return;delete keys.current[key];var node=e.currentTarget;if(holdBlockedClicks.current.has(node))setTimeout(function(){holdBlockedClicks.current.delete(node);},0);},onBlur:function(event){holdBlockedClicks.current.delete(event.currentTarget);delete keys.current[key];if(!sceneMotion.current.paused)stopFlight(s);}});}
-    return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':!!ctx.isDark,'data-contrast':!!ctx.isContrast,'aria-label':__alloT('stem.butterfly.a11y_butterfly_habitat_lab',"Butterfly Habitat Lab")},
+    var isContrast=!!(ctx.isContrast||ctx.theme==='contrast');
+    var isDark=!isContrast&&!!(ctx.isDark||ctx.theme==='dark');
+    var restoreCompRows=DESIGNS.map(function(d){var hId=restoreCommitments[d.id];return hId?{design:d,cmp:compareRestorePrediction(s,d.id,hId)}:null;}).filter(Boolean);
+    return h('section',{className:'bfl','data-butterfly-root':true,'data-dark':isDark,'data-contrast':isContrast,'data-reduced-motion':String(motionReduced),'data-embedded':ctx.embedded?'true':undefined,'aria-label':__alloT('stem.butterfly.a11y_butterfly_habitat_lab',"Butterfly Habitat Lab")},
       h('style',null,CSS),
       h('header',{className:'bf-header'},
         h('div',{className:'bf-header-copy'},
@@ -5894,8 +6230,33 @@ function buildWorld(T,kit) {
           h('div',null,h('label',null,__alloT('stem.butterfly.dsg_step2_predict_resources','2. Predict the resources available'),h('select',{id:'bf-design-guess','aria-describedby':'bf-design-plan-'+plan,value:guess,onChange:function(e){setGuess(e.target.value);}},h('option',{value:''},__alloT('stem.butterfly.dsg_choose_your_prediction','Choose your prediction')),PREDICTIONS.map(function(p){return h('option',{key:p.id,value:p.id},p.label);}))),
             h('div',{className:'bf-design-actions'},button(__alloT('stem.butterfly.dsg_apply_plan','Apply habitat plan'),applyDesign,{className:'bf-primary',disabled:!guess}),button(__alloT('stem.butterfly.dsg_visit_restoration_plot','Visit restoration plot'),function(){travel('restoration');queueSceneFocus('center');})),
             h('p',{className:'bf-help'},s.restoration.prediction?__alloT('stem.butterfly.dsg_help_prediction_saved','Prediction saved. Land at the restoration plot and examine it to record a result.'):__alloT('stem.butterfly.dsg_help_apply_then_visit','Apply a plan, then visit and examine it. Changing plants alone does not count as evidence.')))),
+        h('fieldset',{className:'bf-restore-check','data-bf-restore-check':'true'},
+          h('legend',null,t('stem.butterfly.dsg_check_legend','Optional: commit a full-cycle expectation before applying')),
+          h('p',{className:'bf-help'},t('stem.butterfly.dsg_check_help','Before planting, optionally note what you expect when you later compare flower visits, a generation, and mowing on this design.')),
+          h('div',{className:'bf-restore-choices',role:'group','aria-label':t('stem.butterfly.a11y_restore_outcome_choices','Optional restoration outcome expectations')},
+            RESTORE_OUTCOME_HYPOTHESES.map(function(opt){
+              var active=restoreHyp===opt.id;
+              var label=opt.id==='no-brood-no-pollination'?t('stem.butterfly.restore_hyp_none','No flower visits and no monarch generation can finish'):opt.id==='visits-only'?t('stem.butterfly.restore_hyp_visits','Adults can sip nectar and transfer pollen, but caterpillars still stall'):t('stem.butterfly.restore_hyp_brood','Both flower visits and a full generation can finish if mowing waits');
+              return button(label,function(){setRestoreHyp(active?'':opt.id);},{key:opt.id,'aria-pressed':active,'data-bf-restore-hyp':opt.id});
+            }))),
         h('p',{className:'bf-design-feedback'},designFeedback),
-        h('table',{className:'bf-comparison'},h('caption',null,__alloFill(__alloT('stem.butterfly.dsg_comparison_caption','Your planting comparisons · {value1} of {value2} examined'),{value1:s.restoration.trials.length,value2:DESIGNS.length})),h('thead',null,h('tr',null,h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_established_plan','Established plan')),h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_adult_nectar','Adult nectar')),h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_host_leaves','Caterpillar host leaves')))),h('tbody',null,DESIGNS.map(function(d){var trial=s.restoration.trials.find(function(t){return t.design===d.id;});return h('tr',{key:d.id,'data-design-record':d.id},h('th',{scope:'row'},d.short),h('td',null,trial?(d.nectar?__alloT('stem.butterfly.dsg_present','Present'):__alloT('stem.butterfly.dsg_absent','Absent')):__alloT('stem.butterfly.dsg_not_examined','Not examined'),trial?h('span',null,__alloFill(__alloT('stem.butterfly.dsg_predicted','Predicted: {value1}'),{value1:prediction(trial.prediction).label})):null),h('td',null,trial?(d.host?__alloT('stem.butterfly.dsg_present','Present'):__alloT('stem.butterfly.dsg_absent','Absent')):__alloT('stem.butterfly.dsg_not_examined','Not examined')));}))),
+        h('table',{className:'bf-comparison'},h('caption',null,__alloFill(__alloT('stem.butterfly.dsg_comparison_caption','Your planting comparisons · {value1} of {value2} examined'),{value1:s.restoration.trials.length,value2:DESIGNS.length})),h('thead',null,h('tr',null,h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_established_plan','Established plan')),h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_adult_nectar','Adult nectar')),h('th',{scope:'col'},__alloT('stem.butterfly.dsg_col_host_leaves','Caterpillar host leaves')))),h('tbody',null,DESIGNS.map(function(d){var trial=s.restoration.trials.find(function(tr){return tr.design===d.id;});return h('tr',{key:d.id,'data-design-record':d.id},h('th',{scope:'row'},d.short),h('td',null,trial?(d.nectar?__alloT('stem.butterfly.dsg_present','Present'):__alloT('stem.butterfly.dsg_absent','Absent')):__alloT('stem.butterfly.dsg_not_examined','Not examined'),trial?h('span',null,__alloFill(__alloT('stem.butterfly.dsg_predicted','Predicted: {value1}'),{value1:prediction(trial.prediction).label})):null),h('td',null,trial?(d.host?__alloT('stem.butterfly.dsg_present','Present'):__alloT('stem.butterfly.dsg_absent','Absent')):__alloT('stem.butterfly.dsg_not_examined','Not examined')));}))),
+        restoreCompRows.length?h('div',{className:'bf-restore-comparisons',role:'region','aria-label':t('stem.butterfly.a11y_restore_comparison','Restoration expectation comparison')},
+          restoreCompRows.map(function(entry){
+            var cmp=entry.cmp,d=entry.design,obs=cmp.observed;
+            var hypText=cmp.hypothesisId==='no-brood-no-pollination'?t('stem.butterfly.restore_hyp_none','No flower visits and no monarch generation can finish'):cmp.hypothesisId==='visits-only'?t('stem.butterfly.restore_hyp_visits','Adults can sip nectar and transfer pollen, but caterpillars still stall'):t('stem.butterfly.restore_hyp_brood','Both flower visits and a full generation can finish if mowing waits');
+            var badgeText=cmp.status==='pending'?t('stem.butterfly.dsg_cmp_pending_badge','Awaiting field records'):cmp.matchesObserved?t('stem.butterfly.dsg_cmp_aligned_badge','Aligned with observed records'):t('stem.butterfly.dsg_cmp_diff_badge','Differs from observed records');
+            return h('div',{key:d.id,className:'bf-restore-comparison','data-bf-restore-result':d.id,'data-status':cmp.status,'data-aligned':cmp.matchesObserved===null?'pending':String(cmp.matchesObserved)},
+              h('div',{className:'bf-restore-comparison-head'},h('strong',null,d.short),h('span',{className:'bf-restore-badge'},badgeText)),
+              h('p',null,__alloFill(t('stem.butterfly.dsg_cmp_your_expectation','Pre-trial expectation: {value1}.'),{value1:hypText})),
+              cmp.status==='observed'?h('ul',{className:'bf-restore-metrics'},
+                h('li',{key:'res'},obs.examined?(obs.host?t('stem.butterfly.dsg_metric_both','Resources: nectar + milkweed'):obs.nectar?t('stem.butterfly.dsg_metric_nectar','Resources: nectar only'):t('stem.butterfly.dsg_metric_none','Resources: neither')):t('stem.butterfly.dsg_metric_unexamined','Plot: not examined yet')),
+                h('li',{key:'brood'},obs.broodResult==='complete'?t('stem.butterfly.dsg_metric_brood_complete','Brood: reached adult'):obs.broodResult==='stalls'?t('stem.butterfly.dsg_metric_brood_stalls','Brood: stalled at caterpillar'):t('stem.butterfly.dsg_metric_brood_none','Brood: not followed yet')),
+                h('li',{key:'poll'},obs.pollinationVisits?__alloFill(t('stem.butterfly.dsg_metric_poll_count','Pollination: {value1} recorded'),{value1:obs.pollinationVisits}):t('stem.butterfly.dsg_metric_poll_none','Pollination: not recorded yet')),
+                h('li',{key:'mow'},obs.seasonRuns?__alloFill(t('stem.butterfly.dsg_metric_mow_count','Mowing: {value1} complete · {value2} cut short'),{value1:obs.seasonCompleteCount,value2:obs.seasonCutCount}):t('stem.butterfly.dsg_metric_mow_none','Mowing: not tested yet'))):null,
+              h('p',null,cmp.summary),
+              cmp.whyNot?h('p',{className:'bf-restore-whynot','data-bf-restore-whynot':'true'},h('strong',null,t('stem.butterfly.dsg_cmp_whynot_label','Why the records differ: ')),cmp.whyNot):null);
+          })):null,
         h('p',{className:'bf-help'},__alloT('stem.butterfly.dsg_help_comparison_limits','Each row keeps your latest examined plan. Resource availability is one part of habitat quality; this comparison does not estimate butterfly numbers or survival.')),returnToGuide()),
       h('section',{className:'bf-panel bf-cycle',ref:function(node){sections.current.cycle=node;},tabIndex:-1,'aria-label':__alloT('stem.butterfly.a11y_life_cycle_investigation',"Life cycle investigation"),'data-bf-cycle-patch':s.lifecycle.patch||'','data-bf-cycle-stage':s.lifecycle.stage||''},
         h('div',{className:'bf-cycle-head'},h('div',null,h('div',{className:'bf-eyebrow'},__alloT('stem.butterfly.cyc_eyebrow','Follow a generation · Predict → Lay → Observe')),h('h3',null,__alloT('stem.butterfly.cyc_heading','What happens to the next generation here?')),h('p',{className:'bf-help'},plain(__alloT('stem.butterfly.cyc_intro','You fly the adult. Place eggs on a patch you have already examined, then follow the generation one stage at a time and see how far it gets.'),__alloT('stem.butterfly.cyc_intro_simple','You are the adult butterfly. Lay eggs on a patch you have examined. Then watch what happens, one stage at a time.')))),
@@ -6041,7 +6402,8 @@ function buildWorld(T,kit) {
                   // One whole sentence per model outcome, so translators never see a bare stage id.
                   var whole={complete:__alloT('stem.butterfly.cs_model_whole_cycle_runs','In the model the whole cycle runs. {value1}'),egg:__alloT('stem.butterfly.cs_model_stops_at_egg','In the model it stops at the egg stage. {value1}'),caterpillar:__alloT('stem.butterfly.cs_model_stops_at_caterpillar','In the model it stops at the caterpillar stage. {value1}'),chrysalis:__alloT('stem.butterfly.cs_model_stops_at_chrysalis','In the model it stops at the chrysalis stage. {value1}'),adult:__alloT('stem.butterfly.cs_model_stops_at_adult','In the model it stops at the adult stage. {value1}')};
                   return Object.prototype.hasOwnProperty.call(whole,stop)?__alloFill(whole[stop],{value1:fb.explain}):__alloFill(__alloT('stem.butterfly.cs_model_stops_at_stage','In the model it stops at the {value1} stage. {value2}'),{value1:stop,value2:fb.explain});
-                })(caseAnswer(c).stop))),
+                })(caseAnswer(c).stop)),
+                !fb.matched&&fb.whyNot?h('p',{className:'bf-case-whynot','data-bf-case-whynot':'true'},h('strong',null,t('stem.butterfly.cs_whynot_label','Why your choice does not fit: ')),fb.whyNot):null),
               seasonTimeline(h,caseHabitat(c),c.mowing,true,true),
               h('div',{className:'bf-case-actions'},button(h(R.Fragment,null,__alloT('stem.butterfly.cs_try_case_again','Try this case again'),h('span',{className:'bf-sr'},' · '+c.title)),function(){retryCase(c.id);})))
             :h(R.Fragment,null,
@@ -6089,12 +6451,36 @@ function buildWorld(T,kit) {
       h('p',{className:'bf-help'},__alloT('stem.butterfly.src_footer','Butterfly Habitat Lab · Local habitat exploration. Find the long-distance monarch journey in Animal Migration Lab.'))
     );
   }
-  window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
+  var ButterflyPure=Object.freeze({
+    meadowSpeciesList:MEADOW_SPECIES,visitorSpecies:VISITOR_SPECIES,meadowSpecies:meadowSpecies,visitorPatch:visitorPatch,watchedVisitorIndex:watchedVisitorIndex,
+    plants:PLANTS,designs:DESIGNS,predictions:PREDICTIONS,restoreOutcomeHypotheses:RESTORE_OUTCOME_HYPOTHESES,
+    freshState:freshState,nearest:nearest,steeringPad:steeringPad,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,
+    habitats:habitats,patch:patch,design:design,prediction:prediction,resources:resources,applyPlan:applyPlan,cleanRestoration:cleanRestoration,
+    cleanRestoreCommitments:cleanRestoreCommitments,compareRestorePrediction:compareRestorePrediction,cleanXpLedger:cleanXpLedger,isButterflyGlobalMuted:isButterflyGlobalMuted,
+    fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,
+    fieldReport:fieldReport,reportLines:reportLines,reportIsEmpty:reportIsEmpty,glossary:GLOSSARY,glossaryTerm:glossaryTerm,
+    mowings:MOWINGS,stageWeek:STAGE_WEEK,stageDays:STAGE_DAYS,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,
+    seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
+    stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,
+    larvalFeeding:larvalFeeding,larvalLeafOutline:larvalLeafOutline,larvalLeafHeight:larvalLeafHeight,chrysalisMaturation:chrysalisMaturation,chrysalisSurface:chrysalisSurface,
+    cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
+    claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor,cleanNotebook:cleanNotebook,notebookEvidence:notebookEvidence,notebookReady:notebookReady,investigationSteps:investigationSteps,
+    cases:CASES,caseStops:CASE_STOPS,caseReasons:CASE_REASONS,caseHabitat:caseHabitat,caseAnswer:caseAnswer,diagnoseCaseChoice:diagnoseCaseChoice,caseFeedback:caseFeedback,checkCase:checkCase,cleanCases:cleanCases,casesSummary:casesSummary,
+    missionStatus:missionStatus,seasonNote:seasonNote,fieldFacts:FIELD_FACTS,stageUses:STAGE_USES,meadowPathX:meadowPathX,stemPose:stemPose,
+    cleanPollination:cleanPollination,recordPollination:recordPollination,pollinationIsCurrent:pollinationIsCurrent,currentPollinationVisits:currentPollinationVisits,pollinationPairs:pollinationPairs,
+    feedingVisual:feedingVisual,feedingPhase:feedingPhase,feedingMoment:feedingMoment,feedingOutcome:feedingOutcome,feedingCamera:feedingCamera,
+    stopFlight:stopFlight,flightPose:flightPose,flightResponse:flightResponse,playerWingFlex:playerWingFlex,visitorFlightPose:visitorFlightPose,visitorVisitPose:visitorVisitPose,
+    visitorWingFlex:visitorWingFlex,visitorAntennaPose:visitorAntennaPose,visitorLegTuck:visitorLegTuck,cameraPose:cameraPose,pollinatorCamera:pollinatorCamera,landingPose:landingPose,
+    lifecycleVisual:lifecycleVisual,lifecyclePose:lifecyclePose,lifecycleInspection:lifecycleInspection,monarchWingHeight:monarchWingHeight,lifecycleCamera:lifecycleCamera
+  });
+  window.ButterflyPure=ButterflyPure;
+  window.StemLab.registerTool('butterfly',{label:'Butterfly Habitat Lab',icon:'🦋',desc:'Explore a summer meadow as a monarch, compare nectar and host plants, and build a field journal.',category:'science',color:'orange',gradeRange:'4-12',aliases:['monarch','butterflies','milkweed','pollinator','habitat'],_engine:ButterflyPure,render:function(ctx){return ctx.React.createElement(ButterflyLab,{ctx:ctx});}});
   if(window.__RR_TEST_EXPORTS__)window.__RR_TEST_EXPORTS__.butterfly={meadowSpeciesList:MEADOW_SPECIES,visitorSpecies:VISITOR_SPECIES,meadowSpecies:meadowSpecies,visitorPatch:visitorPatch,watchedVisitorIndex:watchedVisitorIndex,createMeadowButterfly:createMeadowButterfly,plants:PLANTS,freshState:freshState,nearest:nearest,steeringPad:steeringPad,step:step,advanceFrame:advanceFrame,land:land,observe:observe,save:save,buildWorld:buildWorld,designs:DESIGNS,habitats:habitats,applyPlan:applyPlan,cleanRestoration:cleanRestoration,fieldDetail:fieldDetail,evidenceRecorded:evidenceRecorded,broodIsCurrent:broodIsCurrent,broodRowsFor:broodRowsFor,fieldReport:fieldReport,reportLines:reportLines,reportIsEmpty:reportIsEmpty,glossary:GLOSSARY,glossaryTerm:glossaryTerm,mowings:MOWINGS,stageWeek:STAGE_WEEK,stageDays:STAGE_DAYS,seasonOutcome:seasonOutcome,cleanSeason:cleanSeason,runSeason:runSeason,seasonRunFor:seasonRunFor,timingPairs:timingPairs,currentSeasonRuns:currentSeasonRuns,seasonRunIsCurrent:seasonRunIsCurrent,mowing:mowing,
     stages:STAGES,outcomes:OUTCOMES,layEggs:layEggs,advanceStage:advanceStage,broodResult:broodResult,broodFor:broodFor,larvalFeeding:larvalFeeding,larvalLeafOutline:larvalLeafOutline,larvalLeafHeight:larvalLeafHeight,chrysalisMaturation:chrysalisMaturation,chrysalisSurface:chrysalisSurface,
     cleanLifecycle:cleanLifecycle,clampStage:clampStage,abandonBrood:abandonBrood,reachedStage:reachedStage,stageStatus:stageStatus,expectedOutcome:expectedOutcome,
     claims:CLAIMS,judgeClaim:judgeClaim,evidenceFor:evidenceFor,cleanNotebook:cleanNotebook,notebookEvidence:notebookEvidence,notebookReady:notebookReady,investigationSteps:investigationSteps,
-    cases:CASES,caseStops:CASE_STOPS,caseReasons:CASE_REASONS,caseHabitat:caseHabitat,caseAnswer:caseAnswer,caseFeedback:caseFeedback,checkCase:checkCase,cleanCases:cleanCases,casesSummary:casesSummary,
+    cases:CASES,caseStops:CASE_STOPS,caseReasons:CASE_REASONS,caseHabitat:caseHabitat,caseAnswer:caseAnswer,diagnoseCaseChoice:diagnoseCaseChoice,caseFeedback:caseFeedback,checkCase:checkCase,cleanCases:cleanCases,casesSummary:casesSummary,
+    restoreOutcomeHypotheses:RESTORE_OUTCOME_HYPOTHESES,cleanRestoreCommitments:cleanRestoreCommitments,compareRestorePrediction:compareRestorePrediction,cleanXpLedger:cleanXpLedger,isButterflyGlobalMuted:isButterflyGlobalMuted,
     missionStatus:missionStatus,seasonNote:seasonNote,setPlain:function(on){bfPlain=!!on;},fieldFacts:FIELD_FACTS,stageUses:STAGE_USES,paintHabitatMap:paintHabitatMap,meadowPathX:meadowPathX,stemPose:stemPose,paintFeedingDiagram:paintFeedingDiagram,paintLifecycleDiagram:paintLifecycleDiagram,
     cleanPollination:cleanPollination,recordPollination:recordPollination,pollinationIsCurrent:pollinationIsCurrent,currentPollinationVisits:currentPollinationVisits,pollinationPairs:pollinationPairs,
     feedingVisual:feedingVisual,feedingPhase:feedingPhase,feedingMoment:feedingMoment,feedingOutcome:feedingOutcome,feedingCamera:feedingCamera,stopFlight:stopFlight,flightPose:flightPose,flightResponse:flightResponse,playerWingFlex:playerWingFlex,visitorFlightPose:visitorFlightPose,visitorVisitPose:visitorVisitPose,visitorWingFlex:visitorWingFlex,visitorAntennaPose:visitorAntennaPose,visitorLegTuck:visitorLegTuck,cameraPose:cameraPose,pollinatorCamera:pollinatorCamera,landingPose:landingPose,lifecycleVisual:lifecycleVisual,lifecyclePose:lifecyclePose,lifecycleInspection:lifecycleInspection,monarchWingHeight:monarchWingHeight,lifecycleCamera:lifecycleCamera,createLifecycleModels:createLifecycleModels};

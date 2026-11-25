@@ -79,10 +79,17 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       '.ct-meter-fill { height: 100%; transition: width 0.5s ease, background 0.5s; border-radius: 4px; }',
       '.ct-flicker { animation: ctFlicker 4s ease-in-out infinite; }',
       '.ct-mood-pulse { animation: ctMoodPulse 0.6s ease-out 1; }',
-      '@media (prefers-reduced-motion: reduce) { .ct-stage, .ct-stage *, .ct-bubble, .ct-meter-fill, .ct-flicker, .ct-mood-pulse { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'
+      '.selh-conflicttheater button, .selh-conflicttheater [role="radio"], .selh-conflicttheater input, .selh-conflicttheater textarea { touch-action: manipulation; }',
+      '.selh-conflicttheater button:focus-visible, .selh-conflicttheater [role="radio"]:focus-visible, .selh-conflicttheater input:focus-visible, .selh-conflicttheater textarea:focus-visible, .selh-conflicttheater [tabindex="-1"]:focus-visible { outline: 2px solid #14b8a6; outline-offset: 2px; }',
+      '@media (prefers-reduced-motion: reduce) { .ct-stage, .ct-stage *, .ct-bubble, .ct-meter-fill, .ct-flicker, .ct-mood-pulse, .selh-conflicttheater, .selh-conflicttheater * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+      '@media (forced-colors: active) { .selh-conflicttheater button, .selh-conflicttheater [role="radio"] { border: 1px solid ButtonText !important; } .selh-conflicttheater [aria-checked="true"] { outline: 2px solid Highlight !important; outline-offset: 2px; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ── Sound effects (procedural Web Audio) ──
   var _ac = null;
@@ -119,9 +126,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           h('rect', { x: 121, y: 118, width: 4, height: 25, fill: '#451a03' }),
           h('rect', { x: 275, y: 118, width: 4, height: 25, fill: '#451a03' }),
           h('rect', { x: 361, y: 118, width: 4, height: 25, fill: '#451a03' }),
-          h('rect', { x: 170, y: 30, width: 60, height: 60, fill: '#bae6fd', stroke: '#475569', 'stroke-width': 2 }),
-          h('line', { x1: 200, y1: 30, x2: 200, y2: 90, stroke: '#475569', 'stroke-width': 2 }),
-          h('line', { x1: 170, y1: 60, x2: 230, y2: 60, stroke: '#475569', 'stroke-width': 2 })
+          h('rect', { x: 170, y: 30, width: 60, height: 60, fill: '#bae6fd', stroke: '#475569', strokeWidth: 2 }),
+          h('line', { x1: 200, y1: 30, x2: 200, y2: 90, stroke: '#475569', strokeWidth: 2 }),
+          h('line', { x1: 170, y1: 60, x2: 230, y2: 60, stroke: '#475569', strokeWidth: 2 })
         );
       }
     },
@@ -142,7 +149,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Locker rows (left)
           h('g', null,
             [0, 1, 2, 3, 4].map(function(i) {
-              return h('rect', { key: 'lL' + i, x: 10 + i * 18, y: 50, width: 16, height: 80, fill: '#3b82f6', stroke: '#1e3a8a', 'stroke-width': 1 });
+              return h('rect', { key: 'lL' + i, x: 10 + i * 18, y: 50, width: 16, height: 80, fill: '#3b82f6', stroke: '#1e3a8a', strokeWidth: 1 });
             })
           ),
           // Locker handles (left)
@@ -152,7 +159,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Locker rows (right)
           h('g', null,
             [0, 1, 2, 3, 4].map(function(i) {
-              return h('rect', { key: 'lR' + i, x: 312 + i * 18, y: 50, width: 16, height: 80, fill: '#3b82f6', stroke: '#1e3a8a', 'stroke-width': 1 });
+              return h('rect', { key: 'lR' + i, x: 312 + i * 18, y: 50, width: 16, height: 80, fill: '#3b82f6', stroke: '#1e3a8a', strokeWidth: 1 });
             })
           ),
           [0, 1, 2, 3, 4].map(function(i) {
@@ -161,9 +168,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Hanging lights
           h('rect', { x: 180, y: 0, width: 40, height: 6, fill: '#fef9c3', className: 'ct-flicker' }),
           // Trophy case in back wall
-          h('rect', { x: 170, y: 50, width: 60, height: 70, fill: '#1e293b', stroke: '#475569', 'stroke-width': 2 }),
+          h('rect', { x: 170, y: 50, width: 60, height: 70, fill: '#1e293b', stroke: '#475569', strokeWidth: 2 }),
           h('rect', { x: 175, y: 55, width: 50, height: 60, fill: '#fef3c7' }),
-          h('text', { x: 200, y: 90, 'text-anchor': 'middle', 'font-size': 24, fill: '#a16207' }, '🏆')
+          h('text', { x: 200, y: 90, textAnchor: 'middle', fontSize: 24, fill: '#a16207' }, '🏆')
         );
       }
     },
@@ -178,17 +185,17 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Floor
           h('rect', { x: 0, y: 140, width: 400, height: 60, fill: '#94a3b8' }),
           // Whiteboard
-          h('rect', { x: 100, y: 30, width: 200, height: 80, fill: '#fafafa', stroke: '#475569', 'stroke-width': 2 }),
+          h('rect', { x: 100, y: 30, width: 200, height: 80, fill: '#fafafa', stroke: '#475569', strokeWidth: 2 }),
           // Whiteboard text suggestion
-          h('line', { x1: 115, y1: 50, x2: 200, y2: 50, stroke: '#3b82f6', 'stroke-width': 2 }),
-          h('line', { x1: 115, y1: 65, x2: 250, y2: 65, stroke: '#1e293b', 'stroke-width': 1 }),
-          h('line', { x1: 115, y1: 78, x2: 240, y2: 78, stroke: '#1e293b', 'stroke-width': 1 }),
-          h('line', { x1: 115, y1: 91, x2: 220, y2: 91, stroke: '#1e293b', 'stroke-width': 1 }),
+          h('line', { x1: 115, y1: 50, x2: 200, y2: 50, stroke: '#3b82f6', strokeWidth: 2 }),
+          h('line', { x1: 115, y1: 65, x2: 250, y2: 65, stroke: '#1e293b', strokeWidth: 1 }),
+          h('line', { x1: 115, y1: 78, x2: 240, y2: 78, stroke: '#1e293b', strokeWidth: 1 }),
+          h('line', { x1: 115, y1: 91, x2: 220, y2: 91, stroke: '#1e293b', strokeWidth: 1 }),
           // Posters on wall
-          h('rect', { x: 20, y: 40, width: 50, height: 60, fill: '#fbbf24', stroke: '#92400e', 'stroke-width': 1 }),
-          h('text', { x: 45, y: 75, 'text-anchor': 'middle', 'font-size': 20 }, '📚'),
-          h('rect', { x: 330, y: 40, width: 50, height: 60, fill: '#a78bfa', stroke: '#6d28d9', 'stroke-width': 1 }),
-          h('text', { x: 355, y: 75, 'text-anchor': 'middle', 'font-size': 20 }, '🌍'),
+          h('rect', { x: 20, y: 40, width: 50, height: 60, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1 }),
+          h('text', { x: 45, y: 75, textAnchor: 'middle', fontSize: 20 }, '📚'),
+          h('rect', { x: 330, y: 40, width: 50, height: 60, fill: '#a78bfa', stroke: '#6d28d9', strokeWidth: 1 }),
+          h('text', { x: 355, y: 75, textAnchor: 'middle', fontSize: 20 }, '🌍'),
           // Desks in foreground
           h('rect', { x: 50, y: 160, width: 70, height: 8, fill: '#92400e' }),
           h('rect', { x: 165, y: 160, width: 70, height: 8, fill: '#92400e' }),
@@ -212,7 +219,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Wall (tile pattern)
           h('rect', { x: 0, y: 0, width: 400, height: 140, fill: '#cffafe' }),
           // Tile lines on wall
-          h('g', { stroke: '#67e8f9', 'stroke-width': 0.5 },
+          h('g', { stroke: '#67e8f9', strokeWidth: 0.5 },
             [20, 40, 60, 80, 100, 120].map(function(y) {
               return h('line', { key: 'tl' + y, x1: 0, y1: y, x2: 400, y2: y });
             }),
@@ -227,7 +234,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Individual lockers
           [80, 110, 140, 170, 200, 230, 260, 290].map(function(x, i) {
             return h('g', { key: 'lk' + i },
-              h('rect', { x: x + 1, y: 22, width: 28, height: 96, fill: '#0e7490', stroke: '#164e63', 'stroke-width': 0.5 }),
+              h('rect', { x: x + 1, y: 22, width: 28, height: 96, fill: '#0e7490', stroke: '#164e63', strokeWidth: 0.5 }),
               h('rect', { x: x + 5, y: 30, width: 6, height: 12, fill: '#1e293b' }),
               h('circle', { cx: x + 22, cy: 70, r: 1.5, fill: '#fde047' })
             );
@@ -250,17 +257,17 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           // Background gradient feel via two rects
           h('rect', { x: 0, y: 0, width: 400, height: 200, fill: '#0f172a' }),
           // Stylized phone screen frame
-          h('rect', { x: 100, y: 10, width: 200, height: 180, rx: 20, fill: '#1e293b', stroke: '#475569', 'stroke-width': 3 }),
+          h('rect', { x: 100, y: 10, width: 200, height: 180, rx: 20, fill: '#1e293b', stroke: '#475569', strokeWidth: 3 }),
           h('rect', { x: 110, y: 30, width: 180, height: 150, fill: '#020617' }),
           // Notch at top
           h('rect', { x: 170, y: 14, width: 60, height: 8, rx: 4, fill: '#000' }),
           // Status bar
           h('rect', { x: 110, y: 30, width: 180, height: 12, fill: '#1e293b' }),
-          h('text', { x: 120, y: 39, 'font-size': 8, fill: '#94a3b8' }, '9:42'),
-          h('text', { x: 270, y: 39, 'font-size': 8, fill: '#94a3b8' }, '🔋'),
+          h('text', { x: 120, y: 39, fontSize: 8, fill: '#94a3b8' }, '9:42'),
+          h('text', { x: 270, y: 39, fontSize: 8, fill: '#94a3b8' }, '🔋'),
           // Chat header
           h('rect', { x: 110, y: 42, width: 180, height: 18, fill: '#312e81' }),
-          h('text', { x: 200, y: 54, 'text-anchor': 'middle', 'font-size': 9, fill: '#fef3c7', 'font-weight': 'bold' }, '◀ Group Chat'),
+          h('text', { x: 200, y: 54, textAnchor: 'middle', fontSize: 9, fill: '#fef3c7', fontWeight: 'bold' }, '◀ Group Chat'),
           // Faux chat bubbles (faded — characters render on top)
           h('rect', { x: 120, y: 70, width: 80, height: 14, rx: 6, fill: '#334155', opacity: 0.5 }),
           h('rect', { x: 200, y: 90, width: 80, height: 14, rx: 6, fill: '#1e40af', opacity: 0.5 }),
@@ -934,8 +941,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       var _cftT = (ctx && ctx.theme) || {};
       var _cftHC = !!_cftT.isContrast, _cftL = !_cftHC && !_cftT.isDark;
       var _cft_BGL = {'#1e293b':'#ffffff','#451a03':'#fff7ed','#0f172a':'#f8fafc','#0c4a6e':'#e0f2fe'}, _cft_BGH = {'#1e293b':'#000000','#451a03':'#000000','#0f172a':'#000000','#14b8a6':'#000000','#0c4a6e':'#000000'};
-      var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#475569','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985','#e0f2fe':'#0c4a6e','#a5f3fc':'#0e7490','#fef3c7':'#78350f','#86efac':'#166534','#14b8a6':'#0f766e'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00','#86efac':'#ffff00','#14b8a6':'#ffff00'};
-      var _cft_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cft_BDH = {'#f59e0b':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#92400e':'#ffff00','#14b8a6':'#ffff00','#0369a1':'#ffff00','#0891b2':'#ffff00','#475569':'#ffff00'};
+      var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#475569','#64748b':'#475569','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985','#e0f2fe':'#0c4a6e','#a5f3fc':'#0e7490','#fef3c7':'#78350f','#86efac':'#166534','#14b8a6':'#0f766e','#22c55e':'#15803d','#eab308':'#a16207','#ef4444':'#b91c1c'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00','#86efac':'#ffff00','#14b8a6':'#ffff00'};
+      var _cft_BDL = {'#1e293b':'#cbd5e1','#334155':'#cbd5e1','#475569':'#94a3b8','#92400e':'#b45309'}, _cft_BDH = {'#f59e0b':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#92400e':'#ffff00','#14b8a6':'#ffff00','#0369a1':'#ffff00','#0891b2':'#ffff00','#475569':'#ffff00'};
       var _cftBg = function(h){ return _cftHC ? (_cft_BGH[h]||h) : (_cftL ? (_cft_BGL[h]||h) : h); };
       // Dark-mode foreground map. These accents are readable as TEXT only when
       // lightened; the surface and border maps are untouched.
@@ -1573,7 +1580,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           )
         );
       }
-      var _cftBackBtn = h('button', { type: 'button', onClick: function() { upd({ mode: 'select', teacherSceneId: null }); }, style: Object.assign({}, _cftBtn, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cftFg('#94a3b8') }) }, '← All scenarios');
+      var _cftBackBtn = h('button', { type: 'button', onClick: function() { upd({ mode: 'select', teacherSceneId: null }); }, style: Object.assign({}, _cftBtn, { minHeight: 44, padding: '10px 14px', fontSize: 12, color: _cftFg('#94a3b8') }) }, '← All scenarios');
 
       // MODE: script (scripted branching scene, no AI)
       if (mode === 'script') {
@@ -1583,7 +1590,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         var playerEl = (_cftAO && typeof _cftAO.Player === 'function')
           ? h(_cftAO.Player, { key: scriptKey + ':' + (d.scriptRun || 0), story: scriptStory, t: _cftTr, theme: _cftTheme })
           : renderFallbackPlayer(scriptStory);
-        return h('div', { style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
           _cftCrisis,
           h('div', { style: { textAlign: 'center', marginBottom: 12 } },
             _cftBackBtn,
@@ -1594,7 +1601,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           tsPlaying ? (tsPlaying.intro ? h('p', { 'data-ct-teacher-intro': 'true', style: Object.assign({}, _cftCard, { fontSize: 13, color: _cftFg('#e2e8f0'), lineHeight: 1.6, whiteSpace: 'pre-wrap' }) }, tsPlaying.intro) : null)
             : h('div', { role: 'img', 'aria-label': scene.label + ' scene', style: { marginBottom: 12 } }, scene.svg(h)),
           h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: '0 0 10px', lineHeight: 1.5, textAlign: 'center' } }, 'Choose what you say. Each choice shows how they react. There is more than one ending; replay to find the others.'),
-          h('div', { 'data-ct-script-player': tsPlaying ? scriptKey : scenario.id, onClick: onScriptClick }, playerEl),
+          h('section', { 'data-ct-script-player': tsPlaying ? scriptKey : scenario.id, 'aria-label': 'Scripted conflict scene player', onClick: onScriptClick }, playerEl),
           h('p', { style: { fontSize: 11, color: _cftFg('#94a3b8'), textAlign: 'center', margin: '10px 0' } }, 'Endings found: ' + foundCount + ' of ' + endCount),
           d.scriptEnding ? renderReflectBox({
             id: 'script', title: '✍️ Reflect', draftKey: 'scriptReflectDraft', value: d.scriptReflectDraft, saved: !!d.scriptReflectSaved,
@@ -1632,7 +1639,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           }
           upd('studentScenes', val);
         };
-        return h('div', { style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 16, maxWidth: 720, margin: '0 auto' } },
           _cftCrisis,
           h('div', { style: { textAlign: 'center', marginBottom: 12 } },
             _cftBackBtn,
@@ -1684,13 +1691,13 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       }
       if (mode === 'select') {
         var scenarioList = Object.keys(SCENARIOS).map(function(k) { return SCENARIOS[k]; });
-        return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 20, maxWidth: 720, margin: '0 auto' } },
           renderMemoryResetConfirm(),
           // ── Early-preview banner (Tier 1 #7: beta-gate ConflictTheater) ──
           h('div', {
             role: 'note',
             'aria-label': 'Early preview notice',
-            style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.12)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _cftFg('#fef3c7'), lineHeight: 1.6 }
+            style: { padding: 12, borderRadius: 10, background: _cftHC ? '#000000' : (_cftL ? '#fffbeb' : 'rgba(245,158,11,0.12)'), borderLeft: '3px solid ' + _cftBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _cftFg('#fef3c7'), lineHeight: 1.6 }
           },
             h('strong', null, '🚧 Early preview. '),
             'This tool currently has one scenario. More scenes coming. Treat what you find here as a sample, not the complete experience.'
@@ -1779,33 +1786,33 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       // ──────────────────────────────────────────────────────────
       if (mode === 'opt-in') {
         var charsInPlay = scenario.characterIds.map(function(cid) { return CAST[cid]; }).filter(Boolean);
-        return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 24, maxWidth: 560, margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: 16 } },
             h('button', {
               type: 'button',
               'aria-label': 'Back to scenario list',
               onClick: function() { upd({ mode: 'select' }); },
-              style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer', marginBottom: 12 }
+              style: { minHeight: 44, padding: '10px 14px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 8, fontSize: 12, cursor: 'pointer', marginBottom: 12 }
             }, '← All scenarios'),
             h('h2', { style: { fontSize: 20, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '0 0 4px' } }, scenario.title),
             h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, scene.label)
           ),
           // Per-scenario content warning if present
-          scenario.contentWarning && h('div', { style: { background: _cftBg('#451a03'), border: '1px solid #92400e', borderRadius: 12, padding: 14, marginBottom: 14 } },
+          scenario.contentWarning && h('div', { style: { background: _cftBg('#451a03'), border: '1px solid ' + _cftBd('#92400e'), borderRadius: 12, padding: 14, marginBottom: 14 } },
             h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#fbbf24'), marginBottom: 6 } }, '⚠️ Content warning'),
             h('p', { style: { fontSize: 12, color: _cftFg('#fde68a'), margin: 0, lineHeight: 1.6 } }, scenario.contentWarning)
           ),
           // General safety reminder
-          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14, fontSize: 11, color: _cftFg('#94a3b8'), lineHeight: 1.6 } },
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 12, padding: 14, marginBottom: 14, fontSize: 11, color: _cftFg('#94a3b8'), lineHeight: 1.6 } },
             'Conflict Theater scenarios are realistic. If you are in active distress today, choose a different scenario or come back later. The crisis safety net is at the bottom of every screen.'
           ),
           // Setup
-          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 14 } },
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 12, padding: 14, marginBottom: 14 } },
             h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#e2e8f0'), marginBottom: 6 } }, 'The setup'),
             h('p', { style: { fontSize: 13, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.6 } }, scenario.setup)
           ),
           // Characters in play
-          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 18 } },
+          h('div', { style: { background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 12, padding: 14, marginBottom: 18 } },
             h('div', { style: { fontSize: 12, fontWeight: 700, color: _cftFg('#e2e8f0'), marginBottom: 8 } }, 'You\'ll be talking with'),
             charsInPlay.map(function(c) {
               var role = scenario.characterRoles[c.id] || '';
@@ -1838,13 +1845,13 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
               autoFocus: true,
               // Without AI, Start plays the scripted version of the same scenario.
               onClick: function() { if (!_cftAiOn) { startScript(scenario.id); return; } upd({ mode: 'scene' }); announceSR('Scene started. ' + charsInPlay.map(function(c){ return c.name; }).join(' and ') + ' appear.'); },
-              style: { padding: '12px 32px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
+              style: { minHeight: 44, padding: '12px 32px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
             }, 'Start →'),
             _cftAiOn ? h('button', {
               type: 'button',
               'data-ct-start-script': 'true',
               onClick: function() { startScript(scenario.id); },
-              style: { padding: '12px 20px', background: 'transparent', color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '12px 20px', background: 'transparent', color: _cftFg('#e2e8f0'), border: '1px solid ' + _cftBd('#475569'), borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
             }, '📜 Play the scripted version') : null
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1864,16 +1871,16 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         var principleList = ['acknowledged', 'madeSpace', 'identifiedHarm', 'proposedRepair', 'namedNeed'];
         var principleLabels = { acknowledged: 'Acknowledged feelings', madeSpace: 'Made space', identifiedHarm: 'Named the harm specifically', proposedRepair: 'Proposed concrete repair', namedNeed: 'Named a need' };
 
-        return h('div', { style: { padding: 20, maxWidth: 580, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 20, maxWidth: 580, margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: 20 } },
-            h('div', { style: { fontSize: 56, marginBottom: 8 } }, em.icon),
+            h('div', { style: { fontSize: 56, marginBottom: 8 }, 'aria-hidden': 'true' }, em.icon),
             h('h3', { style: { fontSize: 20, fontWeight: 800, color: em.color, marginBottom: 8 } }, em.label),
             h('p', { style: { fontSize: 13, color: _cftFg('#cbd5e1'), margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 } }, em.summary)
           ),
           // Harmony final
-          h('div', { style: { padding: 14, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
+          h('div', { style: { padding: 14, background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 12, marginBottom: 16 } },
             h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Final harmony'),
-            h('div', { className: 'ct-meter-track' },
+            h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-label': 'Final harmony', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(harmony), 'aria-valuetext': Math.round(harmony) + ' out of 100' },
               h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmony >= 75 ? _cftFg('#22c55e') : harmony >= 40 ? _cftFg('#eab308') : _cftFg('#ef4444') } })
             ),
             h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8'), marginTop: 6 } }, Math.round(harmony) + ' / 100')
@@ -1928,7 +1935,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
               type: 'button',
               'aria-label': 'Try again with different choices',
               onClick: resetScenario,
-              style: { padding: '10px 20px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '10px 20px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
             }, '↺ Try again'),
             // Compare-to-previous: only show if there are 2+ attempts of THIS scenario
             (function() {
@@ -1937,7 +1944,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
               return h('button', {
                 type: 'button',
                 onClick: function() { upd('mode', 'compare'); announceSR('Comparing this attempt to previous attempt.'); },
-                style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#a5f3fc'), border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#a5f3fc'), border: '1px solid ' + _cftBd('#0891b2'), borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '⇆ Compare to previous');
             })(),
             h('button', {
@@ -1960,13 +1967,13 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
                   ]
                 });
               },
-              style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), border: '1px solid ' + _cftBd('#475569'), borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '🖨 Print transcript'),
             h('button', {
               type: 'button',
               'aria-label': 'Back to opt-in',
               onClick: function() { upd({ mode: 'select' }); },
-              style: { padding: '10px 20px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '10px 20px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid ' + _cftBd('#475569'), borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '← Exit')
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -2024,7 +2031,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
             h('div', { style: { maxHeight: 380, overflowY: 'auto', paddingRight: 4 } }, transcript.length ? transcript : h('div', { style: { fontSize: 11, color: _cftFg('#64748b'), fontStyle: 'italic' } }, '(no dialogue)'))
           );
         }
-        return h('div', { style: { padding: 16, maxWidth: 1000, margin: '0 auto' } },
+        return h('div', { className: 'selh-conflicttheater', style: { padding: 16, maxWidth: 1000, margin: '0 auto' } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 12, flexWrap: 'wrap' } },
             h('div', null,
               h('h3', { style: { fontSize: 18, fontWeight: 800, color: _cftFg('#f1f5f9'), margin: '0 0 2px' } }, 'Comparing attempts'),
@@ -2034,7 +2041,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
               type: 'button',
               'aria-label': 'Back to outcome',
               onClick: function() { upd('mode', 'ending'); },
-              style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '10px 14px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 8, fontSize: 12, cursor: 'pointer' }
             }, '← Back to outcome')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 12 } },
@@ -2117,10 +2124,10 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       );
 
       // Harmony meter + per-character mood pips
-      var meters = h('div', { style: { display: 'flex', gap: 12, marginBottom: 12, padding: 12, background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 10 } },
+      var meters = h('div', { style: { display: 'flex', gap: 12, marginBottom: 12, padding: 12, background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 10 } },
         h('div', { style: { flex: 1 } },
           h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Harmony'),
-          h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-valuenow': Math.round(harmony), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': 'Harmony with ' + characters.map(function(c) { return c.name; }).join(' and ') + ': ' + Math.round(harmony) + ' percent' },
+          h('div', { className: 'ct-meter-track', role: 'progressbar', 'aria-valuenow': Math.round(harmony), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuetext': Math.round(harmony) + ' out of 100', 'aria-label': 'Harmony with ' + characters.map(function(c) { return c.name; }).join(' and ') + ': ' + Math.round(harmony) + ' percent' },
             h('div', { className: 'ct-meter-fill', style: { width: Math.round(harmony) + '%', background: harmonyColor } })
           ),
           h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), marginTop: 4 } }, Math.round(harmony) + ' / 100')
@@ -2151,7 +2158,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       );
 
       // Coach hint card (dismissible)
-      var coachHintCard = (coachHint && !coachHintDismissed) ? h('div', { role: 'note', 'aria-label': 'Coach hint', style: { padding: '10px 14px', marginBottom: 8, background: _cftBg('#0c4a6e'), border: '1px solid #0369a1', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+      var coachHintCard = (coachHint && !coachHintDismissed) ? h('div', { role: 'note', 'aria-label': 'Coach hint', style: { padding: '10px 14px', marginBottom: 8, background: _cftBg('#0c4a6e'), border: '1px solid ' + _cftBd('#0369a1'), borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10 } },
         h('span', { 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, '💡'),
         h('div', { style: { flex: 1 } },
           h('div', { style: { fontSize: 10, color: _cftFg('#7dd3fc'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 } }, 'Coach has a thought'),
@@ -2161,7 +2168,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           type: 'button',
           'aria-label': 'Dismiss coach hint',
           onClick: function() { upd('coachHintDismissed', true); },
-          style: { padding: '2px 8px', background: 'transparent', color: _cftFg('#7dd3fc'), border: '1px solid #0369a1', borderRadius: 6, fontSize: 10, cursor: 'pointer', flexShrink: 0 }
+          style: { minHeight: 44, padding: '8px 12px', background: 'transparent', color: _cftFg('#7dd3fc'), border: '1px solid ' + _cftBd('#0369a1'), borderRadius: 8, fontSize: 12, cursor: 'pointer', flexShrink: 0 }
         }, 'Got it')
       ) : null;
 
@@ -2175,7 +2182,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
               role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': 'Address ' + opt.name,
               tabIndex: on ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                if (isImeComposing(e) || e.ctrlKey || e.altKey || e.metaKey) return;
                 var nextIdx = -1;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (optIdx + 1) % addrOpts.length;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (optIdx + addrOpts.length - 1) % addrOpts.length;
@@ -2184,15 +2191,18 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
                 if (nextIdx < 0) return;
                 e.preventDefault();
                 upd('addressing', addrOpts[nextIdx].id);
-                var radios = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="radio"]');
-                if (radios && radios[nextIdx]) radios[nextIdx].focus();
+                var groupEl = e.currentTarget && e.currentTarget.parentNode;
+                setTimeout(function() {
+                  var radios = groupEl && groupEl.querySelectorAll ? groupEl.querySelectorAll('[role="radio"]') : null;
+                  if (radios && radios[nextIdx] && radios[nextIdx].focus) radios[nextIdx].focus();
+                }, 0);
               },
               onClick: function() { upd('addressing', opt.id); },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? _cftBd('#14b8a6') : _cftBd('#475569')), background: on ? (_cftHC ? '#000000' : '#134e4a') : 'transparent', color: on ? (_cftHC ? '#ffff00' : '#ccfbf1') : _cftFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (on ? _cftBd('#14b8a6') : _cftBd('#475569')), background: on ? (_cftHC ? '#000000' : '#134e4a') : 'transparent', color: on ? (_cftHC ? '#ffff00' : '#ccfbf1') : _cftFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, opt.name);
           })
         ),
-        h('label', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: _cftFg('#94a3b8'), cursor: 'pointer' } },
+        h('label', { style: { marginLeft: 'auto', minHeight: 44, padding: '0 6px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: _cftFg('#94a3b8'), cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: ttsEnabled, onChange: function(e) { upd('ttsEnabled', e.target.checked); }, 'aria-label': 'Enable voice' }),
           'Voice'
         )
@@ -2203,18 +2213,18 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         h('textarea', { 'aria-label': 'Your message',
           value: studentInput,
           onChange: function(e) { upd('studentInput', e.target.value); },
-          onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
+          onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Escape' && studentInput && !loading) { e.preventDefault(); upd('studentInput', ''); return; } if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
           placeholder: addressing === 'both' ? 'Say something to both of them...' : 'Say something to ' + (CAST[addressing] ? CAST[addressing].name : '...'),
           rows: 2,
           disabled: loading,
-          style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid ' + _cftBd('#334155'), background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
+          style: { flex: 1, minHeight: 44, padding: 10, borderRadius: 10, border: '1px solid ' + _cftBd('#334155'), background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }
         }),
         h('button', {
           type: 'button',
           'aria-label': loading ? 'Waiting for characters to respond' : 'Send message',
           onClick: function() { if (studentInput.trim() && !loading) sendTurn(); },
           disabled: loading || !studentInput.trim(),
-          style: { padding: '10px 18px', borderRadius: 10, border: _cftHC ? '2px solid #ffff00' : 'none', background: loading || !studentInput.trim() ? (_cftHC ? '#000000' : '#334155') : (_cftHC ? _cftBg('#14b8a6') : '#0f766e'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
+          style: { minWidth: 44, minHeight: 44, padding: '10px 18px', borderRadius: 10, border: _cftHC ? '2px solid #ffff00' : 'none', background: loading || !studentInput.trim() ? (_cftHC ? '#000000' : '#334155') : (_cftHC ? _cftBg('#14b8a6') : '#0f766e'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 14, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
         }, loading ? '⋯' : '↑')
       );
 
@@ -2223,11 +2233,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           type: 'button',
           'aria-label': 'Exit scene',
           onClick: function() { upd({ mode: 'opt-in' }); },
-          style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
+          style: { minHeight: 44, padding: '10px 16px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 8, fontSize: 12, cursor: 'pointer' }
         }, '← Exit')
       );
 
-      return h('div', { style: { padding: 16, maxWidth: 640, margin: '0 auto' } },
+      return h('div', { className: 'selh-conflicttheater', style: { padding: 16, maxWidth: 640, margin: '0 auto' } },
         crisisSurface,
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('conflicttheater', h, ctx) : null),
         stage,
@@ -2324,7 +2334,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       h('div', { style: { fontSize: 40 } }, '🎬'),
       h('h2', { tabIndex: -1, style: { fontSize: 20, fontWeight: 800, color: fg('#f1f5f9'), margin: '2px 0' } }, 'Conflict Replay'),
       h('p', { style: { fontSize: 12, color: fg('#94a3b8'), margin: 0 } }, 'Act it. Watch it back. Re-shoot it better. Take ' + take + ' of 2.'));
-    var backBtn = h('button', { type: 'button', onClick: exit, style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '← Back to Conflict Theater');
+    var backBtn = h('button', { type: 'button', onClick: exit, style: { minHeight: 44, padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '← Back to Conflict Theater');
 
     // ── Step: consent (INVARIANT-10 — the recorder is unreachable until affirmed) ──
     if (step === 'consent') {
@@ -2475,8 +2485,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         ]) : null,
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
           backBtn,
-          take === 1 && a && a.repairSuggestion ? h('button', { type: 'button', onClick: function() { updR({ step: 'record', take: 2, tryThis: a.repairSuggestion }); announceSR('Re-shoot with one change.'); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '🎬 Re-shoot with one change') : null,
-          take === 2 ? h('button', { type: 'button', onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '🗣️ Debrief') : (a ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' } }, 'Skip to debrief') : null)));
+          take === 1 && a && a.repairSuggestion ? h('button', { type: 'button', onClick: function() { updR({ step: 'record', take: 2, tryThis: a.repairSuggestion }); announceSR('Re-shoot with one change.'); }, style: { minHeight: 44, padding: '10px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '🎬 Re-shoot with one change') : null,
+          take === 2 ? h('button', { type: 'button', onClick: function() { updR({ step: 'debrief' }); }, style: { minHeight: 44, padding: '10px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '🗣️ Debrief') : (a ? h('button', { type: 'button', onClick: function() { updR({ step: 'debrief' }); }, style: { minHeight: 44, padding: '10px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' } }, 'Skip to debrief') : null)));
     }
 
     // ── Step: debrief (restorative + Peacemakers + emotion-coaching cue card) ──

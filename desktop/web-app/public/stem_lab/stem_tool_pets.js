@@ -257,7 +257,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.petslab-catalog summary,.petslab-inquiry-disclosure summary{min-height:46px;padding:12px 14px;cursor:pointer;color:#fef3e2;font-size:12px;font-weight:900;}',
       '.petslab-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0 12px 12px;}',
       '.petslab-inquiry-body{padding:0 12px 12px;}',
-      '.petslab-view-title{outline:none;}',
+      '.petslab-view-title:focus:not(:focus-visible){outline:none;}',
       '.petslab-view-title:focus-visible{outline:3px solid #fbbf24;outline-offset:5px;border-radius:5px;}',
       '.petslab-complete-button{margin-left:auto;}',
       '.petslab-complete-status{margin-left:auto;padding:7px 10px;border:1px solid rgba(132,204,22,.55);border-radius:999px;background:rgba(132,204,22,.12);color:#bef264;font-size:12px;font-weight:900;}',
@@ -6499,7 +6499,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     function backBar(title) {
       var moduleComplete = !!modulesCompleted[view];
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-        h('button', { 'data-pets-focusable': true,
+        h('button', { type: 'button', 'data-pets-focusable': true,
           'aria-label': __alloT('stem.pets.a11y_back_to_pets_lab_menu', 'Back to Pets Lab menu'),
           onClick: function() { goToView('menu'); },
           style: btn({ padding: '6px 12px', fontSize: 12 })
@@ -7424,7 +7424,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ['dog', 'cat', 'rabbit', 'parrot', 'reptile'].map(function(s) {
                 var active = iq.species === s;
                 return h('button', {
-                  key: s,
+                  key: s, type: 'button',
                   'aria-pressed': active,
                   onClick: function() { setKey('species', s); },
                   style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#5c4536'), background: active ? sm.color : '#181210', color: active ? '#000' : '#e8d5b7', cursor: 'pointer' }
@@ -7632,7 +7632,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { id: 'pets-care-inquiry-hypothesis-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.hypothesis.length + ' / 1200 characters'),
             h('p', { id: 'pets-care-inquiry-privacy-note', role: 'note', style: { margin: '0 0 10px', color: '#bda891', fontSize: 9, lineHeight: 1.45 } },
               'Your hypothesis, explanation, and scenario log save with this project. Do not include names or identifying details.'),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4536', background: '#181210', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4536', background: '#181210', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
             iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#181210', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -8398,7 +8398,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('p', { style: { color: T.dim, fontSize: 12, lineHeight: 1.55, margin: '0 0 14px', fontStyle: 'italic' } },
               'Reach 70%+ behavior probability while keeping trust above 80% to earn the Reinforcement Trainer badge.'
             ),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: startTrSim,
               style: btnPrimary({ padding: '12px 22px', fontSize: 14 })
             }, '▶ Start 10-round trainer')
@@ -8616,15 +8616,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })(),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('button', { 'data-pets-focusable': true,
+              h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: newTrSim,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
               }, '🔁 New session ' + TR_BANK_NAMES[nextTrBank()]),
-              h('button', { 'data-pets-focusable': true,
+              h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: function() { setTrMode('read'); },
                 style: btn({ padding: '10px 18px', fontSize: 13 })
               }, '📚 Back to scenarios'),
-              h('button', { 'data-pets-focusable': true,
+              h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: function() { goToView('careSim', 'Pet-Care Week'); },
                 style: btn({ padding: '10px 18px', fontSize: 13 })
               }, '📅 Apply it in Pet-Care Week')
@@ -8669,7 +8669,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             responseBtns.map(function(b) {
               var isPicked = revealed && thisChoice.rxn === b.id;
               return h('button', {
-                key: b.id, className: 'petslab-sim-choice',
+                key: b.id, type: 'button', className: 'petslab-sim-choice',
                 'aria-pressed': isPicked ? 'true' : 'false',
                 'aria-disabled': revealed ? 'true' : undefined,
                 tabIndex: revealed ? -1 : 0,
@@ -8704,7 +8704,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               ),
               h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.verdict)
             ),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: nextTrRound,
               style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
             }, trSim.idx < trMoments.length - 1 ? 'Next round →' : 'See results ✓')
@@ -8714,7 +8714,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // Mode toggle
       var trainingModes = ['read', 'sim'];
       function trainingModeKeyDown(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % trainingModes.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + trainingModes.length - 1) % trainingModes.length;
@@ -8730,7 +8730,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         trainingModes.map(function(m, tabIndex) {
           var sel = trMode === m;
           return h('button', {
-            key: m, id: 'pets-training-tab-' + m, role: 'tab',
+            key: m, type: 'button', id: 'pets-training-tab-' + m, role: 'tab',
             'aria-selected': sel ? 'true' : 'false',
             'aria-controls': 'pets-training-panel-' + m,
             tabIndex: sel ? 0 : -1,
@@ -9153,7 +9153,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, TFS_VIGNETTES.length + ' vignettes · target ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' — identify the clearest hazard pattern, then revisit every miss.')
                 )
               ),
-              h('button', {
+              h('button', { type: 'button',
                 ref: _toxinToggleRef,
                 'aria-label': tfsOpen ? 'Close Household Hazard Sleuth quiz' : 'Open Household Hazard Sleuth quiz',
                 'aria-expanded': tfsOpen,
@@ -9168,7 +9168,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
                     h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
                       TFS_VIGNETTES.length + ' vignettes across foods, plants, medicines, and fumes. Reach ' + tfsTarget + '/' + TFS_VIGNETTES.length + ' to meet the activity target. After each choice, coaching names what makes that species the canonical poisoning case; at the end, every missed case stays available for review and focused retry.'),
-                    h('button', {
+                    h('button', { type: 'button',
                       ref: _toxinQuestionRef,
                       onClick: beginTfsAttempt,
                       style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#1f1612', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
@@ -9227,7 +9227,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                             bg = opt.color + '20'; border = opt.color + '60'; color = T.text;
                           }
                           return h('button', {
-                            key: opt.id,
+                            key: opt.id, type: 'button',
                             'aria-pressed': picked ? 'true' : 'false',
                             'aria-disabled': tfsAns ? 'true' : undefined,
                             tabIndex: tfsAns ? -1 : 0,
@@ -9348,7 +9348,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                                       var selected = reviewAnswered && tfsReview.pick === option.id;
                                       var correctChoice = reviewAnswered && reviewVignette.correct === option.id;
                                       return h('button', {
-                                        key: option.id,
+                                        key: option.id, type: 'button',
                                         'aria-label': option.label,
                                         'aria-pressed': selected ? 'true' : 'false',
                                         disabled: reviewAnswered,
@@ -9379,7 +9379,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                                         ? '✅ Correct — ' + reviewCorrectOption.label
                                         : 'Not yet — correct pattern: ' + reviewCorrectOption.label + '. This case stays in the rotation.'),
                                       h('p', { style: { color: T.text, fontSize: 10, lineHeight: 1.5, margin: '4px 0 7px' } }, reviewVignette.why),
-                                      h('button', {
+                                      h('button', { type: 'button',
                                         onClick: advanceTfsReview,
                                         style: { padding: '6px 10px', borderRadius: 7, border: 'none', background: T.link, color: '#082f49', fontSize: 10, fontWeight: 850, cursor: 'pointer' }
                                       }, reviewCorrect
@@ -9393,12 +9393,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                                       style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 800 }
                                     }, '✅ Focused retry complete — every missed hazard case was identified correctly.')
                                   : missedCases.length
-                                    ? h('button', {
+                                    ? h('button', { type: 'button',
                                         onClick: beginTfsReview,
                                         style: { marginTop: 10, marginRight: 8, padding: '7px 11px', borderRadius: 8, border: '1px solid ' + T.link, background: 'rgba(14,165,233,0.12)', color: '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
                                       }, 'Retry ' + missedCases.length + ' missed ' + (missedCases.length === 1 ? 'case' : 'cases'))
                                     : null,
-                              h('button', {
+                              h('button', { type: 'button',
                                 onClick: function() {
                                   updMulti({
                                     tfsIdx: -1, tfsShown: [], tfsAns: false, tfsPick: null,
@@ -9410,7 +9410,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                                 style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#1f1612', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                               }, '🔄 Restart full 10')
                             )
-                          : h('button', {
+                          : h('button', { type: 'button',
                               onClick: advanceTfs,
                               style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#1f1612', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                             }, '➡️ Next vignette')
@@ -10917,8 +10917,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('input', { id: 'pp-hours', 'data-pets-focusable': true, type: 'range',
             min: 0, max: 14, step: 1, value: pickHoursHome,
             'aria-label': __alloT('stem.pets.a11y_hours_alone_per_day', 'Hours alone per day'),
+            'aria-valuetext': __alloT('stem.pets.a11y_hours_alone_per_day', 'Hours alone per day') + ': ' + pickHoursHome,
             onChange: function(e) { upd('pickHoursHome', parseInt(e.target.value, 10)); },
-            style: { width: '100%', accentColor: T.accent } }),
+            style: { width: '100%', minHeight: 44, accentColor: T.accent } }),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } }, '💵 Budget'),
           h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_budget', 'Budget') },
             radio('budget', 'low', pickBudget, 'Low (< $1K/yr)', function(v) { upd('pickBudget', v); }),
@@ -11881,7 +11882,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         ['read', 'quiz', 'context'].map(function(m) {
           var sel = blMode === m;
           return h('button', {
-            key: m, id: 'pets-body-mode-' + m, role: 'tab',
+            key: m, type: 'button', id: 'pets-body-mode-' + m, role: 'tab',
             'aria-selected': sel ? 'true' : 'false',
             'aria-controls': 'pets-body-panel-' + m,
             'data-pets-body-mode': m,
@@ -11890,7 +11891,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'aria-label': m === 'read' ? 'Reference reading mode' : m === 'quiz' ? 'Signal practice mode' : 'Context challenge mode',
             onClick: function() { setMode(m); },
             onKeyDown: function(e) {
-              if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               var modes = ['read', 'quiz', 'context'];
               var at = modes.indexOf(m);
               var nextAt = null;
@@ -12059,11 +12060,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 onClick: function() { startQuiz('unseen'); },
                 style: missedQuestions.length ? btn({ padding: '10px 18px', fontSize: 13 }) : btnPrimary({ padding: '10px 18px', fontSize: 13 })
               }, '✨ Practice unseen (up to 10 of ' + unseenSignals.length + ')'),
-              h('button', { 'data-pets-focusable': true,
+              h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: newQuiz,
                 style: btn({ padding: '10px 18px', fontSize: 13 })
               }, '🎲 Random 10'),
-              h('button', { 'data-pets-focusable': true,
+              h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: function() { setMode('read'); },
                 style: btn({ padding: '10px 18px', fontSize: 13 })
               }, '📚 Back to reference')
@@ -12141,7 +12142,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 return h('li', { key: cueIndex }, 'Cue ' + (cueIndex + 1) + ': ' + cue[0]);
               }))
           ),
-          revealed && h('button', { 'data-pets-focusable': true,
+          revealed && h('button', { type: 'button', 'data-pets-focusable': true,
             onClick: nextQuiz,
             style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
           }, blQuiz.idx < blQuiz.qs.length - 1 ? 'Next signal →' : 'See score ✓')
@@ -12650,8 +12651,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('input', { id: 'cs-years', 'data-pets-focusable': true, type: 'range',
             min: 1, max: 30, step: 1, value: costYears,
             'aria-label': __alloT('stem.pets.a11y_commitment_years', 'Commitment years'),
+            'aria-valuetext': __alloT('stem.pets.a11y_commitment_years', 'Commitment years') + ': ' + costYears,
             onChange: function(e) { upd('costYears', parseInt(e.target.value, 10)); },
-            style: { width: '100%', accentColor: T.accent } })),
+            style: { width: '100%', minHeight: 44, accentColor: T.accent } })),
         h('div', { className: 'petslab-cost-summary', style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } },
             p.icon + ' ' + p.name + ': ' + costYears + '-year ' +
@@ -13678,7 +13680,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() {
                 upd('quizState', Object.assign({}, quizState, {
                   idx: 0, score: 0, answered: false, lastChoice: null,
@@ -13688,14 +13690,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 focusPetsTarget(_quizQuestionRef);
               },
               style: btn() }, '🔄 Try full quiz'),
-            missedNow.length > 0 && h('button', { 'data-pets-focusable': true,
+            missedNow.length > 0 && h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() {
                 upd('quizState', Object.assign({}, quizState, { idx: 0, score: 0, answered: false, lastChoice: null, reviewIds: missedNow.slice(), mode: 'missed' }));
                 petsAnnounce('Retrying ' + missedNow.length + ' missed questions');
                 focusPetsTarget(_quizQuestionRef);
               },
               style: btnPrimary() }, '🎯 Retry ' + missedNow.length + ' missed ' + (missedNow.length === 1 ? 'question' : 'questions')),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() { goToView('menu'); }, style: btn() }, '← Back to menu')),
           footer());
       }
@@ -13733,7 +13735,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 if (correct) { bg = '#1a3320'; bd = T.ok; }
                 else if (picked) { bg = '#3a1a1a'; bd = T.danger; }
               } else if (picked) { bg = T.cardAlt; bd = T.accentHi; }
-              return h('button', { key: i, 'data-pets-focusable': true,
+              return h('button', { key: i, type: 'button', 'data-pets-focusable': true,
                 'aria-pressed': picked ? 'true' : 'false',
                 'aria-disabled': quizState.answered ? 'true' : undefined,
                 tabIndex: quizState.answered ? -1 : 0,
@@ -13775,7 +13777,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'This choice does not fit all of the evidence in the scenario. Compare it with the model below.'),
             h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, 'Evidence-based model:'),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, q.why))),
-        quizState.answered && h('button', { 'data-pets-focusable': true,
+        quizState.answered && h('button', { type: 'button', 'data-pets-focusable': true,
           onClick: function() {
             var nextIdx = qIdx + 1;
             var attemptPct = !isReview && nextIdx >= quizPool.length
@@ -14810,7 +14812,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               })
             )
           ),
-          h('button', { 'data-pets-focusable': true,
+          h('button', { type: 'button', 'data-pets-focusable': true,
             ref: _lifespanQuestionRef,
             onClick: beginLsAttempt,
             style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#1f1612', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
@@ -14909,7 +14911,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               var selected = reviewAnswered && lsReview.pick === bucket.id;
               var acceptedChoice = reviewAnswered && acceptedBucketIds(reviewVignette).indexOf(bucket.id) >= 0;
               return h('button', {
-                key: bucket.id,
+                key: bucket.id, type: 'button',
                 'aria-label': bucket.label,
                 'aria-pressed': selected ? 'true' : 'false',
                 'data-pets-focusable': true,
@@ -14942,7 +14944,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 : 'Not yet — accepted bucket: ' + reviewAcceptedLabel + '. This species stays in the rotation.'),
               h('p', { style: { color: T.text, fontSize: 10, lineHeight: 1.5, margin: '4px 0 7px' } },
                 'Typical range: ' + LIFE_VISUALS[reviewVignette.id].label + '. ' + reviewVignette.why),
-              h('button', {
+              h('button', { type: 'button',
                 'data-pets-focusable': true,
                 onClick: advanceLsReview,
                 style: { padding: '6px 10px', borderRadius: 7, border: 'none', background: T.link, color: '#082f49', fontSize: 10, fontWeight: 850, cursor: 'pointer' }
@@ -14958,7 +14960,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 800 }
           }, '✅ Focused retry complete — every missed species was matched to an accepted lifespan bucket.');
         }
-        return missedCases.length ? h('button', {
+        return missedCases.length ? h('button', { type: 'button',
           'data-pets-focusable': true,
           onClick: beginLsReview,
           style: { marginTop: 10, marginRight: 8, padding: '7px 11px', borderRadius: 8, border: '1px solid ' + T.link, background: 'rgba(14,165,233,0.12)', color: '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
@@ -14997,7 +14999,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             } else {
               bg = b.color + '15'; border = b.color + '55'; color = T.text;
             }
-            return h('button', { key: b.id,
+            return h('button', { key: b.id, type: 'button',
               'aria-pressed': picked ? 'true' : 'false',
               'aria-disabled': lsAns ? 'true' : undefined,
               tabIndex: lsAns ? -1 : 0,
@@ -15060,7 +15062,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 renderLifespanMissReview(),
                 renderSpeciesComparison(),
                 renderLifespanFocusedRetry(),
-                h('button', { 'data-pets-focusable': true,
+                h('button', { type: 'button', 'data-pets-focusable': true,
                   onClick: function() {
                     updMulti({
                       lsIdx: -1, lsShown: [], lsAns: false, lsPick: null,
@@ -15072,7 +15074,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#1f1612', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
                 }, '🔄 Restart full 10')
               )
-            : h('button', { 'data-pets-focusable': true,
+            : h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: advanceLs,
                 style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#1f1612', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, '➡️ Next species')
@@ -15096,7 +15098,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
           FAMOUS_FILTERS.map(function(f) {
             var active = famousFilter === f.id;
-            return h('button', { key: f.id, 'data-pets-focusable': true,
+            return h('button', { key: f.id, type: 'button', 'data-pets-focusable': true,
               'aria-pressed': active ? 'true' : 'false',
               onClick: function() { upd('famousFilter', f.id); petsAnnounce('Filtered to ' + f.label); },
               style: btn({
@@ -16371,7 +16373,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         caption = 'Tooth shape reveals diet. Dogs have flat-topped molars (can grind plants) and a longer braincase. Cats have only sharp canines + carnassial teeth (slicing only — no grinding) and proportionally larger eye sockets for low-light hunting. Anatomy confirms what biochemistry already shows: cats are obligate carnivores.';
       }
       var petsDiagramTabKeyDown = function(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         var total = DIAGRAM_TABS.length;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % total;
@@ -16392,7 +16394,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
           DIAGRAM_TABS.map(function(t, tabIndex) {
             var picked = current === t.id;
-            return h('button', { key: t.id, role: 'tab',
+            return h('button', { key: t.id, type: 'button', role: 'tab',
               id: 'pets-diagram-tab-' + t.id,
               'aria-controls': 'pets-diagram-panel-' + t.id,
               'aria-selected': picked ? 'true' : 'false',
@@ -16427,7 +16429,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       function setSec(id) { upd('welfareSec', id); petsAnnounce(WELFARE_DATA[id].label); }
       var welfareKeys = Object.keys(WELFARE_DATA);
       function welfareTabKeyDown(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % welfareKeys.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + welfareKeys.length - 1) % welfareKeys.length;
@@ -16445,7 +16447,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           var sel = welfareSec === k;
           var visited = !!welfareVisited[k];
           return h('button', {
-            key: k, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            key: k, type: 'button', role: 'tab', 'aria-selected': sel ? 'true' : 'false',
             id: 'pets-welfare-tab-' + k,
             'aria-controls': 'pets-welfare-panel-' + k,
             tabIndex: sel ? 0 : -1,
@@ -16506,8 +16508,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('input', { id: 'litter-years', 'data-pets-focusable': true, type: 'range',
               min: 1, max: 7, step: 1, value: years,
               'aria-label': __alloT('stem.pets.a11y_years_of_unchecked_breeding', 'Years of unchecked breeding'),
+              'aria-valuetext': __alloT('stem.pets.a11y_years_of_unchecked_breeding', 'Years of unchecked breeding') + ': ' + years,
               onChange: function(e) { upd('litterYears', parseInt(e.target.value, 10)); },
-              style: { width: '100%', accentColor: T.warm, cursor: 'pointer' }
+              style: { width: '100%', minHeight: 44, accentColor: T.warm, cursor: 'pointer' }
             }),
             h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border, textAlign: 'center' } },
               h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Kittens born to one unspayed female and her daughters'),
@@ -17648,7 +17651,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             zones.map(function(z) {
               var done = !!todayInts[z.kind];
               return h('button', {
-                key: z.kind, className: 'petslab-care-zone petslab-care-zone--' + z.kind,
+                key: z.kind, type: 'button', className: 'petslab-care-zone petslab-care-zone--' + z.kind,
                 'data-pets-focusable': true,
                 onClick: function(ev) { ev.stopPropagation(); onInteract(z.kind); },
                 'aria-label': (done ? 'Already done today: ' : 'Care interaction: ') + z.label,
@@ -18213,7 +18216,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               // aria-label made every card a paragraph before its name.
               var spNameId = 'petslab-care-species-' + sp.id + '-name';
               var spDescId = 'petslab-care-species-' + sp.id + '-desc';
-              return h('button', { key: sp.id, 'data-pets-focusable': true,
+              return h('button', { key: sp.id, type: 'button', 'data-pets-focusable': true,
                 onClick: function() { startSim(sp.id); },
                 'aria-labelledby': spNameId,
                 'aria-describedby': spDescId,
@@ -18527,26 +18530,26 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'Try ' + untried.map(function(id) { return names[id] || id; }).join(' or ') + ' next: the same four welfare domains, but what each one needs, and what it costs, is different.');
           })(),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            h('button', { 'data-pets-focusable': true, onClick: function() { startSim(c.species, c.week); },
+            h('button', { type: 'button', 'data-pets-focusable': true, onClick: function() { startSim(c.species, c.week); },
               style: btnPrimary({ padding: '10px 18px' })
             }, c.week === 2 ? '🔁 Retry week 2' : '🔁 Retry this species'),
-            c.week !== 2 && CARE_SIM_WEEK2[c.species] && h('button', { 'data-pets-focusable': true,
+            c.week !== 2 && CARE_SIM_WEEK2[c.species] && h('button', { type: 'button', 'data-pets-focusable': true,
               className: 'petslab-care-week2-continue',
               onClick: function() { startSim(c.species, 2); },
               style: btnPrimary({ padding: '10px 18px' })
             }, '▶ Continue: week 2, ' + (CARE_SIM_WEEK2_TITLES[c.species] || 'the same animal, months on')),
-            c.week === 2 && h('button', { 'data-pets-focusable': true,
+            c.week === 2 && h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() { startSim(c.species, 1); },
               style: btn({ padding: '10px 18px' })
             }, '◀ Back to week 1'),
-            h('button', { 'data-pets-focusable': true, onClick: reset,
+            h('button', { type: 'button', 'data-pets-focusable': true, onClick: reset,
               style: btn({ padding: '10px 18px' })
             }, '🐾 Change species'),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() { goToView('welfare', 'Welfare & Ethics'); },
               style: btn({ padding: '10px 18px' })
             }, '🛡️ Welfare & Ethics'),
-            h('button', { 'data-pets-focusable': true,
+            h('button', { type: 'button', 'data-pets-focusable': true,
               onClick: function() { goToView('cost', 'Lifetime Cost'); },
               style: btn({ padding: '10px 18px' })
             }, '💵 Lifetime Cost')
@@ -18594,7 +18597,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         CARE_ROUTINE_KINDS.map(function(c) {
           var done = !!todayInts[c.kind];
           return h('button', {
-            key: c.kind, className: 'petslab-sim-button',
+            key: c.kind, type: 'button', className: 'petslab-sim-button',
             'data-pets-focusable': true,
             onClick: function() { petInteract(c.kind); },
             'aria-label': (done ? 'Already done today: ' : 'Do this care: ') + c.label + ' (' + c.short + ')',
@@ -18729,7 +18732,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               }, pv.text);
             })) : null;
             return h('button', {
-              key: ch.id, className: 'petslab-sim-choice',
+              key: ch.id, type: 'button', className: 'petslab-sim-choice',
               'aria-pressed': isPicked ? 'true' : 'false',
               'aria-disabled': hasChosen ? 'true' : undefined,
               tabIndex: hasChosen ? -1 : 0,
@@ -18794,7 +18797,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   : 'Only tomorrow\'s decision can move that meter now.')
             );
           })(),
-          h('button', { 'data-pets-focusable': true, onClick: nextDay,
+          h('button', { type: 'button', 'data-pets-focusable': true, onClick: nextDay,
             style: btnPrimary({ padding: '12px 24px', fontSize: 14, width: '100%' })
           }, careSim.day < allDays.length - 1 ? 'Next day →' : 'See week summary ✓')
         ),
@@ -18868,12 +18871,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // for anyone who navigates by pointer only.
       function padBtn(label, aria, onDown) {
         return h('button', {
-          key: aria, className: 'petslab-sim-button', 'data-pets-focusable': true, 'aria-label': aria,
+          key: aria, type: 'button', className: 'petslab-sim-button', 'data-pets-focusable': true, 'aria-label': aria,
           disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
           onPointerDown: function () { onDown(true); },
           onPointerUp: function () { onDown(false); },
           onPointerLeave: function () { onDown(false); },
-          onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDown(true); } },
+          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDown(true); } },
           onKeyUp: function () { onDown(false); },
           style: {
             width: 44, height: 40, borderRadius: 8, border: '1px solid ' + T.border,
@@ -19082,7 +19085,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 : 'Aim at something useful, then capture a frame. The first frame locks the comparison angle.')
             ),
             h('div', { className: 'petslab-sensory-compare-actions' },
-              h('button', {
+              h('button', { type: 'button',
                 className: 'petslab-sim-button petslab-sensory-capture',
                 'data-pets-focusable': true,
                 disabled: sensoryStatus !== 'ready',
@@ -19090,7 +19093,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'aria-label': (currentSaved ? 'Replace ' : 'Capture ') + sp.name + ' comparison frame',
                 style: btnPrimary({ padding: '8px 13px', fontSize: 12, opacity: sensoryStatus === 'ready' ? 1 : 0.48 })
               }, currentSaved ? '↻ Replace ' + sp.name : '📸 Capture ' + sp.name),
-              sensoryCompareActive && h('button', {
+              sensoryCompareActive && h('button', { type: 'button',
                 className: 'petslab-sim-button petslab-sensory-clear',
                 'data-pets-focusable': true,
                 onClick: function () { clearSensoryComparison(true); },
@@ -19151,14 +19154,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             var on = s.id === sensorySpecies;
             var seen = !!sensorySeen[s.id];
             return h('button', {
-              key: s.id, role: 'radio', 'aria-checked': on ? 'true' : 'false',
+              key: s.id, type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false',
               'data-pets-focusable': true,
               'data-pets-sensory-species': s.id,
               tabIndex: on ? 0 : -1,
               'aria-label': s.name + (seen ? ' (already compared)' : ' (not yet seen)'),
               onClick: function () { pickSpecies(s.id); },
               onKeyDown: function (e) {
-                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var currentIndex = SENSORY_SPECIES.indexOf(s);
                 var nextIndex = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % SENSORY_SPECIES.length;
@@ -19232,16 +19235,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ? h('div', null,
                 h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 8 } },
                   '⚠ The 3D engine could not load — school networks often block CDNs. Everything below still works.'),
-                h('button', { 'data-pets-focusable': true, onClick: loadEngine, style: btn({ padding: '8px 16px', fontSize: 13 }) }, '↻ Try again'))
+                h('button', { type: 'button', 'data-pets-focusable': true, onClick: loadEngine, style: btn({ padding: '8px 16px', fontSize: 13 }) }, '↻ Try again'))
             : h('div', null,
                 h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 10, lineHeight: 1.6 } },
                   'The walk-around view needs the 3D engine (about 600 KB, loaded only if you ask for it).'),
-                h('button', {
+                h('button', { type: 'button',
                   'data-pets-focusable': true, onClick: loadEngine, disabled: threeLoading,
                   style: btnPrimary({ padding: '12px 24px', fontSize: 14, opacity: threeLoading ? 0.6 : 1 })
                 }, threeLoading ? '⏳ Loading 3D engine…' : '▶ Load the 3D room'))
         ) : !sensoryActive ? h('div', { style: { padding: 20, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center', marginBottom: 14 } },
-          h('button', {
+          h('button', { type: 'button',
             'data-pets-focusable': true,
             onClick: function () {
               upd('sensoryActive', true);
@@ -19327,7 +19330,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 { id: 'person', label: '\uD83E\uDDCD Person' }
               ].map(function(target) {
                 return h('button', {
-                  key: target.id, className: 'petslab-sim-button', 'data-pets-focusable': true,
+                  key: target.id, type: 'button', className: 'petslab-sim-button', 'data-pets-focusable': true,
                   disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
                   onClick: function () {
                     var viewer = _sensoryViewerRef.current;
@@ -19338,7 +19341,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48 })
                 }, target.label);
               }),
-              h('button', {
+              h('button', { type: 'button',
                 className: 'petslab-sim-button', 'data-pets-focusable': true,
                 disabled: sensoryStatus !== 'ready' || sensoryCompareActive,
                 onClick: function () {
@@ -19350,13 +19353,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48 })
               }, '\u21BA Reset')
             ),
-            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true, onClick: toggleDusk,
+            h('button', { type: 'button', className: 'petslab-sim-button', 'data-pets-focusable': true, onClick: toggleDusk,
               disabled: sensoryCompareActive,
               'aria-label': sensoryCompareActive ? 'Lighting locked while comparison frames are saved' : (sensoryDusk ? 'Switch to daylight' : 'Switch to dusk'),
               'aria-pressed': sensoryDusk ? 'true' : 'false',
               style: btn({ padding: '8px 14px', fontSize: 13, opacity: sensoryCompareActive ? 0.48 : 1 }) },
               sensoryDusk ? '🌙 Dusk — on' : '☀️ Daylight'),
-            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
+            h('button', { type: 'button', className: 'petslab-sim-button', 'data-pets-focusable': true,
               'aria-pressed': sensoryReduceMotion ? 'true' : 'false',
               onClick: function () {
                 var next = !sensoryReduceMotion;
@@ -19367,7 +19370,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) },
               sensoryReduceMotion ? '🧊 Motion reduced' : '🌀 Motion on'),
-            h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
+            h('button', { type: 'button', className: 'petslab-sim-button', 'data-pets-focusable': true,
               onClick: function () { clearSensoryComparison(false); upd('sensoryActive', false); petsAnnounce(__alloT('stem.pets.sr_left_the_room', 'Left the room.')); },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
             h('span', { style: { fontSize: 11, color: T.dim } },
@@ -19478,7 +19481,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         // the lab where "go back" moved, and the only one where it competed
         // with the page's real primary action.
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 } },
-          h('button', { 'data-pets-focusable': true,
+          h('button', { type: 'button', 'data-pets-focusable': true,
             'aria-label': __alloT('stem.pets.a11y_back_to_pets_lab_menu', 'Back to Pets Lab menu'),
             onClick: function () { goToView('menu'); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
@@ -19553,7 +19556,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           })
         ),
         h('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
-          h('button', { 'data-pets-focusable': true,
+          h('button', { type: 'button', 'data-pets-focusable': true,
             onClick: function () {
               updMulti({ view: 'bodyLang', lastView: 'bodyLang', blMode: 'quiz', blQuiz: null });
               markVisited('bodyLang');

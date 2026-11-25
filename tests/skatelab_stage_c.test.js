@@ -81,6 +81,14 @@ async function remount(initial, ctxOverrides) {
 const click = (element) => act(async () => { element.click(); });
 const launchButton = () => container.querySelector('[data-skatelab-launch="true"]');
 const launch = () => click(launchButton());
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const buttonByText = (text) => [...container.querySelectorAll('button')].find((button) => button.textContent === text);
 const key = (element, name, extra = {}) => act(async () => {
   element.dispatchEvent(new window.KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true, ...extra }));
@@ -143,6 +151,7 @@ describe('Stage B leftovers', () => {
     expect(alert.textContent).toContain('Make a prediction first');
     expect(container.querySelector('#sk-estimate').getAttribute('aria-invalid')).toBe('true');
 
+    await toPrompt('hp_moon');
     await click(container.querySelector('#sk-predict-hp_moon-same'));
     expect(container.querySelector('[role="alert"]')).toBeNull();
     expect(launchButton().getAttribute('aria-disabled')).toBeNull();
@@ -383,6 +392,7 @@ describe('P4-3 teacher controls', () => {
 
   it('hide answers: the learner sees the choice and results but no verdict or misconception', async () => {
     const state = await mount(seed({ estimateChallenge: true, teacher: { locks: {}, assign: null, hideAnswers: true } }));
+    await toPrompt('hp_moon');
     await click(container.querySelector('#sk-predict-hp_moon-higher'));
     await launch();
     expect(state.latest.skatelab.predictionResult.misconception).toBe('low_gravity_higher');
@@ -407,7 +417,8 @@ describe('P4-3 teacher controls', () => {
       estimateChallenge: true, cer, misconceptionTally: { low_gravity_higher: 2 }, predictionStats: { made: 3, matched: 1 },
       missions: { spin_540: { done: true, tries: 2, last: 540 } },
     }), { isTeacherMode: true, studentNickname: 'Ava' });
-    // predictionStats.made = 3 rotates the question to hp_spin, whose model answer is 'same'.
+    // predictionStats.made = 3 now rotates to hp_mass; one "different question" reaches hp_spin, whose model answer is 'same'.
+    await toPrompt('hp_spin');
     await click(container.querySelector('#sk-predict-hp_spin-same'));
     await launch();
     await click(buttonByText('Printable report'));

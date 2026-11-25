@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings } from './helpers/coaster_settings';
 
 /**
  * The onboard rider must not pass through the ride's own scenery.
@@ -93,6 +94,7 @@ test('a rear-row rider is not drawn while the camera borrows their seat, and eve
   test.setTimeout(300000);
   await page.addInitScript(() => { localStorage.setItem('coaster_lab_onboarding_v1', 'complete'); });
   await harness.mount(page, {}, `document.querySelector('${SEL}')._lab`);
+  await openCoasterSettings(page);
   await page.locator('#clab-seatSel').selectOption('2');
   const state = await page.evaluate((sel) => {
     const lab = (document.querySelector(sel) as any)._lab;

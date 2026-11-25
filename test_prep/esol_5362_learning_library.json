@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-esol-5362-learning-library",
@@ -33,7 +34,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 6,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 6,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -6021,7 +6027,7 @@
       "taskType": "Transcript and Intelligibility Analysis",
       "title": "Word stress in an academic explanation",
       "prompt": "Identify the feature most likely affecting listener comprehension, plan a focused intelligibility intervention, and explain what should not be inferred from the sample.",
-      "stimulus": "Transcript: \"The CONtent changed when we conTENT the solution\" is produced while a student explains a chemistry procedure. Delivery notes: The learner places stress on the first syllable in both uses of the spelled form and speaks all other key terms clearly. Peers understand the first clause but ask what action occurred in the second. The written explanation correctly distinguishes the noun content from the intended verb-like form, though the chosen wording is awkward. This is a constructed practice description, not a recording or diagnosis.",
+      "stimulus": "Transcript: \"The CONtent changed when we conTENT the solution\" is produced while a student explains a chemistry procedure. Delivery notes: The learner stresses the first syllable in the noun (CONtent) and the second syllable in the intended verb phrase (conTENT the solution) and speaks all other key terms clearly. Peers understand the first clause but ask what action occurred in the second. The written explanation correctly distinguishes the noun content from the intended verb-like form, though the chosen wording is awkward. This is a constructed practice description, not a recording or diagnosis.",
       "taskParts": [
         "Analyze stress, lexical choice, grammar, and listener evidence separately.",
         "Prioritize a meaningful perception-production task tied to the explanation.",
@@ -6030,7 +6036,7 @@
       "planningFrame": [
         {
           "label": "Evidence",
-          "guidance": "Separate first-syllable stress on both \"content\" uses, clear delivery of other terms, peer confusion on clause two's action, and awkward written verb wording."
+          "guidance": "Separate the noun-verb stress contrast (\"CONtent\" vs. \"conTENT\"), clear delivery of other terms, peer confusion on clause two's action, and awkward written verb wording."
         },
         {
           "label": "Concept",
@@ -7480,7 +7486,7 @@
         "Lau v. Nichols (1974) & EEOA (1974): Identical \"sink-or-swim\" instruction without language support violates Title VI of the Civil Rights Act; districts must take affirmative action to overcome language barriers.",
         "Castaneda v. Pickard (1981) Three-Prong Test: An EL program is legally compliant only if it is (1) based on sound educational theory, (2) implemented effectively with adequate resources and qualified staff, and (3) evaluated and revised when it fails to produce results.",
         "Plyler v. Doe (1982): Under the 14th Amendment Equal Protection Clause, undocumented children have a constitutional right to free K–12 public education; schools may never require immigration papers or Social Security numbers to enroll.",
-        "ESSA Title III & Parent Opt-Out Rule: Requires standardized statewide entrance/exit criteria, annual ELP testing, parent notification within 30 days of enrollment, and honors written parent opt-out of specialized EL programs while preserving classroom accommodations and annual ELP testing."
+        "ESSA Title III & Parent Opt-Out Rule: Requires standardized statewide entrance/exit criteria, annual ELP testing, parent notification within 30 days after the beginning of the school year (or within 2 weeks of placement for students identified mid-year under ESSA Section 1112(e)(3)(A)), and honors written parent opt-out of specialized EL programs while preserving classroom accommodations and annual ELP testing."
       ],
       "decisionRules": [
         "When a school office refuses to register a newly arrived child who lacks a Social Security card or visa → cite Plyler v. Doe and advocate for immediate enrollment using standard residency and age verification.",
@@ -7870,6 +7876,2517 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "esol-5362-session-ch-01",
+      "title": "Phonology, Morphology, Syntax, and Language Structure guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phonology, Morphology, Syntax, and Language Structure\" (Foundations of Linguistics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-01",
+      "itemIds": [
+        "esol5362-b1-001",
+        "esol5362-b1-002",
+        "esol5362-b1-003",
+        "esol5362-b1-004",
+        "esol5362-b1-005",
+        "esol5362-b1-006",
+        "esol5362-b1-007",
+        "esol5362-b1-008",
+        "esol5362-b1-009",
+        "esol5362-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phonology, Morphology, Syntax, and Language Structure\" and the \"Linguistic Subsystems, Morphology & Sociolinguistics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Linguistic Subsystems in ESOL Analysis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Unpacking Passive Voice and Clause Roles in Science Texts\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phonology, Morphology, Syntax, and Language Structure\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguish Conversational BICS from Academic CALP and Silent-Period Growth\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-02",
+      "title": "Semantics, Pragmatics, Discourse, and Sociolinguistics guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Semantics, Pragmatics, Discourse, and Sociolinguistics\" (Foundations of Linguistics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-02",
+      "itemIds": [
+        "esol5362-b1-017",
+        "esol5362-b1-018",
+        "esol5362-b2-010",
+        "esol5362-b2-011",
+        "esol5362-b2-012",
+        "esol5362-b2-013",
+        "esol5362-b2-014",
+        "esol5362-b2-015",
+        "esol5362-b2-016",
+        "esol5362-b2-017"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Semantics, Pragmatics, Discourse, and Sociolinguistics\" and the \"Linguistic Subsystems, Morphology & Sociolinguistics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Meaning Across Contexts: Semantics, Pragmatics, Discourse Cohesion, and Register\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Building Discourse Cohesion and Peer Repair in Social Studies\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Semantics, Pragmatics, Discourse, and Sociolinguistics\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Diagnose L1 Transfer and Interlanguage Patterns Accurately Across Linguistic Domains\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-03",
+      "title": "Language Acquisition, Interaction, Feedback, and Development guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Language Acquisition, Interaction, Feedback, and Development\" (Foundations of Language Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-03",
+      "itemIds": [
+        "esol5362-b2-022",
+        "esol5362-b2-023",
+        "esol5362-b2-024",
+        "esol5362-b2-025",
+        "esol5362-b2-026",
+        "esol5362-b2-027",
+        "esol5362-b2-028",
+        "esol5362-b2-029",
+        "esol5362-b1-019",
+        "esol5362-b1-020"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Language Acquisition, Interaction, Feedback, and Development\" and the \"SLA Theories, BICS vs. CALP & Cross-Linguistic Transfer\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Second Language Acquisition (SLA), Interlanguage & Cross-Linguistic Transfer Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Shifting from Mechanical Drills to Meaningful Communicative Retrieval\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Language Acquisition, Interaction, Feedback, and Development\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Scaffold Grade-Level Content Rigor Through Paired Language Objectives\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-04",
+      "title": "Multilingualism, Transfer, Identity, and Learner Factors guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Multilingualism, Transfer, Identity, and Learner Factors\" (Foundations of Language Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-04",
+      "itemIds": [
+        "esol5362-b2-040",
+        "esol5362-b1-030",
+        "esol5362-b1-031",
+        "esol5362-b1-032",
+        "esol5362-b1-033",
+        "esol5362-b1-034",
+        "esol5362-b1-035",
+        "esol5362-b1-036",
+        "esol5362-b1-037",
+        "esol5362-b1-038"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Multilingualism, Transfer, Identity, and Learner Factors\" and the \"SLA Theories, BICS vs. CALP & Cross-Linguistic Transfer\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Asset-Based Multilingual Development: Transfer, Translanguaging, Learner Factors, and Biliteracy\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Supporting an Adolescent SLIFE Learner Without Infantile Materials\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Multilingualism, Transfer, Identity, and Learner Factors\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Lau, Castañeda, and Plyler Civil-Rights Protections to School Policy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-05",
+      "title": "Standards, Objectives, Materials, and Differentiation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Standards, Objectives, Materials, and Differentiation\" (Planning and Implementing Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-05",
+      "itemIds": [
+        "esol5362-b1-045",
+        "esol5362-b1-046",
+        "esol5362-b1-047",
+        "esol5362-b1-048",
+        "esol5362-b1-049",
+        "esol5362-b1-050",
+        "esol5362-b1-051",
+        "esol5362-b1-052",
+        "esol5362-b2-041",
+        "esol5362-b2-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Standards, Objectives, Materials, and Differentiation\" and the \"SIOP Objectives, WIDA Scaffolding & Corrective Feedback\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Sheltered Content & Academic Language Scaffolding Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Permanent Isolation with Flexible Grouping and Tiered Tech\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Standards, Objectives, Materials, and Differentiation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Construct Validity and Modality Alignment in ESOL Assessment\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-06",
+      "title": "Interaction, Scaffolding, Feedback, and Integrated Literacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Interaction, Scaffolding, Feedback, and Integrated Literacy\" (Planning and Implementing Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-06",
+      "itemIds": [
+        "esol5362-b2-055",
+        "esol5362-b2-056",
+        "esol5362-b2-057",
+        "esol5362-b2-058",
+        "esol5362-b2-059",
+        "esol5362-b2-060",
+        "esol5362-b2-061",
+        "esol5362-b2-062",
+        "esol5362-b2-063",
+        "esol5362-b1-053"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Interaction, Scaffolding, Feedback, and Integrated Literacy\" and the \"SIOP Objectives, WIDA Scaffolding & Corrective Feedback\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Multilingual Literacy Development: Oracy, Phonics, and Academic Reading-Writing Bridge\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Prioritizing Intelligibility Over Accent Elimination in Presentations\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Interaction, Scaffolding, Feedback, and Integrated Literacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Replace Cultural Deficit Assumptions with Asset-Based, Equitable Family Access\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-07",
+      "title": "Assessment Purpose, Validity, Reliability, and Proficiency guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Purpose, Validity, Reliability, and Proficiency\" (Assessment and Evaluation) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-07",
+      "itemIds": [
+        "esol5362-b2-066",
+        "esol5362-b2-067",
+        "esol5362-b2-068",
+        "esol5362-b2-069",
+        "esol5362-b2-070",
+        "esol5362-b2-071",
+        "esol5362-b1-064",
+        "esol5362-b1-065",
+        "esol5362-b1-066",
+        "esol5362-b1-067"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Purpose, Validity, Reliability, and Proficiency\" and the \"ELP Assessment Cycle, Validity & Fair Accommodations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Valid Assessment of Multilingual Learners & Separating Language Difference from Disability\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Interpreting Norm-Referenced vs. Criterion-Referenced ELP Data\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Purpose, Validity, Reliability, and Proficiency\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Distinguish Conversational BICS from Academic CALP and Silent-Period Growth\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-08",
+      "title": "Classroom Assessment, Data Use, Fairness, and Monitoring guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Classroom Assessment, Data Use, Fairness, and Monitoring\" (Assessment and Evaluation) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-08",
+      "itemIds": [
+        "esol5362-b2-072",
+        "esol5362-b2-073",
+        "esol5362-b2-074",
+        "esol5362-b2-075",
+        "esol5362-b2-076",
+        "esol5362-b2-077",
+        "esol5362-b2-078",
+        "esol5362-b1-072",
+        "esol5362-b1-073",
+        "esol5362-b1-074"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Classroom Assessment, Data Use, Fairness, and Monitoring\" and the \"ELP Assessment Cycle, Validity & Fair Accommodations\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Classroom Assessment Cycle: Performance Evidence, Rubrics, Error Analysis, and EL Program Decisions\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Acting on Post-Exit Monitoring Evidence for Reclassified Learners\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Classroom Assessment, Data Use, Fairness, and Monitoring\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Diagnose L1 Transfer and Interlanguage Patterns Accurately Across Linguistic Domains\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-09",
+      "title": "Culture, Identity, Responsiveness, and Power guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Culture, Identity, Responsiveness, and Power\" (Culture) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-09",
+      "itemIds": [
+        "esol5362-b2-081",
+        "esol5362-b2-082",
+        "esol5362-b2-083",
+        "esol5362-b2-084",
+        "esol5362-b1-079",
+        "esol5362-b1-080",
+        "esol5362-b1-081",
+        "esol5362-b1-082",
+        "esol5362-b1-083",
+        "esol5362-b1-084"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Culture, Identity, Responsiveness, and Power\" and the \"Cultural Frameworks, Acculturation & Family Partnerships\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Culturally Sustaining ESOL Practice: Dynamic Culture, Curriculum, Interaction, and Belonging\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Reframing Cultural Interactional Norms in Classroom Discussions\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Culture, Identity, Responsiveness, and Power\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Scaffold Grade-Level Content Rigor Through Paired Language Objectives\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-10",
+      "title": "Family, Community, and Cross-Cultural Partnerships guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Family, Community, and Cross-Cultural Partnerships\" (Culture) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-10",
+      "itemIds": [
+        "esol5362-b1-088",
+        "esol5362-b1-089",
+        "esol5362-b2-085",
+        "esol5362-b2-086",
+        "esol5362-b2-087",
+        "esol5362-b2-088",
+        "esol5362-b2-089",
+        "esol5362-b1-085",
+        "esol5362-b1-086",
+        "esol5362-b1-087"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Family, Community, and Cross-Cultural Partnerships\" and the \"Cultural Frameworks, Acculturation & Family Partnerships\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Equitable Family and Community Partnerships: Language Access, Reciprocity, and Institutional Trust\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upholding Plyler Data Minimization and Language Access for Families\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Family, Community, and Cross-Cultural Partnerships\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Lau, Castañeda, and Plyler Civil-Rights Protections to School Policy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-11",
+      "title": "Collaboration, Ethics, Inquiry, and Professional Boundaries guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collaboration, Ethics, Inquiry, and Professional Boundaries\" (Professionalism and Advocacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-11",
+      "itemIds": [
+        "esol5362-b2-094",
+        "esol5362-b2-095",
+        "esol5362-b1-090",
+        "esol5362-b1-091",
+        "esol5362-b1-092",
+        "esol5362-b1-093",
+        "esol5362-b1-094",
+        "esol5362-b1-095",
+        "esol5362-b2-090",
+        "esol5362-b2-091"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collaboration, Ethics, Inquiry, and Professional Boundaries\" and the \"EL Civil Rights Law, Castaneda Prongs & Advocacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"ESOL Collaboration, Reflective Inquiry, Multidisciplinary Boundaries, and Learner Agency\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting Privacy, Informed Consent, and Scope in MTSS Referrals\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collaboration, Ethics, Inquiry, and Professional Boundaries\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Construct Validity and Modality Alignment in ESOL Assessment\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-ch-12",
+      "title": "Advocacy, Program Evaluation, Rights, and Meaningful Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Advocacy, Program Evaluation, Rights, and Meaningful Access\" (Professionalism and Advocacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "esol5362-ch-12",
+      "itemIds": [
+        "esol5362-b2-098",
+        "esol5362-b2-099",
+        "esol5362-b2-100",
+        "esol5362-b1-096",
+        "esol5362-b1-097",
+        "esol5362-b1-098",
+        "esol5362-b1-099",
+        "esol5362-b1-100",
+        "esol5362-b2-096",
+        "esol5362-b2-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Advocacy, Program Evaluation, Rights, and Meaningful Access\" and the \"EL Civil Rights Law, Castaneda Prongs & Advocacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Civil Rights, Lau/Castañeda Program Evaluation & Culturally Sustaining Family Partnership Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Addressing Segregated EL Tracks and Opt-Out Civil Rights Protections\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Advocacy, Program Evaluation, Rights, and Meaningful Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Replace Cultural Deficit Assumptions with Asset-Based, Equitable Family Access\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-trap-repair-sprint",
+      "title": "Praxis English to Speakers of Other Languages (5362) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "esol5362-b1-019",
+        "esol5362-b1-001",
+        "esol5362-b1-041",
+        "esol5362-b1-090",
+        "esol5362-b1-064",
+        "esol5362-b1-079",
+        "esol5362-b1-020",
+        "esol5362-b1-002",
+        "esol5362-b1-042",
+        "esol5362-b1-091",
+        "esol5362-b1-065",
+        "esol5362-b1-080"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Distinguish Conversational BICS from Academic CALP and Silent-Period Growth\", \"Diagnose L1 Transfer and Interlanguage Patterns Accurately Across Linguistic Domains\", \"Scaffold Grade-Level Content Rigor Through Paired Language Objectives\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-session-mixed-capstone",
+      "title": "Praxis English to Speakers of Other Languages (5362) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "esol5362-b1-004",
+        "esol5362-b1-022",
+        "esol5362-b1-044",
+        "esol5362-b1-067",
+        "esol5362-b1-082",
+        "esol5362-b1-093",
+        "esol5362-b1-015",
+        "esol5362-b1-033",
+        "esol5362-b1-055",
+        "esol5362-b1-078",
+        "esol5362-b2-082",
+        "esol5362-b2-093",
+        "esol5362-b2-008",
+        "esol5362-b2-022",
+        "esol5362-b2-043"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Audio and classroom-analysis workshops, outline a response to \"Reduced speech in a classroom announcement\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "esol-5362-spaced-ch-01",
+      "topicId": "esol5362-ch-01",
+      "topicLabel": "1. Phonology, Morphology, Syntax, and Language Structure",
+      "unitId": "foundations-linguistics",
+      "chapterId": "esol5362-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phonology, Morphology, Syntax, and Language Structure\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-02",
+      "topicId": "esol5362-ch-02",
+      "topicLabel": "2. Semantics, Pragmatics, Discourse, and Sociolinguistics",
+      "unitId": "foundations-linguistics",
+      "chapterId": "esol5362-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Semantics, Pragmatics, Discourse, and Sociolinguistics\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-03",
+      "topicId": "esol5362-ch-03",
+      "topicLabel": "3. Language Acquisition, Interaction, Feedback, and Development",
+      "unitId": "foundations-language-learning",
+      "chapterId": "esol5362-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Language Acquisition, Interaction, Feedback, and Development\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-04",
+      "topicId": "esol5362-ch-04",
+      "topicLabel": "4. Multilingualism, Transfer, Identity, and Learner Factors",
+      "unitId": "foundations-language-learning",
+      "chapterId": "esol5362-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Multilingualism, Transfer, Identity, and Learner Factors\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-05",
+      "topicId": "esol5362-ch-05",
+      "topicLabel": "5. Standards, Objectives, Materials, and Differentiation",
+      "unitId": "planning-implementing-instruction",
+      "chapterId": "esol5362-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Standards, Objectives, Materials, and Differentiation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-06",
+      "topicId": "esol5362-ch-06",
+      "topicLabel": "6. Interaction, Scaffolding, Feedback, and Integrated Literacy",
+      "unitId": "planning-implementing-instruction",
+      "chapterId": "esol5362-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Interaction, Scaffolding, Feedback, and Integrated Literacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-07",
+      "topicId": "esol5362-ch-07",
+      "topicLabel": "7. Assessment Purpose, Validity, Reliability, and Proficiency",
+      "unitId": "assessment-evaluation",
+      "chapterId": "esol5362-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Purpose, Validity, Reliability, and Proficiency\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-08",
+      "topicId": "esol5362-ch-08",
+      "topicLabel": "8. Classroom Assessment, Data Use, Fairness, and Monitoring",
+      "unitId": "assessment-evaluation",
+      "chapterId": "esol5362-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Classroom Assessment, Data Use, Fairness, and Monitoring\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-09",
+      "topicId": "esol5362-ch-09",
+      "topicLabel": "9. Culture, Identity, Responsiveness, and Power",
+      "unitId": "culture",
+      "chapterId": "esol5362-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Culture, Identity, Responsiveness, and Power\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-10",
+      "topicId": "esol5362-ch-10",
+      "topicLabel": "10. Family, Community, and Cross-Cultural Partnerships",
+      "unitId": "culture",
+      "chapterId": "esol5362-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Family, Community, and Cross-Cultural Partnerships\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-11",
+      "topicId": "esol5362-ch-11",
+      "topicLabel": "11. Collaboration, Ethics, Inquiry, and Professional Boundaries",
+      "unitId": "professionalism-advocacy",
+      "chapterId": "esol5362-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collaboration, Ethics, Inquiry, and Professional Boundaries\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-spaced-ch-12",
+      "topicId": "esol5362-ch-12",
+      "topicLabel": "12. Advocacy, Program Evaluation, Rights, and Meaningful Access",
+      "unitId": "professionalism-advocacy",
+      "chapterId": "esol5362-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Advocacy, Program Evaluation, Rights, and Meaningful Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "esol-5362-source-01",
+      "title": "Praxis ESOL (5362) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "esol-5362-source-02",
+      "title": "Praxis ESOL (5362) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/english-to-speakers-of-other-languages-5362.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "esol-5362-source-03",
+      "title": "The 2018 TESOL International Association Standards for Initial TESOL Pre-K–12 Teacher Preparation Programs",
+      "organization": "TESOL International Association",
+      "url": "https://www.tesol.org/media/v33fewo0/2018-tesol-teacher-prep-standards-final.pdf",
+      "credibility": "TESOL International Association developed and publishes these professional preparation standards. They are a primary source for the association’s expectations, but not a substitute for current state rules or the ETS 5362 blueprint.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "esol-5362-source-04",
+      "title": "WIDA English Language Development Standards Framework, 2020 Edition | WIDA",
+      "organization": "WIDA, Wisconsin Center for Education Research",
+      "url": "https://wida.wisc.edu/resources/wida-english-language-development-standards-framework-2020-edition",
+      "credibility": "WIDA, Wisconsin Center for Education Research is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "esol-5362-source-05",
+      "title": "English Learner Toolkit | NCELA - English Language Acquisition & Language Instruction Educational Programs",
+      "organization": "National Clearinghouse for English Language Acquisition (NCELA), U.S. Department of Education",
+      "url": "https://ncela.ed.gov/educator-support/toolkits/english-learner-toolkit",
+      "credibility": "National Clearinghouse for English Language Acquisition (NCELA), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "esol-5362-source-06",
+      "title": "Equal Education Opportunities for English Learners",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "esol-5362-unit-review-01",
+      "unitId": "foundations-linguistics",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Phonology, Morphology, Syntax, and Language Structure",
+      "chapterId": "esol5362-ch-01",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-01-section-01",
+        "esol5362-ch-01-section-02",
+        "esol5362-ch-01-section-03",
+        "esol5362-ch-01-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-001",
+        "esol5362-b1-002",
+        "esol5362-b1-003",
+        "esol5362-b1-004",
+        "esol5362-b1-005",
+        "esol5362-b1-006",
+        "esol5362-b1-007",
+        "esol5362-b1-008",
+        "esol5362-b1-009",
+        "esol5362-b2-001",
+        "esol5362-b2-002",
+        "esol5362-b2-003",
+        "esol5362-b2-004",
+        "esol5362-b2-005",
+        "esol5362-b2-006",
+        "esol5362-b2-007",
+        "esol5362-b2-008",
+        "esol5362-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-001",
+        "esol5362-b1-002",
+        "esol5362-b1-003",
+        "esol5362-b1-004",
+        "esol5362-b1-005",
+        "esol5362-b1-006",
+        "esol5362-b1-007",
+        "esol5362-b1-008",
+        "esol5362-b1-009",
+        "esol5362-b2-001",
+        "esol5362-b2-002",
+        "esol5362-b2-003"
+      ],
+      "purpose": "Consolidate \"Phonology, Morphology, Syntax, and Language Structure\" (Foundations of Linguistics) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-02",
+      "unitId": "foundations-linguistics",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Semantics, Pragmatics, Discourse, and Sociolinguistics",
+      "chapterId": "esol5362-ch-02",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-02-section-01",
+        "esol5362-ch-02-section-02",
+        "esol5362-ch-02-section-03",
+        "esol5362-ch-02-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-010",
+        "esol5362-b1-011",
+        "esol5362-b1-012",
+        "esol5362-b1-013",
+        "esol5362-b1-014",
+        "esol5362-b1-015",
+        "esol5362-b1-016",
+        "esol5362-b1-017",
+        "esol5362-b1-018",
+        "esol5362-b2-010",
+        "esol5362-b2-011",
+        "esol5362-b2-012",
+        "esol5362-b2-013",
+        "esol5362-b2-014",
+        "esol5362-b2-015",
+        "esol5362-b2-016",
+        "esol5362-b2-017",
+        "esol5362-b2-018"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-010",
+        "esol5362-b1-011",
+        "esol5362-b1-012",
+        "esol5362-b1-013",
+        "esol5362-b1-014",
+        "esol5362-b1-015",
+        "esol5362-b1-016",
+        "esol5362-b1-017",
+        "esol5362-b1-018",
+        "esol5362-b2-010",
+        "esol5362-b2-011",
+        "esol5362-b2-012"
+      ],
+      "purpose": "Consolidate \"Semantics, Pragmatics, Discourse, and Sociolinguistics\" (Foundations of Linguistics) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-03",
+      "unitId": "foundations-language-learning",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Language Acquisition, Interaction, Feedback, and Development",
+      "chapterId": "esol5362-ch-03",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-03-section-01",
+        "esol5362-ch-03-section-02",
+        "esol5362-ch-03-section-03",
+        "esol5362-ch-03-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-019",
+        "esol5362-b1-020",
+        "esol5362-b1-021",
+        "esol5362-b1-022",
+        "esol5362-b1-023",
+        "esol5362-b1-024",
+        "esol5362-b1-025",
+        "esol5362-b1-026",
+        "esol5362-b1-027",
+        "esol5362-b1-028",
+        "esol5362-b1-029",
+        "esol5362-b2-019",
+        "esol5362-b2-020",
+        "esol5362-b2-021",
+        "esol5362-b2-022",
+        "esol5362-b2-023",
+        "esol5362-b2-024",
+        "esol5362-b2-025",
+        "esol5362-b2-026",
+        "esol5362-b2-027",
+        "esol5362-b2-028",
+        "esol5362-b2-029"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-019",
+        "esol5362-b1-020",
+        "esol5362-b1-021",
+        "esol5362-b1-022",
+        "esol5362-b1-023",
+        "esol5362-b1-024",
+        "esol5362-b1-025",
+        "esol5362-b1-026",
+        "esol5362-b1-027",
+        "esol5362-b1-028",
+        "esol5362-b1-029",
+        "esol5362-b2-019"
+      ],
+      "purpose": "Consolidate \"Language Acquisition, Interaction, Feedback, and Development\" (Foundations of Language Learning) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-04",
+      "unitId": "foundations-language-learning",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Multilingualism, Transfer, Identity, and Learner Factors",
+      "chapterId": "esol5362-ch-04",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-04-section-01",
+        "esol5362-ch-04-section-02",
+        "esol5362-ch-04-section-03",
+        "esol5362-ch-04-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-030",
+        "esol5362-b1-031",
+        "esol5362-b1-032",
+        "esol5362-b1-033",
+        "esol5362-b1-034",
+        "esol5362-b1-035",
+        "esol5362-b1-036",
+        "esol5362-b1-037",
+        "esol5362-b1-038",
+        "esol5362-b1-039",
+        "esol5362-b1-040",
+        "esol5362-b2-030",
+        "esol5362-b2-031",
+        "esol5362-b2-032",
+        "esol5362-b2-033",
+        "esol5362-b2-034",
+        "esol5362-b2-035",
+        "esol5362-b2-036",
+        "esol5362-b2-037",
+        "esol5362-b2-038",
+        "esol5362-b2-039",
+        "esol5362-b2-040"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-030",
+        "esol5362-b1-031",
+        "esol5362-b1-032",
+        "esol5362-b1-033",
+        "esol5362-b1-034",
+        "esol5362-b1-035",
+        "esol5362-b1-036",
+        "esol5362-b1-037",
+        "esol5362-b1-038",
+        "esol5362-b1-039",
+        "esol5362-b1-040",
+        "esol5362-b2-030"
+      ],
+      "purpose": "Consolidate \"Multilingualism, Transfer, Identity, and Learner Factors\" (Foundations of Language Learning) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-05",
+      "unitId": "planning-implementing-instruction",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Standards, Objectives, Materials, and Differentiation",
+      "chapterId": "esol5362-ch-05",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-05-section-01",
+        "esol5362-ch-05-section-02",
+        "esol5362-ch-05-section-03",
+        "esol5362-ch-05-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-041",
+        "esol5362-b1-042",
+        "esol5362-b1-043",
+        "esol5362-b1-044",
+        "esol5362-b1-045",
+        "esol5362-b1-046",
+        "esol5362-b1-047",
+        "esol5362-b1-048",
+        "esol5362-b1-049",
+        "esol5362-b1-050",
+        "esol5362-b1-051",
+        "esol5362-b1-052",
+        "esol5362-b2-041",
+        "esol5362-b2-042",
+        "esol5362-b2-043",
+        "esol5362-b2-044",
+        "esol5362-b2-045",
+        "esol5362-b2-046",
+        "esol5362-b2-047",
+        "esol5362-b2-048",
+        "esol5362-b2-049",
+        "esol5362-b2-050",
+        "esol5362-b2-051",
+        "esol5362-b2-052"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-041",
+        "esol5362-b1-042",
+        "esol5362-b1-043",
+        "esol5362-b1-044",
+        "esol5362-b1-045",
+        "esol5362-b1-046",
+        "esol5362-b1-047",
+        "esol5362-b1-048",
+        "esol5362-b1-049",
+        "esol5362-b1-050",
+        "esol5362-b1-051",
+        "esol5362-b1-052"
+      ],
+      "purpose": "Consolidate \"Standards, Objectives, Materials, and Differentiation\" (Planning and Implementing Instruction) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-06",
+      "unitId": "planning-implementing-instruction",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Interaction, Scaffolding, Feedback, and Integrated Literacy",
+      "chapterId": "esol5362-ch-06",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-06-section-01",
+        "esol5362-ch-06-section-02",
+        "esol5362-ch-06-section-03",
+        "esol5362-ch-06-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-053",
+        "esol5362-b1-054",
+        "esol5362-b1-055",
+        "esol5362-b1-056",
+        "esol5362-b1-057",
+        "esol5362-b1-058",
+        "esol5362-b1-059",
+        "esol5362-b1-060",
+        "esol5362-b1-061",
+        "esol5362-b1-062",
+        "esol5362-b1-063",
+        "esol5362-b2-053",
+        "esol5362-b2-054",
+        "esol5362-b2-055",
+        "esol5362-b2-056",
+        "esol5362-b2-057",
+        "esol5362-b2-058",
+        "esol5362-b2-059",
+        "esol5362-b2-060",
+        "esol5362-b2-061",
+        "esol5362-b2-062",
+        "esol5362-b2-063"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-053",
+        "esol5362-b1-054",
+        "esol5362-b1-055",
+        "esol5362-b1-056",
+        "esol5362-b1-057",
+        "esol5362-b1-058",
+        "esol5362-b1-059",
+        "esol5362-b1-060",
+        "esol5362-b1-061",
+        "esol5362-b1-062",
+        "esol5362-b1-063",
+        "esol5362-b2-053"
+      ],
+      "purpose": "Consolidate \"Interaction, Scaffolding, Feedback, and Integrated Literacy\" (Planning and Implementing Instruction) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-07",
+      "unitId": "assessment-evaluation",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Assessment Purpose, Validity, Reliability, and Proficiency",
+      "chapterId": "esol5362-ch-07",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-07-section-01",
+        "esol5362-ch-07-section-02",
+        "esol5362-ch-07-section-03",
+        "esol5362-ch-07-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-064",
+        "esol5362-b1-065",
+        "esol5362-b1-066",
+        "esol5362-b1-067",
+        "esol5362-b1-068",
+        "esol5362-b1-069",
+        "esol5362-b1-070",
+        "esol5362-b1-071",
+        "esol5362-b2-064",
+        "esol5362-b2-065",
+        "esol5362-b2-066",
+        "esol5362-b2-067",
+        "esol5362-b2-068",
+        "esol5362-b2-069",
+        "esol5362-b2-070",
+        "esol5362-b2-071"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-064",
+        "esol5362-b1-065",
+        "esol5362-b1-066",
+        "esol5362-b1-067",
+        "esol5362-b1-068",
+        "esol5362-b1-069",
+        "esol5362-b1-070",
+        "esol5362-b1-071",
+        "esol5362-b2-064",
+        "esol5362-b2-065",
+        "esol5362-b2-066",
+        "esol5362-b2-067"
+      ],
+      "purpose": "Consolidate \"Assessment Purpose, Validity, Reliability, and Proficiency\" (Assessment and Evaluation) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-08",
+      "unitId": "assessment-evaluation",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Classroom Assessment, Data Use, Fairness, and Monitoring",
+      "chapterId": "esol5362-ch-08",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-08-section-01",
+        "esol5362-ch-08-section-02",
+        "esol5362-ch-08-section-03",
+        "esol5362-ch-08-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-072",
+        "esol5362-b1-073",
+        "esol5362-b1-074",
+        "esol5362-b1-075",
+        "esol5362-b1-076",
+        "esol5362-b1-077",
+        "esol5362-b1-078",
+        "esol5362-b2-072",
+        "esol5362-b2-073",
+        "esol5362-b2-074",
+        "esol5362-b2-075",
+        "esol5362-b2-076",
+        "esol5362-b2-077",
+        "esol5362-b2-078"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-072",
+        "esol5362-b1-073",
+        "esol5362-b1-074",
+        "esol5362-b1-075",
+        "esol5362-b1-076",
+        "esol5362-b1-077",
+        "esol5362-b1-078",
+        "esol5362-b2-072",
+        "esol5362-b2-073",
+        "esol5362-b2-074",
+        "esol5362-b2-075",
+        "esol5362-b2-076"
+      ],
+      "purpose": "Consolidate \"Classroom Assessment, Data Use, Fairness, and Monitoring\" (Assessment and Evaluation) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-09",
+      "unitId": "culture",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Culture, Identity, Responsiveness, and Power",
+      "chapterId": "esol5362-ch-09",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-09-section-01",
+        "esol5362-ch-09-section-02",
+        "esol5362-ch-09-section-03",
+        "esol5362-ch-09-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-079",
+        "esol5362-b1-080",
+        "esol5362-b1-081",
+        "esol5362-b1-082",
+        "esol5362-b1-083",
+        "esol5362-b1-084",
+        "esol5362-b2-079",
+        "esol5362-b2-080",
+        "esol5362-b2-081",
+        "esol5362-b2-082",
+        "esol5362-b2-083",
+        "esol5362-b2-084"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-079",
+        "esol5362-b1-080",
+        "esol5362-b1-081",
+        "esol5362-b1-082",
+        "esol5362-b1-083",
+        "esol5362-b1-084",
+        "esol5362-b2-079",
+        "esol5362-b2-080",
+        "esol5362-b2-081",
+        "esol5362-b2-082",
+        "esol5362-b2-083",
+        "esol5362-b2-084"
+      ],
+      "purpose": "Consolidate \"Culture, Identity, Responsiveness, and Power\" (Culture) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-10",
+      "unitId": "culture",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Family, Community, and Cross-Cultural Partnerships",
+      "chapterId": "esol5362-ch-10",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-10-section-01",
+        "esol5362-ch-10-section-02",
+        "esol5362-ch-10-section-03",
+        "esol5362-ch-10-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-086",
+        "esol5362-b1-087",
+        "esol5362-b1-088",
+        "esol5362-b1-089",
+        "esol5362-b2-079",
+        "esol5362-b2-080",
+        "esol5362-b2-081",
+        "esol5362-b2-082",
+        "esol5362-b2-083",
+        "esol5362-b2-084",
+        "esol5362-b2-085",
+        "esol5362-b2-086",
+        "esol5362-b2-087",
+        "esol5362-b2-088",
+        "esol5362-b2-089",
+        "esol5362-b1-079",
+        "esol5362-b1-080",
+        "esol5362-b1-081",
+        "esol5362-b1-082",
+        "esol5362-b1-083",
+        "esol5362-b1-084",
+        "esol5362-b1-085"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-086",
+        "esol5362-b1-087",
+        "esol5362-b1-088",
+        "esol5362-b1-089",
+        "esol5362-b2-079",
+        "esol5362-b2-080",
+        "esol5362-b2-081",
+        "esol5362-b2-082",
+        "esol5362-b2-083",
+        "esol5362-b2-084",
+        "esol5362-b2-085",
+        "esol5362-b2-086"
+      ],
+      "purpose": "Consolidate \"Family, Community, and Cross-Cultural Partnerships\" (Culture) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-11",
+      "unitId": "professionalism-advocacy",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Collaboration, Ethics, Inquiry, and Professional Boundaries",
+      "chapterId": "esol5362-ch-11",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-11-section-01",
+        "esol5362-ch-11-section-02",
+        "esol5362-ch-11-section-03",
+        "esol5362-ch-11-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b1-090",
+        "esol5362-b1-091",
+        "esol5362-b1-092",
+        "esol5362-b1-093",
+        "esol5362-b1-094",
+        "esol5362-b1-095",
+        "esol5362-b2-090",
+        "esol5362-b2-091",
+        "esol5362-b2-092",
+        "esol5362-b2-093",
+        "esol5362-b2-094",
+        "esol5362-b2-095"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b1-090",
+        "esol5362-b1-091",
+        "esol5362-b1-092",
+        "esol5362-b1-093",
+        "esol5362-b1-094",
+        "esol5362-b1-095",
+        "esol5362-b2-090",
+        "esol5362-b2-091",
+        "esol5362-b2-092",
+        "esol5362-b2-093",
+        "esol5362-b2-094",
+        "esol5362-b2-095"
+      ],
+      "purpose": "Consolidate \"Collaboration, Ethics, Inquiry, and Professional Boundaries\" (Professionalism and Advocacy) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-unit-review-12",
+      "unitId": "professionalism-advocacy",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Advocacy, Program Evaluation, Rights, and Meaningful Access",
+      "chapterId": "esol5362-ch-12",
+      "topicDiagnosticRouteIds": [
+        "esol5362-ch-12-section-01",
+        "esol5362-ch-12-section-02",
+        "esol5362-ch-12-section-03",
+        "esol5362-ch-12-section-04"
+      ],
+      "itemIds": [
+        "esol5362-b2-090",
+        "esol5362-b2-091",
+        "esol5362-b2-092",
+        "esol5362-b2-093",
+        "esol5362-b2-094",
+        "esol5362-b2-095",
+        "esol5362-b2-096",
+        "esol5362-b2-097",
+        "esol5362-b2-098",
+        "esol5362-b2-099",
+        "esol5362-b2-100",
+        "esol5362-b1-090",
+        "esol5362-b1-091",
+        "esol5362-b1-092",
+        "esol5362-b1-093",
+        "esol5362-b1-094",
+        "esol5362-b1-095",
+        "esol5362-b1-096",
+        "esol5362-b1-097",
+        "esol5362-b1-098",
+        "esol5362-b1-099",
+        "esol5362-b1-100"
+      ],
+      "mixedPracticeItemIds": [
+        "esol5362-b2-090",
+        "esol5362-b2-091",
+        "esol5362-b2-092",
+        "esol5362-b2-093",
+        "esol5362-b2-094",
+        "esol5362-b2-095",
+        "esol5362-b2-096",
+        "esol5362-b2-097",
+        "esol5362-b2-098",
+        "esol5362-b2-099",
+        "esol5362-b2-100",
+        "esol5362-b1-090"
+      ],
+      "purpose": "Consolidate \"Advocacy, Program Evaluation, Rights, and Meaningful Access\" (Professionalism and Advocacy) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "esol-5362-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis English to Speakers of Other Languages (5362) blueprint domains.",
+      "focus": [
+        "Foundations of Linguistics",
+        "Foundations of Language Learning",
+        "Planning and Implementing Instruction",
+        "Assessment and Evaluation"
+      ],
+      "itemIds": [
+        "esol5362-b1-001",
+        "esol5362-b1-064",
+        "esol5362-b1-002",
+        "esol5362-b1-065",
+        "esol5362-b1-003",
+        "esol5362-b1-066",
+        "esol5362-b1-004",
+        "esol5362-b1-067",
+        "esol5362-b1-005",
+        "esol5362-b1-068",
+        "esol5362-b1-006",
+        "esol5362-b1-069",
+        "esol5362-b1-007",
+        "esol5362-b1-070",
+        "esol5362-b1-008",
+        "esol5362-b1-071",
+        "esol5362-b1-009",
+        "esol5362-b1-072",
+        "esol5362-b1-010",
+        "esol5362-b1-073",
+        "esol5362-b1-011",
+        "esol5362-b1-074",
+        "esol5362-b1-012",
+        "esol5362-b1-075",
+        "esol5362-b1-013",
+        "esol5362-b1-076",
+        "esol5362-b1-014",
+        "esol5362-b1-077",
+        "esol5362-b1-015",
+        "esol5362-b1-078",
+        "esol5362-b1-016",
+        "esol5362-b2-064",
+        "esol5362-b1-017",
+        "esol5362-b2-065",
+        "esol5362-b1-018",
+        "esol5362-b2-066",
+        "esol5362-b2-001",
+        "esol5362-b2-067",
+        "esol5362-b2-002",
+        "esol5362-b2-068"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis English to Speakers of Other Languages (5362) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Planning and Implementing Instruction",
+        "Assessment and Evaluation",
+        "Culture",
+        "Professionalism and Advocacy"
+      ],
+      "itemIds": [
+        "esol5362-b1-019",
+        "esol5362-b1-079",
+        "esol5362-b1-020",
+        "esol5362-b1-080",
+        "esol5362-b1-021",
+        "esol5362-b1-081",
+        "esol5362-b1-022",
+        "esol5362-b1-082",
+        "esol5362-b1-023",
+        "esol5362-b1-083",
+        "esol5362-b1-024",
+        "esol5362-b1-084",
+        "esol5362-b1-025",
+        "esol5362-b1-085",
+        "esol5362-b1-026",
+        "esol5362-b1-086",
+        "esol5362-b1-027",
+        "esol5362-b1-087",
+        "esol5362-b1-028",
+        "esol5362-b1-088",
+        "esol5362-b1-029",
+        "esol5362-b1-089",
+        "esol5362-b1-030",
+        "esol5362-b2-079",
+        "esol5362-b1-031",
+        "esol5362-b2-080",
+        "esol5362-b1-032",
+        "esol5362-b2-081",
+        "esol5362-b1-033",
+        "esol5362-b2-082",
+        "esol5362-b1-034",
+        "esol5362-b2-083",
+        "esol5362-b1-035",
+        "esol5362-b2-084",
+        "esol5362-b1-036",
+        "esol5362-b2-085",
+        "esol5362-b1-037",
+        "esol5362-b2-086",
+        "esol5362-b1-038",
+        "esol5362-b2-087"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis English to Speakers of Other Languages (5362) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Mistaking Social Fluency (BICS) for Academic Language Proficiency (CALP)",
+        "Mistaking L1 Transfer and Interlanguage Rules for a Language Disability",
+        "Simplifying Content Rigor Instead of Scaffolding Academic Language Access"
+      ],
+      "itemIds": [
+        "esol5362-b1-041",
+        "esol5362-b1-090",
+        "esol5362-b1-042",
+        "esol5362-b1-091",
+        "esol5362-b1-043",
+        "esol5362-b1-092",
+        "esol5362-b1-044",
+        "esol5362-b1-093",
+        "esol5362-b1-045",
+        "esol5362-b1-094",
+        "esol5362-b1-046",
+        "esol5362-b1-095",
+        "esol5362-b1-047",
+        "esol5362-b1-096",
+        "esol5362-b1-048",
+        "esol5362-b1-097",
+        "esol5362-b1-049",
+        "esol5362-b1-098",
+        "esol5362-b1-050",
+        "esol5362-b1-099",
+        "esol5362-b1-051",
+        "esol5362-b1-100",
+        "esol5362-b1-052",
+        "esol5362-b2-090",
+        "esol5362-b1-053",
+        "esol5362-b2-091",
+        "esol5362-b1-054",
+        "esol5362-b2-092",
+        "esol5362-b1-055",
+        "esol5362-b2-093",
+        "esol5362-b1-056",
+        "esol5362-b2-094",
+        "esol5362-b1-057",
+        "esol5362-b2-095",
+        "esol5362-b1-058",
+        "esol5362-b2-096",
+        "esol5362-b1-059",
+        "esol5362-b2-097",
+        "esol5362-b1-060",
+        "esol5362-b2-098"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "esol-5362-form-internal-a",
+      "title": "Internal practice form A (Praxis English to Speakers of Other Languages (5362))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "esol5362-b1-001",
+        "esol5362-b1-064",
+        "esol5362-b1-002",
+        "esol5362-b1-065",
+        "esol5362-b1-003",
+        "esol5362-b1-066",
+        "esol5362-b1-004",
+        "esol5362-b1-067",
+        "esol5362-b1-005",
+        "esol5362-b1-068",
+        "esol5362-b1-006",
+        "esol5362-b1-069",
+        "esol5362-b1-007",
+        "esol5362-b1-070",
+        "esol5362-b1-008",
+        "esol5362-b1-071",
+        "esol5362-b1-009",
+        "esol5362-b1-072",
+        "esol5362-b1-010",
+        "esol5362-b1-073",
+        "esol5362-b1-011",
+        "esol5362-b1-074",
+        "esol5362-b1-012",
+        "esol5362-b1-075",
+        "esol5362-b1-013",
+        "esol5362-b1-076",
+        "esol5362-b1-014",
+        "esol5362-b1-077",
+        "esol5362-b1-015",
+        "esol5362-b1-078",
+        "esol5362-b1-016",
+        "esol5362-b2-064",
+        "esol5362-b1-017",
+        "esol5362-b2-065",
+        "esol5362-b1-018",
+        "esol5362-b2-066",
+        "esol5362-b2-001",
+        "esol5362-b2-067",
+        "esol5362-b2-002",
+        "esol5362-b2-068",
+        "esol5362-b2-003",
+        "esol5362-b2-069",
+        "esol5362-b2-004",
+        "esol5362-b2-070",
+        "esol5362-b2-005",
+        "esol5362-b2-071",
+        "esol5362-b2-041",
+        "esol5362-b2-021",
+        "esol5362-b2-008",
+        "esol5362-b2-074"
+      ],
+      "topicIds": [
+        "esol5362-ch-01",
+        "esol5362-ch-07",
+        "esol5362-ch-08",
+        "esol5362-ch-02",
+        "esol5362-ch-05",
+        "esol5362-ch-03"
+      ],
+      "unitIds": [
+        "foundations-linguistics",
+        "assessment-evaluation",
+        "planning-implementing-instruction",
+        "foundations-language-learning"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-form-internal-b",
+      "title": "Internal practice form B (Praxis English to Speakers of Other Languages (5362))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "esol5362-b1-019",
+        "esol5362-b1-079",
+        "esol5362-b1-020",
+        "esol5362-b1-080",
+        "esol5362-b1-021",
+        "esol5362-b1-081",
+        "esol5362-b1-022",
+        "esol5362-b1-082",
+        "esol5362-b1-023",
+        "esol5362-b1-083",
+        "esol5362-b1-024",
+        "esol5362-b1-084",
+        "esol5362-b1-025",
+        "esol5362-b1-085",
+        "esol5362-b1-026",
+        "esol5362-b1-086",
+        "esol5362-b1-027",
+        "esol5362-b1-087",
+        "esol5362-b1-028",
+        "esol5362-b1-088",
+        "esol5362-b1-029",
+        "esol5362-b1-089",
+        "esol5362-b1-030",
+        "esol5362-b2-079",
+        "esol5362-b1-031",
+        "esol5362-b2-080",
+        "esol5362-b1-032",
+        "esol5362-b2-081",
+        "esol5362-b1-033",
+        "esol5362-b2-082",
+        "esol5362-b1-034",
+        "esol5362-b2-083",
+        "esol5362-b1-035",
+        "esol5362-b2-084",
+        "esol5362-b1-036",
+        "esol5362-b2-085",
+        "esol5362-b1-037",
+        "esol5362-b2-086",
+        "esol5362-b1-038",
+        "esol5362-b2-087",
+        "esol5362-b1-039",
+        "esol5362-b2-088",
+        "esol5362-b1-040",
+        "esol5362-b2-089",
+        "esol5362-b2-019",
+        "esol5362-b2-006",
+        "esol5362-b2-072",
+        "esol5362-b2-042",
+        "esol5362-b2-022",
+        "esol5362-b2-009"
+      ],
+      "topicIds": [
+        "esol5362-ch-03",
+        "esol5362-ch-09",
+        "esol5362-ch-10",
+        "esol5362-ch-04",
+        "esol5362-ch-01",
+        "esol5362-ch-08",
+        "esol5362-ch-05"
+      ],
+      "unitIds": [
+        "foundations-language-learning",
+        "culture",
+        "foundations-linguistics",
+        "assessment-evaluation",
+        "planning-implementing-instruction"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "esol-5362-form-internal-c",
+      "title": "Internal practice form C (Praxis English to Speakers of Other Languages (5362))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "esol5362-b1-041",
+        "esol5362-b1-090",
+        "esol5362-b1-042",
+        "esol5362-b1-091",
+        "esol5362-b1-043",
+        "esol5362-b1-092",
+        "esol5362-b1-044",
+        "esol5362-b1-093",
+        "esol5362-b1-045",
+        "esol5362-b1-094",
+        "esol5362-b1-046",
+        "esol5362-b1-095",
+        "esol5362-b1-047",
+        "esol5362-b1-096",
+        "esol5362-b1-048",
+        "esol5362-b1-097",
+        "esol5362-b1-049",
+        "esol5362-b1-098",
+        "esol5362-b1-050",
+        "esol5362-b1-099",
+        "esol5362-b1-051",
+        "esol5362-b1-100",
+        "esol5362-b1-052",
+        "esol5362-b2-090",
+        "esol5362-b1-053",
+        "esol5362-b2-091",
+        "esol5362-b1-054",
+        "esol5362-b2-092",
+        "esol5362-b1-055",
+        "esol5362-b2-093",
+        "esol5362-b1-056",
+        "esol5362-b2-094",
+        "esol5362-b1-057",
+        "esol5362-b2-095",
+        "esol5362-b1-058",
+        "esol5362-b2-096",
+        "esol5362-b1-059",
+        "esol5362-b2-097",
+        "esol5362-b1-060",
+        "esol5362-b2-098",
+        "esol5362-b1-061",
+        "esol5362-b2-099",
+        "esol5362-b1-062",
+        "esol5362-b2-100",
+        "esol5362-b1-063",
+        "esol5362-b2-020",
+        "esol5362-b2-007",
+        "esol5362-b2-073",
+        "esol5362-b2-043",
+        "esol5362-b2-023"
+      ],
+      "topicIds": [
+        "esol5362-ch-05",
+        "esol5362-ch-11",
+        "esol5362-ch-12",
+        "esol5362-ch-06",
+        "esol5362-ch-03",
+        "esol5362-ch-01",
+        "esol5362-ch-08"
+      ],
+      "unitIds": [
+        "planning-implementing-instruction",
+        "professionalism-advocacy",
+        "foundations-language-learning",
+        "foundations-linguistics",
+        "assessment-evaluation"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

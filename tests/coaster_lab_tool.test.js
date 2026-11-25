@@ -1723,37 +1723,42 @@ describe('coaster lab — rider safety, restraints, and the height explainer', (
       const r = restraintSpec(t);
       expect(r.key).toBe('simple');
       expect(r.holdN).toBe(0);
-      expect(r.band.inLo).toBeGreaterThan(0);
+      expect(r.band).toBeUndefined();     // no height number travels with the spec
     }
   });
 
-  it('every restraint class carries a height band, and heavier restraints post taller', () => {
+  // 2026-11-23: the per-class height bands (36-42 / 42-48 / 48-54 in) had no
+  // primary source, so they were removed under the owner's source rule. The
+  // reasoning (forces -> restraint -> posted height) stays.
+  it('every restraint class carries its reasoning and no unsourced height band', () => {
     const { RESTRAINT_CLASSES } = loadSafety(TOOL_PATHS[0]);
     const order = ['simple', 'ratchet', 'harness'];
-    let prev = 0;
     for (const key of order) {
       const c = RESTRAINT_CLASSES[key];
       expect(c.name.length).toBeGreaterThan(3);
       expect(c.why.length).toBeGreaterThan(20);           // the reasoning always travels with it
-      expect(c.band.inLo).toBeGreaterThan(prev);          // a bigger restraint posts a taller sign
-      expect(c.band.inHi).toBeGreaterThan(c.band.inLo);
-      expect(c.band.cmLo).toBeGreaterThan(0);             // metric too
-      expect(c.band.cmHi).toBeGreaterThan(c.band.cmLo);
-      prev = c.band.inLo;
+      expect(c.band).toBeUndefined();
+      // 2026-11-23 source audit: the class is this lab's rule, not an industry rule
+      expect(c.why).toMatch(/this lab/i);
     }
+    // some real inverting coasters run lap bars only (Wikipedia, Roller coaster train)
+    expect(RESTRAINT_CLASSES.harness.why).toContain('Some real looping rides use a locking lap bar instead.');
   });
 
-  it.each(TOOL_PATHS)('%s: the height is presented as a band with its limits stated, never as a computed number', (p) => {
+  it.each(TOOL_PATHS)('%s: the height explainer teaches the chain and shows no unsourced height number', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     const s = src.indexOf('function renderRiderSafety(tele){');
     const e = src.indexOf('\nfunction computeScores(tele){', s);
     expect(s).toBeGreaterThan(-1);
     const card = src.slice(s, e);
     // the chain is taught, and the disclaimer is in the rendered card, not just a comment
-    expect(card).toContain('A height sign is really a <b>restraint</b> sign');
+    // 2026-11-23 source audit: "really a restraint sign" became "partly", since
+    // parks also cite maturity (Six Flags ADA guide)
+    expect(card).toContain('A height sign is partly a <b>restraint</b> sign');
+    expect(card).toContain('rough guide to the maturity a ride needs');
     expect(card).toContain('it is not calculated from your');
     expect(card).toContain("comes from the train manufacturer's restraint");
-    expect(card).toContain('${b.inLo}–${b.inHi} in (${b.cmLo}–${b.cmHi} cm)');
+    expect(card).not.toMatch(/\d+\s*in \(|typically post/);   // no unsourced height band
     // sustained findings are labelled advisory, because certification still uses peak force
     expect(card).toContain('certification still grades on peak force');
     // and the card is actually rendered into the report
@@ -2002,9 +2007,10 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     // a run that never happened still produces a card rather than nothing
     expect(card).toContain('No ride photo yet');
     expect(card).toContain('No completed run yet');
-    // the card carries the safety verdict, the height band with its caveat, and the rows
+    // the card carries the safety verdict and the height caveat (the unsourced
+    // per-class band was removed 2026-11-23), and the rows
     expect(card).toContain("text('RIDER SAFETY'");
-    expect(card).toContain("the restraint's number, not the track's");
+    expect(card).toContain("height sign depends on its restraint, not only its track");
     expect(card).toContain('Educational physics simulation — not a structural safety approval.');
     // and the pasteable summary gained the same facts plus the generator seed
     expect(src).toContain('`Restraint the forces demand: ${f.spec.name}`');

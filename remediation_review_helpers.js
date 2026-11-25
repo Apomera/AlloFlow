@@ -1,12 +1,26 @@
-(function (root, factory) {
+(function (rawRoot, factory) {
   'use strict';
+  var root = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
   var api = factory(root);
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.RemediationReview = api; }
-})(typeof window !== 'undefined' ? window : globalThis, function (root) {
+  if (typeof module === 'object' && module !== null && module.exports) module.exports = api;
+  if (root) {
+    try {
+      if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
+      root.AlloModules.RemediationReview = api;
+    } catch (_) {}
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function (root) {
   'use strict';
   var MAX_RECORDS = 100, MAX_REFERENCES = 700;
-  var reasons = {
+  var hasOwn = Object.prototype.hasOwnProperty;
+  function _rrStr(v) {
+    if (v == null || typeof v === 'symbol') return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? String(v) : '';
+    if (typeof v === 'boolean') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+  var reasons = Object.freeze({
     "source-visibility-changed": "The suggestion hid source content from view or assistive technology; the original was retained.",
     "table-semantics-changed": "Existing table headers or associations lost their meaning; the original table was retained.",
     "form-state-changed": "A form value, state, label association, or destination changed; the original form was retained.",
@@ -30,19 +44,20 @@
     "source-content-added": "The suggestion added unsupported source content; the original was retained.",
     "source-contract-uncheckable": "Source preservation could not be checked; the original content was retained.",
     'content-not-preserved': 'The suggestion did not preserve the document; the original was retained.'
-  };
+  });
   function count(value) { return Number.isSafeInteger(value) && value >= 0 ? Math.min(value, 1000000) : 0; }
   function records(value) {
     if (!Array.isArray(value)) return [];
     return value.slice(0, MAX_RECORDS).filter(function (r) {
-      return r && typeof r === 'object' && !Array.isArray(r) && typeof r.chunkId === 'string'
+      return r && typeof r === 'object' && !Array.isArray(r)
+        && hasOwn.call(r, 'chunkId') && typeof r.chunkId === 'string'
         && /^(?:all|[0-9]{1,8}(?:\.[0-9]{1,8})?)$/.test(r.chunkId)
-        && ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'].includes(r.phase)
-        && Object.prototype.hasOwnProperty.call(reasons, r.reason);
+        && hasOwn.call(r, 'phase') && ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'].includes(r.phase)
+        && hasOwn.call(r, 'reason') && hasOwn.call(reasons, r.reason);
     }).map(function (r) {
       var item = { chunkId: r.chunkId, phase: r.phase, reason: r.reason };
-      if (Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
-      if (typeof r.sourceLocation === 'string' && /^(?:document|(?:table|row|cell|link|figure|control|math):[1-9][0-9]{0,7}(?:\/(?:row|cell):[1-9][0-9]{0,7}){0,2})$/.test(r.sourceLocation)) item.sourceLocation = r.sourceLocation;
+      if (hasOwn.call(r, 'pass') && Number.isSafeInteger(r.pass) && r.pass >= 1 && r.pass <= 1000000) item.pass = r.pass;
+      if (hasOwn.call(r, 'sourceLocation') && typeof r.sourceLocation === 'string' && /^(?:document|(?:table|row|cell|link|figure|control|math):[1-9][0-9]{0,7}(?:\/(?:row|cell):[1-9][0-9]{0,7}){0,2})$/.test(r.sourceLocation)) item.sourceLocation = r.sourceLocation;
       return item;
     });
   }
@@ -64,25 +79,28 @@
     return result;
   }
   function reviewItems(value, reviewed) {
+    var safeReviewed = reviewed && typeof reviewed === 'object' && !Array.isArray(reviewed) ? reviewed : null;
     return records(value && value.candidateRejections).map(function (r, index) {
       var key = ['preservation', index, r.pass, r.chunkId, r.phase, r.reason].join('|');
-      return Object.assign({}, r, { key: key, reviewed: !!(reviewed && reviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
+      return Object.assign({}, r, { key: key, reviewed: !!(safeReviewed && hasOwn.call(safeReviewed, key) && safeReviewed[key]), description: reasons[r.reason] || reasons['content-not-preserved'],
         locationLabel: r.sourceLocation ? 'Location in the input for this attempt: ' + r.sourceLocation.replace(/:/g, ' ').replace(/\//g, ', ') + '.' : '',
         referenceKind: /table/i.test(r.reason) ? 'table' : /image|asset|placeholder/i.test(r.reason) ? 'figure' : null });
     });
   }
-  function text(value) { return String(value || '').normalize('NFKC').replace(/\s+/g, ' ').trim(); }
+  function text(value) { return _rrStr(value).normalize('NFKC').replace(/\s+/g, ' ').trim(); }
   function documentFor(html, options) {
     var Parser = (options && options.DOMParser) || (root && root.DOMParser);
     if (!Parser) throw new Error('Document references need an HTML parser.');
-    return new Parser().parseFromString(String(html || ''), 'text/html');
+    return new Parser().parseFromString(_rrStr(html), 'text/html');
   }
   async function hash(value, options) {
-    if (options && typeof options.digest === 'function') return options.digest(String(value));
+    var str = _rrStr(value);
+    if (options && typeof options.digest === 'function') return options.digest(str);
     var subtle = root && root.crypto && root.crypto.subtle;
     if (!subtle) throw new Error('Document references need SHA-256 support.');
-    var Encoder = root.TextEncoder || globalThis.TextEncoder;
-    var bytes = await subtle.digest('SHA-256', new Encoder().encode(String(value)));
+    var Encoder = (root && root.TextEncoder) || (typeof globalThis !== 'undefined' && globalThis.TextEncoder);
+    if (typeof Encoder !== 'function') throw new Error('Document references need SHA-256 support.');
+    var bytes = await subtle.digest('SHA-256', new Encoder().encode(str));
     return Array.from(new Uint8Array(bytes)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
   }
   function ownedRows(table) { return Array.from(table.querySelectorAll('tr')).filter(function (row) { return row.closest('table') === table; }); }
@@ -137,7 +155,7 @@
   }
   async function createSourceModel(html, options) {
     try {
-      var doc = documentFor(html, options), inv = await inventory(doc, options), sourceDigest = await hash(String(html || ''), options);
+      var doc = documentFor(html, options), inv = await inventory(doc, options), sourceDigest = await hash(_rrStr(html), options);
       return { version: 1, sourceDigest: sourceDigest, signature: inv.signature, truncated: inv.truncated,
         references: inv.refs.map(function (ref, index) {
           var result = Object.assign({}, ref, { id: 'src-' + sourceDigest.slice(0, 16) + '-' + (index + 1) });
@@ -147,14 +165,14 @@
     } catch (_) { return null; }
   }
   function normalizeSourceModel(value) {
-    if (!value || value.version !== 1 || !/^[a-f0-9]{64}$/.test(value.sourceDigest || '') || !/^[a-f0-9]{64}$/.test(value.signature || '') || !Array.isArray(value.references)) return null;
+    if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1 || typeof value.sourceDigest !== 'string' || !/^[a-f0-9]{64}$/.test(value.sourceDigest) || typeof value.signature !== 'string' || !/^[a-f0-9]{64}$/.test(value.signature) || !Array.isArray(value.references)) return null;
     var ids = new Set(), refs = [];
     for (var raw of value.references.slice(0, MAX_REFERENCES)) {
-      if (!raw || !['table', 'cell', 'figure'].includes(raw.kind) || !new RegExp('^src-' + value.sourceDigest.slice(0, 16) + '-[1-9][0-9]{0,3}$').test(raw.id || '') || ids.has(raw.id) || !/^[a-f0-9]{64}$/.test(raw.fingerprint || '')) return null;
-      var ref = { id: raw.id, kind: raw.kind, fingerprint: raw.fingerprint, label: String(raw.label || '').slice(0, 160) };
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !['table', 'cell', 'figure'].includes(raw.kind) || typeof raw.id !== 'string' || !new RegExp('^src-' + value.sourceDigest.slice(0, 16) + '-[1-9][0-9]{0,3}$').test(raw.id) || ids.has(raw.id) || typeof raw.fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(raw.fingerprint)) return null;
+      var ref = { id: raw.id, kind: raw.kind, fingerprint: raw.fingerprint, label: _rrStr(raw.label).slice(0, 160) };
       var keys = raw.kind === 'figure' ? ['index'] : raw.kind === 'cell' ? ['table', 'row', 'column'] : ['table'];
       for (var key of keys) { if (!Number.isSafeInteger(raw[key]) || raw[key] < 0 || raw[key] > 100000) return null; ref[key] = raw[key]; }
-      if (raw.kind === 'cell') { if (!/^[a-f0-9]{64}$/.test(raw.tableFingerprint || '')) return null; ref.tableFingerprint = raw.tableFingerprint; }
+      if (raw.kind === 'cell') { if (typeof raw.tableFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(raw.tableFingerprint)) return null; ref.tableFingerprint = raw.tableFingerprint; }
       ids.add(ref.id); refs.push(ref);
     }
     return { version: 1, sourceDigest: value.sourceDigest, signature: value.signature, truncated: value.truncated === true || value.references.length >= MAX_REFERENCES, references: refs };
@@ -198,12 +216,18 @@
 // Lives in this file because every build path (per-module builder, build.js deploy path, desktop app-build) appends
 // it to doc_pipeline_module.js: window.AlloModules.RemediationDecisionGuides in the browser, and
 // require('remediation_review_helpers.js').decisionGuides in Node (added to the helpers' exports, not replacing them).
-(function (root, factory) {
+(function (rawRoot, factory) {
   'use strict';
+  var root = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
   var api = factory();
-  if (typeof module === 'object' && module.exports && typeof module.exports === 'object') module.exports.decisionGuides = api;
-  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.RemediationDecisionGuides = api; }
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+  if (typeof module === 'object' && module !== null && module.exports && typeof module.exports === 'object') module.exports.decisionGuides = api;
+  if (root) {
+    try {
+      if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
+      root.AlloModules.RemediationDecisionGuides = api;
+    } catch (_) {}
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function () {
   'use strict';
   var UNSURE = { id: 'unsure', label: 'Not sure', choose: 'You cannot tell from the page, or it depends on how the document will be used.', then: 'Leave it open and ask a colleague who knows the content. It stays in the review list until someone decides.' };
   var GUIDES = [
@@ -534,30 +558,59 @@
       { scenario: 'A link reads "Free and reduced-price meal application".', answer: 'fine', why: 'The words name where the link goes.' }
     ]
   };
+  function _dgStr(v) {
+    if (v == null || typeof v === 'symbol') return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? String(v) : '';
+    if (typeof v === 'boolean') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function _dgNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') return Number(v);
+    return NaN;
+  }
+  function _dgDeepFreeze(obj) {
+    if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
+    Object.keys(obj).forEach(function (k) { _dgDeepFreeze(obj[k]); });
+    return Object.freeze(obj);
+  }
   GUIDES.forEach(function (g) {
     g.wcagRefs = wcagRefs(g.wcag);
     if (NO_WCAG[g.id]) g.wcagNote = NO_WCAG[g.id];
     g.practice = PRACTICE[g.id] || [];
   });
-  var BY_KEY = {};
+  _dgDeepFreeze(UNSURE);
+  _dgDeepFreeze(WCAG);
+  _dgDeepFreeze(NO_WCAG);
+  _dgDeepFreeze(PRACTICE);
+  _dgDeepFreeze(GUIDES);
+  var BY_KEY = Object.create(null);
   GUIDES.forEach(function (g) { g.match.forEach(function (k) { BY_KEY[k] = g; }); });
-  function guideFor(source, id) { return BY_KEY[String(source) + ':' + String(id)] || null; }
+  function guideFor(source, id) {
+    var s = _dgStr(source), i = _dgStr(id);
+    if (!s || !i) return null;
+    return BY_KEY[s + ':' + i] || null;
+  }
   function guideById(id) { for (var i = 0; i < GUIDES.length; i++) if (GUIDES[i].id === id) return GUIDES[i]; return null; }
   // The guides a finished run needs, each with the findings it covers: ea review rule ids, fidelity note kinds,
   // AI audit rule ids and the tagged-PDF withhold code. Plain data (JSON-safe) for reports.
   function guidesForRun(input) {
-    var o = input || {}, out = [], seen = {};
-    var add = function (source, id, finding) {
-      var g = guideFor(source, id);
+    var o = (input && typeof input === 'object' && !Array.isArray(input)) ? input : {}, out = [], seen = Object.create(null);
+    var add = function (source, id) {
+      var sid = _dgStr(id);
+      if (!sid) return;
+      var g = guideFor(source, sid);
       if (!g) return;
       if (!seen[g.id]) { seen[g.id] = { guide: g, findings: [] }; out.push(seen[g.id]); }
-      var key = source + ':' + id;
+      var key = source + ':' + sid;
       if (seen[g.id].findings.indexOf(key) === -1) seen[g.id].findings.push(key);
     };
-    (o.equalAccess || []).forEach(function (id) { add('equalAccess', id); });
-    (o.fidelity || []).forEach(function (id) { add('fidelity', id); });
-    (o.ai || []).forEach(function (id) { add('ai', id); });
-    if (o.withhold) add('delivery', String(o.withhold).replace(/ \(.*$/, ''));
+    if (Array.isArray(o.equalAccess)) o.equalAccess.slice(0, 500).forEach(function (id) { add('equalAccess', id); });
+    if (Array.isArray(o.fidelity)) o.fidelity.slice(0, 500).forEach(function (id) { add('fidelity', id); });
+    if (Array.isArray(o.ai)) o.ai.slice(0, 500).forEach(function (id) { add('ai', id); });
+    var withhold = _dgStr(o.withhold);
+    if (withhold) add('delivery', withhold.replace(/ \(.*$/, ''));
     return out.map(function (x) { var g = Object.assign({ findings: x.findings }, JSON.parse(JSON.stringify(x.guide))); delete g.practice; return g; });
   }
   // (2026-10-28, phase 3) Where a phrase or number sits in the ORIGINAL: page number and the words around it, so a
@@ -565,22 +618,26 @@
   // Numbers match whole numbers only ("16" never inside "2016" or "16.5"); words match case-insensitively with
   // whitespace collapsed. Returns up to `limit` hits: { page, before, match, after }.
   function sourceContext(pages, needle, limit) {
-    var max = Math.max(1, Math.min(Number(limit) || 2, 5)), out = [];
-    var n = String(needle == null ? '' : needle).replace(/\s+/g, ' ').trim();
+    var parsedLimit = _dgNum(limit);
+    var max = Math.max(1, Math.min(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.floor(parsedLimit) : 2, 5)), out = [];
+    var n = _dgStr(needle).replace(/\s+/g, ' ').trim();
     if (!Array.isArray(pages) || !n || n.length > 200) return out;
     var esc = n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
     var re = /^[\d.,%$]+$/.test(n) ? new RegExp('(?<![\\d.,])' + esc + '(?![\\d]|[.,]\\d)', 'g') : new RegExp(esc, 'gi');
-    for (var i = 0; i < pages.length && out.length < max; i++) {
-      var pg = pages[i], text = String((pg && pg.text) || '').replace(/\s+/g, ' ');
+    var maxPages = Math.min(pages.length, 5000);
+    for (var i = 0; i < maxPages && out.length < max; i++) {
+      var pg = pages[i], text = _dgStr(pg && pg.text).slice(0, 500000).replace(/\s+/g, ' ');
+      var rawPageNum = _dgNum(pg && pg.pageNum);
+      var pageNum = (Number.isFinite(rawPageNum) && rawPageNum > 0) ? Math.floor(rawPageNum) : (i + 1);
       re.lastIndex = 0;
       var m;
       while (out.length < max && (m = re.exec(text))) {
         var s = Math.max(0, m.index - 70), e = Math.min(text.length, m.index + m[0].length + 70);
-        out.push({ page: Number(pg.pageNum) || i + 1, before: (s > 0 ? '\u2026' : '') + text.slice(s, m.index).replace(/^\S*\s/, s > 0 ? '' : '$&'), match: m[0], after: text.slice(m.index + m[0].length, e).replace(/\s\S*$/, e < text.length ? '' : '$&') + (e < text.length ? '\u2026' : '') });
+        out.push({ page: pageNum, before: (s > 0 ? '\u2026' : '') + text.slice(s, m.index).replace(/^\S*\s/, s > 0 ? '' : '$&'), match: m[0], after: text.slice(m.index + m[0].length, e).replace(/\s\S*$/, e < text.length ? '' : '$&') + (e < text.length ? '\u2026' : '') });
         if (m[0].length === 0) re.lastIndex++;
       }
     }
     return out;
   }
-  return { version: 1, guides: GUIDES, guideFor: guideFor, guideById: guideById, guidesForRun: guidesForRun, unsureOption: UNSURE, sourceContext: sourceContext, wcagRefs: wcagRefs };
+  return Object.freeze({ version: 1, guides: GUIDES, guideFor: guideFor, guideById: guideById, guidesForRun: guidesForRun, unsureOption: UNSURE, sourceContext: sourceContext, wcagRefs: wcagRefs });
 });

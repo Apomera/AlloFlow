@@ -1394,8 +1394,9 @@ describe('Test Prep Hub render flow', () => {
     }
     expect(host.textContent).toContain('Question 9 of 100');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
-    const migratedWrongAnswer = (eppp.items[8].answerIndex + 1) % eppp.items[8].choices.length;
-    await act(async () => { migratedRadios[migratedWrongAnswer].click(); });
+    const migratedCorrectChoice = eppp.items[8].choices[eppp.items[8].answerIndex];
+    const migratedWrongRadio = migratedRadios.find((r) => !(r.closest('label') && r.closest('label').textContent.includes(migratedCorrectChoice))) || migratedRadios[0];
+    await act(async () => { migratedWrongRadio.click(); });
     await clickButton('Check answer');
     expect(host.textContent).not.toContain('Migration provenance');
     expect(host.textContent).not.toContain('legacy-313b8d365ea7d566');

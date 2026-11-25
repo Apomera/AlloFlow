@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
 <meta name="referrer" content="no-referrer">
 <title>Accessibility &amp; AAC Demonstration | AlloFlow</title>
 <meta name="robots" content="index, follow">
@@ -24,11 +26,28 @@
 <meta name="twitter:description" content="Try an AAC accessibility demonstration with keyboard navigation, switch scanning, high contrast, and screen-reader support.">
 <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
 <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "@id": "https://apomera.github.io/AlloFlow/accessibility_demo.html#app",
+      "url": "https://apomera.github.io/AlloFlow/accessibility_demo.html",
+      "name": "Accessibility & AAC Demonstration | AlloFlow",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "isAccessibleForFree": true,
+      "accessibilityFeature": ["highContrastDisplay", "alternativeText", "structuralNavigation", "ARIA"],
+      "description": "Try an AAC accessibility demonstration with keyboard navigation, switch scanning, high contrast, and screen-reader support.",
+      "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" }
+    }
+    </script>
 <style>
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -47,12 +66,40 @@ html { max-width: 100%; overflow-x: clip; }
 body { margin: 0; font-family: 'Plus Jakarta Sans', var(--font); background: var(--bg); color: var(--text); line-height: 1.6; background-image: none; overflow-x: clip; }
 h1, h2, h3 { font-family: 'Outfit', var(--font); }
 body.hc {
-  --bg: #000; --text: #fff; --text-muted: #ccc;
-  --card-bg: #000; --card-border: #fff;
-  --section-bg: #111; --focus-ring: #facc15;
-  --gray-50: #111; --gray-100: #111; --gray-200: #333; --gray-800: #fff;
+  --bg: #000000; --text: #ffffff; --text-muted: #e5e7eb;
+  --card-bg: #000000; --card-border: #ffffff;
+  --section-bg: #0a0a0a; --focus-ring: #facc15;
+  --purple: #facc15; --purple-light: #1a1a00; --purple-dark: #facc15;
+  --gray-50: #111111; --gray-100: #111111; --gray-200: #444444; --gray-800: #1f2937;
   font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
+body.hc h1, body.hc h2, body.hc h3 { color: #facc15; }
+body.hc .hero h1, body.hc .hero .subtitle, body.hc .demo-header h3 { color: #ffffff; }
+body.hc .demo-header { background: #000000; border-bottom: 2px solid #ffffff; }
+body.hc .navbar { background: #000000; border-bottom: 2px solid #ffffff; }
+body.hc .nav-logo, body.hc .nav-links a, body.hc .mobile-menu-btn { color: #ffffff; }
+body.hc .mobile-nav { background: #000000; border-bottom: 2px solid #ffffff; }
+body.hc .mobile-nav a { color: #ffffff; }
+body.hc .mobile-nav .mobile-nav-heading { color: #facc15; }
+body.hc .mobile-nav .mobile-nav-cta { background: #facc15; color: #000000; }
+body.hc .nav-links a:hover, body.hc .nav-links a[aria-current="page"] { color: #facc15; }
+body.hc .nav-links .cta-btn { background: #facc15; color: #000000; border: 2px solid #ffffff; }
+body.hc .btn-purple { background: #facc15; color: #000000; border: 2px solid #ffffff; }
+body.hc .btn-dark { background: #ffffff; color: #000000; border: 2px solid #facc15; }
+body.hc .badge-purple { background: #facc15; color: #000000; }
+body.hc .badge-green { background: #000000; color: #86efac; border: 1px solid #86efac; }
+body.hc .anchor-nav a { color: #ffffff; }
+body.hc main a:not(.btn):not(.btn-primary):not(.btn-secondary),
+body.hc footer a { color: #facc15; text-decoration: underline; }
+body.hc footer { background: #000000; color: #ffffff; border-top: 2px solid #ffffff; }
+body.hc .footer-link-heading { color: #facc15; }
+body.hc .footer-links a { color: #ffffff; }
+body.hc .footer-links a:hover, body.hc .footer-links a[aria-current="page"] { color: #facc15; }
+body.hc .skip-link:focus { background: #facc15; color: #000000; }
+body.hc .demo-board-wrap, body.hc .demo-strip, body.hc .scan-bar, body.hc .sr-panel, body.hc .focus-inspector { background: #000000; border-color: #ffffff; }
+body.hc .demo-strip-placeholder { color: #e5e7eb; }
+body.hc code { background: #1f2937; color: #facc15; padding: 1px 4px; border-radius: 3px; }
+body.hc section { background: #000000 !important; border-color: #ffffff; }
 
 /* ── Skip link ── */
 .skip-link { position: absolute; inset-inline-start: 8px; top: 8px; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; z-index: 10000; }
@@ -75,7 +122,6 @@ h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 4px; }
 .section-intro { color: var(--text-muted); margin: 0 0 24px; max-width: 600px; font-size: 0.95rem; }
 .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .badge-purple { background: var(--purple-light); color: var(--purple); }
-body.hc .badge-purple { background: var(--purple); color: #fff; }
 .badge-green { background: #dcfce7; color: #166534; }
 
 /* ── Hero ── */
@@ -190,8 +236,8 @@ body.hc .sr-panel { border-color: #fff; } body.hc .sr-panel-header { background:
 body.hc .anchor-nav { background: #000; border-color: #fff; }
 body.hc .anchor-nav a:hover { background: #333; color: #facc15; }
 
-/* ── Reveal animation ── */
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+/* ── Reveal animation (default visible so no-JS & initial paint never hide sections) ── */
+.reveal { opacity: 1; transform: none; transition: opacity 0.5s ease, transform 0.5s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Footer ── */
@@ -202,8 +248,13 @@ footer a { color: var(--purple); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
 @media (forced-colors: active) { .demo-cell { border: 2px solid CanvasText; } .demo-cell:focus-visible { outline: 3px solid Highlight; } .btn { border: 1px solid ButtonText; } }
 @media (prefers-color-scheme: dark) {
-  body:not(.hc) { --bg: #0f172a; --text: #e2e8f0; --text-muted: #94a3b8; --card-bg: #1e293b; --card-border: #334155; --section-bg: #0f172a; --gray-50: #1e293b; --gray-100: #1e293b; }
+  body:not(.hc) { --bg: #0f172a; --text: #e2e8f0; --text-muted: #cbd5e1; --card-bg: #1e293b; --card-border: #334155; --section-bg: #0f172a; --gray-50: #1e293b; --gray-100: #1e293b; }
+  body:not(.hc) .navbar { background: rgba(15, 23, 42, 0.94); border-bottom-color: #334155; }
+  body:not(.hc) .nav-logo, body:not(.hc) .nav-links a, body:not(.hc) .mobile-menu-btn { color: #e2e8f0; }
+  body:not(.hc) .nav-links .cta-btn { background: #4338ca; color: #ffffff; }
   body:not(.hc) h2, body:not(.hc) .stat-num, body:not(.hc) footer a, body:not(.hc) main p a:not(.btn-primary):not(.btn-secondary), body:not(.hc) main li a:not(.btn-primary):not(.btn-secondary) { color: #5eead4; }
+  body:not(.hc) .footer-link-heading { color: #f1f5f9; }
+  body:not(.hc) .footer-links a { color: #cbd5e1; }
   body:not(.hc) .try-it { background: #134e4a; color: #f0fdfa; border-color: #2dd4bf; }
   body:not(.hc) .badge-purple { background: #134e4a; color: #ccfbf1; }
   body:not(.hc) kbd { background: #0f172a; border-color: #64748b; color: #f1f5f9; }
@@ -223,6 +274,8 @@ footer a { color: var(--purple); }
   #strip-btns { flex-wrap: wrap; margin-left: 0 !important; }
 }
 </style>
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
 </head>
 <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -253,20 +306,32 @@ footer a { color: var(--purple); }
 <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html">Features</a>
-        <a href="manuals.html">Manuals</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html">Remediation</a>
-        <a href="accessibility_demo.html" aria-current="page">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html">For Districts</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html" aria-current="page">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -384,10 +449,17 @@ footer a { color: var(--purple); }
     <div class="demo-grid" role="grid" aria-label="Communication symbols" id="demo-grid">
       <!-- Cells injected by JS -->
     </div>
+    <noscript>
+      <style>.demo-board-wrap #demo-grid, .demo-board-wrap #demo-strip, .demo-board-wrap #scan-bar, .demo-board-wrap .sr-panel, .demo-board-wrap .focus-inspector { display: none; }</style>
+      <div style="padding:20px;background:#0f172a;color:#f8fafc;font-size:0.95rem;line-height:1.6;">
+        <p style="margin:0 0 8px;"><strong>Interactive AAC board demo requires JavaScript.</strong></p>
+        <p style="margin:0;color:#cbd5e1;">Enable JavaScript to test symbol speech, 1-switch and 2-switch scanning, roving tabindex keyboard navigation, and the High Contrast toggle. All keyboard, switch-access, screen-reader, and WCAG 2.2 AA documentation below remains fully readable without JavaScript.</p>
+      </div>
+    </noscript>
     <!-- Live SR Announcements Panel -->
     <div class="sr-panel" role="region" aria-label="Screen reader announcement log">
       <div class="sr-panel-header"><span class="dot" aria-hidden="true"></span> Live Screen Reader Announcements</div>
-      <div class="sr-log" id="sr-log">
+      <div class="sr-log" id="sr-log" tabindex="0" role="log" aria-label="Screen reader announcement entries">
         <div class="entry" style="color:#94a3b8;font-style:italic;">Interact with the board above to see what a screen reader would announce&hellip;</div>
       </div>
     </div>
@@ -598,11 +670,11 @@ footer a { color: var(--purple); }
 
 <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html" aria-current="page">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
   </div>

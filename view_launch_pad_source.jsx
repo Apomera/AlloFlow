@@ -711,7 +711,7 @@ function LaunchPadView(props) {
     var focusTarget = selectedButton || firstButton;
     if (focusTarget) focusTarget.focus();
     var handleLanguageKeyDown = function(event) {
-      if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (event.defaultPrevented || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -811,7 +811,7 @@ function LaunchPadView(props) {
             .lp-mode-grid, .lp-direct-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
             .lp-card { appearance: none; width: 100%; min-height: 44px; font: inherit; color: inherit; text-align: left; background: rgba(20,29,49,.92); border: 1px solid rgba(148,163,184,.22); border-radius: 18px; cursor: pointer; transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.055), 0 14px 36px rgba(2,6,23,.2); }
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; border-top: 1px solid rgba(255,255,255,.06); }
-            .lp-card::after { content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.125rem; transition: transform .18s ease, color .18s ease; }
+            .lp-card::after { content: '→'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #cbd5e1; font-size: 1.125rem; transition: transform .18s ease, color .18s ease; }
             .lp-mode-grid .lp-card { min-height: 178px; padding: 24px 54px 22px 22px; }
             .lp-mode-grid .lp-card[data-emphasis="recommended"] { background: linear-gradient(145deg, rgba(55,48,163,.86), rgba(30,41,82,.96)); border-color: rgba(165,180,252,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.13), 0 18px 46px rgba(49,46,129,.28); }
             .lp-direct-grid .lp-card { min-height: 104px; padding: 18px 50px 18px 18px; display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 13px; box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 10px 26px rgba(2,6,23,.15); }
@@ -847,7 +847,7 @@ function LaunchPadView(props) {
             .lp-student-option .lp-download-button { justify-self: start; }
             .lp-code-row { display: flex; flex-wrap: wrap; gap: 8px; }
             .lp-code-input { flex: 1 1 100px; width: 100px; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid #94a3b8; border-radius: 8px; background: #111827; color: white; font: inherit; font-size: 1.125rem; letter-spacing: 0; text-transform: uppercase; }
-            .lp-code-input::placeholder { color: #94a3b8; }
+            .lp-code-input::placeholder { color: #cbd5e1; }
             .lp-resume { display: grid; gap: 4px; width: 100%; min-height: 64px; margin-bottom: 16px; padding: 12px 14px; border: 1px solid #059669; border-radius: 8px; background: #064e3b; color: #ecfdf5; font: inherit; font-size: 0.875rem; font-weight: 750; text-align: left; cursor: pointer; }
             .lp-resume span { color: #a7f3d0; font-size: 0.75rem; font-weight: 500; }
             .lp-resume:focus-visible { outline: 3px solid #facc15; outline-offset: 3px; }
@@ -878,7 +878,7 @@ function LaunchPadView(props) {
             .lp-voice-disclosure > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 15px; border: 1px solid rgba(148,163,184,.2); border-radius: 16px; color: #cbd5e1; background: rgba(15,23,42,.5); font-size: 0.75rem; font-weight: 800; cursor: pointer; list-style: none; }
             .lp-voice-disclosure > summary::-webkit-details-marker { display: none; }
             .lp-voice-summary-copy { display: inline-flex; align-items: center; gap: 9px; }
-            .lp-voice-summary-meta { margin-left: auto; color: #94a3b8; font-size: 0.6875rem; font-weight: 650; }
+            .lp-voice-summary-meta { margin-left: auto; color: #cbd5e1; font-size: 0.6875rem; font-weight: 650; }
             .lp-voice-disclosure > summary::after { content: '+'; font-size: 1.125rem; color: #a5b4fc; }
             .lp-voice-disclosure[open] > summary { border-radius: 16px 16px 0 0; background: rgba(30,41,67,.78); color: #f8fafc; }
             .lp-voice-disclosure[open] > summary::after { content: '−'; }
@@ -915,8 +915,14 @@ function LaunchPadView(props) {
             @media (prefers-reduced-motion: reduce) {
               .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
             }
+            .lp-root button, .lp-root input, .lp-root summary { touch-action: manipulation; }
+            .theme-contrast .lp-root { background: #000000 !important; color: #ffffff !important; }
+            .theme-contrast .lp-card, .theme-contrast .lp-lang-trigger, .theme-contrast .lp-ai-settings, .theme-contrast .lp-download-button, .theme-contrast .lp-voice-disclosure > summary, .theme-contrast .lp-code-input { background: #000000 !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
+            .theme-contrast .lp-root :focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }
             @media (forced-colors: active) {
               .lp-root h1 { background: none !important; color: CanvasText !important; -webkit-text-fill-color: CanvasText !important; }
+              .lp-root :focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px !important; }
+              .lp-card, .lp-download-button, .lp-ai-settings, .lp-lang-trigger, .lp-voice-disclosure > summary, .lp-code-input { border: 1px solid ButtonText !important; }
             }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
@@ -1078,7 +1084,7 @@ function LaunchPadView(props) {
               </div>
               {studentOpen && (
                 <div id="launch-pad-student-panel" className="lp-student-panel" onKeyDown={function(event) {
-                  if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
+                  if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229)) return;
                   if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeStudentPanel(); }
                 }}>
                   <div className="lp-student-options">
@@ -1191,7 +1197,7 @@ function LaunchPadView(props) {
               )}
               <div className="lp-offline-header">
                 <h2 style={{ color: 'white', fontSize: '13px', fontWeight: 820, margin: 0 }}>{copy('launch_pad.on_device_title', 'Private, on-device options')}</h2>
-                <span style={{ color: '#94a3b8', fontSize: '10px', fontWeight: 650 }}>{copy('launch_pad.on_device_note', 'One-time download · stored locally when supported')}</span>
+                <span style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: 650 }}>{copy('launch_pad.on_device_note', 'One-time download · stored locally when supported')}</span>
               </div>
               <div className="lp-voice-grid">
                 <div className="lp-voice-option">
@@ -1211,7 +1217,7 @@ function LaunchPadView(props) {
             </details>
           </section>
           <div className="lp-launch-footer">
-            <p style={{ margin: 0, textAlign: 'center', fontSize: '11px', color: '#94a3b8', fontWeight: 550 }}>{switchHint}</p>
+            <p style={{ margin: 0, textAlign: 'center', fontSize: '11px', color: '#cbd5e1', fontWeight: 550 }}>{switchHint}</p>
             <button type="button" className="lp-report-problem" onClick={openProblemReporter} aria-busy={reportLoadStatus === 'loading'} aria-disabled={reportLoadStatus === 'loading'} aria-describedby="launch-pad-report-status">
               {reportLoadStatus === 'loading' ? copy('launch_pad.report_loading', 'Opening report…') : reportLoadStatus === 'error' ? copy('launch_pad.report_retry', 'Try opening report again') : copy('launch_pad.report_problem', 'Report a problem')}
             </button>

@@ -4,7 +4,21 @@ if(window.AlloModules&&window.AlloModules.DocBuilderRendererModule){console.log(
 // Kept separate from the remediation orchestrator so block rendering has an
 // explicit dependency contract and can be exercised without running the PDF pipeline.
 
+function _ensureDocBuilderA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-doc-builder-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-doc-builder-a11y-css';
+  st.textContent =
+    '[data-img-placeholder="true"] button,[data-img-placeholder="true"] label,[data-img-placeholder="true"] a{touch-action:manipulation;}' +
+    '[data-img-placeholder="true"] button:focus-visible,[data-img-placeholder="true"] label:focus-within,[data-img-placeholder="true"] a:focus-visible{outline:2px solid #2563eb;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-img-placeholder="true"] button:focus-visible,[data-img-placeholder="true"] label:focus-within,[data-img-placeholder="true"] a:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-img-placeholder="true"] *,[data-img-placeholder="true"] *::before,[data-img-placeholder="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 function createDocBuilderRenderer(deps) {
+  _ensureDocBuilderA11yCss();
   deps = deps || {};
   const {
     docStyle: rawDocStyle,
@@ -366,15 +380,15 @@ const renderJsonToHtml = (blocks) => {
               // An explicit empty alt is the prompt's decorative signal (2026-10-26); a missing alt is not.
               const _decorative = typeof block.alt === 'string' && !_shortAlt;
               return `<figure id="${_imgId}-figure" data-img-placeholder="true" data-allo-placeholder-id="${_imgId}" data-allo-placeholder-alt="${_attr(_imgDesc)}"${_shortAlt ? ` data-allo-alt="${_attr(_shortAlt)}"` : ''}${_decorative ? ' data-allo-decorative="true"' : ''} style="position:relative;margin:1em 0">`
-                + `<button type="button" contenteditable="false" data-allo-placeholder-action="remove" data-allo-placeholder-id="${_imgId}" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:16px;line-height:1;cursor:pointer">×</button>`
+                + `<button type="button" contenteditable="false" data-allo-placeholder-action="remove" data-allo-placeholder-id="${_imgId}" aria-label="Remove this image placeholder" title="Remove this image placeholder" style="position:absolute;top:6px;right:6px;z-index:2;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:16px;line-height:1;cursor:pointer;touch-action:manipulation">×</button>`
                 + `<div id="${_imgId}-container" data-allo-placeholder-dropzone="true" data-allo-placeholder-id="${_imgId}" style="background:#f1f5f9;border:2px dashed #64748b;border-radius:8px;padding:1rem;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem">`
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
                 + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
                 + `<span style="font-size:12px;color:#475569;max-width:90%">${escapeTextField(_imgDesc.substring(0, 140))}${_imgDesc.length > 140 ? '…' : ''}</span>`
                 + `<span style="font-size:11px;color:#475569;font-style:italic">Drag an extracted image here, or:</span>`
                 + `<div style="display:flex;gap:6px;margin-top:0.25rem;flex-wrap:wrap;justify-content:center">`
-                + `<label style="display:inline-flex;align-items:center;gap:6px;min-height:44px;box-sizing:border-box;padding:10px 14px;background:#1d4ed8;color:#ffffff !important;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="color:#ffffff !important">Upload image</span><input type="file" accept="image/*" data-allo-placeholder-action="upload" data-allo-placeholder-id="${_imgId}" data-allo-placeholder-accept="image/*" style="display:none"></label>`
-                + `<button type="button" data-allo-placeholder-action="pick" data-allo-placeholder-id="${_imgId}" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;box-sizing:border-box;padding:10px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick extracted image from this document"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
+                + `<label style="display:inline-flex;align-items:center;gap:6px;min-height:44px;box-sizing:border-box;padding:10px 14px;background:#1d4ed8;color:#ffffff !important;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="color:#ffffff !important">Upload image</span><input type="file" accept="image/*" data-allo-placeholder-action="upload" data-allo-placeholder-id="${_imgId}" data-allo-placeholder-accept="image/*" style="display:none"></label>`
+                + `<button type="button" data-allo-placeholder-action="pick" data-allo-placeholder-id="${_imgId}" style="display:inline-flex;align-items:center;gap:6px;min-height:44px;box-sizing:border-box;padding:10px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation" aria-label="Pick extracted image from this document"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
                 + `</div>`
                 + `</div>`
                 + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${escapeTextField(_captionText)}</figcaption>` : '')

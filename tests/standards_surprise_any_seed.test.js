@@ -68,7 +68,8 @@ describe('the engine proposes the settings a teacher would re-derive', () => {
     expect(sidebar).toContain('SurpriseMeEngine.TONES.indexOf(clamp(d.tone, 40)) >= 0');
   });
   it('names every field it set, and never sets the level', () => {
-    expect(misc).toContain('"Set " + changed.join(", ")');
+    // The toast is localizable now; its English still names every changed field.
+    expect(misc).toContain('_mpCopy(t, "surprise_topic.applied_and_prefilled", "Set {fields}. The standard code is prefilled in Universal Settings.").replace("{fields}", changed.join(", "))');
     expect(misc, 'target level must stay the teacher\'s own').not.toContain('setSourceLevel(direction');
   });
   it('never overwrites vocabulary the teacher already typed', () => {

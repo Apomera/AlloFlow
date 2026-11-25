@@ -15175,9 +15175,9 @@ function QuizViewContent(props) {
   var reviewProgress = draftNamespace ? _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace)) : null;
   var studentFeedbackCopy = gradedMode || deliverySettings.feedbackTiming === 'teacher-graded' ? quizT('quiz.graded.feedback_note', 'Graded: answer feedback is withheld until your teacher checks your work.') : quickCheckActive ? quizT('quiz.quick_check.feedback_note', 'Quick check mode: answer feedback stays hidden until you submit.') : deliverySettings.feedbackTiming === 'immediate' ? 'Practice feedback is available as you check responses.' : deliverySettings.feedbackTiming === 'teacher-release' ? 'Answer feedback stays hidden until you submit and your teacher releases it.' : 'Answer feedback stays hidden until you submit the assessment.';
   var stepperItems = reviewProgress && Array.isArray(reviewProgress.items) ? reviewProgress.items : [];
-  // The navigation row keeps `pr-20 md:pr-0`: on phones the Student Tools
+  // Both rows keep `pr-20 md:pr-0`: on phones the Student Tools
   // launcher is pinned to the bottom-right corner (view_fab_stack, 12px in),
-  // and Next / Review & submit are the row's right-most controls, so without
+  // and Review & submit (top row) and Next (progress row) are right-most, so without
   // that clearance the launcher covered them whenever the row scrolled to the
   // bottom of the screen.
   var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? /*#__PURE__*/React.createElement("section", {
@@ -15221,7 +15221,7 @@ function QuizViewContent(props) {
     onTogglePause: toggleAssessmentTimer,
     onExtend: extendAssessmentTimer
   }), (deliverySettings.showProgress || oneQuestionAtATime) && assessmentQuestionCount > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2"
+    className: "flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2 pr-20 md:pr-0"
   }, deliverySettings.showProgress && /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold text-slate-700 shrink-0"
   }, oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'), deliverySettings.showProgress && stepperItems.length > 0 && stepperItems.length <= 25 && /*#__PURE__*/React.createElement("nav", {

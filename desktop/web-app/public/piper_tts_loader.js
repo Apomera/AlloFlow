@@ -15,8 +15,33 @@
 (function () {
     'use strict';
 
+    if (typeof window !== 'object' || !window) return;
+
+    function _log() {
+        if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+            console.log.apply(console, arguments);
+        }
+    }
+    function _warn() {
+        if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
+            console.warn.apply(console, arguments);
+        }
+    }
+    function _error() {
+        if (typeof console !== 'undefined' && console && typeof console.error === 'function') {
+            console.error.apply(console, arguments);
+        }
+    }
+    function _normalizeBaseLang(langCode) {
+        if (langCode == null || langCode === '') return '';
+        let raw = '';
+        if (typeof langCode === 'string') raw = langCode;
+        else { try { raw = String(langCode); } catch (_) { return ''; } }
+        return raw.trim().split(/[-_]/)[0].toLowerCase();
+    }
+
     if (window._piperTTS) {
-        console.log('[Piper TTS] Already registered, skipping duplicate load');
+        _log('[Piper TTS] Already registered, skipping duplicate load');
         return;
     }
 
@@ -145,12 +170,35 @@
     }
 
     function _createRequest(callerSignal) {
-        const controller = new AbortController();
+        let controller;
+        if (typeof AbortController === 'function') {
+            controller = new AbortController();
+        } else {
+            const listeners = new Set();
+            const fallbackSignal = {
+                aborted: false,
+                reason: undefined,
+                addEventListener: (type, fn) => { if (type === 'abort' && typeof fn === 'function') listeners.add(fn); },
+                removeEventListener: (type, fn) => { if (type === 'abort') listeners.delete(fn); },
+            };
+            controller = {
+                signal: fallbackSignal,
+                abort: (reason) => {
+                    if (fallbackSignal.aborted) return;
+                    fallbackSignal.aborted = true;
+                    fallbackSignal.reason = reason;
+                    for (const fn of Array.from(listeners)) {
+                        try { fn(); } catch (_) {}
+                    }
+                    listeners.clear();
+                },
+            };
+        }
         let forwardAbort = null;
         if (callerSignal) {
             if (callerSignal.aborted) {
                 controller.abort(callerSignal.reason);
-            } else {
+            } else if (typeof callerSignal.addEventListener === 'function') {
                 forwardAbort = () => controller.abort(callerSignal.reason);
                 callerSignal.addEventListener('abort', forwardAbort, { once: true });
             }
@@ -161,7 +209,7 @@
                 if (!controller.signal.aborted) controller.abort(_abortError(reason));
             },
             cleanup: () => {
-                if (callerSignal && forwardAbort) {
+                if (callerSignal && forwardAbort && typeof callerSignal.removeEventListener === 'function') {
                     callerSignal.removeEventListener('abort', forwardAbort);
                 }
             },
@@ -242,8 +290,10 @@
 
     function _fireProgress(stage, pct) {
         _loadProgress = pct;
-        if (_onProgress) _onProgress({ stage, pct });
-        console.log('[Piper TTS] ' + stage + ': ' + Math.round(pct * 100) + '%');
+        if (typeof _onProgress === 'function') {
+            try { _onProgress({ stage, pct }); } catch (_) {}
+        }
+        _log('[Piper TTS] ' + stage + ': ' + Math.round(pct * 100) + '%');
     }
 
     // ─── Initialize Library ─────────────────────────────────────────────
@@ -354,21 +404,22 @@
                 controller = new AbortController();
                 timer = setTimeout(() => controller.abort(), 15000);
             }
-            const res = await fetch(base + '/' + path + '.json', controller ? { signal: controller.signal } : undefined);
+            const fetchOpts = controller ? { signal: controller.signal, credentials: 'omit' } : { credentials: 'omit' };
+            const res = await fetch(base + '/' + path + '.json', fetchOpts);
             if (!res.ok) {
-                console.warn('[Piper TTS] Voice config for ' + voiceId + ' returned HTTP ' + res.status + '; skipping this voice.');
+                _warn('[Piper TTS] Voice config for ' + voiceId + ' returned HTTP ' + res.status + '; skipping this voice.');
                 return (res.status === 404 || res.status === 410) ? 'invalid' : 'transient';
             }
             const text = await res.text();
             try {
                 JSON.parse(text); // an error page fails here, before it can be cached
             } catch (parseErr) {
-                console.warn('[Piper TTS] Voice config for ' + voiceId + ' is not valid JSON:', (parseErr && parseErr.message) || parseErr);
+                _warn('[Piper TTS] Voice config for ' + voiceId + ' is not valid JSON:', (parseErr && parseErr.message) || parseErr);
                 return 'invalid';
             }
             return 'ok';
         } catch (e) {
-            console.warn('[Piper TTS] Voice config check for ' + voiceId + ' failed transiently:', (e && e.message) || e);
+            _warn('[Piper TTS] Voice config check for ' + voiceId + ' failed transiently:', (e && e.message) || e);
             return 'transient';
         } finally {
             if (timer !== null) clearTimeout(timer);
@@ -393,7 +444,7 @@
         if (_purgePromise) return _purgePromise;
         _purgePromise = (async () => {
             try {
-                if (!navigator.storage || typeof navigator.storage.getDirectory !== 'function') return 0;
+                if (typeof navigator === 'undefined' || !navigator || !navigator.storage || typeof navigator.storage.getDirectory !== 'function') return 0;
                 const root = await navigator.storage.getDirectory();
                 let dir;
                 try { dir = await root.getDirectoryHandle('piper'); }
@@ -411,11 +462,11 @@
                     try { await dir.removeEntry(name); } catch (_) {}
                 }
                 if (doomed.length) {
-                    console.warn('[Piper TTS] Removed ' + doomed.length + ' unusable cached voice file(s):', doomed);
+                    _warn('[Piper TTS] Removed ' + doomed.length + ' unusable cached voice file(s):', doomed);
                 }
                 return doomed.length;
             } catch (e) {
-                console.warn('[Piper TTS] Could not check the voice cache:', (e && e.message) || e);
+                _warn('[Piper TTS] Could not check the voice cache:', (e && e.message) || e);
                 return 0;
             }
         })();
@@ -426,7 +477,8 @@
     async function _ensureVoice(langCode, options) {
         const signal = options && options.signal;
         if (signal && signal.aborted) throw _signalAbortError(signal);
-        const baseLang = langCode.split('-')[0].toLowerCase();
+        const baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang) return false;
 
         if (_loadedVoices.has(baseLang)) {
             _currentLang = baseLang;
@@ -436,7 +488,7 @@
 
         const voiceInfo = Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang) ? PIPER_VOICE_MAP[baseLang] : null;
         if (!voiceInfo) {
-            console.warn('[Piper TTS] No voice model for language:', baseLang);
+            _warn('[Piper TTS] No voice model for language:', baseLang);
             return false;
         }
 
@@ -446,11 +498,13 @@
             promise = (async () => {
                 try {
                     await _purgePoisonedEntries();
+                    if (generation !== _generation) throw _abortError('Piper TTS was disposed while checking cache');
                     const lib = await _ensureLibLoaded();
+                    if (generation !== _generation) throw _abortError('Piper TTS was disposed while loading');
                     if (!_pathMap && lib && lib.PATH_MAP) _pathMap = lib.PATH_MAP;
                     const voiceId = _resolveVoiceId(baseLang);
                     if (!voiceId) {
-                        _unavailableLangs.add(baseLang);
+                        if (generation === _generation) _unavailableLangs.add(baseLang);
                         return false;
                     }
                     _fireProgress('Downloading ' + voiceInfo.name + ' voice', 0.2);
@@ -472,29 +526,45 @@
 
                     if (_isRemoteBlocked() || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
                         if (await tryStoredVoice()) return true;
-                        if (_isRemoteBlocked()) _unavailableLangs.add(baseLang);
                         return false;
                     }
 
                     const configStatus = await _configIsReal(lib, voiceId);
+                    if (generation !== _generation) throw _abortError('Piper TTS was disposed while verifying voice config');
                     if (configStatus !== 'ok') {
                         if (configStatus === 'invalid') {
                             // Anything already sitting in OPFS for this voice came
                             // from the same bad response, so throw it out too.
                             await _evictVoice(lib, voiceId, baseLang);
-                            _unavailableLangs.add(baseLang);
+                            if (generation === _generation) _unavailableLangs.add(baseLang);
                             return false;
                         }
                         // Transient network failure: reuse an already-downloaded OPFS voice if present.
                         return tryStoredVoice();
                     }
 
-                    // Pre-download the voice model into the OPFS cache.
-                    if (lib.download) {
-                        await lib.download(voiceId, function (progress) {
-                            var pct = 0.2 + (progress && progress.progress ? progress.progress * 0.6 : 0);
-                            _fireProgress('Downloading ' + voiceInfo.name, pct);
-                        });
+                    // Pre-download the voice model into the OPFS cache with stall timeout watchdog.
+                    if (typeof lib.download === 'function') {
+                        let stallTimer = null;
+                        try {
+                            await new Promise((resolve, reject) => {
+                                const resetStall = () => {
+                                    if (stallTimer !== null) clearTimeout(stallTimer);
+                                    stallTimer = setTimeout(() => {
+                                        reject(new Error('Piper TTS voice download timed out for ' + voiceId));
+                                    }, 90000);
+                                };
+                                resetStall();
+                                Promise.resolve(lib.download(voiceId, function (progress) {
+                                    resetStall();
+                                    if (generation !== _generation) return;
+                                    var pct = 0.2 + (progress && progress.progress ? progress.progress * 0.6 : 0);
+                                    _fireProgress('Downloading ' + voiceInfo.name, pct);
+                                })).then(resolve, reject);
+                            });
+                        } finally {
+                            if (stallTimer !== null) clearTimeout(stallTimer);
+                        }
                     }
 
                     if (generation !== _generation) {
@@ -504,11 +574,11 @@
                     _currentLang = baseLang;
                     _ready = true;
                     _fireProgress('Ready', 1.0);
-                    console.log('[Piper TTS] Voice ready for: ' + voiceInfo.name + ' (' + voiceId + ')');
+                    _log('[Piper TTS] Voice ready for: ' + voiceInfo.name + ' (' + voiceId + ')');
                     return true;
                 } catch (e) {
                     if (e && e.name === 'AbortError') throw e;
-                    console.error('[Piper TTS] Failed to load voice for ' + baseLang + ':', e);
+                    _error('[Piper TTS] Failed to load voice for ' + baseLang + ':', e);
                     return false;
                 }
             })();
@@ -603,6 +673,7 @@
     // `_instance` is a plain public static field on the exported class, so this
     // uses only what the package exposes.
     let _sessionVoiceId = null;
+    let _predictQueue = Promise.resolve();
     function _prepareSessionFor(lib, voiceId, force) {
         try {
             if (!force && _sessionVoiceId === voiceId) return;
@@ -610,8 +681,29 @@
             if (Session && Object.prototype.hasOwnProperty.call(Session, '_instance')) {
                 Session._instance = null;
             }
-            _sessionVoiceId = voiceId;
+            _sessionVoiceId = null;
         } catch (_) { /* fall through: a stale session is still better than a throw */ }
+    }
+    function _runSerializedPredict(lib, voiceId, text, signal, forceReset) {
+        const exec = async () => {
+            if (signal && signal.aborted) throw _signalAbortError(signal);
+            _prepareSessionFor(lib, voiceId, forceReset);
+            try {
+                const blob = await _awaitWithSignal(Promise.resolve(lib.predict({
+                    text: text,
+                    voiceId: voiceId
+                })), signal);
+                if (signal && signal.aborted) throw _signalAbortError(signal);
+                _sessionVoiceId = voiceId;
+                return blob;
+            } catch (err) {
+                _sessionVoiceId = null;
+                throw err;
+            }
+        };
+        const slot = _predictQueue.then(exec, exec);
+        _predictQueue = slot.then(() => {}, () => {});
+        return _awaitWithSignal(slot, signal);
     }
 
     // ─── Generate Speech ────────────────────────────────────────────────
@@ -620,11 +712,10 @@
 
         options = options || {};
         const force = options.force === true;
+        const baseLang = _normalizeBaseLang(lang || 'en') || 'en';
         const request = _createRequest(options.signal);
         _activeRequests.add(request);
         const signal = request.signal;
-        lang = lang || 'en';
-        const baseLang = lang.split('-')[0].toLowerCase();
 
         try {
             if (signal.aborted) throw _signalAbortError(signal);
@@ -643,38 +734,30 @@
 
             const lib = await _awaitWithSignal(_ensureLibLoaded(), signal);
             if (signal.aborted) throw _signalAbortError(signal);
-            _prepareSessionFor(lib, voiceId);
             // predict() returns neutral-speed WAV bytes. The Audio element owns
             // playbackRate, so speed is not applied a second time here.
             let blob;
             try {
-                blob = await _awaitWithSignal(Promise.resolve(lib.predict({
-                    text: text,
-                    voiceId: voiceId
-                })), signal);
+                blob = await _runSerializedPredict(lib, voiceId, text, signal, false);
             } catch (predictErr) {
                 if (predictErr && predictErr.name === 'AbortError') throw predictErr;
                 if (!_isCorruptModelError(predictErr)) throw predictErr;
                 // The cached model is unusable and will stay that way until it
                 // is thrown out. Do that, re-download, and try once.
-                console.warn('[Piper TTS] Cached voice model is unusable — clearing it and re-downloading once.', predictErr);
+                _warn('[Piper TTS] Cached voice model is unusable — clearing it and re-downloading once.', predictErr);
                 _fireProgress('Repairing the ' + voiceInfo.name + ' voice download', 0.1);
                 await _evictVoice(lib, voiceId, baseLang);
                 if (signal.aborted) throw _signalAbortError(signal);
                 const reloaded = await _ensureVoice(baseLang, { signal });
                 if (signal.aborted) throw _signalAbortError(signal);
                 if (!reloaded) return null;
-                _prepareSessionFor(lib, voiceId, true);
-                blob = await _awaitWithSignal(Promise.resolve(lib.predict({
-                    text: text,
-                    voiceId: voiceId
-                })), signal);
-                console.log('[Piper TTS] Voice model repaired after re-download.');
+                blob = await _runSerializedPredict(lib, voiceId, text, signal, true);
+                _log('[Piper TTS] Voice model repaired after re-download.');
             }
             if (signal.aborted) throw _signalAbortError(signal);
 
             if (!blob) {
-                console.warn('[Piper TTS] predict() returned empty result');
+                _warn('[Piper TTS] predict() returned empty result');
                 return null;
             }
 
@@ -684,7 +767,7 @@
             const audioUrl = URL.createObjectURL(blob);
             if (!audioUrl) return null;
             _cacheSet(cacheKey, text, voiceId, audioUrl);
-            console.log('[Piper TTS] Generated audio for:', text.substring(0, 40));
+            _log('[Piper TTS] Generated audio for:', text.substring(0, 40));
             return audioUrl;
         } catch (e) {
             if (e && e.name === 'AbortError') throw e;
@@ -692,7 +775,7 @@
             // next engine; the message stays in the console and in lastError for
             // diagnostics and is never shown to a learner.
             _lastError = String((e && e.message) || e || 'unknown');
-            console.error('[Piper TTS] Generation failed:', e);
+            _error('[Piper TTS] Generation failed:', e);
             return null;
         } finally {
             _finishRequest(request);
@@ -705,8 +788,8 @@
     // so the cascade stops handing Piper work it cannot do and the utterance
     // goes to the next engine instead of failing.
     function supportsLanguage(langCode) {
-        if (!langCode) return false;
-        var baseLang = langCode.split('-')[0].toLowerCase();
+        var baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang) return false;
         if (_unavailableLangs.has(baseLang)) return false;
         return Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang);
     }
@@ -716,8 +799,35 @@
     // told the user "Piper Neural Voice — auto-selected" for a voice that had
     // never been downloaded.
     function isLanguageReady(langCode) {
-        if (!langCode) return false;
-        return _loadedVoices.has(String(langCode).split('-')[0].toLowerCase());
+        var baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang) return false;
+        return _loadedVoices.has(baseLang);
+    }
+
+    // Check OPFS for an already-downloaded model without initiating any download.
+    // Lets Voice Settings and Student AI-Off wake a previously saved language
+    // voice across page reloads without surprising bandwidth-constrained users.
+    async function isLanguageStored(langCode) {
+        var baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang || _unavailableLangs.has(baseLang)) return false;
+        if (_loadedVoices.has(baseLang)) return true;
+        if (!Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang)) return false;
+        try {
+            await _purgePoisonedEntries();
+            const lib = await _ensureLibLoaded();
+            if (!_pathMap && lib && lib.PATH_MAP) _pathMap = lib.PATH_MAP;
+            const voiceId = _resolveVoiceId(baseLang);
+            if (!voiceId || !lib || typeof lib.stored !== 'function') return false;
+            const storedList = await lib.stored().catch(() => []);
+            if (Array.isArray(storedList) && storedList.includes(voiceId)) {
+                _loadedVoices.add(baseLang);
+                _ready = true;
+                return true;
+            }
+            return false;
+        } catch (_) {
+            return false;
+        }
     }
 
     function getSupportedLanguages() {
@@ -729,11 +839,13 @@
     // ─── Proactive Language Preloading ──────────────────────────────────
     // Downloads voice model in background so first TTS request is instant.
     async function preloadLanguage(langCode, options) {
-        if (!langCode) return false;
-        var baseLang = langCode.split('-')[0].toLowerCase();
+        var baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang) return false;
         if (baseLang === 'en') return true; // Kokoro handles English
         if (!Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang)) return false;
 
+        const prevProgress = _onProgress;
+        if (options && typeof options.onProgress === 'function') _onProgress = options.onProgress;
         const request = _createRequest(options && options.signal);
         _activeRequests.add(request);
         try {
@@ -741,7 +853,32 @@
             if (request.signal.aborted) throw _signalAbortError(request.signal);
             return ready;
         } finally {
+            if (options && typeof options.onProgress === 'function' && _onProgress === options.onProgress) {
+                _onProgress = prevProgress;
+            }
             _finishRequest(request);
+        }
+    }
+
+    // Remove one language's cached OPFS model to free device storage without
+    // wiping other downloaded languages.
+    async function removeLanguage(langCode) {
+        var baseLang = _normalizeBaseLang(langCode);
+        if (!baseLang || !Object.prototype.hasOwnProperty.call(PIPER_VOICE_MAP, baseLang)) return false;
+        try {
+            const lib = await _ensureLibLoaded();
+            if (!_pathMap && lib && lib.PATH_MAP) _pathMap = lib.PATH_MAP;
+            const voiceId = _resolveVoiceId(baseLang) || PIPER_VOICE_MAP[baseLang].voiceId;
+            if (!voiceId) return false;
+            const removed = await _evictVoice(lib, voiceId, baseLang);
+            if (_sessionVoiceId === voiceId) _sessionVoiceId = null;
+            if (_loadedVoices.size === 0) _ready = false;
+            clearCache();
+            _log('[Piper TTS] Removed cached voice for:', baseLang, '(' + voiceId + ')');
+            return removed;
+        } catch (e) {
+            _warn('[Piper TTS] removeLanguage failed for ' + baseLang + ':', e);
+            return false;
         }
     }
 
@@ -763,6 +900,7 @@
         _onProgress = null;
         _PiperLib = null;
         _libInitPromise = null;
+        _purgePromise = null;
         _loadedVoices.clear();
         _voiceLoadPromises.clear();
         _unavailableLangs.clear();
@@ -776,18 +914,24 @@
     // Reports what it did rather than failing silently, because the whole
     // point is to diagnose a download that went wrong once and then stuck.
     async function repairVoices() {
+        stop('Piper TTS repairing voices');
+        _generation++;
+        _purgePromise = null;
         let lib = null;
         try { lib = await _ensureLibLoaded(); } catch (e) {
-            console.warn('[Piper TTS] repairVoices: library unavailable', e);
+            _warn('[Piper TTS] repairVoices: library unavailable', e);
         }
         let names = [];
         try {
-            if (lib && typeof lib.stored === 'function') names = (await lib.stored()) || [];
+            if (lib && typeof lib.stored === 'function') {
+                const raw = await lib.stored();
+                names = Array.isArray(raw) ? raw : [];
+            }
         } catch (_) {}
         try {
             if (lib && typeof lib.flush === 'function') await lib.flush();
         } catch (e) {
-            console.warn('[Piper TTS] repairVoices: flush failed', e);
+            _warn('[Piper TTS] repairVoices: flush failed', e);
         }
         _loadedVoices.clear();
         _voiceLoadPromises.clear();
@@ -798,7 +942,7 @@
         _ready = false;
         _currentLang = null;
         clearCache();
-        console.log('[Piper TTS] Cleared ' + names.length + ' cached voice file(s):', names);
+        _log('[Piper TTS] Cleared ' + names.length + ' cached voice file(s):', names);
         return names;
     }
 
@@ -807,6 +951,7 @@
         init: init,
         speak: speak,
         preloadLanguage: preloadLanguage,
+        removeLanguage: removeLanguage,
         stop: stop,
         dispose: dispose,
         ownsUrl: ownsUrl,
@@ -819,6 +964,7 @@
         repairVoices: repairVoices,
         supportsLanguage: supportsLanguage,
         isLanguageReady: isLanguageReady,
+        isLanguageStored: isLanguageStored,
         getSupportedLanguages: getSupportedLanguages,
         voiceMap: PIPER_VOICE_MAP,
         // Diagnostics only. Nothing user-facing reads this; it exists so a
@@ -831,5 +977,5 @@
         get synthesisRate() { return SYNTHESIS_SPEED; },
     };
 
-    console.log('[Piper TTS] Loader registered. Supports', Object.keys(PIPER_VOICE_MAP).length, 'languages.');
+    _log('[Piper TTS] Loader registered. Supports', Object.keys(PIPER_VOICE_MAP).length, 'languages.');
 })();

@@ -115,6 +115,30 @@ describe('teacher Help menu, compact header', () => {
     expect(menu()).toBeNull();
   });
 
+  // 2026-11-23: hiding AlloBot left no labelled way back in the compact header. Its
+  // toggle is an icon in the expanded header only, so the menu offers it while hidden.
+  it('offers "Show AI Assistant" only while AlloBot is hidden', () => {
+    mount(TEACHER, { isBotVisible: true });
+    act(() => helpButton().click());
+    expect(menu().querySelector('[data-help-menu-bot]')).toBeNull();
+    expect(menu().querySelectorAll('button')).toHaveLength(3);
+    act(() => root.unmount()); host.remove(); root = null;
+
+    const handleToggleIsBotVisible = vi.fn();
+    mount(TEACHER, { isBotVisible: false, handleToggleIsBotVisible });
+    act(() => helpButton().click());
+    const rows = Array.from(menu().querySelectorAll('button'));
+    expect(rows).toHaveLength(4);
+    const row = menu().querySelector('[data-help-menu-bot]');
+    expect(row).toBe(rows[3]);
+    expect(row.textContent).toBe('Show AI Assistant');
+    expect(row.className).toBe(rows[0].className);
+    act(() => row.click());
+    expect(handleToggleIsBotVisible).toHaveBeenCalledTimes(1);
+    expect(menu(), 'the menu closes').toBeNull();
+    expect(document.activeElement, 'focus returns to "?" instead of falling to the page').toBe(helpButton());
+  });
+
   it('the dot shows on "?" only when there are tips or messages to read again', () => {
     mount(TEACHER, { hintHistory: [], toastHistoryCount: 0 });
     expect(host.querySelector('[data-help-dot]')).toBeNull();
@@ -149,5 +173,15 @@ describe('expanded header', () => {
     expect(menu().querySelectorAll('button')).toHaveLength(3);
     act(() => menu().querySelector('[data-help-key="hints_recall"]').click());
     expect(handleSetShowHintsModalToTrue).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps its own AlloBot toggle, so the Help menu does not repeat it', () => {
+    mount(TEACHER, { isBotVisible: false }, false);
+    const toggle = host.querySelector('[data-help-key="header_bot_toggle"]');
+    expect(toggle).not.toBeNull();
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    act(() => helpButton().click());
+    expect(menu().querySelector('[data-help-menu-bot]')).toBeNull();
+    expect(menu().querySelectorAll('button')).toHaveLength(3);
   });
 });

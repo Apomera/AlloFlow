@@ -67,6 +67,18 @@
   var useRef = React.useRef;
   var useCallback = React.useCallback;
   var useMemo = React.useMemo;
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-research-hub-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-research-hub-a11y-css';
+    st.textContent = [
+      '[data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '[data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [data-help-key="research_hub"] *, [aria-labelledby="research-hub-dialog-title"] *, [aria-labelledby="research-allosheet-title"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   function getEvidenceGraphApi() {
     return typeof window !== 'undefined' ? (window.AlloFlowResearchEvidenceGraph || null) : null;
   }

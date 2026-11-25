@@ -37,7 +37,11 @@ describe('resource-delivery launch deadline',()=>{
 });
 
 describe('teacher organizer progress wording',()=>{
- const dock=fs.readFileSync('view_live_session_dock_source.jsx','utf8');const begin=dock.indexOf('const rawOrganizerProgress ='),end=dock.indexOf('                          return (',begin);const label=(progress)=>new Function('entry','activeOrganizer','normalizeLiveOrganizerProgress',dock.slice(begin,end)+';return organizerProgressLabel;')({organizerProgress:progress},{activityId:'organizer:active:1'},p=>p);
+ // The dock now derives the progress state in the roster enrichment pass and builds the label later in the row
+ // render, so run the two shipped pieces back to back.
+ const dock=fs.readFileSync('view_live_session_dock_source.jsx','utf8');const begin=dock.indexOf('const rawOrganizerProgress ='),end=dock.indexOf('const needsAttention',begin);const lb=dock.indexOf('const organizerProgressLabel =',end),le=dock.indexOf('                          return (',lb);
+ if(begin<0||end<0||lb<0||le<0)throw new Error('organizer progress code moved');
+ const label=(progress)=>new Function('entry','activeOrganizer','normalizeLiveOrganizerProgress',dock.slice(begin,end)+dock.slice(lb,le)+';return organizerProgressLabel;')({organizerProgress:progress},{activityId:'organizer:active:1'},p=>p);
  const base={activityId:'organizer:active:1',type:'reflection',status:'complete',total:3,correct:0,attempts:2,at:Date.now()};
  it('shows reflection submission and revision without a correctness score',()=>{expect(label(base)).toBe('Reflection submitted · revision 2');});
  it('retains correctness counts for scored sorting activities',()=>{expect(label({...base,type:'outline',correct:3})).toBe('Organizer complete 3/3');});

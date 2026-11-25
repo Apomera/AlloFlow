@@ -154,12 +154,97 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 .copy-names-said:empty { display: none; }
 .copy-names-wrap { margin-top: 0.45rem; max-width: 22rem; }
 .copy-names-box { display: block; width: 100%; padding: 0.5rem 0.7rem; font: inherit; font-size: 0.875rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
+/* 2026-11-23: a read-along's answers to "Check your understanding", in a closed fold under the result's line. Right and not right are words. */
+.ra-fold { margin-top: 0.2rem; min-width: 14rem; white-space: initial; }
+.ra-fold > summary { min-height: 2.75rem; padding: 0.7rem 0; font-size: 0.875rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+.ra-page { margin-top: 0.5rem; font-size: 0.8125rem; font-weight: 700; color: var(--ink); }
+.ra-answers { margin: 0.2rem 0 0.4rem; padding-left: 1.1rem; list-style: disc; font-size: 0.875rem; font-weight: 400; color: var(--ink); }
+.ra-answers li { margin-top: 0.2rem; overflow-wrap: anywhere; }
+.ra-question { color: var(--muted); }
+.ra-mark { font-weight: 700; }
 .check-missed-fold { margin-top: 1.5rem; }
 .check-missed-fold > summary { width: fit-content; min-height: 2.75rem; display: inline-flex; align-items: center; font-size: 1rem; font-weight: 700; color: var(--ink); cursor: pointer; }
 .next-practice { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
 .next-practice-title { margin: 0; font-size: 1.0625rem; color: var(--ink); line-height: 1.25; }
 .next-practice-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
 .next-practice .new-tab-hint { margin-top: 0.65rem; }
+.followup-card { margin-top: 1.5rem; padding: 1.05rem 1.25rem; background: var(--note); border: 1.5px solid var(--line-strong); border-left: 4px solid var(--accent); border-radius: var(--radius); }
+.followup-title { margin: 0; font-size: 1.0625rem; color: var(--ink); line-height: 1.25; }
+.followup-intro { margin-top: 0.35rem; }
+.followup-summary { margin: 0.6rem 0 0; padding-left: 1.2rem; list-style: disc; font-size: 0.9375rem; color: var(--text); }
+.followup-summary li + li { margin-top: 0.25rem; }
+.followup-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
+.followup-actions .btn { background: var(--surface); border-color: var(--accent); }
+.followup-actions .btn:hover { background: var(--accent-soft); }
+.followup-note { margin-top: 0.5rem; }
+.followup-status { margin-top: 0.35rem; font-weight: 600; color: var(--ink); }
+.followup-status:empty { display: none; }
+.udl-group-card { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: var(--radius); }
+.udl-group-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; }
+.udl-group-title { margin: 0; font-size: 1.0625rem; color: var(--ink); line-height: 1.25; }
+.udl-group-copy-said { margin-top: 0.45rem; font-weight: 600; color: var(--ink); }
+.udl-group-copy-box { margin-top: 0.5rem; }
+.udl-group-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.85rem; margin-top: 0.75rem; }
+@media (min-width: 40rem) { .udl-group-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.udl-group-block { padding: 0.75rem 0.9rem; background: var(--note); border: 1px solid var(--line); border-radius: 8px; }
+.udl-group-sub { margin: 0 0 0.45rem; font-size: 0.9375rem; font-weight: 700; color: var(--ink); }
+.udl-group-list { margin: 0; padding-left: 1.15rem; list-style: disc; font-size: 0.9375rem; color: var(--text); }
+.udl-group-list li + li { margin-top: 0.2rem; }
+.udl-group-note { margin-top: 0.45rem; }
+.udl-group-foot { margin-top: 0.75rem; }
+.mtss-huddle-card { margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--surface); border: 1.5px solid var(--line-strong); border-radius: var(--radius); }
+.mtss-huddle-title { margin: 0; font-size: 1.0625rem; color: var(--ink); line-height: 1.25; }
+.mtss-huddle-fold { margin-top: 0.5rem; }
+.mtss-huddle-fold > summary { width: fit-content; min-height: 2.75rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 600; color: var(--accent); cursor: pointer; list-style: none; }
+.mtss-huddle-fold > summary::-webkit-details-marker { display: none; }
+.mtss-huddle-fold > summary::before { content: ""; flex: none; width: 0.42rem; height: 0.42rem; margin-top: -0.05rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }
+.mtss-huddle-fold[open] > summary::before { margin-top: -0.2rem; transform: rotate(45deg); }
+.mtss-huddle-fold > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.mtss-huddle-body { margin-top: 0.65rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.mtss-huddle-notice { margin: 0 0 0.75rem; }
+.mtss-tier-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+@media (min-width: 40rem) { .mtss-tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mtss-tier-block { padding: 0.75rem 0.9rem; background: var(--note); border: 1px solid var(--line); border-radius: 8px; }
+.mtss-tier-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.35rem 0.6rem; margin-bottom: 0.4rem; }
+.mtss-tier-title { margin: 0; font-size: 0.9375rem; font-weight: 700; color: var(--ink); }
+.mtss-tier-filter-btn { min-height: 2.25rem; padding: 0.15rem 0.5rem; font-size: 0.85rem; }
+.mtss-tier-filter-btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.mtss-student-list { margin: 0; padding: 0; list-style: none; font-size: 0.9375rem; color: var(--text); }
+.mtss-student-row + .mtss-student-row { margin-top: 0.3rem; }
+.mtss-student-chip { min-height: 2.25rem; padding: 0.1rem 0.35rem; font-weight: 700; color: var(--accent); text-decoration: underline; }
+.mtss-student-chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.mtss-student-detail { color: var(--muted); font-size: 0.875rem; }
+.mtss-suggested { margin-top: 0.85rem; padding: 0.75rem 0.9rem; background: var(--note); border: 1px solid var(--line); border-radius: 8px; }
+.mtss-suggested-list { margin: 0; padding-left: 1.15rem; font-size: 0.9375rem; color: var(--text); }
+.mtss-suggested-list li + li { margin-top: 0.45rem; }
+.mtss-group-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.4rem; }
+.mtss-followup-btn { background: var(--surface); border-color: var(--accent); }
+.mtss-followup-btn:hover { background: var(--accent-soft); }
+.mtss-followup-status { margin-top: 0.45rem; font-weight: 600; color: var(--ink); }
+.mtss-huddle-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem; }
+.mtss-copy-said { margin-top: 0.45rem; font-weight: 600; color: var(--ink); }
+.mtss-copy-box { margin-top: 0.5rem; }
+.progress-sheet { margin-top: 1.5rem; padding: clamp(1rem, 3vw, 1.4rem); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); }
+.progress-sheet-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 0.5rem 1rem; }
+.progress-sheet-title { margin: 0; font-size: 1.125rem; color: var(--ink); line-height: 1.25; }
+.progress-sheet-fold { margin-top: 0.6rem; }
+.progress-sheet-fold > summary { width: fit-content; min-height: 2.75rem; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 600; color: var(--accent); cursor: pointer; list-style: none; }
+.progress-sheet-fold > summary::-webkit-details-marker { display: none; }
+.progress-sheet-fold > summary::before { content: ""; flex: none; width: 0.42rem; height: 0.42rem; margin-top: -0.05rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }
+.progress-sheet-fold[open] > summary::before { margin-top: -0.2rem; transform: rotate(45deg); }
+.progress-sheet-body { margin-top: 0.65rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.progress-meta { margin-bottom: 0.75rem; }
+.progress-student { margin: 0; font-size: 1.125rem; font-weight: 700; color: var(--ink); }
+.progress-dates { margin: 0.15rem 0 0; font-size: 0.9375rem; color: var(--muted); }
+.progress-sub-note { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--muted); }
+.progress-grid { display: grid; gap: 0.85rem; grid-template-columns: 1fr; }
+.progress-block { padding: 0.75rem 0.9rem; background: var(--note); border: 1px solid var(--line); border-radius: 8px; }
+.progress-block-title { margin: 0 0 0.35rem; font-size: 0.875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink); }
+.progress-list { margin: 0; padding-left: 1.1rem; list-style: disc; font-size: 0.9375rem; color: var(--text); }
+.progress-list li + li { margin-top: 0.25rem; }
+.progress-text, .progress-compare, .progress-empty { margin: 0.3rem 0 0; font-size: 0.9375rem; color: var(--text); }
+.progress-compare { font-weight: 600; color: var(--ink); }
+.progress-foot { margin: 0.75rem 0 0; font-size: 0.8125rem; color: var(--muted); }
 .new-tab-hint { margin-top: 0.4rem; }
 .mixed-files { margin-top: 0.75rem; }
 .goal-fold { margin-top: 0.75rem; }
@@ -185,6 +270,15 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 /* Take it with you */
 .take { margin-top: 2.5rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
 .take-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; }
+.take-more { margin-top: 0.85rem; max-width: 46rem; padding: 0.55rem 0.9rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.take-more > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.6rem; min-height: 2.75rem; font-size: 0.9375rem; font-weight: 600; color: var(--accent); cursor: pointer; list-style: none; }
+.take-more > summary::-webkit-details-marker { display: none; }
+.take-more > summary::before { content: ""; flex: none; width: 0.42rem; height: 0.42rem; margin-top: -0.05rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }
+.take-more[open] > summary::before { margin-top: -0.2rem; transform: rotate(45deg); }
+.take-more-hint { font-weight: 400; color: var(--muted); font-size: 0.875rem; }
+.take-more-body { padding: 0.65rem 0 0.25rem; border-top: 1px solid var(--line); margin-top: 0.45rem; }
+.take-more-body .take-row { margin-top: 0; }
+.take-more-body > .hint { margin-top: 0.6rem; }
 .take > .hint { margin-top: 0.75rem; max-width: 44rem; }
 .take-said { margin-top: 0.5rem; font-weight: 600; color: var(--ink); min-height: 1.6em; }
 .copy-summary-wrap { margin-top: 0.6rem; max-width: 46rem; }
@@ -223,6 +317,7 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .pair-buttons { margin-top: 0; }
   .middles { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
   .paper-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (min-width: 58rem) {
@@ -239,13 +334,14 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .chart-paper { fill: Canvas; }
   .chart-scale, .chart-value, .chart-goal-label, .chart-paper-label { fill: CanvasText; }
   .drop.is-over { border-width: 4px; }
+  .followup-card, .udl-group-card, .udl-group-block, .mtss-huddle-card, .mtss-tier-block, .mtss-suggested, .progress-sheet, .progress-block { border-color: CanvasText; }
 }
 
 /* Print: black on white, a line at the top that says what this is and when it was printed, no controls */
 @media print {
   @page { margin: 14mm; }
   html, body { background: #ffffff; color: #000000; font-size: 11pt; }
-  .top, .proof, .skip, .foot, .no-print, .drop-over, #state-empty, #state-check, .results-lead, .btn:not(.name-link), .sort-name::after, .scroll-cue { display: none !important; }
+  .top, .proof, .skip, .foot, .no-print, .drop-over, #state-empty, #state-check, .results-lead, .btn:not(.name-link):not(.mtss-student-chip), .sort-name::after, .scroll-cue { display: none !important; }
   .print-only { display: block; }
   .print-head { margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid #000000; font-size: 9pt; }
   .results { padding: 0; }
@@ -254,7 +350,11 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .results-head { margin-top: 0.5rem; border-bottom-color: #000000; }
   h1, h2, h3, h4, .hint, .results-line, .cell-sub, .cell-value, .middle-label, .middle-range, .measure-unit, .measure-middle, .chart-key, .data thead th, .data tbody th, .honest, .learner-line, .sort, .name-link, .check-missed-fold > summary, .missed-fold > summary { color: #000000 !important; }
   .check-missed-fold > summary, .missed-fold > summary { min-height: 0; padding: 0.25rem 0; }
-  .name-link { display: inline !important; min-height: 0; text-decoration: none; }
+  .ra-fold > summary, .ra-page, .ra-answers, .ra-question { color: #000000 !important; }
+  .ra-fold > summary { min-height: 0; padding: 0.25rem 0; }
+  .name-link, .mtss-student-chip { display: inline !important; min-height: 0; padding: 0; text-decoration: none; color: #000000 !important; }
+  .mtss-huddle-card, .mtss-tier-block, .mtss-suggested { border-color: #000000; background: #ffffff !important; break-inside: avoid; }
+  .mtss-huddle-fold > summary { min-height: 0; color: #000000 !important; }
   .sort { min-height: 0; padding: 0; }
   .table-scroll { overflow: visible; max-width: none; border-color: #000000; border-radius: 0; }
   .table-scroll.is-wide { background: #ffffff !important; }
@@ -280,4 +380,29 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
   .chart-grid { stroke: #bbbbbb; }
   .chart-axis { stroke: #000000; }
   .chart-scale, .chart-value, .chart-goal-label { fill: #000000; }
+  .progress-sheet, .progress-block, .udl-group-card, .udl-group-block { background: #ffffff !important; border-color: #000000; break-inside: avoid; }
+  .udl-group-title, .udl-group-sub, .udl-group-list, .udl-group-note, .udl-group-foot, .progress-sheet-title, .progress-student, .progress-dates, .progress-sub-note, .progress-block-title, .progress-list, .progress-text, .progress-compare, .progress-empty, .progress-foot { color: #000000 !important; }
+  body.print-one-page-summary .results h1,
+  body.print-one-page-summary .results-head,
+  body.print-one-page-summary #sample-note,
+  body.print-one-page-summary #view-learner > h3,
+  body.print-one-page-summary #learner-body > :not(#student-progress-summary) { display: none !important; }
+  body.print-one-page-summary #student-progress-summary { display: block !important; margin-top: 0.25rem; padding: 6mm; border: 1.5px solid #000000; border-radius: 0; font-size: 9.5pt; line-height: 1.35; }
+  body.print-one-page-summary .progress-sheet-fold { margin-top: 0.25rem; }
+  body.print-one-page-summary .progress-sheet-body { margin-top: 0.25rem; padding-top: 0.4rem; border-top-color: #000000; }
+  body.print-one-page-summary .progress-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  body.print-one-page-summary .progress-block { padding: 0.45rem 0.6rem; border: 1px solid #000000; border-radius: 0; }
+  body.print-mtss-huddle .results h1,
+  body.print-mtss-huddle .results-head,
+  body.print-mtss-huddle #sample-note,
+  body.print-mtss-huddle #view-learner,
+  body.print-mtss-huddle #view-group > :not(#group-mtss-host),
+  body.print-mtss-huddle .mtss-huddle-fold > summary { display: none !important; }
+  body.print-mtss-huddle #group-mtss-host { display: block !important; }
+  body.print-mtss-huddle .mtss-huddle-card { margin-top: 0.25rem; padding: 6mm; border: 1.5px solid #000000; border-radius: 0; font-size: 9.5pt; line-height: 1.35; }
+  body.print-mtss-huddle .mtss-huddle-fold { margin-top: 0.25rem; }
+  body.print-mtss-huddle .mtss-huddle-body { margin-top: 0.25rem; padding-top: 0.4rem; border-top-color: #000000; }
+  body.print-mtss-huddle .mtss-tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  body.print-mtss-huddle .mtss-tier-block,
+  body.print-mtss-huddle .mtss-suggested { padding: 0.45rem 0.6rem; border: 1px solid #000000; border-radius: 0; }
 }

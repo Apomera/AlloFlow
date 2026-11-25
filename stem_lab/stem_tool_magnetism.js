@@ -4462,7 +4462,7 @@
           '.mag-root .mag-coach-title{min-width:0}.mag-root .mag-coach-title small{display:block;color:var(--mag-coach-tone);font-size:8.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.mag-root .mag-coach-title h3{margin:2px 0 0;color:' + TEXT + ';font-size:14px;line-height:1.2}.mag-root .mag-coach-title p{margin:2px 0 0;color:' + SOFT + ';font-size:10px;line-height:1.35}.mag-root .mag-coach-mode{padding:4px 7px;border:1px solid color-mix(in srgb,var(--mag-coach-tone) 34%,' + BORDER + ');border-radius:999px;color:' + TEXT + ';font-size:8.5px;font-weight:900;white-space:nowrap}' +
           '.mag-root .mag-coach-route{display:flex;align-items:center;gap:5px;margin:9px 0 8px;color:' + SOFT + ';font-size:9px;font-weight:850}.mag-root .mag-coach-route i{width:20px;height:1px;background:linear-gradient(90deg,var(--mag-coach-tone),transparent)}.mag-root .mag-coach-route b{color:' + TEXT + ';font-weight:900}' +
           '.mag-root .mag-coach-starters{padding:9px;border:1px solid ' + BORDER + ';border-radius:11px;background:rgba(148,163,184,.035)}.mag-root .mag-coach-starters>small{display:block;margin-bottom:6px;color:' + SOFT + ';font-size:9px;font-weight:850}.mag-root .mag-coach-starter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.mag-root .mag-coach-starter{min-width:0;min-height:48px;padding:7px 8px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';color:' + TEXT + ';text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}.mag-root .mag-coach-starter:hover{transform:translateY(-1px);border-color:var(--mag-coach-tone)}.mag-root .mag-coach-starter[aria-pressed="true"]{border-color:var(--mag-coach-tone);background:color-mix(in srgb,var(--mag-coach-tone) 10%,' + INSTRUMENT + ')}.mag-root .mag-coach-starter b{display:block;color:var(--mag-coach-tone);font-size:9px;text-transform:uppercase;letter-spacing:.06em}.mag-root .mag-coach-starter span{display:-webkit-box;overflow:hidden;margin-top:3px;color:' + SOFT + ';font-size:9px;line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2}' +
-          '.mag-root .mag-coach-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end;margin-top:8px}.mag-root .mag-coach-question{position:relative;min-width:0}.mag-root .mag-coach-question label{display:block;margin-bottom:4px;color:' + TEXT + ';font-size:10.5px;font-weight:850}.mag-root .mag-coach-question input{width:100%;min-height:40px;padding:8px 50px 8px 10px;border:1px solid ' + BORDER + ';border-radius:9px;outline:none;background:' + INSTRUMENT + ';color:' + TEXT + ';font-size:12px;box-sizing:border-box}.mag-root .mag-coach-question input:focus{border-color:var(--mag-coach-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-coach-tone) 14%,transparent)}.mag-root .mag-coach-count{position:absolute;right:8px;bottom:12px;color:' + SOFT + ';font-size:8px;font-variant-numeric:tabular-nums}.mag-root .mag-coach-submit{min-height:40px;padding:8px 11px;border:1px solid ' + ACTIVE + ';border-radius:9px;background:' + ACTIVE + ';color:#fff;font-size:11px;font-weight:850;cursor:pointer}.mag-root .mag-coach-submit:disabled{cursor:not-allowed;opacity:.5}' +
+          '.mag-root .mag-coach-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end;margin-top:8px}.mag-root .mag-coach-question{position:relative;min-width:0}.mag-root .mag-coach-question label{display:block;margin-bottom:4px;color:' + TEXT + ';font-size:10.5px;font-weight:850}.mag-root .mag-coach-question input{width:100%;min-height:44px;padding:8px 50px 8px 10px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';color:' + TEXT + ';font-size:12px;box-sizing:border-box}.mag-root .mag-coach-question input:focus{border-color:var(--mag-coach-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-coach-tone) 14%,transparent)}.mag-root .mag-coach-question input:focus-visible{outline:2px solid var(--mag-coach-tone);outline-offset:1px}.mag-root .mag-coach-count{position:absolute;right:8px;bottom:14px;color:' + SOFT + ';font-size:8px;font-variant-numeric:tabular-nums}.mag-root .mag-coach-submit{min-height:44px;padding:8px 11px;border:1px solid ' + ACTIVE + ';border-radius:9px;background:' + ACTIVE + ';color:#fff;font-size:11px;font-weight:850;cursor:pointer}.mag-root .mag-coach-submit:disabled{cursor:not-allowed;opacity:.5}' +
           '.mag-root .mag-coach-response{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:start;margin-top:9px;padding:9px;border:1px solid color-mix(in srgb,var(--mag-coach-tone) 28%,' + BORDER + ');border-radius:10px;background:color-mix(in srgb,var(--mag-coach-tone) 6%,' + INSTRUMENT + ')}.mag-root .mag-coach-response>i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--mag-coach-tone) 13%,transparent);font-style:normal}.mag-root .mag-coach-response small{display:block;color:var(--mag-coach-tone);font-size:8.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.mag-root .mag-coach-response p{margin:3px 0 0;color:' + TEXT + ';font-size:11px;line-height:1.45}.mag-root .mag-coach-response span{display:block;margin-top:4px;color:' + SOFT + ';font-size:9px;line-height:1.35}.mag-root .mag-coach-clear{min-height:32px;padding:5px 7px;border:1px solid ' + BORDER + ';border-radius:8px;background:' + PANEL + ';color:' + SOFT + ';font-size:9px;font-weight:800;cursor:pointer}.mag-root .mag-coach-empty{display:flex;align-items:center;gap:7px;margin-top:8px;color:' + SOFT + ';font-size:9.5px;line-height:1.4}.mag-root .mag-coach-empty i{color:var(--mag-coach-tone);font-style:normal}' +
           '.mag-root .mag-coach-loading{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-coach-dots{display:flex;gap:3px;margin-top:6px}.mag-root .mag-coach-dots i{width:5px;height:5px;border-radius:50%;background:var(--mag-coach-tone);animation:mag-coach-dot 1s ease-in-out infinite}.mag-root .mag-coach-dots i:nth-child(2){animation-delay:.16s}.mag-root .mag-coach-dots i:nth-child(3){animation-delay:.32s}' +
           '@keyframes mag-coach-wave{0%,100%{opacity:.35;transform:scale(.86)}50%{opacity:1;transform:scale(1.05)}}@keyframes mag-coach-dot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}' +
@@ -4511,7 +4511,7 @@
           '.mag-root .mag-studio-title{min-width:0}.mag-root .mag-studio-title small{display:block;color:var(--mag-studio-tone);font-size:8.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.mag-root .mag-studio-title h3{margin:2px 0 0;color:' + TEXT + ';font-size:16px;line-height:1.2}.mag-root .mag-studio-title p{margin:3px 0 0;color:' + SOFT + ';font-size:10.5px;line-height:1.4}.mag-root .mag-studio-badge{display:grid;justify-items:end;gap:4px;min-width:115px;padding:7px 8px;border:1px solid color-mix(in srgb,var(--mag-studio-tone) 34%,' + BORDER + ');border-radius:10px;background:color-mix(in srgb,var(--mag-studio-tone) 7%,' + INSTRUMENT + ')}.mag-root .mag-studio-badge b{color:' + TEXT + ';font-size:10px}.mag-root .mag-studio-badge small{color:' + SOFT + ';font-size:8.5px}.mag-root .mag-studio-badge progress{width:100%;height:6px;accent-color:var(--mag-studio-tone)}' +
           '.mag-root .mag-studio-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;list-style:none;margin:11px 0 9px;padding:9px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.035)}.mag-root .mag-studio-step{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:center;min-width:0;padding:5px 7px;border:1px solid transparent;border-radius:9px}.mag-root .mag-studio-step:not(:last-child):after{content:"";position:absolute;z-index:0;left:calc(100% - 3px);top:50%;width:13px;height:1px;background:' + BORDER + '}.mag-root .mag-studio-step>i{position:relative;z-index:1;display:grid;place-items:center;width:27px;height:27px;border:1px solid ' + BORDER + ';border-radius:50%;background:' + INSTRUMENT + ';color:' + SOFT + ';font-style:normal;font-size:10px;font-weight:900}.mag-root .mag-studio-step span{min-width:0}.mag-root .mag-studio-step b{display:block;color:' + TEXT + ';font-size:10.5px}.mag-root .mag-studio-step small{display:block;overflow:hidden;margin-top:1px;color:' + SOFT + ';font-size:8px;text-overflow:ellipsis;white-space:nowrap}.mag-root .mag-studio-step[data-state="current"]{border-color:var(--mag-studio-tone);background:color-mix(in srgb,var(--mag-studio-tone) 8%,transparent)}.mag-root .mag-studio-step[data-state="current"]>i{border-color:var(--mag-studio-tone);color:var(--mag-studio-tone);animation:mag-studio-current 2s ease-in-out infinite}.mag-root .mag-studio-step[data-state="complete"]>i{border-color:#34d399;background:rgba(52,211,153,.13);color:#6ee7b7}.mag-root .mag-studio-step[data-state="optional"],.mag-root .mag-studio-step[data-state="drafted"]{opacity:.78}' +
           '.mag-root .mag-studio-snapshot{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(0,1fr);gap:8px;align-items:stretch;margin-bottom:9px}.mag-root .mag-studio-snapshot article{min-width:0;padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:11px;background:' + INSTRUMENT + '}.mag-root .mag-studio-snapshot article:last-child{border-color:color-mix(in srgb,var(--mag-studio-tone) 30%,' + BORDER + ')}.mag-root .mag-studio-snapshot small{display:block;color:var(--mag-studio-tone);font-size:8px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.mag-root .mag-studio-snapshot b{display:block;margin-top:2px;color:' + TEXT + ';font-size:10.5px}.mag-root .mag-studio-snapshot p{margin:3px 0 0;color:' + SOFT + ';font-size:9.5px;line-height:1.4}.mag-root .mag-studio-flow{display:grid;place-items:center;align-content:center;color:var(--mag-studio-tone)}.mag-root .mag-studio-flow i{position:relative;width:32px;height:2px;border-radius:2px;background:color-mix(in srgb,var(--mag-studio-tone) 36%,transparent)}.mag-root .mag-studio-flow i:after{content:"";position:absolute;top:-2px;left:0;width:6px;height:6px;border-radius:50%;background:var(--mag-studio-tone);animation:mag-studio-particle 1.8s ease-in-out infinite}.mag-root .mag-studio-flow b{font-size:15px}' +
-          '.mag-root .mag-studio-compose{padding:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.04)}.mag-root .mag-studio-compose label,.mag-root .mag-studio-claim label{display:block;color:' + TEXT + ';font-size:11px;font-weight:850}.mag-root .mag-studio-compose input,.mag-root .mag-studio-claim textarea{width:100%;margin-top:5px;padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:9px;outline:none;background:' + INSTRUMENT + ';color:' + TEXT + ';font-size:12px;box-sizing:border-box}.mag-root .mag-studio-compose input:focus,.mag-root .mag-studio-claim textarea:focus{border-color:var(--mag-studio-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-studio-tone) 14%,transparent)}.mag-root .mag-studio-compose-hint{display:block;margin-top:5px;color:' + SOFT + ';font-size:9px;line-height:1.35}.mag-root .mag-studio-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}.mag-root .mag-studio-actions>span{margin-left:auto;color:' + SOFT + ';font-size:9px}.mag-root .mag-studio-actions button{min-height:36px}' +
+          '.mag-root .mag-studio-compose{padding:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.04)}.mag-root .mag-studio-compose label,.mag-root .mag-studio-claim label{display:block;color:' + TEXT + ';font-size:11px;font-weight:850}.mag-root .mag-studio-compose input,.mag-root .mag-studio-claim textarea{width:100%;margin-top:5px;padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';color:' + TEXT + ';font-size:12px;box-sizing:border-box}.mag-root .mag-studio-compose input:focus,.mag-root .mag-studio-claim textarea:focus{border-color:var(--mag-studio-tone);box-shadow:0 0 0 3px color-mix(in srgb,var(--mag-studio-tone) 14%,transparent)}.mag-root .mag-studio-compose input:focus-visible,.mag-root .mag-studio-claim textarea:focus-visible{outline:2px solid var(--mag-studio-tone);outline-offset:1px}.mag-root .mag-studio-compose-hint{display:block;margin-top:5px;color:' + SOFT + ';font-size:9px;line-height:1.35}.mag-root .mag-studio-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}.mag-root .mag-studio-actions>span{margin-left:auto;color:' + SOFT + ';font-size:9px}.mag-root .mag-studio-actions button{min-height:44px}' +
           '.mag-root .mag-studio-trail{margin-top:10px;padding-top:9px;border-top:1px solid ' + BORDER + '}.mag-root .mag-studio-trail-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.mag-root .mag-studio-trail-head b{color:' + TEXT + ';font-size:11px}.mag-root .mag-studio-trail-head span{color:' + SOFT + ';font-size:8.5px;font-weight:850}.mag-root .mag-studio-trials{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(225px,34%);gap:7px;overflow-x:auto;scroll-snap-type:x proximity;list-style:none;margin:0;padding:1px 1px 5px}.mag-root .mag-studio-trial{min-width:0;padding:8px 9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';scroll-snap-align:start}.mag-root .mag-studio-trial[data-latest="true"]{border-color:var(--mag-studio-tone);background:color-mix(in srgb,var(--mag-studio-tone) 6%,' + INSTRUMENT + ')}.mag-root .mag-studio-trial-head{display:flex;align-items:center;justify-content:space-between;gap:7px}.mag-root .mag-studio-trial-head small{color:var(--mag-studio-tone);font-size:8px;font-weight:900;text-transform:uppercase}.mag-root .mag-studio-trial-head b{overflow:hidden;color:' + TEXT + ';font-size:9.5px;text-overflow:ellipsis;white-space:nowrap}.mag-root .mag-studio-trial p{margin:5px 0;color:' + SOFT + ';font-size:9px;line-height:1.38}.mag-root .mag-studio-trial>span{display:block;padding-top:5px;border-top:1px dashed ' + BORDER + ';color:' + SOFT + ';font-size:8.5px;line-height:1.35}.mag-root .mag-studio-empty{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;padding:10px;border:1px dashed color-mix(in srgb,var(--mag-studio-tone) 38%,' + BORDER + ');border-radius:10px;color:' + SOFT + ';font-size:9.5px}.mag-root .mag-studio-empty i{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:color-mix(in srgb,var(--mag-studio-tone) 11%,transparent);color:var(--mag-studio-tone);font-style:normal}' +
           '.mag-root .mag-studio-claim{margin-top:9px;padding:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.04)}.mag-root .mag-studio-claim[data-ready="true"]{border-color:rgba(52,211,153,.46);background:rgba(52,211,153,.055)}.mag-root .mag-studio-claim-head{display:flex;align-items:end;justify-content:space-between;gap:8px}.mag-root .mag-studio-claim-head small{color:' + SOFT + ';font-size:8.5px}.mag-root .mag-studio-claim textarea{min-height:66px;resize:vertical}.mag-root .mag-studio-claim-status{display:flex;align-items:center;gap:6px;margin-top:6px;color:' + SOFT + ';font-size:9px;line-height:1.35}.mag-root .mag-studio-claim-status i{color:var(--mag-studio-tone);font-style:normal;font-weight:900}' +
           '@keyframes mag-studio-arrive{0%{opacity:.55;transform:translateY(-4px)}100%{opacity:1;transform:translateY(0)}}@keyframes mag-studio-flow{to{stroke-dashoffset:-18}}@keyframes mag-studio-particle{0%{opacity:.2;transform:translateX(0)}50%{opacity:1}100%{opacity:.2;transform:translateX(26px)}}@keyframes mag-studio-current{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--mag-studio-tone) 8%,transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--mag-studio-tone) 15%,transparent)}}' +
@@ -4884,7 +4884,7 @@
           }
         }
         function onTabKeyDown(event, index) {
-          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+          if (event.isComposing || (event.nativeEvent && (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229)) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var nextIndex = null;
           if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
           if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + TABS.length) % TABS.length;
@@ -5283,7 +5283,7 @@
             // Shared procedural brushed-metal bump texture & soft glowing flow-bead texture (cleaned up on unmount).
             var _brushedBumpTex = null, _flowBeadTex = null;
             try {
-              var bCv = document.createElement('canvas'); bCv.width = 128; bCv.height = 64;
+              var bCv = document.createElement('canvas'); bCv.setAttribute('aria-hidden', 'true'); bCv.width = 128; bCv.height = 64;
               var bCtx = bCv.getContext('2d');
               if (bCtx) {
                 bCtx.fillStyle = '#808080'; bCtx.fillRect(0, 0, 128, 64);
@@ -5296,7 +5296,7 @@
                 _brushedBumpTex.wrapS = _brushedBumpTex.wrapT = THREE.RepeatWrapping;
                 _brushedBumpTex._magShared = true;
               }
-              var pCv = document.createElement('canvas'); pCv.width = pCv.height = 64;
+              var pCv = document.createElement('canvas'); pCv.setAttribute('aria-hidden', 'true'); pCv.width = pCv.height = 64;
               var pCtx = pCv.getContext('2d');
               if (pCtx && pCtx.createRadialGradient) {
                 var pg = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -5998,7 +5998,7 @@
           commitField3D({ field3dProbe: next, field3dNullFound: false });
         }
         function viewButton(id, label) {
-          return h('button', { key: id, onClick: function () {
+          return h('button', { type: 'button', key: id, onClick: function () {
             if (_field3DCanvas && typeof _field3DCanvas._mag3dSetView === 'function') _field3DCanvas._mag3dSetView(id);
             announceToSR(label + ' view selected.');
           }, style: btn() }, label);
@@ -6021,7 +6021,7 @@
           h('div', { id: 'mag-field3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.field3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.field3dStatus === 'ready' ? '3D scene ready. Drag to orbit; drag a magnet to move it on the x-z plane.' :
             d.field3dStatus === 'error' ? h('span', null, '3D graphics did not load. The 2D map is still fully available. ',
-              h('button', { onClick: function () { upd({ field3dStatus: 'loading', field3dAttempt: (d.field3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) :
+              h('button', { type: 'button', onClick: function () { upd({ field3dStatus: 'loading', field3dAttempt: (d.field3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) :
               'Loading the 3D field engine...'),
           h('p', { id: 'mag-field3d-instructions', style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x = left/right, y = height, z = depth. Every pointer action has an equivalent labeled control below.'),
           poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
@@ -6030,8 +6030,8 @@
             h('span', { style: { color: SOFT, fontSize: 11.5, alignSelf: 'center', fontWeight: 700 } }, 'Camera'),
             viewButton('perspective', 'Perspective'), viewButton('front', 'Front'), viewButton('top', 'Top'), viewButton('side', 'Side')),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_field_layers', '3D field layers'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 } },
-            h('button', { 'aria-pressed': d.field3dVectors ? 'true' : 'false', onClick: function () { commitField3D({ field3dVectors: !d.field3dVectors }, 'Sampled field vectors ' + (!d.field3dVectors ? 'shown.' : 'hidden.')); }, style: btn(d.field3dVectors) }, 'Vector lattice: ' + (d.field3dVectors ? 'on' : 'off')),
-            h('button', { 'aria-pressed': d.field3dLines ? 'true' : 'false', onClick: function () { commitField3D({ field3dLines: !d.field3dLines }, 'Field streamlines ' + (!d.field3dLines ? 'shown.' : 'hidden.')); }, style: btn(d.field3dLines) }, 'Streamlines: ' + (d.field3dLines ? 'on' : 'off')),
+            h('button', { type: 'button', 'aria-pressed': d.field3dVectors ? 'true' : 'false', onClick: function () { commitField3D({ field3dVectors: !d.field3dVectors }, 'Sampled field vectors ' + (!d.field3dVectors ? 'shown.' : 'hidden.')); }, style: btn(d.field3dVectors) }, 'Vector lattice: ' + (d.field3dVectors ? 'on' : 'off')),
+            h('button', { type: 'button', 'aria-pressed': d.field3dLines ? 'true' : 'false', onClick: function () { commitField3D({ field3dLines: !d.field3dLines }, 'Field streamlines ' + (!d.field3dLines ? 'shown.' : 'hidden.')); }, style: btn(d.field3dLines) }, 'Streamlines: ' + (d.field3dLines ? 'on' : 'off')),
             h('label', { htmlFor: 'mag-field3d-slice', style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Heat slice'),
             h('select', { id: 'mag-field3d-slice', value: d.field3dSlice || 'none', onChange: function (e) { commitField3D({ field3dSlice: e.target.value }, e.target.value === 'none' ? 'Heat slice hidden.' : e.target.value.toUpperCase() + ' field-strength slice shown.'); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: TEXT } },
               h('option', { value: 'none' }, 'None'), h('option', { value: 'xy' }, 'XY plane'), h('option', { value: 'xz' }, 'XZ plane'), h('option', { value: 'yz' }, 'YZ plane'))),
@@ -6047,30 +6047,30 @@
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_magnet_controls', 'Magnet controls') },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Move and rotate a magnet'),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 7 } },
-                magnets.map(function (mag, index) { return h('button', { key: '3dmag' + index, 'aria-pressed': selected === index ? 'true' : 'false', onClick: function () { commitField3D({ field3dSelected: index }, 'Selected magnet ' + (index + 1) + '.'); }, style: btn(selected === index) }, 'Magnet ' + (index + 1)); })),
+                magnets.map(function (mag, index) { return h('button', { type: 'button', key: '3dmag' + index, 'aria-pressed': selected === index ? 'true' : 'false', onClick: function () { commitField3D({ field3dSelected: index }, 'Selected magnet ' + (index + 1) + '.'); }, style: btn(selected === index) }, 'Magnet ' + (index + 1)); })),
               h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_in_three_dimensions', 'Move selected magnet in three dimensions'), style: { display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 7 } },
-                h('button', { onClick: function () { moveSelectedField3D('x', -0.35); }, style: btn() }, 'x−'),
-                h('button', { onClick: function () { moveSelectedField3D('x', 0.35); }, style: btn() }, 'x+'),
-                h('button', { onClick: function () { moveSelectedField3D('y', -0.35); }, style: btn() }, 'y−'),
-                h('button', { onClick: function () { moveSelectedField3D('y', 0.35); }, style: btn() }, 'y+'),
-                h('button', { onClick: function () { moveSelectedField3D('z', -0.35); }, style: btn() }, 'z−'),
-                h('button', { onClick: function () { moveSelectedField3D('z', 0.35); }, style: btn() }, 'z+')),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('x', -0.35); }, style: btn() }, 'x−'),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('x', 0.35); }, style: btn() }, 'x+'),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('y', -0.35); }, style: btn() }, 'y−'),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('y', 0.35); }, style: btn() }, 'y+'),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('z', -0.35); }, style: btn() }, 'z−'),
+                h('button', { type: 'button', onClick: function () { moveSelectedField3D('z', 0.35); }, style: btn() }, 'z+')),
               h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_rotate_selected_magnet', 'Rotate selected magnet'), style: { display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 7 } },
-                h('button', { onClick: function () { updateSelectedField3DMagnet({ yaw: (Number(selectedMagnet.yaw) || 0) - Math.PI / 12 }, 'Rotated the selected magnet left 15 degrees.'); }, style: btn() }, 'Yaw −15°'),
-                h('button', { onClick: function () { updateSelectedField3DMagnet({ yaw: (Number(selectedMagnet.yaw) || 0) + Math.PI / 12 }, 'Rotated the selected magnet right 15 degrees.'); }, style: btn() }, 'Yaw +15°'),
-                h('button', { onClick: function () { updateSelectedField3DMagnet({ pitch: Math.max(-Math.PI / 2, (Number(selectedMagnet.pitch) || 0) - Math.PI / 12) }, 'Tilted the selected magnet down 15 degrees.'); }, style: btn() }, 'Pitch −15°'),
-                h('button', { onClick: function () { updateSelectedField3DMagnet({ pitch: Math.min(Math.PI / 2, (Number(selectedMagnet.pitch) || 0) + Math.PI / 12) }, 'Tilted the selected magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15°')),
+                h('button', { type: 'button', onClick: function () { updateSelectedField3DMagnet({ yaw: (Number(selectedMagnet.yaw) || 0) - Math.PI / 12 }, 'Rotated the selected magnet left 15 degrees.'); }, style: btn() }, 'Yaw −15°'),
+                h('button', { type: 'button', onClick: function () { updateSelectedField3DMagnet({ yaw: (Number(selectedMagnet.yaw) || 0) + Math.PI / 12 }, 'Rotated the selected magnet right 15 degrees.'); }, style: btn() }, 'Yaw +15°'),
+                h('button', { type: 'button', onClick: function () { updateSelectedField3DMagnet({ pitch: Math.max(-Math.PI / 2, (Number(selectedMagnet.pitch) || 0) - Math.PI / 12) }, 'Tilted the selected magnet down 15 degrees.'); }, style: btn() }, 'Pitch −15°'),
+                h('button', { type: 'button', onClick: function () { updateSelectedField3DMagnet({ pitch: Math.min(Math.PI / 2, (Number(selectedMagnet.pitch) || 0) + Math.PI / 12) }, 'Tilted the selected magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15°')),
               slider('Selected magnet strength', selectedMagnet.strength == null ? 1 : selectedMagnet.strength, 0.5, 3, 0.25, function (v) { updateSelectedField3DMagnet({ strength: v }); }),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                h('button', { onClick: function () { updateSelectedField3DMagnet({ polarity: selectedMagnet.polarity < 0 ? 1 : -1 }, 'Flipped the selected magnet poles.'); }, style: btn() }, 'Flip poles'),
-                h('button', { onClick: function () { setField3DSetup('attract'); }, style: btn() }, 'Attract setup'),
-                h('button', { onClick: function () { setField3DSetup('repel'); }, style: btn() }, 'Repel setup'))),
+                h('button', { type: 'button', onClick: function () { updateSelectedField3DMagnet({ polarity: selectedMagnet.polarity < 0 ? 1 : -1 }, 'Flipped the selected magnet poles.'); }, style: btn() }, 'Flip poles'),
+                h('button', { type: 'button', onClick: function () { setField3DSetup('attract'); }, style: btn() }, 'Attract setup'),
+                h('button', { type: 'button', onClick: function () { setField3DSetup('repel'); }, style: btn() }, 'Repel setup'))),
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_three_dimensional_field_probe', 'Three-dimensional field probe') },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Measure with the gold probe'),
               slider('Probe x', probe.x, -3.5, 3.5, 0.25, function (v) { setProbe('x', v); }),
               slider('Probe y', probe.y, -3.5, 3.5, 0.25, function (v) { setProbe('y', v); }),
               slider('Probe z', probe.z, -3.5, 3.5, 0.25, function (v) { setProbe('z', v); }),
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                 var found = findFieldNull3D(magnets, { bound: 3.7, steps: 13 });
                 commitField3D({ field3dProbe: { x: found.x, y: found.y, z: found.z }, field3dNullFound: true }, 'Moved the probe to a cancellation candidate where the resultant is ' + (found.cancellation * 100).toFixed(1) + ' percent of the separate field contributions.');
               }, style: btn(true) }, 'Find a cancellation point'),
@@ -6353,12 +6353,12 @@
             h('button', { type: 'button', 'aria-pressed': logScale, onClick: function () { upd({ fieldMapGraphScale: 'log' }); }, style: btn(logScale) }, 'Log–log scale')),
           logScale ? h('p', { style: { color: SOFT, fontSize: 12 } }, 'Equal spacing now means equal ratios. A power law becomes a straight line; its slope is the exponent. This changes the axes, not your measurements.') : null,
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_automated_field_scan_path', 'Automated field scan path'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-            h('button', { 'aria-pressed': pathName === 'axial' ? 'true' : 'false', onClick: function () { upd({ fieldMapPath: 'axial', fieldMapUsed: true }); }, style: btn(pathName === 'axial') }, 'Axial scan · beyond N pole'),
-            h('button', { 'aria-pressed': pathName === 'equatorial' ? 'true' : 'false', onClick: function () { upd({ fieldMapPath: 'equatorial', fieldMapUsed: true }); }, style: btn(pathName === 'equatorial') }, 'Equatorial scan · above center')),
+            h('button', { type: 'button', 'aria-pressed': pathName === 'axial' ? 'true' : 'false', onClick: function () { upd({ fieldMapPath: 'axial', fieldMapUsed: true }); }, style: btn(pathName === 'axial') }, 'Axial scan · beyond N pole'),
+            h('button', { type: 'button', 'aria-pressed': pathName === 'equatorial' ? 'true' : 'false', onClick: function () { upd({ fieldMapPath: 'equatorial', fieldMapUsed: true }); }, style: btn(pathName === 'equatorial') }, 'Equatorial scan · above center')),
           h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
-            h('button', { onClick: runScan, style: btn(true) }, 'Run 7-point scan'),
-            h('button', { disabled: current.distance < 45, onClick: recordProbe, style: btn() }, 'Record current probe'),
-            h('button', { disabled: !samples.length && !analysis.rejectedCount, onClick: function () { upd({ fieldMapSamples: [], fieldMapSelected: 0, fieldMapScanPrediction: null, fieldMapUsed: true }); announceToSR(__alloT('stem.magnetism.sr_field_measurements_cleared', 'Field measurements cleared.')); }, style: btn() }, 'Clear measurements')),
+            h('button', { type: 'button', onClick: runScan, style: btn(true) }, 'Run 7-point scan'),
+            h('button', { type: 'button', disabled: current.distance < 45, onClick: recordProbe, style: btn() }, 'Record current probe'),
+            h('button', { type: 'button', disabled: !samples.length && !analysis.rejectedCount, onClick: function () { upd({ fieldMapSamples: [], fieldMapSelected: 0, fieldMapScanPrediction: null, fieldMapUsed: true }); announceToSR(__alloT('stem.magnetism.sr_field_measurements_cleared', 'Field measurements cleared.')); }, style: btn() }, 'Clear measurements')),
           current.distance < 45 ? h('p', { style: { color: SOFT, fontSize: 12 } }, 'Move at least 45 relative units from the center to record a reading for the distance-law investigation.') : null,
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12 } },
             h('div', null,
@@ -6368,9 +6368,9 @@
               slider('Magnet strength', sourceMagnet.strength, 0.5, 3, 0.5, function (value) { upd({ fieldMapStrength: value, fieldMapUsed: true }); }),
               slider('Sensor uncertainty (%)', noise, 0, 20, 1, function (value) { upd({ fieldMapNoise: value, fieldMapUsed: true }); }))),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 10 } },
-            h('span', null, ''), h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_up', 'Move Hall probe up'), onClick: function () { commitProbe(probe.x, probe.y - 10); }, style: btn() }, '↑'), h('span', null, ''),
-            h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_left', 'Move Hall probe left'), onClick: function () { commitProbe(probe.x - 10, probe.y); }, style: btn() }, '←'), h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, 'probe'), h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_right', 'Move Hall probe right'), onClick: function () { commitProbe(probe.x + 10, probe.y); }, style: btn() }, '→'),
-            h('span', null, ''), h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_down', 'Move Hall probe down'), onClick: function () { commitProbe(probe.x, probe.y + 10); }, style: btn() }, '↓'), h('span', null, '')),
+            h('span', null, ''), h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_up', 'Move Hall probe up'), onClick: function () { commitProbe(probe.x, probe.y - 10); }, style: btn() }, '↑'), h('span', null, ''),
+            h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_left', 'Move Hall probe left'), onClick: function () { commitProbe(probe.x - 10, probe.y); }, style: btn() }, '←'), h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, 'probe'), h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_right', 'Move Hall probe right'), onClick: function () { commitProbe(probe.x + 10, probe.y); }, style: btn() }, '→'),
+            h('span', null, ''), h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_hall_probe_down', 'Move Hall probe down'), onClick: function () { commitProbe(probe.x, probe.y + 10); }, style: btn() }, '↓'), h('span', null, '')),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
             h('span', { 'aria-hidden': 'true' }, controlled ? '✓' : samples.length ? '△' : '◎'),
             h('span', null, h('b', null, controlled ? 'Controlled scan. ' : samples.length ? 'Comparison caution. ' : 'Ready to measure. '), analysis.reason)),
@@ -6706,10 +6706,10 @@
         return h('div', null,
           h('div', { className: 'mag-mode-rail', onFocusCapture: revealFocusedMode, role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_explorer_dimension', 'Field Explorer dimension'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Explore and measure with'),
-            h('button', { 'aria-pressed': fieldMode === '2d' ? 'true' : 'false', onClick: function () { upd({ fieldView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_field_explorer_selected', 'Two-dimensional field explorer selected.')); }, style: btn(fieldMode === '2d') }, '2D field explorer'),
-            h('button', { 'aria-pressed': fieldMode === '3d' ? 'true' : 'false', onClick: function () { if (fieldMode === '3d') return; upd({ fieldView: '3d', field3dStatus: 'loading', field3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_field_studio_selected', 'Three-dimensional field studio selected.')); }, style: btn(fieldMode === '3d') }, '3D field studio'),
-            h('button', { 'aria-pressed': fieldMode === 'map' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'map', fieldMapUsed: true }); announceToSR(__alloT('stem.magnetism.sr_quantitative_hall_probe_field_mapping_lab_selecte', 'Quantitative Hall-probe field mapping lab selected.')); }, style: btn(fieldMode === 'map') }, 'Measurement lab'),
-            h('button', { 'aria-pressed': fieldMode === 'hunt' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'hunt', fieldHuntUsed: true }); announceToSR(__alloT('stem.magnetism.sr_magnetometer_hunt_inverse_investigation_selected', 'Magnetometer Hunt inverse investigation selected.')); }, style: btn(fieldMode === 'hunt') }, 'Magnetometer Hunt')),
+            h('button', { type: 'button', 'aria-pressed': fieldMode === '2d' ? 'true' : 'false', onClick: function () { upd({ fieldView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_field_explorer_selected', 'Two-dimensional field explorer selected.')); }, style: btn(fieldMode === '2d') }, '2D field explorer'),
+            h('button', { type: 'button', 'aria-pressed': fieldMode === '3d' ? 'true' : 'false', onClick: function () { if (fieldMode === '3d') return; upd({ fieldView: '3d', field3dStatus: 'loading', field3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_field_studio_selected', 'Three-dimensional field studio selected.')); }, style: btn(fieldMode === '3d') }, '3D field studio'),
+            h('button', { type: 'button', 'aria-pressed': fieldMode === 'map' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'map', fieldMapUsed: true }); announceToSR(__alloT('stem.magnetism.sr_quantitative_hall_probe_field_mapping_lab_selecte', 'Quantitative Hall-probe field mapping lab selected.')); }, style: btn(fieldMode === 'map') }, 'Measurement lab'),
+            h('button', { type: 'button', 'aria-pressed': fieldMode === 'hunt' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'hunt', fieldHuntUsed: true }); announceToSR(__alloT('stem.magnetism.sr_magnetometer_hunt_inverse_investigation_selected', 'Magnetometer Hunt inverse investigation selected.')); }, style: btn(fieldMode === 'hunt') }, 'Magnetometer Hunt')),
           fieldMode === 'hunt' ? fieldHuntCard() : fieldMode === '3d' ? field3DCard() : fieldMode === 'map' ? fieldMapperCard() : card('Trace the invisible field', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Field lines leave the ', h('b', { style: { color: TEXT } }, 'north (N/red)'), ' pole and curve back into the ', h('b', { style: { color: TEXT } }, 'south (S/blue)'), ' pole. Click open space to move the compass, or use the labeled controls to rebuild the field. The needle follows the local resultant field.'),
             poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
@@ -6729,13 +6729,13 @@
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
               h('span', { style: { color: SOFT, fontSize: 11 } }, 'Keyboard magnet control:'),
               d.magnets.map(function (m, i) {
-                return h('button', { key: 'selectMag' + i, 'aria-pressed': d.fieldSelected === i ? 'true' : 'false',
+                return h('button', { type: 'button', key: 'selectMag' + i, 'aria-pressed': d.fieldSelected === i ? 'true' : 'false',
                   onClick: function () { upd({ fieldSelected: i }); }, style: btn(d.fieldSelected === i) }, 'Magnet ' + (i + 1));
               }),
-              h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_left', 'Move selected magnet left'), onClick: function () { moveMagnet(-18, 0); }, style: btn() }, 'left'),
-              h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_up', 'Move selected magnet up'), onClick: function () { moveMagnet(0, -18); }, style: btn() }, 'up'),
-              h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_down', 'Move selected magnet down'), onClick: function () { moveMagnet(0, 18); }, style: btn() }, 'down'),
-              h('button', { 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_right', 'Move selected magnet right'), onClick: function () { moveMagnet(18, 0); }, style: btn() }, 'right')),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_left', 'Move selected magnet left'), onClick: function () { moveMagnet(-18, 0); }, style: btn() }, 'left'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_up', 'Move selected magnet up'), onClick: function () { moveMagnet(0, -18); }, style: btn() }, 'up'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_down', 'Move selected magnet down'), onClick: function () { moveMagnet(0, 18); }, style: btn() }, 'down'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.magnetism.a11y_move_selected_magnet_right', 'Move selected magnet right'), onClick: function () { moveMagnet(18, 0); }, style: btn() }, 'right')),
             // live field-strength readout at the compass position (log scale:
             // dipole fields fall off as 1/r³, so linear bars would be useless)
             (function () {
@@ -6757,19 +6757,19 @@
               upd({ magnets: ms });
             }),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' } },
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                   var ms = d.magnets.map(function (m, i) { return i === 0 ? Object.assign({}, m, { polarity: -m.polarity }) : m; });
                   upd({ magnets: ms });
                   announceToSR(__alloT('stem.magnetism.sr_flipped_the_first_magnet_s_poles', 'Flipped the first magnet’s poles'));
                 }, style: btn() }, '🔄 Flip poles'),
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                   var ms = d.magnets.map(function (m, i) { return i === 0 ? Object.assign({}, m, { angle: (m.angle + Math.PI / 4) % (Math.PI * 2) }) : m; });
                   upd({ magnets: ms });
                   announceToSR(__alloT('stem.magnetism.sr_rotated_the_first_magnet_45_degrees_watch_the_who', 'Rotated the first magnet 45 degrees — watch the whole field swing with it'));
                 }, style: btn() }, '↻ Rotate 45°'),
-              h('button', { onClick: function () { upd({ filings: !d.filings }); }, style: btn(d.filings) }, '🧲 Iron filings: ' + (d.filings ? 'on' : 'off')),
-              two ? h('button', { 'aria-pressed': d.fieldVectors ? 'true' : 'false', onClick: function () { upd({ fieldVectors: !d.fieldVectors }); }, style: btn(d.fieldVectors) }, 'Source vectors: ' + (d.fieldVectors ? 'on' : 'off')) : null,
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () { upd({ filings: !d.filings }); }, style: btn(d.filings) }, '🧲 Iron filings: ' + (d.filings ? 'on' : 'off')),
+              two ? h('button', { type: 'button', 'aria-pressed': d.fieldVectors ? 'true' : 'false', onClick: function () { upd({ fieldVectors: !d.fieldVectors }); }, style: btn(d.fieldVectors) }, 'Source vectors: ' + (d.fieldVectors ? 'on' : 'off')) : null,
+              h('button', { type: 'button', onClick: function () {
                   if (two) { upd({ magnets: [d.magnets[0]], fieldSelected: 0 }); return; }
                   // add a 2nd magnet on the right, opposite orientation (attract)
                   upd({ magnets: [Object.assign({}, d.magnets[0], { x: -70 }), { x: 70, y: 0, angle: 0, polarity: 1 }], sawAttract: true });
@@ -6780,11 +6780,11 @@
           fieldMode === '2d' && two ? card('Attract or repel?', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'The facing ends decide everything. Opposite poles pull together; like poles push apart — you can see it in how the field lines connect or refuse to.'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                   upd({ magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }, { x: 70, y: 0, angle: 0, polarity: 1 }], sawAttract: true });
                   announceToSR(__alloT('stem.magnetism.sr_n_faces_s_the_magnets_attract', 'N faces S — the magnets attract'));
                 }, style: btn() }, '🧲 Set up ATTRACT (N–S)'),
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                   upd({ magnets: [{ x: -70, y: 0, angle: 0, polarity: 1 }, { x: 70, y: 0, angle: Math.PI, polarity: 1 }], sawRepel: true });
                   announceToSR(__alloT('stem.magnetism.sr_n_faces_n_the_magnets_repel', 'N faces N — the magnets repel'));
                 }, style: btn() }, '💥 Set up REPEL (N–N)')),
@@ -6951,7 +6951,7 @@
       }
 
       function pad(sym, dx, dy) {
-        return h('button', { 'aria-label': (dx < 0 ? __alloT('stem.magnetism.a11y_move_compass_left', 'Move compass left') : dx > 0 ? __alloT('stem.magnetism.a11y_move_compass_right', 'Move compass right') : dy < 0 ? __alloT('stem.magnetism.a11y_move_compass_up', 'Move compass up') : __alloT('stem.magnetism.a11y_move_compass_down', 'Move compass down')),
+        return h('button', { type: 'button', 'aria-label': (dx < 0 ? __alloT('stem.magnetism.a11y_move_compass_left', 'Move compass left') : dx > 0 ? __alloT('stem.magnetism.a11y_move_compass_right', 'Move compass right') : dy < 0 ? __alloT('stem.magnetism.a11y_move_compass_up', 'Move compass up') : __alloT('stem.magnetism.a11y_move_compass_down', 'Move compass down')),
           onClick: function () { moveCompass(dx, dy); },
           style: { width: 44, height: 44, borderRadius: 9, border: '1px solid ' + BORDER, background: PANEL, color: TEXT, fontSize: 18, cursor: 'pointer' } }, sym);
       }
@@ -7448,7 +7448,7 @@
         var probeField = solenoidFieldAt3D(state.probe.x, state.probe.y, state.probe.z, state);
         var probeMagnitude = Math.hypot(probeField.x, probeField.y, probeField.z);
         var fieldDir = state.currentDir * state.windingDir > 0 ? 'positive x; right end is north' : 'negative x; left end is north';
-        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_electro3DCanvas && typeof _electro3DCanvas._electro3dSetView === 'function') _electro3DCanvas._electro3dSetView(id); announceToSR(label + ' electromagnet view selected.'); }, style: btn() }, label); }
+        function cameraButton(id, label) { return h('button', { type: 'button', key: id, onClick: function () { if (_electro3DCanvas && typeof _electro3DCanvas._electro3dSetView === 'function') _electro3DCanvas._electro3dSetView(id); announceToSR(label + ' electromagnet view selected.'); }, style: btn() }, label); }
         function setProbe(axis, value) { var next = Object.assign({}, state.probe); next[axis] = value; commitElectro3D({ electro3dProbe: next }); }
         return card('3D Electromagnet Engineering Lab', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
@@ -7462,13 +7462,13 @@
             ], 'coil axis · x'),
           h('div', { id: 'mag-electro3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.electro3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.electro3dStatus === 'ready' ? 'Scene ready. Drag to orbit; click the ground plane to move the gold field probe.' :
-            d.electro3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D coil investigation remains available. ', h('button', { onClick: function () { upd({ electro3dStatus: 'loading', electro3dAttempt: (d.electro3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D electromagnet engine...'),
+            d.electro3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D coil investigation remains available. ', h('button', { type: 'button', onClick: function () { upd({ electro3dStatus: 'loading', electro3dAttempt: (d.electro3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D electromagnet engine...'),
           poleLegend(fieldDir.indexOf('right end') >= 0 ? 'North pole — right end, one bright ring' : 'North pole — left end, one bright ring', fieldDir.indexOf('right end') >= 0 ? 'South pole — left end, two bright rings' : 'South pole — right end, two bright rings'),
           sceneTextAlternative('mag-electro3d-summary', 'The coil has ' + state.turns + ' turns carrying ' + state.current + ' amps around a ' + material.name + ' core. The field points ' + fieldDir + '. The center field is ' + (centerB * 1000).toFixed(centerB < 0.01 ? 2 : 0) + ' millitesla. The field probe is at x ' + state.probe.x.toFixed(2) + ', y ' + state.probe.y.toFixed(2) + ', z ' + state.probe.z.toFixed(2) + ', with relative magnitude ' + probeMagnitude.toFixed(2) + '.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_electromagnet_camera_and_layers', '3D electromagnet camera and layers'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
             cameraButton('perspective', 'Perspective'), cameraButton('side', 'Side'), cameraButton('end', 'Look into coil'), cameraButton('top', 'Top'),
-            h('button', { 'aria-pressed': state.vectors ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dVectors: !state.vectors }); }, style: btn(state.vectors) }, 'Vectors: ' + (state.vectors ? 'on' : 'off')),
-            h('button', { 'aria-pressed': state.lines ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dLines: !state.lines }); }, style: btn(state.lines) }, 'Field lines: ' + (state.lines ? 'on' : 'off'))),
+            h('button', { type: 'button', 'aria-pressed': state.vectors ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dVectors: !state.vectors }); }, style: btn(state.vectors) }, 'Vectors: ' + (state.vectors ? 'on' : 'off')),
+            h('button', { type: 'button', 'aria-pressed': state.lines ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dLines: !state.lines }); }, style: btn(state.lines) }, 'Field lines: ' + (state.lines ? 'on' : 'off'))),
           h('div', { className: 'mag-observe' },
             h('span', { 'aria-hidden': 'true' }, '✋'),
             h('span', null, h('b', null, 'Right-hand rule: '), 'curl your right-hand fingers with the orange current arrows. Your thumb points with the interior field toward the north pole. Reverse either current or winding and the poles swap; reverse both and they return.')),
@@ -7478,8 +7478,8 @@
             h('div', null,
               h('b', null, 'Equal ampere-turn engineering comparison: '), 'both setups make NI = 160 A·turns in the same geometry, but their wire length and I² heating differ.',
               h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_compare_equal_ampere_turn_coil_designs', 'Compare equal ampere-turn coil designs'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
-                h('button', { onClick: function () { commitElectro3D({ turns: 40, current: 4 }, 'Selected 40 turns at 4 amps: 160 ampere-turns.'); }, style: btn(state.turns === 40 && state.current === 4) }, '40 turns × 4 A'),
-                h('button', { onClick: function () { commitElectro3D({ turns: 160, current: 1 }, 'Selected 160 turns at 1 amp: 160 ampere-turns.'); }, style: btn(state.turns === 160 && state.current === 1) }, '160 turns × 1 A')))),
+                h('button', { type: 'button', onClick: function () { commitElectro3D({ turns: 40, current: 4 }, 'Selected 40 turns at 4 amps: 160 ampere-turns.'); }, style: btn(state.turns === 40 && state.current === 4) }, '40 turns × 4 A'),
+                h('button', { type: 'button', onClick: function () { commitElectro3D({ turns: 160, current: 1 }, 'Selected 160 turns at 1 amp: 160 ampere-turns.'); }, style: btn(state.turns === 160 && state.current === 1) }, '160 turns × 1 A')))),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12, alignItems: 'start' } },
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_coil_engineering_controls', 'Coil engineering controls') },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Engineer the coil'),
@@ -7488,10 +7488,10 @@
               slider('Coil length (cm)', d.electro3dLengthCm, 6, 24, 1, function (v) { commitElectro3D({ electro3dLengthCm: v }); }),
               slider('Coil radius (cm)', d.electro3dRadiusCm, 1.5, 5, 0.5, function (v) { commitElectro3D({ electro3dRadiusCm: v }); }),
               h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_electromagnet_direction', 'Electromagnet direction'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
-                h('button', { 'aria-pressed': state.currentDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ currentDir: -state.currentDir, directionSeen: true }, 'Current reversed; electromagnet poles swapped.'); }, style: btn(state.currentDir < 0) }, 'Reverse current'),
-                h('button', { 'aria-pressed': state.windingDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ windingDir: -state.windingDir, directionSeen: true }, 'Winding reversed; electromagnet poles swapped.'); }, style: btn(state.windingDir < 0) }, 'Reverse winding')),
+                h('button', { type: 'button', 'aria-pressed': state.currentDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ currentDir: -state.currentDir, directionSeen: true }, 'Current reversed; electromagnet poles swapped.'); }, style: btn(state.currentDir < 0) }, 'Reverse current'),
+                h('button', { type: 'button', 'aria-pressed': state.windingDir < 0 ? 'true' : 'false', onClick: function () { commitElectro3D({ windingDir: -state.windingDir, directionSeen: true }, 'Winding reversed; electromagnet poles swapped.'); }, style: btn(state.windingDir < 0) }, 'Reverse winding')),
               h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_core_material', 'Core material'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                Object.keys(CORE_MATERIALS).map(function (key) { return h('button', { key: key, 'aria-pressed': state.material === key ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dMaterial: key, core: key !== 'air' }, CORE_MATERIALS[key].name + ' core selected.'); }, style: btn(state.material === key) }, CORE_MATERIALS[key].name); }))),
+                Object.keys(CORE_MATERIALS).map(function (key) { return h('button', { type: 'button', key: key, 'aria-pressed': state.material === key ? 'true' : 'false', onClick: function () { commitElectro3D({ electro3dMaterial: key, core: key !== 'air' }, CORE_MATERIALS[key].name + ' core selected.'); }, style: btn(state.material === key) }, CORE_MATERIALS[key].name); }))),
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_three_dimensional_solenoid_field_probe', 'Three-dimensional solenoid field probe') },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Measure around the coil'),
               slider('Probe x', state.probe.x, -4, 4, 0.25, function (v) { setProbe('x', v); }),
@@ -7520,8 +7520,8 @@
         return h('div', null,
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_electromagnet_view', 'Electromagnet view'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Explore the coil in'),
-            h('button', { 'aria-pressed': d.electroView !== '3d' ? 'true' : 'false', onClick: function () { upd({ electroView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_electromagnet_investigation_selec', 'Two-dimensional electromagnet investigation selected.')); }, style: btn(d.electroView !== '3d') }, '2D fair test'),
-            h('button', { 'aria-pressed': d.electroView === '3d' ? 'true' : 'false', onClick: function () { if (d.electroView === '3d') return; upd({ electroView: '3d', electro3dStatus: 'loading', electro3dUsed: true, coilTouched: true, electro3dMaterial: d.core ? (d.electro3dMaterial === 'air' ? 'soft' : d.electro3dMaterial) : 'air' }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_electromagnet_engineering_lab_s', 'Three-dimensional electromagnet engineering lab selected.')); }, style: btn(d.electroView === '3d') }, '3D engineering lab')),
+            h('button', { type: 'button', 'aria-pressed': d.electroView !== '3d' ? 'true' : 'false', onClick: function () { upd({ electroView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_electromagnet_investigation_selec', 'Two-dimensional electromagnet investigation selected.')); }, style: btn(d.electroView !== '3d') }, '2D fair test'),
+            h('button', { type: 'button', 'aria-pressed': d.electroView === '3d' ? 'true' : 'false', onClick: function () { if (d.electroView === '3d') return; upd({ electroView: '3d', electro3dStatus: 'loading', electro3dUsed: true, coilTouched: true, electro3dMaterial: d.core ? (d.electro3dMaterial === 'air' ? 'soft' : d.electro3dMaterial) : 'air' }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_electromagnet_engineering_lab_s', 'Three-dimensional electromagnet engineering lab selected.')); }, style: btn(d.electroView === '3d') }, '3D engineering lab')),
           d.electroView === '3d' ? electro3DCard() : card('Build an electromagnet', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A coil of wire carrying current becomes a magnet. Two things you control set its strength: how many ', h('b', null, 'turns'), ' of wire, and how much ', h('b', null, 'current'), ' flows. An iron core multiplies it.'),
             h('div', { className: 'mag-electro-workbench' },
@@ -7534,11 +7534,11 @@
             slider('Turns of wire (N)', d.turns, 5, 200, 5, function (v) { upd({ turns: v, coilTouched: true }); }),
             slider('Current (I, amps)', d.current, 0, 6, 0.5, function (v) { upd({ current: v, coilTouched: true }); }),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '-2px 0 9px' } },
-              h('button', { 'aria-pressed': d.currentDir < 0 ? 'true' : 'false', onClick: function () {
+              h('button', { type: 'button', 'aria-pressed': d.currentDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ currentDir: -d.currentDir, coilTouched: true, directionSeen: true });
                 announceToSR(__alloT('stem.magnetism.sr_current_reversed_electromagnet_poles_swapped', 'Current reversed. Electromagnet poles swapped.'));
               }, style: btn(d.currentDir < 0) }, '↕ Reverse current'),
-              h('button', { 'aria-pressed': d.windingDir < 0 ? 'true' : 'false', onClick: function () {
+              h('button', { type: 'button', 'aria-pressed': d.windingDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ windingDir: -d.windingDir, coilTouched: true, directionSeen: true });
                 announceToSR(__alloT('stem.magnetism.sr_coil_winding_reversed_electromagnet_poles_swapped', 'Coil winding reversed. Electromagnet poles swapped.'));
               }, style: btn(d.windingDir < 0) }, '↻ Reverse winding')),
@@ -7719,10 +7719,10 @@
             h('div', null, h('small', null, 'Perpendicular fraction'), h('b', { 'data-wire-reading': 'fraction' }, state.perpendicularFraction.toFixed(2))),
             h('div', null, h('small', null, 'Force direction'), h('b', { 'data-wire-reading': 'direction' }, state.deadSpot ? 'ZERO' : state.forceDirection))),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_force_vector_direction_controls', 'Force vector direction controls'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { 'aria-pressed': d.forceLabCurrentDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabCurrentDir: -d.forceLabCurrentDir }, state.deadSpot ? 'Current reversed. Force remains zero.' : 'Current reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabCurrentDir < 0) }, '↕ Reverse current'),
-            h('button', { 'aria-pressed': d.forceLabFieldDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabFieldDir: -d.forceLabFieldDir }, state.deadSpot ? 'Field reversed. Force remains zero.' : 'Field reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabFieldDir < 0) }, '🧲 Reverse field'),
-            h('button', { 'aria-pressed': d.forceLabAngle === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 0 }, 'Wire is parallel to the field. Force is zero.'); }, style: btn(d.forceLabAngle === 0) }, '0° · parallel'),
-            h('button', { 'aria-pressed': d.forceLabAngle === 90 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 90 }, 'Wire is perpendicular to the field. Force is maximum.'); }, style: btn(d.forceLabAngle === 90) }, '90° · maximum')),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabCurrentDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabCurrentDir: -d.forceLabCurrentDir }, state.deadSpot ? 'Current reversed. Force remains zero.' : 'Current reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabCurrentDir < 0) }, '↕ Reverse current'),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabFieldDir < 0 ? 'true' : 'false', onClick: function () { commit({ forceLabFieldDir: -d.forceLabFieldDir }, state.deadSpot ? 'Field reversed. Force remains zero.' : 'Field reversed. Force now points ' + reversedForceLabel + '.'); }, style: btn(d.forceLabFieldDir < 0) }, '🧲 Reverse field'),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabAngle === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 0 }, 'Wire is parallel to the field. Force is zero.'); }, style: btn(d.forceLabAngle === 0) }, '0° · parallel'),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabAngle === 90 ? 'true' : 'false', onClick: function () { commit({ forceLabAngle: 90 }, 'Wire is perpendicular to the field. Force is maximum.'); }, style: btn(d.forceLabAngle === 90) }, '90° · maximum')),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 } },
             h('div', null,
               slider('Current in wire (I)', d.forceLabCurrent, 0, 8, 1, function (value) { commit({ forceLabCurrent: value }); }),
@@ -7783,9 +7783,9 @@
             h('div', null, h('span', null, 'Work per turn'), h('b', { 'data-power-reading': 'work' }, state.workPerTurn.toFixed(2)), h('small', null, 'Work over one revolution · W = 2π τ'))),
           h('p', { className: 'mag-power-scale' }, 'Comparison bars stop at the teaching-scale reference; the numbers show the full values.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_shaft_speed_presets', 'Shaft speed presets'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { 'aria-pressed': d.forceLabSpeed === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 0 }, 'Shaft stopped. Mechanical power is zero.'); }, style: btn(d.forceLabSpeed === 0) }, '0 RPM · stop'),
-            h('button', { 'aria-pressed': d.forceLabSpeed === 300 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 300 }, 'Shaft set to 300 RPM.'); }, style: btn(d.forceLabSpeed === 300) }, '300 RPM · steady'),
-            h('button', { 'aria-pressed': d.forceLabSpeed === 600 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 600 }, 'Shaft set to 600 RPM.'); }, style: btn(d.forceLabSpeed === 600) }, '600 RPM · fast')),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabSpeed === 0 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 0 }, 'Shaft stopped. Mechanical power is zero.'); }, style: btn(d.forceLabSpeed === 0) }, '0 RPM · stop'),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabSpeed === 300 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 300 }, 'Shaft set to 300 RPM.'); }, style: btn(d.forceLabSpeed === 300) }, '300 RPM · steady'),
+            h('button', { type: 'button', 'aria-pressed': d.forceLabSpeed === 600 ? 'true' : 'false', onClick: function () { commit({ forceLabSpeed: 600 }, 'Shaft set to 600 RPM.'); }, style: btn(d.forceLabSpeed === 600) }, '600 RPM · fast')),
           slider('Shaft speed (RPM)', d.forceLabSpeed, 0, 600, 50, function (value) { commit({ forceLabSpeed: value }); }),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
             h('span', { 'aria-hidden': 'true' }, state.powerActive ? '⚡' : '⏸'),
@@ -7862,17 +7862,17 @@
             })) : null);
         }
         var modeSwitch = h('div', { className: 'mag-mode-rail', onFocusCapture: revealFocusedMode, role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_investigation', 'Motor investigation'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
-          h('button', { 'aria-pressed': mode === 'forces' ? 'true' : 'false', onClick: function () { chooseMotorMode('forces'); }, style: btn(mode === 'forces') }, 'Motor forces'),
-          h('button', { 'aria-pressed': mode === 'energy' ? 'true' : 'false', onClick: function () { chooseMotorMode('energy'); }, style: btn(mode === 'energy') }, 'Energy systems'),
-          h('button', { 'aria-pressed': mode === 'particle' ? 'true' : 'false', onClick: function () { chooseMotorMode('particle'); }, style: btn(mode === 'particle') }, 'Particle beam'),
-          h('button', { 'aria-pressed': mode === 'analyzer' ? 'true' : 'false', onClick: function () { chooseMotorMode('analyzer'); }, style: btn(mode === 'analyzer') }, 'Mass analyzer'));
+          h('button', { type: 'button', 'aria-pressed': mode === 'forces' ? 'true' : 'false', onClick: function () { chooseMotorMode('forces'); }, style: btn(mode === 'forces') }, 'Motor forces'),
+          h('button', { type: 'button', 'aria-pressed': mode === 'energy' ? 'true' : 'false', onClick: function () { chooseMotorMode('energy'); }, style: btn(mode === 'energy') }, 'Energy systems'),
+          h('button', { type: 'button', 'aria-pressed': mode === 'particle' ? 'true' : 'false', onClick: function () { chooseMotorMode('particle'); }, style: btn(mode === 'particle') }, 'Particle beam'),
+          h('button', { type: 'button', 'aria-pressed': mode === 'analyzer' ? 'true' : 'false', onClick: function () { chooseMotorMode('analyzer'); }, style: btn(mode === 'analyzer') }, 'Mass analyzer'));
         return h('div', null,
           modeSwitch,
           mode === 'forces' ? card('How a motor spins', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Current in the loop sits inside a magnet’s field. Each side feels a force ', h('b', null, 'F = B·I·L'), ' — one side pushed up, the other down. That twist is torque. A ', h('b', null, 'commutator'), ' flips the current every half turn so the push never reverses.'),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_force_model_view', 'Motor force model view'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-              h('button', { 'aria-pressed': d.motorView !== '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_motor_force_model_selected', 'Two-dimensional motor force model selected.')); }, style: btn(d.motorView !== '3d') }, '2D force diagram'),
-              h('button', { 'aria-pressed': d.motorView === '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '3d', motor3dStatus: 'loading', motor3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_motor_torque_lab_selected', 'Three-dimensional motor torque lab selected.')); }, style: btn(d.motorView === '3d') }, '3D torque lab')),
+              h('button', { type: 'button', 'aria-pressed': d.motorView !== '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '2d' }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_motor_force_model_selected', 'Two-dimensional motor force model selected.')); }, style: btn(d.motorView !== '3d') }, '2D force diagram'),
+              h('button', { type: 'button', 'aria-pressed': d.motorView === '3d' ? 'true' : 'false', onClick: function () { upd({ motorView: '3d', motor3dStatus: 'loading', motor3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_motor_torque_lab_selected', 'Three-dimensional motor torque lab selected.')); }, style: btn(d.motorView === '3d') }, '3D torque lab')),
             h('div', { className: d.motorView === '3d' ? 'mag-motor-workbench-3d' : 'mag-motor-workbench' },
               h('div', { className: 'mag-motor-scene' }, d.motorView === '3d' ? motor3DPanel() : motorSVG(), motorTorqueGraph()),
               h('div', { className: 'mag-motion-controls mag-motor-controls' },
@@ -7882,16 +7882,16 @@
             slider('Shaft load (relative torque ×)', Math.max(0, Number(d.motorLoad) || 0), 0, 2, 0.25, function (v) { upd({ motorLoad: v }); }),
             h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 8px' } }, 'Raise the load until the margin reaches 0× to find the stall boundary.'),
             h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '-2px 0 9px' } },
-              h('button', { 'aria-pressed': d.motorCurrentDir < 0 ? 'true' : 'false', onClick: function () {
+              h('button', { type: 'button', 'aria-pressed': d.motorCurrentDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ motorCurrentDir: -d.motorCurrentDir, motorDirectionSeen: true });
                 announceToSR(__alloT('stem.magnetism.sr_motor_supply_current_reversed_rotation_direction', 'Motor supply current reversed. Rotation direction reversed.'));
               }, style: btn(d.motorCurrentDir < 0) }, '↕ Reverse current'),
-              h('button', { 'aria-pressed': d.motorFieldDir < 0 ? 'true' : 'false', onClick: function () {
+              h('button', { type: 'button', 'aria-pressed': d.motorFieldDir < 0 ? 'true' : 'false', onClick: function () {
                 upd({ motorFieldDir: -d.motorFieldDir, motorDirectionSeen: true });
                 announceToSR(__alloT('stem.magnetism.sr_motor_magnetic_field_reversed_rotation_direction', 'Motor magnetic field reversed. Rotation direction reversed.'));
               }, style: btn(d.motorFieldDir < 0) }, '🧲 Flip field')),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', margin: '6px 0' } },
-              h('button', { 'aria-pressed': d.motorRunning ? 'true' : 'false', onClick: function () {
+              h('button', { type: 'button', 'aria-pressed': d.motorRunning ? 'true' : 'false', onClick: function () {
                   var running = !d.motorRunning;
                   if (running && _motionPreference.current.reduced) {
                     upd({ motorRunning: false, motorRan: true });
@@ -7909,13 +7909,13 @@
                     announceToSR(__alloT('stem.magnetism.sr_motor_stopped', 'Motor stopped'));
                   }
                 }, style: btn(d.motorRunning) }, d.motorRunning ? '⏹ Stop' : '▶ Run motor'),
-              h('button', { onClick: function () { var md = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1; upd({ motorAngle: (d.motorAngle + md * 30 + 360) % 360, motorRan: true }); }, style: btn() }, '↻ Step by hand')),
+              h('button', { type: 'button', onClick: function () { var md = d.motorCurrentDir * d.motorFieldDir > 0 ? 1 : -1; upd({ motorAngle: (d.motorAngle + md * 30 + 360) % 360, motorRan: true }); }, style: btn() }, '↻ Step by hand')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_torque_landmarks', 'Motor torque landmarks'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '2px 0 8px' } },
               h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Freeze at:'),
-              h('button', { 'aria-pressed': motorLandmarkActive(0) ? 'true' : 'false', onClick: function () { freezeMotorAt(0, 'Dead spot'); }, style: btn(motorLandmarkActive(0)) }, '0° · dead spot'),
-              h('button', { 'aria-pressed': motorLandmarkActive(90) ? 'true' : 'false', onClick: function () { freezeMotorAt(90, 'Maximum torque'); }, style: btn(motorLandmarkActive(90)) }, '90° · maximum torque'),
-              h('button', { 'aria-pressed': motorLandmarkActive(180) ? 'true' : 'false', onClick: function () { freezeMotorAt(180, 'Commutator flip'); }, style: btn(motorLandmarkActive(180)) }, '180° · commutator flip'),
-              h('button', { 'aria-pressed': motorLandmarkActive(270) ? 'true' : 'false', onClick: function () { freezeMotorAt(270, 'Maximum torque'); }, style: btn(motorLandmarkActive(270)) }, '270° · maximum torque')),
+              h('button', { type: 'button', 'aria-pressed': motorLandmarkActive(0) ? 'true' : 'false', onClick: function () { freezeMotorAt(0, 'Dead spot'); }, style: btn(motorLandmarkActive(0)) }, '0° · dead spot'),
+              h('button', { type: 'button', 'aria-pressed': motorLandmarkActive(90) ? 'true' : 'false', onClick: function () { freezeMotorAt(90, 'Maximum torque'); }, style: btn(motorLandmarkActive(90)) }, '90° · maximum torque'),
+              h('button', { type: 'button', 'aria-pressed': motorLandmarkActive(180) ? 'true' : 'false', onClick: function () { freezeMotorAt(180, 'Commutator flip'); }, style: btn(motorLandmarkActive(180)) }, '180° · commutator flip'),
+              h('button', { type: 'button', 'aria-pressed': motorLandmarkActive(270) ? 'true' : 'false', onClick: function () { freezeMotorAt(270, 'Maximum torque'); }, style: btn(motorLandmarkActive(270)) }, '270° · maximum torque')),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_angle_probe', 'Motor angle probe'), style: { margin: '0 0 2px' } },
               slider('Rotor angle (°)', Math.round(Number(d.motorAngle) || 0), 0, 360, 5, probeMotorAngle),
               h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.35, margin: '-5px 0 9px' } }, 'Scrub the angle to watch torque leverage rise and fall. 0° and 360° are the same physical position.')))),
@@ -8195,9 +8195,9 @@
       function benchControlPanel(loadOhms, friction, turns, field) {
         return h('div', null,
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_generator_load_presets', 'Generator load presets'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-            h('button', { 'aria-pressed': loadOhms === 10 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 10, benchUsed: true }); }, style: btn(loadOhms === 10) }, 'Heavy load · 10 Ω'),
-            h('button', { 'aria-pressed': loadOhms === 40 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 40, benchUsed: true }); }, style: btn(loadOhms === 40) }, 'Balanced · 40 Ω'),
-            h('button', { 'aria-pressed': loadOhms === 160 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 160, benchUsed: true }); }, style: btn(loadOhms === 160) }, 'Light load · 160 Ω')),
+            h('button', { type: 'button', 'aria-pressed': loadOhms === 10 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 10, benchUsed: true }); }, style: btn(loadOhms === 10) }, 'Heavy load · 10 Ω'),
+            h('button', { type: 'button', 'aria-pressed': loadOhms === 40 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 40, benchUsed: true }); }, style: btn(loadOhms === 40) }, 'Balanced · 40 Ω'),
+            h('button', { type: 'button', 'aria-pressed': loadOhms === 160 ? 'true' : 'false', onClick: function () { upd({ benchLoadOhms: 160, benchUsed: true }); }, style: btn(loadOhms === 160) }, 'Light load · 160 Ω')),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 } },
             h('div', null,
               slider('Generator load (Ω)', loadOhms, 10, 200, 10, function (v) { upd({ benchLoadOhms: v, benchUsed: true }); }),
@@ -8235,7 +8235,7 @@
                   h('td', { style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, fontWeight: 800 } }, trial.pass ? '✓ Pass' : '↻ Revise'),
                   h('td', { style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, change ? change.label : 'baseline'),
                   h('td', { style: { textAlign: 'left', padding: '4px 5px', borderBottom: '1px solid ' + BORDER } },
-                    h('button', { 'aria-pressed': selected ? 'true' : 'false', onClick: function () {
+                    h('button', { type: 'button', 'aria-pressed': selected ? 'true' : 'false', onClick: function () {
                       upd({ benchCompareTrialId: selected ? null : trial.id });
                       announceToSR(selected ? 'Trial comparison curve hidden.' : 'Trial ' + trial.id + ' selected as the dashed comparison curve.');
                     }, style: Object.assign({}, btn(selected), { padding: '4px 7px', fontSize: 11, whiteSpace: 'nowrap' }) }, selected ? 'Hide' : 'Compare')));
@@ -8264,10 +8264,10 @@
           motorGeneratorMissionGraph(trace),
           h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
             d.benchRunning
-              ? h('button', { onClick: pauseBenchMission, style: btn(true) }, 'Pause trial')
-              : h('button', { onClick: startBenchMission, disabled: d.benchTime >= 10 && status !== 'paused', style: btn(true) }, status === 'paused' ? 'Resume trial' : 'Run & record 10 s trial'),
-            h('button', { onClick: advanceBenchMission, disabled: d.benchRunning || d.benchTime >= 10, style: btn() }, 'Advance 1 s'),
-            h('button', { onClick: resetBenchMission, style: btn() }, 'Reset current run')),
+              ? h('button', { type: 'button', onClick: pauseBenchMission, style: btn(true) }, 'Pause trial')
+              : h('button', { type: 'button', onClick: startBenchMission, disabled: d.benchTime >= 10 && status !== 'paused', style: btn(true) }, status === 'paused' ? 'Resume trial' : 'Run & record 10 s trial'),
+            h('button', { type: 'button', onClick: advanceBenchMission, disabled: d.benchRunning || d.benchTime >= 10, style: btn() }, 'Advance 1 s'),
+            h('button', { type: 'button', onClick: resetBenchMission, style: btn() }, 'Reset current run')),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
             h('span', { 'aria-hidden': 'true' }, status === 'passed' ? '✓' : '⚙️'),
             h('span', null, h('b', null, statusText + ' '),
@@ -8290,12 +8290,12 @@
         var missionView = d.benchView === 'mission';
         return card('Coupled motor–generator engineering bench', h('div', null,
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_motor_generator_investigation_mode', 'Motor-generator investigation mode'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
-            h('button', { 'aria-pressed': !missionView ? 'true' : 'false', onClick: function () {
+            h('button', { type: 'button', 'aria-pressed': !missionView ? 'true' : 'false', onClick: function () {
               if (_benchTimer && typeof window !== 'undefined') { window.clearInterval(_benchTimer); _benchTimer = null; }
               upd({ benchView: 'steady', benchRunning: false, benchMissionStatus: d.benchRunning ? 'paused' : d.benchMissionStatus });
               announceToSR(__alloT('stem.magnetism.sr_steady_state_energy_explorer_selected', 'Steady-state energy explorer selected.'));
             }, style: btn(!missionView) }, 'Steady-state explorer'),
-            h('button', { 'aria-pressed': missionView ? 'true' : 'false', onClick: function () { upd({ benchView: 'mission', benchUsed: true }); announceToSR(__alloT('stem.magnetism.sr_transient_design_mission_selected', 'Transient design mission selected.')); }, style: btn(missionView) }, 'Transient design mission')),
+            h('button', { type: 'button', 'aria-pressed': missionView ? 'true' : 'false', onClick: function () { upd({ benchView: 'mission', benchUsed: true }); announceToSR(__alloT('stem.magnetism.sr_transient_design_mission_selected', 'Transient design mission selected.')); }, style: btn(missionView) }, 'Transient design mission')),
           missionView ? motorGeneratorMissionPanel(loadOhms, friction, turns, field) : h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
               'The motor above drives a generator and load model. Keep motor current and field fixed, then change one load variable to see where the energy goes.'),
@@ -8669,7 +8669,7 @@
           var pitchWords = comparison.pitchRatio == null ? 'center-field pitch changed from ' + state.reference.pitch.toFixed(2) + ' to ' + state.pitch.toFixed(2) : 'center-field pitch is ' + comparison.pitchRatio.toFixed(2) + '× the reference';
           comparisonText = (comparison.count === 0 ? 'Current controls match the pinned reference. ' : comparison.fair ? 'Fair comparison: only ' + changeWords + ' changed. ' : 'Confounded comparison: ' + changeWords + ' changed. ') + radiusWords + '; ' + pitchWords + '. ' + (comparison.handednessChanged ? 'The helix handedness reversed.' : 'Helix handedness stayed the same.');
         }
-        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_charge3DCanvas && typeof _charge3DCanvas._charge3dSetView === 'function') _charge3DCanvas._charge3dSetView(id); announceToSR(label + ' particle view selected.'); }, style: btn() }, label); }
+        function cameraButton(id, label) { return h('button', { type: 'button', key: id, onClick: function () { if (_charge3DCanvas && typeof _charge3DCanvas._charge3dSetView === 'function') _charge3DCanvas._charge3dSetView(id); announceToSR(label + ' particle view selected.'); }, style: btn() }, label); }
         function pinReference() {
           stopCharge3D();
           upd({ charge3dReference: { fieldModel: state.fieldModel, mirrorRatio: state.mirrorRatio, chargeSign: state.chargeSign, fieldSign: state.fieldSign, speed: state.speed, field: state.field, tilt: state.tilt, mass: state.mass }, charge3dUsed: true, lorentzUsed: true });
@@ -8687,19 +8687,19 @@
             ], 'B axis · y'),
           h('div', { id: 'mag-charge3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.charge3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.charge3dStatus === 'ready' ? (isMirror ? 'Mirror scene ready. Drag to orbit, then test whether the particle is trapped or escapes.' : 'Scene ready. Drag to orbit, run the particle, scrub its position, or pin a path for comparison.') :
-            d.charge3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Lorentz-force diagram remains available. ', h('button', { onClick: function () { upd({ charge3dStatus: 'loading', charge3dAttempt: (d.charge3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D particle engine...'),
+            d.charge3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Lorentz-force diagram remains available. ', h('button', { type: 'button', onClick: function () { upd({ charge3dStatus: 'loading', charge3dAttempt: (d.charge3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D particle engine...'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_vector_key', '3D vector key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
             h('span', null, 'B ↑ blue field arrows'), isMirror ? h('span', null, 'three-ring copper mirror coils') : null, h('span', null, 'v → gold velocity arrow'), h('span', null, 'F → green force arrow'), h('span', null, 'solid pink current path'), state.reference ? h('span', null, 'dashed pale reference path') : null, h('span', null, (state.chargeSign > 0 ? '+ one-ring' : '− two-ring') + ' particle marker')),
           sceneTextAlternative('mag-charge3d-summary', 'A ' + (state.chargeSign > 0 ? 'positive' : 'negative') + ' particle of relative mass ' + state.mass.toFixed(1) + ' moves in the ' + (isMirror ? 'non-uniform field of two magnetic mirror coils with end-to-center field ratio ' + state.mirrorRatio.toFixed(1) : 'uniform magnetic field') + ' along ' + (state.fieldSign > 0 ? 'positive y' : 'negative y') + '. Its velocity is tilted ' + state.tilt + ' degrees from the field axis, with parallel component ' + state.parallelSpeed.toFixed(2) + ' and perpendicular component ' + state.perpendicularSpeed.toFixed(2) + '. The path is ' + pathWords + ', center-field radius ' + state.radius.toFixed(2) + ', and center-field pitch per turn ' + state.pitch.toFixed(2) + '. ' + (isMirror ? mirrorEvidence : 'The magnetic force magnitude is proportional to ' + state.force.toFixed(2) + ' and the path curves ' + turnWords + '. Magnetic force stays perpendicular to velocity, so speed remains constant. ') + comparisonText),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_particle_camera_and_path_controls', '3D particle camera and path controls'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
             cameraButton('perspective', 'Perspective'), cameraButton('field', 'Along field'), cameraButton('side', 'Side'), cameraButton('end', 'End'),
-            h('button', { 'aria-pressed': state.trail ? 'true' : 'false', onClick: function () { upd({ charge3dTrail: !state.trail, charge3dUsed: true }); }, style: btn(state.trail) }, 'Traveled path: ' + (state.trail ? 'on' : 'off'))),
+            h('button', { type: 'button', 'aria-pressed': state.trail ? 'true' : 'false', onClick: function () { upd({ charge3dTrail: !state.trail, charge3dUsed: true }); }, style: btn(state.trail) }, 'Traveled path: ' + (state.trail ? 'on' : 'off'))),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_particle_path_comparison', 'Particle path comparison'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { onClick: pinReference, style: btn(!!state.reference) }, state.reference ? 'Replace pinned path' : 'Pin path for comparison'),
-            state.reference ? h('button', { onClick: function () { upd({ charge3dReference: null, charge3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_pinned_particle_path_cleared', 'Pinned particle path cleared.')); }, style: btn() }, 'Clear comparison') : null),
+            h('button', { type: 'button', onClick: pinReference, style: btn(!!state.reference) }, state.reference ? 'Replace pinned path' : 'Pin path for comparison'),
+            state.reference ? h('button', { type: 'button', onClick: function () { upd({ charge3dReference: null, charge3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_pinned_particle_path_cleared', 'Pinned particle path cleared.')); }, style: btn() }, 'Clear comparison') : null),
           h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            d.charge3dRunning ? h('button', { onClick: function () { stopCharge3D('Particle animation paused.'); }, style: btn(true) }, 'Pause particle') : h('button', { onClick: runCharge3D, style: btn(true) }, d.charge3dProgress > 0 && d.charge3dProgress < 100 ? 'Resume particle' : 'Run particle'),
-            h('button', { onClick: function () { stopCharge3D(); upd({ charge3dProgress: 0, charge3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_particle_returned_to_the_start_of_the_path', 'Particle returned to the start of the path.')); }, style: btn() }, 'Reset particle')),
+            d.charge3dRunning ? h('button', { type: 'button', onClick: function () { stopCharge3D('Particle animation paused.'); }, style: btn(true) }, 'Pause particle') : h('button', { type: 'button', onClick: runCharge3D, style: btn(true) }, d.charge3dProgress > 0 && d.charge3dProgress < 100 ? 'Resume particle' : 'Run particle'),
+            h('button', { type: 'button', onClick: function () { stopCharge3D(); upd({ charge3dProgress: 0, charge3dUsed: true }); announceToSR(__alloT('stem.magnetism.sr_particle_returned_to_the_start_of_the_path', 'Particle returned to the start of the path.')); }, style: btn() }, 'Reset particle')),
           slider('Particle position (%)', Math.round(state.progress), 0, 100, 1, function (v) { stopCharge3D(); upd({ charge3dProgress: v, charge3dUsed: true, lorentzUsed: true }); }),
           h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
             h('span', { 'aria-hidden': 'true' }, state.reference ? '⇄' : isMirror ? (state.trapped ? '↕' : '↗') : state.motionType === 'helical' ? '↟' : state.motionType === 'circular' ? '○' : '↑'),
@@ -8898,11 +8898,11 @@
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_ion_species', 'Ion species'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
             Object.keys(ANALYZER_SPECIES).map(function (key) {
               var item = ANALYZER_SPECIES[key];
-              return h('button', { key: key, 'aria-pressed': speciesKey === key ? 'true' : 'false', onClick: function () { upd({ analyzerSpecies: key, analyzerUsed: true, lorentzUsed: true }); announceToSR(item.name + ' selected. Mass-to-charge ratio ' + (item.mass / Math.abs(item.charge)).toFixed(1) + '.'); }, style: btn(speciesKey === key) }, item.symbol + ' · m/q ' + (item.mass / Math.abs(item.charge)).toFixed(1));
+              return h('button', { type: 'button', key: key, 'aria-pressed': speciesKey === key ? 'true' : 'false', onClick: function () { upd({ analyzerSpecies: key, analyzerUsed: true, lorentzUsed: true }); announceToSR(item.name + ' selected. Mass-to-charge ratio ' + (item.mass / Math.abs(item.charge)).toFixed(1) + '.'); }, style: btn(speciesKey === key) }, item.symbol + ' · m/q ' + (item.mass / Math.abs(item.charge)).toFixed(1));
             })),
           h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
-            h('button', { onClick: function () { upd({ analyzerSpeed: Math.max(0, Math.min(10, state.selectedSpeed)), analyzerUsed: true, lorentzUsed: true }); announceToSR(__alloFill(__alloT('stem.magnetism.sr_beam_speed_matched_to_e_divided_by_b', 'Beam speed matched to E divided by B: {value1}.'), { value1: selectedSpeedText })); }, style: btn(true) }, 'Match beam to E/B'),
-            h('button', { 'aria-pressed': d.analyzerShowAll ? 'true' : 'false', onClick: function () { upd({ analyzerShowAll: !d.analyzerShowAll, analyzerUsed: true, lorentzUsed: true }); }, style: btn(d.analyzerShowAll) }, d.analyzerShowAll ? 'Compare all ion paths: on' : 'Compare all ion paths: off')),
+            h('button', { type: 'button', onClick: function () { upd({ analyzerSpeed: Math.max(0, Math.min(10, state.selectedSpeed)), analyzerUsed: true, lorentzUsed: true }); announceToSR(__alloFill(__alloT('stem.magnetism.sr_beam_speed_matched_to_e_divided_by_b', 'Beam speed matched to E divided by B: {value1}.'), { value1: selectedSpeedText })); }, style: btn(true) }, 'Match beam to E/B'),
+            h('button', { type: 'button', 'aria-pressed': d.analyzerShowAll ? 'true' : 'false', onClick: function () { upd({ analyzerShowAll: !d.analyzerShowAll, analyzerUsed: true, lorentzUsed: true }); }, style: btn(d.analyzerShowAll) }, d.analyzerShowAll ? 'Compare all ion paths: on' : 'Compare all ion paths: off')),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12 } },
             h('div', null,
               slider('Electric field E', d.analyzerE, 0, 10, 0.5, function (v) { upd({ analyzerE: v, analyzerUsed: true, lorentzUsed: true }); }),
@@ -8944,8 +8944,8 @@
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'A moving charge in a magnetic field feels ', h('b', null, 'F = qv × B'), '. The force is sideways, so the field bends the path instead of speeding the particle up. Reverse either the charge or the field and the curve reverses.'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_charged_particle_model_view', 'Charged-particle model view'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-            h('button', { 'aria-pressed': d.chargeView !== '3d' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeView: '2d', charge3dRunning: false }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_lorentz_force_diagram_selected', 'Two-dimensional Lorentz-force diagram selected.')); }, style: btn(d.chargeView !== '3d') }, '2D bend diagram'),
-            h('button', { 'aria-pressed': d.chargeView === '3d' ? 'true' : 'false', onClick: function () { if (d.chargeView === '3d') return; upd({ chargeView: '3d', charge3dStatus: 'loading', charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_particle_helix_lab_selected', 'Three-dimensional particle helix lab selected.')); }, style: btn(d.chargeView === '3d') }, '3D helix lab')),
+            h('button', { type: 'button', 'aria-pressed': d.chargeView !== '3d' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeView: '2d', charge3dRunning: false }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_lorentz_force_diagram_selected', 'Two-dimensional Lorentz-force diagram selected.')); }, style: btn(d.chargeView !== '3d') }, '2D bend diagram'),
+            h('button', { type: 'button', 'aria-pressed': d.chargeView === '3d' ? 'true' : 'false', onClick: function () { if (d.chargeView === '3d') return; upd({ chargeView: '3d', charge3dStatus: 'loading', charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_particle_helix_lab_selected', 'Three-dimensional particle helix lab selected.')); }, style: btn(d.chargeView === '3d') }, '3D helix lab')),
           h('div', { className: d.chargeView === '3d' ? '' : 'mag-particle-workbench' },
           d.chargeView === '3d' ? chargedParticle3DPanel() : h('figure', { className: 'mag-particle-figure', 'data-particle-stage': 'true' },
             h('figcaption', { className: 'mag-particle-heading' }, h('b', null, 'Beam chamber'), h('span', null, chargeName + ' charge · ' + (d.chargeField > 0 ? '⊙ B out of screen' : '⊗ B into screen'))),
@@ -8985,25 +8985,25 @@
             h('div', null,
               h('div', { style: { color: SOFT, fontSize: 11, marginBottom: 5 } }, 'Particle charge'),
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('button', { 'aria-pressed': d.chargeSign > 0 ? 'true' : 'false', onClick: function () { upd({ chargeSign: 1, lorentzUsed: true }); }, style: btn(d.chargeSign > 0) }, '+ Positive'),
-                h('button', { 'aria-pressed': d.chargeSign < 0 ? 'true' : 'false', onClick: function () { upd({ chargeSign: -1, lorentzUsed: true }); }, style: btn(d.chargeSign < 0) }, '− Negative'))),
+                h('button', { type: 'button', 'aria-pressed': d.chargeSign > 0 ? 'true' : 'false', onClick: function () { upd({ chargeSign: 1, lorentzUsed: true }); }, style: btn(d.chargeSign > 0) }, '+ Positive'),
+                h('button', { type: 'button', 'aria-pressed': d.chargeSign < 0 ? 'true' : 'false', onClick: function () { upd({ chargeSign: -1, lorentzUsed: true }); }, style: btn(d.chargeSign < 0) }, '− Negative'))),
             h('div', null,
               h('div', { style: { color: SOFT, fontSize: 11, marginBottom: 5 } }, 'Field direction'),
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('button', { 'aria-pressed': d.chargeField > 0 ? 'true' : 'false', onClick: function () { upd({ chargeField: 1, lorentzUsed: true }); }, style: btn(d.chargeField > 0) }, '⊙ Out'),
-                h('button', { 'aria-pressed': d.chargeField < 0 ? 'true' : 'false', onClick: function () { upd({ chargeField: -1, lorentzUsed: true }); }, style: btn(d.chargeField < 0) }, '⊗ Into')))),
+                h('button', { type: 'button', 'aria-pressed': d.chargeField > 0 ? 'true' : 'false', onClick: function () { upd({ chargeField: 1, lorentzUsed: true }); }, style: btn(d.chargeField > 0) }, '⊙ Out'),
+                h('button', { type: 'button', 'aria-pressed': d.chargeField < 0 ? 'true' : 'false', onClick: function () { upd({ chargeField: -1, lorentzUsed: true }); }, style: btn(d.chargeField < 0) }, '⊗ Into')))),
           slider('Particle speed (v)', d.chargeSpeed, 2, 8, 1, function (v) { upd({ chargeSpeed: v, lorentzUsed: true }); }),
           slider('Magnetic field strength (B)', d.chargeB, 1, 8, 1, function (v) { upd({ chargeB: v, lorentzUsed: true }); }))),
           d.chargeView === '3d' ? h('div', null,
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_magnetic_environment', 'Magnetic environment'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { 'aria-pressed': charge3d.fieldModel === 'uniform' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeFieldModel: 'uniform', charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_uniform_magnetic_field_selected', 'Uniform magnetic field selected.')); }, style: btn(charge3d.fieldModel === 'uniform') }, 'Uniform field'),
-              h('button', { 'aria-pressed': charge3d.fieldModel === 'mirror' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeFieldModel: 'mirror', charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_magnetic_mirror_selected_test_pitch_angles_above', 'Magnetic mirror selected. Test pitch angles above and below the loss-cone boundary.')); }, style: btn(charge3d.fieldModel === 'mirror') }, 'Magnetic mirror')),
+              h('button', { type: 'button', 'aria-pressed': charge3d.fieldModel === 'uniform' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeFieldModel: 'uniform', charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_uniform_magnetic_field_selected', 'Uniform magnetic field selected.')); }, style: btn(charge3d.fieldModel === 'uniform') }, 'Uniform field'),
+              h('button', { type: 'button', 'aria-pressed': charge3d.fieldModel === 'mirror' ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeFieldModel: 'mirror', charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); announceToSR(__alloT('stem.magnetism.sr_magnetic_mirror_selected_test_pitch_angles_above', 'Magnetic mirror selected. Test pitch angles above and below the loss-cone boundary.')); }, style: btn(charge3d.fieldModel === 'mirror') }, 'Magnetic mirror')),
             charge3d.fieldModel === 'mirror' ? slider('Mirror ratio (B ends / B center)', d.chargeMirrorRatio, 1.5, 6, 0.5, function (v) { stopCharge3D(); upd({ chargeMirrorRatio: v, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }) : null,
             slider('Relative particle mass (m)', d.chargeMass, 0.5, 6, 0.5, function (v) { stopCharge3D(); upd({ chargeMass: v, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_velocity_tilt_presets', 'Velocity tilt presets'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { 'aria-pressed': d.chargeTilt === 0 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 0, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 0) }, '0° · axial line'),
-              h('button', { 'aria-pressed': d.chargeTilt === 45 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 45, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 45) }, '45° · helix'),
-              h('button', { 'aria-pressed': d.chargeTilt === 90 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 90, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 90) }, '90° · circle')),
+              h('button', { type: 'button', 'aria-pressed': d.chargeTilt === 0 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 0, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 0) }, '0° · axial line'),
+              h('button', { type: 'button', 'aria-pressed': d.chargeTilt === 45 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 45, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 45) }, '45° · helix'),
+              h('button', { type: 'button', 'aria-pressed': d.chargeTilt === 90 ? 'true' : 'false', onClick: function () { stopCharge3D(); upd({ chargeTilt: 90, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }, style: btn(d.chargeTilt === 90) }, '90° · circle')),
             slider('Velocity tilt from field axis (°)', d.chargeTilt, 0, 90, 5, function (v) { stopCharge3D(); upd({ chargeTilt: v, charge3dProgress: 0, charge3dUsed: true, lorentzUsed: true }); }),
             h('div', { style: { color: SOFT, fontSize: 11.5, margin: '-3px 0 8px', lineHeight: 1.4 } }, 'm ' + charge3d.mass.toFixed(1) + ' · v∥ ' + charge3d.parallelSpeed.toFixed(2) + ' · v⊥ ' + charge3d.perpendicularSpeed.toFixed(2) + ' · magnetic force ∝ ' + charge3d.force.toFixed(2) + (charge3d.fieldModel === 'mirror' ? ' · critical pitch ' + charge3d.criticalAngle.toFixed(1) + '°' : ''))) : null,
           d.chargeView === '3d' ? null : h('div', { className: 'mag-observe', role: 'status' },
@@ -9386,7 +9386,7 @@
         var direction = state.torqueDirection > 0 ? 'clockwise' : 'counter-clockwise';
         var fieldPhrase = state.fieldDirection > 0 ? 'left north pole to right south pole' : 'right north pole to left south pole';
         var currentPhrase = state.segmentDirection > 0 ? 'up the near active side and down the far side' : 'down the near active side and up the far side';
-        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_motor3DCanvas && typeof _motor3DCanvas._motor3dSetView === 'function') _motor3DCanvas._motor3dSetView(id); announceToSR(label + ' motor view selected.'); }, style: btn() }, label); }
+        function cameraButton(id, label) { return h('button', { type: 'button', key: id, onClick: function () { if (_motor3DCanvas && typeof _motor3DCanvas._motor3dSetView === 'function') _motor3DCanvas._motor3dSetView(id); announceToSR(label + ' motor view selected.'); }, style: btn() }, label); }
         function setLandmark(angle, label) { upd({ motorAngle: angle, motorRunning: false, motorRan: true, motor3dUsed: true }); announceToSR(label + ' selected at ' + angle + ' degrees.'); }
         return h('div', null,
           sceneViewport(h('canvas', { key: 'motor3d-' + (d.motor3dAttempt || 0), ref: motor3DCanvasRef, className: 'mag-motor3d', role: 'img',
@@ -9399,18 +9399,18 @@
             ], 'shaft · y'),
           h('div', { id: 'mag-motor3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.motor3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.motor3dStatus === 'ready' ? 'Scene ready. Drag to orbit, then run the motor or freeze it at a landmark angle.' :
-            d.motor3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D force diagram remains available. ', h('button', { onClick: function () { upd({ motor3dStatus: 'loading', motor3dAttempt: (d.motor3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D motor engine...'),
+            d.motor3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D force diagram remains available. ', h('button', { type: 'button', onClick: function () { upd({ motor3dStatus: 'loading', motor3dAttempt: (d.motor3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D motor engine...'),
           poleLegend(state.fieldDirection > 0 ? 'North pole — left, one bright ring' : 'North pole — right, one bright ring', state.fieldDirection > 0 ? 'South pole — right, two bright rings' : 'South pole — left, two bright rings'),
           sceneTextAlternative('mag-motor3d-summary', 'The rotor is at ' + Math.round(state.angle) + ' degrees in half-turn ' + state.halfTurn + '. Magnetic field points from ' + fieldPhrase + '. Conventional current moves ' + currentPhrase + '. The two active sides feel equal opposite forces of about ' + state.force.toFixed(3) + ' newtons. Relative torque is ' + Math.round(state.torquePercent) + ' percent and points in the ' + direction + ' rotation direction. ' + (state.deadSpot ? 'The loop is at a torque dead spot; inertia is needed to carry it through.' : 'The forces form a turning pair around the shaft.')),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_motor_camera_and_visual_layers', '3D motor camera and visual layers'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 9 } },
             cameraButton('perspective', 'Perspective'), cameraButton('field', 'Along field'), cameraButton('shaft', 'Along shaft'), cameraButton('commutator', 'Commutator close-up'),
-            h('button', { 'aria-pressed': state.showForces ? 'true' : 'false', onClick: function () { upd({ motor3dForces: !state.showForces, motor3dUsed: true }); }, style: btn(state.showForces) }, 'Force + torque vectors: ' + (state.showForces ? 'on' : 'off')),
-            h('button', { 'aria-pressed': state.showCurrent ? 'true' : 'false', onClick: function () { upd({ motor3dCurrent: !state.showCurrent, motor3dUsed: true }); }, style: btn(state.showCurrent) }, 'Current + moment vectors: ' + (state.showCurrent ? 'on' : 'off'))),
+            h('button', { type: 'button', 'aria-pressed': state.showForces ? 'true' : 'false', onClick: function () { upd({ motor3dForces: !state.showForces, motor3dUsed: true }); }, style: btn(state.showForces) }, 'Force + torque vectors: ' + (state.showForces ? 'on' : 'off')),
+            h('button', { type: 'button', 'aria-pressed': state.showCurrent ? 'true' : 'false', onClick: function () { upd({ motor3dCurrent: !state.showCurrent, motor3dUsed: true }); }, style: btn(state.showCurrent) }, 'Current + moment vectors: ' + (state.showCurrent ? 'on' : 'off'))),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_freeze_rotor_at_a_concept_landmark', 'Freeze rotor at a concept landmark'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { onClick: function () { setLandmark(0, 'First torque dead spot'); }, style: btn(state.angle === 0) }, '0° · dead spot'),
-            h('button', { onClick: function () { setLandmark(90, 'Maximum torque'); }, style: btn(state.angle === 90) }, '90° · maximum torque'),
-            h('button', { onClick: function () { setLandmark(180, 'Commutator flip and second dead spot'); }, style: btn(state.angle === 180) }, '180° · commutator flips'),
-            h('button', { onClick: function () { setLandmark(270, 'Maximum torque after commutation'); }, style: btn(state.angle === 270) }, '270° · maximum torque')),
+            h('button', { type: 'button', onClick: function () { setLandmark(0, 'First torque dead spot'); }, style: btn(state.angle === 0) }, '0° · dead spot'),
+            h('button', { type: 'button', onClick: function () { setLandmark(90, 'Maximum torque'); }, style: btn(state.angle === 90) }, '90° · maximum torque'),
+            h('button', { type: 'button', onClick: function () { setLandmark(180, 'Commutator flip and second dead spot'); }, style: btn(state.angle === 180) }, '180° · commutator flips'),
+            h('button', { type: 'button', onClick: function () { setLandmark(270, 'Maximum torque after commutation'); }, style: btn(state.angle === 270) }, '270° · maximum torque')),
           h('div', { className: 'mag-observe', role: 'status' },
             h('span', { 'aria-hidden': 'true' }, state.deadSpot ? '○' : '↻'),
             h('span', null, h('b', null, state.deadSpot ? 'Torque dead spot. ' : 'Turning pair active. '),
@@ -9701,7 +9701,7 @@
         var flux = state.flux, emf = Number(d.ind3dEMF) || 0;
         var direction = Math.abs(emf) < 0.005 ? 'no induced current while the flux is unchanged' : (emf > 0 ? 'counter-clockwise viewed along the green coil normal' : 'clockwise viewed along the green coil normal');
         function cameraButton(id, label) {
-          return h('button', { key: id, onClick: function () { if (_induction3DCanvas && typeof _induction3DCanvas._induction3dSetView === 'function') _induction3DCanvas._induction3dSetView(id); announceToSR(label + ' induction view selected.'); }, style: btn() }, label);
+          return h('button', { type: 'button', key: id, onClick: function () { if (_induction3DCanvas && typeof _induction3DCanvas._induction3dSetView === 'function') _induction3DCanvas._induction3dSetView(id); announceToSR(label + ' induction view selected.'); }, style: btn() }, label);
         }
         return card('3D Induction Lab — field through a coil', h('div', null,
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
@@ -9717,7 +9717,7 @@
           ], '−dΦ / dt'),
           h('div', { id: 'mag-induction3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.ind3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
             d.ind3dStatus === 'ready' ? 'Scene ready. Drag to orbit; drag the magnet across the ground plane.' :
-            d.ind3dStatus === 'error' ? h('span', null, '3D graphics did not load; every other generator mode remains available. ', h('button', { onClick: function () { upd({ ind3dStatus: 'loading', ind3dAttempt: (d.ind3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D induction engine...'),
+            d.ind3dStatus === 'error' ? h('span', null, '3D graphics did not load; every other generator mode remains available. ', h('button', { type: 'button', onClick: function () { upd({ ind3dStatus: 'loading', ind3dAttempt: (d.ind3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D induction engine...'),
           h('p', { id: 'mag-induction3d-instructions', style: { color: SOFT, fontSize: 11.5, margin: '0 0 8px', lineHeight: 1.4 } }, 'Axis key: x passes through the coil, y is height, and z is sideways offset. The green arrow is the coil-area normal used for signed flux. Every pointer action has a labeled control below.'),
           poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
           sceneTextAlternative('mag-induction3d-summary', 'The bar magnet is at x ' + magnet.x.toFixed(2) + ', y ' + magnet.y.toFixed(2) + ', z ' + magnet.z.toFixed(2) + '. The coil has ' + d.ind3dTurns + ' turns and radius ' + (Number.isFinite(Number(d.ind3dCoilRadius)) ? Number(d.ind3dCoilRadius) : 0).toFixed(2) + '. Signed flux is ' + flux.toFixed(2) + ' and induced voltage is ' + emf.toFixed(2) + '. The induced-current interpretation is: ' + direction + '.'),
@@ -9732,11 +9732,11 @@
             h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 6 } }, 'Controlled passage trials'),
             h('p', { style: { color: SOFT, fontSize: 11.5, margin: '0 0 7px', lineHeight: 1.4 } }, 'Predict first: if the path and coil stay identical, which pass should produce the taller voltage peaks?'),
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_pass_magnet_through_coil', 'Pass magnet through coil'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('slow'); }, style: btn() }, 'Slow pass · 2.00 s'),
-              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('fast'); }, style: btn(true) }, 'Fast pass · 0.50 s'),
-              h('button', { disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('reverse'); }, style: btn() }, 'Reverse pass'),
-              h('button', { disabled: d.ind3dRunning, onClick: holdInduction3DStill, style: btn() }, 'Hold still'),
-              d.ind3dRunning ? h('button', { onClick: stopInduction3DPass, style: btn() }, 'Stop trial') : null),
+              h('button', { type: 'button', disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('slow'); }, style: btn() }, 'Slow pass · 2.00 s'),
+              h('button', { type: 'button', disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('fast'); }, style: btn(true) }, 'Fast pass · 0.50 s'),
+              h('button', { type: 'button', disabled: d.ind3dRunning, onClick: function () { runInduction3DPass('reverse'); }, style: btn() }, 'Reverse pass'),
+              h('button', { type: 'button', disabled: d.ind3dRunning, onClick: holdInduction3DStill, style: btn() }, 'Hold still'),
+              d.ind3dRunning ? h('button', { type: 'button', onClick: stopInduction3DPass, style: btn() }, 'Stop trial') : null),
             d.ind3dTrialMsg ? h('p', { role: 'status', style: { color: TEXT, fontSize: 12, margin: '7px 0 0', lineHeight: 1.45 } }, d.ind3dTrialMsg) : null),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12, alignItems: 'start' } },
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_three_dimensional_magnet_controls', 'Three-dimensional magnet controls') },
@@ -9746,9 +9746,9 @@
               slider('Magnet z', magnet.z, -2, 2, 0.2, function (v) { moveInduction3DMagnet({ z: v }); }),
               slider('Magnet yaw', Math.round((magnet.yaw || 0) * 180 / Math.PI), -180, 180, 15, function (v) { moveInduction3DMagnet({ yaw: v * Math.PI / 180 }); }),
               h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 9 } },
-                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.max(-Math.PI / 2, (magnet.pitch || 0) - Math.PI / 12) }, 'Tilted the magnet down 15 degrees.'); }, style: btn() }, 'Pitch −15°'),
-                h('button', { onClick: function () { moveInduction3DMagnet({ pitch: Math.min(Math.PI / 2, (magnet.pitch || 0) + Math.PI / 12) }, 'Tilted the magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15°'),
-                h('button', { onClick: function () { moveInduction3DMagnet({ polarity: magnet.polarity < 0 ? 1 : -1 }, 'Flipped the magnet poles; signed flux and voltage reversed.'); }, style: btn() }, 'Flip poles')),
+                h('button', { type: 'button', onClick: function () { moveInduction3DMagnet({ pitch: Math.max(-Math.PI / 2, (magnet.pitch || 0) - Math.PI / 12) }, 'Tilted the magnet down 15 degrees.'); }, style: btn() }, 'Pitch −15°'),
+                h('button', { type: 'button', onClick: function () { moveInduction3DMagnet({ pitch: Math.min(Math.PI / 2, (magnet.pitch || 0) + Math.PI / 12) }, 'Tilted the magnet up 15 degrees.'); }, style: btn() }, 'Pitch +15°'),
+                h('button', { type: 'button', onClick: function () { moveInduction3DMagnet({ polarity: magnet.polarity < 0 ? 1 : -1 }, 'Flipped the magnet poles; signed flux and voltage reversed.'); }, style: btn() }, 'Flip poles')),
               slider('Time per manual step (s)', d.ind3dStepTime, 0.1, 1.5, 0.1, function (v) { upd({ ind3dStepTime: v, ind3dUsed: true }); })),
             h('section', { 'aria-label': __alloT('stem.magnetism.a11y_three_dimensional_coil_controls', 'Three-dimensional coil controls') },
               h('div', { style: { color: TEXT, fontSize: 12.5, fontWeight: 800, marginBottom: 7 } }, 'Set the coil before a trial'),
@@ -10146,7 +10146,7 @@
         return h('div', { className: 'mag-mode-rail', onFocusCapture: revealFocusedMode, role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_generator_investigation_mode', 'Generator investigation mode'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } },
           modes.map(function (m) {
             var on = d.induceMode === m.id;
-            return h('button', { key: m.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () {
+            return h('button', { type: 'button', key: m.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () {
               if (d.induceMode === m.id) return;
               if (d.induceMode === '3d') stopInduction3DPass();
               upd(Object.assign({ induceMode: m.id }, m.id === '3d' ? { ind3dStatus: 'loading', ind3dUsed: true } : {}));
@@ -10493,11 +10493,11 @@
               h('figcaption', { className: 'mag-generator-axis' }, h('span', null, '0°'), h('span', null, 'Speed-scaled voltage'), h('span', null, '360°')))),
           slider('Coil angle (θ)', d.genAngle, 0, 360, 5, function (v) { upd({ genAngle: v, genPhaseSeen: true }); }),
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', margin: '-2px 0 8px' } },
-            h('button', { onClick: function () { upd({ genAngle: 0, genPhaseSeen: true }); }, style: btn(Math.abs(angle) < 1) }, 'Flux maximum · 0°'),
-            h('button', { onClick: function () { upd({ genAngle: 90, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 90) < 1) }, 'Voltage maximum · 90°'),
-            h('button', { onClick: function () { upd({ genAngle: 180, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 180) < 1) }, 'Flux minimum · 180°'),
-            h('button', { onClick: function () { upd({ genAngle: 270, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 270) < 1) }, 'Voltage minimum · 270°'),
-            h('button', { onClick: function () { upd({ genAngle: (angle + 30) % 360, genPhaseSeen: true }); }, style: btn() }, '↻ Step 30°')),
+            h('button', { type: 'button', onClick: function () { upd({ genAngle: 0, genPhaseSeen: true }); }, style: btn(Math.abs(angle) < 1) }, 'Flux maximum · 0°'),
+            h('button', { type: 'button', onClick: function () { upd({ genAngle: 90, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 90) < 1) }, 'Voltage maximum · 90°'),
+            h('button', { type: 'button', onClick: function () { upd({ genAngle: 180, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 180) < 1) }, 'Flux minimum · 180°'),
+            h('button', { type: 'button', onClick: function () { upd({ genAngle: 270, genPhaseSeen: true }); }, style: btn(Math.abs(angle - 270) < 1) }, 'Voltage minimum · 270°'),
+            h('button', { type: 'button', onClick: function () { upd({ genAngle: (angle + 30) % 360, genPhaseSeen: true }); }, style: btn() }, '↻ Step 30°')),
           slider('Crank speed (RPM)', d.genRPM, 0, 180, 15, function (v) { upd({ genRPM: v, genSpeedSeen: true }); }),
           h('div', { role: 'status', style: { color: SOFT, fontSize: 12, margin: '-4px 0 9px' } },
             d.genRPM + ' RPM = ' + frequency.toFixed(2) + ' electrical cycle' + (Math.abs(frequency - 1) < 0.001 ? '' : 's') + ' per second · voltage amplitude ×' + speedFactor.toFixed(2)),
@@ -10559,7 +10559,7 @@
               : 'Wiggle the magnet in AND out, back and forth. Watch the trace cross the zero line both ways — that alternation has a famous name.'),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 } },
             h('span', { style: { color: SOFT, fontSize: 11.5 } }, (function () { var cyc = countCycles(trace); return cyc >= 1 ? ('≈ ' + cyc + ' full cycle' + (cyc > 1 ? 's' : '') + ' in view — grid AC does 60 every second') : ''; })()),
-            h('button', { onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))))
+            h('button', { type: 'button', onClick: function () { upd({ emfTrace: [] }); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: SOFT, fontSize: 12, cursor: 'pointer' } }, 'Clear trace'))))
         ), '#fbbf24');
       }
 
@@ -10702,10 +10702,10 @@
                 h('span', { className: 'mag-section-label' }, 'Engineer the brake'),
           h('div', { className: 'mag-eddy-materials', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_eddy_current_conductor_and_loop_geometry', 'Eddy-current conductor and loop geometry'), style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
             Object.keys(EDDY_MATERIALS).map(function (key) {
-              return h('button', { key: key, 'aria-pressed': d.eddyMaterial === key ? 'true' : 'false',
+              return h('button', { type: 'button', key: key, 'aria-pressed': d.eddyMaterial === key ? 'true' : 'false',
                 onClick: function () { resetRace({ eddyMaterial: key }); }, style: btn(d.eddyMaterial === key) }, EDDY_MATERIALS[key].name);
             }),
-            h('button', { 'aria-pressed': d.eddySlit ? 'true' : 'false', onClick: function () { resetRace({ eddySlit: !d.eddySlit }); }, style: btn(d.eddySlit) }, d.eddySlit ? 'Slit plate/tube: open loop' : 'Solid plate/tube: closed loop')),
+            h('button', { type: 'button', 'aria-pressed': d.eddySlit ? 'true' : 'false', onClick: function () { resetRace({ eddySlit: !d.eddySlit }); }, style: btn(d.eddySlit) }, d.eddySlit ? 'Slit plate/tube: open loop' : 'Solid plate/tube: closed loop')),
           slider('Conductor thickness (mm)', d.eddyThickness, 1, 6, 1, function (v) { resetRace({ eddyThickness: v }); }),
             h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12 } },
               slider('Plate speed', d.eddySpeed, 0, 10, 1, function (v) { resetRace({ eddySpeed: v }); }),
@@ -10728,7 +10728,7 @@
                 tube(148, 'plastic', prog.pl, '#64748b', false),
                 h('text', { x: 110, y: 144, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'relative braking ' + Math.round(brake * 100) + '%'))),
             h('div', { style: { textAlign: 'center', marginBottom: 8 } },
-              h('button', { disabled: d.tubeRunning, onClick: startTubeRace, style: btn(true) }, d.tubeRunning ? 'falling...' : (d.tubeDone ? 'Drop again' : 'Drop both magnets'))),
+              h('button', { type: 'button', disabled: d.tubeRunning, onClick: startTubeRace, style: btn(true) }, d.tubeRunning ? 'falling...' : (d.tubeDone ? 'Drop again' : 'Drop both magnets'))),
             h('div', { className: 'mag-observe', role: 'status' },
               h('span', { 'aria-hidden': 'true' }, d.eddySlit ? '/' : 'O'),
               h('span', null, h('b', null, d.eddySlit ? 'Broken loop: ' : 'Closed loop: '),
@@ -11236,7 +11236,7 @@
               h('button', { type: 'button', disabled: d.craneDone || d.craneSlot >= BIN_SLOT || moveLocked, 'aria-label': __alloT('stem.magnetism.a11y_move_crane_right', 'Move crane right'), onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
             h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, (typeof d.craneMsg === 'string' ? d.craneMsg : '') || 'Move over an object, predict, then test it with the field.'),
             d.craneDone ? h('div', { style: { textAlign: 'center' } },
-              h('button', { onClick: function () {
+              h('button', { type: 'button', onClick: function () {
                   upd({ craneSlot: 0, cranePower: false, craneHolding: null, craneMsg: '',
                     craneItems: { 0: 'nail', 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
                     craneDeposited: {}, cranePredictions: {}, craneTests: {}, craneDone: false });
@@ -11455,13 +11455,13 @@
               h('span', { role: 'status' }, h('b', null, 'Read the needle: '), d.learningMode === 'challenge' ? 'Use the needle bearing to choose your own step. No path hint is shown; your connected trail is the evidence.' : 'Its strongest cardinal component points ' + bearing.word + '. The gold-outlined step is the closest D-pad match; your connected trail records the field line you infer.')),
             h('div', { className: 'mag-walk-pad', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_field_walk_movement', 'Field Walk movement'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,44px)', gap: 4, justifyContent: 'center', marginBottom: 8 } },
               h('span', null, ''),
-              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_up', 'Walk up{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
+              h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_up', 'Walk up{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, -1); }, style: mazePadStyle(0, -1) }, '↑'),
               h('span', null, ''),
-              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_left', 'Walk left{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(-1, 0); }, style: mazePadStyle(-1, 0) }, '←'),
+              h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_left', 'Walk left{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === -1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(-1, 0); }, style: mazePadStyle(-1, 0) }, '←'),
               h('span', { style: { textAlign: 'center', color: SOFT, fontSize: 11, alignSelf: 'center' } }, d.mazeSteps + ' steps'),
-              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_right', 'Walk right{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(1, 0); }, style: mazePadStyle(1, 0) }, '→'),
+              h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_right', 'Walk right{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dx === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(1, 0); }, style: mazePadStyle(1, 0) }, '→'),
               h('span', null, ''),
-              h('button', { 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_down', 'Walk down{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
+              h('button', { type: 'button', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_walk_down', 'Walk down{value1}'), { value1: d.learningMode !== 'challenge' && bearing.dy === 1 ? __alloT('stem.magnetism.a11y_closest_to_the_red_needle_direction', ', closest to the red needle direction') : '' }), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
               h('span', null, '')))),
             h('div', { className: 'mag-maze-evidence' },
               h('div', { className: 'mag-maze-head' },
@@ -11481,13 +11481,13 @@
                   h('b', null, evidence.lastMoveAligned == null ? 'Start the evidence trail' : evidence.lastMoveAligned ? 'Aligned with the field' : 'Cross-field move'),
                   evidence.lastMoveAligned == null ? 'Your first square is the 1.00× baseline. Move once to compare direction and strength.' : (evidence.lastMoveAligned ? 'Your last step matched the red tip at the prior square. ' : 'Your last step did not match the red tip at the prior square. That is useful evidence, not a penalty. ') + trendText)),
               d.mazeSteps > 0 && !d.mazeWon ? h('div', { className: 'mag-maze-actions' },
-                h('button', { onClick: mazeRestartRound, style: btn() }, '↻ Restart this route')) : null),
+                h('button', { type: 'button', onClick: mazeRestartRound, style: btn() }, '↻ Restart this route')) : null),
             d.mazeWon ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid #22c55e', marginBottom: 8 } },
               h('p', { style: { color: TEXT, fontSize: 13, fontWeight: 700, margin: '0 0 6px' } }, '🏆 Found in ' + d.mazeSteps + ' steps!'),
               h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } }, 'Notice WHERE you arrived: the ', h('b', { style: { color: '#3b82f6' } }, 'SOUTH pole'), '. Field lines flow into south poles, so following the red end always lands you there. This is Earth’s great naming joke — a compass points “north” because the spot we call the north magnetic pole is, magnetically, a ', h('b', null, 'south'), ' pole.'),
               h('p', { style: { color: SOFT, fontSize: 11.5, margin: '7px 0 0', lineHeight: 1.45 } }, 'Route evidence: ' + (evidence.alignmentPercent == null ? 'no scored moves' : evidence.alignmentPercent + '% field-aligned') + ' · ' + evidence.uniqueCount + ' unique squares · ' + evidence.revisits + ' revisits · needle-following benchmark ' + evidence.referenceSteps + ' steps.'),
               h('div', { style: { textAlign: 'center', marginTop: 8 } },
-                h('button', { onClick: mazeNextRound, style: btn(true) }, '▶ Next round'))) : null,
+                h('button', { type: 'button', onClick: mazeNextRound, style: btn(true) }, '▶ Next round'))) : null,
             h('p', { style: { color: SOFT, fontSize: 12, margin: 0, lineHeight: 1.5 } }, 'Rounds won: ' + (d.mazeWins || 0) + '. The needle does NOT point straight at the magnet — it follows the curved field line through your square. Your breadcrumb trail will show the curve you walked.')
           ), '#38bdf8'),
           disclosure('The compass responds to the hidden magnet’s real dipole field, computed at your position — the same physics as the Field Explorer, just with the magnet invisible. Real magnetometer surveys (archaeology, shipwreck hunting, unexploded-ordnance clearing) work exactly this way.')
@@ -11674,7 +11674,7 @@
             slider('Primary turns (N1)', d.xfmrN1, 25, 200, 25, function (v) { upd({ xfmrN1: v, xfmrTouched: true }); }),
             slider('Secondary turns (N2)', d.xfmrN2, 25, 400, 25, function (v) { upd({ xfmrN2: v, xfmrTouched: true }); }),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-              h('button', { 'aria-pressed': d.xfmrAC ? 'true' : 'false', onClick: function () { upd({ xfmrAC: !d.xfmrAC, xfmrTouched: true }); }, style: btn(d.xfmrAC) }, d.xfmrAC ? 'AC input' : 'DC input'),
+              h('button', { type: 'button', 'aria-pressed': d.xfmrAC ? 'true' : 'false', onClick: function () { upd({ xfmrAC: !d.xfmrAC, xfmrTouched: true }); }, style: btn(d.xfmrAC) }, d.xfmrAC ? 'AC input' : 'DC input'),
               h('div', { style: { flex: 1, minWidth: 180, padding: 10, borderRadius: 8, background: d.xfmrAC ? 'rgba(56,189,248,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (d.xfmrAC ? 'rgba(56,189,248,0.3)' : 'rgba(239,68,68,0.3)') } },
                 h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800 } }, '120 V → ' + load.vout.toFixed(0) + ' V output'),
                 h('div', { style: { color: SOFT, fontSize: 11.5, marginTop: 2 } }, d.xfmrAC
@@ -11695,7 +11695,7 @@
               h('div', { className: 'mag-xfmr-missions', role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_transformer_engineering_briefs', 'Transformer engineering briefs') },
                 TRANSFORMER_DESIGN_MISSIONS.map(function (mission, index) {
                   var selected = index === design.index;
-                  return h('button', { key: mission.id, 'aria-pressed': selected ? 'true' : 'false',
+                  return h('button', { type: 'button', key: mission.id, 'aria-pressed': selected ? 'true' : 'false',
                     onClick: function () { selectTransformerMission(index); }, style: btn(selected) },
                     mission.icon + ' ' + mission.targetVoltage + ' V' + (missionWins[mission.id] ? ' \u2713' : ''));
                 })),
@@ -11710,8 +11710,8 @@
                 h('span', null, h('b', null, feedbackTitle), feedbackDetail)),
               h('div', { className: 'mag-xfmr-actions' },
                 design.allMet && missionWon
-                  ? h('button', { onClick: nextTransformerMission, style: btn(true) }, solvedCount === TRANSFORMER_DESIGN_MISSIONS.length ? '\u21BB Replay next mission' : '\u25B6 Next unsolved mission')
-                  : h('button', { onClick: validateTransformerDesign, style: btn(design.allMet) }, design.allMet ? '\u2713 Lock in design' : (d.xfmrChecked ? 'Check again' : 'Check design')),
+                  ? h('button', { type: 'button', onClick: nextTransformerMission, style: btn(true) }, solvedCount === TRANSFORMER_DESIGN_MISSIONS.length ? '\u21BB Replay next mission' : '\u25B6 Next unsolved mission')
+                  : h('button', { type: 'button', onClick: validateTransformerDesign, style: btn(design.allMet) }, design.allMet ? '\u2713 Lock in design' : (d.xfmrChecked ? 'Check again' : 'Check design')),
                 d.xfmrChecked && !design.allMet ? h('span', { style: { alignSelf: 'center', color: SOFT, fontSize: 11 } }, 'Next focus: ' + design.nextAction.label) : null)),
             h('div', { className: 'mag-readouts' },
               instrumentReadout('Secondary current', load.iout.toFixed(2) + ' A', 'Live · resistive load', '#0284c7'),
@@ -12006,8 +12006,8 @@
       function earth3DPanel() {
         var state = currentEarth3DState();
         var daysideShift = 9.8 - state.daysideRadiusRE, tailGrowth = state.tailReachRE - 15;
-        function cameraButton(id, label) { return h('button', { key: id, onClick: function () { if (_earth3DCanvas && typeof _earth3DCanvas._earth3dSetView === 'function') _earth3DCanvas._earth3dSetView(id); announceToSR(label + ' magnetosphere view selected.'); }, style: btn() }, label); }
-        function layerButton(key, label, on) { var patch = {}; patch[key] = !on; patch.earth3dUsed = true; return h('button', { 'aria-pressed': on ? 'true' : 'false', onClick: function () { upd(patch); }, style: btn(on) }, label + ': ' + (on ? 'on' : 'off')); }
+        function cameraButton(id, label) { return h('button', { type: 'button', key: id, onClick: function () { if (_earth3DCanvas && typeof _earth3DCanvas._earth3dSetView === 'function') _earth3DCanvas._earth3dSetView(id); announceToSR(label + ' magnetosphere view selected.'); }, style: btn() }, label); }
+        function layerButton(key, label, on) { var patch = {}; patch[key] = !on; patch.earth3dUsed = true; return h('button', { type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function () { upd(patch); }, style: btn(on) }, label + ': ' + (on ? 'on' : 'off')); }
         return h('div', null,
           sceneViewport(h('canvas', { key: 'earth3d-' + (d.earth3dAttempt || 0), ref: earth3DCanvasRef, className: 'mag-earth3d', role: 'img',
             'aria-label': __alloT('stem.magnetism.a11y_interactive_three_dimensional_schematic_magneto', 'Interactive three-dimensional schematic magnetosphere with Earth, tilted dipole field lines and direction arrows, solar-wind flow, open bow shock, magnetopause, quiet-condition reference, radiation-belt rings, particle markers, and auroral ovals.'),
@@ -12017,7 +12017,7 @@
               { label: 'Auroral oval', value: state.auroralLatitude.toFixed(0) + '° latitude', tone: '#34d399' }
             ], 'solar wind · +x'),
           h('div', { id: 'mag-earth3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: d.earth3dStatus === 'error' ? '#fbbf24' : SOFT, fontSize: 11.5, lineHeight: 1.45, margin: '7px 0' } },
-            d.earth3dStatus === 'ready' ? 'Scene ready. Drag to orbit or compare the Sun-facing side, tail, and polar views. ' + (state.motion ? 'Flow animation is on.' : 'Motion is paused.') : d.earth3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Earth-field model remains available. ', h('button', { onClick: function () { upd({ earth3dStatus: 'loading', earth3dAttempt: (d.earth3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D magnetosphere engine...'),
+            d.earth3dStatus === 'ready' ? 'Scene ready. Drag to orbit or compare the Sun-facing side, tail, and polar views. ' + (state.motion ? 'Flow animation is on.' : 'Motion is paused.') : d.earth3dStatus === 'error' ? h('span', null, '3D graphics did not load. The complete 2D Earth-field model remains available. ', h('button', { type: 'button', onClick: function () { upd({ earth3dStatus: 'loading', earth3dAttempt: (d.earth3dAttempt || 0) + 1 }); }, style: btn() }, 'Retry 3D')) : 'Loading the 3D magnetosphere engine...'),
           h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_3d_magnetosphere_key', '3D magnetosphere key'), style: { display: 'flex', gap: 10, flexWrap: 'wrap', color: SOFT, fontSize: 11.5, marginBottom: 8 } },
             h('span', null, 'blue sphere Earth'), h('span', null, 'blue arrowed curves field direction'), h('span', null, 'one/two white rings N/S poles'), h('span', null, 'gold dashed arcs bow shock'), h('span', null, 'blue wire shell magnetopause'), h('span', null, 'white dashed quiet reference'), h('span', null, 'violet/pink rings trapped-particle belts'), h('span', null, 'green polar auroral ovals'), h('span', null, 'gold arrows solar wind')),
           sceneTextAlternative('mag-earth3d-summary', 'This schematic 3D magnetosphere shows ' + state.activity + ' solar-wind pressure at level ' + state.pressure + ' of 10. The Sun-facing magnetopause is about ' + state.daysideRadiusRE.toFixed(1) + ' Earth radii from Earth in this teaching scale, while the modeled tail reaches ' + state.tailReachRE.toFixed(0) + ' Earth radii downstream. The auroral oval is shown near ' + state.auroralLatitude.toFixed(0) + ' degrees magnetic latitude. The gray geographic axis and tilted red magnetic axis are separated by about ' + state.dipoleTilt + ' degrees. One white ring marks the magnetic north side and two mark the magnetic south side without relying on color. Arrowheads show field direction outside Earth. The dashed white outline preserves the quiet-condition boundary for direct comparison. Violet and pink rings identify two schematic trapped-particle belt regions; they are zones, not solid tubes. Optional animation moves solar-wind arrows downstream and particles around the belts, and respects reduced-motion preferences. Dimensions respond illustratively to the pressure control and are not a space-weather forecast.'),
@@ -12062,8 +12062,8 @@
         return h('div', null,
           card('Earth’s dynamo and your compass', h('div', null,
             h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_earth_magnetic_field_model_view', 'Earth magnetic-field model view'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
-              h('button', { 'aria-pressed': d.earthView !== '3d' ? 'true' : 'false', onClick: function () { upd({ earthView: '2d', earthSeen: true }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_magnetosphere_cross_section_selec', 'Two-dimensional magnetosphere cross-section selected.')); }, style: btn(d.earthView !== '3d') }, '2D cross-section'),
-              h('button', { 'aria-pressed': d.earthView === '3d' ? 'true' : 'false', onClick: function () { if (d.earthView === '3d') return; upd({ earthView: '3d', earth3dStatus: 'loading', earth3dUsed: true, earthSeen: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_magnetosphere_lab_selected', 'Three-dimensional magnetosphere lab selected.')); }, style: btn(d.earthView === '3d') }, '3D magnetosphere lab')),
+              h('button', { type: 'button', 'aria-pressed': d.earthView !== '3d' ? 'true' : 'false', onClick: function () { upd({ earthView: '2d', earthSeen: true }); announceToSR(__alloT('stem.magnetism.sr_two_dimensional_magnetosphere_cross_section_selec', 'Two-dimensional magnetosphere cross-section selected.')); }, style: btn(d.earthView !== '3d') }, '2D cross-section'),
+              h('button', { type: 'button', 'aria-pressed': d.earthView === '3d' ? 'true' : 'false', onClick: function () { if (d.earthView === '3d') return; upd({ earthView: '3d', earth3dStatus: 'loading', earth3dUsed: true, earthSeen: true }); announceToSR(__alloT('stem.magnetism.sr_three_dimensional_magnetosphere_lab_selected', 'Three-dimensional magnetosphere lab selected.')); }, style: btn(d.earthView === '3d') }, '3D magnetosphere lab')),
             h('div', { className: 'mag-earth-stage', 'data-activity': shield.current.activity },
               h('div', { className: 'mag-earth-stage-live', 'aria-hidden': 'true' }, h('span', null, h('i', null), 'Live shield · ' + shield.current.activity), h('span', null, 'pressure ' + shield.current.pressure + '/10')),
               d.earthView === '3d' ? earth3DPanel() : h('div', { style: { display: 'flex', justifyContent: 'center' } }, earthSVG())),
@@ -12123,7 +12123,7 @@
                 slider('Solar-wind pressure', windLevel, 1, 10, 1, function (v) { upd({ earthSolarWind: v, earthSeen: true, earth3dUsed: d.earthView === '3d' || d.earth3dUsed }); }),
                 h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_solar_wind_comparison_presets', 'Solar-wind comparison presets'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', margin: '0 0 9px' } },
                   [{ value: 2, label: 'Quiet · 2' }, { value: 5, label: 'Active · 5' }, { value: 10, label: 'Storm · 10' }].map(function (preset) {
-                    return h('button', { key: preset.value, 'aria-pressed': windLevel === preset.value ? 'true' : 'false', onClick: function () { upd({ earthSolarWind: preset.value, earthSeen: true, earth3dUsed: d.earthView === '3d' || d.earth3dUsed }); announceToSR(preset.label.replace(' · ', ' solar wind level ') + ' selected.'); }, style: btn(windLevel === preset.value) }, preset.label);
+                    return h('button', { type: 'button', key: preset.value, 'aria-pressed': windLevel === preset.value ? 'true' : 'false', onClick: function () { upd({ earthSolarWind: preset.value, earthSeen: true, earth3dUsed: d.earthView === '3d' || d.earth3dUsed }); announceToSR(preset.label.replace(' · ', ' solar wind level ') + ' selected.'); }, style: btn(windLevel === preset.value) }, preset.label);
                   })),
                 shield.baseline && !shield.currentMatchesExpected ? h('p', { className: 'mag-earth-control-note', role: 'status' }, shield.currentComparison) : null)),
             h('div', { className: 'mag-observe' },
@@ -12261,10 +12261,10 @@
                     h('strong', null, topic.correct + '/' + topic.total)),
                   h('div', { className: 'mag-quiz-topic-track', role: 'progressbar', 'aria-label': __alloFill(__alloT('stem.magnetism.a11y_mastery_of_correct', '{topicLabel} mastery: {correct} of {total} correct'), { topicLabel: topicLabel, correct: topic.correct, total: topic.total }), 'aria-valuemin': 0, 'aria-valuemax': topic.total, 'aria-valuenow': topic.correct },
                     h('span', { className: 'mag-quiz-topic-fill', style: { width: topic.percent + '%' } })),
-                  topic.needsReview ? h('button', { onClick: function () { upd({ tab: topic.id }); announceToSR(__alloFill(__alloT('stem.magnetism.sr_opened_to_review', 'Opened {value1} to review'), { value1: topicLabel })); }, style: btn() }, 'Study: ' + topicLabel) : null);
+                  topic.needsReview ? h('button', { type: 'button', onClick: function () { upd({ tab: topic.id }); announceToSR(__alloFill(__alloT('stem.magnetism.sr_opened_to_review', 'Opened {value1} to review'), { value1: topicLabel })); }, style: btn() }, 'Study: ' + topicLabel) : null);
               }))),
             h('div', { className: 'mag-quiz-results-actions' },
-              h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizMissed: [] }); announceToSR(__alloT('stem.magnetism.sr_quiz_restarted', 'Quiz restarted')); }, style: btn(true) }, '↻ Try again'))
+              h('button', { type: 'button', onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizMissed: [] }); announceToSR(__alloT('stem.magnetism.sr_quiz_restarted', 'Quiz restarted')); }, style: btn(true) }, '↻ Try again'))
           ));
         }
         var item = QUIZ[evidence.index];
@@ -12325,7 +12325,7 @@
                   h('b', null, pickedRight ? 'Evidence confirmed' : 'Claim revised · Revise the claim.'),
                   h('p', null, item.why),
                   h('span', { className: 'mag-quiz-next-cue' }, pickedRight ? 'Next: carry this model into the next question.' : 'Next: use the highlighted model answer; ' + quizTopicLabel + ' is saved for review.')),
-                h('button', { onClick: function () {
+                h('button', { type: 'button', onClick: function () {
                   if (evidence.index + 1 >= QUIZ.length) {
                     var previousBest = Number(d.quizBest) || 0;
                     var best = Math.max(previousBest, evidence.score);
@@ -12574,10 +12574,10 @@
       function learningModeSwitch() {
         return h('div', { role: 'group', 'aria-label': __alloT('stem.magnetism.a11y_learning_support_level', 'Learning support level'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center' } },
           h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Support level'),
-          h('button', { 'aria-pressed': d.learningMode === 'guided' ? 'true' : 'false', onClick: function () {
+          h('button', { type: 'button', 'aria-pressed': d.learningMode === 'guided' ? 'true' : 'false', onClick: function () {
             upd({ learningMode: 'guided' }); announceToSR(__alloT('stem.magnetism.sr_guided_mode_prediction_test_and_explanation_promp', 'Guided mode: prediction, test, and explanation prompts are visible.'));
           }, style: btn(d.learningMode === 'guided') }, 'Guided'),
-          h('button', { 'aria-pressed': d.learningMode === 'challenge' ? 'true' : 'false', onClick: function () {
+          h('button', { type: 'button', 'aria-pressed': d.learningMode === 'challenge' ? 'true' : 'false', onClick: function () {
             upd({ learningMode: 'challenge' }); announceToSR(__alloT('stem.magnetism.sr_challenge_mode_guidance_and_path_hints_are_reduce', 'Challenge mode: guidance and path hints are reduced.'));
           }, style: btn(d.learningMode === 'challenge') }, 'Challenge'));
       }
@@ -13534,7 +13534,7 @@
             h('span', { 'aria-hidden': 'true' }, progress.completed ? '✓' : '🧭'),
             h('span', null, h('b', null, missionStatus + ' '), progress.completed ? 'Choose another target to transfer the idea to a new system.' : next.hint)),
           h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 8 } },
-            progress.completed ? h('span', { style: { color: '#22c55e', fontSize: 12, fontWeight: 800, padding: '8px 0' } }, 'Mission evidence complete ✓') : h('button', { onClick: function () { openStep(next); }, style: btn(true) }, started ? 'Open next: ' + next.label : 'Start mission → ' + next.label),
+            progress.completed ? h('span', { style: { color: '#22c55e', fontSize: 12, fontWeight: 800, padding: '8px 0' } }, 'Mission evidence complete ✓') : h('button', { type: 'button', onClick: function () { openStep(next); }, style: btn(true) }, started ? 'Open next: ' + next.label : 'Start mission → ' + next.label),
             h('span', { style: { color: SOFT, fontSize: 11.5, padding: '8px 0' } }, 'Steps stay linked to your real station progress.')),
           h('details', { open: started || progress.completed, style: { marginTop: 9 } },
             h('summary', { style: { color: TEXT, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Design review · what the evidence proves'),

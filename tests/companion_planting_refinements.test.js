@@ -79,7 +79,9 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('data-best-fit-candidate');
     expect(source).toContain('data-repeat-last-crop');
     expect(source).toContain('data-undo-last-placement');
-    expect(source).toContain('skipNextPlantXPPlot');
+    // Round 3 (2026-11-24): skipNextPlantXPPlot was written on undo but never read, and planting awards no XP at all
+    // (XP comes only from saved evidence), so the flag was removed. Undo cannot farm XP: see companionplanting_round3.
+    expect(source).not.toContain('skipNextPlantXPPlot');
     expect(source).toContain('data-community-learning-compass');
     expect(source).toContain('data-learning-cycle');
     expect(source).toContain('data-planting-cause-effect');
@@ -397,7 +399,9 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-community-visitors="true"');
     expect(html).toContain('Wildlife has discovered your garden');
     expect(html).toContain('Seed-eating birds');
-    expect(html).toContain('Observe +8 XP');
+    // Round 2: recording a visitor is a routine click, so the button no longer promises XP.
+    expect(html).toContain('>Record<');
+    expect(html).not.toContain('Observe +8 XP');
     expect(html).toContain('0/5 observed');
     expect(html).toContain('data-community-wildlife-guide="true"');
     expect(html).toContain('Undiscovered');
@@ -441,9 +445,10 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('East · Plot 2');
     expect(html).toContain('South · Plot 5');
     expect(html).toContain('Southeast · Plot 6');
-    expect(html).toContain('Basil repels tomato hornworm and whiteflies');
+    // 2026-11-24 accuracy pass: the old repel/kill claims overstated the evidence (see tool source comments).
+    expect(html).toContain('Basil rows meant fewer whiteflies on tomatoes in one field test (other results mixed)');
     expect(html).toContain('Same family — share blight and beetle pests!');
-    expect(html).toContain('Marigold roots kill soil nematodes');
+    expect(html).toContain('Thick French marigolds can lower soil nematodes, best grown for months before the crop');
     expect(html).toContain('Focus this neighbor');
     expect(html).toContain('The simulation checks all eight surrounding plots.');
     expect(html).toContain('data-focused-plant-inspect="true"');

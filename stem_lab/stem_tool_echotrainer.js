@@ -46,8 +46,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   if (typeof document !== 'undefined' && document.head && !document.getElementById('echotrainer-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'echotrainer-a11y-css';
-    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; } [data-echotrainer-root] button { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; } [data-echotrainer-root] button:not([disabled]):hover { transform: translateY(-1px); } [data-echotrainer-root] button:focus-visible, [data-echotrainer-root] summary:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }';
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; } [data-echotrainer-root] button { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; } [data-echotrainer-root] button:not([disabled]):hover { transform: translateY(-1px); } [data-echotrainer-root] button:focus-visible, [data-echotrainer-root] summary:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; } @media (max-width: 560px) { [data-echotrainer-root] [data-echotrainer-pills], [data-echotrainer-root] [data-echotrainer-eyebrow] { display: none !important; } [data-echotrainer-root] [data-echotrainer-titleblock] { flex: 1 1 150px !important; } [data-echotrainer-root] { padding: 10px !important; gap: 10px !important; } }';
     document.head.appendChild(_s);
+  }
+  // Contrast theme for the older controls inside "More" (places, levels, stats, the help panels, the echo lab's Log,
+  // Reset and notes): they kept dark-theme slate and indigo. Black ground, white text, yellow edges; a chosen
+  // button is filled yellow, a locked place has a dashed edge (its words already say "locked").
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('echotrainer-hc-more-css')) {
+    var _hc = document.createElement('style');
+    _hc.id = 'echotrainer-hc-more-css';
+    var _M = '[data-echotrainer-theme=contrast] [data-echotrainer-more] ';
+    _hc.textContent = [
+      _M + 'details, ' + _M + 'summary, ' + _M + 'textarea, ' + _M + 'details div[style*="background"]:not(:empty) { background: #000000 !important; background-image: none !important; color: #ffffff !important; border-color: #ffff00 !important; }',
+      _M + 'details { border: 1px solid #ffff00 !important; }',
+      _M + 'textarea { border: 2px solid #ffff00 !important; }',
+      _M + 'button { background: #000000 !important; color: #ffffff !important; border: 2px solid #ffff00 !important; opacity: 1 !important; }',
+      _M + 'button[aria-pressed="true"] { background: #ffff00 !important; color: #000000 !important; }',
+      _M + 'button[aria-pressed="true"] * { color: #000000 !important; }',
+      _M + 'button:disabled { border-style: dashed !important; cursor: not-allowed; }'
+    ].join(' ');
+    document.head.appendChild(_hc);
   }
 
   // WCAG live region
@@ -76,20 +94,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
   // ── Environment presets ──
   var ENVIRONMENTS = [
-    { id: 'simple_room', name: 'Simple Room', icon: '\uD83C\uDFE0', desc: 'A rectangular room with one pillar. Good for beginners.', complexity: 1 },
+    { id: 'simple_room', name: 'Simple Room', icon: '\uD83C\uDFE0', desc: 'A rectangular room with one pillar. Good for beginners.', descV2: 'A rectangular room with one pillar and long curtains on two walls. Good for beginners.', complexity: 1 },
     { id: 'cave', name: 'Cave System', icon: '\uD83E\uDD87', desc: 'Irregular walls, stalactites, and narrow passages.', complexity: 2 },
     { id: 'corridor', name: 'Corridor Maze', icon: '\uD83C\uDFDB\uFE0F', desc: 'Hallways and turns \u2014 can you find the exit?', complexity: 3 },
     { id: 'forest', name: 'Forest Path', icon: '\uD83C\uDF32', desc: 'Trees and rocks in an open space. Materials vary.', complexity: 2 },
-    { id: 'urban', name: 'Urban Street', icon: '\uD83C\uDFD9\uFE0F', desc: 'Buildings, metal posts, glass, moving pedestrians and cars.', complexity: 3 },
-    { id: 'school', name: 'School Hallway', icon: '\uD83C\uDFEB', desc: 'Navigate a school: classrooms, lockers, trophy case. Find the main office.', complexity: 2 },
-    { id: 'grocery', name: 'Grocery Store', icon: '\uD83D\uDED2', desc: 'Aisles, freezers, deli counter. Reach the checkout while avoiding shoppers.', complexity: 3 },
-    { id: 'park', name: 'City Park', icon: '\uD83C\uDFDE\uFE0F', desc: 'Benches, fountain, playground, paths. Joggers and cyclists pass by.', complexity: 2 },
+    { id: 'urban', name: 'Urban Street', icon: '\uD83C\uDFD9\uFE0F', desc: 'Buildings, metal posts, glass, moving pedestrians and cars.', descV2: 'Buildings, metal posts, glass, crowds waiting, moving pedestrians and cars.', complexity: 3 },
+    { id: 'school', name: 'School Hallway', icon: '\uD83C\uDFEB', desc: 'Navigate a school: classrooms, lockers, trophy case. Find the main office.', descV2: 'Navigate a school: classrooms with curtains and seated classes, lockers, trophy case. Find the main office.', complexity: 2 },
+    { id: 'grocery', name: 'Grocery Store', icon: '\uD83D\uDED2', desc: 'Aisles, freezers, deli counter. Reach the checkout while avoiding shoppers.', descV2: 'Aisles, freezers, checkout lines of people. Reach the checkout while avoiding shoppers.', complexity: 3 },
+    { id: 'park', name: 'City Park', icon: '\uD83C\uDFDE\uFE0F', desc: 'Benches, fountain, playground, paths. Joggers and cyclists pass by.', descV2: 'Benches, fountain, playground, paths and crowds watching a show. Joggers and cyclists pass by.', complexity: 2 },
     { id: 'challenge', name: 'Random Challenge', icon: '\uD83C\uDFB2', desc: 'Procedurally generated. Every attempt is unique.', complexity: 4 }
   ];
 
   // ── Progress persistence (localStorage) ──
   var ECHO_STORAGE_KEY = 'alloEchoTrainerProgress_v1';
-  var ECHO_PERSIST_FIELDS = ['goalsFound', 'blindWins', 'urbanNoCarHit', 'batMasterWin', 'schoolWin', 'waypointComplete', 'matQuizCorrect', 'difficulty', 'envType'];
+  var ECHO_PERSIST_FIELDS = ['goalsFound', 'blindWins', 'urbanNoCarHit', 'batMasterWin', 'schoolWin', 'waypointComplete', 'matQuizCorrect', 'difficulty', 'envType', 'goalEnvs'];
+  // One id per page load. A student's safety acknowledgement counts for this visit only; a teacher's is kept.
+  var ECHO_SESSION_ID = 's' + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);
   function loadEchoProgress() {
     try {
       var raw = localStorage.getItem(ECHO_STORAGE_KEY);
@@ -152,8 +172,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     glass:    [0x9c, 0xea, 0xff],
     flesh:    [0xff, 0x9c, 0x9c],
     car:      [0xff, 0xc4, 0x7c],
-    goal:     [0xff, 0xd8, 0x40]
+    goal:     [0xff, 0xd8, 0x40],
+    curtain:  [0xd8, 0xb4, 0xfe]
   };
+
+  // ── How much sound each surface soaks up (absorption coefficient) at 250 Hz, 1 kHz, 4 kHz ──
+  // Hall, Musical Acoustics 2nd ed., Table 15.1, as given at https://hyperphysics.gsu.edu/hbase/Acoustic/revmod.html
+  // concrete = poured concrete; glass = ordinary window glass; wood = plywood sheet on studs;
+  // curtain = medium velour draperies. The table has no rock, metal or people row, so (stated
+  // in the Materials panel) rock uses brick, metal (and car, beacon) uses poured concrete, and
+  // people use "wooden pews, occupied". A surface sends back (1 - absorption) of the energy.
+  var ECHO_MATERIALS = {
+    concrete: [0.01, 0.02, 0.03],
+    rock:     [0.03, 0.04, 0.07],
+    metal:    [0.01, 0.02, 0.03],
+    glass:    [0.2, 0.1, 0.04],
+    wood:     [0.3, 0.1, 0.1],
+    curtain:  [0.3, 0.7, 0.6],
+    flesh:    [0.4, 0.7, 0.7]
+  };
+  var ECHO_MAT_ALIAS = { car: 'metal', goal: 'metal' };
+  function matAbs(mat) { return ECHO_MATERIALS[ECHO_MAT_ALIAS[mat] || mat] || ECHO_MATERIALS.concrete; }
+  // Share of the sound energy at 1 kHz that comes back (0 to 1).
+  function matRef(mat) { return Math.round((1 - matAbs(mat)[1]) * 100) / 100; }
 
   // ── Difficulty presets ──
   var DIFFICULTY = [
@@ -214,7 +255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       name: 'Park Tour',
       points: [
         { x: 200, y: 400, label: 'West Path' },
-        { x: 400, y: 400, label: 'Fountain' },
+        { x: 440, y: 440, label: 'Fountain' }, // beside the fountain: its center (400, 400) is inside the 40 px basin, so no one could reach it
         { x: 590, y: 590, label: 'Playground' },
         { x: 400, y: 200, label: 'North Path' }
       ]
@@ -231,129 +272,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     var objects = [];
 
     // Outer boundary (always)
-    walls.push({ x1: 20, y1: 20, x2: W - 20, y2: 20, mat: 'concrete', ref: 0.92 });
-    walls.push({ x1: W - 20, y1: 20, x2: W - 20, y2: H - 20, mat: 'concrete', ref: 0.92 });
-    walls.push({ x1: W - 20, y1: H - 20, x2: 20, y2: H - 20, mat: 'concrete', ref: 0.92 });
-    walls.push({ x1: 20, y1: H - 20, x2: 20, y2: 20, mat: 'concrete', ref: 0.92 });
+    walls.push({ x1: 20, y1: 20, x2: W - 20, y2: 20, mat: 'concrete', ref: matRef('concrete') });
+    walls.push({ x1: W - 20, y1: 20, x2: W - 20, y2: H - 20, mat: 'concrete', ref: matRef('concrete') });
+    walls.push({ x1: W - 20, y1: H - 20, x2: 20, y2: H - 20, mat: 'concrete', ref: matRef('concrete') });
+    walls.push({ x1: 20, y1: H - 20, x2: 20, y2: 20, mat: 'concrete', ref: matRef('concrete') });
+    // A block of people (a seated audience, a class, a queue), drawn as its outline. People use the
+    // "wooden pews, occupied" row of the absorption table, so a crowd is a soft surface.
+    function crowdBlock(x, y, w, h) {
+      walls.push({ x1: x, y1: y, x2: x + w, y2: y, mat: 'flesh', ref: matRef('flesh'), crowd: true });
+      walls.push({ x1: x + w, y1: y, x2: x + w, y2: y + h, mat: 'flesh', ref: matRef('flesh'), crowd: true });
+      walls.push({ x1: x + w, y1: y + h, x2: x, y2: y + h, mat: 'flesh', ref: matRef('flesh'), crowd: true });
+      walls.push({ x1: x, y1: y + h, x2: x, y2: y, mat: 'flesh', ref: matRef('flesh'), crowd: true });
+    }
 
     if (type === 'simple_room') {
-      objects.push({ x: 400, y: 350, r: 30, mat: 'concrete', ref: 0.9 });
-      walls.push({ x1: 300, y1: 200, x2: 500, y2: 200, mat: 'wood', ref: 0.5 });
+      objects.push({ x: 400, y: 350, r: 30, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 300, y1: 200, x2: 500, y2: 200, mat: 'wood', ref: matRef('wood') });
+      // Heavy curtains hung in front of the west and east walls: soft surfaces, for hard-or-soft listening.
+      walls.push({ x1: 40, y1: 150, x2: 40, y2: 650, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 760, y1: 150, x2: 760, y2: 650, mat: 'curtain', ref: matRef('curtain') });
     } else if (type === 'cave') {
       for (var ci = 0; ci < 5; ci++) {
         var cx = 80 + rng() * 640, cy = 80 + rng() * 640;
         var cl = 60 + rng() * 180, ca = rng() * Math.PI;
-        walls.push({ x1: cx, y1: cy, x2: cx + Math.cos(ca) * cl, y2: cy + Math.sin(ca) * cl, mat: 'rock', ref: 0.85 });
+        walls.push({ x1: cx, y1: cy, x2: cx + Math.cos(ca) * cl, y2: cy + Math.sin(ca) * cl, mat: 'rock', ref: matRef('rock') });
       }
       for (var si = 0; si < 4; si++) {
-        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 10 + rng() * 15, mat: 'rock', ref: 0.85 });
+        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 10 + rng() * 15, mat: 'rock', ref: matRef('rock') });
       }
     } else if (type === 'corridor') {
       var corridorY = [200, 400, 600];
       corridorY.forEach(function(y) {
         var gapX = 150 + rng() * 500;
-        walls.push({ x1: 20, y1: y, x2: gapX - 40, y2: y, mat: 'concrete', ref: 0.92 });
-        walls.push({ x1: gapX + 40, y1: y, x2: W - 20, y2: y, mat: 'concrete', ref: 0.92 });
+        walls.push({ x1: 20, y1: y, x2: gapX - 40, y2: y, mat: 'concrete', ref: matRef('concrete') });
+        walls.push({ x1: gapX + 40, y1: y, x2: W - 20, y2: y, mat: 'concrete', ref: matRef('concrete') });
       });
     } else if (type === 'forest') {
       for (var ti = 0; ti < 8; ti++) {
-        objects.push({ x: 80 + rng() * 640, y: 80 + rng() * 640, r: 20 + rng() * 30, mat: 'wood', ref: 0.5 });
+        objects.push({ x: 80 + rng() * 640, y: 80 + rng() * 640, r: 20 + rng() * 30, mat: 'wood', ref: matRef('wood') });
       }
       for (var ri = 0; ri < 3; ri++) {
-        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 15 + rng() * 20, mat: 'rock', ref: 0.85 });
+        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 15 + rng() * 20, mat: 'rock', ref: matRef('rock') });
       }
     } else if (type === 'urban') {
       for (var bi = 0; bi < 4; bi++) {
         var bx = 100 + rng() * 500, by = 100 + rng() * 500;
         var bw = 60 + rng() * 80, bh = 60 + rng() * 80;
-        walls.push({ x1: bx, y1: by, x2: bx + bw, y2: by, mat: 'concrete', ref: 0.92 });
-        walls.push({ x1: bx + bw, y1: by, x2: bx + bw, y2: by + bh, mat: rng() > 0.5 ? 'glass' : 'concrete', ref: rng() > 0.5 ? 0.3 : 0.92 });
-        walls.push({ x1: bx + bw, y1: by + bh, x2: bx, y2: by + bh, mat: 'concrete', ref: 0.92 });
-        walls.push({ x1: bx, y1: by + bh, x2: bx, y2: by, mat: 'concrete', ref: 0.92 });
+        walls.push({ x1: bx, y1: by, x2: bx + bw, y2: by, mat: 'concrete', ref: matRef('concrete') });
+        var sideMat = rng() > 0.5 ? 'glass' : 'concrete'; rng(); // the second draw is kept so layouts do not move
+        walls.push({ x1: bx + bw, y1: by, x2: bx + bw, y2: by + bh, mat: sideMat, ref: matRef(sideMat) });
+        walls.push({ x1: bx + bw, y1: by + bh, x2: bx, y2: by + bh, mat: 'concrete', ref: matRef('concrete') });
+        walls.push({ x1: bx, y1: by + bh, x2: bx, y2: by, mat: 'concrete', ref: matRef('concrete') });
       }
       for (var pi = 0; pi < 3; pi++) {
-        objects.push({ x: 80 + rng() * 640, y: 80 + rng() * 640, r: 8, mat: 'metal', ref: 0.95 });
+        objects.push({ x: 80 + rng() * 640, y: 80 + rng() * 640, r: 8, mat: 'metal', ref: matRef('metal') });
       }
+      crowdBlock(90, 620, 140, 50);
+      crowdBlock(560, 80, 150, 40);
+      crowdBlock(520, 650, 160, 40);
     } else if (type === 'school') {
       // ── School Hallway layout ──
-      walls.push({ x1: 60, y1: 360, x2: 120, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 180, y1: 360, x2: 400, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 400, y1: 360, x2: 460, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 520, y1: 360, x2: 740, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 60, y1: 440, x2: 120, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 180, y1: 440, x2: 400, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 400, y1: 440, x2: 460, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 520, y1: 440, x2: 740, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 60, y1: 360, x2: 60, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 740, y1: 360, x2: 740, y2: 440, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 60, y1: 100, x2: 240, y2: 100, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 60, y1: 100, x2: 60, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 240, y1: 100, x2: 240, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 400, y1: 100, x2: 600, y2: 100, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 400, y1: 100, x2: 400, y2: 360, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 600, y1: 100, x2: 600, y2: 360, mat: 'wood', ref: 0.5 });
-      walls.push({ x1: 60, y1: 700, x2: 240, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 60, y1: 440, x2: 60, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 240, y1: 440, x2: 240, y2: 700, mat: 'wood', ref: 0.5 });
-      walls.push({ x1: 400, y1: 700, x2: 600, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 400, y1: 440, x2: 400, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 600, y1: 440, x2: 600, y2: 700, mat: 'concrete', ref: 0.92 });
-      objects.push({ x: 250, y: 365, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 310, y: 365, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 620, y: 365, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 250, y: 435, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 310, y: 435, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 620, y: 435, r: 6, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 350, y: 380, r: 15, mat: 'glass', ref: 0.3 });
-      objects.push({ x: 650, y: 365, r: 8, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 500, y: 580, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+      walls.push({ x1: 60, y1: 360, x2: 120, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 180, y1: 360, x2: 400, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 400, y1: 360, x2: 460, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 520, y1: 360, x2: 740, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 60, y1: 440, x2: 120, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 180, y1: 440, x2: 400, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 400, y1: 440, x2: 460, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 520, y1: 440, x2: 740, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 60, y1: 360, x2: 60, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 740, y1: 360, x2: 740, y2: 440, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 60, y1: 100, x2: 240, y2: 100, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 60, y1: 100, x2: 60, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 240, y1: 100, x2: 240, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 400, y1: 100, x2: 600, y2: 100, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 400, y1: 100, x2: 400, y2: 360, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 600, y1: 100, x2: 600, y2: 360, mat: 'wood', ref: matRef('wood') });
+      walls.push({ x1: 60, y1: 700, x2: 240, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 60, y1: 440, x2: 60, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 240, y1: 440, x2: 240, y2: 700, mat: 'wood', ref: matRef('wood') });
+      walls.push({ x1: 400, y1: 700, x2: 600, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 400, y1: 440, x2: 400, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 600, y1: 440, x2: 600, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      // Window curtains along the far wall of the two north classrooms (soft surfaces).
+      walls.push({ x1: 80, y1: 110, x2: 220, y2: 110, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 420, y1: 110, x2: 580, y2: 110, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 80, y1: 690, x2: 220, y2: 690, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 420, y1: 690, x2: 580, y2: 690, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 70, y1: 120, x2: 70, y2: 340, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 590, y1: 120, x2: 590, y2: 340, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 70, y1: 460, x2: 70, y2: 680, mat: 'curtain', ref: matRef('curtain') });
+      walls.push({ x1: 590, y1: 460, x2: 590, y2: 680, mat: 'curtain', ref: matRef('curtain') });
+      crowdBlock(95, 170, 120, 120);
+      crowdBlock(435, 170, 130, 120);
+      crowdBlock(95, 600, 115, 60);
+      crowdBlock(430, 630, 140, 40);
+      objects.push({ x: 250, y: 365, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 310, y: 365, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 620, y: 365, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 250, y: 435, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 310, y: 435, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 620, y: 435, r: 6, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 350, y: 380, r: 15, mat: 'glass', ref: matRef('glass') });
+      objects.push({ x: 650, y: 365, r: 8, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 500, y: 580, r: 18, mat: 'goal', ref: matRef('goal'), isGoal: true });
     } else if (type === 'grocery') {
       var aisleXs = [150, 280, 410, 540, 670];
       for (var gai = 0; gai < aisleXs.length; gai++) {
         var ax = aisleXs[gai];
-        walls.push({ x1: ax - 20, y1: 150, x2: ax - 20, y2: 275, mat: 'metal', ref: 0.95 });
-        walls.push({ x1: ax - 20, y1: 325, x2: ax - 20, y2: 425, mat: 'metal', ref: 0.95 });
-        walls.push({ x1: ax - 20, y1: 475, x2: ax - 20, y2: 600, mat: 'metal', ref: 0.95 });
-        walls.push({ x1: ax + 20, y1: 150, x2: ax + 20, y2: 275, mat: 'metal', ref: 0.95 });
-        walls.push({ x1: ax + 20, y1: 325, x2: ax + 20, y2: 425, mat: 'metal', ref: 0.95 });
-        walls.push({ x1: ax + 20, y1: 475, x2: ax + 20, y2: 600, mat: 'metal', ref: 0.95 });
+        walls.push({ x1: ax - 20, y1: 150, x2: ax - 20, y2: 275, mat: 'metal', ref: matRef('metal') });
+        walls.push({ x1: ax - 20, y1: 325, x2: ax - 20, y2: 425, mat: 'metal', ref: matRef('metal') });
+        walls.push({ x1: ax - 20, y1: 475, x2: ax - 20, y2: 600, mat: 'metal', ref: matRef('metal') });
+        walls.push({ x1: ax + 20, y1: 150, x2: ax + 20, y2: 275, mat: 'metal', ref: matRef('metal') });
+        walls.push({ x1: ax + 20, y1: 325, x2: ax + 20, y2: 425, mat: 'metal', ref: matRef('metal') });
+        walls.push({ x1: ax + 20, y1: 475, x2: ax + 20, y2: 600, mat: 'metal', ref: matRef('metal') });
       }
-      walls.push({ x1: 100, y1: 120, x2: 300, y2: 120, mat: 'glass', ref: 0.3 });
-      walls.push({ x1: 500, y1: 120, x2: 740, y2: 120, mat: 'glass', ref: 0.3 });
-      walls.push({ x1: 500, y1: 100, x2: 740, y2: 100, mat: 'metal', ref: 0.95 });
-      walls.push({ x1: 120, y1: 700, x2: 220, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 300, y1: 700, x2: 400, y2: 700, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 480, y1: 700, x2: 580, y2: 700, mat: 'concrete', ref: 0.92 });
-      objects.push({ x: 160, y: 350, r: 10, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 420, y: 500, r: 10, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 550, y: 250, r: 10, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 290, y: 550, r: 10, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 350, y: 730, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+      walls.push({ x1: 100, y1: 120, x2: 300, y2: 120, mat: 'glass', ref: matRef('glass') });
+      walls.push({ x1: 500, y1: 120, x2: 740, y2: 120, mat: 'glass', ref: matRef('glass') });
+      walls.push({ x1: 500, y1: 100, x2: 740, y2: 100, mat: 'metal', ref: matRef('metal') });
+      walls.push({ x1: 120, y1: 700, x2: 220, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 300, y1: 700, x2: 400, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 480, y1: 700, x2: 580, y2: 700, mat: 'concrete', ref: matRef('concrete') });
+      objects.push({ x: 160, y: 350, r: 10, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 420, y: 500, r: 10, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 550, y: 250, r: 10, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 290, y: 550, r: 10, mat: 'metal', ref: matRef('metal') });
+      crowdBlock(195, 615, 20, 70);
+      crowdBlock(370, 615, 20, 70);
+      crowdBlock(490, 615, 20, 70);
+      objects.push({ x: 350, y: 730, r: 18, mat: 'goal', ref: matRef('goal'), isGoal: true });
     } else if (type === 'park') {
-      walls.push({ x1: 80, y1: 390, x2: 720, y2: 390, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 80, y1: 410, x2: 720, y2: 410, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 390, y1: 80, x2: 390, y2: 390, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 410, y1: 80, x2: 410, y2: 390, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 390, y1: 410, x2: 390, y2: 720, mat: 'concrete', ref: 0.92 });
-      walls.push({ x1: 410, y1: 410, x2: 410, y2: 720, mat: 'concrete', ref: 0.92 });
-      objects.push({ x: 400, y: 400, r: 40, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 200, y: 385, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 300, y: 415, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 500, y: 385, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 600, y: 415, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 385, y: 200, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 415, y: 300, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 385, y: 550, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 415, y: 650, r: 12, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 560, y: 560, r: 15, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 620, y: 620, r: 15, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 650, y: 540, r: 15, mat: 'metal', ref: 0.95 });
-      objects.push({ x: 150, y: 180, r: 25, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 250, y: 600, r: 25, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 600, y: 150, r: 25, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 680, y: 300, r: 25, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 140, y: 500, r: 25, mat: 'wood', ref: 0.5 });
-      objects.push({ x: 590, y: 590, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+      walls.push({ x1: 80, y1: 390, x2: 720, y2: 390, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 80, y1: 410, x2: 720, y2: 410, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 390, y1: 80, x2: 390, y2: 390, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 410, y1: 80, x2: 410, y2: 390, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 390, y1: 410, x2: 390, y2: 720, mat: 'concrete', ref: matRef('concrete') });
+      walls.push({ x1: 410, y1: 410, x2: 410, y2: 720, mat: 'concrete', ref: matRef('concrete') });
+      objects.push({ x: 400, y: 400, r: 40, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 200, y: 385, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 300, y: 415, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 500, y: 385, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 600, y: 415, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 385, y: 200, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 415, y: 300, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 385, y: 550, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 415, y: 650, r: 12, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 560, y: 560, r: 15, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 620, y: 620, r: 15, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 650, y: 540, r: 15, mat: 'metal', ref: matRef('metal') });
+      objects.push({ x: 150, y: 180, r: 25, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 250, y: 600, r: 25, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 600, y: 150, r: 25, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 680, y: 300, r: 25, mat: 'wood', ref: matRef('wood') });
+      objects.push({ x: 140, y: 500, r: 25, mat: 'wood', ref: matRef('wood') });
+      crowdBlock(120, 235, 220, 85);
+      crowdBlock(460, 210, 150, 70);
+      crowdBlock(200, 450, 120, 50);
+      objects.push({ x: 590, y: 590, r: 18, mat: 'goal', ref: matRef('goal'), isGoal: true });
     } else {
       var nw = 3 + Math.floor(rng() * 5);
       for (var cwi = 0; cwi < nw; cwi++) {
@@ -361,13 +436,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var wl = 60 + rng() * 250, wa = rng() * Math.PI;
         var mats = ['rock', 'wood', 'concrete', 'metal', 'glass'];
         var m = mats[Math.floor(rng() * mats.length)];
-        var refs = { rock: 0.85, wood: 0.5, concrete: 0.92, metal: 0.95, glass: 0.3 };
-        walls.push({ x1: wx, y1: wy, x2: wx + Math.cos(wa) * wl, y2: wy + Math.sin(wa) * wl, mat: m, ref: refs[m] || 0.7 });
+        walls.push({ x1: wx, y1: wy, x2: wx + Math.cos(wa) * wl, y2: wy + Math.sin(wa) * wl, mat: m, ref: matRef(m) });
       }
       var no = 2 + Math.floor(rng() * 5);
       for (var coi = 0; coi < no; coi++) {
         var om = mats[Math.floor(rng() * mats.length)];
-        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 12 + rng() * 30, mat: om, ref: refs[om] || 0.7 });
+        objects.push({ x: 100 + rng() * 600, y: 100 + rng() * 600, r: 12 + rng() * 30, mat: om, ref: matRef(om) });
       }
     }
 
@@ -378,7 +452,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     if (!hasGoal) {
       var goalX, goalY;
       do { goalX = 80 + rng() * 640; goalY = 80 + rng() * 640; } while (Math.sqrt((goalX - 400) * (goalX - 400) + (goalY - 700) * (goalY - 700)) < 200);
-      objects.push({ x: goalX, y: goalY, r: 18, mat: 'goal', ref: 0.9, isGoal: true });
+      objects.push({ x: goalX, y: goalY, r: 18, mat: 'goal', ref: matRef('goal'), isGoal: true });
     }
 
     return { walls: walls, objects: objects, W: W, H: H, seed: seed, type: type };
@@ -401,7 +475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       for (var pdi = 0; pdi < 4; pdi++) {
         var wp = pedWaypoints[pdi];
         var startIdx = Math.floor(rng() * wp.length);
-        agents.push({ id: 'ped_' + pdi, kind: 'pedestrian', x: wp[startIdx].x, y: wp[startIdx].y, targetIdx: (startIdx + 1) % wp.length, waypoints: wp, speed: 25 + rng() * 15, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
+        agents.push({ id: 'ped_' + pdi, kind: 'pedestrian', x: wp[startIdx].x, y: wp[startIdx].y, targetIdx: (startIdx + 1) % wp.length, waypoints: wp, speed: 25 + rng() * 15, loop: true, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
       }
       var carLanes = [
         { waypoints: [{ x: 20, y: 380 }, { x: 780, y: 380 }], speed: 80 + rng() * 40 },
@@ -410,7 +484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       ];
       for (var cri = 0; cri < 3; cri++) {
         var lane = carLanes[cri];
-        agents.push({ id: 'car_' + cri, kind: 'car', x: lane.waypoints[0].x, y: lane.waypoints[0].y, targetIdx: 1, waypoints: lane.waypoints, speed: lane.speed, loop: true, radius: 20, mat: 'car', ref: 0.85, height: 1.2 });
+        agents.push({ id: 'car_' + cri, kind: 'car', x: lane.waypoints[0].x, y: lane.waypoints[0].y, targetIdx: 1, waypoints: lane.waypoints, speed: lane.speed, loop: true, radius: 20, mat: 'car', ref: matRef('car'), height: 1.2 });
       }
     } else if (type === 'cave') {
       for (var bti = 0; bti < 3; bti++) {
@@ -421,27 +495,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           var ba = (bsi / 8) * Math.PI * 2;
           bwp.push({ x: bcx + Math.cos(ba) * brad, y: bcy + Math.sin(ba) * brad });
         }
-        agents.push({ id: 'bat_' + bti, kind: 'bat', x: bwp[0].x, y: bwp[0].y, targetIdx: 1, waypoints: bwp, speed: 50 + rng() * 40, loop: true, radius: 6, mat: 'flesh', ref: 0.4, height: 0.3 });
+        agents.push({ id: 'bat_' + bti, kind: 'bat', x: bwp[0].x, y: bwp[0].y, targetIdx: 1, waypoints: bwp, speed: 50 + rng() * 40, loop: true, radius: 6, mat: 'flesh', ref: matRef('flesh'), height: 0.3 });
       }
     } else if (type === 'forest') {
       for (var dri = 0; dri < 2; dri++) {
         var deerWp = [];
         for (var dwi = 0; dwi < 5; dwi++) { deerWp.push({ x: 80 + rng() * 640, y: 80 + rng() * 640 }); }
-        agents.push({ id: 'deer_' + dri, kind: 'deer', x: deerWp[0].x, y: deerWp[0].y, targetIdx: 1, waypoints: deerWp, speed: 30 + rng() * 15, loop: true, radius: 14, mat: 'flesh', ref: 0.5, height: 1.3 });
+        agents.push({ id: 'deer_' + dri, kind: 'deer', x: deerWp[0].x, y: deerWp[0].y, targetIdx: 1, waypoints: deerWp, speed: 30 + rng() * 15, loop: true, radius: 14, mat: 'flesh', ref: matRef('flesh'), height: 1.3 });
       }
       for (var bri2 = 0; bri2 < 4; bri2++) {
         var birdWp = [];
         for (var bwi2 = 0; bwi2 < 6; bwi2++) { birdWp.push({ x: 60 + rng() * 680, y: 60 + rng() * 680 }); }
-        agents.push({ id: 'bird_' + bri2, kind: 'bird', x: birdWp[0].x, y: birdWp[0].y, targetIdx: 1, waypoints: birdWp, speed: 70 + rng() * 40, loop: true, radius: 4, mat: 'flesh', ref: 0.2, height: 0.2 });
+        agents.push({ id: 'bird_' + bri2, kind: 'bird', x: birdWp[0].x, y: birdWp[0].y, targetIdx: 1, waypoints: birdWp, speed: 70 + rng() * 40, loop: true, radius: 4, mat: 'flesh', ref: matRef('flesh'), height: 0.2 });
       }
     } else if (type === 'corridor') {
-      agents.push({ id: 'ped_cor_0', kind: 'pedestrian', x: 60, y: 150, targetIdx: 1, waypoints: [{ x: 60, y: 150 }, { x: 740, y: 150 }], speed: 30, loop: false, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
-      agents.push({ id: 'ped_cor_1', kind: 'pedestrian', x: 740, y: 500, targetIdx: 1, waypoints: [{ x: 740, y: 500 }, { x: 60, y: 500 }], speed: 35, loop: false, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
+      agents.push({ id: 'ped_cor_0', kind: 'pedestrian', x: 60, y: 150, targetIdx: 1, waypoints: [{ x: 60, y: 150 }, { x: 740, y: 150 }], speed: 30, loop: false, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'ped_cor_1', kind: 'pedestrian', x: 740, y: 500, targetIdx: 1, waypoints: [{ x: 740, y: 500 }, { x: 60, y: 500 }], speed: 35, loop: false, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
     } else if (type === 'school') {
-      agents.push({ id: 'stu_0', kind: 'pedestrian', x: 100, y: 400, targetIdx: 1, waypoints: [{ x: 100, y: 400 }, { x: 700, y: 400 }], speed: 25, loop: false, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
-      agents.push({ id: 'stu_1', kind: 'pedestrian', x: 600, y: 400, targetIdx: 1, waypoints: [{ x: 600, y: 400 }, { x: 80, y: 400 }], speed: 28, loop: false, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
-      agents.push({ id: 'stu_2', kind: 'pedestrian', x: 350, y: 400, targetIdx: 1, waypoints: [{ x: 350, y: 400 }, { x: 700, y: 400 }, { x: 350, y: 400 }], speed: 22, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
-      agents.push({ id: 'janitor_0', kind: 'pedestrian', x: 150, y: 550, targetIdx: 1, waypoints: [{ x: 150, y: 550 }, { x: 150, y: 440 }, { x: 150, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 440 }, { x: 500, y: 550 }], speed: 15, loop: true, radius: 12, mat: 'flesh', ref: 0.6, height: 1.7 });
+      agents.push({ id: 'stu_0', kind: 'pedestrian', x: 100, y: 400, targetIdx: 1, waypoints: [{ x: 100, y: 400 }, { x: 700, y: 400 }], speed: 25, loop: false, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'stu_1', kind: 'pedestrian', x: 600, y: 400, targetIdx: 1, waypoints: [{ x: 600, y: 400 }, { x: 80, y: 400 }], speed: 28, loop: false, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'stu_2', kind: 'pedestrian', x: 350, y: 400, targetIdx: 1, waypoints: [{ x: 350, y: 400 }, { x: 700, y: 400 }, { x: 350, y: 400 }], speed: 22, loop: true, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'janitor_0', kind: 'pedestrian', x: 150, y: 550, targetIdx: 1, waypoints: [{ x: 150, y: 550 }, { x: 150, y: 440 }, { x: 150, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 440 }, { x: 500, y: 550 }], speed: 15, loop: true, radius: 12, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
     } else if (type === 'grocery') {
       var shopperPaths = [
         [{ x: 150, y: 160 }, { x: 150, y: 590 }, { x: 280, y: 590 }, { x: 280, y: 160 }],
@@ -452,16 +526,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       for (var gsi = 0; gsi < 4; gsi++) {
         var spWp = shopperPaths[gsi];
         var spStart = Math.floor(rng() * spWp.length);
-        agents.push({ id: 'shopper_' + gsi, kind: 'pedestrian', x: spWp[spStart].x, y: spWp[spStart].y, targetIdx: (spStart + 1) % spWp.length, waypoints: spWp, speed: 20, loop: true, radius: 12, mat: 'flesh', ref: 0.6, height: 1.7 });
+        agents.push({ id: 'shopper_' + gsi, kind: 'pedestrian', x: spWp[spStart].x, y: spWp[spStart].y, targetIdx: (spStart + 1) % spWp.length, waypoints: spWp, speed: 20, loop: true, radius: 12, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
       }
-      agents.push({ id: 'employee_0', kind: 'pedestrian', x: 60, y: 700, targetIdx: 1, waypoints: [{ x: 60, y: 700 }, { x: 740, y: 700 }, { x: 740, y: 650 }, { x: 60, y: 650 }], speed: 30, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
+      agents.push({ id: 'employee_0', kind: 'pedestrian', x: 60, y: 700, targetIdx: 1, waypoints: [{ x: 60, y: 700 }, { x: 740, y: 700 }, { x: 740, y: 650 }, { x: 60, y: 650 }], speed: 30, loop: true, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
     } else if (type === 'park') {
-      agents.push({ id: 'jogger_0', kind: 'jogger', x: 80, y: 400, targetIdx: 1, waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }], speed: 60, loop: false, radius: 8, mat: 'flesh', ref: 0.5, height: 1.7 });
-      agents.push({ id: 'jogger_1', kind: 'jogger', x: 400, y: 80, targetIdx: 1, waypoints: [{ x: 400, y: 80 }, { x: 400, y: 720 }], speed: 60, loop: false, radius: 8, mat: 'flesh', ref: 0.5, height: 1.7 });
-      agents.push({ id: 'cyclist_0', kind: 'cyclist', x: 80, y: 400, targetIdx: 1, waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }], speed: 90, loop: false, radius: 8, mat: 'car', ref: 0.7, height: 1.3 });
-      agents.push({ id: 'dogwalker_0', kind: 'pedestrian', x: 150, y: 180, targetIdx: 1, waypoints: [{ x: 150, y: 180 }, { x: 250, y: 600 }, { x: 140, y: 500 }, { x: 150, y: 180 }], speed: 15, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
+      agents.push({ id: 'jogger_0', kind: 'jogger', x: 80, y: 400, targetIdx: 1, waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }], speed: 60, loop: false, radius: 8, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'jogger_1', kind: 'jogger', x: 400, y: 80, targetIdx: 1, waypoints: [{ x: 400, y: 80 }, { x: 400, y: 720 }], speed: 60, loop: false, radius: 8, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
+      agents.push({ id: 'cyclist_0', kind: 'cyclist', x: 80, y: 400, targetIdx: 1, waypoints: [{ x: 80, y: 400 }, { x: 720, y: 400 }], speed: 90, loop: false, radius: 8, mat: 'car', ref: matRef('car'), height: 1.3 });
+      agents.push({ id: 'dogwalker_0', kind: 'pedestrian', x: 150, y: 180, targetIdx: 1, waypoints: [{ x: 150, y: 180 }, { x: 250, y: 600 }, { x: 140, y: 500 }, { x: 150, y: 180 }], speed: 15, loop: true, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
     } else if (type === 'simple_room') {
-      agents.push({ id: 'ped_tut', kind: 'pedestrian', x: 300, y: 400, targetIdx: 1, waypoints: [{ x: 300, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 600 }, { x: 300, y: 600 }], speed: 20, loop: true, radius: 10, mat: 'flesh', ref: 0.6, height: 1.7 });
+      agents.push({ id: 'ped_tut', kind: 'pedestrian', x: 300, y: 400, targetIdx: 1, waypoints: [{ x: 300, y: 400 }, { x: 500, y: 400 }, { x: 500, y: 600 }, { x: 300, y: 600 }], speed: 20, loop: true, radius: 10, mat: 'flesh', ref: matRef('flesh'), height: 1.7 });
     }
     return agents;
   }
@@ -625,7 +699,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           };
           m.customProgramCacheKey = function () { return 'et-acoustic-contour-fresnel-v1'; };
         }
-        m.userData = { baseColor: baseCol, ref: ref, mat: matName, isPbr: true, _acousticGlowUniform: glowUni };
+        m.userData = { baseColor: baseCol, ref: ref, mat: matName, isPbr: true, _acousticGlowUniform: glowUni, _rimUniform: rimColUni, _rimBase: rimColUni.value.clone() };
         return m;
       }
       var mb = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -663,7 +737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       wMesh.position.set(midX, wallHeight / 2, midZ);
       var angle = Math.atan2(dy, dx);
       wMesh.rotation.y = -angle;
-      wMesh.userData = { mapX: (w.x1 + w.x2) / 2, mapY: (w.y1 + w.y2) / 2, ref: w.ref, mat: w.mat, glowUntil: 0, glowAmt: 0, kind: 'wall' };
+      wMesh.userData = { mapX: (w.x1 + w.x2) / 2, mapY: (w.y1 + w.y2) / 2, ref: w.ref, mat: w.mat, glowUntil: 0, glowAmt: 0, kind: 'wall', hitKey: 'w' + wi };
       attachAcousticEdges(wMesh, wGeo, wMat.userData.baseColor);
       scene.add(wMesh);
       meshes.push(wMesh);
@@ -701,7 +775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         oMesh.position.set(obj.x * SCALE, cylHeight / 2, obj.y * SCALE);
         attachAcousticEdges(oMesh, oGeo2, oMat2.userData.baseColor);
       }
-      oMesh.userData = { mapX: obj.x, mapY: obj.y, ref: obj.ref, mat: obj.mat, glowUntil: 0, glowAmt: 0, kind: 'object', isGoal: !!obj.isGoal };
+      oMesh.userData = { mapX: obj.x, mapY: obj.y, ref: obj.ref, mat: obj.mat, glowUntil: 0, glowAmt: 0, kind: 'object', isGoal: !!obj.isGoal, hitKey: 'o' + oi };
       scene.add(oMesh);
       meshes.push(oMesh);
     }
@@ -719,7 +793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var aMat = makeAcousticMat(aMatName, ag.ref);
       aMesh = new THREE.Mesh(aGeo, aMat);
       aMesh.position.set(ag.x * SCALE, aY, ag.y * SCALE);
-      aMesh.userData = { mapX: ag.x, mapY: ag.y, ref: ag.ref, mat: ag.mat, glowUntil: 0, glowAmt: 0, kind: 'agent', agentKind: ag.kind, agentId: ag.id };
+      aMesh.userData = { mapX: ag.x, mapY: ag.y, ref: ag.ref, mat: ag.mat, glowUntil: 0, glowAmt: 0, kind: 'agent', agentKind: ag.kind, agentId: ag.id, hitKey: 'm' + ami };
       attachAcousticEdges(aMesh, aGeo, aMat.userData.baseColor);
       scene.add(aMesh);
       meshes.push(aMesh);
@@ -971,7 +1045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     }
 
     return {
-      scene: scene, meshes: meshes, agentMeshes: agentMeshes, SCALE: SCALE,
+      scene: scene, meshes: meshes, agentMeshes: agentMeshes, SCALE: SCALE, envBg: envBg,
       ambient: ambient, hemi: hemi, rimLight: rimLight, sonarLight: sonarLight,
       floor: floor, edgeLines: edgeLines, goalHalos: goalHalos, waveRings: waveRings,
       echoRipples: echoRipples, echoRippleIdx: 0,
@@ -1012,11 +1086,335 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
     return true;
   }
 
+  // Where the player starts: (400, 700), unless that spot is inside a wall or cut off from the goal.
+  // That was true in the School, Grocery and Park layouts (and some Forest seeds), so the player
+  // could not take a single step. Then use the free spot nearest (400, 700) that can walk to the goal.
+  function spawnPoint(map) {
+    var goal = null, i, x, y;
+    for (i = 0; i < map.objects.length; i++) if (map.objects[i].isGoal) { goal = map.objects[i]; break; }
+    if (!goal) return { x: 400, y: 700 };
+    var steps = [[10, 0], [-10, 0], [0, 10], [0, -10]];
+    // Usual case: the start is free and a 10 px walk reaches the goal, so stop as soon as it does.
+    if (canMoveTo(400, 700, map)) {
+      var seen0 = { '400,700': true }, q0 = [[400, 700]], h0 = 0, reach = goal.r + 12;
+      while (h0 < q0.length) {
+        var c0 = q0[h0++];
+        if (Math.sqrt((c0[0] - goal.x) * (c0[0] - goal.x) + (c0[1] - goal.y) * (c0[1] - goal.y)) < reach) return { x: 400, y: 700 };
+        for (var k0 = 0; k0 < 4; k0++) {
+          var ax = c0[0] + steps[k0][0], ay = c0[1] + steps[k0][1], akey = ax + ',' + ay;
+          if (seen0[akey] || ax < 40 || ay < 40 || ax > 760 || ay > 760 || !canMoveTo(ax, ay, map)) continue;
+          seen0[akey] = true; q0.push([ax, ay]);
+        }
+      }
+    }
+    var gx = null, gy = null, gd = Infinity;
+    for (x = 40; x <= 760; x += 10) for (y = 40; y <= 760; y += 10) {
+      var dg = Math.sqrt((x - goal.x) * (x - goal.x) + (y - goal.y) * (y - goal.y));
+      if (dg < gd && canMoveTo(x, y, map)) { gd = dg; gx = x; gy = y; }
+    }
+    if (gx === null) return { x: 400, y: 700 };
+    var seen = {}, queue = [[gx, gy]], head = 0;
+    seen[gx + ',' + gy] = true;
+    while (head < queue.length) {
+      var c = queue[head++];
+      for (var k = 0; k < 4; k++) {
+        var nx = c[0] + steps[k][0], ny = c[1] + steps[k][1], key = nx + ',' + ny;
+        if (seen[key] || nx < 40 || ny < 40 || nx > 760 || ny > 760 || !canMoveTo(nx, ny, map)) continue;
+        seen[key] = true; queue.push([nx, ny]);
+      }
+    }
+    if (seen['400,700']) return { x: 400, y: 700 };
+    // Nearest to (400, 700), but at least 200 px from the goal (the rule random goals already use), so the
+    // new start is not in the goal's room. If no spot is that far, take the nearest one.
+    var best = null, bd = Infinity, near = null, nd = Infinity;
+    for (i = 0; i < queue.length; i++) {
+      var d2 = (queue[i][0] - 400) * (queue[i][0] - 400) + (queue[i][1] - 700) * (queue[i][1] - 700);
+      var far = Math.sqrt((queue[i][0] - goal.x) * (queue[i][0] - goal.x) + (queue[i][1] - goal.y) * (queue[i][1] - goal.y)) >= 200
+        && canMoveTo(queue[i][0], queue[i][1] - 20, map) && canMoveTo(queue[i][0], queue[i][1] - 40, map); // room to walk forward (north) first
+      if (far && d2 < bd) { bd = d2; best = queue[i]; }
+      if (d2 < nd) { nd = d2; near = queue[i]; }
+    }
+    best = best || near;
+    return best ? { x: best[0], y: best[1] } : { x: 400, y: 700 };
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ECHO MODEL — the one place every echo number comes from
+  // ══════════════════════════════════════════════════════════
+  // The sound the room plays, the echo read-out, the distance quiz and the Echo
+  // timing panel all call these functions, so a number on screen cannot disagree
+  // with the sound. 1 map unit = 0.05 m, the same scale the 3D picture is drawn at
+  // (walls 3 m tall, people 1.7 m, a 4 m school hallway). Until 2026-11-23 the sound used
+  // 0.1 m, so every echo came back twice as late as the room you could see.
+  var M_PER_PX = 0.05;
+  var ECHO_RANGE_PX = 500;          // a surface farther than this (25 m) returns no echo
+  var ECHO_RAYS = 32;
+  var ECHO_FAN = Math.PI * 0.67;    // the click spreads about 120 degrees ahead
+  // Under about 5 ms a click's echo fuses with the click: "psychophysical echo thresholds on the
+  // order of 5-6 ms measured with pairs of lead-lag transients" (Brown, Stecker & Tollin 2015,
+  // https://pmc.ncbi.nlm.nih.gov/articles/PMC4310855/). A fused echo still changes the pitch and
+  // loudness of the click (Schenkman & Nilsson 2011, https://doi.org/10.1068/p6898).
+  var ECHO_FUSE_MS = 5;
+  // Within 2 m every listener detected a reflecting object well (Schenkman & Nilsson 2010,
+  // https://doi.org/10.1068/p6473): the echo of a surface 2 m away comes back after 11.7 ms.
+  var ECHO_NEAR_M = 2;
+  var EchoModel = {
+    SPEED_OF_SOUND: SPEED_OF_SOUND, M_PER_PX: M_PER_PX, RANGE_PX: ECHO_RANGE_PX,
+    RAYS: ECHO_RAYS, FAN: ECHO_FAN, FUSE_MS: ECHO_FUSE_MS, NEAR_M: ECHO_NEAR_M,
+    NEAR_MS: (2 * ECHO_NEAR_M / SPEED_OF_SOUND) * 1000,
+    MATERIALS: ECHO_MATERIALS, matRef: matRef,
+    // Percent of the sound energy (at 1 kHz) a surface sends back, and soaks up.
+    reflectPct: function (mat) { return Math.round(matRef(mat) * 100); },
+    absorbPct: function (mat) { return 100 - Math.round(matRef(mat) * 100); },
+    // Hard surfaces send most of the sound back; soft ones soak up most of it.
+    soundGroup: function (mat) { return matRef(mat) >= 0.5 ? 'hard' : 'soft'; },
+    // Timbre: how much louder (dB) the low (250 Hz) and high (4 kHz) parts of the echo come
+    // back than the 1 kHz part, from the same absorption table. Soft things lose highs.
+    echoTilt: function (mat) {
+      var a = matAbs(mat), mid = 1 - a[1];
+      return { lowDb: 10 * Math.log10((1 - a[0]) / mid), highDb: 10 * Math.log10((1 - a[2]) / mid) };
+    },
+    // Material quiz: the two choices in a random order (rand is 0 to 1).
+    materialChoices: function (rand) { return rand < 0.5 ? ['hard', 'soft'] : ['soft', 'hard']; },
+    // The glowing ring is drawn in slow motion so it can be watched: this many times slower than sound.
+    RING_SLOWDOWN: Math.round(1 / (0.5 * M_PER_PX)),
+    metersFromPx: function (px) { return px * M_PER_PX; },
+    // Out and back: the sound covers the distance twice.
+    delaySec: function (meters, speed) {
+      var v = (typeof speed === 'number' && isFinite(speed) && speed > 0) ? speed : SPEED_OF_SOUND;
+      return (2 * meters) / v;
+    },
+    delaySecFromPx: function (px) { return Math.min(0.6, EchoModel.delaySec(px * M_PER_PX)); },
+    metersFromDelay: function (sec, speed) {
+      var v = (typeof speed === 'number' && isFinite(speed) && speed > 0) ? speed : SPEED_OF_SOUND;
+      return (sec * v) / 2;
+    },
+    // Louder when close, quieter when far. ref is the share of sound ENERGY the surface sends
+    // back (0 to 1); a speaker gain sets amplitude, which is the square root of energy.
+    gainFromPx: function (px, ref) { return Math.min(1, 40 / (px + 5)) * Math.sqrt(Math.max(0, ref)); },
+    gainFromMeters: function (meters, ref) { return EchoModel.gainFromPx(meters / M_PER_PX, ref); },
+    strengthBand: function (gain) { return gain >= 0.3 ? 'strong' : (gain >= 0.1 ? 'medium' : 'faint'); },
+    // tooFast: fuses with the click (heard as a change in the click). crisp: a close echo,
+    // 2 m or nearer, where listeners do best. distinct: a separate echo from farther away.
+    timingState: function (ms) { return ms < ECHO_FUSE_MS ? 'tooFast' : (ms <= EchoModel.NEAR_MS + 1e-9 ? 'crisp' : 'distinct'); },
+    // Where a thing is compared with the way the player faces, on the y-down map.
+    // forward > 0 is ahead, right > 0 is to the right. Web Audio listens along -z
+    // with +x to the right, so a panner takes { x: right, z: -forward }.
+    headRelative: function (dx, dy, angle) {
+      var c = Math.cos(angle), s = Math.sin(angle);
+      var forward = dx * c + dy * s;
+      var right = -dx * s + dy * c;
+      return { forward: forward, right: right, x: right, z: -forward };
+    },
+    // Signed bearing in degrees: 0 = straight ahead, +90 = hard right, -90 = hard left.
+    bearingDeg: function (dx, dy, angle) {
+      var hr = EchoModel.headRelative(dx, dy, angle);
+      return Math.atan2(hr.right, hr.forward) * 180 / Math.PI;
+    },
+    // Left / right balance for a plain stereo ping: -1 left ear, +1 right ear.
+    stereoPan: function (dx, dy, angle) {
+      var hr = EchoModel.headRelative(dx, dy, angle);
+      var len = Math.sqrt(hr.forward * hr.forward + hr.right * hr.right);
+      return len < 0.0001 ? 0 : Math.max(-1, Math.min(1, hr.right / len));
+    },
+    // Arrow keys: left must turn left. On the y-down map a left turn LOWERS the angle.
+    turnDelta: function (leftHeld, rightHeld, rate, dt) {
+      return ((rightHeld ? 1 : 0) - (leftHeld ? 1 : 0)) * rate * dt;
+    },
+    // 0 = north (up on the map), then clockwise in 45 degree steps.
+    compass8: function (angle) {
+      var deg = ((angle * 180 / Math.PI + 90) % 360 + 360) % 360;
+      return Math.round(deg / 45) % 8;
+    },
+    // Nearest surface along one direction. movers = extra round things (people, cars).
+    castRay: function (map, movers, px, py, angle, skipGoal) {
+      var rdx = Math.cos(angle), rdy = Math.sin(angle);
+      var minDist = Infinity, hitMat = null, hitRef = 0, isGoal = false, hitKey = null;
+      for (var wi = 0; wi < map.walls.length; wi++) {
+        var w = map.walls[wi];
+        var dist = rayHit(px, py, rdx, rdy, w.x1, w.y1, w.x2, w.y2);
+        if (dist > 0 && dist < minDist) { minDist = dist; hitMat = w.mat; hitRef = w.ref; isGoal = false; hitKey = 'w' + wi; }
+      }
+      var lists = [map.objects, movers || []];
+      for (var li = 0; li < lists.length; li++) {
+        for (var oi = 0; oi < lists[li].length; oi++) {
+          var obj = lists[li][oi];
+          if (skipGoal && obj.isGoal) continue;
+          var r = (typeof obj.r === 'number') ? obj.r : obj.radius;
+          var odx = obj.x - px, ody = obj.y - py;
+          var proj = odx * rdx + ody * rdy;
+          if (proj > 0) {
+            var perp = Math.abs(odx * rdy - ody * rdx);
+            if (perp < r) {
+              var hd = proj - Math.sqrt(Math.max(0, r * r - perp * perp));
+              if (hd > 0 && hd < minDist) { minDist = hd; hitMat = obj.mat; hitRef = obj.ref; isGoal = !!obj.isGoal; hitKey = (li === 0 ? 'o' : 'm') + oi; }
+            }
+          }
+        }
+      }
+      return { px: minDist, mat: hitMat, ref: hitRef, angle: angle, isGoal: isGoal, key: hitKey };
+    },
+    // Every ray of one click. emitClick turns these into sound; fanSummary turns the
+    // SAME list into the read-out, so the text is a caption of what was played.
+    castFan: function (map, movers, px, py, angle) {
+      var hits = [];
+      var startA = angle - ECHO_FAN / 2, stepA = ECHO_FAN / (ECHO_RAYS - 1);
+      for (var ri = 0; ri < ECHO_RAYS; ri++) {
+        var hit = EchoModel.castRay(map, movers, px, py, startA + ri * stepA, false);
+        hit.rel = (startA + ri * stepA) - angle;
+        hits.push(hit);
+      }
+      return hits;
+    },
+    // Each surface one click touched, nearest touch first. The picture lights these, in this order.
+    surfacesHit: function (hits, px, py) {
+      var byKey = {}, list = [];
+      for (var i = 0; i < hits.length; i++) {
+        var hit = hits[i];
+        if (!(hit.px < ECHO_RANGE_PX) || !hit.key) continue;
+        if (!byKey[hit.key] || hit.px < byKey[hit.key].px) {
+          var entry = byKey[hit.key];
+          if (!entry) { entry = byKey[hit.key] = { key: hit.key }; list.push(entry); }
+          entry.px = hit.px; entry.ref = hit.ref;
+          entry.gain = EchoModel.gainFromPx(hit.px, hit.ref);
+          entry.x = px + Math.cos(hit.angle) * hit.px; entry.y = py + Math.sin(hit.angle) * hit.px;
+        }
+      }
+      list.sort(function (a, b) { return a.px - b.px; });
+      return list;
+    },
+    // How bright a touched surface glows: never invisible, brighter for a stronger echo.
+    glowFor: function (gain) { return 0.75 + 0.25 * Math.min(1, gain / 0.3); },
+    // A lit surface fades over about two seconds, so there is time to look at it.
+    GLOW_FADE_PER_SEC: 0.4,
+    // Where the slow-motion ring is, in map units, this many seconds after the click.
+    ringRadiusPx: function (ageSec) { return ageSec * SPEED_OF_SOUND * 0.5; },
+    // Nearest echo in each third of the fan: left, ahead, right.
+    fanSummary: function (hits) {
+      var out = { left: null, ahead: null, right: null };
+      for (var i = 0; i < hits.length; i++) {
+        var hit = hits[i];
+        if (!(hit.px < ECHO_RANGE_PX)) continue;
+        var side = hit.rel < -ECHO_FAN / 6 ? 'left' : (hit.rel > ECHO_FAN / 6 ? 'right' : 'ahead');
+        if (!out[side] || hit.px < out[side].px) {
+          var gain = EchoModel.gainFromPx(hit.px, hit.ref);
+          out[side] = { px: hit.px, ms: Math.round(EchoModel.delaySecFromPx(hit.px) * 1000), gain: gain, strength: EchoModel.strengthBand(gain) };
+        }
+      }
+      return out;
+    },
+    // Four choices one doubling apart. rank (0 to 3) is where the true distance sits
+    // in the ladder, so the right answer is not always the nearest or the farthest.
+    distanceChoices: function (actualM, rank) {
+      var k = Math.max(0, Math.min(3, Math.floor(rank) || 0));
+      var out = [];
+      // Under 1 m a choice keeps two decimals, so close-up ladders stay one doubling apart (0.13, 0.25, 0.5, 1).
+      for (var i = 0; i < 4; i++) { var v = actualM * Math.pow(2, i - k); out.push(i === k ? actualM : (v < 1 ? Math.round(v * 100) / 100 : Math.round(v * 10) / 10)); }
+      return out;
+    },
+    judgeDistance: function (actualM, guessM) {
+      var error = Math.abs(guessM - actualM);
+      var correct = error < 0.051;
+      var kind = correct ? 'right' : (Math.abs(guessM - 2 * actualM) <= 0.06 * actualM ? 'roundTrip' : (guessM > actualM ? 'tooFar' : 'tooNear'));
+      return { correct: correct, kind: kind, actualMs: Math.round(EchoModel.delaySec(actualM) * 1000), guessMs: Math.round(EchoModel.delaySec(guessM) * 1000) };
+    },
+    // A quiz target is scored once: the same spot and heading cannot be farmed.
+    targetKey: function (x, y, angle) {
+      return Math.round(x / 20) + ':' + Math.round(y / 20) + ':' + EchoModel.compass8(angle);
+    },
+    // What a found beacon counts as. An audio win needs the WHOLE run in Audio Only:
+    // no click with a picture on screen and no Reveal. (Before, mapping the room in
+    // Echo Vision or Reveal and switching at the end still scored as an audio win.)
+    winMode: function (viewMode, sightClicks, hasRevealed) {
+      if (hasRevealed || viewMode === 'reveal') return 'reveal';
+      if (viewMode === 'audio' && !(sightClicks > 0)) return 'audio';
+      return 'echo';
+    },
+    beaconZone: function (px) { return px < 60 ? 'veryNear' : (px < 120 ? 'near' : (px < 200 ? 'far' : 'none')); },
+    // Which map a view may draw: the whole room, only what clicks have touched, or nothing.
+    mapMode: function (viewMode, isCornerMap) {
+      if (viewMode === 'reveal') return 'full';
+      if (viewMode === 'audio') return 'none';
+      return isCornerMap ? 'sonar' : 'none';
+    },
+    // The beacon on the sonar map is a help for the first two levels. At Echolocator and Bat Master the ears find it.
+    envName: function (id) { for (var i = 0; i < ENVIRONMENTS.length; i++) { if (ENVIRONMENTS[i].id === id) return ENVIRONMENTS[i].name; } return String(id || ''); },
+    sonarShowsBeacon: function (diffId) { return diffId !== 'hard' && diffId !== 'master'; },
+    // While a material quiz waits for an answer, lit surfaces share one neutral color, so the glow cannot give it away.
+    hideMaterialHue: function (mq) { return !!(mq && mq.active && !mq.result); },
+    NEUTRAL_GLOW: [203, 213, 225],
+    // Pushing into a wall counts one bump until the player moves free again. (Holding the key used to add one every 0.3 s.)
+    contactBump: function (wasInContact, blocked, moved) {
+      return { bump: !!blocked && !wasInContact, inContact: blocked ? true : (moved ? false : !!wasInContact) };
+    },
+    // Places where a beacon was found, each counted once. Older saves kept only the run list, so its places count too.
+    goalEnvList: function (data) {
+      var d = data || {}, out = [], ok = {};
+      for (var i = 0; i < ENVIRONMENTS.length; i++) ok[ENVIRONMENTS[i].id] = true;
+      var add = function (id) { if (typeof id === 'string' && ok[id] && out.indexOf(id) === -1) out.push(id); };
+      if (Array.isArray(d.goalEnvs)) d.goalEnvs.forEach(add);
+      if (Array.isArray(d.runHistory)) d.runHistory.forEach(function (r) { if (r && typeof r === 'object') add(r.env); });
+      return out;
+    },
+    addGoalEnv: function (data, envId) { var list = EchoModel.goalEnvList(data); if (list.indexOf(envId) === -1 && EchoModel.goalEnvList({ goalEnvs: [envId] }).length) list.push(envId); return list; },
+    // The points one click's rays reached: the same rays the sound is made from. The 2D Echo Vision lights these, so a
+    // surface behind a wall never glows.
+    rayPoints: function (hits, px, py) {
+      var out = [];
+      for (var i = 0; i < hits.length; i++) {
+        var hit = hits[i];
+        if (!(hit.px < ECHO_RANGE_PX) || !hit.key) continue;
+        out.push({ key: hit.key, px: hit.px, ref: hit.ref, gain: EchoModel.gainFromPx(hit.px, hit.ref), x: px + Math.cos(hit.angle) * hit.px, y: py + Math.sin(hit.angle) * hit.px });
+      }
+      return out;
+    },
+    // Sonar map: a click marks the cells its echoes came back from, and the things it touched.
+    markSeen: function (seen, hits, px, py, keys) {
+      for (var i = 0; i < hits.length; i++) {
+        var hit = hits[i];
+        if (!(hit.px < ECHO_RANGE_PX)) continue;
+        if (keys && hit.key && hit.key.charAt(0) === 'o') keys[hit.key] = true;
+        var cx = Math.floor((px + Math.cos(hit.angle) * hit.px) / 20);
+        var cy = Math.floor((py + Math.sin(hit.angle) * hit.px) / 20);
+        if (cx >= 0 && cx < 40 && cy >= 0 && cy < 40) seen[cx][cy] = 1;
+      }
+    },
+    // True when a click has touched this spot or a cell next to it.
+    isSeen: function (seen, x, y) {
+      var cx = Math.floor(x / 20), cy = Math.floor(y / 20);
+      for (var ix = cx - 1; ix <= cx + 1; ix++) {
+        for (var iy = cy - 1; iy <= cy + 1; iy++) {
+          if (ix >= 0 && ix < 40 && iy >= 0 && iy < 40 && seen[ix] && seen[ix][iy]) return true;
+        }
+      }
+      return false;
+    },
+    // What to try next, from saved results only.
+    nextStep: function (data) {
+      var d = data || {};
+      var goals = (typeof d.goalsFound === 'number' && d.goalsFound > 0) ? Math.floor(d.goalsFound) : 0;
+      var blind = (typeof d.blindWins === 'number' && d.blindWins > 0) ? Math.floor(d.blindWins) : 0;
+      if (goals === 0) return { id: 'first_goal' };
+      if (blind === 0) return { id: 'try_audio' };
+      var best = null;
+      for (var i = 0; i < ENVIRONMENTS.length; i++) {
+        var need = envUnlockThreshold(ENVIRONMENTS[i].id);
+        if (need > goals && isFinite(need) && (!best || need < best.need)) best = { env: ENVIRONMENTS[i].id, need: need };
+      }
+      if (best) return { id: 'unlock', env: best.env, more: best.need - goals };
+      return { id: d.batMasterWin ? 'all_done' : 'bat_master' };
+    }
+  };
+  // The room builders, so a test can run the model on the real rooms.
+  EchoModel.world = { generateEnvironment: generateEnvironment, generateAgents: generateAgents, canMoveTo: canMoveTo, spawnPoint: spawnPoint, envUnlockThreshold: envUnlockThreshold };
+  window.__alloEchoNavModel = EchoModel;
+
+  // Each step is finished by doing it (see the first-room effect), not by reading it.
   var TUTORIAL_STEPS = [
-    { title: 'The World Is Dark', text: 'The world is pitch-black. Press SPACE (or click the Click button) to emit a sonar click. Listen for echoes bouncing off nearby surfaces. Each echo tells you where something is.' },
-    { title: 'Materials Glow Differently', text: 'Each surface lights up differently when hit by sonar. Metal is bright white-blue, wood is warm brown, concrete is cool blue, glass is faint teal. Brighter glow = stronger echo.' },
-    { title: 'Move Toward the Goal', text: 'Use WASD to walk (or arrow keys to turn). The goal is a golden sphere somewhere in the room. As you get closer, you will hear a proximity beep that gets faster.' },
-    { title: 'Watch for Moving Entities', text: 'A pedestrian is walking around the room. You will hear a faint tone and see a subtle glow from their body. In Urban mode, watch for cars. In School, Grocery, and Park modes, watch for pedestrians, joggers, and cyclists!' }
+    { title: 'Click and listen', text: 'Press Space or the Click button. The click goes out, hits something and comes back as an echo.' },
+    { title: 'Walk closer', text: 'Walk forward with W or the up button, then click again. The echo comes back sooner, because the sound has less far to go.' },
+    { title: 'Turn and listen', text: 'Turn with the left or right arrow, then click. An echo from your left is louder in your left ear.' },
+    { title: 'Find the beacon', text: 'Now find the gold beacon. It beeps when you are near, and faster as you get closer. A thud means you bumped something: stop and click.' }
   ];
 
   // -- Accents that follow the SUBSTRATE, in both directions --
@@ -1055,7 +1453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         check: function (d) { var iq = (d && d._echoHunt) || {}; return !!iq.understood && typeof iq.explanation === 'string' && iq.explanation.trim().length >= 40; },
         progress: function (d) { var iq = (d && d._echoHunt) || {}; return iq.understood ? (((iq.explanation || '').trim().length >= 40) ? 'Explained' : 'Say more') : 'Open Echo Timing Discovery'; } },
       { id: 'find_goal_1', label: 'Find the goal in any environment', icon: '\u2B50', check: function(d) { return d.goalsFound >= 1; }, progress: function(d) { return (d.goalsFound || 0) + '/1'; } },
-      { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return d.goalsFound >= 5; }, progress: function(d) { return (d.goalsFound || 0) + '/5'; } },
+      { id: 'find_goal_5', label: 'Find goals in 5 different environments', icon: '\uD83C\uDFC6', check: function(d) { return EchoModel.goalEnvList(d).length >= 5; }, progress: function(d) { return Math.min(5, EchoModel.goalEnvList(d).length) + '/5'; } },
       { id: 'blind_navigation', label: 'Find a goal in Audio Only mode', icon: '\uD83C\uDFA7', check: function(d) { return d.blindWins >= 1; }, progress: function(d) { return (d.blindWins || 0) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'cross_urban', label: 'Survive Urban Street without a car hit', icon: '\uD83D\uDE97', check: function(d) { return !!d.urbanNoCarHit; }, progress: function(d) { return d.urbanNoCarHit ? 'Done!' : 'Not yet'; } },
       { id: 'bat_master_win', label: 'Find a goal on Bat Master difficulty', icon: '\uD83E\uDD87', check: function(d) { return !!d.batMasterWin; }, progress: function(d) { return d.batMasterWin ? 'Done!' : 'Not yet'; } },
@@ -1087,6 +1485,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       // live values via dataRef.current without tearing down.
       var dataRef = React.useRef(d);
       dataRef.current = d;
+      // The app has its own reduce-motion switch as well as the system one.
+      var reduceRef = React.useRef(false);
+      reduceRef.current = !!(ctx && ctx.reduceMotion);
+      // Latest "read the echo aloud" function, for the key listener the 3D effect owns.
+      var describeRef = React.useRef(null);
       var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('echoTrainer', key, val); };
       var updMulti = function(obj) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('echoTrainer', obj); };
       var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft; var isContrast = !!ctx.isContrast; var isDark = !!ctx.isDark || isContrast; var theme = ctx.theme;
@@ -1141,6 +1544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var runStartRef = useRef(Date.now());
       var footstepRef = useRef({ lastStep: 0, stepInterval: 0.4 });
       var coverageRef = useRef(null);
+      // Cells a click's echoes have come back from. The minimap draws only these.
+      var seenRef = useRef(null);
       var hydratedRef = useRef(false);
 
       // ── Hydrate progress from localStorage on first mount ──
@@ -1164,11 +1569,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         }
       }, []);
 
+      // On each visit: a saved echo read-out belongs to the last visit, so it is cleared (the first read-out is this visit's
+      // own click), and a student acknowledges the safety notice again in each new session. A teacher's acknowledgement is kept.
+      useEffect(function() {
+        var fresh = {}, any = false;
+        if (d.lastEcho) { fresh.lastEcho = null; any = true; }
+        if (d.disclaimerDismissed && !ctx.isTeacherMode && d.disclaimerSession !== ECHO_SESSION_ID) { fresh.disclaimerDismissed = false; fresh.safetyOpen = false; any = true; }
+        if (any) updMulti(fresh);
+      }, []);
+
       // ── Auto-save progress whenever persistent fields change ──
       useEffect(function() {
         if (!hydratedRef.current) return;
         saveEchoProgress(d);
-      }, [d.goalsFound, d.blindWins, d.urbanNoCarHit, d.batMasterWin, d.schoolWin, d.waypointComplete, d.matQuizCorrect, d.difficulty, d.envType]);
+      }, [d.goalsFound, d.blindWins, d.urbanNoCarHit, d.batMasterWin, d.schoolWin, d.waypointComplete, d.matQuizCorrect, d.difficulty, d.envType, (d.goalEnvs || []).length]);
 
       // ── Release the AudioContext when the tool unmounts ──
       // Browsers cap concurrent AudioContexts (~6). Without this, every visit left
@@ -1189,7 +1603,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       if (!mapRef.current || mapRef.current.seed !== seed || mapRef.current.type !== envType) {
         mapRef.current = generateEnvironment(envType, seed);
         agentsRef.current = generateAgents(envType, seed, mapRef.current);
-        playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 };
+        var spawnAt = spawnPoint(mapRef.current);
+        playerRef.current = { x: spawnAt.x, y: spawnAt.y, angle: -Math.PI / 2 };
         yawRef.current = -Math.PI / 2;
         pitchRef.current = 0;
         carHitRef.current = false;
@@ -1202,6 +1617,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var grid = [];
         for (var ci = 0; ci < 40; ci++) { grid[ci] = []; for (var cj = 0; cj < 40; cj++) { grid[ci][cj] = 0; } }
         coverageRef.current = { grid: grid, seed: seed };
+        var seenGrid = [];
+        for (var sci = 0; sci < 40; sci++) { seenGrid[sci] = []; for (var scj = 0; scj < 40; scj++) { seenGrid[sci][scj] = 0; } }
+        seenRef.current = { grid: seenGrid, keys: {}, seed: seed };
       }
 
       function initAudio() {
@@ -1232,23 +1650,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       }
 
       function emitClick() {
+        var curData = dataRef.current || {};
+        // The safety notice comes first: no sonar until it has been acknowledged.
+        if (!curData.disclaimerDismissed) return;
+        var player = playerRef.current;
+        var map = mapRef.current;
+        if (!map) return;
+        // One list of ray hits feeds the sound, the read-out and the sonar map.
+        var fanHits = EchoModel.castFan(map, agentsRef.current, player.x, player.y, player.angle);
+        var fanSum = EchoModel.fanSummary(fanHits);
+        if (seenRef.current) EchoModel.markSeen(seenRef.current.grid, fanHits, player.x, player.y, seenRef.current.keys);
+        updMulti({
+          clicks: (curData.clicks || 0) + 1,
+          sightClicks: (curData.sightClicks || 0) + (((curData.viewMode || 'echo') === 'audio') ? 0 : 1),
+          lastEcho: { left: fanSum.left, ahead: fanSum.ahead, right: fanSum.right, a: Math.round(player.angle * 100) / 100, t: Date.now() }
+        });
+        if (window._alloHaptic) window._alloHaptic('echo');
+        // The picture of the pulse and the map do not depend on the speakers working.
+        pulsesRef.current.push({ x: player.x, y: player.y, radius: 0, maxRadius: 500, birth: Date.now(), hits: EchoModel.surfacesHit(fanHits, player.x, player.y), points: EchoModel.rayPoints(fanHits, player.x, player.y) });
+        // ── Coverage map update ──
+        if (coverageRef.current) {
+          var cGrid = coverageRef.current.grid;
+          var covCx = Math.floor(player.x / 20);
+          var covCy = Math.floor(player.y / 20);
+          for (var gx = Math.max(0, covCx - 5); gx <= Math.min(39, covCx + 5); gx++) {
+            for (var gy = Math.max(0, covCy - 5); gy <= Math.min(39, covCy + 5); gy++) {
+              var gDist = Math.sqrt((gx - covCx) * (gx - covCx) + (gy - covCy) * (gy - covCy));
+              if (gDist <= 5) {
+                cGrid[gx][gy] = Math.min(1, cGrid[gx][gy] + 0.3);
+              }
+            }
+          }
+        }
         var audio = initAudio();
         if (!audio) return;
         var ac = audio.ctx;
         if (ac.state === 'suspended') ac.resume();
-        var player = playerRef.current;
-        var map = mapRef.current;
-        if (!map) return;
-        var curData = dataRef.current || {};
-        updMulti({ clicks: (curData.clicks || 0) + 1 });
-        if (window._alloHaptic) window._alloHaptic('echo');
+        var multiBounceNow = !!curData.multiBounce;
         var activeBuf = (curData.clickType || 'tongue') === 'cane' ? audio.caneBuf : audio.clickBuf;
 
         // One panner per angular bin for this click, positioned at the bin centre.
         // Fresh per click so a click fired while earlier echoes are still ringing
         // cannot drag those echoes to a new direction.
         var ECHO_BINS = 8;
-        var binFan = Math.PI * 0.67;
+        var binFan = ECHO_FAN;
         var binPanners = [];
         var clickNodes = [];
         function binPannerFor(worldAngle) {
@@ -1290,23 +1735,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               binPanners.length = 0;
             }, (clickTail + 0.3) * 1000);
         }
-        if (has3D || viewMode === 'echo') {
-          pulsesRef.current.push({ x: player.x, y: player.y, radius: 0, maxRadius: 500, birth: Date.now(), hits: [] });
-        }
-        // ── Coverage map update ──
-        if (coverageRef.current) {
-          var cGrid = coverageRef.current.grid;
-          var covCx = Math.floor(player.x / 20);
-          var covCy = Math.floor(player.y / 20);
-          for (var gx = Math.max(0, covCx - 5); gx <= Math.min(39, covCx + 5); gx++) {
-            for (var gy = Math.max(0, covCy - 5); gy <= Math.min(39, covCy + 5); gy++) {
-              var gDist = Math.sqrt((gx - covCx) * (gx - covCx) + (gy - covCy) * (gy - covCy));
-              if (gDist <= 5) {
-                cGrid[gx][gy] = Math.min(1, cGrid[gx][gy] + 0.3);
-              }
-            }
-          }
-        }
         var directSrc = ac.createBufferSource();
         directSrc.buffer = activeBuf;
         var directGain = ac.createGain();
@@ -1314,56 +1742,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         directSrc.connect(directGain);
         directGain.connect(ac.destination);
         directSrc.start();
-        var numRays = 32;
-        var fan = Math.PI * 0.67;
-        var startA = player.angle - fan / 2;
-        var stepA = fan / (numRays - 1);
-        var allObjects = map.objects.slice();
-        var agts = agentsRef.current;
-        for (var agi = 0; agi < agts.length; agi++) {
-          allObjects.push({ x: agts[agi].x, y: agts[agi].y, r: agts[agi].radius, mat: agts[agi].mat, ref: agts[agi].ref, isGoal: false });
-        }
-        for (var ri = 0; ri < numRays; ri++) {
-          var ra = startA + ri * stepA;
+        for (var ri = 0; ri < fanHits.length; ri++) {
+          var ra = fanHits[ri].angle;
           var rdx = Math.cos(ra), rdy = Math.sin(ra);
-          var minDist = Infinity, hitMat = 'rock', hitRef = 0.8;
-          for (var wi = 0; wi < map.walls.length; wi++) {
-            var w = map.walls[wi];
-            var dist = rayHit(player.x, player.y, rdx, rdy, w.x1, w.y1, w.x2, w.y2);
-            if (dist > 0 && dist < minDist) { minDist = dist; hitMat = w.mat; hitRef = w.ref; }
-          }
-          for (var oi = 0; oi < allObjects.length; oi++) {
-            var obj = allObjects[oi];
-            var odx = obj.x - player.x, ody = obj.y - player.y;
-            var proj = odx * rdx + ody * rdy;
-            if (proj > 0) {
-              var perp = Math.abs(odx * rdy - ody * rdx);
-              if (perp < obj.r) {
-                var hd = proj - Math.sqrt(Math.max(0, obj.r * obj.r - perp * perp));
-                if (hd > 0 && hd < minDist) { minDist = hd; hitMat = obj.mat; hitRef = obj.ref; }
-              }
-            }
-          }
-          if (minDist < 500) {
-            var roundTrip = minDist * 2 * 0.1;
-            var delaySec = Math.min(0.6, roundTrip / SPEED_OF_SOUND);
-            var atten = Math.min(1, 40 / (minDist + 5)) * hitRef;
-            var filterHz = hitMat === 'metal' ? 6000 : hitMat === 'glass' ? 7000 : hitMat === 'concrete' ? 4000 : hitMat === 'rock' ? 3500 : hitMat === 'wood' ? 2000 : hitMat === 'goal' ? 5000 : hitMat === 'car' ? 4500 : hitMat === 'flesh' ? 2500 : 3000;
+          var minDist = fanHits[ri].px, hitMat = fanHits[ri].mat, hitRef = fanHits[ri].ref;
+          if (minDist < EchoModel.RANGE_PX) {
+            // Delay and loudness come from the model: the same functions the
+            // read-out, the quiz and the Echo timing panel use.
+            var delaySec = EchoModel.delaySecFromPx(minDist);
+            var atten = EchoModel.gainFromPx(minDist, hitRef);
+            // Timbre from the same absorption table: low and high shelves set the 250 Hz and
+            // 4 kHz parts of the echo against the 1 kHz part (soft things lose their highs).
+            var tilt = EchoModel.echoTilt(hitMat);
             var echoSrc = ac.createBufferSource();
             echoSrc.buffer = activeBuf;
             var delay = ac.createDelay(1.0);
             delay.delayTime.value = delaySec;
             var filter = ac.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = filterHz;
+            filter.type = 'lowshelf';
+            filter.frequency.value = 500;
+            filter.gain.value = tilt.lowDb;
+            var filterHi = ac.createBiquadFilter();
+            filterHi.type = 'highshelf';
+            filterHi.frequency.value = 2000;
+            filterHi.gain.value = tilt.highDb;
             var gain = ac.createGain();
             gain.gain.value = atten * 0.35;
             var panner = binPannerFor(ra);
-            echoSrc.connect(delay); delay.connect(filter); filter.connect(gain); gain.connect(panner);
+            echoSrc.connect(delay); delay.connect(filter); filter.connect(filterHi); filterHi.connect(gain); gain.connect(panner);
             clickNodes.push(echoSrc, delay, filter, gain);
+            clickNodes.push(filterHi);
             echoSrc.start();
             retireClickNodes(delaySec + activeBuf.duration);
-            if (multiBounce && minDist < 400) {
+            if (multiBounceNow && minDist < 400) {
               for (var bri = 0; bri < 3; bri++) {
                 var bounceAngle = ra + Math.PI + (bri - 1) * 0.3;
                 var bdx = Math.cos(bounceAngle), bdy = Math.sin(bounceAngle);
@@ -1376,14 +1787,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 }
                 if (bMinDist < 400 && bMinDist > 5) {
                   var totalDist = minDist + bMinDist;
-                  var bDelay = Math.min(0.8, (totalDist * 2 * 0.1) / SPEED_OF_SOUND);
-                  var bAtten = Math.min(0.5, 20 / (totalDist + 10)) * hitRef * bRef2;
-                  var bFilt = bMat === 'metal' ? 4000 : bMat === 'wood' ? 1500 : 2500;
+                  // Path: you -> first surface -> second surface -> first surface -> you.
+                  var bDelay = Math.min(0.8, EchoModel.delaySec(EchoModel.metersFromPx(totalDist)));
+                  // Three reflections (first, second, first again): energy ref1 x ref2 x ref1, amplitude its square root.
+                  var bAtten = Math.min(0.5, 20 / (totalDist + 10)) * Math.sqrt(hitRef * bRef2 * hitRef);
+                  var bHighDb = 2 * EchoModel.echoTilt(hitMat).highDb + EchoModel.echoTilt(bMat).highDb;
                   var bSrc = ac.createBufferSource(); bSrc.buffer = activeBuf;
                   var bDel = ac.createDelay(1.0); bDel.delayTime.value = bDelay;
-                  var bF = ac.createBiquadFilter(); bF.type = 'lowpass'; bF.frequency.value = bFilt;
+                  var bF = ac.createBiquadFilter(); bF.type = 'highshelf'; bF.frequency.value = 2000; bF.gain.value = bHighDb;
                   var bG = ac.createGain(); bG.gain.value = bAtten * 0.2;
-                  var bP = binPannerFor(bounceAngle);
+                  // That path comes home from the FIRST surface, so it is heard from
+                  // that side. (It used the bounce heading, which points behind the
+                  // player and was clamped to the far right of the fan every time.)
+                  var bP = binPannerFor(ra);
                   bSrc.connect(bDel); bDel.connect(bF); bF.connect(bG); bG.connect(bP);
                   clickNodes.push(bSrc, bDel, bF, bG);
                   bSrc.start();
@@ -1396,37 +1812,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       }
 
       // ── Distance estimation challenge ──
+      // Listen first, then guess, then see the working. The target, its echo time and
+      // the four choices all come from EchoModel, the same functions that made the sound.
       function startDistanceChallenge() {
         var player = playerRef.current;
         var map = mapRef.current;
         if (!map) return;
-        // Find the nearest wall in the facing direction
-        var rdx = Math.cos(player.angle), rdy = Math.sin(player.angle);
-        var minDist = Infinity, hitMat = 'wall';
-        for (var wi = 0; wi < map.walls.length; wi++) {
-          var w = map.walls[wi];
-          var dist = rayHit(player.x, player.y, rdx, rdy, w.x1, w.y1, w.x2, w.y2);
-          if (dist > 0 && dist < minDist) { minDist = dist; hitMat = w.mat; }
+        if (!(dataRef.current || {}).disclaimerDismissed) return;
+        // Nearest wall or object straight ahead (the goal and moving things do not count).
+        var hit = EchoModel.castRay(map, null, player.x, player.y, player.angle, true);
+        var minDist = hit.px, hitMat = hit.mat || 'wall';
+        if (!(minDist < EchoModel.RANGE_PX)) {
+          if (addToast) addToast(t('stem.echotrainer.dist_none_ahead', 'Nothing is close enough straight ahead. Turn to face a wall, then try again.'), 'info');
+          if (announceToSR) announceToSR(t('stem.echotrainer.dist_none_ahead', 'Nothing is close enough straight ahead. Turn to face a wall, then try again.'));
+          return;
         }
-        for (var oi = 0; oi < map.objects.length; oi++) {
-          var obj = map.objects[oi];
-          if (obj.isGoal) continue;
-          var odx = obj.x - player.x, ody = obj.y - player.y;
-          var proj = odx * rdx + ody * rdy;
-          if (proj > 0) {
-            var perp = Math.abs(odx * rdy - ody * rdx);
-            if (perp < obj.r) {
-              var hd = proj - Math.sqrt(Math.max(0, obj.r * obj.r - perp * perp));
-              if (hd > 0 && hd < minDist) { minDist = hd; hitMat = obj.mat; }
-            }
+        var realDistMeters = Math.round(EchoModel.metersFromPx(minDist) * 10) / 10; // round to 1 decimal
+        if (EchoModel.delaySec(realDistMeters) * 1000 < EchoModel.FUSE_MS) {
+          if (addToast) addToast(t('stem.echotrainer.dist_too_close', 'You are too close: the echo blends into the click. Step back, then try again.'), 'info');
+          if (announceToSR) announceToSR(t('stem.echotrainer.dist_too_close', 'You are too close: the echo blends into the click. Step back, then try again.'));
+          return;
+        }
+        upd('distChallenge', {
+          active: true, targetDist: realDistMeters, targetMat: hitMat, answer: null, result: null,
+          choices: EchoModel.distanceChoices(realDistMeters, Math.floor(Math.random() * 4)),
+          gain: EchoModel.gainFromPx(minDist, hit.ref),
+          key: EchoModel.targetKey(player.x, player.y, player.angle)
+        });
+        emitClick(); // fire a sonar pulse so they can hear it
+        if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_distance_challenge_v2', 'Distance challenge. You just clicked. How far is the {material} surface straight ahead? Four choices follow. You can play the echo again.', { material: hitMat }));
+      }
+
+      // Plays one click and one echo for a given distance, straight ahead. Used by the
+      // distance challenge replay and by the Echo timing panel, so both are the sound
+      // of the numbers they show.
+      // mat (optional) gives the echo that material's timbre, as in the room. startAt (seconds, optional) delays the pair.
+      function playSingleEcho(meters, speed, gainAmt, mat, startAt) {
+        var audio = initAudio();
+        if (!audio) return false;
+        var ac = audio.ctx;
+        if (ac.state === 'suspended') ac.resume();
+        var buf = ((dataRef.current || {}).clickType || 'tongue') === 'cane' ? audio.caneBuf : audio.clickBuf;
+        var delaySec = Math.min(1.4, EchoModel.delaySec(meters, speed));
+        var t0 = ac.currentTime + (startAt > 0 ? startAt : 0);
+        var nodes = [];
+        var src0 = ac.createBufferSource(); src0.buffer = buf;
+        var g0 = ac.createGain(); g0.gain.value = 0.25;
+        src0.connect(g0); g0.connect(ac.destination); src0.start(t0);
+        nodes.push(src0, g0);
+        if (gainAmt > 0.0005) {
+          var src1 = ac.createBufferSource(); src1.buffer = buf;
+          var del1 = ac.createDelay(1.5); del1.delayTime.value = delaySec;
+          var g1 = ac.createGain(); g1.gain.value = Math.min(1, gainAmt) * 0.35;
+          var last1 = del1;
+          if (mat) {
+            var tilt1 = EchoModel.echoTilt(mat);
+            var lo1 = ac.createBiquadFilter(); lo1.type = 'lowshelf'; lo1.frequency.value = 500; lo1.gain.value = tilt1.lowDb;
+            var hi1 = ac.createBiquadFilter(); hi1.type = 'highshelf'; hi1.frequency.value = 2000; hi1.gain.value = tilt1.highDb;
+            del1.connect(lo1); lo1.connect(hi1); last1 = hi1; nodes.push(lo1, hi1);
           }
+          src1.connect(del1); last1.connect(g1); g1.connect(ac.destination); src1.start(t0);
+          nodes.push(src1, del1, g1);
         }
-        if (minDist < 500) {
-          var realDistMeters = Math.round(minDist * 0.1 * 10) / 10; // 1px = 0.1m, round to 1 decimal
-          upd('distChallenge', { active: true, targetDist: realDistMeters, targetMat: hitMat, answer: null, result: null });
-          emitClick(); // fire a sonar pulse so they can hear it
-          if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_distance_challenge', 'Distance challenge! You just clicked. How far is the {material} surface ahead of you? Choose an estimate.', { material: hitMat }));
-        }
+        setTimeout(function() { for (var ni = 0; ni < nodes.length; ni++) { try { nodes[ni].disconnect(); } catch (e) {} } }, ((startAt > 0 ? startAt : 0) + delaySec + buf.duration + 0.3) * 1000);
+        return true;
       }
 
       // ── Material identification quiz ──
@@ -1434,41 +1883,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var player = playerRef.current;
         var map = mapRef.current;
         if (!map) return;
-        var rdx = Math.cos(player.angle), rdy = Math.sin(player.angle);
-        var minDist = Infinity, hitMat = null;
-        for (var wi = 0; wi < map.walls.length; wi++) {
-          var w = map.walls[wi];
-          var dist = rayHit(player.x, player.y, rdx, rdy, w.x1, w.y1, w.x2, w.y2);
-          if (dist > 0 && dist < minDist) { minDist = dist; hitMat = w.mat; }
-        }
-        for (var oi = 0; oi < map.objects.length; oi++) {
-          var obj = map.objects[oi];
-          if (obj.isGoal) continue;
-          var odx = obj.x - player.x, ody = obj.y - player.y;
-          var proj = odx * rdx + ody * rdy;
-          if (proj > 0) {
-            var perp = Math.abs(odx * rdy - ody * rdx);
-            if (perp < obj.r) {
-              var hd = proj - Math.sqrt(Math.max(0, obj.r * obj.r - perp * perp));
-              if (hd > 0 && hd < minDist) { minDist = hd; hitMat = obj.mat; }
-            }
-          }
-        }
+        if (!(dataRef.current || {}).disclaimerDismissed) return;
+        var mqHit = EchoModel.castRay(map, null, player.x, player.y, player.angle, true);
+        var minDist = mqHit.px, hitMat = mqHit.mat;
+        var mqKey = EchoModel.targetKey(player.x, player.y, player.angle);
         if (hitMat && minDist < 400) {
-          var allMats = ['concrete', 'rock', 'wood', 'metal', 'glass'];
-          var options = [hitMat];
-          while (options.length < 4) {
-            var pick = allMats[Math.floor(Math.random() * allMats.length)];
-            if (options.indexOf(pick) === -1) options.push(pick);
-          }
-          // Shuffle options
-          for (var si = options.length - 1; si > 0; si--) {
-            var sj = Math.floor(Math.random() * (si + 1));
-            var temp = options[si]; options[si] = options[sj]; options[sj] = temp;
-          }
-          upd('matQuiz', { active: true, correctMat: hitMat, options: options, answer: null, result: null });
+          // Real hard surfaces (concrete, rock, metal, glass, wood) all send back 90% or more of
+          // the sound, so their echoes sound almost alike. The real, hearable difference is hard
+          // versus soft, so that is the question. The order of the two choices is random.
+          var options = EchoModel.materialChoices(Math.random());
+          var mqMeters = Math.round(EchoModel.metersFromPx(minDist) * 10) / 10;
+          upd('matQuiz', { active: true, correctMat: hitMat, options: options, answer: null, result: null, key: mqKey, dist: mqMeters, gain: EchoModel.gainFromPx(minDist, mqHit.ref) });
           emitClick();
-          if (announceToSR) announceToSR(t('stem.echotrainer.material_quiz_listen_to_the_echo_ahead', 'Material quiz! Listen to the echo ahead and identify the material.'));
+          if (announceToSR) announceToSR(t('stem.echotrainer.material_quiz_listen_to_the_echo_ahead_v2', 'Material quiz. Listen to the echo from straight ahead. Is that surface hard or soft? Two choices follow. You can play the echo again.'));
         } else {
           if (addToast) addToast(t('stem.echotrainer.no_surface_detected_ahead_try_facing_a', 'No surface detected ahead. Try facing a wall first.'), 'info');
         }
@@ -1569,7 +1996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         document.addEventListener('pointerlockchange', onPointerLockChange);
         function onCanvasClick() { if (!isLocked) { try { container.focus({ preventScroll: true }); } catch(e) {} try { renderer.domElement.requestPointerLock(); } catch(e) {} } else { emitClick(); } }
         renderer.domElement.addEventListener('click', onCanvasClick);
-        function onMouseMove(e) { if (!isLocked) return; var sensitivity = 0.002; yawRef.current -= e.movementX * sensitivity; pitchRef.current -= e.movementY * sensitivity; pitchRef.current = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, pitchRef.current)); }
+        function onMouseMove(e) { if (!isLocked) return; var sensitivity = 0.002; yawRef.current += e.movementX * sensitivity; pitchRef.current -= e.movementY * sensitivity; pitchRef.current = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, pitchRef.current)); }
         document.addEventListener('mousemove', onMouseMove);
         // WCAG 2.1.4: movement keys and Space act only while the 3D viewport (tabIndex 0) has focus or the mouse is locked.
         function onKeyDown(e) {
@@ -1578,7 +2005,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           keysRef.current[e.code] = true; if (e.code === 'Space') { e.preventDefault(); emitClick(); }
         }
         function onKeyUp(e) { keysRef.current[e.code] = false; }
-        document.addEventListener('keydown', onKeyDown); document.addEventListener('keyup', onKeyUp);
+        function onDescribeKey(e) {
+          if (e.ctrlKey || e.metaKey || e.altKey || e.code !== 'KeyR') return;
+          if (!isLocked && !(e.target && e.target.nodeType && container.contains(e.target))) return;
+          if (describeRef.current) describeRef.current();
+        }
+        document.addEventListener('keydown', onKeyDown); document.addEventListener('keyup', onKeyUp); document.addEventListener('keydown', onDescribeKey);
         var agentSounds = []; var ambientNodes = [];
         try {
           var audio = initAudio();
@@ -1684,7 +2116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
         } catch(e) {}
         agentOscRef.current = agentSounds; ambientSoundsRef.current = ambientNodes;
-        var running = true; var lastTime = performance.now(); var goalCheckTimer = 0; var bumpFlash = 0; var ambientTime = 0;
+        var running = true; var lastTime = performance.now(); var goalCheckTimer = 0; var bumpFlash = 0; var wallContact = false; var ambientTime = 0; var lastBumpSaid = -9999; var lastZone = (dataRef.current && dataRef.current.beaconZone) || 'none';
 
         function loop(now) {
           if (!running) return;
@@ -1694,7 +2126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           // the loop on the next frame instead of being trapped at mount.
           var d = dataRef.current;
           var dt = Math.min(0.05, (now - lastTime) / 1000); lastTime = now; ambientTime += dt;
-          var keys = keysRef.current; var currentViewMode = d.viewMode || 'echo';
+          var keys = d.disclaimerDismissed ? keysRef.current : {}; var currentViewMode = d.viewMode || 'echo';
 
           // Sprint and crouch detection
           var isSprinting = keys['ShiftLeft'] || keys['ShiftRight'];
@@ -1703,7 +2135,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           var ms = 180 * speedMult;
           var turnSpeed = 2.0;
 
-          if (!isLocked) { if (keys['ArrowLeft']) yawRef.current += turnSpeed * dt; if (keys['ArrowRight']) yawRef.current -= turnSpeed * dt; }
+          // Left arrow turns left. (It added to the angle, which is a RIGHT turn on this
+          // map, so both arrow keys and the mouse turned the wrong way in 3D.)
+          if (!isLocked) yawRef.current += EchoModel.turnDelta(keys['ArrowLeft'], keys['ArrowRight'], turnSpeed, dt);
           player.angle = yawRef.current;
           var fdx = Math.cos(player.angle); var fdy = Math.sin(player.angle);
           var rdxS = Math.cos(player.angle + Math.PI / 2); var rdyS = Math.sin(player.angle + Math.PI / 2);
@@ -1717,10 +2151,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var mLen = Math.sqrt(moveX * moveX + moveY * moveY);
             moveX = (moveX / mLen) * ms * dt; moveY = (moveY / mLen) * ms * dt;
             var nx = player.x + moveX, ny = player.y + moveY;
-            if (canMoveTo(nx, ny, map)) { player.x = nx; player.y = ny; moved = true; }
+            if (canMoveTo(nx, ny, map)) { player.x = nx; player.y = ny; moved = true; wallContact = false; }
             else {
+              // The thud repeats while the key is held, so the wall can still be heard; the count goes up once per contact.
+              var wallHit = EchoModel.contactBump(wallContact, true, false); wallContact = wallHit.inContact;
+              if (wallHit.bump) updMulti({ bumps: (d.bumps || 0) + 1 });
               if (bumpFlash <= 0) {
-                bumpFlash = 0.3; updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump');
+                bumpFlash = 0.3; if (window._alloHaptic) window._alloHaptic('bump');
+                if (wallHit.bump && announceToSR && now - lastBumpSaid > 2000) { lastBumpSaid = now; announceToSR(t('stem.echotrainer.sr_bump_wall', 'Bump. Something solid is in the way. Stop and click.')); }
                 try { var bac = audioRef.current && audioRef.current.ctx; if (bac) { var bo = bac.createOscillator(); var bg = bac.createGain(); bo.type = 'sine'; bo.frequency.value = 120; bg.gain.setValueAtTime(0.08, bac.currentTime); bg.gain.exponentialRampToValueAtTime(0.001, bac.currentTime + 0.1); bo.connect(bg); bg.connect(bac.destination); bo.start(); bo.stop(bac.currentTime + 0.1); } } catch(e) {}
               }
             }
@@ -1772,11 +2210,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           for (var ami = 0; ami < sd.agentMeshes.length; ami++) { var am = sd.agentMeshes[ami]; var amAg = am.agent; am.mesh.position.x = amAg.x * SCALE; am.mesh.position.z = amAg.y * SCALE; am.mesh.userData.mapX = amAg.x; am.mesh.userData.mapY = amAg.y; }
           for (var sai = 0; sai < agentSounds.length; sai++) {
-            var asnd = agentSounds[sai]; var sag = asnd.agent; var relX = (sag.x - player.x) * 0.01; var relZ = (sag.y - player.y) * 0.01;
-            var cosP = Math.cos(-player.angle), sinP = Math.sin(-player.angle);
-            asnd.panner.positionX.value = relX * cosP - relZ * sinP;
+            var asnd = agentSounds[sai]; var sag = asnd.agent;
+            // Ahead must sound ahead. The old rotation put a thing straight ahead at
+            // +x (hard right) and a thing on the right behind the listener.
+            var agHead = EchoModel.headRelative((sag.x - player.x) * 0.01, (sag.y - player.y) * 0.01, player.angle);
+            asnd.panner.positionX.value = agHead.x;
             asnd.panner.positionY.value = (sag.kind === 'bat' ? 1.5 : sag.kind === 'bird' ? 2.0 : sag.kind === 'deer' ? -0.5 : sag.kind === 'jogger' ? 0 : sag.kind === 'cyclist' ? -0.3 : 0);
-            asnd.panner.positionZ.value = relX * sinP + relZ * cosP;
+            asnd.panner.positionZ.value = agHead.z;
 
             // Doppler effect: pitch shift based on radial velocity toward player
             if (!asnd._lastDist) asnd._lastDist = 0;
@@ -1790,62 +2230,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var ambi = 0; ambi < ambientNodes.length; ambi++) {
             var aNode = ambientNodes[ambi];
             if (aNode.type === 'drip') {
-              var dRelX = (aNode.pos.x - player.x) * 0.01; var dRelZ = (aNode.pos.y - player.y) * 0.01;
-              var dCosP = Math.cos(-player.angle), dSinP = Math.sin(-player.angle);
-              aNode.panner.positionX.value = dRelX * dCosP - dRelZ * dSinP; aNode.panner.positionY.value = 1.0; aNode.panner.positionZ.value = dRelX * dSinP + dRelZ * dCosP;
+              var dHead = EchoModel.headRelative((aNode.pos.x - player.x) * 0.01, (aNode.pos.y - player.y) * 0.01, player.angle);
+              aNode.panner.positionX.value = dHead.x; aNode.panner.positionY.value = 1.0; aNode.panner.positionZ.value = dHead.z;
               var dripCycle = (ambientTime + aNode.phase) % 2.5;
               if (dripCycle < 0.06) { aNode.gain.gain.value = 0.035; } else { aNode.gain.gain.value = 0; }
             } else if (aNode.type === 'chirp') { var chirpPulse = Math.sin(ambientTime * 1.5) * 0.5 + 0.5; aNode.gain.gain.value = 0.005 * chirpPulse; }
             else if (aNode.type === 'fountain' && aNode.panner) {
-              var fRelX = (aNode.pos.x - player.x) * 0.01; var fRelZ = (aNode.pos.y - player.y) * 0.01;
-              var fCosP = Math.cos(-player.angle), fSinP = Math.sin(-player.angle);
-              aNode.panner.positionX.value = fRelX * fCosP - fRelZ * fSinP; aNode.panner.positionY.value = 0; aNode.panner.positionZ.value = fRelX * fSinP + fRelZ * fCosP;
+              var fHead = EchoModel.headRelative((aNode.pos.x - player.x) * 0.01, (aNode.pos.y - player.y) * 0.01, player.angle);
+              aNode.panner.positionX.value = fHead.x; aNode.panner.positionY.value = 0; aNode.panner.positionZ.value = fHead.z;
             } else if (aNode.type === 'landmark_tick' || aNode.type === 'landmark_beep') {
               var lmCycle = ambientTime % aNode.interval;
               aNode.gain.gain.value = (lmCycle < 0.04) ? aNode.baseGain : 0;
-              var lmRelX = (aNode.pos.x - player.x) * 0.01;
-              var lmRelZ = (aNode.pos.y - player.y) * 0.01;
-              var lmCosP = Math.cos(-player.angle), lmSinP = Math.sin(-player.angle);
-              aNode.panner.positionX.value = lmRelX * lmCosP - lmRelZ * lmSinP;
+              var lmHead = EchoModel.headRelative((aNode.pos.x - player.x) * 0.01, (aNode.pos.y - player.y) * 0.01, player.angle);
+              aNode.panner.positionX.value = lmHead.x;
               aNode.panner.positionY.value = 0;
-              aNode.panner.positionZ.value = lmRelX * lmSinP + lmRelZ * lmCosP;
+              aNode.panner.positionZ.value = lmHead.z;
             } else if (aNode.type === 'landmark_hum') {
-              var lhRelX = (aNode.pos.x - player.x) * 0.01;
-              var lhRelZ = (aNode.pos.y - player.y) * 0.01;
-              var lhCosP = Math.cos(-player.angle), lhSinP = Math.sin(-player.angle);
-              aNode.panner.positionX.value = lhRelX * lhCosP - lhRelZ * lhSinP;
+              var lhHead = EchoModel.headRelative((aNode.pos.x - player.x) * 0.01, (aNode.pos.y - player.y) * 0.01, player.angle);
+              aNode.panner.positionX.value = lhHead.x;
               aNode.panner.positionY.value = 0;
-              aNode.panner.positionZ.value = lhRelX * lhSinP + lhRelZ * lhCosP;
+              aNode.panner.positionZ.value = lhHead.z;
             }
           }
           var activePulses = []; var nowMs = Date.now();
-          var etReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          var etReduced = !!reduceRef.current || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           var etSec = etReduced ? 2.1 : now * 0.001;
           if (sd.acousticTimeUniform) sd.acousticTimeUniform.value = etSec;
           var maxSonarFlash = 0;
+          // Material quiz open: every lit surface (but the beacon) takes one neutral color until it is answered.
+          var hideHue3d = EchoModel.hideMaterialHue(d.matQuiz); var nG3 = EchoModel.NEUTRAL_GLOW; var neutral3 = { r: nG3[0] / 255, g: nG3[1] / 255, b: nG3[2] / 255 };
+          // Echo Vision lights what the click TOUCHED, when the slow-motion ring gets
+          // there. (It used to light a mesh only if its centre lay within about 11 m,
+          // and the pulse died at 0.67 s, so from the start spot nothing lit up at all.)
+          var meshByKey = sd.meshByKey;
+          if (!meshByKey) { meshByKey = sd.meshByKey = {}; for (var mk = 0; mk < sd.meshes.length; mk++) { var mkKey = sd.meshes[mk].userData.hitKey; if (mkKey) meshByKey[mkKey] = sd.meshes[mk]; } }
           for (var spi = 0; spi < pulsesRef.current.length; spi++) {
-            var pulse = pulsesRef.current[spi]; var age = (nowMs - pulse.birth) / 1000; var pulseRadiusPx = age * SPEED_OF_SOUND * 0.5; var pulseIntensity = Math.max(0, 1 - age * 1.5);
-            if (pulseIntensity <= 0) continue; activePulses.push(pulse);
+            var pulse = pulsesRef.current[spi]; var age = (nowMs - pulse.birth) / 1000; var pulseRadiusPx = EchoModel.ringRadiusPx(age);
+            if (pulseRadiusPx > EchoModel.RANGE_PX + 20) continue; activePulses.push(pulse);
+            var pulseIntensity = Math.max(0, 1 - age * 1.5);
             if (pulseIntensity > maxSonarFlash) maxSonarFlash = pulseIntensity;
-            for (var mi = 0; mi < sd.meshes.length; mi++) {
-              var mesh = sd.meshes[mi]; var mData = mesh.userData; if (mData.kind === 'floor') continue;
-              var mdx = mData.mapX - pulse.x; var mdy = mData.mapY - pulse.y; var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-              var band = (mData.kind === 'agent') ? 28 : 22;
-              if (Math.abs(mDist - pulseRadiusPx) < band) {
-                var bandFade = 1 - Math.abs(mDist - pulseRadiusPx) / band;
-                var glow = pulseIntensity * bandFade * (mData.ref || 0.5);
-                if (glow > mData.glowAmt) { mData.glowAmt = glow; }
-                // Spawn shimmering obstacle echo-reflection ripple ring when sonar strikes an obstacle
-                if (sd.echoRipples && sd.echoRipples.length && currentViewMode !== 'audio' && glow > 0.16 && (!mData._lastRippleMs || nowMs - mData._lastRippleMs > 420)) {
-                  mData._lastRippleMs = nowMs;
-                  var erSlot = sd.echoRipples[sd.echoRippleIdx % sd.echoRipples.length];
-                  sd.echoRippleIdx = (sd.echoRippleIdx + 1) % sd.echoRipples.length;
-                  erSlot.birth = nowMs;
-                  erSlot.mesh.position.set(mData.mapX * SCALE, 0.09, mData.mapY * SCALE);
-                  var baseC = mesh.material && mesh.material.userData && mesh.material.userData.baseColor;
-                  if (baseC && erSlot.mat.uniforms && erSlot.mat.uniforms.uColor) {
-                    erSlot.mat.uniforms.uColor.value.copy(baseC);
-                  }
+            var pHits = pulse.hits || [];
+            for (var phi = 0; phi < pHits.length; phi++) {
+              var ph = pHits[phi];
+              if (ph.lit || !(etReduced || pulseRadiusPx >= ph.px)) continue;
+              ph.lit = true;
+              var mesh = meshByKey[ph.key]; if (!mesh) continue;
+              var mData = mesh.userData;
+              var glow = EchoModel.glowFor(ph.gain);
+              if (glow > mData.glowAmt) { mData.glowAmt = glow; }
+              // An echo marker starts where the click touched the surface and (unless
+              // motion is reduced) travels back to where the click was made.
+              if (sd.echoRipples && sd.echoRipples.length && currentViewMode !== 'audio') {
+                var erSlot = sd.echoRipples[sd.echoRippleIdx % sd.echoRipples.length];
+                sd.echoRippleIdx = (sd.echoRippleIdx + 1) % sd.echoRipples.length;
+                erSlot.birth = nowMs;
+                erSlot.fromX = ph.x; erSlot.fromY = ph.y; erSlot.toX = pulse.x; erSlot.toY = pulse.y;
+                erSlot.travelSec = Math.max(0.3, ph.px / (SPEED_OF_SOUND * 0.5));
+                erSlot.mesh.position.set(ph.x * SCALE, 0.09, ph.y * SCALE);
+                var baseC = mesh.material && mesh.material.userData && mesh.material.userData.baseColor;
+                if (baseC && erSlot.mat.uniforms && erSlot.mat.uniforms.uColor) {
+                  if (hideHue3d && mData.mat !== 'goal') erSlot.mat.uniforms.uColor.value.setRGB(neutral3.r, neutral3.g, neutral3.b); else erSlot.mat.uniforms.uColor.value.copy(baseC);
                 }
               }
             }
@@ -1858,8 +2302,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var wpPulse = (currentViewMode !== 'audio' && wri2 < activePulses.length) ? activePulses[wri2] : null;
               if (wpPulse) {
                 var wpAge = (nowMs - wpPulse.birth) / 1000;
-                var wpRad = Math.max(0.2, wpAge * SPEED_OF_SOUND * 0.5 * SCALE);
-                var wpAlpha = Math.max(0, 1 - wpAge * 1.5);
+                var wpRad = Math.max(0.2, EchoModel.ringRadiusPx(wpAge) * SCALE);
+                // Reduced motion: surfaces light at once, so the ring is only a short flash.
+                var wpAlpha = etReduced ? Math.max(0, 1 - wpAge * 1.5) : Math.max(0.12, 1 - EchoModel.ringRadiusPx(wpAge) / (EchoModel.RANGE_PX + 20));
+                var wpShell = Math.max(0, 1 - wpAge * 1.5);
                 wrPair.floorRing.visible = true;
                 wrPair.floorRing.position.set(wpPulse.x * SCALE, 0.06, wpPulse.y * SCALE);
                 wrPair.floorRing.scale.setScalar(wpRad);
@@ -1870,19 +2316,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 } else {
                   wrPair.floorRing.material.opacity = wpAlpha * (etReduced ? 0.35 : 0.62);
                 }
-                wrPair.earRing.visible = !etReduced;
+                wrPair.earRing.visible = !etReduced && wpShell > 0.01;
                 if (!etReduced) {
                   if (wrPair.isShell) {
                     wrPair.earRing.position.set(wpPulse.x * SCALE, 0.04, wpPulse.y * SCALE);
                     wrPair.earRing.scale.set(wpRad, Math.min(3.4, wpRad * 0.68), wpRad);
                     if (wrPair.earRing.material.uniforms) {
                       wrPair.earRing.material.uniforms.uTime.value = etSec;
-                      wrPair.earRing.material.uniforms.uOpacity.value = wpAlpha * 0.48;
+                      wrPair.earRing.material.uniforms.uOpacity.value = wpShell * 0.48;
                     }
                   } else {
                     wrPair.earRing.position.set(wpPulse.x * SCALE, 1.35, wpPulse.y * SCALE);
                     wrPair.earRing.scale.setScalar(wpRad * 0.96);
-                    wrPair.earRing.material.opacity = wpAlpha * 0.26;
+                    wrPair.earRing.material.opacity = wpShell * 0.26;
                   }
                 }
               } else {
@@ -1896,14 +2342,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             for (var eri2 = 0; eri2 < sd.echoRipples.length; eri2++) {
               var er = sd.echoRipples[eri2];
               var erAge = (nowMs - er.birth) / 1000;
-              if (currentViewMode !== 'audio' && erAge >= 0 && erAge < 0.92) {
-                var erProg = etReduced ? 0.42 : (erAge / 0.92);
+              var erLife = etReduced ? 1.6 : (er.travelSec || 0.92);
+              if (currentViewMode !== 'audio' && erAge >= 0 && erAge < erLife) {
+                var erProg = etReduced ? 0.42 : (erAge / erLife);
                 er.mesh.visible = true;
-                er.mesh.scale.setScalar(0.55 + erProg * 2.15);
+                if (typeof er.fromX === 'number') {
+                  var erT = etReduced ? 0 : erProg;
+                  er.mesh.position.set((er.fromX + (er.toX - er.fromX) * erT) * SCALE, 0.09, (er.fromY + (er.toY - er.fromY) * erT) * SCALE);
+                }
+                er.mesh.scale.setScalar(etReduced ? 1.4 : (1.5 - erProg * 0.7));
                 if (er.mat.uniforms) {
                   er.mat.uniforms.uTime.value = etSec;
                   er.mat.uniforms.uProgress.value = erProg;
-                  er.mat.uniforms.uOpacity.value = (1 - erProg) * (etReduced ? 0.38 : 0.72);
+                  er.mat.uniforms.uOpacity.value = etReduced ? 0.5 * (1 - erAge / erLife) : (0.35 + 0.5 * Math.sin(Math.PI * Math.min(1, erProg * 1.05)));
                 }
               } else {
                 er.mesh.visible = false;
@@ -1932,7 +2383,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 var ghostTarget = Math.min(diff.ghostMax, (gm.userData.peakGlow || 0) * 0.14);
                 if (!gm.userData.ghostGlow || gm.userData.ghostGlow < ghostTarget) { gm.userData.ghostGlow = ghostTarget; }
               }
-              gm.userData.glowAmt = Math.max(0, gm.userData.glowAmt - 1.15 * dt);
+              // With reduced motion there is no ring to watch, so the lit picture is held longer.
+              gm.userData.glowAmt = Math.max(0, gm.userData.glowAmt - (etReduced ? 0.2 : EchoModel.GLOW_FADE_PER_SEC) * dt);
             }
             if (gm.userData.kind !== 'agent' && gm.userData.ghostGlow > 0) { gm.userData.ghostGlow = Math.max(0, gm.userData.ghostGlow - diff.ghostDecay * dt); }
           }
@@ -1946,10 +2398,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var mci = 0; mci < sd.meshes.length; mci++) {
             var cm = sd.meshes[mci]; var cmMat = cm.material; var cmUD = cmMat.userData; if (!cmUD || !cmUD.baseColor) continue;
             var effG = 0;
+            var hueC = (hideHue3d && cmUD.mat !== 'goal') ? neutral3 : cmUD.baseColor;
+            if (cmUD._rimUniform) { if (hueC === neutral3) cmUD._rimUniform.value.setRGB(neutral3.r, neutral3.g, neutral3.b); else cmUD._rimUniform.value.copy(cmUD._rimBase); }
             if (currentViewMode === 'reveal') {
               effG = 1.0;
-              cmMat.color.copy(cmUD.baseColor);
-              if (cmUD.isPbr && cmMat.emissive) cmMat.emissive.setRGB(cmUD.baseColor.r * 0.28, cmUD.baseColor.g * 0.28, cmUD.baseColor.b * 0.28);
+              cmMat.color.setRGB(hueC.r, hueC.g, hueC.b);
+              if (cmUD.isPbr && cmMat.emissive) cmMat.emissive.setRGB(hueC.r * 0.28, hueC.g * 0.28, hueC.b * 0.28);
             } else if (currentViewMode === 'audio') {
               effG = 0;
               cmMat.color.setHex(0x000000);
@@ -1958,10 +2412,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var ga = cm.userData.glowAmt || 0; var ghostG = cm.userData.ghostGlow || 0;
               effG = Math.max(ga, ghostG);
               if (cmUD.isPbr && cmMat.emissive) {
-                cmMat.color.setRGB(cmUD.baseColor.r * effG * 0.55, cmUD.baseColor.g * effG * 0.55, cmUD.baseColor.b * effG * 0.55);
-                cmMat.emissive.setRGB(cmUD.baseColor.r * effG * 0.92, cmUD.baseColor.g * effG * 0.92, cmUD.baseColor.b * effG * 0.92);
+                cmMat.color.setRGB(hueC.r * effG * 0.55, hueC.g * effG * 0.55, hueC.b * effG * 0.55);
+                cmMat.emissive.setRGB(hueC.r * effG * 0.92, hueC.g * effG * 0.92, hueC.b * effG * 0.92);
               } else {
-                cmMat.color.setRGB(cmUD.baseColor.r * effG, cmUD.baseColor.g * effG, cmUD.baseColor.b * effG);
+                cmMat.color.setRGB(hueC.r * effG, hueC.g * effG, hueC.b * effG);
               }
             }
             cm.userData._effGlow = effG;
@@ -1972,6 +2426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               var elItem = sd.edgeLines[eli];
               var eg = elItem.owner.userData._effGlow || 0;
               elItem.lines.visible = eg > 0.015;
+              if (elItem.baseColor && elItem.lines.material.color) { if (hideHue3d && elItem.owner.userData.mat !== 'goal') elItem.lines.material.color.setRGB(neutral3.r, neutral3.g, neutral3.b); else elItem.lines.material.color.copy(elItem.baseColor); }
               elItem.lines.material.opacity = currentViewMode === 'reveal' ? 0.36 : Math.min(0.95, eg * 1.25);
             }
           }
@@ -2012,6 +2467,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (sd.hemi) sd.hemi.intensity = currentViewMode === 'reveal' ? 0.72 : (currentViewMode === 'audio' ? 0 : 0.14);
           if (sd.rimLight) sd.rimLight.intensity = currentViewMode === 'reveal' ? 0.62 : (currentViewMode === 'audio' ? 0 : 0.22);
           sd.scene.fog.far = currentViewMode === 'reveal' ? 96 : 38;
+          var skyHex = currentViewMode === 'audio' ? 0x000000 : sd.envBg;
+          if (sd.scene.background && sd.scene.background.getHex && sd.scene.background.getHex() !== skyHex) { sd.scene.background.setHex(skyHex); sd.scene.fog.color.setHex(skyHex); }
 
           // Camera height: crouch lowers camera
           var camHeight = isCrouching ? 0.8 : 1.5;
@@ -2026,18 +2483,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             map.objects.forEach(function(o) {
               if (!o.isGoal || goalFoundRef.current) return;
               var gdist = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
+              // The beeps are also shown as words (for anyone who cannot hear them).
+              var zoneNow = EchoModel.beaconZone(gdist);
+              if (zoneNow !== lastZone) { lastZone = zoneNow; upd('beaconZone', zoneNow); }
               if (gdist < 200) {
                 var interval = Math.max(8, Math.floor(gdist / 3));
                 if (goalCheckTimer % interval === 0) {
                   var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600;
-                  try { var pac = audioRef.current && audioRef.current.ctx; if (pac) { var po = pac.createOscillator(); var pg = pac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, pac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, pac.currentTime + 0.05); po.connect(pg); pg.connect(pac.destination); po.start(); po.stop(pac.currentTime + 0.05); } } catch(e) {}
+                  // The ping leans toward the ear the beacon is on, so it gives a direction
+                  // as well as a closeness. It is quieter when the beacon is behind you.
+                  var pingPan = EchoModel.stereoPan(o.x - player.x, o.y - player.y, player.angle);
+                  var pingBehind = EchoModel.headRelative(o.x - player.x, o.y - player.y, player.angle).forward < 0;
+                  try { var pac = audioRef.current && audioRef.current.ctx; if (pac) { var po = pac.createOscillator(); var pg = pac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(pingBehind ? 0.022 : 0.04, pac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, pac.currentTime + 0.05); po.connect(pg); var pOut = pg; if (typeof pac.createStereoPanner === 'function') { var pp = pac.createStereoPanner(); pp.pan.value = pingPan; pg.connect(pp); pOut = pp; } pOut.connect(pac.destination); po.start(); po.stop(pac.currentTime + 0.05); } } catch(e) {}
                   if (window._alloHaptic && gdist < 80) window._alloHaptic('echo');
                 }
               }
             });
           }
           // ── Waypoint navigation detection (3D) ──
-          if (waypointMode && WAYPOINT_ROUTES[envType] && !goalFoundRef.current) {
+          if (d.waypointMode && WAYPOINT_ROUTES[envType] && !goalFoundRef.current) {
             var route = WAYPOINT_ROUTES[envType];
             var wpIdx = d.waypointIdx || 0;
             if (wpIdx < route.points.length) {
@@ -2069,27 +2533,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               }
             }
           }
-          if (goalCheckTimer % 15 === 0 && !goalFoundRef.current && !waypointMode) {
+          if (goalCheckTimer % 15 === 0 && !goalFoundRef.current && !d.waypointMode) {
             map.objects.forEach(function(o) {
               if (!o.isGoal) return;
               var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
               if (gd < o.r + 12) {
                 goalFoundRef.current = true;
-                var isAudioOnly = (currentViewMode === 'audio');
+                var winMode = EchoModel.winMode(currentViewMode, d.sightClicks, d.hasRevealed);
+                var isAudioOnly = (winMode === 'audio');
                 var curGoals3d = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
                 var curBlinds3d = (typeof d.blindWins === 'number' && isFinite(d.blindWins) && d.blindWins >= 0) ? Math.floor(d.blindWins) : 0;
                 var newGoals = curGoals3d + 1; var newBlinds = isAudioOnly ? curBlinds3d + 1 : curBlinds3d;
-                var updateObj = { goalFoundThisRun: true, goalsFound: newGoals, blindWins: newBlinds };
+                var updateObj = { goalFoundThisRun: true, goalsFound: newGoals, blindWins: newBlinds, goalEnvs: EchoModel.addGoalEnv(d, envType) };
                 if (envType === 'urban' && !carHitRef.current) { updateObj.urbanNoCarHit = true; }
                 if (diffId === 'master') { updateObj.batMasterWin = true; }
                 if (envType === 'school') { updateObj.schoolWin = true; }
-                var baseXP = isAudioOnly ? 30 : (currentViewMode === 'echo' ? 20 : 10);
+                var baseXP = isAudioOnly ? 30 : (winMode === 'echo' ? 20 : 10);
                 var bumpPenalty = Math.min(baseXP - 5, d.bumps || 0);
                 var finalXP = Math.max(5, Math.round((baseXP - bumpPenalty) * diff.xpMult));
-                var modeLabel = currentViewMode === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
+                var modeLabel = winMode === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : winMode === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                 var runTime = Math.floor((Date.now() - runStartRef.current) / 1000);
                 var runHistory = (Array.isArray(d.runHistory) ? d.runHistory : []).slice();
-                runHistory.push({ env: envType, mode: modeLabel, difficulty: diff.label, time: runTime, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP });
+                runHistory.push({ env: envType, mode: modeLabel, win: winMode, difficulty: diff.label, time: runTime, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP });
                 if (runHistory.length > 20) runHistory.shift();
                 updateObj.runHistory = runHistory;
                 updMulti(updateObj);
@@ -2161,9 +2626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           rendererRef.current = null; sceneDataRef.current = null;
           if (document.pointerLockElement) { try { document.exitPointerLock(); } catch(e) {} }
           document.removeEventListener('pointerlockchange', onPointerLockChange); document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('keydown', onKeyDown); document.removeEventListener('keyup', onKeyUp);
+          document.removeEventListener('keydown', onKeyDown); document.removeEventListener('keyup', onKeyUp); document.removeEventListener('keydown', onDescribeKey);
         };
-      }, [seed, envType, has3D, viewMode, diffId, isContrast]);
+      }, [seed, envType, has3D, diffId, isContrast]);
 
       // ══════════════════════════════════════════════════════════
       // 2D MINIMAP / STANDALONE FALLBACK
@@ -2182,6 +2647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             if (!focused) return;
             keysRef.current[e.code] = true;
             if (e.code === 'Space') { e.preventDefault(); emitClick(); }
+            if (e.code === 'KeyR' && describeRef.current) describeRef.current();
           };
           onKeyUp2d = function(e) { keysRef.current[e.code] = false; };
           onBlur2d = function() { keysRef.current = {}; };
@@ -2195,7 +2661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           // WebGL isn't available) reflects current viewMode / bumps /
           // run-history rather than mount-time values.
           var d = dataRef.current;
-          var map = mapRef.current; var player = playerRef.current; var agents = agentsRef.current; var keys = keysRef.current;
+          var map = mapRef.current; var player = playerRef.current; var agents = agentsRef.current; var keys = d.disclaimerDismissed ? keysRef.current : {};
           if (!map) return;
           var isMinimap = has3D; var W, H, scale, ox, oy;
           if (isMinimap) { W = canvas.width = 200; H = canvas.height = 200; scale = Math.min(W / map.W, H / map.H); ox = 0; oy = 0; }
@@ -2208,18 +2674,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var fdx2 = Math.cos(player.angle) * ms2, fdy2 = Math.sin(player.angle) * ms2;
             if (keys['KeyW'] || keys['ArrowUp']) {
               var nx2 = player.x + fdx2, ny2 = player.y + fdy2;
-              if (canMoveTo(nx2, ny2, map)) { player.x = nx2; player.y = ny2; }
-              else if (!player._bumpCooldown) { player._bumpCooldown = 20; updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump'); try { var bac = audioRef.current && audioRef.current.ctx; if (bac) { var bo = bac.createOscillator(); var bg = bac.createGain(); bo.type = 'sine'; bo.frequency.value = 120; bg.gain.setValueAtTime(0.08, bac.currentTime); bg.gain.exponentialRampToValueAtTime(0.001, bac.currentTime + 0.1); bo.connect(bg); bg.connect(bac.destination); bo.start(); bo.stop(bac.currentTime + 0.1); } } catch(e) {} }
+              if (canMoveTo(nx2, ny2, map)) { player.x = nx2; player.y = ny2; player._wallContact = false; }
+              else { var wallHit2 = EchoModel.contactBump(player._wallContact, true, false); player._wallContact = wallHit2.inContact; if (wallHit2.bump) updMulti({ bumps: (d.bumps || 0) + 1 }); if (!player._bumpCooldown) { player._bumpCooldown = 20; if (window._alloHaptic) window._alloHaptic('bump'); try { var bac = audioRef.current && audioRef.current.ctx; if (bac) { var bo = bac.createOscillator(); var bg = bac.createGain(); bo.type = 'sine'; bo.frequency.value = 120; bg.gain.setValueAtTime(0.08, bac.currentTime); bg.gain.exponentialRampToValueAtTime(0.001, bac.currentTime + 0.1); bo.connect(bg); bg.connect(bac.destination); bo.start(); bo.stop(bac.currentTime + 0.1); } } catch(e) {} } }
             }
             if (keys['KeyS'] || keys['ArrowDown']) {
               var nx3 = player.x - fdx2, ny3 = player.y - fdy2;
-              if (canMoveTo(nx3, ny3, map)) { player.x = nx3; player.y = ny3; }
-              else if (!player._bumpCooldown) { player._bumpCooldown = 20; updMulti({ bumps: (d.bumps || 0) + 1 }); if (window._alloHaptic) window._alloHaptic('bump'); try { var bac2 = audioRef.current && audioRef.current.ctx; if (bac2) { var bo2 = bac2.createOscillator(); var bg2 = bac2.createGain(); bo2.type = 'sine'; bo2.frequency.value = 120; bg2.gain.setValueAtTime(0.08, bac2.currentTime); bg2.gain.exponentialRampToValueAtTime(0.001, bac2.currentTime + 0.1); bo2.connect(bg2); bg2.connect(bac2.destination); bo2.start(); bo2.stop(bac2.currentTime + 0.1); } } catch(e) {} }
+              if (canMoveTo(nx3, ny3, map)) { player.x = nx3; player.y = ny3; player._wallContact = false; }
+              else { var wallHit2 = EchoModel.contactBump(player._wallContact, true, false); player._wallContact = wallHit2.inContact; if (wallHit2.bump) updMulti({ bumps: (d.bumps || 0) + 1 }); if (!player._bumpCooldown) { player._bumpCooldown = 20; if (window._alloHaptic) window._alloHaptic('bump'); try { var bac2 = audioRef.current && audioRef.current.ctx; if (bac2) { var bo2 = bac2.createOscillator(); var bg2 = bac2.createGain(); bo2.type = 'sine'; bo2.frequency.value = 120; bg2.gain.setValueAtTime(0.08, bac2.currentTime); bg2.gain.exponentialRampToValueAtTime(0.001, bac2.currentTime + 0.1); bo2.connect(bg2); bg2.connect(bac2.destination); bo2.start(); bo2.stop(bac2.currentTime + 0.1); } } catch(e) {} } }
             }
             if (player._bumpCooldown > 0) player._bumpCooldown--;
             updateAgents(agents, (1 / 60) * diff.agentSpeedMult, map);
           }
-          var etReduced2d = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          var etReduced2d = !!reduceRef.current || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           gfx.clearRect(0, 0, W, H);
           // Deep phosphor-CRT radar backdrop with subtle radial scope vignette
           var scopeBg = gfx.createRadialGradient(W * 0.5, H * 0.5, 8, W * 0.5, H * 0.5, Math.max(W, H) * 0.65);
@@ -2244,21 +2710,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
           gfx.restore();
 
-          var currentViewMode2d = d.viewMode || 'echo'; var showMap = isMinimap || currentViewMode2d === 'reveal';
+          var currentViewMode2d = d.viewMode || 'echo';
+          var hideHue2d = EchoModel.hideMaterialHue(d.matQuiz);
+          // The corner map used to draw every wall, the beacon and every moving thing in
+          // every mode, Audio Only included, so the answer was always on screen. Now:
+          // Reveal = the whole room; Echo Vision = only what a click has touched;
+          // Audio Only = nothing.
+          var mapMode = EchoModel.mapMode(currentViewMode2d, isMinimap);
+          var fullMap = mapMode === 'full';
+          var showMap = mapMode !== 'none';
+          var seen2d = (seenRef.current && seenRef.current.grid) || null;
+          var seenKeys2d = (seenRef.current && seenRef.current.keys) || {};
           if (showMap) {
             gfx.save();
             gfx.lineCap = 'round';
             gfx.lineWidth = isMinimap ? 2.5 : 3.2;
             map.walls.forEach(function(w) {
-              var wCol = w.mat === 'metal' ? '#bae6fd' : w.mat === 'wood' ? '#d97706' : w.mat === 'glass' ? 'rgba(125,211,252,0.5)' : '#64748b';
+              var wCol = hideHue2d ? '#cbd5e1' : w.mat === 'metal' ? '#bae6fd' : w.mat === 'wood' ? '#d97706' : w.mat === 'glass' ? 'rgba(125,211,252,0.5)' : w.mat === 'curtain' ? '#c084fc' : w.mat === 'flesh' ? '#fda4af' : '#64748b';
               gfx.strokeStyle = wCol;
-              gfx.shadowColor = w.mat === 'metal' ? 'rgba(56,189,248,0.35)' : 'rgba(99,102,241,0.18)';
+              gfx.shadowColor = (w.mat === 'metal' && !hideHue2d) ? 'rgba(56,189,248,0.35)' : 'rgba(99,102,241,0.18)';
               gfx.shadowBlur = isMinimap ? 2 : 5;
-              gfx.beginPath(); gfx.moveTo(w.x1, w.y1); gfx.lineTo(w.x2, w.y2); gfx.stroke();
+              if (fullMap) { gfx.beginPath(); gfx.moveTo(w.x1, w.y1); gfx.lineTo(w.x2, w.y2); gfx.stroke(); return; }
+              // Sonar map: draw only the stretches of this wall a click has touched.
+              if (!seen2d) return;
+              var wdx2 = w.x2 - w.x1, wdy2 = w.y2 - w.y1;
+              var wSteps = Math.max(1, Math.ceil(Math.sqrt(wdx2 * wdx2 + wdy2 * wdy2) / 12));
+              gfx.beginPath();
+              for (var wsi = 0; wsi < wSteps; wsi++) {
+                var wt0 = wsi / wSteps, wt1 = (wsi + 1) / wSteps, wtm = (wt0 + wt1) / 2;
+                if (EchoModel.isSeen(seen2d, w.x1 + wdx2 * wtm, w.y1 + wdy2 * wtm)) {
+                  gfx.moveTo(w.x1 + wdx2 * wt0, w.y1 + wdy2 * wt0); gfx.lineTo(w.x1 + wdx2 * wt1, w.y1 + wdy2 * wt1);
+                }
+              }
+              gfx.stroke();
             });
             gfx.shadowBlur = 0;
             var goalPulse2d = etReduced2d ? 1 : (0.85 + Math.sin(Date.now() * 0.005) * 0.15);
-            map.objects.forEach(function(o) {
+            map.objects.forEach(function(o, oIdx2d) {
+              if (!fullMap && !seenKeys2d['o' + oIdx2d]) return;
+              if (!fullMap && o.isGoal && !EchoModel.sonarShowsBeacon(diffId)) return;   // Echolocator and Bat Master: the ears find it
               if (o.isGoal) {
                 var gHalo = gfx.createRadialGradient(o.x, o.y, o.r * 0.3, o.x, o.y, o.r * 2.1 * goalPulse2d);
                 gHalo.addColorStop(0, 'rgba(251,191,36,0.45)');
@@ -2266,14 +2756,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 gfx.fillStyle = gHalo;
                 gfx.beginPath(); gfx.arc(o.x, o.y, o.r * 2.1 * goalPulse2d, 0, Math.PI * 2); gfx.fill();
               }
-              gfx.fillStyle = o.isGoal ? '#fbbf24' : o.mat === 'metal' ? '#cbd5e1' : o.mat === 'wood' ? '#b45309' : '#64748b';
+              gfx.fillStyle = o.isGoal ? '#fbbf24' : hideHue2d ? '#94a3b8' : o.mat === 'metal' ? '#cbd5e1' : o.mat === 'wood' ? '#b45309' : '#64748b';
               gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.fill();
               if (o.isGoal && !isMinimap) { gfx.fillStyle = '#080810'; gfx.font = 'bold 14px sans-serif'; gfx.textAlign = 'center'; gfx.fillText('\u2B50', o.x, o.y + 5); }
             });
             gfx.restore();
           }
-          if (showMap || isMinimap) {
-            for (var dai = 0; dai < agents.length; dai++) { var da = agents[dai]; gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : da.kind === 'jogger' ? '#fb923c' : da.kind === 'cyclist' ? '#f472b6' : '#ff9c9c'; gfx.beginPath(); gfx.arc(da.x, da.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill(); }
+          // Moving things: always in Reveal; on the sonar map only if the latest click touched them.
+          var lastPulse2d = pulsesRef.current.length ? pulsesRef.current[pulsesRef.current.length - 1] : null;
+          var touched2d = {};
+          if (lastPulse2d && lastPulse2d.hits) { for (var lhi = 0; lhi < lastPulse2d.hits.length; lhi++) touched2d[lastPulse2d.hits[lhi].key] = true; }
+          if (showMap) {
+            for (var dai = 0; dai < agents.length; dai++) { var da = agents[dai]; if (!fullMap && !touched2d['m' + dai]) continue; gfx.fillStyle = da.kind === 'car' ? '#ffc47c' : da.kind === 'bat' ? '#c4b5fd' : da.kind === 'deer' ? '#a3e635' : da.kind === 'bird' ? '#67e8f9' : da.kind === 'jogger' ? '#fb923c' : da.kind === 'cyclist' ? '#f472b6' : '#ff9c9c'; gfx.beginPath(); gfx.arc(da.x, da.y, isMinimap ? 5 : 8, 0, Math.PI * 2); gfx.fill(); }
           }
           // ── Coverage heatmap overlay on minimap ──
           if (coverageRef.current && isMinimap) {
@@ -2293,11 +2787,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             if (player._trail.length === 0 || Math.abs(player.x - player._trail[player._trail.length - 1].x) > 5 || Math.abs(player.y - player._trail[player._trail.length - 1].y) > 5) { player._trail.push({ x: player.x, y: player.y }); if (player._trail.length > 200) player._trail.shift(); }
             for (var ti2 = 0; ti2 < player._trail.length; ti2++) { var trailAlpha = (ti2 / player._trail.length) * 0.22; gfx.fillStyle = 'rgba(56,189,248,' + trailAlpha + ')'; gfx.beginPath(); gfx.arc(player._trail[ti2].x, player._trail[ti2].y, 2, 0, Math.PI * 2); gfx.fill(); }
           }
-          if ((currentViewMode2d === 'echo' || isMinimap) && pulsesRef.current.length > 0) {
+          if (!isMinimap && pulsesRef.current.length > 0) {
+            var nowPrune = Date.now();
+            pulsesRef.current = pulsesRef.current.filter(function(pz) { return EchoModel.ringRadiusPx((nowPrune - pz.birth) / 1000) <= EchoModel.RANGE_PX + 20; });
+          }
+          if (currentViewMode2d !== 'audio' && (currentViewMode2d === 'echo' || isMinimap) && pulsesRef.current.length > 0) {
             var nowEv = Date.now();
             gfx.save(); gfx.globalCompositeOperation = 'lighter';
             pulsesRef.current.forEach(function(pulse) {
-              var evAge = (nowEv - pulse.birth) / 1000; var evRadius = evAge * SPEED_OF_SOUND * 0.5; var evAlpha = Math.max(0, 1 - evAge * 1.5);
+              var evAge = (nowEv - pulse.birth) / 1000; var evRadius = EchoModel.ringRadiusPx(evAge); var evAlpha = Math.max(0, 1 - evRadius / (EchoModel.RANGE_PX + 20));
               if (evAlpha <= 0) return;
               // Crisp phosphor leading wavefront + soft trailing acoustic wake
               gfx.strokeStyle = 'rgba(56,189,248,' + (evAlpha * 0.55) + ')'; gfx.lineWidth = isMinimap ? 3 : 2.5; gfx.beginPath(); gfx.arc(pulse.x, pulse.y, evRadius, 0, Math.PI * 2); gfx.stroke();
@@ -2305,9 +2803,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 gfx.strokeStyle = 'rgba(129,140,248,' + (evAlpha * 0.22) + ')'; gfx.lineWidth = isMinimap ? 6 : 8; gfx.beginPath(); gfx.arc(pulse.x, pulse.y, evRadius - 5, 0, Math.PI * 2); gfx.stroke();
               }
               if (!isMinimap) {
-                map.walls.forEach(function(w) { var wx = w.x2 - w.x1, wy = w.y2 - w.y1; var wl2 = wx * wx + wy * wy; if (wl2 < 1) return; for (var svi = 0; svi <= 6; svi++) { var t2 = svi / 6; var pvx = w.x1 + wx * t2, pvy = w.y1 + wy * t2; var dx2 = pvx - pulse.x, dy2 = pvy - pulse.y; var dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2); if (Math.abs(dist2 - evRadius) < 18) { var intensity = evAlpha * w.ref * (1 - Math.abs(dist2 - evRadius) / 18); var color = w.mat === 'metal' ? '186,230,253' : w.mat === 'wood' ? '245,158,11' : w.mat === 'glass' ? '125,211,252' : '96,165,250'; var wHalo = gfx.createRadialGradient(pvx, pvy, 1, pvx, pvy, 11); wHalo.addColorStop(0, 'rgba(' + color + ',' + (intensity * 0.85) + ')'); wHalo.addColorStop(1, 'rgba(' + color + ',0)'); gfx.fillStyle = wHalo; gfx.beginPath(); gfx.arc(pvx, pvy, 11, 0, Math.PI * 2); gfx.fill(); } } });
-                map.objects.forEach(function(o) { var odx = o.x - pulse.x, ody = o.y - pulse.y; var odist = Math.sqrt(odx * odx + ody * ody); if (Math.abs(odist - evRadius) < o.r + 14) { var oIntensity = evAlpha * o.ref * (1 - Math.abs(odist - evRadius) / (o.r + 14)); var oColor = o.isGoal ? '253,224,71' : o.mat === 'metal' ? '224,242,254' : '125,211,252'; var oHalo = gfx.createRadialGradient(o.x, o.y, o.r * 0.4, o.x, o.y, o.r + 14); oHalo.addColorStop(0, 'rgba(' + oColor + ',' + (oIntensity * 0.72) + ')'); oHalo.addColorStop(1, 'rgba(' + oColor + ',0)'); gfx.fillStyle = oHalo; gfx.beginPath(); gfx.arc(o.x, o.y, o.r + 14, 0, Math.PI * 2); gfx.fill(); gfx.strokeStyle = 'rgba(' + oColor + ',' + (oIntensity * 0.95) + ')'; gfx.lineWidth = 2.2; gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.stroke(); } });
-                for (var eai = 0; eai < agents.length; eai++) { var ea = agents[eai]; var eadx = ea.x - pulse.x, eady = ea.y - pulse.y; var eadist = Math.sqrt(eadx * eadx + eady * eady); if (Math.abs(eadist - evRadius) < ea.radius + 14) { var eaInt = evAlpha * ea.ref * (1 - Math.abs(eadist - evRadius) / (ea.radius + 14)); var eaColor = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156'; var aHalo = gfx.createRadialGradient(ea.x, ea.y, 2, ea.x, ea.y, ea.radius + 10); aHalo.addColorStop(0, 'rgba(' + eaColor + ',' + (eaInt * 0.8) + ')'); aHalo.addColorStop(1, 'rgba(' + eaColor + ',0)'); gfx.fillStyle = aHalo; gfx.beginPath(); gfx.arc(ea.x, ea.y, ea.radius + 10, 0, Math.PI * 2); gfx.fill(); } }
+                // Light what the click's rays reached, when the slow ring gets there: the same rays the sound and the 3D
+                // view use, so nothing behind a wall glows. (Every surface at ring distance used to light, through walls.)
+                var litObj2d = {};
+                (pulse.points || []).forEach(function(pt) {
+                  if (!(etReduced2d || evRadius >= pt.px)) return;
+                  var fade = etReduced2d ? Math.max(0.35, evAlpha) : Math.max(0, 1 - (evRadius - pt.px) / 200);
+                  var lit = EchoModel.glowFor(pt.gain) * fade; if (lit <= 0.01) return;
+                  var kind = pt.key.charAt(0), idx = +pt.key.slice(1), col;
+                  if (kind === 'w') {
+                    var w = map.walls[idx]; if (!w) return;
+                    col = hideHue2d ? '203,213,225' : w.mat === 'metal' ? '186,230,253' : w.mat === 'wood' ? '245,158,11' : w.mat === 'glass' ? '125,211,252' : w.mat === 'curtain' ? '216,180,254' : w.mat === 'flesh' ? '253,164,175' : '96,165,250';
+                    var wl = Math.sqrt((w.x2 - w.x1) * (w.x2 - w.x1) + (w.y2 - w.y1) * (w.y2 - w.y1)) || 1, ux = (w.x2 - w.x1) / wl, uy = (w.y2 - w.y1) / wl;
+                    var wHalo = gfx.createRadialGradient(pt.x, pt.y, 1, pt.x, pt.y, 12); wHalo.addColorStop(0, 'rgba(' + col + ',' + (lit * 0.7) + ')'); wHalo.addColorStop(1, 'rgba(' + col + ',0)');
+                    gfx.fillStyle = wHalo; gfx.beginPath(); gfx.arc(pt.x, pt.y, 12, 0, Math.PI * 2); gfx.fill();
+                    gfx.strokeStyle = 'rgba(' + col + ',' + lit + ')'; gfx.lineWidth = 3.5; gfx.beginPath(); gfx.moveTo(pt.x - ux * 9, pt.y - uy * 9); gfx.lineTo(pt.x + ux * 9, pt.y + uy * 9); gfx.stroke();
+                  } else if (kind === 'o') {
+                    var o = map.objects[idx]; if (!o || litObj2d[pt.key]) return; litObj2d[pt.key] = true;
+                    col = o.isGoal ? '253,224,71' : hideHue2d ? '203,213,225' : o.mat === 'metal' ? '224,242,254' : '125,211,252';
+                    var oHalo = gfx.createRadialGradient(o.x, o.y, o.r * 0.4, o.x, o.y, o.r + 14); oHalo.addColorStop(0, 'rgba(' + col + ',' + (lit * 0.72) + ')'); oHalo.addColorStop(1, 'rgba(' + col + ',0)');
+                    gfx.fillStyle = oHalo; gfx.beginPath(); gfx.arc(o.x, o.y, o.r + 14, 0, Math.PI * 2); gfx.fill();
+                    gfx.strokeStyle = 'rgba(' + col + ',' + lit + ')'; gfx.lineWidth = 2.2; gfx.beginPath(); gfx.arc(o.x, o.y, o.r, 0, Math.PI * 2); gfx.stroke();
+                  } else if (kind === 'm') {
+                    var ea = agents[idx]; if (!ea) return;
+                    col = ea.kind === 'car' ? '255,196,124' : ea.kind === 'bat' ? '196,181,253' : ea.kind === 'deer' ? '163,230,53' : ea.kind === 'bird' ? '103,232,249' : ea.kind === 'jogger' ? '251,146,60' : ea.kind === 'cyclist' ? '244,114,182' : '255,156,156';
+                    var aHalo = gfx.createRadialGradient(pt.x, pt.y, 2, pt.x, pt.y, 14); aHalo.addColorStop(0, 'rgba(' + col + ',' + (lit * 0.8) + ')'); aHalo.addColorStop(1, 'rgba(' + col + ',0)');
+                    gfx.fillStyle = aHalo; gfx.beginPath(); gfx.arc(pt.x, pt.y, 14, 0, Math.PI * 2); gfx.fill();
+                  }
+                });
               }
             });
             gfx.restore();
@@ -2334,13 +2857,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (!isMinimap) {
             gfx.save(); gfx.translate(map.W - 30, 40); gfx.strokeStyle = 'rgba(148,163,184,0.3)'; gfx.lineWidth = 1;
             gfx.beginPath(); gfx.moveTo(0, -16); gfx.lineTo(0, 16); gfx.stroke(); gfx.beginPath(); gfx.moveTo(-16, 0); gfx.lineTo(16, 0); gfx.stroke();
-            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 8px sans-serif'; gfx.textAlign = 'center'; gfx.fillText(t('stem.echotrainer.compass_n', 'N'), 0, -19);
+            gfx.fillStyle = 'rgba(239,68,68,0.5)'; gfx.font = 'bold 12px sans-serif'; gfx.textAlign = 'center'; gfx.fillText(t('stem.echotrainer.compass_n', 'N'), 0, -19);
             gfx.fillStyle = 'rgba(148,163,184,0.3)'; gfx.fillText(t('stem.echotrainer.compass_s', 'S'), 0, 24); gfx.fillText(t('stem.echotrainer.compass_e', 'E'), 20, 3); gfx.fillText(t('stem.echotrainer.compass_w', 'W'), -20, 3); gfx.restore();
           }
           gfx.restore();
           if (!isMinimap) {
             gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(0, 0, W, 26);
-            gfx.font = 'bold 11px monospace'; gfx.fillStyle = '#94a3b8'; gfx.textAlign = 'left';
+            gfx.font = 'bold 12px monospace'; gfx.fillStyle = '#94a3b8'; gfx.textAlign = 'left';
             var modeLabel = currentViewMode2d === 'echo' ? 'ECHO VISION' : currentViewMode2d === 'audio' ? 'AUDIO ONLY \uD83C\uDFA7' : 'MAP VISIBLE';
             var elapsed2d = Math.floor((Date.now() - runStartRef.current) / 1000);
             var timeStr2d = Math.floor(elapsed2d / 60) + ':' + ('0' + (elapsed2d % 60)).slice(-2);
@@ -2348,13 +2871,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             gfx.fillText(tFmt('stem.echotrainer.hud_line',
               'Echo Navigator  |  Clicks: {clicks}  |  Bumps: {bumps}  |  Goals: {goals}  |  {mode}  |  {env}  |  {difficulty}  |  Time: {time}  |  {cpm} clicks/min',
               { clicks: d.clicks || 0, bumps: d.bumps || 0, goals: goalsFound, mode: modeLabel,
-                env: t('stem.echotrainer.env_' + envType + '_name', envType), difficulty: diff.label,
+                env: t('stem.echotrainer.env_' + envType + '_name', EchoModel.envName(envType)), difficulty: diff.label,
                 time: timeStr2d, cpm: cpm2d }), 8, 17);
             goalCheckTimer2d++;
             if (goalCheckTimer2d % 10 === 0) {
               map.objects.forEach(function(o) {
                 if (!o.isGoal || d.goalFoundThisRun) return;
                 var gdist = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
+                var zone2d = EchoModel.beaconZone(gdist);
+                if (zone2d !== (d.beaconZone || 'none')) upd('beaconZone', zone2d);
                 if (gdist < 200) { var interval = Math.max(8, Math.floor(gdist / 3)); if (goalCheckTimer2d % interval === 0) { var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600; try { var ac = audioRef.current && audioRef.current.ctx; if (ac) { var po = ac.createOscillator(); var pg = ac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, ac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05); po.connect(pg); pg.connect(ac.destination); po.start(); po.stop(ac.currentTime + 0.05); } } catch(e) {} if (window._alloHaptic && gdist < 80) window._alloHaptic('echo'); } }
               });
             }
@@ -2364,19 +2889,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
                 if (gd < o.r + 12) {
                   goalFoundRef.current = true;
-                  var isAudioOnly2d = (currentViewMode2d === 'audio');
+                  var winMode2d = EchoModel.winMode(currentViewMode2d, d.sightClicks, d.hasRevealed);
+                  var isAudioOnly2d = (winMode2d === 'audio');
                   var curGoals2d = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
                   var curBlinds2d = (typeof d.blindWins === 'number' && isFinite(d.blindWins) && d.blindWins >= 0) ? Math.floor(d.blindWins) : 0;
-                  var updateObj2d = { goalFoundThisRun: true, goalsFound: curGoals2d + 1, blindWins: isAudioOnly2d ? curBlinds2d + 1 : curBlinds2d };
+                  var updateObj2d = { goalFoundThisRun: true, goalsFound: curGoals2d + 1, blindWins: isAudioOnly2d ? curBlinds2d + 1 : curBlinds2d, goalEnvs: EchoModel.addGoalEnv(d, envType) };
                   if (diffId === 'master') { updateObj2d.batMasterWin = true; }
                   if (envType === 'school') { updateObj2d.schoolWin = true; }
-                  var baseXP2 = isAudioOnly2d ? 30 : (currentViewMode2d === 'echo' ? 20 : 10);
+                  var baseXP2 = isAudioOnly2d ? 30 : (winMode2d === 'echo' ? 20 : 10);
                   var bumpPenalty2 = Math.min(baseXP2 - 5, d.bumps || 0);
                   var finalXP2 = Math.max(5, Math.round((baseXP2 - bumpPenalty2) * diff.xpMult));
-                  var modeLabel2 = currentViewMode2d === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : currentViewMode2d === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
+                  var modeLabel2 = winMode2d === 'audio' ? t('stem.echotrainer.mode_audio_only', 'Audio-only') : winMode2d === 'echo' ? t('stem.echotrainer.mode_echo_vision', 'Echo Vision') : t('stem.echotrainer.mode_revealed', 'Revealed');
                   var runTime2 = Math.floor((Date.now() - runStartRef.current) / 1000);
                   var runHistory2 = (Array.isArray(d.runHistory) ? d.runHistory : []).slice();
-                  runHistory2.push({ env: envType, mode: modeLabel2, difficulty: diff.label, time: runTime2, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP2 });
+                  runHistory2.push({ env: envType, mode: modeLabel2, win: winMode2d, difficulty: diff.label, time: runTime2, clicks: d.clicks || 0, bumps: d.bumps || 0, xp: finalXP2 });
                   if (runHistory2.length > 20) runHistory2.shift();
                   updateObj2d.runHistory = runHistory2;
                   updMulti(updateObj2d);
@@ -2445,7 +2971,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var coveragePct = totalCells > 0 ? Math.round(coveredCells / totalCells * 100) : 0;
 
       // ── Material quiz hint map ──
-      var matHints = { concrete: 'Bright echo', rock: 'Dull, heavy', wood: 'Muffled, warm', metal: 'Sharp ring', glass: 'Faint, high' };
+      var matHints = { hard: t('stem.echotrainer.mat_hint_hard', 'Sends back most of the sound'), soft: t('stem.echotrainer.mat_hint_soft', 'Soaks up much of the sound') };
+      var matChoiceNames = { hard: t('stem.echotrainer.mat_choice_hard', 'Hard'), soft: t('stem.echotrainer.mat_choice_soft', 'Soft') };
+      var matNames = { concrete: t('stem.echotrainer.matname_concrete', 'concrete'), rock: t('stem.echotrainer.matname_rock', 'rock'), metal: t('stem.echotrainer.matname_metal', 'metal'), glass: t('stem.echotrainer.matname_glass', 'glass'), wood: t('stem.echotrainer.matname_wood', 'wood'), curtain: t('stem.echotrainer.matname_curtain', 'a curtain'), flesh: t('stem.echotrainer.matname_people', 'a group of people'), car: t('stem.echotrainer.matname_car', 'a car'), goal: t('stem.echotrainer.matname_goal', 'the beacon') };
+      // Numbers only where the absorption table has a row for the material (rock and metal do not).
+      var MAT_NUMBERED = { concrete: true, glass: true, wood: true, curtain: true };
+      function matExplain(mat, guess, correct, dist) {
+        var vars = { material: matNames[mat] || String(mat), m: typeof dist === 'number' ? dist : '?', abs: EchoModel.absorbPct(mat), ref: EchoModel.reflectPct(mat) };
+        var hard = EchoModel.soundGroup(mat) === 'hard';
+        if (correct) {
+          if (!hard) return tFmt('stem.echotrainer.mat_right_soft', 'Right: soft. It was {material}, {m} m away. It soaks up about {abs}% of the sound at 1,000 Hz, so only about {ref}% comes back. The echo is quieter and duller than a wall at the same distance.', vars);
+          return MAT_NUMBERED[mat] ? tFmt('stem.echotrainer.mat_right_hard_num', 'Right: hard. It was {material}, {m} m away. It soaks up only about {abs}% of the sound at 1,000 Hz, so about {ref}% comes back as a strong echo.', vars)
+            : tFmt('stem.echotrainer.mat_right_hard', 'Right: hard. It was {material}, {m} m away. Hard surfaces send back almost all of the sound, so the echo is strong.', vars);
+        }
+        if (!hard) return tFmt('stem.echotrainer.mat_wrong_was_soft', 'Not quite: it was soft ({material}, {m} m away). It soaks up about {abs}% of the sound at 1,000 Hz, so its echo was quieter and duller than a hard wall this close.', vars);
+        return MAT_NUMBERED[mat] ? tFmt('stem.echotrainer.mat_wrong_was_hard_num', 'Not quite: it was hard ({material}, {m} m away). It sends back about {ref}% of the sound. A far wall can sound quiet, but that is the distance, not softness. Listen to the wait too.', vars)
+          : tFmt('stem.echotrainer.mat_wrong_was_hard', 'Not quite: it was hard ({material}, {m} m away). Hard surfaces send back almost all of the sound. A far wall can sound quiet, but that is the distance, not softness. Listen to the wait too.', vars);
+      }
       var currentEnv = ENVIRONMENTS[0];
       for (var cei = 0; cei < ENVIRONMENTS.length; cei++) { if (ENVIRONMENTS[cei].id === envType) { currentEnv = ENVIRONMENTS[cei]; break; } }
       var viewTone = (d.viewMode || 'echo') === 'echo'
@@ -2466,23 +3008,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       ];
 
       var heroBgStyle = isContrast
-        ? { padding: '14px 16px', borderRadius: '14px', backgroundColor: '#000000', border: '2px solid #ffff00', color: '#ffff00' }
-        : { padding: '14px 16px', borderRadius: '14px', backgroundColor: '#1e1b4b', background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #312e81 55%, #1e1b4b 100%)' : 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 55%, #0f172a 100%)', border: '1px solid rgba(165,180,252,0.35)', color: '#ffffff', boxShadow: '0 8px 24px rgba(30,27,75,0.24)' };
+        ? { padding: '10px 14px', borderRadius: '14px', backgroundColor: '#000000', border: '2px solid #ffff00', color: '#ffff00' }
+        : { padding: '10px 14px', borderRadius: '14px', backgroundColor: '#1e1b4b', background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #312e81 55%, #1e1b4b 100%)' : 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 55%, #0f172a 100%)', border: '1px solid rgba(165,180,252,0.35)', color: '#ffffff', boxShadow: '0 8px 24px rgba(30,27,75,0.24)' };
       var heroPillStyle = isContrast
-        ? { fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', backgroundColor: '#000000', border: '1px solid #ffff00', color: '#ffff00' }
-        : { fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', backgroundColor: 'rgba(15,23,42,0.58)', border: '1px solid rgba(199,210,254,0.35)', color: '#eef2ff' };
+        ? { fontSize: '12px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', backgroundColor: '#000000', border: '1px solid #ffff00', color: '#ffff00' }
+        : { fontSize: '12px', fontWeight: 700, padding: '3px 9px', borderRadius: '999px', backgroundColor: 'rgba(15,23,42,0.58)', border: '1px solid rgba(199,210,254,0.35)', color: '#eef2ff' };
 
-      return h('div', { 'data-echotrainer-root': 'true', 'data-echotrainer-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%',
-        // ★This tool already branches on isDark for its panels
-        // (isDark ? '#1e293b' : '#f8fafc') but painted no ground of its own, so in dark
-        // theme those dark panels floated on the host's white card and every element
-        // between them took a dark ink onto white: #94a3b8 on #ffffff x10. Give the
-        // isDark branch the canvas it already assumes.
-        background: isContrast ? '#000000' : (isDark ? '#0b1220' : '#f8fafc'), borderRadius: 16, padding: 14, border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#1e293b' : '#cbd5e1')), minWidth: 0 } },
+      // ══════════════════════════════════════════════════════════
+      // FIRST-SCREEN HELPERS: view switch, new run, echo read-out, move pad
+      // ══════════════════════════════════════════════════════════
+      var viewNow = d.viewMode || 'echo';
+      var safetyAck = !!d.disclaimerDismissed;
+      var safetyOpen = !safetyAck || !!d.safetyOpen;
+      var quizOpen = !!(d.distChallenge && d.distChallenge.active && !d.distChallenge.result);
+      var uiInk = isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b');
+      var uiSoft = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569');
+      var uiPanel = isContrast ? '#000000' : (isDark ? '#111827' : '#ffffff');
+      var uiLine = isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1');
+      var uiAccent = isContrast ? '#00ff00' : (isDark ? '#a5b4fc' : '#4338ca');
+      var viewNames = {
+        echo: t('stem.echotrainer.echo_vision', 'Echo Vision'),
+        audio: t('stem.echotrainer.audio_only', 'Audio Only'),
+        reveal: t('stem.echotrainer.view_reveal_short', 'Reveal')
+      };
+      var viewHelp = {
+        echo: t('stem.echotrainer.view_echo_help', 'Echo Vision: each click lights up what it touched.'),
+        audio: t('stem.echotrainer.view_audio_help', 'Audio Only: no picture, no map and no numbers. Your ears do the work.'),
+        reveal: t('stem.echotrainer.view_reveal_help', 'Reveal: the whole room is shown. A run that used Reveal counts as a practice run.')
+      };
+
+      function setViewMode(next) {
+        var cur = (dataRef.current || {}).viewMode || 'echo';
+        if (next === cur) return;
+        if (next === 'reveal') { upd('hasRevealed', true); }
+        upd('viewMode', next);
+        if (announceToSR) announceToSR(viewHelp[next]);
+      }
+
+      // One place that starts a fresh run, so every way of starting one resets the same things.
+      function resetRun(envId) {
+        var keepAudio = ((dataRef.current || {}).viewMode === 'audio');
+        var patch = { seed: Math.floor(Math.random() * 999999), viewMode: keepAudio ? 'audio' : 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, sightClicks: 0, waypointMode: false, waypointIdx: 0, matQuiz: null, distChallenge: null, lastEcho: null, beaconZone: 'none' };
+        if (envId) patch.envType = envId;
+        updMulti(patch);
+        mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; seenRef.current = null; pulsesRef.current = []; runStartRef.current = Date.now();
+      }
+
+      // ── Echo read-out: a caption of the sound, built from the same ray hits ──
+      var sideNames = { left: t('stem.echotrainer.side_left', 'Left'), ahead: t('stem.echotrainer.side_ahead', 'Ahead'), right: t('stem.echotrainer.side_right', 'Right') };
+      var strengthNames = { strong: t('stem.echotrainer.strength_strong', 'strong'), medium: t('stem.echotrainer.strength_medium', 'medium'), faint: t('stem.echotrainer.strength_faint', 'faint') };
+      var compassNames = [
+        t('stem.echotrainer.dir_n', 'north'), t('stem.echotrainer.dir_ne', 'north-east'), t('stem.echotrainer.dir_e', 'east'), t('stem.echotrainer.dir_se', 'south-east'),
+        t('stem.echotrainer.dir_s', 'south'), t('stem.echotrainer.dir_sw', 'south-west'), t('stem.echotrainer.dir_w', 'west'), t('stem.echotrainer.dir_nw', 'north-west')
+      ];
+      var beaconNames = {
+        none: t('stem.echotrainer.beacon_none', 'Beacon: not heard yet'),
+        far: t('stem.echotrainer.beacon_far', 'Beacon: beeping, still far'),
+        near: t('stem.echotrainer.beacon_near', 'Beacon: near'),
+        veryNear: t('stem.echotrainer.beacon_very_near', 'Beacon: very near'),
+        found: t('stem.echotrainer.beacon_found', 'Beacon: found')
+      };
+      function sideText(side, e) {
+        if (!e) return tFmt('stem.echotrainer.echo_side_none', '{side}: no echo', { side: sideNames[side] });
+        return tFmt('stem.echotrainer.echo_side_hit', '{side}: echo after {ms} ms, {strength}', { side: sideNames[side], ms: e.ms, strength: strengthNames[e.strength] || e.strength });
+      }
+      function buildDescribe() {
+        var cur = dataRef.current || {};
+        var parts = [tFmt('stem.echotrainer.describe_facing', 'Facing {dir}.', { dir: compassNames[EchoModel.compass8(playerRef.current.angle)] })];
+        var dcNow = cur.distChallenge;
+        if ((cur.viewMode || 'echo') === 'audio') parts.push(t('stem.echotrainer.describe_audio', 'Audio Only: echo numbers are off.'));
+        else if (dcNow && dcNow.active && !dcNow.result) parts.push(t('stem.echotrainer.describe_quiz', 'Echo numbers are hidden while you guess.'));
+        else if (!cur.lastEcho) parts.push(t('stem.echotrainer.describe_no_click', 'No click yet. Press Space to send one.'));
+        else parts.push(sideText('ahead', cur.lastEcho.ahead) + '. ' + sideText('left', cur.lastEcho.left) + '. ' + sideText('right', cur.lastEcho.right) + '.');
+        parts.push((cur.goalFoundThisRun ? beaconNames.found : (beaconNames[cur.beaconZone] || beaconNames.none)) + '.');
+        return parts.join(' ');
+      }
+      function describeNow() { if (announceToSR) announceToSR(buildDescribe()); }
+      describeRef.current = describeNow;
+
+      // ── On-screen move pad: hold to move. Works by touch, mouse, keyboard and switch. ──
+      var padHeldRef = useRef({});
+      function padProps(code, label) {
+        function press() { if ((dataRef.current || {}).disclaimerDismissed) keysRef.current[code] = true; }
+        function release() { keysRef.current[code] = false; }
+        return {
+          type: 'button', 'aria-label': label, title: label, 'data-echotrainer-pad': code,
+          onPointerDown: function(e) { padHeldRef.current[code] = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} press(); },
+          onPointerUp: release, onPointerCancel: release, onLostPointerCapture: release, onBlur: release,
+          onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); padHeldRef.current[code] = true; press(); } },
+          onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); padHeldRef.current[code] = false; release(); } },
+          // A screen reader's "activate" sends only a click: take one short step.
+          onClick: function() { if (padHeldRef.current[code]) { padHeldRef.current[code] = false; return; } press(); setTimeout(release, 260); },
+          onContextMenu: function(e) { e.preventDefault(); },
+          style: {
+            width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+            backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.86)', color: isContrast ? '#ffff00' : '#e0e7ff',
+            border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.65)', cursor: 'pointer', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none'
+          }
+        };
+      }
+      function padIcon(pathD) {
+        return h('svg', { viewBox: '0 0 24 24', width: 24, height: 24, 'aria-hidden': 'true', focusable: 'false' },
+          h('path', { d: pathD, fill: 'none', stroke: 'currentColor', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+      }
+
+      // ── First-room steps: learned by doing, each one finished by an action ──
+      useEffect(function() {
+        if (envType !== 'simple_room' || tutStep >= 4) return;
+        var le = d.lastEcho;
+        var patch = null;
+        if (tutStep === 3) {
+          if (d.goalFoundThisRun) patch = { tutStep: 4 };
+        } else if (le && typeof le.t === 'number' && le.t !== d.tutSeenT) {
+          patch = { tutSeenT: le.t };
+          if (tutStep === 0) {
+            patch.tutStep = 1; patch.tutFirstMs = le.ahead ? le.ahead.ms : null; patch.tutFirstA = le.a;
+          } else if (tutStep === 1) {
+            if (typeof d.tutFirstMs !== 'number') { patch.tutFirstMs = le.ahead ? le.ahead.ms : null; }
+            else if (le.ahead && le.ahead.ms <= d.tutFirstMs - 15) { patch.tutStep = 2; patch.tutNowMs = le.ahead.ms; patch.tutFirstA = le.a; }
+          } else if (tutStep === 2) {
+            var turned = Math.abs(Math.atan2(Math.sin(le.a - (d.tutFirstA || 0)), Math.cos(le.a - (d.tutFirstA || 0))));
+            if (turned >= 0.5) patch.tutStep = 3;
+          }
+        }
+        if (!patch) return;
+        updMulti(patch);
+        if (typeof patch.tutStep === 'number' && patch.tutStep < 4 && announceToSR) {
+          announceToSR(tFmt('stem.echotrainer.sr_tut_step', 'Step {n} of 4. {title}. {text}', { n: patch.tutStep + 1, title: t('stem.echotrainer.tut_' + patch.tutStep + '_title_v2', TUTORIAL_STEPS[patch.tutStep].title), text: t('stem.echotrainer.tut_' + patch.tutStep + '_text_v2', TUTORIAL_STEPS[patch.tutStep].text) }));
+        }
+      }, [d.lastEcho && d.lastEcho.t, d.goalFoundThisRun, tutStep, envType]);
+
+      // What to try next, from saved results (EchoModel.nextStep).
+      var stepInfo = EchoModel.nextStep(d);
+      var nextEnvName = stepInfo.env ? t('stem.echotrainer.env_' + stepInfo.env + '_name', (ENVIRONMENTS.filter(function(en) { return en.id === stepInfo.env; })[0] || {}).name || stepInfo.env) : '';
+      var coachText = stepInfo.id === 'first_goal' ? t('stem.echotrainer.coach_first_goal', 'Goal: find the gold beacon. Click, listen, then walk toward it.')
+        : stepInfo.id === 'try_audio' ? t('stem.echotrainer.coach_try_audio', 'Next: start a new layout, switch to Audio Only before your first click, and find the beacon by ear.')
+        : stepInfo.id === 'unlock' ? (stepInfo.more === 1
+            ? tFmt('stem.echotrainer.coach_unlock_one', 'Next: find 1 more beacon to open {place}.', { place: nextEnvName })
+            : tFmt('stem.echotrainer.coach_unlock_many', 'Next: find {n} more beacons to open {place}.', { n: stepInfo.more, place: nextEnvName }))
+        : stepInfo.id === 'bat_master' ? t('stem.echotrainer.coach_bat_master', 'Every place is open. Next: find a beacon on the Bat Master level.')
+        : t('stem.echotrainer.coach_all_done', 'Every place is open. Try Random Challenge in Audio Only.');
+
+      var elHeader =
         // Bespoke Acoustic Observatory Hero Header
         h('header', { style: heroBgStyle },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 240px', minWidth: 0 } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
+            h('div', { 'data-echotrainer-titleblock': 'true', style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 340px', minWidth: 0 } },
               // Bespoke Acoustic Sonar Emblem SVG
               h('div', { 'aria-hidden': 'true', style: { width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.48)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.4)' } },
                 h('svg', { viewBox: '0 0 40 40', width: 32, height: 32, 'aria-hidden': 'true' },
@@ -2492,20 +3163,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   h('line', { x1: 33, y1: 8, x2: 33, y2: 32, stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 3, strokeLinecap: 'round' })
                 )),
               h('div', { style: { minWidth: 0 } },
-                h('div', { style: { fontSize: '10px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
+                h('div', { 'data-echotrainer-eyebrow': 'true', style: { fontSize: '12px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
                   t('stem.echotrainer.badge_subject', 'Science · Tech · Acoustic Echolocation Lab')),
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: '19px', fontWeight: 900, color: isContrast ? '#ffff00' : '#ffffff', lineHeight: 1.2 } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
-                  has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: isContrast ? '#000000' : '#ffffff', backgroundColor: isContrast ? '#00ff00' : '#2563eb', padding: '2px 8px', borderRadius: '6px' } }, '3D') : null),
+                  has3D ? h('span', { style: { fontSize: '12px', fontWeight: 800, color: isContrast ? '#000000' : '#ffffff', backgroundColor: isContrast ? '#00ff00' : '#2563eb', padding: '2px 8px', borderRadius: '6px' } }, '3D') : null),
                 h('div', { style: { fontSize: '12px', color: isContrast ? '#ffffff' : '#e0e7ff', marginTop: '2px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone')))),
-            h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.6)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)', borderRadius: '9px', padding: '6px 12px', color: isContrast ? '#ffff00' : '#ffffff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab'))),
-          // Live Telemetry Pills
-          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' } },
-            h('span', { style: heroPillStyle }, currentEnv.icon + ' ' + currentEnv.name),
-            h('span', { style: heroPillStyle }, has3D ? t('stem.echotrainer.pill_3d', '3D HRTF Spatial Audio') : t('stem.echotrainer.pill_2d', '2D Sonar Map')),
-            h('span', { style: heroPillStyle }, viewTone.label),
-            h('span', { style: heroPillStyle }, diff.icon + ' ' + diff.label),
-            h('span', { style: heroPillStyle }, t('stem.echotrainer.pill_clicks', 'Clicks: ') + (d.clicks || 0) + ' · ' + t('stem.echotrainer.pill_goals', 'Goals: ') + goalsFound))),
+            // Live Telemetry Pills
+            h('div', { 'data-echotrainer-pills': 'true', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: '2 1 280px', alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 } },
+              h('span', { style: heroPillStyle }, currentEnv.icon + ' ' + currentEnv.name),
+              h('span', { style: heroPillStyle }, has3D ? t('stem.echotrainer.pill_3d', '3D HRTF Spatial Audio') : t('stem.echotrainer.pill_2d', '2D Sonar Map')),
+              h('span', { style: heroPillStyle }, viewTone.label),
+              h('span', { style: heroPillStyle }, diff.icon + ' ' + diff.label),
+              h('span', { style: heroPillStyle }, t('stem.echotrainer.pill_clicks', 'Clicks: ') + (d.clicks || 0) + ' · ' + t('stem.echotrainer.pill_goals', 'Goals: ') + goalsFound)),
+            h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.6)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)', borderRadius: '9px', minHeight: '44px', padding: '6px 14px', color: isContrast ? '#ffff00' : '#ffffff', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab'))));
+
+      var elBriefing =
         h('section', {
           'data-echotrainer-briefing': 'true',
           'aria-labelledby': 'echotrainer-briefing-title',
@@ -2514,20 +3187,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             : { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '14px', padding: '16px', borderRadius: '14px', border: '1px solid ' + (isDark ? 'rgba(129, 140, 248, 0.42)' : '#c7d2fe'), backgroundColor: isDark ? '#0f172a' : '#eef2ff', background: isDark ? 'linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e1b4b 100%)' : 'linear-gradient(135deg, #eef2ff 0%, #f8fafc 56%, #ecfeff 100%)', boxShadow: isDark ? 'inset 0 0 38px rgba(99,102,241,0.12)' : '0 8px 24px rgba(79,70,229,0.08)' }
         },
           h('div', { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '12px' } },
-            h('div', { style: { color: isContrast ? '#00ff00' : (isDark ? '#a5b4fc' : '#4338ca'), fontSize: '11px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' } }, t('stem.echotrainer.sonar_briefing', 'Sonar Briefing')),
+            h('div', { style: { color: isContrast ? '#00ff00' : (isDark ? '#a5b4fc' : '#4338ca'), fontSize: '12px', fontWeight: 900, letterSpacing: '1px', textTransform: 'uppercase' } }, t('stem.echotrainer.sonar_briefing', 'Sonar Briefing')),
             h('h2', { id: 'echotrainer-briefing-title', style: { margin: 0, color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#111827'), fontSize: 'clamp(22px, 4vw, 32px)', lineHeight: 1.08, fontWeight: 900 } }, t('stem.echotrainer.sonar_briefing_title', 'Build a map from echoes')),
             h('p', { style: { margin: 0, color: isContrast ? '#ffffff' : (isDark ? '#dbeafe' : '#334155'), fontSize: '13px', lineHeight: 1.55, maxWidth: '62ch' } }, t('stem.echotrainer.sonar_briefing_copy', 'Emit a click, listen for timing and direction, then move slowly toward the goal while the map appears one pulse at a time.')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' } },
               briefingStats.map(function(stat) {
                 return h('div', { key: stat.label, style: { padding: '10px 12px', borderRadius: '10px', backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.85)'), border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#dbeafe')) } },
                   h('div', { style: { color: isContrast ? '#00ff00' : (isDark ? '#bfdbfe' : '#1d4ed8'), fontSize: '17px', fontWeight: 900 } }, stat.value),
-                  h('div', { style: { marginTop: '2px', color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontSize: '11px', fontWeight: 800 } }, stat.label)
+                  h('div', { style: { marginTop: '2px', color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontSize: '12px', fontWeight: 800 } }, stat.label)
                 );
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', { type: 'button', onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', backgroundColor: isContrast ? '#000000' : (isDark ? '#6d28d9' : '#5b21b6'), color: isContrast ? '#00ff00' : '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
-              h('button', { type: 'button', onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + viewTone.border), backgroundColor: isContrast ? '#000000' : viewTone.bg, color: isContrast ? '#ffff00' : viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
+              h('button', { type: 'button', onClick: emitClick, style: { minHeight: '44px', padding: '10px 16px', borderRadius: '10px', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', backgroundColor: isContrast ? '#000000' : (isDark ? '#6d28d9' : '#5b21b6'), color: isContrast ? '#00ff00' : '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
+              h('button', { type: 'button', onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { minHeight: '44px', padding: '10px 14px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + viewTone.border), backgroundColor: isContrast ? '#000000' : viewTone.bg, color: isContrast ? '#ffff00' : viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
               h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1')), color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.8)'), fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
             )
           ),
@@ -2550,82 +3223,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('circle', { cx: 252, cy: 116, r: 13, fill: isContrast ? '#ffff00' : '#fbbf24', opacity: 0.95 }),
               h('path', { d: 'M144 114 C178 96 196 88 214 72', stroke: isContrast ? '#ffff00' : '#c4b5fd', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
               h('path', { d: 'M214 158 C190 150 166 136 144 120', stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2, strokeDasharray: '5 6', fill: 'none' }),
-              h('text', { x: 18, y: 28, fill: isContrast ? '#ffff00' : (isDark ? '#dbeafe' : '#1e3a8a'), fontSize: 12, fontWeight: 900 }, currentEnv.icon + ' ' + currentEnv.name),
-              h('text', { x: 18, y: 47, fill: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 10.5, fontWeight: 700 }, has3D ? '3D spatial audio ready' : '2D audio map ready'),
-              h('text', { x: 222, y: 205, fill: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#92400e'), fontSize: 10.5, fontWeight: 900 }, t('stem.echotrainer.goal_echo', 'Goal echo'))
+              h('text', { x: 18, y: 28, fill: isContrast ? '#ffff00' : (isDark ? '#dbeafe' : '#1e3a8a'), fontSize: 13.5, fontWeight: 900 }, currentEnv.icon + ' ' + currentEnv.name),
+              h('text', { x: 18, y: 47, fill: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 13.5, fontWeight: 700 }, has3D ? '3D spatial audio ready' : '2D audio map ready'),
+              h('text', { x: 214, y: 205, fill: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#92400e'), fontSize: 13.5, fontWeight: 900 }, t('stem.echotrainer.goal_echo', 'Goal echo'))
             )
           )
-        ),
-        !d.disclaimerDismissed && h('div', { role: 'alert', style: { background: isDark ? '#1c1917' : '#fffbeb', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px 16px', marginBottom: '4px' } },
-          h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
-            h('span', { style: { fontSize: '20px', lineHeight: 1 } }, '\u26A0\uFE0F'),
-            h('div', { style: { flex: 1 } },
-              h('div', { style: { fontSize: '12px', fontWeight: 800, color: etint('#92400e'), marginBottom: '4px' } }, t('stem.echotrainer.important_safety_notice', 'Important Safety Notice')),
-              h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: 0 } }, t('stem.echotrainer.this_simulation_is_an_educational_tool', 'This simulation is an educational tool for learning about echolocation and spatial audio. It does NOT replace training with a qualified Orientation & Mobility (O&M) specialist. ')),
-              h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: '6px 0 0 0' } }, t('stem.echotrainer.do_not_attempt_to_navigate_real_world_', 'Do not attempt to navigate real-world environments using echolocation skills developed in this simulation. Virtual environments are simplified and do not include the complexity, hazards, or unpredictability of real spaces. Success here does not indicate readiness for real-world navigation.')),
-              h('p', { style: { fontSize: '10px', color: isDark ? '#a8a29e' : '#92400e', lineHeight: 1.4, margin: '8px 0 0 0', fontStyle: 'italic' } }, t('stem.echotrainer.research_thaler_et_al_2011_2021_demons', 'Research: Thaler et al. (2011, 2021) demonstrated that both blind and sighted individuals can develop echolocation skills through training. This tool is inspired by the work of Daniel Kish and World Access for the Blind.'))
-            ),
-            h('button', { type: 'button', onClick: function() { upd('disclaimerDismissed', true); }, 'aria-label': t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { padding: '6px 14px', borderRadius: '6px', background: '#fbbf24', color: '#451a03', border: '1px solid #d97706', fontSize: '11px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, t('stem.echotrainer.i_understand', 'I Understand'))
-          )
-        ),
-        h('details', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '4px' } },
-          h('summary', { style: { cursor: 'pointer', fontWeight: 700, fontSize: '11px' } }, t('stem.echotrainer.who_is_this_for_research_background', '\uD83E\uDDE0 Who Is This For? (Research Background)')),
+        );
+
+      // The safety notice covers the play surface until it is acknowledged: no click and
+      // no step happens before that. Afterwards it folds to one line with a way back.
+      var elSafety =
+        safetyOpen && h('div', { 'data-echotrainer-safety': 'true', style: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px', backgroundColor: 'rgba(2,6,23,0.93)', borderRadius: '12px' } },
+         // The words scroll if they must; the button never leaves the screen.
+         h('div', { role: 'alert', style: { background: isDark ? '#1c1917' : '#fffbeb', border: '2px solid #f59e0b', borderRadius: '12px', padding: '12px 14px', maxWidth: '620px', maxHeight: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px', minHeight: 0 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '20px', lineHeight: 1 } }, '⚠️'),
+            h('div', { style: { fontSize: '15px', fontWeight: 800, color: etint('#92400e') } }, t('stem.echotrainer.important_safety_notice', 'Important Safety Notice'))),
+          h('div', { tabIndex: 0, role: 'group', 'aria-label': t('stem.echotrainer.important_safety_notice', 'Important Safety Notice'), style: { overflowY: 'auto', minHeight: 0, flex: '1 1 auto' } },
+              h('p', { style: { fontSize: '13px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: 0 } }, t('stem.echotrainer.this_simulation_is_an_educational_tool', 'This simulation is an educational tool for learning about echolocation and spatial audio. It does NOT replace training with a qualified Orientation & Mobility (O&M) specialist. ')),
+              h('p', { style: { fontSize: '13px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: '6px 0 0 0' } }, t('stem.echotrainer.do_not_attempt_to_navigate_real_world_', 'Do not attempt to navigate real-world environments using echolocation skills developed in this simulation. Virtual environments are simplified and do not include the complexity, hazards, or unpredictability of real spaces. Success here does not indicate readiness for real-world navigation.')),
+              h('p', { style: { fontSize: '12px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.4, margin: '8px 0 0 0', fontStyle: 'italic' } }, /* 2011: https://pmc.ncbi.nlm.nih.gov/articles/PMC3102086/ 2021: https://pmc.ncbi.nlm.nih.gov/articles/PMC8171922/ */ t('stem.echotrainer.research_thaler_et_al_2011_2021_demons_v2', 'Research: Thaler et al. (2011) found that two expert blind echolocators processed echoes in brain areas that usually handle vision. In a 2021 study from Thaler\'s Durham University lab, blind and sighted adults both got better at echolocation over 10 weeks of training. This tool is inspired by the work of Daniel Kish and World Access for the Blind.'))
+          ),
+          h('button', { type: 'button', 'data-echotrainer-safety-ok': 'true', onClick: function() { updMulti({ disclaimerDismissed: true, safetyOpen: false, disclaimerSession: ECHO_SESSION_ID }); if (announceToSR) announceToSR(t('stem.echotrainer.sr_safety_ack', 'Safety notice acknowledged. The room is ready. Press Space in the view, or the Click button, to send a click.')); }, 'aria-label': safetyAck ? t('stem.echotrainer.close_safety_notice', 'Close the safety notice') : t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { flexShrink: 0, alignSelf: 'flex-end', minHeight: '44px', padding: '8px 18px', borderRadius: '8px', background: '#fbbf24', color: '#451a03', border: '1px solid #d97706', fontSize: '14px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, safetyAck ? t('stem.echotrainer.close', 'Close') : t('stem.echotrainer.i_understand', 'I Understand'))
+         )
+        );
+
+      var elWhoFor =
+        h('details', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '4px' } },
+          h('summary', { style: { cursor: 'pointer', fontWeight: 700, fontSize: '13px', padding: '12px 4px', minHeight: '44px', boxSizing: 'border-box' } }, t('stem.echotrainer.who_is_this_for_research_background', '\uD83E\uDDE0 Who Is This For? (Research Background)')),
           h('div', { style: { padding: '10px', lineHeight: 1.7, background: isDark ? '#0f172a' : '#f8fafc', borderRadius: '8px', marginTop: '4px' } },
             h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, t('stem.echotrainer.students_with_visual_impairments', 'Students with visual impairments: ')), t('stem.echotrainer.practice_spatial_awareness_and_echo_in', 'Practice spatial awareness and echo interpretation in a safe, controlled environment before real-world training with an O&M instructor.')),
-            h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, t('stem.echotrainer.all_students', 'All students: ')), t('stem.echotrainer.research_shows_sighted_people_can_lear', 'Research shows sighted people CAN learn echolocation (Thaler et al., 2021 \u2014 Durham University). Participants improved significantly over 10 weeks. Children learn faster than adults, making K-12 the ideal time.')),
+            h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, t('stem.echotrainer.all_students', 'All students: ')), /* ages 21-79, not strongly limited by age: https://pmc.ncbi.nlm.nih.gov/articles/PMC8171922/ */ t('stem.echotrainer.research_shows_sighted_people_can_lear_v2', 'Research shows sighted people CAN learn echolocation (Thaler and colleagues, 2021 \u2014 Durham University). Blind and sighted adults aged 21 to 79 improved over 10 weeks, and age did not hold them back much.')),
             h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, t('stem.echotrainer.accessibility_awareness', 'Accessibility awareness: ')), t('stem.echotrainer.experience_what_it_s_like_to_navigate_', 'Experience what it\u2019s like to navigate without sight. Builds empathy and understanding of sensory diversity.')),
             h('p', { style: { margin: '0 0 6px 0' } }, h('strong', null, t('stem.echotrainer.stem_learning', 'STEM learning: ')), t('stem.echotrainer.teaches_acoustics_speed_of_sound_refle', 'Teaches acoustics (speed of sound, reflection coefficients, material absorption), spatial reasoning, and the physics of echolocation used by bats and dolphins.')),
-            h('p', { style: { margin: 0, fontStyle: 'italic' } }, t('stem.echotrainer.daniel_kish_who_is_blind_navigates_by_', '\uD83D\uDC1D Daniel Kish, who is blind, navigates by bicycle using tongue clicks. He has taught echolocation to thousands of people worldwide through World Access for the Blind.'))
+            h('p', { style: { margin: 0, fontStyle: 'italic' } }, /* bike: https://www.npr.org/2011/03/13/134425825/human-echolocation-using-sound-to-see 500 children: https://en.wikipedia.org/wiki/Daniel_Kish */ t('stem.echotrainer.daniel_kish_who_is_blind_navigates_by_v2', '\uD83D\uDC1D Daniel Kish, who is blind, rides a bicycle using tongue clicks. He and World Access for the Blind have taught echolocation to at least 500 blind children around the world.'))
           )
-        ),
+        );
+
+      var elHowWorks =
         h('details', { style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
-          h('summary', { style: { padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' } }, t('stem.echotrainer.how_echolocation_works', '\uD83D\uDCDA How Echolocation Works')),
-          h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff' } },
+          h('summary', { style: { padding: '12px 14px', minHeight: '44px', boxSizing: 'border-box', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' } }, t('stem.echotrainer.how_echolocation_works', '\uD83D\uDCDA How Echolocation Works')),
+          h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff', overflowX: 'auto' } },
             (function() {
               var etReducedSvg = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-              return h('svg', { viewBox: '0 0 500 172', width: '100%', preserveAspectRatio: 'xMidYMid meet', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '150px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
+              return h('svg', { viewBox: '0 0 500 172', width: '100%', preserveAspectRatio: 'xMidYMid meet', style: { display: 'block', width: '100%', minWidth: '500px', maxWidth: '760px', margin: '0 auto', height: 'auto' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
                 h('rect', { x: 0, y: 0, width: 500, height: 172, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), rx: 8 }),
                 h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
                 h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
-                h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, 'You'),
+                h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '12', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, 'You'),
                 h('rect', { x: 410, y: 20, width: 12, height: 112, fill: isContrast ? '#ffff00' : '#475569', rx: 3 }),
-                h('text', { x: 416, y: 150, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
+                h('text', { x: 416, y: 150, textAnchor: 'middle', fontSize: '12', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
                 etReducedSvg ? h('circle', { cx: 80, cy: 70, r: 72, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.45 }) : h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })),
                 etReducedSvg ? h('circle', { cx: 80, cy: 70, r: 120, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.3 }) : h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })),
                 etReducedSvg ? h('circle', { cx: 410, cy: 70, r: 90, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0.4 }) : h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 }, h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })),
                 h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
-                h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9'), fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
+                h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '12', fill: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9'), fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
                 h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: isContrast ? '#00ff00' : '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
-                h('text', { x: 332, y: 109, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#00ff00' : (isDark ? '#4ade80' : '#15803d'), fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
+                h('text', { x: 332, y: 109, textAnchor: 'middle', fontSize: '12', fill: isContrast ? '#00ff00' : (isDark ? '#4ade80' : '#15803d'), fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
                 h('rect', { x: 170, y: 128, width: 160, height: 26, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f0f9ff'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#bae6fd') }),
-                h('text', { x: 250, y: 145, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
+                h('text', { x: 250, y: 145, textAnchor: 'middle', fontSize: '12', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
                 h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
               );
             })(),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginTop: '10px', fontSize: '12px' } },
               h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#e9d5ff'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83D\uDD0A'), h('div', { style: { fontWeight: 700, color: etint('#7c3aed') } }, t('stem.echotrainer.click_2', 'Click')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.press_space_to_emit_a_tongue_click_sou', 'Press Space to emit a tongue click sound'))),
               h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#ecfdf5', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83C\uDFA7'), h('div', { style: { fontWeight: 700, color: etint('#22c55e') } }, t('stem.echotrainer.listen', 'Listen')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.echoes_return_from_different_direction', 'Echoes return from different directions via headphones'))),
               h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#eff6ff', border: '1px solid ' + (isDark ? '#334155' : '#bfdbfe'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83E\uDDE0'), h('div', { style: { fontWeight: 700, color: etint('#3b82f6') } }, t('stem.echotrainer.navigate', 'Navigate')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.build_a_mental_map_from_echo_timing_di', 'Build a mental map from echo timing + direction')))
             ),
             h('div', { style: { marginTop: '10px', padding: '10px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f0f9ff', border: '1px solid ' + (isDark ? '#334155' : '#bae6fd') } },
-              h('div', { style: { fontWeight: 800, fontSize: '11px', color: etint('#0369a1'), marginBottom: '4px' } }, t('stem.echotrainer.why_headphones_are_essential', '\uD83C\uDFA7 Why Headphones Are Essential')),
-              h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.this_tool_uses_hrtf_head_related_trans', 'This tool uses HRTF (Head-Related Transfer Function) \u2014 the same technique your brain uses to locate sounds in 3D space. Each echo is processed through a virtual model of how sound reaches your left and right ears differently based on direction.')),
-              h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.a_wall_to_your_left_will_return_an_ech', 'A wall to your LEFT will return an echo that arrives at your left ear a fraction of a millisecond sooner and slightly louder. Your brain detects this automatically \u2014 if you\'re wearing headphones. Speakers cannot reproduce this effect.')),
-              h('p', { style: { fontSize: '10px', lineHeight: 1.5, margin: 0, color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.in_3d_mode_you_also_perceive_height_di', 'In 3D mode, you also perceive HEIGHT differences. A bat flying overhead sounds different from a car at ground level. The 3D scene positions every echo and every moving entity\'s sound in true 3D space around your head.'))
+              h('div', { style: { fontWeight: 800, fontSize: '12px', color: etint('#0369a1'), marginBottom: '4px' } }, t('stem.echotrainer.why_headphones_are_essential', '\uD83C\uDFA7 Why Headphones Are Essential')),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, /* https://en.wikipedia.org/wiki/Head-related_transfer_function */ t('stem.echotrainer.this_tool_uses_hrtf_head_related_trans_v2', 'This tool uses an HRTF (Head-Related Transfer Function): a model of how your head and outer ears change a sound on its way into each ear, depending on where the sound comes from. Your brain uses those changes, and the differences between your two ears, to locate sounds in 3D space.')),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: '0 0 6px 0', color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.a_wall_to_your_left_will_return_an_ech', 'A wall to your LEFT will return an echo that arrives at your left ear a fraction of a millisecond sooner and slightly louder. Your brain detects this automatically \u2014 if you\'re wearing headphones. Speakers cannot reproduce this effect.')),
+              h('p', { style: { fontSize: '12px', lineHeight: 1.5, margin: 0, color: isDark ? '#94a3b8' : '#475569' } }, t('stem.echotrainer.in_3d_mode_you_also_perceive_height_di', 'In 3D mode, you also perceive HEIGHT differences. A bat flying overhead sounds different from a car at ground level. The 3D scene positions every echo and every moving entity\'s sound in true 3D space around your head.'))
             ),
             h('div', { style: { marginTop: '10px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' } },
-              [{ name: t('stem.echotrainer.rock', 'Rock'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.bright_echo', 'Bright echo'), ref: '85%' }, { name: t('stem.echotrainer.metal', 'Metal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.sharp_ring', 'Sharp ring'), ref: '95%' }, { name: t('stem.echotrainer.wood', 'Wood'), color: etint('#92400e'), desc: t('stem.echotrainer.muffled', 'Muffled'), ref: '50%' }, { name: t('stem.echotrainer.glass', 'Glass'), color: '#7dd3fc', desc: t('stem.echotrainer.faint', 'Faint'), ref: '30%' }, { name: t('stem.echotrainer.goal', 'Goal \u2B50'), color: etint('#fbbf24'), desc: 'Bright!', ref: '90%' }].map(function(mat) {
-                return h('div', { key: mat.name, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f8fafc', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), fontSize: '9px' } }, h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: mat.color } }), h('span', { style: { fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, mat.name), h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, mat.desc));
+              [{ name: t('stem.echotrainer.rock', 'Rock'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.chip_hard', 'Hard') }, { name: t('stem.echotrainer.metal', 'Metal'), color: 'var(--allo-stem-text-soft, #94a3b8)', desc: t('stem.echotrainer.chip_hard', 'Hard') }, { name: t('stem.echotrainer.wood', 'Wood'), color: etint('#92400e'), desc: t('stem.echotrainer.chip_hard', 'Hard') }, { name: t('stem.echotrainer.glass', 'Glass'), color: '#7dd3fc', desc: t('stem.echotrainer.chip_hard', 'Hard') }, { name: t('stem.echotrainer.chip_curtain', 'Curtain'), color: etint('#c084fc'), desc: t('stem.echotrainer.chip_soft', 'Soft') }, { name: t('stem.echotrainer.chip_people', 'People'), color: etint('#ff9c9c'), desc: t('stem.echotrainer.chip_soft', 'Soft') }].map(function(mat) {
+                return h('div', { key: mat.name, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f8fafc', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), fontSize: '12px' } }, h('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: mat.color } }), h('span', { style: { fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, mat.name), h('span', { style: { color: isDark ? '#94a3b8' : '#64748b' } }, mat.desc));
               })
             )
           )
-        ),
+        );
+
+      var elEnvPicker =
         h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
           ENVIRONMENTS.map(function(env) {
             var active = envType === env.id; var is3D = !!ENV_3D_READY[env.id];
             var unlocked = isEnvUnlocked(env.id, d);
             var envName = t('stem.echotrainer.env_' + env.id + '_name', env.name);
-            var envDesc = t('stem.echotrainer.env_' + env.id + '_desc', env.desc);
+            var envDesc = t('stem.echotrainer.env_' + env.id + '_desc', env.desc); if (env.descV2) envDesc = t('stem.echotrainer.env_' + env.id + '_desc_v2', env.descV2);
             var envHint = t('stem.echotrainer.unlock_' + env.id, (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label) || '');
             return h('button', { type: 'button', key: env.id,
               disabled: !unlocked,
@@ -2634,9 +3319,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 : tFmt('stem.echotrainer.aria_env_locked', '{name} (Locked: {hint})', { name: envName, hint: envHint }),
               'aria-pressed': active ? 'true' : 'false',
               title: unlocked ? envDesc : tFmt('stem.echotrainer.title_env_locked', 'Locked: {hint}', { hint: envHint }),
-              onClick: unlocked ? function() { var envId = env.id; return function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ envType: envId, seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_environment_selected', 'Environment: {name}. {desc} {mode} Press Space to click.', { name: envName, desc: envDesc, mode: is3D ? t('stem.echotrainer.sr_mode_3d', '3D mode.') : t('stem.echotrainer.sr_mode_2d', '2D mode.') })); }; }() : undefined,
+              onClick: unlocked ? function() { var envId = env.id; return function() { resetRun(envId); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_environment_selected', 'Environment: {name}. {desc} {mode} Press Space to click.', { name: envName, desc: envDesc, mode: is3D ? t('stem.echotrainer.sr_mode_3d', '3D mode.') : t('stem.echotrainer.sr_mode_2d', '2D mode.') })); }; }() : undefined,
               style: {
-                padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700,
+                minHeight: '44px', padding: '8px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
                 cursor: unlocked ? 'pointer' : 'not-allowed',
                 opacity: unlocked ? 1 : 0.5,
                 border: '1px solid ' + (active ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')),
@@ -2645,24 +3330,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               }
             }, (unlocked ? '' : '\uD83D\uDD12 ') + env.icon + ' ' + envName + (is3D ? ' [3D]' : '') + (!unlocked ? ' (' + envHint + ')' : ''));
           })
-        ),
+        );
+
+      // Secondary controls (inside the one "More" disclosure). Click, the view switch and
+      // the distance challenge live in the action row under the play surface.
+      var moreBtn = function(active, tone) {
+        return { minHeight: '44px', padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (active ? (tone || '#818cf8') : (isDark ? '#475569' : '#cbd5e1'))),
+          backgroundColor: isContrast ? '#000000' : (active ? (isDark ? '#312e81' : '#e0e7ff') : (isDark ? '#1e293b' : '#fff')),
+          color: isContrast ? '#ffff00' : (active ? (isDark ? '#e0e7ff' : '#312e81') : (isDark ? '#e2e8f0' : '#334155')) };
+      };
+      var elControls =
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
-          h('button', { type: 'button', onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
-          h('button', { type: 'button', onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
-          h('button', { type: 'button', onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
-          h('button', { type: 'button', onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? t('stem.echotrainer.sr_multibounce_off', 'Multi-bounce echoes off') : t('stem.echotrainer.sr_multibounce_on', 'Multi-bounce echoes on \u2014 more realistic but harder')); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
-          h('button', {
-            type: 'button',
-            onClick: startDistanceChallenge,
-            'aria-label': t('stem.echotrainer.start_a_distance_estimation_challenge', 'Start a distance estimation challenge'),
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#6d28d9' : '#c4b5fd'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#ddd6fe' : '#6d28d9', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-          }, t('stem.echotrainer.distance_quiz', '\uD83D\uDCCF Distance Quiz')),
+          h('button', { type: 'button', onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: moreBtn(false) }, clickType === 'tongue' ? t('stem.echotrainer.btn_sound_tongue', 'Sound: tongue click') : t('stem.echotrainer.btn_sound_cane', 'Sound: cane tap')),
+          h('button', { type: 'button', onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? t('stem.echotrainer.sr_multibounce_off', 'Multi-bounce echoes off') : t('stem.echotrainer.sr_multibounce_on', 'Multi-bounce echoes on — more realistic but harder')); }, 'aria-label': multiBounce ? t('stem.echotrainer.aria_multibounce_off', 'Turn off multi-bounce echoes') : t('stem.echotrainer.aria_multibounce_on', 'Turn on multi-bounce echoes (advanced)'), 'aria-pressed': multiBounce ? 'true' : 'false', style: moreBtn(multiBounce, '#f59e0b') }, multiBounce ? t('stem.echotrainer.btn_multibounce_on', 'Multi-bounce: on') : t('stem.echotrainer.btn_multibounce_off', 'Multi-bounce: off')),
           h('button', {
             type: 'button',
             onClick: startMaterialQuiz,
-            'aria-label': t('stem.echotrainer.start_a_material_identification_quiz', 'Start a material identification quiz'),
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#92400e' : '#f59e0b'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fde68a' : '#92400e', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-          }, t('stem.echotrainer.material_quiz', '\uD83E\uDDCA Material Quiz')),
+            'aria-label': t('stem.echotrainer.start_a_material_identification_quiz_v2', 'Start a material quiz: is the surface straight ahead hard or soft?'),
+            style: moreBtn(false)
+          }, t('stem.echotrainer.material_quiz', '🧊 Material Quiz')),
           WAYPOINT_ROUTES[envType] ? h('button', {
             type: 'button',
             onClick: function() {
@@ -2671,38 +3358,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               goalFoundRef.current = false;
               if (announceToSR) announceToSR(newMode ? tFmt('stem.echotrainer.sr_waypoint_on', 'Waypoint challenge ON! Navigate to: {label}', { label: WAYPOINT_ROUTES[envType].points[0].label }) : t('stem.echotrainer.sr_waypoint_off', 'Waypoint challenge OFF. Find the single goal.'));
             },
-            'aria-label': waypointMode ? 'Disable waypoint challenge' : 'Enable waypoint navigation challenge',
-            style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (waypointMode ? '#22c55e' : (isDark ? '#334155' : '#e2e8f0')), background: waypointMode ? '#166534' : (isDark ? '#1e293b' : '#fff'), color: waypointMode ? '#86efac' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
-          }, waypointMode ? '\uD83D\uDEA9 Waypoint ON (' + (d.waypointIdx || 0) + '/' + WAYPOINT_ROUTES[envType].points.length + ')' : '\uD83D\uDEA9 Waypoint Challenge') : null,
-          h('button', { type: 'button', onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, t('stem.echotrainer.new_layout', '\uD83C\uDFB2 New Layout')),
-          d.goalFoundThisRun && h('span', { style: isContrast ? { padding: '8px 16px', borderRadius: '8px', background: '#000000', color: '#00ff00', border: '1px solid #ffff00', fontSize: '12px', fontWeight: 800 } : { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
-        ),
+            'aria-label': waypointMode ? t('stem.echotrainer.aria_waypoint_off', 'Disable waypoint challenge') : t('stem.echotrainer.aria_waypoint_on', 'Enable waypoint navigation challenge'),
+            'aria-pressed': waypointMode ? 'true' : 'false',
+            style: moreBtn(waypointMode, '#22c55e')
+          }, waypointMode ? tFmt('stem.echotrainer.btn_waypoint_on', 'Waypoints: on ({n} of {total})', { n: d.waypointIdx || 0, total: WAYPOINT_ROUTES[envType].points.length }) : t('stem.echotrainer.btn_waypoint_off', 'Waypoint challenge')) : null,
+          h('button', { type: 'button', onClick: function() { resetRun(null); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: moreBtn(false) }, t('stem.echotrainer.new_layout', '🎲 New Layout'))
+        );
+
+      var elWaypointHud =
         // ── Waypoint HUD info ──
         (waypointMode && WAYPOINT_ROUTES[envType]) ? h('div', {
           'aria-live': 'polite',
           style: { padding: '8px 14px', borderRadius: '8px', background: isDark ? '#052e16' : '#f0fdf4', border: '1px solid #22c55e', fontSize: '12px', color: isDark ? '#86efac' : '#166534', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }
         },
           '\uD83D\uDEA9 ' + WAYPOINT_ROUTES[envType].name + ' \u2014 Waypoint ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length + ': ' + ((d.waypointIdx || 0) < WAYPOINT_ROUTES[envType].points.length ? WAYPOINT_ROUTES[envType].points[d.waypointIdx || 0].label : 'Complete!')
-        ) : null,
+        ) : null;
+
+      var elDifficulty =
         h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' } },
-          h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
+          h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
           DIFFICULTY.map(function(dLvl) {
             var isActive = diffId === dLvl.id;
-            return h('button', { type: 'button', key: dLvl.id, 'aria-label': tFmt('stem.echotrainer.aria_difficulty', '{name}: {desc}', { name: dLvl.label, desc: dLvl.desc }), 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_difficulty', 'Difficulty: {name}. {desc}', { name: dLvl.label, desc: dLvl.desc })); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
+            return h('button', { type: 'button', key: dLvl.id, 'aria-label': tFmt('stem.echotrainer.aria_difficulty', '{name}: {desc}', { name: dLvl.label, desc: dLvl.desc }), 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_difficulty', 'Difficulty: {name}. {desc}', { name: dLvl.label, desc: dLvl.desc })); }, style: { minHeight: '44px', padding: '8px 14px', borderRadius: '10px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
           })
-        ),
-        h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
-          h('summary', { style: { padding: '8px 12px', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (Array.isArray(d.runHistory) ? d.runHistory : []).length + ' runs) | ' + coveragePct + '% mapped | Mat Quiz: ' + (d.matQuizCorrect || 0) + '/' + (d.matQuizTotal || 0)),
+        );
+
+      var elStats =
+        h('details', { style: { fontSize: '12px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
+          h('summary', { style: { padding: '12px', minHeight: '44px', boxSizing: 'border-box', cursor: 'pointer', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc' } }, '\uD83D\uDCCA Performance Stats (' + (Array.isArray(d.runHistory) ? d.runHistory : []).length + ' runs) | ' + coveragePct + '% mapped | Mat Quiz: ' + (d.matQuizCorrect || 0) + '/' + (d.matQuizTotal || 0)),
           h('div', { style: { padding: '10px', background: isDark ? '#0f172a' : '#fff' } },
             (Array.isArray(d.runHistory) && d.runHistory.length > 0) ?
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '8px' } },
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#6366f1') } }, (Array.isArray(d.runHistory) ? d.runHistory : []).length), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#ecfdf5', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22c55e' } }, (Array.isArray(d.runHistory) ? d.runHistory : []).reduce(function(sum, r) { return sum + r.xp; }, 0)), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_xp', 'Total XP'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#3b82f6') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
-                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#f59e0b') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginBottom: '8px' } },
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#f5f3ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#6366f1') } }, (Array.isArray(d.runHistory) ? d.runHistory : []).length), h('div', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_runs', 'Total Runs'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#ecfdf5', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: '#22c55e' } }, (Array.isArray(d.runHistory) ? d.runHistory : []).reduce(function(sum, r) { return sum + r.xp; }, 0)), h('div', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.total_xp', 'Total XP'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#eff6ff', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#3b82f6') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ time: 0 }]).map(function(r) { return r.time; })) + 's'), h('div', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.best_time', 'Best Time'))),
+                h('div', { style: { padding: '8px', borderRadius: '6px', background: isDark ? '#1e293b' : '#fef3c7', textAlign: 'center' } }, h('div', { style: { fontSize: '18px', fontWeight: 900, color: etint('#f59e0b') } }, Math.min.apply(null, (Array.isArray(d.runHistory) && d.runHistory.length ? d.runHistory : [{ bumps: 0 }]).map(function(r) { return r.bumps; }))), h('div', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.fewest_bumps', 'Fewest Bumps')))
               ) : h('p', { style: { color: isDark ? '#94a3b8' : '#64748b', fontStyle: 'italic' } }, t('stem.echotrainer.complete_a_run_to_see_your_stats_here', 'Complete a run to see your stats here.')),
             (Array.isArray(d.runHistory) && d.runHistory.length > 0) ?
-              h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
+              h('table', { style: { width: '100%', fontSize: '12px', borderCollapse: 'collapse' } },
                 h('thead', null, h('tr', { style: { borderBottom: '1px solid ' + (isDark ? '#334155' : '#e2e8f0') } },
                   h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'Env'),
                   h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.mode', 'Mode')),
@@ -2723,59 +3416,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 }))
               ) : null
           )
-        ),
-        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': tFmt('stem.echotrainer.aria_tutorial_step', 'Tutorial step {n} of 4', { n: tutStep + 1 }), tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: etint('#3b82f6') } }, tFmt('stem.echotrainer.tut_counter', 'Tutorial {n}/4', { n: tutStep + 1 })), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.tut_' + tutStep + '_title', TUTORIAL_STEPS[tutStep].title))),
-          h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, t('stem.echotrainer.tut_' + tutStep + '_text', TUTORIAL_STEPS[tutStep].text)),
-          h('button', { type: 'button', onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
-        ) : null,
+        );
+
+      var elTutorial =
+        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': tFmt('stem.echotrainer.aria_tutorial_step', 'Tutorial step {n} of 4', { n: tutStep + 1 }), tabIndex: 0, 'data-echotrainer-step': String(tutStep), style: { backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#eff6ff'), border: isContrast ? '2px solid #ffff00' : '2px solid #3b82f6', borderRadius: '12px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' } },
+          h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: '12px', fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : (isDark ? '#93c5fd' : '#1d4ed8') } }, tFmt('stem.echotrainer.tut_counter_v2', 'Step {n} of 4', { n: tutStep + 1 })),
+              h('span', { style: { fontSize: '15px', fontWeight: 800, color: uiInk } }, t('stem.echotrainer.tut_' + tutStep + '_title_v2', TUTORIAL_STEPS[tutStep].title))),
+            h('p', { style: { fontSize: '14px', color: uiSoft, lineHeight: 1.45, margin: '2px 0 0 0' } }, t('stem.echotrainer.tut_' + tutStep + '_text_v2', TUTORIAL_STEPS[tutStep].text)),
+            // The student's own two echo times, once they have walked closer.
+            (tutStep === 2 && typeof d.tutFirstMs === 'number' && typeof d.tutNowMs === 'number' && viewNow !== 'audio')
+              ? h('p', { 'data-echotrainer-tut-proof': 'true', style: { fontSize: '14px', fontWeight: 700, color: isContrast ? '#00ff00' : (isDark ? '#6ee7b7' : '#047857'), margin: '4px 0 0 0' } },
+                  tFmt('stem.echotrainer.tut_proof', 'Your first wait was {first} ms. Closer up it was {now} ms. A shorter wait means closer.', { first: d.tutFirstMs, now: d.tutNowMs }))
+              : null),
+          h('button', { type: 'button', onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? t('stem.echotrainer.tut_skip_step', 'Skip this step') : t('stem.echotrainer.tut_finish', 'Finish the steps'), style: { minHeight: '44px', padding: '8px 16px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : '1px solid #1d4ed8', backgroundColor: isContrast ? '#000000' : '#1d4ed8', color: isContrast ? '#ffff00' : '#fff', fontSize: '14px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, tutStep < 3 ? t('stem.echotrainer.tut_skip', 'Skip') : t('stem.echotrainer.tut_got_it', 'Got it'))
+        ) : null;
+
+      var quizBtn = { minHeight: '44px', minWidth: '72px', padding: '8px 16px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#475569' : '#cbd5e1')), backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#fff'), color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#1e293b'), fontSize: '15px', fontWeight: 700, cursor: 'pointer' };
+      var elDistUi =
         // Distance challenge UI
         (d.distChallenge && d.distChallenge.active && !d.distChallenge.result) ? h('div', {
           role: 'region', 'aria-label': t('stem.echotrainer.distance_estimation_challenge', 'Distance estimation challenge'),
           tabIndex: 0,
-          style: { padding: '14px', borderRadius: '12px', border: '2px solid #7c3aed', background: isDark ? '#1e1033' : '#faf5ff', marginBottom: '8px' }
+          style: { padding: '14px', borderRadius: '12px', border: isContrast ? '2px solid #ffff00' : '2px solid #7c3aed', backgroundColor: isContrast ? '#000000' : (isDark ? '#1e1033' : '#faf5ff') }
         },
-          h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#7c3aed', marginBottom: '6px' } }, t('stem.echotrainer.distance_challenge', '\uD83D\uDCCF Distance Challenge')),
-          h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
-            tFmt('stem.echotrainer.dist_prompt', 'You just sent a sonar pulse. How far is the {material} surface directly ahead of you?', { material: d.distChallenge.targetMat || t('stem.echotrainer.material_wall', 'wall') })),
-          h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-            [0.5, 1, 2, 3, 5, 8, 12, 20].map(function(est) {
+          h('div', { style: { fontWeight: 800, fontSize: '15px', color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#6d28d9'), marginBottom: '6px' } }, t('stem.echotrainer.distance_challenge', '📏 Distance Challenge')),
+          h('p', { style: { fontSize: '14px', color: uiInk, margin: '0 0 4px 0' } },
+            tFmt('stem.echotrainer.dist_prompt', 'You just sent a sonar pulse. How far is the {material} surface directly ahead of you?', { material: (d.distChallenge.targetMat === 'flesh' ? t('stem.echotrainer.material_crowd', 'crowd') : d.distChallenge.targetMat) || t('stem.echotrainer.material_wall', 'wall') })),
+          h('p', { style: { fontSize: '13px', color: uiSoft, margin: '0 0 10px 0' } }, t('stem.echotrainer.dist_hint', 'Listen to the wait between the click and the echo. A longer wait means farther away. Guess first; the working is shown after.')),
+          h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
+            h('button', { type: 'button', 'data-echotrainer-replay': 'true',
+              onClick: function() { playSingleEcho(d.distChallenge.targetDist, undefined, typeof d.distChallenge.gain === 'number' ? d.distChallenge.gain : 0.3, d.distChallenge.targetMat); },
+              style: Object.assign({}, quizBtn, { backgroundColor: isContrast ? '#000000' : '#6d28d9', color: isContrast ? '#00ff00' : '#fff', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd' })
+            }, t('stem.echotrainer.dist_replay', 'Play the echo again')),
+            (Array.isArray(d.distChallenge.choices) && d.distChallenge.choices.length === 4 ? d.distChallenge.choices : [0.5, 1, 2, 3, 5, 8, 12, 20]).map(function(est) {
               return h('button', {
                 type: 'button',
                 key: est,
+                'data-echotrainer-choice': String(est),
                 onClick: function() {
                   var actual = d.distChallenge.targetDist;
                   var error = Math.abs(est - actual);
                   // Guard the divisor: targetDist rounds to one decimal, so standing
                   // against a surface yields 0 and the percentage became Infinity.
                   var pct = actual > 0 ? Math.round((error / actual) * 100) : (error > 0 ? 100 : 0);
-                  var grade = pct < 15 ? t('stem.echotrainer.grade_excellent', 'Excellent!')
-                    : pct < 30 ? t('stem.echotrainer.grade_good', 'Good!')
-                    : pct < 50 ? t('stem.echotrainer.grade_fair', 'Fair')
-                    : t('stem.echotrainer.grade_keep_practicing', 'Keep practicing');
-                  var resultStr = grade + ' ' + tFmt('stem.echotrainer.dist_result', 'Actual: {actual}m. Your guess: {guess}m ({pct}% off).', { actual: actual, guess: est, pct: pct });
-                  upd('distChallenge', { active: true, targetDist: actual, targetMat: d.distChallenge.targetMat, answer: est, result: resultStr });
+                  var modelChoices = Array.isArray(d.distChallenge.choices) && d.distChallenge.choices.length === 4;
+                  var verdict = EchoModel.judgeDistance(actual, est);
+                  var isRight = modelChoices ? verdict.correct : pct < 15;
+                  var grade = isRight ? t('stem.echotrainer.grade_excellent', 'Excellent!')
+                    : (modelChoices ? ((actual > 0 && (Math.abs(est / actual - 2) < 0.1 || Math.abs(est / actual - 0.5) < 0.05)) ? t('stem.echotrainer.grade_one_step', 'One step off.') : t('stem.echotrainer.grade_keep_practicing', 'Keep practicing'))
+                      : (pct < 30 ? t('stem.echotrainer.grade_good', 'Good!') : pct < 50 ? t('stem.echotrainer.grade_fair', 'Fair') : t('stem.echotrainer.grade_keep_practicing', 'Keep practicing')));
+                  if (!/[.!?]$/.test(grade)) grade += '.';
+                  // Every number below is worked from the same model that made the sound.
+                  var msShown = Math.round(EchoModel.delaySec(actual) * 10000) / 10;
+                  var parts = [grade, tFmt('stem.echotrainer.dist_result', 'Actual: {actual}m. Your guess: {guess}m ({pct}% off).', { actual: actual, guess: est, pct: pct })];
+                  if (!isRight && verdict.kind === 'roundTrip') parts.push(tFmt('stem.echotrainer.dist_wrong_roundtrip', '{guess} m is the whole trip: {actual} m out and {actual} m back. The surface is half of that.', { guess: est, actual: actual }));
+                  else if (!isRight && verdict.kind === 'tooFar') parts.push(tFmt('stem.echotrainer.dist_wrong_far', 'A surface {guess} m away would take about {guessMs} ms to answer. This echo took only {ms} ms, so it is closer.', { guess: est, guessMs: verdict.guessMs, ms: verdict.actualMs }));
+                  else if (!isRight && verdict.kind === 'tooNear') parts.push(tFmt('stem.echotrainer.dist_wrong_near', 'A surface {guess} m away would answer after about {guessMs} ms. This echo took {ms} ms, so it is farther.', { guess: est, guessMs: verdict.guessMs, ms: verdict.actualMs }));
+                  parts.push(tFmt('stem.echotrainer.dist_why', 'The working: the echo came back after {ms} ms. Sound goes {speed} meters each second, and the echo travels there and back, so distance = {speed} x {sec} / 2 = {actual} m.', { ms: msShown, speed: EchoModel.SPEED_OF_SOUND, sec: (msShown / 1000).toFixed(4), actual: actual }));
+                  // XP is for a NEW target: the same spot and heading cannot be scored again.
+                  var scored = Array.isArray(d.quizScored) ? d.quizScored : [];
+                  var scoreKey = 'dist:' + (d.distChallenge.key || '');
+                  var isNew = !!d.distChallenge.key && scored.indexOf(scoreKey) === -1;
+                  if (isRight && !isNew) parts.push(t('stem.echotrainer.quiz_no_repeat', 'No XP this time: you already scored this spot. Move or turn to find a new one.'));
+                  var resultStr = parts.join(' ');
+                  updMulti({
+                    distChallenge: { active: true, targetDist: actual, targetMat: d.distChallenge.targetMat, answer: est, result: resultStr, ok: isRight, gain: d.distChallenge.gain, key: d.distChallenge.key },
+                    quizScored: (isRight && isNew) ? scored.concat([scoreKey]).slice(-60) : scored
+                  });
                   if (announceToSR) announceToSR(resultStr);
-                  if (pct < 15 && awardXP) awardXP('echoTrainer', 5, 'Distance estimation: ' + pct + '% error');
+                  if (isRight && isNew && awardXP) awardXP('echoTrainer', 5, 'Distance estimation: ' + pct + '% error');
                 },
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
-              }, est + 'm');
+                style: quizBtn
+              }, est + ' m');
             })
           )
-        ) : null,
+        ) : null;
+
+      var elDistResult =
         // Distance challenge result display
         (d.distChallenge && d.distChallenge.result) ? h('div', {
-          style: { padding: '10px 14px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f0fdf4', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), marginBottom: '8px', fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b' }
+          'data-echotrainer-dist-result': d.distChallenge.ok === false ? 'wrong' : 'right',
+          style: { padding: '12px 14px', borderRadius: '10px', backgroundColor: isContrast ? '#000000' : (d.distChallenge.ok === false ? (isDark ? '#422006' : '#fffbeb') : (isDark ? '#052e16' : '#f0fdf4')), border: isContrast ? '2px solid #ffff00' : ('2px solid ' + (d.distChallenge.ok === false ? '#f59e0b' : '#22c55e')), fontSize: '14px', lineHeight: 1.5, color: uiInk }
         },
-          h('span', { style: { fontWeight: 800, color: '#22c55e' } }, '\uD83C\uDFAF '),
-          d.distChallenge.result,
-          ' ',
-          h('button', {
-            type: 'button',
-            onClick: function() { upd('distChallenge', null); },
-            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-          }, t('stem.echotrainer.dismiss', 'Dismiss'))
-        ) : null,
+          h('p', { style: { margin: '0 0 8px 0' } }, d.distChallenge.result),
+          h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+            h('button', { type: 'button', onClick: function() { playSingleEcho(d.distChallenge.targetDist, undefined, typeof d.distChallenge.gain === 'number' ? d.distChallenge.gain : 0.3, d.distChallenge.targetMat); }, style: quizBtn }, t('stem.echotrainer.dist_replay_after', 'Hear it again')),
+            h('button', {
+              type: 'button',
+              onClick: function() { upd('distChallenge', null); },
+              style: { minHeight: '44px', padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
+            }, t('stem.echotrainer.dismiss', 'Dismiss')))
+        ) : null;
+
+      var elMatUi =
         // ── Material Quiz UI ──
         (matQuiz && matQuiz.active && !matQuiz.result) ? h('div', {
           role: 'region', 'aria-label': t('stem.echotrainer.material_identification_quiz', 'Material identification quiz'),
@@ -2783,56 +3518,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           style: { padding: '14px', borderRadius: '12px', border: '2px solid #f59e0b', background: isDark ? '#1c1917' : '#fffbeb', marginBottom: '8px' }
         },
           h('div', { style: { fontWeight: 800, fontSize: '13px', color: etint('#f59e0b'), marginBottom: '6px' } }, t('stem.echotrainer.material_quiz_2', '\uD83E\uDDCA Material Quiz')),
-          h('p', { style: { fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
-            t('stem.echotrainer.listen_to_the_echo_ahead_what_material', 'Listen to the echo ahead. What material did you just hear?')),
+          h('p', { style: { fontSize: '13px', color: isDark ? '#e2e8f0' : '#1e293b', margin: '0 0 10px 0' } },
+            t('stem.echotrainer.listen_hard_or_soft', 'Listen to the echo from straight ahead. Is that surface hard or soft? Think about the wait too: a far wall is quieter only because it is far.')),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+            typeof matQuiz.dist === 'number' ? h('button', { type: 'button', 'data-echotrainer-mat-replay': 'true',
+              onClick: function() { playSingleEcho(matQuiz.dist, undefined, typeof matQuiz.gain === 'number' ? matQuiz.gain : 0.3, matQuiz.correctMat); },
+              style: { minHeight: '44px', padding: '8px 16px', borderRadius: '8px', backgroundColor: isContrast ? '#000000' : '#6d28d9', color: isContrast ? '#00ff00' : '#ffffff', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } },
+              t('stem.echotrainer.mat_replay', 'Play the echo again')) : null,
             (matQuiz.options || []).map(function(opt) {
               var hint = matHints[opt] || '';
               return h('button', {
                 type: 'button',
                 key: opt,
+                'data-echotrainer-mat-choice': opt,
                 onClick: function() {
-                  var correct = opt === matQuiz.correctMat;
+                  // Old saves asked for a material name; new quizzes ask hard or soft.
+                  var byGroup = (opt === 'hard' || opt === 'soft');
+                  var correct = byGroup ? opt === EchoModel.soundGroup(matQuiz.correctMat) : opt === matQuiz.correctMat;
                   var newTotal = (d.matQuizTotal || 0) + 1;
                   var newCorrect = (d.matQuizCorrect || 0) + (correct ? 1 : 0);
-                  var explanation = correct
-                    ? tFmt('stem.echotrainer.mat_correct', 'Correct! {material} has a {hint} sound signature.', { material: opt, hint: matHints[opt] || '' })
-                    : tFmt('stem.echotrainer.mat_wrong', 'Not quite. The material was {material} ({hint}). You guessed {guess}.', { material: matQuiz.correctMat, hint: matHints[matQuiz.correctMat] || '', guess: opt });
-                  var resultObj = { active: true, correctMat: matQuiz.correctMat, options: matQuiz.options, answer: opt, result: explanation };
-                  updMulti({ matQuiz: resultObj, matQuizTotal: newTotal, matQuizCorrect: newCorrect });
+                  var explanation = matExplain(matQuiz.correctMat, opt, correct, matQuiz.dist);
+                  var resultObj = { active: true, correctMat: matQuiz.correctMat, options: matQuiz.options, answer: opt, result: explanation, ok: correct, dist: matQuiz.dist };
+                  // XP is for a NEW target: the same spot and heading cannot be scored again.
+                  var mqScored = Array.isArray(d.quizScored) ? d.quizScored : [];
+                  var mqScoreKey = 'mat:' + (matQuiz.key || '');
+                  var mqNew = !!matQuiz.key && mqScored.indexOf(mqScoreKey) === -1;
+                  if (correct && !mqNew) { explanation += ' ' + t('stem.echotrainer.quiz_no_repeat', 'No XP this time: you already scored this spot. Move or turn to find a new one.'); resultObj.result = explanation; }
+                  updMulti({ matQuiz: resultObj, matQuizTotal: newTotal, matQuizCorrect: newCorrect, quizScored: (correct && mqNew) ? mqScored.concat([mqScoreKey]).slice(-60) : mqScored });
                   if (announceToSR) announceToSR(explanation);
-                  if (correct && awardXP) awardXP('echoTrainer', 5, 'Material quiz: identified ' + opt);
+                  if (correct && mqNew && awardXP) awardXP('echoTrainer', 5, 'Material quiz: heard a ' + EchoModel.soundGroup(matQuiz.correctMat) + ' surface');
                 },
-                style: { padding: '10px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', minWidth: '100px' }
-              }, h('div', { style: { fontWeight: 800, fontSize: '13px' } }, opt.charAt(0).toUpperCase() + opt.slice(1)), h('div', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b', marginTop: '2px' } }, hint));
+                style: { minHeight: '44px', padding: '10px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textAlign: 'center', minWidth: '140px' }
+              }, h('div', { style: { fontWeight: 800, fontSize: '14px' } }, matChoiceNames[opt] || (opt.charAt(0).toUpperCase() + opt.slice(1))), h('div', { style: { fontSize: '12px', color: isDark ? '#cbd5e1' : '#475569', marginTop: '2px' } }, hint));
             })
           )
-        ) : null,
+        ) : null;
+
+      var elMatResult =
         // Material Quiz result display
-        (matQuiz && matQuiz.result) ? h('div', {
-          style: { padding: '10px 14px', borderRadius: '8px', background: (matQuiz.answer === matQuiz.correctMat) ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2'), border: '1px solid ' + ((matQuiz.answer === matQuiz.correctMat) ? '#22c55e' : '#ef4444'), marginBottom: '8px', fontSize: '12px', color: isDark ? '#e2e8f0' : '#1e293b' }
+        (matQuiz && matQuiz.result) ? (function () {
+          var mqOk = typeof matQuiz.ok === 'boolean' ? matQuiz.ok : (matQuiz.answer === matQuiz.correctMat);
+          return h('div', {
+          'data-echotrainer-mat-result': mqOk ? 'right' : 'wrong',
+          style: { padding: '10px 14px', borderRadius: '8px', background: isContrast ? '#000000' : (mqOk ? (isDark ? '#052e16' : '#f0fdf4') : (isDark ? '#450a0a' : '#fef2f2')), border: (isContrast ? '2px solid #ffff00' : ('1px solid ' + (mqOk ? '#22c55e' : '#ef4444'))), marginBottom: '8px', fontSize: '13px', lineHeight: 1.5, color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b') }
         },
-          h('span', { style: { fontWeight: 800, color: (matQuiz.answer === matQuiz.correctMat) ? '#22c55e' : '#ef4444' } }, (matQuiz.answer === matQuiz.correctMat) ? '\u2705 ' : '\u274C '),
+          h('span', { 'aria-hidden': 'true', style: { fontWeight: 800 } }, mqOk ? '\u2705 ' : '\u274C '),
           matQuiz.result,
           ' ',
+          typeof matQuiz.dist === 'number' ? h('button', { type: 'button', 'data-echotrainer-mat-compare': 'true',
+            onClick: function() {
+              var m = matQuiz.dist;
+              var played = playSingleEcho(m, undefined, EchoModel.gainFromMeters(m, matRef('concrete')), 'concrete');
+              playSingleEcho(m, undefined, EchoModel.gainFromMeters(m, matRef('curtain')), 'curtain', 1.0);
+              if (announceToSR) announceToSR(played ? tFmt('stem.echotrainer.mat_compare_sr', 'Playing a concrete wall {m} m away, then a curtain {m} m away.', { m: m }) : t('stem.echotrainer.iq_no_audio', 'Sound is not available on this device.'));
+            },
+            style: { marginLeft: '8px', minHeight: '44px', padding: '8px 16px', borderRadius: '10px', border: '1px solid #c4b5fd', background: isContrast ? '#000000' : '#6d28d9', color: isContrast ? '#00ff00' : '#ffffff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
+          }, tFmt('stem.echotrainer.mat_compare', 'Compare at {m} m: hard, then soft', { m: matQuiz.dist })) : null,
           h('button', {
             type: 'button',
             onClick: function() { upd('matQuiz', null); },
-            style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            style: { marginLeft: '8px', minHeight: '44px', padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.dismiss_2', 'Dismiss'))
-        ) : null,
+        ); })() : null;
+
+      var elWebglError =
         d.webglError ? h('div', {
           style: { padding: '16px', borderRadius: '12px', border: '1px solid #ef4444', background: isDark ? '#450a0a' : '#fef2f2', color: isDark ? '#fca5a5' : '#991b1b', marginBottom: '16px', fontSize: '13px' }
         },
           h('h4', { style: { fontWeight: 800, fontSize: '15px', marginBottom: '4px' } }, t('stem.echotrainer.echo_navigator_3d_mode_unresolved', '⚠️ Echo Navigator 3D Mode Unresolved')),
-          h('p', { style: { marginBottom: '12px', fontSize: '11px', color: isDark ? '#fca5a5' : '#7f1d1d' } }, t('stem.echotrainer.webgl_failed_to_initialize_your_device', 'WebGL failed to initialize. Your device or browser may not support 3D hardware acceleration. The tool has automatically fallen back to 2D Audio/Tactile mode, but you can retry 3D Mode below.')),
+          h('p', { style: { marginBottom: '12px', fontSize: '12px', color: isDark ? '#fca5a5' : '#7f1d1d' } }, t('stem.echotrainer.webgl_failed_to_initialize_your_device', 'WebGL failed to initialize. Your device or browser may not support 3D hardware acceleration. The tool has automatically fallen back to 2D Audio/Tactile mode, but you can retry 3D Mode below.')),
           h('button', {
             type: 'button',
             onClick: function() { upd('webglError', false); },
-            style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            style: { minHeight: '44px', padding: '8px 16px', borderRadius: '10px', border: 'none', background: '#dc2626', color: '#fff', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.retry_3d_mode', 'Retry 3D Mode'))
-        ) : null,
-        has3D ? h('div', { ref: echoFsRef, 'data-allo-fs-stage': 'true', style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
+        ) : null;
+
+      // Move pad: turn left, forward, turn right / click, back, read the echo aloud.
+      var elPad = h('div', { 'data-echotrainer-padgrid': 'true', role: 'group', 'aria-label': t('stem.echotrainer.pad_group', 'Move and click buttons'), style: { position: 'absolute', left: '10px', bottom: '10px', zIndex: 6, display: 'grid', gridTemplateColumns: 'repeat(3, 48px)', gap: '6px' } },
+        h('button', padProps('ArrowLeft', t('stem.echotrainer.pad_turn_left', 'Turn left (hold)')), padIcon('M9 14 L4 9 L9 4 M4 9 H14 a6 6 0 0 1 0 12 H11')),
+        h('button', padProps('KeyW', t('stem.echotrainer.pad_forward', 'Walk forward (hold)')), padIcon('M12 19 V5 M5 12 L12 5 L19 12')),
+        h('button', padProps('ArrowRight', t('stem.echotrainer.pad_turn_right', 'Turn right (hold)')), padIcon('M15 14 L20 9 L15 4 M20 9 H10 a6 6 0 0 0 0 12 H13')),
+        h('button', { type: 'button', onClick: emitClick, 'aria-label': t('stem.echotrainer.pad_click', 'Send a click'), title: t('stem.echotrainer.pad_click', 'Send a click'), 'data-echotrainer-pad': 'click', style: Object.assign({}, padProps('none', '').style, { backgroundColor: isContrast ? '#000000' : '#6d28d9', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', color: isContrast ? '#00ff00' : '#ffffff', touchAction: 'manipulation' }) }, padIcon('M4 9 v6 h4 l5 4 V5 L8 9 Z M16.5 9 a4 4 0 0 1 0 6 M19 6.5 a8 8 0 0 1 0 11')),
+        h('button', padProps('KeyS', t('stem.echotrainer.pad_back', 'Walk backward (hold)')), padIcon('M12 5 V19 M5 12 L12 19 L19 12')),
+        h('button', { type: 'button', onClick: describeNow, 'aria-label': t('stem.echotrainer.pad_describe', 'Read the last echo aloud'), title: t('stem.echotrainer.pad_describe', 'Read the last echo aloud'), 'data-echotrainer-pad': 'describe', style: Object.assign({}, padProps('none', '').style, { touchAction: 'manipulation' }) }, padIcon('M4 5 h16 v11 H10 l-5 4 v-4 H4 Z M8 9 h8 M8 12.5 h5'))
+      );
+      var stageMinH = 'clamp(280px, 48vh, 520px)';
+      var hudText = viewNames[viewNow] + '  |  ' + tFmt('stem.echotrainer.hud_short', 'Clicks {clicks}  |  Bumps {bumps}  |  {time}', { clicks: d.clicks || 0, bumps: d.bumps || 0, time: timeStr }) + (waypointMode && WAYPOINT_ROUTES[envType] ? '  |  ' + tFmt('stem.echotrainer.hud_waypoint', 'Waypoint {n} of {total}', { n: Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length), total: WAYPOINT_ROUTES[envType].points.length }) : '');
+      var elStage3d =
+        has3D ? h('div', { ref: echoFsRef, 'data-allo-fs-stage': 'true', inert: safetyOpen ? '' : undefined, style: { position: 'relative', width: '100%', flex: 1, minHeight: stageMinH, borderRadius: '12px', overflow: 'hidden', background: '#000' } },
           h('button', {
             type: 'button',
             onClick: function() { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(echoFsRef.current); },
@@ -2840,90 +3614,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             'aria-label': echoFs
               ? t('stem.echotrainer.exit_fullscreen', 'Exit fullscreen echo navigation (Escape)')
               : t('stem.echotrainer.enter_fullscreen', 'View echo navigation fullscreen'),
-            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(99,102,241,0.55)', color: '#c7d2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            style: { position: 'absolute', top: 6, right: 6, zIndex: 20, width: 44, height: 44, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(99,102,241,0.55)', color: '#c7d2fe', fontSize: 18, fontWeight: 700, cursor: 'pointer' }
           }, h('span', { 'aria-hidden': 'true' }, echoFs ? '✕' : '⛶')),
-          h('div', { ref: mountRef, role: 'application', 'aria-label': t('stem.echotrainer.echo_navigation_3d_viewport_click_to_l', 'Echo navigation 3D viewport. Click to lock mouse, then click to emit sonar. WASD to move, mouse to look, Q/E to strafe. Shift to sprint, C to crouch.'), tabIndex: 0, style: { width: '100%', height: '100%', minHeight: '400px', cursor: 'crosshair' } }),
-          h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { position: 'absolute', bottom: '10px', right: '10px', width: '200px', height: '200px', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.9, pointerEvents: 'none', zIndex: 5 } }),
-          h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: etint('#6366f1'), background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),
-          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 0, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none' } },
-            'Echo Navigator 3D  |  ' + viewModeLabel + '  |  Clicks: ' + (d.clicks || 0) + '  |  Bumps: ' + (d.bumps || 0) + '  |  Goals: ' + goalsFound + '  |  ' + envType + '  |  ' + diff.icon + ' ' + diff.label + '  |  Time: ' + timeStr + '  |  ' + cpm + ' clicks/min' + (waypointMode && WAYPOINT_ROUTES[envType] ? '  |  WP ' + Math.min((d.waypointIdx || 0) + 1, WAYPOINT_ROUTES[envType].points.length) + '/' + WAYPOINT_ROUTES[envType].points.length : '') + (pointerLockedRef.current ? '' : '  |  Click to lock mouse')
+          h('div', { ref: mountRef, role: 'application', 'aria-label': t('stem.echotrainer.echo_navigation_3d_viewport_click_to_l_v2', 'Echo navigation view. Keys: W and S walk, left and right arrows turn, A and D step sideways, Space sends a click, R reads the last echo aloud. Shift runs, C crouches. Clicking the view locks the mouse for looking around; Escape frees it.'), tabIndex: 0, style: { width: '100%', height: '100%', minHeight: stageMinH, cursor: 'crosshair' } }),
+          // Corner map: what your clicks have touched so far. Off in Audio Only.
+          h('div', { 'data-echotrainer-minimap': viewNow, style: { position: 'absolute', bottom: '10px', right: '10px', zIndex: 5, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#c7d2fe', backgroundColor: 'rgba(0,0,0,0.72)', padding: '2px 8px', borderRadius: '6px' } },
+              viewNow === 'audio' ? t('stem.echotrainer.map_off_audio', 'Audio Only: map off') : (viewNow === 'reveal' ? t('stem.echotrainer.map_full', 'Whole room shown') : tFmt('stem.echotrainer.map_sonar', 'Sonar map: {pct}% explored', { pct: coveragePct }))),
+            h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: viewNow === 'audio' ? 'none' : 'block', width: 'clamp(104px, 26vw, 200px)', height: 'clamp(104px, 26vw, 200px)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.92 } })
           ),
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, left: 0, right: 56, padding: '6px 12px', background: 'rgba(0,0,0,0.5)', color: '#cbd5e1', fontSize: '12px', fontFamily: 'monospace', fontWeight: 700, zIndex: 5, pointerEvents: 'none', borderBottomRightRadius: '8px' } }, hudText),
           h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '20px', height: '20px', zIndex: 5, pointerEvents: 'none' } },
             h('div', { style: { position: 'absolute', top: '50%', left: 0, right: 0, height: '2px', background: 'rgba(163,190,252,0.4)', transform: 'translateY(-1px)' } }),
             h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '2px', background: 'rgba(163,190,252,0.4)', transform: 'translateX(-1px)' } })
-          )
-        ) : null,
-        !has3D ? h('canvas', { ref: canvasRef, className: 'echotrainer-focus-canvas', role: 'application', 'aria-label': tFmt('stem.echotrainer.aria_nav_area', 'Echo navigation area. WASD to move, arrows to turn, Space to click. {mode}', { mode: (d.viewMode || 'echo') === 'reveal' ? t('stem.echotrainer.aria_map_visible', 'Map visible.') : t('stem.echotrainer.aria_sonar_mode', 'Audio sonar mode \u2014 listen for echoes.') }), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null,
-        h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' } },
+          ),
+          elPad
+        ) : null;
+
+      var elCanvas2d =
+        !has3D ? h('canvas', { ref: canvasRef, className: 'echotrainer-focus-canvas', role: 'application', 'aria-label': tFmt('stem.echotrainer.aria_nav_area', 'Echo navigation area. WASD to move, arrows to turn, Space to click. {mode}', { mode: (d.viewMode || 'echo') === 'reveal' ? t('stem.echotrainer.aria_map_visible', 'Map visible.') : t('stem.echotrainer.aria_sonar_mode', 'Audio sonar mode \u2014 listen for echoes.') }), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null;
+
+      var elHints =
+        h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } },
           has3D ? h('span', null, t('stem.echotrainer.click_to_lock_mouse_click_again_to_son', '\uD83D\uDDB1 Click to lock mouse, click again to sonar')) : null,
           h('span', null, '\uD83C\uDFAE WASD: Move' + (has3D ? ', Q/E: Strafe' : '/Arrows: Turn')),
           h('span', null, t('stem.echotrainer.space_click', 'Space: Click')), h('span', null, t('stem.echotrainer.headphones_required', '\uD83C\uDFA7 Headphones required')), h('span', null, t('stem.echotrainer.find_the_goal_using_echoes', '\u2B50 Find the goal using echoes')),
           h('span', null, t('stem.echotrainer.shift_sprint_c_crouch', 'Shift: Sprint | C: Crouch')),
           agentCounts.length > 0 ? h('span', { style: { color: etint('#f59e0b') } }, '\uD83D\uDEB6 ' + agentCounts.join(', ')) : null,
           h('span', { style: { color: etint('#6366f1') } }, 'HRTF spatial audio \u2022 ' + (d.clicks || 0) + ' clicks \u2022 Seed: ' + seed)
-        ),
-        h('details', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' } },
-          h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, t('stem.echotrainer.how_materials_sound', '\uD83D\uDCD6 How Materials Sound')),
+        );
+
+      var elMaterials =
+        h('details', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } },
+          h('summary', { style: { cursor: 'pointer', fontWeight: 700, fontSize: '13px', padding: '12px 4px', minHeight: '44px', boxSizing: 'border-box' } }, t('stem.echotrainer.how_materials_sound', '\uD83D\uDCD6 How Materials Sound')),
           h('div', { style: { padding: '8px', lineHeight: 1.8 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 8px' } },
-              h('span', { style: { fontWeight: 700 } }, 'Concrete/Rock:'), h('span', null, t('stem.echotrainer.bright_echo_reflects_90_of_sound_energ', 'Bright echo (reflects ~90% of sound energy)')),
-              h('span', { style: { fontWeight: 700 } }, 'Metal:'), h('span', null, t('stem.echotrainer.sharp_ringing_echo_reflects_95_highest', 'Sharp, ringing echo (reflects ~95% \u2014 highest reflectivity)')),
-              h('span', { style: { fontWeight: 700 } }, 'Wood:'), h('span', null, t('stem.echotrainer.muffled_echo_absorbs_high_frequencies_', 'Muffled echo (absorbs high frequencies, reflects ~50%)')),
-              h('span', { style: { fontWeight: 700 } }, 'Glass:'), h('span', null, t('stem.echotrainer.faint_high_pitched_echo_mostly_transpa', 'Faint, high-pitched echo (mostly transparent to sound)')),
-              h('span', { style: { fontWeight: 700 } }, 'Fabric/Carpet:'), h('span', null, t('stem.echotrainer.nearly_silent_absorbs_most_sound_hard_', 'Nearly silent (absorbs most sound \u2014 hard to detect)')),
-              h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.locker_shopping_cart_metal', 'Locker/Shopping Cart (Metal):')), h('span', null, t('stem.echotrainer.sharp_ring_highest_reflectivity_easy_t', 'Sharp ring, highest reflectivity \u2014 easy to locate')),
-              h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.trophy_case_freezer_glass', 'Trophy Case/Freezer (Glass):')), h('span', null, t('stem.echotrainer.faint_echo_deceptively_quiet_easy_to_w', 'Faint echo \u2014 deceptively quiet, easy to walk into')),
+              h('span', { style: { fontWeight: 700 } }, 'Concrete/Rock:'), h('span', null, t('stem.echotrainer.bright_echo_reflects_90_of_sound_energ_v3', 'Hard. Poured concrete soaks up about 2% of the sound at 1,000 Hz, so about 98% comes back. The table has no rock, so rock is treated like brick (4%).')),
+              h('span', { style: { fontWeight: 700 } }, 'Metal:'), h('span', null, t('stem.echotrainer.sharp_ringing_echo_reflects_95_highest_v3', 'Hard. The table has no metal, so this sim treats metal like concrete.')),
+              h('span', { style: { fontWeight: 700 } }, 'Wood:'), h('span', null, t('stem.echotrainer.muffled_echo_absorbs_high_frequencies_v3', 'Hard. A plywood wall soaks up about 10% at 1,000 Hz, so about 90% comes back. It soaks up more of the low sounds (30% at 250 Hz).')),
+              h('span', { style: { fontWeight: 700 } }, 'Glass:'), h('span', null, t('stem.echotrainer.faint_high_pitched_echo_mostly_transpa_v3', 'Hard. A window soaks up about 10% at 1,000 Hz, so about 90% comes back. It also soaks up more of the low sounds (20% at 250 Hz).')),
+              h('span', { style: { fontWeight: 700 } }, 'Curtain/Carpet:'), h('span', null, t('stem.echotrainer.nearly_silent_absorbs_most_sound_hard_v3', 'Soft. A heavy velour curtain soaks up about 70% at 1,000 Hz, so only about 30% comes back, with fewer high sounds: a quieter, duller echo. Heavy carpet on concrete soaks up about 40%.')),
+              h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.locker_shopping_cart_metal', 'Locker/Shopping Cart (Metal):')), h('span', null, t('stem.echotrainer.sharp_ring_highest_reflectivity_easy_t_v2', 'Hard, like other metal: a strong echo.')),
+              h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.trophy_case_freezer_glass', 'Trophy Case/Freezer (Glass):')), h('span', null, t('stem.echotrainer.faint_echo_deceptively_quiet_easy_to_w_v2', 'Hard: a strong echo, even though you can see through glass.')),
+              h('span', { style: { fontWeight: 700 } }, t('stem.echotrainer.people_label', 'People:')), h('span', null, t('stem.echotrainer.people_soft_note', 'Soft. The table has no row for one person, so this sim uses its row for people seated on wooden pews: about 70% soaked up.')),
               h('span', { style: { fontWeight: 700, color: etint('#ff9c9c') } }, 'Pedestrian:'), h('span', null, t('stem.echotrainer.soft_echo_faint_glow_triangle_wave_ton', 'Soft echo, faint glow, triangle-wave tone at 200Hz')),
               h('span', { style: { fontWeight: 700, color: etint('#ffc47c') } }, 'Car:'), h('span', null, t('stem.echotrainer.strong_echo_sawtooth_engine_rumble_at_', 'Strong echo, sawtooth engine rumble at 55Hz \u2014 AVOID!')),
-              h('span', { style: { fontWeight: 700, color: etint('#c4b5fd') } }, 'Bat:'), h('span', null, t('stem.echotrainer.faint_ultrasonic_chirp_at_3200hz_tiny_', 'Faint, ultrasonic chirp at 3200Hz \u2014 tiny targets')),
+              h('span', { style: { fontWeight: 700, color: etint('#c4b5fd') } }, 'Bat:'), h('span', null, t('stem.echotrainer.faint_ultrasonic_chirp_at_3200hz_tiny_v2', 'Faint, high chirp at 3200 Hz \u2014 tiny targets (real bat calls are mostly too high for people to hear)')),
               h('span', { style: { fontWeight: 700, color: etint('#a3e635') } }, 'Deer:'), h('span', null, t('stem.echotrainer.low_80hz_thud_large_slow_moving_body', 'Low 80Hz thud \u2014 large, slow-moving body')),
               h('span', { style: { fontWeight: 700, color: etint('#67e8f9') } }, 'Bird:'), h('span', null, t('stem.echotrainer.high_2400_3200hz_chirp_tiny_fast_movin', 'High 2400-3200Hz chirp \u2014 tiny, fast-moving')),
               h('span', { style: { fontWeight: 700, color: etint('#fb923c') } }, 'Jogger:'), h('span', null, t('stem.echotrainer.rhythmic_180hz_footsteps_fast_small_ta', 'Rhythmic 180Hz footsteps \u2014 fast, small target')),
               h('span', { style: { fontWeight: 700, color: etint('#f472b6') } }, 'Cyclist:'), h('span', null, t('stem.echotrainer.low_90hz_wheel_hum_very_fast_watch_out', 'Low 90Hz wheel hum \u2014 very fast, watch out!')),
-              h('span', { style: { fontWeight: 700, color: etint('#fbbf24') } }, t('stem.echotrainer.goal_2', 'Goal \u2B50:')), h('span', null, t('stem.echotrainer.distinctive_bright_echo_with_a_unique_', 'Distinctive bright echo with a unique tonal quality'))
+              h('span', { style: { fontWeight: 700, color: etint('#fbbf24') } }, t('stem.echotrainer.goal_2', 'Goal \u2B50:')), h('span', null, t('stem.echotrainer.distinctive_bright_echo_with_a_unique__v2', 'Beeps faster as you get closer. Its echo is like metal.'))
             ),
-            h('p', { style: { marginTop: '6px', fontStyle: 'italic', fontSize: '9px' } }, t('stem.echotrainer.real_bats_use_frequencies_of_20_200_kh', '\uD83E\uDD87 Real bats use frequencies of 20-200 kHz (ultrasonic). Humans echolocate best with tongue clicks at 2-4 kHz. The key cue is the time delay between click and echo \u2014 at 343 m/s, a wall 1.7m away returns an echo in 10ms.')),
-            h('p', { style: { marginTop: '4px', fontStyle: 'italic', fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.ghost_outlines_after_sonar_pulses_hit_', '\uD83D\uDC7B Ghost outlines: After sonar pulses hit surfaces, a faint persistent glow remains to help you build a mental map. Higher difficulties reduce or eliminate ghost outlines.'))
+            h('p', { style: { marginTop: '6px', fontSize: '12px' } }, /* Hall, Musical Acoustics, Table 15.1: https://hyperphysics.gsu.edu/hbase/Acoustic/revmod.html */ t('stem.echotrainer.materials_real_world_note_v2', 'Hard surfaces such as concrete, glass and wood all send back most of the sound, so their echoes sound almost alike. Soft things such as curtains, carpet and people soak up much more. The numbers come from a standard table of sound absorption (Hall, Musical Acoustics), and the room plays the same numbers.')),
+            h('p', { style: { marginTop: '6px', fontStyle: 'italic', fontSize: '12px' } }, /* bats: https://www.scientificamerican.com/article/how-do-bats-echolocate-an/ clicks: https://pmc.ncbi.nlm.nih.gov/articles/PMC5578488/ */ t('stem.echotrainer.real_bats_use_frequencies_of_20_200_kh_v2', '\uD83E\uDD87 Most bat calls are ultrasonic, about 20-200 kHz. The clicks of expert human echolocators are loudest at about 2-4 kHz. The key cue is the time delay between click and echo \u2014 at 343 m/s, a wall 1.7 m away returns an echo in 10 ms.')),
+            h('p', { style: { marginTop: '4px', fontStyle: 'italic', fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.ghost_outlines_after_sonar_pulses_hit_', '\uD83D\uDC7B Ghost outlines: After sonar pulses hit surfaces, a faint persistent glow remains to help you build a mental map. Higher difficulties reduce or eliminate ghost outlines.'))
           )
-        ),
-        h('div', { style: { fontSize: '9px', color: isDark ? '#94a3b8' : '#64748b', textAlign: 'center', padding: '6px 0', borderTop: '1px solid ' + (isDark ? '#1e293b' : '#e2e8f0') } }, t('stem.echotrainer.this_is_an_educational_simulation_do_n', '\u26A0\uFE0F This is an educational simulation. Do not rely on simulation experience for real-world navigation. Consult a qualified O&M specialist for echolocation training.')),
+        );
 
+      var elFooter =
+        h('div', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#64748b', textAlign: 'center', padding: '6px 0', borderTop: '1px solid ' + (isDark ? '#1e293b' : '#e2e8f0') } }, t('stem.echotrainer.this_is_an_educational_simulation_do_n', '\u26A0\uFE0F This is an educational simulation. Do not rely on simulation experience for real-world navigation. Consult a qualified O&M specialist for echolocation training.'));
+
+      var elInquiry =
         // === H7b'' inquiry widget: echo timing ===
         (function() {
           var rawIQ = (d._echoHunt && typeof d._echoHunt === 'object' && !Array.isArray(d._echoHunt)) ? d._echoHunt : {};
           var safeDist = (typeof rawIQ.distance === 'number' && isFinite(rawIQ.distance)) ? Math.max(0.5, Math.min(100, rawIQ.distance)) : 10;
-          var safeSpeed = (typeof rawIQ.speed === 'number' && isFinite(rawIQ.speed) && rawIQ.speed > 0) ? Math.max(200, Math.min(400, rawIQ.speed)) : 340;
+          var safeSpeed = (typeof rawIQ.speed === 'number' && isFinite(rawIQ.speed) && rawIQ.speed > 0) ? Math.max(200, Math.min(400, rawIQ.speed)) : SPEED_OF_SOUND;
           var safeSurf = (typeof rawIQ.surface === 'number' && isFinite(rawIQ.surface)) ? Math.max(0, Math.min(100, rawIQ.surface)) : 50;
           var iq = Object.assign({ distance: safeDist, speed: safeSpeed, surface: safeSurf, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, rawIQ, { distance: safeDist, speed: safeSpeed, surface: safeSurf, log: Array.isArray(rawIQ.log) ? rawIQ.log : [] });
           function setIQ(patch) { upd('_echoHunt', Object.assign({}, iq, patch)); }
-          var echoMs = (iq.distance * 2 / iq.speed) * 1000;
-          var state;
-          if (echoMs < 30) state = 'tooFast';
-          else if (echoMs < 100) state = 'crisp';
-          else if (echoMs < 250) state = 'distinct';
-          else state = 'reverb';
+          // Same functions the room's sound uses: one model, one answer.
+          var echoMs = EchoModel.delaySec(iq.distance, iq.speed) * 1000;
+          var state = EchoModel.timingState(echoMs);
           var sm = isContrast ? {
-            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
-            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#00ff00', bg: '#000000', border: '#00ff00', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
-            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect_v2', '\u26A1 Blends into the click'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi_v3', 'Under about 5 ms the echo fuses with the click. You do not hear two sounds, but the click itself sounds a little different: its pitch and loudness change.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo_v2', '\uD83D\uDFE2 Close echo (2 m or nearer)'), color: '#00ff00', bg: '#000000', border: '#00ff00', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa_v3', 'An echo from close by. In listening tests, people found a reflecting object best when it was 2 m away or closer.') },
+            distinct: { label: t('stem.echotrainer.distinct_delay_v2', '\uD83D\uDFE1 Separate echo'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.surface_noticeable_but_distant_v2', 'You hear the echo as its own sound after the click. The farther the surface, the fainter the echo and the harder it is to notice.') },
             reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#ffff00', bg: '#000000', border: '#ffff00', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
           }[state] : isDark ? {
-            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#fca5a5', bg: '#450a0a', border: '#ef4444', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
-            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#6ee7b7', bg: '#064e3b', border: '#10b981', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
-            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#fde68a', bg: '#451a03', border: '#f59e0b', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect_v2', '\u26A1 Blends into the click'), color: '#fca5a5', bg: '#450a0a', border: '#ef4444', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi_v3', 'Under about 5 ms the echo fuses with the click. You do not hear two sounds, but the click itself sounds a little different: its pitch and loudness change.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo_v2', '\uD83D\uDFE2 Close echo (2 m or nearer)'), color: '#6ee7b7', bg: '#064e3b', border: '#10b981', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa_v3', 'An echo from close by. In listening tests, people found a reflecting object best when it was 2 m away or closer.') },
+            distinct: { label: t('stem.echotrainer.distinct_delay_v2', '\uD83D\uDFE1 Separate echo'), color: '#fde68a', bg: '#451a03', border: '#f59e0b', desc: t('stem.echotrainer.surface_noticeable_but_distant_v2', 'You hear the echo as its own sound after the click. The farther the surface, the fainter the echo and the harder it is to notice.') },
             reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#ddd6fe', bg: '#2e1065', border: '#8b5cf6', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
           }[state] : {
-            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect', '\u26A1 Too fast (no echo detect)'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi', 'Surface too close. Brain merges echo with click.') },
-            crisp:    { label: t('stem.echotrainer.crisp_echo', '\uD83D\uDFE2 Crisp echo'), color: '#065f46', bg: '#ecfdf5', border: '#86efac', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa', 'Optimal range. Brain can localize surface.') },
-            distinct: { label: t('stem.echotrainer.distinct_delay', '\uD83D\uDFE1 Distinct delay'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echotrainer.surface_noticeable_but_distant', 'Surface noticeable but distant.') },
+            tooFast:  { label: t('stem.echotrainer.too_fast_no_echo_detect_v2', '\u26A1 Blends into the click'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.echotrainer.surface_too_close_brain_merges_echo_wi_v3', 'Under about 5 ms the echo fuses with the click. You do not hear two sounds, but the click itself sounds a little different: its pitch and loudness change.') },
+            crisp:    { label: t('stem.echotrainer.crisp_echo_v2', '\uD83D\uDFE2 Close echo (2 m or nearer)'), color: '#065f46', bg: '#ecfdf5', border: '#86efac', desc: t('stem.echotrainer.optimal_range_brain_can_localize_surfa_v3', 'An echo from close by. In listening tests, people found a reflecting object best when it was 2 m away or closer.') },
+            distinct: { label: t('stem.echotrainer.distinct_delay_v2', '\uD83D\uDFE1 Separate echo'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.echotrainer.surface_noticeable_but_distant_v2', 'You hear the echo as its own sound after the click. The farther the surface, the fainter the echo and the harder it is to notice.') },
             reverb:   { label: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), color: '#5b21b6', bg: '#f5f3ff', border: '#c4b5fd', desc: t('stem.echotrainer.far_surface_multiple_bounces', 'Far surface, multiple bounces.') }
           }[state];
 
           // Live Acoustic Pulse-Echo Oscilloscope coordinates
           var maxMs = 600;
           var echoX = 48 + Math.min(1, echoMs / maxMs) * 476;
-          var fusionX = 48 + (30 / maxMs) * 476;
-          var crispX = 48 + (100 / maxMs) * 476;
+          var fusionX = 48 + (EchoModel.FUSE_MS / maxMs) * 476;
+          var crispX = 48 + (EchoModel.NEAR_MS / maxMs) * 476;
           var echoAmp = 6 + (iq.surface / 100) * 32;
           var wallX = 72 + ((iq.distance - 0.5) / 99.5) * 440;
           var oscBg = isContrast ? '#000000' : '#090d1a';
@@ -2936,28 +3721,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               // Quick acoustic scenario presets
               h('div', { style: { display: 'flex', gap: '5px', flexWrap: 'wrap' } },
                 [
-                  { id: 'close', lbl: t('stem.echotrainer.preset_close', 'Close Wall (2m)'), d: 2, s: 343, sr: 85 },
-                  { id: 'crisp', lbl: t('stem.echotrainer.preset_crisp', 'Crisp Hall (12m)'), d: 12, s: 343, sr: 90 },
-                  { id: 'canyon', lbl: t('stem.echotrainer.preset_canyon', 'Canyon (48m)'), d: 48, s: 343, sr: 75 },
-                  { id: 'glass', lbl: t('stem.echotrainer.preset_glass', 'Faint Glass (15m)'), d: 15, s: 343, sr: 25 }
+                  { id: 'touch', lbl: t('stem.echotrainer.preset_touch', 'Very close wall (0.5m)'), d: 0.5, s: 343, sr: 98 },
+                  { id: 'close', lbl: t('stem.echotrainer.preset_close', 'Close Wall (2m)'), d: 2, s: 343, sr: 98 },
+                  { id: 'crisp', lbl: t('stem.echotrainer.preset_crisp_v2', 'Long hallway (12m)'), d: 12, s: 343, sr: 98 },
+                  { id: 'canyon', lbl: t('stem.echotrainer.preset_canyon', 'Canyon (48m)'), d: 48, s: 343, sr: 96 },
+                  { id: 'curtain', lbl: t('stem.echotrainer.preset_curtain', 'Curtain (2m)'), d: 2, s: 343, sr: 30 }
                 ].map(function(pr) {
                   return h('button', {
                     key: pr.id, type: 'button',
                     onClick: function() { setIQ({ distance: pr.d, speed: pr.s, surface: pr.sr }); },
-                    style: { padding: '4px 9px', borderRadius: '999px', fontSize: 11, fontWeight: 700, cursor: 'pointer', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? '#334155' : '#cbd5e1')), backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f1f5f9'), color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155') }
+                    style: { minHeight: '44px', padding: '8px 14px', borderRadius: '999px', fontSize: 13, fontWeight: 700, cursor: 'pointer', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? '#334155' : '#cbd5e1')), backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f1f5f9'), color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155') }
                   }, pr.lbl);
                 }))),
-            h('p', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), marginBottom: 10, marginTop: 0 } }, t('stem.echotrainer.sliders_for_distance_speed_surface_dis', 'Sliders for distance, speed, surface. Discrete 4-state echo. No score, no reveal.')),
+            h('p', { style: { fontSize: 12, color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), marginBottom: 10, marginTop: 0 } }, t('stem.echotrainer.sliders_for_distance_speed_surface_dis_v2', 'Move the sliders, then press Play this echo and listen. What makes the wait longer? What makes the echo quieter? This is the same sound model the room uses.')),
             // Live Acoustic Pulse-Echo Oscilloscope & Path SVG
-            h('div', { style: { borderRadius: 10, overflow: 'hidden', border: isContrast ? '2px solid #ffff00' : '1px solid #1e293b', marginBottom: 10, backgroundColor: oscBg } },
-              h('svg', { viewBox: '0 0 560 124', width: '100%', style: { display: 'block', maxHeight: '140px' }, role: 'img', 'aria-label': t('stem.echotrainer.oscilloscope_aria', 'Live acoustic pulse-echo oscilloscope showing click at 0 ms and returning echo at ') + echoMs.toFixed(1) + ' ms' },
+            h('div', { style: { borderRadius: 10, overflowX: 'auto', overflowY: 'hidden', border: isContrast ? '2px solid #ffff00' : '1px solid #1e293b', marginBottom: 10, backgroundColor: oscBg } },
+              h('svg', { viewBox: '0 0 560 124', width: '100%', style: { display: 'block', minWidth: '560px', maxWidth: '760px', margin: '0 auto' }, role: 'img', 'aria-label': t('stem.echotrainer.oscilloscope_aria', 'Live acoustic pulse-echo oscilloscope showing click at 0 ms and returning echo at ') + echoMs.toFixed(1) + ' ms' },
                 h('rect', { x: 0, y: 0, width: 560, height: 124, fill: oscBg }),
                 // Top track: Spatial distance path
                 h('line', { x1: 48, y1: 26, x2: wallX, y2: 26, stroke: isContrast ? '#ffff00' : '#818cf8', strokeWidth: 2, strokeDasharray: '4 3' }),
                 h('circle', { cx: 48, cy: 26, r: 7, fill: isContrast ? '#00ff00' : '#818cf8' }),
                 h('rect', { x: wallX, y: 12, width: 10, height: 28, rx: 3, fill: isContrast ? '#ffff00' : '#38bdf8', opacity: Math.max(0.25, iq.surface / 100) }),
-                h('text', { x: 48, y: 48, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: oscInk }, '0m'),
-                h('text', { x: Math.min(510, wallX + 5), y: 48, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#00ff00' : '#7dd3fc' }, iq.distance + 'm (' + iq.surface + '%)'),
+                h('text', { x: 48, y: 48, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: oscInk }, '0m'),
+                h('text', { x: Math.min(510, Math.max(104, wallX + 5)), y: 48, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: isContrast ? '#00ff00' : '#7dd3fc' }, iq.distance + 'm (' + iq.surface + '%)'),
                 // Bottom track: Time-domain waveform
                 h('rect', { x: 48, y: 60, width: Math.max(4, fusionX - 48), height: 42, fill: isContrast ? '#222200' : 'rgba(239,68,68,0.18)' }),
                 h('rect', { x: fusionX, y: 60, width: Math.max(4, crispX - fusionX), height: 42, fill: isContrast ? '#002200' : 'rgba(16,185,129,0.16)' }),
@@ -2966,45 +3752,193 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 h('path', { d: 'M 48 102 L 51 64 L 54 102', fill: 'none', stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 2.5 }),
                 // Returning echo pulse at t=echoMs
                 h('path', { d: 'M ' + (echoX - 4).toFixed(1) + ' 102 L ' + echoX.toFixed(1) + ' ' + (102 - echoAmp).toFixed(1) + ' L ' + (echoX + 4).toFixed(1) + ' 102', fill: 'none', stroke: isContrast ? '#00ff00' : '#34d399', strokeWidth: 2.8 }),
-                h('text', { x: 48, y: 117, textAnchor: 'start', fontSize: 10, fontWeight: 700, fill: oscInk }, '0 ms (Click)'),
-                h('text', { x: 280, y: 117, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#00ff00' : '#34d399' }, 'Echo: ' + echoMs.toFixed(1) + ' ms'),
-                h('text', { x: 530, y: 117, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: oscInk }, '600 ms')
+                h('text', { x: 48, y: 117, textAnchor: 'start', fontSize: 12, fontWeight: 700, fill: oscInk }, '0 ms (Click)'),
+                h('text', { x: 280, y: 117, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: isContrast ? '#00ff00' : '#34d399' }, 'Echo: ' + echoMs.toFixed(1) + ' ms'),
+                h('text', { x: 530, y: 117, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: oscInk }, '600 ms')
               )
             ),
             h('div', { style: { padding: 10, borderRadius: 8, textAlign: 'center', backgroundColor: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
               h('div', { style: { fontSize: 13.5, fontWeight: 900, color: sm.color } }, sm.label),
-              h('div', { style: { fontSize: 11.5, color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), marginTop: 4 } }, sm.desc),
-              h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#334155'), marginTop: 4, fontFamily: 'monospace', fontWeight: 700 } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
+              h('div', { style: { fontSize: 12, color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), marginTop: 4 } }, sm.desc),
+              h('div', { style: { fontSize: 12, color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#334155'), marginTop: 4, fontFamily: 'monospace', fontWeight: 700 } }, 'Round-trip \u2248 ' + echoMs.toFixed(1) + ' ms')
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 8 } },
               [{ k: 'distance', l: 'Distance (m)', mn: 0.5, mx: 100, st: 0.5 },
-               { k: 'speed', l: 'Speed (m/s)', mn: 200, mx: 400, st: 5 },
+               { k: 'speed', l: 'Speed (m/s)', mn: 200, mx: 400, st: 1 },
                { k: 'surface', l: 'Reflect (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: isDark ? '#cbd5e1' : '#475569' } }, s.l + ': ', h('span', { style: { color: isDark ? '#67e8f9' : '#155e75', fontFamily: 'monospace' } }, iq[s.k])),
+                  h('label', { htmlFor: 'eh-' + s.k, style: { display: 'block', fontSize: 12, fontWeight: 'bold', color: isDark ? '#cbd5e1' : '#475569' } }, s.l + ': ', h('span', { style: { color: isDark ? '#67e8f9' : '#155e75', fontFamily: 'monospace' } }, iq[s.k])),
                   h('input', { id: 'eh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                    style: { width: '100%' }, 'aria-label': s.l }));
+                    style: { width: '100%', minHeight: '44px' }, 'aria-label': s.l }));
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, s: iq.speed, sr: iq.surface, ms: echoMs.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: isDark ? '#0f172a' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, t('stem.echotrainer.log', '\uD83D\uDCCB Log')),
-              h('button', { type: 'button', onClick: function() { setIQ({ distance: 10, speed: 340, surface: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: isDark ? '#94a3b8' : '#64748b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, t('stem.echotrainer.reset', '\u21BA Reset'))
+              h('button', { type: 'button', 'data-echotrainer-iq-play': 'true', onClick: function() { var played = playSingleEcho(iq.distance, iq.speed, EchoModel.gainFromMeters(iq.distance, iq.surface / 100)); if (announceToSR) announceToSR(played ? tFmt('stem.echotrainer.iq_played', 'Played: a click, then its echo {ms} ms later.', { ms: echoMs.toFixed(1) }) : t('stem.echotrainer.iq_no_audio', 'Sound is not available on this device.')); }, style: { minHeight: '44px', padding: '8px 16px', backgroundColor: isContrast ? '#000000' : '#6d28d9', color: isContrast ? '#00ff00' : '#ffffff', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.iq_play', 'Play this echo')),
+              h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, s: iq.speed, sr: iq.surface, ms: echoMs.toFixed(1), st: state }]).slice(-8) }); }, style: { minHeight: '44px', padding: '8px 14px', background: isDark ? '#0f172a' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, t('stem.echotrainer.log', '\uD83D\uDCCB Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ distance: 10, speed: SPEED_OF_SOUND, surface: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: '44px', padding: '8px 14px', background: 'transparent', color: isDark ? '#94a3b8' : '#64748b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, cursor: 'pointer' } }, t('stem.echotrainer.reset', '\u21BA Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echotrainer.hypothesis_input', 'Echo distance hypothesis'), placeholder: t('stem.echotrainer.hypothesis_at_what_distance_does_echo_', 'Hypothesis: At what distance does echo become detectable?'),
+            // The student's own logged tests (their evidence, not the model's answer).
+            (Array.isArray(iq.log) && iq.log.length) ? h('div', { style: { overflowX: 'auto', marginBottom: 8 } },
+              h('table', { 'data-echotrainer-iq-log': 'true', style: { width: '100%', borderCollapse: 'collapse', fontSize: 13, color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b') } },
+                h('caption', { style: { textAlign: 'left', fontWeight: 800, padding: '2px 0 4px 0' } }, t('stem.echotrainer.iq_log_caption', 'Your logged tests')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px 6px' } }, t('stem.echotrainer.iq_col_distance', 'Distance (m)')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px 6px' } }, t('stem.echotrainer.iq_col_speed', 'Speed (m/s)')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px 6px' } }, t('stem.echotrainer.iq_col_reflect', 'Reflect (%)')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px 6px' } }, t('stem.echotrainer.iq_col_wait', 'Wait (ms)')),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px 6px' } }, t('stem.echotrainer.iq_col_heard', 'What you would hear')))),
+                h('tbody', null, iq.log.map(function(row, ri) {
+                  var rowState = { reverb: t('stem.echotrainer.reverberant', '\uD83D\uDD0A Reverberant'), tooFast: t('stem.echotrainer.too_fast_no_echo_detect_v2', '\u26A1 Blends into the click'), crisp: t('stem.echotrainer.crisp_echo_v2', '\uD83D\uDFE2 Close echo (2 m or nearer)'), distinct: t('stem.echotrainer.distinct_delay_v2', '\uD83D\uDFE1 Separate echo') }[row && row.st] || '';
+                  return h('tr', { key: ri, style: { borderTop: '1px solid ' + (isDark ? '#334155' : '#e2e8f0') } },
+                    h('td', { style: { textAlign: 'right', padding: '4px 6px' } }, row.d),
+                    h('td', { style: { textAlign: 'right', padding: '4px 6px' } }, row.s),
+                    h('td', { style: { textAlign: 'right', padding: '4px 6px' } }, row.sr),
+                    h('td', { style: { textAlign: 'right', padding: '4px 6px' } }, row.ms),
+                    h('td', { style: { textAlign: 'left', padding: '4px 6px' } }, rowState));
+                })))) : null,
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echotrainer.hypothesis_input', 'Echo distance hypothesis'), placeholder: t('stem.echotrainer.hypothesis_at_what_distance_does_echo__v2', 'Hypothesis: how close can a wall be before its echo blends into the click?'),
               style: { width: '100%', minHeight: 50, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: etint('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
-            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } },
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: '44px', padding: '8px 14px', background: 'rgba(251,191,36,0.15)', color: etint('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
+            iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } },
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
                 h('li', null, t('stem.echotrainer.sound_in_air_343_m_s_investigate_the_f', 'Sound in air = 343 m/s. Investigate the formula.')),
                 h('li', null, t('stem.echotrainer.why_do_bats_use_high_frequency_clicks', 'Why do bats use high-frequency clicks?')))),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: etint('#34d399'), cursor: 'pointer' } },
-              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), t('stem.echotrainer.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, fontSize: 13, fontWeight: 'bold', color: etint('#34d399'), cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 24, height: 24, flexShrink: 0 } }), t('stem.echotrainer.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.echotrainer.explanation_input', 'Echo physics explanation'), placeholder: t('stem.echotrainer.explain_echo_physics', 'Explain echo physics.'),
               style: { width: '100%', minHeight: 60, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-            h('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: etint('#64748b') } }, t('stem.echotrainer.design_note_discrete_4_state_echo_mark', 'Design note: discrete 4-state echo marker; no detection score; no reveal \u2014 by design.'))
+            h('div', { style: { marginTop: 8, fontSize: 12, fontStyle: 'italic', color: etint('#64748b') } }, t('stem.echotrainer.design_note_discrete_4_state_echo_mark_v2', 'Design note: three echo states (fused under 5 ms, close up to 2 m, separate beyond); no detection score; no reveal \u2014 by design.'))
           );
-        })()
+        })();
+
+      // ══════════════════════════════════════════════════════════
+      // FIRST SCREEN: goal line -> play surface -> read-out -> actions.
+      // Everything else sits behind ONE disclosure. Nothing was removed.
+      // ══════════════════════════════════════════════════════════
+      var elGoalLine = h('div', { 'data-echotrainer-goal': 'true', style: { display: 'flex', gap: '10px', alignItems: 'stretch', flexWrap: 'wrap' } },
+        h('div', { style: { flex: '1 1 300px', minWidth: 0 } },
+          elTutorial || h('p', { 'data-echotrainer-coach': stepInfo.id, style: { margin: 0, padding: '10px 14px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, lineHeight: 1.4, color: uiInk, backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#eef2ff'), border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#3730a3' : '#c7d2fe')) } }, coachText))
+      );
+
+      var elStage2d = !has3D ? h('div', { inert: safetyOpen ? '' : undefined, style: { position: 'relative' } }, elCanvas2d, elPad) : null;
+      var elPlayArea = h('div', { 'data-echotrainer-play': 'true', style: { position: 'relative', minWidth: 0 } }, elWebglError, elStage3d, elStage2d, elSafety);
+
+      // ── Echo read-out: when each echo came back, as a picture and as words ──
+      var lastEcho = (d.lastEcho && typeof d.lastEcho === 'object') ? d.lastEcho : null;
+      var readoutNote = viewNow === 'audio' ? t('stem.echotrainer.readout_audio', 'Audio Only: no picture and no numbers. Listen for the wait between your click and its echo.')
+        : (quizOpen ? t('stem.echotrainer.readout_quiz', 'Echo numbers are hidden while you guess.')
+          : (!lastEcho ? t('stem.echotrainer.readout_empty', 'Send a click to see when its echoes come back.') : ''));
+      var laneInk = isContrast ? { left: '#ffff00', ahead: '#00ff00', right: '#ffff00' } : (isDark ? { left: '#38bdf8', ahead: '#34d399', right: '#fbbf24' } : { left: '#0369a1', ahead: '#047857', right: '#b45309' });
+      // The longest echo the room returns is 2 x 25 m / 343 m/s = 146 ms, so the axis ends at 150 ms.
+      var laneX = function(ms) { return 64 + (Math.min(150, Math.max(0, ms)) / 150) * 280; };
+      var elReadout = h('section', { 'data-echotrainer-readout': readoutNote ? 'hidden' : 'shown', 'aria-label': t('stem.echotrainer.readout_title', 'Echo read-out'), style: { display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', padding: '10px 12px', borderRadius: '12px', backgroundColor: uiPanel, border: (isContrast ? '2px solid ' : '1px solid ') + uiLine } },
+        readoutNote
+          ? h('p', { style: { flex: '1 1 260px', margin: 0, fontSize: '14px', fontWeight: 700, color: uiInk } }, readoutNote)
+          : h('svg', { viewBox: '0 0 360 98', role: 'img', 'aria-label': sideText('ahead', lastEcho.ahead) + '. ' + sideText('left', lastEcho.left) + '. ' + sideText('right', lastEcho.right) + '.', style: { flex: '1 1 300px', maxWidth: '420px', minWidth: 0, height: 'auto', display: 'block' } },
+              ['left', 'ahead', 'right'].map(function(side, idx) {
+                var y = 18 + idx * 22; var e = lastEcho[side];
+                var x = e ? laneX(e.ms) : 0;
+                return h('g', { key: side },
+                  h('text', { x: 2, y: y + 4, fontSize: 13, fontWeight: 700, fill: uiInk }, sideNames[side]),
+                  h('line', { x1: 64, y1: y, x2: 344, y2: y, stroke: uiLine, strokeWidth: 1.5 }),
+                  e ? h('circle', { cx: x, cy: y, r: e.strength === 'strong' ? 7 : (e.strength === 'medium' ? 5.5 : 4), fill: laneInk[side] }) : null,
+                  e ? h('text', { x: x > 250 ? x - 11 : x + 11, y: y - 4, textAnchor: x > 250 ? 'end' : 'start', fontSize: 13, fontWeight: 700, fill: uiInk }, e.ms + ' ms') : h('text', { x: 72, y: y - 4, fontSize: 13, fill: uiSoft }, t('stem.echotrainer.readout_no_echo', 'no echo')));
+              }),
+              h('line', { x1: 64, y1: 4, x2: 64, y2: 76, stroke: isContrast ? '#ffffff' : '#a78bfa', strokeWidth: 2.5 }),
+              h('line', { x1: 64, y1: 76, x2: 344, y2: 76, stroke: uiSoft, strokeWidth: 1 }),
+              [0, 50, 100, 150].map(function(ms) {
+                return h('g', { key: ms },
+                  h('line', { x1: laneX(ms), y1: 76, x2: laneX(ms), y2: 81, stroke: uiSoft, strokeWidth: 1 }),
+                  h('text', { x: laneX(ms), y: 94, textAnchor: ms === 150 ? 'end' : (ms === 0 ? 'start' : 'middle'), fontSize: 13, fill: uiSoft }, ms === 0 ? t('stem.echotrainer.readout_axis_click', '0 ms (click)') : (ms + ' ms')));
+              })),
+        h('div', { style: { flex: '1 1 220px', minWidth: 0, fontSize: '13px', lineHeight: 1.45, color: uiSoft } },
+          readoutNote ? null : h('div', { style: { fontWeight: 800, color: uiInk, fontSize: '14px' } }, t('stem.echotrainer.readout_rule', 'A longer wait means the surface is farther away.')),
+          h('div', { 'data-echotrainer-beacon': d.beaconZone || 'none', style: { fontWeight: 700, color: (d.beaconZone && d.beaconZone !== 'none') ? (isContrast ? '#00ff00' : (isDark ? '#fde68a' : '#92400e')) : uiSoft } }, d.goalFoundThisRun ? beaconNames.found : (beaconNames[d.beaconZone] || beaconNames.none)),
+          (readoutNote || viewNow !== 'echo' || reduceRef.current || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) ? null : h('div', null, tFmt('stem.echotrainer.readout_slowmo', 'The glowing ring is slowed down {n} times so you can watch it reach each surface.', { n: EchoModel.RING_SLOWDOWN })),
+          h('div', { style: { marginTop: '4px' } }, viewHelp[viewNow] + ' ' + t('stem.echotrainer.keys_hint', 'Keys work after you click the view: W and S walk, left and right arrows turn, Space clicks, R reads the echo aloud. Headphones help you tell left from right.')))
+      );
+
+      // ── Action row ──
+      var actBtn = function(kind, active) {
+        var base = { minHeight: '44px', padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: 800, cursor: 'pointer' };
+        if (isContrast) return Object.assign(base, { backgroundColor: '#000000', color: active ? '#00ff00' : '#ffff00', border: '2px solid ' + (active ? '#00ff00' : '#ffff00') });
+        if (kind === 'primary') return Object.assign(base, { backgroundColor: '#6d28d9', color: '#ffffff', border: '1px solid #c4b5fd', fontSize: '15px' });
+        if (active) return Object.assign(base, { backgroundColor: isDark ? '#312e81' : '#4338ca', color: '#ffffff', border: '1px solid #818cf8' });
+        return Object.assign(base, { backgroundColor: isDark ? '#1e293b' : '#ffffff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? '#475569' : '#cbd5e1') });
+      };
+      var elActions = h('div', { 'data-echotrainer-actions': 'true', style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+        h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
+          h('button', { type: 'button', 'data-echotrainer-click': 'true', disabled: !safetyAck, onClick: emitClick, style: Object.assign(actBtn('primary'), safetyAck ? {} : { opacity: 0.55, cursor: 'not-allowed' }) }, t('stem.echotrainer.click_space', '🔊 Click (Space)')),
+          h('div', { role: 'group', 'aria-label': t('stem.echotrainer.view_group', 'View'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+            ['echo', 'audio', 'reveal'].map(function(mode) {
+              return h('button', { type: 'button', key: mode, 'data-echotrainer-view': mode, 'aria-pressed': viewNow === mode ? 'true' : 'false', title: viewHelp[mode], onClick: function() { setViewMode(mode); }, style: actBtn('view', viewNow === mode) }, viewNames[mode]);
+            })),
+          h('button', { type: 'button', 'data-echotrainer-distquiz': 'true', disabled: !safetyAck || quizOpen, onClick: startDistanceChallenge, 'aria-label': t('stem.echotrainer.start_a_distance_estimation_challenge', 'Start a distance estimation challenge'), style: Object.assign(actBtn('plain'), (!safetyAck || quizOpen) ? { opacity: 0.55, cursor: 'not-allowed' } : {}) }, t('stem.echotrainer.distance_quiz_v2', 'Listen and guess the distance')),
+          h('button', { type: 'button', 'data-echotrainer-describe': 'true', onClick: describeNow, style: actBtn('plain') }, t('stem.echotrainer.describe_btn', 'Read echo aloud (R)')),
+          safetyAck ? h('button', { type: 'button', 'data-echotrainer-safety-chip': 'true', onClick: function() { upd('safetyOpen', true); }, 'aria-label': t('stem.echotrainer.safety_chip_aria', 'Read the safety notice again'), style: { minHeight: '44px', padding: '8px 14px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', backgroundColor: isContrast ? '#000000' : (isDark ? '#1c1917' : '#fffbeb'), color: isContrast ? '#ffff00' : (isDark ? '#fde68a' : '#78350f'), border: isContrast ? '2px solid #ffff00' : '1px solid #f59e0b' } }, t('stem.echotrainer.safety_chip', 'Safety notice')) : null)
+      );
+
+      // ── Success: what happened, what it counted as, and one clear next step ──
+      var lastRun = runHistorySafe.length ? runHistorySafe[runHistorySafe.length - 1] : null;
+      var nextPlace = null;
+      for (var npi = 0; npi < ENVIRONMENTS.length; npi++) { if (ENVIRONMENTS[npi].id === envType) { for (var npj = npi + 1; npj < ENVIRONMENTS.length; npj++) { if (isEnvUnlocked(ENVIRONMENTS[npj].id, d)) { nextPlace = ENVIRONMENTS[npj]; break; } } break; } }
+      var justOpened = ENVIRONMENTS.filter(function(en) { return goalsFound > 0 && envUnlockThreshold(en.id) === goalsFound; }).map(function(en) { return t('stem.echotrainer.env_' + en.id + '_name', en.name); });
+      var elSuccess = d.goalFoundThisRun ? h('div', { 'data-echotrainer-success': 'true', style: { padding: '14px', borderRadius: '12px', backgroundColor: isContrast ? '#000000' : (isDark ? '#052e16' : '#f0fdf4'), border: isContrast ? '2px solid #00ff00' : '2px solid #22c55e', color: uiInk } },
+        h('div', { style: { fontSize: '18px', fontWeight: 900, color: isContrast ? '#00ff00' : (isDark ? '#86efac' : '#166534') } }, waypointMode ? t('stem.echotrainer.success_route', 'Route complete!') : t('stem.echotrainer.success_title', 'Beacon found!')),
+        (!waypointMode && lastRun) ? h('p', { style: { margin: '4px 0 0 0', fontSize: '14px', lineHeight: 1.45 } }, tFmt('stem.echotrainer.success_stats', 'Time: {time} seconds. Clicks: {clicks}. Bumps: {bumps}. Counted as {mode}: {xp} XP.', { time: lastRun.time, clicks: lastRun.clicks || 0, bumps: lastRun.bumps || 0, mode: lastRun.mode, xp: lastRun.xp })) : null,
+        (!waypointMode && lastRun && lastRun.win && lastRun.win !== 'audio' && viewNow === 'audio') ? h('p', { style: { margin: '4px 0 0 0', fontSize: '14px', lineHeight: 1.45 } }, t('stem.echotrainer.success_audio_note', 'This run had clicks with the picture on (or used Reveal), so it is not an Audio win. For one, switch to Audio Only before your first click.')) : null,
+        justOpened.length ? h('p', { style: { margin: '4px 0 0 0', fontSize: '14px', fontWeight: 700 } }, tFmt('stem.echotrainer.success_unlocked', 'New place open: {places}.', { places: justOpened.join(', ') })) : null,
+        h('p', { style: { margin: '4px 0 10px 0', fontSize: '14px', lineHeight: 1.45 } }, coachText),
+        h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+          h('button', { type: 'button', 'data-echotrainer-again': 'true', onClick: function() { resetRun(null); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, style: Object.assign(actBtn('primary'), { opacity: 1 }) }, t('stem.echotrainer.success_again', 'New layout, same place')),
+          nextPlace ? h('button', { type: 'button', 'data-echotrainer-next': nextPlace.id, onClick: function() { var np = nextPlace; resetRun(np.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_next_place', 'Now in {name}. Press Space to click.', { name: t('stem.echotrainer.env_' + np.id + '_name', np.name) })); }, style: Object.assign(actBtn('plain'), { opacity: 1 }) }, tFmt('stem.echotrainer.success_next', 'Next place: {name}', { name: t('stem.echotrainer.env_' + nextPlace.id + '_name', nextPlace.name) })) : null,
+          h('button', { type: 'button', onClick: function() { upd('moreOpen', true); }, style: Object.assign(actBtn('plain'), { opacity: 1 }) }, t('stem.echotrainer.success_places', 'All places and levels')))
+      ) : null;
+
+      // ── The one disclosure ──
+      var moreHead = function(text) { return h('h3', { style: { margin: '14px 0 6px 0', fontSize: '13px', fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', color: uiAccent } }, text); };
+      var elMore = h('details', { 'data-echotrainer-more': 'true', open: !!d.moreOpen, onToggle: function(e) { var isOpen = !!(e.currentTarget && e.currentTarget.open); if (isOpen !== !!(dataRef.current || {}).moreOpen) upd('moreOpen', isOpen); }, style: { borderRadius: '12px', border: (isContrast ? '2px solid ' : '1px solid ') + uiLine, backgroundColor: uiPanel, minWidth: 0 } },
+        h('summary', { style: { padding: '12px 14px', minHeight: '44px', boxSizing: 'border-box', cursor: 'pointer', fontSize: '15px', fontWeight: 800, color: uiInk } }, t('stem.echotrainer.more_summary', 'More: places, levels, practice tools, echo lab and help')),
+        h('div', { style: { padding: '0 14px 14px 14px', display: 'flex', flexDirection: 'column', gap: '8px', minWidth: 0 } },
+          moreHead(t('stem.echotrainer.more_places', 'Places')),
+          elEnvPicker,
+          moreHead(t('stem.echotrainer.more_level', 'Level')),
+          elDifficulty,
+          moreHead(t('stem.echotrainer.more_practice', 'Sound and practice tools')),
+          elControls,
+          moreHead(t('stem.echotrainer.more_progress', 'Your progress')),
+          elBriefing,
+          elStats,
+          moreHead(t('stem.echotrainer.more_lab', 'Echo lab')),
+          elInquiry,
+          moreHead(t('stem.echotrainer.more_help', 'Help and background')),
+          elHints,
+          elWhoFor,
+          elHowWorks,
+          elMaterials)
+      );
+
+      return h('div', { 'data-echotrainer-root': 'true', 'data-echotrainer-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: { display: 'flex', flexDirection: 'column', gap: '12px', height: '100%',
+        // ★This tool already branches on isDark for its panels
+        // (isDark ? '#1e293b' : '#f8fafc') but painted no ground of its own, so in dark
+        // theme those dark panels floated on the host's white card and every element
+        // between them took a dark ink onto white: #94a3b8 on #ffffff x10. Give the
+        // isDark branch the canvas it already assumes.
+        background: isContrast ? '#000000' : (isDark ? '#0b1220' : '#f8fafc'), borderRadius: 16, padding: 14, border: isContrast ? '2px solid #ffff00' : ('1px solid ' + (isDark ? '#1e293b' : '#cbd5e1')), minWidth: 0 } },
+        elHeader,
+        elGoalLine,
+        elPlayArea,
+        elActions,
+        elReadout,
+        elSuccess,
+        elWaypointHud,
+        elDistUi,
+        elDistResult,
+        elMatUi,
+        elMatResult,
+        elMore,
+        elFooter
       );
     }
   });

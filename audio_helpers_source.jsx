@@ -245,6 +245,14 @@ const _audioStudentDeviceVoice = (text, opts = {}) => {
                 if (tag) u.lang = tag;
             } catch (_) {}
         }
+        try {
+            const langTag = String(u.lang || (typeof document !== 'undefined' && document.documentElement?.lang) || (typeof navigator !== 'undefined' && navigator.language) || 'en').toLowerCase();
+            const baseLang = langTag.split('-')[0];
+            const voices = typeof synth.getVoices === 'function' ? (synth.getVoices() || []) : [];
+            const localMatch = voices.find((v) => v && v.localService === true && String(v.lang || '').toLowerCase() === langTag)
+                || voices.find((v) => v && v.localService === true && String(v.lang || '').toLowerCase().split('-')[0] === baseLang);
+            if (localMatch) u.voice = localMatch;
+        } catch (_) {}
         if (typeof opts.onEnd === 'function') { u.onend = opts.onEnd; u.onerror = opts.onEnd; }
         synth.cancel();
         synth.speak(u);

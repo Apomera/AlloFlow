@@ -20,22 +20,28 @@
   // measure code the app's own records use. name: the app's visible name for the measure.
   // The time limit comes from the form (60 s, 120 s, 120 s today); timeLimitS is the fallback.
   // practice: sample items shown before the clock starts; they give feedback and are not scored.
-  var MEASURES = {
-    quantity_discrimination: { bank: 'QUANTITY_DISCRIMINATION_PROBES', code: 'quantity_discrimination', unit: 'items_correct', scoringVersion: 1, name: 'Quantity Discrimination',
-      slug: 'quantity-discrimination', timeLimitS: 60, allowSkip: false, practice: [{ left: 2, right: 5 }, { left: 4, right: 1 }] },
-    missing_number: { bank: 'MISSING_NUMBER_PROBES', code: 'missing_number', unit: 'items_correct', scoringVersion: 1, name: 'Missing Number',
-      slug: 'missing-number', timeLimitS: 120, allowSkip: true, practice: [{ display: '2 + __ = 3', answer: 1 }] },
+  var MEASURES = Object.freeze({
+    quantity_discrimination: Object.freeze({ bank: 'QUANTITY_DISCRIMINATION_PROBES', code: 'quantity_discrimination', unit: 'items_correct', scoringVersion: 1, name: 'Quantity Discrimination',
+      slug: 'quantity-discrimination', timeLimitS: 60, allowSkip: false, practice: Object.freeze([Object.freeze({ left: 2, right: 5 }), Object.freeze({ left: 4, right: 1 })]) }),
+    missing_number: Object.freeze({ bank: 'MISSING_NUMBER_PROBES', code: 'missing_number', unit: 'items_correct', scoringVersion: 1, name: 'Missing Number',
+      slug: 'missing-number', timeLimitS: 120, allowSkip: true, practice: Object.freeze([Object.freeze({ display: '2 + __ = 3', answer: 1 })]) }),
     // Scoring version 3 is math_fluency_module.js MF_SCORING_VERSION: digits correct per minute, prorated when every item is done early.
-    math_computation: { bank: 'MATH_PROBE_BANKS', code: 'math_dcpm', unit: 'digits_correct_per_minute', scoringVersion: 3, name: 'Math Fluency',
-      slug: 'math-computation', timeLimitS: 120, allowSkip: true, practice: [{ a: 1, b: 1, op: 'add' }] },
-  };
-  var OPS = { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' };
+    math_computation: Object.freeze({ bank: 'MATH_PROBE_BANKS', code: 'math_dcpm', unit: 'digits_correct_per_minute', scoringVersion: 3, name: 'Math Fluency',
+      slug: 'math-computation', timeLimitS: 120, allowSkip: true, practice: Object.freeze([Object.freeze({ a: 1, b: 1, op: 'add' })]) }),
+  });
+  var OPS = Object.assign(Object.create(null), { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' });
   OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0x2013)] = 'sub'; OPS[String.fromCharCode(0x2014)] = 'sub';
   OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xB7)] = 'mul'; OPS[String.fromCharCode(0x22C5)] = 'mul';
   OPS[String.fromCharCode(0xF7)] = 'div';
-  var SIGNS = { add: '+', sub: '-', mul: 'x', div: String.fromCharCode(0xF7) };
+  Object.freeze(OPS);
+  var SIGNS = Object.freeze(Object.assign(Object.create(null), { add: '+', sub: '-', mul: 'x', div: String.fromCharCode(0xF7) }));
 
-  function text(value) { return value == null ? '' : String(value); }
+  function text(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+    try { return String(value); } catch (_) { return ''; }
+  }
   function own(object, key) { return !!object && Object.prototype.hasOwnProperty.call(object, key); }
   // FNV-1a, as the loader's hashText: names a lesson by its content.
   function fnv(value) {
@@ -43,7 +49,18 @@
     for (var i = 0; i < value.length; i++) { h ^= value.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
     return ('0000000' + h.toString(16)).slice(-8);
   }
-  function whole(value, max) { return value != null && value !== '' && typeof value !== 'boolean' && Number.isSafeInteger(Number(value)) && Number(value) >= 0 && Number(value) <= max; }
+  function whole(value, max) {
+    if (value == null || typeof value === 'boolean' || typeof value === 'symbol' || typeof value === 'object') return false;
+    if (typeof value === 'string' && !value.trim()) return false;
+    var n = Number(value);
+    return Number.isSafeInteger(n) && n >= 0 && n <= max;
+  }
+  function signedWhole(value, maxAbs) {
+    if (value == null || typeof value === 'boolean' || typeof value === 'symbol' || typeof value === 'object') return false;
+    if (typeof value === 'string' && !value.trim()) return false;
+    var n = Number(value);
+    return Number.isSafeInteger(n) && Math.abs(n) <= maxAbs;
+  }
 
   // The revision names the content: a change to the items, the title or the timing gives a new
   // one, and so a new place in the browser's storage.
@@ -74,24 +91,27 @@
     var sign = function (t) { return t === '(' || t === ')' ? t : own(OPS, t) ? OPS[t] : null; };
     if (!tokens.length || tokens.some(function (t) { return !/^\d+$/.test(t) && !sign(t); })) return null;
     var peek = function () { return at < tokens.length ? (/^\d+$/.test(tokens[at]) ? 'n' : sign(tokens[at])) : null; };
-    var atom = function () {
+    var atom = function (depth) {
+      if (depth > 64) return null;
       var k = peek();
-      if (k === 'sub') { at++; var v = atom(); return v === null ? null : -v; }
-      if (k === '(') { at++; var inner = sum(); if (peek() !== ')') return null; at++; return inner; }
+      if (k === 'sub') { at++; var v = atom(depth + 1); return v === null ? null : -v; }
+      if (k === '(') { at++; var inner = sum(depth + 1); if (peek() !== ')') return null; at++; return inner; }
       if (k !== 'n') return null;
       return Number(tokens[at++]);
     };
-    var product = function () {
-      var v = atom();
-      while (v !== null && (peek() === 'mul' || peek() === 'div')) { var op = peek(); at++; var w = atom(); mixed.mul = true; if (op === 'div' && w === 0) zero = true; v = w === null || zero ? null : op === 'mul' ? v * w : v / w; }
+    var product = function (depth) {
+      if (depth > 64) return null;
+      var v = atom(depth + 1);
+      while (v !== null && (peek() === 'mul' || peek() === 'div')) { var op = peek(); at++; var w = atom(depth + 1); mixed.mul = true; if (op === 'div' && w === 0) zero = true; v = w === null || zero ? null : op === 'mul' ? v * w : v / w; }
       return v;
     };
-    var sum = function () {
-      var v = product();
-      while (v !== null && (peek() === 'add' || peek() === 'sub')) { var op = peek(); at++; var w = product(); mixed.add = true; v = w === null ? null : op === 'add' ? v + w : v - w; }
+    var sum = function (depth) {
+      if (depth > 64) return null;
+      var v = product(depth + 1);
+      while (v !== null && (peek() === 'add' || peek() === 'sub')) { var op = peek(); at++; var w = product(depth + 1); mixed.add = true; v = w === null ? null : op === 'add' ? v + w : v - w; }
       return v;
     };
-    var value = sum();
+    var value = sum(0);
     if (zero) return { zero: true };
     return value === null || at !== tokens.length || !isFinite(value) ? null : { value: value, mixed: mixed.add && mixed.mul && text(display).indexOf('(') < 0 };
   }
@@ -104,7 +124,7 @@
       var display = text(p.display).replace(/\s+/g, ' ').trim();
       if (!display) fail('the problem is empty.');
       if (display.length > 40) fail('the problem is longer than 40 characters.');
-      if (p.answer == null || p.answer === '' || typeof p.answer === 'boolean' || !Number.isSafeInteger(Number(p.answer)) || Math.abs(Number(p.answer)) > 99999999) fail('the answer must be a whole number.');
+      if (!signedWhole(p.answer, 99999999)) fail('the answer must be a whole number.');
       // A blank or a second = sign asks for something else than "type the answer" (2026-11-13, answer audit).
       if (/_{2,}/.test(display)) fail('it has a blank (__). Write the whole problem, like 3 + 4 + 5 = 12.');
       if (display.indexOf('=') >= 0) fail('write the problem with one = sign, before its answer.');
@@ -143,7 +163,7 @@
     var first = list[0], op = OPS[text(first.op)];
     var digits = function (n) { return String(Math.abs(Math.trunc(Number(n)))).length; };
     var low = function (n) { return n <= 1 ? 1 : Math.pow(10, n - 1); };
-    var taken = {};
+    var taken = Object.create(null);
     list.forEach(function (p) { var o2 = OPS[text(p.op)]; taken[o2 + ':' + Number(p.a) + ':' + Number(p.b)] = true; if (o2 === 'add' || o2 === 'mul') taken[o2 + ':' + Number(p.b) + ':' + Number(p.a)] = true; });
     var la = digits(first.a), lb = digits(first.b), lq = op === 'div' && Number(first.b) ? digits(Number(first.a) / Number(first.b)) : 1;
     var steps = [[0, 0], [0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [0, 2], [2, 0], [2, 1], [1, 2], [2, 2], [0, 3], [3, 0], [3, 3]];
@@ -183,7 +203,7 @@
     if (!bank || typeof bank !== 'object') throw new Error('The form bank has no ' + m.bank + '. Pass the parsed psychometric_math_probes.json as bank.');
     var grade = text(o.grade).trim().toUpperCase();
     var form = text(o.form == null ? 'A' : o.form).trim().toUpperCase();
-    if (!own(bank, grade)) throw new Error('There is no ' + m.name + ' form for grade "' + grade + '". Grades with forms: ' + Object.keys(bank).sort().join(', ') + '.');
+    if (!own(bank, grade) || !bank[grade] || typeof bank[grade] !== 'object') throw new Error('There is no ' + m.name + ' form for grade "' + grade + '". Grades with forms: ' + Object.keys(bank).sort().join(', ') + '.');
     if (!own(bank[grade], form)) throw new Error('There is no form "' + form + '" of ' + m.name + ' for grade ' + grade + '. Forms: ' + Object.keys(bank[grade]).sort().join(', ') + '.');
     var data = bank[grade][form] || {};
     var problems = Array.isArray(data.problems) ? data.problems : [];
@@ -219,10 +239,13 @@
 
   // "7+8, 12-5, 6x4, 20/4" -> [{ a, b, op }]; "3 + 4 + 5 = 12" -> { display, answer }. For the command line and a plain text box.
   // Also tolerates pasted worksheets: BOM, leading numbering/bullets, trailing blank = / = ? / = ___, typographic operators, and Unicode minus on negative answers.
+  var MAX_PARSE_CHARS = 65536;
   function parseProblems(value) {
+    var raw = text(value).replace(/^\uFEFF/, '');
+    if (raw.length > MAX_PARSE_CHARS) throw new Error('That list is too long to read at once. Paste ' + MAX_PROBLEMS + ' problems or fewer.');
     var simpleRe = new RegExp('^(\\d+)\\s*([-+xX*/:' + String.fromCharCode(0x2212, 0x2013, 0x2014, 0xD7, 0xB7, 0x22C5, 0xF7) + '])\\s*(\\d+)$');
     var statedRe = new RegExp('^(.*[^=\\s])\\s*=\\s*([-' + String.fromCharCode(0x2212, 0x2013) + ']?\\d+)$');
-    return text(value).replace(/^\uFEFF/, '').split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
+    return raw.split(/[,;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).map(function (part, i) {
       var clean = part.replace(/^\uFEFF/, '').trim()
         .replace(/^(?:\(\d{1,3}\)|\d{1,3}[.)]|[\u2022\u25CF\u25CB\u25AA\u2023\u2043*\u2013\u2014-])\s+/, '')
         .replace(/\s*=\s*(?:\?|_+|[\u25A1\u2B1C])?$/, '').trim();
@@ -237,23 +260,34 @@
   // 2026-11-17: spoken directions for the two checks given to the youngest students. The line of the Get ready screen
   // that says the time, as the file writes it (timeWords and check_ready_timed in the loader). L = the file's labels.
   function readyTimeLine(L, seconds) {
-    var n = Math.round(Number(seconds));
-    if (!(n > 0)) return text(L.check_ready_untimed);
-    var time = n % 60 === 0 ? (n === 60 ? text(L.check_one_minute) : text(L.check_minutes).replace('{n}', n / 60)) : text(L.check_seconds).replace('{n}', n);
-    return text(L.check_ready_timed).replace('{time}', time);
+    var labels = L && typeof L === 'object' ? L : {};
+    var n = (typeof seconds === 'number' || (typeof seconds === 'string' && seconds.trim() !== '')) ? Math.round(Number(seconds)) : NaN;
+    if (!Number.isFinite(n) || !(n > 0)) return text(labels.check_ready_untimed);
+    var time = n % 60 === 0 ? (n === 60 ? text(labels.check_one_minute) : text(labels.check_minutes).replace('{n}', n / 60)) : text(labels.check_seconds).replace('{n}', n);
+    return text(labels.check_ready_timed).replace('{time}', time);
   }
   // The recordings of a check's own Get ready lines, from bank (packets_check_directions.js: { clips: { line: data URI } }).
   // Standard preset durations (1 min, 2 min, untimed) require all three recorded lines; translated labels or malformed/missing
   // clips return null. For a non-preset custom positive timer (e.g. 90 s, 3 min) whose exact time line is not recorded in
   // bank.clips, falls back to the duration-agnostic 2-clip set (task directions + one-try rule) when labels are untranslated
   // and both clips are valid, rather than speaking the wrong time or silently dropping spoken directions for K-1 students.
-  var SPOKEN = { quantity_discrimination: true, missing_number: true };
-  var TIME_LABELS = ['check_ready_timed', 'check_ready_untimed', 'check_one_minute', 'check_minutes', 'check_seconds'];
+  var SPOKEN = Object.freeze(Object.assign(Object.create(null), { quantity_discrimination: true, missing_number: true }));
+  var TIME_LABELS = Object.freeze(['check_ready_timed', 'check_ready_untimed', 'check_one_minute', 'check_minutes', 'check_seconds']);
+  function safeLabelCopy(src) {
+    var out = {};
+    if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+    Object.keys(src).forEach(function (k) {
+      if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') out[k] = src[k];
+    });
+    return out;
+  }
   function directionsFor(lesson, loader, bank, labels) {
-    var block = lesson && lesson.blocks && lesson.blocks[0], activity = block ? text(block.activity) : '';
-    if (!bank || typeof bank !== 'object' || !bank.clips || typeof bank.clips !== 'object' || !own(SPOKEN, activity) || !loader.CHECK_LABELS) return null;
+    var block = lesson && Array.isArray(lesson.blocks) ? lesson.blocks[0] : null;
+    var activity = block && typeof block === 'object' ? text(block.activity) : '';
+    if (!bank || typeof bank !== 'object' || !bank.clips || typeof bank.clips !== 'object' || !own(SPOKEN, activity) || !loader || typeof loader !== 'object' || !loader.CHECK_LABELS || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS[activity]) return null;
     var baseL = loader.CHECK_LABELS;
-    var L = Object.assign({}, baseL, loader.CHECK_ADAPTERS[activity].labels, labels || {});
+    var adapterLabels = loader.CHECK_ADAPTERS[activity] && typeof loader.CHECK_ADAPTERS[activity].labels === 'object' ? loader.CHECK_ADAPTERS[activity].labels : {};
+    var L = Object.assign({}, safeLabelCopy(baseL), safeLabelCopy(adapterLabels), safeLabelCopy(labels));
     var howLine = text(L[activity + '_directions']);
     var timeLine = readyTimeLine(L, lesson.timeLimitS);
     var tryLine = text(L.check_ready_one_try);
@@ -308,7 +342,9 @@
     var loader = o.loader;
     if (!loader || typeof loader.buildHtml !== 'function' || !loader.CHECK_ADAPTERS || typeof loader.sha256 !== 'function') throw new Error('buildCheckPacket needs loader (AlloWordSoundsTakeHome, with check mode)');
     if (!o.lesson || o.lesson.mode !== 'probe' || !Array.isArray(o.lesson.blocks)) throw new Error('buildCheckPacket needs a lesson from lessonFromMathForm or lessonFromMathProblems');
-    var lesson = JSON.parse(JSON.stringify(o.lesson));
+    var lesson;
+    try { lesson = safeParseManifest(JSON.stringify(o.lesson)); }
+    catch (_) { throw new Error('buildCheckPacket needs a plain JSON-serializable lesson'); }
     var title = text(o.title).replace(/\s+/g, ' ').trim().slice(0, 120);
     if (title) lesson.title = title;
     stamp(lesson);
@@ -316,9 +352,9 @@
     if (code && code.length < 4) throw new Error('The teacher code needs 4 or more characters.');
     if (code.length > 64) throw new Error('The teacher code can have 64 characters at most.');
     var spoken = o.directions ? directionsFor(lesson, loader, o.directions, o.labels) : null;
-    var labels = o.labels || null, options = { teacherCode: code || null };
+    var labels = o.labels && typeof o.labels === 'object' ? safeLabelCopy(o.labels) : null, options = { teacherCode: code || null };
     if (spoken) {
-      lesson.audio = lesson.audio && typeof lesson.audio === 'object' ? lesson.audio : {};
+      lesson.audio = lesson.audio && typeof lesson.audio === 'object' && !Array.isArray(lesson.audio) ? lesson.audio : {};
       lesson.directions = spoken.clips.map(function (uri, i) { var id = 'directions-' + (i + 1); lesson.audio[id] = uri; return id; });
       labels = Object.assign({ about_never: 'It never uses the microphone or the camera. It has no cookies and runs no AI. The voice that reads the directions is a set of recordings made ahead of time with a computer voice; this file makes no speech itself.' }, labels || {});
       options.attributions = ['Recordings of the directions: made ahead of time with ' + spoken.voice + '. No person has listened to each one.'];
@@ -330,7 +366,7 @@
     // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
     if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
-    return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex, spoken: spoken ? spoken.lines : null };
+    return { html: html, manifest: block ? safeParseManifest(block[1]) : null, sha256: loader.sha256(html).hex, spoken: spoken ? spoken.lines : null };
   }
 
   // A student's code name, as a file may carry it: the rule of word_sounds_packet_builder.js codeName (letters of any
@@ -356,9 +392,9 @@
     return html.slice(0, from) + json + html.slice(to);
   }
 
-  var api = { VERSION: VERSION, MEASURES: MEASURES, formTitle: formTitle, lessonFromMathForm: lessonFromMathForm, lessonFromMathProblems: lessonFromMathProblems, parseProblems: parseProblems, buildCheckPacket: buildCheckPacket,
+  var api = Object.freeze({ VERSION: VERSION, MEASURES: MEASURES, formTitle: formTitle, lessonFromMathForm: lessonFromMathForm, lessonFromMathProblems: lessonFromMathProblems, parseProblems: parseProblems, buildCheckPacket: buildCheckPacket,
     readyTimeLine: readyTimeLine, directionsFor: directionsFor,
-    codeName: codeName, withCodeName: withCodeName };
-  root.AlloPacketChecks = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+    codeName: codeName, withCodeName: withCodeName });
+  if (root && typeof root === 'object') root.AlloPacketChecks = api;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null));

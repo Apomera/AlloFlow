@@ -20,6 +20,18 @@ function PersonaEvidenceNote({ message, source, t }) {
 function _pcIsBlockedKey(k) {
   return k === '__proto__' || k === 'constructor' || k === 'prototype';
 }
+function _ensurePersonaChatA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-persona-chat-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-persona-chat-a11y-css';
+  st.textContent =
+    '[data-persona-chat-dialog="true"] button,[data-persona-chat-dialog="true"] a,[data-persona-chat-dialog="true"] input,[data-persona-chat-dialog="true"] select,[data-persona-chat-dialog="true"] textarea,[data-persona-chat-dialog="true"] summary{touch-action:manipulation;}' +
+    '[data-persona-chat-dialog="true"] button:focus-visible,[data-persona-chat-dialog="true"] a:focus-visible,[data-persona-chat-dialog="true"] input:focus-visible,[data-persona-chat-dialog="true"] select:focus-visible,[data-persona-chat-dialog="true"] textarea:focus-visible,[data-persona-chat-dialog="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-persona-chat-dialog="true"] button:focus-visible,[data-persona-chat-dialog="true"] a:focus-visible,[data-persona-chat-dialog="true"] input:focus-visible,[data-persona-chat-dialog="true"] select:focus-visible,[data-persona-chat-dialog="true"] textarea:focus-visible,[data-persona-chat-dialog="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-persona-chat-dialog="true"],[data-persona-chat-dialog="true"] *,[data-persona-chat-dialog="true"] *::before,[data-persona-chat-dialog="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 function _aiUsable(kind, fn) {
   if (_pcHardAiPolicyBlocked(kind)) return false;
   if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) return false;
@@ -833,6 +845,7 @@ function PersonaChatView(props) {
   React.useEffect(function () {
     var dialog = personaDialogRef.current;
     if (!dialog) return undefined;
+    _ensurePersonaChatA11yCss();
     personaPreviousFocusRef.current = document.activeElement;
     var focusTimer = window.setTimeout(function () {
       var initial = dialog.querySelector('[data-persona-initial-focus]');
@@ -856,6 +869,7 @@ function PersonaChatView(props) {
         return;
       }
       if (event.key !== 'Tab') return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
       var scope = dialog.querySelector('[data-persona-archive-dialog]')
         || dialog.querySelector('[data-persona-summary-dialog]')
         || dialog.querySelector('[data-persona-reflection-dialog]')
@@ -1569,6 +1583,7 @@ function PersonaChatView(props) {
         <div
             className={`allo-docsuite fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-1 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-300 theme-${theme}`}
             ref={personaDialogRef}
+            data-persona-chat-dialog="true"
             role="dialog"
             aria-modal="true"
             aria-labelledby="persona-chat-title"
@@ -2029,7 +2044,7 @@ function PersonaChatView(props) {
                                             tabIndex={-1}
                                             aria-labelledby="persona-definition-title"
                                             onKeyDown={(e) => {
-                                                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+                                                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                                                 if (e.key === 'Escape') {
                                                     e.preventDefault();
                                                     e.stopPropagation();
@@ -2174,7 +2189,7 @@ function PersonaChatView(props) {
                                 aria-labelledby="persona-reflection-title"
                                 tabIndex={-1}
                                 onKeyDown={(e) => {
-                                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+                                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                                     if (e.key === 'Escape' && !reflectionBusy) {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -2287,14 +2302,14 @@ function PersonaChatView(props) {
                          )}
                          {!personaState.avatarUrl && !personaState.isImageLoading && (
                              <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
-                                 <History size={64} className="text-yellow-300/50"/>
+                                 <History size={64} className="text-yellow-300/50" aria-hidden="true"/>
                                  {typeof handleRetryPortraitGeneration === 'function' && personaState.selectedCharacter && <button type="button"
-                                     aria-label={t('persona.generate_portrait_for', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
+                                     aria-label={t('persona.generate_portrait_for', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') || 'character' }) || `Generate portrait for ${personaState.selectedCharacter?.name || 'character'}`}
                                      onClick={() => handleRetryPortraitGeneration(personaState.selectedCharacter)}
                                      className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2 transition-all motion-reduce:transition-none shadow-md hover:shadow-lg"
                                  >
                                      <RefreshCw size={16} aria-hidden="true" />
-                                     {t('persona.generate_portrait')}
+                                     {t('persona.generate_portrait') || 'Generate portrait'}
                                  </button>}
                                  {personaState.avatarGenerationFailed && typeof handleRetryPortraitGeneration === 'function' && (
                                      <span className="text-xs text-amber-800 italic text-center">
@@ -2837,7 +2852,7 @@ function PersonaChatView(props) {
                                 aria-labelledby="persona-reflection-title"
                                 tabIndex={-1}
                                 onKeyDown={(e) => {
-                                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+                                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                                     if (e.key === 'Escape' && !reflectionBusy) {
                                         e.preventDefault();
                                         e.stopPropagation();

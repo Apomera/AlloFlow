@@ -3,7 +3,7 @@
  */
 (function (global) {
   'use strict';
-  if (global.RaptorDistanceEvidence) return;
+  if (!global || typeof global !== 'object' || global.RaptorDistanceEvidence) return;
 
   var FIELDS = ['distance', 'cycles', 'contrast'];
   var PREDICTIONS = { both: true, eagle: true, neither: true };
@@ -28,21 +28,37 @@
         !own(raw, 'contrast') || !integer(raw.contrast, 10, 100)) return null;
     if ((own(raw, 'widthM') && raw.widthM !== .30) || (own(raw, 'wideFov') && raw.wideFov !== 20) ||
         (own(raw, 'detailFov') && raw.detailFov !== .75)) return null;
-    return source.normalize({ version: 1, distance: raw.distance, cycles: raw.cycles, contrast: raw.contrast });
+    var normalized = source.normalize({ version: 1, distance: raw.distance, cycles: raw.cycles, contrast: raw.contrast });
+    if (!plain(normalized) ||
+        typeof normalized.distance !== 'number' || !Number.isFinite(normalized.distance) || normalized.distance <= 0 ||
+        typeof normalized.cycles !== 'number' || !Number.isFinite(normalized.cycles) || normalized.cycles <= 0 ||
+        typeof normalized.contrast !== 'number' || !Number.isFinite(normalized.contrast) || normalized.contrast <= 0) return null;
+    return normalized;
   }
   function compare(reference, current) {
     var before = snapshot(reference), after = snapshot(current);
     if (!before || !after) return null;
     var changed = [], held = [];
     FIELDS.forEach(function (key) { (before[key] === after[key] ? held : changed).push(key); });
-    var source = model(), a = source.metrics(before), b = source.metrics(after);
+    var source = model();
+    if (!source) return null;
+    var a = source.metrics(before), b = source.metrics(after);
+    if (!a || typeof a !== 'object' || !b || typeof b !== 'object') return null;
+    if (typeof a.angleDeg !== 'number' || !Number.isFinite(a.angleDeg) || a.angleDeg <= 0 ||
+        typeof b.angleDeg !== 'number' || !Number.isFinite(b.angleDeg) || b.angleDeg <= 0 ||
+        typeof a.cyclesPerDegree !== 'number' || !Number.isFinite(a.cyclesPerDegree) || a.cyclesPerDegree <= 0 ||
+        typeof b.cyclesPerDegree !== 'number' || !Number.isFinite(b.cyclesPerDegree) || b.cyclesPerDegree <= 0) return null;
+    var angleRatio = b.angleDeg / a.angleDeg;
+    var frequencyRatio = b.cyclesPerDegree / a.cyclesPerDegree;
+    var contrastRatio = after.contrast / before.contrast;
+    if (!Number.isFinite(angleRatio) || !Number.isFinite(frequencyRatio) || !Number.isFinite(contrastRatio)) return null;
     return {
       reference: before, current: after, changedFields: changed, heldFields: held,
       kind: changed.length === 0 ? 'same' : changed.length === 1 ? 'single' : 'multiple',
       factor: changed.length === 1 ? changed[0] : null,
-      angleRatio: b.angleDeg / a.angleDeg,
-      frequencyRatio: b.cyclesPerDegree / a.cyclesPerDegree,
-      contrastRatio: after.contrast / before.contrast
+      angleRatio: angleRatio,
+      frequencyRatio: frequencyRatio,
+      contrastRatio: contrastRatio
     };
   }
   function experiment(reference, kind) {
@@ -94,12 +110,22 @@
   function readRecords(rawSettings) {
     if (!plain(rawSettings) || !own(rawSettings, 'version') || rawSettings.version !== 1 ||
         !own(rawSettings, 'records') || !Array.isArray(rawSettings.records)) return [];
-    var records = [];
+    var records = [], list = rawSettings.records;
     // Retain the latest six valid observations in their original time order.
-    for (var i = rawSettings.records.length - 1; i >= 0 && records.length < 6; i--) {
-      if (!own(rawSettings.records, i)) continue;
-      var record = readRecord(rawSettings.records[i]);
-      if (record) records.push(record);
+    if (list.length > 4096) {
+      var indices = Object.keys(list).map(Number).filter(function (n) {
+        return Number.isInteger(n) && n >= 0 && n < list.length;
+      }).sort(function (a, b) { return b - a; });
+      for (var k = 0; k < indices.length && records.length < 6; k++) {
+        var sparseRecord = readRecord(list[indices[k]]);
+        if (sparseRecord) records.push(sparseRecord);
+      }
+    } else {
+      for (var i = list.length - 1; i >= 0 && records.length < 6; i--) {
+        if (!own(list, i)) continue;
+        var record = readRecord(list[i]);
+        if (record) records.push(record);
+      }
     }
     return records.reverse();
   }
@@ -107,4 +133,4 @@
     version: 1, snapshot: snapshot, compare: compare, experiment: experiment,
     readRecords: readRecords, makeRecord: makeRecord
   });
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

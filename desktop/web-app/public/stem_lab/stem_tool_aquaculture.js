@@ -8701,7 +8701,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
     }
     function makeCausticTexture() {
       if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
-      var c = document.createElement('canvas');
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
       c.width = 256; c.height = 256;
       var g = c.getContext('2d');
       if (!g) return null;
@@ -8742,7 +8742,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
     }
     function makeTimberTexture(baseHex, grainHex) {
       if (typeof document === 'undefined' || typeof THREE.CanvasTexture !== 'function') return null;
-      var c = document.createElement('canvas');
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
       c.width = 128; c.height = 128;
       var g = c.getContext('2d');
       if (!g) return null;
@@ -12507,7 +12507,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
               opsRoutes.map(function(route) {
-                return h('button', { key: route.id, className: 'aq-btn aq-operation-tile',
+                return h('button', { type: 'button', key: route.id, className: 'aq-btn aq-operation-tile',
                   onClick: function() { navigateToTopic(route.tab, route.label); },
                   style: { textAlign: 'left', minHeight: 116, cursor: 'pointer', padding: 12, borderRadius: 12, border: '1px solid rgba(148,163,184,0.20)', borderTop: '4px solid ' + route.tone, background: 'rgba(15,23,42,0.58)', color: '#e2e8f0' } },
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: route.tone, marginBottom: 5 } }, route.label),
@@ -13174,7 +13174,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
         var value = ecosystemWorkspace.water[key];
         return h('label', { key: key, className: 'aq-eco-slider', htmlFor: 'aq-eco-' + key, style: { display: 'block', padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #416c67', color: '#e2e8f0', fontSize: 12, fontWeight: 850 } },
           h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } }, label, h('output', { htmlFor: 'aq-eco-' + key, style: { color: '#5eead4', fontWeight: 950 } }, value + unit)),
-          h('input', { id: 'aq-eco-' + key, type: 'range', min: min, max: max, step: step, value: value, onChange: function(event) { updateEcosystemWater(key, event.target.value); }, style: { width: '100%', marginTop: 8 } }));
+          h('input', { id: 'aq-eco-' + key, type: 'range', min: min, max: max, step: step, value: value, 'aria-valuetext': value + unit, onChange: function(event) { updateEcosystemWater(key, event.target.value); }, style: { width: '100%', minHeight: 44, marginTop: 8 } }));
       }
       function evidenceField(key, label, placeholder) {
         var evidence = ecosystemWorkspace.evidence || {};
@@ -13438,7 +13438,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
       var selectedId = String(config.selectedId || '');
       return h('section', { className: 'aq-mission-decision-panel ' + (config.className || ''), 'aria-labelledby': prefix + '-heading', style: { marginTop: 10, padding: 11, borderRadius: 10, background: '#041b22', border: '1px solid #67e8f9', boxShadow: '0 12px 28px rgba(0,0,0,.24)' } },
         h('div', { className: 'aq-section-kicker', style: { color: '#67e8f9', fontSize: 12, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Evidence checkpoint'),
-        h('h3', { id: prefix + '-heading', ref: config.focusRef, tabIndex: -1, style: { margin: '4px 0 5px', color: '#f8fafc', fontSize: 16, outline: 'none' } }, 'Choose the best next verification'),
+        h('h3', { id: prefix + '-heading', ref: config.focusRef, tabIndex: -1, style: { margin: '4px 0 5px', color: '#f8fafc', fontSize: 16 } }, 'Choose the best next verification'),
         h('p', { style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, scenario.decision.prompt),
         h('div', { className: 'aq-mission-warning-signals', style: { marginBottom: 9, padding: 8, borderRadius: 8, background: '#061a18', border: '1px solid #527a75' } },
           h('div', { style: { color: '#fde68a', fontSize: 12, fontWeight: 900 } }, 'Signals to verify'),
@@ -13571,14 +13571,14 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
           h('div', { className: 'aq-3d-condition-banner', style: { margin: '8px 0 2px', padding: '8px 10px', borderRadius: 8, background: '#031714', color: '#dbeafe', border: '1px solid #527a75', fontSize: 12, lineHeight: 1.45 } }, h('b', { style: { color: '#99f6e4' } }, active3DScenario.name + ': '), active3DScenario.weather + ' - ' + active3DCurrent.narrative),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'three.js r128 loads from cdnjs (~600 KB) on demand.'),
-            h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
+            h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               'Load 3D engine + launch ' + active3DScenario.name)) : null,
           sim.loading ? h('div', { role: 'status', 'aria-live': 'polite', style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '\u23F3 Loading three.js\u2026') : null,
           sim.threeError ? h('div', { role: 'alert', style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine / WebGL failed to load or initialize'),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8 } }, 'Guided 2D above provides the same mission decisions and evidence without WebGL. Other curriculum tabs remain available.'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setSim({ active: false, threeLoaded: false, threeError: false, loading: false });
                 setTimeout(startSim, 50);
@@ -13587,7 +13587,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
             }, 'Retry 3D Mode')
           ) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
-            h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
+            h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               'Cast off in ' + active3DScenario.name)) : null,
           sim.active ? h('div', { className: 'aq-3d-sim-shell', 'data-allo-fs-stage': 'true', style: { position: 'relative' } },
@@ -13710,7 +13710,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
                   props.onPointerUp = function(event) { setFarmControl(c.key, false); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} };
                   props.onPointerCancel = function() { setFarmControl(c.key, false); };
                   props.onLostPointerCapture = function() { setFarmControl(c.key, false); };
-                  props.onKeyDown = function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFarmControl(c.key, true); } };
+                  props.onKeyDown = function(event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFarmControl(c.key, true); } };
                   props.onKeyUp = function(event) { if (event.key === 'Enter' || event.key === ' ') setFarmControl(c.key, false); };
                   props.onClick = function(event) { if (event.detail === 0) pulseFarmControl(c.key); };
                 } else {
@@ -25365,7 +25365,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
               h('a', { href: 'https://www1.maine.gov/dmr/fisheries/shellfish/closures', target: '_blank', rel: 'noopener noreferrer', style: { color: '#fecaca', fontWeight: 900 } }, 'Check current Maine DMR shellfish closures.')),
             musselAssessmentRevealed ? h(React.Fragment, null,
               h('section', { ref: musselAssessmentRef, tabIndex: -1, className: 'aq-mussel-assessment', 'aria-labelledby': 'aq-mussel-result-heading',
-                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 12, marginTop: 12, padding: 12, borderRadius: 10, background: '#031714', border: '2px solid ' + assessment.tone, outline: 'none' } },
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 12, marginTop: 12, padding: 12, borderRadius: 10, background: '#031714', border: '2px solid ' + assessment.tone } },
                 h('div', null,
                   h('div', { style: { color: '#cbd5e1', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Model status'),
                   h('h3', { id: 'aq-mussel-result-heading', style: { margin: '3px 0', color: assessment.tone, fontSize: 20 } }, assessment.status),
@@ -26385,13 +26385,13 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
                 slider.label, ': ', h('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, slider.val)),
               h('input', { id: 'sh-' + slider.key, type: 'range', min: slider.min, max: slider.max, step: slider.step || 1, value: slider.val,
                 onChange: function(e) { var p = {}; p[slider.key] = parseFloat(e.target.value); setSH(p); },
-                style: { width: '100%' }, 'aria-label': slider.label }));
+                style: { width: '100%', minHeight: 44 }, 'aria-label': slider.label, 'aria-valuetext': slider.label + ': ' + slider.val }));
           })
         ),
         // Log + reset
         h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 } },
-          h('button', { onClick: logObs, style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
-          h('button', { onClick: function() { setSH({ density: 12, exchange: 80, feed: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+          h('button', { type: 'button', onClick: logObs, style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '📋 Log observation'),
+          h('button', { type: 'button', onClick: function() { setSH({ density: 12, exchange: 80, feed: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
             style: { padding: '4px 10px', background: '#0f1c2f', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 600, cursor: 'pointer' } }, '↺ Reset'),
           (sh.log || []).length > 0 && h('span', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, (sh.log || []).length + ' observations logged')
         ),
@@ -26425,7 +26425,7 @@ if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegist
         ),
         // Opt-in open questions
         h('div', { style: { marginBottom: 10 } },
-          !sh.stuckRevealed && h('button', { onClick: function() { setSH({ stuckRevealed: true }); },
+          !sh.stuckRevealed && h('button', { type: 'button', onClick: function() { setSH({ stuckRevealed: true }); },
             style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
             '🤔 I\'m stuck — show me questions to think about (no answers)'),
           sh.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },

@@ -1,5 +1,39 @@
-/* AlloFlow Website — Shared Styles */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+/* AlloFlow Website — Shared Styles (self-hosted OFL fonts; zero external font requests) */
+@font-face {
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 300 900;
+    font-display: swap;
+    src: url('vendor/fonts/Outfit-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('vendor/fonts/PlusJakartaSans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: italic;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('vendor/fonts/PlusJakartaSans-italic-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300 900;
+    font-display: swap;
+    src: url('vendor/fonts/Inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
     --indigo: #3730a3;
@@ -196,7 +230,8 @@ img {
 }
 
 main p a:not(.btn-primary):not(.btn-secondary),
-main li a:not(.btn-primary):not(.btn-secondary) {
+main li a:not(.btn-primary):not(.btn-secondary),
+main td a:not(.btn-primary):not(.btn-secondary) {
     color: var(--indigo);
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
@@ -324,6 +359,7 @@ main li a:not(.btn-primary):not(.btn-secondary) {
 .btn-primary {
     background: linear-gradient(135deg, var(--indigo), var(--teal));
     color: #fff;
+    min-height: 44px;
     padding: 16px 36px;
     border-radius: 10px;
     font-weight: 700;
@@ -345,6 +381,7 @@ main li a:not(.btn-primary):not(.btn-secondary) {
 .btn-secondary {
     background: #fff;
     color: #475569;
+    min-height: 44px;
     padding: 16px 32px;
     border-radius: 10px;
     font-weight: 700;
@@ -406,57 +443,12 @@ main li a:not(.btn-primary):not(.btn-secondary) {
     transform: translateY(0) scale(1);
 }
 
-/* Staggered Card Cascade */
+/* Keep cards immediately visible (no opacity-0 blink or transient contrast drop on load). */
 .reveal.visible .card,
 .reveal.visible [style*="display:flex;gap:12px"] {
-    opacity: 0;
-    transform: translateY(16px);
-    animation: cardCascade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.reveal.visible .card:nth-child(1),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.reveal.visible .card:nth-child(2),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.reveal.visible .card:nth-child(3),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.reveal.visible .card:nth-child(4),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.reveal.visible .card:nth-child(5),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.reveal.visible .card:nth-child(6),
-.reveal.visible [style*="display:flex;gap:12px"]:nth-child(6) {
-    animation-delay: 0.3s;
-}
-
-.reveal.visible .card:nth-child(7) {
-    animation-delay: 0.35s;
-}
-
-.reveal.visible .card:nth-child(8) {
-    animation-delay: 0.4s;
-}
-
-@keyframes cardCascade {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    opacity: 1;
+    transform: none;
+    animation: none;
 }
 
 /* Back to Top Button */
@@ -1024,5 +1016,57 @@ textarea:focus-visible,
     :focus-visible {
         outline: 3px solid Highlight !important;
         outline-offset: 2px !important;
+    }
+}
+
+@media print {
+    .navbar,
+    .mobile-nav,
+    .noscript-nav,
+    .skip-link,
+    .back-to-top,
+    .jump-nav,
+    .home-page-nav,
+    .principles-jump,
+    .savings-bar,
+    .mobile-menu-btn,
+    .blob,
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+        background-image: none !important;
+        color: #111827 !important;
+    }
+
+    .section,
+    header.section {
+        padding: 20px 0 !important;
+        background: #fff !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .gradient-text {
+        background: none !important;
+        -webkit-text-fill-color: #111827 !important;
+        color: #111827 !important;
+    }
+
+    .footer {
+        padding: 18px 0 !important;
+        border-top: 1px solid #cbd5e1 !important;
+        background: #fff !important;
+    }
+
+    .footer-link-groups {
+        display: none !important;
     }
 }

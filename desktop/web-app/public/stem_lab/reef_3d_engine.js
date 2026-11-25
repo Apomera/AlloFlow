@@ -17,7 +17,7 @@
   // little closer (was 2.1 m). Lane sv14: closer and steeper, as a surveyor looks down
   // at the point (was 1.9 m at pitch 0.6), so the bottom under the line is large enough to judge.
   var DIVER = { yaw: -Math.PI / 2 + 0.82, pitch: 0.85, dist: 1.35 };
-  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  function clamp(v, lo, hi) { if (!isFinite(v)) return v > 0 ? hi : lo; return v < lo ? lo : v > hi ? hi : v; }
   function damp(rate, dt) { return 1 - Math.exp(-rate * dt); }
   function num(v, fallback) { if (v === null || v === undefined || v === '') return fallback; v = Number(v); return isFinite(v) ? v : fallback; }
   function hashString(s) { var h = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
@@ -353,7 +353,7 @@
       },
       // True when every program created so far has finished linking.
       poll: function (budget) {
-        if (!khr) return true;
+        if (!khr || (typeof gl.isContextLost === 'function' && gl.isContextLost())) return true;
         var t0 = clock();
         while (polled < created.length) {
           var p = created[polled];
@@ -451,26 +451,30 @@
     function dispose() {
       if (disposed) return; disposed = true;
       stopLoop(); cancelLoad(); clearTimer(notifyTimer); notifyTimer = 0;
-      listeners.forEach(function (off) { off(); }); listeners.length = 0;
-      if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+      listeners.forEach(function (off) { try { off(); } catch (_) {} }); listeners.length = 0;
+      if (resizeObserver) { try { resizeObserver.disconnect(); } catch (_) {} resizeObserver = null; }
       pointers.clear();
-      if (habitat) { habitat.dispose(); habitat = null; }
+      if (habitat) { try { if (typeof habitat.dispose === 'function') habitat.dispose(); } catch (_) {} habitat = null; }
       var geometries = new Set(), materials = new Set(), textures = new Set();
-      scene.traverse(function (o) {
-        if (o.geometry) geometries.add(o.geometry);
-        (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (m) { materials.add(m); });
-      });
-      owned.forEach(function (r) { if (r.isBufferGeometry) geometries.add(r); else if (r.isMaterial) materials.add(r); else if (r.isTexture) textures.add(r); });
-      materials.forEach(function (m) { Object.keys(m).forEach(function (k) { if (m[k] && m[k].isTexture) textures.add(m[k]); }); });
-      geometries.forEach(function (g) { g.dispose(); }); materials.forEach(function (m) { m.dispose(); }); textures.forEach(function (t) { t.dispose(); });
+      try {
+        scene.traverse(function (o) {
+          if (o.geometry) geometries.add(o.geometry);
+          (Array.isArray(o.material) ? o.material : o.material ? [o.material] : []).forEach(function (m) { materials.add(m); });
+        });
+      } catch (_) {}
+      owned.forEach(function (r) { if (r && r.isBufferGeometry) geometries.add(r); else if (r && r.isMaterial) materials.add(r); else if (r && r.isTexture) textures.add(r); });
+      materials.forEach(function (m) { if (!m) return; Object.keys(m).forEach(function (k) { if (m[k] && m[k].isTexture) textures.add(m[k]); }); });
+      geometries.forEach(function (g) { if (g && typeof g.dispose === 'function') { try { g.dispose(); } catch (_) {} } });
+      materials.forEach(function (m) { if (m && typeof m.dispose === 'function') { try { m.dispose(); } catch (_) {} } });
+      textures.forEach(function (t) { if (t && typeof t.dispose === 'function') { try { t.dispose(); } catch (_) {} } });
       owned.length = 0; fish.length = 0;
       if (renderer) {
-        renderer.dispose();
-        if (!contextLost && typeof renderer.forceContextLoss === 'function') renderer.forceContextLoss();
+        try { if (typeof renderer.dispose === 'function') renderer.dispose(); } catch (_) {}
+        if (!contextLost && typeof renderer.forceContextLoss === 'function') { try { renderer.forceContextLoss(); } catch (_) {} }
         renderer = null;
       }
-      scene.clear();
-      if (canvas._reef3d === controller) delete canvas._reef3d;
+      try { if (scene && typeof scene.clear === 'function') scene.clear(); } catch (_) {}
+      try { if (canvas._reef3d === controller) delete canvas._reef3d; } catch (_) {}
     }
 
     // The sun, the water and its light follow Reef3DExplore, so the survey and the dive share one ocean.
@@ -504,8 +508,8 @@
       var highContrastMode = !!options.highContrast;
       if (!highContrastMode) {
         try {
-          if (typeof document !== 'undefined') {
-            var docEl = document.documentElement, bodyEl = document.body;
+          if (doc) {
+            var docEl = doc.documentElement, bodyEl = doc.body;
             if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
                 (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrastMode = true;
           }
@@ -933,6 +937,7 @@
       raf = 0;
       if (disposed || contextLost || hidden()) return;
       try {
+        if (!isFinite(stamp)) stamp = now();
         var rawMs = lastStamp === null ? 0 : stamp - lastStamp;
         var dt = lastStamp === null ? 0 : clamp((stamp - lastStamp) / 1000, 0, 0.1); lastStamp = stamp;
         var animating = !paused && !reducedMotion;
@@ -1070,7 +1075,8 @@
     function resize() {
       if (disposed || !renderer) return;
       var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { width: canvas.clientWidth, height: canvas.clientHeight };
-      var w = Math.max(1, Math.round(rect.width || 0)), h = Math.max(1, Math.round(rect.height || 0));
+      var rw = rect && isFinite(rect.width) ? rect.width : 0, rh = rect && isFinite(rect.height) ? rect.height : 0;
+      var w = Math.max(1, Math.min(8192, Math.round(rw))), h = Math.max(1, Math.min(8192, Math.round(rh)));
       if (w === canvasW && h === canvasH) return;
       canvasW = w; canvasH = h; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
       if (staged && !loaded) clearToWater(THREE, renderer); // a resize blanks the canvas
@@ -1098,52 +1104,59 @@
       if (!loaded) return;
       setGoal(); if (reducedMotion) applyCamera(0, true); refresh();
     }
-    listen(canvas, 'keydown', function (event) {
-      if (event.ctrlKey || event.altKey || event.metaKey) return;
-      var key = event.key;
-      if (key === 'ArrowRight') goToPoint(pointIndex + 1);
-      else if (key === 'ArrowLeft') goToPoint(pointIndex - 1);
-      else if (key === 'PageUp') jump(1);
-      else if (key === 'PageDown') jump(-1);
-      else if (key === 'Home') goToPoint(0);
-      else if (key === 'End') goToPoint(points.length - 1);
-      else if (key === ' ' || key === 'Spacebar') { if (!event.repeat) setPaused(!paused); }
-      else return;
-      if (event.preventDefault) event.preventDefault();
-    });
-    listen(canvas, 'pointerdown', function (event) {
-      if (event.button && event.pointerType !== 'touch') return;
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      try { canvas.setPointerCapture(event.pointerId); } catch (ignore) {}
-      try { if (canvas.focus) canvas.focus({ preventScroll: true }); } catch (ignore) {}
-      if (pointers.size === 2) { var p = Array.from(pointers.values()); pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
-    });
-    listen(canvas, 'pointermove', function (event) {
-      var old = pointers.get(event.pointerId); if (!old) return;
-      var dx = event.clientX - old.x, dy = event.clientY - old.y; pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      if (pointers.size > 1) { var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); if (pinch > 0 && d > 0) zoom(Math.log(pinch / d)); pinch = d; }
-      else look(dx, dy);
-    });
-    function pointerUp(event) { pointers.delete(event.pointerId); pinch = 0; }
-    listen(canvas, 'pointerup', pointerUp); listen(canvas, 'pointercancel', pointerUp); listen(canvas, 'lostpointercapture', pointerUp);
-    listen(canvas, 'wheel', function (event) { if (event.preventDefault) event.preventDefault(); zoom(clamp(event.deltaY || 0, -200, 200) * 0.0015); }, { passive: false });
-    listen(canvas, 'blur', function () { pointers.clear(); pinch = 0; });
-    listen(canvas, 'webglcontextlost', function (event) {
-      if (event && event.preventDefault) event.preventDefault();
-      contextLost = true; stopLoop(); cancelLoad(); pointers.clear();
-      reportError(new Error('The 3D reef view lost its graphics context. Reopen the 3D view or use the 2D survey.'));
-      notify(true);
-    });
-    listen(doc, 'visibilitychange', function () { lastStamp = null; var was = slowReset(); if (hidden()) { stopLoop(); if (was) notify(true); } else refresh(); });
-    if (typeof global.ResizeObserver === 'function') { resizeObserver = new global.ResizeObserver(function () { resize(); }); resizeObserver.observe(canvas); }
-    else listen(global, 'resize', resize);
+    try {
+      listen(canvas, 'keydown', function (event) {
+        if (event.ctrlKey || event.altKey || event.metaKey) return;
+        var key = event.key;
+        if (key === 'ArrowRight') goToPoint(pointIndex + 1);
+        else if (key === 'ArrowLeft') goToPoint(pointIndex - 1);
+        else if (key === 'PageUp') jump(1);
+        else if (key === 'PageDown') jump(-1);
+        else if (key === 'Home') goToPoint(0);
+        else if (key === 'End') goToPoint(points.length - 1);
+        else if (key === ' ' || key === 'Spacebar') { if (!event.repeat) setPaused(!paused); }
+        else return;
+        if (event.preventDefault) event.preventDefault();
+      });
+      listen(canvas, 'pointerdown', function (event) {
+        if (event.button && event.pointerType !== 'touch') return;
+        if (!isFinite(event.clientX) || !isFinite(event.clientY)) return;
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        try { canvas.setPointerCapture(event.pointerId); } catch (ignore) {}
+        try { if (canvas.focus) canvas.focus({ preventScroll: true }); } catch (ignore) {}
+        if (pointers.size === 2) { var p = Array.from(pointers.values()); pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
+      });
+      listen(canvas, 'pointermove', function (event) {
+        var old = pointers.get(event.pointerId); if (!old) return;
+        if (!isFinite(event.clientX) || !isFinite(event.clientY)) return;
+        var dx = event.clientX - old.x, dy = event.clientY - old.y; pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pointers.size > 1) { var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); if (pinch > 0 && d > 0) zoom(Math.log(pinch / d)); pinch = d; }
+        else look(dx, dy);
+      });
+      function pointerUp(event) { pointers.delete(event.pointerId); pinch = 0; }
+      listen(canvas, 'pointerup', pointerUp); listen(canvas, 'pointercancel', pointerUp); listen(canvas, 'lostpointercapture', pointerUp);
+      listen(canvas, 'wheel', function (event) { if (event.preventDefault) event.preventDefault(); zoom(clamp(event.deltaY || 0, -200, 200) * 0.0015); }, { passive: false });
+      listen(canvas, 'blur', function () { pointers.clear(); pinch = 0; });
+      listen(canvas, 'webglcontextlost', function (event) {
+        if (event && event.preventDefault) event.preventDefault();
+        contextLost = true; stopLoop(); cancelLoad(); pointers.clear();
+        reportError(new Error('The 3D reef view lost its graphics context. Reopen the 3D view or use the 2D survey.'));
+        notify(true);
+      });
+      listen(doc, 'visibilitychange', function () { lastStamp = null; var was = slowReset(); if (hidden()) { stopLoop(); if (was) notify(true); } else refresh(); });
+      if (typeof global.ResizeObserver === 'function') { resizeObserver = new global.ResizeObserver(function () { resize(); }); resizeObserver.observe(canvas); }
+      else listen(global, 'resize', resize);
 
-    canvas._reef3d = controller;
-    if (canvas.tabIndex < 0) canvas.tabIndex = 0;
-    if (canvas.style) canvas.style.touchAction = 'none';
-    if (staged) loadTimer = setTimer(pump, 0); else firstFrame();
-    return controller;
+      canvas._reef3d = controller;
+      if (canvas.tabIndex < 0) canvas.tabIndex = 0;
+      if (canvas.style) canvas.style.touchAction = 'none';
+      if (staged) loadTimer = setTimer(pump, 0); else firstFrame();
+      return controller;
+    } catch (error) {
+      dispose();
+      throw new Error('This device could not start the 3D reef. ' + (error && error.message ? error.message : 'Please use the 2D survey.'));
+    }
   }
 
-  global.Reef3D = { version: '1.0.0', mount: mount, selectQuality: selectQuality, profileDevice: profileDevice, fishFamilies: FAMILIES.slice() };
-})(window);
+  if (global) global.Reef3D = { version: '1.0.0', mount: mount, selectQuality: selectQuality, profileDevice: profileDevice, fishFamilies: FAMILIES.slice() };
+})(typeof window !== 'undefined' && window ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

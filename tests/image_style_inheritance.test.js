@@ -33,7 +33,8 @@ describe('Universal image-style inheritance', () => {
     expect(glossary).toContain("if (nextMode === 'inherit') setGlossaryImageStyle('');");
     expect(dispatcher).toContain("(glossaryImageStyle || '').trim() || (universalImageStyle || '').trim()");
     // Add-term stays in Phase N; quick-add moved to the host handlers (checked through `app` below).
-    expect(occurrences(phaseN, "String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim()")).toBe(1);
+    // Add-term now strips control characters from both styles before choosing.
+    expect(occurrences(phaseN, "String(glossaryImageStyle || '').replace(/[\\u0000-\\u001f\\u007f]/g, '').trim() || String(universalImageStyle || '').replace(/[\\u0000-\\u001f\\u007f]/g, '').trim()")).toBe(1);
     expect(app).toContain("const _alloGlossaryImageDeps = () => ({");
     expect(app).toContain("glossaryImageStyle, universalImageStyle, newGlossaryTerm");
     expect(app).toContain("const effectiveGlossaryStyle = String(glossaryImageStyle || '').trim() || String(universalImageStyle || '').trim();");
@@ -42,7 +43,10 @@ describe('Universal image-style inheritance', () => {
   it('applies the effective Universal or override style to every Word Sounds image path', () => {
     expect(wordSounds).toContain("const [imageThemeMode, setImageThemeMode] = useSetupState('imageThemeMode', () => 'inherit');");
     expect(wordSounds).toContain("const effectiveImageTheme = imageThemeMode === 'override' && imageTheme.trim()");
-    expect(occurrences(wordSounds, 'const themePrefix = effectiveImageTheme ?')).toBe(3);
+    // Each of the three image paths now builds its prefix from the tag-stripped effective theme.
+    expect(occurrences(wordSounds, 'const themePrefix = safeImgTheme ? `${safeImgTheme} style, ` : \'\';')).toBe(3);
+    expect(wordSounds).toContain("const safeImgTheme = String(effectiveImageTheme || '').replace(");
+    expect(wordSounds).toContain('const safeImgTheme = stripImgTags(effectiveImageTheme);');
     expect(wordSounds).toContain('Style changes apply to new Word Sounds images, not Glossary images.');
     expect(app).toContain('universalImageStyle={universalImageStyle}');
   });

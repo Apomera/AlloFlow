@@ -28,18 +28,19 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.UIPolish) {
-    console.log('[UIPolish] Already loaded, skipping');
+  if (typeof window === 'undefined' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.UIPolish) {
+    if (typeof console !== 'undefined' && console.log) console.log('[UIPolish] Already loaded, skipping');
     return;
   }
-  if (!window.React) {
-    console.warn('[UIPolish] React not available, skipping');
+  if (!window.React || typeof window.React.createElement !== 'function') {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[UIPolish] React not available, skipping');
     return;
   }
   var React = window.React;
   var h = React.createElement;
 
-  var SAFE_COLOR_RE = /^(?:#[0-9a-f]{3,8}|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i;
+  var SAFE_COLOR_RE = /^(?:#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i;
   function safeColor(v, fallback) {
     return (typeof v === 'string' && SAFE_COLOR_RE.test(v.trim())) ? v.trim() : fallback;
   }
@@ -70,7 +71,7 @@
       ctaLabel && onCta && h('button', {
         type: 'button',
         onClick: onCta,
-        className: 'mt-4 px-4 py-2 rounded-lg text-sm font-bold text-white transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2',
+        className: 'mt-4 px-4 py-2 rounded-lg text-sm font-bold text-white transition-transform motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2',
         style: { background: accent },
       }, ctaLabel)
     );
@@ -84,9 +85,11 @@
   // Props: { lines, variant: 'card' | 'list' | 'table' | 'reader' }
   function LoadingSkeleton(props) {
     props = (props && typeof props === 'object') ? props : {};
-    var rawLines = Number(props.lines);
+    var hasLines = props.lines !== null && props.lines !== undefined && props.lines !== '' && typeof props.lines !== 'boolean';
+    var rawLines = hasLines ? Number(props.lines) : NaN;
     var lines = Number.isFinite(rawLines) ? Math.max(1, Math.min(24, Math.floor(rawLines))) : 4;
     var variant = props.variant || 'list';
+    var ariaLabel = typeof props.ariaLabel === 'string' && props.ariaLabel.trim() ? props.ariaLabel : '';
     var bars = [];
     for (var i = 0; i < lines; i++) {
       // Stagger widths so it looks like real content shapes, not bars.
@@ -97,6 +100,7 @@
       else                           w = i === lines - 1 ? '70%' : '100%';
       bars.push(h('div', {
         key: i,
+        'aria-hidden': 'true',
         className: 'alloflow-skeleton',
         style: {
           height: variant === 'reader' ? '14px' : '12px',
@@ -108,9 +112,10 @@
     return h('div', {
       className: 'py-3',
       role: 'status',
-      'aria-label': props.ariaLabel || 'Loading',
+      'aria-busy': 'true',
+      'aria-label': ariaLabel || 'Loading',
     },
-      h('div', { className: 'sr-only' }, props.ariaLabel || 'Loading…'),
+      h('div', { className: 'sr-only' }, ariaLabel || 'Loading…'),
       bars
     );
   }
@@ -127,13 +132,16 @@
     var cls = state === 'correct' ? 'allo-correct-pulse'
             : state === 'wrong'   ? 'allo-wrong-nudge'
             : '';
+    var baseCls = typeof props.className === 'string' ? props.className.trim() : '';
+    var combined = baseCls && cls ? baseCls + ' ' + cls : (baseCls || cls);
+    var safeStyle = (props.style && typeof props.style === 'object' && !Array.isArray(props.style)) ? props.style : undefined;
     return h('div', {
-      className: (props.className || '') + ' ' + cls,
-      style: props.style,
+      className: combined,
+      style: safeStyle,
     }, props.children);
   }
 
-  window.AlloModules = window.AlloModules || {};
+  window.AlloModules = (window.AlloModules && typeof window.AlloModules === 'object') ? window.AlloModules : {};
   window.AlloModules.UIPolish = Object.freeze({ EmptyState: EmptyState, LoadingSkeleton: LoadingSkeleton, JuiceWrap: JuiceWrap });
-  console.log('[UIPolish] Registered EmptyState + LoadingSkeleton + JuiceWrap');
+  if (typeof console !== 'undefined' && console.log) console.log('[UIPolish] Registered EmptyState + LoadingSkeleton + JuiceWrap');
 })();

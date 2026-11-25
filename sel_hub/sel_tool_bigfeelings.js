@@ -279,7 +279,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
   window.SelHub.registerTool('bigFeelings', {
     icon: '🔥',
     label: 'Big Feelings (Anger)',
-    desc: 'Anger-specific psychoeducation and skill-building. Anger is information, not the problem; reactive aggression is. Built on Lochman\'s Coping Power tradition (adolescent CBT for anger) plus the wider CBT-for-anger evidence base. Hassle log, trigger inventory, the choice point, and personalized cool-down skills.',
+    desc: 'Anger-specific psychoeducation and skill-building. Anger is information, not the problem; reactive aggression is. Built on the CBT-for-anger tradition: Lochman\'s Coping Power (for late-elementary and middle-school students) and Feindler\'s adolescent anger-control training, the source of the hassle log. Hassle log, trigger inventory, the choice point, and personalized cool-down skills.',
     color: 'orange',
     category: 'self-regulation',
     render: function(ctx) {
@@ -450,7 +450,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           h('div', { style: { padding: 14, borderRadius: 10, background: _bigBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a855f7', marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _bigFg('#c4b5fd'), marginBottom: 10 } }, '🧠 Why "just calm down" never works'),
             h('p', { style: { margin: 0, color: _bigFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'When you\'re angry, your amygdala is firing alarms, adrenaline is flooding your body, your heart rate is up, your prefrontal cortex (the part that does considered thinking) is offline. Telling yourself "just calm down" or "think clearly" does not work because the thinking brain is literally unavailable. What works: get the body to come back FIRST (cool-down skills), then the brain comes back, then you can choose. Body first, brain second. This is why all the techniques in this tool involve the body.'
+              'When you\'re angry, your amygdala is firing alarms, adrenaline is flooding your body, your heart rate is up, your prefrontal cortex (the part that does considered thinking) is much harder to reach. Telling yourself "just calm down" or "think clearly" does not work because the thinking brain is hard to reach in that moment. What works: get the body to come back FIRST (cool-down skills), then the brain comes back, then you can choose. Body first, brain second. This is why all the techniques in this tool involve the body.'
             )
           ),
 
@@ -816,13 +816,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
               'Anger-specific psychoeducation and skill-building, designed for adolescents. The core frame: anger is information, NOT a problem. The problem is reactive aggression — the impulsive action people often regret. The work is widening the gap between feeling and acting.'
             ),
             h('p', { style: { margin: 0, color: _bigFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'The tool is reflective and skill-based, not behavioral control. It does NOT pathologize anger; it treats the user as a person trying to choose better, not as a "behavior problem." The hassle log, trigger inventory, and choice-point framing all come from the CBT-for-anger evidence base. The Lochman Coping Power program for adolescents is the closest research-based parallel.'
+              'The tool is reflective and skill-based, not behavioral control. It does NOT pathologize anger; it treats the user as a person trying to choose better, not as a "behavior problem." The hassle log, trigger inventory, and choice-point framing all come from the CBT-for-anger evidence base. Lochman\'s Coping Power program (late elementary and middle school) and Feindler\'s adolescent anger-control training are the closest research-based parallels.'
             )
           ),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _bigBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _bigFg('#fdba74'), fontSize: 16 } }, '📚 Sources and learn more'),
-            sourceCard('Lochman, J. E., Wells, K. C., and Lenhart, L. A. (2008)', 'Coping Power: Child Group Program, Oxford University Press', 'The leading evidence-based adolescent anger and aggression program. Strongly researched.', null),
+            sourceCard('Lochman, J. E., Wells, K. C., and Lenhart, L. A. (2008)', 'Coping Power: Child Group Program, Oxford University Press', 'A leading evidence-based program for aggression in pre-adolescents and early adolescents. Strongly researched.', null),
             sourceCard('Beck, A. T. (1999)', 'Prisoners of Hate: The Cognitive Basis of Anger, Hostility, and Violence, Harper Perennial', 'Beck\'s book on CBT for anger and hostility.', null),
             sourceCard('Novaco, R. W. (1975)', 'Anger Control: The Development and Evaluation of an Experimental Treatment, Lexington Books', 'Foundational text in CBT-for-anger.', null),
             sourceCard('Deffenbacher, J. L. (2011)', '"Cognitive-Behavioral Conceptualization and Treatment of Anger," Cognitive and Behavioral Practice, 18(2), 212-221', 'Modern review of CBT approaches.', null),
@@ -934,7 +934,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
             ) : h('div', { style: { fontSize: 12, color: _bigFg('#475569'), fontStyle: 'italic' } }, 'No hassle log entries yet.'),
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _bigFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
-              'Hassle log from Lochman Coping Power (Lochman, Wells, & Lenhart). ',
+              'Hassle log from adolescent anger-control training (Feindler & Ecton, 1986). ',
               'Created with AlloFlow SEL Hub.'
             )
           ),

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
     <title>AlloFlow Features | Open-Source UDL &amp; Classroom Tools</title>
     <meta name="description" content="Explore AlloFlow STEM, SEL, AAC, differentiation, assessment, accessibility, and local-first classroom capabilities.">
     <meta name="robots" content="index, follow">
@@ -27,12 +28,26 @@
     <meta name="twitter:image:alt" content="AlloFlow. Open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
-    <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://apomera.github.io/AlloFlow/features.html#page",
+      "url": "https://apomera.github.io/AlloFlow/features.html",
+      "name": "AlloFlow Features | Open-Source UDL & Classroom Tools",
+      "description": "Explore AlloFlow STEM, SEL, AAC, differentiation, assessment, accessibility, and local-first classroom capabilities.",
+      "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" },
+      "about": { "@id": "https://apomera.github.io/AlloFlow/#software" }
+    }
+    </script>
 </head>
 
 <body>
@@ -60,20 +75,32 @@
     <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html" aria-current="page">Features</a>
-        <a href="manuals.html">Manuals</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html">Remediation</a>
-        <a href="accessibility_demo.html">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html">For Districts</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html" aria-current="page">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -90,7 +117,7 @@
                 Toolkit</span></h1>
         <p style="font-size:1.05rem;color:#475569;max-width:600px;margin:0 auto">400+ documented capabilities organized by CAST's
             Universal Design for Learning framework, with current STEM and SEL registries.</p>
-        <p style="font-size:0.95rem;color:#475569;max-width:680px;margin:16px auto 0">Start with a classroom need. <a href="tools.html">Find a tool and check its requirements</a>, then <a href="index.html#classroom-example">explore a worked lesson example</a>. AI-generated resources are drafts to review before use.</p>
+        <p style="font-size:0.95rem;color:#475569;max-width:680px;margin:16px auto 0">Start with a classroom need. <a href="tools.html">Find a tool and check its requirements</a>, then <a href="./#classroom-example">explore a worked lesson example</a>. AI-generated resources are drafts to review before use.</p>
     </header>
 
     <!-- Jump Navigation -->
@@ -98,18 +125,34 @@
         <div class="jump-nav-inner">
             <a href="#engagement" class="jump-pill">Engagement</a>
             <a href="#representation" class="jump-pill">Representation</a>
-            <a href="#action" class="jump-pill">Action & Expression</a>
+            <a href="#action" class="jump-pill">Action &amp; Expression</a>
             <a href="#intake" class="jump-pill">Content Intake</a>
             <a href="#grading" class="jump-pill">Grading</a>
             <a href="#architecture" class="jump-pill">Architecture</a>
-            <a href="#stem" class="jump-pill">STEM & Productivity</a>
+            <a href="#stem" class="jump-pill">STEM &amp; Productivity</a>
             <a href="#sel" class="jump-pill">SEL Hub</a>
-            <a href="#aac" class="jump-pill">AAC & Visual Communication</a>
+            <a href="#aac" class="jump-pill">AAC &amp; Visual Communication</a>
             <a href="#accessibility" class="jump-pill">Accessibility</a>
         </div>
     </nav>
 
     <main id="main-content" tabindex="-1">
+        <!-- Progressive Instant Feature Filter -->
+        <div id="featuresFilterBar" class="features-filter-bar" role="search" aria-label="Filter AlloFlow capabilities" hidden>
+            <div class="features-filter-inner">
+                <label for="featuresSearch" class="features-filter-label">Search capabilities</label>
+                <div class="features-filter-row">
+                    <input id="featuresSearch" type="search" autocomplete="off"
+                        placeholder="Filter capabilities (e.g., phonics, QTI, Canvas, Ollama, AAC, dyslexia, FBA, offline)…">
+                    <button type="button" id="featuresSearchClear" class="features-clear-btn" hidden>Clear</button>
+                </div>
+                <p id="featuresSearchStatus" class="features-filter-status" role="status" aria-live="polite"></p>
+            </div>
+        </div>
+        <div id="featuresEmptyState" class="features-empty-state" hidden>
+            <p>No capabilities matched that search.</p>
+            <button type="button" id="featuresEmptyReset" class="features-clear-btn">Show all capabilities</button>
+        </div>
         <!-- Engagement -->
         <section id="engagement" class="section reveal" style="background:#fff;border-bottom:1px solid #e2e8f0">
             <div class="section-inner">
@@ -416,7 +459,7 @@
                         <p style="font-size:0.75rem;color:#475569">Includes materials, timing, differentiation, and
                             standards connections. Perfect for PBL and learning stations.</p>
                     </div>
-                    <div class="card">
+                    <div class="card feature-card-wide">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#be185d">
                             <i data-lucide="book-open-check" aria-hidden="true" style="width:16px;height:16px"></i> Immersive Reader Suite
@@ -497,9 +540,9 @@
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed;font-size:0.85rem">
                             <i data-lucide="search" aria-hidden="true" style="width:16px;height:16px"></i> AI Search & Grounding
                         </div>
-                        <p style="font-size:0.75rem;color:#475569">"Find AI" mode: type a topic and AlloFlow searches
-                            Google, curates the best source, and grounds content with citations to prevent
-                            hallucinations.
+                        <p style="font-size:0.75rem;color:#475569">"Find AI" mode: enter a topic to pull a candidate
+                            source and draft citations with web grounding where supported. Review sources and factual
+                            claims before sharing with students.
                         </p>
                     </div>
                     <div class="card">
@@ -530,7 +573,7 @@
                         <p style="font-size:0.75rem;color:#475569">Benchmark probe banks, teacher &amp; parent-friendly
                             reports.</p>
                     </div>
-                    <div class="card">
+                    <div class="card feature-card-wide">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#854d0e;font-size:0.85rem">
                             <i data-lucide="server" aria-hidden="true" style="width:16px;height:16px"></i> Canvas LMS Export
@@ -644,7 +687,7 @@
                         </div>
                         <p style="font-size:0.75rem;color:#475569">Browser-based rhythm and composition workspace for synthesis, samples, notation concepts, and license-aware classroom music creation.</p>
                     </div>
-                    <div class="card">
+                    <div class="card feature-card-wide">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb;font-size:0.85rem">
                             <i data-lucide="graduation-cap" aria-hidden="true" style="width:16px;height:16px"></i> Professional Development
@@ -668,7 +711,7 @@
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857;font-size:0.85rem">
                             <i data-lucide="brain" aria-hidden="true" style="width:16px;height:16px"></i> Zones of Regulation
                         </div>
-                        <p style="font-size:0.75rem;color:#475569">Interactive zone identification (Blue / Green / Yellow / Red) with a strategy explorer, daily check-in tracker, AI-powered scenario coach, and grade-adaptive vocabulary from K, 12.</p>
+                        <p style="font-size:0.75rem;color:#475569">Interactive zone identification (Blue / Green / Yellow / Red) with a strategy explorer, daily check-in tracker, AI-powered scenario coach, and grade-adaptive vocabulary from K&ndash;12.</p>
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#166534;font-size:0.85rem">
@@ -686,7 +729,7 @@
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857;font-size:0.85rem">
                             <i data-lucide="activity" aria-hidden="true" style="width:16px;height:16px"></i> Grade-Adaptive
                         </div>
-                        <p style="font-size:0.75rem;color:#475569">SEL tools read the active grade band from AlloFlow context and scale vocabulary, scenario complexity, and UI density accordingly, from simple emoji-based K, 2 check-ins to nuanced high school coaching.</p>
+                        <p style="font-size:0.75rem;color:#475569">SEL tools read the active grade band from AlloFlow context and scale vocabulary, scenario complexity, and UI density accordingly, from simple emoji-based K&ndash;2 check-ins to nuanced high school coaching.</p>
                     </div>
                 </div>
             </div>
@@ -987,11 +1030,11 @@
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html" aria-current="page">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
         </div>
@@ -1052,9 +1095,203 @@
             const cta = document.getElementById('stickyCta');
             if (cta) cta.classList.toggle('visible', window.scrollY > 400);
         }, { passive: true });
+
+        // Instant capability filter
+        (function initFeaturesFilter() {
+            const bar = document.getElementById('featuresFilterBar');
+            const input = document.getElementById('featuresSearch');
+            const clearBtn = document.getElementById('featuresSearchClear');
+            const status = document.getElementById('featuresSearchStatus');
+            const emptyState = document.getElementById('featuresEmptyState');
+            const emptyReset = document.getElementById('featuresEmptyReset');
+            const mainEl = document.getElementById('main-content');
+            if (!bar || !input || !mainEl) return;
+
+            const sections = Array.from(mainEl.querySelectorAll('section[id]')).map(sec => {
+                const heading = (sec.querySelector('h2')?.textContent || '').toLowerCase();
+                const cards = Array.from(sec.querySelectorAll('.card')).map(card => ({
+                    el: card,
+                    text: (heading + ' ' + card.textContent).toLowerCase().replace(/\s+/g, ' ').trim()
+                }));
+                return { el: sec, cards };
+            }).filter(s => s.cards.length > 0);
+            const totalCards = sections.reduce((sum, s) => sum + s.cards.length, 0);
+            bar.hidden = false;
+
+            function syncUrl(rawVal) {
+                if (!window.history || typeof window.history.replaceState !== 'function' || typeof URLSearchParams !== 'function') return;
+                try {
+                    const params = new URLSearchParams(window.location.search || '');
+                    if (rawVal) params.set('q', rawVal); else params.delete('q');
+                    const qs = params.toString();
+                    window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + (window.location.hash || ''));
+                } catch (_) {}
+            }
+
+            try {
+                if (typeof URLSearchParams === 'function') {
+                    const initQ = new URLSearchParams(window.location.search || '').get('q');
+                    if (initQ) input.value = String(initQ).slice(0, 120);
+                }
+            } catch (_) {}
+
+            function applyFilter(skipUrlSync) {
+                const rawTrim = input.value.trim();
+                const q = rawTrim.toLowerCase().replace(/\s+/g, ' ');
+                const tokens = q ? q.split(' ') : [];
+                let shown = 0;
+                let visibleSections = 0;
+                mainEl.classList.toggle('is-filtered', tokens.length > 0);
+
+                sections.forEach(s => {
+                    let secMatches = 0;
+                    s.cards.forEach(c => {
+                        const match = !tokens.length || tokens.every(t => c.text.indexOf(t) !== -1);
+                        c.el.hidden = !match;
+                        if (match) { shown++; secMatches++; }
+                    });
+                    s.el.hidden = secMatches === 0;
+                    if (secMatches > 0) {
+                        visibleSections++;
+                        s.el.classList.add('visible');
+                    }
+                });
+
+                if (clearBtn) clearBtn.hidden = !q;
+                if (emptyState) emptyState.hidden = shown > 0;
+                if (status) {
+                    status.textContent = q
+                        ? `Showing ${shown} of ${totalCards} capability cards across ${visibleSections} ${visibleSections === 1 ? 'section' : 'sections'}.`
+                        : `Showing all ${totalCards} capability cards across ${sections.length} sections.`;
+                }
+                if (!skipUrlSync) syncUrl(rawTrim);
+            }
+
+            input.addEventListener('input', () => applyFilter(false));
+            input.addEventListener('keydown', (e) => {
+                if (e.isComposing || e.keyCode === 229) return;
+                if (e.key === 'Escape' && input.value) {
+                    e.preventDefault();
+                    input.value = '';
+                    applyFilter(false);
+                }
+            });
+            const clearAndFocus = () => { input.value = ''; applyFilter(false); input.focus(); };
+            if (clearBtn) clearBtn.addEventListener('click', clearAndFocus);
+            if (emptyReset) emptyReset.addEventListener('click', clearAndFocus);
+            applyFilter(true);
+        })();
     </script>
 
     <style>
+        .features-filter-bar {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 18px 24px;
+        }
+
+        .features-filter-inner {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .features-filter-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .features-filter-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .features-filter-row input[type="search"] {
+            flex: 1 1 260px;
+            min-height: 44px;
+            padding: 10px 14px;
+            border: 1px solid #94a3b8;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #0f172a;
+            font: inherit;
+            font-size: 0.95rem;
+        }
+
+        .features-filter-row input[type="search"]:focus-visible,
+        .features-clear-btn:focus-visible {
+            outline: 3px solid #3730a3;
+            outline-offset: 2px;
+        }
+
+        .features-clear-btn {
+            min-height: 44px;
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #1e293b;
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .features-clear-btn:hover {
+            background: #eef2ff;
+            border-color: #6366f1;
+        }
+
+        .features-filter-status {
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .features-empty-state {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 32px 24px;
+            text-align: center;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+        }
+
+        .features-empty-state p {
+            color: #334155;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        #main-content:not(.is-filtered) .feature-card-wide {
+            grid-column: 1 / -1;
+        }
+
+        @media print {
+            .features-filter-bar,
+            .features-empty-state,
+            .sticky-cta {
+                display: none !important;
+            }
+        }
+
+        @media (forced-colors: active) {
+            .features-filter-row input[type="search"],
+            .features-clear-btn,
+            .features-empty-state {
+                border: 1px solid CanvasText;
+            }
+            .features-filter-row input[type="search"]:focus-visible,
+            .features-clear-btn:focus-visible {
+                outline: 3px solid Highlight !important;
+            }
+        }
+
         .sticky-cta {
             position: fixed;
             bottom: 0;

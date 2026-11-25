@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-school-counselor-5422-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 4,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 8,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -6367,7 +6373,7 @@
         },
         {
           "label": "Professional framework",
-          "guidance": "Use ASCA Ethical Standards (A.2 confidentiality, A.9 serious and foreseeable harm, A.11 abuse reporting), state mandated-reporter statutes, and FERPA need-to-know limits."
+          "guidance": "Use ASCA Ethical Standards (A.2 confidentiality, A.9 serious and foreseeable harm, A.12 child abuse reporting), state mandated-reporter statutes, and FERPA need-to-know limits."
         },
         {
           "label": "Action plan",
@@ -7031,7 +7037,7 @@
       "id": "school-counselor-5422-remediation-non-counseling-duties-80-20",
       "familyId": "sc5422-non-counseling-duties-vs-asca-80-20",
       "familyLabel": "Accepting inappropriate non-counseling duties instead of protecting the ASCA 80/20 allocation",
-      "title": "Use Use-of-Time data and the Annual Conference to defend 80/20 services",
+      "title": "Apply Use-of-Time data and the Annual Conference to defend 80/20 services",
       "recognitionCue": "The chosen answer passively absorbs full-time testing coordination or discipline duty, or refuses an administrator without offering Use-of-Time evidence and collaborative solutions.",
       "repairQuestion": "Is this assigned task an appropriate counseling role or an inappropriate non-counseling duty, and how do Use-of-Time data and the Annual Administrative Conference protect the ASCA 80/20 balance?",
       "stages": [
@@ -7188,6 +7194,2625 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "school-counselor-5422-session-ch-01",
+      "title": "School Counselor Role and Program Foundations guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"School Counselor Role and Program Foundations\" (Define) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-01",
+      "itemIds": [
+        "sc5422-b1-001",
+        "sc5422-b1-002",
+        "sc5422-b1-003",
+        "sc5422-b1-004",
+        "sc5422-b1-005",
+        "sc5422-b1-006",
+        "sc5422-b1-007",
+        "sc5422-b1-008",
+        "sc5422-b2-001",
+        "sc5422-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"School Counselor Role and Program Foundations\" and the \"ASCA Define Standards, Development & Ethical/Legal Duties\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Direct vs. Indirect Student Services and Counselor Role Boundaries\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Disaggregated AP Enrollment Equity Advocacy and Barrier Removal\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"School Counselor Role and Program Foundations\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Hold strict confidentiality except for mandated safety duties and FERPA rules\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-02",
+      "title": "Human Development, Learning, and Family Systems guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Human Development, Learning, and Family Systems\" (Define) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-02",
+      "itemIds": [
+        "sc5422-b1-016",
+        "sc5422-b2-009",
+        "sc5422-b2-010",
+        "sc5422-b2-011",
+        "sc5422-b2-012",
+        "sc5422-b2-013",
+        "sc5422-b2-014",
+        "sc5422-b2-015",
+        "sc5422-b2-016",
+        "sc5422-b3-009"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Human Development, Learning, and Family Systems\" and the \"ASCA Define Standards, Development & Ethical/Legal Duties\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Developmental, Learning, and Ecological Lenses for Student Support Design\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Addressing Escape-Maintained Presentation Anxiety in Grade 7\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Human Development, Learning, and Family Systems\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate participation, Mindsets & Behaviors, and outcome data before claiming impact\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-03",
+      "title": "Ethics, Law, Equity, Safety, and Boundaries guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Ethics, Law, Equity, Safety, and Boundaries\" (Define) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-03",
+      "itemIds": [
+        "sc5422-b2-022",
+        "sc5422-b2-023",
+        "sc5422-b2-024",
+        "sc5422-b2-025",
+        "sc5422-b3-017",
+        "sc5422-b3-018",
+        "sc5422-b3-019",
+        "sc5422-b3-020",
+        "sc5422-b3-021",
+        "sc5422-b3-022"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Ethics, Law, Equity, Safety, and Boundaries\" and the \"ASCA Define Standards, Development & Ethical/Legal Duties\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Confidentiality, Informed Consent, and Duty-to-Warn / Reporting Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Ethical Confidentiality Balance and Section 504 Exploration in Grade 11\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Ethics, Law, Equity, Safety, and Boundaries\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Use-of-Time data and the Annual Conference to defend 80/20 services\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-04",
+      "title": "Individual Counseling, Academic Planning, and Career Development guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Individual Counseling, Academic Planning, and Career Development\" (Deliver) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-04",
+      "itemIds": [
+        "sc5422-b2-033",
+        "sc5422-b2-034",
+        "sc5422-b2-035",
+        "sc5422-b2-036",
+        "sc5422-b2-037",
+        "sc5422-b2-038",
+        "sc5422-b2-039",
+        "sc5422-b3-026",
+        "sc5422-b3-027",
+        "sc5422-b3-028"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Individual Counseling, Academic Planning, and Career Development\" and the \"Direct/Indirect Delivery, Brief Counseling, Career & Groups\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Postsecondary, Career, and Academic Planning Progression\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Scope-of-Practice Boundary and Warm Trauma Referral in Grade 10\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Individual Counseling, Academic Planning, and Career Development\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Maintain continuous supervision, structured screening, and caregiver handoff in suicide crises\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-05",
+      "title": "Group, Classroom, Crisis, and Prevention Services guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Group, Classroom, Crisis, and Prevention Services\" (Deliver) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-05",
+      "itemIds": [
+        "sc5422-b3-042",
+        "sc5422-b3-043",
+        "sc5422-b3-044",
+        "sc5422-b3-045",
+        "sc5422-b3-046",
+        "sc5422-b3-047",
+        "sc5422-b3-048",
+        "sc5422-b3-049",
+        "sc5422-b3-050",
+        "sc5422-b3-051"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Group, Classroom, Crisis, and Prevention Services\" and the \"Direct/Indirect Delivery, Brief Counseling, Career & Groups\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Classroom, Small-Group, Prevention, and Crisis Service Alignment\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Rejecting Peer Mediation for Power-Imbalanced Cyberbullying in Middle School\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Group, Classroom, Crisis, and Prevention Services\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Screen members, secure consent, and set realistic group confidentiality norms\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-06",
+      "title": "Consultation, Collaboration, MTSS, Plans, and Referrals guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Consultation, Collaboration, MTSS, Plans, and Referrals\" (Deliver) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-06",
+      "itemIds": [
+        "sc5422-b3-062",
+        "sc5422-b3-063",
+        "sc5422-b3-064",
+        "sc5422-b3-065",
+        "sc5422-b1-053",
+        "sc5422-b1-054",
+        "sc5422-b1-055",
+        "sc5422-b1-056",
+        "sc5422-b1-057",
+        "sc5422-b1-058"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Consultation, Collaboration, MTSS, Plans, and Referrals\" and the \"Direct/Indirect Delivery, Brief Counseling, Career & Groups\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Systemic Consultation, Family Partnership, and Referral Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Fluid Tier 2 MTSS Support Without Permanent Student Tier Labels\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Consultation, Collaboration, MTSS, Plans, and Referrals\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Disaggregate data to dismantle systemic barriers instead of blaming students\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-07",
+      "title": "Program Vision, Mission, Alignment, and Partnership guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Program Vision, Mission, Alignment, and Partnership\" (Manage) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-07",
+      "itemIds": [
+        "sc5422-b1-066",
+        "sc5422-b1-067",
+        "sc5422-b1-068",
+        "sc5422-b1-069",
+        "sc5422-b1-070",
+        "sc5422-b1-071",
+        "sc5422-b1-072",
+        "sc5422-b2-066",
+        "sc5422-b2-067",
+        "sc5422-b2-068"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Program Vision, Mission, Alignment, and Partnership\" and the \"ASCA Manage Tools, SMART Goals, Data Types & Advisory Councils\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"ASCA National Model Four-Component Program Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Advisory Council Governance, FERPA Privacy, and Counselor Role Boundaries\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Program Vision, Mission, Alignment, and Partnership\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Hold strict confidentiality except for mandated safety duties and FERPA rules\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-08",
+      "title": "Outcome Goals, Data Types, Action Plans, and Measurement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Outcome Goals, Data Types, Action Plans, and Measurement\" (Manage) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-08",
+      "itemIds": [
+        "sc5422-b2-073",
+        "sc5422-b2-074",
+        "sc5422-b2-075",
+        "sc5422-b2-076",
+        "sc5422-b2-077",
+        "sc5422-b2-078",
+        "sc5422-b2-079",
+        "sc5422-b3-073",
+        "sc5422-b3-074",
+        "sc5422-b3-075"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Outcome Goals, Data Types, Action Plans, and Measurement\" and the \"ASCA Manage Tools, SMART Goals, Data Types & Advisory Councils\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"From Measurement Quality and Baseline Needs to Executable Action Plans\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Accurate Percentile Rank Interpretation During Grade 9 Course Advising\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Outcome Goals, Data Types, Action Plans, and Measurement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate participation, Mindsets & Behaviors, and outcome data before claiming impact\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-09",
+      "title": "Program Operations, Technology, Resources, and Communication guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Program Operations, Technology, Resources, and Communication\" (Manage) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-09",
+      "itemIds": [
+        "sc5422-b1-082",
+        "sc5422-b1-083",
+        "sc5422-b1-084",
+        "sc5422-b1-085",
+        "sc5422-b2-080",
+        "sc5422-b2-081",
+        "sc5422-b2-082",
+        "sc5422-b2-083",
+        "sc5422-b2-084",
+        "sc5422-b2-085"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Program Operations, Technology, Resources, and Communication\" and the \"ASCA Manage Tools, SMART Goals, Data Types & Advisory Councils\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Safe, Equitable Counseling Operations, Data Governance, and Communication\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Multilingual Communication Plan to Close Family Access Gaps\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Program Operations, Technology, Resources, and Communication\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Use-of-Time data and the Annual Conference to defend 80/20 services\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-10",
+      "title": "Program Assessment and Implementation Quality guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Program Assessment and Implementation Quality\" (Assess) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-10",
+      "itemIds": [
+        "sc5422-b1-089",
+        "sc5422-b1-090",
+        "sc5422-b2-086",
+        "sc5422-b2-087",
+        "sc5422-b2-088",
+        "sc5422-b2-089",
+        "sc5422-b2-090",
+        "sc5422-b3-086",
+        "sc5422-b3-087",
+        "sc5422-b3-088"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Program Assessment and Implementation Quality\" and the \"Program Assessment, Results Analysis & Data-Based Advocacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Program Assessment, Competency Reflection, and Implementation Quality Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Pre-Delivery Baseline and Aligned Evaluation for Senior FAFSA Lessons\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Program Assessment and Implementation Quality\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Maintain continuous supervision, structured screening, and caregiver handoff in suicide crises\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-11",
+      "title": "Results Data, Interpretation, and Reporting guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Results Data, Interpretation, and Reporting\" (Assess) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-11",
+      "itemIds": [
+        "sc5422-b3-091",
+        "sc5422-b3-092",
+        "sc5422-b3-093",
+        "sc5422-b3-094",
+        "sc5422-b3-095",
+        "sc5422-b1-091",
+        "sc5422-b1-092",
+        "sc5422-b1-093",
+        "sc5422-b1-094",
+        "sc5422-b1-095"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Results Data, Interpretation, and Reporting\" and the \"Program Assessment, Results Analysis & Data-Based Advocacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Data-Driven Closing-the-Gap Action Plan Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Transparent Disaggregated Results Reporting for a Grade 6 Attendance Group\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Results Data, Interpretation, and Reporting\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Screen members, secure consent, and set realistic group confidentiality norms\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-ch-12",
+      "title": "Continuous Improvement and Data-Based Advocacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Continuous Improvement and Data-Based Advocacy\" (Assess) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sc5422-ch-12",
+      "itemIds": [
+        "sc5422-b1-098",
+        "sc5422-b1-099",
+        "sc5422-b1-100",
+        "sc5422-b2-096",
+        "sc5422-b2-097",
+        "sc5422-b2-098",
+        "sc5422-b2-099",
+        "sc5422-b2-100",
+        "sc5422-b3-096",
+        "sc5422-b3-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Continuous Improvement and Data-Based Advocacy\" and the \"Program Assessment, Results Analysis & Data-Based Advocacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Continuous Improvement, Transparent Reporting, and Sustainable Scaling Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Phased Scaling of a Grant-Funded Grade 9 Peer-Mentoring Pilot\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Continuous Improvement and Data-Based Advocacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Disaggregate data to dismantle systemic barriers instead of blaming students\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-trap-repair-sprint",
+      "title": "Praxis School Counselor (5422) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "sc5422-b1-005",
+        "sc5422-b1-073",
+        "sc5422-b1-001",
+        "sc5422-b1-007",
+        "sc5422-b1-009",
+        "sc5422-b1-003",
+        "sc5422-b1-074",
+        "sc5422-b1-002",
+        "sc5422-b1-008",
+        "sc5422-b1-010",
+        "sc5422-b1-006",
+        "sc5422-b1-075"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Hold strict confidentiality except for mandated safety duties and FERPA rules\", \"Separate participation, Mindsets & Behaviors, and outcome data before claiming impact\", \"Apply Use-of-Time data and the Annual Conference to defend 80/20 services\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-session-mixed-capstone",
+      "title": "Praxis School Counselor (5422) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "sc5422-b1-004",
+        "sc5422-b1-029",
+        "sc5422-b1-069",
+        "sc5422-b1-089",
+        "sc5422-b1-015",
+        "sc5422-b1-040",
+        "sc5422-b1-080",
+        "sc5422-b1-100",
+        "sc5422-b2-001",
+        "sc5422-b1-051",
+        "sc5422-b2-071",
+        "sc5422-b2-096",
+        "sc5422-b2-012",
+        "sc5422-b1-062",
+        "sc5422-b2-082"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied counseling case workshops, outline a response to \"Balance Student Privacy, Mandated Reporting, and Parent Notification\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "school-counselor-5422-spaced-ch-01",
+      "topicId": "sc5422-ch-01",
+      "topicLabel": "1. School Counselor Role and Program Foundations",
+      "unitId": "define",
+      "chapterId": "sc5422-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"School Counselor Role and Program Foundations\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-02",
+      "topicId": "sc5422-ch-02",
+      "topicLabel": "2. Human Development, Learning, and Family Systems",
+      "unitId": "define",
+      "chapterId": "sc5422-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Human Development, Learning, and Family Systems\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-03",
+      "topicId": "sc5422-ch-03",
+      "topicLabel": "3. Ethics, Law, Equity, Safety, and Boundaries",
+      "unitId": "define",
+      "chapterId": "sc5422-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Ethics, Law, Equity, Safety, and Boundaries\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-04",
+      "topicId": "sc5422-ch-04",
+      "topicLabel": "4. Individual Counseling, Academic Planning, and Career Development",
+      "unitId": "deliver",
+      "chapterId": "sc5422-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Individual Counseling, Academic Planning, and Career Development\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-05",
+      "topicId": "sc5422-ch-05",
+      "topicLabel": "5. Group, Classroom, Crisis, and Prevention Services",
+      "unitId": "deliver",
+      "chapterId": "sc5422-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Group, Classroom, Crisis, and Prevention Services\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-06",
+      "topicId": "sc5422-ch-06",
+      "topicLabel": "6. Consultation, Collaboration, MTSS, Plans, and Referrals",
+      "unitId": "deliver",
+      "chapterId": "sc5422-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Consultation, Collaboration, MTSS, Plans, and Referrals\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-07",
+      "topicId": "sc5422-ch-07",
+      "topicLabel": "7. Program Vision, Mission, Alignment, and Partnership",
+      "unitId": "manage",
+      "chapterId": "sc5422-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Program Vision, Mission, Alignment, and Partnership\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-08",
+      "topicId": "sc5422-ch-08",
+      "topicLabel": "8. Outcome Goals, Data Types, Action Plans, and Measurement",
+      "unitId": "manage",
+      "chapterId": "sc5422-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Outcome Goals, Data Types, Action Plans, and Measurement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-09",
+      "topicId": "sc5422-ch-09",
+      "topicLabel": "9. Program Operations, Technology, Resources, and Communication",
+      "unitId": "manage",
+      "chapterId": "sc5422-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Program Operations, Technology, Resources, and Communication\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-10",
+      "topicId": "sc5422-ch-10",
+      "topicLabel": "10. Program Assessment and Implementation Quality",
+      "unitId": "assess",
+      "chapterId": "sc5422-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Program Assessment and Implementation Quality\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-11",
+      "topicId": "sc5422-ch-11",
+      "topicLabel": "11. Results Data, Interpretation, and Reporting",
+      "unitId": "assess",
+      "chapterId": "sc5422-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Results Data, Interpretation, and Reporting\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-spaced-ch-12",
+      "topicId": "sc5422-ch-12",
+      "topicLabel": "12. Continuous Improvement and Data-Based Advocacy",
+      "unitId": "assess",
+      "chapterId": "sc5422-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Continuous Improvement and Data-Based Advocacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "school-counselor-5422-source-01",
+      "title": "School Counselor 5422 diagnostics — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-02",
+      "title": "ASCA Professional Standards - American School Counselor Association (ASCA)",
+      "organization": "American School Counselor Association (ASCA)",
+      "url": "https://www.schoolcounselor.org/Standards-Positions/Standards/ASCA-Professional-Standards",
+      "credibility": "American School Counselor Association (ASCA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-03",
+      "title": "The School Counselor and School Counseling Programs - American School Counselor Association (ASCA)",
+      "organization": "American School Counselor Association (ASCA)",
+      "url": "https://schoolcounselor.org/Standards-Positions/Position-Statements/ASCA-Position-Statements/The-School-Counselor-and-School-Counseling-Program",
+      "credibility": "American School Counselor Association (ASCA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-04",
+      "title": "ASCA Ethical Standards for School Counselors - American School Counselor Association (ASCA)",
+      "organization": "American School Counselor Association (ASCA)",
+      "url": "https://www.schoolcounselor.org/About-School-Counseling/Ethical-Responsibilities/ASCA-Ethical-Standards-for-School-Counselors-%281%29",
+      "credibility": "American School Counselor Association (ASCA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-05",
+      "title": "FERPA | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/ferpa",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-06",
+      "title": "Individuals with Disabilities Education Act (IDEA)",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-07",
+      "title": "U.S. Department Of Education Resource",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/individuals-disabilities/section-504",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-counselor-5422-source-08",
+      "title": "WWC | Using Student Achievement Data to Support Instructional Decision Making",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/12",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "school-counselor-5422-unit-review-01",
+      "unitId": "define",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: School Counselor Role and Program Foundations",
+      "chapterId": "sc5422-ch-01",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-01-section-01",
+        "sc5422-ch-01-section-02",
+        "sc5422-ch-01-section-03",
+        "sc5422-ch-01-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-001",
+        "sc5422-b1-002",
+        "sc5422-b1-003",
+        "sc5422-b1-004",
+        "sc5422-b1-005",
+        "sc5422-b1-006",
+        "sc5422-b1-007",
+        "sc5422-b1-008",
+        "sc5422-b2-001",
+        "sc5422-b2-002",
+        "sc5422-b2-003",
+        "sc5422-b2-004",
+        "sc5422-b2-005",
+        "sc5422-b2-006",
+        "sc5422-b2-007",
+        "sc5422-b2-008",
+        "sc5422-b3-001",
+        "sc5422-b3-002",
+        "sc5422-b3-003",
+        "sc5422-b3-004",
+        "sc5422-b3-005",
+        "sc5422-b3-006",
+        "sc5422-b3-007",
+        "sc5422-b3-008"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-001",
+        "sc5422-b1-002",
+        "sc5422-b1-003",
+        "sc5422-b1-004",
+        "sc5422-b1-005",
+        "sc5422-b1-006",
+        "sc5422-b1-007",
+        "sc5422-b1-008",
+        "sc5422-b2-001",
+        "sc5422-b2-002",
+        "sc5422-b2-003",
+        "sc5422-b2-004"
+      ],
+      "purpose": "Consolidate \"School Counselor Role and Program Foundations\" (Define) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-02",
+      "unitId": "define",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Human Development, Learning, and Family Systems",
+      "chapterId": "sc5422-ch-02",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-02-section-01",
+        "sc5422-ch-02-section-02",
+        "sc5422-ch-02-section-03",
+        "sc5422-ch-02-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-009",
+        "sc5422-b1-010",
+        "sc5422-b1-011",
+        "sc5422-b1-012",
+        "sc5422-b1-013",
+        "sc5422-b1-014",
+        "sc5422-b1-015",
+        "sc5422-b1-016",
+        "sc5422-b2-009",
+        "sc5422-b2-010",
+        "sc5422-b2-011",
+        "sc5422-b2-012",
+        "sc5422-b2-013",
+        "sc5422-b2-014",
+        "sc5422-b2-015",
+        "sc5422-b2-016",
+        "sc5422-b3-009",
+        "sc5422-b3-010",
+        "sc5422-b3-011",
+        "sc5422-b3-012",
+        "sc5422-b3-013",
+        "sc5422-b3-014",
+        "sc5422-b3-015",
+        "sc5422-b3-016"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-009",
+        "sc5422-b1-010",
+        "sc5422-b1-011",
+        "sc5422-b1-012",
+        "sc5422-b1-013",
+        "sc5422-b1-014",
+        "sc5422-b1-015",
+        "sc5422-b1-016",
+        "sc5422-b2-009",
+        "sc5422-b2-010",
+        "sc5422-b2-011",
+        "sc5422-b2-012"
+      ],
+      "purpose": "Consolidate \"Human Development, Learning, and Family Systems\" (Define) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-03",
+      "unitId": "define",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Ethics, Law, Equity, Safety, and Boundaries",
+      "chapterId": "sc5422-ch-03",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-03-section-01",
+        "sc5422-ch-03-section-02",
+        "sc5422-ch-03-section-03",
+        "sc5422-ch-03-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-017",
+        "sc5422-b1-018",
+        "sc5422-b1-019",
+        "sc5422-b1-020",
+        "sc5422-b1-021",
+        "sc5422-b1-022",
+        "sc5422-b1-023",
+        "sc5422-b1-024",
+        "sc5422-b1-025",
+        "sc5422-b2-017",
+        "sc5422-b2-018",
+        "sc5422-b2-019",
+        "sc5422-b2-020",
+        "sc5422-b2-021",
+        "sc5422-b2-022",
+        "sc5422-b2-023",
+        "sc5422-b2-024",
+        "sc5422-b2-025",
+        "sc5422-b3-017",
+        "sc5422-b3-018",
+        "sc5422-b3-019",
+        "sc5422-b3-020",
+        "sc5422-b3-021",
+        "sc5422-b3-022",
+        "sc5422-b3-023",
+        "sc5422-b3-024",
+        "sc5422-b3-025"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-017",
+        "sc5422-b1-018",
+        "sc5422-b1-019",
+        "sc5422-b1-020",
+        "sc5422-b1-021",
+        "sc5422-b1-022",
+        "sc5422-b1-023",
+        "sc5422-b1-024",
+        "sc5422-b1-025",
+        "sc5422-b2-017",
+        "sc5422-b2-018",
+        "sc5422-b2-019"
+      ],
+      "purpose": "Consolidate \"Ethics, Law, Equity, Safety, and Boundaries\" (Define) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-04",
+      "unitId": "deliver",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Individual Counseling, Academic Planning, and Career Development",
+      "chapterId": "sc5422-ch-04",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-04-section-01",
+        "sc5422-ch-04-section-02",
+        "sc5422-ch-04-section-03",
+        "sc5422-ch-04-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-026",
+        "sc5422-b1-027",
+        "sc5422-b1-028",
+        "sc5422-b1-029",
+        "sc5422-b1-030",
+        "sc5422-b1-031",
+        "sc5422-b1-032",
+        "sc5422-b1-033",
+        "sc5422-b1-034",
+        "sc5422-b1-035",
+        "sc5422-b1-036",
+        "sc5422-b1-037",
+        "sc5422-b1-038",
+        "sc5422-b1-039",
+        "sc5422-b2-026",
+        "sc5422-b2-027",
+        "sc5422-b2-028",
+        "sc5422-b2-029",
+        "sc5422-b2-030",
+        "sc5422-b2-031",
+        "sc5422-b2-032",
+        "sc5422-b2-033",
+        "sc5422-b2-034",
+        "sc5422-b2-035",
+        "sc5422-b2-036",
+        "sc5422-b2-037",
+        "sc5422-b2-038",
+        "sc5422-b2-039",
+        "sc5422-b3-026",
+        "sc5422-b3-027",
+        "sc5422-b3-028",
+        "sc5422-b3-029",
+        "sc5422-b3-030",
+        "sc5422-b3-031",
+        "sc5422-b3-032",
+        "sc5422-b3-033",
+        "sc5422-b3-034",
+        "sc5422-b3-035",
+        "sc5422-b3-036",
+        "sc5422-b3-037",
+        "sc5422-b3-038",
+        "sc5422-b3-039"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-026",
+        "sc5422-b1-027",
+        "sc5422-b1-028",
+        "sc5422-b1-029",
+        "sc5422-b1-030",
+        "sc5422-b1-031",
+        "sc5422-b1-032",
+        "sc5422-b1-033",
+        "sc5422-b1-034",
+        "sc5422-b1-035",
+        "sc5422-b1-036",
+        "sc5422-b1-037"
+      ],
+      "purpose": "Consolidate \"Individual Counseling, Academic Planning, and Career Development\" (Deliver) across 4 lessons and 42 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-05",
+      "unitId": "deliver",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Group, Classroom, Crisis, and Prevention Services",
+      "chapterId": "sc5422-ch-05",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-05-section-01",
+        "sc5422-ch-05-section-02",
+        "sc5422-ch-05-section-03",
+        "sc5422-ch-05-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-040",
+        "sc5422-b1-041",
+        "sc5422-b1-042",
+        "sc5422-b1-043",
+        "sc5422-b1-044",
+        "sc5422-b1-045",
+        "sc5422-b1-046",
+        "sc5422-b1-047",
+        "sc5422-b1-048",
+        "sc5422-b1-049",
+        "sc5422-b1-050",
+        "sc5422-b1-051",
+        "sc5422-b1-052",
+        "sc5422-b2-040",
+        "sc5422-b2-041",
+        "sc5422-b2-042",
+        "sc5422-b2-043",
+        "sc5422-b2-044",
+        "sc5422-b2-045",
+        "sc5422-b2-046",
+        "sc5422-b2-047",
+        "sc5422-b2-048",
+        "sc5422-b2-049",
+        "sc5422-b2-050",
+        "sc5422-b2-051",
+        "sc5422-b2-052",
+        "sc5422-b3-040",
+        "sc5422-b3-041",
+        "sc5422-b3-042",
+        "sc5422-b3-043",
+        "sc5422-b3-044",
+        "sc5422-b3-045",
+        "sc5422-b3-046",
+        "sc5422-b3-047",
+        "sc5422-b3-048",
+        "sc5422-b3-049",
+        "sc5422-b3-050",
+        "sc5422-b3-051",
+        "sc5422-b3-052"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-040",
+        "sc5422-b1-041",
+        "sc5422-b1-042",
+        "sc5422-b1-043",
+        "sc5422-b1-044",
+        "sc5422-b1-045",
+        "sc5422-b1-046",
+        "sc5422-b1-047",
+        "sc5422-b1-048",
+        "sc5422-b1-049",
+        "sc5422-b1-050",
+        "sc5422-b1-051"
+      ],
+      "purpose": "Consolidate \"Group, Classroom, Crisis, and Prevention Services\" (Deliver) across 4 lessons and 39 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-06",
+      "unitId": "deliver",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Consultation, Collaboration, MTSS, Plans, and Referrals",
+      "chapterId": "sc5422-ch-06",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-06-section-01",
+        "sc5422-ch-06-section-02",
+        "sc5422-ch-06-section-03",
+        "sc5422-ch-06-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-053",
+        "sc5422-b1-054",
+        "sc5422-b1-055",
+        "sc5422-b1-056",
+        "sc5422-b1-057",
+        "sc5422-b1-058",
+        "sc5422-b1-059",
+        "sc5422-b1-060",
+        "sc5422-b1-061",
+        "sc5422-b1-062",
+        "sc5422-b1-063",
+        "sc5422-b1-064",
+        "sc5422-b1-065",
+        "sc5422-b2-053",
+        "sc5422-b2-054",
+        "sc5422-b2-055",
+        "sc5422-b2-056",
+        "sc5422-b2-057",
+        "sc5422-b2-058",
+        "sc5422-b2-059",
+        "sc5422-b2-060",
+        "sc5422-b2-061",
+        "sc5422-b2-062",
+        "sc5422-b2-063",
+        "sc5422-b2-064",
+        "sc5422-b2-065",
+        "sc5422-b3-053",
+        "sc5422-b3-054",
+        "sc5422-b3-055",
+        "sc5422-b3-056",
+        "sc5422-b3-057",
+        "sc5422-b3-058",
+        "sc5422-b3-059",
+        "sc5422-b3-060",
+        "sc5422-b3-061",
+        "sc5422-b3-062",
+        "sc5422-b3-063",
+        "sc5422-b3-064",
+        "sc5422-b3-065"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-053",
+        "sc5422-b1-054",
+        "sc5422-b1-055",
+        "sc5422-b1-056",
+        "sc5422-b1-057",
+        "sc5422-b1-058",
+        "sc5422-b1-059",
+        "sc5422-b1-060",
+        "sc5422-b1-061",
+        "sc5422-b1-062",
+        "sc5422-b1-063",
+        "sc5422-b1-064"
+      ],
+      "purpose": "Consolidate \"Consultation, Collaboration, MTSS, Plans, and Referrals\" (Deliver) across 4 lessons and 39 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-07",
+      "unitId": "manage",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Program Vision, Mission, Alignment, and Partnership",
+      "chapterId": "sc5422-ch-07",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-07-section-01",
+        "sc5422-ch-07-section-02",
+        "sc5422-ch-07-section-03",
+        "sc5422-ch-07-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-066",
+        "sc5422-b1-067",
+        "sc5422-b1-068",
+        "sc5422-b1-069",
+        "sc5422-b1-070",
+        "sc5422-b1-071",
+        "sc5422-b1-072",
+        "sc5422-b2-066",
+        "sc5422-b2-067",
+        "sc5422-b2-068",
+        "sc5422-b2-069",
+        "sc5422-b2-070",
+        "sc5422-b2-071",
+        "sc5422-b2-072",
+        "sc5422-b3-066",
+        "sc5422-b3-067",
+        "sc5422-b3-068",
+        "sc5422-b3-069",
+        "sc5422-b3-070",
+        "sc5422-b3-071",
+        "sc5422-b3-072"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-066",
+        "sc5422-b1-067",
+        "sc5422-b1-068",
+        "sc5422-b1-069",
+        "sc5422-b1-070",
+        "sc5422-b1-071",
+        "sc5422-b1-072",
+        "sc5422-b2-066",
+        "sc5422-b2-067",
+        "sc5422-b2-068",
+        "sc5422-b2-069",
+        "sc5422-b2-070"
+      ],
+      "purpose": "Consolidate \"Program Vision, Mission, Alignment, and Partnership\" (Manage) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-08",
+      "unitId": "manage",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Outcome Goals, Data Types, Action Plans, and Measurement",
+      "chapterId": "sc5422-ch-08",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-08-section-01",
+        "sc5422-ch-08-section-02",
+        "sc5422-ch-08-section-03",
+        "sc5422-ch-08-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-073",
+        "sc5422-b1-074",
+        "sc5422-b1-075",
+        "sc5422-b1-076",
+        "sc5422-b1-077",
+        "sc5422-b1-078",
+        "sc5422-b1-079",
+        "sc5422-b2-073",
+        "sc5422-b2-074",
+        "sc5422-b2-075",
+        "sc5422-b2-076",
+        "sc5422-b2-077",
+        "sc5422-b2-078",
+        "sc5422-b2-079",
+        "sc5422-b3-073",
+        "sc5422-b3-074",
+        "sc5422-b3-075",
+        "sc5422-b3-076",
+        "sc5422-b3-077",
+        "sc5422-b3-078",
+        "sc5422-b3-079"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-073",
+        "sc5422-b1-074",
+        "sc5422-b1-075",
+        "sc5422-b1-076",
+        "sc5422-b1-077",
+        "sc5422-b1-078",
+        "sc5422-b1-079",
+        "sc5422-b2-073",
+        "sc5422-b2-074",
+        "sc5422-b2-075",
+        "sc5422-b2-076",
+        "sc5422-b2-077"
+      ],
+      "purpose": "Consolidate \"Outcome Goals, Data Types, Action Plans, and Measurement\" (Manage) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-09",
+      "unitId": "manage",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Program Operations, Technology, Resources, and Communication",
+      "chapterId": "sc5422-ch-09",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-09-section-01",
+        "sc5422-ch-09-section-02",
+        "sc5422-ch-09-section-03",
+        "sc5422-ch-09-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-080",
+        "sc5422-b1-081",
+        "sc5422-b1-082",
+        "sc5422-b1-083",
+        "sc5422-b1-084",
+        "sc5422-b1-085",
+        "sc5422-b2-080",
+        "sc5422-b2-081",
+        "sc5422-b2-082",
+        "sc5422-b2-083",
+        "sc5422-b2-084",
+        "sc5422-b2-085",
+        "sc5422-b3-080",
+        "sc5422-b3-081",
+        "sc5422-b3-082",
+        "sc5422-b3-083",
+        "sc5422-b3-084",
+        "sc5422-b3-085"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-080",
+        "sc5422-b1-081",
+        "sc5422-b1-082",
+        "sc5422-b1-083",
+        "sc5422-b1-084",
+        "sc5422-b1-085",
+        "sc5422-b2-080",
+        "sc5422-b2-081",
+        "sc5422-b2-082",
+        "sc5422-b2-083",
+        "sc5422-b2-084",
+        "sc5422-b2-085"
+      ],
+      "purpose": "Consolidate \"Program Operations, Technology, Resources, and Communication\" (Manage) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-10",
+      "unitId": "assess",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Program Assessment and Implementation Quality",
+      "chapterId": "sc5422-ch-10",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-10-section-01",
+        "sc5422-ch-10-section-02",
+        "sc5422-ch-10-section-03",
+        "sc5422-ch-10-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-086",
+        "sc5422-b1-087",
+        "sc5422-b1-088",
+        "sc5422-b1-089",
+        "sc5422-b1-090",
+        "sc5422-b2-086",
+        "sc5422-b2-087",
+        "sc5422-b2-088",
+        "sc5422-b2-089",
+        "sc5422-b2-090",
+        "sc5422-b3-086",
+        "sc5422-b3-087",
+        "sc5422-b3-088",
+        "sc5422-b3-089",
+        "sc5422-b3-090"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-086",
+        "sc5422-b1-087",
+        "sc5422-b1-088",
+        "sc5422-b1-089",
+        "sc5422-b1-090",
+        "sc5422-b2-086",
+        "sc5422-b2-087",
+        "sc5422-b2-088",
+        "sc5422-b2-089",
+        "sc5422-b2-090",
+        "sc5422-b3-086",
+        "sc5422-b3-087"
+      ],
+      "purpose": "Consolidate \"Program Assessment and Implementation Quality\" (Assess) across 4 lessons and 15 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-11",
+      "unitId": "assess",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Results Data, Interpretation, and Reporting",
+      "chapterId": "sc5422-ch-11",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-11-section-01",
+        "sc5422-ch-11-section-02",
+        "sc5422-ch-11-section-03",
+        "sc5422-ch-11-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-091",
+        "sc5422-b1-092",
+        "sc5422-b1-093",
+        "sc5422-b1-094",
+        "sc5422-b1-095",
+        "sc5422-b2-091",
+        "sc5422-b2-092",
+        "sc5422-b2-093",
+        "sc5422-b2-094",
+        "sc5422-b2-095",
+        "sc5422-b3-091",
+        "sc5422-b3-092",
+        "sc5422-b3-093",
+        "sc5422-b3-094",
+        "sc5422-b3-095"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-091",
+        "sc5422-b1-092",
+        "sc5422-b1-093",
+        "sc5422-b1-094",
+        "sc5422-b1-095",
+        "sc5422-b2-091",
+        "sc5422-b2-092",
+        "sc5422-b2-093",
+        "sc5422-b2-094",
+        "sc5422-b2-095",
+        "sc5422-b3-091",
+        "sc5422-b3-092"
+      ],
+      "purpose": "Consolidate \"Results Data, Interpretation, and Reporting\" (Assess) across 4 lessons and 15 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-unit-review-12",
+      "unitId": "assess",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Continuous Improvement and Data-Based Advocacy",
+      "chapterId": "sc5422-ch-12",
+      "topicDiagnosticRouteIds": [
+        "sc5422-ch-12-section-01",
+        "sc5422-ch-12-section-02",
+        "sc5422-ch-12-section-03",
+        "sc5422-ch-12-section-04"
+      ],
+      "itemIds": [
+        "sc5422-b1-096",
+        "sc5422-b1-097",
+        "sc5422-b1-098",
+        "sc5422-b1-099",
+        "sc5422-b1-100",
+        "sc5422-b2-096",
+        "sc5422-b2-097",
+        "sc5422-b2-098",
+        "sc5422-b2-099",
+        "sc5422-b2-100",
+        "sc5422-b3-096",
+        "sc5422-b3-097",
+        "sc5422-b3-098",
+        "sc5422-b3-099",
+        "sc5422-b3-100"
+      ],
+      "mixedPracticeItemIds": [
+        "sc5422-b1-096",
+        "sc5422-b1-097",
+        "sc5422-b1-098",
+        "sc5422-b1-099",
+        "sc5422-b1-100",
+        "sc5422-b2-096",
+        "sc5422-b2-097",
+        "sc5422-b2-098",
+        "sc5422-b2-099",
+        "sc5422-b2-100",
+        "sc5422-b3-096",
+        "sc5422-b3-097"
+      ],
+      "purpose": "Consolidate \"Continuous Improvement and Data-Based Advocacy\" (Assess) across 4 lessons and 15 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "school-counselor-5422-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis School Counselor (5422) blueprint domains.",
+      "focus": [
+        "Define",
+        "Deliver",
+        "Manage",
+        "Assess"
+      ],
+      "itemIds": [
+        "sc5422-b1-001",
+        "sc5422-b1-086",
+        "sc5422-b1-067",
+        "sc5422-b1-028",
+        "sc5422-b1-004",
+        "sc5422-b1-089",
+        "sc5422-b1-070",
+        "sc5422-b1-031",
+        "sc5422-b1-007",
+        "sc5422-b1-092",
+        "sc5422-b1-073",
+        "sc5422-b1-034",
+        "sc5422-b1-010",
+        "sc5422-b1-095",
+        "sc5422-b1-076",
+        "sc5422-b1-037",
+        "sc5422-b1-013",
+        "sc5422-b1-098",
+        "sc5422-b1-079",
+        "sc5422-b1-040",
+        "sc5422-b1-016",
+        "sc5422-b2-086",
+        "sc5422-b1-082",
+        "sc5422-b1-043",
+        "sc5422-b1-019",
+        "sc5422-b2-089",
+        "sc5422-b1-085",
+        "sc5422-b1-046",
+        "sc5422-b1-022",
+        "sc5422-b2-092",
+        "sc5422-b2-068",
+        "sc5422-b1-049",
+        "sc5422-b1-025",
+        "sc5422-b2-095",
+        "sc5422-b2-071",
+        "sc5422-b1-052",
+        "sc5422-b2-003",
+        "sc5422-b2-098",
+        "sc5422-b2-074",
+        "sc5422-b1-055"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis School Counselor (5422) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Manage",
+        "Assess",
+        "Define",
+        "Deliver"
+      ],
+      "itemIds": [
+        "sc5422-b1-026",
+        "sc5422-b1-002",
+        "sc5422-b1-087",
+        "sc5422-b1-068",
+        "sc5422-b1-029",
+        "sc5422-b1-005",
+        "sc5422-b1-090",
+        "sc5422-b1-071",
+        "sc5422-b1-032",
+        "sc5422-b1-008",
+        "sc5422-b1-093",
+        "sc5422-b1-074",
+        "sc5422-b1-035",
+        "sc5422-b1-011",
+        "sc5422-b1-096",
+        "sc5422-b1-077",
+        "sc5422-b1-038",
+        "sc5422-b1-014",
+        "sc5422-b1-099",
+        "sc5422-b1-080",
+        "sc5422-b1-041",
+        "sc5422-b1-017",
+        "sc5422-b2-087",
+        "sc5422-b1-083",
+        "sc5422-b1-044",
+        "sc5422-b1-020",
+        "sc5422-b2-090",
+        "sc5422-b2-066",
+        "sc5422-b1-047",
+        "sc5422-b1-023",
+        "sc5422-b2-093",
+        "sc5422-b2-069",
+        "sc5422-b1-050",
+        "sc5422-b2-001",
+        "sc5422-b2-096",
+        "sc5422-b2-072",
+        "sc5422-b1-053",
+        "sc5422-b2-004",
+        "sc5422-b2-099",
+        "sc5422-b2-075"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis School Counselor (5422) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Mismanaging confidentiality limits, mandated reporting, and FERPA record boundaries",
+        "Conflating participation, Mindsets & Behaviors, and outcome data or overclaiming causality",
+        "Accepting inappropriate non-counseling duties instead of protecting the ASCA 80/20 allocation"
+      ],
+      "itemIds": [
+        "sc5422-b1-066",
+        "sc5422-b1-027",
+        "sc5422-b1-003",
+        "sc5422-b1-088",
+        "sc5422-b1-069",
+        "sc5422-b1-030",
+        "sc5422-b1-006",
+        "sc5422-b1-091",
+        "sc5422-b1-072",
+        "sc5422-b1-033",
+        "sc5422-b1-009",
+        "sc5422-b1-094",
+        "sc5422-b1-075",
+        "sc5422-b1-036",
+        "sc5422-b1-012",
+        "sc5422-b1-097",
+        "sc5422-b1-078",
+        "sc5422-b1-039",
+        "sc5422-b1-015",
+        "sc5422-b1-100",
+        "sc5422-b1-081",
+        "sc5422-b1-042",
+        "sc5422-b1-018",
+        "sc5422-b2-088",
+        "sc5422-b1-084",
+        "sc5422-b1-045",
+        "sc5422-b1-021",
+        "sc5422-b2-091",
+        "sc5422-b2-067",
+        "sc5422-b1-048",
+        "sc5422-b1-024",
+        "sc5422-b2-094",
+        "sc5422-b2-070",
+        "sc5422-b1-051",
+        "sc5422-b2-002",
+        "sc5422-b2-097",
+        "sc5422-b2-073",
+        "sc5422-b1-054",
+        "sc5422-b2-005",
+        "sc5422-b2-100"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "school-counselor-5422-form-internal-a",
+      "title": "Internal practice form A (Praxis School Counselor (5422))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sc5422-b1-001",
+        "sc5422-b1-086",
+        "sc5422-b1-067",
+        "sc5422-b1-028",
+        "sc5422-b1-004",
+        "sc5422-b1-089",
+        "sc5422-b1-070",
+        "sc5422-b1-031",
+        "sc5422-b1-007",
+        "sc5422-b1-092",
+        "sc5422-b1-073",
+        "sc5422-b1-034",
+        "sc5422-b1-010",
+        "sc5422-b1-095",
+        "sc5422-b1-076",
+        "sc5422-b1-037",
+        "sc5422-b1-013",
+        "sc5422-b1-098",
+        "sc5422-b1-079",
+        "sc5422-b1-040",
+        "sc5422-b1-016",
+        "sc5422-b2-086",
+        "sc5422-b1-082",
+        "sc5422-b1-043",
+        "sc5422-b1-019",
+        "sc5422-b2-089",
+        "sc5422-b1-085",
+        "sc5422-b1-046",
+        "sc5422-b1-022",
+        "sc5422-b2-092",
+        "sc5422-b2-068",
+        "sc5422-b1-049",
+        "sc5422-b1-025",
+        "sc5422-b2-095",
+        "sc5422-b2-071",
+        "sc5422-b1-052",
+        "sc5422-b2-003",
+        "sc5422-b2-098",
+        "sc5422-b2-074",
+        "sc5422-b1-055",
+        "sc5422-b2-006",
+        "sc5422-b3-086",
+        "sc5422-b2-077",
+        "sc5422-b1-058",
+        "sc5422-b2-009",
+        "sc5422-b3-089",
+        "sc5422-b2-080",
+        "sc5422-b1-061",
+        "sc5422-b2-012",
+        "sc5422-b3-092"
+      ],
+      "topicIds": [
+        "sc5422-ch-01",
+        "sc5422-ch-10",
+        "sc5422-ch-07",
+        "sc5422-ch-04",
+        "sc5422-ch-11",
+        "sc5422-ch-08",
+        "sc5422-ch-02",
+        "sc5422-ch-12",
+        "sc5422-ch-05",
+        "sc5422-ch-09",
+        "sc5422-ch-03",
+        "sc5422-ch-06"
+      ],
+      "unitIds": [
+        "define",
+        "assess",
+        "manage",
+        "deliver"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-form-internal-b",
+      "title": "Internal practice form B (Praxis School Counselor (5422))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sc5422-b1-026",
+        "sc5422-b1-002",
+        "sc5422-b1-087",
+        "sc5422-b1-068",
+        "sc5422-b1-029",
+        "sc5422-b1-005",
+        "sc5422-b1-090",
+        "sc5422-b1-071",
+        "sc5422-b1-032",
+        "sc5422-b1-008",
+        "sc5422-b1-093",
+        "sc5422-b1-074",
+        "sc5422-b1-035",
+        "sc5422-b1-011",
+        "sc5422-b1-096",
+        "sc5422-b1-077",
+        "sc5422-b1-038",
+        "sc5422-b1-014",
+        "sc5422-b1-099",
+        "sc5422-b1-080",
+        "sc5422-b1-041",
+        "sc5422-b1-017",
+        "sc5422-b2-087",
+        "sc5422-b1-083",
+        "sc5422-b1-044",
+        "sc5422-b1-020",
+        "sc5422-b2-090",
+        "sc5422-b2-066",
+        "sc5422-b1-047",
+        "sc5422-b1-023",
+        "sc5422-b2-093",
+        "sc5422-b2-069",
+        "sc5422-b1-050",
+        "sc5422-b2-001",
+        "sc5422-b2-096",
+        "sc5422-b2-072",
+        "sc5422-b1-053",
+        "sc5422-b2-004",
+        "sc5422-b2-099",
+        "sc5422-b2-075",
+        "sc5422-b1-056",
+        "sc5422-b2-007",
+        "sc5422-b3-087",
+        "sc5422-b2-078",
+        "sc5422-b1-059",
+        "sc5422-b2-010",
+        "sc5422-b3-090",
+        "sc5422-b2-081",
+        "sc5422-b1-062",
+        "sc5422-b2-013"
+      ],
+      "topicIds": [
+        "sc5422-ch-04",
+        "sc5422-ch-01",
+        "sc5422-ch-10",
+        "sc5422-ch-07",
+        "sc5422-ch-11",
+        "sc5422-ch-08",
+        "sc5422-ch-02",
+        "sc5422-ch-12",
+        "sc5422-ch-09",
+        "sc5422-ch-05",
+        "sc5422-ch-03",
+        "sc5422-ch-06"
+      ],
+      "unitIds": [
+        "deliver",
+        "define",
+        "assess",
+        "manage"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-counselor-5422-form-internal-c",
+      "title": "Internal practice form C (Praxis School Counselor (5422))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sc5422-b1-066",
+        "sc5422-b1-027",
+        "sc5422-b1-003",
+        "sc5422-b1-088",
+        "sc5422-b1-069",
+        "sc5422-b1-030",
+        "sc5422-b1-006",
+        "sc5422-b1-091",
+        "sc5422-b1-072",
+        "sc5422-b1-033",
+        "sc5422-b1-009",
+        "sc5422-b1-094",
+        "sc5422-b1-075",
+        "sc5422-b1-036",
+        "sc5422-b1-012",
+        "sc5422-b1-097",
+        "sc5422-b1-078",
+        "sc5422-b1-039",
+        "sc5422-b1-015",
+        "sc5422-b1-100",
+        "sc5422-b1-081",
+        "sc5422-b1-042",
+        "sc5422-b1-018",
+        "sc5422-b2-088",
+        "sc5422-b1-084",
+        "sc5422-b1-045",
+        "sc5422-b1-021",
+        "sc5422-b2-091",
+        "sc5422-b2-067",
+        "sc5422-b1-048",
+        "sc5422-b1-024",
+        "sc5422-b2-094",
+        "sc5422-b2-070",
+        "sc5422-b1-051",
+        "sc5422-b2-002",
+        "sc5422-b2-097",
+        "sc5422-b2-073",
+        "sc5422-b1-054",
+        "sc5422-b2-005",
+        "sc5422-b2-100",
+        "sc5422-b2-076",
+        "sc5422-b1-057",
+        "sc5422-b2-008",
+        "sc5422-b3-088",
+        "sc5422-b2-079",
+        "sc5422-b1-060",
+        "sc5422-b2-011",
+        "sc5422-b3-091",
+        "sc5422-b2-082",
+        "sc5422-b1-063"
+      ],
+      "topicIds": [
+        "sc5422-ch-07",
+        "sc5422-ch-04",
+        "sc5422-ch-01",
+        "sc5422-ch-10",
+        "sc5422-ch-11",
+        "sc5422-ch-02",
+        "sc5422-ch-08",
+        "sc5422-ch-12",
+        "sc5422-ch-09",
+        "sc5422-ch-05",
+        "sc5422-ch-03",
+        "sc5422-ch-06"
+      ],
+      "unitIds": [
+        "manage",
+        "deliver",
+        "define",
+        "assess"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

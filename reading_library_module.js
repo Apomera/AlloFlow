@@ -4090,6 +4090,11 @@
     var index = _idx[0]; var setIndex = _idx[1];
     var _f = useState({ language: 'English', level: '', topic: '', length: '', license: '', search: '', audio: false, fullOnly: false, sort: 'level', source: '', searchAll: false });
     var filters = _f[0]; var setFilters = _f[1];
+    // Filters kept behind the "More options" fold. The fold shows how many are
+    // on, and starts open if any is already on, so none is ever out of sight.
+    var hiddenFilterCount = ['source', 'topic', 'length', 'license', 'audio', 'fullOnly', 'searchAll']
+      .filter(function (key) { return !!filters[key]; }).length;
+    var _more = useState(hiddenFilterCount > 0); var moreFiltersOpen = _more[0]; var setMoreFiltersOpen = _more[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _setView = useState(null); var activeReadingSet = _setView[0]; var setActiveReadingSet = _setView[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
@@ -4648,17 +4653,16 @@
             onClick: function () { stopSpeech(); setOpenBook(null); setSelectedCollectionId(null); },
           }, tr('readinglib_change_collection', 'Change collection'))
         ),
-        // filters
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 pb-3' },
-          sourceOptions.length > 1 ? e('select', {
+        // filters: search, language and level stay in view; the rest sit
+        // behind one "More options" fold just below this row.
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pb-3', 'data-testid': 'reading-catalog-filters' },
+          e('input', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
-            value: filters.source,
-            onChange: function (ev) { setFilters(Object.assign({}, filters, { source: ev.target.value })); },
-            'aria-label': tr('readinglib_filter_source', 'Source'),
-          },
-            e('option', { value: '' }, tr('readinglib_all_sources', 'All sources')),
-            sourceOptions.map(function (s) { return e('option', { key: s.id, value: s.id }, s.label + ' (' + s.count + ')'); })
-          ) : null,
+            placeholder: tr('readinglib_search_ph', 'Search titles, authors, topics…'),
+            value: filters.search,
+            onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); },
+            'aria-label': tr('readinglib_search', 'Search'),
+          }),
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.language,
@@ -4677,6 +4681,41 @@
             e('option', { value: '' }, tr('readinglib_all_levels', 'All levels')),
             availableLevels.map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
           ),
+          e('button', {
+            type: 'button',
+            className: 'flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
+              (moreFiltersOpen ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setMoreFiltersOpen(!moreFiltersOpen); },
+            'aria-expanded': moreFiltersOpen,
+            'aria-controls': 'reading-more-filters',
+            'aria-label': tr('memory_aid.panel_more_options', 'More options') +
+              (hiddenFilterCount ? '. ' + tr('readinglib_active_filters', 'Active filters') + ': ' + hiddenFilterCount : ''),
+            'data-testid': 'reading-more-filters-toggle',
+          },
+            e('span', { className: 'flex min-w-0 items-center gap-1.5' },
+              e('span', { className: 'truncate' }, tr('memory_aid.panel_more_options', 'More options')),
+              hiddenFilterCount ? e('span', {
+                // Outlined in the button's own text colour, so every theme (High contrast too) can read it.
+                className: 'inline-flex min-w-[1.25rem] shrink-0 justify-center rounded-full border border-current px-1.5 text-[11px] font-bold leading-5',
+                'data-testid': 'reading-more-filters-count',
+              }, String(hiddenFilterCount)) : null),
+            e('span', { 'aria-hidden': 'true', className: 'shrink-0 text-slate-500' }, moreFiltersOpen ? '▴' : '▾'))
+        ),
+        moreFiltersOpen ? e('div', {
+          id: 'reading-more-filters',
+          className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-3 rounded-xl border border-slate-200 bg-slate-50 p-2',
+          role: 'group',
+          'aria-label': tr('memory_aid.panel_more_options', 'More options'),
+        },
+          sourceOptions.length > 1 ? e('select', {
+            className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
+            value: filters.source,
+            onChange: function (ev) { setFilters(Object.assign({}, filters, { source: ev.target.value })); },
+            'aria-label': tr('readinglib_filter_source', 'Source'),
+          },
+            e('option', { value: '' }, tr('readinglib_all_sources', 'All sources')),
+            sourceOptions.map(function (s) { return e('option', { key: s.id, value: s.id }, s.label + ' (' + s.count + ')'); })
+          ) : null,
           topicOptions.length ? e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.topic,
@@ -4715,13 +4754,6 @@
             e('option', { value: 'audio' }, tr('readinglib_sort_audio', 'Narrated first')),
             e('option', { value: 'language' }, tr('readinglib_sort_language', 'Language'))
           ),
-          e('input', {
-            className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
-            placeholder: tr('readinglib_search_ph', 'Search titles, authors, topics…'),
-            value: filters.search,
-            onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); },
-            'aria-label': tr('readinglib_search', 'Search'),
-          }),
           e('button', {
             className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
               (filters.audio ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
@@ -4745,7 +4777,7 @@
             'aria-pressed': filters.searchAll,
             title: tr('readinglib_search_all_hint', 'Include books from every collection in search results'),
           }, '🔎 ' + tr('readinglib_search_all', 'All collections'))
-        ),
+        ) : null,
         props.isTeacherMode && selectedSetSlugs.length ? e('div', {
           className: 'mb-3 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3',
           'data-testid': 'reading-set-builder',
@@ -4870,6 +4902,16 @@
               ? visibleBooks.length + ' ' + tr('readinglib_shown_of', 'shown of') + ' ' + filtered.length + ' ' + tr('readinglib_matches', 'matches') + scope + ' · ' + denom + ' ' + tr('readinglib_books', 'books')
               : filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + denom + ' ' + tr('readinglib_books', 'books') + scope;
           })()),
+        // "All collections" lives in the fold, so offer it here when a search
+        // finds nothing on this shelf: widening costs no extra click.
+        index.status !== 'loading' && index.status !== 'error' && filtered.length === 0 && filters.search.trim() && !filters.searchAll && !moreFiltersOpen ? e('div', { className: 'pb-3' },
+          e('button', {
+            type: 'button',
+            className: 'rounded-lg border px-3 py-2 text-sm font-semibold bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
+            onClick: function () { setFilters(Object.assign({}, filters, { searchAll: true })); },
+            title: tr('readinglib_search_all_hint', 'Include books from every collection in search results'),
+            'data-testid': 'reading-search-all-suggestion',
+          }, '🔎 ' + tr('readinglib_search_all', 'All collections'))) : null,
         e('div', { className: 'flex flex-wrap items-center gap-2 pb-3', role: 'group', 'aria-label': tr('readinglib_cover_size', 'Cover size') },
           e('span', { className: 'text-sm font-semibold text-slate-700' }, tr('readinglib_cover_size', 'Cover size')),
           ['compact', 'comfortable', 'large'].map(function (size) {

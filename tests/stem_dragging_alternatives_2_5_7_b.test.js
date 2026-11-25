@@ -60,9 +60,17 @@ describe('Play Lab: tap a player, then tap the field (no drag)', () => {
     const canvas = host.querySelector('canvas[data-playlab-canvas]');
     expect(canvas).toBeTruthy();
     canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 360, right: 720, bottom: 360, x: 0, y: 0 });
-    canvas._plLogicalW = 720; canvas._plLogicalH = 360;
     const live = () => (document.getElementById('allo-live-playlab') || {}).textContent || '';
-    const toClient = (yx, yy) => [30 + (yx / 120) * 660, 18 + (yy / 53.33) * 310];
+    // Since 2026-11-23 the field is drawn play-art style (offense at the bottom, zoomed on
+    // the play), so yards map to pixels through the tool's own camera and map
+    // (window.StemLab.PlayLabModel), not through a fixed 120-yard strip.
+    const model = window.StemLab.PlayLabModel;
+    const toClient = (yx, yy) => {
+      const lW = canvas._plLogicalW, lH = canvas._plLogicalH;
+      const sim = model.simulate({ playId: 'slant', coverageId: 'cover2', losX: 25, customPositions: view.data.playlab.customPositions || {} });
+      const map = model.fieldMap(lW, lH, model.camera(sim));
+      return [map.px(yy) * (720 / lW), map.py(yx) * (360 / lH)];
+    };
     // Find a player by tapping across the offensive backfield.
     let pid = null;
     for (let yx = 10; yx <= 30 && !pid; yx += 1) {
@@ -78,10 +86,12 @@ describe('Play Lab: tap a player, then tap the field (no drag)', () => {
     expect(live()).toContain('Picked up ' + pid);
     expect(host.querySelector('[data-playlab-picked="' + pid + '"]'), 'visible picked-up status').toBeTruthy();
     expect((view.data.playlab.customPositions || {})[pid]).toBeUndefined();
-    // Tap open field far from every offensive player.
-    const [tx, ty] = toClient(100, 40);
+    // Tap open field far from every offensive player (20 yards downfield, in view).
+    const [tx, ty] = toClient(45, 40);
+    expect(tx).toBeGreaterThan(0); expect(tx).toBeLessThan(720);
+    expect(ty).toBeGreaterThan(0); expect(ty).toBeLessThan(360);
     act(() => { mouse(canvas, 'mousedown', tx, ty); mouse(canvas, 'mouseup', tx, ty); });
-    expect(view.data.playlab.customPositions[pid]).toEqual({ x: 100, y: 40 });
+    expect(view.data.playlab.customPositions[pid]).toEqual({ x: 45, y: 40 });
     expect(host.querySelector('[data-playlab-picked]')).toBeNull();
     expect(live()).toContain('Placed ' + pid);
   });

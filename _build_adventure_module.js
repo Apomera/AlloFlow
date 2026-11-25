@@ -121,11 +121,16 @@ const outputCode = `/**
   }
   window.__adventureModuleLoaded = true;
 
-  // WCAG 2.1 AA: accessibility support shared by all Adventure overlays.
-  if (!document.getElementById('adv-a11y-css')) {
+  // WCAG 2.2 AA: accessibility support shared by all Adventure overlays.
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById('adv-a11y-css')) {
     var advA11yStyle = document.createElement('style');
     advA11yStyle.id = 'adv-a11y-css';
-    advA11yStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }';
+    advA11yStyle.textContent = [
+      '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      ':where([role="dialog"], [role="alertdialog"], [aria-labelledby="adventure-audio-dialog-title"], [aria-labelledby="adventure-cast-lobby-title"]) :where(button, input, select, textarea, a, [role="button"], [role="tab"]) { touch-action: manipulation; }',
+      ':where([role="dialog"], [role="alertdialog"], [aria-labelledby="adventure-audio-dialog-title"], [aria-labelledby="adventure-cast-lobby-title"]) :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { :where([role="dialog"], [role="alertdialog"], [aria-labelledby="adventure-audio-dialog-title"], [aria-labelledby="adventure-cast-lobby-title"]) :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }'
+    ].join(' ');
     document.head.appendChild(advA11yStyle);
   }
 
@@ -134,7 +139,7 @@ const outputCode = `/**
 ${indent(fallbackSource, 2)}
 
   // WCAG 4.1.3: shared status live region for dynamic announcements.
-  if (!document.getElementById('allo-live-adventure')) {
+  if (typeof document !== 'undefined' && document.body && typeof document.getElementById === 'function' && !document.getElementById('allo-live-adventure')) {
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-adventure';
     liveRegion.setAttribute('aria-live', 'polite');

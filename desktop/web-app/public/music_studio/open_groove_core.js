@@ -1685,7 +1685,7 @@
     return {
       root: safeRoot,
       quality: safeQuality,
-      symbol: safeRoot + (OG_CHORD_SUFFIX[safeQuality] || ''),
+      symbol: safeRoot + (Object.prototype.hasOwnProperty.call(OG_CHORD_SUFFIX, safeQuality) ? OG_CHORD_SUFFIX[safeQuality] : ''),
       octave: safeOctave,
       pitches: pitches,
       midi: pitches.map(ogNoteNameToMidi)
@@ -1776,7 +1776,7 @@
     var tonic = key.tonic || 'C';
     var rootPc = ogPitchClassFromName(tonic);
     var pc = typeof pitchLike === 'number' ? ((Math.round(pitchLike) % 12) + 12) % 12 : ogPitchClassFromName(pitchLike);
-    var intervals = OG_SCALE_INTERVALS[mode] || OG_SCALE_INTERVALS.minor;
+    var intervals = Object.prototype.hasOwnProperty.call(OG_SCALE_INTERVALS, mode) ? OG_SCALE_INTERVALS[mode] : OG_SCALE_INTERVALS.minor;
     if (rootPc == null || pc == null) return null;
     for (var i = 0; i < intervals.length; i++) {
       if ((rootPc + intervals[i]) % 12 === pc) {
@@ -1808,7 +1808,7 @@
       root: chordLike.root,
       displayRoot: rootName,
       quality: quality,
-      symbol: rootName + (OG_CHORD_SUFFIX[quality] || ''),
+      symbol: rootName + (Object.prototype.hasOwnProperty.call(OG_CHORD_SUFFIX, quality) ? OG_CHORD_SUFFIX[quality] : ''),
       roman: degree && degree.degree ? ogRomanForDegree(degreeIndex, quality) : '?',
       nashville: degree && degree.degree ? String(degree.degree) : '?',
       solfege: degree && degree.solfege || '?',
@@ -1821,7 +1821,7 @@
     var tonic = key.tonic || 'C';
     var mode = key.mode || 'minor';
     var rootPc = ogPitchClassFromName(tonic);
-    var intervals = OG_SCALE_INTERVALS[mode] || OG_SCALE_INTERVALS.minor;
+    var intervals = Object.prototype.hasOwnProperty.call(OG_SCALE_INTERVALS, mode) ? OG_SCALE_INTERVALS[mode] : OG_SCALE_INTERVALS.minor;
     if (rootPc == null) rootPc = 0;
     var scaleDegrees = intervals.map(function (interval, index) {
       var pc = (rootPc + interval) % 12;
@@ -1835,7 +1835,7 @@
         nashville: String(index + 1),
         degreeName: OG_SCALE_DEGREE_NAMES[index] || 'degree ' + (index + 1),
         chordQuality: quality,
-        chordSymbol: note + (OG_CHORD_SUFFIX[quality] || '')
+        chordSymbol: note + (Object.prototype.hasOwnProperty.call(OG_CHORD_SUFFIX, quality) ? OG_CHORD_SUFFIX[quality] : '')
       };
     });
     var preview = ogBuildNotationPreview(project, patternId);
@@ -1909,7 +1909,7 @@
       'triplet-sixteenth': { actualNotes: 3, normalNotes: 2, baseType: '16th' },
       'sixteenth-triplet': { actualNotes: 3, normalNotes: 2, baseType: '16th' }
     };
-    return map[key] ? ogNormalizeTuplet(map[key]) : null;
+    return Object.prototype.hasOwnProperty.call(map, key) ? ogNormalizeTuplet(map[key]) : null;
   }
   function ogNormalizeNotationArticulation(value) {
     var key = String(value == null ? 'normal' : value).trim().toLowerCase().replace(/[_\s]+/g, '-');
@@ -1927,7 +1927,7 @@
       marcato: 'marcato',
       'strong-accent': 'marcato'
     };
-    return map[key] || 'normal';
+    return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : 'normal';
   }
 
   function ogMusicXmlArticulationTag(value) {
@@ -1954,7 +1954,7 @@
       mezzoforte: 'mf',
       fortepiano: 'fp'
     };
-    return map[key] || 'mf';
+    return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : 'mf';
   }
 
   function ogDynamicVelocity(value) {
@@ -2167,8 +2167,9 @@
     var text = String(xmlText || '').trim();
     if (!text) throw new Error('OpenGroove: MusicXML text is empty');
     if (text.length > MAX_MUSICXML_CHARS) throw new Error('OpenGroove: MusicXML exceeds the 5 MB safety limit');
-    if (typeof DOMParser === 'undefined') throw new Error('OpenGroove: MusicXML import requires a browser XML parser');
-    var doc = new DOMParser().parseFromString(text, 'application/xml');
+    var Parser = typeof DOMParser === 'function' ? DOMParser : (root && typeof root.DOMParser === 'function' ? root.DOMParser : null);
+    if (!Parser) throw new Error('OpenGroove: MusicXML import requires a browser XML parser');
+    var doc = new Parser().parseFromString(text, 'application/xml');
     if (doc.getElementsByTagName('parsererror').length) throw new Error('OpenGroove: MusicXML could not be parsed');
     return doc;
   }
@@ -3060,7 +3061,7 @@
     var notation = ogMusicXmlDurationNotationFromTicks(project, ticks, tuplet);
     var map = { whole: 'w', half: 'h', quarter: 'q', eighth: 'e', '16th': 's' };
     if (notation && notation.tuplet) return notation.tuplet.token;
-    if (!notation || !map[notation.type]) return 'q';
+    if (!notation || !Object.prototype.hasOwnProperty.call(map, notation.type)) return 'q';
     return map[notation.type] + (notation.dots ? new Array(notation.dots + 1).join('.') : '');
   }
 
@@ -3072,7 +3073,7 @@
     if (!track || track.type !== 'synth') throw new Error('OpenGroove: synth track not found');
     var measureTicks = ogTicksPerMeasure(project);
     var beatTicks = ogTicksPerBeat(project);
-    var bar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, ogInt(options.startBar, 0)));
+    var bar = Math.max(0, Math.min(Math.max(1, ogInt(pattern.bars, 1)) - 1, ogInt(options.startBar, 0)));
     var startBeat = Math.max(1, ogFinite(options.startBeat, 1));
     var startTick = Math.max(0, Math.min(ogPatternLengthTicks(project, pattern) - 1, bar * measureTicks + Math.round((startBeat - 1) * beatTicks)));
     var durationTicks = options.durationTicks != null ? Math.max(1, ogInt(options.durationTicks, beatTicks)) : ogNotationDurationTicks(project, options.duration || 'q');
@@ -4310,7 +4311,7 @@
       : 'note';
     var start = Math.max(0, Math.min(length - 1, ogInt(eventLike.startTick, 0)));
     var event = {
-      id: eventLike.id || ogMintId(project, 'event'),
+      id: (eventLike.id && !ogIsUnsafeKey(eventLike.id)) ? eventLike.id : ogMintId(project, 'event'),
       type: type,
       trackId: ogSafeString(eventLike.trackId, ''),
       startTick: start
@@ -4381,14 +4382,16 @@
   }
 
   function ogSortEvents(pattern) {
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     pattern.events.sort(function (a, b) {
-      return (ogInt(a.startTick, 0) - ogInt(b.startTick, 0)) || String(a.id).localeCompare(String(b.id));
+      return (ogInt(a && a.startTick, 0) - ogInt(b && b.startTick, 0)) || String(a && a.id || '').localeCompare(String(b && b.id || ''));
     });
   }
 
   function ogAppendEvent(project, patternId, eventLike) {
     var pattern = ogFindPattern(project, patternId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     var event = ogSanitizeEvent(project, pattern, eventLike);
     pattern.events.push(event);
     ogSortEvents(pattern);
@@ -4398,9 +4401,9 @@
 
   function ogRemoveEvent(project, patternId, eventId) {
     var pattern = ogFindPattern(project, patternId);
-    if (!pattern) return false;
+    if (!pattern || !Array.isArray(pattern.events)) return false;
     var before = pattern.events.length;
-    pattern.events = pattern.events.filter(function (event) { return event.id !== eventId; });
+    pattern.events = pattern.events.filter(function (event) { return event && event.id !== eventId; });
     return pattern.events.length !== before;
   }
 
@@ -4408,15 +4411,16 @@
     options = options || {};
     var pattern = ogFindPattern(project, patternId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     var perBar = Math.max(1, ogInt(stepsPerBar, 16));
-    var totalSteps = Math.max(1, pattern.bars * perBar);
+    var totalSteps = Math.max(1, Math.max(1, ogInt(pattern.bars, 1)) * perBar);
     var step = Math.max(0, Math.min(totalSteps - 1, ogInt(stepIndex, 0)));
     var stepTicks = Math.round(ogTicksPerMeasure(project) / perBar);
     var startTick = step * stepTicks;
     var existing = null;
     for (var i = 0; i < pattern.events.length; i++) {
       var event = pattern.events[i];
-      if (event.type === 'drumHit' && event.trackId === trackId && event.padId === padId && event.startTick === startTick) {
+      if (event && event.type === 'drumHit' && event.trackId === trackId && event.padId === padId && event.startTick === startTick) {
         existing = event;
         break;
       }
@@ -4455,8 +4459,9 @@
     options = options || {};
     var pattern = ogFindPattern(project, patternId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     var perBar = Math.max(1, ogInt(stepsPerBar, 16));
-    var totalSteps = Math.max(1, pattern.bars * perBar);
+    var totalSteps = Math.max(1, Math.max(1, ogInt(pattern.bars, 1)) * perBar);
     var step = Math.max(0, Math.min(totalSteps - 1, ogInt(stepIndex, 0)));
     var stepTicks = Math.round(ogTicksPerMeasure(project) / perBar);
     var startTick = step * stepTicks;
@@ -4465,7 +4470,7 @@
     var existing = null;
     for (var i = 0; i < pattern.events.length; i++) {
       var event = pattern.events[i];
-      if (event.type === 'note' && event.trackId === trackId && event.midi === midi && event.startTick === startTick) {
+      if (event && event.type === 'note' && event.trackId === trackId && event.midi === midi && event.startTick === startTick) {
         existing = event;
         break;
       }
@@ -5171,7 +5176,7 @@
     var track = ogFindTrack(project, trackId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
     var preview = ogBuildNotationPreview(project, pattern.id);
-    var ts = Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
+    var ts = project && Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
     var clef = ogInferStaffClef(project, trackId, options);
     var clefSign = clef === 'bass' ? 'F' : 'G';
     var clefLine = clef === 'bass' ? 4 : 2;
@@ -5302,7 +5307,7 @@
     var ppq = Math.max(24, Math.min(32767, ogTicksPerBeat(project)));
     var bpm = Math.max(20, Math.min(400, ogFinite(project && project.bpm, OG_DEFAULT_BPM)));
     var tempo = Math.round(60000000 / bpm);
-    var ts = Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
+    var ts = project && Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
     var denominator = Math.max(1, Math.min(32, ogInt(ts[1], 4)));
     var denominatorPower = 0;
     while (Math.pow(2, denominatorPower) < denominator && denominatorPower < 8) denominatorPower += 1;
@@ -5422,8 +5427,8 @@
     var copy = {
       id: ogMintId(project, 'pattern'),
       name: ogSafeString(name, source.name + ' Copy'),
-      bars: source.bars,
-      events: source.events.map(function (event) {
+      bars: Math.max(1, ogInt(source.bars, 1)),
+      events: (Array.isArray(source.events) ? source.events : []).filter(Boolean).map(function (event) {
         var next = ogClone(event);
         next.id = ogMintId(project, 'event');
         return next;
@@ -5435,7 +5440,7 @@
 
   function ogFindScene(project, sceneId) {
     var scenes = project && Array.isArray(project.scenes) ? project.scenes : [];
-    for (var i = 0; i < scenes.length; i++) if (scenes[i].id === sceneId) return scenes[i];
+    for (var i = 0; i < scenes.length; i++) if (scenes[i] && scenes[i].id === sceneId) return scenes[i];
     return null;
   }
 
@@ -5461,7 +5466,7 @@
     });
     if (!patternIds.length && project.patterns[0]) patternIds.push(project.patterns[0].id);
     var scene = {
-      id: options.id || ogMintId(project, 'scene'),
+      id: (options.id && !ogIsUnsafeKey(options.id)) ? options.id : ogMintId(project, 'scene'),
       name: ogSafeString(options.name, 'Scene ' + (project.scenes.length + 1)),
       patternIds: patternIds
     };
@@ -5483,6 +5488,7 @@
   function ogNextArrangementStartBar(project) {
     var next = 1;
     (project && Array.isArray(project.arrangement) ? project.arrangement : []).forEach(function (section) {
+      if (!section || typeof section !== 'object') return;
       next = Math.max(next, Math.max(1, ogInt(section.startBar, 1)) + Math.max(1, ogInt(section.bars, 1)));
     });
     return next;
@@ -5538,8 +5544,8 @@
     var replace = options.replace !== false;
     if (replace) project.arrangement = [];
 
-    var variants = { A: sourcePattern };
-    var scenesByVariant = {};
+    var variants = Object.assign(Object.create(null), { A: sourcePattern });
+    var scenesByVariant = Object.create(null);
     var createdPatternIds = [];
     var createdSceneIds = [];
     var sections = [];
@@ -5602,7 +5608,9 @@
 
   function ogBuildArrangementTimeline(project) {
     var measureTicks = ogTicksPerMeasure(project);
-    return (project && Array.isArray(project.arrangement) ? project.arrangement : []).map(function (section, index) {
+    return (project && Array.isArray(project.arrangement) ? project.arrangement : []).filter(function (section) {
+      return section && typeof section === 'object';
+    }).map(function (section, index) {
       var scene = ogFindScene(project, section.sceneId);
       var startBar = Math.max(1, ogInt(section.startBar, index + 1));
       var bars = Math.max(1, ogInt(section.bars, scene ? ogSceneLengthBars(project, scene) : 1));
@@ -5718,8 +5726,10 @@
     var pattern = ogFindPattern(project, patternId);
     if (!pattern) throw new Error('OpenGroove: pattern not found');
     var range = ogBarRange(project, pattern, barIndex);
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     var before = pattern.events.length;
     pattern.events = pattern.events.filter(function (event) {
+      if (!event || typeof event !== 'object') return false;
       var inRange = ogInt(event.startTick, 0) >= range.fromTick && ogInt(event.startTick, 0) < range.toTick;
       return !(inRange && ogEventMatchesEditFilter(event, options));
     });
@@ -5761,11 +5771,13 @@
     var toTick = options.toTick == null ? ogPatternLengthTicks(project, pattern) : Math.max(fromTick, ogInt(options.toTick, 0));
     var typeMap = null;
     if (Array.isArray(options.types) && options.types.length) {
-      typeMap = {};
-      options.types.forEach(function (type) { typeMap[type] = true; });
+      typeMap = Object.create(null);
+      options.types.forEach(function (type) { if (typeof type === 'string') typeMap[type] = true; });
     }
     var removed = 0;
+    if (!Array.isArray(pattern.events)) pattern.events = [];
     pattern.events = pattern.events.filter(function (event) {
+      if (!event || typeof event !== 'object') return false;
       var inRange = event.trackId === trackId && event.startTick >= fromTick && event.startTick < toTick;
       var typeMatches = !typeMap || !!typeMap[event.type];
       if (inRange && typeMatches) {
@@ -5796,7 +5808,7 @@
     chordLike = chordLike || {};
     return {
       root: ogNormalizeRootName(chordLike.root || 'C'),
-      quality: OG_CHORD_INTERVALS[chordLike.quality] ? chordLike.quality : 'major',
+      quality: Object.prototype.hasOwnProperty.call(OG_CHORD_INTERVALS, chordLike.quality) ? chordLike.quality : 'major',
       bass: chordLike.bass ? ogNormalizeRootName(chordLike.bass) : null
     };
   }
@@ -6374,7 +6386,7 @@
     assetLike = assetLike || {};
     if (!project || !Array.isArray(project.assets)) throw new Error('OpenGroove: project is not ready');
     var asset = {
-      id: assetLike.id || ogMintId(project, 'asset'),
+      id: (assetLike.id && !ogIsUnsafeKey(assetLike.id)) ? assetLike.id : ogMintId(project, 'asset'),
       type: assetLike.type === 'recording' || assetLike.type === 'loop' || assetLike.type === 'sample' ? assetLike.type : 'sample',
       name: ogSafeString(assetLike.name, 'Untitled Sample'),
       file: ogSafeString(assetLike.file, ''),
@@ -6407,7 +6419,7 @@
 
   function ogFindAsset(project, assetId) {
     var assets = project && Array.isArray(project.assets) ? project.assets : [];
-    for (var i = 0; i < assets.length; i++) if (assets[i].id === assetId) return assets[i];
+    for (var i = 0; i < assets.length; i++) if (assets[i] && assets[i].id === assetId) return assets[i];
     return null;
   }
 
@@ -6415,7 +6427,7 @@
     var track = ogFindTrack(project, trackId);
     if (!track || track.type !== 'drumRack') return null;
     for (var i = 0; i < (track.pads || []).length; i++) {
-      if (track.pads[i].id === padId) return track.pads[i];
+      if (track.pads[i] && track.pads[i].id === padId) return track.pads[i];
     }
     return null;
   }
@@ -6989,7 +7001,7 @@
     var startIndex = Math.max(0, Math.min((track.pads || []).length - 1, ogInt(options.startPadIndex, 0)));
     if (options.startPadId) {
       for (var p = 0; p < (track.pads || []).length; p++) {
-        if (track.pads[p].id === options.startPadId) {
+        if (track.pads[p] && track.pads[p].id === options.startPadId) {
           startIndex = p;
           break;
         }
@@ -7004,6 +7016,7 @@
       var sliceStart = sourceStart + span * i / slices;
       var sliceEnd = sourceStart + span * (i + 1) / slices;
       var pad = track.pads[startIndex + i];
+      if (!pad || typeof pad !== 'object') continue;
       pad.assetId = asset.id;
       pad.engine = 'sample';
       pad.name = asset.name + ' ' + (i + 1);
@@ -7024,6 +7037,7 @@
     var summary = Object.create(null);
     var warnings = [];
     assets.forEach(function (asset) {
+      if (!asset || typeof asset !== 'object') return;
       var license = ogSafeString(asset.license, 'Unknown');
       summary[license] = (summary[license] || 0) + 1;
       var isReview = Object.prototype.hasOwnProperty.call(OG_REVIEW_LICENSES, license) && OG_REVIEW_LICENSES[license];
@@ -7069,6 +7083,7 @@
     var humanizedHitCount = 0;
     var grooveHitCount = 0;
     assets.forEach(function (asset) {
+      if (!asset || typeof asset !== 'object') return;
       var tags = asset && asset.tags || [];
       if (tags.indexOf('factory') >= 0) factoryCount += 1;
       if (asset && asset.mimeType === 'audio/procedural') proceduralCount += 1;
@@ -7083,11 +7098,12 @@
     });
     (project && project.tracks || []).forEach(function (track) {
       (track && track.pads || []).forEach(function (pad) {
-        if (pad.assetId && pad.sampleRegion) slicedPadCount += 1;
+        if (pad && pad.assetId && pad.sampleRegion) slicedPadCount += 1;
       });
     });
     (project && project.patterns || []).forEach(function (pattern) {
-      (pattern.events || []).forEach(function (event) {
+      (pattern && pattern.events || []).forEach(function (event) {
+        if (!event || typeof event !== 'object') return;
         if (event.type === 'drumHit' && ogInt(event.microtimingTicks, 0) !== 0) humanizedHitCount += 1;
         if (event.type === 'drumHit' && event.role === 'groove') grooveHitCount += 1;
       });
@@ -7109,15 +7125,15 @@
   function ogBuildOnboardingStatus(project, patternId) {
     var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
     var events = pattern && Array.isArray(pattern.events) ? pattern.events : [];
-    var hasBeat = events.some(function (event) { return event.type === 'drumHit'; });
-    var hasHarmony = events.some(function (event) { return event.type === 'note' || event.type === 'chord'; });
+    var hasBeat = events.some(function (event) { return event && event.type === 'drumHit'; });
+    var hasHarmony = events.some(function (event) { return event && (event.type === 'note' || event.type === 'chord'); });
     var hasVariation = (project && project.patterns || []).length > 1;
     var timeline = ogBuildArrangementTimeline(project);
     var hasSong = timeline.length > 0 && timeline.some(function (section) { return section.patternIds.length > 0; });
     var hasSample = false;
     (project && project.tracks || []).forEach(function (track) {
       (track && track.pads || []).forEach(function (pad) {
-        if (pad.assetId) hasSample = true;
+        if (pad && pad.assetId) hasSample = true;
       });
     });
     var validation = ogValidateProject(project);
@@ -7248,7 +7264,7 @@
         else if (ogIsUnsafeKey(event.id)) errors.push('Event uses a reserved id: ' + event.id);
         if (!trackIds[event.trackId]) errors.push('Event ' + event.id + ' references an unknown track.');
         if (ogInt(event.startTick, -1) < 0 || ogInt(event.startTick, -1) >= length) errors.push('Event ' + event.id + ' starts outside its pattern.');
-        if (event.velocity != null && (event.velocity < 0 || event.velocity > 1)) errors.push('Event ' + event.id + ' has invalid velocity.');
+        if (event.velocity != null && !(ogFinite(event.velocity, -1) >= 0 && ogFinite(event.velocity, 2) <= 1)) errors.push('Event ' + event.id + ' has invalid velocity.');
         if (event.microtimingTicks != null && Math.abs(ogFinite(event.microtimingTicks, 0)) > measureTicks) errors.push('Event ' + event.id + ' has excessive microtiming offset.');
         if (event.type === 'note' && event.notation && ogInt(event.notation.durationTicks, 0) <= 0) errors.push('Event ' + event.id + ' has invalid notation duration.');
         if (event.type === 'audioRegion' && event.assetId && !assetIds[event.assetId]) errors.push('Event ' + event.id + ' references an unknown asset.');
@@ -7535,7 +7551,7 @@
   };
 
   root.OpenGrooveCore = api;
-  root.AlloModules = root.AlloModules || {};
+  if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
   root.AlloModules.OpenGrooveCore = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

@@ -25,12 +25,20 @@
   var MAX_PASSWORD_BYTES = 4096;
   var MAX_AAD_BYTES = 65536;
   var MAX_CIPHERTEXT_BYTES = 192 * 1024 * 1024;
-  var _vaultKeyMaterial = (typeof WeakMap !== 'undefined') ? new WeakMap() : null;
+  var _vaultKeyMaterial = (typeof WeakMap === 'function') ? new WeakMap() : null;
+  var _hasOwn = Object.prototype.hasOwnProperty;
+
+  function _isPlainObj(v) {
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+    var proto = Object.getPrototypeOf(v);
+    if (proto === Object.prototype || proto === null) return true;
+    return Object.prototype.toString.call(v) === '[object Object]' && Object.getPrototypeOf(proto) === null;
+  }
 
   // Lazy lookup: resolve crypto at call time, not load time.
   function _cryptoObj() {
-    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) return window.crypto;
-    if (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.subtle) return globalThis.crypto;
+    if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function') && window.crypto && window.crypto.subtle) return window.crypto;
+    if (typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object' && globalThis.crypto && globalThis.crypto.subtle) return globalThis.crypto;
     try { return require('crypto').webcrypto; } catch (e) { return null; } // Node / test env
   }
   function _subtle() {
@@ -69,8 +77,8 @@
     }
     return new Uint8Array(Buffer.from(b64, 'base64'));
   }
-  var _enc = (typeof TextEncoder !== 'undefined') ? new TextEncoder() : { encode: function (s) { return new Uint8Array(Buffer.from(s, 'utf8')); } };
-  var _dec = (typeof TextDecoder !== 'undefined') ? new TextDecoder('utf-8', { fatal: true }) : { decode: function (b) { return Buffer.from(b).toString('utf8'); } };
+  var _enc = (typeof TextEncoder === 'function') ? new TextEncoder() : { encode: function (s) { return new Uint8Array(Buffer.from(s, 'utf8')); } };
+  var _dec = (typeof TextDecoder === 'function') ? new TextDecoder('utf-8', { fatal: true }) : { decode: function (b) { return Buffer.from(b).toString('utf8'); } };
 
   function _concatBytes(a, b) {
     var out = new Uint8Array(a.length + b.length);
@@ -95,16 +103,19 @@
   }
   function _passwordBytes(password, label) {
     if (typeof password !== 'string' || !password) throw new Error((label || 'Password') + ': empty password');
+    if (password.length > MAX_PASSWORD_BYTES) throw new Error((label || 'Password') + ' is too long.');
     var bytes = _enc.encode(password);
     if (bytes.length > MAX_PASSWORD_BYTES) throw new Error((label || 'Password') + ' is too long.');
     return bytes;
   }
   function _assertVersion(env, label, allowLegacy) {
-    var ok = env && (env.v === ENVELOPE_VERSION || (allowLegacy && env.v === LEGACY_ENVELOPE_VERSION));
+    var v = (_isPlainObj(env) && _hasOwn.call(env, 'v')) ? env.v : undefined;
+    var ok = (v === ENVELOPE_VERSION || (allowLegacy && v === LEGACY_ENVELOPE_VERSION));
     if (!ok) throw new Error('Unsupported ' + label + ' envelope version.');
+    return v;
   }
   function _decodeField(env, name, minBytes, maxBytes, exactBytes) {
-    var value = env && env[name];
+    var value = (_isPlainObj(env) && _hasOwn.call(env, name)) ? env[name] : undefined;
     var maxEncodedLength = Math.ceil(maxBytes / 3) * 4;
     if (typeof value !== 'string' || !value || value.length > maxEncodedLength || value.length % 4 !== 0
       || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) {
@@ -153,16 +164,17 @@
   }
 
   function _validatePasswordHashEnvelope(env) {
-    if (!env || env.kind !== 'pwhash' || env.alg !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow password verifier.');
-    _assertVersion(env, 'password verifier', true);
-    var iter = _validatedIterations(env.iter, 'Stored PBKDF2 iterations');
-    return { iter: iter, salt: _decodeField(env, 'salt', 16, 16, 16), hash: _decodeField(env, 'hash', 32, 32, 32) };
+    if (!_isPlainObj(env) || !_hasOwn.call(env, 'kind') || env.kind !== 'pwhash' || !_hasOwn.call(env, 'alg') || env.alg !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow password verifier.');
+    var v = _assertVersion(env, 'password verifier', true);
+    var iter = _validatedIterations(_hasOwn.call(env, 'iter') ? env.iter : undefined, 'Stored PBKDF2 iterations');
+    return { v: v, iter: iter, salt: _decodeField(env, 'salt', 16, 16, 16), hash: _decodeField(env, 'hash', 32, 32, 32) };
   }
   function _validateEncryptedEnvelope(env) {
-    if (!env || env.kind !== 'alloenc' || env.alg !== 'AES-256-GCM' || env.kdf !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow encrypted envelope.');
-    _assertVersion(env, 'encrypted data', true);
-    var iter = _validatedIterations(env.iter, 'Stored PBKDF2 iterations');
+    if (!_isPlainObj(env) || !_hasOwn.call(env, 'kind') || env.kind !== 'alloenc' || !_hasOwn.call(env, 'alg') || env.alg !== 'AES-256-GCM' || !_hasOwn.call(env, 'kdf') || env.kdf !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow encrypted envelope.');
+    var v = _assertVersion(env, 'encrypted data', true);
+    var iter = _validatedIterations(_hasOwn.call(env, 'iter') ? env.iter : undefined, 'Stored PBKDF2 iterations');
     return {
+      v: v,
       iter: iter,
       salt: _decodeField(env, 'salt', 16, 16, 16),
       iv: _decodeField(env, 'iv', 12, 12, 12),
@@ -197,11 +209,12 @@
   async function encryptJSON(obj, password, iterations) {
     _passwordBytes(password, 'encryptJSON');
     var iter = _requestedIterations(iterations);
+    var ptBytes = _serializeJSON(obj, 'encryptJSON value');
     var salt = _randomBytes(16);
     var iv = _randomBytes(12); // GCM standard IV size
     var key = await _deriveAesKey(password, salt, iter);
     var env = { v: ENVELOPE_VERSION, kind: 'alloenc', alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iter: iter, salt: _b64(salt), iv: _b64(iv) };
-    var ct = new Uint8Array(await _subtle().encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128, additionalData: _passwordEnvelopeAad(env) }, key, _serializeJSON(obj, 'encryptJSON value')));
+    var ct = new Uint8Array(await _subtle().encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128, additionalData: _passwordEnvelopeAad(env) }, key, ptBytes));
     env.ct = _b64(ct);
     return env;
   }
@@ -213,7 +226,7 @@
     var parsed = _validateEncryptedEnvelope(env);
     var key = await _deriveAesKey(password, parsed.salt, parsed.iter);
     var algorithm = { name: 'AES-GCM', iv: parsed.iv, tagLength: 128 };
-    if (env.v === ENVELOPE_VERSION) algorithm.additionalData = _passwordEnvelopeAad(env);
+    if (parsed.v === ENVELOPE_VERSION) algorithm.additionalData = _passwordEnvelopeAad(parsed);
     var pt;
     try {
       pt = await _subtle().decrypt(algorithm, key, parsed.ct);
@@ -254,10 +267,11 @@
     return _enc.encode('AlloFlow|allovault-key|v' + env.v + '|AES-256-GCM|PBKDF2-SHA256|' + env.iter);
   }
   function _validateWrappedVaultKey(env) {
-    if (!env || env.kind !== 'allovault-key' || env.alg !== 'AES-256-GCM' || env.kdf !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow wrapped vault key.');
-    _assertVersion(env, 'wrapped vault key', false);
-    var iter = _validatedIterations(env.iter, 'Stored PBKDF2 iterations');
+    if (!_isPlainObj(env) || !_hasOwn.call(env, 'kind') || env.kind !== 'allovault-key' || !_hasOwn.call(env, 'alg') || env.alg !== 'AES-256-GCM' || !_hasOwn.call(env, 'kdf') || env.kdf !== 'PBKDF2-SHA256') throw new Error('Not an AlloFlow wrapped vault key.');
+    var v = _assertVersion(env, 'wrapped vault key', false);
+    var iter = _validatedIterations(_hasOwn.call(env, 'iter') ? env.iter : undefined, 'Stored PBKDF2 iterations');
     return {
+      v: v,
       iter: iter,
       salt: _decodeField(env, 'salt', 16, 16, 16),
       iv: _decodeField(env, 'iv', 12, 12, 12),
@@ -292,7 +306,7 @@
     var kek = await _deriveAesKey(password, parsed.salt, parsed.iter);
     var material;
     try {
-      material = new Uint8Array(await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, tagLength: 128, additionalData: _vaultWrapAad(env) }, kek, parsed.ct));
+      material = new Uint8Array(await _subtle().decrypt({ name: 'AES-GCM', iv: parsed.iv, tagLength: 128, additionalData: _vaultWrapAad(parsed) }, kek, parsed.ct));
     } catch (e) {
       throw new Error('WRONG_PASSWORD_OR_CORRUPT');
     }
@@ -304,7 +318,7 @@
     }
   }
   function destroyVaultKey(dek) {
-    if (!dek || !_vaultKeyMaterial) return false;
+    if (!dek || (typeof dek !== 'object' && typeof dek !== 'function') || !_vaultKeyMaterial) return false;
     var material = _vaultKeyMaterial.get(dek);
     if (material && typeof material.fill === 'function') material.fill(0);
     return _vaultKeyMaterial.delete(dek);
@@ -331,12 +345,16 @@
     if (Array.isArray(value)) {
       if (seen.indexOf(value) !== -1) throw new Error('AAD must not contain cycles.');
       seen.push(value);
-      var array = value.map(function (item) { return _canonicalize(item, seen, level + 1); });
+      var array = new Array(value.length);
+      for (var ai = 0; ai < value.length; ai++) {
+        if (!(ai in value)) { seen.pop(); throw new Error('AAD must not contain sparse array holes.'); }
+        array[ai] = _canonicalize(value[ai], seen, level + 1);
+      }
       seen.pop();
       return array;
     }
     if (value && typeof value === 'object') {
-      if (Object.prototype.toString.call(value) !== '[object Object]') throw new Error('AAD must be a plain JSON value.');
+      if (!_isPlainObj(value)) throw new Error('AAD must be a plain JSON value.');
       if (seen.indexOf(value) !== -1) throw new Error('AAD must not contain cycles.');
       seen.push(value);
       var object = Object.create(null);
@@ -353,11 +371,23 @@
   }
   function _aadBytes(aad) {
     var bytes;
-    if (typeof aad === 'string') bytes = _enc.encode(aad);
-    else if (aad instanceof Uint8Array) bytes = new Uint8Array(aad);
-    else if (typeof ArrayBuffer !== 'undefined' && aad instanceof ArrayBuffer) bytes = new Uint8Array(aad.slice(0));
-    else if (aad !== undefined && aad !== null) bytes = _enc.encode(JSON.stringify(_canonicalize(aad, [])));
-    else throw new Error('Record AAD is required.');
+    if (typeof aad === 'string') {
+      if (!aad.length) throw new Error('Record AAD is required.');
+      if (aad.length > MAX_AAD_BYTES) throw new Error('Record AAD is too large.');
+      bytes = _enc.encode(aad);
+    } else if (aad instanceof Uint8Array) {
+      if (!aad.byteLength) throw new Error('Record AAD is required.');
+      if (aad.byteLength > MAX_AAD_BYTES) throw new Error('Record AAD is too large.');
+      bytes = new Uint8Array(aad);
+    } else if (typeof ArrayBuffer === 'function' && aad instanceof ArrayBuffer) {
+      if (!aad.byteLength) throw new Error('Record AAD is required.');
+      if (aad.byteLength > MAX_AAD_BYTES) throw new Error('Record AAD is too large.');
+      bytes = new Uint8Array(aad.slice(0));
+    } else if (aad !== undefined && aad !== null) {
+      bytes = _enc.encode(JSON.stringify(_canonicalize(aad, [])));
+    } else {
+      throw new Error('Record AAD is required.');
+    }
     if (!bytes.length) throw new Error('Record AAD is required.');
     if (bytes.length > MAX_AAD_BYTES) throw new Error('Record AAD is too large.');
     return bytes;
@@ -366,7 +396,7 @@
     return _concatBytes(_enc.encode('AlloFlow|allovault-record|v2|AES-256-GCM|json-utf8|'), _aadBytes(aad));
   }
   function _validateRecordEnvelope(env) {
-    if (!env || env.kind !== 'allovault-record' || env.alg !== 'AES-256-GCM' || env.codec !== 'json-utf8') throw new Error('Not an AlloFlow encrypted vault record.');
+    if (!_isPlainObj(env) || !_hasOwn.call(env, 'kind') || env.kind !== 'allovault-record' || !_hasOwn.call(env, 'alg') || env.alg !== 'AES-256-GCM' || !_hasOwn.call(env, 'codec') || env.codec !== 'json-utf8') throw new Error('Not an AlloFlow encrypted vault record.');
     _assertVersion(env, 'vault record', false);
     return {
       iv: _decodeField(env, 'iv', 12, 12, 12),
@@ -457,7 +487,8 @@
     return compact.match(/.{1,4}/g).join('-');
   }
   function normalizeRecoveryCode(input) {
-    if (typeof input !== 'string' || input.length > 256) throw new Error('Recovery code is required.');
+    if (typeof input !== 'string' || !input || input.length > 256) throw new Error('Recovery code is required.');
+    if (!/^[0-9A-Za-z\s-]+$/.test(input)) throw new Error('Recovery code contains an invalid character.');
     var compact = input.toUpperCase().replace(/[\s-]+/g, '');
     if (compact.length !== RECOVERY_CODE_PAYLOAD_CHARS + RECOVERY_CODE_CHECK_CHARS) {
       throw new Error('Recovery code has an invalid length.');
@@ -491,7 +522,7 @@
       bytes.fill(0);
     }
   }
-  var AlloCrypto = {
+  var AlloCrypto = Object.freeze({
     hashPassword: hashPassword,
     verifyPassword: verifyPassword,
     encryptJSON: encryptJSON,
@@ -512,12 +543,12 @@
     MIN_PBKDF2_ITERATIONS: MIN_PBKDF2_ITERATIONS,
     MAX_PBKDF2_ITERATIONS: MAX_PBKDF2_ITERATIONS,
     ENVELOPE_VERSION: ENVELOPE_VERSION,
-  };
+  });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = AlloCrypto;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = AlloCrypto;
+  if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AlloCrypto = AlloCrypto;
-    if (typeof console !== 'undefined') console.log('[CDN] AlloCrypto loaded');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] AlloCrypto loaded');
   }
 })();

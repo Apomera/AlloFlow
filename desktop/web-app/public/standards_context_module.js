@@ -34,7 +34,8 @@
     if (value === undefined || value === null) return '';
     var raw = '';
     if (typeof value === 'string') raw = value;
-    else if (typeof value === 'number' || typeof value === 'boolean') raw = String(value);
+    else if (typeof value === 'number') raw = Number.isFinite(value) ? String(value) : '';
+    else if (typeof value === 'boolean') raw = String(value);
     else return '';
     var maxLen = limit || MAX_FIELD;
     var bounded = raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
@@ -47,18 +48,20 @@
   }
 
   function safeUrl(value, limit) {
-    var raw = text(value, limit || MAX_FIELD);
+    var maxLen = limit || MAX_FIELD;
+    var raw = text(value, maxLen);
     if (!raw || /[\s"'<>\\]/.test(raw)) return '';
     if (typeof URL === 'function') {
       try {
         var parsed = new URL(raw);
         if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';
-        return parsed.href.slice(0, limit || MAX_FIELD);
+        if (/[\s"'<>\\]/.test(parsed.href) || parsed.href.length > maxLen) return '';
+        return parsed.href;
       } catch (_) {
         return '';
       }
     }
-    return /^https?:\/\/[^@\s"'<>\\]+$/i.test(raw) ? raw : '';
+    return /^https?:\/\/[a-z0-9.-]+(?::\d{1,5})?(?:[/?#][^\s"'<>\\]*)?$/i.test(raw) ? raw : '';
   }
 
   function uniqueSafeUrls(values, limit) {
@@ -97,18 +100,15 @@
 
   function normalizeInstructionalConstraints(value) {
     var source = isObject(value) ? value : {};
-    var expectation = text(
-      own(source, 'textAccessExpectation') || own(source, 'primaryTextPolicy') || own(source, 'expectation'),
-      80
-    );
+    var expectation = text(pick(source, ['textAccessExpectation', 'primaryTextPolicy', 'expectation']), 80);
     if (TEXT_ACCESS_EXPECTATIONS.indexOf(expectation) === -1) expectation = 'unspecified';
-    var basis = text(own(source, 'basis') || own(source, 'source') || own(source, 'authority'), 240);
-    var safeSourceUrl = safeUrl(own(source, 'sourceUrl') || own(source, 'url'), MAX_FIELD);
+    var basis = text(pick(source, ['basis', 'source', 'authority']), 240);
+    var safeSourceUrl = safeUrl(pick(source, ['sourceUrl', 'url']), MAX_FIELD);
     return {
       textAccessExpectation: expectation,
       basis: basis,
       sourceUrl: safeSourceUrl,
-      notes: text(own(source, 'notes') || own(source, 'description'), MAX_FIELD),
+      notes: text(pick(source, ['notes', 'description']), MAX_FIELD),
       sourced: !!(safeSourceUrl || basis)
     };
   }
@@ -194,39 +194,41 @@
       if (entry) entries.push(entry);
     }
     var sourceObject = isObject(source) ? source : {};
+    var rawExistingProv = own(sourceObject, 'provenance');
+    var existingProvenance = isObject(rawExistingProv) ? rawExistingProv : {};
     var inputText = text(
-      own(sourceObject, 'inputText') || own(sourceObject, 'rawInput') || (typeof input === 'string' ? input : ''),
+      text(own(sourceObject, 'inputText'), MAX_INPUT) || text(own(sourceObject, 'rawInput'), MAX_INPUT) || (typeof input === 'string' ? input : ''),
       MAX_INPUT
     );
-    var promptText = buildPrompt(entries, text(own(sourceObject, 'promptText') || inputText, MAX_PROMPT));
+    var promptText = buildPrompt(entries, text(text(own(sourceObject, 'promptText'), MAX_PROMPT) || inputText, MAX_PROMPT));
     var ownSourceUrls = own(sourceObject, 'sourceUrls');
     var ownSourceUrl = own(sourceObject, 'sourceUrl');
+    var provSourceUrls = own(existingProvenance, 'sourceUrls');
     var sourceUrls = uniqueSafeUrls([].concat(
       Array.isArray(ownSourceUrls) ? ownSourceUrls : [],
       ownSourceUrl ? [ownSourceUrl] : [],
+      Array.isArray(provSourceUrls) ? provSourceUrls : [],
       entries.reduce(function (all, entry) {
         return all.concat(entry.sourceUrl ? [entry.sourceUrl] : [], entry.sourceUrls || []);
       }, [])
     ), MAX_URLS);
-    var provider = text(own(sourceObject, 'provider') || own(sourceObject, 'resolver') || own(opts, 'provider'), 160) || 'user-input';
-    var datasetVersion = text(own(sourceObject, 'datasetVersion') || own(sourceObject, 'snapshotId') || own(opts, 'datasetVersion'), 160);
-    var resolutionStatus = text(own(sourceObject, 'resolutionStatus') || own(sourceObject, 'status') || own(opts, 'resolutionStatus'), 80);
+    var provider = text(pick(sourceObject, ['provider', 'resolver']) || pick(existingProvenance, ['provider', 'resolver']) || pick(opts, ['provider']), 160) || 'user-input';
+    var datasetVersion = text(pick(sourceObject, ['datasetVersion', 'snapshotId']) || pick(existingProvenance, ['datasetVersion', 'snapshotId']) || pick(opts, ['datasetVersion']), 160);
+    var resolutionStatus = text(pick(sourceObject, ['resolutionStatus', 'status']) || pick(existingProvenance, ['resolutionStatus', 'status']) || pick(opts, ['resolutionStatus']), 80);
     if (['unresolved', 'partial', 'resolved'].indexOf(resolutionStatus) === -1) {
       resolutionStatus = entries.some(function (entry) { return !!(entry.code && (entry.text || entry.sourceUrl || entry.sourceUrls.length)); })
         ? (entries.every(function (entry) { return !!(entry.code && (entry.text || entry.sourceUrl || entry.sourceUrls.length)); }) ? 'resolved' : 'partial')
         : (entries.length ? 'unresolved' : 'unresolved');
     }
-    var rawExistingProv = own(sourceObject, 'provenance');
-    var existingProvenance = isObject(rawExistingProv) ? rawExistingProv : {};
     var provenance = {
       provider: provider,
       datasetVersion: datasetVersion,
-      snapshotId: text(own(sourceObject, 'snapshotId') || own(existingProvenance, 'snapshotId'), 160),
+      snapshotId: text(pick(sourceObject, ['snapshotId']) || pick(existingProvenance, ['snapshotId']), 160),
       sourceUrls: sourceUrls.slice(),
       resolutionStatus: resolutionStatus,
-      retrievedAt: text(own(sourceObject, 'retrievedAt') || own(existingProvenance, 'retrievedAt'), 80),
-      license: text(own(sourceObject, 'license') || own(existingProvenance, 'license'), 240),
-      attribution: text(own(sourceObject, 'attribution') || own(existingProvenance, 'attribution'), 600)
+      retrievedAt: text(pick(sourceObject, ['retrievedAt']) || pick(existingProvenance, ['retrievedAt']), 80),
+      license: text(pick(sourceObject, ['license']) || pick(existingProvenance, ['license']), 240),
+      attribution: text(pick(sourceObject, ['attribution']) || pick(existingProvenance, ['attribution']), 600)
     };
     var sourceConstraints = normalizeInstructionalConstraints(
       own(sourceObject, 'instructionalConstraints') || own(sourceObject, 'textAccessPolicy')
@@ -281,7 +283,8 @@
   }
 
   function isEmpty(context) {
-    return !context || !Array.isArray(context.standards) || context.standards.length === 0;
+    var stds = own(context, 'standards');
+    return !Array.isArray(stds) || stds.length === 0;
   }
 
   var API = Object.freeze({
@@ -294,9 +297,12 @@
     buildResourceDirective: buildResourceDirective
   });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
-    window.AlloModules.StandardsContext = API;
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  if (_win) {
+    try {
+      if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+      _win.AlloModules.StandardsContext = API;
+    } catch (_) {}
   }
 })();

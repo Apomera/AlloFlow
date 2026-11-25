@@ -54,7 +54,9 @@ describe('Round 8 Wave 32 — Generation Matrix, Generation Helpers, AlloCommand
     expect(src).toContain('if (!result || result.reason !== \'invalid-actual\')');
     expect(src).toContain('const _plannedLessonDnaSnapshot = _cloneFullPackValue(lessonDNA);');
     expect(src).toContain('if (requested && !_isBlockedPropKey(requested) && !used.has(requested)) return requested;');
-    expect(src).toContain('const _fullPackAiBlocked = typeof window !== \'undefined\'');
+    // The policy checks moved into the shared _ghIsPolicyAiBlocked(), plus the host's __alloAiUsable.
+    expect(src).toContain('const _fullPackAiBlocked = _ghIsPolicyAiBlocked()');
+    expect(src).toContain("typeof window.__alloAiUsable === 'function' && (() => { try { return !window.__alloAiUsable('text'); } catch (_) { return true; } })()");
     expect(src).toContain('if (_isFullPackAbort(delayErr, _fullPackSignal)) break;');
 
     if (!window.AlloModules || !window.AlloModules.GenerationHelpers) {
@@ -75,8 +77,9 @@ describe('Round 8 Wave 32 — Generation Matrix, Generation Helpers, AlloCommand
   it('3. allo_commands_module.js: gates routeUtterance/planUtterance via hardened _aiUsable, guards open_persona_chat, adds sessionSerial & chunk-timer cleanup, 44px progress controls', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'allo_commands_source.jsx'), 'utf8');
     expect(src).toContain("when: (c) => !c.studentAiFeaturesHidden && typeof c.openPersona === 'function'");
-    expect(src).toContain("if (!opts.allowAi || !_aiUsable('text', ctx && ctx.callGemini)) return null;");
-    expect(src).toContain("if (!ctx || !_aiUsable('text', ctx.callGemini)) return null;");
+    // Both gates now also refuse crisis text before any AI call.
+    expect(src).toContain("if (!opts.allowAi || _cmdCheckCrisisText(text) || !_aiUsable('text', ctx && ctx.callGemini)) return null;");
+    expect(src).toContain("if (!ctx || _cmdCheckCrisisText(text) || !_aiUsable('text', ctx.callGemini)) return null;");
     expect(src).toContain('if (!(structured && outcome.ok === false)) _recordCommandUse(cmd.id);');
     expect(src).toContain('if (loadTimer != null) { clearTimeout(loadTimer); loadTimer = null; }');
     expect(src).toContain('if (activeChunkTimerClear) { try { activeChunkTimerClear(); } catch (_) {} activeChunkTimerClear = null; }');
@@ -97,12 +100,20 @@ describe('Round 8 Wave 32 — Generation Matrix, Generation Helpers, AlloCommand
       isTeacherMode: true,
       callGemini: async () => { geminiCalls++; return '{"commandId":"open_notebook","confidence":0.95}'; }
     };
-    window.__alloQrStudentMode = { active: true };
+    // A QR session whose policy is off: the host turns the real switch on (11-23: the mere
+    // presence of __alloQrStudentMode no longer blocks, so validated BYOK students keep AI).
+    window.__alloQrStudentMode = { active: true, aiPolicy: 'off' };
+    window.__alloStudentAiDisabled = true;
     const routed = await AC.routeUtterance(ctx, 'please help me organize these notes', { allowAi: true });
     expect(routed).toBeNull();
     const planned = await AC.planUtterance(ctx, 'build a full lesson on cells and make a quiz');
     expect(planned).toBeNull();
     expect(geminiCalls).toBe(0);
+    // A teacher-authorized BYOK session: the host leaves the switch off, and AI routing runs.
+    window.__alloQrStudentMode = { active: true, aiPolicy: 'student-byok' };
+    delete window.__alloStudentAiDisabled;
+    await AC.routeUtterance(ctx, 'please help me organize these notes', { allowAi: true });
+    expect(geminiCalls).toBeGreaterThan(0);
 
     // open_persona_chat hidden when studentAiFeaturesHidden is true
     const hiddenCmds = AC.buildAlloCommands({ isTeacherMode: false, studentAiFeaturesHidden: true, openPersona: () => {} });
@@ -120,6 +131,7 @@ describe('Round 8 Wave 32 — Generation Matrix, Generation Helpers, AlloCommand
     expect(src).toContain('!studentProjectSettings || studentProjectSettings.allowDictation !== false');
     expect(src).toContain('Could not send signal to teacher');
 
+    if (!window.React) window.React = createRequire(path.resolve(ROOT, 'desktop/web-app/package.json'))('react');
     if (!window.AlloModules || !window.AlloModules.AlloCommandContext) {
       loadBrowserModule('allo_command_context_module.js');
     }

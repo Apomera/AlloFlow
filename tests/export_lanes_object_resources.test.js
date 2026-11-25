@@ -112,7 +112,8 @@ describe('sibling lanes and registries', () => {
     const fallback = source.indexOf("const tx = (d && (d.text || d.content || d.summary)) || '';");
     expect(fallback).toBeGreaterThan(-1);
     const slice = source.slice(fallback, fallback + 1500);
-    expect(slice).toContain('summarizeResourceText(it, { maxChars: 4000 })');
+    // The call now also passes the answer-key / assessment-mode flags.
+    expect(slice).toContain('summarizeResourceText(it, { maxChars: 4000, hideAnswers: !_showKey, assessmentMode: exportConfig?.assessmentMode === true })');
     expect(slice).not.toContain('JSON.stringify');
   });
 

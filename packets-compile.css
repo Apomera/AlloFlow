@@ -1,0 +1,92 @@
+/* Maker styles for packets-compile.html. Colors and radii come from packets.css. No address, no font, no image. */
+
+.template-grid { display: grid; grid-template-columns: 1fr; gap: 0.7rem; margin-top: 0.75rem; }
+@media (min-width: 44rem) { .template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.template-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; width: 100%; padding: 0.85rem 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.template-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.template-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.template-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.template-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; font-size: 0.8125rem; font-weight: 700; color: var(--muted); }
+.template-tag { padding: 0.08rem 0.48rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--accent); }
+.template-name { font-weight: 700; color: var(--ink); font-size: 1rem; line-height: 1.3; }
+.template-summary { font-size: 0.875rem; color: var(--muted); line-height: 1.4; }
+
+.drop-zone { margin-top: 0.6rem; padding: 0.9rem 1rem; border: 2px dashed var(--line-strong); border-radius: var(--radius); background: var(--note); }
+.drop-zone.is-over { border-color: var(--accent); background: var(--accent-soft); }
+
+.strip-panel { padding: 1rem 1.1rem; border: 1.5px solid var(--accent); border-radius: var(--radius); background: var(--accent-soft); }
+.strip-panel h3 { margin: 0 0 0.4rem; font-size: 1.05rem; color: var(--ink); }
+.strip-headline { margin: 0 0 0.6rem; font-weight: 700; color: var(--ink); }
+.strip-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 0.6rem; }
+.strip-badge { padding: 0.15rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 0.82rem; font-weight: 700; }
+.strip-notes { list-style: disc; padding-left: 1.25rem; margin: 0; font-size: 0.92rem; color: var(--text); }
+.strip-notes li { margin: 0.2rem 0; }
+
+.field-row { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.6rem; }
+@media (min-width: 40rem) { .field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.field-row .field { margin-top: 0; }
+
+.mode-opts { margin-top: 0.75rem; padding: 0.85rem 1rem; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+
+.paper-comp-fold { margin-top: 1.1rem; padding: 0.75rem 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.paper-comp-fold > summary { cursor: pointer; font-weight: 700; color: var(--ink); min-height: 2.75rem; display: flex; align-items: center; gap: 0.55rem; list-style: none; }
+.paper-comp-fold > summary::-webkit-details-marker { display: none; }
+.paper-comp-fold > summary::before { content: ""; flex: none; width: 0.45rem; height: 0.45rem; margin-top: -0.1rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); transition: transform 0.14s ease; }
+.paper-comp-fold[open] > summary::before { margin-top: -0.25rem; transform: rotate(45deg); }
+.paper-comp-fold > summary:hover { color: var(--accent); }
+.paper-comp-fold > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.paper-comp-controls { margin-top: 0.5rem; display: grid; gap: 0.65rem; }
+.paper-comp-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem 1rem; }
+
+.paper-comp-sheet { margin-top: 0.9rem; padding: 1.15rem 1.25rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.paper-comp-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; padding-bottom: 0.65rem; border-bottom: 1.5px solid var(--line-strong); }
+.paper-comp-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+.paper-comp-fields { margin: 0; font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+.paper-comp-prompt { margin: 0.75rem 0 0.5rem; font-size: 0.98rem; font-weight: 600; color: var(--ink); }
+.paper-comp-sub { margin: 0.75rem 0 0.35rem; font-size: 0.94rem; font-weight: 700; color: var(--ink); }
+.paper-comp-body { margin: 0.55rem 0 0; font-size: 0.98rem; line-height: 1.85; white-space: pre-wrap; }
+.paper-comp-bank { margin-top: 0.75rem; padding: 0.65rem 0.85rem; border: 1.5px dashed var(--line-strong); border-radius: 8px; break-inside: avoid; }
+.paper-comp-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.45rem 0 0; padding: 0; list-style: none; }
+.paper-comp-chips li { padding: 0.25rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 6px; font-size: 0.9rem; font-weight: 600; }
+.paper-comp-qs { margin: 0.75rem 0 0; padding-left: 1.35rem; display: grid; gap: 0.85rem; }
+.paper-comp-q { break-inside: avoid; font-size: 0.96rem; line-height: 1.45; }
+.paper-comp-choices { margin: 0.4rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.35rem; }
+.paper-comp-choices li { display: flex; align-items: flex-start; gap: 0.45rem; font-size: 0.92rem; }
+.paper-comp-box { flex: none; width: 1rem; height: 1rem; margin-top: 0.15rem; border: 1.5px solid var(--line-strong); border-radius: 3px; display: inline-block; }
+.paper-comp-card { margin-top: 0.8rem; padding: 0.8rem 0.95rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); break-inside: avoid; }
+.paper-comp-grid { display: grid; grid-template-columns: 1fr; gap: 0.7rem; margin-top: 0.65rem; }
+@media (min-width: 38rem) { .paper-comp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.paper-comp-lines { display: grid; gap: 0.7rem; margin-top: 0.6rem; }
+.paper-comp-line { border-bottom: 1.5px solid var(--line-strong); height: 1.35rem; }
+.paper-comp-seq-row { display: grid; grid-template-columns: 1.8rem minmax(0, 1fr); gap: 0.45rem; align-items: end; margin-top: 0.45rem; }
+.paper-comp-passage { margin-top: 0.7rem; padding: 0.75rem 0.9rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--note); font-size: 0.94rem; line-height: 1.6; white-space: pre-wrap; }
+.paper-comp-key { margin-top: 1.35rem; padding-top: 1rem; border-top: 2px solid var(--line-strong); }
+.paper-comp-key h4 { margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--ink); }
+.paper-comp-key-list { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.3rem; font-size: 0.92rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .template-card,
+  .drop-zone,
+  .paper-comp-fold > summary::before { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .template-card[aria-pressed="true"],
+  .strip-panel { border: 2px solid Highlight; }
+  .paper-comp-fold, .paper-comp-sheet, .paper-comp-bank, .paper-comp-chips li, .paper-comp-box, .paper-comp-card, .paper-comp-passage { border-color: CanvasText; }
+  .paper-comp-fold > summary::before { border-color: CanvasText; }
+}
+
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #ffffff; color: #000000; }
+  header.top, nav, .reopen, .steps, .actions, .batch, .about, footer.foot, .no-print,
+  #step-1, #step-2, #loading, #load-problem, #making, #build-problem, #summary, #title-field, #after-save, #summary-list, #step-3-title, #step-3 > .kicker, h1, .scope { display: none !important; }
+  .sheet { border: 0; padding: 0; margin: 0; background: #ffffff; }
+  .paper-comp-sheet[data-ready="1"] { display: block !important; border: 0; padding: 0; margin: 0; background: #ffffff; color: #000000; }
+  .paper-comp-title, .paper-comp-fields, .paper-comp-prompt, .paper-comp-sub, .paper-comp-body, .paper-comp-chips li, .paper-comp-qs, .paper-comp-q, .paper-comp-choices, .paper-comp-card, .paper-comp-passage, .paper-comp-key, .paper-comp-key h4, .paper-comp-key-list { color: #000000 !important; }
+  .paper-comp-header, .paper-comp-bank, .paper-comp-chips li, .paper-comp-box, .paper-comp-card, .paper-comp-line, .paper-comp-passage { border-color: #000000; background: #ffffff; }
+  .paper-comp-key { border-top: 0; margin-top: 0; padding-top: 0; break-before: page; page-break-before: always; }
+}

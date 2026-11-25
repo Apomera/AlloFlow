@@ -167,7 +167,7 @@ describe('Phase 15 Wave 1 — Core runtime modules hardening', () => {
     expect(read('read_aloud_audio_service_source.jsx')).toContain("window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true");
     expect(read('misc_handlers_source.jsx')).toContain('<UNTRUSTED_SOURCE_TEXT>');
     expect(read('misc_handlers_source.jsx')).toContain("if (typeof result !== 'string' || !result.trim()) return 'Catastrophe';");
-    expect(read('admin_hub_source.jsx')).toContain("if (!res.ok) throw new Error('Drive backup request failed (HTTP '");
+    expect(read('admin_hub_source.jsx')).toContain("if (res && res.ok === false) throw new Error('Drive backup request failed (HTTP ' + res.status + ').');");
     expect(read('math_fluency_module.js')).toContain('.finally(function () { try { Promise.resolve(ctx.close()).catch(function () {}); } catch (_) {} })');
     expect(read('reading_library_module.js')).toContain('function _rlFetch(url, opts, timeoutMs)');
     expect(read('content_engine_source.jsx')).toContain('window.__alloAiSecretsLocked === true');
@@ -229,7 +229,8 @@ describe('Phase 15 Wave 3 — Remaining views a11y, contrast, IME & focus-trap s
     expect(read('view_end_session_preview_source.jsx')).toContain('window.getComputedStyle(cur)');
 
     const vr = read('view_renderers_source.jsx');
-    expect(vr).toContain('window.__alloAiSecretsLocked !== true');
+    // The AI gate now refuses up front, before any host capability check.
+    expect(vr).toContain('window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true');
     expect(vr).toContain('aria-pressed={!!isMapLocked}');
     expect(vr).toContain('window.getComputedStyle(cur)');
 
@@ -260,7 +261,8 @@ describe('Phase 15 Wave 3 — Remaining views a11y, contrast, IME & focus-trap s
     expect(pdf).toContain("aria-label={isAgentRunning ? 'Agent working' : 'Run expert command'}");
 
     const vmSrc = read('view_math_source.jsx');
-    expect(vmSrc).toContain('window.__alloAiSecretsLocked !== true');
+    // The math view's AI gate refuses up front when secrets are locked (2026-11-23 rewrite of _mathViewAiUsable).
+    expect(vmSrc).toContain('if (window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true || window.__alloAiSecretsLocked === true) return false;');
     expect(vmSrc).toContain('placeholder-slate-500');
     expect(read('view_student_save_adventure_source.jsx')).toContain('window.__alloAiSecretsLocked === true');
   });

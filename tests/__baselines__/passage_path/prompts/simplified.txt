@@ -20,6 +20,7 @@
               INSTRUCTIONAL PURPOSE: Create an adapted companion that supports reading the original. Preserve the original as the primary reading reference; do not claim this rewrite replaces it or is an unchanged original. This guidance applies even when no standards are attached.
               
               
+              
               - Do not use emojis.
               - Remove all hyperlinks and citations.
               - DO NOT emit any "Sources", "References", "Bibliography", "Verified Sources", "Références", "Sources du texte", "Referencias", "Quellen", or equivalent section. The references list is appended automatically by the app — any references section you produce will be discarded and may cause duplicates.

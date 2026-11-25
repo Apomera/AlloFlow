@@ -104,6 +104,29 @@ async function makeFiles(dir) {
   const raSyllables = (w) => (w.length >= 6 ? [w.slice(0, Math.ceil(w.length / 2)), w.slice(Math.ceil(w.length / 2))] : null);
   put('read-along', ra.buildReadAlongPacket({ made: ra.lessonFromReadAlong({ loader, title: 'The kite', sentences: raSentences, clips: Object.fromEntries(raSentences.map((s) => [ra.clipKey(s.text), mp3Clip])), syllables: raSyllables }), loader }), 'Read-along practice with recordings and syllables');
   put('read-along-silent', ra.buildReadAlongPacket({ made: ra.lessonFromReadAlong({ loader, title: 'The kite (silent)', sentences: raSentences, clips: {}, syllables: raSyllables }), loader }), 'Read-along practice in silent syllable-only mode');
+  // 2026-11-24: Wave 2-5 zero-AI builders registered so permanent a11y gate covers every student packet format.
+  const swa = require(path.join(ROOT, 'packet_sort_write_adapters.js'));
+  const chB = require(path.join(ROOT, 'packet_choice_builder.js'));
+  const chT = chB.templates();
+  put('choice-board', chB.buildChoicePacket({ loader, adapters: swa, lesson: chB.lessonFromChoice({ loader, adapters: swa, title: 'Ecosystems Choice Board', mode: 'practice', choiceBoard: true, items: [chT[0].item, chT[1].item, chT[2].item] }) }), 'UDL Choice Board (Sort, Sequence, Tiered Writing)');
+  const mzB = require(path.join(ROOT, 'packet_maze_builder.js'));
+  const mzP = mzB.passages().find((p) => p.bandKey === '4-5' && p.form === 'A') || mzB.passages()[0];
+  put('maze-check', mzB.buildMazePacket({ loader, lesson: mzB.lessonFromMaze({ loader, passage: mzP.passage, title: mzP.title, mode: 'check', grade: mzP.bandKey, form: mzP.form, passageId: mzP.id }) }), 'CBM-Maze Reading Check');
+  const mpB = require(path.join(ROOT, 'packet_manipulative_builder.js'));
+  const mpS = mpB.defaultStarterFor('manip_base_ten');
+  put('manip-baseten', mpB.buildManipulativePacket({ loader, lesson: mpB.lessonFromManipulatives({ loader, title: mpS.title, activity: 'manip_base_ten', items: mpS.items.slice(0, 2) }) }), 'Visual Math Manipulatives: Base-Ten Blocks');
+  const stB = require(path.join(ROOT, 'packet_stem_lab_builder.js'));
+  const stData = stB.starters().find((s) => s.activity === 'stem_data_explorer') || stB.starters()[0];
+  put('stem-data', stB.buildStemLabPacket({ loader, lesson: stB.lessonFromStemLab(Object.assign({}, stData, { loader, title: stData.title, activity: stData.activity, items: stData.items.slice(0, 2) })) }), 'STEM Lab: Data & Graph Explorer');
+  const lsB = require(path.join(ROOT, 'packet_life_skills_builder.js'));
+  put('life-skills', lsB.buildLifeSkillsPacket({ loader, lesson: lsB.lessonFromLifeSkills({ loader, title: 'Daily Independence Practice', blocks: lsB.mixedDefaultBlocks() }) }), 'Life Skills & Transition Practice');
+  const aacB = require(path.join(ROOT, 'packet_aac_builder.js'));
+  const aacS = aacB.starters()[0];
+  put('aac-board', aacB.buildAacPacket({ loader, title: aacS.title, folders: aacS.folders, grid: aacS.gridLayout || '4x3' }), 'Offline AAC Communication Board');
+  const selB = require(path.join(ROOT, 'packet_sel_builder.js'));
+  put('sel-toolkit', selB.buildSelPacket({ loader, lesson: selB.lessonFromSel({ loader, title: 'Start Routine', blocks: selB.mixedDefaultBlocks() }) }), 'SEL & Executive Function Toolkit');
+  const mcB = require(path.join(ROOT, 'packets_main_app_compiler.js'));
+  put('compiled-quiz', mcB.compileActivityPacket({ loader, artifact: mcB.samples()[0].artifact }), 'Main-App Compiled Offline Packet');
   return out;
 }
 
@@ -500,9 +523,38 @@ function siteStates() {
   // Voice recorder / studio
   site('voice: empty', '/packets-voice.html', async (p) => { await p.waitForSelector('#f-words', { timeout: 15000 }); });
   site('voice: words entered', '/packets-voice.html', async (p) => { await p.waitForSelector('#f-words', { timeout: 15000 }); await p.fill('#f-words', 'cat, habitat, sun'); await wait(p, 400); }, true);
+// 2026-11-23: meanings handed over by the vocabulary maker (packets_voice_meanings.js): the word steps hidden, the list shown.
+site('voice: meanings handed over', '/packets-voice.html#meanings=' + encodeURIComponent(JSON.stringify(['The natural place where a living thing gets what it needs', 'If something is ___, it is on fire'])), async (p) => { await p.waitForSelector('.voice-row-meaning', { timeout: 15000 }); await wait(p, 300); }, true);
   // Vocab lookup
   site('vocab lookup: start', '/packets-vocab-lookup.html', async (p) => { await p.waitForSelector('#word', { timeout: 15000 }); });
   site('vocab lookup: proof open', '/packets-vocab-lookup.html', async (p) => { await p.waitForSelector('#word', { timeout: 15000 }); await p.locator('details.proof > summary').first().click(); }, true);
+  // Send feedback (2026-11-23): the empty page, and a message cleaned in the box "What will be sent". Not named "feedback": a state with that
+  // word in its name is taken for an answer-feedback screen and must announce one (see the live check in main()).
+  site('send a note: start', '/packets-feedback.html', async (p) => { await p.waitForSelector('#fb-message', { timeout: 15000 }); });
+  site('send a note: a message cleaned, ready to send', '/packets-feedback.html#from=packets-make', async (p) => {
+    await p.waitForSelector('#fb-message', { timeout: 15000 });
+    await p.check('input[name="fb-kind"][value="broken"]');
+    await p.fill('#fb-message', 'Jordan could not hear the sounds on our Chromebook. Call me at 207-555-0134.');
+    await p.check('#fb-read');
+    await wait(p, 300);
+  }, true);
+  // Collect by sealed QR (2026-11-23: this page had no state, so it passed by being absent).
+  site('qr: start', '/packets-qr.html', async (p) => { await p.waitForSelector('#make-key', { timeout: 15000 }); });
+  site('qr: proof open', '/packets-qr.html', async (p) => { await p.waitForSelector('#make-key', { timeout: 15000 }); await p.locator('details.proof > summary').first().click(); });
+  site('qr: sample key, three sample results collected', '/packets-qr.html', async (p) => {
+    await p.waitForSelector('#demo-start', { timeout: 15000 });
+    await p.click('#demo-start'); await p.click('#demo-unlock');
+    await p.waitForSelector('#collected-body tr', { timeout: 8000 });
+    await p.evaluate(() => document.querySelectorAll('#collected-body details').forEach((d) => { d.open = true; }));
+  }, true);
+  site('qr: own key, a file attached, a warning shown', '/packets-qr.html', async (p, gen) => {
+    await p.waitForSelector('#make-key', { timeout: 15000 });
+    await p.click('#make-key');
+    await p.setInputFiles('#seal-files', path.join(gen.dir, 'check-mc.html'));
+    await p.waitForSelector('#seal-results:not([hidden])', { timeout: 15000 });
+    await p.click('#clear-key');
+    await wait(p, 300);
+  }, true);
   // Try / Preview page
   site('try: no preview', '/packets-try.html', async (p) => { await p.waitForSelector('#try-problem:not([hidden])', { timeout: 8000 }); }, true);
   site('try: a file running', '/packets-about.html', async (p, gen) => {
@@ -514,6 +566,19 @@ function siteStates() {
     await p.waitForSelector('iframe', { timeout: 15000 });
     await wait(p, 1500);
   });
+  // 2026-11-24: Wave 2-5 zero-AI makers and libraries (covers all 10 new packets*.html pages, Light + Dark).
+  site('choice: step 1', '/packets-choice.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('maze: step 1, bands', '/packets-maze.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('maze: step 2, blank editor', '/packets-maze.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); });
+  site('manipulatives: step 1', '/packets-manipulatives.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('stem lab: step 1', '/packets-stem-lab.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('life skills: step 1', '/packets-life-skills.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('aac: step 1', '/packets-aac.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); });
+  site('aac: step 2, tile editor', '/packets-aac.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); await p.click('#next-1'); await p.waitForSelector('#step-2:not([hidden])', { timeout: 8000 }); }, true);
+  site('sel: step 1', '/packets-sel.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('playlist: step 1', '/packets-playlist.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); }, true);
+  site('packs: pathways open', '/packets-packs.html', async (p) => { await p.waitForSelector('#packs-grid .pack-card', { timeout: 15000 }); await p.click('#scope-pathways > summary'); await wait(p, 150); }, true);
+  site('compile: sample compiled', '/packets-compile.html', async (p) => { await p.waitForSelector('#step-1:not([hidden])', { timeout: 15000 }); const s = p.locator('[data-sample]').first(); if (await s.count()) { await s.click(); await wait(p, 250); } }, true);
   return S;
 }
 
@@ -604,6 +669,26 @@ function fileStates(gen) {
   // does: the same states, through it. (Before, it had no practice item: start, a question, the end, teacher screen.)
   checkFlow('vocab-check', 'vocab check');
   checkFlow('sr-check', 'symbol runner check');
+  // 2026-11-24: Wave 2-5 student packet runtimes (start, active screen, high contrast).
+  const simpleFile = (key, label) => {
+    f(label + ': start', key, async (p) => { await p.waitForSelector('#app h2', { timeout: 8000 }); });
+    f(label + ': active screen', key, async (p) => { await file.start(p); });
+    f(label + ': high contrast colors', key, async (p) => {
+      await file.start(p);
+      await p.click('[data-tools-open]');
+      await p.click('[data-tool="colors-1"]');
+      await p.locator('[data-tools-close-top], [data-tools-close]').first().click();
+      await wait(p, 100);
+    });
+  };
+  simpleFile('choice-board', 'choice board');
+  simpleFile('maze-check', 'maze check');
+  simpleFile('manip-baseten', 'manipulatives base-ten');
+  simpleFile('stem-data', 'stem data explorer');
+  simpleFile('life-skills', 'life skills');
+  simpleFile('aac-board', 'aac board');
+  simpleFile('sel-toolkit', 'sel toolkit');
+  simpleFile('compiled-quiz', 'compiled quiz');
   return S;
 }
 
@@ -616,7 +701,12 @@ async function main() {
   const gen = { dir, files };
   const server = await serve(dir);
   const origin = 'http://127.0.0.1:' + server.address().port;
-  const states = siteStates().concat(fileStates(gen)).filter((s) => !ONLY || s.name.toLowerCase().includes(ONLY.toLowerCase()));
+  const allStates = siteStates().concat(fileStates(gen));
+  // 2026-11-23: a Packets page that no state opens is a failure, not a pass. (The QR page went unaudited this way.)
+  const ROOT_DIR = path.resolve(__dirname, '..');
+  const unvisited = fs.readdirSync(ROOT_DIR).filter((f) => /^packets[\w-]*\.html$/.test(f)).filter((f) => !allStates.some((s) => !s.isFile && String(s.url).split(/[?#]/)[0] === '/' + f));
+  const states = allStates.filter((s) => !ONLY || s.name.toLowerCase().includes(ONLY.toLowerCase()));
+  if (!ONLY) unvisited.forEach((f) => skipped.push({ state: f, what: 'the whole page', why: 'no state in this gate opens it: add one to siteStates()' }));
   let tm = lap('files and server', t0);
   const browser = await chromium.launch();
   tm = lap('launch', tm);

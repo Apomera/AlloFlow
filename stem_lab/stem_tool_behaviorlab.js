@@ -43,6 +43,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     st.id = 'allo-behaviorlab-hc-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"behaviorLab\"] :is(.behaviorlab-viewswitch-btn.is-on,.behaviorlab-3d-part.is-on):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(251, 191, 36)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] :is(.behaviorlab-viewswitch-btn.is-on,.behaviorlab-3d-part.is-on){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(11, 18, 32)\"],[style*=\"; color: rgb(11, 18, 32)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(11, 18, 32)\"],[style*=\"; color: rgb(11, 18, 32)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] button[class*=\"bg-gradient-to-\"]:not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"behaviorLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-behaviorlab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-behaviorlab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"behaviorLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"behaviorLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end WCAG 1.4.3 high contrast
   (function() {
@@ -126,7 +132,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // 2D / 3D switch. Pill buttons, and the selected one is filled rather than
       // merely tinted — an aria-pressed state that is only a 1.2:1 background
       // difference is not a state anyone can see.
-      // Tailwind's animate-pulse animates the ELEMENT's opacity 1 -> 0.5, so any
+      // Tailwind's opacity-pulse animates the ELEMENT's opacity 1 -> 0.5, so any
       // label inside spends half its cycle at half contrast: measured 3.28:1 on the
       // chain tracker and 2.98:1 on the Deliver Food button and the streak chip.
       // axe only caught the first, because it samples once and the sample has to
@@ -4584,7 +4590,7 @@ dataRef.current = d;
                   borderLeft: '4px solid #fbbf24'
                 }
               },
-                React.createElement("button", {
+                React.createElement("button", { type: "button",
                   onClick: function () { setStemLabTool(null); },
                   'aria-label': __alloT('stem.behaviorlab.back_to_stem_lab', 'Back to STEAM Lab'),
                   style: {
@@ -4674,7 +4680,7 @@ dataRef.current = d;
 
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
 
-                  return React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.select_level_label', 'Select level ') + lvl.id + ": " + lvl.title,
+                  return React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.select_level_label', 'Select level ') + lvl.id + ": " + lvl.title,
 
                     "aria-current": isCurrent ? "step" : undefined, "aria-pressed": isCurrent,
 
@@ -4954,7 +4960,7 @@ dataRef.current = d;
 
                           return React.createElement("button", {
 
-                            key: L.id,
+                            key: L.id, type: "button",
 
                             onClick: function () { upd('aiLevel', L.id); },
 
@@ -4970,7 +4976,7 @@ dataRef.current = d;
 
                       ),
 
-                      React.createElement("button", {
+                      React.createElement("button", { type: "button",
 
                         onClick: explain,
 
@@ -4998,7 +5004,7 @@ dataRef.current = d;
 
               // Start button
 
-              React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.start_experiment', "Start Experiment"),
+              React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.start_experiment', "Start Experiment"),
 
                 onClick: function () {
 
@@ -5082,36 +5088,36 @@ dataRef.current = d;
                   React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
                     ['CRF', 'FR3', 'VR5', 'FI30', 'VI30'].map(function(sch) {
                       var active = iq.schedule === sch;
-                      return React.createElement("button", { key: sch, 'aria-pressed': active, onClick: function() { setKey('schedule', sch); }, style: { minHeight: 44, minWidth: 44, padding: '3px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, sch);
+                      return React.createElement("button", { key: sch, type: "button", 'aria-pressed': active, onClick: function() { setKey('schedule', sch); }, style: { minHeight: 44, minWidth: 44, padding: '3px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, sch);
                     })
                   ),
                   React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 8 } },
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.strength', 'Strength '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.reinforcerStrength)),
-                      React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
+                      React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.reinforcerStrength, 'aria-valuetext': __alloT('stem.behaviorlab.strength', 'Strength ') + iq.reinforcerStrength, onChange: function(e) { setKey('reinforcerStrength', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.alternative', 'Alternative '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.alternativeReward)),
-                      React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
+                      React.createElement("input", { type: 'range', min: 0, max: 10, step: 1, value: iq.alternativeReward, 'aria-valuetext': __alloT('stem.behaviorlab.alternative', 'Alternative ') + iq.alternativeReward, onChange: function(e) { setKey('alternativeReward', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     ),
                     React.createElement("label", { style: { fontSize: 10 } },
                       React.createElement("div", { style: { marginBottom: 2 } }, __alloT('stem.behaviorlab.ext_time', 'Ext time '), React.createElement("span", { style: { color: sm.color, fontFamily: 'monospace' } }, iq.extinctionTime)),
-                      React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
+                      React.createElement("input", { type: 'range', min: 0, max: 30, step: 1, value: iq.extinctionTime, 'aria-valuetext': __alloT('stem.behaviorlab.ext_time', 'Ext time ') + iq.extinctionTime, onChange: function(e) { setKey('extinctionTime', parseInt(e.target.value, 10)); }, style: { width: '100%', height: 44 } })
                     )
                   ),
                   React.createElement("div", { style: { display: 'flex', gap: 6, marginBottom: 6 } },
-                    React.createElement("button", { onClick: function() {
+                    React.createElement("button", { type: "button", onClick: function() {
                       var t = new Date().toISOString().slice(11, 19);
                       setIQ({ log: iq.log.concat([{ t: t, s: iq.schedule, str: iq.reinforcerStrength, alt: iq.alternativeReward, ext: iq.extinctionTime, p: persistence.toFixed(1), state: sm.label }]) });
                     }, style: { flex: 1, minHeight: 44, padding: 4, fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.behaviorlab.log', '\uD83D\uDCCB Log')),
-                    React.createElement("button", { onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { minHeight: 44, minWidth: 44, padding: '4px 10px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.behaviorlab.reset', 'Reset'))
+                    React.createElement("button", { type: "button", onClick: function() { setIQ({ schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5 }); }, style: { minHeight: 44, minWidth: 44, padding: '4px 10px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.behaviorlab.reset', 'Reset'))
                   ),
                   iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                     iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
                   ),
                   React.createElement("label", { htmlFor: 'behaviorlab-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, __alloT('stem.behaviorlab.your_hypothesis_why_does_vr_resist_ext', 'Your hypothesis (why does VR resist extinction so much?)')),
                   React.createElement("textarea", { id: 'behaviorlab-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', minHeight: 44, padding: 6, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 44, padding: '4px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
+                  !iq.stuckRevealed && React.createElement("button", { type: "button", onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 44, padding: '4px 10px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                   iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
                     React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, __alloT('stem.behaviorlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
                     React.createElement("ul", { style: { margin: 0, paddingLeft: 14 } },
@@ -5197,7 +5203,7 @@ dataRef.current = d;
 
             },
 
-              React.createElement("button", {
+              React.createElement("button", { type: "button",
 
                 onClick: function () { upd('blPhase', 'intro'); },
 
@@ -5227,7 +5233,7 @@ dataRef.current = d;
 
                 [1, 2, 3].map(function (sp) {
 
-                  return React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.set_speed_to', 'Set speed to ') + (sp === 1 ? 'Slow' : sp === 2 ? __alloT('stem.behaviorlab.speed_medium', 'Medium') : __alloT('stem.behaviorlab.speed_fast', 'Fast')),
+                  return React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.set_speed_to', 'Set speed to ') + (sp === 1 ? 'Slow' : sp === 2 ? __alloT('stem.behaviorlab.speed_medium', 'Medium') : __alloT('stem.behaviorlab.speed_fast', 'Fast')),
 
                     key: sp,
 
@@ -5246,7 +5252,7 @@ dataRef.current = d;
 
               // ── Sound toggle ──
 
-              React.createElement("button", {
+              React.createElement("button", { type: "button",
 
                 onClick: function () { upd('blSoundOn', !blSoundOn); },
 
@@ -5260,7 +5266,7 @@ dataRef.current = d;
 
               // ── Pause button ──
 
-              React.createElement("button", { "aria-label": blPaused ? __alloT('stem.behaviorlab.resume_simulation', 'Resume simulation') : __alloT('stem.behaviorlab.pause_simulation', 'Pause simulation'),
+              React.createElement("button", { type: "button", "aria-label": blPaused ? __alloT('stem.behaviorlab.resume_simulation', 'Resume simulation') : __alloT('stem.behaviorlab.pause_simulation', 'Pause simulation'),
 
                 onClick: function () { upd('blPaused', !blPaused); if (announceToSR) announceToSR(blPaused ? __alloT('stem.behaviorlab.sim_resumed', 'Simulation resumed') : __alloT('stem.behaviorlab.sim_paused', 'Simulation paused')); },
 
@@ -5459,7 +5465,7 @@ dataRef.current = d;
 
                     else btnClass += 'transition-colors bg-slate-800/60 text-slate-100 border-slate-600/30 hover:bg-slate-700/60 active:scale-[0.97]';
 
-                    return React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.quiz_answer_label', 'Quiz answer: ') + opt,
+                    return React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.quiz_answer_label', 'Quiz answer: ') + opt,
 
                       key: oi,
 
@@ -5521,7 +5527,7 @@ dataRef.current = d;
 
               // Next level button
 
-              React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next_level', "Next Level"),
+              React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.next_level', "Next Level"),
 
                 onClick: function () {
 
@@ -5829,7 +5835,7 @@ dataRef.current = d;
 
               }, __alloT('stem.behaviorlab.use_the_classical_conditioning_panel_b', "\uD83D\uDD14 Use the Classical Conditioning panel below")) :
 
-                React.createElement("button", { onClick: function () {
+                React.createElement("button", { type: "button", onClick: function () {
 
                     if (blLevel === 3 && blExtinctionPhase) {
 
@@ -5993,7 +5999,7 @@ dataRef.current = d;
                             'bg-slate-800/60 text-slate-200 border border-slate-700/40')
 
                       ,
-                      // Pulses the GLOW, not the element's opacity: animate-pulse
+                      // Pulses the GLOW, not the element's opacity: opacity-pulse
                       // dimmed this label to 3.28:1 for half of every cycle.
                       style: isCurrent ? { animation: 'bl-pulse 1.6s ease-in-out infinite' } : undefined
                     }, (isDone ? '✅ ' : isCurrent ? '⏳ ' : '') + stepLabel)
@@ -6210,7 +6216,7 @@ dataRef.current = d;
 
                 // Ring Bell button
 
-                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.ring_bell', "Ring Bell"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.ring_bell', "Ring Bell"),
 
                   onClick: function () {
 
@@ -6361,7 +6367,7 @@ dataRef.current = d;
 
                 // Pair Bell + Food button (only in pairing phase)
 
-                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.pair_bell_with_food', "Pair Bell with Food"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.pair_bell_with_food', "Pair Bell with Food"),
 
                   onClick: function () {
 
@@ -6629,7 +6635,7 @@ dataRef.current = d;
 
                 // CSV Export button
 
-                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.export_abc_data_as_csv', "Export ABC Data as CSV"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.export_abc_data_as_csv', "Export ABC Data as CSV"),
 
                   onClick: function () {
 
@@ -6735,7 +6741,7 @@ dataRef.current = d;
                     title: badge.name + ': ' + badge.desc + (earned ? __alloT('stem.behaviorlab.badge_earned_paren', ' (Earned)') : __alloT('stem.behaviorlab.badge_locked_paren', ' (locked)')),
                     onClick: function() { if (earned || isCurrent) { upd('blLevel', l.id); upd('blPhase', 'intro'); upd('blLevelScore', 0); upd('blTick', 0); } }
                   },
-                    React.createElement("div", { className: "text-2xl " + (isCurrent ? 'animate-bounce motion-reduce:animate-none' : '') }, badge.icon),
+                    React.createElement("div", { className: "text-2xl " + (isCurrent ? 'motion-safe:animate-bounce motion-reduce:animate-none' : '') }, badge.icon),
                     React.createElement("div", { className: "text-[0.6875rem] font-bold " + (earned ? 'text-amber-400' : 'text-slate-200') }, 'L' + l.id),
                     earned ? React.createElement("div", { className: "text-[0.6875rem] text-green-400" }, __alloT('stem.behaviorlab.earned', '\u2713 Earned')) : React.createElement("div", { className: "text-[0.6875rem] text-slate-200" }, '\uD83D\uDD12')
                   );
@@ -6804,7 +6810,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.beyond_pure_aba_neurodiversity_affirmi', "🧭 Beyond Pure ABA — neurodiversity-affirming + trauma-informed")),
-                React.createElement("button", { onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowBeyond', !d.blShowBeyond); },
                   className: "transition-colors text-[0.6875rem] text-purple-400 hover:text-purple-300"
                 }, d.blShowBeyond ? __alloT('stem.behaviorlab.hide', 'Hide') : 'View →')
               ),
@@ -6905,7 +6911,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_comparison', "\uD83D\uDCC8 Schedule Comparison")),
-                React.createElement("button", { onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blSchedCanvas', !blSchedCanvas); },
                   className: "transition-colors text-[0.6875rem] text-amber-400 hover:text-amber-300"
                 }, blSchedCanvas ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.compare_schedules_arrow', 'Compare Schedules \u2192'))
               ),
@@ -7077,11 +7083,11 @@ dataRef.current = d;
                 }),
                 // Controls
                 React.createElement("div", { className: "flex gap-2 mt-2 justify-center" },
-                  React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.toggle_schedule_animation', "Toggle schedule animation"),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.toggle_schedule_animation', "Toggle schedule animation"),
                     onClick: function() { upd('blSchedPaused', !blSchedPaused); },
                     className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold transition-all " + (blSchedPaused ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-100')
                   }, blSchedPaused ? __alloT('stem.behaviorlab.play_btn', '\u25B6 Play') : __alloT('stem.behaviorlab.pause_btn2', '\u23F8 Pause')),
-                  React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.reset_schedule_animation', "Reset schedule animation"),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.reset_schedule_animation', "Reset schedule animation"),
                     onClick: function() { upd('blSchedTick', 0); upd('blSchedPaused', false); },
                     className: "transition-colors px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
                   }, __alloT('stem.behaviorlab.reset_2', '\u21BB Reset'))
@@ -7115,7 +7121,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.schedule_sleuth_identify_the_schedule_', "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve")),
-                React.createElement("button", {
+                React.createElement("button", { type: "button",
                   onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
                   className: "transition-colors text-[0.6875rem] text-amber-400 hover:text-amber-300"
                 }, d.blShowSleuth ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.play_arrow', 'Play \u2192'))
@@ -7141,7 +7147,7 @@ dataRef.current = d;
                 if (sleuthIdx < 0) {
                   return React.createElement("div", { className: "text-center py-4" },
                     React.createElement("p", { className: "text-[0.6875rem] text-slate-300 mb-3 italic" }, __alloT('stem.behaviorlab.you_will_see_one_unlabeled_cumulative_', "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue.")),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.start_schedule_sleuth', "Start Schedule Sleuth"),
                       className: "transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-[0.6875rem] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
@@ -7333,7 +7339,7 @@ dataRef.current = d;
                         bg = 'rgba(30,41,59,0.7)'; border = opt.color + '60'; color = '#e2e8f0';
                       }
                       return React.createElement('button', {
-                        key: oi, role: 'radio',
+                        key: oi, type: "button", role: 'radio',
                         'aria-checked': isPicked ? 'true' : 'false',
                         'aria-label': opt.name + ' (' + opt.abbrev + ')',
                         disabled: sleuthAnswered,
@@ -7362,7 +7368,7 @@ dataRef.current = d;
                       : sch.pattern === 'scallop' ? __alloT('stem.behaviorlab.sleuth_why_fi', 'Fixed Interval produces a *scallop*: slow responding right after reinforcement, then accelerating as the interval ends and the next reinforcer becomes available. Look for repeating concave curves.')
                       : __alloT('stem.behaviorlab.sleuth_why_vi', 'Variable Interval produces a *low, steady* rate. The next reinforcer arrives at unpredictable times, so a moderate steady rate maximizes the chance of catching it. Look for the lowest, smoothest line.')
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       onClick: startRound,
                       "aria-label": __alloT('stem.behaviorlab.next_round', "Next round"),
                       className: "transition-colors px-4 py-1.5 rounded-lg bg-amber-700 text-white font-bold text-[0.6875rem] hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-300 active:scale-[0.97]"
@@ -7451,7 +7457,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.operant_vs_classical_conditioning', "\uD83D\uDD2C Operant vs Classical Conditioning")),
-                React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.aspect', "Aspect"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.aspect', "Aspect"),
                   onClick: function() { upd('blShowCondCompare', !blShowCondCompare); },
                   className: "transition-colors text-[0.6875rem] text-violet-400 hover:text-violet-300"
                 }, blShowCondCompare ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.compare_arrow', 'Compare \u2192'))
@@ -7513,7 +7519,7 @@ dataRef.current = d;
                       var bgClass = !answered ? 'transition-colors bg-slate-800/40 border-slate-600 hover:border-slate-400 cursor-pointer' :
                         isRight ? 'bg-emerald-900/30 border-emerald-500' :
                         isSelected && !isRight ? 'bg-red-900/30 border-red-500' : 'bg-slate-800/20 border-slate-700 opacity-40';
-                      return React.createElement("button", { key: oi,
+                      return React.createElement("button", { key: oi, type: "button",
                         onClick: function() {
                           if (answered) return;
                           upd('blScenarioAnswer', oi);
@@ -7550,7 +7556,7 @@ dataRef.current = d;
                       React.createElement("span", { className: "font-bold" }, __alloT('stem.behaviorlab.better_approach', '\uD83D\uDCA1 Better approach: ')),
                       sc.better
                     ),
-                    React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next_scenario', "Next Scenario ("),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.behaviorlab.next_scenario', "Next Scenario ("),
                       onClick: function() {
                         var nextIdx = (blScenarioIdx + 1) % SCENARIO_CHALLENGES.length;
                         upd('blScenarioIdx', nextIdx);
@@ -7572,7 +7578,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.aba_history_timeline', "\uD83D\uDCC5 ABA History Timeline")),
-                React.createElement("button", { onClick: function() { upd('blShowTimeline', !blShowTimeline); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowTimeline', !blShowTimeline); },
                   className: "transition-colors text-[0.6875rem] text-blue-400 hover:text-blue-300"
                 }, blShowTimeline ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.explore_arrow', 'Explore \u2192'))
               ),
@@ -7619,7 +7625,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.quick_reference_cards', "\uD83D\uDCCB Quick Reference Cards")),
-                React.createElement("button", { onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowQuickRef', !blShowQuickRef); },
                   className: "transition-colors text-[0.6875rem] text-emerald-400 hover:text-emerald-300"
                 }, blShowQuickRef ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.view_arrow', 'View \u2192'))
               ),
@@ -7646,7 +7652,7 @@ dataRef.current = d;
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.aba_glossary_n', '\uD83D\uDCD6 ABA glossary ({n} terms)', { n: ABA_GLOSSARY.length })),
-                React.createElement("button", { onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
                   className: "transition-colors text-[0.6875rem] text-slate-200 hover:text-slate-100"
                 }, d.blShowGlossary ? __alloT('stem.behaviorlab.hide', 'Hide') : __alloT('stem.behaviorlab.browse_arrow', 'Browse \u2192'))
               ),
@@ -7683,7 +7689,7 @@ dataRef.current = d;
 
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.measurement_methods_n', '\uD83D\uDCCF Measurement methods ({n})', { n: MEASUREMENT_METHODS.length })),
 
-                React.createElement("button", { onClick: function() { upd('blShowMeasurement', !d.blShowMeasurement); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowMeasurement', !d.blShowMeasurement); },
 
                   className: "transition-colors text-[0.6875rem] text-sky-400 hover:text-sky-300"
 
@@ -7756,7 +7762,7 @@ dataRef.current = d;
 
                 React.createElement("h4", { className: "text-[0.6875rem] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.practice_standards_n', '\u2696\uFE0F Practice standards ({n})', { n: ABA_ETHICS.length })),
 
-                React.createElement("button", { onClick: function() { upd('blShowEthics', !d.blShowEthics); },
+                React.createElement("button", { type: "button", onClick: function() { upd('blShowEthics', !d.blShowEthics); },
 
                   className: "transition-colors text-[0.6875rem] text-pink-400 hover:text-pink-300"
 

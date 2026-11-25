@@ -445,6 +445,93 @@ function senseCandidates(word, posOrder) {
     if (got.length) posSeen.push(p);
     out.push(...got);
   }
+  return applySenseFixes(out);
+}
+
+// 2026-11-23: sense fixes (the curation file's "senseFixes": id -> { def, reason } or { reject: true, reason }) correct a
+// meaning's wording, or drop the meaning, WITHOUT a curation entry for the word: a word with an entry counts as checked
+// and is never trimmed from the core, so entries for hundreds of unchecked words would grow the core and move its wrong
+// answers. The meaning shows as edited and still unchecked. Made for blanks the word as written does not fit ("If you
+// are ___ on something" for prey needs "preying"). A meaning a checker saw keeps its verdict in "words" instead.
+// 2026-11-23: why a meaning's blank (___) may not take the word as it is written, or '' (rough rules, by the words around
+// the blank and the part of speech p: n v a r). A student sees the word as written and must be able to put it in the blank.
+// The blank pass checked every blank meaning by reading it; these rules guard the bank afterwards
+// (tests/packets_vocab_blank_fit_2026_11_23.test.js). A meaning that fits although a rule flags it is listed, with why,
+// in the curation file's "blankFitOk".
+function blankFitProblem(word, p, def) {
+  const m = /_{2,}/.exec(def || '');
+  if (!m) return '';
+  const before = def.slice(0, m.index), after = def.slice(m.index + m[0].length), w = String(word);
+  const plural = /(s|ae|i|a)$/.test(w) && !/(ss|us|is)$/.test(w);
+  if (/^[a-z]/i.test(after)) return 'letters glued to the blank (___s, ___ed, ___ing)';
+  if (p === 'v' && /\b(someone|somebody|something|a person|anyone|anything|one|a thing|an animal|a plant)\s+(who|that|which)\s*$/i.test(before)) return 'verb after a singular subject: needs the -s form';
+  if (p === 'v' && /\b(of|by|for|from|about|without|while|keep|stop|start|like|enjoy)\s*$/i.test(before)) return 'verb after a word that needs -ing (or a circular frame)';
+  if (/\ban\s*$/i.test(before) && /^[^aeiou]/i.test(w) && !/^(h[oe]n|hour|honest|heir|u[nm]|x)/i.test(w)) return '"an" before a word that needs "a"';
+  if (/\ba\s*$/i.test(before) && /^[aeio]/i.test(w) && p !== 'v') return '"a" before a word that needs "an"';
+  if (p === 'v' && /\b(something|someone|somebody|it|he|she|a person|a thing|a group|an animal|a plant|the person|the thing|one|anything|everything|nobody|everyone|a company|a liquid|water|the sun|the moon)\s*$/i.test(before)) return 'verb after a singular subject: needs the -s form';
+  if (p === 'v' && /\b(is|are|was|were|be|been|being|am|'s|'re)\s*$/i.test(before)) return 'verb after "be": needs -ing or -ed';
+  if (p === 'v' && /\b(has|have|had|having)\s*$/i.test(before)) return 'verb after "have": needs the -ed form';
+  if (p === 'n' && !plural && (/\b(many|several|two|three|four|five|some|few|all|both|these|those|various|multiple)\s*$/i.test(before) || /^\s*(are|were|have)\b/i.test(after))) return 'noun used as plural';
+  return '';
+}
+
+function applySenseFixes(list) {
+  const fixes = inputs().curation.senseFixes || {};
+  const out = [];
+  for (const s of list) {
+    const f = Object.prototype.hasOwnProperty.call(fixes, s.id) ? fixes[s.id] : null;
+    if (!f) { out.push(s); continue; }
+    // A dropped meaning stays in the list until the build has chosen which meanings a word shows, then goes (fixDrop):
+    // dropping one must leave a gap, not let an unchecked meaning that was not shown before move up into view.
+    if (f.reject) { out.push(Object.assign(s, { fixDrop: true })); continue; }
+    if (typeof f.def === 'string' && f.def && safety(f.def) !== 'hard') { s.def = f.def; s.style = /___/.test(f.def) ? 'blank' : 'phrase'; s.edited = true; s.soft = !!safety(f.def); s.senseFix = true; }
+    out.push(s);
+  }
+  return out;
+}
+
+// 2026-11-23: what a checker is shown for a word: every meaning the three sources give, not only the ones senseCandidates
+// keeps for the automatic bank. senseCandidates drops a meaning that names the word or a related word ("a person who boxes",
+// "containing cream") and then shows a rarer one, and it reads WordNet and English Wiktionary only when Simple English
+// Wiktionary has nothing for that part of speech; the checker found the everyday meaning missing that way for many words.
+// Ids follow senseCandidates exactly (Simple: <word>|<p>|<n>, WordNet: |w<n>, English Wiktionary: |e<n>), so a checker who
+// picks one with verdict "fixed" and a "def" gets it shown with its source credited (curateExtended, build()).
+// Each: { id, p, source, raw (the source text), def (cleaned, or null), usable (senseCandidates would keep it),
+// needsRewording (why the clean-up drops it), notShownBecause (why a clean meaning is not in the bank), soft, ex }.
+// Nothing here changes the bank.
+function checkerCandidates(word) {
+  const { simple, enw, wn } = inputs();
+  const kept = new Map(senseCandidates(word, []).filter((s) => !s.fixDrop).map((s) => [s.id, s]));
+  const out = [];
+  const add = (id, p, source, raw, ex, tagStr) => {
+    const k = kept.get(id);
+    if (k) { out.push({ id, p, source, raw, def: k.def, usable: true, needsRewording: '', notShownBecause: '', soft: !!k.soft, ex: (k.ex || []).slice(0, 2) }); return; }
+    const c = cleanDef(word, p, raw);
+    const hard = safety(raw) === 'hard' || (!c.reject && safety(c.text) === 'hard');
+    if (hard) return; // never shown to anyone
+    const label = tagStr && SKIP_TAGS.exec(tagStr);
+    out.push({ id, p, source, raw, def: c.reject ? null : c.text, usable: false, needsRewording: c.reject || '',
+      notShownBecause: c.reject ? '' : label ? 'labelled ' + label[0] + ' in the source' : 'another source covered this part of speech', soft: !!safety(raw), ex: (ex || []).slice(0, 2) });
+  };
+  const pos = [];
+  for (const e of simple[word] || []) { const p = P1[e.pos]; if (p && !pos.includes(p)) pos.push(p); }
+  for (const e of enw[word] || []) { const p = P1[e.pos]; if (p && !pos.includes(p)) pos.push(p); }
+  for (const p of ['n', 'v', 'a', 'r']) if (wnSynsets(word, p).length && !pos.includes(p)) pos.push(p);
+  for (const p of pos) {
+    let n = 0;
+    for (const e of simple[word] || []) {
+      if (P1[e.pos] !== p || isFormEntry(e)) continue;
+      for (const s of e.senses) {
+        n++;
+        const tagStr = (s.tags || []).join(' ') + ' ' + (s.cats || []).join(' ');
+        if (BAD_TAGS.test(tagStr)) continue;
+        add(word + '|' + p + '|' + n, p, 'simple', s.g, s.ex, tagStr);
+      }
+    }
+    wnSynsets(word, p).forEach((id, i) => { const syn = wn.synsets[id]; if (syn && syn.d) add(word + '|' + p + '|w' + (i + 1), p, 'wordnet', syn.d, syn.ex); });
+    let i = 0;
+    for (const e of enw[word] || []) { if (P1[e.pos] !== p) continue; for (const s of e.senses) { if (!s.g) continue; i++; add(word + '|' + p + '|e' + i, p, 'wiktionary', s.g, s.ex); } }
+  }
   return out;
 }
 
@@ -564,6 +651,9 @@ function build(opts) {
   for (const e of entries) if (!e.checked && !(opts.blanksFor && opts.blanksFor.has(e.w))) {
     const per = {}; e.senses = e.senses.filter((s) => { per[s.p] = (per[s.p] || 0) + 1; return per[s.p] <= 2; }).slice(0, 3);
   }
+  // meanings a sense fix drops go now, after the choice of what each word shows (applySenseFixes)
+  for (const e of entries) e.senses = e.senses.filter((s) => !s.fixDrop);
+  for (let i = entries.length - 1; i >= 0; i--) if (!entries[i].senses.length) { entries.splice(i, 1); stats.noSense++; }
   // Keep checked common words ahead of trimmable ones. A checked word near the
   // tail should not pin every unchecked word that comes before it.
   const prio = (e) => (e.lists.has('unit') ? 0 : e.lists.has('nawl') ? 1 : e.lists.has('builtin') ? 2 : e.checked ? 3 : 4);
@@ -741,7 +831,7 @@ const CREDITS = [
   { set: 'Princeton WordNet 3.1', author: 'Princeton University', license: 'WordNet License', url: 'https://wordnet.princeton.edu', deed: 'https://wordnet.princeton.edu/license-and-commercial-use' },
   { set: 'New Academic Word List 1.2 (word choice)', author: 'Charles Browne, Brent Culligan and Joseph Phillips', license: 'CC BY-SA 4.0', url: 'https://www.newgeneralservicelist.com', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
 ];
-const CHECKING = 'Checked and corrected with AI assistance on November 12, 13 and 14, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.';
+const CHECKING = 'Checked and corrected with AI assistance on November 12, 13, 14 and 23, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.';
 
 // US spelling for what students read (2026-11-12): the sources mix in British forms (colour, centre, theatre).
 // A fixed list of whole words only; a headword that is itself British keeps its own spelling.
@@ -868,6 +958,45 @@ const CURATED_K12_PHRASES = [
   ['wheel and axle', 'n', 'A simple machine made of a large wheel attached to a smaller rod that turns together with it.'],
 ];
 
+// 2026-11-23: the checker's corrections for an extended word (curation entry with ext: true), by the core's rules (build(),
+// "1. senses"): added meanings, rejects, rewritten text and examples, order (keepOnlyOrdered keeps only the listed ones).
+// A meaning the checker never saw stays unchecked. At most three meanings, as for every extended word.
+function curateExtended(w, ss, C, stats) {
+  const sv = C.senses || {};
+  // Copies: the sense objects may be shared with the rest of the build (senseCandidates), and a rewrite must not leak.
+  ss = ss.map((s) => Object.assign({}, s));
+  if (C.add) for (const a of C.add) {
+    if (ss.some((s) => s.id === a.id)) throw new Error('curation adds a sense that exists: ' + a.id);
+    ss.push({ id: a.id, word: w, p: a.id.split('|')[1], def: a.def, style: /___/.test(a.def) ? 'blank' : 'phrase', source: a.source || 'alloflow', ex: a.example ? [a.example] : [], syn: [], ant: [], soft: !!safety(a.def), tags: '', raw: a.def, added: true, addedEdited: a.edited !== false });
+  }
+  for (const id of Object.keys(sv)) {
+    if (ss.some((s) => s.id === id) || sv[id].verdict === 'reject') continue;
+    const v = sv[id];
+    if (v.verdict === 'fixed' && v.def && !safety(v.def) && id.split('|')[0] === w) {
+      const n = id.split('|')[2];
+      ss.push({ id, word: w, p: id.split('|')[1], def: v.def, style: /___/.test(v.def) ? 'blank' : 'phrase', source: /^w/.test(n) ? 'wordnet' : /^e/.test(n) ? 'wiktionary' : 'simple', ex: [], syn: [], ant: [], soft: false, tags: '', raw: v.def });
+    } else if (stats) (stats.extCurationStale = stats.extCurationStale || []).push(id);
+  }
+  ss = ss.filter((s) => !(sv[s.id] && sv[s.id].verdict === 'reject'));
+  for (const s of ss) {
+    if (!sv[s.id] && !s.added) { s.checked = ''; continue; }
+    const v = sv[s.id] || { verdict: 'fixed' };
+    if (s.added) s.edited = s.addedEdited;
+    if (v.verdict === 'fixed') {
+      if (v.def) { if (safety(v.def)) throw new Error('a checked rewrite fails the safety filter: ' + s.id); s.def = v.def; s.style = /___/.test(v.def) ? 'blank' : 'phrase'; s.edited = true; }
+      if (v.example !== undefined) { s.fixedExample = v.example; if (v.exampleEdited) s.edited = true; }
+      s.checked = 'fixed';
+    } else if (v.verdict === 'good') { s.checked = 'good'; if (v.example !== undefined) s.fixedExample = v.example; }
+    else throw new Error('unknown verdict ' + v.verdict + ' for ' + s.id);
+  }
+  if (C.order) {
+    const rank = new Map(C.order.map((id, i) => [id, i]));
+    ss.sort((a, b) => (rank.has(a.id) ? rank.get(a.id) : 1e3 + ss.indexOf(a)) - (rank.has(b.id) ? rank.get(b.id) : 1e3 + ss.indexOf(b)));
+    if (C.keepOnlyOrdered) ss = ss.filter((s) => rank.has(s.id));
+  }
+  return ss.slice(0, 3);
+}
+
 function buildExtended(made, coreKeptWords) {
   const I = inputs();
   const { simple, enw, wn, lists, curation, formBase } = I;
@@ -920,22 +1049,33 @@ function buildExtended(made, coreKeptWords) {
 
     let ss = senseCandidates(w, []);
     if (!ss.length) continue;
-    const pord = [];
-    for (const s of ss) if (!pord.includes(s.p)) pord.push(s.p);
-    ss = pord.flatMap((p) => [...ss.filter((s) => s.p === p && !s.soft), ...ss.filter((s) => s.p === p && s.soft)]);
-    const per = {};
-    ss = ss.filter((s) => { per[s.p] = (per[s.p] || 0) + 1; return per[s.p] <= 2; }).slice(0, 3);
     const C = cur[w];
+    if (C && C.ext) {
+      // 2026-11-23: a checked extended word (curation entry with ext: true): its order, rejects, rewrites, examples and added
+      // meanings apply as in the core (build(), "1. senses"). An extended word has no wrong answers of its own, so the
+      // distractor fields are not used; and it stays extended (a core word would be one the budget may never trim).
+      ss = curateExtended(w, ss, C, made.stats);
+      if (!ss.length) continue;
+    } else {
+      const pord = [];
+      for (const s of ss) if (!pord.includes(s.p)) pord.push(s.p);
+      ss = pord.flatMap((p) => [...ss.filter((s) => s.p === p && !s.soft), ...ss.filter((s) => s.p === p && s.soft)]);
+      const per = {};
+      ss = ss.filter((s) => { per[s.p] = (per[s.p] || 0) + 1; return per[s.p] <= 2; }).slice(0, 3);
+    }
+    ss = ss.filter((s) => !s.fixDrop);
+    if (!ss.length) continue;
     const us = usSpell(w) === w ? usSpell : (x) => x;
     const rows = ss.map((s, idx) => {
       const al = s.synset ? { id: s.synset, overlap: 1 } : alignSynset(w, s.p, s.def);
       s.synset0 = al ? al.id : null;
       const cross = isCrossVerified(w, s.p, s.def, s.source, al ? al.overlap : 0);
       const humanRev = !!(C && C.senses && C.senses[s.id] && C.senses[s.id].humanReviewed);
-      const flags = (cross ? 8 : 0) + (humanRev ? 16 : 0);
-      const ex = idx === 0 ? exampleFor(s) : null;
+      const flags = (s.edited ? 1 : 0) + (s.checked === 'good' ? 2 : s.checked === 'fixed' ? 4 : 0) + (cross && !s.checked ? 8 : 0) + (humanRev ? 16 : 0);
+      // A checked example (even an empty one, meaning "no example") wins; otherwise the first meaning gets one from the sources.
+      const exText = s.fixedExample !== undefined ? s.fixedExample : (idx === 0 ? ((exampleFor(s) || {}).text || '') : '');
       const n = s.id.split('|')[2];
-      return [s.p + n, us(s.def), us(ex ? ex.text : ''), SRC[s.source], flags];
+      return [s.p + n, us(s.def), us(exText), SRC[s.source] || SRC.alloflow, flags];
     });
     if (rows.length) extWords.set(w, rows);
   }
@@ -1435,7 +1575,7 @@ function main(argv) {
   console.log(JSON.stringify(summary, null, 1));
 }
 
-module.exports = { inputs, build, outputs, cleanDef, pastForm, formsOf, related, containsWordForm, jacc, contentStems, safety, HARD, SOFT, ruleBases, exclusionsFor, sharesSynset, CREDITS };
+module.exports = { inputs, build, outputs, senseCandidates, checkerCandidates, curateExtended, applySenseFixes, blankFitProblem, cleanDef, pastForm, formsOf, related, containsWordForm, jacc, contentStems, safety, HARD, SOFT, ruleBases, exclusionsFor, sharesSynset, CREDITS };
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (error) { console.error(error.stack || error.message); process.exitCode = 1; }
 }

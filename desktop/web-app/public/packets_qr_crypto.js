@@ -283,79 +283,183 @@
       return { publicKey: PK_PREFIX + toBase64Url(bytes), bytes: bytes, fingerprint: fingerprintOf(bytes) };
     }
 
-    function compactItem(it, full) {
-      var row = [
-        Number(it.n) || 0,
-        String(it.activity || '').slice(0, 30),
-        String(it.word || '').slice(0, 48),
-        it.target != null ? String(it.target).slice(0, 32) : '',
-        Array.isArray(it.responses) ? it.responses.slice(0, 4).map(function (r) { return String(r || '').slice(0, 40); }) : [],
-        Number(it.attempts) || 0,
-        it.firstTry ? 1 : 0,
-        it.correct ? 1 : 0,
-        full ? Math.max(0, Math.round(Number(it.ms) || 0)) : 0,
-        String(it.flag || '').slice(0, 24),
-        it.digitsCorrect != null ? Number(it.digitsCorrect) : null,
-        it.digitsPossible != null ? Number(it.digitsPossible) : null,
-        it.practice || null,
-      ];
-      while (row.length > 8 && (row[row.length - 1] == null || row[row.length - 1] === '' || row[row.length - 1] === 0)) row.pop();
+    // Payload version 2 (2026-11-23). Version 1 kept only the missed items of a long result and the teacher page
+    // filled the rest in, so the reader counted a wrong score. Rule of version 2: EVERY item is always carried with
+    // what is counted from it (right, first try, done, practice, tries, digits, activity, flag). Only what describes
+    // an item may be left out to fit one code, in this order, and the payload says which (c):
+    //   c absent  nothing left out: the teacher page rebuilds the same rows the student's own results file has
+    //   c 1       the time on each item
+    //   c 2       also the wording (word, target, answers) of the items right at the first try
+    //   c 3       also the wording of the missed items that do not fit, and the per-item helps (totals stay)
+    // A result whose counted part alone does not fit is refused (code "too_long"): the student saves the file.
+    var B36 = '0123456789abcdefghijklmnopqrstuvwxyz';
+    var QR_UNITS = ['', 'digits_correct_per_minute', 'items_correct'];
+    function qrText(v, max) { return (v == null ? '' : String(v)).slice(0, max); }
+    function qrTrimRow(row, keep) {
+      while (row.length > keep && (row[row.length - 1] == null || row[row.length - 1] === '' || row[row.length - 1] === 0)) row.pop();
       return row;
+    }
+    function compactScore(sc) {
+      var o = {};
+      var put = function (k, v, dflt) { if (v != null && v !== dflt) o[k] = v; };
+      var unit = qrText(sc.scoreUnit, 40);
+      put('m', qrText(sc.measure, 40), '');
+      put('s', sc.score != null ? sc.score : null, null);
+      put('u', QR_UNITS.indexOf(unit) > 0 ? QR_UNITS.indexOf(unit) : unit, '');
+      put('dc', sc.digitsCorrect != null ? sc.digitsCorrect : null, null);
+      put('dp', sc.digitsPossible != null ? sc.digitsPossible : null, null);
+      put('ic', Number(sc.itemsCorrect) || 0, 0);
+      put('ia', Number(sc.itemsAttempted) || 0, 0);
+      put('tl', sc.timeLimitS != null ? sc.timeLimitS : null, null);
+      put('el', Number(sc.elapsedS) || 0, 0);
+      put('hd', Number(sc.hiddenS) || 0, 0);
+      put('ps', Number(sc.pausedS) || 0, 0);
+      put('pn', Number(sc.pauses) || 0, 0);
+      put('dh', Number(sc.directionsHeard) || 0, 0);
+      put('cm', qrText(sc.completion, 24), '');
+      put('pr', sc.prorated ? 1 : 0, 0);
+      put('nr', qrText(sc.noScoreReason, 32), '');
+      put('sv', sc.scoringVersion != null ? sc.scoringVersion : 3, 3);
+      put('fv', sc.formVersion != null ? sc.formVersion : 2, 2);
+      put('at', Number(sc.attempt) || 1, 1);
+      if (Array.isArray(sc.flags) && sc.flags.length) o.fl = sc.flags.slice(0, 8).map(function (x) { return qrText(x, 24); });
+      if (Array.isArray(sc.tools) && sc.tools.length) o.tl2 = sc.tools.slice(0, 8).map(function (x) { return qrText(x, 24); });
+      if (sc.untimed) { o.un = 1; if (sc.usualTimeLimitS != null) o.ut = sc.usualTimeLimitS; }
+      return o;
     }
     function compactResult(file) {
       var f = file || {};
       var pkt = (f.packet && typeof f.packet === 'object') ? f.packet : {};
       var mode = (pkt.mode === 'check' || pkt.mode === 'probe') ? 'check' : 'practice';
       var sum = f.summary || {};
-      var items = Array.isArray(f.items) ? f.items : [];
-      var actTitles = f.activityTitles && typeof f.activityTitles === 'object' ? f.activityTitles : {};
-      var base = {
-        v: 1,
-        sid: String(f.sessionId || '').slice(0, 48),
-        pid: String(pkt.id || f.lessonId || '').slice(0, 64),
-        rev: String(pkt.version || f.revision || '').slice(0, 24),
-        t: String(f.lessonTitle || '').slice(0, 80),
-        m: mode,
-        f: String(pkt.form || '').slice(0, 16),
-        l: String(f.learner || f.learnerName || '').slice(0, 40),
-        s: String(f.startedLocal || f.startedAt || '').slice(0, 32),
-        e: String(f.finishedLocal || f.finishedAt || '').slice(0, 32),
-        a: Math.max(0, Math.round((Number(f.activeMs != null ? f.activeMs : f.durationMs) || 0) / 1000)),
-        sum: [Number(sum.items) || 0, Number(sum.done) || 0, Number(sum.firstTry) || 0, Number(sum.afterRetry) || 0, Number(sum.missed) || 0, Number(sum.practised) || 0],
-        at: actTitles,
+      var items = (Array.isArray(f.items) ? f.items : []).map(function (it) { return it && typeof it === 'object' ? it : {}; });
+      var titles = f.activityTitles && typeof f.activityTitles === 'object' ? f.activityTitles : {};
+      var acts = [], actAt = {}, seq = {}, at = {};
+      var K = '', G = '', D = '', O = '', X = {}, P = [], supKeys = [], supAt = {}, supTotals = {};
+      var anyDigits = false, anyRole = false, anySup = false, anyX = false;
+      var ids = [], rows = [], plain = [], focus = [], recall = [];
+      var digit = function (v, x, key) {
+        if (v == null || v === '' || !isFinite(Number(v))) return '-';
+        var n = Math.max(0, Math.round(Number(v)));
+        anyDigits = true;
+        if (n < 36) return B36.charAt(n);
+        x[key] = n;
+        return '-';
       };
-      if (mode === 'check' && f.score && typeof f.score === 'object') {
-        var sc = f.score;
-        base.sc = {
-          m: sc.measure || '', s: sc.score != null ? sc.score : null, u: sc.scoreUnit || '',
-          dc: sc.digitsCorrect != null ? sc.digitsCorrect : null, dp: sc.digitsPossible != null ? sc.digitsPossible : null,
-          ic: Number(sc.itemsCorrect) || 0, ia: Number(sc.itemsAttempted) || 0,
-          tl: sc.timeLimitS != null ? sc.timeLimitS : null, el: Number(sc.elapsedS) || 0,
-          hd: Number(sc.hiddenS) || 0, ps: Number(sc.pausedS) || 0, pn: Number(sc.pauses) || 0,
-          dh: Number(sc.directionsHeard) || 0, cm: sc.completion || '', pr: sc.prorated ? 1 : 0,
-          nr: sc.noScoreReason || '', sv: sc.scoringVersion || null, fv: sc.formVersion || null,
-          at: Number(sc.attempt) || 1, fl: Array.isArray(sc.flags) ? sc.flags.slice(0, 8) : [],
-          tl2: Array.isArray(sc.tools) ? sc.tools.slice(0, 8) : [],
-          un: sc.untimed ? 1 : 0, ut: sc.usualTimeLimitS != null ? sc.usualTimeLimitS : null,
-        };
-      }
-      var sup = {};
-      items.forEach(function (it) {
-        var sp = it && it.supports;
-        if (!sp || typeof sp !== 'object') return;
-        Object.keys(sp).forEach(function (k) { var n = Number(sp[k]) || 0; if (n > 0) sup[k] = (sup[k] || 0) + n; });
+      items.forEach(function (it, i) {
+        var act = qrText(it.activity, 40), key = 'a:' + act;
+        if (actAt[key] == null) {
+          if (acts.length >= 36) { var many = new Error('Too many activities for one QR code.'); many.code = 'too_long'; throw many; }
+          actAt[key] = acts.length; acts.push(act); seq[key] = [0, 0];
+          if (titles[act] != null && titles[act] !== '') at[act] = qrText(titles[act], 60);
+        }
+        var practice = !!it.practice;
+        var tries = Math.max(0, Math.round(Number(it.attempts) || 0));
+        var x = {};
+        K += B64U.charAt((it.firstTry ? 1 : 0) | (it.correct ? 2 : 0) | (it.done ? 4 : 0) | (practice ? 8 : 0) | (Math.min(tries, 3) << 4));
+        G += B36.charAt(actAt[key]);
+        if (tries > 3) x.at = tries;
+        if (it.n != null && Number(it.n) > 0 && Number(it.n) !== i + 1) x.n = Number(it.n);
+        if (practice && typeof it.practice === 'string' && it.practice !== 'practice') x.p = qrText(it.practice, 24);
+        if (it.flag) x.f = qrText(it.flag, 24);
+        D += digit(it.digitsCorrect, x, 'dc') + digit(it.digitsPossible, x, 'dp');
+        var dflt = (practice ? 'p' : '') + seq[key][practice ? 1 : 0]++;
+        var full = qrText(it.itemId, 80);
+        var suffix = act && full.indexOf(act + '-') === 0 ? full.slice(act.length + 1) : '=' + full;
+        ids.push(suffix === dflt ? 0 : suffix);
+        var low = full.toLowerCase();
+        var agree = /-(match|conflict)(?:-new|-known)?$/.exec(low);
+        var role = (agree ? (agree[1] === 'match' ? 3 : 6) : 0) + (/-new$/.test(low) ? 1 : /-known$/.test(low) ? 2 : 0);
+        if (role) anyRole = true;
+        O += String(role);
+        var sp = it.supports && typeof it.supports === 'object' ? it.supports : null;
+        var pairs = [];
+        if (sp) Object.keys(sp).slice(0, 12).forEach(function (k) {
+          var name = qrText(k, 24), v = sp[k];
+          if (supAt['s:' + name] == null) { supAt['s:' + name] = supKeys.length; supKeys.push(name); }
+          pairs.push(supAt['s:' + name], typeof v === 'number' ? v : qrText(v, 24));
+          var n = Number(v) || 0;
+          if (n > 0) supTotals[name] = (supTotals[name] || 0) + n;
+        });
+        if (pairs.length) anySup = true;
+        P.push(pairs.length ? pairs : 0);
+        var target = qrText(it.target, 240);
+        var resp = Array.isArray(it.responses) ? it.responses.slice(0, 12).map(function (r) { return qrText(r, 260); }) : [];
+        rows.push([qrText(it.word, 240), target, !resp.length ? 0 : (resp.length === 1 && target !== '' && resp[0] === target) ? 1 : resp, Math.max(0, Math.round(Number(it.ms) || 0))]);
+        var isPlain = !practice && !!it.done && !!it.correct && !!it.firstTry && !it.flag;
+        plain.push(isPlain);
+        focus.push(!practice && !isPlain && (tries > 0 || !!it.done));
+        if (!practice && act !== 'letter_tracing' && it.firstTry && it.recallMs != null && isFinite(Number(it.recallMs)) && Number(it.recallMs) >= 0) recall.push(Math.round(Number(it.recallMs)));
+        if (Object.keys(x).length) { X[i] = x; anyX = true; }
       });
-      if (Object.keys(sup).length) base.sup = sup;
-
-      base.it = items.map(function (it) { return compactItem(it, true); });
-      if (utf8Encode(JSON.stringify(base)).length <= MAX_QR_PLAINTEXT) return { payload: base, truncated: false };
-      base.it = items.map(function (it) { return compactItem(it, false); });
-      if (utf8Encode(JSON.stringify(base)).length <= MAX_QR_PLAINTEXT) return { payload: base, truncated: false };
-      base.tr = 1;
-      var focus = items.filter(function (it) { return !it.practice && it.done && (!it.correct || !it.firstTry || it.flag === 'skipped'); });
-      base.it = focus.map(function (it) { return compactItem(it, false); });
-      while (base.it.length > 0 && utf8Encode(JSON.stringify(base)).length > MAX_QR_PLAINTEXT) base.it.pop();
-      return { payload: base, truncated: true };
+      var started = qrText(f.startedLocal || f.startedAt, 32), finished = qrText(f.finishedLocal || f.finishedAt, 32);
+      var sameDay = started.length === 25 && finished.length === 25 && finished.slice(0, 11) === started.slice(0, 11) && finished.slice(19) === started.slice(19);
+      var base = {
+        v: 2,
+        sid: qrText(f.sessionId, 48),
+        pid: qrText(pkt.id || f.lessonId, 64),
+        rev: qrText(pkt.version || f.revision, 24),
+        t: qrText(f.lessonTitle, 120),
+        l: qrText(f.learner != null && f.learner !== '' ? f.learner : f.learnerName, 40),
+        s: started,
+        e: sameDay ? finished.slice(11, 19) : finished,
+        du: Math.max(0, Math.round((Number(f.durationMs) || 0) / 1000)),
+        sum: [Number(sum.items) || 0, Number(sum.done) || 0, Number(sum.firstTry) || 0, Number(sum.afterRetry) || 0, Number(sum.missed) || 0, Number(sum.practised) || 0],
+        A: acts,
+        K: K,
+      };
+      if (mode === 'check') base.m = 1;
+      if (pkt.form) base.f = qrText(pkt.form, 16);
+      if (f.activeMs != null && f.activeMs !== '' && isFinite(Number(f.activeMs))) base.a = Math.max(0, Math.round(Number(f.activeMs) / 1000));
+      if (Object.keys(at).length) base.at = at;
+      if (mode === 'check' && f.score && typeof f.score === 'object') base.sc = compactScore(f.score);
+      if (acts.length > 1) base.G = G;
+      if (anyDigits) base.D = D;
+      if (anyX) base.X = X;
+      if (recall.length) {
+        recall.sort(function (p, q) { return p - q; });
+        var mid = recall.length >> 1;
+        base.rs = [recall.length, Math.round(recall.length % 2 ? recall[mid] : (recall[mid - 1] + recall[mid]) / 2)];
+      }
+      var fits = function () { return utf8Encode(JSON.stringify(base)).length <= MAX_QR_PLAINTEXT; };
+      var wording = function (i, timed) { return [ids[i], rows[i][0], rows[i][1], rows[i][2]].concat(timed ? [rows[i][3]] : []); };
+      if (anySup) { base.S = supKeys; base.P = P; }
+      base.R = items.map(function (_, i) { return qrTrimRow(wording(i, true), 0); });
+      if (fits()) return { payload: base, truncated: false, level: 0 };
+      base.c = 1;
+      base.R = items.map(function (_, i) { return qrTrimRow(wording(i, false), 0); });
+      if (fits()) return { payload: base, truncated: true, level: 1 };
+      base.c = 2;
+      if (anyRole) base.O = O;
+      var listed = [];
+      items.forEach(function (_, i) { if (!plain[i]) listed.push(i); });
+      base.R = listed.map(function (i) { return qrTrimRow([i].concat(wording(i, false)), 1); });
+      base.cn = [items.length - listed.length, 0];
+      if (fits()) {
+        // The wording of as many first-try items as still fit, in order.
+        var misses = 0;
+        for (var pi = 0; pi < items.length && misses < 3; pi++) {
+          if (!plain[pi]) continue;
+          base.R.push(qrTrimRow([pi].concat(wording(pi, false)), 1));
+          base.cn = [items.length - base.R.length, 0];
+          if (fits()) misses = 0;
+          else { base.R.pop(); base.cn = [items.length - base.R.length, 0]; misses++; }
+        }
+        return { payload: base, truncated: true, level: 2 };
+      }
+      base.c = 3;
+      delete base.S; delete base.P;
+      if (anySup) base.pt = supTotals;
+      listed = [];
+      items.forEach(function (_, i) { if (focus[i]) listed.push(i); });
+      var focusCount = listed.length;
+      base.R = listed.map(function (i) { return qrTrimRow([i].concat(wording(i, false)), 1); });
+      base.cn = [items.length - base.R.length, 0];
+      while (base.R.length && !fits()) { base.R.pop(); base.cn = [items.length - base.R.length, focusCount - base.R.length]; }
+      if (fits()) return { payload: base, truncated: true, level: 3 };
+      var err = new Error('This result is too long for one QR code.');
+      err.code = 'too_long';
+      throw err;
     }
 
     function sealResult(resultFile, publicKeyStr, opts) {
@@ -376,7 +480,7 @@
       var fpBytes = new Uint8Array(4);
       for (var i = 0; i < 4; i++) fpBytes[i] = parseInt(pk.fingerprint.slice(i * 2, i * 2 + 2), 16);
       var wire = concatBytes([new Uint8Array([1]), fpBytes, ephPk, nonce, ctTag]);
-      return { code: QR_PREFIX + toBase32(wire), fingerprint: pk.fingerprint, bytes: wire.length, truncated: packed.truncated };
+      return { code: QR_PREFIX + toBase32(wire), fingerprint: pk.fingerprint, bytes: wire.length, truncated: packed.truncated, level: packed.level };
     }
 
     var ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
@@ -434,6 +538,9 @@
       var rawBytes = isAlnum ? null : utf8Encode(s);
       var ver = 0, dataCap = 0;
       for (var v = 1; v <= 30; v++) {
+        // 2026-11-23: version 23 is never used: jsQR 1.4.0 (the page's reader where the browser has none) cannot read
+        // it, from this encoder or from qrcode.js. A larger version is always allowed, so the code steps to 24.
+        if (v === 23) continue;
         var info = QR_EC_L[v];
         var capBytes = info[1] * info[2] + info[3] * info[4];
         var ccBits = isAlnum ? (v < 10 ? 9 : v < 27 ? 11 : 13) : (v < 10 ? 8 : 16);
@@ -640,7 +747,7 @@
     }
 
     return {
-      PK_PREFIX: PK_PREFIX, QR_PREFIX: QR_PREFIX, HKDF_INFO: HKDF_INFO, MAX_QR_PLAINTEXT: MAX_QR_PLAINTEXT,
+      PK_PREFIX: PK_PREFIX, QR_PREFIX: QR_PREFIX, HKDF_INFO: HKDF_INFO, MAX_QR_PLAINTEXT: MAX_QR_PLAINTEXT, QR_UNITS: QR_UNITS,
       utf8Encode: utf8Encode, concatBytes: concatBytes, randomBytes: randomBytes, toHex: toHex,
       toBase64Url: toBase64Url, fromBase64Url: fromBase64Url, toBase32: toBase32,
       sha256: sha256, hmacSha256: hmacSha256, hkdfSha256: hkdfSha256,
@@ -722,42 +829,138 @@
       secretKey: SK_PREFIX + st.toBase64Url(sk),
     };
   }
-  function expandResult(p) {
-    if (!p || typeof p !== 'object' || p.v !== 1) return null;
-    var mode = p.m === 'check' ? 'check' : 'practice';
-    var sum = Array.isArray(p.sum) ? p.sum : [0, 0, 0, 0, 0, 0];
-    var rawItems = Array.isArray(p.it) ? p.it : [];
-    var items = rawItems.map(function (row, idx) {
-      var r = Array.isArray(row) ? row : [];
-      var item = {
-        n: Number(r[0]) || (idx + 1),
-        itemId: String(r[1] || 'item') + '-' + idx,
-        activity: String(r[1] || ''),
-        word: String(r[2] || ''),
-        target: r[3] != null && r[3] !== '' ? String(r[3]) : null,
-        responses: Array.isArray(r[4]) ? r[4].map(String) : [],
-        attempts: Number(r[5]) || 0,
-        firstTry: !!r[6],
-        correct: !!r[7],
-        done: true,
-        ms: Number(r[8]) || 0,
-        supports: {},
-        practice: r[12] || null,
-        flag: String(r[9] || ''),
-      };
-      if (r[10] != null) item.digitsCorrect = Number(r[10]);
-      if (r[11] != null) item.digitsPossible = Number(r[11]);
-      return item;
-    });
-    if (p.tr && sum[2] > 0) {
-      var firstPresent = items.filter(function (it) { return !it.practice && it.firstTry; }).length;
-      var padCount = Math.max(0, Number(sum[2]) - firstPresent);
-      var actId = (items[0] && items[0].activity) || (p.at && Object.keys(p.at)[0]) || (mode === 'check' ? 'math_computation' : 'practice');
-      for (var k = 0; k < padCount; k++) {
-        items.push({ n: items.length + 1, itemId: 'qr-ok-' + k, activity: actId, word: '(right on first try)', target: null, responses: [], attempts: 1, firstTry: true, correct: true, done: true, ms: 0, supports: {}, practice: null, flag: '' });
+  // What a version 2 payload leaves out, in plain words for the teacher page (level 0: nothing).
+  function leftOutOf(p) {
+    var c = Math.max(0, Math.min(3, Math.round(Number(p.c) || 0)));
+    var cn = Array.isArray(p.cn) ? p.cn : [0, 0];
+    return { level: c, times: c >= 1, noWording: c >= 2 ? Math.max(0, Number(cn[0]) || 0) : 0, missedNoWording: c >= 3 ? Math.max(0, Number(cn[1]) || 0) : 0, helpsAsTotals: c >= 3 && !!p.pt };
+  }
+  // Version 2 (2026-11-23): every item comes back with what is counted from it; see compactResult.
+  function expandItemsV2(p) {
+    var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_', B36 = '0123456789abcdefghijklmnopqrstuvwxyz';
+    var K = typeof p.K === 'string' ? p.K : '', n = K.length;
+    if (n > 2000) return null;
+    var acts = Array.isArray(p.A) ? p.A.map(String) : [];
+    var G = typeof p.G === 'string' ? p.G : '', D = typeof p.D === 'string' ? p.D : '', O = typeof p.O === 'string' ? p.O : '';
+    if ((G && G.length !== n) || (D && D.length !== 2 * n) || (O && O.length !== n)) return null;
+    var X = p.X && typeof p.X === 'object' ? p.X : {};
+    var S = Array.isArray(p.S) ? p.S.map(String) : [], P = Array.isArray(p.P) ? p.P : null;
+    if (P && P.length !== n) return null;
+    var c = leftOutOf(p).level;
+    var R = Array.isArray(p.R) ? p.R : [];
+    var detail = {};
+    if (c <= 1) {
+      if (R.length !== n) return null;
+      R.forEach(function (row, i) { detail[i] = Array.isArray(row) ? row : []; });
+    } else {
+      for (var j = 0; j < R.length; j++) {
+        var row = R[j];
+        if (!Array.isArray(row) || typeof row[0] !== 'number' || row[0] !== Math.floor(row[0]) || row[0] < 0 || row[0] >= n || detail[row[0]]) return null;
+        detail[row[0]] = row.slice(1);
       }
     }
-    if (p.sup && typeof p.sup === 'object' && items.length) items[0].supports = Object.assign({}, p.sup);
+    var seq = {}, items = [];
+    for (var i = 0; i < n; i++) {
+      var k = B64.indexOf(K.charAt(i));
+      var act = acts[G ? B36.indexOf(G.charAt(i)) : 0];
+      if (k < 0 || act == null) return null;
+      var practice = !!(k & 8);
+      var x = X[i] && typeof X[i] === 'object' ? X[i] : {};
+      var slot = seq['a:' + act] || (seq['a:' + act] = [0, 0]);
+      var dflt = (practice ? 'p' : '') + slot[practice ? 1 : 0]++;
+      var d = detail[i] || null;
+      var itemId;
+      if (d && typeof d[0] === 'string' && d[0] !== '') itemId = d[0].charAt(0) === '=' ? d[0].slice(1) : act + '-' + d[0];
+      else {
+        itemId = act + '-' + dflt;
+        // An item with no wording keeps the part of its id that is counted from: new or known, matching or conflicting.
+        if (!d && O) {
+          var o = Number(O.charAt(i)) || 0, agree = Math.floor(o / 3), role = o % 3;
+          itemId += (agree === 1 ? '-match' : agree === 2 ? '-conflict' : '') + (role === 1 ? '-new' : role === 2 ? '-known' : '');
+        }
+      }
+      var target = d && d[2] != null && d[2] !== 0 && d[2] !== '' ? String(d[2]) : '';
+      var r = d ? d[3] : 0;
+      var supports = {};
+      var pairs = P && Array.isArray(P[i]) ? P[i] : [];
+      for (var s = 0; s + 1 < pairs.length; s += 2) { if (S[pairs[s]] != null) supports[S[pairs[s]]] = pairs[s + 1]; }
+      var item = {
+        n: Number(x.n) > 0 ? Number(x.n) : i + 1,
+        itemId: itemId,
+        activity: act,
+        word: d && d[1] != null && d[1] !== 0 ? String(d[1]) : '',
+        target: target === '' ? null : target,
+        responses: r === 1 ? [target] : Array.isArray(r) ? r.map(String) : [],
+        attempts: Number(x.at) > 3 ? Math.round(Number(x.at)) : (k >> 4) & 3,
+        firstTry: !!(k & 1),
+        correct: !!(k & 2),
+        done: !!(k & 4),
+        ms: c === 0 && d ? Math.max(0, Number(d[4]) || 0) : 0,
+        supports: supports,
+        practice: practice ? (typeof x.p === 'string' && x.p ? x.p : 'practice') : null,
+        flag: typeof x.f === 'string' ? x.f : '',
+      };
+      if (!d) item.qrNoWording = true;
+      if (D) {
+        var dc = D.charAt(2 * i), dp = D.charAt(2 * i + 1);
+        item.digitsCorrect = x.dc != null ? Number(x.dc) : dc === '-' ? null : B36.indexOf(dc);
+        item.digitsPossible = x.dp != null ? Number(x.dp) : dp === '-' ? null : B36.indexOf(dp);
+        if (item.digitsCorrect !== null && !(item.digitsCorrect >= 0)) return null;
+        if (item.digitsPossible !== null && !(item.digitsPossible >= 0)) return null;
+      }
+      items.push(item);
+    }
+    // The recall time is carried as the two numbers the results file states (how many facts, their middle time), and
+    // given back to that many first-try facts, so the rebuilt summary states the same two numbers.
+    if (Array.isArray(p.rs) && Number(p.rs[0]) > 0 && Number(p.rs[1]) >= 0) {
+      var left = Math.round(Number(p.rs[0]));
+      items.forEach(function (it) { if (left > 0 && !it.practice && it.activity !== 'letter_tracing' && it.firstTry) { it.recallMs = Math.round(Number(p.rs[1])); left--; } });
+    }
+    return items;
+  }
+  function expandResult(p) {
+    if (!p || typeof p !== 'object' || (p.v !== 1 && p.v !== 2)) return null;
+    var v2 = p.v === 2;
+    var mode = (v2 ? p.m === 1 : p.m === 'check') ? 'check' : 'practice';
+    var sum = Array.isArray(p.sum) ? p.sum : [0, 0, 0, 0, 0, 0];
+    var items;
+    if (v2) {
+      items = expandItemsV2(p);
+      if (!items) return null;
+    } else {
+      // Version 1 (files sealed before 2026-11-23). A condensed version 1 code (p.tr) holds only some of the missed
+      // items: unsealResult refuses it, because no right score can be counted from it.
+      items = (Array.isArray(p.it) ? p.it : []).map(function (row, idx) {
+        var r = Array.isArray(row) ? row : [];
+        var item = {
+          n: Number(r[0]) || (idx + 1),
+          itemId: String(r[1] || 'item') + '-' + idx,
+          activity: String(r[1] || ''),
+          word: String(r[2] || ''),
+          target: r[3] != null && r[3] !== '' ? String(r[3]) : null,
+          responses: Array.isArray(r[4]) ? r[4].map(String) : [],
+          attempts: Number(r[5]) || 0,
+          firstTry: !!r[6],
+          correct: !!r[7],
+          done: true,
+          ms: Number(r[8]) || 0,
+          supports: {},
+          practice: r[12] || null,
+          flag: String(r[9] || ''),
+        };
+        if (r[10] != null) item.digitsCorrect = Number(r[10]);
+        if (r[11] != null) item.digitsPossible = Number(r[11]);
+        return item;
+      });
+    }
+    var totals = {};
+    if (v2) {
+      if (p.pt && typeof p.pt === 'object') Object.keys(p.pt).slice(0, 24).forEach(function (k) { totals[k] = Number(p.pt[k]) || 0; });
+      else items.forEach(function (it) { Object.keys(it.supports).forEach(function (k) { var n = Number(it.supports[k]) || 0; if (n > 0) totals[k] = (totals[k] || 0) + n; }); });
+    } else if (p.sup && typeof p.sup === 'object') totals = p.sup;
+    var started = String(p.s || '');
+    var finished = String(p.e || '');
+    if (v2 && finished.length === 8 && started.length === 25) finished = started.slice(0, 11) + finished + started.slice(19);
     var activeMs = Math.max(0, Number(p.a) || 0) * 1000;
     var out = {
       kind: 'alloflow-take-home-result',
@@ -771,22 +974,23 @@
       activityTitles: (p.at && typeof p.at === 'object') ? p.at : {},
       learner: String(p.l || ''),
       learnerName: String(p.l || ''),
-      startedAt: String(p.s || ''),
-      finishedAt: String(p.e || ''),
-      startedLocal: String(p.s || ''),
-      finishedLocal: String(p.e || ''),
-      durationMs: activeMs,
-      activeMs: activeMs,
+      startedAt: started,
+      finishedAt: finished,
+      startedLocal: started,
+      finishedLocal: finished,
+      durationMs: v2 ? Math.max(0, Number(p.du) || 0) * 1000 : activeMs,
       timesAreFromTheLearnerDevice: true,
       items: items,
       summary: { items: Number(sum[0]) || 0, done: Number(sum[1]) || 0, firstTry: Number(sum[2]) || 0, afterRetry: Number(sum[3]) || 0, missed: Number(sum[4]) || 0, practised: Number(sum[5]) || 0 },
-      qrTruncated: !!p.tr,
-      qrSupports: (p.sup && typeof p.sup === 'object') ? p.sup : {},
+      qrLeftOut: v2 ? leftOutOf(p) : { level: p.tr ? 9 : 0, times: false, noWording: 0, missedNoWording: 0, helpsAsTotals: false },
+      qrTruncated: v2 ? leftOutOf(p).level > 0 : !!p.tr,
+      qrSupports: totals,
     };
+    if (!v2 || p.a != null) out.activeMs = activeMs;
     if (mode === 'check' && p.sc && typeof p.sc === 'object') {
       var sc = p.sc;
       out.score = {
-        measure: sc.m || '', score: sc.s != null ? sc.s : null, scoreUnit: sc.u || '',
+        measure: sc.m || '', score: sc.s != null ? sc.s : null, scoreUnit: (typeof sc.u === 'number' ? st.QR_UNITS[sc.u] : sc.u) || '',
         digitsCorrect: sc.dc != null ? sc.dc : null, digitsPossible: sc.dp != null ? sc.dp : null,
         itemsCorrect: Number(sc.ic) || 0, itemsAttempted: Number(sc.ia) || 0,
         timeLimitS: sc.tl != null ? sc.tl : null, elapsedS: Number(sc.el) || 0,
@@ -826,12 +1030,18 @@
     try {
       parsed = JSON.parse(utf8Decode(pt), function (k, v) { return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v; });
     } catch (_) { return { ok: false, reason: 'tampered' }; }
+    // A condensed code from a file sealed before 2026-11-23 holds only some of the missed questions. No right score
+    // can be counted from it, so it is refused: the teacher asks for the saved results file, or seals the file again.
+    if (parsed && parsed.v === 1 && parsed.tr) return { ok: false, reason: 'old_condensed' };
     var result = expandResult(parsed);
     if (!result) return { ok: false, reason: 'format' };
-    return { ok: true, result: result, compact: parsed, fingerprint: sk.fingerprint, truncated: !!parsed.tr };
+    return { ok: true, result: result, compact: parsed, fingerprint: sk.fingerprint, truncated: !!result.qrTruncated, leftOut: result.qrLeftOut };
   }
+  // The student-side code as text. It needs BigInt (Safari and iOS 14 or later). Where that is missing, the file must
+  // still start: the stand-in below fails only when the QR is asked for, and the file then says to save the results file.
   function studentEmbedSource() {
-    return '(' + buildStudentQrRuntime.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n +/g, '\n') + ')(window)';
+    var runtime = buildStudentQrRuntime.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n +/g, '\n');
+    return '(function(w){try{return(' + runtime + ')(w)}catch(e){var no=function(){throw e};return{sealResult:no,qrImgEl:no}}})(window)';
   }
 
   var api = {
@@ -855,6 +1065,7 @@
     parseSecretKey: parseSecretKey,
     compactResult: st.compactResult,
     expandResult: expandResult,
+    leftOutOf: leftOutOf,
     sealResult: st.sealResult,
     unsealResult: unsealResult,
     qrMatrix: st.qrMatrix,

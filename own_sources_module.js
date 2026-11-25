@@ -19,16 +19,31 @@
  * host's storage wrapper, with localStorage as the fallback Lumen already uses.
  * A document's bytes never leave the device.
  */
-(function (root) {
+(function (rawRoot) {
   'use strict';
+  var root = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
+
+  function _osStr(v, fb) {
+    if (v == null || typeof v === 'symbol') return fb || '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? String(v) : (fb || '');
+    if (typeof v === 'boolean') return String(v);
+    try { return String(v); } catch (_) { return fb || ''; }
+  }
+
+  function _osNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') return Number(v);
+    return NaN;
+  }
 
   function evidenceApi() {
-    try { return (root.LumenEvidence && typeof root.LumenEvidence.createProjectStore === 'function') ? root.LumenEvidence : null; }
+    try { return (root && root.LumenEvidence && typeof root.LumenEvidence.createProjectStore === 'function') ? root.LumenEvidence : null; }
     catch (_) { return null; }
   }
 
   function documentsApi() {
-    try { return (root.LumenDocuments && typeof root.LumenDocuments.extractLocalDocument === 'function') ? root.LumenDocuments : null; }
+    try { return (root && root.LumenDocuments && typeof root.LumenDocuments.extractLocalDocument === 'function') ? root.LumenDocuments : null; }
     catch (_) { return null; }
   }
 
@@ -47,11 +62,11 @@
   function ensureLumen(timeoutMs) {
     if (evidenceApi() && documentsApi()) return Promise.resolve(true);
     if (_ensureLumenPromise) return _ensureLumenPromise;
-    var parsedWait = Number(timeoutMs);
+    var parsedWait = _osNum(timeoutMs);
     var waitMs = (Number.isFinite(parsedWait) && parsedWait > 0) ? Math.min(parsedWait, 30000) : 8000;
     var run = (async function () {
       try {
-        if (typeof root.__alloEnsureStemPluginLoaded === 'function') {
+        if (root && typeof root.__alloEnsureStemPluginLoaded === 'function') {
           LUMEN_MODULES.forEach(function (name) {
             try { root.__alloEnsureStemPluginLoaded(name); } catch (_) { /* keep asking for the rest */ }
           });
@@ -77,11 +92,12 @@
   function storageDb(ctx) {
     try {
       if (ctx && ctx.storageDB) return ctx.storageDB;
-      return (root.AlloModules && root.AlloModules.UtilsPure && root.AlloModules.UtilsPure.storageDB) || null;
+      return (root && root.AlloModules && root.AlloModules.UtilsPure && root.AlloModules.UtilsPure.storageDB) || null;
     } catch (_) { return null; }
   }
 
   function localStorageApi() {
+    if (!root) return null;
     try { return root.localStorage || null; }
     catch (error) {
       // A denied fallback may contain newer data; it is not an absent adapter.
@@ -136,11 +152,11 @@
   // readings are not imported research documents. Filter a copy for research;
   // never delete the reading or its notes from the shared study project.
   function isResearchSource(source) {
-    return !!source && source.type !== 'reading'
+    return !!source && typeof source === 'object' && !Array.isArray(source) && source.type !== 'reading'
       && source.importMethod !== 'reading-workspace'
       && source.importMethod !== 'alloflow-current-source'
       && source.id !== 'source-current'
-      && !/^src_reading_/.test(String(source.id || ''));
+      && !/^src_reading_/.test(_osStr(source.id));
   }
 
   function researchProject(project, selectedSourceIds) {
@@ -187,11 +203,11 @@
         allowAI: source.allowAI !== false,
         locator: source.locator || '',
         chars: typeof source.content === 'string' ? source.content.length : 0,
-        version: Number(source.version) || 1,
+        version: (function () { var v = _osNum(source.version); return (Number.isFinite(v) && v > 0) ? v : 1; })(),
         fileName: source.fileName || '',
         fileSize: source.fileSize,
         importedAt: source.importedAt || '',
-        documentPartCount: Number(source.documentPartCount) || 1,
+        documentPartCount: (function () { var c = _osNum(source.documentPartCount); return (Number.isFinite(c) && c > 0) ? c : 1; })(),
       };
     });
   }
@@ -306,7 +322,7 @@
   }
 
   function documentName(source) {
-    return String(source && (source.fileName || source.title) || '').trim().toLowerCase();
+    return _osStr(source && (source.fileName || source.title)).trim().toLowerCase();
   }
 
   function identicalDocument(existing, incoming) {
@@ -327,9 +343,10 @@
   }
 
   function duplicateSummary(source) {
+    var ver = _osNum(source.version);
     return {
       id: source.id, title: source.title, fileName: source.fileName || source.title,
-      fileSize: source.fileSize, chars: typeof source.content === 'string' ? source.content.length : 0, version: Number(source.version) || 1,
+      fileSize: source.fileSize, chars: typeof source.content === 'string' ? source.content.length : 0, version: (Number.isFinite(ver) && ver > 0) ? ver : 1,
       importedAt: source.importedAt || '', active: source.active !== false, allowAI: source.allowAI !== false,
     };
   }
@@ -341,12 +358,12 @@
   function separateCopy(project, spec, incoming) {
     var existingSources = (project && Array.isArray(project.sources)) ? project.sources.filter(function (s) { return !!(s && typeof s === 'object'); }) : [];
     var ids = new Set(existingSources.map(function (source) { return source.id; }));
-    var baseId = spec.id + '_' + incoming.contentHash;
+    var baseId = _osStr(spec.id) + '_' + _osStr(incoming.contentHash);
     var id = baseId;
     var suffix = 2;
     while (ids.has(id)) { id = baseId + '_' + suffix; suffix++; }
-    var titles = new Set(existingSources.map(function (source) { return String(source.title || '').toLowerCase(); }));
-    var name = String(spec.title || spec.fileName || 'Untitled source');
+    var titles = new Set(existingSources.map(function (source) { return _osStr(source.title).toLowerCase(); }));
+    var name = _osStr(spec.title || spec.fileName, 'Untitled source') || 'Untitled source';
     var extension = name.match(/(\.[^./\\]+)$/);
     var stem = extension ? name.slice(0, -extension[1].length) : name;
     var title = name;
@@ -366,7 +383,7 @@
     if (!E || !D) return { ok: false, reason: 'unavailable', imported: 0, skipped: 0, failed: 0, results: [], count: 0 };
 
     var files = _toFileArray(fileList);
-    var rawLimit = Number(D.MAX_FILES_PER_IMPORT);
+    var rawLimit = _osNum(D.MAX_FILES_PER_IMPORT);
     var limit = (Number.isFinite(rawLimit) && rawLimit > 0) ? Math.min(Math.floor(rawLimit), 50) : 5;
     var overLimit = files.slice(limit, limit + 500);
     files = files.slice(0, limit);
@@ -475,7 +492,7 @@
           action: 'skipped', reason: error && error.ownSourceReason || 'failed', sourceId: '',
           // Lumen's adapter writes these for a person ("did not contain enough
           // readable text"), so pass it through rather than replacing it.
-          message: (error && error.message) ? error.message : 'This document could not be read.',
+          message: (error && typeof error.message === 'string' && error.message) ? error.message : 'This document could not be read.',
         });
       }
     }
@@ -505,7 +522,7 @@
     return (D && D.ACCEPT) || '.pdf,.docx,.pptx,.xlsx,.xls,.xlsb,.ods,.txt,.md,.markdown,.csv,.epub';
   }
 
-  var api = {
+  var api = Object.freeze({
     acceptAttribute: acceptAttribute,
     available: function () { return !!(evidenceApi() && documentsApi()); },
     ensureLumen: ensureLumen,
@@ -519,25 +536,35 @@
     removeSource: removeSource,
     setSourceActive: setSourceActive,
     importFiles: importFiles,
-  };
+  });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (typeof module === 'object' && module !== null && module.exports) module.exports = api;
   if (root) {
-    root.AlloOwnSources = api;
-    root.AlloModules = root.AlloModules || {};
-    root.AlloModules.OwnSources = api;
+    try {
+      root.AlloOwnSources = api;
+      if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
+      root.AlloModules.OwnSources = api;
+    } catch (_) {}
   }
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));
 
 // Bundled with own_sources_module.js so citation inspection is available wherever
 // the document library is loaded. Snapshots describe the passage supplied at generation.
-(function(root) {
+(function(rawRoot) {
   'use strict';
+  var root = (rawRoot && (typeof rawRoot === 'object' || typeof rawRoot === 'function')) ? rawRoot : null;
   if (!root || root.AlloResearchEvidence) return;
   var prefix = '#allo-doc-';
   var storagePrefix = 'alloflow.research-evidence.v1.';
   var closeViewer = null;
   var sequence = 0;
+  function safeStr(v, fb) {
+    if (v == null || typeof v === 'symbol') return fb || '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? String(v) : (fb || '');
+    if (typeof v === 'boolean') return String(v);
+    try { return String(v); } catch (_) { return fb || ''; }
+  }
   function safeJsonParse(raw) {
     return JSON.parse(raw, function (k, v) {
       return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
@@ -559,18 +586,18 @@
     return storagePrefix;
   }
   function escapeMarkdown(value) {
-    return String(value || '').replace(/[\\`*_{}\[\]()<>#!|~&]/g, '\\$&');
+    return safeStr(value).replace(/[\\`*_{}\[\]()<>#!|~&]/g, '\\$&');
   }
-  function passage(row) { return String(row && row.snippet || '').slice(0, 1200); }
+  function passage(row) { return safeStr(row && row.snippet).slice(0, 1200); }
   function snapshot(evidence) {
     var run = Date.now().toString(36) + '-' + (++sequence).toString(36) + '-' + Math.random().toString(36).slice(2, 10);
     return (Array.isArray(evidence) ? evidence : []).filter(function (row) { return !!(row && typeof row === 'object'); }).slice(0, 500).map(function(row, index) {
       var v = row && row.version;
       var safeVersion = (Number.isSafeInteger(v) && v > 0) ? v : null;
       var item = {
-        id: run + '-' + (index + 1), sourceId: String(row.sourceId || '').slice(0, 200),
-        evidenceId: String(row.evidenceId || '').slice(0, 200), title: String(row.title || 'Imported document').slice(0, 500),
-        locatorLabel: String(row.locatorLabel || '').slice(0, 200), version: safeVersion,
+        id: run + '-' + (index + 1), sourceId: safeStr(row.sourceId).slice(0, 200),
+        evidenceId: safeStr(row.evidenceId).slice(0, 200), title: (safeStr(row.title) || 'Imported document').slice(0, 500),
+        locatorLabel: safeStr(row.locatorLabel).slice(0, 200), version: safeVersion,
         passage: passage(row), suppliedAt: new Date().toISOString()
       };
       return item;
@@ -679,7 +706,7 @@
     return records.size > cacheLimits.persistentItems || bytes > cacheLimits.persistentBytes;
   }
   function remember(items) {
-    if (!Array.isArray(items)) return false;
+    if (!Array.isArray(items) || items.length > 2000) return false;
     var pfx = activePrefix();
     var batch = new Map(), batchBytes = 0;
     for (var i = 0; i < items.length; i++) {
@@ -687,7 +714,11 @@
       if (!item) return false;
       var prior = batch.get(item.id), cached = citationMemory.get(pfx + item.id);
       if ((prior && !citationSame(prior, item)) || (cached && !citationSame(cached.item, item))) return false;
-      if (!prior) { batch.set(item.id, item); batchBytes += 2 * citationBytes(pfx + item.id, JSON.stringify(item)) + 64; }
+      if (!prior) {
+        batch.set(item.id, item);
+        batchBytes += 2 * citationBytes(pfx + item.id, JSON.stringify(item)) + 64;
+        if (batch.size > cacheLimits.memoryItems || batchBytes > cacheLimits.memoryBytes) return false;
+      }
     }
     if (!batch.size) return true;
     // A single operation cannot promise both bounded retention and protection of
@@ -799,7 +830,7 @@
     return Object.assign({}, cached.item);
   }
   function purgeBySourceId(sourceId) {
-    var sid = String(sourceId || '');
+    var sid = safeStr(sourceId);
     if (!sid) return 0;
     var pfx = activePrefix();
     var removed = 0;
@@ -832,14 +863,15 @@
     return removed;
   }
   function cite(text, items) {
-    return String(text || '').replace(/\s*\[Your document (\d+)\]/gi, function(_, n) {
+    return safeStr(text).replace(/\s*\[Your document (\d+)\]/gi, function(_, n) {
       var idx = Number(n) - 1;
       var item = Array.isArray(items) && idx >= 0 && idx < items.length ? items[idx] : null;
       return (item && citationId(item.id)) ? ' [Document ' + n + '](' + prefix + item.id + ')' : '';
     });
   }
   function used(text, items) {
-    return (Array.isArray(items) ? items : []).filter(function(item) { return !!(item && typeof item === 'object' && item.id) && String(text || '').indexOf('](' + prefix + item.id + ')') !== -1; });
+    var str = safeStr(text);
+    return (Array.isArray(items) ? items : []).filter(function(item) { return !!(item && typeof item === 'object' && typeof item.id === 'string' && item.id) && str.indexOf('](' + prefix + item.id + ')') !== -1; });
   }
   function finish(text, items) {
     if (!Array.isArray(items) || !items.length) return { text: text, evidence: null };
@@ -855,7 +887,9 @@
       body += '\n\nOpen a Document link to inspect the passage supplied to the model. A citation does not by itself verify the generated claim. The exact supplied passages are also saved below for export and review.';
       cited.forEach(function(item) {
         var index = safeItems.indexOf(item) + 1;
-        var safeHeading = String((item.title || '') + (item.locatorLabel ? ', ' + item.locatorLabel : '')).replace(/[\r\n]+/g, ' ');
+        var titleStr = safeStr(item.title);
+        var locStr = safeStr(item.locatorLabel);
+        var safeHeading = (titleStr + (locStr ? ', ' + locStr : '')).replace(/[\r\n]+/g, ' ');
         var safePassage = typeof item.passage === 'string' ? item.passage : '';
         body += '\n\n**Document ' + index + ': ' + escapeMarkdown(safeHeading) + '**\n\n'
           + safePassage.split(/\r?\n/).map(function(line) { return '> ' + escapeMarkdown(line); }).join('\n');
@@ -890,7 +924,7 @@
       rendered.push(quote.split(/\r?\n/).map(function(line) { return '> ' + escapeMarkdown(line); }).join('\n') + '\n\n[Your document ' + number + ']');
     }
     if (!rendered.length) return null;
-    return '# ' + escapeMarkdown(String(topic || 'Selected document excerpts').replace(/[\r\n]+/g, ' '))
+    return '# ' + escapeMarkdown((safeStr(topic) || 'Selected document excerpts').replace(/[\r\n]+/g, ' '))
       + '\n\n*Documents only: exact excerpts selected from your documents. Reading level, tone, and length do not rewrite these passages. No web search or additional factual prose was used.*\n\n'
       + rendered.join('\n\n');
   }
@@ -941,7 +975,9 @@
     function close() {
       if (closed) return;
       closed = true;
-      doc.removeEventListener('keydown', keydown, true); doc.removeEventListener('focusin', containFocus, true); overlay.remove(); closeViewer = null;
+      doc.removeEventListener('keydown', keydown, true); doc.removeEventListener('focusin', containFocus, true);
+      if (typeof overlay.remove === 'function') overlay.remove(); else if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      closeViewer = null;
       var s = root && root.__alloFocusTrapStack;
       var wasTop = true;
       if (Array.isArray(s)) {
@@ -988,12 +1024,14 @@
     trapStack.push(trapEntry);
     doc.addEventListener('keydown', keydown, true); doc.addEventListener('focusin', containFocus, true); try { button.focus(); } catch (_) {}
   }
-  if (root.document) root.document.addEventListener('click', function(event) {
+  if (root.document && typeof root.document.addEventListener === 'function') root.document.addEventListener('click', function(event) {
     var tgt = event.target && event.target.nodeType === 3 ? event.target.parentElement : event.target;
-    var anchor = tgt && tgt.closest && tgt.closest('a');
-    var href = anchor && anchor.getAttribute('href');
+    var anchor = tgt && typeof tgt.closest === 'function' && tgt.closest('a');
+    var href = anchor && typeof anchor.getAttribute === 'function' && anchor.getAttribute('href');
     if (!href || !/^#allo-doc-[a-z0-9-]{1,128}$/.test(href)) return;
     event.preventDefault(); event.stopPropagation(); show(href.slice(prefix.length), anchor);
   }, true);
-  root.AlloResearchEvidence = { snapshot: snapshot, remember: remember, lookup: lookup, cite: cite, finish: finish, exactExcerpts: exactExcerpts, show: show, passage: passage, purgeBySourceId: purgeBySourceId };
+  try {
+    root.AlloResearchEvidence = Object.freeze({ snapshot: snapshot, remember: remember, lookup: lookup, cite: cite, finish: finish, exactExcerpts: exactExcerpts, show: show, passage: passage, purgeBySourceId: purgeBySourceId });
+  } catch (_) {}
 })(typeof window !== 'undefined' ? window : null);

@@ -269,7 +269,9 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(phaseOSource).toContain('isLocalOnly: true');
     expect(phaseOSource).toContain("transport: 'local-preview'");
     expect(sessionModalSource).toContain("if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';");
-    expect(sessionModalSource).toContain('if (mailboxJoinUrl) return mailboxJoinUrl;');
+    // The mailbox URL is still preferred, now passed through the http(s)-only, no-credentials URL check.
+    expect(sessionModalSource).toContain('if (mailboxJoinUrl) return _smSafeJoinUrl(mailboxJoinUrl);');
+    expect(sessionModalSource).toContain("if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || parsed.username || parsed.password) return '';");
     expect(sessionModalSource).toContain("isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'");
     expect(sessionModalSource).toContain("typeof onRequestEndSession === 'function'");
     expect(sessionModalSource).toContain('{!isProjectionMode && !isMailboxSession && (');
@@ -468,7 +470,8 @@ describe('homework QR hardening', () => {
     const creator = sliceBetween(rootSource, 'const createHomeworkAssignmentLink = useCallback', 'const testHomeworkAsStudent');
     expect(creator).toContain('allo_assignment: assignmentId');
     expect(creator).not.toContain('allo_join:');
-    expect(rootSource).toContain("window.open(url, '_blank')");
+    // Student previews open only http(s) links, without an opener (host_handlers openStudentQrPreview).
+    expect(rootSource).toContain("preview = window.open(parsedUrl.toString(), '_blank', 'noopener,noreferrer');");
     expect(shareSessionSurfacesSource).toContain('Revoke homework link');
     expect(rootSource).toContain("throw new Error('Assignment expired')");
     expect(rootSource).toContain('function _alloAssignmentIsExpired(packet)');

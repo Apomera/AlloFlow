@@ -529,7 +529,8 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_oratory.js', 'bg-violet-600 hover:bg-violet-700 text-white'],
       ['stem_tool_oratory.js', 'bg-red-100 hover:bg-red-200 text-red-800'],
       ['stem_tool_oratory.js', 'bg-red-600 hover:bg-red-700 text-white'],
-      ['stem_tool_oratory.js', 'bg-red-50 text-red-700'],
+      // The recording badge moved into the dark hero header (2026-11-19): solid red-600 with white text (4.8:1).
+      ['stem_tool_oratory.js', 'bg-red-600 text-white border border-red-300'],
       ['stem_tool_platetectonics.js', 'bg-orange-700 text-white'],
       ['stem_tool_platetectonics.js', 'bg-emerald-700 text-white'],
       ['stem_tool_platetectonics.js', 'bg-white text-red-700 border border-red-200 hover:bg-red-50'],
@@ -611,15 +612,18 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_calculus.js', 'bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800'],
       ['stem_tool_calculus.js', 'bg-red-600 border-red-700 text-white shadow-md'],
       ['stem_tool_calculus.js', 'bg-indigo-600 border-indigo-700 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-amber-700 text-white border-amber-800 shadow'],
-      ['stem_tool_bakingscience.js', 'bg-orange-700 text-white border-orange-800 shadow'],
-      ['stem_tool_bakingscience.js', 'bg-yellow-800 text-white shadow'],
-      ['stem_tool_bakingscience.js', 'bg-emerald-700 border-emerald-800 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-red-600 border-red-700 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-pink-700 border-pink-800 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-rose-600 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-teal-700 text-white'],
-      ['stem_tool_bakingscience.js', 'bg-sky-700 text-white'],
+      // Baking moved its active states from Tailwind classes to theme-aware inline styles (2026-11-19).
+      // Same light-theme hexes: amber-700/800, orange-700/800, yellow-800, emerald-700/800, red-600/700,
+      // pink-700/800, rose-600, teal-700, sky-700, each with white text; contrast mode swaps to black/neon.
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#b45309', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#92400e'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#9a3412'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#854d0e', color: isContrast ? '#00ff00' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#00ff00' : '#047857', borderColor: isContrast ? '#00ff00' : '#065f46', color: isContrast ? '#000000' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#ffff00' : '#dc2626', borderColor: isContrast ? '#ffff00' : '#b91c1c', color: isContrast ? '#000000' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#00ff00' : '#be185d', borderColor: isContrast ? '#00ff00' : '#9d174d', color: isContrast ? '#000000' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#e11d48', color: isContrast ? '#00ff00' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#0f766e', color: isContrast ? '#00ff00' : '#ffffff'"],
+      ['stem_tool_bakingscience.js', "background: isContrast ? '#000000' : '#0369a1', color: isContrast ? '#00ff00' : '#ffffff'"],
       ['stem_tool_echolocation.js', 'hover:bg-emerald-800'],
       ['stem_tool_echolocation.js', 'hover:bg-indigo-700'],
       ['stem_tool_echolocation.js', 'bg-slate-200 text-slate-700'],
@@ -640,7 +644,8 @@ describe('STEM dynamic active-state contrast', () => {
 
   it('pins the ten-tool small-state contrast batch', () => {
     const treatments = [
-      ['stem_tool_a11yauditor.js', 'hover:bg-teal-100 text-teal-700 transition-colors'],
+      // Back button sits on the hero now, with its own white fill and a darker teal-800 label (2026-11-19).
+      ['stem_tool_a11yauditor.js', 'hover:bg-teal-100 text-teal-800 border border-teal-300 bg-white transition-colors'],
       ['stem_tool_geosandbox.js', 'text-slate-300 hover:bg-slate-700'],
       // Cell's interior-guide pathway and Next buttons moved to semantic classes (09-10,
       // 78799283f); their two amber pins are retired.

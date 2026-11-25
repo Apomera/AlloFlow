@@ -4,20 +4,20 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 12,
   "inputs": 6,
-  "lengthBucket": 47,
+  "lengthBucket": 114,
   "selects": 0,
-  "sha": "28cada90211e5f37",
-  "svgs": 0,
+  "sha": "7b440fb0f5ee08b9",
+  "svgs": 3,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for assessmentLiteracy 1`] = `
 {
-  "buttons": 10,
+  "buttons": 15,
   "inputs": 0,
-  "lengthBucket": 30,
+  "lengthBucket": 48,
   "selects": 0,
-  "sha": "8cb2ba5664fbb39c",
+  "sha": "d0455e66c302e20a",
   "svgs": 0,
 }
 `;
@@ -26,65 +26,65 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 179,
   "inputs": 13,
-  "lengthBucket": 1802,
+  "lengthBucket": 1812,
   "selects": 6,
-  "sha": "930900a7352acf95",
-  "svgs": 113,
+  "sha": "5291e3a459e8eeb3",
+  "svgs": 115,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for birdLab 1`] = `
 {
-  "buttons": 149,
+  "buttons": 155,
   "inputs": 1,
-  "lengthBucket": 5583,
+  "lengthBucket": 5604,
   "selects": 0,
-  "sha": "bc2a16af7e9052f2",
-  "svgs": 14,
+  "sha": "ebe34e5a68c43d0a",
+  "svgs": 16,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for cephalopodLab 1`] = `
 {
-  "buttons": 52,
+  "buttons": 58,
   "inputs": 1,
-  "lengthBucket": 256,
+  "lengthBucket": 273,
   "selects": 0,
-  "sha": "70689f25af336eca",
+  "sha": "09a976661f100801",
   "svgs": 1,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for learningLab 1`] = `
 {
-  "buttons": 22,
+  "buttons": 28,
   "inputs": 0,
-  "lengthBucket": 89,
+  "lengthBucket": 134,
   "selects": 0,
-  "sha": "eeb9d59a4e0863be",
-  "svgs": 0,
+  "sha": "3ecb9b7f90f691df",
+  "svgs": 2,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for nutritionLab 1`] = `
 {
-  "buttons": 24,
+  "buttons": 29,
   "inputs": 0,
-  "lengthBucket": 166,
+  "lengthBucket": 196,
   "selects": 0,
-  "sha": "7602405ca72802b6",
-  "svgs": 0,
+  "sha": "5a9363752dc26a36",
+  "svgs": 2,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 13,
+  "buttons": 18,
   "inputs": 1,
-  "lengthBucket": 60,
+  "lengthBucket": 74,
   "selects": 0,
-  "sha": "94371d314cffc630",
-  "svgs": 0,
+  "sha": "01ea01950983b6d0",
+  "svgs": 2,
 }
 `;
 
@@ -92,42 +92,42 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 30,
   "inputs": 1,
-  "lengthBucket": 237,
+  "lengthBucket": 252,
   "selects": 0,
-  "sha": "ae03f17f91c14bdc",
+  "sha": "712697b4a59d35bb",
   "svgs": 2,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for raptorHunt 1`] = `
 {
-  "buttons": 59,
+  "buttons": 63,
   "inputs": 1,
-  "lengthBucket": 211,
+  "lengthBucket": 221,
   "selects": 0,
-  "sha": "f2f832f9cbd613aa",
-  "svgs": 6,
+  "sha": "d1af4db4f38e0177",
+  "svgs": 8,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for roadReady 1`] = `
 {
-  "buttons": 86,
+  "buttons": 90,
   "inputs": 6,
-  "lengthBucket": 421,
+  "lengthBucket": 434,
   "selects": 3,
-  "sha": "b21e151c3768f98f",
-  "svgs": 1,
+  "sha": "534ab787fc6a0227",
+  "svgs": 3,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 49,
+  "buttons": 62,
   "inputs": 1,
-  "lengthBucket": 274,
+  "lengthBucket": 308,
   "selects": 0,
-  "sha": "22d3cae4c2f7195f",
-  "svgs": 0,
+  "sha": "8d36262df0c1d68f",
+  "svgs": 2,
 }
 `;

@@ -100,6 +100,11 @@ const REVIEWED = [
   'rocks -> stem.tools_menu',
   'universe -> stem.galaxy',
   'watercycle -> stem.tools_menu',
+  // Reviewed 2026-11-23: the Mastery Atlas card for the Wave tool is labelled from
+  // the Wave tool's own namespace (stem.wave.atlas_mastery_label, "Wave Mastery"),
+  // the same own-name arrangement as PICKER_OWN_NAMES. The key is not yet in
+  // ui_strings.js or any pack, so it is English everywhere until registered.
+  'stem_lab_module -> stem.wave',
   ...PICKER_OWN_NAMES.map((space) => `stem_lab_module -> ${space}`),
 ].sort();
 

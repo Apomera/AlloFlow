@@ -18,11 +18,11 @@
 (function registerSignupSheetContract(root, factory) {
     const api = factory();
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
+    if (root && typeof root === 'object') {
         root.AlloModules = root.AlloModules || {};
         root.AlloModules.SignupSheetContract = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createSignupSheetContract() {
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null), function createSignupSheetContract() {
     'use strict';
 
     const VERSION = 1;
@@ -40,12 +40,28 @@
     function isSafeKey(key) {
         return typeof key === 'string' && key.length > 0 && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
     }
+    function safeInt(val) {
+        if (typeof val === 'number') return Number.isFinite(val) ? Math.trunc(val) : NaN;
+        if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (!trimmed) return NaN;
+            const parsed = parseInt(trimmed, 10);
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+        return NaN;
+    }
     function safeTimestamp(val) {
-        if (typeof val !== 'string' && typeof val !== 'number') return NaN;
-        return Date.parse(val);
+        if (typeof val === 'number') return Number.isFinite(val) ? val : NaN;
+        if (typeof val === 'string') return val.trim() ? Date.parse(val) : NaN;
+        return NaN;
     }
     function resolveNow(now) {
         return (typeof now === 'number' && Number.isFinite(now)) ? now : Date.now();
+    }
+    function deepFreeze(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+        return Object.freeze(obj);
     }
 
     function capacityFor(config, optionId) {
@@ -53,7 +69,7 @@
         const options = Array.isArray(config && config.options) ? config.options.slice(0, LIMITS.OPTIONS) : [];
         for (let i = 0; i < options.length; i++) {
             if (options[i] && options[i].id === optionId) {
-                const parsed = parseInt(options[i].capacity, 10);
+                const parsed = safeInt(options[i].capacity);
                 if (!Number.isFinite(parsed)) return 1;
                 return Math.min(LIMITS.CAPACITY, Math.max(0, parsed));
             }
@@ -100,7 +116,7 @@
             if (!opt || typeof opt !== 'object' || !isSafeKey(opt.id) || Object.prototype.hasOwnProperty.call(seenIds, opt.id)) return;
             seenIds[opt.id] = true;
             const cap = capacityFor(config, opt.id);
-            const rawTaken = Object.prototype.hasOwnProperty.call(safeCounts, opt.id) ? parseInt(safeCounts[opt.id], 10) : 0;
+            const rawTaken = Object.prototype.hasOwnProperty.call(safeCounts, opt.id) ? safeInt(safeCounts[opt.id]) : 0;
             const taken = Number.isFinite(rawTaken) && rawTaken > 0 ? rawTaken : 0;
             out.push({
                 id: opt.id,
@@ -120,7 +136,7 @@
     function evaluateClaim(config, responses, uid, wanted) {
         const requested = Array.isArray(wanted) ? wanted : null;
         if (!requested) return { ok: false, reason: 'bad-claims', full: [] };
-        const parsedMax = parseInt(config && config.maxPerPerson, 10);
+        const parsedMax = safeInt(config && config.maxPerPerson);
         const maxPerPerson = Number.isFinite(parsedMax) && parsedMax >= 1 ? Math.min(LIMITS.OPTIONS, parsedMax) : 1;
         if (requested.length > maxPerPerson) {
             return { ok: false, reason: 'too-many', full: [] };
@@ -256,6 +272,15 @@
         if (!adapter || typeof adapter !== 'object') {
             return { ok: false, failures: [{ fixture: '*', check: 'adapter', expected: 'object', actual: String(adapter) }], fixtures: FIXTURES.length };
         }
+        const requiredMethods = ['counts', 'remaining', 'evaluateClaim', 'visibility', 'isClosed', 'retentionDue'];
+        const missing = requiredMethods.filter(function (m) { return typeof adapter[m] !== 'function'; });
+        if (missing.length) {
+            return {
+                ok: false,
+                failures: missing.map(function (m) { return { fixture: '*', check: 'adapter.' + m, expected: 'function', actual: typeof adapter[m] }; }),
+                fixtures: FIXTURES.length
+            };
+        }
         const failures = [];
         const note = function (fixture, check, expected, actual) {
             failures.push({
@@ -297,18 +322,20 @@
             });
 
             const expectedClosed = isClosed(fixture.config, null);
-            if (adapter.isClosed(fixture.config) !== expectedClosed) {
-                note(fixture, 'isClosed', expectedClosed, adapter.isClosed(fixture.config));
+            const actualClosed = adapter.isClosed(fixture.config);
+            if (actualClosed !== expectedClosed) {
+                note(fixture, 'isClosed', expectedClosed, actualClosed);
             }
             const expectedDue = retentionDue(fixture.config, null);
-            if (adapter.retentionDue(fixture.config) !== expectedDue) {
-                note(fixture, 'retentionDue', expectedDue, adapter.retentionDue(fixture.config));
+            const actualDue = adapter.retentionDue(fixture.config);
+            if (actualDue !== expectedDue) {
+                note(fixture, 'retentionDue', expectedDue, actualDue);
             }
         });
         return { ok: failures.length === 0, failures: failures, fixtures: FIXTURES.length };
     }
 
-    Object.freeze(FIXTURES);
+    deepFreeze(FIXTURES);
     return Object.freeze({
         VERSION: VERSION,
         LIMITS: LIMITS,

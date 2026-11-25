@@ -79,6 +79,14 @@ function _educatorAlloSheetTheme() {
   if (root && root.classList.contains("theme-light") || body && body.classList.contains("theme-light")) return "light";
   return "dark";
 }
+function _ensureEducatorHubA11yCss() {
+  if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+  if (document.getElementById("allo-educator-hub-a11y-css")) return;
+  const st = document.createElement("style");
+  st.id = "allo-educator-hub-a11y-css";
+  st.textContent = '[data-educator-hub-modal="true"] button,[data-educator-hub-modal="true"] a,[data-educator-hub-modal="true"] input,[data-educator-hub-modal="true"] select,[data-educator-hub-modal="true"] summary{touch-action:manipulation;}[data-educator-hub-modal="true"] button:focus-visible,[data-educator-hub-modal="true"] a:focus-visible,[data-educator-hub-modal="true"] input:focus-visible,[data-educator-hub-modal="true"] select:focus-visible,[data-educator-hub-modal="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){[data-educator-hub-modal="true"] button:focus-visible,[data-educator-hub-modal="true"] a:focus-visible,[data-educator-hub-modal="true"] input:focus-visible,[data-educator-hub-modal="true"] select:focus-visible,[data-educator-hub-modal="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-educator-hub-modal="true"],[data-educator-hub-modal="true"] *,[data-educator-hub-modal="true"] *::before,[data-educator-hub-modal="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 function EducatorHubModal(props) {
   const {
     handleFileUpload = (() => {
@@ -335,6 +343,7 @@ function EducatorHubModal(props) {
         return true;
       });
     };
+    _ensureEducatorHubA11yCss();
     const first = getFocusable()[0];
     try {
       (first || dialog).focus();
@@ -345,13 +354,13 @@ function EducatorHubModal(props) {
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === "Escape") {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         event.stopPropagation();
         closeHandlerRef.current && closeHandlerRef.current();
         return;
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== "Tab" || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) {
         event.preventDefault();
@@ -630,7 +639,7 @@ function EducatorHubModal(props) {
         backdropMouseDownRef.current = false;
       }
     },
-    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "educator-hub-title", "aria-describedby": "educator-hub-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "educator-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E0}\uFE0F"), " ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { id: "educator-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestCloseHub, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "mb-4 space-y-3", role: "search", "aria-label": tr("hub.search_label", "Search tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-search", className: "sr-only" }, tr("hub.search_label", "Search tools")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-educator-hub-modal": "true", "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "educator-hub-title", "aria-describedby": "educator-hub-subtitle" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "educator-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E0}\uFE0F"), " ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { id: "educator-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: requestCloseHub, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "mb-4 space-y-3", role: "search", "aria-label": tr("hub.search_label", "Search tools") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "educator-hub-search", className: "sr-only" }, tr("hub.search_label", "Search tools")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "educator-hub-search",
@@ -639,7 +648,7 @@ function EducatorHubModal(props) {
         value: hubQuery,
         onChange: (event) => setHubQuery(event.target.value),
         onKeyDown: (event) => {
-          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+          if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           if (event.key === "Enter") {
             event.preventDefault();
             launchSingleVisibleHubMatch();

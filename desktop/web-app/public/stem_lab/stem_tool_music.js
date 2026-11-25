@@ -6107,7 +6107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     onChange: function (e) { upd('bpCompName', e.target.value); },
                     placeholder: __alloT('stem.music.composition_name_placeholder', 'Composition name...'),
                     "aria-label": __alloT('stem.music.composition_name_aria', 'Name your composition'),
-                    className: "px-2 py-1 rounded-lg border border-emerald-300 bg-white text-slate-800 text-[0.75rem] w-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700"
+                    className: "px-2 py-1 rounded-lg border border-emerald-600 bg-white text-slate-800 text-[0.75rem] w-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700"
                   }),
                   React.createElement("button", { type: "button", "aria-label": __alloT('stem.music.save', "Save"),
                     onClick: function () {
@@ -6137,7 +6137,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     type: "text", readOnly: true, value: d.bpShareFallbackUrl,
                     "aria-label": __alloT('stem.music.aria_share_url_field', 'Shareable beat URL'),
                     onFocus: function (e) { e.target.select(); },
-                    className: "flex-1 px-2 py-1 text-xs font-mono text-slate-800 bg-slate-50 border border-slate-300 rounded"
+                    className: "flex-1 px-2 py-1 text-xs font-mono text-slate-800 bg-slate-50 border border-slate-500 rounded"
                   }),
                   React.createElement("button", { type: "button", onClick: function () { upd('bpShareFallbackUrl', ''); }, "aria-label": __alloT('stem.music.aria_dismiss_share_url', 'Dismiss share URL'), className: "px-2 py-1 rounded text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300" }, "\u2715")
                 ),
@@ -6959,7 +6959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 { k: 'ksDamping', label: t('stem.synth.sustaindamping', 'Sustain/Damping'), min: 0.99, max: 0.9999, step: 0.0001 }].map(function (p) {
                   return React.createElement("div", { key: p.k, className: "flex items-center gap-2 mb-1" },
                     React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700 w-24" }, p.label),
-                    React.createElement("input", { type: "range", 'aria-label': p.label, 'aria-valuetext': (String(d[p.k] != null ? d[p.k] : (p.k === 'ksBrightness' ? 0.8 : 0.996))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500" }),
+                    React.createElement("input", { type: "range", 'aria-label': p.label, 'aria-valuetext': (String(d[p.k] != null ? d[p.k] : (p.k === 'ksBrightness' ? 0.8 : 0.996))), min: p.min, max: p.max, step: p.step, value: d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996), onChange: function (e) { upd(p.k, parseFloat(e.target.value)); }, className: "flex-1 accent-amber-500", style: { minHeight: 24 } }),
                     React.createElement("span", { className: "text-[0.6875rem] text-amber-700 w-14 text-right font-mono" }, (d[p.k] || (p.k === 'ksBrightness' ? 0.8 : 0.996)).toFixed(p.k === 'ksDamping' ? 4 : 2))
                   );
                 }),

@@ -32,9 +32,9 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.ItemCorrection) {
-    console.log('[ItemCorrection] Already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[ItemCorrection] Already loaded, skipping');
     return;
   }
   window.AlloModules = window.AlloModules || {};
@@ -48,7 +48,7 @@
   function communityFeedbackBlocked() {
     try {
       if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')) return true;
-      if (window._isDesktopBundledApp === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentView === true || window.__alloOfflineOnly === true) return true;
+      if (window._isDesktopBundledApp === true || Boolean(window.__alloQrStudentMode) || window._alloQrBlocked === true || window.__alloStudentView === true || window.__alloOfflineOnly === true) return true;
       return false;
     } catch (_) { return true; }
   }
@@ -78,10 +78,23 @@
   var overlay = null;
   var activeController = null;
   var activeTimer = null;
+  var activeTrapEntry = null;
+  var activeModalCleanup = null;
   var modalToken = 0;
   var previousFocus = null;
 
   var hasOwn = Object.prototype.hasOwnProperty;
+
+  function ensureA11yStyle() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-ic-a11y-style')) return;
+    var target = document.head || document.body || document.documentElement;
+    if (!target) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ic-a11y-style';
+    st.textContent = '#allo-ic-overlay :is(button,select,textarea,input):focus-visible{outline:2px solid #0f766e;outline-offset:2px;}';
+    target.appendChild(st);
+  }
 
   function safeStr(s, maxLen) {
     if (s == null) return '';
@@ -137,10 +150,13 @@
     if (typeof document === 'undefined' || !document.body) return;
     ctx = normalizeContext(ctx);
     closeModal();
+    ensureA11yStyle();
     var myToken = ++modalToken;
     var inFlight = false;
-    try { previousFocus = document.activeElement && document.activeElement !== document.body ? document.activeElement : null; }
-    catch (_) { previousFocus = null; }
+    try {
+      var ae = document.activeElement;
+      previousFocus = (ae && ae !== document.body && ae !== document.documentElement) ? ae : null;
+    } catch (_) { previousFocus = null; }
     var blocked = communityFeedbackBlocked();
 
     overlay = document.createElement('div');
@@ -152,7 +168,13 @@
       'position:fixed', 'inset:0', 'z-index:2147483647', 'background:rgba(0,0,0,0.5)',
       'display:flex', 'align-items:center', 'justify-content:center', 'padding:16px'
     ].join(';');
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+    var backdropDown = false;
+    overlay.addEventListener('mousedown', function (e) { backdropDown = (e.target === overlay); });
+    overlay.addEventListener('click', function (e) {
+      var allow = backdropDown;
+      backdropDown = false;
+      if (allow && e.target === overlay) closeModal();
+    });
 
     var kindOptions = KINDS.map(function (k) {
       return '<option value="' + esc(k.id) + '">' + esc(k.label) + '</option>';
@@ -173,51 +195,102 @@
     ].join(';');
     panel.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:12px">' +
-        '<h2 style="margin:0;font:700 17px system-ui;color:#0f172a">✎ Suggest a correction</h2>' +
-        '<button id="allo-ic-x" type="button" aria-label="Close" style="border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#64748b">×</button>' +
+        '<h2 style="margin:0;font:700 17px system-ui;color:#0f172a"><span aria-hidden="true">✎</span> Suggest a correction</h2>' +
+        '<button id="allo-ic-x" type="button" aria-label="Close" style="min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:#475569">×</button>' +
       '</div>' +
       '<p style="margin:0 0 14px;font:13px/1.5 system-ui;color:#475569">Flag a practice item that looks wrong. Your correction is stored privately for up to 30 days for maintainer review. Only reviewed corrections may be published. Do not include personal student details.</p>' +
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Pack</div>' +
       '<div style="font:13px system-ui;color:#334155;background:#f8fafc;border-radius:6px;padding:8px;margin-bottom:10px">' + esc(ctx.packTitle) + '</div>' +
       tierRow + promptRow +
-      '<label for="allo-ic-kind" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">What is the problem? <span style="color:#dc2626">*</span></label>' +
+      '<label for="allo-ic-kind" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">What is the problem? <span style="color:#dc2626" aria-hidden="true">*</span></label>' +
       '<select id="allo-ic-kind" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px">' + kindOptions + '</select>' +
-      '<label for="allo-ic-suggest" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested fix <span style="color:#dc2626">*</span></label>' +
-      '<textarea id="allo-ic-suggest" rows="3" maxlength="3000" aria-required="true" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
+      '<label for="allo-ic-suggest" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested fix <span style="color:#dc2626" aria-hidden="true">*</span></label>' +
+      '<textarea id="allo-ic-suggest" rows="3" maxlength="3000" required aria-required="true" aria-describedby="allo-ic-err" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
       '<label for="allo-ic-note" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Source or reasoning (optional)</label>' +
       '<textarea id="allo-ic-note" rows="2" maxlength="2000" placeholder="e.g. per the current ETS blueprint / IDEA 2004 / a citation link" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
       '<div id="allo-ic-err" role="alert" style="display:' + (blocked ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (blocked ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
-        '<button id="allo-ic-cancel" type="button" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
-        '<button id="allo-ic-send" type="button"' + (blocked ? ' disabled' : '') + ' style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
+        '<button id="allo-ic-cancel" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font:600 13px system-ui;cursor:pointer">Cancel</button>' +
+        '<button id="allo-ic-send" type="button"' + (blocked ? ' disabled' : '') + ' style="min-height:44px;padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Send correction →</button>' +
       '</div>';
     overlay.appendChild(panel);
     document.body.appendChild(overlay);
 
-    var $ = function (id) { return panel.querySelector('#' + id); };
-    $('allo-ic-x').onclick = closeModal;
-    $('allo-ic-cancel').onclick = closeModal;
-    overlay.addEventListener('keydown', function (e) {
-      if (e.isComposing || e.keyCode === 229) return;
+    var trapStack = (window.__alloFocusTrapStack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : []);
+    var trapEntry = { id: 'allo-ic-modal', root: panel, container: overlay };
+    activeTrapEntry = trapEntry;
+    trapStack.push(trapEntry);
+
+    function isTopTrap() {
+      var s = window.__alloFocusTrapStack;
+      return !Array.isArray(s) || !s.length || s[s.length - 1] === trapEntry;
+    }
+    function focusablesInPanel() {
+      var list = panel.querySelectorAll('button:not([disabled]), select:not([disabled]), textarea:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      var out = [];
+      for (var i = 0; i < list.length; i++) {
+        var el = list[i];
+        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) continue;
+        var hiddenByCss = false;
+        try {
+          if (typeof window.getComputedStyle === 'function') {
+            for (var cur = el; cur && cur !== panel.parentElement; cur = cur.parentElement) {
+              var cs = window.getComputedStyle(cur);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) { hiddenByCss = true; break; }
+              if (cur === panel) break;
+            }
+          }
+        } catch (_) {}
+        if (!hiddenByCss) out.push(el);
+      }
+      return out;
+    }
+    function onDocKeydown(e) {
+      if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
+      if (!overlay || !overlay.isConnected || !isTopTrap()) return;
       if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
+        e.stopPropagation();
         closeModal();
         return;
       }
       if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        var nodes = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), select:not([disabled]), textarea:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'));
-        if (!nodes.length) return;
+        var nodes = focusablesInPanel();
+        if (!nodes.length) { e.preventDefault(); return; }
         var firstNode = nodes[0];
         var lastNode = nodes[nodes.length - 1];
-        if (e.shiftKey && (document.activeElement === firstNode || !panel.contains(document.activeElement))) {
+        if (!panel.contains(document.activeElement)) {
           e.preventDefault();
+          e.stopPropagation();
+          try { (e.shiftKey ? lastNode : firstNode).focus(); } catch (_) {}
+        } else if (e.shiftKey && document.activeElement === firstNode) {
+          e.preventDefault();
+          e.stopPropagation();
           try { lastNode.focus(); } catch (_) {}
         } else if (!e.shiftKey && document.activeElement === lastNode) {
           e.preventDefault();
+          e.stopPropagation();
           try { firstNode.focus(); } catch (_) {}
         }
       }
-    });
+    }
+    function onDocFocusin(e) {
+      if (!overlay || !overlay.isConnected || !isTopTrap()) return;
+      if (!panel.contains(e.target)) {
+        var nodes = focusablesInPanel();
+        if (nodes.length) { try { nodes[0].focus(); } catch (_) {} }
+      }
+    }
+    document.addEventListener('keydown', onDocKeydown, true);
+    document.addEventListener('focusin', onDocFocusin, true);
+    activeModalCleanup = function () {
+      document.removeEventListener('keydown', onDocKeydown, true);
+      document.removeEventListener('focusin', onDocFocusin, true);
+    };
+
+    var $ = function (id) { return panel.querySelector('#' + id); };
+    $('allo-ic-x').onclick = closeModal;
+    $('allo-ic-cancel').onclick = closeModal;
 
     function showManagedBlock() {
       if (myToken !== modalToken) return;
@@ -231,6 +304,7 @@
     function showThanks() {
       if (myToken !== modalToken) return;
       inFlight = false;
+      if (overlay) overlay.setAttribute('aria-label', 'Correction sent for review');
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🙏</div>' +
@@ -238,7 +312,7 @@
           '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
             'Your correction was sent for review. Accepted fixes are applied to the pack; expert validation stays a separate, documented step.' +
           '</p>' +
-          '<button id="allo-ic-done" type="button" style="padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
+          '<button id="allo-ic-done" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
       var done = panel.querySelector('#allo-ic-done');
       if (done) { done.onclick = closeModal; done.focus(); }
@@ -248,7 +322,7 @@
       if (myToken !== modalToken || inFlight) return;
       if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       var errEl = $('allo-ic-err');
-      var suggested = scrubSubmissionText(stripCtl($('allo-ic-suggest').value || '', 3000).trim()).slice(0, 3000);
+      var suggested = scrubSubmissionText(stripCtl(safeStr($('allo-ic-suggest').value || '').trim(), 3000)).trim().slice(0, 3000);
       if (!suggested) { errEl.textContent = 'Please describe your suggested fix.'; errEl.style.display = 'block'; try { $('allo-ic-suggest').focus(); } catch (_) {} return; }
       var rawKindId = ($('allo-ic-kind').value || 'other');
       var matchedKind = KINDS.filter(function (k) { return k.id === rawKindId; })[0] || KINDS[KINDS.length - 1];
@@ -262,7 +336,7 @@
         currentAnswer: ctx.currentAnswer,
         kind: matchedKind.id + ' (' + matchedKind.label + ')',
         suggested: suggested,
-        note: scrubSubmissionText(stripCtl($('allo-ic-note').value || '', 2000).trim()).slice(0, 2000)
+        note: scrubSubmissionText(stripCtl(safeStr($('allo-ic-note').value || '').trim(), 2000)).trim().slice(0, 2000)
       };
       var sendBtn = $('allo-ic-send');
       inFlight = true;
@@ -278,8 +352,11 @@
       var ctrl = null;
       var timer = null;
       var cleanupRequest = function () {
-        if (timer) { clearTimeout(timer); timer = null; }
-        if (activeTimer && activeTimer === timer) activeTimer = null;
+        if (timer) {
+          clearTimeout(timer);
+          if (activeTimer === timer) activeTimer = null;
+          timer = null;
+        }
         if (activeController === ctrl) activeController = null;
       };
       try {
@@ -295,15 +372,9 @@
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) { if (myToken !== modalToken) return; if (res.ok && res.j && typeof res.j === 'object' && !Array.isArray(res.j) && res.j.ok === true && res.j.storage === 'private') showThanks(); else showSendFailure(); })
           .catch(function () { showSendFailure(); })
-          .finally(function () {
-            if (timer) clearTimeout(timer);
-            if (activeTimer === timer) activeTimer = null;
-            if (activeController === ctrl) activeController = null;
-          });
+          .finally(cleanupRequest);
       } catch (_) {
-        if (timer) clearTimeout(timer);
-        if (activeTimer === timer) activeTimer = null;
-        if (activeController === ctrl) activeController = null;
+        cleanupRequest();
         showSendFailure();
       }
     };
@@ -312,11 +383,20 @@
 
   function closeModal() {
     modalToken++;
+    if (activeModalCleanup) { try { activeModalCleanup(); } catch (_) {} activeModalCleanup = null; }
+    var wasTop = true;
+    if (activeTrapEntry && Array.isArray(window.__alloFocusTrapStack)) {
+      var s = window.__alloFocusTrapStack;
+      wasTop = !s.length || s[s.length - 1] === activeTrapEntry;
+      var idx = s.lastIndexOf(activeTrapEntry);
+      if (idx >= 0) s.splice(idx, 1);
+    }
+    activeTrapEntry = null;
     if (activeTimer) { clearTimeout(activeTimer); activeTimer = null; }
     if (activeController) { try { activeController.abort(); } catch (_) {} activeController = null; }
     if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     overlay = null;
-    if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+    if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
       try { previousFocus.focus(); } catch (_) {}
     }
     previousFocus = null;
@@ -329,5 +409,5 @@
     KINDS: KINDS,
     _version: '1'
   });
-  console.log('[ItemCorrection] loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[ItemCorrection] loaded');
 })();

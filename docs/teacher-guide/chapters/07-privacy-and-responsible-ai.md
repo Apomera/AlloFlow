@@ -82,7 +82,7 @@ AI output is a draft. Before students see it:
 8. **Edit visibly.** Make the resource your own instructional material rather than presenting an unreviewed generation as authority.
 9. **Monitor use.** Watch how actual students interpret the task and stop or adjust if the resource causes harm or confusion.
 
-Grounding or citation features can help locate sources; they do not eliminate the need to open the source and verify the claim.
+Grounding or citation features can help locate sources; they do not eliminate the need to open the source and verify the claim. For the design rationale behind preparing with AI first and keeping student AI off by default on shared links, see [Teachers generate first, then share](https://apomera.github.io/AlloFlow/principles.html#teachers-generate-first).
 
 ## Be transparent with students
 

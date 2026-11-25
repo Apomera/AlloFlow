@@ -30,7 +30,8 @@ describe('Free Forms contrast regressions', () => {
     expect(contrast('#64748b', '#1e293b')).toBeLessThan(4.5);
 
     const file = source('stem_lab/stem_tool_freeforms.js');
-    expect(file).toContain("#allo-free-forms .ff-sidebar .text-slate-500 { color: #94a3b8 !important; }");
+    // 2026-11-19: the override now covers every slate-500 text in the tool and uses the lighter #cbd5e1 (checked above).
+    expect(file).toContain("#allo-free-forms .ff-sidebar .text-slate-500, #allo-free-forms .text-slate-500 { color: #cbd5e1 !important; }");
   });
 
   it('keeps control boundaries at 3:1 and button text at 4.5:1', () => {
@@ -64,7 +65,8 @@ describe('Shared STEM 3D panel contrast regressions', () => {
 describe('Other STEM dark-panel helper text', () => {
   it.each([
     'stem_lab/stem_tool_evolab.js',
-    'stem_lab/stem_tool_spacecolony.js',
+    // spacecolony removed 2026-11-23: its 10 px italic "Design note" was a developer note shown to students and is
+    // now a code comment, so there is no helper text left to pin.
   ])('%s uses a readable helper color', (fileName) => {
     const file = source(fileName);
     expect(file).toContain("background: 'rgba(15,28,47,0.5)'");

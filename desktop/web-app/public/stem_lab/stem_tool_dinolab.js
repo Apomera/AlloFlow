@@ -19019,6 +19019,483 @@ var CLASSIFY_CASES = [
   var DinoVoxelDig3DStable = null;
 
   var DinoFieldStation3DStable = null;
+  function DinoLabXpRefCarrier(p) {
+    var ref = p.React.useRef({});
+    if (p && p.box) p.box.current = ref.current;
+    return null;
+  }
+
+  function isDinoGlobalMuted() {
+    if (typeof window === 'undefined') return false;
+    var fnMuted = false;
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) fnMuted = true;
+    } catch (_) {}
+    if (fnMuted) return true;
+    try {
+      if (window._alloGlobalMute || window.__alloGlobalMuted === true) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function _dinoDeepFreeze(obj) {
+    if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) return obj;
+    try { Object.freeze(obj); } catch (_) {}
+    Object.keys(obj).forEach(function (k) {
+      var v = obj[k];
+      if (v && typeof v === 'object' && !Object.isFrozen(v)) _dinoDeepFreeze(v);
+    });
+    return obj;
+  }
+
+  function _dinoNormOpt(s) {
+    return String(s == null ? '' : s).replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim();
+  }
+
+  var _DINO_QUIZ_TOPICS = {
+    q1: 'birds_evolution', q2: 'extinction', q3: 'taxonomy', q4: 'anatomy_fossils',
+    q5: 'taxonomy', q6: 'anatomy_fossils', q7: 'deep_time', q8: 'anatomy_fossils',
+    q9: 'extinction', q10: 'ecology_behavior', q11: 'taxonomy', q12: 'anatomy_fossils',
+    q13: 'anatomy_fossils', q14: 'ecology_behavior', q15: 'birds_evolution', q16: 'deep_time',
+    q17: 'extinction', q18: 'extinction', q19: 'anatomy_fossils', q20: 'anatomy_fossils',
+    q21: 'taxonomy', q22: 'ecology_behavior', q23: 'deep_time', q24: 'anatomy_fossils',
+    q25: 'extinction', q26: 'anatomy_fossils', q27: 'taxonomy', q28: 'taxonomy',
+    q29: 'taxonomy', q30: 'taxonomy', q31: 'deep_time', q32: 'ecology_behavior',
+    q33: 'anatomy_fossils', q34: 'ecology_behavior'
+  };
+
+  var _DINO_TOPIC_META = {
+    birds_evolution: { label: 'Birds & Dinosaur Evolution', tab: 'birds', tip: 'Review the seven anatomical links connecting theropods to living birds.' },
+    extinction: { label: 'Mass Extinctions & K-Pg Evidence', tab: 'extinction', tip: 'Compare rock-record impact markers with climate-model consequences.' },
+    taxonomy: { label: 'Dinosaur Groups & Classification', tab: 'classify', tip: 'Practice nested clades: hip structure and shared ancestry beat surface look-alikes.' },
+    anatomy_fossils: { label: 'Anatomy & Fossil Clues', tab: 'anatomy', tip: 'Distinguish what fossil bones, tracks, and melanosomes preserve from inference.' },
+    deep_time: { label: 'Deep Time & Geologic Periods', tab: 'deeptime', tip: 'Check the Mesozoic timeline to compare when Triassic, Jurassic, and Cretaceous species lived.' },
+    ecology_behavior: { label: 'Behavior & Ancient Ecosystems', tab: 'ecosystem', tip: 'Connect trace fossils, nesting sites, and jaw/snout anatomy to behavior cautiously.' }
+  };
+
+  var _DINO_QUIZ_WHY_NOT = {
+    q1: {
+      'Crocodiles': 'Crocodiles are archosaur cousins that split off before dinosaurs appeared; they are close relatives, not dinosaurs.',
+      'Lizards': 'Lizards belong to a separate reptile branch (squamates) with sprawling limbs rather than the upright dinosaur lineage.',
+      'None, they all died out': 'Only the non-bird dinosaurs disappeared at the K-Pg boundary; avian theropods survived and diversified into over 10,000 living bird species.'
+    },
+    q2: {
+      'An ice age': 'The Late Cretaceous was a warm greenhouse world with no polar ice sheets; the rapid cooling followed impact debris rather than a long ice age.',
+      'A disease': 'Pathogens rarely wipe out unrelated marine plankton, ammonites, and terrestrial giants simultaneously around the globe.',
+      'Plants dying out until the herbivores starved': 'Plant collapse was a downstream consequence of impact-winter darkness, not the initial external trigger.'
+    },
+    q3: {
+      'Triceratops': 'Triceratops was a true ornithischian (ceratopsian) dinosaur with upright limbs and a perforated hip socket.',
+      'Stegosaurus': 'Stegosaurus was a true ornithischian (plated) dinosaur from the Late Jurassic.',
+      'Velociraptor': 'Velociraptor was a true feathered theropod dinosaur in the dromaeosaurid family.'
+    },
+    q4: {
+      'As tall as a person': 'That taller silhouette comes from film depictions inspired by the larger relative Deinonychus, not Velociraptor mongoliensis.',
+      'A little bigger than a horse': 'Even Utahraptor was closer to bear-sized than horse-sized, and real Velociraptor weighed only about 15 kg.',
+      'As big as a bus': 'Bus-sized predators were giant theropods like Tyrannosaurus or Spinosaurus, whereas Velociraptor measured roughly 1.8 m long including its tail.'
+    },
+    q5: {
+      'Pachycephalosauria': 'Pachycephalosaurs were bipedal dome-headed ornithischians, not long-necked quadrupeds.',
+      'Ornithopoda': 'Ornithopods were duck-billed and iguanodontian plant-eaters without ultra-long sauropod necks.',
+      'Ceratopsia': 'Ceratopsians were horned and frilled dinosaurs like Triceratops, with short sturdy necks.'
+    },
+    q6: {
+      "The animal's color": 'Color comes from microscopic pigment structures (melanosomes) in feathers or skin impressions, not from fossil dung.',
+      'How fast it could run': 'Movement speed is estimated from trackway stride lengths and leg biomechanics, not coprolites.',
+      'Its exact age': 'Age at death is studied from bone growth rings (osteohistology), whereas coprolites preserve digestive remains.'
+    },
+    q7: {
+      'Stegosaurus': 'Stegosaurus lived ~155–145 million years ago and T. rex ~68–66 million years ago, so about 84 million years separate them—longer than the 66 million years from T. rex to today.',
+      'Both are equally distant': 'The gap from T. rex to Stegosaurus is roughly 84 million years, noticeably longer than the ~66 million years from T. rex to the present.',
+      'It lived with Stegosaurus': 'Their fossil rock units are separated by tens of millions of years: Late Jurassic Morrison Formation vs. Late Cretaceous Hell Creek Formation.'
+    },
+    q8: {
+      'A Triceratops neck frill': 'The Triceratops frill is formed from expanded parietal and squamosal skull bones, not tail spikes.',
+      'A head crest': 'Head crests appear on dinosaurs like Parasaurolophus and Dilophosaurus, whereas the thagomizer is at the tip of the tail.',
+      'A thumb claw': 'A conical thumb spike is famous on Iguanodon, while the thagomizer refers to Stegosaurus’s four tail spikes.'
+    },
+    q9: {
+      'A layer of volcanic ash found only in one region': 'A purely local ash layer could not point to a planet-wide impact event; the key clue was a thin iridium-rich clay bed found globally.',
+      'Dinosaur eggs': 'Fossil eggs show reproduction and nesting, not the extraterrestrial chemical signature of an asteroid impact.',
+      'Tree rings': 'Fossil wood records local seasonal growth, whereas the Alvarez discovery centered on global iridium enrichment at the boundary.'
+    },
+    q10: {
+      'Later studies proved that it never ate any eggs of any kind': 'Fossils cannot prove an animal never ate eggs; the name was unfair because the nest it sat on contained its own eggs.',
+      'It had no mouth': 'Oviraptor had a toothless, parrot-like beak and functional jaws, not a missing mouth.',
+      'It was a plant': 'Oviraptor was a feathered theropod dinosaur, not a plant.'
+    },
+    q11: {
+      'Wings for gliding or flight': 'Wing-like feathered arms evolved later within maniraptoran theropods; sauropods and armored dinosaurs never had wings.',
+      'A full coat of feathers': 'Feathers or filaments are documented in many lineages, but large scaly impressions show not every dinosaur wore a full feather coat.',
+      'A heavy club at the end of the tail': 'Bony tail clubs evolved specifically in derived ankylosaurs, not across all dinosaurs.'
+    },
+    q12: {
+      'They cannot; color never fossilizes': 'While most fossils lack color, exceptionally preserved feathers and skin sometimes retain microscopic melanosomes that constrain hues and patterns.',
+      'From ancient artwork of living dinosaurs': 'Non-bird dinosaurs went extinct about 66 million years ago, long before any humans existed to draw them.',
+      'By making educated guesses from the shape of the bones': 'Bone shape informs posture and biomechanics, not skin or feather pigment chemistry.'
+    },
+    q13: {
+      'Tyrannosaurus': 'T. rex was heavier and more robust, but estimated around 12.3 m long—shorter than Spinosaurus (~15 m).',
+      'Velociraptor': 'Velociraptor was only about 1.8 m long, roughly turkey-sized in body mass.',
+      'Allosaurus': 'Allosaurus reached roughly 9.5 m in length, much shorter than Spinosaurus.'
+    },
+    q14: {
+      'The exact color of the skin': 'Footprints press into mud or sand and do not preserve pigment cells.',
+      'The size of the brain': 'Brain volume is estimated from skull endocasts (CT scans of the braincase), not footprint trails.',
+      'What the trackmaker had eaten on that day': 'Actual meals are indicated by stomach contents, bite marks, or coprolites rather than footprints.'
+    },
+    q15: {
+      'Sauropods': 'Sauropods were four-legged long-necked plant-eaters; birds share hollow bones, three-toed feet, and wishbones with theropods instead.',
+      'Ceratopsians': 'Ceratopsians belong to the ornithischian branch, whereas birds evolved within saurischian theropods.',
+      'Stegosaurs': 'Despite being "bird-hipped" ornithischians, stegosaurs evolved their backward-pointing pubis independently and are not the ancestors of birds.'
+    },
+    q16: {
+      'Jurassic': 'Dinosaurs became dominant in the Jurassic, but their earliest fossils already appear earlier in the Late Triassic (~233 Ma).',
+      'Cretaceous': 'The Cretaceous was the final period of the Mesozoic—more than 80 million years after dinosaurs first appeared.',
+      'Paleogene': 'The Paleogene began after the K-Pg extinction, when only bird dinosaurs survived.'
+    },
+    q17: {
+      'End-Ordovician': 'The end-Ordovician was a severe marine extinction (~444 Ma), but the end-Permian (~252 Ma) was far deadlier.',
+      'End-Triassic': 'The end-Triassic extinction (~201 Ma) cleared dinosaur rivals, but killed a smaller share of species than the end-Permian.',
+      'End-Cretaceous': 'The end-Cretaceous (~66 Ma) is the most famous because non-bird dinosaurs vanished, yet the end-Permian eliminated a much higher fraction of all life.'
+    },
+    q18: {
+      'It wiped out every dinosaur species then alive': 'Dinosaurs survived the end-Triassic extinction and diversified rapidly afterward; non-bird dinosaurs ended at the later end-Cretaceous event.',
+      'It had almost no effect on land animals': 'Many large non-dinosaur crocodile-line archosaurs (pseudosuchians) vanished on land, dramatically reshaping terrestrial ecosystems.',
+      'It caused the very first birds to appear right afterward': 'The earliest known birds such as Archaeopteryx appear around 150 Ma in the Late Jurassic, roughly 50 million years later.'
+    },
+    q19: {
+      'A fossilized type of dinosaur egg': 'Fossilized eggs are studied as ooliths or egg clutches, whereas "gastro-lith" literally means stomach stone.',
+      'A bone from the tip of the tail': 'Tail-tip bones are distal caudal vertebrae, not swallowed stones.',
+      'A special grinding tooth from an herbivore jaw': 'Plant-grinding teeth sit in the jaw (such as hadrosaur dental batteries), whereas gastroliths worked inside the digestive tract.'
+    },
+    q20: {
+      'It was almost completely blind': 'Large eye sockets and optic lobes indicate T. rex relied heavily on vision, not near-blindness.',
+      'It could only see clearly at night': 'Nothing in its skull anatomy limits T. rex to strictly nocturnal vision.',
+      'It could not see objects that were standing perfectly still': 'That is a movie myth—forward-facing eyes gave T. rex binocular depth perception well suited to spotting stationary or moving targets.'
+    },
+    q21: {
+      'Teeth': 'Teeth vary widely with diet even within the same branch (e.g., plant-eating theropods), so teeth do not define the two classic main branches.',
+      'Feet': 'Foot shapes evolved for running or supporting massive weight in multiple clades rather than defining Saurischia vs. Ornithischia.',
+      'Skulls': 'Skulls show crests, horns, and beaks in subgroups, whereas Harry Seeley named Saurischia and Ornithischia for pelvic (hip) bone orientation.'
+    },
+    q22: {
+      'Giganotosaurus': 'Giganotosaurus is known from giant predator skeletons in Argentina, not large nesting colonies with hatchlings.',
+      'Diplodocus': 'Diplodocus is famous for its long whip tail and museum casts rather than parental-care nesting grounds.',
+      'Ankylosaurus': 'Ankylosaurus is known from armored skulls and tail clubs, with no documented nesting colonies showing chick care.'
+    },
+    q23: {
+      'About 1 million years ago': 'One million years ago was the Pleistocene Ice Age of mammoths and early humans—65 million years after non-bird dinosaurs vanished.',
+      'About 10,000 years ago, alongside early humans': 'Humans and non-bird dinosaurs are separated by roughly 66 million years and never coexisted.',
+      'About 500 years ago': 'Five hundred years ago was the Renaissance, millions of years after the Mesozoic Era ended.'
+    },
+    q24: {
+      'All dinosaurs were enormous animals, far heavier than any modern elephant': 'Many dinosaurs—like Microraptor, Compsognathus, and Archaeopteryx—were crow- to chicken-sized.',
+      'Nearly all dinosaurs were small, about the size of a dog': 'While small species were common, sauropods, large theropods, ceratopsians, and hadrosaurs grew to multi-tonne sizes.',
+      'Almost every dinosaur species was close to the same size': 'Dinosaur body sizes spanned over four orders of magnitude in mass, from under 1 kg to over 60 tonnes.'
+    },
+    q25: {
+      'An enormous volcano erupting on the Moon': 'Lunar volcanism mostly ended billions of years ago and would not deposit a global clay layer across Earth 66 million years ago.',
+      'Ancient farming': 'Farming began only about 10,000 years ago with humans—long after the K-Pg boundary.',
+      'A flood': 'Ordinary river or sea floods rearrange Earth’s crust sediments, which are naturally poor in iridium compared with metallic asteroids.'
+    },
+    q26: {
+      'Pachycephalosaurus': 'Pachycephalosaurus had a solid thickened bone dome on its skull, not hollow resonating nasal tubes.',
+      'Stegosaurus': 'Stegosaurus had a small, low skull with no hollow nasal trumpet crest.',
+      'Spinosaurus': 'Spinosaurus had a small solid ridge between its eyes and a tall back sail, not a hollow tubular head crest.'
+    },
+    q27: {
+      'Could fly': 'Therizinosaurus was a multi-tonne, 10-meter ground dweller—far too large for flight.',
+      'Lived underwater': 'Its limb proportions and Nemegt Formation fossils show a terrestrial browser, not a marine swimmer.',
+      'Had no legs': 'Therizinosaurus walked upright on two sturdy hind legs and had long clawed forelimbs.'
+    },
+    q28: {
+      'It is far too small to be a dinosaur': 'Many true dinosaurs (like Compsognathus) were smaller than 3-meter Dimetrodon—size never disqualifies an animal from Dinosauria.',
+      'Its famous sail is the wrong shape for any known dinosaur': 'Several true dinosaurs (like Spinosaurus and Ouranosaurus) evolved tall sails too; skull openings and Permian synapsid ancestry exclude Dimetrodon.',
+      'It could glide between trees': 'Dimetrodon was a sprawling terrestrial predator with no gliding membranes.'
+    },
+    q29: {
+      'Raptors': 'Raptors (dromaeosaurs) were small-to-medium bipedal feathered theropods, not long-necked quadrupedal giants.',
+      'Ceratopsians': 'Ceratopsians were horned, frilled ornithischians with short necks.',
+      'Pachycephalosaurs': 'Pachycephalosaurs were small-to-medium bipedal dome-headed dinosaurs.'
+    },
+    q30: {
+      'A rare type of trace fossil': 'Trace fossils are footprints, burrows, or coprolites; a cladogram is a scientific diagram of evolutionary relationships.',
+      'A tool for digging fossils out of rock': 'Excavation uses chisels, brushes, and air scribes; a cladogram organizes shared derived traits into branches.',
+      'A named geologic period within the age of the dinosaurs': 'The Mesozoic periods are Triassic, Jurassic, and Cretaceous; a cladogram maps branching ancestry across time.'
+    },
+    q31: {
+      'Triassic': 'Triassic North American dinosaurs come from units like the Chinle Formation (e.g., Coelophysis), earlier than Morrison rocks.',
+      'Late Cretaceous': 'Late Cretaceous North American dinosaurs like T. rex and Triceratops come from younger units like Hell Creek and Dinosaur Park.',
+      'Paleogene': 'The Paleogene sits above the K-Pg boundary after non-bird dinosaurs disappeared.'
+    },
+    q32: {
+      'Unusually big and sharp teeth': 'Teeth point to diet and feeding mechanics, not whether adults fed or protected their young.',
+      'Extremely long and flexible necks': 'Neck length reflects browsing reach, not nesting or parenting behavior.',
+      'Heavy defensive bone clubs on their tails': 'Tail clubs point to predator defense or intraspecific combat, not brood care.'
+    },
+    q33: {
+      'Scientists have been careless with specimens': 'Incompleteness is caused by geology and decay—most organisms rot or erode before burial—not carelessness.',
+      'Most of the fossils displayed in museums are replicas or outright fakes': 'Museum casts are accurate copies of real fossils made for study and display; the record is incomplete because fossilization itself is rare.',
+      'Nothing from that era ever fossilized at all': 'Thousands of dinosaur skeletons, tracks, eggs, and impressions have fossilized—just a tiny fraction of all individuals that ever lived.'
+    },
+    q34: {
+      'Triceratops': 'Triceratops was a horned plant-eater with a skull frill, not a sail-backed fish-eater.',
+      'Ankylosaurus': 'Ankylosaurus was a low, armored herbivore with a tail club rather than a tall back sail.',
+      'Stegosaurus': 'Stegosaurus had two rows of back plates and ate low plants, not a tall neural-spine sail for semi-aquatic fishing.'
+    }
+  };
+
+  var DinoLabPure = _dinoDeepFreeze({
+    VERSION: '14.0',
+    QUIZ_TOPICS: _DINO_QUIZ_TOPICS,
+    QUIZ_WHY_NOT: _DINO_QUIZ_WHY_NOT,
+    diagnoseQuizChoice: function (q, pickedIdx) {
+      if (!q || typeof q !== 'object' || !Array.isArray(q.options) || !q.options.length) {
+        return { ok: false, isCorrect: false, questionId: '', topic: 'anatomy_fossils', chosenText: '', correctText: '', whyNot: '', explanation: '', nextTip: '' };
+      }
+      var idx = Math.floor(Number(pickedIdx));
+      if (!isFinite(idx) || idx < 0 || idx >= q.options.length) {
+        return { ok: false, isCorrect: false, questionId: String(q.id || ''), topic: _DINO_QUIZ_TOPICS[q.id] || 'anatomy_fossils', chosenText: '', correctText: String(q.options[q.answer] || ''), whyNot: '', explanation: String(q.explain || ''), nextTip: '' };
+      }
+      var chosenText = String(q.options[idx] == null ? '' : q.options[idx]);
+      var correctText = String(q.options[q.answer] == null ? '' : q.options[q.answer]);
+      var isCorrect = idx === q.answer;
+      var topic = _DINO_QUIZ_TOPICS[q.id] || 'anatomy_fossils';
+      var topicMeta = _DINO_TOPIC_META[topic] || _DINO_TOPIC_META.anatomy_fossils;
+      var whyNot = '';
+      if (!isCorrect) {
+        var map = _DINO_QUIZ_WHY_NOT[q.id];
+        if (map) {
+          whyNot = map[chosenText] || map[_dinoNormOpt(chosenText)] || '';
+          if (!whyNot) {
+            var normChosen = _dinoNormOpt(chosenText);
+            var keys = Object.keys(map);
+            for (var ki = 0; ki < keys.length; ki++) {
+              if (_dinoNormOpt(keys[ki]) === normChosen) { whyNot = map[keys[ki]]; break; }
+            }
+          }
+        }
+        if (!whyNot) {
+          whyNot = '“' + chosenText + '” does not match the fossil evidence for this question; compare it with “' + correctText + '”.';
+        }
+      }
+      return {
+        ok: true,
+        isCorrect: isCorrect,
+        questionId: String(q.id || ''),
+        topic: topic,
+        topicLabel: topicMeta.label,
+        reviewTab: topicMeta.tab,
+        chosenText: chosenText,
+        correctText: correctText,
+        whyNot: whyNot,
+        explanation: String(q.explain || ''),
+        nextTip: topicMeta.tip
+      };
+    },
+    coachQuizMastery: function (rawState) {
+      var st = (rawState && typeof rawState === 'object' && !Array.isArray(rawState)) ? rawState : {};
+      var qDone = Math.max(0, Math.floor(Number(st.quizDone) || 0));
+      var qCorrect = Math.max(0, Math.min(qDone, Math.floor(Number(st.quizCorrect) || 0)));
+      var sDone = Math.max(0, Math.floor(Number(st.sortDone) || 0));
+      var sScore = Math.max(0, Math.min(sDone, Math.floor(Number(st.sortScore) || 0)));
+      var fDone = Math.max(0, Math.floor(Number(st.field3dChallengeDone) || 0));
+      var fScore = Math.max(0, Math.min(fDone, Math.floor(Number(st.field3dChallengeScore) || 0)));
+      var digsSolved = Math.max(0, Math.floor(Number(st.digsSolved) || 0));
+      var seenCount = (st.seen && typeof st.seen === 'object' && !Array.isArray(st.seen)) ? Object.keys(st.seen).filter(function (k) { return !!st.seen[k]; }).length : 0;
+      var totalAttempts = qDone + sDone + fDone;
+      var totalCorrect = qCorrect + sScore + fScore;
+      var accuracyPct = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+      var history = (st.quizHistory && typeof st.quizHistory === 'object' && !Array.isArray(st.quizHistory)) ? st.quizHistory : {};
+      var topicStats = {};
+      Object.keys(history).forEach(function (qid) {
+        var rec = history[qid];
+        if (!rec || typeof rec !== 'object') return;
+        var tid = (typeof rec.topic === 'string' && _DINO_TOPIC_META[rec.topic]) ? rec.topic : (_DINO_QUIZ_TOPICS[qid] || 'anatomy_fossils');
+        if (!topicStats[tid]) topicStats[tid] = { topic: tid, correct: 0, missed: 0, total: 0 };
+        topicStats[tid].total += 1;
+        if (rec.correct) topicStats[tid].correct += 1; else topicStats[tid].missed += 1;
+      });
+      var weakTopics = Object.keys(topicStats).map(function (tid) {
+        var row = topicStats[tid];
+        var meta = _DINO_TOPIC_META[tid] || _DINO_TOPIC_META.anatomy_fossils;
+        return { topic: tid, label: meta.label, tab: meta.tab, tip: meta.tip, missed: row.missed, total: row.total, accuracyPct: row.total ? Math.round((row.correct / row.total) * 100) : 0 };
+      }).filter(function (item) { return item.missed > 0; }).sort(function (a, b) { return b.missed - a.missed || a.accuracyPct - b.accuracyPct; });
+      var masteryBand = totalAttempts === 0 && digsSolved === 0 ? 'getting_started'
+        : (accuracyPct >= 85 && totalAttempts >= 5 && digsSolved >= 1) ? 'paleontologist'
+        : (accuracyPct >= 70 && totalAttempts >= 3) ? 'proficient'
+        : 'building';
+      var headline = masteryBand === 'getting_started'
+        ? 'Ready for fieldwork: try a quiz check, classify a species, or excavate a dig site.'
+        : masteryBand === 'paleontologist'
+        ? 'Strong paleontology evidence reasoning (' + accuracyPct + '% accuracy across ' + totalAttempts + ' checks, ' + digsSolved + ' dig' + (digsSolved === 1 ? '' : 's') + ' solved).'
+        : masteryBand === 'proficient'
+        ? 'Solid progress (' + accuracyPct + '% accuracy). Push into 3D reconstruction claims and dig evidence next.'
+        : 'Building foundations (' + accuracyPct + '% accuracy). Focus on why distractors fail—every miss points to a fossil clue.';
+      var nextActions = [];
+      if (weakTopics.length > 0) {
+        var topWeak = weakTopics[0];
+        nextActions.push({ label: 'Review ' + topWeak.label, tab: topWeak.tab, reason: topWeak.tip });
+      }
+      if (qDone < 5) nextActions.push({ label: 'Practice Dino Quiz (' + qDone + '/5 checks)', tab: 'quiz', reason: 'Read each per-option explanation to lock in deep-time and fossil distinctions.' });
+      if (digsSolved < 1) nextActions.push({ label: 'Solve a Dig Site', tab: 'dig', reason: 'Uncover bone clues and cite at least two distinguishing traits before identifying.' });
+      if (fDone < 3) nextActions.push({ label: 'Try 3D Evidence vs. Inference', tab: 'field3d', reason: 'Separate direct fossil bones from inferred soft tissue and open debates.' });
+      if (seenCount < 5) nextActions.push({ label: 'Inspect more species (' + seenCount + '/5)', tab: 'explore', reason: 'Compare "How we know" and "What we are not sure about" across clades.' });
+      nextActions = nextActions.slice(0, 3);
+      var readAloudSummary = headline + (nextActions.length ? ' Suggested next step: ' + nextActions[0].label + '. ' + nextActions[0].reason : '');
+      return {
+        accuracyPct: accuracyPct,
+        totalAttempts: totalAttempts,
+        totalCorrect: totalCorrect,
+        digsSolved: digsSolved,
+        seenCount: seenCount,
+        masteryBand: masteryBand,
+        headline: headline,
+        weakTopics: weakTopics,
+        nextActions: nextActions,
+        readAloudSummary: readAloudSummary
+      };
+    },
+    diagnoseClassifyPick: function (speciesOrId, pickedGroup) {
+      var dn = (typeof speciesOrId === 'string') ? byId(speciesOrId) : (speciesOrId && typeof speciesOrId === 'object' ? speciesOrId : null);
+      var picked = String(pickedGroup || '');
+      if (!dn) {
+        return { ok: false, isCorrect: false, speciesName: '', actualGroup: '', actualLabel: '', pickedGroup: picked, pickedLabel: GROUP_LABEL[picked] || picked, whyNot: '', traitCue: '', studyTab: 'classify' };
+      }
+      var actual = String(dn.group || '');
+      var actualLabel = GROUP_LABEL[actual] || cap(actual);
+      var pickedLabel = GROUP_LABEL[picked] || cap(picked);
+      var isCorrect = picked === actual;
+      var traitCue = (Array.isArray(dn.traits) && dn.traits[0]) ? dn.traits[0] : (dn.clade || actualLabel);
+      var whyNot = '';
+      if (!isCorrect) {
+        if (actual === 'other') {
+          whyNot = dn.common + ' (' + (dn.clade || 'non-dinosaur') + ') is a close relative teaching foil, not a true dinosaur in ' + pickedLabel + '.';
+        } else if (actual === 'theropod' && picked === 'ornithischian') {
+          whyNot = dn.diet === 'herbivore'
+            ? 'Careful: eating plants does not make a dinosaur an ornithischian—' + dn.common + ' is a plant-eating theropod (' + dn.clade + ') inside the lizard-hipped branch.'
+            : dn.common + ' is a bipedal theropod (' + dn.clade + ') on the saurischian branch, whereas ornithischians are the bird-hipped plant-eating lineage.';
+        } else if (actual === 'theropod' && picked === 'sauropod') {
+          whyNot = 'Sauropodomorphs are the long-necked plant-eating giants; ' + dn.common + ' belongs to the bipedal theropod lineage (' + dn.clade + ').';
+        } else if (actual === 'sauropod' && picked === 'theropod') {
+          whyNot = 'Theropods are mostly bipedal hunters and birds; ' + dn.common + ' is a long-necked herbivorous sauropodomorph (' + dn.clade + ').';
+        } else if (actual === 'sauropod' && picked === 'ornithischian') {
+          whyNot = 'Both groups ate plants, but ' + dn.common + ' sits in Saurischia as a long-necked sauropodomorph (' + dn.clade + '), not bird-hipped Ornithischia.';
+        } else if (actual === 'ornithischian' && picked === 'theropod') {
+          whyNot = 'Theropods are lizard-hipped bipeds (carnivores, omnivores, and birds); ' + dn.common + ' is a bird-hipped ornithischian plant-eater (' + dn.clade + ').';
+        } else if (actual === 'ornithischian' && picked === 'sauropod') {
+          whyNot = 'Sauropodomorphs are lizard-hipped long-necked giants; ' + dn.common + ' belongs to Ornithischia (' + dn.clade + '), the bird-hipped herbivores.';
+        } else {
+          whyNot = dn.common + ' belongs to ' + actualLabel + ' (' + (dn.clade || 'catalog clade') + '), not ' + pickedLabel + '.';
+        }
+      }
+      return {
+        ok: true,
+        isCorrect: isCorrect,
+        speciesName: dn.common,
+        actualGroup: actual,
+        actualLabel: actualLabel,
+        pickedGroup: picked,
+        pickedLabel: pickedLabel,
+        whyNot: whyNot,
+        traitCue: 'Key clue: ' + traitCue + ' (' + dn.clade + ', ' + cap(dn.diet) + ').',
+        studyTab: 'classify'
+      };
+    },
+    diagnoseField3DClaim: function (step, pickedKind, species) {
+      var actual = step && typeof step.kind === 'string' ? step.kind : '';
+      var picked = String(pickedKind || '');
+      if (!actual || !picked) {
+        return { ok: false, isCorrect: false, actualKind: actual, pickedKind: picked, whyNot: '', feedback: (step && step.feedback) || '', coachingTip: '' };
+      }
+      var isCorrect = picked === actual;
+      var spName = (species && species.common) ? species.common : 'this species';
+      var whyNot = '';
+      if (!isCorrect) {
+        if (actual === 'evidence' && picked === 'inference') {
+          whyNot = 'Not an inference: documented fossil skeletons, bones, or tracks for ' + spName + ' are direct material observations that anchor the model.';
+        } else if (actual === 'evidence' && picked === 'uncertainty') {
+          whyNot = 'Not uncertainty: even though gaps exist elsewhere, these named fossil specimens are real recorded evidence we can inspect directly.';
+        } else if (actual === 'inference' && picked === 'evidence') {
+          whyNot = 'Not direct evidence: soft tissue like muscles and body volume around ' + spName + ' rarely fossilizes directly and must be reconstructed from bones and relatives.';
+        } else if (actual === 'inference' && picked === 'uncertainty') {
+          whyNot = 'Closer to inference than pure uncertainty: biomechanics and living relatives constrain a plausible soft-tissue outline even without direct skin preservation.';
+        } else if (actual === 'uncertainty' && picked === 'evidence') {
+          whyNot = 'Not direct evidence: an active scientific debate cannot be cited as a directly observed fossil fact.';
+        } else if (actual === 'uncertainty' && picked === 'inference') {
+          whyNot = 'Not a settled inference: where competing hypotheses remain unresolved for ' + spName + ', scientific honesty marks it explicitly as uncertainty.';
+        }
+      }
+      return {
+        ok: true,
+        isCorrect: isCorrect,
+        actualKind: actual,
+        pickedKind: picked,
+        whyNot: whyNot,
+        feedback: String((step && step.feedback) || ''),
+        coachingTip: actual === 'evidence'
+          ? 'Rule of thumb: if you can measure it in a fossil specimen or rock bed, it is Evidence.'
+          : actual === 'inference'
+          ? 'Rule of thumb: if it bridges bones to living anatomy using biomechanics or relatives, it is Inference.'
+          : 'Rule of thumb: if fossils do not yet settle competing ideas, label it Uncertainty.'
+      };
+    },
+    scoreDigEfficiency: function (metrics) {
+      var m = (metrics && typeof metrics === 'object' && !Array.isArray(metrics)) ? metrics : {};
+      var totalCells = Math.max(1, Math.floor(Number(m.totalCells) || 24));
+      var totalBones = Math.max(1, Math.floor(Number(m.totalBones) || 8));
+      var cellsDug = Math.max(0, Math.min(totalCells, Math.floor(Number(m.cellsDug) || 0)));
+      var bonesFound = Math.max(0, Math.min(totalBones, Math.floor(Number(m.bonesFound) || 0)));
+      var cluesCited = Math.max(0, Math.floor(Number(m.cluesCited) || 0));
+      var layersRemoved = Math.max(0, Math.floor(Number(m.layersRemoved) || 0));
+      var solved = !!m.solved;
+      var hitRatePct = cellsDug > 0 ? Math.round((bonesFound / cellsDug) * 100) : 0;
+      var coveragePct = Math.round((cellsDug / totalCells) * 100);
+      var tier = !solved ? 'in_progress'
+        : (hitRatePct >= 60 || cellsDug <= 12) ? 'surgical'
+        : (hitRatePct >= 40) ? 'methodical'
+        : 'thorough';
+      var summary = !solved
+        ? ('Excavation in progress: ' + bonesFound + '/' + totalBones + ' fossil columns exposed across ' + cellsDug + ' cleared columns (' + hitRatePct + '% hit rate).')
+        : ('Dig efficiency (' + tier + '): identified with ' + cluesCited + ' cited clue' + (cluesCited === 1 ? '' : 's') + ', ' + bonesFound + '/' + totalBones + ' bone columns, ' + cellsDug + '/' + totalCells + ' cells cleared (' + hitRatePct + '% hit rate, ' + layersRemoved + ' layers removed).');
+      var tip = !solved
+        ? (cluesCited < 2 ? 'Expose bones with the brush at fossil contacts and cite at least two distinguishing clues.' : 'Compare your cited clues against all six candidate cards to rule out look-alikes.')
+        : 'Good fieldwork balances careful matrix removal with citing clues that eliminate every alternative candidate.';
+      return {
+        tier: tier,
+        hitRatePct: hitRatePct,
+        coveragePct: coveragePct,
+        bonesFound: bonesFound,
+        totalBones: totalBones,
+        cellsDug: cellsDug,
+        totalCells: totalCells,
+        cluesCited: cluesCited,
+        layersRemoved: layersRemoved,
+        solved: solved,
+        summary: summary,
+        tip: tip
+      };
+    },
+    dedupeXpAward: function (ledger, awardKey, points) {
+      var safeLedger = {};
+      if (ledger && typeof ledger === 'object' && !Array.isArray(ledger)) {
+        Object.keys(ledger).forEach(function (k) { if (ledger[k]) safeLedger[k] = true; });
+      }
+      var key = typeof awardKey === 'string' ? awardKey.trim() : '';
+      var pts = Math.max(0, Math.floor(Number(points) || 0));
+      if (!key || pts <= 0 || Object.prototype.hasOwnProperty.call(safeLedger, key)) {
+        return { awarded: false, points: 0, key: key, nextLedger: safeLedger };
+      }
+      var nextLedger = Object.assign({}, safeLedger);
+      nextLedger[key] = true;
+      return { awarded: true, points: pts, key: key, nextLedger: nextLedger };
+    }
+  });
+
+  if (typeof window !== 'undefined') {
+    try { window.DinoLabPure = DinoLabPure; } catch (_) {}
+  }
 
   // WCAG 1.4.3 high contrast (generated by gen_hc.cjs)
   (function() {
@@ -19036,6 +19513,7 @@ var CLASSIFY_CASES = [
     desc: 'Explore dinosaurs across deep time, compare species, dig fossils, build food webs, and connect birds to dinosaurs.',
     category: 'biology',
     aliases: ['dinosaurs', 'paleontology', 'fossils', 'food webs'],
+    _engine: DinoLabPure,
     questHooks: [
       { id: 'meet_5', label: 'Open 5 different dinosaur cards', icon: '🦕', check: function (d) { return Object.keys(d.seen || {}).length >= 5; }, progress: function (d) { return Object.keys(d.seen || {}).length + '/5 met'; } },
       { id: 'dig_one', label: 'Excavate a fossil at the Dig Site', icon: '⛏️', check: function (d) { return (d.digsSolved || 0) >= 1; }, progress: function (d) { return (d.digsSolved || 0) + '/1 dig'; } },
@@ -19043,17 +19521,29 @@ var CLASSIFY_CASES = [
       { id: 'compare_two', label: 'Compare two dinosaurs side by side', icon: '⚖️', check: function (d) { return (d.compareA && d.compareB) ? true : false; }, progress: function (d) { return (d.compareA && d.compareB) ? 'done' : 'pick 2'; } }
     ],
     render: function (ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var el = React.createElement;
       var rawDino = (ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData.dinoLab : null;
       var d = (rawDino && typeof rawDino === 'object' && !Array.isArray(rawDino)) ? rawDino : {};
       // Section-cue ink: teal-300 was designed for the dark substrate and is
-      // invisible (1.19:1) on the light one. Same DOM sniff probability uses;
-      // re-evaluated every render, so theme toggles keep it honest.
-      var isContrastDino = !!ctx.isContrast || (typeof ctx.theme === 'string' && ctx.theme.indexOf('contrast') !== -1) || (typeof document !== 'undefined' && !!document.querySelector('.theme-contrast,[data-stem-theme=contrast]'));
-      var dinoCueInk = isContrastDino ? '#ffff00' : ((typeof document !== 'undefined' && document.querySelector('.theme-dark,[data-stem-theme=dark]')) ? '#5eead4' : '#115e59');
+      // invisible (1.19:1) on the light one. Check host ctx theme flags first
+      // (separating high-contrast from dark), then DOM fallback so toggles stay honest.
+      var isContrastDino = !!(ctx.isContrast || (typeof ctx.theme === 'string' && ctx.theme.indexOf('contrast') !== -1)) || (typeof document !== 'undefined' && !!document.querySelector('.theme-contrast,[data-stem-theme=contrast]'));
+      var isDarkDino = !isContrastDino && (!!(ctx.isDark || (typeof ctx.theme === 'string' && ctx.theme.indexOf('dark') !== -1)) || (typeof document !== 'undefined' && !!document.querySelector('.theme-dark,[data-stem-theme=dark]')));
+      var dinoCueInk = isContrastDino ? '#ffff00' : (isDarkDino ? '#5eead4' : '#115e59');
+      var isEmbedded = !!(ctx && ctx.embedded);
+      var hostReduceMotion = !!(ctx && ctx.reduceMotion);
+      var canReadAloud = typeof ctx.callTTS === 'function';
+      function speakDino(text) {
+        if (!text || !canReadAloud || isDinoGlobalMuted()) return false;
+        try {
+          ctx.callTTS(String(text), undefined, undefined, { force: true });
+          return true;
+        } catch (_) { return false; }
+      }
+      var xpGuardBox = { current: null };
       var FIELD_PROGRESS_VERSION = 1;
       function fieldProgressMap(value) {
         var out = {};
@@ -19192,6 +19682,37 @@ var CLASSIFY_CASES = [
         }
         else { var scalarPatch = {}; scalarPatch[key] = val; scalarPatch = decorateFieldProgressPatch(scalarPatch); if (ctx.updateMulti) ctx.updateMulti('dinoLab', scalarPatch); else if (ctx.update) Object.keys(scalarPatch).forEach(function (k) { ctx.update('dinoLab', k, scalarPatch[k]); }); }
       };
+      // Pure React 18 StrictMode-safe XP deduplicator: state updater merges d.xpAwarded
+      // purely with zero side effects; ctx.awardXP fires at most once outside the updater,
+      // backed by both persisted d.xpAwarded and the synchronous ref guard xpGuardBox.
+      function awardDinoXP(awardKey, pts, reason, extraPatch) {
+        var persisted = (d.xpAwarded && typeof d.xpAwarded === 'object' && !Array.isArray(d.xpAwarded)) ? d.xpAwarded : {};
+        var guard = xpGuardBox.current || (xpGuardBox.current = {});
+        var res = DinoLabPure.dedupeXpAward(persisted, awardKey, pts);
+        var shouldAward = !!(res.awarded && !guard[awardKey]);
+        if (shouldAward) guard[awardKey] = true;
+        var mergedPatch = Object.assign({}, extraPatch || {});
+        if (shouldAward) mergedPatch.xpAwarded = res.nextLedger;
+        if (typeof ctx.setLabToolData === 'function') {
+          var decorated = decorateFieldProgressPatch(mergedPatch);
+          ctx.setLabToolData(function (prev) {
+            var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var cur = (safePrev.dinoLab && typeof safePrev.dinoLab === 'object' && !Array.isArray(safePrev.dinoLab)) ? safePrev.dinoLab : {};
+            var nextDino = Object.assign({}, cur, decorated);
+            if (decorated.xpAwarded && typeof decorated.xpAwarded === 'object' && !Array.isArray(decorated.xpAwarded)) {
+              var prevXp = (cur.xpAwarded && typeof cur.xpAwarded === 'object' && !Array.isArray(cur.xpAwarded)) ? cur.xpAwarded : {};
+              nextDino.xpAwarded = Object.assign({}, prevXp, decorated.xpAwarded);
+            }
+            return Object.assign({}, safePrev, { dinoLab: nextDino });
+          });
+        } else if (Object.keys(mergedPatch).length > 0) {
+          upd(mergedPatch);
+        }
+        if (shouldAward && typeof ctx.awardXP === 'function') {
+          try { ctx.awardXP('dinoLab', res.points, reason); } catch (_) {}
+        }
+        return shouldAward;
+      }
       var announceToSR = ctx.announceToSR || function () {};
 
       function strVal(value) { return value == null ? '' : String(value); }
@@ -19239,7 +19760,10 @@ var CLASSIFY_CASES = [
               Object.assign(patch, { field3dWorkflowStarted: false, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: dn.id, field3dAssemblyPlaced: {}, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: dn.id });
             }
             upd(patch);
-          } }, __alloT('stem.dinolab.inspect_in_3d', 'Inspect in 3D'))
+          } }, __alloT('stem.dinolab.inspect_in_3d', 'Inspect in 3D')),
+          canReadAloud ? el('button', { type: 'button', className: 'dinolab-read-aloud-btn', style: actionStyle, 'aria-label': t('stem.dinolab.read_species_aloud', 'Read species details aloud for {species}').replace('{species}', dn.common), onClick: function () {
+            speakDino(dn.common + ' (' + dn.name + '). ' + dn.blurb + ' How we know: ' + dn.howKnow + ' What we are not sure about: ' + dn.uncertain);
+          } }, '🔊 ' + t('stem.dinolab.read_aloud', 'Read aloud')) : null
         );
       }
       function catalogGlyph(dn) {
@@ -19311,7 +19835,7 @@ var CLASSIFY_CASES = [
           '<div class="say">Say it: ' + esc(dn.say) + '  ·  Means: &ldquo;' + esc(dn.meaning) + '&rdquo;</div>' +
           '<p class="blurb">' + esc(dn.blurb) + '</p>' +
           '<table><tbody>' + rows.map(function (r) { return '<tr><th scope="row">' + esc(r[0]) + '</th><td>' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table>' +
-          '<h3>Standout traits</h3><ul>' + dn.traits.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+          '<h3>Standout traits</h3><ul>' + dn.traits.map(function (trait) { return '<li>' + esc(trait) + '</li>'; }).join('') + '</ul>' +
           '<div class="box know"><b>🔎 How we know:</b> ' + esc(dn.howKnow) + '</div>' +
           '<div class="box unc"><b>⚖️ What we are not sure about:</b> ' + esc(dn.uncertain) + '</div>' +
           '<div class="foot">Dino Lab · STEAM Lab — lengths, weights, and speeds are widely-cited estimates, not exact measurements.</div>' +
@@ -19438,8 +19962,47 @@ var CLASSIFY_CASES = [
         return el('button', { key: tb.id, id: 'dinotab-' + tb.id, role: 'tab', 'data-tab-group': tabGroupFor(tb.id), title: tabGroupFor(tb.id) + ': ' + tb.label, tabIndex: active ? 0 : -1, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'dinopanel', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', onKeyDown: function (event) { handleTabKeyDown(event, tabIndex); }, onClick: function () { upd('tab', tb.id); announceToSR(tb.label + ' tab'); }, style: { flexShrink: 0, minHeight: 44, padding: '7px 11px', borderRadius: 9, border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: active ? 700 : 500, boxShadow: active ? '0 1px 4px rgba(21,128,61,0.45)' : 'none', background: active ? '#15803d' : 'transparent', color: active ? '#fff' : T.soft, whiteSpace: 'nowrap' } }, tb.icon + ' ' + tb.label);
       }));
       var dinoSeenCount = (d.seen && typeof d.seen === 'object' && !Array.isArray(d.seen)) ? Object.keys(d.seen).length : 0;
+      var coachOpen = d.coachOpen === true;
+      var showNavBack = !isEmbedded && typeof ctx.setStemLabTool === 'function';
+      var showNavCoachToggle = typeof ctx.setStemLabTool === 'function' || coachOpen || (d.quizDone || 0) > 0 || (d.sortDone || 0) > 0 || (d.digsSolved || 0) > 0 || (d.field3dChallengeDone || 0) > 0;
+      function togglePaleoCoach() {
+        var nextOpen = !coachOpen;
+        upd('coachOpen', nextOpen);
+        announceToSR(nextOpen ? t('stem.dinolab.coach_opened_sr', 'Paleontology Coach opened') : t('stem.dinolab.coach_closed_sr', 'Paleontology Coach closed'));
+      }
+      function renderPaleoCoach() {
+        var mastery = DinoLabPure.coachQuizMastery(d);
+        var coachBg = isContrastDino ? '#000000' : T.panel;
+        var coachInk = isContrastDino ? '#ffff00' : T.text;
+        var coachSoft = isContrastDino ? '#ffffff' : T.soft;
+        var coachBorder = isContrastDino ? '2px solid #ffff00' : '1px solid ' + T.border;
+        return el('section', { id: 'dinolab-paleo-coach', className: 'dinolab-paleo-coach', 'aria-label': t('stem.dinolab.paleo_coach_aria', 'Offline Paleontology Coach'), style: { marginBottom: 14, padding: 14, borderRadius: 12, border: coachBorder, background: coachBg, color: coachInk } },
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 } },
+            el('strong', { style: { fontSize: 14 } }, '🧭 ' + t('stem.dinolab.paleo_coach_title', 'Paleontology Coach (Offline)')),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+              canReadAloud ? el('button', { type: 'button', style: actionStyle, 'aria-label': t('stem.dinolab.read_coach_aloud', 'Read coaching summary aloud'), onClick: function () { speakDino(mastery.readAloudSummary); } }, '🔊 ' + t('stem.dinolab.read_aloud', 'Read aloud')) : null,
+              el('button', { type: 'button', style: actionStyle, 'aria-label': t('stem.dinolab.close_coach', 'Close Paleontology Coach'), onClick: togglePaleoCoach }, t('stem.dinolab.close', 'Close'))
+            )
+          ),
+          el('p', { style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.55, color: coachInk } }, mastery.headline),
+          mastery.weakTopics.length ? el('div', { style: { marginBottom: 10 } },
+            el('div', { style: { fontSize: 11.5, fontWeight: 800, color: coachSoft, marginBottom: 6 } }, t('stem.dinolab.coach_focus_areas', 'Areas to sharpen from recent misses:')),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, mastery.weakTopics.slice(0, 3).map(function (wt) {
+              return el('button', { key: wt.topic, type: 'button', style: actionStyle, onClick: function () { upd({ tab: wt.tab, coachOpen: false }); focusSoon('dinotab-' + wt.tab); } }, wt.label + ' (' + wt.missed + ' ' + t('stem.dinolab.coach_missed', 'missed') + ') →');
+            }))
+          ) : null,
+          mastery.nextActions.length ? el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 } }, mastery.nextActions.map(function (act, idx) {
+            return el('div', { key: act.tab + '-' + idx, style: { padding: 10, borderRadius: 9, border: coachBorder, background: isContrastDino ? '#000000' : T.deeper } },
+              el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 4, color: coachInk } }, act.label),
+              el('div', { style: { fontSize: 11.5, lineHeight: 1.45, color: coachSoft, marginBottom: 8 } }, act.reason),
+              el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: act.tab, coachOpen: false }); focusSoon('dinotab-' + act.tab); } }, t('stem.dinolab.coach_open_tab', 'Go now') + ' →')
+            );
+          })) : null
+        );
+      }
       var tabNavigation = el('nav', { className: 'dinolab-navigation', 'aria-label': __alloT('stem.dinolab.a11y_dino_lab_section_navigation', 'Dino Lab section navigation'), style: { background: T.deeper } },
         el('div', { className: 'dinolab-section-cue', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, padding: '7px 12px 0', color: T.soft, fontSize: 11.5 } },
+          showNavBack ? el('button', { type: 'button', className: 'dinolab-back-btn', 'aria-label': t('stem.dinolab.back_to_lab', 'Back to STEAM Lab'), onClick: function () { try { ctx.setStemLabTool(null); } catch (_) {} }, style: { minHeight: 40, padding: '6px 11px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 } }, '← ' + t('stem.dinolab.back', 'Back')) : null,
           el('div', { className: 'dinolab-wordmark' },
             el('span', { 'aria-hidden': 'true', className: 'dinolab-wordmark-symbol' },
               el('svg', { width: 24, height: 24, viewBox: '0 0 28 28', 'aria-hidden': 'true', focusable: 'false' },
@@ -19455,6 +20018,7 @@ var CLASSIFY_CASES = [
             el('span', { className: 'dinolab-telemetry-pill' }, PERIODS.length + ' ' + __alloT('stem.dinolab.pill_eras', 'eras')),
             el('span', { className: 'dinolab-telemetry-pill' }, dinoSeenCount + ' ' + __alloT('stem.dinolab.pill_studied', 'studied'))
           ),
+          showNavCoachToggle ? el('button', { type: 'button', className: 'dinolab-coach-toggle', 'aria-expanded': coachOpen ? 'true' : 'false', 'aria-controls': 'dinolab-paleo-coach', onClick: togglePaleoCoach, style: { minHeight: 40, padding: '6px 11px', borderRadius: 8, border: '1px solid ' + (coachOpen ? (isContrastDino ? '#ffff00' : '#15803d') : T.border), background: coachOpen ? (isContrastDino ? '#000000' : '#15803d') : T.panel, color: coachOpen ? (isContrastDino ? '#ffff00' : '#ffffff') : T.text, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 } }, '🧭 ' + t('stem.dinolab.coach_btn', 'Coach')) : null,
           el('select', { id: 'dino-section-picker', 'aria-label': __alloT('stem.dinolab.jump_to_section', 'Jump to a lab section'), value: tab, onChange: function (event) { var target = event.target.value; if (!TABS.some(function (tb) { return tb.id === target; })) return; upd('tab', target); focusSoon('dinotab-' + target); }, style: { marginLeft: 'auto', flex: '0 1 260px', minWidth: 0, maxWidth: '70%', minHeight: 44, padding: '7px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 700 } },
             [['Discover', 'nav_discover'], ['Investigate', 'nav_investigate'], ['Explain', 'nav_explain'], ['Practice and teach', 'nav_practice']].map(function (group) {
               return el('optgroup', { key: group[0], label: t('stem.dinolab.' + group[1], group[0]) }, TABS.filter(function (tb) { return tabGroupFor(tb.id) === group[0]; }).map(function (tb) { return el('option', { key: tb.id, value: tb.id }, tb.label); }));
@@ -19797,10 +20361,9 @@ var CLASSIFY_CASES = [
         // below it was dark and crisp. Same render-time DOM sniff the file
         // already uses for dinoCueInk, re-evaluated every render so a theme
         // toggle stays honest.
-        var mapStatDark = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]'));
-        var statTeal = mapStatDark ? '#5eead4' : '#115e59';
-        var statSky = mapStatDark ? '#7dd3fc' : '#075985';
-        var statAmber = mapStatDark ? '#fde68a' : '#92400e';
+        var statTeal = isContrastDino ? '#ffff00' : (isDarkDino ? '#5eead4' : '#115e59');
+        var statSky = isContrastDino ? '#ffffff' : (isDarkDino ? '#7dd3fc' : '#075985');
+        var statAmber = isContrastDino ? '#ffff00' : (isDarkDino ? '#fde68a' : '#92400e');
         var stats = el('div', { className: 'dinolab-map-stats', 'aria-label': __alloT('stem.dinolab.a11y_map_catalog_summary', 'Map catalog summary'), style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '8px 0 10px' } },
           panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statTeal } }, String(totalMapped)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'dinosaurs plotted')]),
           panel([el('div', { key: 'v', style: { fontSize: 18, fontWeight: 900, color: statSky } }, String(TILES.length)), el('div', { key: 'l', style: { fontSize: 11, color: T.soft } }, 'continents represented')]),
@@ -19962,14 +20525,16 @@ var CLASSIFY_CASES = [
         var motionClockRef = React.useRef({ last: null, elapsed: 0 });
         var motionPausedState = React.useState(false), motionPaused = motionPausedState[0], setMotionPaused = motionPausedState[1];
         var motionPausedRef = React.useRef(false);
-        var reducedMotionState = React.useState(function () { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); });
+        var reducedMotionState = React.useState(function () { return !!(props.reduceMotion || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)); });
         var deviceReducedMotion = reducedMotionState[0], setDeviceReducedMotion = reducedMotionState[1];
-        var reducedMotionRef = React.useRef(deviceReducedMotion);
+        var effectiveReducedMotion = !!(props.reduceMotion || deviceReducedMotion);
+        var reducedMotionRef = React.useRef(effectiveReducedMotion);
+        reducedMotionRef.current = effectiveReducedMotion;
         React.useEffect(function () {
-          if (!window.matchMedia) return;
+          if (typeof window === 'undefined' || !window.matchMedia) return;
           var preference = window.matchMedia('(prefers-reduced-motion: reduce)');
           function updateMotionPreference() {
-            reducedMotionRef.current = preference.matches;
+            reducedMotionRef.current = !!(props.reduceMotion || preference.matches);
             motionClockRef.current.last = null;
             setDeviceReducedMotion(preference.matches);
             requestSceneRender();
@@ -19981,7 +20546,7 @@ var CLASSIFY_CASES = [
             if (preference.removeEventListener) preference.removeEventListener('change', updateMotionPreference);
             else if (preference.removeListener) preference.removeListener(updateMotionPreference);
           };
-        }, []);
+        }, [props.reduceMotion]);
         function toggleMotionPause() {
           motionPausedRef.current = !motionPausedRef.current;
           motionClockRef.current.last = null;
@@ -20204,7 +20769,8 @@ var CLASSIFY_CASES = [
         React.useEffect(function () { setShapeViews({ context: shapeViewContext, pins: [] }); setShapeViewMessage(''); }, [shapeViewContext]);
         // Capture the current spatial frame before the layer effect replaces
         // geometry. Bone and life can then be inspected without a fitting jump.
-        React.useLayoutEffect(function () {
+        var useIsoLayoutEffect = (typeof window !== 'undefined' && typeof document !== 'undefined') ? React.useLayoutEffect : React.useEffect;
+        useIsoLayoutEffect(function () {
           if (props.shapeStudy && cameraControlRef.current && cameraControlRef.current.preserveInspectionFrame) cameraControlRef.current.preserveInspectionFrame();
         }, [props.showSkeleton, props.showBody]);
         function keepShapeView(index) {
@@ -21044,9 +21610,11 @@ var CLASSIFY_CASES = [
                 if (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
                 return texture;
               }
+              var skinBumpCanvas = document.createElement('canvas');
+              var skinRoughnessCanvas = document.createElement('canvas');
               skinTexture = makeSkinTexture(skinCanvas, skinPixels.color, 'color');
-              skinBumpTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.bump, 'bump');
-              skinRoughnessTexture = makeSkinTexture(document.createElement('canvas'), skinPixels.roughness, 'roughness');
+              skinBumpTexture = makeSkinTexture(skinBumpCanvas, skinPixels.bump, 'bump');
+              skinRoughnessTexture = makeSkinTexture(skinRoughnessCanvas, skinPixels.roughness, 'roughness');
             }
             var boneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc7b99c, roughness: 0.90, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc7b99c, shininess: 6 });
             var jointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc9b990, roughness: 0.76, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc9b990, shininess: 12 });
@@ -22002,8 +22570,8 @@ var CLASSIFY_CASES = [
               if (addRegionalStegosaurArmor(mat, mat === boneMat, 'plate')) return;
               if (!hasAnatomyPart('plates')) return;
               for (var plateIndex = 0; plateIndex < 17; plateIndex++) {
-                var u = plateIndex / 16, t = -0.10 + u * 1.52;
-                var root = dorsalSurfacePoint(t);
+                var u = plateIndex / 16, plateT = -0.10 + u * 1.52;
+                var root = dorsalSurfacePoint(plateT);
                 var side = plateIndex % 2 ? -1 : 1;
                 root.z = side * surfaceBodyDepth * 0.16;
                 root.y -= surfaceBodyHeight * 0.065;
@@ -23586,10 +24154,10 @@ if (/Ceratops/i.test(cladeName)) {
               var spread = end.clone().sub(start), span = spread.length();
               var count = hind ? 8 : 10, tract = hind ? 'hind-wing' : 'forewing';
               for (var featherIndex = 0; featherIndex < count; featherIndex++) {
-                var t = 0.08 + featherIndex / (count - 1) * 0.86;
-                var center = start.clone().lerp(end, t);
-                var fanLength = len * (hind ? 0.075 : 0.085) * (0.82 + Math.sin(t * Math.PI * 0.72) * 0.48);
-                var direction = vec(fanLength, -fanLength * (0.14 + t * 0.10), side * fanLength * (0.25 + t * 0.22));
+                var featherT = 0.08 + featherIndex / (count - 1) * 0.86;
+                var center = start.clone().lerp(end, featherT);
+                var fanLength = len * (hind ? 0.075 : 0.085) * (0.82 + Math.sin(featherT * Math.PI * 0.72) * 0.48);
+                var direction = vec(fanLength, -fanLength * (0.14 + featherT * 0.10), side * fanLength * (0.25 + featherT * 0.22));
                 var width = Math.max(span / count * 1.08, fanLength * 0.14);
                 var outward = vec(1, 0.05, side * 0.4);
                 addSeatedFeather(surface, center, outward, direction, width, spread, tract);
@@ -25782,7 +26350,7 @@ if (/Ceratops/i.test(cladeName)) {
             part.anatomicalTerm ? el('dl', { className: 'dinolab-anatomical-term', style: { margin: '0 0 12px', padding: '10px 12px', borderLeft: '3px solid var(--dino-accent,#0f766e)', borderRadius: '0 7px 7px 0', background: T.deeper } },
               el('dt', { style: { color: T.soft, fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase' } }, __alloT('stem.dinolab.anatomical_term', 'Anatomical term')),
               el('dd', { style: { margin: '2px 0 0', color: T.text, fontSize: 17, fontWeight: 700, lineHeight: 1.5, overflowWrap: 'anywhere' } }, part.anatomicalTerm)) : null,
-            selectedGuide ? el('div', { className: 'dinolab-part-guide-navigation', role: 'group', 'aria-label': 'Navigate from this body part', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            selectedGuide ? el('div', { className: 'dinolab-part-guide-navigation', role: 'group', 'aria-label': t('stem.dinolab.navigate_from_body_part', 'Navigate from this body part'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
               el('button', { type: 'button', onClick: focusBodyPartModel, 'aria-controls': 'dinolab-3d-canvas-' + props.species.id, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #0f766e', background: '#0f766e', color: '#fff', font: 'inherit', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'View on model'),
               el('button', { type: 'button', onClick: function () { focusBodyPartDirectory(true); }, 'aria-controls': 'dinolab-body-part-key', style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, font: 'inherit', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Back to body-part key')) : null,
             layerHelp ? el('p', { className: 'dinolab-part-layer-help', style: { margin: '0 0 10px', color: T.soft } }, layerHelp) : null,
@@ -25963,7 +26531,7 @@ if (/Ceratops/i.test(cladeName)) {
             el('label', { htmlFor: 'dinolab-part-search', style: { display: 'block', marginBottom: 5, fontSize: 12, fontWeight: 800 } }, __alloT('stem.dinolab.search_body_parts', 'Search body parts')),
             el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               el('input', { ref: partSearchRef, id: 'dinolab-part-search', type: 'search', value: partSearch.query, maxLength: 100,
-                placeholder: 'Try hand, manus, or frill', 'aria-describedby': 'dinolab-part-search-help', 'aria-controls': 'dinolab-part-search-results',
+                placeholder: t('stem.dinolab.part_search_placeholder', 'Try hand, manus, or frill'), 'aria-describedby': 'dinolab-part-search-help', 'aria-controls': 'dinolab-part-search-results',
                 onChange: function (event) { updatePartSearch(event.target.value, section); },
                 onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); updatePartSearch('', section); } },
                 style: { flex: '1 1 220px', minWidth: 0, width: '100%', minHeight: 44, border: '1px solid ' + T.border, borderRadius: 8, padding: '10px 12px', background: T.deep, color: T.text, font: 'inherit', boxSizing: 'border-box' } }),
@@ -26707,7 +27275,10 @@ var evidenceRoute = [
           nextLog[scanTarget.id] = true;
           var nextIdx = findNextOpenIdx(nextLog, scanTargetIdx);
           var nextTarget = scanTargets[nextIdx];
-          upd({ field3dScanLogged: nextLog, field3dScanSpecies: dn.id, field3dShowEvidence: true, field3dScanTargetIdx: nextIdx });
+          var nextCount = scanTargets.reduce(function (n, target) { return n + (nextLog[target.id] ? 1 : 0); }, 0);
+          var scanPatch = { field3dScanLogged: nextLog, field3dScanSpecies: dn.id, field3dShowEvidence: true, field3dScanTargetIdx: nextIdx };
+          if (nextCount >= scanTargets.length) awardDinoXP('field3d_scan:' + dn.id, 12, 'Completed 3D evidence scan for ' + dn.common, scanPatch);
+          else upd(scanPatch);
           announceToSR(scanTarget.label + ' observation logged' + (nextTarget && !nextLog[nextTarget.id] ? '. Next focus: ' + nextTarget.label : '. Field scan complete'));
         }
         function findNextOpenAssemblyIdx(placedMap, startIdx) {
@@ -26735,7 +27306,9 @@ var evidenceRoute = [
           nextPlaced[assemblyFocus.id] = true;
           var nextIdx = findNextOpenAssemblyIdx(nextPlaced, assemblyFocusIdx);
           var done = assemblyPieces.reduce(function (n, piece) { return n + (nextPlaced[piece.id] ? 1 : 0); }, 0) >= assemblyPieces.length;
-          upd({ field3dAssemblyPlaced: nextPlaced, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: nextIdx, field3dShowSkeleton: true, field3dShowEvidence: true });
+          var asmPatch = { field3dAssemblyPlaced: nextPlaced, field3dAssemblySpecies: dn.id, field3dAssemblyFocusIdx: nextIdx, field3dShowSkeleton: true, field3dShowEvidence: true };
+          if (done) awardDinoXP('field3d_assembly:' + dn.id, 15, 'Assembled 3D skeleton for ' + dn.common, asmPatch);
+          else upd(asmPatch);
           announceToSR(assemblyFocus.label + ' fossil placed' + (done ? '. Skeleton assembly complete' : '. Next fossil: ' + assemblyPieces[nextIdx].label));
         }
         function resetAssembly() {
@@ -27248,11 +27821,13 @@ var evidenceRoute = [
         function pickChallenge(choice) {
           if (challengePicked) return;
           var correct = choice === challengeStep.kind;
-          upd({
+          var chPatch = {
             field3dChallengePicked: choice,
             field3dChallengeScore: challengeScore + (correct ? 1 : 0),
             field3dChallengeDone: challengeDone + 1
-          });
+          };
+          if (correct) awardDinoXP('field3d_challenge:' + dn.id + ':' + challengeStep.kind, 8, '3D reconstruction challenge: ' + challengeStep.kind, chPatch);
+          else upd(chPatch);
           announceToSR(correct ? 'Correct reconstruction classification' : 'Not quite. Read the explanation.');
         }
         function nextChallenge() {
@@ -27345,10 +27920,16 @@ var evidenceRoute = [
           keyItem('#facc15', 'Height guide', 'Gold reference bar shows the catalog height estimate with adaptive ticks. Size reference frames both bars and the enabled human comparison; close-up studies hide the bars.'),
           keyItem('#f59e0b', 'Survey compass', 'Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid.')
         ], { marginBottom: 12 });
+        var challengeDiagnosis = challengePicked ? DinoLabPure.diagnoseField3DClaim(challengeStep, challengePicked, dn) : null;
         var challengePanel = panel([
-          el('div', { key: 'h', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+          el('div', { key: 'h', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
             el('div', { style: { fontSize: 13, fontWeight: 900 } }, 'Reconstruction challenge'),
-            el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, challengeCaseLabel + ' | Score: ' + challengeScore + '/' + challengeDone)
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+              canReadAloud ? el('button', { type: 'button', className: 'dinolab-read-aloud-btn', 'aria-label': t('stem.dinolab.read_challenge_aloud', 'Read reconstruction challenge aloud'), onClick: function () {
+                speakDino(challengeStep.prompt + (challengeDiagnosis ? ' ' + (challengeDiagnosis.whyNot ? challengeDiagnosis.whyNot + ' ' : '') + challengeStep.feedback : ''));
+              }, style: { fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 7, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, '🔊 ' + t('stem.dinolab.read_aloud', 'Read aloud')) : null,
+              el('div', { style: { fontSize: 11.5, color: T.soft, fontWeight: 800 } }, challengeCaseLabel + ' | Score: ' + challengeScore + '/' + challengeDone)
+            )
           ),
           el('div', { key: 'meter', role: 'progressbar', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_challenge_progress', 'Reconstruction challenge progress'), 'aria-valuemin': 1, 'aria-valuemax': challengeSteps.length, 'aria-valuenow': challengeIdx + 1, 'aria-valuetext': challengeCaseLabel, style: { height: 6, borderRadius: 999, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.18)', overflow: 'hidden', marginBottom: 8 } },
             el('div', { style: { height: '100%', width: challengeCyclePct + '%', background: 'linear-gradient(90deg, #14b8a6, #38bdf8)' } })
@@ -27376,7 +27957,8 @@ var evidenceRoute = [
             }, choice.label);
           })),
           challengePicked ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8 } },
-            el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.45, marginBottom: 8 } }, (challengePicked === challengeStep.kind ? 'Correct. ' : 'Not quite. ') + challengeStep.feedback),
+            el('div', { style: { fontSize: 12, color: T.soft, lineHeight: 1.45, marginBottom: 6 } }, (challengePicked === challengeStep.kind ? 'Correct. ' : 'Not quite. ') + challengeStep.feedback),
+            challengeDiagnosis && challengeDiagnosis.whyNot ? el('div', { className: 'dinolab-whynot-note', style: { fontSize: 11.5, color: T.text, lineHeight: 1.45, marginBottom: 8, padding: '6px 9px', borderRadius: 7, borderLeft: '3px solid ' + (isContrastDino ? '#ffff00' : '#f59e0b'), background: isContrastDino ? '#000000' : T.deeper } }, el('strong', null, t('stem.dinolab.why_not_label', 'Why not that choice: ')), challengeDiagnosis.whyNot) : null,
             el('button', { onClick: nextChallenge, style: { fontSize: 12, fontWeight: 800, padding: '7px 12px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next challenge')
           ) : el('div', { key: 'hint', style: { marginTop: 8, fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, 'Classify the statement before using it in a claim.')
         ], { marginBottom: 12, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.32)' });
@@ -27385,7 +27967,7 @@ var evidenceRoute = [
           el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative', background: T.canvas, color: T.text, overflowY: focusMode ? 'auto' : undefined } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
-                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dShapeStudy: null, field3dWorkflowStarted: false, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
+                focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': t('stem.dinolab.focused_species_prefix', 'Focused species: ') + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dShapeStudy: null, field3dWorkflowStarted: false, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
                 el('div', { className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_3d_model_view_controls', '3D model view controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginLeft: 'auto' } },
                   el('button', { disabled: !!shapeStudy, onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin'),
                   focusMode ? null : el('button', { id: 'dinolab-field-tools-toggle', type: 'button', onClick: function () { exitShapeStudy(); if (drawerOpen) closeFieldDrawer(); else openCurrentWorkflowTools(); }, 'aria-expanded': drawerOpen ? 'true' : 'false', 'aria-controls': 'dinolab-field-drawer', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (drawerOpen ? '#5eead4' : T.border), background: drawerOpen ? 'rgba(20,184,166,0.16)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, drawerOpen ? 'Close field tools' : 'Open field tools'),
@@ -27395,7 +27977,7 @@ var evidenceRoute = [
               el('div', { className: 'dinolab-field-workflow', hidden: focusMode || !!shapeStudy, role: 'list', 'aria-label': __alloT('stem.dinolab.a11y_field_station_workflow', 'Field Station workflow'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 6, marginBottom: 10 } }, workflowOrder.map(function (step, index) {
                 // teal-300 sits at 1.33:1 on the light "current" card; same
                 // render-time theme sniff the file uses for dinoCueInk.
-                var stepCurrentInk = (typeof document !== 'undefined' && document.querySelector('.theme-dark,.theme-contrast,[data-stem-theme=dark],[data-stem-theme=contrast]')) ? '#5eead4' : '#115e59';
+                var stepCurrentInk = isContrastDino ? '#ffff00' : (isDarkDino ? '#5eead4' : '#115e59');
                 var currentIndex = workflowOrder.indexOf(activeWorkflowStep);
                 var current = step === activeWorkflowStep;
                 var complete = index < currentIndex;
@@ -27451,7 +28033,7 @@ var evidenceRoute = [
                   upd(patch);
                   announceToSR(label + '. ' + (kind === 'tissue' ? 'Inferred tissue shapes revealed through a translucent body. These shapes are reconstructions.' : kind === 'bone' ? 'Bone structure shown.' : 'Life surface shown.') + ' Your selected landmark and viewing direction are retained.');
                 },
-                autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: shapeStudy ? false : workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: shapeStudy ? {} : scanLogged, loggedAnchorKey: shapeStudy ? '' : scanLoggedKey, loggedCount: shapeStudy ? 0 : scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: shapeStudy ? 0 : scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: shapeStudy ? {} : assemblyPlaced, assemblyPlacedKey: shapeStudy ? '' : assemblyPlacedKey, assemblyPlacedCount: shapeStudy ? 0 : assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: shapeStudy ? false : assemblyUnlocked, claimEvidenceFocus: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: shapeStudy ? null : claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+                autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: shapeStudy ? false : workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: shapeStudy ? {} : scanLogged, loggedAnchorKey: shapeStudy ? '' : scanLoggedKey, loggedCount: shapeStudy ? 0 : scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: shapeStudy ? 0 : scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: shapeStudy ? {} : assemblyPlaced, assemblyPlacedKey: shapeStudy ? '' : assemblyPlacedKey, assemblyPlacedCount: shapeStudy ? 0 : assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: shapeStudy ? false : assemblyUnlocked, claimEvidenceFocus: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: !shapeStudy && claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: !shapeStudy && claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: shapeStudy ? null : claimEvidenceTrailLabel, dietColor: dColor(dn.diet), reduceMotion: hostReduceMotion }),
               el('div', { key: 'evidenceContext', hidden: !!shapeStudy, className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.94), rgba(13,58,60,0.94))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)', '--allo-stem-text': '#f1f5f9', '--allo-stem-text-soft': '#cbd5e1' } }, // dark in every theme, so pin light inks
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),
@@ -27516,22 +28098,22 @@ var evidenceRoute = [
                 el('button', { key: 'notebook', type: 'button', onClick: function () { openNotebook(dn); }, style: Object.assign({}, actionStyle, { width: '100%', marginBottom: 9 }) }, __alloT('stem.dinolab.write_field_note', 'Write a field note')),
                 el('button', { key: 'file', id: 'dinolab-field-species-file', type: 'button', onClick: openSpeciesFile, style: { width: '100%', marginBottom: 9, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Open full species file'),
                 el('div', { key: 'hypothesis', role: 'note', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.09)' : 'rgba(20,184,166,0.09)', border: '1px solid ' + (activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.34)' : 'rgba(20,184,166,0.30)') } },
-                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: activeHypothesis.id === 'classic' ? '#fbbf24' : '#5eead4', marginBottom: 3 } }, 'Surface hypothesis | ' + activeHypothesis.status),
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: isContrastDino ? '#ffff00' : (activeHypothesis.id === 'classic' ? (isDarkDino ? '#fbbf24' : '#92400e') : (isDarkDino ? '#5eead4' : '#115e59')), marginBottom: 3 } }, 'Surface hypothesis | ' + activeHypothesis.status),
                   el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, activeHypothesis.label),
                   el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, activeHypothesis.warning)
                 ),
                 el('div', { key: 'profile', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: 'rgba(20,184,166,0.09)', border: '1px solid rgba(20,184,166,0.30)' } },
-                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: '#5eead4', marginBottom: 3 } }, 'Reconstruction profile | ' + cap(reconstructionProfile.coverage) + ' coverage'),
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: isContrastDino ? '#ffff00' : (isDarkDino ? '#5eead4' : '#115e59'), marginBottom: 3 } }, 'Reconstruction profile | ' + cap(reconstructionProfile.coverage) + ' coverage'),
                   el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, reconstructionProfile.label),
                   el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, reconstructionProfile.coverageNote + ' Profile differences are clade-based and remain simplified.')
                 ),
                 el('div', { key: 'habitat', role: 'note', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.28)' } },
-                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: '#7dd3fc', marginBottom: 3 } }, 'Environment hypothesis'),
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: isContrastDino ? '#ffff00' : (isDarkDino ? '#7dd3fc' : '#075985'), marginBottom: 3 } }, 'Environment hypothesis'),
                   el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, habitat.label),
                   el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, dn.formation + ' Formation / ' + dn.region + '. ' + habitat.note)
                 ),
                 el('div', { key: 'surfacePose', role: 'note', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.26)' } },
-                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: '#fbbf24', marginBottom: 3 } }, 'Surface and pose cues'),
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: isContrastDino ? '#ffff00' : (isDarkDino ? '#fbbf24' : '#92400e'), marginBottom: 3 } }, 'Surface and pose cues'),
                   el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, integumentEvidence.label + ' / ' + posture.label),
                   el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, integumentEvidence.note + ' ' + posture.note)
                 ),
@@ -27837,8 +28419,14 @@ var evidenceRoute = [
         function checkEvidence() {
           if (solved || check.kind === 'missing') return;
           var patch = { digChecked: true };
-          if (check.kind === 'match') { patch.digSolvedFor = seed; patch.digsSolved = Math.max(0, numVal(d.digsSolved, 0)) + 1; }
-          upd(patch); focusSoon('dino-dig-feedback');
+          if (check.kind === 'match') {
+            patch.digSolvedFor = seed;
+            patch.digsSolved = Math.max(0, numVal(d.digsSolved, 0)) + 1;
+            awardDinoXP('dig:' + seed, 15, 'Excavated and identified ' + chosen.common, patch);
+          } else {
+            upd(patch);
+          }
+          focusSoon('dino-dig-feedback');
         }
         function gridKey(event, cell) {
           if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -27941,6 +28529,7 @@ var evidenceRoute = [
             el('button', { type: 'button', disabled: solved || check.kind === 'missing', style: Object.assign({}, actionStyle, { minHeight: 44, background: '#15803d', borderColor: '#15803d', color: '#fff' }), onClick: checkEvidence }, dt('check_evidence', 'Check my evidence')),
             el('p', { id: 'dino-dig-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', tabIndex: -1, style: { fontSize: 14, lineHeight: 1.7, marginBottom: 0 } }, feedback || dt('check_hint', 'Choose one candidate and cite at least two clues before checking.')),
             solved ? el('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px solid ' + T.border } },
+              el('p', { className: 'dinolab-dig-efficiency-note', style: { fontSize: 12.5, lineHeight: 1.55, color: T.text, margin: '0 0 8px', padding: '7px 10px', borderRadius: 8, borderLeft: '3px solid ' + (isContrastDino ? '#ffff00' : '#15803d'), background: isContrastDino ? '#000000' : T.deeper } }, DinoLabPure.scoreDigEfficiency({ bonesFound: dugBones, totalBones: totalBones, cellsDug: revealed.length, totalCells: CELLS, cluesCited: cited.length, layersRemoved: layersRemoved, solved: true }).summary),
               el('p', { style: { fontSize: 13, lineHeight: 1.6 } }, dt('reflection', 'Which clue ruled out your closest alternative? What would you still need to identify a real fossil? Explain your reasoning in your notebook.')),
               el('button', { type: 'button', style: actionStyle, onClick: function () { upd({ tab: 'notes', notebookSpecies: chosen.id, digNotebookContext: { seed: seed, clues: cited } }); focusSoon('dino-note-inference'); } }, dt('write_reasoning', 'Explain in my notebook')),
               el('button', { type: 'button', style: Object.assign({}, actionStyle, { marginLeft: 8, marginTop: 8 }), onClick: function () { upd({ tab: 'explore', selected: chosen.id }); focusSoon('dino-specimen-heading'); } }, __alloT('stem.dinolab.open_species_file', 'Open species file'))) : null));
@@ -28131,8 +28720,14 @@ var evidenceRoute = [
         var target = sortPool[sIdx];
         var sAnswered = d.sortAnswered || false, sPicked = d.sortPicked || null;
         var groups = [{ id: 'theropod', label: t('stem.dinolab.theropod_mostly_meat_eaters_two_legs', 'Theropod (mostly meat-eaters, two legs)') }, { id: 'sauropod', label: t('stem.dinolab.sauropodomorph_long_necked_plant_eater', 'Sauropodomorph (long-necked plant-eaters)') }, { id: 'ornithischian', label: t('stem.dinolab.ornithischian_bird_hipped_plant_eaters', 'Ornithischian (bird-hipped plant-eaters)') }];
-        function pickGroup(g) { if (sAnswered) return; var correct = g === target.group; upd({ sortPicked: g, sortAnswered: true, sortScore: (d.sortScore || 0) + (correct ? 1 : 0), sortDone: (d.sortDone || 0) + 1 }); }
+        function pickGroup(g) { if (sAnswered) return;
+          var correct = g === target.group;
+          var sortPatch = { sortPicked: g, sortAnswered: true, sortScore: (d.sortScore || 0) + (correct ? 1 : 0), sortDone: (d.sortDone || 0) + 1 };
+          if (correct) awardDinoXP('classify:' + target.id, 8, 'Classified ' + target.common, sortPatch);
+          else upd(sortPatch);
+        }
         function nextSort() { upd({ sortIdx: (sIdx + 1) % sortPool.length, sortAnswered: false, sortPicked: null }); }
+        var classifyDiag = sAnswered ? DinoLabPure.diagnoseClassifyPick(target, sPicked) : null;
         var activity = panel([
           el('div', { key: 'h', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } }, el('div', { style: { fontWeight: 700 } }, '🧩 Sort the dinosaur'), el('div', { style: { fontSize: 12, color: T.soft } }, 'Score: ' + (d.sortScore || 0) + '/' + (d.sortDone || 0))),
           el('div', { key: 'q', style: { fontSize: 14, margin: '8px 0' } }, 'Which group does ', el('strong', null, target.common), ' belong to?'),
@@ -28141,7 +28736,12 @@ var evidenceRoute = [
             var groupState = isCorrect ? 'correct answer' : (isWrongPick ? 'selected incorrect answer' : (sAnswered ? 'not selected' : 'available answer'));
             return el('button', { key: g.id, onClick: function () { pickGroup(g.id); }, 'aria-disabled': sAnswered ? 'true' : 'false', 'aria-pressed': sPicked === g.id ? 'true' : 'false', 'aria-label': g.label + ', ' + groupState, style: { textAlign: 'left', padding: '8px 12px', borderRadius: 8, cursor: sAnswered ? 'default' : 'pointer', border: '1px solid ' + (isCorrect ? '#22c55e' : (isWrongPick ? '#ef4444' : T.border)), background: isCorrect ? 'rgba(34,197,94,0.18)' : (isWrongPick ? 'rgba(239,68,68,0.15)' : T.deeper), color: T.text, fontSize: 12.5 } }, g.label);
           })),
-          sAnswered ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8 } }, el('div', { style: { fontSize: 12.5, color: T.soft, marginBottom: 6 } }, (sPicked === target.group ? '✅ Correct. ' : '❌ Not quite. ') + target.common + ' is a ' + (GROUP_LABEL[target.group] || target.group) + '.'), el('button', { onClick: nextSort, style: { fontSize: 12.5, fontWeight: 700, padding: '6px 14px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next →')) : null
+          sAnswered ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8 } },
+            el('div', { style: { fontSize: 12.5, color: T.soft, marginBottom: 6 } }, (sPicked === target.group ? '✅ Correct. ' : '❌ Not quite. ') + target.common + ' is a ' + (GROUP_LABEL[target.group] || target.group) + '.'),
+            classifyDiag && classifyDiag.whyNot ? el('div', { className: 'dinolab-whynot-note', style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 6, padding: '6px 9px', borderRadius: 7, borderLeft: '3px solid ' + (isContrastDino ? '#ffff00' : '#f59e0b'), background: isContrastDino ? '#000000' : T.deeper } }, el('strong', null, t('stem.dinolab.why_not_label', 'Why not that choice: ')), classifyDiag.whyNot) : null,
+            classifyDiag && classifyDiag.traitCue ? el('div', { style: { fontSize: 11.5, color: T.soft, marginBottom: 8 } }, classifyDiag.traitCue) : null,
+            el('button', { onClick: nextSort, style: { fontSize: 12.5, fontWeight: 700, padding: '6px 14px', borderRadius: 8, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next →')
+          ) : null
         ], { marginBottom: 14 });
 
         var css = [
@@ -28728,7 +29328,17 @@ var evidenceRoute = [
         var qIdx = modIndex(d.quizIdx, QUIZ.length);
         var q = QUIZ[qIdx];
         var picked = d.quizPicked, answered = d.quizAnswered || false, correctCount = d.quizCorrect || 0, doneCount = d.quizDone || 0;
-        function pick(i) { if (answered) return; var isCorrect = i === q.answer; upd({ quizPicked: i, quizAnswered: true, quizCorrect: correctCount + (isCorrect ? 1 : 0), quizDone: doneCount + 1 }); announceToSR(isCorrect ? 'Correct' : 'Incorrect'); }
+        var diag = answered ? DinoLabPure.diagnoseQuizChoice(q, picked) : null;
+        function pick(i) { if (answered) return;
+          var isCorrect = i === q.answer;
+          var nextHist = (d.quizHistory && typeof d.quizHistory === 'object' && !Array.isArray(d.quizHistory)) ? Object.assign({}, d.quizHistory) : {};
+          var pickDiag = DinoLabPure.diagnoseQuizChoice(q, i);
+          nextHist[q.id] = { correct: isCorrect, topic: pickDiag.topic };
+          var qPatch = { quizPicked: i, quizAnswered: true, quizCorrect: correctCount + (isCorrect ? 1 : 0), quizDone: doneCount + 1, quizHistory: nextHist };
+          if (isCorrect) awardDinoXP('quiz:' + q.id, 10, 'Dino Lab quiz: ' + q.id, qPatch);
+          else upd(qPatch);
+          announceToSR(isCorrect ? 'Correct' : 'Incorrect');
+        }
         function next() { upd({ quizIdx: (qIdx + 1) % QUIZ.length, quizPicked: null, quizAnswered: false }); }
         function restart() { upd({ quizIdx: 0, quizPicked: null, quizAnswered: false, quizCorrect: 0, quizDone: 0 }); }
         var options = q.options.map(function (opt, i) {
@@ -28738,7 +29348,31 @@ var evidenceRoute = [
         });
         var pct = doneCount > 0 ? Math.round((correctCount / doneCount) * 100) : 0;
         return el('div', null, sectionTitle('🧠', 'Dino quiz', 'One question at a time. Read the explanation after each, that is where the learning is.'),
-          panel([el('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 } }, el('span', { style: { fontSize: 12, color: T.soft } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length), el('span', { style: { fontSize: 12, fontWeight: 700, color: T.text } }, 'Score: ' + correctCount + '/' + doneCount + (doneCount ? ' (' + pct + '%)' : ''))), el('div', { key: 'q', style: { fontSize: 15.5, fontWeight: 700, marginBottom: 12, lineHeight: 1.45 } }, q.q), el('div', { key: 'opts' }, options), answered ? el('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, panel([el('div', { key: 'x', style: { fontSize: 12.5, lineHeight: 1.55 } }, el('strong', { style: { color: T.text } }, picked === q.answer ? '\u2705 Correct. ' : '\u27A1\uFE0F Good try. '), q.explain)], { marginTop: 4, marginBottom: 10, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' })) : null, el('div', { key: 'nav', style: { display: 'flex', gap: 8 } }, answered ? el('button', { onClick: next, style: { flex: 1, fontSize: 13.5, fontWeight: 700, padding: '10px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next question →') : null, el('button', { onClick: restart, style: { fontSize: 12.5, fontWeight: 600, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, 'Restart'))])
+          panel([
+            el('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+              el('span', { style: { fontSize: 12, color: T.soft } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ.length),
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                canReadAloud ? el('button', { type: 'button', className: 'dinolab-read-aloud-btn', 'aria-label': t('stem.dinolab.read_quiz_aloud', 'Read quiz question aloud'), onClick: function () {
+                  var spoken = q.q + (answered ? ' ' + (diag && diag.whyNot ? diag.whyNot + ' ' : '') + q.explain : '');
+                  speakDino(spoken);
+                }, style: { fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 8, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, '🔊 ' + t('stem.dinolab.read_aloud', 'Read aloud')) : null,
+                el('span', { style: { fontSize: 12, fontWeight: 700, color: T.text } }, 'Score: ' + correctCount + '/' + doneCount + (doneCount ? ' (' + pct + '%)' : ''))
+              )
+            ),
+            el('div', { key: 'q', style: { fontSize: 15.5, fontWeight: 700, marginBottom: 12, lineHeight: 1.45 } }, q.q),
+            el('div', { key: 'opts' }, options),
+            answered ? el('div', { key: 'fb', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              panel([
+                el('div', { key: 'x', style: { fontSize: 12.5, lineHeight: 1.55 } }, el('strong', { style: { color: T.text } }, picked === q.answer ? '\u2705 Correct. ' : '\u27A1\uFE0F Good try. '), q.explain),
+                diag && diag.whyNot ? el('div', { key: 'wn', className: 'dinolab-whynot-note', style: { marginTop: 8, padding: '7px 10px', borderRadius: 8, borderLeft: '3px solid ' + (isContrastDino ? '#ffff00' : '#f59e0b'), background: isContrastDino ? '#000000' : T.deeper, fontSize: 12, lineHeight: 1.5, color: T.text } }, el('strong', null, t('stem.dinolab.why_not_label', 'Why not that choice: ')), diag.whyNot) : null
+              ], { marginTop: 4, marginBottom: 10, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.30)' })
+            ) : null,
+            el('div', { key: 'nav', style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              answered ? el('button', { onClick: next, style: { flex: 1, fontSize: 13.5, fontWeight: 700, padding: '10px', borderRadius: 10, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, 'Next question →') : null,
+              el('button', { type: 'button', 'aria-expanded': coachOpen ? 'true' : 'false', 'aria-controls': 'dinolab-paleo-coach', onClick: togglePaleoCoach, style: { fontSize: 12.5, fontWeight: 600, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, color: T.text, cursor: 'pointer' } }, '🧭 ' + t('stem.dinolab.paleo_coach_btn', 'Paleontology Coach')),
+              el('button', { onClick: restart, style: { fontSize: 12.5, fontWeight: 600, padding: '10px 14px', borderRadius: 10, border: '1px solid ' + T.border, background: 'transparent', color: T.soft, cursor: 'pointer' } }, 'Restart')
+            )
+          ])
         );
       }
 
@@ -29350,7 +29984,7 @@ var evidenceRoute = [
       ].join('');
       accessibilityStyles += '.dinolab-root.is-field-focus #dinopanel{max-width:none;padding:10px!important}';
       accessibilityStyles += '.dinolab-root .dinolab-telemetry-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dinolab-root .dinolab-telemetry-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--dino-ink);border:1px solid var(--allo-stem-border,#334155)}.dinolab-root .dinolab-era-strip{margin-bottom:18px;padding:14px 16px;border-radius:14px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-panel,#1e293b);display:flex;flex-direction:column;gap:10px}.dinolab-root .dinolab-era-strip-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}.dinolab-root .dinolab-era-strip-title{font-size:12px;font-weight:800;color:var(--dino-ink)}.dinolab-root .dinolab-era-strip-meta{font-size:11px;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-era-presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.dinolab-root .dinolab-era-preset-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--allo-stem-text-soft,#94a3b8)}.dinolab-root .dinolab-era-chip{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid var(--allo-stem-border,#334155);background:var(--allo-stem-canvas,#0f172a);color:var(--dino-ink);font-size:12px;font-weight:700;cursor:pointer}.dinolab-root .dinolab-era-chip[aria-pressed=true]{background:var(--dino-accent)!important;color:var(--dino-on-accent)!important;border-color:var(--dino-accent)!important}.theme-contrast .dinolab-root .dinolab-telemetry-pill,.theme-contrast .dinolab-root .dinolab-era-strip,.theme-contrast .dinolab-root .dinolab-era-chip{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast .dinolab-root .dinolab-era-chip[aria-pressed=true]{background:#ffff00!important;color:#000!important;border-color:#ffff00!important}@media(forced-colors:active){.dinolab-root .dinolab-telemetry-pill,.dinolab-root .dinolab-era-strip{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.dinolab-root .dinolab-era-chip{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.dinolab-root .dinolab-era-chip[aria-pressed=true]{background:Highlight!important;color:HighlightText!important}}';
-      return el('div', { className: 'dinolab-root' + (fieldFocusActive ? ' is-field-focus' : ''), style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
+      return el('div', { className: 'dinolab-root' + (fieldFocusActive ? ' is-field-focus' : ''), style: { minHeight: '100%', background: T.canvas, color: T.text } }, typeof ctx.awardXP === 'function' ? el(DinoLabXpRefCarrier, { box: xpGuardBox, React: React }) : null, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, coachOpen && !fieldFocusActive ? renderPaleoCoach() : null, tab === 'explore' ? renderMissionDeck() : null, content));
     }
   });
 })();

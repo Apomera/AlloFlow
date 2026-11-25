@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Starter packet library</title>
+<meta name="description" content="Browse 25 free, open-source, zero-AI starter packets across literacy, civics, math, STEM, life skills, AAC, SEL toolkits, and multi-stage unit playlists. Download offline files or remix in any maker.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-packs.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packet_math_practice_builder.js" defer></script>
+<script src="packet_sort_write_adapters.js" defer></script>
+<script src="packet_choice_builder.js" defer></script>
+<script src="packet_maze_builder.js" defer></script>
+<script src="packet_manipulative_builder.js" defer></script>
+<script src="packet_stem_lab_builder.js" defer></script>
+<script src="packet_life_skills_builder.js" defer></script>
+<script src="packet_aac_builder.js" defer></script>
+<script src="packet_sel_builder.js" defer></script>
+<script src="packet_playlist_builder.js" defer></script>
+<script src="packets_station_bilingual.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets_starter_packs.js" defer></script>
+<script src="packets-packs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html" aria-current="page">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
+    <a class="top-link" href="packets-playlist.html">Unit Playlists</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>Every starter pack in this library is curated, open-source, and zero-AI. Downloading a student file builds it directly in this browser tab.</li>
+      <li>Your filter choices and downloads are not sent anywhere. The page scripts ask the network for nothing, and the rule below tells the browser to refuse them if they tried.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>This page loads <span id="file-count">twenty-two</span> files, all from this site: the page itself, three stylesheets, seventeen scripts, and the icon in the browser tab. It loads no fonts, no trackers, and nothing from another site. Try it opens this site's preview page in a new tab.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>When you choose Customize in Maker for a starter draft (Word Sounds, Vocabulary, or Unit Playlists), the draft is handed across locally in this browser only and deleted as soon as the maker reads it.</li>
+    </ul>
+    <p id="can-title">Every downloaded starter packet can:</p>
+    <ul aria-labelledby="can-title">
+      <li>Run completely offline in one single .html file and pass inspection on <a href="packets-verify.html">Look inside a file</a>.</li>
+      <li>Be reopened later in its maker page so you can edit items, add home languages, or add student code names.</li>
+    </ul>
+    <p id="cannot-title">A starter packet cannot:</p>
+    <ul aria-labelledby="cannot-title">
+      <li>Run AI or send student work over the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>Require student logins, cookies, or third-party servers.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Remixable OER starter packet library</h1>
+    <p class="scope">Browse curated, open-source starter packets across literacy, math, science, STEM labs, life skills, AAC, SEL toolkits, and unit playlists. Download an offline student file right away or customize any pack in its maker.</p>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to filter packs and assemble student files. Nothing is sent anywhere.</p></noscript>
+
+    <div id="loading" class="sheet">
+      <p class="count-line" role="status">Getting the parts of the page, about 1.7 MB.</p>
+      <p class="hint">If this line is still here after a minute, load the page again.</p>
+    </div>
+
+    <div id="load-problem" class="sheet" hidden>
+      <p class="count-line">The page could not load all of its parts.</p>
+      <p class="sheet-intro" id="load-problem-text">Check the connection, then load the page again.</p>
+      <p class="actions"><a class="btn btn-primary" href="packets-packs.html">Load the page again</a></p>
+    </div>
+
+    <section id="library" class="sheet" aria-labelledby="filters-title" hidden>
+      <details class="scope-panel" id="scope-pathways">
+        <summary>Suggested scope &amp; sequence pathways by typical grade band (teacher planning only)</summary>
+        <div class="scope-panel-body">
+          <p class="hint">Pick a suggested grade-band pathway below to filter matching practice packs and canonical Form A-C progress checks for local group comparison. Student files show only the skill title and version letter — never a grade label.</p>
+          <div id="pathway-grid" class="pathway-grid"></div>
+        </div>
+      </details>
+
+      <h2 id="filters-title">Filter starter packs</h2>
+
+      <div class="filter-bar">
+        <div class="field">
+          <label for="f-subject">Subject</label>
+          <select id="f-subject"></select>
+        </div>
+        <div class="field">
+          <label for="f-grade">Grade band</label>
+          <select id="f-grade"></select>
+        </div>
+        <div class="field filter-search">
+          <label for="f-search">Search keywords</label>
+          <input type="text" id="f-search" maxlength="60" autocomplete="off" placeholder="e.g. fractions, AAC, bilingual, circuit">
+        </div>
+      </div>
+
+      <fieldset class="feature-group">
+        <legend>Support needs &amp; features</legend>
+        <div id="feature-pills" class="feature-pills" role="group" aria-label="Filter by support needs and packet features"></div>
+      </fieldset>
+
+      <div class="filter-meta">
+        <p id="packs-count" class="count-line" role="status" aria-live="polite"></p>
+        <div class="filter-meta-actions">
+          <button type="button" class="btn btn-primary btn-small" id="btn-download-zip">Download filtered packs (.zip)</button>
+          <button type="button" class="btn btn-small" id="btn-seal-zip">Seal filtered packs with QR</button>
+          <button type="button" class="btn btn-small" id="btn-copy-filter-link" disabled>Copy filtered link</button>
+          <button type="button" class="btn btn-small" id="btn-clear-filters" disabled>Clear filters</button>
+        </div>
+      </div>
+
+      <p id="pack-action-status" class="note" role="status" aria-live="polite" hidden></p>
+
+      <div id="packs-grid" class="packs-grid"></div>
+      <div id="packs-empty" class="note" hidden>
+        <p>No starter packs match those filters. Clear one or more filters to see all available packs.</p>
+      </div>
+    </section>
+
+    <details class="about" id="about-page">
+      <summary>About this starter library</summary>
+      <div class="about-body">
+        <h2 id="oer-title">Open educational resources</h2>
+        <p>Every pack in this catalog is open source (AGPL-3.0) and built deterministically in your browser with zero AI and zero external connections. After downloading any student file, you can inspect it on <a href="packets-verify.html">Look inside a file</a> or customize it further in its maker page.</p>
+      </div>
+    </details>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="packets-feedback.html#from-packets-packs">Send feedback</a> <a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

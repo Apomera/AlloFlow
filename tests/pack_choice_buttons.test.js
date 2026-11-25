@@ -275,6 +275,8 @@ describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
       guidedFlowState: { isFlowActive: false, currentStage: null },
       isAutoFillMode: false,
     });
+    // The intent pass is AI-gated since 2026-11-19 (_udlChatAiUsable), so give this host a usable model.
+    deps.callGemini = vi.fn(async () => '');
     await handleSendUDLMessage('where is the font settings', deps);
     // Falls through to the generic intent path (existing behavior).
     expect(deps.parseUserIntent).toHaveBeenCalledTimes(1);

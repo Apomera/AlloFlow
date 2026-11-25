@@ -4,6 +4,15 @@ import { resolve } from 'node:path';
 
 const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
+// 2026-11-21 (Wave 6, T3-2): the two .alloflow.json loaders (start screen "Continue a previous session"
+// and sidebar "Load Project") became ONE shared _loadProjectFromFileInput, so each guard now appears once
+// and must be reached from both entry points.
+function bothEntryPointsShareTheLoader() {
+  expect(view).toContain('const _loadProjectFromFileInput = (e, opts = {}) => {');
+  expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })}');
+  expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
+}
+
 describe('remediation view async document ownership', () => {
   it('binds web/media jobs to a controller and the host document epoch', () => {
     expect(view).toContain('const _viewDocumentJobRef = useRef({ id: 0, controller: null });');
@@ -58,7 +67,9 @@ describe('remediation view async document ownership', () => {
     expect(view).not.toContain('Promise.race([\n                                if (!_compareIsCurrent())');
     expect(view).toContain("win = window.open('', '_blank');");
     expect(view).toContain('let _compareDocumentEpoch = null, _compareOwnerNonce = null;');
-    expect(view).toContain("_compareOwnerNonce = Date.now().toString(36)");
+    // The owner nonce is 16 crypto-random bytes now, with the old time-based value only as a fallback.
+    expect(view).toContain('crypto.getRandomValues(bytes);');
+    expect(view).toContain("return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);");
     expect(view).not.toContain('const _compareDocumentEpoch =');
     expect(view).not.toContain('const _compareOwnerNonce =');
     expect(view).toContain('request.documentEpoch === _compareDocumentEpoch && request.ownerNonce === _compareOwnerNonce');
@@ -193,7 +204,9 @@ describe('honest scores, project memory cap, and loop completion', () => {
 
   it('caps project JSON before read and updates both user-facing messages', () => {
     expect(view).toContain('const _VIEW_MAX_PROJECT_FILE_BYTES = 64 * 1024 * 1024;');
-    expect(view.match(/larger than the 64 MB safety limit/g)?.length).toBe(2);
+    bothEntryPointsShareTheLoader();
+    expect(view.match(/larger than the 64 MB safety limit/g)?.length).toBe(1);
+    expect(view).toContain("if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }");
   });
 
   it('does not declare completion solely because axe is clean and catches loop errors', () => {
@@ -207,7 +220,8 @@ describe('honest scores, project memory cap, and loop completion', () => {
 
 describe('score honesty in restored projects and batch reporting', () => {
   it('preserves unknown project scores and classifies unknown batch scores separately', () => {
-    expect(view.match(/score: Number\.isFinite\(project\.beforeScore\) \? project\.beforeScore : null/g)?.length).toBe(2);
+    bothEntryPointsShareTheLoader();
+    expect(view.match(/score: Number\.isFinite\(project\.beforeScore\) \? project\.beforeScore : null/g)?.length).toBe(1);
     expect(view).toContain("const unknown = done.filter(f => !Number.isFinite(f.result?.afterScore));");
     expect(view).toContain("const cls = !afterKnown ? 'unknown'");
     expect(view).toContain("_afterKnown ? item.result.afterScore : 'Unknown'");
@@ -217,7 +231,8 @@ describe('score honesty in restored projects and batch reporting', () => {
 
 describe('project loader parity and verification safety', () => {
   it('restores size and source identity consistently', () => {
-    expect(view.match(/Number\(project\.fileSize\) \|\| Number\(project\.multiSession\?\.fileSize\) \|\| 0/g)?.length).toBeGreaterThanOrEqual(3);
+    bothEntryPointsShareTheLoader();
+    expect(view.match(/Number\(project\.fileSize\) \|\| Number\(project\.multiSession\?\.fileSize\) \|\| 0/g)?.length).toBeGreaterThanOrEqual(2);
     expect(view).toContain("documentDigest: project.pdfBase64 ? undefined : (project.docKey || project.auditResult?.documentDigest || null)");
   });
 
@@ -228,12 +243,14 @@ describe('project loader parity and verification safety', () => {
 
   it('re-derives verification from stored engine evidence in both loaders', () => {
     expect(view).toContain('function _viewNormalizeLoadedVerification(result, pipeline)');
-    expect(view.match(/const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification\(_loadedFixResult, _docPipeline\);/g)?.length).toBe(2);
-    expect(view.match(/setPdfFixResult\(_normalizedLoadedFixResult\);/g)?.length).toBe(2);
+    bothEntryPointsShareTheLoader();
+    expect(view.match(/const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification\(_loadedFixResult, _docPipeline\);/g)?.length).toBe(1);
+    expect(view.match(/setPdfFixResult\(_normalizedLoadedFixResult\);/g)?.length).toBe(1);
   });
 
   it('handles synchronous FileReader start failures in both loaders', () => {
-    expect(view.match(/try \{ reader\.readAsText\(file\); \}/g)?.length).toBe(2);
+    bothEntryPointsShareTheLoader();
+    expect(view.match(/try \{ reader\.readAsText\(file\); \}/g)?.length).toBe(1);
     expect(view).toContain("'Unable to start reading project file'");
     expect(view.match(/e\.target\.value = '';\n\s+return;/g)?.length).toBeGreaterThanOrEqual(2);
   });

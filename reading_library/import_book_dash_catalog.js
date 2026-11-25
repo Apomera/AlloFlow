@@ -19,7 +19,7 @@ const API = 'https://bookdash.org/wp-json/wp/v2/books';
 const LICENSE_URL = 'https://creativecommons.org/licenses/by/4.0/';
 const RIGHTS_URL = 'https://bookdash.org/about/what-we-do/our-books/';
 const USER_AGENT = 'AlloFlow Book Dash catalog importer (accessibility discovery)';
-const CONCURRENCY = 4;
+const CONCURRENCY = 2;
 const AUDIT_CACHE_DIR = path.join(ROOT, '.book_dash_audit_cache');
 const HTTPS_AGENT = new https.Agent({ keepAlive: true, maxSockets: CONCURRENCY });
 
@@ -63,9 +63,24 @@ function slugify(value) {
     .slice(0, 56) || 'edition';
 }
 
+// bookdash.org/robots.txt disallows automated access to /book-source-files/
+// and to every ?view-file= / ?download= / ?download-folder= link, and its CDN
+// answers scripted downloads with 403. This importer reads only the public WP
+// API and each edition's own book page. It records the source-file link for
+// people to follow but never fetches it. Fails closed on a disallowed URL.
+function assertCrawlAllowed(url) {
+  const parsed = new URL(url);
+  if (!/(^|\.)bookdash\.org$/i.test(parsed.hostname)) return;
+  const disallowed = /^\/book-source-files(\/|$)/i.test(parsed.pathname) ||
+    /^\/wp-admin(\/|$)/i.test(parsed.pathname) ||
+    /[?&](view-file|download|download-folder)=/i.test(parsed.search);
+  if (disallowed) throw new Error('Blocked by bookdash.org robots.txt, not fetched: ' + url);
+}
+
 function fetchTextOnce(url, redirects) {
   redirects = redirects || 0;
   return new Promise((resolve, reject) => {
+    try { assertCrawlAllowed(url); } catch (error) { return reject(error); }
     const parsed = new URL(url);
     const client = parsed.protocol === 'http:' ? http : https;
     const request = client.get(parsed, {
@@ -107,7 +122,7 @@ async function fetchText(url, attempt) {
   try {
     return await fetchTextOnce(url, 0);
   } catch (error) {
-    if (attempt >= 8) throw error;
+    if (attempt >= 8 || /robots\.txt/.test(error.message)) throw error;
     await delay(1500 * attempt);
     return fetchText(url, attempt + 1);
   }
@@ -288,49 +303,35 @@ function relatedBookUrls(html, pageUrl) {
   return urls;
 }
 
-async function buildWorkAuditMap() {
-  const indexHtml = await fetchText('https://bookdash.org/book-source-files/');
-  const keys = [];
-  const re = /[?&]book=([^&\"']+)/gi;
-  let match;
-  while ((match = re.exec(indexHtml))) {
-    const key = decodeURIComponent(match[1]).trim();
-    if (key && !keys.includes(key)) keys.push(key);
+function hasAttributionMarkers(audit) {
+  return !!(audit && audit.credits && audit.credits.length && /\?book=/.test(audit.sourceFilesUrl || ''));
+}
+
+// One audit per edition, read from that edition's public book page (allowed
+// by robots.txt). Replaces the old work-key listing, which read the
+// disallowed /book-source-files/ index. Cached so reruns stay offline.
+async function editionAudit(editionUrl) {
+  const pageUrl = normalizedBookUrl(editionUrl) + '/';
+  const key = pageUrl.replace(/^https:\/\/bookdash\.org\/books\//i, '').replace(/[^a-z0-9_-]+/gi, '_');
+  const cachePath = path.join(AUDIT_CACHE_DIR, 'edition_' + key + '.json');
+  if (fs.existsSync(cachePath)) {
+    const cached = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+    if (!hasAttributionMarkers(cached)) throw new Error('Invalid cached edition audit for ' + pageUrl);
+    return cached;
   }
-  if (keys.length < 100) throw new Error('Book Dash source index returned too few work keys: ' + keys.length);
+  const html = await fetchText(pageUrl);
+  const audit = {
+    pageUrl,
+    related: relatedBookUrls(html, pageUrl),
+    credits: creatorCredits(html),
+    sourceFilesUrl: sourceFilesUrl(html, pageUrl)
+  };
+  if (!hasAttributionMarkers(audit)) {
+    throw new Error('Required creator credits or source-file link missing from ' + pageUrl);
+  }
   fs.mkdirSync(AUDIT_CACHE_DIR, { recursive: true });
-  const audits = await mapLimit(keys, CONCURRENCY, async (key, index) => {
-    const pageUrl = 'https://bookdash.org/books/' + encodeURIComponent(key) + '/';
-    const cachePath = path.join(AUDIT_CACHE_DIR, key.replace(/[^a-z0-9_-]+/gi, '_') + '.json');
-    let audit;
-    if (fs.existsSync(cachePath)) {
-      audit = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
-    } else {
-      const html = await fetchText(pageUrl);
-      audit = {
-        pageUrl,
-        related: relatedBookUrls(html, pageUrl),
-        credits: creatorCredits(html),
-        sourceFilesUrl: sourceFilesUrl(html, pageUrl)
-      };
-      if (!audit.credits.length || !/\?book=/.test(audit.sourceFilesUrl)) {
-        throw new Error('Required work-level attribution markers missing from ' + pageUrl);
-      }
-      fs.writeFileSync(cachePath, JSON.stringify(audit, null, 2) + '\n');
-    }
-    if (!audit.credits.length || !/\?book=/.test(audit.sourceFilesUrl)) {
-      throw new Error('Invalid cached work audit for ' + pageUrl);
-    }
-    if ((index + 1) % 25 === 0 || index + 1 === keys.length) {
-      process.stdout.write('Audited ' + (index + 1) + '/' + keys.length + ' Book Dash works\n');
-    }
-    return audit;
-  });
-  const byEditionUrl = new Map();
-  for (const audit of audits) {
-    for (const url of audit.related) byEditionUrl.set(url, audit);
-  }
-  return byEditionUrl;
+  fs.writeFileSync(cachePath, JSON.stringify(audit, null, 2) + '\n');
+  return audit;
 }
 
 async function main() {
@@ -341,29 +342,13 @@ async function main() {
   const records = await listRecords();
   const requestedLimit = Number(valueAfter('--limit') || records.length);
   const selected = records.slice(0, Math.max(0, requestedLimit));
-  const workAudits = await buildWorkAuditMap();
-  let fallbackCount = 0;
   const books = await mapLimit(selected, CONCURRENCY, async (record, index) => {
-    let audit = workAudits.get(normalizedBookUrl(record.link));
-    if (!audit) {
-      fallbackCount++;
-      const html = await fetchText(record.link);
-      audit = {
-        pageUrl: record.link,
-        related: [normalizedBookUrl(record.link)],
-        credits: creatorCredits(html),
-        sourceFilesUrl: sourceFilesUrl(html, record.link)
-      };
-    }
-    if (!audit.credits.length || !/\?book=/.test(audit.sourceFilesUrl)) {
-      throw new Error('Required source-file or creator attribution markers missing for ' + record.link);
-    }
+    const audit = await editionAudit(record.link);
     if ((index + 1) % 100 === 0 || index + 1 === selected.length) {
       process.stdout.write('Mapped ' + (index + 1) + '/' + selected.length + ' Book Dash editions\n');
     }
     return makeRecord(record, audit);
   });
-  if (fallbackCount) process.stdout.write('Fetched ' + fallbackCount + ' edition pages not listed by a work page\n');
   const catalog = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8'));
   catalog.items = (catalog.items || []).filter((item) => !/^book-dash-\d+-/.test(item.slug));
   const registered = new Set(catalog.items.map((item) => item.slug));
@@ -386,4 +371,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildWorkAuditMap, clean, creatorCredits, makeRecord, normalizedBookUrl, outputPath, relatedBookUrls, sourceFilesUrl, taxonomyTerms };
+module.exports = { assertCrawlAllowed, editionAudit, hasAttributionMarkers, clean, creatorCredits, makeRecord, normalizedBookUrl, outputPath, relatedBookUrls, sourceFilesUrl, taxonomyTerms };

@@ -43,7 +43,7 @@ describe('EPPP knowledge-check source-review wave 02', () => {
     expect(byId.get('knowledge-check-00c8f653423b6373').rationale).toContain('It does not mean that 70% of any one person'); expect(byId.get('knowledge-check-9e3412c360f26f39').rationale).toContain('not specific enough by itself');
     expect(byId.get('knowledge-check-af4d594cf6d7bf40').rationale).toContain('not make a single score diagnostic'); expect(byId.get('knowledge-check-acdc5f5ce3b70db4').rationale).toContain('cannot determine an individual client');
     expect(byId.get('knowledge-check-e77404777e6e9eb3').rationale).toContain('not proof of maltreatment'); expect(byId.get('knowledge-check-d618789af58acc09').rationale).toContain('does not say every adolescent lacks reasoning capacity');
-    expect(byId.get('knowledge-check-52708d9f28539b52').rationale).toContain('double-blind? is not a universal solution');
+    expect(byId.get('knowledge-check-52708d9f28539b52').rationale).toContain('“double-blind” is not a universal solution');
   });
   it('keeps source and deployment catalog copies synchronized', () => { expect(read('desktop/web-app/public/test_prep/eppp_learning_library.json')).toEqual(catalog); expect(read('desktop/web-app/public/test_prep/eppp_learning_library_qa.json')).toEqual(read('test_prep/eppp_learning_library_qa.json')); });
 });

@@ -56,6 +56,19 @@ function _csStripUntrustedTags(text) {
   return String(text == null ? '' : text).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>\s*/gi, '').trim();
 }
 
+function _ensureCommsStudioA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-comms-studio-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-comms-studio-a11y-css';
+  st.textContent =
+    '[data-communications-studio="true"] button,[data-communications-studio="true"] a,[data-communications-studio="true"] input,[data-communications-studio="true"] select,[data-communications-studio="true"] textarea,[data-communications-studio="true"] summary{touch-action:manipulation;}' +
+    '[data-communications-studio="true"] button:focus-visible,[data-communications-studio="true"] a:focus-visible,[data-communications-studio="true"] input:focus-visible,[data-communications-studio="true"] select:focus-visible,[data-communications-studio="true"] textarea:focus-visible,[data-communications-studio="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-communications-studio="true"] button:focus-visible,[data-communications-studio="true"] a:focus-visible,[data-communications-studio="true"] input:focus-visible,[data-communications-studio="true"] select:focus-visible,[data-communications-studio="true"] textarea:focus-visible,[data-communications-studio="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-communications-studio="true"],[data-communications-studio="true"] *,[data-communications-studio="true"] *::before,[data-communications-studio="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 // --- Pure helpers ------------------------------------------------------------
 
 // Same scrub set the Report Writer applies before its clinical drafts, without
@@ -812,6 +825,7 @@ function CommunicationsStudioPanel(props) {
     setTemplateId(id);
   };
   const onTabKey = (event, i) => {
+    if ((event.nativeEvent && event.nativeEvent.isComposing) || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     const n = CS_TEMPLATES.length;
     const next = { ArrowRight: (i + 1) % n, ArrowLeft: (i - 1 + n) % n, Home: 0, End: n - 1 }[event.key];
     if (next === undefined) return;
@@ -1212,6 +1226,7 @@ function CommunicationsStudioPanel(props) {
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || typeof document === 'undefined') return undefined;
+    _ensureCommsStudioA11yCss();
     const previousFocus = document.activeElement;
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
@@ -1266,10 +1281,10 @@ function CommunicationsStudioPanel(props) {
     const onKeyDown = (event) => {
       if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
       if (event.key === 'Escape') {
-        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || typeof escapeRef.current !== 'function') return;
+        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || typeof escapeRef.current !== 'function') return;
         event.preventDefault(); event.stopPropagation(); escapeRef.current(); return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
@@ -1406,7 +1421,7 @@ function CommunicationsStudioPanel(props) {
                           value={batchQuery}
                           onChange={(e) => setBatchQuery(e.target.value)}
                           onKeyDown={(e) => {
-                            if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                            if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                             if (e.key === 'Escape' && batchQuery) { e.preventDefault(); e.stopPropagation(); setBatchQuery(''); }
                           }}
                           aria-label={tr('comms.batch_search_aria', 'Filter report-card comments by codename or text')}

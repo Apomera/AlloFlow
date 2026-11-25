@@ -7,13 +7,13 @@
 
   function __alloT(key, fallback) {
     try {
-      var host = typeof window !== 'undefined' ? window : globalThis;
+      var host = (typeof window === 'object' && window) ? window : (typeof globalThis === 'object' && globalThis ? globalThis : {});
       var value = typeof host.__alloT === 'function' ? host.__alloT(key) : null;
       if (typeof value === 'string' && value !== '' && value !== key) return value;
     } catch (_) {}
     return fallback == null ? key : fallback;
   }
-  var root = typeof window !== 'undefined' ? window : globalThis;
+  var root = (typeof window === 'object' && window) ? window : (typeof globalThis === 'object' && globalThis ? globalThis : {});
   var FEATURES = ['behavior-lens', 'dynamic-assessment', 'report-writer', 'educator-evaluation', 'sped-timelines', 'mtss-triage'];
   var META = 'clinical-setup';
   var KIND = 'alloflow-clinical-record-bucket';
@@ -29,7 +29,8 @@
     'mtss-triage': ['allo_mtss_']
   };
   var _swUnsafeKey = function (k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; };
-  var clone = function (x) { return x == null ? x : JSON.parse(JSON.stringify(x), function (k, v) { return _swUnsafeKey(k) ? undefined : v; }); };
+  var _swStr = function (v) { if (v === null || v === undefined || typeof v === 'symbol') return ''; if (typeof v === 'string') return v; try { return String(v); } catch (_) { return ''; } };
+  var clone = function (x) { if (x == null) return x; var s = JSON.stringify(x); return s === undefined ? undefined : JSON.parse(s, function (k, v) { return _swUnsafeKey(k) ? undefined : v; }); };
   var own = function (x, k) { return Object.prototype.hasOwnProperty.call(x, k); };
   function failure(code, message) { var e = new Error(message); e.code = code; return e; }
   function aborted() { var e = failure('ALLOFLOW_PROTECTED_OPERATION_CANCELLED', 'The protected operation was cancelled.'); e.name = 'AbortError'; return e; }
@@ -81,7 +82,11 @@
     return { allowCanvasRecords: data.allowCanvasRecords === true, allowExternalAi: features };
   }
   function isDeletionTombstone(value) {
-    return !!value && value.kind === DELETION_KIND && value.version === 1
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    var proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) return false;
+    return own(value, 'kind') && own(value, 'version') && own(value, 'deletedAt')
+      && value.kind === DELETION_KIND && value.version === 1
       && typeof value.deletedAt === 'string' && Number.isFinite(Date.parse(value.deletedAt))
       && Object.keys(value).every(function (k) { return ['kind', 'version', 'deletedAt', 'revision'].includes(k); });
   }
@@ -131,7 +136,15 @@
     var state = { phase: 'loading', enabled: false, pending: 0, error: '', idleMinutes: 0, recoveryEnabled: false, activeViews: 0 };
     var local = options.localStorage || null, sessionLocal = options.sessionStorage || null;
     var now = typeof options.now === 'function' ? options.now : Date.now;
-    function date() { tick = Math.max(tick + 1, Number(now())); return new Date(tick).toISOString(); }
+    function safeNow() {
+      try {
+        var n = Number(now());
+        return Number.isFinite(n) ? n : Date.now();
+      } catch (_) {
+        return Date.now();
+      }
+    }
+    function date() { tick = Math.max(tick + 1, safeNow()); return new Date(tick).toISOString(); }
     function notify() {
       state.pending = dirty.size;
       // A subscriber must never inherit a registered editor's synchronous
@@ -161,7 +174,7 @@
       if (c.isCanvas === true && !p.allowCanvasRecords) throw failure('PROTECTED_CANVAS_NOT_APPROVED', 'This Canvas deployment is not configured for real student records. Use the examples or a school-approved deployment.');
     }
     function checkAuthRateLimit() {
-      var currentMs = Number(now());
+      var currentMs = safeNow();
       if (authCooldownUntil > currentMs) {
         var waitSec = Math.max(1, Math.ceil((authCooldownUntil - currentMs) / 1000));
         recordAudit('unlock-rate-limited', 'cooldown-' + waitSec + 's');
@@ -175,11 +188,11 @@
         recordAudit('unlock-failed', err.code);
         if (failedAuthAttempts >= 5) {
           var delay = Math.min(300000, 5000 * Math.pow(2, failedAuthAttempts - 5));
-          authCooldownUntil = Number(now()) + delay;
+          authCooldownUntil = safeNow() + delay;
         }
       }
     }
-    function stamp(store, id) { var r = store && Array.isArray(store.records) && store.records.find(function (x) { return x.id === id; }); return r ? r.savedAt : null; }
+    function stamp(store, id) { var r = store && Array.isArray(store.records) && store.records.find(function (x) { return x && x.id === id; }); return r ? r.savedAt : null; }
     function restoreConflict() { return failure('PROTECTED_CONFLICT', 'Protected storage changed while the backup was being checked. Existing records or deletion were preserved. Review the current store before trying again.'); }
     function checkTicket(expected) { if (disposed || expected !== ticket) throw aborted(); }
     function checkCredential() { if (activeCredentialTicket != null) checkTicket(activeCredentialTicket); else if (disposed) throw aborted(); }
@@ -187,7 +200,7 @@
       async read() {
         checkCredential(); if (staging) return { revision: stagedRevision, store: clone(stagedStore || pendingSeed) };
         var value = await repository.read(); checkCredential();
-        if (restoreTarget && (JSON.stringify(value.revision) !== JSON.stringify(restoreTarget.revision) || JSON.stringify(value.store) !== JSON.stringify(restoreTarget.store))) throw restoreConflict();
+        if (restoreTarget && (!value || JSON.stringify(value.revision) !== JSON.stringify(restoreTarget.revision) || JSON.stringify(value.store) !== JSON.stringify(restoreTarget.store))) throw restoreConflict();
         return value;
       },
       async compareAndSwap(revision, next) {
@@ -195,7 +208,7 @@
         if (activeWrite) {
           var current = staging ? await guardedRepository.read() : await repository.read();
           checkCredential();
-          if (stamp(current.store, activeWrite) !== (stamps.get(activeWrite) || null)) throw failure('PROTECTED_CONFLICT', 'Another window changed these records. Keep this window open and preserve its work before reopening.');
+          if (stamp(current && current.store, activeWrite) !== (stamps.get(activeWrite) || null)) throw failure('PROTECTED_CONFLICT', 'Another window changed these records. Keep this window open and preserve its work before reopening.');
         }
         if (staging) { if (revision !== stagedRevision) return false; stagedStore = clone(next); stagedRevision++; return true; }
         if (restoreTarget && JSON.stringify(revision) !== JSON.stringify(restoreTarget.revision)) throw restoreConflict();
@@ -205,7 +218,7 @@
         return applied;
       }
     };
-    var controller = vaultModule.createRecoveryVaultController({ repository: guardedRepository, crypto: options.crypto, cryptoOptions: options.cryptoOptions, now: function () { return new Date(Number(now())); } });
+    var controller = vaultModule.createRecoveryVaultController({ repository: guardedRepository, crypto: options.crypto, cryptoOptions: options.cryptoOptions, now: function () { return new Date(safeNow()); } });
     function snapshot(id, data) { return { id: id, kind: KIND, version: 1, title: 'Protected clinical records', createdAt: date(), savedAt: date(), pinned: true, data: clone(data) }; }
     function decodePlain(plain) {
       if (!plain || typeof plain !== 'object' || !Array.isArray(plain.snapshots)) throw failure('PROTECTED_BACKUP_INVALID', 'This backup is not a protected clinical workspace.');
@@ -217,8 +230,8 @@
         else { if (!validData(s.data)) throw failure('PROTECTED_BACKUP_INVALID', 'The protected records have an invalid format.'); result.set(s.id, Object.assign(Object.create(null), s.data)); }
       });
       if (!meta || meta.version !== 1 || !Array.isArray(meta.migrationPlan) || ![true, false].includes(meta.ready)) throw failure('PROTECTED_BACKUP_INVALID', 'The protected setup record is missing or invalid.');
-      meta.migrationPlan.forEach(function (p) { if (!p || FEATURES.indexOf(p.feature) < 0 || !['local', 'session', 'prefs'].includes(p.source) || typeof p.key !== 'string' || !matches(p.feature, p.key) || (p.storedKey != null && typeof p.storedKey !== 'string')) throw failure('PROTECTED_BACKUP_INVALID', 'The migration record is invalid.'); });
-      if (meta.archives != null && (!Array.isArray(meta.archives) || meta.archives.some(function (p) { return !p || FEATURES.indexOf(p.feature) < 0 || typeof p.key !== 'string' || typeof p.storedKey !== 'string' || !['local', 'session', 'prefs'].includes(p.source); }))) throw failure('PROTECTED_BACKUP_INVALID', 'The preserved-copy record is invalid.');
+      meta.migrationPlan.forEach(function (p) { if (!p || FEATURES.indexOf(p.feature) < 0 || !['local', 'session', 'prefs'].includes(p.source) || typeof p.key !== 'string' || !matches(p.feature, p.key) || (p.storedKey != null && (typeof p.storedKey !== 'string' || _swUnsafeKey(p.storedKey) || p.storedKey.length > 512))) throw failure('PROTECTED_BACKUP_INVALID', 'The migration record is invalid.'); });
+      if (meta.archives != null && (!Array.isArray(meta.archives) || meta.archives.some(function (p) { return !p || FEATURES.indexOf(p.feature) < 0 || typeof p.key !== 'string' || _swUnsafeKey(p.key) || p.key.length > 512 || typeof p.storedKey !== 'string' || _swUnsafeKey(p.storedKey) || p.storedKey.length > 512 || !['local', 'session', 'prefs'].includes(p.source); }))) throw failure('PROTECTED_BACKUP_INVALID', 'The preserved-copy record is invalid.');
       FEATURES.forEach(function (f) { if (!result.has(f)) result.set(f, Object.create(null)); });
       return { maps: result, meta: meta };
     }
@@ -249,12 +262,12 @@
       }
       if (hydrationError) throw hydrationError;
       maps = decoded.maps; setupMeta = decoded.meta; stamps.clear();
-      (head.store.records || []).forEach(function (r) { stamps.set(r.id, r.savedAt); tick = Math.max(tick, Date.parse(r.savedAt) || 0); });
+      ((head && head.store && head.store.records) || []).forEach(function (r) { if (!r || r.id == null) return; stamps.set(r.id, r.savedAt); tick = Math.max(tick, Date.parse(r.savedAt) || 0); });
       keyActive = true; generation++; epoch++; sessions.clear(); dirty.clear();
       discardDeletionReview(); deletedMarker = null;
       state.enabled = true; state.recoveryEnabled = v.recoveryEnabled === true;
       state.idleMinutes = [0, 5, 15, 30].includes(setupMeta.idleMinutes) ? setupMeta.idleMinutes : 0;
-      state.phase = setupMeta.ready && state.recoveryEnabled ? 'ready' : 'setup'; state.error = ''; idleSuspended = false; lastActivity = Number(now()); notify();
+      state.phase = setupMeta.ready && state.recoveryEnabled ? 'ready' : 'setup'; state.error = ''; idleSuspended = false; lastActivity = safeNow(); notify();
     }
     async function init() {
       if (disposed) throw aborted();
@@ -280,11 +293,13 @@
       }
       [[local, 'local'], [sessionLocal, 'session']].forEach(function (pair) {
         var store = pair[0]; if (!store) return;
-        for (var i = 0; i < store.length; i++) {
-          var k = store.key(i); if (typeof k !== 'string') continue;
-          var value = store.getItem(k); if (value == null) continue;
-          preserve(k, value, pair[1]);
-        }
+        try {
+          for (var i = 0; i < store.length; i++) {
+            var k = store.key(i); if (typeof k !== 'string') continue;
+            var value = store.getItem(k); if (value == null) continue;
+            preserve(k, value, pair[1]);
+          }
+        } catch (_) {}
       });
       if (options.legacyMirror) { var mirror = await options.legacyMirror.read(); Object.keys(mirror || {}).forEach(function (k) { preserve(k, mirror[k], 'prefs'); }); }
       return { buckets: buckets, plan: plan, archives: archives };
@@ -349,12 +364,12 @@
             await write(f, maps.get(f));
             if (dirty.get(f) === version) dirty.delete(f);
           }
-          if (idleSuspended) lastActivity = Number(now());
+          if (idleSuspended) lastActivity = safeNow();
           idleSuspended = false; state.error = ''; notify();
         } catch (error) {
           if (deletedMarker && !keyActive) throw aborted();
           state.error = error && error.code === 'PROTECTED_CONFLICT' ? error.message : 'Protected records could not be saved. Keep this window open and retry; work remains unlocked.';
-          idleSuspended = true; notify(); throw failure(error.code || 'PROTECTED_SAVE_FAILED', state.error);
+          idleSuspended = true; notify(); throw failure((error && error.code) || 'PROTECTED_SAVE_FAILED', state.error);
         }
       });
       return queue;
@@ -402,11 +417,11 @@
         return Object.freeze({ beforeRequest: beforeRequest });
       }
       var storage = {
-        getItem: function (key) { access(); var data = maps.get(feature); return own(data, String(key)) ? data[String(key)] : null; },
-        setItem: function (key, value) { access(); key = String(key); value = String(value); if (!key || key.length > 512 || _swUnsafeKey(key)) throw failure('PROTECTED_KEY_INVALID', 'The record key is invalid.'); var data = maps.get(feature); if (own(data, key) && data[key] === value) return; data[key] = value; changed(feature); },
-        removeItem: function (key) { access(); var data = maps.get(feature); key = String(key); if (own(data, key)) { delete data[key]; changed(feature); } },
+        getItem: function (key) { access(); var data = maps.get(feature); var k = _swStr(key); return (k && own(data, k)) ? data[k] : null; },
+        setItem: function (key, value) { access(); key = _swStr(key); value = _swStr(value); if (!key || key.length > 512 || _swUnsafeKey(key)) throw failure('PROTECTED_KEY_INVALID', 'The record key is invalid.'); var data = maps.get(feature); if (own(data, key) && data[key] === value) return; data[key] = value; changed(feature); },
+        removeItem: function (key) { access(); var data = maps.get(feature); key = _swStr(key); if (key && own(data, key)) { delete data[key]; changed(feature); } },
         clear: function () { access(); if (Object.keys(maps.get(feature)).length) { maps.set(feature, Object.create(null)); changed(feature); } },
-        key: function (i) { access(); return Object.keys(maps.get(feature))[Number(i)] || null; },
+        key: function (i) { access(); var idx = typeof i === 'symbol' ? NaN : Number(i); if (!Number.isInteger(idx) || idx < 0) return null; return Object.keys(maps.get(feature))[idx] || null; },
         flush: sessionFlush
       };
       Object.defineProperty(storage, 'length', { get: function () { access(); return Object.keys(maps.get(feature)).length; } });
@@ -476,10 +491,10 @@
           var plan = Object.freeze({ kind: 'alloflow-clinical-deletion-review', version: 1, scope: 'all-protected-clinical-records-on-this-device', features: Object.freeze(summaries), pendingTransfers: transfers.size, reviewedAt: date() });
           generation++; epoch++; sessions.clear(); flushers.clear();
           deletionPlans.set(plan, { head: clone(head), generation: generation, epoch: epoch }); deletionPlan = plan;
-          state.deletionReview = plan; state.phase = 'deletion-review'; state.error = ''; lastActivity = Number(now()); notify(); return plan;
+          state.deletionReview = plan; state.phase = 'deletion-review'; state.error = ''; lastActivity = safeNow(); notify(); return plan;
         } catch (error) {
           if (disposed || started !== ticket) throw aborted();
-          state.phase = 'ready'; state.error = error.code === 'PROTECTED_UNSAVED_SESSION' ? error.message : 'Deletion review did not complete. Protected work remains available; resolve the reported storage or copy conflict before retrying.';
+          state.phase = 'ready'; state.error = (error && error.code === 'PROTECTED_UNSAVED_SESSION') ? error.message : 'Deletion review did not complete. Protected work remains available; resolve the reported storage or copy conflict before retrying.';
           idleSuspended = true; notify(); throw error;
         }
       });
@@ -603,7 +618,7 @@
         if (disposed) throw aborted();
         if (deletedMarker && !keyActive) return status();
         state.phase = 'ready'; state.error = error && error.code === 'PROTECTED_UNSAVED_SESSION' ? error.message : 'Protected work could not be saved, so this window remains unlocked. Keep it open and retry.';
-        idleSuspended = true; notify(); throw failure(error.code || 'PROTECTED_LOCK_SAVE_FAILED', state.error);
+        idleSuspended = true; notify(); throw failure((error && error.code) || 'PROTECTED_LOCK_SAVE_FAILED', state.error);
       }
     }
     function checkBackupEnvelope(backup) {
@@ -665,7 +680,7 @@
           if (!p || values[k] !== originalValue(p)) throw failure('PROTECTED_LEGACY_CONFLICT', 'An older window changed a clinical record. Close older windows and preserve their work before trying migration again.');
         });
       }
-      function browserValues(store) { var values = Object.create(null); if (store) for (var i = 0; i < store.length; i++) { var k = store.key(i); if (typeof k === 'string') values[k] = store.getItem(k); } return values; }
+      function browserValues(store) { var values = Object.create(null); if (store) { try { for (var i = 0; i < store.length; i++) { var k = store.key(i); if (typeof k === 'string') values[k] = store.getItem(k); } } catch (_) {} } return values; }
       verifySource('local', browserValues(local)); verifySource('session', browserValues(sessionLocal));
       if (options.legacyMirror) verifySource('prefs', await options.legacyMirror.read() || {});
       checkTicket(started);
@@ -759,11 +774,11 @@
     function isIdleExpired() {
       return ['ready', 'deletion-review', 'deletion-unverified'].includes(state.phase)
         && !idleSuspended && state.idleMinutes > 0
-        && Number(now()) - lastActivity >= state.idleMinutes * 60000;
+        && safeNow() - lastActivity >= state.idleMinutes * 60000;
     }
     function touch() {
       if (isIdleExpired()) { lock('idle').catch(function () {}); return; }
-      lastActivity = Number(now());
+      lastActivity = safeNow();
     }
     function dispose() {
       disposed = true; ticket++; cancelTimer(); if (idleTimer) clearInterval(idleTimer);
@@ -843,13 +858,17 @@
     return defaultPromise;
   }
   function downloadJSON(value) {
+    if (!root.URL || typeof root.URL.createObjectURL !== 'function' || !root.document || typeof root.document.createElement !== 'function') return;
     var url = root.URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], { type: 'application/json' }));
     try { var a = root.document.createElement('a'); a.href = url; a.rel = 'noopener'; a.download = 'alloflow-protected-records-' + new Date().toISOString().slice(0, 10) + '.json'; a.click(); }
     finally { setTimeout(function () { try { root.URL.revokeObjectURL(url); } catch (_) {} }, 5000); }
   }
 
   function Boundary(props) {
-    var React = props.React || root.React, h = React.createElement;
+    props = props || {};
+    var React = props.React || root.React;
+    if (!React || typeof React.createElement !== 'function') return null;
+    var h = React.createElement;
     var feature = props.feature; checkFeature(feature);
     var serviceState = React.useState(null), service = serviceState[0], setService = serviceState[1];
     var statusState = React.useState({ phase: 'loading' }), status = statusState[0], setStatus = statusState[1];
@@ -882,7 +901,7 @@
     React.useEffect(function () {
       var child = childRef.current, locking = status.phase === 'locking';
       if (child) {
-        if (locking && child.contains(root.document.activeElement) && lockStatusRef.current) lockStatusRef.current.focus();
+        if (locking && root.document && child.contains(root.document.activeElement) && lockStatusRef.current) lockStatusRef.current.focus();
         child.inert = locking;
       }
     }, [status.phase]);
@@ -906,7 +925,7 @@
         if (latest.epoch !== context.epoch || latest.phase !== context.phase || latest.setupRecoveryCode !== context.setupRecoveryCode) throw aborted();
       }
       try { await fn(assertContext, assertView); if (currentView()) setForm(clearCredentials); }
-      catch (e) { if (currentView() && e.name !== 'AbortError') setError(e && /^PROTECTED_|^VAULT_/.test(e.code || '') ? e.message : 'The protected operation could not finish. Existing work was preserved.'); }
+      catch (e) { if (currentView() && (!e || e.name !== 'AbortError')) setError(e && /^PROTECTED_|^VAULT_/.test(e.code || '') ? e.message : 'The protected operation could not finish. Existing work was preserved.'); }
       finally { if (currentView()) { actionRef.current = null; setBusy(false); } }
     }
     function field(name, label, type) { return h('label', { style: { display: 'block', margin: '12px 0' } }, label,
@@ -1028,7 +1047,10 @@
       h('p', { style: { fontSize: 14 } }, 'Protection here covers the clinical records in these tools on this device. School approval, managed devices, approved AI services, other application stores, and shared-service authorization remain separate requirements.'));
   }
   function Indicator(props) {
-    var React = props.React || root.React, h = React.createElement, state = React.useState(0), errorState = React.useState('');
+    props = props || {};
+    var React = props.React || root.React;
+    if (!React || typeof React.createElement !== 'function') return null;
+    var h = React.createElement, state = React.useState(0), errorState = React.useState('');
     var service = props.service || defaultService;
     var mountedRef = React.useRef(true);
     React.useEffect(function () {
@@ -1057,7 +1079,7 @@
       h('button', { type: 'button', disabled: status.phase === 'locking' || status.phase === 'deleting', onClick: function () { errorState[1](''); service.lock('manual').catch(function (e) { if (mountedRef.current) errorState[1]((e && e.message) || 'Could not lock protected records.'); }); }, style: { minHeight: 44, padding: '10px 14px', fontSize: 16, fontWeight: 'bold', textDecoration: 'underline', color: '#1e3a8a', background: '#ffffff', border: '1px solid #1e40af', borderRadius: 6, cursor: 'pointer' } }, 'Lock records'),
       status.error || errorState[0] ? h('p', { role: 'alert', style: { color: '#991b1b' } }, status.error || errorState[0]) : null);
   }
-  var api = { VERSION: 1, createService: createService, createDurableRepository: createDurableRepository, createLegacyMirror: createLegacyMirror, Boundary: Boundary, Indicator: Indicator, ensure: ensure,
+  var api = Object.freeze({ VERSION: 1, createService: createService, createDurableRepository: createDurableRepository, createLegacyMirror: createLegacyMirror, Boundary: Boundary, Indicator: Indicator, ensure: ensure,
     isSession: function (s, f) { var owner = s && sessionOwners.get(s); return owner ? owner.isSession(s, f) : false; },
     getSession: function (f) { return defaultService ? defaultService.getSession(f) : null; },
     getStatus: function () { return defaultService ? defaultService.getStatus() : { phase: 'loading' }; },
@@ -1065,7 +1087,11 @@
     registerDetachedWindow: function (win) { if (defaultService && typeof defaultService.registerDetachedWindow === 'function') defaultService.registerDetachedWindow(win); },
     recordAuditEvent: function (action, detail) { if (defaultService && typeof defaultService.recordAuditEvent === 'function') defaultService.recordAuditEvent(action, detail); },
     getAuditLog: function () { return defaultService && typeof defaultService.getAuditLog === 'function' ? defaultService.getAuditLog() : []; },
-    FEATURES: FEATURES.slice(), BACKUP_KIND: BACKUP_KIND };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof window !== 'undefined') { root.AlloModules = root.AlloModules || {}; root.AlloModules.SensitiveWorkspace = api; if (root.dispatchEvent && root.Event) root.dispatchEvent(new root.Event('alloflow:module-registry-changed')); }
+    FEATURES: Object.freeze(FEATURES.slice()), BACKUP_KIND: BACKUP_KIND });
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (typeof window === 'object' && window) {
+    if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
+    root.AlloModules.SensitiveWorkspace = api;
+    if (root.dispatchEvent && root.Event) { try { root.dispatchEvent(new root.Event('alloflow:module-registry-changed')); } catch (_) {} }
+  }
 })();

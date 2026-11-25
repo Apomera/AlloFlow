@@ -12542,8 +12542,7 @@
     "guided_resume_step": "Step {n}"
   },
   "about": {
-    "title": "ဘၣ်ဃး AlloFlow v1.0",
-    "tab_about": "ဘၣ်ဃး UDL",
+    "title": "ဘၣ်ဃး AlloFlow",
     "tab_features": "Feature Guide",
     "approach_header": "The AlloFlow Approach",
     "allo_acronym_label": "ALLO:",
@@ -12553,334 +12552,13 @@
     "what_is_udl": "What မ့ၢ် UDL?",
     "udl_definition": "Universal Design လ၁် Learning (UDL) မ့ၢ် framework ဆူ improve ဒီး optimize teaching ဒီး learning လ၁် all people based လ၁်ဖီခိၣ် scientific insights into how humans မၤလိ.",
     "how_help_header": "How does အံၤ tool တၢ်မၤစၢၤ?",
-    "how_help_desc": "အံၤ tool uses AI ဆူ instantly create diverse entry points လ၁် နၤအ curriculum, ensuring နၤ address three core principles အ UDL:",
-    "rep_title": "Representation:",
-    "rep_desc": "Presenting information in different ways (e.g., Adapted Text, Visual Supports, Glossaries).",
-    "action_title": "Action & Expression:",
-    "action_desc": "Providing options လ၁် ဖိသၣ်ကၠိ ဆူ demonstrate what they know (e.g., Scaffolds, Quizzes).",
-    "engage_title": "Engagement:",
-    "engage_desc": "Tapping into interests ဆူ challenge ဒီး motivate (e.g., Interest-based analogies).",
-    "ai_guide_tip": "Use \"AI UDL & Alignment Guide\" button လ၁် sidebar ဆူ chat ဒီး expert pedagogical bot လ၁် အလီၤလီၤ strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
     "reset_wizard": "မၤက္ၤ Quick စးထီၣ် Wizard",
     "support_kofi": "Support လ၁်ဖီခိၣ် Ko-fi",
-    "features_list": {
-      "categories": {
-        "creation": "တၢ်ကူၣ် & Create",
-        "activities": "Engage & ဂဲၤလိၥ်",
-        "assessment": "Assess & Support",
-        "platform": "Manage & Adapt"
-      },
-      "items": [
-        {
-          "title": "Analyze Source",
-          "icon": "ဃုကွၢ်",
-          "desc": "Extract reading levels, key concepts, ဒီး မ့ၢ်တၢ် checks from any source text.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Leveled Text",
-          "icon": "BookOpen",
-          "desc": "Adapt text complexity လ၁် any grade K-12. Includes bilingual side-by-side views.",
-          "category": "creation",
-          "color": "indigo"
-        },
-        {
-          "title": "တၢ်မၤလိ တၢ်ကူၣ်",
-          "icon": "ClipboardList",
-          "desc": "Synthesize all resources into standard-aligned တၢ်မၤလိ တၢ်ကူၣ် မ့တမ့် study guide.",
-          "category": "creation",
-          "color": "violet"
-        },
-        {
-          "title": "Visual Organizer",
-          "icon": "Layout",
-          "desc": "Generate Flow Charts, Venn Diagrams, ဒီး structured outlines.",
-          "category": "creation",
-          "color": "cyan"
-        },
-        {
-          "title": "Brainstorm",
-          "icon": "Lightbulb",
-          "desc": "Generate hands-လ၁်ဖီခိၣ် activity ideas ဒီး real-world connections.",
-          "category": "creation",
-          "color": "yellow"
-        },
-        {
-          "title": "FAQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Anticipate ဖိသၣ်ကၠိ misconceptions ဒီး auto-ဘှီထီၣ် Q& lists.",
-          "category": "creation",
-          "color": "teal"
-        },
-        {
-          "title": "Interview Mode",
-          "icon": "History",
-          "desc": "Chat ဒီး historical figures, fictional characters, မ့တမ့် experts. Uncover hidden secrets.",
-          "category": "activities",
-          "color": "amber"
-        },
-        {
-          "title": "Adventure Mode",
-          "icon": "MapIcon",
-          "desc": "Interactive 'ဃုထၢ နၤအ Own Adventure' simulation ဒီး roleplay scenarios.",
-          "category": "activities",
-          "color": "purple"
-        },
-        {
-          "title": "တၢ်ဂဲၤလိၥ် Arcade",
-          "icon": "Gamepad2",
-          "desc": "Auto-generate Bingo, Memory Match, တၢ်ကတိၤ ဃုကွၢ်, ဒီး Crosswords.",
-          "category": "activities",
-          "color": "pink"
-        },
-        {
-          "title": "Sequence Builder",
-          "icon": "ListOrdered",
-          "desc": "Drag-ဒီး-drop timeline activity လ၁် chronological events မ့တမ့် process steps.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "တၢ်ဆိကမိၣ် Sort",
-          "icon": "Filter",
-          "desc": "Categorize terms ဒီး concepts into buckets. ဒိၣ် လ၁် distinguishing similar ideas.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Socratic Tutor",
-          "icon": "MessageCircleQuestion",
-          "desc": "AI guide န့ၣ် asks guiding တၢ်သံကွၢ် instead အ giving တၢ်စံးဆၢ.",
-          "category": "activities",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Exit Ticket",
-          "icon": "CheckSquare",
-          "desc": "Create quizzes. Launch 'Live Quiz' mode လ၁် real-တၢ်ဆၢကတီၢ် ကၠိ results.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "ကွဲးတၢ် Scaffolds",
-          "icon": "Quote",
-          "desc": "တၢ်ကတိၤထူ starters ဒီး paragraph frames ဒီး built-လ၁် rubrics.",
-          "category": "assessment",
-          "color": "orange"
-        },
-        {
-          "title": "Visual Support",
-          "icon": "ImageIcon",
-          "desc": "AI diagrams ဒီး illustrations. Use image editing ဆူ refine မ့တမ့် ထုးထီၣ်ကွံၥ် text.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "နီၢ်ဂံၢ် & STEM",
-          "icon": "Calculator",
-          "desc": "Step-by-step solvers, graph ဆၢကတၢၢ်, ဒီး similar practice တၢ်ကီတၢ်ခဲ.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Standard Audit",
-          "icon": "ShieldCheck",
-          "desc": "Verify alignment ဒီး အလီၤလီၤ educational standards ဒီး သုံၣ်ညါ rigor gaps.",
-          "category": "assessment",
-          "color": "slate"
-        },
-        {
-          "title": "Oral Fluency",
-          "icon": "Mic",
-          "desc": "ဒိကနၣ် ဆူ ဖိသၣ်ကၠိ ဖးတၢ် aloud ဒီး calculate WCPM ဒီး မ့ၢ်တၢ်.",
-          "category": "assessment",
-          "color": "rose"
-        },
-        {
-          "title": "သရၣ် Dashboard",
-          "icon": "Layout",
-          "desc": "Track ဖိသၣ်ကၠိ progress, view analytics, ဒီး export gradebooks.",
-          "category": "platform",
-          "color": "indigo"
-        },
-        {
-          "title": "Live Sessions",
-          "icon": "Wifi",
-          "desc": "Host synchronized ကၠိ, run Democracy Mode voting, ဒီး manage live quizzes.",
-          "category": "platform",
-          "color": "rose"
-        },
-        {
-          "title": "ဖိသၣ်ကၠိ Profiles",
-          "icon": "Users",
-          "desc": "ပာ်ဖျါ differentiation settings (ကျိၥ်, Interests) လ၁် different ဂံၢ်တြၣ်.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "အသုံးပြုနိုင်စွမ်း",
-          "icon": "Ear",
-          "desc": "Immersive Reader, Line Focus, Dictation, ဒီး Text-ဆူ-Speech tools.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "Export Suite",
-          "icon": "Download",
-          "desc": "Export ဆူ PDF, PowerPoint, Canvas QTI, မ့တမ့် HTML Bundles.",
-          "category": "platform",
-          "color": "blue"
-        },
-        {
-          "title": "Gemini Bridge",
-          "icon": "Terminal",
-          "desc": "Generate prompts ဆူ ဘှီထီၣ် custom interactive apps လ၁် Gemini Canvas.",
-          "category": "platform",
-          "color": "slate"
-        },
-        {
-          "title": "Smart Glossary",
-          "icon": "BookOpen",
-          "desc": "Visual vocabulary cards ဒီး audio, bilingual တၢ်ကွဲးကျိၥ်ထံ, ဒီး 5 vocabulary တၢ်ဂဲၤလိၥ် (crossword, bingo, memory match, တၢ်ကတိၤ ဃုကွၢ်, scramble).",
-          "category": "creation",
-          "color": "purple"
-        },
-        {
-          "title": "Immersive Reader",
-          "icon": "Ear",
-          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Word Sounds Studio",
-          "icon": "Mic",
-          "desc": "Phonemic awareness practice across 8 activity types — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "StoryForge",
-          "icon": "Quote",
-          "desc": "Six-phase scaffolded creative ကွဲးတၢ် ဒီး AI illustrations, narration, custom rubrics, ဒီး 18-ကျိၥ် support.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "AlloBot",
-          "icon": "Sparkles",
-          "desc": "Always-available AI tutor ဒီး platform guide. တၢ်စံးဆၢ content တၢ်သံကွၢ်, navigates AlloFlow, ဒီး auto-configures settings လ၁်ဖီခိၣ် request.",
-          "category": "activities",
-          "color": "indigo"
-        },
-        {
-          "title": "Escape Room",
-          "icon": "MapIcon",
-          "desc": "Team-based puzzle challenges built from နၤအ တၢ်မၤလိ content. သရၣ်-controlled hints, timed escape ပိၣ်ထွဲ, multi-stage rooms.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "SEL Hub",
-          "icon": "Heart",
-          "desc": "32 social-emotional learning tools across CASEL competencies — coping cards, restorative circles, အသးတံၤ-advocacy rehearsal, ဒီး more.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "BehaviorLens",
-          "icon": "ShieldCheck",
-          "desc": "FBA/BIP suite: ABC data collection, frequency/interval ပိၣ်ထွဲ, IOA calculator (5 methods), preference assessments, intervention templates.",
-          "category": "assessment",
-          "color": "indigo"
-        },
-        {
-          "title": "ပှၤစံၣ်တဲၤ Writer",
-          "icon": "ClipboardList",
-          "desc": "10-step wizard လ၁် psychoeducational reports: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass မ့ၢ်တၢ် audit.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Dynamic Assessment",
-          "icon": "Filter",
-          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes ဒီး 4-level prompt ladders, modifiability scoring, IEP goal + accommodation ဆၢကတၢၢ်.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "ဖိသၣ်ကၠိ Analytics",
-          "icon": "Layout",
-          "desc": "Automated RTI Tier 1/2/3 classification ဒီး aimline monitoring, CBM probe history, anomaly flagging, ကၠိ screening reports.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "PDF အသုံးပြုနိုင်စွမ်း",
-          "icon": "Download",
-          "desc": "Upload any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → accessible PDF/HTML/audio export.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Symbol Studio",
-          "icon": "ImageIcon",
-          "desc": "Full AAC platform: AI-ဘှီထီၣ် PCS symbols, board builder, visual schedules, social stories, Symbol Quest တၢ်ဂဲၤလိၥ်, တၢ်ကတိၤ Garden vocabulary ပိၣ်ထွဲ.",
-          "category": "platform",
-          "color": "fuchsia"
-        },
-        {
-          "title": "STEM Lab",
-          "icon": "Layers",
-          "desc": "95+ browser-based interactive simulations across နီၢ်ဂံၢ်, science, CS, engineering, ဒီး creative design — from DNA labs ဆူ physics sandboxes.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "DBQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Document-Based တၢ်သံကွၢ် sets လ၁် source analysis — DOK-tiered prompts ဒီး sourcing/contextualization/corroboration scaffolds + rubric.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "Note Taking Templates",
-          "icon": "ListOrdered",
-          "desc": "Cornell notes, two-column compare/contrast, sketchnote prompts, mindmaps, ဒီး အကရၢၢ် scaffolds — pre-filled မ့တမ့် blank.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "အၢ်ခၢ်ၣ်တၢ်ဂီၤပှၤ",
-          "icon": "Layout",
-          "desc": "Printable ကၠိ-poster anchor charts ဒီး iconography, color-coded sections, AI imagery, ဒီး differentiated complexity levels.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "Annotation Suite",
-          "icon": "Quote",
-          "desc": "Overlay annotations လ၁်ဖီခိၣ် any AlloFlow resource — highlights, sticky notes, voice notes, drawings — ဒီး color-coded layers ဒီး exportable PDFs.",
-          "category": "activities",
-          "color": "purple"
-        },
-        null,
-        null,
-        null,
-        null,
-        {
-          "title": "အသုံးပြုနိုင်စွမ်း Lab"
-        }
-      ]
-    },
     "a11y_title": "အသုံးပြုနိုင်စွမ်း",
     "tab_atlas": "Atlas",
     "tab_opensource": "Open Source",
     "atlas_title": "AlloFlow Atlas",
-    "atlas_intro": "AlloFlow ၏ catalog hub များနှင့် launch surface များကို စနစ်တကျပြထားသော မြေပုံဖြစ်သည်။ visual guide၊ နေရာများ၊ ရှာဖွေနိုင်သော entry များနှင့် source မှတ်စုများအတွက် ဒေသတစ်ခုကို ရွေးပါ။",
-    "atlas_footer": "Registry အခြေပြု section များကို လက်ရှိ catalog များမှ ဖန်တီးသည်။ curated နှင့် mixed section များကို မြေပုံတွင် သတ်မှတ်ပြထားသည်။ အရေအတွက်များသည် ရှာဖွေနိုင်သော catalog entry များဖြစ်ပြီး tool အရေအတွက် မဟုတ်ပါ။",
     "privacy_title": "ကိုယ်ရေးလုံခြုံမှုနှင့် ကျောင်းသားဒေတာ",
     "privacy_intro": "AlloFlow ကို ကိုယ်ရေးလုံခြုံမှုကို အလေးထားသည့် စာသင်ခန်းအသုံးပြုမှုအတွက် ဒီဇိုင်းလုပ်ထားသည်။ သင်ရွေးသည့် storage၊ session transport နှင့် AI provider အပေါ် ဒေတာတည်နေရာ မူတည်သည်။",
     "privacy_footer": "ဤသည်မှာ လွယ်ကူသောဘာသာဖြင့်ရေးထားသည့် product အကျဉ်းချုပ်ဖြစ်ပြီး ဥပဒေအကြံပြုချက် သို့မဟုတ် compliance certificate မဟုတ်ပါ။ FERPA၊ privacy၊ provider agreement၊ configuration၊ consent၊ retention နှင့် deletion ဆုံးဖြတ်ချက်များအတွက် သင့်အဖွဲ့အစည်းက တာဝန်ရှိသည်။",
@@ -12890,10 +12568,54 @@
     "oss_credits_intro": "AlloFlow သည် အခမဲ့ open source (AGPL-3.0) ဖြစ်ပြီး အောက်ပါ project များ၏ အလုပ်ပေါ်တွင် တည်ဆောက်ထားသည်။ စာရေးသူများနှင့် community များကို ကျေးဇူးတင်ပါသည်။",
     "oss_featured_header": "ပေါင်းစပ်ထားသော သင်ယူရေးကိရိယာများ",
     "oss_full_list_header": "ပေါင်းစပ်ထားသော library နှင့် open resource များ",
-    "oss_credits_footer": "Hosted AI feature များသည် AI settings တွင် သတ်မှတ်ထားသော provider ကို အသုံးပြုသည် (Gemini၊ OpenAI၊ Claude သို့မဟုတ် OpenAI-compatible endpoint)။ ထို service များသည် bundled software မဟုတ်ပါ။ License စာသားအပြည့်အစုံကို source နှင့် ပေးထားသည်။",
     "tab_privacy": "ကိုယ်ရေးလုံခြုံမှု",
     "media_guardrails_intro": "Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.",
-    "media_guardrails_title": "Open/free media guardrails"
+    "media_guardrails_title": "Open/free media guardrails",
+    "tab_home": "ဘၣ်ဃး",
+    "atlas_hide": "ဘံၣ်တံၥ်",
+    "atlas_open": "အိးထီၣ်",
+    "fg_clear": "မၤကွံာ်",
+    "clear_search": "မၤကွံာ်တၢ်ဃုကွၢ်",
+    "fg_tip": "တၢ်ဟ့ၣ်ကူၣ်",
+    "fg_all": "ခဲလၢာ် ({count})",
+    "fg_open_atlas": "အိးထီၣ် Atlas",
+    "start_atlas_title": "ဃုသ့ၣ်ညါ Atlas",
+    "atlas_docs": {
+      "glossary": "တၢ်ကတိၤအခီပညီအစရီ"
+    },
+    "fg": {
+      "glossary": {
+        "title": "တၢ်ကတိၤအခီပညီအစရီ"
+      },
+      "activities": {
+        "title": "တၢ်မၤတဖၣ်"
+      },
+      "lesson_images": {
+        "title": "တၢ်မၤလိအဂီၤ"
+      },
+      "lesson_plan": {
+        "title": "တၢ်မၤလိ တၢ်ကူၣ်"
+      },
+      "ai_settings": {
+        "options_1": "သူ AlloFlow လၢ Gemini Canvas အပူၤ"
+      },
+      "allobot": {
+        "options_1": "ဒုးနဲၣ် မ့တမ့ၢ် ဘံၣ်တံၥ် AlloBot"
+      },
+      "assess": {
+        "options_3": "ဒုးနဲၣ် မ့တမ့ၢ် ဘံၣ်တံၥ် တၢ်စံးဆၢ"
+      },
+      "lumen": {
+        "inputs_2": "တၢ်သံကွၢ်တခါ"
+      },
+      "faq_generator": {
+        "options_1": "တၢ်သံကွၢ်အနီၣ်ဂံၢ်"
+      },
+      "family_bridge": {
+        "inputs_2": "ကျိာ်ခံကျိာ်"
+      }
+    },
+    "udl_rep_p4_label": "ဖးကလုၢ်ဖးဒိၣ်:"
   },
   "fluency": {
     "title": "Oral Fluency Check",

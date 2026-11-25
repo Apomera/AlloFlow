@@ -22,8 +22,12 @@
 (function () {
   'use strict';
 
-  if (window.AlloModules && window.AlloModules.QuizModeStrategies) {
-    console.log('[CDN] QuizModeStrategies already loaded, skipping');
+  var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  if (!_win) return;
+  if (_win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.QuizModeStrategies) {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] QuizModeStrategies already loaded, skipping');
+    }
     return;
   }
 
@@ -164,8 +168,20 @@
   };
 
   var hasOwn = Object.prototype.hasOwnProperty;
+  function safeStr(s) {
+    if (s == null || typeof s === 'symbol') return '';
+    if (typeof s === 'string') return s;
+    if (typeof s === 'number') return Number.isFinite(s) ? String(s) : '';
+    if (typeof s === 'boolean') return String(s);
+    try { return String(s); } catch (_) { return ''; }
+  }
+  function safeNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') return Number(v);
+    return NaN;
+  }
   function stripCtl(s) {
-    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return safeStr(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
   }
   function deepFreeze(obj) {
     if (!obj || typeof obj !== 'object' || Object.isFrozen(obj)) return obj;
@@ -198,13 +214,13 @@
   }
 
   function normalizeAssessmentOptions(value) {
-    var source = value && typeof value === 'object' ? value : {};
-    var numeric = source.numericSettings && typeof source.numericSettings === 'object' ? source.numericSettings : {};
-    var weight = Number(numeric.valueWeight);
+    var source = (value && typeof value === 'object' && !Array.isArray(value)) ? value : {};
+    var numeric = (source.numericSettings && typeof source.numericSettings === 'object' && !Array.isArray(source.numericSettings)) ? source.numericSettings : {};
+    var weight = safeNum(numeric.valueWeight);
     return {
       fillBlankPolicy: ['normalized', 'exact', 'review-variants'].indexOf(source.fillBlankPolicy) >= 0 ? source.fillBlankPolicy : 'normalized',
       sequenceMode: source.sequenceMode === 'arrange-explain' ? 'arrange-explain' : 'diagnostic',
-      sequenceMaxSteps: Number(source.sequenceMaxSteps) === 3 ? 3 : 6,
+      sequenceMaxSteps: safeNum(source.sequenceMaxSteps) === 3 ? 3 : 6,
       numericSettings: { allowEquivalentUnits: numeric.allowEquivalentUnits === true, valueWeight: Number.isFinite(weight) ? Math.max(0, Math.min(1, weight)) : 0.5 },
       requireReasoning: source.requireReasoning === true
     };
@@ -232,25 +248,28 @@
   }
 
   function resolveCriteriaCoverage(criteria, selectedIds, count, questions) {
-    var available = (Array.isArray(criteria) ? criteria.slice(0, 200) : []).filter(function (criterion) { return criterion && criterion.id && (criterion.statement || criterion.text); }).map(function (criterion) {
+    var available = (Array.isArray(criteria) ? criteria.slice(0, 200) : []).filter(function (criterion) { return criterion && typeof criterion === 'object' && criterion.id && (criterion.statement || criterion.text); }).map(function (criterion) {
       return { id: stripCtl(criterion.id).slice(0, 160), statement: stripCtl(criterion.statement || criterion.text).slice(0, 600) };
     }).filter(function (criterion, index, all) { return all.findIndex(function (other) { return other.id === criterion.id; }) === index; }).slice(0, 20);
-    var parsedCount = Number(count);
+    var parsedCount = safeNum(count);
     var limit = Number.isFinite(parsedCount) ? Math.max(0, Math.min(20, Math.floor(parsedCount))) : 0;
-    var selected = (Array.isArray(selectedIds) ? available.filter(function (criterion) { return selectedIds.indexOf(criterion.id) >= 0; }) : available).slice(0, limit).map(function (criterion) { return criterion.id; });
+    var boundedSelected = Array.isArray(selectedIds) ? selectedIds.slice(0, 200) : null;
+    var selected = (boundedSelected ? available.filter(function (criterion) { return boundedSelected.indexOf(criterion.id) >= 0; }) : available).slice(0, limit).map(function (criterion) { return criterion.id; });
     var qList = Array.isArray(questions) ? questions.slice(0, 200) : [];
     var covered = selected.filter(function (id) { return qList.some(function (q) { return q && (q.criterionId === id || q.conceptLabel === id); }); });
     return { available: available, selectedIds: selected, coveredIds: covered, uncoveredIds: available.filter(function (criterion) { return covered.indexOf(criterion.id) < 0; }).map(function (criterion) { return criterion.id; }) };
   }
 
   function contentReviewSignature(question) {
-    var q = (question && typeof question === 'object') ? question : {}, shape = {};
+    var q = (question && typeof question === 'object' && !Array.isArray(question)) ? question : {}, shape = {};
     ['type', 'question', 'options', 'optionFeedback', 'correctAnswer', 'correctAnswers', 'expectedFill', 'acceptableAlternatives', 'expectedAnswer', 'rubric', 'studentCriteria', 'items', 'presentedOrder', 'orderingPrinciple', 'pairs', 'wrongPairIndex', 'correctPartnerForWrong', 'candidatePartners', 'answerOptions', 'evidenceOptions', 'correctEvidence', 'correctValue', 'unit', 'acceptableUnits', 'tolerance', 'numericSettings', 'sourceEvidence', 'transferPrompt', 'transferCriteria'].forEach(function (key) {
-      if (hasOwn.call(q, key) && q[key] !== undefined) shape[key] = q[key];
+      try {
+        if (hasOwn.call(q, key) && q[key] !== undefined) shape[key] = q[key];
+      } catch (_) {}
     });
     var value;
     try { value = JSON.stringify(shape) || '{}'; }
-    catch (_) { value = String(shape.type || '') + '|' + String(shape.question || ''); }
+    catch (_) { value = safeStr(shape.type) + '|' + safeStr(shape.question); }
     var hash = 2166136261;
     for (var i = 0; i < value.length; i++) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); }
     return 'content-' + (hash >>> 0).toString(16);
@@ -258,9 +277,9 @@
 
   function normalizeContentReview(raw, questions, sourceText, offset) {
     var rows = raw && Array.isArray(raw.items) ? raw.items.slice(0, 500) : [];
-    var source = String(sourceText || '').replace(/\s+/g, ' ').trim();
-    var parsedOffset = Number(offset);
-    var baseOffset = Number.isFinite(parsedOffset) && parsedOffset >= 0 ? Math.floor(parsedOffset) : 0;
+    var source = stripCtl(sourceText).replace(/\s+/g, ' ').trim();
+    var parsedOffset = safeNum(offset);
+    var baseOffset = Number.isFinite(parsedOffset) && parsedOffset >= 0 ? Math.min(1000000, Math.floor(parsedOffset)) : 0;
     return (Array.isArray(questions) ? questions.slice(0, 200) : []).map(function (q, index) {
       var questionIdx = baseOffset + index;
       var matches = rows.filter(function (row) { return row && row.questionIdx === questionIdx; });
@@ -276,7 +295,7 @@
   }
 
   function localContentReview(questions, sourceText) {
-    var source = String(sourceText || '').replace(/\s+/g, ' ').trim();
+    var source = stripCtl(sourceText).replace(/\s+/g, ' ').trim();
     var checklists = {
       mcq: ['Confirm there is exactly one defensible answer.', 'Check each option explanation and misconception against the lesson.'],
       'multi-select': ['Check every option independently; more than one answer must be correct.', 'Confirm the partial-credit policy matches the task.'],
@@ -300,19 +319,23 @@
       }) };
   }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.QuizModeStrategies = {
-    STRATEGIES: STRATEGIES,
-    getStrategy: getStrategy,
-    listModes: listModes,
-    durationRecipe: durationRecipe,
-    normalizeAssessmentOptions: normalizeAssessmentOptions,
-    reviewSources: reviewSources,
-    resolveReviewContext: resolveReviewContext,
-    resolveCriteriaCoverage: resolveCriteriaCoverage,
-    contentReviewSignature: contentReviewSignature,
-    normalizeContentReview: normalizeContentReview,
-    localContentReview: localContentReview,
-  };
-  console.log('[CDN] QuizModeStrategies loaded (5 modes: exit-ticket, pre-check, formative, review, poll)');
+  try {
+    if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+    _win.AlloModules.QuizModeStrategies = Object.freeze({
+      STRATEGIES: STRATEGIES,
+      getStrategy: getStrategy,
+      listModes: listModes,
+      durationRecipe: durationRecipe,
+      normalizeAssessmentOptions: normalizeAssessmentOptions,
+      reviewSources: reviewSources,
+      resolveReviewContext: resolveReviewContext,
+      resolveCriteriaCoverage: resolveCriteriaCoverage,
+      contentReviewSignature: contentReviewSignature,
+      normalizeContentReview: normalizeContentReview,
+      localContentReview: localContentReview,
+    });
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] QuizModeStrategies loaded (5 modes: exit-ticket, pre-check, formative, review, poll)');
+    }
+  } catch (_) {}
 })();

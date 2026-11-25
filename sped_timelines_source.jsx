@@ -94,7 +94,9 @@ function spedParseDate(s) {
 
 function spedFmt(dt) {
   if (!dt || !(dt instanceof Date) || Number.isNaN(dt.getTime())) return null;
-  return dt.toISOString().slice(0, 10);
+  const y = dt.getUTCFullYear();
+  if (y < 1 || y > 9999) return null;
+  return String(y).padStart(4, '0') + '-' + String(dt.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dt.getUTCDate()).padStart(2, '0');
 }
 
 // Same month/day N years later. Feb 29 anchors land on Feb 28 in
@@ -103,12 +105,14 @@ function spedFmt(dt) {
 function spedAnniversary(dateStr, years) {
   const dt = spedParseDate(dateStr);
   if (!dt || !Number.isFinite(years)) return null;
-  const y = dt.getUTCFullYear() + years;
+  const y = dt.getUTCFullYear() + Math.trunc(years);
+  if (y < 1 || y > 9999) return null;
   const mo = dt.getUTCMonth();
   const d = dt.getUTCDate();
-  let out = new Date(Date.UTC(y, mo, d));
+  let out = new Date(0);
+  out.setUTCFullYear(y, mo, d);
   if (Number.isNaN(out.getTime())) return null;
-  if (out.getUTCMonth() !== mo) out = new Date(Date.UTC(y, mo + 1, 0)); // Feb 29 overflow -> last day of Feb
+  if (out.getUTCMonth() !== mo) { out = new Date(0); out.setUTCFullYear(y, mo + 1, 0); } // Feb 29 overflow -> last day of Feb
   return spedFmt(out);
 }
 
@@ -123,7 +127,10 @@ function spedAddDays(dateStr, days) {
 // Prefill only — always editable in the UI.
 function spedDefaultDue(type, keyDate, evalDays) {
   if (!spedParseDate(keyDate)) return null;
-  if (type === 'initial_eval') return spedAddDays(keyDate, Number.isFinite(Number(evalDays)) && Number(evalDays) > 0 ? Number(evalDays) : 60);
+  const validDays = typeof evalDays !== 'boolean' && typeof evalDays !== 'symbol' && evalDays !== null && String(evalDays).trim() !== ''
+    && Number.isFinite(Number(evalDays)) && Number(evalDays) > 0
+    ? Number(evalDays) : 60;
+  if (type === 'initial_eval') return spedAddDays(keyDate, validDays);
   if (type === 'annual') return spedAnniversary(keyDate, 1);
   if (type === 'triennial') return spedAnniversary(keyDate, 3);
   return null; // custom: the user types the due date
@@ -137,6 +144,7 @@ function spedDaysUntil(dueDate, today) {
 
 // Urgency bands. Thresholds are working-convention prompts, not law.
 function spedBand(c, today) {
+  if (!c || typeof c !== 'object') return 'undated';
   if (c.completedAt) return 'done';
   const days = spedDaysUntil(c.dueDate, today);
   if (days == null) return 'undated';
@@ -158,7 +166,8 @@ const SPED_BAND_META = {
 function spedRollup(cases, today) {
   const counts = { overdue: 0, urgent: 0, soon: 0, ok: 0, undated: 0, done: 0 };
   const providerMap = Object.create(null);
-  const banded = (cases || []).map((c) => {
+  const safeCases = Array.isArray(cases) ? cases.filter((c) => c && typeof c === 'object') : [];
+  const banded = safeCases.map((c) => {
     const band = spedBand(c, today);
     counts[band] += 1;
     const provider = String(c.provider || '').trim() || '(unassigned)';
@@ -205,7 +214,7 @@ function spedDownload(filename, mime, content, addToast, okMsg, failMsg) {
     a.href = url;
     a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 4000);
     addToast(okMsg, 'info');
   } catch (e) {
     addToast(failMsg + String(e && e.message), 'error');
@@ -214,8 +223,11 @@ function spedDownload(filename, mime, content, addToast, okMsg, failMsg) {
 
 function spedAnnounce(message) {
   try {
-    const region = document.getElementById('allo-live-spedtl');
-    if (region) { region.textContent = ''; region.textContent = message; }
+    const region = typeof document !== 'undefined' && document.getElementById('allo-live-spedtl');
+    if (region) {
+      region.textContent = '';
+      setTimeout(() => { try { if (region.isConnected) region.textContent = message; } catch (_) {} }, 0);
+    }
   } catch (_) {}
 }
 
@@ -230,17 +242,30 @@ function SpedTimelinesPanel(props) {
 
   const [config, setConfig] = React.useState(() => {
     const c = spedLoad(SPED_CONFIG_KEY, {});
-    return { evalDays: 60, ...(c && typeof c === 'object' ? c : {}) };
+    const safeObj = (c && typeof c === 'object' && !Array.isArray(c)) ? c : {};
+    const validDays = (typeof safeObj.evalDays === 'number' || typeof safeObj.evalDays === 'string') ? safeObj.evalDays : 60;
+    return { ...safeObj, evalDays: validDays };
   });
-  const [cases, setCases] = React.useState(() => { const v = spedLoad(SPED_CASES_KEY, []); return Array.isArray(v) ? v : []; });
+  const [cases, setCases] = React.useState(() => {
+    const v = spedLoad(SPED_CASES_KEY, []);
+    return Array.isArray(v) ? v.filter((c) => c && typeof c === 'object') : [];
+  });
+  const casesDirtyRef = React.useRef(false);
+  const configDirtyRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const [tab, setTab] = React.useState('dashboard');
   const [form, setForm] = React.useState({ code: '', type: 'initial_eval', provider: '', keyDate: '', dueDate: '' });
   const [armDelete, setArmDelete] = React.useState(null);
   const importInputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
 
-  React.useEffect(() => { spedStore(SPED_CASES_KEY, cases); }, [cases]);
-  React.useEffect(() => { spedStore(SPED_CONFIG_KEY, config); }, [config]);
+  React.useEffect(() => { if (casesDirtyRef.current) spedStore(SPED_CASES_KEY, cases); }, [cases]);
+  React.useEffect(() => { if (configDirtyRef.current) spedStore(SPED_CONFIG_KEY, config); }, [config]);
+  React.useEffect(() => { setArmDelete(null); }, [tab]);
 
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
@@ -344,10 +369,12 @@ function SpedTimelinesPanel(props) {
     };
   }, []);
 
+  const vaultLocked = spedVaultBackend().mode === 'locked';
   const today = spedToday();
-  const rollup = spedRollup(cases, today);
+  const rollup = React.useMemo(() => spedRollup(cases, today), [cases, today]);
 
   const [dueDateManual, setDueDateManual] = React.useState(false);
+  const dueDateManualRef = React.useRef(false);
   const [dashBandFilter, setDashBandFilter] = React.useState('all');
   const [dashProviderFilter, setDashProviderFilter] = React.useState('');
   const [casesStatusFilter, setCasesStatusFilter] = React.useState('all');
@@ -377,13 +404,17 @@ function SpedTimelinesPanel(props) {
   });
 
   const updateForm = (patch) => {
-    if (patch.dueDate !== undefined) setDueDateManual(!!patch.dueDate);
+    if (patch.dueDate !== undefined) {
+      const manual = !!patch.dueDate;
+      dueDateManualRef.current = manual;
+      setDueDateManual(manual);
+    }
     setForm((f) => {
       const next = { ...f, ...patch };
       // Recompute the prefill when type/keyDate change, UNLESS the user
       // already hand-edited the due date to something else.
       if (patch.type !== undefined || patch.keyDate !== undefined) {
-        if (!dueDateManual || !f.dueDate) {
+        if (!dueDateManualRef.current || !f.dueDate) {
           next.dueDate = spedDefaultDue(next.type, next.keyDate, config.evalDays) || '';
         }
       }
@@ -392,6 +423,10 @@ function SpedTimelinesPanel(props) {
   };
 
   const addCase = () => {
+    if (spedVaultBackend().mode === 'locked') {
+      addToast(tt('spedtl.vault_locked', 'Unlock the Sensitive Workspace vault before adding timelines.'), 'warning');
+      return;
+    }
     const code = form.code.trim();
     if (!code) { addToast(tt('spedtl.need_code', 'Enter a student code or initials.'), 'warning'); return; }
     if (!spedParseDate(form.dueDate)) { addToast(tt('spedtl.need_due', 'Enter or confirm a due date.'), 'warning'); return; }
@@ -401,23 +436,32 @@ function SpedTimelinesPanel(props) {
       keyDate: spedParseDate(form.keyDate) ? form.keyDate : '',
       dueDate: form.dueDate, completedAt: null,
     };
+    casesDirtyRef.current = true;
     setCases((list) => [...list, record]);
+    dueDateManualRef.current = false;
     setDueDateManual(false);
     setForm((f) => ({ ...f, code: '', keyDate: '', dueDate: '' }));
     addToast(tt('spedtl.added', 'Timeline added.'), 'success');
   };
 
   const setDone = (id, done) => {
-    setCases((list) => list.map((c) => c.id === id ? { ...c, completedAt: done ? today : null } : c));
+    casesDirtyRef.current = true;
+    const nowDay = spedToday();
+    setCases((list) => list.map((c) => c.id === id ? { ...c, completedAt: done ? nowDay : null } : c));
   };
 
   const exportJson = () => {
+    const nowDay = spedToday();
     const payload = { kind: 'alloflow-sped-timelines', version: 1, exportedAt: new Date().toISOString(), config, cases };
-    spedDownload('sped-timelines-' + today + '.json', 'application/json', JSON.stringify(payload, null, 2), addToast,
+    spedDownload('sped-timelines-' + nowDay + '.json', 'application/json', JSON.stringify(payload, null, 2), addToast,
       tt('spedtl.export_toast', 'Export started — check your downloads.'), tt('spedtl.export_failed', 'Export failed: '));
   };
 
   const importJson = (file) => {
+    if (spedVaultBackend().mode === 'locked') {
+      addToast(tt('spedtl.vault_locked', 'Unlock the Sensitive Workspace vault before importing timelines.'), 'warning');
+      return;
+    }
     const MAX_SPED_IMPORT_BYTES = 10 * 1024 * 1024;
     if (!file || (typeof file.size === 'number' && file.size > MAX_SPED_IMPORT_BYTES)) {
       addToast(tt('spedtl.import_failed', 'Import failed: ') + 'file exceeds 10 MB safety limit', 'error');
@@ -425,6 +469,7 @@ function SpedTimelinesPanel(props) {
     }
     const reader = new FileReader();
     reader.onload = () => {
+      if (!mountedRef.current) return;
       try {
         const rawText = String(reader.result || '');
         if (rawText.length > MAX_SPED_IMPORT_BYTES) throw new Error('file exceeds 10 MB safety limit');
@@ -446,6 +491,7 @@ function SpedTimelinesPanel(props) {
             };
           })
           .filter((x) => x.code && x.dueDate);
+        casesDirtyRef.current = true;
         setCases((list) => {
           const have = new Set(list.map((x) => x.id));
           const merged = list.slice();
@@ -462,7 +508,7 @@ function SpedTimelinesPanel(props) {
         addToast(tt('spedtl.import_failed', 'Import failed: ') + String(e && e.message), 'error');
       }
     };
-    reader.onerror = () => addToast(tt('spedtl.import_failed', 'Import failed: ') + 'read error', 'error');
+    reader.onerror = () => { if (mountedRef.current) addToast(tt('spedtl.import_failed', 'Import failed: ') + 'read error', 'error'); };
     reader.readAsText(file);
   };
 
@@ -471,7 +517,10 @@ function SpedTimelinesPanel(props) {
     { id: 'cases', label: tt('spedtl.tab_cases', 'Timelines'), icon: '🗂️' },
   ];
 
-  const typeLabel = (id) => (SPED_TYPES.find((x) => x.id === id) || {}).label || id;
+  const typeLabel = (id) => {
+    const found = SPED_TYPES.find((x) => x.id === id);
+    return found ? tt('spedtl.type_' + found.id, found.label) : id;
+  };
 
   return (
     <div
@@ -479,7 +528,7 @@ function SpedTimelinesPanel(props) {
       style={{ zIndex: 260 }}
       role="presentation"
       onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
-      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget && typeof onClose === 'function') onClose(); }}
     >
       <div ref={dialogRef} tabIndex={-1} data-help-key="spedtl_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="spedtl-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
@@ -525,6 +574,11 @@ function SpedTimelinesPanel(props) {
             </div>
           )}
         <div className="p-4" role="tabpanel" id="spedtl-tabpanel" aria-labelledby={'spedtl-tab-' + tab} tabIndex={-1}>
+          {vaultLocked && (
+            <p role="status" className="text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2 mb-3">
+              {tt('spedtl.vault_locked_banner', 'Sensitive Workspace is locked. Unlock it before adding or editing timelines.')}
+            </p>
+          )}
           {tab === 'dashboard' && (
             <div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
@@ -665,7 +719,7 @@ function SpedTimelinesPanel(props) {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="spedtl-keydate" className="block text-xs font-bold text-slate-600 mb-1">{(SPED_TYPES.find((ty) => ty.id === form.type) || {}).keyLabel || 'Start date'}</label>
+                    <label htmlFor="spedtl-keydate" className="block text-xs font-bold text-slate-600 mb-1">{tt('spedtl.keylabel_' + form.type, (SPED_TYPES.find((ty) => ty.id === form.type) || {}).keyLabel || 'Start date')}</label>
                     <input id="spedtl-keydate" type="date" value={form.keyDate} onChange={(e) => updateForm({ keyDate: e.target.value })}
                       className="w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                   </div>
@@ -686,8 +740,9 @@ function SpedTimelinesPanel(props) {
                         onChange={(e) => {
                           const rawDigits = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
                           const nextDays = rawDigits === '' ? '' : String(Math.min(3650, Number(rawDigits)));
+                          configDirtyRef.current = true;
                           setConfig((c) => ({ ...c, evalDays: nextDays }));
-                          if (!dueDateManual) {
+                          if (!dueDateManualRef.current) {
                             setForm((f) => (f.type === 'initial_eval' && f.keyDate ? { ...f, dueDate: spedDefaultDue(f.type, f.keyDate, nextDays) || '' } : f));
                           }
                         }}
@@ -763,7 +818,7 @@ function SpedTimelinesPanel(props) {
                     </span>
                     <button type="button"
                       onClick={() => {
-                        if (armDelete === c.id) { setCases((list) => list.filter((x) => x.id !== c.id)); setArmDelete(null); addToast(tt('spedtl.deleted', 'Timeline deleted.'), 'info'); }
+                        if (armDelete === c.id) { casesDirtyRef.current = true; setCases((list) => list.filter((x) => x.id !== c.id)); setArmDelete(null); addToast(tt('spedtl.deleted', 'Timeline deleted.'), 'info'); }
                         else { setArmDelete(c.id); spedAnnounce(tt('spedtl.delete_arm_announce', 'Activate delete again to permanently remove this timeline.')); }
                       }}
                       aria-label={(armDelete === c.id ? tt('spedtl.delete_confirm_aria', 'Confirm delete') : tt('spedtl.delete_aria', 'Delete')) + ' ' + c.code + ' ' + typeLabel(c.type)}
@@ -774,11 +829,11 @@ function SpedTimelinesPanel(props) {
               </ul>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={() => spedDownload('sped-timelines-' + today + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + spedCsv(cases, today), addToast, tt('spedtl.export_toast', 'Export started — check your downloads.'), tt('spedtl.export_failed', 'Export failed: '))}
+                <button type="button" onClick={() => { const nowDay = spedToday(); spedDownload('sped-timelines-' + nowDay + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + spedCsv(cases, nowDay), addToast, tt('spedtl.export_toast', 'Export started — check your downloads.'), tt('spedtl.export_failed', 'Export failed: ')); }}
                   className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('spedtl.export_csv', 'Export CSV')}</button>
                 <button type="button" onClick={exportJson} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('spedtl.export_json', 'Export data (JSON)')}</button>
                 <button type="button" onClick={() => { if (importInputRef.current) importInputRef.current.click(); }} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬆️</span> {tt('spedtl.import', 'Import export file')}</button>
-                <input ref={importInputRef} type="file" accept="application/json,.json" className="sr-only" aria-label={tt('spedtl.import_aria', 'Choose a SpEd Timelines export file')}
+                <input ref={importInputRef} type="file" tabIndex={-1} accept="application/json,.json" className="sr-only" aria-label={tt('spedtl.import_aria', 'Choose a SpEd Timelines export file')}
                   onChange={(e) => { const f = e.target.files && e.target.files[0]; try { e.target.value = ''; } catch (_) {} if (f) importJson(f); }} />
               </div>
               <p className="mt-2 text-xs text-slate-600">{tt('spedtl.storage_note', 'Timelines live only in this browser’s storage — export after changes (Gemini Canvas may not persist storage between sessions). Imports merge; they never overwrite newer local work.')}</p>

@@ -693,6 +693,7 @@
   }
 
   function start() {
+    if (doc && doc.documentElement && typeof doc.documentElement.setAttribute === 'function') doc.documentElement.setAttribute('data-packets-pictures-root', 'true');
     mountOfflineSection();
     mountQueueControls();
     var input = $('word');
@@ -723,7 +724,7 @@
     input.value = state.word;
     drawQueueNote();
     input.addEventListener('input', function () { takeWord(input.value); });
-    input.addEventListener('keydown', function (event) { if (event.key === 'Enter' && !event.repeat && !event.isComposing && event.keyCode !== 229 && state.online) { event.preventDefault(); search(); } });
+    input.addEventListener('keydown', function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter' && !event.repeat && state.online) { event.preventDefault(); search(); } });
     root.addEventListener('hashchange', function () {
       var word = wordFromAddress();
       var more = queueFromAddress(word);
@@ -768,6 +769,7 @@
     });
     $('remove-all-yes').addEventListener('click', removeAll);
     $('remove-all-no').addEventListener('click', function () { show('remove-all-ask', false); $('remove-all').focus(); });
+    if ($('remove-all-ask')) $('remove-all-ask').addEventListener('keydown', function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Escape') { event.preventDefault(); show('remove-all-ask', false); $('remove-all').focus(); } });
 
     store.available().then(function (yes) {
       show('not-keeping', !yes);

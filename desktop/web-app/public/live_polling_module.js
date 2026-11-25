@@ -3331,6 +3331,19 @@
   // ──────────────────────────────────────────────────────────────────────
   const R = (typeof window !== 'undefined' && window.React) || null;
   const ce = R ? R.createElement : null;
+  function _ensureLivePollingA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('live-polling-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'live-polling-a11y-css';
+    st.textContent =
+      '[data-live-polling-root] button,[data-live-polling-root] [role="button"],[data-live-polling-root] summary,[data-live-polling-root] a,[data-live-polling-root] input,[data-live-polling-root] select,[data-live-polling-root] textarea,[data-live-command-center] button,[data-live-command-center] [role="button"],[data-live-command-center] summary,[data-live-command-center] a,[data-live-command-center] input,[data-live-command-center] select,[data-live-command-center] textarea{touch-action:manipulation;}' +
+      '[data-live-polling-root] button:focus-visible,[data-live-polling-root] [role="button"]:focus-visible,[data-live-polling-root] summary:focus-visible,[data-live-polling-root] a:focus-visible,[data-live-polling-root] input:focus-visible,[data-live-polling-root] select:focus-visible,[data-live-polling-root] textarea:focus-visible,[data-live-command-center] button:focus-visible,[data-live-command-center] [role="button"]:focus-visible,[data-live-command-center] summary:focus-visible,[data-live-command-center] a:focus-visible,[data-live-command-center] input:focus-visible,[data-live-command-center] select:focus-visible,[data-live-command-center] textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px;}' +
+      '@media (forced-colors: active){[data-live-polling-root] button:focus-visible,[data-live-polling-root] [role="button"]:focus-visible,[data-live-polling-root] summary:focus-visible,[data-live-polling-root] a:focus-visible,[data-live-polling-root] input:focus-visible,[data-live-polling-root] select:focus-visible,[data-live-polling-root] textarea:focus-visible,[data-live-command-center] button:focus-visible,[data-live-command-center] [role="button"]:focus-visible,[data-live-command-center] summary:focus-visible,[data-live-command-center] a:focus-visible,[data-live-command-center] input:focus-visible,[data-live-command-center] select:focus-visible,[data-live-command-center] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+      '@media (prefers-reduced-motion: reduce){[data-live-polling-root] *,[data-live-polling-root] *::before,[data-live-polling-root] *::after,[data-live-command-center] *,[data-live-command-center] *::before,[data-live-command-center] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+  }
+  _ensureLivePollingA11yCss();
 
   // ── UI localization (runtime-AI, self-contained; NEVER touches lang/*.js) ──
   // English text IS the key; tr() collects strings and a per-component effect
@@ -3424,7 +3437,7 @@
       var firstFocusable = initial || getFocusable()[0] || dialog;
       if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
       var onKeyDown = function (event) {
-        if (event.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (trapStack[trapStack.length - 1] !== trap) return;
         if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           if (typeof escapeRef.current === 'function') {
@@ -3434,7 +3447,7 @@
           }
           return;
         }
-        if (event.key !== 'Tab') return;
+        if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
         var focusable = getFocusable();
         if (!focusable.length) {
           event.preventDefault();
@@ -3506,6 +3519,7 @@
         ce('strong', { style: { color: '#312e81', fontSize: '0.8rem' } }, tr('Private feedback gallery')),
         ce('span', { style: { color: '#475569', fontSize: '0.72rem' } }, submittedCount + '/' + participants.length + ' ' + tr('submitted') + (revisedCount ? ' · ' + revisedCount + ' ' + tr('revised') : '')),
         ce('button', {
+          type: 'button',
           onClick: props.onGenerateAll,
           disabled: submittedCount === 0 || !!props.bulkBusy,
           style: { marginLeft: 'auto', padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid #7c3aed', background: 'white', color: '#5b21b6', fontWeight: 800, fontSize: '0.72rem', cursor: submittedCount === 0 || props.bulkBusy ? 'default' : 'pointer', opacity: submittedCount === 0 ? 0.45 : 1 }
@@ -3535,7 +3549,7 @@
           const feedback = feedbackByUid[participant.uid] || {};
           const busy = !!busyByUid[participant.uid];
           const status = responseEntry ? (attempts.length > 1 ? tr('revised') : tr('submitted')) : tr(participant.status || 'waiting');
-          return ce('article', { key: participant.uid, role: 'listitem', style: { padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: 8, background: 'white' } },
+          return ce('div', { key: participant.uid, role: 'listitem', style: { padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: 8, background: 'white' } },
             ce('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 } },
               ce('strong', { style: { color: '#0f172a', fontSize: '0.8rem' } }, participant.codename),
               participant.groupName ? ce('span', { style: { color: '#6d28d9', background: '#f5f3ff', borderRadius: 999, padding: '0.08rem 0.4rem', fontSize: '0.65rem', fontWeight: 700 } }, participant.groupName) : null,
@@ -3552,6 +3566,7 @@
             responseEntry ? ce('div', null,
               ce('div', { style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 5, flexWrap: 'wrap' } },
                 ce('button', {
+          type: 'button',
                   onClick: function () { props.onGenerate(participant.uid); },
                   disabled: busy,
                   style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #7c3aed', background: 'white', color: '#5b21b6', fontWeight: 800, fontSize: '0.7rem', cursor: busy ? 'default' : 'pointer' }
@@ -3569,15 +3584,18 @@
                 style: { width: '100%', boxSizing: 'border-box', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontSize: '0.76rem', marginBottom: 5 }
               }),
               feedback.draft ? ce('button', {
+          type: 'button',
                 onClick: function () { props.onSendFeedback(participant.uid); },
                 style: { padding: '0.35rem 0.6rem', borderRadius: 6, border: 'none', background: '#4f46e5', color: 'white', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }
               }, feedback.status === 'sent' ? tr('Send updated feedback') : tr('Review complete — send privately')) : null,
               followUpResourceId ? ce('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 6 } },
                 typeof props.onSendToStudent === 'function' ? ce('button', {
+          type: 'button',
                   onClick: function () { props.onSendToStudent(participant.uid, followUpResourceId); },
                   style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #2563eb', background: '#eff6ff', color: '#1d4ed8', fontWeight: 800, fontSize: '0.68rem' }
                 }, tr('Send resource to student')) : null,
                 participant.groupId && typeof props.onSendToGroup === 'function' ? ce('button', {
+          type: 'button',
                   onClick: function () { props.onSendToGroup(participant.groupId, followUpResourceId); },
                   style: { padding: '0.3rem 0.55rem', borderRadius: 6, border: '1px solid #7c3aed', background: '#f5f3ff', color: '#6d28d9', fontWeight: 800, fontSize: '0.68rem' }
                 }, tr('Send to') + ' ' + (participant.groupName || tr('group'))) : null
@@ -3654,7 +3672,7 @@
           const status = normalizeSessionQaStatus(question.status);
           const voteCount = getSessionQaUpvoteCount(state.upvotesByQuestion, question.questionId);
           const isFeatured = state.featuredQuestionId === question.questionId;
-          return ce('article', { key: question.questionId, role: 'listitem', style: { padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 7 } },
+          return ce('div', { key: question.questionId, role: 'listitem', style: { padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 7 } },
             ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
               ce('div', { style: { minWidth: 0 } },
                 ce('strong', { style: { display: 'block', color: '#075985', fontSize: '0.7rem' } }, question.codename || tr('Student')),
@@ -3696,6 +3714,7 @@
 
   const HostPanel = !R ? null : function HostPanel(props) {
     useLivePollingI18n();
+    R.useEffect(function () { _ensureLivePollingA11yCss(); }, []);
     const sessionCode = props.sessionCode || '';
     const isOpen = !!props.isOpen;
     const onClose = props.onClose || (() => {});
@@ -5170,6 +5189,7 @@
       const checkInPending = !!(currentCheckIn && currentCheckIn.activityId === currentSupportActivityId && currentCheckIn.status === 'sent');
       const canCheckIn = !!(row && directConnected && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0)));
       return ce('div', {
+        'data-live-polling-root': 'true',
         role: 'presentation',
         onMouseDown: function (event) { if (event.target === event.currentTarget) closeStudentActivityDetail(); },
         style: { position: 'fixed', inset: 0, zIndex: 10004, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem' }
@@ -5255,7 +5275,7 @@
         ['answerDistribution', tr('Coded answer distribution'), tr('Rating/choice counts with small-group suppression.')],
         ['timeSummary', tr('15-minute time summary'), tr('Response volume by UTC time bucket.')],
       ];
-      return ce('div', { role: 'presentation', onMouseDown: function (event) { if (event.target === event.currentTarget) closeAlloSheetReview(); }, style: { position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' } },
+      return ce('div', { 'data-live-polling-root': 'true', role: 'presentation', onMouseDown: function (event) { if (event.target === event.currentTarget) closeAlloSheetReview(); }, style: { position: 'fixed', inset: 0, zIndex: 10003, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' } },
         ce('div', { ref: alloSheetDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'live-polling-allosheet-title', 'aria-describedby': 'live-polling-allosheet-description', style: { width: '100%', maxWidth: 620, maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto', background: 'white', borderRadius: 12, padding: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' } },
             ce('div', null,
@@ -5285,6 +5305,7 @@
 
     return ce(R.Fragment, null,
       ce('div', {
+        'data-live-polling-root': 'true',
         role: 'presentation',
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem' }
       },
@@ -5416,7 +5437,7 @@
                 const checkInPending = !!(signal && signal.activityId === currentSupportActivityId && signal.status === 'sent');
                 const reasonLabel = item.reason === 'help' ? tr('Help requested') : item.reason === 'failed' ? tr('Resource delivery failed') : item.reason === 'offline' ? tr('Student is offline') : item.reason === 'withdrawn' ? tr('Response withdrawn') : tr('Waiting to begin');
                 const resourceBusy = actionQueueBusyUid === item.uid;
-                return ce('article', { key: item.key, role: 'listitem', style: { padding: '0.55rem', border: '1px solid #ddd6fe', borderRadius: 7, background: 'white' } },
+                return ce('div', { key: item.key, role: 'listitem', style: { padding: '0.55rem', border: '1px solid #ddd6fe', borderRadius: 7, background: 'white' } },
                   ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 6, alignItems: 'center' } },
                     ce('strong', { style: { display: 'block', color: '#1e293b', fontSize: '0.76rem' } }, item.name),
                     ce('span', { style: { color: item.waitMs >= 120000 ? '#b91c1c' : '#64748b', fontSize: '0.63rem', fontWeight: 900, whiteSpace: 'nowrap' } }, tr('Waiting') + ' ' + formatLiveElapsed(item.waitMs))
@@ -5610,6 +5631,7 @@
           ce('div', { style: { display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
             ['rating', 'mcq', 'freetext', 'wordcloud'].map(function (t) {
               return ce('button', {
+          type: 'button',
                 key: t, onClick: function () { setPollType(t); },
                 style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (pollType === t ? '#1e3a8a' : '#cbd5e1'), background: pollType === t ? '#1e3a8a' : 'white', color: pollType === t ? 'white' : '#0f172a', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }
               }, t === 'rating' ? tr('Rating 1–5') : t === 'mcq' ? tr('Multiple choice') : t === 'wordcloud' ? tr('Word cloud') : tr('Free text'));
@@ -5696,6 +5718,7 @@
           // ── Routing-rules expandable section ────────────────────────
           (pollType === 'rating' || pollType === 'mcq') ? ce('div', { style: { marginBottom: 8 } },
             ce('button', {
+          type: 'button',
               onClick: function () { setShowRoutingPanel(function (v) { return !v; }); },
               style: { background: 'none', border: 'none', color: '#1e3a8a', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }
             }, showRoutingPanel ? '▾' : '▸', ' ' + tr('Routing rules') + ' ', ce('span', { style: { fontWeight: 400, color: '#64748b' } }, '(' + composerRules.length + ' ' + (composerRules.length === 1 ? tr('rule') : tr('rules')) + ')'))
@@ -5760,6 +5783,7 @@
                     routingGroups.map(function (g) { return ce('option', { key: g.id, value: g.id }, g.name); })
                   ),
                   ce('button', {
+          type: 'button',
                     onClick: function () { removeRule(rule.id); },
                     'aria-label': tr('Remove rule'),
                     style: { marginLeft: 'auto', padding: '0.25rem 0.5rem', borderRadius: 4, border: '1px solid #fca5a5', background: 'white', color: '#b91c1c', cursor: 'pointer', fontSize: '0.75rem' }
@@ -5768,6 +5792,7 @@
               })
             ) : null,
             ce('button', {
+          type: 'button',
               onClick: addRule, disabled: routingGroups.length === 0,
               style: { marginTop: composerRules.length > 0 ? 6 : 0, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px dashed ' + (routingGroups.length === 0 ? '#cbd5e1' : '#1e3a8a'), background: 'white', color: routingGroups.length === 0 ? '#94a3b8' : '#1e3a8a', cursor: routingGroups.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' }
             }, tr('+ Add rule'))
@@ -5777,7 +5802,7 @@
               ? tr('Ready to broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('student') : tr('students')) + '.'
               : composerValidation.reasons.map(composerValidationMessage).join(' ')
           ),
-          ce('button', { onClick: broadcast, disabled: broadcastDisabled, 'aria-describedby': 'live-poll-composer-readiness', style: { minHeight: 44, padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, activePoll ? tr('Finish active poll first') : tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
+          ce('button', { type: 'button', onClick: broadcast, disabled: broadcastDisabled, 'aria-describedby': 'live-poll-composer-readiness', style: { minHeight: 44, padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, activePoll ? tr('Finish active poll first') : tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
           ) : null
         ),
         activePoll ? ce('div', { 'data-live-workspace-section': 'active', tabIndex: -1, style: { scrollMarginTop: 76, border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 8, padding: '0.75rem' } },
@@ -5788,8 +5813,8 @@
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
               activePoll.type === 'wordcloud' ? ce('button', { type: 'button', onClick: function () { setWordCloudCollectionLocked(!activePoll.submissionsLocked); }, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b45309', background: activePoll.submissionsLocked ? '#fffbeb' : 'white', color: '#92400e', cursor: 'pointer', fontWeight: 800, fontSize: '0.8rem' } }, activePoll.submissionsLocked ? tr('Resume collecting') : tr('Pause and review')) : null,
-              !activeFeedbackConfig.enabled ? ce('button', { onClick: shareResults, disabled: !canShareActiveResults, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (!canShareActiveResults ? '#cbd5e1' : '#2563eb'), background: 'white', color: !canShareActiveResults ? '#94a3b8' : '#1d4ed8', cursor: !canShareActiveResults ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, activePoll.type === 'wordcloud' ? (lastSharedResultsAt ? tr('Reveal updated word cloud') : tr('Reveal approved word cloud')) : (lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results'))) : null,
-              ce('button', { onClick: requestClosePoll, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('End poll'))
+              !activeFeedbackConfig.enabled ? ce('button', { type: 'button', onClick: shareResults, disabled: !canShareActiveResults, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (!canShareActiveResults ? '#cbd5e1' : '#2563eb'), background: 'white', color: !canShareActiveResults ? '#94a3b8' : '#1d4ed8', cursor: !canShareActiveResults ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, activePoll.type === 'wordcloud' ? (lastSharedResultsAt ? tr('Reveal updated word cloud') : tr('Reveal approved word cloud')) : (lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results'))) : null,
+              ce('button', { type: 'button', onClick: requestClosePoll, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('End poll'))
             )
           ),
           ce('div', { style: { marginTop: '0.6rem', fontSize: '0.85rem' } },
@@ -5849,6 +5874,7 @@
               ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 ce('button', { type: 'button', onClick: suggestWordCloudClusters, disabled: wordCloudClusterBusy || !activePoll.submissionsLocked || approvedWordCloudUniqueCount < 2, title: !activePoll.submissionsLocked ? tr('Pause collection before grouping terms') : undefined, style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (activePoll.submissionsLocked && approvedWordCloudUniqueCount >= 2 ? '#7c3aed' : '#cbd5e1'), background: 'white', color: activePoll.submissionsLocked && approvedWordCloudUniqueCount >= 2 ? '#6d28d9' : '#94a3b8', cursor: wordCloudClusterBusy || !activePoll.submissionsLocked || approvedWordCloudUniqueCount < 2 ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.75rem' } }, wordCloudClusterBusy ? tr('Finding groups...') : !activePoll.submissionsLocked ? tr('Pause to group terms') : tr('Suggest similar approved terms')),
                 Object.keys(activeWordCloudAliases).length ? ce('button', {
+          type: 'button',
                   onClick: resetWordCloudAliases,
                   style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid #94a3b8', background: 'white', color: '#475569', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem' }
                 }, tr('Reset term groups')) : null
@@ -5862,7 +5888,7 @@
             wordCloudClusterNotice ? ce('p', { role: 'status', 'aria-live': 'polite', style: { margin: 0, color: '#6d28d9', fontSize: '0.7rem', fontWeight: 750 } }, wordCloudClusterNotice) : null,
             wordCloudClusterSuggestions.length ? ce('div', { role: 'list', 'aria-label': tr('Suggested word cloud term groups'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 6 } },
               wordCloudClusterSuggestions.map(function (suggestion, suggestionIndex) {
-                return ce('article', { key: suggestion.label + '-' + suggestionIndex, role: 'listitem', style: { padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 7, background: '#faf5ff' } },
+                return ce('div', { key: suggestion.label + '-' + suggestionIndex, role: 'listitem', style: { padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 7, background: '#faf5ff' } },
                   ce('strong', { style: { display: 'block', color: '#5b21b6', fontSize: '0.72rem' } }, suggestion.label),
                   ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.66rem', overflowWrap: 'anywhere' } }, suggestion.members.join(' + ')),
                   ce('div', { style: { display: 'flex', gap: 5, marginTop: 5 } },
@@ -6037,6 +6063,7 @@
               })
             ),
             !peerShowcaseRound ? ce('button', {
+          type: 'button',
               onClick: startPeerShowcase,
               disabled: approvedPeerShowcaseRows.length < PEER_SHOWCASE_MIN_CANDIDATES,
               style: { width: '100%', marginTop: 7, padding: '0.5rem', border: 'none', borderRadius: 6, background: approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MIN_CANDIDATES ? '#4f46e5' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MIN_CANDIDATES ? 'pointer' : 'default' }
@@ -6044,8 +6071,8 @@
             peerShowcaseRound && peerShowcaseRound.phase === 'voting' ? ce('div', { style: { marginTop: 8, padding: '0.55rem', borderRadius: 7, background: '#eef2ff' } },
               ce('p', { role: 'status', style: { margin: 0, color: '#312e81', fontSize: '0.76rem', fontWeight: 800 } }, Object.keys(peerVotesForActiveRound).length + ' ' + tr('votes received. Candidate totals stay hidden until you close voting.')),
               ce('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
-                ce('button', { onClick: finishPeerShowcase, style: { flex: 1, padding: '0.45rem', border: 'none', borderRadius: 6, background: '#4f46e5', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close voting and reveal')),
-                ce('button', { onClick: cancelPeerShowcase, style: { padding: '0.45rem 0.7rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Cancel'))
+                ce('button', { type: 'button', onClick: finishPeerShowcase, style: { flex: 1, padding: '0.45rem', border: 'none', borderRadius: 6, background: '#4f46e5', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close voting and reveal')),
+                ce('button', { type: 'button', onClick: cancelPeerShowcase, style: { padding: '0.45rem 0.7rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Cancel'))
               )
             ) : null,
             peerShowcaseRound && peerShowcaseRound.phase === 'results' && peerShowcaseRound.results ? ce('div', { style: { marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -6061,6 +6088,7 @@
                   ),
                   ce('div', { style: { marginTop: 4, color: '#64748b', fontSize: '0.66rem' } }, tr('Teacher view - author:') + ' ' + (owner.codename || owner.name || tr('Student'))),
                   onUsePeerShowcaseResponse ? ce('button', {
+          type: 'button',
                     onClick: function () {
                       onUsePeerShowcaseResponse(candidate.response, {
                         pollId: peerShowcaseRound.pollId,
@@ -6073,10 +6101,12 @@
                     style: { marginTop: 4, padding: '0.25rem 0.4rem', border: '1px solid #34d399', borderRadius: 5, background: '#ecfdf5', color: '#065f46', fontSize: '0.64rem', fontWeight: 900, cursor: 'pointer' }
                   }, tr('Use as Adventure action')) : null,
                   followUpResourceId && onSendToStudent ? ce('button', {
+          type: 'button',
                     onClick: function () { onSendToStudent(internal.ownerUid, followUpResourceId); },
                     style: { marginTop: 4, padding: '0.25rem 0.4rem', border: '1px solid #a5b4fc', borderRadius: 5, background: '#eef2ff', color: '#3730a3', fontSize: '0.64rem', fontWeight: 800, cursor: 'pointer' }
                   }, tr('Send follow-up to author')) : null,
                   followUpResourceId && ownerGroupId && onSendToGroup ? ce('button', {
+          type: 'button',
                     onClick: function () { onSendToGroup(ownerGroupId, followUpResourceId); },
                     style: { marginTop: 4, marginLeft: 4, padding: '0.25rem 0.4rem', border: '1px solid #a5b4fc', borderRadius: 5, background: 'white', color: '#3730a3', fontSize: '0.64rem', fontWeight: 800, cursor: 'pointer' }
                   }, tr('Send to author group')) : null
@@ -6091,7 +6121,7 @@
                 ce('option', { value: '' }, tr('Choose an optional follow-up resource')),
                 resources.map(function (resource) { return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.type || resource.id); })
               ) : null,
-              ce('button', { onClick: cancelPeerShowcase, style: { padding: '0.4rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Close showcase'))
+              ce('button', { type: 'button', onClick: cancelPeerShowcase, style: { padding: '0.4rem', border: '1px solid #a5b4fc', borderRadius: 6, background: 'white', color: '#4338ca', fontWeight: 800, cursor: 'pointer' } }, tr('Close showcase'))
             ) : null,
             ce('p', { style: { margin: '0.45rem 0 0', color: '#64748b', fontSize: '0.65rem', lineHeight: 1.35 } }, tr('Candidate text is shared only after teacher approval. Votes and author identities remain on the teacher device.'))
           ) : null,
@@ -6176,7 +6206,7 @@
       ce('div', {
         ref: endPollDialogRef,
         tabIndex: -1,
-        role: 'alertdialog',
+        'data-live-polling-root': 'true', role: 'alertdialog',
         'aria-modal': 'true',
         'aria-labelledby': 'live-polling-end-title',
         'aria-describedby': 'live-polling-end-summary live-polling-end-guidance',
@@ -6200,7 +6230,7 @@
       ce('div', {
         ref: groupNameDialogRef,
         tabIndex: -1,
-        role: 'alertdialog',
+        'data-live-polling-root': 'true', role: 'alertdialog',
         'aria-modal': 'true',
         'aria-labelledby': 'live-polling-group-warning-title',
         'aria-describedby': 'live-polling-group-warning-message live-polling-group-warning-guidance',
@@ -6220,6 +6250,7 @@
 
   const GuestOverlay = !R ? null : function GuestOverlay(props) {
     useLivePollingI18n();
+    R.useEffect(function () { _ensureLivePollingA11yCss(); }, []);
     const sessionCode = props.sessionCode;
     const userUid = props.userUid;
     const codename = props.codename;
@@ -6620,6 +6651,7 @@
       const total = Number(summary && summary.totalResponses) || 0;
       const sharedCount = summary && summary.wordCloud ? (Number(summary.approvedResponseCount) || 0) : total;
       return ce('div', {
+        'data-live-polling-root': 'true',
         ref: resultsDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Shared poll results'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
       },
@@ -6645,7 +6677,7 @@
             })
           ) : null,
           summary && summary.freeTextSuppressed ? ce('p', { style: { fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.8rem 0' } }, tr('Free-text answers stay private on the teacher device; only the response count is shared.')) : null,
-          ce('button', { onClick: function () { setSharedResults(null); }, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer', fontWeight: 700, width: '100%' } }, tr('Close results'))
+          ce('button', { type: 'button', onClick: function () { setSharedResults(null); }, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: '#1e3a8a', color: 'white', cursor: 'pointer', fontWeight: 700, width: '100%' } }, tr('Close results'))
         )
       );
     };
@@ -6653,6 +6685,7 @@
     const renderPeerVoteResults = function (results) {
       const candidates = Array.isArray(results && results.candidates) ? results.candidates : [];
       return ce('div', {
+        'data-live-polling-root': 'true',
         ref: resultsDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Peer voting results'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
       },
@@ -6673,7 +6706,7 @@
               );
             })
           ),
-          ce('button', { onClick: function () { setPeerVoteResults(null); }, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: '#4338ca', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close results'))
+          ce('button', { type: 'button', onClick: function () { setPeerVoteResults(null); }, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: '#4338ca', color: 'white', fontWeight: 900, cursor: 'pointer' } }, tr('Close results'))
         )
       );
     };
@@ -6685,6 +6718,7 @@
         if (guestRef.current.sendPeerVote(round.roundId, peerVoteSelection)) setPeerVoteSubmitted(true);
       };
       return ce('div', {
+        'data-live-polling-root': 'true',
         role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Anonymous peer showcase'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
       },
@@ -6709,7 +6743,7 @@
               );
             })
           ),
-          ce('button', { onClick: sendVote, disabled: !canSendVote, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: canSendVote ? '#4f46e5' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: canSendVote ? 'pointer' : 'default' } }, peerVoteSubmitted ? tr('Update vote') : tr('Submit vote')),
+          ce('button', { type: 'button', onClick: sendVote, disabled: !canSendVote, style: { marginTop: 10, width: '100%', padding: '0.55rem', border: 'none', borderRadius: 6, background: canSendVote ? '#4f46e5' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: canSendVote ? 'pointer' : 'default' } }, peerVoteSubmitted ? tr('Update vote') : tr('Submit vote')),
           peerVoteSubmitted ? ce('p', { role: 'status', style: { margin: '0.5rem 0 0', color: '#166534', fontSize: '0.75rem', fontWeight: 800 } }, tr('Vote recorded. Totals will appear when the teacher closes voting.')) : null,
           connectionState !== 'connected' ? ce('p', { role: 'status', style: { margin: '0.5rem 0 0', color: '#b45309', fontSize: '0.72rem' } }, tr('Reconnect to cast or update your vote.')) : null
         )
@@ -6757,6 +6791,7 @@
         }
       };
       return ce('div', {
+        'data-live-polling-root': 'true',
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': tr('Live questions and answers'),
@@ -6818,7 +6853,7 @@
           questions.length ? ce('div', { role: 'list', 'aria-label': tr('Anonymous approved questions'), style: { display: 'flex', flexDirection: 'column', gap: 7, marginTop: 7 } },
             questions.map(function (question) {
               const approved = question.status === 'approved';
-              return ce('article', { key: question.questionId, role: 'listitem', style: { padding: '0.65rem', border: '1px solid ' + (question.featured ? '#f59e0b' : '#e2e8f0'), borderRadius: 8, background: question.featured ? '#fffbeb' : 'white' } },
+              return ce('div', { key: question.questionId, role: 'listitem', style: { padding: '0.65rem', border: '1px solid ' + (question.featured ? '#f59e0b' : '#e2e8f0'), borderRadius: 8, background: question.featured ? '#fffbeb' : 'white' } },
                 ce('div', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: '#1e293b', fontSize: '0.84rem' } }, question.text),
                 approved ? ce('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
                   ce('span', { style: { color: '#64748b', fontSize: '0.68rem', fontWeight: 800 } }, question.own ? tr('Your approved question') : tr('Anonymous class question')),
@@ -6923,7 +6958,7 @@
         activePoll ? ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 40, marginLeft: 'auto', padding: '0.3rem 0.55rem', border: '1px solid #2563eb', borderRadius: 999, background: 'white', color: '#1d4ed8', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, tr('Open activity')) : null,
         ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(true); }, 'aria-expanded': false, style: { minWidth: 40, minHeight: 40, marginLeft: activePoll ? 0 : 'auto', border: '1px solid #7c3aed', borderRadius: 999, background: '#f5f3ff', color: '#6d28d9', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, teacherCheckInForCurrentSupport ? tr('Check in') : tr('Support'))
       );
-      return ce('aside', { 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(360px, calc(100vw - 1.5rem))', boxSizing: 'border-box', padding: '0.75rem', border: '1px solid #c4b5fd', borderRadius: 12, background: 'rgba(255,255,255,0.98)', boxShadow: '0 14px 36px rgba(15,23,42,0.24)' } },
+      return ce('aside', { 'data-live-polling-root': 'true', 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(360px, calc(100vw - 1.5rem))', boxSizing: 'border-box', padding: '0.75rem', border: '1px solid #c4b5fd', borderRadius: 12, background: 'rgba(255,255,255,0.98)', boxShadow: '0 14px 36px rgba(15,23,42,0.24)' } },
         ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
           ce('div', null,
             ce('strong', { style: { display: 'block', color: '#312e81', fontSize: '0.82rem' } }, tr('Live session')),
@@ -7038,6 +7073,7 @@
       }
     };
     return ce('div', {
+      'data-live-polling-root': 'true',
       ref: pollDialogRef,
       tabIndex: -1,
       role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Poll:') + ' ' + activePoll.prompt,
@@ -7072,6 +7108,7 @@
           ce('div', { style: { fontWeight: 800 } }, studentFeedback ? tr('Your teacher reviewed your response') : (currentAttempt > 1 ? tr(deliveryState === 'confirmed' ? 'Revision received by teacher. Waiting for feedback.' : 'Revision sent. Waiting for teacher feedback.') : tr(deliveryState === 'confirmed' ? 'Response received by teacher. Waiting for feedback.' : 'Response sent. Waiting for teacher feedback.'))),
           studentFeedback ? ce('div', { style: { marginTop: 7, padding: '0.6rem', background: 'white', border: '1px solid #c7d2fe', borderRadius: 7, whiteSpace: 'pre-wrap', color: '#1e293b', fontSize: '0.86rem', lineHeight: 1.45 } }, studentFeedback.text) : null,
           studentFeedback && studentFeedback.allowRevision && currentAttempt < feedbackConfig.maxAttempts ? ce('button', {
+          type: 'button',
             onClick: function () {
               const nextAttempt = Math.min(feedbackConfig.maxAttempts, currentAttempt + 1);
               setCurrentAttempt(nextAttempt);
@@ -7119,7 +7156,7 @@
               style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: activePoll.submissionsLocked ? '#94a3b8' : '#b91c1c', cursor: activePoll.submissionsLocked ? 'default' : 'pointer', fontWeight: 800 }
             }, tr('Withdraw term'))
           ) : null,
-          ce('button', { onClick: function () { setPollMinimized(true); }, style: { marginTop: 8, minHeight: 44, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Minimize while waiting'))
+          ce('button', { type: 'button', onClick: function () { setPollMinimized(true); }, style: { marginTop: 8, minHeight: 44, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Minimize while waiting'))
         )) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
             ratingValues.map(function (n) {
@@ -7141,7 +7178,7 @@
             ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
           ) :
           ce('textarea', { value: responseValue, disabled: activePoll.submissionsLocked === true || confirmationPending, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : LIVE_POLL_DRAFT_MAX_CHARS, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
-        submitted || confirmationPending ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' || connectionState === 'offline' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
+        submitted || confirmationPending ? null : ce('button', { type: 'button', onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' || connectionState === 'offline' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
         ce('button', {
           type: 'button',
           onClick: toggleHelpRequest,

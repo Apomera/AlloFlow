@@ -66,6 +66,8 @@ describe('anti-drift: every remote fetch in view_pdf_audit is timeout-bounded', 
     // remaining raw-adjacent fetch is the image one, still promise-wrapped.
     expect(audit).toContain('const timer = setTimeout(() => { timedOut = true; try { controller.abort(); } catch (_) {} }, timeoutMs);');
     expect(audit.split('_withTimeout(fetch(').slice(1).length).toBeGreaterThanOrEqual(1);
-    expect(audit).toContain("_withTimeout(fetch(img.src), 20000, 'image fetch')");
+    // The image fetch now goes to the parsed, scheme/origin-checked URL with an
+    // abort signal, and is still promise-timeout wrapped.
+    expect(audit).toContain("const resp = await _withTimeout(fetch(parsedSrc.href, fetchOpts), 20000, 'image fetch');");
   });
 });

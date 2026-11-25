@@ -123,6 +123,11 @@ describe('confirmed native-tool contrast palettes', () => {
   });
 });
 
+// Tools may also honour ctx.theme ('contrast' / 'dark') and let contrast win over dark;
+// either way the flag must still be read from the host's ctx.isContrast / ctx.isDark.
+const THEME_CONTRAST_FLAG = /var isContrast = !!(?:ctx\.isContrast;|\(ctx\.isContrast \|\| ctx\.theme === 'contrast'\);|ctx\.isContrast \|\| ctx\.theme === 'contrast';)/;
+const THEME_DARK_FLAG = /var isDark = (?:!isContrast && \()?!!(?:ctx\.isDark;|\(ctx\.isDark \|\| ctx\.theme === 'dark'\);|ctx\.isDark \|\| ctx\.theme === 'dark'\);)/;
+
 describe('centralized native palettes', () => {
   it.each([
     'stem_lab/stem_tool_autorepair.js',
@@ -130,8 +135,8 @@ describe('centralized native palettes', () => {
     'stem_lab/stem_tool_swimlab.js'
   ])('%s defines light, dark, and contrast branches', (file) => {
     const source = read(file);
-    expect(source).toContain('var isContrast = !!ctx.isContrast');
-    expect(source).toContain('var isDark = !!ctx.isDark');
+    expect(source).toMatch(THEME_CONTRAST_FLAG);
+    expect(source).toMatch(THEME_DARK_FLAG);
     expect(source).toContain("bg: '#000000'");
     expect(source).toMatch(/}\s*:\s*isDark\s*\?\s*{/);
   });
@@ -146,8 +151,8 @@ describe('dispersed-color native shells', () => {
     ['stem_lab/stem_tool_lumen.js', 'data-lumen-theme']
   ])('%s exposes an explicit host-theme shell', (file, marker) => {
     const source = read(file);
-    expect(source).toContain('var isContrast = !!ctx.isContrast');
-    expect(source).toContain('var isDark = !!ctx.isDark');
+    expect(source).toMatch(THEME_CONTRAST_FLAG);
+    expect(source).toMatch(THEME_DARK_FLAG);
     expect(source).toContain(marker);
     expect(source).toContain("'#000000'");
     expect(source).toContain("'#fbbf24'");

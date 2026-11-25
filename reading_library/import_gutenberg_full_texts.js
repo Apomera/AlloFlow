@@ -22,8 +22,15 @@ const { execFileSync } = require('child_process');
 const ROOT = __dirname;
 const BOOKS_DIR = path.join(ROOT, 'books');
 const OPEN_CATALOG_PATH = path.join(ROOT, 'open_catalog.json');
-const GUTENDEX = 'https://gutendex.com/books/';
 const PG_LICENSE = 'https://www.gutenberg.org/policy/license.html';
+// gutenberg.org/policy/robot_access.html: the website is for human users only
+// and automated access gets an IP blocked. Bulk access must use a mirror, the
+// harvest endpoint, or the public-domain offline catalog. Everything here
+// (catalog RDF + plain text) comes from the PGLAF mirror.
+const PG_MIRROR = 'https://gutenberg.pglaf.org';
+const ALLOWED_FETCH_HOSTS = new Set(['gutenberg.pglaf.org']);
+// One request at a time, with a pause after each, as the harvest guidance asks.
+const REQUEST_PAUSE_MS = 1000;
 const UA = 'AlloFlow reading library full-text importer';
 const TARGET_WORDS_PER_PAGE = 520;
 const MAX_WORDS_PER_PAGE = 760;
@@ -749,11 +756,32 @@ const DEFAULT_IMPORTS = [
 ];
 
 const dryRun = process.argv.includes('--dry-run');
+const fromCards = process.argv.includes('--from-cards');
 const idsArg = valueAfter('--ids');
-const requestedIds = idsArg
+const limitArg = Number(valueAfter('--limit') || 0);
+
+// --from-cards: every Gutenberg catalog CARD still in open_catalog.json. Those
+// books stay in the lazily loaded index (indexTier 'lazy'), so promoting them
+// to full text leaves the core index the same size.
+function cardIdsFromCatalog() {
+  const catalog = readJson(OPEN_CATALOG_PATH);
+  const ids = [];
+  for (const item of catalog.items || []) {
+    const match = /^gutenberg-ebook-(\d+)-/.exec(item.slug || '');
+    if (!match) continue;
+    const file = path.join(ROOT, item.file || ('books/' + item.slug + '.json'));
+    if (!fs.existsSync(file)) continue;
+    if (readJson(file).contentType === 'public-domain-catalog-card') ids.push(Number(match[1]));
+  }
+  return ids;
+}
+
+let requestedIds = idsArg
   ? idsArg.split(',').map((s) => Number(s.trim())).filter((n) => Number.isInteger(n) && n > 0)
-  : DEFAULT_IMPORTS.map((item) => item.id);
-const requested = requestedIds.map((id) => DEFAULT_IMPORTS.find((item) => item.id === id) || { id });
+  : fromCards ? cardIdsFromCatalog() : DEFAULT_IMPORTS.map((item) => item.id);
+if (limitArg > 0) requestedIds = requestedIds.slice(0, limitArg);
+const requested = requestedIds.map((id) => DEFAULT_IMPORTS.find((item) => item.id === id) ||
+  (fromCards ? { id, indexTier: 'lazy' } : { id }));
 
 function valueAfter(flag) {
   const idx = process.argv.indexOf(flag);
@@ -768,8 +796,12 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
+// Write to a temp file, then rename: a disk-full write cannot truncate the
+// existing book or catalog.
 function writeJson(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+  const tmp = file + '.tmp-' + process.pid;
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
+  fs.renameSync(tmp, file);
 }
 
 function compact(s) {
@@ -798,14 +830,22 @@ function authorName(person) {
   return compact(person && person.name) || 'Project Gutenberg';
 }
 
+function assertAllowedFetch(url) {
+  const host = new URL(url).hostname.toLowerCase();
+  if (!ALLOWED_FETCH_HOSTS.has(host)) {
+    throw new Error('Refusing automated fetch from ' + host + ' (Project Gutenberg robot policy: use the mirror): ' + url);
+  }
+}
+
 function curlBytes(url, accept, attempt) {
   attempt = attempt || 1;
+  assertAllowedFetch(url);
   try {
     return execFileSync('curl', [
       '-sSL',
       '--fail',
       '--max-time',
-      '45',
+      '180', // the mirror can need >45 s for a 4-7 MB complete-works text
       '-H',
       'User-Agent: ' + UA,
       '-H',
@@ -813,7 +853,9 @@ function curlBytes(url, accept, attempt) {
       url,
     ], { maxBuffer: 96 * 1024 * 1024 });
   } catch (err) {
-    if (attempt < 3) return curlBytes(url, accept, attempt + 1);
+    // curl exit 22 = HTTP error from --fail (e.g. 404, no such file): retrying
+    // will not help. Retry only network failures and timeouts.
+    if (attempt < 3 && err.status !== 22) return curlBytes(url, accept, attempt + 1);
     throw new Error('Could not fetch ' + url + ': ' + String(err.message || err).slice(0, 180));
   }
 }
@@ -826,24 +868,101 @@ function getJson(url) {
   return JSON.parse(curlText(url, 'application/json'));
 }
 
+// Mirror layout: generated UTF-8 text at cache/epub/<id>/pg<id>.txt, and the
+// posted file at <d1>/<d2>/.../<id>/<id>-0.txt (every digit but the last).
+function mirrorFilesDir(id) {
+  const digits = String(id).split('');
+  const dirs = digits.length > 1 ? digits.slice(0, -1) : ['0'];
+  return PG_MIRROR + '/' + dirs.join('/') + '/' + id + '/';
+}
+
 function choosePlainTextSource(formats, id) {
-  const entries = Object.entries(formats || {}).filter(([mime, url]) =>
-    /^text\/plain/i.test(mime) &&
-    /\.txt($|\?)/i.test(String(url || '')) &&
-    !/\.zip($|\?)/i.test(String(url || '')) &&
-    !/readme\.txt($|\?)/i.test(String(url || ''))
-  );
-  const preferred = entries.find(([mime]) => /utf-8/i.test(mime)) ||
-    entries.find(([, url]) => /\/files\/\d+\/\d+-0\.txt/i.test(url)) ||
-    entries.find(([, url]) => /pg\d+\.txt/i.test(url)) ||
-    entries[0];
-  // The cache copy is also carried as a fallback: Gutendex sometimes lists a
-  // stale files/<id>/<id>.txt URL that 404s while pg<id>.txt serves fine
-  // (hit with the illustrated Wizard of Oz #43936).
-  const cacheUrl = 'https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.txt';
-  return preferred
-    ? { mime: preferred[0], url: preferred[1], fallbackUrl: cacheUrl }
-    : { mime: 'text/plain; charset=utf-8', url: cacheUrl };
+  return {
+    mime: 'text/plain; charset=utf-8',
+    url: PG_MIRROR + '/cache/epub/' + id + '/pg' + id + '.txt',
+    fallbackUrl: mirrorFilesDir(id) + id + '-0.txt',
+  };
+}
+
+function xmlDecode(s) {
+  return String(s || '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&amp;/g, '&');
+}
+
+// In PG titles the first line break separates the subtitle; later breaks are
+// only wrapping inside a long subtitle.
+function rdfTitle(raw) {
+  const lines = String(raw || '').split(/\s*\r?\n\s*/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length < 2) return lines[0] || '';
+  const head = lines[0].replace(/[;:,]\s*$/, '');
+  return head + ': ' + lines.slice(1).join(' ');
+}
+
+// Project Gutenberg's own catalog record (public domain), shaped like the
+// Gutendex records this importer used before: Gutendex is a third-party
+// service and was unreachable on 2026-11-23.
+function metadataFromRdf(xml, id) {
+  const ebook = (xml.match(/<pgterms:ebook\b[\s\S]*?<\/pgterms:ebook>/) || [xml])[0];
+  const one = (re) => { const m = ebook.match(re); return m ? xmlDecode(m[1]).trim() : ''; };
+  const rights = one(/<dcterms:rights>([\s\S]*?)<\/dcterms:rights>/);
+  const agents = [];
+  const agentRe = /<(dcterms:creator|marcrel:[a-z]{3})>\s*<pgterms:agent\b[\s\S]*?<\/pgterms:agent>/g;
+  let m;
+  while ((m = agentRe.exec(ebook))) {
+    const block = m[0];
+    const get = (tag) => { const x = block.match(new RegExp('<pgterms:' + tag + '[^>]*>([\\s\\S]*?)</pgterms:' + tag + '>')); return x ? xmlDecode(x[1]).trim() : ''; };
+    const death = parseInt(get('deathdate'), 10);
+    const birth = parseInt(get('birthdate'), 10);
+    agents.push({
+      role: m[1] === 'dcterms:creator' ? 'creator' : m[1].slice(8),
+      name: get('name'),
+      birth_year: Number.isFinite(birth) ? birth : null,
+      death_year: Number.isFinite(death) ? death : null,
+    });
+  }
+  const languages = [];
+  const langRe = /<dcterms:language>[\s\S]*?<rdf:value[^>]*>([\s\S]*?)<\/rdf:value>[\s\S]*?<\/dcterms:language>/g;
+  while ((m = langRe.exec(ebook))) languages.push(xmlDecode(m[1]).trim());
+  const subjects = [];
+  const subjectRe = /<dcterms:subject>[\s\S]*?<rdf:value>([\s\S]*?)<\/rdf:value>[\s\S]*?<\/dcterms:subject>/g;
+  while ((m = subjectRe.exec(ebook))) {
+    const value = xmlDecode(m[1]).trim();
+    if (value && !/^[A-Z]{1,3}$/.test(value)) subjects.push(value); // drop bare LoCC class codes
+  }
+  return {
+    id: Number(id),
+    title: rdfTitle(one(/<dcterms:title>([\s\S]*?)<\/dcterms:title>/)),
+    rights,
+    // Same meaning as Gutendex's flag: false = public domain in the USA.
+    copyright: /^Public domain in the USA\.?$/i.test(rights) ? false : true,
+    authors: agents.filter((a) => a.role === 'creator'),
+    contributors: agents.filter((a) => a.role !== 'creator'),
+    languages,
+    subjects,
+    formats: {
+      'image/jpeg': 'https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.cover.medium.jpg',
+    },
+  };
+}
+
+async function fetchMetadata(id) {
+  const xml = curlText(PG_MIRROR + '/cache/epub/' + id + '/pg' + id + '.rdf', 'application/rdf+xml');
+  await sleep(REQUEST_PAUSE_MS);
+  return metadataFromRdf(xml, id);
+}
+
+// "Public domain in the USA" is a US determination. Life+70 countries protect
+// a work until 70 full years after the last creator or translator died; say so
+// whenever any death year is missing or too recent.
+function outsideUsRightsNotice(metadata, year) {
+  year = year || new Date().getFullYear();
+  const people = (metadata.authors || []).concat(metadata.contributors || []);
+  const unclear = people.filter((p) => !Number.isFinite(p.death_year) || p.death_year + 70 >= year);
+  if (!unclear.length) return null;
+  return 'Public domain in the United States. In countries where copyright lasts 70 years after the author or translator dies, this work may still be protected, so check local rules before copying or sharing it outside the US.';
 }
 
 function fetchPlainText(source) {
@@ -1089,11 +1208,13 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     .filter((p, i) => i >= 6 || !isProductionCreditBlock(p));
   const bodyWords = words(paragraphs.join(' '));
   if (bodyWords < 300) throw new Error('Text for #' + metadata.id + ' was too short after cleaning (' + bodyWords + ' words).');
+  const rightsNotice = outsideUsRightsNotice(metadata);
   const note = [
     'Source note: this public-domain text is available inside AlloFlow for classroom reading.',
     'Use Open original for Project Gutenberg formats and the full Project Gutenberg license.',
+    rightsNotice,
     'Teacher note: historical texts can preserve dated language, assumptions, and viewpoints. Preview before assigning.',
-  ].join(' ');
+  ].filter(Boolean).join(' ');
   const pages = [note].concat(splitIntoReadingPages(paragraphs, pageTargetsFor(bodyWords))).map((text, idx) => ({
     n: idx + 1,
     img: null,
@@ -1128,7 +1249,10 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     },
     // Gutendex records include a generated cover thumbnail for most books;
     // stored as a plain URL string (StoryWeaver books use {card,large}).
-    cover: (metadata.formats && (metadata.formats['image/jpeg'] || metadata.formats['image/png'])) || null,
+    cover: curation.existingCover ||
+      (metadata.formats && (metadata.formats['image/jpeg'] || metadata.formats['image/png'])) || null,
+    ...(rightsNotice ? { rightsNotice } : {}),
+    ...(curation.indexTier ? { indexTier: curation.indexTier } : {}),
     audio: null,
     pages,
     stats: {
@@ -1157,10 +1281,19 @@ async function main() {
 
   for (const curation of requested) {
     try {
-      const metadata = getJson(GUTENDEX + curation.id);
+      const metadata = await fetchMetadata(curation.id);
       validateMetadata(metadata);
       const textSource = choosePlainTextSource(metadata.formats, metadata.id);
       const existingItem = catalogItemForId(catalog, metadata.id);
+      if (existingItem) {
+        const existingPath = path.join(ROOT, existingItem.file || ('books/' + existingItem.slug + '.json'));
+        if (fs.existsSync(existingPath)) {
+          const existing = readJson(existingPath);
+          if (existing.cover && !curation.existingCover) curation.existingCover = existing.cover;
+          // Keep an earlier lazy placement on reruns of a promoted card.
+          if (existing.indexTier && !curation.indexTier) curation.indexTier = existing.indexTier;
+        }
+      }
       const book = makeBook(metadata, textSource, curation, existingItem);
       const file = existingItem ? existingItem.file : 'books/' + book.slug + '.json';
       if (!existingItem && !existingSlugs.has(book.slug)) {
@@ -1169,12 +1302,13 @@ async function main() {
       }
       if (!dryRun) writeJson(path.join(ROOT, file), book);
       imported.push({ id: metadata.id, title: book.title, pages: book.stats.pages, words: book.stats.words, file });
-      console.log((dryRun ? 'WOULD IMPORT ' : 'IMPORTED ') + '#' + metadata.id + ' ' + book.title + ' (' + book.stats.pages + 'p, ' + book.stats.words + 'w)');
-      await sleep(250);
+      console.log((dryRun ? 'WOULD IMPORT ' : 'IMPORTED ') + '#' + metadata.id + ' ' + book.title + ' (' + book.stats.pages + 'p, ' + book.stats.words + 'w' + (book.rightsNotice ? ', US-only PD note' : '') + ')');
+      await sleep(REQUEST_PAUSE_MS);
     } catch (err) {
       skipped.push({ id: curation.id, error: err.message });
       console.warn('SKIP #' + curation.id + ': ' + err.message);
-      await sleep(250);
+      await sleep(REQUEST_PAUSE_MS);
+      if (/Refusing automated fetch/.test(err.message)) throw err;
     }
   }
 
@@ -1195,6 +1329,11 @@ if (require.main === module) {
 // Shared with maintenance scripts (e.g. one-off cleanup passes) so the
 // cleaning rules live in exactly one place.
 module.exports = {
+  assertAllowedFetch,
+  metadataFromRdf,
+  mirrorFilesDir,
+  rdfTitle,
+  outsideUsRightsNotice,
   stripInlineArtifacts,
   stripBlockArtifacts,
   stripEmphasisUnderscores,

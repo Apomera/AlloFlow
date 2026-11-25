@@ -33,6 +33,15 @@
   var ArrowUpRight = _lazyIcon('ArrowUpRight');
 
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+function ensureSentenceFramesPolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-sentence-frames-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-sentence-frames-a11y-css';
+  st.textContent = ['[data-sentence-frames-view="true"] button,[data-sentence-frames-view="true"] input,[data-sentence-frames-view="true"] textarea{touch-action:manipulation;box-sizing:border-box}', '[data-sentence-frames-view="true"] button:focus-visible,[data-sentence-frames-view="true"] input:focus-visible,[data-sentence-frames-view="true"] textarea:focus-visible,[data-sentence-frames-view="true"] [role="region"]:focus-visible{outline:3px solid #be123c;outline-offset:2px}', '.theme-contrast [data-sentence-frames-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}', '@media (forced-colors:active){[data-sentence-frames-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-sentence-frames-view="true"] button,[data-sentence-frames-view="true"] input,[data-sentence-frames-view="true"] textarea{border:1px solid ButtonText}}', '@media (prefers-reduced-motion:reduce){[data-sentence-frames-view="true"] *,[data-sentence-frames-view="true"] *::before,[data-sentence-frames-view="true"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'].join('');
+  document.head.appendChild(st);
+}
+ensureSentenceFramesPolishCss();
+
 // Preserve split-index keys used by existing student projects and voice inputs.
 // Numeric citations ([1], [2, 3]) and Markdown links ([text](url)) are not blanks.
 const SCAFFOLD_BLANK_PATTERN = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
@@ -69,6 +78,7 @@ function _scaffoldTranslationAttributes(artifact) {
   };
 }
 function SentenceFramesView(props) {
+  ensureSentenceFramesPolishCss();
   // State reads
   var t = typeof props.t === 'function' ? props.t : () => '';
   const label = (key, fallback) => {
@@ -164,6 +174,12 @@ function SentenceFramesView(props) {
   };
   const [draftCopied, setDraftCopied] = React.useState(false);
   const draftCopiedTimerRef = React.useRef(null);
+  const [scaffoldSrMsg, setScaffoldSrMsg] = React.useState('');
+  const announceScaffold = msg => {
+    const clean = String(msg || '');
+    setScaffoldSrMsg(clean);
+    if (typeof props.announceToSR === 'function') props.announceToSR(clean);
+  };
   const [activeTierFilter, setActiveTierFilter] = React.useState('all');
   const [speakingDraft, setSpeakingDraft] = React.useState(false);
   const draftSpeechListenerRef = React.useRef(null);
@@ -283,6 +299,7 @@ function SentenceFramesView(props) {
     const inserted = (needsLeadingSpace ? ' ' : '') + word + (needsTrailingSpace ? ' ' : '');
     const nextVal = before + inserted + after;
     handleStudentInput(resId, targetKey, nextVal);
+    announceScaffold(label('scaffolds.inserted_word_sr', 'Inserted word: {word}').replace('{word}', word));
     if (el) {
       const caretPos = before.length + (needsLeadingSpace ? 1 : 0) + word.length;
       const restoreFocus = () => {
@@ -320,6 +337,7 @@ function SentenceFramesView(props) {
     const markCopied = () => {
       if (!scaffoldMountedRef.current) return;
       setDraftCopied(true);
+      announceScaffold(label('scaffolds.draft_copied_sr', 'Draft copied to clipboard.'));
       if (draftCopiedTimerRef.current) clearTimeout(draftCopiedTimerRef.current);
       draftCopiedTimerRef.current = setTimeout(() => {
         draftCopiedTimerRef.current = null;
@@ -468,8 +486,14 @@ function SentenceFramesView(props) {
   };
   const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6",
+    "data-sentence-frames-view": "true"
+  }, scaffoldSrMsg ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, scaffoldSrMsg) : null, /*#__PURE__*/React.createElement("div", {
     className: "bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-center gap-4",
     "data-help-key": "scaffolds_goal_panel"
   }, isTeacherMode && /*#__PURE__*/React.createElement("p", {
@@ -509,7 +533,7 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('common.reset')), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('common.reset') || 'Reset'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-scaffolds-listen-draft": true,
     disabled: !hasAssembledDraft && !speakingDraft,
@@ -565,7 +589,7 @@ function SentenceFramesView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14,
     "aria-hidden": "true"
-  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), draftCrisisNotice && /*#__PURE__*/React.createElement("div", {
+  }), isEditingScaffolds ? t('common.done_editing') || 'Done Editing' : t('scaffolds.edit') || 'Edit Scaffolds'))), draftCrisisNotice && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     "data-scaffolds-crisis-notice": true,
     className: "rounded-xl border-2 border-rose-500 bg-rose-50 p-3 text-sm font-semibold text-rose-900"
@@ -624,14 +648,20 @@ function SentenceFramesView(props) {
     type: "button",
     "data-tier-filter": "all",
     "aria-pressed": effectiveTierFilter === 'all',
-    onClick: () => setActiveTierFilter('all'),
+    onClick: () => {
+      setActiveTierFilter('all');
+      announceScaffold(label('scaffolds.tier_filter_all_sr', 'Showing all writing supports'));
+    },
     className: `min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`
   }, label('common.all', 'All'), " (", draftStats.total, ")"), presentTiers.map(tierKey => /*#__PURE__*/React.createElement("button", {
     key: tierKey,
     type: "button",
     "data-tier-filter": tierKey,
     "aria-pressed": effectiveTierFilter === tierKey,
-    onClick: () => setActiveTierFilter(tierKey),
+    onClick: () => {
+      setActiveTierFilter(tierKey);
+      announceScaffold(label('scaffolds.tier_filter_one_sr', 'Showing {tier} writing supports').replace('{tier}', label(TIER_LABELS[tierKey][0], TIER_LABELS[tierKey][1])));
+    },
     className: `min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === tierKey ? 'bg-rose-700 text-white border-rose-700' : TIER_CLASSES[tierKey] + ' hover:opacity-90'}`
   }, label(TIER_LABELS[tierKey][0], TIER_LABELS[tierKey][1]), " (", tierCounts[tierKey], ")"))), isSessionOpen && typeof DraftFeedbackInterface === 'function' ? (() => {
     const feedbackNode = /*#__PURE__*/React.createElement(DraftFeedbackInterface, {
@@ -684,7 +714,7 @@ function SentenceFramesView(props) {
     onChange: e => {
       if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text', e.target.value);
     },
-    className: "w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none font-serif",
+    className: "w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none font-serif",
     rows: safeGetRows(item.text)
   }), (item.text_en !== undefined || Boolean(leveledTextLanguage && leveledTextLanguage !== 'English')) && /*#__PURE__*/React.createElement("textarea", _extends({}, _scaffoldTranslationAttributes(generatedContent), {
     "aria-label": t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`,
@@ -692,7 +722,7 @@ function SentenceFramesView(props) {
     onChange: e => {
       if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text_en', e.target.value, true);
     },
-    className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
+    className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none",
     rows: safeGetRows(item.text_en || ''),
     placeholder: t('common.placeholder_translation')
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
@@ -742,7 +772,7 @@ function SentenceFramesView(props) {
     onChange: e => {
       if (typeof handleScaffoldTextChange === 'function') handleScaffoldTextChange('text', e.target.value);
     },
-    className: "w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none",
+    className: "w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none",
     rows: safeGetRows(generatedContent?.data?.text)
   }) : /*#__PURE__*/React.createElement("div", {
     lang: leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined,
@@ -816,24 +846,27 @@ function SentenceFramesView(props) {
     onClick: handleToggleRubricZoom,
     "aria-pressed": !!rubricZoom,
     className: `min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${rubricZoom ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-white text-slate-700 hover:text-indigo-700 border-slate-400'}`,
-    title: t('scaffolds.rubric_toggle_tooltip')
+    title: t('scaffolds.rubric_toggle_tooltip') || 'Toggle compact view'
   }, rubricZoom ? /*#__PURE__*/React.createElement(Maximize, {
     size: 12,
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Minimize, {
     size: 12,
     "aria-hidden": "true"
-  }), rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')), /*#__PURE__*/React.createElement("button", {
+  }), rubricZoom ? t('scaffolds.rubric_normal') || 'Normal size' : t('scaffolds.rubric_fit') || 'Fit to screen'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (typeof copyToClipboard === 'function') copyToClipboard(generatedContent?.data?.rubric);
+      if (typeof copyToClipboard === 'function') {
+        copyToClipboard(generatedContent?.data?.rubric);
+        announceScaffold(label('scaffolds.rubric_copied_sr', 'Rubric copied to clipboard.'));
+      }
     },
     className: "min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-    title: t('scaffolds.rubric_copy_tooltip')
+    title: t('scaffolds.rubric_copy_tooltip') || 'Copy text'
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('scaffolds.rubric_copy'))))), generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('scaffolds.rubric_copy') || 'Copy')))), generatedContent?.data?.rubric && /*#__PURE__*/React.createElement("div", {
     className: `bg-white p-4 rounded-xl border border-slate-400 relative shadow-sm transition-all motion-reduce:transition-none ${rubricZoom ? 'text-xs' : ''}`
   }, /*#__PURE__*/React.createElement("style", null, rubricZoom ? `
                                     .rubric-container table th, .rubric-container table td { padding: 4px !important; line-height: 1.2 !important; }
@@ -861,7 +894,7 @@ function SentenceFramesView(props) {
     size: 18,
     "aria-hidden": "true",
     className: "text-indigo-600"
-  }), " ", t('scaffolds.auto_grader')), !gradingResult ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('scaffolds.auto_grader') || 'AI Auto-Grader'), !gradingResult ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('dashboard.grading.student_work_input') || 'Paste student work for grading',
@@ -884,7 +917,7 @@ function SentenceFramesView(props) {
     size: 16,
     "aria-hidden": "true",
     className: "text-amber-200 fill-current"
-  }), isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn'))) : /*#__PURE__*/React.createElement("div", {
+  }), isGrading ? t('dashboard.grading.grade_work_loading') || 'Grading...' : t('dashboard.grading.grade_work_btn') || 'Grade Student Work')) : /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2"
@@ -929,7 +962,7 @@ function SentenceFramesView(props) {
     type: "button",
     onClick: handleSetGradingResultToNull,
     className: "min-h-11 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline w-full text-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, t('dashboard.grading.grade_another'))))));
+  }, t('dashboard.grading.grade_another') || 'Grade Another Draft')))));
 }
 SentenceFramesView.paragraphParts = scaffoldParagraphParts;
 SentenceFramesView.serializeParagraph = serializeScaffoldParagraph;

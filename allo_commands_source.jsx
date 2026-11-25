@@ -40,7 +40,6 @@ function _aiUsable(kind, fn) {
     || window.__alloAiSecretsLocked === true
     || window._alloQrBlocked === true
     || window.hideStudentAiFeatures === true
-    || !!window.__alloQrStudentMode
     || (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled())
     || (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled())
     || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
@@ -1033,10 +1032,11 @@ function buildAlloCommands(ctx, opts = {}) {
     // the recorder: that one coaches while you record, this one is the tool you
     // open when a website is fighting you.
     { id: 'open_it_coach', icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', roles: 'all', when: (c) => typeof window !== 'undefined' && typeof window.open === 'function' && !(c && c.studentAiFeaturesHidden) && window.__alloStudentAiDisabled !== true && window._alloQrBlocked !== true && !window.__alloQrStudentMode && !(window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false), label: t('cmd.open_it_coach', 'Coach me through another website'), aliases: ['it coach', 'help me use this website', 'help me use another website', 'guide me through a website', 'walk me through this site', 'how do i use this site', 'stuck on a website'], hint: t('cmd.open_it_coach_hint', 'Opens a coach that watches a site you share and suggests the next step — it advises, you do the clicking'), run: (c) => {
-      if ((c && c.studentAiFeaturesHidden) || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true || !!window.__alloQrStudentMode || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)))) {
+      if ((c && c.studentAiFeaturesHidden) || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)))) {
         return t('cmd.open_it_coach_disabled', 'Screen Coach is not available while AI features are turned off.');
       }
-      const posture = getCommandAudience(c) === 'teacher' ? 'educator' : 'learner';
+      // Educator only for an explicit teacher: getCommandAudience() reads a missing context as teacher.
+      const posture = (c && c.isTeacherMode === true && getCommandAudience(c) === 'teacher') ? 'educator' : 'learner';
       // Prefer the Video Studio module's opener: it mints a bridge token and
       // registers the window, so the coach reuses the app's AI settings through
       // the bridge that already exists instead of asking for a second key.
@@ -4891,9 +4891,10 @@ function createVoiceLoop(getCtx, opts = {}) {
           const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
           const target = String(u.lang || "").toLowerCase();
           const primary = target.split("-")[0];
-          u.voice = voices.find((voice) => String(voice && voice.lang || "").toLowerCase() === target)
-            || voices.find((voice) => String(voice && voice.lang || "").toLowerCase().split("-")[0] === primary)
-            || null;
+          const localVoices = voices.filter((voice) => voice && voice.localService === true);
+          const pickFrom = (list) => list.find((voice) => String(voice && voice.lang || "").toLowerCase() === target)
+            || list.find((voice) => String(voice && voice.lang || "").toLowerCase().split("-")[0] === primary);
+          u.voice = pickFrom(localVoices) || pickFrom(voices) || null;
         } catch (_) {}
         u.rate = voiceRate;
         u.volume = voiceVolume;

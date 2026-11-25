@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "packId": "praxis-school-counselor-5422",
   "version": "1.0.0",
   "schemaVersion": 1,
@@ -150,8 +151,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "d74e0ac0a55192d437f6f11d3084229c4b5e88d55957832156de2590fe9586d5",
-    "learningLibrarySha256": "d8b01250aad014832e9aa867ef7a6f067489d17c823366e43b08c50d9600b203",
+    "sourceItemsSha256": "bc67346769ff58a93887fc84a4ca5817cb961a03ad0afc6215bfabe3d8b4ea73",
+    "learningLibrarySha256": "4bb085a159ad18224a4e4f36d66f22c62cc93abd6be632011f26f9ff1e1a7a06",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

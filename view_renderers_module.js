@@ -1,6 +1,8 @@
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 if (window.AlloModules && window.AlloModules.ViewRenderersModule) { console.log('[CDN] ViewRenderersModule already loaded, skipping'); return; }
+if (typeof React === 'undefined') return;
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 var useState = React.useState;
 var useEffect = React.useEffect;
@@ -81,13 +83,65 @@ function _vrCopy(t, key, fallback) {
     return fallback;
   }
 }
+const _vrSafeJsonReviver = (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
+const _vrIsGlobalMuted = () => typeof window !== "undefined" && (typeof window.__alloIsGlobalMuted === "function" ? !!window.__alloIsGlobalMuted() : !!window.__alloGlobalMute || !!window._alloGlobalMute);
+const _vrCheckCrisisText = (rawText) => {
+  const s = String(rawText || "").trim();
+  if (!s) return false;
+  try {
+    const checker = typeof window !== "undefined" && (window.AlloModules?.SafetyContentChecker || window.SafetyContentChecker);
+    if (checker && typeof checker.check === "function") {
+      const res = checker.check(s);
+      if (res && (res.blocked || res.crisis || res.level === "critical" || res.severity === "critical")) return true;
+    }
+  } catch (_) {
+  }
+  return /\b(kill\s+my\s*self|suicid\w*|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[\s-]*harm|cut\s+my\s*self)\b/i.test(s);
+};
+const _vrSpeakBranch = (spoken) => {
+  if (!spoken || _vrIsGlobalMuted() || typeof window === "undefined") return;
+  try {
+    if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
+      window.AlloSpeechPlayer.speak(spoken);
+    } else if (typeof window.callTTS === "function") {
+      Promise.resolve(window.callTTS(spoken)).then((url) => {
+        if (!url) return;
+        const revoke = () => {
+          try {
+            URL.revokeObjectURL(url);
+          } catch (_) {
+          }
+        };
+        if (_vrIsGlobalMuted()) {
+          revoke();
+          return;
+        }
+        const audio = new Audio(url);
+        audio.addEventListener("ended", revoke);
+        audio.addEventListener("error", revoke);
+        audio.play().catch(revoke);
+        setTimeout(revoke, 12e4);
+      }).catch(() => {
+      });
+    } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
+    }
+  } catch (_) {
+  }
+};
 const _alloAiUsableKind = (kind, fn) => {
+  if (typeof window === "undefined") return false;
+  if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true) return false;
+  if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled()) return false;
+  if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
   try {
     if (typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
   } catch (_) {
+    return false;
   }
   try {
-    return typeof fn === "function" && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
+    return typeof fn === "function" && !fn._alloQrBlocked;
   } catch (_) {
     return false;
   }
@@ -186,7 +240,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     const chartMatch = line.trim().match(/^\[\[CHART:\s*({.*})\]\]$/);
     if (chartMatch) {
       try {
-        const chartData = JSON.parse(chartMatch[1]);
+        const chartData = JSON.parse(chartMatch[1], _vrSafeJsonReviver);
         const chartDescription = typeof chartData.description === "string" ? chartData.description.trim() : "";
         const chartCaption = chartDescription ? /* @__PURE__ */ React.createElement("figcaption", { "data-chart-description": true, className: "mt-3 text-sm text-slate-700 text-left leading-relaxed" }, chartDescription) : null;
         const chartTable = (rows) => /* @__PURE__ */ React.createElement("details", { "data-chart-data": true, className: "mt-2 w-full text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-semibold text-indigo-800" }, _tcText(t, "table_chart.show_data", "Show the data as a table")), /* @__PURE__ */ React.createElement("table", { className: "mt-2 w-full text-left border border-slate-200" }, /* @__PURE__ */ React.createElement("thead", { className: "bg-slate-50" }, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1" }, _tcText(t, "table_chart.data_label", "Label")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "px-2 py-1" }, _tcText(t, "table_chart.data_value", "Value")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((row, i) => /* @__PURE__ */ React.createElement("tr", { key: i, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "px-2 py-1 font-normal" }, String(row.label == null ? "" : row.label)), /* @__PURE__ */ React.createElement("td", { className: "px-2 py-1" }, String(row.value == null ? "" : row.value)))))));
@@ -624,8 +678,9 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
     clone.style.zoom = "1";
     clone.style.transform = "none";
     const boardRect = board.getBoundingClientRect();
-    const width = Math.ceil(Math.max(board.scrollWidth, boardRect.width / zoom));
-    const height = Math.ceil(Math.max(board.scrollHeight, boardRect.height / zoom));
+    const safeZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+    const width = Math.ceil(Math.max(board.scrollWidth, boardRect.width / safeZoom));
+    const height = Math.ceil(Math.max(board.scrollHeight, boardRect.height / safeZoom));
     return '<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + " " + height + '"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:' + width + "px;height:" + height + 'px;background:#f8fafc;">' + clone.outerHTML + "</div></foreignObject></svg>";
   };
   const exportFilenameBase = "flow-chart-" + _organizerSlugify(topicTitle) + "-" + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
@@ -965,7 +1020,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const empty = () => ({ key: storageKey, values: {}, submitted: null });
   const load = (key) => {
     try {
-      const value = JSON.parse(window.localStorage.getItem(key) || "null");
+      const value = JSON.parse(window.localStorage.getItem(key) || "null", _vrSafeJsonReviver);
       if (value && value.version === 1) return { key, values: Object.fromEntries(fields.map(([id]) => [id, String(value.values?.[id] || "").slice(0, ORGANIZER_REFLECTION_MAX_CHARS)])), submitted: value.submitted || null };
     } catch (_) {
     }
@@ -1000,7 +1055,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     try {
       const scopedRaw = window.localStorage.getItem(kwlNotesKey);
       const raw = scopedRaw || (baseKwlNotesKey && baseKwlNotesKey !== kwlNotesKey ? window.localStorage.getItem(baseKwlNotesKey) : null);
-      const saved = JSON.parse(raw || "null");
+      const saved = JSON.parse(raw || "null", _vrSafeJsonReviver);
       if (Array.isArray(saved) && saved.length === 3 && saved.some((value) => typeof value === "string" && value.trim())) earlierKwlNotes = saved.map((value) => String(value || "").slice(0, ORGANIZER_REFLECTION_MAX_CHARS));
     } catch (_) {
     }
@@ -1062,7 +1117,8 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
       if (owner.current === requestOwner) setBusy(false);
     }
   };
-  return /* @__PURE__ */ React.createElement("section", { "data-organizer-activity-ready": "true", "aria-label": type + " reflection", className: "mx-auto my-5 max-w-5xl rounded-2xl border-2 border-indigo-200 bg-white p-5 text-slate-900" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-bold" }, type === "KWL Chart" ? tr("kwl_title", "My KWL reflection") : type === "Claim-Evidence-Reasoning" ? tr("cer_title", "Build an argument") : tr("explain_title", "Explain your thinking")), onClose && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 rounded-lg border border-slate-400 px-4" }, tr("back_diagram", "Back to diagram"))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm" }, tr("student_intro", "Write in your own words. The diagram is a reference, not your response. Different interpretations can be supported by evidence.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm font-semibold" }, isTeacherMode ? tr("teacher_preview", "Teacher preview \u2014 never submitted as student work.") : sessionCode ? submissionMethod === "lan" ? tr("lan_submit_info", "Drafts stay on this device. Submit sends your reflection privately to your teacher.") : submissionMethod === "mailbox" ? tr("mailbox_submit_info", "Drafts stay on this device. Submit sends your reflection to your teacher\u2019s Class Mailbox.") : tr("download_submit_info", "Submit downloads your reflection for you to share with your teacher.") + (activityId ? tr("progress_info", " Your live progress is updated too.") : "") : tr("local_info", "Local practice \u2014 your reflection stays on this device.")), earlierKwlNotes && !fields.some(([id]) => shown.values[id]) && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-sm" }, /* @__PURE__ */ React.createElement("p", null, tr("import_info", "Earlier KWL notes for this topic are saved on this device. Import them if they are yours.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setEntry({ key: storageKey, values: Object.fromEntries(fields.map(([id], index) => [id, earlierKwlNotes[index]])), submitted: null }), className: "mt-2 min-h-11 rounded-lg border border-indigo-600 px-4 font-bold text-indigo-800" }, tr("import_notes", "Import my earlier KWL notes"))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 grid gap-4 md:grid-cols-3" }, fields.map(([id, label, prompt]) => {
+  const reflectionCrisis = !isTeacherMode && fields.some(([id]) => _vrCheckCrisisText(shown.values[id] || ""));
+  return /* @__PURE__ */ React.createElement("section", { "data-organizer-activity-ready": "true", "aria-label": type + " reflection", className: "mx-auto my-5 max-w-5xl rounded-2xl border-2 border-indigo-200 bg-white p-5 text-slate-900" }, reflectionCrisis && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mb-3 rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-sm font-semibold text-rose-900" }, "You matter, and help is available right now. Call or text 988 (Suicide & Crisis Lifeline), text HOME to 741741, or call 911 in an emergency. Please talk with a trusted adult."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-bold" }, type === "KWL Chart" ? tr("kwl_title", "My KWL reflection") : type === "Claim-Evidence-Reasoning" ? tr("cer_title", "Build an argument") : tr("explain_title", "Explain your thinking")), onClose && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-h-11 rounded-lg border border-slate-400 px-4" }, tr("back_diagram", "Back to diagram"))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm" }, tr("student_intro", "Write in your own words. The diagram is a reference, not your response. Different interpretations can be supported by evidence.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm font-semibold" }, isTeacherMode ? tr("teacher_preview", "Teacher preview \u2014 never submitted as student work.") : sessionCode ? submissionMethod === "lan" ? tr("lan_submit_info", "Drafts stay on this device. Submit sends your reflection privately to your teacher.") : submissionMethod === "mailbox" ? tr("mailbox_submit_info", "Drafts stay on this device. Submit sends your reflection to your teacher\u2019s Class Mailbox.") : tr("download_submit_info", "Submit downloads your reflection for you to share with your teacher.") + (activityId ? tr("progress_info", " Your live progress is updated too.") : "") : tr("local_info", "Local practice \u2014 your reflection stays on this device.")), earlierKwlNotes && !fields.some(([id]) => shown.values[id]) && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-sm" }, /* @__PURE__ */ React.createElement("p", null, tr("import_info", "Earlier KWL notes for this topic are saved on this device. Import them if they are yours.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setEntry({ key: storageKey, values: Object.fromEntries(fields.map(([id], index) => [id, earlierKwlNotes[index]])), submitted: null }), className: "mt-2 min-h-11 rounded-lg border border-indigo-600 px-4 font-bold text-indigo-800" }, tr("import_notes", "Import my earlier KWL notes"))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 grid gap-4 md:grid-cols-3" }, fields.map(([id, label, prompt]) => {
     const used = String(shown.values[id] || "").length;
     const left = ORGANIZER_REFLECTION_MAX_CHARS - used;
     const near = left <= ORGANIZER_REFLECTION_WARN_AT;
@@ -1312,18 +1368,7 @@ const renderOutlineContentCore = (deps) => {
       "data-outline-branch-listen": bIdx,
       onClick: () => {
         const spoken = [branch.title, ...Array.isArray(branch.items) ? branch.items : []].filter(Boolean).join(". ").replace(/\s+/g, " ").trim();
-        if (!spoken) return;
-        try {
-          if (typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
-            window.AlloSpeechPlayer.speak(spoken);
-          } else if (typeof window !== "undefined" && typeof window.callTTS === "function") {
-            window.callTTS(spoken);
-          } else if (typeof window !== "undefined" && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
-          }
-        } catch (_) {
-        }
+        _vrSpeakBranch(spoken);
       },
       "aria-label": (t("common.listen") || "Listen") + (branch.title ? ": " + branch.title : ""),
       title: t("a11y.read_aloud") || "Listen",
@@ -1909,7 +1954,7 @@ const renderOutlineContentCore = (deps) => {
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
       isTeacherMode && deps.activeSessionCode ? "Start activity for students" : "Practice activity"
-    ), renderLiveOrganizerStatus("conceptmap")), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem, t }));
+    ), renderLiveOrganizerStatus("conceptmap")), /* @__PURE__ */ React.createElement(KeyConceptMapView, { branches, main, main_en, BranchItem: renderBranchItem, t }));
   }
   if (type === "Frayer Model" && !isEditingOutline) {
     if (branches.length !== 4) {
@@ -2314,18 +2359,7 @@ const renderOutlineContentCore = (deps) => {
         "data-outline-branch-listen": i,
         onClick: () => {
           const spoken = [branch.title, ...Array.isArray(branch.items) ? branch.items : []].filter(Boolean).join(". ").replace(/\s+/g, " ").trim();
-          if (!spoken) return;
-          try {
-            if (typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
-              window.AlloSpeechPlayer.speak(spoken);
-            } else if (typeof window !== "undefined" && typeof window.callTTS === "function") {
-              window.callTTS(spoken);
-            } else if (typeof window !== "undefined" && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === "function") {
-              window.speechSynthesis.cancel();
-              window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
-            }
-          } catch (_) {
-          }
+          _vrSpeakBranch(spoken);
         },
         "aria-label": (t("common.listen") || "Listen") + (branch.title ? ": " + branch.title : ""),
         title: t("a11y.read_aloud") || "Listen",
@@ -2919,6 +2953,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onSafetyFlag, callImagen
   React.useEffect(() => {
     if (!challenge || won) return void 0;
     const iv = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       elapsedRef.current += 1;
       setElapsed(elapsedRef.current);
     }, 1e3);
@@ -4586,6 +4621,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, c
   React.useEffect(() => {
     if (!recall || finished) return void 0;
     const iv = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       elapsedRef.current += 1;
       setElapsed(elapsedRef.current);
     }, 1e3);
@@ -5016,7 +5052,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, c
         const dl = decorLabels[l.id];
         return `<li><span class="num">${n}</span><div class="body"><div class="fact">${_mpEsc(l.label)}</div>` + (l.mnemonic ? `<div class="mnem"><b>${_mpEsc(t("memory_palace.picture_this") || "Picture this:")}</b> ${_mpEsc(l.mnemonic)}</div>` : "") + (dl ? `<div class="decor">${_mpEsc(t("memory_palace.sr_decoration") || "Decoration")}: ${_mpEsc(dl)}</div>` : "") + `</div></li>`;
       }).join("");
-      return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
+      const safeRoomColor = /^(?:#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\))$/.test(String(room.color || "").trim()) ? String(room.color).trim() : "#6366f1";
+      return `<section class="room"><h2 style="border-color:${_mpEsc(safeRoomColor)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
     }).join("");
     const sheetTitle = _mpEsc(palace.title || data?.main || title || "Memory Palace");
     const html = `<!doctype html><html lang="${String(document.documentElement.lang || "en").replace(/[^\w-]/g, "")}"${document.documentElement.dir === "rtl" ? ' dir="rtl"' : ""}><head><meta charset="utf-8"><title>${sheetTitle}</title><style>body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}@media print{.no-print{display:none;}}</style></head><body><div class="no-print"><button type="button" onclick="window.print()">${_mpEsc(t("common.print") || "Print")}</button></div><h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t("memory_palace.sheet_subtitle") || "Memory palace study sheet \u2014 walk the route in order and picture each image vividly.")}</p>` + roomsHtml + `<div class="method">${_mpEsc(t("memory_palace.caption") || "")}</div></body></html>`;
@@ -7665,7 +7702,7 @@ function parseChartLine(line) {
   const match = String(line || "").trim().match(/^\[\[CHART:\s*({.*})\]\]$/);
   if (!match) return null;
   try {
-    const data = JSON.parse(match[1]);
+    const data = JSON.parse(match[1], _vrSafeJsonReviver);
     return data && (data.type === "bar" || data.type === "donut") ? data : null;
   } catch (_) {
     return null;
@@ -7831,31 +7868,34 @@ function TableChartTools(props) {
   };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "w-px h-4 mx-1 " + (tone === "indigo" ? "bg-indigo-200" : "bg-orange-200") }), /* @__PURE__ */ React.createElement("button", { type: "button", ref: tableButtonRef, "data-tc-open": "table", "aria-expanded": panel === "table", "aria-controls": id("panel"), onClick: () => open("table"), className: toolButton }, tx("table_chart.table_button", "Table")), /* @__PURE__ */ React.createElement("button", { type: "button", ref: chartButtonRef, "data-tc-open": "chart", "aria-expanded": panel === "chart", "aria-controls": id("panel"), onClick: () => open("chart"), className: toolButton }, tx("table_chart.chart_button", "Chart")), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "sr-only", "data-tc-status": true }, status), panel && /* @__PURE__ */ React.createElement("div", { id: id("panel"), role: "group", "aria-labelledby": id("heading"), onKeyDown: onPanelKey, "data-tc-panel": panel, className: "basis-full w-full mt-2 rounded-lg border border-slate-300 bg-white p-3 space-y-2 text-slate-800" }, /* @__PURE__ */ React.createElement("h5", { id: id("heading"), className: "text-sm font-bold" }, panel === "table" ? form.mode === "edit" ? tx("table_chart.edit_table_heading", "Edit this table") : tx("table_chart.insert_table_heading", "Insert a table") : form.mode === "edit" ? tx("table_chart.edit_chart_heading", "Edit this chart") : tx("table_chart.insert_chart_heading", "Insert a chart")), panel === "table" && form.mode === "new" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("caption") }, tx("table_chart.caption", "Caption"), /* @__PURE__ */ React.createElement("span", { id: id("caption-hint"), className: "block font-normal text-slate-600" }, tx("table_chart.caption_hint", "Shown above the table and read by screen readers. Say what the table shows."))), /* @__PURE__ */ React.createElement("input", { ref: firstFieldRef, id: id("caption"), "aria-describedby": id("caption-hint"), value: form.caption, onChange: (e) => set({ caption: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.columns", "Columns"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "8", value: form.columns, onChange: (e) => set({ columns: e.target.value }), className: field + " w-20" })), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.rows", "Rows"), /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", max: "30", value: form.rows, onChange: (e) => set({ rows: e.target.value }), className: field + " w-20" }))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!form.rowHeaders, onChange: (e) => set({ rowHeaders: e.target.checked }) }), tx("table_chart.row_headers", "The first column labels each row")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-insert-table": true, onClick: () => applyTable(null), className: primary }, tx("table_chart.insert_table", "Insert table")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), panel === "table" && form.mode === "edit" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("caption") }, tx("table_chart.caption", "Caption")), /* @__PURE__ */ React.createElement("input", { ref: firstFieldRef, id: id("caption"), value: form.caption, onChange: (e) => set({ caption: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-save-caption": true, onClick: () => applyTable({ caption: form.caption }), className: primary }, tx("table_chart.save_caption", "Save caption")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-add-row": true, onClick: () => applyTable({ addRow: true }), className: secondary }, tx("table_chart.add_row", "Add a row")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-add-column": true, onClick: () => applyTable({ addColumn: true }), className: secondary }, tx("table_chart.add_column", "Add a column")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), panel === "chart" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.chart_type", "Chart type"), /* @__PURE__ */ React.createElement("select", { ref: firstFieldRef, value: form.type, onChange: (e) => set({ type: e.target.value }), className: field }, /* @__PURE__ */ React.createElement("option", { value: "bar" }, tx("table_chart.type_bar", "Bar chart (compare values)")), /* @__PURE__ */ React.createElement("option", { value: "donut" }, tx("table_chart.type_donut", "Percentage (one value out of 100)")))), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.chart_title", "Title"), /* @__PURE__ */ React.createElement("input", { value: form.title, onChange: (e) => set({ title: e.target.value }), className: field })), form.type === "bar" ? /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.data_rows", "Data, one per line as Label: value"), /* @__PURE__ */ React.createElement("textarea", { "data-tc-rows": true, rows: 4, value: form.rowsText, onChange: (e) => set({ rowsText: e.target.value }), placeholder: "Apples: 12\nPears: 7", className: field + " font-mono" })) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.percentage", "Percentage"), /* @__PURE__ */ React.createElement("input", { "data-tc-percentage": true, type: "number", min: "0", max: "100", value: form.percentage, onChange: (e) => set({ percentage: e.target.value }), className: field + " w-24" })), /* @__PURE__ */ React.createElement("label", { className: smallLabel }, tx("table_chart.center_label", "Center label (optional)"), /* @__PURE__ */ React.createElement("input", { value: form.label, onChange: (e) => set({ label: e.target.value }), className: field }))), /* @__PURE__ */ React.createElement("label", { className: smallLabel, htmlFor: id("description") }, tx("table_chart.description", "Description"), /* @__PURE__ */ React.createElement("span", { id: id("description-hint"), className: "block font-normal text-slate-600" }, tx("table_chart.description_hint", "Shown under the chart. Say what it shows and the main pattern, for readers who cannot see it."))), /* @__PURE__ */ React.createElement("textarea", { "data-tc-description": true, id: id("description"), "aria-describedby": id("description-hint"), rows: 3, value: form.description, onChange: (e) => set({ description: e.target.value }), className: field }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-tc-apply-chart": true, onClick: applyChart, className: primary }, form.mode === "edit" ? tx("table_chart.update_chart", "Update chart") : tx("table_chart.insert_chart", "Insert chart")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: close, className: secondary }, tx("common.cancel", "Cancel")))), error && /* @__PURE__ */ React.createElement("p", { role: "alert", "data-tc-error": true, className: "text-xs font-semibold text-rose-800 bg-rose-50 border border-rose-200 rounded p-2" }, error)));
 }
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.ViewRenderers = {
+    TableChartTools,
+    buildMarkdownTable,
+    findTableAt,
+    editMarkdownTable,
+    parseChartLine,
+    parseChartRows,
+    buildChartLine,
+    insertMarkdownBlock,
+    normalizeVisualOrganizerData,
+    organizerReviewText,
+    OrganizerReviewPanel,
+    OrganizerLearnerFeedback,
+    OrganizerReflectionBoard,
+    OrganizerMountReceipt,
+    organizerReflectionKey,
+    organizerReflectionFields,
+    organizerDataWithLearnerWork,
+    renderFormattedText,
+    renderOutlineContent,
+    renderInteractiveMap,
+    openConceptMap3D
+    // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
+  };
+}
 window.AlloModules = window.AlloModules || {};
-window.AlloModules.ViewRenderers = {
-  TableChartTools,
-  buildMarkdownTable,
-  findTableAt,
-  editMarkdownTable,
-  parseChartLine,
-  parseChartRows,
-  buildChartLine,
-  insertMarkdownBlock,
-  normalizeVisualOrganizerData,
-  organizerReviewText,
-  OrganizerReviewPanel,
-  OrganizerLearnerFeedback,
-  OrganizerReflectionBoard,
-  OrganizerMountReceipt,
-  organizerReflectionKey,
-  organizerReflectionFields,
-  organizerDataWithLearnerWork,
-  renderFormattedText,
-  renderOutlineContent,
-  renderInteractiveMap,
-  openConceptMap3D
-  // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
-};
 window.AlloModules.ViewRenderersModule = true;
 console.log('[ViewRenderers] Registered (renderFormattedText, renderOutlineContent, renderInteractiveMap, openConceptMap3D)');
 })();

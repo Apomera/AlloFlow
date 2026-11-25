@@ -4939,6 +4939,7 @@ window.StemLab = window.StemLab || {
             }, 0);
           }
           function physAnalysisTabKey(event, index) {
+            if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229) || event.ctrlKey || event.metaKey || event.altKey) return;
             var next;
             var rtl = window.getComputedStyle(event.currentTarget).direction === 'rtl';
             if (event.key === 'ArrowRight') next = (index + (rtl ? 3 : 1)) % 4;
@@ -5615,7 +5616,7 @@ window.StemLab = window.StemLab || {
                 physSelectSample(low, lastTrail);
               }
               function selectGraphKey(event) {
-                if (!graphCanInspect || event.altKey || event.ctrlKey || event.metaKey) return;
+                if (!graphCanInspect || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229) || event.altKey || event.ctrlKey || event.metaKey) return;
                 var livePoint = physSelectedInspection(cv);
                 var index = livePoint && cv._inspection.trail === lastTrail ? livePoint.index : lastTrail.length - 1;
                 var target;
@@ -5715,7 +5716,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('dl', { className: 'phys-graph-endpoints' },
                     React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, __alloT('stem.physics.sample_launch_point', 'Launch point')), React.createElement('dd', null, physFormatSampleValue(first[field]) + ' m/s')),
                     React.createElement('div', null, React.createElement('dt', { style: { color: graphColors.muted } }, graphLatest && graphLatest.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point')), React.createElement('dd', null, physFormatSampleValue(latest[field]) + ' m/s'))),
-                  React.createElement('svg', Object.assign({ 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, onClick: graphCanInspect ? selectGraphTime : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%' }, graphControlProps(graphCanInspect ? title : description, graphValueText, 'physics-graph-' + field + '-description')),
+                  React.createElement('svg', Object.assign({ 'data-physics-graph': field, 'data-plotted-indices': plotIndices.join(','), 'data-plotted-count': plotIndices.length, 'aria-label': graphCanInspect ? title : description, onClick: graphCanInspect ? selectGraphTime : undefined, style: { cursor: graphCanInspect ? 'crosshair' : 'default', display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 320, height: 'auto', margin: '0 auto' }, viewBox: '0 0 ' + W + ' ' + H, width: '100%' }, graphControlProps(graphCanInspect ? title : description, graphValueText, 'physics-graph-' + field + '-description')),
                     timeAxis(),
                     ticks.map(function(value) { return React.createElement('g', { key: value },
                       axisLine(padL, zero - value * scale, W - padR, zero - value * scale, value !== 0),
@@ -5866,7 +5867,7 @@ window.StemLab = window.StemLab || {
                       'm = ' + p.mass + ' kg · v₀ = ' + p.velocity + ' m/s · g = ' + p.gravity + ' m/s² · h₀ = ' + p.launchHeight + ' m · ' + (p.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off'))),
                     React.createElement('div', { className: 'phys-energy-layout' },
                       React.createElement('div', null,
-                        energies.length > 1 ? React.createElement('svg', Object.assign({ 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': current.initialEnergy, 'data-scale-energy': eMax,
+                        energies.length > 1 ? React.createElement('svg', Object.assign({ 'data-physics-energy-graph': true, 'data-plotted-count': energies.length, 'data-initial-energy': current.initialEnergy, 'data-scale-energy': eMax, 'aria-label': __alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight'),
                           onClick: graphCanInspect ? function(event) { selectGraphTime(event, { width: eW, left: eL, plotWidth: eIW }); } : undefined,
                           viewBox: '0 0 ' + eW + ' ' + eH,
                           style: { display: 'block', width: '100%', maxWidth: 400, height: 'auto', margin: '0 auto', background: graphColors.surface, cursor: graphCanInspect ? 'crosshair' : 'default' } }, graphControlProps(__alloT('stem.physics.energy_timeline_title', 'Energy through the recorded flight'),
@@ -6618,7 +6619,9 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer[data-physics-theme="contrast"] .phys-hero-pill{background:#000!important;border:1px solid #ff0!important;color:#ff0!important}
               #physics-fs-outer[data-physics-theme="contrast"] .phys-hero-pill strong,#physics-fs-outer[data-physics-theme="contrast"] .phys-preset-lbl{color:#0f0!important}
               #physics-fs-outer[data-physics-theme="contrast"] .phys-preset-chip{background:#000!important;border:2px solid #0f0!important;color:#ff0!important}
+              .theme-contrast #physics-fs-outer :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
+              @media(forced-colors:active){#physics-fs-outer :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}#physics-fs-outer :is(button,input,select,textarea,summary,[role="progressbar"]){border-color:ButtonText!important}}
             `),
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
 
@@ -6628,7 +6631,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 React.createElement("div", { className: "phys-command-top" },
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("div", { className: "phys-command-title" },
-                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.physics.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("button", { type: "button", onClick: () => setStemLabTool(null), className: "min-h-[44px] min-w-[44px] inline-flex items-center justify-center shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.physics.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, 'aria-hidden': 'true' })),
                       (function() {
                         var angRad = (((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) * Math.PI) / 180;
                         var vx = +(12 + 20 * Math.cos(angRad)).toFixed(1);
@@ -6710,7 +6713,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             React.createElement("div", { 'data-physics-primary-controls': true, role: 'group', 'aria-label': __alloT('stem.physics.launch_actions', 'Launch and estimate') },
 
-              React.createElement("button", { 'data-physics-launch': true, "aria-label": __alloT('stem.physics.launch', 'Launch!'),
+              React.createElement("button", { type: "button", 'data-physics-launch': true, "aria-label": __alloT('stem.physics.launch', 'Launch!'),
 
                 onClick: function () {
 
@@ -6724,14 +6727,14 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
                   fireLaunch();
 
-                }, className: "px-4 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 shadow-md transition-all"
+                }, className: "min-h-[44px] px-4 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 shadow-md transition-all"
 
               }, "\uD83D\uDE80 " + __alloT('stem.physics.launch', 'Launch!')),
 
               (function() {
                 var curObsDrag = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; }) : null;
                 var dragLocked = !!(curObsDrag && typeof curObsDrag.drag === 'boolean');
-                return React.createElement("button", { 'data-physics-air-drag': true, "aria-label": __alloT('stem.physics.aria_air_drag_currently', 'Air drag, currently ') + (d.airResist ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + (dragLocked ? __alloT('stem.physics.aria_drag_locked', ' (locked by active mission).') : __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.')),
+                return React.createElement("button", { type: "button", 'data-physics-air-drag': true, "aria-label": __alloT('stem.physics.aria_air_drag_currently', 'Air drag, currently ') + (d.airResist ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + (dragLocked ? __alloT('stem.physics.aria_drag_locked', ' (locked by active mission).') : __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.')),
 
                   "aria-pressed": !!d.airResist,
 
@@ -6741,7 +6744,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
                   onClick: function () { if (!dragLocked) upd('airResist', !d.airResist); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+                  className: "min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-800 border border-orange-300')
 
                 }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.label_air_drag', 'Air Drag ') + (d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')));
               })(),
@@ -6798,6 +6801,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     onClick: function () { upd('showTapeMeasure', !d.showTapeMeasure); }
                   }, '📏 ' + __alloT('stem.physics.tape_measure_btn', 'Tape Measure')),
                   React.createElement("button", {
+                    type: "button",
                     'data-physics-fullscreen': true,
                     'aria-label': (physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
                     title: physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
@@ -6862,6 +6866,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 "data-tape-y": String(d.tapeMeasure.y),
 
                 onKeyDown: function (e) {
+                  if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
 
                   // Keyboard and pointer controls follow the same mission locks.
                   var angleLocked = d.targetMode && d.targetConstraint && d.targetConstraint.type === 'fixedAngle';
@@ -7224,7 +7229,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg text-xs font-bold bg-white border border-indigo-300 text-indigo-700 disabled:opacity-50',
                     onClick: physHearFlight }, '🔊 ' + label);
                 })(),
-                React.createElement("button", { 'data-physics-clear': true, "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
+                React.createElement("button", { type: "button", 'data-physics-clear': true, "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                   onClick: function () {
                     // Clear IN PLACE. The draw loop keeps its own references to
                     // these arrays and writes them back to the element every
@@ -7242,7 +7247,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       lastFlight: null, recordedFlights: physNormalizeRecordedFlights([])
                     }) }); });
                   },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
+                  className: "min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
                 }, "\u{1F9F9} " + __alloT('stem.physics.clear_trails', 'Clear Trails')),
                 !physSelectedInspection(typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null) && typeof d.inspectionSnapshot === 'string' && d.inspectionSnapshot && React.createElement('p', { 'data-physics-inspection': true, role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%' }, className: 'text-xs leading-relaxed text-indigo-800 rounded-lg bg-white p-3 border border-indigo-200' }, d.inspectionSnapshot),
                 React.createElement('p', { id: 'physics-playback-help', style: { flexBasis: '100%' }, className: 'text-xs text-slate-600' }, __alloT('stem.physics.playback_time_help', 'Choose the playback pace. Pause to inspect recorded points, or use Step to advance the simulation by 0.035 seconds. The launch velocity stays the same.')),
@@ -7252,6 +7257,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               // The controller advances this comparison after each landing,
               // preserving pause, stepping and playback-speed behavior.
               React.createElement("button", {
+                type: "button",
                 "aria-label": __alloT('stem.physics.aria_ground_symmetry_demo', 'Vacuum symmetry comparison: launch at 30 and 60 degrees from ground level with the same speed and gravity'),
                 disabled: !!(d.targetMode || d.obstacleMode),
                 title: (d.targetMode || d.obstacleMode) ? __alloT('stem.physics.symmetry_target_disabled', 'End the active mission to compare two launch angles.') : undefined,
@@ -7262,7 +7268,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   upd('showOverlay', true);
                   cv._startSymmetryDemo();
                 },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className: "min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed"
               }, "\u{1F500} " + __alloT('stem.physics.ground_symmetry_demo', 'Compare 30° & 60° (ground level, no drag)')),
 
               React.createElement('button', {
@@ -8207,7 +8213,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     h('input', { id: 'physics-range-prediction', 'data-physics-range-prediction': true, type: 'number', inputMode: 'decimal', min: sweep.min, max: sweep.max, step: 1, value: rx.draft,
                       'aria-describedby': 'physics-range-prediction-help',
                       onChange: function(e) { setRX({ draft: String(e.target.value).slice(0, 8) }); },
-                      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
+                      onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); submit(); } },
                       style: { width: 110, minHeight: 44, background: pal.surface, color: pal.ink, border: '1px solid ' + (isContrast ? '#ffffff' : pal.muted), borderRadius: 9, padding: '8px 10px', fontSize: 15 } }),
                     h('button', { type: 'button', 'data-physics-range-submit': true, disabled: !draftValid, 'aria-disabled': !draftValid, onClick: submit, style: Object.assign({}, primaryStyle, draftValid ? {} : { opacity: .6, cursor: 'not-allowed' }) }, __alloT('stem.physics.range_predict_submit', 'Lock in my prediction')),
                     h('button', { type: 'button', 'data-physics-range-skip': true, onClick: function() { setRX({ revealedFor: settingsKey, inspect: Math.round(sweep.best.angle) }); focusReveal('#physics-range-title'); }, style: actionStyle }, __alloT('stem.physics.range_skip', 'Show the curve without predicting'))),
@@ -8596,12 +8602,12 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[0.6875rem] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} " + __alloT('stem.physics.target_mode_title', 'Target Destruction Mode')),
                 !d.targetMode
-                  ? React.createElement("button", { "aria-label": __alloT('stem.physics.start_mission', 'Start Mission'),
+                  ? React.createElement("button", { type: "button", "aria-label": __alloT('stem.physics.start_mission', 'Start Mission'),
                       onClick: function() { startTargetRound(1); },
-                      className: "px-3 py-1 bg-red-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-red-700 transition-all"
+                      className: "min-h-[44px] px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all"
                     }, "\u25B6 " + __alloT('stem.physics.start_mission', 'Start Mission'))
                   : React.createElement("div", { className: "flex gap-1.5" },
-                      React.createElement("button", { "aria-label": d.targetRound >= TARGET_LEVELS.length ? __alloT('stem.physics.restart_mission', 'Mission complete — restart') : __alloT('stem.physics.next_round', 'Next Round'),
+                      React.createElement("button", { type: "button", "aria-label": d.targetRound >= TARGET_LEVELS.length ? __alloT('stem.physics.restart_mission', 'Mission complete — restart') : __alloT('stem.physics.next_round', 'Next Round'),
                         onClick: function() {
                           var allDone = d.targetList && d.targetList.every(function(t){return t.destroyed;});
                           if (allDone && d.targetRound < TARGET_LEVELS.length) {
@@ -8611,16 +8617,16 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                           }
                         },
                         disabled: !(d.targetList && d.targetList.every(function(t){return t.destroyed;})),
-                        className: "px-3 py-1 text-[0.6875rem] font-bold rounded-lg transition-all " +
-                          (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
+                        className: "min-h-[44px] px-3 py-1.5 text-xs font-bold rounded-lg transition-all " +
+                          (d.targetList && d.targetList.every(function(t){return t.destroyed;}) ? 'bg-emerald-700 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-700 cursor-not-allowed')
                       }, "\u27A1 " + (d.targetRound >= TARGET_LEVELS.length ? __alloT('stem.physics.restart_mission', 'Mission complete — restart') : __alloT('stem.physics.next_round', 'Next Round'))),
-                      React.createElement("button", { "aria-label": __alloT('stem.physics.retry', 'Retry'),
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.physics.retry', 'Retry'),
                         onClick: function() { startTargetRound(d.targetRound || 1); },
-                        className: "px-3 py-1 bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-800 transition-all"
+                        className: "min-h-[44px] px-3 py-1.5 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 transition-all"
                       }, "\u{1F504} " + __alloT('stem.physics.retry', 'Retry')),
-                      React.createElement("button", { "aria-label": __alloT('stem.physics.end', 'End'),
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.physics.end', 'End'),
                         onClick: endTargetMode,
-                        className: "px-3 py-1 bg-slate-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-slate-500 transition-all"
+                        className: "min-h-[44px] px-3 py-1.5 bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-600 transition-all"
                       }, "\u2716 " + __alloT('stem.physics.end', 'End'))
                     )
               ),
@@ -9073,6 +9079,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       value: windVal,
                       'data-physics-wind-slider': true,
                       'aria-label': __alloT('stem.physics.atmo_wind_slider_aria', 'Horizontal wind speed in meters per second'),
+                      'aria-valuetext': windDirLbl,
                       style: { minHeight: 44, width: '100%', maxWidth: 240 },
                       onChange: function (e) { upd('windSpeed', parseFloat(e.target.value) || 0); }
                     })
@@ -9496,9 +9503,9 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               return React.createElement("div", { 'data-physics-learning-panel': 'myths', className: "mt-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3" },
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
                   React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider" }, "\uD83E\uDDE0 " + __alloT('stem.physics.physics_myths_title', 'Physics Myths \u2014 true or false?')),
-                  React.createElement("button", { "aria-label": __alloT('stem.physics.aria_start_myth', 'Start a physics myth question'),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.physics.aria_start_myth', 'Start a physics myth question'),
                     onClick: startMyth,
-                    className: "px-3 py-1 bg-violet-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-violet-700 transition-all"
+                    className: "min-h-[44px] px-3 py-1.5 bg-violet-700 text-white text-xs font-bold rounded-lg hover:bg-violet-800 transition-all"
                   }, myth ? "\uD83D\uDD04 " + __alloT('stem.physics.new_myth', 'New Myth') : "\u25B6 " + __alloT('stem.physics.start', 'Start'))
                 ),
                 React.createElement('p', { className: 'text-xs text-slate-700 mb-2' }, __alloT('stem.physics.myth_model_assumptions', 'Unless a question explicitly includes air resistance, assume no air drag. Range comparisons use equal launch and landing heights and hold the other launch settings constant.')),
@@ -9509,7 +9516,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   ),
                   !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                     [true, false].map(function (val) {
-                      return React.createElement("button", { key: String(val),
+                      return React.createElement("button", { type: "button", key: String(val),
                         "aria-label": __alloT('stem.physics.aria_answer', 'Answer ') + (val ? __alloT('stem.physics.true_lc', 'true') : __alloT('stem.physics.false_lc', 'false')),
                         onClick: function () {
                           var right = val === myth.t;
@@ -9521,7 +9528,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                           } else if (typeof stemBeep === 'function') stemBeep(220, 0.15);
                           if (typeof announceToSR === 'function') announceToSR((right ? __alloT('stem.physics.sr_correct', 'Correct.') : __alloT('stem.physics.sr_not_quite', 'Not quite.')) + ' ' + (myth.t ? __alloT('stem.physics.true_period', 'TRUE.') : __alloT('stem.physics.false_period', 'FALSE.')) + ' ' + myth.why);
                         },
-                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
+                        className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
                       }, val ? '\u2705 ' + __alloT('stem.physics.true_cap', 'True') : '\u274C ' + __alloT('stem.physics.false_cap', 'False'));
                     })
                   ),
@@ -9613,9 +9620,9 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       gravity: parseFloat(Number(d.gravity || 9.8).toFixed(1))
                     });
                   }, className: 'px-3 py-2 rounded border border-indigo-300 bg-indigo-50 text-indigo-800 text-xs font-bold', style: { minHeight: 44 } }, '↙ ' + __alloT('stem.physics.iq_sync_from_launcher', 'Sync from launcher')),
-                  h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
-                  h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
+                  h('button', { type: 'button', onClick: logObs, className: 'min-h-[44px] px-3 py-2 rounded bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                    className: 'min-h-[44px] px-3 py-2 rounded bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
                   (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.physics.iq_logged', ' logged'))
                 ),
                 (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
@@ -9641,8 +9648,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
                 ),
                 h('div', { className: 'mb-3' },
-                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                    className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' },
+                  !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
+                    className: 'min-h-[44px] px-3 py-2 rounded bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-900 border border-amber-400' },
                     '\uD83E\uDD14 ' + __alloT('stem.physics.iq_stuck_btn', "I'm stuck \u2014 show me questions to think about (no answers)")),
                   iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                     h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.physics.iq_open_prompts', 'Open prompts \u2014 investigate by manipulating:')),
@@ -9770,26 +9777,28 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   upd('aiLoading', false); upd('aiError', __alloT('stem.physics.ai_could_not_reach', 'Could not reach AI tutor. Try again in a moment.'));
                 });
               }
-              return React.createElement("div", { 'data-physics-learning-panel': 'tutor', className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
+              return React.createElement("div", { 'data-physics-learning-panel': 'tutor', className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", "aria-label": __alloT('stem.physics.explain_at_my_level', 'Explain at my level') },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
-                  React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 " + __alloT('stem.physics.explain_at_my_level', 'Explain at my level')),
+                  React.createElement("span", { className: "text-sm font-bold text-purple-800" }, "\u2728 " + __alloT('stem.physics.explain_at_my_level', 'Explain at my level')),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.physics.aria_reading_level', 'Reading level') },
                     LEVELS.map(function (L) {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
+                        type: "button",
                         key: L.id,
                         onClick: function () { upd('aiLevel', L.id); },
                         "aria-label": __alloT('stem.physics.aria_reading_level_prefix', 'Reading level: ') + L.label + (active ? __alloT('stem.physics.selected_suffix', ' (selected)') : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        className: "min-h-[44px] px-3 py-1.5 rounded text-xs font-bold " + (active ? 'bg-purple-700 text-white' : 'bg-white text-purple-800 border border-purple-300 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),
                   React.createElement("button", {
+                    type: "button",
                     onClick: explain,
                     disabled: aiLoading,
                     "aria-label": __alloT('stem.physics.aria_generate_ai_prefix', 'Generate AI explanation at ') + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || __alloT('stem.physics.level_grade5', 'Grade 5')) + __alloT('stem.physics.aria_level_suffix', ' level'),
-                    className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                    className: "min-h-[44px] px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-700 text-white hover:bg-purple-800 disabled:opacity-50"
                   }, aiLoading ? '\u23F3 ' + __alloT('stem.physics.thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.physics.re_explain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.physics.explain', 'Explain')))
                 ),
                 aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),

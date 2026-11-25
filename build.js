@@ -1435,6 +1435,10 @@ const PLUGIN_FILES = [
     'phonics_g2p_loader.js',
     'translate_loader.js',
     'dictionary_loader.js',
+    // The offline English word bank (Packets' AlloVocabBank). The glossary's built-in
+    // dictionary loads it on demand; unlisted, the loader refused it and the app fell back
+    // to the dictionary loader's core shards only (no extended words, phrases or checks).
+    'packets_vocab_bank_en.js',
     'sd_turbo_loader.js',
     'word_sounds_phonemes_en.js',
     'word_sounds_pronunciations.js',
@@ -1442,6 +1446,9 @@ const PLUGIN_FILES = [
     // editor. Unlisted, it was not on the approved delivery list and the
     // loader refused it (tests/plugin_loader_files_are_approved.test.js).
     'syllable_table_en.js',
+    // Main-stress add-on for that table (~20 KB gzip): the glossary bolds the
+    // stressed syllable without word_sounds_pronunciations.js.
+    'syllable_stress_en.js',
     'packet_check_builder.js',
     // AlloHaven Arcade modes are lazy-loaded with pluginCdnBase. Keep local
     // desktop builds self-contained so live classroom activities do not depend
@@ -1754,7 +1761,8 @@ function compileJsx(src) {
     return r.code;
 }
 
-function simplePureCompilePair(name, fileBase, guardKey) {
+function simplePureCompilePair(name, fileBase, guardKey, opts = {}) {
+    const ssrLine = opts && opts.ssrGuard ? 'if(typeof window==="undefined")return;\n' : '';
     return {
         name,
         srcPath: path.join(ROOT, fileBase + '_source.jsx'),
@@ -1763,6 +1771,7 @@ function simplePureCompilePair(name, fileBase, guardKey) {
         wrap(src) {
             return (
                 '(function(){"use strict";\n'
+                + ssrLine
                 + 'if(window.AlloModules&&window.AlloModules.' + guardKey + '){console.log("[CDN] ' + guardKey + ' already loaded, skipping"); return;}\n'
                 + src.trim() + '\n'
                 + '})();\n'
@@ -1912,7 +1921,7 @@ const COMPILE_PAIRS = [
             return fs.readFileSync(path.join(ROOT, 'applied_challenge_module.js'), 'utf8');
         },
     },
-    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
+    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule', { ssrGuard: true }),
     {
         name: 'WordPractice',
         srcPath: path.join(ROOT, 'word_practice_core.js'),
@@ -1921,7 +1930,7 @@ const COMPILE_PAIRS = [
         wrap() { return require('./_build_word_practice_module.js').buildWordPracticeModule(); },
     },
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
-    simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
+    simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule', { ssrGuard: true }),
     simplePureCompilePair('SemanticReview', 'semantic_review', 'SemanticReviewModule'),
     simplePureCompilePair('DocBuilderRenderer', 'doc_builder_renderer', 'DocBuilderRendererModule'),
     {

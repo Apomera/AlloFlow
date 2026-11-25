@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
     <title>For Districts | AlloFlow</title>
     <meta name="description"
         content="A district brief for evaluating AlloFlow as free, open-source classroom software with Desktop, Gemini Canvas, Firebase, and optional School Box deployment paths.">
@@ -28,12 +29,27 @@
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
-    <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://apomera.github.io/AlloFlow/for-districts.html#page",
+      "url": "https://apomera.github.io/AlloFlow/for-districts.html",
+      "name": "For Districts | AlloFlow",
+      "description": "A district brief for evaluating AlloFlow as free, open-source classroom software with Desktop, Gemini Canvas, Firebase, and optional School Box deployment paths.",
+      "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" },
+      "about": { "@id": "https://apomera.github.io/AlloFlow/#software" },
+      "audience": { "@type": "EducationalAudience", "educationalRole": "administrator" }
+    }
+    </script>
 </head>
 
 <body>
@@ -61,20 +77,32 @@
     <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html">Features</a>
-        <a href="manuals.html">Manuals</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html">Remediation</a>
-        <a href="accessibility_demo.html">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html" aria-current="page">For Districts</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html" aria-current="page">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -92,7 +120,12 @@
         <p style="font-size:1.05rem;color:#475569;max-width:640px;margin:0 auto">
             A one-page brief for district decision-makers. Planning considerations, privacy, accessibility, and the pilot path.
         </p>
-        <p style="font-size:0.85rem;color:#475569;margin-top:10px">Updated August 2026</p>
+        <p style="font-size:0.85rem;color:#475569;margin-top:10px">Updated November 2026</p>
+        <div style="margin-top:16px" class="no-print">
+            <button type="button" class="btn-secondary" onclick="window.print()" style="padding:10px 18px;font-size:0.88rem">
+                <i data-lucide="printer" aria-hidden="true" style="width:16px;height:16px"></i> Print / Save District Brief (PDF)
+            </button>
+        </div>
     </header>
 
     <!-- Jump Navigation -->
@@ -102,6 +135,7 @@
             <a href="#solution" class="jump-pill">License &amp; Cost</a>
             <a href="#free" class="jump-pill">Why It's Free</a>
             <a href="#privacy" class="jump-pill">Privacy &amp; FERPA</a>
+            <a href="#allowlist" class="jump-pill">IT Allowlist</a>
             <a href="#included" class="jump-pill">What's Included</a>
             <a href="#deploy" class="jump-pill">Deployment</a>
             <a href="#access" class="jump-pill">Accessibility</a>
@@ -193,7 +227,7 @@
                             <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
                                 <td style="padding:12px 16px">Accessibility suite</td>
                                 <td style="padding:12px 16px">Read&amp;Write</td>
-                                <td style="padding:12px 16px">$4,500/yr</td>
+                                <td style="padding:12px 16px">Varies / quote-based</td>
                                 <td style="padding:12px 16px;color:#047857;font-weight:700">&check; Included</td>
                             </tr>
                             <tr style="border-top:1px solid #e2e8f0">
@@ -278,7 +312,7 @@
                     <div style="width:6px;height:32px;background:#0891b2;border-radius:4px"></div>
                     <h2 style="font-size:1.75rem;font-weight:900">Privacy &amp; Compliance</h2>
                 </div>
-                <p style="margin-bottom:16px;color:#475569">Two documents answer most district review questions directly: the <a href="guide/for-your-it-department.html" style="color:var(--indigo,#4f46e5)">technical brief written for IT departments</a> (architecture, accounts, data residency, the three AI backend options, and a verify-it-yourself list) and the full <a href="guide/index.html" style="color:var(--indigo,#4f46e5)">teacher guide</a>, whose privacy chapter includes the complete data-path table for line-by-line review with a privacy officer.</p>
+                <p style="margin-bottom:16px;color:#475569">Two documents answer most district review questions directly: the <a href="guide/for-your-it-department.html" style="color:var(--indigo,#4f46e5)">technical brief written for IT departments</a> (architecture, accounts, data residency, the three AI backend options, and a verify-it-yourself list) and the full <a href="guide/index.html" style="color:var(--indigo,#4f46e5)">teacher guide</a>, whose privacy chapter includes the complete data-path table for line-by-line review with a privacy officer. For why teachers generate first and how student AI stays off by default on shared links, see <a href="principles.html#teachers-generate-first" style="color:var(--indigo,#4f46e5)">How AlloFlow is designed</a>.</p>
                 <div style="overflow-x:auto;margin-bottom:20px">
                     <table
                         style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);font-size:0.95rem">
@@ -327,11 +361,65 @@
                     </table>
                 </div>
                 <p
-                    style="font-size:1rem;color:#1e293b;background:#ecfeff;padding:14px 18px;border-radius:10px;border-left:4px solid #0891b2;max-width:900px">
+                    style="font-size:1rem;color:#1e293b;background:#ecfeff;padding:14px 18px;border-radius:10px;border-left:4px solid #0891b2;max-width:900px;margin-bottom:28px">
                     <strong>Your IT department can deploy AlloFlow on district infrastructure</strong> or use the
                     local-first Desktop path. Procurement, privacy review, and data agreements still depend on the
                     deployment selected.
                 </p>
+
+                <div id="allowlist" style="scroll-margin-top:96px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+                        <h3 style="font-size:1.25rem;font-weight:800;color:#0f172a;margin:0">Domains &amp; Endpoints for IT Allowlists</h3>
+                        <button type="button" id="copyAllowlistBtn" class="no-print" style="display:inline-flex;align-items:center;min-height:44px;padding:8px 16px;background:#ffffff;color:#3730a3;border:1px solid #a5b4fc;border-radius:8px;font:inherit;font-size:0.85rem;font-weight:700;cursor:pointer">Copy allowlist domains</button>
+                    </div>
+                    <p id="allowlistCopyStatus" class="no-print" role="status" aria-live="polite" style="font-size:0.85rem;font-weight:700;color:#0f766e;margin:0 0 8px;min-height:0"></p>
+                    <p style="font-size:0.92rem;color:#475569;margin-bottom:14px;max-width:860px">
+                        AlloFlow's documentation and browser pages self-host their fonts and icons &mdash; no external font CDNs, ad networks, or third-party analytics trackers are required. Allow only the origins that match your chosen path:
+                    </p>
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);font-size:0.9rem">
+                            <thead>
+                                <tr style="background:#f1f5f9">
+                                    <th scope="col" style="text-align:left;padding:12px 16px;font-weight:800;color:#1e293b;width:30%">Domain / Origin</th>
+                                    <th scope="col" style="text-align:left;padding:12px 16px;font-weight:800;color:#1e293b;width:24%">Needed when</th>
+                                    <th scope="col" style="text-align:left;padding:12px 16px;font-weight:800;color:#1e293b">What it serves</th>
+                                </tr>
+                            </thead>
+                            <tbody style="color:#334155">
+                                <tr style="border-top:1px solid #e2e8f0">
+                                    <td style="padding:11px 16px"><code>apomera.github.io/AlloFlow</code></td>
+                                    <td style="padding:11px 16px">Docs &amp; Packets</td>
+                                    <td style="padding:11px 16px">Teacher Guide, manuals, cost planner, design principles, and offline-capable Quick Practice &amp; Checks (<a href="packets-it.html" style="color:var(--indigo);text-decoration:underline;text-underline-offset:0.18em">Packets IT guide</a>).</td>
+                                </tr>
+                                <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                    <td style="padding:11px 16px"><code>alloflow.dev</code></td>
+                                    <td style="padding:11px 16px">Browser app &amp; packs</td>
+                                    <td style="padding:11px 16px">Primary static browser edition (<code>/app/</code>) and Lesson Pack catalog (<code>/packs</code>); static assets only, no AlloFlow backend database.</td>
+                                </tr>
+                                <tr style="border-top:1px solid #e2e8f0">
+                                    <td style="padding:11px 16px"><code>alloflow-cdn.pages.dev</code></td>
+                                    <td style="padding:11px 16px">Direct STEM links</td>
+                                    <td style="padding:11px 16px">Direct shareable STEM lab links (152 tools), School Rewards practice sandbox, and legacy browser-app storage migration.</td>
+                                </tr>
+                                <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                    <td style="padding:11px 16px"><code>gemini.google.com</code></td>
+                                    <td style="padding:11px 16px">Optional (Canvas path)</td>
+                                    <td style="padding:11px 16px">Google Workspace for Education Gemini Canvas path, governed by district Workspace admin settings.</td>
+                                </tr>
+                                <tr style="border-top:1px solid #e2e8f0">
+                                    <td style="padding:11px 16px"><code>script.google.com</code><br><code>script.googleusercontent.com</code></td>
+                                    <td style="padding:11px 16px">Optional (Mailbox / Rewards)</td>
+                                    <td style="padding:11px 16px">Teacher- or school-owned Google Apps Script relay for Class Mailbox live sessions (messages expire within 45 min) and School Rewards.</td>
+                                </tr>
+                                <tr style="border-top:1px solid #e2e8f0;background:#f8fafc">
+                                    <td style="padding:11px 16px"><em>None (local only)</em></td>
+                                    <td style="padding:11px 16px">AlloFlow Desktop / Packets files</td>
+                                    <td style="padding:11px 16px">Exported HTML practice files and AlloFlow Desktop with local models (e.g., Ollama) operate without outbound cloud AI calls.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -407,6 +495,22 @@
                             <strong><a href="educator-evaluation.html" style="color:inherit">Educator Growth &amp; Evaluation</a></strong>: walkthroughs, the full observation cycle, and growth trends in a private on-device workspace.
                             <strong>School Rewards</strong>: staff recognize students with points, students track progress and choose a prize, cashiers run a store with a live ledger and receipts, administrators manage windows and access. Runs on your own Google Apps Script deployment; try it first with
                             <a href="https://alloflow-cdn.pages.dev/school-rewards-practice" style="color:inherit">fictional data</a> and read the <a href="school-rewards-manual.html" style="color:inherit">manual</a>. English and Spanish.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#3730a3">
+                            <i data-lucide="package" aria-hidden="true" style="width:18px;height:18px"></i> Quick Practice &amp; Checks (No AI)
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong><a href="packets.html" style="color:inherit">AlloFlow Packets</a></strong> creates offline-ready Word Sounds, vocabulary, math facts, Symbol Runner, AAC, and focus files directly in the browser with no AI, no student accounts, and 25 ready-made starter packs. See the <a href="packets-it.html" style="color:inherit">guide for school IT</a>.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#1d4ed8">
+                            <i data-lucide="file-check-2" aria-hidden="true" style="width:18px;height:18px"></i> Document Accessibility
+                        </div>
+                        <p style="font-size:0.85rem;color:#475569;line-height:1.6">
+                            <strong><a href="remediation.html" style="color:inherit">Remediation Pipeline</a></strong> audits inherited PDFs and worksheets, drafts accessible rebuilds, preserves source fidelity for human review, and exports a traceable evidence report aligned with ADA Title II workflows. Read the <a href="whitepaper.html" style="color:inherit">white paper</a>.
                         </p>
                     </div>
                 </div>
@@ -487,7 +591,7 @@
                     <div style="width:6px;height:32px;background:#2563eb;border-radius:4px"></div>
                     <h2 style="font-size:1.75rem;font-weight:900">Accessibility</h2>
                 </div>
-                <div class="grid-3">
+                <div class="grid-2">
                     <div class="card">
                         <div style="font-weight:700;color:#2563eb;margin-bottom:6px">WCAG 2.2 AA-Oriented Evidence</div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
@@ -547,7 +651,7 @@
                 </div>
                 <p style="font-size:0.78rem;color:#475569;max-width:650px;margin:0 auto 14px">*Canvas is the lowest-friction pilot path; provider terms, hosting, support, accessibility review, and district procurement requirements still apply.</p>
                 <p style="font-size:1rem;color:#475569;line-height:1.7;max-width:650px;margin:0 auto 28px">
-                    If the pilot fits your needs, expand with evidence. If it does not, you retain the lessons and the option to stop. <strong>Pilots launching Fall 2026</strong>
+                    If the pilot fits your needs, expand with evidence. If it does not, you retain the lessons and the option to stop. <strong>Pilots open for 2026&ndash;27</strong>
                     &mdash; early-pilot districts receive direct support from the creator and help shape the roadmap.
                 </p>
                 <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow%20pilot%20interest" class="btn-primary"><i
@@ -566,9 +670,7 @@
                     style="list-style:none;padding:0;max-width:700px;margin:0 auto 24px;font-size:0.9rem;color:#475569;line-height:1.7;text-align:left">
                     <li style="margin-bottom:6px">&bull; Clinical focus: students with executive-function, attention,
                         and learning differences</li>
-                    <li style="margin-bottom:6px">&bull; Automated checks cover clinical logic, rendering, security, build contracts, and accessibility evidence; independent validation remains appropriate for procurement</li>
-                    <li style="margin-bottom:6px">&bull; Historical April 2026 accessibility audit and current VPAT/audit
-                        evidence; independent validation is still appropriate for procurement</li>
+                    <li style="margin-bottom:6px">&bull; Automated checks cover clinical logic, rendering, security, build contracts, and accessibility evidence (including the historical April 2026 audit and current working VPAT); independent validation remains appropriate for district procurement</li>
                     <li style="margin-bottom:6px">&bull; Published doctoral research on game-based math
                         instruction: <em>Use of Minecraft Education to Teach 5th-Grade Common Core Math
                         Standards</em> (<a href="https://eric.ed.gov/?id=ED659551" target="_blank"
@@ -599,11 +701,11 @@
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html" aria-current="page">For Districts</a><a href="calculator.html">Cost Planner</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
         </div>
@@ -643,6 +745,60 @@
             pill.addEventListener('click', () => setActiveJumpPill(pill.getAttribute('href')));
         });
         if (window.location.hash) setActiveJumpPill(window.location.hash);
+
+        // Copy IT allowlist domains
+        const copyAllowlistBtn = document.getElementById('copyAllowlistBtn');
+        const allowlistStatus = document.getElementById('allowlistCopyStatus');
+        if (copyAllowlistBtn) {
+            const allowlistText = [
+                '# AlloFlow Core Static Domains (no trackers or external font CDNs)',
+                'apomera.github.io',
+                'alloflow.dev',
+                'alloflow-cdn.pages.dev',
+                '',
+                '# Optional: Gemini Canvas path',
+                'gemini.google.com',
+                '',
+                '# Optional: School-owned Apps Script relay (Class Mailbox / School Rewards)',
+                'script.google.com',
+                'script.googleusercontent.com'
+            ].join('\n');
+            copyAllowlistBtn.addEventListener('click', () => {
+                const finish = (ok) => {
+                    if (allowlistStatus) {
+                        allowlistStatus.textContent = ok
+                            ? 'Copied 6 allowlist domains (3 core + 3 optional) to clipboard.'
+                            : 'Copy unavailable. Select the domains directly from the table below.';
+                    }
+                    if (ok) {
+                        copyAllowlistBtn.textContent = 'Copied domains';
+                        setTimeout(() => { copyAllowlistBtn.textContent = 'Copy allowlist domains'; }, 2400);
+                    }
+                };
+                const fallback = () => {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = allowlistText;
+                        ta.setAttribute('readonly', '');
+                        ta.setAttribute('aria-hidden', 'true');
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        const ok = Boolean(document.execCommand && document.execCommand('copy'));
+                        document.body.removeChild(ta);
+                        finish(ok);
+                    } catch (_) {
+                        finish(false);
+                    }
+                };
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(allowlistText).then(() => finish(true)).catch(fallback);
+                } else {
+                    fallback();
+                }
+            });
+        }
 
         // Back to Top visibility
         const backBtn = document.querySelector('.back-to-top');

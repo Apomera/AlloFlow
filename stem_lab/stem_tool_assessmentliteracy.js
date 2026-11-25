@@ -15425,7 +15425,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('li', null, h('strong', { className: 'text-emerald-300' }, 'NAMI Helpline: '), '1-800-950-6264 \u2014 info + referrals for mental health.'),
             h('li', null, h('strong', { className: 'text-emerald-300' }, '211: '), 'Dial 211 \u2014 local resources for housing, food, basic needs, mental health.'),
             h('li', null, h('strong', { className: 'text-emerald-300' }, 'Postpartum Support International: '), '1-800-944-4773 for perinatal mental health.'),
-            h('li', null, h('strong', { className: 'text-emerald-300' }, 'NEDA Eating Disorders Helpline: '), '1-800-931-2237.'),
+            // NEDA closed its helpline in 2023; the National Alliance for Eating Disorders took over the number
+            // (allianceforeatingdisorders.com/helpline-acquisition: "Call (866) 662-1235").
+            h('li', null, h('strong', { className: 'text-emerald-300' }, 'Eating disorders (National Alliance for Eating Disorders): '), '1-866-662-1235, Mon-Fri 9-7 ET. In a crisis: call or text 988.'),
             h('li', null, h('strong', { className: 'text-emerald-300' }, 'AA, NA + recovery: '), 'aa.org, na.org for substance recovery. SMART Recovery as secular alternative.'),
             h('li', null, h('strong', { className: 'text-emerald-300' }, 'Take the full MHFA course: '), 'mentalhealthfirstaid.org \u2014 find 8-hour certified course locally. Highly recommended for educators, parents, supervisors, anyone in contact with people in distress.')
           )
@@ -19918,7 +19920,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           assessment_tools: ['EAT-26 (Eating Attitudes Test, screening)', 'EDE-Q (Eating Disorder Examination Questionnaire)', 'Sick Control One Stone Fat Food (SCOFF)', 'Medical workup (BMI, vitals, labs) essential'],
           differential: ['Medical causes of weight loss (cancer, IBD, hyperthyroid)', 'Depression', 'OCD', 'Body Dysmorphic Disorder', 'Autism (food selectivity)', 'Anxiety (gastrointestinal symptoms)', 'Athletic culture or wrestling/weight-class sports'],
           interventions: ['Medical stabilization FIRST in severe cases', 'Evidence-based: FBT (Family-Based Treatment / Maudsley) for adolescent anorexia — strongest evidence', 'CBT-E (Enhanced CBT for eating disorders)', 'IOP/PHP/residential for severe cases', 'School accommodations: medical leave for treatment, lunch supervision if needed'],
-          school_role: 'Watch for visible signs + concerning behaviors. Eating disorders have HIGH mortality (anorexia highest of any mental illness). Always refer to medical provider for evaluation — never just MH provider. NEDA Helpline 1-800-931-2237 for resources.'
+          school_role: 'Watch for visible signs + concerning behaviors. Eating disorders have HIGH mortality (anorexia highest of any mental illness). Always refer to medical provider for evaluation — never just MH provider. National Alliance for Eating Disorders helpline 1-866-662-1235 for resources.'
         },
         {
           name: 'Conduct Disorder + Oppositional Defiant Disorder',

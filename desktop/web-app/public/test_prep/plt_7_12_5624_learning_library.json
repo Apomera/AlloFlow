@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-plt-grades-7-12-5624-learning-library",
@@ -32,7 +33,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 4,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 12,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -483,11 +489,11 @@
         },
         {
           "id": "plt5624-ch-02-check-03",
-          "prompt": "Two children of the same age display different fine-motor control during writing. What is the most appropriate teacher conclusion?",
+          "prompt": "Two tenth graders of the same age display different graphomotor stamina and written-output fluency during timed essays. What is the most appropriate teacher conclusion?",
           "choices": [
             "Determine that the student has a motor disability based directly on classroom handwriting samples alone.",
             "Expect same-age learners to demonstrate nearly identical fine-motor precision on standard writing tools.",
-            "Reduce conceptual writing expectations permanently until the student’s pencil grip matches faster peers.",
+            "Reduce conceptual writing expectations permanently until the student’s handwriting fluency matches faster peers.",
             "Recognize normal variation, check task demands and growth, provide access supports, and consult if needed."
           ],
           "answerIndex": 3,
@@ -947,7 +953,7 @@
           "prompt": "Which approach is most effective when introducing a new classroom transition routine?",
           "choices": [
             "Add a longer set of written cleanup rules to the wall poster without scheduling guided practice time.",
-            "Wait for messy transitions to occur and assign a whole-class loss of recess to build accountability.",
+            "Wait for messy transitions to occur and assign whole-class after-school detention to build accountability.",
             "Define and model the steps, guide rehearsal, give prompts and feedback, reinforce use, and reteach.",
             "Announce the new cleanup expectation clearly once on Monday morning and expect consistent follow-through."
           ],
@@ -2004,9 +2010,9 @@
           "id": "plt5624-ch-09-check-04",
           "prompt": "A tenth grader receives a grade-equivalent score of 11.2 on a standardized test. What is a defensible interpretation?",
           "choices": [
-            "The student should skip two full grade levels next fall because the standardized score confirms full academic and developmental readiness for accelerated placement.",
+            "The student should skip a full grade level next fall because the standardized score confirms full academic and developmental readiness for accelerated placement.",
             "The student has already mastered the full eleventh-grade curriculum across reading and mathematics standards and no longer needs instruction on current-grade objectives.",
-            "The score carries the exact same statistical interpretation as earning a national percentile rank of 62 when comparing performance against same-age peer norm groups.",
+            "The score carries the exact same statistical interpretation as earning a national percentile rank of 11 when comparing performance against same-age peer norm groups.",
             "The raw score matched the typical performance of the referenced eleventh-grade, month-two group; it does not prove eleventh-grade mastery or readiness to advance."
           ],
           "answerIndex": 3,
@@ -4055,7 +4061,7 @@
       "skillId": "learning-theory-cognition-transfer",
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
-      "front": "Which mathematics experience is most appropriate for many learners developing concrete-operational reasoning?",
+      "front": "Which mathematics experience best scaffolds secondary learners transitioning from concrete models to formal-operational symbolic reasoning?",
       "back": "Let learners manipulate concrete models, explain transformations, and connect actions to symbols.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -4103,7 +4109,7 @@
       "skillId": "human-development-grades-7-12",
       "domainId": "students-as-learners",
       "domain": "Students as Learners",
-      "front": "Two children of the same age display different fine-motor control during writing. What is the most appropriate teacher conclusion?",
+      "front": "Two tenth graders of the same age display different graphomotor stamina and written-output fluency during timed essays. What is the most appropriate teacher conclusion?",
       "back": "Recognize normal variation, check task demands and growth, provide access supports, and consult if needed.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -5953,9 +5959,9 @@
         "Measuring only whether tutoring occurred."
       ],
       "sampleOutline": [
-        "Convene an interpreted family-team discussion to clarify the conflict, goals, home evidence, and agreed classroom and homework supports.",
+        "Convene an interpreted family-team discussion with the student included to align classroom supports, homework accommodations, and IDEA postsecondary transition goals.",
         "Provide the paraeducator and relevant staff with role-specific plans, modeling, feedback, and a shared prompt-fading sequence.",
-        "Use approved privacy procedures for any volunteer information and review independence, accuracy, transfer, and implementation on a set date."
+        "Use approved privacy procedures for any volunteer information and review self-advocacy, independence toward postsecondary transition goals, accuracy, and implementation on a set date."
       ],
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw381f0276/pdfs/5624.pdf",
@@ -7469,6 +7475,2561 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "plt-7-12-5624-session-ch-01",
+      "title": "Learning Theory, Cognition, and Transfer guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Learning Theory, Cognition, and Transfer\" (Students as Learners) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-01",
+      "itemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-002",
+        "plt5624-b1-003",
+        "plt5624-b1-004",
+        "plt5624-b1-005",
+        "plt5624-b1-006",
+        "plt5624-b1-007",
+        "plt5624-b1-008",
+        "plt5624-b2-001",
+        "plt5624-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Learning Theory, Cognition, and Transfer\" and the \"Adolescent Identity, Abstract Cognition & Secondary Motivation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Adolescent Cognitive Development, Metacognition & Transfer of Learning\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Retraining Study Strategies and Attribution in Tenth-Grade Chemistry\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Learning Theory, Cognition, and Transfer\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Shift Secondary Classrooms from Lecture Coverage to Disciplinary Literacy and Socratic Inquiry\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-02",
+      "title": "Human Development Across Grades 7–12 guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Human Development Across Grades 7–12\" (Students as Learners) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-02",
+      "itemIds": [
+        "plt5624-b2-009",
+        "plt5624-b2-010",
+        "plt5624-b2-011",
+        "plt5624-b2-012",
+        "plt5624-b2-013",
+        "plt5624-b2-014",
+        "plt5624-b2-015",
+        "plt5624-b1-009",
+        "plt5624-b1-010",
+        "plt5624-b1-011"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Human Development Across Grades 7–12\" and the \"Adolescent Identity, Abstract Cognition & Secondary Motivation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Interacting Secondary Developmental Domains, Reasoning & Responsive Challenge\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Structuring Equitable Moral Inquiry in High School Civics\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Human Development Across Grades 7–12\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Manage Adolescent Working Memory with Worked Examples, Fading, and Spaced Retrieval\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-03",
+      "title": "Learner Differences, Access, Disability, Giftedness, and Language guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Learner Differences, Access, Disability, Giftedness, and Language\" (Students as Learners) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-03",
+      "itemIds": [
+        "plt5624-b2-022",
+        "plt5624-b2-023",
+        "plt5624-b1-016",
+        "plt5624-b1-017",
+        "plt5624-b1-018",
+        "plt5624-b1-019",
+        "plt5624-b1-020",
+        "plt5624-b1-021",
+        "plt5624-b1-022",
+        "plt5624-b1-023"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Learner Differences, Access, Disability, Giftedness, and Language\" and the \"Adolescent Identity, Abstract Cognition & Secondary Motivation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Differentiation, Disciplinary Literacy & Diverse-Learner Access Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Integrating Disciplinary Literacy for Secondary English Learners\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Learner Differences, Access, Disability, Giftedness, and Language\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Turn Open-Ended Secondary Projects into Scaffolded PBL with Formative Checkpoints\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-04",
+      "title": "Motivation, Learning Environment, and Behavior guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Motivation, Learning Environment, and Behavior\" (Students as Learners) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-04",
+      "itemIds": [
+        "plt5624-b2-024",
+        "plt5624-b2-025",
+        "plt5624-b2-026",
+        "plt5624-b2-027",
+        "plt5624-b2-028",
+        "plt5624-b2-029",
+        "plt5624-b2-030",
+        "plt5624-b1-024",
+        "plt5624-b1-025",
+        "plt5624-b1-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Motivation, Learning Environment, and Behavior\" and the \"Adolescent Identity, Abstract Cognition & Secondary Motivation\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Adolescent Motivation, Self-Efficacy & Respectful Secondary Classroom Management\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"De-Escalating Secondary Task Avoidance Without Power Struggles\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Motivation, Learning Environment, and Behavior\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Eliminate Construct Irrelevance and Bias While Interpreting Scores Through SEM\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-05",
+      "title": "Standards, Objectives, Planning, and Resources guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Standards, Objectives, Planning, and Resources\" (Instructional Process) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-05",
+      "itemIds": [
+        "plt5624-b1-039",
+        "plt5624-b1-040",
+        "plt5624-b2-031",
+        "plt5624-b2-032",
+        "plt5624-b2-033",
+        "plt5624-b2-034",
+        "plt5624-b2-035",
+        "plt5624-b2-036",
+        "plt5624-b2-037",
+        "plt5624-b2-038"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Standards, Objectives, Planning, and Resources\" and the \"Disciplinary Inquiry, Socratic Discourse & Secondary Pedagogy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Standards-to-Unit Backward Planning & Differentiated Resource Design\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Anchoring High School Interdisciplinary PBL in Backward Planning\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Standards, Objectives, Planning, and Resources\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Implement IEP and 504 Accommodations Without Diluting Secondary Academic Standards\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-06",
+      "title": "Instructional Methods, Grouping, Scaffolding, and Practice guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Instructional Methods, Grouping, Scaffolding, and Practice\" (Instructional Process) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-06",
+      "itemIds": [
+        "plt5624-b2-046",
+        "plt5624-b2-047",
+        "plt5624-b2-048",
+        "plt5624-b2-049",
+        "plt5624-b2-050",
+        "plt5624-b1-041",
+        "plt5624-b1-042",
+        "plt5624-b1-043",
+        "plt5624-b1-044",
+        "plt5624-b1-045"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Instructional Methods, Grouping, Scaffolding, and Practice\" and the \"Disciplinary Inquiry, Socratic Discourse & Secondary Pedagogy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"High-School Instructional Architecture: Inquiry, Seminar & Argumentation Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using Spaced Interleaved Practice to Unlock Physics Transfer\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Instructional Methods, Grouping, Scaffolding, and Practice\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Navigate Copyright Fair Use, FERPA, Mandated Reporting, and Professional Boundaries\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-07",
+      "title": "Questioning, Communication, Monitoring, and Reflection guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Questioning, Communication, Monitoring, and Reflection\" (Instructional Process) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-07",
+      "itemIds": [
+        "plt5624-b1-053",
+        "plt5624-b1-054",
+        "plt5624-b1-055",
+        "plt5624-b1-056",
+        "plt5624-b1-057",
+        "plt5624-b1-058",
+        "plt5624-b1-059",
+        "plt5624-b1-060",
+        "plt5624-b2-051",
+        "plt5624-b2-052"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Questioning, Communication, Monitoring, and Reflection\" and the \"Disciplinary Inquiry, Socratic Discourse & Secondary Pedagogy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Academic Discourse, Cognitive-Demand Questioning & Responsive Monitoring\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Connecting Multiple Representations in Ninth-Grade Algebra Checks\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Questioning, Communication, Monitoring, and Reflection\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Shift Secondary Classrooms from Lecture Coverage to Disciplinary Literacy and Socratic Inquiry\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-08",
+      "title": "Assessment Purpose, Format, Alignment, and Feedback guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Purpose, Format, Alignment, and Feedback\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-08",
+      "itemIds": [
+        "plt5624-b1-070",
+        "plt5624-b2-061",
+        "plt5624-b2-062",
+        "plt5624-b2-063",
+        "plt5624-b2-064",
+        "plt5624-b2-065",
+        "plt5624-b2-066",
+        "plt5624-b2-067",
+        "plt5624-b2-068",
+        "plt5624-b2-069"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Purpose, Format, Alignment, and Feedback\" and the \"Secondary Measurement, Item Analysis & Standards-Aligned Grading\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Purpose-Driven Secondary Assessment Design, Scoring Tools & Actionable Feedback\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Calibrating Senior Research Portfolios and Peer Assessment\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Purpose, Format, Alignment, and Feedback\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Manage Adolescent Working Memory with Worked Examples, Fading, and Spaced Retrieval\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-09",
+      "title": "Measurement, Scoring, Interpretation, and Communication guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Measurement, Scoring, Interpretation, and Communication\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-09",
+      "itemIds": [
+        "plt5624-b2-077",
+        "plt5624-b2-078",
+        "plt5624-b2-079",
+        "plt5624-b2-080",
+        "plt5624-b1-071",
+        "plt5624-b1-072",
+        "plt5624-b1-073",
+        "plt5624-b1-074",
+        "plt5624-b1-075",
+        "plt5624-b1-076"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Measurement, Scoring, Interpretation, and Communication\" and the \"Secondary Measurement, Item Analysis & Standards-Aligned Grading\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Psychometric Soundness, Performance Assessment & Grading Integrity Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Auditing Benchmark Bias and Bimodal Distributions in History\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Measurement, Scoring, Interpretation, and Communication\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Turn Open-Ended Secondary Projects into Scaffolded PBL with Formative Checkpoints\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-10",
+      "title": "Reflection, Research, and Professional Learning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Reflection, Research, and Professional Learning\" (Professional Development, Leadership, and Community) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-10",
+      "itemIds": [
+        "plt5624-b2-081",
+        "plt5624-b2-082",
+        "plt5624-b2-083",
+        "plt5624-b2-084",
+        "plt5624-b2-085",
+        "plt5624-b2-086",
+        "plt5624-b2-087",
+        "plt5624-b1-081",
+        "plt5624-b1-082",
+        "plt5624-b1-083"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Reflection, Research, and Professional Learning\" and the \"Secondary Law, Student Expression, Academic Integrity & Teacher Leadership\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Evidence Appraisal, Action Inquiry & Departmental Professional Learning\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Strengthening Departmental PLC Action Research Fidelity\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Reflection, Research, and Professional Learning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Eliminate Construct Irrelevance and Bias While Interpreting Scores Through SEM\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-11",
+      "title": "Collaboration, Families, Support Personnel, and Community guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collaboration, Families, Support Personnel, and Community\" (Professional Development, Leadership, and Community) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-11",
+      "itemIds": [
+        "plt5624-b1-088",
+        "plt5624-b1-089",
+        "plt5624-b1-090",
+        "plt5624-b1-091",
+        "plt5624-b1-092",
+        "plt5624-b1-093",
+        "plt5624-b1-094",
+        "plt5624-b2-088",
+        "plt5624-b2-089",
+        "plt5624-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collaboration, Families, Support Personnel, and Community\" and the \"Secondary Law, Student Expression, Academic Integrity & Teacher Leadership\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Collaborative Network: Families, Support Personnel & Community Continuity\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Unifying Secondary Transition and UDL Support Across Specialists\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collaboration, Families, Support Personnel, and Community\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Implement IEP and 504 Accommodations Without Diluting Secondary Academic Standards\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-ch-12",
+      "title": "Ethics, Law, Privacy, Rights, and Student Safety guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Ethics, Law, Privacy, Rights, and Student Safety\" (Professional Development, Leadership, and Community) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "plt5624-ch-12",
+      "itemIds": [
+        "plt5624-b1-100",
+        "plt5624-b2-095",
+        "plt5624-b2-096",
+        "plt5624-b2-097",
+        "plt5624-b2-098",
+        "plt5624-b2-099",
+        "plt5624-b2-100",
+        "plt5624-b1-095",
+        "plt5624-b1-096",
+        "plt5624-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Ethics, Law, Privacy, Rights, and Student Safety\" and the \"Secondary Law, Student Expression, Academic Integrity & Teacher Leadership\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Secondary Professionalism, Postsecondary Advising & Legal-Ethical Responsibilities\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upholding Crisis Reporting, Copyright Limits, and Site Policy\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Ethics, Law, Privacy, Rights, and Student Safety\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Navigate Copyright Fair Use, FERPA, Mandated Reporting, and Professional Boundaries\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-trap-repair-sprint",
+      "title": "Praxis Principles of Learning and Teaching: Grades 7–12 (5624) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-004",
+        "plt5624-b1-061",
+        "plt5624-b1-081",
+        "plt5624-b1-005",
+        "plt5624-b1-002",
+        "plt5624-b1-007",
+        "plt5624-b1-062",
+        "plt5624-b1-009",
+        "plt5624-b1-082",
+        "plt5624-b1-003",
+        "plt5624-b1-033"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Shift Secondary Classrooms from Lecture Coverage to Disciplinary Literacy and Socratic Inquiry\", \"Manage Adolescent Working Memory with Worked Examples, Fading, and Spaced Retrieval\", \"Turn Open-Ended Secondary Projects into Scaffolded PBL with Formative Checkpoints\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-session-mixed-capstone",
+      "title": "Praxis Principles of Learning and Teaching: Grades 7–12 (5624) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "plt5624-b1-004",
+        "plt5624-b1-034",
+        "plt5624-b1-064",
+        "plt5624-b1-084",
+        "plt5624-b1-015",
+        "plt5624-b1-045",
+        "plt5624-b1-075",
+        "plt5624-b1-095",
+        "plt5624-b1-026",
+        "plt5624-b1-056",
+        "plt5624-b2-066",
+        "plt5624-b2-086",
+        "plt5624-b2-007",
+        "plt5624-b2-037",
+        "plt5624-b2-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Case A1: Analyze Learner Development and Motivation\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "plt-7-12-5624-spaced-ch-01",
+      "topicId": "plt5624-ch-01",
+      "topicLabel": "1. Learning Theory, Cognition, and Transfer",
+      "unitId": "students-as-learners",
+      "chapterId": "plt5624-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Learning Theory, Cognition, and Transfer\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-02",
+      "topicId": "plt5624-ch-02",
+      "topicLabel": "2. Human Development Across Grades 7–12",
+      "unitId": "students-as-learners",
+      "chapterId": "plt5624-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Human Development Across Grades 7–12\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-03",
+      "topicId": "plt5624-ch-03",
+      "topicLabel": "3. Learner Differences, Access, Disability, Giftedness, and Language",
+      "unitId": "students-as-learners",
+      "chapterId": "plt5624-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Learner Differences, Access, Disability, Giftedness, and Language\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-04",
+      "topicId": "plt5624-ch-04",
+      "topicLabel": "4. Motivation, Learning Environment, and Behavior",
+      "unitId": "students-as-learners",
+      "chapterId": "plt5624-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Motivation, Learning Environment, and Behavior\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-05",
+      "topicId": "plt5624-ch-05",
+      "topicLabel": "5. Standards, Objectives, Planning, and Resources",
+      "unitId": "instructional-process",
+      "chapterId": "plt5624-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Standards, Objectives, Planning, and Resources\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-06",
+      "topicId": "plt5624-ch-06",
+      "topicLabel": "6. Instructional Methods, Grouping, Scaffolding, and Practice",
+      "unitId": "instructional-process",
+      "chapterId": "plt5624-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Instructional Methods, Grouping, Scaffolding, and Practice\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-07",
+      "topicId": "plt5624-ch-07",
+      "topicLabel": "7. Questioning, Communication, Monitoring, and Reflection",
+      "unitId": "instructional-process",
+      "chapterId": "plt5624-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Questioning, Communication, Monitoring, and Reflection\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-08",
+      "topicId": "plt5624-ch-08",
+      "topicLabel": "8. Assessment Purpose, Format, Alignment, and Feedback",
+      "unitId": "assessment",
+      "chapterId": "plt5624-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Purpose, Format, Alignment, and Feedback\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-09",
+      "topicId": "plt5624-ch-09",
+      "topicLabel": "9. Measurement, Scoring, Interpretation, and Communication",
+      "unitId": "assessment",
+      "chapterId": "plt5624-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Measurement, Scoring, Interpretation, and Communication\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-10",
+      "topicId": "plt5624-ch-10",
+      "topicLabel": "10. Reflection, Research, and Professional Learning",
+      "unitId": "professional-development-leadership-community",
+      "chapterId": "plt5624-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Reflection, Research, and Professional Learning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-11",
+      "topicId": "plt5624-ch-11",
+      "topicLabel": "11. Collaboration, Families, Support Personnel, and Community",
+      "unitId": "professional-development-leadership-community",
+      "chapterId": "plt5624-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collaboration, Families, Support Personnel, and Community\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-spaced-ch-12",
+      "topicId": "plt5624-ch-12",
+      "topicLabel": "12. Ethics, Law, Privacy, Rights, and Student Safety",
+      "unitId": "professional-development-leadership-community",
+      "chapterId": "plt5624-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Ethics, Law, Privacy, Rights, and Student Safety\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "plt-7-12-5624-source-01",
+      "title": "PLT: Grades 7–12 (5624) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw381f0276/pdfs/5624.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-02",
+      "title": "InTASC Model Core Teaching Standards: A Resource for State Dialogue",
+      "organization": "Council of Chief State School Officers (CCSSO)",
+      "url": "https://ccsso.org/sites/default/files/2017-11/InTASC_Model_Core_Teaching_Standards_2011.pdf",
+      "credibility": "CCSSO developed and publishes the InTASC model standards as a primary professional framework. Jurisdictions may adapt them, and they do not replace a current licensure test specification.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-03",
+      "title": "WWC | Organizing Instruction and Study to Improve Student Learning",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/practiceguide/1",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-04",
+      "title": "WWC | Practice Guides",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuides",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-05",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-06",
+      "title": "Return to School Roadmap — Child Find Under Part B of the Individuals with Disabilities Education Act (Aug. 24, 2021) - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/idea-files/rts-qa-child-find-part-b-08-24-2021/",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-07",
+      "title": "Disability Discrimination",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/civil-rights-laws/disability-discrimination",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-08",
+      "title": "Equal Education Opportunities for English Learners",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/civil-rights-laws/race-color-and-national-origin-discrimination/race-color-and-national-origin-discrimination-key-issues/equal-education-opportunities-english",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-09",
+      "title": "WWC | Teacher-Delivered Behavioral Interventions in Grades K-5",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/31/Published",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-10",
+      "title": "WWC | Using Student Achievement Data to Support Instructional Decision Making",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/practiceguide/12",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-11",
+      "title": "Under FERPA, may an educational agency or institution disclose education records to any of its employees without consent? | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/faq/under-ferpa-may-educational-agency-or-institution-disclose-education-records-any-its-employees",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "plt-7-12-5624-source-12",
+      "title": "Emergency Planning",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/teaching-and-administration/safe-learning-environments/school-safety-and-security/emergency-planning",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "plt-7-12-5624-unit-review-01",
+      "unitId": "students-as-learners",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Learning Theory, Cognition, and Transfer",
+      "chapterId": "plt5624-ch-01",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-01-section-01",
+        "plt5624-ch-01-section-02",
+        "plt5624-ch-01-section-03",
+        "plt5624-ch-01-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-002",
+        "plt5624-b1-003",
+        "plt5624-b1-004",
+        "plt5624-b1-005",
+        "plt5624-b1-006",
+        "plt5624-b1-007",
+        "plt5624-b1-008",
+        "plt5624-b2-001",
+        "plt5624-b2-002",
+        "plt5624-b2-003",
+        "plt5624-b2-004",
+        "plt5624-b2-005",
+        "plt5624-b2-006",
+        "plt5624-b2-007",
+        "plt5624-b2-008"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-002",
+        "plt5624-b1-003",
+        "plt5624-b1-004",
+        "plt5624-b1-005",
+        "plt5624-b1-006",
+        "plt5624-b1-007",
+        "plt5624-b1-008",
+        "plt5624-b2-001",
+        "plt5624-b2-002",
+        "plt5624-b2-003",
+        "plt5624-b2-004"
+      ],
+      "purpose": "Consolidate \"Learning Theory, Cognition, and Transfer\" (Students as Learners) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-02",
+      "unitId": "students-as-learners",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Human Development Across Grades 7–12",
+      "chapterId": "plt5624-ch-02",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-02-section-01",
+        "plt5624-ch-02-section-02",
+        "plt5624-ch-02-section-03",
+        "plt5624-ch-02-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-009",
+        "plt5624-b1-010",
+        "plt5624-b1-011",
+        "plt5624-b1-012",
+        "plt5624-b1-013",
+        "plt5624-b1-014",
+        "plt5624-b1-015",
+        "plt5624-b2-009",
+        "plt5624-b2-010",
+        "plt5624-b2-011",
+        "plt5624-b2-012",
+        "plt5624-b2-013",
+        "plt5624-b2-014",
+        "plt5624-b2-015"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-009",
+        "plt5624-b1-010",
+        "plt5624-b1-011",
+        "plt5624-b1-012",
+        "plt5624-b1-013",
+        "plt5624-b1-014",
+        "plt5624-b1-015",
+        "plt5624-b2-009",
+        "plt5624-b2-010",
+        "plt5624-b2-011",
+        "plt5624-b2-012",
+        "plt5624-b2-013"
+      ],
+      "purpose": "Consolidate \"Human Development Across Grades 7–12\" (Students as Learners) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-03",
+      "unitId": "students-as-learners",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Learner Differences, Access, Disability, Giftedness, and Language",
+      "chapterId": "plt5624-ch-03",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-03-section-01",
+        "plt5624-ch-03-section-02",
+        "plt5624-ch-03-section-03",
+        "plt5624-ch-03-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-016",
+        "plt5624-b1-017",
+        "plt5624-b1-018",
+        "plt5624-b1-019",
+        "plt5624-b1-020",
+        "plt5624-b1-021",
+        "plt5624-b1-022",
+        "plt5624-b1-023",
+        "plt5624-b2-016",
+        "plt5624-b2-017",
+        "plt5624-b2-018",
+        "plt5624-b2-019",
+        "plt5624-b2-020",
+        "plt5624-b2-021",
+        "plt5624-b2-022",
+        "plt5624-b2-023"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-016",
+        "plt5624-b1-017",
+        "plt5624-b1-018",
+        "plt5624-b1-019",
+        "plt5624-b1-020",
+        "plt5624-b1-021",
+        "plt5624-b1-022",
+        "plt5624-b1-023",
+        "plt5624-b2-016",
+        "plt5624-b2-017",
+        "plt5624-b2-018",
+        "plt5624-b2-019"
+      ],
+      "purpose": "Consolidate \"Learner Differences, Access, Disability, Giftedness, and Language\" (Students as Learners) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-04",
+      "unitId": "students-as-learners",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Motivation, Learning Environment, and Behavior",
+      "chapterId": "plt5624-ch-04",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-04-section-01",
+        "plt5624-ch-04-section-02",
+        "plt5624-ch-04-section-03",
+        "plt5624-ch-04-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-024",
+        "plt5624-b1-025",
+        "plt5624-b1-026",
+        "plt5624-b1-027",
+        "plt5624-b1-028",
+        "plt5624-b1-029",
+        "plt5624-b1-030",
+        "plt5624-b2-024",
+        "plt5624-b2-025",
+        "plt5624-b2-026",
+        "plt5624-b2-027",
+        "plt5624-b2-028",
+        "plt5624-b2-029",
+        "plt5624-b2-030"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-024",
+        "plt5624-b1-025",
+        "plt5624-b1-026",
+        "plt5624-b1-027",
+        "plt5624-b1-028",
+        "plt5624-b1-029",
+        "plt5624-b1-030",
+        "plt5624-b2-024",
+        "plt5624-b2-025",
+        "plt5624-b2-026",
+        "plt5624-b2-027",
+        "plt5624-b2-028"
+      ],
+      "purpose": "Consolidate \"Motivation, Learning Environment, and Behavior\" (Students as Learners) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-05",
+      "unitId": "instructional-process",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Standards, Objectives, Planning, and Resources",
+      "chapterId": "plt5624-ch-05",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-05-section-01",
+        "plt5624-ch-05-section-02",
+        "plt5624-ch-05-section-03",
+        "plt5624-ch-05-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-031",
+        "plt5624-b1-032",
+        "plt5624-b1-033",
+        "plt5624-b1-034",
+        "plt5624-b1-035",
+        "plt5624-b1-036",
+        "plt5624-b1-037",
+        "plt5624-b1-038",
+        "plt5624-b1-039",
+        "plt5624-b1-040",
+        "plt5624-b2-031",
+        "plt5624-b2-032",
+        "plt5624-b2-033",
+        "plt5624-b2-034",
+        "plt5624-b2-035",
+        "plt5624-b2-036",
+        "plt5624-b2-037",
+        "plt5624-b2-038",
+        "plt5624-b2-039",
+        "plt5624-b2-040"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-031",
+        "plt5624-b1-032",
+        "plt5624-b1-033",
+        "plt5624-b1-034",
+        "plt5624-b1-035",
+        "plt5624-b1-036",
+        "plt5624-b1-037",
+        "plt5624-b1-038",
+        "plt5624-b1-039",
+        "plt5624-b1-040",
+        "plt5624-b2-031",
+        "plt5624-b2-032"
+      ],
+      "purpose": "Consolidate \"Standards, Objectives, Planning, and Resources\" (Instructional Process) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-06",
+      "unitId": "instructional-process",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Instructional Methods, Grouping, Scaffolding, and Practice",
+      "chapterId": "plt5624-ch-06",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-06-section-01",
+        "plt5624-ch-06-section-02",
+        "plt5624-ch-06-section-03",
+        "plt5624-ch-06-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-041",
+        "plt5624-b1-042",
+        "plt5624-b1-043",
+        "plt5624-b1-044",
+        "plt5624-b1-045",
+        "plt5624-b1-046",
+        "plt5624-b1-047",
+        "plt5624-b1-048",
+        "plt5624-b1-049",
+        "plt5624-b1-050",
+        "plt5624-b2-041",
+        "plt5624-b2-042",
+        "plt5624-b2-043",
+        "plt5624-b2-044",
+        "plt5624-b2-045",
+        "plt5624-b2-046",
+        "plt5624-b2-047",
+        "plt5624-b2-048",
+        "plt5624-b2-049",
+        "plt5624-b2-050"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-041",
+        "plt5624-b1-042",
+        "plt5624-b1-043",
+        "plt5624-b1-044",
+        "plt5624-b1-045",
+        "plt5624-b1-046",
+        "plt5624-b1-047",
+        "plt5624-b1-048",
+        "plt5624-b1-049",
+        "plt5624-b1-050",
+        "plt5624-b2-041",
+        "plt5624-b2-042"
+      ],
+      "purpose": "Consolidate \"Instructional Methods, Grouping, Scaffolding, and Practice\" (Instructional Process) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-07",
+      "unitId": "instructional-process",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Questioning, Communication, Monitoring, and Reflection",
+      "chapterId": "plt5624-ch-07",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-07-section-01",
+        "plt5624-ch-07-section-02",
+        "plt5624-ch-07-section-03",
+        "plt5624-ch-07-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-051",
+        "plt5624-b1-052",
+        "plt5624-b1-053",
+        "plt5624-b1-054",
+        "plt5624-b1-055",
+        "plt5624-b1-056",
+        "plt5624-b1-057",
+        "plt5624-b1-058",
+        "plt5624-b1-059",
+        "plt5624-b1-060",
+        "plt5624-b2-051",
+        "plt5624-b2-052",
+        "plt5624-b2-053",
+        "plt5624-b2-054",
+        "plt5624-b2-055",
+        "plt5624-b2-056",
+        "plt5624-b2-057",
+        "plt5624-b2-058",
+        "plt5624-b2-059",
+        "plt5624-b2-060"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-051",
+        "plt5624-b1-052",
+        "plt5624-b1-053",
+        "plt5624-b1-054",
+        "plt5624-b1-055",
+        "plt5624-b1-056",
+        "plt5624-b1-057",
+        "plt5624-b1-058",
+        "plt5624-b1-059",
+        "plt5624-b1-060",
+        "plt5624-b2-051",
+        "plt5624-b2-052"
+      ],
+      "purpose": "Consolidate \"Questioning, Communication, Monitoring, and Reflection\" (Instructional Process) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-08",
+      "unitId": "assessment",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Assessment Purpose, Format, Alignment, and Feedback",
+      "chapterId": "plt5624-ch-08",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-08-section-01",
+        "plt5624-ch-08-section-02",
+        "plt5624-ch-08-section-03",
+        "plt5624-ch-08-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-061",
+        "plt5624-b1-062",
+        "plt5624-b1-063",
+        "plt5624-b1-064",
+        "plt5624-b1-065",
+        "plt5624-b1-066",
+        "plt5624-b1-067",
+        "plt5624-b1-068",
+        "plt5624-b1-069",
+        "plt5624-b1-070",
+        "plt5624-b2-061",
+        "plt5624-b2-062",
+        "plt5624-b2-063",
+        "plt5624-b2-064",
+        "plt5624-b2-065",
+        "plt5624-b2-066",
+        "plt5624-b2-067",
+        "plt5624-b2-068",
+        "plt5624-b2-069",
+        "plt5624-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-061",
+        "plt5624-b1-062",
+        "plt5624-b1-063",
+        "plt5624-b1-064",
+        "plt5624-b1-065",
+        "plt5624-b1-066",
+        "plt5624-b1-067",
+        "plt5624-b1-068",
+        "plt5624-b1-069",
+        "plt5624-b1-070",
+        "plt5624-b2-061",
+        "plt5624-b2-062"
+      ],
+      "purpose": "Consolidate \"Assessment Purpose, Format, Alignment, and Feedback\" (Assessment) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-09",
+      "unitId": "assessment",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Measurement, Scoring, Interpretation, and Communication",
+      "chapterId": "plt5624-ch-09",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-09-section-01",
+        "plt5624-ch-09-section-02",
+        "plt5624-ch-09-section-03",
+        "plt5624-ch-09-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-071",
+        "plt5624-b1-072",
+        "plt5624-b1-073",
+        "plt5624-b1-074",
+        "plt5624-b1-075",
+        "plt5624-b1-076",
+        "plt5624-b1-077",
+        "plt5624-b1-078",
+        "plt5624-b1-079",
+        "plt5624-b1-080",
+        "plt5624-b2-071",
+        "plt5624-b2-072",
+        "plt5624-b2-073",
+        "plt5624-b2-074",
+        "plt5624-b2-075",
+        "plt5624-b2-076",
+        "plt5624-b2-077",
+        "plt5624-b2-078",
+        "plt5624-b2-079",
+        "plt5624-b2-080"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-071",
+        "plt5624-b1-072",
+        "plt5624-b1-073",
+        "plt5624-b1-074",
+        "plt5624-b1-075",
+        "plt5624-b1-076",
+        "plt5624-b1-077",
+        "plt5624-b1-078",
+        "plt5624-b1-079",
+        "plt5624-b1-080",
+        "plt5624-b2-071",
+        "plt5624-b2-072"
+      ],
+      "purpose": "Consolidate \"Measurement, Scoring, Interpretation, and Communication\" (Assessment) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-10",
+      "unitId": "professional-development-leadership-community",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Reflection, Research, and Professional Learning",
+      "chapterId": "plt5624-ch-10",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-10-section-01",
+        "plt5624-ch-10-section-02",
+        "plt5624-ch-10-section-03",
+        "plt5624-ch-10-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-081",
+        "plt5624-b1-082",
+        "plt5624-b1-083",
+        "plt5624-b1-084",
+        "plt5624-b1-085",
+        "plt5624-b1-086",
+        "plt5624-b1-087",
+        "plt5624-b2-081",
+        "plt5624-b2-082",
+        "plt5624-b2-083",
+        "plt5624-b2-084",
+        "plt5624-b2-085",
+        "plt5624-b2-086",
+        "plt5624-b2-087"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-081",
+        "plt5624-b1-082",
+        "plt5624-b1-083",
+        "plt5624-b1-084",
+        "plt5624-b1-085",
+        "plt5624-b1-086",
+        "plt5624-b1-087",
+        "plt5624-b2-081",
+        "plt5624-b2-082",
+        "plt5624-b2-083",
+        "plt5624-b2-084",
+        "plt5624-b2-085"
+      ],
+      "purpose": "Consolidate \"Reflection, Research, and Professional Learning\" (Professional Development, Leadership, and Community) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-11",
+      "unitId": "professional-development-leadership-community",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Collaboration, Families, Support Personnel, and Community",
+      "chapterId": "plt5624-ch-11",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-11-section-01",
+        "plt5624-ch-11-section-02",
+        "plt5624-ch-11-section-03",
+        "plt5624-ch-11-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-088",
+        "plt5624-b1-089",
+        "plt5624-b1-090",
+        "plt5624-b1-091",
+        "plt5624-b1-092",
+        "plt5624-b1-093",
+        "plt5624-b1-094",
+        "plt5624-b2-088",
+        "plt5624-b2-089",
+        "plt5624-b2-090",
+        "plt5624-b2-091",
+        "plt5624-b2-092",
+        "plt5624-b2-093",
+        "plt5624-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-088",
+        "plt5624-b1-089",
+        "plt5624-b1-090",
+        "plt5624-b1-091",
+        "plt5624-b1-092",
+        "plt5624-b1-093",
+        "plt5624-b1-094",
+        "plt5624-b2-088",
+        "plt5624-b2-089",
+        "plt5624-b2-090",
+        "plt5624-b2-091",
+        "plt5624-b2-092"
+      ],
+      "purpose": "Consolidate \"Collaboration, Families, Support Personnel, and Community\" (Professional Development, Leadership, and Community) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-unit-review-12",
+      "unitId": "professional-development-leadership-community",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Ethics, Law, Privacy, Rights, and Student Safety",
+      "chapterId": "plt5624-ch-12",
+      "topicDiagnosticRouteIds": [
+        "plt5624-ch-12-section-01",
+        "plt5624-ch-12-section-02",
+        "plt5624-ch-12-section-03",
+        "plt5624-ch-12-section-04"
+      ],
+      "itemIds": [
+        "plt5624-b1-095",
+        "plt5624-b1-096",
+        "plt5624-b1-097",
+        "plt5624-b1-098",
+        "plt5624-b1-099",
+        "plt5624-b1-100",
+        "plt5624-b2-095",
+        "plt5624-b2-096",
+        "plt5624-b2-097",
+        "plt5624-b2-098",
+        "plt5624-b2-099",
+        "plt5624-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "plt5624-b1-095",
+        "plt5624-b1-096",
+        "plt5624-b1-097",
+        "plt5624-b1-098",
+        "plt5624-b1-099",
+        "plt5624-b1-100",
+        "plt5624-b2-095",
+        "plt5624-b2-096",
+        "plt5624-b2-097",
+        "plt5624-b2-098",
+        "plt5624-b2-099",
+        "plt5624-b2-100"
+      ],
+      "purpose": "Consolidate \"Ethics, Law, Privacy, Rights, and Student Safety\" (Professional Development, Leadership, and Community) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "plt-7-12-5624-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Principles of Learning and Teaching: Grades 7–12 (5624) blueprint domains.",
+      "focus": [
+        "Students as Learners",
+        "Instructional Process",
+        "Assessment",
+        "Professional Development, Leadership, and Community"
+      ],
+      "itemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-081",
+        "plt5624-b1-062",
+        "plt5624-b1-033",
+        "plt5624-b1-004",
+        "plt5624-b1-084",
+        "plt5624-b1-065",
+        "plt5624-b1-036",
+        "plt5624-b1-007",
+        "plt5624-b1-087",
+        "plt5624-b1-068",
+        "plt5624-b1-039",
+        "plt5624-b1-010",
+        "plt5624-b1-090",
+        "plt5624-b1-071",
+        "plt5624-b1-042",
+        "plt5624-b1-013",
+        "plt5624-b1-093",
+        "plt5624-b1-074",
+        "plt5624-b1-045",
+        "plt5624-b1-016",
+        "plt5624-b1-096",
+        "plt5624-b1-077",
+        "plt5624-b1-048",
+        "plt5624-b1-019",
+        "plt5624-b1-099",
+        "plt5624-b1-080",
+        "plt5624-b1-051",
+        "plt5624-b1-022",
+        "plt5624-b2-082",
+        "plt5624-b2-063",
+        "plt5624-b1-054",
+        "plt5624-b1-025",
+        "plt5624-b2-085",
+        "plt5624-b2-066",
+        "plt5624-b1-057",
+        "plt5624-b1-028",
+        "plt5624-b2-088",
+        "plt5624-b2-069",
+        "plt5624-b1-060"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Principles of Learning and Teaching: Grades 7–12 (5624) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Assessment",
+        "Professional Development, Leadership, and Community",
+        "Students as Learners",
+        "Instructional Process"
+      ],
+      "itemIds": [
+        "plt5624-b1-031",
+        "plt5624-b1-002",
+        "plt5624-b1-082",
+        "plt5624-b1-063",
+        "plt5624-b1-034",
+        "plt5624-b1-005",
+        "plt5624-b1-085",
+        "plt5624-b1-066",
+        "plt5624-b1-037",
+        "plt5624-b1-008",
+        "plt5624-b1-088",
+        "plt5624-b1-069",
+        "plt5624-b1-040",
+        "plt5624-b1-011",
+        "plt5624-b1-091",
+        "plt5624-b1-072",
+        "plt5624-b1-043",
+        "plt5624-b1-014",
+        "plt5624-b1-094",
+        "plt5624-b1-075",
+        "plt5624-b1-046",
+        "plt5624-b1-017",
+        "plt5624-b1-097",
+        "plt5624-b1-078",
+        "plt5624-b1-049",
+        "plt5624-b1-020",
+        "plt5624-b1-100",
+        "plt5624-b2-061",
+        "plt5624-b1-052",
+        "plt5624-b1-023",
+        "plt5624-b2-083",
+        "plt5624-b2-064",
+        "plt5624-b1-055",
+        "plt5624-b1-026",
+        "plt5624-b2-086",
+        "plt5624-b2-067",
+        "plt5624-b1-058",
+        "plt5624-b1-029",
+        "plt5624-b2-089",
+        "plt5624-b2-070"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Principles of Learning and Teaching: Grades 7–12 (5624) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Defaulting to Passive Lecture Over Disciplinary Literacy and Socratic Inquiry",
+        "Inducing Cognitive Overload Instead of Using Worked Examples and Retrieval Practice",
+        "Launching Unguided Discovery Instead of Scaffolded PBL with Formative Checkpoints"
+      ],
+      "itemIds": [
+        "plt5624-b1-061",
+        "plt5624-b1-032",
+        "plt5624-b1-003",
+        "plt5624-b1-083",
+        "plt5624-b1-064",
+        "plt5624-b1-035",
+        "plt5624-b1-006",
+        "plt5624-b1-086",
+        "plt5624-b1-067",
+        "plt5624-b1-038",
+        "plt5624-b1-009",
+        "plt5624-b1-089",
+        "plt5624-b1-070",
+        "plt5624-b1-041",
+        "plt5624-b1-012",
+        "plt5624-b1-092",
+        "plt5624-b1-073",
+        "plt5624-b1-044",
+        "plt5624-b1-015",
+        "plt5624-b1-095",
+        "plt5624-b1-076",
+        "plt5624-b1-047",
+        "plt5624-b1-018",
+        "plt5624-b1-098",
+        "plt5624-b1-079",
+        "plt5624-b1-050",
+        "plt5624-b1-021",
+        "plt5624-b2-081",
+        "plt5624-b2-062",
+        "plt5624-b1-053",
+        "plt5624-b1-024",
+        "plt5624-b2-084",
+        "plt5624-b2-065",
+        "plt5624-b1-056",
+        "plt5624-b1-027",
+        "plt5624-b2-087",
+        "plt5624-b2-068",
+        "plt5624-b1-059",
+        "plt5624-b1-030",
+        "plt5624-b2-090"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "plt-7-12-5624-form-internal-a",
+      "title": "Internal practice form A (Praxis Principles of Learning and Teaching: Grades 7–12 (5624))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "plt5624-b1-001",
+        "plt5624-b1-081",
+        "plt5624-b1-062",
+        "plt5624-b1-033",
+        "plt5624-b1-004",
+        "plt5624-b1-084",
+        "plt5624-b1-065",
+        "plt5624-b1-036",
+        "plt5624-b1-007",
+        "plt5624-b1-087",
+        "plt5624-b1-068",
+        "plt5624-b1-039",
+        "plt5624-b1-010",
+        "plt5624-b1-090",
+        "plt5624-b1-071",
+        "plt5624-b1-042",
+        "plt5624-b1-013",
+        "plt5624-b1-093",
+        "plt5624-b1-074",
+        "plt5624-b1-045",
+        "plt5624-b1-016",
+        "plt5624-b1-096",
+        "plt5624-b1-077",
+        "plt5624-b1-048",
+        "plt5624-b1-019",
+        "plt5624-b1-099",
+        "plt5624-b1-080",
+        "plt5624-b1-051",
+        "plt5624-b1-022",
+        "plt5624-b2-082",
+        "plt5624-b2-063",
+        "plt5624-b1-054",
+        "plt5624-b1-025",
+        "plt5624-b2-085",
+        "plt5624-b2-066",
+        "plt5624-b1-057",
+        "plt5624-b1-028",
+        "plt5624-b2-088",
+        "plt5624-b2-069",
+        "plt5624-b1-060",
+        "plt5624-b2-001",
+        "plt5624-b2-091",
+        "plt5624-b2-072",
+        "plt5624-b2-033",
+        "plt5624-b2-004",
+        "plt5624-b2-094",
+        "plt5624-b2-075",
+        "plt5624-b2-036",
+        "plt5624-b2-007",
+        "plt5624-b2-097"
+      ],
+      "topicIds": [
+        "plt5624-ch-01",
+        "plt5624-ch-10",
+        "plt5624-ch-08",
+        "plt5624-ch-05",
+        "plt5624-ch-02",
+        "plt5624-ch-11",
+        "plt5624-ch-09",
+        "plt5624-ch-06",
+        "plt5624-ch-03",
+        "plt5624-ch-12",
+        "plt5624-ch-07",
+        "plt5624-ch-04"
+      ],
+      "unitIds": [
+        "students-as-learners",
+        "professional-development-leadership-community",
+        "assessment",
+        "instructional-process"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-form-internal-b",
+      "title": "Internal practice form B (Praxis Principles of Learning and Teaching: Grades 7–12 (5624))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "plt5624-b1-031",
+        "plt5624-b1-002",
+        "plt5624-b1-082",
+        "plt5624-b1-063",
+        "plt5624-b1-034",
+        "plt5624-b1-005",
+        "plt5624-b1-085",
+        "plt5624-b1-066",
+        "plt5624-b1-037",
+        "plt5624-b1-008",
+        "plt5624-b1-088",
+        "plt5624-b1-069",
+        "plt5624-b1-040",
+        "plt5624-b1-011",
+        "plt5624-b1-091",
+        "plt5624-b1-072",
+        "plt5624-b1-043",
+        "plt5624-b1-014",
+        "plt5624-b1-094",
+        "plt5624-b1-075",
+        "plt5624-b1-046",
+        "plt5624-b1-017",
+        "plt5624-b1-097",
+        "plt5624-b1-078",
+        "plt5624-b1-049",
+        "plt5624-b1-020",
+        "plt5624-b1-100",
+        "plt5624-b2-061",
+        "plt5624-b1-052",
+        "plt5624-b1-023",
+        "plt5624-b2-083",
+        "plt5624-b2-064",
+        "plt5624-b1-055",
+        "plt5624-b1-026",
+        "plt5624-b2-086",
+        "plt5624-b2-067",
+        "plt5624-b1-058",
+        "plt5624-b1-029",
+        "plt5624-b2-089",
+        "plt5624-b2-070",
+        "plt5624-b2-031",
+        "plt5624-b2-002",
+        "plt5624-b2-092",
+        "plt5624-b2-073",
+        "plt5624-b2-034",
+        "plt5624-b2-005",
+        "plt5624-b2-095",
+        "plt5624-b2-076",
+        "plt5624-b2-037",
+        "plt5624-b2-008"
+      ],
+      "topicIds": [
+        "plt5624-ch-05",
+        "plt5624-ch-01",
+        "plt5624-ch-10",
+        "plt5624-ch-08",
+        "plt5624-ch-11",
+        "plt5624-ch-02",
+        "plt5624-ch-09",
+        "plt5624-ch-06",
+        "plt5624-ch-03",
+        "plt5624-ch-12",
+        "plt5624-ch-07",
+        "plt5624-ch-04"
+      ],
+      "unitIds": [
+        "instructional-process",
+        "students-as-learners",
+        "professional-development-leadership-community",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "plt-7-12-5624-form-internal-c",
+      "title": "Internal practice form C (Praxis Principles of Learning and Teaching: Grades 7–12 (5624))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "plt5624-b1-061",
+        "plt5624-b1-032",
+        "plt5624-b1-003",
+        "plt5624-b1-083",
+        "plt5624-b1-064",
+        "plt5624-b1-035",
+        "plt5624-b1-006",
+        "plt5624-b1-086",
+        "plt5624-b1-067",
+        "plt5624-b1-038",
+        "plt5624-b1-009",
+        "plt5624-b1-089",
+        "plt5624-b1-070",
+        "plt5624-b1-041",
+        "plt5624-b1-012",
+        "plt5624-b1-092",
+        "plt5624-b1-073",
+        "plt5624-b1-044",
+        "plt5624-b1-015",
+        "plt5624-b1-095",
+        "plt5624-b1-076",
+        "plt5624-b1-047",
+        "plt5624-b1-018",
+        "plt5624-b1-098",
+        "plt5624-b1-079",
+        "plt5624-b1-050",
+        "plt5624-b1-021",
+        "plt5624-b2-081",
+        "plt5624-b2-062",
+        "plt5624-b1-053",
+        "plt5624-b1-024",
+        "plt5624-b2-084",
+        "plt5624-b2-065",
+        "plt5624-b1-056",
+        "plt5624-b1-027",
+        "plt5624-b2-087",
+        "plt5624-b2-068",
+        "plt5624-b1-059",
+        "plt5624-b1-030",
+        "plt5624-b2-090",
+        "plt5624-b2-071",
+        "plt5624-b2-032",
+        "plt5624-b2-003",
+        "plt5624-b2-093",
+        "plt5624-b2-074",
+        "plt5624-b2-035",
+        "plt5624-b2-006",
+        "plt5624-b2-096",
+        "plt5624-b2-077",
+        "plt5624-b2-038"
+      ],
+      "topicIds": [
+        "plt5624-ch-08",
+        "plt5624-ch-05",
+        "plt5624-ch-01",
+        "plt5624-ch-10",
+        "plt5624-ch-02",
+        "plt5624-ch-11",
+        "plt5624-ch-06",
+        "plt5624-ch-09",
+        "plt5624-ch-12",
+        "plt5624-ch-03",
+        "plt5624-ch-07",
+        "plt5624-ch-04"
+      ],
+      "unitIds": [
+        "assessment",
+        "instructional-process",
+        "students-as-learners",
+        "professional-development-leadership-community"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

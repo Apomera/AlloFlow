@@ -23,12 +23,13 @@
     document.body.appendChild(liveRegion);
   })();
 
-  // WCAG 2.1 AA: accessibility CSS (reduced motion + visible focus)
-  if (typeof document !== 'undefined' && document.head && !document.getElementById('cs-a11y-css')) {
+  // WCAG 2.2 AA: accessibility CSS (reduced motion + touch-action + visible focus + forced-colors)
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById('cs-a11y-css')) {
     var csA11yStyle = document.createElement('style');
     csA11yStyle.id = 'cs-a11y-css';
     csA11yStyle.textContent = [
       '@media (prefers-reduced-motion: reduce) { .cs-root *, .cs-root *::before, .cs-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '.cs-root button, .cs-root input, .cs-root select, .cs-root textarea, .cs-root [role="tab"], .cs-root [role="button"] { touch-action: manipulation; }',
       '.cs-root button:focus-visible, .cs-root input:focus-visible, .cs-root select:focus-visible, .cs-root textarea:focus-visible, .cs-root [tabindex]:focus-visible { outline: 3px solid #818cf8 !important; outline-offset: 2px !important; border-radius: 6px; }',
       '.cs-root :focus:not(:focus-visible) { outline: none !important; }',
       '@media (forced-colors: active) { .cs-root button:focus-visible, .cs-root input:focus-visible, .cs-root select:focus-visible, .cs-root textarea:focus-visible, .cs-root [tabindex]:focus-visible { outline: 3px solid CanvasText !important; } }'
@@ -1210,10 +1211,10 @@
     }
 
     // ── small render helpers ──
-    function label(text, htmlFor) { return h('label', { className: 'block text-sm font-semibold text-slate-200 mb-1', htmlFor: htmlFor }, text); }
+    function label(text, htmlFor) { return h('label', { key: 'lbl-' + (htmlFor || text), className: 'block text-sm font-semibold text-slate-200 mb-1', htmlFor: htmlFor }, text); }
     function selectEl(id, value, onChange, options) {
       return h('select', {
-        id: id, value: value, onChange: function (e) { onChange(e.target.value); },
+        key: 'sel-' + id, id: id, value: value, onChange: function (e) { onChange(e.target.value); },
         className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm'
       }, options.map(function (o) { return h('option', { key: o.id, value: o.id }, o.label); }));
     }
@@ -1232,7 +1233,7 @@
       }
     }
     function onTabKeyDown(e, current) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(e.key) === -1) return;
       e.preventDefault();
       var index = TAB_ORDER.indexOf(current);
@@ -1276,7 +1277,7 @@
     // dependency. Optional prop so legacy hosts render unchanged.
     var vsCrossLink = props.onOpenVideoStudio ? h('div', { className: 'mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs text-sky-200 flex items-center justify-between gap-3 flex-wrap' }, [
       h('span', { key: 't' }, T('cs_video_studio_hint', 'Want to record your own screen demo instead? The Video Studio records, trims, captions, and exports real video — no NotebookLM needed.')),
-      h('button', { key: 'b', onClick: function () { try { props.onOpenVideoStudio(); } catch (_) {} },
+      h('button', { type: 'button', key: 'b', onClick: function () { try { props.onOpenVideoStudio(); } catch (_) {} },
         className: 'shrink-0 rounded-lg bg-sky-600 hover:bg-sky-800 text-white text-xs font-semibold px-3 py-1.5' }, T('cs_video_studio_open', '🎥 Open Video Studio'))
     ]) : null;
 
@@ -1292,7 +1293,7 @@
     // ── BUILD tab ──
     var presetGrid = h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4' }, LESSON_TYPES.map(function (p) {
       var active = p.id === presetId;
-      return h('button', {
+      return h('button', { type: 'button',
         key: p.id, onClick: function () { applyPreset(p.id); }, 'aria-pressed': active, title: p.blurb,
         className: 'text-left rounded-lg border px-3 py-2 transition-colors ' + (active ? 'border-indigo-400 bg-indigo-600/20' : 'border-slate-700 bg-slate-800/60 hover:bg-slate-700/60')
       }, [
@@ -1303,7 +1304,7 @@
 
     var builder = h('div', { className: 'grid sm:grid-cols-2 gap-3' }, [
       h('div', { key: 'topic', className: 'sm:col-span-2' }, [label(T('cs_f_topic', 'Topic / focus'), 'cs-topic'),
-        h('input', { id: 'cs-topic', type: 'text', value: fields.topic, onChange: function (e) { setField('topic', e.target.value); },
+        h('input', { key: 'in-topic', id: 'cs-topic', type: 'text', value: fields.topic, onChange: function (e) { setField('topic', e.target.value); },
           placeholder: 'e.g. how the water cycle moves energy', className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
       h('div', { key: 'grade' }, [label(T('cs_f_grade', 'Grade band'), 'cs-grade'), selectEl('cs-grade', fields.gradeBand, function (v) { setField('gradeBand', v); }, GRADE_BANDS)]),
       h('div', { key: 'read' }, [label(T('cs_f_read', 'Language level'), 'cs-read'), selectEl('cs-read', fields.reading, function (v) { setField('reading', v); }, READING_LEVELS)]),
@@ -1318,10 +1319,10 @@
           { id: 'the student home language', label: 'On-screen text in the student home language' }
         ])]),
       h('div', { key: 'inc', className: 'sm:col-span-2' }, [label(T('cs_f_inc', 'Must include'), 'cs-inc'),
-        h('textarea', { id: 'cs-inc', rows: 2, value: fields.mustInclude, onChange: function (e) { setField('mustInclude', e.target.value); },
+        h('textarea', { key: 'in-inc', id: 'cs-inc', rows: 2, value: fields.mustInclude, onChange: function (e) { setField('mustInclude', e.target.value); },
           className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
       h('div', { key: 'avo', className: 'sm:col-span-2' }, [label(T('cs_f_avo', 'Must avoid'), 'cs-avo'),
-        h('textarea', { id: 'cs-avo', rows: 2, value: fields.mustAvoid, onChange: function (e) { setField('mustAvoid', e.target.value); },
+        h('textarea', { key: 'in-avo', id: 'cs-avo', rows: 2, value: fields.mustAvoid, onChange: function (e) { setField('mustAvoid', e.target.value); },
           className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
       h('label', { key: 'va', className: 'flex min-h-6 cursor-pointer items-center gap-2 text-sm text-slate-200', htmlFor: 'cs-va' }, [
         h('input', { key: 'c', id: 'cs-va', type: 'checkbox', className: 'min-h-6 min-w-6', checked: fields.visualAccuracy, onChange: function (e) { setField('visualAccuracy', e.target.checked); } }),
@@ -1335,8 +1336,8 @@
       h('div', { key: 'lab', className: 'flex flex-wrap items-center justify-between gap-2 mb-1' }, [
         h('span', { key: 't', className: 'text-sm font-semibold text-slate-200' }, T('cs_preview', 'Your steering prompt')),
         h('div', { key: 'btns', className: 'flex gap-2' }, [
-          h('button', { key: 'c', onClick: function (e) { copy(assembled, 'Steering prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy')),
-          h('button', { key: 'a', onClick: improvePrompt, disabled: busy, className: 'text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50' }, busy ? T('cs_refining', 'Refining...') : T('cs_improve', 'Improve with AI'))
+          h('button', { type: 'button', key: 'c', onClick: function (e) { copy(assembled, 'Steering prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy')),
+          h('button', { type: 'button', key: 'a', onClick: improvePrompt, disabled: busy, className: 'text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50' }, busy ? T('cs_refining', 'Refining...') : T('cs_improve', 'Improve with AI'))
         ])
       ]),
       h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mb-1' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
@@ -1344,13 +1345,13 @@
       aiResult ? h('div', { key: 'ai', className: 'mt-3' }, [
         h('div', { key: 'l', className: 'flex flex-wrap items-center justify-between gap-2 mb-1' }, [
           h('span', { key: 't', className: 'text-sm font-semibold text-emerald-300' }, T('cs_ai_label', 'AI-refined draft (review before use)')),
-          h('button', { key: 'c', onClick: function (e) { copy(aiResult, 'Refined prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy'))
+          h('button', { type: 'button', key: 'c', onClick: function (e) { copy(aiResult, 'Refined prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy'))
         ]),
         h('pre', { key: 'p', className: 'whitespace-pre-wrap text-xs text-slate-100 bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-3 max-h-48 overflow-auto' }, aiResult)
       ]) : null
     ]);
 
-    var buildTab = h('div', panelProps('build'), [presetGrid, builder, preview]);
+    var buildTab = h('div', panelProps('build'), presetGrid, builder, preview);
 
     // ── DIAGNOSE tab ──
     var symGrid = h('div', { className: 'grid sm:grid-cols-2 gap-2 mb-3' }, SYMPTOMS.map(function (s) {
@@ -1360,21 +1361,21 @@
         h('span', { key: 'l' }, s.label)
       ]);
     }));
-    var diagnoseTab = h('div', panelProps('diagnose'), [
+    var diagnoseTab = h('div', panelProps('diagnose'),
       h('p', { key: 'i', className: 'text-sm text-slate-400 mb-3' }, T('cs_diag_intro', 'Got a video back that missed the mark? Check what went wrong and add notes. This builds a tight revision prompt to paste back into NotebookLM before you regenerate.')),
       symGrid,
       h('div', { key: 'n', className: 'mb-3' }, [label(T('cs_diag_notes', 'Anything else that was off?'), 'cs-dnotes'),
-        h('textarea', { id: 'cs-dnotes', rows: 2, value: notes, onChange: function (e) { setNotes(e.target.value); }, className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
-      h('button', { key: 'mk', onClick: makeRePrompt, disabled: reBusy, className: 'px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50' }, reBusy ? T('cs_polishing', 'Polishing...') : T('cs_make_reprompt', 'Build revision prompt')),
+        h('textarea', { key: 'in-dnotes', id: 'cs-dnotes', rows: 2, value: notes, onChange: function (e) { setNotes(e.target.value); }, className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
+      h('button', { type: 'button', key: 'mk', onClick: makeRePrompt, disabled: reBusy, className: 'px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50' }, reBusy ? T('cs_polishing', 'Polishing...') : T('cs_make_reprompt', 'Build revision prompt')),
       h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mt-2' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
       rePrompt ? h('div', { key: 'out', className: 'mt-3' }, [
         h('div', { key: 'l', className: 'flex flex-wrap items-center justify-between gap-2 mb-1' }, [
           h('span', { key: 't', className: 'text-sm font-semibold text-slate-200' }, T('cs_reprompt', 'Revision prompt')),
-          h('button', { key: 'c', onClick: function (e) { copy(rePrompt, 'Revision prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy'))
+          h('button', { type: 'button', key: 'c', onClick: function (e) { copy(rePrompt, 'Revision prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy'))
         ]),
         h('pre', { key: 'p', className: 'whitespace-pre-wrap text-xs text-slate-100 bg-slate-900/70 border border-slate-700 rounded-lg p-3 max-h-56 overflow-auto' }, rePrompt)
       ]) : null
-    ]);
+    );
 
     // ── GUIDE tab ──
     var guideItem = function (k, title, body) {
@@ -1402,7 +1403,7 @@
           h('input', { key: 'in', type: 'file', accept: 'video/*,audio/*', style: { display: 'none' }, onChange: function (e) { onPickVideo(e.target.files && e.target.files[0]); } })
         ]),
         vfile ? h('span', { key: 'fn', className: 'text-xs text-slate-300 truncate max-w-[14rem]' }, vfile.name) : null,
-        h('button', { key: 'go', onClick: runTranscribe, disabled: tbusy || !vfile, className: 'text-xs px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-800 text-white disabled:opacity-40' }, tbusy ? T('cs_cap_working', 'Working...') : T('cs_cap_transcribe', 'Transcribe'))
+        h('button', { type: 'button', key: 'go', onClick: runTranscribe, disabled: tbusy || !vfile, className: 'text-xs px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-800 text-white disabled:opacity-40' }, tbusy ? T('cs_cap_working', 'Working...') : T('cs_cap_transcribe', 'Transcribe'))
       ]),
       h('div', { key: 'r2', className: 'flex flex-wrap items-center gap-2 text-xs text-slate-400' }, [
         h('span', { key: 'or' }, T('cs_cap_or', 'or')),
@@ -1410,7 +1411,7 @@
           T('cs_cap_import', 'Import .srt / .vtt / transcript'),
           h('input', { key: 'in', type: 'file', accept: '.srt,.vtt,.txt,text/plain', style: { display: 'none' }, onChange: function (e) { onImportCaptions(e.target.files && e.target.files[0]); } })
         ]),
-        h('button', { key: 'add', onClick: addBlankSeg, className: 'px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_addseg', 'Add blank line'))
+        h('button', { type: 'button', key: 'add', onClick: addBlankSeg, className: 'px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_addseg', 'Add blank line'))
       ]),
       tbusy ? h('div', { key: 'prog', className: 'mt-2' }, [
         h('div', { key: 'bar', role: 'progressbar', 'aria-label': T('cs_cap_progress', 'Transcription progress'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(Math.max(0, Math.min(1, tpct || 0)) * 100), className: 'h-1.5 bg-slate-700 rounded overflow-hidden' }, h('div', { 'aria-hidden': 'true', className: 'h-full bg-emerald-500 transition-all motion-reduce:transition-none', style: { width: Math.round((tpct || 0) * 100) + '%' } })),
@@ -1428,23 +1429,23 @@
             h('input', { key: 'en', type: 'number', step: '0.1', min: '0', value: round1(s.end), 'aria-label': 'Caption line ' + (i + 1) + ' end seconds', onChange: function (e) { updateSeg(s.id, { end: Math.max(0, parseFloat(e.target.value) || 0) }); }, className: 'min-h-6 w-16 bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-xs text-slate-100' })
           ]),
           h('textarea', { key: 'tx', rows: 2, value: s.text, 'aria-label': 'Caption line ' + (i + 1) + ' text', onChange: function (e) { updateSeg(s.id, { text: e.target.value }); }, className: 'w-full min-w-0 flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }),
-          h('button', { key: 'rm', onClick: function () { removeSeg(s.id); }, 'aria-label': 'Remove caption line ' + (i + 1), className: 'text-slate-500 hover:text-rose-400 min-w-6 min-h-6 px-1 text-lg leading-none' }, '×')
+          h('button', { type: 'button', key: 'rm', onClick: function () { removeSeg(s.id); }, 'aria-label': 'Remove caption line ' + (i + 1), className: 'text-slate-500 hover:text-rose-400 min-w-6 min-h-6 px-1 text-lg leading-none' }, '×')
         ]);
       }))
     ]) : null;
 
     var capExport = segs.length ? h('div', { className: 'flex flex-wrap items-center gap-2 mb-3' }, [
       h('span', { key: 'l', className: 'text-xs text-slate-400' }, T('cs_cap_export', 'Export:')),
-      h('button', { key: 'srt', onClick: function () { exportCaptions('srt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
-      h('button', { key: 'vtt', onClick: function () { exportCaptions('vtt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt'),
-      h('button', { key: 'txt', onClick: function () { exportCaptions('txt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_transcript', 'transcript'))
+      h('button', { type: 'button', key: 'srt', onClick: function () { exportCaptions('srt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
+      h('button', { type: 'button', key: 'vtt', onClick: function () { exportCaptions('vtt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt'),
+      h('button', { type: 'button', key: 'txt', onClick: function () { exportCaptions('txt', false); }, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_cap_transcript', 'transcript'))
     ]) : null;
 
     var capTranslate = segs.length ? h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3' }, [
       h('div', { key: 'row', className: 'flex flex-wrap items-center gap-2' }, [
         h('span', { key: 'l', className: 'text-xs text-slate-300 font-semibold' }, T('cs_cap_translate', 'Translate captions to:')),
         h('select', { key: 'sel', value: capLang, 'aria-label': 'Translation language', onChange: function (e) { setCapLang(e.target.value); setTrSegs(null); }, className: 'bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }, CAPTION_LANGS.map(function (l) { return h('option', { key: l, value: l }, l); })),
-        h('button', { key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
+        h('button', { type: 'button', key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
       ]),
       h('p', { key: 'priv', className: 'mt-2 text-xs text-amber-200/90' },
         T('cs_cap_privacy', 'Privacy: transcription stays on your device, but translation sends the caption TEXT to Google for AI processing. Do not translate captions that contain student names or other identifying details.')),
@@ -1452,8 +1453,8 @@
         h('div', { key: 'lab', className: 'flex flex-wrap items-center justify-between gap-2 mb-1' }, [
           h('span', { key: 't', className: 'text-xs font-semibold text-emerald-300' }, capLang + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
           h('div', { key: 'b', className: 'flex gap-2' }, [
-            h('button', { key: 'srt', onClick: function () { exportCaptions('srt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
-            h('button', { key: 'vtt', onClick: function () { exportCaptions('vtt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt')
+            h('button', { type: 'button', key: 'srt', onClick: function () { exportCaptions('srt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.srt'),
+            h('button', { type: 'button', key: 'vtt', onClick: function () { exportCaptions('vtt', true); }, className: 'text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, '.vtt')
           ])
         ]),
         h('div', { key: 'prev', className: 'max-h-40 overflow-auto text-xs text-slate-200 bg-slate-900/70 border border-slate-700 rounded p-2' }, trSegs.map(function (s) {
@@ -1462,10 +1463,10 @@
       ]) : null
     ]) : null;
 
-    var captionsTab = h('div', panelProps('captions'), [
+    var captionsTab = h('div', panelProps('captions'),
       h('p', { key: 'i', className: 'text-sm text-slate-400 mb-3' }, T('cs_cap_intro', 'Download your NotebookLM video, then add captions and translations it cannot make on its own. Transcription runs on your device; translation uses AI.')),
       capHonesty, capSource, capEditor, capExport, capTranslate
-    ]);
+    );
 
     // ── COMPOSE tab (Wave 3: agentic document -> storyboard) ──
     var composeIntro = h('div', { className: 'mb-3 rounded-lg border border-fuchsia-500/40 bg-fuchsia-500/10 px-3 py-2 text-xs text-fuchsia-200' },
@@ -1475,9 +1476,9 @@
       label(T('cs_co_doc', 'Source document'), 'cs-co-doc'),
       h('textarea', { key: 'd', id: 'cs-co-doc', rows: 6, value: cDoc, onChange: function (e) { setCDoc(e.target.value); }, placeholder: 'Paste the lesson text, article, or notes the video should be based on...', className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' }),
       h('div', { key: 'brief', className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2' }, [
-        h('div', { key: 'g' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-grade' }, T('cs_co_grade', 'Grade band')), selectEl('cs-co-grade', fields.gradeBand, function (v) { setField('gradeBand', v); }, GRADE_BANDS)]),
-        h('div', { key: 'l' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-len' }, T('cs_co_len', 'Length')), selectEl('cs-co-len', fields.length, function (v) { setField('length', v); }, LENGTHS)]),
-        h('div', { key: 't' }, [h('label', { className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-tone' }, T('cs_co_tone', 'Tone')), selectEl('cs-co-tone', fields.tone, function (v) { setField('tone', v); }, TONES)])
+        h('div', { key: 'g' }, [h('label', { key: 'lg', className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-grade' }, T('cs_co_grade', 'Grade band')), selectEl('cs-co-grade', fields.gradeBand, function (v) { setField('gradeBand', v); }, GRADE_BANDS)]),
+        h('div', { key: 'l' }, [h('label', { key: 'll', className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-len' }, T('cs_co_len', 'Length')), selectEl('cs-co-len', fields.length, function (v) { setField('length', v); }, LENGTHS)]),
+        h('div', { key: 't' }, [h('label', { key: 'lt', className: 'block text-xs text-slate-400 mb-0.5', htmlFor: 'cs-co-tone' }, T('cs_co_tone', 'Tone')), selectEl('cs-co-tone', fields.tone, function (v) { setField('tone', v); }, TONES)])
       ]),
       h('p', { key: 'bn', className: 'mt-1 text-xs text-slate-500' }, T('cs_co_briefnote', 'These (and topic / must-include) also come from the Build tab.')),
       h('p', { key: 'p', className: 'mt-2 text-xs text-amber-200/90' }, T('cs_co_privacy', 'Privacy: the document text is sent to Google to draft the storyboard. Do not paste student names or other identifying details; use de-identified or curriculum material.')),
@@ -1486,13 +1487,13 @@
         h('input', { key: 'c', id: 'cs-co-ferpa', type: 'checkbox', className: 'min-h-6 min-w-6', checked: cFerpa, onChange: function (e) { setCFerpa(e.target.checked); } }),
         T('cs_co_ferpa', 'I have removed student names and other identifying details.')
       ]),
-      h('button', { key: 'g', onClick: runOutline, disabled: cBusy || !cDoc.trim() || !cFerpa, className: 'mt-3 px-4 py-2 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-sm font-semibold disabled:opacity-40' },
+      h('button', { type: 'button', key: 'g', onClick: runOutline, disabled: cBusy || !cDoc.trim() || !cFerpa, className: 'mt-3 px-4 py-2 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-sm font-semibold disabled:opacity-40' },
         (cBusy && cStage === 'outline') ? T('cs_co_drafting', 'Drafting outline...') : T('cs_co_generate', 'Draft storyboard outline'))
     ]);
 
     var composeProgress = (cBusy && cStage === 'scripting') ? h('div', { className: 'mb-3 flex items-center gap-3' }, [
       h('div', { key: 'st', role: 'status', 'aria-live': 'polite', className: 'text-xs text-slate-400 flex-1' }, cStatus || 'Working...'),
-      h('button', { key: 'stop', onClick: stopScenes, className: 'text-xs px-3 py-1 rounded bg-rose-700 hover:bg-rose-600 text-white' }, T('cs_co_stop', 'Stop'))
+      h('button', { type: 'button', key: 'stop', onClick: stopScenes, className: 'text-xs px-3 py-1 rounded bg-rose-700 hover:bg-rose-600 text-white' }, T('cs_co_stop', 'Stop'))
     ]) : null;
     // Only show the standalone error line when there's no outline to fall back to.
     var composeError = (cStage === 'error' && cErr && !cOutline) ? h('div', { className: 'mb-3 text-xs text-rose-300', role: 'status', 'aria-live': 'polite' }, cErr) : null;
@@ -1513,15 +1514,15 @@
             h('div', { key: 'i', className: 'text-xs text-slate-400 mt-0.5' }, s.narrationIntent)
           ]),
           h('div', { key: 'b', className: 'flex flex-row sm:flex-col' }, [
-            h('button', { key: 'u', onClick: function () { moveOutlineScene(s.id, -1); }, disabled: i === 0, 'aria-label': 'Move scene ' + (i + 1) + ' up', className: 'text-slate-500 hover:text-slate-200 text-xs leading-none min-w-6 min-h-6 disabled:opacity-40' }, '▲'),
-            h('button', { key: 'dn', onClick: function () { moveOutlineScene(s.id, 1); }, disabled: i === cOutline.scenes.length - 1, 'aria-label': 'Move scene ' + (i + 1) + ' down', className: 'text-slate-500 hover:text-slate-200 text-xs leading-none min-w-6 min-h-6 disabled:opacity-40' }, '▼')
+            h('button', { type: 'button', key: 'u', onClick: function () { moveOutlineScene(s.id, -1); }, disabled: i === 0, 'aria-label': 'Move scene ' + (i + 1) + ' up', className: 'text-slate-500 hover:text-slate-200 text-xs leading-none min-w-6 min-h-6 disabled:opacity-40' }, '▲'),
+            h('button', { type: 'button', key: 'dn', onClick: function () { moveOutlineScene(s.id, 1); }, disabled: i === cOutline.scenes.length - 1, 'aria-label': 'Move scene ' + (i + 1) + ' down', className: 'text-slate-500 hover:text-slate-200 text-xs leading-none min-w-6 min-h-6 disabled:opacity-40' }, '▼')
           ]),
-          h('button', { key: 'x', onClick: function () { removeOutlineScene(s.id); }, 'aria-label': 'Remove scene ' + (i + 1), className: 'text-slate-500 hover:text-rose-400 min-w-6 min-h-6 px-1 text-lg leading-none' }, '×')
+          h('button', { type: 'button', key: 'x', onClick: function () { removeOutlineScene(s.id); }, 'aria-label': 'Remove scene ' + (i + 1), className: 'text-slate-500 hover:text-rose-400 min-w-6 min-h-6 px-1 text-lg leading-none' }, '×')
         ]);
       })),
       h('div', { key: 'a', className: 'flex gap-2 mt-3' }, [
-        h('button', { key: 'go', onClick: runScenes, disabled: cBusy || !cOutline.scenes.length, className: 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-800 text-white text-sm font-semibold disabled:opacity-40' }, (cBusy && cStage === 'scripting') ? T('cs_co_writing', 'Writing scenes...') : T('cs_co_approve', 'Approve & write scenes')),
-        h('button', { key: 're', onClick: resetCompose, disabled: cBusy, className: 'px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm disabled:opacity-40' }, T('cs_co_startover', 'Start over'))
+        h('button', { type: 'button', key: 'go', onClick: runScenes, disabled: cBusy || !cOutline.scenes.length, className: 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-800 text-white text-sm font-semibold disabled:opacity-40' }, (cBusy && cStage === 'scripting') ? T('cs_co_writing', 'Writing scenes...') : T('cs_co_approve', 'Approve & write scenes')),
+        h('button', { type: 'button', key: 're', onClick: resetCompose, disabled: cBusy, className: 'px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm disabled:opacity-40' }, T('cs_co_startover', 'Start over'))
       ])
     ]) : null;
 
@@ -1529,8 +1530,8 @@
       h('div', { key: 'h', ref: composeFocusRef, tabIndex: -1, className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, [
         h('span', { key: 't', className: 'text-sm font-semibold text-emerald-300' }, cStoryboard.sb.title + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
         h('div', { key: 'b', className: 'flex gap-2' }, [
-          h('button', { key: 'dl', onClick: downloadStoryboard, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white' }, T('cs_co_download', 'Download storyboard JSON')),
-          h('button', { key: 're', onClick: resetCompose, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_co_new', 'New'))
+          h('button', { type: 'button', key: 'dl', onClick: downloadStoryboard, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white' }, T('cs_co_download', 'Download storyboard JSON')),
+          h('button', { type: 'button', key: 're', onClick: resetCompose, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_co_new', 'New'))
         ])
       ]),
       h('div', { key: 'meta', className: 'text-xs text-slate-400 mb-2' }, cStoryboard.sb.scenes.length + ' scenes, about ' + Math.round(cStoryboard.sb.totalDurationSec) + 's. ' + cStoryboard.validation.groundedCount + '/' + cStoryboard.validation.totalScenes + ' scenes grounded in the source' + (cStoryboard.truncated ? ' (note: only the first ' + DOC_LIMIT.toLocaleString() + ' characters of the source were used).' : '.')),
@@ -1553,7 +1554,7 @@
     ]) : null;
 
     var showDocBlock = (cStage === 'idle' || cStage === 'outline' || (cStage === 'error' && !cOutline));
-    var composeTab = h('div', panelProps('compose'), [composeIntro, showDocBlock ? composeDoc : null, composeProgress, composeError, composeReview, composeDone]);
+    var composeTab = h('div', panelProps('compose'), composeIntro, showDocBlock ? composeDoc : null, composeProgress, composeError, composeReview, composeDone);
 
     var body = tab === 'build' ? buildTab : (tab === 'diagnose' ? diagnoseTab : (tab === 'captions' ? captionsTab : (tab === 'compose' ? composeTab : guideTab)));
 
@@ -1565,7 +1566,7 @@
       ref: dialogRef,
       role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cs-title', 'aria-describedby': 'cs-subtitle',
       className: 'bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl p-4 sm:p-6 my-4'
-    }, [header, banner, vsCrossLink, tabs, body]));
+    }, header, banner, vsCrossLink, tabs, body));
   }
 
   // ─── Module registration ───────────────────────────────────────────────────

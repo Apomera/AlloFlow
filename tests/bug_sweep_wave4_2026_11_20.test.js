@@ -267,7 +267,10 @@ describe('Batch 1: Audio, Speech, and Read-Aloud Runtime (#1-#10)', () => {
     expect(svcSrc).toContain("const fullBinding = bindingFor(null, 'reference');");
     expect(svcSrc).toContain('const captureProfile = options.profile || (provenance && provenance.profile) || undefined;');
     expect(svcSrc).toContain('binding.controller.inspect(segment, { profile: captureProfile }).status');
-    expect(svcSrc).toContain('addEventListener: (type, listener, listenerOptions) => {');
+    // The hand-built signal shim became a real AbortController signal (native
+    // event methods), with the caller's signal and the cancel poll forwarded in.
+    expect(svcSrc).toContain('const dynamicSignal = prepController ? prepController.signal : options.signal;');
+    expect(svcSrc).toContain("options.signal.addEventListener('abort', forwardUpstreamAbort, { once: true });");
     expect(svcSrc).toContain('signal: dynamicSignal,');
     expect(ttsSrc).toContain("_signal.addEventListener?.('abort', relayKokoroAbort, { once: true })");
   });
@@ -378,7 +381,8 @@ describe('Batch 2: Live Sessions, Sync, and Student Join (#11-#20)', () => {
     };
     const container = mountComponent(LiveAacBoardDialog, { payload, onSpeak, onDismiss: vi.fn(), t: (k) => k });
     // #18: Water is the 1st interactive cell (index 1 in grid after blank), so shortcut must be 1
-    const waterBtn = [...container.querySelectorAll('button[role="gridcell"]')].find((b) => b.textContent.includes('Water'));
+    // Cells are buttons (data-aac-cell) inside role="gridcell" wrappers.
+    const waterBtn = [...container.querySelectorAll('[role="gridcell"] > button[data-aac-cell="true"]')].find((b) => b.textContent.includes('Water'));
     expect(waterBtn.getAttribute('aria-label')).toBe('Water, shortcut 1');
 
     // #17: Focus trap pushed once and not re-pushed when clicking a cell (state update)

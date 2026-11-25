@@ -7940,7 +7940,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   },
                     h('span', { style: Object.assign({}, pillStyle, { color: palette.accent }) }, activeLayoutLabel),
                     h('span', { style: pillStyle }, __alloT('stem.typingpractice.pill_tier', 'Tier') + ' ' + tierNum + '/' + TIER_ORDER.length),
-                    h('span', { style: pillStyle }, sessionCount + ' ' + __alloT('stem.typingpractice.pill_sessions', sessionCount === 1 ? 'session' : 'sessions')),
+                    h('span', { style: pillStyle }, sessionCount + ' ' + (sessionCount === 1 ? __alloT('stem.typingpractice.pill_session', 'session') : __alloT('stem.typingpractice.pill_sessions', 'sessions'))),
                     badgeCount > 0 ? h('span', { style: Object.assign({}, pillStyle, { color: palette.success }) }, badgeCount + ' ' + __alloT('stem.typingpractice.pill_badges', 'badges')) : null
                   );
                 })()

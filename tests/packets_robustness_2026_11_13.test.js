@@ -39,6 +39,10 @@ function open(html, { storage = null } = {}) {
     w.Audio = class { play() { const me = this; setTimeout(() => { if (me.onended) me.onended(); }, 5); return Promise.resolve(); } pause() {} };
     const add = w.document.addEventListener.bind(w.document);
     w.document.addEventListener = (type, fn, capture) => { if (type === 'keydown') keyListeners.push(capture === true); return add(type, fn, capture); };
+    // 2026-11-23: an activity now listens for Escape only while its own Hear all runs, and takes the listener off when it
+    // stops (11-19). So the listeners that are ON are counted: one taken off is one fewer.
+    const remove = w.document.removeEventListener.bind(w.document);
+    w.document.removeEventListener = (type, fn, capture) => { if (type === 'keydown') { const at = keyListeners.lastIndexOf(capture === true); if (at >= 0) keyListeners.splice(at, 1); } return remove(type, fn, capture); };
     if (storage === 'blocked') Object.defineProperty(w, 'localStorage', { configurable: true, get() { throw new w.DOMException('The operation is insecure.', 'SecurityError'); } });
     else if (storage === 'full') { const set = w.Storage.prototype.setItem; w.Storage.prototype.setItem = function (k, v) { if (String(k).indexOf('alloflow-take-home:') === 0) throw new w.DOMException('full', 'QuotaExceededError'); return set.call(this, k, v); }; }
     else if (storage) Object.keys(storage).forEach((k) => w.localStorage.setItem(k, storage[k]));

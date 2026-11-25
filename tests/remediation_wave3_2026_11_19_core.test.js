@@ -479,6 +479,18 @@ describe('W3-C10: remediationAudio resume/disconnect hygiene & remediation.html 
     window.isGlobalMuted = () => false;
     try {
       loadAlloModule('remediation_audio_module.js');
+      // Since 2026-11-21 a suspended context only asks to resume and skips that tone (no queued burst later);
+      // the rejected resume() must be swallowed and no node created.
+      let resumeCalls = 0;
+      const rejectResume = fakeCtx.resume;
+      fakeCtx.resume = () => { resumeCalls += 1; return rejectResume(); };
+      expect(() => window.remediationAudio.chunkGood()).not.toThrow();
+      await Promise.resolve(); await Promise.resolve();
+      expect(resumeCalls).toBeGreaterThan(0);
+      expect(capturedOnEnded).toBe(null);
+      // Once running, the tone plays and its nodes disconnect when it ends.
+      fakeCtx.state = 'running';
+      await new Promise((r) => setTimeout(r, 200)); // past the 150 ms chunk-sound debounce
       window.remediationAudio.chunkGood();
       await Promise.resolve();
       expect(typeof capturedOnEnded).toBe('function');

@@ -5919,7 +5919,7 @@ var GEOGRAPHY_PROFILES = {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-weathersystems-hc-extra-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-weathersystems-hc-extra-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    st.textContent = "[data-stem-tool-shell=\"weatherSystems\"] :is(button,input,select,summary){touch-action:manipulation}.theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"weatherSystems\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   window.StemLab.registerTool('weatherSystems', {
@@ -7975,7 +7975,7 @@ function openImmersiveTourStep(stepId) {
         var flowRadians = (windDir + 90) * Math.PI / 180;
         var textureCache = [];
         function makeSoftTexture(size, stops) {
-          var textureCanvas = document.createElement('canvas');
+          var textureCanvas = document.createElement('canvas'); if (textureCanvas.setAttribute) textureCanvas.setAttribute('aria-hidden', 'true');
           textureCanvas.width = size; textureCanvas.height = size;
           var context = textureCanvas.getContext('2d');
           if (!context) return null;
@@ -7991,7 +7991,7 @@ function openImmersiveTourStep(stepId) {
         // puffs do not repeat the same silhouette. The sprite colour still tints it, so
         // fair-weather white and storm slate both keep working.
         function makeCloudTexture(size, variant) {
-          var textureCanvas = document.createElement('canvas');
+          var textureCanvas = document.createElement('canvas'); if (textureCanvas.setAttribute) textureCanvas.setAttribute('aria-hidden', 'true');
           textureCanvas.width = size; textureCanvas.height = size;
           var context = textureCanvas.getContext('2d');
           if (!context) return null;
@@ -8040,7 +8040,7 @@ function openImmersiveTourStep(stepId) {
           return texture;
         }
         function makeLabelTexture(text, accent) {
-          var textureCanvas = document.createElement('canvas');
+          var textureCanvas = document.createElement('canvas'); if (textureCanvas.setAttribute) textureCanvas.setAttribute('aria-hidden', 'true');
           textureCanvas.width = 256; textureCanvas.height = 72;
           var context = textureCanvas.getContext('2d');
           if (!context) return null;
@@ -8808,7 +8808,7 @@ var geographyGroup = new THREE.Group();
           var softTexture = makeSoftTexture(64, [[0, 'rgba(255,255,255,1)'], [0.35, 'rgba(248,252,255,0.88)'], [0.7, 'rgba(224,242,254,0.34)'], [1, 'rgba(255,255,255,0)']]);
           // Tapered glossy rain streaks with bright leading droplet heads; bare points read as static.
           var streakTexture = null;
-          var streakCanvas = document.createElement('canvas');
+          var streakCanvas = document.createElement('canvas'); if (streakCanvas.setAttribute) streakCanvas.setAttribute('aria-hidden', 'true');
           streakCanvas.width = 32; streakCanvas.height = 64;
           var streak = streakCanvas.getContext('2d');
           if (streak) {
@@ -10503,7 +10503,7 @@ var geographyGroup = new THREE.Group();
                 'aria-controls': 'weather-panel-' + tab.id,
                 onClick: function () { update(tab.id === 'atmosphere' || tab.id === 'forecast' || tab.id === 'experiment' || tab.id === 'observations' ? { tab: tab.id, playing: false } : { tab: tab.id }); },
                 onKeyDown: function (event) {
-                  if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+                  if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                   var nextIndex = null;
                   if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
                   if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
@@ -10536,8 +10536,9 @@ var geographyGroup = new THREE.Group();
           h('input', {
             id: id,
             type: 'range', min: min, max: max, step: step, value: value,
+            'aria-valuetext': value + unit,
             onChange: function (event) { setValue(key, Number(event.target.value)); },
-            className: 'h-6 w-full accent-sky-500'
+            className: 'min-h-11 w-full accent-sky-500'
           })
         );
       }
@@ -11480,7 +11481,7 @@ var geographyGroup = new THREE.Group();
               h('label', { htmlFor: 'weather-observation-station', className: 'block text-xs font-bold' }, 'Observation station', h('select', { id: 'weather-observation-station', className: inputClass + ' mt-1', value: station.id, onChange: function (event) { viewStation(event.target.value); } }, STATIONS.map(function (item) { return h('option', { key: item.id, value: item.id }, item.name); })))
             ),
             h('label', { htmlFor: 'weather-observation-hour', className: 'mt-4 block text-xs font-bold' }, 'Observation model hour'),
-            h('div', { className: 'flex items-center gap-3' }, h('input', { id: 'weather-observation-hour', type: 'range', min: 0, max: 24, step: 1, value: state.simHour, className: 'h-8 w-full accent-sky-500', onChange: function (event) { update({ simHour: Number(event.target.value), timeAdvanced: true, playing: false, observationStatus: '' }); } }), h('span', { className: 'whitespace-nowrap text-sm font-black' }, 'T+' + state.simHour + ' h'))
+            h('div', { className: 'flex items-center gap-3' }, h('input', { id: 'weather-observation-hour', type: 'range', min: 0, max: 24, step: 1, value: state.simHour, 'aria-valuetext': __alloFill(__alloT('stem.weather.vt_forecast_hour', 'T+{value1} hours'), { value1: state.simHour }), className: 'min-h-11 w-full accent-sky-500', onChange: function (event) { update({ simHour: Number(event.target.value), timeAdvanced: true, playing: false, observationStatus: '' }); } }), h('span', { className: 'whitespace-nowrap text-sm font-black' }, 'T+' + state.simHour + ' h'))
           ),
           stationPanel(),
           h('section', { className: panelClass + ' min-w-0 p-4', 'data-weather-observation-network': true },
@@ -12844,7 +12845,7 @@ var geographyGroup = new THREE.Group();
               h('p', { className: 'mt-2 text-sm font-bold' }, 'Issued T+' + ensemble.window.startHour + ' h · forecast target T+' + ensemble.window.targetHour + ' h'),
               h('p', { className: 'mt-2 text-xs leading-relaxed ' + mutedClass }, 'Change how far member inputs differ from the control. This exploration leaves your weather setup and saved forecast scores unchanged. The confidence comparison uses the standard spread of 1×.'),
               h('label', { htmlFor: 'weather-ensemble-scale', className: 'mt-3 block text-xs font-bold' }, 'Starting-condition spread · ' + ensemble.scale + '×'),
-              h('input', { id: 'weather-ensemble-scale', type: 'range', min: 0, max: 2, step: 0.5, value: ensemble.scale, 'aria-label': __alloT('stem.weather.startingConditionSpread', 'Starting-condition spread'), className: 'h-8 w-full accent-violet-500', disabled: !ensemble.available, onChange: function (event) { update({ ensembleScale: Number(event.target.value), ensembleNote: '', ensembleNoteContext: '', ensembleStatus: '' }); } }),
+              h('input', { id: 'weather-ensemble-scale', type: 'range', min: 0, max: 2, step: 0.5, value: ensemble.scale, 'aria-label': __alloT('stem.weather.startingConditionSpread', 'Starting-condition spread'), 'aria-valuetext': ensemble.scale + 'x', className: 'min-h-11 w-full accent-violet-500', disabled: !ensemble.available, onChange: function (event) { update({ ensembleScale: Number(event.target.value), ensembleNote: '', ensembleNoteContext: '', ensembleStatus: '' }); } }),
               h('p', { className: 'mt-1 text-xs font-bold' }, ensemble.distinctMemberCount + ' distinct starting setup' + (ensemble.distinctMemberCount === 1 ? '' : 's') + ' across 9 members.'),
               ensemble.scale === 0 && h('p', { className: 'mt-2 text-xs ' + mutedClass }, 'At 0×, every member repeats the control. Identical output does not establish certainty.'),
               ensemble.tiedPrecip.length > 1 && h('p', { className: 'mt-2 text-xs font-bold' }, 'Tied largest groups: ' + ensemble.tiedPrecip.map(function (id) { return precipLabels[id]; }).join(', ') + '. There is no single most common outcome.'),
@@ -14528,7 +14529,7 @@ var geographyGroup = new THREE.Group();
               h('select', { id: 'weather-experiment-metric', className: inputClass + ' mt-1', value: metric.id, onChange: function (event) { update({ experimentMetric: event.target.value }); } }, experimentMetrics.map(function (item) { return h('option', { key: item.id, value: item.id }, item.label); })),
               experimentLineChart(points, 'hour', 'Model hour', reading.hour),
               h('label', { htmlFor: 'weather-experiment-review-hour', className: 'mt-3 block text-xs font-bold' }, 'Review experiment hour'),
-              h('input', { id: 'weather-experiment-review-hour', type: 'range', min: 0, max: result.hour, step: 1, value: reading.hour, className: 'h-8 w-full accent-cyan-500', onChange: function (event) { update({ experimentReviewHour: Number(event.target.value) }); } }),
+              h('input', { id: 'weather-experiment-review-hour', type: 'range', min: 0, max: result.hour, step: 1, value: reading.hour, 'aria-valuetext': __alloFill(__alloT('stem.weather.vt_forecast_hour', 'T+{value1} hours'), { value1: reading.hour }), className: 'min-h-11 w-full accent-cyan-500', onChange: function (event) { update({ experimentReviewHour: Number(event.target.value) }); } }),
               h('p', { className: 'mt-2 rounded-lg p-3 text-sm font-bold ' + (dark ? 'bg-slate-950' : 'bg-sky-50'), 'data-weather-experiment-reading': true, role: 'status' }, 'T+' + reading.hour + ' h · ' + metric.label + ': baseline ' + reading.control[metric.id] + metric.unit + ', test ' + reading.test[metric.id] + metric.unit + '. Change: ' + signedNumber(round(reading.test[metric.id] - reading.control[metric.id], 1), metric.deltaUnit) + '.'),
               h('details', { className: 'mt-3' }, h('summary', { className: 'cursor-pointer py-2 text-sm font-bold' }, 'Read hourly experiment data'), experimentDataTable(points, 'hour', 'Model hour'))
             ),
@@ -14588,8 +14589,9 @@ var geographyGroup = new THREE.Group();
                 h('input', {
                   id: 'weather-experiment-value', type: 'range',
                   min: experimentConfig.min, max: experimentConfig.max, step: experimentConfig.step, value: experimentValue,
+                  'aria-valuetext': experimentValue + experimentConfig.unit,
                   onChange: function (event) { reviseExperiment({ experimentValue: Number(event.target.value) }); },
-                  className: 'h-6 w-full accent-cyan-500'
+                  className: 'min-h-11 w-full accent-cyan-500'
                 }),
                 h('div', { className: 'mt-2 grid grid-cols-2 gap-2 text-xs' },
                   h('div', { className: 'rounded-lg p-2 ' + (dark ? 'bg-slate-950/70' : 'bg-slate-100') }, h('p', { className: mutedClass }, 'Baseline'), h('p', { className: 'font-black' }, experimentBase[experimentVariable] + experimentConfig.unit)),
@@ -15427,9 +15429,9 @@ var geographyGroup = new THREE.Group();
                   h('div', { className: 'flex w-full flex-wrap items-start gap-2' }, forecastTimeControl, stationTempKey, stageLegendPill, stageLegendPanel, focusSpotlightBadge, comparisonLegendPanel, hoverInspectorPanel),
                   presenterPanel
                 ),
-                !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-300' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
+                !geographicMode && !engineReady && !engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/90 text-center' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 motion-safe:animate-spin rounded-full border-4 border-cyan-300/20 border-t-cyan-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading the 3D atmosphere engine...'), h('p', { className: 'mt-1 text-xs text-slate-300' }, 'The Canvas 2D map remains available if WebGL cannot load.'))),
                 !geographicMode && engineError && h('div', { className: 'absolute inset-0 z-20 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, '3D view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, engineError), h('button', { type: 'button', onClick: function () { update({ tab: 'map' }); }, className: 'mt-4 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white' }, 'Return to 2D Canvas map'))),
-                geographicMode && (d.geographicMapLoading || (!d.geographicMapReady && !d.geographicMapError)) && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 text-center', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading open geographic layers...'), h('p', { className: 'mt-1 text-xs text-slate-300' }, 'OpenFreeMap, OpenStreetMap labels, and 3D terrain load only in this opt-in mode.'))),
+                geographicMode && (d.geographicMapLoading || (!d.geographicMapReady && !d.geographicMapError)) && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 text-center', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 motion-safe:animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading open geographic layers...'), h('p', { className: 'mt-1 text-xs text-slate-300' }, 'OpenFreeMap, OpenStreetMap labels, and 3D terrain load only in this opt-in mode.'))),
                 geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2' },
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
                   h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
@@ -16024,7 +16026,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/80 px-4
                     ),
                     h('button', { type: 'button', disabled: !d.geographicMapReady || !live || d.geographicWeatherFieldLoading, onClick: loadRegionalWeatherField, className: 'mt-2 min-h-11 w-full rounded-lg bg-sky-300 px-3 py-2 text-xs font-black text-sky-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50' }, d.geographicWeatherFieldLoading ? 'Loading 25-point field...' : regionalFieldStatus.current ? 'Refresh selected-hour field' : 'Load selected-hour field'),
                     h('label', { htmlFor: 'weather-regional-layer-opacity', className: 'mt-3 block text-[0.6875rem] font-black text-sky-100' }, 'Layer opacity ' + Math.round(regionalFieldOpacity * 100) + '%',
-                      h('input', { id: 'weather-regional-layer-opacity', type: 'range', min: 0.2, max: 0.85, step: 0.05, value: regionalFieldOpacity, disabled: !regionalFieldStatus.current, onChange: function (event) { setRegionalWeatherLayerOpacity(event.target.value); }, className: 'mt-1 min-h-11 w-full accent-sky-300 disabled:opacity-50' })
+                      h('input', { id: 'weather-regional-layer-opacity', type: 'range', min: 0.2, max: 0.85, step: 0.05, value: regionalFieldOpacity, 'aria-valuetext': Math.round(regionalFieldOpacity * 100) + '%', disabled: !regionalFieldStatus.current, onChange: function (event) { setRegionalWeatherLayerOpacity(event.target.value); }, className: 'mt-1 min-h-11 w-full accent-sky-300 disabled:opacity-50' })
                     ),
                     regionalFieldLegend && h('div', { className: 'mt-2', 'data-weather-regional-control-legend': true },
                       h('div', { className: 'h-2 rounded-sm', style: { background: 'linear-gradient(90deg,' + regionalFieldLegend.palette.join(',') + ')' }, 'aria-hidden': true }),

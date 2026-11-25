@@ -875,7 +875,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           h('div', { style: { padding: 16, borderRadius: 12, background: _senBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _senFg('#fdba74'), fontSize: 16 } }, 'Where the framework comes from'),
             h('p', { style: { margin: 0, color: _senFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'The 8-systems sensory model comes from occupational therapy, originally A. Jean Ayres\' work in the 1960s-70s on Sensory Integration. Winnie Dunn formalized the seeker/avoider/sensitive/registration model in the 1990s. The neurodiversity movement (Judy Singer, Nick Walker, others) has reframed these differences as identity rather than disorder. Autistic-led scholars like Olga Bogdashina, Judy Endow, and Damian Milton have deepened the conversation: sensory difference is real and shapes life, AND the disabling part is usually the environment\'s failure to accommodate, not the sensory profile itself.'
+              'The 8-systems sensory model comes from occupational therapy. It builds on A. Jean Ayres\' Sensory Integration work in the 1960s-70s, with interoception added by later OTs. Winnie Dunn formalized the seeker/avoider/sensitive/registration model in the 1990s. The neurodiversity movement (Judy Singer, Nick Walker, others) has reframed these differences as identity rather than disorder. Autistic-led scholars like Olga Bogdashina, Judy Endow, and Damian Milton have deepened the conversation: sensory difference is real and shapes life, AND the disabling part is usually the environment\'s failure to accommodate, not the sensory profile itself.'
             )
           ),
 

@@ -44,7 +44,9 @@ afterEach(() => {
 });
 function fixture() {
   const props = {};
-  for (const property of outerNode.body.body[0].declarations[0].id.properties) {
+  // The view may call a hook before destructuring its props (useAiTextAvailable, 2026-11-21).
+  const decl = outerNode.body.body.find(st => st.type === 'VariableDeclaration' && st.declarations[0].id.type === 'ObjectPattern' && st.declarations[0].init && st.declarations[0].init.name === 'props');
+  for (const property of decl.declarations[0].id.properties) {
     const key = property.key.name;
     props[key] = /^[A-Z]/.test(key) ? () => null : /^(set|handle|toggle|start|capture|isGuided)/.test(key) ? vi.fn() : undefined;
   }

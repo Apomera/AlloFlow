@@ -633,7 +633,9 @@
     show('summary', false);
     show('try', false);
     show('download-worksheet', false);
+    show('download-docx', false);
     show('download-bundle', false);
+    show('math-ws-options', false);
     show('save', false);
     show('after-save', false);
     show('build-problem', false);
@@ -836,7 +838,9 @@
     drawPreviewNote(edited);
     show('summary', true);
     show('download-worksheet', true);
+    show('download-docx', true);
     show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function'));
+    show('math-ws-options', true);
     show('save', true);
     try { drawPaper(result, plan); } catch (_) { clearPaper(); }
     setText('making-said', 'The file is ready: ' + count(cards, 'card') + ', ' + fileSize(built.bytes) + '.');
@@ -950,39 +954,366 @@
     download(url, filename);
     setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 0);
   }
+  var zipLoadPromise = null;
+  var docxLoadPromise = null;
+  function ensureZip() {
+    if (window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function') {
+      return Promise.resolve(window.AlloPacketZip);
+    }
+    if (zipLoadPromise) return zipLoadPromise;
+    zipLoadPromise = new Promise(function (resolve, reject) {
+      var finish = function () {
+        if (window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function') {
+          resolve(window.AlloPacketZip);
+        } else {
+          zipLoadPromise = null;
+          reject(new Error('zip helper did not load'));
+        }
+      };
+      var existing = doc.querySelector('script[data-allo-zip="1"]');
+      if (existing) {
+        if (existing.getAttribute('data-loaded') === '1') { finish(); return; }
+        existing.addEventListener('load', finish, { once: true });
+        existing.addEventListener('error', function () { zipLoadPromise = null; reject(new Error('could not load packets_zip.js')); }, { once: true });
+        return;
+      }
+      var s = doc.createElement('script');
+      s.src = 'packets_zip.js';
+      s.async = true;
+      s.setAttribute('data-allo-zip', '1');
+      s.addEventListener('load', function () { s.setAttribute('data-loaded', '1'); finish(); }, { once: true });
+      s.addEventListener('error', function () { zipLoadPromise = null; reject(new Error('could not load packets_zip.js')); }, { once: true });
+      (doc.head || doc.body || doc.documentElement).appendChild(s);
+    });
+    return zipLoadPromise;
+  }
+  function ensureDocx() {
+    if (window.AlloPacketDocx && typeof window.AlloPacketDocx.buildMathWorksheetDocx === 'function' && typeof window.AlloPacketDocx.downloadDocx === 'function') {
+      return Promise.resolve(window.AlloPacketDocx);
+    }
+    if (docxLoadPromise) return docxLoadPromise;
+    docxLoadPromise = new Promise(function (resolve, reject) {
+      var finish = function () {
+        if (window.AlloPacketDocx && typeof window.AlloPacketDocx.buildMathWorksheetDocx === 'function' && typeof window.AlloPacketDocx.downloadDocx === 'function') {
+          resolve(window.AlloPacketDocx);
+        } else {
+          docxLoadPromise = null;
+          reject(new Error('Word export helper did not load'));
+        }
+      };
+      var existing = doc.querySelector('script[data-allo-docx="1"]');
+      if (existing) {
+        if (existing.getAttribute('data-loaded') === '1') { finish(); return; }
+        existing.addEventListener('load', finish, { once: true });
+        existing.addEventListener('error', function () { docxLoadPromise = null; reject(new Error('could not load packets_docx.js')); }, { once: true });
+        return;
+      }
+      var s = doc.createElement('script');
+      s.src = 'packets_docx.js';
+      s.async = true;
+      s.setAttribute('data-allo-docx', '1');
+      s.addEventListener('load', function () { s.setAttribute('data-loaded', '1'); finish(); }, { once: true });
+      s.addEventListener('error', function () { docxLoadPromise = null; reject(new Error('could not load packets_docx.js')); }, { once: true });
+      (doc.head || doc.body || doc.documentElement).appendChild(s);
+    });
+    return docxLoadPromise;
+  }
+  function mathWorksheetOpts() {
+    var sup = $('f-ws-support') ? $('f-ws-support').value : 'scaffolded';
+    var lay = $('f-ws-layout') ? $('f-ws-layout').value : 'horizontal';
+    var den = $('f-ws-density') ? $('f-ws-density').value : 'standard';
+    var keyBox = $('f-ws-key');
+    return {
+      scaffolded: sup !== 'independent',
+      layout: lay === 'vertical' ? 'vertical' : 'horizontal',
+      density: (den === 'primary' || den === 'compact') ? den : 'standard',
+      includeAnswerKey: keyBox ? !!keyBox.checked : true,
+    };
+  }
+  function renderMathAidPng(item) {
+    if (!item || !doc || typeof doc.createElement !== 'function') return '';
+    var canvas = null, ctx = null;
+    try {
+      if (window.navigator && /jsdom/i.test(String(window.navigator.userAgent || ''))) return '';
+      canvas = doc.createElement('canvas');
+      if (!canvas || typeof canvas.getContext !== 'function' || typeof canvas.toDataURL !== 'function') return '';
+      ctx = canvas.getContext('2d');
+      if (!ctx) return '';
+    } catch (_) { return ''; }
+
+    var scale = 2;
+    function setup(w, h) {
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      ctx.save();
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+    }
+    function finish() {
+      ctx.restore();
+      try {
+        var uri = canvas.toDataURL('image/png');
+        return typeof uri === 'string' && uri.indexOf('data:image/png;base64,') === 0 ? uri : '';
+      } catch (_) { return ''; }
+    }
+    function drawPartWhole(label) {
+      setup(160, 44);
+      ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.3;
+      ctx.strokeRect(4, 4, 152, 18);
+      ctx.strokeStyle = '#808080'; ctx.lineWidth = 1;
+      ctx.strokeRect(4, 24, 74, 16);
+      ctx.strokeRect(82, 24, 74, 16);
+      ctx.fillStyle = '#000000'; ctx.font = 'bold 9px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(label || 'Show your thinking'), 80, 13);
+      return finish();
+    }
+    function drawTenFrame(a, b) {
+      var total = a + b, frames = total > 10 ? 2 : 1, cell = 18, pad = 4, gap = 10, fw = cell * 5;
+      var w = pad * 2 + frames * fw + (frames - 1) * gap, h = pad * 2 + cell * 2;
+      setup(w, h);
+      var idx = 0;
+      for (var f = 0; f < frames; f++) {
+        var ox = pad + f * (fw + gap);
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.3;
+        ctx.strokeRect(ox, pad, fw, cell * 2);
+        for (var r = 0; r < 2; r++) {
+          for (var c = 0; c < 5; c++) {
+            var cx = ox + c * cell, cy = pad + r * cell;
+            ctx.strokeStyle = '#808080'; ctx.lineWidth = 0.8;
+            ctx.strokeRect(cx, cy, cell, cell);
+            if (idx < a) {
+              ctx.beginPath(); ctx.arc(cx + cell / 2, cy + cell / 2, 5.5, 0, Math.PI * 2);
+              ctx.fillStyle = '#000000'; ctx.fill();
+            } else if (idx < total) {
+              ctx.beginPath(); ctx.arc(cx + cell / 2, cy + cell / 2, 5.2, 0, Math.PI * 2);
+              ctx.fillStyle = '#ffffff'; ctx.fill();
+              ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.6; ctx.stroke();
+            }
+            idx++;
+          }
+        }
+      }
+      return finish();
+    }
+    function drawNumberLine(a, b, isSub) {
+      var maxVal = isSub ? Math.max(10, a <= 20 ? 20 : a) : Math.max(10, a + b <= 20 ? 20 : a + b);
+      var w = 220, h = 46, x0 = 12, x1 = w - 12, yLine = 31;
+      setup(w, h);
+      ctx.strokeStyle = '#000000'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(x0, yLine); ctx.lineTo(x1, yLine); ctx.stroke();
+      ctx.font = '8.5px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#000000';
+      if (maxVal <= 20) {
+        var step = (x1 - x0) / maxVal;
+        for (var n = 0; n <= maxVal; n++) {
+          var tx = x0 + n * step, tall = n % 5 === 0 ? 5 : 3;
+          ctx.lineWidth = n % 5 === 0 ? 1.2 : 0.8;
+          ctx.beginPath(); ctx.moveTo(tx, yLine - tall); ctx.lineTo(tx, yLine + tall); ctx.stroke();
+          if (n % 5 === 0) ctx.fillText(String(n), tx, h - 2);
+        }
+        var sx = x0 + a * step, ex = isSub ? x0 + Math.max(0, a - b) * step : x0 + Math.min(maxVal, a + b) * step;
+        ctx.beginPath(); ctx.arc(sx, yLine, 3.2, 0, Math.PI * 2); ctx.fill();
+        if (b > 0) {
+          var mx = (sx + ex) / 2;
+          ctx.save(); ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.4;
+          if (typeof ctx.setLineDash === 'function') ctx.setLineDash([3, 2]);
+          ctx.beginPath(); ctx.moveTo(sx, yLine - 3); ctx.quadraticCurveTo(mx, 4, ex, yLine - 3); ctx.stroke();
+          ctx.restore();
+          ctx.fillText((isSub ? MINUS : '+') + b, mx, 11);
+        }
+      } else {
+        var pStart = isSub ? x1 - 24 : x0 + 24, pEnd = isSub ? x0 + 24 : x1 - 24, pMid = (pStart + pEnd) / 2;
+        ctx.beginPath(); ctx.arc(pStart, yLine, 3.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText(String(a), pStart, h - 2);
+        ctx.save(); ctx.strokeStyle = '#666666'; ctx.lineWidth = 1.4;
+        if (typeof ctx.setLineDash === 'function') ctx.setLineDash([3, 2]);
+        ctx.beginPath(); ctx.moveTo(pStart, yLine - 3); ctx.quadraticCurveTo(pMid, 5, pEnd, yLine - 3); ctx.stroke();
+        ctx.restore();
+        ctx.fillText((isSub ? MINUS : '+') + b, pMid, 12);
+        ctx.fillText('?', pEnd, h - 2);
+      }
+      return finish();
+    }
+    function drawArrayGrid(rows, cols) {
+      var rCount = Math.min(rows, 10), cCount = Math.min(cols, 10), step = 11, pad = 10;
+      var w = pad * 2 + cCount * step, h = pad * 2 + rCount * step;
+      setup(w, h);
+      ctx.save(); ctx.strokeStyle = '#808080'; ctx.lineWidth = 1;
+      if (typeof ctx.setLineDash === 'function') ctx.setLineDash([2, 2]);
+      ctx.strokeRect(pad - 3, pad - 3, cCount * step + 6, rCount * step + 6);
+      ctx.restore();
+      ctx.fillStyle = '#000000';
+      for (var r = 0; r < rCount; r++) {
+        for (var c = 0; c < cCount; c++) {
+          ctx.beginPath(); ctx.arc(pad + c * step + step / 2, pad + r * step + step / 2, 3.2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      return finish();
+    }
+    function drawEqualGroups(total, groups) {
+      var perGroup = groups > 0 ? Math.floor(total / groups) : 0, gShow = Math.min(groups, 10);
+      var boxW = 20, boxH = 22, gap = 4, pad = 4;
+      var w = pad * 2 + gShow * boxW + Math.max(0, gShow - 1) * gap, h = pad * 2 + boxH + 13;
+      setup(w, h);
+      ctx.fillStyle = '#000000'; ctx.font = '8.5px Arial, Helvetica, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(total + ' in ' + groups + ' equal groups', w / 2, 11);
+      for (var g = 0; g < gShow; g++) {
+        var bx = pad + g * (boxW + gap);
+        ctx.strokeStyle = '#000000'; ctx.lineWidth = 1;
+        ctx.strokeRect(bx, 15, boxW, boxH);
+        if (perGroup > 0 && perGroup <= 9) {
+          var cols = perGroup <= 4 ? 2 : 3;
+          ctx.fillStyle = '#666666';
+          for (var d = 0; d < perGroup; d++) {
+            ctx.beginPath(); ctx.arc(bx + 4 + (d % cols) * 5.5, 20 + Math.floor(d / cols) * 5.5, 1.8, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+      }
+      return finish();
+    }
+
+    if (item.hasEquals || item.a === null || item.b === null || !item.op) return drawPartWhole('Show your thinking');
+    if (item.op === 'add') return (item.a >= 0 && item.b >= 0 && item.a <= 10 && item.b <= 10 && item.a + item.b <= 20) ? drawTenFrame(item.a, item.b) : drawNumberLine(item.a, item.b, false);
+    if (item.op === 'sub') return drawNumberLine(item.a, item.b, true);
+    if (item.op === 'mul') return (item.a >= 1 && item.a <= 10 && item.b >= 1 && item.b <= 10) ? drawArrayGrid(item.a, item.b) : drawPartWhole(item.a + ' groups of ' + item.b);
+    if (item.op === 'div') return (item.b >= 1 && item.b <= 10 && item.a >= 0 && item.a <= 100 && item.a % item.b === 0) ? drawEqualGroups(item.a, item.b) : drawPartWhole(item.a + ' split by ' + item.b);
+    return drawPartWhole('Show your thinking');
+  }
+  function worksheetFactsWithAids(rawFacts, withAids) {
+    return (Array.isArray(rawFacts) ? rawFacts : []).map(function (f) {
+      var clone = Object.assign({}, f);
+      if (withAids) {
+        var norm = normalizeWorksheetFact(clone);
+        if (norm) {
+          clone.aidUri = renderMathAidPng(norm);
+          clone.aidLabel = 'Visual model for ' + norm.expr;
+        }
+      }
+      return clone;
+    });
+  }
   function downloadWorksheet() {
     if (!built) return;
+    var opts = mathWorksheetOpts();
     var html = buildMathWorksheetHtml({
       title: built.title,
       facts: worksheetFactsFromBuilt(),
-      scaffolded: true,
-      includeAnswerKey: true,
+      scaffolded: opts.scaffolded,
+      includeAnswerKey: opts.includeAnswerKey,
     });
     var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
     downloadBlobWithRevoke(new Blob([html], { type: 'text/html' }), slug + '-math-worksheet.html');
+  }
+  function downloadDocx() {
+    if (!built) return;
+    var btn = $('download-docx');
+    var prevText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Building Word file...'; }
+    var restore = function () {
+      if (btn) { btn.disabled = false; btn.textContent = prevText || 'Download Word (.docx)'; }
+    };
+    var opts = mathWorksheetOpts();
+    Promise.all([ensureZip(), ensureDocx()]).then(function (mods) {
+      var zipMod = mods[0], docxMod = mods[1];
+      var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
+      var model = {
+        title: built.title,
+        directions: opts.scaffolded
+          ? 'Use the visual model and workspace to solve each math fact.'
+          : 'Write the answer to each math fact.',
+        layout: opts.layout,
+        density: opts.density,
+        scaffolded: opts.scaffolded,
+        facts: worksheetFactsWithAids(worksheetFactsFromBuilt(), opts.scaffolded),
+        answerKeyOn: opts.includeAnswerKey,
+      };
+      var prep = opts.scaffolded && typeof docxMod.prepareImagesAsync === 'function'
+        ? Promise.resolve().then(function () { return docxMod.prepareImagesAsync(model, window, doc); }).then(function (p) { return p || model; }, function () { return model; })
+        : Promise.resolve(model);
+      return prep.then(function (prepared) {
+        var result = docxMod.buildMathWorksheetDocx(prepared, { zip: zipMod, filename: slug + '-math-worksheet.docx' });
+        var ok = docxMod.downloadDocx(result, window, doc);
+        restore();
+        if (!ok) {
+          problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
+          return;
+        }
+        setText('making-said', 'Downloaded ' + result.filename + '.');
+      });
+    }, function (error) {
+      restore();
+      problem('The Word file could not be made (' + said(error) + ').');
+    });
   }
   function downloadBundle() {
     if (!built || !built.html) return;
     if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') {
       return problem('This page could not load the part that makes .zip files. Load the page again.');
     }
-    try {
-      var zip = window.AlloPacketZip.create();
-      var encoder = new TextEncoder();
-      var facts = worksheetFactsFromBuilt();
-      var wsScaffolded = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: true, includeAnswerKey: false });
-      var wsIndependent = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: false });
-      var wsAnswerKey = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: true });
-      zip.add('01-Interactive-Math-Practice.html', encoder.encode(built.html));
-      zip.add('02-Worksheet-Scaffolded.html', encoder.encode(wsScaffolded));
-      zip.add('03-Worksheet-Independent.html', encoder.encode(wsIndependent));
-      zip.add('04-Teacher-Answer-Key.html', encoder.encode(wsAnswerKey));
-      var parts = zip.finish();
-      var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
-      downloadBlobWithRevoke(new Blob(parts, { type: 'application/zip' }), slug + '-math-classroom-bundle.zip');
-    } catch (error) {
-      problem('The classroom bundle could not be made (' + said(error) + ').');
-    }
+    var btn = $('download-bundle');
+    var prevText = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Building bundle...'; }
+    var restore = function () {
+      if (btn) { btn.disabled = false; btn.textContent = prevText || 'Download classroom bundle (.zip)'; }
+    };
+    var opts = mathWorksheetOpts();
+    var facts = worksheetFactsFromBuilt();
+    var finishZip = function (docxEntries) {
+      try {
+        var zip = window.AlloPacketZip.create();
+        var encoder = new TextEncoder();
+        var wsScaffolded = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: true, includeAnswerKey: false });
+        var wsIndependent = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: false });
+        var wsAnswerKey = buildMathWorksheetHtml({ title: built.title, facts: facts, scaffolded: false, includeAnswerKey: true });
+        zip.add('01-Interactive-Math-Practice.html', encoder.encode(built.html));
+        zip.add('02-Worksheet-Scaffolded.html', encoder.encode(wsScaffolded));
+        zip.add('03-Worksheet-Independent.html', encoder.encode(wsIndependent));
+        zip.add('04-Teacher-Answer-Key.html', encoder.encode(wsAnswerKey));
+        (docxEntries || []).forEach(function (entry) {
+          if (entry && entry.name && entry.bytes) zip.add(entry.name, entry.bytes);
+        });
+        var parts = zip.finish();
+        var slug = built.slug || built.plain.replace(/\.html$/i, '') || 'math-practice';
+        downloadBlobWithRevoke(new Blob(parts, { type: 'application/zip' }), slug + '-math-classroom-bundle.zip');
+        restore();
+      } catch (error) {
+        restore();
+        problem('The classroom bundle could not be made (' + said(error) + ').');
+      }
+    };
+    ensureDocx().then(function (docxMod) {
+      var scaffModel = {
+        title: built.title,
+        directions: 'Use the visual model and workspace to solve each math fact.',
+        layout: opts.layout,
+        density: opts.density,
+        scaffolded: true,
+        facts: worksheetFactsWithAids(facts, true),
+        answerKeyOn: opts.includeAnswerKey,
+      };
+      var indepModel = {
+        title: built.title,
+        directions: 'Write the answer to each math fact.',
+        layout: opts.layout,
+        density: opts.density,
+        scaffolded: false,
+        facts: facts,
+        answerKeyOn: opts.includeAnswerKey,
+      };
+      var prep = typeof docxMod.prepareImagesAsync === 'function'
+        ? Promise.resolve().then(function () { return docxMod.prepareImagesAsync(scaffModel, window, doc); }).then(function (p) { return p || scaffModel; }, function () { return scaffModel; })
+        : Promise.resolve(scaffModel);
+      return prep.then(function (preparedScaff) {
+        var d1 = docxMod.buildMathWorksheetDocx(preparedScaff, { zip: window.AlloPacketZip, filename: '05-Worksheet-Scaffolded.docx' });
+        var d2 = docxMod.buildMathWorksheetDocx(indepModel, { zip: window.AlloPacketZip, filename: '06-Worksheet-Independent.docx' });
+        finishZip([
+          { name: '05-Worksheet-Scaffolded.docx', bytes: d1.bytes },
+          { name: '06-Worksheet-Independent.docx', bytes: d2.bytes },
+        ]);
+      });
+    }, function () {
+      finishZip([]);
+    });
   }
   function saveFile() {
     if (!built) return;
@@ -1447,10 +1778,89 @@
     return true;
   }
 
-  // A file handed over by "Change this file" on Open a practice file or check (packets-open.html, packets_handoff.js).
+  function applyMathPracticeDraft(draft) {
+    if (!draft || draft.kind !== 'math_practice') {
+      setText('rehearse-note', 'The follow-up draft is no longer waiting. Choose a fact set or type your own facts in step 1.');
+      show('rehearse-note', true);
+      return false;
+    }
+    var rawMissed = Array.isArray(draft.missedFacts) && draft.missedFacts.length
+      ? draft.missedFacts
+      : (Array.isArray(draft.facts) ? draft.facts : []);
+    var rawKnown = Array.isArray(draft.reviewFacts)
+      ? draft.reviewFacts
+      : (Array.isArray(draft.knownFacts) ? draft.knownFacts : []);
+    var seen = Object.create(null), blockedKnown = Object.create(null);
+    var missedFacts = [], knownFacts = [];
+    rawMissed.forEach(function (tok) {
+      var part = String(tok || '').trim();
+      if (!part || missedFacts.length >= builder.MAX_FACTS) return;
+      var parsed = [];
+      try { parsed = builder.parseFacts(part); } catch (_) { parsed = []; }
+      parsed.forEach(function (f) {
+        var key = builder.factKey(f);
+        if (seen[key] || missedFacts.length >= builder.MAX_FACTS) return;
+        seen[key] = true;
+        blockedKnown[key] = true;
+        var turn = builder.turnaround(f);
+        if (turn) blockedKnown[builder.factKey(turn)] = true;
+        missedFacts.push(f);
+      });
+    });
+    if (!missedFacts.length) {
+      setText('rehearse-note', 'No usable math facts were found in that draft. Choose a fact set or type your own facts in step 1.');
+      show('rehearse-note', true);
+      return false;
+    }
+    rawKnown.forEach(function (tok) {
+      var part = String(tok || '').trim();
+      if (!part || missedFacts.length + knownFacts.length >= builder.MAX_FACTS) return;
+      var parsed = [];
+      try { parsed = builder.parseFacts(part); } catch (_) { parsed = []; }
+      parsed.forEach(function (f) {
+        var key = builder.factKey(f);
+        if (seen[key] || blockedKnown[key] || missedFacts.length + knownFacts.length >= builder.MAX_FACTS) return;
+        seen[key] = true;
+        knownFacts.push(f);
+      });
+    });
+    state.kind = OWN;
+    resetPreview(true);
+    state.facts = missedFacts.concat(knownFacts).map(word).join('\n');
+    var draftTitle = typeof draft.title === 'string' ? draft.title.replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+    state.title = draftTitle || 'Follow-up math fact practice';
+    if (knownFacts.length >= 3 && draft.method !== 'ccc') {
+      state.method = 'rehearsal';
+      state.known[OWN] = knownFacts.map(builder.factKey);
+    } else {
+      state.method = 'ccc';
+      delete state.known[OWN];
+    }
+    remember();
+    drawStep1();
+    setText('rehearse-note', 'Loaded ' + count(missedFacts.length, 'missed fact') + (knownFacts.length ? ' and ' + count(knownFacts.length, 'review fact') : '') + ' from results. They are in step 1, under My own facts.');
+    show('rehearse-note', true);
+    goTo(2, true);
+    return true;
+  }
+
+  // A file handed over by "Change this file" on Open a practice file (packets-open.html, packets_handoff.js),
+  // or a follow-up draft handed over via #import-draft from Add up results.
   function takeHanded() {
     var handoff = window.AlloPacketHandoff;
-    if (!reopenKit || !handoff || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;
+    if (!handoff) return;
+    var draftHash = handoff.DRAFT_HASH || '#import-draft';
+    if (typeof handoff.takeDraft === 'function' && window.location.hash === draftHash) {
+      try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+      handoff.takeDraft().then(function (draft) {
+        applyMathPracticeDraft(draft);
+      }, function () {
+        setText('rehearse-note', 'This browser could not hand the follow-up draft over. Choose a fact set or type your own facts in step 1.');
+        show('rehearse-note', true);
+      });
+      return;
+    }
+    if (!reopenKit || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;
     try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
     handoff.take().then(function (file) {
       if (!file) { showReopen('The file is not here any more. Choose it with Open a file I made.', [], null); return; }
@@ -1538,6 +1948,7 @@
     }
     if ($('print')) $('print').addEventListener('click', printPaper);
     if ($('download-worksheet')) $('download-worksheet').addEventListener('click', downloadWorksheet);
+    if ($('download-docx')) $('download-docx').addEventListener('click', downloadDocx);
     if ($('download-bundle')) $('download-bundle').addEventListener('click', downloadBundle);
     if ($('math-preset-save')) $('math-preset-save').addEventListener('click', savePreset);
     if ($('math-preset-select')) $('math-preset-select').addEventListener('change', function () { applyPreset(this.value); });

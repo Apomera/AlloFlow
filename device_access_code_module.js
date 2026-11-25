@@ -13,7 +13,9 @@
 (function () {
   'use strict';
 
-  var root = typeof window !== 'undefined' ? window : globalThis;
+  var root = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function'))
+    ? window
+    : ((typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis : null);
   var hasOwn = Object.prototype.hasOwnProperty;
   var STORAGE_KEY = 'alloflow_educator_access_code_v1';
   var BACKOFF_KEY = 'alloflow_educator_access_backoff_v1';
@@ -48,14 +50,14 @@
   }
 
   function cryptoApi() {
-    if (root.AlloModules && root.AlloModules.AlloCrypto) return root.AlloModules.AlloCrypto;
+    if (root && root.AlloModules && root.AlloModules.AlloCrypto) return root.AlloModules.AlloCrypto;
     try { return require('./allo_crypto_module.js'); } catch (_) { return null; }
   }
   function localStore() {
-    try { return root.localStorage || null; } catch (_) { return null; }
+    try { return (root && root.localStorage) || null; } catch (_) { return null; }
   }
   function sessionStore() {
-    try { return root.sessionStorage || null; } catch (_) { return null; }
+    try { return (root && root.sessionStorage) || null; } catch (_) { return null; }
   }
   function parseVerifier(raw) {
     if (!raw) return null;
@@ -75,13 +77,13 @@
     var persisted = null;
     try { persisted = parseVerifier(store && store.getItem(STORAGE_KEY)); } catch (_) {}
     if (persisted) return persisted;
-    var config = root.APP_CONFIG;
+    var config = (root && isPlainObject(root.APP_CONFIG)) ? root.APP_CONFIG : null;
     return config ? config._cfg_validation_key : null;
   }
   function publishVerifier(verifier) {
-    if (root.APP_CONFIG) root.APP_CONFIG._cfg_validation_key = verifier || '';
+    if (root && isPlainObject(root.APP_CONFIG)) root.APP_CONFIG._cfg_validation_key = verifier || '';
     try {
-      if (typeof root.dispatchEvent === 'function' && typeof root.CustomEvent === 'function') {
+      if (root && typeof root.dispatchEvent === 'function' && typeof root.CustomEvent === 'function') {
         root.dispatchEvent(new root.CustomEvent('alloflow:educator-access-code-changed', {
           detail: { configured: !!verifier }
         }));
@@ -104,14 +106,21 @@
     } catch (_) { return null; }
   }
   var _memBackoff = null;
+  function stricterBackoff(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    if (b.failures > a.failures) return b;
+    if (a.failures > b.failures) return a;
+    return b.blockedUntil > a.blockedUntil ? b : a;
+  }
   function readBackoff() {
     var primary = localStore();
     var fallback = sessionStore();
-    var parsed = null;
-    try { parsed = primary && parseBackoffRecord(primary.getItem(BACKOFF_KEY)); } catch (_) {}
-    if (!parsed) {
-      try { parsed = fallback && parseBackoffRecord(fallback.getItem(BACKOFF_KEY)); } catch (_) {}
-    }
+    var pRec = null;
+    var fRec = null;
+    try { pRec = primary && parseBackoffRecord(primary.getItem(BACKOFF_KEY)); } catch (_) {}
+    try { fRec = fallback && parseBackoffRecord(fallback.getItem(BACKOFF_KEY)); } catch (_) {}
+    var parsed = stricterBackoff(pRec, fRec);
     if (parsed) return parsed;
     if (_memBackoff) return _memBackoff;
     return { failures: 0, blockedUntil: 0 };
@@ -203,9 +212,15 @@
   function hasAiSecrets(secrets) {
     return Object.keys(secrets).length > 0;
   }
+  var _lockGen = 0;
+  var _forgetGen = 0;
+  function safeClock(options) {
+    var v = options && options.now;
+    return (typeof v === 'number' && Number.isFinite(v) && v >= 0) ? v : Date.now();
+  }
   function notifyAiKeyLockListeners() {
     try {
-      if (typeof root.dispatchEvent !== 'function' || typeof root.CustomEvent !== 'function') return;
+      if (!root || typeof root.dispatchEvent !== 'function' || typeof root.CustomEvent !== 'function') return;
       root.dispatchEvent(new root.CustomEvent('alloflow:ai-key-lock-changed'));
       root.dispatchEvent(new root.CustomEvent('alloflow:ai-config-changed'));
     } catch (_) {}
@@ -231,9 +246,11 @@
   function aiCredentialDestination(config) {
     try {
       var cfg = config && typeof config === 'object' ? config : {};
-      var backend = String(cfg.backend || 'gemini');
+      var backend = (typeof cfg.backend === 'string' && cfg.backend) ? cfg.backend.trim() : 'gemini';
+      if (!backend || /[|\u0000-\u001f\u007f]/.test(backend)) return '';
       var defaultUrl = hasOwn.call(AI_BACKEND_DEFAULTS, backend) ? AI_BACKEND_DEFAULTS[backend] : '';
       var raw = cfg.baseUrl || defaultUrl || (backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : '');
+      if (typeof raw !== 'string') return '';
       var url = new URL(raw);
       if ((url.protocol !== 'http:' && url.protocol !== 'https:') || url.username || url.password) return '';
       return backend + '|' + url.origin;
@@ -289,6 +306,8 @@
     };
   }
   async function writeLockedAiSecrets(code, options) {
+    var startLockGen = _lockGen;
+    var startForgetGen = _forgetGen;
     var cfg = storedAiConfigObject();
     var cfgDest = cfg ? aiCredentialDestination(cfg) : '';
     var cfgMismatch = !!(cfg && cfg.apiKeyDestination && cfgDest && cfg.apiKeyDestination !== cfgDest);
@@ -305,21 +324,25 @@
     var crypto = cryptoApi();
     if (!crypto || typeof crypto.encryptJSON !== 'function') throw new Error('Encryption is unavailable.');
     var record = await crypto.encryptJSON(payload, normalizeCode(code), options && options.iterations);
+    if (_forgetGen !== startForgetGen) return false;
     var store = localStore();
     if (!store) throw new Error('Device storage is unavailable.');
     // Ciphertext lands first: a failed write must not lose the only copy.
     store.setItem(AI_LOCKED_KEY, JSON.stringify(record));
-    writeAiSession(payload, false);
+    if (_lockGen === startLockGen) writeAiSession(payload, false);
     removePlaintextAiSecrets();
     notifyAiKeyLockListeners();
     return true;
   }
-  async function unlockAiKey(code) {
+  async function unlockAiKey(code, forceDecrypt) {
+    var startLockGen = _lockGen;
+    var startForgetGen = _forgetGen;
     var record = lockedAiRecord();
-    if (!record || hasAiSecrets(aiSessionSecrets())) return false;
+    if (!record || (!forceDecrypt && hasAiSecrets(aiSessionSecrets()))) return false;
     var crypto = cryptoApi();
     if (!crypto || typeof crypto.decryptJSON !== 'function') throw new Error('Encryption is unavailable.');
     var decrypted = await crypto.decryptJSON(record, normalizeCode(code));
+    if (_lockGen !== startLockGen || _forgetGen !== startForgetGen) return false;
     var nextSession = pickAiSecrets(decrypted);
     if (nextSession.apiKey && decrypted && typeof decrypted.apiKeyDestination === 'string' && decrypted.apiKeyDestination) {
       nextSession.apiKeyDestination = decrypted.apiKeyDestination;
@@ -330,18 +353,21 @@
   }
   // A failure here must never fail the access check that called it.
   async function syncAiKeyAfterVerifiedCode(code, options) {
-    try { await unlockAiKey(code); } catch (_) {}
+    try { await unlockAiKey(code, false); } catch (_) {}
     try { if (hasAiSecrets(plaintextAiSecrets())) await writeLockedAiSecrets(code, options); } catch (_) {}
   }
   // Wipes the tab's copy when a key is saved under a code (entering a learner
   // role). A tab-only or unsaved edited key has no matching saved copy, so it stays.
   function lockAiKey() {
+    _lockGen += 1;
     if (!lockedAiRecord() || !hasAiSecrets(aiSessionSecrets()) || aiSessionUnsaved()) return false;
     writeAiSession({}, false);
     notifyAiKeyLockListeners();
     return true;
   }
   function forgetAiKey() {
+    _lockGen += 1;
+    _forgetGen += 1;
     var store = localStore();
     try { if (store) store.removeItem(AI_LOCKED_KEY); } catch (_) {}
     writeAiSession({}, false);
@@ -362,6 +388,7 @@
     var dest = (!destMismatch && declaredDest) || computedDest;
     var secrets = {};
     AI_SECRET_FIELDS.forEach(function (field) {
+      if (hasOwn.call(next, field) && typeof next[field] !== 'string') { delete next[field]; return; }
       var value = typeof next[field] === 'string' ? next[field] : '';
       if (field === 'apiKey' && destMismatch) { delete next[field]; return; }
       if (!value || (plaintext[field] === value && !prior[field])) return;
@@ -404,20 +431,20 @@
     return _enqueueSerialized(function () { return _protectAiKeySerialized(code, options); });
   }
   async function _unlockAiKeyUnconfiguredSerialized(code, options) {
-    var now = options && Number.isFinite(options.now) ? options.now : Date.now();
+    var now = safeClock(options);
     var wait = retryAfter(now);
     if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
     if (!lockedAiRecord()) return { ok: false, reason: 'not-configured', retryAfterMs: 0 };
     if (normalizeCode(code).length > MAX_CODE_LENGTH) {
-      var longFailNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      var longFailNow = safeClock(options);
       return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(longFailNow) };
     }
     try {
-      await unlockAiKey(code);
+      await unlockAiKey(code, true);
       writeBackoff(null);
       return { ok: true, reason: 'unlocked', retryAfterMs: 0 };
     } catch (_) {
-      var failNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      var failNow = safeClock(options);
       return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(failNow) };
     }
   }
@@ -471,13 +498,13 @@
     return {
       configured: !!(parseVerifier(value) || (typeof value === 'string' && value)),
       legacyPlaintextConfigured: typeof value === 'string' && !!value,
-      retryAfterMs: retryAfter(Number.isFinite(now) ? now : Date.now())
+      retryAfterMs: retryAfter((typeof now === 'number' && Number.isFinite(now) && now >= 0) ? now : Date.now())
     };
   }
 
   var _verifyQueue = Promise.resolve();
   async function _verifySerialized(code, options) {
-    var now = options && Number.isFinite(options.now) ? options.now : Date.now();
+    var now = safeClock(options);
     var wait = retryAfter(now);
     if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
     await _initializeCore(options);
@@ -488,13 +515,13 @@
     }
     var normalized = normalizeCode(code);
     if (normalized.length > MAX_CODE_LENGTH) {
-      var longNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      var longNow = safeClock(options);
       return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(longNow) };
     }
     var ok = false;
     try { ok = await crypto.verifyPassword(normalized, verifier); } catch (_) { ok = false; }
     if (!ok) {
-      var failNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      var failNow = safeClock(options);
       return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(failNow) };
     }
     writeBackoff(null);
@@ -510,8 +537,11 @@
     return run;
   }
 
-  async function _setCodeSerialized(newCode, options) {
-    if (status().configured && !(options && options.replace === true)) {
+  async function _setCodeSerialized(newCode, options, internal) {
+    var startLockGen = _lockGen;
+    var startForgetGen = _forgetGen;
+    var allowReplace = !!(internal && internal.replace === true) || !!(options && options.replace === true);
+    if (status().configured && !allowReplace) {
       var exists = new Error('An educator access code is already set.');
       exists.code = 'allo/access-code-already-set';
       throw exists;
@@ -523,19 +553,26 @@
     var existingLocked = lockedAiRecord();
     var reencryptedRecord = null;
     var reencryptedPayload = null;
-    if (existingLocked && options && typeof options._currentCode === 'string') {
+    if (existingLocked && internal && typeof internal.currentCode === 'string') {
       if (typeof crypto.decryptJSON !== 'function' || typeof crypto.encryptJSON !== 'function') {
         throw new Error('Encryption is unavailable to re-encrypt saved AI credentials.');
       }
-      var decrypted = await crypto.decryptJSON(existingLocked, normalizeCode(options._currentCode));
+      var decrypted = await crypto.decryptJSON(existingLocked, normalizeCode(internal.currentCode));
       var preserved = pickAiSecrets(decrypted);
       if (preserved.apiKey && decrypted && typeof decrypted.apiKeyDestination === 'string' && decrypted.apiKeyDestination) {
         preserved.apiKeyDestination = decrypted.apiKeyDestination;
       }
+      var cfgObj = storedAiConfigObject();
+      var cfgDest = cfgObj ? aiCredentialDestination(cfgObj) : '';
       var liveSession = aiSessionSecrets();
+      var liveSessDest = sessionAiDestination();
+      if (liveSession.apiKey && liveSessDest && cfgDest && liveSessDest !== cfgDest) {
+        delete liveSession.apiKey;
+        liveSessDest = '';
+      }
       var mergedSecrets = Object.assign({}, preserved, liveSession);
       if (mergedSecrets.apiKey) {
-        var liveDest = (liveSession.apiKey ? sessionAiDestination() : '') || preserved.apiKeyDestination || '';
+        var liveDest = (liveSession.apiKey ? liveSessDest : '') || preserved.apiKeyDestination || cfgDest;
         if (liveDest) mergedSecrets.apiKeyDestination = liveDest;
       }
       if (hasAiSecrets(mergedSecrets)) {
@@ -543,7 +580,7 @@
         reencryptedRecord = await crypto.encryptJSON(mergedSecrets, normalizedNew, options && options.iterations);
       }
     }
-    if (reencryptedRecord) {
+    if (reencryptedRecord && _forgetGen === startForgetGen) {
       var store = localStore();
       if (!store) throw new Error('Device storage is unavailable.');
       var prevLockedRaw = null;
@@ -558,7 +595,7 @@
         } catch (_) {}
         throw err;
       }
-      writeAiSession(reencryptedPayload, false);
+      if (_lockGen === startLockGen) writeAiSession(reencryptedPayload, false);
       removePlaintextAiSecrets();
       writeBackoff(null);
       notifyAiKeyLockListeners();
@@ -566,17 +603,19 @@
     }
     writeVerifier(verifier);
     writeBackoff(null);
-    try { await writeLockedAiSecrets(normalizedNew, options); } catch (_) {}
+    if (_forgetGen === startForgetGen) {
+      try { await writeLockedAiSecrets(normalizedNew, options); } catch (_) {}
+    }
     return { configured: true };
   }
   function setCode(newCode, options) {
-    return _enqueueSerialized(function () { return _setCodeSerialized(newCode, options); });
+    return _enqueueSerialized(function () { return _setCodeSerialized(newCode, options, null); });
   }
 
   async function _changeCodeSerialized(currentCode, newCode, options) {
     var result = await _verifySerialized(currentCode, options);
     if (!result.ok) return result;
-    await _setCodeSerialized(newCode, Object.assign({}, options, { replace: true, _currentCode: currentCode }));
+    await _setCodeSerialized(newCode, options, { replace: true, currentCode: currentCode });
     return { ok: true, reason: 'changed', retryAfterMs: 0 };
   }
   function changeCode(currentCode, newCode, options) {
@@ -630,10 +669,14 @@
     _internal: { parseVerifier: parseVerifier, recordFailure: recordFailure, retryAfter: retryAfter }
   };
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.DeviceAccessCode = api;
+    var cleanupKey = '__alloDeviceAccessCodeCleanup';
+    if (typeof window[cleanupKey] === 'function') {
+      try { window[cleanupKey](); } catch (_) {}
+    }
     var finishInitialization = function () {
       initialize().then(function () {
         if (typeof window.removeEventListener === 'function') {
@@ -641,23 +684,37 @@
         }
       }).catch(function () {});
     };
+    var onStorage = function (event) {
+      if (!event) return;
+      var primary = localStore();
+      if (event.storageArea && primary && event.storageArea !== primary) return;
+      if (event.key === STORAGE_KEY || event.key === null) publishVerifier(parseVerifier(event.newValue));
+      if (event.key === AI_LOCKED_KEY || event.key === null) notifyAiKeyLockListeners();
+    };
+    var onHydrated = function () {
+      initialize().catch(function () {});
+    };
     var initialVerifier = parseVerifier(configuredValue());
     if (initialVerifier) publishVerifier(initialVerifier);
     finishInitialization();
-    if (!cryptoApi() && typeof window.addEventListener === 'function') {
-      window.addEventListener('alloflow:module-registry-changed', finishInitialization);
-    }
     if (typeof window.addEventListener === 'function') {
-      window.addEventListener('storage', function (event) {
-        if (!event) return;
-        var primary = localStore();
-        if (event.storageArea && primary && event.storageArea !== primary) return;
-        if (event.key === STORAGE_KEY || event.key === null) publishVerifier(parseVerifier(event.newValue));
-        if (event.key === AI_LOCKED_KEY || event.key === null) notifyAiKeyLockListeners();
-      });
-      window.addEventListener('allo-prefs-hydrated', function () {
-        initialize().catch(function () {});
-      });
+      if (!cryptoApi()) window.addEventListener('alloflow:module-registry-changed', finishInitialization);
+      window.addEventListener('storage', onStorage);
+      window.addEventListener('allo-prefs-hydrated', onHydrated);
+      try {
+        Object.defineProperty(window, cleanupKey, {
+          configurable: true,
+          writable: true,
+          enumerable: false,
+          value: function () {
+            if (typeof window.removeEventListener === 'function') {
+              window.removeEventListener('alloflow:module-registry-changed', finishInitialization);
+              window.removeEventListener('storage', onStorage);
+              window.removeEventListener('allo-prefs-hydrated', onHydrated);
+            }
+          }
+        });
+      } catch (_) {}
     }
   }
 })();

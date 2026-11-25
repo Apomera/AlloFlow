@@ -12806,7 +12806,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 if (typeof callGemini !== 'function' || runtime.busy) return;
                 var subj = String(d.sculptText || '').trim().slice(0, 1000); if (!subj) return;
                 if (_artCrisisCheck(subj)) {
-                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI sculpting paused for safety.'), 'warning');
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked_sculpt', 'Please reach out to a trusted adult or counselor for support. AI sculpting paused for safety.'), 'warning');
                   return;
                 }
                 runtime.busy = true;
@@ -16199,7 +16199,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                           if (_artCrisisCheck(motionPrompt)) {
                             upd('stereoAnimRendering', false);
-                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI motion paused for safety.'), 'warning');
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked_motion', 'Please reach out to a trusted adult or counselor for support. AI motion paused for safety.'), 'warning');
                             return;
                           }
 

@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-early-childhood-5025-learning-library",
@@ -31,7 +32,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 7,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -683,10 +689,10 @@
           "id": "ec5025-ch-03-check-2",
           "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is orthographic mapping?",
           "choices": [
-            "They memorize the word’s recurring physical position on a familiar classroom chart or storybook page.",
-            "They predict the word repeatedly from surrounding illustrations and sentence context without inspecting letters.",
-            "They store the outer visual silhouette of the entire printed word as an unanalyzed photographic picture.",
-            "They bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval."
+            "Readers memorize the word’s recurring physical position on a familiar classroom chart or storybook page.",
+            "Readers predict the word repeatedly from surrounding illustrations and sentence context without inspecting letters.",
+            "Readers store the outer visual silhouette of the entire printed word as an unanalyzed photographic picture.",
+            "Readers bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval."
           ],
           "answerIndex": 3,
           "rationale": "Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -719,7 +725,7 @@
         },
         {
           "id": "ec5025-ch-03-check-4",
-          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, which error analysis best guides phonics instruction?",
+          "prompt": "In an early-childhood language and literacy context, a first grader repeatedly drops the second sound in words such as plan, stop, and frog when reading aloud and writing. Which error analysis best guides phonics instruction?",
           "choices": [
             "Whether the learner can recite formal dictionary definitions for every short word on the spelling list.",
             "Whether the learner perceives, segments, and represents consonant clusters across decoding and encoding.",
@@ -1292,7 +1298,7 @@
       "knowledgeChecks": [
         {
           "id": "ec5025-ch-06-check-1",
-          "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Evaluate 2a squared - 3b when a = 4 and b = 5.",
+          "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Evaluate 2a² - 3b when a = 4 and b = 5.",
           "choices": [
             "145",
             "17",
@@ -4177,7 +4183,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is orthographic mapping?",
-      "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval.",
+      "back": "Readers bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -4208,7 +4214,7 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, which error analysis best guides phonics instruction?",
+      "front": "In an early-childhood language and literacy context, a first grader repeatedly drops the second sound in words such as plan, stop, and frog when reading aloud and writing. Which error analysis best guides phonics instruction?",
       "back": "Whether the learner perceives, segments, and represents consonant clusters across decoding and encoding.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -4448,7 +4454,7 @@
       "skillId": "geometry-reasoning",
       "domainId": "mathematics",
       "domain": "Mathematics",
-      "front": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Evaluate 2a squared - 3b when a = 4 and b = 5.",
+      "front": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Evaluate 2a² - 3b when a = 4 and b = 5.",
       "back": "17 -- Substitute a = 4 and b = 5 and apply order of operations (exponent before multiplication): 2(4^2) - 3(5) = 2(16) - 15 = 32 - 15 = 17.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -5581,7 +5587,7 @@
       "taskType": "Emergent literacy case workshop (unscored)",
       "title": "Phoneme segmentation, short-vowel confusion, and emergent writing in Kindergarten",
       "prompt": "As a Kindergarten teacher reviewing mid-year screening and writing-center samples, design a developmentally appropriate small-group literacy plan that bridges onset-rime awareness to full phoneme segmentation and phonetic spelling.",
-      "stimulus": "Mid-year Kindergarten screening shows 5 of 20 students clap 2- and 3-syllable words and recognize rhymes (\"cat/hat\") but stall on phoneme segmentation: given \"sun\" they say \"/s/-un\" instead of \"/s/ /u/ /n/.\" In writing journals, the same students draw detailed scenes and write initial-consonant strings (\"D G R N\" for \"The dog ran\") with no word spacing, while 2 multilingual learners confuse short /e/ and short /i/.",
+      "stimulus": "Mid-year Kindergarten screening shows 5 of 20 students clap 2- and 3-syllable words and recognize rhymes (\"cat/hat\") but stall on phoneme segmentation: given \"sun\" they say \"/s/-un\" instead of \"/s/ /u/ /n/.\" In writing journals, the same students draw detailed scenes and write semiphonetic initial-and-final consonant frames (\"D G R N\" for \"The dog ran\") with no word spacing, while 2 multilingual learners confuse short /e/ and short /i/.",
       "estimatedMinutes": 12,
       "taskParts": [
         "A. Diagnose where these 5 students sit on the phonological-awareness continuum and emergent-writing progression, explaining what their strengths already show.",
@@ -7388,6 +7394,2642 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "early-childhood-5025-session-ch-01",
+      "title": "Oral Language and Emergent Literacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Oral Language and Emergent Literacy\" (Language and Literacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-01",
+      "itemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-002",
+        "ec5025-b1-003",
+        "ec5025-b1-004",
+        "ec5025-b1-005",
+        "ec5025-b1-006",
+        "ec5025-b1-007",
+        "ec5025-b1-008",
+        "ec5025-b2-001",
+        "ec5025-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Oral Language and Emergent Literacy\" and the \"PreK–3 Emergent Literacy, Phonics & Early Writing\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Developmentally Appropriate Assessment, UDL & Family-Centered Differentiation Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Bridging Environmental Print to Speech-to-Print Mapping in Pre-K\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Oral Language and Emergent Literacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Sequence PreK–2 Sound Awareness Along the Phonological Continuum\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-02",
+      "title": "Phonological Awareness, Phonics, and Word Reading guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phonological Awareness, Phonics, and Word Reading\" (Language and Literacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-02",
+      "itemIds": [
+        "ec5025-b1-016",
+        "ec5025-b1-017",
+        "ec5025-b1-018",
+        "ec5025-b1-019",
+        "ec5025-b1-020",
+        "ec5025-b1-021",
+        "ec5025-b1-022",
+        "ec5025-b1-023",
+        "ec5025-b1-024",
+        "ec5025-b1-025"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phonological Awareness, Phonics, and Word Reading\" and the \"PreK–3 Emergent Literacy, Phonics & Early Writing\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Literacy Foundations: Oral Language, Print Concepts, Phonics, and Emergent Writing Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Picture Guessing with Decoding and Spelling Reciprocity\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phonological Awareness, Phonics, and Word Reading\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify Cardinality, Place-Value Grouping, and Non-Calculator Number Sense\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-03",
+      "title": "Comprehension, Writing, and Children’s Literature guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Comprehension, Writing, and Children’s Literature\" (Language and Literacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-03",
+      "itemIds": [
+        "ec5025-b3-025",
+        "ec5025-b3-026",
+        "ec5025-b3-027",
+        "ec5025-b3-028",
+        "ec5025-b3-029",
+        "ec5025-b3-030",
+        "ec5025-b1-028",
+        "ec5025-b1-030",
+        "ec5025-b2-028",
+        "ec5025-b2-030"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Comprehension, Writing, and Children’s Literature\" and the \"PreK–3 Emergent Literacy, Phonics & Early Writing\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Comprehension, Children's Literature, and Developmental Writing Integration\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Deepening Inferential Comprehension and Genre Purpose in Grade 2\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Comprehension, Writing, and Children’s Literature\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Defining Geometric Attributes from Orientation, Size, and Surface Labels\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-04",
+      "title": "Number, Operations, and Algebraic Thinking guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Number, Operations, and Algebraic Thinking\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-04",
+      "itemIds": [
+        "ec5025-b2-047",
+        "ec5025-b2-048",
+        "ec5025-b2-049",
+        "ec5025-b2-051",
+        "ec5025-b2-052",
+        "ec5025-b2-053",
+        "ec5025-b2-054",
+        "ec5025-b3-031",
+        "ec5025-b3-032",
+        "ec5025-b3-033"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Number, Operations, and Algebraic Thinking\" and the \"Early Number Sense, CRA Sequence & PreK–3 Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Mathematics Conceptual Progression: Concrete–Representational–Abstract (CRA) Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Repairing Equal-Sign and Place-Value Regrouping Misconceptions\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Number, Operations, and Algebraic Thinking\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Fair-Test Variable Control and Observation-vs-Inference Clarity\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-05",
+      "title": "Measurement, Data, and Probability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Measurement, Data, and Probability\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-05",
+      "itemIds": [
+        "ec5025-b2-055",
+        "ec5025-b3-045",
+        "ec5025-b3-046",
+        "ec5025-b3-047",
+        "ec5025-b3-048",
+        "ec5025-b3-049",
+        "ec5025-b1-041",
+        "ec5025-b1-042",
+        "ec5025-b1-043",
+        "ec5025-b1-044"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Measurement, Data, and Probability\" and the \"Early Number Sense, CRA Sequence & PreK–3 Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Measurement, Data Representation, and Probability Reasoning Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Correcting Ruler Alignment and Inverse Unit-Size Thinking in Grade 1\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Measurement, Data, and Probability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Choose Process Art, Expressive Arts Vocabulary, and DAP Inquiry Over Crafts\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-06",
+      "title": "Geometry and Mathematical Reasoning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Geometry and Mathematical Reasoning\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-06",
+      "itemIds": [
+        "ec5025-b1-040",
+        "ec5025-b1-050",
+        "ec5025-b2-037",
+        "ec5025-b2-038",
+        "ec5025-b2-039",
+        "ec5025-b2-040",
+        "ec5025-b2-050",
+        "ec5025-b3-050",
+        "ec5025-b3-051",
+        "ec5025-b3-052"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Geometry and Mathematical Reasoning\" and the \"Early Number Sense, CRA Sequence & PreK–3 Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Geometric Reasoning Progression: Attributes, Spatial Composition, Representation, and Justification\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Building Orientation-Invariant Shape Identity and Defining Attributes\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Geometry and Mathematical Reasoning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prioritize Inclusive Active Motor Play, Health Habits, and Child Safety Protocols\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-07",
+      "title": "History, Civics, and Culture guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"History, Civics, and Culture\" (Social Studies) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-07",
+      "itemIds": [
+        "ec5025-b2-067",
+        "ec5025-b2-068",
+        "ec5025-b2-069",
+        "ec5025-b3-056",
+        "ec5025-b3-057",
+        "ec5025-b3-058",
+        "ec5025-b3-059",
+        "ec5025-b3-060",
+        "ec5025-b3-061",
+        "ec5025-b3-062"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"History, Civics, and Culture\" and the \"Expanding Environments, Civics, Maps & Early Economics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Historical, Civic, and Cultural Reasoning: Sources, Chronology, Deliberation, and Agency\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Cultural Stereotypes with Anti-Bias Inquiry and Civic Voice\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"History, Civics, and Culture\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Sequence PreK–2 Sound Awareness Along the Phonological Continuum\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-08",
+      "title": "Geography, Economics, and Social Inquiry guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Geography, Economics, and Social Inquiry\" (Social Studies) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-08",
+      "itemIds": [
+        "ec5025-b1-066",
+        "ec5025-b2-058",
+        "ec5025-b2-061",
+        "ec5025-b2-062",
+        "ec5025-b2-063",
+        "ec5025-b2-066",
+        "ec5025-b3-065",
+        "ec5025-b3-066",
+        "ec5025-b3-067",
+        "ec5025-b3-068"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Geography, Economics, and Social Inquiry\" and the \"Expanding Environments, Civics, Maps & Early Economics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Social Studies Civic, Historical, Geographic & Economic Inquiry Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Connecting Globe Comparisons, Interdependence, and Civic Choice\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Geography, Economics, and Social Inquiry\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Verify Cardinality, Place-Value Grouping, and Non-Calculator Number Sense\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-09",
+      "title": "Physical and Earth Science guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Physical and Earth Science\" (Science) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-09",
+      "itemIds": [
+        "ec5025-b3-077",
+        "ec5025-b3-078",
+        "ec5025-b1-070",
+        "ec5025-b1-071",
+        "ec5025-b1-072",
+        "ec5025-b1-073",
+        "ec5025-b1-074",
+        "ec5025-b1-075",
+        "ec5025-b1-076",
+        "ec5025-b1-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Physical and Earth Science\" and the \"5E Inquiry, NGSS Domains & Early Engineering Design\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Physical and Earth Science Reasoning: Matter, Energy, Fair-Test Inquiry, and Earth-System Models\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Testing Conservation of Mass and Lab Safety in Primary Science\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Physical and Earth Science\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Defining Geometric Attributes from Orientation, Size, and Surface Labels\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-10",
+      "title": "Life Science, Environment, and Engineering guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Life Science, Environment, and Engineering\" (Science) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-10",
+      "itemIds": [
+        "ec5025-b3-082",
+        "ec5025-b3-083",
+        "ec5025-b1-080",
+        "ec5025-b1-081",
+        "ec5025-b1-082",
+        "ec5025-b1-083",
+        "ec5025-b2-080",
+        "ec5025-b2-081",
+        "ec5025-b2-082",
+        "ec5025-b2-083"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Life Science, Environment, and Engineering\" and the \"5E Inquiry, NGSS Domains & Early Engineering Design\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Science Three-Dimensional Inquiry & Engineering Design Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Clarifying Living Criteria, Generational Adaptation, and Habitat Ethics\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Life Science, Environment, and Engineering\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Fair-Test Variable Control and Observation-vs-Inference Clarity\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-11",
+      "title": "Health, Safety, and Physical Development guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Health, Safety, and Physical Development\" (Health and Physical Education; Creative and Performing Arts) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-11",
+      "itemIds": [
+        "ec5025-b2-084",
+        "ec5025-b2-085",
+        "ec5025-b2-086",
+        "ec5025-b2-087",
+        "ec5025-b2-088",
+        "ec5025-b2-089",
+        "ec5025-b2-090",
+        "ec5025-b3-084",
+        "ec5025-b3-085",
+        "ec5025-b3-086"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Health, Safety, and Physical Development\" and the \"Motor Principles, Early Health & Process-Focused Arts\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Whole-Child Health, Safety, and Physical Development Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Enforcing Allergen Safety and Inclusive Active Play in Preschool\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Health, Safety, and Physical Development\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Choose Process Art, Expressive Arts Vocabulary, and DAP Inquiry Over Crafts\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-ch-12",
+      "title": "Creative and Performing Arts guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Creative and Performing Arts\" (Health and Physical Education; Creative and Performing Arts) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ec5025-ch-12",
+      "itemIds": [
+        "ec5025-b2-098",
+        "ec5025-b2-099",
+        "ec5025-b2-100",
+        "ec5025-b3-091",
+        "ec5025-b3-092",
+        "ec5025-b3-093",
+        "ec5025-b3-094",
+        "ec5025-b3-095",
+        "ec5025-b3-096",
+        "ec5025-b3-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Creative and Performing Arts\" and the \"Motor Principles, Early Health & Process-Focused Arts\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Integrated Creative Arts, Physical Movement & Play-Based Development Map\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Choosing Safe Process Art Over Pre-Cut Product Crafts in Kindergarten\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Creative and Performing Arts\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prioritize Inclusive Active Motor Play, Health Habits, and Child Safety Protocols\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-trap-repair-sprint",
+      "title": "Praxis Early Childhood Education (5025) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-031",
+        "ec5025-b1-070",
+        "ec5025-b1-056",
+        "ec5025-b1-084",
+        "ec5025-b1-002",
+        "ec5025-b1-032",
+        "ec5025-b1-033",
+        "ec5025-b1-071",
+        "ec5025-b1-059",
+        "ec5025-b1-085",
+        "ec5025-b1-003"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Sequence PreK–2 Sound Awareness Along the Phonological Continuum\", \"Verify Cardinality, Place-Value Grouping, and Non-Calculator Number Sense\", \"Separate Defining Geometric Attributes from Orientation, Size, and Surface Labels\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-session-mixed-capstone",
+      "title": "Praxis Early Childhood Education (5025) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ec5025-b1-004",
+        "ec5025-b1-034",
+        "ec5025-b1-059",
+        "ec5025-b1-073",
+        "ec5025-b1-087",
+        "ec5025-b1-015",
+        "ec5025-b1-045",
+        "ec5025-b2-056",
+        "ec5025-b2-070",
+        "ec5025-b1-098",
+        "ec5025-b1-026",
+        "ec5025-b2-031",
+        "ec5025-b2-067",
+        "ec5025-b2-081",
+        "ec5025-b2-092"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied classroom case workshops, outline a response to \"Phoneme segmentation, short-vowel confusion, and emergent writing in Kindergarten\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "early-childhood-5025-spaced-ch-01",
+      "topicId": "ec5025-ch-01",
+      "topicLabel": "1. Oral Language and Emergent Literacy",
+      "unitId": "language-literacy",
+      "chapterId": "ec5025-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Oral Language and Emergent Literacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-02",
+      "topicId": "ec5025-ch-02",
+      "topicLabel": "2. Phonological Awareness, Phonics, and Word Reading",
+      "unitId": "language-literacy",
+      "chapterId": "ec5025-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phonological Awareness, Phonics, and Word Reading\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-03",
+      "topicId": "ec5025-ch-03",
+      "topicLabel": "3. Comprehension, Writing, and Children’s Literature",
+      "unitId": "language-literacy",
+      "chapterId": "ec5025-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Comprehension, Writing, and Children’s Literature\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-04",
+      "topicId": "ec5025-ch-04",
+      "topicLabel": "4. Number, Operations, and Algebraic Thinking",
+      "unitId": "mathematics",
+      "chapterId": "ec5025-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Number, Operations, and Algebraic Thinking\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-05",
+      "topicId": "ec5025-ch-05",
+      "topicLabel": "5. Measurement, Data, and Probability",
+      "unitId": "mathematics",
+      "chapterId": "ec5025-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Measurement, Data, and Probability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-06",
+      "topicId": "ec5025-ch-06",
+      "topicLabel": "6. Geometry and Mathematical Reasoning",
+      "unitId": "mathematics",
+      "chapterId": "ec5025-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Geometry and Mathematical Reasoning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-07",
+      "topicId": "ec5025-ch-07",
+      "topicLabel": "7. History, Civics, and Culture",
+      "unitId": "social-studies",
+      "chapterId": "ec5025-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"History, Civics, and Culture\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-08",
+      "topicId": "ec5025-ch-08",
+      "topicLabel": "8. Geography, Economics, and Social Inquiry",
+      "unitId": "social-studies",
+      "chapterId": "ec5025-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Geography, Economics, and Social Inquiry\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-09",
+      "topicId": "ec5025-ch-09",
+      "topicLabel": "9. Physical and Earth Science",
+      "unitId": "science",
+      "chapterId": "ec5025-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Physical and Earth Science\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-10",
+      "topicId": "ec5025-ch-10",
+      "topicLabel": "10. Life Science, Environment, and Engineering",
+      "unitId": "science",
+      "chapterId": "ec5025-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Life Science, Environment, and Engineering\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-11",
+      "topicId": "ec5025-ch-11",
+      "topicLabel": "11. Health, Safety, and Physical Development",
+      "unitId": "health-physical-arts",
+      "chapterId": "ec5025-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Health, Safety, and Physical Development\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-spaced-ch-12",
+      "topicId": "ec5025-ch-12",
+      "topicLabel": "12. Creative and Performing Arts",
+      "unitId": "health-physical-arts",
+      "chapterId": "ec5025-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Creative and Performing Arts\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "early-childhood-5025-source-01",
+      "title": "Early Childhood Education (5025) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-02",
+      "title": "Early Childhood Education (5025) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/early-childhood-education-5025.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-03",
+      "title": "Principles of Child Development and Learning and Implications That Inform Practice",
+      "organization": "National Association for the Education of Young Children (NAEYC)",
+      "url": "https://www.naeyc.org/resources/position-statements/dap/principles",
+      "credibility": "NAEYC is the professional association that publishes this position statement. It is an authoritative primary source for NAEYC’s framework, while users should distinguish professional guidance from a test blueprint or a single empirical study.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-04",
+      "title": "National Curriculum Standards for Social Studies: A Framework for Teaching, Learning, and Assessment",
+      "organization": "National Council for the Social Studies (NCSS)",
+      "url": "https://www.socialstudies.org/standards/national-curriculum-standards-social-studies",
+      "credibility": "NCSS is the discipline’s national professional organization and publisher of these curriculum standards. The standards are a primary professional framework, not an ETS blueprint or evidence rating for a particular intervention.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-05",
+      "title": "Home Page | Next Generation Science Standards",
+      "organization": "Next Generation Science Standards",
+      "url": "https://www.nextgenscience.org/",
+      "credibility": "Next Generation Science Standards is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-06",
+      "title": "National PE Standards-Highly Effective Physical Education | SHAPE America",
+      "organization": "SHAPE America",
+      "url": "https://www.shapeamerica.org/standards/pe/",
+      "credibility": "SHAPE America is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "early-childhood-5025-source-07",
+      "title": "Home | National Art Standard",
+      "organization": "National Coalition for Core Arts Standards",
+      "url": "https://www.nationalartsstandards.org/",
+      "credibility": "National Coalition for Core Arts Standards is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "early-childhood-5025-unit-review-01",
+      "unitId": "language-literacy",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Oral Language and Emergent Literacy",
+      "chapterId": "ec5025-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-01-section-1",
+        "ec5025-ch-01-section-2",
+        "ec5025-ch-01-section-3",
+        "ec5025-ch-01-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-002",
+        "ec5025-b1-003",
+        "ec5025-b1-004",
+        "ec5025-b1-005",
+        "ec5025-b1-006",
+        "ec5025-b1-007",
+        "ec5025-b1-008",
+        "ec5025-b2-001",
+        "ec5025-b2-002",
+        "ec5025-b2-003",
+        "ec5025-b2-004",
+        "ec5025-b2-005",
+        "ec5025-b2-006",
+        "ec5025-b2-007",
+        "ec5025-b2-008",
+        "ec5025-b3-001",
+        "ec5025-b3-002",
+        "ec5025-b3-003",
+        "ec5025-b3-004",
+        "ec5025-b3-005",
+        "ec5025-b3-006",
+        "ec5025-b3-007",
+        "ec5025-b3-008"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-002",
+        "ec5025-b1-003",
+        "ec5025-b1-004",
+        "ec5025-b1-005",
+        "ec5025-b1-006",
+        "ec5025-b1-007",
+        "ec5025-b1-008",
+        "ec5025-b2-001",
+        "ec5025-b2-002",
+        "ec5025-b2-003",
+        "ec5025-b2-004"
+      ],
+      "purpose": "Consolidate \"Oral Language and Emergent Literacy\" (Language and Literacy) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-02",
+      "unitId": "language-literacy",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Phonological Awareness, Phonics, and Word Reading",
+      "chapterId": "ec5025-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-02-section-1",
+        "ec5025-ch-02-section-2",
+        "ec5025-ch-02-section-3",
+        "ec5025-ch-02-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-009",
+        "ec5025-b1-010",
+        "ec5025-b1-011",
+        "ec5025-b1-012",
+        "ec5025-b1-013",
+        "ec5025-b1-014",
+        "ec5025-b1-015",
+        "ec5025-b1-016",
+        "ec5025-b1-017",
+        "ec5025-b1-018",
+        "ec5025-b1-019",
+        "ec5025-b1-020",
+        "ec5025-b1-021",
+        "ec5025-b1-022",
+        "ec5025-b1-023",
+        "ec5025-b1-024",
+        "ec5025-b1-025",
+        "ec5025-b1-026",
+        "ec5025-b1-027",
+        "ec5025-b1-029",
+        "ec5025-b2-009",
+        "ec5025-b2-010",
+        "ec5025-b2-011",
+        "ec5025-b2-012",
+        "ec5025-b2-013",
+        "ec5025-b2-014",
+        "ec5025-b2-015",
+        "ec5025-b2-016",
+        "ec5025-b2-017",
+        "ec5025-b2-018",
+        "ec5025-b2-019",
+        "ec5025-b2-020",
+        "ec5025-b2-021",
+        "ec5025-b2-022",
+        "ec5025-b2-023",
+        "ec5025-b2-024",
+        "ec5025-b2-025",
+        "ec5025-b2-026",
+        "ec5025-b2-027",
+        "ec5025-b2-029",
+        "ec5025-b3-009",
+        "ec5025-b3-010",
+        "ec5025-b3-011",
+        "ec5025-b3-012",
+        "ec5025-b3-013"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-009",
+        "ec5025-b1-010",
+        "ec5025-b1-011",
+        "ec5025-b1-012",
+        "ec5025-b1-013",
+        "ec5025-b1-014",
+        "ec5025-b1-015",
+        "ec5025-b1-016",
+        "ec5025-b1-017",
+        "ec5025-b1-018",
+        "ec5025-b1-019",
+        "ec5025-b1-020"
+      ],
+      "purpose": "Consolidate \"Phonological Awareness, Phonics, and Word Reading\" (Language and Literacy) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-03",
+      "unitId": "language-literacy",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Comprehension, Writing, and Children’s Literature",
+      "chapterId": "ec5025-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-03-section-1",
+        "ec5025-ch-03-section-2",
+        "ec5025-ch-03-section-3",
+        "ec5025-ch-03-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-027",
+        "ec5025-b1-028",
+        "ec5025-b1-029",
+        "ec5025-b1-030",
+        "ec5025-b2-001",
+        "ec5025-b2-002",
+        "ec5025-b2-003",
+        "ec5025-b2-004",
+        "ec5025-b2-005",
+        "ec5025-b2-006",
+        "ec5025-b2-007",
+        "ec5025-b2-008",
+        "ec5025-b2-009",
+        "ec5025-b2-010",
+        "ec5025-b2-011",
+        "ec5025-b2-012",
+        "ec5025-b2-013",
+        "ec5025-b2-014",
+        "ec5025-b2-015",
+        "ec5025-b2-016",
+        "ec5025-b2-017",
+        "ec5025-b2-018",
+        "ec5025-b2-019",
+        "ec5025-b2-020",
+        "ec5025-b2-021",
+        "ec5025-b2-022",
+        "ec5025-b2-023",
+        "ec5025-b2-024",
+        "ec5025-b2-025",
+        "ec5025-b2-026",
+        "ec5025-b2-027",
+        "ec5025-b2-028",
+        "ec5025-b2-029",
+        "ec5025-b2-030",
+        "ec5025-b3-001",
+        "ec5025-b3-002",
+        "ec5025-b3-003",
+        "ec5025-b3-004",
+        "ec5025-b3-005",
+        "ec5025-b3-006",
+        "ec5025-b3-007",
+        "ec5025-b3-008",
+        "ec5025-b3-009",
+        "ec5025-b3-010",
+        "ec5025-b3-011"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-027",
+        "ec5025-b1-028",
+        "ec5025-b1-029",
+        "ec5025-b1-030",
+        "ec5025-b2-001",
+        "ec5025-b2-002",
+        "ec5025-b2-003",
+        "ec5025-b2-004",
+        "ec5025-b2-005",
+        "ec5025-b2-006",
+        "ec5025-b2-007",
+        "ec5025-b2-008"
+      ],
+      "purpose": "Consolidate \"Comprehension, Writing, and Children’s Literature\" (Language and Literacy) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-04",
+      "unitId": "mathematics",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Number, Operations, and Algebraic Thinking",
+      "chapterId": "ec5025-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-04-section-1",
+        "ec5025-ch-04-section-2",
+        "ec5025-ch-04-section-3",
+        "ec5025-ch-04-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-031",
+        "ec5025-b1-032",
+        "ec5025-b1-033",
+        "ec5025-b1-034",
+        "ec5025-b1-035",
+        "ec5025-b1-036",
+        "ec5025-b1-045",
+        "ec5025-b1-047",
+        "ec5025-b1-048",
+        "ec5025-b1-049",
+        "ec5025-b1-051",
+        "ec5025-b1-052",
+        "ec5025-b1-053",
+        "ec5025-b1-054",
+        "ec5025-b2-031",
+        "ec5025-b2-032",
+        "ec5025-b2-033",
+        "ec5025-b2-034",
+        "ec5025-b2-035",
+        "ec5025-b2-036",
+        "ec5025-b2-045",
+        "ec5025-b2-047",
+        "ec5025-b2-048",
+        "ec5025-b2-049",
+        "ec5025-b2-051",
+        "ec5025-b2-052",
+        "ec5025-b2-053",
+        "ec5025-b2-054",
+        "ec5025-b3-031",
+        "ec5025-b3-032",
+        "ec5025-b3-033",
+        "ec5025-b3-034",
+        "ec5025-b3-035",
+        "ec5025-b3-036",
+        "ec5025-b3-037",
+        "ec5025-b3-038",
+        "ec5025-b3-039",
+        "ec5025-b3-040",
+        "ec5025-b3-041",
+        "ec5025-b3-042",
+        "ec5025-b3-043",
+        "ec5025-b3-044"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-031",
+        "ec5025-b1-032",
+        "ec5025-b1-033",
+        "ec5025-b1-034",
+        "ec5025-b1-035",
+        "ec5025-b1-036",
+        "ec5025-b1-045",
+        "ec5025-b1-047",
+        "ec5025-b1-048",
+        "ec5025-b1-049",
+        "ec5025-b1-051",
+        "ec5025-b1-052"
+      ],
+      "purpose": "Consolidate \"Number, Operations, and Algebraic Thinking\" (Mathematics) across 4 lessons and 42 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-05",
+      "unitId": "mathematics",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Measurement, Data, and Probability",
+      "chapterId": "ec5025-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-05-section-1",
+        "ec5025-ch-05-section-2",
+        "ec5025-ch-05-section-3",
+        "ec5025-ch-05-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-041",
+        "ec5025-b1-042",
+        "ec5025-b1-043",
+        "ec5025-b1-044",
+        "ec5025-b1-046",
+        "ec5025-b1-055",
+        "ec5025-b2-041",
+        "ec5025-b2-042",
+        "ec5025-b2-043",
+        "ec5025-b2-044",
+        "ec5025-b2-046",
+        "ec5025-b2-055",
+        "ec5025-b3-045",
+        "ec5025-b3-046",
+        "ec5025-b3-047",
+        "ec5025-b3-048",
+        "ec5025-b3-049"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-041",
+        "ec5025-b1-042",
+        "ec5025-b1-043",
+        "ec5025-b1-044",
+        "ec5025-b1-046",
+        "ec5025-b1-055",
+        "ec5025-b2-041",
+        "ec5025-b2-042",
+        "ec5025-b2-043",
+        "ec5025-b2-044",
+        "ec5025-b2-046",
+        "ec5025-b2-055"
+      ],
+      "purpose": "Consolidate \"Measurement, Data, and Probability\" (Mathematics) across 4 lessons and 17 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-06",
+      "unitId": "mathematics",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Geometry and Mathematical Reasoning",
+      "chapterId": "ec5025-ch-06",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-06-section-1",
+        "ec5025-ch-06-section-2",
+        "ec5025-ch-06-section-3",
+        "ec5025-ch-06-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-037",
+        "ec5025-b1-038",
+        "ec5025-b1-039",
+        "ec5025-b1-040",
+        "ec5025-b1-050",
+        "ec5025-b2-037",
+        "ec5025-b2-038",
+        "ec5025-b2-039",
+        "ec5025-b2-040",
+        "ec5025-b2-050",
+        "ec5025-b3-050",
+        "ec5025-b3-051",
+        "ec5025-b3-052",
+        "ec5025-b3-053",
+        "ec5025-b3-054",
+        "ec5025-b3-055"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-037",
+        "ec5025-b1-038",
+        "ec5025-b1-039",
+        "ec5025-b1-040",
+        "ec5025-b1-050",
+        "ec5025-b2-037",
+        "ec5025-b2-038",
+        "ec5025-b2-039",
+        "ec5025-b2-040",
+        "ec5025-b2-050",
+        "ec5025-b3-050",
+        "ec5025-b3-051"
+      ],
+      "purpose": "Consolidate \"Geometry and Mathematical Reasoning\" (Mathematics) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-07",
+      "unitId": "social-studies",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: History, Civics, and Culture",
+      "chapterId": "ec5025-ch-07",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-07-section-1",
+        "ec5025-ch-07-section-2",
+        "ec5025-ch-07-section-3",
+        "ec5025-ch-07-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-056",
+        "ec5025-b1-057",
+        "ec5025-b1-059",
+        "ec5025-b1-060",
+        "ec5025-b1-064",
+        "ec5025-b1-065",
+        "ec5025-b1-067",
+        "ec5025-b1-068",
+        "ec5025-b1-069",
+        "ec5025-b2-056",
+        "ec5025-b2-057",
+        "ec5025-b2-059",
+        "ec5025-b2-060",
+        "ec5025-b2-064",
+        "ec5025-b2-065",
+        "ec5025-b2-067",
+        "ec5025-b2-068",
+        "ec5025-b2-069",
+        "ec5025-b3-056",
+        "ec5025-b3-057",
+        "ec5025-b3-058",
+        "ec5025-b3-059",
+        "ec5025-b3-060",
+        "ec5025-b3-061",
+        "ec5025-b3-062",
+        "ec5025-b3-063",
+        "ec5025-b3-064"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-056",
+        "ec5025-b1-057",
+        "ec5025-b1-059",
+        "ec5025-b1-060",
+        "ec5025-b1-064",
+        "ec5025-b1-065",
+        "ec5025-b1-067",
+        "ec5025-b1-068",
+        "ec5025-b1-069",
+        "ec5025-b2-056",
+        "ec5025-b2-057",
+        "ec5025-b2-059"
+      ],
+      "purpose": "Consolidate \"History, Civics, and Culture\" (Social Studies) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-08",
+      "unitId": "social-studies",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Geography, Economics, and Social Inquiry",
+      "chapterId": "ec5025-ch-08",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-08-section-1",
+        "ec5025-ch-08-section-2",
+        "ec5025-ch-08-section-3",
+        "ec5025-ch-08-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-058",
+        "ec5025-b1-061",
+        "ec5025-b1-062",
+        "ec5025-b1-063",
+        "ec5025-b1-066",
+        "ec5025-b2-058",
+        "ec5025-b2-061",
+        "ec5025-b2-062",
+        "ec5025-b2-063",
+        "ec5025-b2-066",
+        "ec5025-b3-065",
+        "ec5025-b3-066",
+        "ec5025-b3-067",
+        "ec5025-b3-068",
+        "ec5025-b3-069"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-058",
+        "ec5025-b1-061",
+        "ec5025-b1-062",
+        "ec5025-b1-063",
+        "ec5025-b1-066",
+        "ec5025-b2-058",
+        "ec5025-b2-061",
+        "ec5025-b2-062",
+        "ec5025-b2-063",
+        "ec5025-b2-066",
+        "ec5025-b3-065",
+        "ec5025-b3-066"
+      ],
+      "purpose": "Consolidate \"Geography, Economics, and Social Inquiry\" (Social Studies) across 4 lessons and 15 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-09",
+      "unitId": "science",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Physical and Earth Science",
+      "chapterId": "ec5025-ch-09",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-09-section-1",
+        "ec5025-ch-09-section-2",
+        "ec5025-ch-09-section-3",
+        "ec5025-ch-09-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-070",
+        "ec5025-b1-071",
+        "ec5025-b1-072",
+        "ec5025-b1-073",
+        "ec5025-b1-074",
+        "ec5025-b1-075",
+        "ec5025-b1-076",
+        "ec5025-b1-077",
+        "ec5025-b1-078",
+        "ec5025-b1-079",
+        "ec5025-b2-070",
+        "ec5025-b2-071",
+        "ec5025-b2-072",
+        "ec5025-b2-073",
+        "ec5025-b2-074",
+        "ec5025-b2-075",
+        "ec5025-b2-076",
+        "ec5025-b2-077",
+        "ec5025-b2-078",
+        "ec5025-b2-079",
+        "ec5025-b3-070",
+        "ec5025-b3-071",
+        "ec5025-b3-072",
+        "ec5025-b3-073",
+        "ec5025-b3-074",
+        "ec5025-b3-075",
+        "ec5025-b3-076",
+        "ec5025-b3-077",
+        "ec5025-b3-078"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-070",
+        "ec5025-b1-071",
+        "ec5025-b1-072",
+        "ec5025-b1-073",
+        "ec5025-b1-074",
+        "ec5025-b1-075",
+        "ec5025-b1-076",
+        "ec5025-b1-077",
+        "ec5025-b1-078",
+        "ec5025-b1-079",
+        "ec5025-b2-070",
+        "ec5025-b2-071"
+      ],
+      "purpose": "Consolidate \"Physical and Earth Science\" (Science) across 4 lessons and 29 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-10",
+      "unitId": "science",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Life Science, Environment, and Engineering",
+      "chapterId": "ec5025-ch-10",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-10-section-1",
+        "ec5025-ch-10-section-2",
+        "ec5025-ch-10-section-3",
+        "ec5025-ch-10-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-080",
+        "ec5025-b1-081",
+        "ec5025-b1-082",
+        "ec5025-b1-083",
+        "ec5025-b2-080",
+        "ec5025-b2-081",
+        "ec5025-b2-082",
+        "ec5025-b2-083",
+        "ec5025-b3-079",
+        "ec5025-b3-080",
+        "ec5025-b3-081",
+        "ec5025-b3-082",
+        "ec5025-b3-083"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-080",
+        "ec5025-b1-081",
+        "ec5025-b1-082",
+        "ec5025-b1-083",
+        "ec5025-b2-080",
+        "ec5025-b2-081",
+        "ec5025-b2-082",
+        "ec5025-b2-083",
+        "ec5025-b3-079",
+        "ec5025-b3-080",
+        "ec5025-b3-081",
+        "ec5025-b3-082"
+      ],
+      "purpose": "Consolidate \"Life Science, Environment, and Engineering\" (Science) across 4 lessons and 13 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-11",
+      "unitId": "health-physical-arts",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Health, Safety, and Physical Development",
+      "chapterId": "ec5025-ch-11",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-11-section-1",
+        "ec5025-ch-11-section-2",
+        "ec5025-ch-11-section-3",
+        "ec5025-ch-11-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-084",
+        "ec5025-b1-085",
+        "ec5025-b1-086",
+        "ec5025-b1-087",
+        "ec5025-b1-088",
+        "ec5025-b1-089",
+        "ec5025-b1-090",
+        "ec5025-b2-084",
+        "ec5025-b2-085",
+        "ec5025-b2-086",
+        "ec5025-b2-087",
+        "ec5025-b2-088",
+        "ec5025-b2-089",
+        "ec5025-b2-090",
+        "ec5025-b3-084",
+        "ec5025-b3-085",
+        "ec5025-b3-086",
+        "ec5025-b3-087",
+        "ec5025-b3-088",
+        "ec5025-b3-089",
+        "ec5025-b3-090"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-084",
+        "ec5025-b1-085",
+        "ec5025-b1-086",
+        "ec5025-b1-087",
+        "ec5025-b1-088",
+        "ec5025-b1-089",
+        "ec5025-b1-090",
+        "ec5025-b2-084",
+        "ec5025-b2-085",
+        "ec5025-b2-086",
+        "ec5025-b2-087",
+        "ec5025-b2-088"
+      ],
+      "purpose": "Consolidate \"Health, Safety, and Physical Development\" (Health and Physical Education; Creative and Performing Arts) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-unit-review-12",
+      "unitId": "health-physical-arts",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Creative and Performing Arts",
+      "chapterId": "ec5025-ch-12",
+      "topicDiagnosticRouteIds": [
+        "ec5025-ch-12-section-1",
+        "ec5025-ch-12-section-2",
+        "ec5025-ch-12-section-3",
+        "ec5025-ch-12-section-4"
+      ],
+      "itemIds": [
+        "ec5025-b1-091",
+        "ec5025-b1-092",
+        "ec5025-b1-093",
+        "ec5025-b1-094",
+        "ec5025-b1-095",
+        "ec5025-b1-096",
+        "ec5025-b1-097",
+        "ec5025-b1-098",
+        "ec5025-b1-099",
+        "ec5025-b1-100",
+        "ec5025-b2-091",
+        "ec5025-b2-092",
+        "ec5025-b2-093",
+        "ec5025-b2-094",
+        "ec5025-b2-095",
+        "ec5025-b2-096",
+        "ec5025-b2-097",
+        "ec5025-b2-098",
+        "ec5025-b2-099",
+        "ec5025-b2-100",
+        "ec5025-b3-091",
+        "ec5025-b3-092",
+        "ec5025-b3-093",
+        "ec5025-b3-094",
+        "ec5025-b3-095",
+        "ec5025-b3-096",
+        "ec5025-b3-097",
+        "ec5025-b3-098",
+        "ec5025-b3-099",
+        "ec5025-b3-100"
+      ],
+      "mixedPracticeItemIds": [
+        "ec5025-b1-091",
+        "ec5025-b1-092",
+        "ec5025-b1-093",
+        "ec5025-b1-094",
+        "ec5025-b1-095",
+        "ec5025-b1-096",
+        "ec5025-b1-097",
+        "ec5025-b1-098",
+        "ec5025-b1-099",
+        "ec5025-b1-100",
+        "ec5025-b2-091",
+        "ec5025-b2-092"
+      ],
+      "purpose": "Consolidate \"Creative and Performing Arts\" (Health and Physical Education; Creative and Performing Arts) across 4 lessons and 30 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "early-childhood-5025-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Early Childhood Education (5025) blueprint domains.",
+      "focus": [
+        "Language and Literacy",
+        "Mathematics",
+        "Social Studies",
+        "Science"
+      ],
+      "itemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-070",
+        "ec5025-b1-032",
+        "ec5025-b1-085",
+        "ec5025-b1-058",
+        "ec5025-b1-004",
+        "ec5025-b1-073",
+        "ec5025-b1-035",
+        "ec5025-b1-088",
+        "ec5025-b1-061",
+        "ec5025-b1-007",
+        "ec5025-b1-076",
+        "ec5025-b1-038",
+        "ec5025-b1-091",
+        "ec5025-b1-064",
+        "ec5025-b1-010",
+        "ec5025-b1-079",
+        "ec5025-b1-041",
+        "ec5025-b1-094",
+        "ec5025-b1-067",
+        "ec5025-b1-013",
+        "ec5025-b1-082",
+        "ec5025-b1-044",
+        "ec5025-b1-097",
+        "ec5025-b2-056",
+        "ec5025-b1-016",
+        "ec5025-b2-071",
+        "ec5025-b1-047",
+        "ec5025-b1-100",
+        "ec5025-b2-059",
+        "ec5025-b1-019",
+        "ec5025-b2-074",
+        "ec5025-b1-050",
+        "ec5025-b2-086",
+        "ec5025-b2-062",
+        "ec5025-b1-022",
+        "ec5025-b2-077",
+        "ec5025-b1-053",
+        "ec5025-b2-089",
+        "ec5025-b2-065"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Early Childhood Education (5025) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Social Studies",
+        "Science",
+        "Health and Physical Education; Creative and Performing Arts",
+        "Language and Literacy"
+      ],
+      "itemIds": [
+        "ec5025-b1-031",
+        "ec5025-b1-084",
+        "ec5025-b1-057",
+        "ec5025-b1-003",
+        "ec5025-b1-072",
+        "ec5025-b1-034",
+        "ec5025-b1-087",
+        "ec5025-b1-060",
+        "ec5025-b1-006",
+        "ec5025-b1-075",
+        "ec5025-b1-037",
+        "ec5025-b1-090",
+        "ec5025-b1-063",
+        "ec5025-b1-009",
+        "ec5025-b1-078",
+        "ec5025-b1-040",
+        "ec5025-b1-093",
+        "ec5025-b1-066",
+        "ec5025-b1-012",
+        "ec5025-b1-081",
+        "ec5025-b1-043",
+        "ec5025-b1-096",
+        "ec5025-b1-069",
+        "ec5025-b1-015",
+        "ec5025-b2-070",
+        "ec5025-b1-046",
+        "ec5025-b1-099",
+        "ec5025-b2-058",
+        "ec5025-b1-018",
+        "ec5025-b2-073",
+        "ec5025-b1-049",
+        "ec5025-b2-085",
+        "ec5025-b2-061",
+        "ec5025-b1-021",
+        "ec5025-b2-076",
+        "ec5025-b1-052",
+        "ec5025-b2-088",
+        "ec5025-b2-064",
+        "ec5025-b1-024",
+        "ec5025-b2-079"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Early Childhood Education (5025) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Reversing the Early-Childhood Phonological Awareness Continuum",
+        "Mistaking Rote Counting and Procedure Recall for Cardinality and Place-Value Reasoning",
+        "Confusing Non-Defining Visual Features with Defining Geometric Attributes"
+      ],
+      "itemIds": [
+        "ec5025-b1-056",
+        "ec5025-b1-002",
+        "ec5025-b1-071",
+        "ec5025-b1-033",
+        "ec5025-b1-086",
+        "ec5025-b1-059",
+        "ec5025-b1-005",
+        "ec5025-b1-074",
+        "ec5025-b1-036",
+        "ec5025-b1-089",
+        "ec5025-b1-062",
+        "ec5025-b1-008",
+        "ec5025-b1-077",
+        "ec5025-b1-039",
+        "ec5025-b1-092",
+        "ec5025-b1-065",
+        "ec5025-b1-011",
+        "ec5025-b1-080",
+        "ec5025-b1-042",
+        "ec5025-b1-095",
+        "ec5025-b1-068",
+        "ec5025-b1-014",
+        "ec5025-b1-083",
+        "ec5025-b1-045",
+        "ec5025-b1-098",
+        "ec5025-b2-057",
+        "ec5025-b1-017",
+        "ec5025-b2-072",
+        "ec5025-b1-048",
+        "ec5025-b2-084",
+        "ec5025-b2-060",
+        "ec5025-b1-020",
+        "ec5025-b2-075",
+        "ec5025-b1-051",
+        "ec5025-b2-087",
+        "ec5025-b2-063",
+        "ec5025-b1-023",
+        "ec5025-b2-078",
+        "ec5025-b1-054",
+        "ec5025-b2-090"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "early-childhood-5025-form-internal-a",
+      "title": "Internal practice form A (Praxis Early Childhood Education (5025))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ec5025-b1-001",
+        "ec5025-b1-070",
+        "ec5025-b1-032",
+        "ec5025-b1-085",
+        "ec5025-b1-058",
+        "ec5025-b1-004",
+        "ec5025-b1-073",
+        "ec5025-b1-035",
+        "ec5025-b1-088",
+        "ec5025-b1-061",
+        "ec5025-b1-007",
+        "ec5025-b1-076",
+        "ec5025-b1-038",
+        "ec5025-b1-091",
+        "ec5025-b1-064",
+        "ec5025-b1-010",
+        "ec5025-b1-079",
+        "ec5025-b1-041",
+        "ec5025-b1-094",
+        "ec5025-b1-067",
+        "ec5025-b1-013",
+        "ec5025-b1-082",
+        "ec5025-b1-044",
+        "ec5025-b1-097",
+        "ec5025-b2-056",
+        "ec5025-b1-016",
+        "ec5025-b2-071",
+        "ec5025-b1-047",
+        "ec5025-b1-100",
+        "ec5025-b2-059",
+        "ec5025-b1-019",
+        "ec5025-b2-074",
+        "ec5025-b1-050",
+        "ec5025-b2-086",
+        "ec5025-b2-062",
+        "ec5025-b1-022",
+        "ec5025-b2-077",
+        "ec5025-b1-053",
+        "ec5025-b2-089",
+        "ec5025-b2-065",
+        "ec5025-b1-025",
+        "ec5025-b2-080",
+        "ec5025-b2-031",
+        "ec5025-b2-092",
+        "ec5025-b2-068",
+        "ec5025-b1-028",
+        "ec5025-b2-083",
+        "ec5025-b2-034",
+        "ec5025-b2-095",
+        "ec5025-b3-057"
+      ],
+      "topicIds": [
+        "ec5025-ch-01",
+        "ec5025-ch-09",
+        "ec5025-ch-04",
+        "ec5025-ch-11",
+        "ec5025-ch-08",
+        "ec5025-ch-06",
+        "ec5025-ch-12",
+        "ec5025-ch-07",
+        "ec5025-ch-02",
+        "ec5025-ch-05",
+        "ec5025-ch-10",
+        "ec5025-ch-03"
+      ],
+      "unitIds": [
+        "language-literacy",
+        "science",
+        "mathematics",
+        "health-physical-arts",
+        "social-studies"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-form-internal-b",
+      "title": "Internal practice form B (Praxis Early Childhood Education (5025))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ec5025-b1-031",
+        "ec5025-b1-084",
+        "ec5025-b1-057",
+        "ec5025-b1-003",
+        "ec5025-b1-072",
+        "ec5025-b1-034",
+        "ec5025-b1-087",
+        "ec5025-b1-060",
+        "ec5025-b1-006",
+        "ec5025-b1-075",
+        "ec5025-b1-037",
+        "ec5025-b1-090",
+        "ec5025-b1-063",
+        "ec5025-b1-009",
+        "ec5025-b1-078",
+        "ec5025-b1-040",
+        "ec5025-b1-093",
+        "ec5025-b1-066",
+        "ec5025-b1-012",
+        "ec5025-b1-081",
+        "ec5025-b1-043",
+        "ec5025-b1-096",
+        "ec5025-b1-069",
+        "ec5025-b1-015",
+        "ec5025-b2-070",
+        "ec5025-b1-046",
+        "ec5025-b1-099",
+        "ec5025-b2-058",
+        "ec5025-b1-018",
+        "ec5025-b2-073",
+        "ec5025-b1-049",
+        "ec5025-b2-085",
+        "ec5025-b2-061",
+        "ec5025-b1-021",
+        "ec5025-b2-076",
+        "ec5025-b1-052",
+        "ec5025-b2-088",
+        "ec5025-b2-064",
+        "ec5025-b1-024",
+        "ec5025-b2-079",
+        "ec5025-b1-055",
+        "ec5025-b2-091",
+        "ec5025-b2-067",
+        "ec5025-b1-027",
+        "ec5025-b2-082",
+        "ec5025-b2-033",
+        "ec5025-b2-094",
+        "ec5025-b3-056",
+        "ec5025-b1-030",
+        "ec5025-b3-071"
+      ],
+      "topicIds": [
+        "ec5025-ch-04",
+        "ec5025-ch-11",
+        "ec5025-ch-07",
+        "ec5025-ch-01",
+        "ec5025-ch-09",
+        "ec5025-ch-06",
+        "ec5025-ch-08",
+        "ec5025-ch-02",
+        "ec5025-ch-12",
+        "ec5025-ch-10",
+        "ec5025-ch-05",
+        "ec5025-ch-03"
+      ],
+      "unitIds": [
+        "mathematics",
+        "health-physical-arts",
+        "social-studies",
+        "language-literacy",
+        "science"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "early-childhood-5025-form-internal-c",
+      "title": "Internal practice form C (Praxis Early Childhood Education (5025))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ec5025-b1-056",
+        "ec5025-b1-002",
+        "ec5025-b1-071",
+        "ec5025-b1-033",
+        "ec5025-b1-086",
+        "ec5025-b1-059",
+        "ec5025-b1-005",
+        "ec5025-b1-074",
+        "ec5025-b1-036",
+        "ec5025-b1-089",
+        "ec5025-b1-062",
+        "ec5025-b1-008",
+        "ec5025-b1-077",
+        "ec5025-b1-039",
+        "ec5025-b1-092",
+        "ec5025-b1-065",
+        "ec5025-b1-011",
+        "ec5025-b1-080",
+        "ec5025-b1-042",
+        "ec5025-b1-095",
+        "ec5025-b1-068",
+        "ec5025-b1-014",
+        "ec5025-b1-083",
+        "ec5025-b1-045",
+        "ec5025-b1-098",
+        "ec5025-b2-057",
+        "ec5025-b1-017",
+        "ec5025-b2-072",
+        "ec5025-b1-048",
+        "ec5025-b2-084",
+        "ec5025-b2-060",
+        "ec5025-b1-020",
+        "ec5025-b2-075",
+        "ec5025-b1-051",
+        "ec5025-b2-087",
+        "ec5025-b2-063",
+        "ec5025-b1-023",
+        "ec5025-b2-078",
+        "ec5025-b1-054",
+        "ec5025-b2-090",
+        "ec5025-b2-066",
+        "ec5025-b1-026",
+        "ec5025-b2-081",
+        "ec5025-b2-032",
+        "ec5025-b2-093",
+        "ec5025-b2-069",
+        "ec5025-b1-029",
+        "ec5025-b3-070",
+        "ec5025-b2-035",
+        "ec5025-b2-096"
+      ],
+      "topicIds": [
+        "ec5025-ch-07",
+        "ec5025-ch-01",
+        "ec5025-ch-09",
+        "ec5025-ch-04",
+        "ec5025-ch-11",
+        "ec5025-ch-08",
+        "ec5025-ch-06",
+        "ec5025-ch-12",
+        "ec5025-ch-02",
+        "ec5025-ch-10",
+        "ec5025-ch-05"
+      ],
+      "unitIds": [
+        "social-studies",
+        "language-literacy",
+        "science",
+        "mathematics",
+        "health-physical-arts"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

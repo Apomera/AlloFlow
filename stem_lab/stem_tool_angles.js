@@ -96,7 +96,10 @@ window.StemLab = window.StemLab || {
       '.allo-ang-dash-flow { animation: allo-ang-dash-flow 1.9s linear infinite; pointer-events: none; }',
       '.theme-contrast .allo-ang-sheen, .theme-contrast .allo-ang-sector-shimmer, .theme-contrast .allo-ang-ray-glow, .theme-contrast .allo-ang-resonance-ring, .theme-contrast .allo-ang-handle-halo, .theme-contrast .allo-ang-dash-flow { animation: none !important; }',
       '.theme-contrast .allo-ang-sheen, .theme-contrast .allo-ang-sector-shimmer, .theme-contrast .allo-ang-ray-glow, .theme-contrast .allo-ang-resonance-ring, .theme-contrast .allo-ang-handle-halo { display: none !important; }',
-      '@media (prefers-reduced-motion: reduce) { .allo-ang-sheen, .allo-ang-sector-shimmer, .allo-ang-ray-glow, .allo-ang-resonance-ring, .allo-ang-handle-halo, .allo-ang-dash-flow { animation: none !important; } .allo-ang-resonance-ring { opacity: 0.3; } }'
+      '@media (prefers-reduced-motion: reduce) { .allo-ang-sheen, .allo-ang-sector-shimmer, .allo-ang-ray-glow, .allo-ang-resonance-ring, .allo-ang-handle-halo, .allo-ang-dash-flow { animation: none !important; } .allo-ang-resonance-ring { opacity: 0.3; } }',
+      '.ang-reduce-motion *, .ang-reduce-motion *::before, .ang-reduce-motion *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
+      '.ang-reduce-motion .allo-ang-sheen, .ang-reduce-motion .allo-ang-sector-shimmer, .ang-reduce-motion .allo-ang-ray-glow, .ang-reduce-motion .allo-ang-resonance-ring, .ang-reduce-motion .allo-ang-handle-halo, .ang-reduce-motion .allo-ang-dash-flow { animation: none !important; }',
+      '.ang-reduce-motion .allo-ang-resonance-ring { opacity: 0.3; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -118,14 +121,26 @@ window.StemLab = window.StemLab || {
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
   // ══════════════════════════════════════════════════════════════
+  function isAnglesGlobalMuted() {
+    var fnMuted = false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function') {
+        fnMuted = !!window.__alloIsGlobalMuted();
+      }
+    } catch (e) { fnMuted = false; }
+    var flagMuted = (typeof window !== 'undefined') && !!window._alloGlobalMute;
+    return fnMuted || flagMuted;
+  }
   var _audioCtx = null;
   function getAudioCtx() {
+    if (isAnglesGlobalMuted()) return null;
     if (!_audioCtx) {
       try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) { /* silent */ }
     }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (isAnglesGlobalMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -960,6 +975,381 @@ window.StemLab = window.StemLab || {
       return { copied: copied, target: con.m, ok: Math.abs(copied - con.m) <= 0.5, firstWidthChanged: Math.abs(s[0].r - s[1].r) > 0.5, widthNotDE: Math.abs(s[2].r - de) > 0.5, de: de };
     }
 
+    // ── Deterministic Offline Angle Coach & Per-Distractor Misconception Diagnosis ──
+    var COACH_FACTS = Object.freeze([
+      'An 8-slice pizza divides a full 360° circle into 45° acute slices.',
+      'Yield signs are equilateral triangles with three 60° interior angles.',
+      'Square building corners use 90° right angles so walls transfer load straight down.',
+      'Honeycomb cells are regular hexagons whose 120° obtuse corners pack space with minimum wax.',
+      'Standard STOP signs are regular octagons with 135° interior angles and 45° exterior turns.',
+      'The Eiffel Tower’s lower legs lean inward at about 54° to brace against wind.',
+      'Earth’s 23.5° axial tilt is an acute angle that creates the changing seasons.',
+      'Fiber-optic cables bend light past water/glass critical angles (~42°–49°) for total internal reflection.'
+    ]);
+    var COACH_BENCHMARKS = Object.freeze([0, 45, 90, 135, 180, 270, 360]);
+    function buildOfflineAngleCoach(angleDeg, cls, comp, supp, misTally) {
+      var raw = Number(angleDeg);
+      var deg = isFinite(raw) ? Math.max(0, Math.min(360, Math.round(raw))) : 45;
+      var canonical = ['Zero', 'Acute', 'Right', 'Obtuse', 'Straight', 'Reflex', 'Full'];
+      var c = (typeof cls === 'string' && canonical.indexOf(cls) !== -1) ? cls : ANG.classify(deg);
+      var compVal = comp === undefined ? (deg <= 90 ? 90 - deg : null) : (comp != null && isFinite(Number(comp)) ? Math.round(Number(comp)) : null);
+      var suppVal = supp === undefined ? (deg <= 180 ? 180 - deg : null) : (supp != null && isFinite(Number(supp)) ? Math.round(Number(supp)) : null);
+      var expVal = 360 - deg;
+      var radPi = ANG.piForm(deg);
+      var nearest = 0, bestDiff = Infinity;
+      for (var bi = 0; bi < COACH_BENCHMARKS.length; bi++) {
+        var bm = COACH_BENCHMARKS[bi], diff = Math.abs(deg - bm);
+        if (diff < bestDiff) { bestDiff = diff; nearest = bm; }
+      }
+      var benchmark;
+      if (c === 'Zero') benchmark = '0° is a zero angle: both rays lie on top of each other with no turn yet.';
+      else if (c === 'Acute') benchmark = deg + '° (' + radPi + ' rad) is acute (between 0° and 90°) — narrower than a 90° square corner, ' + (90 - deg) + '° below a right angle (nearest benchmark: ' + nearest + '°).';
+      else if (c === 'Right') benchmark = '90° (π/2 rad) is a right angle — one exact quarter turn and the key benchmark separating acute from obtuse.';
+      else if (c === 'Obtuse') benchmark = deg + '° (' + radPi + ' rad) is obtuse (between 90° and 180°) — ' + (deg - 90) + '° wider than a right angle and ' + (180 - deg) + '° shy of a straight line (nearest benchmark: ' + nearest + '°).';
+      else if (c === 'Straight') benchmark = '180° (π rad) is a straight angle — an exact half turn forming a straight line.';
+      else if (c === 'Reflex') benchmark = deg + '° (' + radPi + ' rad) is a reflex angle (between 180° and 360°) — ' + (deg - 180) + '° past a straight line, leaving ' + expVal + '° to complete a full turn.';
+      else benchmark = '360° (2π rad) is a full rotation — one complete circle returning to the starting ray.';
+
+      var pairMode, pairNote;
+      if (compVal != null && suppVal != null) {
+        pairMode = 'both';
+        pairNote = 'Complementary partner: 90° − ' + deg + '° = ' + compVal + '° (makes a right angle). Supplementary partner: 180° − ' + deg + '° = ' + suppVal + '° (makes a straight line).';
+      } else if (suppVal != null) {
+        pairMode = 'supp';
+        pairNote = 'No complementary partner (since ' + deg + '° > 90°). Supplementary partner: 180° − ' + deg + '° = ' + suppVal + '° (together they make a 180° straight line).';
+      } else {
+        pairMode = 'explement';
+        pairNote = 'Past 180°, so there is no complementary or supplementary partner; the explement completing a full circle is 360° − ' + deg + '° = ' + expVal + '°.';
+      }
+
+      var oppScale = (deg > 0 && deg < 180 && deg !== 90) ? (180 - deg) : null;
+      var scaleMode, scaleCheck;
+      if (oppScale != null) {
+        scaleMode = 'check';
+        scaleCheck = 'Protractor scale check: the opposite scale reads 180° − ' + deg + '° = ' + oppScale + '°. Since ' + deg + '° is ' + c.toLowerCase() + ' (' + (deg < 90 ? 'narrower' : 'wider') + ' than 90°), start from the 0° on the base ray so you do not misread ' + oppScale + '°.';
+      } else if (deg === 90) {
+        scaleMode = 'right';
+        scaleCheck = 'Protractor scale check: at 90°, both the inner and outer scales meet at the exact same mark — a useful anchor for checking acute vs. obtuse.';
+      } else if (deg === 0 || deg === 180) {
+        scaleMode = 'edge';
+        scaleCheck = 'Protractor scale check: ' + deg + '° sits along the straight baseline, where one scale starts at 0° and the other starts at 180°.';
+      } else {
+        scaleMode = 'reflex';
+        scaleCheck = 'Protractor scale check: a half-circle protractor stops at 180°. Measure the smaller inside opening (' + expVal + '°) and subtract from 360° to verify ' + deg + '°.';
+      }
+
+      var topMisCode = null, topMisCount = 0;
+      if (misTally && typeof misTally === 'object' && !Array.isArray(misTally)) {
+        var keys = Object.keys(misTally).sort();
+        for (var mi = 0; mi < keys.length; mi++) {
+          var mk = keys[mi], mv = Number(misTally[mk]);
+          if (isFinite(mv) && mv > topMisCount) { topMisCount = mv; topMisCode = mk; }
+        }
+      }
+      var remediationKey = 'none', remediation;
+      if (topMisCode === 'wrong_scale' || topMisCode === 'opposite_scale') {
+        remediationKey = 'wrong_scale';
+        remediation = 'Personal focus (' + topMisCount + '× opposite-scale slip): always compare the opening to a 90° square corner first, then count up from the 0° sitting on the base ray.';
+      } else if (topMisCode === 'used_180' || topMisCode === 'used_90' || topMisCode === 'comp_supp_swap' || topMisCode === 'vert_is_supp' || topMisCode === 'linear_is_equal') {
+        remediationKey = 'comp_supp';
+        remediation = 'Personal focus (' + topMisCount + '× 90°/180° pair mix-up): square corner mark = complementary (90°); straight line = supplementary (180°); across a crossing = equal vertical angles.';
+      } else if (topMisCode === 'int_ext_swap' || topMisCode === 'n180' || topMisCode === 'extn_used_180') {
+        remediationKey = 'int_ext';
+        remediation = 'Personal focus (' + topMisCount + '× polygon angle slip): at every polygon corner, interior + exterior = 180°, interior sum is (n − 2) × 180°, and exterior turns always sum to 360°.';
+      } else if (topMisCode === 'vertex_off' || topMisCode === 'wrong_zero') {
+        remediationKey = 'vertex';
+        remediation = 'Personal focus (' + topMisCount + '× alignment slip): place the protractor cross directly on the vertex and line 0° along one ray before reading.';
+      } else if (topMisCode === 'ray_length') {
+        remediationKey = 'ray_length';
+        remediation = 'Personal focus (' + topMisCount + '× ray-length trap): angle size depends only on the turn between the rays, never on how long the rays are drawn.';
+      } else if (topMisCode) {
+        remediationKey = 'general';
+        remediation = 'Personal focus: estimate with 45°, 90°, and 180° benchmarks before checking to catch slip-ups early.';
+      } else {
+        remediationKey = 'none';
+        remediation = 'Next move: test this angle against 90° and 180°, then try locking an estimate before checking in Puzzles or Construct.';
+      }
+
+      var factIndex = (deg + (c === 'Right' ? 2 : c === 'Obtuse' ? 3 : 0)) % COACH_FACTS.length;
+      var fact = COACH_FACTS[factIndex];
+      var tips = [benchmark, pairNote, scaleCheck, remediation];
+      return {
+        angleDeg: deg,
+        cls: c,
+        radPi: radPi,
+        nearestBenchmark: nearest,
+        benchmarkDelta: bestDiff,
+        benchmark: benchmark,
+        comp: compVal,
+        supp: suppVal,
+        explement: expVal,
+        pairMode: pairMode,
+        pairNote: pairNote,
+        oppositeScaleDeg: oppScale,
+        scaleMode: scaleMode,
+        scaleCheck: scaleCheck,
+        topMisCode: topMisCode,
+        topMisCount: topMisCount,
+        remediationKey: remediationKey,
+        remediation: remediation,
+        factIndex: factIndex,
+        fact: fact,
+        tips: tips,
+        summary: tips.join('\n') + '\n\n📐 ' + fact
+      };
+    }
+
+    function diagnoseAngleChoice(kind, target, guess) {
+      var k = String(kind || 'protractor').toLowerCase();
+      var obj = (target && typeof target === 'object' && !Array.isArray(target)) ? target : null;
+      var tol = (obj && isFinite(Number(obj.tol))) ? Math.max(0.5, Number(obj.tol)) : ((k === 'protractor' || k === 'read' || k === 'draw' || k === 'measure' || k === 'scale' || k === 'explore') ? 2 : 1);
+
+      // Categorical construction relationship check ('bisect' | 'copy' with pick string)
+      if ((k === 'bisect' || k === 'copy' || k === 'construct') && typeof guess === 'string' && !/^[+-]?(\d+\.?\d*|\.\d+)\s*°?$/.test(guess.trim())) {
+        var pickStr = guess.trim().toLowerCase();
+        var isCopy = k === 'copy' || (obj && obj.kind === 'copy');
+        var expPick = isCopy ? 'same' : 'half';
+        if (pickStr === expPick) {
+          return { ok: true, code: 'ok', kind: k, expected: expPick, guess: pickStr, whyNot: '', hint: '' };
+        }
+        if (pickStr === 'supp') {
+          return {
+            ok: false, code: 'opposite_scale', kind: k, expected: expPick, guess: pickStr,
+            whyNot: '180° − θ is the supplementary (opposite-scale) angle on a straight line, not the ' + (isCopy ? 'copied' : 'bisected') + ' angle. ' + (isCopy ? 'Copying reproduces the exact opening of ∠ABC.' : 'Bisecting splits ∠ABC into two equal halves.'),
+            hint: 'Compare the interior opening of ∠ABC directly instead of subtracting from 180°.'
+          };
+        }
+        if (pickStr === 'comp') {
+          return {
+            ok: false, code: 'comp_supp_swap', kind: k, expected: expPick, guess: pickStr,
+            whyNot: '90° − θ is the complementary partner that completes a right angle. ' + (isCopy ? 'Copying matches ∠ABC itself, not 90° − ∠ABC.' : 'Bisecting divides ∠ABC by 2, rather than subtracting from 90°.'),
+            hint: isCopy ? 'A copied angle has the exact same measure as the original.' : 'An angle bisector cuts the angle in half (θ ÷ 2).'
+          };
+        }
+        if (!isCopy && pickStr === 'same') {
+          return {
+            ok: false, code: 'whole_not_half', kind: k, expected: expPick, guess: pickStr,
+            whyNot: 'Equal to ∠ABC describes copying an angle; bisecting splits ∠ABC into two equal halves, each half as wide.',
+            hint: 'Check the two smaller angles ∠ABF and ∠FBC formed by the bisector ray.'
+          };
+        }
+        if (isCopy && pickStr === 'half') {
+          return {
+            ok: false, code: 'halved_not_copied', kind: k, expected: expPick, guess: pickStr,
+            whyNot: 'Half of ∠ABC describes bisecting an angle; copying preserves the full chord width DE so ∠D′PE′ equals ∠ABC.',
+            hint: 'Both arcs use the same radius and chord DE so the openings match.'
+          };
+        }
+        return {
+          ok: false, code: 'off', kind: k, expected: expPick, guess: pickStr,
+          whyNot: isCopy ? 'Copying preserves the full opening of ∠ABC.' : 'Bisecting splits ∠ABC into two equal halves.',
+          hint: 'Measure the finished construction with the protractor check to verify.'
+        };
+      }
+
+      var g = ANG.toNum(guess);
+      if (!isFinite(g)) {
+        return {
+          ok: false, code: 'nan', kind: k, expected: obj && isFinite(Number(obj.answer)) ? Number(obj.answer) : (isFinite(Number(target)) ? Number(target) : null),
+          guess: null,
+          whyNot: 'Enter or select a numeric angle measure in degrees before checking.',
+          hint: 'Use a whole number such as 45 or 120.'
+        };
+      }
+
+      // Compute expected numeric value
+      var expected;
+      if (obj && isFinite(Number(obj.answer))) expected = Number(obj.answer);
+      else if (obj && isFinite(Number(obj.expected))) expected = Number(obj.expected);
+      else if (obj && isFinite(Number(obj.n)) && (k === 'poly_ext' || k === 'polygon_exterior')) expected = Math.round(ANG.regExterior(Number(obj.n)) * 10) / 10;
+      else if (obj && isFinite(Number(obj.n)) && (k === 'poly_int' || k === 'polygon_interior' || k === 'polygon')) expected = Math.round(ANG.regInterior(Number(obj.n)) * 10) / 10;
+      else if (k === 'bisect' && isFinite(Number(target))) expected = Number(target) / 2;
+      else expected = isFinite(Number(target)) ? Number(target) : NaN;
+
+      if (!isFinite(expected)) {
+        return { ok: false, code: 'off', kind: k, expected: null, guess: g, whyNot: 'No valid target angle was supplied.', hint: '' };
+      }
+
+      if (Math.abs(g - expected) <= tol) {
+        return { ok: true, code: 'ok', kind: k, expected: expected, guess: g, whyNot: '', hint: '' };
+      }
+
+      // 1. Classic Misconception #2: Complementary vs Supplementary (90° / 180° swap)
+      if (k === 'comp' || k === 'complementary') {
+        var givenC = (obj && isFinite(Number(obj.given))) ? Number(obj.given) : (90 - expected);
+        if (Math.abs(g - (expected + 90)) <= tol || Math.abs(g - (180 - givenC)) <= tol) {
+          return {
+            ok: false, code: 'comp_supp_swap', kind: k, expected: expected, guess: g,
+            whyNot: g + '° is 180° − ' + givenC + '° (the supplementary angle on a straight line), not the complementary angle. Complementary angles fill a 90° right corner: 90° − ' + givenC + '° = ' + expected + '°.',
+            hint: 'Use 90° for complementary pairs and 180° for supplementary pairs.'
+          };
+        }
+        if (Math.abs(givenC - expected) > tol && Math.abs(g - givenC) <= tol) {
+          return {
+            ok: false, code: 'copied_given', kind: k, expected: expected, guess: g,
+            whyNot: g + '° is the angle already given. Subtract it from 90° to find its complementary partner.',
+            hint: 'Compute 90° − ' + givenC + '°.'
+          };
+        }
+      }
+
+      if (k === 'supp' || k === 'supplementary' || k === 'linear') {
+        var givenS = (obj && isFinite(Number(obj.given))) ? Number(obj.given) : (180 - expected);
+        if ((givenS < 90 && Math.abs(g - (90 - givenS)) <= tol) || (expected > 90 && Math.abs(g - (expected - 90)) <= tol)) {
+          return {
+            ok: false, code: 'comp_supp_swap', kind: k, expected: expected, guess: g,
+            whyNot: g + '° uses 90° (complementary) instead of 180° (supplementary). Angles on a straight line add to 180°: 180° − ' + givenS + '° = ' + expected + '°.',
+            hint: 'A straight line is a half turn (180°), twice a right angle.'
+          };
+        }
+        if (Math.abs(givenS - expected) > tol && Math.abs(g - givenS) <= tol) {
+          return {
+            ok: false, code: 'copied_given', kind: k, expected: expected, guess: g,
+            whyNot: g + '° is the given angle itself. Subtract from 180° to find its supplementary partner.',
+            hint: 'Compute 180° − ' + givenS + '°.'
+          };
+        }
+      }
+
+      // 2. Classic Misconception #3: Interior vs Exterior polygon angle confusion
+      if (k === 'poly_int' || k === 'poly_ext' || k === 'polygon_interior' || k === 'polygon_exterior' || k === 'polygon') {
+        var askingExt = (k === 'poly_ext' || k === 'polygon_exterior' || (obj && obj.ask === 'exterior'));
+        var swappedPoly = Math.round((180 - expected) * 10) / 10;
+        if (Math.abs(expected - 90) > tol && Math.abs(g - swappedPoly) <= tol) {
+          return {
+            ok: false, code: 'int_ext_swap', kind: k, expected: expected, guess: g,
+            whyNot: askingExt
+              ? g + '° is the interior angle inside the polygon, not the exterior turn angle. At each vertex, interior + exterior = 180°, so exterior = 180° − ' + g + '° = ' + expected + '°.'
+              : g + '° is the exterior turn angle (360° ÷ n), not the interior angle inside the corner. At each vertex, interior + exterior = 180°, so interior = 180° − ' + g + '° = ' + expected + '°.',
+            hint: 'Remember: interior angle + exterior angle = 180° at every corner.'
+          };
+        }
+        if (expected < 180 && Math.abs(g - Math.abs(90 - swappedPoly)) <= tol && Math.abs(g - expected) > tol) {
+          return {
+            ok: false, code: 'comp_supp_swap', kind: k, expected: expected, guess: g,
+            whyNot: g + '° subtracted from 90° instead of 180°. Polygon interior and exterior angles form a straight line (180°), not a 90° right angle.',
+            hint: 'Subtract from 180°, because an extended polygon side forms a straight line.'
+          };
+        }
+      }
+
+      // 3. Classic Misconception #1: Opposite protractor scale (180° - θ)
+      if (expected > 0 && expected < 180 && Math.abs(expected - 90) > tol && Math.abs(g - (180 - expected)) <= tol) {
+        return {
+          ok: false, code: 'opposite_scale', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is 180° − ' + expected + '° — the reading from the opposite protractor scale. Check against 90°: this opening is ' + (expected < 90 ? 'acute (smaller than 90°)' : 'obtuse (larger than 90°)') + ', so count from the 0° on the base ray.',
+          hint: 'Start from 0° on the base ray and follow that same inner or outer scale.'
+        };
+      }
+
+      // Additional targeted checks (bisect/copy numeric, reflex outside, comp_supp on protractor)
+      if (k === 'bisect' && isFinite(Number(target)) && Math.abs(g - Number(target)) <= tol) {
+        return {
+          ok: false, code: 'whole_not_half', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is the whole angle before bisecting. An angle bisector divides the angle into two equal halves (' + expected + '° each).',
+          hint: 'Divide the full angle by 2.'
+        };
+      }
+      if (k === 'copy' && Math.abs(g - expected / 2) <= tol) {
+        return {
+          ok: false, code: 'halved_not_copied', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is half of the angle (a bisection). Copying an angle keeps the full ' + expected + '° measure.',
+          hint: 'A copied angle equals the original angle.'
+        };
+      }
+      if (expected > 0 && expected < 180 && Math.abs(g - (360 - expected)) <= tol) {
+        return {
+          ok: false, code: 'reflex_outside', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is the reflex angle around the outside (360° − ' + expected + '°), not the interior opening between the rays.',
+          hint: 'Measure the smaller turn inside the two rays.'
+        };
+      }
+      if (expected > 0 && expected < 90 && Math.abs(expected - 45) > tol && Math.abs(g - (90 - expected)) <= tol) {
+        return {
+          ok: false, code: 'comp_supp_swap', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is the complementary partner (90° − ' + expected + '°), not the angle itself.',
+          hint: 'Read the opening directly from 0° on the base ray.'
+        };
+      }
+      if (Math.abs(g - expected) <= 10) {
+        return {
+          ok: false, code: 'close', kind: k, expected: expected, guess: g,
+          whyNot: g + '° is close to ' + expected + '°, off by ' + Math.round(Math.abs(g - expected) * 10) / 10 + '°. Double-check your subtraction or tick count.',
+          hint: 'Re-check the single-degree ticks or arithmetic.'
+        };
+      }
+      return {
+        ok: false, code: 'off', kind: k, expected: expected, guess: g,
+        whyNot: g + '° does not match the target relationship (expected ' + expected + '°). Compare with 90° and 180° benchmarks.',
+        hint: 'Identify the benchmark (90°, 180°, or 360°) before calculating.'
+      };
+    }
+
+    function makeExploreCheck(mode, angleDeg) {
+      var m = (mode === 'comp' || mode === 'poly') ? mode : 'scale';
+      var raw = isFinite(Number(angleDeg)) ? Math.abs(Math.round(Number(angleDeg))) : 45;
+      if (m === 'scale') {
+        var acuteSet = [25, 35, 40, 55, 65, 70, 75, 115, 125, 130, 140, 145];
+        var target = acuteSet[raw % acuteSet.length];
+        var opp = 180 - target;
+        var compAlt = target < 90 ? (90 - target) : (target - 90);
+        var refAlt = 360 - target;
+        var rawOpts = [target, opp, compAlt, refAlt];
+        var uniq = [];
+        for (var si = 0; si < rawOpts.length; si++) { if (uniq.indexOf(rawOpts[si]) === -1) uniq.push(rawOpts[si]); }
+        var rotS = raw % uniq.length;
+        var optsS = uniq.slice(rotS).concat(uniq.slice(0, rotS));
+        return { mode: 'scale', kind: 'protractor', target: target, opp: opp, isAcute: target < 90, choices: optsS, id: 'exp:scale:' + target };
+      }
+      if (m === 'comp') {
+        var pairSet = [
+          { ask: 'comp', given: 28, answer: 62 },
+          { ask: 'supp', given: 55, answer: 125 },
+          { ask: 'comp', given: 34, answer: 56 },
+          { ask: 'supp', given: 42, answer: 138 },
+          { ask: 'comp', given: 18, answer: 72 },
+          { ask: 'supp', given: 65, answer: 115 }
+        ];
+        var item = pairSet[raw % pairSet.length];
+        var swap = item.ask === 'comp' ? (180 - item.given) : (90 - item.given);
+        var extra = item.ask === 'comp' ? (90 + item.given) : (180 - item.answer + 30);
+        var rawC = [item.answer, swap, item.given, extra];
+        var uniqC = [];
+        for (var ci = 0; ci < rawC.length; ci++) { if (uniqC.indexOf(rawC[ci]) === -1) uniqC.push(rawC[ci]); }
+        var rotC = (raw + 1) % uniqC.length;
+        var optsC = uniqC.slice(rotC).concat(uniqC.slice(0, rotC));
+        return { mode: 'comp', kind: item.ask, target: { given: item.given, answer: item.answer }, given: item.given, answer: item.answer, choices: optsC, id: 'exp:' + item.ask + ':' + item.given };
+      }
+      var polySet = [
+        { n: 5, ask: 'interior', ext: 72, answer: 108 },
+        { n: 6, ask: 'exterior', int: 120, answer: 60 },
+        { n: 8, ask: 'interior', ext: 45, answer: 135 },
+        { n: 10, ask: 'exterior', int: 144, answer: 36 },
+        { n: 12, ask: 'interior', ext: 30, answer: 150 },
+        { n: 9, ask: 'exterior', int: 140, answer: 40 }
+      ];
+      var pItem = polySet[raw % polySet.length];
+      var pSwap = 180 - pItem.answer;
+      var pHalf = Math.round(pItem.answer / 2);
+      var pComp = Math.abs(90 - pSwap);
+      var rawP = [pItem.answer, pSwap, pComp > 0 ? pComp : pHalf, pItem.n * 10];
+      var uniqP = [];
+      for (var pi = 0; pi < rawP.length; pi++) { if (uniqP.indexOf(rawP[pi]) === -1) uniqP.push(rawP[pi]); }
+      var rotP = (raw + 2) % uniqP.length;
+      var optsP = uniqP.slice(rotP).concat(uniqP.slice(0, rotP));
+      return {
+        mode: 'poly',
+        kind: pItem.ask === 'exterior' ? 'poly_ext' : 'poly_int',
+        target: { n: pItem.n, ask: pItem.ask, answer: pItem.answer },
+        n: pItem.n,
+        ask: pItem.ask,
+        given: pSwap,
+        answer: pItem.answer,
+        choices: optsP,
+        id: 'exp:poly:' + pItem.n + ':' + pItem.ask
+      };
+    }
+
     var B = {
       seedRng: seedRng, polySum: polySum, regInterior: regInterior, regExterior: regExterior, makePolygon: makePolygon, vertexAngle: vertexAngle,
       isAdjacent: isAdjacent, chordsCross: chordsCross, addDiagonal: addDiagonal, polyRegions: polyRegions, triangulated: triangulated,
@@ -970,12 +1360,15 @@ window.StemLab = window.StemLab || {
       UNIT_KINDS: UNIT_KINDS, makeUnitTask: makeUnitTask, diagnoseUnit: diagnoseUnit,
       clockAngle: clockAngle, clockStatic: clockStatic, COMPASS_PTS: COMPASS_PTS, quadBearing: quadBearing, makeCtxTask: makeCtxTask, diagnoseCtx: diagnoseCtx,
       dist: dist, circleCircle: circleCircle, dirOf: dirOf, CON_W: CON_W, CON_H: CON_H, makeConstruction: makeConstruction, conPoints: conPoints,
-      conDone: conDone, conApply: conApply, conVerify: conVerify
+      conDone: conDone, conApply: conApply, conVerify: conVerify,
+      COACH_FACTS: COACH_FACTS, buildOfflineAngleCoach: buildOfflineAngleCoach, diagnoseAngleChoice: diagnoseAngleChoice, makeExploreCheck: makeExploreCheck
     };
     Object.keys(B).forEach(function(k) { ANG[k] = B[k]; });
   })();
 
+  var AnglesPure = Object.freeze(Object.assign({}, ANG));
   window.StemLab.anglesCore = ANG;
+  if (typeof window !== 'undefined') window.AnglesPure = AnglesPure;
 
 
   // ══════════════════════════════════════════════════════════════
@@ -1023,6 +1416,7 @@ window.StemLab = window.StemLab || {
     icon: '📐', label: 'Angle Explorer',
     desc: 'Measure and construct angles. Classify acute, right, obtuse, and reflex.',
     color: 'purple', category: 'math',
+    _engine: AnglesPure,
     questHooks: [
       { id: 'pin_3_angles', get label() { return __alloT('stem.angles.quest_pin3', 'Save 3 angle measurements'); }, icon: '📍', check: function(d) { return (d.anglePins || []).length >= 3; },
         progress: function(d) { return __anglesFill(__alloT('stem.angles.quest_pins_of', '{k}/{n} pins'), { k: (d.anglePins || []).length, n: 3 }); } },
@@ -1036,11 +1430,11 @@ window.StemLab = window.StemLab || {
       var h = React.createElement;
       // i18n: t(key, English). A host t() that echoes a missing key, returns
       // undefined or throws falls back to the English text.
-      var t = function(k, fb) {
+      var t = (ctx.t && function(k, fb) {
         var v;
         try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; }
         return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v;
-      };
+      }) || function(k, fb) { return fb != null ? fb : k; };
       __anglesLastT = t;
       // Fill {placeholders}; a function replacement keeps "$&" in values literal.
       // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
@@ -1055,8 +1449,9 @@ window.StemLab = window.StemLab || {
       var addToast = ctx.addToast;
       var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
       var celebrate = ctx.celebrate;
-      var isContrast = !!ctx.isContrast;
-      var isDark = !!ctx.isDark || isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var reduceMotion = !!(ctx && ctx.reduceMotion);
       var isTeacher = ctx.isTeacherMode === true;
       // Student AI-off: no window.callGemini alias; AI controls render only when the host says text AI is usable.
       var _anglesAiFn = ctx.callGemini;
@@ -1068,6 +1463,113 @@ window.StemLab = window.StemLab || {
         if (typeof ctx.announceToSR === 'function') { try { ctx.announceToSR(msg); return; } catch (e) { /* fall through */ } }
         var lr = document.getElementById('allo-live-angles');
         if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 40); }
+      };
+      var hasTTS = typeof ctx.callTTS === 'function';
+      var readAloud = function(text) {
+        if (!text) return;
+        if (isAnglesGlobalMuted()) {
+          announce(t('stem.angles.tts_muted', 'Sound is muted. Unmute to hear text read aloud.'));
+          return;
+        }
+        if (typeof ctx.callTTS === 'function' && !isAnglesGlobalMuted()) {
+          try { ctx.callTTS(String(text), undefined, undefined, { force: true }); } catch (e) { /* ignore */ }
+        }
+      };
+      var renderReadAloudBtn = function(text, ariaLabel, key) {
+        if (typeof ctx.callTTS !== 'function' || !text) return null;
+        return h('button', {
+          key: key || undefined,
+          type: 'button',
+          'data-angles-read-aloud': 'true',
+          'aria-label': ariaLabel || t('stem.angles.read_aloud_aria', 'Read this explanation aloud'),
+          onClick: function() { readAloud(text); },
+          style: isContrast ? { minHeight: 36, backgroundColor: '#000000', color: '#ffff00', borderColor: '#ffff00' } : { minHeight: 36 },
+          className: isContrast
+            ? 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border-2 bg-black text-yellow-300 border-yellow-400'
+            : 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border border-violet-700 bg-white text-violet-900 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500'
+        }, t('stem.angles.read_aloud_btn', '🔊 Read aloud'));
+      };
+      var COACH_FACT_LOC = [
+        t('stem.angles.coach_fact_0', 'An 8-slice pizza divides a full 360° circle into 45° acute slices.'),
+        t('stem.angles.coach_fact_1', 'Yield signs are equilateral triangles with three 60° interior angles.'),
+        t('stem.angles.coach_fact_2', 'Square building corners use 90° right angles so walls transfer load straight down.'),
+        t('stem.angles.coach_fact_3', 'Honeycomb cells are regular hexagons whose 120° obtuse corners pack space with minimum wax.'),
+        t('stem.angles.coach_fact_4', 'Standard STOP signs are regular octagons with 135° interior angles and 45° exterior turns.'),
+        t('stem.angles.coach_fact_5', 'The Eiffel Tower’s lower legs lean inward at about 54° to brace against wind.'),
+        t('stem.angles.coach_fact_6', 'Earth’s 23.5° axial tilt is an acute angle that creates the changing seasons.'),
+        t('stem.angles.coach_fact_7', 'Fiber-optic cables bend light past water/glass critical angles (~42°–49°) for total internal reflection.')
+      ];
+      var formatOfflineCoach = function(coach) {
+        var bm = coach.cls === 'Zero' ? t('stem.angles.coach_bm_zero', '0° is a zero angle: both rays lie on top of each other with no turn yet.')
+          : coach.cls === 'Acute' ? fill(t('stem.angles.coach_bm_acute', '{deg}° ({rad} rad) is acute (0°–90°), {diff}° narrower than a 90° right corner (nearest benchmark: {bm}°).'), { deg: coach.angleDeg, rad: coach.radPi, diff: 90 - coach.angleDeg, bm: coach.nearestBenchmark })
+          : coach.cls === 'Right' ? t('stem.angles.coach_bm_right', '90° (π/2 rad) is a right angle — one exact quarter turn separating acute from obtuse.')
+          : coach.cls === 'Obtuse' ? fill(t('stem.angles.coach_bm_obtuse', '{deg}° ({rad} rad) is obtuse (90°–180°), {over}° wider than 90° and {under}° below 180° (nearest benchmark: {bm}°).'), { deg: coach.angleDeg, rad: coach.radPi, over: coach.angleDeg - 90, under: 180 - coach.angleDeg, bm: coach.nearestBenchmark })
+          : coach.cls === 'Straight' ? t('stem.angles.coach_bm_straight', '180° (π rad) is a straight angle — an exact half turn forming a straight line.')
+          : coach.cls === 'Reflex' ? fill(t('stem.angles.coach_bm_reflex', '{deg}° ({rad} rad) is a reflex angle (180°–360°), {over}° past a straight line with {exp}° left to a full turn.'), { deg: coach.angleDeg, rad: coach.radPi, over: coach.angleDeg - 180, exp: coach.explement })
+          : t('stem.angles.coach_bm_full', '360° (2π rad) is a full rotation — one complete circle returning to the start.');
+        var pair = coach.pairMode === 'both'
+          ? fill(t('stem.angles.coach_pairs_both', 'Complement: 90° − {deg}° = {comp}°. Supplement: 180° − {deg}° = {supp}°.'), { deg: coach.angleDeg, comp: coach.comp, supp: coach.supp })
+          : coach.pairMode === 'supp'
+          ? fill(t('stem.angles.coach_pairs_supp', 'No complement (above 90°). Supplement: 180° − {deg}° = {supp}° on a straight line.'), { deg: coach.angleDeg, supp: coach.supp })
+          : fill(t('stem.angles.coach_pairs_explement', 'Past 180° (no complement or supplement). Explement to a full circle: 360° − {deg}° = {exp}°.'), { deg: coach.angleDeg, exp: coach.explement });
+        var scale = coach.scaleMode === 'check'
+          ? fill(t('stem.angles.coach_scale_check', 'Opposite protractor scale reads 180° − {deg}° = {opp}°. Check against 90° and count from the 0° on the base ray so you do not misread {opp}°.'), { deg: coach.angleDeg, opp: coach.oppositeScaleDeg })
+          : coach.scaleMode === 'right'
+          ? t('stem.angles.coach_scale_right', 'At 90°, inner and outer protractor scales meet at the same tick — a reliable benchmark for acute vs. obtuse.')
+          : coach.scaleMode === 'edge'
+          ? fill(t('stem.angles.coach_scale_edge', '{deg}° lies on the straight baseline where one scale starts at 0° and the other at 180°.'), { deg: coach.angleDeg })
+          : fill(t('stem.angles.coach_scale_reflex', 'A half-circle protractor stops at 180°. Measure the smaller inside opening ({exp}°) and subtract from 360° to confirm {deg}°.'), { exp: coach.explement, deg: coach.angleDeg });
+        var rem = coach.remediationKey === 'wrong_scale' ? fill(t('stem.angles.coach_rem_wrong_scale', 'Focus ({n}× opposite-scale slip): compare against a 90° corner first, then count up from 0° on the base ray.'), { n: coach.topMisCount })
+          : coach.remediationKey === 'comp_supp' ? fill(t('stem.angles.coach_rem_comp_supp', 'Focus ({n}× 90°/180° pair mix-up): square corner = 90° (complementary); straight line = 180° (supplementary).'), { n: coach.topMisCount })
+          : coach.remediationKey === 'int_ext' ? fill(t('stem.angles.coach_rem_int_ext', 'Focus ({n}× polygon slip): at every corner, interior + exterior = 180°, and exterior turns sum to 360°.'), { n: coach.topMisCount })
+          : coach.remediationKey === 'vertex' ? fill(t('stem.angles.coach_rem_vertex', 'Focus ({n}× alignment slip): centre the cross on the vertex and line 0° along one ray before reading.'), { n: coach.topMisCount })
+          : coach.remediationKey === 'ray_length' ? fill(t('stem.angles.coach_rem_ray_len', 'Focus ({n}× ray-length trap): angle size depends only on the turn between rays, never ray length.'), { n: coach.topMisCount })
+          : coach.remediationKey === 'general' ? t('stem.angles.coach_rem_general', 'Focus: estimate with 45°, 90°, and 180° benchmarks before checking to spot errors early.')
+          : t('stem.angles.coach_rem_none', 'Next move: compare this opening to 90° and 180°, then commit to a prediction before checking.');
+        var fact = COACH_FACT_LOC[coach.factIndex] || COACH_FACT_LOC[0];
+        return { benchmark: bm, pair: pair, scale: scale, remediation: rem, fact: fact, full: [bm, pair, scale, rem, fact].join(' ') };
+      };
+      var formatWhyNot = function(diag) {
+        if (!diag || diag.ok) return '';
+        if (diag.code === 'opposite_scale') {
+          return typeof diag.guess === 'number' && typeof diag.expected === 'number'
+            ? fill(t('stem.angles.whynot_opposite_scale', 'Why not {g}°? That is 180° − {e}°, the reading on the opposite protractor scale. Check against 90° and count from the 0° on the base ray.'), { g: diag.guess, e: diag.expected })
+            : t('stem.angles.whynot_opposite_scale_rel', 'Why not 180° − θ? That is the supplementary angle on a straight line, not the interior opening produced by this construction.');
+        }
+        if (diag.code === 'comp_supp_swap') {
+          if (diag.kind === 'comp' || diag.kind === 'complementary') {
+            return fill(t('stem.angles.whynot_comp_supp_from_180', 'Why not {g}°? You subtracted from 180° (supplementary) instead of 90° (complementary). A square corner totals 90°.'), { g: diag.guess });
+          }
+          if (diag.kind === 'supp' || diag.kind === 'supplementary' || diag.kind === 'linear') {
+            return fill(t('stem.angles.whynot_comp_supp_from_90', 'Why not {g}°? You used 90° (complementary) instead of 180° (supplementary). A straight line totals 180°.'), { g: diag.guess });
+          }
+          return typeof diag.guess === 'number'
+            ? fill(t('stem.angles.whynot_comp_supp_gen', 'Why not {g}°? That uses the 90° complementary rule instead of the target angle relationship.'), { g: diag.guess })
+            : t('stem.angles.whynot_comp_supp_rel', 'Why not 90° − θ? That computes a complementary partner to 90° rather than bisecting or copying ∠ABC.');
+        }
+        if (diag.code === 'int_ext_swap') {
+          return (diag.kind === 'poly_ext' || diag.kind === 'polygon_exterior')
+            ? fill(t('stem.angles.whynot_int_ext_to_ext', 'Why not {g}°? That is the interior angle inside the polygon, not the exterior turn. At each corner, interior + exterior = 180°.'), { g: diag.guess })
+            : fill(t('stem.angles.whynot_int_ext_to_int', 'Why not {g}°? That is the exterior turn angle (360° ÷ n), not the interior corner angle. At each corner, interior + exterior = 180°.'), { g: diag.guess });
+        }
+        if (diag.code === 'reflex_outside') {
+          return fill(t('stem.angles.whynot_reflex_outside', 'Why not {g}°? That is the reflex angle around the outside (360° − {e}°), not the opening between the rays.'), { g: diag.guess, e: diag.expected });
+        }
+        if (diag.code === 'copied_given') {
+          return fill(t('stem.angles.whynot_copied_given', 'Why not {g}°? That is the angle already given rather than its missing partner.'), { g: diag.guess });
+        }
+        if (diag.code === 'whole_not_half') {
+          return t('stem.angles.whynot_whole_not_half', 'Why not equal to ∠ABC? Equal openings describe copying an angle; bisecting splits ∠ABC into two equal halves.');
+        }
+        if (diag.code === 'halved_not_copied') {
+          return t('stem.angles.whynot_halved_not_copied', 'Why not half of ∠ABC? Half describes a bisector; copying preserves the full chord width so ∠D′PE′ equals ∠ABC.');
+        }
+        if (diag.code === 'close' && typeof diag.guess === 'number') {
+          return fill(t('stem.angles.whynot_close', 'Why not {g}°? That estimate is close, so double-check the benchmark and arithmetic.'), { g: diag.guess });
+        }
+        return typeof diag.guess === 'number'
+          ? fill(t('stem.angles.whynot_off', 'Why not {g}°? Check whether the relationship totals 90°, 180°, or 360° and compare with a right angle.'), { g: diag.guess })
+          : t('stem.angles.whynot_off_rel', 'Check how the compass arcs relate the new angle to ∠ABC.');
       };
 
       // Badges and credits this mounted instance already paid out. Two checks in
@@ -1116,7 +1618,16 @@ window.StemLab = window.StemLab || {
       var speedStateRef = React.useRef({});
       var speedRemainingRef = React.useRef(0);
       React.useEffect(function() {
+        var onMuteChanged = function() {
+          if (isAnglesGlobalMuted()) stopSweep();
+        };
+        if (typeof window !== 'undefined' && window.addEventListener) {
+          window.addEventListener('alloflow-mute-changed', onMuteChanged);
+        }
         return function() {
+          if (typeof window !== 'undefined' && window.removeEventListener) {
+            window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+          }
           stopSweep();
           if (dragRef.current) dragRef.current();
           // A speed round left running kept ticking after the tool closed; pause it.
@@ -1732,10 +2243,19 @@ window.StemLab = window.StemLab || {
         }
       };
 
-      // ── AI Tutor ──
-      // Only offered when the host allows AI and no hidden answer is on screen.
+      // ── AI Tutor / Offline Angle Coach ──
+      // Uses deterministic AnglesPure.buildOfflineAngleCoach offline or on fallback,
+      // and upgrades seamlessly to Gemini when host AI is usable and no hidden answer is on screen.
+      var offlineCoachRaw = AnglesPure.buildOfflineAngleCoach(angleValue, angleClass, complementary, supplementary, misTally);
+      var offlineCoachLoc = formatOfflineCoach(offlineCoachRaw);
+      var offlineCoachText = offlineCoachLoc.benchmark + '\n' + offlineCoachLoc.pair + '\n' + offlineCoachLoc.scale + '\n' + offlineCoachLoc.remediation + '\n\n📐 ' + offlineCoachLoc.fact;
       var askAITutor = function() {
-        if (!callGemini || window.__anglesAiInFlight || hideNumbers || hideClass) return;
+        if (window.__anglesAiInFlight || hideNumbers || hideClass) return;
+        if (!callGemini) {
+          upd({ aiAdvice: offlineCoachText, aiLoading: false });
+          announce(offlineCoachLoc.benchmark);
+          return;
+        }
         window.__anglesAiReqId = (window.__anglesAiReqId || 0) + 1;
         var thisReqId = window.__anglesAiReqId;
         window.__anglesAiInFlight = true;
@@ -1754,12 +2274,12 @@ window.StemLab = window.StemLab || {
             var text = '';
             if (parsed && parsed.tips) parsed.tips.forEach(function(tip, i) { text += (i > 0 ? '\n' : '') + tip; });
             if (parsed && parsed.funFact) text += '\n\n📐 ' + parsed.funFact;
-            upd({ aiAdvice: text || t('stem.angles.ai_fallback', 'Try exploring different angles!'), aiLoading: false });
-          } catch (e) { upd({ aiAdvice: typeof resp === 'string' ? resp : t('stem.angles.ai_fallback', 'Try exploring different angles!'), aiLoading: false }); }
+            upd({ aiAdvice: text || offlineCoachText || t('stem.angles.ai_fallback', 'Try exploring different angles!'), aiLoading: false });
+          } catch (e) { upd({ aiAdvice: (typeof resp === 'string' && resp.trim()) ? resp : offlineCoachText, aiLoading: false }); }
         }).catch(function() {
           if (thisReqId !== window.__anglesAiReqId) return;
           window.__anglesAiInFlight = false;
-          upd({ aiAdvice: t('stem.angles.ai_error', '⚠️ Could not reach the AI tutor. Try again later!'), aiLoading: false });
+          upd({ aiAdvice: offlineCoachText || t('stem.angles.ai_error', '⚠️ Could not reach the AI tutor. Try again later!'), aiLoading: false });
         });
       };
 
@@ -1809,6 +2329,10 @@ window.StemLab = window.StemLab || {
       // soft beat at every 45-degree benchmark passed and a bell at the end.
       var playSweep = function(sweepDeg) {
         stopSweep();
+        if (isAnglesGlobalMuted()) {
+          announce(t('stem.angles.sound_muted', 'Sound is muted. Unmute to hear the angle sweep.'));
+          return;
+        }
         var ac = getAudioCtx();
         if (!ac) { announce(t('stem.angles.sound_unavailable', 'Sound is not available on this device.')); return; }
         var deg = Math.max(0, Math.min(360, Math.abs(sweepDeg)));
@@ -1838,7 +2362,10 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── Palette: SVG colours cannot use CSS vars; pick by theme ──
       // ══════════════════════════════════════════════════════════════
-      var P = isDark ? {
+      var P = isContrast ? {
+        panel: '#000000', ink: '#ffffff', muted: '#e2e8f0', base: '#ffffff', ray: '#ffff00', draw: '#00ff00', hint: '#fbbf24',
+        protFill: 'rgba(0,0,0,0.85)', protStroke: '#00ff00', tick: '#ffffff', inner: '#00ffff', outer: '#ffff00', vertex: '#ffffff', arc: '#ffff00', given: '#fbbf24', unknown: '#00ff00', line: '#ffffff', snap: '#00ff00'
+      } : isDark ? {
         panel: '#0f172a', ink: '#e2e8f0', muted: '#cbd5e1', base: '#e2e8f0', ray: '#c4b5fd', draw: '#5eead4', hint: '#fbbf24',
         protFill: 'rgba(30,64,175,0.42)', protStroke: '#7dd3fc', tick: '#e2e8f0', inner: '#93c5fd', outer: '#fca5a5', vertex: '#f8fafc', arc: '#c4b5fd', given: '#fde68a', unknown: '#f9a8d4', line: '#cbd5e1', snap: '#86efac'
       } : {
@@ -3149,6 +3676,14 @@ window.StemLab = window.StemLab || {
             pzHint >= 2 && h('li', null, pzHintText(pz, 2))
           ),
           resText && h('p', { role: 'status', 'data-angles-pz-result': pzResult.code, className: 'p-2 rounded-lg text-sm font-bold border ' + (pzResult.ok ? 'bg-green-50 text-green-800 border-green-600' : 'bg-amber-50 text-amber-900 border-amber-600') }, resText),
+          resText && renderReadAloudBtn(resText + (pzLocked && pzResult.revealed ? ' ' + pzWorkedFor(pz) : ''), t('stem.angles.read_aloud_pz_aria', 'Read puzzle feedback aloud'), 'tts-pz'),
+          (function() {
+            if (pzLocked || !pzResult || pzResult.ok || pzResult.code === 'nan' || (pz.kind !== 'comp' && pz.kind !== 'supp')) return null;
+            var wnDiag = AnglesPure.diagnoseAngleChoice(pz.kind, { given: pz.a, answer: pz.answer }, pzResult.typed != null ? pzResult.typed : pzAnswer);
+            if (!wnDiag || wnDiag.ok || (wnDiag.code !== 'comp_supp_swap' && wnDiag.code !== 'copied_given')) return null;
+            var wnMsg = formatWhyNot(wnDiag);
+            return wnMsg ? h('p', { 'data-angles-pz-whynot': wnDiag.code, className: isContrast ? 'p-2 rounded-lg text-xs font-semibold border-2 border-yellow-400 bg-black text-white' : 'p-2 rounded-lg text-xs font-semibold border border-amber-300 bg-amber-50 text-amber-950' }, wnMsg) : null;
+          })(),
           // A wrong answer far from the student's own estimate gets a sense check (no numbers).
           (function() {
             if (pzLocked || !pzResult || pzResult.ok || pzResult.code === 'nan' || pzResult.typed !== pzAnswer) return null;
@@ -3196,7 +3731,9 @@ window.StemLab = window.StemLab || {
       // ── Stage B: shared task card (predict, named misconception, a second
       //    try, then a reveal with no credit), used by four new tabs ──
       // ══════════════════════════════════════════════════════════════
-      Object.assign(P, isDark ? {
+      Object.assign(P, isContrast ? {
+        shadeA: 'rgba(255,255,0,0.22)', shadeB: 'rgba(0,255,0,0.22)', ok: '#00ff00', warn: '#fbbf24', compass: '#ffff00', soft: '#ffffff'
+      } : isDark ? {
         shadeA: 'rgba(96,165,250,0.30)', shadeB: 'rgba(196,181,253,0.30)', ok: '#86efac', warn: '#fca5a5', compass: '#fdba74', soft: '#334155'
       } : {
         shadeA: 'rgba(59,130,246,0.16)', shadeB: 'rgba(139,92,246,0.16)', ok: '#15803d', warn: '#b91c1c', compass: '#c2410c', soft: '#cbd5e1'
@@ -3303,6 +3840,14 @@ window.StemLab = window.StemLab || {
           st.hint >= 1 && !locked && h('ul', { className: 'text-sm list-disc ml-5 text-amber-950', 'aria-label': t('stem.angles.a11y_hints', 'Hints') },
             h('li', null, cfg.hintText(task, 1)), st.hint >= 2 && h('li', null, cfg.hintText(task, 2))),
           resText && h('p', { role: 'status', 'data-angles-task-result': res.code, className: resultClass(!!res.ok) }, resText),
+          resText && renderReadAloudBtn(resText + (locked && res.revealed && cfg.solution ? ' ' + cfg.solution(task) : ''), t('stem.angles.read_aloud_task_aria', 'Read question feedback aloud'), 'tts-' + st.pf),
+          (function() {
+            if (locked || !res || res.ok || res.code === 'nan' || st.pf !== 'pgp' || (task.kind !== 'regular' && task.kind !== 'ext')) return null;
+            var pDiag = AnglesPure.diagnoseAngleChoice(task.kind === 'ext' ? 'poly_ext' : 'poly_int', { n: task.n, answer: task.answer }, st.answer);
+            if (!pDiag || pDiag.ok || pDiag.code !== 'int_ext_swap') return null;
+            var pMsg = formatWhyNot(pDiag);
+            return pMsg ? h('p', { 'data-angles-task-whynot': pDiag.code, className: isContrast ? 'p-2 rounded-lg text-xs font-semibold border-2 border-yellow-400 bg-black text-white' : 'p-2 rounded-lg text-xs font-semibold border border-amber-300 bg-amber-50 text-amber-950' }, pMsg) : null;
+          })(),
           res && !res.ok && res.code !== 'nan' && afterTwo(st.pf, st.tries, locked, function() { revealTask(st, cfg); },
             { q: cfg.prompt(task), wrong: st.answer, right: cfg.answerText ? cfg.answerText(task) : String(task.answer), text: taskAiText(st),
               save: function(s) { var o = {}; o[st.pf + 'Ai'] = { id: task.id, text: s }; upd(o); } }),
@@ -3325,6 +3870,7 @@ window.StemLab = window.StemLab || {
                 className: 'text-left px-3 py-2 rounded-lg text-sm border-2 ' + (right ? 'bg-green-100 border-green-700 text-green-900 font-bold' : (s && s.pick === o[0]) ? 'bg-violet-200 border-violet-700 text-violet-950' : 'bg-white border-violet-400 text-violet-950 hover:bg-violet-100') }, o[1]);
             })),
           s && s.msg && h('p', { role: 'status', className: 'mt-1 text-sm font-bold ' + (s.ok ? 'text-green-800' : 'text-amber-900') }, s.msg),
+          s && s.msg && renderReadAloudBtn(s.msg, t('stem.angles.read_aloud_choice_aria', 'Read investigation feedback aloud'), 'tts-ch-' + opts.id),
           s && !s.ok && opts.stateKey && afterTwo(opts.id, s.tries || 0, done, function() { revealChoice(opts.stateKey, s); })
         );
       };
@@ -4736,7 +5282,7 @@ window.StemLab = window.StemLab || {
         announce(last + ' ' + conVerifyText(r.con, v));
       };
       var conUndo = function() { if (!con.steps.length) return; conSave({ con: Object.assign({}, con, { steps: con.steps.slice(0, -1) }), conMsg: null }); announce(t('stem.angles.cn_undone', 'Last step undone.')); };
-      var conNew = function(kind) { var k = kind || conKind; upd({ conKind: k, con: ANG.makeConstruction(k, Math.random), conMsg: null, conTool: 'compass', conCentre: 'B' }); announce(k === 'bisect' ? t('stem.angles.cn_new_b', 'New angle ABC to bisect.') : t('stem.angles.cn_new_c', 'New angle ABC to copy onto the ray from P.')); };
+      var conNew = function(kind) { var k = kind || conKind; upd({ conKind: k, con: ANG.makeConstruction(k, Math.random), conMsg: null, conTool: 'compass', conCentre: 'B', conPred: null }); announce(k === 'bisect' ? t('stem.angles.cn_new_b', 'New angle ABC to bisect.') : t('stem.angles.cn_new_c', 'New angle ABC to copy onto the ray from P.')); };
       var renderConSvg = function() {
         var W = ANG.CON_W, H = ANG.CON_H, kids = [], s = con.steps;
         if (richSvg) kids.push(angDefs('cn'));
@@ -4793,12 +5339,66 @@ window.StemLab = window.StemLab || {
         var msgOk = conMsg && (conMsg.code === 'ok' || conMsg.code === 'verified');
         var msgText = !conMsg ? '' : conMsg.code === 'verified' || conMsg.code === 'verify_off' ? conVerifyText(con, conVer)
           : conMsg.code === 'ok' ? (conStepText(con).slice(-1)[0] || '') : conMsg.code === 'arcs_miss' ? CON_MSG.arcs_miss : (CON_MSG[conMsg.code] || '');
+        var CON_PRED_OPTS = [
+          ['half', t('stem.angles.con_pred_opt_half', 'Half of ∠ABC (θ ÷ 2)')],
+          ['same', t('stem.angles.con_pred_opt_same', 'Equal to ∠ABC (same measure)')],
+          ['supp', t('stem.angles.con_pred_opt_supp', 'Supplementary to ∠ABC (180° − θ)')],
+          ['comp', t('stem.angles.con_pred_opt_comp', 'Complementary to ∠ABC (90° − θ)')]
+        ];
+        var conPredRot = (con.m || 0) % CON_PRED_OPTS.length;
+        var conPredOpts = CON_PRED_OPTS.slice(conPredRot).concat(CON_PRED_OPTS.slice(0, conPredRot));
+        var conPred = plain(d.conPred) && d.conPred.id === con.id && ['half', 'same', 'supp', 'comp'].indexOf(d.conPred.pick) !== -1
+          ? { id: con.id, pick: d.conPred.pick, locked: !!d.conPred.locked } : null;
+        var conPredDiag = (conFinished && conVer && conPred) ? AnglesPure.diagnoseAngleChoice(con.kind, { kind: con.kind, m: con.m }, conPred.pick) : null;
+        var conPredFeedback = conPredDiag
+          ? (conPredDiag.ok
+              ? (con.kind === 'bisect'
+                  ? fill(t('stem.angles.con_pred_ok_bisect', 'Your prediction matched: bisecting ∠ABC ({m}°) yields two equal halves.'), { m: con.m })
+                  : fill(t('stem.angles.con_pred_ok_copy', 'Your prediction matched: copying ∠ABC reproduces the full {m}° opening at P.'), { m: con.m }))
+              : formatWhyNot(conPredDiag))
+          : '';
         return h('div', { className: 'space-y-3', 'data-angles-construct': conKind },
           h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.angles.a11y_con_modes', 'Construction') },
             subModeBtn('bisect', conKind === 'bisect', t('stem.angles.cn_mode_b', '✂️ Bisect an angle'), function() { if (conKind !== 'bisect') conNew('bisect'); }),
             subModeBtn('copy', conKind === 'copy', t('stem.angles.cn_mode_c', '📋 Copy an angle'), function() { if (conKind !== 'copy') conNew('copy'); })),
           h('p', { className: 'text-sm font-bold text-slate-900' }, conKind === 'bisect' ? t('stem.angles.cn_goal_b', 'Goal: cut angle ABC into two equal angles using only a compass and a straightedge (no protractor until the end).')
             : t('stem.angles.cn_goal_c', 'Goal: make an angle at P, on the new ray, exactly equal to angle ABC, using only a compass and a straightedge.')),
+          h('fieldset', {
+            'data-angles-con-predict': conPred && conPred.locked ? 'locked' : 'open',
+            className: isContrast ? 'rounded-lg border-2 border-yellow-400 bg-black p-2.5 space-y-2 text-white' : 'rounded-lg border border-indigo-300 bg-indigo-50 p-2.5 space-y-2 text-slate-900'
+          },
+            h('legend', { className: isContrast ? 'text-xs font-black px-1 text-yellow-300' : 'text-xs font-black px-1 text-indigo-900' }, t('stem.angles.con_pred_title', 'Commit to a relationship before you verify')),
+            h('p', { className: isContrast ? 'text-xs text-white' : 'text-xs text-slate-700' }, t('stem.angles.con_pred_note', 'Optional: select how the constructed angle will relate to ∠ABC and lock it before finishing. It is checked against the protractor measurement once your construction is done.')),
+            h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.angles.con_pred_choices_aria', 'Predicted angle relationship') },
+              conPredOpts.map(function(opt) {
+                var selected = !!(conPred && conPred.pick === opt[0]);
+                var disabled = conFinished || !!(conPred && conPred.locked);
+                return h('button', {
+                  key: opt[0], type: 'button', disabled: disabled,
+                  'aria-pressed': selected ? 'true' : 'false',
+                  onClick: function() { conSave({ conPred: { id: con.id, pick: opt[0], locked: false } }); },
+                  style: { minHeight: 40 },
+                  className: isContrast
+                    ? ('px-3 py-1.5 rounded-lg text-xs font-bold border-2 ' + (selected ? 'bg-black text-yellow-300 border-yellow-400' : 'bg-black text-white border-white'))
+                    : ('px-3 py-1.5 rounded-lg text-xs font-bold border-2 ' + (selected ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-900 border-slate-500 hover:bg-indigo-100'))
+                }, opt[1]);
+              })
+            ),
+            !conFinished && conPred && !conPred.locked && h('button', {
+              type: 'button', 'data-angles-con-pred-lock': 'true',
+              onClick: function() {
+                conSave({ conPred: { id: con.id, pick: conPred.pick, locked: true } });
+                announce(t('stem.angles.con_pred_locked', 'Choice locked. Complete the construction to compare it with the protractor check.'));
+              },
+              style: { minHeight: 36 },
+              className: isContrast ? 'px-3 py-1.5 rounded-lg text-xs font-bold border-2 bg-black text-yellow-300 border-yellow-400' : 'px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800'
+            }, t('stem.angles.con_pred_lock_btn', 'Lock commitment')),
+            !conFinished && conPred && conPred.locked && h('p', { role: 'status', className: isContrast ? 'text-xs font-bold text-yellow-300' : 'text-xs font-bold text-indigo-900' }, t('stem.angles.con_pred_locked', 'Choice locked. Complete the construction to compare it with the protractor check.')),
+            conPredDiag && conPredFeedback && h('div', { className: 'space-y-1.5' },
+              h('p', { role: 'status', 'data-angles-con-pred-result': conPredDiag.code, className: isContrast ? 'p-2 rounded-lg text-xs font-bold border-2 border-yellow-400 bg-black text-white' : resultClass(!!conPredDiag.ok) }, conPredFeedback),
+              renderReadAloudBtn(conPredFeedback, t('stem.angles.read_aloud_con_pred_aria', 'Read construction prediction feedback aloud'), 'tts-con-pred')
+            )
+          ),
           showGuide ? h('ol', { className: 'list-decimal ml-5 text-sm text-sky-950 rounded-lg border border-sky-300 bg-sky-50 p-2 pl-6 space-y-0.5', 'data-angles-con-guide': 'full' },
               CON_GUIDE.map(function(g, i) { return h('li', { key: i, className: i === guideIdx && !conFinished ? 'font-bold' : '' }, g); }))
             : h('div', { className: 'flex flex-wrap gap-2 items-center' },
@@ -4832,6 +5432,7 @@ window.StemLab = window.StemLab || {
                 ptSelect('stem-angles-con-mb', t('stem.angles.cn_seg_to', 'to point'), conMb, function(v) { conSave({ conMb: v }); }),
                 h('button', { type: 'button', disabled: conMa === conMb, onClick: function() { var w = Math.round(ANG.dist(conPts[conMa], conPts[conMb]) * 100) / 100; conSave({ conW: Math.max(10, Math.min(220, w)) }); announce(fill(t('stem.angles.cn_set_sr', 'Compass opened to {a}{b}: width {w}.'), { a: PTN[conMa], b: PTN[conMb], w: fmt1(w) })); }, style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg text-xs font-bold border border-orange-700 bg-white text-orange-900 disabled:opacity-50' }, t('stem.angles.cn_set_width', 'Set the width'))))),
           msgText && h('p', { role: 'status', 'data-angles-con-msg': conMsg.code, className: resultClass(!!msgOk) }, msgText),
+          msgText && renderReadAloudBtn(msgText, t('stem.angles.read_aloud_con_aria', 'Read construction feedback aloud'), 'tts-con'),
           h('div', { className: 'flex flex-wrap gap-2' },
             h('button', { type: 'button', onClick: conUndo, disabled: !con.steps.length || (conVer && conVer.ok), style: { minHeight: 44 }, className: 'px-3 py-2 rounded-lg text-sm font-bold border border-slate-600 bg-white text-slate-900 disabled:opacity-50' }, t('stem.angles.cn_undo', '↶ Undo last step')),
             h('button', { type: 'button', onClick: function() { conNew(); }, style: { minHeight: 44 }, className: 'px-4 py-2 rounded-lg text-sm font-bold bg-slate-800 text-white hover:bg-slate-900' }, t('stem.angles.cn_new', '➡ New angle')),
@@ -5219,7 +5820,7 @@ window.StemLab = window.StemLab || {
 
       var buildMainView = function(libraryNode) {
         var hideRead = hideNumbers;
-        return h('div', { 'data-angles-root': 'true', className: 'space-y-3 max-w-5xl mx-auto animate-in fade-in duration-200' },
+        return h('div', { 'data-angles-root': 'true', 'data-reduce-motion': reduceMotion ? 'true' : undefined, className: reduceMotion ? 'space-y-3 max-w-5xl mx-auto ang-reduce-motion' : 'space-y-3 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
         h('section', { 'data-protractor-command': 'true', className: 'ang-hero-deck' },
@@ -5227,7 +5828,7 @@ window.StemLab = window.StemLab || {
           // pin count show on Explore only; elsewhere that angle was a decoy answer.
           h('div', { className: 'px-3 py-2.5 sm:px-4' },
             h('div', { className: 'flex flex-wrap items-center gap-x-3 gap-y-2' },
-              h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, style: { minHeight: 44, minWidth: 44 }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+              !ctx.embedded && h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, style: { minHeight: 44, minWidth: 44 }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
               h('svg', { width: 42, height: 42, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
                 h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(196,181,253,0.55)', strokeWidth: 1.5 }),
                 h('path', { className: richSvg ? 'allo-ang-sheen' : undefined, d: 'M12 46 A20 20 0 0 1 52 46 Z', fill: isContrast ? '#000000' : 'rgba(167,139,250,0.22)', stroke: isContrast ? '#ffffff' : '#c4b5fd', strokeWidth: 2 }),
@@ -5298,8 +5899,8 @@ window.StemLab = window.StemLab || {
           return h('div', {
             style: {
               margin: '0 0 12px', padding: '12px 14px', borderRadius: 12,
-              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-              border: '1px solid ' + meta.accent + '55', borderLeft: '4px solid ' + meta.accent,
+              background: isContrast ? '#000000' : 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: isContrast ? '2px solid #ffff00' : '1px solid ' + meta.accent + '55', borderLeft: isContrast ? '4px solid #fbbf24' : '4px solid ' + meta.accent,
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
             }
           },
@@ -5463,16 +6064,128 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          // ── AI Tutor (host AI allowed, nothing hidden on screen) ──
-          callGemini && !hideRead && !hideClass && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
-            h('div', { className: 'flex items-center gap-2 mb-1.5' },
-              h('span', { className: 'text-[0.6875rem] font-bold text-pink-700 uppercase' }, t('stem.angles.ai_angle_tutor', '🤖 AI Angle Tutor')),
-              h('button', { type: 'button', 'aria-label': t('stem.angles.a11y_ask_ai', 'Ask the AI tutor for angle tips'), onClick: askAITutor, disabled: aiLoading, style: { minHeight: 32 }, className: 'ml-auto px-3 py-1 text-[0.6875rem] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
+          // ── Predict-Before-Check Quick Misconception Check (Explore tab only, spoiler-free before commit) ──
+          !hideRead && !hideClass && (function() {
+            var expPredMode = (d.expPredMode === 'comp' || d.expPredMode === 'poly') ? d.expPredMode : 'scale';
+            var expCheck = AnglesPure.makeExploreCheck(expPredMode, angleValue);
+            var expPred = plain(d.expPred) && d.expPred.id === expCheck.id && typeof d.expPred.pick === 'number' && isFinite(d.expPred.pick)
+              ? { id: expCheck.id, pick: d.expPred.pick, checked: !!d.expPred.checked } : null;
+            var expDiag = (expPred && expPred.checked) ? AnglesPure.diagnoseAngleChoice(expCheck.kind, expCheck.target, expPred.pick) : null;
+            var expQ = expCheck.mode === 'scale'
+              ? (expCheck.isAcute
+                  ? fill(t('stem.angles.exp_pred_q_scale_acute', 'A ray crosses a protractor at {a}° on one scale and {b}° on the other. The opening is narrower than a 90° square corner. Commit to the true measure:'), { a: Math.min(expCheck.target, expCheck.opp), b: Math.max(expCheck.target, expCheck.opp) })
+                  : fill(t('stem.angles.exp_pred_q_scale_obtuse', 'A ray crosses a protractor at {a}° on one scale and {b}° on the other. The opening is wider than a 90° square corner. Commit to the true measure:'), { a: Math.min(expCheck.target, expCheck.opp), b: Math.max(expCheck.target, expCheck.opp) }))
+              : expCheck.mode === 'comp'
+              ? (expCheck.kind === 'comp'
+                  ? fill(t('stem.angles.exp_pred_q_comp', 'Two angles form a 90° right corner. One measures {g}°. Commit to its complementary partner:'), { g: expCheck.given })
+                  : fill(t('stem.angles.exp_pred_q_supp', 'Two angles sit on a 180° straight line. One measures {g}°. Commit to its supplementary partner:'), { g: expCheck.given }))
+              : (expCheck.ask === 'exterior'
+                  ? fill(t('stem.angles.exp_pred_q_poly_ext', 'A regular {n}-gon has interior corners of {g}° each. Commit to each exterior turn angle:'), { n: expCheck.n, g: expCheck.given })
+                  : fill(t('stem.angles.exp_pred_q_poly_int', 'A regular {n}-gon has exterior turn angles of {g}° each. Commit to each interior corner angle:'), { n: expCheck.n, g: expCheck.given }));
+            var expFbText = expDiag
+              ? (expDiag.ok
+                  ? fill(t('stem.angles.exp_pred_ok', 'Spot on! {e}° matches the geometric rule.'), { e: expDiag.expected })
+                  : formatWhyNot(expDiag))
+              : '';
+            return h('fieldset', {
+              'data-angles-explore-predict': expPred && expPred.checked ? 'checked' : 'open',
+              className: isContrast ? 'rounded-xl p-3 border-2 border-yellow-400 bg-black text-white space-y-2' : 'rounded-xl p-3 border border-indigo-200 bg-indigo-50 text-slate-900 space-y-2'
+            },
+              h('legend', { className: isContrast ? 'text-xs font-black uppercase px-1 text-yellow-300' : 'text-xs font-black uppercase px-1 text-indigo-900' }, t('stem.angles.exp_pred_title', '🎯 Commit & Check: Classic Angle Traps')),
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.angles.exp_pred_modes_aria', 'Diagnostic trap category') },
+                [
+                  ['scale', t('stem.angles.exp_pred_mode_scale', 'Protractor scale (180° − θ)')],
+                  ['comp', t('stem.angles.exp_pred_mode_comp', '90° vs 180° pairs')],
+                  ['poly', t('stem.angles.exp_pred_mode_poly', 'Polygon int vs ext')]
+                ].map(function(m) {
+                  var active = expPredMode === m[0];
+                  return h('button', {
+                    key: m[0], type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() { upd({ expPredMode: m[0], expPred: null }); },
+                    style: { minHeight: 34 },
+                    className: isContrast
+                      ? ('px-2.5 py-1 rounded-lg text-xs font-bold border-2 ' + (active ? 'bg-black text-yellow-300 border-yellow-400' : 'bg-black text-white border-white'))
+                      : ('px-2.5 py-1 rounded-lg text-xs font-bold border ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-900 border-indigo-500 hover:bg-indigo-100'))
+                  }, m[1]);
+                })
+              ),
+              h('p', { className: isContrast ? 'text-xs font-semibold text-white' : 'text-xs font-semibold text-slate-900' }, expQ),
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.angles.exp_pred_choices_aria', 'Angle prediction choices') },
+                expCheck.choices.map(function(val) {
+                  var picked = !!(expPred && expPred.pick === val);
+                  var isRight = !!(expDiag && expDiag.ok && val === expDiag.expected);
+                  return h('button', {
+                    key: String(val), type: 'button',
+                    disabled: !!(expPred && expPred.checked),
+                    'aria-pressed': picked ? 'true' : 'false',
+                    onClick: function() { upd({ expPred: { id: expCheck.id, pick: val, checked: false } }); },
+                    style: { minHeight: 36, minWidth: 52 },
+                    className: isContrast
+                      ? ('px-3 py-1 rounded-lg text-xs font-bold border-2 ' + (picked ? 'bg-black text-yellow-300 border-yellow-400' : 'bg-black text-white border-white'))
+                      : ('px-3 py-1 rounded-lg text-xs font-bold border-2 ' + (isRight ? 'bg-green-100 border-green-700 text-green-900' : picked ? 'bg-indigo-700 border-indigo-700 text-white' : 'bg-white border-slate-500 text-slate-900 hover:bg-indigo-100'))
+                  }, val + '°');
+                })
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                !expDiag && h('button', {
+                  type: 'button',
+                  'data-angles-exp-pred-check': 'true',
+                  disabled: !expPred,
+                  onClick: function() {
+                    if (!expPred) return;
+                    var resD = AnglesPure.diagnoseAngleChoice(expCheck.kind, expCheck.target, expPred.pick);
+                    upd({ expPred: { id: expCheck.id, pick: expPred.pick, checked: true } });
+                    if (resD.ok) { if (soundEnabled) sfxCorrect(); announce(fill(t('stem.angles.exp_pred_ok', 'Spot on! {e}° matches the geometric rule.'), { e: resD.expected })); }
+                    else { if (soundEnabled) sfxWrong(); announce(formatWhyNot(resD)); }
+                  },
+                  style: { minHeight: 36 },
+                  className: isContrast
+                    ? 'px-3 py-1 rounded-lg text-xs font-bold border-2 bg-black text-yellow-300 border-yellow-400 disabled:opacity-50'
+                    : 'px-3 py-1 rounded-lg text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800 disabled:opacity-50'
+                }, t('stem.angles.exp_pred_check_btn', '✔ Check prediction')),
+                expDiag && h('button', {
+                  type: 'button',
+                  onClick: function() { upd({ expPred: null }); },
+                  style: { minHeight: 36 },
+                  className: isContrast
+                    ? 'px-3 py-1 rounded-lg text-xs font-bold border-2 bg-black text-white border-white'
+                    : 'px-3 py-1 rounded-lg text-xs font-bold border border-indigo-600 bg-white text-indigo-900 hover:bg-indigo-100'
+                }, t('stem.angles.exp_pred_reset_btn', '↺ Try again'))
+              ),
+              expDiag && expFbText && h('div', { className: 'space-y-1.5' },
+                h('p', {
+                  role: 'status',
+                  'data-angles-exp-pred-result': expDiag.code,
+                  className: isContrast
+                    ? 'p-2 rounded-lg text-xs font-bold border-2 border-yellow-400 bg-black text-white'
+                    : ('p-2 rounded-lg text-xs font-bold border ' + (expDiag.ok ? 'bg-green-50 text-green-900 border-green-600' : 'bg-amber-50 text-amber-950 border-amber-600'))
+                }, expFbText),
+                renderReadAloudBtn(expFbText, t('stem.angles.read_aloud_exp_pred_aria', 'Read prediction diagnosis aloud'), 'tts-exp-pred')
+              )
+            );
+          })(),
+
+          // ── Angle Coach (deterministic offline coach always available; seamlessly upgrades to Gemini when usable) ──
+          !hideRead && !hideClass && h('div', {
+            'data-angles-offline-coach': 'true',
+            style: isContrast ? { backgroundColor: '#000000', color: '#ffffff', borderColor: '#ffff00' } : undefined,
+            className: isContrast ? 'bg-black text-white rounded-xl p-3 border-2 border-yellow-400 space-y-2' : 'bg-pink-50 text-slate-900 rounded-xl p-3 border border-pink-200 space-y-2'
+          },
+            h('div', { className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { className: isContrast ? 'text-[0.6875rem] font-bold text-yellow-300 uppercase' : 'text-[0.6875rem] font-bold text-pink-900 uppercase' },
+                callGemini ? t('stem.angles.ai_angle_tutor', '🤖 AI Angle Tutor') : t('stem.angles.coach_offline_title', '📐 Angle Coach')),
+              renderReadAloudBtn(aiAdvice || offlineCoachLoc.full, t('stem.angles.read_aloud_coach_aria', 'Read angle coach explanation aloud'), 'tts-coach'),
+              callGemini && h('button', { type: 'button', 'aria-label': t('stem.angles.a11y_ask_ai', 'Ask the AI tutor for angle tips'), onClick: askAITutor, disabled: aiLoading, style: { minHeight: 32 }, className: 'ml-auto px-3 py-1 text-[0.6875rem] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-800 cursor-pointer') },
                 aiLoading ? t('stem.angles.ai_thinking', '⏳ Thinking...') : t('stem.angles.ai_ask', '✨ Ask for Tips'))
             ),
-            aiAdvice
-              ? h('div', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, aiAdvice)
-              : h('div', { className: 'text-xs text-pink-700' }, t('stem.angles.click_to_get_personalized_angle_tips_2', 'Click to get personalized angle tips!'))
+            h('ul', { className: isContrast ? 'text-xs text-white space-y-1 list-disc ml-4' : 'text-xs text-slate-800 space-y-1 list-disc ml-4' },
+              h('li', null, offlineCoachLoc.benchmark),
+              h('li', null, offlineCoachLoc.pair),
+              h('li', null, offlineCoachLoc.scale),
+              h('li', null, offlineCoachLoc.remediation),
+              h('li', null, offlineCoachLoc.fact)
+            ),
+            aiAdvice && h('div', { className: isContrast ? 'text-xs text-yellow-300 leading-relaxed whitespace-pre-line pt-1 border-t border-yellow-400' : 'text-xs text-pink-950 leading-relaxed whitespace-pre-line pt-1 border-t border-pink-200' }, aiAdvice)
           )
         ),
 
@@ -5481,7 +6194,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'challenges' && h('div', { className: 'space-y-3' },
           h('div', { className: 'flex items-center gap-2 text-[0.6875rem] flex-wrap' },
-            h('span', { className: 'text-slate-700' + (ctx.isContrast ? ' text-white' : '') }, t('stem.angles.difficulty', 'Difficulty:')),
+            h('span', { className: isContrast ? 'text-white' : 'text-slate-700' }, t('stem.angles.difficulty', 'Difficulty:')),
             h('span', { className: 'font-bold ' + (tolerance <= 2 ? 'text-red-700' : tolerance <= 3 ? 'text-orange-700' : 'text-green-700') },
               tolerance <= 2 ? fill(t('stem.angles.diff_expert', '🔥 Expert (±{n}°)'), { n: tolerance }) : tolerance <= 3 ? fill(t('stem.angles.diff_medium', '⚡ Medium (±{n}°)'), { n: tolerance }) : fill(t('stem.angles.diff_easy', '🌿 Easy (±{n}°)'), { n: tolerance })
             ),
@@ -5519,7 +6232,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Speed Round UI ──
-          speedActive && h('div', { className: 'bg-red-50 rounded-xl p-4 border-2 border-red-300 animate-in fade-in' },
+          speedActive && h('div', { className: 'bg-red-50 rounded-xl p-4 border-2 border-red-300' + (reduceMotion ? '' : ' animate-in fade-in') },
             h('div', { className: 'flex items-center justify-between mb-3' },
               h('div', { className: 'text-sm font-bold text-red-700' }, t('stem.angles.speed_round_3', '⚡ Speed Round')),
               h('div', { className: 'flex gap-3 items-center' },
@@ -5761,7 +6474,8 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-sm font-bold text-' + rel.color + '-700', style: { overflowWrap: 'anywhere' } }, rel.name)
                   ),
                   h('div', { className: 'text-[0.6875rem] text-' + rel.color + '-700 mb-1' }, rel.desc),
-                  h('div', { className: 'text-[0.6875rem] text-' + rel.color + '-700 font-mono' }, rel.example)
+                  h('div', { className: 'text-[0.6875rem] text-' + rel.color + '-700 font-mono' }, rel.example),
+                  hasTTS && h('div', { className: 'mt-1.5' }, renderReadAloudBtn(rel.name + '. ' + rel.desc + '. ' + rel.example, fill(t('stem.angles.read_aloud_rel_aria', 'Read {name} angle relationship aloud'), { name: rel.name }), 'tts-rel-' + rel.color))
                 );
               })
             )
@@ -5828,7 +6542,14 @@ window.StemLab = window.StemLab || {
               )
             ),
             h('div', { className: 'mt-2 text-[0.6875rem] text-violet-700 text-center' },
-              fill(t('stem.angles.poly_formula', 'Formula: interior = (n − 2) × 180° ÷ n, where n = {n}'), { n: selectedPolygon }))
+              fill(t('stem.angles.poly_formula', 'Formula: interior = (n − 2) × 180° ÷ n, where n = {n}'), { n: selectedPolygon })),
+            hasTTS && h('div', { className: 'mt-2 flex justify-center' },
+              renderReadAloudBtn(
+                (POLY_NAME[selectedPolygon] || '') + '. ' + t('stem.angles.interior_angle', 'Interior Angle') + ': ' + polyInterior(selectedPolygon).toFixed(1) + '°. ' + t('stem.angles.exterior_angle', 'Exterior Angle') + ': ' + polyExterior(selectedPolygon).toFixed(1) + '°. ' + t('stem.angles.angle_sum', 'Angle Sum') + ': ' + polyAngleSum(selectedPolygon) + '°.',
+                t('stem.angles.read_aloud_poly_ref_aria', 'Read selected polygon angles aloud'),
+                'tts-poly-ref'
+              )
+            )
           ),
           libraryNode
         ),
@@ -5882,7 +6603,13 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        h('div', { 'data-angles-coach': 'true', style: isContrast ? { backgroundImage: 'none', backgroundColor: '#000000' } : undefined, className: 'bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800 leading-relaxed' },
+        h('div', {
+          'data-angles-coach': 'true',
+          style: isContrast ? { backgroundImage: 'none', backgroundColor: '#000000' } : undefined,
+          className: isContrast
+            ? 'bg-black text-white rounded-lg p-3 border-2 border-yellow-400 text-xs leading-relaxed'
+            : 'bg-gradient-to-r from-purple-50 to-violet-50 rounded-lg p-3 border border-purple-100 text-xs text-purple-800 leading-relaxed'
+        },
           streak >= 10 ? fill(t('stem.angles.coach_streak10', '🔥 Incredible {n}-streak! You’re an angle genius!'), { n: streak })
             : streak >= 5 ? fill(t('stem.angles.coach_streak5', '⚡ {n} in a row! Keep the streak alive!'), { n: streak })
             : exploreScore.total === 0 && pathNext ? fill(t('stem.angles.coach_welcome_path', '📐 Welcome! Start with the next step on your path: {step}.'), { step: pathNext.label })
@@ -6032,12 +6759,19 @@ window.StemLab = window.StemLab || {
       ];
 
       function expHeader() {
-        return h('div', { 'data-angles-ref-head': 'true', style: isContrast ? { backgroundImage: 'none', backgroundColor: '#000000' } : undefined, className: 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200' },
+        return h('div', {
+          'data-angles-ref-head': 'true',
+          style: isContrast ? { backgroundImage: 'none', backgroundColor: '#000000' } : undefined,
+          className: isContrast
+            ? 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-black text-white border-2 border-yellow-400'
+            : 'mt-6 mb-2 flex items-center justify-between flex-wrap gap-2 p-3 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-200'
+        },
           h('div', null,
-            h('h3', { className: 'text-base font-black text-rose-900' }, t('stem.angles.angles_reference_library', '\uD83D\uDCD0 Angles Reference Library')),
-            h('div', { className: 'text-[0.6875rem] text-rose-700 mt-0.5' }, t('stem.angles.interactive_geometry_references_pick_a', 'Interactive geometry references \u2014 pick a topic.'))
+            h('h3', { className: isContrast ? 'text-base font-black text-white' : 'text-base font-black text-rose-900' }, t('stem.angles.angles_reference_library', '\uD83D\uDCD0 Angles Reference Library')),
+            h('div', { className: isContrast ? 'text-[0.6875rem] text-yellow-300 mt-0.5' : 'text-[0.6875rem] text-rose-700 mt-0.5' }, t('stem.angles.interactive_geometry_references_pick_a', 'Interactive geometry references \u2014 pick a topic.'))
           ),
           expSection && h('button', {
+            type: 'button',
             onClick: function() { setExp({ expSection: null }); },
             className: 'px-3 py-1 rounded-md text-xs font-bold bg-white border border-rose-300 text-rose-700 hover:bg-rose-100'
           }, t('stem.angles.close_section', '\u2715 Close section'))
@@ -6124,7 +6858,7 @@ window.StemLab = window.StemLab || {
             // button. Without this guard `g.tabs.map` threw "Cannot read properties of undefined
             // (reading 'map')" and crashed the whole protractor tool on render.
             if (!g.tabs) return renderBtn(g, g.color || 'slate');
-            return h('div', { key: g.id, role: 'group', 'aria-label': g.label + ' tabs', className: 'flex items-center gap-2 flex-wrap' },
+            return h('div', { key: g.id, role: 'group', 'aria-label': fill(t('stem.angles.ref_group_tabs', '{label} tabs'), { label: g.label }), className: 'flex items-center gap-2 flex-wrap' },
               h('span', { 'aria-hidden': 'true', className: 'text-[0.625rem] font-extrabold tracking-widest uppercase text-' + g.color + '-700 min-w-[120px] text-right pr-1 border-r border-' + g.color + '-200 shrink-0' }, g.label),
               g.tabs.map(function(s) { return renderBtn(s, g.color); })
             );
@@ -6138,10 +6872,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-2' },
             ANGLE_TYPES.map(function(a, i) {
               return h('div', { key: 'a'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'flex items-baseline gap-2 mb-1' },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
                   h('span', { className: 'text-xl text-rose-600 font-mono' }, a.icon),
                   h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, a.name),
-                  h('span', { className: 'text-[0.6875rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono' }, a.range)
+                  h('span', { className: 'text-[0.6875rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-mono' }, a.range),
+                  renderReadAloudBtn(a.name + ', ' + a.range + '. ' + a.desc, fill(t('stem.angles.read_aloud_type_aria', 'Read {name} angle definition aloud'), { name: a.name }), 'tts-type-' + i)
                 ),
                 h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, a.desc)
               );
@@ -6158,7 +6893,8 @@ window.StemLab = window.StemLab || {
               return h('div', { key: 'r'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
                   h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, r.name),
-                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, r.condition)
+                  h('span', { className: 'text-[0.625rem] font-bold ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, r.condition),
+                  renderReadAloudBtn(r.name + '. ' + r.condition + '. ' + r.example + '. ' + r.visual, fill(t('stem.angles.read_aloud_pair_aria', 'Read {name} pair rule aloud'), { name: r.name }), 'tts-pair-' + i)
                 ),
                 h('div', { className: 'text-[0.6875rem] text-slate-700 mb-0.5' }, h('strong', null, t('stem.angles.lib_example', 'Example: ')), r.example),
                 h('div', { className: 'text-[0.6875rem] text-slate-600 italic' }, r.visual)
@@ -6203,14 +6939,14 @@ window.StemLab = window.StemLab || {
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.sin_trigonometric_functions', 'sin Trigonometric functions')),
           h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' }, t('stem.angles.soh_cah_toa_sine_opp_hyp_cosine_adj_hy', 'SOH-CAH-TOA: Sine = Opp/Hyp, Cosine = Adj/Hyp, Tangent = Opp/Adj. The trig functions express ratios of right-triangle sides; extended to all angles via the unit circle.')),
           h('div', { className: 'space-y-2' },
-            TRIG_REF.map(function(t, i) {
+            TRIG_REF.map(function(tr, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
                 h('div', { className: 'flex items-baseline gap-2 mb-1' },
-                  h('span', { className: 'text-base font-black text-rose-700 font-mono min-w-[48px]' }, t.fn),
-                  h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, t.mnemonic),
-                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, t.range)
+                  h('span', { className: 'text-base font-black text-rose-700 font-mono min-w-[48px]' }, tr.fn),
+                  h('span', { className: 'text-[0.6875rem] font-bold text-slate-700' }, tr.mnemonic),
+                  h('span', { className: 'text-[0.625rem] font-mono ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, tr.range)
                 ),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, tr.notes)
               );
             })
           )
@@ -6289,10 +7025,13 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_problem_solving_shortcuts', '\u26A1 Angle problem-solving shortcuts')),
           h('div', { className: 'space-y-2' },
-            ANGLE_TRICKS.map(function(t, i) {
+            ANGLE_TRICKS.map(function(tk, i) {
               return h('div', { key: 't'+i, className: 'p-2.5 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.trick),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.use)
+                h('div', { className: 'flex items-center justify-between gap-2 mb-0.5 flex-wrap' },
+                  h('div', { className: 'text-[0.75rem] font-black text-rose-900' }, tk.trick),
+                  renderReadAloudBtn(tk.trick + '. ' + tk.use, fill(t('stem.angles.read_aloud_trick_aria', 'Read shortcut {name} aloud'), { name: tk.trick }), 'tts-trick-' + i)
+                ),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, tk.use)
               );
             })
           )
@@ -6479,7 +7218,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'space-y-1' },
             ANGLES_GLOSSARY.map(function(g, i) {
               return h('div', { key: 'g'+i, className: 'p-2 rounded-md bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-rose-900' }, g.term),
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', { className: 'text-[0.75rem] font-black text-rose-900' }, g.term),
+                  renderReadAloudBtn(g.term + '. ' + g.def, fill(t('stem.angles.read_aloud_gloss_aria', 'Read glossary term {term} aloud'), { term: g.term }), 'tts-gloss-' + i)
+                ),
                 h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, g.def)
               );
             })
@@ -6669,12 +7411,12 @@ window.StemLab = window.StemLab || {
                 )
               ),
               h('tbody', null,
-                PYTHAG_TRIPLES.map(function(t, i) {
+                PYTHAG_TRIPLES.map(function(pt, i) {
                   return h('tr', { key: 't'+i, className: i % 2 === 0 ? 'bg-white' : 'bg-slate-50' },
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.a),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.b),
-                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, t.c),
-                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem] italic' }, t.notes)
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, pt.a),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, pt.b),
+                    h('td', { className: 'px-2 py-1 font-mono text-rose-700 font-bold' }, pt.c),
+                    h('td', { className: 'px-2 py-1 text-slate-700 text-[0.625rem] italic' }, pt.notes)
                   );
                 })
               )
@@ -6692,14 +7434,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'mb-3' },
             h('h5', { className: 'text-[0.75rem] font-bold text-slate-700 mb-1' }, t('stem.angles.classification', 'Classification')),
             h('div', { className: 'space-y-1' },
-              TRIANGLE_TYPES.map(function(t, i) {
+              TRIANGLE_TYPES.map(function(tt, i) {
                 return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border border-slate-200' },
                   h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
-                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, t.type),
-                    h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto' }, t.angles)
+                    h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, tt.type),
+                    h('span', { className: 'text-[0.625rem] text-rose-700 font-mono ml-auto' }, tt.angles)
                   ),
-                  h('div', { className: 'text-[0.625rem] text-slate-700 italic mb-0.5' }, t.sides),
-                  h('div', { className: 'text-[0.625rem] text-slate-700' }, t.notes)
+                  h('div', { className: 'text-[0.625rem] text-slate-700 italic mb-0.5' }, tt.sides),
+                  h('div', { className: 'text-[0.625rem] text-slate-700' }, tt.notes)
                 );
               })
             )
@@ -6767,12 +7509,12 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.geometric_transformations', '↻ Geometric transformations')),
           h('div', { className: 'space-y-2' },
-            TRANSFORMATIONS.map(function(t, i) {
+            TRANSFORMATIONS.map(function(tf, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, t.name),
-                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, t.effect),
-                h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, __alloT('stem.angles.lib_preserves', 'Preserves: ')), t.preserves),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, tf.name),
+                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, tf.effect),
+                h('div', { className: 'text-[0.625rem] text-slate-700 mb-1' }, h('strong', null, __alloT('stem.angles.lib_preserves', 'Preserves: ')), tf.preserves),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, tf.notes)
               );
             })
           )
@@ -6833,10 +7575,10 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.tessellations_tilings', '⬡ Tessellations & tilings')),
           h('div', { className: 'space-y-2' },
-            TILING_FACTS.map(function(t, i) {
+            TILING_FACTS.map(function(tl, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.name),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, tl.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, tl.detail)
               );
             })
           )
@@ -6951,11 +7693,14 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.classic_mathematical_theorems', '∎ Classic mathematical theorems')),
           h('div', { className: 'space-y-2' },
-            CLASSIC_THEOREMS.map(function(t, i) {
+            CLASSIC_THEOREMS.map(function(th, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border-l-4 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-1' }, t.theorem),
-                h('div', { className: 'text-[0.6875rem] text-slate-800 font-mono mb-1' }, t.statement),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed italic' }, t.notes)
+                h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
+                  h('div', { className: 'text-[0.75rem] font-black text-rose-900' }, th.theorem),
+                  renderReadAloudBtn(th.theorem + '. ' + th.statement + '. ' + th.notes, fill(t('stem.angles.read_aloud_thm_aria', 'Read {name} theorem aloud'), { name: th.theorem }), 'tts-thm-' + i)
+                ),
+                h('div', { className: 'text-[0.6875rem] text-slate-800 font-mono mb-1' }, th.statement),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed italic' }, th.notes)
               );
             })
           )
@@ -7367,10 +8112,10 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.famous_tilings_of_the_plane', '◇ Famous tilings of the plane')),
           h('div', { className: 'space-y-1' },
-            FAMOUS_TILINGS.map(function(t, i) {
+            FAMOUS_TILINGS.map(function(ft, i) {
               return h('div', { key: 't'+i, className: 'p-2 rounded bg-slate-50 border-l-2 border-l-rose-400 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, t.name),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.detail)
+                h('div', { className: 'text-[0.75rem] font-black text-rose-900 mb-0.5' }, ft.name),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, ft.detail)
               );
             })
           )
@@ -8029,11 +8774,11 @@ window.StemLab = window.StemLab || {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, t('stem.angles.angle_measuring_tools', '📏 Angle-measuring tools')),
           h('div', { className: 'space-y-2' },
-            MEASURING_TOOLS.map(function(t, i) {
+            MEASURING_TOOLS.map(function(mt, i) {
               return h('div', { key: 't'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },
-                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, t.tool),
-                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, __alloT('stem.angles.lib_use', 'Use: ') + t.use),
-                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, t.notes)
+                h('div', { className: 'text-[0.75rem] font-black text-slate-800 mb-1' }, mt.tool),
+                h('div', { className: 'text-[0.6875rem] text-rose-700 font-bold mb-1' }, __alloT('stem.angles.lib_use', 'Use: ') + mt.use),
+                h('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, mt.notes)
               );
             })
           )

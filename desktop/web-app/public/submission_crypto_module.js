@@ -1,7 +1,11 @@
 (function() {
 'use strict';
-if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SubmissionCrypto) {
-  console.log('[CDN] SubmissionCrypto already loaded, skipping');
+var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+var _log = function (msg) {
+  try { if (typeof console === 'object' && console && typeof console.log === 'function') console.log(msg); } catch (_) {}
+};
+if (_win && _win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.SubmissionCrypto) {
+  _log('[CDN] SubmissionCrypto already loaded, skipping');
   return;
 }
 
@@ -30,32 +34,49 @@ if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.Su
 // ── Helpers ───────────────────────────────────────────────────────────
 function _b64encode(bytes) {
   // Uint8Array -> base64 string (chunked to avoid O(n^2) concatenation)
-  var parts = [];
-  var CHUNK = 8192;
-  for (var i = 0; i < bytes.byteLength; i += CHUNK) {
-    var slice = bytes.subarray(i, Math.min(i + CHUNK, bytes.byteLength));
-    parts.push(String.fromCharCode.apply(null, slice));
+  if (typeof btoa === 'function') {
+    var parts = [];
+    var CHUNK = 8192;
+    for (var i = 0; i < bytes.byteLength; i += CHUNK) {
+      var slice = bytes.subarray(i, Math.min(i + CHUNK, bytes.byteLength));
+      parts.push(String.fromCharCode.apply(null, slice));
+    }
+    return btoa(parts.join(''));
   }
-  return btoa(parts.join(''));
+  if (typeof Buffer === 'function') return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('base64');
+  throw new Error('Base64 encoder unavailable.');
 }
 function _b64decode(s) {
   // base64 string -> Uint8Array
-  if (typeof s !== 'string' || !s) throw new Error('Malformed submission blob: invalid base64.');
-  var bin;
-  try { bin = atob(s); } catch (_) { throw new Error('Malformed submission blob: invalid base64.'); }
-  var bytes = new Uint8Array(bin.length);
-  for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
+  if (typeof s !== 'string' || !s || s.length % 4 !== 0 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s)) {
+    throw new Error('Malformed submission blob: invalid base64.');
+  }
+  if (typeof atob === 'function') {
+    var bin;
+    try { bin = atob(s); } catch (_) { throw new Error('Malformed submission blob: invalid base64.'); }
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+  if (typeof Buffer === 'function') return new Uint8Array(Buffer.from(s, 'base64'));
+  throw new Error('Base64 decoder unavailable.');
 }
 var MAX_WRAPPED_KEY_B64 = 4096;
 var MAX_IV_B64 = 64;
+var MAX_JWK_FIELD_CHARS = 8192;
 var MAX_PLAINTEXT_BYTES = 24 * 1024 * 1024;
 var MAX_CIPHERTEXT_B64 = Math.ceil((MAX_PLAINTEXT_BYTES + 16) / 3) * 4;
 function _isPlainObject(v) {
-  return !!v && typeof v === 'object' && !Array.isArray(v);
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return false;
+  var proto = Object.getPrototypeOf(v);
+  if (proto === Object.prototype || proto === null) return true;
+  return Object.prototype.toString.call(v) === '[object Object]' && Object.getPrototypeOf(proto) === null;
+}
+function _validJwkStr(v) {
+  return typeof v === 'string' && v.length > 0 && v.length <= MAX_JWK_FIELD_CHARS;
 }
 function _validatePublicJwk(jwk) {
-  if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || typeof jwk.n !== 'string' || !jwk.n || typeof jwk.e !== 'string' || !jwk.e) {
+  if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || !_validJwkStr(jwk.n) || !_validJwkStr(jwk.e)) {
     throw new Error('Invalid class public key: expected an RSA JWK.');
   }
   if (jwk.d !== undefined || jwk.p !== undefined || jwk.q !== undefined || jwk.dp !== undefined || jwk.dq !== undefined || jwk.qi !== undefined || jwk.oth !== undefined) {
@@ -66,22 +87,30 @@ function _cleanPublicJwk(jwk) {
   return { kty: 'RSA', n: jwk.n, e: jwk.e };
 }
 function _validatePrivateJwk(jwk) {
-  if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || typeof jwk.n !== 'string' || !jwk.n || typeof jwk.e !== 'string' || !jwk.e || typeof jwk.d !== 'string' || !jwk.d) {
+  if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || !_validJwkStr(jwk.n) || !_validJwkStr(jwk.e) || !_validJwkStr(jwk.d)) {
     throw new Error('Invalid class private key: expected an RSA private JWK.');
   }
 }
 function _cleanPrivateJwk(jwk) {
   var out = { kty: 'RSA', n: jwk.n, e: jwk.e, d: jwk.d };
-  var optKeys = ['p', 'q', 'dp', 'dq', 'qi', 'oth'];
-  for (var i = 0; i < optKeys.length; i++) {
-    var k = optKeys[i];
-    if (Object.prototype.hasOwnProperty.call(jwk, k) && jwk[k] !== undefined) out[k] = jwk[k];
+  var optStrKeys = ['p', 'q', 'dp', 'dq', 'qi'];
+  for (var i = 0; i < optStrKeys.length; i++) {
+    var k = optStrKeys[i];
+    if (Object.prototype.hasOwnProperty.call(jwk, k) && jwk[k] !== undefined) {
+      if (!_validJwkStr(jwk[k])) throw new Error('Invalid class private key: malformed RSA CRT parameter.');
+      out[k] = jwk[k];
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(jwk, 'oth') && jwk.oth !== undefined) {
+    if (!Array.isArray(jwk.oth) || jwk.oth.length > 16) throw new Error('Invalid class private key: malformed RSA oth parameter.');
+    out.oth = jwk.oth;
   }
   return out;
 }
 function _getCrypto() {
-  var c = (typeof window !== 'undefined' && window.crypto) ? window.crypto
-    : (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : null);
+  var w = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  var g = (typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis : null;
+  var c = (w && w.crypto) ? w.crypto : (g && g.crypto ? g.crypto : null);
   if (!c || !c.subtle || typeof c.getRandomValues !== 'function') {
     throw new Error('Web Crypto API not available (crypto.subtle missing). Submissions require a secure context (HTTPS or localhost).');
   }
@@ -90,8 +119,24 @@ function _getCrypto() {
 function _getSubtle() {
   return _getCrypto().subtle;
 }
-var _enc = new TextEncoder();
-var _dec = new TextDecoder('utf-8', { fatal: true });
+var _encInst = null;
+var _decInst = null;
+function _encodeUtf8(str) {
+  if (typeof TextEncoder === 'function') {
+    if (!_encInst) _encInst = new TextEncoder();
+    return _encInst.encode(str);
+  }
+  if (typeof Buffer === 'function') return new Uint8Array(Buffer.from(str, 'utf8'));
+  throw new Error('UTF-8 encoder unavailable.');
+}
+function _decodeUtf8(buf) {
+  if (typeof TextDecoder === 'function') {
+    if (!_decInst) _decInst = new TextDecoder('utf-8', { fatal: true });
+    return _decInst.decode(buf);
+  }
+  if (typeof Buffer === 'function') return Buffer.from(buf).toString('utf8');
+  throw new Error('UTF-8 decoder unavailable.');
+}
 
 // ── Public API ────────────────────────────────────────────────────────
 
@@ -126,7 +171,7 @@ async function encryptSubmission(payloadObj, publicJwk) {
   if (typeof jsonStr !== 'string') {
     throw new Error('Invalid submission payload: expected a plain object.');
   }
-  var payloadBytes = _enc.encode(jsonStr);
+  var payloadBytes = _encodeUtf8(jsonStr);
   if (payloadBytes.byteLength > MAX_PLAINTEXT_BYTES) {
     throw new Error('Submission payload exceeds maximum supported size.');
   }
@@ -206,7 +251,7 @@ async function decryptSubmission(blob, privateJwk) {
   }
   var parsed;
   try {
-    var payloadJson = _dec.decode(payloadBuf);
+    var payloadJson = _decodeUtf8(payloadBuf);
     parsed = JSON.parse(payloadJson, function (key, value) {
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
       return value;
@@ -242,7 +287,7 @@ var INLINE_ENCRYPT_SCRIPT = [
   '  if (!publicJwk || typeof publicJwk !== "object" || Array.isArray(publicJwk) || publicJwk.kty !== "RSA" || typeof publicJwk.n !== "string" || !publicJwk.n || typeof publicJwk.e !== "string" || !publicJwk.e || publicJwk.d !== undefined || publicJwk.p !== undefined || publicJwk.q !== undefined || publicJwk.dp !== undefined || publicJwk.dq !== undefined || publicJwk.qi !== undefined || publicJwk.oth !== undefined) throw new Error("Invalid class public key.");',
   '  var enc = new TextEncoder();',
   '  function b64(bytes) { var parts=[]; for (var i=0;i<bytes.byteLength;i+=8192) parts.push(String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i+8192, bytes.byteLength)))); return btoa(parts.join("")); }',
-  '  var jsonStr = JSON.stringify(payloadObj);',
+  '  var jsonStr; try { jsonStr = JSON.stringify(payloadObj); } catch (_) { throw new Error("Invalid submission payload."); }',
   '  if (typeof jsonStr !== "string") throw new Error("Invalid submission payload.");',
   '  var payloadBytes = enc.encode(jsonStr);',
   '  if (payloadBytes.byteLength > ' + MAX_PLAINTEXT_BYTES + ') throw new Error("Submission payload exceeds maximum supported size.");',
@@ -257,17 +302,17 @@ var INLINE_ENCRYPT_SCRIPT = [
   '};',
 ].join('\n');
 
-var api = {
+var api = Object.freeze({
   generateClassKeypair: generateClassKeypair,
   encryptSubmission: encryptSubmission,
   decryptSubmission: decryptSubmission,
   INLINE_ENCRYPT_SCRIPT: INLINE_ENCRYPT_SCRIPT,
-};
-if (typeof module !== 'undefined' && module.exports) module.exports = api;
-if (typeof window !== 'undefined') {
-  if (!window.AlloModules) window.AlloModules = {};
-  window.AlloModules.SubmissionCrypto = api;
+});
+if (typeof module === 'object' && module && module.exports) module.exports = api;
+if (_win) {
+  if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+  _win.AlloModules.SubmissionCrypto = api;
 }
 
-console.log('[SubmissionCrypto] Loaded: RSA-OAEP 2048 + AES-GCM 256 hybrid');
+_log('[SubmissionCrypto] Loaded: RSA-OAEP 2048 + AES-GCM 256 hybrid');
 })();

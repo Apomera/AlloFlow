@@ -2,31 +2,31 @@
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for accessLens 1`] = `
 {
-  "buttons": 7,
+  "buttons": 10,
   "inputs": 1,
-  "lengthBucket": 26,
-  "sha": "05194ae155df05d1",
-  "svgs": 0,
+  "lengthBucket": 87,
+  "sha": "c84e190344e00822",
+  "svgs": 2,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquacultureLab 1`] = `
 {
-  "buttons": 182,
+  "buttons": 188,
   "inputs": 2,
-  "lengthBucket": 716,
-  "sha": "8f70ccbf448106ca",
-  "svgs": 0,
+  "lengthBucket": 740,
+  "sha": "ebceca34471a21fa",
+  "svgs": 2,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquarium 1`] = `
 {
-  "buttons": 37,
+  "buttons": 42,
   "inputs": 0,
-  "lengthBucket": 198,
-  "sha": "938b161897d09d85",
-  "svgs": 0,
+  "lengthBucket": 214,
+  "sha": "6fb79bc230a65bbf",
+  "svgs": 2,
 }
 `;
 
@@ -34,9 +34,9 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 21,
   "inputs": 4,
-  "lengthBucket": 63,
-  "sha": "aa87d49eff2c4872",
-  "svgs": 0,
+  "lengthBucket": 78,
+  "sha": "d23caee74e09a473",
+  "svgs": 2,
 }
 `;
 
@@ -44,19 +44,19 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 71,
   "inputs": 9,
-  "lengthBucket": 202,
-  "sha": "6c04796eff624ed3",
-  "svgs": 1,
+  "lengthBucket": 260,
+  "sha": "3dc46339f7a59bce",
+  "svgs": 3,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for climateExplorer 1`] = `
 {
-  "buttons": 44,
+  "buttons": 43,
   "inputs": 0,
-  "lengthBucket": 227,
-  "sha": "7a0c1af5c28e6a3c",
-  "svgs": 0,
+  "lengthBucket": 222,
+  "sha": "8981e438eff6a54c",
+  "svgs": 1,
 }
 `;
 
@@ -64,9 +64,9 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 49,
   "inputs": 11,
-  "lengthBucket": 220,
-  "sha": "60d534fd29897f43",
-  "svgs": 0,
+  "lengthBucket": 232,
+  "sha": "fd350fa2636857b4",
+  "svgs": 1,
 }
 `;
 
@@ -82,11 +82,11 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
 {
-  "buttons": 40,
+  "buttons": 46,
   "inputs": 1,
-  "lengthBucket": 146,
-  "sha": "876488db7e0dcdde",
-  "svgs": 1,
+  "lengthBucket": 165,
+  "sha": "99aa40cc83884f7b",
+  "svgs": 3,
 }
 `;
 
@@ -122,20 +122,20 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for spaceColony 1`] = `
 {
-  "buttons": 32,
+  "buttons": 37,
   "inputs": 7,
-  "lengthBucket": 171,
-  "sha": "5cf1f3677a9f74fa",
-  "svgs": 2,
+  "lengthBucket": 244,
+  "sha": "3b387ec7472c74ed",
+  "svgs": 4,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for worldBuilder 1`] = `
 {
-  "buttons": 11,
+  "buttons": 14,
   "inputs": 5,
-  "lengthBucket": 40,
-  "sha": "3ed29c95b7afe13f",
-  "svgs": 1,
+  "lengthBucket": 79,
+  "sha": "c49d4f7d6e13728d",
+  "svgs": 3,
 }
 `;

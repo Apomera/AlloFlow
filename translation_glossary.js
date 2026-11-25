@@ -48,7 +48,13 @@
     "UDL",
     "SEL",
     "RTI",
+    "MTSS",
     "IEP",
+    "LRE",
+    "FAPE",
+    "DBT",
+    "DEAR MAN",
+    "STEM",
     "FERPA",
     "DBQ",
     "PII",
@@ -88,10 +94,10 @@
 
   "DNT_PATTERNS": [
     "\\{[a-zA-Z_][a-zA-Z0-9_]*\\}",
-    "\\d+(\\.\\d+)?(MB|KB|GB|cm|mm|km|m|kg|g|°C|°F|fps|Hz|ms|hr|min|sec|nm|μm|AU|ly)",
-    "v\\d+(\\.\\d+)?",
-    "#[A-Fa-f0-9]{3,8}",
-    "https?://[^\\s\\)]+"
+    "\\b\\d+(?:\\.\\d+)?(?:MB|KB|GB|cm|mm|km|kg|°C|°F|fps|Hz|ms|hr|min|sec|nm|μm|AU|ly|m|g)\\b",
+    "\\bv\\d+(?:\\.\\d+)?\\b",
+    "#[A-Fa-f0-9]{3,8}\\b",
+    "https?://[^\\s\\)\\]]+"
   ],
 
   "DOMAIN_GLOSSARY": {

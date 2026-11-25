@@ -1045,56 +1045,132 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
     return {
       headwaterStreams: {
         role: t('stem.watercycle.ws_headwaterStreams_role', 'Cold-water indicator'),
-        desc: t('stem.watercycle.ws_headwaterStreams_desc', 'High-elevation forested streams. Native brook trout, native eastern brook trout, water temperature below 20°C. The cleanest water in the watershed; everything downstream is shaped by what happens here.'),
+        // Accuracy audit 2026-11-24, ported from stem_tool_fieldjourneys.js (which copied this text; same _v2 key where the
+        // wording matches). Virginia DWR (dwr.virginia.gov/blog/cool-clear-water-is-key-for-the-brook-trouts-future): "Brook trout
+        // prefer water temperatures below 65˚F." / "Temperatures of about 70 degrees are going to be stressful or fatal".
+        // Old repeated "native brook trout" and "the cleanest water" superlative: cut.
+        desc: t('stem.watercycle.ws_headwaterStreams_desc_v2', 'Small, shaded forest streams high in the watershed. Native brook trout live here because the water stays cold; water near 21°C (70°F) stresses them. Whatever happens here flows down to every reach below.'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_headwaterStreams_knowledge', 'Headwater streams are first-order channels: small enough to step across, fed by springs and seeps, almost always shaded by mature forest. They make up roughly 60 to 80 percent of the total stream-mile length in a typical Maine watershed but receive a fraction of the regulatory attention. Native brook trout require water below about 20°C, dissolved oxygen above 7 mg/L, and woody debris for cover. Every degree of warming pushes their range north and uphill.'),
-          casework: t('stem.watercycle.ws_headwaterStreams_casework', 'The Eastern Brook Trout Joint Venture maps the status of native populations across the species range. Maine retains an unusually large portion of historic native brook trout habitat compared to the rest of the Northeast. Most successful headwater protection has come from upper-watershed conservation easements and replacement of undersized culverts that act as warm-water bottlenecks.'),
-          modernContext: t('stem.watercycle.ws_headwaterStreams_moderncontext', 'Climate change is the central long-term threat to Maine headwater streams. Several Maine Audubon and Wabanaki community projects have led culvert replacement and shade-tree planting campaigns. The 2023 Maine Climate Action Plan named cold-water-fishery protection as a priority but funding has lagged.'),
+          // EPA ORD headwater dataset (catalog.data.gov "Headwater streams and catchments across the conterminous United States"):
+          // "approximately 8.4 million kilometers of headwater streams – 77% of the total stream network". Old "60 to 80 percent in
+          // a typical Maine watershed", the 7 mg/L trout rule and "every degree pushes their range": no source, cut.
+          knowledge: t('stem.watercycle.ws_headwaterStreams_knowledge_v2', 'Headwater streams are the smallest channels, often fed by springs and shaded by forest. Across the lower 48 states, an EPA study counted about 77 percent of all stream length as headwater streams. Brook trout need this cold, clean, shaded water.'),
+          // Maine IF&W (maine.gov/ifw, wild brook trout): "today Maine is home to 97% of the intact wild brook trout lake and pond
+          // habitat in the eastern United States." Old "most successful protection came from easements and culverts": unsourced, cut.
+          casework: t('stem.watercycle.ws_headwaterStreams_casework_v2', 'Wild brook trout have declined across much of their eastern range. Maine\'s fish and wildlife agency reports that Maine holds 97 percent of the intact wild brook trout lake and pond habitat in the eastern United States.'),
+          // Old "2023 Maine Climate Action Plan" (the plan is Maine Won't Wait, 2020, updated 2024) and named-group claims: cut.
+          // USGS (usgs.gov/special-topics/drought): drought "raises water temperatures, and stresses fish populations, particularly
+          // cold-water species like trout."
+          modernContext: t('stem.watercycle.ws_headwaterStreams_moderncontext_v2', 'Warmer, drier summers are a growing threat. The USGS notes that drought raises water temperatures and stresses cold-water fish like trout. Shade trees along the banks help keep the water cool.'),
         },
       },
       riverMainstem: {
         role: t('stem.watercycle.ws_riverMainstem_role', 'Migratory fish corridor'),
-        desc: t('stem.watercycle.ws_riverMainstem_desc', 'The big channel through the watershed. Historically the route for Atlantic salmon, alewife, sea-run brook trout, eels, sturgeon. In Maine, dam barriers block most of these runs; recent removals (Edwards Dam 1999, Fort Halifax 2008, Veazie 2012, Great Works 2013) reopened sections.'),
+        // Old text had Veazie 2012 / Great Works 2013, the wrong way round. USFWS 2016-06 release (fws.gov/press-release/2016-06/
+        // penobscot-river-restoration-project-celebrates-final-milestone-reconnects): "in June 2012, the Great Works Dam removal
+        // began" ... "the removal of the Veazie Dam at the head of tide in 2013." NOAA (fisheries.noaa.gov/feature-story/finding-
+        // next-sebasticook): "The restoration began in 1999, with the removal of the Edwards Dam on the Kennebec River in Augusta,
+        // Maine." NRCM (nrcm.org): "On July 17, 2008 dam owner FPL Energy Maine Hydro breached the Fort Halifax Dam". NOAA salmon
+        // spotlight: "More than 90 percent of Maine's rivers and streams are affected by dams". Eels dropped: American eels spawn
+        // at sea and swim upriver to grow, so "up rivers to spawn" is wrong for them.
+        desc: t('stem.watercycle.ws_riverMainstem_desc_v2', 'The big channel through the watershed. Sea-run fish such as Atlantic salmon, alewife, American shad and sturgeon once swam up rivers like this to spawn. Dams still block many of these runs in Maine. Removing dams reopened some rivers: Edwards Dam (Kennebec, 1999), Fort Halifax Dam (Sebasticook, 2008), Great Works Dam (Penobscot, 2012) and Veazie Dam (Penobscot, 2013).'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_riverMainstem_knowledge', 'Anadromous fish (born in fresh water, mature at sea, return upstream to spawn) include Atlantic salmon, alewife, blueback herring, American shad, sea lamprey, and sea-run brook trout. Each species has different barrier-passage tolerance: alewife can use modest fish ladders; Atlantic salmon need near-full passage; sturgeon need almost-complete connectivity. Dam barriers degrade water quality upstream too: stagnant impoundments warm, accumulate sediment, and lose dissolved oxygen.'),
-          casework: t('stem.watercycle.ws_riverMainstem_casework', 'The Penobscot River Restoration Project (Penobscot Nation, NGOs, hydro companies) removed Veazie Dam in 2012 and Great Works Dam in 2013 while preserving most generation through upgrades elsewhere. River herring returns increased over 1000-fold in the first decade post-removal. The Kennebec saw Edwards Dam come down in 1999 and Fort Halifax in 2008. The Sebasticook tributary alone now hosts the largest river-herring run on the East Coast.'),
-          modernContext: t('stem.watercycle.ws_riverMainstem_moderncontext', 'The Penobscot Nation has led the legal, political, and ecological work on its ancestral river. Ongoing dam-removal campaigns target the Mattaceunk, Milford, and lower Kennebec dams. NOAA and the Atlantic Salmon Federation track returns annually; numbers are recovering but still well below historic.'),
+          // Old per-species passage claims ("sturgeon need almost-complete connectivity") had no source: cut.
+          knowledge: t('stem.watercycle.ws_riverMainstem_knowledge_v2', 'Anadromous fish are born in fresh water, grow up at sea, and return upriver to spawn. Atlantic salmon, alewife, blueback herring, American shad and sea lamprey are examples. A dam can block them from the cold, clean water upstream where they lay eggs.'),
+          // USFWS 2016-06 release: "more than 1.7 million river herring have already passed above dams removed by the Penobscot
+          // Project"; "significantly improving access to nearly 1,000 miles of Maine's largest river". NOAA finding-next-sebasticook
+          // (2018): "more than 5 million sea-run fish returned, making this the largest alewife run in the United States." Old
+          // "over 1000-fold" and "largest river-herring run on the East Coast": no source found, replaced.
+          casework: t('stem.watercycle.ws_riverMainstem_casework_v2', 'The Penobscot River Restoration Project removed Great Works Dam (2012) and Veazie Dam (2013), improving fish access to nearly 1,000 miles of Maine\'s largest river. By 2016, more than 1.7 million river herring had passed above the removed dams. On the Sebasticook River, NOAA reported a year when more than 5 million sea-run fish returned, the largest alewife run in the United States.'),
+          // NOAA salmon spotlight (fisheries.noaa.gov/species/atlantic-salmon-protected/spotlight): "The GOM DPS of anadromous Atlantic
+          // salmon was initially listed as an endangered species in 2000."; "the average number of salmon returning to GOM rivers
+          // annually is only around 1,200." The USFWS 2016 release lists the Penobscot Indian Nation among the Penobscot River
+          // Restoration Trust members. Old "led the legal, political, and ecological work" and named dam campaigns: unsourced, cut.
+          modernContext: t('stem.watercycle.ws_riverMainstem_moderncontext_v2', 'Atlantic salmon in Maine (the Gulf of Maine population) have been listed as endangered since 2000. NOAA reports that only about 1,200 adults return to these rivers in an average year. The Penobscot Indian Nation was one of the partners in the Penobscot project.'),
         },
       },
       floodplainWetlands: {
         role: t('stem.watercycle.ws_floodplainWetlands_role', 'Beaver-built flood storage'),
-        desc: t('stem.watercycle.ws_floodplainWetlands_desc', 'Beaver dam complexes and adjacent wet meadows. Slow flood pulses, recharge groundwater, filter nutrients, support amphibians, waterfowl, moose, otter. Beaver Dam Analogs (BDAs) mimic this work where beavers have not returned.'),
+        // NPS "Shapers of a Continent" (nps.gov/gaar/learn/nature/shapers-of-a-continent.htm): beavers are "helping to control
+        // flooding and erosion" and their wetlands are "homes for a large number of species, including insects, amphibians, fish,
+        // birds, and mammals." DOI Nature-Based Solutions Roadmap: BDAs are "human built structures meant to mimic the design and
+        // function of beaver dams".
+        desc: t('stem.watercycle.ws_floodplainWetlands_desc_v2', 'Beaver ponds and the wet meadows around them. They slow floods and give homes to insects, amphibians, fish, birds and mammals. A Beaver Dam Analog (BDA) is a human-built copy of a beaver dam, used where beavers are missing.'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_floodplainWetlands_knowledge', 'Beaver-built wetlands are the textbook example of ecosystem engineering. A single beaver complex can create up to 10 acres of wet meadow that stores flood water, recharges groundwater, traps sediment, filters nutrients, and supports moose, waterfowl, river otter, brook trout, and amphibians. Wetland complexes also act as firebreaks during dry years. North American beaver populations were estimated at 60 to 400 million pre-contact; the European fur trade crashed them to under 100,000 by 1900.'),
-          casework: t('stem.watercycle.ws_floodplainWetlands_casework', 'Beaver populations have recovered to perhaps 10 to 15 million across North America but remain far below historic in most Northeast watersheds. Beaver Dam Analog (BDA) restoration mimics beaver work with imported wood, rock, and posts; it is increasingly used where beavers have not naturally recolonized. The Methow Beaver Project in Washington and similar Maine pilots have shown that BDAs can trigger natural beaver return within 2 to 4 years.'),
-          modernContext: t('stem.watercycle.ws_floodplainWetlands_moderncontext', 'Beavers face conflict with road managers and downstream landowners over flooding. Lethal trapping continues in Maine. Beaver Deceiver flow-control devices are the non-lethal alternative; Wabanaki communities have led some of the strongest beaver-protection advocacy in the region. Climate-resilience planners increasingly cite beavers as low-cost natural infrastructure.'),
+          // Baker & Hill beaver chapter (aphis.usda.gov/sites/default/files/baker-and-hill-beaver-chapter.pdf): "Seton (1929)
+          // estimated the beaver population at 60-400 million"; "beaver populations in the eastern United States were largely
+          // extirpated by fur trappers before 1900." Old "up to 10 acres", firebreak and "under 100,000 by 1900": cut.
+          knowledge: t('stem.watercycle.ws_floodplainWetlands_knowledge_v2', 'Beavers are ecosystem engineers: their dams turn a stream into ponds and wet meadows that hold water, slow floods and shelter many other animals. One early estimate (from 1929) put North America\'s beavers before European settlement at 60 to 400 million. Fur trapping wiped them out across much of the eastern United States before 1900.'),
+          // Old "10 to 15 million today" and "Methow and Maine pilots ... return within 2 to 4 years": no source found, cut. Baker &
+          // Hill: "beaver now occupy much of their former range in North America". Wyoming Game and Fish (wgfd.wyo.gov, BDAs): "like
+          // a real beaver dam, analogs are temporary and can get breached if the water flows high and fast."
+          casework: t('stem.watercycle.ws_floodplainWetlands_casework_v2', 'Beavers have come back to much of their old range. Where they are missing, restoration crews sometimes build Beaver Dam Analogs from posts and woven branches. Like real beaver dams, these are temporary and can wash out in high water.'),
+          // Old "Wabanaki communities have led some of the strongest beaver-protection advocacy" and "planners increasingly cite":
+          // cut. Minnesota legislative beaver fence and pipe flow device sheet (lrl.mn.gov, SF3444): a pond leveler pipe "maintains
+          // a steady flow of water" through a beaver dam.
+          modernContext: t('stem.watercycle.ws_floodplainWetlands_moderncontext_v2', 'Beaver ponds can flood roads and fields, so people and beavers sometimes clash. Flow devices that keep a pond from rising too high are one non-lethal way to live with beavers.'),
         },
       },
       forestBuffer: {
         role: t('stem.watercycle.ws_forestBuffer_role', 'Riparian shade and filter'),
-        desc: t('stem.watercycle.ws_forestBuffer_desc', 'The strip of mature forest along stream banks. Shade keeps water cold, roots stabilize banks, leaf litter feeds aquatic insects, wood falls in to create habitat. A 50-foot intact buffer is the single most cost-effective stream protection.'),
+        // Penn State Extension (extension.psu.edu/the-role-of-trees-and-forests-in-healthy-watersheds): "Riparian forest buffers
+        // filter sediment from streams during storm events", "shade and modify stream temperatures". Old "A 50-foot intact buffer
+        // is the single most cost-effective stream protection": no source for the width or the cost ranking, cut.
+        desc: t('stem.watercycle.ws_forestBuffer_desc_v2', 'The strip of trees and shrubs along stream banks. Shade keeps the water cool, roots hold the banks in place, many stream animals feed on what falls from the trees, and the plants catch soil washing off the land in storms.'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_forestBuffer_knowledge', 'Riparian buffers do five distinct jobs at once: shade keeps water cold for trout and salmon parr, root systems stabilize banks against erosion, leaf litter is the primary food source for stream insects (which feed fish), woody debris falls in to create pools and cover, and the buffer filters runoff from adjacent agricultural and developed land. The pioneering research by Allan and others established that even a 30-foot intact buffer captures most of the runoff-quality benefit, and a 100-foot buffer provides the full hydrological function.'),
-          casework: t('stem.watercycle.ws_forestBuffer_casework', 'Maine\'s Shoreland Zoning Act (1971) regulates the first 75 feet around great ponds and 250 feet around rivers, but enforcement is uneven and exemptions for development are routine. Land trust easements have been more effective than regulation in many Maine watersheds. The Maine Coast Heritage Trust and Atlantic Salmon Federation have funded buffer-replanting on hundreds of farm streams; cover-cropping plus tree-row plantings cut runoff measurably within 3 to 5 years.'),
-          modernContext: t('stem.watercycle.ws_forestBuffer_moderncontext', 'Buffer policy in Maine remains fragmented across jurisdictions. The strongest buffer protections often come from voluntary landowner agreements rather than zoning. Climate-driven storm events make buffers MORE important (they hold the streambank during high flows), so the federal Infrastructure Investment and Jobs Act has lifted buffer-restoration funding.'),
+          // Penn State (extension.psu.edu/riparian-buffers-pennsylvanias-best-solution-for-protecting-its-waters): "Allowing trees
+          // and shrubs to create a forest buffer along a stream is the most impactful solution." Old "pioneering research by Allan
+          // ... 30-foot ... 100-foot": no citation found, cut.
+          knowledge: t('stem.watercycle.ws_forestBuffer_knowledge_v2', 'A forested buffer does several jobs at once. Shade keeps water cool for trout and young salmon. Roots hold the banks. Leaves and insects that fall in feed the stream. The plants slow runoff and catch soil, nitrogen and phosphorus before they reach the water. Penn State Extension calls a forest buffer along a stream the most effective fix for protecting it.'),
+          // The old text had the distances reversed ("75 feet around great ponds and 250 feet around rivers"). 38 M.R.S. §435
+          // (mainelegislature.org/legis/statutes/38/title38sec435.html): shoreland areas are those "within 250 feet of the normal
+          // high-water line of any great pond, river or saltwater body" ... "or within 75 feet of the high-water line of a stream."
+          // "Enforcement is uneven", "land trusts more effective" and the MCHT/ASF replanting claims: unsourced, cut.
+          casework: t('stem.watercycle.ws_forestBuffer_casework_v2', 'Maine\'s Mandatory Shoreland Zoning Act makes towns regulate land use within 250 feet of great ponds, rivers and tidal waters, and within 75 feet of many streams. Cutting trees and building close to the water are limited inside that zone.'),
+          // Old "fragmented", "strongest protections from voluntary agreements" and "IIJA has lifted buffer-restoration funding": cut.
+          // Penn State Extension: buffers "provide stability to the bank (wood root systems)".
+          modernContext: t('stem.watercycle.ws_forestBuffer_moderncontext_v2', 'Tree roots help hold stream banks together during high water, so a buffer protects land and roads beside the stream too.'),
         },
       },
       agriculturalWatershed: {
         role: t('stem.watercycle.ws_agriculturalWatershed_role', 'Nutrient + sediment source'),
-        desc: t('stem.watercycle.ws_agriculturalWatershed_desc', 'Dairy farms, hay fields, row crops, blueberry barrens. The dominant land use in central Maine watersheds. Manure runoff, fertilizer, sediment from tilled land all flow downstream. BMPs (Best Management Practices) can cut runoff by 50-80%.'),
+        // Old "The dominant land use in central Maine watersheds" is wrong: Maine is mostly forest (USDA Forest Service FIA,
+        // fs.usda.gov/nrs/pubs/ru/ru_fs366.pdf: 89% forest). Old "BMPs can cut runoff by 50-80%": no source, cut. EPA
+        // (epa.gov/nps/nonpoint-source-agriculture): farmers can "plant cover crops to uptake residual nutrients"; "A fenced stream
+        // crossing restricts livestock access"; "maintain vegetated buffer strips around fields and streams to intercept runoff".
+        desc: t('stem.watercycle.ws_agriculturalWatershed_desc_v2', 'Dairy farms, hay fields, row crops and blueberry fields. Rain can wash soil, fertilizer and manure from fields into streams. Best Management Practices (BMPs) such as cover crops, fencing cows away from streams and grassy buffer strips keep more of it on the farm.'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_agriculturalWatershed_knowledge', 'Agricultural land delivers three primary watershed insults: sediment from tilled or overgrazed land, nutrients (nitrogen and phosphorus) from manure and fertilizer, and pathogens from livestock waste. Best Management Practices include cover cropping, contour farming, livestock fencing from streams, manure storage upgrades, riparian buffer easements, and reduced-till or no-till cropping. Documented BMP implementations cut watershed nutrient export by 50 to 80 percent on participating farms.'),
-          casework: t('stem.watercycle.ws_agriculturalWatershed_casework', 'Maine has roughly 7,500 farms covering about 1.3 million acres. The Maine Soil and Water Conservation Districts operate the state-side BMP outreach; USDA NRCS provides federal cost-share. Dairy farms in the Sebasticook and Kennebec watersheds have implemented manure-handling and buffer projects with measurable downstream quality improvement; comparable work in the St. John watershed has helped Aroostook potato production.'),
-          modernContext: t('stem.watercycle.ws_agriculturalWatershed_moderncontext', 'Farm consolidation pressures BMP adoption (the smallest farms have the thinnest margins to invest in capital improvements). PFAS contamination from historic biosolid spreading has surfaced as a major Maine farm-water issue post-2022, with state-led testing and remediation programs. The Maine Farmland Trust links farmland protection to watershed protection.'),
+          // Old "Documented BMP implementations cut watershed nutrient export by 50 to 80 percent": no source, cut.
+          knowledge: t('stem.watercycle.ws_agriculturalWatershed_knowledge_v2', 'Farm runoff can carry three kinds of pollution: soil from bare or tilled ground, nutrients (nitrogen and phosphorus) from manure and fertilizer, and germs from animal waste. Best Management Practices include cover crops, fencing livestock out of streams, covered manure storage and planted buffer strips.'),
+          // USDA NASS 2022 Census of Agriculture, Maine profile (nass.usda.gov/Publications/AgCensus/2022/Online_Resources/
+          // County_Profiles/Maine/cp99023.pdf): 7,036 farms and 1,225,046 acres of land in farms. Old "roughly 7,500 farms covering
+          // about 1.3 million acres" was the 2017 count; the Sebasticook / St. John success claims were unsourced: cut.
+          casework: t('stem.watercycle.ws_agriculturalWatershed_casework_v2', 'The 2022 Census of Agriculture counted about 7,000 farms in Maine on about 1.2 million acres. Most of Maine is forest, so farms are one part of a mostly wooded landscape. Local Soil and Water Conservation Districts and the USDA Natural Resources Conservation Service help farmers plan and pay for BMPs.'),
+          // Maine LD 1911 (2022, P.L. 2021 ch. 641; lldc.mainelegislature.org/Open/LDs/130/130-LD-1911.pdf): prohibits "the
+          // application or spreading on any land in the State of sludge". Old "post-2022" timing and consolidation claim: cut.
+          modernContext: t('stem.watercycle.ws_agriculturalWatershed_moderncontext_v2', 'Some Maine farm fields were polluted with PFAS ("forever chemicals") from sewage sludge spread as fertilizer years ago. In 2022, Maine passed a law banning the spreading of sludge on land.'),
         },
       },
       suburbanEdges: {
         role: t('stem.watercycle.ws_suburbanEdges_role', 'Stormwater + impervious surface'),
-        desc: t('stem.watercycle.ws_suburbanEdges_desc', 'Subdivisions, parking lots, lawns. Impervious surfaces deliver pulses of warm polluted water to streams during storms. Lawn fertilizer and pet waste are the modern eutrophication inputs. Green stormwater infrastructure can offset the impact.'),
+        // Maine DEP (maine.gov/dep/water/lakes/algalbloom.html): nutrients wash in "where water washes over lawns, farm fields,
+        // roads, driveways, and construction sites." EPA (epa.gov/green-infrastructure): green infrastructure helps "to help
+        // reduce and treat stormwater where it falls." Old "the modern eutrophication inputs" overstated one cause: reworded.
+        desc: t('stem.watercycle.ws_suburbanEdges_desc_v2', 'Neighborhoods, roads and parking lots. Rain runs off roofs and pavement instead of soaking in, and it carries soil, lawn fertilizer, pet waste and other pollution to streams. Rain gardens and other green stormwater fixes help treat rain where it falls.'),
         deepDive: {
-          knowledge: t('stem.watercycle.ws_suburbanEdges_knowledge', 'Impervious surface (roads, roofs, parking lots, driveways) shapes urban and suburban hydrology more than any other variable. Above 10 percent watershed-wide impervious cover, stream biology measurably degrades; above 25 percent, most native fish populations are gone. Stormwater pulses are warm, fast, and pollutant-laden: lawn fertilizer, dog waste, vehicle drip, road salt, sediment from construction. Conventional drainage (curb, gutter, pipe) delivers all of it directly to streams.'),
-          casework: t('stem.watercycle.ws_suburbanEdges_casework', 'Portland, ME has documented stream impairment along the Capisic Brook and Stroudwater drainages tied directly to impervious cover. Green Stormwater Infrastructure (rain gardens, swales, permeable pavement, detention basins, green roofs) can offset 50 to 80 percent of the conventional pulse. The Maine Stormwater BMP Manual is the regulatory reference; municipal stormwater (MS4) permits require larger towns to implement.'),
-          modernContext: t('stem.watercycle.ws_suburbanEdges_moderncontext', 'Most suburban watershed work in Maine happens at municipal scale through MS4 permits, town stormwater ordinances, and watershed-association advocacy. Climate-resilience funding under the Infrastructure Investment and Jobs Act has dramatically increased available capital for retrofit. The biggest challenge is older developments built before stormwater regulation that have no easy retrofit path.'),
+          // Center for Watershed Protection, Impacts of Impervious Cover on Aquatic Systems (2003; EPA-hosted copy at
+          // www3.epa.gov/region1/npdes/rda/ar/), as summarized in a California review: "non-impacted when IC was less than 10%, b)
+          // impacted when IC was between 10 and 25%, and c) degraded waterways when IC exceeded 25%". Old "more than any other
+          // variable" and "most native fish populations are gone": overstated, cut.
+          knowledge: t('stem.watercycle.ws_suburbanEdges_knowledge_v2', 'Impervious surfaces (roads, roofs, parking lots, driveways) do not let rain soak in. Many studies find streams start to show harm when roughly 10 percent of the land around them is paved or roofed, and are badly degraded above about 25 percent. The exact tipping point differs from place to place.'),
+          // Maine DEP impervious cover TMDL, Capisic Brook appendix (www1.maine.gov/dep/water/monitoring/tmdl/2012/
+          // Appendix_6_Capisic_Brook.pdf): the watershed "has an impervious surface area of 31%". Portland Press Herald: "an urban
+          // impaired stream that does not meet minimum standards of the Clean Water Act". "Stroudwater" and "offset 50 to 80
+          // percent": unsourced, cut.
+          casework: t('stem.watercycle.ws_suburbanEdges_casework_v2', 'Capisic Brook in Portland is an urban stream that does not meet Maine\'s water quality standards. Maine DEP measured about 31 percent of its watershed as paved or roofed. Rain gardens, swales, porous pavement and detention basins are common fixes listed in Maine\'s stormwater manual.'),
+          // Old "IIJA has dramatically increased capital" and "biggest challenge": unsourced, cut. Maine DEP posts each MS4 town's
+          // Stormwater Management Plan.
+          modernContext: t('stem.watercycle.ws_suburbanEdges_moderncontext_v2', 'Much stormwater work happens town by town. Maine\'s more urban towns hold a municipal stormwater (MS4) permit and file a stormwater management plan with the state.'),
         },
       },
     };
@@ -1245,19 +1321,32 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
     return {
       ev: {
         majorFlood_name: t('stem.watercycle.sw_ev_majorFlood_name', 'Major flood'),
-        majorFlood_desc: t('stem.watercycle.sw_ev_majorFlood_desc', 'A 10-year flood scoured stream banks and washed sediment downstream. Buffers without good root systems lost ground.'),
+        // Accuracy audit 2026-11-24: event sentences checked against each apply() by running it (tests/watercycle_watershed_
+        // facts_2026_11_24.test.js). USGS 100-year flood page: "The recurrence interval is based on the probability that the
+        // given event will be equaled or exceeded in any given year". Model: buffers under 65 lose quality, wetlands gain.
+        majorFlood_desc: t('stem.watercycle.sw_ev_majorFlood_desc_v2', 'A 10-year flood (a flood this big has about a 1-in-10 chance each year) scoured stream banks and washed soil downstream. Weak forest buffers (under 65 quality in this game) lost ground, while floodplain wetlands soaked up water.'),
         drought_name: t('stem.watercycle.sw_ev_drought_name', 'Drought year'),
-        drought_desc: t('stem.watercycle.sw_ev_drought_desc', 'Low summer flows raised stream temperatures and concentrated pollutants. Cold-water species took a hit.'),
+        // USGS drought page: drought "reduces streamflows, raises water temperatures, and stresses fish populations, particularly
+        // cold-water species like trout." Model: headwaters and mainstem quality drop.
+        drought_desc: t('stem.watercycle.sw_ev_drought_desc_v2', 'Low summer flows warmed the streams and left less water to dilute pollution. Cold-water fish like brook trout were stressed, so headwater and mainstem quality dropped.'),
         sewageRelease_name: t('stem.watercycle.sw_ev_sewageRelease_name', 'Sewage discharge'),
-        sewageRelease_desc: t('stem.watercycle.sw_ev_sewageRelease_desc', 'A wastewater treatment plant bypass during a heavy storm released untreated discharge. Mainstem quality drops.'),
+        // EPA CSO page (epa.gov/npdes/combined-sewer-overflows-csos): "When that happens, untreated stormwater and wastewater flows
+        // into nearby waterbodies." Model: mainstem AND suburban quality drop (the old text named only the mainstem).
+        sewageRelease_desc: t('stem.watercycle.sw_ev_sewageRelease_desc_v2', 'A heavy storm sent more water into the sewer pipes than they could hold, and untreated wastewater overflowed into the river. Mainstem and town-stream quality drop.'),
         algalBloom_name: t('stem.watercycle.sw_ev_algalBloom_name', 'Cyanobacteria bloom'),
-        algalBloom_desc: t('stem.watercycle.sw_ev_algalBloom_desc', 'A cyanobacteria bloom closed swim beaches and prompted advisories. Public support shifts toward stronger watershed protection.'),
+        // Maine DEP algal blooms: "High levels of nutrients such as phosphorus and nitrogen are often necessary for HAB formation".
+        // Model: farm quality drops and support rises everywhere; the support rise is a game rule, labelled as one.
+        algalBloom_desc: t('stem.watercycle.sw_ev_algalBloom_desc_v2', 'Phosphorus and nitrogen washed off fields, lawns and roads fed a cyanobacteria (blue-green algae) bloom, and swim beaches closed. Farm-area quality drops. In this game, the closures also make people more willing to support watershed work.'),
         volunteerSurge_name: t('stem.watercycle.sw_ev_volunteerSurge_name', 'Volunteer surge'),
         volunteerSurge_desc: t('stem.watercycle.sw_ev_volunteerSurge_desc', 'A successful River Day brought 200+ volunteers. Citizen monitoring + cleanup boost across the board.'),
         farmSold_name: t('stem.watercycle.sw_ev_farmSold_name', 'Farm sold for development'),
-        farmSold_desc: t('stem.watercycle.sw_ev_farmSold_desc', 'A long-running family dairy operation sold to a residential developer. BMP gains on that land reset.'),
-        salmonReturn_name: t('stem.watercycle.sw_ev_salmonReturn_name', 'Atlantic salmon detected'),
-        salmonReturn_desc: t('stem.watercycle.sw_ev_salmonReturn_desc', 'Returning Atlantic salmon (or alewife runs) detected in the mainstem. Major morale boost and federal attention.'),
+        // Model: farm quality and suburban quality both drop; not a full reset of earlier gains (old "BMP gains on that land reset").
+        farmSold_desc: t('stem.watercycle.sw_ev_farmSold_desc_v2', 'A family dairy farm was sold to a housing developer. Some of the farm\'s runoff protections are lost, and the new roofs and roads add runoff downstream.'),
+        salmonReturn_name: t('stem.watercycle.sw_ev_salmonReturn_name_v2', 'Sea-run fish return'),
+        // NOAA salmon spotlight: the GOM DPS "was initially listed as an endangered species in 2000"; "the average number of salmon
+        // returning to GOM rivers annually is only around 1,200." _v3, not Field Journeys' _v2: the bigger support rise needs
+        // connectivityBoosts >= 1, which dam removal AND fish passage both add (applyStewardTech), so both are named.
+        salmonReturn_desc: t('stem.watercycle.sw_ev_salmonReturn_desc_v3', 'Alewives and a few Atlantic salmon were counted coming up the river. Alewives can return by the millions, but Maine\'s Atlantic salmon are endangered, with only about 1,200 adults returning in an average year, so each one is news. In this game, support rises more if you already removed a dam or built fish passage.'),
         beaverExpand_name: t('stem.watercycle.sw_ev_beaverExpand_name', 'Beaver complex expands'),
         beaverExpand_desc: t('stem.watercycle.sw_ev_beaverExpand_desc', 'Beavers expanded their territory and built three new dam complexes in the floodplain.'),
         fundingBump_name: t('stem.watercycle.sw_ev_fundingBump_name', 'EPA / FEMA grant'),
@@ -1271,7 +1360,9 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
         damRemoval_desc: t('stem.watercycle.sw_tech_damRemoval_desc', 'Remove or breach a barrier dam. Huge connectivity gain. Politically expensive: some landowners and recreational users will be upset.'),
         fishPassage_desc: t('stem.watercycle.sw_tech_fishPassage_desc', 'Build a fish ladder or nature-like bypass around a barrier. Cheaper than dam removal and politically easier, but less effective for some species.'),
         bmpOutreach_desc: t('stem.watercycle.sw_tech_bmpOutreach_desc', 'Work with farmers on Best Management Practices: cover crops, livestock fencing, manure storage, buffer easements. Real Maine programs.'),
-        easement_desc: t('stem.watercycle.sw_tech_easement_desc', 'Pay a landowner to permanently protect a riparian or upland parcel. The single highest-impact and highest-cost intervention.'),
+        // Accuracy audit 2026-11-24: "the single highest-impact" was an unsourced real-world ranking; in the game it is the biggest
+        // watershed-wide action (STEWARD_TECHNIQUES easement).
+        easement_desc: t('stem.watercycle.sw_tech_easement_desc_v2', 'Pay a landowner to protect a stream-side or upland parcel for good. In this game it is the biggest and most expensive watershed-wide action.'),
         stormwater_desc: t('stem.watercycle.sw_tech_stormwater_desc', 'Install rain gardens, swales, permeable pavement, or detention basins in developed areas. Slows and filters stormwater pulses.'),
         citizenScience_desc: t('stem.watercycle.sw_tech_citizenScience_desc', 'Train volunteer water-quality monitors. Slow but builds long-term community support and detects problems early.'),
         publicEd_desc: t('stem.watercycle.sw_tech_publicEd_desc', 'Watershed festivals, school programs, paddle events. Build community ownership of the watershed.'),
@@ -1279,18 +1370,24 @@ if (typeof window !== 'undefined') window.WaterCycleAirProfile = wcPrecipAirProf
       },
       fb: {
         bufferFeedsHeadwaters_msg: t('stem.watercycle.sw_fb_bufferFeedsHeadwaters_msg', 'Healthy forest buffers cooled and cleaned headwater streams.'),
-        beaverHelpsFloodplain_msg: t('stem.watercycle.sw_fb_beaverHelpsFloodplain_msg', 'Beaver-built wetlands attenuated flood pulses and improved mainstem water quality.'),
+        // Plainer words; "attenuated" replaced. Rule: wetlands over 60 raise mainstem quality.
+        beaverHelpsFloodplain_msg: t('stem.watercycle.sw_fb_beaverHelpsFloodplain_msg_v2', 'Beaver wetlands slowed flood water and let soil settle out, so the mainstem got cleaner.'),
         agCleansUp_msg: t('stem.watercycle.sw_fb_agCleansUp_msg', 'Lower agricultural runoff cleaned up the river mainstem.'),
-        runRestoration_msg: t('stem.watercycle.sw_fb_runRestoration_msg', 'Connected, shaded river segments support documented anadromous fish returns.'),
+        // "documented" implied real survey data, but this is the game's own rule (support rises in every component).
+        runRestoration_msg: t('stem.watercycle.sw_fb_runRestoration_msg_v2', 'A connected, shaded mainstem lets sea-run fish (fish that grow up in the ocean and swim upriver to spawn) reach good habitat. In this game, that raises support everywhere.'),
       },
       hint: {
-        bufferFeedsHeadwaters_fired: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_fired', 'Your forest buffers crossed 70% quality — shade cooled the water and roots filtered it, so cleaner cold water flowed downhill into the headwaters (+quality there, for free).'),
+        // Old hint said cold water "flowed downhill into the headwaters"; headwaters are the TOP of the watershed.
+        bufferFeedsHeadwaters_fired: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_fired_v2', 'Your forest buffers crossed 70 quality. Trees along the headwater streams shade and filter them, so headwater quality rises too.'),
         beaverHelpsFloodplain_fired: t('stem.watercycle.sw_hint_beaverHelpsFloodplain_fired', 'Your floodplain wetlands crossed 60% — beaver-built storage slowed the flood pulses and let sediment settle, improving mainstem water quality downstream.'),
         agCleansUp_fired: t('stem.watercycle.sw_hint_agCleansUp_fired', 'Farm runoff dropped enough (agricultural quality over 60) that the mainstem cleaned up on its own — less nitrogen, phosphorus, and sediment reaching the river.'),
-        runRestoration_fired: t('stem.watercycle.sw_hint_runRestoration_fired', 'A connected, shaded mainstem (connectivity over 60, with healthy buffers) is now supporting documented anadromous fish returns — morale rose across every component.'),
-        bufferFeedsHeadwaters_near: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_near', 'Forest-buffer quality is at {v}. Get it past 70 (one riparian buffer planting) and it will cool and clean the headwaters automatically every year after.'),
+        runRestoration_fired: t('stem.watercycle.sw_hint_runRestoration_fired_v2', 'A connected, shaded mainstem (connectivity over 60, with buffers over 60 quality) lets sea-run fish reach good habitat. In this game, support rose in every part of the watershed.'),
+        // Near-hints show for values within 8 under the threshold (stewardYearDebrief) and the rule needs MORE than the
+        // threshold, so one action is not always enough (buffer at 62 + 8 = 70; farms at 52 or 53 + 7 stay at or under 60).
+        // They now state each action's step size; tests pin it to STEWARD_TECHNIQUES.
+        bufferFeedsHeadwaters_near: t('stem.watercycle.sw_hint_bufferFeedsHeadwaters_near_v2', 'Forest-buffer quality is at {v}. Each riparian buffer planting adds 8. Get it past 70 and it will cool and clean the headwaters every year after.'),
         beaverHelpsFloodplain_near: t('stem.watercycle.sw_hint_beaverHelpsFloodplain_near', 'Floodplain wetlands sit at {v}. A single Beaver Dam Analog would push past 60 and start cleaning the mainstem for you.'),
-        agCleansUp_near: t('stem.watercycle.sw_hint_agCleansUp_near', 'Agricultural quality is {v}. BMP outreach is cheap (4h) and would tip it past 60, cleaning the mainstem via the runoff feedback.'),
+        agCleansUp_near: t('stem.watercycle.sw_hint_agCleansUp_near_v2', 'Agricultural quality is {v}. BMP outreach is cheap (4 hours) and adds 7 each time. Get it past 60 and the mainstem cleans up through the runoff feedback.'),
         runRestoration_near: t('stem.watercycle.sw_hint_runRestoration_near', 'Mainstem connectivity is {v}. Cross 60 with buffers already healthy and you unlock fish returns plus a support boost watershed-wide.'),
       },
       diff: {
@@ -6771,7 +6868,8 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
           // Numbers calibrated to a plausible mid-Maine watershed of about
           // 600 stream miles, 12,000 acres of forested buffer potential,
           // 3,500 acres of floodplain wetland potential, 75 dams in the
-          // historic record, ~150 farms.
+          // historic record, ~150 farms. These are invented game scales, not
+          // data, so the debrief labels each one "(game scale)" (audit 2026-11-24).
           function watershedArtifact(c) {
             var q = Math.max(0, Math.round(c.quality));
             var k = Math.max(0, Math.round(c.connectivity));
@@ -6807,16 +6905,28 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             var ag = steward.components.find(function(c) { return c.id === 'agriculturalWatershed'; });
             var mainstem = steward.components.find(function(c) { return c.id === 'riverMainstem'; });
             var buffer = steward.components.find(function(c) { return c.id === 'forestBuffer'; });
+            var bmp = STEWARD_TECHNIQUES.find(function(tc) { return tc.id === 'bmpOutreach'; });
+            var dam = STEWARD_TECHNIQUES.find(function(tc) { return tc.id === 'damRemoval'; });
+            var agHint = STEWARD_CASCADE_HINTS.find(function(hc) { return hc.id === 'agCleansUp'; });
+            var agDef = getWatershedComponent('agriculturalWatershed');
+            var agGoal = agDef && agDef.targets ? agDef.targets.quality : 65;
+            // The feedback rule needs quality ABOVE the threshold.
+            var bmpRounds = ag ? Math.max(1, Math.floor((agHint.threshold - ag.quality) / bmp.effects.quality) + 1) : 1;
             if (ag && ag.quality < 50) {
               return {
                 priority: 'Open with BMP outreach to farms',
-                text: 'Agricultural runoff is the dominant pressure on this watershed (current quality ' + Math.round(ag.quality) + '). BMP outreach is cheap (4h) and triggers the feedback rule that cleans up the mainstem. Pair it with riparian buffer planting on adjacent stream miles for compounding effect over the campaign.'
+                // Accuracy audit 2026-11-24: the old tip called farm runoff "the dominant pressure" (the debrief's own
+                // weakest-link rule picks the mainstem at the start) and said one BMP outreach "triggers the feedback rule"
+                // (45 + 7 = 52, and the rule needs over 60). Every number now comes from the model.
+                text: 'Farm runoff is one of the biggest problems here (farm quality ' + Math.round(ag.quality) + ', goal ' + agGoal + '). BMP outreach costs ' + bmp.hours + ' hours and adds ' + bmp.effects.quality + ' quality each time. About ' + bmpRounds + ' rounds would lift farm quality past ' + agHint.threshold + ', and then cleaner farm runoff starts cleaning the mainstem every year. Pair it with riparian buffer planting for gains that build over the campaign.'
               };
             }
             if (mainstem && mainstem.connectivity < 35) {
               return {
                 priority: 'Plan the connectivity arc',
-                text: 'River mainstem connectivity is critically low (' + Math.round(mainstem.connectivity) + '). Dam removal is the highest-impact move available but it costs 15 hours and 12 support. Most successful Maine projects (Edwards 1999, Veazie 2012) started with 2 to 3 years of public education and fish-passage installations before attempting full removal.'
+                // Old "Most successful Maine projects (Edwards 1999, Veazie 2012) started with 2 to 3 years of public education"
+                // had a wrong year (Veazie came down in 2013, USFWS 2016-06 release) and no source for the pattern: cut.
+                text: 'River mainstem connectivity is critically low (' + Math.round(mainstem.connectivity) + '). In this game, dam removal is the biggest connectivity gain (+' + dam.effects.connectivity + '), but it costs ' + dam.hours + ' hours and ' + (-dam.effects.support) + ' community support. Public education and fish passage can build support first.'
               };
             }
             return {
@@ -6891,7 +7001,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
             else if (restedOnly) grade = { emoji: '🍃', label: 'Deliberate pause', note: 'Holding steady lets support recover and some components self-heal — a valid move once or twice, but pressures do not wait forever.' };
             else grade = { emoji: '🤔', label: 'Scattered effort', note: 'A lot of capacity sat idle or spread thin. Pressures never rest — pick the one component holding the watershed back and concentrate there.' };
 
-            var backfire = usedDamRemoval ? 'Dam removal is the single biggest connectivity gain available, but it costs about 12 community support — the backlash is real and modeled. Follow it with public education and River Days to rebuild trust before the support hit stalls your other work.' : '';
+            var backfire = usedDamRemoval ? 'Dam removal is the single biggest connectivity gain available, but in this game it costs 12 community support, because some people oppose losing a dam. Follow it with public education and River Days to rebuild trust before the support hit stalls your other work.' : '';
 
             return { hoursSpent: hoursSpent, hoursIdle: hoursIdle, hoursPerYear: hoursPerYear, grade: grade, fired: firedMsgs, near: nearMsgs, weakest: weakest, rec: rec, backfire: backfire };
           }
@@ -7095,7 +7205,10 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
               '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
               '- NEVER invent quotes attributed to anyone.',
               '- DO frame as "documented watershed-science research" or "Maine restoration project case studies" (Edwards Dam 1999, Penobscot River Restoration Project, Beaver Dam Analog research, Eastern Brook Trout Joint Venture, Maine Soil and Water Conservation Districts).',
-              '- DO acknowledge that the Penobscot Nation led the Penobscot River Restoration Project when relevant, and that Wabanaki nations have shaped Maine watershed policy, without speaking for them.',
+              // Accuracy audit 2026-11-24: "led" overstated it. USFWS 2016-06 release lists the Penobscot Indian Nation among the
+              // Penobscot River Restoration Trust members; the unsourced "shaped Maine watershed policy" clause was cut.
+              '- DO note, when relevant, that the Penobscot Indian Nation was one of the partners in the Penobscot River Restoration Project, without speaking for it.',
+              '- Real dam removal years: Edwards Dam 1999 (Kennebec), Fort Halifax Dam 2008 (Sebasticook), Great Works Dam 2012 and Veazie Dam 2013 (Penobscot). Do not state other numbers or dates unless you are sure of them.',
               '- DO stay grounded in observable component state and concrete techniques: buffer planting, beaver dam analog, dam removal, fish passage, BMP outreach, conservation easement, stormwater retrofit.',
               '- Name 1 or 2 highest-priority moves and explain why, grounded in hydrology and feedback rules.',
               '- Be direct, observational, useful. No flowery language.',
@@ -7425,7 +7538,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                         h('strong', { style: { color: wcIdentityInk(c.color, isDark) } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
-                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.watercycle.' + (c.id) + '_desc', c.desc)),
+                      h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, c.desc), // already localized via wcWatershedCopy; the old computed key '<id>_desc' was registered with the pre-audit text and overrode it
                       c.deepDive ? h('button', {
                         onClick: function() { openStewardDeepDive(c.id); },
                         'aria-label': 'Open deep-dive for ' + c.name,
@@ -7588,7 +7701,7 @@ const d = (rawWc && typeof rawWc === 'object' && !Array.isArray(rawWc)) ? rawWc 
                         'Community support: ' + Math.round(c.support) + '/' + def.targets.support
                       ),
                       art.text ? h('div', { style: { marginTop: 6, padding: 6, background: isDark ? '#1e293b' : '#fef3c7', borderRadius: 6, fontSize: 11.5, color: isDark ? '#fde68a' : '#92400e' } },
-                        h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                        h('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text + ' (game scale)'
                       ) : null
                     );
                   })

@@ -44,10 +44,15 @@ describe('third-wave CDN extraction', () => {
       const reads = source.slice(source.indexOf(`function ${component}(props)`));
       const handed = names(/\{\.\.\.\{([\s\S]*?)\}\}/.exec(call)[1]);
       expect(handed.length, component).toBeGreaterThan(0);
-      expect(handed, component).toEqual(names(/const \{([\s\S]*?)\} = props;/.exec(reads)[1]));
+      // A screen may also read a prop directly (props.t, props.addToast); those count as reads too.
+      // onTrapEscape is handed as its own attribute (checked below), not through the spread.
+      const body = reads.slice(0, reads.indexOf('\n}\n'));
+      const direct = [...body.matchAll(/\bprops\.([A-Za-z_$][\w$]*)/g)].map((m) => m[1]).filter((n) => n !== 'onTrapEscape');
+      const wanted = [...new Set([...names(/const \{([\s\S]*?)\} = props;/.exec(reads)[1]), ...direct])].sort();
+      expect(handed, component).toEqual(wanted);
     }
     // The inline copies are gone: each screen's distinctive marker now lives only in its source.
-    for (const marker of ['<Terminal size={18} />', 'id="saved-math-assessment-title"', 'onAddCharacter={(newChar)', 'id="stem-artwork-handoff-title"', "t('share_collect.start_live_session')", 'id="header-translate-dialog-title"']) {
+    for (const marker of ['<Terminal size={18} aria-hidden="true" />', 'id="saved-math-assessment-title"', 'onAddCharacter={(newChar)', 'id="stem-artwork-handoff-title"', "t('share_collect.start_live_session')", 'id="header-translate-dialog-title"']) {
       expect(host, marker).not.toContain(marker);
       expect(source, marker).toContain(marker);
     }
@@ -88,13 +93,21 @@ describe('third-wave CDN extraction', () => {
     for (const [ref, component, close] of [['sessionStartOptionsRef', 'SessionStartOptionsView', '() => setShowSessionStartOptions(false)'], ['translateModalRef', 'TranslateModalView', '() => setIsTranslateModalOpen(false)']]) {
       expect(host, ref).not.toContain(ref);
       const view = source.slice(source.indexOf('function ' + component + '(props) {'));
-      const head = view.slice(0, view.indexOf('\n', view.indexOf('useFocusTrap(')));
+      // The trap (plus a body scroll lock) now goes through the shared _useColdPathDialogLock helper.
+      const lockAt = view.indexOf('_useColdPathDialogLock(');
+      expect(lockAt, ref).toBeGreaterThan(0);
+      const head = view.slice(0, view.indexOf('\n', lockAt));
       // The hook is called on every render, before anything can return, with the dialog open for as long as it is mounted.
-      expect(head, ref).toContain('  const ' + ref + ' = React.useRef(null);\n  window.__alloHooks.useFocusTrap(' + ref + ', true, props.onTrapEscape);');
+      expect(head, ref).toContain('  const ' + ref + ' = React.useRef(null);\n');
+      expect(head, ref).toContain('  _useColdPathDialogLock(' + ref + ', props.onTrapEscape || ');
       expect(head, ref).not.toMatch(/\breturn\b/);
       expect(view.slice(0, view.indexOf('\n}\n')), ref).toContain('ref={' + ref + '}');
       expect(host, component).toContain('onTrapEscape={' + close + '}');
     }
+    // ...and that helper calls the host's trap with the dialog open, the same hook count every render.
+    const lock = source.slice(source.indexOf('function _useColdPathDialogLock(dialogRef, onEscape) {'));
+    expect(lock.slice(0, lock.indexOf('\n}\n'))).toContain('window.__alloHooks.useFocusTrap\n    : null;');
+    expect(lock.slice(0, lock.indexOf('\n}\n'))).toContain('    hostHook(dialogRef, true, onEscape);');
     // Saving a project has to work with no network, so its dialog is not lazy.
     expect(host).toMatch(/useFocusTrap\(\s*saveModalRef\b/);
     expect(host).toContain('ref={saveModalRef}');

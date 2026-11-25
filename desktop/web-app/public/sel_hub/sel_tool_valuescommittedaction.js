@@ -682,7 +682,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _vcaFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Values and Committed Action from Acceptance and Commitment Therapy (Hayes, Strosahl, Wilson). ',
-              'Adolescent framing draws on DNA-V (Hayes, Ciarrochi, Bailey). Created with AlloFlow SEL Hub.'
+              'Adolescent framing draws on DNA-V (Louise Hayes, Ciarrochi, Bailey). Created with AlloFlow SEL Hub.'
             )
           ),
 
@@ -713,7 +713,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
               'Acceptance and Commitment Therapy (ACT, pronounced as the word "act") was developed primarily by Steven C. Hayes starting in the 1980s. ACT sits in the third wave of CBT alongside DBT, mindfulness-based therapies, and others. Its central move is to relate differently to thoughts and feelings (acceptance, defusion) rather than trying to change them, and to commit to actions guided by values. ACT has been extensively evaluated; meta-analyses find efficacy across depression, anxiety, chronic pain, and many other conditions.'
             ),
             h('p', { style: { margin: '10px 0 0', color: _vcaFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'For adolescents specifically, DNA-V (Discoverer, Noticer, Advisor, Values) was developed by Hayes, Joseph Ciarrochi, and Louise Hayes as a developmentally appropriate ACT framework. DNA-V is now taught in many schools and youth mental health programs as the adolescent-facing version of ACT.'
+              'For adolescents specifically, DNA-V (Discoverer, Noticer, Advisor, Values) was developed by Louise Hayes and Joseph Ciarrochi as a developmentally appropriate ACT framework. DNA-V is now taught in many schools and youth mental health programs as the adolescent-facing version of ACT.'
             )
           ),
 

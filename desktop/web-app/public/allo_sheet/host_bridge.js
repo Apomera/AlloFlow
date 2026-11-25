@@ -1,8 +1,10 @@
 (function () {
   'use strict';
 
+  if (typeof window !== 'object' || !window) return;
+
   if (window.AlloSheetHostBridge) {
-    window.AlloModules = window.AlloModules || {};
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AlloSheetHostBridge = window.AlloSheetHostBridge;
     return;
   }
@@ -148,7 +150,7 @@
       !cleaned
       || cleaned !== original.trim()
       || BLOCKED_KEYS[cleaned]
-      || /[\/\\\u0000-\u001f]/.test(cleaned)
+      || /[\/\\\u0000-\u001f\u007f]/.test(cleaned)
     ) {
       throw artifactFailure(label + ' is empty or unsafe.');
     }
@@ -340,9 +342,13 @@
   // Student AI-off: the host's blocked callGemini is truthy; ask the host (old-host fallback).
   function isAiAvailable() {
     var fn = window.callGemini;
-    try {
-      if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
-    } catch (_) {}
+    if (typeof window.__alloAiUsable === 'function') {
+      try {
+        return !!window.__alloAiUsable('text', fn);
+      } catch (_) {
+        return false;
+      }
+    }
     return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true;
   }
 
@@ -467,7 +473,7 @@
   }
 
   function armQueuedTransferTimeout(entry) {
-    if (!entry || entry.queueTimer) return;
+    if (!entry || entry.queueTimer || typeof window.setTimeout !== 'function') return;
     entry.queueTimer = window.setTimeout(function () {
       var index = transferQueue.indexOf(entry);
       if (index < 0) return;
@@ -498,7 +504,7 @@
         bridgeToken: bridgeToken
       }, targetOrigin());
       entry.posted = true;
-      entry.timer = window.setTimeout(function () {
+      entry.timer = typeof window.setTimeout === 'function' ? window.setTimeout(function () {
         if (activeTransfer !== entry || entry.deliveredSettled) return;
         var error = transferFailure(
           'AlloSheet did not confirm receipt of this transfer. Reopen AlloSheet and try again.',
@@ -507,7 +513,7 @@
         failTransfer(entry, error);
         activeTransfer = null;
         sendNextTransfer(popup);
-      }, TRANSFER_DELIVERY_TIMEOUT_MS);
+      }, TRANSFER_DELIVERY_TIMEOUT_MS) : null;
       return true;
     } catch (error) {
       entry.posted = false;
@@ -556,6 +562,7 @@
 
   function restoreLauncherFocus(returnTarget) {
     try { window.focus(); } catch (_) {}
+    if (typeof window.setTimeout !== 'function') return;
     window.setTimeout(function () {
       try {
         if (
@@ -634,14 +641,18 @@
     };
     if (scope === 'selected-values') {
       result.records = (Array.isArray(snapshot.records) ? snapshot.records : []).slice(0, 40).map(function (record) {
-        var fields = {};
+        var fields = Object.create(null);
         Object.keys(record && record.fields || {}).slice(0, 40).forEach(function (field) {
           if (!field || field === '__proto__' || field === 'constructor' || field === 'prototype') return;
+          var safeField = safeText(field, 160);
+          if (!safeField || BLOCKED_KEYS[safeField]) return;
           var value = record.fields[field];
-          if (value === null || typeof value === 'boolean' || typeof value === 'number') {
-            fields[safeText(field, 160)] = value;
+          if (value === null || typeof value === 'boolean') {
+            fields[safeField] = value;
+          } else if (typeof value === 'number') {
+            fields[safeField] = Number.isFinite(value) ? value : null;
           } else {
-            fields[safeText(field, 160)] = safeText(value, 1200);
+            fields[safeField] = safeText(value, 1200);
           }
         });
         return { id: safeText(record && record.id, 120), fields: fields };
@@ -868,7 +879,7 @@
     return transfer ? transfer.popup : null;
   }
 
-  window.addEventListener('message', onMessage);
+  if (typeof window.addEventListener === 'function') window.addEventListener('message', onMessage);
   var bridge = {
     version: 1,
     transferProtocolVersion: 1,
@@ -885,6 +896,6 @@
     companionUrl: pageUrl
   };
   window.AlloSheetHostBridge = bridge;
-  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
   window.AlloModules.AlloSheetHostBridge = bridge;
 })();

@@ -1014,7 +1014,7 @@
         "No discontinuity"
       ],
       "answerIndex": 0,
-      "rationale": "Nearby values approach 2, but the defined value is 4; one redefinition repairs continuity.",
+      "rationale": "Factoring gives (x^2 - 1)/(x - 1) = x + 1 for x != 1, so lim_{x->1} f(x) = 2 exists as a finite number but disagrees with f(1) = 4, creating a removable discontinuity that redefining f(1) = 2 would repair.",
       "choiceRationales": [
         "Best answer. Nearby values approach 2, but the defined value is 4; one redefinition repairs continuity.",
         "Factoring (x^2-1)/(x-1) into x+1 shows both one-sided limits equal 2 here, whereas a jump discontinuity requires two distinct finite one-sided limits.",
@@ -1485,7 +1485,7 @@
         "Some c in (1,4) has f'(c)=0 instead."
       ],
       "answerIndex": 0,
-      "rationale": "Zero lies between the endpoint outputs, and continuity guarantees an interior preimage.",
+      "rationale": "Because f is continuous on the closed interval [1, 4] and the target value 0 lies strictly between f(1) = -2 and f(4) = 5, the Intermediate Value Theorem guarantees at least one c in (1, 4) with f(c) = 0.",
       "choiceRationales": [
         "Best answer. Zero lies between the endpoint outputs, and continuity guarantees an interior preimage.",
         "The Intermediate Value Theorem guarantees at least one root, but the curve could cross zero multiple times.",
@@ -1955,7 +1955,7 @@
         "The graph has a minimum point at x=2."
       ],
       "answerIndex": 0,
-      "rationale": "A derivative requires matching one-sided slopes; this continuous corner has unequal slopes.",
+      "rationale": "Although f(x) = |x - 2| is continuous at x = 2, its left-hand derivative is -1 while its right-hand derivative is +1; because the one-sided limits of the difference quotient disagree, f'(2) does not exist.",
       "choiceRationales": [
         "Best answer. A derivative requires matching one-sided slopes; this continuous corner has unequal slopes.",
         "The absolute value function f(x)=|x-2| is continuous everywhere, including at x=2; continuity alone does not ensure differentiability when left and right slopes fail to agree.",
@@ -4303,7 +4303,7 @@
         "27"
       ],
       "answerIndex": 0,
-      "rationale": "Differentiate position to obtain velocity s'(t)=3t^2-6t, then evaluate at t=3 to get 9.",
+      "rationale": "Instantaneous velocity is the first derivative of position with respect to time: differentiating s(t) = t^3 - 3t^2 yields v(t) = s'(t) = 3t^2 - 6t, and evaluating at t = 3 gives v(3) = 3(9) - 6(3) = 9.",
       "choiceRationales": [
         "Best answer. Differentiate position to obtain velocity s'(t)=3t^2-6t, then evaluate at t=3 to get 9.",
         "Evaluating position s(3)=3^3-3(3)^2=0 gives the location of the particle at t=3 rather than differentiating first to find the velocity v(3)=3(3)^2-6(3)=9.",
@@ -5475,7 +5475,7 @@
         "Just the values taken by the second derivative there"
       ],
       "answerIndex": 2,
-      "rationale": "The candidates test includes endpoints and every interior point where the derivative is zero or undefined.",
+      "rationale": "By the Extreme Value Theorem and the Candidates Test, absolute extrema of a continuous function on a closed interval [a, b] must occur either at the endpoints a and b or at interior critical numbers where f' is 0 or undefined.",
       "choiceRationales": [
         "An absolute extremum can occur at an interior peak or valley, so checking endpoints alone can miss it.",
         "Checking only interior critical points misses extreme values when a monotonic or clipped curve reaches its absolute highest or lowest height at an interval endpoint.",
@@ -5711,7 +5711,7 @@
         "Increasing on (-2,1)"
       ],
       "answerIndex": 0,
-      "rationale": "The derivative changes positive-to-negative at -2 and negative-to-positive at 1.",
+      "rationale": "For f'(x) = (x + 2)(x - 1), the derivative is positive on (-inf, -2), negative on (-2, 1), and positive on (1, inf); by the First Derivative Test, f has a local maximum at x = -2 and a local minimum at x = 1.",
       "choiceRationales": [
         "Best answer. The derivative changes positive-to-negative at -2 and negative-to-positive at 1.",
         "A smooth polynomial cannot have two consecutive local minima without a local maximum between them; f prime flips + to - at -2.",
@@ -7482,7 +7482,7 @@
         "(x^2+1)^5/5+C"
       ],
       "answerIndex": 3,
-      "rationale": "Let u=x^2+1 so du=2x dx; integrating u^4 gives u^5/5 plus the constant of integration.",
+      "rationale": "Using u-substitution with u = x^2 + 1 gives du = 2x dx, transforming the integral into integral of u^4 du = u^5/5 + C = (x^2 + 1)^5/5 + C.",
       "choiceRationales": [
         "After substituting u=x^2+1 and du=2x dx, integrating u^4 du divides by the new exponent 5 rather than multiplying the expression by 2.",
         "This divides by the original exponent 4 without increasing the power on u=x^2+1 from 4 to 5 during antidifferentiation.",
@@ -9722,7 +9722,7 @@
       "answerIndex": 2,
       "rationale": "Using the disk method with radius R(x)=sqrt(x), the volume is pi integral_0^4 (sqrt(x))^2 dx = pi integral_0^4 x dx = pi[x^2/2]_0^4 = 8 pi.",
       "choiceRationales": [
-        "Forgetting to integrate x to x^2/2 properly or using upper limit 2 halves the true disk volume 8 pi.",
+        "Evaluating the disk cross-sectional area pi*r(x)^2 = pi*x at x = 4 gives 4 pi, rather than integrating pi*x over [0, 4] to get pi[x^2/2]_0^4 = 8 pi.",
         "Omitting the factor 1/2 when integrating r(x)^2=x into x^2/2 over [0,4] doubles the true solid-of-revolution volume from 8 pi to 16 pi.",
         "Best answer. Using the disk method with radius R(x)=sqrt(x), the volume is pi integral_0^4 (sqrt(x))^2 dx = pi integral_0^4 x dx = pi[x^2/2]_0^4 = 8 pi.",
         "Integrating x^2 instead of (sqrt(x))^2=x squares the radius twice and yields 32 pi/3 instead of 8 pi."
@@ -9957,7 +9957,7 @@
         "The limit does not exist"
       ],
       "answerIndex": 0,
-      "rationale": "The two-sided nearby behavior approaches 4; the filled point controls f(1), not the limit.",
+      "rationale": "A two-sided limit depends solely on the y-values approached as x nears 1 from both left and right—here 4—while the displaced filled dot at (1, 7) determines only f(1) and does not affect the limit.",
       "choiceRationales": [
         "Best answer. The two-sided nearby behavior approaches 4; the filled point controls f(1), not the limit.",
         "This reports the input coordinate x=1 that x is approaching rather than the y-value 4 that the curve approaches from both sides.",
@@ -10074,7 +10074,7 @@
         "The limit does not exist"
       ],
       "answerIndex": 1,
-      "rationale": "Outputs from both sides approach -1, and the missing function value does not prevent the limit.",
+      "rationale": "As x approaches 2 from both the left and right, the table outputs converge smoothly toward -1; a limit can exist and equal -1 even when f(2) itself is undefined.",
       "choiceRationales": [
         "The table outputs -1.1, -1.01, -0.99, and -0.9 converge tightly around -1 from both sides rather than approaching 0.",
         "Best answer. Outputs from both sides approach -1, and the missing function value does not prevent the limit.",
@@ -10780,7 +10780,7 @@
         "Negative infinity"
       ],
       "answerIndex": 3,
-      "rationale": "From the left, x-3 is negative and approaches zero, so its reciprocal decreases without bound.",
+      "rationale": "As x approaches 3 from the left (x < 3), the denominator x - 3 stays negative while shrinking toward 0, so the quotient 1/(x - 3) is negative and grows arbitrarily large in magnitude, approaching negative infinity.",
       "choiceRationales": [
         "Approaching 3 from the left means x<3, so x-3 is negative and 1/(x-3) goes to negative, not positive, infinity.",
         "Dividing 1 by a tiny negative number produces a huge negative magnitude rather than shrinking toward 0.",
@@ -10897,7 +10897,7 @@
         "The function is decreasing everywhere"
       ],
       "answerIndex": 0,
-      "rationale": "Four lies between the endpoint outputs, so IVT guarantees existence but not location or uniqueness.",
+      "rationale": "Because f is continuous on [2, 5] and 4 lies strictly between f(5) = 1 and f(2) = 8, the Intermediate Value Theorem guarantees at least one c in (2, 5) with f(c) = 4, without specifying uniqueness or exact location.",
       "choiceRationales": [
         "Best answer. Four lies between the endpoint outputs, so IVT guarantees existence but not location or uniqueness.",
         "The Intermediate Value Theorem guarantees at least one input c with f(c)=4 on (2,5), but a continuous graph may cross y=4 multiple times.",
@@ -11014,7 +11014,7 @@
         "The function f has some critical point in (a,b)."
       ],
       "answerIndex": 1,
-      "rationale": "Continuity on the closed interval and an intermediate target value are the required conditions.",
+      "rationale": "The Intermediate Value Theorem requires only two hypotheses: f must be continuous on the closed interval [a, b], and the target output k must lie between f(a) and f(b); differentiability is not required.",
       "choiceRationales": [
         "Knowing that a function is differentiable at a single endpoint does not guarantee continuity across the entire closed interval [a,b] as IVT requires.",
         "Best answer. Continuity on the closed interval and an intermediate target value are the required conditions.",
@@ -11367,7 +11367,7 @@
         "f'(c)=1"
       ],
       "answerIndex": 0,
-      "rationale": "Unequal one-sided derivatives prevent a derivative even though the function is continuous.",
+      "rationale": "For f'(c) to exist, the left-hand and right-hand limits of the difference quotient must both exist and be equal; because the one-sided slopes are 2 and -1, f has a corner and is not differentiable at x = c.",
       "choiceRationales": [
         "Best answer. Unequal one-sided derivatives prevent a derivative even though the function is continuous.",
         "The problem explicitly gives that f is continuous at x=c; mismatching one-sided slopes 2 and -1 create a sharp corner rather than a break.",
@@ -11484,7 +11484,7 @@
         "f(c)=0"
       ],
       "answerIndex": 1,
-      "rationale": "Existence of a finite derivative implies continuity, but not an extremum, second derivative, or zero output.",
+      "rationale": "Differentiability at x = c implies continuity at x = c because lim_{x->c} [f(x) - f(c)] = f'(c) * 0 = 0; however, having a finite first derivative implies nothing about extrema, f''(c), or f(c) = 0.",
       "choiceRationales": [
         "A finite derivative guarantees local continuity and a non-vertical tangent line, but the slope at c can be positive, negative, or zero without any peak.",
         "Best answer. Existence of a finite derivative implies continuity, but not an extremum, second derivative, or zero output.",
@@ -12072,11 +12072,11 @@
         "6"
       ],
       "answerIndex": 2,
-      "rationale": "By the product rule, h'(1)=f'(1)g(1)+f(1)g'(1). Substituting the given values at x=1 gives (-1)(4)+(2)(3)=-4+6=2.",
+      "rationale": "By the product rule for h = f*g, h'(1) = f'(1)g(1) + f(1)g'(1). Substituting f(1) = 2, f'(1) = -1, g(1) = 4, and g'(1) = 3 yields (-1)(4) + (2)(3) = -4 + 6 = 2.",
       "choiceRationales": [
         "This evaluates only the first product-rule term f prime(1)g(1)=(-1)(4)=-4 and leaves out the second term f(1)g prime(1)=(2)(3)=6.",
-        "Miscombining table values or summing derivatives directly misses the product-rule formula, which combines f prime(1)g(1)=(-1)(4) and f(1)g prime(1)=(2)(3) to give 2.",
-        "Best answer. By the product rule, h'(1)=f'(1)g(1)+f(1)g'(1). Substituting the given values at x=1 gives (-1)(4)+(2)(3)=-4+6=2.",
+        "Evaluating f(1)g(1) + f'(1)g'(1) = (2)(4) + (-1)(3) = 5 pairs functions and derivatives incorrectly instead of applying the product rule f'(1)g(1) + f(1)g'(1) = 2.",
+        "Best answer. By the product rule for h = f*g, h'(1) = f'(1)g(1) + f(1)g'(1). Substituting f(1) = 2, f'(1) = -1, g(1) = 4, and g'(1) = 3 yields (-1)(4) + (2)(3) = -4 + 6 = 2.",
         "This evaluates only the second product-rule term f(1)g prime(1)=(2)(3)=6 while completely omitting the first product-rule term f prime(1)g(1)=(-1)(4)=-4."
       ],
       "misconceptionTags": [
@@ -12192,7 +12192,7 @@
       "answerIndex": 3,
       "rationale": "By the quotient rule, h'(1)=[f'(1)g(1)-f(1)g'(1)]/[g(1)]^2. Plugging in the values at x=1 yields [(-1)(4)-(2)(3)]/4^2=-10/16=-5/8.",
       "choiceRationales": [
-        "Dividing f prime(1)/g prime(1) or forgetting to square g(1)=4 in the denominator misses the quotient-rule formula [f prime g - f g prime]/g^2.",
+        "Computing f'(1)/g(1) = -1/4 keeps only the first numerator term f'(1)g(1)/[g(1)]^2 and omits subtracting f(1)g'(1) in the quotient rule [f'g - fg']/g^2 = -5/8.",
         "Adding instead of subtracting in the quotient-rule numerator produces 2/16=1/8 rather than evaluating [(-1)(4)-(2)(3)] divided by 4^2 to get -5/8.",
         "Reversing the subtraction order in the quotient-rule numerator to f g prime - f prime g flips the final sign from -5/8 to +5/8.",
         "Best answer. By the quotient rule, h'(1)=[f'(1)g(1)-f(1)g'(1)]/[g(1)]^2. Plugging in the values at x=1 yields [(-1)(4)-(2)(3)]/4^2=-10/16=-5/8."
@@ -12541,7 +12541,7 @@
         "5/4"
       ],
       "answerIndex": 2,
-      "rationale": "Implicit differentiation gives 2x+y+(x+2y)y'=0, so the slope is -(2x+y)/(x+2y)=-4/5.",
+      "rationale": "Differentiating x^2 + xy + y^2 = 7 implicitly with the product and chain rules gives 2x + y + xy' + 2yy' = 0, so dy/dx = -(2x + y)/(x + 2y); evaluating at (1, 2) yields -(2 + 2)/(1 + 4) = -4/5.",
       "choiceRationales": [
         "Implicit differentiation of x^2+xy+y^2=7 gives 2x+y+(x+2y)(dy/dx)=0, so the slope at (1,2) is -(2x+y)/(x+2y)=-4/5; writing -5/4 inverts that ratio.",
         "Dropping the negative sign when moving 2x+y to the right side of the equation flips the slope at (1,2) from -4/5 to +4/5.",
@@ -13011,7 +13011,7 @@
         "3x^2/(x^2+1)"
       ],
       "answerIndex": 2,
-      "rationale": "Log properties or the chain rule reduce the expression to 3 ln(x^2+1), whose derivative is 6x/(x^2+1).",
+      "rationale": "Rewriting ln((x^2 + 1)^3) as 3 ln(x^2 + 1) and applying the chain rule gives f'(x) = 3 * (2x)/(x^2 + 1) = 6x/(x^2 + 1), which matches differentiating the composite logarithm directly.",
       "choiceRationales": [
         "This brings the exponent 3 down in front of ln(x^2+1) but forgets to multiply by the inner derivative 2x.",
         "Differentiating ln(u) replaces the logarithm entirely with u prime/u, so keeping ln(x^2+1) in the expression misapplies the logarithmic derivative rule.",
@@ -13128,7 +13128,7 @@
         "Product rule with a nested chain rule"
       ],
       "answerIndex": 3,
-      "rationale": "The two factors require the product rule, while sin(e^x) requires chaining through sine and the exponential.",
+      "rationale": "Because x^2 sin(e^x) is the product of x^2 and the composite function sin(e^x), differentiating it requires the product rule together with a chain rule to differentiate sin(e^x) through its inner function e^x.",
       "choiceRationales": [
         "The power rule handles x^2 by itself, but it cannot differentiate a product of two functions or the nested composition sin(e^x).",
         "There is no fraction or division in x^2 sin(e^x); differentiating it requires the product rule paired with a nested chain rule.",
@@ -13480,7 +13480,7 @@
         "The population is increasing by 120 people every hour."
       ],
       "answerIndex": 2,
-      "rationale": "A derivative gives the instantaneous rate of change at the stated input, with output units per input unit.",
+      "rationale": "The derivative R'(t) represents the instantaneous rate of change of population with respect to time in people per hour, so R'(10) = 12 means that at t = 10 hours the population is increasing at 12 people per hour.",
       "choiceRationales": [
         "A derivative at t=10 gives an instantaneous rate, not total accumulated change over the interval [0,10].",
         "In R prime(10)=12, the input 10 is the time in hours and 12 is the instantaneous rate in people per hour, so this swaps both values and units.",
@@ -13955,7 +13955,7 @@
         "Using 4 pi r(dr/dt) instead of dV/dt=4 pi r^2(dr/dt) forgets to square the radius r=2 when differentiating V=(4/3)pi r^3.",
         "Differentiating V=(4/3)pi r^3 gives dV/dt=4 pi r^2(dr/dt)=4 pi(2^2)(3)=48 pi, so 24 pi drops a factor of 2 in the arithmetic.",
         "Best answer. Differentiate sphere volume V=(4/3)pi r^3 with respect to time to get dV/dt=4 pi r^2 (dr/dt). Plugging in r=2 and dr/dt=3 gives 4 pi(4)(3)=48 pi cubic centimeters per second.",
-        "Swapping r=2 and dr/dt=3 or miscomputing 4(4)(3) as 36 fails to evaluate dV/dt=4 pi(2^2)(3), which equals 48 pi cm^3/s."
+        "Using 3 instead of 4 in dV/dt = 4 pi r^2(dr/dt), or evaluating 4 pi r^2 at r = 3 without dr/dt, yields 36 pi instead of 4 pi(2^2)(3) = 48 pi cm^3/s."
       ],
       "misconceptionTags": [
         "Substitute instant values after differentiating."
@@ -14419,7 +14419,7 @@
         "15"
       ],
       "answerIndex": 2,
-      "rationale": "Using standard limits or L Hospital rule gives the ratio of the inner coefficients, 3/5.",
+      "rationale": "Because sin(3x)/sin(5x) gives the indeterminate form 0/0 at x = 0, L'Hopital's Rule yields lim_{x->0} [3 cos(3x)] / [5 cos(5x)] = 3(1)/[5(1)] = 3/5, matching the standard limit sin(kx)/(kx) -> 1.",
       "choiceRationales": [
         "Treating sin(3x)/sin(5x) as if it behaved like sin(x)/x ignores the distinct inner scaling constants 3 and 5 in numerator and denominator.",
         "Applying L Hospital Rule gives (3 cos 3x)/(5 cos 5x), which approaches 3/5 at x=0, so 5/3 inverts the ratio of inner derivatives.",
@@ -14653,7 +14653,7 @@
         "c=2"
       ],
       "answerIndex": 0,
-      "rationale": "The secant slope is 3, so 3c^2=3. Of c=-1 and c=1, only c=1 lies in the open interval.",
+      "rationale": "Because f(x) = x^3 is continuous on [-1, 2] and differentiable on (-1, 2), MVT sets f'(c) = 3c^2 equal to the secant slope (8 - (-1))/(2 - (-1)) = 3, giving c = +/-1, of which only c = 1 lies in the open interval (-1, 2).",
       "choiceRationales": [
         "Best answer. The secant slope is 3, so 3c^2=3. Of c=-1 and c=1, only c=1 lies in the open interval.",
         "The Mean Value Theorem guarantees c strictly inside the open interval (-1,2), so endpoint c=-1 does not qualify.",
@@ -14887,7 +14887,7 @@
         "x=-2, 0, and 2 alone"
       ],
       "answerIndex": 2,
-      "rationale": "Closed-interval candidates include both endpoints and every interior solution of f prime of x=4x(x^2-2)=0.",
+      "rationale": "Setting f'(x) = 4x^3 - 8x = 4x(x^2 - 2) = 0 yields interior critical points x = 0 and x = +/-sqrt(2) inside (-3, 3); by the Candidates Test, absolute extrema are found by comparing f at those points and endpoints -3 and 3.",
       "choiceRationales": [
         "This checks endpoints and x=0 but omits the other two interior critical numbers x=-sqrt(2) and x=sqrt(2).",
         "Checking only the two local minima misses both the interior critical point x=0 and the endpoints x=-3 and x=3.",
@@ -15123,7 +15123,7 @@
         "No local extrema"
       ],
       "answerIndex": 0,
-      "rationale": "The derivative stays negative through x=0 but changes from negative to positive at x=2.",
+      "rationale": "Since x^2 >= 0 for all real x, f'(x) = x^2(x - 2) stays negative on both sides of x = 0 (no extremum there) and switches from negative to positive across x = 2, producing a local minimum at x = 2 only.",
       "choiceRationales": [
         "Best answer. The derivative stays negative through x=0 but changes from negative to positive at x=2.",
         "Because x^2 is nonnegative on both sides of 0, f prime(x)=x^2(x-2) stays negative across x=0 with no extremum there.",
@@ -15478,7 +15478,7 @@
         "f has a local minimum at c."
       ],
       "answerIndex": 3,
-      "rationale": "A positive second derivative makes the graph locally concave up at a stationary point.",
+      "rationale": "By the Second Derivative Test, when f'(c) = 0 (horizontal tangent) and f''(c) > 0 (graph strictly concave up near c), the curve sits at the bottom of a local trough, confirming a local minimum at x = c.",
       "choiceRationales": [
         "A local maximum occurs when f double prime(c)<0 (concave down), whereas f double prime(c)>0 is concave up.",
         "Having f double prime(c)>0 means the curve is strictly concave up at c rather than changing concavity.",
@@ -15597,7 +15597,7 @@
         "A vertical tangent at x=2"
       ],
       "answerIndex": 0,
-      "rationale": "The derivative changes from negative to positive, so f changes from decreasing to increasing.",
+      "rationale": "When the graph of f' crosses the x-axis from negative to positive at x = 2, the original function f transitions from decreasing to increasing, which by the First Derivative Test identifies a local minimum at x = 2.",
       "choiceRationales": [
         "Best answer. The derivative changes from negative to positive, so f changes from decreasing to increasing.",
         "Crossing the x-axis from below to above means f prime switches from negative to positive, creating a minimum, not a maximum.",
@@ -15950,7 +15950,7 @@
         "Net cost change moving from 0 to 100 items"
       ],
       "answerIndex": 3,
-      "rationale": "Integrating a rate of cost change over production gives net change in total cost.",
+      "rationale": "By the Net Change Theorem (FTC Part 2), integrating the marginal cost rate C'(q) in dollars per item from q = 0 to q = 100 yields C(100) - C(0), the net change in total production cost from 0 to 100 items.",
       "choiceRationales": [
         "Average rate or average cost requires dividing by the number of items, which this definite integral does not do.",
         "Without adding fixed startup cost C(0), the integral of C prime from 0 to 100 gives only C(100)-C(0), the change in cost.",
@@ -16305,7 +16305,7 @@
         "-2x"
       ],
       "answerIndex": 2,
-      "rationale": "A variable lower bound contributes the negative of the integrand evaluated at that bound.",
+      "rationale": "Reversing the limits of integration gives G(x) = -integral from 3 to x of t^2 dt; applying the Fundamental Theorem of Calculus Part 1 then yields G'(x) = -x^2 because x is the lower bound.",
       "choiceRationales": [
         "Because the variable x is the lower limit rather than the upper limit, reversing the bounds introduces a minus sign.",
         "The constant upper bound 3 has derivative 0 and never multiplies x^2; reversing bounds to put x on top introduces a negative sign, giving -x^2.",
@@ -16776,7 +16776,7 @@
         "x^4+ln|2x|+C"
       ],
       "answerIndex": 2,
-      "rationale": "Integrate term by term and include both the absolute value in the logarithm and the constant of integration.",
+      "rationale": "Integrating term by term gives integral of 4x^3 dx = x^4 and integral of (2/x) dx = 2 ln|x|, where the absolute value handles negative intervals and + C captures the full family of antiderivatives.",
       "choiceRationales": [
         "This differentiates 4x^3 to 12x^2 instead of integrating it to x^4, and uses a wrong sign/power on 2/x.",
         "This omits both the absolute value bars required in ln|x| for negative x-values and the arbitrary constant of integration +C.",
@@ -16894,7 +16894,7 @@
         "ln|3x+1|+C"
       ],
       "answerIndex": 3,
-      "rationale": "The numerator matches the derivative of 3x+1, so direct substitution gives the logarithm.",
+      "rationale": "Setting u = 3x + 1 produces du = 3 dx, which matches the numerator exactly, so integral of 3/(3x + 1) dx = integral of (1/u) du = ln|u| + C = ln|3x + 1| + C.",
       "choiceRationales": [
         "Because du=3 dx already absorbs the numerator 3, keeping an extra factor of 3 outside ln|3x+1| triples the answer.",
         "This differentiates (3x+1)^(-1) up to a sign and constant rather than substituting u=3x+1 and integrating (1/u)du to ln|3x+1|+C.",
@@ -17011,7 +17011,7 @@
         "The quantity Q remains constant, because the equation has no explicit t in it."
       ],
       "answerIndex": 0,
-      "rationale": "The negative proportionality constant describes continuous exponential decay relative to the current amount.",
+      "rationale": "In the differential equation dQ/dt = -0.1Q, the rate of change is proportional to the current value Q with constant -0.1, meaning Q undergoes continuous exponential decay at 10% of its current amount per unit time.",
       "choiceRationales": [
         "Best answer. The negative proportionality constant describes continuous exponential decay relative to the current amount.",
         "That describes a constant linear rate dQ/dt=-0.1, ignoring the factor Q that scales decay with current size.",
@@ -17128,7 +17128,7 @@
         "dP/dt=k/P"
       ],
       "answerIndex": 1,
-      "rationale": "Direct proportionality means the rate equals a constant multiple of the current population.",
+      "rationale": "Direct proportionality between a population's rate of change dP/dt and its current size P means their ratio is the constant k, yielding the exponential growth-and-decay differential equation dP/dt = kP.",
       "choiceRationales": [
         "Direct proportionality means the rate of change is a constant multiple of P (multiplication, kP) rather than adding a constant k to P.",
         "Best answer. Direct proportionality means the rate equals a constant multiple of the current population.",
@@ -17714,7 +17714,7 @@
         "y=-sqrt(x^2+4)"
       ],
       "answerIndex": 2,
-      "rationale": "Separating gives y dy=x dx, so y^2=x^2+C. The initial condition gives C=4 and selects the positive branch.",
+      "rationale": "Separating variables gives y dy = x dx; integrating yields y^2/2 = x^2/2 + C1, or y^2 = x^2 + C. Applying y(0) = 2 fixes C = 4 and selects the positive square root branch, giving y = sqrt(x^2 + 4).",
       "choiceRationales": [
         "Integrating x dx into x^2/2 without separating y onto the left side treats dy/dx=x/y as though it were dy/dx=x.",
         "Substituting the initial condition y(0)=2 into the integrated equation y^2=x^2+C gives C=2^2=4 rather than C=2, yielding y=sqrt(x^2+4).",
@@ -17832,7 +17832,7 @@
         "y=5e^(-x^2/2)"
       ],
       "answerIndex": 3,
-      "rationale": "Separate dy/y=-x dx, integrate, exponentiate, and use the initial value to obtain the factor 5.",
+      "rationale": "Separating variables yields (1/y) dy = -x dx; integrating gives ln|y| = -x^2/2 + C1, so y = Ce^(-x^2/2). Substituting the initial condition y(0) = 5 gives C = 5, resulting in y = 5e^(-x^2/2).",
       "choiceRationales": [
         "After separating into (1/y)dy=-x dx, integrating -x dx produces -x^2/2 in the exponent rather than the linear exponent -x.",
         "Using y(0)=5 determines the multiplicative coefficient C=5 outside the exponential function rather than multiplying inside the exponent.",
@@ -18185,7 +18185,7 @@
         "10"
       ],
       "answerIndex": 2,
-      "rationale": "The integral over the interval is 10, and dividing by the interval length 2 gives 5.",
+      "rationale": "The average value on [1, 3] is [1/(3 - 1)] * integral from 1 to 3 of (2x + 1) dx = (1/2)[x^2 + x] evaluated from 1 to 3 = (1/2)[(9 + 3) - (1 + 1)] = 10/2 = 5.",
       "choiceRationales": [
         "Evaluating 2x+1 at the midpoint incorrectly or dividing 8 by 2 misses that the integral on [1,3] is 10.",
         "Misapplying the antiderivative F(x)=x^2+x at the endpoints gives 8 instead of computing [F(3)-F(1)] divided by (3-1), which equals (12-2)/2=5.",
@@ -18302,7 +18302,7 @@
         "Some c in [a,b] has f(c) equal to f’s average value."
       ],
       "answerIndex": 3,
-      "rationale": "Continuity guarantees that the average height is attained, but not where or uniquely.",
+      "rationale": "For any function continuous on [a, b], the Mean Value Theorem for Integrals guarantees at least one number c in [a, b] where f(c) equals the average value [1/(b - a)] * integral from a to b of f(x) dx.",
       "choiceRationales": [
         "Only linear functions are guaranteed to hit their average value at the midpoint; nonlinear curves can hit it elsewhere.",
         "The Mean Value Theorem for Integrals applies to any continuous function regardless of whether its integral is zero.",
@@ -18657,7 +18657,7 @@
         "8sqrt(2)"
       ],
       "answerIndex": 2,
-      "rationale": "The curves meet at plus or minus sqrt(2); integrating 4-2x^2 between those bounds gives 16sqrt(2)/3.",
+      "rationale": "Setting 4 - x^2 = x^2 gives intersections at x = +/-sqrt(2); integrating top minus bottom, integral from -sqrt(2) to sqrt(2) of (4 - 2x^2) dx = 2[4x - 2x^3/3]_0^{sqrt(2)} = 16sqrt(2)/3.",
       "choiceRationales": [
         "Integrating (4-2x^2) only from 0 to sqrt(2) computes just the right half of the symmetric region enclosed between -sqrt(2) and sqrt(2).",
         "Dropping the irrational factor sqrt(2) when substituting x=sqrt(2) into the antiderivative 4x-(2/3)x^3 leaves out a radical factor and understates the area.",
@@ -18894,7 +18894,7 @@
         "(pi/4)[s(x)]^2"
       ],
       "answerIndex": 0,
-      "rationale": "The area formula for an equilateral triangle of side s is sqrt(3)s squared over 4.",
+      "rationale": "An equilateral triangle with side s(x) has altitude (sqrt(3)/2)s(x), so its cross-sectional area A(x) = (1/2) * base * height = (1/2)s(x) * (sqrt(3)/2)s(x) = (sqrt(3)/4)[s(x)]^2.",
       "choiceRationales": [
         "Best answer. The area formula for an equilateral triangle of side s is sqrt(3)s squared over 4.",
         "This gives the area of an isosceles right triangle with legs s(x), not an equilateral triangle whose height is (sqrt(3)/2)s.",
@@ -19012,7 +19012,7 @@
         "Integral from 0 to 1 of (x-x^2)dx"
       ],
       "answerIndex": 1,
-      "rationale": "Each square area is the side length squared, and volume accumulates those areas.",
+      "rationale": "For a solid with known cross sections perpendicular to the x-axis, volume equals the integral of cross-sectional area A(x); squaring the side length gives A(x) = (sqrt(x) - x)^2, integrated from 0 to 1 without pi.",
       "choiceRationales": [
         "Integrating the side length without squaring computes the 2D base area instead of summing square cross sections.",
         "Best answer. Each square area is the side length squared, and volume accumulates those areas.",
@@ -19132,7 +19132,7 @@
         "pi integral from 0 to 2 of [(x-1)^2-1]dx"
       ],
       "answerIndex": 2,
-      "rationale": "The outer radius is x+1 and the inner radius is 1 because both are measured from the shifted axis.",
+      "rationale": "Rotating around the horizontal line y = -1 shifts both vertical radii by +1: outer radius R(x) = x - (-1) = x + 1 and inner radius r(x) = 0 - (-1) = 1, yielding the washer volume pi * integral from 0 to 2 of [(x + 1)^2 - 1] dx.",
       "choiceRationales": [
         "This uses radius x measured from y=0, ignoring both the shifted axis y=-1 and the inner hollow cylinder.",
         "A washer integral about y=-1 uses pi(R^2-r^2) with squared radii (x+1)^2-1^2 rather than 2 pi times a single linear radius.",
@@ -19254,7 +19254,7 @@
       "answerIndex": 3,
       "rationale": "Each circular cross section of radius 2-x has area pi(2-x)^2. Integrating from 0 to 2 gives pi[-(2-x)^3/3]_0^2 = pi(0 - (-8/3)) = 8pi/3.",
       "choiceRationales": [
-        "Using 2^2=4 instead of 2^3=8 when evaluating pi[(2-x)^3/3] across [0,2] forgets to cube the radius endpoint and halves the volume.",
+        "Using 2^2 = 4 instead of 2^3 = 8 when evaluating pi[-(2-x)^3/3] across [0, 2] forgets to cube the radius endpoint and halves the volume from 8pi/3 to 4pi/3.",
         "Integrating pi(2-x) without squaring the radius computes a linear integral rather than summing circular areas pi r^2.",
         "Omitting the denominator 3 from the reverse power rule when integrating (2-x)^2 triples the true solid volume from 8pi/3 to 8pi.",
         "Best answer. Each circular cross section of radius 2-x has area pi(2-x)^2. Integrating from 0 to 2 gives pi[-(2-x)^3/3]_0^2 = pi(0 - (-8/3)) = 8pi/3."

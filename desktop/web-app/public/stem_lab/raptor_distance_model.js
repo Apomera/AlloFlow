@@ -4,7 +4,9 @@
  */
 (function (global) {
   'use strict';
-  if (global.RaptorDistanceModel) return;
+  if (!global || typeof global !== 'object' || global.RaptorDistanceModel) return;
+
+  function own(value, key) { return Object.prototype.hasOwnProperty.call(value, key); }
 
   var VERSION = 1, WIDTH_M = .30, WIDE_FOV = 20, DETAIL_FOV = .75;
   var REFERENCE_LIMIT = 60, EAGLE_LIMIT = 140;
@@ -27,12 +29,12 @@
       ? Math.round(Math.max(low, Math.min(high, value))) : fallback;
   }
   function normalize(raw) {
-    var value = plain(raw) && raw.version === VERSION ? raw : {};
+    var value = plain(raw) && own(raw, 'version') && raw.version === VERSION ? raw : {};
     return {
       version: VERSION,
-      distance: number(value.distance, 120, 40, 300),
-      contrast: number(value.contrast, 95, 10, 100),
-      cycles: number(value.cycles, 12, 4, 20),
+      distance: number(own(value, 'distance') ? value.distance : undefined, 120, 40, 300),
+      contrast: number(own(value, 'contrast') ? value.contrast : undefined, 95, 10, 100),
+      cycles: number(own(value, 'cycles') ? value.cycles : undefined, 12, 4, 20),
       widthM: WIDTH_M, wideFov: WIDE_FOV, detailFov: DETAIL_FOV
     };
   }
@@ -64,7 +66,7 @@
     }
     var sigma = (widthPixels / DETAIL_FOV) / (2 * Math.PI * limit) * Math.sqrt(2 * LOG_TEN);
     if (!Number.isFinite(sigma)) throw new RangeError('Gaussian illustration exceeds finite sampling dimensions.');
-    return sigma;
+    return sigma === 0 ? 0 : sigma;
   }
 
   var presets = freeze({
@@ -99,4 +101,4 @@
     gaussianSigmaPixels: gaussianSigmaPixels,
     presets: presets, sources: sources, assumptions: assumptions
   });
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

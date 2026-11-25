@@ -52,11 +52,55 @@ function _vrCopy(t, key, fallback) {
     return v && v !== key ? v : fallback;
   } catch (_) { return fallback; }
 }
+const _vrSafeJsonReviver = (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+const _vrIsGlobalMuted = () => typeof window !== 'undefined' && (
+  typeof window.__alloIsGlobalMuted === 'function'
+    ? !!window.__alloIsGlobalMuted()
+    : (!!window.__alloGlobalMute || !!window._alloGlobalMute)
+);
+const _vrCheckCrisisText = (rawText) => {
+  const s = String(rawText || '').trim();
+  if (!s) return false;
+  try {
+    const checker = typeof window !== 'undefined' && (window.AlloModules?.SafetyContentChecker || window.SafetyContentChecker);
+    if (checker && typeof checker.check === 'function') {
+      const res = checker.check(s);
+      if (res && (res.blocked || res.crisis || res.level === 'critical' || res.severity === 'critical')) return true;
+    }
+  } catch (_) {}
+  return /\b(kill\s+my\s*self|suicid\w*|end\s+my\s+life|want\s+to\s+die|hurt\s+my\s*self|self[\s-]*harm|cut\s+my\s*self)\b/i.test(s);
+};
+const _vrSpeakBranch = (spoken) => {
+  if (!spoken || _vrIsGlobalMuted() || typeof window === 'undefined') return;
+  try {
+    if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
+      window.AlloSpeechPlayer.speak(spoken);
+    } else if (typeof window.callTTS === 'function') {
+      Promise.resolve(window.callTTS(spoken)).then((url) => {
+        if (!url) return;
+        const revoke = () => { try { URL.revokeObjectURL(url); } catch (_) {} };
+        if (_vrIsGlobalMuted()) { revoke(); return; }
+        const audio = new Audio(url);
+        audio.addEventListener('ended', revoke);
+        audio.addEventListener('error', revoke);
+        audio.play().catch(revoke);
+        setTimeout(revoke, 120000);
+      }).catch(() => {});
+    } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
+    }
+  } catch (_) {}
+};
 const _alloAiUsableKind = (kind, fn) => {
+  if (typeof window === 'undefined') return false;
+  if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true) return false;
+  if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return false;
+  if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
   try {
     if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
-  } catch (_) {}
-  try { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; } catch (_) { return false; }
+  } catch (_) { return false; }
+  try { return typeof fn === 'function' && !fn._alloQrBlocked; } catch (_) { return false; }
 };
 const _alloRuntimeAiAvailable = () => {
   try { return typeof window.callGemini === 'function' && _alloAiUsableKind('text', window.callGemini); } catch (_) { return false; }
@@ -169,7 +213,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
         const chartMatch = line.trim().match(/^\[\[CHART:\s*({.*})\]\]$/);
         if (chartMatch) {
             try {
-                const chartData = JSON.parse(chartMatch[1]);
+                const chartData = JSON.parse(chartMatch[1], _vrSafeJsonReviver);
                 // A figure whose figcaption is the written description; the data table gives every value as text.
                 const chartDescription = typeof chartData.description === 'string' ? chartData.description.trim() : '';
                 const chartCaption = chartDescription ? <figcaption data-chart-description className="mt-3 text-sm text-slate-700 text-left leading-relaxed">{chartDescription}</figcaption> : null;
@@ -657,8 +701,9 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
     clone.style.zoom = '1';
     clone.style.transform = 'none';
     const boardRect = board.getBoundingClientRect();
-    const width = Math.ceil(Math.max(board.scrollWidth, boardRect.width / zoom));
-    const height = Math.ceil(Math.max(board.scrollHeight, boardRect.height / zoom));
+    const safeZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+    const width = Math.ceil(Math.max(board.scrollWidth, boardRect.width / safeZoom));
+    const height = Math.ceil(Math.max(board.scrollHeight, boardRect.height / safeZoom));
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
       '<foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml" style="width:' + width + 'px;height:' + height + 'px;background:#f8fafc;">' +
@@ -1095,7 +1140,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const storageKey = organizerReflectionKey({ resourceId: resource?.id, learnerId: isTeacherMode ? 'teacher-preview:' + (learnerId || 'local') : learnerId, sessionCode, structureType: type });
   const empty = () => ({ key: storageKey, values: {}, submitted: null });
   const load = key => {
-    try { const value = JSON.parse(window.localStorage.getItem(key) || 'null');
+    try { const value = JSON.parse(window.localStorage.getItem(key) || 'null', _vrSafeJsonReviver);
       if (value && value.version === 1) return { key, values: Object.fromEntries(fields.map(([id]) => [id, String(value.values?.[id] || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS)])), submitted: value.submitted || null };
     } catch (_) {}
     return { key, values: {}, submitted: null };
@@ -1142,7 +1187,7 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     try {
       const scopedRaw = window.localStorage.getItem(kwlNotesKey);
       const raw = scopedRaw || (baseKwlNotesKey && baseKwlNotesKey !== kwlNotesKey ? window.localStorage.getItem(baseKwlNotesKey) : null);
-      const saved = JSON.parse(raw || 'null');
+      const saved = JSON.parse(raw || 'null', _vrSafeJsonReviver);
       if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS));
     } catch (_) {}
   }
@@ -1184,7 +1229,9 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     } catch (error) { if (owner.current === requestOwner) { setNoticeFailed(true); setNotice(error.message || tr("submission_failed", "Submission failed. Your draft is still here.")); } }
     finally { if (owner.current === requestOwner) setBusy(false); }
   };
+  const reflectionCrisis = !isTeacherMode && fields.some(([id]) => _vrCheckCrisisText(shown.values[id] || ''));
   return <section data-organizer-activity-ready="true" aria-label={type + ' reflection'} className="mx-auto my-5 max-w-5xl rounded-2xl border-2 border-indigo-200 bg-white p-5 text-slate-900">
+    {reflectionCrisis && <div role="alert" className="mb-3 rounded-xl border-2 border-rose-300 bg-rose-50 p-3 text-sm font-semibold text-rose-900">You matter, and help is available right now. Call or text 988 (Suicide &amp; Crisis Lifeline), text HOME to 741741, or call 911 in an emergency. Please talk with a trusted adult.</div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-xl font-bold">{type === 'KWL Chart' ? tr("kwl_title", "My KWL reflection") : type === 'Claim-Evidence-Reasoning' ? tr("cer_title", "Build an argument") : tr("explain_title", "Explain your thinking")}</h3>
       {onClose && <button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-slate-400 px-4">{tr("back_diagram", "Back to diagram")}</button>}
@@ -1509,17 +1556,7 @@ const renderOutlineContentCore = (deps) => {
                                  data-outline-branch-listen={bIdx}
                                  onClick={() => {
                                    const spoken = [branch.title, ...(Array.isArray(branch.items) ? branch.items : [])].filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
-                                   if (!spoken) return;
-                                   try {
-                                     if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
-                                       window.AlloSpeechPlayer.speak(spoken);
-                                     } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-                                       window.callTTS(spoken);
-                                     } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
-                                       window.speechSynthesis.cancel();
-                                       window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
-                                     }
-                                   } catch (_) {}
+                                   _vrSpeakBranch(spoken);
                                  }}
                                  aria-label={(t('common.listen') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
                                  title={t('a11y.read_aloud') || 'Listen'}
@@ -2562,7 +2599,7 @@ const renderOutlineContentCore = (deps) => {
                             {renderLiveOrganizerStatus("conceptmap")}
                         </div>
                     )}
-                    <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} t={t} />
+                    <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={renderBranchItem} t={t} />
                 </div>
             );
         }
@@ -3196,17 +3233,7 @@ const renderOutlineContentCore = (deps) => {
                                                             data-outline-branch-listen={i}
                                                             onClick={() => {
                                                                 const spoken = [branch.title, ...(Array.isArray(branch.items) ? branch.items : [])].filter(Boolean).join('. ').replace(/\s+/g, ' ').trim();
-                                                                if (!spoken) return;
-                                                                try {
-                                                                    if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
-                                                                        window.AlloSpeechPlayer.speak(spoken);
-                                                                    } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-                                                                        window.callTTS(spoken);
-                                                                    } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
-                                                                        window.speechSynthesis.cancel();
-                                                                        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(spoken));
-                                                                    }
-                                                                } catch (_) {}
+                                                                _vrSpeakBranch(spoken);
                                                             }}
                                                             aria-label={(t('common.listen') || 'Listen') + (branch.title ? ': ' + branch.title : '')}
                                                             title={t('a11y.read_aloud') || 'Listen'}
@@ -3736,7 +3763,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, onSafetyFlag, callImagen
     // Stopwatch: ticks while a run is live, freezes on a win.
     React.useEffect(() => {
         if (!challenge || won) return undefined;
-        const iv = setInterval(() => { elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
+        const iv = setInterval(() => { if (typeof document !== 'undefined' && document.hidden) return; elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
         return () => clearInterval(iv);
     }, [challenge, won]);
 
@@ -5438,7 +5465,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, c
     // Stopwatch (count-up; freezes when the walk is scored).
     React.useEffect(() => {
         if (!recall || finished) return undefined;
-        const iv = setInterval(() => { elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
+        const iv = setInterval(() => { if (typeof document !== 'undefined' && document.hidden) return; elapsedRef.current += 1; setElapsed(elapsedRef.current); }, 1000);
         return () => clearInterval(iv);
     }, [recall, finished]);
 
@@ -5866,7 +5893,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, c
                     + (dl ? `<div class="decor">${_mpEsc(t('memory_palace.sr_decoration') || 'Decoration')}: ${_mpEsc(dl)}</div>` : '')
                     + `</div></li>`;
             }).join('');
-            return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
+            const safeRoomColor = /^(?:#[0-9a-fA-F]{3,8}|rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\))$/.test(String(room.color || '').trim()) ? String(room.color).trim() : '#6366f1';
+            return `<section class="room"><h2 style="border-color:${_mpEsc(safeRoomColor)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
         }).join('');
         const sheetTitle = _mpEsc(palace.title || data?.main || title || 'Memory Palace');
         const html = `<!doctype html><html lang="${String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '')}"${document.documentElement.dir === 'rtl' ? ' dir="rtl"' : ''}><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
@@ -8945,7 +8973,7 @@ function editMarkdownTable(table, change, labels) {
 function parseChartLine(line) {
   const match = String(line || '').trim().match(/^\[\[CHART:\s*({.*})\]\]$/);
   if (!match) return null;
-  try { const data = JSON.parse(match[1]); return data && (data.type === 'bar' || data.type === 'donut') ? data : null; } catch (_) { return null; }
+  try { const data = JSON.parse(match[1], _vrSafeJsonReviver); return data && (data.type === 'bar' || data.type === 'donut') ? data : null; } catch (_) { return null; }
 }
 // "Label: value" (or "Label, value") per line. Returns { data, bad } where bad lists unreadable lines.
 function parseChartRows(text) {
@@ -9101,6 +9129,7 @@ function TableChartTools(props) {
   </>;
 }
 
+if (typeof window !== 'undefined') {
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ViewRenderers = {
   TableChartTools, buildMarkdownTable, findTableAt, editMarkdownTable, parseChartLine, parseChartRows, buildChartLine, insertMarkdownBlock,
@@ -9112,3 +9141,4 @@ window.AlloModules.ViewRenderers = {
   renderInteractiveMap,
   openConceptMap3D,   // exported so the static organizer view (view_outline) can open 3D without entering interactive mode
 };
+}

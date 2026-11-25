@@ -201,6 +201,26 @@
       },
       {
         "index": 19,
+        "tool": "memory-aid",
+        "status": "ready",
+        "commandId": null,
+        "directive": "",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-memory-aid-175p6h4"
+      },
+      {
+        "index": 20,
+        "tool": "applied-challenge",
+        "status": "ready",
+        "commandId": null,
+        "directive": "",
+        "generationAction": "generate",
+        "expectedCalls": 1,
+        "generationConfigFingerprint": "cfg-applied-challenge-1n1zg4j"
+      },
+      {
+        "index": 21,
         "tool": "lesson-plan",
         "status": "ready",
         "commandId": null,
@@ -234,6 +254,8 @@
         "math",
         "gemini-bridge",
         "alignment-report",
+        "memory-aid",
+        "applied-challenge",
         "lesson-plan"
       ],
       "resourcePlan": [
@@ -1897,6 +1919,176 @@
           "suppressedGenerationVariants": []
         },
         {
+          "tool": "memory-aid",
+          "directive": "",
+          "uiId": "memory-aid-20",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "unspecified",
+            "form": "original",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "legacy-inferred",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-memory-aid-5zqdv6",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-memory-aid-5zqdv6",
+              "type": "memory-aid",
+              "grade": null,
+              "language": "English",
+              "variantKey": "default",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "memory-aid",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {},
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-memory-aid-175p6h4",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "default",
+          "explicitVariantKey": null,
+          "variantKeyDerived": true,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "memory-aid",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {},
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-memory-aid-175p6h4",
+          "generationPolicy": "variant-repeatable",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        },
+        {
+          "tool": "applied-challenge",
+          "directive": "",
+          "uiId": "applied-challenge-21",
+          "instructionalText": {
+            "schemaVersion": 1,
+            "role": "unspecified",
+            "form": "original",
+            "sourceArtifactId": null,
+            "primaryArtifactId": null,
+            "designationSource": "legacy-inferred",
+            "replacementAuthorization": {
+              "authorized": false,
+              "source": "none"
+            },
+            "complexity": {
+              "requestedGrade": "",
+              "calibrationTarget": "",
+              "measuredGrade": null,
+              "method": "",
+              "status": "unavailable",
+              "contentFingerprint": "",
+              "measuredAt": "",
+              "language": "English"
+            }
+          },
+          "generationAction": "generate",
+          "generationIdentity": "gm1-applied-challenge-1cjqhu2",
+          "generationVariants": [
+            {
+              "generationIdentity": "gm1-applied-challenge-1cjqhu2",
+              "type": "applied-challenge",
+              "grade": null,
+              "language": "English",
+              "variantKey": "default",
+              "sourceFingerprint": "",
+              "sourceArtifactId": "",
+              "contextFingerprint": "",
+              "contextInputsFingerprint": "ctxi-1jey7ut",
+              "generationConfig": {
+                "version": "generation-config/v1",
+                "type": "applied-challenge",
+                "backend": "",
+                "provider": "",
+                "model": "",
+                "fallbackModel": "",
+                "imageProvider": "",
+                "imageModel": "",
+                "visionModel": "",
+                "fields": {},
+                "generationContext": {}
+              },
+              "generationConfigFingerprint": "cfg-applied-challenge-1n1zg4j",
+              "action": "generate",
+              "existingArtifactId": null,
+              "reason": "No reusable artifact exists for this source-aware generation identity."
+            }
+          ],
+          "existingArtifactId": null,
+          "variantKey": "default",
+          "explicitVariantKey": null,
+          "variantKeyDerived": true,
+          "sourceFingerprint": "",
+          "sourceArtifactId": null,
+          "contextFingerprint": "",
+          "contextInputsFingerprint": "ctxi-1jey7ut",
+          "contextFingerprintDerived": true,
+          "generationConfig": {
+            "version": "generation-config/v1",
+            "type": "applied-challenge",
+            "backend": "",
+            "provider": "",
+            "model": "",
+            "fallbackModel": "",
+            "imageProvider": "",
+            "imageModel": "",
+            "visionModel": "",
+            "fields": {},
+            "generationContext": {}
+          },
+          "generationConfigFingerprint": "cfg-applied-challenge-1n1zg4j",
+          "generationPolicy": "variant-repeatable",
+          "novelResource": true,
+          "suppressedGenerationVariants": []
+        },
+        {
           "tool": "lesson-plan",
           "directive": "",
           "uiId": "lesson-plan-17",
@@ -2002,6 +2194,8 @@
         "math": "",
         "gemini-bridge": "",
         "alignment-report": "",
+        "memory-aid": "",
+        "applied-challenge": "",
         "lesson-plan": ""
       },
       "sourcePolicy": {

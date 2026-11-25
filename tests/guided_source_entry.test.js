@@ -160,31 +160,129 @@ function shellProps(extra = {}) {
     fileInputRef: { current: null }, t: () => '', inputText: '', toggleTool: vi.fn(),
     showSourceGen: false, showUrlInput: false, ...extra };
 }
-describe('source actions stay directly available without changing source scope', () => {
-  it.each([{ guidedMode: true }, { isParentMode: true }, {}])('shows all 5 source controls directly in the action grid without "More sources": %j', mode => {
+// 2026-11-23, owner: the six ways to bring in a passage (Upload, Find online, Write with AI, Reading
+// catalog, Dictate, Open PDF project) are always on show, in that order, with Paste (in SourceInputPanel).
+// Only starting WITHOUT a passage (teacher, no passage: topic, word list, blank) sits behind ONE
+// "Other ways to start" disclosure; its body stays mounted, hidden, so the request listener keeps working.
+const DIRECT = ['#tour-upload-source', '[data-help-key="source_link_btn"]', '[data-help-key="source_generate_btn"]', '[data-help-key="source_books_btn"]', '[data-source-dictate-btn="true"]', '[data-source-open-pdf-project="true"]'];
+const otherWays = () => {
+  const toggle = host.querySelector('[data-source-other-ways-toggle]');
+  expect(toggle, 'the "Other ways to start" toggle').toBeTruthy();
+  const region = document.getElementById(toggle.getAttribute('aria-controls'));
+  expect(region, 'aria-controls names the disclosure body').toBeTruthy();
+  return { toggle, region };
+};
+describe('source actions: six ways in on show, starts without a passage one click away', () => {
+  it.each([{ guidedMode: true }, { isParentMode: true }, {}, { isTeacherMode: true }])('shows all six ways in directly, in order, as pills in one grid: %j', mode => {
     const captured = vi.fn(() => React.createElement('textarea', { 'aria-label': 'Source text' }));
     window.AlloModules = { SourceInputPanel: captured };
     const scope = { useOwnSources: true, selectedOwnSourceIds: ['doc-1'], documentsOnly: true, setUseOwnSources: vi.fn(), setSelectedOwnSourceIds: vi.fn(), setDocumentsOnly: vi.fn() };
-    render(Shell, shellProps({ ...mode, ...scope }));
+    render(Shell, shellProps({ ...mode, ...scope, handleGenerate: vi.fn() }));
     expect(host.querySelector('details[data-help-key="source_more_options"]')).toBeNull();
     expect(host.textContent).not.toContain('More sources');
     const grid = host.querySelector('.allo-source-action-grid');
     expect(grid).toBeTruthy();
-    const selectors = [
-      '#tour-upload-source',
-      '[data-source-open-pdf-project="true"]',
-      '[data-help-key="source_link_btn"]',
-      '[data-help-key="source_generate_btn"]',
-      '[data-help-key="source_books_btn"]',
-    ];
-    for (const selector of selectors) {
-      const control = host.querySelector(selector);
-      expect(control, selector).toBeTruthy();
-      expect(control.parentElement).toBe(grid);
-      expect(control.closest('details')).toBeNull();
-    }
+    const controls = DIRECT.map((selector) => host.querySelector(selector));
+    controls.forEach((control, i) => {
+      expect(control, DIRECT[i]).toBeTruthy();
+      expect(control.parentElement, DIRECT[i]).toBe(grid);
+      expect(control.closest('[hidden]'), DIRECT[i]).toBeNull();
+      expect(control.className, DIRECT[i] + ' keeps the pill style').toContain(controls[0].className);
+      if (i > 0) expect(controls[i - 1].compareDocumentPosition(control) & Node.DOCUMENT_POSITION_FOLLOWING, DIRECT[i] + ' order').toBeTruthy();
+    });
     expect(host.querySelector('textarea').closest('details')).toBeNull();
     expect(captured.mock.calls.at(-1)[0]).toMatchObject(scope);
+  });
+  it('a teacher with no passage gets one full-width "Other ways to start" after the six, holding only the starts without a passage', () => {
+    window.AlloModules = {};
+    render(Shell, shellProps({ isTeacherMode: true, handleGenerate: vi.fn() }));
+    const grid = host.querySelector('.allo-source-action-grid');
+    const { toggle, region } = otherWays();
+    expect(toggle.parentElement).toBe(grid);
+    expect(toggle.tagName).toBe('BUTTON');
+    expect(toggle.textContent).toBe('Other ways to start');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.className, 'same pill as its neighbours').toBe(host.querySelector('#tour-upload-source').className);
+    expect(toggle.style.gridColumn, 'a full-width row, no empty cell beside it').toBe('1 / -1');
+    const last = host.querySelector('[data-source-open-pdf-project="true"]');
+    expect(last.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING, 'after the six').toBeTruthy();
+    expect(toggle.nextElementSibling, 'the body follows the toggle in tab order').toBe(region);
+    expect(region.hasAttribute('hidden')).toBe(true);
+    for (const selector of DIRECT) expect(region.querySelector(selector), selector + ' is not in the fold').toBeNull();
+    expect(region.querySelector('[data-source-start-chooser]')).toBeTruthy();
+    act(() => toggle.click());
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(region.hasAttribute('hidden')).toBe(false);
+    act(() => toggle.click());
+    expect(region.hasAttribute('hidden')).toBe(true);
+  });
+  it.each([{ guidedMode: true }, { isParentMode: true }, {}])('no fold when there is nothing to put in it (no teacher start chooser): %j', mode => {
+    window.AlloModules = {};
+    render(Shell, shellProps(mode));
+    expect(host.querySelector('[data-source-other-ways-toggle]')).toBeNull();
+    expect(host.querySelector('[data-source-other-ways]')).toBeNull();
+  });
+  it('the six ways in keep their hooks and handlers', () => {
+    window.AlloModules = {};
+    const props = shellProps({ setShowSourceGen: vi.fn(), setIsReadingLibraryOpen: vi.fn(), openSourceView: vi.fn(), setExpandedTools: vi.fn() });
+    render(Shell, props);
+    const heard = vi.fn();
+    window.addEventListener('alloflow:open-source-dictation', heard);
+    try {
+      act(() => host.querySelector('[data-source-dictate-btn="true"]').click());
+    } finally { window.removeEventListener('alloflow:open-source-dictation', heard); }
+    expect(heard).toHaveBeenCalledTimes(1);
+    expect(window.__alloOpenSourceDictation).toBe(true);
+    delete window.__alloOpenSourceDictation;
+    expect(props.openSourceView).toHaveBeenCalledWith({ focus: false });
+    act(() => host.querySelector('[data-help-key="source_books_btn"]').click());
+    expect(props.setIsReadingLibraryOpen).toHaveBeenCalledWith(true);
+    act(() => host.querySelector('[data-help-key="source_generate_btn"]').click());
+    expect(props.setShowSourceGen).toHaveBeenCalledWith(true);
+    expect(host.querySelector('[data-source-open-pdf-project="true"] input[type="file"][accept=".json"]')).toBeTruthy();
+    expect(host.querySelector('[data-help-key="source_dictate_btn"]').getAttribute('data-source-dictate-btn')).toBe('true');
+  });
+  it('Write with AI stays on the first view, so its Cancel is always in view; the fold stays closed', () => {
+    window.AlloModules = {};
+    render(Shell, shellProps({ showSourceGen: true, isTeacherMode: true, handleGenerate: vi.fn() }));
+    const writeAi = host.querySelector('[data-help-key="source_generate_btn"]');
+    expect(writeAi.closest('[hidden]')).toBeNull();
+    expect(writeAi.getAttribute('aria-expanded')).toBe('true');
+    expect(otherWays().region.hasAttribute('hidden')).toBe(true);
+  });
+  it('opening it expands a collapsed Source card', () => {
+    window.AlloModules = {};
+    const setExpandedTools = vi.fn();
+    render(Shell, shellProps({ expandedTools: [], setExpandedTools, isTeacherMode: true, handleGenerate: vi.fn() }));
+    act(() => otherWays().toggle.click());
+    expect(setExpandedTools).toHaveBeenCalledTimes(1);
+    expect(setExpandedTools.mock.calls[0][0]([])).toEqual(['source-input']);
+  });
+  it('holds the three starts without a passage for a teacher, and a start request opens it and focuses the form', () => {
+    window.AlloModules = {};
+    window.__alloBlankStartTypes = ['quiz'];
+    try {
+      render(Shell, shellProps({ isTeacherMode: true, handleGenerate: vi.fn(), setExpandedTools: vi.fn() }));
+      const { region, toggle } = otherWays();
+      const chooser = host.querySelector('[data-source-start-chooser]');
+      expect(chooser, 'mounted while closed').toBeTruthy();
+      expect(chooser.closest('[hidden]')).toBe(region);
+      expect(host.querySelectorAll('[data-source-start-chooser]')).toHaveLength(1);
+      act(() => { window.__alloRequestSourceStart('word-list'); });
+      expect(region.hasAttribute('hidden')).toBe(false);
+      expect(toggle.getAttribute('aria-expanded')).toBe('true');
+      expect(document.activeElement).toBe(chooser.querySelector('form textarea'));
+      expect(chooser.querySelector('[data-path-less-traveled]'), 'the experimental note').toBeTruthy();
+    } finally { delete window.__alloBlankStartTypes; }
+  });
+  it('with a passage, there is no disclosure and the separate starts stay below the source card', () => {
+    window.AlloModules = {};
+    render(Shell, shellProps({ isTeacherMode: true, handleGenerate: vi.fn(), inputText: 'A complete passage ready for adaptation.' }));
+    expect(host.querySelector('[data-source-other-ways-toggle]')).toBeNull();
+    const chooser = host.querySelector('[data-source-start-chooser]');
+    expect(chooser).toBeTruthy();
+    expect(chooser.closest('[hidden]')).toBeNull();
+    expect(chooser.querySelector('[data-source-start-toggle]'), 'folded behind its own "Show these options"').toBeTruthy();
   });
   it('opens a Family tool only on an explicit adult action, without generating', () => {
     window.AlloModules = {};

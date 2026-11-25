@@ -1195,7 +1195,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.ar-career-tab-copy { min-width: 0; }',
       '.ar-career-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
       '.ar-career-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.82; }',
-      '.ar-career-panel { min-width: 0; outline: none; }',
+      '.ar-career-panel { min-width: 0; }',
+      '.ar-career-panel:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
+      '[data-stem-tool-shell="autoRepair"] button, [data-stem-tool-shell="autoRepair"] summary, [data-stem-tool-shell="autoRepair"] input, [data-stem-tool-shell="autoRepair"] select { touch-action: manipulation; }',
       '.ar-career-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
       '.ar-career-section + .ar-career-section { margin-top: 14px; }',
       '.ar-career-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
@@ -1293,7 +1295,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.ar-usedcar-tab-copy { min-width: 0; }',
       '.ar-usedcar-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
       '.ar-usedcar-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.84; }',
-      '.ar-usedcar-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-usedcar-panel { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-usedcar-panel:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '.ar-usedcar-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
       '.ar-usedcar-section + .ar-usedcar-section { margin-top: 14px; }',
       '.ar-usedcar-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
@@ -1442,7 +1445,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.ar-tire-readout-copy span { font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }',
       '.ar-tire-readout-copy strong { margin-top: 3px; font-size: 12px; line-height: 1.32; }',
       '.ar-tire-readout-copy small { margin-top: 3px; font-size: 10px; line-height: 1.4; }',
-      '.ar-tire-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-tire-panel { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-tire-panel:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '.ar-tire-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
       '.ar-tire-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
       '.ar-tire-section-head > div { min-width: 0; max-width: 780px; }',
@@ -1821,7 +1825,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       '.ar-ev-tab-copy { min-width: 0; }',
       '.ar-ev-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
       '.ar-ev-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.84; }',
-      '.ar-ev-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-ev-panel { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-ev-panel:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '.ar-ev-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
       '.ar-ev-section + .ar-ev-section, .ar-ev-section + .ar-ev-critical { margin-top: 14px; }',
       '.ar-ev-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
@@ -8162,7 +8167,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   function makeAutoMetalTexture(THREE, kind) {
     if (typeof document === 'undefined' || !THREE || typeof THREE.CanvasTexture !== 'function') return null;
     try {
-      var canvas = document.createElement('canvas');
+      var canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
       canvas.width = 128; canvas.height = 128;
       var ctx = canvas.getContext('2d');
       if (!ctx) return null;
@@ -10768,7 +10773,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize()); return mesh;
     }
     function label(parent, text, pos, width, color) {
-      var canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 128;
+      var canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); canvas.width = 768; canvas.height = 128;
       var ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.fillStyle = '#102033'; ctx.fillRect(0, 0, 768, 128);
@@ -10779,7 +10784,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       plane.name = 'shop-sign-' + text; plane.position.set(pos[0], pos[1], pos[2]); parent.add(plane); return plane;
     }
     function instrumentDisplay(parent, text, pos, width) {
-      var canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 160;
+      var canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); canvas.width = 512; canvas.height = 160;
       var ctx = canvas.getContext('2d');
       if (!ctx) return;
       ctx.fillStyle = '#c6ead9'; ctx.fillRect(0, 0, 512, 160);
@@ -11156,7 +11161,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           [-1.30 + Math.cos(angle) * 0.13, 0.40 + Math.sin(angle) * 0.13, 0.962], lugMaterial, 'z');
         lug.userData.partId = instrumentKind === 'torque' ? 'shop-lug-' + lugIndex : 'brakes'; lug.userData.checked = state.lugs.indexOf(lugIndex) !== -1; lug.userData.next = lugIndex === nextWheelLug; picks.push(lug);
         if (instrumentKind === 'torque' && instrumentReady) {
-          var badgeCanvas = document.createElement('canvas'); badgeCanvas.width = badgeCanvas.height = 128;
+          var badgeCanvas = document.createElement('canvas'); if (badgeCanvas.setAttribute) badgeCanvas.setAttribute('aria-hidden', 'true'); badgeCanvas.width = badgeCanvas.height = 128;
           var badgeContext = badgeCanvas.getContext('2d');
           if (badgeContext) {
             badgeContext.fillStyle = '#102033'; badgeContext.fillRect(0, 0, 128, 128);
@@ -12513,7 +12518,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ),
             h('div', { className: 'ar-menu-quick-grid' },
               quickStarts.map(function(item) {
-                return h('button', {
+                return h('button', { type: 'button',
                   key: item.id,
                   'data-ar-focusable': true,
                   'data-ar-quick-start': item.id,
@@ -12575,7 +12580,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'data-ar-category': cat.id,
                 className: 'ar-menu-category'
               },
-                h('button', {
+                h('button', { type: 'button',
                   'data-ar-focusable': true,
                   'data-ar-category-toggle': cat.id,
                   'aria-label': (collapsed ? 'Expand' : 'Collapse') + ' ' + cat.name,
@@ -12639,7 +12644,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     var progressText = progressInfo
                       ? progressInfo.current + ' of ' + progressInfo.maximum + ' ' + (isDecisionLab ? 'preparation stages' : __alloT('stem.autorepair.complete_lower', 'complete'))
                       : '';
-                    return h('button', {
+                    return h('button', { type: 'button',
                       'data-ar-focusable': true,
                       'data-ar-module-card': m.id,
                       key: m.id,
@@ -12784,7 +12789,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
 
         function dxTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -13253,7 +13258,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 streak > 0 && h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } }, '\uD83D\uDD25 Streak ', h('strong', null, streak)),
                 d.dxQuizBestStreak > 1 && h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } }, 'Best ', h('strong', null, d.dxQuizBestStreak))
               ),
-              showReset && attempts > 0 && h('button', { 'data-ar-focusable': true,
+              showReset && attempts > 0 && h('button', { type: 'button', 'data-ar-focusable': true,
                 onClick: function() { updMulti({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
                 style: Object.assign({}, btnSecondary(), { fontSize: 11 })
               }, __alloT('stem.autorepair.reset_score', '\u21BA Reset score'))
@@ -13295,7 +13300,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   dxFact('Shop boundary', current.shop, T.warn, false)
                 )
               ),
-              h('button', { 'data-ar-focusable': true, onClick: startRound, style: Object.assign({}, btnPrimary(), { marginTop: 10 }) },
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: startRound, style: Object.assign({}, btnPrimary(), { marginTop: 10 }) },
                 __alloT('stem.autorepair.next_noise', '\u21BB Next noise \u2192'))
             );
           }
@@ -13313,7 +13318,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('h2', { style: { margin: '8px 0 6px', fontSize: 18, color: T.text } }, __alloT('stem.autorepair.diagnose_by_ear', 'Diagnose by ear')),
                 h('p', { style: { maxWidth: 620, margin: '0 auto 13px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                   'You will get a noise and when it happens. Pick the most likely cause from four options. ' + LISTEN_CUES.length + ' real Maine-flavored cues are in rotation.'),
-                h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, __alloT('stem.autorepair.start', '\uD83D\uDE97 Start'))
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, __alloT('stem.autorepair.start', '\uD83D\uDE97 Start'))
               )
             );
           }
@@ -13633,7 +13638,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 }
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
+              h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
                 onClick: function() { upd('repairPicked', null); }, style: btnGhost() }, __alloT('stem.autorepair.repair_list', '← Repair list')),
               h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, pickedRepair.icon),
               h('h2', { style: { margin: 0, fontSize: 18, color: T.text } }, pickedRepair.name)
@@ -13836,7 +13841,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             __alloT('stem.autorepair.pick_a_job_each_scenario_shows_tools_s', 'Pick a job. Each scenario shows tools, safety, step-by-step, gotchas, and a clear DIY-vs-shop verdict.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
             REPAIR_SCENARIOS.map(function(s) {
-              return h('button', { key: s.id, 'data-ar-focusable': true,
+              return h('button', { type: 'button', key: s.id, 'data-ar-focusable': true,
                 'aria-label': s.name,
                 onClick: function() {
                   updMulti({ repairPicked: s.id, repairSafetyFor: s.id, repairSafetyChecks: {} });
@@ -13868,7 +13873,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           setTimeout(function() { var target = document.querySelector(selector); if (target && typeof target.focus === 'function') target.focus(); }, 30);
         }
         function toolsTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault(); var nextIndex = index;
@@ -14166,7 +14171,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         };
 
         function careerTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -14362,7 +14367,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 pct >= 80 ? '🏅 Solid foundation. You\'re ready to start hands-on practice with a mentor or CTE class.' :
                 pct >= 60 ? '👍 Good start. Review the diagnose + safety modules and re-test.' :
                 '📚 Worth another pass through the material — especially safety. No shame; this is hard.'),
-              h('button', { 'data-ar-focusable': true, onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
                 style: btnPrimary() }, __alloT('stem.autorepair.retake_quiz', '🔄 Retake quiz'))
             ),
             disclaimerFooter()
@@ -14391,7 +14396,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 } else {
                   bg = T.cardAlt; border = T.border; color = T.text;
                 }
-                return h('button', { key: i, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: i, 'data-ar-focusable': true,
                   'aria-label': c, 'aria-pressed': isPicked ? 'true' : 'false',
                   disabled: submitted,
                   onClick: function() {
@@ -14408,7 +14413,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 picked === question.correct ? '✅ Correct. ' : '❌ Not quite. '),
               h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } }, question.why),
               h('div', { style: { marginTop: 10 } },
-                h('button', { 'data-ar-focusable': true, onClick: function() { upd('quizIdx', qIdx + 1); }, style: btnPrimary() },
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() { upd('quizIdx', qIdx + 1); }, style: btnPrimary() },
                   qIdx + 1 < QUIZ.length ? '→ Next question' : '🎉 Finish quiz')
               )
             )
@@ -14501,7 +14506,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               Object.keys(DECISION_TREES).map(function(k) {
                 var t = DECISION_TREES[k];
-                return h('button', { key: k, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: k, 'data-ar-focusable': true,
                   'aria-label': __alloFill(__alloT('stem.autorepair.a11y_start_decision_tree', 'Start decision tree: {value1}'), { value1: t.name }),
                   onClick: function() { pickTree(k); awardBadge('tree-explorer', 'Decision Tree Explorer'); },
                   style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer' } },
@@ -14518,16 +14523,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var node = tree.nodes[nodeId];
         if (!node) {
           return h('div', { style: { padding: 20, color: T.bad } }, 'Decision tree node not found: ' + nodeId,
-            h('button', { onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.restart', '↺ Restart')));
+            h('button', { type: 'button', onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.restart', '↺ Restart')));
         }
 
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_tree_list', 'Back to tree list'),
+            h('button', { type: 'button', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_tree_list', 'Back to tree list'),
               onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.trees', '← Trees')),
             h('span', { style: { fontSize: 22 } }, tree.icon),
             h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, tree.name),
-            path.length > 0 && h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_one_step_in_tree', 'Back one step in tree'),
+            path.length > 0 && h('button', { type: 'button', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_one_step_in_tree', 'Back one step in tree'),
               onClick: backOneStep, style: btnGhost({ marginLeft: 'auto' }) }, __alloT('stem.autorepair.back_one_step', '↶ Back one step'))
           ),
           path.length > 0 && h('div', { role: 'list', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 12, color: T.muted } },
@@ -14553,8 +14558,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             !node.terminal && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 14, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
               h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.shop', '🏪 Shop: ')), node.shop),
             h('div', { style: { display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: backOneStep, style: btnSecondary() }, __alloT('stem.autorepair.try_a_different_answer', '↶ Try a different answer')),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.new_tree', '🌳 New tree'))
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: backOneStep, style: btnSecondary() }, __alloT('stem.autorepair.try_a_different_answer', '↶ Try a different answer')),
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.new_tree', '🌳 New tree'))
             )
           ) : h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -14562,7 +14567,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               node.choices.map(function(c, i) {
-                return h('button', { key: i, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: i, 'data-ar-focusable': true,
                   'aria-label': c.label,
                   onClick: function() { selectChoice(c); },
                   style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 14, lineHeight: 1.5 } },
@@ -14985,7 +14990,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var ucView = d.ucView || 'overview';
         var USED_CAR_TAB_IDS = ['overview', 'flags', 'walk'];
         function usedCarTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15000,7 +15005,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         function tabBtn(id, label) {
           var active = ucView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-usedcar-tab-' + id,
             'aria-controls': 'autorepair-usedcar-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
@@ -15042,7 +15047,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               USED_CAR_CHECK.redFlags.map(function(f) {
                 var sel = picked === f.id;
-                return h('button', { key: f.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: f.id, 'data-ar-focusable': true,
                   'aria-label': f.flag,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('ucFlagPicked', sel ? null : f.id); },
@@ -15083,7 +15088,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               USED_CAR_CHECK.walkaround.map(function(s) {
                 var isChecked = !!checked[s.step];
-                return h('div', { key: s.step, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
+                return h('div', { key: s.step, role: 'listitem' }, h('button', { type: 'button', 'data-ar-focusable': true,
                   'aria-label': 'Step ' + s.step + (isChecked ? ' (done)' : ''),
                   'aria-pressed': isChecked ? 'true' : 'false',
                   onClick: function() {
@@ -15131,7 +15136,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         };
 
         function usedCarTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15426,7 +15431,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           diffs: { icon: '🔄', label: 'vs ICE', note: EV_KEY_DIFFERENCES.length + ' service shifts' }
         };
         function evTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15689,7 +15694,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.filter_by_category', 'Filter by category'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               tags.map(function(t) {
                 var active = tagFilter === t;
-                return h('button', { key: t, 'data-ar-focusable': true, role: 'tab',
+                return h('button', { type: 'button', key: t, 'data-ar-focusable': true, role: 'tab',
                   'aria-selected': active ? 'true' : 'false',
                   onClick: function() { upd('glossaryTag', t); },
                   style: Object.assign({}, btnGhost(), { background: active ? T.accent : 'transparent', color: active ? '#0f172a' : T.muted, fontWeight: active ? 800 : 600 }) },
@@ -15904,7 +15909,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var rsView = RS_TAB_IDS.indexOf(d.rsView) >= 0 ? d.rsView : 'overview';
 
         function rsTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15920,7 +15925,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
         function tabBtn(id, label) {
           var active = rsView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-roadside-tab-' + id,
             'aria-controls': 'autorepair-roadside-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
@@ -15959,7 +15964,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
               TRUNK_KIT.map(function(it) {
                 var isPacked = !!packed[it.id];
-                return h('button', { key: it.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: it.id, 'data-ar-focusable': true,
                   'aria-label': it.name + (isPacked ? ' (packed)' : ''),
                   'aria-pressed': isPacked ? 'true' : 'false',
                   onClick: function() {
@@ -16111,7 +16116,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         style: { color: T.link, textDecoration: 'underline' } }, caseItem.sourceLabel + ': ' + caseItem.title));
                   })
                 ),
-                h('button', { 'data-ar-focusable': true, onClick: resetRoadsideDecisions, style: btnPrimary() }, '↺ Run the four cases again')
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: resetRoadsideDecisions, style: btnPrimary() }, '↺ Run the four cases again')
               )
             );
           }
@@ -16222,7 +16227,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   : selectedWrong
                     ? (isContrast ? T.cardAlt : (isDark ? '#3a171b' : '#fef2f2'))
                     : T.cardAlt;
-                return h('button', { key: choice.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: choice.id, 'data-ar-focusable': true,
                   'data-ar-roadside-choice': choice.id,
                   'data-ar-choice-state': state,
                   'aria-pressed': selected ? 'true' : 'false',
@@ -16271,7 +16276,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             answered && h('div', { 'data-ar-roadside-actions': 'true', className: 'ar-roadside-actions' },
               h('a', { 'data-ar-roadside-source': caseDef.id, href: caseDef.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
                 style: { color: T.link, fontSize: 12, textDecoration: 'underline' } }, 'Read official guidance: ' + caseDef.sourceLabel),
-              h('button', { 'data-ar-focusable': true, onClick: advanceRoadsideDecision, style: btnPrimary() },
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: advanceRoadsideDecision, style: btnPrimary() },
                 index === total - 1 ? 'See results' : 'Next case \u2192')
             )
           );
@@ -16307,7 +16312,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var sbView = d.sbView || 'overview';
         function tabBtn(id, label) {
           var active = sbView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('sbView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -19368,7 +19373,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var racView = d.racView || 'overview';
         function tabBtn(id, label) {
           var active = racView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('racView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -19412,7 +19417,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               PIT_CREW_ROLES.map(function(r) {
                 var sel = picked === r.id;
-                return h('button', { key: r.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: r.id, 'data-ar-focusable': true,
                   'aria-label': r.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('crewPicked', sel ? null : r.id); awardBadge('race-crew-explorer', 'Race Crew Explorer'); },
@@ -19490,7 +19495,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   );
                 })
               ),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.reset_and_try_again', '🔁 Reset and try again'))
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.reset_and_try_again', '🔁 Reset and try again'))
             );
           }
 
@@ -19513,7 +19518,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.text } }, __alloT('stem.autorepair.pick_the_next_step', 'Pick the next step:')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               available.map(function(s) {
-                return h('button', { key: s.n, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: s.n, 'data-ar-focusable': true,
                   'aria-label': s.action,
                   onClick: function() { pickStep(s.n); },
                   style: { textAlign: 'left', padding: 10, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 12, lineHeight: 1.4, display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } },
@@ -19523,7 +19528,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               })
             ),
             h('div', { style: { marginTop: 10, display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.reset', '🔁 Reset')))
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.reset', '🔁 Reset')))
           );
         }
 
@@ -19539,7 +19544,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               SETUP_ADJUSTMENTS.map(function(a) {
                 var sel = picked === a.id;
-                return h('button', { key: a.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: a.id, 'data-ar-focusable': true,
                   'aria-label': a.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('setupPicked', sel ? null : a.id); },
@@ -19587,7 +19592,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               RACE_DIAGNOSTICS.map(function(r) {
                 var sel = picked === r.id;
-                return h('button', { key: r.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: r.id, 'data-ar-focusable': true,
                   'aria-label': r.driverSays,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('radioPicked', sel ? null : r.id); awardBadge('race-radio', 'Race Radio Decoded'); },
@@ -19676,7 +19681,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var bView = d.bView || 'phases';
         function tabBtn(id, label) {
           var active = bView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('bView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -19702,7 +19707,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               BUILD_PHASES.map(function(p) {
                 var sel = picked === p.id;
                 var phaseDone = p.tasks.filter(function(_, i) { return done[p.id + '-' + i]; }).length;
-                return h('button', { key: p.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: p.id, 'data-ar-focusable': true,
                   'aria-label': p.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('bPhasePicked', sel ? null : p.id); },
@@ -19729,7 +19734,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 pickedPhase.tasks.map(function(t, i) {
                   var key = pickedPhase.id + '-' + i;
                   var isDone = !!done[key];
-                  return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
+                  return h('div', { key: key, role: 'listitem' }, h('button', { type: 'button', 'data-ar-focusable': true,
                     'aria-label': t.do + (isDone ? ' (done)' : ''),
                     'aria-pressed': isDone ? 'true' : 'false',
                     onClick: function() {
@@ -19792,7 +19797,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var dView = d.dView || 'overview';
         function tabBtn(id, label) {
           var active = dView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('dView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -19840,7 +19845,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               DIESEL_KEY_DIFFS.map(function(it, i) {
                 var sel = picked === i;
-                return h('button', { key: i, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: i, 'data-ar-focusable': true,
                   'aria-label': it.topic,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('dDiffPicked', sel ? null : i); awardBadge('diesel-aware', 'Diesel Aware'); },
@@ -19874,7 +19879,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
               DIESEL_CODES.map(function(c) {
                 var sel = picked === c.code;
-                return h('button', { key: c.code, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: c.code, 'data-ar-focusable': true,
                   'aria-label': c.code + ': ' + c.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('dCodePicked', sel ? null : c.code); },
@@ -19913,7 +19918,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               HEAVY_EQUIPMENT.map(function(e) {
                 var sel = picked === e.id;
-                return h('button', { key: e.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: e.id, 'data-ar-focusable': true,
                   'aria-label': e.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('dEquipPicked', sel ? null : e.id); },
@@ -19969,7 +19974,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var pView = d.pView || 'overview';
         function tabBtn(id, label) {
           var active = pView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('pView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -20014,7 +20019,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               POWERSPORTS_PLATFORMS.map(function(pl) {
                 var sel = picked === pl.id;
-                return h('button', { key: pl.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: pl.id, 'data-ar-focusable': true,
                   'aria-label': pl.name,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('pPlatPicked', sel ? null : pl.id); },
@@ -20247,7 +20252,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var tView = d.tView || 'sizing';
         function tabBtn(id, label) {
           var active = tView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             'aria-selected': active ? 'true' : 'false',
             onClick: function() { upd('tView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
@@ -20290,7 +20295,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
               TIRE_TYPES.map(function(t) {
                 var sel = picked === t.type;
-                return h('button', { key: t.type, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: t.type, 'data-ar-focusable': true,
                   'aria-label': t.type,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('tTypePicked', sel ? null : t.type); },
@@ -20334,7 +20339,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
               TIRE_ROTATION_PATTERNS.map(function(r) {
                 var sel = picked === r.drive;
-                return h('button', { key: r.drive, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: r.drive, 'data-ar-focusable': true,
                   'aria-label': r.drive,
                   'aria-pressed': sel ? 'true' : 'false',
                   onClick: function() { upd('tRotPicked', sel ? null : r.drive); awardBadge('tire-pro', 'Tire Pro'); },
@@ -20423,7 +20428,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var sceneMeta = TIRE_SCENE_META[tView];
 
         function tireTabKeyDown(e, index) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -21194,7 +21199,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var note = st3 === 'failed' ? cfg.failText : (st3 === 'loading' ? cfg.loadText : null);
         function onKey(e) {
-          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var k = e.key;
           var handled = true;
           if (k === 'ArrowLeft') V.nudge(-0.16, 0);
@@ -21251,7 +21256,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var live = st3 === 'ready';
         function ctl(aria, glyph, fn, action, title) {
-          return h('button', { key: aria, 'data-ar-focusable': true, 'aria-label': aria,
+          return h('button', { type: 'button', key: aria, 'data-ar-focusable': true, 'aria-label': aria,
             'data-ar-bay-action': action || null,
             title: title || aria,
             disabled: !live, onClick: fn,
@@ -22411,7 +22416,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // Arrived here from a live Repair Bay case? Offer the way back.
           // The case state is untouched in toolData, so returning drops the
           // student straight back where they were.
-          d.uhFrom === 'repairbay' && h('button', { 'data-ar-focusable': true,
+          d.uhFrom === 'repairbay' && h('button', { type: 'button', 'data-ar-focusable': true,
             'aria-label': __alloT('stem.autorepair.a11y_return_to_the_repair_bay_case_you_were_working', 'Return to the Repair Bay case you were working'),
             onClick: function () { updMulti({ view: 'repairbay', uhFrom: null }); arAnnounce(__alloT('stem.autorepair.sr_back_to_the_case', 'Back to the case')); },
             style: btnSecondary({ marginBottom: 12, borderColor: T.accent }) },
@@ -22446,7 +22451,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 selected: sel,
                 selectedLabel: selPart ? selPart.label : sel,
                 extra: [
-                  h('button', { key: 'lbl', 'data-ar-focusable': true,
+                  h('button', { type: 'button', key: 'lbl', 'data-ar-focusable': true,
                     'aria-pressed': showAllLabels ? 'true' : 'false',
                     'aria-label': showAllLabels ? 'Hide the labels on every part' : 'Show a label on every part',
                     onClick: function () {
@@ -22458,7 +22463,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       color: showAllLabels ? '#0f172a' : T.muted,
                       fontWeight: showAllLabels ? 700 : 400
                     }) }, __alloT('stem.autorepair.uh_label_all', '🏷 Label all')),
-                  sel && h('button', { key: 'clr', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.a11y_clear_selection', 'Clear selection'),
+                  sel && h('button', { type: 'button', key: 'clr', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.a11y_clear_selection', 'Clear selection'),
                     onClick: function () {
                       updMulti({ uhSel: null, uhOpenPart: null });
                       if (UH3D.returnToScene) UH3D.returnToScene();
@@ -22481,7 +22486,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 UNDER_HOOD_PARTS.map(function (p) {
                   var active = p.id === sel;
                   return h('li', { key: p.id },
-                    h('button', { 'data-ar-focusable': true,
+                    h('button', { type: 'button', 'data-ar-focusable': true,
                       'aria-pressed': active ? 'true' : 'false',
                       'aria-label': p.label + (seen[p.id] ? ' — already explored' : ''),
                       onClick: function () { pick(p.id); },
@@ -22526,7 +22531,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       : (selPart.id === 'fusebox'
                         ? 'Lift the lid to reveal the fuse map and the protected circuits underneath.'
                         : 'Pull the dipstick to reveal the actual level marks and oil condition.')),
-                  h('button', {
+                  h('button', { type: 'button',
                     'data-ar-focusable': true,
                     'data-ar-inspection-action': selPart.id,
                     'aria-pressed': openPart === selPart.id ? 'true' : 'false',
@@ -22600,7 +22605,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 var recState = rec && rec.verdict === 'correct'
                   ? (rec.verified === true ? 'Verified' : 'Diagnosed')
                   : (rec ? 'Revisit' : 'Not started');
-                return h('button', { key: c.id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: c.id, 'data-ar-focusable': true,
                   'aria-label': 'Open case: ' + c.title + (rec ? ' — ' + recState + ', grade ' + rec.grade : ''),
                   onClick: function () { updMulti({
                     rbCase: c.id, rbEngine: 'off', rbFound: {}, rbSel: null,
@@ -23065,7 +23070,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
         return h('div', { role: 'main', 'aria-label': __alloFill(__alloT('stem.autorepair.a11y_repair_bay_case', 'Repair Bay case: {value1}'), { value1: kase.title }), style: { padding: 20, maxWidth: 1060, margin: '0 auto', color: T.text, background: T.bg, borderRadius: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.a11y_back_to_case_list', 'Back to case list'),
+            h('button', { type: 'button', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.a11y_back_to_case_list', 'Back to case list'),
               onClick: function () {
                 updMulti({
                   rbCase: null, rbSel: null, rbOpenPart: null, rbVerdict: null,
@@ -23093,7 +23098,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('span', { style: { fontSize: 12, fontWeight: 800, color: T.text } },
               h('span', { 'aria-hidden': 'true' }, engine === 'running' ? '🔊 ' : '🔇 '),
               __alloT('stem.autorepair.rb_engine', 'Engine: '), engine === 'running' ? __alloT('stem.autorepair.rb_running', 'RUNNING') : __alloT('stem.autorepair.rb_off', 'OFF')),
-            h('button', { 'data-ar-focusable': true, disabled: !!verdict,
+            h('button', { type: 'button', 'data-ar-focusable': true, disabled: !!verdict,
               'aria-label': engine === 'running' ? 'Shut the engine off' : 'Start the engine',
               onClick: function () {
                 var next = engine === 'running' ? 'off' : 'running';
@@ -23156,7 +23161,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         ? 'Lid raised: the fuse map, relays, puller, and the fan-circuit fuse are visible.'
                         : 'Blade pulled: MIN/MAX marks and the case-specific oil film are visible.')
                       : (sel === 'fusebox' ? 'Fuse box closed.' : 'Dipstick returned to its guide tube.')),
-                  h('button', {
+                  h('button', { type: 'button',
                     'data-ar-focusable': true,
                     'data-ar-inspection-action': sel,
                     disabled: engine === 'running' || !!verdict,
@@ -23185,7 +23190,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 // A student who does not yet know what an alternator IS cannot
                 // reason about "no bearing play." The reference is one module
                 // away; make it one tap away instead of a dead end.
-                h('button', { 'data-ar-focusable': true,
+                h('button', { type: 'button', 'data-ar-focusable': true,
                   'aria-label': __alloT('stem.autorepair.a11y_look_this_part_up_in_the_under_hood_tour_then_c', 'Look this part up in the under-hood tour, then come back to the case'),
                   onClick: function () {
                     updMulti({
@@ -23210,7 +23215,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   for (var i = 0; i < UNDER_HOOD_PARTS.length; i++) { if (UNDER_HOOD_PARTS[i].id === pid) { lbl = UNDER_HOOD_PARTS[i].label; break; } }
                   var got = !!found['p:' + pid];
                   var risky = engine === 'running' && !!RB_RUNNING_HAZARD[pid];
-                  return h('button', { key: pid, 'data-ar-focusable': true, disabled: !!verdict,
+                  return h('button', { type: 'button', key: pid, 'data-ar-focusable': true, disabled: !!verdict,
                     'aria-label': 'Inspect ' + lbl + (got ? ' — already inspected' : '') + (risky ? ' — unsafe with the engine running' : ''),
                     'aria-pressed': sel === pid,
                     onClick: function () { inspect(pid); },
@@ -23226,7 +23231,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   var got = !!found['t:' + t.id];
                   var avail = (t.needs === 'any' || t.needs === engine);
                   return h('div', { key: t.id },
-                    h('button', { 'data-ar-focusable': true, disabled: !!verdict,
+                    h('button', { type: 'button', 'data-ar-focusable': true, disabled: !!verdict,
                       'aria-disabled': (!!verdict || !avail) ? 'true' : 'false',
                       'data-ar-meter-test-trigger': t.meter ? t.id : undefined,
                       'aria-label': t.label + (avail ? '' : ' — requires the engine ' + t.needs),
@@ -23413,7 +23418,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 var reveal = !!verdict;
                 var tone = !reveal ? T.border : (c.verdict === 'correct' ? T.good : (c.verdict === 'trap' ? T.bad : T.warn));
                 return h('div', { key: c.id },
-                  h('button', { 'data-ar-focusable': true, disabled: reveal,
+                  h('button', { type: 'button', 'data-ar-focusable': true, disabled: reveal,
                     'aria-label': c.label, onClick: function () { commit(c); },
                     style: { width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 8, fontSize: 13,
                       cursor: reveal ? 'default' : 'pointer',
@@ -23615,7 +23620,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               'bad'),
             panel(__alloT('stem.autorepair.rb_takeaway', 'What this case teaches'), kase.teaching, 'good'),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
-              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: function () { updMulti({
                 rbEngine: 'off', rbFound: {}, rbSel: null, rbOpenPart: null,
                 rbVerdict: null, rbViolations: [], rbNotes: '',
                 rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
@@ -23624,7 +23629,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 rbVerifyResult: null, rbPendingGrade: null
               }); arAnnounce(__alloT('stem.autorepair.sr_case_reset', 'Case reset')); },
                 style: btnSecondary() }, __alloT('stem.autorepair.rb_retry', '↺ Run it again')),
-              h('button', { 'data-ar-focusable': true, onClick: function () { updMulti({
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: function () { updMulti({
                 rbCase: null, rbSel: null, rbOpenPart: null, rbVerdict: null,
                 rbMeterCase: null, rbMeterTest: null, rbMeterDraft: null,
                 rbMeterFeedback: null, rbActiveTest: null,
@@ -23898,7 +23903,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 var item = st || hz;
                 if (!item) return null;
                 var flagged = hz && violations.indexOf(hz.id) !== -1;
-                return h('button', { key: id, 'data-ar-focusable': true,
+                return h('button', { type: 'button', key: id, 'data-ar-focusable': true,
                   'aria-label': item.label,
                   onClick: function () { choose(id); },
                   style: { width: '100%', textAlign: 'left', padding: '9px 11px', borderRadius: 8, fontSize: 13,
@@ -23929,10 +23934,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.tc_now_real', 'Now do it for real, before you need to. ')),
               __alloT('stem.autorepair.tc_now_real_body', 'Find your jack, your wrench and your spare, and check the spare actually holds air. Read your manual for where the jack points are on your car. A driveway on a dry afternoon is a much better place to learn this than a dark verge in February.')),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
-              h('button', { 'data-ar-focusable': true,
+              h('button', { type: 'button', 'data-ar-focusable': true,
                 onClick: function () { updMulti({ tcDone: [], tcWrong: 0, tcViolations: [], tcLast: null, tcSel: null, tcLugActive: false, tcLugOrder: [], tcLugWrong: 0, tcLugLast: null }); arAnnounce('Reset'); },
                 style: btnSecondary() }, __alloT('stem.autorepair.tc_again', '↺ Run it again')),
-              h('button', { 'data-ar-focusable': true, onClick: function () { setView('menu'); },
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: function () { setView('menu'); },
                 style: btnPrimary() }, __alloT('stem.autorepair.tc_menu', 'Back to menu')))
           ),
 

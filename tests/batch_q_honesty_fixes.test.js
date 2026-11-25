@@ -124,7 +124,8 @@ describe('B4 — batch HTML dashboard popup tells the verification truth', () =>
     expect(view).toContain('${summary?.reviewRequired ?? 0} verification review');
   });
   it('the details table has a per-document Verification column and an honest gain cell', () => {
-    expect(view).toContain('<th>Verification</th><th>Status</th>');
+    // Header cells now carry scope="col".
+    expect(view).toContain('<th scope="col">Verification</th><th scope="col">Status</th>');
     expect(view).toContain("esc((r && r.verificationState) || '—')");
     expect(view).not.toContain("'</td><td>+' + (r ? (r.afterScore - r.beforeScore) : '—')");
   });

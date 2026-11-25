@@ -213,7 +213,8 @@ describe('Standards Alignment and Check Level see the whole text, or say what th
       gradeLevel: '6th Grade', leveledTextLanguage: 'English',
       callGemini: async p => { prompts.push(p); return prompts.length === 1 ? JSON.stringify({ estimatedLevel: '6th Grade', alignment: 'Aligned', feedback: 'ok' }) : JSON.stringify({ confirmedLevel: '6th Grade', rubric: {}, nuanceSummary: 'ok' }); },
       cleanJson: s => s, calculateReadability: () => ({ score: 6 }), t: k => k, addToast: () => {}, warnLog: () => {}, setError: () => {},
-      setIsCheckingLevel: () => {}, setGeneratedContent: c => saved.push(c), setHistory: () => {}, alloBotRef: { current: null }
+      // Check Level writes through an updater now (it only replaces the resource it checked), so apply it.
+      setIsCheckingLevel: () => {}, setGeneratedContent: c => saved.push(typeof c === 'function' ? c({ id: 'adapted-1', type: 'simplified', data: text }) : c), setHistory: () => {}, alloBotRef: { current: null }
     });
     expect(prompts).toHaveLength(2);
     return { prompts, check: saved.at(-1).levelCheck };
@@ -507,7 +508,9 @@ describe('Table and chart wiring and generator captions', () => {
     const simplified = readFileSync('view_simplified_module.js', 'utf8');
     const analysis = readFileSync('view_analysis_module.js', 'utf8');
     expect(/TableChartTools,\s*\{\s*t:\s*t,\s*textareaRef:\s*textEditorRef,\s*getText:\s*\(\)\s*=>\s*generatedContent\?\.data,\s*onChange:\s*handleSimplifiedTextChange/.test(simplified), 'Adapted Text wiring').toBe(true);
-    expect(/TableChartTools,\s*\{\s*t:\s*t,\s*textareaRef:\s*analysisEditorRef,\s*getText:\s*\(\)\s*=>\s*generatedContent\?\.data\.originalText,\s*onChange:\s*handleAnalysisTextChange/.test(analysis), 'Analyze Source wiring').toBe(true);
+    // The analysis view reads its data through a null-safe analysisData (2026-11-21).
+    expect(analysis).toContain("const analysisData = generatedContent && generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};");
+    expect(/TableChartTools,\s*\{\s*t:\s*t,\s*textareaRef:\s*analysisEditorRef,\s*getText:\s*\(\)\s*=>\s*analysisData\.originalText,\s*onChange:\s*handleAnalysisTextChange/.test(analysis), 'Analyze Source wiring').toBe(true);
   });
   it('the Adapted Text generator asks for "Table:" captions and chart descriptions', () => {
     const dispatcher = readFileSync('generate_dispatcher_module.js', 'utf8');

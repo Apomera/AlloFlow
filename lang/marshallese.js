@@ -12551,8 +12551,7 @@
     "guided_resume_step": "Step {n}"
   },
   "about": {
-    "title": "Kōn AlloFlow v1.0",
-    "tab_about": "About UDL",
+    "title": "Kōn AlloFlow",
     "tab_features": "Feature Guide",
     "approach_header": "Eo AlloFlow Approach",
     "allo_acronym_label": "ALLO:",
@@ -12562,334 +12561,12 @@
     "what_is_udl": "ta ej UDL?",
     "udl_definition": "Universal Design ñan Learning (UDL) ej a framework ñan improve im optimize teaching im learning ñan aolep people based ioon scientific insights into how humans katak.",
     "how_help_header": "How does in tool jipañ?",
-    "how_help_desc": "in tool uses AI ñan instantly create diverse entry points ñan eo am curriculum, ensuring kwe address eo three core principles in UDL:",
-    "rep_title": "Representation:",
-    "rep_desc": "Presenting information in different ways (e.g., Adapted Text, Visual Supports, Glossaries).",
-    "action_title": "Action & Expression:",
-    "action_desc": "Providing options ñan rūkkatak ñan demonstrate ta they know (e.g., Scaffolds, Quizzes).",
-    "engage_title": "Engagement:",
-    "engage_desc": "Tapping into interests ñan challenge im motivate (e.g., Interest-based analogies).",
-    "ai_guide_tip": "Kōjerbal eo \"AI UDL & Alignment Guide\" button ilo eo sidebar ñan chat ippan an expert pedagogical bot ñan specific strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
     "reset_wizard": "Bar jino Quick Jino Wizard",
     "support_kofi": "Support ioon Ko-fi",
-    "features_list": {
-      "categories": {
-        "creation": "Plan & Create",
-        "activities": "Engage & Ikkure",
-        "assessment": "Assess & Support",
-        "platform": "Manage & Adapt"
-      },
-      "items": [
-        {
-          "title": "Analyze Source",
-          "icon": "Pukot",
-          "desc": "Extract reading levels, key concepts, im accuracy checks from any source text.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Leveled Text",
-          "icon": "BookOpen",
-          "desc": "Adapt text complexity ñan any grade K-12. Includes bilingual side-by-side views.",
-          "category": "creation",
-          "color": "indigo"
-        },
-        {
-          "title": "katak Plan",
-          "icon": "ClipboardList",
-          "desc": "Synthesize aolep resources into a standard-aligned katak plan ak study guide.",
-          "category": "creation",
-          "color": "violet"
-        },
-        {
-          "title": "Visual Organizer",
-          "icon": "Layout",
-          "desc": "Generate Flow Charts, Venn Diagrams, im structured outlines.",
-          "category": "creation",
-          "color": "cyan"
-        },
-        {
-          "title": "Brainstorm",
-          "icon": "Lightbulb",
-          "desc": "Generate hands-ioon activity ideas im real-world connections.",
-          "category": "creation",
-          "color": "yellow"
-        },
-        {
-          "title": "Kōṃṃan FAQ",
-          "icon": "FileQuestion",
-          "desc": "Anticipate rūkkatak misconceptions ippan auto-kōṃṃan Q&A lists.",
-          "category": "creation",
-          "color": "teal"
-        },
-        {
-          "title": "Interview Mode",
-          "icon": "Bwebwenato",
-          "desc": "Chat ippan historical figures, fictional characters, ak experts. Uncover hidden secrets.",
-          "category": "activities",
-          "color": "amber"
-        },
-        {
-          "title": "Adventure Mode",
-          "icon": "MapIcon",
-          "desc": "Interactive 'Kālōt eo am Own Adventure' simulation im roleplay scenarios.",
-          "category": "activities",
-          "color": "purple"
-        },
-        {
-          "title": "ikkure Arcade",
-          "icon": "Gamepad2",
-          "desc": "Auto-generate Bingo, Memory Match, naan Pukot, im Crosswords.",
-          "category": "activities",
-          "color": "pink"
-        },
-        {
-          "title": "Sequence Builder",
-          "icon": "ListOrdered",
-          "desc": "Drag-im-drop timeline activity ñan chronological events ak process steps.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "Concept Sort",
-          "icon": "Filter",
-          "desc": "Categorize terms im concepts into buckets. Eḷap ñan distinguishing similar ideas.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Socratic Tutor",
-          "icon": "MessageCircleQuestion",
-          "desc": "AI guide eṇ asks guiding kajjitōk instead in giving uwaak.",
-          "category": "activities",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Exit Ticket",
-          "icon": "CheckSquare",
-          "desc": "Create quizzes. Launch 'Mool Quiz' mode ñan real-iien kilaaj results.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "Writing Scaffolds",
-          "icon": "Quote",
-          "desc": "Sentence starters im paragraph frames ippan built-ilo rubrics.",
-          "category": "assessment",
-          "color": "orange"
-        },
-        {
-          "title": "Visual Support",
-          "icon": "ImageIcon",
-          "desc": "AI diagrams im illustrations. Kōjerbal image editing ñan refine ak joḷọk text.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Math & STEM",
-          "icon": "Calculator",
-          "desc": "Step-by-step solvers, graph epepen, im similar practice problems.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Standard Audit",
-          "icon": "ShieldCheck",
-          "desc": "Verify alignment ippan specific educational standards im kile rigor gaps.",
-          "category": "assessment",
-          "color": "slate"
-        },
-        {
-          "title": "Oral Fluency",
-          "icon": "Mic",
-          "desc": "Roñjake ñan rūkkatak riit aloud im calculate WCPM im accuracy.",
-          "category": "assessment",
-          "color": "rose"
-        },
-        {
-          "title": "rūkaki Dashboard",
-          "icon": "Layout",
-          "desc": "Track rūkkatak progress, view analytics, im export gradebooks.",
-          "category": "platform",
-          "color": "indigo"
-        },
-        {
-          "title": "Mool Sessions",
-          "icon": "Wifi",
-          "desc": "Host synchronized kilaaj, run Democracy Mode voting, im manage mool quizzes.",
-          "category": "platform",
-          "color": "rose"
-        },
-        {
-          "title": "rūkkatak Profiles",
-          "icon": "Users",
-          "desc": "Kōjparok differentiation settings (kajin, Interests) ñan different groups.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Accessibility",
-          "icon": "Ear",
-          "desc": "Immersive Reader, Line Focus, Dictation, im Text-ñan-Speech tools.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "Export Suite",
-          "icon": "Download",
-          "desc": "Export ñan PDF, PowerPoint, Canvas QTI, ak HTML Bundles.",
-          "category": "platform",
-          "color": "blue"
-        },
-        {
-          "title": "Gemini Bridge",
-          "icon": "Terminal",
-          "desc": "Generate naan in jiroñ ñan kalōk custom interactive apps ilo Gemini Canvas.",
-          "category": "platform",
-          "color": "slate"
-        },
-        {
-          "title": "Smart Glossary",
-          "icon": "BookOpen",
-          "desc": "Visual vocabulary cards ippan audio, bilingual translations, im 5 vocabulary ikkure (crossword, bingo, memory match, naan pukot, scramble).",
-          "category": "creation",
-          "color": "purple"
-        },
-        {
-          "title": "Immersive Reader",
-          "icon": "Ear",
-          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Word Sounds Studio",
-          "icon": "Mic",
-          "desc": "Phonemic awareness practice across 8 activity types — blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "StoryForge",
-          "icon": "Quote",
-          "desc": "Six-phase scaffolded creative writing ippan AI illustrations, narration, custom rubrics, im 18-kajin support.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "AlloBot",
-          "icon": "Sparkles",
-          "desc": "Always-available AI tutor im platform guide. uwaak content kajjitōk, navigates AlloFlow, im auto-configures settings ioon request.",
-          "category": "activities",
-          "color": "indigo"
-        },
-        {
-          "title": "Escape Room",
-          "icon": "MapIcon",
-          "desc": "Team-based puzzle challenges built from eo am katak content. rūkaki-controlled hints, timed escape jaake, multi-stage rooms.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "SEL Hub",
-          "icon": "Būruo",
-          "desc": "32 social-emotional learning tools across CASEL competencies — coping cards, restorative circles, make-advocacy rehearsal, im eḷap ḷọk.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "BehaviorLens",
-          "icon": "ShieldCheck",
-          "desc": "FBA/BIP suite: ABC data collection, frequency/interval jaake, IOA calculator (5 methods), preference assessments, intervention templates.",
-          "category": "assessment",
-          "color": "indigo"
-        },
-        {
-          "title": "Report Writer",
-          "icon": "ClipboardList",
-          "desc": "10-step wizard ñan psychoeducational reports: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass accuracy audit.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Dynamic Assessment",
-          "icon": "Filter",
-          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes ippan 4-level prompt ladders, modifiability scoring, IEP goal + accommodation epepen.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "rūkkatak Analytics",
-          "icon": "Layout",
-          "desc": "Automated RTI Tier 1/2/3 classification ippan aimline monitoring, CBM probe history, anomaly flagging, kilaaj screening reports.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "PDF Accessibility",
-          "icon": "Download",
-          "desc": "Upload any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → accessible PDF/HTML/audio export.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Symbol Studio",
-          "icon": "ImageIcon",
-          "desc": "Full AAC platform: AI-kōṃṃan PCS symbols, board builder, visual schedules, social stories, Symbol Quest ikkure, naan Garden vocabulary jaake.",
-          "category": "platform",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Iiaḷ in STEM",
-          "icon": "Layers",
-          "desc": "95+ browser-based interactive simulations across math, science, CS, engineering, im creative design — from DNA labs ñan physics sandboxes.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "DBQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Document-Based kajjitōk sets ñan source analysis — DOK-tiered naan in jiroñ ippan sourcing/contextualization/corroboration scaffolds + rubric.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "Note Taking Templates",
-          "icon": "ListOrdered",
-          "desc": "Cornell notes, two-column compare/contrast, sketchnote naan in jiroñ, mindmaps, im summary scaffolds — pre-filled ak blank.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Pij in Pikinpukōt",
-          "icon": "Layout",
-          "desc": "Printable kilaaj-poster anchor charts ippan iconography, color-coded sections, AI imagery, im differentiated complexity levels.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "Annotation Suite",
-          "icon": "Quote",
-          "desc": "Overlay annotations ioon any AlloFlow resource — highlights, sticky notes, voice notes, drawings — ippan color-coded layers im exportable PDFs.",
-          "category": "activities",
-          "color": "purple"
-        },
-        null,
-        null,
-        null,
-        null,
-        null,
-        {
-          "icon": "Pukot"
-        }
-      ]
-    },
     "tab_atlas": "Atlas",
     "tab_opensource": "Open Source",
     "atlas_title": "AlloFlow Atlas",
-    "atlas_intro": "Juon map eo ej kwalok hub ko im launch surface ko an AlloFlow ilo catalog. Kōjerbal juon region ñan lale visual guide, wāween, entry ko im source note ko.",
-    "atlas_footer": "Section ko rej etal jān registry rej kōm̧m̧an jān catalog ko kiiō; section ko rekar kōjparok im mixed rej kwalok ilo map. Nōṃba ko rej catalog entry ko, ejjab nōṃba in tool ko.",
     "privacy_title": "Privacy im data in rijikuul",
     "privacy_intro": "AlloFlow ej kōm̧m̧an ñan class eo ej kōjparok privacy. Jikin data ej itok jān storage, session transport im AI provider eo kwoj kōjerbal.",
     "privacy_footer": "Elap̧̧ in ej bok in kōmeḷeḷe kin product, ejjab advice in kien ak compliance certificate. Institution eo am̧ ej bōk eddo in FERPA, privacy, agreement, consent, retention im deletion.",
@@ -12899,11 +12576,27 @@
     "oss_credits_intro": "AlloFlow ej free im Open Source (AGPL-3.0), im ej kōm̧m̧an jān jerbal in project ko ilal. Kam̧m̧ol ñan author im community ko.",
     "oss_featured_header": "Learning tools ko kim kōjparok",
     "oss_full_list_header": "Library im open resource ko kim kōjparok",
-    "oss_credits_footer": "Hosted AI features rej kōjerbal provider eo ilo AI settings (Gemini, OpenAI, Claude ak OpenAI-compatible endpoint); service ko rejjab bundled software. License text ko otemjej rej itok ibben source.",
     "tab_privacy": "Privacy",
     "a11y_title": "Accessibility",
     "media_guardrails_intro": "Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.",
-    "media_guardrails_title": "Open/free media guardrails"
+    "media_guardrails_title": "Open/free media guardrails",
+    "start_heading": "Jino ijin",
+    "start_atlas_title": "Lale Atlas eo",
+    "start_palette_title": "Pukot jabdewōt kein jerbal",
+    "fg_back": "Jepḷaak ñan Feature Guide",
+    "fg_all": "Aolep ({count})",
+    "fg_how_heading": "Wāween an jerbal",
+    "fg_inputs": "Ta eo kwōj bōktok",
+    "fg_steps": "Ta eo AlloFlow ej kōṃṃane",
+    "fg_outputs": "Ta eo kwōnaaj bōk",
+    "fg_clear": "Jolok",
+    "clear_search": "Jolok pukot eo",
+    "atlas_examples": "Waanjoñak:",
+    "fg_category": {
+      "creation": "Kōpooj im Kōṃṃan",
+      "activities": "Katak im Ikkure"
+    },
+    "privacy_saved_title": "Jerbal ko eṃōj kōjparok"
   },
   "fluency": {
     "title": "Oral Fluency Check",

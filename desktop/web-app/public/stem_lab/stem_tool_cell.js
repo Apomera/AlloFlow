@@ -60,7 +60,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-cell-hc-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-cell-hc-css';
-    st.textContent = ".theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-explanation-panel],[data-cell-explanation-emblem],[data-cell-explanation-picker] select,[data-cell-explanation-markers] span,[data-cell-label-focus-control],[data-cell-keyboard-help],[data-cell-explanation-actions],[data-cell-explanation-actions] button,[data-cell-explanation-actions] button:hover,[data-cell-explanation-actions] button[data-cell-explanation-close]:hover,[data-cell-observation-actions] button[aria-pressed=true],[data-cell-stage-utility],[data-cell-visibility-count],[data-cell-visibility-option],[data-cell-visibility-option][aria-pressed=true],[data-cell-visibility-mark],[data-cell-visibility-empty],[data-cell-organism-chooser],[data-cell-organism-option],[data-cell-organism-option][aria-pressed=true],[data-cell-observation-state=selected] [data-cell-gallery-status],[data-cell-observation-summary],[data-cell-specimen-portrait],[data-cell-organism-field-notes],[data-cell-specimen-overview],[data-cell-anatomy-heading]>span,[data-cell-anatomy-item],[data-cell-anatomy-item]:hover,[data-cell-anatomy-item][data-cell-mission-focus=true],[data-cell-anatomy-item][aria-current=true],[data-cell-anatomy-icon],[data-cell-interior-workspace],[data-cell-study-nav],[data-cell-pathway-picker] button,[data-cell-guided-pathway] button,[data-cell-pathway-steps] button>span,[data-cell-pathway-steps] button[aria-current=step]>span,[data-cell-pathway-explanation],[data-cell-round-progress] span,[data-cell-round-actions] button,[data-cell-selection-actions] button:first-child,[data-cell-inspector-navigation] button,[data-cell-diagram-toolbar] button,[data-cell-structure-picker] button,[data-cell-selected-structure],[data-cell-inspector-empty],[data-cell-status-feedback]>div,[data-cell-review-heading] span,[data-cell-picker-search] input,[data-cell-picker-search] button,[data-cell-zoom-control],[data-cell-inquiry-cards],.cell-inquiry-guide button,.cell-inquiry-observation,.cell-inquiry-reflection,.cell-inquiry-observation textarea,[data-cell-illumination-control],[data-cell-illumination-option]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(244, 249, 247)\"],[style*=\"background-color: rgb(244, 249, 247)\"],[style*=\"background: rgb(240, 253, 244)\"],[style*=\"background-color: rgb(240, 253, 244)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-explanation-header],[data-cell-guided-pathway],[data-cell-round-summary],[data-cell-related-pathways]>button,[data-cell-review-navigation],[data-cell-tool] .cell-inquiry-card,[data-cell-illumination-icon=brightfield]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(240, 253, 244)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-tool],[data-cell-explanation-panel],[data-cell-explanation-emblem],[data-cell-explanation-picker],[data-cell-explanation-picker] select,[data-cell-explanation-kicker],[data-cell-explanation-position],[data-cell-explanation-copy] h3,[data-cell-explanation-copy] p,[data-cell-label-focus-control],[data-cell-keyboard-help],[data-cell-keyboard-help] strong,[data-cell-explanation-actions] button,[data-cell-explanation-actions] button[data-cell-explanation-close],[data-cell-observation-actions] button[aria-pressed=true],[data-cell-stage-utility],[data-cell-control-label],[data-cell-control-value],[data-cell-visibility-heading] h4,[data-cell-visibility-heading] p,[data-cell-visibility-count],[data-cell-visibility-identity],[data-cell-visibility-state],[data-cell-visibility-mark],[data-cell-visibility-empty],[data-cell-organism-chooser] h4,[data-cell-gallery-classification],[data-cell-gallery-movement],[data-cell-gallery-footer],[data-cell-gallery-status],[data-cell-observation-state=selected] [data-cell-gallery-status],[data-cell-observation-summary],[data-cell-card-name],[data-cell-selected-organism-header] h4,[data-cell-organism-field-notes] h5,[data-cell-specimen-overview] span,[data-cell-specimen-overview] strong,[data-cell-anatomy-heading] h5,[data-cell-anatomy-heading]>span,[data-cell-anatomy-intro],[data-cell-anatomy-title]>strong,[data-cell-anatomy-mission],[data-cell-anatomy-description],[data-cell-anatomy-action],[data-cell-study-nav] h4,[data-cell-study-nav] p,[data-cell-pathway-picker] summary,[data-cell-pathway-picker] button,[data-cell-guided-pathway],[data-cell-pathway-heading] p,[data-cell-guided-pathway] button,[data-cell-pathway-steps] button>span,[data-cell-pathway-steps] button[aria-current=step]>span,[data-cell-pathway-position],[data-cell-round-summary],[data-cell-round-eyebrow],[data-cell-round-answers] strong,[data-cell-round-answers] strong[data-correct=\"false\"],[data-cell-round-actions] button,[data-cell-selection-actions] button:first-child,[data-cell-inspector-navigation] button,[data-cell-diagram-toolbar] button,[data-cell-structure-picker] button,[data-cell-selected-structure] > div:first-child > span:last-child,[data-cell-related-pathways] h5,[data-cell-related-pathways]>p,[data-cell-related-pathways]>button,[data-cell-related-step],[data-cell-related-action],[data-cell-inspector-details] summary,[data-cell-status-feedback],[data-cell-status-feedback] button,[data-cell-review-heading],[data-cell-review-navigation] p,[data-cell-picker-search] input,[data-cell-picker-search] button,[data-cell-choice-status],[data-cell-inquiry-cards],.cell-inquiry-guide,.cell-inquiry-intro>span,.cell-inquiry-eyebrow,.cell-inquiry-intro p,[data-cell-tool] .cell-inquiry-card,.cell-inquiry-card-top,.cell-inquiry-subtitle,.cell-inquiry-guide button,.cell-inquiry-progress,.cell-inquiry-observation textarea,.cell-inquiry-guide-actions span,.cell-inquiry-guide-footer span,[data-cell-illumination-control],[data-cell-illumination-label],[data-cell-illumination-current],[data-cell-illumination-option],[data-cell-illumination-caption]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style^=\"color: rgb(21, 128, 61)\"],[style*=\"; color: rgb(21, 128, 61)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(45, 79, 69)\"],[style*=\"; color: rgb(45, 79, 69)\"],[style^=\"color: rgb(31, 74, 64)\"],[style*=\"; color: rgb(31, 74, 64)\"],[style^=\"color: rgb(55, 48, 163)\"],[style*=\"; color: rgb(55, 48, 163)\"],[style^=\"color: rgb(21, 94, 117)\"],[style*=\"; color: rgb(21, 94, 117)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(21, 128, 61)\"],[style*=\"; color: rgb(21, 128, 61)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(45, 79, 69)\"],[style*=\"; color: rgb(45, 79, 69)\"],[style^=\"color: rgb(31, 74, 64)\"],[style*=\"; color: rgb(31, 74, 64)\"],[style^=\"color: rgb(55, 48, 163)\"],[style*=\"; color: rgb(55, 48, 163)\"],[style^=\"color: rgb(21, 94, 117)\"],[style*=\"; color: rgb(21, 94, 117)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(244, 249, 247)\"],[style*=\"background-color: rgb(244, 249, 247)\"],[style*=\"background: rgb(240, 253, 244)\"],[style*=\"background-color: rgb(240, 253, 244)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
+    st.textContent = "[data-stem-tool-shell=\"cell\"] :is(button,input,select,summary){touch-action:manipulation}.theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-explanation-panel],[data-cell-explanation-emblem],[data-cell-explanation-picker] select,[data-cell-explanation-markers] span,[data-cell-label-focus-control],[data-cell-keyboard-help],[data-cell-explanation-actions],[data-cell-explanation-actions] button,[data-cell-explanation-actions] button:hover,[data-cell-explanation-actions] button[data-cell-explanation-close]:hover,[data-cell-observation-actions] button[aria-pressed=true],[data-cell-stage-utility],[data-cell-visibility-count],[data-cell-visibility-option],[data-cell-visibility-option][aria-pressed=true],[data-cell-visibility-mark],[data-cell-visibility-empty],[data-cell-organism-chooser],[data-cell-organism-option],[data-cell-organism-option][aria-pressed=true],[data-cell-observation-state=selected] [data-cell-gallery-status],[data-cell-observation-summary],[data-cell-specimen-portrait],[data-cell-organism-field-notes],[data-cell-specimen-overview],[data-cell-anatomy-heading]>span,[data-cell-anatomy-item],[data-cell-anatomy-item]:hover,[data-cell-anatomy-item][data-cell-mission-focus=true],[data-cell-anatomy-item][aria-current=true],[data-cell-anatomy-icon],[data-cell-interior-workspace],[data-cell-study-nav],[data-cell-pathway-picker] button,[data-cell-guided-pathway] button,[data-cell-pathway-steps] button>span,[data-cell-pathway-steps] button[aria-current=step]>span,[data-cell-pathway-explanation],[data-cell-round-progress] span,[data-cell-round-actions] button,[data-cell-selection-actions] button:first-child,[data-cell-inspector-navigation] button,[data-cell-diagram-toolbar] button,[data-cell-structure-picker] button,[data-cell-selected-structure],[data-cell-inspector-empty],[data-cell-status-feedback]>div,[data-cell-review-heading] span,[data-cell-picker-search] input,[data-cell-picker-search] button,[data-cell-zoom-control],[data-cell-inquiry-cards],.cell-inquiry-guide button,.cell-inquiry-observation,.cell-inquiry-reflection,.cell-inquiry-observation textarea,[data-cell-illumination-control],[data-cell-illumination-option]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(244, 249, 247)\"],[style*=\"background-color: rgb(244, 249, 247)\"],[style*=\"background: rgb(240, 253, 244)\"],[style*=\"background-color: rgb(240, 253, 244)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-explanation-header],[data-cell-guided-pathway],[data-cell-round-summary],[data-cell-related-pathways]>button,[data-cell-review-navigation],[data-cell-tool] .cell-inquiry-card,[data-cell-illumination-icon=brightfield]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style*=\"gradient(\"][style*=\"rgb(240, 253, 244)\"]):not(:empty):not(svg,canvas,video,iframe,object){background:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] :is([data-cell-tool],[data-cell-explanation-panel],[data-cell-explanation-emblem],[data-cell-explanation-picker],[data-cell-explanation-picker] select,[data-cell-explanation-kicker],[data-cell-explanation-position],[data-cell-explanation-copy] h3,[data-cell-explanation-copy] p,[data-cell-label-focus-control],[data-cell-keyboard-help],[data-cell-keyboard-help] strong,[data-cell-explanation-actions] button,[data-cell-explanation-actions] button[data-cell-explanation-close],[data-cell-observation-actions] button[aria-pressed=true],[data-cell-stage-utility],[data-cell-control-label],[data-cell-control-value],[data-cell-visibility-heading] h4,[data-cell-visibility-heading] p,[data-cell-visibility-count],[data-cell-visibility-identity],[data-cell-visibility-state],[data-cell-visibility-mark],[data-cell-visibility-empty],[data-cell-organism-chooser] h4,[data-cell-gallery-classification],[data-cell-gallery-movement],[data-cell-gallery-footer],[data-cell-gallery-status],[data-cell-observation-state=selected] [data-cell-gallery-status],[data-cell-observation-summary],[data-cell-card-name],[data-cell-selected-organism-header] h4,[data-cell-organism-field-notes] h5,[data-cell-specimen-overview] span,[data-cell-specimen-overview] strong,[data-cell-anatomy-heading] h5,[data-cell-anatomy-heading]>span,[data-cell-anatomy-intro],[data-cell-anatomy-title]>strong,[data-cell-anatomy-mission],[data-cell-anatomy-description],[data-cell-anatomy-action],[data-cell-study-nav] h4,[data-cell-study-nav] p,[data-cell-pathway-picker] summary,[data-cell-pathway-picker] button,[data-cell-guided-pathway],[data-cell-pathway-heading] p,[data-cell-guided-pathway] button,[data-cell-pathway-steps] button>span,[data-cell-pathway-steps] button[aria-current=step]>span,[data-cell-pathway-position],[data-cell-round-summary],[data-cell-round-eyebrow],[data-cell-round-answers] strong,[data-cell-round-answers] strong[data-correct=\"false\"],[data-cell-round-actions] button,[data-cell-selection-actions] button:first-child,[data-cell-inspector-navigation] button,[data-cell-diagram-toolbar] button,[data-cell-structure-picker] button,[data-cell-selected-structure] > div:first-child > span:last-child,[data-cell-related-pathways] h5,[data-cell-related-pathways]>p,[data-cell-related-pathways]>button,[data-cell-related-step],[data-cell-related-action],[data-cell-inspector-details] summary,[data-cell-status-feedback],[data-cell-status-feedback] button,[data-cell-review-heading],[data-cell-review-navigation] p,[data-cell-picker-search] input,[data-cell-picker-search] button,[data-cell-choice-status],[data-cell-inquiry-cards],.cell-inquiry-guide,.cell-inquiry-intro>span,.cell-inquiry-eyebrow,.cell-inquiry-intro p,[data-cell-tool] .cell-inquiry-card,.cell-inquiry-card-top,.cell-inquiry-subtitle,.cell-inquiry-guide button,.cell-inquiry-progress,.cell-inquiry-observation textarea,.cell-inquiry-guide-actions span,.cell-inquiry-guide-footer span,[data-cell-illumination-control],[data-cell-illumination-label],[data-cell-illumination-current],[data-cell-illumination-option],[data-cell-illumination-caption]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:is([style^=\"color: rgb(21, 128, 61)\"],[style*=\"; color: rgb(21, 128, 61)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(45, 79, 69)\"],[style*=\"; color: rgb(45, 79, 69)\"],[style^=\"color: rgb(31, 74, 64)\"],[style*=\"; color: rgb(31, 74, 64)\"],[style^=\"color: rgb(55, 48, 163)\"],[style*=\"; color: rgb(55, 48, 163)\"],[style^=\"color: rgb(21, 94, 117)\"],[style*=\"; color: rgb(21, 94, 117)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(21, 128, 61)\"],[style*=\"; color: rgb(21, 128, 61)\"],[style^=\"color: rgb(22, 101, 52)\"],[style*=\"; color: rgb(22, 101, 52)\"],[style^=\"color: rgb(146, 64, 14)\"],[style*=\"; color: rgb(146, 64, 14)\"],[style^=\"color: rgb(45, 79, 69)\"],[style*=\"; color: rgb(45, 79, 69)\"],[style^=\"color: rgb(31, 74, 64)\"],[style*=\"; color: rgb(31, 74, 64)\"],[style^=\"color: rgb(55, 48, 163)\"],[style*=\"; color: rgb(55, 48, 163)\"],[style^=\"color: rgb(21, 94, 117)\"],[style*=\"; color: rgb(21, 94, 117)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background: rgb(244, 249, 247)\"],[style*=\"background-color: rgb(244, 249, 247)\"],[style*=\"background: rgb(240, 253, 244)\"],[style*=\"background-color: rgb(240, 253, 244)\"],[style*=\"background: rgb(255, 251, 235)\"],[style*=\"background-color: rgb(255, 251, 235)\"],[style*=\"background: rgb(236, 254, 255)\"],[style*=\"background-color: rgb(236, 254, 255)\"],[style*=\"background: rgb(238, 242, 255)\"],[style*=\"background-color: rgb(238, 242, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cell\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"cell\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
@@ -198,7 +198,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
       h('div', { 'data-osmo-controls': true },
         [{ key: 'inside', label: 'Inside solute (mOsm/L)', max: 200 }, { key: 'outside', label: 'Outside solute (mOsm/L)', max: 200 }, { key: 'perm', label: 'Water permeability (%)', max: 100 }].map(function(control) {
           return h('div', { key: control.key }, h('label', { htmlFor: 'oh-' + control.key, className: 'block text-sm font-bold' }, control.label + ': ' + model[control.key]),
-            h('input', { id: 'oh-' + control.key, type: 'range', min: 0, max: control.max, step: 1, value: model[control.key], className: 'w-full', onChange: function(e) { var change = {}; change[control.key] = Number(e.target.value); patch(change); } }));
+            h('input', { id: 'oh-' + control.key, type: 'range', min: 0, max: control.max, step: 1, value: model[control.key], 'aria-valuetext': control.label + ': ' + model[control.key], className: 'w-full min-h-11', onChange: function(e) { var change = {}; change[control.key] = Number(e.target.value); patch(change); } }));
         })),
       h('div', { 'data-osmo-readout': true, className: 'rounded-xl border border-slate-300 bg-slate-50 p-3' },
         h('p', { className: 'text-sm font-bold', 'data-osmosis-tonicity': model.tonicity }, model.tonicity + ' external solution'),
@@ -1282,7 +1282,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
     var key = [type, sel, contrast ? 1 : 0, size, scale].join('|'), store = host._cellInteriorInset;
     if (store && store.key === key) return store.canvas;
     var canvas = null, lc = null, px = Math.round(size * scale);
-    try { canvas = iaLayerFactory ? iaLayerFactory(px, px) : document.createElement('canvas'); canvas.width = px; canvas.height = px; lc = canvas.getContext('2d'); } catch (e2) { lc = null; }
+    try { canvas = iaLayerFactory ? iaLayerFactory(px, px) : document.createElement('canvas'); if (canvas && canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); canvas.width = px; canvas.height = px; lc = canvas.getContext('2d'); } catch (e2) { lc = null; }
     if (!lc || typeof lc.setTransform !== 'function' || typeof lc.scale !== 'function') return null;
     lc.setTransform(scale, 0, 0, scale, 0, 0);
     drawCellStructureDetail(lc, size, size, type, sel, contrast);
@@ -3191,7 +3191,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
     if (store && store.key === key) return store.canvas;
     var canvas = store && store.canvas, lc = store && store.ctx;
     if (!canvas || !lc) {
-      try { canvas = iaLayerFactory ? iaLayerFactory(pw, ph) : document.createElement('canvas'); lc = canvas && canvas.getContext ? canvas.getContext('2d') : null; } catch (e2) { lc = null; }
+      try { canvas = iaLayerFactory ? iaLayerFactory(pw, ph) : document.createElement('canvas'); if (canvas && canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); lc = canvas && canvas.getContext ? canvas.getContext('2d') : null; } catch (e2) { lc = null; }
       if (!lc) return null;
     }
     if (canvas.width !== pw) canvas.width = pw;
@@ -10661,7 +10661,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
   // Pre-render the static terrain (size-dependent only).
   function scBuildLandscape(W, H, dpr) {
     if (typeof document === 'undefined') return null;
-    var cvs = document.createElement('canvas');
+    var cvs = document.createElement('canvas'); if (cvs.setAttribute) cvs.setAttribute('aria-hidden', 'true');
     cvs.width = Math.max(1, Math.round(W * dpr)); cvs.height = Math.max(1, Math.round(H * dpr));
     var cx = null; try { cx = cvs.getContext('2d'); } catch (e) { cx = null; }
     if (!cx) return null;
@@ -11346,7 +11346,7 @@ if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
     var parts = SC_PORTRAITS[id](h, g, u, opts);
     var style = opts.delay ? { '--d': opts.delay } : undefined;
     var a11y = opts.decorative ? { 'aria-hidden': 'true' } : { role: 'img', 'aria-label': opts.label || parts.label };
-    return h('svg', Object.assign({ viewBox: '0 0 240 170', focusable: 'false', className: 'sc-portrait' + (opts.animate ? ' sc-anim' : ''), style: style, 'data-sc-portrait': id }, a11y),
+    return h('svg', Object.assign({ viewBox: '0 0 240 170', focusable: 'false', role: a11y.role, 'aria-label': a11y['aria-label'], 'aria-hidden': a11y['aria-hidden'], className: 'sc-portrait' + (opts.animate ? ' sc-anim' : ''), style: style, 'data-sc-portrait': id }),
       h('defs', null, parts.defs), parts.els);
   }
   function scNodePortrait(h, nodeId, opts) {
@@ -31324,6 +31324,8 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
 
             function render() {
 
+              if (!cctx) return;
+
               cctx.clearRect(0, 0, W, HH);
 
               var renderNow = canvasNow();
@@ -33148,7 +33150,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
 
             // ResizeObserver
 
-            var ro = new ResizeObserver(function () {
+            var ro = typeof ResizeObserver === 'function' ? new ResizeObserver(function () {
 
               missionOverlaySafeBandCache = null;
 
@@ -33160,9 +33162,9 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
 
               if (canvasEl._cellSimPaused) renderStaticFrame();
 
-            });
+            }) : null;
 
-            ro.observe(canvasEl);
+            if (ro) ro.observe(canvasEl);
 
             canvasEl._cellSimRO = ro;
 
@@ -33550,6 +33552,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
             finishCellPlayTutorial(resumeCanvas);
           }
           function handleCellPlayTutorialKeyDown(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
             if (e.key === 'Escape') {
               e.preventDefault();
               e.stopPropagation();
@@ -34284,7 +34287,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                 var els = [];
                 // Top bar: hub + breadcrumb + search
                 els.push(React.createElement('div', { key: 'top', className: 'flex flex-wrap items-center gap-2 w-full mb-2' },
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     onClick: function() { setCat(null); upd('_cellPicked', false); },
                     className: 'px-3 py-1 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-1 ' + (atHub ? 'bg-green-700 text-white' : 'transition-colors bg-slate-100 text-green-700 hover:bg-green-50 border border-green-300 active:scale-[0.97]')
                   }, '🏠 Hub'),
@@ -34308,7 +34311,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                     searchResults.length === 0
                       ? React.createElement('span', { className: 'text-xs text-slate-500 italic' }, 'No matches.')
                       : searchResults.map(function(m) {
-                          return React.createElement('button', {
+                          return React.createElement('button', { type: 'button',
                             key: m,
                             'aria-current': d.mode === m ? 'true' : undefined,
                             onClick: function() { setMode(m); upd('_cellSearch', ''); },
@@ -34325,7 +34328,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                   els.push(React.createElement('div', { key: 'hub', className: 'grid gap-3 w-full sm:grid-cols-2 lg:grid-cols-4', "data-cell-mode-hub": true },
                     CELL_CATEGORIES.map(function(c) {
                       var theme = CELL_CATEGORY_STYLE[c.id] || CELL_CATEGORY_STYLE.interactive;
-                      return React.createElement('button', {
+                      return React.createElement('button', { type: 'button',
                         key: c.id,
                         onClick: function() { setCat(c.id); setMode(c.modes[0]); },
                         className: 'text-left p-3 rounded-xl border-2 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]',
@@ -34346,7 +34349,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                   els.push(React.createElement('div', { key: 'cat-modes', className: 'flex flex-wrap gap-1 w-full' },
                     activeCat.modes.map(function(m) {
                       var isActive = d.mode === m;
-                      return React.createElement('button', {
+                      return React.createElement('button', { type: 'button',
                         key: m,
                         'aria-current': isActive ? 'true' : undefined,
                         onClick: function() { setMode(m); },
@@ -34757,7 +34760,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                 h('div', { 'data-cell-specimen-switch': true, 'data-cell-study-surface': true, className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_type', 'Cell type') },
                   CTYPES.map(function (c) {
                     var on = c.id === ctype;
-                    return h('button', { key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
+                    return h('button', { type: 'button', key: c.id, 'aria-pressed': on ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = null; cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general'; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; cel.interiorAdaptiveQuiz = false; cel.interiorQuizKey = null; cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-sm font-bold border transition-colors active:scale-[0.97] ' + (on ? 'bg-green-700 text-white border-green-800' : 'bg-white text-green-800 border-green-300 hover:bg-green-50') }, c.label);
                   })),
                 h('div', { 'data-cell-study-layout': true, 'data-cell-study-surface': true },
                 h('div', { 'data-cell-visual-column': true },
@@ -34779,6 +34782,7 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
                     tabIndex: 0, 'aria-describedby': 'cell-interior-keyboard-help', 'aria-keyshortcuts': 'ArrowRight ArrowLeft ArrowUp ArrowDown Home End Enter Space',
                     onKeyDown: function (e) {
+                      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                       var navKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
                       if (navKeys.indexOf(e.key) < 0 && ['Enter', ' ', 'Home', 'End'].indexOf(e.key) < 0) return;
                       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(sel || orgKeys[0]); focusStructureInspector(); return; }
@@ -34872,15 +34876,15 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                     )
                   )),
                 h('div', { 'data-cell-diagram-toolbar': true, role: 'group', 'aria-label': __alloT('stem.cell.diagram_display_controls','Diagram display controls') },
-                  h('button', { 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
-                  h('button', { 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
+                  h('button', { type: 'button', 'aria-pressed': contrastMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorHighContrast = !contrastMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (contrastMode ? 'bg-slate-900 text-yellow-200 border-slate-950' : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-slate-100') }, contrastMode ? 'Standard contrast' : 'High contrast'),
+                  h('button', { type: 'button', 'data-cell-label-toggle': true, 'aria-pressed': showLabels ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorShowLabels = !showLabels; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (showLabels ? 'bg-cyan-700 text-white border-cyan-800' : 'bg-cyan-50 text-cyan-900 border-cyan-300 hover:bg-cyan-100') }, showLabels ? 'Hide study labels' : 'Show study labels'),
 
                   h('span', { id: 'cell-interior-keyboard-help', className: 'text-xs text-slate-600' }, 'Tap to select. Keyboard: arrows move, Home/End jump, Enter opens the explanation.'),
                   h('button', { type: 'button', 'aria-pressed': !!d.interiorAnnotations, onClick: function() { upd('interiorAnnotations', !d.interiorAnnotations); } }, d.interiorAnnotations ? 'Hide diagram annotations' : 'Show diagram annotations')
                 ),
                 h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2', 'data-cell-zoom-control': true },
                   h('label', { htmlFor: 'cell-detail-zoom', className: 'text-xs font-black text-sky-900' }, 'Detail zoom ' + Math.round(zoomLevel * 100) + '%'),
-                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-sky-600', 'aria-label': __alloT('stem.cell.a11y_cell_diagram_detail_zoom', 'Cell diagram detail zoom') }),
+                  h('input', { id: 'cell-detail-zoom', type: 'range', min: 0.85, max: 1.25, step: 0.05, value: zoomLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorZoom = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] min-h-11 flex-1 accent-sky-600', 'aria-label': __alloT('stem.cell.a11y_cell_diagram_detail_zoom', 'Cell diagram detail zoom'), 'aria-valuetext': Math.round(zoomLevel * 100) + '%' }),
                   h('span', { className: 'text-[0.625rem] text-sky-800' }, '85%–125% • centered on the cell'),
                   h('button', { type: 'button', 'data-cell-reset-diagram': true, onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorZoom = 1; cel.interiorHighContrast = false; cel.interiorShowLabels = false; cel.interiorAnnotations = false; return cel; }); }, className: 'min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700' }, 'Reset diagram')
                 ),
@@ -34931,8 +34935,8 @@ var d = (labToolData && labToolData.cell && typeof labToolData.cell === 'object'
                     selOrg.fn),
                   h('div', { className: 'mt-2 flex flex-wrap items-center gap-1.5 rounded-lg border border-slate-200 bg-white p-2', 'data-cell-mastery-controls': true },
                     h('span', { className: 'mr-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Study status'),
-                    h('button', { 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
-                    h('button', { 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
+                    h('button', { type: 'button', 'aria-pressed': masteredKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'mastered'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (masteredKeys.indexOf(sel) >= 0 ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100') }, masteredKeys.indexOf(sel) >= 0 ? 'Mastered' : 'Mark mastered'),
+                    h('button', { type: 'button', 'aria-pressed': reviewKeys.indexOf(sel) >= 0 ? 'true' : 'false', onClick: function () { markMastery(sel, 'review'); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (reviewKeys.indexOf(sel) >= 0 ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, reviewKeys.indexOf(sel) >= 0 ? 'In review queue' : 'Needs review'),
                   ),
                   h('div', { 'data-cell-status-feedback': true },
                     canUndoStudy && h('div', null,
@@ -34990,7 +34994,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 h('div', { 'data-cell-study-surface': true, 'data-cell-structure-picker': true, id: 'cell-structure-choices', className: 'flex flex-wrap gap-1.5 mt-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_organelles_tap_to_inspect', 'Organelles — tap to inspect') },
                   pickerKeys.map(function (k) {
                     var o = CELL_ORGANELLES[k], on = sel === k;
-                    return h('button', { key: k, 'data-cell-structure-choice': k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) requestAnimationFrame(function() { var inspector = document.querySelector('[data-cell-selected-structure]'); if (inspector) { inspector.focus({ preventScroll: true }); inspector.scrollIntoView({ block: 'nearest' }); } }); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: cellDarkenAccent(o.color), borderColor: cellDarkenAccent(o.color) } : { borderColor: o.color } },
+                    return h('button', { type: 'button', key: k, 'data-cell-structure-choice': k, 'aria-pressed': on ? 'true' : 'false', onClick: function () { pick(k); if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) requestAnimationFrame(function() { var inspector = document.querySelector('[data-cell-selected-structure]'); if (inspector) { inspector.focus({ preventScroll: true }); inspector.scrollIntoView({ block: 'nearest' }); } }); }, className: 'px-2 py-1 rounded-md text-[11.5px] font-bold border transition-colors active:scale-[0.97] ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: cellDarkenAccent(o.color), borderColor: cellDarkenAccent(o.color) } : { borderColor: o.color } },
                       h('span', { 'aria-hidden': 'true', style: { color: on ? '#fff' : o.color } }, '● '), h('span', null, o.name, h('small', { 'data-cell-choice-status': true }, reviewKeys.indexOf(k) >= 0 ? 'Needs review' : masteredKeys.indexOf(k) >= 0 ? 'Mastered' : seen.indexOf(k) >= 0 ? 'Explored' : 'New')));
                   })),
                 h('div', { className: 'text-[0.6875rem] text-slate-500 mt-1' }, '🔎 ' + __alloT('stem.cell.explored', 'Explored') + ' ' + seen.filter(function (k) { return orgKeys.indexOf(k) >= 0 || ['cellWall', 'cellMembrane'].indexOf(k) >= 0; }).length + ' / ' + orgKeys.length + ' ' + __alloT('stem.cell.organelles', 'organelles in this cell'))),
@@ -34998,7 +35002,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 h('div', { className: 'text-[0.75rem] text-slate-600 mb-2 p-2 rounded-lg bg-green-50 border border-green-200 leading-snug' }, note),                h('div', { className: 'mb-2 rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-cell-learning-progress': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_study_progress', 'Study progress') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-sky-900' }, 'Study progress • ' + (((CTYPES.find(function (c) { return c.id === ctype; }) || {}).label) || ctype)), h('p', { className: 'mt-0.5 text-[0.6875rem] text-sky-800' }, directoryMasteredCount + ' mastered • ' + directoryReviewCount + ' in review • ' + Math.max(0, orgKeys.length - directoryMasteredCount) + ' remaining')) ,
-                    h('button', { onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
+                    h('button', { type: 'button', onClick: openReviewQueue, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, directoryReviewCount ? 'Open review queue' : 'Explore directory')
                   ),
                   h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-white', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': directoryProgressPct, 'aria-label': __alloT('stem.cell.a11y_mastery_progress', 'Mastery progress') }, h('div', { className: 'h-full rounded-full bg-sky-600 transition-all', style: { width: directoryProgressPct + '%' } })),
                   h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-[10.5px] font-bold text-sky-800' },
@@ -35012,16 +35016,16 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-600' }, 'Export this versioned record to continue on another device, or paste one from a previous session. Importing restores each cell type separately.'),
                   h('textarea', { value: progressTransfer, onChange: function (e) { upd('interiorProgressTransfer', e.target.value); }, placeholder: 'Progress JSON appears here…', rows: 4, className: 'mt-2 w-full rounded-md border border-slate-500 bg-white px-2.5 py-2 font-mono text-[0.625rem] leading-snug text-slate-800', 'aria-label': __alloT('stem.cell.a11y_portable_cell_progress_json', 'Portable cell progress JSON') }),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
-                    h('button', { onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
-                    h('button', { onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
-                    h('button', { onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
+                    h('button', { type: 'button', onClick: exportCellProgress, className: 'rounded-md border border-sky-300 bg-white px-2.5 py-1.5 text-[0.6875rem] font-bold text-sky-900 hover:bg-sky-100' }, 'Export progress'),
+                    h('button', { type: 'button', onClick: importCellProgress, className: 'rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-emerald-900 hover:bg-emerald-100' }, 'Import progress'),
+                    h('button', { type: 'button', onClick: resetAllCellProgress, className: 'rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-[0.6875rem] font-bold text-rose-900 hover:bg-rose-100' }, 'Reset all progress')
                   ),
                   progressNotice && h('p', { className: 'mt-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[0.6875rem] text-slate-700', role: 'status', 'aria-live': 'polite' }, progressNotice),
                   h('div', { className: 'mt-3', 'data-cell-progress-overview': true, role: 'region', 'aria-label': __alloT('stem.cell.a11y_progress_across_cell_types', 'Progress across cell types') },
                     h('p', { className: 'text-[10.5px] font-black uppercase tracking-wide text-slate-600' }, 'Portfolio overview'),
                     h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, portfolioOverview.map(function (item) {
                       var mastery = item.total ? Math.round(item.mastered / item.total * 100) : 0;
-                      return h('button', { key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
+                      return h('button', { type: 'button', key: 'portfolio-' + item.type, onClick: function () { switchInteriorType(item.type); }, 'aria-pressed': ctype === item.type ? 'true' : 'false', className: 'rounded-lg border bg-white p-2 text-left transition-colors hover:border-sky-500 ' + (ctype === item.type ? 'ring-2 ring-sky-400' : '') },
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-[0.6875rem] font-black text-slate-800' }, item.label), h('span', { className: 'text-[0.625rem] font-black text-sky-800' }, mastery + '%')) ,
                         h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100' }, h('div', { className: 'h-full rounded-full bg-sky-500', style: { width: mastery + '%' } })),
                         h('div', { className: 'mt-1 text-[0.625rem] font-bold text-slate-500' }, item.explored + '/' + item.total + ' explored • ' + item.review + ' review')
@@ -35030,16 +35034,16 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   )
                 ),
                 h('div', { className: 'flex flex-wrap gap-2 mb-2 items-center', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_comparison_and_guided_pathways', 'Cell comparison and guided pathways') },
-                  h('button', { 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
-                  h('button', { 'data-cell-reset-view': true, onClick: resetInteriorView, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-slate-500 bg-white text-slate-700 hover:bg-slate-100 transition-colors active:scale-[0.97]' }, 'Reset view'),
-                  h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
-                  h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
-                  h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
+                  h('button', { type: 'button', 'aria-pressed': compareMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCompare = !compareMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (compareMode ? 'bg-indigo-700 text-white border-indigo-800' : 'bg-indigo-50 text-indigo-800 border-indigo-300 hover:bg-indigo-100') }, compareMode ? 'Hide comparison' : 'Compare cells'),
+                  h('button', { type: 'button', 'data-cell-reset-view': true, onClick: resetInteriorView, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-slate-500 bg-white text-slate-700 hover:bg-slate-100 transition-colors active:scale-[0.97]' }, 'Reset view'),
+                  h('button', { type: 'button', 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
+                  h('button', { type: 'button', 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
+                  h('button', { type: 'button', 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
 
                 ),
                 depthMode && h('div', { className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2', 'data-cell-depth-control': true },
                   h('label', { htmlFor: 'cell-optical-depth', className: 'text-xs font-black text-amber-900' }, 'Optical section ' + Math.round(depthLevel) + '%'),
-                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] flex-1 accent-amber-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') }),
+                  h('input', { id: 'cell-optical-depth', type: 'range', min: 0, max: 100, step: 5, value: depthLevel, onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDepthLevel = Number(e.target.value); return cel; }); }, className: 'min-w-[180px] min-h-11 flex-1 accent-amber-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth'), 'aria-valuetext': Math.round(depthLevel) + '%' }),
                   h('span', { className: 'text-[0.625rem] text-amber-800' }, 'Focal slice • structures outside this plane fade')
                 ),
                 h('div', { className: 'mb-2 rounded-lg border border-lime-200 bg-lime-50 px-3 py-2', 'data-cell-specialization-control': true },
@@ -35047,33 +35051,33 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     h('span', { className: 'text-xs font-black text-lime-900' }, 'Specialization lens'),
                     specializationOptions.map(function (option) {
                       var active = option.id === specializationId;
-                      return h('button', { key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
+                      return h('button', { type: 'button', key: option.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorSpecialization = option.id; cel.interiorCheckChoice = null; cel.interiorCheckRevealed = false; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (active ? 'border-lime-800 bg-lime-700 text-white' : 'border-lime-300 bg-white text-lime-900 hover:bg-lime-100') }, option.label);
                     })
                   ),
                   h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-lime-900' }, (specializationOptions.find(function (item) { return item.id === specializationId; }) || specializationOptions[0]).note)
                 ),
                 h('div', { className: 'mb-2', 'data-cell-structure-directory': true },
-                  h('button', { 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
+                  h('button', { type: 'button', 'aria-expanded': directoryOpen ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryOpen = !directoryOpen; return cel; }); }, className: 'w-full rounded-lg border px-3 py-2 text-left text-xs font-black transition-colors ' + (directoryOpen ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100') }, directoryOpen ? 'Hide structure directory' : 'Open structure directory', h('span', { className: 'float-right font-normal opacity-80' }, directoryOpen ? 'collapse' : 'study by role')),
                   directoryOpen && h('div', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3', role: 'region', 'aria-label': __alloT('stem.cell.a11y_structure_directory', 'Structure directory') },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('p', { className: 'text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Explored ' + directoryExploredCount + ' / ' + orgKeys.length), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-violet-800' }, directoryVisibleKeys.length + ' shown'), h('span', { className: 'text-[0.625rem] font-bold text-violet-800' }, 'Mastered ' + directoryMasteredCount + ' • Review ' + directoryReviewCount)),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
                       h('input', { type: 'search', value: directoryInput, placeholder: __alloT('stem.cell.search_organelles_functions_or_mechanisms','Search organelles, functions, or mechanisms'), onChange: function (e) { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = e.target.value; return cel; }); }, className: 'min-w-[220px] flex-1 rounded-md border border-violet-500 bg-white px-2.5 py-1.5 text-[0.6875rem] text-slate-800', 'aria-label': __alloT('stem.cell.a11y_search_structure_directory', 'Search structure directory') }),
-                      h('button', { 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
-                      h('button', { 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
+                      h('button', { type: 'button', 'aria-pressed': directoryUnexploredOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryUnexploredOnly = !directoryUnexploredOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryUnexploredOnly ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryUnexploredOnly ? 'Show all structures' : 'Unexplored only'),
+                      h('button', { type: 'button', 'data-cell-review-filter': true, 'aria-pressed': directoryReviewOnly ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryReviewOnly = !directoryReviewOnly; return cel; }); }, className: 'rounded-md border px-2 py-1.5 text-[0.6875rem] font-bold ' + (directoryReviewOnly ? 'border-amber-700 bg-amber-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, directoryReviewOnly ? 'Show all statuses' : 'Review queue')
                     ),
                     h('div', { className: 'flex flex-wrap items-center gap-1.5' },
                       h('span', { className: 'mr-1 text-[0.6875rem] font-black uppercase tracking-wide text-violet-900' }, 'Group:'),
-                      h('button', { 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
+                      h('button', { type: 'button', 'aria-pressed': directoryGroup === 'all' ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = 'all'; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (directoryGroup === 'all' ? 'border-violet-800 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100') }, 'All structures'),
                       directoryGroups.map(function (group) {
                         var active = directoryGroup === group.id;
-                        return h('button', { key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (active ? 'text-slate-900' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
+                        return h('button', { type: 'button', key: 'directory-group-' + group.id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDirectoryGroup = group.id; return cel; }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (active ? 'text-slate-900' : 'bg-white text-violet-900 hover:bg-violet-100'), style: active ? { background: group.color, borderColor: group.color } : { borderColor: group.color } }, group.label);
                       })
                     ),
                     h('p', { className: 'mt-2 text-[0.6875rem] leading-snug text-violet-900' }, directoryGroup === 'all' ? 'Choose a structure to spotlight it in the diagram. Explored items carry a checkmark.' : (directoryGroups.find(function (group) { return group.id === directoryGroup; }) || {}).note),
                     directoryVisibleKeys.length === 0 && h('p', { className: 'mt-2 rounded-md border border-dashed border-violet-300 bg-white px-2.5 py-2 text-[0.6875rem] text-violet-900' }, 'No structures match this search and filter.', h('button', { type: 'button', className: 'block mt-2 min-h-10 underline font-bold', onClick: function() { updateCellDataFunctional(function(cel) { cel.interiorDirectoryQuery = ''; cel.interiorDirectoryGroup = 'all'; cel.interiorDirectoryUnexploredOnly = false; cel.interiorDirectoryReviewOnly = false; return cel; }); } }, 'Clear search and filters')),
                     h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' }, directoryVisibleKeys.map(function (key) {
                       var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
-                      return h('button', { key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
+                      return h('button', { type: 'button', key: 'directory-' + key, onClick: function () { pick(key); }, 'aria-label': item.name + ': ' + item.fn, className: 'rounded-lg border bg-white p-2.5 text-left transition-colors hover:border-violet-600 ' + (sel === key ? 'ring-2 ring-violet-500' : ''), style: { borderColor: item.color } },
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black text-slate-900' }, item.name), explored ? h('span', { className: 'rounded-full bg-emerald-100 px-1.5 py-0.5 text-[0.625rem] font-black text-emerald-800' }, 'Explored') : h('span', { className: 'text-[0.625rem] font-bold text-slate-400' }, 'New')),
                         h('p', { className: 'mt-1 text-[0.6875rem] leading-snug text-slate-700' }, item.fn),
                         h('p', { className: 'mt-1 text-[10.5px] leading-snug text-slate-500' }, 'Mechanism: ' + item.structure)
@@ -35088,14 +35092,14 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       h('p', { className: 'mt-1 text-[0.6875rem] font-bold leading-snug text-orange-800' }, 'This is a concept check, not an experiment prediction.'),
                       h('p', { className: 'mt-1 text-[0.75rem] leading-snug text-orange-950' }, currentCheck.prompt)
                     ),
-                    checkRevealed ? h('button', { onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
+                    checkRevealed ? h('button', { type: 'button', onClick: resetCheck, className: 'rounded-md border border-orange-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-orange-900 hover:bg-orange-100' }, 'Try again') : null
                   ),
                   h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_concept_check_answers', 'Concept check answers') },
                     currentCheck.options.map(function (option, index) {
                       var chosen = checkChoice === index;
                       var correct = checkRevealed && index === currentCheck.answer;
                       var wrong = checkRevealed && chosen && !correct;
-                      return h('button', { key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
+                      return h('button', { type: 'button', key: option, 'aria-pressed': chosen ? 'true' : 'false', disabled: checkRevealed, onClick: function () { answerCheck(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-orange-800 bg-orange-700 text-white' : 'border-orange-300 bg-white text-orange-950 hover:bg-orange-100') }, option);
                     })
                   ),
                   checkRevealed && h('div', { className: 'mt-2 rounded-md border border-orange-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-orange-950', 'data-cell-concept-feedback': checkChoice === currentCheck.answer ? 'correct' : 'retry', role: 'status', 'aria-live': 'polite' }, (checkChoice === currentCheck.answer ? 'Reasoning check: correct. ' : 'Reasoning check: not yet. ') + currentCheck.explanation)
@@ -35103,7 +35107,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 adaptiveQuizActive && adaptiveQuizItem && h('div', { className: 'mb-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-cell-adaptive-quiz': true, 'data-cell-study-surface': true, tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.cell.a11y_adaptive_organelle_check', 'Adaptive organelle check') },
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                     h('div', null, h('p', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-900' }, 'Adaptive review check'), h('p', { className: 'text-[0.625rem] font-bold text-fuchsia-800' }, recallRound ? 'Question ' + Math.min(recallRound.keys.length, recallRound.answers.length + (adaptiveQuizRevealed ? 0 : 1)) + ' of ' + recallRound.keys.length + ' · Review structures first' : 'Review structures first')),
-                    h('button', { onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
+                    h('button', { type: 'button', onClick: stopAdaptiveQuiz, className: 'rounded-md border border-fuchsia-300 bg-white px-2 py-1 text-[0.6875rem] font-bold text-fuchsia-900 hover:bg-fuchsia-100' }, 'End check')
                   ),
                   recallRound && h('div', { 'data-cell-round-progress': true, role: 'progressbar', 'aria-label': __alloT('stem.cell.round_questions_answered','Round questions answered'), 'aria-valuemin': 0, 'aria-valuemax': recallRound.keys.length, 'aria-valuenow': recallRound.answers.length }, recallRound.keys.map(function(key, index) { return h('span', { key: key, 'data-answered': index < recallRound.answers.length ? 'true' : 'false', 'aria-hidden': true }); })),
                   h('p', { className: 'mt-2 text-[0.75rem] font-black text-fuchsia-950' }, 'Which structure best matches this clue?'),
@@ -35112,10 +35116,10 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     var chosen = adaptiveQuizChoice === index;
                     var correct = adaptiveQuizRevealed && index === adaptiveAnswer;
                     var wrong = adaptiveQuizRevealed && chosen && !correct;
-                    return h('button', { key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
+                    return h('button', { type: 'button', key: 'adaptive-answer-' + key, 'aria-pressed': chosen ? 'true' : 'false', disabled: adaptiveQuizRevealed, onClick: function () { answerAdaptiveQuiz(index); }, className: 'rounded-md border px-2.5 py-1.5 text-[0.6875rem] font-bold transition-colors ' + (correct ? 'border-emerald-800 bg-emerald-700 text-white' : wrong ? 'border-rose-800 bg-rose-700 text-white' : chosen ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-white text-fuchsia-950 hover:bg-fuchsia-100') }, CELL_ORGANELLES[key].name);
                   })),
                   adaptiveQuizRevealed && h('div', { className: 'mt-2 rounded-md border border-fuchsia-200 bg-white px-2.5 py-2 text-[0.75rem] leading-relaxed text-fuchsia-950', role: 'status', 'aria-live': 'polite' }, (adaptiveQuizChoice === adaptiveAnswer ? 'Correct. ' : 'Not quite. ') + adaptiveQuizItem.name + '. ' + adaptiveQuizItem.structure + ' Connections: ' + adaptiveQuizItem.connections),
-                  adaptiveQuizRevealed && h('button', { onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, recallRound && recallRound.answers.length === recallRound.keys.length ? 'See round results' : 'Next review item')
+                  adaptiveQuizRevealed && h('button', { type: 'button', onClick: nextAdaptiveQuiz, className: 'mt-2 rounded-md border border-fuchsia-800 bg-fuchsia-700 px-2.5 py-1.5 text-[0.6875rem] font-bold text-white hover:bg-fuchsia-800' }, recallRound && recallRound.answers.length === recallRound.keys.length ? 'See round results' : 'Next review item')
                 ),
                 !adaptiveQuizActive && recallRound && recallRound.finished && h('section', { 'data-cell-round-summary': true, 'data-cell-study-surface': true, tabIndex: -1, 'aria-label': __alloT('stem.cell.recall_round_results','Recall round results') },
                   h('div', { 'data-cell-round-heading': true },
@@ -35136,7 +35140,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   ),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' }, CTYPES.map(function (c) {
                     var compareSel = sel && interiorHas(c.id, sel) ? sel : null;
-                    return h('button', { key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_open_in_the_main_cell_view', 'Open {label} in the main cell view'), { label: c.label }) },
+                    return h('button', { type: 'button', key: 'compare-' + c.id, onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorCellType = c.id; cel.interiorSel = compareSel; cel.interiorGuide = null; return cel; }); }, className: 'rounded-xl border border-indigo-200 bg-white p-1.5 text-left hover:border-indigo-500 transition-colors', 'aria-label': __alloAriaFill(__alloT('stem.cell.a11y_open_in_the_main_cell_view', 'Open {label} in the main cell view'), { label: c.label }) },
                       h('canvas', { key: 'compare-canvas-' + c.id + '-' + (compareSel || 'none'), width: 300, height: 190, role: 'img', 'aria-label': c.label + ' comparison diagram' + (compareSel ? ', ' + CELL_ORGANELLES[compareSel].name + ' highlighted' : ''), style: { width: '100%', height: 'auto', display: 'block', borderRadius: '0.6rem' }, ref: function (cv) {
                         if (!cv) return; var ctx = cv.getContext && cv.getContext('2d'); if (!ctx) return;
                         // Crisp on high-density screens; the study chrome is sized for the
@@ -35222,7 +35226,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     { id: 'quiz', label: 'Concept Check', desc: 'Practice organelles, movement, and cell type clues.', accent: '#0284c7' }
                   ].map(function(route) {
                     var active = activeCellMode === route.id || (route.id === 'quiz' && d.quizMode);
-                    return React.createElement("button", {
+                    return React.createElement("button", { type: 'button',
                       key: route.id,
                       onClick: function() { jumpCellMode(route.id); },
                       className: "rounded-lg border p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.97]",
@@ -35568,7 +35572,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     onPointerUp: function (e) { setPadDirection(key, false, e); },
                     onPointerCancel: function (e) { setPadDirection(key, false, e); },
                     onPointerLeave: function (e) { setPadDirection(key, false, e); },
-                    onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, true, e); },
+                    onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, true, e); },
                     onKeyUp: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, false, e); },
                     onBlur: function (e) { setPadDirection(key, false, e); },
                     className: "relative h-11 w-11 rounded-xl border border-white/30 bg-slate-900/90 text-xl font-black text-white shadow-lg backdrop-blur transition motion-reduce:transition-none hover:bg-violet-700 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-95 " + gridClass,
@@ -35606,7 +35610,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 React.createElement("input", {
 
-                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1, "aria-label": __alloT('stem.cell.a11y_microscope_zoom_level', 'Microscope zoom level'),
+                  type: "range", min: 0.5, max: 10, step: 0.1, value: d.zoom || 1, "aria-label": __alloT('stem.cell.a11y_microscope_zoom_level', 'Microscope zoom level'), "aria-valuetext": (d.zoom || 1) + "x",
 
                   onChange: function (e) { var z = parseFloat(e.target.value); upd("zoom", z); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetZoom) cv._cellSimSetZoom(z); },
 
@@ -35633,7 +35637,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                 React.createElement("input", {
 
-                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1, "aria-label": __alloT('stem.cell.a11y_simulation_speed', 'Simulation speed'),
+                  type: "range", min: 1, max: 5, step: 1, value: d.simSpeed || 1, "aria-label": __alloT('stem.cell.a11y_simulation_speed', 'Simulation speed'), "aria-valuetext": (d.simSpeed || 1) + "x",
 
                   onChange: function (e) { var s = parseInt(e.target.value); upd("simSpeed", s); var cv = document.querySelector('[data-cell-sim-canvas]'); if (cv && cv._cellSimSetSpeed) cv._cellSimSetSpeed(s); },
 
@@ -35931,7 +35935,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             ),
             (activePlayDef || selDef) && React.createElement('section', {
               'data-cell-explanation-panel': true, 'aria-label': __alloT('stem.cell.structure_explorer','Structure explorer'),
-              onKeyDown: function(e) { if (e.key === 'Escape' && cellExplanation && e.target.tagName !== 'SELECT') { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
+              onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Escape' && cellExplanation && e.target.tagName !== 'SELECT') { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
             },
               React.createElement('div', { 'data-cell-explanation-header': true },
                 React.createElement('span', { 'data-cell-explanation-emblem': true, 'aria-hidden': true }, cellControlIcon('structure')),
@@ -36087,7 +36091,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 React.createElement("span", { "data-cell-visibility-count": true, role: "status" }, visibleModelCount + " of " + ORGANISMS.length + " visible"),
                 React.createElement("div", { "data-cell-visibility-actions": true },
 
-                  React.createElement("button", {
+                  React.createElement("button", { type: 'button',
 
                     "aria-label": __alloT('stem.cell.a11y_show_all_cell_types_in_petri_dish', 'Show all cell types in petri dish'),
 
@@ -36118,7 +36122,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                   }, "Show All"),
 
-                  React.createElement("button", {
+                  React.createElement("button", { type: 'button',
 
                     "aria-label": __alloT('stem.cell.a11y_clear_all_cell_types_from_petri_dish', 'Clear all cell types from petri dish'),
 
@@ -36571,7 +36575,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   selDef.anatomy.map(function (a, i) {
                     var missionFocus = !!(d.mode === "play" && selectedPlayTutorial && selectedPlayTutorial.focusStructures.indexOf(a.name) !== -1);
 
-                    return React.createElement("button", {
+                    return React.createElement("button", { type: 'button',
 
                       key: i,
                       "data-cell-anatomy-item": a.name,
@@ -36690,7 +36694,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       var isCorrect = opt.toLowerCase() === quizQuestion.a.toLowerCase();
                       var isSelected = d._selectedOption === idx;
 
-                      return React.createElement("button", { "aria-label": "Select quiz answer: " + opt,
+                      return React.createElement("button", { type: 'button', "aria-label": "Select quiz answer: " + opt,
 
                         key: opt,
                         disabled: !!d.quizFeedback,
@@ -36753,7 +36757,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       var isCorrect = org.id === quizQuestion.a;
                       var isSelected = d._selectedOption === org.id;
 
-                      return React.createElement("button", { "aria-label": "Select answer: " + org.label,
+                      return React.createElement("button", { type: 'button', "aria-label": "Select answer: " + org.label,
 
                         key: org.id,
                         disabled: !!d.quizFeedback,
@@ -36810,7 +36814,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                   ),
 
-                d.quizFeedback && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 animate-pulse" : "border-red-200") },
+                d.quizFeedback && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-3 p-3 bg-white rounded-lg border text-left text-xs font-normal space-y-2 " + (d.quizFeedback.correct ? "border-green-200 motion-safe:animate-pulse" : "border-red-200") },
 
                   React.createElement("p", { className: "font-bold text-sm " + (d.quizFeedback.correct ? "text-green-700" : "text-red-600") }, d.quizFeedback.msg),
 
@@ -36829,11 +36833,11 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                         : getOrganismSpotterFeedback(d._selectedOption, quizQuestion.a)
                     ),
                     React.createElement("div", { className: "flex flex-wrap gap-2 pt-1" },
-                      quizQuestion.concept && React.createElement("button", {
+                      quizQuestion.concept && React.createElement("button", { type: 'button',
                         onClick: function() { upd("_studyConcept", quizQuestion.concept); },
                         className: "px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-600 rounded font-bold text-xs hover:bg-emerald-100 transition-all active:scale-[0.97]"
                       }, "📖 Study " + (CELL_VOCAB[quizQuestion.concept] ? CELL_VOCAB[quizQuestion.concept].term : quizQuestion.concept) + " (+5 RP)"),
-                      React.createElement("button", {
+                      React.createElement("button", { type: 'button',
                         onClick: function () {
                           var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                           setLabToolData(function(prev) {
@@ -36850,7 +36854,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                   ),
 
                   d.quizFeedback.correct && React.createElement("div", { className: "flex justify-end" },
-                    React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_next', 'Next'),
+                    React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_next', 'Next'),
                       onClick: function () {
                         var nextIdx = ((d.quizIdx || 0) + 1) % QUIZ_BANK.length;
                         setLabToolData(function(prev) {
@@ -36874,7 +36878,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             d._cellShowBadges && React.createElement("div", { className: "mt-3 bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-amber-700" }, "\uD83C\uDFC5 Badges (" + ext.badges.length + "/" + Object.keys(cellBadges).length + ")"),
-                React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_close_badges', 'Close badges'), onClick: function () { upd('_cellShowBadges', false); }, className: "transition-colors text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_close_badges', 'Close badges'), onClick: function () { upd('_cellShowBadges', false); }, className: "transition-colors text-amber-600 hover:text-amber-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                 Object.keys(cellBadges).map(function (key) {
@@ -36895,17 +36899,17 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             callGemini && d._cellShowAI && React.createElement("div", { className: "mt-3 bg-blue-50 rounded-xl border-2 border-blue-200 p-4 animate-in fade-in" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-xs font-bold text-blue-700" }, "\uD83E\uDD16 AI Biology Tutor"),
-                React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_close_ai_tutor', 'Close AI tutor'), onClick: function () { upd('_cellShowAI', false); }, className: "transition-colors text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
+                React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_close_ai_tutor', 'Close AI tutor'), onClick: function () { upd('_cellShowAI', false); }, className: "transition-colors text-blue-600 hover:text-blue-700" }, React.createElement(X, { size: 14 }))
               ),
               React.createElement("div", { className: "flex gap-2" },
                 React.createElement("input", {
                   type: "text", placeholder: __alloT('stem.cell.ask_about_cells_organisms','Ask about cells, organisms...'), value: d._cellAIQ || '',
                   'aria-label': __alloT('stem.cell.a11y_ask_the_cell_biology_ai_tutor', 'Ask the cell biology AI tutor'),
                   onChange: function (e) { upd('_cellAIQ', e.target.value); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') askAI(d._cellAIQ); },
+                  onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') askAI(d._cellAIQ); },
                   className: "flex-1 px-3 py-1.5 text-xs rounded-lg border border-blue-200 focus:border-blue-400"
                 }),
-                React.createElement("button", { onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "transition-colors px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-[0.97]", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
+                React.createElement("button", { type: 'button', onClick: function () { askAI(d._cellAIQ); }, 'aria-busy': d._cellAILoading, 'aria-label': d._cellAILoading ? 'Asking AI tutor' : 'Ask AI tutor', className: "transition-colors px-3 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:scale-[0.97]", disabled: d._cellAILoading }, d._cellAILoading ? '...' : 'Ask')
               ),
               d._cellAIResp && React.createElement("div", { role: "status", "aria-live": "polite", className: "mt-2 p-2 bg-white rounded-lg text-xs text-slate-700 leading-relaxed border border-blue-100" }, d._cellAIResp)
             ),
@@ -36916,10 +36920,10 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_toggle_badges_panel', 'Toggle badges panel'), "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
-              callGemini && React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_ai_tutor', 'AI Tutor'), "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_toggle_badges_panel', 'Toggle badges panel'), "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              callGemini && React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_ai_tutor', 'AI Tutor'), "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
 
-              React.createElement("button", { "aria-label": __alloT('stem.cell.a11y_snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.cell.a11y_snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 
@@ -37062,16 +37066,16 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 h('ol', { className: 'mt-3 grid gap-2 sm:grid-cols-5', 'aria-label': __alloT('stem.cell.a11y_microdissection_protocol_progress', 'Microdissection protocol progress') }, MICRO_STEPS.map(function(label, index) { var done = microStage > index, active = microStage === index; return h('li', { key: label, className: 'rounded-lg border px-2 py-2 text-center text-xs font-bold', style: { borderColor: done || active ? '#8b5cf6' : '#cbd5e1', background: done ? '#ede9fe' : active ? '#f5f3ff' : '#fff', color: done || active ? '#5b21b6' : '#64748b' }, 'aria-current': active ? 'step' : undefined }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
                 h('div', { className: 'mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]' },
                   h('div', null,
-                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_specimen_type', 'Cell specimen type') }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFromInterior: false, microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
+                    h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_specimen_type', 'Cell specimen type') }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { type: 'button', key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFromInterior: false, microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
                     h('div', { className: 'overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-xl' },
                       h('canvas', { key: 'cell-micro-canvas', 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); }, ref: microCanvasRefCb })
                     ),
-                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth') })),
-                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_structures_to_target', 'Cell structures to target') }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
+                    h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] min-h-11 flex-1 accent-violet-600', 'aria-label': __alloT('stem.cell.a11y_optical_section_depth', 'Optical section depth'), 'aria-valuetext': microDepth + '%' })),
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_cell_structures_to_target', 'Cell structures to target') }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { type: 'button', key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))
                   ),
                   h('aside', { className: 'space-y-3' },
-                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microdissection_instrument', 'Microdissection instrument') }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[0.625rem] font-normal opacity-80' }, item.use)); }))),
-                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microscopy_label', 'Microscopy label') }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
+                    h('div', { className: 'rounded-xl border border-violet-200 bg-violet-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-800' }, 'Instrument'), h('div', { className: 'mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microdissection_instrument', 'Microdissection instrument') }, MICRO_TOOLS.map(function(item) { var on = item.id === microTool; return h('button', { type: 'button', key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microTool: item.id, microFeedback: item.label + ': ' + item.use + '.' }); }, className: 'rounded-lg border px-3 py-2 text-left text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-slate-700 hover:bg-violet-50') }, item.label, h('span', { className: 'block text-[0.625rem] font-normal opacity-80' }, item.use)); }))),
+                    h('div', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-3' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Contrast / label'), h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': __alloT('stem.cell.a11y_microscopy_label', 'Microscopy label') }, [['none', 'None'], ['fluorescence', 'Fluorescence'], ['nuclear', 'Nuclear'], ['membrane', 'Membrane']].map(function(item) { var on = microStain === item[0]; return h('button', { type: 'button', key: item[0], 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microStain: item[0], microFeedback: item[1] + ' label selected.' }); }, className: 'rounded-md border px-2 py-1 text-[0.6875rem] font-bold ' + (on ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-fuchsia-200 bg-white text-fuchsia-800 hover:bg-fuchsia-100') }, item[1]); }))),
                     h('button', { type: 'button', onClick: runMicroStep, disabled: microStage >= 5, className: 'w-full rounded-xl bg-violet-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-emerald-700', 'data-micro-action': microStage }, actionLabels[microStage]),
                     h('div', { role: 'status', 'aria-live': 'polite', className: 'min-h-[48px] rounded-lg border border-slate-200 bg-white p-2 text-xs leading-relaxed text-slate-700' }, d.microFeedback || 'Start by selecting the objective and calibrating the field of view.'),
                     h('button', { type: 'button', onClick: function() { microPatch({ microStage: 0, microTool: 'objective', microStain: 'none', microTarget: null, microFromInterior: false, microFeedback: 'Protocol reset. Calibrate the objective.' }); }, className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50' }, 'Reset protocol')
@@ -37174,6 +37178,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 }, 0);
               }
               function keyProcess(e, index) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 var next = null;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = index + 1;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = index - 1;
@@ -37895,13 +37900,13 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
               return React.createElement('div', {
                 role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'cell-flashcard-title', tabIndex: -1,
-                onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); upd('_studyConcept', null); } },
+                onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Escape') { e.stopPropagation(); upd('_studyConcept', null); } },
                 className: 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200'
               },
                 React.createElement('div', {
                   className: 'bg-white rounded-2xl border-2 border-emerald-500 max-w-sm w-full p-6 shadow-2xl relative animate-in zoom-in-95 duration-200'
                 },
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     autoFocus: true,
                     onClick: function() { upd('_studyConcept', null); },
                     className: 'transition-colors absolute top-3 right-3 text-slate-600 hover:text-slate-900 font-bold p-1 rounded-lg hover:bg-slate-100 active:scale-[0.97]',
@@ -37913,7 +37918,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     React.createElement('div', { className: 'bg-emerald-50 rounded-xl p-4 border border-emerald-100 text-xs text-slate-700 leading-relaxed mb-4 text-left' },
                       vocabInfo.def
                     ),
-                    !isStudied ? React.createElement('button', {
+                    !isStudied ? React.createElement('button', { type: 'button',
                       onClick: function() {
                         var sv = Object.assign({}, d._studiedVocab || {});
                         sv[termKey] = true;
@@ -37933,7 +37938,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                       className: 'w-full py-2.5 px-4 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-teal-700 rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md hover:shadow-lg transition-all'
                     }, 'Study Term (+5 RP)') : React.createElement('div', null,
                       React.createElement('p', { className: 'text-xs text-emerald-600 font-bold mb-3' }, '✓ You have already studied this term!'),
-                      React.createElement('button', {
+                      React.createElement('button', { type: 'button',
                         onClick: function() { upd('_studyConcept', null); },
                         className: 'w-full py-2 px-4 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-all active:scale-[0.97]'
                       }, 'Close')

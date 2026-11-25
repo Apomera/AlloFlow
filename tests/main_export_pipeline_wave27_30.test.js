@@ -605,7 +605,9 @@ describe('Wave 28 · QTI/IMS/H5P/Slides, Forms Delivery & Export Preview', () =>
     expect(pf.issues.find((i) => i.code === 'image-alt')).toBeUndefined();
 
     const compatCornell = previewHelpers.h5pCompat({ id: 'cn1', type: 'note-taking', data: { templateType: 'cornell-notes', cues: ['Why?'] } }, []);
-    expect(compatCornell.ready).toBe(false);
+    // Cornell notes (either template name) are H5P-exportable now: export_source.jsx
+    // turns each cue/note row into a manually reviewed prompt.
+    expect(compatCornell).toMatchObject({ ready: true, unit: 'prompt', valid: 1, manualReview: 1 });
 
     const compatQuiz = previewHelpers.h5pCompat({
       id: 'hq1',

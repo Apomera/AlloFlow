@@ -344,6 +344,10 @@ async function mountAlloHaven(page, scenario) {
 }
 
 async function openSelSurface(page, surface) {
+  // 2026-11-23: Teacher launch and Custom SEL Stations sit inside the teacher-only "Teacher tools" fold.
+  if (surface === 'station-builder' || surface === 'teacher-launch') {
+    await page.locator('details[data-sel-teacher-tools]').first().evaluate((el) => { el.open = true; });
+  }
   if (surface === 'share-packet') {
     await page.getByRole('button', { name: /Create SEL Share Packet/i }).first().scrollIntoViewIfNeeded();
     await page.getByRole('button', { name: /Create SEL Share Packet/i }).first().click();

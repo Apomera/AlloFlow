@@ -411,7 +411,7 @@
   }
   // A "More options" box opens by itself when something inside it is set. It is never closed for the teacher.
   function openMore(id, set) { var box = $(id); if (box && set && !box.open) box.open = true; }
-  function closeMores() { ['more-1', 'more-2', 'more-3'].forEach(function (id) { if ($(id)) $(id).open = false; }); }
+  function closeMores() { ['more-1', 'more-2', 'more-3', 'ws-item-editor'].forEach(function (id) { if ($(id)) $(id).open = false; }); }
   // The groups of step 1: open when one of their activities is chosen. With none chosen anywhere, all are open.
   function openStrands() {
     var any = state.activities.length > 0;
@@ -1059,14 +1059,18 @@
     show('stage-why-text', !!whyText);
     drawMore2();
   }
-  // "More options" of step 2: a sound and other curricula while the page picks the words, and the version
-  // always. Its top line says what they are now; it opens by itself when one of them is set.
+  // "More options" of step 2: a sound, the sound patterns and other curricula while the page picks the words,
+  // and the version always. Its top line says what they are now; it opens by itself when one of them is set.
+  // 2026-11-23: the sound patterns moved in here from above the words. The top line names them (also when a
+  // preset of step 1 sets them), and they do not open the box: a preset would then open all of it.
   function drawMore2() {
     var picking = state.mode === 'pick';
     show('more-2-pick', picking);
     var now = [];
     if (picking) {
       now.push(state.sound ? soundName(state.sound) + ' sound' + (state.position === 'any' ? '' : ', ' + POSITION_NAMES[state.position]) : 'any sound');
+      var shapesNow = activeShapes();
+      now.push(!shapesNow.length ? 'any pattern' : shapesNow.length === 1 ? shapesNow[0] + ' pattern' : shapesNow.join(' + ') + ' patterns');
     }
     now.push('version ' + state.version);
     // 2026-11-17: groups of words and choosing the words yourself are in this box too.
@@ -1999,6 +2003,9 @@
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
   // The lesson of the last file made: the questions "Question order" lists (step 3).
   var lastLesson = null, lastManifest = null;
+  // Step 3 item-level review & editing: keeps the unmodified built lesson and applies teacher edits on top.
+  var baseLesson = null, baseResult = null;
+  var itemEdits = { sectionOrder: [], omitted: Object.create(null), distractorEdits: Object.create(null) };
 
   function openCache() {
     try {
@@ -2505,6 +2512,10 @@
     built = null;
     lastLesson = null;
     lastManifest = null;
+    baseLesson = null;
+    baseResult = null;
+    itemEdits = { sectionOrder: [], omitted: Object.create(null), distractorEdits: Object.create(null) };
+    if (typeof resetItemEditorUi === 'function') resetItemEditorUi();
     if (typeof drawOrder === 'function') drawOrder();
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     show('summary', false);
@@ -2512,6 +2523,7 @@
     show('size-warn', false);
     show('try', false);
     show('save', false);
+    show('worksheet-audio', false);
     show('download-bundle', false);
     show('open-symbol-runner', false);
     show('after-save', false);
@@ -2845,37 +2857,479 @@
       return { said: String((err && err.message) || 'Could not update the file.') };
     });
   }
-  function drawResult(result, words) {
-    show('making', false);
-    var manifest = result.manifest, out = leftOut(result, words);
-    if (!result.html) {
-      if (result.exceptions.some(function (e) { return /converted to WAV|no converter/.test(e.reason); })) {
-        problem('This browser could not prepare the recordings, so no file was made. Open this page in a current version of Chrome, Edge, Firefox or Safari. Your choices are kept.', 'retry');
-      } else problem('No question could be made from these words and activities. ' + out.join(' ') + ' Change the words or the activities.', 'change');
-      return;
+  // ---------------------------------------------------------------------------
+  // Step 3: Item-Level Review & Editing (#ws-item-editor)
+  // Lets teachers inspect generated items, reorder activity sections, remove or
+  // restore individual items, and swap or edit wrong answer choices before
+  // saving, previewing, opening worksheets/audio, or downloading the bundle.
+  // ---------------------------------------------------------------------------
+  function cloneJson(value) {
+    return value == null ? value : JSON.parse(JSON.stringify(value));
+  }
+  function cloneLessonStructure(lesson) {
+    if (!lesson || typeof lesson !== 'object') return null;
+    var out = {};
+    Object.keys(lesson).forEach(function (key) {
+      if (key === 'audio' || key === 'images') {
+        out[key] = lesson[key] && typeof lesson[key] === 'object' ? Object.assign({}, lesson[key]) : lesson[key];
+      } else {
+        out[key] = cloneJson(lesson[key]);
+      }
+    });
+    return out;
+  }
+  function safeJsonForHtml(value) {
+    return JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')
+      .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+  }
+  function readHtmlPacketManifest(html) {
+    var open = '<script type="application/json" id="packet-manifest">';
+    var text = String(html || '');
+    var at = text.indexOf(open);
+    if (at < 0) return null;
+    var from = at + open.length, to = text.indexOf('</script>', from);
+    if (to < 0) return null;
+    try {
+      return JSON.parse(text.slice(from, to), function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    } catch (_) { return null; }
+  }
+  function patchHtmlPacketManifest(html, extra) {
+    var open = '<script type="application/json" id="packet-manifest">';
+    var text = String(html || '');
+    var at = text.indexOf(open);
+    if (at < 0) return text;
+    var from = at + open.length, to = text.indexOf('</script>', from);
+    if (to < 0) return text;
+    var manifest = readHtmlPacketManifest(text);
+    if (!manifest || typeof manifest !== 'object') return text;
+    Object.keys(extra || {}).forEach(function (key) {
+      if (extra[key] === undefined) return;
+      if (key === 'attributions' && Array.isArray(extra.attributions)) {
+        var cur = Array.isArray(manifest.attributions) ? manifest.attributions.slice() : [];
+        extra.attributions.forEach(function (line) { if (cur.indexOf(line) < 0) cur.push(line); });
+        manifest.attributions = cur;
+      } else {
+        manifest[key] = extra[key];
+      }
+    });
+    return text.slice(0, from) + safeJsonForHtml(manifest) + text.slice(to);
+  }
+  function shortEditHash(text) {
+    var h = 2166136261 >>> 0, str = String(text || '');
+    for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return ('0000000' + h.toString(16)).slice(-8);
+  }
+  function itemEditKey(block, item, idx) {
+    return String((item && item.id) || ((block && block.activity ? block.activity : 'item') + '-' + idx));
+  }
+  function freshItemEdits(lesson) {
+    var blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    return {
+      sectionOrder: blocks.map(function (b) { return String(b.activity || ''); }),
+      omitted: Object.create(null),
+      distractorEdits: Object.create(null),
+    };
+  }
+  function resetItemEditorUi() {
+    show('ws-item-editor', false);
+    if ($('ws-item-editor')) $('ws-item-editor').open = false;
+    setText('ws-item-editor-now', '');
+    setText('ws-item-editor-said', '');
+    show('ws-item-reset', false);
+    if ($('ws-item-list')) $('ws-item-list').textContent = '';
+  }
+  function itemChoiceText(entry) {
+    if (typeof entry === 'string') return entry;
+    if (entry && typeof entry === 'object') {
+      if (typeof entry.text === 'string') return entry.text;
+      if (typeof entry.label === 'string') return entry.label;
+      if (typeof entry.word === 'string') return entry.word;
     }
-    var blob = new Blob([result.html], { type: 'text/html' });
-    var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
-    built = { html: result.html, baseHtml: baseHtml, title: manifest.title, total: manifest.items.total, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
-    lastLesson = result.lesson || null;
+    return '';
+  }
+  function itemSoundsMatch(a, b) {
+    var sa = String(a || '').trim().toLowerCase(), sb = String(b || '').trim().toLowerCase();
+    if (!sa || !sb) return false;
+    if (sa === sb) return true;
+    return !!(core && typeof core.soundAnswerMatches === 'function' && core.soundAnswerMatches(sa, sb));
+  }
+  function itemPronKey(word) {
+    if (!dictionary || typeof dictionary.lookup !== 'function' || !word) return '';
+    var p = dictionary.lookup(String(word).trim().toLowerCase())[0];
+    return p && p.length ? Array.prototype.join.call(p, ' ') : '';
+  }
+  var IE_VOWELS = { a: 1, e: 1, i: 1, o: 1, u: 1, ay: 1, ee: 1, ie: 1, oa: 1, oo: 1, oo_short: 1, oy: 1, ow: 1, aw: 1, ar: 1, or: 1, er: 1, ir: 1, ur: 1, air: 1, ear: 1, schwa: 1 };
+  function itemRimePhonemes(word) {
+    if (!dictionary || typeof dictionary.lookup !== 'function' || !word) return '';
+    var p = dictionary.lookup(String(word).trim().toLowerCase())[0];
+    if (!p || !p.length) return '';
+    for (var i = p.length - 1; i >= 0; i--) {
+      if (IE_VOWELS[p[i]]) return Array.prototype.slice.call(p, i).join(' ');
+    }
+    return '';
+  }
+  function itemSpelledRime(word) {
+    var m = /[aeiouy][a-z]*$/.exec(String(word || '').trim().toLowerCase());
+    return m ? m[0] : '';
+  }
+  function itemWordsRhyme(a, b) {
+    var la = String(a || '').trim().toLowerCase(), lb = String(b || '').trim().toLowerCase();
+    if (!la || !lb) return false;
+    if (la === lb) return true;
+    var ra = itemRimePhonemes(la), rb = itemRimePhonemes(lb);
+    if (ra && rb && ra === rb) return true;
+    var sa = itemSpelledRime(la), sb = itemSpelledRime(lb);
+    return sa.length >= 2 && sa === sb;
+  }
+  function collectLessonPools(lesson) {
+    var audioMap = (lesson && lesson.audio && typeof lesson.audio === 'object') ? lesson.audio : {};
+    var wordAudioByKey = Object.create(null), wordAudioList = [];
+    var soundAudioByKey = Object.create(null), soundAudioList = [];
+    var textWordByKey = Object.create(null), textWords = [];
+    var addWordAudio = function (text, clipId) {
+      var clean = String(text || '').trim();
+      var key = clean.toLowerCase();
+      if (!clean || !clipId || !audioMap[clipId] || wordAudioByKey[key]) return;
+      wordAudioByKey[key] = true;
+      wordAudioList.push({ text: clean, audio: clipId });
+    };
+    var addSoundAudio = function (label, clipId) {
+      var clean = String(label || '').trim();
+      var key = clean.toLowerCase();
+      if (!clean || !clipId || !audioMap[clipId] || soundAudioByKey[key]) return;
+      soundAudioByKey[key] = true;
+      soundAudioList.push({ label: clean, audio: clipId });
+    };
+    var addTextWord = function (text) {
+      var clean = String(text || '').trim();
+      var key = clean.toLowerCase();
+      if (!clean || textWordByKey[key]) return;
+      textWordByKey[key] = true;
+      textWords.push(clean);
+    };
+    var blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    blocks.forEach(function (block) {
+      var act = String(block.activity || '');
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        if (!item || typeof item !== 'object') return;
+        if (item.word) {
+          addTextWord(item.word);
+          if (item.wordAudio) addWordAudio(item.word, item.wordAudio);
+        }
+        if (act === 'isolation' && Array.isArray(item.choices)) {
+          item.choices.forEach(function (c) { if (c && c.label && c.audio) addSoundAudio(c.label, c.audio); });
+        } else if (act === 'segmentation' && Array.isArray(item.chips)) {
+          item.chips.forEach(function (c) { if (c && c.label && c.audio) addSoundAudio(c.label, c.audio); });
+        } else {
+          ['choices', 'chips', 'options', 'words'].forEach(function (prop) {
+            if (!Array.isArray(item[prop])) return;
+            item[prop].forEach(function (c) {
+              var txt = itemChoiceText(c);
+              if (txt && act !== 'missing_letter' && act !== 'counting' && act !== 'syllable_counting' && act !== 'mapping' && act !== 'word_scramble') {
+                addTextWord(txt);
+                if (c && typeof c === 'object' && c.audio) addWordAudio(txt, c.audio);
+              }
+            });
+          });
+        }
+      });
+    });
+    ['cat', 'dog', 'sun', 'map', 'bed', 'pig', 'cup', 'hat', 'pen', 'top', 'red', 'fan'].forEach(addTextWord);
+    wordAudioList.sort(function (a, b) { return a.text.localeCompare(b.text); });
+    soundAudioList.sort(function (a, b) { return a.label.localeCompare(b.label); });
+    textWords.sort(function (a, b) { return a.localeCompare(b); });
+    return { wordAudio: wordAudioList, soundAudio: soundAudioList, words: textWords };
+  }
+  var IE_SKIP_CHOICES = { counting: 1, syllable_counting: 1, mapping: 1, word_scramble: 1, orthography: 1, spelling_bee: 1, letter_tracing: 1, decoding: 1 };
+  function getItemChoiceSpec(activity, item) {
+    if (!item || typeof item !== 'object' || IE_SKIP_CHOICES[activity]) return null;
+    var prop = '', isSound = false, singleLetter = false;
+    if (activity === 'isolation' && Array.isArray(item.choices)) { prop = 'choices'; isSound = true; }
+    else if (activity === 'segmentation' && Array.isArray(item.chips)) { prop = 'chips'; isSound = true; }
+    else if ((activity === 'blending' || activity === 'rhyming') && Array.isArray(item.choices)) { prop = 'choices'; }
+    else if ((activity === 'word_families' || activity === 'sound_sort') && Array.isArray(item.chips)) { prop = 'chips'; }
+    else if (activity === 'missing_letter' && Array.isArray(item.options)) { prop = 'options'; singleLetter = true; }
+    else if (Array.isArray(item.choices) && item.choices.length) { prop = 'choices'; }
+    else if (Array.isArray(item.options) && item.options.length) { prop = 'options'; }
+    else if (Array.isArray(item.words) && item.words.length) { prop = 'words'; }
+    if (!prop || !Array.isArray(item[prop]) || item[prop].length < 2) return null;
+
+    var targetLow = String(item.target || item.answer || item.word || '').trim().toLowerCase();
+    var segSounds = Array.isArray(item.sounds) ? item.sounds : [];
+    var entries = item[prop].map(function (c, idx) {
+      var val = isSound ? String((c && typeof c === 'object' ? (c.label || c.text) : c) || '') : itemChoiceText(c);
+      var hasAudio = !!(c && typeof c === 'object' && typeof c.audio === 'string' && c.audio);
+      var isTarget = false;
+      if (activity === 'isolation') isTarget = itemSoundsMatch(val, item.target);
+      else if (activity === 'segmentation') isTarget = segSounds.some(function (s) { return itemSoundsMatch(val, s); });
+      else if (activity === 'rhyming') isTarget = (c && typeof c === 'object' && (!!c.answer || !!c.ok)) || val.trim().toLowerCase() === targetLow;
+      else if (activity === 'word_families' || activity === 'sound_sort') isTarget = !!(c && typeof c === 'object' && c.member);
+      else isTarget = val.trim().toLowerCase() === targetLow;
+      var display = isSound ? '/' + val + '/' : (singleLetter && item.capital ? val.toUpperCase() : val);
+      return {
+        idx: idx,
+        value: val,
+        display: display,
+        isTarget: isTarget,
+        hasAudio: hasAudio,
+        audio: hasAudio ? c.audio : '',
+        editable: !isTarget && !hasAudio,
+      };
+    });
+    if (!entries.some(function (e) { return !e.isTarget; })) return null;
+    return { prop: prop, isSound: isSound, singleLetter: singleLetter, entries: entries };
+  }
+  function applyDistractorEditsToItem(activity, item, editsForItem) {
+    if (!item || !editsForItem || typeof editsForItem !== 'object') return item;
+    var spec = getItemChoiceSpec(activity, item);
+    if (!spec) return item;
+    var arr = item[spec.prop];
+    if (!Array.isArray(arr)) return item;
+    Object.keys(editsForItem).forEach(function (rawIdx) {
+      var idx = Number(rawIdx);
+      var edit = editsForItem[rawIdx];
+      if (!Number.isInteger(idx) || idx < 0 || idx >= arr.length || !edit) return;
+      var meta = spec.entries[idx];
+      // Never modify or overwrite a correct/target choice.
+      if (!meta || meta.isTarget) return;
+      var orig = arr[idx];
+      if (typeof orig === 'string') {
+        if (typeof edit.text === 'string' && edit.text.trim()) arr[idx] = edit.text;
+      } else if (orig && typeof orig === 'object') {
+        var next = Object.assign({}, orig);
+        if (spec.isSound) {
+          if (typeof edit.label === 'string' && edit.label) next.label = edit.label;
+          if (typeof edit.audio === 'string' && edit.audio) next.audio = edit.audio;
+        } else {
+          if (typeof edit.text === 'string' && edit.text) next.text = edit.text;
+          if (typeof edit.audio === 'string' && edit.audio) next.audio = edit.audio;
+          if (activity === 'rhyming') { next.ok = false; next.answer = false; }
+          if (activity === 'word_families' || activity === 'sound_sort') next.member = false;
+        }
+        arr[idx] = next;
+      }
+    });
+    return item;
+  }
+  function validDistractorRing(activity, baseItem, currentItem, choiceIdx, pools) {
+    var spec = getItemChoiceSpec(activity, currentItem);
+    if (!spec) return [];
+    var entry = spec.entries[choiceIdx];
+    if (!entry || entry.isTarget) return [];
+    var otherVals = spec.entries.filter(function (e) { return e.idx !== choiceIdx; }).map(function (e) { return e.value; });
+    var otherLow = otherVals.map(function (v) { return v.trim().toLowerCase(); });
+    var otherProns = otherVals.map(itemPronKey).filter(Boolean);
+    var wordLow = String(currentItem.word || '').trim().toLowerCase();
+    var targetLow = String(currentItem.target || currentItem.answer || '').trim().toLowerCase();
+    var wordPron = itemPronKey(wordLow), targetPron = itemPronKey(targetLow);
+    var curVal = entry.value;
+    var ring = [], seen = Object.create(null);
+    var addCand = function (key, cand) {
+      var low = String(key || '').trim().toLowerCase();
+      if (!low || seen[low]) return;
+      seen[low] = true;
+      ring.push(cand);
+    };
+
+    if (spec.isSound) {
+      var segSounds = Array.isArray(currentItem.sounds) ? currentItem.sounds : [];
+      var soundOk = function (lbl) {
+        if (!lbl) return false;
+        if (activity === 'isolation' && itemSoundsMatch(lbl, currentItem.target)) return false;
+        if (activity === 'segmentation' && segSounds.some(function (s) { return itemSoundsMatch(lbl, s); })) return false;
+        if (otherVals.some(function (o) { return itemSoundsMatch(lbl, o); })) return false;
+        return true;
+      };
+      if (entry.hasAudio) addCand(curVal, { label: curVal, audio: entry.audio });
+      var baseArr = baseItem && Array.isArray(baseItem[spec.prop]) ? baseItem[spec.prop] : [];
+      var baseChoice = baseArr[choiceIdx];
+      if (baseChoice && baseChoice.label && baseChoice.audio && soundOk(baseChoice.label)) addCand(baseChoice.label, { label: baseChoice.label, audio: baseChoice.audio });
+      (pools.soundAudio || []).forEach(function (c) {
+        if (soundOk(c.label)) addCand(c.label, { label: c.label, audio: c.audio });
+      });
+      return ring;
+    }
+
+    if (spec.singleLetter) {
+      var isVowel = 'aeiou'.indexOf(targetLow) >= 0 || (targetLow === 'y' && !/[aeiou]/.test(wordLow));
+      var letters = (isVowel ? 'aeiou' : 'bcdfghjklmnprstvwz').split('');
+      var hiddenAt = Number.isInteger(currentItem.hiddenIndex) ? currentItem.hiddenIndex : -1;
+      var letterOk = function (ch) {
+        var low = String(ch || '').trim().toLowerCase();
+        if (!/^[a-z]$/.test(low) || low === targetLow || otherLow.indexOf(low) >= 0) return false;
+        if (hiddenAt >= 0 && wordLow && wordPron) {
+          var spelled = wordLow.slice(0, hiddenAt) + low + wordLow.slice(hiddenAt + 1);
+          var spPron = itemPronKey(spelled);
+          if (spPron && spPron === wordPron) return false;
+        }
+        return true;
+      };
+      addCand(curVal, { text: curVal.toLowerCase() });
+      var baseLet = baseItem && Array.isArray(baseItem.options) ? baseItem.options[choiceIdx] : '';
+      if (baseLet && letterOk(baseLet)) addCand(baseLet, { text: String(baseLet).toLowerCase() });
+      letters.forEach(function (ch) { if (letterOk(ch)) addCand(ch, { text: ch }); });
+      return ring;
+    }
+
+    var wordOk = function (w) {
+      var low = String(w || '').trim().toLowerCase();
+      if (!low || low === wordLow || low === targetLow || otherLow.indexOf(low) >= 0) return false;
+      var p = itemPronKey(low);
+      if (p && ((wordPron && p === wordPron) || (targetPron && p === targetPron) || otherProns.indexOf(p) >= 0)) return false;
+      if (activity === 'rhyming' && itemWordsRhyme(low, wordLow)) return false;
+      if (activity === 'word_families') {
+        var rime = String(currentItem.rime || '').trim().toLowerCase();
+        if (rime && low.slice(-rime.length) === rime) return false;
+        if (itemWordsRhyme(low, wordLow)) return false;
+      }
+      if (activity === 'sound_sort' && core && typeof core.edgeSound === 'function' && typeof core.soundKey === 'function') {
+        var sEdge = core.edgeSound(low, currentItem.mode === 'last' ? 'last' : 'first');
+        if (sEdge != null && core.soundKey(sEdge) === core.soundKey(currentItem.sound)) return false;
+      }
+      return true;
+    };
+
+    if (entry.hasAudio) {
+      addCand(curVal, { text: curVal, audio: entry.audio });
+      var baseList = baseItem && Array.isArray(baseItem[spec.prop]) ? baseItem[spec.prop] : [];
+      var baseObj = baseList[choiceIdx];
+      if (baseObj && baseObj.text && baseObj.audio && wordOk(baseObj.text)) addCand(baseObj.text, { text: baseObj.text, audio: baseObj.audio });
+      (pools.wordAudio || []).forEach(function (c) {
+        if (wordOk(c.text)) addCand(c.text, { text: c.text, audio: c.audio });
+      });
+      return ring;
+    }
+
+    addCand(curVal, { text: curVal });
+    var baseTxt = baseItem && Array.isArray(baseItem[spec.prop]) ? itemChoiceText(baseItem[spec.prop][choiceIdx]) : '';
+    if (baseTxt && wordOk(baseTxt)) addCand(baseTxt, { text: baseTxt });
+    (pools.words || []).forEach(function (w) { if (wordOk(w)) addCand(w, { text: w }); });
+    return ring;
+  }
+  function itemEditStats() {
+    var blocks = baseLesson && Array.isArray(baseLesson.blocks) ? baseLesson.blocks : [];
+    var total = 0, removed = 0;
+    blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item, idx) {
+        total++;
+        if (itemEdits.omitted[itemEditKey(block, item, idx)]) removed++;
+      });
+    });
+    var origOrder = blocks.map(function (b) { return String(b.activity || ''); });
+    var curOrder = itemEdits.sectionOrder.length === origOrder.length ? itemEdits.sectionOrder : origOrder;
+    var sectionsReordered = origOrder.some(function (act, i) { return curOrder[i] !== act; });
+    var distractorCount = 0;
+    Object.keys(itemEdits.distractorEdits).forEach(function (k) {
+      var map = itemEdits.distractorEdits[k];
+      if (map && typeof map === 'object') distractorCount += Object.keys(map).length;
+    });
+    return {
+      total: total,
+      active: total - removed,
+      removed: removed,
+      sectionsReordered: sectionsReordered,
+      distractorCount: distractorCount,
+      hasEdits: removed > 0 || sectionsReordered || distractorCount > 0,
+    };
+  }
+  function buildEditedLesson() {
+    var cloned = cloneLessonStructure(baseLesson);
+    if (!cloned || !Array.isArray(cloned.blocks)) return null;
+    var blockByAct = Object.create(null);
+    cloned.blocks.forEach(function (b) { blockByAct[String(b.activity || '')] = b; });
+    var orderedActs = itemEdits.sectionOrder.length ? itemEdits.sectionOrder : cloned.blocks.map(function (b) { return String(b.activity || ''); });
+    var keptIds = Object.create(null), nextBlocks = [];
+    orderedActs.forEach(function (act) {
+      var block = blockByAct[act];
+      if (!block) return;
+      var items = (Array.isArray(block.items) ? block.items : []).reduce(function (acc, item, idx) {
+        var key = itemEditKey(block, item, idx);
+        if (itemEdits.omitted[key]) return acc;
+        var editsForItem = itemEdits.distractorEdits[key];
+        if (editsForItem) applyDistractorEditsToItem(act, item, editsForItem);
+        keptIds[String(item.id)] = true;
+        acc.push(item);
+        return acc;
+      }, []);
+      if (items.length) {
+        block.items = items;
+        nextBlocks.push(block);
+      }
+    });
+    cloned.blocks = nextBlocks;
+    var stats = itemEditStats();
+    if (stats.sectionsReordered) {
+      delete cloned.sequence;
+    } else if (Array.isArray(cloned.sequence)) {
+      cloned.sequence = cloned.sequence.filter(function (id) { return !!keptIds[String(id)]; });
+      if (!cloned.sequence.length) delete cloned.sequence;
+    }
+    if (stats.hasEdits) {
+      var sig = JSON.stringify([orderedActs, Object.keys(itemEdits.omitted).sort(), itemEdits.distractorEdits]);
+      cloned.revision = String(cloned.revision || 'v1') + 'e' + shortEditHash(sig);
+    }
+    return cloned;
+  }
+  function itemPreviewText(activity, item) {
+    if (!item || typeof item !== 'object') return '';
+    var word = String(item.word || '').trim();
+    if (activity === 'isolation') {
+      var pos = item.positionName || (item.position === 0 ? 'first' : ((loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.ordinals && loader.DEFAULT_LABELS.ordinals[item.position]) || ('#' + (Number(item.position || 0) + 1))));
+      return pos.charAt(0).toUpperCase() + pos.slice(1) + ' sound: /' + String(item.target || '') + '/';
+    }
+    if (activity === 'blending') {
+      var ph = dictionary && typeof dictionary.lookup === 'function' ? dictionary.lookup(word.toLowerCase())[0] : null;
+      return ph && ph.length ? 'Blend ' + Array.prototype.map.call(ph, function (s) { return '/' + s + '/'; }).join(' ') + ' \u2192 ' + (item.target || word) : 'Blend sounds \u2192 ' + (item.target || word);
+    }
+    if (activity === 'segmentation') {
+      return 'Break into sounds: ' + (Array.isArray(item.sounds) ? item.sounds.map(function (s) { return '/' + s + '/'; }).join(' ') : String(item.target || ''));
+    }
+    if (activity === 'counting') return 'Count sounds: ' + String(item.target || '');
+    if (activity === 'mapping') return 'Map graphemes: ' + (Array.isArray(item.graphemes) ? item.graphemes.join(' \u00b7 ') : String(item.target || ''));
+    if (activity === 'missing_letter') {
+      var blanked = Array.isArray(item.letters) ? item.letters.map(function (ch, i) { return i === item.hiddenIndex ? '_' : ch; }).join('') : word;
+      var ans = item.capital ? String(item.target || '').toUpperCase() : String(item.target || '');
+      return 'Missing letter: ' + blanked + ' (' + ans + ')';
+    }
+    if (activity === 'orthography') return 'Spell with tiles: ' + String(item.target || word);
+    if (activity === 'word_scramble') return 'Unscramble ' + (Array.isArray(item.letters) ? item.letters.join(', ') : '') + ' \u2192 ' + String(item.target || word);
+    if (activity === 'spelling_bee') return 'Listen and type: ' + String(item.target || word);
+    if (activity === 'letter_tracing') return 'Trace: ' + (Array.isArray(item.parts) ? item.parts.map(function (p) { return p.letter; }).join(', ') : String(item.letter || ''));
+    if (activity === 'rhyming') return 'Rhymes with ' + word + ' \u2192 ' + String(item.target || '');
+    if (activity === 'word_families') return '-' + String(item.rime || '') + ' family \u2192 ' + String(item.target || '');
+    if (activity === 'sound_sort') return (item.mode === 'last' ? 'Ends' : 'Starts') + ' with /' + String(item.sound || '') + '/ \u2192 ' + String(item.target || '');
+    if (activity === 'syllable_blending') return 'Blend syllables \u2192 ' + String(item.target || word);
+    if (activity === 'syllable_counting') return 'Count syllables: ' + String(item.target || '');
+    if (activity === 'manipulation') return (item.instructionText ? String(item.instructionText) + ' \u2192 ' : 'Sound swap \u2192 ') + String(item.target || '');
+    if (activity === 'decoding') return 'Read and match picture: ' + String(item.printed || word);
+    return item.target ? 'Answer: ' + String(item.target) : '';
+  }
+  function renderStep3Output(lesson, manifest, baseHtml, finalHtml, outLines) {
+    var blob = new Blob([finalHtml], { type: 'text/html' });
+    if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
+    built = { html: finalHtml, baseHtml: baseHtml, title: manifest.title, total: manifest.items.total, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
+    lastLesson = lesson || null;
     lastManifest = manifest || null;
     drawOrder();
-    try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var total = manifest.items.total;
     setText('summary-facts', count(total, 'question') + '. About ' + count(Math.ceil(total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
     setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
     show('size-warn', built.bytes >= LARGE_FILE_BYTES);
-    // With more than one group the words are listed under the teacher's labels (not in the file's order).
     var usedNow = manifest.words.used, byLabel = groupsOn() && picked && picked.parts ? picked.parts.map(function (part) {
       var here = part.words.filter(function (word) { return usedNow.indexOf(word) >= 0; });
       return here.length ? part.label + ': ' + here.join(', ') : '';
     }).filter(Boolean) : [];
     setText('sum-words', count(usedNow.length, 'word') + ': ' + (byLabel.length > 1 ? byLabel.join('. ') : usedNow.join(', ')) + '.');
-    drawList('sum-activities', manifest.activities.asked.map(function (id) {
+    var stats = baseLesson ? itemEditStats() : { sectionsReordered: false };
+    var actOrder = stats.sectionsReordered && itemEdits.sectionOrder.length ? itemEdits.sectionOrder.concat(manifest.activities.asked.filter(function (id) { return itemEdits.sectionOrder.indexOf(id) < 0; })) : manifest.activities.asked;
+    drawList('sum-activities', actOrder.map(function (id) {
       var n = manifest.items.byActivity[id] || 0;
       return core.activityLabel(id) + ': ' + (n ? count(n, 'question') : 'none (see Left out)') + '.';
     }));
-    drawList('sum-out', out.length ? out : ['Nothing. Every word is in every activity you chose.']);
+    drawList('sum-out', outLines.length ? outLines : ['Nothing. Every word is in every activity you chose.']);
     var omitCount = Object.keys(previewOmit).length, swapCount = Object.keys(previewSeeds).length;
     if (omitCount || swapCount) {
       var previewParts = [];
@@ -2893,7 +3347,6 @@
       previewNote.appendChild(restoreBtn);
       $('sum-out').appendChild(previewNote);
     }
-    // With pictures, the line under the box now counts the words that show one in this file.
     if (manifest.pictures && (manifest.pictures.symbols || manifest.pictures.counts.teacher)) drawPictures(manifest.pictures.counts);
     show('summary', true);
     show('summary-more', true);
@@ -2907,6 +3360,8 @@
       }
     }
     show('save', true);
+    var hasAudioClips = !!(lastLesson && lastLesson.audio && Object.keys(lastLesson.audio).length > 0);
+    show('worksheet-audio', !!(hasAudioClips && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.openWorksheetAudio === 'function'));
     show('download-bundle', !!(window.AlloPacketZip && typeof window.AlloPacketZip.create === 'function' && window.AlloPacketPrintCards && typeof window.AlloPacketPrintCards.buildWordSoundsWorksheetHtml === 'function'));
     var srLink = $('open-symbol-runner');
     if (srLink) {
@@ -2921,6 +3376,391 @@
     }
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
+  }
+  function applyItemEdits(announcement, focusSpec) {
+    if (!baseLesson || !baseResult) return;
+    var stats = itemEditStats();
+    if (!stats.hasEdits) {
+      var origLesson = cloneLessonStructure(baseLesson);
+      var origManifest = cloneJson(baseResult.manifest);
+      var origBaseHtml = baseResult.baseHtml;
+      var learnerNow = codeNameNow();
+      var origFinalHtml = learnerNow === (origManifest.learnerLabel || '') && baseResult.html
+        ? baseResult.html
+        : (typeof builder.withCodeName === 'function' ? builder.withCodeName(origBaseHtml, learnerNow) : origBaseHtml);
+      origManifest.learnerLabel = learnerNow;
+      renderStep3Output(origLesson, origManifest, origBaseHtml, origFinalHtml, baseResult.outLines.slice());
+      drawItemEditor(focusSpec);
+      if (announcement) setText('ws-item-editor-said', announcement);
+      return;
+    }
+    var editedLesson = buildEditedLesson();
+    if (!editedLesson || !editedLesson.blocks.length) {
+      setText('ws-item-editor-said', 'Keep at least 1 item in the file.');
+      return;
+    }
+    var editedManifest = cloneJson(baseResult.manifest);
+    var byActivity = {};
+    (editedManifest.activities.asked || []).forEach(function (id) { byActivity[id] = 0; });
+    editedLesson.blocks.forEach(function (b) { byActivity[b.activity] = b.items.length; });
+    var total = Object.keys(byActivity).reduce(function (sum, id) { return sum + (byActivity[id] || 0); }, 0);
+    var activeWords = [];
+    (baseResult.manifest.words.used || []).forEach(function (w) {
+      var low = String(w).toLowerCase();
+      var present = editedLesson.blocks.some(function (b) {
+        return b.items.some(function (it) { return String(it.word || '').toLowerCase() === low; });
+      });
+      if (present && activeWords.indexOf(w) < 0) activeWords.push(w);
+    });
+    editedManifest.items = { total: total, byActivity: byActivity };
+    editedManifest.words = { asked: editedManifest.words.asked.slice(), used: activeWords };
+    editedManifest.activities = { asked: editedManifest.activities.asked.slice(), built: editedLesson.blocks.map(function (b) { return b.activity; }) };
+    if (editedManifest.packet) editedManifest.packet.version = editedLesson.revision;
+    editedManifest.learnerLabel = codeNameNow();
+
+    var rawHtml = loader.buildHtml(editedLesson, { core: core, attributions: editedManifest.attributions || [] });
+    var extra = cloneJson(baseResult.packetExtra || {});
+    if (extra.builder && typeof extra.builder === 'object') {
+      extra.builder.words = activeWords.length;
+      extra.builder.items = total;
+      if (stats.sectionsReordered) delete extra.builder.order;
+    }
+    var nextBaseHtml = patchHtmlPacketManifest(rawHtml, extra);
+    var nextFinalHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(nextBaseHtml, editedManifest.learnerLabel) : nextBaseHtml;
+    var nextOut = baseResult.outLines.slice();
+    if (stats.removed > 0) nextOut.push(count(stats.removed, 'item') + ' removed in Review & customize items.');
+    renderStep3Output(editedLesson, editedManifest, nextBaseHtml, nextFinalHtml, nextOut);
+    drawItemEditor(focusSpec);
+    if (announcement) setText('ws-item-editor-said', announcement);
+  }
+  function drawItemEditor(focusSpec) {
+    var box = $('ws-item-editor'), host = $('ws-item-list');
+    if (!box || !host) return;
+    if (!baseLesson || !Array.isArray(baseLesson.blocks) || !baseLesson.blocks.length) {
+      resetItemEditorUi();
+      return;
+    }
+    box.hidden = false;
+    var stats = itemEditStats();
+    var summaryParts = [];
+    if (stats.removed > 0) summaryParts.push(stats.removed + ' removed');
+    if (stats.sectionsReordered) summaryParts.push('reordered');
+    if (stats.distractorCount > 0) summaryParts.push(count(stats.distractorCount, 'choice') + ' edited');
+    setText('ws-item-editor-now', summaryParts.length ? summaryParts.join(', ') : 'All ' + count(stats.total, 'item') + ' active');
+    show('ws-item-reset', stats.hasEdits);
+
+    var pools = collectLessonPools(baseLesson);
+    var blockByAct = Object.create(null);
+    baseLesson.blocks.forEach(function (b) { blockByAct[String(b.activity || '')] = b; });
+    var orderedActs = itemEdits.sectionOrder.length ? itemEdits.sectionOrder : baseLesson.blocks.map(function (b) { return String(b.activity || ''); });
+    var multiSec = orderedActs.length >= 2;
+    host.textContent = '';
+
+    orderedActs.forEach(function (act, secIdx) {
+      var block = blockByAct[act];
+      if (!block || !Array.isArray(block.items)) return;
+      var secTitle = core.activityLabel(act);
+      var secTotal = block.items.length;
+      var secActive = block.items.filter(function (it, idx) { return !itemEdits.omitted[itemEditKey(block, it, idx)]; }).length;
+
+      var secEl = el('div', 'ws-ie-section');
+      secEl.setAttribute('data-ie-section', act);
+      var head = el('div', 'ws-ie-sec-head');
+      var meta = el('div', 'ws-ie-sec-meta');
+      meta.appendChild(el('h3', 'ws-ie-sec-title', secTitle));
+      meta.appendChild(el('span', 'ws-ie-sec-count', secActive + ' of ' + count(secTotal, 'item')));
+      head.appendChild(meta);
+      if (multiSec) {
+        var actions = el('div', 'ws-ie-sec-actions');
+        [['up', 'Move up', secIdx === 0], ['down', 'Move down', secIdx === orderedActs.length - 1]].forEach(function (spec) {
+          var btn = el('button', 'btn btn-small ws-ie-move', spec[1]);
+          btn.type = 'button';
+          btn.setAttribute('data-ie-move', spec[0]);
+          btn.setAttribute('data-ie-activity', act);
+          btn.setAttribute('aria-label', spec[1] + ': ' + secTitle);
+          btn.disabled = spec[2];
+          actions.appendChild(btn);
+        });
+        head.appendChild(actions);
+      }
+      secEl.appendChild(head);
+
+      var list = el('ol', 'ws-ie-items');
+      var activeNum = 0;
+      block.items.forEach(function (baseItem, idx) {
+        var key = itemEditKey(block, baseItem, idx);
+        var omitted = !!itemEdits.omitted[key];
+        var currentItem = cloneJson(baseItem);
+        if (itemEdits.distractorEdits[key]) applyDistractorEditsToItem(act, currentItem, itemEdits.distractorEdits[key]);
+        if (!omitted) activeNum++;
+        var wordLabel = String(currentItem.word || currentItem.target || '');
+
+        var row = el('li', 'ws-ie-item' + (omitted ? ' is-omitted' : ''));
+        row.setAttribute('data-ie-item', key);
+        var mainRow = el('div', 'ws-ie-item-main');
+        mainRow.appendChild(el('span', 'ws-ie-num', omitted ? '\u2014' : '#' + activeNum));
+        mainRow.appendChild(el('span', 'ws-ie-target', wordLabel));
+        mainRow.appendChild(el('span', 'ws-ie-preview', itemPreviewText(act, currentItem)));
+        if (omitted) mainRow.appendChild(el('span', 'ws-ie-badge', 'Removed'));
+        var toggleBtn = el('button', 'btn btn-small ws-ie-toggle', omitted ? 'Restore' : 'Remove');
+        toggleBtn.type = 'button';
+        toggleBtn.setAttribute('data-ie-toggle', key);
+        toggleBtn.setAttribute('aria-label', (omitted ? 'Restore ' : 'Remove ') + (wordLabel || 'item ' + (idx + 1)) + ' in ' + secTitle);
+        mainRow.appendChild(toggleBtn);
+        row.appendChild(mainRow);
+
+        if (!omitted) {
+          var choiceSpec = getItemChoiceSpec(act, currentItem);
+          if (choiceSpec) {
+            var distractors = choiceSpec.entries.filter(function (e) { return !e.isTarget; });
+            if (distractors.length) {
+              var distWrap = el('div', 'ws-ie-distractors');
+              distWrap.appendChild(el('span', 'ws-ie-dist-label', 'Wrong choices:'));
+              var distList = el('ul', 'ws-ie-dist-list');
+              distractors.forEach(function (entry, dIdx) {
+                var ring = validDistractorRing(act, baseItem, currentItem, entry.idx, pools);
+                var chip = el('li', 'ws-ie-dist-chip' + (entry.editable ? ' ws-ie-dist-editable' : ''));
+                if (entry.editable) {
+                  var inp = el('input', 'ws-ie-dist-input' + (choiceSpec.singleLetter ? ' ws-ie-dist-letter' : ''));
+                  inp.type = 'text';
+                  inp.value = entry.display;
+                  inp.maxLength = choiceSpec.singleLetter ? 1 : 24;
+                  inp.setAttribute('autocomplete', 'off');
+                  inp.setAttribute('spellcheck', 'false');
+                  inp.setAttribute('autocapitalize', 'none');
+                  inp.setAttribute('data-ie-edit', key);
+                  inp.setAttribute('data-ie-choice-idx', String(entry.idx));
+                  inp.setAttribute('aria-label', 'Wrong choice ' + (dIdx + 1) + ' for ' + (wordLabel || 'item ' + activeNum) + ' in ' + secTitle);
+                  chip.appendChild(inp);
+                } else {
+                  chip.appendChild(el('span', 'ws-ie-dist-val', entry.display));
+                }
+                var swapBtn = el('button', 'btn btn-small ws-ie-swap', 'Swap');
+                swapBtn.type = 'button';
+                swapBtn.setAttribute('data-ie-swap', key);
+                swapBtn.setAttribute('data-ie-choice-idx', String(entry.idx));
+                swapBtn.setAttribute('aria-label', 'Swap wrong choice ' + entry.display + ' for ' + (wordLabel || 'item ' + activeNum) + ' in ' + secTitle);
+                if (ring.length < 2) swapBtn.disabled = true;
+                chip.appendChild(swapBtn);
+                distList.appendChild(chip);
+              });
+              distWrap.appendChild(distList);
+              row.appendChild(distWrap);
+            }
+          }
+        }
+        list.appendChild(row);
+      });
+      secEl.appendChild(list);
+      host.appendChild(secEl);
+    });
+
+    if (focusSpec) {
+      var targetBtn = null;
+      if (focusSpec.kind === 'move') {
+        targetBtn = host.querySelector('[data-ie-move="' + focusSpec.dir + '"][data-ie-activity="' + focusSpec.act.replace(/"/g, '') + '"]');
+        if (targetBtn && targetBtn.disabled) {
+          targetBtn = host.querySelector('[data-ie-activity="' + focusSpec.act.replace(/"/g, '') + '"]:not(:disabled)');
+        }
+      } else if (focusSpec.kind === 'toggle') {
+        targetBtn = host.querySelector('[data-ie-toggle="' + focusSpec.key.replace(/"/g, '') + '"]');
+      } else if (focusSpec.kind === 'swap') {
+        targetBtn = host.querySelector('[data-ie-swap="' + focusSpec.key.replace(/"/g, '') + '"][data-ie-choice-idx="' + focusSpec.idx + '"]');
+      } else if (focusSpec.kind === 'edit') {
+        targetBtn = host.querySelector('[data-ie-edit="' + focusSpec.key.replace(/"/g, '') + '"][data-ie-choice-idx="' + focusSpec.idx + '"]');
+      }
+      if (targetBtn && typeof targetBtn.focus === 'function') targetBtn.focus();
+    }
+  }
+  function findBaseItemByKey(key) {
+    var blocks = baseLesson && Array.isArray(baseLesson.blocks) ? baseLesson.blocks : [];
+    for (var i = 0; i < blocks.length; i++) {
+      var b = blocks[i], items = Array.isArray(b.items) ? b.items : [];
+      for (var j = 0; j < items.length; j++) {
+        if (itemEditKey(b, items[j], j) === key) return { block: b, activity: String(b.activity || ''), item: items[j], idx: j };
+      }
+    }
+    return null;
+  }
+  function moveItemSection(act, dir) {
+    if (!baseLesson || !itemEdits.sectionOrder.length) return;
+    var at = itemEdits.sectionOrder.indexOf(act);
+    var to = at + (dir === 'up' ? -1 : 1);
+    if (at < 0 || to < 0 || to >= itemEdits.sectionOrder.length) return;
+    itemEdits.sectionOrder.splice(to, 0, itemEdits.sectionOrder.splice(at, 1)[0]);
+    applyItemEdits('Moved ' + core.activityLabel(act) + ' to position ' + (to + 1) + ' of ' + itemEdits.sectionOrder.length + '.', { kind: 'move', act: act, dir: dir });
+  }
+  function toggleItemOmitted(key) {
+    var found = findBaseItemByKey(key);
+    if (!found) return;
+    var word = String(found.item.word || found.item.target || 'item');
+    if (itemEdits.omitted[key]) {
+      delete itemEdits.omitted[key];
+      applyItemEdits('Restored ' + word + ' in ' + core.activityLabel(found.activity) + '.', { kind: 'toggle', key: key });
+      return;
+    }
+    var stats = itemEditStats();
+    if (stats.active <= 1) {
+      setText('ws-item-editor-said', 'Keep at least 1 item in the file.');
+      return;
+    }
+    itemEdits.omitted[key] = true;
+    applyItemEdits('Removed ' + word + ' from ' + core.activityLabel(found.activity) + '.', { kind: 'toggle', key: key });
+  }
+  function swapItemDistractor(key, choiceIdx) {
+    var found = findBaseItemByKey(key);
+    if (!found) return;
+    var currentItem = cloneJson(found.item);
+    if (itemEdits.distractorEdits[key]) applyDistractorEditsToItem(found.activity, currentItem, itemEdits.distractorEdits[key]);
+    var spec = getItemChoiceSpec(found.activity, currentItem);
+    if (!spec || !spec.entries[choiceIdx] || spec.entries[choiceIdx].isTarget) return;
+    var pools = collectLessonPools(baseLesson);
+    var ring = validDistractorRing(found.activity, found.item, currentItem, choiceIdx, pools);
+    if (ring.length < 2) {
+      setText('ws-item-editor-said', 'No other distractor is available for this item.');
+      return;
+    }
+    var curVal = spec.entries[choiceIdx].value.trim().toLowerCase();
+    var curAt = -1;
+    for (var i = 0; i < ring.length; i++) {
+      var candVal = String(spec.isSound ? ring[i].label : ring[i].text).trim().toLowerCase();
+      if (candVal === curVal) { curAt = i; break; }
+    }
+    var pickedCand = ring[(curAt + 1) % ring.length];
+    var baseSpec = getItemChoiceSpec(found.activity, found.item);
+    var baseVal = baseSpec && baseSpec.entries[choiceIdx] ? baseSpec.entries[choiceIdx].value.trim().toLowerCase() : '';
+    var nextVal = String(spec.isSound ? pickedCand.label : pickedCand.text).trim().toLowerCase();
+    if (nextVal === baseVal) {
+      if (itemEdits.distractorEdits[key]) {
+        delete itemEdits.distractorEdits[key][choiceIdx];
+        if (!Object.keys(itemEdits.distractorEdits[key]).length) delete itemEdits.distractorEdits[key];
+      }
+    } else {
+      if (!itemEdits.distractorEdits[key]) itemEdits.distractorEdits[key] = Object.create(null);
+      itemEdits.distractorEdits[key][choiceIdx] = pickedCand;
+    }
+    var shown = spec.isSound ? '/' + pickedCand.label + '/' : (spec.singleLetter && found.item.capital ? String(pickedCand.text).toUpperCase() : String(pickedCand.text));
+    applyItemEdits('Swapped wrong choice to ' + shown + '.', { kind: 'swap', key: key, idx: choiceIdx });
+  }
+  function editItemDistractorText(key, choiceIdx, rawValue, inputEl) {
+    var found = findBaseItemByKey(key);
+    if (!found) return;
+    var currentItem = cloneJson(found.item);
+    if (itemEdits.distractorEdits[key]) applyDistractorEditsToItem(found.activity, currentItem, itemEdits.distractorEdits[key]);
+    var spec = getItemChoiceSpec(found.activity, currentItem);
+    if (!spec || !spec.entries[choiceIdx] || !spec.entries[choiceIdx].editable) return;
+    var curEntry = spec.entries[choiceIdx];
+    var trimmed = String(rawValue || '').trim();
+    var targetLow = String(currentItem.target || currentItem.answer || '').trim().toLowerCase();
+    var otherLow = spec.entries.filter(function (e) { return e.idx !== choiceIdx; }).map(function (e) { return e.value.trim().toLowerCase(); });
+    var clean = '';
+    if (spec.singleLetter) {
+      clean = trimmed.toLowerCase();
+      if (!/^[a-z]$/.test(clean) || clean === targetLow || otherLow.indexOf(clean) >= 0) {
+        if (inputEl) inputEl.value = curEntry.display;
+        setText('ws-item-editor-said', 'Enter a single letter that is different from the answer and other choices.');
+        return;
+      }
+    } else {
+      clean = trimmed.slice(0, 24);
+      var low = clean.toLowerCase();
+      if (!clean || low === targetLow || low === String(currentItem.word || '').trim().toLowerCase() || otherLow.indexOf(low) >= 0) {
+        if (inputEl) inputEl.value = curEntry.display;
+        setText('ws-item-editor-said', 'Enter a different word or choice that does not match the answer.');
+        return;
+      }
+    }
+    if (clean.toLowerCase() === curEntry.value.trim().toLowerCase()) {
+      if (inputEl) inputEl.value = curEntry.display;
+      return;
+    }
+    var baseSpec = getItemChoiceSpec(found.activity, found.item);
+    var baseVal = baseSpec && baseSpec.entries[choiceIdx] ? baseSpec.entries[choiceIdx].value.trim().toLowerCase() : '';
+    if (clean.toLowerCase() === baseVal) {
+      if (itemEdits.distractorEdits[key]) {
+        delete itemEdits.distractorEdits[key][choiceIdx];
+        if (!Object.keys(itemEdits.distractorEdits[key]).length) delete itemEdits.distractorEdits[key];
+      }
+    } else {
+      if (!itemEdits.distractorEdits[key]) itemEdits.distractorEdits[key] = Object.create(null);
+      itemEdits.distractorEdits[key][choiceIdx] = { text: clean };
+    }
+    var shown = spec.singleLetter && found.item.capital ? clean.toUpperCase() : clean;
+    applyItemEdits('Updated wrong choice to ' + shown + '.', { kind: 'edit', key: key, idx: choiceIdx });
+  }
+  function wireItemEditor() {
+    var list = $('ws-item-list');
+    if (list) {
+      list.addEventListener('click', function (event) {
+        var target = event.target;
+        if (!target || typeof target.closest !== 'function') return;
+        var moveBtn = target.closest('[data-ie-move]');
+        if (moveBtn && !moveBtn.disabled) {
+          moveItemSection(moveBtn.getAttribute('data-ie-activity'), moveBtn.getAttribute('data-ie-move'));
+          return;
+        }
+        var toggleBtn = target.closest('[data-ie-toggle]');
+        if (toggleBtn && !toggleBtn.disabled) {
+          toggleItemOmitted(toggleBtn.getAttribute('data-ie-toggle'));
+          return;
+        }
+        var swapBtn = target.closest('[data-ie-swap]');
+        if (swapBtn && !swapBtn.disabled) {
+          swapItemDistractor(swapBtn.getAttribute('data-ie-swap'), Number(swapBtn.getAttribute('data-ie-choice-idx')));
+        }
+      });
+      list.addEventListener('change', function (event) {
+        var inp = event.target;
+        if (inp && inp.hasAttribute && inp.hasAttribute('data-ie-edit')) {
+          editItemDistractorText(inp.getAttribute('data-ie-edit'), Number(inp.getAttribute('data-ie-choice-idx')), inp.value, inp);
+        }
+      });
+      list.addEventListener('keydown', function (event) {
+        var inp = event.target;
+        if (event.key === 'Enter' && inp && inp.hasAttribute && inp.hasAttribute('data-ie-edit')) {
+          event.preventDefault();
+          editItemDistractorText(inp.getAttribute('data-ie-edit'), Number(inp.getAttribute('data-ie-choice-idx')), inp.value, inp);
+        }
+      });
+    }
+    var resetBtn = $('ws-item-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        if (!baseLesson) return;
+        itemEdits = freshItemEdits(baseLesson);
+        applyItemEdits('Reset all item edits.');
+        var sum = $('ws-item-editor') && $('ws-item-editor').querySelector('summary');
+        if (sum && typeof sum.focus === 'function') sum.focus();
+      });
+    }
+  }
+
+  function drawResult(result, words) {
+    show('making', false);
+    var manifest = result.manifest, out = leftOut(result, words);
+    if (!result.html) {
+      if (result.exceptions.some(function (e) { return /converted to WAV|no converter/.test(e.reason); })) {
+        problem('This browser could not prepare the recordings, so no file was made. Open this page in a current version of Chrome, Edge, Firefox or Safari. Your choices are kept.', 'retry');
+      } else problem('No question could be made from these words and activities. ' + out.join(' ') + ' Change the words or the activities.', 'change');
+      return;
+    }
+    var baseHtml = typeof builder.withCodeName === 'function' ? builder.withCodeName(result.html, '') : result.html;
+    var parsedManifest = readHtmlPacketManifest(result.html) || {};
+    var packetExtra = {};
+    ['attributions', 'notices', 'builder', 'pictures', 'own'].forEach(function (k) {
+      if (parsedManifest[k] !== undefined) packetExtra[k] = cloneJson(parsedManifest[k]);
+    });
+    baseLesson = cloneLessonStructure(result.lesson || null);
+    baseResult = {
+      manifest: cloneJson(manifest || {}),
+      html: result.html,
+      baseHtml: baseHtml,
+      outLines: out.slice(),
+      packetExtra: packetExtra,
+    };
+    itemEdits = freshItemEdits(baseLesson);
+    renderStep3Output(result.lesson || null, manifest || null, baseHtml, result.html, out);
+    drawItemEditor();
   }
   function saveFile() {
     if (!built) return;
@@ -3642,6 +4482,7 @@
     });
     $('f-title').addEventListener('blur', function () { if (!state.titleEdited) this.value = autoTitle(); });
     wireBatch();
+    wireItemEditor();
     $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); drawLengths(); });
     if ($('f-repeat-missed')) $('f-repeat-missed').addEventListener('change', function () { state.repeatMissed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); remember(); makeSoon(0); drawLengths(); });
     // 2026-11-18: the questions' order. The switch is in step 1 (step 3 makes the file again when it opens); "Question
@@ -3675,13 +4516,20 @@
       return { words: fileWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
     });
     var wordSoundsWorksheetState = function () {
+      var activeActs = lastLesson && Array.isArray(lastLesson.blocks) && lastLesson.blocks.length
+        ? lastLesson.blocks.map(function (b) { return b.activity; })
+        : order.filter(function (id) { return state.activities.indexOf(id) >= 0; });
+      var activeWords = lastManifest && lastManifest.words && Array.isArray(lastManifest.words.used) && lastManifest.words.used.length
+        ? lastManifest.words.used.slice()
+        : fileWords();
       return {
         lesson: lastLesson,
         blocks: lastLesson && Array.isArray(lastLesson.blocks) ? lastLesson.blocks : null,
         images: lastLesson && lastLesson.images ? lastLesson.images : null,
+        audio: lastLesson && lastLesson.audio ? lastLesson.audio : null,
         manifest: lastManifest,
-        words: fileWords(),
-        activities: order.filter(function (id) { return state.activities.indexOf(id) >= 0; }),
+        words: activeWords,
+        activities: activeActs,
         title: titleNow(),
         pictures: !!$('f-pictures').checked,
         symbols: symbols,
@@ -3694,6 +4542,7 @@
       };
     };
     if (cards && typeof cards.wireWorksheet === 'function') cards.wireWorksheet($('print-worksheet'), wordSoundsWorksheetState);
+    if (cards && typeof cards.wireWorksheetAudio === 'function') cards.wireWorksheetAudio($('worksheet-audio'), wordSoundsWorksheetState);
     if ($('download-bundle')) $('download-bundle').addEventListener('click', function () {
       if (!built || !built.html) return;
       var zipKit = window.AlloPacketZip;

@@ -212,7 +212,10 @@ describe('Wave 83: Reader release content-hash pin & 3-host canonical shell pari
     expect(report.ok).toBe(true);
     expect(report.mirrorsMatch).toBe(true);
     expect(report.hostsMatch).toBe(true);
-    expect(report.expectedModuleSha256.startsWith('c71de20e')).toBe(true);
+    // Re-pinned 2026-11-23: the reader module was rebuilt on 11-21 (URL hardening in the
+    // dictionary/source links, larger popup text); verifyReaderRelease confirms the
+    // module is exactly the build of the current sources.
+    expect(report.expectedModuleSha256.startsWith('d36897ea')).toBe(true);
 
     const hosts = [
       'AlloFlowANTI.txt',
@@ -221,7 +224,7 @@ describe('Wave 83: Reader release content-hash pin & 3-host canonical shell pari
     ];
     const baseline = readFileSync(resolve(ROOT, hosts[0]), 'utf8');
     expect(baseline).toContain(
-      "loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=c71de20e')"
+      "loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d36897ea')"
     );
     for (const rel of hosts.slice(1)) {
       expect(readFileSync(resolve(ROOT, rel), 'utf8')).toBe(baseline);

@@ -108,7 +108,143 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     );
   }
 
-  function renderProsodySimSvg(h, iq, accentColor, isDark) {
+  function oratoryFmt(tpl, vals) {
+    var out = String(tpl == null ? '' : tpl);
+    if (!vals || !vals.length) return out;
+    for (var i = 0; i < vals.length; i++) {
+      out = out.split('{' + (i + 1) + '}').join(String(vals[i] == null ? '' : vals[i]));
+    }
+    return out;
+  }
+
+  function isOratoryMuted() {
+    try {
+      return (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && !!window.__alloIsGlobalMuted()) ||
+        (typeof window !== 'undefined' && !!window._alloGlobalMute);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function renderStudioContourSvg(h, points, opts) {
+    var o = opts || {};
+    var isDark = !!o.isDark;
+    var isContrast = !!o.isContrast;
+    var W = 540, Hh = 136, padL = 42, padR = 16, padT = 16, padB = 26;
+    var plotW = W - padL - padR, plotH = Hh - padT - padB;
+    var pts = Array.isArray(points) && points.length >= 2 ? points : [0.5, 0.5];
+    var showTarget = o.showTarget !== false;
+    var tokens = Array.isArray(o.tokens) ? o.tokens : [];
+    var markedStress = Array.isArray(o.markedStress) ? o.markedStress : [];
+    var targetStress = Array.isArray(o.targetStress) ? o.targetStress : [];
+    var userCurve = Array.isArray(o.userCurve) && o.userCurve.length >= 2 ? o.userCurve : null;
+    var bg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+    var borderCol = isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1');
+    var gridCol = isContrast ? '#525252' : (isDark ? '#1e293b' : '#e2e8f0');
+    var targetStroke = isContrast ? '#00ff00' : (isDark ? '#a78bfa' : '#6d28d9');
+    var userStroke = isContrast ? '#ffff00' : (isDark ? '#38bdf8' : '#0284c7');
+    var textCol = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#334155');
+    var softCol = isContrast ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
+
+    function buildPath(arr) {
+      return arr.map(function(val, idx) {
+        var clamped = Math.max(0, Math.min(1, Number(val) || 0));
+        var x = padL + (idx / Math.max(1, arr.length - 1)) * plotW;
+        var y = padT + (1 - clamped) * plotH;
+        return (idx === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
+    }
+
+    var targetPath = showTarget ? buildPath(pts) : '';
+    var userPath = userCurve ? buildPath(userCurve) : '';
+    var lastVal = Math.max(0, Math.min(1, Number(pts[pts.length - 1]) || 0.5));
+    var lastX = padL + plotW;
+    var lastY = padT + (1 - lastVal) * plotH;
+
+    return h('div', { style: { overflowX: 'auto', width: '100%' } },
+      h('svg', {
+        viewBox: '0 0 ' + W + ' ' + Hh,
+        width: '100%',
+        role: 'img',
+        'aria-label': o.ariaLabel || '',
+        style: {
+          display: 'block',
+          minWidth: 280,
+          maxHeight: 152,
+          borderRadius: 10,
+          background: bg,
+          border: (isContrast ? '2px solid ' : '1px solid ') + borderCol
+        }
+      },
+        // Conversational mid-band
+        !isContrast && h('rect', { x: padL, y: padT + plotH * 0.30, width: plotW, height: plotH * 0.40, fill: isDark ? 'rgba(16,185,129,0.12)' : 'rgba(16,185,129,0.10)' }),
+        [0.2, 0.5, 0.8].map(function(f, gi) {
+          var gy = padT + plotH * f;
+          return h('line', { key: 'g' + gi, x1: padL, y1: gy, x2: W - padR, y2: gy, stroke: gridCol, strokeWidth: 1, strokeDasharray: '3 3' });
+        }),
+        h('text', { x: padL - 6, y: padT + 10, textAnchor: 'end', fill: softCol, fontSize: 9, fontWeight: 700 }, 'High'),
+        h('text', { x: padL - 6, y: padT + plotH * 0.54, textAnchor: 'end', fill: isContrast ? '#00ff00' : (isDark ? '#34d399' : '#047857'), fontSize: 9, fontWeight: 700 }, 'Mid'),
+        h('text', { x: padL - 6, y: padT + plotH, textAnchor: 'end', fill: softCol, fontSize: 9, fontWeight: 700 }, 'Low'),
+        // Token alignment vertical ticks & labels
+        tokens.map(function(tok, ti) {
+          var tx = padL + ((ti + 0.5) / Math.max(1, tokens.length)) * plotW;
+          var isMarked = markedStress.indexOf(ti) !== -1;
+          var isTargetS = showTarget && targetStress.indexOf(ti) !== -1;
+          var shortTok = String(tok).length > 10 ? String(tok).slice(0, 9) + '\u2026' : String(tok);
+          return h('g', { key: 'tk' + ti },
+            (isMarked || isTargetS) && h('line', {
+              x1: tx.toFixed(1),
+              y1: padT,
+              x2: tx.toFixed(1),
+              y2: padT + plotH,
+              stroke: isTargetS ? targetStroke : userStroke,
+              strokeWidth: isTargetS ? 1.6 : 1.2,
+              strokeDasharray: isTargetS ? '2 2' : '4 3',
+              opacity: 0.65
+            }),
+            h('text', {
+              x: tx.toFixed(1),
+              y: Hh - 8,
+              textAnchor: 'middle',
+              fill: isTargetS ? targetStroke : (isMarked ? userStroke : textCol),
+              fontSize: tokens.length > 7 ? 8.5 : 9.5,
+              fontWeight: (isMarked || isTargetS) ? 700 : 500
+            }, shortTok)
+          );
+        }),
+        // Target contour curve
+        showTarget && h('path', {
+          d: targetPath,
+          fill: 'none',
+          stroke: targetStroke,
+          strokeWidth: 3,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        }),
+        showTarget && h('circle', { cx: lastX.toFixed(1), cy: lastY.toFixed(1), r: 4.5, fill: targetStroke }),
+        // Student / predicted curve overlay
+        userPath && h('path', {
+          d: userPath,
+          fill: 'none',
+          stroke: userStroke,
+          strokeWidth: 2.6,
+          strokeDasharray: showTarget ? '6 4' : undefined,
+          strokeLinecap: 'round',
+          strokeLinejoin: 'round'
+        }),
+        !showTarget && !userPath && h('text', {
+          x: padL + plotW / 2,
+          y: padT + plotH / 2 + 4,
+          textAnchor: 'middle',
+          fill: softCol,
+          fontSize: 11,
+          fontWeight: 700
+        }, o.hiddenPrompt || 'Mark stress & turn, then check to reveal pitch contour')
+      )
+    );
+  }
+
+  function renderProsodySimSvg(h, iq, accentColor, isDark, isContrast, headingLabel, ariaLabel) {
     var W = 460, Hh = 122, padL = 42, padR = 14, padT = 16, padB = 22;
     var plotW = W - padL - padR, plotH = Hh - padT - padB;
     var pace = Math.max(0.5, Math.min(2.0, Number(iq.pace) || 1.0));
@@ -142,15 +278,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     }
     var areaPoly = padL.toFixed(1) + ',' + (padT + plotH).toFixed(1) + ' ' + areaPts.join(' ') + ' ' + (W - padR).toFixed(1) + ',' + (padT + plotH).toFixed(1);
     var strokeW = (1.9 + ((volDb + 12) / 24) * 2.2).toFixed(1);
-    var bg = isDark ? '#0b1220' : '#0f172a';
+    var bg = isContrast ? '#000000' : (isDark ? '#0b1220' : '#0f172a');
     var gridCol = '#1e293b';
     var ringCount = volDb >= 4 ? 4 : volDb >= -4 ? 3 : 2;
-    return h('div', { className: 'oratory-prosody-stage rounded-xl p-3', style: { background: bg, border: '1px solid #334155' } },
+    return h('div', { className: 'oratory-prosody-stage rounded-xl p-3', style: { background: bg, border: isContrast ? '2px solid #ffff00' : '1px solid #334155' } },
       h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1.5 text-[0.6875rem]', style: { color: '#e2e8f0' } },
-        h('span', { className: 'font-bold uppercase tracking-wider', style: { color: '#cbd5e1' } }, 'Live Acoustic Delivery Preview'),
-        h('span', { className: 'font-mono font-bold', style: { color: '#38bdf8' } }, '~' + estWpm + ' WPM · +' + pitchOff + ' Hz · ' + (volDb >= 0 ? '+' : '') + volDb + ' dB')
+        h('span', { className: 'font-bold uppercase tracking-wider', style: { color: isContrast ? '#ffff00' : '#cbd5e1' } }, headingLabel || 'Live Acoustic Delivery Preview'),
+        h('span', { className: 'font-mono font-bold', style: { color: isContrast ? '#ffffff' : '#38bdf8' } }, '~' + estWpm + ' WPM \u00B7 +' + pitchOff + ' Hz \u00B7 ' + (volDb >= 0 ? '+' : '') + volDb + ' dB')
       ),
-      h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': 'Simulated delivery prosody wave at approximately ' + estWpm + ' words per minute, plus ' + pitchOff + ' hertz pitch offset, and ' + volDb + ' decibel gain.', style: { display: 'block', maxHeight: 132 } },
+      h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, width: '100%', role: 'img', 'aria-label': ariaLabel || '', style: { display: 'block', maxHeight: 132 } },
         h('defs', null,
           h('linearGradient', { id: 'oratoryStageBg', x1: '0', y1: '0', x2: '0', y2: '1' },
             h('stop', { offset: '0%', stopColor: '#071024' }),
@@ -211,6 +347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-oratory')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-oratory';
@@ -1877,6 +2014,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   // Practice exercise templates
   // ═══════════════════════════════════════════
   var EXERCISE_TYPES = [
+    { id: 'contourStudio', icon: '\uD83C\uDFA8', label: 'Visual Contour Studio (No Mic)', desc: 'Inspect pitch curves, listen to models, and mark stress & intonation turns without a microphone.', noMic: true },
+    { id: 'prosodyChallenge', icon: '\uD83E\uDDE0', label: 'Prosody & Rhetoric Challenges', desc: 'Predict how stress, intonation, and pacing shift meaning before revealing the contour.', noMic: true },
     { id: 'emotion', icon: '\uD83C\uDFAD', label: 'Emotion Cards', desc: 'Say a phrase with different emotions to see how prosody changes.' },
     { id: 'question', icon: '\u2753', label: 'Question vs Statement', desc: 'Practice rising vs falling intonation.' },
     { id: 'emphasis', icon: '\uD83D\uDCAA', label: 'Emphasis Drill', desc: 'Shift word stress to change meaning.' },
@@ -1997,6 +2136,1709 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   ];
 
   // ═══════════════════════════════════════════
+  // Pure Deterministic Oratory & Prosody Engine (zero React / zero DOM)
+  // Exposed on registered tool config as `_engine` and globally as `window.OratoryPure`.
+  // ═══════════════════════════════════════════
+  var ORATORY_ENGINE = (function() {
+    var LANGUAGE_PHRASE_BANK = {
+      en: [
+        {
+          id: 'en-1',
+          text: 'Good morning! What are we exploring today?',
+          phonetic: 'good MOR-ning! WHAT are we ex-PLOR-ing to-DAY?',
+          gloss: 'Good morning! What are we exploring today?',
+          patternId: 'wh_question',
+          stressNote: 'English is stress-timed: content words (MOR-ning, WHAT, PLOR, DAY) get stronger pitch peaks, and Wh-questions fall gently at the end.',
+          ttsLang: 'en-US',
+          tokens: ['Good', 'morning!', 'What', 'are', 'we', 'exploring', 'today?'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'falling',
+          contour: [0.46, 0.58, 0.64, 0.50, 0.44, 0.66, 0.72, 0.58, 0.50, 0.56, 0.70, 0.64, 0.52, 0.42, 0.32, 0.24]
+        },
+        {
+          id: 'en-2',
+          text: 'Did you hear the choir rehearse?',
+          phonetic: 'did you HEAR the KWY-er re-HERSE?',
+          gloss: 'Did you hear the choir rehearse?',
+          patternId: 'yesno',
+          stressNote: 'English yes/no questions hold a steady mid pitch and rise sharply on the final stressed syllable (re-HERSE?).',
+          ttsLang: 'en-US',
+          tokens: ['Did', 'you', 'hear', 'the', 'choir', 'rehearse?'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'rising',
+          contour: [0.42, 0.44, 0.46, 0.56, 0.52, 0.48, 0.54, 0.58, 0.52, 0.54, 0.60, 0.68, 0.76, 0.84, 0.90, 0.94]
+        },
+        {
+          id: 'en-3',
+          text: 'We measured pitch, pace, and clear pauses.',
+          phonetic: 'we MEZH-erd PITCH, PACE, and KLEER PAW-zez.',
+          gloss: 'We measured pitch, pace, and clear pauses.',
+          patternId: 'listing',
+          stressNote: 'Non-final list items step slightly upward to signal continuation, then the final item falls to mark completion.',
+          ttsLang: 'en-US',
+          tokens: ['We', 'measured', 'pitch,', 'pace,', 'and', 'clear', 'pauses.'],
+          targetStressIndices: [2, 3, 6],
+          targetTurn: 'stepped',
+          contour: [0.40, 0.46, 0.52, 0.46, 0.58, 0.66, 0.48, 0.60, 0.68, 0.50, 0.54, 0.60, 0.52, 0.40, 0.30, 0.20]
+        }
+      ],
+      es: [
+        {
+          id: 'es-1',
+          text: '\u00BFC\u00F3mo estuvo tu d\u00EDa en la escuela?',
+          phonetic: 'KOH-moh ehs-TOO-boh too DEE-ah ehn lah ehs-KWEH-lah?',
+          gloss: 'How was your day at school?',
+          patternId: 'wh_question',
+          stressNote: 'Spanish is syllable-timed with crisp even beats; Wh-questions peak early on C\u00F3mo and glide smoothly downward at the close.',
+          ttsLang: 'es-ES',
+          tokens: ['\u00BFC\u00F3mo', 'estuvo', 'tu', 'd\u00EDa', 'en', 'la', 'escuela?'],
+          targetStressIndices: [0, 3],
+          targetTurn: 'falling',
+          contour: [0.62, 0.78, 0.72, 0.60, 0.58, 0.62, 0.56, 0.64, 0.60, 0.52, 0.46, 0.42, 0.38, 0.34, 0.28, 0.22]
+        },
+        {
+          id: 'es-2',
+          text: '\u00BFQuieres practicar conmigo hoy?',
+          phonetic: 'KYEH-rehs prahk-tee-KAHR kohn-MEE-goh OY?',
+          gloss: 'Do you want to practice with me today?',
+          patternId: 'yesno',
+          stressNote: 'Spanish yes/no questions dip slightly before the final stressed syllable and climb cleanly at the end.',
+          ttsLang: 'es-ES',
+          tokens: ['\u00BFQuieres', 'practicar', 'conmigo', 'hoy?'],
+          targetStressIndices: [0, 3],
+          targetTurn: 'rising',
+          contour: [0.46, 0.56, 0.52, 0.48, 0.50, 0.54, 0.50, 0.46, 0.44, 0.48, 0.56, 0.66, 0.74, 0.82, 0.88, 0.92]
+        },
+        {
+          id: 'es-3',
+          text: 'Me gusta leer cuentos en voz alta.',
+          phonetic: 'meh GOOS-tah leh-EHR KWEHN-tohs ehn bohs AHL-tah.',
+          gloss: 'I like to read stories out loud.',
+          patternId: 'declarative',
+          stressNote: 'Declarative Spanish sentences maintain an even rhythmic cadence and settle gently downward on the final stressed vowel.',
+          ttsLang: 'es-ES',
+          tokens: ['Me', 'gusta', 'leer', 'cuentos', 'en', 'voz', 'alta.'],
+          targetStressIndices: [1, 3],
+          targetTurn: 'falling',
+          contour: [0.44, 0.52, 0.58, 0.54, 0.50, 0.56, 0.62, 0.58, 0.52, 0.48, 0.46, 0.42, 0.38, 0.32, 0.26, 0.20]
+        }
+      ],
+      fr: [
+        {
+          id: 'fr-1',
+          text: 'Bonjour, comment s\u2019est pass\u00E9e ta journ\u00E9e ?',
+          phonetic: 'bohn-ZHOOR, koh-MAHN seh pah-SAY tah zhoor-NAY?',
+          gloss: 'Hello, how did your day go?',
+          patternId: 'yesno',
+          stressNote: 'French places primary rhythmic stress on the final syllable of each phrase group, with a light lift on conversational questions.',
+          ttsLang: 'fr-FR',
+          tokens: ['Bonjour,', 'comment', 's\u2019est', 'pass\u00E9e', 'ta', 'journ\u00E9e ?'],
+          targetStressIndices: [0, 5],
+          targetTurn: 'rising',
+          contour: [0.42, 0.54, 0.62, 0.48, 0.50, 0.54, 0.50, 0.56, 0.58, 0.54, 0.58, 0.64, 0.72, 0.78, 0.84, 0.86]
+        },
+        {
+          id: 'fr-2',
+          text: 'Nous pr\u00E9parons un expos\u00E9 sur la musique.',
+          phonetic: 'noo pray-pah-ROHN uhn ehk-spoh-ZAY soor lah moo-ZEEK.',
+          gloss: 'We are preparing a presentation about music.',
+          patternId: 'declarative',
+          stressNote: 'Notice gentle rises at the end of internal sense groups (pr\u00E9parons, expos\u00E9) followed by a firm final fall on musique.',
+          ttsLang: 'fr-FR',
+          tokens: ['Nous', 'pr\u00E9parons', 'un', 'expos\u00E9', 'sur', 'la', 'musique.'],
+          targetStressIndices: [1, 3, 6],
+          targetTurn: 'falling',
+          contour: [0.40, 0.46, 0.54, 0.62, 0.48, 0.52, 0.58, 0.64, 0.50, 0.48, 0.46, 0.44, 0.38, 0.32, 0.24, 0.18]
+        },
+        {
+          id: 'fr-3',
+          text: 'Tu veux relire ce passage avec moi ?',
+          phonetic: 'too vuh ruh-LEER suh pah-SAHZH ah-vehk MWAH?',
+          gloss: 'Do you want to reread this passage with me?',
+          patternId: 'yesno',
+          stressNote: 'In everyday French yes/no questions, rising intonation on the final syllable (moi?) signals the question all by itself.',
+          ttsLang: 'fr-FR',
+          tokens: ['Tu', 'veux', 'relire', 'ce', 'passage', 'avec', 'moi ?'],
+          targetStressIndices: [2, 6],
+          targetTurn: 'rising',
+          contour: [0.42, 0.46, 0.50, 0.56, 0.52, 0.50, 0.56, 0.58, 0.52, 0.54, 0.60, 0.66, 0.74, 0.82, 0.88, 0.94]
+        }
+      ],
+      zh: [
+        {
+          id: 'zh-1',
+          text: '\u4F60\u4ECA\u5929\u5728\u5B66\u6821\u5F00\u5FC3\u5417\uFF1F',
+          phonetic: 'N\u01D0 (3) j\u012Bn-ti\u0101n (1-1) z\u00E0i (4) xu\u00E9-xi\u00E0o (2-4) k\u0101i-x\u012Bn (1-1) ma?',
+          gloss: 'Were you happy at school today?',
+          patternId: 'yesno',
+          stressNote: 'Mandarin is tonal: every syllable carries a lexical tone (1 high-level, 2 rising, 3 dipping, 4 falling), layered over a slight overall question lift before neutral ma.',
+          ttsLang: 'zh-CN',
+          tokens: ['\u4F60', '\u4ECA\u5929', '\u5728', '\u5B66\u6821', '\u5F00\u5FC3', '\u5417\uFF1F'],
+          targetStressIndices: [4],
+          targetTurn: 'rising',
+          contour: [0.42, 0.28, 0.36, 0.76, 0.76, 0.72, 0.44, 0.50, 0.74, 0.68, 0.42, 0.78, 0.80, 0.82, 0.84, 0.86]
+        },
+        {
+          id: 'zh-2',
+          text: '\u4ECA\u5929\u5929\u6C14\u771F\u597D\uFF0C\u6211\u4EEC\u53BB\u516C\u56ED\u5427\u3002',
+          phonetic: 'J\u012Bn-ti\u0101n (1-1) ti\u0101n-q\u00EC (1-4) zh\u0113n h\u01CEo (1-3), w\u01D2-men (3-0) q\u00F9 (4) g\u014Dng-yu\u00E1n (1-2) ba.',
+          gloss: 'The weather is really nice today; let us go to the park.',
+          patternId: 'declarative',
+          stressNote: 'Keep Tone 1 high and steady on j\u012Bn-ti\u0101n and g\u014Dng, dip cleanly on Tone 3 h\u01CEo, and let the final particle ba relax downward.',
+          ttsLang: 'zh-CN',
+          tokens: ['\u4ECA\u5929', '\u5929\u6C14', '\u771F\u597D\uFF0C', '\u6211\u4EEC', '\u53BB', '\u516C\u56ED', '\u5427\u3002'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'falling',
+          contour: [0.76, 0.76, 0.74, 0.74, 0.42, 0.72, 0.30, 0.40, 0.34, 0.44, 0.66, 0.38, 0.74, 0.56, 0.68, 0.36]
+        },
+        {
+          id: 'zh-3',
+          text: '\u8BF7\u6162\u4E00\u70B9\u8BF4\uFF0C\u8C22\u8C22\u4F60\u3002',
+          phonetic: 'Q\u01D0ng (3) m\u00E0n (4) y\u012B-di\u01CEn (1-3) shu\u014D (1), xi\u00E8-xie (4-0) n\u01D0 (3).',
+          gloss: 'Please speak a little slower, thank you.',
+          patternId: 'declarative',
+          stressNote: 'Mandarin conveys high information per syllable (~5 syllables/sec), so deliberate pacing preserves clear tone contrasts.',
+          ttsLang: 'zh-CN',
+          tokens: ['\u8BF7', '\u6162\u4E00\u70B9', '\u8BF4\uFF0C', '\u8C22\u8C22', '\u4F60\u3002'],
+          targetStressIndices: [1, 3],
+          targetTurn: 'falling',
+          contour: [0.36, 0.28, 0.76, 0.42, 0.74, 0.36, 0.72, 0.72, 0.50, 0.70, 0.40, 0.36, 0.32, 0.26, 0.30, 0.24]
+        }
+      ],
+      ar: [
+        {
+          id: 'ar-1',
+          text: '\u0645\u0631\u062D\u0628\u0627\u064B\u060C \u0643\u064A\u0641 \u062D\u0627\u0644\u0643 \u0627\u0644\u064A\u0648\u0645\u061F',
+          phonetic: 'MAR-ha-ban, KAY-fa HAA-lu-ka al-YAWM?',
+          gloss: 'Hello, how are you today?',
+          patternId: 'wh_question',
+          stressNote: 'Arabic places clear stress on heavy long-vowel syllables (HAA, YAWM) with a resonant rise on the question word kayfa and a steady close.',
+          ttsLang: 'ar-SA',
+          tokens: ['\u0645\u0631\u062D\u0628\u0627\u064B\u060C', '\u0643\u064A\u0641', '\u062D\u0627\u0644\u0643', '\u0627\u0644\u064A\u0648\u0645\u061F'],
+          targetStressIndices: [1, 2],
+          targetTurn: 'rise-fall',
+          contour: [0.54, 0.62, 0.50, 0.46, 0.66, 0.76, 0.64, 0.70, 0.74, 0.62, 0.54, 0.58, 0.52, 0.44, 0.36, 0.30]
+        },
+        {
+          id: 'ar-2',
+          text: '\u0647\u0644 \u0623\u0646\u062A \u0645\u0633\u062A\u0639\u062F \u0644\u0644\u0639\u0631\u0636\u061F',
+          phonetic: 'hal AN-ta mus-ta-IDD lil-ARD?',
+          gloss: 'Are you ready for the presentation?',
+          patternId: 'yesno',
+          stressNote: 'Yes/no questions introduced by hal build upward pitch energy into the final stressed phrase.',
+          ttsLang: 'ar-SA',
+          tokens: ['\u0647\u0644', '\u0623\u0646\u062A', '\u0645\u0633\u062A\u0639\u062F', '\u0644\u0644\u0639\u0631\u0636\u061F'],
+          targetStressIndices: [2, 3],
+          targetTurn: 'rising',
+          contour: [0.46, 0.50, 0.56, 0.52, 0.48, 0.52, 0.58, 0.64, 0.60, 0.62, 0.68, 0.74, 0.80, 0.86, 0.90, 0.92]
+        },
+        {
+          id: 'ar-3',
+          text: '\u0635\u0648\u062A\u0643 \u0648\u0627\u0636\u062D \u0648\u0647\u0627\u062F\u0626 \u062C\u062F\u0627\u064B.',
+          phonetic: 'SAW-tu-ka WAA-dih wa HAA-di\u2019 JID-dan.',
+          gloss: 'Your voice is very clear and calm.',
+          patternId: 'declarative',
+          stressNote: 'Hold long vowels (WAA, HAA) distinctly without rushing; declarative statements fall warmly at the end.',
+          ttsLang: 'ar-SA',
+          tokens: ['\u0635\u0648\u062A\u0643', '\u0648\u0627\u0636\u062D', '\u0648\u0647\u0627\u062F\u0626', '\u062C\u062F\u0627\u064B.'],
+          targetStressIndices: [1, 2],
+          targetTurn: 'falling',
+          contour: [0.50, 0.58, 0.52, 0.62, 0.66, 0.54, 0.48, 0.56, 0.62, 0.56, 0.48, 0.44, 0.38, 0.32, 0.26, 0.20]
+        }
+      ],
+      pt: [
+        {
+          id: 'pt-1',
+          text: 'Bom dia! Voc\u00EA gostou da aula hoje?',
+          phonetic: 'bohn JEE-ah! voh-SEH gohs-TOH dah OW-lah OH-zhee?',
+          gloss: 'Good morning! Did you enjoy class today?',
+          patternId: 'yesno',
+          stressNote: 'Brazilian Portuguese yes/no questions often feature a melodic rise-peak-rise contour near the final stressed word.',
+          ttsLang: 'pt-BR',
+          tokens: ['Bom', 'dia!', 'Voc\u00EA', 'gostou', 'da', 'aula', 'hoje?'],
+          targetStressIndices: [3, 6],
+          targetTurn: 'rising',
+          contour: [0.46, 0.58, 0.62, 0.48, 0.46, 0.52, 0.64, 0.68, 0.54, 0.50, 0.56, 0.64, 0.74, 0.84, 0.88, 0.86]
+        },
+        {
+          id: 'pt-2',
+          text: 'N\u00F3s vamos apresentar nosso projeto agora.',
+          phonetic: 'nohs VAH-mohs ah-preh-zehn-TAHR NOH-soh proh-ZHEH-too ah-GOH-rah.',
+          gloss: 'We are going to present our project now.',
+          patternId: 'declarative',
+          stressNote: 'Warm rhythmic cadence with clear stress on apresentar and projeto before falling gently on agora.',
+          ttsLang: 'pt-BR',
+          tokens: ['N\u00F3s', 'vamos', 'apresentar', 'nosso', 'projeto', 'agora.'],
+          targetStressIndices: [2, 4],
+          targetTurn: 'falling',
+          contour: [0.48, 0.54, 0.52, 0.56, 0.64, 0.60, 0.52, 0.56, 0.62, 0.58, 0.50, 0.46, 0.40, 0.34, 0.26, 0.20]
+        },
+        {
+          id: 'pt-3',
+          text: 'Qual parte da hist\u00F3ria voc\u00EA achou mais interessante?',
+          phonetic: 'kwahl PAHR-chee dah ees-TOH-ryah voh-SEH ah-SHOH mahys een-teh-reh-SAHN-chee?',
+          gloss: 'Which part of the story did you find most interesting?',
+          patternId: 'wh_question',
+          stressNote: 'Open question word Qual starts high; pitch stays lively through hist\u00F3ria and settles smoothly at the end.',
+          ttsLang: 'pt-BR',
+          tokens: ['Qual', 'parte', 'da', 'hist\u00F3ria', 'voc\u00EA', 'achou', 'mais', 'interessante?'],
+          targetStressIndices: [0, 3, 7],
+          targetTurn: 'falling',
+          contour: [0.68, 0.76, 0.64, 0.56, 0.62, 0.68, 0.58, 0.52, 0.56, 0.52, 0.58, 0.62, 0.50, 0.40, 0.30, 0.24]
+        }
+      ],
+      so: [
+        {
+          id: 'so-1',
+          text: 'Subax wanaagsan, sidee tahay maanta?',
+          phonetic: 'su-BAKH wa-NAAG-san, si-DEE ta-HAY MAAN-ta?',
+          gloss: 'Good morning, how are you today?',
+          patternId: 'wh_question',
+          stressNote: 'Somali uses grammatical high-tone pitch accent and contrastive vowel length (aa in wanaagsan, maanta) — keep long vowels held twice as steadily.',
+          ttsLang: 'so-SO',
+          tokens: ['Subax', 'wanaagsan,', 'sidee', 'tahay', 'maanta?'],
+          targetStressIndices: [1, 2],
+          targetTurn: 'falling',
+          contour: [0.46, 0.54, 0.64, 0.68, 0.54, 0.48, 0.66, 0.76, 0.64, 0.54, 0.56, 0.60, 0.50, 0.42, 0.34, 0.26]
+        },
+        {
+          id: 'so-2',
+          text: 'Ma diyaar baad u tahay casharka?',
+          phonetic: 'ma di-YAAR baad u ta-HAY ca-SHAR-ka?',
+          gloss: 'Are you ready for the lesson?',
+          patternId: 'yesno',
+          stressNote: 'The question particle ma introduces a yes/no question; focus pitch rises clearly on diyaar and stays lifted toward the end.',
+          ttsLang: 'so-SO',
+          tokens: ['Ma', 'diyaar', 'baad', 'u', 'tahay', 'casharka?'],
+          targetStressIndices: [1, 5],
+          targetTurn: 'rising',
+          contour: [0.48, 0.56, 0.68, 0.72, 0.60, 0.54, 0.52, 0.56, 0.58, 0.60, 0.64, 0.70, 0.76, 0.82, 0.86, 0.88]
+        },
+        {
+          id: 'so-3',
+          text: 'Codkaagu waa cad yahay oo deggen yahay.',
+          phonetic: 'COD-kaa-gu waa CAD ya-hay oo DEG-gen ya-hay.',
+          gloss: 'Your voice is clear and calm.',
+          patternId: 'declarative',
+          stressNote: 'Hold long vowel aa in codkaagu and waa steadily, with clear focus peaks on cad (clear) and deggen (calm).',
+          ttsLang: 'so-SO',
+          tokens: ['Codkaagu', 'waa', 'cad', 'yahay', 'oo', 'deggen', 'yahay.'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'falling',
+          contour: [0.54, 0.60, 0.54, 0.50, 0.66, 0.62, 0.52, 0.48, 0.50, 0.62, 0.64, 0.54, 0.46, 0.38, 0.30, 0.22]
+        }
+      ],
+      vi: [
+        {
+          id: 'vi-1',
+          text: 'H\u00F4m nay b\u1EA1n c\u00F3 kh\u1ECFe kh\u00F4ng?',
+          phonetic: 'hohm (level) nay (level) bahn (low drop) kaw (high rise) khweh (dip-rise) khohm (level)?',
+          gloss: 'How are you feeling today?',
+          patternId: 'yesno',
+          stressNote: 'Vietnamese uses 6 lexical tones: keep b\u1EA1n low/heavy, c\u00F3 rising crisply, and kh\u1ECFe dipping then lifting cleanly before level kh\u00F4ng.',
+          ttsLang: 'vi-VN',
+          tokens: ['H\u00F4m', 'nay', 'b\u1EA1n', 'c\u00F3', 'kh\u1ECFe', 'kh\u00F4ng?'],
+          targetStressIndices: [3, 4],
+          targetTurn: 'rising',
+          contour: [0.54, 0.54, 0.54, 0.52, 0.26, 0.24, 0.56, 0.82, 0.44, 0.30, 0.58, 0.70, 0.64, 0.66, 0.70, 0.74]
+        },
+        {
+          id: 'vi-2',
+          text: 'Ch\u00FAng ta c\u00F9ng \u0111\u1ECDc b\u00E0i n\u00E0y nh\u00E9.',
+          phonetic: 'choong (high rise) ta (level) koong (low fall) dok (low drop) bai (low fall) nay (low fall) nyeh (high rise).',
+          gloss: 'Let us read this passage together, okay?',
+          patternId: 'declarative',
+          stressNote: 'Notice how tone melodies move syllable by syllable while the friendly final particle nh\u00E9 adds warmth.',
+          ttsLang: 'vi-VN',
+          tokens: ['Ch\u00FAng', 'ta', 'c\u00F9ng', '\u0111\u1ECDc', 'b\u00E0i', 'n\u00E0y', 'nh\u00E9.'],
+          targetStressIndices: [0, 3],
+          targetTurn: 'rise-fall',
+          contour: [0.60, 0.80, 0.54, 0.54, 0.44, 0.34, 0.26, 0.22, 0.42, 0.32, 0.40, 0.30, 0.52, 0.72, 0.62, 0.48]
+        },
+        {
+          id: 'vi-3',
+          text: 'Gi\u1ECDng n\u00F3i c\u1EE7a b\u1EA1n r\u1EA5t r\u00F5 r\u00E0ng.',
+          phonetic: 'zong (low drop) noy (high rise) koo-ah (dip) bahn (low drop) zuht (high rise) zaw (creaky rise) zahng (low fall).',
+          gloss: 'Your speaking voice is very clear.',
+          patternId: 'declarative',
+          stressNote: 'Give each monosyllabic word clean rhythmic space so rising tones (n\u00F3i, r\u1EA5t) contrast sharply with falling r\u00E0ng.',
+          ttsLang: 'vi-VN',
+          tokens: ['Gi\u1ECDng', 'n\u00F3i', 'c\u1EE7a', 'b\u1EA1n', 'r\u1EA5t', 'r\u00F5', 'r\u00E0ng.'],
+          targetStressIndices: [4, 5],
+          targetTurn: 'falling',
+          contour: [0.30, 0.24, 0.58, 0.82, 0.40, 0.30, 0.26, 0.24, 0.62, 0.84, 0.54, 0.80, 0.50, 0.38, 0.28, 0.20]
+        }
+      ],
+      ht: [
+        {
+          id: 'ht-1',
+          text: 'Bonjou, kijan ou ye jodi a?',
+          phonetic: 'bohn-ZHOO, kee-ZHAHN oo yeh zhoh-DEE ah?',
+          gloss: 'Good morning, how are you today?',
+          patternId: 'wh_question',
+          stressNote: 'Haitian Creole flows with smooth syllable-timed rhythm and gentle phrase-final prominence; open kijan questions lift early then relax.',
+          ttsLang: 'ht-HT',
+          tokens: ['Bonjou,', 'kijan', 'ou', 'ye', 'jodi', 'a?'],
+          targetStressIndices: [1, 4],
+          targetTurn: 'falling',
+          contour: [0.46, 0.58, 0.52, 0.64, 0.74, 0.66, 0.56, 0.54, 0.50, 0.54, 0.60, 0.56, 0.46, 0.38, 0.30, 0.24]
+        },
+        {
+          id: 'ht-2',
+          text: '\u00C8ske ou pare pou prezantasyon an?',
+          phonetic: 'EHS-keh oo pah-REH poo preh-zahn-tah-SYOHN ahn?',
+          gloss: 'Are you ready for the presentation?',
+          patternId: 'yesno',
+          stressNote: '\u00C8ske marks a yes/no question right away, paired with an inviting rising turn on the final syllables.',
+          ttsLang: 'ht-HT',
+          tokens: ['\u00C8ske', 'ou', 'pare', 'pou', 'prezantasyon', 'an?'],
+          targetStressIndices: [2, 4],
+          targetTurn: 'rising',
+          contour: [0.54, 0.58, 0.50, 0.52, 0.60, 0.64, 0.54, 0.52, 0.56, 0.62, 0.68, 0.74, 0.80, 0.86, 0.90, 0.92]
+        },
+        {
+          id: 'ht-3',
+          text: 'Ann pratike pale kl\u00E8 epi dousman.',
+          phonetic: 'ahn prah-tee-KEH pah-LEH KLEH eh-pee doos-MAHN.',
+          gloss: 'Let us practice speaking clearly and steadily.',
+          patternId: 'declarative',
+          stressNote: 'Pause lightly after kl\u00E8 (clearly) and land softly downward on dousman (steadily).',
+          ttsLang: 'ht-HT',
+          tokens: ['Ann', 'pratike', 'pale', 'kl\u00E8', 'epi', 'dousman.'],
+          targetStressIndices: [3, 5],
+          targetTurn: 'falling',
+          contour: [0.44, 0.48, 0.54, 0.58, 0.52, 0.56, 0.64, 0.66, 0.52, 0.48, 0.50, 0.54, 0.46, 0.38, 0.30, 0.22]
+        }
+      ],
+      de: [
+        {
+          id: 'de-1',
+          text: 'Guten Morgen, wie geht es dir heute?',
+          phonetic: 'GOO-ten MOR-gen, vee GAYT ehs deer HOY-teh?',
+          gloss: 'Good morning, how are you today?',
+          patternId: 'wh_question',
+          stressNote: 'German is stress-timed like English: strong root-syllable stress on MOR-gen, GAYT, and HOY-teh, with a warm fall on Wh-questions.',
+          ttsLang: 'de-DE',
+          tokens: ['Guten', 'Morgen,', 'wie', 'geht', 'es', 'dir', 'heute?'],
+          targetStressIndices: [1, 3, 6],
+          targetTurn: 'falling',
+          contour: [0.50, 0.64, 0.56, 0.48, 0.54, 0.70, 0.64, 0.54, 0.48, 0.52, 0.62, 0.58, 0.48, 0.38, 0.30, 0.22]
+        },
+        {
+          id: 'de-2',
+          text: 'Hast du dein Referat schon ge\u00FCbt?',
+          phonetic: 'hahst doo dine reh-feh-RAHT shohn geh-UEBT?',
+          gloss: 'Have you practiced your presentation yet?',
+          patternId: 'yesno',
+          stressNote: 'Verb-first German yes/no questions finish with a crisp upward rise on the final stressed participle (ge-\u00DCBT?).',
+          ttsLang: 'de-DE',
+          tokens: ['Hast', 'du', 'dein', 'Referat', 'schon', 'ge\u00FCbt?'],
+          targetStressIndices: [3, 5],
+          targetTurn: 'rising',
+          contour: [0.48, 0.50, 0.46, 0.48, 0.52, 0.60, 0.64, 0.54, 0.52, 0.56, 0.64, 0.72, 0.80, 0.86, 0.90, 0.94]
+        },
+        {
+          id: 'de-3',
+          text: 'Deine Stimme klingt ruhig und klar.',
+          phonetic: 'DINE-eh SHTIM-meh klingt ROO-ikh oont KLAHR.',
+          gloss: 'Your voice sounds calm and clear.',
+          patternId: 'declarative',
+          stressNote: 'Strong consonant clarity with balanced pitch peaks on Stimme, ruhig, and a firm concluding drop on klar.',
+          ttsLang: 'de-DE',
+          tokens: ['Deine', 'Stimme', 'klingt', 'ruhig', 'und', 'klar.'],
+          targetStressIndices: [1, 3, 5],
+          targetTurn: 'falling',
+          contour: [0.46, 0.58, 0.64, 0.54, 0.50, 0.56, 0.62, 0.56, 0.50, 0.48, 0.52, 0.48, 0.40, 0.32, 0.24, 0.18]
+        }
+      ],
+      ja: [
+        {
+          id: 'ja-1',
+          text: '\u304A\u306F\u3088\u3046\u3054\u3056\u3044\u307E\u3059\u3001\u304A\u5143\u6C17\u3067\u3059\u304B\uFF1F',
+          phonetic: 'o-HA-YOO-go-za-i-MA-su, o-GE-n-ki de-su KA?',
+          gloss: 'Good morning, how are you?',
+          patternId: 'yesno',
+          stressNote: 'Japanese is mora-timed with pitch accent (high vs low steps rather than loud stress); polite questions lift neatly on final ka.',
+          ttsLang: 'ja-JP',
+          tokens: ['\u304A\u306F\u3088\u3046', '\u3054\u3056\u3044\u307E\u3059\u3001', '\u304A\u5143\u6C17', '\u3067\u3059\u304B\uFF1F'],
+          targetStressIndices: [2, 3],
+          targetTurn: 'rising',
+          contour: [0.36, 0.62, 0.64, 0.60, 0.52, 0.58, 0.42, 0.40, 0.68, 0.44, 0.42, 0.44, 0.48, 0.62, 0.78, 0.88]
+        },
+        {
+          id: 'ja-2',
+          text: '\u4ECA\u65E5\u306F\u79D1\u5B66\u306E\u767A\u8868\u3092\u3057\u307E\u3059\u3002',
+          phonetic: 'KYO-o wa KA-ga-ku no hap-PYO-o o shi-MA-su.',
+          gloss: 'Today I will give a science presentation.',
+          patternId: 'declarative',
+          stressNote: 'Notice the crisp pitch-accent drop after KYO and KA while keeping every mora beat even and steady.',
+          ttsLang: 'ja-JP',
+          tokens: ['\u4ECA\u65E5\u306F', '\u79D1\u5B66\u306E', '\u767A\u8868\u3092', '\u3057\u307E\u3059\u3002'],
+          targetStressIndices: [0, 1],
+          targetTurn: 'falling',
+          contour: [0.68, 0.44, 0.42, 0.66, 0.44, 0.42, 0.40, 0.58, 0.60, 0.56, 0.46, 0.52, 0.46, 0.36, 0.28, 0.22]
+        },
+        {
+          id: 'ja-3',
+          text: '\u3086\u3063\u304F\u308A\u306F\u3063\u304D\u308A\u8A71\u3057\u307E\u3057\u3087\u3046\u3002',
+          phonetic: 'yuk-KU-ri hak-KI-ri ha-na-shi-ma-SHO-o.',
+          gloss: 'Let us speak slowly and clearly.',
+          patternId: 'declarative',
+          stressNote: 'Give doubled consonants (small \u3063 in yukkuri, hakkiri) a clean brief pause beat — rhythm clarity carries meaning in Japanese.',
+          ttsLang: 'ja-JP',
+          tokens: ['\u3086\u3063\u304F\u308A', '\u306F\u3063\u304D\u308A', '\u8A71\u3057\u307E\u3057\u3087\u3046\u3002'],
+          targetStressIndices: [0, 1],
+          targetTurn: 'falling',
+          contour: [0.40, 0.64, 0.64, 0.44, 0.40, 0.64, 0.64, 0.44, 0.42, 0.52, 0.56, 0.58, 0.50, 0.40, 0.32, 0.24]
+        }
+      ],
+      ko: [
+        {
+          id: 'ko-1',
+          text: '\uC548\uB155\uD558\uC138\uC694, \uC624\uB298 \uAE30\uBD84\uC774 \uC5B4\uB5A0\uC138\uC694?',
+          phonetic: 'an-nyeong-ha-se-YO, o-neul gi-bu-ni eo-tteo-se-YO?',
+          gloss: 'Hello, how are you feeling today?',
+          patternId: 'yesno',
+          stressNote: 'Korean groups speech into smooth accentual phrases (low-high-low-high arcs) and ends polite questions with a clear rise on -yo.',
+          ttsLang: 'ko-KR',
+          tokens: ['\uC548\uB155\uD558\uC138\uC694,', '\uC624\uB298', '\uAE30\uBD84\uC774', '\uC5B4\uB5A0\uC138\uC694?'],
+          targetStressIndices: [2, 3],
+          targetTurn: 'rising',
+          contour: [0.40, 0.56, 0.54, 0.62, 0.44, 0.54, 0.52, 0.48, 0.60, 0.56, 0.50, 0.58, 0.66, 0.74, 0.84, 0.90]
+        },
+        {
+          id: 'ko-2',
+          text: '\uC6B0\uB9AC \uD568\uAED8 \uBC1C\uD45C\uB97C \uC5F0\uC2B5\uD574 \uBD10\uC694.',
+          phonetic: 'u-ri ham-kke bal-pyo-reul yeon-seup-hae bwa-YO.',
+          gloss: 'Let us practice the presentation together.',
+          patternId: 'declarative',
+          stressNote: 'Korean has even syllable timing without sharp English-style word stress; shape smooth phrasing arcs and relax downward on bwayo.',
+          ttsLang: 'ko-KR',
+          tokens: ['\uC6B0\uB9AC', '\uD568\uAED8', '\uBC1C\uD45C\uB97C', '\uC5F0\uC2B5\uD574', '\uBD10\uC694.'],
+          targetStressIndices: [2, 3],
+          targetTurn: 'falling',
+          contour: [0.42, 0.54, 0.50, 0.60, 0.52, 0.48, 0.62, 0.58, 0.50, 0.56, 0.54, 0.48, 0.42, 0.36, 0.28, 0.22]
+        },
+        {
+          id: 'ko-3',
+          text: '\uBAA9\uC18C\uB9AC\uAC00 \uCC28\uBD84\uD558\uACE0 \uB610\uBC15\uB610\uBC15 \uB4E4\uB824\uC694.',
+          phonetic: 'mok-so-ri-ga cha-bun-ha-go tto-bak-tto-bak deul-lyeo-yo.',
+          gloss: 'Your voice sounds calm and very clear.',
+          patternId: 'declarative',
+          stressNote: 'Notice the crisp tense consonants in tto-bak-tto-bak (articulating clearly syllable by syllable).',
+          ttsLang: 'ko-KR',
+          tokens: ['\uBAA9\uC18C\uB9AC\uAC00', '\uCC28\uBD84\uD558\uACE0', '\uB610\uBC15\uB610\uBC15', '\uB4E4\uB824\uC694.'],
+          targetStressIndices: [1, 2],
+          targetTurn: 'falling',
+          contour: [0.44, 0.54, 0.52, 0.48, 0.58, 0.56, 0.50, 0.64, 0.60, 0.64, 0.56, 0.48, 0.42, 0.36, 0.28, 0.20]
+        }
+      ],
+      hi: [
+        {
+          id: 'hi-1',
+          text: '\u0928\u092E\u0938\u094D\u0924\u0947, \u0906\u091C \u0906\u092A\u0915\u093E \u0926\u093F\u0928 \u0915\u0948\u0938\u093E \u0939\u0948?',
+          phonetic: 'na-mas-TE, aaj AAP-kaa din KAI-saa hai?',
+          gloss: 'Hello, how is your day today?',
+          patternId: 'wh_question',
+          stressNote: 'Hindi shapes each phrase with a characteristic low-then-rising wave across content words, peaking on the question word kaisaa before settling on hai.',
+          ttsLang: 'hi-IN',
+          tokens: ['\u0928\u092E\u0938\u094D\u0924\u0947,', '\u0906\u091C', '\u0906\u092A\u0915\u093E', '\u0926\u093F\u0928', '\u0915\u0948\u0938\u093E', '\u0939\u0948?'],
+          targetStressIndices: [2, 4],
+          targetTurn: 'rise-fall',
+          contour: [0.42, 0.56, 0.60, 0.44, 0.50, 0.62, 0.54, 0.48, 0.56, 0.64, 0.76, 0.72, 0.56, 0.44, 0.36, 0.30]
+        },
+        {
+          id: 'hi-2',
+          text: '\u0915\u094D\u092F\u093E \u0906\u092A \u092C\u094B\u0932\u0928\u0947 \u0915\u0947 \u0932\u093F\u090F \u0924\u0948\u092F\u093E\u0930 \u0939\u0948\u0902?',
+          phonetic: 'kyaa AAP BOL-ne ke li-ye tai-YAAR hain?',
+          gloss: 'Are you ready to speak?',
+          patternId: 'yesno',
+          stressNote: 'Polar questions with kyaa carry a clean rising inflection over the final predicate (taiyaar hain?).',
+          ttsLang: 'hi-IN',
+          tokens: ['\u0915\u094D\u092F\u093E', '\u0906\u092A', '\u092C\u094B\u0932\u0928\u0947', '\u0915\u0947 \u0932\u093F\u090F', '\u0924\u0948\u092F\u093E\u0930', '\u0939\u0948\u0902?'],
+          targetStressIndices: [2, 4],
+          targetTurn: 'rising',
+          contour: [0.46, 0.54, 0.50, 0.56, 0.62, 0.54, 0.48, 0.52, 0.56, 0.60, 0.66, 0.74, 0.80, 0.86, 0.90, 0.92]
+        },
+        {
+          id: 'hi-3',
+          text: '\u0906\u092A\u0915\u0940 \u0906\u0935\u093E\u091C\u093C \u092C\u0939\u0941\u0924 \u0938\u093E\u092B\u093C \u0914\u0930 \u0938\u094D\u092A\u0937\u094D\u091F \u0939\u0948\u0964',
+          phonetic: 'AAP-kee aa-WAAZ ba-hut SAAF aur SPASHT hai.',
+          gloss: 'Your voice is very clear and distinct.',
+          patternId: 'declarative',
+          stressNote: 'Keep syllable timing steady with gentle rises on aawaaz and saaf, then fall smoothly on spasht hai.',
+          ttsLang: 'hi-IN',
+          tokens: ['\u0906\u092A\u0915\u0940', '\u0906\u0935\u093E\u091C\u093C', '\u092C\u0939\u0941\u0924', '\u0938\u093E\u092B\u093C', '\u0914\u0930', '\u0938\u094D\u092A\u0937\u094D\u091F', '\u0939\u0948\u0964'],
+          targetStressIndices: [1, 3, 5],
+          targetTurn: 'falling',
+          contour: [0.44, 0.54, 0.50, 0.62, 0.56, 0.48, 0.54, 0.66, 0.58, 0.50, 0.54, 0.56, 0.46, 0.36, 0.28, 0.20]
+        }
+      ],
+      ru: [
+        {
+          id: 'ru-1',
+          text: '\u041F\u0440\u0438\u0432\u0435\u0442, \u043A\u0430\u043A \u043F\u0440\u043E\u0448\u0451\u043B \u0442\u0432\u043E\u0439 \u0434\u0435\u043D\u044C?',
+          phonetic: 'pree-VYET, kahk prah-SHYOHL tvoy dyen?',
+          gloss: 'Hi, how did your day go?',
+          patternId: 'wh_question',
+          stressNote: 'Russian has strong lexical stress (IK-2 for Wh-questions): clear emphasis on kak/proshyol with a firm descending finish.',
+          ttsLang: 'ru-RU',
+          tokens: ['\u041F\u0440\u0438\u0432\u0435\u0442,', '\u043A\u0430\u043A', '\u043F\u0440\u043E\u0448\u0451\u043B', '\u0442\u0432\u043E\u0439', '\u0434\u0435\u043D\u044C?'],
+          targetStressIndices: [1, 2],
+          targetTurn: 'falling',
+          contour: [0.46, 0.62, 0.54, 0.68, 0.74, 0.64, 0.60, 0.66, 0.56, 0.48, 0.44, 0.40, 0.36, 0.30, 0.26, 0.20]
+        },
+        {
+          id: 'ru-2',
+          text: '\u0422\u044B \u0433\u043E\u0442\u043E\u0432 \u043A \u0432\u044B\u0441\u0442\u0443\u043F\u043B\u0435\u043D\u0438\u044E?',
+          phonetic: 'ty gah-TOHF k vy-stoop-LYEH-nee-yoo?',
+          gloss: 'Are you ready for the speech?',
+          patternId: 'contrast',
+          stressNote: 'Russian yes/no questions (IK-3) use a sharp pitch peak RIGHT on the focal stressed syllable (gah-TOHF), then drop afterward rather than rising at the very end.',
+          ttsLang: 'ru-RU',
+          tokens: ['\u0422\u044B', '\u0433\u043E\u0442\u043E\u0432', '\u043A', '\u0432\u044B\u0441\u0442\u0443\u043F\u043B\u0435\u043D\u0438\u044E?'],
+          targetStressIndices: [1],
+          targetTurn: 'rise-fall',
+          contour: [0.44, 0.46, 0.52, 0.72, 0.92, 0.86, 0.58, 0.46, 0.42, 0.40, 0.38, 0.36, 0.34, 0.32, 0.30, 0.28]
+        },
+        {
+          id: 'ru-3',
+          text: '\u0422\u0432\u043E\u0439 \u0433\u043E\u043B\u043E\u0441 \u0437\u0432\u0443\u0447\u0438\u0442 \u0443\u0432\u0435\u0440\u0435\u043D\u043D\u043E \u0438 \u0447\u0451\u0442\u043A\u043E.',
+          phonetic: 'tvoy GOH-lahs zvoo-CHEET oo-VYEH-rehn-nah ee CHYOHT-kah.',
+          gloss: 'Your voice sounds confident and crisp.',
+          patternId: 'declarative',
+          stressNote: 'Unstressed Russian vowels reduce softly while stressed syllables carry full length and a clean concluding fall (IK-1).',
+          ttsLang: 'ru-RU',
+          tokens: ['\u0422\u0432\u043E\u0439', '\u0433\u043E\u043B\u043E\u0441', '\u0437\u0432\u0443\u0447\u0438\u0442', '\u0443\u0432\u0435\u0440\u0435\u043D\u043D\u043E', '\u0438', '\u0447\u0451\u0442\u043A\u043E.'],
+          targetStressIndices: [1, 3, 5],
+          targetTurn: 'falling',
+          contour: [0.46, 0.56, 0.62, 0.52, 0.54, 0.60, 0.54, 0.64, 0.60, 0.52, 0.46, 0.48, 0.42, 0.34, 0.26, 0.18]
+        }
+      ],
+      sw: [
+        {
+          id: 'sw-1',
+          text: 'Habari za asubuhi, u hali gani leo?',
+          phonetic: 'ha-BAH-ree zah ah-soo-BOO-hee, oo HAH-lee GAH-nee LEH-oh?',
+          gloss: 'Good morning, how are you today?',
+          patternId: 'wh_question',
+          stressNote: 'Swahili reliably places stress on the second-to-last (penultimate) syllable of every word (ha-BA-ri, a-su-BU-hi, GA-ni, LE-o).',
+          ttsLang: 'sw-KE',
+          tokens: ['Habari', 'za', 'asubuhi,', 'u', 'hali', 'gani', 'leo?'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'falling',
+          contour: [0.46, 0.58, 0.50, 0.48, 0.54, 0.64, 0.52, 0.48, 0.56, 0.52, 0.66, 0.60, 0.50, 0.44, 0.34, 0.24]
+        },
+        {
+          id: 'sw-2',
+          text: 'Je, uko tayari kusoma kwa sauti?',
+          phonetic: 'jeh, OO-koh tah-YAH-ree koo-SOH-mah kwah sah-OO-tee?',
+          gloss: 'Are you ready to read aloud?',
+          patternId: 'yesno',
+          stressNote: 'Je signals a question up front; keep penultimate stress steady and let pitch lift gently at the end.',
+          ttsLang: 'sw-KE',
+          tokens: ['Je,', 'uko', 'tayari', 'kusoma', 'kwa', 'sauti?'],
+          targetStressIndices: [2, 5],
+          targetTurn: 'rising',
+          contour: [0.54, 0.56, 0.50, 0.54, 0.58, 0.64, 0.56, 0.54, 0.60, 0.58, 0.62, 0.68, 0.76, 0.84, 0.88, 0.90]
+        },
+        {
+          id: 'sw-3',
+          text: 'Sauti yako ni wazi na yenye utulivu.',
+          phonetic: 'sah-OO-tee YAH-koh nee WAH-zee nah YEH-nyeh oo-too-LEE-voo.',
+          gloss: 'Your voice is clear and calm.',
+          patternId: 'declarative',
+          stressNote: 'Smooth vowel-rich syllables with regular penultimate peaks (OO, YAH, WAH, LEE) and a calm declarative fall.',
+          ttsLang: 'sw-KE',
+          tokens: ['Sauti', 'yako', 'ni', 'wazi', 'na', 'yenye', 'utulivu.'],
+          targetStressIndices: [3, 6],
+          targetTurn: 'falling',
+          contour: [0.46, 0.56, 0.50, 0.56, 0.50, 0.48, 0.62, 0.54, 0.50, 0.56, 0.52, 0.48, 0.52, 0.42, 0.30, 0.20]
+        }
+      ]
+    };
+
+    var CONTOUR_STUDIO_DRILLS = [
+      {
+        id: 'studio-yesno-hw',
+        title: 'Confirmation Question',
+        category: 'yesno',
+        intent: 'Ask your partner to confirm whether they already finished their homework (surprised check).',
+        phrase: 'You finished your homework?',
+        tokens: ['You', 'finished', 'your', 'homework?'],
+        targetStressIndices: [3],
+        targetTurn: 'rising',
+        contour: [0.42, 0.44, 0.46, 0.48, 0.48, 0.47, 0.48, 0.50, 0.54, 0.60, 0.68, 0.76, 0.84, 0.90, 0.94, 0.96],
+        hint: 'When statement word order turns into a yes/no question, pitch lifts on the final focus word.',
+        explanation: 'A rising ending turn on HOME-work turns declarative syntax into a clear yes/no confirmation question.'
+      },
+      {
+        id: 'studio-wh-goggles',
+        title: 'Information Wh-Question',
+        category: 'wh_question',
+        intent: 'Ask a lab partner where the safety goggles are stored (neutral information request).',
+        phrase: 'Where did you put the goggles?',
+        tokens: ['Where', 'did', 'you', 'put', 'the', 'goggles?'],
+        targetStressIndices: [0, 5],
+        targetTurn: 'falling',
+        contour: [0.64, 0.78, 0.72, 0.60, 0.54, 0.50, 0.52, 0.56, 0.50, 0.48, 0.56, 0.52, 0.42, 0.34, 0.26, 0.20],
+        hint: 'Unlike yes/no questions, neutral English Wh-questions peak on the question/focus word and fall at the end.',
+        explanation: 'Where carries an early pitch peak and the phrase closes with a falling turn on GOG-gles.'
+      },
+      {
+        id: 'studio-contrast-blue',
+        title: 'Contrastive Emphasis',
+        category: 'contrast',
+        intent: 'Correct a mix-up: clarify you asked for the BLUE folder, not the green one.',
+        phrase: 'I asked for the blue folder.',
+        tokens: ['I', 'asked', 'for', 'the', 'blue', 'folder.'],
+        targetStressIndices: [4],
+        targetTurn: 'falling',
+        contour: [0.44, 0.46, 0.48, 0.44, 0.42, 0.40, 0.42, 0.48, 0.72, 0.92, 0.86, 0.64, 0.46, 0.36, 0.28, 0.22],
+        hint: 'Focus pitch rises sharply on the contrasting adjective, then drops back down to finish.',
+        explanation: 'Stressing BLUE creates a dip-peak-dip contrast contour that spotlights the correction for listeners.'
+      },
+      {
+        id: 'studio-list-lab',
+        title: 'Stepped Enumeration',
+        category: 'listing',
+        intent: 'Read a lab supply checklist so listeners know when more items are coming and when the list ends.',
+        phrase: 'Bring paper, tape, string, and scissors.',
+        tokens: ['Bring', 'paper,', 'tape,', 'string,', 'and', 'scissors.'],
+        targetStressIndices: [1, 2, 3, 5],
+        targetTurn: 'stepped',
+        contour: [0.40, 0.48, 0.58, 0.44, 0.52, 0.64, 0.46, 0.56, 0.68, 0.48, 0.52, 0.58, 0.48, 0.38, 0.28, 0.18],
+        hint: 'Non-final items step upward slightly; only the last item falls to signal the list is done.',
+        explanation: 'Stepped rises on paper, tape, and string cue continuation; the final fall on scissors signals completion.'
+      },
+      {
+        id: 'studio-decl-calm',
+        title: 'Confident Closing Statement',
+        category: 'declarative',
+        intent: 'Conclude a persuasive speech with calm authority so the audience hears finality.',
+        phrase: 'Our data proves the bridge holds.',
+        tokens: ['Our', 'data', 'proves', 'the', 'bridge', 'holds.'],
+        targetStressIndices: [1, 5],
+        targetTurn: 'falling',
+        contour: [0.46, 0.56, 0.62, 0.56, 0.58, 0.56, 0.52, 0.50, 0.54, 0.52, 0.48, 0.44, 0.38, 0.30, 0.24, 0.18],
+        hint: 'Avoid uptalk at the end — a confident statement finishes with a steady downward cadence.',
+        explanation: 'A clear stress on DA-ta followed by a clean falling cadence on holds communicates certainty and closure.'
+      },
+      {
+        id: 'studio-exclaim-wow',
+        title: 'High-Energy Exclamation',
+        category: 'exclamation',
+        intent: 'Celebrate a teammate solving a tough robotics problem with genuine enthusiasm.',
+        phrase: 'Wow, that design actually worked!',
+        tokens: ['Wow,', 'that', 'design', 'actually', 'worked!'],
+        targetStressIndices: [0, 4],
+        targetTurn: 'rise-fall',
+        contour: [0.68, 0.92, 0.96, 0.74, 0.58, 0.60, 0.66, 0.62, 0.68, 0.74, 0.80, 0.72, 0.56, 0.44, 0.34, 0.26],
+        hint: 'Enthusiastic exclamations launch with a high initial peak and stay wide in pitch range before landing.',
+        explanation: 'Launching high on WOW and lifting again on WORKED uses wide pitch range to signal authentic excitement.'
+      },
+      {
+        id: 'studio-sarcasm-flat',
+        title: 'Dry Sarcasm vs. Excitement',
+        category: 'sarcasm',
+        intent: 'Notice how intentionally flattening pitch range signals dry irony instead of excitement.',
+        phrase: 'Oh great, another rainy field day.',
+        tokens: ['Oh', 'great,', 'another', 'rainy', 'field', 'day.'],
+        targetStressIndices: [1],
+        targetTurn: 'flat',
+        contour: [0.48, 0.50, 0.49, 0.49, 0.48, 0.49, 0.48, 0.48, 0.47, 0.47, 0.46, 0.46, 0.46, 0.45, 0.45, 0.44],
+        hint: 'Dry sarcasm deliberately compresses pitch range near midline instead of peaking brightly.',
+        explanation: 'Compressed, flat pitch across "Oh great" contradicts the positive words, signaling sarcasm to listeners.'
+      },
+      {
+        id: 'studio-shift-she',
+        title: 'Stress-Meaning Shift',
+        category: 'contrast',
+        intent: 'Deny that SHE was the one who borrowed your notes (implying someone else did).',
+        phrase: 'I did not say she took my notes.',
+        tokens: ['I', 'did', 'not', 'say', 'she', 'took', 'my', 'notes.'],
+        targetStressIndices: [4],
+        targetTurn: 'falling',
+        contour: [0.44, 0.45, 0.44, 0.44, 0.42, 0.40, 0.52, 0.82, 0.90, 0.74, 0.54, 0.46, 0.40, 0.34, 0.28, 0.22],
+        hint: 'Place the single strongest pitch peak directly on the pronoun you are contrasting.',
+        explanation: 'Peaking pitch on SHE signals that someone else — not she — took the notes, while a falling end closes the claim.'
+      }
+    ];
+
+    // 10 predict-first mic-free prosody & rhetorical intent challenges
+    // Balanced authored correct indices: 0, 1, 2, 3, 0, 1, 2, 3, 1, 2 (counts: 2, 3, 3, 2)
+    var PROSODY_CHALLENGES = [
+      {
+        id: 'stress_money_who',
+        category: 'stress_shift',
+        categoryLabel: 'Stress-Meaning Shift',
+        title: 'Who Took the Money?',
+        prompt: 'A speaker says: "I did not say SHE stole my money," placing the highest pitch peak and loudness on the word SHE. What meaning does this stress shift communicate?',
+        phrase: 'I did not say SHE stole my money.',
+        ttsText: 'I did not say she stole my money.',
+        contour: [0.44, 0.44, 0.43, 0.42, 0.40, 0.46, 0.78, 0.92, 0.80, 0.56, 0.46, 0.42, 0.38, 0.32, 0.26, 0.22],
+        showContourBeforeReveal: true,
+        correct: 0,
+        options: [
+          {
+            id: 'a',
+            label: 'Someone else stole the money, not her.',
+            explain: 'Correct! Contrastive stress on a subject pronoun ("SHE") tells listeners to contrast that person with another possible agent.'
+          },
+          {
+            id: 'b',
+            label: 'I merely implied it without speaking the words aloud.',
+            whyNot: 'That meaning comes from stressing the verb "SAY" ("I did not SAY she stole my money"), not the pronoun "SHE."'
+          },
+          {
+            id: 'c',
+            label: 'She borrowed the money instead of stealing it.',
+            whyNot: 'Contrasting the action requires stressing the verb "STOLE" rather than "SHE."'
+          },
+          {
+            id: 'd',
+            label: 'She stole someone else\u2019s money, not mine.',
+            whyNot: 'To contrast ownership, the speaker would place the pitch peak on the possessive "MY."'
+          }
+        ]
+      },
+      {
+        id: 'stress_leave_when',
+        category: 'stress_shift',
+        categoryLabel: 'Stress-Meaning Shift',
+        title: 'Urgent Departure Timing',
+        prompt: 'Your robotics team thinks they can leave for the bus in 20 minutes, but the bus leaves in 2 minutes. In "We need to leave right now," which stress placement best corrects their timing?',
+        phrase: 'We need to leave RIGHT NOW.',
+        ttsText: 'We need to leave right now.',
+        contour: [0.46, 0.46, 0.48, 0.48, 0.46, 0.48, 0.52, 0.50, 0.54, 0.68, 0.84, 0.92, 0.84, 0.66, 0.44, 0.30],
+        showContourBeforeReveal: false,
+        correct: 1,
+        options: [
+          {
+            id: 'a',
+            label: 'Stress "WE" — to show who is going.',
+            whyNot: 'Stressing "WE" contrasts our group against another group ("WE need to leave, not them"), which does not fix the timing mix-up.'
+          },
+          {
+            id: 'b',
+            label: 'Stress "RIGHT NOW" — to spotlight immediate timing with no delay.',
+            explain: 'Correct! Raising pitch and volume on the time adverbial "RIGHT NOW" directly contrasts "immediately" against "in 20 minutes."'
+          },
+          {
+            id: 'c',
+            label: 'Stress "TO" — to connect the verbs smoothly.',
+            whyNot: 'Function words like "to" are normally unstressed in English; stressing "to" sounds unnatural and hides the urgent time cue.'
+          },
+          {
+            id: 'd',
+            label: 'Keep every word completely flat at identical pitch and volume.',
+            whyNot: 'Flat monotone delivery removes the focal cue listeners rely on to detect urgency and which detail changed.'
+          }
+        ]
+      },
+      {
+        id: 'stress_blue_contrast',
+        category: 'stress_shift',
+        categoryLabel: 'Stress-Meaning Shift',
+        title: 'Spotting Contrastive Pitch Shape',
+        prompt: 'In "I asked for the BLUE folder, not the green one," how does the pitch contour typically behave around the contrasted word BLUE?',
+        phrase: 'I asked for the BLUE folder, not the green one.',
+        ttsText: 'I asked for the blue folder, not the green one.',
+        contour: [0.45, 0.42, 0.38, 0.35, 0.32, 0.38, 0.58, 0.82, 0.92, 0.78, 0.54, 0.42, 0.38, 0.34, 0.28, 0.22],
+        showContourBeforeReveal: false,
+        correct: 2,
+        options: [
+          {
+            id: 'a',
+            label: 'It drops to the speaker\u2019s lowest pitch on BLUE and rises on "one."',
+            whyNot: 'Contrastive focus normally elevates pitch on the contrasted word rather than burying it at the bottom.'
+          },
+          {
+            id: 'b',
+            label: 'It climbs steadily from start to finish like a yes/no question.',
+            whyNot: 'A continuous final rise signals a yes/no question, not an assertive contrast correction.'
+          },
+          {
+            id: 'c',
+            label: 'It forms a dip-peak-dip prominence spike right on BLUE, then falls at the end.',
+            explain: 'Correct! A brief pre-focus dip makes the pitch peak on BLUE stand out sharply before the sentence resolves downward.'
+          },
+          {
+            id: 'd',
+            label: 'It pauses for three full seconds before every single word.',
+            whyNot: 'Long 3-second blocks disrupt fluency; contrastive emphasis relies primarily on pitch prominence, lengthening, and loudness.'
+          }
+        ]
+      },
+      {
+        id: 'inton_wh_fall',
+        category: 'intonation_turn',
+        categoryLabel: 'Rising vs. Falling Intonation',
+        title: 'The Wh-Question Myth',
+        prompt: 'A student asks a neutral information question: "Where did you put the lab goggles?" What final pitch contour does standard English typically use on this Wh-question?',
+        phrase: 'Where did you put the lab goggles?',
+        ttsText: 'Where did you put the lab goggles?',
+        contour: [0.60, 0.74, 0.76, 0.68, 0.60, 0.54, 0.50, 0.48, 0.46, 0.44, 0.42, 0.38, 0.34, 0.30, 0.26, 0.20],
+        showContourBeforeReveal: false,
+        correct: 3,
+        options: [
+          {
+            id: 'a',
+            label: 'A sharp upward jump at the very end, identical to "Did you find them?"',
+            whyNot: 'That is a classic misconception! Yes/no questions usually rise at the end, whereas neutral Wh-questions (Who/What/Where/Why) normally fall.'
+          },
+          {
+            id: 'b',
+            label: 'Completely flat midline pitch with zero movement.',
+            whyNot: 'A flat monotone contour removes natural question focus and can sound robotic or sarcastic.'
+          },
+          {
+            id: 'c',
+            label: 'Three equal stepped rises followed by another rise.',
+            whyNot: 'Stepped rises belong to enumeration lists ("apples, bananas, oranges..."), not a single Wh-question.'
+          },
+          {
+            id: 'd',
+            label: 'An early pitch rise on the question/focus word followed by a gentle fall at the end.',
+            explain: 'Correct! Neutral Wh-questions peak early and finish with a falling intonation contour (a final rise only happens if asking for repetition/echo).'
+          }
+        ]
+      },
+      {
+        id: 'inton_listing_step',
+        category: 'intonation_turn',
+        categoryLabel: 'Rising vs. Falling Intonation',
+        title: 'Signaling List Continuation',
+        prompt: 'You are reading aloud: "Bring a notebook, a pencil, a ruler, and a calculator." Look at the contour below. Why do the first three items step upward while only "calculator" falls?',
+        phrase: 'Bring a notebook, a pencil, a ruler, and a calculator.',
+        ttsText: 'Bring a notebook, a pencil, a ruler, and a calculator.',
+        contour: [0.36, 0.46, 0.56, 0.42, 0.50, 0.62, 0.46, 0.56, 0.68, 0.50, 0.58, 0.66, 0.52, 0.40, 0.28, 0.18],
+        showContourBeforeReveal: true,
+        correct: 0,
+        options: [
+          {
+            id: 'a',
+            label: 'Non-final rises cue "more items are coming," and the final fall signals the list is complete.',
+            explain: 'Correct! Continuation rises keep listeners expecting the next item, while a final falling cadence clearly marks the end of the list.'
+          },
+          {
+            id: 'b',
+            label: 'The speaker is unsure whether notebooks and pencils are needed.',
+            whyNot: 'Continuation rises in a list are structural cues for "keep listening," not expressions of doubt.'
+          },
+          {
+            id: 'c',
+            label: 'The speaker ran out of breath on the last word.',
+            whyNot: 'Even with full breath support, trained speakers intentionally use a falling cadence to close a completed list.'
+          },
+          {
+            id: 'd',
+            label: 'Every English noun always ends with rising pitch.',
+            whyNot: 'Nouns do not carry fixed rising pitch — the pitch turn depends on phrase position and speaker intent.'
+          }
+        ]
+      },
+      {
+        id: 'inton_tag_confirm',
+        category: 'intonation_turn',
+        categoryLabel: 'Rising vs. Falling Intonation',
+        title: 'Same Words, Opposite Meaning',
+        prompt: 'Compare "The bus is here." and "The bus is here?" Both use the exact same four words in the exact same order. Which acoustic change tells the listener it is a question?',
+        phrase: 'The bus is here?',
+        ttsText: 'The bus is here?',
+        contour: [0.40, 0.42, 0.44, 0.46, 0.45, 0.44, 0.46, 0.48, 0.52, 0.58, 0.66, 0.74, 0.82, 0.88, 0.92, 0.95],
+        showContourBeforeReveal: false,
+        correct: 1,
+        options: [
+          {
+            id: 'a',
+            label: 'Speaking twice as fast with no pauses.',
+            whyNot: 'Faster speed alone sounds rushed rather than questioning; listeners rely on the final pitch direction.'
+          },
+          {
+            id: 'b',
+            label: 'Lifting pitch upward on the final syllable ("here?") instead of falling.',
+            explain: 'Correct! Terminal rising pitch overrides declarative word order and signals a confirmation question.'
+          },
+          {
+            id: 'c',
+            label: 'Lowering volume into a whisper on "bus."',
+            whyNot: 'Dropping loudness mid-sentence hides the subject word rather than signaling a question.'
+          },
+          {
+            id: 'd',
+            label: 'Dropping pitch steeply downward at the end.',
+            whyNot: 'A steep downward drop at the end signals a confident statement ("The bus is here."), the opposite of a question.'
+          }
+        ]
+      },
+      {
+        id: 'pacing_ted_keynote',
+        category: 'pacing_audience',
+        categoryLabel: 'Pacing & Audience Match',
+        title: 'Science Fair Keynote Pacing',
+        prompt: 'Two students rehearse the same 3-minute science fair talk for middle-school listeners. Speaker A averages 215 WPM with 4% pause time. Speaker B averages 138 WPM with 24% strategic pauses between claims. Which delivery supports stronger comprehension and why?',
+        phrase: 'First, observe the water level. Notice what happens next.',
+        ttsText: 'First, observe the water level. Notice what happens next.',
+        contour: [0.46, 0.56, 0.62, 0.54, 0.44, 0.34, 0.30, 0.30, 0.48, 0.60, 0.64, 0.58, 0.50, 0.42, 0.32, 0.24],
+        showContourBeforeReveal: true,
+        correct: 2,
+        options: [
+          {
+            id: 'a',
+            label: 'Speaker A, because faster speech always sounds smarter and keeps attention.',
+            whyNot: 'Above ~180 WPM with almost no pauses, working memory gets overloaded and audience comprehension drops sharply.'
+          },
+          {
+            id: 'b',
+            label: 'Speaker A, because pauses waste time and make speakers seem unprepared.',
+            whyNot: 'Brief 0.5\u20131.5 second pauses at idea boundaries actually project confidence and give listeners time to process new concepts.'
+          },
+          {
+            id: 'c',
+            label: 'Speaker B, because conversational-to-keynote pacing (~120\u2013155 WPM) with 20\u201330% clause pauses gives listeners time to process each claim.',
+            explain: 'Correct! Most effective public talks sit around 130\u2013155 WPM with purposeful 20\u201330% pausing at clause boundaries.'
+          },
+          {
+            id: 'd',
+            label: 'Neither — speaking speed has zero effect on listener comprehension.',
+            whyNot: 'Research in speech perception shows comprehension falls when articulation rate outpaces working-memory chunking.'
+          }
+        ]
+      },
+      {
+        id: 'pacing_cross_lang',
+        category: 'pacing_audience',
+        categoryLabel: 'Pacing & Audience Match',
+        title: 'Why Syllable Speed Varies Across Languages',
+        prompt: 'In cross-linguistic speech studies, Spanish and Japanese average roughly 7 syllables per second, English around 6, and Mandarin around 5 — yet all convey meaning at roughly the same information rate per second. Why?',
+        phrase: 'Every language balances syllable pace and information density.',
+        ttsText: 'Every language balances syllable pace and information density.',
+        contour: [0.48, 0.56, 0.54, 0.50, 0.58, 0.64, 0.56, 0.50, 0.54, 0.62, 0.60, 0.52, 0.46, 0.38, 0.30, 0.24],
+        showContourBeforeReveal: false,
+        correct: 3,
+        options: [
+          {
+            id: 'a',
+            label: 'Speakers of faster-syllable languages think faster than speakers of tonal languages.',
+            whyNot: 'Human cognitive processing speed is shared across languages; the difference lies in syllable structure, not thinking speed.'
+          },
+          {
+            id: 'b',
+            label: 'Mandarin speakers are speaking too slowly and need to speed up.',
+            whyNot: 'Mandarin syllables pack lexical tone and rich morpheme meaning into each syllable, so ~5 syllables/sec is natural and efficient.'
+          },
+          {
+            id: 'c',
+            label: 'English has no pauses between words.',
+            whyNot: 'All spoken languages use phrasing and pauses; syllable count per second reflects syllable complexity.'
+          },
+          {
+            id: 'd',
+            label: 'Languages with denser syllables (tones or complex clusters) speak fewer syllables per second, while simpler-syllable languages speak more syllables per second.',
+            explain: 'Correct! Information density trades off against syllable rate (Coup\u00E9 et al., 2019), keeping overall communication bandwidth remarkably balanced.'
+          }
+        ]
+      },
+      {
+        id: 'emotion_sarcasm_flat',
+        category: 'emotional_contour',
+        categoryLabel: 'Emotional Contour Match',
+        title: 'Reading Sarcasm on a Pitch Graph',
+        prompt: 'Inspect the flat, compressed pitch contour below for the phrase "Oh great, another pop quiz." Which delivery intent best matches this contour?',
+        phrase: 'Oh great, another pop quiz.',
+        ttsText: 'Oh great, another pop quiz.',
+        contour: [0.50, 0.50, 0.49, 0.50, 0.51, 0.50, 0.49, 0.50, 0.50, 0.49, 0.50, 0.49, 0.48, 0.48, 0.47, 0.47],
+        showContourBeforeReveal: true,
+        correct: 1,
+        options: [
+          {
+            id: 'a',
+            label: 'Genuine joy and thrilled anticipation.',
+            whyNot: 'Genuine excitement produces a wide pitch range with a bright high peak on "great," not a flat compressed line.'
+          },
+          {
+            id: 'b',
+            label: 'Dry sarcasm or weary irony — flat prosody deliberately contradicts the positive word "great."',
+            explain: 'Correct! Deliberately compressed, flat pitch over an upbeat phrase is a classic acoustic cue for dry sarcasm.'
+          },
+          {
+            id: 'c',
+            label: 'An urgent yes/no question.',
+            whyNot: 'A yes/no question climbs steeply upward at the end, whereas this trace barely moves from 0.50.'
+          },
+          {
+            id: 'd',
+            label: 'Sudden surprise or alarm.',
+            whyNot: 'Surprise produces a sharp upward pitch jump rather than a flat midline trace.'
+          }
+        ]
+      },
+      {
+        id: 'emotion_gravitas_pause',
+        category: 'emotional_contour',
+        categoryLabel: 'Emotional Contour Match',
+        title: 'Delivering Gravitas & Reflection',
+        prompt: 'You are delivering a solemn tribute line in a school assembly: "We remember every voice that stood for fairness." Which prosody combination best communicates reflection and gravitas?',
+        phrase: 'We remember every voice that stood for fairness.',
+        ttsText: 'We remember every voice that stood for fairness.',
+        contour: [0.42, 0.46, 0.54, 0.52, 0.48, 0.58, 0.60, 0.52, 0.44, 0.44, 0.52, 0.56, 0.48, 0.40, 0.30, 0.20],
+        showContourBeforeReveal: false,
+        correct: 2,
+        options: [
+          {
+            id: 'a',
+            label: 'High strained pitch (>320 Hz), rapid 195 WPM sprint, and rising end pitch.',
+            whyNot: 'High strained pitch and rapid speed communicate panic or frantic urgency, undercutting solemn reflection.'
+          },
+          {
+            id: 'b',
+            label: 'Sharp upward jump on the final syllable like a surprised question.',
+            whyNot: 'Ending a solemn tribute with a surprised upward jump turns a firm tribute into uncertainty.'
+          },
+          {
+            id: 'c',
+            label: 'Deliberate slower pace (~95\u2013115 WPM), warm lower-mid pitch, purposeful pause after "voice," and a steady falling close.',
+            explain: 'Correct! Slower deliberate pacing, grounded lower-mid pitch, intentional pausing, and a calm falling cadence convey dignity and gravitas.'
+          },
+          {
+            id: 'd',
+            label: 'Whisper-quiet volume dropping below audibility on key words.',
+            whyNot: 'Even gentle reflective delivery needs steady breath-supported projection so every listener in the room can hear clearly.'
+          }
+        ]
+      }
+    ];
+
+    function seedHash(str) {
+      var s = String(str == null ? '' : str);
+      var h = 2166136261;
+      for (var i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      var a = (seed >>> 0) || 1;
+      return function() {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        var t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function shuffleOptionsSeeded(challenge, seed) {
+      if (!challenge || !Array.isArray(challenge.options)) {
+        return { options: [], correctOptionId: null, correctIndex: -1 };
+      }
+      var list = challenge.options.map(function(opt, idx) {
+        return Object.assign({}, opt, { _origIdx: idx });
+      });
+      var rng = mulberry32(seedHash(String(challenge.id || 'ch') + ':' + String(seed == null ? 0 : seed)));
+      for (var i = list.length - 1; i > 0; i--) {
+        var j = Math.floor(rng() * (i + 1));
+        var tmp = list[i];
+        list[i] = list[j];
+        list[j] = tmp;
+      }
+      var correctOrig = typeof challenge.correct === 'number' ? challenge.correct : 0;
+      var newCorrectIdx = -1;
+      var correctOptId = null;
+      for (var k = 0; k < list.length; k++) {
+        if (list[k]._origIdx === correctOrig) {
+          newCorrectIdx = k;
+          correctOptId = list[k].id;
+        }
+        delete list[k]._origIdx;
+      }
+      return {
+        options: list,
+        correctOptionId: correctOptId,
+        correctIndex: newCorrectIdx
+      };
+    }
+
+    function resolveLanguageCode(input) {
+      if (!input) return 'en';
+      var raw = String(input).trim().toLowerCase();
+      if (LANGUAGE_PHRASE_BANK[raw]) return raw;
+      for (var i = 0; i < LANGUAGES.length; i++) {
+        if (LANGUAGES[i].code.toLowerCase() === raw || LANGUAGES[i].name.toLowerCase() === raw) {
+          return LANGUAGES[i].code;
+        }
+      }
+      for (var j = 0; j < LANGUAGES.length; j++) {
+        if (LANGUAGES[j].name.toLowerCase().indexOf(raw) !== -1 && raw.length >= 3) {
+          return LANGUAGES[j].code;
+        }
+      }
+      return null;
+    }
+
+    function getLanguagePhrases(langCode) {
+      var code = resolveLanguageCode(langCode) || 'en';
+      return (LANGUAGE_PHRASE_BANK[code] || LANGUAGE_PHRASE_BANK.en).slice();
+    }
+
+    function getLanguagePhrase(langCode, idx) {
+      var list = getLanguagePhrases(langCode);
+      if (!list.length) return null;
+      var safeIdx = Number.isInteger(idx) ? ((idx % list.length) + list.length) % list.length : 0;
+      return list[safeIdx];
+    }
+
+    function classifyPitchZone(hz) {
+      var v = Number(hz);
+      if (!isFinite(v) || v <= 0) return { color: 'var(--allo-stem-text-soft, #94a3b8)', label: 'No pitch', zone: 'none' };
+      if (v < 130) return { color: '#3b82f6', label: 'Low / calm', zone: 'low' };
+      if (v < 220) return { color: '#22c55e', label: 'Conversational', zone: 'mid' };
+      if (v < 320) return { color: '#f97316', label: 'Emphasis', zone: 'high' };
+      return { color: '#ef4444', label: 'High / strained', zone: 'strain' };
+    }
+
+    function classifyPacing(wpm, gradeLevel) {
+      var rate = Number(wpm);
+      if (!isFinite(rate) || rate < 0) rate = 0;
+      var g = typeof gradeLevel === 'number' ? gradeLevel : parseInt(String(gradeLevel || ''), 10);
+      var slowThreshold = 100, convHigh = 150, fastThreshold = 180;
+      if (isFinite(g) && g > 0 && g <= 2) {
+        slowThreshold = 70; convHigh = 110; fastThreshold = 130;
+      } else if (isFinite(g) && g > 0 && g <= 5) {
+        slowThreshold = 80; convHigh = 130; fastThreshold = 160;
+      }
+      var idealMid = Math.round((slowThreshold + convHigh) / 2);
+      var smooth = rate >= Math.max(70, slowThreshold - 10) && rate <= Math.min(170, convHigh + 10);
+      if (rate < slowThreshold) {
+        return {
+          wpm: Math.round(rate),
+          zone: 'slow',
+          label: 'Too Slow',
+          color: '#3b82f6',
+          targetRange: [slowThreshold, convHigh],
+          smooth: false,
+          deltaFromIdeal: Math.round(rate - idealMid),
+          coachingTip: rate === 0 ? 'Start speaking or test a rhythm preset to measure pace.' : 'Pick up a slightly livelier tempo while keeping clear articulation.'
+        };
+      }
+      if (rate < convHigh) {
+        return {
+          wpm: Math.round(rate),
+          zone: 'conversational',
+          label: 'Conversational',
+          color: '#22c55e',
+          targetRange: [slowThreshold, convHigh],
+          smooth: smooth,
+          deltaFromIdeal: Math.round(rate - idealMid),
+          coachingTip: 'Comfortable conversational pace — easy for listeners to follow.'
+        };
+      }
+      if (rate < fastThreshold) {
+        return {
+          wpm: Math.round(rate),
+          zone: 'presentation',
+          label: 'Presentation Pace',
+          color: '#eab308',
+          targetRange: [slowThreshold, convHigh],
+          smooth: smooth,
+          deltaFromIdeal: Math.round(rate - idealMid),
+          coachingTip: 'Energetic presentation pace — add brief pauses between key points.'
+        };
+      }
+      return {
+        wpm: Math.round(rate),
+        zone: 'fast',
+        label: 'Too Fast',
+        color: '#ef4444',
+        targetRange: [slowThreshold, convHigh],
+        smooth: false,
+        deltaFromIdeal: Math.round(rate - idealMid),
+        coachingTip: 'Slow down and pause at punctuation so listeners can absorb each idea.'
+      };
+    }
+
+    function resampleContour(arr, targetLen) {
+      var n = Number.isInteger(targetLen) && targetLen >= 2 ? targetLen : 32;
+      if (!Array.isArray(arr) || arr.length === 0) return [];
+      if (arr.length === 1) {
+        var flat = [];
+        for (var k = 0; k < n; k++) flat.push(Number(arr[0]) || 0);
+        return flat;
+      }
+      var result = [];
+      for (var i = 0; i < n; i++) {
+        var srcIdx = (i / (n - 1)) * (arr.length - 1);
+        var lo = Math.floor(srcIdx);
+        var hi = Math.min(lo + 1, arr.length - 1);
+        var frac = srcIdx - lo;
+        var vLo = Number(arr[lo]) || 0;
+        var vHi = Number(arr[hi]) || 0;
+        result.push(vLo * (1 - frac) + vHi * frac);
+      }
+      return result;
+    }
+
+    function detectContourTurn(points) {
+      if (!Array.isArray(points) || points.length < 3) return 'level';
+      var len = points.length;
+      var tailCount = Math.max(2, Math.floor(len * 0.25));
+      var headSum = 0, midSum = 0, tailSum = 0;
+      var headEnd = Math.max(1, Math.floor(len * 0.3));
+      var midStart = headEnd;
+      var midEnd = Math.max(midStart + 1, len - tailCount);
+      for (var i = 0; i < headEnd; i++) headSum += Number(points[i]) || 0;
+      for (var j = midStart; j < midEnd; j++) midSum += Number(points[j]) || 0;
+      for (var k = len - tailCount; k < len; k++) tailSum += Number(points[k]) || 0;
+      var headAvg = headSum / headEnd;
+      var midAvg = midSum / Math.max(1, midEnd - midStart);
+      var tailAvg = tailSum / tailCount;
+      var endDelta = tailAvg - midAvg;
+      var totalDelta = tailAvg - headAvg;
+      var mn = points[0], mx = points[0];
+      for (var p = 1; p < len; p++) {
+        if (points[p] < mn) mn = points[p];
+        if (points[p] > mx) mx = points[p];
+      }
+      if (mx - mn < 0.12) return 'flat';
+      if (endDelta >= 0.14 || totalDelta >= 0.18) return 'rising';
+      if (midAvg - headAvg >= 0.14 && midAvg - tailAvg >= 0.14) return 'rise-fall';
+      if (endDelta <= -0.10 || totalDelta <= -0.14) return 'falling';
+      return 'level';
+    }
+
+    function scoreProsodyContour(templatePoints, observedPoints, options) {
+      var opts = options || {};
+      if (!Array.isArray(templatePoints) || templatePoints.length < 2 || !Array.isArray(observedPoints)) {
+        return {
+          score: 0,
+          mae: 1,
+          correlation: 0,
+          directionMatch: false,
+          targetTurn: 'level',
+          observedTurn: 'level',
+          band: 'keep_practicing',
+          feedback: 'Not enough pitch samples yet — speak a full phrase or trace a contour first.'
+        };
+      }
+      var valid = [];
+      for (var i = 0; i < observedPoints.length; i++) {
+        var v = Number(observedPoints[i]);
+        if (isFinite(v) && (opts.normalized ? v >= 0 : v > 0)) valid.push(v);
+      }
+      var minSamples = opts.normalized ? 2 : 5;
+      if (valid.length < minSamples) {
+        return {
+          score: 0,
+          mae: 1,
+          correlation: 0,
+          directionMatch: false,
+          targetTurn: detectContourTurn(templatePoints),
+          observedTurn: 'level',
+          band: 'keep_practicing',
+          feedback: 'Record a slightly longer voiced phrase so pitch contour can be measured.'
+        };
+      }
+      var normObs;
+      if (opts.normalized) {
+        normObs = valid.map(function(x) { return Math.max(0, Math.min(1, x)); });
+      } else {
+        var sMin = valid[0], sMax = valid[0];
+        for (var j = 1; j < valid.length; j++) {
+          if (valid[j] < sMin) sMin = valid[j];
+          if (valid[j] > sMax) sMax = valid[j];
+        }
+        var sRange = sMax - sMin;
+        if (sRange < 6) {
+          // Flat monotone live voice
+          normObs = valid.map(function() { return 0.5; });
+        } else {
+          normObs = valid.map(function(x) { return (x - sMin) / sRange; });
+        }
+      }
+      var resampleLen = 50;
+      var tRaw = resampleContour(templatePoints, resampleLen);
+      var tMin = tRaw[0], tMax = tRaw[0];
+      for (var ti = 1; ti < tRaw.length; ti++) {
+        if (tRaw[ti] < tMin) tMin = tRaw[ti];
+        if (tRaw[ti] > tMax) tMax = tRaw[ti];
+      }
+      var tRange = tMax - tMin;
+      var tRes = (tRange >= 0.15 && !opts.normalized)
+        ? tRaw.map(function(x) { return (x - tMin) / tRange; })
+        : tRaw;
+      var sRes = resampleContour(normObs, resampleLen);
+
+      var mae = 0, tMean = 0, sMean = 0;
+      for (var k = 0; k < resampleLen; k++) {
+        mae += Math.abs(tRes[k] - sRes[k]);
+        tMean += tRes[k];
+        sMean += sRes[k];
+      }
+      mae /= resampleLen;
+      tMean /= resampleLen;
+      sMean /= resampleLen;
+
+      var num = 0, tDen = 0, sDen = 0;
+      for (var c = 0; c < resampleLen; c++) {
+        var dt = tRes[c] - tMean;
+        var ds = sRes[c] - sMean;
+        num += dt * ds;
+        tDen += dt * dt;
+        sDen += ds * ds;
+      }
+      var corr = (tDen > 1e-6 && sDen > 1e-6) ? (num / Math.sqrt(tDen * sDen)) : (mae < 0.08 ? 1 : 0);
+      var targetTurn = detectContourTurn(tRes);
+      var observedTurn = detectContourTurn(sRes);
+      var directionMatch = targetTurn === observedTurn ||
+        (targetTurn === 'rise-fall' && observedTurn === 'falling') ||
+        (targetTurn === 'falling' && observedTurn === 'rise-fall');
+
+      var maeScore = Math.max(0, Math.min(100, 100 - mae * 235));
+      var shapeBonus = corr > 0 ? corr * 15 : corr * 10;
+      var score = Math.max(0, Math.min(100, Math.round(maeScore * 0.88 + Math.max(0, 50 + shapeBonus * 3) * 0.12)));
+      if (mae < 0.01) score = 100;
+
+      var band = score >= 85 ? 'excellent' : score >= 70 ? 'good' : score >= 50 ? 'developing' : 'keep_practicing';
+      var feedback;
+      if (score >= 85) {
+        feedback = 'Excellent contour match! Your pitch peaks and ending cadence closely align with the target.';
+      } else if (!directionMatch && targetTurn === 'rising') {
+        feedback = 'Lift your pitch upward on the final stressed syllable — your ending stayed flat or fell instead of rising.';
+      } else if (!directionMatch && targetTurn === 'falling') {
+        feedback = 'Let your pitch settle downward at the close — your ending stayed high instead of completing the fall.';
+      } else if (observedTurn === 'flat' && targetTurn !== 'flat') {
+        feedback = 'Your contour stayed fairly flat — exaggerate the pitch peak on the stressed word for clearer melody.';
+      } else if (score >= 70) {
+        feedback = 'Strong match! Fine-tune the height of the main stressed peak to lock in the target curve.';
+      } else {
+        feedback = 'Compare where the peak and ending turn sit on the target curve, then try again.';
+      }
+
+      return {
+        score: score,
+        mae: Math.round(mae * 1000) / 1000,
+        correlation: Math.round(corr * 1000) / 1000,
+        directionMatch: directionMatch,
+        targetTurn: targetTurn,
+        observedTurn: observedTurn,
+        band: band,
+        feedback: feedback
+      };
+    }
+
+    function scoreStressAndTurn(markedStressIndices, markedTurn, targetStressIndices, targetTurn) {
+      var marked = Array.isArray(markedStressIndices)
+        ? markedStressIndices.filter(function(n) { return Number.isInteger(n) && n >= 0; })
+        : [];
+      var target = Array.isArray(targetStressIndices)
+        ? targetStressIndices.filter(function(n) { return Number.isInteger(n) && n >= 0; })
+        : [];
+      var uniqueMarked = [];
+      for (var i = 0; i < marked.length; i++) {
+        if (uniqueMarked.indexOf(marked[i]) === -1) uniqueMarked.push(marked[i]);
+      }
+      var hits = 0;
+      for (var j = 0; j < uniqueMarked.length; j++) {
+        if (target.indexOf(uniqueMarked[j]) !== -1) hits++;
+      }
+      var extras = Math.max(0, uniqueMarked.length - hits);
+      var denom = Math.max(1, target.length);
+      var recall = hits / denom;
+      var penalty = extras * 0.25;
+      var stressScore = Math.max(0, Math.min(100, Math.round((recall - penalty) * 100)));
+      var stressCorrect = hits === target.length && extras === 0 && target.length > 0;
+
+      var normMarkedTurn = String(markedTurn || '').toLowerCase();
+      var normTargetTurn = String(targetTurn || '').toLowerCase();
+      var turnCorrect = normMarkedTurn === normTargetTurn;
+      var turnScore = turnCorrect ? 100 : 0;
+
+      var score = Math.round(stressScore * 0.6 + turnScore * 0.4);
+      var passed = score >= 80 && turnCorrect && hits > 0;
+      var feedback;
+      if (stressCorrect && turnCorrect) {
+        feedback = 'Spot on! You placed both the primary word stress and the ending intonation turn accurately.';
+      } else if (stressCorrect && !turnCorrect) {
+        feedback = 'Great stress placement! Check the ending turn: this intent uses a "' + normTargetTurn + '" cadence.';
+      } else if (!stressCorrect && turnCorrect) {
+        feedback = 'Right ending intonation turn! Adjust which word(s) carry the main pitch peak to spotlight the key meaning.';
+      } else {
+        feedback = 'Re-read the speaker intent: identify the single most contrasted word and whether the ending lifts, falls, steps, or stays flat.';
+      }
+
+      return {
+        score: score,
+        stressScore: stressScore,
+        turnScore: turnScore,
+        stressCorrect: stressCorrect,
+        turnCorrect: turnCorrect,
+        passed: passed,
+        feedback: feedback,
+        expectedStressIndices: target.slice(),
+        expectedTurn: normTargetTurn
+      };
+    }
+
+    function buildPredictedContour(tokenCount, markedStressIndices, markedTurn) {
+      var count = Math.max(2, Number(tokenCount) || 4);
+      var marked = Array.isArray(markedStressIndices) ? markedStressIndices : [];
+      var turn = String(markedTurn || 'falling').toLowerCase();
+      var pts = [];
+      var steps = 16;
+      for (var i = 0; i < steps; i++) {
+        var u = i / (steps - 1);
+        var base = 0.46;
+        if (turn === 'rising') {
+          base = 0.42 + Math.pow(u, 2.2) * 0.48;
+        } else if (turn === 'falling') {
+          base = 0.50 - Math.pow(u, 1.8) * 0.28;
+        } else if (turn === 'rise-fall') {
+          base = 0.44 + Math.sin(u * Math.PI) * 0.24 - u * 0.14;
+        } else if (turn === 'stepped') {
+          base = u < 0.75 ? (0.44 + ((i % 4) * 0.06)) : (0.50 - (u - 0.75) * 1.15);
+        } else if (turn === 'flat') {
+          base = 0.49 - u * 0.03;
+        }
+        // Add peaks over marked stressed words (unless flat sarcasm)
+        if (turn !== 'flat') {
+          for (var m = 0; m < marked.length; m++) {
+            var center = (marked[m] + 0.5) / count;
+            var dist = Math.abs(u - center);
+            if (dist < 0.16) {
+              base += (1 - dist / 0.16) * 0.32;
+            }
+          }
+        }
+        pts.push(Math.round(Math.max(0.12, Math.min(0.96, base)) * 100) / 100);
+      }
+      return pts;
+    }
+
+    function synthesizeModelContour(patternOrText, length) {
+      var n = Number.isInteger(length) && length >= 16 ? length : 56;
+      var matched = null;
+      if (typeof patternOrText === 'string') {
+        for (var i = 0; i < INTONATION_PATTERNS.length; i++) {
+          if (INTONATION_PATTERNS[i].id === patternOrText) {
+            matched = INTONATION_PATTERNS[i].points;
+            break;
+          }
+        }
+        if (!matched) {
+          var trimmed = patternOrText.trim();
+          if (/\?$/.test(trimmed)) {
+            if (/^(who|what|where|when|why|how|c\u00F3mo|qu\u00E9|d\u00F3nde|comment|kijan|wie|qual)\b/i.test(trimmed)) {
+              matched = INTONATION_PATTERNS[2].points; // wh_question
+            } else {
+              matched = INTONATION_PATTERNS[1].points; // yesno
+            }
+          } else if (/!$/.test(trimmed)) {
+            matched = INTONATION_PATTERNS[4].points; // exclamation
+          }
+        }
+      } else if (Array.isArray(patternOrText) && patternOrText.length >= 2) {
+        matched = patternOrText;
+      }
+      if (matched) {
+        var res = resampleContour(matched, n);
+        return res.map(function(p) { return Math.round(125 + Math.max(0, Math.min(1, p)) * 135); });
+      }
+      var seed = seedHash(String(patternOrText || 'model'));
+      var phase = ((seed % 100) / 100) * Math.PI * 0.4;
+      var curve = [];
+      for (var c = 0; c < n; c++) {
+        var u = c / Math.max(1, n - 1);
+        var hz = 160 + 40 * Math.sin(u * Math.PI * 0.9) + 14 * Math.sin(u * Math.PI * 3.2 + phase);
+        curve.push(Math.round(hz));
+      }
+      return curve;
+    }
+
+    function computeDeliverySteadiness(pauseEvents, syllableIntervals, volumeHistory) {
+      var pauses = Array.isArray(pauseEvents) ? pauseEvents : [];
+      var sylls = Array.isArray(syllableIntervals) ? syllableIntervals : [];
+      var vols = Array.isArray(volumeHistory) ? volumeHistory : [];
+
+      var normalPauses = 0, extendedPauses = 0, blocks = 0;
+      for (var pi = 0; pi < pauses.length; pi++) {
+        var pe = pauses[pi];
+        if (!pe || typeof pe !== 'object') continue;
+        if (pe.type === 'normal') normalPauses++;
+        else if (pe.type === 'extended') extendedPauses++;
+        else if (pe.type === 'block') blocks++;
+      }
+      var pauseScore = Math.max(0, Math.min(100, 100 - (extendedPauses * 15) - (blocks * 30)));
+
+      var syllCV = 0;
+      if (sylls.length > 3) {
+        var sMean = 0;
+        for (var si = 0; si < sylls.length; si++) sMean += Number(sylls[si]) || 0;
+        sMean /= sylls.length;
+        var sVar = 0;
+        for (var si2 = 0; si2 < sylls.length; si2++) {
+          var d = (Number(sylls[si2]) || 0) - sMean;
+          sVar += d * d;
+        }
+        sVar /= sylls.length;
+        syllCV = sMean > 0 ? Math.sqrt(sVar) / sMean : 1;
+      }
+      var rhythmScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(syllCV, 1)) * 100)));
+
+      var volScore = 50;
+      if (vols.length > 10) {
+        var vRecent = vols.slice(-90);
+        var vMean = 0;
+        for (var vi = 0; vi < vRecent.length; vi++) vMean += Number(vRecent[vi]) || 0;
+        vMean /= vRecent.length;
+        var vVariance = 0;
+        for (var vi2 = 0; vi2 < vRecent.length; vi2++) {
+          var vd = (Number(vRecent[vi2]) || 0) - vMean;
+          vVariance += vd * vd;
+        }
+        vVariance /= vRecent.length;
+        var vCV = vMean !== 0 ? Math.sqrt(vVariance) / Math.abs(vMean) : 0;
+        volScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(vCV, 1)) * 100)));
+      }
+
+      var composite = Math.round(pauseScore * 0.35 + rhythmScore * 0.4 + volScore * 0.25);
+      var stars = composite >= 85 ? 5 : composite >= 70 ? 4 : composite >= 55 ? 3 : composite >= 40 ? 2 : 1;
+      var starLabels = ['', 'Just getting started', 'Finding a rhythm', 'Fairly steady', 'Smooth & steady', 'Very smooth & steady'];
+      return {
+        composite: composite,
+        stars: stars,
+        starLabel: starLabels[stars] || '',
+        pauseScore: pauseScore,
+        rhythmScore: rhythmScore,
+        volScore: volScore,
+        normalPauses: normalPauses,
+        extendedPauses: extendedPauses,
+        blocks: blocks,
+        syllCV: syllCV
+      };
+    }
+
+    function getChallengeById(challengeId) {
+      for (var i = 0; i < PROSODY_CHALLENGES.length; i++) {
+        if (PROSODY_CHALLENGES[i].id === challengeId) return PROSODY_CHALLENGES[i];
+      }
+      return null;
+    }
+
+    function evaluateChallengeAnswer(challengeId, chosenOptionId) {
+      var ch = getChallengeById(challengeId);
+      if (!ch || !Array.isArray(ch.options)) {
+        return { valid: false, correct: false, chosenOptionId: chosenOptionId, correctOptionId: null, feedback: 'Unknown challenge.', explain: '', misconception: '' };
+      }
+      var correctOpt = ch.options[ch.correct] || ch.options[0];
+      var chosen = null;
+      for (var i = 0; i < ch.options.length; i++) {
+        if (ch.options[i].id === chosenOptionId) {
+          chosen = ch.options[i];
+          break;
+        }
+      }
+      if (!chosen) {
+        return { valid: false, correct: false, chosenOptionId: chosenOptionId, correctOptionId: correctOpt ? correctOpt.id : null, feedback: 'Select an option first.', explain: '', misconception: '' };
+      }
+      var isCorrect = correctOpt && chosen.id === correctOpt.id;
+      return {
+        valid: true,
+        correct: isCorrect,
+        chosenOptionId: chosen.id,
+        correctOptionId: correctOpt ? correctOpt.id : null,
+        feedback: isCorrect ? (chosen.explain || '') : (chosen.whyNot || ''),
+        explain: correctOpt ? (correctOpt.explain || '') : '',
+        misconception: isCorrect ? '' : (chosen.whyNot || '')
+      };
+    }
+
+    function sanitizeToolData(raw) {
+      var d = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+      var safeStrArr = function(v) {
+        if (!Array.isArray(v)) return [];
+        var out = [];
+        for (var i = 0; i < v.length; i++) {
+          if (typeof v[i] === 'string' && v[i].length > 0 && out.indexOf(v[i]) === -1) out.push(v[i]);
+        }
+        return out;
+      };
+      var rawRange = (d.sessionPitchRange && typeof d.sessionPitchRange === 'object' && !Array.isArray(d.sessionPitchRange)) ? d.sessionPitchRange : null;
+      var pitchRange = (rawRange && typeof rawRange.min === 'number' && isFinite(rawRange.min) && typeof rawRange.max === 'number' && isFinite(rawRange.max))
+        ? { min: rawRange.min, max: rawRange.max }
+        : { min: 9999, max: 0 };
+      var rawIq = (d.prosodyHunt && typeof d.prosodyHunt === 'object' && !Array.isArray(d.prosodyHunt)) ? d.prosodyHunt : {};
+      var safeLog = Array.isArray(rawIq.log) ? rawIq.log.filter(function(entry) {
+        return entry && typeof entry === 'object' && !Array.isArray(entry) && typeof entry.p === 'number' && isFinite(entry.p) && typeof entry.c === 'number' && isFinite(entry.c) && typeof entry.v === 'number' && isFinite(entry.v);
+      }).slice(-8) : [];
+      var clampNum = function(v, mn, mx, fb) {
+        return (typeof v === 'number' && isFinite(v)) ? Math.max(mn, Math.min(mx, v)) : fb;
+      };
+      return {
+        warmUpsCompleted: (typeof d.warmUpsCompleted === 'number' && isFinite(d.warmUpsCompleted) && d.warmUpsCompleted >= 0) ? Math.floor(d.warmUpsCompleted) : 0,
+        phrasesAnalyzed: (typeof d.phrasesAnalyzed === 'number' && isFinite(d.phrasesAnalyzed) && d.phrasesAnalyzed >= 0) ? Math.floor(d.phrasesAnalyzed) : 0,
+        achievedSmoothPacing: d.achievedSmoothPacing === true,
+        sessionStartTime: (typeof d.sessionStartTime === 'number' && isFinite(d.sessionStartTime)) ? d.sessionStartTime : null,
+        totalPhrases: (typeof d.totalPhrases === 'number' && isFinite(d.totalPhrases) && d.totalPhrases >= 0) ? Math.floor(d.totalPhrases) : 0,
+        cachedExercises: (d.cachedExercises && typeof d.cachedExercises === 'object' && !Array.isArray(d.cachedExercises)) ? d.cachedExercises : null,
+        bestSteadiness: clampNum(d.bestSteadiness, 0, 100, 0),
+        bestPacingScore: clampNum(d.bestPacingScore, 0, 100, 0),
+        sessionWpmReadings: Array.isArray(d.sessionWpmReadings) ? d.sessionWpmReadings.filter(function(x) { return typeof x === 'number' && isFinite(x) && x >= 0; }) : [],
+        sessionPitchRange: pitchRange,
+        sessionTimeSpent: (typeof d.sessionTimeSpent === 'number' && isFinite(d.sessionTimeSpent) && d.sessionTimeSpent >= 0) ? d.sessionTimeSpent : 0,
+        fluencySessions: Array.isArray(d.fluencySessions) ? d.fluencySessions.filter(function(s) { return s && typeof s === 'object' && !Array.isArray(s) && typeof s.fluencyStars === 'number' && isFinite(s.fluencyStars); }) : [],
+        completedWarmupIds: safeStrArr(d.completedWarmupIds),
+        completedPhraseKeys: safeStrArr(d.completedPhraseKeys),
+        solvedChallengeIds: safeStrArr(d.solvedChallengeIds),
+        masteredStudioIds: safeStrArr(d.masteredStudioIds),
+        prosodyHunt: {
+          pitch: clampNum(rawIq.pitch, 0, 200, 100),
+          pace: clampNum(rawIq.pace, 0.5, 2.0, 1.0),
+          volume: clampNum(rawIq.volume, -12, 12, 0),
+          hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+          stuckRevealed: rawIq.stuckRevealed === true,
+          understood: rawIq.understood === true,
+          explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+          log: safeLog
+        }
+      };
+    }
+
+    return {
+      LANGUAGES: LANGUAGES,
+      LANGUAGE_PHRASE_BANK: LANGUAGE_PHRASE_BANK,
+      INTONATION_PATTERNS: INTONATION_PATTERNS,
+      CONTOUR_STUDIO_DRILLS: CONTOUR_STUDIO_DRILLS,
+      PROSODY_CHALLENGES: PROSODY_CHALLENGES,
+      WARMUPS: WARMUPS,
+      formatTemplate: oratoryFmt,
+      seedHash: seedHash,
+      shuffleOptionsSeeded: shuffleOptionsSeeded,
+      resolveLanguageCode: resolveLanguageCode,
+      getLanguagePhrases: getLanguagePhrases,
+      getLanguagePhrase: getLanguagePhrase,
+      classifyPitchZone: classifyPitchZone,
+      classifyPacing: classifyPacing,
+      resampleContour: resampleContour,
+      detectContourTurn: detectContourTurn,
+      scoreProsodyContour: scoreProsodyContour,
+      scoreStressAndTurn: scoreStressAndTurn,
+      buildPredictedContour: buildPredictedContour,
+      synthesizeModelContour: synthesizeModelContour,
+      computeDeliverySteadiness: computeDeliverySteadiness,
+      getChallengeById: getChallengeById,
+      evaluateChallengeAnswer: evaluateChallengeAnswer,
+      sanitizeToolData: sanitizeToolData
+    };
+  })();
+
+  if (typeof window !== 'undefined') {
+    window.OratoryPure = ORATORY_ENGINE;
+  }
+
+  // ═══════════════════════════════════════════
   // Tool Registration
   // ═══════════════════════════════════════════
 
@@ -2006,6 +3848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
     desc: 'Real-time speech prosody visualization \u2014 pitch, pacing, volume & intonation practice',
     color: 'violet',
     category: 'science',
+    _engine: ORATORY_ENGINE,
     questHooks: [
       { id: 'complete_warm_up', label: 'Complete a vocal warm-up exercise', icon: '\uD83C\uDFA4', check: function(d) { return (d.warmUpsCompleted || 0) >= 1; }, progress: function(d) { return (d.warmUpsCompleted || 0) + '/1'; } },
       { id: 'practice_5_phrases', label: 'Practice 5 phrases with prosody feedback', icon: '\uD83D\uDCCA', check: function(d) { return (d.phrasesAnalyzed || 0) >= 5; }, progress: function(d) { return (d.phrasesAnalyzed || 0) + '/5'; } },
@@ -2020,7 +3863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast;
-      var t = __alloT;
+      var t = (ctx.t && function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; }) || __alloT;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var announceToSR = ctx.announceToSR;
       var awardStemXP = ctx.awardXP;
@@ -2034,27 +3877,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
-      var isContrast = !!ctx.isContrast;
-      var isDark = !!ctx.isDark || isContrast;
-      var reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var isEmbedded = !!ctx.embedded;
+      var reducedMotion = !!(ctx.reduceMotion || (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
       var canvasNarrate = ctx.canvasNarrate;
 
       return (function() {
-        var d = (labToolData && labToolData.oratory) || {};
+        var d = ORATORY_ENGINE.sanitizeToolData(labToolData && typeof labToolData === 'object' ? labToolData.oratory : null);
         var upd = function(key, val) {
           if (typeof setLabToolData !== 'function') return;
           var _k = {};
           _k[key] = val;
           setLabToolData(function(prev) {
-            var base = (prev && typeof prev === 'object') ? prev : {};
-            return Object.assign({}, base, { oratory: Object.assign({}, base.oratory || {}, _k) });
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var prevOr = (base.oratory && typeof base.oratory === 'object' && !Array.isArray(base.oratory)) ? base.oratory : {};
+            return Object.assign({}, base, { oratory: Object.assign({}, prevOr, _k) });
           });
         };
         var updAll = function(patch) {
           if (typeof setLabToolData !== 'function') return;
           setLabToolData(function(prev) {
-            var base = (prev && typeof prev === 'object') ? prev : {};
-            return Object.assign({}, base, { oratory: Object.assign({}, base.oratory || {}, patch) });
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var prevOr = (base.oratory && typeof base.oratory === 'object' && !Array.isArray(base.oratory)) ? base.oratory : {};
+            return Object.assign({}, base, { oratory: Object.assign({}, prevOr, patch) });
           });
         };
 
@@ -2067,19 +3913,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           }, { debounce: 800 });
         }
 
-        // ── Persisted state (via ctx.update) ──
-        var warmUpsCompleted = d.warmUpsCompleted || 0;
-        var phrasesAnalyzed = d.phrasesAnalyzed || 0;
-        var achievedSmoothPacing = d.achievedSmoothPacing || false;
-        var sessionStartTime = d.sessionStartTime || null;
-        var totalPhrases = d.totalPhrases || 0;
-        var cachedExercises = d.cachedExercises || null;
-        var bestSteadiness = d.bestSteadiness || 0;
-        var bestPacingScore = d.bestPacingScore || 0;
-        var sessionWpmReadings = d.sessionWpmReadings || [];
-        var sessionPitchRange = d.sessionPitchRange || { min: 9999, max: 0 };
-        var sessionTimeSpent = d.sessionTimeSpent || 0;
-        var fluencySessions = d.fluencySessions || [];
+        // ── Persisted state (type-hardened via ORATORY_ENGINE.sanitizeToolData) ──
+        var warmUpsCompleted = d.warmUpsCompleted;
+        var phrasesAnalyzed = d.phrasesAnalyzed;
+        var achievedSmoothPacing = d.achievedSmoothPacing;
+        var sessionStartTime = d.sessionStartTime;
+        var totalPhrases = d.totalPhrases;
+        var cachedExercises = d.cachedExercises;
+        var bestSteadiness = d.bestSteadiness;
+        var bestPacingScore = d.bestPacingScore;
+        var sessionWpmReadings = d.sessionWpmReadings;
+        var sessionPitchRange = d.sessionPitchRange;
+        var sessionTimeSpent = d.sessionTimeSpent;
+        var fluencySessions = d.fluencySessions;
+        var completedWarmupIds = d.completedWarmupIds;
+        var completedPhraseKeys = d.completedPhraseKeys;
+        var solvedChallengeIds = d.solvedChallengeIds;
+        var masteredStudioIds = d.masteredStudioIds;
 
         // ── Ephemeral state (local React state) ──
         var tabState = React.useState('visualizer');
@@ -2365,6 +4215,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var setFluencyDetails = fluencyDetailsState[1];
 
         var fluencyChartCanvasRef = React.useRef(null);
+
+        // ════════════════════════════════════════
+        // Enhancement 5: No-Mic Visual Contour Studio, Prosody Challenges & Offline Multilingual State
+        // ════════════════════════════════════════
+        var studioDrillIdxState = React.useState(0);
+        var studioDrillIdx = studioDrillIdxState[0];
+        var setStudioDrillIdx = studioDrillIdxState[1];
+
+        var studioMarkedStressState = React.useState([]);
+        var studioMarkedStress = studioMarkedStressState[0];
+        var setStudioMarkedStress = studioMarkedStressState[1];
+
+        var studioMarkedTurnState = React.useState('');
+        var studioMarkedTurn = studioMarkedTurnState[0];
+        var setStudioMarkedTurn = studioMarkedTurnState[1];
+
+        var studioResultState = React.useState(null);
+        var studioResult = studioResultState[0];
+        var setStudioResult = studioResultState[1];
+
+        var studioLiveScoreState = React.useState(null);
+        var studioLiveScore = studioLiveScoreState[0];
+        var setStudioLiveScore = studioLiveScoreState[1];
+
+        var challengeCatState = React.useState('all');
+        var challengeCat = challengeCatState[0];
+        var setChallengeCat = challengeCatState[1];
+
+        var challengeIdState = React.useState(ORATORY_ENGINE.PROSODY_CHALLENGES[0].id);
+        var challengeId = challengeIdState[0];
+        var setChallengeId = challengeIdState[1];
+
+        var challengeSeedState = React.useState(1);
+        var challengeSeed = challengeSeedState[0];
+        var setChallengeSeed = challengeSeedState[1];
+
+        var challengeSelectedOptState = React.useState(null);
+        var challengeSelectedOpt = challengeSelectedOptState[0];
+        var setChallengeSelectedOpt = challengeSelectedOptState[1];
+
+        var challengeSubmissionState = React.useState(null);
+        var challengeSubmission = challengeSubmissionState[0];
+        var setChallengeSubmission = challengeSubmissionState[1];
+
+        var multiPhraseIdxState = React.useState(0);
+        var multiPhraseIdx = multiPhraseIdxState[0];
+        var setMultiPhraseIdx = multiPhraseIdxState[1];
+
+        var multiMarkedStressState = React.useState([]);
+        var multiMarkedStress = multiMarkedStressState[0];
+        var setMultiMarkedStress = multiMarkedStressState[1];
+
+        var multiStressCheckState = React.useState(null);
+        var multiStressCheck = multiStressCheckState[0];
+        var setMultiStressCheck = multiStressCheckState[1];
+
+        var multiContourScoreState = React.useState(null);
+        var multiContourScore = multiContourScoreState[0];
+        var setMultiContourScore = multiContourScoreState[1];
 
         // ════════════════════════════════════════
         // Audio Engine: Start / Stop
@@ -3013,16 +4922,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           syllableIntervalsRef.current = [];
           syllableCountRef.current = 0;
           syllableTimestampsRef.current = [];
-          if (addToast) addToast('Session reset.', 'info');
+          if (addToast) addToast(t('stem.oratory.toast_session_reset', 'Session reset.'), 'info');
           if (announceToSR) announceToSR(__alloT('stem.oratory.sr_session_data_cleared', 'Session data cleared.'));
         }
 
         // ════════════════════════════════════
         // Model Prosody: TTS demo + trace
         // ════════════════════════════════════
-        function playModelPhrase(text, voice) {
+        function playModelPhrase(text, voice, customContour) {
           if (!callTTS) {
-            if (addToast) addToast('TTS not available.', 'error');
+            if (addToast) addToast(t('stem.oratory.toast_tts_unavailable', 'TTS not available.'), 'error');
             return;
           }
           setTtsLoading(true);
@@ -3032,34 +4941,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             .then(function(audioUrl) {
               setTtsLoading(false);
               if (!audioUrl) {
-                var appMuted = false;
-                try { appMuted = (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; } catch (e) {}
-                if (addToast) addToast(appMuted ? 'Sound is muted. Unmute the app to hear the model phrase.' : 'The model phrase could not be read aloud right now.', appMuted ? 'info' : 'error');
+                var appMuted = isOratoryMuted();
+                if (addToast) addToast(
+                  appMuted
+                    ? t('stem.oratory.toast_model_muted', 'Sound is muted. Unmute the app to hear the model phrase.')
+                    : t('stem.oratory.toast_model_unavailable', 'The model phrase could not be read aloud right now.'),
+                  appMuted ? 'info' : 'error'
+                );
                 return;
               }
               setModelAudioUrl(audioUrl);
 
-              // Generate a synthetic model curve (a smooth pitch contour)
-              // This simulates what ideal prosody looks like for the phrase
-              var wordCount = text.split(/\s+/).length;
+              // Deterministic model prosody contour via ORATORY_ENGINE
+              var wordCount = String(text || '').trim().split(/\s+/).length;
               var points = Math.max(50, wordCount * 8);
-              var curve = [];
-              for (var ci = 0; ci < points; ci++) {
-                var t_norm = ci / points;
-                // Natural speech has slight rise at start, peak at ~60%, gentle fall at end
-                var basePitch = 160;
-                var contour = basePitch + 40 * Math.sin(t_norm * Math.PI * 0.9) + 15 * Math.sin(t_norm * Math.PI * 3.5);
-                // Add slight variation
-                contour += (Math.random() - 0.5) * 8;
-                curve.push(Math.round(contour));
-              }
+              var curve = ORATORY_ENGINE.synthesizeModelContour(customContour || text, points);
               setModelCurve(curve);
               if (announceToSR) announceToSR(__alloT('stem.oratory.sr_model_phrase_playing_listen_to_the_rhythm_and_pit', 'Model phrase playing. Listen to the rhythm and pitch, then try to match it.'));
             })
             .catch(function(err) {
               setTtsLoading(false);
               console.warn('[Oratory] TTS error:', err);
-              if (addToast) addToast('Error generating speech model.', 'error');
+              if (addToast) addToast(t('stem.oratory.toast_speech_model_error', 'Error generating speech model.'), 'error');
             });
         }
 
@@ -3068,7 +4971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ════════════════════════════════════
         function generateExercises(type) {
           if (!callGemini) {
-            if (addToast) addToast('AI not available. Using built-in exercises.', 'info');
+            if (addToast) addToast(t('stem.oratory.toast_ai_builtin', 'AI not available. Using built-in exercises.'), 'info');
             return;
           }
           setAiLoading(true);
@@ -3110,14 +5013,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               } catch(e) {
                 console.warn('[Oratory] AI parse error:', e);
               }
-              if (addToast) addToast('Could not parse AI exercises. Using built-in ones.', 'info');
+              if (addToast) addToast(t('stem.oratory.toast_ai_parse_fallback', 'Could not parse AI exercises. Using built-in ones.'), 'info');
               setAiExercises(null);
             })
             .catch(function(err) {
               if (!oratoryMountedRef.current) return;
               setAiLoading(false);
               console.warn('[Oratory] AI error:', err);
-              if (addToast) addToast('AI generation failed. Using built-in exercises.', 'info');
+              if (addToast) addToast(t('stem.oratory.toast_ai_failed_fallback', 'AI generation failed. Using built-in exercises.'), 'info');
               setAiExercises(null);
             });
         }
@@ -3130,17 +5033,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ════════════════════════════════════
-        // Complete a phrase analysis
+        // Complete a phrase analysis (deduped XP per unique phrase/exercise key)
         // ════════════════════════════════════
-        function recordPhraseCompletion() {
-          var newCount = (phrasesAnalyzed || 0) + 1;
-          var updates = { phrasesAnalyzed: newCount, totalPhrases: (totalPhrases || 0) + 1 };
-          // Check smooth pacing quest
+        function recordPhraseCompletion(phraseKeyArg) {
+          var keyStr = (typeof phraseKeyArg === 'string' && phraseKeyArg.trim())
+            ? phraseKeyArg.trim()
+            : ((exerciseType || activeTab || 'phrase') + ':' + exerciseIndex + ':' + emotionIndex + ':' + emphasisWord);
+          var isNewPhrase = completedPhraseKeys.indexOf(keyStr) === -1;
+          var nextKeys = isNewPhrase ? completedPhraseKeys.concat([keyStr]) : completedPhraseKeys;
+          var newAnalyzed = isNewPhrase ? Math.max((phrasesAnalyzed || 0) + 1, nextKeys.length) : (phrasesAnalyzed || 0);
+          var newTotal = (totalPhrases || 0) + 1;
+          var updates = {
+            phrasesAnalyzed: newAnalyzed,
+            totalPhrases: newTotal,
+            completedPhraseKeys: nextKeys
+          };
+          // Check smooth pacing quest (deduped via !achievedSmoothPacing)
           if (currentWpm >= 90 && currentWpm <= 160 && !achievedSmoothPacing) {
             updates.achievedSmoothPacing = true;
             if (stemCelebrate) stemCelebrate();
-            if (addToast) addToast('Achievement unlocked: Smooth Pacing!', 'success');
-            if (awardStemXP) awardStemXP('oratory_smooth_pacing', 25, 'Achieved smooth pacing rating');
+            if (addToast) addToast(t('stem.oratory.toast_smooth_pacing', 'Achievement unlocked: Smooth Pacing!'), 'success');
+            if (awardStemXP) awardStemXP('oratory', 25, 'Achieved smooth pacing rating');
           }
           // Track WPM readings
           if (currentWpm > 0) {
@@ -3148,40 +5061,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             updates.sessionWpmReadings = readings;
           }
           updAll(updates);
-          if (awardStemXP) awardStemXP('oratory_phrase', 5, 'Practiced a phrase with prosody feedback');
-          if (announceToSR) announceToSR('Phrase recorded. Total phrases analyzed: ' + newCount);
+          if (isNewPhrase) {
+            if (awardStemXP) awardStemXP('oratory', 5, 'Practiced unique phrase: ' + keyStr);
+            if (addToast) addToast(t('stem.oratory.toast_phrase_recorded', 'Phrase mastery recorded! +5 XP'), 'success');
+          } else {
+            if (addToast) addToast(t('stem.oratory.toast_phrase_repeat', 'Practiced again! Try a new phrase or pattern to earn more XP.'), 'info');
+          }
+          if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_phrase_recorded_count', 'Phrase recorded. Total unique phrases analyzed: {1}'), [newAnalyzed]));
         }
         recordPhraseCompletionRef.current = recordPhraseCompletion;
 
         // ════════════════════════════════════
-        // Complete a warm-up
+        // Complete a warm-up (deduped XP per unique warm-up ID)
         // ════════════════════════════════════
         function completeWarmup(warmupId) {
-          var newCount = (warmUpsCompleted || 0) + 1;
-          upd('warmUpsCompleted', newCount);
+          var wid = String(warmupId || 'warmup');
+          var isNewWarmup = completedWarmupIds.indexOf(wid) === -1;
           setWarmupActive(null);
-          if (awardStemXP) awardStemXP('oratory_warmup', 10, 'Completed vocal warm-up: ' + warmupId);
-          if (newCount === 1 && stemCelebrate) stemCelebrate();
-          if (addToast) addToast('Warm-up complete! Great job warming up your voice.', 'success');
-          if (announceToSR) announceToSR('Warm-up exercise completed. Total warm-ups: ' + newCount);
+          if (isNewWarmup) {
+            var nextIds = completedWarmupIds.concat([wid]);
+            var newCount = Math.max((warmUpsCompleted || 0) + 1, nextIds.length);
+            updAll({ warmUpsCompleted: newCount, completedWarmupIds: nextIds });
+            if (awardStemXP) awardStemXP('oratory', 10, 'Completed vocal warm-up: ' + wid);
+            if (newCount === 1 && stemCelebrate) stemCelebrate();
+            if (addToast) addToast(t('stem.oratory.toast_warmup_done', 'Warm-up complete! Great job warming up your voice.'), 'success');
+            if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_warmup_completed_count', 'Warm-up exercise completed. Total unique warm-ups: {1}'), [newCount]));
+          } else {
+            if (addToast) addToast(t('stem.oratory.toast_warmup_repeat', 'Warm-up practiced again! XP already earned for this warm-up.'), 'info');
+            if (announceToSR) announceToSR(t('stem.oratory.sr_warmup_repeat', 'Warm-up practiced again.'));
+          }
         }
 
         // ════════════════════════════════════
-        // Multilingual: Model then Match flow
+        // No-Mic Visual Contour Studio & Prosody Challenge mastery (deduped XP)
         // ════════════════════════════════════
+        function recordStudioMastery(drillId) {
+          var sid = String(drillId || '');
+          if (!sid) return false;
+          var isNew = masteredStudioIds.indexOf(sid) === -1;
+          if (!isNew) return false;
+          var nextStudio = masteredStudioIds.concat([sid]);
+          var phraseTag = 'studio:' + sid;
+          var isNewPhrase = completedPhraseKeys.indexOf(phraseTag) === -1;
+          var nextPhraseKeys = isNewPhrase ? completedPhraseKeys.concat([phraseTag]) : completedPhraseKeys;
+          var nextAnalyzed = isNewPhrase ? Math.max((phrasesAnalyzed || 0) + 1, nextPhraseKeys.length) : (phrasesAnalyzed || 0);
+          updAll({
+            masteredStudioIds: nextStudio,
+            completedPhraseKeys: nextPhraseKeys,
+            phrasesAnalyzed: nextAnalyzed,
+            totalPhrases: (totalPhrases || 0) + 1
+          });
+          if (awardStemXP) awardStemXP('oratory', 8, 'Mastered visual contour drill: ' + sid);
+          if (stemCelebrate && nextStudio.length === 1) stemCelebrate();
+          if (addToast) addToast(t('stem.oratory.toast_studio_mastered', 'Contour mastered! +8 XP'), 'success');
+          return true;
+        }
+
+        function recordChallengeMastery(chId) {
+          var cid = String(chId || '');
+          if (!cid) return false;
+          var isNew = solvedChallengeIds.indexOf(cid) === -1;
+          if (!isNew) return false;
+          var nextSolved = solvedChallengeIds.concat([cid]);
+          upd('solvedChallengeIds', nextSolved);
+          if (awardStemXP) awardStemXP('oratory', 12, 'Solved prosody challenge: ' + cid);
+          if (stemCelebrate && (nextSolved.length === 1 || nextSolved.length === ORATORY_ENGINE.PROSODY_CHALLENGES.length)) stemCelebrate();
+          if (addToast) addToast(t('stem.oratory.toast_challenge_mastered', 'Prosody challenge solved! +12 XP'), 'success');
+          return true;
+        }
+
+        // ════════════════════════════════════
+        // Multilingual: Offline 15-Language Bank + Optional AI + Model/Match flow
+        // ════════════════════════════════════
+        function selectOfflineMultiPhrase(langCode, idx) {
+          var list = ORATORY_ENGINE.getLanguagePhrases(langCode);
+          if (!list.length) return null;
+          var safeIdx = ((idx % list.length) + list.length) % list.length;
+          var entry = list[safeIdx];
+          setMultiPhraseIdx(safeIdx);
+          setMultiPhrase(entry.text);
+          setMultiMarkedStress([]);
+          setMultiStressCheck(null);
+          setMultiContourScore(null);
+          setMultiModelCurve(ORATORY_ENGINE.synthesizeModelContour(entry.contour, 56));
+          setModelCurve(ORATORY_ENGINE.synthesizeModelContour(entry.contour, 56));
+          return entry;
+        }
+
         function generateMultiPhrase() {
-          var lang = customLang || LANGUAGES.find(function(l) { return l.code === selectedLang; });
-          var rawLangName = typeof lang === 'string' ? lang : (lang ? lang.name : 'English');
+          var matchedCode = customLang ? ORATORY_ENGINE.resolveLanguageCode(customLang) : selectedLang;
+          var langObj = LANGUAGES.find(function(l) { return l.code === (matchedCode || selectedLang); });
+          var rawLangName = customLang || (langObj ? langObj.name : 'English');
           var langName = String(rawLangName || 'English').replace(/[\r\n"`]+/g, ' ').trim().slice(0, 40) || 'English';
           if (customLang && typeof window !== 'undefined' && typeof window.safeRehearseCheck === 'function') {
             var safety = window.safeRehearseCheck(customLang);
             if (safety && safety.blocked) {
-              if (addToast) addToast('Please enter a language name to practice.', 'info');
+              if (addToast) addToast(t('stem.oratory.toast_enter_lang', 'Please enter a language name to practice.'), 'info');
               return;
             }
           }
+          var fallbackCode = matchedCode || selectedLang || 'en';
           if (!callGemini) {
-            setMultiPhrase('Hello, how are you today?');
+            var nextEntry = selectOfflineMultiPhrase(fallbackCode, multiPhraseIdx + 1);
+            if (customLang && !matchedCode && addToast) {
+              addToast(t('stem.oratory.toast_offline_lang_bank', 'Offline bank covers all 15 listed languages. Showing curated phrase — type any custom phrase directly in the box!'), 'info');
+            } else if (nextEntry && addToast) {
+              addToast(oratoryFmt(t('stem.oratory.toast_next_offline_phrase', 'Loaded curated {1} phrase.'), [langObj ? langObj.name : langName]), 'info');
+            }
             return;
           }
           setAiLoading(true);
@@ -3192,20 +5178,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               setAiLoading(false);
               var raw = typeof response === 'string' ? response : ((response && (response.text || response.output || response.response)) || '');
               var text = String(raw).trim();
-              setMultiPhrase(text || 'Hello, how are you today?');
+              if (text) {
+                setMultiPhrase(text);
+                setMultiMarkedStress([]);
+                setMultiStressCheck(null);
+                setMultiContourScore(null);
+                setMultiModelCurve(ORATORY_ENGINE.synthesizeModelContour(text, 56));
+              } else {
+                selectOfflineMultiPhrase(fallbackCode, multiPhraseIdx + 1);
+              }
             })
             .catch(function() {
               if (!oratoryMountedRef.current) return;
               setAiLoading(false);
-              setMultiPhrase('Hello, how are you today?');
+              selectOfflineMultiPhrase(fallbackCode, multiPhraseIdx + 1);
             });
         }
 
-        function modelMultiPhrase() {
-          if (!multiPhrase) return;
+        function modelMultiPhrase(customText, customContour) {
+          var speakText = (typeof customText === 'string' && customText.trim()) ? customText.trim() : multiPhrase;
+          if (!speakText) return;
           setMultiMode('modeling');
-          playModelPhrase(multiPhrase);
-          setMultiModelCurve(modelCurve);
+          var contourCurve = ORATORY_ENGINE.synthesizeModelContour(customContour || speakText, 56);
+          setMultiModelCurve(contourCurve);
+          setModelCurve(contourCurve);
+          playModelPhrase(speakText, 'Kore', customContour || speakText);
           // After a delay, switch to "your turn"
           if (multiTimerRef.current) clearTimeout(multiTimerRef.current);
           multiTimerRef.current = setTimeout(function() {
@@ -3222,6 +5219,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         function startPlayback(idx) {
           var rec = savedRecordings[idx];
           if (!rec) return;
+          if (isOratoryMuted()) {
+            if (addToast) addToast(t('stem.oratory.toast_playback_muted', 'Sound is muted. Unmute the app to play back your recording.'), 'info');
+            return;
+          }
 
           // Stop any current playback
           stopPlayback();
@@ -3274,6 +5275,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         function resumePlayback() {
+          if (isOratoryMuted()) {
+            if (addToast) addToast(t('stem.oratory.toast_playback_muted', 'Sound is muted. Unmute the app to play back your recording.'), 'info');
+            return;
+          }
           if (playbackAudioRef.current && playbackAudioRef.current.paused) {
             playbackAudioRef.current.play().catch(function() {});
             setPlaybackStatus('playing');
@@ -3315,98 +5320,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ════════════════════════════════════
-        // Enhancement 4: Compute Fluency Score
+        // Enhancement 4: Compute Fluency Score (via ORATORY_ENGINE)
         // ════════════════════════════════════
         function computeFluencyScore() {
-          var pauseEvents = pauseEventsRef.current;
-          var syllIntervals = syllableIntervalsRef.current;
-          var volHist = volumeHistory.slice();
+          var res = ORATORY_ENGINE.computeDeliverySteadiness(
+            pauseEventsRef.current,
+            syllableIntervalsRef.current,
+            volumeHistory.slice()
+          );
 
-          // 1. Pause regularity score (0-100)
-          var normalPauses = 0, extendedPauses = 0, blocks = 0;
-          for (var pi = 0; pi < pauseEvents.length; pi++) {
-            if (pauseEvents[pi].type === 'normal') normalPauses++;
-            else if (pauseEvents[pi].type === 'extended') extendedPauses++;
-            else if (pauseEvents[pi].type === 'block') blocks++;
-          }
-          var totalPauses = pauseEvents.length || 1;
-          var pauseScore = Math.max(0, 100 - (extendedPauses * 15) - (blocks * 30));
-          pauseScore = Math.min(100, pauseScore);
-
-          // 2. Syllable rate consistency (CV)
-          var syllCV = 0;
-          if (syllIntervals.length > 3) {
-            var sMean = 0;
-            for (var si = 0; si < syllIntervals.length; si++) sMean += syllIntervals[si];
-            sMean /= syllIntervals.length;
-            var sVar = 0;
-            for (var si2 = 0; si2 < syllIntervals.length; si2++) sVar += (syllIntervals[si2] - sMean) * (syllIntervals[si2] - sMean);
-            sVar /= syllIntervals.length;
-            var sStd = Math.sqrt(sVar);
-            syllCV = sMean > 0 ? sStd / sMean : 1;
-          }
-          // Lower CV = better. CV < 0.3 = smooth, CV > 0.6 = cluttered
-          var rhythmScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(syllCV, 1)) * 100)));
-
-          // 3. Volume steadiness (reuse from volume meter)
-          var volScore = 50;
-          if (volHist.length > 10) {
-            var vRecent = volHist.slice(-90);
-            var vMean = 0;
-            for (var vi = 0; vi < vRecent.length; vi++) vMean += vRecent[vi];
-            vMean /= vRecent.length;
-            var vVariance = 0;
-            for (var vi2 = 0; vi2 < vRecent.length; vi2++) vVariance += (vRecent[vi2] - vMean) * (vRecent[vi2] - vMean);
-            vVariance /= vRecent.length;
-            var vStd = Math.sqrt(vVariance);
-            var vCV = vMean !== 0 ? vStd / Math.abs(vMean) : 0;
-            volScore = Math.max(0, Math.min(100, Math.round((1 - Math.min(vCV, 1)) * 100)));
-          }
-
-          // Composite: weighted average
-          var composite = Math.round(pauseScore * 0.35 + rhythmScore * 0.4 + volScore * 0.25);
-
-          // Star rating: 1-5
-          var stars = 1;
-          if (composite >= 85) stars = 5;
-          else if (composite >= 70) stars = 4;
-          else if (composite >= 55) stars = 3;
-          else if (composite >= 40) stars = 2;
-
-          // Integrity: these describe the MEASURED delivery steadiness (a
-          // loudness-envelope proxy), not the speaker's fluency/ability. The old
-          // clinical ladder ("Needs Support".."Fluent Speaker") over-claimed a
-          // diagnostic verdict from an amplitude-CV heuristic.
-          var starLabels = ['', 'Just getting started', 'Finding a rhythm', 'Fairly steady', 'Smooth & steady', 'Very smooth & steady'];
-
-          setFluencyScore(composite);
-          setFluencyStars(stars);
+          setFluencyScore(res.composite);
+          setFluencyStars(res.stars);
           setFluencyDetails({
-            pauseScore: pauseScore,
-            rhythmScore: rhythmScore,
-            volScore: volScore,
-            normalPauses: normalPauses,
-            extendedPauses: extendedPauses,
-            blocks: blocks,
-            syllCV: syllCV,
-            starLabel: starLabels[stars] || ''
+            pauseScore: res.pauseScore,
+            rhythmScore: res.rhythmScore,
+            volScore: res.volScore,
+            normalPauses: res.normalPauses,
+            extendedPauses: res.extendedPauses,
+            blocks: res.blocks,
+            syllCV: res.syllCV,
+            starLabel: res.starLabel
           });
 
           // Save to persisted fluency sessions
           var newSession = {
             timestamp: Date.now(),
-            fluencyStars: stars,
-            composite: composite,
-            pauseScore: pauseScore,
-            rhythmScore: rhythmScore,
-            volScore: volScore
+            fluencyStars: res.stars,
+            composite: res.composite,
+            pauseScore: res.pauseScore,
+            rhythmScore: res.rhythmScore,
+            volScore: res.volScore
           };
           var sessions = (fluencySessions || []).concat([newSession]);
           if (sessions.length > 20) sessions = sessions.slice(-20);
           upd('fluencySessions', sessions);
 
-          if (announceToSR) announceToSR('Fluency score calculated: ' + composite + ' percent, ' + stars + ' stars, ' + starLabels[stars]);
-          if (addToast) addToast('Fluency analyzed: ' + stars + ' stars - ' + starLabels[stars], 'success');
+          if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_fluency_score', 'Fluency score calculated: {1} percent, {2} stars, {3}'), [res.composite, res.stars, res.starLabel]));
+          if (addToast) addToast(oratoryFmt(t('stem.oratory.toast_fluency_analyzed', 'Fluency analyzed: {1} stars - {2}'), [res.stars, res.starLabel]), 'success');
         }
 
         // Draw fluency chart when sessions change
@@ -3476,8 +5426,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             '=== Oratory Lab Session Report ===',
             'Date: ' + new Date().toLocaleDateString(),
             '',
-            'Phrases practiced: ' + (totalPhrases || 0),
+            'Phrases practiced: ' + (totalPhrases || 0) + ' (' + (phrasesAnalyzed || 0) + ' unique)',
             'Warm-ups completed: ' + (warmUpsCompleted || 0),
+            'Visual Contour Studio drills mastered: ' + masteredStudioIds.length + '/' + ORATORY_ENGINE.CONTOUR_STUDIO_DRILLS.length,
+            'Prosody & Rhetoric challenges solved: ' + solvedChallengeIds.length + '/' + ORATORY_ENGINE.PROSODY_CHALLENGES.length,
             'Average pacing: ' + (avgWpm > 0 ? avgWpm + ' WPM' : 'N/A'),
             'Volume consistency best: ' + (bestSteadiness || 0) + '%',
             'Pitch range used: ' + (pitchMin > 0 ? pitchMin + ' - ' + pitchMax + ' Hz' : 'N/A'),
@@ -3491,8 +5443,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             '',
             '--- Notes for SLP ---',
             'This student used the Oratory & Prosody Communication Lab for real-time',
-            'speech visualization practice. The tool provides visual feedback on pitch',
-            'contour, speaking rate, volume consistency, pause patterns, and fluency.',
+            'speech visualization and mic-free prosody contour practice. The tool provides',
+            'visual feedback on pitch contour, speaking rate, volume consistency, pause patterns, and fluency.',
             'These are rough ACOUSTIC PROXIES (loudness-envelope pause timing,',
             'syllable-onset rate CV, and volume steadiness) for self-practice —',
             'NOT a clinical fluency assessment, diagnosis, or measure of ability.',
@@ -3510,7 +5462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(reportText).then(function() {
             if (!oratoryMountedRef.current) return;
             setCopied(true);
-            if (addToast) addToast('Report copied to clipboard!', 'success');
+            if (addToast) addToast(t('stem.oratory.toast_report_copied', 'Report copied to clipboard!'), 'success');
             if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
             copiedTimerRef.current = setTimeout(function() {
               copiedTimerRef.current = null;
@@ -3518,7 +5470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               setCopied(false);
             }, 2000);
           }).catch(function() {
-            if (addToast) addToast('Could not copy. Try selecting the text manually.', 'error');
+            if (addToast) addToast(t('stem.oratory.toast_copy_failed', 'Could not copy. Try selecting the text manually.'), 'error');
           });
         }
 
@@ -3544,7 +5496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               volumeTimerRefId.current = null;
               setExerciseActive(false);
               if (typeof recordPhraseCompletionRef.current === 'function') {
-                recordPhraseCompletionRef.current();
+                recordPhraseCompletionRef.current('volume:' + exerciseIndex);
               }
             }
           }, 1000);
@@ -3564,21 +5516,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ═══════════════════════════════════════
         // Shared styles
         // ═══════════════════════════════════════
-        var cardClass = isDark
-          ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
-          : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm';
+        var cardClass = isContrast
+          ? 'bg-black border-2 border-yellow-300 text-white rounded-xl p-4'
+          : (isDark
+            ? 'bg-slate-800 border border-slate-700 rounded-xl p-4'
+            : 'bg-white border border-slate-400 rounded-xl p-4 shadow-sm');
         // ★ These two drive the whole tool chrome, which paints no ground and
         // therefore sits on the HOST surface. That is a white card in light AND
         // dark, but pure BLACK in the contrast theme - where the light branch
         // put slate-900 on black at 1.18:1, the tool own name included.
         var headingClass = (isDark || isContrast) ? 'text-white font-bold' : 'text-slate-900 font-bold';
-        var subTextClass = (isDark || isContrast) ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
+        var subTextClass = isContrast ? 'text-yellow-200 text-xs' : ((isDark || isContrast) ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs');
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-          (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]');
+          (isContrast
+            ? 'bg-black border-2 border-yellow-300 text-yellow-300 hover:bg-yellow-300 hover:text-black focus:ring-yellow-300'
+            : (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'));
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]');
+          (isContrast
+            ? 'bg-black border border-yellow-300 text-white hover:bg-yellow-300 hover:text-black focus:ring-yellow-300'
+            : (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]'));
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-800 focus:ring-red-400 active:scale-[0.97]');
+          (isContrast
+            ? 'bg-black border-2 border-yellow-300 text-yellow-300 hover:bg-yellow-300 hover:text-black focus:ring-yellow-300'
+            : (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-800 focus:ring-red-400 active:scale-[0.97]'));
 
         // ═══════════════════════════════════════
         // Render: Tab 1 — Prosody Visualizer
@@ -3596,24 +5556,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               ),
               warmupActive
                 ? h('div', { className: 'space-y-3' },
-                    h('div', { className: (isDark ? 'bg-violet-900/30 border-violet-700' : 'bg-violet-50 border-violet-200') + ' border rounded-lg p-3' },
-                      h('div', { className: 'flex items-center gap-2 mb-2' },
-                        h('span', { className: 'text-xl' }, warmupActive.icon),
-                        h('span', { className: headingClass + ' text-sm' }, warmupActive.label)),
-                      h('p', { className: (isDark ? 'text-slate-300' : 'text-slate-600') + ' text-sm leading-relaxed' }, warmupActive.desc),
+                    h('div', { className: (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-violet-900/30 border-violet-700' : 'bg-violet-50 border-violet-200')) + ' border rounded-lg p-3' },
+                      h('div', { className: 'flex items-center justify-between gap-2 mb-2 flex-wrap' },
+                        h('div', { className: 'flex items-center gap-2' },
+                          h('span', { className: 'text-xl' }, warmupActive.icon),
+                          h('span', { className: headingClass + ' text-sm' }, warmupActive.label)),
+                        completedWarmupIds.indexOf(warmupActive.id) !== -1 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full ' + (isContrast ? 'bg-black border border-yellow-300 text-yellow-300' : (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800')) }, t('stem.oratory.xp_earned_badge', 'XP earned \u2713'))),
+                      h('p', { className: (isContrast ? 'text-white' : (isDark ? 'text-slate-300' : 'text-slate-600')) + ' text-sm leading-relaxed' }, warmupActive.desc),
                       h('p', { className: subTextClass + ' mt-2 italic' }, t('stem.oratory.start_your_microphone_and_try_it_when_', 'Start your microphone and try it! When you\'re done, click "Complete."'))),
-                    h('div', { className: 'flex gap-2' },
+                    h('div', { className: 'flex gap-2 flex-wrap' },
                       h('button', {
                         type: 'button',
                         className: btnPrimary,
                         onClick: function() { completeWarmup(warmupActive.id); },
                         'aria-label': t('stem.oratory.mark_warm_up_as_complete', 'Mark warm-up as complete')
                       }, t('stem.oratory.complete', 'Complete')),
+                      callTTS && h('button', {
+                        type: 'button',
+                        className: btnSecondary,
+                        disabled: ttsLoading,
+                        onClick: function() { playModelPhrase(warmupActive.label + '. ' + warmupActive.desc, 'Kore'); },
+                        'aria-label': t('stem.oratory.aria_read_warmup_aloud', 'Read warm-up instructions aloud')
+                      }, t('stem.oratory.read_aloud', '\uD83D\uDD0A Read Aloud')),
                       h('button', {
                         type: 'button',
                         className: btnSecondary,
-                        onClick: function() { setWarmupActive(null); },
-                        
+                        onClick: function() { setWarmupActive(null); }
                       }, t('stem.oratory.cancel', 'Cancel'))))
                 : h('div', { className: 'flex flex-wrap gap-2', role: 'list', 'aria-label': t('stem.oratory.available_warm_up_exercises', 'Available warm-up exercises') },
                     WARMUPS.map(function(wu) {
@@ -3621,7 +5589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         type: 'button',
                         className: btnSecondary + ' flex items-center gap-1.5',
                         onClick: function() { setWarmupActive(wu); },
-                        'aria-label': wu.label + ': ' + wu.desc
+                        'aria-label': oratoryFmt(t('stem.oratory.aria_warmup_item', '{1}: {2}'), [wu.label, wu.desc])
                       }, h('span', null, wu.icon), wu.label));
                     }))
             ),
@@ -3636,7 +5604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
                       : 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'),
                     onClick: isRecording ? stopRecording : startRecording,
-                    'aria-label': isRecording ? 'Stop recording microphone' : 'Start Microphone — begin speech visualization',
+                    'aria-label': isRecording ? t('stem.oratory.aria_stop_recording_mic', 'Stop recording microphone') : t('stem.oratory.aria_start_mic_viz', 'Start Microphone \u2014 begin speech visualization'),
                     'aria-pressed': isRecording ? 'true' : 'false'
                   },
                     isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start Microphone'),
@@ -3659,16 +5627,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         playModelPhrase('Hello, my name is Alex. I am happy to meet you today.', 'Kore');
                       }
                     },
-                    'aria-label': showModel ? 'Hide model prosody curve' : 'Show model: plays a demo phrase and traces ideal pitch curve for matching',
+                    'aria-label': showModel ? t('stem.oratory.aria_hide_model_curve', 'Hide model prosody curve') : t('stem.oratory.aria_show_model_curve', 'Show model: plays a demo phrase and traces ideal pitch curve for matching'),
                     'aria-pressed': showModel ? 'true' : 'false',
                     disabled: ttsLoading
                   }, ttsLoading ? 'Loading...' : (showModel ? 'Hide Model' : '\uD83C\uDFAF Show Model')))),
 
-              // Mic error
+              // Mic error + direct No-Mic Studio launch
               micError && h('div', {
-                className: 'mt-3 p-3 rounded-lg border text-sm ' + (isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'),
+                className: 'mt-3 p-3 rounded-lg border text-sm space-y-2 ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700')),
                 role: 'alert'
-              }, micError)
+              },
+                h('div', null, micError),
+                h('div', { className: 'flex flex-wrap items-center gap-2 pt-1' },
+                  h('span', { className: 'text-xs font-semibold' }, t('stem.oratory.no_mic_prompt', 'No microphone? Practice prosody visually with zero mic required:')),
+                  h('button', {
+                    type: 'button',
+                    className: btnPrimary + ' text-xs py-1 px-3',
+                    onClick: function() { setActiveTab('practice'); setExerciseType('contourStudio'); },
+                    'aria-label': t('stem.oratory.aria_open_nomic_studio', 'Open No-Mic Visual Contour Studio')
+                  }, t('stem.oratory.open_nomic_studio', '\uD83C\uDFA8 Open No-Mic Contour Studio')),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() { setActiveTab('practice'); setExerciseType('prosodyChallenge'); },
+                    'aria-label': t('stem.oratory.aria_open_prosody_challenges', 'Open Prosody and Rhetoric Challenges')
+                  }, t('stem.oratory.open_challenges', '\uD83E\uDDE0 Prosody Challenges'))))
             ),
 
             // Prosody Curve
@@ -3686,8 +5669,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                 role: 'img',
                 'aria-label': currentPitch > 0
-                  ? 'Pitch contour graph. Current pitch: ' + Math.round(currentPitch) + ' hertz, ' + pitchZone(currentPitch).label
-                  : 'Pitch contour graph. No pitch detected. Speak into the microphone to see your pitch.'
+                  ? oratoryFmt(t('stem.oratory.aria_pitch_graph_live', 'Pitch contour graph. Current pitch: {1} hertz, {2}'), [Math.round(currentPitch), pitchZone(currentPitch).label])
+                  : t('stem.oratory.aria_pitch_graph_idle', 'Pitch contour graph. No pitch detected. Speak into the microphone to see your pitch.')
               }),
               // Pitch zone legend
               h('div', { className: 'flex flex-wrap gap-3 mt-2 text-xs', role: 'list', 'aria-label': t('stem.oratory.pitch_zone_legend', 'Pitch zone legend') },
@@ -3719,7 +5702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   height: 160,
                   className: 'block mx-auto max-w-full rounded-lg',
                   role: 'img',
-                  'aria-label': 'Pacing speedometer. Current pace: ' + currentWpm + ' words per minute. ' + pacingZone(currentWpm, gradeLevel).label
+                  'aria-label': oratoryFmt(t('stem.oratory.aria_pacing_gauge', 'Pacing speedometer. Current pace: {1} words per minute. {2}'), [currentWpm, pacingZone(currentWpm, gradeLevel).label])
                 })),
 
               // Volume Meter
@@ -3736,7 +5719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   height: 70,
                   className: 'w-full rounded-lg',
                   role: 'img',
-                  'aria-label': 'Volume meter. Current level: ' + Math.round(currentDb) + ' decibels.'
+                  'aria-label': oratoryFmt(t('stem.oratory.aria_volume_meter', 'Volume meter. Current level: {1} decibels.'), [Math.round(currentDb)])
                 }))
             ),
 
@@ -3755,8 +5738,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 className: 'w-full rounded-lg',
                 role: 'img',
                 'aria-label': isPaused
-                  ? 'Pause indicator. Currently pausing for ' + pauseDuration.toFixed(1) + ' seconds. Pause ratio: ' + Math.round(pauseRatio * 100) + ' percent.'
-                  : 'Pause indicator. Speaking. Pause ratio: ' + Math.round(pauseRatio * 100) + ' percent.'
+                  ? oratoryFmt(t('stem.oratory.aria_pause_pausing', 'Pause indicator. Currently pausing for {1} seconds. Pause ratio: {2} percent.'), [pauseDuration.toFixed(1), Math.round(pauseRatio * 100)])
+                  : oratoryFmt(t('stem.oratory.aria_pause_speaking', 'Pause indicator. Speaking. Pause ratio: {1} percent.'), [Math.round(pauseRatio * 100)])
               })),
 
             // ═══════════════════════════════════════
@@ -3793,7 +5776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 fluencyScore !== null && h('div', { className: 'space-y-3' },
                   // Star rating
                   h('div', { className: 'text-center p-4 rounded-lg ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
-                    h('div', { className: 'text-3xl mb-1', 'aria-label': fluencyStars + ' out of 5 stars' },
+                    h('div', { className: 'text-3xl mb-1', 'aria-label': oratoryFmt(t('stem.oratory.aria_fluency_stars', '{1} out of 5 stars'), [fluencyStars]) },
                       Array.apply(null, Array(5)).map(function(_, si) {
                         return h('span', { key: si, style: { opacity: si < fluencyStars ? 1 : 0.2 } }, '\u2B50');
                       })
@@ -3828,7 +5811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     height: 150,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                     role: 'img',
-                    'aria-label': 'Fluency score bar chart showing ' + fluencySessions.length + ' sessions'
+                    'aria-label': oratoryFmt(t('stem.oratory.aria_fluency_chart', 'Fluency score bar chart showing {1} sessions'), [fluencySessions.length])
                   }))
               )
             ),
@@ -3889,9 +5872,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   height: 400,
                   className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                   role: 'img',
-                  'aria-label': 'Vowel space scatterplot showing F1 and F2 formant positions. Current F1: ' +
-                    Math.round(currentF1) + ' Hz, F2: ' + Math.round(currentF2) + ' Hz. ' +
-                    'Using ' + (VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en).name + ' vowel map.'
+                  'aria-label': oratoryFmt(t('stem.oratory.aria_vowel_space', 'Vowel space scatterplot showing F1 and F2 formant positions. Current F1: {1} Hz, F2: {2} Hz. Using {3} vowel map.'), [Math.round(currentF1), Math.round(currentF2), (VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en).name])
                 })
                 ),
 
@@ -3946,7 +5927,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                             else if (isPausing) resumePlayback();
                             else startPlayback(ri);
                           },
-                          'aria-label': isPlaying ? 'Pause recording ' + (ri + 1) : 'Play recording ' + (ri + 1)
+                          'aria-label': isPlaying
+                            ? oratoryFmt(t('stem.oratory.aria_pause_recording', 'Pause recording {1}'), [ri + 1])
+                            : oratoryFmt(t('stem.oratory.aria_play_recording', 'Play recording {1}'), [ri + 1])
                         }, isPlaying ? '\u23F8' : '\u25B6'),
 
                         // Info
@@ -3958,7 +5941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         playbackIdx === ri && h('div', {
                           className: 'flex-1 h-2 rounded-full overflow-hidden ' + (isDark ? 'bg-slate-600' : 'bg-slate-200'),
                           role: 'progressbar',
-                          'aria-label': 'Recording ' + (ri + 1) + ' playback progress',
+                          'aria-label': oratoryFmt(t('stem.oratory.aria_recording_progress', 'Recording {1} playback progress'), [ri + 1]),
                           'aria-valuenow': Math.round(playbackProgress * 100),
                           'aria-valuemin': '0',
                           'aria-valuemax': '100'
@@ -3977,7 +5960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         height: 120,
                         className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                         role: 'img',
-                        'aria-label': 'Playback prosody visualization showing pitch and volume for recording ' + (playbackIdx + 1)
+                        'aria-label': oratoryFmt(t('stem.oratory.aria_playback_canvas', 'Playback prosody visualization showing pitch and volume for recording {1}'), [playbackIdx + 1])
                       })),
 
                     // Compare recordings button
@@ -3987,7 +5970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         className: btnSecondary + (compareMode ? ' ring-2 ring-violet-400' : ''),
                         onClick: function() { setCompareMode(!compareMode); },
                         'aria-pressed': compareMode ? 'true' : 'false',
-                        'aria-label': compareMode ? 'Close comparison view' : 'Compare two recordings side by side'
+                        'aria-label': compareMode ? t('stem.oratory.aria_close_compare', 'Close comparison view') : t('stem.oratory.aria_open_compare', 'Compare two recordings side by side')
                       }, compareMode ? 'Close Comparison' : '\uD83D\uDD0D Compare Recordings'),
 
                       // Comparison view
@@ -4021,7 +6004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           height: 150,
                           className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                           role: 'img',
-                          'aria-label': 'Side by side prosody comparison of recording ' + (compareIdx1 + 1) + ' and recording ' + (compareIdx2 + 1)
+                          'aria-label': oratoryFmt(t('stem.oratory.aria_compare_canvas', 'Side by side prosody comparison of recording {1} and recording {2}'), [compareIdx1 + 1, compareIdx2 + 1])
                         })
                       ))
                   )
@@ -4042,8 +6025,445 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ═══════════════════════════════════════
-        // Render: Tab 2 — Practice Exercises
+        // Render: Tab 2 — Practice Exercises (Mic + No-Mic Visual Contour Studio + Challenges)
         // ═══════════════════════════════════════
+        function renderContourStudio() {
+          var drills = ORATORY_ENGINE.CONTOUR_STUDIO_DRILLS;
+          var safeIdx = (studioDrillIdx >= 0 && studioDrillIdx < drills.length) ? studioDrillIdx : 0;
+          var drill = drills[safeIdx] || drills[0];
+          var isMastered = masteredStudioIds.indexOf(drill.id) !== -1;
+          var turnChoices = [
+            { id: 'rising', icon: '\u2197\uFE0F', label: t('stem.oratory.turn_rising', 'Rising End') },
+            { id: 'falling', icon: '\u2198\uFE0F', label: t('stem.oratory.turn_falling', 'Falling End') },
+            { id: 'rise-fall', icon: '\u2312', label: t('stem.oratory.turn_rise_fall', 'Rise-Fall Peak') },
+            { id: 'stepped', icon: '\uD83D\uDCCA', label: t('stem.oratory.turn_stepped', 'Stepped List') },
+            { id: 'flat', icon: '\u27A1\uFE0F', label: t('stem.oratory.turn_flat', 'Flat / Monotone') }
+          ];
+          var predictedCurve = (studioMarkedStress.length > 0 || studioMarkedTurn)
+            ? ORATORY_ENGINE.buildPredictedContour(drill.tokens.length, studioMarkedStress, studioMarkedTurn || 'falling')
+            : null;
+          var selectDrill = function(nextIdx) {
+            setStudioDrillIdx(((nextIdx % drills.length) + drills.length) % drills.length);
+            setStudioMarkedStress([]);
+            setStudioMarkedTurn('');
+            setStudioResult(null);
+            setStudioLiveScore(null);
+          };
+          var toggleStressWord = function(wIdx) {
+            setStudioMarkedStress(function(prev) {
+              var has = prev.indexOf(wIdx) !== -1;
+              return has ? prev.filter(function(x) { return x !== wIdx; }) : prev.concat([wIdx]).sort(function(a, b) { return a - b; });
+            });
+          };
+          var checkStudioWork = function() {
+            if (studioMarkedStress.length === 0 || !studioMarkedTurn) {
+              if (addToast) addToast(t('stem.oratory.toast_studio_pick_both', 'Tap at least one stressed word and choose an ending intonation turn first.'), 'info');
+              return;
+            }
+            var res = ORATORY_ENGINE.scoreStressAndTurn(studioMarkedStress, studioMarkedTurn, drill.targetStressIndices, drill.targetTurn);
+            setStudioResult(res);
+            if (res.passed) {
+              recordStudioMastery(drill.id);
+            }
+            if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_studio_score', 'Contour check score: {1} percent. {2}'), [res.score, res.feedback]));
+          };
+
+          return h('div', { className: 'space-y-4' },
+            // Header bar
+            h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+              h('button', {
+                type: 'button',
+                className: btnSecondary + ' flex items-center gap-1',
+                onClick: function() { setExerciseType(null); },
+                'aria-label': t('stem.oratory.back_to_exercise_type_selection', 'Back to exercise type selection')
+              }, t('stem.oratory.back', '\u2190 Back')),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: headingClass + ' text-sm' }, t('stem.oratory.studio_title', '\uD83C\uDFA8 Visual Contour Studio (No Mic Needed)')),
+                h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full ' + (isContrast ? 'bg-black border border-yellow-300 text-yellow-300' : (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800')) },
+                  oratoryFmt(t('stem.oratory.studio_progress_badge', '{1}/{2} mastered'), [masteredStudioIds.length, drills.length]))),
+              h('div', { className: 'flex gap-1' },
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  onClick: function() { selectDrill(safeIdx - 1); },
+                  'aria-label': t('stem.oratory.aria_prev_studio_drill', 'Previous visual contour drill')
+                }, '\u2190'),
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  onClick: function() { selectDrill(safeIdx + 1); },
+                  'aria-label': t('stem.oratory.aria_next_studio_drill', 'Next visual contour drill')
+                }, '\u2192'))
+            ),
+
+            // Drill picker pills
+            h('div', { className: cardClass + ' space-y-3' },
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'list', 'aria-label': t('stem.oratory.aria_studio_drill_list', 'Visual contour drills') },
+                drills.map(function(dr, di) {
+                  var active = di === safeIdx;
+                  var done = masteredStudioIds.indexOf(dr.id) !== -1;
+                  return h('div', { key: dr.id, role: 'listitem' },
+                    h('button', {
+                      type: 'button',
+                      className: (active
+                        ? (isContrast ? 'bg-black border-2 border-yellow-300 text-yellow-300 font-bold' : 'bg-violet-600 text-white font-bold ring-2 ring-violet-400')
+                        : btnSecondary) + ' px-2.5 py-1 rounded-full text-xs',
+                      onClick: function() { selectDrill(di); },
+                      'aria-pressed': active ? 'true' : 'false',
+                      'aria-label': oratoryFmt(t('stem.oratory.aria_select_studio_drill', 'Select drill {1}: {2}'), [di + 1, dr.title])
+                    }, (done ? '\u2705 ' : '') + (di + 1) + '. ' + dr.title));
+                })),
+
+              // Goal & phrase banner
+              h('div', { className: 'p-3.5 rounded-xl border ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-violet-900/30 border-violet-700' : 'bg-violet-50 border-violet-200')) },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1' },
+                  h('span', { className: 'text-xs font-extrabold uppercase tracking-wider ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-violet-300' : 'text-violet-700')) },
+                    t('stem.oratory.studio_intent_label', 'Speaker Intent Goal')),
+                  isMastered && h('span', { className: 'text-xs font-bold ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-emerald-300' : 'text-emerald-700')) }, t('stem.oratory.mastered_xp_badge', '\u2705 Mastered (+8 XP earned)'))),
+                h('p', { className: (isContrast ? 'text-white' : (isDark ? 'text-slate-200' : 'text-slate-700')) + ' text-sm m-0 mb-2' }, drill.intent),
+                h('div', { className: headingClass + ' text-lg text-center py-1' }, '"' + drill.phrase + '"'),
+                h('div', { className: 'flex justify-center gap-2 mt-2 flex-wrap' },
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    disabled: ttsLoading,
+                    onClick: function() { playModelPhrase(drill.phrase, 'Kore', drill.contour); },
+                    'aria-label': t('stem.oratory.aria_listen_studio_model', 'Listen to model speech for this phrase')
+                  }, ttsLoading ? t('stem.oratory.loading', 'Loading...') : t('stem.oratory.studio_listen_model', '\uD83D\uDD0A Listen to Model')),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() { setStudioMarkedStress([]); setStudioMarkedTurn(''); setStudioResult(null); },
+                    'aria-label': t('stem.oratory.aria_clear_studio_marks', 'Clear your stress and intonation selections')
+                  }, t('stem.oratory.clear_marks', '\u21BA Clear Marks')))),
+
+              // Step 1: Tap stressed words
+              h('div', { className: 'space-y-2' },
+                h('div', { className: headingClass + ' text-xs uppercase tracking-wider' },
+                  t('stem.oratory.studio_step1', 'Step 1 — Tap the word(s) that carry the strongest pitch stress:')),
+                h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': t('stem.oratory.aria_tap_stress_words', 'Tap stressed words in the phrase') },
+                  drill.tokens.map(function(tok, ti) {
+                    var selected = studioMarkedStress.indexOf(ti) !== -1;
+                    var isTarget = studioResult && drill.targetStressIndices.indexOf(ti) !== -1;
+                    return h('button', {
+                      type: 'button',
+                      key: drill.id + '-tok-' + ti,
+                      'aria-pressed': selected ? 'true' : 'false',
+                      className: 'px-3.5 py-2 rounded-lg text-sm font-bold border transition-all ' +
+                        (selected
+                          ? (isContrast ? 'bg-yellow-300 text-black border-yellow-300' : 'bg-violet-600 text-white border-violet-500 ring-2 ring-violet-300')
+                          : (isTarget
+                            ? (isContrast ? 'bg-black text-yellow-300 border-2 border-yellow-300' : (isDark ? 'bg-emerald-900/40 text-emerald-200 border-emerald-500' : 'bg-emerald-50 text-emerald-800 border-emerald-400'))
+                            : (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-700 text-slate-100 border-slate-600 hover:bg-slate-600' : 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200')))),
+                      onClick: function() { toggleStressWord(ti); },
+                      'aria-label': oratoryFmt(t('stem.oratory.aria_stress_word_btn', 'Toggle stress on word {1}'), [tok])
+                    }, (selected ? '\u2605 ' : '') + tok + (isTarget && !selected ? ' (\u2713)' : ''));
+                  }))),
+
+              // Step 2: Pick ending intonation turn
+              h('div', { className: 'space-y-2' },
+                h('div', { className: headingClass + ' text-xs uppercase tracking-wider' },
+                  t('stem.oratory.studio_step2', 'Step 2 — Predict the ending intonation contour:')),
+                h('div', { className: 'flex flex-wrap gap-2', role: 'radiogroup', 'aria-label': t('stem.oratory.aria_select_ending_turn', 'Select ending intonation contour') },
+                  turnChoices.map(function(tc) {
+                    var active = studioMarkedTurn === tc.id;
+                    return h('button', {
+                      type: 'button',
+                      key: tc.id,
+                      role: 'radio',
+                      'aria-checked': active ? 'true' : 'false',
+                      className: (active
+                        ? (isContrast ? 'bg-yellow-300 text-black border-2 border-yellow-300 font-bold' : 'bg-sky-700 text-white font-bold ring-2 ring-sky-300')
+                        : btnSecondary) + ' px-3 py-1.5 rounded-lg text-xs',
+                      onClick: function() { setStudioMarkedTurn(tc.id); }
+                    }, tc.icon + ' ' + tc.label);
+                  }))),
+
+              // Visual SVG Pitch Contour Stage (predict-first: target hidden until checked!)
+              renderStudioContourSvg(h, drill.contour, {
+                isDark: isDark,
+                isContrast: isContrast,
+                showTarget: !!studioResult,
+                tokens: drill.tokens,
+                markedStress: studioMarkedStress,
+                targetStress: drill.targetStressIndices,
+                userCurve: predictedCurve,
+                hiddenPrompt: t('stem.oratory.studio_svg_hidden_prompt', 'Blue dashed line = your prediction. Click "Check My Contour" to reveal target!'),
+                ariaLabel: studioResult
+                  ? oratoryFmt(t('stem.oratory.aria_studio_svg_revealed', 'Revealed target pitch contour for {1} with {2} ending compared with your prediction.'), [drill.phrase, drill.targetTurn])
+                  : oratoryFmt(t('stem.oratory.aria_studio_svg_predict', 'Pitch contour prediction stage for {1}. Mark stressed words and ending turn, then check to reveal.'), [drill.phrase])
+              }),
+
+              // Submit prediction button
+              h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+                h('span', { className: subTextClass + ' italic' }, drill.hint),
+                h('button', {
+                  type: 'button',
+                  className: btnPrimary,
+                  onClick: checkStudioWork,
+                  'aria-label': t('stem.oratory.aria_check_contour', 'Check my predicted stress and intonation contour')
+                }, t('stem.oratory.studio_check_btn', '\u2713 Check My Contour'))),
+
+              // Feedback panel after prediction
+              studioResult && h('div', {
+                role: 'status',
+                className: 'p-3.5 rounded-xl border space-y-1.5 ' + (
+                  studioResult.passed
+                    ? (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-emerald-900/30 border-emerald-600 text-emerald-100' : 'bg-emerald-50 border-emerald-300 text-emerald-900'))
+                    : (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-amber-900/30 border-amber-600 text-amber-100' : 'bg-amber-50 border-amber-300 text-amber-900'))
+                )
+              },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('span', { className: 'font-bold text-sm' },
+                    (studioResult.passed ? '\u2705 ' : '\uD83D\uDCA1 ') +
+                    oratoryFmt(t('stem.oratory.studio_score_line', 'Contour Match: {1}% (Stress {2}% \u00B7 Ending Turn {3}%)'), [studioResult.score, studioResult.stressScore, studioResult.turnScore])),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() { selectDrill(safeIdx + 1); },
+                    'aria-label': t('stem.oratory.aria_next_drill_after_check', 'Advance to next contour drill')
+                  }, t('stem.oratory.next_drill', 'Next Drill \u2192'))),
+                h('p', { className: 'text-xs m-0 leading-relaxed' }, studioResult.feedback),
+                h('p', { className: 'text-xs m-0 opacity-90' }, drill.explanation))
+            ),
+
+            // Optional Live Mic Upgrade (for learners WITH a mic who want to speak the same phrase)
+            h('div', { className: cardClass + ' space-y-2' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('h4', { className: headingClass + ' text-xs uppercase tracking-wider m-0' },
+                  t('stem.oratory.studio_optional_mic', '\uD83C\uDFA4 Optional Live Mic Practice (Speak & Score)')),
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  disabled: pitchHistory.length < 5,
+                  onClick: function() {
+                    var res = ORATORY_ENGINE.scoreProsodyContour(drill.contour, pitchHistory.slice());
+                    setStudioLiveScore(res);
+                    if (res.score >= 70) recordStudioMastery(drill.id);
+                    if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_live_contour_score', 'Live contour score: {1} percent. {2}'), [res.score, res.feedback]));
+                  },
+                  'aria-label': t('stem.oratory.aria_score_live_contour', 'Score live microphone contour against target')
+                }, t('stem.oratory.score_live_attempt', 'Score Live Contour'))),
+              renderMiniControls(),
+              studioLiveScore && h('div', { className: 'p-2.5 rounded-lg text-xs border ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800')) },
+                h('strong', null, oratoryFmt(t('stem.oratory.live_score_summary', 'Live Contour Score: {1}% \u2014 '), [studioLiveScore.score])),
+                studioLiveScore.feedback))
+          );
+        }
+
+        function renderProsodyChallenges() {
+          var allChallenges = ORATORY_ENGINE.PROSODY_CHALLENGES;
+          var categories = [
+            { id: 'all', label: t('stem.oratory.cat_all', 'All (10)') },
+            { id: 'stress_shift', label: t('stem.oratory.cat_stress', 'Stress-Meaning Shift') },
+            { id: 'intonation_turn', label: t('stem.oratory.cat_intonation', 'Rising vs. Falling') },
+            { id: 'pacing_audience', label: t('stem.oratory.cat_pacing', 'Pacing & Audience') },
+            { id: 'emotional_contour', label: t('stem.oratory.cat_emotion', 'Emotional Contour') }
+          ];
+          var filtered = challengeCat === 'all'
+            ? allChallenges
+            : allChallenges.filter(function(c) { return c.category === challengeCat; });
+          var activeCh = filtered.find(function(c) { return c.id === challengeId; }) || filtered[0] || allChallenges[0];
+          var activeIdx = filtered.indexOf(activeCh);
+          var shuffled = ORATORY_ENGINE.shuffleOptionsSeeded(activeCh, challengeSeed);
+          var isSolved = solvedChallengeIds.indexOf(activeCh.id) !== -1;
+
+          var openChallenge = function(nextCh) {
+            if (!nextCh) return;
+            setChallengeId(nextCh.id);
+            setChallengeSelectedOpt(null);
+            setChallengeSubmission(null);
+          };
+
+          var submitPrediction = function() {
+            if (!challengeSelectedOpt) {
+              if (addToast) addToast(t('stem.oratory.toast_pick_answer', 'Select an answer before checking your prediction.'), 'info');
+              return;
+            }
+            var res = ORATORY_ENGINE.evaluateChallengeAnswer(activeCh.id, challengeSelectedOpt);
+            setChallengeSubmission(res);
+            if (res.correct) {
+              recordChallengeMastery(activeCh.id);
+            }
+            if (announceToSR) {
+              announceToSR(res.correct
+                ? oratoryFmt(t('stem.oratory.sr_challenge_correct', 'Correct! {1}'), [res.feedback])
+                : oratoryFmt(t('stem.oratory.sr_challenge_incorrect', 'Not quite. {1}'), [res.feedback]));
+            }
+          };
+
+          return h('div', { className: 'space-y-4' },
+            // Header bar
+            h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+              h('button', {
+                type: 'button',
+                className: btnSecondary + ' flex items-center gap-1',
+                onClick: function() { setExerciseType(null); },
+                'aria-label': t('stem.oratory.back_to_exercise_type_selection', 'Back to exercise type selection')
+              }, t('stem.oratory.back', '\u2190 Back')),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: headingClass + ' text-sm' }, t('stem.oratory.challenges_title', '\uD83E\uDDE0 Prosody & Rhetorical Intent Challenges')),
+                h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full ' + (isContrast ? 'bg-black border border-yellow-300 text-yellow-300' : (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-800')) },
+                  oratoryFmt(t('stem.oratory.challenges_progress', '{1}/{2} solved'), [solvedChallengeIds.length, allChallenges.length]))),
+              h('div', { className: 'flex gap-1' },
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  onClick: function() { openChallenge(filtered[(activeIdx - 1 + filtered.length) % filtered.length]); },
+                  'aria-label': t('stem.oratory.aria_prev_challenge', 'Previous prosody challenge')
+                }, '\u2190'),
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  onClick: function() { openChallenge(filtered[(activeIdx + 1) % filtered.length]); },
+                  'aria-label': t('stem.oratory.aria_next_challenge', 'Next prosody challenge')
+                }, '\u2192'))
+            ),
+
+            // Category filter pills + challenge selector
+            h('div', { className: cardClass + ' space-y-3' },
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'radiogroup', 'aria-label': t('stem.oratory.aria_challenge_category', 'Filter prosody challenges by skill') },
+                categories.map(function(cat) {
+                  var isCatActive = challengeCat === cat.id;
+                  return h('button', {
+                    type: 'button',
+                    key: cat.id,
+                    role: 'radio',
+                    'aria-checked': isCatActive ? 'true' : 'false',
+                    className: (isCatActive
+                      ? (isContrast ? 'bg-yellow-300 text-black border-2 border-yellow-300 font-bold' : 'bg-violet-600 text-white font-bold')
+                      : btnSecondary) + ' px-2.5 py-1 rounded-full text-xs',
+                    onClick: function() {
+                      setChallengeCat(cat.id);
+                      var nextList = cat.id === 'all' ? allChallenges : allChallenges.filter(function(c) { return c.category === cat.id; });
+                      if (nextList.length) openChallenge(nextList[0]);
+                    }
+                  }, cat.label);
+                })),
+
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'list', 'aria-label': t('stem.oratory.aria_challenge_list', 'Prosody challenge selector') },
+                filtered.map(function(ch, ci) {
+                  var selected = ch.id === activeCh.id;
+                  var done = solvedChallengeIds.indexOf(ch.id) !== -1;
+                  return h('div', { key: ch.id, role: 'listitem' },
+                    h('button', {
+                      type: 'button',
+                      className: (selected
+                        ? (isContrast ? 'bg-black border-2 border-yellow-300 text-yellow-300 font-bold' : 'bg-sky-700 text-white font-bold')
+                        : btnSecondary) + ' px-2.5 py-1 rounded-lg text-xs',
+                      onClick: function() { openChallenge(ch); },
+                      'aria-pressed': selected ? 'true' : 'false',
+                      'aria-label': oratoryFmt(t('stem.oratory.aria_select_challenge', 'Challenge {1}: {2}'), [ci + 1, ch.title])
+                    }, (done ? '\u2705 ' : '') + (ci + 1) + '. ' + ch.title));
+                })),
+
+              // Challenge prompt card
+              h('div', { className: 'p-4 rounded-xl border space-y-2 ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900/70 border-slate-700' : 'bg-violet-50/70 border-violet-200')) },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('span', { className: 'text-xs font-extrabold uppercase tracking-wider ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-sky-300' : 'text-violet-700')) },
+                    activeCh.categoryLabel + ' \u00B7 ' + activeCh.title),
+                  isSolved && h('span', { className: 'text-xs font-bold ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-emerald-300' : 'text-emerald-700')) },
+                    t('stem.oratory.challenge_solved_badge', '\u2705 Solved (+12 XP earned)'))),
+                h('p', { className: (isContrast ? 'text-white' : (isDark ? 'text-slate-100' : 'text-slate-800')) + ' text-sm leading-relaxed m-0' }, activeCh.prompt),
+                h('div', { className: 'flex flex-wrap gap-2 pt-1' },
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    disabled: ttsLoading,
+                    onClick: function() { playModelPhrase(activeCh.prompt, 'Kore'); },
+                    'aria-label': t('stem.oratory.aria_read_challenge_prompt', 'Read challenge question aloud')
+                  }, t('stem.oratory.read_prompt_aloud', '\uD83D\uDD0A Read Question Aloud')),
+                  challengeSubmission && h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    disabled: ttsLoading,
+                    onClick: function() { playModelPhrase(activeCh.ttsText || activeCh.phrase, 'Kore', activeCh.contour); },
+                    'aria-label': t('stem.oratory.aria_hear_challenge_model', 'Hear model delivery of this phrase')
+                  }, t('stem.oratory.hear_model_delivery', '\uD83C\uDFA7 Hear Model Delivery')))),
+
+              // Visual pitch contour (shown before reveal when part of the prompt, or revealed after submitting!)
+              (activeCh.showContourBeforeReveal || challengeSubmission) && renderStudioContourSvg(h, activeCh.contour, {
+                isDark: isDark,
+                isContrast: isContrast,
+                showTarget: true,
+                tokens: String(activeCh.phrase || '').split(/\s+/),
+                ariaLabel: oratoryFmt(t('stem.oratory.aria_challenge_contour_svg', 'Visual pitch contour for {1}'), [activeCh.phrase])
+              }),
+
+              // Options (deterministically seeded shuffle)
+              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': t('stem.oratory.aria_challenge_options', 'Prediction choices') },
+                shuffled.options.map(function(opt, oi) {
+                  var isPicked = challengeSelectedOpt === opt.id;
+                  var isRevealedRight = challengeSubmission && challengeSubmission.correct && opt.id === challengeSubmission.correctOptionId;
+                  var isRevealedWrong = challengeSubmission && !challengeSubmission.correct && isPicked;
+                  var letter = ['A', 'B', 'C', 'D'][oi] || String(oi + 1);
+                  return h('button', {
+                    type: 'button',
+                    key: activeCh.id + '-' + opt.id,
+                    role: 'radio',
+                    'aria-checked': isPicked ? 'true' : 'false',
+                    className: 'w-full text-left p-3 rounded-xl border text-sm transition-all flex items-start gap-2.5 ' + (
+                      isRevealedRight
+                        ? (isContrast ? 'bg-black border-2 border-yellow-300 text-yellow-300 font-bold' : (isDark ? 'bg-emerald-900/40 border-emerald-500 text-emerald-100 font-semibold' : 'bg-emerald-50 border-emerald-500 text-emerald-900 font-semibold'))
+                        : isRevealedWrong
+                          ? (isContrast ? 'bg-black border-2 border-yellow-300 text-white' : (isDark ? 'bg-red-900/35 border-red-500 text-red-100' : 'bg-red-50 border-red-400 text-red-900'))
+                          : isPicked
+                            ? (isContrast ? 'bg-yellow-300 text-black border-2 border-yellow-300 font-bold' : (isDark ? 'bg-violet-900/50 border-violet-400 text-white ring-2 ring-violet-400' : 'bg-violet-50 border-violet-500 text-violet-950 ring-2 ring-violet-300'))
+                            : (isContrast ? 'bg-black border-yellow-300 text-white hover:bg-slate-900' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:border-violet-400' : 'bg-white border-slate-300 text-slate-800 hover:border-violet-400'))
+                    ),
+                    onClick: function() {
+                      setChallengeSelectedOpt(opt.id);
+                      if (challengeSubmission && !challengeSubmission.correct) setChallengeSubmission(null);
+                    }
+                  },
+                    h('span', { className: 'font-mono font-bold flex-shrink-0' }, letter + '.'),
+                    h('span', { className: 'flex-1' }, opt.label));
+                })),
+
+              // Action buttons
+              h('div', { className: 'flex items-center justify-between flex-wrap gap-2 pt-1' },
+                h('button', {
+                  type: 'button',
+                  className: btnPrimary,
+                  onClick: submitPrediction,
+                  'aria-label': t('stem.oratory.aria_check_prediction', 'Check your prosody prediction')
+                }, t('stem.oratory.check_prediction', '\u2713 Check Prediction')),
+                h('div', { className: 'flex gap-2' },
+                  challengeSubmission && !challengeSubmission.correct && h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() {
+                      setChallengeSelectedOpt(null);
+                      setChallengeSubmission(null);
+                      setChallengeSeed(function(s) { return s + 1; });
+                    },
+                    'aria-label': t('stem.oratory.aria_retry_challenge', 'Try this challenge again with shuffled options')
+                  }, t('stem.oratory.try_again_shuffled', '\uD83D\uDD01 Try Again')),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() { openChallenge(filtered[(activeIdx + 1) % filtered.length]); },
+                    'aria-label': t('stem.oratory.aria_next_challenge_btn', 'Go to next challenge')
+                  }, t('stem.oratory.next_challenge', 'Next Challenge \u2192')))),
+
+              // Misconception / Explanation feedback panel
+              challengeSubmission && h('div', {
+                role: 'status',
+                className: 'p-3.5 rounded-xl border text-sm space-y-1 ' + (
+                  challengeSubmission.correct
+                    ? (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-emerald-900/35 border-emerald-600 text-emerald-100' : 'bg-emerald-50 border-emerald-300 text-emerald-900'))
+                    : (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-amber-900/35 border-amber-600 text-amber-100' : 'bg-amber-50 border-amber-300 text-amber-900'))
+                )
+              },
+                h('div', { className: 'font-bold' },
+                  challengeSubmission.correct
+                    ? t('stem.oratory.challenge_right_heading', '\u2705 Spot-on Prediction!')
+                    : t('stem.oratory.challenge_whynot_heading', '\uD83D\uDD0D Why Not That Choice?')),
+                h('p', { className: 'm-0 text-xs leading-relaxed' }, challengeSubmission.feedback))
+            )
+          );
+        }
+
         function renderPractice() {
           // No exercise type selected — show type picker
           if (!exerciseType) {
@@ -4055,7 +6475,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 EXERCISE_TYPES.map(function(et) {
                   return h('div', { key: et.id, role: 'listitem' }, h('button', {
                     type: 'button',
-                    className: cardClass + ' text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
+                    className: cardClass + ' w-full text-left hover:ring-2 hover:ring-violet-400 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500',
                     onClick: function() {
                       setExerciseType(et.id);
                       setExerciseIndex(0);
@@ -4066,23 +6486,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       setPatternPracticing(false);
                       setPatternScore(null);
                       setPatternStudentCurve(null);
-                      // Try to load cached or generate new (skip for intonation)
-                      if (callGemini && et.id !== 'intonation' && (!cachedExercises || !cachedExercises[et.id])) {
+                      // Try to load cached or generate new (skip for intonation & offline no-mic studios)
+                      if (callGemini && et.id !== 'intonation' && et.id !== 'contourStudio' && et.id !== 'prosodyChallenge' && (!cachedExercises || !cachedExercises[et.id])) {
                         generateExercises(et.id);
                       }
                     },
-                    'aria-label': et.label + ': ' + et.desc
+                    'aria-label': oratoryFmt(t('stem.oratory.aria_exercise_type_card', '{1}: {2}'), [et.label, et.desc])
                   },
                     h('div', { className: 'flex items-center gap-3' },
-                      h('span', { className: 'text-2xl' }, et.icon),
-                      h('div', null,
-                        h('div', { className: headingClass + ' text-sm' }, et.label),
-                        h('div', { className: subTextClass }, __alloT('stem.oratory.' + (et.id) + '_desc', et.desc))))));
+                      h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, et.icon),
+                      h('div', { className: 'min-w-0 flex-1' },
+                        h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                          h('span', { className: headingClass + ' text-sm' }, et.label),
+                          et.noMic && h('span', { className: 'text-[0.625rem] font-extrabold uppercase px-1.5 py-0.5 rounded ' + (isContrast ? 'bg-black border border-yellow-300 text-yellow-300' : (isDark ? 'bg-sky-900/50 text-sky-300' : 'bg-sky-100 text-sky-800')) }, t('stem.oratory.badge_no_mic', 'No Mic'))),
+                        h('div', { className: subTextClass }, t('stem.oratory.' + (et.id) + '_desc', et.desc))))));
                 })),
-              // AI generation note
+              // Honest offline / AI note
               h('div', { className: subTextClass + ' text-center mt-2 italic' },
-                'Exercises are personalized for ' + (gradeLevel ? 'grade ' + gradeLevel : 'your grade level') + ' using AI.')
+                callGemini
+                  ? oratoryFmt(t('stem.oratory.practice_ai_ready_note', 'Built-in offline drills & No-Mic Contour Studio ready, plus AI drills tailored for {1}.'), [gradeLevel ? 'grade ' + gradeLevel : 'your grade level'])
+                  : t('stem.oratory.practice_offline_ready_note', 'Built-in offline drills, No-Mic Contour Studio, and Prosody Challenges ready \u2014 no microphone or internet required.'))
             );
+          }
+
+          if (exerciseType === 'contourStudio') {
+            return renderContourStudio();
+          }
+
+          if (exerciseType === 'prosodyChallenge') {
+            return renderProsodyChallenges();
           }
 
           // ═══════════════════════════════════════
@@ -4157,7 +6589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                       onClick: function() { setEmotionIndex(ei); }
                     }, emo);
                   })),
-                h('div', { className: 'text-center p-4 rounded-lg ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
+                h('div', { className: 'text-center p-4 rounded-lg ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200')) },
                   h('div', { className: 'text-3xl mb-2' },
                     currentEmotion === 'Excitement' || currentEmotion === 'Joy' || currentEmotion === 'Happy' ? '\uD83D\uDE04' :
                     currentEmotion === 'Sadness' || currentEmotion === 'Sad' ? '\uD83D\uDE22' :
@@ -4170,14 +6602,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     currentEmotion === 'Disappointment' ? '\uD83D\uDE1E' :
                     '\uD83C\uDFAD'),
                   h('div', { className: headingClass + ' text-xl' }, currentEmotion),
-                  h('p', { className: subTextClass + ' mt-1' }, t('stem.oratory.say_the_phrase_with_this_feeling_notic', 'Say the phrase with THIS feeling. Notice what happens to your pitch!')))),
+                  h('p', { className: subTextClass + ' mt-1' }, t('stem.oratory.say_the_phrase_with_this_feeling_notic', 'Say the phrase with THIS feeling. Notice what happens to your pitch!')),
+                  h('div', { className: 'mt-3 flex justify-center' },
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(phrase, 'Kore'); },
+                      'aria-label': t('stem.oratory.aria_hear_emotion_phrase', 'Hear model pronunciation of this phrase')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model'))))),
               // Mic controls + mini visualizer
               renderMiniControls(),
               h('div', { className: 'text-center' },
                 h('button', {
                   type: 'button',
                   className: btnPrimary,
-                  onClick: recordPhraseCompletion,
+                  onClick: function() { recordPhraseCompletion('emotion:' + exerciseIndex + ':' + emotionIndex); },
                   'aria-label': t('stem.oratory.i_practiced_this_phrase_record_it', 'I practiced this phrase, record it')
                 }, t('stem.oratory.i_practiced_this', '\u2713 I Practiced This')))
             );
@@ -4193,17 +6633,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.question_vs_statement', 'Question vs Statement')),
                 h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.say_the_same_words_as_a_statement_pitc', 'Say the same words as a statement (pitch falls at the end) and as a question (pitch rises). Watch the difference on the pitch graph!')),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
-                  h('div', { className: 'p-4 rounded-lg text-center ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
-                    h('div', { className: 'text-2xl mb-1' }, '\u2198\uFE0F'),
-                    h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.statement_pitch_falls', 'Statement (pitch falls)')),
-                    h('div', { className: headingClass + ' text-base' }, stmt)),
-                  h('div', { className: 'p-4 rounded-lg text-center ' + (isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200') },
-                    h('div', { className: 'text-2xl mb-1' }, '\u2197\uFE0F'),
-                    h('div', { className: subTextClass + ' mb-1' }, t('stem.oratory.question_pitch_rises', 'Question (pitch rises)')),
-                    h('div', { className: headingClass + ' text-base' }, qst)))),
+                  h('div', { className: 'p-4 rounded-lg text-center space-y-2 ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')) },
+                    h('div', { className: 'text-2xl' }, '\u2198\uFE0F'),
+                    h('div', { className: subTextClass }, t('stem.oratory.statement_pitch_falls', 'Statement (pitch falls)')),
+                    h('div', { className: headingClass + ' text-base' }, stmt),
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(stmt, 'Kore', 'declarative'); },
+                      'aria-label': t('stem.oratory.aria_hear_statement', 'Hear statement model aloud')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model'))),
+                  h('div', { className: 'p-4 rounded-lg text-center space-y-2 ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200')) },
+                    h('div', { className: 'text-2xl' }, '\u2197\uFE0F'),
+                    h('div', { className: subTextClass }, t('stem.oratory.question_pitch_rises', 'Question (pitch rises)')),
+                    h('div', { className: headingClass + ' text-base' }, qst),
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(qst, 'Kore', 'yesno'); },
+                      'aria-label': t('stem.oratory.aria_hear_question', 'Hear question model aloud')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model'))))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { type: 'button', className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_2', '\u2713 I Practiced This')))
+                h('button', { type: 'button', className: btnPrimary, onClick: function() { recordPhraseCompletion('question:' + exerciseIndex); }, 'aria-label': t('stem.oratory.i_practiced_this_phrase', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_2', '\u2713 I Practiced This')))
             );
           }
 
@@ -4224,15 +6678,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }
               return word;
             }).join(' ');
+            var emphasisTargetIndices = [];
+            displayParts.forEach(function(w, idx) {
+              var cleanW = w.replace(/[.,!?;:]/g, '').toLowerCase();
+              if (selectedWord.toLowerCase().split(/\s+/).indexOf(cleanW) !== -1) emphasisTargetIndices.push(idx);
+            });
+            var emphasisPreviewContour = ORATORY_ENGINE.buildPredictedContour(displayParts.length, emphasisTargetIndices, 'falling');
 
             return h('div', { className: 'space-y-4' },
               navBar,
-              h('div', { className: cardClass },
-                h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.emphasis_drill', 'Emphasis Drill')),
-                h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.the_same_sentence_means_different_thin', 'The same sentence means different things depending on which word you stress. Select a word below, then say the sentence emphasizing that word.')),
-                h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
+              h('div', { className: cardClass + ' space-y-3' },
+                h('h3', { className: headingClass + ' text-sm m-0' }, t('stem.oratory.emphasis_drill', 'Emphasis Drill')),
+                h('p', { className: subTextClass + ' m-0' }, t('stem.oratory.the_same_sentence_means_different_thin', 'The same sentence means different things depending on which word you stress. Select a word below, then say the sentence emphasizing that word.')),
+                h('div', { className: 'text-center p-4 rounded-lg ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200')) },
                   h('div', { className: headingClass + ' text-lg' }, '"' + emphasizedPhrase + '"'),
-                  selectedMeaning && h('div', { className: subTextClass + ' mt-2 italic' }, 'Meaning: ' + selectedMeaning)),
+                  selectedMeaning && h('div', { className: subTextClass + ' mt-2 italic' }, 'Meaning: ' + selectedMeaning),
+                  h('div', { className: 'mt-2 flex justify-center' },
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(base, 'Kore', emphasisPreviewContour); },
+                      'aria-label': t('stem.oratory.aria_hear_emphasis_model', 'Hear model sentence aloud')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model')))),
+                renderStudioContourSvg(h, emphasisPreviewContour, {
+                  isDark: isDark,
+                  isContrast: isContrast,
+                  showTarget: true,
+                  tokens: displayParts,
+                  targetStress: emphasisTargetIndices,
+                  ariaLabel: oratoryFmt(t('stem.oratory.aria_emphasis_contour', 'Visual pitch emphasis contour highlighting {1}'), [selectedWord])
+                }),
                 h('div', { className: 'flex flex-wrap gap-2 justify-center', role: 'radiogroup', 'aria-label': t('stem.oratory.select_word_to_emphasize', 'Select word to emphasize') },
                   words.map(function(word, wi) {
                     var isActive = wi === emphasisWord;
@@ -4249,33 +6725,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { type: 'button', className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase_2', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_3', '\u2713 I Practiced This')))
+                h('button', { type: 'button', className: btnPrimary, onClick: function() { recordPhraseCompletion('emphasis:' + exerciseIndex + ':' + emphasisWord); }, 'aria-label': t('stem.oratory.i_practiced_this_phrase_2', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_3', '\u2713 I Practiced This')))
             );
           }
 
           if (exerciseType === 'pacing') {
             var text = currentExercise.text || 'The quick brown fox jumps over the lazy dog.';
             var targetWpm = currentExercise.targetWpm || 120;
+            var paceEval = ORATORY_ENGINE.classifyPacing(currentWpm, gradeLevel);
 
             return h('div', { className: 'space-y-4' },
               navBar,
               h('div', { className: cardClass },
                 h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.pacing_challenge', 'Pacing Challenge')),
                 h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.read_the_passage_below_at_the_target_s', 'Read the passage below at the target speed. The speedometer will show you how fast you are going!')),
-                h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200') },
-                  h('div', { className: 'text-xs font-bold mb-2 ' + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, 'Target: ' + targetWpm + ' WPM'),
-                  h('div', { className: headingClass + ' text-base leading-relaxed' }, text)),
+                h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200')) },
+                  h('div', { className: 'text-xs font-bold mb-2 ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-yellow-300' : 'text-yellow-700')) }, 'Target: ' + targetWpm + ' WPM'),
+                  h('div', { className: headingClass + ' text-base leading-relaxed' }, text),
+                  h('div', { className: 'mt-2 flex justify-center' },
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(text, 'Kore'); },
+                      'aria-label': t('stem.oratory.aria_hear_pacing_passage', 'Hear pacing passage read aloud')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model')))),
                 h('div', { className: 'text-center' },
                   h('div', { className: 'text-2xl font-bold tracking-tight ' + (Math.abs(currentWpm - targetWpm) < 20 ? 'text-green-600' : Math.abs(currentWpm - targetWpm) < 40 ? 'text-amber-600' : 'text-red-600') },
                     currentWpm + ' WPM'),
                   h('div', { className: subTextClass },
-                    currentWpm === 0 ? 'Start speaking...'
+                    currentWpm === 0 ? paceEval.coachingTip
                     : Math.abs(currentWpm - targetWpm) < 20 ? 'Right on target!'
                     : currentWpm < targetWpm ? 'A little faster...'
                     : 'Slow down a bit...'))),
               renderMiniControls(),
               h('div', { className: 'text-center' },
-                h('button', { type: 'button', className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_passage', 'I practiced this passage') }, t('stem.oratory.i_practiced_this_4', '\u2713 I Practiced This')))
+                h('button', { type: 'button', className: btnPrimary, onClick: function() { recordPhraseCompletion('pacing:' + exerciseIndex); }, 'aria-label': t('stem.oratory.i_practiced_this_passage', 'I practiced this passage') }, t('stem.oratory.i_practiced_this_4', '\u2713 I Practiced This')))
             );
           }
 
@@ -4288,7 +6773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('div', { className: cardClass },
                 h('h3', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.volume_projection', 'Volume Projection')),
                 h('p', { className: subTextClass + ' mb-3' }, 'Speak at a steady, consistent volume for ' + volDuration + ' seconds. Try to keep the volume meter in the green zone the whole time!'),
-                h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
+                h('div', { className: 'text-center p-4 rounded-lg mb-3 ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')) },
                   h('div', { className: headingClass + ' text-base leading-relaxed mb-2' }, volText),
                   exerciseActive
                     ? h('div', null,
@@ -4301,7 +6786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           if (!isRecording) startRecording();
                           startVolumeChallenge();
                         },
-                        'aria-label': 'Start the ' + volDuration + ' second volume challenge'
+                        'aria-label': oratoryFmt(t('stem.oratory.aria_start_volume_challenge', 'Start the {1} second volume challenge'), [volDuration])
                       }, t('stem.oratory.start_challenge', 'Start Challenge')))),
               renderMiniControls()
             );
@@ -4341,10 +6826,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   }, t('stem.oratory.change_pattern', 'Change Pattern'))),
                 h('p', { className: subTextClass + ' mb-2' }, selectedPattern.desc),
 
-                // Sample phrase
-                h('div', { className: 'text-center p-3 rounded-lg mb-3 ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
+                // Sample phrase + Listen button (works without a mic!)
+                h('div', { className: 'text-center p-3 rounded-lg mb-3 ' + (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200')) },
                   h('div', { className: subTextClass + ' text-xs mb-1' }, t('stem.oratory.sample_phrase', 'Sample Phrase:')),
-                  h('div', { className: headingClass + ' text-lg' }, '"' + selectedPattern.phrase + '"')),
+                  h('div', { className: headingClass + ' text-lg' }, '"' + selectedPattern.phrase + '"'),
+                  h('div', { className: 'mt-2 flex justify-center' },
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      disabled: ttsLoading,
+                      onClick: function() { playModelPhrase(selectedPattern.phrase, 'Kore', selectedPattern.points); },
+                      'aria-label': t('stem.oratory.aria_hear_pattern_model', 'Hear model intonation pattern aloud')
+                    }, t('stem.oratory.hear_model', '\uD83D\uDD0A Hear Model')))),
 
                 // Target pattern canvas
                 h('div', { className: 'mb-3' },
@@ -4354,12 +6847,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     height: 120,
                     className: 'w-full rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-200'),
                     role: 'img',
-                    'aria-label': 'Intonation pattern target for ' + selectedPattern.label + '. ' + selectedPattern.desc
+                    'aria-label': oratoryFmt(t('stem.oratory.aria_intonation_target_canvas', 'Intonation pattern target for {1}. {2}'), [selectedPattern.label, selectedPattern.desc])
                   })),
 
                 // Practice button
                 !patternPracticing
-                  ? h('div', { className: 'flex items-center gap-3 justify-center' },
+                  ? h('div', { className: 'flex items-center gap-3 justify-center flex-wrap' },
                       h('button', {
                         type: 'button',
                         className: btnPrimary,
@@ -4371,7 +6864,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           if (!isRecording) startRecording();
                         },
                         'aria-label': t('stem.oratory.start_practicing_this_intonation_patte', 'Start practicing this intonation pattern')
-                      }, t('stem.oratory.practice_this_pattern', '\uD83C\uDFA4 Practice This Pattern')))
+                      }, t('stem.oratory.practice_this_pattern', '\uD83C\uDFA4 Practice This Pattern')),
+                      h('button', {
+                        type: 'button',
+                        className: btnSecondary,
+                        onClick: function() { setExerciseType('contourStudio'); },
+                        'aria-label': t('stem.oratory.aria_switch_nomic_studio', 'Practice contours without a microphone in Visual Contour Studio')
+                      }, t('stem.oratory.try_nomic_studio', '\uD83C\uDFA8 No Mic? Try Visual Studio')))
                   : h('div', { className: 'space-y-3' },
                       h('div', { className: 'text-center p-2 rounded-lg ' + (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200') },
                         h('p', { className: (isDark ? 'text-green-300' : 'text-green-700') + ' font-bold text-sm' + (reducedMotion ? '' : ' animate-pulse') },
@@ -4381,15 +6880,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           type: 'button',
                           className: btnPrimary,
                           onClick: function() {
-                            // Capture pitch data and compute score
+                            // Capture pitch data and compute detailed score via ORATORY_ENGINE
                             var studentData = pitchHistory.slice();
                             setPatternStudentCurve(studentData);
-                            var score = computePatternMatchScore(selectedPattern.points, studentData);
+                            var detailed = ORATORY_ENGINE.scoreProsodyContour(selectedPattern.points, studentData);
+                            var score = detailed.score;
                             setPatternScore(score);
                             setPatternPracticing(false);
-                            recordPhraseCompletion();
+                            recordPhraseCompletion('intonation:' + selectedPattern.id);
                             if (score >= 70 && stemCelebrate) stemCelebrate();
-                            if (announceToSR) announceToSR('Pattern match score: ' + score + ' percent.');
+                            if (announceToSR) announceToSR(oratoryFmt(t('stem.oratory.sr_pattern_score', 'Pattern match score: {1} percent. {2}'), [score, detailed.feedback]));
                           },
                           'aria-label': t('stem.oratory.stop_and_score_my_attempt', 'Stop and score my attempt')
                         }, t('stem.oratory.score_my_attempt', '\u2713 Score My Attempt')),
@@ -4456,7 +6956,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     setPatternScore(null);
                     setPatternStudentCurve(null);
                   },
-                  'aria-label': pat.label + ': ' + pat.desc + '. Sample phrase: ' + pat.phrase
+                  'aria-label': oratoryFmt(t('stem.oratory.aria_pattern_card', '{1}: {2}. Sample phrase: {3}'), [pat.label, pat.desc, pat.phrase])
                 },
                   h('div', { className: 'flex items-start justify-between gap-3' },
                     h('div', { className: 'flex items-start gap-2.5 min-w-0 flex-1' },
@@ -4483,7 +6983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   ? 'transition-colors motion-reduce:transition-none px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 focus-visible:ring-2 focus-visible:ring-red-300 active:scale-[0.97]' + (reducedMotion ? '' : ' animate-pulse')
                   : 'px-4 py-2 rounded-full font-bold text-sm ' + ('transition-colors motion-reduce:transition-none bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 focus-visible:ring-2 focus-visible:ring-violet-400',
                 onClick: isRecording ? stopRecording : startRecording,
-                'aria-label': isRecording ? 'Stop microphone' : 'Start microphone'
+                'aria-label': isRecording ? t('stem.oratory.aria_stop_mic', 'Stop microphone') : t('stem.oratory.aria_start_mic', 'Start microphone')
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
               h('span', { className: subTextClass },
                 isRecording ? 'Listening... speak now!' : 'Click to activate your microphone.')),
@@ -4508,17 +7008,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         }
 
         // ═══════════════════════════════════════
-        // Render: Tab 3 — Multilingual Mode
+        // Render: Tab 3 — Multilingual Mode (100% Offline 15-Language Bank + Optional AI + No-Mic Studio)
         // ═══════════════════════════════════════
         function renderMultilingual() {
-          var langObj = LANGUAGES.find(function(l) { return l.code === selectedLang; });
+          var resolvedCode = customLang ? ORATORY_ENGINE.resolveLanguageCode(customLang) : selectedLang;
+          var activeLangCode = resolvedCode || selectedLang || 'en';
+          var langObj = LANGUAGES.find(function(l) { return l.code === activeLangCode; }) || LANGUAGES[0];
           var langName = customLang || (langObj ? langObj.name : 'English');
+          var bankPhrases = ORATORY_ENGINE.getLanguagePhrases(activeLangCode);
+          var safePhraseIdx = (multiPhraseIdx >= 0 && multiPhraseIdx < bankPhrases.length) ? multiPhraseIdx : 0;
+          var curatedEntry = bankPhrases[safePhraseIdx] || bankPhrases[0];
+          var activePhraseText = multiPhrase || (curatedEntry ? curatedEntry.text : '');
+          var usingCurated = curatedEntry && (!multiPhrase || multiPhrase === curatedEntry.text);
+          var activeContour = (usingCurated && curatedEntry.contour)
+            ? curatedEntry.contour
+            : ORATORY_ENGINE.resampleContour(ORATORY_ENGINE.synthesizeModelContour(activePhraseText, 16).map(function(hz) { return Math.max(0.1, Math.min(0.95, (hz - 120) / 145)); }), 16);
+          var activeTokens = (usingCurated && Array.isArray(curatedEntry.tokens)) ? curatedEntry.tokens : String(activePhraseText || '').trim().split(/\s+/).filter(Boolean);
 
           return h('div', { className: 'space-y-4' },
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
                 h('span', null, '\uD83C\uDF10'), t('stem.oratory.multilingual_pronunciation_lab', 'Multilingual Pronunciation Lab')),
-              h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.practice_pronunciation_in_any_language', 'Practice pronunciation in any language! The AI will model the phrase, then you try to match its prosody.'))),
+              h('p', { className: subTextClass + ' mb-0' }, t('stem.oratory.multi_offline_intro', 'Explore curated authentic phrases, phonetic stress cues, and visual pitch contours across all 15 languages offline \u2014 listen with TTS, tap stressed words without a mic, or compare with your microphone!'))),
 
             // Language selector
             h('div', { className: cardClass },
@@ -4532,12 +7043,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     role: 'radio',
                     'aria-checked': isActive ? 'true' : 'false',
                     className: (isActive
-                      ? 'px-3 py-1.5 rounded-full text-xs font-bold bg-violet-600 text-white ring-2 ring-violet-400'
+                      ? (isContrast ? 'px-3 py-1.5 rounded-full text-xs font-bold bg-yellow-300 text-black border-2 border-yellow-300' : 'px-3 py-1.5 rounded-full text-xs font-bold bg-violet-600 text-white ring-2 ring-violet-400')
                       : btnSecondary + ' px-3 py-1.5 rounded-full') + ' transition-all',
-                    onClick: function() { setSelectedLang(lang.code); setCustomLang(''); }
+                    onClick: function() {
+                      setSelectedLang(lang.code);
+                      setCustomLang('');
+                      selectOfflineMultiPhrase(lang.code, 0);
+                    }
                   }, lang.flag + ' ' + lang.name);
                 })),
-              h('div', { className: 'flex items-center gap-2' },
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
                 h('label', { className: subTextClass, htmlFor: 'oratory-custom-lang' }, t('stem.oratory.or_type_any_language', 'Or type any language:')),
                 h('input', {
                   id: 'oratory-custom-lang',
@@ -4545,41 +7060,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   value: customLang,
                   onChange: function(e) { setCustomLang(e.target.value); },
                   placeholder: t('stem.oratory.e_g_tagalog_amharic', 'e.g., Tagalog, Amharic...'),
-                  className: 'flex-1 px-3 py-1.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
-                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900'),
+                  className: 'flex-1 min-w-[180px] px-3 py-1.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
+                    (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900')),
                   'aria-label': t('stem.oratory.type_a_language_name', 'Type a language name')
                 }))),
 
-            // Phrase input
-            h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.phrase_to_practice', 'Phrase to Practice')),
-              h('div', { className: 'flex items-center gap-2 mb-3' },
+            // Curated offline phrase switcher + custom phrase input
+            h('div', { className: cardClass + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+                h('h4', { className: headingClass + ' text-sm m-0' },
+                  oratoryFmt(t('stem.oratory.multi_curated_header', '{1} Practice Phrases ({2} curated offline)'), [langObj ? langObj.flag + ' ' + langName : langName, bankPhrases.length])),
+                h('div', { className: 'flex items-center gap-1.5 flex-wrap' },
+                  bankPhrases.map(function(bp, bi) {
+                    var isCur = usingCurated && bi === safePhraseIdx;
+                    return h('button', {
+                      type: 'button',
+                      key: bp.id,
+                      className: (isCur
+                        ? (isContrast ? 'bg-yellow-300 text-black border-2 border-yellow-300 font-bold' : 'bg-violet-600 text-white font-bold')
+                        : btnSecondary) + ' px-2.5 py-1 rounded-full text-xs',
+                      onClick: function() { selectOfflineMultiPhrase(activeLangCode, bi); },
+                      'aria-pressed': isCur ? 'true' : 'false',
+                      'aria-label': oratoryFmt(t('stem.oratory.aria_select_multi_phrase', 'Select curated phrase {1} in {2}'), [bi + 1, langName])
+                    }, '#' + (bi + 1));
+                  }),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() { selectOfflineMultiPhrase(activeLangCode, safePhraseIdx + 1); },
+                    'aria-label': oratoryFmt(t('stem.oratory.aria_next_offline_phrase', 'Load next curated phrase in {1}'), [langName])
+                  }, t('stem.oratory.multi_next_phrase', '\u21BB Next Phrase')),
+                  callGemini && h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: generateMultiPhrase,
+                    disabled: aiLoading,
+                    'aria-label': oratoryFmt(t('stem.oratory.aria_generate_ai_phrase', 'Generate a phrase in {1} using AI'), [langName])
+                  }, aiLoading ? '...' : t('stem.oratory.multi_ai_generate', '\u2728 AI Phrase')))),
+
+              h('div', { className: 'flex items-center gap-2' },
                 h('input', {
                   type: 'text',
-                  value: multiPhrase,
-                  onChange: function(e) { setMultiPhrase(e.target.value); },
-                  placeholder: 'Type a phrase in ' + langName + ' or click Generate...',
+                  value: activePhraseText,
+                  onChange: function(e) {
+                    setMultiPhrase(e.target.value);
+                    setMultiMarkedStress([]);
+                    setMultiStressCheck(null);
+                    setMultiContourScore(null);
+                  },
+                  placeholder: oratoryFmt(t('stem.oratory.multi_input_placeholder', 'Type or edit a phrase in {1}...'), [langName]),
                   className: 'flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
-                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900'),
-                  'aria-label': 'Phrase to practice in ' + langName
+                    (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900')),
+                  'aria-label': oratoryFmt(t('stem.oratory.aria_phrase_input_lang', 'Phrase to practice in {1}'), [langName])
+                })),
+
+              activePhraseText && h('div', { className: 'p-4 rounded-xl space-y-3 border ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-violet-900/30 border-violet-700' : 'bg-violet-50 border-violet-200')) },
+                h('div', { className: 'text-center space-y-1' },
+                  h('div', { className: headingClass + ' text-xl' }, activePhraseText),
+                  usingCurated && curatedEntry.phonetic && h('div', { className: 'text-xs font-mono font-semibold ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-sky-300' : 'text-violet-800')) },
+                    t('stem.oratory.multi_phonetic_prefix', 'Phonetic & stress: ') + curatedEntry.phonetic),
+                  usingCurated && curatedEntry.gloss && h('div', { className: subTextClass + ' italic' },
+                    t('stem.oratory.multi_gloss_prefix', 'Meaning: ') + '"' + curatedEntry.gloss + '"')),
+
+                // Visual Intonation Contour SVG (works 100% offline & without a mic!)
+                renderStudioContourSvg(h, activeContour, {
+                  isDark: isDark,
+                  isContrast: isContrast,
+                  showTarget: true,
+                  tokens: activeTokens,
+                  markedStress: multiMarkedStress,
+                  targetStress: (usingCurated && multiStressCheck) ? curatedEntry.targetStressIndices : [],
+                  ariaLabel: oratoryFmt(t('stem.oratory.aria_multi_contour_svg', 'Intonation contour curve for {1} phrase: {2}'), [langName, activePhraseText])
                 }),
-                callGemini && h('button', {
-                  type: 'button',
-                  className: btnSecondary,
-                  onClick: generateMultiPhrase,
-                  disabled: aiLoading,
-                  'aria-label': 'Generate a phrase in ' + langName + ' using AI'
-                }, aiLoading ? '...' : '\u2728 Generate')),
 
-              multiPhrase && h('div', { className: 'text-center p-4 rounded-lg ' + (isDark ? 'bg-violet-900/30 border border-violet-700' : 'bg-violet-50 border border-violet-200') },
-                h('div', { className: headingClass + ' text-lg mb-3' }, multiPhrase),
+                // Linguistic stress / rhythm note
+                usingCurated && curatedEntry.stressNote && h('p', { className: subTextClass + ' m-0 p-2.5 rounded-lg ' + (isContrast ? 'bg-black border border-yellow-300 text-white' : (isDark ? 'bg-slate-900/70 text-slate-200' : 'bg-white/80 text-slate-700')) },
+                  '\uD83C\uDFB5 ' + curatedEntry.stressNote),
 
-                // Model / Your Turn buttons
-                h('div', { className: 'flex gap-3 justify-center flex-wrap' },
+                // No-Mic Interactive Stress Tap Check for curated phrases
+                usingCurated && Array.isArray(curatedEntry.tokens) && curatedEntry.tokens.length > 1 && h('div', { className: 'space-y-2 pt-1' },
+                  h('div', { className: headingClass + ' text-xs' },
+                    t('stem.oratory.multi_nomic_tap_prompt', 'No-Mic Practice \u2014 Tap the stressed/focal word(s) in this phrase, then check:')),
+                  h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.oratory.aria_multi_stress_tokens', 'Tap stressed words in target language phrase') },
+                    curatedEntry.tokens.map(function(tok, ti) {
+                      var sel = multiMarkedStress.indexOf(ti) !== -1;
+                      var isTarg = multiStressCheck && curatedEntry.targetStressIndices.indexOf(ti) !== -1;
+                      return h('button', {
+                        type: 'button',
+                        key: curatedEntry.id + '-mtok-' + ti,
+                        'aria-pressed': sel ? 'true' : 'false',
+                        className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' + (
+                          sel
+                            ? (isContrast ? 'bg-yellow-300 text-black border-yellow-300' : 'bg-violet-600 text-white border-violet-500')
+                            : isTarg
+                              ? (isContrast ? 'bg-black text-yellow-300 border-2 border-yellow-300' : (isDark ? 'bg-emerald-900/40 text-emerald-200 border-emerald-500' : 'bg-emerald-50 text-emerald-800 border-emerald-500'))
+                              : (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-700 text-slate-100 border-slate-600' : 'bg-white text-slate-800 border-slate-300'))
+                        ),
+                        onClick: function() {
+                          setMultiMarkedStress(function(prev) {
+                            return prev.indexOf(ti) !== -1 ? prev.filter(function(x) { return x !== ti; }) : prev.concat([ti]);
+                          });
+                        }
+                      }, (sel ? '\u2605 ' : '') + tok + (isTarg && !sel ? ' (\u2713)' : ''));
+                    })),
+                  h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                    h('button', {
+                      type: 'button',
+                      className: btnSecondary,
+                      onClick: function() {
+                        if (!multiMarkedStress.length) {
+                          if (addToast) addToast(t('stem.oratory.toast_multi_tap_first', 'Tap one or more words above first.'), 'info');
+                          return;
+                        }
+                        var chk = ORATORY_ENGINE.scoreStressAndTurn(multiMarkedStress, curatedEntry.targetTurn, curatedEntry.targetStressIndices, curatedEntry.targetTurn);
+                        setMultiStressCheck(chk);
+                        if (chk.stressScore >= 50) {
+                          recordPhraseCompletion('multi:' + curatedEntry.id);
+                        }
+                      },
+                      'aria-label': t('stem.oratory.aria_check_multi_stress', 'Check marked stress words')
+                    }, t('stem.oratory.multi_check_stress', '\u2713 Check Stress Marks')),
+                    multiStressCheck && h('span', { className: 'text-xs font-bold ' + (isContrast ? 'text-yellow-300' : (multiStressCheck.stressCorrect ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-amber-300' : 'text-amber-800'))) },
+                      oratoryFmt(t('stem.oratory.multi_stress_result', 'Stress match: {1}% ({2} cadence)'), [multiStressCheck.stressScore, curatedEntry.targetTurn])))),
+
+                // Model (TTS) / Your Turn (Mic Optional) buttons
+                h('div', { className: 'flex gap-3 justify-center flex-wrap pt-1' },
                   h('button', {
                     type: 'button',
                     className: btnPrimary + ' flex items-center gap-2',
-                    onClick: modelMultiPhrase,
+                    onClick: function() { modelMultiPhrase(activePhraseText, activeContour); },
                     disabled: ttsLoading || multiMode === 'modeling',
                     'aria-label': t('stem.oratory.hear_the_ai_model_speak_this_phrase', 'Hear the AI model speak this phrase')
                   }, ttsLoading ? 'Loading...' : '\uD83D\uDD0A Model'),
@@ -4592,17 +7201,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     },
                     disabled: multiMode === 'modeling',
                     'aria-label': t('stem.oratory.your_turn_to_speak_the_phrase', 'Your turn to speak the phrase')
-                  }, t('stem.oratory.your_turn', '\uD83C\uDFA4 Your Turn'))),
+                  }, t('stem.oratory.your_turn', '\uD83C\uDFA4 Your Turn')),
+                  h('button', {
+                    type: 'button',
+                    className: btnSecondary,
+                    onClick: function() {
+                      recordPhraseCompletion('multi:' + (usingCurated ? curatedEntry.id : activeLangCode + ':' + activePhraseText.slice(0, 40)));
+                    },
+                    'aria-label': t('stem.oratory.i_practiced_this_phrase_3', 'I practiced this phrase')
+                  }, t('stem.oratory.i_practiced_this_5', '\u2713 I Practiced This'))),
 
                 // Mode status
-                multiMode === 'modeling' && h('div', { className: subTextClass + ' mt-3' + (reducedMotion ? '' : ' animate-pulse') }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
-                multiMode === 'yourTurn' && h('div', { className: (isDark ? 'text-green-400' : 'text-green-700') + ' mt-3 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
+                multiMode === 'modeling' && h('div', { className: subTextClass + ' text-center mt-2' + (reducedMotion ? '' : ' animate-pulse') }, t('stem.oratory.listen_carefully_to_the_model', 'Listen carefully to the model...')),
+                multiMode === 'yourTurn' && h('div', { className: (isContrast ? 'text-yellow-300' : (isDark ? 'text-green-400' : 'text-green-700')) + ' text-center mt-2 font-bold text-sm' }, t('stem.oratory.your_turn_speak_the_phrase_and_try_to_', 'Your turn! Speak the phrase and try to match the pitch pattern.')))
             ),
 
-            // Prosody comparison visualization
-            (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass },
-              h('h4', { className: headingClass + ' text-sm mb-2' }, t('stem.oratory.prosody_comparison', 'Prosody Comparison')),
+            // Prosody comparison visualization (when mic speaking active)
+            (multiMode === 'yourTurn' || multiMode === 'comparing') && h('div', { className: cardClass + ' space-y-2' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('h4', { className: headingClass + ' text-sm m-0' }, t('stem.oratory.prosody_comparison', 'Prosody Comparison')),
+                h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  disabled: pitchHistory.length < 5,
+                  onClick: function() {
+                    var sc = ORATORY_ENGINE.scoreProsodyContour(activeContour, pitchHistory.slice());
+                    setMultiContourScore(sc);
+                    if (sc.score >= 60) recordPhraseCompletion('multi:' + (usingCurated ? curatedEntry.id : activeLangCode + ':' + activePhraseText.slice(0, 40)));
+                  },
+                  'aria-label': t('stem.oratory.aria_score_multi_live', 'Score live pronunciation contour against target')
+                }, t('stem.oratory.score_live_attempt', 'Score Live Contour'))),
               h('p', { className: subTextClass + ' mb-2' }, t('stem.oratory.dashed_line_model_solid_line_your_spee', 'Dashed line = model, solid line = your speech. Try to make them match!')),
+              multiContourScore && h('div', { className: 'p-2.5 rounded-lg text-xs border ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800')) },
+                h('strong', null, oratoryFmt(t('stem.oratory.live_score_summary', 'Live Contour Score: {1}% \u2014 '), [multiContourScore.score])),
+                multiContourScore.feedback),
               h('canvas', { tabIndex: 0, ref: pitchCanvasRef,
                 width: 600,
                 height: 180,
@@ -4610,9 +7242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 role: 'img',
                 'aria-label': t('stem.oratory.prosody_comparison_graph_showing_model', 'Prosody comparison graph showing model curve and your speech curve overlaid')
               }),
-              renderMiniControls(),
-              h('div', { className: 'text-center mt-2' },
-                h('button', { type: 'button', className: btnPrimary, onClick: recordPhraseCompletion, 'aria-label': t('stem.oratory.i_practiced_this_phrase_3', 'I practiced this phrase') }, t('stem.oratory.i_practiced_this_5', '\u2713 I Practiced This'))))
+              renderMiniControls())
           );
         }
 
@@ -4636,16 +7266,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('div', { className: cardClass },
               h('h3', { className: headingClass + ' text-base mb-1 flex items-center gap-2' },
                 h('span', null, '\uD83D\uDCCB'), t('stem.oratory.session_report', 'Session Report')),
-              h('p', { className: subTextClass + ' mb-4' }, t('stem.oratory.summary_of_your_practice_session_share', 'Summary of your practice session. Share this with your speech-language pathologist!'))),
+              h('p', { className: subTextClass + ' mb-0' }, t('stem.oratory.summary_of_your_practice_session_share', 'Summary of your practice session. Share this with your speech-language pathologist!'))),
 
             // Stats grid
-            h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-3' },
-              renderStatCard('\uD83D\uDCDD', 'Phrases Practiced', (totalPhrases || 0).toString()),
-              renderStatCard('\uD83C\uDFB5', 'Warm-ups Done', (warmUpsCompleted || 0).toString()),
-              renderStatCard('\u23F1\uFE0F', 'Avg Pacing', avgWpm > 0 ? avgWpm + ' WPM' : 'N/A'),
-              renderStatCard('\uD83D\uDD0A', 'Best Steadiness', (bestSteadiness || 0) + '%'),
-              renderStatCard('\uD83C\uDFB6', 'Pitch Range', pitchMin > 0 ? pitchMin + '-' + pitchMax + ' Hz' : 'N/A'),
-              renderStatCard('\u23F0', 'Time Spent', timeMin > 0 ? '~' + timeMin + ' min' : '<1 min')),
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
+              renderStatCard('\uD83D\uDCDD', t('stem.oratory.report_phrases', 'Phrases Practiced'), (totalPhrases || 0).toString()),
+              renderStatCard('\uD83C\uDFB5', t('stem.oratory.report_warmups', 'Warm-ups Done'), (warmUpsCompleted || 0).toString()),
+              renderStatCard('\uD83C\uDFA8', t('stem.oratory.report_studio_drills', 'Contour Drills'), masteredStudioIds.length + '/' + ORATORY_ENGINE.CONTOUR_STUDIO_DRILLS.length),
+              renderStatCard('\uD83E\uDDE0', t('stem.oratory.report_challenges', 'Challenges Solved'), solvedChallengeIds.length + '/' + ORATORY_ENGINE.PROSODY_CHALLENGES.length),
+              renderStatCard('\u23F1\uFE0F', t('stem.oratory.report_avg_pacing', 'Avg Pacing'), avgWpm > 0 ? avgWpm + ' WPM' : 'N/A'),
+              renderStatCard('\uD83D\uDD0A', t('stem.oratory.report_best_steadiness', 'Best Steadiness'), (bestSteadiness || 0) + '%'),
+              renderStatCard('\uD83C\uDFB6', t('stem.oratory.report_pitch_range', 'Pitch Range'), pitchMin > 0 ? pitchMin + '-' + pitchMax + ' Hz' : 'N/A'),
+              renderStatCard('\u23F0', t('stem.oratory.report_time_spent', 'Time Spent'), timeMin > 0 ? '~' + timeMin + ' min' : '<1 min')),
 
             // Fluency summary in report
             fluencySessions.length > 0 && h('div', { className: cardClass },
@@ -4666,14 +7298,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.achievements', 'Achievements')),
               h('div', { className: 'space-y-2', role: 'list', 'aria-label': t('stem.oratory.achievements', 'Achievements') },
                 renderAchievement('\uD83C\uDFA4', 'Vocal Warm-up', warmUpsCompleted >= 1, warmUpsCompleted + '/1 completed'),
-                renderAchievement('\uD83D\uDCCA', '5 Phrases Analyzed', phrasesAnalyzed >= 5, phrasesAnalyzed + '/5 phrases'),
+                renderAchievement('\uD83D\uDCCA', '5 Unique Phrases Analyzed', phrasesAnalyzed >= 5, phrasesAnalyzed + '/5 phrases'),
+                renderAchievement('\uD83E\uDDE0', 'Prosody Analyst (5+ Challenges)', solvedChallengeIds.length >= 5, solvedChallengeIds.length + '/' + ORATORY_ENGINE.PROSODY_CHALLENGES.length + ' solved'),
                 renderAchievement('\uD83C\uDFC6', 'Smooth Pacing', achievedSmoothPacing, achievedSmoothPacing ? 'Achieved!' : 'Not yet'))),
 
             // Share button
             h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.share_with_slp', 'Share with SLP')),
               h('p', { className: subTextClass + ' mb-3' }, t('stem.oratory.generate_a_text_summary_of_this_sessio', 'Generate a text summary of this session that you can share with your speech-language pathologist.')),
-              h('div', { className: 'flex gap-2' },
+              h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', {
                   type: 'button',
                   className: btnPrimary,
@@ -4684,12 +7317,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   type: 'button',
                   className: btnSecondary,
                   onClick: copyReport,
-                  'aria-label': copied ? 'Report copied!' : 'Copy report to clipboard'
-                }, copied ? '\u2713 Copied!' : '\uD83D\uDCCB Copy')),
+                  'aria-label': copied ? t('stem.oratory.aria_report_copied', 'Report copied!') : t('stem.oratory.aria_copy_report', 'Copy report to clipboard')
+                }, copied ? '\u2713 Copied!' : '\uD83D\uDCCB Copy'),
+                callTTS && h('button', {
+                  type: 'button',
+                  className: btnSecondary,
+                  disabled: ttsLoading,
+                  onClick: function() {
+                    var summary = 'Oratory Lab summary: ' + (phrasesAnalyzed || 0) + ' unique phrases practiced, ' +
+                      (warmUpsCompleted || 0) + ' warm-ups completed, ' +
+                      masteredStudioIds.length + ' contour drills mastered, and ' +
+                      solvedChallengeIds.length + ' of ' + ORATORY_ENGINE.PROSODY_CHALLENGES.length + ' prosody challenges solved.';
+                    playModelPhrase(summary, 'Kore');
+                  },
+                  'aria-label': t('stem.oratory.aria_read_report_aloud', 'Read session report summary aloud')
+                }, t('stem.oratory.read_aloud', '\uD83D\uDD0A Read Aloud'))),
 
               reportText && h('pre', {
                 className: 'mt-3 p-3 rounded-lg text-xs leading-relaxed overflow-auto max-h-60 ' +
-                  (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400'),
+                  (isContrast ? 'bg-black text-white border border-yellow-300' : (isDark ? 'bg-slate-900 text-slate-300 border border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400')),
                 role: 'textbox',
                 'aria-label': t('stem.oratory.session_report_text', 'Session report text'),
                 'aria-readonly': 'true',
@@ -4714,10 +7360,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                     sessionTimeSpent: 0,
                     sessionStartTime: null,
                     cachedExercises: null,
-                    fluencySessions: []
+                    fluencySessions: [],
+                    completedWarmupIds: [],
+                    completedPhraseKeys: [],
+                    solvedChallengeIds: [],
+                    masteredStudioIds: []
                   });
                   setReportText(null);
-                  if (addToast) addToast('Session data cleared.', 'info');
+                  if (addToast) addToast(t('stem.oratory.toast_session_cleared', 'Session data cleared.'), 'info');
                   if (announceToSR) announceToSR(__alloT('stem.oratory.sr_all_session_data_has_been_reset', 'All session data has been reset.'));
                 },
                 'aria-label': t('stem.oratory.clear_all_session_data_and_start_fresh', 'Clear all session data and start fresh')
@@ -4738,15 +7388,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           return h('div', {
             className: 'flex items-center gap-3 p-2 rounded-lg ' +
               (achieved
-                ? (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200')
-                : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400')),
+                ? (isContrast ? 'bg-black border-2 border-yellow-300' : (isDark ? 'bg-green-900/30 border border-green-700' : 'bg-green-50 border border-green-200'))
+                : (isContrast ? 'bg-black border border-yellow-300' : (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-400'))),
             role: 'listitem'
           },
             h('span', { className: 'text-lg' }, achieved ? '\u2705' : icon),
             h('div', { className: 'flex-1' },
               h('div', { className: headingClass + ' text-xs' }, label),
               h('div', { className: subTextClass }, progress)),
-            achieved && h('span', { className: 'text-green-500 font-bold text-xs' }, 'DONE'));
+            achieved && h('span', { className: (isContrast ? 'text-yellow-300' : 'text-green-500') + ' font-bold text-xs' }, 'DONE'));
         }
 
         // ═══════════════════════════════════════
@@ -4760,12 +7410,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
           // inks are designed for a dark page, but the host renders tools on a
           // white card even under the dark theme - the subtitle measured
           // 1.23:1 there. Light mode is untouched.
-          style: isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined
+          style: isContrast ? { background: '#000000', color: '#ffffff', borderRadius: 12, padding: 12 } : (isDark ? { background: '#0f172a', borderRadius: 12, padding: 12 } : undefined)
         },
           // Acoustic & Rhetoric Studio Hero Header
           h('div', { className: 'oratory-hero rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap' },
             h('div', { className: 'flex items-center gap-3 min-w-0 flex-1' },
-              h('button', {
+              !isEmbedded && h('button', {
                 type: 'button',
                 className: 'px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-violet-300',
                 style: { background: 'rgba(15,23,42,0.55)', borderColor: 'rgba(196,181,253,0.45)', color: '#f8fafc' },
@@ -4808,7 +7458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
           // Tab navigation
           h('div', {
-            className: 'flex flex-wrap gap-1 p-1 rounded-xl ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
+            className: 'flex flex-wrap gap-1 p-1 rounded-xl ' + (isContrast ? 'bg-black border-2 border-yellow-300' : (isDark ? 'bg-slate-800' : 'bg-slate-100')),
             role: 'tablist',
             'aria-label': t('stem.oratory.oratory_lab_sections', 'Oratory Lab sections')
           },
@@ -4824,11 +7474,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 tabIndex: isActive ? 0 : -1,
                 className: 'flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
                   (isActive
-                    ? (isDark ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-700 shadow-sm')
-                    : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700')),
+                    ? (isContrast ? 'bg-yellow-300 text-black font-bold' : (isDark ? 'bg-violet-600 text-white shadow-sm' : 'bg-white text-violet-700 shadow-sm'))
+                    : (isContrast ? 'bg-black text-white hover:bg-slate-900' : (isDark ? 'transition-colors text-slate-200 hover:bg-slate-700 hover:text-white active:scale-[0.97]' : 'transition-colors text-slate-600 hover:text-slate-700'))),
                 onClick: function() { setActiveTab(tab.id); },
                 onKeyDown: function(e) {
-                  var tabIds = TABS.map(function(t) { return t.id; });
+                  var tabIds = TABS.map(function(tabItem) { return tabItem.id; });
                   var idx = tabIds.indexOf(tab.id);
                   var targetId = null;
                   if (e.key === 'ArrowRight') {
@@ -4868,7 +7518,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             };
             var meta = TAB_META[activeTab] || TAB_META.visualizer;
             // Accent at 55% (light) or 45% toward white (dark) clears 4.5:1 on the tint.
-            var heroInk = 'rgb(' + [1, 3, 5].map(function(i) { var c = parseInt(meta.accent.substr(i, 2), 16); return Math.round(isDark ? c + (255 - c) * 0.45 : c * 0.55); }).join(',') + ')';
+            var heroInk = isContrast ? '#ffff00' : ('rgb(' + [1, 3, 5].map(function(i) { var c = parseInt(meta.accent.substr(i, 2), 16); return Math.round(isDark ? c + (255 - c) * 0.45 : c * 0.55); }).join(',') + ')');
             return h('div', {
               className: 'oratory-tab-band mt-2',
               style: {
@@ -4883,7 +7533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                h('p', { style: { margin: '3px 0 0', color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
               )
             );
           })(),
@@ -4893,14 +7543,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             id: 'oratory-panel-' + activeTab,
             role: 'tabpanel',
             'aria-labelledby': 'oratory-tab-' + activeTab,
-            'aria-label': (TABS.find(function(t) { return t.id === activeTab; }) || {}).label + ' panel'
+            'aria-label': oratoryFmt(t('stem.oratory.aria_tab_panel', '{1} panel'), [(TABS.find(function(tabItem) { return tabItem.id === activeTab; }) || {}).label || ''])
           },
             activeTab === 'visualizer' && renderVisualizer(),
             activeTab === 'practice' && renderPractice(),
             activeTab === 'multilingual' && renderMultilingual(),
             activeTab === 'report' && renderReport(),
             activeTab === 'prosodyHunt' && (function() {
-              var iq = d.prosodyHunt || { pitch: 100, pace: 1.0, volume: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iq = d.prosodyHunt;
               function setIQ(patch) { upd('prosodyHunt', Object.assign({}, iq, patch)); }
               var tempo;
               if (iq.pace < 0.7) tempo = 'slow';
@@ -4918,7 +7568,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 { id: 'dramatic', label: t('stem.oratory.preset_dramatic', '🎭 Dramatic Gravitas'), patch: { pitch: 55, pace: 0.65, volume: 4 } },
                 { id: 'urgent', label: t('stem.oratory.preset_urgent', '⚡ Urgent Broadcast'), patch: { pitch: 155, pace: 1.45, volume: 6 } }
               ];
-              return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-500') + ' space-y-3' },
+              var estSimWpm = Math.round(145 * Math.max(0.5, Math.min(2.0, Number(iq.pace) || 1.0)));
+              var simAriaLabel = oratoryFmt(t('stem.oratory.aria_prosody_sim_wave', 'Simulated delivery prosody wave at approximately {1} words per minute, plus {2} hertz pitch offset, and {3} decibel gain.'), [estSimWpm, iq.pitch, iq.volume]);
+              return h('div', { className: 'p-4 rounded-xl border ' + (isContrast ? 'bg-black border-2 border-yellow-300 text-white' : (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-500')) + ' space-y-3' },
                 h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
                   h('h3', { className: 'text-sm font-black m-0' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
                   h('div', { className: 'flex flex-wrap gap-1.5' },
@@ -4929,19 +7581,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
                 h('p', { className: 'text-[0.75rem] leading-relaxed m-0' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
                 // Live reactive SVG prosody waveform simulator
-                renderProsodySimSvg(h, iq, tm.wave, isDark),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
-                  h('div', { className: 'text-base font-black', style: { color: tm.color } }, tm.label),
-                  h('div', { className: 'text-[0.6875rem] mt-1 font-medium', style: { color: '#1e293b' } }, tm.desc)
+                renderProsodySimSvg(h, iq, tm.wave, isDark, isContrast, t('stem.oratory.live_acoustic_preview', 'Live Acoustic Delivery Preview'), simAriaLabel),
+                h('div', { className: 'p-3 rounded-lg text-center', style: isContrast ? { background: '#000000', border: '2px solid #ffff00' } : { background: tm.bg, border: '2px solid ' + tm.border } },
+                  h('div', { className: 'text-base font-black', style: { color: isContrast ? '#ffff00' : tm.color } }, tm.label),
+                  h('div', { className: 'text-[0.6875rem] mt-1 font-medium', style: { color: isContrast ? '#ffffff' : '#1e293b' } }, tm.desc)
                 ),
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
-                  [{ k: 'pitch', l: 'Pitch (+Hz)', mn: 0, mx: 200, st: 5 },
-                   { k: 'pace', l: 'Pace ×', mn: 0.5, mx: 2.0, st: 0.05 },
-                   { k: 'volume', l: 'Volume gain dB', mn: -12, mx: 12, st: 0.5 }].map(function(s) {
-                    return h('div', { key: s.k, className: 'p-2.5 rounded-lg border ' + (isDark ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50 border-slate-300') },
+                  [{ k: 'pitch', l: t('stem.oratory.slider_pitch', 'Pitch (+Hz)'), mn: 0, mx: 200, st: 5 },
+                   { k: 'pace', l: t('stem.oratory.slider_pace', 'Pace \u00D7'), mn: 0.5, mx: 2.0, st: 0.05 },
+                   { k: 'volume', l: t('stem.oratory.slider_volume', 'Volume gain dB'), mn: -12, mx: 12, st: 0.5 }].map(function(s) {
+                    return h('div', { key: s.k, className: 'p-2.5 rounded-lg border ' + (isContrast ? 'bg-black border-yellow-300' : (isDark ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50 border-slate-300')) },
                       h('label', { htmlFor: 'ph-' + s.k, className: 'flex justify-between text-[0.6875rem] font-bold mb-1' },
                         h('span', null, s.l),
-                        h('span', { className: 'font-mono ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, iq[s.k])),
+                        h('span', { className: 'font-mono ' + (isContrast ? 'text-yellow-300' : (isDark ? 'text-violet-300' : 'text-violet-700')) }, iq[s.k])),
                       h('input', { id: 'ph-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                         onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
                         className: 'w-full', 'aria-label': s.l }));
@@ -4949,18 +7601,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
                   h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ p: iq.pitch, c: iq.pace, v: iq.volume, t: tempo }]).slice(-8) }); }, className: btnPrimary + ' text-xs py-1.5 px-3' }, t('stem.oratory.log', '📋 Log')),
-                  h('button', { type: 'button', onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: btnSecondary }, t('stem.oratory.reset_2', '↺ Reset'))
+                  h('button', { type: 'button', onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: btnSecondary }, t('stem.oratory.reset_2', '↺ Reset')),
+                  h('button', { type: 'button', onClick: function() { setActiveTab('practice'); setExerciseType('prosodyChallenge'); }, className: btnSecondary, 'aria-label': t('stem.oratory.aria_jump_challenges_from_prosody', 'Test your intuition in Prosody and Rhetoric Challenges') }, t('stem.oratory.jump_prosody_challenges', '\uD83E\uDDE0 Test in Prosody Challenges'))
                 ),
-                (iq.log && iq.log.length > 0) && h('div', { className: 'rounded-lg p-2.5 text-[0.6875rem] font-mono border ' + (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800') },
+                (iq.log && iq.log.length > 0) && h('div', { className: 'rounded-lg p-2.5 text-[0.6875rem] font-mono border ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800')) },
                   h('div', { className: 'font-sans font-bold mb-1 text-[0.6875rem]' }, 'Logged Trials (' + iq.log.length + ')'),
                   iq.log.map(function(entry, li) {
                     return h('div', { key: li, className: 'py-0.5' }, '#' + (li + 1) + ' · ' + entry.t + ' · +' + entry.p + 'Hz · ' + entry.c + '× (~' + Math.round(145 * entry.c) + ' WPM) · ' + (entry.v >= 0 ? '+' : '') + entry.v + 'dB');
                   })
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.oratory.hypothesis_input', 'Oratory pace hypothesis'), placeholder: t('stem.oratory.hypothesis_how_does_pace_affect_audien', 'Hypothesis: How does pace affect audience comprehension?'),
-                  className: 'w-full text-[0.75rem] border border-slate-500 rounded-lg p-2.5 font-mono leading-snug ' + (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'), rows: 3 }),
-                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border ' + (isDark ? 'bg-amber-900/40 text-amber-200 border-amber-600' : 'bg-amber-50 text-amber-900 border-amber-400') }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-3 rounded-lg border text-[0.6875rem] leading-relaxed ' + (isDark ? 'bg-amber-950/60 border-amber-700 text-amber-100' : 'bg-amber-50 border-amber-300 text-slate-800') },
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded-lg p-2.5 font-mono leading-snug ' + (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800')), rows: 3 }),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border ' + (isContrast ? 'bg-black text-yellow-300 border-yellow-300' : (isDark ? 'bg-amber-900/40 text-amber-200 border-amber-600' : 'bg-amber-50 text-amber-900 border-amber-400')) }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+                iq.stuckRevealed && h('div', { className: 'p-3 rounded-lg border text-[0.6875rem] leading-relaxed ' + (isContrast ? 'bg-black border-yellow-300 text-white' : (isDark ? 'bg-amber-950/60 border-amber-700 text-amber-100' : 'bg-amber-50 border-amber-300 text-slate-800')) },
                   h('ul', { className: 'list-disc pl-5 space-y-1 m-0' },
                     h('li', null, t('stem.oratory.most_ted_talks_are_150_wpm_investigate', 'Most TED talks are ~150 wpm. Investigate why.')),
                     h('li', null, t('stem.oratory.when_does_pitch_variation_help_vs_dist', 'When does pitch variation help vs distract?')))),
@@ -4968,8 +7621,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.oratory.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.oratory.explanation_input', 'Oratory prosody explanation'), placeholder: t('stem.oratory.explain_how_prosody_shapes_oratory_imp', 'Explain how prosody shapes oratory impact.'),
-                  className: 'w-full text-[0.75rem] border border-emerald-400 rounded-lg p-2.5 font-mono leading-snug mt-2 ' + (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'), rows: 3 }),
-                h('div', { className: 'text-[0.6875rem] italic ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
+                  className: 'w-full text-[0.75rem] border border-emerald-400 rounded-lg p-2.5 font-mono leading-snug mt-2 ' + (isContrast ? 'bg-black text-white border-yellow-300' : (isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800')), rows: 3 }),
+                h('div', { className: 'text-[0.6875rem] italic ' + (isContrast ? 'text-yellow-200' : (isDark ? 'text-slate-300' : 'text-slate-600')) }, t('stem.oratory.design_note_discrete_4_tempo_marker_no', 'Design note: discrete 4-tempo marker; no delivery score; no reveal — by design.'))
               );
             })()
           ),

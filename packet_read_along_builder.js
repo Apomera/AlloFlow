@@ -1031,8 +1031,12 @@
     var studentMic = made.studentMic === true || lesson.studentMic === true;
     var deviceVoice = made.deviceVoice === true || lesson.deviceVoice === true;
     var intro = recTotal > 0 ? loader.CHECK_ADAPTERS[ACTIVITY].labels.read_along_intro : (deviceVoice ? 'Read the passage on screen, tap a word to hear it with this device voice, or use Reading tools.' : 'Read the passage on screen. Use Reading tools to change text size, colors, spacing or syllables.');
+    // 2026-11-23: a file made for the device's own voice, opened on a device that has none for the passage (the player
+    // shows this in place of the intro; it said "tap a word to hear it with this device voice" there too).
+    var introNoVoice = (recTotal === 0 && deviceVoice) ? 'Read the passage on screen. This device has no voice that can read this passage aloud. Use Reading tools to change text size, colors, spacing or syllables.' : '';
+    // 2026-11-23: "Save my recording" saves a file, so About no longer says the recording is "never saved".
     var micPrefix = studentMic
-      ? 'It uses the microphone only when you press Record my voice (your recording stays in this tab only and is never saved or sent). It never uses the camera, has no cookies and runs no AI.'
+      ? 'It uses the microphone only when you press Record my voice. Your recording stays in the memory of this browser and is never sent. It is saved only if you press Save my recording, and then only as a file on this device. It never uses the camera, has no cookies and runs no AI.'
       : 'It never uses the microphone or the camera. It has no cookies and runs no AI.';
     var aboutNever, speechNote, speechMade, humanReviewed = false, credits = [];
     if (recTotal === 0) {
@@ -1056,9 +1060,12 @@
       speechMade = 'ahead of time, on the device of the person who made this file, with Kokoro-82M text-to-speech (voice ' + voice + '), a machine voice';
       credits.push('Recordings of the sentences: made ahead of time, on the device of the person who made this file, with Kokoro-82M text-to-speech (voice ' + voice + '), a machine voice. No person has listened to each one.');
     }
-    if (made.syllables) credits.push('Syllable breaks: worked out when this file was made, from a word list' + (made.syllables.source ? ' (' + made.syllables.source + ')' : '') + '. No AI.');
-    if (made.partsOfSpeech) credits.push('Parts of speech: tagged with ' + (made.partsOfSpeech.dictionaryBacked ? 'offline open-dictionary word classes and ' : 'a built-in word list and ') + 'grammar rules when this file was made. No AI.');
-    if (made.dictionary) credits.push('Word meanings: looked up when this file was made from open dictionaries' + (made.dictionary.source ? ' (' + made.dictionary.source + ')' : ' (Simple English Wiktionary, English Wiktionary, Open English WordNet; CC BY-SA 4.0)') + '. No AI runs in this file.');
+    // 2026-11-23 (owner's wording rule): the claim is "Runs without AI", never a bare "No AI". The word meanings come from
+    // the Packets word list, where some meanings were checked and corrected with AI help (packets-vocab.html says so).
+    if (made.syllables) credits.push('Syllable breaks: worked out when this file was made, from a word list' + (made.syllables.source ? ' (' + made.syllables.source + ')' : '') + '. Runs without AI.');
+    if (made.partsOfSpeech) credits.push('Parts of speech: tagged with ' + (made.partsOfSpeech.dictionaryBacked ? 'offline open-dictionary word classes and ' : 'a built-in word list and ') + 'grammar rules when this file was made. Runs without AI.');
+    if (made.dictionary) credits.push('Word meanings: looked up when this file was made from open dictionaries' + (made.dictionary.source ? ' (' + made.dictionary.source + ')' : ' (Simple English Wiktionary, English Wiktionary, Open English WordNet; CC BY-SA 4.0)') + '. No AI runs in this file.'
+      + (!made.dictionary.source || /Wiktionary|WordNet/i.test(made.dictionary.source) ? ' Some meanings were checked and corrected ahead of time with AI help, not by a person.' : ''));
     if (made.pictures && made.pictures.count) {
       var sets = Array.isArray(made.pictures.sets) ? made.pictures.sets : [];
       var partsPic = [];
@@ -1066,7 +1073,7 @@
       if (!sets.length || sets.indexOf('openmoji') >= 0) partsPic.push('OpenMoji 17.0.0 (OpenMoji project, CC BY-SA 4.0)');
       if (sets.indexOf('diagram') >= 0) partsPic.push('AlloFlow Curriculum Diagrams (AGPL-3.0)');
       if (sets.indexOf('teacher') >= 0) partsPic.push('teacher saved pictures');
-      credits.push('Word pictures: ' + partsPic.join(', ') + ', bundled when this file was made. No AI.');
+      credits.push('Word pictures: ' + partsPic.join(', ') + ', bundled when this file was made. Runs without AI: the pictures are looked up by word, and none is generated.');
       if (Array.isArray(made.pictures.credits)) {
         made.pictures.credits.forEach(function (c) { if (c) credits.push('Picture credit: ' + c); });
       }
@@ -1082,6 +1089,7 @@
       else credits.push('Support recordings: made ahead of time with Kokoro-82M text-to-speech (voice ' + voice + '), a machine voice.');
     }
     var htmlLabels = { intro: intro, about_never: aboutNever };
+    if (introNoVoice) htmlLabels.intro_no_voice = introNoVoice;
     if (lang !== 'en') htmlLabels.lang = lang;
     if (isRtlLang(lang)) htmlLabels.dir = 'rtl';
     var html = loader.buildHtml(lesson, { core: NO_ANSWERS, labels: htmlLabels, attributions: credits });

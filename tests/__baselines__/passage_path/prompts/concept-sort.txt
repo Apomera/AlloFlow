@@ -12,6 +12,7 @@
             Differentiation Strategy for 5th Grade:
             - LOWER LEVEL: Focus on concrete, tangible examples. The content of the cards should be short (1-5 words) to act as captions for visual support.
             
+            Key concepts from Source Analysis (use as contrasting themes if they fit cleanly): orbit, gravity, tides, phases.
             
             
             Return ONLY JSON with this structure:

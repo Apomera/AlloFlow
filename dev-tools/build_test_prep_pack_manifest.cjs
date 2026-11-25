@@ -350,6 +350,7 @@ if (manifestOnly) {
   execFileSync(process.execPath, [apUsHistoryBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apUsGovernmentBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apStatisticsBuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [path.join(root, 'dev-tools', 'apply_option2_item_quality_polish.cjs')], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(root, 'dev-tools', 'apply_learning_library_check_remediation.cjs'), '--write'], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(root, 'dev-tools', 'apply_learning_library_study_tools_polish.cjs'), '--write'], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [path.join(root, 'dev-tools', 'stamp_learning_library_identity.cjs')], { cwd: root, stdio: 'inherit' });

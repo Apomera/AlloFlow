@@ -1170,8 +1170,8 @@ function LessonPlanView(props) {
                         )}
 
                         <div className="no-print flex justify-center pb-8">
-                             <button type="button" onClick={handleExportPDF} data-lesson-plan-print-bottom className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
-                                <Printer size={18}/> {t('lesson_plan.print')}
+                             <button type="button" onClick={handleExportPDF} data-lesson-plan-print-bottom title={t('lesson_plan.print_pdf_tooltip') || 'Opens the print window. Choose Save as PDF there to keep a file.'} className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg">
+                                <Printer size={18}/> {t('lesson_plan.print_pdf_button') || 'Print / PDF'}
                              </button>
                         </div>
                         {!audienceView && <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-200">

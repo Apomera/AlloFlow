@@ -3,11 +3,11 @@
 .footer-link-groups {
     align-items: flex-start;
     display: grid;
-    gap: 26px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     margin-left: auto;
     margin-right: auto;
-    max-width: 920px;
+    max-width: 1120px;
     text-align: left;
 }
 
@@ -43,6 +43,73 @@
     padding: 14px 17px;
 }
 
+/* Compact grouped mobile drawer so all 17 links scan quickly without long scrolling. */
+.mobile-nav.open {
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 68px 20px 28px;
+}
+
+.mobile-nav-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 12px;
+    max-width: 460px;
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.mobile-nav-group:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
+.mobile-nav-heading {
+    grid-column: 1 / -1;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0 10px 2px;
+}
+
+.mobile-nav .mobile-nav-group a {
+    font-size: 0.96rem;
+    font-weight: 700;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    line-height: 1.25;
+}
+
+.mobile-nav .mobile-nav-group a:hover {
+    background: #f1f5f9;
+    color: var(--indigo);
+}
+
+.mobile-nav .mobile-nav-group a.mobile-nav-cta {
+    grid-column: 1 / -1;
+    justify-content: center;
+    background: var(--slate-900);
+    color: #ffffff;
+    margin-top: 4px;
+}
+
+.mobile-nav .mobile-nav-group a.mobile-nav-cta:hover {
+    background: #334155;
+    color: #ffffff;
+}
+
+@media (max-width: 360px) {
+    .mobile-nav-group {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 1024px) {
     .footer-link-groups {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -70,7 +137,12 @@
         border: 1px solid CanvasText;
     }
 
-    .footer-link-heading {
+    .footer-link-heading,
+    .mobile-nav-heading {
         color: CanvasText;
+    }
+
+    .mobile-nav .mobile-nav-group a.mobile-nav-cta {
+        border: 1px solid ButtonText;
     }
 }

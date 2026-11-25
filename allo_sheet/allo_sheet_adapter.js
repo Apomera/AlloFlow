@@ -18,7 +18,11 @@
   }
 
   function safeText(value, max) {
-    return String(value == null ? '' : value)
+    var text = '';
+    if (value != null) {
+      try { text = String(value); } catch (_) { text = ''; }
+    }
+    return text
       .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ')
       .slice(0, max || MAX_CELL_CHARS);
   }
@@ -45,7 +49,7 @@
       : (payload && Array.isArray(payload.records) ? payload.records : []);
     return source.slice(0, MAX_RECORDS).map(function (record, index) {
       var candidateId = record && record.id;
-      var id = (typeof candidateId === 'number' || typeof candidateId === 'string')
+      var id = ((typeof candidateId === 'number' && Number.isFinite(candidateId)) || typeof candidateId === 'string')
         ? candidateId
         : index + 1;
       var inputFields = record && record.fields && typeof record.fields === 'object'
@@ -121,8 +125,8 @@
     if (scope === 'structure-only') return snapshot;
 
     var selected = Object.create(null);
-    (options.selectedIds || []).slice(0, MAX_AGENT_ROWS).forEach(function (id) {
-      selected[String(id)] = true;
+    (Array.isArray(options.selectedIds) ? options.selectedIds : []).slice(0, MAX_AGENT_ROWS).forEach(function (id) {
+      if (typeof id === 'string' || (typeof id === 'number' && Number.isFinite(id))) selected[String(id)] = true;
     });
     snapshot.records = records.filter(function (record) { return selected[String(record.id)]; })
       .slice(0, MAX_AGENT_ROWS)
@@ -176,12 +180,15 @@
     columns.forEach(function (field) { allowedFields[field] = true; });
     var scope = context.scope === 'selected-values' ? 'selected-values' : 'structure-only';
     var selected = Object.create(null);
-    (context.selectedIds || []).forEach(function (id) { selected[String(id)] = true; });
+    (Array.isArray(context.selectedIds) ? context.selectedIds : []).forEach(function (id) {
+      if (typeof id === 'string' || (typeof id === 'number' && Number.isFinite(id))) selected[String(id)] = true;
+    });
     var changes = [];
 
     if (scope === 'selected-values' && Array.isArray(parsed.changes)) {
       parsed.changes.slice(0, MAX_CHANGES).forEach(function (change) {
-        if (!change || !allowedFields[change.field]) return;
+        if (!change || typeof change !== 'object' || typeof change.field !== 'string' || !allowedFields[change.field]) return;
+        if (typeof change.recordId !== 'string' && !(typeof change.recordId === 'number' && Number.isFinite(change.recordId))) return;
         var key = String(change.recordId);
         var record = byId[key];
         if (!record || !selected[key] || !isScalar(change.newValue)) return;
@@ -212,8 +219,9 @@
 
   function buildPatch(changes) {
     var grouped = Object.create(null);
-    (changes || []).slice(0, MAX_CHANGES).forEach(function (change) {
-      if (!change || !isSafeFieldName(change.field) || !isScalar(change.newValue)) return;
+    (Array.isArray(changes) ? changes : []).slice(0, MAX_CHANGES).forEach(function (change) {
+      if (!change || typeof change !== 'object' || !isSafeFieldName(change.field) || !isScalar(change.newValue)) return;
+      if (typeof change.recordId !== 'string' && !(typeof change.recordId === 'number' && Number.isFinite(change.recordId))) return;
       var key = String(change.recordId);
       if (!grouped[key]) grouped[key] = { id: change.recordId, fields: Object.create(null) };
       grouped[key].fields[change.field] = sanitizeScalar(change.newValue);
@@ -222,7 +230,9 @@
   }
 
   function buildUndoPatch(changes) {
-    return buildPatch((changes || []).map(function (change) {
+    return buildPatch((Array.isArray(changes) ? changes : []).filter(function (change) {
+      return change && typeof change === 'object';
+    }).map(function (change) {
       return {
         recordId: change.recordId,
         field: change.field,
@@ -275,9 +285,9 @@
   }
 
   function GristRestAdapter(options) {
-    options = options || {};
+    options = options && typeof options === 'object' ? options : {};
     this.apiBase = safeText(options.apiBase || '', 500).replace(/\/+$/, '');
-    this.fetchImpl = options.fetchImpl || (root && root.fetch ? root.fetch.bind(root) : null);
+    this.fetchImpl = typeof options.fetchImpl === 'function' ? options.fetchImpl : (root && typeof root.fetch === 'function' ? root.fetch.bind(root) : null);
   }
 
   GristRestAdapter.prototype._request = async function (path, options) {
@@ -291,7 +301,7 @@
       var payload = null;
       try { payload = await response.json(); } catch (_) {}
       if (!response.ok) throw new Error(safeText(payload && payload.error || ('Request failed with HTTP ' + response.status), 500));
-      return payload || {};
+      return (payload && typeof payload === 'object') ? payload : {};
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -357,6 +367,6 @@
     GristRestAdapter: GristRestAdapter
   };
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (root) root.AlloSheetAdapter = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (root && typeof root === 'object') root.AlloSheetAdapter = api;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null);

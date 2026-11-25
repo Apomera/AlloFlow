@@ -4,6 +4,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.FabStack) {
     console.log('[CDN] FabStack already loaded, skipping');
     return;
@@ -51,17 +52,22 @@ function magnifierLensSize(vw, vh) {
 }
 function magnifierLayout({ x, y, zoom, size, touch, vw, vh }) {
   const k = normalizeMagnifierZoom(zoom);
-  const half = size / 2;
-  let left = x - half;
-  let top = y - half;
+  const safeX = Number.isFinite(Number(x)) ? Number(x) : 0;
+  const safeY = Number.isFinite(Number(y)) ? Number(y) : 0;
+  const safeSize = Number.isFinite(Number(size)) && Number(size) > 0 ? Number(size) : 120;
+  const safeVw = Number.isFinite(Number(vw)) && Number(vw) > 0 ? Number(vw) : 0;
+  const safeVh = Number.isFinite(Number(vh)) && Number(vh) > 0 ? Number(vh) : 0;
+  const half = safeSize / 2;
+  let left = safeX - half;
+  let top = safeY - half;
   if (touch) {
-    top = y - half - Math.round(size * 0.75);
+    top = safeY - half - Math.round(safeSize * 0.75);
     if (top < 0) {
-      top = Math.max(0, Math.min(vh - size, y - half));
-      left = x > vw / 2 ? x - size * 1.35 : x + size * 0.35;
+      top = Math.max(0, Math.min(safeVh - safeSize, safeY - half));
+      left = safeX > safeVw / 2 ? safeX - safeSize * 1.35 : safeX + safeSize * 0.35;
     }
   }
-  return { left: Math.round(left), top: Math.round(top), size, zoom: k, tx: half - x * k, ty: half - y * k };
+  return { left: Math.round(left), top: Math.round(top), size: safeSize, zoom: k, tx: half - safeX * k, ty: half - safeY * k };
 }
 function createPageMagnifier(options) {
   const doc = document;
@@ -203,7 +209,7 @@ function createPageMagnifier(options) {
     if (o.hasAttributes && o.hasAttributes()) {
       for (const attr of Array.from(c.attributes)) {
         const name = attr.name.toLowerCase();
-        if (name.indexOf("on") === 0 || name === "autofocus" || name === "loading") c.removeAttribute(attr.name);
+        if (name.indexOf("on") === 0 || name === "autofocus" || name === "loading" || name === "srcdoc" || name === "formaction") c.removeAttribute(attr.name);
       }
     }
     return c;
@@ -216,7 +222,7 @@ function createPageMagnifier(options) {
   };
   const drawFrame = (from, to) => {
     try {
-      if (from.tagName === "VIDEO" && (from.readyState < 2 || !from.videoWidth)) return;
+      if (from.tagName === "VIDEO" && (from.readyState < 2 || !from.videoWidth || !from.videoHeight)) return;
       const ctx = to.getContext && to.getContext("2d");
       if (!ctx) return;
       const cw = to.width, ch = to.height;
@@ -261,12 +267,12 @@ function createPageMagnifier(options) {
     return box;
   };
   const copyTree = (o, ctx) => {
-    const tag = o.tagName;
-    if (o === host || MAGNIFIER_DROP[tag]) {
+    const tag = String(o.tagName || "").toUpperCase();
+    if (o === host || Object.prototype.hasOwnProperty.call(MAGNIFIER_DROP, tag)) {
       return tag === "AUDIO" && o.hasAttribute("controls") ? frameStandIn(o) : null;
     }
     if (tag === "VIDEO") return videoStandIn(o, ctx);
-    if (MAGNIFIER_STAND_IN[tag]) return frameStandIn(o);
+    if (Object.prototype.hasOwnProperty.call(MAGNIFIER_STAND_IN, tag)) return frameStandIn(o);
     ctx.count += 1;
     const c = shallow(o);
     if (o.scrollTop || o.scrollLeft) ctx.scrolls.push([c, o.scrollTop, o.scrollLeft]);
@@ -480,6 +486,7 @@ function createPageMagnifier(options) {
     if (!frame && !destroyed) frame = raf(runFrame);
   };
   const requestBuild = (delay) => {
+    if (destroyed || doc.hidden) return;
     needBuild = true;
     const wait = Math.max(0, delay || 0);
     const due = now() + wait;
@@ -496,7 +503,7 @@ function createPageMagnifier(options) {
   const syncLiveTimer = () => {
     if (live.length && !liveTimer) {
       liveTimer = win.setInterval(() => {
-        if (host.style.display === "none") return;
+        if (destroyed || doc.hidden || host.style.display === "none") return;
         live.forEach(([from, to]) => {
           if (from.isConnected) drawFrame(from, to);
         });
@@ -509,7 +516,7 @@ function createPageMagnifier(options) {
   let moveTimer = 0;
   const checkMoved = () => {
     moveTimer = 0;
-    if (destroyed) return;
+    if (destroyed || doc.hidden) return;
     const moved = tracked.some((item) => {
       if (!item.el.isConnected) return true;
       const r = item.el.getBoundingClientRect();
@@ -528,6 +535,7 @@ function createPageMagnifier(options) {
     return false;
   };
   const observer = typeof win.MutationObserver === "function" ? new win.MutationObserver((records) => {
+    if (destroyed || doc.hidden) return;
     let rebuildSoon = false;
     let maybeMoved = false;
     for (const rec of records) {
@@ -588,7 +596,7 @@ function createPageMagnifier(options) {
   const modalOpen = () => Array.from(doc.querySelectorAll('[aria-modal=true], dialog[open], [role="alertdialog"]')).some((el) => el.isConnected && !el.closest('[hidden], [aria-hidden="true"], dialog:not([open])'));
   const onKeyDown = (event) => {
     if (event.key === "Escape") {
-      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || editable(event.target) || modalOpen()) return;
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || editable(event.target) || modalOpen()) return;
       if (typeof opts.onEscape === "function") opts.onEscape();
       return;
     }
@@ -607,6 +615,15 @@ function createPageMagnifier(options) {
     requestBuild(0);
     scheduleFrame();
   };
+  const onVisibilityChange = () => {
+    if (destroyed) return;
+    if (doc.hidden) {
+      hide();
+      return;
+    }
+    requestBuild(0);
+    scheduleFrame();
+  };
   const pointerEvents = typeof win.PointerEvent === "function";
   const moveType = pointerEvents ? "pointermove" : "mousemove";
   const downType = pointerEvents ? "pointerdown" : "mousedown";
@@ -616,6 +633,7 @@ function createPageMagnifier(options) {
   win.addEventListener("touchstart", onTouch, passive);
   win.addEventListener("touchmove", onTouch, passive);
   doc.addEventListener("mouseout", onMouseOut, passive);
+  doc.addEventListener("visibilitychange", onVisibilityChange);
   win.addEventListener("keydown", onKeyDown);
   win.addEventListener("focusin", onFocusIn);
   win.addEventListener("scroll", onScroll, { capture: true, passive: true });
@@ -653,6 +671,7 @@ function createPageMagnifier(options) {
       win.removeEventListener("touchstart", onTouch);
       win.removeEventListener("touchmove", onTouch);
       doc.removeEventListener("mouseout", onMouseOut);
+      doc.removeEventListener("visibilitychange", onVisibilityChange);
       win.removeEventListener("keydown", onKeyDown);
       win.removeEventListener("focusin", onFocusIn);
       win.removeEventListener("scroll", onScroll, true);
@@ -665,19 +684,20 @@ function createPageMagnifier(options) {
 }
 function FabStack(props) {
   const noop = () => null;
-  const AlignJustify = window.AlignJustify || noop;
-  const Clock = window.Clock || noop;
-  const Eye = window.Eye || noop;
-  const Gamepad2 = window.Gamepad2 || noop;
-  const HelpCircle = window.HelpCircle || noop;
-  const MessageCircleQuestion = window.MessageCircleQuestion || noop;
-  const Mic = window.Mic || noop;
-  const MicOff = window.MicOff || noop;
-  const ScanLine = window.ScanLine || noop;
-  const Search = window.Search || noop;
-  const ScanSearch = window.ScanSearch || window.Search || noop;
-  const Volume2 = window.Volume2 || noop;
-  const Wrench = window.Wrench || noop;
+  const _win = typeof window !== "undefined" ? window : null;
+  const AlignJustify = _win && _win.AlignJustify || noop;
+  const Clock = _win && _win.Clock || noop;
+  const Eye = _win && _win.Eye || noop;
+  const Gamepad2 = _win && _win.Gamepad2 || noop;
+  const HelpCircle = _win && _win.HelpCircle || noop;
+  const MessageCircleQuestion = _win && _win.MessageCircleQuestion || noop;
+  const Mic = _win && _win.Mic || noop;
+  const MicOff = _win && _win.MicOff || noop;
+  const ScanLine = _win && _win.ScanLine || noop;
+  const Search = _win && _win.Search || noop;
+  const ScanSearch = _win && (_win.ScanSearch || _win.Search) || noop;
+  const Volume2 = _win && _win.Volume2 || noop;
+  const Wrench = _win && _win.Wrench || noop;
   const {
     activeView,
     addToast,
@@ -713,9 +733,12 @@ function FabStack(props) {
     showVisualSupports,
     stopPlayback,
     studentProjectSettings,
-    studentAiFeaturesHidden,
+    studentAiFeaturesHidden: studentAiFeaturesHiddenProp,
     t
   } = props;
+  const studentAiFeaturesHidden = Boolean(
+    studentAiFeaturesHiddenProp || typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || !isTeacherMode && (window.__alloQrStudentMode === true || window.hideStudentAiFeatures === true || window.AlloModules?.StudentPolicy?.hideStudentAiFeatures?.() === true || window.AlloModules?.StudentPolicy?.isAiDisabled?.() === true))
+  );
   const toolLabel = (key, fallback) => {
     const value = t(key);
     return value && value !== key ? value : fallback;
@@ -726,8 +749,10 @@ function FabStack(props) {
   const panelRef = React.useRef(null);
   const toggleRef = React.useRef(null);
   const stackRef = React.useRef(null);
+  const closeFocusTimerRef = React.useRef(null);
+  const reportPanelTimerRef = React.useRef(null);
   const [footerClearance, setFooterClearance] = React.useState(0);
-  const magnifierSupported = typeof window.Element === "function" && typeof window.Element.prototype.attachShadow === "function";
+  const magnifierSupported = !!(_win && typeof _win.Element === "function" && typeof _win.Element.prototype.attachShadow === "function");
   const [magnifierOn, setMagnifierOn] = React.useState(() => magnifierSupported && readMagnifierPref(MAGNIFIER_STORAGE_KEY) === "1");
   const [magnifierZoom, setMagnifierZoom] = React.useState(() => normalizeMagnifierZoom(readMagnifierPref(MAGNIFIER_ZOOM_STORAGE_KEY)));
   const magnifierRef = React.useRef(null);
@@ -746,11 +771,16 @@ function FabStack(props) {
   React.useEffect(() => {
     if (!isFabExpanded) return void 0;
     const focusTimer = window.setTimeout(() => {
+      if (!panelRef.current || !panelRef.current.isConnected) return;
       const firstTool = panelRef.current?.querySelector('[data-student-tool="true"]:not([disabled])');
       if (firstTool) firstTool.focus();
     }, 0);
     return () => window.clearTimeout(focusTimer);
   }, [isFabExpanded]);
+  React.useEffect(() => () => {
+    if (closeFocusTimerRef.current && typeof window !== "undefined") window.clearTimeout(closeFocusTimerRef.current);
+    if (reportPanelTimerRef.current && typeof window !== "undefined") window.clearTimeout(reportPanelTimerRef.current);
+  }, []);
   React.useEffect(() => {
     const workspace = document.getElementById("workspace-preview-pane");
     if (!generatedContent || !workspace) {
@@ -873,11 +903,12 @@ function FabStack(props) {
   }, [activeFocusAidCount, aidResetNotice]);
   const handleMagnifierKeyDown = (event) => {
     if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     const lens = magnifierRef.current;
     if (!magnifierOn || !lens) return;
     const step = event.shiftKey ? 96 : 24;
     const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
-    const move = moves[event.key];
+    const move = Object.prototype.hasOwnProperty.call(moves, event.key) ? moves[event.key] : null;
     if (!move) return;
     event.preventDefault();
     lens.nudge(move[0], move[1]);
@@ -885,11 +916,12 @@ function FabStack(props) {
   const closeStudentTools = () => {
     if (!isFabExpanded) return;
     handleToggleIsFabExpanded();
-    window.setTimeout(() => toggleRef.current?.focus(), 0);
+    if (closeFocusTimerRef.current) window.clearTimeout(closeFocusTimerRef.current);
+    closeFocusTimerRef.current = window.setTimeout(() => toggleRef.current?.focus(), 0);
   };
   const handlePanelKeyDown = (event) => {
     if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
-    if (event.key === "Tab" && panelRef.current) {
+    if (event.key === "Tab" && panelRef.current && panelRef.current.isConnected) {
       const isMobileSheet = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(max-width: 767px)").matches;
       if (!isMobileSheet) return;
       const focusable = Array.from(panelRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((el) => !el.closest('[hidden], [inert], [aria-hidden="true"]'));
@@ -906,6 +938,7 @@ function FabStack(props) {
       return;
     }
     if (event.key !== "Escape") return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     event.preventDefault();
     event.stopPropagation();
     closeStudentTools();
@@ -1326,10 +1359,10 @@ function FabStack(props) {
           type: "button",
           onClick: (e) => {
             e.preventDefault();
-            const voice = window.AlloFlowVoice;
-            const supported = voice && typeof voice.isDictationSupported === "function" ? voice.isDictationSupported() : !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+            const voice = typeof window !== "undefined" ? window.AlloFlowVoice : null;
+            const supported = voice && typeof voice.isDictationSupported === "function" ? voice.isDictationSupported() : !!(typeof window !== "undefined" && (window.SpeechRecognition || window.webkitSpeechRecognition));
             if (!supported) {
-              addToast(t("roles.voice_not_supported"), "error");
+              if (typeof addToast === "function") addToast(t("roles.voice_not_supported"), "error");
               return;
             }
             setIsDictationMode(!isDictationMode);
@@ -1356,14 +1389,17 @@ function FabStack(props) {
         /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, dictationAnnouncement),
         dictationStatus.privacy && /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-xs text-slate-600" }, dictationStatus.privacy)
       )))),
-      !isTeacherMode && window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === "function" && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200/80 px-4 py-1" }, /* @__PURE__ */ React.createElement(
+      !isTeacherMode && typeof window !== "undefined" && window.AlloModules && window.AlloModules.ErrorReporter && typeof window.AlloModules.ErrorReporter.openPanel === "function" && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200/80 px-4 py-1" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           "data-student-report-problem": "",
           onClick: () => {
             closeStudentTools();
-            window.setTimeout(() => window.AlloModules.ErrorReporter.openPanel("errors"), 0);
+            if (reportPanelTimerRef.current) window.clearTimeout(reportPanelTimerRef.current);
+            reportPanelTimerRef.current = window.setTimeout(() => {
+              window.AlloModules?.ErrorReporter?.openPanel?.("errors");
+            }, 0);
           },
           className: "min-h-11 text-xs font-bold text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline"
         },

@@ -171,6 +171,12 @@ describe('double number lines on a phone', () => {
     for (const [name, state, sel] of [CASES[2], CASES[3], CASES[5], CASES[7]]) {
       it('real host, ' + theme + ', 320 px, ' + name + ': 11 px or more, nothing overlaps, nothing is cut off', async () => {
         const { context, page } = await openHost(state, theme);
+        // Since 11-19 the explorer sits in a "Free exploration" <details>, closed by default. A closed
+        // details skips layout, so getScreenCTM() is stale; open it the way a student does first.
+        if (sel === EXPLORER) {
+          const summary = page.locator('details[data-ratio-exploration]:not([open]) > summary');
+          if (await summary.count()) { await summary.first().click(); await page.waitForTimeout(600); }
+        }
         const m = await measure(page, sel);
         console.log('ratios dnl host ' + theme + ' ' + name + ': ' + JSON.stringify({ w: m.svgWidth, smallest: m.smallest, overlaps: m.overlaps, outside: m.outside, sideways: m.sideways }));
         expect(m.missing).toBeUndefined();

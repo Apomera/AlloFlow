@@ -97,7 +97,8 @@ describe('Phase 13 Wave 2 — SEL & STEM runtime leaks, crashes, AudioContext & 
     expect(ce).toContain('if (!cv._ceRafId) heroDraw();');
 
     const music = read('stem_lab/stem_tool_music.js');
-    expect(music).toContain("var _sb = JSON.parse(localStorage.getItem('alloflow_beats') || '[]'); if (Array.isArray(_sb))");
+    // Saved beats are read through the prototype-safe parser now; still array-checked inside try.
+    expect(music).toContain("try { var _sb = _musSafeJsonParse(localStorage.getItem('alloflow_beats') || '[]', []); if (Array.isArray(_sb)) saved = _sb; } catch (_e) {}");
 
     const wave = read('stem_lab/stem_tool_wave.js');
     expect(wave).toContain('_waveAudio.dopplerFlyby.ctx.close()');
@@ -116,7 +117,8 @@ describe('Phase 13 Wave 2 — SEL & STEM runtime leaks, crashes, AudioContext & 
 
     const orat = read('stem_lab/stem_tool_oratory.js');
     expect(orat).toContain('var startingMicRef = React.useRef(false);');
-    expect(orat).toContain("var text = typeof response === 'string' ? response.trim() : '';");
+    // A null reply still becomes '' (object replies are read too), and the phrase falls back to the default.
+    expect(orat).toContain("var raw = typeof response === 'string' ? response : ((response && (response.text || response.output || response.response)) || '');\n              var text = String(raw).trim();\n              setMultiPhrase(text || 'Hello, how are you today?');");
 
     const sing = read('stem_lab/stem_tool_singing.js');
     expect(sing).toContain('var startingMicRef = React.useRef(false);');
@@ -153,7 +155,8 @@ describe('Phase 13 Wave 3 — Zero-clutter WCAG 2.2 AA & UX fixes', () => {
 
     const rend = read('view_renderers_source.jsx');
     expect(rend).toContain('aria-label="Apply art change"');
-    expect(rend).toContain('aria-label="Create art"');
+    // The submit button's name is localized now (needs concept_space.create_art_aria in ui_strings.js).
+    expect(rend).toContain("aria-label={t('concept_space.create_art_aria') || 'Create art'}");
     expect(rend).toContain("aria-pressed={artType === 'sculpture'}");
     expect(rend).toContain("aria-pressed={artType === 'image'}");
 

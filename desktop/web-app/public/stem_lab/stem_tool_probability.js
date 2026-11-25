@@ -91,7 +91,8 @@ window.StemLab = window.StemLab || {
       '.theme-dark .prob-starter-chip{background:#1e1b4b;border-color:rgba(167,139,250,.5);color:#ede9fe}',
       '.theme-dark .prob-starter-chip:hover:not(:disabled){background:#312e81;border-color:#c4b5fd;color:#ffffff}',
       '.theme-dark .prob-starter-chip[aria-pressed="true"]{background:#7c3aed;border-color:#ddd6fe;color:#ffffff}',
-      '[data-probability-root] button:focus-visible,[data-probability-root] select:focus-visible,[data-probability-root] input:focus-visible,[data-probability-root] [role="switch"]:focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
+      '[data-probability-root] :is(button,input,select,textarea,summary,[role="switch"]){touch-action:manipulation;box-sizing:border-box}',
+      '[data-probability-root] :is(button,select,input,textarea,summary,[role="switch"],canvas):focus-visible{outline:3px solid #7c3aed;outline-offset:2px}',
       '.theme-contrast .prob-hero-header,.theme-contrast [data-probability-command]{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}',
       '.theme-contrast .prob-hero-badge,.theme-contrast .prob-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
       '.theme-contrast .prob-telemetry-pill strong{color:#00ff00!important}',
@@ -99,10 +100,14 @@ window.StemLab = window.StemLab || {
       '.theme-contrast .prob-starter-label{color:#ffff00!important}',
       '.theme-contrast .prob-starter-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}',
       '.theme-contrast .prob-starter-chip[aria-pressed="true"]{background:#000000!important;border:2px solid #ffff00!important;color:#ffff00!important}',
-      '.theme-contrast [data-probability-root] button:focus-visible,[data-probability-root] select:focus-visible,.theme-contrast [data-probability-root] input:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+      '.theme-contrast [data-probability-root] :is(button,select,input,textarea,summary,[role="switch"],canvas):focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}',
+      '@media(forced-colors:active){[data-probability-root] :is(button,select,input,textarea,summary,[role="switch"],canvas):focus-visible{outline:3px solid Highlight!important;outline-offset:2px!important}[data-probability-root] :is(button,select,input,textarea,summary,[role="switch"],[role="progressbar"]){border-color:ButtonText!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
+  function _probIgnoreKey(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey));
+  }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -555,6 +560,7 @@ window.StemLab = window.StemLab || {
   }
   // Stable handler, for the same reason _v3Attach is stable.
   function _v3Keys(e) {
+    if (_probIgnoreKey(e)) return;
     var STEP = 0.18;
     var k = e.key;
     if (k === 'ArrowLeft') _v3Orbit(-STEP, 0);
@@ -2029,8 +2035,8 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                   );
                 })),
                 React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                  React.createElement("button", { disabled: quickTrialsSupported && !customCanRun, onClick: canRunQuickTrials ? function() { runTrial(10); } : function() { if (!quickTrialsSupported) selectMode('coin'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed", style: { background: '#5b21b6', color: '#fff', border: '1px solid #4c1d95', boxShadow: '0 8px 18px rgba(91,33,182,0.22)' } }, canRunQuickTrials ? t('stem.probability.run_10_trials', 'Run 10 Trials') : quickTrialsSupported ? 'Fix Custom Model' : t('stem.probability.start_with_coin', 'Start With Coin')),
-                  React.createElement("button", { onClick: function() { selectMode('monty'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.82)', color: isDark || isContrast ? '#e0e7ff' : '#4338ca', border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.28)' : '#c7d2fe') } }, t('stem.probability.try_a_paradox', 'Try a Paradox'))
+                  React.createElement("button", { type: 'button', disabled: quickTrialsSupported && !customCanRun, onClick: canRunQuickTrials ? function() { runTrial(10); } : function() { if (!quickTrialsSupported) selectMode('coin'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed", style: { background: '#5b21b6', color: '#fff', border: '1px solid #4c1d95', boxShadow: '0 8px 18px rgba(91,33,182,0.22)' } }, canRunQuickTrials ? t('stem.probability.run_10_trials', 'Run 10 Trials') : quickTrialsSupported ? 'Fix Custom Model' : t('stem.probability.start_with_coin', 'Start With Coin')),
+                  React.createElement("button", { type: 'button', onClick: function() { selectMode('monty'); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.82)', color: isDark || isContrast ? '#e0e7ff' : '#4338ca', border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.28)' : '#c7d2fe') } }, t('stem.probability.try_a_paradox', 'Try a Paradox'))
                 )
               ),
               React.createElement("div", { style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -2108,7 +2114,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 ),
                 React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } }, routes.map(function(route) {
                   var active = route.modes.indexOf(d.mode) >= 0;
-                  return React.createElement("button", { key: route.title, onClick: function() { selectMode(route.action); }, className: "text-left rounded-lg transition-all", style: { padding: 10, border: '1px solid ' + (active ? '#7c3aed' : (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e2e8f0')), background: active ? (isDark || isContrast ? 'rgba(124,58,237,0.24)' : '#f5f3ff') : (isDark || isContrast ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.72)'), color: isDark || isContrast ? '#f8fafc' : '#1e293b' } },
+                  return React.createElement("button", { type: 'button', key: route.title, onClick: function() { selectMode(route.action); }, className: "text-left rounded-lg transition-all", style: { padding: 10, border: '1px solid ' + (active ? '#7c3aed' : (isDark || isContrast ? 'rgba(148,163,184,0.22)' : '#e2e8f0')), background: active ? (isDark || isContrast ? 'rgba(124,58,237,0.24)' : '#f5f3ff') : (isDark || isContrast ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.72)'), color: isDark || isContrast ? '#f8fafc' : '#1e293b' } },
                     React.createElement("div", { style: { fontSize: 12, fontWeight: 900, color: active ? (isDark || isContrast ? '#ddd6fe' : '#5b21b6') : (isDark || isContrast ? '#e2e8f0' : '#334155') } }, route.title),
                     React.createElement("div", { style: { marginTop: 3, fontSize: 10, lineHeight: 1.35, color: isDark || isContrast ? '#cbd5e1' : '#475569' } }, route.note)
                   );
@@ -2140,7 +2146,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
             React.createElement("div", { className: "prob-hero-header" },
               React.createElement("div", { className: "prob-hero-row" },
                 React.createElement("div", { className: "prob-hero-id" },
-                  React.createElement("button", { onClick: leaveProbabilityLab, className: "p-2 rounded-lg transition-colors", style: { color: '#ffffff', background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.22)' }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                  React.createElement("button", { type: 'button', onClick: leaveProbabilityLab, className: "p-2 rounded-lg transition-colors", style: { color: '#ffffff', background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', border: isContrast ? '2px solid #00ff00' : '1px solid rgba(255,255,255,0.22)' }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                   React.createElement("svg", { width: 42, height: 42, viewBox: "0 0 64 64", style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
                     React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.58)', stroke: isContrast ? '#00ff00' : 'rgba(196,181,253,0.55)', strokeWidth: 1.8 }),
                     React.createElement("rect", { x: 14, y: 14, width: 22, height: 22, rx: 5, fill: isContrast ? '#000000' : '#7c3aed', stroke: isContrast ? '#ffff00' : '#ddd6fe', strokeWidth: 1.6 }),
@@ -2161,7 +2167,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                   d.trials > 0 && React.createElement("span", { className: "prob-telemetry-pill" }, React.createElement("strong", null, String(d.trials)), ' ', t('stem.probability.pill_trials', 'trials')),
                   (d._bestStreak || 0) >= 3 && React.createElement("span", { className: "prob-telemetry-pill" }, '🔥 ', t('stem.probability.pill_best', 'Best'), ' ', React.createElement("strong", null, String(d._bestStreak || 0))),
                   // Mute toggle (wraps probTone at the source via window._probabilityMuted)
-                  React.createElement("button", {
+                  React.createElement("button", { type: 'button',
                     onClick: function() {
                       var next = !d.muted;
                       upd('muted', next);
@@ -2188,7 +2194,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
               [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', t('stem.probability.mode_custom_model', 'Custom outcomes')], ['tree', t('stem.probability.mode_probability_tree', 'Probability tree')], ['pi', t('stem.probability.mode_estimate_pi', 'Estimate pi')], ['birthday', t('stem.probability.mode_shared_birthdays', 'Shared birthdays')], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].filter(function(pair) { return d.showAllExperiments || ['coin', 'dice', 'dice2', 'spinner', 'marbleBag'].indexOf(pair[0]) >= 0 || pair[0] === d.mode; }).map(([m, label]) =>
 
-                React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_mode', 'Select mode: {value1}'), { value1: label }), "aria-pressed": d.mode === m, "data-probability-mode": m, key: m, onClick: function() { selectMode(m); }, className: "px-3 py-2 rounded-lg text-sm font-bold transition-all", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
+                React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_select_mode', 'Select mode: {value1}'), { value1: label }), "aria-pressed": d.mode === m, "data-probability-mode": m, key: m, onClick: function() { selectMode(m); }, className: "px-3 py-2 rounded-lg text-sm font-bold transition-all", style: { minHeight: 44, minWidth: 0, whiteSpace: "normal", overflowWrap: "anywhere", background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
               )
 
@@ -2306,7 +2312,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 DICE_TYPES.map(function(sides) {
                   var active = diceSides === sides;
                   var dieColor = (DIE_SHAPES[sides] || {}).fill || '#888';
-                  return React.createElement("button", {
+                  return React.createElement("button", { type: 'button',
                     key: 'dt-' + sides,
                     onClick: function() {
                       sfxProbClick();
@@ -2360,6 +2366,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     // same toggle so they cannot drift apart.
                     onClick: function () { mbToggleReplacement(); },
                     onKeyDown: function (e) {
+                      if (_probIgnoreKey(e)) return;
                       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); mbToggleReplacement(); }
                     },
                    
@@ -2410,15 +2417,15 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                     React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_color', 'Name for color {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg text-sm font-bold flex-shrink-0", style: { border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ddd6fe'), background: isDark || isContrast ? 'rgba(255,255,255,0.05)' : '#fff', color: _text } }),
 
-                    React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#991b1b' } }, "\u2212"),
+                    React.createElement("button", { type: 'button', "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#fecaca', color: '#991b1b' } }, "\u2212"),
 
                     React.createElement("span", { className: "w-8 text-center text-sm font-black", style: { color: _text } }, count),
 
-                    React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#bbf7d0', color: '#14532d' } }, "+"),
+                    React.createElement("button", { type: 'button', "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full font-bold text-sm flex-shrink-0 flex items-center justify-center transition-all hover:scale-110", style: { background: '#bbf7d0', color: '#14532d' } }, "+"),
 
                     React.createElement("span", { className: "ml-auto text-[0.6875rem] font-mono", style: { color: isDark || isContrast ? '#a5b4fc' : '#7c3aed' } }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + ((o.prob || 0) * 100).toFixed(1) + '%'),
 
-                    customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
+                    customOutcomes.length > 2 && React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-sm font-bold px-1 flex-shrink-0 transition-colors", style: { color: '#f87171' } }, "\u2715")
 
                   );
 
@@ -2426,7 +2433,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
               ),
 
-              customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.add_color_2', "+ Add Color")),
+              customOutcomes.length < 8 && React.createElement("button", { type: 'button', "aria-label": t('stem.probability.add_color', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: ['Green', 'Yellow', 'Purple', 'Orange', 'Pink', 'Teal'][Math.min(customOutcomes.length - 2, 5)] || String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 3, color: ['#22c55e', '#eab308', '#8b5cf6', '#f97316', '#ec4899', '#06b6d4', '#14b8a6', '#f43f5e'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:scale-105", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.add_color_2', "+ Add Color")),
 
               // ── SVG Bag Visualization ──
 
@@ -2526,7 +2533,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 SPORTS.map(function (s) {
 
-                  return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_sport_scenario', 'Select sport scenario: {value1}'), { value1: s.label }),
+                  return React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_select_sport_scenario', 'Select sport scenario: {value1}'), { value1: s.label }),
 
                     key: s.id,
 
@@ -2552,7 +2559,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
               React.createElement("div", { className: "flex gap-1 mb-3 bg-amber-100/50 rounded-lg p-1" },
 
-                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_select_input_mode', 'Select {value1} input mode'), { value1: label }), key: sm, onClick: function () { setCustomSubMode(sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
+                [['fraction', '\uD83C\uDFAF Fraction'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['slider', '\uD83C\uDFA8 Slider']].map(function (pair) { var sm = pair[0], label = pair[1]; return React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_select_input_mode', 'Select {value1} input mode'), { value1: label }), key: sm, onClick: function () { setCustomSubMode(sm); }, className: "flex-1 px-3 py-1.5 rounded-md text-xs font-bold transition-all " + (customSubMode === sm ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700') }, label); })
 
               ),
 
@@ -2582,7 +2589,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                       React.createElement("span", { className: "ml-1 px-2 py-0.5 rounded-full text-[0.6875rem] font-bold " + (o.prob <= 0.1 ? 'bg-violet-100 text-violet-700' : o.prob <= 0.5 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }, (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_event', 'Remove event {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_event', 'Remove event {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -2590,7 +2597,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
+                customOutcomes.length < 8 && React.createElement("button", { type: 'button', "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
 
                 React.createElement("p", { className: "text-[0.6875rem] mt-1.5 " + (customModel.valid ? 'text-emerald-500' : 'text-red-500') }, "Total: " + (customModel.total * 100).toFixed(1) + "%" + (customModel.valid ? ' - ready' : ' - must equal exactly 100%'))
 
@@ -2616,15 +2623,15 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                       React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': __alloFill(__alloT('stem.probability.a11y_name_for_marble_color', 'Name for marble color {value1}'), { value1: (i + 1) }), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-800 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                      React.createElement("button", { type: 'button', "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-800 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
 
-                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                      React.createElement("button", { type: 'button', "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
 
                       React.createElement("span", { className: "ml-1 text-[0.6875rem] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_marble_color', 'Remove marble color {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
 
                     );
 
@@ -2650,7 +2657,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
+                customOutcomes.length < 8 && React.createElement("button", { type: 'button', "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
 
               ),
 
@@ -2674,13 +2681,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                       React.createElement("div", { className: "flex min-w-0 flex-1 basis-32 items-center gap-1" },
 
-                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': __alloFill(__alloT('stem.probability.a11y_probability_for_outcome', 'Probability for outcome {value1}'), { value1: (o.label || (i + 1)) }), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "h-6 min-w-0 flex-1 accent-amber-600" }),
+                        React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), 'aria-label': __alloFill(__alloT('stem.probability.a11y_probability_for_outcome', 'Probability for outcome {value1}'), { value1: (o.label || (i + 1)) }), 'aria-valuetext': Math.round(o.prob * 100) + ' percent', onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } setProbabilityOutcomes(co); }, className: "h-6 min-w-0 flex-1 accent-amber-600" }),
 
                         React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
 
                       ),
 
-                      customOutcomes.length > 2 && React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_outcome', 'Remove outcome {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
+                      customOutcomes.length > 2 && React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_remove_outcome', 'Remove outcome {value1}'), { value1: (o.label || (i + 1)) }), onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); var total = co.reduce(function (s, c) { return s + c.prob; }, 0); co = co.map(function (c) { return Object.assign({}, c, { prob: c.prob / total }); }); setProbabilityOutcomes(co); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1" }, "\u2715")
 
                     );
 
@@ -2688,7 +2695,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); setProbabilityOutcomes(newOuts); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
+                customOutcomes.length < 8 && React.createElement("button", { type: 'button', "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); setProbabilityOutcomes(newOuts); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
 
                 React.createElement("p", { className: "text-[0.6875rem] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
 
@@ -2807,7 +2814,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 }
                 var clickable = m.stage === 'pick';
                 var borderColor = isFinal ? (m.won ? '#16a34a' : '#dc2626') : isPicked ? '#7c3aed' : '#475569';
-                return React.createElement('button', {
+                return React.createElement('button', { type: 'button',
                   key: 'door-' + idx,
                   onClick: clickable ? function() { pickDoor(idx); } : null,
                   disabled: !clickable && m.stage !== 'reveal',
@@ -2844,10 +2851,10 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 // Action buttons
                 React.createElement('div', { className: 'flex justify-center gap-2 mb-4' },
                   m.stage === 'choice' && [
-                    React.createElement('button', { key: 'stay', onClick: function() { decide('stay'); }, className: 'px-4 py-2 rounded-lg font-bold bg-slate-200 text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.stay', '🛡 Stay')),
-                    React.createElement('button', { key: 'switch', onClick: function() { decide('switch'); }, className: 'px-4 py-2 rounded-lg font-bold bg-amber-400 text-amber-900 hover:bg-amber-300 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.switch', '🔄 Switch'))
+                    React.createElement('button', { type: 'button', key: 'stay', onClick: function() { decide('stay'); }, className: 'px-4 py-2 rounded-lg font-bold bg-slate-200 text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.stay', '🛡 Stay')),
+                    React.createElement('button', { type: 'button', key: 'switch', onClick: function() { decide('switch'); }, className: 'px-4 py-2 rounded-lg font-bold bg-amber-400 text-amber-900 hover:bg-amber-300 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.switch', '🔄 Switch'))
                   ],
-                  m.stage === 'reveal' && React.createElement('button', { onClick: newRound, className: 'px-5 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.play_another_round', '↻ Play another round'))
+                  m.stage === 'reveal' && React.createElement('button', { type: 'button', onClick: newRound, className: 'px-5 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white focus:outline-none' }, t('stem.probability.play_another_round', '↻ Play another round'))
                 ),
                 // Strategy stats — side by side comparison + outcome strip
                 (ms.stayN > 0 || ms.switchN > 0) && (function() {
@@ -2924,13 +2931,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 // Auto-run row + reset
                 React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
                   [100, 500, 1000].map(function(n) {
-                    return React.createElement('button', {
+                    return React.createElement('button', { type: 'button',
                       key: 'auto-' + n,
                       onClick: function() { autoRun(n); },
                       className: 'px-3 py-1.5 rounded-md text-[0.6875rem] font-bold bg-white/15 hover:bg-white/25 text-white focus:ring-2 focus:ring-white focus:outline-none',
                       'aria-label': __alloFill(__alloT('stem.probability.a11y_simulate_rounds_of_each_strategy', 'Simulate {value1} rounds of each strategy'), { value1: n })}, '⚡ +' + n + ' of each');
                   }),
-                  (ms.stayN > 0 || ms.switchN > 0) && React.createElement('button', {
+                  (ms.stayN > 0 || ms.switchN > 0) && React.createElement('button', { type: 'button',
                     onClick: resetStats,
                     className: 'px-3 py-1.5 rounded-md text-[0.6875rem] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 ml-auto'
                   }, t('stem.probability.reset_stats', '↻ Reset stats'))
@@ -3319,14 +3326,14 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 // Drop controls
                 React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center' },
                   [1, 10, 100, 1000].map(function(n) {
-                    return React.createElement('button', {
+                    return React.createElement('button', { type: 'button',
                       key: 'drop-' + n,
                       onClick: function() { dropN(n); },
                       className: 'px-4 py-2 rounded-lg font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:ring-2 focus:ring-white focus:outline-none transition',
                       'aria-label': 'Drop ' + n + ' ball' + (n > 1 ? 's' : '')
                     }, '⚪ Drop ' + n);
                   }),
-                  totalDropped > 0 && React.createElement('button', {
+                  totalDropped > 0 && React.createElement('button', { type: 'button',
                     onClick: resetBoard,
                     className: 'px-3 py-2 rounded-lg text-[0.75rem] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 focus:ring-2 focus:ring-white focus:outline-none'
                   }, t('stem.probability.reset', '↻ Reset'))
@@ -3447,7 +3454,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                   V3_SHAPES.map(function(s) {
                     var active = s.id === shapeId;
                     var hex = '#' + s.color.toString(16).padStart(6, '0');
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: 'v3s-' + s.id,
                       onClick: function() { sfxProbClick(); upd('v3Shape', s.id); upd('v3Cloud', []); upd('v3Total', 0); upd('v3Inside', 0); },
                       'aria-pressed': active,
@@ -3529,13 +3536,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                 // ── Controls ──
                 h('div', { className: 'flex flex-wrap gap-2 mt-3 items-center' },
                   [100, 1000, 10000].map(function(n) {
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: 'v3t-' + n, onClick: function() { throwDarts(n); },
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold text-white',
                       style: { background: '#0369a1' }
                     }, '+' + n.toLocaleString() + ' ' + t('stem.probability.volume3d_darts_word', 'darts'));
                   }),
-                  h('button', { onClick: resetDarts, className: 'px-3 py-1.5 rounded-lg text-xs font-semibold border',
+                  h('button', { type: 'button', onClick: resetDarts, className: 'px-3 py-1.5 rounded-lg text-xs font-semibold border',
                     style: { color: body, borderColor: isDark || isContrast ? 'rgba(100,116,139,0.5)' : '#cbd5e1' } }, t('stem.probability.volume3d_reset', '↺ Reset')),
                   h('label', { className: 'flex items-center gap-1 text-[0.6875rem] font-bold cursor-pointer ml-auto', style: { color: body } },
                     h('input', { type: 'checkbox', checked: showMiss, onChange: function(e) { upd('v3ShowMiss', e.target.checked); }, className: 'w-3 h-3' }),
@@ -3598,7 +3605,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                   React.createElement("span", { className: "text-xs font-bold w-24 flex-shrink-0", style: { color: isDark||isContrast?'#fbbf24':'#b45309' } }, '👥 ' + _bn + ' people'),
 
-                  React.createElement("input", { type: "range", min: 2, max: 70, value: _bn, 'aria-label': t('stem.probability.number_of_people_in_room', 'Number of people in room'), onChange: function(e) { upd('birthdayN', parseInt(e.target.value)); }, className: "min-w-0 flex-1", style: { accentColor: '#f59e0b' } })
+                  React.createElement("input", { type: "range", min: 2, max: 70, value: _bn, 'aria-label': t('stem.probability.number_of_people_in_room', 'Number of people in room'), 'aria-valuetext': _bn + ' people', onChange: function(e) { upd('birthdayN', parseInt(e.target.value)); }, className: "min-w-0 flex-1", style: { accentColor: '#f59e0b' } })
 
                 ),
 
@@ -3630,7 +3637,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                     for (var _mk = 0; _mk < mn && _mk < 365; _mk++) mpb *= (365 - _mk) / 365;
 
-                    return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_set_group_size_to_people', 'Set group size to {value1} people'), { value1: mn }), key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all", style: { background: _bn === mn ? '#b45309' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(180,83,9,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
+                    return React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_set_group_size_to_people', 'Set group size to {value1} people'), { value1: mn }), key: mn, onClick: function() { upd('birthdayN', mn); }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all", style: { background: _bn === mn ? '#b45309' : (isDark||isContrast?'rgba(251,191,36,0.1)':'#fef9c3'), color: _bn === mn ? '#fff' : (isDark||isContrast?'#fbbf24':'#92400e'), border: '1px solid '+(isDark||isContrast?'rgba(251,191,36,0.2)':'#fde68a'), boxShadow: _bn === mn ? '0 2px 8px rgba(180,83,9,0.3)' : 'none' } }, 'n=' + mn + ' → ' + ((1 - mpb) * 100).toFixed(0) + '%');
 
                   })
 
@@ -3788,13 +3795,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     ),
                     // Action buttons
                     React.createElement('div', { className: 'flex flex-wrap gap-2 items-center' },
-                      React.createElement('button', {
+                      React.createElement('button', { type: 'button',
                         onClick: resample,
                         className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition',
                         style: { background: '#f59e0b', color: '#451a03' },
                         'aria-label': t('stem.probability.re_randomize_all_birthdays', 'Re-randomize all birthdays')
                       }, t('stem.probability.resample', '🎲 Resample')),
-                      React.createElement('button', {
+                      React.createElement('button', { type: 'button',
                         onClick: runMany,
                         className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold transition',
                         style: { background: '#15803d', color: '#fff' },
@@ -3805,7 +3812,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                         React.createElement('span', { className: 'ml-2 font-mono font-bold', style: { color: isDark||isContrast?'#86efac':'#166534' } }, '(' + batchPct + '%)'),
                         React.createElement('span', { className: 'ml-1 italic' }, '— theory says ' + _bpct + '%')
                       ),
-                      batch.runs > 0 && React.createElement('button', {
+                      batch.runs > 0 && React.createElement('button', { type: 'button',
                         onClick: resetBatch,
                         className: 'px-2 py-1 rounded-md text-[0.625rem] font-bold transition',
                         style: { background: '#fee2e2', color: '#991b1b' },
@@ -4108,7 +4115,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
             // ── Auto-Run Controls ──
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { role: "group", 'aria-label': __alloT('stem.probability.a11y_automatic_simulation_controls', 'Automatic simulation controls'), className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.probability.a11y_automatic_simulation', 'Automatic simulation'), "aria-pressed": d._autoRunning ? "true" : "false",
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.probability.a11y_automatic_simulation', 'Automatic simulation'), "aria-pressed": d._autoRunning ? "true" : "false",
 
                 disabled: !customCanRun || !!d._piSlowRunning || (d.trials || 0) >= PROBABILITY_AUTO_TRIAL_LIMIT,
                 onClick: function() {
@@ -4142,7 +4149,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
               React.createElement("div", { role: "group", 'aria-label': __alloT('stem.probability.a11y_automatic_simulation_speed', 'Automatic simulation speed'), className: "flex flex-wrap gap-1" }, [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
 
-                return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_set_simulation_speed_to', 'Set simulation speed to {value1}'), { value1: pair[0] }), "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
+                return React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_set_simulation_speed_to', 'Set simulation speed to {value1}'), { value1: pair[0] }), "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
 
                   upd('_autoSpeed', pair[1]);
                   if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.probability.sr_automatic_simulation_speed_set_to', 'Automatic simulation speed set to {value1}.'), { value1: pair[0] }));
@@ -4169,9 +4176,9 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
-              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": __alloFill(__alloT('stem.probability.a11y_run_trials', 'Run {value1} trials'), { value1: n }), disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
+              [1, 10, 50, 100, 500].map(n => React.createElement("button", { type: 'button', "aria-label": __alloFill(__alloT('stem.probability.a11y_run_trials', 'Run {value1} trials'), { value1: n }), disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
-              React.createElement("button", { "aria-label": __alloT('stem.probability.a11y_reset_current_run', 'Reset current run'), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.probability.a11y_reset_current_run', 'Reset current run'), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
 
             ),
 
@@ -4641,7 +4648,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
               if (piTotal <= 0) {
                 return React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
                   React.createElement("div", { role: "status", className: "p-3 text-center text-sm font-bold", style: { color: _accent } }, "No estimate yet \u2014 throw a dart."),
-                  React.createElement("button", {
+                  React.createElement("button", { type: 'button',
                     onClick: beginPiSlowDrop,
                     className: "mt-2 w-full px-3 py-2 rounded-lg text-[0.6875rem] font-bold transition",
                     style: { background: '#7c3aed', color: '#fff' },
@@ -4756,7 +4763,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     // Drops 100 points one at a time over ~10 seconds so students
                     // can SEE the convergence happen. Standard +N buttons stay
                     // fast for batch mode; this is the "show your work" mode.
-                    React.createElement("button", {
+                    React.createElement("button", { type: 'button',
                       onClick: function() {
                         if (_piAnim.interval) {
                           // Toggle off if already running
@@ -4923,7 +4930,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
                       _done ? React.createElement("span", { className:"text-[0.6875rem] font-bold text-emerald-500 flex-shrink-0" }, t('stem.probability.done', '✅ Done!'))
 
-                        : _ok ? React.createElement("button", { "aria-label": t('stem.probability.claim', "Claim"), onClick:function() {
+                        : _ok ? React.createElement("button", { type: 'button', "aria-label": t('stem.probability.claim', "Claim"), onClick:function() {
 
                             if(_cc.indexOf(ch.id)>=0 || probabilityRewardGuard.current.challenges[ch.id]) return;
                             probabilityRewardGuard.current.challenges[ch.id] = true;
@@ -4956,13 +4963,13 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
 
             })(),
 
-            React.createElement("button", { "aria-label": t('stem.probability.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, t('stem.probability.snapshot_2', "\uD83D\uDCF8 Snapshot")),
-            React.createElement("button", { "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ var _s = String(k).replace(/\"/g,'""'); if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(_s) && !Number.isFinite(Number(_s))) _s = "'" + _s; return '\"' + _s + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-800 to-teal-800 rounded-full hover:from-emerald-800 hover:to-teal-800 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
+            React.createElement("button", { type: 'button', "aria-label": t('stem.probability.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'pr-' + Date.now(), tool: 'probability', label: d.mode + ' ' + d.trials + ' trials', data: Object.assign({}, d), timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, t('stem.probability.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+            React.createElement("button", { type: 'button', "aria-label": t('stem.probability.export_csv', "Export CSV"), onClick: function() { try { var _r = (typeof d !== 'undefined' && d && d.results) ? d.results : []; if (!_r.length) return; var _counts = {}; _r.forEach(function(o){ var k = String(o); _counts[k] = (_counts[k]||0)+1; }); var _csv = 'outcome,count\n' + Object.keys(_counts).map(function(k){ var _s = String(k).replace(/\"/g,'""'); if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r\n])/.test(_s) && !Number.isFinite(Number(_s))) _s = "'" + _s; return '\"' + _s + '\",' + _counts[k]; }).join('\n'); var _b = new Blob([_csv], { type: 'text/csv' }); var _u = URL.createObjectURL(_b); var _a = document.createElement('a'); _a.href = _u; _a.download = 'probability_' + Date.now() + '.csv'; _a.click(); setTimeout(function(){ try { URL.revokeObjectURL(_u); } catch(_e){} }, 1000); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 CSV saved!', 'success'); } catch(e){} }, className: "mt-3 ml-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-800 to-teal-800 rounded-full hover:from-emerald-800 hover:to-teal-800 shadow-md" }, t('stem.probability.export_csv_2', "\uD83D\uDCE5 Export CSV")),
 
             // ── AI Explain Results + TTS Narrate ──
             React.createElement("div", { className: "mt-4 pt-4", style: { borderTop: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe') } },
               React.createElement("div", { className: "flex gap-2 flex-wrap mb-2" },
-                callGemini && React.createElement("button", { "aria-label": t('stem.probability.explain_results_with_ai', "Explain results with AI"),
+                callGemini && React.createElement("button", { type: "button", "aria-label": t('stem.probability.explain_results_with_ai', "Explain results with AI"),
                   disabled: !callGemini || (d.trials === 0 && d.mode !== 'tree') || d._aiLoading,
                   onClick: function() {
                     if (!callGemini) return;
@@ -4993,10 +5000,10 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     ).then(function(resp){ upd('_aiExplanation', resp); upd('_aiLoading', false); })
                      .catch(function(){ upd('_aiLoading', false); addToast('AI explain failed', 'error'); });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                  style: { background: isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe', color: isDark||isContrast?'#c4b5fd':'#7c3aed', opacity: (!callGemini||(d.trials===0&&d.mode!=='tree')||d._aiLoading)?0.5:1, cursor: (!callGemini||(d.trials===0&&d.mode!=='tree')||d._aiLoading)?'not-allowed':'pointer' }
+                  className: "min-h-[44px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  style: { background: isDark||isContrast?'rgba(139,92,246,0.15)':'#ede9fe', color: isDark||isContrast?'#c4b5fd':'#6d28d9', opacity: (!callGemini||(d.trials===0&&d.mode!=='tree')||d._aiLoading)?0.5:1, cursor: (!callGemini||(d.trials===0&&d.mode!=='tree')||d._aiLoading)?'not-allowed':'pointer' }
                 }, d._aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 Explain My Results'),
-                d.trials > 0 && callTTS && React.createElement("button", { "aria-label": t('stem.probability.narrate_results', "Narrate Results"),
+                d.trials > 0 && callTTS && React.createElement("button", { type: "button", "aria-label": t('stem.probability.narrate_results', "Narrate Results"),
                   onClick: function() {
                     var topOutcome = Object.keys(counts).sort(function(a,b){ return (counts[b]||0)-(counts[a]||0); })[0];
                     var narration = 'Probability Lab results. Mode: ' + d.mode + '. ' + statN + ' trials run. ' +
@@ -5004,8 +5011,8 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                       'Chi-square test: ' + (!chiIndependent ? 'does not apply, because draws without replacement are not independent' : !chiApplicable ? 'does not apply, because only one outcome is possible' : chiReady ? (chiPass?'fair':'potentially biased') : 'not enough trials yet, it needs ' + chiTrialsNeeded + ' for this setup') + '.';
                     callTTS(narration, null, undefined, { force: true });
                   },
-                  className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                  style: { background: isDark||isContrast?'rgba(34,197,94,0.1)':'#f0fdf4', color: isDark||isContrast?'#86efac':'#16a34a' }
+                  className: "min-h-[44px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  style: { background: isDark||isContrast?'rgba(34,197,94,0.1)':'#f0fdf4', color: isDark||isContrast?'#86efac':'#15803d' }
                 }, t('stem.probability.narrate_results_2', '\uD83D\uDD0A Narrate Results'))
               ),
               d._aiExplanation && React.createElement("div", { className: "rounded-xl p-3", style: { background: isDark||isContrast?'rgba(139,92,246,0.08)':'rgba(139,92,246,0.04)', border: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.2)':'#ddd6fe') } },
@@ -5093,7 +5100,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                     h('div', { className: 'flex items-center justify-between gap-2 mb-1' },
                       h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: isDark||isContrast?'#cbd5e1':'#475569' } },
                         t('stem.probability.sample_of_draws', 'Sample of ') + SAMPLE_N + t('stem.probability.sample_of_draws_suffix', ' draws')),
-                      h('button', { onClick: function() { setIQ({ sampleNonce: ((iq.sampleNonce || 0) + 1) % 997 }); },
+                      h('button', { type: 'button', onClick: function() { setIQ({ sampleNonce: ((iq.sampleNonce || 0) + 1) % 997 }); },
                         className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold',
                         style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } },
                         t('stem.probability.new_sample', '🎲 New sample'))
@@ -5131,12 +5138,12 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                           s.label + ': ', h('span', { className: 'font-mono', style: { color: isDark||isContrast?'#67e8f9':'#0e7490' } }, s.val)),
                         h('input', { id: 'dh-' + s.key, type: 'range', min: 0, max: 100, step: 1, value: s.val,
                           onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
-                          className: 'w-full', 'aria-label': s.label }));
+                          className: 'w-full', 'aria-label': s.label, 'aria-valuetext': s.label + ' ' + s.val }));
                     })
                   ),
                   h('div', { className: 'flex gap-2 items-center mb-2 flex-wrap' },
-                    h('button', { onClick: logObs, className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
-                    h('button', { onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, sampleNonce: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                    h('button', { type: 'button', onClick: logObs, className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold', style: { background: isDark||isContrast?'rgba(8,145,178,0.2)':'#cffafe', color: isDark||isContrast?'#67e8f9':'#155e75' } }, t('stem.probability.log', '\uD83D\uDCCB Log')),
+                    h('button', { type: 'button', onClick: function() { setIQ({ pLow: 33, pMid: 34, pHigh: 33, sampleNonce: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                       className: 'px-2 py-0.5 rounded text-[0.625rem] font-semibold border', style: { color: isDark||isContrast?'#94a3b8':'#475569', borderColor: isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1' } }, t('stem.probability.reset_3', '\u21BA Reset')),
                     (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] italic', style: { color: isDark||isContrast?'#94a3b8':'#475569' } }, (iq.log || []).length + ' logged')
                   ),
@@ -5155,7 +5162,7 @@ var d = (_rawProbData && typeof _rawProbData === 'object' && !Array.isArray(_raw
                   h('textarea', { 'aria-label': t('stem.probability.hypothesis_label', 'Probability distribution hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                     placeholder: t('stem.probability.hypothesis_free_text_what_combination_', 'Hypothesis (free text): What combination produces uniform? What about peaked?'),
                     className: 'w-full text-[0.6875rem] rounded p-1 font-mono leading-snug mb-2', style: { background: isDark||isContrast?'rgba(15,23,42,0.6)':'#ffffff', color: isDark||isContrast?'#e2e8f0':'#1e293b', border: '1px solid ' + (isDark||isContrast?'rgba(100,116,139,0.4)':'#cbd5e1') }, rows: 2 }),
-                  !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+                  !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
                     className: 'px-2 py-0.5 rounded text-[0.625rem] font-bold mb-2', style: { background: isDark||isContrast?'rgba(251,191,36,0.15)':'#fef3c7', color: isDark||isContrast?'#fbbf24':'#92400e' } }, t('stem.probability.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
                   iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] leading-relaxed mb-2', style: { background: isDark||isContrast?'rgba(251,191,36,0.08)':'#fffbeb', color: isDark||isContrast?'#cbd5e1':'#475569', border: '1px solid ' + (isDark||isContrast?'rgba(251,191,36,0.3)':'#fcd34d') } },
                     h('ul', { className: 'list-disc pl-4 space-y-0.5' },

@@ -85,7 +85,12 @@ describe('#1 trend — progress is legible even when both runs floor at 0', () =
     expect(d.dedDelta).toBeLessThan(0);
   });
   it('the view persists + reads the trend keyed per file (name|size|pageCount), display-only', () => {
-    expect(viewSrc).toMatch(/'alloflow_score_trend_' \+ \(pendingPdfFile\.name \|\| 'doc'\)/);
+    // Still keyed per file by name|size|pageCount, but the key is now a hash (no file name in storage),
+    // kept in one session-scoped map of at most 20 files.
+    expect(viewSrc).toContain("const _sig = (pendingPdfFile.name || 'doc') + '|' + (pendingPdfFile.size || 0) + '|' + (pdfAuditResult.pageCount || 0);");
+    expect(viewSrc).toContain("const _hashKey = 't_' + ((_h >>> 0).toString(16).padStart(8, '0'));");
+    expect(viewSrc).toContain("const _STORE_KEY = 'alloflow_score_trend_v2';");
+    expect(viewSrc).toContain('sessionStorage.setItem(_STORE_KEY, JSON.stringify(_map));');
     expect(viewSrc).toMatch(/_setScoreTrend\(\(_prior && \(_prior\.ded !== _cur\.ded \|\| _prior\.count !== _cur\.count\)\) \? \{ prior: _prior, cur: _cur \} : null\)/);
   });
 });

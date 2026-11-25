@@ -34,19 +34,22 @@
 //   - word-aware 40-cell wrapping (no mid-word breaks); and
 //   - a dropped-character count (opts.withMeta) so a caller can warn honestly
 //     when a script has no Grade-1 English braille equivalent (CJK, Arabic...).
-var _G1_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+var _G1_DIGIT = Object.assign(Object.create(null), { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' });
 // Supported UEB symbols expressed as North-American Braille ASCII. Anything
 // outside this explicit set is counted and omitted instead of passing raw ASCII
 // through as an unrelated braille cell.
-var _G1_PUNCT = {
+var _G1_PUNCT = Object.assign(Object.create(null), {
   ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8',
   '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/',
   '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>'
-};
-var _G1_SMART = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
-var _G1_OPEN_QUOTE = '\ue000';
-var _G1_CLOSE_QUOTE = '\ue001';
+});
+var _G1_SMART = Object.assign(Object.create(null), { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' });
 var _G1_PREFIX = /[#,;@_^".]$/;
+function _safeBrailleStr(text) {
+  if (text == null) return '';
+  if (typeof text === 'string') return text;
+  try { return String(text); } catch (_) { return ''; }
+}
 function _g1HardSplit(word, into, cells) {
   // Numeric continuation indicator (dot 5 = ") keeps a divided numeric item
   // in numeric mode on the next braille line.
@@ -68,6 +71,7 @@ function _g1Wrap(line, into, cells) {
   var words = line.split(' '), cur = '';
   for (var i = 0; i < words.length; i++) {
     var w = words[i];
+    if (!w) continue;
     if (w.length > cells) { if (cur) { into.push(cur); cur = ''; } _g1HardSplit(w, into, cells); continue; }
     if (!cur) cur = w;
     else if (cur.length + 1 + w.length <= cells) cur += ' ' + w;
@@ -76,10 +80,9 @@ function _g1Wrap(line, into, cells) {
   if (cur) into.push(cur);
 }
 function toGrade1BRF(text, opts) {
-  var src = String(text == null ? '' : text);
+  var src = _safeBrailleStr(text);
   var rawCells = opts && opts.cellsPerLine;
   var cells = Math.max(2, Math.floor(Number.isFinite(Number(rawCells)) && Number(rawCells) > 0 ? Number(rawCells) : 40));
-  src = src.replace(/[\u201c\u00ab]/g, _G1_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _G1_CLOSE_QUOTE);
   src = src.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, function (c) { return _G1_SMART[c] || ''; });
   try { src = src.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
   var lines = src.replace(/\r\n?/g, '\n').split('\n');
@@ -103,8 +106,8 @@ function toGrade1BRF(text, opts) {
         continue;
       }
       if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
-      if (ch === _G1_OPEN_QUOTE) { bl += '8'; continue; }
-      if (ch === _G1_CLOSE_QUOTE) { bl += '0'; continue; }
+      if (ch === '\u201c' || ch === '\u00ab') { bl += '8'; continue; }
+      if (ch === '\u201d' || ch === '\u00bb') { bl += '0'; continue; }
       if (ch === '"') {
         var prev = i > 0 ? chars[i - 1] : '';
         bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0';
@@ -118,14 +121,14 @@ function toGrade1BRF(text, opts) {
   var brf = out.join('\r\n');
   return (opts && opts.withMeta) ? { brf: brf, dropped: dropped } : brf;
 }
-if (typeof window !== 'undefined') {
+if (typeof window === 'object' && window) {
   window.AlloBraille = window.AlloBraille || {};
   if (typeof window.AlloBraille.toGrade1BRF !== 'function') window.AlloBraille.toGrade1BRF = toGrade1BRF;
 }
 if (typeof module !== 'undefined' && module.exports) module.exports = { toGrade1BRF: toGrade1BRF };
 
 // ── UEB Grade 2 (contracted) via liblouis — browser only, lazy ──────────────
-if (typeof window !== 'undefined') (function () {
+if (typeof window === 'object' && window) (function () {
   'use strict';
   if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') return;
 
@@ -134,7 +137,7 @@ if (typeof window !== 'undefined') (function () {
   var EASY_URL = 'https://cdn.jsdelivr.net/npm/liblouis@0.4.0/easy-api.js';
   var EASY_SRI = 'sha384-OAr26nwiJiYKNHBnvR/EnsmSQ/QZzaZE31CCJz3XnwgQrfr3ySzBXI52LAJ+HbZ3';
   var TABLES_URL = 'https://cdn.jsdelivr.net/npm/liblouis-build@3.2.0-rc/tables/';
-  var SRI_BY_URL = {};
+  var SRI_BY_URL = Object.create(null);
   SRI_BY_URL[BUILD_URL] = BUILD_SRI;
   SRI_BY_URL[EASY_URL] = EASY_SRI;
   // UEB Grade 2 (contracted), with the Unicode display table so translateString
@@ -148,15 +151,26 @@ if (typeof window !== 'undefined') (function () {
 
   var _readyPromise = null;
 
-  function loadScript(src) {
-    if (typeof window !== 'undefined' && (
+  function isRemoteCdnDisabled() {
+    return (typeof window === 'object' && window && (
       window._isDesktopBundledApp === true ||
       window.__alloOfflineOnly === true ||
       window.__ALLO_LOCAL_BOX === true ||
       !!window.__alloQrStudentMode ||
       window._alloQrBlocked === true
-    )) {
+    )) || (typeof navigator !== 'undefined' && navigator && navigator.onLine === false);
+  }
+
+  function isLiblouisModule(mod) {
+    return !!(mod && typeof mod === 'object' && typeof mod.ccall === 'function' && (typeof mod._lou_translateString === 'function' || typeof mod._lou_version === 'function'));
+  }
+
+  function loadScript(src) {
+    if (isRemoteCdnDisabled()) {
       return Promise.reject(new Error('External liblouis CDN is disabled in this mode'));
+    }
+    if (typeof document !== 'object' || !document || !document.head) {
+      return Promise.reject(new Error('DOM unavailable for loading ' + src));
     }
     return new Promise(function (resolve, reject) {
       var s = document.createElement('script');
@@ -166,9 +180,11 @@ if (typeof window !== 'undefined') (function () {
       s.src = src;
       s.async = true;
       var settled = false;
+      var cleanup = function () { s.onload = null; s.onerror = null; };
       var timer = setTimeout(function () {
         if (settled) return;
         settled = true;
+        cleanup();
         try { s.remove(); } catch (_) {}
         reject(new Error('timed out loading ' + src));
       }, 15000);
@@ -176,27 +192,38 @@ if (typeof window !== 'undefined') (function () {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        cleanup();
         resolve();
       };
       s.onerror = function () {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        cleanup();
         try { s.remove(); } catch (_) {}
         reject(new Error('failed to load ' + src));
       };
-      document.head.appendChild(s);
+      try {
+        document.head.appendChild(s);
+      } catch (err) {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          cleanup();
+          reject(err);
+        }
+      }
     });
   }
 
   function getInstance() {
     // easy-api auto-creates window.liblouis when the build is ready; otherwise
-    // construct one from the build global (Module / liblouisBuild).
+    // construct one from the build global (liblouisBuild / liblouis Module).
     if (window.liblouis && typeof window.liblouis.translateString === 'function') return window.liblouis;
     if (typeof window.LiblouisEasyApi === 'function') {
       try {
         var build = (typeof window.liblouisBuild !== 'undefined') ? window.liblouisBuild
-          : (typeof window.Module !== 'undefined' ? window.Module : undefined);
+          : (isLiblouisModule(window.Module) ? window.Module : undefined);
         var inst = new window.LiblouisEasyApi(build);
         if (inst && typeof inst.translateString === 'function') { window.liblouis = inst; return inst; }
       } catch (_) {}
@@ -220,13 +247,15 @@ if (typeof window !== 'undefined') (function () {
 
   function ensureReady() {
     if (_readyPromise) return _readyPromise;
-    var hasBuild = typeof window !== 'undefined' && (window.liblouis || window.liblouisBuild || window.Module);
-    var hasEasy = typeof window !== 'undefined' && (window.liblouis || typeof window.LiblouisEasyApi === 'function');
+    var hasBuild = typeof window === 'object' && window && (window.liblouis || window.liblouisBuild || isLiblouisModule(window.Module));
+    var hasEasy = typeof window === 'object' && window && (window.liblouis || typeof window.LiblouisEasyApi === 'function');
     _readyPromise = (hasBuild ? Promise.resolve() : loadScript(BUILD_URL))
       .then(function () { return hasEasy ? Promise.resolve() : loadScript(EASY_URL); })
       .then(function () { return waitForReady(12000); })
       .then(function (inst) {
-        try { inst.enableOnDemandTableLoading(TABLES_URL); } catch (e) { /* still usable if tables cached */ }
+        if (!isRemoteCdnDisabled()) {
+          try { inst.enableOnDemandTableLoading(TABLES_URL); } catch (e) { /* still usable if tables cached */ }
+        }
         return inst;
       })
       .catch(function (e) { _readyPromise = null; throw e; }); // allow a later retry
@@ -250,23 +279,9 @@ if (typeof window !== 'undefined') (function () {
   }
 
   // Greedy word-wrap at CELLS_PER_LINE, breaking on spaces; hard-split words
-  // longer than a line. Preserves the embosser's 40-cell default.
+  // without stranding UEB prefix indicators. Preserves the embosser's 40-cell default.
   function wrap(asciiLine, into) {
-    if (asciiLine.length <= CELLS_PER_LINE) { into.push(asciiLine); return; }
-    var words = asciiLine.split(' ');
-    var cur = '';
-    for (var i = 0; i < words.length; i++) {
-      var w = words[i];
-      while (w.length > CELLS_PER_LINE) { // a single long token
-        if (cur) { into.push(cur); cur = ''; }
-        into.push(w.slice(0, CELLS_PER_LINE));
-        w = w.slice(CELLS_PER_LINE);
-      }
-      if (!cur) cur = w;
-      else if (cur.length + 1 + w.length <= CELLS_PER_LINE) cur += ' ' + w;
-      else { into.push(cur); cur = w; }
-    }
-    if (cur) into.push(cur);
+    _g1Wrap(asciiLine, into, CELLS_PER_LINE);
   }
 
   window.AlloBraille = Object.assign(window.AlloBraille || {}, {
@@ -275,7 +290,7 @@ if (typeof window !== 'undefined') (function () {
      * to a string, or NULL if liblouis is unavailable / anything goes wrong.
      */
     toUEB: function (text) {
-      var src = String(text == null ? '' : text);
+      var src = _safeBrailleStr(text);
       if (!src.trim()) return Promise.resolve(null);
       return ensureReady().then(function (inst) {
         var lines = src.replace(/\r\n?/g, '\n').split('\n');
@@ -295,5 +310,7 @@ if (typeof window !== 'undefined') (function () {
     _tableList: TABLE_LIST
   });
 
-  console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2) + toGrade1BRF(text) (Grade 1)');
+  if (typeof console === 'object' && console && typeof console.log === 'function') {
+    console.log('[AlloBraille] liblouis_braille_loader.js ready — window.AlloBraille.toUEB(text) (lazy UEB Grade 2) + toGrade1BRF(text) (Grade 1)');
+  }
 })();

@@ -283,7 +283,9 @@ describe('4. student-facing labels are translated', () => {
     ];
     await render(React.createElement(QuizView, quizBase({
       generatedContent: { id: 'quiz-i18n', type: 'quiz', title: 'T', data: { questions } },
-      modeStrategy: { render: { allowIDontKnow: true, allowConfidenceRating: true } }
+      modeStrategy: { render: { allowIDontKnow: true, allowConfidenceRating: true } },
+      // "Grade my answer" is the AI-on label (AI off shows "Check my answer"), so supply AI.
+      callGemini: vi.fn(async () => '{}')
     })));
     const text = host.textContent;
     for (const key of ['quiz.student.check_selections', 'quiz.student.check_both_parts', 'quiz.student.check_value', 'quiz.student.grade_my_answer', 'quiz.student.review_submit', 'quiz.student.type_fill_blank']) {

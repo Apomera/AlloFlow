@@ -2769,7 +2769,7 @@ window.StemLab = window.StemLab || {
                   for (var k = f; k <= 100; k += f) nh[k] = true;
                   upd({ hundredsHighlight: nh });
                 },
-                className: 'w-12 px-1.5 py-1 rounded border border-indigo-300 bg-white text-slate-900 text-xs font-bold text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'
+                className: 'w-12 px-1.5 py-1 rounded border border-indigo-500 bg-white text-slate-900 text-xs font-bold text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600'
               }),
               h('button', { type: 'button', onClick: function() {
                 var f = parseInt(_m.hundredsMultipleN == null ? '7' : _m.hundredsMultipleN, 10);

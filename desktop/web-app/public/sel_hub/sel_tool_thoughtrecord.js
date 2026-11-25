@@ -72,7 +72,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
   window.SelHub.registerTool('thoughtRecord', {
     icon: '📓',
     label: 'CBT Thought Record',
-    desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves over time so you can see your patterns. Foundational tool from Beck and Burns.',
+    desc: 'The 7-column thought record from Cognitive Behavioral Therapy. Walk through a hard moment: situation, emotion, automatic thought, evidence for and against, balanced thought, emotion re-rating. Saves over time so you can see your patterns. Built on Beck\'s thought record, in the 7-column form developed by Padesky.',
     color: 'purple',
     category: 'inner-work',
     render: function(ctx) {
@@ -601,7 +601,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
           h('div', { style: { padding: 16, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _thFg('#c4b5fd'), fontSize: 16 } }, 'Where CBT comes from'),
             h('p', { style: { margin: 0, color: _thFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'Cognitive Behavioral Therapy was developed by psychiatrist Aaron T. Beck at the University of Pennsylvania, starting in the 1960s. Beck originally trained as a psychoanalyst and developed CBT after observing that his depressed patients had recurrent negative thought patterns that were not addressed by classical psychoanalysis. CBT became one of the most heavily researched psychotherapies; it has consistently been shown effective for depression, anxiety, PTSD, OCD, and many other conditions. The thought record format you are using is essentially unchanged from the one Beck taught in the 1970s.'
+              'Cognitive Behavioral Therapy was developed by psychiatrist Aaron T. Beck at the University of Pennsylvania, starting in the 1960s. Beck originally trained as a psychoanalyst and developed CBT after observing that his depressed patients had recurrent negative thought patterns that were not addressed by classical psychoanalysis. CBT became one of the most heavily researched psychotherapies; it has consistently been shown effective for depression, anxiety, PTSD, OCD, and many other conditions. The thought record format you are using is the 7-column version developed by Christine Padesky and published in Mind Over Mood (Greenberger & Padesky, 1995). It builds on the 5-column Daily Record of Dysfunctional Thoughts that Beck introduced in the 1970s.'
             )
           ),
 

@@ -116,6 +116,13 @@
     return !!v && typeof v === 'object' && !Array.isArray(v);
   }
 
+  function safeStr(v) {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+
   function safeShallowClone(src, extra) {
     var out = {};
     if (isPlainObject(src)) {
@@ -133,9 +140,17 @@
 
   function safeUrl(value, limit) {
     if (value === undefined || value === null) return '';
-    var cleaned = String(value).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit || 600);
+    var cleaned = safeStr(value).replace(/[\u0000-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit || 600);
     if (!cleaned) return '';
     if (!SAFE_HTTP_URL_RE.test(cleaned)) return '';
+    if (typeof URL === 'function') {
+      try {
+        var parsed = new URL(cleaned);
+        if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || !parsed.hostname || parsed.username || parsed.password) return '';
+      } catch (_) {
+        return '';
+      }
+    }
     return cleaned;
   }
 
@@ -147,7 +162,7 @@
   // values. Returns error objects; empty array = clean.
   function scanUnsafeFields(obj, path, out, depth, state) {
     if (!obj || typeof obj !== 'object') return out;
-    var ctx = state || { visited: new Set(), nodes: 0, limitReported: false };
+    var ctx = state || { visited: new Set(), nodes: 0, entries: 0, limitReported: false };
     if (out.length >= MAX_SCAN_ERRORS) return out;
     if (depth > MAX_SCAN_DEPTH) {
       out.push(err('payload-too-deep', path, 'Contract payloads may not exceed ' + MAX_SCAN_DEPTH + ' levels of nesting.'));
@@ -165,9 +180,26 @@
       return out;
     }
     ctx.visited.add(obj);
-    var keys = Array.isArray(obj) ? obj.map(function (_, i) { return i; }) : Object.keys(obj);
-    for (var i = 0; i < keys.length && out.length < MAX_SCAN_ERRORS; i++) {
-      var k = keys[i];
+    var isArr = Array.isArray(obj);
+    var keys = isArr ? null : Object.keys(obj);
+    var total = isArr ? obj.length : keys.length;
+    if (total > MAX_SCAN_NODES) {
+      if (!ctx.limitReported) {
+        ctx.limitReported = true;
+        out.push(err('payload-too-large', path, 'Contract payload exceeds the node traversal budget.'));
+      }
+      ctx.visited.delete(obj);
+      return out;
+    }
+    for (var i = 0; i < total && out.length < MAX_SCAN_ERRORS; i++) {
+      if (++ctx.entries > MAX_SCAN_NODES * 5) {
+        if (!ctx.limitReported) {
+          ctx.limitReported = true;
+          out.push(err('payload-too-large', path, 'Contract payload exceeds the node traversal budget.'));
+        }
+        break;
+      }
+      var k = isArr ? i : keys[i];
       var p = path ? path + '.' + k : String(k);
       if (typeof k === 'string' && (k === '__proto__' || k === 'constructor' || k === 'prototype')) {
         out.push(err('unsafe-key', p, 'Prototype-polluting key "' + k + '" is not allowed in contract payloads.'));
@@ -177,7 +209,8 @@
         out.push(err('secret-like-field', p, 'Field name "' + k + '" looks like a secret and is not allowed in contract payloads.'));
         continue;
       }
-      var v = obj[k];
+      var v;
+      try { v = obj[k]; } catch (_) { continue; }
       if (typeof v === 'string' && UNSAFE_PATH_RE.test(v)) {
         out.push(err('unsafe-path-value', p, 'Absolute filesystem paths are not allowed in contract payloads.'));
       } else if (v && typeof v === 'object') {
@@ -245,7 +278,7 @@
       return { ok: false, errors: [err('not-an-object', '', 'CapabilityManifest must be an object.')], warnings: [], value: null };
     }
     if (input.schemaVersion !== SCHEMA_VERSION) {
-      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + input.schemaVersion + '".'));
+      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + safeStr(input.schemaVersion) + '".'));
     }
     if (DEPLOYMENT_MODES.indexOf(input.deploymentMode) === -1) {
       errors.push(err('unknown-deployment-mode', 'deploymentMode', 'deploymentMode must be one of ' + DEPLOYMENT_MODES.join(', ') + '.'));
@@ -261,7 +294,7 @@
         errors.push(err('bad-modality', key, key + ' must be { available: boolean, providers: string[] }.'));
         continue;
       }
-      value[key] = { available: m.available, providers: m.providers.map(String) };
+      value[key] = { available: m.available, providers: m.providers.map(safeStr) };
     }
     value.speech = isPlainObject(input.speech)
       ? { tts: !!input.speech.tts, asr: !!input.speech.asr }
@@ -271,8 +304,8 @@
       ? { read: !!input.catalog.read, stage: !!input.catalog.stage }
       : { read: false, stage: false };
 
-    var perms = Array.isArray(input.permissions) ? input.permissions.map(String) : [];
-    for (var p = 0; p < perms.length; p++) {
+    var perms = Array.isArray(input.permissions) ? input.permissions.map(safeStr) : [];
+    for (var p = 0; p < perms.length && errors.length < MAX_SCAN_ERRORS; p++) {
       if (PERMISSIONS.indexOf(perms[p]) === -1) {
         errors.push(err('unknown-permission', 'permissions[' + p + ']', 'Unknown permission "' + perms[p] + '".'));
       }
@@ -281,7 +314,7 @@
 
     // Demo mode must not advertise privileged production capabilities.
     if (input.deploymentMode === 'demo') {
-      for (var d = 0; d < perms.length; d++) {
+      for (var d = 0; d < perms.length && errors.length < MAX_SCAN_ERRORS; d++) {
         if (DEMO_ALLOWED_PERMISSIONS.indexOf(perms[d]) === -1) {
           errors.push(err('demo-privileged-permission', 'permissions[' + d + ']', 'Demo mode may not advertise "' + perms[d] + '".'));
         }
@@ -294,7 +327,7 @@
     // Unknown top-level fields: dropped with a warning (explicit policy).
     var known = ['schemaVersion', 'deploymentMode', 'speech', 'webSearch', 'catalog', 'permissions'].concat(MODALITY_KEYS);
     Object.keys(input).forEach(function (k) {
-      if (known.indexOf(k) === -1) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
+      if (known.indexOf(k) === -1 && warnings.length < 50) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
     });
 
     return { ok: errors.length === 0, errors: errors, warnings: warnings, value: errors.length === 0 ? value : null };
@@ -313,7 +346,7 @@
     if (!isPlainObject(input)) return null;
     var cap = function (value, limit) {
       if (value === undefined || value === null) return '';
-      return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 600);
+      return safeStr(value).replace(/\s+/g, ' ').trim().slice(0, limit || 600);
     };
     var normalizeInstructionalConstraints = function (value) {
       var source = isPlainObject(value) ? value : {};
@@ -414,7 +447,8 @@
   function instructionalFingerprint(value) {
     var serialized = '';
     try { serialized = JSON.stringify(value === undefined ? null : value); }
-    catch (_) { serialized = String(value || ''); }
+    catch (_) { serialized = safeStr(value); }
+    if (typeof serialized !== 'string') serialized = '';
     var hash = 2166136261;
     for (var i = 0; i < serialized.length; i++) {
       hash ^= serialized.charCodeAt(i);
@@ -428,7 +462,7 @@
     var complexity = isPlainObject(source.complexity) ? source.complexity : {};
     var cap = function (value, limit) {
       if (value === undefined || value === null) return '';
-      return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 160);
+      return safeStr(value).replace(/\s+/g, ' ').trim().slice(0, limit || 160);
     };
     var roles = ['primary', 'supplemental', 'unspecified'];
     var forms = ['original', 'same-text-supported', 'adapted'];
@@ -442,7 +476,7 @@
     var rawAuthorization = isPlainObject(source.replacementAuthorization) ? source.replacementAuthorization : {};
     var authorized = rawAuthorization.authorized === true && rawAuthorization.source === 'educator';
     var rawMeasured = complexity.measuredGrade;
-    var measured = rawMeasured === null || rawMeasured === undefined || rawMeasured === '' ? NaN : Number(rawMeasured);
+    var measured = (typeof rawMeasured === 'number' || (typeof rawMeasured === 'string' && rawMeasured.trim() !== '')) ? Number(rawMeasured) : NaN;
     return {
       schemaVersion: 1,
       role: role,
@@ -479,7 +513,7 @@
       });
       if (constrainedEntry) constraints = constrainedEntry.instructionalConstraints;
     }
-    var expectation = String(constraints.textAccessExpectation || 'unspecified');
+    var expectation = safeStr(constraints.textAccessExpectation || 'unspecified');
     var sourced = constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl);
     var values = [opts.standardsInput, opts.standards, standardsContext.inputText, standardsContext.promptText];
     (standardsContext.standards || []).forEach(function (entry) {
@@ -487,7 +521,7 @@
       else values.push(entry);
     });
     var searchable = values.map(function (value) {
-      return value === undefined || value === null ? '' : String(value).replace(/\s+/g, ' ').trim().slice(0, 3600);
+      return value === undefined || value === null ? '' : safeStr(value).replace(/\s+/g, ' ').trim().slice(0, 3600);
     }).filter(Boolean).join(' ');
     var complexityRequired = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
       || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
@@ -498,8 +532,8 @@
     // a grade-level text standard defaults to NO adapted companion (source
     // 'standard'); an educator's include/omit is kept; a default the workflow
     // or a standard made earlier is derived again.
-    var requestedAdapted = String(source.adaptedTextPolicy || opts.adaptedTextPolicy || '').replace(/\s+/g, ' ').trim().slice(0, 40);
-    var priorSource = String(source.adaptedTextPolicySource || opts.adaptedTextPolicySource || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var requestedAdapted = safeStr(source.adaptedTextPolicy || opts.adaptedTextPolicy || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    var priorSource = safeStr(source.adaptedTextPolicySource || opts.adaptedTextPolicySource || '').replace(/\s+/g, ' ').trim().slice(0, 40);
     var derivedEarlier = (priorSource === 'workflow-default' && requestedAdapted === 'include')
       || (priorSource === 'standard' && requestedAdapted === 'omit');
     var explicitAdapted = derivedEarlier ? '' : requestedAdapted;
@@ -514,7 +548,7 @@
     else if (['educator', 'standard', 'workflow-default'].indexOf(decisionSource) === -1) {
       decisionSource = explicitAdapted ? 'educator' : 'workflow-default';
     }
-    var explicitPrimary = String(source.primaryTextAccess || opts.primaryTextAccess || '');
+    var explicitPrimary = safeStr(source.primaryTextAccess || opts.primaryTextAccess || '');
     var primaryTextAccess = ['required', 'available'].indexOf(explicitPrimary) !== -1
       ? explicitPrimary : (standardRequiresPrimary ? 'required' : 'available');
     if (standardRequiresPrimary) primaryTextAccess = 'required';
@@ -540,8 +574,8 @@
     var opts = isPlainObject(fallback) ? fallback : {};
     var standardsContext = normalizeStandardsContext(source.standardsContext || opts.standardsContext);
     var policy = source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary';
-    var grade = String(source.instructionalGrade || opts.instructionalGrade || '').replace(/\s+/g, ' ').trim().slice(0, 80);
-    var suppliedFingerprint = String(source.standardsFingerprint || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    var grade = safeStr(source.instructionalGrade || opts.instructionalGrade || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    var suppliedFingerprint = safeStr(source.standardsFingerprint || '').replace(/\s+/g, ' ').trim().slice(0, 120);
     var textAccess = deriveTextAccessPlan(source, {
       standardsContext: standardsContext,
       standardsInput: opts.standardsInput || opts.standards || ''
@@ -567,7 +601,8 @@
       var item = list[i];
       var tool = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
       if (!tool) continue;
-      var toolKey = String(tool);
+      var toolKey = safeStr(tool);
+      if (!toolKey) continue;
       var mappedDir = (dirMap && hasOwn.call(dirMap, toolKey)) ? dirMap[toolKey] : '';
       var directive = typeof item === 'string'
         ? mappedDir
@@ -575,10 +610,11 @@
       // Stable per-row identity. Preserved when the caller already has one
       // (round-trips are idempotent), minted from the PRE-REORDER index
       // otherwise so it travels with the item through the sort below.
-      var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (toolKey + '-' + i);
+      var rawUiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (toolKey + '-' + i);
+      var uiId = safeStr(rawUiId) || (toolKey + '-' + i);
       var normalized = {
         tool: toolKey,
-        directive: String(directive || ''),
+        directive: safeStr(directive),
         uiId: String(uiId),
         instructionalText: normalizeInstructionalText(item && typeof item === 'object' ? item.instructionalText : null, toolKey)
       };
@@ -651,7 +687,7 @@
       return { ok: false, errors: [err('not-an-object', '', 'Blueprint must be an object.')], warnings: [], value: null };
     }
     if (input.schemaVersion !== SCHEMA_VERSION) {
-      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + input.schemaVersion + '".'));
+      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + safeStr(input.schemaVersion) + '".'));
     }
     if (typeof input.blueprintId !== 'string' || !input.blueprintId.trim()) {
       errors.push(err('missing-blueprint-id', 'blueprintId', 'blueprintId is required.'));
@@ -665,7 +701,7 @@
       if (!rawPlan.length) {
         errors.push(err('empty-plan', 'plan', 'A Blueprint needs at least one plan item.'));
       }
-      for (var rawIndex = 0; rawIndex < rawPlan.length; rawIndex++) {
+      for (var rawIndex = 0; rawIndex < rawPlan.length && errors.length < MAX_SCAN_ERRORS; rawIndex++) {
         var rawItem = rawPlan[rawIndex];
         var rawTool = typeof rawItem === 'string' ? rawItem : (rawItem && (rawItem.tool || rawItem.type || rawItem.id));
         if (typeof rawTool !== 'string' || !rawTool.trim()) {
@@ -675,7 +711,7 @@
     }
 
     var plan = normalizePlanItems(rawPlan, null);
-    for (var i = 0; i < plan.length; i++) {
+    for (var i = 0; i < plan.length && errors.length < MAX_SCAN_ERRORS; i++) {
       if (knownTools.indexOf(plan[i].tool) === -1) {
         errors.push(err('unknown-tool', 'plan[' + i + ']', 'Unknown tool "' + plan[i].tool + '".'));
       }
@@ -699,7 +735,7 @@
     }
 
     Object.keys(input).forEach(function (k) {
-      if (BLUEPRINT_KNOWN_FIELDS.indexOf(k) === -1) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
+      if (BLUEPRINT_KNOWN_FIELDS.indexOf(k) === -1 && warnings.length < 50) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
     });
 
     if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
@@ -726,7 +762,7 @@
       configs: isPlainObject(input.configs) ? safeShallowClone(input.configs) : {},
       requiredCapabilities: requiredCapabilitiesForPlan(plan),
       warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20).map(function (w) {
-        return typeof w === 'string' ? w.slice(0, 400) : (isPlainObject(w) ? safeShallowClone(w) : String(w == null ? '' : w).slice(0, 400));
+        return typeof w === 'string' ? w.slice(0, 400) : (isPlainObject(w) ? safeShallowClone(w) : safeStr(w).slice(0, 400));
       }) : [],
       review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer.replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 200) : '' },
       provenance: provenance
@@ -767,7 +803,7 @@
       });
     });
     var configs = {};
-    LEGACY_CONFIG_KEYS.forEach(function (k) { if (hasOwn.call(c, k) && isPlainObject(c[k])) configs[k] = c[k]; });
+    LEGACY_CONFIG_KEYS.forEach(function (k) { if (hasOwn.call(c, k) && isPlainObject(c[k])) configs[k] = safeShallowClone(c[k]); });
     var legacyInstructionalInput = isPlainObject(ctx.instructionalContext)
       ? ctx.instructionalContext
       : (isPlainObject(c.instructionalContext) ? c.instructionalContext : {});
@@ -779,7 +815,7 @@
     catch (_) { fallbackPlanJson = plan.map(function (r) { return r.tool + ':' + r.uiId; }).join('|'); }
     return {
       schemaVersion: SCHEMA_VERSION,
-      blueprintId: String(ctx.blueprintId || 'bp-' + Math.abs(fallbackPlanJson.split('').reduce(function (a, ch) { return ((a << 5) - a + ch.charCodeAt(0)) | 0; }, 0))),
+      blueprintId: safeStr(ctx.blueprintId) || ('bp-' + Math.abs(fallbackPlanJson.split('').reduce(function (a, ch) { return ((a << 5) - a + ch.charCodeAt(0)) | 0; }, 0))),
       audience: {
         gradeLevel: (c.globalSettings && c.globalSettings.gradeLevel) || ctx.gradeLevel || '',
         language: ctx.language || '',
@@ -792,15 +828,15 @@
         standardsContext: legacyStandardsContext,
         standards: ctx.standards || c.standards || ''
       }),
-      sourcePolicy: isPlainObject(ctx.sourcePolicy) ? ctx.sourcePolicy
-        : (isPlainObject(c.sourcePolicy) ? c.sourcePolicy : { kind: 'workspace-source' }),
-      lessonDNA: isPlainObject(c.lessonDNA) ? c.lessonDNA : {},
-      globalSettings: isPlainObject(c.globalSettings) ? c.globalSettings : {},
+      sourcePolicy: isPlainObject(ctx.sourcePolicy) ? safeShallowClone(ctx.sourcePolicy)
+        : (isPlainObject(c.sourcePolicy) ? safeShallowClone(c.sourcePolicy) : { kind: 'workspace-source' }),
+      lessonDNA: isPlainObject(c.lessonDNA) ? safeShallowClone(c.lessonDNA) : {},
+      globalSettings: isPlainObject(c.globalSettings) ? safeShallowClone(c.globalSettings) : {},
       plan: plan,
       configs: configs,
       warnings: [],
       review: { state: 'draft', reviewer: '' },
-      provenance: isPlainObject(ctx.provenance) ? ctx.provenance : {}
+      provenance: isPlainObject(ctx.provenance) ? safeShallowClone(ctx.provenance) : {}
     };
   }
 
@@ -845,8 +881,8 @@
         }
         return acc;
       }, {}),
-      lessonDNA: isPlainObject(b.lessonDNA) ? b.lessonDNA : {},
-      globalSettings: isPlainObject(b.globalSettings) ? b.globalSettings : {},
+      lessonDNA: isPlainObject(b.lessonDNA) ? safeShallowClone(b.lessonDNA) : {},
+      globalSettings: isPlainObject(b.globalSettings) ? safeShallowClone(b.globalSettings) : {},
       standards: typeof b.standards === 'string' ? b.standards : '',
       standardsContext: legacyStandardsContext,
       instructionalContext: normalizeInstructionalContext(b.instructionalContext, {
@@ -854,10 +890,10 @@
         standardsContext: legacyStandardsContext,
         standards: b.standards
       }),
-      sourcePolicy: isPlainObject(b.sourcePolicy) ? b.sourcePolicy : { kind: 'workspace-source' }
+      sourcePolicy: isPlainObject(b.sourcePolicy) ? safeShallowClone(b.sourcePolicy) : { kind: 'workspace-source' }
     };
     var configs = isPlainObject(b.configs) ? b.configs : {};
-    LEGACY_CONFIG_KEYS.forEach(function (k) { if (isPlainObject(configs[k])) legacy[k] = configs[k]; });
+    LEGACY_CONFIG_KEYS.forEach(function (k) { if (hasOwn.call(configs, k) && isPlainObject(configs[k])) legacy[k] = safeShallowClone(configs[k]); });
     return legacy;
   }
 
@@ -930,10 +966,10 @@
       else seenStepIds[stepId] = true;
       if (!COMMAND_ID_RE.test(commandId)) errors.push(err('bad-command-id', path + '.commandId', 'commandId must be a short identifier.'));
       else if (knownCommandIds.length && knownCommandIds.indexOf(commandId) === -1) errors.push(err('unknown-command', path + '.commandId', 'Unknown command "' + commandId + '".'));
-      var onFailure = raw.onFailure || 'pause';
+      var onFailure = raw.onFailure === undefined ? 'pause' : raw.onFailure;
       if (COMMAND_WORKFLOW_FAILURE_POLICIES.indexOf(onFailure) === -1) errors.push(err('bad-failure-policy', path + '.onFailure', 'onFailure must be pause or stop.'));
       Object.keys(raw).forEach(function (key) {
-        if (COMMAND_WORKFLOW_STEP_FIELDS.indexOf(key) === -1) warnings.push(err('unknown-field-dropped', path + '.' + key, 'Unknown workflow step field was dropped.'));
+        if (COMMAND_WORKFLOW_STEP_FIELDS.indexOf(key) === -1 && warnings.length < 50) warnings.push(err('unknown-field-dropped', path + '.' + key, 'Unknown workflow step field was dropped.'));
       });
       steps.push({
         stepId: stepId,
@@ -953,7 +989,7 @@
       else provenance = provenanceReport.value;
     }
     Object.keys(input).forEach(function (key) {
-      if (COMMAND_WORKFLOW_KNOWN_FIELDS.indexOf(key) === -1) warnings.push(err('unknown-field-dropped', key, 'Unknown CommandWorkflow field was dropped.'));
+      if (COMMAND_WORKFLOW_KNOWN_FIELDS.indexOf(key) === -1 && warnings.length < 50) warnings.push(err('unknown-field-dropped', key, 'Unknown CommandWorkflow field was dropped.'));
     });
     if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
     return {
@@ -966,8 +1002,10 @@
         kind: 'command-workflow',
         audience: input.audience,
         steps: steps,
-        warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20) : [],
-        review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer.slice(0, 200) : '' },
+        warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20).map(function (w) {
+          return typeof w === 'string' ? w.slice(0, 400) : (isPlainObject(w) ? safeShallowClone(w) : safeStr(w).slice(0, 400));
+        }) : [],
+        review: { state: review.state, reviewer: typeof review.reviewer === 'string' ? review.reviewer.replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 200) : '' },
         provenance: provenance
       }
     };
@@ -1001,7 +1039,9 @@
         status: input.status,
         currentStep: (typeof input.currentStep === 'number' && Number.isFinite(input.currentStep) && input.currentStep >= 0) ? Math.floor(input.currentStep) : 0,
         progress: (typeof input.progress === 'number' && Number.isFinite(input.progress)) ? Math.max(0, Math.min(1, input.progress)) : 0,
-        warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20) : [],
+        warnings: Array.isArray(input.warnings) ? input.warnings.slice(0, 20).map(function (w) {
+          return typeof w === 'string' ? w.slice(0, 400) : (isPlainObject(w) ? safeShallowClone(w) : safeStr(w).slice(0, 400));
+        }) : [],
         resultArtifactIds: Array.isArray(input.resultArtifactIds) ? input.resultArtifactIds.slice(0, 200) : [],
         createdAt: typeof input.createdAt === 'string' ? input.createdAt.slice(0, 80) : '',
         updatedAt: typeof input.updatedAt === 'string' ? input.updatedAt.slice(0, 80) : ''
@@ -1035,8 +1075,8 @@
         model: input.model || '',
         sourceDeclaration: input.sourceDeclaration || '',
         licenseDeclaration: input.licenseDeclaration || '',
-        generatedAt: typeof input.generatedAt === 'string' ? input.generatedAt : '',
-        validatedAt: typeof input.validatedAt === 'string' ? input.validatedAt : '',
+        generatedAt: typeof input.generatedAt === 'string' ? input.generatedAt.slice(0, 80) : '',
+        validatedAt: typeof input.validatedAt === 'string' ? input.validatedAt.slice(0, 80) : '',
         contractVersion: SCHEMA_VERSION
       }
     };
@@ -1063,7 +1103,7 @@
       return { ok: false, errors: [err('not-an-object', '', 'Artifact must be an object.')], warnings: [], value: null };
     }
     if (input.schemaVersion !== SCHEMA_VERSION) {
-      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + input.schemaVersion + '".'));
+      errors.push(err('unsupported-version', 'schemaVersion', 'Expected schemaVersion "' + SCHEMA_VERSION + '", got "' + safeStr(input.schemaVersion) + '".'));
     }
     if (typeof input.artifactId !== 'string' || !input.artifactId.trim()) {
       errors.push(err('missing-artifact-id', 'artifactId', 'artifactId is required.'));
@@ -1071,7 +1111,9 @@
     if (knownTypes.indexOf(input.type) === -1) {
       errors.push(err('unknown-artifact-type', 'type', 'type must be a known tool id or "allopack".'));
     }
-    if (input.data !== undefined) {
+    scanUnsafeFields(input, '', errors, 0);
+    var skipSerialize = errors.some(function (e) { return e.code === 'payload-too-deep' || e.code === 'payload-too-large'; });
+    if (input.data !== undefined && !skipSerialize) {
       var size = 0;
       try {
         var serialized = typeof input.data === 'string' ? input.data : JSON.stringify(input.data);
@@ -1082,7 +1124,6 @@
         errors.push(err('data-too-large', 'data', 'data exceeds ' + ARTIFACT_MAX_DATA_CHARS + ' serialized characters; reference a file instead.'));
       }
     }
-    scanUnsafeFields(input, '', errors, 0);
     var provenance = {};
     if (input.provenance !== undefined) {
       var prov = validateProvenance(input.provenance);
@@ -1095,7 +1136,7 @@
       }
     }
     Object.keys(input).forEach(function (k) {
-      if (ARTIFACT_KNOWN_FIELDS.indexOf(k) === -1) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
+      if (ARTIFACT_KNOWN_FIELDS.indexOf(k) === -1 && warnings.length < 50) warnings.push(err('unknown-field-dropped', k, 'Unknown field "' + k + '" was dropped.'));
     });
     if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
     return {
@@ -1147,9 +1188,11 @@
     validateArtifact: validateArtifact
   };
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  Object.freeze(API);
+
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AgentCoreContracts = API;
   }
 })();

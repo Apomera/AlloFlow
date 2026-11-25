@@ -445,7 +445,26 @@
     };
   }
 
+  function attachConceptAtlasA11yCSS() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('ah-concept-atlas-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-concept-atlas-a11y-css';
+    st.textContent = [
+      '[data-arcade-mode="concept-atlas"] button, [data-arcade-mode="concept-atlas"] [role="button"], [data-arcade-mode="concept-atlas"] summary, [data-arcade-mode="concept-atlas"] a, [data-arcade-mode="concept-atlas"] input, [data-arcade-mode="concept-atlas"] select, [data-arcade-mode="concept-atlas"] textarea { touch-action: manipulation; }',
+      '[data-arcade-mode="concept-atlas"] button:focus-visible, [data-arcade-mode="concept-atlas"] [role="button"]:focus-visible, [data-arcade-mode="concept-atlas"] summary:focus-visible, [data-arcade-mode="concept-atlas"] a:focus-visible, [data-arcade-mode="concept-atlas"] input:focus-visible, [data-arcade-mode="concept-atlas"] select:focus-visible, [data-arcade-mode="concept-atlas"] textarea:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }',
+      '@media (forced-colors: active) {',
+      '  [data-arcade-mode="concept-atlas"] button:focus-visible, [data-arcade-mode="concept-atlas"] [role="button"]:focus-visible, [data-arcade-mode="concept-atlas"] summary:focus-visible, [data-arcade-mode="concept-atlas"] a:focus-visible, [data-arcade-mode="concept-atlas"] input:focus-visible, [data-arcade-mode="concept-atlas"] select:focus-visible, [data-arcade-mode="concept-atlas"] textarea:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  [data-arcade-mode="concept-atlas"] *, [data-arcade-mode="concept-atlas"] *::before, [data-arcade-mode="concept-atlas"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
   function register() {
+    attachConceptAtlasA11yCSS();
     window.AlloHavenArcade.registerMode('concept-atlas', {
       // The student's own map of how ideas relate is the point, and it needs no
       // grade to exist: self-rated solo, teacher-scored in class.
@@ -457,16 +476,14 @@
       partnerRequired: false,
       ready: true,
       render: function (ctx) {
+        attachConceptAtlasA11yCSS();
         var React = ctx.React || window.React;
         var session = ctx.session;
         var inActiveSession = !!(session && session.modeId === 'concept-atlas');
-        if (inActiveSession) {
-          return React.createElement(ConceptAtlasMain, {
-            key: 'ca-' + session.startedAt,
-            ctx: ctx
-          });
-        }
-        return React.createElement(AtlasLauncherCard, { ctx: ctx });
+        var body = inActiveSession
+          ? React.createElement(ConceptAtlasMain, { key: 'ca-' + session.startedAt, ctx: ctx })
+          : React.createElement(AtlasLauncherCard, { ctx: ctx });
+        return React.createElement('div', { 'data-arcade-mode': 'concept-atlas' }, body);
       }
     });
   }
@@ -603,6 +620,7 @@
         )
       ),
       resumable ? h('button', {
+            type: 'button',
         onClick: handleResume,
         disabled: disabled || !canAfford,
         'aria-label': 'Continue your atlas: ' + (resumable.name || resumable.topic || 'untitled'),
@@ -630,6 +648,7 @@
         )
       ) : null,
       h('button', {
+            type: 'button',
         onClick: handleLaunch,
         disabled: disabled || !canAfford,
         'aria-label': 'Start a new atlas',
@@ -658,6 +677,7 @@
       // Two buttons: host (visible when a class atlas could be hosted) and
       // join (visible when a class atlas is already open in this session).
       hasOpenClassAtlas ? h('button', {
+            type: 'button',
         onClick: handleJoinClassAtlas,
         disabled: disabled || deckSize < MIN_DECK_FOR_LAUNCH,
         'aria-label': 'Join class atlas hosted by ' + (classAtlas.hostNickname || 'Teacher'),
@@ -687,6 +707,7 @@
         )
       ) : null,
       (canHostClass && !hasOpenClassAtlas) ? h('button', {
+            type: 'button',
         onClick: handleStartClassAtlas,
         disabled: disabled || deckSize < MIN_DECK_FOR_LAUNCH,
         'aria-label': 'Host a class atlas',
@@ -1730,11 +1751,13 @@
         classBadge,
         // Wrap-up only for host/solo; students wait for host to close.
         (phase === 'play' && !isClassStudent) ? h('button', {
+            type: 'button',
           onClick: endAtlas,
           'aria-label': 'Wrap up this atlas',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
         }, 'Wrap up') : null,
         h('button', {
+            type: 'button',
           onClick: closeArcade,
           'aria-label': 'Close arcade',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -1787,6 +1810,7 @@
             style: { width: '100%', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', color: palette.text || '#e2e8f0', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px', boxSizing: 'border-box', marginBottom: '14px' }
           }),
           h('button', {
+            type: 'button',
             onClick: startNewAtlas,
             disabled: topicDraft.trim().length < 2,
             style: { padding: '8px 16px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: topicDraft.trim().length < 2 ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: topicDraft.trim().length < 2 ? 0.6 : 1 }
@@ -1801,6 +1825,7 @@
       var onClick = opts.onClick || function () {};
       var tierShort = card.tier ? String(card.tier).replace(/^Tier\s*/i, 'T') : '';
       return h('button', {
+            type: 'button',
         key: 'card-' + card.id + (opts.suffix || ''),
         onClick: onClick,
         className: 'ah-arcade-card' + (picked ? ' is-picked' : ''),
@@ -1965,6 +1990,7 @@
         renderPickerStrip('1. From card', fromCard, function (c) { setFromCard(c); }, toCard ? toCard.id : null),
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', gap: '8px' } },
           h('button', {
+            type: 'button',
             onClick: refreshHand,
             'aria-label': 'Shuffle hand',
             style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px', padding: '2px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -1982,6 +2008,7 @@
             verbs.map(function (v) {
               var active = pickedVerb && pickedVerb.id === v.id;
               return h('button', {
+            type: 'button',
                 key: 'av-' + v.id,
                 className: 'ah-arcade-verb' + (active ? ' is-active' : ''),
                 role: 'radio',
@@ -2024,11 +2051,13 @@
               } else { label = '… transcribing'; click = null; busy = true; }
               return h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
                 voiceMode === 'recording' ? h('button', {
+            type: 'button',
                   onClick: cancelVoice,
                   'aria-label': 'Cancel voice recording',
                   style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '999px', padding: '3px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
                 }, 'Cancel') : null,
                 h('button', {
+            type: 'button',
                   onClick: click || function () {},
                   disabled: !click,
                   'aria-label': voiceMode === 'idle' ? 'Speak your justification' : label,
@@ -2077,6 +2106,7 @@
         // Submit
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: '8px' } },
           h('button', {
+            type: 'button',
             onClick: submitEdge,
             disabled: !canSubmit,
             'aria-busy': submitting ? 'true' : 'false',
@@ -2180,11 +2210,13 @@
             summary),
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
             canPrint ? h('button', {
+            type: 'button',
               onClick: printAtlas,
               'aria-label': 'Print this atlas',
               style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: 'transparent', color: palette.text || '#e2e8f0', border: '1.5px solid ' + (palette.border || '#334155'), borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
             }, '🖨 Print this atlas') : null,
             h('button', {
+            type: 'button',
               onClick: closeArcade,
               style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Back to your room')

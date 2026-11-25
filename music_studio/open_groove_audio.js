@@ -6,6 +6,7 @@
   var sessionSamples = root.OpenGrooveSessionSamples = root.OpenGrooveSessionSamples || Object.create(null);
 
   function finiteOr(value, fallback) {
+    if (value == null || value === '' || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return fallback;
     var n = Number(value);
     return Number.isFinite(n) ? n : fallback;
   }
@@ -129,13 +130,21 @@
     if (!ctx || ctx.state === 'closed') {
       return { available: false, reason: 'AudioContext is closed or unavailable.' };
     }
-    var master = ctx.createGain();
-    master.gain.value = options.gain == null ? 0.85 : Math.max(0, Math.min(1.5, finiteOr(options.gain, 0.85)));
-    var shaper = ctx.createWaveShaper();
-    shaper.curve = makeDistCurve(0.5);
-    shaper.oversample = '2x';
-    master.connect(shaper);
-    shaper.connect(ctx.destination);
+    var master, shaper;
+    try {
+      master = ctx.createGain();
+      master.gain.value = options.gain == null ? 0.85 : Math.max(0, Math.min(1.5, finiteOr(options.gain, 0.85)));
+      shaper = ctx.createWaveShaper();
+      shaper.curve = makeDistCurve(0.5);
+      shaper.oversample = '2x';
+      master.connect(shaper);
+      shaper.connect(ctx.destination);
+    } catch (err) {
+      if (!options.context && ctx && typeof ctx.close === 'function') {
+        try { Promise.resolve(ctx.close()).catch(function () {}); } catch (_) {}
+      }
+      return { available: false, reason: 'Could not initialize audio graph: ' + String(err && err.message || err) };
+    }
     return {
       available: true,
       ctx: ctx,
@@ -191,10 +200,19 @@
         primarySource.onended = cleanup;
       } catch (_) {}
     }
-    if (!root.setTimeout) return;
+    if (typeof root.setTimeout !== 'function') return;
     var now = finiteOr(ctx && ctx.currentTime, 0);
     var end = finiteOr(stopAt, now + 0.5);
     var delayMs = Math.max(60, Math.min(MAX_TIMER_MS, Math.round((Math.max(now, end) - now + 0.25) * 1000)));
+    function scheduleTimer(fn, ms) {
+      try {
+        var id = root.setTimeout(fn, ms);
+        if (id != null && engine && engine._timers) engine._timers.add(id);
+        return id;
+      } catch (_) {
+        return null;
+      }
+    }
     function onTimer() {
       if (timerId != null && engine && engine._timers) engine._timers.delete(timerId);
       timerId = null;
@@ -205,20 +223,17 @@
       }
       var cur = finiteOr(ctx && ctx.currentTime, end);
       if (ctx && ctx.state === 'suspended') {
-        timerId = root.setTimeout(cleanup, 5000);
-        if (engine && engine._timers) engine._timers.add(timerId);
+        timerId = scheduleTimer(cleanup, 5000);
         return;
       }
       if (cur + 0.05 < end && cur >= now) {
         var remainingMs = Math.max(60, Math.min(MAX_TIMER_MS, Math.round((end - cur + 0.2) * 1000)));
-        timerId = root.setTimeout(cleanup, remainingMs);
-        if (engine && engine._timers) engine._timers.add(timerId);
+        timerId = scheduleTimer(cleanup, remainingMs);
         return;
       }
       cleanup();
     }
-    timerId = root.setTimeout(onTimer, delayMs);
-    if (engine && engine._timers) engine._timers.add(timerId);
+    timerId = scheduleTimer(onTimer, delayMs);
   }
 
   function connectWetDry(ctx, input, wetNode, mix) {
@@ -551,7 +566,7 @@
     var filter = ctx.createBiquadFilter();
     var output = createEffectOutput(engine, event && event.effects, start, Math.max(dur, atkDec) + relSec + 1.5);
     var env = connectEnvelope(ctx, output, start, dur, event && event.velocity, envelopePatch);
-    var partials = Array.isArray(patch.partials) && patch.partials.length ? patch.partials : [{ ratio: 1, type: patch.oscillator || 'sawtooth', gain: 1, detune: 0 }];
+    var partials = Array.isArray(patch.partials) && patch.partials.length ? patch.partials.slice(0, 24) : [{ ratio: 1, type: patch.oscillator || 'sawtooth', gain: 1, detune: 0 }];
     var unison = patch.unison || {};
     var requestedVoices = Math.max(1, Math.min(7, Math.round(finiteOr(unison.voices, 1))));
     var voices = Math.max(1, Math.min(requestedVoices, Math.floor(24 / Math.max(1, partials.length))));
@@ -617,7 +632,7 @@
   }
 
   function ogRegisterSampleBuffer(assetId, buffer, metadata) {
-    if (!assetId || !buffer) return false;
+    if (typeof assetId !== 'string' || !assetId || !buffer) return false;
     if (assetId === '__proto__' || assetId === 'constructor' || assetId === 'prototype') return false;
     var existing = Object.prototype.hasOwnProperty.call(sessionSamples, assetId);
     if (!existing) {
@@ -789,15 +804,19 @@
       if (prob < 1 && Math.random() > prob) continue;
       var when = baseTime + finiteOr(item.time, 0);
       if (item.type === 'drumHit') {
-        if (item.assetId && ogPlaySample(engine, item.assetId, when, item.velocity, item.sampleRegion, item.effects)) {
-          scheduled += 1;
-          continue;
-        }
-        var padType = item.padEngine || item.event && (item.event.engine || item.event.padEngine) || item.padId || 'kick';
-        if (PAD_MAP[padType]) padType = PAD_MAP[padType];
-        scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects, item.drumVoice) ? 1 : 0;
+        try {
+          if (item.assetId && ogPlaySample(engine, item.assetId, when, item.velocity, item.sampleRegion, item.effects)) {
+            scheduled += 1;
+            continue;
+          }
+          var padType = item.padEngine || item.event && (item.event.engine || item.event.padEngine) || item.padId || 'kick';
+          if (PAD_MAP[padType]) padType = PAD_MAP[padType];
+          scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects, item.drumVoice) ? 1 : 0;
+        } catch (_) {}
       } else if (item.type === 'note') {
-        scheduled += ogPlayNote(engine, item, when, item.durationSec) ? 1 : 0;
+        try {
+          scheduled += ogPlayNote(engine, item, when, item.durationSec) ? 1 : 0;
+        } catch (_) {}
       }
     }
     return scheduled;
@@ -822,7 +841,7 @@
   };
 
   root.OpenGrooveAudio = api;
-  root.AlloModules = root.AlloModules || {};
+  if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
   root.AlloModules.OpenGrooveAudio = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

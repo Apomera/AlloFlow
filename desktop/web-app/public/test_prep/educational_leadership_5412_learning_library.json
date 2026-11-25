@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-educational-leadership-5412-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 6,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 10,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -7355,7 +7361,7 @@
           "order": 2,
           "id": "repair",
           "label": "Repair",
-          "instruction": "Apply the three-part fiscal compliance test: (1) Would the district have to fund this core cost anyway without federal dollars? If yes, Title I cannot pay for it (supplement, never supplant); (2) Does total multi-year cost (licenses, training, maintenance, replacement) trigger competitive bidding and align with strategic priorities?; (3) Disclose any real or perceived conflict in writing and recuse completely from review and voting.",
+          "instruction": "Apply the three-part fiscal compliance test: (1) Under ESSA (20 U.S.C. § 6321(b)), does the district allocate state and local funds to Title I schools using a Title I-neutral methodology (supplement, not supplant) rather than reducing state/local support because a school receives Title I?; (2) Does total multi-year cost (licenses, training, maintenance, replacement) trigger competitive bidding and align with strategic priorities?; (3) Disclose any real or perceived conflict in writing and recuse completely from review and voting.",
           "requiredOutput": "Draft a 3-point pre-signature audit rule covering categorical fund legality, total-cost-of-ownership budgeting, and conflict-of-interest recusal."
         },
         {
@@ -7456,6 +7462,2613 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "educational-leadership-5412-session-ch-01",
+      "title": "Mission, Vision, Goals, and Core Values guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Mission, Vision, Goals, and Core Values\" (Strategic Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-01",
+      "itemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-002",
+        "lead5412-b1-003",
+        "lead5412-b1-004",
+        "lead5412-b1-005",
+        "lead5412-b1-006",
+        "lead5412-b1-007",
+        "lead5412-b1-008",
+        "lead5412-b1-009",
+        "lead5412-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Mission, Vision, Goals, and Core Values\" and the \"Mission, Vision, Continuous Improvement & Change Alignment\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Strategic School Vision, Equity Audit & Continuous Improvement Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Co-Constructing Shared Vision Commitments After Disaggregated Literacy Drops\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Mission, Vision, Goals, and Core Values\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Run Root-Cause Inquiry, Theory of Action, and PDSA Pilots Before Scaling Initiatives\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-02",
+      "title": "Continuous Improvement, Change, and Strategic Alignment guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Continuous Improvement, Change, and Strategic Alignment\" (Strategic Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-02",
+      "itemIds": [
+        "lead5412-b1-017",
+        "lead5412-b2-010",
+        "lead5412-b2-011",
+        "lead5412-b2-012",
+        "lead5412-b2-013",
+        "lead5412-b2-014",
+        "lead5412-b2-015",
+        "lead5412-b2-016",
+        "lead5412-b2-017",
+        "lead5412-b3-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Continuous Improvement, Change, and Strategic Alignment\" and the \"Mission, Vision, Continuous Improvement & Change Alignment\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Root-Cause Inquiry, Bounded PDSA Testing & Productive Adaptation Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Initiative Mapping and Bounded PDSA Pilot to Curb Middle School Burnout\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Continuous Improvement, Change, and Strategic Alignment\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Non-Evaluative Coaching Walkthroughs from Formal Due-Process Evaluation\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-03",
+      "title": "Professional Capacity, Feedback, and Adult Learning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Capacity, Feedback, and Adult Learning\" (Instructional Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-03",
+      "itemIds": [
+        "lead5412-b2-020",
+        "lead5412-b2-021",
+        "lead5412-b2-022",
+        "lead5412-b2-023",
+        "lead5412-b2-024",
+        "lead5412-b2-025",
+        "lead5412-b2-026",
+        "lead5412-b2-027",
+        "lead5412-b2-028",
+        "lead5412-b2-029"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Capacity, Feedback, and Adult Learning\" and the \"Supervision, Adult Learning, Curriculum Alignment & Accountability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Instructional Leadership, Observation Feedback & PLC Capacity Building Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Actionable Walkthrough Feedback Versus Premature Formal Remediation\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Capacity, Feedback, and Adult Learning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Disaggregate Data by Subgroup to Uncover and Repair Systemic Equity Gaps\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-04",
+      "title": "Curriculum, Instruction, Assessment, and Accountability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Curriculum, Instruction, Assessment, and Accountability\" (Instructional Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-04",
+      "itemIds": [
+        "lead5412-b2-040",
+        "lead5412-b3-030",
+        "lead5412-b3-031",
+        "lead5412-b3-032",
+        "lead5412-b3-033",
+        "lead5412-b3-034",
+        "lead5412-b3-035",
+        "lead5412-b3-036",
+        "lead5412-b3-037",
+        "lead5412-b3-038"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Curriculum, Instruction, Assessment, and Accountability\" and the \"Supervision, Adult Learning, Curriculum Alignment & Accountability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Coherent Curriculum, Rigorous Access, Balanced Assessment & MTSS Evaluation Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Disaggregated Benchmark Validity and MTSS Alignment in Grade 8 Math\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Curriculum, Instruction, Assessment, and Accountability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prevent Title I Supplanting, Bid-Splitting, and Procurement Conflicts of Interest\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-05",
+      "title": "Inclusive Community, Belonging, and Student Support guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Inclusive Community, Belonging, and Student Support\" (Climate and Cultural Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-05",
+      "itemIds": [
+        "lead5412-b1-042",
+        "lead5412-b1-043",
+        "lead5412-b1-044",
+        "lead5412-b1-045",
+        "lead5412-b1-046",
+        "lead5412-b1-047",
+        "lead5412-b1-048",
+        "lead5412-b1-049",
+        "lead5412-b2-041",
+        "lead5412-b2-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Inclusive Community, Belonging, and Student Support\" and the \"Inclusive Culture, SWPBIS, Restorative Systems & Staff Well-Being\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Positive School Culture, Multi-Tiered Climate & Restorative Discipline System\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting Non-Disruptive Student Voice and Due Process in Dress-Code Protests\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Inclusive Community, Belonging, and Student Support\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Constitutional and Statutory Protections Under Tinker, Goss, Title IX, IDEA, and FERPA\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-06",
+      "title": "Professional Culture, Collaboration, Conflict, and Well-Being guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Culture, Collaboration, Conflict, and Well-Being\" (Climate and Cultural Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-06",
+      "itemIds": [
+        "lead5412-b1-058",
+        "lead5412-b2-050",
+        "lead5412-b2-051",
+        "lead5412-b2-052",
+        "lead5412-b2-053",
+        "lead5412-b2-054",
+        "lead5412-b2-055",
+        "lead5412-b2-056",
+        "lead5412-b2-057",
+        "lead5412-b2-058"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Culture, Collaboration, Conflict, and Well-Being\" and the \"Inclusive Culture, SWPBIS, Restorative Systems & Staff Well-Being\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Collective Responsibility, Psychological Safety, Trust Repair & Sustainable Work Design\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Rebalancing Distributed Leadership Workload and Collaborative Recognition\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Culture, Collaboration, Conflict, and Well-Being\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead Through Distributed PLCs, Governance Boundaries, and Multilingual Family Co-Design\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-07",
+      "title": "Ethics, Professional Norms, Equity, and Decision Making guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Ethics, Professional Norms, Equity, and Decision Making\" (Ethical Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-07",
+      "itemIds": [
+        "lead5412-b3-061",
+        "lead5412-b3-062",
+        "lead5412-b3-063",
+        "lead5412-b3-064",
+        "lead5412-b3-065",
+        "lead5412-b3-066",
+        "lead5412-b1-059",
+        "lead5412-b1-060",
+        "lead5412-b1-061",
+        "lead5412-b1-062"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Ethics, Professional Norms, Equity, and Decision Making\" and the \"Education Law, Constitutional Rights, Due Process & Ethical Paradigms\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ethical Decision-Making, Equity Allocation, Conflict Safeguards & Bounded Transparency\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Conflict-of-Interest Recusal in Title I Supplemental Tutoring Procurement\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Ethics, Professional Norms, Equity, and Decision Making\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Run Root-Cause Inquiry, Theory of Action, and PDSA Pilots Before Scaling Initiatives\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-08",
+      "title": "Law, Rights, Due Process, Privacy, and Protected Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Law, Rights, Due Process, Privacy, and Protected Access\" (Ethical Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-08",
+      "itemIds": [
+        "lead5412-b1-068",
+        "lead5412-b1-069",
+        "lead5412-b1-070",
+        "lead5412-b1-071",
+        "lead5412-b1-072",
+        "lead5412-b1-073",
+        "lead5412-b1-074",
+        "lead5412-b2-067",
+        "lead5412-b2-068",
+        "lead5412-b2-069"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Law, Rights, Due Process, Privacy, and Protected Access\" and the \"Education Law, Constitutional Rights, Due Process & Ethical Paradigms\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ethical Governance, Constitutional Rights & Legal Compliance Decision Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Title IX Reporting, Anti-Retaliation, and Impartial Review in Athletics\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Law, Rights, Due Process, Privacy, and Protected Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Non-Evaluative Coaching Walkthroughs from Formal Due-Process Evaluation\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-09",
+      "title": "Operations, Budget, Resources, Facilities, and Technology guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Operations, Budget, Resources, Facilities, and Technology\" (Organizational Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-09",
+      "itemIds": [
+        "lead5412-b3-075",
+        "lead5412-b3-076",
+        "lead5412-b3-077",
+        "lead5412-b3-078",
+        "lead5412-b3-079",
+        "lead5412-b3-080",
+        "lead5412-b3-081",
+        "lead5412-b1-075",
+        "lead5412-b1-076",
+        "lead5412-b1-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Operations, Budget, Resources, Facilities, and Technology\" and the \"Budgeting, Title I Fiscal Rules, HR Systems & Crisis Management\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"School Operations, Equity-Driven Budgeting & Fiscal Compliance Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"FERPA Breach Containment and Vendor Data Governance After Unvetted AI Upload\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Operations, Budget, Resources, Facilities, and Technology\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Disaggregate Data by Subgroup to Uncover and Repair Systemic Equity Gaps\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-10",
+      "title": "Personnel Systems, Safety, Crisis Response, and Continuity guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Personnel Systems, Safety, Crisis Response, and Continuity\" (Organizational Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-10",
+      "itemIds": [
+        "lead5412-b2-085",
+        "lead5412-b2-086",
+        "lead5412-b2-087",
+        "lead5412-b3-082",
+        "lead5412-b3-083",
+        "lead5412-b3-084",
+        "lead5412-b3-085",
+        "lead5412-b3-086",
+        "lead5412-b3-087",
+        "lead5412-b1-082"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Personnel Systems, Safety, Crisis Response, and Continuity\" and the \"Budgeting, Title I Fiscal Rules, HR Systems & Crisis Management\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Personnel Integrity, Accessible Emergency Operations & Post-Incident Continuity Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Accessible Emergency Operations and Reunification Planning After Drill Failures\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Personnel Systems, Safety, Crisis Response, and Continuity\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prevent Title I Supplanting, Bid-Splitting, and Procurement Conflicts of Interest\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-11",
+      "title": "Family Engagement, Communication, and Reciprocal Partnerships guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Family Engagement, Communication, and Reciprocal Partnerships\" (Community Engagement Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-11",
+      "itemIds": [
+        "lead5412-b2-088",
+        "lead5412-b2-089",
+        "lead5412-b2-090",
+        "lead5412-b2-091",
+        "lead5412-b2-092",
+        "lead5412-b2-093",
+        "lead5412-b2-094",
+        "lead5412-b3-088",
+        "lead5412-b3-089",
+        "lead5412-b3-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Family Engagement, Communication, and Reciprocal Partnerships\" and the \"Reciprocal Family Partnerships, Governance & Public Accountability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Community Engagement, Family Partnership & Systemic Advocacy Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Closing Multilingual Family Feedback Loops Beyond an English-Only Portal\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Family Engagement, Communication, and Reciprocal Partnerships\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Constitutional and Statutory Protections Under Tinker, Goss, Title IX, IDEA, and FERPA\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-ch-12",
+      "title": "Community Assets, Advocacy, Governance, and Public Accountability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Community Assets, Advocacy, Governance, and Public Accountability\" (Community Engagement Leadership) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "lead5412-ch-12",
+      "itemIds": [
+        "lead5412-b1-100",
+        "lead5412-b2-095",
+        "lead5412-b2-096",
+        "lead5412-b2-097",
+        "lead5412-b2-098",
+        "lead5412-b2-099",
+        "lead5412-b2-100",
+        "lead5412-b3-095",
+        "lead5412-b3-096",
+        "lead5412-b3-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Community Assets, Advocacy, Governance, and Public Accountability\" and the \"Reciprocal Family Partnerships, Governance & Public Accountability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Community Asset Mapping, Evidence-Based Advocacy, Governance & Public Accountability Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Navigating Board Decision Rights and Curriculum Policy During Individual Demands\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Community Assets, Advocacy, Governance, and Public Accountability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead Through Distributed PLCs, Governance Boundaries, and Multilingual Family Co-Design\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-trap-repair-sprint",
+      "title": "Praxis Educational Leadership: Administration and Supervision (5412) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-018",
+        "lead5412-b1-041",
+        "lead5412-b1-060",
+        "lead5412-b1-048",
+        "lead5412-b1-088",
+        "lead5412-b1-002",
+        "lead5412-b1-019",
+        "lead5412-b1-042",
+        "lead5412-b1-061",
+        "lead5412-b1-059",
+        "lead5412-b1-089"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Run Root-Cause Inquiry, Theory of Action, and PDSA Pilots Before Scaling Initiatives\", \"Separate Non-Evaluative Coaching Walkthroughs from Formal Due-Process Evaluation\", \"Disaggregate Data by Subgroup to Uncover and Repair Systemic Equity Gaps\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-session-mixed-capstone",
+      "title": "Praxis Educational Leadership: Administration and Supervision (5412) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "lead5412-b1-004",
+        "lead5412-b1-021",
+        "lead5412-b1-044",
+        "lead5412-b1-062",
+        "lead5412-b1-078",
+        "lead5412-b1-091",
+        "lead5412-b1-015",
+        "lead5412-b1-032",
+        "lead5412-b1-055",
+        "lead5412-b1-073",
+        "lead5412-b2-076",
+        "lead5412-b2-089",
+        "lead5412-b2-009",
+        "lead5412-b2-020",
+        "lead5412-b2-048"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied leadership case workshops, outline a response to \"Root-cause inquiry and PDSA planning for 7th-grade mathematics\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "educational-leadership-5412-spaced-ch-01",
+      "topicId": "lead5412-ch-01",
+      "topicLabel": "1. Mission, Vision, Goals, and Core Values",
+      "unitId": "strategic-leadership",
+      "chapterId": "lead5412-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Mission, Vision, Goals, and Core Values\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-02",
+      "topicId": "lead5412-ch-02",
+      "topicLabel": "2. Continuous Improvement, Change, and Strategic Alignment",
+      "unitId": "strategic-leadership",
+      "chapterId": "lead5412-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Continuous Improvement, Change, and Strategic Alignment\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-03",
+      "topicId": "lead5412-ch-03",
+      "topicLabel": "3. Professional Capacity, Feedback, and Adult Learning",
+      "unitId": "instructional-leadership",
+      "chapterId": "lead5412-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Capacity, Feedback, and Adult Learning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-04",
+      "topicId": "lead5412-ch-04",
+      "topicLabel": "4. Curriculum, Instruction, Assessment, and Accountability",
+      "unitId": "instructional-leadership",
+      "chapterId": "lead5412-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Curriculum, Instruction, Assessment, and Accountability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-05",
+      "topicId": "lead5412-ch-05",
+      "topicLabel": "5. Inclusive Community, Belonging, and Student Support",
+      "unitId": "climate-cultural-leadership",
+      "chapterId": "lead5412-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Inclusive Community, Belonging, and Student Support\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-06",
+      "topicId": "lead5412-ch-06",
+      "topicLabel": "6. Professional Culture, Collaboration, Conflict, and Well-Being",
+      "unitId": "climate-cultural-leadership",
+      "chapterId": "lead5412-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Culture, Collaboration, Conflict, and Well-Being\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-07",
+      "topicId": "lead5412-ch-07",
+      "topicLabel": "7. Ethics, Professional Norms, Equity, and Decision Making",
+      "unitId": "ethical-leadership",
+      "chapterId": "lead5412-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Ethics, Professional Norms, Equity, and Decision Making\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-08",
+      "topicId": "lead5412-ch-08",
+      "topicLabel": "8. Law, Rights, Due Process, Privacy, and Protected Access",
+      "unitId": "ethical-leadership",
+      "chapterId": "lead5412-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Law, Rights, Due Process, Privacy, and Protected Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-09",
+      "topicId": "lead5412-ch-09",
+      "topicLabel": "9. Operations, Budget, Resources, Facilities, and Technology",
+      "unitId": "organizational-leadership",
+      "chapterId": "lead5412-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Operations, Budget, Resources, Facilities, and Technology\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-10",
+      "topicId": "lead5412-ch-10",
+      "topicLabel": "10. Personnel Systems, Safety, Crisis Response, and Continuity",
+      "unitId": "organizational-leadership",
+      "chapterId": "lead5412-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Personnel Systems, Safety, Crisis Response, and Continuity\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-11",
+      "topicId": "lead5412-ch-11",
+      "topicLabel": "11. Family Engagement, Communication, and Reciprocal Partnerships",
+      "unitId": "community-engagement-leadership",
+      "chapterId": "lead5412-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Family Engagement, Communication, and Reciprocal Partnerships\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-spaced-ch-12",
+      "topicId": "lead5412-ch-12",
+      "topicLabel": "12. Community Assets, Advocacy, Governance, and Public Accountability",
+      "unitId": "community-engagement-leadership",
+      "chapterId": "lead5412-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Community Assets, Advocacy, Governance, and Public Accountability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "educational-leadership-5412-source-01",
+      "title": "Educational Leadership (5412) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-02",
+      "title": "Professional Standards for Educational Leaders 2015",
+      "organization": "National Policy Board for Educational Administration (NPBEA)",
+      "url": "https://www.npbea.org/wp-content/uploads/2017/06/Professional-Standards-for-Educational-Leaders_2015.pdf",
+      "credibility": "NPBEA is the publisher of PSEL 2015, making this the primary source for the standards’ wording and organization. State requirements and credential blueprints may adopt or adapt the framework differently.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-03",
+      "title": "Continuous Improvement in Education: A Toolkit for Schools and Districts | IES",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/use-work/resource-library/resource/other-resource/continuous-improvement-education-toolkit-schools-and-districts",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-04",
+      "title": "Sec. 300.304 Evaluation procedures - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.304",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-05",
+      "title": "Civil Rights Laws",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/laws-and-policy/civil-rights-laws",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-06",
+      "title": "Return to School Roadmap — Child Find Under Part B of the Individuals with Disabilities Education Act (Aug. 24, 2021) - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/idea-files/rts-qa-child-find-part-b-08-24-2021/",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-07",
+      "title": "Emergency Planning",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/teaching-and-administration/safe-learning-environments/school-safety-and-security/emergency-planning",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-08",
+      "title": "Who is a “school official” under FERPA? | Protecting Student Privacy",
+      "organization": "Student Privacy Policy Office, U.S. Department of Education",
+      "url": "https://studentprivacy.ed.gov/faq/who-school-official-under-ferpa",
+      "credibility": "Student Privacy Policy Office, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-09",
+      "title": "Protecting Our Future: Cybersecurity for K-12 | CISA",
+      "organization": "Cybersecurity and Infrastructure Security Agency (CISA)",
+      "url": "https://www.cisa.gov/resources-tools/resources/report-protecting-our-future",
+      "credibility": "Cybersecurity and Infrastructure Security Agency (CISA) is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "educational-leadership-5412-source-10",
+      "title": "Strategies for Equitable Family Engagement",
+      "organization": "U.S. Department of Education",
+      "url": "https://www.ed.gov/teaching-and-administration/lead-and-manage-my-school/state-support-network/ssn-resources/strategies-for-equitable-family-engagement",
+      "credibility": "U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "educational-leadership-5412-unit-review-01",
+      "unitId": "strategic-leadership",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Mission, Vision, Goals, and Core Values",
+      "chapterId": "lead5412-ch-01",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-01-section-01",
+        "lead5412-ch-01-section-02",
+        "lead5412-ch-01-section-03",
+        "lead5412-ch-01-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-002",
+        "lead5412-b1-003",
+        "lead5412-b1-004",
+        "lead5412-b1-005",
+        "lead5412-b1-006",
+        "lead5412-b1-007",
+        "lead5412-b1-008",
+        "lead5412-b1-009",
+        "lead5412-b2-001",
+        "lead5412-b2-002",
+        "lead5412-b2-003",
+        "lead5412-b2-004",
+        "lead5412-b2-005",
+        "lead5412-b2-006",
+        "lead5412-b2-007",
+        "lead5412-b2-008",
+        "lead5412-b2-009",
+        "lead5412-b3-001",
+        "lead5412-b3-002",
+        "lead5412-b3-003",
+        "lead5412-b3-004",
+        "lead5412-b3-005",
+        "lead5412-b3-006",
+        "lead5412-b3-007",
+        "lead5412-b3-008",
+        "lead5412-b3-009"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-002",
+        "lead5412-b1-003",
+        "lead5412-b1-004",
+        "lead5412-b1-005",
+        "lead5412-b1-006",
+        "lead5412-b1-007",
+        "lead5412-b1-008",
+        "lead5412-b1-009",
+        "lead5412-b2-001",
+        "lead5412-b2-002",
+        "lead5412-b2-003"
+      ],
+      "purpose": "Consolidate \"Mission, Vision, Goals, and Core Values\" (Strategic Leadership) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-02",
+      "unitId": "strategic-leadership",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Continuous Improvement, Change, and Strategic Alignment",
+      "chapterId": "lead5412-ch-02",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-02-section-01",
+        "lead5412-ch-02-section-02",
+        "lead5412-ch-02-section-03",
+        "lead5412-ch-02-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-010",
+        "lead5412-b1-011",
+        "lead5412-b1-012",
+        "lead5412-b1-013",
+        "lead5412-b1-014",
+        "lead5412-b1-015",
+        "lead5412-b1-016",
+        "lead5412-b1-017",
+        "lead5412-b2-010",
+        "lead5412-b2-011",
+        "lead5412-b2-012",
+        "lead5412-b2-013",
+        "lead5412-b2-014",
+        "lead5412-b2-015",
+        "lead5412-b2-016",
+        "lead5412-b2-017",
+        "lead5412-b3-010",
+        "lead5412-b3-011",
+        "lead5412-b3-012",
+        "lead5412-b3-013",
+        "lead5412-b3-014",
+        "lead5412-b3-015",
+        "lead5412-b3-016",
+        "lead5412-b3-017"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-010",
+        "lead5412-b1-011",
+        "lead5412-b1-012",
+        "lead5412-b1-013",
+        "lead5412-b1-014",
+        "lead5412-b1-015",
+        "lead5412-b1-016",
+        "lead5412-b1-017",
+        "lead5412-b2-010",
+        "lead5412-b2-011",
+        "lead5412-b2-012",
+        "lead5412-b2-013"
+      ],
+      "purpose": "Consolidate \"Continuous Improvement, Change, and Strategic Alignment\" (Strategic Leadership) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-03",
+      "unitId": "instructional-leadership",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Professional Capacity, Feedback, and Adult Learning",
+      "chapterId": "lead5412-ch-03",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-03-section-01",
+        "lead5412-ch-03-section-02",
+        "lead5412-ch-03-section-03",
+        "lead5412-ch-03-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-018",
+        "lead5412-b1-019",
+        "lead5412-b1-020",
+        "lead5412-b1-021",
+        "lead5412-b1-022",
+        "lead5412-b1-023",
+        "lead5412-b1-024",
+        "lead5412-b1-025",
+        "lead5412-b1-026",
+        "lead5412-b1-027",
+        "lead5412-b1-028",
+        "lead5412-b1-029",
+        "lead5412-b2-018",
+        "lead5412-b2-019",
+        "lead5412-b2-020",
+        "lead5412-b2-021",
+        "lead5412-b2-022",
+        "lead5412-b2-023",
+        "lead5412-b2-024",
+        "lead5412-b2-025",
+        "lead5412-b2-026",
+        "lead5412-b2-027",
+        "lead5412-b2-028",
+        "lead5412-b2-029",
+        "lead5412-b3-018",
+        "lead5412-b3-019",
+        "lead5412-b3-020",
+        "lead5412-b3-021",
+        "lead5412-b3-022",
+        "lead5412-b3-023",
+        "lead5412-b3-024",
+        "lead5412-b3-025",
+        "lead5412-b3-026",
+        "lead5412-b3-027",
+        "lead5412-b3-028",
+        "lead5412-b3-029"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-018",
+        "lead5412-b1-019",
+        "lead5412-b1-020",
+        "lead5412-b1-021",
+        "lead5412-b1-022",
+        "lead5412-b1-023",
+        "lead5412-b1-024",
+        "lead5412-b1-025",
+        "lead5412-b1-026",
+        "lead5412-b1-027",
+        "lead5412-b1-028",
+        "lead5412-b1-029"
+      ],
+      "purpose": "Consolidate \"Professional Capacity, Feedback, and Adult Learning\" (Instructional Leadership) across 4 lessons and 36 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-04",
+      "unitId": "instructional-leadership",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Curriculum, Instruction, Assessment, and Accountability",
+      "chapterId": "lead5412-ch-04",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-04-section-01",
+        "lead5412-ch-04-section-02",
+        "lead5412-ch-04-section-03",
+        "lead5412-ch-04-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-030",
+        "lead5412-b1-031",
+        "lead5412-b1-032",
+        "lead5412-b1-033",
+        "lead5412-b1-034",
+        "lead5412-b1-035",
+        "lead5412-b1-036",
+        "lead5412-b1-037",
+        "lead5412-b1-038",
+        "lead5412-b1-039",
+        "lead5412-b1-040",
+        "lead5412-b2-030",
+        "lead5412-b2-031",
+        "lead5412-b2-032",
+        "lead5412-b2-033",
+        "lead5412-b2-034",
+        "lead5412-b2-035",
+        "lead5412-b2-036",
+        "lead5412-b2-037",
+        "lead5412-b2-038",
+        "lead5412-b2-039",
+        "lead5412-b2-040",
+        "lead5412-b3-030",
+        "lead5412-b3-031",
+        "lead5412-b3-032",
+        "lead5412-b3-033",
+        "lead5412-b3-034",
+        "lead5412-b3-035",
+        "lead5412-b3-036",
+        "lead5412-b3-037",
+        "lead5412-b3-038",
+        "lead5412-b3-039",
+        "lead5412-b3-040"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-030",
+        "lead5412-b1-031",
+        "lead5412-b1-032",
+        "lead5412-b1-033",
+        "lead5412-b1-034",
+        "lead5412-b1-035",
+        "lead5412-b1-036",
+        "lead5412-b1-037",
+        "lead5412-b1-038",
+        "lead5412-b1-039",
+        "lead5412-b1-040",
+        "lead5412-b2-030"
+      ],
+      "purpose": "Consolidate \"Curriculum, Instruction, Assessment, and Accountability\" (Instructional Leadership) across 4 lessons and 33 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-05",
+      "unitId": "climate-cultural-leadership",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Inclusive Community, Belonging, and Student Support",
+      "chapterId": "lead5412-ch-05",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-05-section-01",
+        "lead5412-ch-05-section-02",
+        "lead5412-ch-05-section-03",
+        "lead5412-ch-05-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-041",
+        "lead5412-b1-042",
+        "lead5412-b1-043",
+        "lead5412-b1-044",
+        "lead5412-b1-045",
+        "lead5412-b1-046",
+        "lead5412-b1-047",
+        "lead5412-b1-048",
+        "lead5412-b1-049",
+        "lead5412-b2-041",
+        "lead5412-b2-042",
+        "lead5412-b2-043",
+        "lead5412-b2-044",
+        "lead5412-b2-045",
+        "lead5412-b2-046",
+        "lead5412-b2-047",
+        "lead5412-b2-048",
+        "lead5412-b2-049",
+        "lead5412-b3-041",
+        "lead5412-b3-042",
+        "lead5412-b3-043",
+        "lead5412-b3-044",
+        "lead5412-b3-045",
+        "lead5412-b3-046",
+        "lead5412-b3-047",
+        "lead5412-b3-048",
+        "lead5412-b3-049"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-041",
+        "lead5412-b1-042",
+        "lead5412-b1-043",
+        "lead5412-b1-044",
+        "lead5412-b1-045",
+        "lead5412-b1-046",
+        "lead5412-b1-047",
+        "lead5412-b1-048",
+        "lead5412-b1-049",
+        "lead5412-b2-041",
+        "lead5412-b2-042",
+        "lead5412-b2-043"
+      ],
+      "purpose": "Consolidate \"Inclusive Community, Belonging, and Student Support\" (Climate and Cultural Leadership) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-06",
+      "unitId": "climate-cultural-leadership",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Professional Culture, Collaboration, Conflict, and Well-Being",
+      "chapterId": "lead5412-ch-06",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-06-section-01",
+        "lead5412-ch-06-section-02",
+        "lead5412-ch-06-section-03",
+        "lead5412-ch-06-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-050",
+        "lead5412-b1-051",
+        "lead5412-b1-052",
+        "lead5412-b1-053",
+        "lead5412-b1-054",
+        "lead5412-b1-055",
+        "lead5412-b1-056",
+        "lead5412-b1-057",
+        "lead5412-b1-058",
+        "lead5412-b2-050",
+        "lead5412-b2-051",
+        "lead5412-b2-052",
+        "lead5412-b2-053",
+        "lead5412-b2-054",
+        "lead5412-b2-055",
+        "lead5412-b2-056",
+        "lead5412-b2-057",
+        "lead5412-b2-058",
+        "lead5412-b3-050",
+        "lead5412-b3-051",
+        "lead5412-b3-052",
+        "lead5412-b3-053",
+        "lead5412-b3-054",
+        "lead5412-b3-055",
+        "lead5412-b3-056",
+        "lead5412-b3-057",
+        "lead5412-b3-058"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-050",
+        "lead5412-b1-051",
+        "lead5412-b1-052",
+        "lead5412-b1-053",
+        "lead5412-b1-054",
+        "lead5412-b1-055",
+        "lead5412-b1-056",
+        "lead5412-b1-057",
+        "lead5412-b1-058",
+        "lead5412-b2-050",
+        "lead5412-b2-051",
+        "lead5412-b2-052"
+      ],
+      "purpose": "Consolidate \"Professional Culture, Collaboration, Conflict, and Well-Being\" (Climate and Cultural Leadership) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-07",
+      "unitId": "ethical-leadership",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Ethics, Professional Norms, Equity, and Decision Making",
+      "chapterId": "lead5412-ch-07",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-07-section-01",
+        "lead5412-ch-07-section-02",
+        "lead5412-ch-07-section-03",
+        "lead5412-ch-07-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-059",
+        "lead5412-b1-060",
+        "lead5412-b1-061",
+        "lead5412-b1-062",
+        "lead5412-b1-063",
+        "lead5412-b1-064",
+        "lead5412-b1-065",
+        "lead5412-b1-066",
+        "lead5412-b2-059",
+        "lead5412-b2-060",
+        "lead5412-b2-061",
+        "lead5412-b2-062",
+        "lead5412-b2-063",
+        "lead5412-b2-064",
+        "lead5412-b2-065",
+        "lead5412-b2-066",
+        "lead5412-b3-059",
+        "lead5412-b3-060",
+        "lead5412-b3-061",
+        "lead5412-b3-062",
+        "lead5412-b3-063",
+        "lead5412-b3-064",
+        "lead5412-b3-065",
+        "lead5412-b3-066"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-059",
+        "lead5412-b1-060",
+        "lead5412-b1-061",
+        "lead5412-b1-062",
+        "lead5412-b1-063",
+        "lead5412-b1-064",
+        "lead5412-b1-065",
+        "lead5412-b1-066",
+        "lead5412-b2-059",
+        "lead5412-b2-060",
+        "lead5412-b2-061",
+        "lead5412-b2-062"
+      ],
+      "purpose": "Consolidate \"Ethics, Professional Norms, Equity, and Decision Making\" (Ethical Leadership) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-08",
+      "unitId": "ethical-leadership",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Law, Rights, Due Process, Privacy, and Protected Access",
+      "chapterId": "lead5412-ch-08",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-08-section-01",
+        "lead5412-ch-08-section-02",
+        "lead5412-ch-08-section-03",
+        "lead5412-ch-08-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-067",
+        "lead5412-b1-068",
+        "lead5412-b1-069",
+        "lead5412-b1-070",
+        "lead5412-b1-071",
+        "lead5412-b1-072",
+        "lead5412-b1-073",
+        "lead5412-b1-074",
+        "lead5412-b2-067",
+        "lead5412-b2-068",
+        "lead5412-b2-069",
+        "lead5412-b2-070",
+        "lead5412-b2-071",
+        "lead5412-b2-072",
+        "lead5412-b2-073",
+        "lead5412-b2-074",
+        "lead5412-b3-067",
+        "lead5412-b3-068",
+        "lead5412-b3-069",
+        "lead5412-b3-070",
+        "lead5412-b3-071",
+        "lead5412-b3-072",
+        "lead5412-b3-073",
+        "lead5412-b3-074"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-067",
+        "lead5412-b1-068",
+        "lead5412-b1-069",
+        "lead5412-b1-070",
+        "lead5412-b1-071",
+        "lead5412-b1-072",
+        "lead5412-b1-073",
+        "lead5412-b1-074",
+        "lead5412-b2-067",
+        "lead5412-b2-068",
+        "lead5412-b2-069",
+        "lead5412-b2-070"
+      ],
+      "purpose": "Consolidate \"Law, Rights, Due Process, Privacy, and Protected Access\" (Ethical Leadership) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-09",
+      "unitId": "organizational-leadership",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Operations, Budget, Resources, Facilities, and Technology",
+      "chapterId": "lead5412-ch-09",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-09-section-01",
+        "lead5412-ch-09-section-02",
+        "lead5412-ch-09-section-03",
+        "lead5412-ch-09-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-075",
+        "lead5412-b1-076",
+        "lead5412-b1-077",
+        "lead5412-b1-078",
+        "lead5412-b1-079",
+        "lead5412-b1-080",
+        "lead5412-b1-081",
+        "lead5412-b2-075",
+        "lead5412-b2-076",
+        "lead5412-b2-077",
+        "lead5412-b2-078",
+        "lead5412-b2-079",
+        "lead5412-b2-080",
+        "lead5412-b2-081",
+        "lead5412-b3-075",
+        "lead5412-b3-076",
+        "lead5412-b3-077",
+        "lead5412-b3-078",
+        "lead5412-b3-079",
+        "lead5412-b3-080",
+        "lead5412-b3-081"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-075",
+        "lead5412-b1-076",
+        "lead5412-b1-077",
+        "lead5412-b1-078",
+        "lead5412-b1-079",
+        "lead5412-b1-080",
+        "lead5412-b1-081",
+        "lead5412-b2-075",
+        "lead5412-b2-076",
+        "lead5412-b2-077",
+        "lead5412-b2-078",
+        "lead5412-b2-079"
+      ],
+      "purpose": "Consolidate \"Operations, Budget, Resources, Facilities, and Technology\" (Organizational Leadership) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-10",
+      "unitId": "organizational-leadership",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Personnel Systems, Safety, Crisis Response, and Continuity",
+      "chapterId": "lead5412-ch-10",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-10-section-01",
+        "lead5412-ch-10-section-02",
+        "lead5412-ch-10-section-03",
+        "lead5412-ch-10-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-082",
+        "lead5412-b1-083",
+        "lead5412-b1-084",
+        "lead5412-b1-085",
+        "lead5412-b1-086",
+        "lead5412-b1-087",
+        "lead5412-b2-082",
+        "lead5412-b2-083",
+        "lead5412-b2-084",
+        "lead5412-b2-085",
+        "lead5412-b2-086",
+        "lead5412-b2-087",
+        "lead5412-b3-082",
+        "lead5412-b3-083",
+        "lead5412-b3-084",
+        "lead5412-b3-085",
+        "lead5412-b3-086",
+        "lead5412-b3-087"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-082",
+        "lead5412-b1-083",
+        "lead5412-b1-084",
+        "lead5412-b1-085",
+        "lead5412-b1-086",
+        "lead5412-b1-087",
+        "lead5412-b2-082",
+        "lead5412-b2-083",
+        "lead5412-b2-084",
+        "lead5412-b2-085",
+        "lead5412-b2-086",
+        "lead5412-b2-087"
+      ],
+      "purpose": "Consolidate \"Personnel Systems, Safety, Crisis Response, and Continuity\" (Organizational Leadership) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-11",
+      "unitId": "community-engagement-leadership",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Family Engagement, Communication, and Reciprocal Partnerships",
+      "chapterId": "lead5412-ch-11",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-11-section-01",
+        "lead5412-ch-11-section-02",
+        "lead5412-ch-11-section-03",
+        "lead5412-ch-11-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-088",
+        "lead5412-b1-089",
+        "lead5412-b1-090",
+        "lead5412-b1-091",
+        "lead5412-b1-092",
+        "lead5412-b1-093",
+        "lead5412-b1-094",
+        "lead5412-b2-088",
+        "lead5412-b2-089",
+        "lead5412-b2-090",
+        "lead5412-b2-091",
+        "lead5412-b2-092",
+        "lead5412-b2-093",
+        "lead5412-b2-094",
+        "lead5412-b3-088",
+        "lead5412-b3-089",
+        "lead5412-b3-090",
+        "lead5412-b3-091",
+        "lead5412-b3-092",
+        "lead5412-b3-093",
+        "lead5412-b3-094"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-088",
+        "lead5412-b1-089",
+        "lead5412-b1-090",
+        "lead5412-b1-091",
+        "lead5412-b1-092",
+        "lead5412-b1-093",
+        "lead5412-b1-094",
+        "lead5412-b2-088",
+        "lead5412-b2-089",
+        "lead5412-b2-090",
+        "lead5412-b2-091",
+        "lead5412-b2-092"
+      ],
+      "purpose": "Consolidate \"Family Engagement, Communication, and Reciprocal Partnerships\" (Community Engagement Leadership) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-unit-review-12",
+      "unitId": "community-engagement-leadership",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Community Assets, Advocacy, Governance, and Public Accountability",
+      "chapterId": "lead5412-ch-12",
+      "topicDiagnosticRouteIds": [
+        "lead5412-ch-12-section-01",
+        "lead5412-ch-12-section-02",
+        "lead5412-ch-12-section-03",
+        "lead5412-ch-12-section-04"
+      ],
+      "itemIds": [
+        "lead5412-b1-095",
+        "lead5412-b1-096",
+        "lead5412-b1-097",
+        "lead5412-b1-098",
+        "lead5412-b1-099",
+        "lead5412-b1-100",
+        "lead5412-b2-095",
+        "lead5412-b2-096",
+        "lead5412-b2-097",
+        "lead5412-b2-098",
+        "lead5412-b2-099",
+        "lead5412-b2-100",
+        "lead5412-b3-095",
+        "lead5412-b3-096",
+        "lead5412-b3-097",
+        "lead5412-b3-098",
+        "lead5412-b3-099",
+        "lead5412-b3-100"
+      ],
+      "mixedPracticeItemIds": [
+        "lead5412-b1-095",
+        "lead5412-b1-096",
+        "lead5412-b1-097",
+        "lead5412-b1-098",
+        "lead5412-b1-099",
+        "lead5412-b1-100",
+        "lead5412-b2-095",
+        "lead5412-b2-096",
+        "lead5412-b2-097",
+        "lead5412-b2-098",
+        "lead5412-b2-099",
+        "lead5412-b2-100"
+      ],
+      "purpose": "Consolidate \"Community Assets, Advocacy, Governance, and Public Accountability\" (Community Engagement Leadership) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "educational-leadership-5412-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Educational Leadership: Administration and Supervision (5412) blueprint domains.",
+      "focus": [
+        "Strategic Leadership",
+        "Instructional Leadership",
+        "Climate and Cultural Leadership",
+        "Ethical Leadership"
+      ],
+      "itemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-059",
+        "lead5412-b1-002",
+        "lead5412-b1-060",
+        "lead5412-b1-003",
+        "lead5412-b1-061",
+        "lead5412-b1-004",
+        "lead5412-b1-062",
+        "lead5412-b1-005",
+        "lead5412-b1-063",
+        "lead5412-b1-006",
+        "lead5412-b1-064",
+        "lead5412-b1-007",
+        "lead5412-b1-065",
+        "lead5412-b1-008",
+        "lead5412-b1-066",
+        "lead5412-b1-009",
+        "lead5412-b1-067",
+        "lead5412-b1-010",
+        "lead5412-b1-068",
+        "lead5412-b1-011",
+        "lead5412-b1-069",
+        "lead5412-b1-012",
+        "lead5412-b1-070",
+        "lead5412-b1-013",
+        "lead5412-b1-071",
+        "lead5412-b1-014",
+        "lead5412-b1-072",
+        "lead5412-b1-015",
+        "lead5412-b1-073",
+        "lead5412-b1-016",
+        "lead5412-b1-074",
+        "lead5412-b1-017",
+        "lead5412-b2-059",
+        "lead5412-b2-001",
+        "lead5412-b2-060",
+        "lead5412-b2-002",
+        "lead5412-b2-061",
+        "lead5412-b2-003",
+        "lead5412-b2-062"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Educational Leadership: Administration and Supervision (5412) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Climate and Cultural Leadership",
+        "Ethical Leadership",
+        "Organizational Leadership",
+        "Community Engagement Leadership"
+      ],
+      "itemIds": [
+        "lead5412-b1-018",
+        "lead5412-b1-075",
+        "lead5412-b1-019",
+        "lead5412-b1-076",
+        "lead5412-b1-020",
+        "lead5412-b1-077",
+        "lead5412-b1-021",
+        "lead5412-b1-078",
+        "lead5412-b1-022",
+        "lead5412-b1-079",
+        "lead5412-b1-023",
+        "lead5412-b1-080",
+        "lead5412-b1-024",
+        "lead5412-b1-081",
+        "lead5412-b1-025",
+        "lead5412-b1-082",
+        "lead5412-b1-026",
+        "lead5412-b1-083",
+        "lead5412-b1-027",
+        "lead5412-b1-084",
+        "lead5412-b1-028",
+        "lead5412-b1-085",
+        "lead5412-b1-029",
+        "lead5412-b1-086",
+        "lead5412-b1-030",
+        "lead5412-b1-087",
+        "lead5412-b1-031",
+        "lead5412-b2-075",
+        "lead5412-b1-032",
+        "lead5412-b2-076",
+        "lead5412-b1-033",
+        "lead5412-b2-077",
+        "lead5412-b1-034",
+        "lead5412-b2-078",
+        "lead5412-b1-035",
+        "lead5412-b2-079",
+        "lead5412-b1-036",
+        "lead5412-b2-080",
+        "lead5412-b1-037",
+        "lead5412-b2-081"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Educational Leadership: Administration and Supervision (5412) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Jumping to Solutions Before Root-Cause Analysis and PDSA Cycles",
+        "Conflating Coaching Walkthroughs with Formal Due-Process Evaluation",
+        "Letting Schoolwide Averages Hide Subgroup Equity and Climate Gaps"
+      ],
+      "itemIds": [
+        "lead5412-b1-041",
+        "lead5412-b1-088",
+        "lead5412-b1-042",
+        "lead5412-b1-089",
+        "lead5412-b1-043",
+        "lead5412-b1-090",
+        "lead5412-b1-044",
+        "lead5412-b1-091",
+        "lead5412-b1-045",
+        "lead5412-b1-092",
+        "lead5412-b1-046",
+        "lead5412-b1-093",
+        "lead5412-b1-047",
+        "lead5412-b1-094",
+        "lead5412-b1-048",
+        "lead5412-b1-095",
+        "lead5412-b1-049",
+        "lead5412-b1-096",
+        "lead5412-b1-050",
+        "lead5412-b1-097",
+        "lead5412-b1-051",
+        "lead5412-b1-098",
+        "lead5412-b1-052",
+        "lead5412-b1-099",
+        "lead5412-b1-053",
+        "lead5412-b1-100",
+        "lead5412-b1-054",
+        "lead5412-b2-088",
+        "lead5412-b1-055",
+        "lead5412-b2-089",
+        "lead5412-b1-056",
+        "lead5412-b2-090",
+        "lead5412-b1-057",
+        "lead5412-b2-091",
+        "lead5412-b1-058",
+        "lead5412-b2-092",
+        "lead5412-b2-041",
+        "lead5412-b2-093",
+        "lead5412-b2-042",
+        "lead5412-b2-094"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "educational-leadership-5412-form-internal-a",
+      "title": "Internal practice form A (Praxis Educational Leadership: Administration and Supervision (5412))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "lead5412-b1-001",
+        "lead5412-b1-059",
+        "lead5412-b1-002",
+        "lead5412-b1-060",
+        "lead5412-b1-003",
+        "lead5412-b1-061",
+        "lead5412-b1-004",
+        "lead5412-b1-062",
+        "lead5412-b1-005",
+        "lead5412-b1-063",
+        "lead5412-b1-006",
+        "lead5412-b1-064",
+        "lead5412-b1-007",
+        "lead5412-b1-065",
+        "lead5412-b1-008",
+        "lead5412-b1-066",
+        "lead5412-b1-009",
+        "lead5412-b1-067",
+        "lead5412-b1-010",
+        "lead5412-b1-068",
+        "lead5412-b1-011",
+        "lead5412-b1-069",
+        "lead5412-b1-012",
+        "lead5412-b1-070",
+        "lead5412-b1-013",
+        "lead5412-b1-071",
+        "lead5412-b1-014",
+        "lead5412-b1-072",
+        "lead5412-b1-015",
+        "lead5412-b1-073",
+        "lead5412-b1-016",
+        "lead5412-b1-074",
+        "lead5412-b1-017",
+        "lead5412-b2-059",
+        "lead5412-b2-001",
+        "lead5412-b2-060",
+        "lead5412-b2-002",
+        "lead5412-b2-061",
+        "lead5412-b2-003",
+        "lead5412-b2-062",
+        "lead5412-b2-004",
+        "lead5412-b2-063",
+        "lead5412-b2-005",
+        "lead5412-b2-064",
+        "lead5412-b2-006",
+        "lead5412-b2-065",
+        "lead5412-b2-007",
+        "lead5412-b2-066",
+        "lead5412-b2-008",
+        "lead5412-b2-067"
+      ],
+      "topicIds": [
+        "lead5412-ch-01",
+        "lead5412-ch-07",
+        "lead5412-ch-08",
+        "lead5412-ch-02"
+      ],
+      "unitIds": [
+        "strategic-leadership",
+        "ethical-leadership"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-form-internal-b",
+      "title": "Internal practice form B (Praxis Educational Leadership: Administration and Supervision (5412))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "lead5412-b1-018",
+        "lead5412-b1-075",
+        "lead5412-b1-019",
+        "lead5412-b1-076",
+        "lead5412-b1-020",
+        "lead5412-b1-077",
+        "lead5412-b1-021",
+        "lead5412-b1-078",
+        "lead5412-b1-022",
+        "lead5412-b1-079",
+        "lead5412-b1-023",
+        "lead5412-b1-080",
+        "lead5412-b1-024",
+        "lead5412-b1-081",
+        "lead5412-b1-025",
+        "lead5412-b1-082",
+        "lead5412-b1-026",
+        "lead5412-b1-083",
+        "lead5412-b1-027",
+        "lead5412-b1-084",
+        "lead5412-b1-028",
+        "lead5412-b1-085",
+        "lead5412-b1-029",
+        "lead5412-b1-086",
+        "lead5412-b1-030",
+        "lead5412-b1-087",
+        "lead5412-b1-031",
+        "lead5412-b2-075",
+        "lead5412-b1-032",
+        "lead5412-b2-076",
+        "lead5412-b1-033",
+        "lead5412-b2-077",
+        "lead5412-b1-034",
+        "lead5412-b2-078",
+        "lead5412-b1-035",
+        "lead5412-b2-079",
+        "lead5412-b1-036",
+        "lead5412-b2-080",
+        "lead5412-b1-037",
+        "lead5412-b2-081",
+        "lead5412-b1-038",
+        "lead5412-b2-082",
+        "lead5412-b1-039",
+        "lead5412-b2-083",
+        "lead5412-b1-040",
+        "lead5412-b2-084",
+        "lead5412-b2-018",
+        "lead5412-b2-085",
+        "lead5412-b2-019",
+        "lead5412-b2-086"
+      ],
+      "topicIds": [
+        "lead5412-ch-03",
+        "lead5412-ch-09",
+        "lead5412-ch-10",
+        "lead5412-ch-04"
+      ],
+      "unitIds": [
+        "instructional-leadership",
+        "organizational-leadership"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "educational-leadership-5412-form-internal-c",
+      "title": "Internal practice form C (Praxis Educational Leadership: Administration and Supervision (5412))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "lead5412-b1-041",
+        "lead5412-b1-088",
+        "lead5412-b1-042",
+        "lead5412-b1-089",
+        "lead5412-b1-043",
+        "lead5412-b1-090",
+        "lead5412-b1-044",
+        "lead5412-b1-091",
+        "lead5412-b1-045",
+        "lead5412-b1-092",
+        "lead5412-b1-046",
+        "lead5412-b1-093",
+        "lead5412-b1-047",
+        "lead5412-b1-094",
+        "lead5412-b1-048",
+        "lead5412-b1-095",
+        "lead5412-b1-049",
+        "lead5412-b1-096",
+        "lead5412-b1-050",
+        "lead5412-b1-097",
+        "lead5412-b1-051",
+        "lead5412-b1-098",
+        "lead5412-b1-052",
+        "lead5412-b1-099",
+        "lead5412-b1-053",
+        "lead5412-b1-100",
+        "lead5412-b1-054",
+        "lead5412-b2-088",
+        "lead5412-b1-055",
+        "lead5412-b2-089",
+        "lead5412-b1-056",
+        "lead5412-b2-090",
+        "lead5412-b1-057",
+        "lead5412-b2-091",
+        "lead5412-b1-058",
+        "lead5412-b2-092",
+        "lead5412-b2-041",
+        "lead5412-b2-093",
+        "lead5412-b2-042",
+        "lead5412-b2-094",
+        "lead5412-b2-043",
+        "lead5412-b2-095",
+        "lead5412-b2-044",
+        "lead5412-b2-096",
+        "lead5412-b2-045",
+        "lead5412-b2-097",
+        "lead5412-b2-046",
+        "lead5412-b2-098",
+        "lead5412-b2-047",
+        "lead5412-b2-099"
+      ],
+      "topicIds": [
+        "lead5412-ch-05",
+        "lead5412-ch-11",
+        "lead5412-ch-12",
+        "lead5412-ch-06"
+      ],
+      "unitIds": [
+        "climate-cultural-leadership",
+        "community-engagement-leadership"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

@@ -26,6 +26,18 @@
   'use strict';
 
   if (typeof window === 'undefined') return;
+  // WCAG 2.2 AA: Scoped accessibility CSS for Community Catalog & PD dialogs
+  if (typeof document !== 'undefined' && document.head && typeof document.createElement === 'function' && typeof document.getElementById === 'function' && !document.getElementById('allo-catalog-a11y-css')) {
+    var catA11yStyle = document.createElement('style');
+    catA11yStyle.id = 'allo-catalog-a11y-css';
+    catA11yStyle.textContent = [
+      '[data-allo-catalog] button, [data-allo-catalog] a, [data-allo-catalog] input, [data-allo-catalog] select, [data-allo-catalog] textarea, [data-allo-catalog] summary, [data-allo-catalog] [role="tab"], [data-allo-catalog] [role="button"] { touch-action: manipulation; }',
+      '[data-allo-catalog] button:focus-visible, [data-allo-catalog] a:focus-visible, [data-allo-catalog] input:focus-visible, [data-allo-catalog] select:focus-visible, [data-allo-catalog] textarea:focus-visible, [data-allo-catalog] summary:focus-visible, [data-allo-catalog] [tabindex]:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [data-allo-catalog] button:focus-visible, [data-allo-catalog] a:focus-visible, [data-allo-catalog] input:focus-visible, [data-allo-catalog] select:focus-visible, [data-allo-catalog] textarea:focus-visible, [data-allo-catalog] summary:focus-visible, [data-allo-catalog] [tabindex]:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [data-allo-catalog], [data-allo-catalog] *, [data-allo-catalog] *::before, [data-allo-catalog] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(catA11yStyle);
+  }
   if (window.AlloModules && window.AlloModules.CommunityCatalog) {
     console.log('[CDN] CommunityCatalog already loaded, skipping');
     return;
@@ -1323,7 +1335,7 @@
         e('label', { className: labelClass, htmlFor: 'cat-json' }, 'Lesson JSON ',
           e('span', { className: 'font-normal text-slate-500' }, '(paste or upload)')),
         e('div', { className: 'flex gap-2 mb-2' },
-          e('input', { type: 'file', accept: 'application/json,.json', onChange: handleFileUpload, className: 'text-xs' })
+          e('input', { type: 'file', accept: 'application/json,.json', 'aria-label': tr('catalog_upload_lesson_json', 'Upload lesson JSON file'), onChange: handleFileUpload, className: 'text-xs' })
         ),
         e('textarea', {
           id: 'cat-json',
@@ -1338,7 +1350,7 @@
       ),
       // PII scan
       e('div', null,
-        e('button', {
+        e('button', { type: 'button',
           onClick: handleScan,
           disabled: !jsonText.trim(),
           className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50 disabled:opacity-50',
@@ -1420,7 +1432,7 @@
       ),
       // Submit row
       e('div', null,
-        e('button', {
+        e('button', { type: 'button',
           onClick: handleSubmit,
           disabled: !canSubmit,
           className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed',
@@ -2211,14 +2223,14 @@
           submitted && q.explanation && e('div', { className: 'text-xs text-slate-600 mt-0.5 pl-6' }, 'Why: ' + q.explanation)
         );
       }),
-      !submitted && e('button', {
+      !submitted && e('button', { type: 'button',
         disabled: !allAnswered,
         onClick: function () { props.onRaw({ answers: answers, submitted: true }); },
         className: 'self-start px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded disabled:opacity-40 disabled:cursor-not-allowed',
       }, 'Submit answers'),
       submitted && norm && e('div', { className: 'text-sm font-semibold ' + (passed ? 'text-emerald-700' : 'text-amber-700'), role: 'status', 'aria-live': 'polite' },
         'Score: ' + Math.round(norm.score * 100) + '% — ' + (passed ? 'passed' : 'need ' + Math.round(threshold * 100) + '% to continue')),
-      submitted && !passed && e('button', {
+      submitted && !passed && e('button', { type: 'button',
         onClick: function () { props.onRaw({ answers: answers, submitted: false }); },
         className: 'self-start px-3 py-1 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
       }, 'Try again')
@@ -2450,7 +2462,7 @@
               id: act.id + '-chat', rows: 2, value: draft,
               disabled: status === 'waiting',
               onChange: function (ev) { setDraft(ev.target.value); },
-              onKeyDown: function (ev) { if (ev && !ev.isComposing && ev.keyCode !== 229 && ev.key === 'Enter' && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); send(); } },
+              onKeyDown: function (ev) { if (ev && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229 && ev.key === 'Enter' && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); send(); } },
               className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white',
               placeholder: msgs.length ? tr('catalog_reply_in_character_as_yourself', 'Reply…') : tr('catalog_open_the_conversation', 'Open the conversation…'),
             })
@@ -2811,7 +2823,7 @@
         placeholder: tr('catalog_write_how_you_would_respond', 'Write how you would respond…'),
       }),
       e('div', { className: 'text-xs text-slate-600' }, 'Your response is sent to an AI service for formative feedback. Don’t include student names or other personal information.'),
-      e('button', {
+      e('button', { type: 'button',
         onClick: submit,
         disabled: !response.trim() || status === 'scoring',
         className: 'self-start px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded disabled:opacity-40 disabled:cursor-not-allowed',
@@ -2953,7 +2965,7 @@
           e('input', { id: 'pd-learner-name', type: 'text', maxLength: 80, value: learnerName, onChange: function (ev2) { setLearnerName(ev2.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white', placeholder: tr('catalog_e_g_your_name', 'e.g., your name') })
         ),
         e('div', { className: 'flex gap-2 flex-wrap' },
-          ev.complete && e('button', {
+          ev.complete && e('button', { type: 'button',
             onClick: function () {
               savePdLearnerName(learnerName);
               var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
@@ -2962,11 +2974,11 @@
             },
             className: 'px-4 py-2 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800',
           }, 'Download completion record (JSON)'),
-          ev.complete && typeof props.onCertificate === 'function' && e('button', {
+          ev.complete && typeof props.onCertificate === 'function' && e('button', { type: 'button',
             onClick: function () { props.onCertificate(mod, resultsById(), { name: learnerName.trim() || null }); },
             className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
           }, 'Print certificate'),
-          ev.complete && allowSelfPacedSigning && e('button', {
+          ev.complete && allowSelfPacedSigning && e('button', { type: 'button',
             onClick: function () {
               savePdLearnerName(learnerName);
               var rec = Core.buildCompletionRecord(mod, resultsById(), { name: learnerName.trim() || null }, new Date().toISOString());
@@ -2978,11 +2990,11 @@
             },
             className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded-md hover:bg-indigo-50',
           }, 'Get signed attestation'),
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { startOver(); },
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
           }, 'Review again'),
-          e('button', {
+          e('button', { type: 'button',
             onClick: props.onExit,
             className: 'px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50',
           }, 'Back to PD library')
@@ -3147,8 +3159,8 @@
             e('p', { className: 'text-xs text-slate-500' }, cur.sec.title + ' · step ' + (idx + 1) + ' of ' + steps.length)
           ),
           e('div', { className: 'flex items-center gap-3' },
-            resumed && e('button', { onClick: function () { startOver(); }, className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline decoration-dotted' }, 'Start over'),
-            e('button', { onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': tr('catalog_exit_module', 'Exit module') }, 'Exit')
+            resumed && e('button', { type: 'button', onClick: function () { startOver(); }, className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline decoration-dotted' }, 'Start over'),
+            e('button', { type: 'button', onClick: props.onExit, className: 'text-sm font-semibold text-slate-600 hover:text-slate-900', 'aria-label': tr('catalog_exit_module', 'Exit module') }, 'Exit')
           )
         ),
         e('div', {
@@ -3179,7 +3191,7 @@
       ),
       // Footer (gated Next)
       e('div', { className: 'flex items-center justify-between gap-3 border-t border-slate-200 pt-3' },
-        e('button', {
+        e('button', { type: 'button',
           onClick: function () { if (idx > 0) setIdx(idx - 1); },
           disabled: idx === 0,
           className: 'px-3 py-1.5 text-sm font-semibold border border-slate-300 text-slate-700 rounded disabled:opacity-40',
@@ -3189,7 +3201,7 @@
           // reason is announced reliably when "Next" is disabled.
           e('span', { id: 'pd-gate-hint', className: 'text-xs text-slate-500', 'aria-live': 'polite' },
             !canNext ? (gate.reason === 'unsubmitted' ? 'Submit your answers to continue.' : (gate.reason === 'incomplete' ? 'Finish this activity to continue.' : 'Reach the passing score to continue.')) : ''),
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { if (!canNext) return; if (isLast) setDone(true); else setIdx(idx + 1); },
             disabled: !canNext,
             'aria-describedby': !canNext ? 'pd-gate-hint' : undefined,
@@ -3286,7 +3298,7 @@
         e('label', { className: labelClass, htmlFor: 'pd-json' }, 'PD module JSON ',
           e('span', { className: 'font-normal text-slate-500' }, '(paste or upload)')),
         e('div', { className: 'flex gap-2 mb-2' },
-          e('input', { type: 'file', accept: 'application/json,.json', onChange: handleFileUpload, className: 'text-xs' })
+          e('input', { type: 'file', accept: 'application/json,.json', 'aria-label': tr('catalog_upload_pd_module_json', 'Upload PD module JSON file'), onChange: handleFileUpload, className: 'text-xs' })
         ),
         e('textarea', {
           id: 'pd-json',
@@ -3313,7 +3325,7 @@
             ))
       ),
       e('div', null,
-        e('button', {
+        e('button', { type: 'button',
           onClick: handleScan,
           disabled: !jsonText.trim(),
           className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50 disabled:opacity-50',
@@ -3362,7 +3374,7 @@
         })
       ),
       e('div', null,
-        e('button', {
+        e('button', { type: 'button',
           onClick: handleSubmit,
           disabled: !canSubmit,
           className: 'w-full px-4 py-2.5 text-sm font-bold bg-emerald-700 text-white rounded-md hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed',
@@ -3736,7 +3748,7 @@
 
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-        e('button', { onClick: function () { if (dirty) flushSave(); props.onBack(); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to My modules'),
+        e('button', { type: 'button', onClick: function () { if (dirty) flushSave(); props.onBack(); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to My modules'),
         e('span', { className: 'text-xs ' + (saveState === 'saved' ? 'text-emerald-700' : saveState === 'saving' ? 'text-slate-500' : 'text-red-700'), role: 'status', 'aria-live': 'polite' },
           saveState === 'saved' ? '✓ Draft saved' : saveState === 'saving' ? 'Saving…' : saveState)
       ),
@@ -3828,7 +3840,7 @@
 
       // Actions
       e('div', { className: 'flex gap-2 flex-wrap' },
-        e('button', {
+        e('button', { type: 'button',
           disabled: !(validation.ok && ready),
           onClick: function () {
             if (dirty && !flushSave()) return;
@@ -3838,8 +3850,8 @@
           },
           className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed',
         }, '▶ Run this draft'),
-        e('button', { onClick: function () { downloadJsonFile(mod, (meta.id || slugify(meta.title || 'pd-module'))); }, className: 'px-3 py-2 text-sm font-semibold border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50' }, 'Export JSON'),
-        e('button', {
+        e('button', { type: 'button', onClick: function () { downloadJsonFile(mod, (meta.id || slugify(meta.title || 'pd-module'))); }, className: 'px-3 py-2 text-sm font-semibold border border-slate-400 text-slate-700 rounded-md hover:bg-slate-50' }, 'Export JSON'),
+        e('button', { type: 'button',
           disabled: !validation.ok,
           onClick: function () { if (dirty && !flushSave()) return; props.onSubmit && props.onSubmit(JSON.stringify(mod, null, 2)); },
           className: 'px-3 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded-md hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed',
@@ -3893,7 +3905,7 @@
     var labelClass = 'block text-xs font-semibold text-slate-700 mb-1';
 
     return e('div', { className: 'flex flex-col gap-4' },
-      e('button', { onClick: props.onBack, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+      e('button', { type: 'button', onClick: props.onBack, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
       e('h3', { className: 'font-bold text-base text-slate-800' }, 'Create a PD module with AI'),
       // Honesty banner — AI drafts can be wrong; review before use.
       e('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800' },
@@ -3944,7 +3956,7 @@
         e('input', { type: 'checkbox', checked: includeBranching, onChange: function (ev) { setIncludeBranching(ev.target.checked); } }),
         e('span', null, 'Include a branching choose-your-path scenario')
       ),
-      e('button', {
+      e('button', { type: 'button',
         onClick: generate,
         disabled: !topic.trim() || status === 'generating' || !aiAvailable,
         className: 'self-start px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed',
@@ -3959,10 +3971,10 @@
         result.metadata && result.metadata.summary && e('p', { className: 'text-xs text-slate-600' }, result.metadata.summary),
         e('p', { className: 'text-xs text-slate-500' }, 'Review the content and answer keys, then preview, edit, or submit it.'),
         e('div', { className: 'flex gap-2 flex-wrap pt-1' },
-          e('button', { onClick: function () { props.onRun && props.onRun(result); }, className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700' }, 'Preview / run'),
-          e('button', { onClick: function () { props.onEdit && props.onEdit(draftRec || newPdDraftFromModule(result, 'ai')); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit in builder'),
-          e('button', { onClick: function () { props.onUse && props.onUse(JSON.stringify(result, null, 2)); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit & submit'),
-          e('button', { onClick: function () { downloadJsonFile(result, ((result.metadata && result.metadata.id) || slugify((result.metadata && result.metadata.title) || 'pd-module')) + '-draft'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Download JSON')
+          e('button', { type: 'button', onClick: function () { props.onRun && props.onRun(result); }, className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700' }, 'Preview / run'),
+          e('button', { type: 'button', onClick: function () { props.onEdit && props.onEdit(draftRec || newPdDraftFromModule(result, 'ai')); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit in builder'),
+          e('button', { type: 'button', onClick: function () { props.onUse && props.onUse(JSON.stringify(result, null, 2)); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit & submit'),
+          e('button', { type: 'button', onClick: function () { downloadJsonFile(result, ((result.metadata && result.metadata.id) || slugify((result.metadata && result.metadata.title) || 'pd-module')) + '-draft'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Download JSON')
         )
       )
     );
@@ -4109,7 +4121,7 @@
       };
       return e('div', { className: 'flex flex-col gap-3' },
         e('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-          e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+          e('button', { type: 'button', onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
           e('div', { className: 'flex items-center gap-2 flex-wrap' },
             e('button', {
               type: 'button',
@@ -4179,9 +4191,9 @@
                   ),
                   md.summary && e('p', { className: 'text-xs text-slate-600' }, md.summary),
                   e('div', { className: 'flex gap-2 flex-wrap' },
-                    e('button', { onClick: function () { runDraft(d); }, className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700' }, 'Run'),
-                    e('button', { onClick: function () { setEditingDraft(d); setView('edit'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit'),
-                    e('button', {
+                    e('button', { type: 'button', onClick: function () { runDraft(d); }, className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700' }, 'Run'),
+                    e('button', { type: 'button', onClick: function () { setEditingDraft(d); setView('edit'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Edit'),
+                    e('button', { type: 'button',
                       onClick: function () {
                         var clone = _catSafeJsonParse(JSON.stringify(d.module));
                         clone.metadata = clone.metadata || {};
@@ -4193,8 +4205,8 @@
                       },
                       className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
                     }, 'Duplicate'),
-                    e('button', { onClick: function () { downloadJsonFile(d.module, (md.id || slugify(md.title || 'pd-module'))); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Export JSON'),
-                    e('button', { onClick: function () { setPrefill(JSON.stringify(d.module, null, 2)); setView('submit'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Submit…'),
+                    e('button', { type: 'button', onClick: function () { downloadJsonFile(d.module, (md.id || slugify(md.title || 'pd-module'))); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Export JSON'),
+                    e('button', { type: 'button', onClick: function () { setPrefill(JSON.stringify(d.module, null, 2)); setView('submit'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50' }, 'Submit…'),
                     e('button', {
                       type: 'button',
                       onClick: function () {
@@ -4237,7 +4249,7 @@
     }
     if (view === 'submit') {
       return e('div', { className: 'flex flex-col gap-3' },
-        e('button', { onClick: function () { setView('browse'); setPrefill(''); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+        e('button', { type: 'button', onClick: function () { setView('browse'); setPrefill(''); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
         e(PdSubmit, { addToast: addToast, initialJson: prefill })
       );
     }
@@ -4254,9 +4266,9 @@
       var pathsComplete = (state.paths || []).filter(function (p) { return pdPathProgress(p, slugCompleted).complete; }).length;
       return e('div', { className: 'flex flex-col gap-3' },
         e('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
-          e('button', { onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+          e('button', { type: 'button', onClick: function () { setView('browse'); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
           e('div', { className: 'flex items-center gap-3 flex-wrap' },
-            hist.length > 0 && e('button', {
+            hist.length > 0 && e('button', { type: 'button',
               onClick: function () { exportPdHistory(); addToast && addToast(tr('catalog_exported_your_pd_history', 'Exported your PD history.'), 'success'); },
               className: 'text-xs font-semibold text-indigo-700 hover:underline',
             }, 'Export'),
@@ -4309,7 +4321,7 @@
                 ev.target.value = '';
               },
             }),
-            hist.length > 0 && e('button', {
+            hist.length > 0 && e('button', { type: 'button',
               onClick: function () { try { localStorage.removeItem(PD_HISTORY_KEY); } catch (_e) { /* no-op */ } setHistTick(function (n) { return n + 1; }); addToast && addToast(tr('catalog_cleared_your_local_pd_history', 'Cleared your local PD history.'), 'info'); },
               className: 'text-xs text-slate-500 hover:text-red-700 underline decoration-dotted',
             }, 'Clear history'),
@@ -4345,7 +4357,7 @@
           return e('div', { className: 'bg-white border border-slate-200 rounded-lg p-3 flex flex-col gap-2' },
             e('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               e('h4', { className: 'text-sm font-bold text-slate-800' }, 'Hours log ', e('span', { className: 'font-normal text-slate-500' }, '(self-reported)')),
-              (hist.length > 0 || manualHours.length > 0) && e('button', {
+              (hist.length > 0 || manualHours.length > 0) && e('button', { type: 'button',
                 onClick: function () { exportPdHoursCsv(hist, state.entries, manualHours); addToast && addToast(tr('catalog_exported_your_hours_log', 'Exported your hours log (CSV).'), 'success'); },
                 className: 'text-xs font-semibold text-indigo-700 hover:underline',
               }, 'Export CSV')
@@ -4390,7 +4402,7 @@
               manualHours.map(function (h) {
                 return e('li', { key: h.id, className: 'flex items-center justify-between gap-2 text-xs text-slate-700 border border-slate-100 rounded p-1.5' },
                   e('span', null, h.date + ' \u2014 ' + h.title + (h.provider ? ' (' + h.provider + ')' : '') + ' \u2014 ' + h.minutes + ' min'),
-                  e('button', {
+                  e('button', { type: 'button',
                     onClick: function () { deletePdHourEntry(h.id); setHoursTick(function (n) { return n + 1; }); },
                     className: 'text-red-700 font-semibold hover:underline shrink-0',
                     'aria-label': tr('catalog_delete_hours_entry', 'Delete hours entry') + ' ' + h.title,
@@ -4415,7 +4427,7 @@
                     match && !currentBinding && e('div', { className: 'text-xs text-amber-700 mt-1' },
                       'Completed an earlier module version; the current version is not yet complete.'),
                   ),
-                  match && e('button', { onClick: function () { startModule(match); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Review again')
+                  match && e('button', { type: 'button', onClick: function () { startModule(match); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'Review again')
                 );
               })
             )
@@ -4428,13 +4440,13 @@
         return (state.entries || []).filter(function (en) { return en.slug === sl; })[0] || { slug: sl, title: sl, _missing: true };
       });
       return e('div', { className: 'flex flex-col gap-3' },
-        e('button', { onClick: function () { setView('browse'); setActivePath(null); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
+        e('button', { type: 'button', onClick: function () { setView('browse'); setActivePath(null); }, className: 'self-start text-sm text-indigo-700 hover:underline' }, '← Back to PD library'),
         e('div', null,
           e('h3', { className: 'font-bold text-base text-slate-800' }, (apProg.complete ? '🎓 ' : '') + (ap.title || 'Learning path')),
           ap.summary && e('p', { className: 'text-sm text-slate-600 mt-1' }, ap.summary),
           e('p', { className: 'text-xs mt-1 ' + (apProg.complete ? 'text-emerald-700 font-semibold' : 'text-slate-500') },
             apProg.complete ? ('Path complete — all ' + apProg.total + ' modules done') : (apProg.done + ' of ' + apProg.total + ' modules complete')),
-          apProg.complete && e('button', {
+          apProg.complete && e('button', { type: 'button',
             onClick: function () { printPdPathCertificate(ap, state.entries, pdEffectiveLearner(props.learner), addToast); },
             className: 'mt-2 px-3 py-1.5 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50',
           }, 'Print path certificate')
@@ -4449,7 +4461,7 @@
                   ? e('div', { className: 'text-xs text-amber-700' }, 'This module is not in the catalog yet.')
                   : (en.summary && e('div', { className: 'text-xs text-slate-500' }, en.summary))
               ),
-              !en._missing && e('button', {
+              !en._missing && e('button', { type: 'button',
                 onClick: function () { startModule(en); },
                 className: 'px-3 py-1.5 text-xs font-semibold rounded ' + (done ? 'border border-indigo-600 text-indigo-700 hover:bg-indigo-50' : 'bg-indigo-600 text-white hover:bg-indigo-700'),
               }, done ? 'Review' : 'Start')
@@ -4501,7 +4513,7 @@
       guidelineFilter && e('div', { className: 'flex items-center gap-2 flex-wrap p-3 bg-indigo-50 border border-indigo-200 rounded-lg', role: 'status' },
         e('span', { className: 'text-sm text-indigo-900' },
           tr('catalog_showing_pd_related_to', 'Showing PD related to') + ' ' + pdGuidelineLabel(guidelineFilter) + ' — ' + tr('catalog_from_your_walkthrough_pd_signals', 'from your walkthrough PD signals.')),
-        e('button', {
+        e('button', { type: 'button',
           onClick: function () { setGuidelineFilter(null); },
           className: 'px-2.5 py-1 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-100',
         }, tr('catalog_show_all_modules', 'Show all modules'))
@@ -4510,19 +4522,19 @@
         e('p', { className: 'text-sm text-slate-700 max-w-2xl' },
           'Short, self-paced professional-development modules — read, take a knowledge check, and reflect. Finishing one lets you download a self-paced completion record (JSON) or print a certificate. This is a personal record of your work, not accredited contact hours.'),
         e('div', { className: 'shrink-0 flex gap-2 flex-wrap' },
-          completedCount > 0 && e('button', {
+          completedCount > 0 && e('button', { type: 'button',
             onClick: function () { setView('history'); },
             className: 'px-3 py-1.5 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded hover:bg-emerald-50',
           }, 'My learning (' + completedCount + ')'),
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { setView('mine'); },
             className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
           }, 'My modules' + (myModules.length ? ' (' + myModules.length + ')' : '')),
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { setView('generate'); },
             className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
           }, '✨ Create with AI'),
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { setPrefill(''); setView('submit'); },
             className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
           }, 'Submit a module')
@@ -4541,7 +4553,7 @@
               pth.summary && e('p', { className: 'text-xs text-slate-600' }, pth.summary),
               e('div', { className: 'text-xs text-slate-500' }, pr.done + ' / ' + pr.total + ' modules complete'),
               e('div', { className: 'mt-auto pt-1' },
-                e('button', { onClick: function () { setActivePath(pth); setView('path'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'View path')
+                e('button', { type: 'button', onClick: function () { setActivePath(pth); setView('path'); }, className: 'px-3 py-1.5 text-xs font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50' }, 'View path')
               )
             );
           })
@@ -4580,7 +4592,7 @@
         state.status === 'loading' ? 'Loading PD library…' :
         state.status === 'error' ? e('span', { className: 'text-red-600' },
           'Could not load PD library: ' + state.error + ' ',
-          e('button', {
+          e('button', { type: 'button',
             onClick: function () { setState({ status: 'loading', entries: [], paths: [], error: null }); setReloadTick(function (n) { return n + 1; }); },
             className: 'ml-1 font-semibold text-indigo-700 hover:underline',
           }, 'Retry')) :
@@ -4610,15 +4622,15 @@
             entry.credit && e('div', { className: 'text-xs text-slate-500' }, 'Credit: ' + entry.credit),
             e('div', { className: 'text-xs text-slate-600 font-mono' }, 'License: ' + (entry.license || '(unspecified)')),
             e('div', { className: 'mt-auto pt-2 flex flex-col gap-1' },
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { startModule(entry); },
                 className: 'w-full px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
               }, doneBadge ? 'Review again' : (inProgress ? 'Resume' : 'Start')),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { remixEntry(entry); },
                 className: 'w-full px-3 py-1 text-xs font-semibold text-indigo-700 rounded hover:bg-indigo-50',
               }, 'Remix into My modules'),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { downloadPdFacilitationGuide(entry, addToast); },
                 className: 'w-full px-3 py-1 text-xs font-semibold text-slate-600 rounded hover:bg-slate-50',
               }, 'Facilitator guide (group session)')
@@ -4696,7 +4708,7 @@
         'data-allo-catalog': '',
         tabIndex: -1, ref: dialogRef,
         onKeyDown: function (ev) {
-          if (!ev || ev.isComposing || ev.keyCode === 229) return;
+          if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
           if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); ev.stopPropagation(); props.onClose(); return; }
           if (ev.key !== 'Tab') return;
           // Keep keyboard focus inside the modal (focus trap).
@@ -4739,7 +4751,7 @@
               // Roving-tabindex tab semantics: arrows/Home/End move AND focus;
               // only the active tab is in the Tab order (WAI-ARIA tabs pattern).
               onKeyDown: function (ev) {
-                if (!ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+                if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                 var order = ['browse', 'submit', 'pd'];
                 var idx = order.indexOf(tab);
                 var next = null;
@@ -4753,11 +4765,11 @@
                 try { var el = document.getElementById('pd-tab-' + next); if (el && el.focus) el.focus(); } catch (_e) { /* no-op */ }
               },
             },
-              e('button', { role: 'tab', id: 'pd-tab-browse', 'aria-selected': tab === 'browse', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'browse' ? 0 : -1, className: tabBtn(tab === 'browse'), onClick: function () { setTab('browse'); } }, 'Browse'),
-              e('button', { role: 'tab', id: 'pd-tab-submit', 'aria-selected': tab === 'submit', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'submit' ? 0 : -1, className: tabBtn(tab === 'submit'), onClick: function () { setTab('submit'); } }, 'Submit'),
-              e('button', { role: 'tab', id: 'pd-tab-pd', 'aria-selected': tab === 'pd', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'pd' ? 0 : -1, className: tabBtn(tab === 'pd'), onClick: function () { setTab('pd'); } }, 'Professional Development')
+              e('button', { type: 'button', role: 'tab', id: 'pd-tab-browse', 'aria-selected': tab === 'browse', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'browse' ? 0 : -1, className: tabBtn(tab === 'browse'), onClick: function () { setTab('browse'); } }, 'Browse'),
+              e('button', { type: 'button', role: 'tab', id: 'pd-tab-submit', 'aria-selected': tab === 'submit', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'submit' ? 0 : -1, className: tabBtn(tab === 'submit'), onClick: function () { setTab('submit'); } }, 'Submit'),
+              e('button', { type: 'button', role: 'tab', id: 'pd-tab-pd', 'aria-selected': tab === 'pd', 'aria-controls': 'pd-tabpanel', tabIndex: tab === 'pd' ? 0 : -1, className: tabBtn(tab === 'pd'), onClick: function () { setTab('pd'); } }, 'Professional Development')
             ),
-            e('button', {
+            e('button', { type: 'button',
               className: 'ml-3 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
               onClick: props.onClose,
               'aria-label': tr('catalog_close_community_catalog', 'Close Community Catalog'),

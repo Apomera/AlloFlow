@@ -13,7 +13,7 @@
       "licenseShort": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
       "licenseFile": "CC-BY-SA-4.0.txt",
-      "extract": { "file": "simple_wiktionary_en.json", "what": "word -> entries {pos, forms, senses: {g (first gloss), tags, cats (only labels the build acts on), ex, syn, ant, form_of}} for content parts of speech and form-of entries", "sha256": "12a228ba5f09220b91150f939706becbc99f21d2c0245bb9100853a5ee63fbc5" }
+      "extract": { "file": "simple_wiktionary_en.json", "what": "word -> entries {pos, forms, senses: {g (first gloss), tags, cats (only labels the build acts on), ex, syn, ant, form_of}} for content parts of speech and form-of entries", "sha256": "ed86d61fb4f591ef7b53089bbc0fdbba91273642fb88a80221857d603bb0b5cf" }
     },
     "wiktionary": {
       "name": "English Wiktionary, kaikki.org post-processed English dictionary (enwiktionary dump 2026-10-01, extracted 2026-10-30)",
@@ -25,7 +25,7 @@
       "licenseShort": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
       "licenseFile": "CC-BY-SA-4.0.txt",
-      "extract": { "file": "wiktionary_en.json", "what": "word -> entries {pos, forms, senses: up to 6 per entry, slang/old/rare/offensive-labelled senses dropped: {g (most specific gloss), ex (up to 2 usage examples, no quotations)} or {form_of}}", "sha256": "26eb99879cf2f651765a75685991faa25ea15d5102a7270d18c1068cfee57fac" }
+      "extract": { "file": "wiktionary_en.json", "what": "word -> entries {pos, forms, senses: up to 6 per entry, slang/old/rare/offensive-labelled senses dropped: {g (most specific gloss), ex (up to 2 usage examples, no quotations)} or {form_of}}", "sha256": "92d8da96163e8d08282a205bc90a9a6be21ea62a2a4b7cab8d2cf8d1376a3cfd" }
     },
     "wordnet": {
       "name": "Open English WordNet 2025 edition (WN-LMF XML)",
@@ -38,7 +38,7 @@
       "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
       "licenseFile": ["CC-BY-4.0.txt", "OEWN_LICENSE.md", "WNDB_License.txt"],
       "licenseFilesFrom": "OEWN_LICENSE.md and WNDB_License.txt are LICENSE.md and WNDB_License.txt from the main branch of github.com/globalwordnet/english-wordnet, unchanged (OEWN_LICENSE.md is identical to the LICENSE.md in the release); CC-BY-4.0.txt is https://creativecommons.org/licenses/by/4.0/legalcode.txt, unchanged",
-      "extract": { "file": "wordnet_en.json", "what": "lemmas (wanted words only) -> synset ids per pos; synsets of those words with gloss, members, examples (up to 3) and hypernym/similar/antonym/topic/attribute/pertainym links, plus the ancestors they need (names only); hyponyms are rebuilt from hypernyms", "sha256": "43adbba2b74c6bae1e274365eef923e019fcde1c179b372b5939e50903ba3057" }
+      "extract": { "file": "wordnet_en.json", "what": "lemmas (wanted words only) -> synset ids per pos; synsets of those words with gloss, members, examples (up to 3) and hypernym/similar/antonym/topic/attribute/pertainym links, plus the ancestors they need (names only); hyponyms are rebuilt from hypernyms", "sha256": "ea37e67e7ec85395720c6bc11a52d74ed216963166d5b9befe2cc9dc47cab961" }
     },
     "nawl": {
       "name": "New Academic Word List 1.2 (Browne, Culligan & Phillips 2013)",
@@ -53,7 +53,8 @@
     },
     "wordlists": {
       "name": "Word lists and familiarity",
-      "extract": { "file": "wordlists_en.json", "sha256": "cc00d07902bfaad960a4811dfc266d1089e426c1cdffbb00a901d9eecda441cd", "what": "unit: the hand-made K-8 unit list (86 words, AlloFlow); nawl; builtin and common: from word_sounds_wordlist_en.js; zipf: CYP-LEX children's-book frequency (CC BY 4.0, data/vendor/cyplex) for these words and their forms" }
+      "extract": { "file": "wordlists_en.json", "sha256": "b86b53469f4b285b87b77e5119df3abbc21ec17138258616b35160cdbb225fb9", "what": "unit: the hand-made K-8 unit list (86 words, AlloFlow); nawl; builtin and common: from word_sounds_wordlist_en.js; zipf: CYP-LEX children's-book frequency (CC BY 4.0, data/vendor/cyplex) for these words and their forms" }
     }
-  }
+  },
+  "widened": "2026-11-23: re-cut from the same downloads (their sha256 above unchanged) with --builtin-from (the built-in list of 2026-11-12, kept so the core the vocabulary maker loads first stays as it was) and --extended-common 40000 (entries for every ranked dictionary word, used only by the extended files packets_vocab_ext/). Extended meanings are automatic and not checked."
 }

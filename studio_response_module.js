@@ -1,10 +1,21 @@
 /* Shared response boundary for Memory Aid and Applied Challenge. */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
+  const _srStr = v => {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  };
+  const _srFinite = (v, fallback) => {
+    if (typeof v === 'number') return Number.isFinite(v) ? v : fallback;
+    if (typeof v === 'string' && v.trim() !== '') { const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+    return fallback;
+  };
   const isBlockedKey = key => key === '__proto__' || key === 'constructor' || key === 'prototype';
   const safeIdKey = (raw, fallback) => {
-    const s = String(raw);
+    const s = _srStr(raw);
     return isBlockedKey(s) ? ('id-' + s) : (s || fallback);
   };
   const memoryFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview', 'visualReviewBasis'];
@@ -19,8 +30,8 @@
   function memoryCueFactBasis(card) {
     const shared = window.AlloModules?.MemoryAid?.exportRules?.cueFactBasis;
     if (typeof shared === 'function') return shared(card);
-    const fold = (value, max) => String(value == null ? '' : value).slice(0, max).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
-    const facts = (Array.isArray(card?.essentialFacts || card?.facts) ? card.essentialFacts || card.facts : []).slice(0, 10).map(value => String(value == null ? '' : value).slice(0, 600).trim()).filter(Boolean);
+    const fold = (value, max) => _srStr(value).slice(0, max).normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
+    const facts = (Array.isArray(card?.essentialFacts || card?.facts) ? card.essentialFacts || card.facts : []).slice(0, 10).map(value => _srStr(value).slice(0, 600).trim()).filter(Boolean);
     const text = [fold(card?.target || card?.concept, 1000), ...facts.map(value => fold(value, 1000))].join('\n').slice(0, 24000);
     let hash = 2166136261;
     for (let index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
@@ -66,10 +77,10 @@
         && (card.visualImage !== prior?.visualImage || (typeof card.visualAlt === 'string' && card.visualAlt.trim() && card.visualAlt !== prior?.visualAlt))))) {
       out.visualReviewBasis = memoryVisualReviewBasis(base, card);
     }
-    if ('visualNeedsReview' in card && (!writing || differs('visualNeedsReview'))) out.visualNeedsReview = card.visualNeedsReview;
+    if (own(card, 'visualNeedsReview') && (!writing || differs('visualNeedsReview'))) out.visualNeedsReview = card.visualNeedsReview;
     if (base?.mode !== 'student-authored') return out;
     const ownPicture = !writing || differs('visualImage');
-    memoryFields.filter(key => key.startsWith('visual') && !['visualNeedsReview', 'visualReviewBasis'].includes(key) && key in card).forEach(key => {
+    memoryFields.filter(key => key.startsWith('visual') && !['visualNeedsReview', 'visualReviewBasis'].includes(key) && own(card, key)).forEach(key => {
       if (ownPicture || (key === 'visualCheck' ? card[key] && differs(key) : ['visualPrompt', 'visualAlt'].includes(key) ? differs(key) : key === 'visualAltSource' && differs('visualAlt'))) out[key] = card[key];
     });
     return out;
@@ -82,7 +93,7 @@
   const noteRowId = (row, key, idx) => hasId(row?.id) ? safeIdKey(row.id, (key === 'blanks' ? 'blank-' : key + '-') + idx) : (key === 'blanks' ? 'blank-' : key + '-') + idx;
   function anchorSections(data) {
     const seen = new Set();
-    return (Array.isArray(data?.sections) ? data.sections : []).filter(Boolean).map((section, index) => {
+    return (Array.isArray(data?.sections) ? data.sections : []).filter(record).map((section, index) => {
       const baseId = hasId(section.id) ? safeIdKey(section.id, 'section-' + index) : 'section-' + index;
       let id = baseId, s = index;
       while (seen.has(id)) { id = baseId + '-' + s; s++; }
@@ -90,7 +101,7 @@
       const bulletSeen = new Set();
       const bullets = Array.isArray(section.bullets) ? section.bullets : [];
       const bulletIds = bullets.map((_, i) => {
-        const rawKey = section.bulletIds?.[i];
+        const rawKey = Array.isArray(section.bulletIds) ? section.bulletIds[i] : undefined;
         const baseKey = hasId(rawKey) ? safeIdKey(rawKey, id + '-bullet-' + i) : id + '-bullet-' + i;
         let key = baseKey, b = i;
         while (bulletSeen.has(key)) { key = baseKey + '-' + b; b++; }
@@ -105,14 +116,16 @@
       const secVal = own(value, section.id) && value[section.id] && typeof value[section.id] === 'object' ? value[section.id] : null;
       return [section.id, Object.fromEntries(section.bulletIds.map((id, i) => {
         const raw = secVal ? (own(secVal, id) ? secVal[id] : (own(secVal, String(i)) ? secVal[String(i)] : '')) : '';
-        return [id, String(raw ?? '').slice(0,12000)];
+        return [id, _srStr(raw).slice(0,12000)];
       }))];
     }));
   }
   // AI feedback stays while the learner revises; a submission marks whether it was
   // about an earlier draft, from the fingerprint the view stored with it.
   function anchorDraftFingerprint(answers) {
-    const text = JSON.stringify(answers || {}); let hash = 2166136261;
+    let text = '{}';
+    try { text = JSON.stringify(answers || {}) || '{}'; } catch (_) { text = '{}'; }
+    let hash = 2166136261;
     for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
     return 'anchor-v1:' + (hash >>> 0).toString(16);
   }
@@ -123,18 +136,25 @@
     return { ...feedback, earlierDraft: !fp || (fp !== draft && fp !== legacy) };
   }
   function legacyNotes(data) {
+    if (!record(data)) return {};
     const base = pick(data, ['notes', 'summary', 'hypothesis', 'data', 'analysis', 'conclusion', 'thinkings', 'connection', 'notesExtra', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore']);
     if (data.templateType === 'reading-response') Object.assign(base,pick(data,['favoriteLine','question','pageRange']));
-    if (Array.isArray(data.entries)) base.entries = data.entries.map((row, i) => ({ id: noteRowId(row, 'entries', i), response: row.response || '' }));
-    if (Array.isArray(data.blanks)) base.blanks = data.blanks.map((row, i) => ({ id: noteRowId(row, 'blanks', i), studentAnswer: row.studentAnswer || '' }));
+    if (Array.isArray(data.entries)) base.entries = data.entries.map((row, i) => { const r = record(row) ? row : {}; return { id: noteRowId(r, 'entries', i), response: r.response || '' }; });
+    if (Array.isArray(data.blanks)) base.blanks = data.blanks.map((row, i) => { const r = record(row) ? row : {}; return { id: noteRowId(r, 'blanks', i), studentAnswer: r.studentAnswer || '' }; });
     return base;
   }
   function noteResponseField(key, value) {
-    if (key === 'blanks') return (Array.isArray(value) ? value : []).map((row, i) => ({ id: noteRowId(row, 'blanks', i), studentAnswer: String(row.studentAnswer || '') }));
+    if (key === 'blanks') return (Array.isArray(value) ? value : []).map((row, i) => { const r = record(row) ? row : {}; return { id: noteRowId(r, 'blanks', i), studentAnswer: _srStr(r.studentAnswer) }; });
     return value;
   }
   function mergeNoteRows(original, rows, key = 'blanks') {
-    return (rows || []).map((row, i) => ({ ...(original || []).find((old, idx) => noteRowId(old, key, idx) === noteRowId(row, key, i)), ...row }));
+    const origArr = Array.isArray(original) ? original : [];
+    const rowArr = Array.isArray(rows) ? rows : [];
+    return rowArr.map((row, i) => {
+      const r = record(row) ? row : {};
+      const match = origArr.find((old, idx) => record(old) && noteRowId(old, key, idx) === noteRowId(r, key, i));
+      return { ...(record(match) ? match : {}), ...r };
+    });
   }
   function safeNoteTree(value, depth = 0, seen = new Set()) {
     if (depth > 5) return null;
@@ -158,18 +178,20 @@
     }
   }
   function noteSubmission(resource, raw) {
-    const original = resource.data || {}, out = { schemaVersion: 1, templateType: original.templateType || 'cornell-notes' };
+    const original = (record(resource) && record(resource.data)) ? resource.data : {}, out = { schemaVersion: 1, templateType: original.templateType || 'cornell-notes' };
+    const safeRaw = record(raw) ? raw : {};
     const learnerKeys = new Set(Object.keys(legacyNotes(original)));
     noteFields.forEach(key => {
-      if (!own(raw, key)) return;
-      const value = raw[key];
+      if (!own(safeRaw, key)) return;
+      const value = safeRaw[key];
       if (Array.isArray(value)) {
         const originalRows = Array.isArray(original[key]) ? original[key] : [];
         out[key] = value.slice(0,100).map((row,index) => {
-          const before = originalRows.find((r,i)=>noteRowId(r, key, i)===noteRowId(row, key, index)) || {};
-          const result = { id: noteRowId(row, key, index) };
+          const r = record(row) ? row : {};
+          const before = originalRows.find((old,i)=>record(old) && noteRowId(old, key, i)===noteRowId(r, key, index)) || {};
+          const result = { id: noteRowId(r, key, index) };
           const fields = key === 'blanks' ? ['studentAnswer'] : key === 'entries' ? ['quote','response'] : key === 'pairs' ? ['question','answer'] : ['text'];
-          fields.forEach(field => { if (key === 'notes' || field === 'studentAnswer' || (key === 'entries' && field === 'response') || !same(row[field], before[field])) { if (typeof row[field] === 'string') result[field] = row[field].slice(0,12000); } });
+          fields.forEach(field => { if (key === 'notes' || field === 'studentAnswer' || (key === 'entries' && field === 'response') || !same(r[field], before[field])) { if (typeof r[field] === 'string') result[field] = r[field].slice(0,12000); } });
           return result;
         });
       } else if (learnerKeys.has(key) || !same(value,original[key])) out[key] = safeNoteTree(value);
@@ -197,7 +219,7 @@
   }
   function memoryCards(data) {
     const normalize = window.AlloModules?.MemoryAid?._testing?.normalizeMemoryAidCards;
-    return typeof normalize === 'function' ? normalize(data?.cards, data?.authorshipMode) : (Array.isArray(data?.cards) ? data.cards.slice(0, 8) : []);
+    return typeof normalize === 'function' ? normalize(data?.cards, data?.authorshipMode) : (Array.isArray(data?.cards) ? data.cards.filter(record).slice(0, 8) : []);
   }
   function memoryConnections(value) {
     const seen = new Set(), text = (v,n) => typeof v === 'string' ? v.slice(0,n) : '';
@@ -214,15 +236,17 @@
     return workspace;
   }
   function responseFromData(type, data, reference, previous) {
-    if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(data, data.studentAnswers), feedback: data.feedback || null, prevFeedbackScore: Number(data.prevFeedbackScore) || 0 };
-    if (type === 'note-taking') return { schemaVersion: 1, ...legacyNotes(data || {}) };
-    if (type === 'memory-aid') { const base = memoryCards(reference || data), prior = previous ? memoryCards(previous) : []; return { schemaVersion: 1, cards: memoryCards(data).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true, prior.find(item => item.id === card.id)) })) }; }
-    const fields = pick(data, appliedFields);
+    const d = record(data) ? data : {};
+    if (type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(d, d.studentAnswers), feedback: d.feedback || null, prevFeedbackScore: _srFinite(d.prevFeedbackScore, 0) };
+    if (type === 'note-taking') return { schemaVersion: 1, ...legacyNotes(d) };
+    if (type === 'memory-aid') { const base = memoryCards(reference || d), prior = previous ? memoryCards(previous) : []; return { schemaVersion: 1, cards: memoryCards(d).map(card => ({ id: card.id, ...memoryOwned(card, base.find(item => item.id === card.id), true, prior.find(item => item.id === card.id)) })) }; }
+    const fields = pick(d, appliedFields);
     if (fields.workspace) fields.workspace = appliedWorkspaceResponse(fields.workspace);
     return { schemaVersion: 1, ...fields };
   }
   function project(resource, response) {
-    const data = resource.data || {};
+    if (!record(resource)) return resource;
+    const data = record(resource.data) ? resource.data : {};
     if (resource.type === 'anchor-chart') return { ...resource, data: { ...data, sections: anchorSections(data), ...pick(response, anchorFields), studentAnswers: anchorAnswers(data, response?.studentAnswers || data.studentAnswers) } };
     if (resource.type === 'note-taking') {
       const fields = pick(response, noteFields), merged = { ...data, ...fields };
@@ -231,8 +255,9 @@
     }
     if (!response) return resource.type === 'memory-aid' ? { ...resource, data: { ...data, cards: memoryCards(data) } } : resource;
     if (resource.type === 'memory-aid') {
+      const responseCards = Array.isArray(response.cards) ? response.cards : [];
       const cards = memoryCards(data).map(card => {
-        const owned = memoryOwned((response.cards || []).find(item => item?.id === card.id), card, false);
+        const owned = memoryOwned(responseCards.find(item => item?.id === card.id), card, false);
         const studentCueNeedsReview = !!(typeof owned.studentDraft === 'string' && owned.studentDraft.trim() && owned.cueFactBasis !== memoryCueFactBasis(card));
         const merged = { ...card, ...owned };
         const ownsPicture = Object.prototype.hasOwnProperty.call(owned, 'visualImage') && !!owned.visualImage;
@@ -258,57 +283,79 @@
       if(links.has(link))continue; links.add(link);
       const base=text(item.id,80).replace(/[^A-Za-z0-9_-]/g,'-')||'source-'+out.length; let id=base,n=0;
       while(ids.has(id))id=base.slice(0,70)+'-'+(++n); ids.add(id);
-      out.push({id,url:url.href,rowId,title:typeof item.title==='string'?text(item.title,350):url.hostname,foundAt:/^\d{4}-\d{2}-\d{2}$/.test(item.foundAt)?item.foundAt:'',author:text(item.author,250),publicationDate:text(item.publicationDate,100),reviewNote:text(item.reviewNote,2000)});
+      out.push({id,url:url.href,rowId,title:typeof item.title==='string'?text(item.title,350):url.hostname,foundAt:typeof item.foundAt==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(item.foundAt)?item.foundAt:'',author:text(item.author,250),publicationDate:text(item.publicationDate,100),reviewNote:text(item.reviewNote,2000)});
     }
     return out;
   }
   function toSubmission(resource, response) {
-    if (!resource || typeof resource !== 'object') return { id: '', type: '', title: '', data: { schemaVersion: 1 } };
-    const raw = response || responseFromData(resource.type, resource.data || {});
+    if (!record(resource)) return { id: '', type: '', title: '', data: { schemaVersion: 1 } };
+    const raw = record(response) ? response : responseFromData(resource.type, resource.data || {});
     if (resource.type === 'note-taking') {
       const notes = noteSubmission(resource,raw), draftOf = window.AlloModules?.NoteTakingDraftFingerprint;
       if (record(notes.feedback)) { const marked = markedFeedback(notes.feedback, typeof draftOf === 'function' ? draftOf(project(resource, raw).data) : undefined); if (marked) notes.feedback = marked; else delete notes.feedback; }
-      return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: notes };
+      return { id: resource.id, type: resource.type, title: _srStr(resource.title || resource.data?.title).slice(0,300), data: notes };
     }
     if (resource.type === 'anchor-chart') {
       const answers = anchorAnswers(resource.data, raw.studentAnswers);
-      const sections = anchorSections(resource.data).slice(0,100).map(section => ({ id: section.id, label: String(section.label || '').slice(0,300), bulletIds: section.bulletIds.slice(0,100), bullets: section.bulletIds.slice(0,100).map(id => answers[section.id][id]) }));
-      return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0,300), data: { schemaVersion: 1, sections, studentAnswers: Object.fromEntries(sections.map(s=>[s.id,Object.fromEntries(s.bulletIds.map((id,i)=>[id,s.bullets[i]]))])), feedback: markedFeedback(safeNoteTree(raw.feedback || null), anchorDraftFingerprint(answers), JSON.stringify(answers)), prevFeedbackScore: Math.max(0,Math.min(120,Number(raw.prevFeedbackScore)||0)) } };
+      const sections = anchorSections(resource.data).slice(0,100).map(section => ({ id: section.id, label: _srStr(section.label).slice(0,300), bulletIds: section.bulletIds.slice(0,100), bullets: section.bulletIds.slice(0,100).map(id => answers[section.id][id]) }));
+      let legacyJson = '{}';
+      try { legacyJson = JSON.stringify(answers) || '{}'; } catch (_) { legacyJson = '{}'; }
+      return { id: resource.id, type: resource.type, title: _srStr(resource.title || resource.data?.title).slice(0,300), data: { schemaVersion: 1, sections, studentAnswers: Object.fromEntries(sections.map(s=>[s.id,Object.fromEntries(s.bulletIds.map((id,i)=>[id,s.bullets[i]]))])), feedback: markedFeedback(safeNoteTree(raw.feedback || null), anchorDraftFingerprint(answers), legacyJson), prevFeedbackScore: Math.max(0,Math.min(120,_srFinite(raw.prevFeedbackScore,0))) } };
     }
     const baseCards = resource.type === 'memory-aid' ? memoryCards(resource.data) : [];
     const data = resource.type === 'memory-aid'
-      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), ...(typeof card?.cueFactBasis === 'string' ? { cueFactBasis: card.cueFactBasis.slice(0, 80) } : {}), studentConnections: memoryConnections(card?.studentConnections) })) }
+      ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).filter(record).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), ...(typeof card?.cueFactBasis === 'string' ? { cueFactBasis: card.cueFactBasis.slice(0, 80) } : {}), studentConnections: memoryConnections(card?.studentConnections) })) }
       : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => own(raw, key)).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(key === 'workspace' ? appliedWorkspaceResponse(raw[key]) : raw[key])])) };
-    return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
+    return { id: resource.id, type: resource.type, title: _srStr(resource.title || resource.data?.title).slice(0, 300), data };
   }
+  const ENTRY_PREFIX_MAP = Object.assign(Object.create(null), { 'applied-challenge': ':applied:', 'memory-aid': ':memory:', 'anchor-chart': ':anchor:', 'note-taking': ':notes:' });
   function toResponseEntries(resource, response) {
+    if (!record(resource) || typeof resource.type !== 'string' || !ENTRY_PREFIX_MAP[resource.type]) return {};
     const data = toSubmission(resource, response).data;
     const entries = {};
-    const prefix = resource.id + ({ 'applied-challenge': ':applied:', 'memory-aid': ':memory:', 'anchor-chart': ':anchor:', 'note-taking': ':notes:' }[resource.type]);
-    function walk(value, key) {
+    const prefix = _srStr(resource.id) + ENTRY_PREFIX_MAP[resource.type];
+    const seen = new Set();
+    function walk(value, key, depth) {
+      if (depth > 12) return;
       if (typeof value === 'string' && value.trim()) entries[prefix + key] = value;
-      else if (value && typeof value === 'object') Object.entries(value).forEach(([name, item]) => walk(item, key ? key + '-' + name : name));
+      else if (value && typeof value === 'object') {
+        if (seen.has(value)) return;
+        seen.add(value);
+        try { Object.entries(value).forEach(([name, item]) => walk(item, key ? key + '-' + name : name, depth + 1)); }
+        finally { seen.delete(value); }
+      }
     }
     if (resource.type === 'note-taking') {
-      const writing=(value,key)=> { if(typeof value==='string') walk(value,key); else if(value && typeof value==='object') Object.entries(value).filter(([name])=>name!=='id').forEach(([name,item])=>writing(item,key+'-'+name)); };
-      Object.entries(data).filter(([key])=> !['schemaVersion','templateType','feedback','prevFeedbackScore','feedbackCount'].includes(key)).forEach(([key,value])=>writing(value,key));
+      const writing = (value, key, depth) => {
+        if (depth > 12) return;
+        if (typeof value === 'string') walk(value, key, depth);
+        else if (value && typeof value === 'object') {
+          if (seen.has(value)) return;
+          seen.add(value);
+          try { Object.entries(value).filter(([name]) => name !== 'id').forEach(([name, item]) => writing(item, key + '-' + name, depth + 1)); }
+          finally { seen.delete(value); }
+        }
+      };
+      Object.entries(data).filter(([key])=> !['schemaVersion','templateType','feedback','prevFeedbackScore','feedbackCount'].includes(key)).forEach(([key,value])=>writing(value,key,0));
     }
-    else if (resource.type === 'anchor-chart') { Object.entries(data.studentAnswers).forEach(([section,answers])=>Object.entries(answers).forEach(([id,value])=>walk(value,section+'-'+id))); }
+    else if (resource.type === 'anchor-chart') { Object.entries(data.studentAnswers || {}).forEach(([section,answers])=>Object.entries(answers || {}).forEach(([id,value])=>walk(value,section+'-'+id,0))); }
     else if (resource.type === 'applied-challenge') {
-      walk(data.workspace, '');
-      (Array.isArray(data.evidenceLedger) ? data.evidenceLedger : []).forEach((row, index) => { if (!record(row)) return; ['claim', 'evidence', 'tradeoff'].forEach(key => walk(row[key], 'ledger-' + index + '-' + key)); });
-      Object.entries(record(data.criteriaCheck) ? data.criteriaCheck : {}).forEach(([key, item]) => { if (record(item)) walk(item.note, 'selfcheck-' + key); });
-      walk(data.validationCycles, 'checks');
-    } else (Array.isArray(data.cards) ? data.cards : []).forEach(card => { if (!record(card)) return; walk(card.studentDraft, card.id + '-draft'); walk(card.studentReasoning, card.id + '-reasoning'); walk(card.visualAlt, card.id + '-visual-description'); (Array.isArray(card.studentConnections) ? card.studentConnections : []).forEach((row,index) => { if (!record(row)) return; walk(row.cue,card.id+'-connection-'+index+'-cue'); walk(row.explanation,card.id+'-connection-'+index+'-explanation'); }); });
+      walk(data.workspace, '', 0);
+      (Array.isArray(data.evidenceLedger) ? data.evidenceLedger : []).forEach((row, index) => { if (!record(row)) return; ['claim', 'evidence', 'tradeoff'].forEach(key => walk(row[key], 'ledger-' + index + '-' + key, 0)); });
+      Object.entries(record(data.criteriaCheck) ? data.criteriaCheck : {}).forEach(([key, item]) => { if (record(item)) walk(item.note, 'selfcheck-' + key, 0); });
+      walk(data.validationCycles, 'checks', 0);
+    } else (Array.isArray(data.cards) ? data.cards : []).forEach(card => { if (!record(card)) return; walk(card.studentDraft, card.id + '-draft', 0); walk(card.studentReasoning, card.id + '-reasoning', 0); walk(card.visualAlt, card.id + '-visual-description', 0); (Array.isArray(card.studentConnections) ? card.studentConnections : []).forEach((row,index) => { if (!record(row)) return; walk(row.cue,card.id+'-connection-'+index+'-cue',0); walk(row.explanation,card.id+'-connection-'+index+'-explanation',0); }); });
     return entries;
   }
   function projectForExport(resource, response) {
+    if (!record(resource)) return resource;
     const shown = project(resource,response);
     if (resource.type !== 'anchor-chart' || !resource.data?.interactive?.armed) return shown;
     const submitted = toSubmission(resource,response);
     return { ...shown, data: { ...shown.data, sections: shown.data.sections.map(section=>({ ...section, bullets: submitted.data.sections.find(row=>row.id===section.id)?.bullets || [] })), interactive: { armed: false }, feedback: submitted.data.feedback } };
   }
   function emptyResponse(resource) {
+    if (!record(resource)) return { schemaVersion: 1 };
     if (resource.type === 'anchor-chart') return { schemaVersion: 1, studentAnswers: anchorAnswers(resource.data,{}), feedback: null, prevFeedbackScore: 0 };
     if (resource.type === 'note-taking') {
       const data = resource.data || {}, response = { schemaVersion:1, feedback:null, feedbackCount:0, prevFeedbackScore:0 };
@@ -324,6 +371,7 @@
     return JSON.parse(serialized, (key, val) => isBlockedKey(key) ? undefined : val);
   }
   function backup(resource, response) {
+    if (!record(resource)) throw new Error('Invalid resource');
     const item = toSubmission(resource, response);
     if (resource.type === 'applied-challenge' && !Object.prototype.hasOwnProperty.call(item.data, 'workspace')) item.data.workspace = {};
     return { format: 'alloflow-studio-response', version: 1, resourceId: resource.id, resourceType: resource.type, title: item.title, savedAt: new Date().toISOString(), studio: item.data };
@@ -369,26 +417,35 @@
     }
     const restored = resource.type === 'note-taking' ? { schemaVersion:1, ...pick(noteSubmission(resource,raw),noteFields) } : toSubmission(resource, raw).data;
     if (record(restored.feedback)) delete restored.feedback.earlierDraft;
-    if (resource.type === 'memory-aid' && previous) restored.cards = restored.cards.map(card => ({ ...pick((previous.cards || []).find(item => item.id === card.id), memoryFields), ...card }));
+    if (resource.type === 'memory-aid' && previous) {
+      const prevCards = Array.isArray(previous.cards) ? previous.cards : [];
+      restored.cards = restored.cards.map(card => ({ ...pick(prevCards.find(item => item?.id === card.id), memoryFields), ...card }));
+    }
     return restored;
   }
   function WorkConflict({ conflict, status, onResolve, onDownload, resource, t }) {
     const React = window.React;
+    if (!React || typeof React.createElement !== 'function' || !record(conflict)) return null;
     const tr = (key, fallback) => { const value = t?.('studio_response.' + key); return value && value !== 'studio_response.' + key ? value : fallback; };
-    const describe = value => value === undefined ? tr('work_conflict_deleted', 'Removed') : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    const describe = value => {
+      if (value === undefined) return tr('work_conflict_deleted', 'Removed');
+      if (typeof value === 'string') return value;
+      try { return JSON.stringify(value, null, 2); } catch (_) { return _srStr(value); }
+    };
     const label = path => {
-      const last = path.filter(part => part !== '$rows' && part !== 'studio').at(-1) || 'response';
-      const field = String(last).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]/g, ' ');
-      const readable = tr('work_field_' + last, field.charAt(0).toUpperCase() + field.slice(1));
-      const title = path[0] === resource?.id ? (resource.title || resource.data?.title || tr('work_conflict_activity', 'This activity')) : path[0];
-      return title ? title + ' · ' + readable : readable;
+      const parts = Array.isArray(path) ? path : [];
+      const last = parts.filter(part => part !== '$rows' && part !== 'studio').at(-1) || 'response';
+      const field = _srStr(last).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]/g, ' ');
+      const readable = tr('work_field_' + _srStr(last), field.charAt(0).toUpperCase() + field.slice(1));
+      const title = parts[0] === resource?.id ? (resource?.title || resource?.data?.title || tr('work_conflict_activity', 'This activity')) : parts[0];
+      return title ? _srStr(title) + ' · ' + readable : readable;
     };
     return React.createElement('section', { className: 'mb-3 rounded-xl border border-amber-500 bg-amber-50 p-3', role: 'region', 'aria-label': tr('work_conflict_title', 'Choose which saved changes to keep') },
       React.createElement('p', { role: 'alert' }, conflict.reason === 'changed-again'
         ? tr('work_conflict_changed', 'The work changed again. Review the updated comparison before choosing.')
         : tr('work_conflict', 'Another tab changed the same work. Your changes are still here, but have not been saved. Changes to other fields are kept.')),
       React.createElement('p', { className: 'mt-2 text-sm' }, tr('work_conflict_scope', 'This choice applies only to the conflicting fields shown below.')),
-      React.createElement('ul', { className: 'mt-2 space-y-2' }, (conflict.conflicts || []).map((item, index) => React.createElement('li', { key: index, className: 'rounded border border-amber-200 p-2 text-sm' },
+      React.createElement('ul', { className: 'mt-2 space-y-2' }, (Array.isArray(conflict.conflicts) ? conflict.conflicts : []).filter(record).map((item, index) => React.createElement('li', { key: index, className: 'rounded border border-amber-200 p-2 text-sm' },
         React.createElement('p', { className: 'font-semibold' }, label(item.path)),
         React.createElement('p', { className: 'whitespace-pre-wrap break-words' }, tr('work_conflict_mine', 'My change:') + ' ' + describe(item.mine)),
         React.createElement('p', { className: 'whitespace-pre-wrap break-words' }, tr('work_conflict_saved', 'Saved change:') + ' ' + describe(item.saved))))),
@@ -399,7 +456,9 @@
   }
   function Boundary(props) {
     const React = window.React;
+    if (!React || typeof React.createElement !== 'function' || !record(props)) return null;
     const { View, generatedContent: resource, studentResponses, onResponseChange, studentWorkStatus, isTeacherMode, ...viewProps } = props;
+    if (!record(resource) || !View) return null;
     const [preview, setPreview] = React.useState(!!props.startInPreview);
     const [previewResponse, setPreviewResponse] = React.useState(null);
     const [backupMessage, setBackupMessage] = React.useState('');
@@ -408,11 +467,11 @@
     const mounted = React.useRef(true);
     React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; restoreAttemptOwner.current = null; }; }, []);
     const previewOwner = React.useRef('');
-    const scope = String(resource.id) + ':' + String(viewProps.activeProfileId || '');
+    const scope = _srStr(resource.id) + ':' + _srStr(viewProps.activeProfileId);
     const response = isTeacherMode ? (preview ? ((previewOwner.current === scope ? previewResponse : null) || emptyResponse(resource)) : null) : studentResponses?.[resource.id]?.studio;
     const current = React.useRef(null);
     current.current = { resource, response, preview, isTeacherMode, onResponseChange };
-    const identity = String(resource.id) + ':' + String(viewProps.activeProfileId || '') + ':' + isTeacherMode + ':' + preview;
+    const identity = _srStr(resource.id) + ':' + _srStr(viewProps.activeProfileId) + ':' + isTeacherMode + ':' + preview;
     current.current.identity = identity;
     const tr = (key, fallback) => { const value = viewProps.t?.('studio_response.' + key); return value && value !== 'studio_response.' + key ? value : fallback; };
     const handleNoteUpdate = React.useCallback((key, change) => {
@@ -420,6 +479,7 @@
       if (state.identity !== identity) return;
       const shown = project(state.resource, state.response);
       if (state.isTeacherMode && !state.preview) {
+        if (typeof viewProps.handleNoteUpdate !== 'function') return;
         // Teacher editing can update the template, never learner fields.
         if (state.resource.type === 'applied-challenge' && appliedFields.includes(key)) return;
         if (state.resource.type === 'note-taking' && noteLearnerKeys(state.resource.data).includes(key)) return;
@@ -427,13 +487,13 @@
           const field = noteLearnerRows[key];
           viewProps.handleNoteUpdate(key, old => {
             const next = typeof change === 'function' ? change(old) : change, prior = Array.isArray(old) ? old : [];
-            return (Array.isArray(next) ? next : []).map((row, i) => ({ ...row, [field]: prior.find((item, idx) => String(item?.id || idx) === String(row?.id || i))?.[field] || '' }));
+            return (Array.isArray(next) ? next : []).map((row, i) => ({ ...row, [field]: prior.find((item, idx) => _srStr(item?.id ?? idx) === _srStr(row?.id ?? i))?.[field] || '' }));
           });
         } else if (state.resource.type === 'memory-aid' && key === 'cards') {
           viewProps.handleNoteUpdate(key, old => {
-            const next = typeof change === 'function' ? change(old) : change;
-            return next.map(card => {
-              const prior = (old || []).find(item => item.id === card.id);
+            const next = typeof change === 'function' ? change(old) : change, priorArr = Array.isArray(old) ? old : [];
+            return (Array.isArray(next) ? next : []).map(card => {
+              const prior = priorArr.find(item => item?.id === card?.id);
               return { ...card, studentDraft: prior?.studentDraft || '', studentReasoning: prior?.studentReasoning || '', feedback: prior?.feedback || null, coachHint: prior?.coachHint || '' };
             });
           });
@@ -446,7 +506,7 @@
       // Update immediately so multiple functional writes in one event compose.
       current.current = { ...state, response: next };
       if (state.isTeacherMode) { previewOwner.current = scope; setPreviewResponse(next); }
-      else state.onResponseChange(state.resource.id, next);
+      else if (typeof state.onResponseChange === 'function') state.onResponseChange(state.resource.id, next);
     }, [viewProps.handleNoteUpdate, identity, scope]);
     const shown = project(resource, response);
     const download = () => {
@@ -459,7 +519,10 @@
       } catch (_) { setBackupMessage(tr('backup_failed', 'The backup could not be downloaded. Keep this page open and try again.')); }
     };
     const restore = async event => {
-      const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
+      const target = event?.target;
+      const file = target?.files?.[0];
+      if (target) target.value = '';
+      if (!file) return;
       // A newer selection owns completion even when its file is invalid.
       const attempt = {};
       restoreAttemptOwner.current = attempt;
@@ -472,7 +535,7 @@
         if (!isCurrentAttempt()) return;
         const data = readBackup(resource, safeJsonParse(serialized), startingResponse);
         if (current.current.response !== startingResponse) throw new Error('Work changed during restore');
-        current.current.onResponseChange(startingResource, data);
+        if (typeof current.current.onResponseChange === 'function') current.current.onResponseChange(startingResource, data);
         if (isCurrentAttempt()) setBackupMessage(tr('backup_restored', 'Backup restored to this workspace. Check the save status before leaving.'));
       } catch (_) { if (isCurrentAttempt()) setBackupMessage(tr('backup_invalid', 'Choose a text backup downloaded from this resource. Your current work has not changed.')); }
     };
@@ -493,7 +556,7 @@
       !isTeacherMode && resource.type === 'applied-challenge' && backupMessage && React.createElement('p', { className: 'mb-2 text-xs text-slate-600', role: 'status' }, backupMessage),
       React.createElement(View, { ...viewProps, key: identity, generatedContent: shown, referenceResource: resource, isTeacherMode: isTeacherMode && !preview, learnerReadOnly: isTeacherMode && !preview, previewMode: preview, activeProfileId: viewProps.activeProfileId, handleNoteUpdate }));
   }
-  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
   window.AlloModules.StudioResponse = Object.freeze({ supports, responseFromData, project, projectForExport, anchorSections, toSubmission, toResponseEntries, emptyResponse, maxBackupBytes, backup, serializeBackup, readBackup, WorkConflict, Boundary });
   window.AlloModules.StudioResponseModule = true;
 })();

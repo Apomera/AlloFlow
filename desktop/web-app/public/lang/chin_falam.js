@@ -12794,8 +12794,7 @@
     "syntax_scramble": "Syntax Scramble encountered an error."
   },
   "about": {
-    "title": "About AlloFlow v1.0",
-    "tab_about": "About UDL",
+    "title": "About AlloFlow",
     "tab_features": "Feature Guide",
     "approach_header": "The AlloFlow Approach",
     "allo_acronym_label": "ALLO:",
@@ -12805,334 +12804,12 @@
     "what_is_udl": "What is UDL?",
     "udl_definition": "Universal Design for Learning (UDL) is a framework to improve and optimize teaching and learning for all people based on scientific insights into how humans learn.",
     "how_help_header": "How does this tool help?",
-    "how_help_desc": "This tool uses AI to instantly create diverse entry points for your curriculum, ensuring you address the three core principles of UDL:",
-    "rep_title": "Representation:",
-    "rep_desc": "Presenting information in different ways (e.g., Adapted Text, Visual Supports, Glossaries).",
-    "action_title": "Action & Expression:",
-    "action_desc": "Providing options for students to demonstrate what they know (e.g., Scaffolds, Quizzes).",
-    "engage_title": "Engagement:",
-    "engage_desc": "Tapping into interests to challenge and motivate (e.g., Interest-based analogies).",
-    "ai_guide_tip": "Use the \"AI UDL & Alignment Guide\" button in the sidebar to chat with an expert pedagogical bot for specific strategy advice.",
     "cast_link_text": "View Full UDL Guidelines (CAST.org)",
     "reset_wizard": "Reset Quick Start Wizard",
     "support_kofi": "Support on Ko-fi",
-    "features_list": {
-      "categories": {
-        "creation": "Plan & Create",
-        "activities": "Engage & Play",
-        "assessment": "Assess & Support",
-        "platform": "Manage & Adapt"
-      },
-      "items": [
-        {
-          "title": "Analyze Source",
-          "icon": "Kawl",
-          "desc": "Extract reading levels, key concepts, and accuracy checks from any source text.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Leveled Text",
-          "icon": "BookOpen",
-          "desc": "Adapt text complexity for any grade K-12. Includes bilingual side-by-side views.",
-          "category": "creation",
-          "color": "indigo"
-        },
-        {
-          "title": "Cawnnak Plan",
-          "icon": "ClipboardList",
-          "desc": "Synthesize all resources into a standard-aligned lesson plan or study guide.",
-          "category": "creation",
-          "color": "violet"
-        },
-        {
-          "title": "Visual Organizer",
-          "icon": "Layout",
-          "desc": "Generate Flow Charts, Venn Diagrams, and structured outlines.",
-          "category": "creation",
-          "color": "cyan"
-        },
-        {
-          "title": "Brainstorm",
-          "icon": "Lightbulb",
-          "desc": "Generate hands-on activity ideas and real-world connections.",
-          "category": "creation",
-          "color": "yellow"
-        },
-        {
-          "title": "FAQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Anticipate student misconceptions with auto-generated Q&A lists.",
-          "category": "creation",
-          "color": "teal"
-        },
-        {
-          "title": "Interview Mode",
-          "icon": "History",
-          "desc": "Chat with historical figures, fictional characters, or experts. Uncover hidden secrets.",
-          "category": "activities",
-          "color": "amber"
-        },
-        {
-          "title": "Adventure Mode",
-          "icon": "MapIcon",
-          "desc": "Interactive 'Choose Your Own Adventure' simulation and roleplay scenarios.",
-          "category": "activities",
-          "color": "purple"
-        },
-        {
-          "title": "Game Arcade",
-          "icon": "Gamepad2",
-          "desc": "Auto-generate Bingo, Memory Match, Word Search, and Crosswords.",
-          "category": "activities",
-          "color": "pink"
-        },
-        {
-          "title": "Sequence Builder",
-          "icon": "ListOrdered",
-          "desc": "Drag-and-drop timeline activity for chronological events or process steps.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "Concept Sort",
-          "icon": "Filter",
-          "desc": "Categorize terms and concepts into buckets. Great for distinguishing similar ideas.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "Socratic Tutor",
-          "icon": "MessageCircleQuestion",
-          "desc": "AI guide that asks guiding questions instead of giving answers.",
-          "category": "activities",
-          "color": "fuchsia"
-        },
-        {
-          "title": "Exit Ticket",
-          "icon": "CheckSquare",
-          "desc": "Create quizzes. Launch 'Live Quiz' mode for real-time class results.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "Writing Scaffolds",
-          "icon": "Quote",
-          "desc": "Sentence starters and paragraph frames with built-in rubrics.",
-          "category": "assessment",
-          "color": "orange"
-        },
-        {
-          "title": "Visual Support",
-          "icon": "ImageIcon",
-          "desc": "AI diagrams and illustrations. Use image editing to refine or remove text.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Math & STEM",
-          "icon": "Calculator",
-          "desc": "Step-by-step solvers, graph generation, and similar practice problems.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Standard Audit",
-          "icon": "ShieldCheck",
-          "desc": "Verify alignment with specific educational standards and identify rigor gaps.",
-          "category": "assessment",
-          "color": "slate"
-        },
-        {
-          "title": "Oral Fluency",
-          "icon": "Mic",
-          "desc": "Listen to students read aloud and calculate WCPM and accuracy.",
-          "category": "assessment",
-          "color": "rose"
-        },
-        {
-          "title": "Saya Dashboard",
-          "icon": "Layout",
-          "desc": "Track student progress, view analytics, and export gradebooks.",
-          "category": "platform",
-          "color": "indigo"
-        },
-        {
-          "title": "Live Sessions",
-          "icon": "Wifi",
-          "desc": "Host synchronized classes, run Democracy Mode voting, and manage live quizzes.",
-          "category": "platform",
-          "color": "rose"
-        },
-        {
-          "title": "Sianginn Profile hna",
-          "icon": "Users",
-          "desc": "Save differentiation settings (Language, Interests) for different groups.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Accessibility",
-          "icon": "Ear",
-          "desc": "Immersive Reader, Line Focus, Dictation, and Text-to-Speech tools.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "Export Suite",
-          "icon": "Download",
-          "desc": "Export to PDF, PowerPoint, Canvas QTI, or HTML Bundles.",
-          "category": "platform",
-          "color": "blue"
-        },
-        {
-          "title": "Gemini Bridge",
-          "icon": "Terminal",
-          "desc": "Generate prompts to build custom interactive apps in Gemini Canvas.",
-          "category": "platform",
-          "color": "slate"
-        },
-        {
-          "title": "Smart Glossary",
-          "icon": "BookOpen",
-          "desc": "Visual vocabulary cards with audio, bilingual translations, and 5 vocabulary games (crossword, bingo, memory match, word search, scramble).",
-          "category": "creation",
-          "color": "purple"
-        },
-        {
-          "title": "Immersive Reader",
-          "icon": "Ear",
-          "desc": "Multi-mode reading support: RSVP speed reading, karaoke highlighting, bionic reading, line-focus ruler, grammar overlays.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Word Sounds Studio",
-          "icon": "Mic",
-          "desc": "Phonemic awareness practice across 8 activity types, blending, segmenting, rhyming, mapping, isolation, spelling, families, sight & spell.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "StoryForge",
-          "icon": "Quote",
-          "desc": "Six-phase scaffolded creative writing with AI illustrations, narration, custom rubrics, and 18-language support.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "AlloBot",
-          "icon": "Sparkles",
-          "desc": "Always-available AI tutor and platform guide. Answers content questions, navigates AlloFlow, and auto-configures settings on request.",
-          "category": "activities",
-          "color": "indigo"
-        },
-        {
-          "title": "Escape Room",
-          "icon": "MapIcon",
-          "desc": "Team-based puzzle challenges built from your lesson content. Teacher-controlled hints, timed escape tracking, multi-stage rooms.",
-          "category": "activities",
-          "color": "orange"
-        },
-        {
-          "title": "SEL Hub",
-          "icon": "Lungthin",
-          "desc": "32 social-emotional learning tools across CASEL competencies, coping cards, restorative circles, self-advocacy rehearsal, and more.",
-          "category": "activities",
-          "color": "rose"
-        },
-        {
-          "title": "BehaviorLens",
-          "icon": "ShieldCheck",
-          "desc": "FBA/BIP suite: ABC data collection, frequency/interval tracking, IOA calculator (5 methods), preference assessments, intervention templates.",
-          "category": "assessment",
-          "color": "indigo"
-        },
-        {
-          "title": "Report Writer",
-          "icon": "ClipboardList",
-          "desc": "10-step wizard for psychoeducational reports: 17 assessment presets, fact-chunk verification, triangulated drafting, dual-pass accuracy audit.",
-          "category": "assessment",
-          "color": "purple"
-        },
-        {
-          "title": "Dynamic Assessment",
-          "icon": "Filter",
-          "desc": "Vygotsky/Feuerstein/Lidz test-teach-retest probes with 4-level prompt ladders, modifiability scoring, IEP goal + accommodation generation.",
-          "category": "assessment",
-          "color": "blue"
-        },
-        {
-          "title": "Sianginn ngakchia Analytics",
-          "icon": "Layout",
-          "desc": "Automated RTI Tier 1/2/3 classification with aimline monitoring, CBM probe history, anomaly flagging, class screening reports.",
-          "category": "assessment",
-          "color": "emerald"
-        },
-        {
-          "title": "PDF Accessibility",
-          "icon": "Download",
-          "desc": "Upload any PDF → 5-auditor triangulated audit → WCAG remediation via Vision API → axe-core verification → accessible PDF/HTML/audio export.",
-          "category": "platform",
-          "color": "cyan"
-        },
-        {
-          "title": "Symbol Studio",
-          "icon": "ImageIcon",
-          "desc": "Full AAC platform: AI-generated PCS symbols, board builder, visual schedules, social stories, Symbol Quest games, Word Garden vocabulary tracking.",
-          "category": "platform",
-          "color": "fuchsia"
-        },
-        {
-          "title": "STEM Lab",
-          "icon": "Layers",
-          "desc": "95+ browser-based interactive simulations across math, science, CS, engineering, and creative design, from DNA labs to physics sandboxes.",
-          "category": "platform",
-          "color": "teal"
-        },
-        {
-          "title": "DBQ Generator",
-          "icon": "FileQuestion",
-          "desc": "Document-Based Question sets for source analysis, DOK-tiered prompts with sourcing/contextualization/corroboration scaffolds + rubric.",
-          "category": "creation",
-          "color": "amber"
-        },
-        {
-          "title": "Note Taking Templates",
-          "icon": "ListOrdered",
-          "desc": "Cornell notes, two-column compare/contrast, sketchnote prompts, mindmaps, and summary scaffolds, pre-filled or blank.",
-          "category": "creation",
-          "color": "blue"
-        },
-        {
-          "title": "Anchor Chart",
-          "icon": "Layout",
-          "desc": "Printable classroom-poster anchor charts with iconography, color-coded sections, AI imagery, and differentiated complexity levels.",
-          "category": "creation",
-          "color": "rose"
-        },
-        {
-          "title": "Annotation Suite",
-          "icon": "Quote",
-          "desc": "Overlay annotations on any AlloFlow resource, highlights, sticky notes, voice notes, drawings, with color-coded layers and exportable PDFs.",
-          "category": "activities",
-          "color": "purple"
-        },
-        null,
-        null,
-        null,
-        null,
-        null,
-        {
-          "icon": "Kawl"
-        }
-      ]
-    },
     "tab_atlas": "Atlas",
     "tab_opensource": "Open Source",
     "atlas_title": "AlloFlow Atlas",
-    "atlas_intro": "AlloFlow catalog hub le launch surface te kha organization in an lang map a si. Visual guide, area, search theih entry le source note dingah region khat thlang rawh.",
-    "atlas_footer": "Registry based section te cu catalog tu te chungin a suah. Curated le mixed section te map chungah hman an si. Nambar te cu search theih catalog entry zat an si, tool zat an si lo.",
     "privacy_title": "Privacy le student data",
     "privacy_intro": "AlloFlow cu privacy a ngaih pawl class hman dingah tuah a si. Data umnak cu storage, session transport le AI provider na thlangmi he a zirlai.",
     "privacy_footer": "Hihi cu product thu a fawi in simnak a si, legal advice asilole compliance certificate a si lo. FERPA le privacy thuthluknak, provider agreement, consent, retention le deletion cu institution i hna a si.",
@@ -13142,11 +12819,29 @@
     "oss_credits_intro": "AlloFlow cu free le open source (AGPL-3.0) a si. Hihi project te le an community hna ih hna a si. Author le community hna cu kan lawm.",
     "oss_featured_header": "Learning tools kan telh",
     "oss_full_list_header": "Library le open resource kan telh",
-    "oss_credits_footer": "Hosted AI feature te cu AI settings chungih provider (Gemini, OpenAI, Claude asilole OpenAI-compatible endpoint) an hman. Service te cu bundled software an si lo. License text zawng zawng cu source he an um.",
     "tab_privacy": "Privacy",
     "a11y_title": "Accessibility",
     "media_guardrails_intro": "Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.",
-    "media_guardrails_title": "Open/free media guardrails"
+    "media_guardrails_title": "Open/free media guardrails",
+    "atlas_hide": "Thuh",
+    "license_label": "Nawlpeknak",
+    "atlas_docs": {
+      "glossary": "Biafang Sullam Cazin"
+    },
+    "fg": {
+      "glossary": {
+        "title": "Biafang Sullam Cazin"
+      },
+      "lesson_images": {
+        "title": "Cawnnak hmanthlak"
+      },
+      "lumen": {
+        "inputs_2": "Biahalnak pakhat"
+      },
+      "family_bridge": {
+        "inputs_2": "Holh pahnih"
+      }
+    }
   },
   "fluency": {
     "title": "Oral Fluency Check",

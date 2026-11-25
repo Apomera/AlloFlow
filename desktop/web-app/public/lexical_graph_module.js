@@ -13,13 +13,14 @@
  * and provenance together rather than reducing every edge to "related".
  */
 (function registerLexicalGraph(root, factory) {
-    const api = factory(root || (typeof globalThis !== 'undefined' ? globalThis : {}));
-    if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
-        root.AlloModules = root.AlloModules || {};
-        root.AlloModules.LexicalGraph = api;
+    const target = root && typeof root === 'object' ? root : (typeof globalThis === 'object' && globalThis ? globalThis : null);
+    const api = factory(target || {});
+    if (typeof module === 'object' && module && module.exports) module.exports = api;
+    if (target) {
+        if (!target.AlloModules || typeof target.AlloModules !== 'object') target.AlloModules = {};
+        target.AlloModules.LexicalGraph = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createLexicalGraphModule() {
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null), function createLexicalGraphModule() {
     'use strict';
 
     const VERSION = 'lexical-graph/v1';
@@ -141,13 +142,22 @@
         return Object.freeze(value);
     }
 
+    function safeStr(value) {
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'string') return value;
+        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+        try { return String(value); } catch (_) { return ''; }
+    }
+
     function cleanText(value, limit) {
         if (value === null || value === undefined) return '';
-        return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
+        const cap = limit || MAX_TEXT;
+        return safeStr(value).slice(0, Math.max(cap * 8, 8192)).replace(/\s+/g, ' ').trim().slice(0, cap);
     }
 
     function rawTextWithinLimit(value, limit) {
-        return value === null || value === undefined || String(value).length <= limit;
+        if (value === null || value === undefined) return true;
+        return safeStr(value).length <= limit;
     }
 
     function normalizeToken(value) {
@@ -242,8 +252,12 @@
         if (!Array.isArray(manifest.sources) || manifest.sources.length === 0) {
             errors.push(issue('manifest-sources-required', `${path}.sources`, 'At least one source record is required.'));
         } else {
+            if (manifest.sources.length > 200) {
+                errors.push(issue('manifest-sources-bound-exceeded', `${path}.sources`, 'At most 200 source records are allowed.'));
+            }
             const seen = new Set();
-            manifest.sources.forEach((source, index) => {
+            manifest.sources.slice(0, 200).forEach((source, index) => {
+                if (errors.length >= 200) return;
                 const sourcePath = `${path}.sources[${index}]`;
                 if (!isObject(source) || !validId(source.id)) errors.push(issue('source-id-invalid', `${sourcePath}.id`, 'Source id is invalid.'));
                 else if (seen.has(source.id)) errors.push(issue('source-id-duplicate', `${sourcePath}.id`, 'Source ids must be unique.'));
@@ -303,7 +317,7 @@
         if (!validId(edge.toId) || !nodeById[edge.toId]) errors.push(issue('edge-to-missing', `${path}.toId`, 'Edge target node does not exist.'));
         if (!RELATION_TYPES.includes(edge.relationType)) errors.push(issue('edge-relation-invalid', `${path}.relationType`, 'Unknown lexical relation type.'));
         if (edge.direction !== expectedDirection(edge.relationType)) {
-            errors.push(issue('edge-direction-invalid', `${path}.direction`, `Direction must be ${expectedDirection(edge.relationType)} for ${edge.relationType}.`));
+            errors.push(issue('edge-direction-invalid', `${path}.direction`, `Direction must be ${expectedDirection(edge.relationType)} for ${safeStr(edge.relationType)}.`));
         }
         if (!cleanText(edge.label, 240)) errors.push(issue('edge-label-required', `${path}.label`, 'A learner-readable relationship label is required.'));
         if (!VERIFICATION_TYPES.includes(edge.verification)) errors.push(issue('edge-verification-invalid', `${path}.verification`, 'Unknown verification status.'));
@@ -320,21 +334,27 @@
                 errors.push(issue('edge-provenance-reviewed-at-required', `${path}.provenance.reviewedAt`, 'Provenance reviewedAt must be an ISO calendar date.'));
             }
 
-            const sourceIds = Array.isArray(provenance.sourceIds) ? provenance.sourceIds : [];
-            if (!sourceIds.length) {
+            const rawSourceIds = Array.isArray(provenance.sourceIds) ? provenance.sourceIds : [];
+            const sourceIds = rawSourceIds.slice(0, 100);
+            if (!rawSourceIds.length) {
                 errors.push(issue('edge-source-required', `${path}.provenance.sourceIds`, 'Every edge must identify at least one source.'));
             } else {
+                if (rawSourceIds.length > 100) {
+                    errors.push(issue('edge-source-bound-exceeded', `${path}.provenance.sourceIds`, 'At most 100 sources are allowed per edge.'));
+                }
                 if (new Set(sourceIds).size !== sourceIds.length) {
                     errors.push(issue('edge-source-duplicate', `${path}.provenance.sourceIds`, 'Edge source ids must not contain duplicates.'));
                 }
                 sourceIds.forEach((sourceId, index) => {
+                    if (errors.length >= 200) return;
                     if (!validId(sourceId) || (sourceById && !sourceById[sourceId])) {
                         errors.push(issue('edge-source-unknown', `${path}.provenance.sourceIds[${index}]`, 'Edge references an unknown source.'));
                     }
                 });
             }
-            const sourceUrls = Array.isArray(provenance.sourceUrls) ? provenance.sourceUrls : [];
-            if (!sourceUrls.length || sourceUrls.some((url) => !validSourceUrl(url))) {
+            const rawSourceUrls = Array.isArray(provenance.sourceUrls) ? provenance.sourceUrls : [];
+            const sourceUrls = rawSourceUrls.slice(0, 100);
+            if (!rawSourceUrls.length || rawSourceUrls.length > 100 || sourceUrls.some((url) => !validSourceUrl(url))) {
                 errors.push(issue('edge-source-url-required', `${path}.provenance.sourceUrls`, 'Every edge must carry valid HTTPS source URLs.'));
             }
 
@@ -392,15 +412,18 @@
         const edgeList = Array.isArray(edges) ? edges : [];
         if (nodeList.length > limits.nodes) errors.push(issue('node-bound-exceeded', 'nodes', `At most ${limits.nodes} nodes are allowed.`));
         if (edgeList.length > limits.edges) errors.push(issue('edge-bound-exceeded', 'edges', `At most ${limits.edges} edges are allowed.`));
+        const boundedNodes = nodeList.slice(0, limits.nodes);
+        const boundedEdges = edgeList.slice(0, limits.edges);
         const nodeById = Object.create(null);
-        nodeList.forEach((node, index) => {
-            validateNode(node, `nodes[${index}]`, errors);
+        boundedNodes.forEach((node, index) => {
+            if (errors.length < 200) validateNode(node, `nodes[${index}]`, errors);
             if (node && validId(node.id)) {
-                if (nodeById[node.id]) errors.push(issue('node-id-duplicate', `nodes[${index}].id`, 'Node ids must be unique.'));
+                if (nodeById[node.id]) { if (errors.length < 200) errors.push(issue('node-id-duplicate', `nodes[${index}].id`, 'Node ids must be unique.')); }
                 else nodeById[node.id] = node;
             }
         });
-        nodeList.forEach((node, index) => {
+        boundedNodes.forEach((node, index) => {
+            if (errors.length >= 200) return;
             if (!node || !['sense', 'form'].includes(node.type) || !validId(node.lexemeId)) return;
             if (!nodeById[node.lexemeId] || nodeById[node.lexemeId].type !== 'lexeme') {
                 errors.push(issue('lexeme-reference-invalid', `nodes[${index}].lexemeId`, 'Sense and form nodes must reference a lexeme node.'));
@@ -408,7 +431,8 @@
         });
         const edgeIds = new Set();
         const edgeKeys = new Set();
-        edgeList.forEach((edge, index) => {
+        boundedEdges.forEach((edge, index) => {
+            if (errors.length >= 200) return;
             validateEdge(edge, `edges[${index}]`, nodeById, sourceById, manifest, errors, warnings);
             if (!edge || !validId(edge.id)) return;
             if (edgeIds.has(edge.id)) errors.push(issue('edge-id-duplicate', `edges[${index}].id`, 'Edge ids must be unique.'));
@@ -485,6 +509,9 @@
 
     function boundedInteger(value, fallback, minimum, maximum, name) {
         if (value === undefined || value === null || value === '') return fallback;
+        if (typeof value === 'boolean' || typeof value === 'symbol' || typeof value === 'object' || (typeof value === 'string' && !value.trim())) {
+            throw new RangeError(`${name} must be an integer from ${minimum} through ${maximum}.`);
+        }
         const numeric = Number(value);
         if (!Number.isInteger(numeric) || numeric < minimum || numeric > maximum) {
             throw new RangeError(`${name} must be an integer from ${minimum} through ${maximum}.`);
@@ -512,11 +539,12 @@
 
     function describeNode(node) {
         const language = node.language ? `${languageName(node.language)} ` : '';
-        if (node.type === 'sense') return `${language}sense "${node.label}": ${node.definition}`;
-        if (node.type === 'form') return `${language}form "${node.label}" (${node.formType})`;
-        if (node.type === 'morpheme') return `morpheme "${node.label}": ${node.meaning}`;
-        if (node.type === 'etymon') return `${node.historicalLanguage} etymon "${node.label}": ${node.gloss}`;
-        return `${language}${node.partOfSpeech || 'word'} "${node.label}"`;
+        const label = safeStr(node.label);
+        if (node.type === 'sense') return `${language}sense "${label}": ${safeStr(node.definition)}`;
+        if (node.type === 'form') return `${language}form "${label}" (${safeStr(node.formType)})`;
+        if (node.type === 'morpheme') return `morpheme "${label}": ${safeStr(node.meaning)}`;
+        if (node.type === 'etymon') return `${safeStr(node.historicalLanguage)} etymon "${label}": ${safeStr(node.gloss)}`;
+        return `${language}${safeStr(node.partOfSpeech) || 'word'} "${label}"`;
     }
 
     function edgeSentence(edge, nodeById) {
@@ -525,7 +553,7 @@
         if (!from || !to) return '';
         const sourceLabel = describeNode(from);
         const targetLabel = describeNode(to);
-        return `${sourceLabel} ${edge.label || RELATION_LABELS[edge.relationType]} ${targetLabel}. Verification: ${edge.verification}.`;
+        return `${sourceLabel} ${safeStr(edge.label) || RELATION_LABELS[edge.relationType] || ''} ${targetLabel}. Verification: ${safeStr(edge.verification)}.`;
     }
 
     function deriveAccessibleOutline(graph) {
@@ -542,7 +570,7 @@
         value.nodes.forEach((node) => { adjacency[node.id] = []; });
         value.edges.slice().sort(edgeSort).forEach((edge) => {
             if (adjacency[edge.fromId]) adjacency[edge.fromId].push(edge);
-            if (adjacency[edge.toId]) adjacency[edge.toId].push(edge);
+            if (edge.toId !== edge.fromId && adjacency[edge.toId]) adjacency[edge.toId].push(edge);
         });
         Object.keys(adjacency).forEach((id) => adjacency[id].sort((a, b) => {
             const byEdge = edgeSort(a, b);
@@ -712,7 +740,7 @@
         value.nodes.forEach((node) => { adjacency[node.id] = []; });
         sortedEdges.forEach((edge) => {
             adjacency[edge.fromId].push(edge);
-            adjacency[edge.toId].push(edge);
+            if (edge.toId !== edge.fromId) adjacency[edge.toId].push(edge);
         });
 
         function getManifest() {
@@ -793,7 +821,7 @@
             let relationFilter = null;
             if (Array.isArray(opts.relations) && opts.relations.length) {
                 const unknown = opts.relations.filter((relation) => !RELATION_TYPES.includes(relation));
-                if (unknown.length) throw new RangeError(`Unknown lexical relation: ${unknown[0]}.`);
+                if (unknown.length) throw new RangeError(`Unknown lexical relation: ${safeStr(unknown[0])}.`);
                 relationFilter = new Set(opts.relations);
             }
             let languageFilter = null;

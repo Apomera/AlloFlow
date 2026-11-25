@@ -27,13 +27,16 @@
  * before it happens, never to grant anything.
  */
 (function (root, factory) {
-    if (typeof module === 'object' && module.exports) {
+    const validRoot = !!(root && (typeof root === 'object' || typeof root === 'function'));
+    if (typeof module === 'object' && module && module.exports) {
         module.exports = factory();
-    } else if (root) {
-        root.AlloModules = root.AlloModules || {};
+    } else if (validRoot) {
+        if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
         root.AlloModules.QuestionBoardTransport = factory();
     }
-}(typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : (typeof globalThis !== 'undefined' ? globalThis : null)), function () {
+}((typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window
+    : ((typeof self !== 'undefined' && self && (typeof self === 'object' || typeof self === 'function')) ? self
+        : ((typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis : null)), function () {
     'use strict';
 
     const VERSION = '1.0.0';
@@ -44,8 +47,13 @@
     const MAX_NOTE_CHARS = 1000;
     const ALLOWED_STATUSES = Object.freeze({ 'held': 1, 'approved': 1, 'hidden': 1 });
 
+    function toStr(value) {
+        if (value == null || typeof value === 'symbol') return '';
+        try { return String(value); } catch (_) { return ''; }
+    }
+
     function stripCtrl(value) {
-        return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+        return toStr(value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '');
     }
 
     function safeJsonParse(raw, maxChars) {
@@ -62,6 +70,15 @@
 
     function finiteNum(value, fallback) {
         return (typeof value === 'number' && Number.isFinite(value)) ? value : fallback;
+    }
+
+    function parseTsMs(value) {
+        if (typeof value === 'number' && Number.isFinite(value) && value >= 0) return value;
+        if (typeof value === 'string' && value.trim()) {
+            const parsed = Date.parse(value.trim());
+            if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+        }
+        return NaN;
     }
 
     // Server code → contract reason. Anything unlisted surfaces as 'error',
@@ -82,7 +99,7 @@
     });
 
     function reasonFor(code) {
-        const key = String(code || '');
+        const key = toStr(code);
         return hasOwn.call(REASONS, key) ? REASONS[key] : 'error';
     }
 
@@ -94,7 +111,7 @@
      * connection" instead of "the board is full".
      */
     function refusal(code, transport) {
-        return { ok: false, reason: reasonFor(code), code: String(code || ''), transport: !!transport };
+        return { ok: false, reason: reasonFor(code), code: toStr(code), transport: !!transport };
     }
 
     /**
@@ -111,6 +128,18 @@
         return n >= floor ? n : fallback;
     }
 
+    function nonNegInt(value, fallback, minVal) {
+        const n = nonNegNum(value, fallback, minVal);
+        return Math.floor(n);
+    }
+
+    function normalizeExpiresAt(raw) {
+        if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
+            try { return new Date(raw).toISOString(); } catch (_) { return ''; }
+        }
+        return stripCtrl(raw || '').slice(0, 64);
+    }
+
     function boardFromSummary(summary) {
         if (!summary || typeof summary !== 'object' || Array.isArray(summary) || summary.ok === false) return null;
         const items = Array.isArray(summary.items) ? summary.items.slice(0, MAX_BOARD_ITEMS) : [];
@@ -121,14 +150,16 @@
                 type: 'question_board',
                 prompt: stripCtrl(summary.prompt || '').slice(0, 1000),
                 revealPolicy: rawPolicy === 'teacher_review' ? 'teacher_review' : 'auto_publish',
-                minParticipants: nonNegNum(summary.minParticipants, 3, 1),
-                itemsPerStudent: nonNegNum(summary.itemsPerStudent, 5, 1),
-                boardCap: nonNegNum(summary.boardCap, 400, 1),
-                expiresAt: stripCtrl(summary.expiresAt || '').slice(0, 64)
+                minParticipants: nonNegInt(summary.minParticipants, 3, 1),
+                itemsPerStudent: nonNegInt(summary.itemsPerStudent, 5, 1),
+                boardCap: nonNegInt(summary.boardCap, 400, 1),
+                expiresAt: normalizeExpiresAt(summary.expiresAt)
             },
             items: items.filter(function (it) { return it && typeof it === 'object' && !Array.isArray(it); }).map(function (it) {
-                const rawStatus = it.status === 'pending' ? 'held' : String(it.status || 'held');
+                const rawStatus = it.status === 'pending' ? 'held' : (toStr(it.status) || 'held');
                 const safeStatus = hasOwn.call(ALLOWED_STATUSES, rawStatus) ? rawStatus : 'held';
+                const ansAt = (it.answered && typeof it.answered === 'object' && !Array.isArray(it.answered)) ? parseTsMs(it.answered.at) : NaN;
+                const createdTs = parseTsMs(it.createdAt);
                 return {
                     id: stripCtrl(it.id || '').slice(0, 128),
                     uid: stripCtrl(it.uid || '').slice(0, 128),
@@ -141,18 +172,18 @@
                     answered: (it.answered && typeof it.answered === 'object' && !Array.isArray(it.answered))
                         ? Object.assign(
                             {},
-                            typeof it.answered.at === 'number' && Number.isFinite(it.answered.at) && it.answered.at >= 0 ? { at: it.answered.at } : {},
+                            Number.isFinite(ansAt) ? { at: ansAt } : {},
                             typeof it.answered.by === 'string' && it.answered.by ? { by: stripCtrl(it.answered.by).slice(0, 64) } : {},
                             typeof it.answered.note === 'string' && it.answered.note ? { note: stripCtrl(it.answered.note).slice(0, MAX_NOTE_CHARS) } : {},
                             typeof it.answered.resourceId === 'string' && it.answered.resourceId ? { resourceId: stripCtrl(it.answered.resourceId).slice(0, 128) } : {}
                         )
                         : (it.answered === true),
-                    createdAt: nonNegNum(it.createdAt, 0, 0)
+                    createdAt: Number.isFinite(createdTs) ? createdTs : 0
                 };
             }),
-            version: nonNegNum(summary.version, 0, 0),
+            version: nonNegInt(summary.version, 0, 0),
             updatedAt: nonNegNum(summary.updatedAt, 0, 0),
-            participantCount: nonNegNum(summary.participantCount, 0, 0)
+            participantCount: nonNegInt(summary.participantCount, 0, 0)
         };
     }
 
@@ -173,30 +204,36 @@
         const call = opts.call;
         if (typeof call !== 'function') throw new Error('createMailboxTransport requires options.call');
 
-        const rawUrl = String(opts.url == null ? '' : opts.url).trim();
+        if (typeof opts.url !== 'string') {
+            throw new Error('createMailboxTransport rejected unsafe URL scheme');
+        }
+        const rawUrl = opts.url.trim();
         const url = stripCtrl(rawUrl).trim();
-        const hasControlOrSpace = /[\u0000-\u0020\u007f]/.test(rawUrl);
+        const hasControlOrSpace = /[\s\\\u0000-\u0020\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/.test(rawUrl);
         const collapsedForScheme = rawUrl.replace(/[\u0000-\u0020\u007f]+/g, '');
         const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(collapsedForScheme);
-        const safeScheme = /^https:\/\/[^\/\s@]+(?:\/[^\s]*)?$|^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/[^\s]*)?$/i.test(url);
+        const safeScheme = /^https:\/\/[^\/\s@\\]+(?:\/[^\s\\]*)?$|^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/[^\s\\]*)?$/i.test(url);
         if (!url || hasControlOrSpace || /^\/\//.test(url) || (hasScheme && !safeScheme)) {
             throw new Error('createMailboxTransport rejected unsafe URL scheme');
         }
-        const packId = String(opts.packId || '');
-        const activityId = String(opts.activityId || '');
-        const admin = String(opts.admin || '');
-        const packSecret = String(opts.packSecret || '');
+        const packId = stripCtrl(opts.packId || '');
+        const activityId = stripCtrl(opts.activityId || '');
+        const admin = toStr(opts.admin);
+        const packSecret = toStr(opts.packSecret);
         const isTeacher = !!opts.isTeacher;
-        const learnerScope = String(
-            opts.storageKeyScope ||
-            (typeof globalThis !== 'undefined' && typeof globalThis.__alloActiveLearnerKey === 'string' ? globalThis.__alloActiveLearnerKey : '') ||
-            ''
-        ).trim().slice(0, 64);
+        const winObj = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+        const gObj = (typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis : null;
+        const activeKey = (winObj && typeof winObj.__alloActiveLearnerKey === 'string' && winObj.__alloActiveLearnerKey)
+            ? winObj.__alloActiveLearnerKey
+            : ((gObj && typeof gObj.__alloActiveLearnerKey === 'string') ? gObj.__alloActiveLearnerKey : '');
+        const learnerScope = stripCtrl(opts.storageKeyScope || activeKey || '').trim().slice(0, 64);
         let storage = opts.storage || null;
-        if (!learnerScope && typeof globalThis !== 'undefined' && (globalThis.__alloQrStudentMode || globalThis.__alloStudentView === true)) {
+        const qrOrStudent = !!((winObj && (winObj.__alloQrStudentMode || winObj.__alloStudentView === true))
+            || (gObj && (gObj.__alloQrStudentMode || gObj.__alloStudentView === true)));
+        if (!learnerScope && qrOrStudent) {
             try {
-                if (typeof window !== 'undefined' && window.localStorage && storage === window.localStorage) {
-                    storage = window.sessionStorage || null;
+                if (winObj && winObj.localStorage && storage === winObj.localStorage) {
+                    storage = winObj.sessionStorage || null;
                 }
             } catch (_) {
                 storage = null;
@@ -260,7 +297,7 @@
                 });
                 if (!joined || joined.ok === false || !validCred(joined)) {
                     const err = new Error('join-failed');
-                    err.code = String((joined && joined.e) || 'denied');
+                    err.code = toStr(joined && joined.e) || 'denied';
                     throw err;
                 }
                 const next = { uid: joined.uid, pt: joined.pt };
@@ -280,19 +317,47 @@
         // recoverable hiccup and a student locked out of their own board.
         async function withCredential(build) {
             let cred = await ensureCredential();
+            const genAtStart = joinGen;
             try {
                 const res = await call(url, build(cred));
-                if (res && res.ok === false && String(res.e || '').includes('denied')) {
+                if (res && res.ok === false && toStr(res.e).includes('denied')) {
+                    if (genAtStart !== joinGen) return res;
                     forget();
                     cred = await ensureCredential();
                     return call(url, build(cred));
                 }
                 return res;
             } catch (e) {
-                if (!String((e && e.code) || '').includes('denied')) throw e;
+                if (!toStr(e && e.code).includes('denied')) throw e;
+                if (genAtStart !== joinGen) throw e;
                 forget();
                 cred = await ensureCredential();
                 return call(url, build(cred));
+            }
+        }
+
+        async function loadBoard() {
+            try {
+                let result;
+                if (isTeacher) {
+                    result = await call(url, {
+                        a: 'getactivityadmin', admin: admin, id: packId, aid: activityId
+                    });
+                } else {
+                    result = await withCredential(function (cred) {
+                        return {
+                            a: 'getactivitysummary', id: packId, aid: activityId,
+                            uid: cred.uid, pt: cred.pt
+                        };
+                    });
+                }
+                if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
+                const board = boardFromSummary(result);
+                if (!board) return refusal('error', false);
+                return { ok: true, board: board };
+            } catch (e) {
+                const isJoinRefusal = !!(e && e.message === 'join-failed');
+                return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
             }
         }
 
@@ -311,7 +376,7 @@
                 displayName = '';
                 try {
                     await ensureCredential();
-                    return this.load();
+                    return loadBoard();
                 } catch (e) {
                     const isJoinRefusal = e && e.message === 'join-failed';
                     return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
@@ -326,30 +391,7 @@
             },
 
             /** Current board state, already filtered for whoever is asking. */
-            async load() {
-                try {
-                    let result;
-                    if (isTeacher) {
-                        result = await call(url, {
-                            a: 'getactivityadmin', admin: admin, id: packId, aid: activityId
-                        });
-                    } else {
-                        result = await withCredential(function (cred) {
-                            return {
-                                a: 'getactivitysummary', id: packId, aid: activityId,
-                                uid: cred.uid, pt: cred.pt
-                            };
-                        });
-                    }
-                    if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    const board = boardFromSummary(result);
-                    if (!board) return refusal('error', false);
-                    return { ok: true, board: board };
-                } catch (e) {
-                    const isJoinRefusal = !!(e && e.message === 'join-failed');
-                    return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
-                }
-            },
+            load: loadBoard,
 
             /**
              * Post one question. Returns the refreshed board on success, so a
@@ -391,7 +433,7 @@
                 const cleanUid = stripCtrl(authorUid || '').trim().slice(0, 128);
                 const cleanItemId = stripCtrl(itemId || '').trim().slice(0, 128);
                 if (!cleanUid || !cleanItemId) return refusal('error', false);
-                const rawStatus = String(status || '');
+                const rawStatus = toStr(status);
                 const wireStatus = rawStatus === 'held' ? 'pending' : rawStatus;
                 if (wireStatus !== 'pending' && wireStatus !== 'approved' && wireStatus !== 'hidden') {
                     return refusal('error', false);
@@ -439,11 +481,11 @@
         };
     }
 
-    return {
+    return Object.freeze({
         VERSION: VERSION,
         REASONS: REASONS,
         reasonFor: reasonFor,
         boardFromSummary: boardFromSummary,
         createMailboxTransport: createMailboxTransport
-    };
+    });
 }));

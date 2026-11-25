@@ -18,19 +18,29 @@
 // Category: relationship-skills
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
 
-  (function() {
-    if (document.getElementById('allo-live-crewprotocols')) return;
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols')) return;
+
+  var _cpLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-crewprotocols');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-crewprotocols';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -39,10 +49,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
   // WCAG 2.3.3 / 2.4.7 / forced-colors scoped styles for Crew Protocols
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-crewprotocols-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-crewprotocols-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-crewprotocols-a11y-css';
     st.textContent = [
@@ -417,7 +429,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
   // Pull crewPrompt entries from the standards alignment registry
   function gatherCrewPrompts() {
-    if (!window.SelHubStandards || !window.SelHubStandards.alignments) return [];
+    if (typeof window !== 'object' || !window || !window.SelHubStandards || !window.SelHubStandards.alignments) return [];
     var prompts = [];
     Object.keys(window.SelHubStandards.alignments).forEach(function(toolId) {
       var align = window.SelHubStandards.alignments[toolId];
@@ -455,65 +467,80 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         if (_cpL) return {'#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#22c55e':'#15803d','#10b981':'#047857','#f59e0b':'#b45309','#ef4444':'#b91c1c','#dc2626':'#b91c1c','#3b82f6':'#1d4ed8','#ec4899':'#be185d','#6366f1':'#4338ca'}[lc] || c;
         return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[lc] || c;
       };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
-      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
+      var onSafetyFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
       var _cpBand = (ctx && ctx.gradeBand) || 'high';
+      function safeStr(v) { return typeof v === 'string' ? v : ''; }
       function isImeComposing(e) {
         return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
       }
       function announceCP(msg) {
         if (!msg) return;
         if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-crewprotocols');
-          if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 20); }
-        }
+        try {
+          var lr = ensureLiveRegion();
+          if (lr) { lr.textContent = ''; setTimeout(function() { try { lr.textContent = String(msg); } catch (_) {} }, 20); }
+        } catch (_) {}
       }
 
-      var d = labToolData.crewProtocols || defaultState();
+      var rawCp = labToolData.crewProtocols;
+      var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : defaultState();
       function setCP(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.crewProtocols) || defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevRaw = base.crewProtocols;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
           var next = Object.assign({}, prior, patch);
           next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { crewProtocols: next });
+          return Object.assign({}, base, { crewProtocols: next });
         });
       }
       function scanCrewText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'crewProtocols', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
-        }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && (scan.hasCrisis || scan.triggered)) {
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+        try {
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var chk = sh.safeRehearseCheck(trimmed, { toolId: 'crewProtocols', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.hasCrisis || scan.triggered)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'crewProtocols', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _cpLocalCrisisRe.test(trimmed)) {
             blocked = true;
             if (typeof onSafetyFlag === 'function') {
               try { onSafetyFlag({ toolId: 'crewProtocols', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
             }
           }
-        }
-        if (blocked) {
-          setCP({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Crew Protocols', contentSnippet: trimmed });
+          if (blocked) {
+            setCP({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'Crew Protocols', contentSnippet: trimmed });
+            }
+            announceCP('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.');
           }
-        }
+        } catch (_) {}
         return blocked;
       }
       var VALID_VIEWS = ['home', 'browse', 'crewprompts', 'planner', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
       function goto(v) { setCP({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'home' }); }
-      function printNow() { try { window.print(); } catch (e) {} }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -547,8 +574,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           var targetId = tabs[next].id;
           goto(targetId);
           setTimeout(function() {
-            var el = typeof document !== 'undefined' && document.getElementById('cp-tab-' + targetId);
-            if (el && el.focus) el.focus();
+            try {
+              var el = (typeof document === 'object' && document && typeof document.getElementById === 'function') ? document.getElementById('cp-tab-' + targetId) : null;
+              if (el && typeof el.focus === 'function') el.focus();
+            } catch (_) {}
           }, 0);
         }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Crew Protocols sections',
@@ -570,7 +599,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _cpHC ? '#000000' : (_cpL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _cpBd('#334155'), fontSize: 11, color: _cpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Crew protocols are facilitator tools. Restorative circles and hard-conversation formats require training or a trained adult; do not improvise these.'
+          'Crew protocols are facilitator tools. Restorative circles and hard-conversation formats require training or a trained adult; do not improvise these. For crisis support, call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741, or call 911 in immediate danger.'
         );
       }
 
@@ -620,18 +649,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // BROWSE — protocols, optionally filtered
       // ═══════════════════════════════════════════════════════════
       function renderBrowse() {
-        var protocols = d.filter ? PROTOCOLS.filter(function(p) { return p.category === d.filter; }) : PROTOCOLS;
+        var activeFilter = (typeof d.filter === 'string' && Object.prototype.hasOwnProperty.call(CATEGORIES, d.filter)) ? d.filter : null;
+        var protocols = activeFilter ? PROTOCOLS.filter(function(p) { return p.category === activeFilter; }) : PROTOCOLS;
         var plannedList = Array.isArray(d.planned) ? d.planned : [];
 
         return h('div', null,
           // Filter chips
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            h('button', { type: 'button', onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all', 'aria-pressed': !d.filter,
-              style: { padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + _cpBd(!d.filter ? '#0ea5e9' : '#334155'), background: !d.filter ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'), color: !d.filter ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
+            h('button', { type: 'button', onClick: function() { setCP({ filter: null }); }, 'aria-label': 'Show all', 'aria-pressed': !activeFilter,
+              style: { padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + _cpBd(!activeFilter ? '#0ea5e9' : '#334155'), background: !activeFilter ? (_cpHC ? '#000000' : (_cpL ? '#e0f2fe' : 'rgba(14,165,233,0.18)')) : _cpBg('#1e293b'), color: !activeFilter ? _cpFg('#bae6fd') : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'All (' + PROTOCOLS.length + ')'),
             Object.keys(CATEGORIES).map(function(catId) {
               var cat = CATEGORIES[catId];
               var count = PROTOCOLS.filter(function(p) { return p.category === catId; }).length;
-              var active = d.filter === catId;
+              var active = activeFilter === catId;
               return h('button', { key: catId, type: 'button', onClick: function() { setCP({ filter: catId }); }, 'aria-label': 'Filter by ' + cat.label, 'aria-pressed': active,
                 style: { padding: '8px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 14, border: '1px solid ' + _cpBd(active ? cat.color : '#334155'), background: active ? (_cpHC ? '#000000' : cat.color + '22') : _cpBg('#1e293b'), color: active ? _cpInk(_cpFg(cat.color)) : _cpFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, cat.icon + ' ' + cat.label + ' (' + count + ')');
             })
@@ -755,10 +785,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
         }
         function remove(idx, title) {
           setLabToolData(function(prev) {
-            var prior = (prev && prev.crewProtocols) || defaultState();
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var prior = (base.crewProtocols && typeof base.crewProtocols === 'object' && !Array.isArray(base.crewProtocols)) ? base.crewProtocols : defaultState();
             var cur = Array.isArray(prior.planned) ? prior.planned.slice() : [];
+            if (idx < 0 || idx >= cur.length) return base;
             cur.splice(idx, 1);
-            return Object.assign({}, prev, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
+            return Object.assign({}, base, { crewProtocols: Object.assign({}, prior, { planned: cur, lastUpdated: todayISO() }) });
           });
           if (title) announceCP('Removed ' + title + ' from Crew plan.');
         }
@@ -767,9 +799,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           h('div', { style: { fontSize: 12, color: _cpFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, planned.length + ' protocol' + (planned.length === 1 ? '' : 's') + ' in your plan'),
 
           planned.map(function(entry, i) {
+            if (!entry || typeof entry !== 'object') return null;
             var p = PROTOCOLS.find(function(pr) { return pr.id === entry.protocolId; });
             if (!p) return null;
             var cat = CATEGORIES[p.category];
+            var dateStr = safeStr(entry.date);
+            var notesStr = safeStr(entry.notes);
             return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _cpBg('#0f172a'), borderTop: '1px solid ' + _cpBd('#1e293b'), borderRight: '1px solid ' + _cpBd('#1e293b'), borderBottom: '1px solid ' + _cpBd('#1e293b'), borderLeft: '3px solid ' + _cpBd(cat.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, cat.icon),
@@ -781,19 +816,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
                 h('div', null,
                   h('label', { htmlFor: 'cp-date-' + i, style: { display: 'block', fontSize: 11, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'When'),
-                  h('input', { id: 'cp-date-' + i, type: 'text', value: entry.date || '',
+                  h('input', { id: 'cp-date-' + i, type: 'text', value: dateStr,
                     placeholder: 'e.g. Mon Sep 15',
                     onChange: function(e) { setEntry(i, { date: e.target.value }); },
-                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && entry.date) { e.preventDefault(); setEntry(i, { date: '' }); } },
+                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && dateStr) { e.preventDefault(); setEntry(i, { date: '' }); } },
                     onBlur: function(e) { scanCrewText(e.target.value); },
                     style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 6, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 13 } })
                 ),
                 h('div', null,
                   h('label', { htmlFor: 'cp-notes-' + i, style: { display: 'block', fontSize: 11, color: _cpFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Notes'),
-                  h('input', { id: 'cp-notes-' + i, type: 'text', value: entry.notes || '',
+                  h('input', { id: 'cp-notes-' + i, type: 'text', value: notesStr,
                     placeholder: 'Specific framing, who to focus on, etc.',
                     onChange: function(e) { setEntry(i, { notes: e.target.value }); },
-                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && entry.notes) { e.preventDefault(); setEntry(i, { notes: '' }); } },
+                    onKeyDown: function(e) { if (!isImeComposing(e) && e.key === 'Escape' && notesStr) { e.preventDefault(); setEntry(i, { notes: '' }); } },
                     onBlur: function(e) { scanCrewText(e.target.value); },
                     style: { width: '100%', boxSizing: 'border-box', padding: '10px 12px', minHeight: 44, borderRadius: 6, border: '1px solid ' + _cpBd('#334155'), background: _cpBg('#1e293b'), color: _cpFg('#e2e8f0'), fontSize: 13 } })
                 )
@@ -845,15 +880,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
             planned.length > 0
               ? planned.map(function(entry, i) {
+                  if (!entry || typeof entry !== 'object') return null;
                   var p = PROTOCOLS.find(function(pr) { return pr.id === entry.protocolId; });
                   if (!p) return null;
+                  var pDate = safeStr(entry.date);
+                  var pNotes = safeStr(entry.notes);
                   return h('div', { key: i, style: { marginBottom: 16, pageBreakInside: 'avoid' } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
                       h('strong', { style: { fontSize: 13 } }, p.title),
                       h('span', { style: { fontSize: 10, color: _cpFg('#64748b') } }, '·  ' + p.time + '  ·  ' + p.groupSize)
                     ),
-                    entry.date ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4 } }, 'When: ' + entry.date) : null,
-                    entry.notes ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4, fontStyle: 'italic' } }, 'Notes: ' + entry.notes) : null,
+                    pDate ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4 } }, 'When: ' + pDate) : null,
+                    pNotes ? h('div', { style: { fontSize: 11, color: _cpFg('#475569'), marginBottom: 4, fontStyle: 'italic' } }, 'Notes: ' + pNotes) : null,
                     h('div', { style: { fontSize: 12, color: _cpFg('#0f172a'), marginTop: 4 } }, p.purpose),
                     h('ol', { style: { margin: '6px 0 0', padding: '0 0 0 24px', color: _cpFg('#0f172a'), fontSize: 12, lineHeight: 1.65 } },
                       p.steps.map(function(s, si) { return h('li', { key: si, style: { marginBottom: 2 } }, s); })
@@ -877,7 +915,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('crewProtocols', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('crewProtocols', h, ctx) : null),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _cpFg('#7dd3fc'), fontSize: 16 } }, 'What this tool is'),
@@ -891,7 +929,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _cpFg('#7dd3fc'), fontSize: 16 } }, '📚 Sources and learn more'),
-            (window.SelHub && window.SelHub.renderElPrimer) ? window.SelHub.renderElPrimer(h, { fg: _cpFg, bg: _cpBg, open: true }) : null,
+            (typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderElPrimer === 'function') ? window.SelHub.renderElPrimer(h, { fg: _cpFg, bg: _cpBg, open: true }) : null,
             sourceCard('EL Education', 'eleducation.org', 'The foundational source for Crew as a school structure. Free protocols and guidance.', 'https://eleducation.org/'),
             sourceCard('King Middle School, Portland, Maine', 'king.portlandschools.org', 'One of the first ten EL schools (1992); Crew meets daily. The learning-model page and the grading guide with the three HOWLs.', 'https://king.portlandschools.org/about/learning-models'),
             sourceCard('International Institute for Restorative Practices (IIRP)', 'iirp.edu', 'Standards body for restorative circles and conferences in schools.', 'https://www.iirp.edu/'),
@@ -943,12 +981,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
       return h('div', { className: 'selh-crewprotocols', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Crew Protocols Library' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _cpBand) : null,
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? window.SelHub.renderCrisisResources(h, _cpBand)
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _cpHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_cpHC ? '#ffff00' : '#ef4444'), color: _cpFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
+          : null,
         h('div', { role: 'tabpanel', id: 'cp-panel-' + view, 'aria-labelledby': 'cp-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

@@ -119,7 +119,7 @@ function buildAlloCommandContext(deps) {
     readMediaDescriptions, readingLibraryIndexForBot, readingTheme, repeatReadThisPageItem, resetFontSize, restoreIntentSnapshot,
     resumeReadThisPage, rtpPlaybackState, runAutoFixLoop, runTour, saveType, schoolRewardsPortalUrl,
     selectToolFromCatalog, selectedVoice, setActiveSidebarTab, setActiveView, setAdventureFluencyEnabled, setAdventureTypingPaceEnabled,
-    setAlloVoiceActive, setColorOverlay, setExpandedTools, setGlobalMute, setGradeLevel, setGuidedMode,
+    setAlloVoiceActive, setColorOverlay, setCustomTourSteps, setExpandedTools, setGlobalMute, setGradeLevel, setGuidedMode,
     setGuidedStep, setHasSelectedMode, setHasSelectedRole, setIsAccessibilityLabOpen, setIsAdminHubOpen, setIsAlloHavenOpen,
     setIsAlloStudioOpen, setIsBotVisible, setIsCommunityCatalogOpen, setIsDictationMode, setIsDynamicAssessmentOpen, setIsGateOpen,
     setIsLineFocusMode, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsProjectSettingsOpen, setIsReadingLibraryOpen, setIsResearchSuiteOpen,
@@ -1477,7 +1477,25 @@ function buildAlloCommandContext(deps) {
           return (t('agent.where_found') || 'Found it — spotlighting “') + label + (t('agent.where_found2') || '” on screen.');
         } catch (_) { return null; }
       },
-      startAppTour: () => { try { setTourStep(0); } catch (_) {} setRunTour(true); },
+      startAppTour: () => {
+        try { if (isHelpMode && typeof handleToggleIsHelpMode === 'function') handleToggleIsHelpMode(); } catch (_) {}
+        try { setSpotlightMessage(''); } catch (_) {}
+        try {
+          if (!isTeacherMode && !isIndependentMode && typeof setCustomTourSteps === 'function') {
+            setCustomTourSteps([
+              { helpKey: 'read_this_page_toggle', title: t('header.read_this_page') || 'Read This Page', text: 'Tap **Read This Page** anytime to hear the lesson read aloud with synchronized highlighting so you can follow along at your own pace.' },
+              { helpKey: 'header_settings_text', title: t('header.text_settings') || 'Reading & Display Settings', text: 'Adjust **font size**, **dyslexia-friendly fonts**, **line spacing**, **color themes**, and **reading voice speed** to make text comfortable for your eyes.' },
+              { helpKey: 'fab_toggle', title: t('fab.reading_tools') || 'Reading Tools', text: 'Open the **Reading Tools** button for a Reading Ruler, Line Focus, distraction-free Focus Mode, Study Timer, and Dictation.' },
+              { helpKey: 'socratic_toggle', title: t('socratic.title') || 'Study Helper', text: 'Ask for hints and guiding questions without giving away the answer whenever you feel stuck.' },
+              { helpKey: 'header_student_actions', title: t('header.save_work') || 'Save & Share Your Work', text: 'Save your work file when you finish so you can reopen it later or turn it in to your teacher.' },
+            ]);
+          } else if (typeof setCustomTourSteps === 'function') {
+            setCustomTourSteps(null);
+          }
+        } catch (_) {}
+        try { setTourStep(0); } catch (_) {}
+        setRunTour(true);
+      },
       // S3: parameter-carrying capabilities
       startLessonFlow: (p) => {
         try { setIsBotVisible(true); } catch (_) {}

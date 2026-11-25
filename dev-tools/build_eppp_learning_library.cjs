@@ -22,6 +22,9 @@ const {
 const {
   openEpppMigrationSourceArchive,
 } = require('./eppp_migration_source_archive.cjs');
+const {
+  buildEpppStudyLayers,
+} = require('./learning_library_study_sessions/build_eppp_study_layers.cjs');
 
 const root = path.resolve(__dirname, '..');
 const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep');
@@ -744,6 +747,11 @@ const catalog = {
   glossary: glossaryProjection.records,
   flashcards,
   memoryAids: aidRecords,
+  ...buildEpppStudyLayers({
+    root,
+    chapters: chapterRecords,
+    referenceCatalog,
+  }),
 };
 const referencedReviewArtifacts = resolveReferencedReviewArtifacts({
   catalog,

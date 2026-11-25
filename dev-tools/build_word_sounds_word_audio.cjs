@@ -979,8 +979,26 @@ function createEngine(options) {
     const launch = { headless: true, timeout: 180000, handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false, serviceWorkers: 'block',
       args: launchArgs };
     if (browserName !== 'chromium') launch.channel = browserName;
-    try { context = await chromium.launchPersistentContext(profile, launch); }
-    catch (error) { throw new EngineError('The browser "' + browserName + '" did not start: ' + String(error.message).split('\n')[0]); }
+    const lockBackoffMs = [3000, 5000, 8000, 12000, 15000];
+    let lastLaunchErr = null;
+    for (let attempt = 0; attempt <= lockBackoffMs.length; attempt++) {
+      try {
+        context = await chromium.launchPersistentContext(profile, launch);
+        lastLaunchErr = null;
+        break;
+      } catch (error) {
+        lastLaunchErr = error;
+        const msg = String(error && error.message || error);
+        const isProfileLock = /ProcessSingleton|profile is already in use|SingletonLock|user data directory is already in use/i.test(msg);
+        if (!isProfileLock || attempt === lockBackoffMs.length) break;
+        const waitMs = lockBackoffMs[attempt];
+        log('Browser profile lock still clearing (' + browserName + '); retrying in ' + Math.round(waitMs / 1000) + ' s (' + (attempt + 1) + '/' + lockBackoffMs.length + ').');
+        await new Promise(resolve => setTimeout(resolve, waitMs));
+      }
+    }
+    if (lastLaunchErr) {
+      throw new EngineError('The browser "' + browserName + '" did not start: ' + String(lastLaunchErr.message).split('\n')[0]);
+    }
     // Engine code comes only from this repo; the only outside address is Hugging Face, for the model, by GET.
     // (A request still in flight when the browser closes makes these calls fail: that is not an error.)
     await context.route('**/*', route => {
@@ -1047,7 +1065,25 @@ function createEngine(options) {
   async function stopBrowser() {
     const closing = context;
     context = null; pages = [];
-    if (closing) { try { await withTimeout(closing.close(), 30000, 'Closing the browser'); } catch (_) { /* already gone */ } }
+    if (closing) {
+      let proc = null;
+      try { proc = closing.browser && closing.browser() && closing.browser().process ? closing.browser().process() : null; } catch (_) { proc = null; }
+      let closeTimedOut = false;
+      try {
+        await withTimeout(closing.close(), 25000, 'Closing the browser');
+      } catch (_) {
+        closeTimedOut = true;
+      }
+      if (closeTimedOut && proc && proc.pid) {
+        log('Browser did not exit cleanly after GPU/engine stall; terminating its process tree (PID ' + proc.pid + ').');
+        try {
+          if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(proc.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true });
+          else process.kill(proc.pid, 'SIGKILL');
+        } catch (_) { /* already exited */ }
+      }
+      // Give Windows Chromium time to release SingletonLock and profile file handles before relaunching.
+      await new Promise(resolve => setTimeout(resolve, closeTimedOut ? 3000 : 1500));
+    }
   }
   async function stop() {
     await stopBrowser();

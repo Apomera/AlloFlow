@@ -108,8 +108,13 @@ describe('Throw Lab deep refinement contracts', () => {
   it('exposes replay progress and prevents conflicting mid-replay actions', () => {
     expect(source).toContain("role: 'progressbar'");
     expect(source).toContain("'aria-valuenow': Math.round");
-    expect(source).toContain("'aria-label': d.replayActive ? 'Replay in progress; wait to launch another trial'");
-    expect(source).toContain('disabled: !!d.replayActive');
+    // Round 2 (2026-11-23): the launch button used to be disabled for the whole replay (up to 3.2 s).
+    // It now stays enabled and SKIPS to the result, so a press mid-replay still cannot start a second
+    // throw, and a keyboard user keeps a working control under the focus.
+    // (the button still calls throwPitch; throwPitch itself turns a mid-replay press into a skip)
+    expect(source).toContain("'data-throwlab-launch-state': d.replayActive ? 'skip' : 'ready'");
+    expect(source).toContain("'aria-label': d.replayActive ? (tlInFlight ? 'Skip the replay and show the result' : 'End the replay') : launchActionLabel()");
+    expect(source).toContain('if (d.replayActive) { skipReplayToResult(); return; }');
     expect(source).toContain(`tlAnnounce(__alloT('stem.throwlab.sr_replay_complete', 'Replay complete.'))`);
     expect(source).toContain('Replay shown without animation because reduced motion is enabled.');
   });

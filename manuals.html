@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
     <title>AlloFlow Manuals &amp; Guides</title>
     <meta name="description"
         content="Find AlloFlow's searchable teacher guide, complete user manual, offline reference, evaluation manual, dynamic assessment guide, and district resources in one place.">
@@ -28,6 +29,8 @@
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
     <link rel="icon" type="image/svg+xml" href="allobot.svg">
     <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="promotion-wave3.css">
     <link rel="stylesheet" href="promotion-wave3-shell.css">
@@ -35,7 +38,7 @@
     <link rel="stylesheet" href="manuals.css">
     <script src="site.js" defer></script>
     <script src="manuals.js" defer></script>
-    <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -81,20 +84,32 @@
     <!-- shared mobile nav:start -->
     <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
         <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
-        <a href="./">Home</a>
-        <a href="tools.html">Find a Tool</a>
-        <a href="packets.html">Quick Practice &amp; Checks</a>
-        <a href="features.html">Features</a>
-        <a href="library.html">Lesson Library</a>
-        <a href="remediation.html">Remediation</a>
-        <a href="accessibility_demo.html">Accessibility Lab</a>
-        <a href="whitepaper.html">White Paper</a>
-        <a href="ways-to-use.html">Ways to Use</a>
-        <a href="for-districts.html">For Districts</a>
-        <a href="manuals.html" aria-current="page">Manuals</a>
-        <a href="feedback.html">Feedback</a>
-        <a href="launch.html">Launch AlloFlow</a>
-        <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html" aria-current="page">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
     </div>
     <noscript>
         <style>.mobile-menu-btn{display:none!important}</style>
@@ -171,6 +186,13 @@
                         <p class="manual-card__meta">Short read · Classroom-ready</p>
                         <a href="guide/quick-reference.html">Open Quick Reference &rarr;</a>
                     </article>
+                    <article id="illustrated-tour" class="manual-card" data-manual-card data-audience="educators families multilingual specialists leaders" data-keywords="visual tour slides diagrams overview architecture workflow offline differentiation privacy stem sel">
+                        <span class="manual-card__eyebrow">Visual walkthrough</span>
+                        <h3>26-Slide Illustrated Tour</h3>
+                        <p>Step through 26 visual diagrams showing local-first lesson bundles, leveled reading supports, STEM and SEL labs, privacy boundaries, and deployment options.</p>
+                        <p class="manual-card__meta">Interactive slides · Self-paced</p>
+                        <a href="tour.html">Open the 26-slide visual tour &rarr;</a>
+                    </article>
                 </div>
             </div>
         </section>
@@ -209,12 +231,32 @@
                         <p class="manual-card__meta">Leadership path · 20 minutes</p>
                         <a href="guide/for-school-leaders.html">Open the school leaders chapter &rarr;</a>
                     </article>
-                    <article id="it-guide" class="manual-card" data-manual-card data-audience="leaders" data-keywords="it technology architecture accounts data flow privacy ai backend deployment security">
+                    <article id="it-guide" class="manual-card" data-manual-card data-audience="leaders" data-keywords="it technology architecture accounts data flow privacy ai backend deployment security allowlist domains">
                         <span class="manual-card__eyebrow">IT and privacy</span>
                         <h3>IT Department Guide</h3>
                         <p>Review architecture, accounts, data flow, AI backend choices, deployment responsibilities, and a verify-it-yourself checklist.</p>
                         <p class="manual-card__meta">Technical brief · Verification checklist</p>
-                        <a href="guide/for-your-it-department.html">Open the IT department chapter &rarr;</a>
+                        <div class="manual-card__actions">
+                            <a href="guide/for-your-it-department.html">Open the IT department chapter &rarr;</a>
+                            <a href="for-districts.html#allowlist" class="manual-card__try">IT allowlist domains &rarr;</a>
+                        </div>
+                    </article>
+                    <article id="packets-it-guide" class="manual-card" data-manual-card data-audience="leaders educators" data-keywords="packets quick practice checks it security csp zero ai offline network allowlist browser">
+                        <span class="manual-card__eyebrow">No-AI Packets · IT review</span>
+                        <h3>Packets Guide for School IT</h3>
+                        <p>Verify how Quick Practice &amp; Checks runs in the browser with no AI, no student accounts, strict Content-Security-Policy rules, and offline HTML practice files.</p>
+                        <p class="manual-card__meta">IT verification · No-AI offline path</p>
+                        <div class="manual-card__actions">
+                            <a href="packets-it.html">Open the Packets IT guide &rarr;</a>
+                            <a href="packets-about.html" class="manual-card__try">About Packets &rarr;</a>
+                        </div>
+                    </article>
+                    <article id="principles-rationale" class="manual-card" data-manual-card data-audience="educators families multilingual specialists leaders" data-keywords="principles design rationale student ai off by default privacy transparency open source agpl">
+                        <span class="manual-card__eyebrow">Design &amp; governance</span>
+                        <h3>How AlloFlow Is Designed</h3>
+                        <p>Three tests every feature must pass, five commitments, and why teachers generate first while shared student links keep AI off by default.</p>
+                        <p class="manual-card__meta">Principles &amp; rationale · Public commitments</p>
+                        <a href="principles.html">Read How AlloFlow is designed &rarr;</a>
                     </article>
                     <article id="accessibility-guide" class="manual-card" data-manual-card data-audience="educators families multilingual specialists leaders" data-keywords="accessibility udl learner experience response options representation translation language assistive technology">
                         <span class="manual-card__eyebrow">Accessibility</span>
@@ -356,11 +398,11 @@
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
-                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html" aria-current="page">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
                 <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
-                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
             </nav>
 <!-- shared footer links:end -->
         </div>

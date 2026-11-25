@@ -96,7 +96,8 @@ function _alloReviewIsSession(value) {
 function _alloReviewIsTransaction(value) {
   return !!value && typeof value === 'object'
     && value.kind === _alloReviewTransactionKind
-    && Number.isFinite(value.baseRevision);
+    && Array.isArray(value.commands)
+    && Number.isSafeInteger(value.baseRevision) && value.baseRevision >= 0;
 }
 
 // A verification result is an exact-artifact claim. Preserve the artifact and
@@ -165,6 +166,12 @@ function _alloReviewInvalidateRemediation(value, reason) {
   return Object.freeze(next);
 }
 
+function _alloReviewSafeRevision(val, fallback) {
+  var n = Number.isFinite(val) ? Math.floor(val) : (Number.isFinite(fallback) ? Math.floor(fallback) : 0);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(n, Number.MAX_SAFE_INTEGER - 1);
+}
+
 function _alloReviewLedgerEntry(entry, defaults) {
   var source = entry && typeof entry === 'object' ? entry : {};
   var fallback = defaults || {};
@@ -172,7 +179,7 @@ function _alloReviewLedgerEntry(entry, defaults) {
     id: _alloReviewId('entry', source.id || fallback.id),
     type: _alloReviewStripCtl(source.type || fallback.type || 'note').slice(0, 80),
     at: _alloReviewNow(source.at || fallback.at),
-    revision: Number.isFinite(source.revision) ? source.revision : (Number.isFinite(fallback.revision) ? fallback.revision : 0),
+    revision: _alloReviewSafeRevision(source.revision, fallback.revision),
     transactionId: source.transactionId || fallback.transactionId || null,
   }));
 }
@@ -192,7 +199,7 @@ function _alloReviewCreateSession(input) {
     : (typeof sourceDocument.baselineHtml === 'string' ? sourceDocument.baselineHtml : currentHtml);
   var createdAt = _alloReviewNow(source.createdAt);
   var updatedAt = _alloReviewNow(source.updatedAt || createdAt);
-  var revision = Number.isFinite(source.revision) ? Math.max(0, Math.floor(source.revision)) : 0;
+  var revision = _alloReviewSafeRevision(source.revision, 0);
   var ledger = Array.isArray(source.ledger)
     ? source.ledger.slice(-_alloReviewMaxLedger).map(function (entry) { return _alloReviewLedgerEntry(entry, { revision: revision }); })
     : [];
@@ -244,12 +251,12 @@ function _alloReviewHydrateSession(value, options) {
       } catch (_) { source = null; }
     }
   }
-  var hasOptions = !!(options && Object.keys(options).length);
+  var hasOptions = !!(options && typeof options === 'object' && !Array.isArray(options) && Object.keys(options).length);
   if (!fromString && !hasOptions && _alloReviewIsSession(source)
       && Object.isFrozen(source) && Object.isFrozen(source.document)
-      && source.evidence && typeof source.evidence === 'object'
-      && source.workflow && typeof source.workflow === 'object'
-      && Array.isArray(source.ledger) && source.ledger.length <= _alloReviewMaxLedger
+      && source.evidence && typeof source.evidence === 'object' && Object.isFrozen(source.evidence)
+      && source.workflow && typeof source.workflow === 'object' && Object.isFrozen(source.workflow)
+      && Array.isArray(source.ledger) && Object.isFrozen(source.ledger) && source.ledger.length <= _alloReviewMaxLedger
       && Number.isSafeInteger(source.revision) && source.revision >= 0
       && _alloReviewWorkspaceModes.indexOf(source.workspaceMode) !== -1) {
     return source;
@@ -382,9 +389,11 @@ function _alloReviewCommitTransaction(session, transaction, output) {
       remediationResult: remediationResult,
     })),
   }));
-  var commandEntries = transaction.commands.map(function (command, index) {
+  var commandEntries = transaction.commands.filter(function (command) {
+    return command && typeof command === 'object';
+  }).map(function (command, index) {
     return {
-      type: 'command.' + command.type,
+      type: 'command.' + _alloReviewStripCtl(command.type || 'edit').slice(0, 80),
       command: command,
       commandIndex: index,
       summary: result.summary || transaction.label,
@@ -410,7 +419,7 @@ function _alloReviewApplyCommand(session, command, output) {
 }
 
 function _alloReviewSummarize(value) {
-  var session = _alloReviewIsSession(value) ? value : _alloReviewHydrateSession(value);
+  var session = _alloReviewHydrateSession(value);
   var result = session.document.remediationResult || {};
   return Object.freeze({
     id: session.id,
@@ -428,23 +437,25 @@ function _alloReviewSummarize(value) {
   });
 }
 
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.ReviewDocumentSession = Object.freeze({
-  SESSION_KIND: _alloReviewSessionKind,
-  TRANSACTION_KIND: _alloReviewTransactionKind,
-  SCHEMA_VERSION: 1,
-  WORKSPACE_MODES: _alloReviewWorkspaceModes,
-  EVIDENCE_INVALIDATION_REASON: _alloReviewInvalidationReason,
-  isSession: _alloReviewIsSession,
-  isTransaction: _alloReviewIsTransaction,
-  createSession: _alloReviewCreateSession,
-  hydrateSession: _alloReviewHydrateSession,
-  setWorkspaceMode: _alloReviewSetWorkspaceMode,
-  beginTransaction: _alloReviewBeginTransaction,
-  addCommand: _alloReviewAddCommand,
-  commitTransaction: _alloReviewCommitTransaction,
-  applyCommand: _alloReviewApplyCommand,
-  invalidateVerification: _alloReviewInvalidateVerification,
-  summarize: _alloReviewSummarize,
-});
-window.AlloModules.ReviewDocumentSessionModule = true;
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.ReviewDocumentSession = Object.freeze({
+    SESSION_KIND: _alloReviewSessionKind,
+    TRANSACTION_KIND: _alloReviewTransactionKind,
+    SCHEMA_VERSION: 1,
+    WORKSPACE_MODES: _alloReviewWorkspaceModes,
+    EVIDENCE_INVALIDATION_REASON: _alloReviewInvalidationReason,
+    isSession: _alloReviewIsSession,
+    isTransaction: _alloReviewIsTransaction,
+    createSession: _alloReviewCreateSession,
+    hydrateSession: _alloReviewHydrateSession,
+    setWorkspaceMode: _alloReviewSetWorkspaceMode,
+    beginTransaction: _alloReviewBeginTransaction,
+    addCommand: _alloReviewAddCommand,
+    commitTransaction: _alloReviewCommitTransaction,
+    applyCommand: _alloReviewApplyCommand,
+    invalidateVerification: _alloReviewInvalidateVerification,
+    summarize: _alloReviewSummarize,
+  });
+  window.AlloModules.ReviewDocumentSessionModule = true;
+}

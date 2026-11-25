@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -20,6 +21,7 @@ test('bold rails and readable labels survive themes, heatmaps, rides, and reload
   const button = page.locator('#clab-btnBoldTrack');
   await expect(button).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(state).toMatchObject({ active: true, meshCount: 3, centersValid: true, shaderErrors: 0 });
+  await openCoasterSettings(page);
   for(const theme of ['daylight', 'dusk', 'neon', 'blueprint']){
     await page.locator('#clab-visualTheme').selectOption(theme);
     await expect.poll(state).toMatchObject({ active: true, centersValid: true, shaderErrors: 0 });
@@ -48,6 +50,7 @@ test('bold rails and readable labels survive themes, heatmaps, rides, and reload
   await page.locator('#clab-trackViz').selectOption('track');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('#clab-btnSceneFocus').click();
+  await closeCoasterSettings(page); // "Restore panels" now waits in the bar
   await expect(button).toBeInViewport();
   await page.screenshot({ path: testInfo.outputPath('bold-track-phone.png') });
   await button.click();

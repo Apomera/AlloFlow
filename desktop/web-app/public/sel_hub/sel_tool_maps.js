@@ -11,20 +11,27 @@
 
 (function() {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
 
-  window.SelHub = window.SelHub || {
-    _registry: {}, _order: [],
-    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-    isRegistered: function(id) { return !!this._registry[id]; },
-    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
   };
 
   if (window.SelHub.isRegistered && window.SelHub.isRegistered('maps')) return;
 
-  (function() {
-    if (typeof document === 'undefined' || !document.body) return;
-    if (document.getElementById('allo-live-maps')) return;
+  var _mpLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-maps');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-maps';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -33,10 +40,12 @@
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
 
   (function() {
-    if (typeof document === 'undefined' || !document.head) return;
+    if (typeof document !== 'object' || !document || !document.head || typeof document.getElementById !== 'function') return;
     if (document.getElementById('allo-maps-a11y-css')) return;
     var s = document.createElement('style');
     s.id = 'allo-maps-a11y-css';
@@ -98,7 +107,7 @@
     category: 'self-direction',
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
-      if (!ctx || !ctx.React) return null;
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var _mpT = (ctx && ctx.theme) || {};
       var _mpHC = !!_mpT.isContrast, _mpL = !_mpHC && !_mpT.isDark;
       var _mp_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _mp_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
@@ -128,13 +137,13 @@
       function announceMP(msg) {
         if (!msg) return;
         if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var live = document.getElementById('allo-live-maps');
+        try {
+          var live = ensureLiveRegion();
           if (live) {
             live.textContent = '';
-            setTimeout(function() { live.textContent = msg; }, 20);
+            setTimeout(function() { try { live.textContent = String(msg); } catch (_) {} }, 20);
           }
-        }
+        } catch (_) {}
       }
 
       function safeObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
@@ -157,33 +166,43 @@
       }
       function scanMapsText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || typeof window === 'undefined' || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'maps', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
-        }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && scan.triggered) {
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+        try {
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var chk = sh.safeRehearseCheck(trimmed, { toolId: 'maps', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'maps', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _mpLocalCrisisRe.test(trimmed)) {
             blocked = true;
             if (typeof onSafetyFlag === 'function') {
               try { onSafetyFlag({ toolId: 'maps', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
             }
           }
-        }
-        if (blocked) {
-          setMAPS({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'MAPS', contentSnippet: trimmed });
+          if (blocked) {
+            setMAPS({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'MAPS', contentSnippet: trimmed });
+            }
+            announceMP('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.');
           }
-        }
+        } catch (_) {}
         return blocked;
       }
       var VALID_VIEWS = ['overview', 'edit', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'overview';
-      function goto(v) { setMAPS({ view: v }); }
-      function printNow() { try { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); } catch (e) {} }
+      function goto(v) { setMAPS({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'overview' }); }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       // ── Header ──
       function header() {
@@ -207,10 +226,12 @@
         function selectTab(nextTab) {
           goto(nextTab.id);
           announceMP('Switched to ' + nextTab.label + '.');
-          if (typeof document !== 'undefined') {
+          if (typeof document === 'object' && document && typeof document.getElementById === 'function') {
             setTimeout(function() {
-              var el = document.getElementById('maps-tab-' + nextTab.id);
-              if (el && typeof el.focus === 'function') el.focus();
+              try {
+                var el = document.getElementById('maps-tab-' + nextTab.id);
+                if (el && typeof el.focus === 'function') el.focus();
+              } catch (_) {}
             }, 0);
           }
         }
@@ -239,7 +260,7 @@
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _mpSoftBg('rgba(15,23,42,0.5)', '#f1f5f9'), border: '1px solid ' + _mpBd('#334155'), fontSize: 12, color: _mpFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'Your MAP is yours. You decide who sees it. If a prompt brings up something heavy, that is information; bring it to a counselor or trusted adult. Crisis Text Line: text HOME to 741741.'
+          'Your MAP is yours. You decide who sees it. If a prompt brings up something heavy, that is information; bring it to a counselor or trusted adult. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'
         );
       }
 
@@ -332,10 +353,12 @@
         function selectPrompt(nextPrompt) {
           setMAPS({ activeKey: nextPrompt.key });
           announceMP('Moved to ' + nextPrompt.label + '.');
-          if (typeof document !== 'undefined') {
+          if (typeof document === 'object' && document && typeof document.getElementById === 'function') {
             setTimeout(function() {
-              var el = document.getElementById('maps-prompt-tab-' + nextPrompt.key);
-              if (el && typeof el.focus === 'function') el.focus();
+              try {
+                var el = document.getElementById('maps-prompt-tab-' + nextPrompt.key);
+                if (el && typeof el.focus === 'function') el.focus();
+              } catch (_) {}
             }, 0);
           }
         }
@@ -457,7 +480,7 @@
             // Header
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _mpBd('#4f46e5') } },
               h('div', { style: { fontSize: 12, color: _mpHC ? '#ffff00' : '#475569', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'MAPS · Making Action Plans'),
-              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, nameStr.trim() ? (nameStr + '’s MAP') : 'My MAP'),
+              h('h3', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, nameStr.trim() ? (nameStr + '’s MAP') : 'My MAP'),
               updatedStr ? h('div', { style: { fontSize: 12, color: _mpFg('#475569'), marginTop: 4 } }, 'Updated ' + updatedStr) : null
             ),
 
@@ -490,7 +513,7 @@
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (typeof window !== 'undefined' && window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('maps', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('maps', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _mpBg('#0f172a'), border: '1px solid ' + _mpBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _mpFg('#a5b4fc'), fontSize: 16 } }, 'What MAPS is'),
             h('p', { style: { margin: '0 0 10px', color: _mpFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -558,8 +581,12 @@
       return h('div', { className: 'selh-maps', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'MAPS' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _mpBand) : null,
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? window.SelHub.renderCrisisResources(h, _mpBand)
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _mpHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_mpHC ? '#ffff00' : '#ef4444'), color: _mpFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
+          : null,
         h('div', { role: 'tabpanel', id: 'maps-panel-' + view, 'aria-labelledby': 'maps-tab-' + view }, body)
       );
     }

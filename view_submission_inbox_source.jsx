@@ -5947,6 +5947,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       tabIndex: -1,
       onKeyDown: event => {
         event.stopPropagation();
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           if (!alloSheetBusyRef.current) closeAlloSheetReview();
@@ -6450,8 +6451,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       }
     },
       /*#__PURE__*/React.createElement('style', null,
-        '[data-si-dialog] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}' +
-        '@media (prefers-reduced-motion:reduce){[data-si-dialog] *{transition-duration:0.01ms !important;animation-duration:0.01ms !important}}'
+        '[data-si-dialog] :is(button,a,input,select,textarea,summary){touch-action:manipulation}' +
+        '[data-si-dialog] :is(button,a,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}' +
+        '@media (forced-colors: active){[data-si-dialog] :is(button,a,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid Highlight;outline-offset:2px}}' +
+        '@media (prefers-reduced-motion:reduce){[data-si-dialog],[data-si-dialog] *,[data-si-dialog] *::before,[data-si-dialog] *::after{transition-duration:0.01ms !important;animation-duration:0.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important}}'
       ),
       // Header
       /*#__PURE__*/React.createElement('div', { style: { padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
@@ -6675,7 +6678,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: 'text', 'aria-label': tr('Preset name'),
                   value: presetNameInput,
                   onChange: e => setPresetNameInput(e.target.value),
-                  onKeyDown: e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
+                  onKeyDown: e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
                   placeholder: tr('Name this preset (e.g. "Reading response Ch.3")'),
                   style: { flex: 1, minWidth: 180, minHeight: 44, padding: '8px 10px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.82rem' }
                 }),
@@ -7228,7 +7231,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   value: queueSearch,
                   onChange: e => setQueueSearch(e.target.value),
                   onKeyDown: e => {
-                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === 'Escape' && queueSearch) {
                       e.preventDefault();
                       e.stopPropagation();
@@ -7796,6 +7799,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
             /*#__PURE__*/React.createElement('input', {
               type: 'range', min: 0, max: 100, step: 5, 'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Manual score slider' : 'Anchor score slider'),
+              'aria-valuetext': tr('{score} out of 100', { score: pendingAnchor.score }),
               value: pendingAnchor.score,
               onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value, scoreTouched: true }),
               style: { flex: 1 }
@@ -7842,7 +7846,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           tabIndex: -1,
           onKeyDown: event => {
             event.stopPropagation();
-            if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; event.preventDefault(); finishConfirmation(false); return; }
+            if (event.key === 'Escape') { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; event.preventDefault(); finishConfirmation(false); return; }
             containDialogFocus(event, confirmationDialogRef.current);
           },
           style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.3)', maxWidth: 480, width: '100%', padding: '22px 24px', border: '2px solid #fecaca' }

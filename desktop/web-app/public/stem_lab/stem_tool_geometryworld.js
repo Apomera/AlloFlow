@@ -9005,7 +9005,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
 
       function handleSettingsTabKey(ev, current) {
-        if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         var ids = ['workspace', 'view', 'learning', 'create'], index = ids.indexOf(current), next;
         if (ev.key === 'ArrowRight') next = ids[(index + 1) % ids.length];
         else if (ev.key === 'ArrowLeft') next = ids[(index + ids.length - 1) % ids.length];
@@ -9798,7 +9798,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         engine.camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 200);
         engine.camera.position.set(2, 3, 2);
 
-        var cnv = document.createElement('canvas');
+        var cnv = document.createElement('canvas'); if (cnv.setAttribute) cnv.setAttribute('aria-hidden', 'true');
         // The named, focusable viewport owns the text alternative and keyboard contract.
         cnv.setAttribute('aria-hidden', 'true');
         cnv.style.width = '100%';
@@ -9978,7 +9978,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // and the horizon plane read them: the lesson ground, where students count and measure, never has anything move
         // across it. The same texture at a larger scale breaks up the far meadow's single flat green.
         (function initCloudShadows() {
-          var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+          var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true'); cv.width = cv.height = 256;
           var g = cv.getContext('2d'); g.fillStyle = '#000'; g.fillRect(0, 0, 256, 256);
           var seed = 4051; function rnd() { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; }
           g.globalCompositeOperation = 'lighter';
@@ -10510,7 +10510,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var envSeed = 977; function envRandom() { envSeed = envSeed * 16807 % 2147483647; return (envSeed - 1) / 2147483646; }
             var S = 128;
             for (var fi = 0; fi < 6; fi++) {
-              var fc = document.createElement('canvas'); fc.width = S; fc.height = S;
+              var fc = document.createElement('canvas'); if (fc.setAttribute) fc.setAttribute('aria-hidden', 'true'); fc.width = S; fc.height = S;
               var g2 = fc.getContext('2d');
               if (fi === 2) {
                 g2.fillStyle = zenithDeep; g2.fillRect(0, 0, S, S);
@@ -10795,7 +10795,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // ── Sky atmosphere: sun disc + drifting clouds ──
         (function initSky() {
           // Sun disc — bright sprite in the sky
-          var sunCanvas = document.createElement('canvas'); sunCanvas.width = 128; sunCanvas.height = 128;
+          var sunCanvas = document.createElement('canvas'); if (sunCanvas.setAttribute) sunCanvas.setAttribute('aria-hidden', 'true'); sunCanvas.width = 128; sunCanvas.height = 128;
           var sctx = sunCanvas.getContext('2d');
           var grad = sctx.createRadialGradient(64, 64, 0, 64, 64, 64);
           grad.addColorStop(0, 'rgba(255,250,220,1)');
@@ -10810,7 +10810,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           engine._sunSprite = sunSprite;
           // Moon: opposite the sun, pale, three soft craters; fades in as the sun
           // intensity drops (night, late sunset), so the sky has a light at night.
-          var moonCanvas = document.createElement('canvas'); moonCanvas.width = 128; moonCanvas.height = 128;
+          var moonCanvas = document.createElement('canvas'); if (moonCanvas.setAttribute) moonCanvas.setAttribute('aria-hidden', 'true'); moonCanvas.width = 128; moonCanvas.height = 128;
           var mctx = moonCanvas.getContext('2d');
           var mg = mctx.createRadialGradient(64, 64, 30, 64, 64, 64);
           mg.addColorStop(0, 'rgba(235,240,248,1)'); mg.addColorStop(0.62, 'rgba(226,232,240,1)'); mg.addColorStop(0.72, 'rgba(226,232,240,0.35)'); mg.addColorStop(1, 'rgba(226,232,240,0)');
@@ -10849,7 +10849,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
           }
           function makeCloudSheet(count, scale, alpha, size, height, opacity) {
-            var cnv = document.createElement('canvas'); cnv.width = 512; cnv.height = 512;
+            var cnv = document.createElement('canvas'); if (cnv.setAttribute) cnv.setAttribute('aria-hidden', 'true'); cnv.width = 512; cnv.height = 512;
             var pxc = cnv.getContext('2d');
             pxc.clearRect(0, 0, 512, 512);
             paintCloudSheet(pxc, count, scale, alpha);
@@ -10877,7 +10877,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // 135-155 units out and 26-52 up, just clear of the hills, unfogged, shaded bright on top and grey at the base.
           function seededRandom(seed) { var v = seed % 2147483647; if (v <= 0) v += 2147483646; return function() { v = v * 16807 % 2147483647; return (v - 1) / 2147483646; }; }
           function makeCumulusTexture(seed) {
-            var rnd = seededRandom(seed), cnv = document.createElement('canvas'); cnv.width = 256; cnv.height = 128;
+            var rnd = seededRandom(seed), cnv = document.createElement('canvas'); if (cnv.setAttribute) cnv.setAttribute('aria-hidden', 'true'); cnv.width = 256; cnv.height = 128;
             var g = cnv.getContext('2d'), base = 104, puffs = 7 + Math.floor(rnd() * 4);
             g.clearRect(0, 0, 256, 128);
             for (var p = 0; p < puffs; p++) {
@@ -10945,7 +10945,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             for (var i = 0; i < count; i++) { phase[i] = rnd() * Math.PI * 2; }
             var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             // A soft round glow; bare points draw as squares.
-            var glowCanvas = document.createElement('canvas'); glowCanvas.width = glowCanvas.height = 32;
+            var glowCanvas = document.createElement('canvas'); if (glowCanvas.setAttribute) glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = glowCanvas.height = 32;
             var glowCtx = glowCanvas.getContext('2d'), glowGrad = glowCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
             glowGrad.addColorStop(0, 'rgba(255,255,230,1)'); glowGrad.addColorStop(0.3, 'rgba(236,250,160,0.75)'); glowGrad.addColorStop(1, 'rgba(200,240,120,0)');
             glowCtx.fillStyle = glowGrad; glowCtx.fillRect(0, 0, 32, 32);
@@ -10977,7 +10977,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           (function initButterflies() {
             var rnd = seededRandom(6173), group = new THREE.Group(), flies = [], mats = [];
             [['#f2a33a', '#7a3d12'], ['#f5f0d8', '#8a8a7a'], ['#f2d24c', '#6b5212'], ['#8fb8f0', '#2c4a78']].forEach(function(pair) {
-              var cv = document.createElement('canvas'); cv.width = cv.height = 32;
+              var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true'); cv.width = cv.height = 32;
               var g = cv.getContext('2d'); g.clearRect(0, 0, 32, 32);
               g.fillStyle = pair[0]; g.beginPath(); g.ellipse(14, 11, 12, 9, -0.3, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(12, 24, 8, 6, 0.4, 0, Math.PI * 2); g.fill();
               g.fillStyle = pair[1]; g.beginPath(); g.arc(17, 10, 2.4, 0, Math.PI * 2); g.fill(); g.fillRect(0, 0, 2, 32);
@@ -10999,7 +10999,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // Morning mist: three low sheets of soft haze at sunrise. They clear within a few blocks of the player, so the
           // floor and the blocks being measured stay sharp, and fade out over the other times of day.
           (function initMist() {
-            var rnd = seededRandom(2777), cv = document.createElement('canvas'); cv.width = cv.height = 256;
+            var rnd = seededRandom(2777), cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true'); cv.width = cv.height = 256;
             var g = cv.getContext('2d'); g.clearRect(0, 0, 256, 256);
             for (var i = 0; i < 46; i++) {
               var x = rnd() * 256, y = rnd() * 256, r = 26 + rnd() * 46;
@@ -11159,7 +11159,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeStoneTexture() {
           if (_procTexCache.stone) return _procTexCache.stone;
           var random = surfaceRandom(341), size = 256;
-          var c = document.createElement('canvas'); c.width = c.height = size;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = size;
           var ctx = c.getContext('2d'), image = ctx.createImageData(size, size), pixels = image.data;
           // A honed mineral surface: restrained broad variation with finer grains.
           // Periodic fields tile on every face without painted border seams, and
@@ -11202,7 +11202,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // Turf rather than felt: soft patches of lighter and darker green, then several hundred short blades in four
           // tones, a few catching the light, and a rare clover fleck. Same average green as before (#63875b), so the
           // swatch and the cube atlas fringe still match. Blades wrap at the edges, so tiles join without a seam.
-          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 128;
           var ctx = c.getContext('2d');
           ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 128, 128);
           for (var i = 0; i < 26; i++) {
@@ -11239,7 +11239,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeGrassAtlasTexture() {
           var random = surfaceRandom(811);
           if (_procTexCache.grassAtlas) return _procTexCache.grassAtlas;
-          var c = document.createElement('canvas'); c.width = 64; c.height = 128;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 64; c.height = 128;
           var ctx = c.getContext('2d');
           try { ctx.drawImage(makeGrassTexture().image, 0, 0, 64, 64); } catch (e) { ctx.fillStyle = '#63875b'; ctx.fillRect(0, 0, 64, 64); }
           ctx.fillStyle = '#7a5537'; ctx.fillRect(0, 64, 64, 64);
@@ -11267,7 +11267,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeBumpNormalTexture(kind) {
           var key = kind + 'Normal';
           if (_procTexCache[key]) return _procTexCache[key];
-          var N = 64, hc = document.createElement('canvas'); hc.width = N; hc.height = N;
+          var N = 64, hc = document.createElement('canvas'); if (hc.setAttribute) hc.setAttribute('aria-hidden', 'true'); hc.width = N; hc.height = N;
           var hx = hc.getContext('2d');
           hx.fillStyle = '#808080'; hx.fillRect(0, 0, N, N);
           if (kind === 'water') {
@@ -11289,7 +11289,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           var hd = hx.getImageData(0, 0, N, N).data;
           var H = function(x, y) { x = (x + N) % N; y = (y + N) % N; return hd[(y * N + x) * 4] / 255; };
-          var nc = document.createElement('canvas'); nc.width = N; nc.height = N;
+          var nc = document.createElement('canvas'); if (nc.setAttribute) nc.setAttribute('aria-hidden', 'true'); nc.width = N; nc.height = N;
           var nx2 = nc.getContext('2d'), out = nx2.createImageData(N, N), od = out.data;
           var strength = kind === 'water' ? 2.2 : 3.0;
           for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
@@ -11308,7 +11308,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         // faded per torch by the same flicker that drives its light.
         function makeTorchGlowTexture() {
           if (_procTexCache.torchGlow) return _procTexCache.torchGlow;
-          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 64; c.height = 64;
           var g2 = c.getContext('2d');
           var gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32);
           gr.addColorStop(0, 'rgba(255,220,150,0.85)');
@@ -11323,7 +11323,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeBrickTexture() {
           if (_procTexCache.brick) return _procTexCache.brick;
           var random = surfaceRandom(1237);
-          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = 256;
           var ctx = c.getContext('2d'); ctx.scale(4, 4);
           // Fine warm mortar separates individually fired clay faces. The slim
           // raised lip belongs to the painted material, never the printable mesh.
@@ -11355,7 +11355,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeWoodTexture() {
           if (_procTexCache.wood) return _procTexCache.wood;
           var random = surfaceRandom(1879);
-          var c = document.createElement('canvas'); c.width = c.height = 256;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = 256;
           var ctx = c.getContext('2d'); ctx.scale(4, 4);
           ctx.fillStyle = '#b88d59'; ctx.fillRect(0, 0, 64, 64);
           // Broad growth bands remain visible at a distance; finer fibres resolve
@@ -11396,7 +11396,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeSandTexture() {
           var random = surfaceRandom(2371);
           if (_procTexCache.sand) return _procTexCache.sand;
-          var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 128;
           var ctx = c.getContext('2d'); ctx.scale(2, 2);
           ctx.fillStyle = '#dbc69d'; ctx.fillRect(0, 0, 64, 64);
           // Sand ripple lines (gentle curves)
@@ -11425,7 +11425,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeSurfaceNormalTexture(kind, texture) {
           var key = kind + 'SurfaceNormal';
           if (_procTexCache[key]) return _procTexCache[key];
-          var size = 128, canvas = document.createElement('canvas');
+          var size = 128, canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
           canvas.width = canvas.height = size;
           var context = canvas.getContext('2d');
           context.drawImage(texture.image, 0, 0, size, size);
@@ -11458,7 +11458,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function makeSurfaceRoughnessTexture(kind, texture) {
           var key = kind + 'SurfaceRoughness';
           if (_procTexCache[key]) return _procTexCache[key];
-          var size = 128, canvas = document.createElement('canvas'); canvas.width = canvas.height = size;
+          var size = 128, canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); canvas.width = canvas.height = size;
           var context = canvas.getContext('2d'); context.drawImage(texture.image, 0, 0, size, size);
           var image = context.getImageData(0, 0, size, size), pixels = image.data;
           var base = kind === 'wood' ? 0.79 : kind === 'stone' ? 0.87 : 0.91;
@@ -11478,7 +11478,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var key = kind === 'diamond' ? 'grainDiamond' : 'grainPlain';
           if (_procTexCache[key]) return _procTexCache[key];
           var random = surfaceRandom(kind === 'diamond' ? 913 : 457), size = 128;
-          var c = document.createElement('canvas'); c.width = c.height = size;
+          var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = size;
           var ctx = c.getContext('2d'), image = ctx.createImageData(size, size), px = image.data;
           var coarse = new Float32Array(64); for (var n = 0; n < 64; n++) coarse[n] = random() * 2 - 1;
           function field(x, y) {
@@ -11900,7 +11900,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // and absent in Battery saver. They sway only when motion is allowed.
           var decor = null;
           function decorTexture(kind) {
-            var cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+            var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true'); cv.width = 64; cv.height = 64;
             var g = cv.getContext('2d'), seed = kind === 'flower' ? 4441 : 2203;
             function rnd() { seed = seed * 16807 % 2147483647; return (seed - 1) / 2147483646; }
             g.clearRect(0, 0, 64, 64); g.lineCap = 'round';
@@ -12596,7 +12596,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var contactBlob = null;
           try {
             if (!engine._contactBlobTex) {
-              var blobCanvas = document.createElement('canvas'); blobCanvas.width = blobCanvas.height = 64;
+              var blobCanvas = document.createElement('canvas'); if (blobCanvas.setAttribute) blobCanvas.setAttribute('aria-hidden', 'true'); blobCanvas.width = blobCanvas.height = 64;
               var blobCtx = blobCanvas.getContext('2d'), blobGrad = blobCtx.createRadialGradient(32, 32, 2, 32, 32, 31);
               blobGrad.addColorStop(0, 'rgba(0,0,0,0.62)'); blobGrad.addColorStop(0.55, 'rgba(0,0,0,0.3)'); blobGrad.addColorStop(1, 'rgba(0,0,0,0)');
               blobCtx.fillStyle = blobGrad; blobCtx.fillRect(0, 0, 64, 64);
@@ -12675,7 +12675,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           head.add(eyeR);
 
           // Crisp name and location hierarchy; all guide textures share one palette.
-          var canvas2 = document.createElement('canvas'); canvas2.width = 640; canvas2.height = 160;
+          var canvas2 = document.createElement('canvas'); if (canvas2.setAttribute) canvas2.setAttribute('aria-hidden', 'true'); canvas2.width = 640; canvas2.height = 160;
           var labelTex = new THREE.CanvasTexture(canvas2);
           if (typeof THREE.sRGBEncoding !== 'undefined') labelTex.encoding = THREE.sRGBEncoding;
           var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false }));
@@ -12684,7 +12684,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           engine.scene.add(sprite);
 
           // A keyboard keycap makes the interaction explicit at close range.
-          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 320; promptCanvas.height = 96;
+          var promptCanvas = document.createElement('canvas'); if (promptCanvas.setAttribute) promptCanvas.setAttribute('aria-hidden', 'true'); promptCanvas.width = 320; promptCanvas.height = 96;
           var promptTex = new THREE.CanvasTexture(promptCanvas);
           if (typeof THREE.sRGBEncoding !== 'undefined') promptTex.encoding = THREE.sRGBEncoding;
           var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: promptTex, transparent: true, depthTest: false, opacity: 0 }));
@@ -12695,7 +12695,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // Floating question mark indicator (for NPCs with questions)
           var qMarkSprite = null;
           if (data.question) {
-            var qCanvas = document.createElement('canvas'); qCanvas.width = 128; qCanvas.height = 128;
+            var qCanvas = document.createElement('canvas'); if (qCanvas.setAttribute) qCanvas.setAttribute('aria-hidden', 'true'); qCanvas.width = 128; qCanvas.height = 128;
             var qTex = new THREE.CanvasTexture(qCanvas);
             if (typeof THREE.sRGBEncoding !== 'undefined') qTex.encoding = THREE.sRGBEncoding;
             qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: qTex, transparent: true, depthTest: false }));
@@ -12936,7 +12936,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           engine._showcase.hidden.push([object,object.visible]);object.visible=false;
         }
         function makeDimLabel(text, color) {
-          var THREE=window.THREE,c=document.createElement('canvas'),cx=c.getContext('2d');
+          var THREE=window.THREE,c=document.createElement('canvas'),cx=c.getContext('2d'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
           var fontSize=34,fontFamily='system-ui, -apple-system, Segoe UI, sans-serif';
           cx.font='600 '+fontSize+'px '+fontFamily;
           var measured=cx.measureText(text).width;
@@ -15052,7 +15052,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               npc._ring.scale.setScalar(1.0 + (ambientMotion ? Math.sin(t * 3 + i) * 0.08 : 0));
               // Speech bubble preview — show first ~30 chars of dialogue when medium-close
               if (!npc._speechBubble && npc.data.dialogue) {
-                var sbCanvas = document.createElement('canvas'); sbCanvas.width = 512; sbCanvas.height = 128;
+                var sbCanvas = document.createElement('canvas'); if (sbCanvas.setAttribute) sbCanvas.setAttribute('aria-hidden', 'true'); sbCanvas.width = 512; sbCanvas.height = 128;
                 var sbTex = new THREE.CanvasTexture(sbCanvas);
                 if (typeof THREE.sRGBEncoding !== 'undefined') sbTex.encoding = THREE.sRGBEncoding;
                 npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: sbTex, transparent: true, depthTest: false, opacity: 0 }));
@@ -15192,7 +15192,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               // Drawn at 2x on a dark card with an amber border, and tagged sRGB: the
               // old sprite was bare text on nothing, untagged, and so read as faint
               // pastel over whatever sky happened to be behind it.
-              var canvas2 = document.createElement('canvas'); canvas2.width = 1024; canvas2.height = 512;
+              var canvas2 = document.createElement('canvas'); if (canvas2.setAttribute) canvas2.setAttribute('aria-hidden', 'true'); canvas2.width = 1024; canvas2.height = 512;
               var cx2 = canvas2.getContext('2d');
               cx2.clearRect(0, 0, 1024, 512);
               cx2.fillStyle = 'rgba(15,23,42,0.9)';
@@ -16978,7 +16978,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-build-tools': buildToolsOpen ? 'open' : 'closed', 'data-hud-hidden': hudHidden ? 'true' : 'false', 'data-npc-dialog': showNpcDialog ? (npcPeek ? 'peek' : 'open') : 'closed', 'data-hud-preset': hudPreset, 'data-hud-panel': hudPanel, 'data-ui-text-size': workspacePreferences.uiTextSize, 'data-ui-surface': workspacePreferences.uiSurface, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen && hudPanel !== 'history' ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
-        el('header', { ref: geometryToolbarRef, className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
+        el('header', { ref: geometryToolbarRef, className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), role: 'group', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
@@ -17435,7 +17435,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
             ),
             el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'measurement', title: 'Reflect on this structure', onClick: openGeometryReflection }, toolbarIcon('Sparkles', 'talk'), 'Reflect on this structure'),
-            measureResult.isComplete !== false && el('button', {
+            measureResult.isComplete !== false && el('button', { type: 'button',
               className: 'gw-measure-build-card gw-focusable',
               onClick: function() {
                 var card = generateManipulativeCard(measureResult, currentLesson.title);
@@ -17645,7 +17645,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             el('option', { value: 'sw' }, '\uD83C\uDDF0\uD83C\uDDEA Kiswahili')
           )),
           // Help toggle
-          el('button', {
+          el('button', { type: 'button',
             onClick: function() { upd({ showHelp: !showHelp, showGameSettings: false }); },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
@@ -17665,7 +17665,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           el('div', { className: 'gw-settings-panel', role: 'tabpanel', id: 'gw-settings-panel-create', 'aria-labelledby': 'gw-settings-tab-create', hidden: settingsTab !== 'create', tabIndex: 0 },
           el('h3', { className: 'gw-settings-section-title' }, 'Create, share & export'),
           // Save/Export world
-          engine && el('button', {
+          engine && el('button', { type: 'button',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
@@ -17689,7 +17689,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCBE Save'),
           // 3D Print Export (STL)
-          engine && el('button', {
+          engine && el('button', { type: 'button',
             onClick: function() {
               var printBuilder = window.StemLab && window.StemLab.geometryWorldBuilderPure;
               if (printBuilder && printBuilder.openSelectedBuildInPrintLab) { printBuilder.openSelectedBuildInPrintLab(ctx); return; }
@@ -17797,7 +17797,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#f472b6', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83E\uDE78 3D Print'),
           // Screenshot capture
-          engine && el('button', {
+          engine && el('button', { type: 'button',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng || !eng.renderer || !eng.scene || !eng.camera) return;
@@ -17833,15 +17833,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }),
           worldActive && el('button',{type:'button',onClick:function(){var eng=window[engineKey];if(eng && eng.openConceptSnapshots)eng.openConceptSnapshots();else if(addToast)addToast('Concept snapshots are still loading. Try again in a moment.','info');},title:__alloT('stem.geometryworld.save_a_moment_in_the_world_with_observations','Save a moment in the world with observations and mathematical reasoning'),style:{background:'var(--allo-stem-panel, #1e293b)',border:'1px solid var(--allo-stem-border, #334155)',borderRadius:'6px',padding:'4px 10px',color:'#60a5fa',fontSize:'11px',cursor:'pointer',fontWeight:600}},'Concept snapshots'),
           // Creator Mode toggle
-          el('button', {
+          el('button', { type: 'button',
             onClick: function() { upd({ creatorMode: !creatorMode, showGameSettings: false }); if (!creatorMode && addToast) addToast('\uD83C\uDFA8 Creator Mode ON \u2014 build a lesson for your classmates!', 'info'); },
             style: { background: creatorMode ? '#7c3aed' : '#1e293b', border: '1px solid ' + (creatorMode ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: creatorMode ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
           }, creatorMode ? '\uD83C\uDFA8 Creating...' : '\uD83C\uDFA8 Create'),
           // Load World (import JSON)
-          el('button', {
+          el('button', { type: 'button',
             onClick: function() {
               var input = document.createElement('input');
-              input.type = 'file'; input.accept = '.json';
+              input.type = 'file'; input.accept = '.json'; input.setAttribute('aria-label', __alloT('stem.geometryworld.import_json', 'Import Geometry World JSON file'));
               input.onchange = function(ev) {
                 var file = ev.target.files && ev.target.files[0];
                 if (!file) return;
@@ -17923,7 +17923,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCC2 Load'),
           // Research data export (session analytics as CSV)
-          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
+          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', { type: 'button',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
@@ -17940,7 +17940,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#22d3ee', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCA Data'),
           // MTSS Progress Report export
-          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', {
+          engine && engine.sessionLog && engine.sessionLog.length > 0 && el('button', { type: 'button',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng || !eng.generateProgressReport) return;
@@ -17951,7 +17951,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCCB MTSS'),
           // ── Peer Worlds: Share button ──
-          sessionCode && engine && el('button', {
+          sessionCode && engine && el('button', { type: 'button',
             onClick: function() {
               var eng = window[engineKey];
               if (!eng) return;
@@ -17979,13 +17979,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 10px', color: '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83C\uDF10 Share'),
           // ── Peer Worlds: Browse class library ──
-          sessionCode && el('button', {
+          sessionCode && el('button', { type: 'button',
             onClick: function() { upd('showGameSettings', false); loadPeerWorlds(); },
             title: __alloT('stem.geometryworld.browse_worlds_shared_by_classmates', 'Browse worlds shared by classmates'),
             style: { background: showPeerWorlds ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showPeerWorlds ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showPeerWorlds ? '#fff' : '#c084fc', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
           }, '\uD83D\uDCDA Class Worlds'),
           // ── Collaborative Mode toggle ──
-          sessionCode && el('button', {
+          sessionCode && el('button', { type: 'button',
             onClick: function() {
               if (collabMode) {
                 // Stop collab mode
@@ -18002,7 +18002,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             style: { background: collabMode ? '#059669' : '#1e293b', border: '1px solid ' + (collabMode ? '#34d399' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: collabMode ? '#fff' : '#34d399', fontSize: '11px', cursor: 'pointer', fontWeight: 700, animation: collabMode ? 'none' : 'none' }
           }, collabMode ? '\uD83D\uDC65 Building...' : '\uD83D\uDC65 Collab'),
           // ── Teacher Command Center toggle ──
-          isTeacher && sessionCode && el('button', {
+          isTeacher && sessionCode && el('button', { type: 'button',
             onClick: function() { upd('showGameSettings', false); toggleTeacherView(); },
             title: showTeacherView ? 'Close teacher dashboard' : 'Open real-time student progress dashboard',
             style: { background: showTeacherView ? '#dc2626' : '#1e293b', border: '1px solid ' + (showTeacherView ? '#f87171' : '#334155'), borderRadius: '6px', padding: '4px 10px', color: showTeacherView ? '#fff' : '#f87171', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
@@ -18013,7 +18013,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             el('input', {
               type: 'text', value: aiPrompt, 'aria-label': __alloT('stem.geometryworld.describe_a_geometry_lesson_topic_for_a', 'Describe a geometry lesson topic for AI generation'),
               onChange: function(ev) { upd('aiPrompt', ev.target.value); },
-              onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') generateWorld(); },
+              onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') generateWorld(); },
               placeholder: __alloT('stem.geometryworld.describe_a_lesson_topic', 'Describe a lesson topic...'),
               style: { width: '150px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
             }),
@@ -18039,7 +18039,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               el('p', { id: 'gw-lesson-depth-help', style: { margin: 0, fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
                 aiDepthProfile.detail + ' Longer lessons take more time to generate. Time estimates are for students; generation includes planning and checks.')
             ),
-            el('button', {
+            el('button', { type: 'button',
               onClick: generateWorld, disabled: aiGenerating || !aiPrompt.trim(),
               title: 'Plan and generate a connected lesson with ' + aiDepthProfile.activities + ' activities',
               style: { background: aiGenerating ? '#334155' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 12px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, minHeight: '44px' }
@@ -18051,7 +18051,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             d.aiGenerationStatus && el('p', { role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%', fontSize: '11px', margin: '2px 0 6px', lineHeight: 1.5 } }, d.aiGenerationStatus),
             d.pendingGeneratedLesson && el('button', { type: 'button', 'data-gw-pending-generated': 'true', onClick: function() { finishGeneration(d.pendingGeneratedLesson); }, style: { minHeight: '44px', padding: '8px 12px', border: '1px solid #7ba998', borderRadius: '6px', background: '#196754', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, toolbarIcon('Play', 'talk'), 'Open ready lesson: ' + (d.pendingGeneratedLesson.title || 'Generated lesson')),
             // Surprise Me (grade-aware topics)
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() {
                 var gradeTopics = {
                   '3': ['counting unit cubes in a toy box', 'how many blocks fill a sandbox?', 'building a doghouse with blocks', 'comparing sizes of gift boxes', 'stacking blocks to make towers of different heights'],
@@ -18068,7 +18068,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
             }, '\uD83C\uDFB2'),
             // My Lessons library button
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() { upd({ showMyLessons: !showMyLessons, showGameSettings: false }); },
               title: __alloT('stem.geometryworld.browse_saved_ai_generated_lessons', 'Browse saved AI-generated lessons'),
               style: { background: showMyLessons ? '#7c3aed' : '#1e293b', border: '1px solid ' + (showMyLessons ? '#a78bfa' : '#334155'), borderRadius: '6px', padding: '4px 8px', color: showMyLessons ? '#fff' : '#a78bfa', fontSize: '11px', cursor: 'pointer', fontWeight: 700 }
@@ -18079,15 +18079,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             el('input', {
               type: 'text', value: aiRefinePrompt, 'aria-label': __alloT('stem.geometryworld.refine_the_generated_lesson', 'Refine the generated lesson'),
               onChange: function(ev) { upd('aiRefinePrompt', ev.target.value); },
-              onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') refineLesson(); },
+              onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') refineLesson(); },
               placeholder: __alloT('stem.geometryworld.refine_make_it_harder_add_more_npcs_ch', 'Refine: "Make it harder" / "Add more NPCs" / "Change theme to ocean"...'),
               style: { flex: 1, minWidth: '180px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #7c3aed33', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '10px', fontFamily: 'inherit' }
             }),
-            el('button', {
+            el('button', { type: 'button',
               onClick: refineLesson, disabled: !aiRefinePrompt.trim(),
               style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 }
             }, '\uD83D\uDD04 Refine'),
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() { upd({ showLessonEditor: !showLessonEditor, showGameSettings: false }); },
               title: __alloT('stem.geometryworld.edit_the_raw_lesson_json_manually', 'Edit the raw lesson JSON manually'),
               style: { background: showLessonEditor ? '#f59e0b' : '#1e293b', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: showLessonEditor ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
@@ -18377,7 +18377,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             spellCheck: false
           }),
           el('div', { style: { display: 'flex', gap: '6px', marginTop: '6px' } },
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() {
                 try {
                   var lesson = _gwSafeJsonParse(lessonEditorJson);
@@ -18408,7 +18408,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               },
               style: { flex: 1, background: '#22c55e', color: '#000', border: 'none', borderRadius: '6px', padding: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, '\u2705 Apply & Save'),
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() {
                 try {
                   var formatted = JSON.stringify(_gwSafeJsonParse(lessonEditorJson), null, 2);
@@ -18445,7 +18445,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 el('input', { type: 'number', min: 1, max: 5, value: creatorNpcCorrect + 1, onChange: function(ev) { upd('creatorNpcCorrect', Math.max(0, parseInt(ev.target.value, 10) - 1)); }, style: { width: '40px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '5px', padding: '3px 6px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', textAlign: 'center' } })
               )
             ),
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() {
                 if (!creatorNpcName.trim() || !creatorNpcDialogue.trim()) { if (addToast) addToast('NPC needs a name and dialogue!', 'error'); return; }
                 var eng = window[engineKey];
@@ -18756,7 +18756,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         )),
         // ── Coordinate & Compass HUD (bottom-left) ──
         workspacePreferences.showCoordinates && engine && engine.camera && el('details', { className: 'gw-coordinate-hud', open: typeof window === 'undefined' || (window.innerWidth > 800 && window.innerHeight > 650) },
-          el('summary', { className: 'gw-coordinate-summary', onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); } }, 'Position'),
+          el('summary', { className: 'gw-coordinate-summary', onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); } }, 'Position'),
           renderCoordinateReadout(el, engine.camera.position, 'camera'),
           (function() {
             // Compass: derive facing direction from camera
@@ -18779,7 +18779,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // navigate by coordinate.
           el('button', {
             type: 'button', className: 'gw-focusable gw-coordinate-speech-toggle',
-            onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); },
+            onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); },
             onClick: function() {
               var eng = window[engineKey]; if (!eng || !eng.camera) return;
               eng._coordAnnounce = !eng._coordAnnounce;
@@ -18992,7 +18992,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   'aria-selected': notebookView === view.key, 'aria-controls': 'gw-notebook-view-' + view.key, tabIndex: notebookView === view.key ? 0 : -1,
                   onClick: function() { setNotebookView(view.key); },
                   onKeyDown: function(ev) {
-                    if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+                    if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                     var keys = ['records', 'compare', 'practice'];
                     var index = keys.indexOf(view.key);
                     var next = ev.key === 'ArrowRight' ? keys[(index + 1) % keys.length] : ev.key === 'ArrowLeft' ? keys[(index + keys.length - 1) % keys.length] : ev.key === 'Home' ? keys[0] : ev.key === 'End' ? keys[keys.length - 1] : null;
@@ -19652,7 +19652,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               style: { display: 'block', width: '100%', textAlign: 'start', background: 'transparent', border: 'none', fontFamily: 'inherit', margin: '0 0 10px', padding: '0 0 0 8px', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5, fontStyle: 'italic', borderLeft: '3px solid #fbbf24', cursor: 'pointer' }
             }, '\uD83D\uDD0A ' + translation.dialogue),
             homeLang !== 'en' && !translation && npcIsTranslating && el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px' } }, '\u23F3 Translating...'),
-            homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', {
+            homeLang !== 'en' && !translation && !npcIsTranslating && ctx && ctx.aiHintsEnabled && callGemini && el('button', { type: 'button',
               onClick: doTranslate,
               title: __alloT('stem.geometryworld.translate_this_dialogue_with_ai_uses_a', 'Translate this dialogue with AI (uses an AI request)'),
               style: { fontSize: '11px', color: '#fbbf24', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', padding: '4px 10px', marginBottom: '10px', cursor: 'pointer', fontWeight: 700 }
@@ -19843,7 +19843,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 // enabled AI hints AND the student has missed this NPC >=2 times.
                 // ctx.getHint self-gates (off => zero traffic), enforces the
                 // attempt floor + one-per-question cap + reveal-check.
-                ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', {
+                ctx && ctx.aiHintsEnabled && ((d.npcWrongCount || {})[dialogNpcIdx] || 0) >= 2 && el('button', { type: 'button',
                   key: 'aihint',
                   'aria-label': __alloT('stem.geometryworld.ask_the_ai_for_a_hint', 'Ask the AI for a hint'),
                   onClick: function() {
@@ -19879,7 +19879,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   type: 'text', value: npcChatInput,
                   onChange: function(ev) { upd('npcChatInput', ev.target.value); },
                   onKeyDown: function(ev) {
-                    if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+                    if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                     if (ev.key === 'Enter' && npcChatInput.trim() && !npcChatLoading && callGemini) {
                       var userMsg = npcChatInput.trim();
                       if (_gwCrisisCheck(userMsg)) {
@@ -19925,7 +19925,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   placeholder: npcChatLoading ? 'Thinking...' : 'Ask a question...',
                   style: { flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '4px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit' }
                 }),
-                el('button', {
+                el('button', { type: 'button',
                   onClick: function() {
                     // Trigger same as Enter key
                     if (!npcChatInput.trim() || npcChatLoading || !callGemini) return;
@@ -19982,16 +19982,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           el('div', { style: { fontSize: '14px', fontWeight: 700, color: '#c4b5fd', marginBottom: '8px', letterSpacing: '0.5px' } }, 'Growth Mindset Moment'),
           el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: '16px' } }, growthNudgeMsg),
           el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() { upd('showGrowthNudge', false); },
               style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, 'I\u2019ve got this! \uD83D\uDCAA'),
-            el('button', {
+            el('button', { type: 'button',
               onClick: function() { upd({ showGrowthNudge: false, growthNudgeOptOut: true }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.geometryworld.sr_growth_nudge_off', 'Growth mindset moments turned off for this world.')); },
               title: __alloT('stem.geometryworld.growth_nudge_off_title', 'Stop showing Growth Mindset Moments in this world'),
               style: { background: 'transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', border: '1px solid var(--allo-stem-border, #64748b)', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.geometryworld.growth_nudge_off', 'Don’t show these again')),
-            callGemini && el('button', {
+            callGemini && el('button', { type: 'button',
               onClick: function() {
                 upd({ showGrowthNudge: false, showNpcDialog: false });
                 var eng = window[engineKey];
@@ -20031,7 +20031,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
-              el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#c4b5fd', fontSize: '12px', cursor: 'pointer', fontWeight: 700 } }, '\u21BB Refresh'),
+              el('button', { type: 'button', onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#c4b5fd', fontSize: '12px', cursor: 'pointer', fontWeight: 700 } }, '\u21BB Refresh'),
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
@@ -20046,7 +20046,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     key: wi,
                     role: 'button', tabIndex: 0, className: 'gw-focusable', 'data-gw-peer-world': String(wi),
                     style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', cursor: 'pointer', transition: 'border-color 0.2s' },
-                    onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target !== ev.currentTarget || (ev.key !== 'Enter' && ev.key !== ' ')) return; ev.preventDefault(); ev.currentTarget.click(); },
+                    onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target !== ev.currentTarget || (ev.key !== 'Enter' && ev.key !== ' ')) return; ev.preventDefault(); ev.currentTarget.click(); },
                     onClick: function() {
                       var eng = window[engineKey];
                       if (!eng) return;
@@ -20432,8 +20432,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }),
                 el('div', { className: 'gw-transform-actions' },
                   /* Replaced below with labeled, keyboard-native actions.
-                  el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
-                  el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
+                  el('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
+                  el('button', { type: 'button', onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
                   */
                   el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_add_current_transform_to_observation_log', 'Add current transform to observation log'), title: __alloT('stem.geometryworld.add_to_observation_log','Add to observation log'), onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); } }, '\uD83D\uDCCB Add to log'),
                   el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_reset_transform_discovery', 'Reset transform discovery'), title: __alloT('stem.geometryworld.reset_transform','Reset transform'), onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); } }, '\u21BA Reset')

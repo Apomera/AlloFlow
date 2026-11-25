@@ -45,7 +45,9 @@ describe('Sidebar Panels WCAG 2.2 controls', () => {
     expect(line, 'the resource-mode control should still exist').toBeTruthy();
     expect(line).toMatch(/aria-label=\{label\('resource_setup'/);
     expect(line).toMatch(/value=\{resourceMode\}/);
-    expect(line).toMatch(/disabled=\{locked\(\)/);
+    // The lock is now shared with the resource editors and also covers non-teachers.
+    expect(line).toMatch(/disabled=\{resourceConfigLocked \|\| /);
+    expect(adventureSettings).toContain('const resourceConfigLocked = !props.isTeacherMode || locked();');
   });
 
   it('associates the upload and disclosure relationships', () => {

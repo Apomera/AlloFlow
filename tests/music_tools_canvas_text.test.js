@@ -97,9 +97,12 @@ describe('canvas text — Echo Navigator', () => {
   it('shows the environment name the picker shows, not the raw id', () => {
     const source = read('echotrainer');
     // The HUD printed envType ('simple_room'); it now resolves the same key the
-    // environment picker uses.
+    // environment picker uses. Its English fallback was still the raw id, so an
+    // unregistered key showed "simple_room": the fallback is now the place's name
+    // (2026-11-23 leftovers round).
     const at = source.indexOf('stem.echotrainer.hud_line');
     const block = source.slice(at, at + 700);
-    expect(block).toMatch(/env: t\('stem\.echotrainer\.env_' \+ envType \+ '_name', envType\)/);
+    expect(block).toMatch(/env: t\('stem\.echotrainer\.env_' \+ envType \+ '_name', EchoModel\.envName\(envType\)\)/);
+    expect(block).not.toMatch(/'_name', envType\)/);
   });
 });

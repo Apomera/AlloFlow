@@ -17,7 +17,7 @@ function AllobotSearchSettings({ t }) {
     } catch (_) { return {}; }
   };
   const managed = typeof window !== 'undefined' ? window.ALLOFLOW_MANAGED_AI_POLICY : null;
-  const managedSearchOff = managed != null && (managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
+  const managedSearchOff = managed != null && (managed.enabled === false || managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
   const [key, setKey] = React.useState(() => isLocked() ? '' : String(read().serperApiKey || ''));
   const [hasSavedKey, setHasSavedKey] = React.useState(() => !isLocked() && Boolean(String(read().serperApiKey || '').trim()));
   const [enabled, setEnabled] = React.useState(() => {

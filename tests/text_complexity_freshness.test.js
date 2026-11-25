@@ -4,20 +4,33 @@ import { loadAlloModule } from './setup.js';
 
 let Context;
 
-const extractFunction = (path, startMarker, endMarker, name) => {
+// The handlers now call their module's own hardening helpers (safe JSON parse,
+// prompt fencing, AI-usable gate), so each slice carries the real helper
+// declarations from the same file: `helpers` lists [startMarker, endMarker] pairs.
+const extractFunction = (path, startMarker, endMarker, name, helpers = []) => {
   const source = readFileSync(path, 'utf8');
   const start = source.indexOf(startMarker);
   const end = source.indexOf(endMarker, start);
   if (start < 0 || end <= start) throw new Error(`Unable to extract ${name} from ${path}`);
+  const prelude = helpers.map(([from, to]) => {
+    const a = source.indexOf(from);
+    const b = source.indexOf(to, a + 1);
+    if (a < 0 || b <= a) throw new Error(`Unable to extract helpers ${from} from ${path}`);
+    return source.slice(a, b);
+  }).join('\n');
   // eslint-disable-next-line no-new-func
-  return new Function(`${source.slice(start, end)}\nreturn ${name};`)();
+  return new Function(`${prelude}\n${source.slice(start, end)}\nreturn ${name};`)();
 };
 
 const makeCheckLevel = () => extractFunction(
   'phase_n_misc_helpers_source.jsx',
   'const handleCheckLevel = async (deps) => {',
-  '\nwindow.AlloModules = window.AlloModules || {};',
+  "\nif (typeof window !== 'undefined') {\n  window.AlloModules = window.AlloModules || {};",
   'handleCheckLevel',
+  [
+    ['const _phaseNBlockedKey = ', '\nconst addGlossaryTerm = '],
+    ['const _phaseNFenceUntrusted = ', '\nconst handleMasteryGrading = '],
+  ],
 );
 
 const makeComplexityAdjustment = () => extractFunction(
@@ -25,6 +38,8 @@ const makeComplexityAdjustment = () => extractFunction(
   'const handleComplexityAdjustment = async (deps) => {',
   '\nconst handlePlanFullPack = async',
   'handleComplexityAdjustment',
+  // Everything above the handler is plain (JSX-free) helper code it may call.
+  [['// generation_helpers_source.jsx', 'const handleComplexityAdjustment = async (deps) => {']],
 );
 
 beforeAll(() => {
@@ -95,12 +110,17 @@ describe('artifact-owned Check Level context', () => {
       alloBotRef: { current: null },
     });
 
-    expect(prompts[0]).toContain('Target Level: 5th Grade');
-    expect(prompts[0]).toContain('Text Language: Spanish');
+    // Values are fenced as untrusted data now.
+    expect(prompts[0]).toContain('Target Level: <UNTRUSTED_TARGET_GRADE>\n5th Grade\n</UNTRUSTED_TARGET_GRADE>');
+    expect(prompts[0]).toContain('Text Language: <UNTRUSTED_LANGUAGE>\nSpanish\n</UNTRUSTED_LANGUAGE>');
     expect(prompts[0]).toContain('ARTIFACT STANDARD');
     expect(prompts[0]).not.toContain('AMBIENT STANDARD');
     expect(calculateReadability).not.toHaveBeenCalled();
-    const saved = setGeneratedContent.mock.calls[0][0];
+    const commit = setGeneratedContent.mock.calls[0][0];
+    // Committed as a functional update that only replaces the same artifact.
+    expect(typeof commit).toBe('function');
+    expect(commit({ id: 'some-other-text' })).toEqual({ id: 'some-other-text' });
+    const saved = commit(generatedContent);
     expect(saved.localStats).toBeUndefined();
     expect(saved.levelCheck.measurementStatus).toBe('not-evaluated');
     expect(saved.levelCheck.contentFingerprint).toBe(Context.fingerprintText(generatedContent.data));
@@ -147,7 +167,11 @@ describe('artifact-owned Check Level context', () => {
       alloBotRef: { current: null },
     });
 
-    const saved = setGeneratedContent.mock.calls[0][0];
+    const commit = setGeneratedContent.mock.calls[0][0];
+    // Committed as a functional update that only replaces the same artifact.
+    expect(typeof commit).toBe('function');
+    expect(commit({ id: 'some-other-text' })).toEqual({ id: 'some-other-text' });
+    const saved = commit(generatedContent);
     expect(saved.localStats).toEqual(stats);
     expect(saved.targetGradeLevel).toBe('8th Grade');
     expect(saved.instructionalText.complexity).toMatchObject({
@@ -164,7 +188,7 @@ describe('artifact-owned Check Level context', () => {
     const callGemini = vi.fn().mockResolvedValueOnce('{"estimatedLevel":"4th Grade"}').mockResolvedValueOnce('{"confirmedLevel":"5th Grade","rubric":{"conceptDensity":{"score":1,"reason":"Several ideas."}}}');
     const setGeneratedContent = vi.fn(), setHistory = vi.fn(), calculateReadability = vi.fn();
     await makeCheckLevel()({ generatedContent: source, gradeLevel: '1st Grade', leveledTextLanguage: 'English', callGemini, cleanJson: x => x, calculateReadability, setGeneratedContent, setHistory, setIsCheckingLevel: vi.fn(), setError: vi.fn(), addToast: vi.fn(), t: key => key, warnLog: vi.fn(), alloBotRef: { current: null } });
-    expect(callGemini.mock.calls[0][0]).toContain('Target Level: 5th Grade');
+    expect(callGemini.mock.calls[0][0]).toContain('Target Level: <UNTRUSTED_TARGET_GRADE>\n5th Grade\n</UNTRUSTED_TARGET_GRADE>');
     expect(calculateReadability).not.toHaveBeenCalled();
     const apply = setGeneratedContent.mock.calls[0][0];
     expect(apply(source).levelCheck.rubric.conceptDensity.score).toBe(1);
@@ -319,8 +343,12 @@ describe('selection revision artifact context', () => {
         standardsContext: { promptText: 'ARTIFACT STANDARD: explain energy conversion.' },
       },
     };
+    // Revising passage text is teacher-only now, and the engine's toasts use the
+    // host's global window.__alloT (the host sets it on every render).
+    if (typeof window.__alloT !== 'function') window.__alloT = (key, fallback) => fallback || key;
     const state = {
       generatedContent,
+      isTeacherMode: true,
       selectionMenu: { text: generatedContent.data, x: 10, y: 20 },
       gradeLevel: '2nd Grade',
       leveledTextLanguage: 'Spanish',

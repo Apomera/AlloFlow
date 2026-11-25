@@ -41,12 +41,26 @@
     <details class="top-menu">
       <summary>Switch maker</summary>
       <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
         <a href="packets-make.html" aria-current="page">Word Sounds</a>
         <a href="packets-vocab.html">Vocabulary</a>
         <a href="packets-math-practice.html">Math Fact Practice</a>
         <a href="packets-check.html">Math Check</a>
         <a href="packets-read-along.html">Read-Along</a>
         <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
         <a href="packets-present-export.html">Present &amp; print</a>
         <a href="packets-results.html">Add up results</a>
       </nav>
@@ -113,7 +127,7 @@
     <noscript><p class="note note-problem">This page needs JavaScript to put the file together. Nothing is sent anywhere.</p></noscript>
 
     <div id="loading" class="sheet">
-      <p class="count-line" role="status">Getting the word lists, about 3 MB.</p>
+      <p class="count-line" role="status">Getting the word lists, about 4 MB.</p>
       <p class="hint">If this line is still here after a minute, load the page again.</p>
     </div>
 
@@ -223,12 +237,6 @@
             <p id="not-offered-text" class="hint" hidden></p>
           </details>
         </div>
-        <fieldset class="block pill-group" id="shape-field">
-          <legend>Sound patterns</legend>
-          <span class="hint" id="shape-hint">Leave unchecked for any pattern, or check one or more. C is a consonant sound. V is a vowel sound. CVC is three sounds, like cat.</span>
-          <p class="pill-meta" id="shape-meta" hidden><span id="shape-count" role="status"></span> <button type="button" class="btn btn-text btn-small" id="shape-clear" aria-label="Clear selected sound patterns">Clear</button></p>
-          <div class="pill-list" id="f-shapes"></div>
-        </fieldset>
       </div>
 
       <div id="panel-own" hidden>
@@ -284,7 +292,7 @@
         <summary><span class="more-name">More options</span><span class="more-now" id="more-2-now"></span></summary>
         <div class="more-body">
           <div id="more-2-pick">
-            <p class="hint" id="more-2-hint">Narrow the words to one sound.</p>
+            <p class="hint" id="more-2-hint">Narrow the words to one sound, or to one or more sound patterns.</p>
             <div class="fields">
               <div class="field">
                 <label for="f-sound">A sound to practice</label>
@@ -300,6 +308,13 @@
                 </select>
               </div>
             </div>
+            <!-- 2026-11-23: the sound patterns are here, not above the words. The box's top line says which are chosen (drawMore2). -->
+            <fieldset class="block pill-group" id="shape-field">
+              <legend>Sound patterns</legend>
+              <span class="hint" id="shape-hint">Leave unchecked for any pattern, or check one or more. C is a consonant sound. V is a vowel sound. CVC is three sounds, like cat.</span>
+              <p class="pill-meta" id="shape-meta" hidden><span id="shape-count" role="status"></span> <button type="button" class="btn btn-text btn-small" id="shape-clear" aria-label="Clear selected sound patterns">Clear</button></p>
+              <div class="pill-list" id="f-shapes"></div>
+            </fieldset>
             <details class="why" id="stage-other" hidden>
               <summary>Other curricula</summary>
               <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the levels of other curricula in the list</span></label>
@@ -446,6 +461,18 @@
         <p class="after-phone">If the file does not open on a device (a phone, a tablet, or a school computer that will not open downloaded files), a student opens it on <a href="packets-open.html">Open a practice file or check</a>: <span data-open-address>apomera.github.io/AlloFlow/packets-open.html</span>.</p>
       </div>
 
+      <details class="more" id="ws-item-editor" hidden>
+        <summary><span class="more-name">Review &amp; customize items</span><span class="more-now" id="ws-item-editor-now"></span></summary>
+        <div class="more-body">
+          <p class="hint" id="ws-item-editor-hint">Reorder activity sections, remove or restore individual questions, or swap wrong answer choices. Saving, trying, worksheets, and bundles use your edited items.</p>
+          <div class="row ws-ie-toolbar">
+            <button type="button" class="btn btn-small" id="ws-item-reset" hidden>Reset all item edits</button>
+            <span id="ws-item-editor-said" class="hint" role="status"></span>
+          </div>
+          <div id="ws-item-list" class="ws-ie-list"></div>
+        </div>
+      </details>
+
       <div id="summary-more" class="summary summary-more" hidden>
         <dl>
           <dt>Words</dt>
@@ -514,6 +541,7 @@
           <a class="btn btn-small" id="open-present-export" href="packets-present-export.html#from-word-sounds" target="_blank" rel="noopener">Present &amp; print word cards <span class="sr-only">(opens in a new tab)</span></a>
           <a class="btn btn-small" id="open-symbol-runner" href="packets-symbol-runner.html" target="_blank" rel="noopener" hidden>Practice in Symbol Runner <span class="sr-only">(opens in a new tab)</span></a>
           <button type="button" class="btn btn-small" id="print-worksheet" hidden>Print activity worksheet</button>
+          <button type="button" class="btn btn-small" id="worksheet-audio" hidden>Worksheet audio player</button>
           <button type="button" class="btn btn-small" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         </p>
       </div>
@@ -573,7 +601,7 @@
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">
     <p>Free to use. Open source, license AGPL-3.0.</p>
-    <p><a href="./">More from AlloFlow</a></p>
+    <p><a href="packets-feedback.html#from-packets-make">Send feedback</a> <a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
 </body>

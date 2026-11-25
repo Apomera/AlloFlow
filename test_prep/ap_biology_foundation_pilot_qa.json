@@ -129,14 +129,12 @@
       "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 10,
+      "spacedReviewPlans": 8,
       "sourceCatalog": 4
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 8,
@@ -144,7 +142,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 1000,
+      "checked": 1737,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -292,8 +290,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f",
-    "learningLibrarySha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39",
+    "packSha256": "248ed0f53e5ef259ef54107308800e6b58eea8d7efaac696b10f7f56e76d0d65",
+    "learningLibrarySha256": "e5a59e4e2c3f107bad374be01a578f4a71c660c084c9f6bc06bb8b3855edda3f",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
     "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
@@ -303,15 +301,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f",
-      "deploySha256": "cbcaf7b0c69e8fe08e549e2e14248853f273a77818cad62d6c6923f3dc3ea90f"
+      "sourceSha256": "248ed0f53e5ef259ef54107308800e6b58eea8d7efaac696b10f7f56e76d0d65",
+      "deploySha256": "248ed0f53e5ef259ef54107308800e6b58eea8d7efaac696b10f7f56e76d0d65"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39",
-      "deploySha256": "112d9f3032312f78b9b472a25bddeb34b5f8fe1f2c1c1194a4ad36d469caad39"
+      "sourceSha256": "e5a59e4e2c3f107bad374be01a578f4a71c660c084c9f6bc06bb8b3855edda3f",
+      "deploySha256": "e5a59e4e2c3f107bad374be01a578f4a71c660c084c9f6bc06bb8b3855edda3f"
     }
   ],
   "releaseBlockers": [

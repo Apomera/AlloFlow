@@ -8824,6 +8824,8 @@
         h('style', { hidden: true }, `
           /* High-contrast theme paints every card black but leaves text-cyan-700 (#0e7490) alone: 3.91:1 on black. Cyan-300 reads 12:1 there. */
           .theme-contrast #particle-lab-root .text-cyan-700 { color: #67e8f9; }
+          /* The theme fills bg-yellow-* #ffff00 with black ink, but its button[class*="text-slate-"] rule outranks that and paints #00ff00 ink (1.27:1) on pressed Trace / System probe. */
+          .theme-contrast #particle-lab-root button:is(.bg-yellow-200, .bg-yellow-300, .bg-yellow-400) { color: #000000 !important; }
           /* High contrast blackens every [class*="bg-"] element. The chamber's decorative overlays carry bg-[radial-gradient...]
              and bg-gradient-to-r classes, so that rule painted an opaque black sheet OVER the canvas: the 3D scene vanished. */
           .theme-contrast #particle-viewport > [class*="bg-"] { background-color: transparent !important; }

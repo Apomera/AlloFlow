@@ -83,7 +83,14 @@ describe('a provider throttle is a resumable UI state, not an authentication fai
   });
 
   it('rehydrates the pause marker and its provenance from saved projects', () => {
-    expect((view.match(/_remediationThrottlePaused: !!project\._remediationThrottlePaused/g) || []).length).toBe(2);
-    expect((view.match(/_finalAuditThrottleDeferred: !!project\._finalAuditThrottleDeferred/g) || []).length).toBe(2);
+    // The two project loaders (start screen and results sidebar) were merged into one
+    // shared _loadProjectFromFileInput; it rehydrates both markers, and both inputs use it.
+    expect((view.match(/_remediationThrottlePaused: !!project\._remediationThrottlePaused/g) || []).length).toBe(1);
+    expect((view.match(/_finalAuditThrottleDeferred: !!project\._finalAuditThrottleDeferred/g) || []).length).toBe(1);
+    const loader = view.slice(view.indexOf('const _loadProjectFromFileInput = (e, opts = {}) => {'));
+    expect(loader.indexOf('_remediationThrottlePaused: !!project._remediationThrottlePaused')).toBeGreaterThan(0);
+    expect(loader.indexOf('_remediationThrottlePaused: !!project._remediationThrottlePaused')).toBeLessThan(loader.indexOf('\n  };\n'));
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })}');
+    expect(view).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
   });
 });

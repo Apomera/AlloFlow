@@ -567,7 +567,8 @@ describe('Phase 6 core UDL views, modals, overlays, and prompt hardening', () =>
       expect(hub).toContain("addToast(t('educator_hub.pdf_project_one_at_a_time') || 'Open one saved PDF project at a time, on its own.'");
 
       const math = read('view_math_source.jsx');
-      expect((math.match(/addToast\(_mathT\(/g) || []).length).toBe(7);
+      // 8 since the manipulative-check guards gained their own localized toasts.
+      expect((math.match(/addToast\(_mathT\(/g) || []).length).toBe(8);
       const unguardedAnimateIn = math.split('\n').filter((l) => /animate-in/.test(l) && !/motion-reduce:animate-none/.test(l));
       expect(unguardedAnimateIn).toEqual([]);
 

@@ -18,21 +18,30 @@ describe('Info modal accuracy contracts', () => {
     expect(source).not.toContain('/alloflow_intro_family.mp4');
     expect(source).not.toContain('activeVideo');
     expect(source).toContain('aria-labelledby="about-start-heading"');
-    expect(source).toContain('Map the platform');
-    expect(source).toContain('Browse guided workflows');
+    expect(source).toContain('Explore the Atlas');
+    expect(source).toContain('Open the Feature Guide');
     expect(source).toContain("openCommandPaletteFromInfo('', 'about')");
+    // Internal reassurance is not user-facing copy.
+    expect(source).not.toContain('nothing here can drift into a broken walkthrough');
   });
 
-  it('describes every implemented storage, session, and AI data path', () => {
+  it('describes every implemented storage, session, AI, speech, and report data path', () => {
     for (const fact of [
       'Desktop LAN and local preview',
-      'Firebase demo or bring-your-own Firebase',
+      'Bring-your-own Firebase uses your school’s or district’s own Firebase project',
       'Class Mailbox',
       'teacher-owned Google Drive',
+      'In Gemini Canvas, sessions use the storage Google provides to Canvas apps',
       'Gemini, OpenAI, Claude',
       'custom OpenAI-compatible endpoint',
+      'Gemini API terms require users to be 18 or older',
+      'The browser’s speech service may send your voice to the browser maker (in Chrome, Google)',
+      'are deleted after 30 days',
       'provider age/use restrictions',
+      'AlloFlow does not run a cloud service of its own for class sessions',
     ]) expect(source).toContain(fact);
+    // There is no AlloFlow-run demo cloud (owner decision 2026-11-05; mode removed 2026-11-23).
+    expect(source).not.toMatch(/Firebase demo|demo cloud/i);
 
     expect(source).not.toContain('When you use online AI: Google');
     expect(source).not.toContain('the request goes to <strong>Google');
@@ -58,18 +67,55 @@ describe('Info modal accuracy contracts', () => {
       'WCAG-AA remediated HTML',
       'Shared visual space',
       'Infinite collaborative whiteboard',
+      // Retired 2026-11-23: each was checked against the code and found wrong.
+      '5 vocabulary games',
+      '8 activity types',
+      '17 assessment presets',
+      '17 standardized assessment scores',
+      'PCS symbols',
+      'PCS-style symbol generation',
+      'Full AAC platform',
+      'Team leaderboard',
+      'Auto-routing of safety flags to staff',
+      'filters out accent hesitations',
+      'saving 5–10 minutes',
+      'Hundreds of leveled picture books',
+      'Select from preset characters',
+      'Exportable annotated PDF',
+      'RSVP speed (200–600 wpm)',
+      'axe-core 4.10',
+      'Agentic tool-and-resource builder',
     ]) {
       expect(source + strings).not.toContain(stale);
     }
 
     expect(source).toContain('stemCatalogCount');
     expect(source).toContain('selCatalogCount');
-    expect(strings).toContain('IOA calculator (6 methods)');
-    expect(strings).toContain('Private, device-local infinite whiteboard');
+    // Counts that were re-derived from the code that implements each tool.
+    expect(source).toContain('20 activity types');
+    expect(source).toContain('Scores from 16 common instruments, or a custom one');
+  });
+
+  it('keeps the Feature Guide keyed by stable ids, with every string registered', () => {
+    const ui = JSON.parse(strings).about;
+    const start = source.indexOf('const FEATURE_GUIDE = ');
+    const items = JSON.parse(source.slice(start + 'const FEATURE_GUIDE = '.length, source.indexOf(';\n/* FEATURE_GUIDE_DATA_END */', start)));
+    expect(items.length).toBeGreaterThan(40);
+    expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
+    for (const item of items) {
+      const key = item.id.replace(/[^A-Za-z0-9]+/g, '_');
+      const registered = ui.fg[key];
+      expect(registered, item.id).toBeTruthy();
+      expect(registered.title, item.id).toBe(item.title);
+      expect(registered.desc, item.id).toBe(item.desc);
+      for (const field of ['inputs', 'steps', 'outputs', 'options']) {
+        item[field].forEach((text, i) => expect(registered[field + '_' + (i + 1)], item.id + '.' + field).toBe(text));
+      }
+    }
+    expect(ui.features_list).toBeUndefined();
   });
 
   it('uses plain-language image editing labels instead of an internal model nickname', () => {
-    expect(source).toContain('Image editing canvas');
     expect(strings).toContain('"refiner_title": "Image Editor"');
     expect(source + strings).not.toContain('Nano Banana');
   });
@@ -161,6 +207,24 @@ describe('Info modal accuracy contracts', () => {
     expect(result.stdout).toMatch(/5 hubs, \d+ catalog entries/);
     expect(source).toContain('Generated from the STEAM Lab registry');
     expect(source).toContain('Command palette plus curated top-level launchers');
-    expect(source).toContain('not unique-tool totals');
+    expect(source).toContain('a few tools appear in more than one hub');
+  });
+
+  it('lists each studio once and keeps other hubs and actions out of Studios & Surfaces', () => {
+    const start = source.indexOf('const ATLAS_HUBS = ');
+    const hubs = JSON.parse(source.slice(start + 'const ATLAS_HUBS = '.length, source.indexOf(';\nconst ATLAS_STEAM_DIRECT_LINKS', start)));
+    const studios = hubs.find((hub) => hub.id === 'studios').categories[0].tools;
+    const letters = studios.map((name) => name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+    expect(new Set(letters).size).toBe(letters.length);
+    for (const notASurface of ['STEAM Lab', 'SEL Hub', 'Research Hub', 'export menu', 'a specific STEM tool', 'Go to the dashboard', 'Read this page to me', 'Find the right book']) {
+      expect(studios).not.toContain(notASurface);
+    }
+  });
+
+  it('shows the real build instead of a hard-coded version number', () => {
+    expect(source).toContain('window.__alloBuildStamp');
+    expect(source).toContain("fmtInfo(t('about.version_build') || 'Build {build}', { build: buildHash })");
+    expect(JSON.parse(strings).about.title).toBe('About AlloFlow');
+    expect(source + strings).not.toMatch(/AlloFlow v1\.0/);
   });
 });

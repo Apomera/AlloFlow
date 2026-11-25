@@ -111,6 +111,19 @@ function selectFacet(label, value) {
   act(() => { sel.value = value; sel.dispatchEvent(new window.Event('change', { bubbles: true })); });
 }
 
+// Source, Topic, Reading length, Reuse rights, Sort and the three toggles sit
+// behind the "More options" fold on the browse row; open it (once) to use them.
+const moreFiltersToggle = () => host.querySelector('[data-testid="reading-more-filters-toggle"]');
+async function openMoreFilters() {
+  const toggle = moreFiltersToggle();
+  if (!toggle) throw new Error('no "More options" filter toggle');
+  if (toggle.getAttribute('aria-expanded') !== 'true') {
+    act(() => { toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+  }
+  return host.querySelector('#reading-more-filters');
+}
+
 async function chooseCollection(label) {
   clickByText(host, 'button', label);
   await flush();
@@ -163,6 +176,7 @@ describe('browse view', () => {
     expect(textOf(host)).toContain(storyEntries.length + ' ');
     // narrated-only toggle narrows the grid
     const narrated = storyEntries.filter((b) => b.hasAudio).length;
+    await openMoreFilters();
     clickByText(host, 'button', 'Narrated only');
     await flush();
     expect(textOf(host)).toContain(narrated + ' ');
@@ -186,6 +200,7 @@ describe('browse view', () => {
     await chooseStories();
     selectLang('');
     await flush();
+    await openMoreFilters();
     expect(host.querySelector('select[aria-label="Topic"]')).toBeTruthy();
     expect(host.querySelector('select[aria-label="Reading length"]')).toBeTruthy();
     expect(host.querySelector('select[aria-label="Reuse rights"]')).toBeTruthy();
@@ -330,6 +345,7 @@ describe('browse view', () => {
     const history = allBooks.filter((b) => ['wikisource', 'loc', 'gutenberg'].includes(b.sourceId));
     const readable = history.filter((b) => !/card/.test(b.contentType));
     expect(textOf(host)).toContain(history.length + ' ');
+    await openMoreFilters();
     clickByText(host, 'button', 'Readable in app');
     await flush();
     expect(textOf(host)).toContain(readable.length + ' ');
@@ -383,6 +399,7 @@ describe('browse view', () => {
     await chooseStories();
     // Find controls by aria-label — the Stories shelf gained a conditional
     // source <select> (StoryWeaver + Bloom), so positional indexes shift.
+    await openMoreFilters();
     const sortSel = host.querySelector('select[aria-label="Sort by"]');
     expect(sortSel.value).toBe('level');
     // narrow to one language to keep the grid light; ordering still applies
@@ -399,6 +416,7 @@ describe('browse view', () => {
     await mount();
     await chooseStories();
     selectLang('English');
+    await openMoreFilters();
     const sortSel = host.querySelector('select[aria-label="Sort by"]');
     act(() => { sortSel.value = 'title'; sortSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
     await flush();
@@ -417,7 +435,81 @@ describe('browse view', () => {
     setInputValue(search, 'Hamlet'); // a Shakespeare play lives on the History shelf
     await flush();
     expect(textOf(host)).toContain('No books match');
+    // The toggle is in the fold now, so the empty result offers it directly.
+    const suggestion = host.querySelector('[data-testid="reading-search-all-suggestion"]');
+    expect(textOf(suggestion)).toContain('All collections');
     clickByText(host, 'button', 'All collections');
+    await flush();
+    const card = Array.from(host.querySelectorAll('button')).find((b) => /Level\s+\d/.test(textOf(b)) && /Hamlet/.test(textOf(b)));
+    expect(card).toBeTruthy();
+    // Once on, the suggestion goes and the fold counts the hidden toggle.
+    expect(host.querySelector('[data-testid="reading-search-all-suggestion"]')).toBeNull();
+    expect(textOf(host.querySelector('[data-testid="reading-more-filters-count"]'))).toBe('1');
+  });
+
+  it('keeps search, language and level in view and folds the other filters behind one "More options" control', async () => {
+    await mount();
+    await chooseCollection('History & primary sources');
+    selectLang(''); await settle();
+    const row = host.querySelector('[data-testid="reading-catalog-filters"]');
+    const toggle = moreFiltersToggle();
+    // First view: exactly search, two selects and the fold.
+    expect(Array.from(row.children).map((el) => el.getAttribute('aria-label') || el.tagName)).toEqual(['Search', 'Language', 'Reading level', 'More options']);
+    expect(toggle.tagName).toBe('BUTTON');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe('reading-more-filters');
+    expect(host.querySelector('#reading-more-filters')).toBeNull();
+    expect(host.querySelector('[data-testid="reading-more-filters-count"]')).toBeNull();
+    for (const label of ['Source', 'Topic', 'Reading length', 'Reuse rights', 'Sort by']) {
+      expect(host.querySelector(`select[aria-label="${label}"]`), label).toBeNull();
+    }
+
+    // One click reaches every folded control, in the panel the toggle names.
+    const panel = await openMoreFilters();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(panel.getAttribute('role')).toBe('group');
+    expect(row.nextElementSibling).toBe(panel);
+    for (const label of ['Source', 'Topic', 'Reading length', 'Reuse rights', 'Sort by']) {
+      expect(panel.querySelector(`select[aria-label="${label}"]`), label).toBeTruthy();
+    }
+    const toggles = Array.from(panel.querySelectorAll('button[aria-pressed]')).map(textOf);
+    for (const label of ['Narrated only', 'Readable in app', 'All collections']) {
+      expect(toggles.some((text) => text.includes(label)), label).toBe(true);
+    }
+    expect(panel.querySelectorAll('select, button')).toHaveLength(8);
+
+    // A folded filter that is on is counted on the closed fold and still listed as a removable pill.
+    const lengthOption = panel.querySelector('select[aria-label="Reading length"]').querySelectorAll('option')[1];
+    const lengthLabel = textOf(lengthOption).replace(/\s*\(\d+\)$/, '');
+    selectFacet('Reading length', lengthOption.value);
+    await flush();
+    clickByText(host.querySelector('#reading-more-filters'), 'button', 'Narrated only');
+    await flush();
+    act(() => { toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+    expect(host.querySelector('#reading-more-filters')).toBeNull();
+    expect(textOf(host.querySelector('[data-testid="reading-more-filters-count"]'))).toBe('2');
+    expect(toggle.getAttribute('aria-label')).toBe('More options. Active filters: 2');
+    const active = host.querySelector('[data-testid="active-catalog-filters"]');
+    expect(textOf(active)).toContain('Narrated only');
+    expect(textOf(active)).toContain(lengthLabel);
+    // Sort is not a filter, so it does not count.
+    await openMoreFilters();
+    const sortSel = host.querySelector('select[aria-label="Sort by"]');
+    act(() => { sortSel.value = 'title'; sortSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await flush();
+    expect(textOf(host.querySelector('[data-testid="reading-more-filters-count"]'))).toBe('2');
+  });
+
+  it('reaches "All collections" through the fold as well', async () => {
+    await mount();
+    await chooseStories();
+    setInputValue(host.querySelector('input[aria-label="Search"]'), 'Hamlet');
+    await flush();
+    const panel = await openMoreFilters();
+    // With the fold open the toggle itself is on screen, so no second copy is offered.
+    expect(host.querySelector('[data-testid="reading-search-all-suggestion"]')).toBeNull();
+    clickByText(panel, 'button', 'All collections');
     await flush();
     const card = Array.from(host.querySelectorAll('button')).find((b) => /Level\s+\d/.test(textOf(b)) && /Hamlet/.test(textOf(b)));
     expect(card).toBeTruthy();

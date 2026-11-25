@@ -4,10 +4,14 @@
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
 <title>Dynamic Assessment Studio — Clinician User Guide | AlloFlow</title>
-<meta name="description" content="A clinician's guide to AlloFlow's Dynamic Assessment Studio: running a pretest-mediation-posttest cycle, interpreting the Modifiability Index, the access-contrast framework for multilingual learners, and responsible-use limitations.">
+<meta name="description" content="Clinician guide to AlloFlow Dynamic Assessment Studio: pretest-mediation-posttest cycles, Modifiability Index, multilingual access contrasts, and boundaries.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html">
+<link rel="icon" type="image/svg+xml" href="../allobot.svg">
+<link rel="apple-touch-icon" href="../allobot.png">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="AlloFlow">
 <meta property="og:title" content="Dynamic Assessment Studio — Clinician User Guide">
@@ -24,15 +28,28 @@
 <meta name="twitter:description" content="A responsible-use workflow guide for AlloFlow's non-normed Dynamic Assessment Studio.">
 <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
 <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "@id": "https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html#guide",
+  "url": "https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html",
+  "headline": "Dynamic Assessment Studio — Clinician User Guide",
+  "description": "Clinician guide to AlloFlow Dynamic Assessment Studio: pretest-mediation-posttest cycles, Modifiability Index, multilingual access contrasts, and boundaries.",
+  "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" },
+  "about": { "@id": "https://apomera.github.io/AlloFlow/#software" }
+}
+</script>
 <style>
-:root{--fs:1;--ink:#0f172a;--body:#1e293b;--soft:#475569;--line:#e2e8f0;--panel:#ffffff;--code-bg:#f1f5f9;--accent:#4338ca;--accent-ink:#312e81;--accent-soft:#eef2ff;--accent-bd:#c7d2fe;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;--code-bg:#1b2740;--accent:#a5b4fc;--accent-ink:#c7d2fe;--accent-soft:#18233d;--accent-bd:#33456e;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--bg:#0b1220;}}
+:root{color-scheme:light;--fs:1;--ink:#0f172a;--body:#1e293b;--soft:#475569;--line:#e2e8f0;--panel:#ffffff;--code-bg:#f1f5f9;--accent:#4338ca;--accent-ink:#312e81;--accent-soft:#eef2ff;--accent-bd:#c7d2fe;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;--code-bg:#1b2740;--accent:#a5b4fc;--accent-ink:#c7d2fe;--accent-soft:#18233d;--accent-bd:#33456e;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--bg:#0b1220;}}
+html{scroll-padding-top:calc(var(--reading-tools-height, 0px) + 14px);}
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
 .wrap{max-width:820px;margin:0 auto;padding:32px 22px 80px;}
 .banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 28px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
 h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
-h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);scroll-margin-top:76px;}
+h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);scroll-margin-top:calc(var(--reading-tools-height, 76px) + 14px);}
 h3{font-size:calc(16px * var(--fs));font-weight:800;color:var(--ink);margin:24px 0 6px;}
 p{margin:0 0 14px;color:var(--body);}
 a{color:var(--accent);}
@@ -64,7 +81,7 @@ blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .rtools-panel[hidden]{display:none;}
 .rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
-.rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:7px;min-height:36px;padding:4px 8px;}
+.rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:7px;min-height:44px;padding:6px 10px;}
 .rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
 .rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);border-radius:7px;min-height:44px;padding:6px 11px;cursor:pointer;}
 .rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink);}
@@ -72,17 +89,18 @@ blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 #rtools-ruler{position:fixed;left:0;width:100%;height:2.4em;background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:49;display:none;}
 html[data-allo-ruler="1"] #rtools-ruler{display:block;}
-html:root[data-allo-theme="warm"]{--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;}
-html:root[data-allo-theme="sepia"]{--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;}
-html:root[data-allo-theme="dark"]{--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;}
-html:root[data-allo-theme="highContrast"]{--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;}
-html:root[data-allo-theme="blue"]{--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;}
-html:root[data-allo-theme="green"]{--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;}
-html:root[data-allo-theme="rose"]{--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;}
-html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;}
+html:root[data-allo-theme="warm"]{color-scheme:light;--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;}
+html:root[data-allo-theme="sepia"]{color-scheme:light;--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;}
+html:root[data-allo-theme="dark"]{color-scheme:dark;--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;}
+html:root[data-allo-theme="highContrast"]{color-scheme:dark;--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;}
+html:root[data-allo-theme="blue"]{color-scheme:light;--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;}
+html:root[data-allo-theme="green"]{color-scheme:light;--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;}
+html:root[data-allo-theme="rose"]{color-scheme:light;--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;}
+html:root[data-allo-theme="easyread"]{color-scheme:light;--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;}
 footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:calc(12.5px * var(--fs));}
-.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
+.skip-link{position:absolute;inset-inline-start:8px;top:8px;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;z-index:9999;background:#1e1b4b;color:#fff;border:2px solid #facc15;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
 .skip-link:focus{position:static;display:inline-block;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal;pointer-events:auto;margin:12px 0 0 16px;}
+html:root[data-allo-theme="highContrast"] .skip-link{background:#000;color:#ff0;border-color:#ff0;}
 main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
 @media (forced-colors:active){.banner,.toc,blockquote,.print-btn,.rtools-toggle,.rtools-panel button{border:2px solid CanvasText;}a:focus-visible,button:focus-visible,main:focus-visible{outline:3px solid Highlight;outline-offset:3px;}}
@@ -358,6 +376,11 @@ main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
     el('div', { class: 'rtools-in' }, [toggle, panel])
   ]);
   d.body.insertBefore(bar, d.body.firstChild);
+  function updateAnchorOffset() {
+    root.style.setProperty('--reading-tools-height', bar.getBoundingClientRect().height + 'px');
+  }
+  window.addEventListener('resize', updateAnchorOffset);
+  updateAnchorOffset();
   d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
 
   function announce(msg) { if (status) status.textContent = msg; }
@@ -406,6 +429,7 @@ main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
     var opening = panel.hasAttribute('hidden');
     if (opening) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    updateAnchorOffset();
   });
   panel.addEventListener('keydown', function (e) {
     if (e.isComposing || e.keyCode === 229) return;
@@ -413,6 +437,7 @@ main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
       e.preventDefault();
       panel.setAttribute('hidden', '');
       toggle.setAttribute('aria-expanded', 'false');
+      updateAnchorOffset();
       toggle.focus();
     }
   });

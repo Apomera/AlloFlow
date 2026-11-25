@@ -1927,6 +1927,12 @@
       '.theme-contrast [data-arithmetic-studio] .arith-place-col-active::after,.theme-contrast [data-arithmetic-studio] .arith-decor-only{display:none!important}'
     ].join('');
     document.head.appendChild(mst);
+    if (!document.getElementById('allo-arithmetic-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-arithmetic-a11y-css';
+      a11ySt.textContent = '[data-arithmetic-studio] :is(button,input,select,summary){touch-action:manipulation}[data-arithmetic-studio] :is(button,input,select,summary,[tabindex]):focus-visible{outline:2px solid #2563eb;outline-offset:2px}@media (forced-colors:active){[data-arithmetic-studio] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(a11ySt);
+    }
   })();
   window.StemLab.registerTool('arithmeticStudio', {
     icon: '➕',
@@ -2797,7 +2803,7 @@
       }
 
       function moveTab(event, index) {
-        if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+        if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         var nextIndex = null;
         if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabOrder.length;
         else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabOrder.length) % tabOrder.length;
@@ -3693,7 +3699,7 @@
           h('div', { className: 'grid sm:grid-cols-3 gap-2 items-end' },
             needsEstimate && h('div', { className: 'space-y-1' },
               h('label', { className: 'text-xs font-bold block' }, t('stem.arithmetic.step1_estimate', 'Step 1. Estimate'),
-                h('input', Object.assign({ type: 'number', required: true, 'aria-required': 'true', value: displayedEstimate, disabled: solved || estimateLocked, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') lockEstimate(); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: inputStyle }, numberProps))),
+                h('input', Object.assign({ type: 'number', required: true, 'aria-required': 'true', value: displayedEstimate, disabled: solved || estimateLocked, onChange: function (e) { updatePracticeInput('estimateInput', e.target.value); }, onKeyDown: function (e) { if (!e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') lockEstimate(); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 font-mono', style: inputStyle }, numberProps))),
               !solved && (estimateLocked
                 ? (practiceTry === 0 && !practiceFeedback && h('button', { type: 'button', onClick: function () { update({ estimateLocked: false, estimateStatus: null }); }, className: 'rounded-lg px-3 py-2 text-xs font-bold w-full', style: ghostStyle }, t('stem.arithmetic.change_estimate', 'Change my estimate')))
                 : h('button', { type: 'button', 'data-lock-estimate': true, onClick: lockEstimate, disabled: practiceEstimateInput === '', className: 'rounded-lg px-3 py-2 text-xs font-black w-full disabled:opacity-40', style: solidAccent(opMeta) }, t('stem.arithmetic.lock_estimate', 'Lock in my estimate')))),
@@ -4425,7 +4431,7 @@
             h('textarea', { rows: 2, value: ntOn && d.ntExplain ? String(d.ntExplain) : '', onChange: function (e) { update({ ntFor: item.id, ntExplain: e.target.value }); }, className: 'mt-1 block w-full rounded-lg px-3 py-2 text-sm', style: inputStyle })));
         var answerRow = h('div', { className: 'flex flex-wrap items-end gap-2' },
           h('label', { className: 'text-xs font-bold' }, ntPickOptional ? t('stem.arithmetic.nt_answer_plain', 'Your answer') : t('stem.arithmetic.nt_step2', 'Step 2. Your answer'),
-            h('input', { type: 'number', inputMode: 'numeric', 'data-nt-answer': true, value: shownAnswer, disabled: !answerOpen || done, 'aria-describedby': !answerOpen ? 'arithmetic-nt-pick-first' : undefined, onChange: function (e) { update({ ntFor: item.id, ntAnswer: e.target.value, ntFeedback: ntFeedback === 'try' ? 'try' : null }); }, onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && !e.repeat && answerOpen && ntAnswer !== '' && !done) checkNumberTalk(); }, className: 'mt-1 block w-32 rounded-lg px-3 py-2 font-mono', style: inputStyle })),
+            h('input', { type: 'number', inputMode: 'numeric', 'data-nt-answer': true, value: shownAnswer, disabled: !answerOpen || done, 'aria-describedby': !answerOpen ? 'arithmetic-nt-pick-first' : undefined, onChange: function (e) { update({ ntFor: item.id, ntAnswer: e.target.value, ntFeedback: ntFeedback === 'try' ? 'try' : null }); }, onKeyDown: function (e) { if (!e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && !e.repeat && answerOpen && ntAnswer !== '' && !done) checkNumberTalk(); }, className: 'mt-1 block w-32 rounded-lg px-3 py-2 font-mono', style: inputStyle })),
           h('button', { type: 'button', onClick: checkNumberTalk, disabled: !answerOpen || ntAnswer === '' || done, className: 'rounded-lg px-4 py-2 text-sm font-black disabled:opacity-40', style: solidAccent(opMeta) }, done && ntSolvedNow ? t('stem.arithmetic.solved', 'Solved') : t('stem.arithmetic.check_answer', 'Check answer')));
         return h('div', { className: 'space-y-3', 'data-number-talk': item.id },
           h('p', { className: 'text-xs', style: { color: muted } }, ntTenFrame

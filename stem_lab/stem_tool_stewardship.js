@@ -81,18 +81,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
   // ── Read campaign state out of labToolData ──
   function readCampaignState(labToolData, campaign) {
-    var slot = (labToolData && labToolData[campaign.toolDataKey]) || {};
-    var state = slot[campaign.stateField];
+    if (!campaign || typeof campaign !== 'object') return { status: 'notStarted', phase: null, year: 0, maxYears: 10, outcome: null, difficulty: null };
+    var rawSlot = labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData) ? labToolData[campaign.toolDataKey] : null;
+    var slot = (rawSlot && typeof rawSlot === 'object' && !Array.isArray(rawSlot)) ? rawSlot : {};
+    var rawState = slot[campaign.stateField];
+    var state = (rawState && typeof rawState === 'object' && !Array.isArray(rawState)) ? rawState : null;
     if (!state) return { status: 'notStarted', phase: null, year: 0, maxYears: campaign.defaultMaxYears, outcome: null, difficulty: null };
-    var phase = state.phase || 'setup';
-    var year = state[campaign.yearField] || 0;
-    var maxYears = state[campaign.maxYearsField] || campaign.defaultMaxYears;
-    var outcome = state[campaign.outcomeField] || null;
+    var phase = typeof state.phase === 'string' ? state.phase : 'setup';
+    var year = (typeof state[campaign.yearField] === 'number' && isFinite(state[campaign.yearField])) ? state[campaign.yearField] : 0;
+    var maxYears = (typeof state[campaign.maxYearsField] === 'number' && isFinite(state[campaign.maxYearsField]) && state[campaign.maxYearsField] > 0) ? state[campaign.maxYearsField] : campaign.defaultMaxYears;
+    var rawOutcome = state[campaign.outcomeField];
+    var outcome = (rawOutcome && typeof rawOutcome === 'object' && !Array.isArray(rawOutcome)) ? rawOutcome : null;
     var status;
     if (phase === 'setup') status = 'notStarted';
     else if (phase === 'debrief' && outcome) status = 'complete';
     else status = 'inProgress';
-    return { status: status, phase: phase, year: year, maxYears: maxYears, outcome: outcome, difficulty: state.difficulty || null, seed: state.seed || null };
+    return { status: status, phase: phase, year: year, maxYears: maxYears, outcome: outcome, difficulty: typeof state.difficulty === 'string' ? state.difficulty : null, seed: typeof state.seed === 'string' ? state.seed : null };
   }
 
   function statusLabel(status) {
@@ -967,10 +971,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
   // Detect which families have both Maine+cross-region completion
   function getPairedFamilies(snapshots, scenarioSnaps) {
+    var safeSnaps = Array.isArray(snapshots) ? snapshots : [];
+    var safeScens = Array.isArray(scenarioSnaps) ? scenarioSnaps : [];
     var paired = [];
     Object.keys(FAMILY_PAIRING_INSIGHTS).forEach(function(famId) {
-      var maineDone = snapshots.some(function(s) { return s.state.status === 'complete' && CAMPAIGN_FAMILY[s.campaign.id] === famId; });
-      var scenarioDone = scenarioSnaps.some(function(s) { return s.state.status === 'complete' && s.scenario.family === famId; });
+      var maineDone = safeSnaps.some(function(s) { return s && s.state && s.campaign && s.state.status === 'complete' && CAMPAIGN_FAMILY[s.campaign.id] === famId; });
+      var scenarioDone = safeScens.some(function(s) { return s && s.state && s.scenario && s.state.status === 'complete' && s.scenario.family === famId; });
       if (maineDone && scenarioDone) paired.push(famId);
     });
     return paired;
@@ -978,20 +984,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
   // ── Compute a scenario's status from hub state ──
   function readScenarioState(hub, scenario) {
-    var st = (hub && hub.scenarioStates && hub.scenarioStates[scenario.id]) || null;
+    var safeStates = (hub && typeof hub === 'object' && !Array.isArray(hub) && hub.scenarioStates && typeof hub.scenarioStates === 'object' && !Array.isArray(hub.scenarioStates)) ? hub.scenarioStates : null;
+    var rawSt = safeStates && scenario ? safeStates[scenario.id] : null;
+    var st = (rawSt && typeof rawSt === 'object' && !Array.isArray(rawSt)) ? rawSt : null;
     if (!st) return { status: 'notStarted', phase: 'briefing', step: 0, entities: null, outcome: null };
-    if (st.phase === 'debrief' && st.outcome) return { status: 'complete', phase: 'debrief', step: scenario.decisions.length, entities: st.entities, outcome: st.outcome, decisionLog: st.decisionLog || [] };
-    if (st.phase === 'playing') return { status: 'inProgress', phase: 'playing', step: st.step || 0, entities: st.entities, outcome: null, decisionLog: st.decisionLog || [] };
-    return { status: st.phase === 'briefing' ? 'inProgress' : 'notStarted', phase: st.phase || 'briefing', step: st.step || 0, entities: st.entities || null, outcome: null, decisionLog: st.decisionLog || [] };
+    var safeEntities = (st.entities && typeof st.entities === 'object' && !Array.isArray(st.entities)) ? st.entities : null;
+    var safeOutcome = (st.outcome && typeof st.outcome === 'object' && !Array.isArray(st.outcome)) ? st.outcome : null;
+    var safeLog = Array.isArray(st.decisionLog) ? st.decisionLog : [];
+    var safeStep = (typeof st.step === 'number' && isFinite(st.step) && st.step >= 0) ? Math.floor(st.step) : 0;
+    if (st.phase === 'debrief' && safeOutcome) return { status: 'complete', phase: 'debrief', step: scenario.decisions.length, entities: safeEntities, outcome: safeOutcome, decisionLog: safeLog };
+    if (st.phase === 'playing') return { status: 'inProgress', phase: 'playing', step: safeStep, entities: safeEntities, outcome: null, decisionLog: safeLog };
+    return { status: st.phase === 'briefing' ? 'inProgress' : 'notStarted', phase: typeof st.phase === 'string' ? st.phase : 'briefing', step: safeStep, entities: safeEntities, outcome: null, decisionLog: safeLog };
   }
 
   // ── Compute final outcome from entity averages ──
   function computeScenarioOutcome(scenario, entities) {
-    var values = scenario.entities.map(function(ent) {
-      var v = entities && entities[ent.id] != null ? entities[ent.id] : ent.init;
+    var sc = typeof scenario === 'string' ? SCENARIOS_LIBRARY.find(function(s) { return s.id === scenario; }) : scenario;
+    if (!sc || !Array.isArray(sc.entities)) return scenarioTierFromAvg(0);
+    var safeEntities = (entities && typeof entities === 'object' && !Array.isArray(entities)) ? entities : {};
+    var values = sc.entities.map(function(ent) {
+      var raw = safeEntities[ent.id];
+      var v = (typeof raw === 'number' && isFinite(raw)) ? raw : ent.init;
       v = Math.max(0, Math.min(100, v));
       // Handle inverted entities (e.g., elk pressure — lower is better)
-      if (scenario.entityInverted && scenario.entityInverted[ent.id]) v = 100 - v;
+      if (sc.entityInverted && sc.entityInverted[ent.id]) v = 100 - v;
       return v;
     });
     var avg = values.length ? (values.reduce(function(a, b) { return a + b; }, 0) / values.length) : 0;
@@ -999,7 +1015,325 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
   }
 
   function isScenarioTopTier(outcome) {
-    return outcome && (outcome.tier === 'mastery' || outcome.tier === 'strong');
+    return !!(outcome && (outcome.tier === 'mastery' || outcome.tier === 'strong'));
+  }
+
+  // Read recorded values first; older decisions can be replayed without
+  // mutating their saved entries. Unreadable decisions stay unavailable.
+  function scenarioEvidence(scenario, st) {
+    var sc = typeof scenario === 'string' ? SCENARIOS_LIBRARY.find(function(s) { return s.id === scenario; }) : scenario;
+    if (!sc || !Array.isArray(sc.entities)) return { entries: [], series: {}, rows: [] };
+    var safeSt = (st && typeof st === 'object' && !Array.isArray(st)) ? st : {};
+    var entries = Array.isArray(safeSt.decisionLog) ? safeSt.decisionLog : [];
+    var safeEntities = (safeSt.entities && typeof safeSt.entities === 'object' && !Array.isArray(safeSt.entities)) ? safeSt.entities : {};
+    var series = {}, changes = {};
+    function recorded(values, id) {
+      var value = (values && typeof values === 'object' && !Array.isArray(values)) ? values[id] : null;
+      return typeof value === 'number' && isFinite(value) ? value : null;
+    }
+    sc.entities.forEach(function(ent) {
+      var first = entries[0] && recorded(entries[0].entityValuesBefore, ent.id);
+      series[ent.id] = [first != null ? first : ent.init];
+    });
+    entries.forEach(function(entry) {
+      var decision = entry && typeof entry.step === 'number' && sc.decisions[entry.step];
+      var option = decision && decision.options.filter(function(opt) { return opt.id === entry.optionId; })[0];
+      sc.entities.forEach(function(ent) {
+        var points = series[ent.id];
+        var before = entry && recorded(entry.entityValuesBefore, ent.id);
+        if (before == null) before = points[points.length - 1];
+        var after = entry && recorded(entry.entityValuesAfter, ent.id);
+        if (after == null && before != null && option) after = Math.max(0, Math.min(100, before + ((option.effects && option.effects[ent.id]) || 0)));
+        points.push(after);
+        changes[ent.id] = before != null && after != null ? after - before : null;
+      });
+    });
+    return { entries: entries, series: series, rows: sc.entities.map(function(ent) {
+      var value = recorded(safeEntities, ent.id);
+      if (value == null) value = ent.init;
+      var inverted = !!(sc.entityInverted && sc.entityInverted[ent.id]);
+      var effective = inverted ? 100 - value : value;
+      return { entity: ent, value: value, inverted: inverted, status: effective >= 60 ? 'Healthy' : effective >= 30 ? 'Stressed' : 'Critical', lastChange: entries.length ? changes[ent.id] : null };
+    }) };
+  }
+
+  var FAMILY_FEEDBACK_NOTES = {
+    fire: 'fire-return intervals link fuel reduction directly to elder/ranger capacity and cool-burn timing',
+    conservation: 'trophic cascades link predator recovery to habitat regrowth and rural/community social license',
+    outbreak: 'trust feedback loops make community partnership upstream of clinical reach and containment compliance',
+    watershed: 'hydrological cascades bind upstream flows, Indigenous water governance, habitat, and downstream fisheries together',
+    climate: 'inter-sector policy feedback couples coastal protection, freshwater/food security, climate finance, and local sovereignty'
+  };
+
+  function resolveStewardshipScenario(scenario) {
+    if (!scenario) return null;
+    if (typeof scenario === 'string') return SCENARIOS_LIBRARY.find(function(s) { return s.id === scenario; }) || null;
+    if (typeof scenario === 'object' && Array.isArray(scenario.entities) && Array.isArray(scenario.decisions)) return scenario;
+    return null;
+  }
+
+  function evaluateDecisionTradeoffs(scenario, step, optId, predictedEntityId) {
+    var sc = resolveStewardshipScenario(scenario);
+    if (!sc) return null;
+    var stepIdx = (typeof step === 'number' && isFinite(step)) ? Math.floor(step) : -1;
+    var decision = (stepIdx >= 0 && stepIdx < sc.decisions.length) ? sc.decisions[stepIdx] : null;
+    if (!decision || !Array.isArray(decision.options)) return null;
+    var targetOptId = (optId && typeof optId === 'object') ? optId.id : optId;
+    var option = decision.options.find(function(o) { return o.id === targetOptId; });
+    if (!option) return null;
+
+    var effects = (option.effects && typeof option.effects === 'object') ? option.effects : {};
+    var improved = [], degraded = [], unchanged = [];
+    var dominantShift = null;
+    var netEffectiveDelta = 0;
+
+    sc.entities.forEach(function(ent) {
+      var delta = typeof effects[ent.id] === 'number' && isFinite(effects[ent.id]) ? effects[ent.id] : 0;
+      var inverted = !!(sc.entityInverted && sc.entityInverted[ent.id]);
+      var effectiveDelta = inverted ? -delta : delta;
+      netEffectiveDelta += effectiveDelta;
+      var rec = {
+        id: ent.id,
+        name: ent.name,
+        icon: ent.icon,
+        label: ent.label,
+        delta: delta,
+        effectiveDelta: effectiveDelta,
+        inverted: inverted,
+        direction: effectiveDelta > 0 ? 'improving' : (effectiveDelta < 0 ? 'worsening' : 'unchanged')
+      };
+      if (effectiveDelta > 0) improved.push(rec);
+      else if (effectiveDelta < 0) degraded.push(rec);
+      else unchanged.push(rec);
+      if (effectiveDelta !== 0 && (!dominantShift || Math.abs(effectiveDelta) > Math.abs(dominantShift.effectiveDelta))) {
+        dominantShift = rec;
+      }
+    });
+
+    improved.sort(function(a, b) { return b.effectiveDelta - a.effectiveDelta; });
+    degraded.sort(function(a, b) { return a.effectiveDelta - b.effectiveDelta; });
+
+    var bestAlternative = null;
+    decision.options.forEach(function(alt) {
+      if (alt.id === option.id) return;
+      var altFx = (alt.effects && typeof alt.effects === 'object') ? alt.effects : {};
+      var altNet = 0;
+      var altGains = [];
+      sc.entities.forEach(function(ent) {
+        var d = typeof altFx[ent.id] === 'number' && isFinite(altFx[ent.id]) ? altFx[ent.id] : 0;
+        var inv = !!(sc.entityInverted && sc.entityInverted[ent.id]);
+        var eff = inv ? -d : d;
+        altNet += eff;
+        if (eff > 0) altGains.push(ent.name + ' (' + (d > 0 ? '+' : '') + d + ')');
+      });
+      if (!bestAlternative || altNet > bestAlternative.netEffectiveDelta) {
+        bestAlternative = { id: alt.id, label: alt.label, netEffectiveDelta: altNet, keyGains: altGains };
+      }
+    });
+
+    function fmtDelta(r) {
+      var sign = r.delta > 0 ? '+' : '';
+      return r.name + ' (' + sign + r.delta + (r.inverted ? ', lower is healthier' : '') + ')';
+    }
+
+    var famMeta = FAMILY_COLORS[sc.family] || { label: sc.family, mechanic: 'coupled feedback loops' };
+    var famNote = FAMILY_FEEDBACK_NOTES[sc.family] || 'coupled ecological and governance feedback loops tie every part together';
+    var whyNot = '';
+    if (degraded.length > 0 && improved.length > 0) {
+      whyNot = 'Systems tradeoff in ' + famMeta.mechanic.toLowerCase() + ': ' +
+        improved.slice(0, 2).map(fmtDelta).join(' and ') + ' improved, while ' +
+        degraded.slice(0, 2).map(fmtDelta).join(' and ') + ' degraded. ' +
+        'Short-term or single-metric fixes can backfire because ' + famNote +
+        ' — weakening one link raises the cost of every later turn.' +
+        (bestAlternative && bestAlternative.netEffectiveDelta > netEffectiveDelta
+          ? ' By contrast, an alternative at this step raised broader system resilience (net ' + (bestAlternative.netEffectiveDelta >= 0 ? '+' : '') + bestAlternative.netEffectiveDelta + ' vs. ' + (netEffectiveDelta >= 0 ? '+' : '') + netEffectiveDelta + ').'
+          : '');
+    } else if (degraded.length > 0) {
+      whyNot = 'Negative cascade warning in ' + famMeta.mechanic.toLowerCase() + ': ' +
+        degraded.slice(0, 2).map(fmtDelta).join(' and ') + ' worsened with no compensating gains. ' +
+        'Deferring action or forcing top-down fixes backfires because ' + famNote + '.';
+    } else if (improved.length > 0) {
+      if (bestAlternative && bestAlternative.netEffectiveDelta >= netEffectiveDelta + 15) {
+        whyNot = 'Narrow gain without direct loss: ' + improved.slice(0, 2).map(fmtDelta).join(' and ') +
+          ' improved, but coupled parts stayed flat. Because ' + famNote +
+          ', narrow fixes can leave unaddressed pressures compounding for later turns (stronger multi-part option net ' + (bestAlternative.netEffectiveDelta >= 0 ? '+' : '') + bestAlternative.netEffectiveDelta + ' vs. +' + netEffectiveDelta + ').';
+      } else {
+        whyNot = 'Reinforcing systems feedback: ' + improved.slice(0, 3).map(fmtDelta).join(', ') +
+          ' strengthened together with zero collateral decline. Because ' + famNote +
+          ', pairing ecological action with community capacity avoids the backlash of short-term fixes.';
+      }
+    } else {
+      whyNot = 'No net entity movement on this turn; in ' + famMeta.mechanic.toLowerCase() + ', standing still still leaves underlying system pressures unresolved.';
+    }
+
+    var prediction = null;
+    if (typeof predictedEntityId === 'string' && predictedEntityId) {
+      var predEnt = sc.entities.find(function(e) { return e.id === predictedEntityId; });
+      if (predEnt) {
+        var pDelta = typeof effects[predEnt.id] === 'number' && isFinite(effects[predEnt.id]) ? effects[predEnt.id] : 0;
+        var pInv = !!(sc.entityInverted && sc.entityInverted[predEnt.id]);
+        var pEff = pInv ? -pDelta : pDelta;
+        var pDir = pEff > 0 ? 'improving' : (pEff < 0 ? 'worsening' : 'unchanged');
+        var wasLargest = !!(dominantShift && pEff !== 0 && Math.abs(pEff) === Math.abs(dominantShift.effectiveDelta));
+        var verdict = wasLargest ? 'hit' : (pEff !== 0 ? 'partial' : 'miss');
+        var pSigned = (pDelta > 0 ? '+' : '') + pDelta;
+        var domSigned = dominantShift ? ((dominantShift.delta > 0 ? '+' : '') + dominantShift.delta) : '0';
+        var pSummary = verdict === 'hit'
+          ? 'Your prediction matched the largest shift: ' + predEnt.name + ' moved ' + pSigned + ' points (' + pDir + ').'
+          : verdict === 'partial'
+            ? predEnt.name + ' shifted ' + pSigned + ' points (' + pDir + '), while the biggest cascade hit ' + (dominantShift ? dominantShift.name + ' (' + domSigned + ' points, ' + dominantShift.direction + ')' : 'another part') + '.'
+            : predEnt.name + ' held steady (0 points) on this choice; the largest shift landed on ' + (dominantShift ? dominantShift.name + ' (' + domSigned + ' points, ' + dominantShift.direction + ')' : 'none of the parts') + '.';
+        prediction = {
+          entityId: predEnt.id,
+          entityName: predEnt.name,
+          entityIcon: predEnt.icon,
+          actualDelta: pDelta,
+          effectiveDelta: pEff,
+          direction: pDir,
+          wasLargestShift: wasLargest,
+          matched: wasLargest,
+          shifted: pEff !== 0,
+          verdict: verdict,
+          summary: pSummary
+        };
+      }
+    }
+
+    return {
+      scenarioId: sc.id,
+      step: stepIdx,
+      period: decision.period,
+      optionId: option.id,
+      optionLabel: option.label,
+      narrative: option.narrative,
+      improved: improved,
+      degraded: degraded,
+      unchanged: unchanged,
+      dominantShift: dominantShift,
+      netEffectiveDelta: netEffectiveDelta,
+      bestAlternative: bestAlternative,
+      prediction: prediction,
+      whyNot: whyNot
+    };
+  }
+
+  function buildOfflineSystemsCoach(scenario, st) {
+    var sc = resolveStewardshipScenario(scenario);
+    if (!sc) return null;
+    var safeSt = (st && typeof st === 'object' && !Array.isArray(st)) ? st : {};
+    var safeEntities = (safeSt.entities && typeof safeSt.entities === 'object' && !Array.isArray(safeSt.entities)) ? safeSt.entities : {};
+    var outcome = (safeSt.outcome && typeof safeSt.outcome === 'object' && !Array.isArray(safeSt.outcome))
+      ? safeSt.outcome
+      : computeScenarioOutcome(sc, safeEntities);
+    var famMeta = FAMILY_COLORS[sc.family] || { label: sc.family, mechanic: 'Systems feedback' };
+    var maineAnchor = CAMPAIGNS.find(function(c) { return CAMPAIGN_FAMILY[c.id] === sc.family; }) || null;
+    var sisterScenarios = SCENARIOS_LIBRARY.filter(function(s) { return s.family === sc.family && s.id !== sc.id; }).map(function(s) {
+      return { id: s.id, label: s.label, region: s.region, regionFlag: s.regionFlag };
+    });
+
+    var ranked = sc.entities.map(function(ent) {
+      var raw = safeEntities[ent.id];
+      var val = (typeof raw === 'number' && isFinite(raw)) ? Math.max(0, Math.min(100, raw)) : ent.init;
+      var inv = !!(sc.entityInverted && sc.entityInverted[ent.id]);
+      var eff = inv ? 100 - val : val;
+      return { id: ent.id, name: ent.name, icon: ent.icon, value: Math.round(val), effective: Math.round(eff), inverted: inv };
+    }).sort(function(a, b) { return b.effective - a.effective; });
+
+    var strongest = ranked[0] || null;
+    var weakest = ranked[ranked.length - 1] || null;
+    var entries = Array.isArray(safeSt.decisionLog) ? safeSt.decisionLog : [];
+
+    var sharpestTradeoff = null;
+    entries.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      var ev = evaluateDecisionTradeoffs(sc, entry.step, entry.optionId, entry.predictedEntityId);
+      if (!ev) return;
+      var lossScore = ev.degraded.reduce(function(sum, d) { return sum + Math.abs(d.effectiveDelta); }, 0);
+      var altGap = ev.bestAlternative ? Math.max(0, ev.bestAlternative.netEffectiveDelta - ev.netEffectiveDelta) : 0;
+      var score = lossScore * 2 + altGap;
+      if (!sharpestTradeoff || score > sharpestTradeoff.score) {
+        sharpestTradeoff = { score: score, eval: ev };
+      }
+    });
+
+    var headline = outcome.label + ' in ' + sc.label + ' (' + famMeta.mechanic + ')';
+    var diagnostics = [];
+    if (strongest && weakest) {
+      diagnostics.push(
+        'System balance: ' + strongest.name + ' finished strongest (' + strongest.value + '/100' + (strongest.inverted ? ', lower is healthier' : '') + '), while ' +
+        weakest.name + ' remains the tightest constraint (' + weakest.value + '/100' + (weakest.inverted ? ', lower is healthier' : '') + '). ' +
+        (strongest.effective - weakest.effective >= 25
+          ? 'A wide gap between parts signals uneven resilience — strengthening ' + weakest.name + ' prevents downstream drag.'
+          : 'Parts moved together cleanly, showing balanced multi-entity stewardship.')
+      );
+    }
+    var sisterNames = sisterScenarios.map(function(s) { return s.label + ' (' + s.region.split(' · ')[0] + ')'; }).join(' and ');
+    diagnostics.push(
+      'Cross-region comparison (' + famMeta.label + '): Compare ' + sc.label + ' with Maine anchor ' +
+      (maineAnchor ? maineAnchor.label + ' (' + maineAnchor.scale + ')' : 'campaign') +
+      (sisterNames ? ' and sister case ' + sisterNames : '') +
+      '. All share ' + (FAMILY_FEEDBACK_NOTES[sc.family] || famMeta.mechanic.toLowerCase()) + ', while local governance and history shape which moves earn durable trust.'
+    );
+    if (sharpestTradeoff && sharpestTradeoff.eval && sharpestTradeoff.score > 0) {
+      diagnostics.push(
+        'Key leverage turn (' + sharpestTradeoff.eval.period + '): ' + sharpestTradeoff.eval.whyNot
+      );
+    } else if (entries.length > 0) {
+      diagnostics.push(
+        'Decision consistency: Across ' + entries.length + ' recorded turns, your choices reinforced coupled entities without major backlash — try replaying to test how a short-term fix shifts the cascade.'
+      );
+    } else {
+      diagnostics.push(
+        'Before deciding: Watch ' + (weakest ? weakest.name : 'your lowest-health entity') + ' closely — early investments in community partnership and capacity usually compound across later periods.'
+      );
+    }
+
+    var crossRegionPrompt = 'Compare ' + sc.label + ' against ' + (maineAnchor ? maineAnchor.label : 'the Maine anchor') +
+      (sisterScenarios[0] ? ' and ' + sisterScenarios[0].label : '') +
+      ': which feedback loop behaved identically across regions, and which governance choice depended on local sovereignty?';
+
+    return {
+      scenarioId: sc.id,
+      scenarioLabel: sc.label,
+      region: sc.region,
+      family: sc.family,
+      familyLabel: famMeta.label,
+      mechanic: famMeta.mechanic,
+      maineAnchor: maineAnchor ? { id: maineAnchor.id, label: maineAnchor.label, scale: maineAnchor.scale, mechanic: maineAnchor.mechanic } : null,
+      sisterScenarios: sisterScenarios,
+      outcome: outcome,
+      strongestEntity: strongest,
+      weakestEntity: weakest,
+      headline: headline,
+      diagnostics: diagnostics,
+      crossRegionPrompt: crossRegionPrompt,
+      text: [headline].concat(diagnostics, [crossRegionPrompt]).join(' ')
+    };
+  }
+
+  function isStewardshipGlobalMuted() {
+    var fnMuted = false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function') {
+        fnMuted = !!window.__alloIsGlobalMuted();
+      }
+    } catch (e) { fnMuted = false; }
+    var flagMuted = false;
+    try {
+      if (typeof window !== 'undefined') flagMuted = !!window._alloGlobalMute;
+    } catch (e) { flagMuted = false; }
+    return fnMuted || flagMuted;
+  }
+
+  var StewardshipPure = Object.freeze({
+    computeScenarioOutcome: computeScenarioOutcome,
+    scenarioEvidence: scenarioEvidence,
+    getPairedFamilies: getPairedFamilies,
+    evaluateDecisionTradeoffs: evaluateDecisionTradeoffs,
+    buildOfflineSystemsCoach: buildOfflineSystemsCoach
+  });
+  if (typeof window !== 'undefined') {
+    window.StewardshipPure = StewardshipPure;
   }
 
   // ── Tool registration ──
@@ -1054,17 +1388,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '[data-stewardship-view] .stew-aura-breathe{animation:stewAuraBreathe 3.8s ease-in-out infinite;will-change:opacity;}',
       '[data-stewardship-view] .stew-bar-sheen{animation:stewSheenDrift 5.4s cubic-bezier(0.4,0,0.2,1) infinite;will-change:transform,opacity;}',
       '@media(prefers-reduced-motion:reduce){.stewardship-primary,.stewardship-card-elevated{transition:none;}.stewardship-primary:hover,.stewardship-card-elevated:hover{transform:none;}[data-stewardship-view] .stew-orbit-cw,[data-stewardship-view] .stew-orbit-ccw,[data-stewardship-view] .stew-flow-dash,[data-stewardship-view] .stew-beacon-pulse,[data-stewardship-view] .stew-aura-breathe{animation:none!important;transform:none!important;}[data-stewardship-view] .stew-bar-sheen{display:none!important;animation:none!important;}}',
+      '[data-stewardship-reduce-motion="true"] .stewardship-primary,[data-stewardship-reduce-motion="true"] .stewardship-card-elevated{transition:none!important;}',
+      '[data-stewardship-reduce-motion="true"] .stewardship-primary:hover,[data-stewardship-reduce-motion="true"] .stewardship-card-elevated:hover{transform:none!important;}',
+      '[data-stewardship-reduce-motion="true"] .stew-orbit-cw,[data-stewardship-reduce-motion="true"] .stew-orbit-ccw,[data-stewardship-reduce-motion="true"] .stew-flow-dash,[data-stewardship-reduce-motion="true"] .stew-beacon-pulse,[data-stewardship-reduce-motion="true"] .stew-aura-breathe{animation:none!important;transform:none!important;}',
+      '[data-stewardship-reduce-motion="true"] .stew-bar-sheen{display:none!important;animation:none!important;}',
       "\n[data-stewardship-view]{min-width:0;overflow-wrap:anywhere;line-height:1.6;--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#a8b8cc;--allo-stem-border:#64748b}\n[data-stewardship-view] *,[data-stewardship-view] *:before,[data-stewardship-view] *:after{box-sizing:border-box}\n[data-stewardship-view] :is(button,summary){min-height:44px;min-width:44px}\n[data-stewardship-view] button{white-space:normal;line-height:1.5}\n[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline:3px solid #fde68a;outline-offset:3px}\n[data-stewardship-heading]{scroll-margin-block:18px}\n[data-stewardship-view] [aria-pressed=true]{border-width:3px!important}\n[data-stewardship-inquiry] input[type=range]{min-height:32px;accent-color:#facc15}\n[data-stewardship-inquiry] textarea{font-size:16px!important;line-height:1.6;min-height:100px}\n[data-stewardship-inquiry] label{font-size:13px!important;line-height:1.6}\n[data-stewardship-inquiry] [data-stewardship-inquiry-log]{font-size:12px!important;line-height:1.6!important;max-height:200px!important}\n[data-stewardship-inquiry-log] ol{margin:0;padding:0 0 0 22px}[data-stewardship-inquiry-log] li{padding:6px 2px}\n[data-stewardship-inquiry] p{opacity:1!important;font-size:13px!important;line-height:1.6!important}\n[data-stewardship-inquiry-questions]{font-size:13px!important;line-height:1.6!important}\n[data-stewardship-view^=report]{--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#94a3b8;color:#0f172a}\n[data-stewardship-view^=report] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-view^=report] [data-stewardship-heading]:focus{outline-color:#9a5800}\n[data-stewardship-view] [data-stewardship-primary-action]{background:#166534!important;color:#fff!important;border:1px solid #86efac!important}\n@media(max-width:600px){.stewardship-inquiry-parameters{grid-template-columns:minmax(0,1fr)!important}.stewardship-comparison-grid{grid-template-columns:minmax(0,1fr)!important}[data-stewardship-view] div[style*=\"display: flex\"]{flex-wrap:wrap}[data-stewardship-view] div[style*=\"min-width\"]{min-width:0!important}[data-stewardship-view] div[style*=\"display: grid\"]>*{min-width:0}[data-stewardship-view^=report]>div{padding:14px!important}.stewardship-metric-value{white-space:normal;overflow:visible}.stewardship-metric-label{font-size:11px}}\n@media(forced-colors:active){[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline-color:Highlight}[data-stewardship-view] [aria-pressed=true]{border-color:Highlight!important}[data-stewardship-view] svg text{fill:CanvasText}[data-stewardship-view] [data-stewardship-primary-action]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}\n",
-      "\n[data-stewardship-view] .stewardship-inquiry>summary:focus-visible,[data-stewardship-view] .stewardship-scenario-data>summary:focus-visible{outline-offset:-5px!important}\n.stewardship-scenario-data{margin:14px 0;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data>summary{padding:12px 14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data p{margin:4px 14px 12px;font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#a8b8cc)}\n.stewardship-scenario-data-scroll{margin:0 12px 12px;max-height:none;overflow:auto;scroll-margin-block:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:8px}\n[data-stewardship-view] .stewardship-scenario-data-scroll:focus-visible{outline-offset:-4px!important}\n.stewardship-scenario-data-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table caption{text-align:left;padding:12px;font-size:14px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table :is(th,td){padding:10px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--allo-stem-border,#64748b);overflow-wrap:normal}\n.stewardship-scenario-data-table td{white-space:nowrap}.stewardship-scenario-data-table th{font-weight:700}.stewardship-scenario-data-detail{display:block;font-size:12px;font-weight:400;line-height:1.5;color:var(--allo-stem-text-soft,#a8b8cc);margin-top:3px}.stewardship-scenario-data-table thead{background:var(--allo-stem-panel,#1e293b)}\n.stewardship-scenario-data-table tbody tr:nth-child(even){background:rgba(148,163,184,.06)}\n@media(max-width:600px){[data-stewardship-view] [data-stewardship-report-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-report-header]>.no-print{grid-column:1/-1}}.theme-contrast [data-stewardship-report-header] [data-stewardship-heading=report]{margin-bottom:14px!important}.theme-contrast [data-stewardship-view]{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00}\n.theme-contrast [data-stewardship-inquiry-outcome],.theme-contrast [data-stewardship-report-metadata]{background:#000!important;color:#ffff00!important;border:1px solid #ffff00!important}\n.theme-contrast [data-stewardship-view] [data-stewardship-primary-action]{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast .stewardship-scenario-data :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast [data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:#ffff00}\n@media(forced-colors:active){.stewardship-scenario-data,.stewardship-scenario-data-scroll,.stewardship-scenario-data-table :is(th,td){border-color:CanvasText}.stewardship-scenario-data-table,.stewardship-scenario-data-table caption,.stewardship-scenario-data-table thead{background:Canvas;color:CanvasText}[data-stewardship-system-map] circle{fill:Canvas;stroke:CanvasText}[data-stewardship-system-map] line{stroke:CanvasText;opacity:1}[data-stewardship-inquiry-chart] rect{fill:Canvas;stroke:CanvasText}[data-stewardship-inquiry-chart] rect:nth-of-type(2){fill:Highlight;opacity:1}[data-stewardship-inquiry-chart] rect:nth-of-type(3){fill:Canvas}[data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:CanvasText!important}}\n",
+      "\n[data-stewardship-view] .stewardship-inquiry>summary:focus-visible,[data-stewardship-view] .stewardship-scenario-data>summary:focus-visible{outline-offset:-5px!important}\n.stewardship-scenario-data{margin:14px 0;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data>summary{padding:12px 14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data p{margin:4px 14px 12px;font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#a8b8cc)}\n.stewardship-scenario-data-scroll{margin:0 12px 12px;max-height:none;overflow:auto;scroll-margin-block:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:8px}\n[data-stewardship-view] .stewardship-scenario-data-scroll:focus-visible{outline-offset:-4px!important}\n.stewardship-scenario-data-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table caption{text-align:left;padding:12px;font-size:14px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table :is(th,td){padding:10px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--allo-stem-border,#64748b);overflow-wrap:normal}\n.stewardship-scenario-data-table td{white-space:nowrap}.stewardship-scenario-data-table th{font-weight:700}.stewardship-scenario-data-detail{display:block;font-size:12px;font-weight:400;line-height:1.5;color:var(--allo-stem-text-soft,#a8b8cc);margin-top:3px}.stewardship-scenario-data-table thead{background:var(--allo-stem-panel,#1e293b)}\n.stewardship-scenario-data-table tbody tr:nth-child(even){background:rgba(148,163,184,.06)}\n@media(max-width:600px){[data-stewardship-view] [data-stewardship-report-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-report-header]>.no-print{grid-column:1/-1}}.theme-contrast [data-stewardship-report-header] [data-stewardship-heading=report],[data-stewardship-contrast=\"true\"] [data-stewardship-report-header] [data-stewardship-heading=report]{margin-bottom:14px!important}.theme-contrast [data-stewardship-view],[data-stewardship-contrast=\"true\"]{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00}\n.theme-contrast [data-stewardship-inquiry-outcome],.theme-contrast [data-stewardship-report-metadata],[data-stewardship-contrast=\"true\"] [data-stewardship-inquiry-outcome],[data-stewardship-contrast=\"true\"] [data-stewardship-report-metadata]{background:#000!important;color:#ffff00!important;border:1px solid #ffff00!important}\n.theme-contrast [data-stewardship-view] [data-stewardship-primary-action],[data-stewardship-contrast=\"true\"] [data-stewardship-primary-action]{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast .stewardship-scenario-data :is(table,caption,th,td),[data-stewardship-contrast=\"true\"] .stewardship-scenario-data :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast [data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text,[data-stewardship-contrast=\"true\"] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:#ffff00}\n@media(forced-colors:active){.stewardship-scenario-data,.stewardship-scenario-data-scroll,.stewardship-scenario-data-table :is(th,td){border-color:CanvasText}.stewardship-scenario-data-table,.stewardship-scenario-data-table caption,.stewardship-scenario-data-table thead{background:Canvas;color:CanvasText}[data-stewardship-system-map] circle{fill:Canvas;stroke:CanvasText}[data-stewardship-system-map] line{stroke:CanvasText;opacity:1}[data-stewardship-inquiry-chart] rect{fill:Canvas;stroke:CanvasText}[data-stewardship-inquiry-chart] rect:nth-of-type(2){fill:Highlight;opacity:1}[data-stewardship-inquiry-chart] rect:nth-of-type(3){fill:Canvas}[data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:CanvasText!important}}\n",
       "@media(max-width:600px){[data-stewardship-view] [data-stewardship-scenario-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-scenario-header]>span{justify-self:end}[data-stewardship-scenario-header]>div{grid-column:1/-1}}@media(forced-colors:active){[data-stewardship-view] [data-stewardship-inquiry-chart]{background:Canvas!important}[data-stewardship-view] .stewardship-scenario-data :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
-      ".stewardship-model-explanation{margin:0 0 14px;border:1px solid var(--allo-stem-border,#64748b);border-radius:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}.stewardship-model-explanation>summary{padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer}[data-stewardship-view] .stewardship-model-explanation>summary:focus-visible{outline-offset:-5px!important}.stewardship-model-body{padding:0 12px 12px}.stewardship-model-body table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.6;margin-bottom:12px}.stewardship-model-body caption{text-align:left;font-weight:700;padding:8px 0}.stewardship-model-body :is(th,td){padding:8px 6px;text-align:left;vertical-align:top;border-bottom:1px solid var(--allo-stem-border,#64748b)}.stewardship-model-body td{white-space:nowrap;font-variant-numeric:tabular-nums}.stewardship-model-body th[scope=row]{font-weight:400}.stewardship-model-body [data-stewardship-model-displayed]{font-weight:700}.stewardship-model-body p{margin:8px 0}.theme-contrast .stewardship-model-explanation :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){[data-stewardship-view] .stewardship-model-explanation :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
-      '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry,.theme-contrast .stewardship-constellation,.theme-contrast .stewardship-card-elevated{box-shadow:none!important;border-width:2px!important;background:#000000!important;border-color:#ffff00!important;}',
-      '.theme-contrast .stewardship-family-tab,.theme-contrast .stewardship-preset-chip,.theme-contrast .stewardship-hero-badge{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
-      '.theme-contrast .stewardship-family-tab[aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}',
-      '.theme-contrast [data-stewardship-constellation-svg] text{fill:#ffff00!important;}',
-      '.theme-contrast .stew-svg-fx{display:none!important;}',
-      '.theme-contrast [data-stewardship-view] .stew-orbit-cw,.theme-contrast [data-stewardship-view] .stew-orbit-ccw,.theme-contrast [data-stewardship-view] .stew-flow-dash,.theme-contrast [data-stewardship-view] .stew-beacon-pulse,.theme-contrast [data-stewardship-view] .stew-aura-breathe{animation:none!important;}',
-      '.theme-contrast [data-stewardship-view] .stew-bar-sheen{display:none!important;animation:none!important;}'
+      ".stewardship-model-explanation{margin:0 0 14px;border:1px solid var(--allo-stem-border,#64748b);border-radius:10px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}.stewardship-model-explanation>summary{padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer}[data-stewardship-view] .stewardship-model-explanation>summary:focus-visible{outline-offset:-5px!important}.stewardship-model-body{padding:0 12px 12px}.stewardship-model-body table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.6;margin-bottom:12px}.stewardship-model-body caption{text-align:left;font-weight:700;padding:8px 0}.stewardship-model-body :is(th,td){padding:8px 6px;text-align:left;vertical-align:top;border-bottom:1px solid var(--allo-stem-border,#64748b)}.stewardship-model-body td{white-space:nowrap;font-variant-numeric:tabular-nums}.stewardship-model-body th[scope=row]{font-weight:400}.stewardship-model-body [data-stewardship-model-displayed]{font-weight:700}.stewardship-model-body p{margin:8px 0}.theme-contrast .stewardship-model-explanation :is(table,caption,th,td),[data-stewardship-contrast=\"true\"] .stewardship-model-explanation :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}@media(forced-colors:active){[data-stewardship-view] .stewardship-model-explanation :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
+      '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry,.theme-contrast .stewardship-constellation,.theme-contrast .stewardship-card-elevated,[data-stewardship-contrast="true"] .stewardship-command,[data-stewardship-contrast="true"] .stewardship-inquiry,[data-stewardship-contrast="true"] .stewardship-constellation,[data-stewardship-contrast="true"] .stewardship-card-elevated{box-shadow:none!important;border-width:2px!important;background:#000000!important;border-color:#ffff00!important;}',
+      '.theme-contrast .stewardship-family-tab,.theme-contrast .stewardship-preset-chip,.theme-contrast .stewardship-hero-badge,[data-stewardship-contrast="true"] .stewardship-family-tab,[data-stewardship-contrast="true"] .stewardship-preset-chip,[data-stewardship-contrast="true"] .stewardship-hero-badge{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
+      '.theme-contrast .stewardship-family-tab[aria-selected="true"],[data-stewardship-contrast="true"] .stewardship-family-tab[aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}',
+      '.theme-contrast [data-stewardship-constellation-svg] text,[data-stewardship-contrast="true"] [data-stewardship-constellation-svg] text{fill:#ffff00!important;}',
+      '.theme-contrast .stew-svg-fx,[data-stewardship-contrast="true"] .stew-svg-fx{display:none!important;}',
+      '.theme-contrast [data-stewardship-view] .stew-orbit-cw,.theme-contrast [data-stewardship-view] .stew-orbit-ccw,.theme-contrast [data-stewardship-view] .stew-flow-dash,.theme-contrast [data-stewardship-view] .stew-beacon-pulse,.theme-contrast [data-stewardship-view] .stew-aura-breathe,[data-stewardship-contrast="true"] .stew-orbit-cw,[data-stewardship-contrast="true"] .stew-orbit-ccw,[data-stewardship-contrast="true"] .stew-flow-dash,[data-stewardship-contrast="true"] .stew-beacon-pulse,[data-stewardship-contrast="true"] .stew-aura-breathe{animation:none!important;}',
+      '.theme-contrast [data-stewardship-view] .stew-bar-sheen,[data-stewardship-contrast="true"] .stew-bar-sheen{display:none!important;animation:none!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(stewardshipStyle);
   }
@@ -1086,6 +1424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
     desc: 'Cross-campaign launcher across multiple regions and biomes. 5 deep Maine campaigns plus 10 cross-region scenarios across all five mechanic families: fire (Yarralin Australia, Karuk Northern California), conservation (Yellowstone wolves, Akagera Rwanda lions), public health (Mumbai dengue, Liberia 2014 Ebola), watershed (Klamath River, Murray–Darling Basin), climate (Marshall Islands atolls, Bangladesh delta). Same universal mechanics taught through grounded regional case studies. Family Pairing Insights unlock as you complete Maine + cross-region scenarios in the same mechanic family.',
     color: 'emerald',
     category: 'science',
+    _engine: StewardshipPure,
     questHooks: [
       { id: 'launch_any_campaign', label: 'Launch any campaign or scenario', icon: '🌍', check: function(d) { var hub = (d && d.stewardshipHub) || {}; return !!hub.launchedAny; }, progress: function(d) { var hub = (d && d.stewardshipHub) || {}; return hub.launchedAny ? 'Done!' : 'Not yet'; } },
       { id: 'complete_one', label: 'Complete one', icon: '🌱', check: function(d) { return countCompletedFromTopLevel(d) >= 1; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/1 complete'; } },
@@ -1096,7 +1435,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       { id: 'complete_all_fifteen', label: 'Complete all fifteen — grandmaster', icon: '🌟', check: function(d) { return countCompletedFromTopLevel(d) >= 15; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/15 complete'; } }
     ],
     render: function(ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
@@ -1105,20 +1445,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast' || _stewIsHC());
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var isReducedMotion = !!ctx.reduceMotion;
+      var canSpeak = typeof ctx.callTTS === 'function';
+      function speakStewardship(text) {
+        if (!text || !canSpeak || isStewardshipGlobalMuted()) return;
+        try {
+          var res = ctx.callTTS(String(text), undefined, undefined, { force: true });
+          if (res && typeof res.catch === 'function') res.catch(function() {});
+        } catch (e) {}
+      }
 
       var rawHub = labToolData.stewardshipHub;
       var hub = (rawHub && typeof rawHub === 'object' && !Array.isArray(rawHub)) ? rawHub : {};
       var safeScenarioStates = (hub.scenarioStates && typeof hub.scenarioStates === 'object' && !Array.isArray(hub.scenarioStates)) ? hub.scenarioStates : {};
+      var safeXpCredited = (hub._xpCredited && typeof hub._xpCredited === 'object' && !Array.isArray(hub._xpCredited)) ? hub._xpCredited : {};
+      var xpGuardRef = React.useRef({});
+      var predState = React.useState({ key: '', entityId: null });
+      var pendingPred = predState[0], setPendingPred = predState[1];
+
+      function claimStewardshipXP(grants) {
+        var eligible = [];
+        for (var gi = 0; gi < grants.length; gi++) {
+          var g = grants[gi];
+          if (!g || !g.id) continue;
+          if (safeXpCredited[g.id] || xpGuardRef.current[g.id]) continue;
+          xpGuardRef.current[g.id] = true;
+          eligible.push(g);
+        }
+        return eligible;
+      }
+      function dispatchStewardshipXP(eligible) {
+        if (!eligible || !eligible.length || typeof ctx.awardXP !== 'function') return;
+        for (var di = 0; di < eligible.length; di++) {
+          try { ctx.awardXP('stewardshipHub', eligible[di].points, eligible[di].reason); } catch (e) {}
+        }
+      }
+      function makeXpPatch(eligible) {
+        if (!eligible || !eligible.length) return null;
+        var patch = {};
+        for (var pi = 0; pi < eligible.length; pi++) patch[eligible[pi].id] = true;
+        return patch;
+      }
+
       var stewardshipRootRef = React.useRef(null), stewardshipFocusRequest = React.useRef(null), stewardshipReturnAction = React.useRef(null);
       function stewardshipViewKey(state) {
-        if (state.comparing) return 'comparison:' + state.comparing.mode + (state.comparing.mode === 'viewing' ? ':' + state.comparing.a + ':' + state.comparing.b : '');
-        if (state.viewingReport) return 'report:' + state.viewingReport;
-        if (state.playingScenario) {
-          var scenarioState = state.scenarioStates && state.scenarioStates[state.playingScenario];
-          return 'scenario:' + state.playingScenario + ':' + (scenarioState && scenarioState.phase || 'briefing') + ':' + (scenarioState && scenarioState.step || 0);
+        var s = (state && typeof state === 'object' && !Array.isArray(state)) ? state : {};
+        if (s.comparing && typeof s.comparing === 'object' && !Array.isArray(s.comparing)) return 'comparison:' + s.comparing.mode + (s.comparing.mode === 'viewing' ? ':' + s.comparing.a + ':' + s.comparing.b : '');
+        if (typeof s.viewingReport === 'string' && s.viewingReport) return 'report:' + s.viewingReport;
+        if (typeof s.playingScenario === 'string' && s.playingScenario) {
+          var scMap = (s.scenarioStates && typeof s.scenarioStates === 'object' && !Array.isArray(s.scenarioStates)) ? s.scenarioStates : null;
+          var rawScenarioState = scMap && scMap[s.playingScenario];
+          var scenarioState = (rawScenarioState && typeof rawScenarioState === 'object' && !Array.isArray(rawScenarioState)) ? rawScenarioState : null;
+          return 'scenario:' + s.playingScenario + ':' + (scenarioState && typeof scenarioState.phase === 'string' ? scenarioState.phase : 'briefing') + ':' + (scenarioState && typeof scenarioState.step === 'number' && isFinite(scenarioState.step) ? scenarioState.step : 0);
         }
-        if (state.tutorialStep !== null && state.tutorialStep !== undefined) return 'tutorial:' + Math.min(4, Math.max(0, state.tutorialStep || 0));
-        var firstVisit = !state.tutorialSeen && !state.launchedAny && !CAMPAIGNS.some(function(c) { return readCampaignState(labToolData, c).status !== 'notStarted'; });
+        if (s.tutorialStep !== null && s.tutorialStep !== undefined) {
+          var ts = (typeof s.tutorialStep === 'number' && isFinite(s.tutorialStep)) ? s.tutorialStep : 0;
+          return 'tutorial:' + Math.min(4, Math.max(0, ts));
+        }
+        var firstVisit = !s.tutorialSeen && !s.launchedAny && !CAMPAIGNS.some(function(c) { return readCampaignState(labToolData, c).status !== 'notStarted'; });
         return firstVisit ? 'tutorial:0' : 'hub';
       }
       var stewardshipView = stewardshipViewKey(hub);
@@ -1133,7 +1519,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         setHub(patch);
       }
       function stewardshipSubview(content) {
-        return h('div', { ref: stewardshipRootRef, 'data-stewardship-view': stewardshipView }, content);
+        return h('div', {
+          ref: stewardshipRootRef,
+          'data-stewardship-view': stewardshipView,
+          'data-stewardship-contrast': isContrast ? 'true' : undefined,
+          'data-stewardship-reduce-motion': isReducedMotion ? 'true' : undefined
+        }, content);
       }
       React.useEffect(function () {
         var wanted = stewardshipFocusRequest.current;
@@ -1166,7 +1557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       }, [hub.viewingReport]);
       function setHub(patch) {
         setLabToolData(function(prev) {
-          return Object.assign({}, prev, { stewardshipHub: Object.assign({}, (prev && prev.stewardshipHub) || {}, patch) });
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+          return Object.assign({}, safePrev, { stewardshipHub: Object.assign({}, hubPrev, patch) });
         });
       }
 
@@ -1230,35 +1623,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       function startComparison() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); }
       function closeComparison() { transitionHub({ comparing: null }, true); }
       function pickComparisonCampaign(id) {
-        var cmp = hub.comparing || { mode: 'selecting', a: null, b: null };
+        var cmp = (hub.comparing && typeof hub.comparing === 'object' && !Array.isArray(hub.comparing)) ? hub.comparing : { mode: 'selecting', a: null, b: null };
         if (!cmp.a) {
           setHub({ comparing: { mode: 'selecting', a: id, b: null } });
         } else if (cmp.a === id) {
           // Deselect
           setHub({ comparing: { mode: 'selecting', a: null, b: null } });
         } else {
-          transitionHub({ comparing: { mode: 'viewing', a: cmp.a, b: id } });
+          var cmpPatch = { comparing: { mode: 'viewing', a: cmp.a, b: id } };
+          var cmpXp = claimStewardshipXP([{ id: 'compare:first', points: 10, reason: 'Completed cross-campaign comparison' }]);
+          var xpPatch = makeXpPatch(cmpXp);
+          requestStewardshipFocus(stewardshipViewKey(Object.assign({}, hub, cmpPatch)), false);
+          setLabToolData(function(prev) {
+            var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+            var nextHub = Object.assign({}, hubPrev, cmpPatch);
+            if (xpPatch) {
+              var xpPrev = (hubPrev._xpCredited && typeof hubPrev._xpCredited === 'object' && !Array.isArray(hubPrev._xpCredited)) ? hubPrev._xpCredited : {};
+              nextHub._xpCredited = Object.assign({}, xpPrev, xpPatch);
+            }
+            return Object.assign({}, safePrev, { stewardshipHub: nextHub });
+          });
+          dispatchStewardshipXP(cmpXp);
         }
       }
 
       function renderComparison() {
-        var cmp = hub.comparing;
+        var cmp = (hub.comparing && typeof hub.comparing === 'object' && !Array.isArray(hub.comparing)) ? hub.comparing : null;
         if (!cmp) return null;
         var completedSnaps = snapshots.filter(function(s) { return s.state.status === 'complete'; });
+        var cmpShellBg = isContrast ? '#000000' : 'var(--allo-stem-canvas, #0f172a)';
 
         // ── Selection phase ──
         if (cmp.mode === 'selecting') {
           return h('div', {
             // Dark shell — see note on the hub view above; same palette
             // dependency on a dark background to meet WCAG AA.
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+            style: { background: cmpShellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub', '← Back to hub')),
-              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: isContrast ? '#ffff00' : '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
             ),
-            h('div', { id: inquiryId + '-comparison-selection', 'data-stewardship-comparison-selection': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: '#e9d5ff', lineHeight: 1.55 } },
+            h('div', { id: inquiryId + '-comparison-selection', 'data-stewardship-comparison-selection': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 12, borderRadius: 10, background: isContrast ? '#000000' : 'rgba(168,85,247,0.10)', borderTop: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderRight: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderBottom: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderLeft: '3px solid ' + (isContrast ? '#ffff00' : '#a855f7'), marginBottom: 14, fontSize: 13, color: isContrast ? '#ffff00' : '#e9d5ff', lineHeight: 1.55 } },
               cmp.a
                 ? 'Selected: ' + (CAMPAIGNS.find(function(c) { return c.id === cmp.a; }) || {}).label + '. Pick a second completed campaign to compare against.'
                 : 'Pick any two of your completed campaigns. The hub will show them side-by-side with a pair-specific reflection prompt.'
@@ -1268,19 +1676,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var c = snap.campaign;
                 var picked = cmp.a === c.id;
                 return h('button', { type: 'button', key: c.id, 'data-stewardship-action': 'pick:' + c.id, 'aria-pressed': picked, 'aria-describedby': inquiryId + '-comparison-selection', onClick: function() { pickComparisonCampaign(c.id); },
-                  style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#94a3b8'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
+                  style: { padding: 12, borderRadius: 10, border: '2px solid ' + (isContrast ? '#ffff00' : (picked ? c.color : '#94a3b8')), background: isContrast ? '#000000' : (picked ? c.color + '22' : '#0f172a'), cursor: 'pointer', textAlign: 'left' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { style: { fontSize: 22 } }, c.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 800, color: stewardshipAccent(c.color), fontSize: 13 } }, c.label),
+                      h('div', { style: { fontWeight: 800, color: isContrast ? '#ffff00' : stewardshipAccent(c.color), fontSize: 13 } }, c.label),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, c.scale)
                     ),
-                    picked ? h('span', { style: { fontSize: 16, color: stewardshipAccent(c.color) } }, '✓') : null
+                    picked ? h('span', { style: { fontSize: 16, color: isContrast ? '#ffff00' : stewardshipAccent(c.color) } }, '✓') : null
                   )
                 );
               })
             ),
-            completedSnaps.length < 2 ? h('p', { style: { marginTop: 12, fontSize: 12, color: '#fbbf24', fontStyle: 'italic' } },
+            completedSnaps.length < 2 ? h('p', { style: { marginTop: 12, fontSize: 12, color: isContrast ? '#ffff00' : '#fbbf24', fontStyle: 'italic' } },
               'You need at least 2 completed campaigns to compare. Currently you have ' + completedSnaps.length + '.'
             ) : null
           )); // close inner maxWidth + outer dark shell
@@ -1288,12 +1696,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         function renderComparisonFallback() {
           return h('div', {
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+            style: { background: cmpShellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 680, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
-              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison'))
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: isContrast ? '#ffff00' : '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison'))
             ),
             h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'The selected campaigns could not be loaded for comparison. Return to the hub to choose another pair.')
           ));
@@ -1310,12 +1718,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           var reflection = key ? PAIR_REFLECTIONS[key] : null;
 
           // Pull yearLog feedback-rule frequency for each
-          var slotA = (labToolData[cA.toolDataKey]) || {};
-          var slotB = (labToolData[cB.toolDataKey]) || {};
-          var stateA = slotA[cA.stateField] || {};
-          var stateB = slotB[cB.stateField] || {};
-          var logA = stateA.yearLog || stateA.weekLog || [];
-          var logB = stateB.yearLog || stateB.weekLog || [];
+          var rawSlotA = labToolData[cA.toolDataKey];
+          var rawSlotB = labToolData[cB.toolDataKey];
+          var slotA = (rawSlotA && typeof rawSlotA === 'object' && !Array.isArray(rawSlotA)) ? rawSlotA : {};
+          var slotB = (rawSlotB && typeof rawSlotB === 'object' && !Array.isArray(rawSlotB)) ? rawSlotB : {};
+          var stateA = (slotA[cA.stateField] && typeof slotA[cA.stateField] === 'object' && !Array.isArray(slotA[cA.stateField])) ? slotA[cA.stateField] : {};
+          var stateB = (slotB[cB.stateField] && typeof slotB[cB.stateField] === 'object' && !Array.isArray(slotB[cB.stateField])) ? slotB[cB.stateField] : {};
+          var logA = Array.isArray(stateA.yearLog || stateA.weekLog) ? (stateA.yearLog || stateA.weekLog) : [];
+          var logB = Array.isArray(stateB.yearLog || stateB.weekLog) ? (stateB.yearLog || stateB.weekLog) : [];
 
           function tallyRules(log) {
             var counts = Object.create(null);
@@ -1346,7 +1756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               keys.map(function(k) {
                 var recorded = counts[k].count === 1 ? __alloT('stem.stewardship.feedback_recorded_once', 'Recorded once') : __alloT('stem.stewardship.feedback_recorded_times', 'Recorded {count} times').replace('{count}', counts[k].count);
                 return h('li', { key: k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  h('span', { style: { color: stewardshipAccent(color), fontWeight: 700, marginRight: 6 } }, recorded + ': '),
+                  h('span', { style: { color: isContrast ? '#ffff00' : stewardshipAccent(color), fontWeight: 700, marginRight: 6 } }, recorded + ': '),
                   counts[k].label
                 );
               })
@@ -1355,20 +1765,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           function outcomeChip(c, outcome) {
             if (!outcome) return h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.stewardship.no_outcome', 'No outcome'));
-            return h('div', { style: { padding: 10, borderRadius: 8, background: (outcome.color || '#86efac') + '15', borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
-              h('div', { style: { fontSize: 13, fontWeight: 700, color: stewardshipAccent(outcome.color || '#86efac') } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+            return h('div', { style: { padding: 10, borderRadius: 8, background: isContrast ? '#000000' : ((outcome.color || '#86efac') + '15'), borderLeft: '3px solid ' + (isContrast ? '#ffff00' : (outcome.color || '#86efac')), border: isContrast ? '1px solid #ffff00' : undefined } },
+              h('div', { style: { fontSize: 13, fontWeight: 700, color: isContrast ? '#ffff00' : stewardshipAccent(outcome.color || '#86efac') } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } }, outcome.desc || '')
             );
           }
 
+          var cmpReadLabel = t('stem.stewardship.read_aloud', '🔊 Read aloud');
+
           return h('div', {
             // Dark shell — same WCAG reason as the other view roots
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+            style: { background: cmpShellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 900, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
-              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: isContrast ? '#ffff00' : '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
               h('button', { type: 'button', 'data-stewardship-action': 'pick-again', onClick: function() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
                 style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.stewardship.pick_different_pair', 'Pick different pair'))
             ),
@@ -1377,12 +1789,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             reflection ? h('div', {
               style: {
                 padding: 14, borderRadius: 12, marginBottom: 14,
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
-                borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '4px solid #a855f7'
+                background: isContrast ? '#000000' : 'linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(56,189,248,0.04) 100%)',
+                borderTop: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderRight: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderBottom: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderLeft: '4px solid ' + (isContrast ? '#ffff00' : '#a855f7')
               }
             },
-              h('div', { style: { fontSize: 11, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.stewardship.pair_reflection', 'Pair reflection')),
-              h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 16, fontWeight: 800 } }, reflection.title),
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.pair_reflection', 'Pair reflection')),
+                canSpeak ? h('button', {
+                  type: 'button',
+                  'data-stewardship-read-aloud': 'comparison',
+                  'aria-label': cmpReadLabel + ': ' + reflection.title,
+                  onClick: function() { speakStewardship(reflection.title + '. ' + reflection.text); },
+                  style: { padding: '4px 10px', borderRadius: 8, border: '1px solid ' + (isContrast ? '#ffff00' : '#a855f7'), background: isContrast ? '#000000' : 'rgba(15,23,42,0.85)', color: isContrast ? '#ffff00' : '#e9d5ff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                }, cmpReadLabel) : null
+              ),
+              h('h3', { style: { margin: '0 0 6px', color: isContrast ? '#ffff00' : '#e9d5ff', fontSize: 16, fontWeight: 800 } }, reflection.title),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.65 } }, reflection.text)
             ) : null,
 
@@ -1390,20 +1811,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { className: 'stewardship-comparison-grid', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 } },
               [{ c: cA, s: sA, log: logA, rules: rulesA }, { c: cB, s: sB, log: logB, rules: rulesB }].map(function(side) {
                 return h('section', { key: side.c.id, 'data-stewardship-comparison-card': side.c.id, 'aria-labelledby': inquiryId + '-comparison-' + side.c.id,
-                  style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + side.c.color }
+                  style: { background: cmpShellBg, borderRadius: 12, padding: 14, border: isContrast ? '1px solid #ffff00' : undefined, borderLeft: '3px solid ' + (isContrast ? '#ffff00' : side.c.color) }
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                     h('span', { style: { fontSize: 24 } }, side.c.icon),
                     h('div', { style: { flex: 1 } },
-                      h('h3', { id: inquiryId + '-comparison-' + side.c.id, style: { margin: 0, fontWeight: 800, color: stewardshipAccent(side.c.color), fontSize: 14 } }, side.c.label),
+                      h('h3', { id: inquiryId + '-comparison-' + side.c.id, style: { margin: 0, fontWeight: 800, color: isContrast ? '#ffff00' : stewardshipAccent(side.c.color), fontSize: 14 } }, side.c.label),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, side.c.scale)
                     )
                   ),
                   outcomeChip(side.c, side.s.outcome),
-                  h('div', { style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                  h('div', { style: { marginTop: 10, padding: 8, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', border: isContrast ? '1px solid #ffff00' : undefined } },
                     h('div', null, 'Difficulty: ' + (side.s.difficulty || 'Standard')),
                     h('div', null, 'Periods played: ' + side.log.length),
-                    h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? '#d8b4fe' : '#94a3b8', fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
+                    h('div', { style: { color: side.s.outcome && isTopTier(side.s.outcome) ? (isContrast ? '#ffff00' : '#d8b4fe') : (isContrast ? '#ffff00' : '#94a3b8'), fontWeight: 700, marginTop: 4 } }, side.s.outcome && isTopTier(side.s.outcome) ? '🌟 Top-tier outcome' : '')
                   ),
                   h('div', { style: { marginTop: 10 } },
                     h('h4', { id: inquiryId + '-comparison-feedback-' + side.c.id, style: { margin: '0 0 4px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.feedback_rules_fired', 'Feedback rules fired')),
@@ -1778,94 +2199,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       // ════════════════════════════════════════════════════════════
       function setScenarioState(scenarioId, patch) {
         setLabToolData(function(prev) {
-          var hubPrev = (prev && prev.stewardshipHub) || {};
-          var statesPrev = hubPrev.scenarioStates || {};
-          var curr = statesPrev[scenarioId] || {};
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+          var statesPrev = (hubPrev.scenarioStates && typeof hubPrev.scenarioStates === 'object' && !Array.isArray(hubPrev.scenarioStates)) ? hubPrev.scenarioStates : {};
+          var curr = (statesPrev[scenarioId] && typeof statesPrev[scenarioId] === 'object' && !Array.isArray(statesPrev[scenarioId])) ? statesPrev[scenarioId] : {};
           var next = Object.assign({}, curr, patch);
           var newStates = Object.assign({}, statesPrev);
           newStates[scenarioId] = next;
-          return Object.assign({}, prev, {
+          return Object.assign({}, safePrev, {
             stewardshipHub: Object.assign({}, hubPrev, { scenarioStates: newStates, launchedAny: true })
           });
         });
       }
       function openScenario(scenarioId, fresh) {
         var destinationState = Object.assign({}, hub, { playingScenario: scenarioId, launchedAny: true });
-        if (fresh) { destinationState.scenarioStates = Object.assign({}, hub.scenarioStates); delete destinationState.scenarioStates[scenarioId]; }
+        if (fresh) { destinationState.scenarioStates = Object.assign({}, safeScenarioStates); delete destinationState.scenarioStates[scenarioId]; }
         requestStewardshipFocus(stewardshipViewKey(destinationState));
         setHub({ playingScenario: scenarioId, launchedAny: true });
         if (announceToSR) announceToSR(__alloT('stem.stewardship.sr_opening_scenario', 'Opening scenario'));
       }
       function closeScenario() { transitionHub({ playingScenario: null }, true); }
       function resetScenario(scenarioId) {
+        setPendingPred({ key: '', entityId: null });
         setLabToolData(function(prev) {
-          var hubPrev = (prev && prev.stewardshipHub) || {};
-          var statesPrev = hubPrev.scenarioStates || {};
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+          var statesPrev = (hubPrev.scenarioStates && typeof hubPrev.scenarioStates === 'object' && !Array.isArray(hubPrev.scenarioStates)) ? hubPrev.scenarioStates : {};
           var newStates = Object.assign({}, statesPrev);
           delete newStates[scenarioId];
-          return Object.assign({}, prev, { stewardshipHub: Object.assign({}, hubPrev, { scenarioStates: newStates }) });
+          return Object.assign({}, safePrev, { stewardshipHub: Object.assign({}, hubPrev, { scenarioStates: newStates }) });
         });
       }
       function beginScenarioPlay(scenario) {
+        setPendingPred({ key: '', entityId: null });
         requestStewardshipFocus('scenario:' + scenario.id + ':playing:0');
         var initial = {};
         scenario.entities.forEach(function(ent) { initial[ent.id] = ent.init; });
         setScenarioState(scenario.id, { phase: 'playing', step: 0, entities: initial, decisionLog: [] });
         if (announceToSR) announceToSR(__alloT('stem.stewardship.sr_scenario_started', 'Scenario started'));
       }
-      function chooseScenarioOption(scenario, decisionIndex, option) {
-        var st = (hub && hub.scenarioStates && hub.scenarioStates[scenario.id]) || {};
-        var entities = Object.assign({}, st.entities || {});
+      function chooseScenarioOption(scenario, decisionIndex, option, predictedEntityId) {
+        var rawSt = safeScenarioStates[scenario.id];
+        var st = (rawSt && typeof rawSt === 'object' && !Array.isArray(rawSt)) ? rawSt : {};
+        var baseEntities = (st.entities && typeof st.entities === 'object' && !Array.isArray(st.entities)) ? st.entities : {};
+        var entities = Object.assign({}, baseEntities);
         var entityValuesBefore = Object.assign({}, entities);
         Object.keys(option.effects || {}).forEach(function(k) {
-          var curr = entities[k] != null ? entities[k] : 0;
+          var curr = (typeof entities[k] === 'number' && isFinite(entities[k])) ? entities[k] : 0;
           entities[k] = Math.max(0, Math.min(100, curr + option.effects[k]));
         });
-        var newLog = (st.decisionLog || []).concat([{ step: decisionIndex, optionId: option.id, label: option.label, narrative: option.narrative, entityValuesBefore: entityValuesBefore, entityValuesAfter: Object.assign({}, entities) }]);
+        var logEntry = {
+          step: decisionIndex,
+          optionId: option.id,
+          label: option.label,
+          narrative: option.narrative,
+          entityValuesBefore: entityValuesBefore,
+          entityValuesAfter: Object.assign({}, entities)
+        };
+        if (typeof predictedEntityId === 'string' && predictedEntityId) {
+          logEntry.predictedEntityId = predictedEntityId;
+        }
+        var existingLog = Array.isArray(st.decisionLog) ? st.decisionLog : [];
+        var newLog = existingLog.concat([logEntry]);
         var nextStep = decisionIndex + 1;
-        requestStewardshipFocus('scenario:' + scenario.id + ':' + (nextStep >= scenario.decisions.length ? 'debrief' : 'playing') + ':' + nextStep);
-        if (nextStep >= scenario.decisions.length) {
-          var outcome = computeScenarioOutcome(scenario, entities);
-          setScenarioState(scenario.id, { phase: 'debrief', step: nextStep, entities: entities, decisionLog: newLog, outcome: outcome });
-          if (announceToSR) announceToSR('Scenario complete: ' + outcome.label);
+        var isComplete = nextStep >= scenario.decisions.length;
+        var outcome = isComplete ? computeScenarioOutcome(scenario, entities) : null;
+
+        var xpGrants = [
+          { id: 'turn:' + scenario.id, points: 5, reason: 'First decision in ' + scenario.label }
+        ];
+        if (isComplete) {
+          xpGrants.push({ id: 'debrief:' + scenario.id, points: 15, reason: 'Completed ' + scenario.label });
+          var maineAnchorDone = CAMPAIGNS.some(function(c) {
+            return CAMPAIGN_FAMILY[c.id] === scenario.family && readCampaignState(labToolData, c).status === 'complete';
+          });
+          if (maineAnchorDone) {
+            xpGrants.push({
+              id: 'pair:' + scenario.family,
+              points: 20,
+              reason: 'Unlocked cross-region pairing: ' + (FAMILY_COLORS[scenario.family] ? FAMILY_COLORS[scenario.family].label : scenario.family)
+            });
+          }
+        }
+        var xpEarned = claimStewardshipXP(xpGrants);
+        var xpPatch = makeXpPatch(xpEarned);
+        var scenarioPatch = isComplete
+          ? { phase: 'debrief', step: nextStep, entities: entities, decisionLog: newLog, outcome: outcome }
+          : { phase: 'playing', step: nextStep, entities: entities, decisionLog: newLog };
+
+        setPendingPred({ key: '', entityId: null });
+        requestStewardshipFocus('scenario:' + scenario.id + ':' + (isComplete ? 'debrief' : 'playing') + ':' + nextStep);
+        setLabToolData(function(prev) {
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+          var statesPrev = (hubPrev.scenarioStates && typeof hubPrev.scenarioStates === 'object' && !Array.isArray(hubPrev.scenarioStates)) ? hubPrev.scenarioStates : {};
+          var currState = (statesPrev[scenario.id] && typeof statesPrev[scenario.id] === 'object' && !Array.isArray(statesPrev[scenario.id])) ? statesPrev[scenario.id] : {};
+          var newStates = Object.assign({}, statesPrev);
+          newStates[scenario.id] = Object.assign({}, currState, scenarioPatch);
+          var nextHub = Object.assign({}, hubPrev, { scenarioStates: newStates, launchedAny: true });
+          if (xpPatch) {
+            var xpPrev = (hubPrev._xpCredited && typeof hubPrev._xpCredited === 'object' && !Array.isArray(hubPrev._xpCredited)) ? hubPrev._xpCredited : {};
+            nextHub._xpCredited = Object.assign({}, xpPrev, xpPatch);
+          }
+          return Object.assign({}, safePrev, { stewardshipHub: nextHub });
+        });
+        dispatchStewardshipXP(xpEarned);
+        if (isComplete) {
+          if (announceToSR) announceToSR(t('stem.stewardship.sr_scenario_complete', 'Scenario complete: {label}').replace('{label}', outcome.label));
           if (typeof ctx.addXP === 'function') ctx.addXP(20, 'Stewardship scenario complete');
         } else {
-          setScenarioState(scenario.id, { phase: 'playing', step: nextStep, entities: entities, decisionLog: newLog });
-          if (announceToSR) announceToSR('Decision recorded. Moving to step ' + (nextStep + 1));
+          if (announceToSR) announceToSR(t('stem.stewardship.sr_decision_recorded', 'Decision recorded. Moving to step {step}').replace('{step}', String(nextStep + 1)));
         }
       }
 
-      // Read recorded values first; older decisions can be replayed without
-      // mutating their saved entries. Unreadable decisions stay unavailable.
-      function scenarioEvidence(scenario, st) {
-        var entries = Array.isArray(st.decisionLog) ? st.decisionLog : [];
-        var series = {}, changes = {};
-        function recorded(values, id) { var value = values && values[id]; return typeof value === 'number' && isFinite(value) ? value : null; }
-        scenario.entities.forEach(function(ent) {
-          var first = entries[0] && recorded(entries[0].entityValuesBefore, ent.id);
-          series[ent.id] = [first != null ? first : ent.init];
-        });
-        entries.forEach(function(entry) {
-          var decision = entry && scenario.decisions[entry.step];
-          var option = decision && decision.options.filter(function(opt) { return opt.id === entry.optionId; })[0];
-          scenario.entities.forEach(function(ent) {
-            var points = series[ent.id];
-            var before = entry && recorded(entry.entityValuesBefore, ent.id);
-            if (before == null) before = points[points.length - 1];
-            var after = entry && recorded(entry.entityValuesAfter, ent.id);
-            if (after == null && before != null && option) after = Math.max(0, Math.min(100, before + ((option.effects && option.effects[ent.id]) || 0)));
-            points.push(after);
-            changes[ent.id] = before != null && after != null ? after - before : null;
-          });
-        });
-        return { entries: entries, series: series, rows: scenario.entities.map(function(ent) {
-          var value = recorded(st.entities, ent.id);
-          if (value == null) value = ent.init;
-          var inverted = !!(scenario.entityInverted && scenario.entityInverted[ent.id]);
-          var effective = inverted ? 100 - value : value;
-          return { entity: ent, value: value, inverted: inverted, status: effective >= 60 ? 'Healthy' : effective >= 30 ? 'Stressed' : 'Critical', lastChange: entries.length ? changes[ent.id] : null };
-        }) };
-      }
       function scenarioChangeMeaning(delta, inverted) {
         if (typeof delta !== 'number' || !isFinite(delta)) return { state: 'unavailable', label: __alloT('stem.stewardship.change_unavailable', 'Change unavailable'), color: '#a8b8cc' };
         if (delta === 0) return { state: 'unchanged', label: __alloT('stem.stewardship.no_change', 'No change (0 points)'), color: '#a8b8cc' };
@@ -1926,16 +2372,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       function renderScenarioPlay(scenarioId) {
         var scenario = SCENARIOS_LIBRARY.find(function(s) { return s.id === scenarioId; });
         if (!scenario) return null;
-        var st = (hub.scenarioStates && hub.scenarioStates[scenarioId]) || null;
-        var phase = st ? st.phase : 'briefing';
+        var rawSt = safeScenarioStates[scenarioId];
+        var st = (rawSt && typeof rawSt === 'object' && !Array.isArray(rawSt)) ? rawSt : null;
+        var phase = (st && typeof st.phase === 'string') ? st.phase : 'briefing';
         var familyMeta = FAMILY_COLORS[scenario.family] || { primary: '#86efac', accent: '#86efac' };
+        var shellBg = isContrast ? '#000000' : 'var(--allo-stem-canvas, #0f172a)';
+        var readAloudLabel = t('stem.stewardship.read_aloud', '🔊 Read aloud');
+        var readBtnStyle = {
+          padding: '4px 10px', borderRadius: 8,
+          border: '1px solid ' + (isContrast ? '#ffff00' : '#475569'),
+          background: isContrast ? '#000000' : 'rgba(15,23,42,0.85)',
+          color: isContrast ? '#ffff00' : '#e2e8f0',
+          fontSize: 12, fontWeight: 700, cursor: 'pointer'
+        };
 
         // ── Briefing phase ──
         if (!st || phase === 'briefing') {
           return h('div', {
             // Dark shell — see hub view for WCAG rationale
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
-            role: 'region', 'aria-label': scenario.label + ' briefing'
+            style: { background: shellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': t('stem.stewardship.scenario_briefing_aria', '{label} briefing').replace('{label}', scenario.label)
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_4', '← Back to hub'),
@@ -1943,21 +2399,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, scenario.regionFlag + ' ' + scenario.region),
-                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: stewardshipAccent(scenario.color), fontSize: 22, fontWeight: 900 } }, scenario.label),
-                h('div', { style: { fontSize: 12, color: '#fbbf24', marginTop: 4, fontStyle: 'italic' } }, scenario.scale + ' · ' + scenario.mechanic)
+                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), fontSize: 22, fontWeight: 900 } }, scenario.label),
+                h('div', { style: { fontSize: 12, color: isContrast ? '#ffff00' : '#fbbf24', marginTop: 4, fontStyle: 'italic' } }, scenario.scale + ' · ' + scenario.mechanic)
               )
             ),
             h('div', {
-              style: { padding: 16, borderRadius: 12, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + scenario.color + '55', borderLeft: '4px solid ' + scenario.color, marginBottom: 14 }
+              style: { padding: 16, borderRadius: 12, background: isContrast ? '#000000' : 'rgba(15,23,42,0.7)', border: '1px solid ' + (isContrast ? '#ffff00' : scenario.color + '55'), borderLeft: '4px solid ' + (isContrast ? '#ffff00' : scenario.color), marginBottom: 14 }
             },
-              h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.briefing', 'Briefing')),
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+                h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.briefing', 'Briefing')),
+                canSpeak ? h('button', {
+                  type: 'button',
+                  'data-stewardship-read-aloud': 'briefing',
+                  'aria-label': readAloudLabel + ': ' + t('stem.stewardship.read_briefing_target', '{label} briefing').replace('{label}', scenario.label),
+                  onClick: function() { speakStewardship(scenario.label + '. ' + scenario.briefing); },
+                  style: readBtnStyle
+                }, readAloudLabel) : null
+              ),
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.7 } }, scenario.briefing)
             ),
             h('div', { style: { marginBottom: 14 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.entities_you_steward', 'Entities you steward')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 } },
                 scenario.entities.map(function(ent) {
-                  return h('div', { key: ent.id, style: { padding: 10, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                  return h('div', { key: ent.id, style: { padding: 10, borderRadius: 10, background: shellBg, border: '1px solid var(--allo-stem-border, #1e293b)' } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                       h('span', { style: { fontSize: 22 } }, ent.icon),
                       h('div', null,
@@ -1970,7 +2435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               )
             ),
             h('div', {
-              style: { padding: 12, borderRadius: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', marginBottom: 14, fontSize: 12.5, color: 'var(--allo-stem-text, #fef3c7)', lineHeight: 1.55 }
+              style: { padding: 12, borderRadius: 10, background: isContrast ? '#000000' : 'rgba(251,191,36,0.08)', border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(251,191,36,0.3)'), marginBottom: 14, fontSize: 12.5, color: 'var(--allo-stem-text, #fef3c7)', lineHeight: 1.55 }
             },
               h('strong', null, __alloT('stem.stewardship.ai_scenario_notice', '⚠️ AI scenario notice: ')),
               scenario.aiDisclaimer
@@ -1986,13 +2451,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ── Playing phase ──
         if (phase === 'playing') {
-          var step = st.step || 0;
+          var step = (typeof st.step === 'number' && isFinite(st.step) && st.step >= 0) ? Math.floor(st.step) : 0;
           var decision = scenario.decisions[step];
           if (!decision) return null;
+          var predKey = scenario.id + ':' + step;
+          var activePredId = (pendingPred && pendingPred.key === predKey) ? pendingPred.entityId : null;
+          var logList = Array.isArray(st.decisionLog) ? st.decisionLog : [];
+          var lastEntry = logList.length > 0 ? logList[logList.length - 1] : null;
+          var lastTradeoff = lastEntry ? evaluateDecisionTradeoffs(scenario, lastEntry.step, lastEntry.optionId, lastEntry.predictedEntityId) : null;
+
           return h('div', {
             // Dark shell — same WCAG rationale
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
-            role: 'region', 'aria-label': scenario.label + ', decision ' + (step + 1)
+            style: { background: shellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': t('stem.stewardship.scenario_decision_aria', '{label}, decision {step}').replace('{label}', scenario.label).replace('{step}', String(step + 1))
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             // Header bar
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
@@ -2000,15 +2471,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.pause', '← Pause')),
               h('span', { style: { fontSize: 28 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
-                h('div', { style: { fontWeight: 800, color: stewardshipAccent(scenario.color), fontSize: 16 } }, scenario.label),
+                h('div', { style: { fontWeight: 800, color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), fontSize: 16 } }, scenario.label),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, scenario.region)
               ),
-              h('div', { style: { fontSize: 12, color: '#fbbf24', fontWeight: 700 } }, scenario.yearLabel + ' ' + (step + 1) + ' of ' + scenario.decisions.length)
+              h('div', { style: { fontSize: 12, color: isContrast ? '#ffff00' : '#fbbf24', fontWeight: 700 } }, scenario.yearLabel + ' ' + (step + 1) + ' of ' + scenario.decisions.length)
             ),
             // Progress dots
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
               scenario.decisions.map(function(_, i) {
-                return h('div', { key: i, style: { flex: 1, height: 4, borderRadius: 2, background: i < step ? scenario.color : (i === step ? '#fbbf24' : '#334155'), transition: 'background 0.3s' } });
+                return h('div', { key: i, style: { flex: 1, height: 4, borderRadius: 2, background: i < step ? (isContrast ? '#ffff00' : scenario.color) : (i === step ? (isContrast ? '#ffff00' : '#fbbf24') : '#334155'), transition: isReducedMotion ? 'none' : 'background 0.3s' } });
               })
             ),
             // ── Cascade Map (node-link SYSTEM view; replaces the flat bars) ──
@@ -2018,7 +2489,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             // the spokes green/red and drop +N/-N deltas on the parts it moved —
             // the cascade made literal. The NEXT choice's effects stay hidden
             // (you still choose from the labels), preserving predict-then-see.
-            h('div', { style: { marginBottom: 14, padding: 12, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+            h('div', { style: { marginBottom: 14, padding: 12, borderRadius: 12, background: shellBg, border: '1px solid var(--allo-stem-border, #334155)' } },
               (function() {
                 var ents = scenario.entities, N = ents.length, W = 460, Hh = 276, cx = W / 2, cy = Hh / 2, R = 92;
                 var evidenceRows = scenarioEvidence(scenario, st).rows;
@@ -2031,8 +2502,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   return { ent: ent, x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), v: Math.round(v), hv: Math.max(0, Math.min(100, hv)), col: col, d: evidenceRows[i].lastChange != null ? evidenceRows[i].lastChange : 0, change: scenarioChangeMeaning(evidenceRows[i].lastChange, !!inv) };
                 });
                 var ringC = 2 * Math.PI * 20;
-                var hcS = _stewIsHC();
-                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 540, display: 'block', margin: '0 auto', borderRadius: 10 }, role: 'img', 'aria-label': 'System map of ' + scenario.label + ': ' + N + ' interconnected parts; your last decision shifted the highlighted ones.' },
+                var hcS = isContrast;
+                return h('svg', { 'data-stewardship-system-map': 'true', 'aria-describedby': inquiryId + '-scenario-' + scenario.id + '-current-summary', width: '100%', viewBox: '0 0 ' + W + ' ' + Hh, style: { maxWidth: 540, display: 'block', margin: '0 auto', borderRadius: 10 }, role: 'img', 'aria-label': t('stem.stewardship.system_map_aria', 'System map of {label}: {count} interconnected parts; your last decision shifted the highlighted ones.').replace('{label}', scenario.label).replace('{count}', String(N)) },
                   !hcS && h('defs', null,
                     h('radialGradient', { id: 'stew-map-well', cx: '50%', cy: '48%', r: '58%' },
                       h('stop', { offset: '0%', stopColor: '#132a24' }),
@@ -2086,35 +2557,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               })(),
               h('div', { 'data-stewardship-change-legend': 'true', style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginTop: 8, lineHeight: 1.5 } }, __alloT('stem.stewardship.system_map_change_legend', 'Ring colors show condition. Solid green spokes mean improving; dashed rose spokes mean worsening. Numbers show score changes: lower can be healthier. Open System data for full names, conditions, and changes.'))
             ),
+            // Immediate Systems Feedback + whyNot Tradeoff card after previous turn
+            lastTradeoff ? h('div', {
+              'data-stewardship-tradeoff-feedback': 'true',
+              role: 'status',
+              'aria-live': 'polite',
+              style: {
+                padding: 12, borderRadius: 10, marginBottom: 14,
+                background: isContrast ? '#000000' : 'rgba(30,41,59,0.85)',
+                border: '1px solid ' + (isContrast ? '#ffff00' : (lastTradeoff.degraded.length > 0 ? 'rgba(251,191,36,0.45)' : 'rgba(134,239,172,0.4)')),
+                borderLeft: '4px solid ' + (isContrast ? '#ffff00' : (lastTradeoff.degraded.length > 0 ? '#fbbf24' : '#86efac'))
+              }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: isContrast ? '#ffff00' : (lastTradeoff.degraded.length > 0 ? '#fde68a' : '#86efac'), marginBottom: 4 } },
+                t('stem.stewardship.systems_tradeoff_heading', 'Systems feedback from your last decision')
+              ),
+              lastTradeoff.prediction ? h('div', {
+                'data-stewardship-prediction-result': lastTradeoff.prediction.verdict,
+                style: { fontSize: 12.5, fontWeight: 700, color: isContrast ? '#ffff00' : (lastTradeoff.prediction.verdict === 'hit' ? '#86efac' : '#fde68a'), marginBottom: 6 }
+              }, lastTradeoff.prediction.summary) : null,
+              h('p', { style: { margin: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, lastTradeoff.whyNot)
+            ) : null,
             renderScenarioEvidence(scenario, st, 'current'),
             // Decision prompt
             h('div', {
-              style: { padding: 14, borderRadius: 12, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + scenario.color + '55', borderLeft: '4px solid ' + scenario.color, marginBottom: 14 }
+              style: { padding: 14, borderRadius: 12, background: isContrast ? '#000000' : 'rgba(15,23,42,0.7)', border: '1px solid ' + (isContrast ? '#ffff00' : scenario.color + '55'), borderLeft: '4px solid ' + (isContrast ? '#ffff00' : scenario.color), marginBottom: 14 }
             },
-              h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, decision.period),
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+                h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, decision.period),
+                canSpeak ? h('button', {
+                  type: 'button',
+                  'data-stewardship-read-aloud': 'decision',
+                  'aria-label': readAloudLabel + ': ' + t('stem.stewardship.read_decision_target', 'Decision {step}').replace('{step}', String(step + 1)),
+                  onClick: function() {
+                    var spokenOpts = decision.options.map(function(o, idx) { return 'Option ' + (idx + 1) + ': ' + o.label; }).join('. ');
+                    speakStewardship(decision.period + '. ' + decision.prompt + ' ' + spokenOpts);
+                  },
+                  style: readBtnStyle
+                }, readAloudLabel) : null
+              ),
               h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.65, fontWeight: 600 } }, decision.prompt)
+            ),
+            // Optional Predict-Before-Decide commitment chips
+            h('div', {
+              'data-stewardship-predict-panel': 'true',
+              style: {
+                padding: '10px 12px', borderRadius: 10, marginBottom: 12,
+                background: isContrast ? '#000000' : 'rgba(15,23,42,0.65)',
+                border: '1px dashed ' + (isContrast ? '#ffff00' : 'rgba(148,163,184,0.45)')
+              }
+            },
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: isContrast ? '#ffff00' : '#e2e8f0', marginBottom: 4 } },
+                t('stem.stewardship.predict_before_decide_title', 'Before you choose (optional): which system part will shift most?')
+              ),
+              h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text-soft, #a8b8cc)', marginBottom: 8 } },
+                t('stem.stewardship.predict_before_decide_help', 'Tap a part below to test your systems hunch, then choose a decision to compare your expectation against the cascade tradeoff.')
+              ),
+              h('div', {
+                role: 'group',
+                'aria-label': t('stem.stewardship.predict_shift_group_aria', 'Optional: predict which system part will shift most'),
+                style: { display: 'flex', flexWrap: 'wrap', gap: 6 }
+              },
+                scenario.entities.map(function(ent) {
+                  var picked = activePredId === ent.id;
+                  return h('button', {
+                    key: ent.id,
+                    type: 'button',
+                    'data-stewardship-predict-chip': ent.id,
+                    'aria-pressed': picked ? 'true' : 'false',
+                    onClick: function() {
+                      setPendingPred({ key: predKey, entityId: picked ? null : ent.id });
+                    },
+                    style: {
+                      padding: '6px 10px', borderRadius: 999, cursor: 'pointer', fontSize: 12, fontWeight: picked ? 800 : 600,
+                      border: '1px solid ' + (isContrast ? '#ffff00' : (picked ? '#86efac' : '#475569')),
+                      background: isContrast ? (picked ? '#ffff00' : '#000000') : (picked ? '#14532d' : '#0f172a'),
+                      color: isContrast ? (picked ? '#000000' : '#ffff00') : (picked ? '#ffffff' : '#e2e8f0')
+                    }
+                  }, ent.icon + ' ' + ent.name);
+                })
+              )
             ),
             // Options
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               decision.options.map(function(opt) {
-                return h('button', { type: 'button', key: opt.id, 'data-stewardship-action': 'option:' + opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt); }, 'aria-label': 'Choose: ' + opt.label,
+                return h('button', { type: 'button', key: opt.id, 'data-stewardship-action': 'option:' + opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt, activePredId); }, 'aria-label': t('stem.stewardship.choose_option_aria', 'Choose: {label}').replace('{label}', opt.label),
                   style: {
                     padding: 14, borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer',
-                    background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left',
-                    fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, transition: 'all 0.2s'
+                    background: shellBg, color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left',
+                    fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, transition: isReducedMotion ? 'none' : 'all 0.2s'
                   },
-                  onMouseEnter: function(e) { if (!_stewIsHC()) { e.currentTarget.style.borderColor = scenario.color; e.currentTarget.style.background = 'rgba(15,23,42,0.9)'; } },
-                  onMouseLeave: function(e) { if (!_stewIsHC()) { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.background = '#0f172a'; } }
+                  onMouseEnter: function(e) { if (!isContrast) { e.currentTarget.style.borderColor = scenario.color; e.currentTarget.style.background = 'rgba(15,23,42,0.9)'; } },
+                  onMouseLeave: function(e) { if (!isContrast) { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.background = '#0f172a'; } }
                 }, opt.label);
               })
             ),
             // Recent decision log
-            (st.decisionLog && st.decisionLog.length > 0) ? h('details', { style: { marginTop: 16, padding: '10px 14px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+            (logList.length > 0) ? h('details', { style: { marginTop: 16, padding: '10px 14px', borderRadius: 10, background: shellBg, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.decisions_so_far', '📓 Decisions so far')),
               h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 } },
-                st.decisionLog.map(function(entry, i) {
-                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', borderLeft: '3px solid ' + scenario.color } },
-                    h('div', { style: { fontSize: 11, color: stewardshipAccent(scenario.color), fontWeight: 700, marginBottom: 2 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
+                logList.map(function(entry, i) {
+                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-panel, #1e293b)', borderLeft: '3px solid ' + (isContrast ? '#ffff00' : scenario.color) } },
+                    h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), fontWeight: 700, marginBottom: 2 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4 } }, entry.label),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '↳ ' + entry.narrative)
                   );
@@ -2127,10 +2671,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         // ── Debrief phase ──
         if (phase === 'debrief') {
           var outcome = st.outcome || computeScenarioOutcome(scenario, st.entities);
+          var offlineCoach = buildOfflineSystemsCoach(scenario, st);
+          var debriefLog = Array.isArray(st.decisionLog) ? st.decisionLog : [];
           return h('div', {
             // Dark shell — same WCAG rationale
-            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
-            role: 'region', 'aria-label': scenario.label + ' debrief'
+            style: { background: shellBg, borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
+            role: 'region', 'aria-label': t('stem.stewardship.scenario_debrief_aria', '{label} debrief').replace('{label}', scenario.label)
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_6', '← Back to hub'),
@@ -2138,18 +2684,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 200 } },
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, scenario.regionFlag + ' ' + scenario.region),
-                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: stewardshipAccent(scenario.color), fontSize: 20, fontWeight: 900 } }, scenario.label + ' · Debrief')
+                h('h2', { tabIndex: -1, 'data-stewardship-heading': 'scenario', style: { margin: '2px 0 0', color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), fontSize: 20, fontWeight: 900 } }, scenario.label + ' · Debrief')
               )
             ),
             // Outcome tier
             h('div', {
-              style: { padding: 18, borderRadius: 12, marginBottom: 16, background: (outcome.color || '#86efac') + '18', border: '2px solid ' + (outcome.color || '#86efac') + '88', borderLeft: '4px solid ' + (outcome.color || '#86efac'), boxShadow: '0 0 24px ' + (outcome.color || '#86efac') + '33' }
+              style: { padding: 18, borderRadius: 12, marginBottom: 16, background: isContrast ? '#000000' : ((outcome.color || '#86efac') + '18'), border: '2px solid ' + (isContrast ? '#ffff00' : ((outcome.color || '#86efac') + '88')), borderLeft: '4px solid ' + (isContrast ? '#ffff00' : (outcome.color || '#86efac')), boxShadow: isContrast ? 'none' : ('0 0 24px ' + (outcome.color || '#86efac') + '33') }
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 36 } }, outcome.icon || '🏆'),
                 h('div', null,
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.final_outcome_2', 'Final outcome')),
-                  h('h3', { style: { margin: '2px 0 0', color: stewardshipAccent(outcome.color || '#86efac'), fontSize: 20, fontWeight: 900 } }, outcome.label)
+                  h('h3', { style: { margin: '2px 0 0', color: isContrast ? '#ffff00' : stewardshipAccent(outcome.color || '#86efac'), fontSize: 20, fontWeight: 900 } }, outcome.label)
                 )
               ),
               h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, outcome.desc)
@@ -2173,7 +2719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     var netChange = scenarioChangeMeaning(delta, !!inverted);
                     var pts = traj[ent.id] || [v], n = pts.length;
                     var SW = 100, SH = 24, px = function(i) { return (n <= 1 ? 0.5 : i / (n - 1)) * SW; }, pyv = function(val) { return SH - 3 - (val / 100) * (SH - 6); };
-                    return h('div', { key: ent.id, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+                    return h('div', { key: ent.id, style: { padding: 10, borderRadius: 8, background: shellBg, border: '1px solid var(--allo-stem-border, #1e293b)' } },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                         h('span', { style: { fontSize: 18 } }, ent.icon),
                         h('div', { style: { flex: 1 } },
@@ -2181,12 +2727,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ent.label)
                         ),
                         h('div', { style: { textAlign: 'right' } },
-                          h('div', { style: { fontSize: 14, fontWeight: 900, color: barColor } }, Math.round(v))
+                          h('div', { style: { fontSize: 14, fontWeight: 900, color: isContrast ? '#ffff00' : barColor } }, Math.round(v))
                         )
                       ),
                       h('div', { 'data-stewardship-net-change': ent.id, 'data-change-direction': netChange.state, style: { fontSize: 12, color: netChange.color, lineHeight: 1.5, marginBottom: 6, overflowWrap: 'anywhere' } }, __alloT('stem.stewardship.since_start', 'Since start') + ': ' + scenarioChangeText(delta, !!inverted)),
                       n >= 2 && pts.every(function(value) { return value != null; }) ? (function() {
-                        var hcSp = _stewIsHC();
+                        var hcSp = isContrast;
                         var polyStr = pts.map(function(val, i) { return px(i).toFixed(1) + ',' + pyv(val).toFixed(1); }).join(' ');
                         var areaStr = '0,' + SH + ' ' + polyStr + ' ' + SW + ',' + SH;
                         var spId = 'stew-sp-' + ent.id;
@@ -2205,35 +2751,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                           h('ellipse', { cx: px(n - 1), cy: pyv(pts[n - 1]), rx: 1.6, ry: 2.3, fill: hcSp ? '#ffff00' : barColor, stroke: '#0f172a', strokeWidth: 0.5 })
                         );
                       })() : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
-                        h('div', { style: { width: v + '%', height: '100%', background: barColor } }))
+                        h('div', { style: { width: v + '%', height: '100%', background: isContrast ? '#ffff00' : barColor } }))
                     );
                   })
                 );
               })()
             ),
             renderScenarioEvidence(scenario, st, 'trajectory'),
-            // Decision log
-            (st.decisionLog && st.decisionLog.length > 0) ? h('div', { style: { marginBottom: 16 } },
+            // Decision log with systems tradeoff & prediction feedback
+            (debriefLog.length > 0) ? h('div', { style: { marginBottom: 16 } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, __alloT('stem.stewardship.your_decision_path', 'Your decision path')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
-                st.decisionLog.map(function(entry, i) {
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + scenario.color, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                    h('div', { style: { fontWeight: 700, color: stewardshipAccent(scenario.color), marginBottom: 3 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
+                debriefLog.map(function(entry, i) {
+                  var turnTradeoff = evaluateDecisionTradeoffs(scenario, entry.step, entry.optionId, entry.predictedEntityId);
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: shellBg, border: isContrast ? '1px solid #ffff00' : undefined, borderLeft: '3px solid ' + (isContrast ? '#ffff00' : scenario.color), fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                    h('div', { style: { fontWeight: 700, color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), marginBottom: 3 } }, scenario.yearLabel + ' ' + (entry.step + 1) + ' · ' + (scenario.decisions[entry.step] ? scenario.decisions[entry.step].period : '')),
                     h('div', { style: { marginBottom: 4 } }, entry.label),
-                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '↳ ' + entry.narrative)
+                    h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '↳ ' + entry.narrative),
+                    turnTradeoff && turnTradeoff.prediction ? h('div', { style: { marginTop: 6, fontSize: 11.5, fontWeight: 700, color: isContrast ? '#ffff00' : (turnTradeoff.prediction.verdict === 'hit' ? '#86efac' : '#fde68a') } }, turnTradeoff.prediction.summary) : null,
+                    turnTradeoff ? h('div', { style: { marginTop: 4, fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, turnTradeoff.whyNot) : null
                   );
                 })
               )
             ) : null,
-            // Synthesis
+            // Synthesis + Read Aloud
             h('div', {
-              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.4)', borderRight: '1px solid rgba(168,85,247,0.4)', borderBottom: '1px solid rgba(168,85,247,0.4)', borderLeft: '3px solid #a855f7' }
+              style: { padding: 14, borderRadius: 12, marginBottom: 16, background: isContrast ? '#000000' : 'rgba(168,85,247,0.10)', borderTop: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderRight: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderBottom: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(168,85,247,0.4)'), borderLeft: '3px solid ' + (isContrast ? '#ffff00' : '#a855f7') }
             },
-              h('div', { style: { fontSize: 11, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, __alloT('stem.stewardship.cross_region_synthesis', '🧠 Cross-region synthesis')),
-              h('p', { style: { margin: 0, color: '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+                h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } }, __alloT('stem.stewardship.cross_region_synthesis', '🧠 Cross-region synthesis')),
+                canSpeak ? h('button', {
+                  type: 'button',
+                  'data-stewardship-read-aloud': 'debrief',
+                  'aria-label': readAloudLabel + ': ' + t('stem.stewardship.read_debrief_target', '{label} synthesis debrief').replace('{label}', scenario.label),
+                  onClick: function() {
+                    speakStewardship(scenario.label + '. ' + outcome.label + '. ' + scenario.synthesis + (offlineCoach && offlineCoach.text ? ' ' + offlineCoach.text : ''));
+                  },
+                  style: readBtnStyle
+                }, readAloudLabel) : null
+              ),
+              h('p', { style: { margin: 0, color: isContrast ? '#ffff00' : '#e9d5ff', fontSize: 13.5, lineHeight: 1.65 } }, scenario.synthesis)
             ),
+            // Deterministic Offline Cross-Region Systems Coach
+            offlineCoach ? h('div', {
+              'data-stewardship-offline-coach': 'true',
+              style: {
+                padding: 14, borderRadius: 12, marginBottom: 16,
+                background: isContrast ? '#000000' : 'rgba(15,23,42,0.85)',
+                border: '1px solid ' + (isContrast ? '#ffff00' : 'rgba(134,239,172,0.38)'),
+                borderLeft: '4px solid ' + (isContrast ? '#ffff00' : '#86efac')
+              }
+            },
+              h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 4 } },
+                t('stem.stewardship.offline_systems_coach_label', 'Offline Cross-Region Systems Coach')
+              ),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #f8fafc)', marginBottom: 8 } }, offlineCoach.headline),
+              h('ul', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+                offlineCoach.diagnostics.map(function(line, di) { return h('li', { key: di, style: { marginBottom: 4 } }, line); })
+              ),
+              h('p', { style: { margin: 0, fontSize: 12, color: isContrast ? '#ffff00' : '#fde68a', fontStyle: 'italic', lineHeight: 1.55 } }, offlineCoach.crossRegionPrompt)
+            ) : null,
             // Sources
-            h('details', { open: false, style: { marginBottom: 16, padding: '10px 14px', borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+            h('details', { open: false, style: { marginBottom: 16, padding: '10px 14px', borderRadius: 10, background: shellBg, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('summary', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.stewardship.cited_organizations_and_sources', '📚 Cited organizations and sources')),
               h('ul', { style: { margin: '10px 0 0 18px', padding: 0, fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65 } },
                 scenario.sources.map(function(src, i) { return h('li', { key: i }, src); })
@@ -2245,7 +2824,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             // Actions
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               h('button', { type: 'button', 'data-stewardship-action': 'scenario-replay', onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay', '↻ Replay') + ': ' + scenario.label,
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: stewardshipAccent(scenario.color), fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + (isContrast ? '#ffff00' : scenario.color), cursor: 'pointer', background: 'transparent', color: isContrast ? '#ffff00' : stewardshipAccent(scenario.color), fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
               h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'),
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'))
             )
@@ -2262,31 +2841,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var inProgressCount = snapshots.filter(function(s) { return s.state.status === 'inProgress'; }).length;
       var topTierCount = snapshots.filter(function(s) { return s.state.status === 'complete' && isTopTier(s.state.outcome); }).length;
       // Mastery tiers now count both Maine campaigns AND non-Maine scenarios
-      var totalCompleteForTier = completedCount + ((hub.scenarioStates ? Object.keys(hub.scenarioStates) : []).filter(function(id) {
-        var st = hub.scenarioStates[id];
-        return st && st.phase === 'debrief' && st.outcome;
+      var totalCompleteForTier = completedCount + (Object.keys(safeScenarioStates).filter(function(id) {
+        var st = safeScenarioStates[id];
+        return st && typeof st === 'object' && !Array.isArray(st) && st.phase === 'debrief' && st.outcome;
       }).length);
-      var totalTopTierForTier = topTierCount + ((hub.scenarioStates ? Object.keys(hub.scenarioStates) : []).filter(function(id) {
-        var st = hub.scenarioStates[id];
-        return st && st.phase === 'debrief' && st.outcome && isScenarioTopTier(st.outcome);
+      var totalTopTierForTier = topTierCount + (Object.keys(safeScenarioStates).filter(function(id) {
+        var st = safeScenarioStates[id];
+        return st && typeof st === 'object' && !Array.isArray(st) && st.phase === 'debrief' && st.outcome && isScenarioTopTier(st.outcome);
       }).length);
-      var earnedTiers = STEWARDSHIP_TIERS.filter(function(t) {
-        if (t.requireTopTier) return totalTopTierForTier >= t.minComplete;
-        return totalCompleteForTier >= t.minComplete;
+      var earnedTiers = STEWARDSHIP_TIERS.filter(function(tier) {
+        if (tier.requireTopTier) return totalTopTierForTier >= tier.minComplete;
+        return totalCompleteForTier >= tier.minComplete;
       });
 
       function launchCampaign(c) {
         // Pre-set the host tool's tab or mode so the user lands in the right place
-        var patch = {};
-        var existing = (labToolData[c.toolDataKey]) || {};
-        var fieldPatch = Object.assign({}, existing);
-        fieldPatch[c.tabField] = c.tabValue;
-        patch[c.toolDataKey] = fieldPatch;
-        // Also mark that the hub has launched at least one campaign
-        patch.stewardshipHub = Object.assign({}, hub, { launchedAny: true });
-        setLabToolData(function(prev) { return Object.assign({}, prev, patch); });
-        if (addToast) addToast('Launching ' + c.label + '...', 'info');
-        if (announceToSR) announceToSR('Opening ' + c.label);
+        setLabToolData(function(prev) {
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawExisting = safePrev[c.toolDataKey];
+          var existing = (rawExisting && typeof rawExisting === 'object' && !Array.isArray(rawExisting)) ? rawExisting : {};
+          var fieldPatch = Object.assign({}, existing);
+          fieldPatch[c.tabField] = c.tabValue;
+          var hubPrev = (safePrev.stewardshipHub && typeof safePrev.stewardshipHub === 'object' && !Array.isArray(safePrev.stewardshipHub)) ? safePrev.stewardshipHub : {};
+          var patch = {};
+          patch[c.toolDataKey] = fieldPatch;
+          patch.stewardshipHub = Object.assign({}, hubPrev, { launchedAny: true });
+          return Object.assign({}, safePrev, patch);
+        });
+        if (addToast) addToast(t('stem.stewardship.launching_campaign_toast', 'Launching {label}...').replace('{label}', c.label), 'info');
+        if (announceToSR) announceToSR(t('stem.stewardship.opening_campaign_sr', 'Opening {label}').replace('{label}', c.label));
         // Navigate into the host tool
         if (launchTimerRef.current) clearTimeout(launchTimerRef.current);
         launchTimerRef.current = setTimeout(function() {
@@ -2296,18 +2879,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       }
 
       // If the user is comparing two campaigns, render that
-      if (hub.comparing) {
+      if (hub.comparing && typeof hub.comparing === 'object' && !Array.isArray(hub.comparing)) {
         return stewardshipSubview(renderComparison());
       }
 
       // If the user is viewing a campaign report, render that instead of the main hub
-      if (hub.viewingReport) {
-        return stewardshipSubview(renderCampaignReport(hub.viewingReport));
+      if (typeof hub.viewingReport === 'string' && hub.viewingReport) {
+        var reportNode = renderCampaignReport(hub.viewingReport);
+        if (reportNode) return stewardshipSubview(reportNode);
       }
 
       // If the user is playing a self-contained scenario, render that
-      if (hub.playingScenario) {
-        return stewardshipSubview(renderScenarioPlay(hub.playingScenario));
+      if (typeof hub.playingScenario === 'string' && hub.playingScenario) {
+        var scenarioNode = renderScenarioPlay(hub.playingScenario);
+        if (scenarioNode) return stewardshipSubview(scenarioNode);
       }
 
       // Compute scenario snapshots (self-contained scenarios from SCENARIOS_LIBRARY)
@@ -2350,7 +2935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
       // Bespoke Ecological Watershed & Compass SVG Emblem
       function renderStewardshipEmblem() {
-        var hcE = _stewIsHC();
+        var hcE = isContrast;
         return h('svg', {
           width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
           'aria-label': __alloT('stem.stewardship.emblem_alt', 'Environmental Stewardship ecological compass emblem'),
@@ -2398,7 +2983,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       function renderFamilyConstellationSvg() {
         var W = 680, H = 166;
         var colW = W / 5;
-        var hcC = _stewIsHC();
+        var hcC = isContrast;
         return h('svg', {
           'data-stewardship-constellation-svg': 'true',
           viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
@@ -2494,6 +3079,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       }
 
       return h('main', { ref: stewardshipRootRef, 'data-stewardship-view': stewardshipView, className: 'stewardship-menu-shell', 'data-stewardship-mission': 'true',
+        'data-stewardship-contrast': isContrast ? 'true' : undefined,
+        'data-stewardship-reduce-motion': isReducedMotion ? 'true' : undefined,
         // Dark self-contained shell: this tool's color palette assumes a dark
         // navy background (greens like #86efac, slates like #94a3b8 / #cbd5e1
         // fail WCAG AA on white). Wrapping the panel in #0f172a guarantees the
@@ -2504,7 +3091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         h('header', { className: 'stewardship-command' },
           h('div', { className: 'stewardship-command-top' },
             h('div', { className: 'stewardship-command-title' },
-              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_4', 'Back') + ': ' + __alloT('stem.stewardship.steam_lab_destination', 'STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
+              (!ctx.embedded && ArrowLeft) ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_4', 'Back') + ': ' + __alloT('stem.stewardship.steam_lab_destination', 'STEAM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
               renderStewardshipEmblem(),
               h('div', { style: { minWidth: 0 } },
                 h('div', { className: 'stewardship-hero-badge' }, __alloT('stem.stewardship.subject_badge', 'Environmental Science · Systems Stewardship Studio') + ' · ' + pairedFamilies.length + '/5 ' + __alloT('stem.stewardship.families_paired', 'Families Paired')),
@@ -2546,9 +3133,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           // biodiversity. Higher biodiversity generally INCREASES ecosystem resilience
           // (Tilman/Cardinale/Loreau/IPBES); higher project complexity / uncertainty
           // generally REDUCES the odds that any one campaign succeeds on its first plan.
-          var iq = Object.assign({ investment: 50, timeHorizon: 10, communityBuyin: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, hub.stewIQ || {});
+          var rawIq = (hub.stewIQ && typeof hub.stewIQ === 'object' && !Array.isArray(hub.stewIQ)) ? hub.stewIQ : {};
+          var iq = Object.assign({ investment: 50, timeHorizon: 10, communityBuyin: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, rawIq);
           // Resolve older saved field names without mutating the saved project.
           if (iq.interventionComplexity == null) iq.interventionComplexity = iq.ecologicalComplex != null ? iq.ecologicalComplex : 5;
+          if (typeof iq.investment !== 'number' || !isFinite(iq.investment)) iq.investment = 50;
+          if (typeof iq.timeHorizon !== 'number' || !isFinite(iq.timeHorizon)) iq.timeHorizon = 10;
+          if (typeof iq.communityBuyin !== 'number' || !isFinite(iq.communityBuyin)) iq.communityBuyin = 5;
+          if (typeof iq.interventionComplexity !== 'number' || !isFinite(iq.interventionComplexity)) iq.interventionComplexity = 5;
+          if (typeof iq.hypothesis !== 'string') iq.hypothesis = '';
+          if (typeof iq.explanation !== 'string') iq.explanation = '';
           if (!Array.isArray(iq.log)) iq.log = [];
           function setIQ(patch) { setHub({ stewIQ: Object.assign({}, iq, patch) }); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
@@ -2565,13 +3159,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             struggling: { label: __alloT('stem.stewardship.struggling', 'Struggling'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.stewardship.low_investment_or_weak_community_engag', 'Low investment or weak community engagement. Effort visible but ecosystem still declining.') },
             failing: { label: __alloT('stem.stewardship.failing', 'Failing'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.stewardship.too_little_too_late_or_wrong_approach_', 'Too little, too late, or wrong approach. Tipping point passed or imminent.') }
           })[state];
-          return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.stewardship.stewardship_inquiry_predict_the_trajec', '🔬 Stewardship Inquiry — Explore the Trajectory')),
+          return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: isContrast ? '#000000' : sm.bg, border: '1px solid ' + (isContrast ? '#ffff00' : sm.border), color: isContrast ? '#ffff00' : '#e8f0f5' } },
+            h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: isContrast ? '#ffff00' : sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.stewardship.stewardship_inquiry_predict_the_trajec', '🔬 Stewardship Inquiry — Explore the Trajectory')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a project setting, then observe how investment, time, community, and intervention complexity affect the modeled trajectory. The result updates live; record a hypothesis or pattern. This slider is intervention complexity, not biodiversity; higher biodiversity generally increases resilience.')),
             h('div', { id: inquiryId + '-outcome', 'data-stewardship-inquiry-outcome': 'true', role: 'status', 'aria-atomic': 'true', style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             (function() {
-              var hcG = _stewIsHC();
+              var hcG = isContrast;
               var fillW = Math.max(0, Math.min(320, successOdds * 320));
               var tipX = 30 + fillW;
               // Keep strictly 3 <rect> children so forced-colors rect:nth-of-type(1..3) stays 100% intact.
@@ -2663,25 +3257,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('div', { className: 'stewardship-inquiry-parameters', style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px 12px', marginBottom: 10 } },
               h('label', { htmlFor: inquiryId + '-investment', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.investment_k', 'Investment ($K)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.investment)),
-                h('input', { id: inquiryId + '-investment', 'data-stewardship-inquiry-param': 'investment', 'aria-valuetext': iq.investment + ' thousand dollars', type: 'range', min: 1, max: 500, step: 1, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-investment', 'data-stewardship-inquiry-param': 'investment', 'aria-valuetext': t('stem.stewardship.valuetext_thousand_dollars', '{value} thousand dollars').replace('{value}', String(iq.investment)), type: 'range', min: 1, max: 500, step: 1, value: iq.investment, onChange: function(e) { setKey('investment', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { htmlFor: inquiryId + '-timeHorizon', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.time_horizon_yr', 'Time horizon (yr)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.timeHorizon)),
-                h('input', { id: inquiryId + '-timeHorizon', 'data-stewardship-inquiry-param': 'timeHorizon', 'aria-valuetext': iq.timeHorizon + (iq.timeHorizon === 1 ? ' year' : ' years'), type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-timeHorizon', 'data-stewardship-inquiry-param': 'timeHorizon', 'aria-valuetext': (iq.timeHorizon === 1 ? t('stem.stewardship.valuetext_year_one', '{value} year') : t('stem.stewardship.valuetext_years_many', '{value} years')).replace('{value}', String(iq.timeHorizon)), type: 'range', min: 1, max: 50, step: 1, value: iq.timeHorizon, onChange: function(e) { setKey('timeHorizon', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { htmlFor: inquiryId + '-communityBuyin', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.community_buy_in', 'Community buy-in')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.communityBuyin)),
-                h('input', { id: inquiryId + '-communityBuyin', 'data-stewardship-inquiry-param': 'communityBuyin', 'aria-valuetext': iq.communityBuyin + ' out of 10', type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-communityBuyin', 'data-stewardship-inquiry-param': 'communityBuyin', 'aria-valuetext': t('stem.stewardship.valuetext_out_of_ten', '{value} out of 10').replace('{value}', String(iq.communityBuyin)), type: 'range', min: 0, max: 10, step: 1, value: iq.communityBuyin, onChange: function(e) { setKey('communityBuyin', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               ),
               h('label', { htmlFor: inquiryId + '-interventionComplexity', style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.stewardship.intervention_complexity_uncertainty', 'Intervention complexity / uncertainty')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.interventionComplexity)),
-                h('input', { id: inquiryId + '-interventionComplexity', 'data-stewardship-inquiry-param': 'interventionComplexity', 'aria-valuetext': iq.interventionComplexity + ' out of 10', type: 'range', min: 0, max: 10, step: 1, value: iq.interventionComplexity, onChange: function(e) { setKey('interventionComplexity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { id: inquiryId + '-interventionComplexity', 'data-stewardship-inquiry-param': 'interventionComplexity', 'aria-valuetext': t('stem.stewardship.valuetext_out_of_ten', '{value} out of 10').replace('{value}', String(iq.interventionComplexity)), type: 'range', min: 0, max: 10, step: 1, value: iq.interventionComplexity, onChange: function(e) { setKey('interventionComplexity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
               h('button', { type: 'button', 'data-stewardship-inquiry-log-action': 'true', onClick: function() {
-                var t = new Date().toISOString().slice(11, 19);
-                setIQ({ log: iq.log.concat([{ t: t, inv: iq.investment, hor: iq.timeHorizon, comm: iq.communityBuyin, ic: iq.interventionComplexity, odds: (successOdds * 100).toFixed(0), state: sm.label }]) });
+                var stamp = new Date().toISOString().slice(11, 19);
+                setIQ({ log: iq.log.concat([{ t: stamp, inv: iq.investment, hor: iq.timeHorizon, comm: iq.communityBuyin, ic: iq.interventionComplexity, odds: (successOdds * 100).toFixed(0), state: sm.label }]) });
                 if (announceToSR) announceToSR(__alloT('stem.stewardship.project_logged', 'Project recorded in the recent project log.'));
               }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.stewardship.log_this_project', '📋 Log this project')),
               h('button', { type: 'button', 'data-stewardship-inquiry-reset': 'true', onClick: function() { setIQ({ investment: 50, timeHorizon: 10, communityBuyin: 5, interventionComplexity: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.stewardship.reset', 'Reset'))
@@ -2691,7 +3285,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('p', { id: inquiryId + '-log-help', style: { fontSize: 12, margin: '0 0 6px' } }, 'Showing the latest ' + Math.min(5, iq.log.length) + ' of ' + iq.log.length + ' saved projects. Scroll to review the visible records.'),
               h('div', { 'data-stewardship-inquiry-log': 'true', role: 'region', tabIndex: 0, 'aria-labelledby': inquiryId + '-log-title', 'aria-describedby': inquiryId + '-log-help', style: { maxHeight: 160, overflow: 'auto', padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 12, lineHeight: 1.6 } },
                 h('ol', { role: 'list', style: { margin: 0, paddingLeft: 20 } }, iq.log.slice(-5).map(function(e, i) {
-                  return h('li', { key: i, style: { padding: '6px 0' } }, e.t + ' — ' + e.state + '. Investment $' + e.inv + 'K; horizon ' + e.hor + ' years; community ' + e.comm + '/10; intervention complexity ' + (e.ic != null ? e.ic : e.ec) + '/10; modeled success ' + e.odds + '%.');
+                  var row = (e && typeof e === 'object') ? e : {};
+                  return h('li', { key: i, style: { padding: '6px 0' } }, (row.t || '') + ' — ' + (row.state || '') + '. Investment $' + (row.inv != null ? row.inv : '') + 'K; horizon ' + (row.hor != null ? row.hor : '') + ' years; community ' + (row.comm != null ? row.comm : '') + '/10; intervention complexity ' + (row.ic != null ? row.ic : (row.ec != null ? row.ec : '')) + '/10; modeled success ' + (row.odds != null ? row.odds : '') + '%.');
                 }))
               )
             ),
@@ -2752,22 +3347,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid var(--allo-stem-border, #1e293b)' } },
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, __alloT('stem.stewardship.cross_campaign_mastery', 'Cross-campaign mastery')),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
-            STEWARDSHIP_TIERS.map(function(t) {
-              var earned = t.requireTopTier ? totalTopTierForTier >= t.minComplete : totalCompleteForTier >= t.minComplete;
+            STEWARDSHIP_TIERS.map(function(tier) {
+              var earned = tier.requireTopTier ? totalTopTierForTier >= tier.minComplete : totalCompleteForTier >= tier.minComplete;
               return h('div', {
-                key: t.id,
+                key: tier.id,
                 style: {
-                  background: earned ? 'rgba(134,239,172,0.10)' : '#1e293b',
-                  border: '1px solid ' + (earned ? '#86efac' : '#334155'),
+                  background: isContrast ? '#000000' : (earned ? 'rgba(134,239,172,0.10)' : '#1e293b'),
+                  border: '1px solid ' + (isContrast ? '#ffff00' : (earned ? '#86efac' : '#334155')),
                   borderRadius: 10, padding: 10, opacity: 1
                 }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-                  h('span', { style: { fontSize: 20 } }, t.icon),
-                  h('strong', { style: { color: earned ? '#86efac' : '#cbd5e1', fontSize: 13 } }, t.label)
+                  h('span', { style: { fontSize: 20 } }, tier.icon),
+                  h('strong', { style: { color: isContrast ? '#ffff00' : (earned ? '#86efac' : '#cbd5e1'), fontSize: 13 } }, tier.label)
                 ),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, __alloT('stem.stewardship.' + (t.id) + '_desc', t.desc)),
-                earned ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, fontWeight: 700 } }, __alloT('stem.stewardship.earned', '✓ Earned')) : null
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, __alloT('stem.stewardship.' + (tier.id) + '_desc', tier.desc)),
+                earned ? h('div', { style: { fontSize: 11, color: isContrast ? '#ffff00' : '#86efac', marginTop: 4, fontWeight: 700 } }, __alloT('stem.stewardship.earned', '✓ Earned')) : null
               );
             })
           )
@@ -3072,19 +3667,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
   // Helper used by questHooks — labToolData is the top-level toolData object
   function countCompletedFromTopLevel(d) {
-    if (!d) return 0;
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 0;
     var count = 0;
     CAMPAIGNS.forEach(function(c) {
-      var slot = (d[c.toolDataKey]) || {};
+      var rawSlot = d[c.toolDataKey];
+      var slot = (rawSlot && typeof rawSlot === 'object' && !Array.isArray(rawSlot)) ? rawSlot : {};
       var state = slot[c.stateField];
-      if (state && state.phase === 'debrief' && state[c.outcomeField]) count++;
+      if (state && typeof state === 'object' && !Array.isArray(state) && state.phase === 'debrief' && state[c.outcomeField]) count++;
     });
     // Also count completed self-contained scenarios
-    var hubSlot = (d.stewardshipHub) || {};
-    var scenarioStates = hubSlot.scenarioStates || {};
+    var rawHubSlot = d.stewardshipHub;
+    var hubSlot = (rawHubSlot && typeof rawHubSlot === 'object' && !Array.isArray(rawHubSlot)) ? rawHubSlot : {};
+    var scenarioStates = (hubSlot.scenarioStates && typeof hubSlot.scenarioStates === 'object' && !Array.isArray(hubSlot.scenarioStates)) ? hubSlot.scenarioStates : {};
     Object.keys(scenarioStates).forEach(function(id) {
       var st = scenarioStates[id];
-      if (st && st.phase === 'debrief' && st.outcome) count++;
+      if (st && typeof st === 'object' && !Array.isArray(st) && st.phase === 'debrief' && st.outcome) count++;
     });
     return count;
   }

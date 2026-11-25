@@ -51,6 +51,12 @@
       '@media(forced-colors:active){.ms-orbit-spin,.ms-orbit-spin-rev,.ms-bond-glint,.ms-catchlight,.ms-atom-aura{display:none!important;}.ms-dash-drift{animation:none!important;}}'
     ].join('\n');
     document.head.appendChild(st);
+    if (!document.getElementById('allo-moleculeshelf-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-moleculeshelf-a11y-css';
+      ast.textContent = '[data-moleculeshelf-workbench] :is(button,a,input,select,summary){touch-action:manipulation}[data-moleculeshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid #38bdf8;outline-offset:2px}@media (forced-colors:active){[data-moleculeshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   var MOLECULE_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/molecule_shelf/molecule_shelf.html?v=1';

@@ -6,15 +6,17 @@ import { execFileSync } from 'node:child_process';
 const read = file => readFileSync(file, 'utf8');
 const hosts = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'];
 // deploy.sh's accepted Git pin, verified against the exact committed module bytes.
+// Re-pinned 2026-11-23: the 11-22 hardening release (4486e116ec) changed both modules and
+// deploy 41ff914318 published them; hashes below are `git show 41ff914318:<file>`.
 const publishedHaven = {
-  commit: '3d1ccc9e03bf21c3dee3b50370b43004577dcb51',
-  pin: '3d1ccc9e0',
-  sha256: '8961f5c6d47618d8ef09bd5b0e50de1b6a47168b35e8446e269db09737fc9293',
+  commit: '41ff914318ae029a52b265947c1c6e9a8e0e04a5',
+  pin: '41ff914318',
+  sha256: 'b6fc7fed699986f68cdceec13c7b885f2fe2d17dfc416a5a7933a82d16a9a3ec',
 };
-// The legacy plugin pin used mixed newlines; bind it to the exact Git LF asset.
+// The plugin is pinned by content: the first 10 hex of the exact Git LF asset's sha256.
 const publishedPlugin = {
-  pin: 'f496800d5d',
-  canonicalSha256: 'f496800d5dc33c152629e74b813b046f038903b7630c6ae58de07cb1702cf7ab',
+  pin: '3b81455d46',
+  canonicalSha256: '3b81455d46c728313d621369b7d6a0566caacdc967c8c6b45a7c93abb33dfc74',
 };
 // Every deploy re-pins the CDN refs to its own commit (deploy.sh step 6). Pins verified against the
 // committed module bytes, so a shallow CI checkout that lacks the commit can still check them.

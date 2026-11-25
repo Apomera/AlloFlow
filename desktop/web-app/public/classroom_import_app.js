@@ -1,18 +1,21 @@
 /* AlloFlow's shipped, teacher-only Google Classroom import page. No persistent personal data. */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window || typeof document !== 'object' || !document) return;
   const $ = id => document.getElementById(id);
+  if (!$('import-status') || !$('connect-classroom') || !$('confirm-text')) return;
   const service = window.AlloModules && window.AlloModules.GoogleClassroomImport;
   const config = window.ALLOFLOW_CLASSROOM_IMPORT_CONFIG || {};
   const scopes = service && service.READONLY_SCOPES;
   let connector = null, token = '', tokenExpires = 0, timer = null;
-  let generation = 0, busy = false, authReady = false, courses = [], result = null;
+  let generation = 0, busy = false, reading = false, authReady = false, courses = [], result = null;
   let missingNames = false;
   const downloadUrls = new Set();
-  if (location.hash || location.search) {
-    try { history.replaceState(null, '', location.pathname); } catch (_) {}
+  const loc = window.location || {};
+  if (loc.hash || loc.search) {
+    try { history.replaceState(null, '', loc.pathname); } catch (_) {}
   }
-  const hasRealOrigin = !!(location.origin && location.origin !== 'null');
+  const hasRealOrigin = !!(loc.origin && loc.origin !== 'null');
   // In-app handoff (2026-09-25): when AlloFlow opened this helper as a same-origin window, the
   // codename-only JSON can be posted straight back instead of downloaded. Nothing about the
   // private preview, token or snapshot is ever posted. A cross-origin opener is ignored.
@@ -21,7 +24,7 @@
       if (!hasRealOrigin) return null;
       const opener = window.opener;
       if (!opener || opener === window || opener.closed) return null;
-      return opener.location.origin === location.origin ? opener : null;
+      return opener.location.origin === loc.origin ? opener : null;
     } catch (_) { return null; }
   })();
   let handoffEpoch = 0, handoffTimer = null;
@@ -45,16 +48,19 @@
   }
   const say = message => { $('import-status').textContent = message; };
   function configured() {
-    const safeOrigin = location.protocol === 'https:' ||
-      (location.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname));
-    return window.self === window.top && safeOrigin && service && Array.isArray(scopes) &&
-      config && typeof config === 'object' && !Array.isArray(config) &&
+    let isTop = false;
+    try { isTop = window.self === window.top; } catch (_) { isTop = false; }
+    const safeOrigin = loc.protocol === 'https:' ||
+      (loc.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(loc.hostname));
+    const cfgProto = config && typeof config === 'object' ? Object.getPrototypeOf(config) : undefined;
+    const isPlainCfg = !!config && typeof config === 'object' && !Array.isArray(config) && (cfgProto === null || Object.getPrototypeOf(cfgProto) === null);
+    return isTop && safeOrigin && service && Array.isArray(scopes) && isPlainCfg &&
       Object.keys(config).every(key => ['enabled', 'reviewedDeployment', 'clientId', 'allowedOrigins', 'allowedAccountIds'].includes(key)) &&
       config.enabled === true && config.reviewedDeployment === true &&
       typeof config.clientId === 'string' && /^[A-Za-z0-9._-]+\.apps\.googleusercontent\.com$/.test(config.clientId) &&
       (config.allowedAccountIds === undefined || (Array.isArray(config.allowedAccountIds) && config.allowedAccountIds.length <= 250 &&
         config.allowedAccountIds.every(id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,160}$/.test(id)))) &&
-      Array.isArray(config.allowedOrigins) && config.allowedOrigins.includes(location.origin);
+      Array.isArray(config.allowedOrigins) && config.allowedOrigins.includes(loc.origin);
   }
   function controls() {
     $('connect-classroom').disabled = !authReady || busy;
@@ -81,10 +87,12 @@
   }
   function clearSession(message) {
     generation++;
+    handoffEpoch++;
+    if (handoffTimer !== null) { clearTimeout(handoffTimer); handoffTimer = null; }
     if (timer !== null) clearTimeout(timer);
     timer = null;
     if (connector) connector.dispose();
-    connector = null; token = ''; tokenExpires = 0; busy = false; courses = [];
+    connector = null; token = ''; tokenExpires = 0; busy = false; reading = false; courses = [];
     for (const url of downloadUrls) URL.revokeObjectURL(url);
     downloadUrls.clear();
     clearPreview();
@@ -105,7 +113,7 @@
     if (epoch !== generation) return;
     const expires = Number(response && response.expires_in);
     let scopesGranted = false;
-    try { scopesGranted = !!response && google.accounts.oauth2.hasGrantedAllScopes(response, ...scopes); } catch (_) { /* Authorization failures stay redacted. */ }
+    try { scopesGranted = !!response && window.google.accounts.oauth2.hasGrantedAllScopes(response, ...scopes); } catch (_) { /* Authorization failures stay redacted. */ }
     if (!response || response.error || typeof response.access_token !== 'string' ||
         !response.access_token || !Number.isFinite(expires) || expires <= 10 ||
         !scopesGranted) {
@@ -154,7 +162,7 @@
     let callbackHandled = false;
     say('Choose your school teacher account and review Google’s read-only permissions.');
     try {
-      const client = google.accounts.oauth2.initTokenClient({
+      const client = window.google.accounts.oauth2.initTokenClient({
         client_id: config.clientId,
         scope: scopes.join(' '),
         include_granted_scopes: false,
@@ -178,7 +186,7 @@
   $('read-classroom').onclick = async function () {
     const courseId = $('classroom-course').value;
     if (busy || !connector || !courses.some(course => course.id === courseId)) return;
-    clearPreview(); busy = true; controls();
+    clearPreview(); busy = true; reading = true; controls();
     const epoch = generation;
     const capturedLink = linkContext;
     say('Reading every roster page. Nothing will be exported until you review the complete result.');
@@ -209,19 +217,21 @@
       say(missingNames ? 'Some Classroom names are unavailable. Download is blocked until you resolve these identities in Classroom and read the roster again.' : 'The private preview is ready. Confirm the list and new-class destination before downloading.');
       $('confirm-new-class').focus();
     } catch (error) {
-      if (epoch === generation && error && error.code === 'LINKED_CLASS_MISMATCH') {
-        clearPreview();
-        say('This AlloFlow class is linked to a different Google Classroom class. Choose the class it was linked to. Nothing was read into AlloFlow.');
-      } else if (epoch === generation) {
-        clearSession('The selected roster could not be completed or verified. Private data was cleared and nothing was exported. Reconnect to retry.');
+      if (epoch === generation && linkContext === capturedLink) {
+        if (error && error.code === 'LINKED_CLASS_MISMATCH') {
+          clearPreview();
+          say('This AlloFlow class is linked to a different Google Classroom class. Choose the class it was linked to. Nothing was read into AlloFlow.');
+        } else {
+          clearSession('The selected roster could not be completed or verified. Private data was cleared and nothing was exported. Reconnect to retry.');
+        }
       }
     } finally {
-      if (epoch === generation) { busy = false; controls(); }
+      if (epoch === generation && linkContext === capturedLink) { reading = false; busy = false; controls(); }
     }
   };
   $('confirm-new-class').onchange = controls;
   $('download-classroom').onclick = function () {
-    if (busy || !result || missingNames || !$('confirm-new-class').checked) return;
+    if (busy || linkContext || !result || missingNames || !$('confirm-new-class').checked) return;
     let url = null, anchor = null;
     try {
       url = URL.createObjectURL(new Blob([result.json], { type: 'application/json' }));
@@ -274,7 +284,7 @@
       const existingKeys = existing && typeof existing === 'object' && !Array.isArray(existing) && Object.prototype.toString.call(existing) === '[object Object]' ? Object.keys(existing) : null;
       const valid = (data.mode === 'link' || data.mode === 'sync') && typeof data.syncKey === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.syncKey) &&
         existingKeys !== null && existingKeys.length <= 500 && existingKeys.every(k => typeof existing[k] === 'string' && existing[k].length <= 120) &&
-        Array.isArray(reserved) && reserved.length <= 1000 && reserved.every(name => typeof name === 'string') &&
+        Array.isArray(reserved) && reserved.length <= 1000 && reserved.every(name => typeof name === 'string' && name.length <= 120) &&
         (data.mode === 'link' ? data.classId === null && existingKeys.length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
       if (!valid) return;
       const cleanExisting = Object.create(null);
@@ -282,8 +292,14 @@
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
         cleanExisting[key] = existing[key];
       }
+      const wasReading = reading;
       linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze(cleanExisting), reservedCodenames: Object.freeze(reserved.slice()) });
-      if (result || busy) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
+      if (wasReading) {
+        reading = false;
+        busy = false;
+        try { if (connector) connector.cancel(); } catch (_) {}
+      }
+      if (result || wasReading) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
       describeMode(); controls();
       return;
     }
@@ -302,7 +318,7 @@
     clearSession('Cleared this session. Requesting revocation from Google…');
     const epoch = generation;
     try {
-      google.accounts.oauth2.revoke(revokeToken, response => {
+      window.google.accounts.oauth2.revoke(revokeToken, response => {
         if (epoch !== generation) return;
         say(response && response.successful ? 'Google confirmed access was revoked. Session data is cleared.' : 'Session data is cleared, but revocation was not confirmed. Review third-party access in your Google account.');
       });
@@ -314,7 +330,7 @@
     clearSession();
   });
   describeMode();
-  if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello', protocol: 1 }, location.origin); } catch (_) { /* Download remains available. */ } }
+  if (handoff) { try { handoff.postMessage({ type: 'alloflow-classroom-hello', protocol: 1 }, loc.origin); } catch (_) { /* Download remains available. */ } }
   if (!configured()) {
     say('Not configured for Google access. The AlloFlow helper is installed; school deployment review and an approved OAuth client are still required.');
     controls(); return;
@@ -322,9 +338,9 @@
   $('setup-note').textContent = 'This deployment is configured. Continue only with school approval, using your teacher account and a private screen.';
   say('Loading Google’s authorization library…');
   const script = document.createElement('script');
-  script.src = 'https://accounts.google.com/gsi/client'; script.async = true;
+  script.src = 'https://accounts.google.com/gsi/client'; script.async = true; script.referrerPolicy = 'no-referrer';
   script.onload = () => {
-    authReady = !!(window.google && google.accounts && google.accounts.oauth2);
+    authReady = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
     say(authReady ? 'Ready to connect. No Classroom data has been requested.' : 'Google authorization did not load. No Classroom data was requested.');
     controls();
   };

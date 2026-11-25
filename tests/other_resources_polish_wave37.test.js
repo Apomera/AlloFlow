@@ -117,21 +117,24 @@ describe('Other resources polish wave 37 (Kitchen Studio Sub-Panel CSS & Public 
     expect(quests).toContain('@media(prefers-reduced-motion:reduce){.skill-quests,.skill-quests *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}');
   });
 
-  it('polishes promo-home.css with dark-slider AA contrast, 44px tutorial/workflow controls, amber dark-slider focus ring, full reduced-motion, forced-colors, and 0 axe violations on index.html', async () => {
+  it('polishes promo-home.css and tour.css with dark-slider AA contrast, 44px tutorial/workflow controls, amber dark-slider focus ring, full reduced-motion, forced-colors, and 0 axe violations on index.html', async () => {
     const css = readRepoFile('promo-home.css');
+    const tourCss = readRepoFile('tour.css');
 
-    expect(css).toMatch(/\.slide-counter\s*\{[^}]*color:\s*#cbd5e1;/);
-    expect(css).toMatch(/#indicator\s*\{[^}]*color:\s*#cbd5e1;/);
-    expect(css).toMatch(/\.node-subtext\s*\{[^}]*fill:\s*#cbd5e1;/);
+    expect(tourCss).toMatch(/\.slide-counter\s*\{[^}]*color:\s*#cbd5e1;/);
+    expect(tourCss).toMatch(/#indicator\s*\{[^}]*color:\s*#cbd5e1;/);
+    expect(tourCss).toMatch(/\.node-subtext\s*\{[^}]*fill:\s*#cbd5e1;/);
     expect(css).toMatch(/\.promo-acronym \.acro-arrow\s*\{[^}]*color:\s*#475569;/);
     expect(css).toMatch(/\.tutorial-tab\s*\{[^}]*min-height:\s*44px;/);
     expect(css).toMatch(/\.tutorial-tab \.tutorial-tab-meta\s*\{[^}]*color:\s*#475569;/);
     expect(css).toMatch(/\.home-workflow-grid a\s*\{[^}]*min-height:44px;/);
-    expect(css).toContain('#slider-container :focus-visible { outline:3px solid #fbbf24; outline-offset:2px; }');
-    expect(css).toContain('.slide-tag::after,');
-    expect(css).toContain('.path-line,');
-    expect(css).toContain('.pulse-circle,');
-    expect(css).toContain('#slider-container :focus-visible, .tutorial-tab:focus-visible { outline:3px solid Highlight!important; outline-offset:2px; }');
+    expect(tourCss).toContain('#slider-container :focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }');
+    expect(tourCss).toContain('.slide-tag::after,');
+    expect(tourCss).toContain('.path-line,');
+    expect(tourCss).toContain('.pulse-circle,');
+    expect(tourCss).toContain('#slider-container :focus-visible { outline: 3px solid Highlight!important; outline-offset: 2px; }');
+    expect(css).toContain('.tutorial-tab:focus-visible');
+    expect(css).toContain('outline:3px solid Highlight!important');
 
     const doc = loadStaticHtml('index.html');
     await runAxe(doc.body);

@@ -171,10 +171,18 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     return _audioCtx;
   }
 
-  function playTone(freq, dur, type, vol) {
+  function isDecomposerMuted() {
+    var globalMuted = false;
     try {
-      if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) {
+        globalMuted = true;
+      }
     } catch (_) {}
+    return globalMuted || !!(typeof window !== 'undefined' && window._alloGlobalMute);
+  }
+
+  function playTone(freq, dur, type, vol) {
+    if (isDecomposerMuted()) return;
     var ac = getAudioCtx();
     if (!ac) return;
     try {
@@ -530,291 +538,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
 
   /* ═══════════════════════════════════════════════════════════
-     Zero-GC Canvas Helpers & Accessibility Guards
+     Materials Database  (15 compounds — module-scoped for pure engine)
      ═══════════════════════════════════════════════════════════ */
-  function dcIsHighContrast(flag) {
-    if (flag) return true;
-    try {
-      if (typeof document === 'undefined') return false;
-      return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
-                (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
-    } catch (e) { return false; }
-  }
-  function dcPrefersReducedMotion() {
-    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-    catch (e) { return false; }
-  }
-  function dcEllipse(ctx2d, cx, cy, rx, ry, rot, a0, a1) {
-    if (!ctx2d || rx <= 0 || ry <= 0) return;
-    if (typeof ctx2d.ellipse === 'function') {
-      ctx2d.ellipse(cx, cy, rx, ry, rot || 0, a0, a1);
-    } else {
-      ctx2d.save();
-      ctx2d.translate(cx, cy);
-      if (rot) ctx2d.rotate(rot);
-      ctx2d.scale(rx, ry);
-      ctx2d.arc(0, 0, 1, a0, a1);
-      ctx2d.restore();
-    }
-  }
-  function dcRoundRectPath(ctx2d, rx, ry, rw, rh, rr) {
-    var rad = Math.min(rr, rw / 2, rh / 2);
-    ctx2d.moveTo(rx + rad, ry);
-    ctx2d.lineTo(rx + rw - rad, ry);
-    ctx2d.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
-    ctx2d.lineTo(rx + rw, ry + rh - rad);
-    ctx2d.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
-    ctx2d.lineTo(rx + rad, ry + rh);
-    ctx2d.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
-    ctx2d.lineTo(rx, ry + rad);
-    ctx2d.quadraticCurveTo(rx, ry, rx + rad, ry);
-  }
-  var DC_STATE_BG = { solid: ['#dbeafe', '#eff6ff'], liquid: ['#cffafe', '#ecfeff'], gas: ['#fee2e2', '#fef2f2'] };
-  var DC_STATE_LABELS = {
-    solid: 'SOLID \u2014 Particles vibrate in fixed lattice',
-    liquid: 'LIQUID \u2014 Particles slide past each other',
-    gas: 'GAS \u2014 Particles fly freely, fill container'
-  };
-
-
-  /* ═══════════════════════════════════════════════════════════
-     Register Tool
-     ═══════════════════════════════════════════════════════════ */
-  window.StemLab.registerTool('decomposer', {
-    icon: '\uD83C\uDF42',
-    label: "Material Decomposer",
-    desc: "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
-    color: 'slate',
-    category: 'science',
-    questHooks: [
-      { id: 'explore_5_materials', label: 'Explore 5 decomposable materials', icon: '\uD83E\uDDEB', check: function(d) { return (d.materialsExplored || []).length >= 5; }, progress: function(d) { return (d.materialsExplored || []).length + '/5'; } },
-      { id: 'explore_15_materials', label: 'Explore 15 materials (master decomposer!)', icon: '\uD83C\uDFC6', check: function(d) { return (d.materialsExplored || []).length >= 15; }, progress: function(d) { return (d.materialsExplored || []).length + '/15'; } },
-      { id: 'quiz_score_5', label: 'Score 5+ on the decomposition quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 5; }, progress: function(d) { return (d.quizScore || 0) + '/5'; } },
-      { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 3; }, progress: function(d) { return (d.bestStreak || 0) + '/3'; } }
-    ],
-    render: function(ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      /* ── Aliases ── */
-      var React = ctx.React;
-      var h = React.createElement;
-      var isContrast = !!ctx.isContrast;
-      var isDark = !!ctx.isDark && !isContrast;
-      var onHostInk = (isContrast || ctx.isDark) ? ' text-white' : '';
-      var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
-      var setStemLabTool = typeof ctx.setStemLabTool === 'function' ? ctx.setStemLabTool : function() {};
-      var setStemLabTab = ctx.setStemLabTab;
-      var stemLabTab = ctx.stemLabTab || 'explore';
-      var stemLabTool = ctx.stemLabTool;
-      var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = typeof ctx.setToolSnapshots === 'function' ? ctx.setToolSnapshots : function() {};
-      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
-      var icons = (ctx.icons && typeof ctx.icons === 'object') ? ctx.icons : {};
-      var _fallbackIcon = function() { return null; };
-      var ArrowLeft = icons.ArrowLeft || _fallbackIcon;
-      var Calculator = icons.Calculator || _fallbackIcon;
-      var Sparkles = icons.Sparkles || _fallbackIcon;
-      var X = icons.X || _fallbackIcon;
-      var GripVertical = icons.GripVertical || _fallbackIcon;
-      var announceToSR = ctx.announceToSR;
-      var awardStemXP = ctx.awardXP;
-      var getStemXP = ctx.getXP;
-      var stemCelebrate = ctx.celebrate;
-      var stemBeep = ctx.beep;
-      // null unless text AI is usable: the AI Tutor tab is then not offered.
-      var _aiUsable = typeof window.__alloAiUsable === 'function'
-        ? function(cap, fn) { try { return !!window.__alloAiUsable(cap, fn); } catch (_) { return false; } }
-        : function(_cap, fn) { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window._alloQrBlocked !== true; };
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && _aiUsable('text', ctx.callGemini)) ? ctx.callGemini : null;
-      var callTTS = ctx.callTTS;
-      var callImagen = ctx.callImagen;
-      var callGeminiVision = ctx.callGeminiVision;
-      var gradeLevel = ctx.gradeLevel;
-      var srOnly = ctx.srOnly;
-      var a11yClick = ctx.a11yClick;
-      var canvasA11yDesc = ctx.canvasA11yDesc;
-      var props = ctx.props;
-      var canvasNarrate = ctx.canvasNarrate;
-
-      /* ═══════════════════════════════════════════════════════
-         Tool Body
-         ═══════════════════════════════════════════════════════ */
-      return (function() {
-
-        /* ── State ── */
-        var _isPlainObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
-        var _safeNum = function(v, fb) { return (typeof v === 'number' && isFinite(v)) ? v : (fb || 0); };
-        var d = (labToolData && _isPlainObj(labToolData.decomposer)) ? labToolData.decomposer : {};
-        var motionPaused = d.motionPaused === true || (d.motionPaused !== false
-          && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-
-          // ── Canvas narration: init ──
-          if (typeof canvasNarrate === 'function') {
-            canvasNarrate('decomposer', 'init', {
-              first: 'Material Decomposer loaded. Explore compounds, their elements, reactions, and states of matter.',
-              repeat: 'Decomposer Lab active.',
-              terse: 'Decomposer Lab.'
-            }, { debounce: 800 });
-          }
-
-        var upd = function(key, val) {
-          if (typeof setLabToolData !== 'function') return;
-          setLabToolData(function(prev) {
-            var safePrev = _isPlainObj(prev) ? prev : {};
-            var next = Object.assign({}, safePrev);
-            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {});
-            next.decomposer[key] = val;
-            return next;
-          });
-        };
-
-        var updMulti = function(obj) {
-          if (typeof setLabToolData !== 'function') return;
-          setLabToolData(function(prev) {
-            var safePrev = _isPlainObj(prev) ? prev : {};
-            var next = Object.assign({}, safePrev);
-            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {}, obj);
-            return next;
-          });
-        };
-        function focusDecomposerElement(id) {
-          requestAnimationFrame(function() {
-            var element = document.getElementById(id);
-            if (element) element.focus();
-          });
-        }
-        function renderMotionControl() {
-          return h('button', { type: 'button', 'data-decomposer-motion-control': 'true',
-            'aria-pressed': motionPaused, onClick: function() { upd('motionPaused', !motionPaused); },
-            style: { minHeight: 44 },
-            className: 'px-4 py-2.5 rounded-xl border border-slate-400 bg-slate-100 text-slate-800 text-xs font-bold transition-colors' },
-            motionPaused ? __alloT('stem.decomposer.resume_particle_motion', 'Resume particle motion')
-              : __alloT('stem.decomposer.pause_particle_motion', 'Pause particle motion'));
-        }
-        function watchDecomposerCanvasSize(canvas, key, redraw) {
-          var property = '_decomposerSize' + key;
-          var watch = canvas[property];
-          if (!watch) {
-            watch = { width: canvas.offsetWidth, dpr: window.devicePixelRatio || 1 };
-            watch.changed = function() {
-              if (!canvas.isConnected) { releaseDecomposerCanvasSize(canvas, key); return; }
-              var width = canvas.offsetWidth;
-              var dpr = window.devicePixelRatio || 1;
-              if (width > 0 && (width !== watch.width || dpr !== watch.dpr)) {
-                watch.width = width; watch.dpr = dpr;
-                watch.redraw(canvas);
-              }
-            };
-            canvas[property] = watch;
-            if (typeof ResizeObserver !== 'undefined') {
-              watch.observer = new ResizeObserver(watch.changed);
-              watch.observer.observe(canvas);
-            }
-            window.addEventListener('resize', watch.changed);
-          }
-          watch.redraw = redraw;
-          watch.width = canvas.offsetWidth;
-          watch.dpr = window.devicePixelRatio || 1;
-        }
-        function releaseDecomposerCanvasSize(canvas, key) {
-          var property = '_decomposerSize' + key;
-          var watch = canvas[property];
-          if (!watch) return;
-          if (watch.observer) watch.observer.disconnect();
-          window.removeEventListener('resize', watch.changed);
-          delete canvas[property];
-        }
-
-        var checkDecomposerChallenges = function(customState) {
-          var state = customState || {};
-          var completed = Array.isArray(state.completedChallenges) ? state.completedChallenges : [];
-          var newlyCompleted = [];
-          var pointsEarned = 0;
-
-          for (var i = 0; i < DECOMPOSER_CHALLENGES.length; i++) {
-            var ch = DECOMPOSER_CHALLENGES[i];
-            if (completed.indexOf(ch.id) !== -1) continue;
-
-            var met = false;
-            if (ch.id === 'first_decompose') {
-              met = !!state._hasDecomposed;
-            } else if (ch.id === 'explore_materials') {
-              met = (state.materialsExplored || []).length >= 5;
-            } else if (ch.id === 'quiz_pass') {
-              met = (state.quizCorrectCount || 0) >= 3;
-            } else if (ch.id === 'mix_reactants') {
-              met = Object.keys(state.reactionsDiscovered || {}).length >= 3;
-            } else if (ch.id === 'hunt_compounds') {
-              met = Object.keys(state.foundObjects || {}).length >= 5;
-            } else if (ch.id === 'vocab_studied') {
-              met = (state.vocabWordsStudied || []).length >= 3;
-            }
-
-            if (met) {
-              newlyCompleted.push(ch.id);
-              pointsEarned += ch.rp;
-            }
-          }
-
-          if (newlyCompleted.length > 0) {
-            var updatedCompleted = completed.concat(newlyCompleted);
-            var newRP = (state.researchPoints || 0) + pointsEarned;
-            
-            updMulti({
-              completedChallenges: updatedCompleted,
-              researchPoints: newRP
-            });
-
-            newlyCompleted.forEach(function(finishedId) {
-              var ch = DECOMPOSER_CHALLENGES.find(function(c) { return c.id === finishedId; });
-              if (addToast) {
-                addToast('🏆 Challenge Complete: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
-              }
-              if (typeof awardStemXP === 'function') {
-                awardStemXP('decomposer', ch.rp, 'Challenge: ' + ch.name);
-              }
-            });
-
-            if (typeof stemCelebrate === 'function') stemCelebrate();
-            if (typeof announceToSR === 'function') {
-              announceToSR('Challenges updated. Completed ' + updatedCompleted.length + ' of ' + DECOMPOSER_CHALLENGES.length + '. Research points: ' + newRP);
-            }
-          }
-        };
-
-        var studyDecomposerVocab = function(word) {
-          var current = Array.isArray(d.vocabWordsStudied) ? d.vocabWordsStudied : [];
-          if (current.indexOf(word) === -1) {
-            var next = current.concat([word]);
-            var nextState = Object.assign({}, d, { vocabWordsStudied: next });
-            upd('vocabWordsStudied', next);
-            if (typeof awardStemXP === 'function') {
-              awardStemXP('decomposer', 5, 'Studied: ' + word);
-            }
-            if (addToast) {
-              addToast('📖 Studied concept: ' + word + ' (+5 RP)', 'info');
-            }
-            setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
-          }
-        };
-
-
-
-        /* ═══════════════════════════════════════════════════
-           Materials Database  (15 compounds)
-           ═══════════════════════════════════════════════════ */
-        function readableInk(hex) {
-          var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
-          if (!match) return '#0f172a';
-          var value = parseInt(match[1], 16);
-          var channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(function(channel) {
-            var normalized = channel / 255;
-            return normalized <= 0.04045 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
-          });
-          var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-          return luminance > 0.179 ? '#000000' : '#ffffff';
-        }
-
         var MATERIALS = [
           {
             name: 'Water', formula: 'H\u2082O', emoji: '\uD83D\uDCA7', color: '#60a5fa',
@@ -975,6 +700,966 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
         ];
 
+  var ELEMENTS = (function() {
+    var map = {};
+    for (var mi = 0; mi < MATERIALS.length; mi++) {
+      var els = MATERIALS[mi].elements || [];
+      for (var ei = 0; ei < els.length; ei++) {
+        var el = els[ei];
+        if (!map[el.sym]) {
+          map[el.sym] = { sym: el.sym, name: el.name, num: el.num, group: el.group, mass: el.mass, color: el.color };
+        }
+      }
+    }
+    return map;
+  })();
+
+
+  /* ═══════════════════════════════════════════════════════════
+     Pure Deterministic Chemistry & Pedagogy Engine
+     Zero React / zero DOM — exposed on _engine & window.DecomposerPure
+     ═══════════════════════════════════════════════════════════ */
+  var DECOMPOSER_ENGINE = (function() {
+    var SUBSCRIPT_MAP = {
+      '\u2080': '0', '\u2081': '1', '\u2082': '2', '\u2083': '3', '\u2084': '4',
+      '\u2085': '5', '\u2086': '6', '\u2087': '7', '\u2088': '8', '\u2089': '9'
+    };
+    var MATERIAL_ALIASES = {
+      'vinegar': 'Acetic Acid',
+      'salt': 'Table Salt',
+      'sodium chloride': 'Table Salt',
+      'sucrose': 'Sugar (Sucrose)',
+      'sugar': 'Sugar (Sucrose)',
+      'sodium bicarbonate': 'Baking Soda',
+      'bicarbonate': 'Baking Soda',
+      'iron oxide': 'Rust',
+      'co2': 'Carbon Dioxide',
+      'dry ice': 'Carbon Dioxide',
+      'chalk': 'Calcium Carbonate',
+      'limestone': 'Calcium Carbonate',
+      'seashell': 'Calcium Carbonate',
+      'natural gas': 'Methane',
+      'alcohol': 'Ethanol',
+      'sanitizer': 'Ethanol',
+      'peroxide': 'Hydrogen Peroxide',
+      'battery acid': 'Sulfuric Acid'
+    };
+
+    function normalizeFormula(str) {
+      return String(str || '').replace(/[\u2080-\u2089]/g, function(ch) {
+        return SUBSCRIPT_MAP[ch] || ch;
+      }).toLowerCase().replace(/\s+/g, '');
+    }
+
+    function seededShuffle(items, seedStr) {
+      var arr = Array.isArray(items) ? items.slice() : [];
+      var s = String(seedStr || 'decomposer');
+      var hval = 2166136261;
+      for (var i = 0; i < s.length; i++) {
+        hval ^= s.charCodeAt(i);
+        hval = Math.imul(hval, 16777619) >>> 0;
+      }
+      var state = hval || 1;
+      for (var k = arr.length - 1; k > 0; k--) {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        var j = state % (k + 1);
+        var tmp = arr[k];
+        arr[k] = arr[j];
+        arr[j] = tmp;
+      }
+      return arr;
+    }
+
+    function findMaterial(input, catalog) {
+      var list = Array.isArray(catalog) && catalog.length ? catalog : MATERIALS;
+      if (input && typeof input === 'object' && typeof input.name === 'string') {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].name === input.name) return list[i];
+        }
+        if (Array.isArray(input.elements)) return input;
+      }
+      var q = String(input || '').trim().toLowerCase();
+      if (!q) return list[0];
+      if (MATERIAL_ALIASES[q]) {
+        var aliasTarget = MATERIAL_ALIASES[q];
+        for (var ai = 0; ai < list.length; ai++) {
+          if (list[ai].name === aliasTarget) return list[ai];
+        }
+      }
+      var normQ = normalizeFormula(q);
+      for (var j = 0; j < list.length; j++) {
+        if (list[j].name.toLowerCase() === q || normalizeFormula(list[j].formula) === normQ) {
+          return list[j];
+        }
+      }
+      return list[0];
+    }
+
+    function findMaterialsInText(text, catalog) {
+      var list = Array.isArray(catalog) && catalog.length ? catalog : MATERIALS;
+      var lower = String(text || '').toLowerCase();
+      var norm = normalizeFormula(lower);
+      var found = [];
+      function addMat(mat) {
+        if (!mat) return;
+        for (var i = 0; i < found.length; i++) {
+          if (found[i].name === mat.name) return;
+        }
+        found.push(mat);
+      }
+      for (var i = 0; i < list.length; i++) {
+        var m = list[i];
+        var mLow = m.name.toLowerCase();
+        var mBase = mLow.replace(/\s*\([^)]*\)/g, '').trim();
+        var mForm = normalizeFormula(m.formula);
+        if (lower.indexOf(mLow) !== -1 || (mBase.length >= 4 && lower.indexOf(mBase) !== -1)) {
+          addMat(m);
+        } else if (mForm.length >= 2) {
+          var formRe = new RegExp('(^|[^a-z0-9])' + mForm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)', 'i');
+          if (formRe.test(norm)) addMat(m);
+        }
+      }
+      var aliasKeys = Object.keys(MATERIAL_ALIASES);
+      for (var a = 0; a < aliasKeys.length; a++) {
+        var ak = aliasKeys[a];
+        var re = new RegExp('(^|[^a-z0-9])' + ak.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z0-9]|$)', 'i');
+        if (re.test(lower)) addMat(findMaterial(MATERIAL_ALIASES[ak], list));
+      }
+      return found;
+    }
+
+    function computeComposition(material) {
+      var mat = findMaterial(material);
+      var els = Array.isArray(mat.elements) ? mat.elements : [];
+      var totalAtoms = 0;
+      var calcMass = 0;
+      for (var i = 0; i < els.length; i++) {
+        var cnt = Number(els[i].count) || 0;
+        var massNum = parseFloat(els[i].mass);
+        totalAtoms += cnt;
+        if (isFinite(massNum)) calcMass += cnt * massNum;
+      }
+      var molarMassNum = parseFloat(mat.molarMass);
+      if (!isFinite(molarMassNum) || molarMassNum <= 0) molarMassNum = calcMass || 1;
+      var breakdown = els.map(function(el) {
+        var cnt = Number(el.count) || 0;
+        var massNum = parseFloat(el.mass);
+        var contribution = isFinite(massNum) ? cnt * massNum : 0;
+        return {
+          sym: el.sym,
+          name: el.name,
+          num: el.num,
+          count: cnt,
+          group: el.group,
+          mass: el.mass,
+          contribution: Number(contribution.toFixed(3)),
+          atomPct: totalAtoms > 0 ? Number(((cnt / totalAtoms) * 100).toFixed(1)) : 0,
+          massPct: molarMassNum > 0 ? Number(((contribution / molarMassNum) * 100).toFixed(1)) : 0
+        };
+      });
+      return {
+        name: mat.name,
+        formula: mat.formula,
+        totalAtoms: totalAtoms,
+        molarMassNum: Number(molarMassNum.toFixed(3)),
+        molarMass: mat.molarMass,
+        elements: breakdown
+      };
+    }
+
+    function getPhaseAtTemp(materialName, tempC) {
+      var mat = findMaterial(materialName);
+      var geo = GEOMETRY[mat.name] || null;
+      var clamped = Math.max(-200, Math.min(500, (typeof tempC === 'number' && isFinite(tempC)) ? tempC : 25));
+      if (!geo) {
+        return {
+          materialName: mat.name, tempC: clamped, hasData: false,
+          outsideModel: false, decomposes: false, phase: null,
+          catalogState: mat.state, mp: null, bp: null
+        };
+      }
+      var decomposes = geo.bp === null && geo.mp !== null;
+      var outsideModel = decomposes && clamped >= geo.mp;
+      var phase = null;
+      if (!outsideModel) {
+        phase = geo.bp !== null && clamped >= geo.bp ? 'gas'
+          : geo.mp !== null && clamped >= geo.mp ? 'liquid' : 'solid';
+      }
+      return {
+        materialName: mat.name, tempC: clamped, hasData: true,
+        outsideModel: outsideModel, decomposes: decomposes, phase: phase,
+        catalogState: mat.state, mp: geo.mp, bp: geo.bp
+      };
+    }
+
+    function findReactionPair(reactA, reactB, reactions) {
+      var list = Array.isArray(reactions) && reactions.length ? reactions : REACTIONS;
+      if (!reactA || !reactB || reactA === reactB) return null;
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i];
+        if ((r.a === reactA && r.b === reactB) || (r.a === reactB && r.b === reactA)) {
+          return r;
+        }
+      }
+      return null;
+    }
+
+    function buildPairKey(reactA, reactB) {
+      return [String(reactA || ''), String(reactB || '')].sort().join('||');
+    }
+
+    var MIX_TYPE_CHOICES = [
+      { id: 'chemical', label: 'Chemical Reaction — bonds rearrange to form new substances' },
+      { id: 'physical', label: 'Physical Dissolution — particles disperse without forming a brand-new compound' },
+      { id: 'none', label: 'No Notable Reaction — materials stay unchanged in a simple mixture' }
+    ];
+
+    var MIX_PREDICTION_SPECS = {
+      'Volcano Reaction': {
+        expectedType: 'chemical',
+        correctRuleId: 'volcano_co2',
+        conservationNote: 'Every Na, H, C, and O atom from baking soda and acetic acid is conserved and rearranged into CO\u2082 gas, H\u2082O, and sodium acetate (NaCH\u2083COO).',
+        rules: [
+          { id: 'volcano_co2', label: 'Acid-base neutralization rearranges the atoms into CO\u2082 gas bubbles, water, and sodium acetate while conserving total mass.' },
+          { id: 'volcano_vanish', label: 'The solid baking soda disappears because its atoms are destroyed when touched by acid.', whyNot: 'Matter cannot be destroyed: the solid disappears only because its carbon and oxygen atoms rearrange into invisible CO\u2082 gas and dissolved sodium acetate.' },
+          { id: 'volcano_physical', label: 'This is only physical melting with no new molecules formed and no gas released.', whyNot: 'Vigorous fizzing proves a new gas (CO\u2082) formed from broken and reformed chemical bonds—making it a chemical neutralization reaction, not a physical state change.' },
+          { id: 'volcano_new_elem', label: 'Hydrogen and carbon fuse into brand-new metal elements that were not in either reactant.', whyNot: 'Chemical reactions only rearrange existing atoms; they never transmute elements into new atomic numbers.' }
+        ]
+      },
+      'Dissolving Salt': {
+        expectedType: 'physical',
+        correctRuleId: 'salt_ions',
+        conservationNote: 'Na\u207A and Cl\u207B ions separate in polar water, but zero atoms are lost—evaporating the water recovers the exact same mass of solid NaCl.',
+        rules: [
+          { id: 'salt_ions', label: 'Polar water separates Na\u207A and Cl\u207B ions into solution; total mass is conserved and evaporating water recovers NaCl.' },
+          { id: 'salt_destroy', label: 'Salt atoms break down into pure sodium metal and toxic chlorine gas as soon as salt hits water.', whyNot: 'Dissolving NaCl in water is a physical dissociation of ions, not chemical decomposition into elemental Na metal and Cl\u2082 gas (which requires high-energy electrolysis).' },
+          { id: 'salt_mass_loss', label: 'Because salt vanishes from sight, the saltwater weighs less than the salt plus water combined.', whyNot: 'Conservation of Mass: dissolved ions are still present in the beaker, so mass(solution) = mass(water) + mass(salt).' },
+          { id: 'salt_combustion', label: 'Water and salt ignite in a combustion reaction that releases CO\u2082 gas.', whyNot: 'Neither NaCl nor H\u2082O contains carbon, and neither is a fuel; dissolving salt is a physical change with no flame or gas.' }
+        ]
+      },
+      'Dissolving Sugar': {
+        expectedType: 'physical',
+        correctRuleId: 'sugar_intact',
+        conservationNote: 'Each C\u2081\u2082H\u2082\u2082O\u2081\u2081 molecule stays chemically intact while spreading through water; total mass equals water + sugar.',
+        rules: [
+          { id: 'sugar_intact', label: 'Sucrose molecules stay intact (C\u2081\u2082H\u2082\u2082O\u2081\u2081) while dispersing in water—a reversible physical change that conserves mass.' },
+          { id: 'sugar_decomp', label: 'Cold water decomposes sucrose into solid black carbon and hydrogen gas.', whyNot: 'Dissolving only separates intact sugar molecules from one another; breaking sucrose into carbon requires intense heating (caramelization/charring) or strong dehydrating acid.' },
+          { id: 'sugar_gone', label: 'The sugar turns into water molecules, so the sugar can never be recovered.', whyNot: 'No new compound forms: evaporating the water leaves solid sugar crystals behind, proving it was a physical mixture.' },
+          { id: 'sugar_ions', label: 'Covalent sugar splits into metallic sodium and chloride ions.', whyNot: 'Sugar (C\u2081\u2082H\u2082\u2082O\u2081\u2081) contains only carbon, hydrogen, and oxygen—it has no Na or Cl atoms and does not ionize.' }
+        ]
+      },
+      'Iron Corrosion': {
+        expectedType: 'chemical',
+        correctRuleId: 'rust_oxide',
+        conservationNote: 'Iron atoms combine with oxygen and water molecules to form iron hydroxide / rust; the corroded solid actually gains mass equal to the oxygen and water bound to it.',
+        rules: [
+          { id: 'rust_oxide', label: 'Oxidation combines Fe with O\u2082 and H\u2082O to form iron hydroxide/rust, conserving every Fe, O, and H atom.' },
+          { id: 'rust_lighter', label: 'Rusting destroys iron atoms so the total closed-system mass decreases.', whyNot: 'Atoms are never destroyed: iron bonds with oxygen and water from the surroundings, conserving total mass across metal + air + water.' },
+          { id: 'rust_paint', label: 'Water merely washes orange color onto iron without changing its chemical bonds.', whyNot: 'Rust (Fe\u2082O\u2083 / Fe(OH)\u2083) is a brittle new ionic compound with different properties than shiny metallic iron—clear evidence of chemical oxidation.' },
+          { id: 'rust_evap', label: 'Evaporating the water immediately turns the rust back into pure iron.', whyNot: 'Because oxidation forms new chemical bonds, simple drying cannot reverse rust back into metallic iron.' }
+        ]
+      },
+      'Peroxide Decomposition': {
+        expectedType: 'chemical',
+        correctRuleId: 'peroxide_split',
+        conservationNote: '2H\u2082O\u2082 (4 H, 4 O) breaks down into 2H\u2082O (4 H, 2 O) + O\u2082 (2 O)—exact atom conservation on both sides!',
+        rules: [
+          { id: 'peroxide_split', label: 'H\u2082O\u2082 decomposes into water (H\u2082O) and oxygen gas (O\u2082), conserving all 4 H and 4 O atoms across 2H\u2082O\u2082 \u2192 2H\u2082O + O\u2082.' },
+          { id: 'peroxide_boil', label: 'The bubbles are just boiling water vapor; no chemical bonds break.', whyNot: 'Oxygen gas (O\u2082) forms at room temperature because unstable O\u2013O bonds in H\u2082O\u2082 chemically decompose into H\u2082O and O\u2082.' },
+          { id: 'peroxide_co2', label: 'Hydrogen peroxide breaks down into carbon dioxide and methane.', whyNot: 'Conservation of elements: H\u2082O\u2082 contains only hydrogen and oxygen, so it cannot produce carbon-containing gases like CO\u2082 or CH\u2084.' },
+          { id: 'peroxide_extra', label: 'Extra oxygen atoms are created out of nothing to form the bubbles.', whyNot: 'Each H\u2082O\u2082 molecule already carries one extra oxygen atom compared to H\u2082O—those existing O atoms pair up into O\u2082 gas.' }
+        ]
+      },
+      'Baking Soda Solution': {
+        expectedType: 'physical',
+        correctRuleId: 'bsoda_alkaline',
+        conservationNote: 'Sodium bicarbonate disperses into ions in water (making a mildly basic solution) while conserving all Na, H, C, and O atoms.',
+        rules: [
+          { id: 'bsoda_alkaline', label: 'Baking soda dissolves in water to form a mildly basic aqueous solution while conserving every Na, H, C, and O atom.' },
+          { id: 'bsoda_acid', label: 'Dissolving baking soda turns pure water into a strong corrosive acid like H\u2082SO\u2084.', whyNot: 'Baking soda (NaHCO\u2083) is a mild base (alkaline), not an acid, and contains no sulfur atoms to form sulfuric acid.' },
+          { id: 'bsoda_fire', label: 'Water causes baking soda to burst into flames.', whyNot: 'Baking soda is actually used to extinguish small grease fires by releasing CO\u2082; dissolving it in water is gentle and non-flammable.' },
+          { id: 'bsoda_loss', label: 'Dissolving destroys the sodium atoms so the solution loses mass.', whyNot: 'Na\u207A ions remain dissolved in the water; total mass before and after mixing stays equal.' }
+        ]
+      },
+      'Combustion': {
+        expectedType: 'chemical',
+        correctRuleId: 'methane_burn',
+        conservationNote: 'CH\u2084 + 2O\u2082 \u2192 CO\u2082 + 2H\u2082O: 1 C, 4 H, and 4 O atoms enter and 1 C, 4 H, and 4 O atoms exit—mass is conserved even as heat and light are released.',
+        rules: [
+          { id: 'methane_burn', label: 'Combustion rearranges C, H, and O into CO\u2082 + H\u2082O + energy, conserving every carbon, hydrogen, and oxygen atom.' },
+          { id: 'methane_vanish', label: 'Burning converts methane atoms completely into energy so zero mass remains.', whyNot: 'Common combustion misconception! Fuel atoms do not vanish—they become invisible CO\u2082 and H\u2082O vapor whose combined mass equals the burned fuel plus oxygen.' },
+          { id: 'methane_physical', label: 'Burning methane is only a physical change from gas to liquid.', whyNot: 'Combustion breaks C\u2013H and O=O bonds and forms brand-new CO\u2082 and H\u2082O molecules—a classic exothermic chemical reaction.' },
+          { id: 'methane_salt', label: 'Methane combustion produces solid table salt (NaCl) and rust (Fe\u2082O\u2083).', whyNot: 'Neither methane (CH\u2084) nor oxygen/ozone contains sodium, chlorine, or iron; products can only use atoms present in the reactants.' }
+        ]
+      },
+      'Dissolving Shells': {
+        expectedType: 'chemical',
+        correctRuleId: 'shell_acid',
+        conservationNote: 'CaCO\u2083 + 2CH\u2083COOH \u2192 Ca(CH\u2083COO)\u2082 + H\u2082O + CO\u2082: every Ca, C, H, and O atom is conserved as solid shell becomes dissolved calcium acetate, water, and CO\u2082 gas.',
+        rules: [
+          { id: 'shell_acid', label: 'Acid-base reaction converts CaCO\u2083 + acetic acid into dissolved calcium acetate, water, and CO\u2082 gas bubbles with full atom conservation.' },
+          { id: 'shell_physical', label: 'Vinegar just melts the shell physically, so cooling it refreezes the exact shell.', whyNot: 'Gas bubbles (CO\u2082) prove bonds in CaCO\u2083 broke to create new chemical products—it cannot be reversed by cooling.' },
+          { id: 'shell_vanish', label: 'The acid makes the calcium atoms vanish so total closed-system mass drops.', whyNot: 'The shell looks smaller only because CO\u2082 gas escapes into air and calcium enters solution; in a sealed container total mass never changes.' },
+          { id: 'shell_o2', label: 'Vinegar splits calcium carbonate into pure solid gold and nitrogen gas.', whyNot: 'Chemical reactions cannot create elements (Au, N) that were not in CaCO\u2083 or acetic acid.' }
+        ]
+      }
+    };
+
+    function getRuleSpec(reactA, reactB, reaction) {
+      if (reaction && MIX_PREDICTION_SPECS[reaction.name]) {
+        return MIX_PREDICTION_SPECS[reaction.name];
+      }
+      var matA = findMaterial(reactA);
+      var matB = findMaterial(reactB);
+      var elems = [];
+      (matA.elements || []).concat(matB.elements || []).forEach(function(e) {
+        if (elems.indexOf(e.sym) === -1) elems.push(e.sym);
+      });
+      var elemList = elems.join(', ') || 'reactant elements';
+      return {
+        expectedType: 'none',
+        correctRuleId: 'none_conserved',
+        conservationNote: 'No cataloged chemical reaction occurs between ' + matA.name + ' and ' + matB.name + '; all ' + elemList + ' atoms stay in their original molecules and total mass is conserved.',
+        rules: [
+          { id: 'none_conserved', label: 'No new compound forms in our lab database; existing ' + matA.formula + ' and ' + matB.formula + ' molecules stay intact and total mass is conserved.' },
+          { id: 'none_annihilate', label: 'The two materials cancel each other out so their atoms vanish and total mass drops to zero.', whyNot: 'Law of Conservation of Mass: atoms cannot vanish when substances are combined—total mass always remains constant.' },
+          { id: 'none_transmute', label: 'Mixing turns the atoms (' + elemList + ') into completely different periodic-table elements.', whyNot: 'Mixing compounds can at most rearrange existing atoms; it never transforms one element into another.' },
+          { id: 'none_ignite', label: 'Any two laboratory compounds automatically undergo vigorous combustion with flames.', whyNot: 'Combustion requires a fuel, an oxidizer, and activation energy; most stable compound pairs simply form a physical mixture with no reaction.' }
+        ]
+      };
+    }
+
+    function getMixPredictionPrompt(reactA, reactB, reactions) {
+      if (!reactA || !reactB || reactA === reactB) return null;
+      var pairKey = buildPairKey(reactA, reactB);
+      var reaction = findReactionPair(reactA, reactB, reactions);
+      var spec = getRuleSpec(reactA, reactB, reaction);
+      var typeOpts = seededShuffle(MIX_TYPE_CHOICES.map(function(c) {
+        return { id: c.id, label: c.label };
+      }), pairKey + ':type');
+      var ruleOpts = seededShuffle(spec.rules.map(function(r) {
+        return { id: r.id, label: r.label };
+      }), pairKey + ':rule');
+      return {
+        pairKey: pairKey,
+        reactA: reactA,
+        reactB: reactB,
+        typeOptions: typeOpts,
+        ruleOptions: ruleOpts
+      };
+    }
+
+    function evaluateMixPrediction(reactA, reactB, selectedTypeId, selectedRuleId, reactions) {
+      if (!reactA || !reactB || reactA === reactB) return null;
+      var pairKey = buildPairKey(reactA, reactB);
+      var reaction = findReactionPair(reactA, reactB, reactions);
+      var spec = getRuleSpec(reactA, reactB, reaction);
+      var typeCorrect = selectedTypeId === spec.expectedType;
+      var ruleCorrect = selectedRuleId === spec.correctRuleId;
+      var expectedTypeObj = MIX_TYPE_CHOICES.find(function(c) { return c.id === spec.expectedType; }) || MIX_TYPE_CHOICES[0];
+      var expectedRuleObj = spec.rules.find(function(r) { return r.id === spec.correctRuleId; }) || spec.rules[0];
+      var chosenRuleObj = spec.rules.find(function(r) { return r.id === selectedRuleId; }) || null;
+
+      var typeWhyNot = '';
+      if (!typeCorrect) {
+        if (spec.expectedType === 'chemical') {
+          typeWhyNot = selectedTypeId === 'physical'
+            ? 'In this pair, chemical bonds actually break and rearrange into brand-new substances (not just physical mixing or dissolving).'
+            : 'These two reactants actively interact chemically to form new products—they do not remain an unchanged mixture.';
+        } else if (spec.expectedType === 'physical') {
+          typeWhyNot = selectedTypeId === 'chemical'
+            ? 'Dissolving separates particles in water without creating a brand-new chemical compound; evaporating the water recovers the solute.'
+            : 'The solute visibly disperses in water rather than staying completely separate, forming an aqueous physical solution.';
+        } else {
+          typeWhyNot = 'These two stable substances do not have a cataloged chemical reaction or aqueous dissolution pair here—they remain unchanged in a physical mixture.';
+        }
+      }
+
+      var ruleWhyNot = '';
+      if (!ruleCorrect) {
+        ruleWhyNot = (chosenRuleObj && chosenRuleObj.whyNot)
+          ? chosenRuleObj.whyNot
+          : ('Look closely at atom conservation: ' + spec.conservationNote);
+      }
+
+      return {
+        pairKey: pairKey,
+        reactA: reactA,
+        reactB: reactB,
+        typeCorrect: typeCorrect,
+        ruleCorrect: ruleCorrect,
+        allCorrect: typeCorrect && ruleCorrect,
+        selectedTypeId: selectedTypeId,
+        selectedRuleId: selectedRuleId,
+        expectedTypeId: spec.expectedType,
+        expectedTypeLabel: expectedTypeObj.label,
+        expectedRuleId: spec.correctRuleId,
+        expectedRuleLabel: expectedRuleObj.label,
+        typeWhyNot: typeWhyNot,
+        ruleWhyNot: ruleWhyNot,
+        conservationNote: spec.conservationNote,
+        reactionName: reaction ? reaction.name : null
+      };
+    }
+
+    function explainQuizDistractor(q, chosenOpt) {
+      if (!q || typeof q !== 'object') {
+        return 'Study the chemical formula, element counts, and bond type to compare each choice.';
+      }
+      var choice = String(chosenOpt || '');
+      if (q.whyNot && typeof q.whyNot[choice] === 'string' && q.whyNot[choice]) {
+        return q.whyNot[choice];
+      }
+      if (q.wrongFeedback && typeof q.wrongFeedback[choice] === 'string' && q.wrongFeedback[choice]) {
+        return q.wrongFeedback[choice];
+      }
+      return 'The correct answer is ' + String(q.answer || '') + '. Review how subscripts, element symbols, and bond types distinguish compounds.';
+    }
+
+    function answerMaterialQuestionOffline(question, material, elements, reactions) {
+      var qRaw = String(question || '').trim();
+      var qLow = qRaw.toLowerCase();
+      var rxList = Array.isArray(reactions) && reactions.length ? reactions : REACTIONS;
+      var mentioned = findMaterialsInText(qRaw, MATERIALS);
+      var mat = mentioned.length >= 1 ? mentioned[0] : findMaterial(material, MATERIALS);
+      var comp = computeComposition(mat);
+      var extras = MATERIAL_EXTRAS[mat.name] || { safety: '', facts: [] };
+      var geo = GEOMETRY[mat.name] || null;
+      var relatedReactions = rxList.filter(function(r) { return r.a === mat.name || r.b === mat.name; });
+
+      // 0. Explicit vocabulary definition requests
+      if (/\b(define|definition|meaning|vocab|what is an?)\b/.test(qLow)) {
+        var vocabEarly = Object.keys(DECOMPOSER_VOCAB);
+        for (var vke = 0; vke < vocabEarly.length; vke++) {
+          if (qLow.indexOf(vocabEarly[vke]) !== -1) {
+            return {
+              answer: vocabEarly[vke] + ': ' + DECOMPOSER_VOCAB[vocabEarly[vke]],
+              topic: 'vocab', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: [vocabEarly[vke]], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+            };
+          }
+        }
+      }
+
+      // 1. Two-material comparison
+      if (mentioned.length >= 2 && (/\b(compare|versus|vs\.?|differ|similar|heavier|lighter|more atoms)/.test(qLow) || !/\b(react|mix|combin|add|together)/.test(qLow))) {
+        var mat2 = mentioned[1];
+        var comp2 = computeComposition(mat2);
+        var shared = [];
+        comp.elements.forEach(function(e1) {
+          if (comp2.elements.some(function(e2) { return e2.sym === e1.sym; })) shared.push(e1.name + ' (' + e1.sym + ')');
+        });
+        var answerCmp = mat.name + ' (' + mat.formula + ', ' + comp.totalAtoms + ' atoms, ' + mat.bondType + ', ' + mat.state + ', ' + mat.molarMass + ') vs. '
+          + mat2.name + ' (' + mat2.formula + ', ' + comp2.totalAtoms + ' atoms, ' + mat2.bondType + ', ' + mat2.state + ', ' + mat2.molarMass + '). '
+          + (shared.length > 0 ? 'Shared elements: ' + shared.join(', ') + '. ' : 'They share no elements in common. ')
+          + (comp.molarMassNum > comp2.molarMassNum ? mat.name + ' has the larger molar mass.' : comp2.molarMassNum > comp.molarMassNum ? mat2.name + ' has the larger molar mass.' : 'They have equal molar mass.');
+        return { answer: answerCmp, topic: 'compare', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound', 'molecule'], relatedReactions: relatedReactions.map(function(r) { return r.name; }) };
+      }
+
+      // 2. Chemical reaction / mixing / conservation questions
+      if (/\b(react|mix|combin|fizz|bubbl|volcano|equation|product|conserv|dissolv|combust|burn|corrod|rusting|neutraliz)/.test(qLow)) {
+        if (mentioned.length >= 2) {
+          var pairRx = findReactionPair(mentioned[0].name, mentioned[1].name, rxList);
+          if (pairRx) {
+            var ansPair = pairRx.name + ' (' + pairRx.type + '): ' + pairRx.equation + '. ' + pairRx.desc
+              + ' Observable evidence: ' + pairRx.observable + '. Every reactant atom is conserved—none are created or destroyed.';
+            return { answer: ansPair, topic: 'reaction', materialName: mentioned[0].name, formula: mentioned[0].formula, source: 'offline', relatedConcepts: ['compound', 'decomposition'], relatedReactions: [pairRx.name] };
+          }
+          var ansNoPair = mentioned[0].name + ' (' + mentioned[0].formula + ') and ' + mentioned[1].name + ' (' + mentioned[1].formula + ') do not have a cataloged chemical reaction in this lab. '
+            + 'Combining them creates a physical mixture where each molecule stays intact and total mass is conserved.';
+          return { answer: ansNoPair, topic: 'reaction', materialName: mentioned[0].name, formula: mentioned[0].formula, source: 'offline', relatedConcepts: ['compound'], relatedReactions: [] };
+        }
+        if (/\b(conserv|mass|destroy|vanish)/.test(qLow)) {
+          return {
+            answer: 'Law of Conservation of Mass: during any chemical reaction or physical dissolving, atoms are never created or destroyed—they only rearrange or disperse. The total mass and atom count of every element before mixing always equals the total after.',
+            topic: 'reaction', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound', 'molecule'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+          };
+        }
+        if (/\b(dissolv|physical)/.test(qLow) && /\b(differ|chemical)/.test(qLow)) {
+          return {
+            answer: 'Physical dissolving (like sugar or salt in water) disperses existing molecules or ions without forming a new substance—evaporating the water recovers the original solid. A chemical reaction (like baking soda + vinegar) breaks and reforms bonds to produce new substances such as CO\u2082 gas.',
+            topic: 'reaction', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound', 'neutralization'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+          };
+        }
+        if (relatedReactions.length > 0) {
+          var rxSummary = relatedReactions.map(function(r) {
+            var partner = r.a === mat.name ? r.b : r.a;
+            return r.name + ' with ' + partner + ' (' + r.equation + '; ' + r.type + ')';
+          }).join('; ');
+          return {
+            answer: mat.name + ' (' + mat.formula + ') participates in ' + relatedReactions.length + ' lab reaction' + (relatedReactions.length === 1 ? '' : 's') + ': ' + rxSummary + '. In every reaction, all reactant atoms are conserved.',
+            topic: 'reaction', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+          };
+        }
+        return {
+          answer: mat.name + ' (' + mat.formula + ') does not have a listed pair reaction in the Mix bench yet, though you can decompose it into ' + comp.elements.map(function(e) { return e.count + ' ' + e.name; }).join(', ') + '. Try mixing Baking Soda + Acetic Acid or Calcium Carbonate + Acetic Acid!',
+          topic: 'reaction', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound'], relatedReactions: []
+        };
+      }
+
+      // 3. Decomposition conditions (chemical & biological composting)
+      if (/\b(decompos|break\s*down|breakdown|compost|decay|rot|humid|moisture|oxygen|turn.*bin|rate|split|caramel)/.test(qLow)) {
+        var decompParts = [];
+        if (/\b(compost|humid|moisture|oxygen|rate|rot|decay|bin|microb|biolog)/.test(qLow)) {
+          decompParts.push('Biological decomposition is fastest (hot compost, days to weeks) at warm temperatures (30\u201340\u00B0C), high humidity (70%+), and abundant oxygen—which is why turning compost bins speeds decay.');
+          decompParts.push('Below 0\u00B0C or without moisture or oxygen, microbial decomposition slows dramatically or stops.');
+        } else {
+          decompParts.push('Chemically decomposing one molecule of ' + mat.name + ' (' + mat.formula + ') separates its ' + comp.totalAtoms + ' atoms into ' + comp.elements.map(function(e) { return e.count + ' ' + e.name + ' (' + e.sym + ')'; }).join(', ') + '.');
+          if (geo && geo.bp === null && geo.mp !== null) {
+            decompParts.push('When heated to ' + geo.mp + '\u00B0C or above, ' + mat.name + ' chemically decomposes instead of boiling into a gas.');
+          } else if (mat.name === 'Hydrogen Peroxide') {
+            decompParts.push('Hydrogen peroxide naturally decomposes via 2H\u2082O\u2082 \u2192 2H\u2082O + O\u2082, especially quickly with a catalyst.');
+          } else {
+            decompParts.push('In ecosystems, decomposers also recycle organic matter fastest with warmth (30\u201340\u00B0C), moisture (70%+ humidity), and oxygen.');
+          }
+        }
+        return { answer: decompParts.join(' '), topic: 'decomposition', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['decomposition', 'element'], relatedReactions: relatedReactions.map(function(r) { return r.name; }) };
+      }
+
+      // 4. Element percentages & molar mass breakdown
+      if (/%|\b(percent|mass|molar|weigh|heavy|proportion|ratio|composition)/.test(qLow)) {
+        var pctText = comp.elements.map(function(e) {
+          return e.name + ' (' + e.sym + '): ' + e.count + ' atom' + (e.count === 1 ? '' : 's') + ' (' + e.atomPct + '% by count, ' + e.massPct + '% by mass)';
+        }).join('; ');
+        return {
+          answer: mat.name + ' (' + mat.formula + ') has molar mass ' + mat.molarMass + ' and ' + comp.totalAtoms + ' total atoms. Breakdown: ' + pctText + '.',
+          topic: 'percentage', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['molar mass', 'element'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+        };
+      }
+
+      // 5. State-change temperatures & particle motion
+      if (/\b(melt|boil|freez|state|solid|liquid|gas|phase|temp|sublim|heat|cold|evaporat|particle|latent)/.test(qLow)) {
+        var stateText = 'At room temperature (25\u00B0C), ' + mat.name + ' (' + mat.formula + ') is a ' + mat.state + '. ';
+        if (geo) {
+          if (geo.bp === null && geo.mp !== null) {
+            stateText += 'In our phase model it stays solid below ' + geo.mp + '\u00B0C and chemically decomposes at ' + geo.mp + '\u00B0C+ rather than boiling. ';
+          } else if (geo.mp === geo.bp) {
+            stateText += 'At atmospheric pressure it sublimates directly between solid and gas at ' + geo.mp + '\u00B0C (skipping the liquid phase). ';
+          } else {
+            stateText += 'It melts at ' + geo.mp + '\u00B0C and boils at ' + geo.bp + '\u00B0C (liquid range: ' + geo.mp + '\u2013' + geo.bp + '\u00B0C). ';
+          }
+        } else {
+          stateText += 'Detailed melting/boiling thresholds for ' + mat.name + ' are not modeled in the temperature simulator. ';
+        }
+        stateText += 'Heating gives particles more kinetic energy: vibrating in solids, sliding in liquids, and flying freely in gases—a physical change that keeps ' + mat.formula + ' intact.';
+        return { answer: stateText, topic: 'phase', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['molecule', 'compound'], relatedReactions: relatedReactions.map(function(r) { return r.name; }) };
+      }
+
+      // 6. Bonding & molecular structure
+      if (/\b(bond|covalent|ionic|electron|shar|ion|lattice|metal|nonmetal|structure|polar|configur)/.test(qLow)) {
+        var groups = comp.elements.map(function(e) { return e.name + ' (' + e.group + ')'; }).join(', ');
+        var bondDesc = mat.bondType === 'Covalent'
+          ? 'Covalent bonds share electrons between nonmetal atoms.'
+          : mat.bondType === 'Ionic'
+            ? 'Ionic bonds form through electrostatic attraction between oppositely charged metal cations and nonmetal anions.'
+            : 'Ionic + Covalent compounds contain polyatomic ions held internally by covalent bonds that pack into an ionic crystal lattice.';
+        return {
+          answer: mat.name + ' (' + mat.formula + ') has ' + mat.bondType + ' bonding. ' + bondDesc + ' Its elements are: ' + groups + '.',
+          topic: 'bond', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: [mat.bondType.toLowerCase().indexOf('covalent') !== -1 ? 'covalent bond' : 'ionic bond'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+        };
+      }
+
+      // 7. Safety
+      if (/\b(safe|danger|toxic|touch|eat|drink|hazard|corros|flammab|bleach|burn skin)/.test(qLow)) {
+        var safeLine = extras.safety || ('Handle ' + mat.name + ' with appropriate lab precautions.');
+        return {
+          answer: 'Safety for ' + mat.name + ' (' + mat.formula + '): ' + safeLine + ' Real-world context: ' + mat.realUse,
+          topic: 'safety', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+        };
+      }
+
+      // 8. Everyday uses / real world / nature / facts
+      if (/\b(use|found|nature|real\s*world|everyday|important|fact|why|where)/.test(qLow)) {
+        var extraFact = (extras.facts && extras.facts.length > 0) ? (' Fun fact: ' + extras.facts[0]) : '';
+        return {
+          answer: mat.name + ' (' + mat.formula + '): ' + mat.desc + ' ' + mat.realUse + extraFact,
+          topic: 'use', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['compound', 'molecule'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+        };
+      }
+
+      // 9. Vocabulary & Challenges
+      var vocabKeys = Object.keys(DECOMPOSER_VOCAB);
+      for (var vk = 0; vk < vocabKeys.length; vk++) {
+        if (qLow.indexOf(vocabKeys[vk]) !== -1) {
+          return {
+            answer: vocabKeys[vk] + ': ' + DECOMPOSER_VOCAB[vocabKeys[vk]],
+            topic: 'vocab', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: [vocabKeys[vk]], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+          };
+        }
+      }
+      if (/\b(challenge|goal|badge|quest|rp)/.test(qLow)) {
+        var chSummary = DECOMPOSER_CHALLENGES.map(function(c) { return c.name + ' (' + c.desc + ')'; }).join('; ');
+        return {
+          answer: 'Material Decomposer has ' + DECOMPOSER_CHALLENGES.length + ' lab challenges: ' + chSummary + '.',
+          topic: 'challenge', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: [], relatedReactions: []
+        };
+      }
+
+      // 10. Default comprehensive overview (composition, formula, elements, bond, state, use)
+      var elemDesc = comp.elements.map(function(e) {
+        return e.count + ' ' + e.name + ' (' + e.sym + ', ' + e.massPct + '% mass)';
+      }).join(', ');
+      return {
+        answer: mat.name + ' (' + mat.formula + ') contains ' + comp.totalAtoms + ' total atom' + (comp.totalAtoms === 1 ? '' : 's') + ': ' + elemDesc
+          + '. Bond type: ' + mat.bondType + '; room-temperature state: ' + mat.state + '; molar mass: ' + mat.molarMass + '. ' + mat.realUse,
+        topic: 'overview', materialName: mat.name, formula: mat.formula, source: 'offline', relatedConcepts: ['molecule', 'compound'], relatedReactions: relatedReactions.map(function(r) { return r.name; })
+      };
+    }
+
+    return {
+      MATERIALS: MATERIALS,
+      ELEMENTS: ELEMENTS,
+      GEOMETRY: GEOMETRY,
+      REACTIONS: REACTIONS,
+      DECOMPOSER_VOCAB: DECOMPOSER_VOCAB,
+      DECOMPOSER_CHALLENGES: DECOMPOSER_CHALLENGES,
+      MATERIAL_EXTRAS: MATERIAL_EXTRAS,
+      seededShuffle: seededShuffle,
+      findMaterial: findMaterial,
+      computeComposition: computeComposition,
+      getPhaseAtTemp: getPhaseAtTemp,
+      findReactionPair: findReactionPair,
+      buildPairKey: buildPairKey,
+      getMixPredictionPrompt: getMixPredictionPrompt,
+      evaluateMixPrediction: evaluateMixPrediction,
+      explainQuizDistractor: explainQuizDistractor,
+      answerMaterialQuestionOffline: answerMaterialQuestionOffline
+    };
+  })();
+
+  if (typeof window !== 'undefined') {
+    window.DecomposerPure = DECOMPOSER_ENGINE;
+  }
+
+
+  /* ═══════════════════════════════════════════════════════════
+     Zero-GC Canvas Helpers & Accessibility Guards
+     ═══════════════════════════════════════════════════════════ */
+  function dcIsHighContrast(flag) {
+    if (flag) return true;
+    try {
+      if (typeof document === 'undefined') return false;
+      return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+                (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function dcPrefersReducedMotion(ctxReduceMotion) {
+    if (ctxReduceMotion) return true;
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+  function dcEllipse(ctx2d, cx, cy, rx, ry, rot, a0, a1) {
+    if (!ctx2d || rx <= 0 || ry <= 0) return;
+    if (typeof ctx2d.ellipse === 'function') {
+      ctx2d.ellipse(cx, cy, rx, ry, rot || 0, a0, a1);
+    } else {
+      ctx2d.save();
+      ctx2d.translate(cx, cy);
+      if (rot) ctx2d.rotate(rot);
+      ctx2d.scale(rx, ry);
+      ctx2d.arc(0, 0, 1, a0, a1);
+      ctx2d.restore();
+    }
+  }
+  function dcRoundRectPath(ctx2d, rx, ry, rw, rh, rr) {
+    var rad = Math.min(rr, rw / 2, rh / 2);
+    ctx2d.moveTo(rx + rad, ry);
+    ctx2d.lineTo(rx + rw - rad, ry);
+    ctx2d.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
+    ctx2d.lineTo(rx + rw, ry + rh - rad);
+    ctx2d.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
+    ctx2d.lineTo(rx + rad, ry + rh);
+    ctx2d.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
+    ctx2d.lineTo(rx, ry + rad);
+    ctx2d.quadraticCurveTo(rx, ry, rx + rad, ry);
+  }
+  var DC_STATE_BG = { solid: ['#dbeafe', '#eff6ff'], liquid: ['#cffafe', '#ecfeff'], gas: ['#fee2e2', '#fef2f2'] };
+  var DC_STATE_LABELS = {
+    solid: 'SOLID \u2014 Particles vibrate in fixed lattice',
+    liquid: 'LIQUID \u2014 Particles slide past each other',
+    gas: 'GAS \u2014 Particles fly freely, fill container'
+  };
+
+
+  /* ═══════════════════════════════════════════════════════════
+     Register Tool
+     ═══════════════════════════════════════════════════════════ */
+  window.StemLab.registerTool('decomposer', {
+    icon: '\uD83C\uDF42',
+    label: "Material Decomposer",
+    desc: "Break everyday compounds into their constituent elements and explore molecules, atoms, bonds, states of matter, and chemical reactions.",
+    color: 'slate',
+    category: 'science',
+    questHooks: [
+      { id: 'explore_5_materials', label: 'Explore 5 decomposable materials', icon: '\uD83E\uDDEB', check: function(d) { return (d.materialsExplored || []).length >= 5; }, progress: function(d) { return (d.materialsExplored || []).length + '/5'; } },
+      { id: 'explore_15_materials', label: 'Explore 15 materials (master decomposer!)', icon: '\uD83C\uDFC6', check: function(d) { return (d.materialsExplored || []).length >= 15; }, progress: function(d) { return (d.materialsExplored || []).length + '/15'; } },
+      { id: 'quiz_score_5', label: 'Score 5+ on the decomposition quiz', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 5; }, progress: function(d) { return (d.quizScore || 0) + '/5'; } },
+      { id: 'streak_3', label: 'Get a 3-answer correct streak', icon: '\uD83D\uDD25', check: function(d) { return (d.bestStreak || 0) >= 3; }, progress: function(d) { return (d.bestStreak || 0) + '/3'; } }
+    ],
+    _engine: DECOMPOSER_ENGINE,
+    render: function(ctx) {
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; }) || function(k, fb) { return fb != null ? fb : k; };
+      /* ── Aliases ── */
+      var React = ctx.React;
+      var h = React.createElement;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var reduceMotion = !!(ctx && ctx.reduceMotion);
+      var onHostInk = (isContrast || isDark) ? ' text-white' : '';
+      var labToolData = ctx.toolData;
+      var setLabToolData = ctx.setToolData;
+      var setStemLabTool = typeof ctx.setStemLabTool === 'function' ? ctx.setStemLabTool : function() {};
+      var setStemLabTab = ctx.setStemLabTab;
+      var stemLabTab = ctx.stemLabTab || 'explore';
+      var stemLabTool = ctx.stemLabTool;
+      var toolSnapshots = ctx.toolSnapshots;
+      var setToolSnapshots = typeof ctx.setToolSnapshots === 'function' ? ctx.setToolSnapshots : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
+      var icons = (ctx.icons && typeof ctx.icons === 'object') ? ctx.icons : {};
+      var _fallbackIcon = function() { return null; };
+      var ArrowLeft = icons.ArrowLeft || _fallbackIcon;
+      var Calculator = icons.Calculator || _fallbackIcon;
+      var Sparkles = icons.Sparkles || _fallbackIcon;
+      var X = icons.X || _fallbackIcon;
+      var GripVertical = icons.GripVertical || _fallbackIcon;
+      var announceToSR = ctx.announceToSR;
+      var awardStemXP = ctx.awardXP;
+      var getStemXP = ctx.getXP;
+      var stemCelebrate = ctx.celebrate;
+      var stemBeep = ctx.beep;
+      // null unless text AI is usable: the AI Tutor tab is then not offered.
+      var _aiUsable = typeof window.__alloAiUsable === 'function'
+        ? function(cap, fn) { try { return !!window.__alloAiUsable(cap, fn); } catch (_) { return false; } }
+        : function(_cap, fn) { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window._alloQrBlocked !== true; };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && _aiUsable('text', ctx.callGemini)) ? ctx.callGemini : null;
+      var callTTS = ctx.callTTS;
+      var callImagen = ctx.callImagen;
+      var callGeminiVision = ctx.callGeminiVision;
+      var gradeLevel = ctx.gradeLevel;
+      var srOnly = ctx.srOnly;
+      var a11yClick = ctx.a11yClick;
+      var canvasA11yDesc = ctx.canvasA11yDesc;
+      var props = ctx.props;
+      var canvasNarrate = ctx.canvasNarrate;
+
+      /* ═══════════════════════════════════════════════════════
+         Tool Body
+         ═══════════════════════════════════════════════════════ */
+      return (function() {
+
+        /* ── State ── */
+        var _isPlainObj = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+        var _safeNum = function(v, fb) { return (typeof v === 'number' && isFinite(v)) ? v : (fb || 0); };
+        var d = (labToolData && _isPlainObj(labToolData.decomposer)) ? labToolData.decomposer : {};
+        var motionPaused = d.motionPaused === true || (d.motionPaused !== false
+          && dcPrefersReducedMotion(reduceMotion));
+
+          // ── Canvas narration: init ──
+          if (typeof canvasNarrate === 'function') {
+            canvasNarrate('decomposer', 'init', {
+              first: 'Material Decomposer loaded. Explore compounds, their elements, reactions, and states of matter.',
+              repeat: 'Decomposer Lab active.',
+              terse: 'Decomposer Lab.'
+            }, { debounce: 800 });
+          }
+
+        var upd = function(key, val) {
+          if (typeof setLabToolData !== 'function') return;
+          setLabToolData(function(prev) {
+            var safePrev = _isPlainObj(prev) ? prev : {};
+            var next = Object.assign({}, safePrev);
+            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {});
+            next.decomposer[key] = val;
+            return next;
+          });
+        };
+
+        var updMulti = function(obj) {
+          if (typeof setLabToolData !== 'function') return;
+          setLabToolData(function(prev) {
+            var safePrev = _isPlainObj(prev) ? prev : {};
+            var next = Object.assign({}, safePrev);
+            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {}, obj);
+            return next;
+          });
+        };
+
+        // Pure functional updater that merges XP ledger & discovery maps against
+        // latest prev state so rapid batched clicks never clobber earlier buckets.
+        var updLedgerMerge = function(patch, ledgerMerges) {
+          if (typeof setLabToolData !== 'function') return;
+          setLabToolData(function(prev) {
+            var safePrev = _isPlainObj(prev) ? prev : {};
+            var prevDc = _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {};
+            var nextDc = Object.assign({}, prevDc, patch || {});
+            if (_isPlainObj(ledgerMerges)) {
+              Object.keys(ledgerMerges).forEach(function(bucket) {
+                var prevBucket = _isPlainObj(prevDc[bucket]) ? prevDc[bucket] : {};
+                var addBucket = _isPlainObj(ledgerMerges[bucket]) ? ledgerMerges[bucket] : {};
+                nextDc[bucket] = Object.assign({}, prevBucket, addBucket);
+              });
+            }
+            var next = Object.assign({}, safePrev);
+            next.decomposer = nextDc;
+            return next;
+          });
+        };
+        function focusDecomposerElement(id) {
+          requestAnimationFrame(function() {
+            var element = document.getElementById(id);
+            if (element) element.focus();
+          });
+        }
+        function renderMotionControl() {
+          return h('button', { type: 'button', 'data-decomposer-motion-control': 'true',
+            'aria-pressed': motionPaused, onClick: function() { upd('motionPaused', !motionPaused); },
+            style: { minHeight: 44 },
+            className: 'px-4 py-2.5 rounded-xl border border-slate-400 bg-slate-100 text-slate-800 text-xs font-bold transition-colors' },
+            motionPaused ? __alloT('stem.decomposer.resume_particle_motion', 'Resume particle motion')
+              : __alloT('stem.decomposer.pause_particle_motion', 'Pause particle motion'));
+        }
+        function watchDecomposerCanvasSize(canvas, key, redraw) {
+          var property = '_decomposerSize' + key;
+          var watch = canvas[property];
+          if (!watch) {
+            watch = { width: canvas.offsetWidth, dpr: window.devicePixelRatio || 1 };
+            watch.changed = function() {
+              if (!canvas.isConnected) { releaseDecomposerCanvasSize(canvas, key); return; }
+              var width = canvas.offsetWidth;
+              var dpr = window.devicePixelRatio || 1;
+              if (width > 0 && (width !== watch.width || dpr !== watch.dpr)) {
+                watch.width = width; watch.dpr = dpr;
+                watch.redraw(canvas);
+              }
+            };
+            canvas[property] = watch;
+            if (typeof ResizeObserver !== 'undefined') {
+              watch.observer = new ResizeObserver(watch.changed);
+              watch.observer.observe(canvas);
+            }
+            window.addEventListener('resize', watch.changed);
+          }
+          watch.redraw = redraw;
+          watch.width = canvas.offsetWidth;
+          watch.dpr = window.devicePixelRatio || 1;
+        }
+        function releaseDecomposerCanvasSize(canvas, key) {
+          var property = '_decomposerSize' + key;
+          var watch = canvas[property];
+          if (!watch) return;
+          if (watch.observer) watch.observer.disconnect();
+          window.removeEventListener('resize', watch.changed);
+          delete canvas[property];
+        }
+
+        var checkDecomposerChallenges = function(customState) {
+          var state = customState || {};
+          var completed = Array.isArray(state.completedChallenges) ? state.completedChallenges : [];
+          var newlyCompleted = [];
+          var pointsEarned = 0;
+
+          for (var i = 0; i < DECOMPOSER_CHALLENGES.length; i++) {
+            var ch = DECOMPOSER_CHALLENGES[i];
+            if (completed.indexOf(ch.id) !== -1) continue;
+
+            var met = false;
+            if (ch.id === 'first_decompose') {
+              met = !!state._hasDecomposed;
+            } else if (ch.id === 'explore_materials') {
+              met = (state.materialsExplored || []).length >= 5;
+            } else if (ch.id === 'quiz_pass') {
+              met = (state.quizCorrectCount || 0) >= 3;
+            } else if (ch.id === 'mix_reactants') {
+              met = Object.keys(state.reactionsDiscovered || {}).length >= 3;
+            } else if (ch.id === 'hunt_compounds') {
+              met = Object.keys(state.foundObjects || {}).length >= 5;
+            } else if (ch.id === 'vocab_studied') {
+              met = (state.vocabWordsStudied || []).length >= 3;
+            }
+
+            if (met) {
+              newlyCompleted.push(ch.id);
+              pointsEarned += ch.rp;
+            }
+          }
+
+          if (newlyCompleted.length > 0) {
+            var updatedCompleted = completed.concat(newlyCompleted);
+            var newRP = (state.researchPoints || 0) + pointsEarned;
+
+            if (typeof setLabToolData === 'function') {
+              setLabToolData(function(prev) {
+                var safePrev = _isPlainObj(prev) ? prev : {};
+                var prevDc = _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {};
+                var prevDone = Array.isArray(prevDc.completedChallenges) ? prevDc.completedChallenges : [];
+                var mergedDone = prevDone.slice();
+                var addedRP = 0;
+                newlyCompleted.forEach(function(id) {
+                  if (mergedDone.indexOf(id) === -1) {
+                    mergedDone.push(id);
+                    var foundCh = DECOMPOSER_CHALLENGES.find(function(c) { return c.id === id; });
+                    if (foundCh) addedRP += foundCh.rp;
+                  }
+                });
+                var next = Object.assign({}, safePrev);
+                next.decomposer = Object.assign({}, prevDc, {
+                  completedChallenges: mergedDone,
+                  researchPoints: _safeNum(prevDc.researchPoints, 0) + addedRP
+                });
+                return next;
+              });
+            }
+
+            newlyCompleted.forEach(function(finishedId) {
+              var ch = DECOMPOSER_CHALLENGES.find(function(c) { return c.id === finishedId; });
+              if (addToast) {
+                addToast('🏆 Challenge Complete: ' + ch.name + ' (+' + ch.rp + ' RP)', 'success');
+              }
+              if (typeof awardStemXP === 'function') {
+                awardStemXP('decomposer', ch.rp, 'Challenge: ' + ch.name);
+              }
+            });
+
+            if (typeof stemCelebrate === 'function') stemCelebrate();
+            if (typeof announceToSR === 'function') {
+              announceToSR('Challenges updated. Completed ' + updatedCompleted.length + ' of ' + DECOMPOSER_CHALLENGES.length + '. Research points: ' + newRP);
+            }
+          }
+        };
+
+        var studyDecomposerVocab = function(word) {
+          var current = Array.isArray(d.vocabWordsStudied) ? d.vocabWordsStudied : [];
+          if (current.indexOf(word) === -1) {
+            var next = current.concat([word]);
+            var nextState = Object.assign({}, d, { vocabWordsStudied: next });
+            upd('vocabWordsStudied', next);
+            if (typeof awardStemXP === 'function') {
+              awardStemXP('decomposer', 5, 'Studied: ' + word);
+            }
+            if (addToast) {
+              addToast('📖 Studied concept: ' + word + ' (+5 RP)', 'info');
+            }
+            setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
+          }
+        };
+
+
+
+        /* ═══════════════════════════════════════════════════
+           Color Contrast Helper (uses module-scoped MATERIALS)
+           ═══════════════════════════════════════════════════ */
+        function readableInk(hex) {
+          var match = /^#([0-9a-f]{6})$/i.exec(String(hex || ''));
+          if (!match) return '#0f172a';
+          var value = parseInt(match[1], 16);
+          var channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map(function(channel) {
+            var normalized = channel / 255;
+            return normalized <= 0.04045 ? normalized / 12.92 : Math.pow((normalized + 0.055) / 1.055, 2.4);
+          });
+          var luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+          return luminance > 0.179 ? '#000000' : '#ffffff';
+        }
+
 
         /* ── Derived state ── */
         var sel = MATERIALS.find(function(m) { return m.name === (d.selected || 'Water'); }) || MATERIALS[0];
@@ -1089,6 +1774,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var activeReaction = _isPlainObj(d.activeReaction) ? d.activeReaction : null;
         var reactionsDiscovered = _isPlainObj(d.reactionsDiscovered) ? d.reactionsDiscovered : {};
 
+        // Persisted anti-farming XP ledgers (type-guarded against hostile saved state)
+        var huntXpIds = _isPlainObj(d._huntXpIds) ? d._huntXpIds : {};
+        var reactionXpIds = _isPlainObj(d._reactionXpIds) ? d._reactionXpIds : {};
+        var quizXpIds = _isPlainObj(d._quizXpIds) ? d._quizXpIds : {};
+        var mixPredictXpIds = _isPlainObj(d._mixPredictXpIds) ? d._mixPredictXpIds : {};
+
+        // Predict-Before-Mix Challenge state
+        var mixPredPair = typeof d.mixPredPair === 'string' ? d.mixPredPair : '';
+        var mixPredType = typeof d.mixPredType === 'string' ? d.mixPredType : '';
+        var mixPredRule = typeof d.mixPredRule === 'string' ? d.mixPredRule : '';
+        var mixPredResult = _isPlainObj(d.mixPredResult) ? d.mixPredResult : null;
+
+        // Offline Chemistry Coach state
+        var coachInput = typeof d.coachInput === 'string' ? d.coachInput : '';
+        var coachReply = _isPlainObj(d.coachReply) ? d.coachReply : null;
+
         // Fun fact state
         var factIdx = Math.max(0, Math.floor(_safeNum(d._factIdx, 0)));
 
@@ -1135,15 +1836,27 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
           });
           if (newBadges.length > 0) {
-            var ids = earned.slice();
+            var newIds = newBadges.map(function(b) { return b.id; });
             newBadges.forEach(function(b) {
-              ids.push(b.id);
               addToast(b.icon + ' Badge: ' + b.label, 'success');
               if (awardStemXP) awardStemXP('decomposer', b.xp, 'Badge: ' + b.label);
             });
             SOUNDS.badge();
             if (stemCelebrate) stemCelebrate();
-            upd('badges', ids);
+            if (typeof setLabToolData === 'function') {
+              setLabToolData(function(prev) {
+                var safePrev = _isPlainObj(prev) ? prev : {};
+                var prevDc = _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {};
+                var prevBadges = Array.isArray(prevDc.badges) ? prevDc.badges : [];
+                var merged = prevBadges.slice();
+                newIds.forEach(function(id) {
+                  if (merged.indexOf(id) === -1) merged.push(id);
+                });
+                var next = Object.assign({}, safePrev);
+                next.decomposer = Object.assign({}, prevDc, { badges: merged });
+                return next;
+              });
+            }
           }
         }
 
@@ -1161,6 +1874,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var q = {};
           var opts = [];
           var tc = 0;
+          var fakeMat = null;
 
           if (type === 'formula') {
             q = { text: 'What is the chemical formula for ' + mat.name + '?', answer: mat.formula, concept: 'molecule' };
@@ -1216,72 +1930,84 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             if (isTruth) {
               q = { text: 'True or False: ' + mat.name + ' has the formula ' + mat.formula + '.', answer: 'True', concept: 'molecule' };
             } else {
-              var fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
+              fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
               while (fakeMat.name === mat.name) fakeMat = MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
               q = { text: 'True or False: ' + mat.name + ' has the formula ' + fakeMat.formula + '.', answer: 'False', concept: 'molecule' };
             }
             opts = ['True', 'False'];
           }
 
+          var matElemList = mat.elements.map(function(e) { return e.name; }).join(', ');
+          var matCountSum = mat.elements.map(function(e) { return e.name + ' (' + e.count + ')'; }).join(' + ');
           var wf = {};
           opts.forEach(function(opt) {
             if (opt === q.answer) return;
             if (type === 'formula') {
               var other = MATERIALS.find(function(m) { return m.formula === opt; });
               if (other) {
-                wf[opt] = opt + ' is the chemical formula for ' + other.name + ', not ' + mat.name + '.';
+                var otherEls = other.elements.map(function(e) { return e.name; }).join(', ');
+                wf[opt] = opt + ' is the chemical formula for ' + other.name + ' (' + otherEls + '), not ' + mat.name + ' (' + mat.formula + ': ' + matElemList + ').';
               } else {
-                wf[opt] = 'That is not the correct chemical formula for ' + mat.name + '.';
+                wf[opt] = 'That is not the correct chemical formula for ' + mat.name + ' (' + mat.formula + ').';
               }
             } else if (type === 'elements') {
               var other = MATERIALS.find(function(m) {
                 return m.elements.map(function(e) { return e.name; }).join(', ') === opt;
               });
               if (other) {
-                wf[opt] = 'Those elements are found in ' + other.name + ' (' + other.formula + '), not ' + mat.name + '.';
+                wf[opt] = 'Those elements make up ' + other.name + ' (' + other.formula + '), not ' + mat.name + ' (' + mat.formula + ': ' + matElemList + '). Changing constituent elements forms a different compound.';
               } else {
-                wf[opt] = 'Those elements do not match the composition of ' + mat.name + '.';
+                wf[opt] = 'Those elements do not match ' + mat.formula + ' (' + matElemList + ').';
               }
             } else if (type === 'count') {
-              wf[opt] = 'A molecule of ' + mat.name + ' (' + mat.formula + ') contains ' + tc + ' atoms, not ' + opt + '.';
+              wf[opt] = 'Count every subscript in ' + mat.formula + ': ' + matCountSum + ' = ' + tc + ' total atoms, not ' + opt + '. Remember: an element symbol without a written subscript still counts as 1 atom.';
             } else if (type === 'bond') {
+              var elemGroups = mat.elements.map(function(e) { return e.name + ' (' + e.group + ')'; }).join(', ');
               if (opt === 'Covalent') {
-                wf[opt] = 'Covalent bonding involves sharing electrons between nonmetal atoms. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+                wf[opt] = 'Covalent bonding shares electrons between nonmetals. ' + mat.name + ' (' + elemGroups + ') has ' + mat.bondType + ' bonding instead.';
               } else if (opt === 'Ionic') {
-                wf[opt] = 'Ionic bonding involves electrostatic attraction between oppositely charged metal and nonmetal ions. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+                wf[opt] = 'Pure ionic bonding pairs metal cations and nonmetal anions without internal polyatomic covalent clusters. ' + mat.name + ' (' + elemGroups + ') has ' + mat.bondType + ' bonding.';
               } else if (opt === 'Ionic + Covalent') {
-                wf[opt] = 'This compound has polyatomic ions with internal covalent bonds forming ionic networks. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
+                wf[opt] = 'Ionic + Covalent bonding occurs when polyatomic ions (held internally by covalent bonds) form an ionic lattice. ' + mat.name + ' has ' + mat.bondType + ' bonding.';
               } else if (opt === 'Metallic') {
-                wf[opt] = 'Metallic bonding exists in pure metals, not in chemical compounds like ' + mat.name + '.';
+                wf[opt] = 'Metallic bonding involves a sea of delocalized electrons in pure metals, not in compounds like ' + mat.name + ' (' + mat.bondType + ').';
               } else {
                 wf[opt] = mat.name + ' has ' + mat.bondType + ' bonding, not ' + opt + '.';
               }
             } else if (type === 'state') {
-              wf[opt] = 'At room temperature, ' + mat.name + ' is a ' + mat.state + ', not a ' + opt + '.';
+              var stateWhy = {
+                Solid: 'Solids hold particles vibrating in a fixed lattice.',
+                Liquid: 'Liquids have close particles sliding past one another.',
+                Gas: 'Gases have fast particles spreading to fill their container.',
+                Plasma: 'Plasma is ionized gas found at extreme temperatures like stars or lightning, not ordinary room temperature.'
+              };
+              wf[opt] = 'At room temperature (25\u00B0C), ' + mat.name + ' (' + mat.formula + ') is a ' + mat.state + ', not a ' + opt + '. ' + (stateWhy[opt] || '') + ' Phase changes are physical and keep the formula intact.';
             } else if (type === 'realUse') {
               var other = MATERIALS.find(function(m) { return m.name === opt; });
               if (other) {
-                wf[opt] = opt + ' is commonly used for ' + other.realUse.substring(0, 50) + '..., not this description.';
+                wf[opt] = opt + ' (' + other.formula + ') is used for: ' + other.realUse.substring(0, 60) + '... — whereas this clue describes ' + mat.name + ' (' + mat.formula + ').';
               } else {
-                wf[opt] = 'That choice does not match the real-world application described.';
+                wf[opt] = 'That choice does not match the real-world application of ' + mat.name + '.';
               }
             } else if (type === 'nameFromFormula') {
               var other = MATERIALS.find(function(m) { return m.name === opt; });
               if (other) {
-                wf[opt] = opt + ' has the chemical formula ' + other.formula + ', while ' + mat.formula + ' is ' + mat.name + '.';
+                wf[opt] = opt + ' has the formula ' + other.formula + ', while ' + mat.formula + ' (' + matElemList + ') is ' + mat.name + '.';
               } else {
-                wf[opt] = 'That name does not match the chemical formula ' + mat.formula + '.';
+                wf[opt] = 'That name does not match the chemical formula ' + mat.formula + ' (' + mat.name + ').';
               }
             } else {
               // truefalse
               if (q.answer === 'True') {
-                wf[opt] = 'This statement is true. ' + mat.name + ' indeed has the formula ' + mat.formula + '.';
+                wf[opt] = 'This statement is true: ' + mat.name + ' really has the formula ' + mat.formula + ' (' + matElemList + ').';
               } else {
-                wf[opt] = 'This statement is false. ' + mat.name + ' has the formula ' + mat.formula + ', not the other one shown.';
+                wf[opt] = 'This statement is false: ' + mat.name + ' has the formula ' + mat.formula + (fakeMat ? ', whereas ' + fakeMat.formula + ' is ' + fakeMat.name : '') + '.';
               }
             }
           });
+          q.id = type + ':' + mat.name + ':' + q.answer;
           q.wrongFeedback = wf;
+          q.whyNot = wf;
 
           // Fisher-Yates: the biased comparator left the correct answer (always
           // inserted first) clustered near the top of the options.
@@ -1310,10 +2036,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
 
         /* ═══════════════════════════════════════════════════
-           AI Tutor Handler
+           AI Tutor & Offline Coach Handlers
            ═══════════════════════════════════════════════════ */
         function handleAiQuestion(question) {
-          if (!question || !String(question).trim() || !callGemini || aiLoading) return;
+          if (!question || !String(question).trim() || aiLoading) return;
           var qText = String(question).trim();
           var srCheck = (typeof ctx.safeRehearseCheck === 'function')
             ? ctx.safeRehearseCheck
@@ -1330,6 +2056,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
           SOUNDS.aiTutor();
           var msgs = aiMessages.concat([{ role: 'user', text: qText }]);
+
+          // Offline deterministic chemistry coach path when Gemini is unavailable
+          if (!callGemini) {
+            var offRes = DECOMPOSER_ENGINE.answerMaterialQuestionOffline(qText, sel, ELEMENTS, REACTIONS);
+            var offText = offRes && offRes.answer ? offRes.answer : t('stem.decomposer.coach_fallback', 'Select a material to inspect its formula, elements, bonds, and reactions.');
+            updMulti({
+              aiMessages: msgs.concat([{ role: 'ai', text: offText }]),
+              aiInput: '',
+              aiLoading: false,
+              aiStatus: __alloT('stem.decomposer.tutor_reply', 'Tutor: {reply}').replace('{reply}', offText),
+              aiQuestions: (d.aiQuestions || 0) + 1
+            });
+            focusDecomposerElement('stem-decomposer-tutor-input');
+            return;
+          }
+
           updMulti({ aiMessages: msgs, aiInput: '', aiLoading: true,
             aiStatus: __alloT('stem.decomposer.tutor_thinking', 'The tutor is preparing an answer.') });
           focusDecomposerElement('stem-decomposer-tutor-input');
@@ -1352,36 +2094,188 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             });
           }).catch(function() {
             var errorMessage = __alloT('stem.decomposer.tutor_error', 'The tutor could not get an answer. Please try again.');
-            var updated = msgs.concat([{ role: 'ai', text: errorMessage }]);
+            var offlineGuide = DECOMPOSER_ENGINE.answerMaterialQuestionOffline(qText, sel, ELEMENTS, REACTIONS);
+            var combinedReply = errorMessage + (offlineGuide && offlineGuide.answer
+              ? (' ' + t('stem.decomposer.offline_guide_prefix', 'Offline Chemistry Guide:') + ' ' + offlineGuide.answer)
+              : '');
+            var updated = msgs.concat([{ role: 'ai', text: combinedReply }]);
             updMulti({ aiMessages: updated, aiLoading: false, aiStatus: errorMessage });
           });
         }
 
+        function handleOfflineCoachQuestion(question) {
+          var qText = String(question || '').trim();
+          if (!qText) return;
+          SOUNDS.aiTutor();
+          var res = DECOMPOSER_ENGINE.answerMaterialQuestionOffline(qText, sel, ELEMENTS, REACTIONS);
+          updMulti({
+            coachInput: '',
+            coachReply: {
+              question: qText,
+              answer: res.answer,
+              topic: res.topic,
+              materialName: res.materialName,
+              formula: res.formula
+            }
+          });
+        }
+
+        function renderOfflineCoach(contextTab) {
+          var comparePartner = comparisonMaterial(sel.name, d.compareTo);
+          var prompts = contextTab === 'reactions'
+            ? [
+                t('stem.decomposer.coach_q_mix', 'What happens when {a} mixes with {b}?')
+                  .replace('{a}', reactantA || 'Baking Soda').replace('{b}', reactantB || 'Acetic Acid'),
+                t('stem.decomposer.coach_q_mass', 'Why is mass conserved in chemical reactions?'),
+                t('stem.decomposer.coach_q_dissolve', 'How is physical dissolving different from a chemical reaction?')
+              ]
+            : contextTab === 'states'
+              ? [
+                  t('stem.decomposer.coach_q_phase', 'At what temperatures does {material} melt or boil?').replace('{material}', sel.name),
+                  t('stem.decomposer.coach_q_decomp_heat', 'Does {material} decompose when heated?').replace('{material}', sel.name),
+                  t('stem.decomposer.coach_q_particles', 'How do particles move in solids, liquids, and gases?')
+                ]
+              : [
+                  t('stem.decomposer.coach_q_mass_pct', 'Break down {material} elements and mass percentages').replace('{material}', sel.name),
+                  t('stem.decomposer.coach_q_bond', 'What bond type holds {material} together?').replace('{material}', sel.name),
+                  t('stem.decomposer.coach_q_compare', 'Compare {a} with {b}').replace('{a}', sel.name).replace('{b}', comparePartner.name)
+                ];
+
+          var boxStyle = {
+            backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f5f3ff'),
+            border: isContrast ? '2px solid #ffff00' : (isDark ? '1px solid #475569' : '1px solid #c4b5fd'),
+            color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#1e293b')
+          };
+
+          return h('section', {
+            'data-decomposer-offline-coach': contextTab,
+            'aria-labelledby': 'stem-decomposer-coach-heading',
+            className: 'rounded-xl p-3 mt-4 mb-3',
+            style: boxStyle
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', null,
+                h('h5', { id: 'stem-decomposer-coach-heading', className: 'text-xs font-black', style: { color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#5b21b6') } },
+                  '\uD83E\uDDEA ' + t('stem.decomposer.coach_title', 'Offline Chemistry Coach')),
+                h('p', { className: 'text-[0.6875rem]', style: { color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569') } },
+                  t('stem.decomposer.coach_subtitle', 'Works 100% offline using bundled formulas, bonds, phase points, and reactions.'))
+              ),
+              callGemini && h('button', {
+                type: 'button',
+                onClick: function() { upd('tab', 'tutor'); },
+                className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold border',
+                style: {
+                  backgroundColor: isContrast ? '#000000' : (isDark ? '#312e81' : '#ffffff'),
+                  color: isContrast ? '#ffff00' : (isDark ? '#e0e7ff' : '#5b21b6'),
+                  borderColor: isContrast ? '#ffff00' : '#a78bfa'
+                }
+              }, '\u2728 ' + t('stem.decomposer.coach_upgrade_ai', 'Open AI Tutor'))
+            ),
+            h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+              prompts.map(function(pq, idx) {
+                return h('button', {
+                  type: 'button',
+                  key: 'cq-' + idx,
+                  'data-decomposer-coach-prompt': String(idx),
+                  onClick: function() { handleOfflineCoachQuestion(pq); },
+                  className: 'px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold border transition-colors',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'),
+                    color: isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#4c1d95'),
+                    borderColor: isContrast ? '#ffff00' : (isDark ? '#475569' : '#ddd6fe')
+                  }
+                }, pq);
+              })
+            ),
+            h('div', { className: 'flex gap-2 mb-2' },
+              h('input', {
+                id: 'stem-decomposer-coach-input',
+                type: 'text',
+                value: coachInput,
+                'aria-label': t('stem.decomposer.coach_input_aria', 'Ask the offline chemistry coach a question'),
+                placeholder: t('stem.decomposer.coach_placeholder', 'Ask about {material}, mass %, bonds, or reactions...').replace('{material}', sel.name),
+                onChange: function(e) { upd('coachInput', e.target.value); },
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && !e.ctrlKey && !e.altKey && !e.metaKey && coachInput.trim()) {
+                    e.preventDefault();
+                    handleOfflineCoachQuestion(coachInput);
+                  }
+                },
+                className: 'flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs border',
+                style: {
+                  backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'),
+                  color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#1e293b'),
+                  borderColor: isContrast ? '#ffff00' : '#94a3b8'
+                }
+              }),
+              h('button', {
+                type: 'button',
+                disabled: !coachInput.trim(),
+                onClick: function() { handleOfflineCoachQuestion(coachInput); },
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors disabled:opacity-50',
+                style: {
+                  minHeight: 36,
+                  backgroundColor: isContrast ? '#ffff00' : '#6d28d9',
+                  color: isContrast ? '#000000' : '#ffffff'
+                }
+              }, t('stem.decomposer.coach_ask_btn', 'Ask Coach'))
+            ),
+            h('div', {
+              id: 'stem-decomposer-coach-status',
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true'
+            },
+              coachReply && typeof coachReply.answer === 'string' && h('div', {
+                id: 'stem-decomposer-coach-answer',
+                className: 'rounded-lg p-2.5 mt-1 text-xs leading-relaxed border',
+                style: {
+                  backgroundColor: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'),
+                  color: isContrast ? '#ffffff' : (isDark ? '#f1f5f9' : '#1e293b'),
+                  borderColor: isContrast ? '#ffff00' : '#c4b5fd'
+                }
+              },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                  h('span', { className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider', style: { color: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9') } },
+                    (coachReply.materialName ? (coachReply.materialName + ' \u00B7 ') : '') + String(coachReply.topic || 'guide').toUpperCase()),
+                  h('button', {
+                    type: 'button',
+                    'aria-label': t('stem.decomposer.coach_read_aria', 'Read offline chemistry coach answer aloud'),
+                    onClick: function() { speakText(coachReply.answer); },
+                    className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold border',
+                    style: {
+                      backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f5f3ff'),
+                      color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#5b21b6'),
+                      borderColor: isContrast ? '#ffff00' : '#c4b5fd'
+                    }
+                  }, '\uD83D\uDD0A ' + t('stem.decomposer.coach_read_btn', 'Read aloud'))
+                ),
+                h('p', { className: 'm-0' }, coachReply.answer),
+                callGemini && coachReply.question && h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    var followQ = coachReply.question;
+                    upd('tab', 'tutor');
+                    handleAiQuestion(followQ);
+                  },
+                  className: 'mt-2 text-[0.6875rem] font-bold underline',
+                  style: { color: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9') }
+                }, t('stem.decomposer.coach_ask_gemini_followup', 'Ask AI Tutor for deeper explanation \u2192'))
+              )
+            )
+          );
+        }
+
 
         /* ═══════════════════════════════════════════════════
-           TTS Handler
+           TTS Handler (routes exclusively through ctx.callTTS)
            ═══════════════════════════════════════════════════ */
-        // A speak button: the host voice with force (the header narration switch gates only automatic
-        // narration). The host plays the clip itself and never throws. It resolves null while the app is
-        // muted (stay silent), when student AI is off (it already used the device voice) or when no voice
-        // came back: only that last case calls onNone.
-        function raHostSpeak(callTTS, text, onNone) {
-          var req = null;
-          try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
-          function quiet() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute || window.__alloStudentAiDisabled === true; }
-          Promise.resolve(req).then(function (url) { if (!url && !quiet() && onNone) onNone(); }, function () { if (!quiet() && onNone) onNone(); });
-        }
-        function speakText(text, onDevice) {
-          if (!onDevice) SOUNDS.tts();
-          if (callTTS && !onDevice) { raHostSpeak(callTTS, text, function () { speakText(text, true); }); return; }
-          try {
-            if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
-          } catch (_) {}
-          if (window._kokoroTTS && window._kokoroTTS.speak) {
-            window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
-            return;
+        function speakText(text) {
+          if (!text || isDecomposerMuted()) return;
+          SOUNDS.tts();
+          if (typeof callTTS === 'function') {
+            try { callTTS(String(text), undefined, undefined, { force: true }); } catch (e) {}
           }
-          if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.speak(utter); }
         }
 
 
@@ -1499,7 +2393,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
           function draw() {
             if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; releaseDecomposerCanvasSize(canvas, 'Atoms'); return; }
-            var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion();
+            var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion(reduceMotion);
             var isHC = dcIsHighContrast(isContrast);
             var paintKey = canvas.dataset.formula + '|' + canvas.dataset.decomposed + '|' + canvas.dataset.materialName + '|' + canvas.dataset.elementsJson + '|' + (isHC ? '1' : '0');
             if (pausedMotion && canvas._dcPaintKey === paintKey) {
@@ -1845,7 +2739,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           { id: 'quiz', label: '\uD83E\uDDE0 Quiz', color: 'emerald' },
           { id: 'tutor', label: '\uD83E\uDD16 AI Tutor', color: 'purple' },
           { id: 'decompHunt', label: '\u23F1\uFE0F Decompose', color: 'lime' }
-        ].filter(function(t) { return t.id !== 'tutor' || !!callGemini; });
+        ].filter(function(tb) { return tb.id !== 'tutor' || !!callGemini; });
         var decomposerTabKeyDown = function(e, index) {
           if (e.ctrlKey || e.altKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing)) return;
           var nextIndex = -1;
@@ -1939,7 +2833,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
           },
             h('div', { className: 'flex flex-wrap items-center gap-3' },
-              h('button', { type: 'button',
+              !ctx.embedded && h('button', { type: 'button',
                 onClick: function() { setStemLabTool(null); },
                 className: 'transition-colors p-2 rounded-xl active:scale-[0.97]',
                 style: {
@@ -2079,7 +2973,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               DECOMPOSER_CHALLENGES.map(function(ch) {
                 var done = completedChallenges.indexOf(ch.id) !== -1;
                 return h('div', {
-                  key: ch.id, title: ch.name + ': ' + ch.desc + ' (' + ch.rp + ' RP)',
+                  key: ch.id, title: t('stem.decomposer.challenge_tooltip', '{name}: {desc} ({rp} RP)').replace('{name}', ch.name).replace('{desc}', ch.desc).replace('{rp}', ch.rp),
                   className: 'text-center cursor-default transition-all ' + (done ? 'drop-shadow-md' : 'opacity-25 grayscale'),
                   style: { fontSize: '18px' }
                 }, ch.icon);
@@ -2298,7 +3192,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     viewBox: '0 0 520 176',
                     role: 'img',
                     'aria-label': __alloT('stem.decomposer.molecular_diagram_aria', '{name} ({formula}) molecular schematic showing {state} elements and proportional mass breakdown')
-                      .replace('{name}', sel.name).replace('{formula}', sel.formula).replace('{state}', decomposed ? 'separated' : 'bonded'),
+                      .replace('{name}', sel.name).replace('{formula}', sel.formula).replace('{state}', decomposed ? t('stem.decomposer.state_separated', 'separated') : t('stem.decomposer.state_bonded', 'bonded')),
                     style: { width: '100%', height: 'auto', display: 'block' }
                   },
                     /* Outer lab stage backdrop */
@@ -3334,7 +4228,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                           if (canvas._sceneAnimId) { cancelAnimationFrame(canvas._sceneAnimId); canvas._sceneAnimId = null; }
                           return;
                         }
-                        var staticSoil = motionPaused || dcPrefersReducedMotion();
+                        var staticSoil = motionPaused || dcPrefersReducedMotion(reduceMotion);
                         var isHCNow = dcIsHighContrast(isContrast);
                         drawSceneBase();
 
@@ -3480,12 +4374,19 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                           } else {
                             updates.huntTarget = null;
                           }
-                          var nextState = Object.assign({}, d, updates);
-                          updMulti(updates);
+                          var canAwardHuntXp = !huntXpIds[obj.id];
+                          var updatesPatch = { selectedSceneObj: obj.id, huntScore: newScore, huntStreak: newStreak, huntWrongGuess: null };
+                          if (updates._kitchenComplete) updatesPatch._kitchenComplete = true;
+                          if (updates._allScenesComplete) updatesPatch._allScenesComplete = true;
+                          updatesPatch.huntTarget = updates.huntTarget;
+                          var foundAdd = {}; foundAdd[obj.id] = true;
+                          var huntXpAdd = {}; huntXpAdd[obj.id] = true;
+                          var nextState = Object.assign({}, d, updates, { _huntXpIds: Object.assign({}, huntXpIds, huntXpAdd) });
+                          updLedgerMerge(updatesPatch, { foundObjects: foundAdd, _huntXpIds: huntXpAdd });
                           var matRec = MATERIALS.find(function(m) { return m.name === obj.material; });
                           var matFormula = matRec ? matRec.formula : '?';
                           if (addToast) addToast('\u2705 Correct! ' + obj.name + ' = ' + matFormula, 'success');
-                          if (awardStemXP) awardStemXP('decomposer', 5, 'Compound identified: ' + obj.name);
+                          if (canAwardHuntXp && awardStemXP) awardStemXP('decomposer', 5, 'Compound identified: ' + obj.name);
                           setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                         } else {
                           SOUNDS.quizWrong();
@@ -3647,7 +4548,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 reactantA ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
-                  h('button', { type: 'button', 'data-decomposer-remove': 'a', 'aria-label': __alloT('stem.decomposer.remove_material_a', 'Remove Material A: {material}').replace('{material}', reactantA), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantA; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { type: 'button', 'data-decomposer-remove': 'a', 'aria-label': __alloT('stem.decomposer.remove_material_a', 'Remove Material A: {material}').replace('{material}', reactantA), onClick: function() { updMulti({ reactantA: null, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantA; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
@@ -3656,7 +4557,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 reactantB ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
-                  h('button', { type: 'button', 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { type: 'button', 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-700 text-center py-4' }, 'Select below \u2193')
               )
             ),
@@ -3670,9 +4571,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   'data-decomposer-reactant': m.name, 'aria-pressed': isA || isB,
                   onClick: function() {
                     SOUNDS.selectMaterial();
-                    if (!reactantA) { updMulti({ reactantA: m.name, activeReaction: null }); }
-                    else if (!reactantB && m.name !== reactantA) { upd('reactantB', m.name); }
-                    else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
+                    if (!reactantA) { updMulti({ reactantA: m.name, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); }
+                    else if (!reactantB && m.name !== reactantA) { updMulti({ reactantB: m.name, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); }
+                    else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (isA ? 'bg-indigo-600 text-white' : isB ? 'bg-rose-700 text-white' : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
@@ -3680,29 +4581,217 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               })
             ),
 
-            // React button + result
+            // Predict-Before-Mix Challenge + React button + Result
             reactantA && reactantB ? (function() {
               // Find matching reaction
-              var reaction = null;
-              for (var ri = 0; ri < REACTIONS.length; ri++) {
-                var r = REACTIONS[ri];
-                if ((r.a === reactantA && r.b === reactantB) || (r.a === reactantB && r.b === reactantA)) {
-                  reaction = r; break;
-                }
-              }
+              var reaction = DECOMPOSER_ENGINE.findReactionPair(reactantA, reactantB, REACTIONS);
+              var pairKey = DECOMPOSER_ENGINE.buildPairKey(reactantA, reactantB);
+              var predPrompt = DECOMPOSER_ENGINE.getMixPredictionPrompt(reactantA, reactantB, REACTIONS);
+              var activePredResult = (mixPredResult && mixPredResult.pairKey === pairKey) ? mixPredResult : null;
+              var curPredType = mixPredPair === pairKey ? mixPredType : '';
+              var curPredRule = mixPredPair === pairKey ? mixPredRule : '';
+              var predUnlocked = !!activePredResult;
 
               return h('div', null,
-                // Mix button
-                !activeReaction ? h('button', { id: 'stem-decomposer-reaction-mix', type: 'button',
+                // Predict-Before-Mix Challenge (must commit prediction before unlocking Mix)
+                !activeReaction && predPrompt ? h('section', {
+                  id: 'stem-decomposer-mix-predict',
+                  'data-decomposer-mix-predict': 'true',
+                  'aria-labelledby': 'stem-decomposer-mix-predict-title',
+                  className: 'rounded-xl p-4 mb-3 border-2',
+                  style: {
+                    backgroundColor: isContrast ? '#000000' : (isDark ? '#1e293b' : '#fffbeb'),
+                    borderColor: isContrast ? '#ffff00' : (isDark ? '#475569' : '#f59e0b'),
+                    color: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#1e293b')
+                  }
+                },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                    h('h5', {
+                      id: 'stem-decomposer-mix-predict-title',
+                      className: 'text-sm font-black',
+                      style: { color: isContrast ? '#ffff00' : (isDark ? '#fcd34d' : '#92400e') }
+                    }, '\uD83D\uDD2C ' + t('stem.decomposer.mix_predict_title', 'Predict Before You Mix: {a} + {b}').replace('{a}', reactantA).replace('{b}', reactantB)),
+                    h('span', {
+                      className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full',
+                      style: {
+                        backgroundColor: isContrast ? '#000000' : (predUnlocked ? '#d1fae5' : '#fef3c7'),
+                        color: isContrast ? '#ffff00' : (predUnlocked ? '#065f46' : '#92400e'),
+                        border: isContrast ? '1px solid #ffff00' : 'none'
+                      }
+                    }, predUnlocked
+                      ? t('stem.decomposer.mix_predict_unlocked', 'Prediction locked — ready to mix!')
+                      : t('stem.decomposer.mix_predict_step_badge', 'Step 1 of 2: Predict'))
+                  ),
+                  h('p', { className: 'text-xs mb-3', style: { color: isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569') } },
+                    t('stem.decomposer.mix_predict_intro', 'Commit to both predictions below before unlocking the reaction outcome.')),
+
+                  // Part (a): Change type
+                  h('div', { className: 'mb-3', role: 'group', 'aria-labelledby': 'stem-decomposer-pred-type-label' },
+                    h('p', { id: 'stem-decomposer-pred-type-label', className: 'text-xs font-bold mb-1.5', style: { color: isContrast ? '#ffff00' : (isDark ? '#f1f5f9' : '#1e293b') } },
+                      t('stem.decomposer.mix_predict_part_a', '1. Will a chemical reaction, physical dissolution, or no reaction occur?')),
+                    h('div', { className: 'space-y-1.5' },
+                      predPrompt.typeOptions.map(function(opt) {
+                        var selectedOpt = curPredType === opt.id;
+                        return h('button', {
+                          key: opt.id,
+                          type: 'button',
+                          disabled: predUnlocked,
+                          'data-decomposer-pred-type': opt.id,
+                          'aria-pressed': selectedOpt,
+                          onClick: function() {
+                            if (predUnlocked) return;
+                            updMulti({ mixPredPair: pairKey, mixPredType: opt.id, mixPredRule: curPredRule });
+                          },
+                          className: 'w-full text-left px-3 py-2 rounded-lg text-xs font-semibold border transition-colors',
+                          style: {
+                            backgroundColor: selectedOpt
+                              ? (isContrast ? '#ffff00' : '#4f46e5')
+                              : (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')),
+                            color: selectedOpt
+                              ? (isContrast ? '#000000' : '#ffffff')
+                              : (isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155')),
+                            borderColor: selectedOpt
+                              ? (isContrast ? '#ffff00' : '#4338ca')
+                              : (isContrast ? '#ffff00' : '#cbd5e1')
+                          }
+                        }, opt.label);
+                      })
+                    )
+                  ),
+
+                  // Part (b): Product & Conservation rule
+                  h('div', { className: 'mb-3', role: 'group', 'aria-labelledby': 'stem-decomposer-pred-rule-label' },
+                    h('p', { id: 'stem-decomposer-pred-rule-label', className: 'text-xs font-bold mb-1.5', style: { color: isContrast ? '#ffff00' : (isDark ? '#f1f5f9' : '#1e293b') } },
+                      t('stem.decomposer.mix_predict_part_b', '2. Predict the key outcome and atom-conservation rule:')),
+                    h('div', { className: 'space-y-1.5' },
+                      predPrompt.ruleOptions.map(function(opt) {
+                        var selectedOpt = curPredRule === opt.id;
+                        return h('button', {
+                          key: opt.id,
+                          type: 'button',
+                          disabled: predUnlocked,
+                          'data-decomposer-pred-rule': opt.id,
+                          'aria-pressed': selectedOpt,
+                          onClick: function() {
+                            if (predUnlocked) return;
+                            updMulti({ mixPredPair: pairKey, mixPredType: curPredType, mixPredRule: opt.id });
+                          },
+                          className: 'w-full text-left px-3 py-2 rounded-lg text-xs font-semibold border transition-colors',
+                          style: {
+                            backgroundColor: selectedOpt
+                              ? (isContrast ? '#ffff00' : '#0f766e')
+                              : (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')),
+                            color: selectedOpt
+                              ? (isContrast ? '#000000' : '#ffffff')
+                              : (isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#334155')),
+                            borderColor: selectedOpt
+                              ? (isContrast ? '#ffff00' : '#115e59')
+                              : (isContrast ? '#ffff00' : '#cbd5e1')
+                          }
+                        }, opt.label);
+                      })
+                    )
+                  ),
+
+                  // Commit prediction button
+                  !predUnlocked ? h('button', {
+                    id: 'stem-decomposer-mix-predict-submit',
+                    type: 'button',
+                    disabled: !curPredType || !curPredRule,
+                    onClick: function() {
+                      if (!curPredType || !curPredRule) return;
+                      var evalRes = DECOMPOSER_ENGINE.evaluateMixPrediction(reactantA, reactantB, curPredType, curPredRule, REACTIONS);
+                      if (!evalRes) return;
+                      var canAwardMixPredXp = !!(evalRes.allCorrect && !mixPredictXpIds[pairKey]);
+                      var mixPredXpAdd = {};
+                      if (canAwardMixPredXp) mixPredXpAdd[pairKey] = true;
+                      updLedgerMerge(
+                        { mixPredPair: pairKey, mixPredType: curPredType, mixPredRule: curPredRule, mixPredResult: evalRes },
+                        canAwardMixPredXp ? { _mixPredictXpIds: mixPredXpAdd } : null
+                      );
+                      if (evalRes.allCorrect) {
+                        SOUNDS.quizCorrect();
+                        if (canAwardMixPredXp && awardStemXP) {
+                          awardStemXP('decomposer', 5, 'Mix prediction: ' + reactantA + ' + ' + reactantB);
+                        }
+                        if (addToast) addToast(t('stem.decomposer.toast_mix_pred_correct', 'Strong prediction! Now mix the reactants to verify.'), 'success');
+                      } else {
+                        SOUNDS.quizWrong();
+                        if (addToast) addToast(t('stem.decomposer.toast_mix_pred_review', 'Review the conservation feedback, then mix to observe!'), 'info');
+                      }
+                      focusDecomposerElement('stem-decomposer-mix-predict-feedback');
+                    },
+                    className: 'w-full py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50',
+                    style: {
+                      minHeight: 40,
+                      backgroundColor: isContrast ? '#ffff00' : '#b45309',
+                      color: isContrast ? '#000000' : '#ffffff'
+                    }
+                  }, t('stem.decomposer.mix_predict_submit', 'Check Prediction & Unlock Mix')) : null,
+
+                  // Post-commit per-distractor whyNot feedback
+                  activePredResult ? h('div', {
+                    id: 'stem-decomposer-mix-predict-feedback',
+                    tabIndex: -1,
+                    'data-decomposer-focus': 'true',
+                    role: 'status',
+                    'aria-live': 'polite',
+                    className: 'rounded-lg p-3 mt-2 text-xs space-y-1.5 border',
+                    style: {
+                      backgroundColor: isContrast ? '#000000' : (activePredResult.allCorrect ? '#ecfdf5' : '#fef2f2'),
+                      borderColor: isContrast ? '#ffff00' : (activePredResult.allCorrect ? '#10b981' : '#f87171'),
+                      color: isContrast ? '#ffffff' : '#1e293b'
+                    }
+                  },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                      h('p', { className: 'font-black m-0', style: { color: isContrast ? '#ffff00' : (activePredResult.allCorrect ? '#065f46' : '#991b1b') } },
+                        activePredResult.allCorrect
+                          ? '\u2705 ' + t('stem.decomposer.mix_pred_both_right', 'Spot-on prediction! Both the change type and conservation rule match.')
+                          : '\uD83D\uDD0D ' + t('stem.decomposer.mix_pred_check_why', 'Prediction checked — see why before mixing:')),
+                      h('button', {
+                        type: 'button',
+                        'aria-label': t('stem.decomposer.mix_pred_read_aria', 'Read prediction feedback aloud'),
+                        onClick: function() {
+                          var spoken = [activePredResult.typeWhyNot, activePredResult.ruleWhyNot, activePredResult.conservationNote].filter(Boolean).join(' ');
+                          speakText(spoken);
+                        },
+                        className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold border',
+                        style: {
+                          backgroundColor: isContrast ? '#000000' : '#ffffff',
+                          color: isContrast ? '#ffff00' : '#334155',
+                          borderColor: isContrast ? '#ffff00' : '#cbd5e1'
+                        }
+                      }, '\uD83D\uDD0A ' + t('stem.decomposer.mix_pred_read_btn', 'Read aloud'))
+                    ),
+                    !activePredResult.typeCorrect && activePredResult.typeWhyNot && h('p', { className: 'm-0 leading-relaxed' },
+                      h('strong', null, t('stem.decomposer.mix_pred_why_type', 'Why not that change type: ')),
+                      activePredResult.typeWhyNot),
+                    !activePredResult.ruleCorrect && activePredResult.ruleWhyNot && h('p', { className: 'm-0 leading-relaxed' },
+                      h('strong', null, t('stem.decomposer.mix_pred_why_rule', 'Why not that outcome: ')),
+                      activePredResult.ruleWhyNot),
+                    h('p', { className: 'm-0 leading-relaxed font-semibold' },
+                      h('strong', null, t('stem.decomposer.mix_pred_conservation_label', 'Conservation Rule: ')),
+                      activePredResult.conservationNote)
+                  ) : null
+                ) : null,
+
+                // Mix button (unlocked once learner commits prediction)
+                !activeReaction && predUnlocked ? h('button', { id: 'stem-decomposer-reaction-mix', type: 'button',
                   onClick: function() {
                     SOUNDS.decompose();
                     if (reaction) {
-                      var disc = Object.assign({}, reactionsDiscovered);
-                      disc[reaction.name] = true;
-                      var nextState = Object.assign({}, d, { activeReaction: reaction, reactionsDiscovered: disc });
-                      updMulti({ activeReaction: reaction, reactionsDiscovered: disc });
+                      var canAwardReactionXp = !reactionsDiscovered[reaction.name] && !reactionXpIds[reaction.name];
+                      var discAdd = {}; discAdd[reaction.name] = true;
+                      var rxXpAdd = {}; rxXpAdd[reaction.name] = true;
+                      var nextDisc = Object.assign({}, reactionsDiscovered, discAdd);
+                      var nextState = Object.assign({}, d, {
+                        activeReaction: reaction,
+                        reactionsDiscovered: nextDisc,
+                        _reactionXpIds: Object.assign({}, reactionXpIds, rxXpAdd)
+                      });
+                      updLedgerMerge({ activeReaction: reaction }, { reactionsDiscovered: discAdd, _reactionXpIds: rxXpAdd });
                       if (addToast) addToast(reaction.emoji + ' ' + reaction.name + '!', 'success');
-                      if (awardStemXP) awardStemXP('decomposer', 10, 'Reaction: ' + reaction.name);
+                      if (canAwardReactionXp && awardStemXP) awardStemXP('decomposer', 10, 'Reaction: ' + reaction.name);
                       setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     } else {
                       upd('activeReaction', { name: 'No Known Reaction', emoji: '\uD83E\uDD37', desc: 'These two materials don\u2019t have a notable reaction in our database. Try a different combination!', equation: reactantA + ' + ' + reactantB + ' \u2192 ?', type: 'Unknown', observable: 'No visible change' });
@@ -3734,6 +4823,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     h('span', { className: 'text-[0.6875rem] font-bold text-sky-600' }, '\uD83D\uDC41\uFE0F What you\u2019d see:'),
                     h('span', { className: 'text-xs text-slate-700' }, activeReaction.observable)
                   ) : null,
+                  activePredResult && h('div', { className: 'bg-emerald-50 rounded-lg p-2.5 border border-emerald-200 mb-3 text-xs text-slate-700' },
+                    h('strong', null, t('stem.decomposer.mix_pred_recap_label', 'Atom Conservation Recap: ')),
+                    activePredResult.conservationNote
+                  ),
                   // TTS + try another
                   h('div', { className: 'flex gap-2' },
                     h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
@@ -3741,7 +4834,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 active:scale-[0.97]'
                     }, '\uD83D\uDD0A Listen'),
                     h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_try_another_combo', 'Try Another Combo'),
-                      onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-0'); },
+                      onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null, mixPredPair: '', mixPredType: '', mixPredRule: '', mixPredResult: null }); focusDecomposerElement('stem-decomposer-reactant-0'); },
                       className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
                   )
@@ -3762,7 +4855,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   }, disc ? r.emoji + ' ' + r.name : '\uD83D\uDD12 ???');
                 })
               )
-            ) : null
+            ) : null,
+
+            renderOfflineCoach('reactions')
           ),
 
 
@@ -3896,7 +4991,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
                   function drawState() {
                     if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); releaseDecomposerCanvasSize(canvas, 'States'); return; }
-                    var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion();
+                    var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion(reduceMotion);
                     var isHCSt = dcIsHighContrast(isContrast);
                     if (pausedMotion && !firstStatePaint) {
                       canvas._stateAnimId = requestAnimationFrame(drawState);
@@ -4121,7 +5216,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
                 className: 'transition-colors mt-2 text-[0.6875rem] text-sky-700 hover:text-sky-900 font-bold'
               }, '\uD83D\uDD0A Listen')
-            )
+            ),
+
+            renderOfflineCoach('states')
           ),
 
 
@@ -4280,28 +5377,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       var newStreak = correct ? quizStreak + 1 : 0;
                       var newBest = Math.max(bestStreak, newStreak);
                       var newCorrectCount = (d.quizCorrectCount || 0) + (correct ? 1 : 0);
+                      var quizXpKey = (typeof quizQ.id === 'string' && quizQ.id)
+                        ? quizQ.id
+                        : (String(quizQ.text || '') + '::' + String(quizQ.answer || ''));
+                      var canAwardQuizXp = !!(correct && quizXpKey && !quizXpIds[quizXpKey]);
+                      var quizXpAdd = {};
+                      if (canAwardQuizXp) quizXpAdd[quizXpKey] = true;
                       if (correct) {
                         SOUNDS.quizCorrect();
-                        addToast('Correct!', 'success');
-                        if (awardStemXP) awardStemXP('decomposer', 5, 'Quiz answered correctly');
+                        addToast(t('stem.decomposer.toast_quiz_correct', 'Correct!'), 'success');
+                        if (canAwardQuizXp && awardStemXP) awardStemXP('decomposer', 5, 'Quiz answered correctly');
                       } else {
                         SOUNDS.quizWrong();
-                        addToast('The answer is: ' + quizQ.answer, 'error');
+                        addToast(t('stem.decomposer.toast_quiz_answer', 'The answer is: {answer}').replace('{answer}', quizQ.answer), 'error');
                       }
-                      var nextState = Object.assign({}, d, {
-                        quizQ: Object.assign({}, quizQ, { answered: true, chosen: opt }),
+                      var answeredQ = Object.assign({}, quizQ, { answered: true, chosen: opt });
+                      var quizPatch = {
+                        quizQ: answeredQ,
                         quizScore: quizScore + (correct ? 1 : 0),
                         quizCorrectCount: newCorrectCount,
                         quizStreak: newStreak,
                         bestStreak: newBest
-                      });
-                      updMulti({
-                        quizQ: Object.assign({}, quizQ, { answered: true, chosen: opt }),
-                        quizScore: quizScore + (correct ? 1 : 0),
-                        quizCorrectCount: newCorrectCount,
-                        quizStreak: newStreak,
-                        bestStreak: newBest
-                      });
+                      };
+                      var nextState = Object.assign({}, d, quizPatch, canAwardQuizXp ? { _quizXpIds: Object.assign({}, quizXpIds, quizXpAdd) } : {});
+                      updLedgerMerge(quizPatch, canAwardQuizXp ? { _quizXpIds: quizXpAdd } : null);
                       focusDecomposerElement('stem-decomposer-quiz-feedback');
                       setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
                     },
@@ -4312,20 +5411,27 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
               /* Inline wrong-option explanations and vocabulary study cards */
               quizQ.answered && h('div', { className: 'mt-3 mb-3 space-y-2 animate-in fade-in' },
-                h('div', {
-                  id: 'stem-decomposer-quiz-feedback', role: 'region', tabIndex: -1, 'data-decomposer-focus': 'true',
-                  'aria-labelledby': 'stem-decomposer-quiz-feedback-title', 'aria-describedby': 'stem-decomposer-quiz-feedback-explanation',
-                  className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
-                },
-                  h('h5', { id: 'stem-decomposer-quiz-feedback-title', className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
-                  h('p', { id: 'stem-decomposer-quiz-feedback-explanation', className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' },
-                    quizQ.chosen === quizQ.answer
-                      ? 'Great job! That is correct.'
-                      : (quizQ.wrongFeedback && quizQ.wrongFeedback[quizQ.chosen])
-                        ? quizQ.wrongFeedback[quizQ.chosen]
-                        : 'That choice is not correct. Study the concept to learn more.'
-                  )
-                ),
+                (function() {
+                  var fbText = quizQ.chosen === quizQ.answer
+                    ? t('stem.decomposer.quiz_correct_detail', 'Great job! That is correct.')
+                    : DECOMPOSER_ENGINE.explainQuizDistractor(quizQ, quizQ.chosen);
+                  return h('div', {
+                    id: 'stem-decomposer-quiz-feedback', role: 'region', tabIndex: -1, 'data-decomposer-focus': 'true',
+                    'aria-labelledby': 'stem-decomposer-quiz-feedback-title', 'aria-describedby': 'stem-decomposer-quiz-feedback-explanation',
+                    className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
+                  },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                      h('h5', { id: 'stem-decomposer-quiz-feedback-title', className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
+                      h('button', {
+                        type: 'button',
+                        'aria-label': t('stem.decomposer.quiz_feedback_read_aria', 'Read quiz explanation aloud'),
+                        onClick: function() { speakText(fbText); },
+                        className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold border bg-white text-slate-700 border-slate-300'
+                      }, '\uD83D\uDD0A ' + t('stem.decomposer.quiz_feedback_read_btn', 'Read aloud'))
+                    ),
+                    h('p', { id: 'stem-decomposer-quiz-feedback-explanation', className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' }, fbText)
+                  );
+                })(),
 
                 /* Concept study card */
                 quizQ.concept && DECOMPOSER_VOCAB[quizQ.concept] && (function() {
@@ -4382,7 +5488,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 focusDecomposerElement('stem-decomposer-quiz-start');
               },
               className: 'transition-colors text-xs font-bold' + (onHostInk || ' text-slate-600 hover:text-slate-800')
-            }, '\uD83D\uDD04 Reset Quiz')
+            }, '\uD83D\uDD04 Reset Quiz'),
+
+            renderOfflineCoach('quiz')
           ),
 
 
@@ -4480,12 +5588,26 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           ),
 
           tab === 'decompHunt' && (function() {
-            var iq = d.decompHunt || { tempC: 25, humidity: 70, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+            var rawIq = _isPlainObj(d.decompHunt) ? d.decompHunt : {};
+            var iq = {
+              tempC: _safeNum(rawIq.tempC, 25),
+              humidity: _safeNum(rawIq.humidity, 70),
+              oxygen: _safeNum(rawIq.oxygen, 50),
+              hypothesis: typeof rawIq.hypothesis === 'string' ? rawIq.hypothesis : '',
+              stuckRevealed: !!rawIq.stuckRevealed,
+              understood: !!rawIq.understood,
+              explanation: typeof rawIq.explanation === 'string' ? rawIq.explanation : '',
+              log: Array.isArray(rawIq.log) ? rawIq.log : [],
+              logCount: _safeNum(rawIq.logCount, 0),
+              logStatus: typeof rawIq.logStatus === 'string' ? rawIq.logStatus : ''
+            };
             function setIQ(patch) {
               setLabToolData(function(prev) {
-                var current = (prev.decomposer && prev.decomposer.decompHunt) || iq;
+                var safePrev = _isPlainObj(prev) ? prev : {};
+                var prevDc = _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {};
+                var current = _isPlainObj(prevDc.decompHunt) ? prevDc.decompHunt : iq;
                 var nextIQ = Object.assign({}, current, typeof patch === 'function' ? patch(current) : patch);
-                return Object.assign({}, prev, { decomposer: Object.assign({}, prev.decomposer, { decompHunt: nextIQ }) });
+                return Object.assign({}, safePrev, { decomposer: Object.assign({}, prevDc, { decompHunt: nextIQ }) });
               });
             }
             function rateState(conditions) {

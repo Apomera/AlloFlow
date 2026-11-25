@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
   <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4f46e5">
 <title>AlloFlow Release History &amp; Changelog</title>
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://apomera.github.io/AlloFlow/changelog.html">
@@ -25,6 +26,19 @@
     <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
 <meta name="description" content="Review AlloFlow release history and version notes, and open the current version for classroom work.">
 <link rel="icon" type="image/svg+xml" href="allobot.svg">
+<link rel="apple-touch-icon" href="allobot.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://apomera.github.io/AlloFlow/changelog.html#page",
+  "url": "https://apomera.github.io/AlloFlow/changelog.html",
+  "name": "AlloFlow Release History & Changelog",
+  "description": "Review AlloFlow release history and version notes, and open the current version for classroom work.",
+  "isPartOf": { "@id": "https://apomera.github.io/AlloFlow/#website" },
+  "about": { "@id": "https://apomera.github.io/AlloFlow/#software" }
+}
+</script>
 <style>
   :root {
     --indigo: #4f46e5;
@@ -244,7 +258,7 @@
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <main class="wrap" id="main" tabindex="-1">
-    <nav aria-label="AlloFlow pages" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:24px"><a class="back" style="margin-bottom:0" href="launch.html">&larr; Back to launch</a><a class="back" style="margin-bottom:0" href="about.html">About AlloFlow</a><a class="back" style="margin-bottom:0" href="packets.html">Quick Practice &amp; Checks</a></nav>
+    <nav aria-label="AlloFlow pages" style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:24px"><a class="back" style="margin-bottom:0" href="launch.html">&larr; Back to launch</a><a class="back" style="margin-bottom:0" href="about.html">About AlloFlow</a><a class="back" style="margin-bottom:0" href="principles.html">Principles</a><a class="back" style="margin-bottom:0" href="packets.html">Quick Practice &amp; Checks</a></nav>
     <h1>Changelog</h1>
     <p class="sub">AlloFlow release history, newest first.</p>
 
@@ -263,6 +277,13 @@
     </div>
 
     <div id="status" class="loading" role="status" aria-live="polite">Loading releases&hellip;</div>
+    <noscript>
+      <style>#status{display:none!important}</style>
+      <div class="empty">
+        <strong>JavaScript is off</strong>
+        <span>Browse published release history directly on <a href="https://github.com/Apomera/AlloFlow/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a> or open <a href="releases.json">releases.json</a>.</span>
+      </div>
+    </noscript>
     <ol id="list" class="releases" aria-label="Release history" hidden></ol>
   </main>
 
@@ -354,8 +375,20 @@
     listEl.innerHTML = html;
   }
 
-  function applyFilter() {
-    var q = searchEl ? String(searchEl.value || "").trim().toLowerCase() : "";
+  function syncQueryUrl(rawVal) {
+    if (!window.history || typeof window.history.replaceState !== "function" || typeof URLSearchParams !== "function") return;
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      var trimmed = String(rawVal || "").trim();
+      if (trimmed) params.set("q", trimmed); else params.delete("q");
+      var qs = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : "") + (window.location.hash || ""));
+    } catch (_) {}
+  }
+
+  function applyFilter(skipUrlSync) {
+    var raw = searchEl ? String(searchEl.value || "").trim() : "";
+    var q = raw.toLowerCase();
     if (clearBtn) clearBtn.hidden = !q;
     var matches = !q ? allReleases : allReleases.filter(function (r) {
       var hay = [r && r.version, r && r.id, r && r.notes, r && r.released].filter(Boolean).join(" ").toLowerCase();
@@ -373,6 +406,7 @@
         ? ("Showing " + matches.length + " of " + allReleases.length + " releases matching \"" + q + "\".")
         : ("Showing all " + allReleases.length + " releases.");
     }
+    if (skipUrlSync !== true) syncQueryUrl(raw);
   }
 
   function render(entries) {
@@ -385,25 +419,32 @@
       return timestamp(b && b.released) - timestamp(a && a.released);
     });
 
+    if (searchEl && typeof URLSearchParams === "function") {
+      try {
+        var initQ = new URLSearchParams(window.location.search || "").get("q");
+        if (initQ && !searchEl.value) searchEl.value = String(initQ).slice(0, 120);
+      } catch (_) {}
+    }
+
     if (filterBarEl) filterBarEl.hidden = false;
-    applyFilter();
+    applyFilter(true);
   }
 
   if (searchEl) {
-    searchEl.addEventListener("input", applyFilter);
+    searchEl.addEventListener("input", function () { applyFilter(false); });
     searchEl.addEventListener("keydown", function (event) {
       if (event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape" && searchEl.value) {
         event.preventDefault();
         searchEl.value = "";
-        applyFilter();
+        applyFilter(false);
       }
     });
   }
   if (clearBtn && searchEl) {
     clearBtn.addEventListener("click", function () {
       searchEl.value = "";
-      applyFilter();
+      applyFilter(false);
       searchEl.focus();
     });
   }

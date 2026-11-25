@@ -1074,7 +1074,7 @@ const AnchorChartView = React.memo((props) => {
   };
   const handleInteractiveDialogKeyDown = (e) => {
     if (e.defaultPrevented) return;
-    if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+    if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
     const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
     if (Array.isArray(stack) && stack.length > 0 && interactiveTrapRef.current && stack[stack.length - 1] !== interactiveTrapRef.current) return;
     if (e.key === 'Escape') {
@@ -1266,6 +1266,9 @@ const AnchorChartView = React.memo((props) => {
           font-family: inherit;
           font-weight: 700;
           letter-spacing: 0.02em;
+        }
+        .ac-root :where(button, input, select, textarea, a, [role="button"]) {
+          touch-action: manipulation;
         }
         .ac-root button:focus-visible,
         .ac-root input:focus-visible,

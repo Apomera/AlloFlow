@@ -21,6 +21,7 @@ window.SelHub = window.SelHub || {
 
   // ── WCAG: Live region for screen reader announcements ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-voicedet')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-voicedet';
@@ -33,6 +34,7 @@ window.SelHub = window.SelHub || {
 
   // ── WCAG 2.3.3: Reduced-motion guard ──
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-voicedet-rm-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-voicedet-rm-css';
@@ -40,7 +42,26 @@ window.SelHub = window.SelHub || {
     document.head.appendChild(st);
   })();
 
+  // ── WCAG 2.4.7 focus ring, touch targets, forced-colors (scoped to the tool root) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-voicedet-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-voicedet-a11y-css';
+    st.textContent =
+      '.selh-voicedet button:focus-visible, .selh-voicedet select:focus-visible, .selh-voicedet [tabindex]:focus-visible { outline: 3px solid #a855f7; outline-offset: 2px; }' +
+      '.selh-voicedet button, .selh-voicedet select { touch-action: manipulation; }' +
+      '@media (forced-colors: active) { .selh-voicedet button { border: 1px solid ButtonText !important; } .selh-voicedet [aria-checked="true"] { border: 3px solid Highlight !important; } .selh-voicedet :focus-visible { outline: 3px solid Highlight !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  // The hub is an aria-modal dialog and this tool's own live region sits outside
+  // it, so prefer the host announcer (set from ctx on each render) when present.
+  var _vdHostAnnounce = null;
   function announceToSR(msg) {
+    if (!msg) return;
+    if (typeof _vdHostAnnounce === 'function') { try { _vdHostAnnounce(msg); return; } catch (_) {} }
+    if (typeof document === 'undefined') return;
     var el = document.getElementById('allo-live-voicedet');
     if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
   }
@@ -254,7 +275,8 @@ window.SelHub = window.SelHub || {
       var _vdTheme = (ctx && ctx.theme) || {};
       var _vdHC = !!_vdTheme.isContrast, _vdDark = !_vdHC && !!_vdTheme.isDark;
       var _VD_LIGHT = {
-        '#94a3b8':'#475569','#9ca3af':'#4b5563'
+        '#94a3b8':'#475569','#9ca3af':'#4b5563',
+        '#16a34a':'#166534','#dc2626':'#b91c1c','#f97316':'#c2410c'
       };
       var _VD_DARK = {
         '#1e293b':'#e2e8f0','#374151':'#cbd5e1','#475569':'#cbd5e1','#9ca3af':'#cbd5e1','#94a3b8':'#cbd5e1',
@@ -262,7 +284,7 @@ window.SelHub = window.SelHub || {
         '#faf5ff':'#2e1b4d','#f5f3ff':'#2a1a45','#ede9fe':'#2a1a45','#6b21a8':'#d8b4fe',
         '#fef3c7':'#3a2e12','#fef9c3':'#3a3410','#92400e':'#fde68a',
         '#f0fdf4':'#0b2e22','#eff6ff':'#0e1f3a','#1e40af':'#93c5fd','#f1f5f9':'#1e293b','#dcfce7':'#14532d','#fee2e2':'#3a1a1a',
-        '#166534':'#86efac','#991b1b':'#fca5a5','#16a34a':'#4ade80','#dc2626':'#f87171','#f97316':'#fb923c'
+        '#166534':'#86efac','#991b1b':'#fca5a5','#16a34a':'#4ade80','#dc2626':'#fca5a5','#f97316':'#fb923c'
       };
       var _VD_HC = {
         '#1e293b':'#ffff00','#374151':'#ffff00','#475569':'#ffff00','#9ca3af':'#ffff00','#94a3b8':'#ffff00',
@@ -289,6 +311,7 @@ window.SelHub = window.SelHub || {
       var awardXP = ctx.awardXP;
       var update = ctx.update;
       var toolData = (ctx.toolData && ctx.toolData.voicedetective) || {};
+      _vdHostAnnounce = (ctx && typeof ctx.announceToSR === 'function') ? ctx.announceToSR : null;
 
       // Get emotion set based on difficulty
       var _difficulty = useState(toolData._difficulty || (gradeBand === 'elementary' ? 'basic' : gradeBand === 'middle' ? 'intermediate' : 'advanced'));
@@ -572,7 +595,7 @@ window.SelHub = window.SelHub || {
       var btn = function(bg, fg, dis) {
         var resolvedBg = dis ? (_vdHC ? '#000000' : _vdC('#e5e7eb')) : (_vdHC ? '#000000' : bg);
         var resolvedFg = dis ? (_vdHC ? '#ffff00' : _vdC('#9ca3af')) : (_vdHC ? '#ffff00' : fg);
-        return { padding: '10px 18px', background: resolvedBg, color: resolvedFg, border: _vdHC ? '2px solid #ffff00' : 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', opacity: (dis && _vdHC) ? 0.7 : 1, transition: 'all 0.15s' };
+        return { padding: '10px 18px', minHeight: '44px', background: resolvedBg, color: resolvedFg, border: _vdHC ? '2px solid #ffff00' : 'none', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: dis ? 'not-allowed' : 'pointer', opacity: (dis && _vdHC) ? 0.7 : 1, transition: 'all 0.15s' };
       };
       var PURPLE = '#7c3aed';
       var PURPLE_TEXT = _vdInk('#6b21a8');
@@ -582,7 +605,7 @@ window.SelHub = window.SelHub || {
       // ── Menu ──
       if (mode === 'menu') {
         var allTimeAcc = (toolData._totalTrials || 0) > 0 ? Math.round(((toolData._totalCorrect || 0) / (toolData._totalTrials || 1)) * 100) : 0;
-        return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+        return h('div', { className: 'selh-voicedet', style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('voicedetective', h, ctx) : null),
           h('div', { style: { textAlign: 'center', marginBottom: '24px' } },
             h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '🔊'),
@@ -593,9 +616,10 @@ window.SelHub = window.SelHub || {
           // Difficulty selector
           h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '20px' }, role: 'radiogroup', 'aria-label': 'Difficulty level' },
             [['basic', '4 Emotions', '😊😢😠😨'], ['intermediate', '6 Emotions', '+ 😮🤢'], ['advanced', '10 Emotions', '+ 😏😰🤩😑']].map(function(d) {
-              return h('button', { key: d[0], onClick: function() { setDifficulty(d[0]); },
+              return h('button', { key: d[0], type: 'button', onClick: function() { setDifficulty(d[0]); },
                 role: 'radio', 'aria-checked': difficulty === d[0], 'aria-label': d[1] + ' difficulty',
-                style: { padding: '8px 16px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? (_vdHC ? '#ffff00' : PURPLE) : _vdC('#d1d5db')), background: difficulty === d[0] ? _vdC('#f5f3ff') : _vdC('#fff'), color: difficulty === d[0] ? PURPLE_TEXT : _vdC('#94a3b8'), fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                // High contrast: every border and label is yellow, so the checked option inverts to stay distinguishable.
+                style: { padding: '8px 16px', minHeight: '44px', borderRadius: '10px', border: '2px solid ' + (difficulty === d[0] ? (_vdHC ? '#ffff00' : PURPLE) : _vdC('#d1d5db')), background: difficulty === d[0] ? (_vdHC ? '#ffff00' : _vdC('#f5f3ff')) : _vdC('#fff'), color: difficulty === d[0] ? (_vdHC ? '#000000' : PURPLE_TEXT) : _vdC('#94a3b8'), fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, h('div', null, d[1]), h('div', { style: { fontSize: '16px', marginTop: '2px' } }, d[2]));
             })
           ),
@@ -695,7 +719,7 @@ window.SelHub = window.SelHub || {
               ['discriminate', '🔀 Same Words, Different Feelings', 'The same sentence spoken with different emotions — match each one', '🎭'],
               ['scene', '🎬 Match the Scene', 'Read a scenario, then pick the voice that matches how someone would feel', '🎯'],
             ].map(function(m) {
-              return h('button', { key: m[0], onClick: function() {
+              return h('button', { key: m[0], type: 'button', onClick: function() {
                   stopAudio();
                   persistStats(function(prior) {
                     var tried = Array.isArray(prior._triedModes) ? prior._triedModes : [];
@@ -721,14 +745,14 @@ window.SelHub = window.SelHub || {
             h('strong', null, 'Clinical note: '),
             'Voice Detective trains vocal prosody recognition — the ability to identify emotions from tone of voice. ',
             'This is a core social communication skill targeted in ASD intervention (CASEL Social Awareness). ',
-            'Session data tracks accuracy per emotion category and confusion patterns for IEP progress monitoring.'
+            'Session records report accuracy per emotion category and confusion patterns. Treat it as informal practice data: it is not a validated measure and should not stand alone as IEP progress monitoring.'
           )
         );
       }
 
       // ── Score bar (shared across modes) ──
       var scoreBar = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '16px', padding: '10px 16px', background: _vdC('#f8fafc'), borderRadius: '12px', border: '1px solid ' + _vdC('#e5e7eb') } },
-        h('button', { onClick: function() { stopAudio(); setMode('menu'); },
+        h('button', { type: 'button', onClick: function() { stopAudio(); setMode('menu'); },
           style: btn(_vdC('#f1f5f9'), _vdC('#374151'), false) }, '← Back'),
         h('span', { style: { fontWeight: 700, color: _vdC('#16a34a'), fontSize: '13px' } }, '✅ ' + score + '/' + total),
         streak >= 3 && h('span', { style: { fontWeight: 700, color: _vdC('#f97316'), fontSize: '13px' } }, '🔥 ' + streak + 'x streak'),
@@ -742,12 +766,12 @@ window.SelHub = window.SelHub || {
 
       // ── Mode 1: What Am I Feeling? ──
       if (mode === 'identify' && target) {
-        return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+        return h('div', { className: 'selh-voicedet', style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           // Audio prompt
           h('div', { style: { textAlign: 'center', padding: '24px', background: _vdHC ? '#000000' : 'linear-gradient(135deg, ' + _vdC('#f5f3ff') + ', ' + _vdC('#ede9fe') + ')', borderRadius: '16px', border: '2px solid ' + (_vdHC ? '#ffff00' : '#c4b5fd'), marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: _vdC('#94a3b8'), marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' } }, 'Listen carefully...'),
-            h('button', { onClick: function() { speakEmotion(target.sentence, target.emotion.id, target.voice); }, disabled: speaking, 'aria-label': 'Play voice clip',
+            h('button', { type: 'button', onClick: function() { speakEmotion(target.sentence, target.emotion.id, target.voice); }, disabled: speaking, 'aria-label': 'Play voice clip',
               style: { padding: '16px 32px', fontSize: '28px', background: _vdHC ? '#000000' : (speaking ? _vdC('#e5e7eb') : PURPLE), color: _vdHC ? '#ffff00' : (speaking ? _vdC('#475569') : '#fff'), border: _vdHC ? '2px solid #ffff00' : 'none', borderRadius: '50%', cursor: speaking ? 'wait' : 'pointer', boxShadow: (speaking || _vdHC) ? 'none' : '0 4px 16px rgba(124,58,237,0.3)', width: '80px', height: '80px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }
             }, speaking ? '🔊' : '▶'),
             h('p', { style: { marginTop: '10px', fontSize: '12px', color: _vdInk('#7c3aed'), fontWeight: 600 } }, speaking ? 'Playing...' : 'Tap to hear again'),
@@ -767,7 +791,7 @@ window.SelHub = window.SelHub || {
               var isCorrect = feedback && feedback.ok && em.id === target.emotion.id;
               var isWrong = feedback && !feedback.ok && em.id !== target.emotion.id;
               var isAnswer = feedback && !feedback.ok && em.id === target.emotion.id;
-              return h('button', { key: em.id, onClick: function() { if (!feedback) checkAnswer(em); }, disabled: !!feedback,
+              return h('button', { key: em.id, type: 'button', onClick: function() { if (!feedback) checkAnswer(em); }, disabled: !!feedback,
                 'aria-label': em.label + (isCorrect ? ' - correct answer' : isAnswer ? ' - this was the correct answer' : isWrong ? ' - incorrect' : ''),
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '16px 12px', borderRadius: '14px', cursor: feedback ? 'default' : 'pointer',
                   border: '3px solid ' + (_vdHC ? '#ffff00' : (isCorrect || isAnswer ? '#22c55e' : isWrong ? '#fca5a5' : em.color + '66')), background: isCorrect || isAnswer ? _vdC('#dcfce7') : _vdC('#fff'),
@@ -788,7 +812,7 @@ window.SelHub = window.SelHub || {
       // ── Mode 2: Same Words, Different Feelings ──
       if (mode === 'discriminate' && variants.length > 0) {
         var allAnswered = variants.every(function(v) { return variantAnswers[v.id]; });
-        return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+        return h('div', { className: 'selh-voicedet', style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: _vdC('#1e293b') } }, '🔀 Same Words, Different Feelings'),
@@ -799,12 +823,12 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' } },
             variants.map(function(v, vi) {
               return h('div', { key: v.id, style: Object.assign({}, card, { display: 'flex', alignItems: 'center', gap: '12px' }) },
-                h('button', { onClick: function() { speakEmotion(v.sentence, v.emotion.id, v.emotion.voice); }, disabled: speaking, 'aria-label': 'Play Voice ' + (vi + 1),
+                h('button', { type: 'button', onClick: function() { speakEmotion(v.sentence, v.emotion.id, v.emotion.voice); }, disabled: speaking, 'aria-label': 'Play Voice ' + (vi + 1),
                   style: { width: '48px', height: '48px', borderRadius: '50%', background: _vdHC ? '#000000' : (speaking ? _vdC('#e5e7eb') : PURPLE), color: _vdHC ? '#ffff00' : (speaking ? _vdC('#475569') : '#fff'), border: _vdHC ? '2px solid #ffff00' : 'none', cursor: speaking ? 'wait' : 'pointer', fontSize: '18px', flexShrink: 0 }
                 }, speaking ? '🔊' : '▶'),
                 h('span', { style: { fontSize: '14px', fontWeight: 700, color: _vdC('#374151'), flexShrink: 0 } }, 'Voice ' + (vi + 1)),
                 h('select', { value: variantAnswers[v.id] || '', onChange: function(ev) { setVariantAnswers(function(prev) { var n = Object.assign({}, prev); n[v.id] = ev.target.value; return n; }); },
-                  style: { flex: 1, padding: '8px 12px', borderRadius: '10px', border: '2px solid ' + _vdC('#d1d5db'), background: _vdC('#fff'), color: _vdC('#1e293b'), fontSize: '14px', fontWeight: 600 },
+                  style: { flex: 1, minHeight: '44px', padding: '8px 12px', borderRadius: '10px', border: '2px solid ' + _vdC('#d1d5db'), background: _vdC('#fff'), color: _vdC('#1e293b'), fontSize: '14px', fontWeight: 600 },
                   'aria-label': 'Emotion for voice ' + (vi + 1)
                 },
                   h('option', { value: '' }, '— Select emotion —'),
@@ -814,7 +838,7 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('div', { style: { textAlign: 'center' } },
-            h('button', { onClick: checkMode2, disabled: !allAnswered || !!feedback,
+            h('button', { type: 'button', onClick: checkMode2, disabled: !allAnswered || !!feedback,
               style: btn(PURPLE, '#fff', !allAnswered || !!feedback) }, '✓ Check My Answers')
           )
         );
@@ -822,7 +846,7 @@ window.SelHub = window.SelHub || {
 
       // ── Mode 3: Match the Scene ──
       if (mode === 'scene' && scene) {
-        return h('div', { style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
+        return h('div', { className: 'selh-voicedet', style: { maxWidth: '600px', margin: '0 auto', padding: '20px' } },
           scoreBar,
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: _vdC('#1e293b') } }, '🎬 Match the Scene'),
@@ -838,11 +862,11 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', gap: '12px', justifyContent: 'center' } },
             sceneVoices.map(function(sv, vi) {
               return h('div', { key: sv.id, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' } },
-                h('button', { onClick: function() { speakEmotion(sv.sentence, sv.emotion.id, sv.emotion.voice); }, disabled: speaking, 'aria-label': 'Play Voice ' + (vi + 1),
+                h('button', { type: 'button', onClick: function() { speakEmotion(sv.sentence, sv.emotion.id, sv.emotion.voice); }, disabled: speaking, 'aria-label': 'Play Voice ' + (vi + 1),
                   style: { width: '72px', height: '72px', borderRadius: '50%', background: _vdHC ? '#000000' : (speaking ? _vdC('#e5e7eb') : _vdC('#f1f5f9')), color: _vdHC ? '#ffff00' : _vdC('#1e293b'), border: '3px solid ' + _vdC('#d1d5db'), cursor: speaking ? 'wait' : 'pointer', fontSize: '24px', transition: 'all 0.15s' }
                 }, '🔊'),
                 h('span', { style: { fontSize: '13px', fontWeight: 600, color: _vdC('#374151') } }, 'Voice ' + (vi + 1)),
-                h('button', { onClick: function() { if (!feedback) checkMode3(sv.id); }, disabled: !!feedback, 'aria-label': 'Choose Voice ' + (vi + 1),
+                h('button', { type: 'button', onClick: function() { if (!feedback) checkMode3(sv.id); }, disabled: !!feedback, 'aria-label': 'Choose Voice ' + (vi + 1),
                   style: btn(feedback ? _vdC('#e5e7eb') : PURPLE, feedback ? _vdC('#9ca3af') : '#fff', !!feedback) }, 'This one!')
               );
             })
@@ -851,7 +875,7 @@ window.SelHub = window.SelHub || {
       }
 
       // Fallback
-      return h('div', { style: { textAlign: 'center', padding: '40px', color: _vdC('#94a3b8') } }, 'Loading...');
+      return h('div', { className: 'selh-voicedet', style: { textAlign: 'center', padding: '40px', color: _vdC('#94a3b8') } }, 'Loading...');
     }
   });
 

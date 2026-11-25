@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -21,6 +22,7 @@ test('support dressing stays grounded and stable through themes, rebuilds and FX
   expect(count('columns')).toBeGreaterThan(0); expect(count('braces')).toBeGreaterThan(0);
   expect(count('pads')).toBe(count('columns') + count('braces'));
   expect(count('plates')).toBe(count('pads')); expect(count('anchors')).toBe(count('pads') * 4);
+  await openCoasterSettings(page);
   await page.locator('#clab-btnSceneFocus').click();
   for(const theme of ['daylight', 'dusk', 'neon', 'blueprint']){
     await page.locator('#clab-visualTheme').selectOption(theme);

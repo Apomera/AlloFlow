@@ -111,6 +111,9 @@ const VENDORED = [
   // beside it (which holds every bundled library's notice, VexFlow, JSZip and others), so guard those two files.
   'vendor/opensheetmusicdisplay-2.2.1/LICENSE',
   'vendor/opensheetmusicdisplay-2.2.1/opensheetmusicdisplay.min.js.LICENSE.txt',
+  // (2026-11-23) Brain Atlas decoder keeps its banner; compromise's minified build has none, so guard the LICENSE beside it.
+  'vendor/meshoptimizer/meshopt_decoder.module.js',
+  'vendor/compromise/LICENSE',
 ];
 for (const rel of VENDORED) {
   const p = path.join(ROOT, rel);

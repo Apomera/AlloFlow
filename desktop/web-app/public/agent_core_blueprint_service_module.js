@@ -47,20 +47,33 @@
       return isUnsafeKey(key) ? undefined : val;
     });
   }
+  function _bpStr(v) {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function _bpNum(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v.trim() !== '') return Number(v);
+    return NaN;
+  }
   function safeStringify(value) {
     try { return JSON.stringify(value); } catch (_) { return null; }
   }
   function isBrowserAiBlocked(fn) {
     if (fn && fn._alloQrBlocked === true) return true;
-    if (typeof window === 'undefined' || !window) return false;
+    if (typeof window !== 'object' || !window) return false;
     if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
-    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
-    if (window.__alloQrStudentMode === true) {
-      if (typeof window.__alloAiUsable === 'function') {
-        try { return !window.__alloAiUsable('text', fn); } catch (_) { return true; }
-      }
-      return true;
+    var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+    if (mp && typeof mp === 'object' && (mp.enabled === false || (Array.isArray(mp.connections) && mp.connections.length === 0))) return true;
+    var sp = window.StudentPolicy;
+    if (sp && typeof sp === 'object') {
+      if (sp.aiEnabled === false || sp.allowAi === false || sp.disableAi === true) return true;
+      if (typeof sp.isAiAllowed === 'function') { try { if (!sp.isAiAllowed('text')) return true; } catch (_) { return true; } }
     }
+    var qr = window.__alloQrStudentMode;
+    if (qr === true || (qr && typeof qr === 'object' && qr.active !== false && qr.allowAi !== true)) return true;
     if (typeof window.__alloAiUsable === 'function') {
       try { return !window.__alloAiUsable('text', fn); } catch (_) { return true; }
     }
@@ -69,10 +82,10 @@
 
   function getContracts(injected) {
     if (injected) return injected;
-    if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AgentCoreContracts) {
+    if (typeof window === 'object' && window && window.AlloModules && window.AlloModules.AgentCoreContracts) {
       return window.AlloModules.AgentCoreContracts;
     }
-    if (typeof module !== 'undefined' && typeof require === 'function') {
+    if (typeof module === 'object' && module && typeof require === 'function') {
       try { return require('./agent_core_contracts_module.js'); } catch (_) { return null; }
     }
     return null;
@@ -80,10 +93,10 @@
 
   function getGenerationMatrix(injected) {
     if (injected) return injected;
-    if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenerationMatrix) {
+    if (typeof window === 'object' && window && window.AlloModules && window.AlloModules.GenerationMatrix) {
       return window.AlloModules.GenerationMatrix;
     }
-    if (typeof module !== 'undefined' && typeof require === 'function') {
+    if (typeof module === 'object' && module && typeof require === 'function') {
       try { return require('./generation_matrix_module.js'); } catch (_) { return null; }
     }
     return null;
@@ -128,7 +141,7 @@
         leveledTextLanguage: primaryLanguage,
         outputLanguagePreference: req.outputLanguagePreference !== undefined ? req.outputLanguagePreference : prior.outputLanguagePreference,
         selectedLanguages: list(req.selectedLanguages !== undefined ? req.selectedLanguages : prior.selectedLanguages),
-        nativeLanguageDefaultsVersion: Number(req.nativeLanguageDefaultsVersion !== undefined ? req.nativeLanguageDefaultsVersion : prior.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
+        nativeLanguageDefaultsVersion: _bpNum(req.nativeLanguageDefaultsVersion !== undefined ? req.nativeLanguageDefaultsVersion : prior.nativeLanguageDefaultsVersion) >= 1 ? 1 : 0,
         appLanguage: req.appLanguage || req.currentUiLanguage || prior.appLanguage || prior.currentUiLanguage || 'English',
         effectiveLanguageList: list(req.effectiveLanguageList !== undefined ? req.effectiveLanguageList
           : (req.selectedLanguages !== undefined || req.appLanguage !== undefined || req.currentUiLanguage !== undefined ? [] : prior.effectiveLanguageList)),
@@ -202,14 +215,14 @@
       if (!GenerationMatrix || typeof GenerationMatrix.resolvePlanRows !== 'function') {
         return input.map(function (row) {
           return row && row.generationMatrixUnavailable === true
-            ? row : Object.assign({}, row, { generationMatrixUnavailable: true });
+            ? row : safeAssign(safeAssign({}, row), { generationMatrixUnavailable: true });
         });
       }
       try {
         var resolved = GenerationMatrix.resolvePlanRows(input, generationOptions(request, settings));
         return resolved && Array.isArray(resolved.rows) ? resolved.rows : input;
       } catch (_) {
-        return input.map(function (row) { return Object.assign({}, row, { generationMatrixUnavailable: true }); });
+        return input.map(function (row) { return safeAssign(safeAssign({}, row), { generationMatrixUnavailable: true }); });
       }
     }
 
@@ -231,9 +244,9 @@
       var afterActivity = after.activityConfig && typeof after.activityConfig === 'object' ? after.activityConfig : null;
       var leftJson = safeStringify(beforeActivity);
       var rightJson = safeStringify(afterActivity);
-      return String(before.tool || '') !== String(after.tool || '')
-        || String(before.directive || '') !== String(after.directive || '')
-        || String(before.activityMode || '') !== String(after.activityMode || '')
+      return _bpStr(before.tool) !== _bpStr(after.tool)
+        || _bpStr(before.directive) !== _bpStr(after.directive)
+        || _bpStr(before.activityMode) !== _bpStr(after.activityMode)
         || leftJson === null || rightJson === null || leftJson !== rightJson;
     }
 
@@ -422,19 +435,21 @@
           return report.value;
         });
       }
-      var plan = Array.isArray(req.plan) && req.plan.length ? req.plan : ['analysis', 'lesson-plan'];
-      var requestedGlobalSettings = req.globalSettings && typeof req.globalSettings === 'object' && !Array.isArray(req.globalSettings)
-        ? req.globalSettings : {};
-      var globalSettings = frozenSettings(req, requestedGlobalSettings);
-      var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx), {
-        ensureAnalysis: true, ensureAdapted: true, existingAnalysis: existingAnalysis
+      return Promise.resolve().then(function () {
+        var plan = Array.isArray(req.plan) && req.plan.length ? req.plan : ['analysis', 'lesson-plan'];
+        var requestedGlobalSettings = req.globalSettings && typeof req.globalSettings === 'object' && !Array.isArray(req.globalSettings)
+          ? req.globalSettings : {};
+        var globalSettings = frozenSettings(req, requestedGlobalSettings);
+        var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx), {
+          ensureAnalysis: true, ensureAdapted: true, existingAnalysis: existingAnalysis
+        });
+        bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
+        var report = validate(bp);
+        if (!report.ok) {
+          throw Object.assign(new Error('Draft failed contract validation'), { report: report });
+        }
+        return report.value;
       });
-      bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
-      var report = validate(bp);
-      if (!report.ok) {
-        return Promise.reject(Object.assign(new Error('Draft failed contract validation'), { report: report }));
-      }
-      return Promise.resolve(report.value);
     }
 
     /**
@@ -470,7 +485,7 @@
       if (ch.setDirectives && typeof ch.setDirectives === 'object') {
         plan = plan.map(function (r) {
           return Object.prototype.hasOwnProperty.call(ch.setDirectives, r.tool)
-            ? Object.assign({}, r, { directive: String(ch.setDirectives[r.tool] || '') })
+            ? safeAssign(safeAssign({}, r), { directive: _bpStr(ch.setDirectives[r.tool]) })
             : r;
         });
       }
@@ -563,7 +578,7 @@
       var report = validate(blueprint);
       if (!report.ok) return Promise.reject(Object.assign(new Error('Invalid Blueprint'), { report: report }));
       var b = report.value;
-      var boundedInstruction = String(instruction || '').slice(0, MAX_AI_INSTRUCTION_CHARS);
+      var boundedInstruction = _bpStr(instruction).slice(0, MAX_AI_INSTRUCTION_CHARS);
       return Promise.resolve().then(function () { return d.modifyBlueprint(C.toLegacyConfig(b), boundedInstruction); }).then(function (legacyConfig) {
         var safeLegacy = isPlainObject(legacyConfig) ? legacyConfig : {};
         var rawPlan = Array.isArray(safeLegacy.resourcePlan) ? safeLegacy.resourcePlan : [];
@@ -624,7 +639,7 @@
               complexity: safeText && safeText.complexity
             }, row.tool);
           }
-          return Object.assign({}, row, generationFields(prior), { instructionalText: safeText });
+          return safeAssign(safeAssign(safeAssign({}, row), generationFields(prior)), { instructionalText: safeText });
         });
         // The legacy shape cannot represent every Blueprint field. Preserve
         // contract context that the AI revision never received rather than
@@ -752,7 +767,7 @@
       var report = validate(blueprint);
       if (!report.ok) return { ok: false, errors: report.errors, value: null };
       var b = report.value;
-      var cleanReviewer = String(reviewer || 'teacher').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || 'teacher';
+      var cleanReviewer = (_bpStr(reviewer) || 'teacher').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 200) || 'teacher';
       b.review = { state: 'approved', reviewer: cleanReviewer };
       return { ok: true, errors: [], value: b };
     }
@@ -834,10 +849,10 @@
           try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }
         }
         return {
-          stepId: String(raw && raw.stepId || 'step-' + (index + 1)),
-          commandId: String(raw && raw.commandId || ''),
+          stepId: _bpStr(raw && raw.stepId) || ('step-' + (index + 1)),
+          commandId: _bpStr(raw && raw.commandId),
           params: params,
-          why: String(raw && raw.why || '').slice(0, 120),
+          why: _bpStr(raw && raw.why).slice(0, 120),
           onFailure: raw && raw.onFailure === 'stop' ? 'stop' : 'pause'
         };
       });
@@ -849,7 +864,7 @@
       var req = request || {};
       return validate({
         schemaVersion: C.SCHEMA_VERSION,
-        workflowId: String(req.workflowId || 'cw-' + Date.now().toString(36)),
+        workflowId: _bpStr(req.workflowId) || ('cw-' + Date.now().toString(36)),
         kind: 'command-workflow',
         audience: req.audience || 'teacher',
         steps: sanitizeSteps(req.steps, ctx),
@@ -863,14 +878,15 @@
       if (!report.ok) return report;
       var next = report.value;
       var ch = changes || {};
-      var steps = next.steps.map(function (step) { return Object.assign({}, step, { params: safeAssign({}, step.params) }); });
+      var steps = next.steps.map(function (step) { return safeAssign(safeAssign({}, step), { params: safeAssign({}, step.params) }); });
       if (Array.isArray(ch.replaceSteps)) steps = sanitizeSteps(ch.replaceSteps, ctx);
       if (ch.removeStepId) steps = steps.filter(function (step) { return step.stepId !== ch.removeStepId; });
       if (ch.moveStep && ch.moveStep.stepId) {
         var from = steps.findIndex(function (step) { return step.stepId === ch.moveStep.stepId; });
         if (from >= 0) {
           var moved = steps.splice(from, 1)[0];
-          var to = Math.max(0, Math.min(steps.length, Number(ch.moveStep.toIndex) || 0));
+          var rawTo = _bpNum(ch.moveStep.toIndex);
+          var to = Math.max(0, Math.min(steps.length, Number.isFinite(rawTo) ? rawTo : 0));
           steps.splice(to, 0, moved);
         }
       }
@@ -878,7 +894,7 @@
         steps = steps.map(function (step) {
           if (step.stepId !== ch.setParam.stepId) return step;
           var params = safeAssign({}, step.params);
-          var paramKey = String(ch.setParam.key || '');
+          var paramKey = _bpStr(ch.setParam.key);
           if (paramKey && paramKey !== '__proto__' && paramKey !== 'constructor' && paramKey !== 'prototype') {
             params[paramKey] = ch.setParam.value;
           }
@@ -886,15 +902,15 @@
           if (typeof d.sanitizeCommandParams === 'function') {
             try { params = d.sanitizeCommandParams(command, params); } catch (_) { params = {}; }
           }
-          return Object.assign({}, step, { params: params });
+          return safeAssign(safeAssign({}, step), { params: params });
         });
       }
-      return validate(Object.assign({}, next, { steps: steps, review: { state: 'draft', reviewer: '' } }), ctx);
+      return validate(safeAssign(safeAssign({}, next), { steps: steps, review: { state: 'draft', reviewer: '' } }), ctx);
     }
     function reviseFromText(workflow, instruction, ctx) {
       var report = validate(workflow, ctx);
       if (!report.ok) return Object.assign({}, report, { summary: '' });
-      var text = String(instruction || '').slice(0, MAX_AI_INSTRUCTION_CHARS).trim();
+      var text = _bpStr(instruction).slice(0, MAX_AI_INSTRUCTION_CHARS).trim();
       var steps = report.value.steps;
       var match = text.match(/^(?:remove|delete)\s+(?:step\s+)?(\d+)\s*[.!]?$/i);
       if (match) {
@@ -980,8 +996,8 @@
     function approve(workflow, reviewer, ctx) {
       var report = validate(workflow, ctx);
       if (!report.ok) return report;
-      var cleanReviewer = String(reviewer || 'teacher').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 200) || 'teacher';
-      return validate(Object.assign({}, report.value, { review: { state: 'approved', reviewer: cleanReviewer } }), ctx);
+      var cleanReviewer = (_bpStr(reviewer) || 'teacher').replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 200) || 'teacher';
+      return validate(safeAssign(safeAssign({}, report.value), { review: { state: 'approved', reviewer: cleanReviewer } }), ctx);
     }
     function planExecution(workflow, ctx, opts) {
       var report = validate(workflow, ctx);
@@ -1030,7 +1046,7 @@
       }
     }
     function normalizeTemplateName(name, fallback) {
-      var clean = String(name || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      var clean = _bpStr(name).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       return clean || fallback || 'Command Blueprint';
     }
     function listSaved(ctx) {
@@ -1072,7 +1088,9 @@
       var parsed = parseLibrary();
       if (!parsed.ok) return parsed;
       var existing = parsed.items.find(function (item) { return item && item.workflow && item.workflow.workflowId === draftReport.value.workflowId && item.workflow.audience === draftReport.value.audience; });
-      var now = typeof d.now === 'function' ? String(d.now()) : new Date().toISOString();
+      var now = '';
+      if (typeof d.now === 'function') { try { now = _bpStr(d.now()); } catch (_) { now = ''; } }
+      if (!now) now = new Date().toISOString();
       var record = {
         workflowId: draftReport.value.workflowId,
         name: normalizeTemplateName(name, existing && existing.name),
@@ -1087,21 +1105,23 @@
     function loadSaved(workflowId, ctx) {
       var listed = listSaved(ctx);
       if (!listed.ok) return Object.assign({}, listed, { value: null });
-      var found = listed.items.find(function (item) { return item.workflowId === String(workflowId || ''); });
+      var targetId = _bpStr(workflowId);
+      var found = listed.items.find(function (item) { return item.workflowId === targetId; });
       if (!found) return libraryError('saved-workflow-not-found', 'That saved Command Blueprint is not available in this view.');
-      var report = validate(Object.assign({}, found.workflow, { review: { state: 'draft', reviewer: '' } }), ctx);
+      var report = validate(safeAssign(safeAssign({}, found.workflow), { review: { state: 'draft', reviewer: '' } }), ctx);
       if (!report.ok) return Object.assign({}, report, { items: listed.items });
       return { ok: true, errors: [], warnings: listed.warnings, value: report.value, template: found, items: listed.items };
     }
     function deleteSaved(workflowId, ctx) {
       var listed = listSaved(ctx);
       if (!listed.ok) return listed;
-      var allowed = listed.items.some(function (item) { return item.workflowId === String(workflowId || ''); });
+      var targetId = _bpStr(workflowId);
+      var allowed = listed.items.some(function (item) { return item.workflowId === targetId; });
       if (!allowed) return libraryError('saved-workflow-not-found', 'That saved Command Blueprint is not available in this view.');
       var parsed = parseLibrary();
       if (!parsed.ok) return parsed;
       var audience = currentAudience(ctx);
-      var next = parsed.items.filter(function (item) { return !(item && item.workflow && item.workflow.workflowId === String(workflowId || '') && (!audience || item.workflow.audience === audience)); });
+      var next = parsed.items.filter(function (item) { return !(item && item.workflow && item.workflow.workflowId === targetId && (!audience || item.workflow.audience === audience)); });
       var written = writeLibrary(next);
       return written.ok ? { ok: true, errors: [], warnings: [], items: listSaved(ctx).items } : written;
     }
@@ -1141,7 +1161,7 @@
   var LESSON_TEMPLATE_VERSION = 1;
 
   function _templateSafeString(value, max) {
-    return String(value == null ? '' : value)
+    return _bpStr(value)
       .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
       .slice(0, max || 120);
   }
@@ -1156,9 +1176,9 @@
     var plan = rawPlan.map(function (row, i) {
       var tool = row && (row.tool || row.type);
       if (!tool) return null;
-      var toolName = String(tool);
-      if (isUnsafeKey(toolName)) return null;
-      var uiId = String((row && (row.uiId || row.stepId)) || (toolName + '-' + i));
+      var toolName = _bpStr(tool);
+      if (!toolName || isUnsafeKey(toolName)) return null;
+      var uiId = _bpStr(row && (row.uiId || row.stepId)) || (toolName + '-' + i);
       var keep = !(hasOwn.call(policy, uiId) && policy[uiId] === 'blank');
       return {
         tool: toolName,
@@ -1188,11 +1208,11 @@
     var rows = plan.map(function (row, i) {
       var tool = row && (row.tool || row.type);
       if (!tool) return null;
-      var toolName = String(tool);
-      if (isUnsafeKey(toolName)) return null;
+      var toolName = _bpStr(tool);
+      if (!toolName || isUnsafeKey(toolName)) return null;
       return {
         tool: toolName,
-        uiId: String((row && (row.uiId || row.stepId)) || (toolName + '-' + i)),
+        uiId: _bpStr(row && (row.uiId || row.stepId)) || (toolName + '-' + i),
         directive: _templateSafeString(row && row.directive, 600)
       };
     }).filter(Boolean);
@@ -1227,7 +1247,7 @@
           frozen = true;
           return [];
         }
-        if (typeof env.v === 'number' && env.v > LESSON_TEMPLATE_VERSION) {
+        if (typeof env.v !== 'number' || env.v > LESSON_TEMPLATE_VERSION) {
           frozen = true;
           return [];
         }
@@ -1327,7 +1347,7 @@
           frozen = true;
           return [];
         }
-        if (typeof env.v === 'number' && env.v > BLUEPRINT_ARCHIVE_VERSION) {
+        if (typeof env.v !== 'number' || env.v > BLUEPRINT_ARCHIVE_VERSION) {
           // A NEWER build wrote this. Refuse to read or overwrite it — same
           // stance as the workspace-recovery payload check. Downgrades lose
           // access temporarily; they never lose data.
@@ -1371,15 +1391,15 @@
     };
   }
 
-  var API = { createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY,
+  var API = Object.freeze({ createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY,
               toLessonTemplate: toLessonTemplate, applyLessonTemplate: applyLessonTemplate,
               createLessonTemplateLibrary: createLessonTemplateLibrary, LESSON_TEMPLATE_LIBRARY_KEY: LESSON_TEMPLATE_LIBRARY_KEY,
               toArchivedPlan: toArchivedPlan, createBlueprintArchive: createBlueprintArchive,
-              BLUEPRINT_ARCHIVE_KEY: BLUEPRINT_ARCHIVE_KEY, BLUEPRINT_ARCHIVE_MAX: BLUEPRINT_ARCHIVE_MAX };
+              BLUEPRINT_ARCHIVE_KEY: BLUEPRINT_ARCHIVE_KEY, BLUEPRINT_ARCHIVE_MAX: BLUEPRINT_ARCHIVE_MAX });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AgentCoreBlueprintService = API;
   }
 })();

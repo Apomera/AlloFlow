@@ -241,6 +241,37 @@
               <input id="engine-model-dir" type="text" placeholder="e.g. E:\alloflow-models">
               <button id="engine-model-dir-save" type="button">Save folder</button>
             </div>
+            <details id="engine-hardware-details" class="hardware-details">
+              <summary>Performance &amp; hardware</summary>
+              <label for="engine-context-select">Context window <span class="hint">(larger fits longer texts, uses more RAM)</span></label>
+              <select id="engine-context-select">
+                <option value="0">Auto (sized for this computer)</option>
+                <option value="4096">4,096 tokens (low memory)</option>
+                <option value="8192">8,192 tokens (balanced)</option>
+                <option value="16384">16,384 tokens (long readings)</option>
+                <option value="32768">32,768 tokens (high RAM / GPU)</option>
+              </select>
+              <label for="engine-gpu-layers">GPU offload <span class="hint">(macOS Metal or Vulkan/CUDA build)</span></label>
+              <select id="engine-gpu-layers">
+                <option value="0">Auto / CPU default (uses Metal on Apple Silicon)</option>
+                <option value="999">Offload all layers to GPU</option>
+              </select>
+              <label class="check-row" for="engine-kv-q8">
+                <input id="engine-kv-q8" type="checkbox">
+                <span>Low-memory KV cache (q8_0 — cuts RAM use for long contexts)</span>
+              </label>
+              <label class="check-row" for="engine-flash-attn">
+                <input id="engine-flash-attn" type="checkbox">
+                <span>Enable Flash Attention</span>
+              </label>
+              <label for="engine-binary-url">Custom GPU engine binary URL <span class="hint">(optional — e.g. llama.cpp Vulkan/CUDA .zip; blank = built-in default)</span></label>
+              <input id="engine-binary-url" type="url" placeholder="https://github.com/ggml-org/llama.cpp/releases/download/…/llama-…-vulkan-x64.zip">
+              <label for="engine-binary-sha256">Custom binary SHA-256 checksum <span class="hint">(64 hex chars — required whenever a custom binary URL is set)</span></label>
+              <input id="engine-binary-sha256" type="text" placeholder="64-character SHA-256 hex digest" autocomplete="off" spellcheck="false">
+              <div class="button-row">
+                <button id="engine-hardware-save" type="button">Save hardware settings</button>
+              </div>
+            </details>
             <div class="button-row">
               <button id="engine-start" type="button">Start engine</button>
               <button id="engine-probe" type="button">Check local model</button>
@@ -328,7 +359,6 @@
               <option value="local-preview">Local Preview Only</option>
               <option value="district-server">District Server (future)</option>
               <option value="byo-firebase">Bring Your Own Firebase</option>
-              <option value="alloflow-demo-cloud">AlloFlow Demo Cloud</option>
             </select>
             <div class="button-row">
               <button id="save-live-session" type="button">Save Live Session Mode</button>

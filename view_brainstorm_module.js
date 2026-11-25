@@ -32,7 +32,15 @@
   var MessageSquare = _lazyIcon('MessageSquare');
   var Users = _lazyIcon('Users');
 
-  function projectStudentActivityResource(resource) {
+  function ensureBrainstormPolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-brainstorm-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-brainstorm-a11y-css';
+  st.textContent = ['[data-help-key="brainstorm_panel"] button,[data-help-key="brainstorm_panel"] input,[data-help-key="brainstorm_panel"] select,[data-help-key="brainstorm_panel"] textarea,[data-help-key="brainstorm_panel"] summary{touch-action:manipulation;box-sizing:border-box}', '[data-help-key="brainstorm_panel"] button:focus-visible,[data-help-key="brainstorm_panel"] input:focus-visible,[data-help-key="brainstorm_panel"] select:focus-visible,[data-help-key="brainstorm_panel"] textarea:focus-visible,[data-help-key="brainstorm_panel"] summary:focus-visible{outline:3px solid #4f46e5;outline-offset:2px}', '.theme-contrast [data-help-key="brainstorm_panel"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}', '@media (forced-colors:active){[data-help-key="brainstorm_panel"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-help-key="brainstorm_panel"] button,[data-help-key="brainstorm_panel"] input,[data-help-key="brainstorm_panel"] select,[data-help-key="brainstorm_panel"] textarea,[data-help-key="brainstorm_panel"] summary{border:1px solid ButtonText}}', '@media (prefers-reduced-motion:reduce){[data-help-key="brainstorm_panel"] *,[data-help-key="brainstorm_panel"] *::before,[data-help-key="brainstorm_panel"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'].join('');
+  document.head.appendChild(st);
+}
+ensureBrainstormPolishCss();
+function projectStudentActivityResource(resource) {
   if (!resource || resource.type !== 'brainstorm' || !Array.isArray(resource.data)) return null;
   const text = value => typeof value === 'string' ? value : '';
   // Blank editor lines are not student items.
@@ -319,6 +327,9 @@ function _brainstormSpeakText(raw) {
   var clean = String(raw || '').replace(/\s+/g, ' ').trim();
   if (!clean) return;
   try {
+    if (typeof window !== 'undefined' && (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true || typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted())) {
+      return;
+    }
     if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
       Promise.resolve(window.AlloSpeechPlayer.speak(clean)).catch(function () {});
     } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
@@ -352,7 +363,7 @@ function ActivityResponseField(props) {
       question: String(props.question || '').slice(0, 160)
     }),
     placeholder: activityT(props.t, 'brainstorm.answer_placeholder', 'Type your answer...'),
-    className: "w-full rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    className: "w-full min-h-11 rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }), DictationBtn ? /*#__PURE__*/React.createElement("div", {
     className: "mt-1"
   }, /*#__PURE__*/React.createElement(DictationBtn, {
@@ -488,6 +499,7 @@ function DiscussionKitBody(props) {
   var lookFors = activityNonEmpty(item.lookFors);
   var answering = !isTeacherMode && typeof props.onAnswer === 'function';
   var [activeResponseKey, setActiveResponseKey] = React.useState('');
+  var [stemAnnouncement, setStemAnnouncement] = React.useState('');
   var defaultStemKey = '';
   if (item.openingQuestion) {
     defaultStemKey = activityResponseKey(item, 'opening', item.openingQuestion);
@@ -506,6 +518,11 @@ function DiscussionKitBody(props) {
     var prev = typeof answers[targetKey] === 'string' ? answers[targetKey] : '';
     var sep = prev && !/\s$/.test(prev) ? ' ' : '';
     props.onAnswer(targetKey, prev + sep + stemText);
+    var msg = activityT(t, 'brainstorm.stem_inserted_sr', 'Inserted talk stem: {stem}', {
+      stem: stemText
+    });
+    setStemAnnouncement(msg);
+    if (typeof props.announceToSR === 'function') props.announceToSR(msg);
   };
   var field = function (key, question) {
     return answering ? /*#__PURE__*/React.createElement(ActivityResponseField, {
@@ -529,7 +546,12 @@ function DiscussionKitBody(props) {
   }).length : 0;
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "brainstorm_discussion_card"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, stemAnnouncement ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, stemAnnouncement) : null, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start justify-between gap-2 mb-1"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-lg text-indigo-900 flex items-center gap-2"
@@ -818,6 +840,7 @@ function _brainstormAiDoor(kind, t) {
   }
 }
 function BrainstormView(props) {
+  ensureBrainstormPolishCss();
   var t = typeof props.t === 'function' ? props.t : function () {
     return '';
   };
@@ -883,7 +906,7 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14,
     "aria-hidden": "true"
-  }), isEditingBrainstorm ? t('common.done_editing') : t('brainstorm.edit')))), /*#__PURE__*/React.createElement("div", {
+  }), isEditingBrainstorm ? t('common.done_editing') || 'Done Editing' : t('brainstorm.edit') || 'Edit Activities'))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-6"
   }, items.length === 0 ? /*#__PURE__*/React.createElement("p", {
     role: "status",
@@ -903,6 +926,7 @@ function BrainstormView(props) {
     renderFormattedText: renderFormattedText,
     answers: learnerAnswers,
     onAnswer: onAnswer,
+    announceToSR: props.announceToSR,
     studentWorkStatus: props.studentWorkStatus,
     onRetrySave: props.onRetrySave
   }) : idea.kind === 'jigsaw' ? /*#__PURE__*/React.createElement(JigsawBody, {
@@ -983,7 +1007,7 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement(ListChecks, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('brainstorm.teacher_guide')), isEditingBrainstorm ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t('brainstorm.teacher_guide') || 'Teacher Guide'), isEditingBrainstorm ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('brainstorm.edit_guide') || 'Edit teacher guide',
     value: idea.guide || '',
     onChange: e => handleBrainstormChange(idx, 'guide', e.target.value),
@@ -1007,7 +1031,7 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement(ListChecks, {
     size: 14,
     "aria-hidden": "true"
-  }), isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')), idea.guide && (idea.worksheet ? /*#__PURE__*/React.createElement("details", {
+  }), isGeneratingGuide[idx] ? t('brainstorm.creating_guide') || 'Creating guide…' : t('brainstorm.generate_guide') || 'Generate Teacher Guide'), idea.guide && (idea.worksheet ? /*#__PURE__*/React.createElement("details", {
     className: "mt-3 group"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-200 cursor-pointer list-none transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
@@ -1103,7 +1127,7 @@ function BrainstormView(props) {
       ...idea.rubric,
       title: e.target.value
     }),
-    className: "mt-1 block w-full rounded border border-violet-300 bg-white px-2 py-1 text-xs font-normal text-slate-800"
+    className: "mt-1 block w-full min-h-11 rounded border border-violet-300 bg-white px-2.5 py-2 text-xs font-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   })), idea.rubric.criteria.map((rawCriterion, criterionIndex) => {
     const criterion = rawCriterion && typeof rawCriterion === 'object' ? rawCriterion : {};
     const updateCriterion = patchObj => {
@@ -1137,7 +1161,7 @@ function BrainstormView(props) {
         criterion: e.target.value
       }),
       placeholder: t('brainstorm.rubric_criterion') || 'Criterion',
-      className: "flex-1 min-w-0 rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-800"
+      className: "flex-1 min-w-0 min-h-11 rounded border border-slate-300 px-2.5 py-2 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }), /*#__PURE__*/React.createElement("input", {
       type: "number",
       min: "0",
@@ -1157,7 +1181,7 @@ function BrainstormView(props) {
         });
       },
       placeholder: "%",
-      className: "w-16 rounded border border-slate-300 px-2 py-1 text-xs text-slate-800"
+      className: "w-20 min-h-11 rounded border border-slate-300 px-2 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }), idea.rubric.criteria.length > 1 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => handleBrainstormChange(idx, 'rubric', {
@@ -1165,7 +1189,7 @@ function BrainstormView(props) {
         criteria: idea.rubric.criteria.filter((_, ci) => ci !== criterionIndex)
       }),
       "aria-label": `${t('brainstorm.remove_criterion') || 'Remove criterion'} ${criterionIndex + 1}`,
-      className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold"
+      className: "inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, "×")), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"
     }, [['4', '4 - Exceeds'], ['3', '3 - Meets'], ['2', '2 - Developing'], ['1', '1 - Beginning']].map(([lvl, lvlLabel]) => /*#__PURE__*/React.createElement("label", {
@@ -1175,7 +1199,7 @@ function BrainstormView(props) {
       rows: 2,
       value: typeof (criterion.levels && criterion.levels[lvl]) === 'string' ? criterion.levels[lvl] : '',
       onChange: e => updateLevel(lvl, e.target.value),
-      className: "mt-0.5 block w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-normal text-slate-800 resize-y"
+      className: "mt-0.5 block w-full min-h-11 rounded border border-slate-300 px-2 py-1.5 text-xs font-normal text-slate-800 resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     })))));
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1192,7 +1216,7 @@ function BrainstormView(props) {
         }
       }])
     }),
-    className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-50"
+    className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "+ Add criterion")) : /*#__PURE__*/React.createElement("table", {
     className: "min-w-[760px] w-full text-xs text-left text-slate-700"
   }, /*#__PURE__*/React.createElement("caption", {
@@ -1284,12 +1308,12 @@ function BrainstormView(props) {
     type: "button",
     "data-brainstorm-remove-card": idx,
     onClick: () => handleBrainstormChange(idx, 'remove-card'),
-    className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50"
+    className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "Remove activity card")))))), isTeacherMode && isEditingBrainstorm && typeof handleBrainstormChange === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-brainstorm-add-card": "true",
     onClick: () => handleBrainstormChange(null, 'add-card'),
-    className: "w-full min-h-11 py-3 border-2 border-dashed border-amber-300 rounded-xl text-amber-900 font-bold text-xs hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+    className: "w-full min-h-11 py-3 border-2 border-dashed border-amber-300 rounded-xl text-amber-900 font-bold text-xs hover:bg-amber-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "+ Add activity card"));
 }
 BrainstormView.projectStudentActivityResource = projectStudentActivityResource;

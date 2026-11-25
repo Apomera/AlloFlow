@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.1 AA: respect prefers-reduced-motion + keep slate-600 AA contrast
-  if (!document.getElementById("large-file-module-a11y")) { var _s = document.createElement("style"); _s.id = "large-file-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
+  if (typeof document !== "undefined" && document.head && typeof document.getElementById === "function" && typeof document.createElement === "function" && !document.getElementById("large-file-module-a11y")) { var _s = document.createElement("style"); _s.id = "large-file-module-a11y"; _s.textContent = "[data-large-file-modal] button,[data-large-file-modal] [role='button'],[data-large-file-modal] a,[data-large-file-modal] input,[data-large-file-modal] select,[data-large-file-modal] textarea{touch-action:manipulation;}[data-large-file-modal] button:focus-visible,[data-large-file-modal] [role='button']:focus-visible,[data-large-file-modal] a:focus-visible,[data-large-file-modal] input:focus-visible,[data-large-file-modal] select:focus-visible,[data-large-file-modal] textarea:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){[data-large-file-modal] button:focus-visible,[data-large-file-modal] [role='button']:focus-visible,[data-large-file-modal] a:focus-visible,[data-large-file-modal] input:focus-visible,[data-large-file-modal] select:focus-visible,[data-large-file-modal] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-large-file-modal] *,[data-large-file-modal] *::before,[data-large-file-modal] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.LargeFileModule) { console.log('[CDN] LargeFileModule already loaded, skipping'); return; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 var React = window.React || React;
@@ -580,6 +580,12 @@ const LargeFileTranscriptionModal = React.memo(({
   const isVisible = Boolean(isOpen && file);
   React.useEffect(() => {
     if (!isVisible || typeof document === "undefined" || typeof window === "undefined") return void 0;
+    if (document.head && typeof document.getElementById === "function" && typeof document.createElement === "function" && !document.getElementById("large-file-module-a11y")) {
+      const st = document.createElement("style");
+      st.id = "large-file-module-a11y";
+      st.textContent = "[data-large-file-modal] button,[data-large-file-modal] [role='button'],[data-large-file-modal] a,[data-large-file-modal] input,[data-large-file-modal] select,[data-large-file-modal] textarea{touch-action:manipulation;}[data-large-file-modal] button:focus-visible,[data-large-file-modal] [role='button']:focus-visible,[data-large-file-modal] a:focus-visible,[data-large-file-modal] input:focus-visible,[data-large-file-modal] select:focus-visible,[data-large-file-modal] textarea:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){[data-large-file-modal] button:focus-visible,[data-large-file-modal] [role='button']:focus-visible,[data-large-file-modal] a:focus-visible,[data-large-file-modal] input:focus-visible,[data-large-file-modal] select:focus-visible,[data-large-file-modal] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-large-file-modal] *,[data-large-file-modal] *::before,[data-large-file-modal] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}";
+      document.head.appendChild(st);
+    }
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
@@ -605,7 +611,7 @@ const LargeFileTranscriptionModal = React.memo(({
     });
     (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
-      if (event.isComposing || event.keyCode === 229) return;
+      if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
         if (!processingRef.current) {
@@ -668,6 +674,7 @@ const LargeFileTranscriptionModal = React.memo(({
         ref: dialogRef,
         tabIndex: -1,
         className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
+        "data-large-file-modal": "true",
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "large-file-modal-title",

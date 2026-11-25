@@ -206,7 +206,8 @@ describe('Micro Lab saved-work overview', { timeout: 60000 }, () => {
     mount(seed); expect(mounted.container.querySelector('.micro-workspace-home').textContent).toBe(text);
     click('Show topic library');
     expect(button('Hide topic library').getAttribute('aria-expanded')).toBe('true');
-    expect(mounted.container.querySelectorAll('[role="tab"]')).toHaveLength(19);
+    // 20 since 2026-11-24: the "Microbial World" overview (formerly unreachable renderHome) joined the topic library.
+    expect(mounted.container.querySelectorAll('[role="tab"]')).toHaveLength(20);
   });
 
   it('surfaces a removed-only Growth notebook as work to revisit without counting the removed trial as saved', () => {

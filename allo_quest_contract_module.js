@@ -150,7 +150,7 @@
       if (typeof value === 'number' && Number.isFinite(value)) value = String(value);
       else return '';
     }
-    return value.slice(0, 4096).replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+    return value.slice(0, 4096).replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, ' ').trim();
   }
 
   function _finiteNumber(value) {
@@ -264,11 +264,11 @@
     isComplete: isComplete
   });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = AlloQuestContract;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = AlloQuestContract;
+  if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AlloQuestContract = AlloQuestContract;
     window.AlloQuestContract = AlloQuestContract;
-    if (typeof console !== 'undefined') console.log('[CDN] AlloQuestContract loaded');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] AlloQuestContract loaded');
   }
 })();

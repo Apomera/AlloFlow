@@ -1684,10 +1684,11 @@ function LessonPlanView(props) {
     type: "button",
     onClick: handleExportPDF,
     "data-lesson-plan-print-bottom": true,
+    title: t('lesson_plan.print_pdf_tooltip') || 'Opens the print window. Choose Save as PDF there to keep a file.',
     className: "flex items-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg"
   }, /*#__PURE__*/React.createElement(Printer, {
     size: 18
-  }), " ", t('lesson_plan.print'))), !audienceView && /*#__PURE__*/React.createElement("div", {
+  }), " ", t('lesson_plan.print_pdf_button') || 'Print / PDF')), !audienceView && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-8 border-t-2 border-dashed border-slate-200"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-sm font-black text-slate-600 uppercase tracking-widest mb-4 text-center"

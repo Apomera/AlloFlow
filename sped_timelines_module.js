@@ -6,12 +6,13 @@
  */
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.SpedTimelines) {
-    console.log('[CDN] SpedTimelines already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] SpedTimelines already loaded, skipping');
     return;
   }
   (function() {
-    if (document.getElementById('allo-live-spedtl')) return;
+    if (typeof document !== 'object' || !document || !document.body || document.getElementById('allo-live-spedtl')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-spedtl';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -22,7 +23,7 @@
     document.body.appendChild(liveRegion);
   })();
   var React = window.React;
-  if (!React) { console.error('[SpedTimelines] React not found on window'); return; }
+  if (!React) { if (typeof console === 'object' && console && typeof console.error === 'function') console.error('[SpedTimelines] React not found on window'); return; }
 
 const SPED_CASES_KEY = "allo_sped_cases_v1";
 const SPED_CONFIG_KEY = "allo_sped_config_v1";
@@ -99,17 +100,24 @@ function spedParseDate(s) {
 }
 function spedFmt(dt) {
   if (!dt || !(dt instanceof Date) || Number.isNaN(dt.getTime())) return null;
-  return dt.toISOString().slice(0, 10);
+  const y = dt.getUTCFullYear();
+  if (y < 1 || y > 9999) return null;
+  return String(y).padStart(4, "0") + "-" + String(dt.getUTCMonth() + 1).padStart(2, "0") + "-" + String(dt.getUTCDate()).padStart(2, "0");
 }
 function spedAnniversary(dateStr, years) {
   const dt = spedParseDate(dateStr);
   if (!dt || !Number.isFinite(years)) return null;
-  const y = dt.getUTCFullYear() + years;
+  const y = dt.getUTCFullYear() + Math.trunc(years);
+  if (y < 1 || y > 9999) return null;
   const mo = dt.getUTCMonth();
   const d = dt.getUTCDate();
-  let out = new Date(Date.UTC(y, mo, d));
+  let out = /* @__PURE__ */ new Date(0);
+  out.setUTCFullYear(y, mo, d);
   if (Number.isNaN(out.getTime())) return null;
-  if (out.getUTCMonth() !== mo) out = new Date(Date.UTC(y, mo + 1, 0));
+  if (out.getUTCMonth() !== mo) {
+    out = /* @__PURE__ */ new Date(0);
+    out.setUTCFullYear(y, mo + 1, 0);
+  }
   return spedFmt(out);
 }
 function spedAddDays(dateStr, days) {
@@ -121,7 +129,8 @@ function spedAddDays(dateStr, days) {
 }
 function spedDefaultDue(type, keyDate, evalDays) {
   if (!spedParseDate(keyDate)) return null;
-  if (type === "initial_eval") return spedAddDays(keyDate, Number.isFinite(Number(evalDays)) && Number(evalDays) > 0 ? Number(evalDays) : 60);
+  const validDays = typeof evalDays !== "boolean" && typeof evalDays !== "symbol" && evalDays !== null && String(evalDays).trim() !== "" && Number.isFinite(Number(evalDays)) && Number(evalDays) > 0 ? Number(evalDays) : 60;
+  if (type === "initial_eval") return spedAddDays(keyDate, validDays);
   if (type === "annual") return spedAnniversary(keyDate, 1);
   if (type === "triennial") return spedAnniversary(keyDate, 3);
   return null;
@@ -132,6 +141,7 @@ function spedDaysUntil(dueDate, today) {
   return Math.round((a.getTime() - b.getTime()) / 864e5);
 }
 function spedBand(c, today) {
+  if (!c || typeof c !== "object") return "undated";
   if (c.completedAt) return "done";
   const days = spedDaysUntil(c.dueDate, today);
   if (days == null) return "undated";
@@ -151,7 +161,8 @@ const SPED_BAND_META = {
 function spedRollup(cases, today) {
   const counts = { overdue: 0, urgent: 0, soon: 0, ok: 0, undated: 0, done: 0 };
   const providerMap = /* @__PURE__ */ Object.create(null);
-  const banded = (cases || []).map((c) => {
+  const safeCases = Array.isArray(cases) ? cases.filter((c) => c && typeof c === "object") : [];
+  const banded = safeCases.map((c) => {
     const band = spedBand(c, today);
     counts[band] += 1;
     const provider = String(c.provider || "").trim() || "(unassigned)";
@@ -206,7 +217,12 @@ function spedDownload(filename, mime, content, addToast, okMsg, failMsg) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 4e3);
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (_) {
+      }
+    }, 4e3);
     addToast(okMsg, "info");
   } catch (e) {
     addToast(failMsg + String(e && e.message), "error");
@@ -214,10 +230,15 @@ function spedDownload(filename, mime, content, addToast, okMsg, failMsg) {
 }
 function spedAnnounce(message) {
   try {
-    const region = document.getElementById("allo-live-spedtl");
+    const region = typeof document !== "undefined" && document.getElementById("allo-live-spedtl");
     if (region) {
       region.textContent = "";
-      region.textContent = message;
+      setTimeout(() => {
+        try {
+          if (region.isConnected) region.textContent = message;
+        } catch (_) {
+        }
+      }, 0);
     }
   } catch (_) {
   }
@@ -237,23 +258,37 @@ function SpedTimelinesPanel(props) {
   }, [t]);
   const [config, setConfig] = React.useState(() => {
     const c = spedLoad(SPED_CONFIG_KEY, {});
-    return { evalDays: 60, ...c && typeof c === "object" ? c : {} };
+    const safeObj = c && typeof c === "object" && !Array.isArray(c) ? c : {};
+    const validDays = typeof safeObj.evalDays === "number" || typeof safeObj.evalDays === "string" ? safeObj.evalDays : 60;
+    return { ...safeObj, evalDays: validDays };
   });
   const [cases, setCases] = React.useState(() => {
     const v = spedLoad(SPED_CASES_KEY, []);
-    return Array.isArray(v) ? v : [];
+    return Array.isArray(v) ? v.filter((c) => c && typeof c === "object") : [];
   });
+  const casesDirtyRef = React.useRef(false);
+  const configDirtyRef = React.useRef(false);
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const [tab, setTab] = React.useState("dashboard");
   const [form, setForm] = React.useState({ code: "", type: "initial_eval", provider: "", keyDate: "", dueDate: "" });
   const [armDelete, setArmDelete] = React.useState(null);
   const importInputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
-    spedStore(SPED_CASES_KEY, cases);
+    if (casesDirtyRef.current) spedStore(SPED_CASES_KEY, cases);
   }, [cases]);
   React.useEffect(() => {
-    spedStore(SPED_CONFIG_KEY, config);
+    if (configDirtyRef.current) spedStore(SPED_CONFIG_KEY, config);
   }, [config]);
+  React.useEffect(() => {
+    setArmDelete(null);
+  }, [tab]);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
   React.useEffect(() => {
@@ -393,9 +428,11 @@ function SpedTimelinesPanel(props) {
       if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);
+  const vaultLocked = spedVaultBackend().mode === "locked";
   const today = spedToday();
-  const rollup = spedRollup(cases, today);
+  const rollup = React.useMemo(() => spedRollup(cases, today), [cases, today]);
   const [dueDateManual, setDueDateManual] = React.useState(false);
+  const dueDateManualRef = React.useRef(false);
   const [dashBandFilter, setDashBandFilter] = React.useState("all");
   const [dashProviderFilter, setDashProviderFilter] = React.useState("");
   const [casesStatusFilter, setCasesStatusFilter] = React.useState("all");
@@ -423,11 +460,15 @@ function SpedTimelinesPanel(props) {
     return true;
   });
   const updateForm = (patch) => {
-    if (patch.dueDate !== void 0) setDueDateManual(!!patch.dueDate);
+    if (patch.dueDate !== void 0) {
+      const manual = !!patch.dueDate;
+      dueDateManualRef.current = manual;
+      setDueDateManual(manual);
+    }
     setForm((f) => {
       const next = { ...f, ...patch };
       if (patch.type !== void 0 || patch.keyDate !== void 0) {
-        if (!dueDateManual || !f.dueDate) {
+        if (!dueDateManualRef.current || !f.dueDate) {
           next.dueDate = spedDefaultDue(next.type, next.keyDate, config.evalDays) || "";
         }
       }
@@ -435,6 +476,10 @@ function SpedTimelinesPanel(props) {
     });
   };
   const addCase = () => {
+    if (spedVaultBackend().mode === "locked") {
+      addToast(tt("spedtl.vault_locked", "Unlock the Sensitive Workspace vault before adding timelines."), "warning");
+      return;
+    }
     const code = form.code.trim();
     if (!code) {
       addToast(tt("spedtl.need_code", "Enter a student code or initials."), "warning");
@@ -453,18 +498,23 @@ function SpedTimelinesPanel(props) {
       dueDate: form.dueDate,
       completedAt: null
     };
+    casesDirtyRef.current = true;
     setCases((list) => [...list, record]);
+    dueDateManualRef.current = false;
     setDueDateManual(false);
     setForm((f) => ({ ...f, code: "", keyDate: "", dueDate: "" }));
     addToast(tt("spedtl.added", "Timeline added."), "success");
   };
   const setDone = (id, done) => {
-    setCases((list) => list.map((c) => c.id === id ? { ...c, completedAt: done ? today : null } : c));
+    casesDirtyRef.current = true;
+    const nowDay = spedToday();
+    setCases((list) => list.map((c) => c.id === id ? { ...c, completedAt: done ? nowDay : null } : c));
   };
   const exportJson = () => {
+    const nowDay = spedToday();
     const payload = { kind: "alloflow-sped-timelines", version: 1, exportedAt: (/* @__PURE__ */ new Date()).toISOString(), config, cases };
     spedDownload(
-      "sped-timelines-" + today + ".json",
+      "sped-timelines-" + nowDay + ".json",
       "application/json",
       JSON.stringify(payload, null, 2),
       addToast,
@@ -473,6 +523,10 @@ function SpedTimelinesPanel(props) {
     );
   };
   const importJson = (file) => {
+    if (spedVaultBackend().mode === "locked") {
+      addToast(tt("spedtl.vault_locked", "Unlock the Sensitive Workspace vault before importing timelines."), "warning");
+      return;
+    }
     const MAX_SPED_IMPORT_BYTES = 10 * 1024 * 1024;
     if (!file || typeof file.size === "number" && file.size > MAX_SPED_IMPORT_BYTES) {
       addToast(tt("spedtl.import_failed", "Import failed: ") + "file exceeds 10 MB safety limit", "error");
@@ -480,6 +534,7 @@ function SpedTimelinesPanel(props) {
     }
     const reader = new FileReader();
     reader.onload = () => {
+      if (!mountedRef.current) return;
       try {
         const rawText = String(reader.result || "");
         if (rawText.length > MAX_SPED_IMPORT_BYTES) throw new Error("file exceeds 10 MB safety limit");
@@ -501,6 +556,7 @@ function SpedTimelinesPanel(props) {
             completedAt: spedParseDate(x.completedAt) ? String(x.completedAt) : null
           };
         }).filter((x) => x.code && x.dueDate);
+        casesDirtyRef.current = true;
         setCases((list) => {
           const have = new Set(list.map((x) => x.id));
           const merged = list.slice();
@@ -517,14 +573,19 @@ function SpedTimelinesPanel(props) {
         addToast(tt("spedtl.import_failed", "Import failed: ") + String(e && e.message), "error");
       }
     };
-    reader.onerror = () => addToast(tt("spedtl.import_failed", "Import failed: ") + "read error", "error");
+    reader.onerror = () => {
+      if (mountedRef.current) addToast(tt("spedtl.import_failed", "Import failed: ") + "read error", "error");
+    };
     reader.readAsText(file);
   };
   const tabs = [
     { id: "dashboard", label: tt("spedtl.tab_dashboard", "Dashboard"), icon: "⏰" },
     { id: "cases", label: tt("spedtl.tab_cases", "Timelines"), icon: "🗂️" }
   ];
-  const typeLabel = (id) => (SPED_TYPES.find((x) => x.id === id) || {}).label || id;
+  const typeLabel = (id) => {
+    const found = SPED_TYPES.find((x) => x.id === id);
+    return found ? tt("spedtl.type_" + found.id, found.label) : id;
+  };
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -537,7 +598,7 @@ function SpedTimelinesPanel(props) {
       onClick: (e) => {
         const allow = backdropDownRef.current;
         backdropDownRef.current = false;
-        if (allow && e.target === e.currentTarget) onClose();
+        if (allow && e.target === e.currentTarget && typeof onClose === "function") onClose();
       }
     },
     /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "spedtl_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "spedtl-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "spedtl-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⏰"), " ", tt("spedtl.title", "SpEd Timelines")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("spedtl.subtitle", "Evaluation clocks, annuals, and triennials — student codes only, on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("spedtl.close_aria", "Close SpEd Timelines") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("spedtl.tabs_aria", "Timeline sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
@@ -578,7 +639,7 @@ function SpedTimelinesPanel(props) {
         className: "min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100"
       },
       tt("spedtl.eligibility_link", "Review evaluation, eligibility & safeguards")
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("spedtl.eligibility_link_note", "Opens the generic guide; no timeline data is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "spedtl-tabpanel", "aria-labelledby": "spedtl-tab-" + tab, tabIndex: -1 }, tab === "dashboard" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" }, ["overdue", "urgent", "soon", "ok"].map((band) => {
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("spedtl.eligibility_link_note", "Opens the generic guide; no timeline data is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "spedtl-tabpanel", "aria-labelledby": "spedtl-tab-" + tab, tabIndex: -1 }, vaultLocked && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2 mb-3" }, tt("spedtl.vault_locked_banner", "Sensitive Workspace is locked. Unlock it before adding or editing timelines.")), tab === "dashboard" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" }, ["overdue", "urgent", "soon", "ok"].map((band) => {
       const activeBand = dashBandFilter === band;
       return /* @__PURE__ */ React.createElement(
         "button",
@@ -658,7 +719,7 @@ function SpedTimelinesPanel(props) {
         className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
       },
       SPED_TYPES.map((ty) => /* @__PURE__ */ React.createElement("option", { key: ty.id, value: ty.id }, tt("spedtl.type_" + ty.id, ty.label)))
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "spedtl-keydate", className: "block text-xs font-bold text-slate-600 mb-1" }, (SPED_TYPES.find((ty) => ty.id === form.type) || {}).keyLabel || "Start date"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "spedtl-keydate", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("spedtl.keylabel_" + form.type, (SPED_TYPES.find((ty) => ty.id === form.type) || {}).keyLabel || "Start date")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "spedtl-keydate",
@@ -696,8 +757,9 @@ function SpedTimelinesPanel(props) {
         onChange: (e) => {
           const rawDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
           const nextDays = rawDigits === "" ? "" : String(Math.min(3650, Number(rawDigits)));
+          configDirtyRef.current = true;
           setConfig((c) => ({ ...c, evalDays: nextDays }));
-          if (!dueDateManual) {
+          if (!dueDateManualRef.current) {
             setForm((f) => f.type === "initial_eval" && f.keyDate ? { ...f, dueDate: spedDefaultDue(f.type, f.keyDate, nextDays) || "" } : f);
           }
         },
@@ -764,6 +826,7 @@ function SpedTimelinesPanel(props) {
         type: "button",
         onClick: () => {
           if (armDelete === c.id) {
+            casesDirtyRef.current = true;
             setCases((list) => list.filter((x) => x.id !== c.id));
             setArmDelete(null);
             addToast(tt("spedtl.deleted", "Timeline deleted."), "info");
@@ -780,7 +843,10 @@ function SpedTimelinesPanel(props) {
       "button",
       {
         type: "button",
-        onClick: () => spedDownload("sped-timelines-" + today + ".csv", "text/csv;charset=utf-8", "\uFEFF" + spedCsv(cases, today), addToast, tt("spedtl.export_toast", "Export started — check your downloads."), tt("spedtl.export_failed", "Export failed: ")),
+        onClick: () => {
+          const nowDay = spedToday();
+          spedDownload("sped-timelines-" + nowDay + ".csv", "text/csv;charset=utf-8", "\uFEFF" + spedCsv(cases, nowDay), addToast, tt("spedtl.export_toast", "Export started — check your downloads."), tt("spedtl.export_failed", "Export failed: "));
+        },
         className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"),
@@ -793,6 +859,7 @@ function SpedTimelinesPanel(props) {
       {
         ref: importInputRef,
         type: "file",
+        tabIndex: -1,
         accept: "application/json,.json",
         className: "sr-only",
         "aria-label": tt("spedtl.import_aria", "Choose a SpEd Timelines export file"),
@@ -824,5 +891,5 @@ function SpedTimelinesPanel(props) {
       SPED_TYPES: SPED_TYPES
     }
   };
-  console.log('[CDN] SpedTimelines loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] SpedTimelines loaded');
 })();

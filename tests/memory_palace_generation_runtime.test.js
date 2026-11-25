@@ -12,7 +12,10 @@ const declarations = [
   ...ast.program.body.flatMap(n => n.declarations || []).filter(n => n.id.name === '_alloAiUsableKind' || n.id.name === '_alloRuntimeAiAvailable'),
   ...component.body.body.flatMap(n => n.declarations || []).filter(n => names.includes(n.id.name)),
 ];
-const factory = new Function('env', 'with (env) {\n' + declarations.map(n => 'const ' + source.slice(n.start,n.end) + ';').join('\n') + '\nreturn {' + names.join(',') + '}; }');
+// Module-level helpers the handlers now call (the student-prompt safety screen).
+const helperFunctions = ast.program.body.filter(n => n.type === 'FunctionDeclaration' && n.id.name === '_vrCheckStudentPromptSafety');
+if (helperFunctions.length !== 1) throw new Error('_vrCheckStudentPromptSafety not found');
+const factory = new Function('env', 'with (env) {\n' + helperFunctions.map(n => source.slice(n.start, n.end)).join('\n') + '\n' + declarations.map(n => 'const ' + source.slice(n.start,n.end) + ';').join('\n') + '\nreturn {' + names.join(',') + '}; }');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return {promise,resolve,reject}; };
 const flush = async () => { for(let i=0;i<30;i++) await Promise.resolve(); };
 let env, h, a, b;
@@ -37,7 +40,7 @@ beforeEach(() => {
     directType:'image', directPrompt:'A giant kettle', directEval:null, directBusy:null,
     reliefOn:false, quickCreateRef:{current:null}, nearbyEmptyRef:{current:a.id},
     refinePrompt:'Add a red hat', refineBusy:false, furnishing:null, sculpting:null, images:{}, depths:{},objects3d:{},
-    addToast:vi.fn(), callImagen:vi.fn().mockResolvedValue('data:image/png;base64,new'),
+    addToast:vi.fn(), onSafetyFlag:null, callImagen:vi.fn().mockResolvedValue('data:image/png;base64,new'),
     persist:vi.fn(), setNearbyEmpty:vi.fn(), setStopRequested:vi.fn(),
   };
   for(const key of ['RecallAttempt','RecallContentChanged','RecallAutoAdvance','Recall','Finished','RecallSaid','RecallHint','CanReveal','TypedAnswer','Answered','WrongFlash','SelfRevealId','ArtJob','DirectBusy','DirectEval','DirectPrompt','QuickCreate','RefineBusy','RefinePrompt','Furnishing','Sculpting']) {

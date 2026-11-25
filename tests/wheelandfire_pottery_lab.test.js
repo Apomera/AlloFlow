@@ -4,6 +4,13 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const sourceFile = 'stem_lab/stem_tool_wheelandfire.js';
 
+// Predict-first gate (2026-11-24 round 2): cone readings render only after a prediction for this exact schedule is
+// fired. Defaults match the kiln panel: electric, stoneware maturity 1220°C, 110°C/h, 10 min soak, 55% load, 60% air.
+function withFiredPrediction(state) {
+  const key = window.__alloPotteryPure.coneForecastKey({ kilnType: state.kilnType || 'electric', temperature: state.kilnTemp || 1220, ramp: state.ramp || 110, soak: state.soak === undefined ? 10 : state.soak, loadDensity: state.kilnLoadDensity || 55, airAccess: state.kilnAirAccess || 60 });
+  return Object.assign({}, state, { coneForecast: { key, choiceId: 'down', zoneIndex: 1 } });
+}
+
 function makeBisque(pure, body = 'stoneware') {
   let vessel = pure.makeVessel(body, 'bowl');
   vessel = pure.dryVessel(vessel, { humidity: 48, dryingRate: 40 });
@@ -1216,13 +1223,16 @@ describe('Wheel & Fire pottery lab', () => {
     expect(target.cones.map((cone) => cone.role)).toEqual(['guide', 'firing', 'guard']);
     expect(target.cones.map((cone) => cone.label)).toEqual(['5', '6', '7']);
     expect(target.targetCone).toBe('6');
-    expect(target.guideCone.bendDegrees).toBeGreaterThan(target.firingCone.bendDegrees);
+    // Orton: the chart temperature is the moment the cone tip is level with its base (90° in this model).
+    expect(target.guideCone.bendDegrees).toBeGreaterThanOrEqual(target.firingCone.bendDegrees);
     expect(target.firingCone.bendDegrees).toBeGreaterThan(target.guardCone.bendDegrees);
-    expect(target.firingCone.bendDegrees).toBeGreaterThanOrEqual(25);
-    expect(target.firingCone.bendDegrees).toBeLessThanOrEqual(75);
+    expect(target.firingCone.bendDegrees).toBe(90);
+    expect(target.guardCone.bendDegrees).toBeLessThan(45);
     expect(target.interpretation).toBe('target range');
     expect(target.note).toContain('real firings require');
-    expect(pure.PYROMETRIC_CONES.map((cone) => cone.label)).toEqual(['010', '09', '08', '07', '06', '05', '04', '03', '02', '01', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+    // Round 3 (2026-11-24): Orton rows 015-011 and 11-12 added so open firings and the hottest kiln settings have
+    // real guide and guard cones.
+    expect(pure.PYROMETRIC_CONES.map((cone) => cone.label)).toEqual(['015', '014', '013', '012', '011', '010', '09', '08', '07', '06', '05', '04', '03', '02', '01', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']);
     expect(pure.WITNESS_CONE_MOUNT_ANGLE_DEGREES).toBe(8);
     const cone6 = pure.PYROMETRIC_CONES.find((cone) => cone.label === '6');
     expect(pure.coneReferenceRamp(75)).toBe(60);
@@ -1288,7 +1298,8 @@ describe('Wheel & Fire pottery lab', () => {
     const cold = pure.estimateWitnessConePack({ targetCone: '6', targetTemperature: 1222, targetSoak: 0, observedTemperature: 1200, observedSoak: 0, ramp: 60 });
     const hot = pure.estimateWitnessConePack({ targetCone: '6', targetTemperature: 1222, targetSoak: 0, observedTemperature: 1280, observedSoak: 0, ramp: 60 });
     const near = pure.estimateWitnessConePack({ targetCone: '6', targetTemperature: 1222, targetSoak: 0, observedTemperature: 1214, observedSoak: 0, ramp: 60 });
-    const guardResponding = pure.estimateWitnessConePack({ targetCone: '6', targetTemperature: 1222, targetSoak: 0, observedTemperature: 1230, observedSoak: 0, ramp: 60 });
+    // Guard cone 7 (Orton 1239°C at 60°C/h) bends past halfway near 1235°C; a slight lean at 1230°C is still a cone-6 firing.
+    const guardResponding = pure.estimateWitnessConePack({ targetCone: '6', targetTemperature: 1222, targetSoak: 0, observedTemperature: 1235, observedSoak: 0, ramp: 60 });
     const targetReading = pure.interpretWitnessConeSequence(target);
     const aboveTargetReading = pure.interpretWitnessConeSequence({
       guideCone: { label: '5', bendDegrees: 90 },
@@ -1298,9 +1309,10 @@ describe('Wheel & Fire pottery lab', () => {
     expect(pure.interpretWitnessConeSequence(cold).phase).toBe('approaching');
     expect(pure.interpretWitnessConeSequence(near).phase).toBe('near-target');
     expect(targetReading.phase).toBe('target');
-    expect(targetReading.summary).toContain('25°–75° target band');
+    expect(targetReading.summary).toContain('4 o\'clock');
     expect(targetReading.note).toContain('physical witness cones');
-    expect(aboveTargetReading.phase).toBe('above-target');
+    // An 80° firing cone with a standing guard is down (between 4 o'clock and tip-level), not overfired.
+    expect(aboveTargetReading.phase).toBe('target');
     expect(pure.interpretWitnessConeSequence(guardResponding).phase).toBe('excess');
     const beforeRecord = pure.interpretConeHeatworkMemory({ segmentId: 'ramp', currentTemperatureC: 600, zoneName: 'Top shelf', pack: early });
     const guideRecord = pure.interpretConeHeatworkMemory({ segmentId: 'ramp', currentTemperatureC: 1200, zoneName: 'Top shelf', pack: cold });
@@ -1336,7 +1348,7 @@ describe('Wheel & Fire pottery lab', () => {
     expect(pure.summarizeWitnessConeZones([target], ['Ware level']).resolution).toBe('one-location');
 
     const vessel = pure.makeVessel('stoneware', 'bowl');
-    const kilnHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel } });
+    const kilnHtml = renderTool('wheelAndFire', { wheelAndFire: withFiredPrediction({ view: 'kiln', vessel }) });
     expect(kilnHtml.match(/data-wheel-fire-witness-pack=/g)).toHaveLength(3);
     expect(kilnHtml.match(/data-wheel-fire-cone-role=/g)).toHaveLength(9);
     expect(kilnHtml.match(/data-wheel-fire-cone-curved="true"/g)).toHaveLength(9);
@@ -1349,8 +1361,9 @@ describe('Wheel & Fire pottery lab', () => {
     expect(kilnHtml.match(/data-wheel-fire-heatwork-memory-label="true"/g)).toHaveLength(1);
     expect(kilnHtml.match(/data-wheel-fire-cone-role-label=/g)).toHaveLength(3);
     expect(kilnHtml.match(/data-wheel-fire-cone-target-boundary=/g)).toHaveLength(2);
-    expect(kilnHtml).toContain('data-wheel-fire-cone-target-boundary="25"');
-    expect(kilnHtml).toContain('data-wheel-fire-cone-target-boundary="75"');
+    // Orton-consistent band: 60° (4 o'clock) to 90° (tip level with base).
+    expect(kilnHtml).toContain('data-wheel-fire-cone-target-boundary="60"');
+    expect(kilnHtml).toContain('data-wheel-fire-cone-target-boundary="90"');
     expect(kilnHtml).toContain('data-wheel-fire-selected-cone-pack="true"');
     expect(kilnHtml).toContain('data-wheel-fire-cone-pack-status="true"');
     expect(kilnHtml).toContain('data-wheel-fire-cone-reading=');
@@ -1364,21 +1377,20 @@ describe('Wheel & Fire pottery lab', () => {
     expect(kilnHtml).toContain('three-cone pack targeting cone 6');
     expect(kilnHtml).toContain('(below target range)');
     expect(kilnHtml).toContain('guide responds first');
-    expect(kilnHtml).toContain('25°–75° firing-cone target band');
-    expect(kilnHtml).toContain('closest modeled witness-cone 15, 60, or 150°C/h chart column');
+    expect(kilnHtml).toContain('mark 60° (4 o’clock) and 90° (tip level with base)');
+    expect(kilnHtml).toContain('blended for your ramp and clamped outside that range');
     expect(kilnHtml).toContain('data-wheel-fire-cone-uniformity=');
     expect(kilnHtml).toContain('Across modeled packs:');
     expect(kilnHtml).toContain('Cone-angle spread is comparative');
     expect(kilnHtml).toContain('Curved cone silhouettes show modeled deformation');
-    expect(kilnHtml).toContain('dashed 25° and 75° silhouettes bracket');
     expect(kilnHtml).toContain('large cones in an 8° plaque mount');
     expect(kilnHtml).toContain('three-hole plaque with an 8° starting lean');
-    expect(kilnHtml).toContain('Self-supporting witness cones instead provide their own base');
-    expect(kilnHtml).toContain('three-hole plaque and an 8-degree starting lean');
+    expect(kilnHtml).toContain('Self-supporting witness cones provide their own base');
+    expect(kilnHtml).toContain('three-hole plaque with an 8-degree starting lean');
     expect(kilnHtml).toContain('marks the modeled instantaneous zone temperature');
     expect(kilnHtml).toContain('retained cone bend is a heatwork record, not a live thermometer');
 
-    const openHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel, kilnType: 'open', atmosphere: 'oxidation', kilnPreviewPhase: 100, kilnProbeZone: 'bottom' } });
+    const openHtml = renderTool('wheelAndFire', { wheelAndFire: withFiredPrediction({ view: 'kiln', vessel, kilnType: 'open', atmosphere: 'oxidation', kilnPreviewPhase: 100, kilnProbeZone: 'bottom' }) });
     expect(openHtml.match(/data-wheel-fire-witness-pack=/g)).toHaveLength(1);
     expect(openHtml.match(/data-wheel-fire-cone-role=/g)).toHaveLength(3);
     expect(openHtml.match(/data-wheel-fire-cone-curved="true"/g)).toHaveLength(3);
@@ -1798,7 +1810,7 @@ describe('Wheel & Fire pottery lab', () => {
     expect(chamberGeometry.hearthFloor.path).toContain('M126.0 330.0 L434.0 330.0 L424.0 320.0 L136.0 320.0 Z');
     chamberGeometry.returns.forEach((entry) => expect(entry.path).not.toMatch(/NaN|Infinity/));
 
-    const kilnHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel } });
+    const kilnHtml = renderTool('wheelAndFire', { wheelAndFire: withFiredPrediction({ view: 'kiln', vessel }) });
     expect(kilnHtml).toContain('3D kiln cutaway');
     expect(kilnHtml).toContain('Peak soak · 1220°C · oxidation');
     expect(kilnHtml).toContain('Preview schedule time');
@@ -1862,7 +1874,7 @@ describe('Wheel & Fire pottery lab', () => {
     expect(heatingHtml).toContain('cooler than its surrounding zone');
     expect(heatingHtml).toContain('surface warmer than core');
 
-    const openHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel, kilnType: 'open', atmosphere: 'oxidation', kilnPreviewPhase: 100, kilnProbeZone: 'bottom' } });
+    const openHtml = renderTool('wheelAndFire', { wheelAndFire: withFiredPrediction({ view: 'kiln', vessel, kilnType: 'open', atmosphere: 'oxidation', kilnPreviewPhase: 100, kilnProbeZone: 'bottom' }) });
     expect(openHtml).toContain('Open-firing 3D section');
     expect(openHtml).toContain('Cooling · 100°C · oxidation');
     expect(openHtml).toContain('Cooling toward handling range.');

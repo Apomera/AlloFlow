@@ -88,7 +88,8 @@ window.StemLab = window.StemLab || {
       '[data-mt-hc="true"] [data-mt-grid] td.bg-amber-400 { outline-color: #ffff00 !important; }',
       '[data-mt-hc="true"] [role="tab"][aria-selected="true"] { outline: 3px solid #ffff00; outline-offset: -3px; }',
       '.theme-contrast [data-multtable-root] :is(.allo-mt-beam-cell, .allo-mt-diag-cell, .allo-mt-twin-cell, .allo-mt-beam-svg, .allo-mt-diag-svg, .allo-mt-ripple-svg, .allo-mt-flow-svg, .allo-mt-beacon-svg, .allo-mt-pattern-cell), [data-mt-hc="true"] :is(.allo-mt-beam-cell, .allo-mt-diag-cell, .allo-mt-twin-cell, .allo-mt-beam-svg, .allo-mt-diag-svg, .allo-mt-ripple-svg, .allo-mt-flow-svg, .allo-mt-beacon-svg, .allo-mt-pattern-cell) { animation: none !important; box-shadow: none !important; }',
-      '@media (prefers-reduced-motion: reduce) { .allo-mt-dot, .allo-mt-pattern-cell, .allo-mt-beam-cell, .allo-mt-diag-cell, .allo-mt-twin-cell, .allo-mt-beam-svg, .allo-mt-diag-svg, .allo-mt-ripple-svg, .allo-mt-flow-svg, .allo-mt-beacon-svg { animation: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { .allo-mt-dot, .allo-mt-pattern-cell, .allo-mt-beam-cell, .allo-mt-diag-cell, .allo-mt-twin-cell, .allo-mt-beam-svg, .allo-mt-diag-svg, .allo-mt-ripple-svg, .allo-mt-flow-svg, .allo-mt-beacon-svg { animation: none !important; } }',
+      '[data-mt-reduce-motion="true"] :is(.allo-mt-dot, .allo-mt-pattern-cell, .allo-mt-beam-cell, .allo-mt-diag-cell, .allo-mt-twin-cell, .allo-mt-beam-svg, .allo-mt-diag-svg, .allo-mt-ripple-svg, .allo-mt-flow-svg, .allo-mt-beacon-svg), [data-mt-reduce-motion="true"] *, [data-mt-reduce-motion="true"] *::before, [data-mt-reduce-motion="true"] *::after { animation: none !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -809,18 +810,465 @@ window.StemLab = window.StemLab || {
     return picked;
   }
 
+  // ── Pure per-distractor whyNot diagnostic explainer (never leaks the answer before reveal) ──
+  function fillTemplatePure(tpl, vals) {
+    var out = String(tpl || '');
+    Object.keys(vals || {}).forEach(function(k) {
+      out = out.replace(new RegExp('\\{' + k + '\\}', 'g'), function() { return String(vals[k]); });
+    });
+    return out;
+  }
+  function containsBareNumPure(text, num) {
+    if (num == null || !Number.isFinite(Number(num))) return false;
+    return new RegExp('(^|[^\\d])' + String(num) + '([^\\d]|$)').test(String(text || ''));
+  }
+  function explainDistractorWhyNot(ch, wrongAnswer) {
+    if (!ch || typeof ch !== 'object') return null;
+    if (ch.type === 'multiple') {
+      var mn = Number(ch.n), md = Number(ch.d);
+      if (!Number.isFinite(mn) || !Number.isFinite(md) || md <= 0) return null;
+      var isMult = mn % md === 0;
+      if ((wrongAnswer === 'yes' && isMult) || (wrongAnswer === 'no' && !isMult)) return null;
+      if (wrongAnswer === 'yes' && mn < md && md % mn === 0) {
+        var mv = { n: mn, d: md };
+        var mw = '{n} is a factor of {d}, not a multiple of {d}. Multiples skip-count upward starting at {d}.';
+        var mc = 'Factors divide evenly into {d}; multiples are at least as large as {d}.';
+        return { category: 'factor_vs_multiple', kind: 'factorNotMultiple', given: wrongAnswer, whyKey: 'whynot_factor_not_mult', checkKey: 'whynot_check_factor_not_mult', vals: mv, whyNotTemplate: mw, checkStepTemplate: mc, whyNot: fillTemplatePure(mw, mv), checkStep: fillTemplatePure(mc, mv), leaksAnswer: false };
+      }
+      var mv2 = { n: mn, d: md };
+      var mw2 = wrongAnswer === 'yes' ? 'Skip-counting by {d}s passes right over {n} without landing on it.' : '{n} lands cleanly when you skip-count by {d}s with no remainder.';
+      var mc2 = 'Divide {n} by {d} to check whether the remainder is zero.';
+      return { category: 'factor_vs_multiple', kind: wrongAnswer === 'yes' ? 'notAMultiple' : 'missedMultiple', given: wrongAnswer, whyKey: wrongAnswer === 'yes' ? 'whynot_not_multiple' : 'whynot_missed_multiple', checkKey: 'whynot_check_multiple_rem', vals: mv2, whyNotTemplate: mw2, checkStepTemplate: mc2, whyNot: fillTemplatePure(mw2, mv2), checkStep: fillTemplatePure(mc2, mv2), leaksAnswer: false };
+    }
+    if (wrongAnswer == null || wrongAnswer === '') return null;
+    var given = Number(wrongAnswer);
+    if (!Number.isFinite(given) || !Number.isSafeInteger(given)) return null;
+    var a = Number(ch.a), b = Number(ch.b);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || a < 1 || b < 1) return null;
+    var right = factAnswer(ch);
+    if (right === null || given === right) return null;
+    var p = a * b;
+    var mode = ch.mode || 'mult';
+    var base = diagnoseMistake(ch, given);
+    var kind = base ? base.kind : 'other';
+    var out = function(category, whyKey, checkKey, whyTpl, checkTpl, vals) {
+      var why = fillTemplatePure(whyTpl, vals);
+      var chk = fillTemplatePure(checkTpl, vals);
+      return { category: category, kind: kind, given: given, whyKey: whyKey, checkKey: checkKey, vals: vals || {}, whyNotTemplate: whyTpl, checkStepTemplate: checkTpl, whyNot: why, checkStep: chk, leaksAnswer: false };
+    };
+    if (given === 0) {
+      return out('zero_or_identity', 'whynot_zero_rule', 'whynot_check_zero_rule',
+        'Multiplying or dividing positive whole numbers cannot make zero — zero only happens when a factor is zero.',
+        'Check how many equal groups are shown in the equation.',
+        { given: given });
+    }
+    if (mode === 'divmiss') {
+      var dd = Number(ch.divisor), q = divmissQuotient(ch), x = { given: given, d: dd, q: q, p: p };
+      if (ch.form === 'divisor') {
+        if (given === q || given === p || given === p * q) {
+          return out('division_mult_inversion', 'whynot_divmiss_div_inv', 'whynot_check_divmiss_div',
+            '{given} is already a starting number or larger than the total, not the divisor that splits {p} into groups of {q}.',
+            'Flip to multiplication: ? × {q} = {p}.', x);
+        }
+        if (kind === 'subtracted') {
+          return out('subtracted_once', 'whynot_sub_divmiss', 'whynot_check_divmiss_div',
+            '{given} subtracts {q} once from {p} instead of counting how many equal groups of {q} make {p}.',
+            'Flip to multiplication: ? × {q} = {p}.', x);
+        }
+        if (kind === 'offByOneDivisor') {
+          return out('off_by_one_group', 'whynot_off_one_divmiss', 'whynot_check_off_one_divmiss',
+            '{given} is one group too high or too low for {p}.',
+            'Multiply {given} × {q} and compare it with {p}.', x);
+        }
+        if (given > p) {
+          return out('factor_vs_multiple', 'whynot_factor_gt_total', 'whynot_check_factor_le_total',
+            '{given} is larger than the total {p}, so it behaves like a multiple rather than a factor of {p}.',
+            'Every factor of {p} must be no larger than {p} and divide {p} evenly.', x);
+        }
+        if (digitsSwapped(given, right)) {
+          return out('swapped_digits', 'whynot_swapped', 'whynot_check_swapped',
+            '{given} reverses the tens and ones digits.',
+            'Estimate the tens place first with a friendly nearby fact, then check the ones digit.', x);
+        }
+        if (Math.abs(given - right) === 10) {
+          return out('ten_off', 'whynot_ten_off', 'whynot_check_ten_off',
+            '{given} matches the ones digit but is off in the tens place.',
+            'Recheck the tens place by comparing with a nearby ten-group fact.', x);
+        }
+        return out('general_check', 'whynot_general', 'whynot_check_divmiss_div',
+          '{given} does not match the equal groups in this equation.',
+          'Flip to multiplication: ? × {q} = {p}.', x);
+      }
+      if (kind === 'added') {
+        return out('added_instead_of_multiplied', 'whynot_added_dividend', 'whynot_check_dividend_mult',
+          '{d} + {q} = {given} adds the two numbers once instead of combining {q} equal groups of {d}.',
+          'Undo the division by multiplying {d} × {q}.', x);
+      }
+      if (kind === 'dividedInstead' || kind === 'quotientEcho' || kind === 'divisorEcho') {
+        return out('division_mult_inversion', 'whynot_div_instead_mult', 'whynot_check_dividend_mult',
+          '{given} stays small like a part or quotient, but the missing dividend must be the full total before splitting.',
+          'Undo the division by multiplying {d} × {q}.', x);
+      }
+      if (kind === 'oneGroupOff') {
+        return out('off_by_one_group', 'whynot_one_group_dividend', 'whynot_check_one_group_dividend',
+          '{given} is one equal group away from the total for {d} × {q}.',
+          'Adjust by one group and check by dividing by {d}.', x);
+      }
+      if (kind === 'swapped') {
+        return out('swapped_digits', 'whynot_swapped', 'whynot_check_swapped',
+          '{given} reverses the tens and ones digits.',
+          'Estimate the tens place first with a friendly nearby fact, then check the ones digit.', x);
+      }
+      if (Math.abs(given - right) === 10) {
+        return out('ten_off', 'whynot_ten_off', 'whynot_check_ten_off',
+          '{given} matches the ones digit but is off in the tens place.',
+          'Recheck the tens place by splitting {d} × {q} into two friendly parts.', x);
+      }
+      if (kind === 'close') {
+        return out('close_counting', 'whynot_close', 'whynot_check_close',
+          '{given} is very close, which usually means a small slip on the last count.',
+          'Recount the final group and check the ones digit.', x);
+      }
+      return out('general_check', 'whynot_general', 'whynot_check_dividend_mult',
+        '{given} does not match the equal groups in this equation.',
+        'Undo the division by multiplying {d} × {q}.', x);
+    }
+    if (mode === 'div' || mode === 'missing') {
+      var d = mode === 'div' ? Number(ch.divisor) : Number(ch.known);
+      var dv = { given: given, d: d, p: p };
+      if (d === 1 && given === 1) {
+        return out('zero_or_identity', 'whynot_identity_div', 'whynot_check_identity_div',
+          'Dividing by one puts everything into a single group, so the answer matches the starting total.',
+          'Picture one group holding all {p} items.', dv);
+      }
+      if (kind === 'added') {
+        return out('added_instead_of_multiplied', 'whynot_added_inv', 'whynot_check_inv_mult',
+          '{given} adds {d} onto {p} instead of finding how many equal groups of {d} make {p}.',
+          'Rewrite it as multiplication: {d} × ? = {p}.', dv);
+      }
+      if (kind === 'product' || kind === 'divisorEcho' || given === p * d) {
+        return out('division_mult_inversion',
+          given === p * d ? 'whynot_mult_for_div' : kind === 'product' ? 'whynot_product_for_div' : 'whynot_divisor_echo',
+          'whynot_check_inv_mult',
+          given === p * d ? '{given} multiplies {p} by {d} instead of splitting {p} into equal groups of {d}.'
+            : kind === 'product' ? '{given} is already the total product in the equation, not the missing factor.'
+            : '{given} is the factor already given in the equation, not the missing partner factor.',
+          'Rewrite it as multiplication: {d} × ? = {p}.', dv);
+      }
+      if (kind === 'subtracted') {
+        return out('subtracted_once', 'whynot_sub_div', 'whynot_check_inv_mult',
+          '{given} subtracts {d} once from {p} instead of counting how many groups of {d} fit inside {p}.',
+          'Rewrite it as multiplication: {d} × ? = {p}.', dv);
+      }
+      if (kind === 'offByOne') {
+        return out('off_by_one_group', 'whynot_off_one_div', 'whynot_check_off_one_div',
+          '{given} is one group too high or too low.',
+          'Test {d} × {given} and see whether it lands above or below {p}.', dv);
+      }
+      if (kind === 'swapped') {
+        return out('swapped_digits', 'whynot_swapped', 'whynot_check_swapped',
+          '{given} reverses the tens and ones digits.',
+          'Estimate the tens place first with a friendly nearby fact, then check the ones digit.', dv);
+      }
+      if (Math.abs(given - right) === 10) {
+        return out('ten_off', 'whynot_ten_off', 'whynot_check_ten_off',
+          '{given} matches the ones digit but is off in the tens place.',
+          'Recheck the tens place by comparing with a nearby ten-group fact.', dv);
+      }
+      if (given > p) {
+        return out('factor_vs_multiple', 'whynot_factor_gt_total', 'whynot_check_factor_le_total',
+          '{given} is larger than the total {p}, so it behaves like a multiple rather than a factor of {p}.',
+          'Every factor of {p} must be no larger than {p} and divide {p} evenly.', dv);
+      }
+      return out('general_check', 'whynot_general', 'whynot_check_inv_mult',
+        '{given} does not match the equal groups in this equation.',
+        'Rewrite it as multiplication: {d} × ? = {p}.', dv);
+    }
+    var mv3 = { given: given, a: a, b: b };
+    if (kind === 'identity') {
+      return out('zero_or_identity', 'whynot_identity_mult', 'whynot_check_identity_mult',
+        'Multiplying by one keeps the other factor unchanged — one group holds every item in that group.',
+        'Count the items inside a single group.', mv3);
+    }
+    if (kind === 'added') {
+      return out('added_instead_of_multiplied', 'whynot_added_mult', 'whynot_check_split_mult',
+        '{a} + {b} = {given} adds once, whereas {a} × {b} means {a} equal groups of {b}.',
+        'Split {a} × {b} into two smaller facts you already know and add those parts.', mv3);
+    }
+    if (kind === 'anchorEcho' && base) {
+      return out('anchor_echo', 'whynot_anchor_echo', 'whynot_check_anchor_echo',
+        '{given} is the starting anchor fact {a} × {n}, before stepping to {a} × {b}.',
+        'Add or take away equal groups of {a} to move from {n} groups to {b} groups.',
+        { given: given, a: a, b: b, n: base.n });
+    }
+    if (kind === 'neighbour' && base) {
+      return out('off_by_one_group', 'whynot_neighbour_mult', 'whynot_check_neighbour_mult',
+        '{given} is the neighbouring fact {x} × {y} — one group of {g} away.',
+        'Compare {x} × {y} with {a} × {b} and adjust by one group of {g}.',
+        { given: given, a: a, b: b, x: base.x, y: base.y, g: base.g });
+    }
+    if (kind === 'swapped') {
+      return out('swapped_digits', 'whynot_swapped', 'whynot_check_swapped',
+        '{given} reverses the tens and ones digits.',
+        'Estimate the tens place first with a friendly nearby fact, then check the ones digit.', mv3);
+    }
+    if (Math.abs(given - right) === 10) {
+      return out('ten_off', 'whynot_ten_off', 'whynot_check_ten_off_mult',
+        '{given} matches the ones digit but is off in the tens place.',
+        'Split {a} × {b} into two friendly parts and re-add the tens column carefully.', mv3);
+    }
+    if ((b > 0 && a % b === 0 && given === a / b) || (a > 0 && b % a === 0 && given === b / a)) {
+      return out('division_mult_inversion', 'whynot_div_for_mult', 'whynot_check_mult_larger',
+        '{given} divides {a} and {b} instead of multiplying equal groups together.',
+        'Check that multiplying numbers above one builds a product larger than either factor.', mv3);
+    }
+    if (a > 1 && b > 1 && given > 0 && given <= Math.max(a, b) && (a % given === 0 || b % given === 0)) {
+      return out('factor_vs_multiple', 'whynot_factor_for_prod', 'whynot_check_prod_multiple',
+        '{given} is a factor of one of the given numbers, whereas {a} × {b} must be a multiple of both {a} and {b}.',
+        'A product of {a} and {b} must be at least as large as both factors and divisible by each.', mv3);
+    }
+    if (kind === 'close') {
+      return out('close_counting', 'whynot_close', 'whynot_check_close',
+        '{given} is very close, which usually means a small slip on the last count.',
+        'Recount the final group and check the ones digit.', mv3);
+    }
+    return out('general_check', 'whynot_general', 'whynot_check_split_mult',
+      '{given} does not match the equal groups in this equation.',
+      'Split {a} × {b} into two smaller facts you already know and add those parts.', mv3);
+  }
+
+  // ── Deterministic offline multiplication/division strategy coach (never spoils open challenge) ──
+  function pureStrategySteps(a, b) {
+    var s = strategyFor(a, b);
+    var n = s.n;
+    switch (s.id) {
+      case 'x1': return { title: 'Times-one identity rule', reply: 'Any number multiplied by one stays unchanged because there is only a single group.', steps: ['Keep the other factor as-is.', 'Picture one row with all items inside it.'] };
+      case 'x10': return { title: 'Times-ten place-value shift', reply: 'Multiplying ' + n + ' by ten shifts each digit one place left and puts a zero in the ones place.', steps: ['Write the factor ' + n + '.', 'Shift it into the tens place by attaching a trailing zero.'] };
+      case 'x2': return { title: 'Doubling strategy', reply: 'Multiplying by two doubles the other factor: ' + n + ' + ' + n + '.', steps: ['Add ' + n + ' to itself.', 'Check that your result is an even number.'] };
+      case 'x11': return { title: 'Elevens digit-repeat rule', reply: 'For eleven times a single digit, write that digit in both the tens and ones places.', steps: ['Put the digit in the tens place and again in the ones place.', 'Check with ten groups plus one more group.'] };
+      case 'x5': return { title: 'Half-of-tens strategy', reply: 'Five groups is half of ten groups, and every five-fact ends in zero or five.', steps: ['Find ten groups of ' + n + ' first.', 'Take half of that result (or skip-count by fives).'] };
+      case 'x9': return { title: 'Ten-minus-one-group strategy', reply: 'Nine groups of ' + n + ' is one group less than ten groups of ' + n + '.', steps: ['Start with ten groups of ' + n + '.', 'Subtract one group of ' + n + '.', 'Check that the digits add to nine for factors up to ten.'] };
+      case 'x4': return { title: 'Double-double strategy', reply: 'Multiplying by four means doubling twice in a row.', steps: ['Double ' + n + ' once to get two groups.', 'Double that result again to get four groups.'] };
+      case 'x3': return { title: 'Double-plus-one-group strategy', reply: 'Three groups of ' + n + ' is a double plus one more group.', steps: ['Double ' + n + ' first.', 'Add one more ' + n + ' to that double.'] };
+      case 'x6': return { title: 'Five-plus-one-group strategy', reply: 'Six groups of ' + n + ' splits into five groups plus one more group.', steps: ['Find five groups of ' + n + '.', 'Add one more group of ' + n + '.'] };
+      case 'x7': return { title: 'Distributive five-plus-two split', reply: 'Seven groups of ' + n + ' splits cleanly into five groups plus two groups.', steps: ['Find five groups of ' + n + '.', 'Find two groups (the double) of ' + n + '.', 'Add the two partial products together.'] };
+      case 'x8': return { title: 'Triple-double strategy', reply: 'Multiplying by eight means doubling three times (two, four, then eight groups).', steps: ['Double ' + n + ' to get two groups.', 'Double again to get four groups.', 'Double once more to reach eight groups.'] };
+      case 'x12': return { title: 'Ten-plus-two distributive split', reply: 'Twelve groups of ' + n + ' splits into ten groups plus two groups.', steps: ['Find ten groups of ' + n + '.', 'Find two groups (the double) of ' + n + '.', 'Add the two partial products.'] };
+      default: return { title: 'Ten-plus-one distributive split', reply: 'Eleven groups of ' + n + ' splits into ten groups plus one more group.', steps: ['Find ten groups of ' + n + '.', 'Add one more group of ' + n + '.'] };
+    }
+  }
+  function buildOfflineCoachReply(question, ch, factScores) {
+    var q = typeof question === 'string' ? question.trim() : '';
+    var ql = q.toLowerCase();
+    var hasOpen = !!(ch && typeof ch === 'object' && !ch.resolved && Number(ch.a) >= 1 && Number(ch.b) >= 1);
+    var openA = hasOpen ? Number(ch.a) : null;
+    var openB = hasOpen ? Number(ch.b) : null;
+    var openKey = hasOpen ? tkey(openA, openB) : null;
+    var openAns = hasOpen ? factAnswer(ch) : null;
+    var openShown = hasOpen
+      ? ((ch.mode === 'div' || ch.mode === 'missing') ? [openA * openB, Number(ch.mode === 'div' ? ch.divisor : ch.known)]
+        : ch.mode === 'divmiss' ? (ch.form === 'divisor' ? [openA * openB, divmissQuotient(ch)] : [Number(ch.divisor), divmissQuotient(ch)])
+        : [openA, openB])
+      : [];
+    var scores = (factScores && typeof factScores === 'object' && !Array.isArray(factScores)) ? factScores : {};
+    function sanitizeForOpen(result) {
+      if (!hasOpen || openAns == null || openShown.indexOf(openAns) !== -1) return result;
+      var leaks = containsBareNumPure(result.title, openAns) || containsBareNumPure(result.reply, openAns) || (result.steps || []).some(function(st) { return containsBareNumPure(st, openAns); });
+      if (!leaks) return result;
+      return activeChallengeReply();
+    }
+    function activeChallengeReply() {
+      if (!hasOpen) {
+        return { topic: 'overview', title: 'Start with anchor facts', reply: 'Build hard facts from twos, fives, tens, and squares so you never have to guess.', steps: ['Use doubling for twos, fours, and eights.', 'Use ten-groups minus one for nines, and five-plus-two for sevens.', 'Turn division into missing-factor multiplication.'], spoilerProtected: false };
+      }
+      if (ch.mode === 'div' || ch.mode === 'missing') {
+        var d = ch.mode === 'div' ? Number(ch.divisor) : Number(ch.known), p = openA * openB;
+        return {
+          topic: 'active_challenge',
+          title: 'Active question strategy (no spoiler)',
+          reply: 'Your question is still open, so here is the strategy without revealing the answer: flip it to multiplication (' + d + ' × ? = ' + p + ').',
+          steps: ['Start from the known factor ' + d + ' and skip-count toward ' + p + '.', 'Use a friendly benchmark (five or ten groups of ' + d + ') to narrow down the jump count.', 'Multiply your candidate back by ' + d + ' to verify it equals ' + p + '.'],
+          spoilerProtected: true
+        };
+      }
+      if (ch.mode === 'divmiss') {
+        var dd = Number(ch.divisor), dq = divmissQuotient(ch), dp = openA * openB;
+        if (ch.form === 'divisor') {
+          return {
+            topic: 'active_challenge',
+            title: 'Active division equation strategy (no spoiler)',
+            reply: 'Your question is still open, so here is the strategy without revealing the answer: rewrite ' + dp + ' ÷ ? = ' + dq + ' as ? × ' + dq + ' = ' + dp + '.',
+            steps: ['Count equal groups of ' + dq + ' until you reach ' + dp + '.', 'Check your candidate by multiplying it with ' + dq + '.'],
+            spoilerProtected: true
+          };
+        }
+        return {
+          topic: 'active_challenge',
+          title: 'Active division equation strategy (no spoiler)',
+          reply: 'Your question is still open, so here is the strategy without revealing the answer: undo the division by multiplying ' + dd + ' × ' + dq + '.',
+          steps: ['Combine ' + dd + ' equal groups of ' + dq + '.', 'Check by splitting one factor into friendlier parts and adding the partial products.'],
+          spoilerProtected: true
+        };
+      }
+      var st = pureStrategySteps(openA, openB);
+      return {
+        topic: 'active_challenge',
+        title: st.title + ' (no spoiler)',
+        reply: 'Your question ' + openA + ' × ' + openB + ' is still open, so here is how to work it out without giving away the product: ' + st.reply,
+        steps: st.steps,
+        spoilerProtected: true
+      };
+    }
+
+    // 1. Specific multiplication or division fact asked in the question
+    var multMatch = /(\d{1,3})\s*(?:x|×|\*|times)\s*(\d{1,3})/i.exec(q);
+    if (multMatch) {
+      var ma = Number(multMatch[1]), mb = Number(multMatch[2]);
+      if (ma >= 1 && mb >= 1 && ma <= 100 && mb <= 100) {
+        if (hasOpen && (tkey(ma, mb) === openKey || ma * mb === openAns)) return activeChallengeReply();
+        var mst = pureStrategySteps(ma, mb);
+        var prod = ma * mb;
+        var trick = MEMORY_TRICKS[tkey(ma, mb)] ? ' ' + MEMORY_TRICKS[tkey(ma, mb)].trick : '';
+        return sanitizeForOpen({
+          topic: 'fact_strategy',
+          title: 'Strategy for ' + ma + ' × ' + mb,
+          reply: mst.reply + ' Putting the parts together gives ' + ma + ' × ' + mb + ' = ' + prod + '.' + trick,
+          steps: mst.steps.concat(['Check with the commutative twin: ' + mb + ' × ' + ma + ' = ' + prod + '.']),
+          spoilerProtected: hasOpen
+        });
+      }
+    }
+    var divMatch = /(\d{1,3})\s*(?:\/|÷|divided\s+by)\s*(\d{1,3})/i.exec(q);
+    if (divMatch) {
+      var dtot = Number(divMatch[1]), ddiv = Number(divMatch[2]);
+      if (ddiv === 0) {
+        return { topic: 'division', title: 'Division by zero is undefined', reply: 'You cannot split a number into zero equal groups, so dividing by zero has no valid answer.', steps: ['Check the divisor in the equation.', 'Try a nonzero whole-number divisor.'], spoilerProtected: hasOpen };
+      }
+      if (dtot >= 1 && ddiv >= 1 && dtot <= 1000 && ddiv <= 100) {
+        var exact = dtot % ddiv === 0;
+        var quot = Math.floor(dtot / ddiv), rem = dtot % ddiv;
+        if (hasOpen && exact && (tkey(ddiv, quot) === openKey || quot === openAns || dtot === openAns)) return activeChallengeReply();
+        return sanitizeForOpen({
+          topic: 'fact_strategy',
+          title: 'Strategy for ' + dtot + ' ÷ ' + ddiv,
+          reply: exact
+            ? 'Think multiplication: ' + ddiv + ' × ? = ' + dtot + '. Since ' + ddiv + ' × ' + quot + ' = ' + dtot + ', the quotient is ' + quot + '.'
+            : ddiv + ' fits into ' + dtot + ' ' + quot + ' full times (' + ddiv + ' × ' + quot + ' = ' + (ddiv * quot) + ') with a remainder of ' + rem + '.',
+          steps: ['Turn division into a missing-factor equation.', 'Check by multiplying the quotient and divisor back together.'],
+          spoilerProtected: hasOpen
+        });
+      }
+    }
+
+    // 2. Active-question / hint request
+    if ((!q && hasOpen) || /\b(this|current|stuck|hint|help|answer|spoiler|solve)\b/.test(ql)) {
+      if (hasOpen) return activeChallengeReply();
+    }
+
+    // 3. Factors, multiples, primes, sieve
+    if (/\b(prime|composite|factor|multiple|sieve)\b/.test(ql)) {
+      return sanitizeForOpen({
+        topic: 'factors_primes',
+        title: 'Factors, multiples, and primes',
+        reply: 'Factors divide evenly into a number and are never bigger than it; multiples come from skip-counting upward and are never smaller than the starting number.',
+        steps: ['Prime numbers have exactly two factors: one and themselves (two is the only even prime).', 'One has only a single factor, so one is neither prime nor composite.', 'When testing factor rectangles, stop once rows × rows would pass the number.'],
+        spoilerProtected: hasOpen
+      });
+    }
+
+    // 4. Division, missing factors, fact families
+    if (/\b(divid|division|missing|family|families|inverse|quotient|divisor)\b/.test(ql)) {
+      return sanitizeForOpen({
+        topic: 'division',
+        title: 'Division and fact families',
+        reply: 'Every multiplication fact builds a four-equation fact family with division. Turning a division problem into a missing-factor multiplication makes recall faster.',
+        steps: ['Rewrite total ÷ divisor = ? as divisor × ? = total.', 'Keep the total first in division — unlike multiplication, division order cannot be swapped.', 'Check your quotient by multiplying it back by the divisor.'],
+        spoilerProtected: hasOpen
+      });
+    }
+
+    // 5. Strategy rules by family or concept
+    if (/\b(9s|nines?|times\s*9|x9)\b/.test(ql)) {
+      return sanitizeForOpen({
+        topic: 'strategy_rule',
+        title: 'Nines strategy (ten minus one group)',
+        reply: 'Multiply by ten, then subtract one group of the other factor. Up to ten, the tens digit is one less than the other factor and the digits sum to nine.',
+        steps: ['Start with ten groups of the number.', 'Take away one group.', 'Verify the tens and ones digits add to nine (for factors up to ten).'],
+        spoilerProtected: hasOpen
+      });
+    }
+    if (/\b(7s|8s|sevens?|eights?|distribut|split|break\s*apart)\b/.test(ql)) {
+      return sanitizeForOpen({
+        topic: 'strategy_rule',
+        title: 'Splitting hard facts (distributive property)',
+        reply: 'Break a hard factor into two friendly anchors: sevens split into five plus two, sixes split into five plus one, and eights double three times.',
+        steps: ['Split rows into a friendly five-group or ten-group plus the leftover rows.', 'Find each smaller rectangle separately.', 'Add the two partial products to get the full total.'],
+        spoilerProtected: hasOpen
+      });
+    }
+    if (/\b(array|commutat|twin|swap|square|double|2s|4s|5s|10s|11s|12s)\b/.test(ql)) {
+      return sanitizeForOpen({
+        topic: 'strategy_rule',
+        title: 'Anchor facts and array structure',
+        reply: 'Turning an array sideways proves commutativity (a × b = b × a), cutting the table nearly in half. Twos, fives, tens, and squares unlock every neighbour.',
+        steps: ['Double repeatedly for twos, fours, and eights.', 'Take half of ten-groups for fives, or add ten-groups plus two-groups for twelves.', 'Build an array in the Arrays & groups tab to see why both directions have the same dot count.'],
+        spoilerProtected: hasOpen
+      });
+    }
+
+    // 6. Weak facts analysis from factScores
+    var weak = Object.keys(scores).filter(function(k) {
+      var s = scores[k];
+      return s && typeof s === 'object' && Number(s.attempts) > 0 && Number(s.correct) / Number(s.attempts) < 0.85 && /^\d+x\d+$/.test(k) && (!hasOpen || k !== openKey);
+    }).sort(function(x, y) {
+      var sx = scores[x], sy = scores[y];
+      return (Number(sx.correct) / Number(sx.attempts)) - (Number(sy.correct) / Number(sy.attempts)) || Number(sy.attempts) - Number(sx.attempts);
+    }).slice(0, 3);
+    if (weak.length > 0 && (/\b(weak|hard|tricky|missed|practice|score|master|improve|study)\b/.test(ql) || !q)) {
+      var lines = weak.map(function(k) {
+        var pts = k.split('x').map(Number);
+        var stw = pureStrategySteps(pts[0], pts[1]);
+        return pts[0] + ' × ' + pts[1] + ' — ' + stw.title + ': ' + stw.reply;
+      });
+      return sanitizeForOpen({
+        topic: 'weak_facts',
+        title: 'Targeted plan for your trickiest facts',
+        reply: 'Focus on one small cluster at a time using anchor strategies instead of memorizing the whole grid at once.',
+        steps: lines,
+        spoilerProtected: hasOpen
+      });
+    }
+
+    // 7. Default overview
+    return sanitizeForOpen({
+      topic: 'overview',
+      title: 'Multiplication and division strategy guide',
+      reply: 'Most of the times table follows clear patterns. Learn the anchor facts first, then derive harder facts by splitting rows or doubling.',
+      steps: ['Anchors first: twos (double), fives (half of tens), tens (shift place value), and squares.', 'Derive neighbours: sixes = five + one, sevens = five + two, nines = ten − one, twelves = ten + two.', 'For division, always flip to missing-factor multiplication and verify by multiplying back.'],
+      spoilerProtected: hasOpen
+    });
+  }
+
   // ── Sound effects ──
   // The host's shared context (StemLab.audioContext) is fetched on every use: the
   // host resumes it and owns its lifetime. A context this tool made itself is
   // resumed on each gesture and closed by releaseAudio() when the tool unmounts.
   var _audioCtx = null, _audioOwn = false, _audioUsers = 0;
+  function isMultTableGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (e) { /* mute getter threw */ }
+    return !!(typeof window !== 'undefined' && window._alloGlobalMute);
+  }
   function getAudioCtx() {
+    if (isMultTableGlobalMuted()) return null;
     if (window.StemLab && typeof window.StemLab.audioContext === 'function') {
       var shared = window.StemLab.audioContext();
       if (shared) { _audioCtx = shared; _audioOwn = false; return shared; }
     }
     if (!_audioCtx || !_audioOwn || _audioCtx.state === 'closed') {
       var Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) return null;
       _audioCtx = new Ctor(); _audioOwn = true;
     }
     if (_audioCtx.state === 'suspended' && typeof _audioCtx.resume === 'function') {
@@ -839,9 +1287,10 @@ window.StemLab = window.StemLab || {
     _audioCtx = null; _audioOwn = false;
   }
   function playSound(type) {
-    if (window._multTableMuted) return;  // global mute flag, set by the tool when state changes
+    if (window._multTableMuted || isMultTableGlobalMuted()) return;  // local + global mute gate
     try {
       var ac = getAudioCtx();
+      if (!ac) return;
       var o = ac.createOscillator();
       var g = ac.createGain();
       o.connect(g); g.connect(ac.destination);
@@ -933,11 +1382,12 @@ window.StemLab = window.StemLab || {
   }
   function playRhythm(beats, gap) {
     stopRhythm();
-    if (window._multTableMuted) return false;
+    if (window._multTableMuted || isMultTableGlobalMuted()) return false;
     beats = Math.max(1, Math.min(12, Math.floor(Number(beats) || 0)));
     gap = gap || 0.55;
     try {
       var ac = getAudioCtx();
+      if (!ac) return false;
       for (var i = 0; i < beats; i++) {
         var o = ac.createOscillator(), g = ac.createGain();
         o.connect(g); g.connect(ac.destination);
@@ -979,10 +1429,62 @@ window.StemLab = window.StemLab || {
   // Speed badges and the arrays badge (10 facts the learner picked and built, right or not) carry no XP.
   var NO_XP_BADGES = { speedRunner: true, speedDemon: true, perfectRun: true, visualLearner: true };
 
+  // ── Frozen pure engine export (window.MultTablePure + tool._engine) ──
+  var MULT_TABLE_PURE = Object.freeze({
+    DIFFICULTY: DIFFICULTY,
+    TRICKY_15: TRICKY_15,
+    MEMORY_TRICKS: MEMORY_TRICKS,
+    PATTERN_CLAIMS: PATTERN_CLAIMS,
+    TAB_ORDER: TAB_ORDER,
+    BADGES: BADGES,
+    tkey: tkey,
+    isTrickyFact: isTrickyFact,
+    getAdaptiveRange: getAdaptiveRange,
+    pickFactors: pickFactors,
+    factPool: factPool,
+    pickAdaptiveFact: pickAdaptiveFact,
+    factAnswer: factAnswer,
+    resolveBand: resolveBand,
+    learningPath: learningPath,
+    diagnoseMistake: diagnoseMistake,
+    strategyFor: strategyFor,
+    deriveAnchor: deriveAnchor,
+    derivedFacts: derivedFacts,
+    formatMissedFact: formatMissedFact,
+    missedFactIdentity: missedFactIdentity,
+    missedFactMode: missedFactMode,
+    factorPairs: factorPairs,
+    factorsOf: factorsOf,
+    primeStatus: primeStatus,
+    widthLimit: widthLimit,
+    diagnosePrimeClaim: diagnosePrimeClaim,
+    pickDetectiveItem: pickDetectiveItem,
+    detectiveAnswer: detectiveAnswer,
+    diagnoseDetective: diagnoseDetective,
+    sieveInit: sieveInit,
+    sieveAct: sieveAct,
+    sieveNext: sieveNext,
+    makeWordProblem: makeWordProblem,
+    diagnoseOps: diagnoseOps,
+    diagnoseStep: diagnoseStep,
+    wpTypesFor: wpTypesFor,
+    wpGivens: wpGivens,
+    makeFamily: makeFamily,
+    diagnoseFamily: diagnoseFamily,
+    cardTrue: cardTrue,
+    makeFluencyRound: makeFluencyRound,
+    explainDistractorWhyNot: explainDistractorWhyNot,
+    buildOfflineCoachReply: buildOfflineCoachReply
+  });
+  if (typeof window !== 'undefined' && window) {
+    try { window.MultTablePure = MULT_TABLE_PURE; } catch (e) { /* read-only window */ }
+  }
+
   window.StemLab.registerTool('multtable', {
     icon: '🔢', label: 'Multiplication Table',
     desc: 'Times-table strategies: arrays, patterns, fact families, named-mistake feedback and smart practice.',
     color: 'pink', category: 'math',
+    _engine: MULT_TABLE_PURE,
     // State is split across _multExt (practice totals, badges) and _multTimer
     // (speed-run session) — the hub's quest checker merges these keys so the
     // hooks below can see both.
@@ -1005,12 +1507,11 @@ window.StemLab = window.StemLab || {
       var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : noop;
       var awardXP = ctx.awardXP;
       var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : noop;
-      var rawT = ctx.t;
-      var t = function(key, fallback) {
-        if (typeof rawT !== 'function') return fallback;
-        var v = rawT(key, fallback);
-        return (typeof v === 'string' && v) ? v : fallback;
-      };
+      var t = (ctx.t && function (key, fallback) {
+        var v;
+        try { v = (typeof ctx.t === 'function') ? ctx.t(key, fallback) : null; } catch (e) { v = null; }
+        return (typeof v !== 'string' || v === key || v === '') ? (fallback != null ? fallback : key) : v;
+      }) || function (key, fallback) { return fallback != null ? fallback : key; };
       // Whole sentences with {placeholders}; a replacer function, so "$&" in a value stays literal.
       // English only: "1 dots are" reads "1 dot is". Other languages word their own sentences, and these nouns do not match them.
       function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
@@ -1843,7 +2344,9 @@ window.StemLab = window.StemLab || {
       }
 
       // ── AI hint: only through the host's guarded getHint, never raw callGemini ──
-      var aiCanAsk = typeof ctx.getHint === 'function' && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false && ctx.callGemini !== null;
+      var aiCanAsk = typeof ctx.getHint === 'function' && ctx.aiHintsEnabled !== false && ctx.aiAvailable !== false && ctx.callGemini !== null &&
+        !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled || window.__alloAiSecretsLocked)) &&
+        !(ctx.callGemini && ctx.callGemini._alloQrBlocked);
       function setAiHint(key, text) {
         setLabToolData(function(prev) {
           var ext = prev._multExt || {};
@@ -1861,6 +2364,75 @@ window.StemLab = window.StemLab || {
         } catch (e) {
           setAiHint(key, t('stem.multtable.ai_unavailable', 'The AI hint is not available right now. Use the strategy hint above.'));
         }
+      }
+      var canReadAloud = typeof ctx.callTTS === 'function';
+      function speakMultTable(text) {
+        if (!text || !canReadAloud) return false;
+        if (isMultTableGlobalMuted()) {
+          announceToSR(t('stem.multtable.read_aloud_muted', 'Sound is muted. Unmute to hear Read Aloud.'));
+          return false;
+        }
+        try {
+          ctx.callTTS(String(text), undefined, undefined, { force: true });
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+      function whyNotLocalized(info) {
+        if (!info) return null;
+        var v = info.vals || {};
+        var why = '';
+        switch (info.whyKey) {
+          case 'whynot_zero_rule': why = fmt(t('stem.multtable.whynot_zero_rule', 'Multiplying or dividing positive whole numbers cannot make zero — zero only happens when a factor is zero.'), v); break;
+          case 'whynot_divmiss_div_inv': why = fmt(t('stem.multtable.whynot_divmiss_div_inv', '{given} is already a starting number or larger than the total, not the divisor that splits {p} into groups of {q}.'), v); break;
+          case 'whynot_sub_divmiss': why = fmt(t('stem.multtable.whynot_sub_divmiss', '{given} subtracts {q} once from {p} instead of counting how many equal groups of {q} make {p}.'), v); break;
+          case 'whynot_off_one_divmiss': why = fmt(t('stem.multtable.whynot_off_one_divmiss', '{given} is one group too high or too low for {p}.'), v); break;
+          case 'whynot_factor_gt_total': why = fmt(t('stem.multtable.whynot_factor_gt_total', '{given} is larger than the total {p}, so it behaves like a multiple rather than a factor of {p}.'), v); break;
+          case 'whynot_swapped': why = fmt(t('stem.multtable.whynot_swapped', '{given} reverses the tens and ones digits.'), v); break;
+          case 'whynot_ten_off': why = fmt(t('stem.multtable.whynot_ten_off', '{given} matches the ones digit but is off in the tens place.'), v); break;
+          case 'whynot_added_dividend': why = fmt(t('stem.multtable.whynot_added_dividend', '{d} + {q} = {given} adds the two numbers once instead of combining {q} equal groups of {d}.'), v); break;
+          case 'whynot_div_instead_mult': why = fmt(t('stem.multtable.whynot_div_instead_mult', '{given} stays small like a part or quotient, but the missing dividend must be the full total before splitting.'), v); break;
+          case 'whynot_one_group_dividend': why = fmt(t('stem.multtable.whynot_one_group_dividend', '{given} is one equal group away from the total for {d} × {q}.'), v); break;
+          case 'whynot_close': why = fmt(t('stem.multtable.whynot_close', '{given} is very close, which usually means a small slip on the last count.'), v); break;
+          case 'whynot_identity_div': why = fmt(t('stem.multtable.whynot_identity_div', 'Dividing by one puts everything into a single group, so the answer matches the starting total.'), v); break;
+          case 'whynot_added_inv': why = fmt(t('stem.multtable.whynot_added_inv', '{given} adds {d} onto {p} instead of finding how many equal groups of {d} make {p}.'), v); break;
+          case 'whynot_mult_for_div': why = fmt(t('stem.multtable.whynot_mult_for_div', '{given} multiplies {p} by {d} instead of splitting {p} into equal groups of {d}.'), v); break;
+          case 'whynot_product_for_div': why = fmt(t('stem.multtable.whynot_product_for_div', '{given} is already the total product in the equation, not the missing factor.'), v); break;
+          case 'whynot_divisor_echo': why = fmt(t('stem.multtable.whynot_divisor_echo', '{given} is the factor already given in the equation, not the missing partner factor.'), v); break;
+          case 'whynot_sub_div': why = fmt(t('stem.multtable.whynot_sub_div', '{given} subtracts {d} once from {p} instead of counting how many groups of {d} fit inside {p}.'), v); break;
+          case 'whynot_off_one_div': why = fmt(t('stem.multtable.whynot_off_one_div', '{given} is one group too high or too low.'), v); break;
+          case 'whynot_identity_mult': why = fmt(t('stem.multtable.whynot_identity_mult', 'Multiplying by one keeps the other factor unchanged — one group holds every item in that group.'), v); break;
+          case 'whynot_added_mult': why = fmt(t('stem.multtable.whynot_added_mult', '{a} + {b} = {given} adds once, whereas {a} × {b} means {a} equal groups of {b}.'), v); break;
+          case 'whynot_anchor_echo': why = fmt(t('stem.multtable.whynot_anchor_echo', '{given} is the starting anchor fact {a} × {n}, before stepping to {a} × {b}.'), v); break;
+          case 'whynot_neighbour_mult': why = fmt(t('stem.multtable.whynot_neighbour_mult', '{given} is the neighbouring fact {x} × {y} — one group of {g} away.'), v); break;
+          case 'whynot_div_for_mult': why = fmt(t('stem.multtable.whynot_div_for_mult', '{given} divides {a} and {b} instead of multiplying equal groups together.'), v); break;
+          case 'whynot_factor_for_prod': why = fmt(t('stem.multtable.whynot_factor_for_prod', '{given} is a factor of one of the given numbers, whereas {a} × {b} must be a multiple of both {a} and {b}.'), v); break;
+          default: why = fmt(t('stem.multtable.whynot_general', '{given} does not match the equal groups in this equation.'), v); break;
+        }
+        var chk = '';
+        switch (info.checkKey) {
+          case 'whynot_check_zero_rule': chk = fmt(t('stem.multtable.whynot_check_zero_rule', 'Check how many equal groups are shown in the equation.'), v); break;
+          case 'whynot_check_divmiss_div': chk = fmt(t('stem.multtable.whynot_check_divmiss_div', 'Flip to multiplication: ? × {q} = {p}.'), v); break;
+          case 'whynot_check_off_one_divmiss': chk = fmt(t('stem.multtable.whynot_check_off_one_divmiss', 'Multiply {given} × {q} and compare it with {p}.'), v); break;
+          case 'whynot_check_factor_le_total': chk = fmt(t('stem.multtable.whynot_check_factor_le_total', 'Every factor of {p} must be no larger than {p} and divide {p} evenly.'), v); break;
+          case 'whynot_check_swapped': chk = fmt(t('stem.multtable.whynot_check_swapped', 'Estimate the tens place first with a friendly nearby fact, then check the ones digit.'), v); break;
+          case 'whynot_check_ten_off': chk = fmt(t('stem.multtable.whynot_check_ten_off', 'Recheck the tens place by comparing with a nearby ten-group fact.'), v); break;
+          case 'whynot_check_dividend_mult': chk = fmt(t('stem.multtable.whynot_check_dividend_mult', 'Undo the division by multiplying {d} × {q}.'), v); break;
+          case 'whynot_check_one_group_dividend': chk = fmt(t('stem.multtable.whynot_check_one_group_dividend', 'Adjust by one group and check by dividing by {d}.'), v); break;
+          case 'whynot_check_close': chk = fmt(t('stem.multtable.whynot_check_close', 'Recount the final group and check the ones digit.'), v); break;
+          case 'whynot_check_identity_div': chk = fmt(t('stem.multtable.whynot_check_identity_div', 'Picture one group holding all {p} items.'), v); break;
+          case 'whynot_check_inv_mult': chk = fmt(t('stem.multtable.whynot_check_inv_mult', 'Rewrite it as multiplication: {d} × ? = {p}.'), v); break;
+          case 'whynot_check_off_one_div': chk = fmt(t('stem.multtable.whynot_check_off_one_div', 'Test {d} × {given} and see whether it lands above or below {p}.'), v); break;
+          case 'whynot_check_identity_mult': chk = fmt(t('stem.multtable.whynot_check_identity_mult', 'Count the items inside a single group.'), v); break;
+          case 'whynot_check_split_mult': chk = fmt(t('stem.multtable.whynot_check_split_mult', 'Split {a} × {b} into two smaller facts you already know and add those parts.'), v); break;
+          case 'whynot_check_anchor_echo': chk = fmt(t('stem.multtable.whynot_check_anchor_echo', 'Add or take away equal groups of {a} to move from {n} groups to {b} groups.'), v); break;
+          case 'whynot_check_neighbour_mult': chk = fmt(t('stem.multtable.whynot_check_neighbour_mult', 'Compare {x} × {y} with {a} × {b} and adjust by one group of {g}.'), v); break;
+          case 'whynot_check_ten_off_mult': chk = fmt(t('stem.multtable.whynot_check_ten_off_mult', 'Split {a} × {b} into two friendly parts and re-add the tens column carefully.'), v); break;
+          case 'whynot_check_mult_larger': chk = fmt(t('stem.multtable.whynot_check_mult_larger', 'Check that multiplying numbers above one builds a product larger than either factor.'), v); break;
+          default: chk = fmt(t('stem.multtable.whynot_check_prod_multiple', 'A product of {a} and {b} must be at least as large as both factors and divisible by each.'), v); break;
+        }
+        return { category: info.category, why: why, check: chk };
       }
 
       // ── Keyboard shortcuts: only while the practice panel itself has focus ──
@@ -2184,12 +2756,12 @@ window.StemLab = window.StemLab || {
                 arcs.push(h('path', { key: 'sa-' + hi, d: 'M ' + x1.toFixed(1) + ' ' + baseY + ' Q ' + mx.toFixed(1) + ' ' + archY.toFixed(1) + ' ' + x2.toFixed(1) + ' ' + baseY, fill: 'none', stroke: '#d97706', strokeWidth: 1.8, strokeDasharray: '4 3', strokeLinecap: 'round', className: 'allo-mt-flow-svg', style: { animationDelay: (hi * 0.08) + 's' } }));
                 nodes.push(h('circle', { key: 'sn-' + hi, cx: x2.toFixed(1), cy: baseY, r: hi === hops - 1 ? 3.2 : 2.3, fill: hi === hops - 1 ? '#b45309' : '#f59e0b', stroke: '#ffffff', strokeWidth: 0.9, className: hi === hops - 1 ? 'allo-mt-beacon-svg' : undefined }));
               }
-              return h('svg', { viewBox: '0 0 ' + spanW + ' 36', 'aria-hidden': 'true', focusable: 'false', className: 'mx-auto mt-1.5', style: { width: '100%', maxWidth: 320, height: 'auto', display: 'block' } },
+              return h('svg', { viewBox: '0 0 ' + spanW + ' 38', 'aria-hidden': 'true', focusable: 'false', className: 'mx-auto mt-1.5', style: { width: '100%', maxWidth: 320, height: 'auto', display: 'block' } },
                 h('line', { x1: padX, y1: baseY, x2: spanW - padX, y2: baseY, stroke: '#fcd34d', strokeWidth: 1.5, strokeLinecap: 'round' }),
                 h('circle', { cx: padX, cy: baseY, r: 2.2, fill: '#92400e' }),
                 arcs,
                 nodes,
-                h('text', { x: padX + hops * stepX, y: 35, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: '#92400e' }, String(hops * b))
+                h('text', { x: padX + hops * stepX, y: 36, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#92400e' }, String(hops * b))
               );
             })(),
             h('button', { type: 'button', onClick: function() { vpSet({ built: false, guess: '', committed: null, swapped: false }); focusSoon('[data-mt-predict-input]'); },
@@ -2411,7 +2983,7 @@ window.StemLab = window.StemLab || {
           ),
           renderClaims(),
           h('details', { className: 'bg-white rounded-xl border border-indigo-200 p-3' },
-            h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'text-xs font-bold text-indigo-800 cursor-pointer' }, t('stem.multtable.why_patterns_beat_brute_memorization', '💡 Why patterns beat brute memorization')),
+            h('summary', { style: { color: mtTheme === 'hc' ? '#ffffff' : undefined, minHeight: 32 }, className: 'text-xs font-bold text-indigo-800 cursor-pointer' }, t('stem.multtable.why_patterns_beat_brute_memorization', '💡 Why patterns beat brute memorization')),
             h('div', { className: 'mt-2 space-y-2 text-xs text-slate-800' },
               h('p', {}, h('b', {}, t('stem.multtable.you_only_need_to_memorize_about_a_thir', 'You only need to memorize about a third of the table. ')),
                 t('stem.multtable.anything_in_the_1s_2s_5s_10s_11s_colum', 'Anything in the 1s, 2s, 5s, 10s, 11s columns has an easy rule. The squares are a small set (12 facts). What remains is the "tricky middle" — about 15 facts — that needs real recall: 6×7, 6×8, 6×9, 7×8, 7×9, 8×9 and their twins.')
@@ -2639,7 +3211,7 @@ window.StemLab = window.StemLab || {
         var visibleSteps = fadeLevel === 0 ? steps.length : Math.max(fadeLevel === 1 ? 1 : 0, shownSteps);
         var svgInk = mtTheme === 'hc' ? { first: '#ffff00', second: '#ffffff', line: '#ffffff', num2: '#ffffff', text: '#ffff00' } : { first: '#1d4ed8', second: '#b45309', line: '#0f172a', num2: '#92400e', text: '#0f172a' };
         return h('details', { className: 'bg-white border border-pink-200 rounded-xl p-3 mt-3', key: key, 'data-fact-strategy': true },
-          h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'text-sm font-bold text-pink-800 cursor-pointer' }, t('stem.multtable.build_fact_strategy', 'Build this fact from smaller facts')),
+          h('summary', { style: { color: mtTheme === 'hc' ? '#ffffff' : undefined, minHeight: 32 }, className: 'text-sm font-bold text-pink-800 cursor-pointer' }, t('stem.multtable.build_fact_strategy', 'Build this fact from smaller facts')),
           h('p', { className: 'text-sm text-slate-700 mt-2' }, isDiv ? t('stem.multtable.division_strategy_reason', 'Use the related multiplication fact to check the division. Each row is one equal group.') : t('stem.multtable.split_strategy_reason', 'Split the rows into two groups. Multiply each group, then add the parts. The total number of dots stays the same.')),
           h('div', { role: 'group', 'aria-label': t('stem.multtable.choose_row_split', 'Choose a row split'), className: 'flex flex-wrap gap-2 mt-3' }, options.map(function(value) {
             return h('button', { key: value, type: 'button', 'aria-pressed': split === value, onClick: function() { extUpd({ factSplitKey: key, factSplit: value }); },
@@ -2687,9 +3259,27 @@ window.StemLab = window.StemLab || {
         }
         var sourceNote = ch.source === 'chosen' ? t('stem.multtable.chosen_note', 'You picked this fact from the table, so it is practice only: it earns no XP.')
           : ch.source === 'drill' ? t('stem.multtable.drill_note', 'Practice-set fact: it counts toward your mastery, not XP, because you saw its answer in the review.') : null;
+        var whyNotCard = null;
+        if (retry && fb.lastWrong != null) {
+          var wn = whyNotLocalized(explainDistractorWhyNot(ch, fb.lastWrong));
+          if (wn) {
+            whyNotCard = h('div', { key: 'whynot', 'data-mt-whynot': wn.category, className: 'mt-2 rounded-lg border border-amber-500 bg-white p-2 text-xs text-slate-900 space-y-1', style: cardStyle() },
+              h('p', { className: 'font-bold text-amber-900', style: cardInk('head') }, t('stem.multtable.whynot_heading', 'Why not that answer?')),
+              h('p', { style: cardInk('text') }, wn.why),
+              h('p', { className: 'font-semibold text-slate-800', style: cardInk('text') }, wn.check));
+          }
+        }
+        var retryExtras = (whyNotCard || aiHint) ? h(React.Fragment, null, whyNotCard, aiHint ? h('p', { key: 'aihint', className: 'text-sm text-purple-900 mt-2 whitespace-pre-wrap' }, aiHint) : null) : null;
+        var readChallengeText = resolved
+          ? (solvedText(ch) + (MEMORY_TRICKS[tkey(ch.a, ch.b)] ? '. ' + trickText(tkey(ch.a, ch.b)) : ''))
+          : (retry ? (questionText(ch) + '. ' + strategyText(ch)) : questionText(ch));
         return h('div', { className: 'bg-pink-50 rounded-xl p-4 border-2 border-pink-200 allo-mt-challenge-card', 'data-mt-challenge': 'true' },
-          h('div', { className: 'flex items-center justify-center mb-1.5', 'aria-hidden': 'true' },
-            h('span', { className: 'inline-flex items-center gap-1 rounded-full border border-pink-300 bg-white px-2.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-pink-900' }, modeName(ch.mode === 'derive' ? 'derive' : ch.mode === 'divmiss' ? 'equations' : ch.mode))
+          h('div', { className: 'flex items-center justify-center gap-2 mb-1.5 flex-wrap' },
+            h('span', { 'aria-hidden': 'true', className: 'inline-flex items-center gap-1 rounded-full border border-pink-300 bg-white px-2.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wider text-pink-900' }, modeName(ch.mode === 'derive' ? 'derive' : ch.mode === 'divmiss' ? 'equations' : ch.mode)),
+            canReadAloud && h('button', { type: 'button', onClick: function() { speakMultTable(readChallengeText); },
+              'aria-label': t('stem.multtable.read_challenge_aloud', 'Read question aloud'),
+              className: 'px-2.5 rounded-full border border-pink-700 bg-white text-pink-900 text-xs font-bold hover:bg-pink-100', style: chipInk(CHIP)
+            }, '🔊 ' + t('stem.multtable.read_aloud', 'Read aloud'))
           ),
           prompt,
           sourceNote && h('p', { className: 'text-xs text-slate-700 text-center mb-2' }, sourceNote),
@@ -2723,7 +3313,7 @@ window.StemLab = window.StemLab || {
             retry && hintLadder({ attrs: { 'data-mt-retry': 'true' }, tries: fb.tries || 1, said: saidText(fb.lastWrong),
               mistake: fb.mistake && fb.mistake.kind !== 'other' ? mistakeText(fb.mistake, ch) : null, mistakeAttrs: fb.mistake ? { 'data-mt-mistake': fb.mistake.kind } : null,
               hint: strategyText(ch), rung2: factRung2(ch), showTries: true, onReveal: revealNow,
-              extra: aiHint ? h('p', { className: 'text-sm text-purple-900 mt-2 whitespace-pre-wrap' }, aiHint) : null }),
+              extra: retryExtras }),
             resolved && h('p', { className: 'text-sm font-bold text-center ' + (fb.correct ? 'text-green-800' : 'text-red-800') },
               fb.correct
                 ? (fb.firstTry ? '✅ ' + fmt(t('stem.multtable.correct_eq', 'Correct! {eq}'), { eq: solvedText(ch) }) : '✅ ' + fmt(t('stem.multtable.correct_retry_eq', 'Correct on try {n}: {eq}. Using the hint is how strategies stick.'), { n: fb.tries, eq: solvedText(ch) }))
@@ -3017,7 +3607,7 @@ window.StemLab = window.StemLab || {
         var masked = challengeOpen;
         var grid = tableGrid;
         return h('details', { className: 'rounded-xl border border-pink-200 bg-white p-3', 'data-full-fact-table': true },
-          h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer font-bold text-pink-900' }, t('stem.multtable.open_full_table', 'Full multiplication table')),
+          h('summary', { style: { color: mtTheme === 'hc' ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer font-bold text-pink-900' }, t('stem.multtable.open_full_table', 'Full multiplication table')),
           h('p', { id: 'mt-table-help', className: 'text-xs text-slate-700 mt-2' }, masked
             ? t('stem.multtable.table_masked', 'Answers are hidden while a question is open. Use the arrow keys to move and Enter to select a fact.')
             : t('stem.multtable.table_help', 'Use the arrow keys to move and Enter to select a fact. The selected fact lights its row, its column and its twin.')),
@@ -3048,11 +3638,35 @@ window.StemLab = window.StemLab || {
         }).slice(0, 3);
         var tally = visit.tally || {};
         var topKind = Object.keys(tally).filter(function(k) { return k !== 'other'; }).sort(function(x, y) { return tally[y] - tally[x]; })[0];
+        var activeCh = challengeOpen ? multTableChallenge : null;
+        var coachQuery = typeof local.coachQuery === 'string' ? local.coachQuery : '';
+        var coachReply = (local.coachReply && typeof local.coachReply === 'object') ? local.coachReply : null;
+        function askOfflineCoach(promptText) {
+          var qText = typeof promptText === 'string' ? promptText : coachQuery;
+          var reply = buildOfflineCoachReply(qText, activeCh, factScores);
+          setL({ coachQuery: qText, coachReply: reply });
+          if (reply && reply.reply) announceToSR(reply.title + '. ' + reply.reply);
+        }
+        var quickTopics = (activeCh ? [{ id: 'active', q: 'this question', label: t('stem.multtable.coach_chip_active', 'Current question') }] : []).concat([
+          { id: 'split', q: '7s and 8s split', label: t('stem.multtable.coach_chip_split', '7s & 8s split') },
+          { id: 'nines', q: '9s trick', label: t('stem.multtable.coach_chip_nines', '9s shortcut') },
+          { id: 'div', q: 'division fact family', label: t('stem.multtable.coach_chip_div', 'Division ↔ ×') },
+          { id: 'factors', q: 'factors vs multiples', label: t('stem.multtable.coach_chip_factors', 'Factors vs multiples') }
+        ]);
+        var coachSpeakText = coachReply
+          ? (coachReply.title + '. ' + coachReply.reply + (Array.isArray(coachReply.steps) && coachReply.steps.length ? ' ' + coachReply.steps.join(' ') : ''))
+          : (weak.length ? weak.map(function(k) { var pts = k.split('x').map(Number); return pts[0] + ' times ' + pts[1] + ': ' + strategyText({ a: pts[0], b: pts[1], mode: 'mult' }); }).join(' ')
+            : t('stem.multtable.coach_no_data', 'Answer a few questions and the coach will find the facts that need a strategy. Start with 2s, 5s and 10s: every other fact can be built from them.'));
         return h('section', { className: 'bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-3 border-2 border-purple-200', 'aria-labelledby': 'mt-coach-h', 'data-mt-coach': 'true' },
-          h('div', { className: 'flex items-center justify-between mb-2' },
+          h('div', { className: 'flex items-center justify-between gap-2 mb-2 flex-wrap' },
             h('h3', { id: 'mt-coach-h', className: 'text-sm font-bold text-purple-900' }, '🧭 ' + t('stem.multtable.coach_title', 'Strategy coach')),
-            h('button', { type: 'button', onClick: function() { extUpd({ showCoach: false, showAI: false }); }, 'aria-label': t('stem.multtable.close_coach', 'Close strategy coach'),
-              className: 'text-sm text-slate-700 hover:text-slate-900 rounded', style: { minWidth: 36, minHeight: 36 } }, '✕')
+            h('div', { className: 'flex items-center gap-1' },
+              canReadAloud && h('button', { type: 'button', onClick: function() { speakMultTable(coachSpeakText); }, 'aria-label': t('stem.multtable.read_coach_aloud', 'Read strategy coach aloud'),
+                className: 'px-2.5 rounded-full border border-purple-700 bg-white text-purple-900 text-xs font-bold hover:bg-purple-100', style: chipInk(CHIP)
+              }, '🔊 ' + t('stem.multtable.read_aloud', 'Read aloud')),
+              h('button', { type: 'button', onClick: function() { extUpd({ showCoach: false, showAI: false }); }, 'aria-label': t('stem.multtable.close_coach', 'Close strategy coach'),
+                className: 'text-sm text-slate-700 hover:text-slate-900 rounded', style: { minWidth: 36, minHeight: 36 } }, '✕')
+            )
           ),
           weak.length === 0
             ? h('p', { className: 'text-sm text-purple-900' }, t('stem.multtable.coach_no_data', 'Answer a few questions and the coach will find the facts that need a strategy. Start with 2s, 5s and 10s: every other fact can be built from them.'))
@@ -3066,7 +3680,35 @@ window.StemLab = window.StemLab || {
           topKind && h('p', { className: 'text-sm text-slate-900 mt-2' }, fmt(t('stem.multtable.coach_top_mistake', 'Most common mistake this session: {kind}.'), { kind: mistakeLabel(topKind) })),
           weak.length > 0 && h('button', { type: 'button',
             onClick: function() { extUpd({ difficulty: 'adaptive' }); nextProblem({ difficulty: 'adaptive' }); },
-            className: 'mt-2 px-3 rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 border border-purple-700 text-xs font-bold', style: CHIP }, t('stem.multtable.coach_practise', 'Practise my trickiest facts'))
+            className: 'mt-2 px-3 rounded-full bg-purple-100 text-purple-800 hover:bg-purple-200 border border-purple-700 text-xs font-bold', style: CHIP }, t('stem.multtable.coach_practise', 'Practise my trickiest facts')),
+          h('div', { className: 'mt-3 pt-3 border-t border-purple-200 space-y-2', 'data-mt-offline-coach': 'true' },
+            h('p', { className: 'text-xs font-bold text-purple-900' }, t('stem.multtable.offline_coach_heading', 'Offline strategy Q&A')),
+            h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': t('stem.multtable.coach_quick_topics', 'Quick strategy topics') },
+              quickTopics.map(function(tp) {
+                return h('button', { key: tp.id, type: 'button', onClick: function() { askOfflineCoach(tp.q); },
+                  className: 'px-2.5 rounded-full border border-purple-700 bg-white text-purple-900 text-xs font-bold hover:bg-purple-100', style: chipInk(CHIP)
+                }, tp.label);
+              })
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('input', { type: 'text', id: 'mt-coach-input', value: coachQuery,
+                'aria-label': t('stem.multtable.coach_ask_label', 'Ask the offline strategy coach'),
+                placeholder: t('stem.multtable.coach_ask_placeholder', 'Try: 7 × 8, 9s trick, division, or prime'),
+                onChange: function(e) { setL({ coachQuery: e.target.value }); },
+                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); askOfflineCoach(coachQuery); } },
+                className: 'flex-1 min-w-0 px-2.5 py-1.5 text-sm border border-purple-700 rounded-lg bg-white text-slate-900', style: { minHeight: 36 } }),
+              h('button', { type: 'button', onClick: function() { askOfflineCoach(coachQuery); },
+                className: 'px-3 rounded-lg bg-purple-700 text-white font-bold text-xs hover:bg-purple-800', style: CHIP
+              }, t('stem.multtable.coach_ask_btn', 'Ask coach'))
+            ),
+            coachReply && h('div', { role: 'status', 'aria-live': 'polite', 'data-mt-coach-reply': coachReply.topic, className: 'rounded-lg border border-purple-300 bg-white p-2.5 text-xs text-slate-900 space-y-1', style: cardStyle() },
+              h('p', { className: 'font-bold text-purple-900', style: cardInk('head') }, coachReply.title),
+              coachReply.spoilerProtected && h('p', { className: 'text-[0.6875rem] font-semibold text-amber-900', style: cardInk('head') }, t('stem.multtable.coach_no_spoiler', 'Active answer stays hidden until you solve or reveal.')),
+              h('p', { style: cardInk('text') }, coachReply.reply),
+              Array.isArray(coachReply.steps) && coachReply.steps.length > 0 && h('ul', { className: 'list-disc pl-4 space-y-0.5', style: cardInk('text') },
+                coachReply.steps.map(function(stLine, si) { return h('li', { key: si }, stLine); }))
+            )
+          )
         );
       }
 
@@ -3125,7 +3767,7 @@ window.StemLab = window.StemLab || {
           ),
           // Mastery-threshold thought experiment (teacher only; simulated data).
           h('details', { className: 'mt-1 p-3 rounded-xl bg-white border border-indigo-300 space-y-2', 'data-teacher-mastery-demo': true },
-            h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer text-sm font-bold text-indigo-800' }, t('stem.multtable.teacher_data_activity', 'Teacher activity: explore a hypothetical mastery threshold')),
+            h('summary', { style: { color: mtTheme === 'hc' ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer text-sm font-bold text-indigo-800' }, t('stem.multtable.teacher_data_activity', 'Teacher activity: explore a hypothetical mastery threshold')),
             h('p', { className: 'text-sm text-slate-700' }, t('stem.multtable.simulation_notice', 'This is simulated data, not your practice results. Use the mastery heatmap above to review answers you have actually given.')),
             h('h4', { className: 'text-sm font-black text-indigo-800' }, t('stem.multtable.fact_mastery_discovery', '🎯 Fact mastery discovery')),
             h('div', { className: 'p-2 rounded text-center', style: mtTheme === 'hc' ? { background: '#000000', border: '1px solid #ffffff' } : { background: sm.bg, border: '1px solid ' + sm.border } },
@@ -3809,7 +4451,13 @@ window.StemLab = window.StemLab || {
             wpLock && h('span', { className: 'text-xs font-bold text-indigo-900' }, '🔒 ' + t('stem.multtable.wp_locked', 'Your teacher chose the kind of problem.'))),
           !wp && h('button', { type: 'button', onClick: function() { wpNew(); }, className: 'px-4 rounded-lg bg-amber-800 text-white font-bold text-sm', style: BTN }, t('stem.multtable.wp_start', 'Give me a word problem')),
           wp && h('div', { className: 'space-y-3' },
-            h('p', { id: 'mt-wp-q', className: 'text-base font-bold text-slate-900 leading-relaxed', 'data-mt-wp-text': 'true' }, wpText(it)),
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+              h('p', { id: 'mt-wp-q', className: 'text-base font-bold text-slate-900 leading-relaxed flex-1 min-w-0', 'data-mt-wp-text': 'true' }, wpText(it)),
+              canReadAloud && h('button', { type: 'button', onClick: function() { speakMultTable(wpText(it)); },
+                'aria-label': t('stem.multtable.read_word_problem_aloud', 'Read word problem aloud'),
+                className: 'px-2.5 rounded-full border border-amber-700 bg-white text-amber-900 text-xs font-bold hover:bg-amber-100 shrink-0', style: chipInk(CHIP)
+              }, '🔊 ' + t('stem.multtable.read_aloud', 'Read aloud'))
+            ),
             wp.phase === 'op' && h('div', { className: 'space-y-2' },
               h('p', { className: 'text-sm font-bold text-amber-900' }, it.steps.length > 1 ? t('stem.multtable.wp_choose_two', 'This story has two steps. Which operations, in order?') : t('stem.multtable.wp_choose_first', 'Choose the operation first.')),
               h('div', { role: 'group', 'aria-label': t('stem.multtable.wp_ops', 'Operation'), className: 'flex flex-wrap gap-2' },
@@ -3943,8 +4591,23 @@ window.StemLab = window.StemLab || {
         }, 500);
         return function() { clearInterval(iv); };
       }, [fluTimer && fluTimer.active, fluTimer && fluTimer.paused, fluTimer && fluTimer.endTime]);
-      // Unmount: stop the rhythm and close the audio context this tool opened.
-      React.useEffect(function() { audioMounted(); return function() { releaseAudio(); }; }, []);
+      // Unmount & global-mute sync: stop the rhythm on global mute and close the audio context this tool opened.
+      React.useEffect(function() {
+        audioMounted();
+        var onMuteChanged = function(ev) {
+          var detailMuted = ev && ev.detail && typeof ev.detail.muted === 'boolean' ? ev.detail.muted : false;
+          if (detailMuted || isMultTableGlobalMuted()) stopRhythm();
+        };
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+          window.addEventListener('alloflow-mute-changed', onMuteChanged);
+        }
+        return function() {
+          if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+            window.removeEventListener('alloflow-mute-changed', onMuteChanged);
+          }
+          releaseAudio();
+        };
+      }, []);
       function extUpdFlu(patch) {
         setLabToolData(function(prev) {
           var ext = prev._multExt || {};
@@ -4342,7 +5005,7 @@ window.StemLab = window.StemLab || {
       var drillActive = !!(_mt.drill && _mt.drill.active);
       var visitMissedCount = getUniqueMissed(visit.missed).length;
 
-      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-multtable-root': 'true', 'data-mt-hc': mtTheme === 'hc' ? 'true' : undefined },
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200', 'data-multtable-root': 'true', 'data-mt-hc': mtTheme === 'hc' ? 'true' : undefined, 'data-mt-reduce-motion': ctx.reduceMotion === true ? 'true' : undefined },
 
         // ── Header ──
         h('section', { 'data-multtable-command': 'true', className: 'overflow-hidden rounded-2xl border border-pink-300/40 bg-gradient-to-br from-slate-950 via-pink-950 to-violet-950 text-white shadow-xl allo-mt-hero-deck' },
@@ -4350,7 +5013,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'flex flex-wrap items-center gap-2' },
-                  h('button', { type: 'button', onClick: function() { stopRunQuietly(); setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', style: { minWidth: 44, minHeight: 44 }, 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  !ctx.embedded && h('button', { type: 'button', onClick: function() { stopRunQuietly(); setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-pink-300', style: { minWidth: 44, minHeight: 44 }, 'aria-label': t('stem.multtable.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
                   h('span', { className: 'inline-flex items-center justify-center rounded-xl border border-pink-200/30 bg-white/10 p-1.5 shrink-0', 'aria-hidden': 'true' },
                     h('svg', { viewBox: '0 0 36 36', width: 28, height: 28, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block' } },
                       mtRich && h('defs', null,
@@ -4407,7 +5070,7 @@ window.StemLab = window.StemLab || {
                 );
               })()
             ),
-            h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: ctx.isContrast ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.multtable.multiplication_reasoning_pathway','Multiplication reasoning pathway') },
+            h('details', { className: 'mt-3 text-white' }, h('summary', { style: { color: mtTheme === 'hc' ? '#ffffff' : undefined, minHeight: 32 }, className: 'cursor-pointer text-sm font-bold' }, t('stem.multtable.learning_steps', 'Learning steps')), h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': t('stem.multtable.multiplication_reasoning_pathway','Multiplication reasoning pathway') },
               [
                 { n: '1', title: t('stem.multtable.step_observe', 'Observe'), detail: t('stem.multtable.step_observe_detail', 'See the fact as an array or pattern.') },
                 { n: '2', title: t('stem.multtable.step_predict', 'Predict'), detail: t('stem.multtable.step_predict_detail', 'Use a fact you know to predict.') },
@@ -4428,7 +5091,7 @@ window.StemLab = window.StemLab || {
                 (multTableHidden ? 'bg-pink-700 text-white border-pink-500 shadow-sm' : 'text-slate-700 bg-slate-100 border-slate-300 hover:bg-slate-200'),
               style: CHIP
             }, multTableHidden ? t('stem.multtable.table_answers_hidden', 'Table answers hidden') : t('stem.multtable.table_answers_visible', 'Table answers visible')),
-            h('div', { className: 'text-xs font-bold text-emerald-800', style: { color: ctx.isContrast ? '#000000' : undefined }, 'aria-label': fmt(t('stem.multtable.score_aria', 'Score: {c} of {n}'), { c: exploreScore.correct, n: exploreScore.total }) }, exploreScore.correct + '/' + exploreScore.total),
+            h('div', { className: 'text-xs font-bold text-emerald-800', style: { color: mtTheme === 'hc' ? '#ffffff' : undefined }, 'aria-label': fmt(t('stem.multtable.score_aria', 'Score: {c} of {n}'), { c: exploreScore.correct, n: exploreScore.total }) }, exploreScore.correct + '/' + exploreScore.total),
             (_mt.streak || 0) >= 2 && h('div', {
               className: 'text-xs font-bold text-orange-800 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full'
             }, '🔥 ' + fmt(t('stem.multtable.streak_n', '{n} in a row!'), { n: _mt.streak })),

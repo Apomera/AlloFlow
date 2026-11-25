@@ -51,7 +51,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
     R: { id: 'R', label: 'Relationships', icon: '🤝', color: '#22c55e',
          summary: 'Connection — people in your life who matter, who know you, who you can be real with.',
          atLow: 'Thin relationships score is hard. It is also often a season, not a forever. The Care Constellations and Circles of Support tools in this SEL Hub are built for mapping and growing this.',
-         atHigh: 'Strong relationships are the single strongest predictor of human flourishing across every study ever done. If you have them, they are not luck; you are building them.',
+         atHigh: 'Strong relationships are among the most consistent predictors of wellbeing in long-term research, including the 80-year Harvard Study of Adult Development. If you have them, they are not luck; you are building them.',
          reflection: 'Who is one person who is in your life by mutual choice, not by circumstance?'
        },
     M: { id: 'M', label: 'Meaning',     icon: '🌱', color: '#a855f7',
@@ -283,7 +283,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           // Cross-link to VIA Strengths
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🔗 Pair this with VIA Strengths. '),
-            'PERMA and VIA were developed by the same author (Martin Seligman). Using your signature strengths in new ways tends to raise PERMA scores across domains. Both tools are in the SEL Hub.'
+            'Martin Seligman developed PERMA and co-developed VIA with Christopher Peterson. Using your signature strengths in new ways is one way to work on each PERMA domain. Both tools are in the SEL Hub.'
           ),
 
           softPointer()

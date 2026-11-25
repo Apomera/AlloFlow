@@ -24,6 +24,12 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-dataplot-hc-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"]):not(:empty):not(svg,canvas,video,iframe,object){background-color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style^=\"color: rgb(0, 0, 0)\"],[style*=\"; color: rgb(0, 0, 0)\"],[style^=\"color: rgb(139, 92, 246)\"],[style*=\"; color: rgb(139, 92, 246)\"]):is([style*=\"background: rgb\"],[style*=\"background-color: rgb\"],[style*=\"background: linear\"]):not([style*=\"background: rgba(\"],[style*=\"background-color: rgba(\"]):not(:is([style*=\"background: rgb(34, 197, 94)\"],[style*=\"background-color: rgb(34, 197, 94)\"],[style*=\"background: rgb(234, 179, 8)\"],[style*=\"background-color: rgb(234, 179, 8)\"],[style*=\"background: rgb(254, 226, 226)\"],[style*=\"background-color: rgb(254, 226, 226)\"],[style*=\"background: rgb(220, 252, 231)\"],[style*=\"background-color: rgb(220, 252, 231)\"],[style*=\"background: rgb(245, 158, 11)\"],[style*=\"background-color: rgb(245, 158, 11)\"],[style*=\"background: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(255, 255, 255)\"])):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] [style]:not(#hc-k):not(#hc-k):not(#hc-k):is([style*=\"background: rgb(249, 115, 22)\"],[style*=\"background-color: rgb(249, 115, 22)\"],[style*=\"background: rgb(239, 68, 68)\"],[style*=\"background-color: rgb(239, 68, 68)\"],[style*=\"background: rgb(148, 163, 184)\"],[style*=\"background-color: rgb(148, 163, 184)\"],[style*=\"background: rgb(13, 148, 136)\"],[style*=\"background-color: rgb(13, 148, 136)\"],[style*=\"background: rgb(59, 130, 246)\"],[style*=\"background-color: rgb(59, 130, 246)\"],[style*=\"background: rgb(139, 92, 246)\"],[style*=\"background-color: rgb(139, 92, 246)\"],[style*=\"background: rgb(244, 63, 94)\"],[style*=\"background-color: rgb(244, 63, 94)\"],[style*=\"background: rgb(16, 185, 129)\"],[style*=\"background-color: rgb(16, 185, 129)\"],[style*=\"background: rgb(248, 113, 113)\"],[style*=\"background-color: rgb(248, 113, 113)\"]):not(:empty):not(button:not(:hover)){color:#000!important}.theme-contrast [data-stem-tool-shell=\"dataPlot\"] a:not([style*=\"background\"]):not([class*=\"bg-\"]:not([class*=\"-50\"],[class*=\"-100\"],[class*=\"bg-white\"])){color:#ffff00!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-dataplot-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-dataplot-a11y-css';
+      a11ySt.textContent = "@media (forced-colors:active){[data-stem-tool-shell=\"dataPlot\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end WCAG 1.4.3 high contrast
   (function() {
@@ -3777,9 +3783,9 @@ window.StemLab = window.StemLab || {
         };
         var sortedLinePts = chartType === 'line' && n >= 2 ? visiblePoints.slice().sort(function(a,b) { return a.x - b.x; }) : null;
         var linePathD = sortedLinePts ? sortedLinePts.map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' ') : '';
-        return h('svg', svgBase(chartType === 'bar' ? t('stem.dataplot.bar_img_label', 'Bar chart of the current data set') : t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
+        return h('svg', Object.assign(svgBase(chartType === 'bar' ? t('stem.dataplot.bar_img_label', 'Bar chart of the current data set') : t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
           { onClick: handleSvgClick, onPointerMove: (myLineEls || showHoverCross) ? updateHoverCross : undefined, onPointerLeave: showHoverCross ? clearHoverCross : undefined, onPointerUp: myLineEls ? endDrag : undefined, onPointerCancel: myLineEls ? endDrag : undefined, onLostPointerCapture: myLineEls ? endDrag : undefined,
-            className: 'w-full rounded-xl border border-teal-200' + ((chartType === 'scatter' || chartType === 'line') && clickMode === 'add' && !stepMode ? ' cursor-crosshair' : '') }),
+            className: 'w-full rounded-xl border border-teal-200' + ((chartType === 'scatter' || chartType === 'line') && clickMode === 'add' && !stepMode ? ' cursor-crosshair' : '') }), { role: 'img' }),
           dpDefs('xy', h('clipPath', { id: 'dp-plot-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: H - PT - PB }))),
           dpWell('xy', PL, PT, W - PL - PR, H - PT - PB, 6),
           axisTicks(axY, false, toSY),
@@ -3887,7 +3893,7 @@ window.StemLab = window.StemLab || {
         var normCol = isContrast ? '#ff80ff' : dc('#6d28d9');
         var meanCol = isContrast ? '#ff8080' : dc('#b91c1c');
         var medCol = isContrast ? '#00ffff' : dc('#1d4ed8');
-        return h('svg', svgBase(t('stem.dataplot.histogram_img_label', 'Histogram of the current data set')),
+        return h('svg', Object.assign(svgBase(t('stem.dataplot.histogram_img_label', 'Histogram of the current data set')), { role: 'img' }),
           dpDefs('hist'),
           dpWell('hist', PL, PT, plotW, H - PT - PB, 6),
           axisTicks(hAx, false, hy),
@@ -3961,7 +3967,7 @@ window.StemLab = window.StemLab || {
         var oToX = function(v) { return PL + ((v - oAx.min) / (oAx.max - oAx.min || 1)) * (W - PL - PR); };
         var oToY = function(v) { return (H - PB) - (v / n) * (H - PT - PB); };
         var pathD = cumulativeFreq.map(function(pt, i) { return (i === 0 ? 'M' : 'L') + oToX(pt.x).toFixed(1) + ',' + oToY(pt.y).toFixed(1); }).join(' ');
-        return h('svg', svgBase(t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph')),
+        return h('svg', Object.assign(svgBase(t('stem.dataplot.ogive_img_label', 'Cumulative frequency graph')), { role: 'img' }),
           dpDefs('og'),
           dpWell('og', PL, PT, W - PL - PR, H - PT - PB, 6),
           [0, 25, 50, 75, 100].map(function(pct) {
@@ -4355,8 +4361,8 @@ window.StemLab = window.StemLab || {
           h('summary', { className: 'px-3 py-2 text-sm font-bold cursor-pointer', style: bigStyle }, fillT(t('stem.dataplot.table_summary', 'Data table ({n} rows)'), { n: points.length })),
           h('div', { className: 'p-3 pt-0 space-y-2' },
             h('div', { className: 'flex gap-2 items-end flex-wrap' },
-              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_x', 'New {x}'), { x: xName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-x-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.key === 'Enter') addRow(); } })),
-              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_y', 'New {y}'), { y: yName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-y-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.key === 'Enter') addRow(); } })),
+              h('div', null, h('label', { htmlFor: 'dp-x-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_x', 'New {x}'), { x: xName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-x-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') addRow(); } })),
+              h('div', null, h('label', { htmlFor: 'dp-y-input', className: 'text-xs font-bold text-slate-800 block' }, fillT(t('stem.dataplot.new_y', 'New {y}'), { y: yName })), h('input', { type: 'text', inputMode: 'decimal', id: 'dp-y-input', className: 'w-24 px-2 py-1 text-sm border border-slate-500 rounded text-center font-mono', style: chipStyle, onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') addRow(); } })),
               h('button', { type: 'button', style: bigStyle, onClick: addRow, className: 'px-3 py-1 bg-teal-700 text-white font-bold rounded text-sm hover:bg-teal-800' }, t('stem.dataplot.add_row', '+ Add row'))),
             points.length > 0 && h('div', { className: 'overflow-x-auto', style: { maxHeight: 320, overflowY: 'auto', position: 'relative' } },
               h('table', { className: 'w-full text-sm border-collapse' },
@@ -4615,7 +4621,7 @@ window.StemLab = window.StemLab || {
               h('label', { htmlFor: id, className: 'font-bold block' }, s.prompt || t('stem.dataplot.we_your_turn', 'Your turn: work out this step.')),
               h('div', { className: 'flex gap-2 flex-wrap items-center mt-1' },
                 h('input', { id: id, type: 'text', inputMode: 'decimal', key: id + ':' + (a.tries || 0), defaultValue: '', className: 'w-28 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: chipStyle,
-                  onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.parentNode.querySelector('button').click(); } } }),
+                  onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.parentNode.querySelector('button').click(); } } }),
                 h('button', { type: 'button', style: chipStyle, onClick: function (e) {
                   var el = document.getElementById(id), v = el ? toNumber(el.value, ';') : NaN, nx = Object.assign({}, answers);
                   if (!dpFin(v)) { say(t('stem.dataplot.sr_type_number', 'Type a number first.')); return; }
@@ -4974,7 +4980,7 @@ window.StemLab = window.StemLab || {
               }))
             : q.numeric ? h('div', { className: 'flex gap-2 items-end flex-wrap' },
                 h('label', { className: 'text-xs font-bold text-slate-900' }, t('stem.dataplot.your_answer', 'Your answer'),
-                  h('input', { id: 'dp-quiz-num', type: 'text', inputMode: 'decimal', disabled: q.answered, key: 'num-' + q.key + '-' + (q.tries || 0), defaultValue: '', onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); answerQuiz(e.target.value); } }, className: 'block mt-1 w-32 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: chipStyle })),
+                  h('input', { id: 'dp-quiz-num', type: 'text', inputMode: 'decimal', disabled: q.answered, key: 'num-' + q.key + '-' + (q.tries || 0), defaultValue: '', onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); answerQuiz(e.target.value); } }, className: 'block mt-1 w-32 px-2 py-1 text-sm border border-slate-500 rounded font-mono', style: chipStyle })),
                 !q.answered && h('button', { type: 'button', style: bigStyle, 'data-dataplot-quiz-check': true, onClick: function () { var el = document.getElementById('dp-quiz-num'); answerQuiz(el ? el.value : ''); }, className: 'px-4 py-1.5 rounded-lg text-sm font-bold bg-teal-700 text-white' }, t('stem.dataplot.check', 'Check')))
             : null,
             h('div', { role: 'status', 'aria-live': 'polite', 'data-dataplot-quiz-feedback': true },
@@ -6064,7 +6070,7 @@ window.StemLab = window.StemLab || {
                ['noiseSD', t('stem.dataplot.noise_sd', 'Noise SD'), 0, 3, 0.1, fmtFixed(iq.noiseSD, 1)], ['outlierCount', t('stem.dataplot.outliers_2', 'Outliers'), 0, 10, 1, String(iq.outlierCount)]].map(function (s) {
                 return h('label', { key: s[0], className: 'text-xs' },
                   h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, s[1]), h('span', { className: 'font-mono font-bold', style: { color: sm.color } }, s[5])),
-                  h('input', { type: 'range', min: s[2], max: s[3], step: s[4], value: iq[s[0]], onChange: function(e) { setKey(s[0], s[0] === 'n' || s[0] === 'outlierCount' ? parseInt(e.target.value, 10) : parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 28 } }));
+                  h('input', { type: 'range', min: s[2], max: s[3], step: s[4], value: iq[s[0]], 'aria-valuetext': s[1] + ': ' + s[5], onChange: function(e) { setKey(s[0], s[0] === 'n' || s[0] === 'outlierCount' ? parseInt(e.target.value, 10) : parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 44 } }));
               })),
             h('div', { className: 'flex gap-2 mb-2' },
               h('button', { type: 'button', onClick: function() {
@@ -6259,6 +6265,7 @@ window.StemLab = window.StemLab || {
         return h('button', { key: id, type: 'button', id: 'data-plot-tab-' + id, 'aria-controls': 'data-plot-panel-' + id, tabIndex: active ? 0 : -1, 'data-dataplot-on-path': onPath ? 'true' : undefined,
           'aria-describedby': onPath && d.pathOpen === true ? 'dp-path-note' : undefined,
           style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere', boxShadow: onPath && !active ? 'inset 0 4px 0 ' + (isContrast ? '#ffff00' : isDarkUI ? '#22d3ee' : '#0e7490') : undefined }, onKeyDown: function(e) {
+          if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
           var index = dataPlotTabOrder.indexOf(id), next = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % dataPlotTabOrder.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + dataPlotTabOrder.length - 1) % dataPlotTabOrder.length;

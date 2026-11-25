@@ -90,7 +90,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       role: 'Professor of animal science, Colorado State University; designed humane livestock-handling systems used across North American agriculture; among the most-known autistic adults in the world.',
       icon: '🐄', color: '#fbbf24',
       quote: 'Different, not less.',
-      context: 'A phrase that became Grandin\'s public refrain, reinforced by the title of her mother\'s memoir and the HBO biopic of her life. She has consistently framed her autism as the source of her professional success — visual thinking enabled cattle-handling design that revolutionized humane slaughterhouse architecture.',
+      context: 'A phrase that became Grandin\'s public refrain, popularized by the 2010 HBO biopic and used as the title of her 2012 book Different... Not Less. She has consistently framed her autism as the source of her professional success \u2014 visual thinking enabled cattle-handling design that revolutionized humane slaughterhouse architecture.',
       source: 'Thinking in Pictures (1995); HBO biopic Temple Grandin (2010); decades of public lectures'
     },
     {
@@ -98,7 +98,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       role: 'Autistic sociologist, University of Kent; developed the Double Empathy Problem framework that reframes autism social-skill "deficits" as two-way mismatches in mutual understanding.',
       icon: '⇄', color: '#22d3ee',
       quote: 'In a sense it is a \'double problem\' as both people experience it, and so it is not a singular problem located in any one person. Rather, it is based in the social interaction between two differently disposed social actors.',
-      context: 'Milton\'s 2012 paper has been cited thousands of times and is one of the most-cited works in autism research. It directly challenges the foundational assumption of much social-skills training: that the autistic person is the one who needs to change. Subsequent research (Crompton et al. 2020) found autistic-to-autistic communication is actually highly effective — supporting Milton\'s reframe.',
+      context: 'Milton\'s 2012 paper has been cited thousands of times and is one of the most influential recent papers in autism research. It directly challenges the foundational assumption of much social-skills training: that the autistic person is the one who needs to change. Subsequent research (Crompton et al. 2020) found autistic-to-autistic communication is actually highly effective \u2014 supporting Milton\'s reframe.',
       source: 'Milton D. (2012). "On the ontological status of autism: the \'double empathy problem\'." Disability & Society, 27(6), 883-887 — open access via the Kent Academic Repository; Crompton et al. (2020), Autism'
     },
     {
@@ -107,7 +107,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       icon: '📊', color: '#a78bfa',
       quote: 'Nearly half (46 percent) of the ABA-exposed respondents met the diagnostic threshold for PTSD, and extreme levels of severity were recorded in 47 percent of the affected subgroup.',
       context: 'The Kupferstein survey (n=460) reported that 46% of ABA-exposed respondents indicated post-traumatic stress symptoms, while 72% of non-exposed respondents were asymptomatic. Read those two numbers carefully: they describe opposite things, so they are not a 46-versus-72 comparison. Methodologists have contested this study hard — self-report, retrospective, no clinical diagnosis, and recruitment through communities already critical of ABA (Leaf et al. 2018, published in the same journal). In December 2025 the journal issued an Expression of Concern over a possible error in research standards; as of 2026 that investigation is unresolved, and the paper is neither cleared nor retracted. Treat this as a contested claim, not a settled finding. It still belongs here because the survey is a documented turning point in how the autistic community pressed the field on harm — that history is real whatever becomes of the statistic.',
-      source: 'Kupferstein H. (2018). "Evidence of increased PTSD symptoms in autistics exposed to applied behavior analysis." Advances in Autism, 4(1), 19-29 — subject to a publisher Expression of Concern (Advances in Autism, 3 December 2025), investigation unresolved. Read it alongside the critique: Leaf et al. (2018), Advances in Autism, 4(3), 122-129, and Kupferstein\'s reply, 5(4), 318-321.'
+      source: 'Kupferstein H. (2018). "Evidence of increased PTSD symptoms in autistics exposed to applied behavior analysis." Advances in Autism, 4(1), 19-29 \u2014 subject to a publisher Expression of Concern (Advances in Autism, 3 December 2025), investigation unresolved. Read it alongside the critique: Leaf et al. (2018), Advances in Autism, 4(3), 122-129, and the response by Chown, Hughes, Leatherland & Davison (2019), Advances in Autism, 5(4), 318.'
     },
     {
       name: 'Kassiane Asasumasu',
@@ -127,11 +127,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     },
     {
       name: 'Mel Baggs (1980–2020)',
-      role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video In My Language was the first widely-shared first-person account of nonspeaking autistic experience — viewed millions of times, taught in disability-studies courses since.',
+      role: 'Nonspeaking autistic activist, writer, and YouTuber. The 2007 video In My Language was the first widely-shared first-person account of nonspeaking autistic experience \u2014 widely viewed, taught in disability-studies courses since.',
       icon: '✊', color: '#94a3b8',
       quote: 'My language is not about designing words or even visual symbols for people to interpret. It is about being in a constant conversation with every aspect of my environment.',
       context: 'Baggs\'s video opens with several minutes of what looks like "stimming" to outsiders. The second half translates: each behavior was a form of conversation with their environment — touching water, swaying with humming, tasting a doorknob. The video changed how many disability-studies instructors and BCBAs frame what "behavior" is, and what it means to communicate. Baggs died in 2020; their writing remains foundational.',
-      source: 'In My Language (2007, YouTube, ~28M views as of 2024); Ballastexistenz blog; CNN interview 2007'
+      source: 'In My Language (2007, YouTube); Ballastexistenz blog; CNN interview 2007'
     },
     {
       name: 'Ly Xīnzhèn M. Zhǎngsūn Brown',
@@ -161,7 +161,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
   // author, year, format (book/paper/video/blog), and a one-line on
   // why it matters. Lets students who want to go deeper find a path.
   var READING_LIST = [
-    { author: 'Mel Baggs', year: 2007, title: 'In My Language', format: 'Video (YouTube)', why: 'The single most-watched first-person account of nonspeaking autistic experience. ~28 minutes. Free.' },
+    { author: 'Mel Baggs', year: 2007, title: 'In My Language', format: 'Video (YouTube)', why: 'A landmark first-person account of nonspeaking autistic experience. About 9 minutes. Free.' },
     { author: 'Damian Milton', year: 2012, title: 'On the ontological status of autism: the double empathy problem', format: 'Peer-reviewed paper', why: 'Foundational paper reframing autism social-skill "deficits" as a two-way mismatch.' },
     { author: 'Steve Silberman', year: 2015, title: 'NeuroTribes', format: 'Book (popular history)', where: 'Available at most libraries', why: 'Sweeping history of autism research from Asperger and Kanner to the neurodiversity movement. Widely cited starting point.' },
     { author: 'Eric Garcia', year: 2021, title: 'We\'re Not Broken: Changing the Autism Conversation', format: 'Book (journalism)', why: 'Autistic journalist Eric Garcia interviews dozens of autistic adults across the US on housing, work, and care.' },
@@ -209,7 +209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     {
       name: 'National Center for Learning Disabilities (NCLD)',
       scope: 'National', icon: '📊', color: '#fbbf24',
-      what: 'Research, policy, and advocacy on specific learning disabilities (SLD) and ADHD. Publishes the "State of LD" report annually with state-by-state data. Strong free resources for parents navigating IEP-team meetings — useful background reading for school-psych work.',
+      what: 'Research, policy, and advocacy on specific learning disabilities (SLD) and ADHD. Periodically publishes the "State of LD" report with state-by-state data. Strong free resources for parents navigating IEP-team meetings \u2014 useful background reading for school-psych work.',
       web: 'ncld.org',
       maine: false
     },
@@ -230,7 +230,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     {
       name: 'CommunicationFIRST',
       scope: 'National', icon: '🗣️', color: '#f472b6',
-      what: 'The only nonprofit dedicated to protecting and advancing the civil rights of the 5+ million Americans who, due to disability or other condition, cannot rely on speech alone to be heard and understood. Strong work on AAC access, supported decision-making, and the rights of nonspeaking autistic people. Founded by lawyer Bob Williams.',
+      what: 'The only nonprofit dedicated to protecting and advancing the civil rights of the estimated 5 million Americans who, due to disability or other condition, cannot rely on speech alone to be heard and understood. Strong work on AAC access, supported decision-making, and the rights of nonspeaking autistic people. Co-founded in 2019 by Bob Williams, a former federal disability-policy leader who uses AAC himself.',
       web: 'communicationfirst.org',
       maine: false
     },
@@ -298,9 +298,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       }
       var view = DV_TAB_IDS.indexOf(d.view) !== -1 ? d.view : 'home';
 
-      // The polite live region is created at load; without this it was never
-      // written to, so switching sections was silent to screen readers.
+      // The polite live region is created at load; bridge host announceToSR
+      // while always updating #allo-live-disvoices for assistive tech & tests.
       function _disAnnounce(msg) {
+        if (!msg) return;
+        if (ctx && typeof ctx.announceToSR === 'function') {
+          try { ctx.announceToSR(msg); } catch (_) {}
+        }
+        if (typeof document === 'undefined') return;
         var region = document.getElementById('allo-live-disvoices');
         if (!region) return;
         region.textContent = '';
@@ -317,6 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       // WCAG/APG tab pattern: arrows move between tabs, Home/End jump to the
       // ends, and focus follows selection.
       function dvTabKeyDown(e, index) {
+        if (isImeComposing(e)) return;
         var key = e.key;
         if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
         e.preventDefault();
@@ -331,6 +337,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       }
 
       function header() {
+        var hdrEdge = '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#fbcfe8' : 'rgba(244,114,182,0.20)'));
         return h('div', {
           className: 'no-print',
           style: {
@@ -341,23 +348,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             padding: '14px 16px',
             borderRadius: 14,
             background: _disHC ? '#000000' : (_disL ? '#fdf2f8' : 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(249,168,212,0.10), transparent 70%), #0f172a'),
-            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#fbcfe8' : 'rgba(244,114,182,0.20)')),
+            borderTop: hdrEdge,
+            borderRight: hdrEdge,
+            borderBottom: hdrEdge,
             borderLeft: '4px solid ' + _disBd('#f472b6')
           }
         },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.06)'), border: '1px solid ' + _disBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _disFg('#cbd5e1'), fontSize: 14, flexShrink: 0 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.06)'), border: '1px solid ' + _disBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _disFg('#cbd5e1'), fontSize: 14, fontWeight: 700, flexShrink: 0 } }, '← Back'),
           // Circular accent hero badge — same vocabulary as the rest
           // of the design system. 56px hero size matches School
           // Behavior Toolkit + TypingPractice drill-intro.
           h('div', { 'aria-hidden': 'true',
             style: {
               width: 56, height: 56, borderRadius: '50%',
-              background: 'rgba(244,114,182,0.18)',
-              border: '2px solid #f472b6',
+              background: _disHC ? '#000000' : (_disL ? '#fce7f3' : 'rgba(244,114,182,0.18)'),
+              border: '2px solid ' + _disBd('#f472b6'),
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 28, lineHeight: 1, flexShrink: 0,
-              boxShadow: '0 4px 16px rgba(244,114,182,0.25)'
+              boxShadow: _disHC ? 'none' : '0 4px 16px rgba(244,114,182,0.25)'
             }
           }, '🎙️'),
           h('div', { style: { flex: 1, minWidth: 240 } },
@@ -366,8 +375,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               // Meta-count chip showing total voices + reading entries
               h('span', { style: {
                 padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(244,114,182,0.12)',
-                border: '1px solid rgba(244,114,182,0.40)',
+                background: _disHC ? '#000000' : (_disL ? '#fce7f3' : 'rgba(244,114,182,0.12)'),
+                border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#f9a8d4' : 'rgba(244,114,182,0.40)')),
                 color: _disFg('#f9a8d4'), fontSize: 12, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
               } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings · ' + ORGANIZATIONS.length + ' orgs')
@@ -388,15 +397,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Disability Voices sections',
           style: {
             display: 'flex', gap: 4, marginBottom: 16,
-            borderBottom: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(244,114,182,0.15)'),
+            borderBottom: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#fbcfe8' : 'rgba(244,114,182,0.15)')),
             alignItems: 'flex-end',
             overflowX: 'auto'
           }
         },
           tabs.map(function(tab) {
             var active = view === tab.id;
+            var tabEdge = '1px solid ' + (active ? (_disHC ? '#ffff00' : (_disL ? '#f9a8d4' : 'rgba(244,114,182,0.30)')) : 'transparent');
             return h('button', {
               key: tab.id,
+              type: 'button',
               role: 'tab',
               id: 'disvoices-tab-' + tab.id,
               'aria-controls': 'disvoices-panel-' + tab.id,
@@ -407,8 +418,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               style: {
                 position: 'relative',
                 padding: '10px 14px 12px',
-                border: 'none',
-                background: active ? (_disHC ? '#000000' : 'rgba(244,114,182,0.10)') : 'transparent',
+                minHeight: 44,
+                display: 'inline-flex',
+                alignItems: 'center',
+                borderTop: tabEdge,
+                borderLeft: tabEdge,
+                borderRight: tabEdge,
+                borderBottom: 'none',
+                background: active ? (_disHC ? '#000000' : (_disL ? '#fce7f3' : 'rgba(244,114,182,0.10)')) : 'transparent',
                 color: active ? _disFg('#f9a8d4') : _disFg('#94a3b8'),
                 fontSize: 14,
                 fontWeight: active ? 800 : 600,
@@ -416,9 +433,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 borderRadius: '8px 8px 0 0',
-                borderTop: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
-                borderLeft: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
-                borderRight: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
                 marginBottom: -1,
                 transition: 'color 140ms ease, background 140ms ease'
               }
@@ -437,11 +451,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       }
 
       function renderHome() {
+        var cardEdge = '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'));
+        var quoteEdge = _disHC ? '1px solid #ffff00' : (_disL ? '1px solid #e2e8f0' : 'none');
         return h('div', null,
           h('div', { style: {
             padding: '12px 14px', borderRadius: 10,
-            background: 'rgba(244,114,182,0.08)',
-            border: '1px solid rgba(244,114,182,0.30)',
+            background: _disHC ? '#000000' : (_disL ? '#fdf2f8' : 'rgba(244,114,182,0.08)'),
+            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#fbcfe8' : 'rgba(244,114,182,0.30)')),
             marginBottom: 14
           } },
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -455,7 +471,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   background: _disBg('#0f172a'),
                   borderRadius: 12,
                   padding: '14px 16px',
-                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderTop: cardEdge,
+                  borderRight: cardEdge,
+                  borderBottom: cardEdge,
                   borderLeft: '4px solid ' + _disBd(v.color)
                 }
               },
@@ -481,7 +499,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   style: {
                     padding: '12px 14px', borderRadius: 8,
                     background: _disHC ? '#000000' : (_disL ? '#ffffff' : v.color + '12'),
-                    border: _disHC ? '1px solid #ffff00' : (_disL ? '1px solid #e2e8f0' : 'none'),
+                    borderTop: quoteEdge,
+                    borderRight: quoteEdge,
+                    borderBottom: quoteEdge,
                     borderLeft: '3px solid ' + _disBd(v.color),
                     marginBottom: 10
                   }
@@ -512,8 +532,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           h('div', {
             style: {
               marginTop: 14, padding: '12px 14px', borderRadius: 10,
-              background: 'rgba(167,139,250,0.06)',
-              border: '1px solid rgba(167,139,250,0.20)',
+              background: _disHC ? '#000000' : (_disL ? '#f5f3ff' : 'rgba(167,139,250,0.06)'),
+              border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#ddd6fe' : 'rgba(167,139,250,0.20)')),
               color: _disFg('#cbd5e1'), fontSize: 14, lineHeight: 1.65, fontStyle: 'italic'
             }
           },
@@ -523,19 +543,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
 
       function renderReading() {
         var marked = d.readingMarkedList;
-        function toggleMarked(key) {
+        var cardEdge = '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'));
+        function toggleMarked(key, title) {
+          var wasMarked = !!marked[key];
           setDV(function(prior) {
             var priorMarked = (prior.readingMarkedList && typeof prior.readingMarkedList === 'object' && !Array.isArray(prior.readingMarkedList)) ? prior.readingMarkedList : {};
             var next = Object.assign({}, priorMarked);
             if (next[key]) delete next[key]; else next[key] = todayISO();
             return { readingMarkedList: next };
           });
+          if (title) _disAnnounce((wasMarked ? 'Unmarked ' : 'Marked ') + title);
         }
         return h('div', null,
           h('div', { style: {
             padding: '12px 14px', borderRadius: 10,
-            background: _disHC ? '#000000' : 'rgba(34,197,94,0.06)',
-            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(34,197,94,0.20)'),
+            background: _disHC ? '#000000' : (_disL ? '#f0fdf4' : 'rgba(34,197,94,0.06)'),
+            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#bbf7d0' : 'rgba(34,197,94,0.20)')),
             marginBottom: 14
           } },
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -551,7 +574,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   background: _disBg('#0f172a'),
                   borderRadius: 10,
                   padding: '12px 14px',
-                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderTop: cardEdge,
+                  borderRight: cardEdge,
+                  borderBottom: cardEdge,
                   borderLeft: isMarked ? '4px solid ' + _disBd('#22c55e') : '4px solid ' + (_disHC ? '#ffff00' : 'rgba(100,116,139,0.4)'),
                   display: 'flex', gap: 12, alignItems: 'flex-start'
                 }
@@ -563,15 +588,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.55 } }, r.why)
                 ),
                 h('button', {
-                  onClick: function() { toggleMarked(key); },
+                  type: 'button',
+                  onClick: function() { toggleMarked(key, r.title); },
                   'aria-label': (isMarked ? 'Unmark ' : 'Mark ') + r.title,
                   'aria-pressed': isMarked ? 'true' : 'false',
                   style: {
                     flexShrink: 0,
-                    background: isMarked ? (_disHC ? '#000000' : 'rgba(34,197,94,0.16)') : (_disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.04)')),
+                    background: isMarked ? (_disHC ? '#000000' : (_disL ? '#dcfce7' : 'rgba(34,197,94,0.16)')) : (_disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.04)')),
                     border: '1px solid ' + (isMarked ? _disBd('#22c55e') : _disBd('#334155')),
                     color: isMarked ? _disFg('#86efac') : _disFg('#94a3b8'),
-                    padding: '6px 10px',
+                    padding: '10px 14px',
+                    minHeight: 44,
+                    display: 'inline-flex',
+                    alignItems: 'center',
                     borderRadius: 8,
                     fontSize: 12,
                     fontWeight: 700,
@@ -585,11 +614,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       }
 
       function renderOrganizations() {
+        var cardEdge = '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'));
         return h('div', null,
           h('div', { style: {
             padding: '12px 14px', borderRadius: 10,
-            background: _disHC ? '#000000' : 'rgba(34,211,238,0.06)',
-            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(34,211,238,0.20)'),
+            background: _disHC ? '#000000' : (_disL ? '#ecfeff' : 'rgba(34,211,238,0.06)'),
+            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#a5f3fc' : 'rgba(34,211,238,0.20)')),
             marginBottom: 14
           } },
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -602,7 +632,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   background: _disBg('#0f172a'),
                   borderRadius: 12,
                   padding: '14px 16px',
-                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderTop: cardEdge,
+                  borderRight: cardEdge,
+                  borderBottom: cardEdge,
                   borderLeft: '4px solid ' + _disBd(o.color)
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 } },
@@ -620,8 +652,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg(o.color), lineHeight: 1.2 } }, o.name),
                       h('span', { style: {
                         padding: '1px 7px', borderRadius: 999,
-                        background: _disHC ? '#000000' : (o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)'),
-                        border: '1px solid ' + (_disHC ? '#ffff00' : (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)')),
+                        background: _disHC ? '#000000' : (o.maine ? (_disL ? '#e0f2fe' : 'rgba(14,165,233,0.18)') : (_disL ? '#f1f5f9' : 'rgba(148,163,184,0.10)')),
+                        border: '1px solid ' + (_disHC ? '#ffff00' : (o.maine ? (_disL ? '#7dd3fc' : 'rgba(14,165,233,0.40)') : (_disL ? '#cbd5e1' : 'rgba(148,163,184,0.25)'))),
                         color: o.maine ? _disFg('#7dd3fc') : _disFg('#94a3b8'),
                         fontSize: 12, fontWeight: 700,
                         fontFamily: 'ui-monospace, Menlo, monospace',
@@ -642,8 +674,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           ),
           h('div', { style: {
             marginTop: 14, padding: '12px 14px', borderRadius: 10,
-            background: _disHC ? '#000000' : 'rgba(167,139,250,0.06)',
-            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(167,139,250,0.20)'),
+            background: _disHC ? '#000000' : (_disL ? '#f5f3ff' : 'rgba(167,139,250,0.06)'),
+            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#ddd6fe' : 'rgba(167,139,250,0.20)')),
             color: _disFg('#cbd5e1'), fontSize: 14, lineHeight: 1.65, fontStyle: 'italic'
           } },
             '💡 Following a few of these on social media is one of the easier continuing-education paths. National orgs (ASAN, Sins Invalid, AWN, CommunicationFIRST) are active on Bluesky and Mastodon. Disability Rights Maine and the Maine DD Council post events relevant to families and staff serving Mainers with disabilities. Show up to one virtual event per month and the field changes for you fast.')
@@ -672,7 +704,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'On identity-first language'),
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
-              'This tool uses identity-first language ("autistic person," "disabled person") rather than person-first ("person with autism," "person with a disability"). This follows the consensus of the autistic adult community as documented in peer-reviewed research (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). Some individuals prefer person-first; honor any specific person\'s preference when known.')
+              'This tool uses identity-first language ("autistic person," "disabled person") rather than person-first ("person with autism," "person with a disability"). This follows the preference of most autistic adults in surveys, as documented in peer-reviewed research (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). Some individuals prefer person-first; honor any specific person\'s preference when known.')
           ),
           h('div', {
             style: {
@@ -694,7 +726,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       else if (view === 'about') content = renderAbout();
       else content = renderHome();
 
-      return h('div', { role: 'region', 'aria-label': 'Disability Voices', style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
+      return h('div', { className: 'selh-disvoices', role: 'region', 'aria-label': 'Disability Voices', style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
         header(),
         navTabs(),
         // role="tablist" without a matching panel left screen readers on an

@@ -19,6 +19,8 @@ const styles = (props) => {
   const collect = node => {
     if (!node || typeof node !== 'object') return '';
     if (node.type === 'style') return '<style>' + node.props.children + '</style>';
+    // The unconditional sheet lives in a memoized child (AppStylesStatic); render it too.
+    if (node.type && node.type.$$typeof === Symbol.for('react.memo')) return collect(node.type.type(node.props || {}));
     return React.Children.toArray(node.props?.children).map(collect).join('');
   };
   return collect(tree);

@@ -146,6 +146,8 @@ describe('IMS package from the Builder preview', () => {
     _removeStudentPackageTeacherSections: removeTeacher, altExportBusy: '', addToast: vi.fn(), t: () => '', onExportSuccess: vi.fn(), exportConfig: {},
     beginAlternativeExport: () => true, finishAlternativeExport: () => {}, qtiAssessments: [], selectedQtiKey: '', h5pActivities: [], selectedH5PKey: '',
     handleExportQTI: null, handleExportH5P: null, handleExportIMS: vi.fn(async () => true),
+    builderResourceIds: [], // closure dep added for the QTI/H5P handlers
+
     getCleanBuilderDocument: vi.fn((options) => { const clone = new DOMParser().parseFromString(page, 'text/html').documentElement; if (!options.keepScripts) clone.querySelectorAll('script').forEach((n) => n.remove()); return { clone, title: 'Lesson', html: '<!DOCTYPE html>\n' + clone.outerHTML }; }),
     ...overrides,
   });

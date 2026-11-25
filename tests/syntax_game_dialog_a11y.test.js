@@ -28,6 +28,6 @@ describe('Syntax Builder dialog accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('<Layout size={24} aria-hidden="true"/>');
     expect(source).toContain('<Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>');
-    expect(source).toContain("useReducedMotion() ? '' : ' animate-in zoom-in-95'");
+    expect(source).toContain("useReducedMotion() ? '' : ' animate-in motion-reduce:animate-none zoom-in-95'");
   });
 });

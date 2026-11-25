@@ -6,12 +6,13 @@
  */
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.MtssTriage) {
-    console.log('[CDN] MtssTriage already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] MtssTriage already loaded, skipping');
     return;
   }
   (function() {
-    if (document.getElementById('allo-live-mtss')) return;
+    if (typeof document !== 'object' || !document || !document.body || document.getElementById('allo-live-mtss')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-mtss';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -22,7 +23,7 @@
     document.body.appendChild(liveRegion);
   })();
   var React = window.React;
-  if (!React) { console.error('[MtssTriage] React not found on window'); return; }
+  if (!React) { if (typeof console === 'object' && console && typeof console.error === 'function') console.error('[MtssTriage] React not found on window'); return; }
 
 const MTSS_DATASETS_KEY = "allo_mtss_datasets_v1";
 const MTSS_GROUPS_KEY = "allo_mtss_groups_v1";
@@ -84,8 +85,25 @@ function mtssToday() {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 function mtssSplitRow(line) {
-  if (line.indexOf("	") !== -1) return line.split("	");
-  const sep = line.indexOf(";") !== -1 ? ";" : ",";
+  if (line.indexOf("	") !== -1) {
+    return line.split("	").map((cell) => {
+      const trimmed = cell.trim();
+      return trimmed.length >= 2 && trimmed[0] === '"' && trimmed[trimmed.length - 1] === '"' ? trimmed.slice(1, -1).replace(/""/g, '"') : trimmed;
+    });
+  }
+  let hasUnquotedSemi = false;
+  let inQ = false;
+  for (const ch of line) {
+    if (ch === '"') {
+      inQ = !inQ;
+      continue;
+    }
+    if (ch === ";" && !inQ) {
+      hasUnquotedSemi = true;
+      break;
+    }
+  }
+  const sep = hasUnquotedSemi ? ";" : ",";
   const out = [];
   let cur = "";
   let quoted = false;
@@ -131,7 +149,7 @@ function mtssParsePaste(text) {
   return { rows, skipped };
 }
 function mtssNum(v) {
-  if (v == null || String(v).trim() === "") return NaN;
+  if (v == null || typeof v === "boolean" || typeof v === "symbol" || String(v).trim() === "") return NaN;
   return Number(v);
 }
 function mtssTierOf(score, cutpoints) {
@@ -139,10 +157,12 @@ function mtssTierOf(score, cutpoints) {
   const t3 = mtssNum(cutpoints && cutpoints.tier3Cut);
   if (!Number.isFinite(score) || !Number.isFinite(t2) || !Number.isFinite(t3)) return null;
   if (cutpoints.higherBetter) {
+    if (!(t3 < t2)) return null;
     if (score >= t2) return 1;
     if (score >= t3) return 2;
     return 3;
   }
+  if (!(t3 > t2)) return null;
   if (score <= t2) return 1;
   if (score <= t3) return 2;
   return 3;
@@ -161,7 +181,7 @@ function mtssBoard(dataset) {
   const seen = /* @__PURE__ */ new Set();
   (dataset && Array.isArray(dataset.rows) ? dataset.rows : []).forEach((r) => {
     const code = String(r && r.code || "").trim();
-    const score = Number(r && r.score);
+    const score = mtssNum(r && r.score);
     if (!code || !Number.isFinite(score)) {
       invalid.push(r);
       return;
@@ -241,12 +261,13 @@ function mtssSiblingCounts(storage, options) {
       return { walkthroughVisits: 0, disproAnalyses: 0, meetings: 0, spedOpen: 0 };
     }
   }
+  const safeParse = (raw) => JSON.parse(raw, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
   const read = (key, targetStorage) => {
     try {
       const src = targetStorage || storage;
       const raw = src && typeof src.getItem === "function" ? src.getItem(key) : null;
       if (!raw) return 0;
-      const v = JSON.parse(raw);
+      const v = safeParse(raw);
       return Array.isArray(v) ? v.length : 0;
     } catch (_) {
       return 0;
@@ -261,7 +282,7 @@ function mtssSiblingCounts(storage, options) {
       try {
         const raw = spedStorage && typeof spedStorage.getItem === "function" ? spedStorage.getItem("allo_sped_cases_v1") : null;
         if (!raw) return 0;
-        const v = JSON.parse(raw);
+        const v = safeParse(raw);
         return Array.isArray(v) ? v.filter((c) => c && !c.completedAt).length : 0;
       } catch (_) {
         return 0;
@@ -288,14 +309,20 @@ function mtssCsv(dataset) {
 }
 function mtssDownload(filename, mime, content, addToast, okMsg, failMsg) {
   try {
+    const safeName = String(filename || "mtss.csv").replace(/[\\/:*?"<>|\u0000-\u001f]+/g, "-").replace(/\s+/g, "-");
     const url = URL.createObjectURL(new Blob([content], { type: mime }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = safeName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 4e3);
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (_) {
+      }
+    }, 4e3);
     addToast(okMsg, "info");
   } catch (e) {
     addToast(failMsg + String(e && e.message), "error");
@@ -303,10 +330,15 @@ function mtssDownload(filename, mime, content, addToast, okMsg, failMsg) {
 }
 function mtssAnnounce(message) {
   try {
-    const region = document.getElementById("allo-live-mtss");
+    const region = typeof document !== "undefined" && document.getElementById("allo-live-mtss");
     if (region) {
       region.textContent = "";
-      region.textContent = message;
+      setTimeout(() => {
+        try {
+          if (region.isConnected) region.textContent = message;
+        } catch (_) {
+        }
+      }, 0);
     }
   } catch (_) {
   }
@@ -331,16 +363,18 @@ function MtssTriagePanel(props) {
   }, [t]);
   const [datasets, setDatasets] = React.useState(() => {
     const v = mtssLoad(MTSS_DATASETS_KEY, []);
-    return Array.isArray(v) ? v : [];
+    return Array.isArray(v) ? v.filter((d) => d && typeof d === "object") : [];
   });
   const [groups, setGroups] = React.useState(() => {
     const v = mtssLoad(MTSS_GROUPS_KEY, []);
-    return Array.isArray(v) ? v : [];
+    return Array.isArray(v) ? v.filter((g) => g && typeof g === "object") : [];
   });
+  const datasetsDirtyRef = React.useRef(false);
+  const groupsDirtyRef = React.useRef(false);
   const [tab, setTab] = React.useState("screen");
   const [activeId, setActiveId] = React.useState(null);
   const [form, setForm] = React.useState({ label: "", window: "", higherBetter: true, tier2Cut: "", tier3Cut: "", paste: "" });
-  const [checked, setChecked] = React.useState({});
+  const [checked, setChecked] = React.useState(() => /* @__PURE__ */ Object.create(null));
   const [groupName, setGroupName] = React.useState("");
   const [groupFocus, setGroupFocus] = React.useState("");
   const [progA, setProgA] = React.useState("");
@@ -350,11 +384,14 @@ function MtssTriagePanel(props) {
   const [armDelete, setArmDelete] = React.useState(null);
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
-    mtssStore(MTSS_DATASETS_KEY, datasets);
+    if (datasetsDirtyRef.current) mtssStore(MTSS_DATASETS_KEY, datasets);
   }, [datasets]);
   React.useEffect(() => {
-    mtssStore(MTSS_GROUPS_KEY, groups);
+    if (groupsDirtyRef.current) mtssStore(MTSS_GROUPS_KEY, groups);
   }, [groups]);
+  React.useEffect(() => {
+    setArmDelete(null);
+  }, [tab, activeId]);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
   React.useEffect(() => {
@@ -494,10 +531,16 @@ function MtssTriagePanel(props) {
       if (wasTop && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);
+  const isCheckedCode = (map, code) => Object.prototype.hasOwnProperty.call(map, code) && !!map[code];
+  const vaultLocked = mtssVaultBackend().mode === "locked";
   const active = activeId ? datasets.find((d) => d.id === activeId) : null;
-  const board = active ? mtssBoard(active) : null;
-  const context = mtssSiblingCounts(typeof localStorage !== "undefined" ? localStorage : { getItem: () => null });
+  const board = React.useMemo(() => active ? mtssBoard(active) : null, [active]);
+  const context = React.useMemo(() => mtssSiblingCounts(typeof localStorage !== "undefined" ? localStorage : { getItem: () => null }), [tab, datasets.length]);
   const saveDataset = () => {
+    if (mtssVaultBackend().mode === "locked") {
+      addToast(tt("mtss.vault_locked", "Unlock the Sensitive Workspace vault before saving screening windows."), "warning");
+      return;
+    }
     const rawCuts = { higherBetter: !!form.higherBetter, tier2Cut: form.tier2Cut, tier3Cut: form.tier3Cut };
     const cutError = mtssValidateCuts(rawCuts);
     const cutpoints = { higherBetter: rawCuts.higherBetter, tier2Cut: Number(form.tier2Cut), tier3Cut: Number(form.tier3Cut) };
@@ -522,25 +565,30 @@ function MtssTriagePanel(props) {
       rows: parsed.rows,
       savedAt: Date.now()
     };
+    datasetsDirtyRef.current = true;
     setDatasets((list) => [record, ...list]);
     setActiveId(record.id);
-    setChecked({});
+    setChecked(/* @__PURE__ */ Object.create(null));
     setForm((f) => ({ ...f, paste: "" }));
     const msg = parsed.rows.length + " " + tt("mtss.rows_loaded", "scores loaded.") + (parsed.skipped.length ? " " + parsed.skipped.length + " " + tt("mtss.rows_skipped", "lines skipped.") : "");
     addToast(msg, parsed.skipped.length ? "warning" : "success");
   };
-  const toggleChecked = (code) => setChecked((c) => ({ ...c, [code]: !c[code] }));
+  const toggleChecked = (code) => setChecked((c) => {
+    const next = Object.assign(/* @__PURE__ */ Object.create(null), c);
+    next[code] = !isCheckedCode(c, code);
+    return next;
+  });
   const validBoardCodes = React.useMemo(() => {
     if (!board) return /* @__PURE__ */ new Set();
     return new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
   }, [board]);
-  const selectedCount = Object.keys(checked).filter((k) => checked[k] && validBoardCodes.has(k)).length;
+  const selectedCount = Object.keys(checked).filter((k) => isCheckedCode(checked, k) && validBoardCodes.has(k)).length;
   const toggleTierSelection = (tier) => {
     if (!board || !board.tiers[tier] || board.tiers[tier].length === 0) return;
     const codes = board.tiers[tier].map((r) => r.code);
-    const allSelected = codes.every((code) => !!checked[code]);
+    const allSelected = codes.every((code) => isCheckedCode(checked, code));
     setChecked((prev) => {
-      const next = { ...prev };
+      const next = Object.assign(/* @__PURE__ */ Object.create(null), prev);
       codes.forEach((code) => {
         next[code] = !allSelected;
       });
@@ -548,9 +596,13 @@ function MtssTriagePanel(props) {
     });
   };
   const createGroup = () => {
+    if (mtssVaultBackend().mode === "locked") {
+      addToast(tt("mtss.vault_locked_group", "Unlock the Sensitive Workspace vault before saving groups."), "warning");
+      return;
+    }
     if (!active || !board) return;
     const validCodes = new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
-    const members = Object.keys(checked).filter((k) => checked[k] && validCodes.has(k));
+    const members = Object.keys(checked).filter((k) => isCheckedCode(checked, k) && validCodes.has(k));
     if (members.length === 0) {
       addToast(tt("mtss.need_members", "Check at least one student."), "warning");
       return;
@@ -559,6 +611,7 @@ function MtssTriagePanel(props) {
       addToast(tt("mtss.need_group_name", "Name the group."), "warning");
       return;
     }
+    groupsDirtyRef.current = true;
     setGroups((g) => [{
       id: mtssNextId("mg"),
       name: groupName.trim(),
@@ -568,7 +621,7 @@ function MtssTriagePanel(props) {
       members,
       createdAt: mtssToday()
     }, ...g]);
-    setChecked({});
+    setChecked(/* @__PURE__ */ Object.create(null));
     setGroupName("");
     setGroupFocus("");
     setTab("groups");
@@ -601,7 +654,7 @@ function MtssTriagePanel(props) {
       onClick: (e) => {
         const allow = backdropDownRef.current;
         backdropDownRef.current = false;
-        if (allow && e.target === e.currentTarget) onClose();
+        if (allow && e.target === e.currentTarget && typeof onClose === "function") onClose();
       }
     },
     /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "mtss_panel", className: "allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "92vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "mtss-title", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "mtss-title", className: "text-lg font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🧮"), " ", tt("mtss.title", "MTSS Triage")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, tt("mtss.subtitle", "Screening scores in, team-review flags out — your cut scores, your decisions, on this device."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-xl", "aria-label": tt("mtss.close_aria", "Close MTSS Triage") }, "✕")), /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": tt("mtss.tabs_aria", "Triage sections"), className: "flex gap-1 mt-2" }, tabs.map((tb, tbIdx) => /* @__PURE__ */ React.createElement(
@@ -634,7 +687,7 @@ function MtssTriagePanel(props) {
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tb.icon),
       " ",
       tb.label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "mtss-tabpanel", "aria-labelledby": "mtss-tab-" + tab, tabIndex: -1 }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, tt("mtss.context_strip", "Building context (from this device’s Leadership Hub data):"), " ", context.walkthroughVisits, " ", tt("mtss.ctx_visits", "walkthrough visits"), " · ", context.disproAnalyses, " ", tt("mtss.ctx_dispro", "equity analyses"), " · ", context.spedOpen, " ", tt("mtss.ctx_sped", "open SpEd timelines"), " · ", context.meetings, " ", tt("mtss.ctx_meetings", "meeting records")), tab === "screen" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.new_dataset", "New screening window")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-label", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("mtss.measure_label", "Measure (e.g. ORF grade 3)")), /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "mtss-tabpanel", "aria-labelledby": "mtss-tab-" + tab, tabIndex: -1 }, vaultLocked && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2 mb-3" }, tt("mtss.vault_locked_banner", "Sensitive Workspace is locked. Unlock it before saving or editing MTSS windows and groups.")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, tt("mtss.context_strip", "Building context (from this device’s Leadership Hub data):"), " ", context.walkthroughVisits, " ", tt("mtss.ctx_visits", "walkthrough visits"), " · ", context.disproAnalyses, " ", tt("mtss.ctx_dispro", "equity analyses"), " · ", context.spedOpen, " ", tt("mtss.ctx_sped", "open SpEd timelines"), " · ", context.meetings, " ", tt("mtss.ctx_meetings", "meeting records")), tab === "screen" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.new_dataset", "New screening window")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-label", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("mtss.measure_label", "Measure (e.g. ORF grade 3)")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "mtss-label",
@@ -699,7 +752,7 @@ function MtssTriagePanel(props) {
         "aria-pressed": activeId === d.id,
         onClick: () => {
           setActiveId(d.id);
-          setChecked({});
+          setChecked(/* @__PURE__ */ Object.create(null));
           setBoardQuery("");
         },
         className: "min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold " + (activeId === d.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100")
@@ -707,7 +760,7 @@ function MtssTriagePanel(props) {
       d.label,
       " · ",
       d.window
-    ))), active && board && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, board.total, " ", tt("mtss.students", "students"), " · ", board.invalid.length > 0 ? board.invalid.length + " " + tt("mtss.invalid_rows", "invalid/duplicate rows ignored") : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, board.total >= 6 && /* @__PURE__ */ React.createElement(
+    ))), active && board && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, board.total, " ", tt("mtss.students", "students"), board.invalid.length > 0 ? " · " + board.invalid.length + " " + tt("mtss.invalid_rows", "invalid/duplicate rows ignored") : ""), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, board.total >= 6 && /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "mtss-board-search",
@@ -742,9 +795,12 @@ function MtssTriagePanel(props) {
         type: "button",
         onClick: () => {
           if (armDelete === active.id) {
+            datasetsDirtyRef.current = true;
             setDatasets((l) => l.filter((x) => x.id !== active.id));
+            if (progA === active.id) setProgA("");
+            if (progB === active.id) setProgB("");
             setActiveId(null);
-            setChecked({});
+            setChecked(/* @__PURE__ */ Object.create(null));
             setBoardQuery("");
             setArmDelete(null);
             addToast(tt("mtss.dataset_deleted", "Window deleted."), "info");
@@ -759,7 +815,7 @@ function MtssTriagePanel(props) {
     ))), board.total > 0 && /* @__PURE__ */ React.createElement("div", { "data-mtss-tier-distribution": "true", className: "mb-2.5 rounded-xl border border-slate-200 bg-white p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700 mb-1.5 tabular-nums" }, /* @__PURE__ */ React.createElement("span", null, tt("mtss.distribution_title", "Window distribution")), /* @__PURE__ */ React.createElement("span", { className: "flex flex-wrap items-center gap-2 font-semibold" }, /* @__PURE__ */ React.createElement("span", { className: "text-emerald-800" }, "T1: ", tierPct(1), "% (", board.tiers[1].length, ")"), /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, "T2: ", tierPct(2), "% (", board.tiers[2].length, ")"), /* @__PURE__ */ React.createElement("span", { className: "text-rose-800" }, "T3: ", tierPct(3), "% (", board.tiers[3].length, ")"))), /* @__PURE__ */ React.createElement("div", { className: "h-2.5 w-full rounded-full overflow-hidden bg-slate-100 flex", "aria-hidden": "true" }, board.tiers[1].length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-600 h-full transition-all motion-reduce:transition-none", style: { width: board.tiers[1].length / board.total * 100 + "%" } }), board.tiers[2].length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-500 h-full transition-all motion-reduce:transition-none", style: { width: board.tiers[2].length / board.total * 100 + "%" } }), board.tiers[3].length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-rose-600 h-full transition-all motion-reduce:transition-none", style: { width: board.tiers[3].length / board.total * 100 + "%" } }))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" }, [3, 2, 1].map((tier) => {
       const tierRows = board.tiers[tier] || [];
       const visibleRows = normalizedBoardQuery ? tierRows.filter((r) => String(r.code || "").toLowerCase().indexOf(normalizedBoardQuery) !== -1) : tierRows;
-      const allTierSelected = tier !== 1 && tierRows.length > 0 && tierRows.every((r) => !!checked[r.code]);
+      const allTierSelected = tier !== 1 && tierRows.length > 0 && tierRows.every((r) => isCheckedCode(checked, r.code));
       return /* @__PURE__ */ React.createElement("div", { key: tier, className: "rounded-xl border p-2 " + MTSS_TIER_META[tier].cls }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-1.5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold leading-snug" }, tt("mtss.tier_" + tier, MTSS_TIER_META[tier].label), " (", visibleRows.length, normalizedBoardQuery ? "/" + tierRows.length : "", ")"), tier !== 1 && tierRows.length > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -775,7 +831,7 @@ function MtssTriagePanel(props) {
         "input",
         {
           type: "checkbox",
-          checked: !!checked[r.code],
+          checked: isCheckedCode(checked, r.code),
           onChange: () => toggleChecked(r.code),
           "aria-label": tt("mtss.check_aria", "Select for grouping:") + " " + r.code,
           className: "w-4 h-4 shrink-0"
@@ -786,7 +842,7 @@ function MtssTriagePanel(props) {
       {
         type: "button",
         "data-mtss-clear-selected": "true",
-        onClick: () => setChecked({}),
+        onClick: () => setChecked(/* @__PURE__ */ Object.create(null)),
         className: "min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
       },
       tt("mtss.clear_selected", "Clear")
@@ -812,20 +868,22 @@ function MtssTriagePanel(props) {
       "button",
       {
         type: "button",
+        "aria-label": (armDelete === g.id ? tt("mtss.delete_confirm", "Tap again to delete") : tt("mtss.delete", "Delete")) + " " + String(g.name || ""),
         onClick: () => {
           if (armDelete === g.id) {
+            groupsDirtyRef.current = true;
             setGroups((l) => l.filter((x) => x.id !== g.id));
             setArmDelete(null);
             addToast(tt("mtss.group_deleted", "Group deleted."), "info");
           } else {
             setArmDelete(g.id);
-            mtssAnnounce(tt("mtss.delete_arm_announce", "Activate delete again to permanently remove this group."));
+            mtssAnnounce(tt("mtss.delete_group_arm_announce", "Activate delete again to permanently remove this group."));
           }
         },
         className: "shrink-0 min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold " + (armDelete === g.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
       },
       armDelete === g.id ? tt("mtss.delete_confirm", "Tap again to delete") : tt("mtss.delete", "Delete")
-    )), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-1" }, g.members.map((m) => /* @__PURE__ */ React.createElement("li", { key: m, className: "text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200" }, m)))))), groups.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("mtss.groups_note", "For delivering interventions, the teacher-facing side of AlloFlow (SEL Hub routines, accessible materials, Take-Home Packs) is the natural next stop — groups here are the roster, not the intervention."))), tab === "progress" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.progress_title", "Window over window")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("mtss.progress_hint", "Compare two saved windows of the SAME measure (matching student codes). Movement toward less intensive bands is the win condition.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" }, [["A", progA, setProgA], ["B", progB, setProgB]].map(([label, val, setter]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-prog-" + label, className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("mtss.window", "Window"), " ", label), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 flex flex-wrap gap-1" }, (Array.isArray(g.members) ? g.members : []).map((m) => /* @__PURE__ */ React.createElement("li", { key: m, className: "text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200" }, m)))))), groups.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("mtss.groups_note", "For delivering interventions, the teacher-facing side of AlloFlow (SEL Hub routines, accessible materials, Take-Home Packs) is the natural next stop — groups here are the roster, not the intervention."))), tab === "progress" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("mtss.progress_title", "Window over window")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("mtss.progress_hint", "Compare two saved windows of the SAME measure (matching student codes). Movement toward less intensive bands is the win condition.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2" }, [["A", progA, setProgA], ["B", progB, setProgB]].map(([label, val, setter]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mtss-prog-" + label, className: "block text-xs font-bold text-slate-600 mb-0.5" }, tt("mtss.window", "Window"), " ", label), /* @__PURE__ */ React.createElement(
       "select",
       {
         id: "mtss-prog-" + label,
@@ -869,5 +927,5 @@ function MtssTriagePanel(props) {
       mtssCsv: mtssCsv
     }
   };
-  console.log('[CDN] MtssTriage loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] MtssTriage loaded');
 })();

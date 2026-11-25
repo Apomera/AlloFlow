@@ -1,16 +1,17 @@
 /* Authored, deterministic outing rules shared by 3D and text controls. */
-(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.AlloOutingEngine=factory();})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){if(typeof module==='object'&&module&&module.exports)module.exports=factory();else if(root&&typeof root==='object')root.AlloOutingEngine=factory();})(typeof globalThis==='object'&&globalThis!==null?globalThis:typeof window==='object'&&window!==null?window:typeof self==='object'&&self!==null?self:null,function(){
   'use strict';
   var PREFIX='alloflow-life-outing:v1:',MISSION='home-outing',MAX_COMMANDS=200;
-  var copy=function(v){return JSON.parse(JSON.stringify(v));};
-  function freeze(v){if(v&&typeof v==='object'){Object.keys(v).forEach(function(k){freeze(v[k]);});Object.freeze(v);}return v;}
+  function safeJsonParse(str){return JSON.parse(str,function(k,v){return k==='__proto__'||k==='constructor'||k==='prototype'?undefined:v;});}
+  var copy=function(v){return safeJsonParse(JSON.stringify(v));};
+  function freeze(v){if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.keys(v).forEach(function(k){freeze(v[k]);});Object.freeze(v);}return v;}
   function validId(v){return typeof v==='string'&&/^[a-zA-Z0-9-]{1,64}$/.test(v);}
   function uid(){return typeof globalThis!=='undefined'&&globalThis.crypto&&globalThis.crypto.randomUUID?globalThis.crypto.randomUUID():'outing-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12);}
   function pick(v,allowed,label){if(allowed.indexOf(v)<0)throw Error('Invalid '+label+'.');return v;}
   function config(c,manifest){if(!c||typeof c!=='object'||Array.isArray(c))throw Error('Missing mission settings.');return {context:pick(c.context,['community','work'],'context'),support:pick(c.support,['guided','try','independent'],'support'),language:pick(c.language,['plain','standard'],'language'),variation:pick(c.variation,manifest===2?['rain','warm','bus-delay']:['rain','warm'],'variation')};}
-  function createRun(o){o=o||{};var id=o.runId===undefined?uid():o.runId;if(!validId(id))throw Error('Invalid outing ID.');return freeze({version:1,manifestVersion:2,missionId:MISSION,runId:id,config:config({context:o.context||'community',support:o.support||'guided',language:o.language||'plain',variation:o.variation||'rain'},2),commands:[],content:[],createdAt:new Date().toISOString()});}
+  function createRun(o){o=o&&typeof o==='object'?o:{};var id=o.runId===undefined?uid():o.runId;if(!validId(id))throw Error('Invalid outing ID.');return freeze({version:1,manifestVersion:2,missionId:MISSION,runId:id,config:config({context:o.context||'community',support:o.support||'guided',language:o.language||'plain',variation:o.variation||'rain'},2),commands:[],content:[],createdAt:new Date().toISOString()});}
   function card(c){return c.context==='work'?'orientation card':'booking card';}
-  function clock(m){var t=540+m;return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');}
+  function clock(m){if(!Number.isFinite(m))return '--:--';var t=Math.max(0,Math.round(540+m));return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');}
   function start(c,manifest){return {config:c,manifestVersion:manifest,revision:0,minutes:0,deadline:35,prepCount:0,hints:0,bottleFilled:false,bottlePacked:false,clothingReady:false,documentPacked:false,weatherItem:null,weatherPackingUsed:false,weather:'cloudy',forecastUpdated:false,forecastChecked:false,busDelayed:false,route:null,departed:false,arrival:null,observations:[],event:null,feedback:'Explore the room and make a plan. You can prepare in any order.'};}
   function arrival(s,r){if(r==='walk')return s.minutes+18;if(r==='ride'&&s.manifestVersion===2)return s.minutes+15;if(r==='bus')return s.minutes<=20?(s.busDelayed?45:30):null;if(r==='late_bus')return s.minutes<=40?50:null;return null;}
   function item(s){return s.weather==='rain'?'raincoat':'hat';}
@@ -53,23 +54,26 @@
     if(prep)s.prepCount++;if(allowEvents!==false)updateForecast(s);s.revision++;return s;
   }
   function shape(raw){
-    if(!raw||raw.version!==1||[1,2].indexOf(raw.manifestVersion)<0||raw.missionId!==MISSION||!validId(raw.runId))throw Error('Unrecognized outing save or mission version.');
+    if(!raw||typeof raw!=='object'||Array.isArray(raw)||raw.version!==1||[1,2].indexOf(raw.manifestVersion)<0||raw.missionId!==MISSION||!validId(raw.runId))throw Error('Unrecognized outing save or mission version.');
     if(typeof raw.createdAt!=='string'||raw.createdAt.length>40||!Number.isFinite(Date.parse(raw.createdAt)))throw Error('Invalid outing date.');
     if(!Array.isArray(raw.commands)||raw.commands.length>MAX_COMMANDS)throw Error('Invalid outing journal.');
-    var seen=Object.create(null),commands=raw.commands.map(function(e,i){if(!e||!validId(e.id)||seen[e.id]||e.revision!==i||typeof e.actionId!=='string'||e.actionId.length>40)throw Error('Invalid or duplicate journal event.');seen[e.id]=true;return {id:e.id,actionId:e.actionId,revision:i};});
+    var seen=Object.create(null),commands=[];
+    for(var ci=0;ci<raw.commands.length;ci++){var e=ci in raw.commands?raw.commands[ci]:null;if(!e||typeof e!=='object'||!validId(e.id)||seen[e.id]||e.revision!==ci||typeof e.actionId!=='string'||e.actionId.length>40)throw Error('Invalid or duplicate journal event.');seen[e.id]=true;commands.push({id:e.id,actionId:e.actionId,revision:ci});}
     if(!Array.isArray(raw.content)||raw.content.length>4)throw Error('Invalid saved narration.');
-    var contentIds=Object.create(null),contentKinds=Object.create(null),content=raw.content.map(function(e){
-      if(!e||!validId(e.id)||contentIds[e.id]||!Number.isInteger(e.revision)||e.revision<0||e.revision>commands.length||['intro','dialogue'].indexOf(e.kind)<0||['authored','generated','fallback'].indexOf(e.status)<0||typeof e.text!=='string'||!e.text.trim()||e.text.length>1200||(e.kind==='dialogue'&&['plan','change','help'].indexOf(e.intent)<0)||(e.kind==='intro'&&e.intent!==undefined))throw Error('Invalid saved narration entry.');
-      var key=e.kind==='intro'?'intro':e.intent;if(contentKinds[key])throw Error('This narration has already been accepted.');contentKinds[key]=true;contentIds[e.id]=true;
-      var result={id:e.id,revision:e.revision,kind:e.kind,text:e.text,status:e.status};if(e.kind==='dialogue')result.intent=e.intent;return result;
-    });
+    var contentIds=Object.create(null),contentKinds=Object.create(null),content=[];
+    for(var ni=0;ni<raw.content.length;ni++){
+      var ne=ni in raw.content?raw.content[ni]:null;
+      if(!ne||typeof ne!=='object'||!validId(ne.id)||contentIds[ne.id]||!Number.isInteger(ne.revision)||ne.revision<0||ne.revision>commands.length||['intro','dialogue'].indexOf(ne.kind)<0||['authored','generated','fallback'].indexOf(ne.status)<0||typeof ne.text!=='string'||!ne.text.trim()||ne.text.length>1200||(ne.kind==='dialogue'&&['plan','change','help'].indexOf(ne.intent)<0)||(ne.kind==='intro'&&ne.intent!==undefined))throw Error('Invalid saved narration entry.');
+      var key=ne.kind==='intro'?'intro':ne.intent;if(contentKinds[key])throw Error('This narration has already been accepted.');contentKinds[key]=true;contentIds[ne.id]=true;
+      var result={id:ne.id,revision:ne.revision,kind:ne.kind,text:ne.text,status:ne.status};if(ne.kind==='dialogue')result.intent=ne.intent;content.push(result);
+    }
     return {version:1,manifestVersion:raw.manifestVersion,missionId:MISSION,runId:raw.runId,config:config(raw.config,raw.manifestVersion),commands:commands,content:content,createdAt:raw.createdAt};
   }
   function replay(run){var s=start(run.config,run.manifestVersion);run.commands.forEach(function(e){var a=actions(s).filter(function(a){return a.id===e.actionId;})[0];if(!a||a.disabled)throw Error('Saved action is unavailable: '+e.actionId+'.');step(s,e.actionId);});return s;}
   function validateRun(raw){var run=shape(raw);replay(run);return freeze(run);}
   function materialize(raw){return freeze(replay(shape(raw)));}
   function dispatch(raw,id,revision,eventId){var run=validateRun(raw);if(revision===undefined)revision=run.commands.length;if(revision!==run.commands.length)throw Error('This decision has already been handled. Refresh the current choices.');if(run.commands.length>=MAX_COMMANDS)throw Error('This practice journal is full. Replay to start another outing.');eventId=eventId===undefined?uid():eventId;if(!validId(eventId)||run.commands.some(function(e){return e.id===eventId;}))throw Error('Invalid or duplicate event ID.');var a=actions(replay(run)).filter(function(a){return a.id===id;})[0];if(!a||a.disabled)throw Error(a&&a.reason||'That action is unavailable now.');var next=copy(run);next.commands.push({id:eventId,actionId:id,revision:run.commands.length});return validateRun(next);}
-  function addContent(raw,entry){var run=validateRun(raw);if(!entry||entry.revision!==run.commands.length)throw Error('This narration belongs to an earlier decision.');var next=copy(run);next.content.push(copy(entry));return validateRun(next);}
+  function addContent(raw,entry){var run=validateRun(raw);if(!entry||typeof entry!=='object'||Array.isArray(entry)||entry.revision!==run.commands.length)throw Error('This narration belongs to an earlier decision.');var picked={id:entry.id,revision:entry.revision,kind:entry.kind,text:entry.text,status:entry.status};if(entry.kind==='dialogue')picked.intent=entry.intent;var next=copy(run);next.content.push(picked);return validateRun(next);}
   function hint(s){
     if(!s.clothingReady)return {notice:'Two outfits are available.',connect:'One is ready now; the other needs 8 minutes.',try:'Choose the clothes that fit your plan.'};
     if(!s.bottleFilled)return {notice:'The water bottle is empty.',connect:'A packed empty bottle will not give you water.',try:'Fill it before packing it.'};
@@ -156,12 +160,12 @@
     result.scene.busDelayed=s.busDelayed;
     return freeze(result);
   }
-  function forkRun(raw,o){var r=validateRun(raw);o=o||{};if(o.runId===r.runId)throw Error('A replay needs a new outing ID.');return createRun({context:r.config.context,support:r.config.support,language:r.config.language,variation:o.variation||r.config.variation,runId:o.runId});}
-  function copyRun(raw,o){var run=copy(validateRun(raw));o=o||{};var id=o.runId===undefined?uid():o.runId;if(!validId(id)||id===run.runId)throw Error('A copy needs a new outing ID.');run.runId=id;run.createdAt=new Date().toISOString();return validateRun(run);}
+  function forkRun(raw,o){var r=validateRun(raw);o=o&&typeof o==='object'?o:{};if(o.runId===r.runId)throw Error('A replay needs a new outing ID.');return createRun({context:r.config.context,support:r.config.support,language:r.config.language,variation:o.variation||r.config.variation,runId:o.runId});}
+  function copyRun(raw,o){var run=copy(validateRun(raw));o=o&&typeof o==='object'?o:{};var id=o.runId===undefined?uid():o.runId;if(!validId(id)||id===run.runId)throw Error('A copy needs a new outing ID.');run.runId=id;run.createdAt=new Date().toISOString();return validateRun(run);}
   // A retry uses the original rules and only the journal and prose at its starting point.
-  function branchRun(raw,revision,o){var run=validateRun(raw);if(!Number.isInteger(revision)||revision<0||revision>=run.commands.length)throw Error('Choose an existing decision to retry.');var next=copy(copyRun(run,o));next.commands=next.commands.slice(0,revision);next.content=next.content.filter(function(entry){return entry.revision<=revision;});return validateRun(next);}
+  function branchRun(raw,revision,o){var run=validateRun(raw);o=o&&typeof o==='object'?o:{};if(!Number.isInteger(revision)||revision<0||revision>=run.commands.length)throw Error('Choose an existing decision to retry.');var next=copy(copyRun(run,o));next.commands=next.commands.slice(0,revision);next.content=next.content.filter(function(entry){return entry.revision<=revision;});return validateRun(next);}
   function validateComparison(raw,value){
-    var run=validateRun(raw);if(!value||!Number.isInteger(value.revision))throw Error('Invalid comparison starting point.');
+    var run=validateRun(raw);if(!value||typeof value!=='object'||Array.isArray(value)||!Number.isInteger(value.revision))throw Error('Invalid comparison starting point.');
     var original=validateRun(value.original),revision=value.revision;
     if(revision<0||revision>=original.commands.length||revision>run.commands.length||original.manifestVersion!==run.manifestVersion||JSON.stringify(original.config)!==JSON.stringify(run.config)||original.commands.slice(0,revision).some(function(command,i){return JSON.stringify(command)!==JSON.stringify(run.commands[i]);}))throw Error('These practices do not share the same starting point.');
     return freeze({original:original,revision:revision});
@@ -175,13 +179,15 @@
   }
   function validatePlan(raw,value) {
     var run=validateRun(raw),allowed=planOptions(run).map(function(action){return action.id;});
-    if(!value||value.version!==1||!Array.isArray(value.steps)||value.steps.length>12)throw Error('A plan can have up to 12 steps.');
+    if(!value||typeof value!=='object'||Array.isArray(value)||value.version!==1||!Array.isArray(value.steps)||value.steps.length>12)throw Error('A plan can have up to 12 steps.');
     var checkedAt=value.checkedAt===undefined?null:value.checkedAt;
     if(checkedAt!==null&&(!Number.isInteger(checkedAt)||checkedAt<0||checkedAt>run.commands.length))throw Error('Invalid plan check.');
-    var seen=Object.create(null),steps=value.steps.map(function(entry){
-      if(!entry||!validId(entry.id)||seen[entry.id]||allowed.indexOf(entry.actionId)<0||!Number.isInteger(entry.addedAt)||entry.addedAt<0||entry.addedAt>run.commands.length)throw Error('Invalid planned step.');
-      seen[entry.id]=true;return {id:entry.id,actionId:entry.actionId,addedAt:entry.addedAt};
-    });
+    var seen=Object.create(null),steps=[];
+    for(var si=0;si<value.steps.length;si++){
+      var entry=si in value.steps?value.steps[si]:null;
+      if(!entry||typeof entry!=='object'||!validId(entry.id)||seen[entry.id]||allowed.indexOf(entry.actionId)<0||!Number.isInteger(entry.addedAt)||entry.addedAt<0||entry.addedAt>run.commands.length)throw Error('Invalid planned step.');
+      seen[entry.id]=true;steps.push({id:entry.id,actionId:entry.actionId,addedAt:entry.addedAt});
+    }
     return freeze({version:1,steps:steps,checkedAt:checkedAt});
   }
   function planView(raw,value) {
@@ -222,7 +228,7 @@
   }
   function readBackup(source){
     if(typeof source!=='string'||source.length>300000)throw Error('Choose a practice backup smaller than 300 KB.');
-    var raw;try{raw=JSON.parse(source);}catch(_){throw Error('This file is not a readable practice backup.');}
+    var raw;try{raw=safeJsonParse(source);}catch(_){throw Error('This file is not a readable practice backup.');}
     if(raw&&raw.format===BACKUP_FORMAT){if(raw.version!==1)throw Error('This backup version is not supported.');return createBackup(raw.run,raw.reflection,raw.comparison,raw.plan);}
     // The first prototype downloaded the run directly, without an envelope.
     return createBackup(raw,'');
@@ -230,8 +236,8 @@
   function cleanScope(scope){return typeof scope==='string'?scope.replace(/[^a-zA-Z0-9_-]/g,'').slice(0,48):'';}
   function prefixFor(scope){var s=cleanScope(scope);return s?'alloflow-life-outing:v1:'+s+':':PREFIX;}
   function saveKey(r,scope){if(!r||!validId(r.runId))throw Error('Invalid outing ID.');return prefixFor(scope)+r.runId;}
-  function saveRun(storage,raw,scope){var r;try{r=validateRun(raw);}catch(e){return {ok:false,message:e.message};}try{var key=saveKey(r,scope),existing=storage.getItem(key);if(existing!==null){var old;try{old=validateRun(JSON.parse(existing));}catch(e){return {ok:false,message:'The existing saved outing needs recovery. It was left untouched. Download this outing to keep your work.'};}if(old.manifestVersion!==r.manifestVersion||old.runId!==r.runId||old.createdAt!==r.createdAt||JSON.stringify(old.config)!==JSON.stringify(r.config)||old.commands.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.commands[i]);})||old.content.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.content[i]);}))return {ok:false,message:'Another version of this outing is already saved. It was left untouched. Download this outing before reopening the saved version.'};}storage.setItem(key,JSON.stringify(r));return {ok:true,key:key};}catch(e){return {ok:false,message:'This browser could not save your outing. Keep this page open and download it to keep your work.'};}}
-  function readRun(storage,key,scope){var expectedPrefix=prefixFor(scope);if(typeof key!=='string'||key.indexOf(expectedPrefix)!==0||(!cleanScope(scope)&&key.slice(expectedPrefix.length).indexOf(':')>=0))throw Error('Only Life Skills outing saves can be opened here.');var text=storage.getItem(key);if(!text||text.length>100000)throw Error('This outing save cannot be read. Original data was retained.');var r=validateRun(JSON.parse(text));if(saveKey(r,scope)!==key)throw Error('The outing ID does not match its storage key.');return r;}
-  function listRuns(storage,scope){var expectedPrefix=prefixFor(scope),hasScope=!!cleanScope(scope),result=[];for(var i=0;i<storage.length;i++){var key=storage.key(i);if(typeof key!=='string'||key.indexOf(expectedPrefix)!==0)continue;if(!hasScope&&key.slice(expectedPrefix.length).indexOf(':')>=0)continue;try{result.push({key:key,run:readRun(storage,key,scope)});}catch(e){result.push({key:key,error:'Saved outing needs recovery; original data retained.'});}}return result.sort(function(a,b){return ((b.run&&b.run.createdAt)||'').localeCompare((a.run&&a.run.createdAt)||'');});}
+  function saveRun(storage,raw,scope){var r;try{r=validateRun(raw);}catch(e){return {ok:false,message:e.message};}try{if(!storage||typeof storage.getItem!=='function'||typeof storage.setItem!=='function')throw Error('Storage unavailable');var key=saveKey(r,scope),existing=storage.getItem(key);if(existing!==null){var old;try{old=validateRun(safeJsonParse(existing));}catch(e){return {ok:false,message:'The existing saved outing needs recovery. It was left untouched. Download this outing to keep your work.'};}if(old.manifestVersion!==r.manifestVersion||old.runId!==r.runId||old.createdAt!==r.createdAt||JSON.stringify(old.config)!==JSON.stringify(r.config)||old.commands.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.commands[i]);})||old.content.some(function(e,i){return JSON.stringify(e)!==JSON.stringify(r.content[i]);}))return {ok:false,message:'Another version of this outing is already saved. It was left untouched. Download this outing before reopening the saved version.'};}storage.setItem(key,JSON.stringify(r));return {ok:true,key:key};}catch(e){return {ok:false,message:'This browser could not save your outing. Keep this page open and download it to keep your work.'};}}
+  function readRun(storage,key,scope){var expectedPrefix=prefixFor(scope);if(typeof key!=='string'||key.indexOf(expectedPrefix)!==0||(!cleanScope(scope)&&key.slice(expectedPrefix.length).indexOf(':')>=0))throw Error('Only Life Skills outing saves can be opened here.');if(!storage||typeof storage.getItem!=='function')throw Error('This outing save cannot be read. Original data was retained.');var text;try{text=storage.getItem(key);}catch(_){throw Error('This outing save cannot be read. Original data was retained.');}if(!text||text.length>100000)throw Error('This outing save cannot be read. Original data was retained.');var parsed;try{parsed=safeJsonParse(text);}catch(_){throw Error('This outing save cannot be read. Original data was retained.');}var r=validateRun(parsed);if(saveKey(r,scope)!==key)throw Error('The outing ID does not match its storage key.');return r;}
+  function listRuns(storage,scope){if(!storage||typeof storage.key!=='function'||typeof storage.getItem!=='function')return [];var expectedPrefix=prefixFor(scope),hasScope=!!cleanScope(scope),result=[],len=0;try{len=Number.isInteger(storage.length)&&storage.length>0?Math.min(storage.length,10000):0;}catch(_){return [];}for(var i=0;i<len;i++){var key;try{key=storage.key(i);}catch(_){continue;}if(typeof key!=='string'||key.indexOf(expectedPrefix)!==0)continue;if(!hasScope&&key.slice(expectedPrefix.length).indexOf(':')>=0)continue;try{result.push({key:key,run:readRun(storage,key,scope)});}catch(e){result.push({key:key,error:'Saved outing needs recovery; original data retained.'});}}return result.sort(function(a,b){return ((b.run&&b.run.createdAt)||'').localeCompare((a.run&&a.run.createdAt)||'');});}
   return freeze({PREFIX:PREFIX,createRun:createRun,validateRun:validateRun,materialize:materialize,view:view,history:history,previewAction:previewAction,travelAt:travelAt,dispatch:dispatch,forkRun:forkRun,branchRun:branchRun,copyRun:copyRun,validateComparison:validateComparison,planOptions:planOptions,validatePlan:validatePlan,planView:planView,createBackup:createBackup,readBackup:readBackup,saveRun:saveRun,listRuns:listRuns,readRun:readRun,saveKey:saveKey,addContent:addContent});
 });

@@ -473,10 +473,15 @@ describe('5. Network resilience in packets-vocab-lookup.js & packets-pictures.js
     // Start first lookup, then start a second lookup -> first AbortSignal must be aborted.
     d.getElementById('look').click();
     expect(calls.length).toBe(1);
+    // 2026-11-23: while a lookup runs the button is off ("Looking it up..."). Typing another word is what stops the
+    // first lookup and turns the button back on, so the test types it, as a teacher does.
+    expect(d.getElementById('look').disabled).toBe(true);
     input.value = 'climate';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
+    expect(calls[0].signal.aborted).toBe(true);
+    expect(d.getElementById('look').disabled).toBe(false);
     d.getElementById('look').click();
     expect(calls.length).toBe(2);
-    expect(calls[0].signal.aborted).toBe(true);
 
     // HTTP 429 shows friendly rate-limit notice.
     calls[1].resolve({ ok: false, status: 429 });
@@ -485,6 +490,7 @@ describe('5. Network resilience in packets-vocab-lookup.js & packets-pictures.js
 
     // Toggling online OFF aborts active request immediately.
     input.value = 'erosion';
+    input.dispatchEvent(new w.Event('input', { bubbles: true }));
     d.getElementById('look').click();
     expect(calls.length).toBe(3);
     expect(calls[2].signal.aborted).toBe(false);

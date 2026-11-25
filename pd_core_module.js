@@ -67,6 +67,11 @@
   function isBlockedKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
   function isNum(n) { return typeof n === 'number' && isFinite(n); }
   function isNonEmptyString(v) { return typeof v === 'string' && v.trim().length > 0; }
+  function _pdStr(v) {
+    if (v === null || v === undefined || typeof v === 'symbol') return '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return ''; }
+  }
 
   // Stable identifiers are deliberately URL-/filename-friendly so they can be
   // used consistently by catalogs, evidence stores, and future issuers. Colons
@@ -121,27 +126,29 @@
     if (obj.schema_version !== SCHEMA_VERSION) {
       return { ok: false, error: 'Unsupported schema_version; expected ' + SCHEMA_VERSION + '.' };
     }
-    if (!obj.metadata || !isNonEmptyString(obj.metadata.title)) return { ok: false, error: 'Missing metadata.title.' };
+    if (!obj.metadata || typeof obj.metadata !== 'object' || Array.isArray(obj.metadata) || !isNonEmptyString(obj.metadata.title)) return { ok: false, error: 'Missing metadata.title.' };
     if (!isStableId(obj.metadata.id)) return { ok: false, error: 'metadata.id must be a stable identifier.' };
     var modulePolicyProblem = assessmentPolicyError(obj.assessmentPolicy, 'assessmentPolicy');
     if (modulePolicyProblem) return { ok: false, error: modulePolicyProblem };
     if (!Array.isArray(obj.sections) || obj.sections.length === 0) return { ok: false, error: 'A module needs at least one section.' };
+    if (obj.sections.length > 200) return { ok: false, error: 'Module exceeds maximum section count.' };
 
     var ids = Object.create(null);
     var counts = { sections: obj.sections.length, activities: 0, gated: 0 };
     for (var s = 0; s < obj.sections.length; s++) {
       var sec = obj.sections[s];
-      if (!sec || !Array.isArray(sec.activities) || sec.activities.length === 0) {
+      if (!sec || typeof sec !== 'object' || Array.isArray(sec) || !Array.isArray(sec.activities) || sec.activities.length === 0) {
         return { ok: false, error: 'Section ' + (s + 1) + ' has no activities.' };
       }
       if (!isNonEmptyString(sec.title)) return { ok: false, error: 'Section ' + (s + 1) + ' needs a title.' };
       for (var a = 0; a < sec.activities.length; a++) {
         var act = sec.activities[a];
         counts.activities++;
-        if (!act || !isStableId(act.id)) return { ok: false, error: 'Every activity needs a stable string id.' };
+        if (counts.activities > 2000) return { ok: false, error: 'Module exceeds maximum activity count.' };
+        if (!act || typeof act !== 'object' || Array.isArray(act) || !isStableId(act.id)) return { ok: false, error: 'Every activity needs a stable string id.' };
         if (ids[act.id]) return { ok: false, error: 'Duplicate activity id: ' + act.id };
         ids[act.id] = true;
-        if (ACTIVITY_TYPES.indexOf(act.type) === -1) return { ok: false, error: 'Unknown activity type "' + act.type + '" (' + act.id + ').' };
+        if (ACTIVITY_TYPES.indexOf(act.type) === -1) return { ok: false, error: 'Unknown activity type "' + _pdStr(act.type) + '" (' + act.id + ').' };
         if (!isNonEmptyString(act.title)) return { ok: false, error: 'Activity ' + act.id + ' needs a title.' };
         if (!act.content || typeof act.content !== 'object' || Array.isArray(act.content)) {
           return { ok: false, error: 'Activity ' + act.id + ' needs a content object.' };
@@ -221,7 +228,7 @@
             var catIds = Object.create(null);
             for (var rc = 0; rc < rCats.length; rc++) {
               var rcat = rCats[rc];
-              if (!rcat || !isNonEmptyString(rcat.id) || !isNonEmptyString(rcat.label)) return { ok: false, error: 'Resource ' + act.id + ' category ' + (rc + 1) + ' needs id and label.' };
+              if (!rcat || !isNonEmptyString(rcat.id) || isBlockedKey(rcat.id) || !isNonEmptyString(rcat.label)) return { ok: false, error: 'Resource ' + act.id + ' category ' + (rc + 1) + ' needs id and label.' };
               if (catIds[rcat.id]) return { ok: false, error: 'Resource ' + act.id + ' has a duplicate category id: ' + rcat.id };
               catIds[rcat.id] = true;
             }
@@ -232,7 +239,7 @@
               if (!rit || !isNonEmptyString(rit.id) || isBlockedKey(rit.id) || !isNonEmptyString(rit.content)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' needs id and content.' };
               if (itemIds[rit.id]) return { ok: false, error: 'Resource ' + act.id + ' has a duplicate item id: ' + rit.id };
               itemIds[rit.id] = true;
-              if (!catIds[rit.categoryId]) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' categoryId does not match a category.' };
+              if (typeof rit.categoryId !== 'string' || !catIds[rit.categoryId]) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' categoryId does not match a category.' };
               if (rit.image !== undefined && !isSafeUrl(rit.image)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' image must be a safe URL.' };
             }
           } else {
@@ -356,7 +363,7 @@
 
         var gate = act.gate === undefined ? { kind: 'none' } : act.gate;
         if (!gate || typeof gate !== 'object' || Array.isArray(gate) || (gate.kind !== 'none' && gate.kind !== 'score')) {
-          return { ok: false, error: 'Activity ' + act.id + ' has unknown gate.kind "' + (gate && gate.kind) + '".' };
+          return { ok: false, error: 'Activity ' + act.id + ' has unknown gate.kind "' + _pdStr(gate && gate.kind) + '".' };
         }
         if (gate.kind === 'score') {
           counts.gated++;
@@ -475,7 +482,7 @@
       out.completed = Array.isArray(raw.checked) && raw.checked.some(function (x) { return !!x; });
     } else if (type === 'branching') {
       var walkContent = (activity && activity.content) || {};
-      var walkNodes = (walkContent.nodes && typeof walkContent.nodes === 'object') ? walkContent.nodes : {};
+      var walkNodes = (walkContent.nodes && typeof walkContent.nodes === 'object' && !Array.isArray(walkContent.nodes)) ? walkContent.nodes : {};
       var walkPath = Array.isArray(raw.path) ? raw.path : [];
       var walkOk = walkPath.length > 0 && walkPath.length <= 2000 && typeof walkPath[0] === 'string' && walkPath[0] === walkContent.start;
       for (var wi = 0; walkOk && wi < walkPath.length - 1; wi++) {
@@ -657,7 +664,8 @@
         var raw = (entry && entry.raw && typeof entry.raw === 'object' && !Array.isArray(entry.raw)) ? entry.raw : {};
         var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
         var activityPaste = act.assessmentPolicy && act.assessmentPolicy.paste;
-        var policyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
+        var rawPolicyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
+        var policyMode = ['allowed', 'monitored', 'restricted'].indexOf(rawPolicyMode) !== -1 ? rawPolicyMode : 'allowed';
         var remaining = Math.max(0, MAX_COMPLETION_INTEGRITY_EVENTS - out.length);
         events.slice(0, remaining).forEach(function (event) {
           if (!event || typeof event !== 'object' || Array.isArray(event)) return;
@@ -685,25 +693,28 @@
   }
 
   function buildCompletionRecord(mod, resultsById, learner, nowISO) {
-    var ev = evaluateModule(mod, resultsById);
+    var safeMod = (mod && typeof mod === 'object' && !Array.isArray(mod)) ? mod : {};
+    var ev = evaluateModule(safeMod, resultsById);
+    var digest = null;
+    try { digest = moduleContentDigest(mod); } catch (_) { digest = null; }
     return {
       schema_version: COMPLETION_SCHEMA_VERSION,
-      moduleId: (mod.metadata && mod.metadata.id) || mod.id || null,
+      moduleId: (safeMod.metadata && safeMod.metadata.id) || safeMod.id || null,
       // A publisher may supply a human-facing release label; contentDigest is
       // the authoritative binding to the exact module content.
-      moduleVersion: (mod.metadata && mod.metadata.version) || mod.module_version || mod.version || null,
-      contentDigest: moduleContentDigest(mod),
-      moduleTitle: mod.metadata && mod.metadata.title,
-      topic: mod.metadata && mod.metadata.topic,
+      moduleVersion: (safeMod.metadata && safeMod.metadata.version) || safeMod.module_version || safeMod.version || null,
+      contentDigest: digest,
+      moduleTitle: safeMod.metadata && safeMod.metadata.title,
+      topic: safeMod.metadata && safeMod.metadata.topic,
       learner: sanitizeCompletionLearner(learner),
-      completedAt: nowISO || null,
+      completedAt: (typeof nowISO === 'string' && nowISO) ? nowISO : null,
       complete: ev.complete,
       perActivity: ev.perActivity.map(function (p) { return { activityId: p.activityId, type: p.type, score: p.score, passed: p.passed }; }),
       // The learner's own written work (reflections, committed actions, scenario
       // responses) — makes the downloaded record a portfolio artifact.
-      responses: collectResponses(mod, resultsById),
+      responses: collectResponses(safeMod, resultsById),
       // Disclosed assessment-integrity signals only; never clipboard contents.
-      integrityEvents: collectIntegrityEvents(mod, resultsById),
+      integrityEvents: collectIntegrityEvents(safeMod, resultsById),
       // Honest trust framing — this is NOT an accredited credential. A Tier-2
       // server issuer or Tier-4 (MAIER/UMaine) re-issues from this same record.
       issuer: { kind: 'self-paced', verified: false, note: 'Self-paced completion record generated on-device — not an accredited credential or verified contact hours.' }
@@ -754,7 +765,7 @@
   function reviewConsentNotice(locale) {
     return {
       version: REVIEW_CANDIDATE_CONSENT_VERSION,
-      locale: locale,
+      locale: typeof locale === 'string' ? locale : '',
       heading: 'Prepare evidence for human review',
       purpose: 'This creates a local learner-device-unverified JSON package for a separate human review process. Nothing is uploaded or submitted by this action, and the package is not an approval decision.',
       privacy: 'Structured identity fields and raw clipboard event/content fields are omitted. Written responses are included as learner-provided, unverified free text and may contain names, email addresses, or other personal data you typed or pasted.',
@@ -859,10 +870,12 @@
     var allowedTypes = ['paste', 'drop', 'beforeinput', 'insertFromPaste'];
     var modulePaste = mod.assessmentPolicy && mod.assessmentPolicy.paste;
     var problem = null;
+    var safeResults = (resultsById && typeof resultsById === 'object' && !Array.isArray(resultsById)) ? resultsById : {};
     (mod.sections || []).forEach(function (sec) {
       (sec.activities || []).forEach(function (act) {
         if (problem) return;
-        var raw = (hasOwn(resultsById, act.id) && resultsById[act.id] && resultsById[act.id].raw) || {};
+        var entry = (hasOwn(safeResults, act.id) && safeResults[act.id] && typeof safeResults[act.id] === 'object') ? safeResults[act.id] : null;
+        var raw = (entry && entry.raw && typeof entry.raw === 'object' && !Array.isArray(entry.raw)) ? entry.raw : {};
         var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
         if (eventCount + events.length > MAX_COMPLETION_INTEGRITY_EVENTS) {
           problem = reviewCandidateProblem('integrity_event_limit', 'integrity_summary', 'Too many integrity events for a formal review-candidate package.');
@@ -870,7 +883,8 @@
         }
         eventCount += events.length;
         var activityPaste = act.assessmentPolicy && act.assessmentPolicy.paste;
-        var policyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
+        var rawPolicyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
+        var policyMode = ['allowed', 'monitored', 'restricted'].indexOf(rawPolicyMode) !== -1 ? rawPolicyMode : 'allowed';
         var row = {
           activity_id: act.id,
           policy_mode: policyMode,
@@ -1056,8 +1070,9 @@
         if (includeTranscripts) {
           var personaMessages = Array.isArray(raw.messages) ? raw.messages : [];
           var transcriptLines = [];
-          var personaName = String((act.content && act.content.personaName) || 'Persona');
-          for (var pm = 0; pm < personaMessages.length; pm++) {
+          var personaName = _pdStr(act.content && act.content.personaName) || 'Persona';
+          var pmLimit = Math.min(personaMessages.length, 2000);
+          for (var pm = 0; pm < pmLimit; pm++) {
             var personaMsg = personaMessages[pm];
             if (!personaMsg || typeof personaMsg.text !== 'string' || !personaMsg.text.trim()) continue;
             if (personaMsg.role !== 'educator' && personaMsg.role !== 'persona') continue;
@@ -1117,6 +1132,9 @@
     if (includeIntegrity) scopes.push('integrity-summary');
     if (includeTranscripts) scopes.push('live-practice-transcript');
 
+    var moduleDigest;
+    try { moduleDigest = moduleContentDigest(mod); }
+    catch (_) { return reviewCandidateProblem('invalid_module', 'module', 'Module content could not be digested.'); }
     var candidate = {
       schema_version: REVIEW_CANDIDATE_SCHEMA_VERSION,
       kind: 'pd_review_candidate',
@@ -1128,7 +1146,7 @@
         version: metadata.version,
         language: metadata.language,
         title: metadata.title,
-        content_digest: moduleContentDigest(mod),
+        content_digest: moduleDigest,
         activity_ids: flatActivities.map(function (act) { return act.id; })
       },
       consent: {
@@ -1238,7 +1256,7 @@
       var activity = candidate.activities[ai];
       var observation = activity && activity.client_observation;
       if (!reviewOnlyKeys(activity, ['activity_id', 'type', 'client_observation', 'artifact_refs']) ||
-          !expectedIds[activity.activity_id] || activityMap[activity.activity_id] ||
+          typeof activity.activity_id !== 'string' || !expectedIds[activity.activity_id] || activityMap[activity.activity_id] ||
           ACTIVITY_TYPES.indexOf(activity.type) === -1 ||
           !reviewOnlyKeys(observation, ['completed', 'gate_passed', 'score', 'score_interpretation']) ||
           observation.completed !== true || observation.gate_passed !== true ||
@@ -1269,7 +1287,7 @@
       var artifact = candidate.artifacts[ar];
       if (!reviewOnlyKeys(artifact, ['artifact_id', 'activity_id', 'kind', 'media_type', 'source', 'provenance', 'value', 'digest']) ||
           !isStableId(artifact.artifact_id) || artifactMap[artifact.artifact_id] ||
-          !activityMap[artifact.activity_id] || referenced[artifact.artifact_id] !== artifact.activity_id ||
+          typeof artifact.activity_id !== 'string' || !activityMap[artifact.activity_id] || referenced[artifact.artifact_id] !== artifact.activity_id ||
           !reviewIsDigest(artifact.digest)) {
         return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Artifact binding or digest is invalid.');
       }
@@ -1391,7 +1409,7 @@
       for (var ii = 0; ii < integrity.activities.length; ii++) {
         var row = integrity.activities[ii];
         if (!reviewOnlyKeys(row, ['activity_id', 'policy_mode', 'event_count', 'blocked_event_count', 'character_count', 'word_count']) ||
-            !activityMap[row.activity_id] || integrityRows[row.activity_id] || ['allowed', 'monitored', 'restricted'].indexOf(row.policy_mode) === -1 ||
+            typeof row.activity_id !== 'string' || !activityMap[row.activity_id] || integrityRows[row.activity_id] || ['allowed', 'monitored', 'restricted'].indexOf(row.policy_mode) === -1 ||
             !reviewIsInteger(row.event_count) || row.event_count < 1 ||
             !reviewIsInteger(row.blocked_event_count) || row.blocked_event_count < 0 || row.blocked_event_count > row.event_count ||
             !reviewIsInteger(row.character_count) || row.character_count < 0 || row.character_count > row.event_count * REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT ||
@@ -1602,9 +1620,9 @@
     buildCredentialPayload: buildCredentialPayload
   });
 
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.PdCore = API;
   }
-  if (typeof module !== 'undefined' && module.exports) { module.exports = API; }
+  if (typeof module === 'object' && module && module.exports) { module.exports = API; }
 })();

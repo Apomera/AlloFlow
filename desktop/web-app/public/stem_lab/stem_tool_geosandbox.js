@@ -3902,7 +3902,7 @@ window.StemLab = window.StemLab || {
           toggle('showGrid','grid','Show grid',gd.showGrid!==false),toggle('showCanvasMeasures','canvas_measures','Show measurements on canvas',showCanvasMeasures),toggle('showNavigationHints','navigation_hints','Show navigation hints',showNavigationHints),toggle('autoRotate','auto_rotate','Rotate automatically',gd.autoRotate===true),
           h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_motion_note','Dragging stops rotation. Reduced motion also pauses automatic rotation.')),
           h('label',{className:'geo-field'},t('stem.geosandbox.studio_density','Control spacing'),h('select',{value:gd.controlDensity==='compact'?'compact':'comfortable',onChange:function(e){upd('controlDensity',e.target.value);}},h('option',{value:'comfortable'},t('stem.geosandbox.studio_comfortable','Comfortable')),h('option',{value:'compact'},t('stem.geosandbox.studio_compact','Compact')))),
-          h('button',{className:'geo-workbench-button',onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{geoSandbox:Object.assign({},prev.geoSandbox||{},{canvasBackground:'slate',showGrid:true,showCanvasMeasures:false,showNavigationHints:false,autoRotate:false,controlDensity:'comfortable',sculptSurfaceQuality:'smooth',showSceneLabels:false,constructionSurface:'translucent',dimUnselected:false})});});}},t('stem.geosandbox.studio_reset_display','Reset display settings')));
+          h('button',{ type: 'button',className:'geo-workbench-button',onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{geoSandbox:Object.assign({},prev.geoSandbox||{},{canvasBackground:'slate',showGrid:true,showCanvasMeasures:false,showNavigationHints:false,autoRotate:false,controlDensity:'comfortable',sculptSurfaceQuality:'smooth',showSceneLabels:false,constructionSurface:'translucent',dimUnselected:false})});});}},t('stem.geosandbox.studio_reset_display','Reset display settings')));
       } // 'single' | 'stretch' | 'sculpt'
       // Hide incompatible roots synchronously at the interaction boundary. The
       // persisted mode update and Three.js rebuild happen in passive effects;
@@ -4276,7 +4276,7 @@ window.StemLab = window.StemLab || {
           h('details',{key:selected.id,className:'geo-object-properties',open:!canResize},h('summary',null,t('stem.geosandbox.studio_object_properties','Name, appearance & placement')),
             h('label',{className:'geo-field'},t('stem.geosandbox.studio_object_name','Object name'),h('input',{type:'text',maxLength:60,value:selected.name||'',placeholder:stretchObjectTitle(Object.assign({},selected,{name:''})),onFocus:beginResizeDrag,onBlur:endResizeDrag,onChange:function(e){updateStretchSelection({name:e.target.value});}})),
             h('label',{className:'geo-field geo-inline-field'},t('stem.geosandbox.studio_object_color','Object color'),h('input',{type:'color',value:selected.color||({point:'#ef4444',segment:'#22c55e',rect:'#3b82f6',prism:'#a78bfa',pyramid:'#f472b6',revolution:'#2dd4bf'})[selected.type]||'#a78bfa',onFocus:beginResizeDrag,onBlur:endResizeDrag,onChange:function(e){updateStretchSelection({color:e.target.value});}})),
-            h('label',{className:'geo-field'},h('span',null,t('stem.geosandbox.studio_object_opacity','Object opacity')+' · '+Math.round(alpha*100)+'%'),h('input',{type:'range',min:.15,max:1,step:.05,value:alpha,'aria-label':t('stem.geosandbox.studio_object_opacity','Object opacity'),onPointerDown:beginResizeDrag,onPointerUp:endResizeDrag,onPointerCancel:endResizeDrag,onBlur:endResizeDrag,onChange:function(e){updateStretchSelection({opacity:Number(e.target.value)});}})),
+            h('label',{className:'geo-field'},h('span',null,t('stem.geosandbox.studio_object_opacity','Object opacity')+' · '+Math.round(alpha*100)+'%'),h('input',{type:'range',min:.15,max:1,step:.05,value:alpha,'aria-label':t('stem.geosandbox.studio_object_opacity','Object opacity'),'aria-valuetext':Math.round(alpha*100)+' '+t('stem.geosandbox.vt_percent_opacity','percent opacity'),onPointerDown:beginResizeDrag,onPointerUp:endResizeDrag,onPointerCancel:endResizeDrag,onBlur:endResizeDrag,onChange:function(e){updateStretchSelection({opacity:Number(e.target.value)});}})),
             h('button',{type:'button',className:'geo-quiet-action',onClick:function(){endResizeDrag();updateStretchSelection({color:null,opacity:null});}},t('stem.geosandbox.studio_reset_object_style','Use default appearance')),
             canMove?h('div',{className:'geo-position-fields'},['X','Y','Z'].map(function(axis,i){return h('label',{key:axis,className:'geo-field'},axis+' '+t('stem.geosandbox.studio_position','position'),h('input',{type:'number',min:i===1?0:-20,max:20,step:.25,value:selected.position[i],onFocus:beginResizeDrag,onBlur:endResizeDrag,onChange:function(e){if(e.target.value==='')return;var value=Number(e.target.value);updateStretchSelection(function(object){var position=object.position.slice();position[i]=value;return{position:position};});}}));})):h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_revolution_placement','Revolved solids use their profile’s sweep axis. Change the profile before revolving to choose a different placement.')),
             canMove&&h('details',{className:'geo-copy-options'},h('summary',null,t('stem.geosandbox.studio_copy_options','Copy direction & spacing')),h('div',{className:'geo-copy-fields'},h('label',{className:'geo-field'},t('stem.geosandbox.studio_stretch_copy_axis','Copy direction'),h('select',{value:copyAxis,onChange:function(e){upd('stretchCopyAxis',Number(e.target.value));}},['X','Y','Z'].map(function(axis,i){return h('option',{key:axis,value:i},'+'+axis);}))),h('label',{className:'geo-field'},t('stem.geosandbox.studio_copy_spacing','Copy spacing'),h('input',{type:'number',min:.1,max:20,step:.25,value:copySpacing,onChange:function(e){if(e.target.value!=='')upd('stretchCopySpacing',Math.max(.1,Math.min(20,Number(e.target.value)||.1)));}}))))),
@@ -5378,7 +5378,7 @@ window.StemLab = window.StemLab || {
         return h('div',{className:'geo-sculpt-part-browser'},
           (sculptRecipe.parts.length>4||active)&&h('div',{className:'geo-sculpt-find-wrap'},
             h(compact?'div':'details',{className:'geo-sculpt-finder'},h(compact?'h4':'summary',null,sculptLabel('find_part','Find a part')),
-              h('label',{className:'geo-field'},sculptLabel('search_parts','Search parts'),h('input',{type:'search',value:sculptPartQuery,'aria-label':sculptLabel('search_parts','Search parts'),'aria-controls':listId,placeholder:sculptLabel('part_search_hint','Name, shape, group, or number'),onChange:function(e){setSculptPartQuery(e.target.value);},onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setSculptPartQuery('');}if(e.key==='Enter'&&matches.length){e.preventDefault();selectSculptPart(matches[0].index);var target=document.getElementById('geo-sculpt-choice-'+suffix+'-'+matches[0].index);if(target)target.focus();}}})),
+              h('label',{className:'geo-field'},sculptLabel('search_parts','Search parts'),h('input',{type:'search',value:sculptPartQuery,'aria-label':sculptLabel('search_parts','Search parts'),'aria-controls':listId,placeholder:sculptLabel('part_search_hint','Name, shape, group, or number'),onChange:function(e){setSculptPartQuery(e.target.value);},onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setSculptPartQuery('');}if(e.key==='Enter'&&matches.length){e.preventDefault();selectSculptPart(matches[0].index);var target=document.getElementById('geo-sculpt-choice-'+suffix+'-'+matches[0].index);if(target)target.focus();}}})),
               h('label',{className:'geo-field'},sculptLabel('filter_parts','Filter parts'),h('select',{value:sculptPartFilter,'aria-label':sculptLabel('filter_parts','Filter parts'),onChange:function(e){setSculptPartFilter(e.target.value);}},h('option',{value:'all'},sculptLabel('all_parts','All parts')),h('option',{value:'unlocked'},sculptLabel('unlocked_parts','Unlocked parts')),h('option',{value:'locked'},sculptLabel('locked_parts','Locked parts'))))),
             h('div',{className:'geo-sculpt-find-count'},h('span',{role:'status'},sculptLabel('part_match_count','{shown} of {total} parts').replace('{shown}',matches.length).replace('{total}',sculptRecipe.parts.length)),active&&h('button',{type:'button',onClick:function(){clearFilters(false);}},sculptLabel('clear_part_filters','Clear filters')))),
           h('div',{id:listId,className:'geo-sculpt-part-list'+(compact?' is-compact':''),role:'group','aria-label':sculptLabel('sculpt_part_picker','Sculpture parts')},matches.map(function(item){var pp=item.part,i=item.index;return h('button',{key:pp.partId||i,id:'geo-sculpt-choice-'+suffix+'-'+i,type:'button','aria-pressed':selPart===i,onClick:function(){selectSculptPart(i);},onMouseEnter:function(){previewSculptPart(i);},onMouseLeave:function(){previewSculptPart(null);},onFocus:function(){previewSculptPart(i);},onBlur:function(){previewSculptPart(null);},className:'geo-sculpt-part-chip',title:(pp.label||pp.shape)+(pp.group?' · '+pp.group:'')+(pp.locked?' · '+sculptLabel('part_locked','Locked'):'')},
@@ -5541,7 +5541,7 @@ window.StemLab = window.StemLab || {
         var matches=names.filter(function(name){var recipe=savedSculpts[name]||{},parts=Array.isArray(recipe.parts)?recipe.parts:[];var words=[name,recipe.name].concat(parts.map(function(p){return[p.label,p.group,p.shape].join(' ');})).join(' ').toLowerCase();return terms.every(function(term){return words.indexOf(term)>=0;});});
         matches.sort(function(a,b){return gallerySort==='name'?a.localeCompare(b):((Number(savedSculpts[b].savedAt)||0)-(Number(savedSculpts[a].savedAt)||0)||a.localeCompare(b));});
         return h('div',{className:'geo-saved-gallery'},
-          (names.length>3||galleryQuery)&&h('label',{className:'geo-field'},sculptLabel('search_saved','Find a saved sculpture'),h('input',{type:'search',value:galleryQuery,'aria-label':sculptLabel('search_saved','Find a saved sculpture'),placeholder:sculptLabel('search_saved_hint','Name, part, group, or shape'),onChange:function(e){setGalleryQuery(e.target.value);},onKeyDown:function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setGalleryQuery('');}}})),
+          (names.length>3||galleryQuery)&&h('label',{className:'geo-field'},sculptLabel('search_saved','Find a saved sculpture'),h('input',{type:'search',value:galleryQuery,'aria-label':sculptLabel('search_saved','Find a saved sculpture'),placeholder:sculptLabel('search_saved_hint','Name, part, group, or shape'),onChange:function(e){setGalleryQuery(e.target.value);},onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setGalleryQuery('');}}})),
           h('div',{className:'geo-gallery-toolbar'},h('span',{role:'status'},sculptLabel('saved_match_count','{shown} of {total} saved').replace('{shown}',matches.length).replace('{total}',names.length)),h('label',{className:'geo-field'},sculptLabel('sort_saved','Sort saved sculptures'),h('select',{'aria-label':sculptLabel('sort_saved','Sort saved sculptures'),value:gallerySort,onChange:function(e){setGallerySort(e.target.value);}},h('option',{value:'recent'},sculptLabel('recently_saved','Recently saved')),h('option',{value:'name'},sculptLabel('saved_by_name','Name A–Z'))))),
           !matches.length&&h('p',{className:'geo-sculpt-note'},sculptLabel('no_saved_matches','No matching sculptures. Try another name or shape.')),
           galleryQuery&&h('button',{type:'button',className:'geo-gallery-clear',onClick:function(){setGalleryQuery('');}},sculptLabel('clear_saved_search','Clear search')),
@@ -5599,12 +5599,12 @@ window.StemLab = window.StemLab || {
                       'aria-label': t('stem.geosandbox.sculpt_placeholder', 'Describe an object to sculpt'),
                       className: 'w-full text-sm p-2 rounded-lg bg-slate-900/60 border border-fuchsia-500/40 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-fuchsia-400 outline-none'
                     }),
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: doGenerateSculpt,
                       disabled: sculptBusy,
                       className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all'
                     }, sculptBusy ? t('stem.geosandbox.sculpt_working', '… Creating') : ('✨ ' + (sculptRecipe ? t('stem.geosandbox.sculpt_regenerate', 'Regenerate') : t('stem.geosandbox.sculpt_create', 'Create sculpture')))),
-                    voiceSupported && h('button', {
+                    voiceSupported && h('button', { type: 'button',
                       onClick: function() { toggleVoice(handleVoiceCommand, 'Listening. Say what to make or how to change it.'); },
                       disabled: sculptBusy,
                       'aria-pressed': voiceListening ? 'true' : 'false',
@@ -5624,7 +5624,7 @@ window.StemLab = window.StemLab || {
                           'aria-label': t('stem.geosandbox.sculpt_refine_placeholder', 'Tell the AI what to change'),
                           className: 'flex-1 min-w-0 text-xs p-1.5 rounded-lg bg-slate-900/60 border border-fuchsia-500/40 text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-fuchsia-400 outline-none'
                         }),
-                        h('button', { onClick: doRefineSculpt, disabled: sculptBusy, 'aria-label': t('stem.geosandbox.apply_sculpt_refinement', 'Apply sculpture refinement'), className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
+                        h('button', { type: 'button', onClick: doRefineSculpt, disabled: sculptBusy, 'aria-label': t('stem.geosandbox.apply_sculpt_refinement', 'Apply sculpture refinement'), className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50' }, '✨')
                       )
                     )
                   ))
@@ -6179,20 +6179,20 @@ window.StemLab = window.StemLab || {
 
         // Header row
         h('header',{className:'geo-studio-header'},h('div',{className:'geo-brand'},h('span',{className:'geo-brand-mark','aria-hidden':'true'},
-          h('svg',{width:28,height:28,viewBox:'0 0 36 36',fill:'none'},
+          h('svg',{width:28,height:28,viewBox:'0 0 36 36',fill:'none','aria-hidden':'true'},
             h('polygon',{points:'18,4 31,11 31,25 18,32 5,25 5,11',stroke:'#7dd3fc',strokeWidth:2,fill:'rgba(56,189,248,0.16)'}),
             h('polyline',{points:'5,11 18,18 31,11',stroke:'#bae6fd',strokeWidth:1.8,fill:'none'}),
             h('line',{x1:18,y1:18,x2:18,y2:32,stroke:'#38bdf8',strokeWidth:1.8}),
             h('circle',{cx:18,cy:18,r:2.3,fill:'#fde047'})
           )
-        ),h('div',null,h('span',{className:'geo-subject-badge'},t('stem.geosandbox.subject_badge','3D Solid Geometry & Spatial Modeling')),h('h2',null,t('stem.geosandbox.studio_title','Geometry Sandbox')),h('p',null,t('stem.geosandbox.studio_subtitle','A little space for big spatial ideas.')))),h('div',{className:'geo-header-actions'},h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
+        ),h('div',null,h('span',{className:'geo-subject-badge'},t('stem.geosandbox.subject_badge','3D Solid Geometry & Spatial Modeling')),h('h2',null,t('stem.geosandbox.studio_title','Geometry Sandbox')),h('p',null,t('stem.geosandbox.studio_subtitle','A little space for big spatial ideas.')))),h('div',{className:'geo-header-actions'},h('button', { type: 'button', 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-700 to-orange-800 shadow-md shadow-amber-700/20 hover:from-amber-800 hover:to-orange-900' : 'text-amber-100 bg-amber-700/30 border border-amber-300/70 hover:bg-amber-700/40')
-            }, t('stem.geosandbox.challenge_2', '\uD83C\uDFAF Challenge')),gd.challengeMode && h('button', { 'aria-label': t('stem.geosandbox.exit', 'Exit'),
+            }, t('stem.geosandbox.challenge_2', '\uD83C\uDFAF Challenge')),gd.challengeMode && h('button', { type: 'button', 'aria-label': t('stem.geosandbox.exit', 'Exit'),
               onClick: function() { exitGeometryChallenge(); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-200 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
-            }, t('stem.geosandbox.exit_2', '\u2716 Exit')),h('details',{className:'geo-more-tools geo-immersive-tools',onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}},h('summary',null,t('stem.geosandbox.studio_immersive_3d','Immersive 3D')),h('div',{className:'geo-more-menu geo-immersive-menu'},h('h3',null,t('stem.geosandbox.studio_choose_immersive','Choose your 3D experience')),xrSupported && h('button', {
+            }, t('stem.geosandbox.exit_2', '\u2716 Exit')),h('details',{className:'geo-more-tools geo-immersive-tools',onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}},h('summary',null,t('stem.geosandbox.studio_immersive_3d','Immersive 3D')),h('div',{className:'geo-more-menu geo-immersive-menu'},h('h3',null,t('stem.geosandbox.studio_choose_immersive','Choose your 3D experience')),xrSupported && h('button', { type: 'button',
               'aria-label': t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
               onClick: function() {
                 var gs = window._geoScene;
@@ -6202,7 +6202,7 @@ window.StemLab = window.StemLab || {
               },
               title: t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20'
-            }, t('stem.geosandbox.enter_vr', '🥽 VR')),!xrSupported&&h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_vr_available','Connect a compatible VR headset to step inside your current model.')),h('button', {
+            }, t('stem.geosandbox.enter_vr', '🥽 VR')),!xrSupported&&h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_vr_available','Connect a compatible VR headset to step inside your current model.')),h('button', { type: 'button',
               'aria-label': t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
               onClick: function() {
                 // Top-level window (Video-Studio / Access-Lens escape-hatch), so WebXR
@@ -6235,20 +6235,20 @@ window.StemLab = window.StemLab || {
               },
               title: t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-violet-600/20'
-            }, t('stem.geosandbox.open_immersive', '🌐 Stretch Lab ↗')),h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_immersive_explain','The Stretch Lab has its own desktop and VR workspace for exploring dimensions.')))),h('details',{className:'geo-more-tools',onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}},h('summary',null,t('stem.geosandbox.studio_more','More tools')),h('div',{className:'geo-more-menu'},h('button', { 'aria-label': t('stem.geosandbox.badges_b', 'Badges [B]'),
+            }, t('stem.geosandbox.open_immersive', '🌐 Stretch Lab ↗')),h('p',{className:'geo-setting-note'},t('stem.geosandbox.studio_immersive_explain','The Stretch Lab has its own desktop and VR workspace for exploring dimensions.')))),h('details',{className:'geo-more-tools',onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Escape'){e.preventDefault();e.currentTarget.open=false;e.currentTarget.querySelector('summary').focus();}}},h('summary',null,t('stem.geosandbox.studio_more','More tools')),h('div',{className:'geo-more-menu'},h('button', { type: 'button', 'aria-label': t('stem.geosandbox.badges_b', 'Badges [B]'),
               onClick: function() { updExt({ showBadges: !showBadges }); },
               title: t('stem.geosandbox.badges_b_2', 'Badges [B]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-700 to-fuchsia-800 shadow-md' : 'text-purple-200 bg-purple-700/30 border border-purple-300/70 hover:bg-purple-700/40')
-            }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),(typeof geoCallGemini === 'function') && h('button', { id: 'geo-ai-tutor-button', 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
+            }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),(typeof geoCallGemini === 'function') && h('button', { type: 'button', id: 'geo-ai-tutor-button', 'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor'),
               'aria-controls': 'geo-ai-tutor-panel', 'aria-expanded': showAI, disabled: aiLoading,
               onClick: askAI,
               title: t('stem.geosandbox.ai_tutor', 'AI Tutor [/]'),
               className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (aiLoading ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 opacity-90' : showAI ? 'text-white bg-gradient-to-r from-cyan-700 to-blue-700 shadow-md' : 'text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 hover:bg-cyan-500/30')
-            }, aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 AI Tutor'),mode === 'single' && h('button', { 'aria-label': t('stem.geosandbox.export_stl', 'Export current shape as STL'),
+            }, aiLoading ? '\u23F3 Thinking...' : '\uD83E\uDD16 AI Tutor'),mode === 'single' && h('button', { 'aria-label': t('stem.geosandbox.export_stl', 'Export current shape as STL'), type: 'button',
               onClick: doExportSTL,
               title: t('stem.geosandbox.export_stl_e', 'Export STL [E]'),
               className: 'px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-green-700 rounded-full hover:from-emerald-800 hover:to-green-800 shadow-md hover:shadow-lg transition-all flex items-center gap-1'
-            }, t('stem.geosandbox.stl', '\uD83D\uDCE6 STL')))),h('button', { 'aria-label': t('stem.geosandbox.back', 'Back'),
+            }, t('stem.geosandbox.stl', '\uD83D\uDCE6 STL')))),h('button', { type: 'button', 'aria-label': t('stem.geosandbox.back', 'Back'),
               onClick: function() { cleanupScene(); setStemLabTool(null); },
               className: 'px-3 py-1.5 text-xs font-bold text-slate-300 bg-slate-700/60 rounded-full hover:bg-slate-600 transition-all'
             }, t('stem.geosandbox.back_2', '\u2190 Back')))),
@@ -6349,7 +6349,7 @@ window.StemLab = window.StemLab || {
         showAI && (typeof geoCallGemini === 'function') && h('div', { id: 'geo-ai-tutor-panel', role: 'region', 'aria-labelledby': 'geo-ai-tutor-title', 'aria-busy': aiLoading, className: 'bg-gradient-to-br from-cyan-900/40 to-blue-900/30 backdrop-blur-md rounded-xl p-4 border border-cyan-500/30' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('div', { id: 'geo-ai-tutor-title', className: 'text-sm font-bold text-cyan-200 flex items-center gap-2' }, t('stem.geosandbox.ai_geometry_tutor', '\uD83E\uDD16 AI Geometry Tutor')),
-            h('button', { onClick: function() { updExt({ showAI: false }); window.setTimeout(function() { var btn = document.getElementById('geo-ai-tutor-button'); if (btn) { var menu=btn.closest('details');if(menu)menu.open=true;btn.focus();} }, 0); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
+            h('button', { type: 'button', onClick: function() { updExt({ showAI: false }); window.setTimeout(function() { var btn = document.getElementById('geo-ai-tutor-button'); if (btn) { var menu=btn.closest('details');if(menu)menu.open=true;btn.focus();} }, 0); }, 'aria-label': t('stem.geosandbox.close_ai_geometry_tutor', 'Close AI Geometry Tutor'), className: 'text-xs text-slate-200 hover:text-slate-200' }, '\u2716')
           ),
           aiLoading
             ? h('div', { role: 'status', className: 'text-sm text-cyan-300 opacity-90' }, t('stem.geosandbox.ai_analyzing_scene', 'Analyzing the current geometry scene...'))
@@ -6380,7 +6380,7 @@ window.StemLab = window.StemLab || {
               window.setTimeout(function() { var tab = document.getElementById('geo-mode-tab-' + next); if (tab) tab.focus(); }, 0);
             }
           },
-            h('button', {
+            h('button', { type: 'button',
               id: 'geo-mode-tab-single',
               role: 'tab',
               'aria-selected': mode === 'single',
@@ -6393,7 +6393,7 @@ window.StemLab = window.StemLab || {
               className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'single' ? 'bg-sky-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.single_shape', '\uD83D\uDCE6 Single shape')),
-            h('button', {
+            h('button', { type: 'button',
               id: 'geo-mode-tab-stretch',
               role: 'tab',
               'aria-selected': mode === 'stretch',
@@ -6407,7 +6407,7 @@ window.StemLab = window.StemLab || {
               className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'stretch' ? 'bg-purple-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode')),
-            h('button', {
+            h('button', { type: 'button',
               id: 'geo-mode-tab-sculpt',
               role: 'tab',
               'aria-selected': mode === 'sculpt',
@@ -6424,13 +6424,13 @@ window.StemLab = window.StemLab || {
             }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA Sculpt'))
           )),
 !gd.challengeMode && h('div',{id:'geo-control-sidebar',hidden:focusView,className:'geo-sidebar'},
-h('div',{className:'geo-panel-tabs',role:'tablist','aria-label':t('stem.geosandbox.studio_panels','Workspace panels'),onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;if(['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key)<0)return;e.preventDefault();var tabs=['build','learn','settings'],i=tabs.indexOf(workspacePanel),next=e.key==='Home'?'build':e.key==='End'?'settings':tabs[(i+(e.key==='ArrowRight'?1:2))%3];openWorkspacePanel(next,true);}},['build','learn','settings'].map(function(panel){return h('button',{key:panel,id:'geo-panel-tab-'+panel,role:'tab','aria-selected':workspacePanel===panel,'aria-controls':'geo-panel-'+panel,tabIndex:workspacePanel===panel?0:-1,onClick:function(){openWorkspacePanel(panel,false);}},t('stem.geosandbox.studio_panel_'+panel,panel==='build'?'Build':panel==='learn'?'Learn':'Settings'));})),
+h('div',{className:'geo-panel-tabs',role:'tablist','aria-label':t('stem.geosandbox.studio_panels','Workspace panels'),onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;if(['ArrowLeft','ArrowRight','Home','End'].indexOf(e.key)<0)return;e.preventDefault();var tabs=['build','learn','settings'],i=tabs.indexOf(workspacePanel),next=e.key==='Home'?'build':e.key==='End'?'settings':tabs[(i+(e.key==='ArrowRight'?1:2))%3];openWorkspacePanel(next,true);}},['build','learn','settings'].map(function(panel){return h('button',{ type: 'button',key:panel,id:'geo-panel-tab-'+panel,role:'tab','aria-selected':workspacePanel===panel,'aria-controls':'geo-panel-'+panel,tabIndex:workspacePanel===panel?0:-1,onClick:function(){openWorkspacePanel(panel,false);}},t('stem.geosandbox.studio_panel_'+panel,panel==='build'?'Build':panel==='learn'?'Learn':'Settings'));})),
 h('div',{id:'geo-panel-build',role:'tabpanel','aria-labelledby':'geo-panel-tab-build',hidden:workspacePanel!=='build',className:'geo-panel-content'},workspacePath === 'lesson' && renderLessonGuide(),
 mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.geosandbox.shapes', 'Shapes')),
               h('div', { className: 'grid grid-cols-4 gap-1.5' },
                 shapes.map(function(s) {
-                  return h('button', { 'aria-label': s.label, 'aria-pressed': shape === s.id,
+                  return h('button', { type: 'button', 'aria-label': s.label, 'aria-pressed': shape === s.id,
                     key: s.id,
                     onClick: function() { selectShape(s.id); },
                     title: s.label + ' [' + s.key + ']',
@@ -6457,6 +6457,7 @@ currentSliders.map(function(sl) {
                     max: sliderMax,
                     step: sl.step,
                     value: dims[sl.key] || sl.min,
+                    'aria-valuetext': (dims[sl.key] || sl.min) + ' ' + t('stem.geosandbox.vt_units', 'units'),
                     onChange: function(e) { updDim(sl.key, e.target.value); },
                     'aria-label': sl.label + t('stem.geosandbox.dim_suffix_slider', ' slider'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
@@ -6469,7 +6470,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                 h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.build_action_2', 'Build action') },
                   [{ id: 'stretch', label: t('stem.geosandbox.verb_stretch', '⤴ Stretch') }, { id: 'taper', label: t('stem.geosandbox.verb_taper', '🔺 Taper') }, { id: 'revolve', label: t('stem.geosandbox.verb_revolve', '🌀 Revolve') }].map(function(vb) {
                     var active = buildVerb === vb.id;
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: 'vb-' + vb.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('buildVerb', vb.id); },
                       className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold border-2 ' +
@@ -6490,6 +6491,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   type: 'range', min: '0', max: '1', step: '0.05', value: topScale,
                   onChange: function(e) { upd('topScale', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.top_size_aria', 'Taper top size'),
+                  'aria-valuetext': Math.round(topScale * 100) + ' ' + t('stem.geosandbox.vt_percent_top_size', 'percent top size'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500'
                 })
               ),buildVerb === 'revolve' && h('div', null,
@@ -6501,6 +6503,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   type: 'range', min: '30', max: '360', step: '15', value: revolveAngle,
                   onChange: function(e) { upd('revolveAngle', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.sweep_angle_aria', 'Revolution sweep angle in degrees'),
+                  'aria-valuetext': revolveAngle + ' ' + t('stem.geosandbox.vt_degrees', 'degrees'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500'
                 }),
                 h('p', { className: 'text-[0.625rem] text-teal-200/70 mt-0.5' },
@@ -6509,7 +6512,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                 h('div', { className: 'flex gap-1 mt-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.revolve_profile', 'Profile to spin') },
                   [{ id: 'rect', label: t('stem.geosandbox.profile_rect', '▭ Rectangle → cylinder') }, { id: 'triangle', label: t('stem.geosandbox.profile_tri', '◺ Triangle → cone') }].map(function(pf) {
                     var active = revolveProfile === pf.id;
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: 'pf-' + pf.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('revolveProfile', pf.id); },
                       className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold border ' +
@@ -6549,7 +6552,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                       var active = stretchAxis === ax.id;
                       // The axis that will really be used, when it isn't the picked one.
                       var substituted = eff.reason === 'parallel' && eff.axis === ax.id;
-                      return h('button', {
+                      return h('button', { type: 'button',
                         key: 'ax-' + ax.id,
                         role: 'radio',
                         'aria-checked': active,
@@ -6598,6 +6601,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                     value: stretchLength,
                     onChange: function(e) { upd('stretchLength', parseFloat(e.target.value)); },
                     'aria-label': t('stem.geosandbox.stretch_length', 'Stretch length'),
+                    'aria-valuetext': stretchLength + ' ' + t('stem.geosandbox.vt_units', 'units'),
                     className: 'flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
                   }),
                   h('input', {
@@ -6625,6 +6629,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   value: stretchSlant,
                   onChange: function(e) { upd('stretchSlant', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.slant_amount', 'Slant amount'),
+                  'aria-valuetext': stretchSlant + ' ' + t('stem.geosandbox.vt_slant', 'slant'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500'
                 }),
                 stretchSlant !== 0 && h('p', { className: 'text-[0.625rem] text-emerald-300/80 mt-0.5' },
@@ -6643,11 +6648,11 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                     'aria-label': t('stem.geosandbox.your_prediction', 'Your prediction'),
                     className: 'flex-1 px-2 py-1 rounded bg-slate-900/70 border border-indigo-400/50 text-indigo-100 text-xs font-mono text-right'
                   }),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: revealPrediction,
                     className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all'
                   }, t('stem.geosandbox.reveal_build', 'Reveal & build')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: cancelPrediction,
                     'aria-label': t('stem.geosandbox.cancel_prediction', 'Cancel prediction'),
                     className: 'px-2 py-1 rounded-lg text-[0.6875rem] text-indigo-200 hover:bg-indigo-800/50 transition-all'
@@ -6682,7 +6687,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                 else if (sel.type === 'segment')   { label = t('stem.geosandbox.btn_segment_to_rect', 'Stretch segment → rectangle (2D)'); enabled = true; }
                 else if (sel.type === 'rect')      { label = t('stem.geosandbox.btn_rect_to_prism', 'Stretch rectangle → prism (3D)'); enabled = true; }
                 else { label = '✓ ' + t('stem.geosandbox.btn_already_solid', 'Already a solid (3D)'); }
-                return h('button', {
+                return h('button', { type: 'button',
                   onClick: performStretch,
                   disabled: !enabled || !!pendingPredict,
                   'aria-label': label,
@@ -6708,6 +6713,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                         onPointerDown: beginResizeDrag, onPointerUp: endResizeDrag, onPointerCancel: endResizeDrag, onBlur: endResizeDrag,
                         onChange: function(e) { resizeSelectedDim(d.i, parseFloat(e.target.value), false); },
                         'aria-label': d.label + ' ' + t('stem.geosandbox.resize', 'resize'),
+                        'aria-valuetext': Math.min(12, d.len) + ' ' + t('stem.geosandbox.vt_units', 'units'),
                         className: 'flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500'
                       }),
                       h('input', {
@@ -6721,12 +6727,12 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   })
                 );
               })()),h('section',{className:'geo-add-geometry'},h('h3',null,t('stem.geosandbox.studio_add_geometry','Add geometry')),h('div',{className:'geo-point-placement'},h('div', { className: 'flex gap-1.5' },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { addPoint([0, 0, 0]); },
                     'aria-label': t('stem.geosandbox.add_a_point_at_origin', 'Add a point at origin'),
                     className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-md'
                   }, t('stem.geosandbox.place_point_at_origin', '⊙ Point at origin')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { upd('placeArmed', !placeArmed); },
                     'aria-pressed': placeArmed,
                     'aria-label': t('stem.geosandbox.click_to_place_toggle', 'Click in the 3D view to place a point'),
@@ -6764,7 +6770,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                       'aria-label': t('stem.geosandbox.place_y_aria', 'Point height above the grid'),
                       className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[0.6875rem] font-mono text-right'
                     })),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { placePoint(placeX, placeZ, placeY); },
                     'aria-label': t('stem.geosandbox.place_at_xyz', 'Place a point at the entered X, Z and height Y'),
                     className: 'px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all'
@@ -6773,7 +6779,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   h('span', { className: 'text-[0.625rem] font-bold text-purple-200' }, t('stem.geosandbox.snap', 'Snap:')),
                   [{ v: 0.5, l: '½' }, { v: 1, l: '1' }, { v: 0, l: t('stem.geosandbox.snap_off', 'off') }].map(function(s) {
                     var on = snap === s.v;
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: 'snap-' + s.v,
                       onClick: function() { upd('snap', s.v); },
                       'aria-pressed': on,
@@ -6782,13 +6788,13 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                         (on ? 'bg-purple-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
                     }, s.l);
                   })
-                ))),workspacePath==='free' && h('details',{className:'geo-quick-shapes'},h('summary',null,t('stem.geosandbox.studio_quick_shapes','Quick shapes')),h('div',{className:'geo-starter-grid'},[['segment','─',t('stem.geosandbox.studio_type_line','Line')],['rect','▱',t('stem.geosandbox.studio_type_surface','Surface')],['prism','◇',t('stem.geosandbox.studio_type_prism','Prism')]].map(function(item){return h('button',{key:item[0],type:'button',onClick:function(){addStretchStarter(item[0]);}},h('span',{'aria-hidden':'true'},item[1]),item[2]);})))),h('div',{className:'geo-history-actions'},h('button', {
+                ))),workspacePath==='free' && h('details',{className:'geo-quick-shapes'},h('summary',null,t('stem.geosandbox.studio_quick_shapes','Quick shapes')),h('div',{className:'geo-starter-grid'},[['segment','─',t('stem.geosandbox.studio_type_line','Line')],['rect','▱',t('stem.geosandbox.studio_type_surface','Surface')],['prism','◇',t('stem.geosandbox.studio_type_prism','Prism')]].map(function(item){return h('button',{key:item[0],type:'button',onClick:function(){addStretchStarter(item[0]);}},h('span',{'aria-hidden':'true'},item[1]),item[2]);})))),h('div',{className:'geo-history-actions'},h('button', { type: 'button',
                   onClick: doStretchUndo,
                   disabled: !history.length,
                   'aria-label': t('stem.geosandbox.undo_last_stretch', 'Undo last stretch'),
                   className: 'flex-1 px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold transition-all ' +
                     (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
-                }, '↶ Undo (' + history.length + ')'),h('button',{type:'button',onClick:doStretchRedo,disabled:!redoHistory.length,'aria-label':t('stem.geosandbox.studio_redo_stretch','Redo last stretch')},'↷ '+t('stem.geosandbox.studio_redo','Redo')+' ('+redoHistory.length+')'),h('button', {
+                }, '↶ Undo (' + history.length + ')'),h('button',{type:'button',onClick:doStretchRedo,disabled:!redoHistory.length,'aria-label':t('stem.geosandbox.studio_redo_stretch','Redo last stretch')},'↷ '+t('stem.geosandbox.studio_redo','Redo')+' ('+redoHistory.length+')'),h('button', { type: 'button',
                   onClick: clearConstruction,
                   disabled: !construction.objects.length,
                   'aria-label': t('stem.geosandbox.clear_all_construction_objects', 'Clear all construction objects'),
@@ -6808,7 +6814,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                     h('p', { className: 'text-[10.5px] text-emerald-200/70' }, t('stem.geosandbox.build_challenge_intro', 'Get a target and build a shape that hits it — stretch to the right length, area, or volume.')),
                     h('div', { className: 'flex gap-1' },
                       [[1, t('stem.geosandbox.level_length', 'Length')], [2, t('stem.geosandbox.level_area', 'Area')], [3, t('stem.geosandbox.level_volume', 'Volume')]].map(function(lvl) {
-                        return h('button', {
+                        return h('button', { type: 'button',
                           key: 'lvl-' + lvl[0],
                           onClick: function() { startBuildChallenge(lvl[0]); },
                           className: 'flex-1 px-2 py-1.5 rounded text-[0.6875rem] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800 transition-all'
@@ -6827,15 +6833,15 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   h('p', { className: 'text-[0.6875rem] text-emerald-100 font-medium' }, buildChallenge.prompt),
                   buildEval && h('p', { className: 'text-[10.5px] font-mono ' + (solved ? 'text-emerald-300' : 'text-amber-300/90'), 'aria-live': 'polite' }, buildEval.message),
                   h('div', { className: 'flex gap-1' },
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() { updExt({ _bldHint: !(gd._geoExt && gd._geoExt._bldHint) }); },
                       className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-200 hover:bg-slate-700'
                     }, '💡 ' + t('stem.geosandbox.hint', 'Hint')),
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() { startBuildChallenge(solved ? undefined : buildChallenge.level); },
                       className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800'
                     }, solved ? ('➡ ' + t('stem.geosandbox.next_challenge', 'Next')) : ('🔄 ' + t('stem.geosandbox.new_challenge', 'New'))),
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: clearBuildChallenge,
                       className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-slate-800/70 text-slate-300 hover:bg-slate-700'
                     }, '✕')
@@ -6843,7 +6849,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   (gd._geoExt && gd._geoExt._bldHint) && h('p', { className: 'text-[0.625rem] text-emerald-200/70 italic' }, buildChallenge.hint)
                 );
               })()),(voiceSupported && typeof geoCallGemini === 'function') && h('div', { className: 'space-y-1' },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { toggleVoice(handleStretchVoiceCommand, 'Listening. Say “add a point”, then “stretch it up”, “sweep across”, or “pull it out”.'); },
                   'aria-pressed': voiceListening ? 'true' : 'false',
                   'aria-label': t('stem.geosandbox.voice_build_title', 'Voice build — speak the stretches to build point to line to plane to solid, hands-free'),
@@ -6854,7 +6860,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
               ),h('details',null,h('summary', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, t('stem.geosandbox.dimensional_stretch_builder', '📐 Dimensional Stretch Builder')),h('p', { className: 'text-[0.6875rem] text-purple-200/80 leading-relaxed' },
                 t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
               )))),mode==='stretch' && h('section',{className:'geo-section geo-saved-builds'},h('h3',null,t('stem.geosandbox.studio_saved_builds','Saved builds')),mode === 'stretch' && h('div', { className: 'flex gap-1' },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     setSaveName('Build ' + new Date().toLocaleDateString());
                     setSaveOpen(true);
@@ -6863,7 +6869,7 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                   className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold ' +
                     (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, t('stem.geosandbox.save', '💾 Save')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { upd('showSaved', !showSaved); },
                   className: 'flex-1 px-2 py-1 rounded text-[0.6875rem] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
                 }, '📂 Load (' + Object.keys(savedConstructions).length + ')')
@@ -6886,11 +6892,11 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                       return h('div', { key: 'sv-' + name, className: 'flex flex-wrap items-center gap-1 bg-slate-900/60 rounded p-1' },
                         h('span', { className: 'text-[0.6875rem] text-slate-200 flex-1 truncate', title: name }, name),
                         h('span', { className: 'text-[0.625rem] text-slate-400 font-mono' }, (snap.objects || []).length + ' objs'),
-                        h('button', {
+                        h('button', { type: 'button',
                           onClick: function() { loadConstruction(name); },
                           className: 'px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-indigo-700 text-white hover:bg-indigo-800'
                         }, t('stem.geosandbox.load', 'Load')),
-                        h('button', {
+                        h('button', { type: 'button',
                           onClick: function() { setDeletePending(name); },
                           'aria-label': t('stem.geosandbox.delete_saved_construction', 'Delete saved construction') + ' ' + name,
                           className: 'px-1.5 py-0.5 rounded text-[0.625rem] font-bold bg-rose-700 text-white hover:bg-rose-800'
@@ -6903,14 +6909,14 @@ mode === 'stretch' && h('div',{className:'geo-stretch-builder'},renderStretchJou
                         },
                           h('p', { className: 'mb-1.5' }, t('stem.geosandbox.delete_saved_prompt', 'Delete this saved construction?') + ' "' + name + '"'),
                           h('div', { className: 'flex gap-1' },
-                            h('button', { onClick: function() { deleteConstruction(name); setDeletePending(null); }, className: 'px-2 py-1 rounded bg-rose-700 text-white font-bold' }, t('common.delete', 'Delete')),
-                            h('button', { ref: deleteCancelRef, onClick: function() { setDeletePending(null); }, className: 'px-2 py-1 rounded bg-slate-700 text-white font-bold' }, t('common.cancel', 'Cancel'))
+                            h('button', { type: 'button', onClick: function() { deleteConstruction(name); setDeletePending(null); }, className: 'px-2 py-1 rounded bg-rose-700 text-white font-bold' }, t('common.delete', 'Delete')),
+                            h('button', { type: 'button', ref: deleteCancelRef, onClick: function() { setDeletePending(null); }, className: 'px-2 py-1 rounded bg-slate-700 text-white font-bold' }, t('common.cancel', 'Cancel'))
                           )
                         )
                       );
                     })
               ))),
-h('div',{id:'geo-panel-learn',role:'tabpanel','aria-labelledby':'geo-panel-tab-learn',hidden:workspacePanel!=='learn',className:'geo-panel-content'},workspacePath==='lesson'?h('section',{className:'geo-lesson-guide geo-lesson-context','aria-label':t('stem.geosandbox.studio_current_lesson','Current lesson')},h('div',{className:'geo-lesson-eyebrow'},t('stem.geosandbox.studio_path_lesson','Lesson sequence')+' · '+(lessonIndex+1)+' / '+GEO_MISSIONS.length),h('h3',null,GEO_MISSIONS[lessonIndex].title),h('p',null,GEO_MISSIONS[lessonIndex].desc),h('button',{type:'button',onClick:function(){openWorkspacePanel('build',true);}},t('stem.geosandbox.studio_back_build','Back to building'))):h('div',{className:'geo-section'},h('h3',null,t('stem.geosandbox.studio_learning','Explore the math')),h('p',null,t('stem.geosandbox.studio_learning_help','Inspect your model, try an investigation, or follow seven lessons from length to volume.')),h('button',{className:'geo-primary',onClick:function(){chooseWorkspacePath('lesson');}},t('stem.geosandbox.studio_open_lessons','Open lesson sequence'))),
+h('div',{id:'geo-panel-learn',role:'tabpanel','aria-labelledby':'geo-panel-tab-learn',hidden:workspacePanel!=='learn',className:'geo-panel-content'},workspacePath==='lesson'?h('section',{className:'geo-lesson-guide geo-lesson-context','aria-label':t('stem.geosandbox.studio_current_lesson','Current lesson')},h('div',{className:'geo-lesson-eyebrow'},t('stem.geosandbox.studio_path_lesson','Lesson sequence')+' · '+(lessonIndex+1)+' / '+GEO_MISSIONS.length),h('h3',null,GEO_MISSIONS[lessonIndex].title),h('p',null,GEO_MISSIONS[lessonIndex].desc),h('button',{type:'button',onClick:function(){openWorkspacePanel('build',true);}},t('stem.geosandbox.studio_back_build','Back to building'))):h('div',{className:'geo-section'},h('h3',null,t('stem.geosandbox.studio_learning','Explore the math')),h('p',null,t('stem.geosandbox.studio_learning_help','Inspect your model, try an investigation, or follow seven lessons from length to volume.')),h('button',{ type: 'button',className:'geo-primary',onClick:function(){chooseWorkspacePath('lesson');}},t('stem.geosandbox.studio_open_lessons','Open lesson sequence'))),
 mode==='stretch' && renderStretchMeasurementCard(),
 mode==='stretch' && renderGuidedExperiments(),
 mode === 'sculpt' && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts.length > 0 && (function() {
@@ -7106,7 +7112,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
               h('div', { className: 'grid grid-cols-2 gap-1' },
                 GEO_REAL_OBJECTS.map(function(ro) {
                   var active = realChallengeId === ro.id;
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: 'real-' + ro.id,
                     onClick: function() { upd('realChallenge', active ? null : ro.id); },
                     'aria-pressed': active,
@@ -7145,7 +7151,7 @@ mode === 'stretch' && (function() {
               return h('div', { className: 'bg-slate-900/40 rounded-xl p-3 border border-sky-500/40 space-y-2' },
                 h('div', { className: 'flex items-center justify-between' },
                   h('div', { className: 'text-xs font-bold text-sky-200 uppercase tracking-wider' }, t('stem.geosandbox.net_unfold', '📦 Unfold net')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { updExt({ _netOpen: !netOpen }); },
                     'aria-expanded': netOpen,
                     'aria-controls': 'geo-stretch-net-panel',
@@ -7168,7 +7174,7 @@ mode === 'stretch' && (function() {
                     h('div', { className: 'bg-white rounded-lg p-2 flex justify-center', dangerouslySetInnerHTML: { __html: svg } }),
                     h('div', { className: 'text-[0.625rem] text-sky-200/80' }, t('stem.geosandbox.net_faces', '6 faces · edges {a}×{b}×{c}')
                       .replace('{a}', net.dims.a.toFixed(1)).replace('{b}', net.dims.b.toFixed(1)).replace('{c}', net.dims.c.toFixed(1))),
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() {
                         try {
                           var win = window.open('', '_blank');
@@ -7205,6 +7211,7 @@ mode === 'stretch' && (function() {
                   type: 'range', min: '0.5', max: '3', step: '0.25', value: k,
                   onChange: function(e) { upd('scaleK', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.scale_factor', 'Scale factor k'),
+                  'aria-valuetext': k + ' ' + t('stem.geosandbox.vt_scale_factor', 'times scale factor'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500'
                 }),
                 h('div', { className: 'space-y-1' },
@@ -7219,7 +7226,7 @@ mode === 'stretch' && (function() {
                 sel.type === 'prism' && h('p', { className: 'text-[0.625rem] text-amber-300/80' },
                   t('stem.geosandbox.square_cube_note', 'Double the sides and the volume grows 8×, not 2× — why big animals need thick legs and small ones do not.')
                 ),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { placeScaledCopy(k); },
                   'aria-label': t('stem.geosandbox.place_scaled_copy', 'Place a scaled copy beside the original'),
                   className: 'w-full px-2 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-amber-700/70 text-white hover:bg-amber-800'
@@ -7236,7 +7243,7 @@ mode === 'stretch' && (function() {
               return h('div', { className: 'bg-gradient-to-br from-yellow-900/30 to-slate-900/30 rounded-xl p-3 border border-yellow-500/40 space-y-2' },
                 h('div', { className: 'flex items-center justify-between' },
                   h('div', { className: 'text-xs font-bold text-yellow-200 uppercase tracking-wider' }, t('stem.geosandbox.cross_section', '🍰 Cross-section slicer')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { upd('sliceOn', !sliceOn); },
                     'aria-pressed': sliceOn,
                     className: 'px-2 py-1 rounded text-[10.5px] font-bold ' + (sliceOn ? 'bg-yellow-700 text-white' : 'bg-slate-800/70 text-yellow-200 hover:bg-slate-700')
@@ -7251,6 +7258,7 @@ mode === 'stretch' && (function() {
                     type: 'range', min: '0', max: '1', step: '0.02', value: sliceT,
                     onChange: function(e) { upd('sliceT', parseFloat(e.target.value)); },
                     'aria-label': t('stem.geosandbox.slice_height', 'Slice height'),
+                    'aria-valuetext': Math.round(sliceT * 100) + ' ' + t('stem.geosandbox.vt_percent_height', 'percent height'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
                   })
                 ),
@@ -7274,6 +7282,7 @@ mode === 'stretch' && (function() {
                     type: 'range', min: '2', max: '40', step: '1', value: nSlices,
                     onChange: function(e) { upd('sliceN', parseInt(e.target.value, 10)); },
                     'aria-label': t('stem.geosandbox.slice_count', 'Number of slices in the stack'),
+                    'aria-valuetext': nSlices + ' ' + t('stem.geosandbox.vt_slices', 'slices'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
                   }),
                   h('p', { className: 'text-[0.625rem] text-yellow-200/70' }, t('stem.geosandbox.stack_note', 'More slices → the stack of areas adds up to the true volume.'))
@@ -7402,11 +7411,11 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
                 h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
                   h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.view_angle', 'View angle')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.viewAngle + '°')),
-                    h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.view_angle_aria', 'Analyzer view angle'), className: 'w-full' })
+                    h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.view_angle_aria', 'Analyzer view angle'), 'aria-valuetext': iq.viewAngle + ' ' + t('stem.geosandbox.vt_degrees', 'degrees'), className: 'w-full' })
                   ),
                   h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.detail_level', 'Detail (decimals)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
-                    h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.detail_decimals_aria', 'Decimal places shown in the analyzer metrics'), className: 'w-full' })
+                    h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.detail_decimals_aria', 'Decimal places shown in the analyzer metrics'), 'aria-valuetext': iq.detail + ' ' + t('stem.geosandbox.vt_decimal_places', 'decimal places'), className: 'w-full' })
                   ),
                   h('label', { className: 'text-[0.625rem]' },
                     h('div', { className: 'mb-0.5' }, t('stem.geosandbox.focus_on_type', 'Focus on type')),
@@ -7422,18 +7431,18 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
                   )
                 ),
                 h('div', { className: 'flex gap-2 mb-2' },
-                  h('button', { onClick: function() {
+                  h('button', { type: 'button', onClick: function() {
                     var t = new Date().toISOString().slice(11, 19);
                     setIQ({ log: iq.log.concat([{ t: t, n: objs.length, dim: avgDim.toFixed(2), len: totalLen.toFixed(2), area: totalArea.toFixed(2), vol: totalVol.toFixed(2) }]) });
                   }, className: 'flex-1 px-2 py-1 rounded text-[0.625rem] font-bold', style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, t('stem.geosandbox.log_snapshot', '📋 Log snapshot')),
-                  h('button', { onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.clear_log', 'Clear log'))
+                  h('button', { type: 'button', onClick: function() { setIQ({ log: [] }); }, className: 'px-2 py-1 rounded text-[0.625rem]', style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.clear_log', 'Clear log'))
                 ),
                 iq.log.length > 0 && h('div', { className: 'mb-2 p-1.5 rounded text-[0.5625rem] font-mono', style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
                   iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  n=' + e.n + ' d=' + e.dim + ' L=' + e.len + ' A=' + e.area + ' V=' + e.vol); })
                 ),
                 h('label', { className: 'block text-[0.625rem] font-bold opacity-85 mb-1' }, t('stem.geosandbox.your_hypothesis_what_stretches_grow_le', 'Your hypothesis (what stretches grow length faster — area faster — volume faster?)')),
                 h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.geosandbox.your_hypothesis', 'Your geometry scaling hypothesis'), placeholder: t('stem.geosandbox.e_g_stretching_a_segment_perpendicular', 'e.g., stretching a segment perpendicular doubles area but volume needs a second stretch...'), className: 'w-full p-1.5 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded text-[0.625rem] font-bold mb-2', style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, t('stem.geosandbox.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded text-[0.625rem] mb-2', style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                   h('div', { className: 'font-bold mb-1', style: { color: sm.color } }, t('stem.geosandbox.open_questions_no_answer_key', 'Open questions (no answer key)')),
                   h('ul', { className: 'pl-4 m-0' },
@@ -7454,7 +7463,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
 !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
               h('div', { className: 'flex justify-between items-center mb-2' },
                 h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, t('stem.geosandbox.measurements', '\uD83D\uDCCF Measurements')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { upd('showMath', !showMath); },
                   'aria-pressed': showMath,
                   className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -7507,7 +7516,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
 !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-gradient-to-br from-yellow-900/30 to-slate-900/40 rounded-xl p-3 border border-yellow-500/40' },
               h('div', { className: 'flex justify-between items-center' },
                 h('div', { className: 'text-xs font-bold text-yellow-200 uppercase tracking-wider' }, t('stem.geosandbox.cross_section', '🔪 Cross-section')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { upd('xsOn', !xsOn); },
                   'aria-pressed': xsOn,
                   className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -7523,6 +7532,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
                   type: 'range', min: '0', max: '1', step: '0.02', value: xsT,
                   onChange: function(e) { upd('xsT', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.cut_height_aria', 'Cross-section cut height'),
+                  'aria-valuetext': Math.round(xsT * 100) + ' ' + t('stem.geosandbox.vt_percent_height', 'percent height'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
                 }),
                 // 2D cross-section drawing + readout
@@ -7556,6 +7566,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
                     type: 'range', min: '0', max: '85', step: '1', value: conicTilt,
                     onChange: function(e) { upd('conicTilt', parseFloat(e.target.value)); },
                     'aria-label': t('stem.geosandbox.conic_tilt_aria', 'Conic section cutting-plane tilt'),
+                    'aria-valuetext': conicTilt + ' ' + t('stem.geosandbox.vt_degrees', 'degrees'),
                     className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500'
                   }),
                   h('div', { className: 'text-[0.75rem] font-bold text-orange-100' }, conic.name),
@@ -7566,7 +7577,7 @@ mode==='stretch' && h('details',{className:'geo-learning-panel'},h('summary',nul
 !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-gradient-to-br from-sky-900/30 to-slate-900/40 rounded-xl p-3 border border-sky-500/40 space-y-2' },
               h('div', { className: 'flex justify-between items-center' },
                 h('div', { className: 'text-xs font-bold text-sky-200 uppercase tracking-wider' }, t('stem.geosandbox.unfold_net_single', '\uD83D\uDCE6 Unfold net')),
-                shapeNet.unfoldable && h('button', {
+                shapeNet.unfoldable && h('button', { type: 'button',
                   onClick: function() { upd('singleNetOpen', !netOpen); },
                   'aria-expanded': netOpen,
                   'aria-controls': 'geo-single-net-panel',
@@ -7612,7 +7623,7 @@ h('div', { className: 'mt-3' },
                 h('div', { className: 'text-[0.6875rem] text-slate-300 mb-1' }, t('stem.geosandbox.color', 'Color')),
                 h('div', { className: 'flex gap-1.5 flex-wrap' },
                   colorPalette.map(function(c) {
-                    return h('button', { key: c,
+                    return h('button', { type: 'button', key: c,
                       onClick: function() { upd('color', c); },
                       'aria-label': t('stem.geosandbox.choose_shape_color', 'Choose shape color') + ': ' + colorNames[c],
                       'aria-pressed': shapeColor === c,
@@ -7624,7 +7635,7 @@ h('div', { className: 'mt-3' },
                 )
               ),
 h('div', { className: 'flex items-center gap-2 mt-3' },
-                h('button', { role: 'switch', 'aria-checked': wireframe, 'aria-label': t('stem.geosandbox.wireframe', 'Wireframe'),
+                h('button', { type: 'button', role: 'switch', 'aria-checked': wireframe, 'aria-label': t('stem.geosandbox.wireframe', 'Wireframe'),
                   onClick: toggleWireframe,
                   title: t('stem.geosandbox.toggle_wireframe_w', 'Toggle wireframe [W]'),
                   className: 'w-10 h-6 rounded-full transition-all relative ' + (wireframe ? 'bg-sky-500' : 'bg-slate-600')
@@ -7647,6 +7658,7 @@ h('div', { className: 'mt-2' },
                   value: opacity,
                   onChange: function(e) { upd('opacity', parseFloat(e.target.value)); },
                   'aria-label': t('stem.geosandbox.shape_opacity', 'Shape opacity'),
+                  'aria-valuetext': Math.round(opacity * 100) + ' ' + t('stem.geosandbox.vt_percent_opacity', 'percent opacity'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500'
                 })
               ), h('label',{className:'geo-field'},t('stem.geosandbox.studio_custom_color','Custom shape color'),h('input',{type:'color',value:shapeColor,onChange:function(e){upd('color',e.target.value);}}))),
@@ -7697,7 +7709,7 @@ h('div',{ className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border bor
                   h('span', { className: 'text-4xl' }, '⚠️'),
                   h('span', { className: 'text-base font-bold text-red-400' }, t('stem.geosandbox.webgl_is_disabled_or_unsupported', 'WebGL is disabled or unsupported')),
                   h('span', { className: 'text-sm text-slate-400 max-w-md' }, t('stem.geosandbox.alloflow_requires_hardware_acceleratio', 'AlloFlow requires hardware acceleration to display 3D graphics. Please enable WebGL in your browser settings to interact with this lab.')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { cleanupScene(); setWebglError(false); },
                     className: 'px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all'
                   }, t('stem.geosandbox.retry', 'Retry'))
@@ -7737,7 +7749,7 @@ h('div',{ className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border bor
             !webglError && !focusView && !gd.challengeMode && ((mode==='stretch' && !construction.objects.length && !placeArmed)||(mode==='sculpt' && (!sculptRecipe||!sculptRecipe.parts||!sculptRecipe.parts.length))) && h('div',{className:'geo-empty-scene'},h('div',{className:'geo-empty-symbol','aria-hidden':'true'},mode==='stretch'?'⊙':'◇'),h('h3',null,mode==='stretch'?t('stem.geosandbox.studio_empty_stretch','Every shape starts with a point'):t('stem.geosandbox.studio_empty_sculpt','Make room for your next idea')),h('p',null,mode==='stretch'?t('stem.geosandbox.studio_empty_stretch_help','Place a point, then stretch it into lines, surfaces, and solids.'):t('stem.geosandbox.studio_empty_sculpt_help','Start with a simple shape. Add parts and make it yours.')),h('button',{type:'button',className:'geo-primary',onClick:function(){if(mode==='stretch')addPoint([0,0,0]);else startFromScratch();}},mode==='stretch'?t('stem.geosandbox.studio_first_point','Place first point'):t('stem.geosandbox.studio_first_box','Start with a box'))),
 
 h('button',{type:'button',className:'geo-focus-button','aria-label':t('stem.geosandbox.studio_focus','Focus view'),'aria-pressed':focusView,onClick:function(){upd('focusView',!focusView);}},focusView?t('stem.geosandbox.studio_show_controls','Show controls'):t('stem.geosandbox.studio_focus','Focus view')),
-h('button', {
+h('button', { type: 'button',
               'aria-label': t('stem.geosandbox.toggle_fullscreen', 'Toggle fullscreen'),
               title: t('stem.geosandbox.fullscreen', 'Fullscreen'),
               onClick: function(ev) {
@@ -7924,7 +7936,7 @@ h('button', {
               className: 'flex-1 px-4 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-base text-white font-bold placeholder-slate-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30',
               style: {minWidth:0}
             }),
-            h('button', { 'aria-label': t('stem.geosandbox.check', 'Check'),
+            h('button', { type: 'button', 'aria-label': t('stem.geosandbox.check', 'Check'),
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
               className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-700 to-orange-800 text-white shadow-md hover:from-amber-800 hover:to-orange-900' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
@@ -7947,7 +7959,7 @@ h('button', {
               )
             ),
             h('p',{role:'status'},geoChallengeGuidance(challenge,true)),
-            h('button', { 'aria-label': t('stem.geosandbox.next_challenge', 'Next Challenge'),
+            h('button', { type: 'button', 'aria-label': t('stem.geosandbox.next_challenge', 'Next Challenge'),
               onClick: generateChallenge,
               className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-800 text-white shadow-md hover:from-amber-800 hover:to-orange-900 transition-all'
             }, t('stem.geosandbox.next_challenge_2', '\u27A1 Next Challenge'))

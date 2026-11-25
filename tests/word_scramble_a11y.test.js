@@ -33,7 +33,8 @@ describe('Word Scramble accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('min-w-11 min-h-11');
     expect(source).toContain('focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2');
-    expect(source).toContain("e.key === 'Enter' && !e.nativeEvent.isComposing");
+    // Enter checks the guess, but never mid-IME-composition (all three composition signals are honoured).
+    expect(source).toContain("onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleCheck(); }}");
   });
 
   it('hides decorative icons and honors reduced motion', () => {
@@ -42,6 +43,6 @@ describe('Word Scramble accessibility', () => {
     expect(source).toContain('<Trophy size={64} className="text-yellow-500 mx-auto mb-4" aria-hidden="true"/>');
     expect(source).toContain('<Search size={12} aria-hidden="true"/>');
     expect(source).toContain('motion-safe:animate-shake');
-    expect(source).toContain('motion-safe:animate-in motion-safe:zoom-in-95');
+    expect(source).toContain('motion-safe:animate-in motion-reduce:animate-none motion-safe:zoom-in-95');
   });
 });

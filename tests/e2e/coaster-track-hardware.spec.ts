@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
  probes: "document.head.insertAdjacentHTML('beforeend','<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -20,6 +21,7 @@ test('continuous deck and aligned wheel assemblies survive rebuilds and FX chang
  expect(model.batches).toHaveLength(3); expect(model.batches.every((b: any) => b.finite && b.count > 0)).toBe(true);
  for(const contact of model.wheelRailContact){ expect(contact.lateralError).toBeCloseTo(0,8); expect(contact.clearance).toBeCloseTo(0,8); }
  await page.locator('#clab-btnTrainView').click();
+ await openCoasterSettings(page);
  for(const theme of ['daylight','neon','blueprint']){
   await page.locator('#clab-visualTheme').selectOption(theme);
   await page.screenshot({path:testInfo.outputPath('hardware-'+theme+'.png')});
@@ -34,6 +36,7 @@ test('continuous deck and aligned wheel assemblies survive rebuilds and FX chang
  model = await state(); expect(model.batches.every((b: any) => b.finite)).toBe(true);
  await page.setViewportSize({width:390,height:844});
  await page.locator('#clab-visualTheme').selectOption('daylight');
+ await closeCoasterSettings(page); // the phone drawer drops over the build panel
  await page.locator('#clab-btnTrainView').click();
  await expect.poll(() => page.evaluate(() => (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.trainPresentation().projected.every((p: any) => Math.abs(p.x)<=1 && Math.abs(p.y)<=1))).toBe(true);
  await page.screenshot({path:testInfo.outputPath('hardware-phone.png')});

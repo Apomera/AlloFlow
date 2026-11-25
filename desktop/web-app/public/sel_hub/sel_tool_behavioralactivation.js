@@ -11,19 +11,29 @@
 // Category: self-regulation
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActivation'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
 
-  (function() {
-    if (document.getElementById('allo-live-ba')) return;
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActivation')) return;
+
+  var _baLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-ba');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-ba';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -32,7 +42,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
 
   // Starter list of activity categories for the planning view.
   var ACTIVITY_STARTERS = {
@@ -162,38 +174,90 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       var _beaBd = function(h){ return _beaHC ? (_bea_BDH[h]||h) : (_beaL ? (_bea_BDL[h]||h) : h); };
       // white text needs a 700-weight fill (1.4.3); High Contrast uses black fill + yellow border/ink
       var _beaSolid = function(c){ return _beaHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
-      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
+      var onSafetyFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
       var _baBand = ctx.gradeBand || 'middle';
 
-      var d = labToolData.behavioralActivation || defaultState();
-      function setBA(patch) {
+      function getCat(id) {
+        return (typeof id === 'string' && Object.prototype.hasOwnProperty.call(CAT_LABELS, id))
+          ? CAT_LABELS[id]
+          : { label: typeof id === 'string' ? id : 'Activity', icon: '◆', color: '#64748b' };
+      }
+      function safeActivities(raw) {
+        return Array.isArray(raw) ? raw.filter(function(a) { return a && typeof a === 'object'; }) : [];
+      }
+      function clampRating(v, fallback) {
+        var n = typeof v === 'number' ? v : (typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN);
+        return Number.isFinite(n) ? Math.max(0, Math.min(10, Math.round(n))) : fallback;
+      }
+
+      var rawBa = labToolData.behavioralActivation;
+      var d = (rawBa && typeof rawBa === 'object' && !Array.isArray(rawBa)) ? rawBa : defaultState();
+      function setBA(patchOrFn) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.behavioralActivation) || defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevRaw = base.behavioralActivation;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
+          if (!patch || typeof patch !== 'object') return base;
           var next = Object.assign({}, prior, patch);
           next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { behavioralActivation: next });
+          return Object.assign({}, base, { behavioralActivation: next });
         });
       }
-      var view = d.view || 'home';
-      function goto(v) { setBA({ view: v }); }
-      function printNow() { try { window.print(); } catch (e) {} }
+      function scanBaText(text) {
+        var trimmed = String(text || '').trim();
+        if (!trimmed) return false;
+        var blocked = false;
+        try {
+          var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var safety = sh.safeRehearseCheck(trimmed, { toolId: 'behavioralactivation', onSafetyFlag: onSafetyFlag });
+            if (safety && safety.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'behavioralactivation', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {} }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _baLocalCrisisRe.test(trimmed)) {
+            blocked = true;
+            if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'behavioralactivation', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {} }
+          }
+          if (blocked) {
+            setBA({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'Behavioral Activation', contentSnippet: trimmed });
+            }
+            if (typeof addToast === 'function') addToast('Support resources are shown on this screen.', 'info');
+            announceBA('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.');
+          }
+        } catch (_) {}
+        return blocked;
+      }
+      var VALID_VIEWS = ['home', 'plan', 'log', 'patterns', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
+      function goto(v) { setBA({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'home' }); }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
       function isImeComposing(e) {
         return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
       }
       function announceBA(msg) {
         if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
         try {
-          var lr = document.getElementById('allo-live-ba');
+          var lr = ensureLiveRegion();
           if (!lr) return;
           lr.textContent = '';
-          setTimeout(function() { lr.textContent = String(msg || ''); }, 30);
+          setTimeout(function() { try { lr.textContent = String(msg || ''); } catch (_) {} }, 30);
         } catch (_) {}
       }
 
@@ -227,7 +291,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               type: 'button',
               onClick: function() { goto(t.id); },
               onKeyDown: function(ev) {
-                if (isImeComposing(ev)) return;
+                if (isImeComposing(ev) || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                 var nextIdx = idx;
                 if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
                 else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
@@ -237,8 +301,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
                 ev.preventDefault();
                 goto(tabs[nextIdx].id);
                 setTimeout(function() {
-                  var nextBtn = document.getElementById('ba-tab-' + tabs[nextIdx].id);
-                  if (nextBtn) nextBtn.focus();
+                  try {
+                    if (typeof document === 'object' && document && typeof document.getElementById === 'function') {
+                      var nextBtn = document.getElementById('ba-tab-' + tabs[nextIdx].id);
+                      if (nextBtn && typeof nextBtn.focus === 'function') nextBtn.focus();
+                    }
+                  } catch (_) {}
                 }, 0);
               },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'ba-panel-' + t.id, tabIndex: active ? 0 : -1,
@@ -262,11 +330,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // HOME
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
-        var activities = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
+        var activities = safeActivities(d.plannedActivities);
         var planned = activities.filter(function(a) { return !a.done; }).length;
         var doneCount = activities.filter(function(a) { return a.done; }).length;
         var focused = activities.filter(function(a) { return !a.done && a.id === d.focusActivityId; })[0] || null;
-        var focusedCat = focused ? (CAT_LABELS[focused.category] || { label: focused.category, icon: '◆', color: '#64748b' }) : null;
+        var focusedCat = focused ? getCat(focused.category) : null;
         var focusedEnergy = focused ? ENERGY_LEVELS.filter(function(item) { return item.id === focused.energy; })[0] : null;
 
         return h('div', null,
@@ -328,45 +396,37 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // ═══════════════════════════════════════════════════════════
       function renderPlan() {
         function addActivity(label, category, energy) {
-          if (!label || !label.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var trimmed = label.trim();
-          try {
-            if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
-              var safety = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'behavioralactivation', onSafetyFlag: onSafetyFlag });
-              if (safety && safety.action === 'block') {
-                setBA({ _crisisTier: 3 });
-                if (typeof window.SelHub.showCrisisModal === 'function') {
-                  window.SelHub.showCrisisModal({ toolName: 'Behavioral Activation', contentSnippet: trimmed });
-                }
-                if (typeof addToast === 'function') addToast('Support resources are shown on this screen.', 'info');
-                return;
-              }
-            }
-          } catch (_) {}
+          if (!label || !String(label).trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+          var trimmed = String(label).trim();
+          if (scanBaText(trimmed)) return;
           var entry = { id: uid(), label: trimmed, category: category, day: todayISO(), done: false, energy: energy || d.energyLevel || null };
-          setBA({ plannedActivities: ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).concat([entry]), focusActivityId: entry.id });
+          setBA(function(prior) {
+            return { plannedActivities: safeActivities(prior.plannedActivities).concat([entry]), focusActivityId: entry.id };
+          });
           if (announceToSR) announceToSR('Activity added and set as your next action.');
         }
         function removeActivity(id) {
-          var patch = { plannedActivities: ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return a.id !== id; }) };
-          if (d.focusActivityId === id) patch.focusActivityId = null;
-          setBA(patch);
+          setBA(function(prior) {
+            var patch = { plannedActivities: safeActivities(prior.plannedActivities).filter(function(a) { return a.id !== id; }) };
+            if (prior.focusActivityId === id) patch.focusActivityId = null;
+            return patch;
+          });
           if (announceToSR) announceToSR('Activity removed.');
         }
 
-        var planned = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return !a.done; });
+        var planned = safeActivities(d.plannedActivities).filter(function(a) { return !a.done; });
         var energy = ENERGY_LEVELS.filter(function(item) { return item.id === d.energyLevel; })[0] || null;
         var focused = planned.filter(function(a) { return a.id === d.focusActivityId; })[0] || null;
-        var focusCat = focused ? (CAT_LABELS[focused.category] || { label: focused.category, icon: '◆', color: '#64748b' }) : null;
+        var focusCat = focused ? getCat(focused.category) : null;
         var focusEnergy = focused ? ENERGY_LEVELS.filter(function(item) { return item.id === focused.energy; })[0] : null;
 
         function finishFocused() {
           if (!focused) return;
-          var nx = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).map(function(a) {
+          var nx = safeActivities(d.plannedActivities).map(function(a) {
             return a.id === focused.id ? Object.assign({}, a, {
               done: true,
-              mastery: a.mastery !== undefined ? a.mastery : 5,
-              pleasure: a.pleasure !== undefined ? a.pleasure : 5
+              mastery: clampRating(a.mastery, 5),
+              pleasure: clampRating(a.pleasure, 5)
             }) : a;
           });
           setBA({ plannedActivities: nx, focusActivityId: null, view: 'log' });
@@ -443,7 +503,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           planned.length > 0 ? h('details', { style: { padding: 12, borderRadius: 10, background: _beaBg('#0f172a'), border: '1px solid ' + _beaBd('#334155'), marginBottom: 14 } },
             h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _beaFg('#cbd5e1'), fontWeight: 850, marginBottom: 8, minHeight: 44, display: 'flex', alignItems: 'center' } }, 'Saved plan (' + planned.length + ')'),
             planned.map(function(a) {
-              var cat = CAT_LABELS[a.category] || { label: a.category, icon: '◆', color: _beaFg('#64748b') };
+              var cat = getCat(a.category);
               return h('div', { key: a.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 6, background: _beaBg('#1e293b'), marginBottom: 4, borderLeft: '3px solid ' + cat.color } },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, cat.icon),
                 h('span', { style: { flex: 1, fontSize: 13, color: _beaFg('#e2e8f0') } }, a.label),
@@ -460,6 +520,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             var cat = CAT_LABELS[catId];
             var inputId = 'ba-input-' + catId;
             function submit() {
+              if (typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
               var el = document.getElementById(inputId);
               if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
               addActivity(el.value, catId);
@@ -474,6 +535,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
               h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
                 h('label', { htmlFor: inputId, className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add ' + cat.label + ' activity'),
                 h('input', { id: inputId, type: 'text', placeholder: 'Add a small ' + cat.label.toLowerCase() + ' activity...',
+                  onBlur: function(e) { scanBaText(e.target.value); },
                   onKeyDown: function(e) {
                     if (isImeComposing(e)) return;
                     if (e.key === 'Enter') { e.preventDefault(); submit(); }
@@ -503,7 +565,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // LOG — mark done + rate mastery/pleasure
       // ═══════════════════════════════════════════════════════════
       function renderLog() {
-        var activities = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
+        var activities = safeActivities(d.plannedActivities);
         if (activities.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _beaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
@@ -516,8 +578,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         }
 
         function update(id, patch) {
-          var nx = activities.slice().map(function(a) { return a.id === id ? Object.assign({}, a, patch) : a; });
-          setBA({ plannedActivities: nx });
+          setBA(function(prior) {
+            var nx = safeActivities(prior.plannedActivities).map(function(a) { return a.id === id ? Object.assign({}, a, patch) : a; });
+            return { plannedActivities: nx };
+          });
         }
 
         return h('div', null,
@@ -527,9 +591,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           ),
 
           activities.map(function(a) {
-            var cat = CAT_LABELS[a.category] || { label: a.category, icon: '◆', color: _beaFg('#64748b') };
-            var masteryVal = a.mastery !== undefined ? a.mastery : 5;
-            var pleasureVal = a.pleasure !== undefined ? a.pleasure : 5;
+            var cat = getCat(a.category);
+            var masteryVal = clampRating(a.mastery, 5);
+            var pleasureVal = clampRating(a.pleasure, 5);
             return h('div', { key: a.id, style: { padding: 12, borderRadius: 10, background: _beaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + cat.color, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, cat.icon),
@@ -550,14 +614,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
                 h('div', null,
                   h('label', { htmlFor: 'ba-mastery-' + a.id, style: { display: 'block', fontSize: 10, color: _beaFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Mastery: ' + masteryVal + '/10'),
                   h('input', { id: 'ba-mastery-' + a.id, type: 'range', min: 0, max: 10, value: masteryVal,
-                    onChange: function(e) { update(a.id, { mastery: parseInt(e.target.value, 10) }); },
-                    style: { width: '100%', minHeight: 44 }, 'aria-label': 'Mastery rating', 'aria-valuetext': masteryVal + ' out of 10' })
+                    onChange: function(e) { update(a.id, { mastery: clampRating(e.target.value, masteryVal) }); },
+                    style: { width: '100%', minHeight: 44 }, 'aria-label': 'Mastery rating for ' + (a.label || 'activity'), 'aria-valuetext': masteryVal + ' out of 10' })
                 ),
                 h('div', null,
                   h('label', { htmlFor: 'ba-pleasure-' + a.id, style: { display: 'block', fontSize: 10, color: _beaFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Pleasure: ' + pleasureVal + '/10'),
                   h('input', { id: 'ba-pleasure-' + a.id, type: 'range', min: 0, max: 10, value: pleasureVal,
-                    onChange: function(e) { update(a.id, { pleasure: parseInt(e.target.value, 10) }); },
-                    style: { width: '100%', minHeight: 44 }, 'aria-label': 'Pleasure rating', 'aria-valuetext': pleasureVal + ' out of 10' })
+                    onChange: function(e) { update(a.id, { pleasure: clampRating(e.target.value, pleasureVal) }); },
+                    style: { width: '100%', minHeight: 44 }, 'aria-label': 'Pleasure rating for ' + (a.label || 'activity'), 'aria-valuetext': pleasureVal + ' out of 10' })
                 )
               ) : null
             );
@@ -571,7 +635,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // PATTERNS — what is lifting you, what is depleting you
       // ═══════════════════════════════════════════════════════════
       function renderPatterns() {
-        var doneActs = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return a.done && a.mastery !== undefined && a.pleasure !== undefined; });
+        var doneActs = safeActivities(d.plannedActivities).filter(function(a) {
+          return a.done && clampRating(a.mastery, null) !== null && clampRating(a.pleasure, null) !== null;
+        }).map(function(a) {
+          return Object.assign({}, a, { mastery: clampRating(a.mastery, 0), pleasure: clampRating(a.pleasure, 0) });
+        });
         if (doneActs.length < 3) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _beaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
@@ -589,14 +657,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
         var sortedByBoth = doneActs.slice().sort(function(a, b) { return (b.mastery + b.pleasure) - (a.mastery + a.pleasure); });
 
         // Category averages
-        var byCat = {};
+        var byCat = Object.create(null);
         doneActs.forEach(function(a) {
-          byCat[a.category] = byCat[a.category] || { mastery: [], pleasure: [] };
-          byCat[a.category].mastery.push(a.mastery);
-          byCat[a.category].pleasure.push(a.pleasure);
+          var key = (typeof a.category === 'string' && a.category && a.category !== '__proto__' && a.category !== 'constructor' && a.category !== 'prototype') ? a.category : 'other';
+          if (!byCat[key]) byCat[key] = { mastery: [], pleasure: [] };
+          byCat[key].mastery.push(a.mastery);
+          byCat[key].pleasure.push(a.pleasure);
         });
 
-        function avg(arr) { return arr.reduce(function(s, n) { return s + n; }, 0) / arr.length; }
+        function avg(arr) { return arr.length ? arr.reduce(function(s, n) { return s + n; }, 0) / arr.length : 0; }
 
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 14, fontSize: 13, color: _beaFg('#e9d5ff'), lineHeight: 1.65 } },
@@ -608,8 +677,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           h('div', { style: { padding: 12, borderRadius: 10, background: _beaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: _beaFg('#bbf7d0'), marginBottom: 8 } }, '🌟 Most lifting (mastery + pleasure combined)'),
             sortedByBoth.slice(0, 3).map(function(a, i) {
-              var cat = CAT_LABELS[a.category] || { icon: '◆' };
-              return h('div', { key: a.id, style: { fontSize: 13, color: _beaFg('#e2e8f0'), marginBottom: 3 } }, cat.icon + ' ' + a.label + ' · ', h('strong', { style: { color: _beaFg('#22c55e') } }, 'M:' + a.mastery + ' P:' + a.pleasure));
+              var cat = getCat(a.category);
+              return h('div', { key: a.id || i, style: { fontSize: 13, color: _beaFg('#e2e8f0'), marginBottom: 3 } }, cat.icon + ' ' + a.label + ' · ', h('strong', { style: { color: _beaFg('#22c55e') } }, 'M:' + a.mastery + ' P:' + a.pleasure));
             })
           ),
 
@@ -617,9 +686,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           sortedByBoth.length > 3 ? h('div', { style: { padding: 12, borderRadius: 10, background: _beaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: _beaFg('#fecaca'), marginBottom: 8 } }, '⚠ Least lifting'),
             h('div', { style: { fontSize: 11, color: _beaFg('#94a3b8'), marginBottom: 6, fontStyle: 'italic' } }, 'Activities that scored lowest. Worth asking: are these doing depleting work that you cannot drop, or could you shift?'),
-            sortedByBoth.slice(-3).reverse().map(function(a) {
-              var cat = CAT_LABELS[a.category] || { icon: '◆' };
-              return h('div', { key: a.id, style: { fontSize: 13, color: _beaFg('#e2e8f0'), marginBottom: 3 } }, cat.icon + ' ' + a.label + ' · ', h('strong', { style: { color: _beaFg('#ef4444') } }, 'M:' + a.mastery + ' P:' + a.pleasure));
+            sortedByBoth.slice(-3).reverse().map(function(a, i) {
+              var cat = getCat(a.category);
+              return h('div', { key: a.id || i, style: { fontSize: 13, color: _beaFg('#e2e8f0'), marginBottom: 3 } }, cat.icon + ' ' + a.label + ' · ', h('strong', { style: { color: _beaFg('#ef4444') } }, 'M:' + a.mastery + ' P:' + a.pleasure));
             })
           ) : null,
 
@@ -627,7 +696,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
           h('div', { style: { padding: 12, borderRadius: 10, background: _beaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #3b82f6', marginBottom: 10 } },
             h('div', { style: { fontSize: 12, fontWeight: 800, color: _beaFg('#bfdbfe'), marginBottom: 8 } }, '📊 By category average'),
             Object.keys(byCat).map(function(catId) {
-              var cat = CAT_LABELS[catId];
+              var cat = Object.prototype.hasOwnProperty.call(CAT_LABELS, catId) ? CAT_LABELS[catId] : null;
               var m = avg(byCat[catId].mastery).toFixed(1);
               var p = avg(byCat[catId].pleasure).toFixed(1);
               return h('div', { key: catId, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' } },
@@ -652,7 +721,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var acts = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
+        var acts = safeActivities(d.plannedActivities);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(16,185,129,0.10)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _beaFg('#a7f3d0'), lineHeight: 1.55 } },
@@ -670,7 +739,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#ba-print-region, #ba-print-region * { visibility: visible !important; } ' +
-              '#ba-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#ba-print-region { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff !important; color: #0f172a !important; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#ba-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -714,7 +784,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('behavioralActivation', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('behavioralActivation', h, ctx) : null),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _beaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _beaFg('#86efac'), fontSize: 16 } }, 'What Behavioral Activation is'),
@@ -784,8 +854,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Behavioral Activation' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _baBand))
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _baBand))
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _beaHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_beaHC ? '#ffff00' : '#ef4444'), color: _beaFg('#fecaca'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
           : null,
         h('div', { id: 'ba-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'ba-tab-' + view }, body)
       );
@@ -793,4 +866,3 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
   });
 
 })();
-}

@@ -58,8 +58,8 @@ function _alloLanConfig() {
           }
         } catch (_) { base = ''; }
       }
-      // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
-      // demo cloud) on Firestore even if a stale lanApiBase lingers.
+      // firestoreAllowed !== true keeps the explicit cloud opt-in (byo-firebase)
+      // on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
         cfg = { base, token: typeof parsed.lanToken === 'string' ? parsed.lanToken : '', uid: typeof parsed.lanUid === 'string' ? parsed.lanUid : '' };
       }

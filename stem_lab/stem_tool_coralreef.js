@@ -3314,6 +3314,7 @@
       h(Hs11Host, { React: React, t: __alloT }),
       h('style', null, PF11_ROOT_CSS),
       h('style', null, RD12_LANG_CSS),
+      h('style', { id: 'allo-coralreef-a11y-css' }, '[data-coralreef-root] :is(button,input,select,summary){touch-action:manipulation}'),
       h('header', {
         className: 'cr-masthead',
         'data-coralreef-masthead': 'true',
@@ -4441,7 +4442,7 @@
       env.say(__alloFill(__alloT('stem.coralreef.w2_m_sr_part', 'Part {n} of {total}: {name}.'), { n: W2_METHOD_PARTS.indexOf(id) + 1, total: W2_METHOD_PARTS.length, name: PN[id].name }));
     }
     function onKey(e, idx) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var n = W2_METHOD_PARTS.length, nx = null;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nx = (idx + 1) % n;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nx = (idx - 1 + n) % n;
@@ -4735,7 +4736,7 @@
   function pf19uChose(__alloT, fill, tier, why) { return fill(__alloT('stem.coralreef.pf19u_chose', 'Automatic chose {tier}: {why}.'), { tier: pf19uTierName(__alloT, tier), why: why }); }
   function pf19uSelect(env, attrs) {
     var h = env.h, P = env.P, __alloT = env.t;
-    return h('select', Object.assign({ value: pf19uPref(env.d), 'data-pf19u-select': 'true', style: { color: P.text, background: P.card, border: '1px solid ' + P.ctlBorder, borderRadius: 8, padding: '8px 12px', minHeight: 44 },
+    return h('select', Object.assign({ 'aria-label': __alloT('stem.coralreef.pf19u_label', '3D detail'), value: pf19uPref(env.d), 'data-pf19u-select': 'true', style: { color: P.text, background: P.card, border: '1px solid ' + P.ctlBorder, borderRadius: 8, padding: '8px 12px', minHeight: 44 },
       onChange: function (event) { env.set({ diveQuality: event.target.value }); } }, attrs || {}),
       h('option', { value: 'auto' }, __alloT('stem.coralreef.ex_quality_auto', 'Automatic')),
       h('option', { value: 'low' }, __alloT('stem.coralreef.ex_quality_low', 'Smoother')),
@@ -10225,7 +10226,7 @@
     '[data-coralreef-root] .cr-guide-group>h3,[data-coralreef-root] .cr-species-card,[data-coralreef-root] .cr-guide-search input{scroll-margin-top:88px}',
     '[data-coralreef-root] .cr-guide-group>h3:focus,[data-coralreef-root] .cr-sp-name:focus{outline:2px solid var(--reef-accent);outline-offset:3px}',
     '[data-coralreef-root] .cr-species-card:has(.cr-sp-name:focus){outline:3px solid var(--reef-accent);outline-offset:3px}',
-    '[data-coralreef-root] .cr-species-card:has(.cr-sp-name:focus) .cr-sp-name{outline:none}',
+    '[data-coralreef-root] .cr-species-card:has(.cr-sp-name:focus) .cr-sp-name{outline:2px solid transparent}',
     '[data-coralreef-root] .cr-looks{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px}',
     '[data-coralreef-root] .cr-look-chip{min-height:32px;padding:4px 11px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:start}',
     '[data-coralreef-root] .cr-scilab-tabs{display:flex;flex-wrap:wrap;gap:8px}',
@@ -12743,7 +12744,7 @@
       a11yRefocus(function () { return chipRefs.current[was]; }, !!env.ctx.reduceMotion);
     }
     function onChipKey(e, id) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var i = order.indexOf(id), rows = FW_ROWS, next = null, ri = 0;
       for (var q = 0; q < rows.length; q++) if (rows[q].ids.indexOf(id) >= 0) ri = q;
       var ci = rows[ri].ids.indexOf(id);
@@ -13000,7 +13001,7 @@
       env.say(__alloFill(__alloT('stem.coralreef.sciLab_sr_topic', 'Topic: {name}.'), { name: TN[id].name }));
     }
     function onKey(e, i) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var n = SCILAB_TOPICS.length, next = null;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % n;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + n) % n;
@@ -16754,6 +16755,7 @@
     img.onload = function () {
       try {
         var scale = Math.min(1, 960 / (img.naturalWidth || 960)), canvas = document.createElement('canvas');
+        canvas.setAttribute('aria-hidden', 'true');
         canvas.width = Math.max(1, Math.round((img.naturalWidth || 960) * scale)); canvas.height = Math.max(1, Math.round((img.naturalHeight || 540) * scale));
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
         var small = canvas.toDataURL('image/jpeg', 0.86);
@@ -18288,7 +18290,7 @@
   function thumbLook(THREE) {
     var out = { backdrop: null, shadow: null, dispose: function () {} };
     try {
-      var c = document.createElement('canvas'); c.width = 360; c.height = 240;
+      var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 360; c.height = 240;
       var g = c.getContext && c.getContext('2d');
       if (!g || typeof g.createImageData !== 'function') return out;
       // Drawn pixel by pixel from whole-number row colours minus a column shade:
@@ -18316,7 +18318,7 @@
       var bg = new THREE.CanvasTexture(c);
       if (THREE.sRGBEncoding) bg.encoding = THREE.sRGBEncoding;
       out.backdrop = bg;
-      var sc = document.createElement('canvas'); sc.width = 64; sc.height = 64;
+      var sc = document.createElement('canvas'); sc.setAttribute('aria-hidden', 'true'); sc.width = 64; sc.height = 64;
       var sg = sc.getContext('2d'), blur = sg.createRadialGradient(32, 32, 0, 32, 32, 32);
       blur.addColorStop(0, 'rgba(255,255,255,1)'); blur.addColorStop(0.55, 'rgba(255,255,255,0.75)'); blur.addColorStop(0.8, 'rgba(255,255,255,0.25)'); blur.addColorStop(1, 'rgba(255,255,255,0)');
       sg.fillStyle = blur; sg.fillRect(0, 0, 64, 64);
@@ -18335,7 +18337,7 @@
     if (thumbJob) return thumbJob;
     if (!thumbQueue.length) { thumbWatchers = []; return Promise.resolve(); }
     thumbJob = ensureSpecies().then(function (THREE) {
-      var canvas = document.createElement('canvas'); canvas.width = 360; canvas.height = 240;
+      var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); canvas.width = 360; canvas.height = 240;
       var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true, alpha: false });
       renderer.setPixelRatio(1); renderer.setSize(360, 240, false);
       var derivatives = !!((renderer.capabilities && renderer.capabilities.isWebGL2) || (renderer.extensions && renderer.extensions.has && renderer.extensions.has('OES_standard_derivatives')));
@@ -18450,7 +18452,7 @@
     if (!gvQueue.length) { gvWatchers = []; return Promise.resolve(); }
     function tell(key) { gvWatchers.slice().forEach(function (fn) { try { fn(key); } catch (e) {} }); }
     gvJob = ensureSpecies().then(function (THREE) {
-      var W = 640, H = 420, canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+      var W = 640, H = 420, canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); canvas.width = W; canvas.height = H;
       var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, preserveDrawingBuffer: true });
       renderer.setPixelRatio(1); renderer.setSize(W, H, false);
       if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
@@ -20774,7 +20776,7 @@
     '[data-coralreef-root] .cr-dxp-picture-stage{position:relative;display:grid;place-items:center;aspect-ratio:960/630;overflow:hidden;min-width:0;touch-action:pan-y;outline-offset:-4px}',
     '[data-coralreef-root] .cr-dxp-picture-stage[data-zoomed=true]{touch-action:none;cursor:grab}',
     '[data-coralreef-root] .cr-dxp-picture-stage[data-zoomed=true]:active{cursor:grabbing}',
-    '[data-coralreef-root] .cr-dxp-picture-stage:focus-visible{outline:none}',
+    '[data-coralreef-root] .cr-dxp-picture-stage:focus-visible{outline:2px solid transparent}',
     '[data-coralreef-root] .cr-dxp-picture-stage:focus-visible:after{content:"";position:absolute;inset:4px;border:3px solid #d7eeeb;border-radius:10px;pointer-events:none;z-index:1;box-shadow:0 0 0 1px #103d4b,inset 0 0 0 1px #103d4b}',
     '[data-coralreef-root] .cr-dxp-picture-stage img{position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:cover;transform-origin:center;user-select:none;pointer-events:none}',
     '[data-coralreef-root] .cr-dxp-picture-tools{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:10px}',
@@ -21722,7 +21724,7 @@
     '[data-coralreef-root] .crst-stage{touch-action:pan-y pinch-zoom}',
     '[data-coralreef-root] .crst-stage[data-zoomed=true]{touch-action:none;cursor:grab}',
     '[data-coralreef-root] .crst-stage[data-zoomed=true]:active{cursor:grabbing}',
-    '[data-coralreef-root] .crst-stage:focus-visible{outline:none}',
+    '[data-coralreef-root] .crst-stage:focus-visible{outline:2px solid transparent}',
     '[data-coralreef-root] .crst-stage:focus-visible:after{content:"";position:absolute;inset:4px;border:3px solid #d7eeeb;border-radius:10px;pointer-events:none;z-index:1;box-shadow:0 0 0 1px #103d4b,inset 0 0 0 1px #103d4b}',
     '[data-coralreef-root] .crst-stage img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;transform-origin:center;max-width:none;user-select:none;pointer-events:none}',
     '[data-coralreef-root] [data-study-specimen-toggle]{scroll-margin-top:28px}',
@@ -22581,7 +22583,7 @@
         h('canvas', { key: 'pf19u-' + pf19uQ, id: uid + '-canvas', ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details ' + uid + '-pinch-help',
           onPointerDown: pointerStart, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: pointerEnd, onLostPointerCapture: pointerEnd,
           onKeyDown: function (event) {
-            if (!ready || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (!ready || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
             var key = event.key, amount = key === '+' || key === '=' ? .25 : key === '-' || key === '_' ? -.25 : 0;
             if (amount) { event.preventDefault(); zoom(amount); return; }
             if (key === 'Home') { event.preventDefault(); if (event.shiftKey) centerDetail(); else fit(); return; }

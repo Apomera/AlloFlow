@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -17,8 +18,10 @@ test('fitted views keep the track visible and preserve manual camera control', a
     await expect.poll(async () => { const s = await state(); return s.autoFit && s.maxX < 0.87 && s.maxY < s.paddingY + 0.01 && s.minZ > -1 && s.maxZ < 1; }).toBe(true);
   };
   await fits();
+  await openCoasterSettings(page);
   await page.locator('#clab-visualTheme').selectOption('daylight');
   await page.locator('#clab-btnSceneFocus').click();
+  await closeCoasterSettings(page); // "Restore panels" now waits in the bar
   for(const [id, angle] of [['clab-btnFitCoaster', 0.42], ['clab-btnTopView', 1.55], ['clab-btnSideView', 0.08]] as const){
     const button = page.locator('#' + id); await button.focus(); await page.keyboard.press('Enter');
     await expect(button).toBeFocused();

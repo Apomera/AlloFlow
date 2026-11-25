@@ -21,8 +21,18 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   'use strict';
   if (typeof window === 'undefined' || !window.SelHub) return;
   (function() {
-    if (typeof document === 'undefined' || !document.body) return;
-    if (document.getElementById('allo-live-friendship')) return;
+    if (typeof document === 'undefined') return;
+    if (document.head && !document.getElementById('allo-friendship-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-friendship-a11y-css';
+      st.textContent =
+        '.selh-friendship button, .selh-friendship a, .selh-friendship input, .selh-friendship textarea, .selh-friendship select, .selh-friendship summary { touch-action: manipulation; }\n' +
+        '.selh-friendship button:focus-visible, .selh-friendship a:focus-visible, .selh-friendship input:focus-visible, .selh-friendship textarea:focus-visible, .selh-friendship select:focus-visible, .selh-friendship summary:focus-visible, .selh-friendship [tabindex="0"]:focus-visible { outline: 3px solid #d97706 !important; outline-offset: 2px !important; }\n' +
+        '@media (prefers-reduced-motion: reduce) { .selh-friendship *, .selh-friendship *::before, .selh-friendship *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }\n' +
+        '@media (forced-colors: active) { .selh-friendship button, .selh-friendship [role="tab"], .selh-friendship input, .selh-friendship textarea, .selh-friendship select { border: 1px solid ButtonText !important; } .selh-friendship [role="tab"][aria-selected="true"] { background: Highlight !important; color: HighlightText !important; forced-color-adjust: none; } }';
+      document.head.appendChild(st);
+    }
+    if (!document.body || document.getElementById('allo-live-friendship')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-friendship';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -32,6 +42,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ── Sound Effects ──
   var _audioCtx = null;
@@ -1126,46 +1139,68 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         }, [activeTab]);
       }
       var exploredCount = TABS.filter(function(t) { return !!exploredTabs[t.id] || t.id === activeTab; }).length;
+      function announceFR(msg) {
+        if (!msg) return;
+        if (typeof ctx.announceToSR === 'function') { try { ctx.announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-friendship');
+          if (lr) {
+            lr.textContent = '';
+            setTimeout(function() { if (lr) lr.textContent = msg; }, 25);
+          }
+        }
+      }
 
       var tabBar = h('div', {
         style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + (_frHC ? '#ffff00' : _frDark ? '#78350f' : '#fde68a'), background: 'linear-gradient(180deg, ' + _frC('#fffbeb') + ', ' + _frC('#fef3c7') + ')', flexShrink: 0 }
       },
-        h('div', { style: { height: '3px', background: _frC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
-          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: _frHC ? '#ffff00' : 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
+        h('div', {
+          role: 'progressbar',
+          'aria-label': 'Friendship sections explored',
+          'aria-valuenow': exploredCount,
+          'aria-valuemin': 0,
+          'aria-valuemax': TABS.length,
+          'aria-valuetext': exploredCount + ' of ' + TABS.length + ' sections explored',
+          style: { height: '3px', background: _frC('#e2e8f0'), position: 'relative', overflow: 'hidden' }
+        },
+          h('div', { 'aria-hidden': 'true', style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: _frHC ? '#ffff00' : 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
+          style: { display: 'flex', gap: '4px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          h('div', { role: 'tablist', 'aria-label': 'Friendship sections', style: { display: 'flex', gap: '3px' } },
+          h('div', { role: 'tablist', 'aria-label': 'Friendship sections', style: { display: 'flex', gap: '4px' } },
             TABS.map(function(t, tabIndex) {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
               key: t.id, type: 'button', id: 'friendship-tab-' + t.id, role: 'tab', tabIndex: active ? 0 : -1, className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'friendship-panel-' + t.id,
-              onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              onClick: function() { upd('activeTab', t.id); announceFR(t.label + ' section shown.'); if (soundEnabled) sfxClick(); },
               onKeyDown: function(e) {
-                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                if (isImeComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIdx = -1;
-                if (e.key === 'ArrowRight') nextIdx = (tabIndex + 1) % TABS.length;
-                else if (e.key === 'ArrowLeft') nextIdx = (tabIndex - 1 + TABS.length) % TABS.length;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (tabIndex + 1) % TABS.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (tabIndex - 1 + TABS.length) % TABS.length;
                 else if (e.key === 'Home') nextIdx = 0;
                 else if (e.key === 'End') nextIdx = TABS.length - 1;
                 if (nextIdx >= 0) {
                   e.preventDefault();
                   var nextTab = TABS[nextIdx];
                   upd('activeTab', nextTab.id);
+                  announceFR(nextTab.label + ' section shown.');
                   if (soundEnabled) sfxClick();
-                  try { var el = document.getElementById('friendship-tab-' + nextTab.id); if (el) el.focus(); } catch (_) {}
+                  setTimeout(function() {
+                    try { var el = document.getElementById('friendship-tab-' + nextTab.id); if (el) el.focus(); } catch (_) {}
+                  }, 0);
                 }
               },
-              style: { padding: '6px 14px', borderRadius: '10px', border: active ? (_frHC ? '2px solid #ffff00' : 'none') : '1px solid ' + (explored ? (_frHC ? '#ffff00' : _frDark ? '#92400e' : '#fde68a') : (_frHC ? '#ffff00' : 'transparent')), background: active ? (_frHC ? '#ffff00' : 'linear-gradient(135deg, #b45309, #92400e)') : explored ? (_frHC ? '#000000' : 'rgba(217,119,6,0.08)') : 'transparent', color: active ? (_frHC ? '#000000' : '#fff') : explored ? _frC('#78350f') : _frC('#475569'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active && !_frHC ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { minHeight: '44px', padding: '10px 14px', borderRadius: '10px', border: active ? (_frHC ? '2px solid #ffff00' : 'none') : '1px solid ' + (explored ? (_frHC ? '#ffff00' : _frDark ? '#92400e' : '#fde68a') : (_frHC ? '#ffff00' : 'transparent')), background: active ? (_frHC ? '#ffff00' : 'linear-gradient(135deg, #b45309, #92400e)') : explored ? (_frHC ? '#000000' : 'rgba(217,119,6,0.08)') : 'transparent', color: active ? (_frHC ? '#000000' : '#fff') : explored ? _frC('#78350f') : _frC('#475569'), fontWeight: active ? 700 : 500, fontSize: '12.5px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active && !_frHC ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { 'aria-hidden': 'true', style: { width: '5px', height: '5px', borderRadius: '50%', background: _frHC ? '#ffff00' : '#d97706', marginLeft: '2px' } }) : null
             );
             })
           ),
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '12px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
-          h('button', { type: 'button', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0, color: _frC('#1f2937') } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '12px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '4px 10px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('button', { type: 'button', onClick: function() { upd('soundEnabled', !soundEnabled); announceFR(soundEnabled ? 'Sound muted.' : 'Sound unmuted.'); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', 'aria-pressed': !soundEnabled ? 'true' : 'false', style: { marginLeft: 'auto', minHeight: '44px', minWidth: '44px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '16px', opacity: 0.9, flexShrink: 0, color: _frC('#1f2937') } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );
 
@@ -1192,13 +1227,16 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           return '#ffffff';
         };
         var meta = TAB_META[activeTab] || TAB_META.compass;
+        var heroEdge = '1px solid ' + (_frHC ? '#ffff00' : meta.accent + '55');
         return h('div', {
           style: {
             margin: '8px 12px 12px',
             padding: '12px 14px',
             borderRadius: 12,
             background: _frHC ? '#000000' : 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-            border: '1px solid ' + (_frHC ? '#ffff00' : meta.accent + '55'),
+            borderTop: heroEdge,
+            borderRight: heroEdge,
+            borderBottom: heroEdge,
             borderLeft: '4px solid ' + (_frHC ? '#ffff00' : meta.accent),
             display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
           }
@@ -1214,15 +1252,18 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       // ── My Style (Friendship Compass) ──
       function friendRouteCard(label, detail, target, color) {
         var isHere = activeTab === target;
+        var cardEdge = '1px solid ' + (_frHC ? '#ffff00' : isHere ? color : _frC('#e5e7eb'));
         return h('button', {
           key: target, type: 'button',
-          onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
+          onClick: function() { upd('activeTab', target); announceFR(label + ' section shown.'); if (soundEnabled) sfxClick(); },
           'aria-label': label + ': ' + detail,
           style: {
             minHeight: 86,
             padding: '12px 14px',
             borderRadius: 12,
-            border: '1px solid ' + (_frHC ? '#ffff00' : isHere ? color : _frC('#e5e7eb')),
+            borderTop: cardEdge,
+            borderRight: cardEdge,
+            borderBottom: cardEdge,
             borderLeft: '4px solid ' + (_frHC ? '#ffff00' : color),
             background: isHere ? (_frHC ? '#000000' : color + '18') : _frC('#fff'),
             color: _frC('#374151'),
@@ -1522,7 +1563,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
             h('label', { htmlFor: 'fr-keep-journal', style: { display: 'block', fontWeight: 700 } }, 'Friendship journal entry'),
             h('input', { 'aria-label': 'Friendship journal entry', id: 'fr-keep-journal', type: 'text', value: newNote,
               onChange: function(ev) { upd({ newNote: ev.target.value, keepingJournalNotice: '' }); },
-              onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); keepAddJournal(); } },
+              onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                if (ev.key === 'Enter') { ev.preventDefault(); keepAddJournal(); }
+                else if (ev.key === 'Escape' && newNote) { ev.preventDefault(); upd({ newNote: '', keepingJournalNotice: '' }); }
+              },
               placeholder: keepBand === 'elementary' ? 'Something I want to remember or think about...' : 'A real or fictional friendship reflection...', style: keepControl }),
             h('button', { type: 'button', 'aria-label': 'Add friendship journal entry', onClick: keepAddJournal, disabled: !newNote.trim(),
               style: Object.assign({}, keepControl, { width: 'auto', marginTop: '10px', fontWeight: 700, cursor: newNote.trim() ? 'pointer' : 'not-allowed', opacity: newNote.trim() ? 1 : 0.7 }) }, 'Save journal note'),
@@ -1812,7 +1857,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
             h('p', { id: 'fr-coach-hint', style: { margin: '6px 0' } }, 'Sending shares this message with the AI service. You can use a fictional example. Enter and Send do the same thing.'),
             h('input', { 'aria-label': 'Friendship practice message', id: 'fr-coach-message', 'aria-describedby': 'fr-coach-hint', type: 'text', value: coachInput,
               onChange: function(ev) { upd({ coachInput: ev.target.value, coachError: '' }); },
-              onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); sendFriendshipCoach(); } },
+              onKeyDown: function(ev) {
+                if (isImeComposing(ev)) return;
+                if (ev.key === 'Enter') { ev.preventDefault(); sendFriendshipCoach(); }
+                else if (ev.key === 'Escape' && coachInput) { ev.preventDefault(); upd({ coachInput: '', coachError: '' }); }
+              },
               disabled: coachLoading, style: { width: '100%', minWidth: 0, minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + coachEdge, borderRadius: '8px', background: coachSurface, color: coachInk, font: 'inherit', fontSize: '16px' } }),
             h('button', { type: 'button', 'aria-label': coachLoading ? 'Friendship coach is responding' : 'Send message to friendship coach', onClick: sendFriendshipCoach,
               disabled: coachLoading || !coachInput.trim() || !_frAiOn, style: Object.assign({}, coachButton, { marginTop: '10px', fontWeight: 700 }) }, coachLoading ? 'Waiting for reply…' : 'Send'),
@@ -2208,7 +2257,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       }
 
       var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent || rehearseContent;
-      return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
+      return h('div', { className: 'selh-friendship', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h, ctx) : null),
         tabBar,
         heroBand,

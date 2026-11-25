@@ -17,18 +17,27 @@
 // Category: relationship-skills
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
+
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan')) return;
+
+  var _dmLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
 
   (function() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return;
     if (document.getElementById('allo-live-dearman')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-dearman';
@@ -140,69 +149,100 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var _de_FGD = {'#0ea5e9':'#38bdf8','#a855f7':'#d8b4fe','#ec4899':'#f9a8d4','#6366f1':'#a5b4fc'};
       var _deFg = function(h){ return _deHC ? (_de_FGH[h]||h) : (_deL ? (_de_FGL[h]||h) : (_de_FGD[h]||h)); };
       var _deBd = function(h){ return _deHC ? (_de_BDH[h]||h) : (_deL ? (_de_BDL[h]||h) : h); };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
-      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
+      var onSafetyFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
       var _dmBand = ctx.gradeBand || 'middle';
       var _dePrintFill = function(c) {
         if (_deHC) return '#000000';
         return ({ '#0ea5e9': '#0369a1', '#a855f7': '#7e22ce', '#22c55e': '#15803d', '#f59e0b': '#b45309', '#ec4899': '#be185d', '#14b8a6': '#0f766e', '#6366f1': '#4338ca' }[String(c || '').toLowerCase()] || c);
       };
+      function safeStr(v) { return typeof v === 'string' ? v : ''; }
+      function respStr(responses, id) {
+        return (responses && typeof responses === 'object' && Object.prototype.hasOwnProperty.call(responses, id) && typeof responses[id] === 'string') ? responses[id] : '';
+      }
 
-      var d = labToolData.dearMan || defaultState();
-      function setDM(patch) {
+      var rawDm = labToolData.dearMan;
+      var d = (rawDm && typeof rawDm === 'object' && !Array.isArray(rawDm)) ? rawDm : defaultState();
+      function setDM(patchOrFn) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.dearMan) || defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevRaw = base.dearMan;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
+          if (!patch || typeof patch !== 'object') return base;
           var next = Object.assign({}, prior, patch);
           if (patch.responses || patch.script !== undefined || patch.ask !== undefined) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { dearMan: next });
+          return Object.assign({}, base, { dearMan: next });
         });
       }
       function scanDearManText(text) {
         var trimmed = String(text || '').trim();
         if (!trimmed) return false;
+        var blocked = false;
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
         try {
-          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
-            var res = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'dearman', onSafetyFlag: onSafetyFlag });
-            if (res && res.action === 'block') {
-              setDM({ _crisisTier: 3 });
-              if (typeof window.SelHub.showCrisisModal === 'function') {
-                window.SelHub.showCrisisModal({ toolName: 'DEAR MAN', contentSnippet: trimmed });
-              }
-              return true;
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var res = sh.safeRehearseCheck(trimmed, { toolId: 'dearman', onSafetyFlag: onSafetyFlag });
+            if (res && res.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'dearman', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {} }
             }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _dmLocalCrisisRe.test(trimmed)) {
+            blocked = true;
+            if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'dearman', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {} }
+          }
+          if (blocked) {
+            setDM({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'DEAR MAN', contentSnippet: trimmed });
+            }
+            if (announceToSR) { try { announceToSR('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.'); } catch (_) {} }
+            return true;
           }
         } catch (_) {}
         return false;
       }
-      var view = d.view || 'home';
+      var VALID_VIEWS = ['home', 'script', 'practice', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'home';
       var buildMode = d.buildMode === 'all' ? 'all' : 'guided';
       var activeStep = Math.min(LETTERS.length - 1, Math.max(0, Math.floor(Number(d.activeStep)) || 0));
       var practiceSupport = ['full', 'starter', 'memory'].indexOf(d.practiceSupport) >= 0 ? d.practiceSupport : 'full';
       var draftedSteps = LETTERS.filter(function(L) {
-        var response = (d.responses || {})[L.id];
+        var response = respStr(d.responses, L.id);
         return response && response.trim();
       }).length;
       var dearManProgressText = draftedSteps === 0
         ? 'No DEAR MAN steps drafted yet. Start with Describe.'
         : draftedSteps + ' of ' + LETTERS.length + ' DEAR MAN steps drafted.';
       function goto(v) {
-        if (v === 'script' || v === 'practice') {
-          var combined = [d.ask || '', d.audience || '', buildScript()].join(' ').trim();
+        var nextView = VALID_VIEWS.indexOf(v) !== -1 ? v : 'home';
+        if (nextView === 'script' || nextView === 'practice' || nextView === 'print') {
+          var combined = [safeStr(d.ask), safeStr(d.audience), buildScript()].join(' ').trim();
           scanDearManText(combined);
         }
-        setDM({ view: v });
+        setDM({ view: nextView });
       }
       function focusStepField(index, attempt) {
+        if (typeof window !== 'object' || !window || typeof window.setTimeout !== 'function') return;
         window.setTimeout(function() {
-          var field = document.getElementById('dm-' + LETTERS[index].id);
-          if (field) field.focus();
-          else if ((attempt || 0) < 2) focusStepField(index, (attempt || 0) + 1);
+          try {
+            if (typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
+            var field = document.getElementById('dm-' + LETTERS[index].id);
+            if (field && typeof field.focus === 'function') field.focus();
+            else if ((attempt || 0) < 2) focusStepField(index, (attempt || 0) + 1);
+          } catch (_) {}
         }, 0);
       }
       function goToBuildStep(index) {
@@ -216,7 +256,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           ? 'Guided drafting mode. One DEAR MAN step is shown at a time.'
           : 'All steps mode. All seven DEAR MAN steps are shown.');
       }
-      function printNow() { try { window.print(); } catch (e) {} }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -252,7 +292,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               tabIndex: active ? 0 : -1,
               onClick: function() { goto(t.id); },
               onKeyDown: function(event) {
-                if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229)) return;
+                if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229) || event.ctrlKey || event.metaKey || event.altKey) return;
                 var tabIndex = tabs.indexOf(t);
                 var nextIndex = tabIndex;
                 if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
@@ -263,8 +303,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
                 event.preventDefault();
                 goto(tabs[nextIndex].id);
                 setTimeout(function() {
-                  var nextTab = document.getElementById('dearman-tab-' + tabs[nextIndex].id);
-                  if (nextTab) nextTab.focus();
+                  try {
+                    if (typeof document === 'object' && document && typeof document.getElementById === 'function') {
+                      var nextTab = document.getElementById('dearman-tab-' + tabs[nextIndex].id);
+                      if (nextTab && typeof nextTab.focus === 'function') nextTab.focus();
+                    }
+                  } catch (_) {}
                 }, 0);
               },
 
@@ -280,14 +324,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _deFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'DEAR MAN is a tool for ASKING. It is not a tool for confronting someone who has been abusive or unsafe. For those situations: bring a counselor, school psych, or trusted adult into the conversation. Crisis Text Line: text HOME to 741741.'
+          'DEAR MAN is a tool for ASKING. It is not a tool for confronting someone who has been abusive or unsafe. For those situations: bring a counselor, school psych, or trusted adult into the conversation. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'
         );
       }
 
       function buildScript() {
         var parts = [];
         LETTERS.forEach(function(L) {
-          var v = (d.responses || {})[L.id];
+          var v = respStr(d.responses, L.id);
           if (v && v.trim()) parts.push(v.trim());
         });
         return parts.join('  ');
@@ -298,9 +342,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
         function setResponse(id, val) {
-          var r = Object.assign({}, (d.responses || {}));
-          r[id] = val;
-          setDM({ responses: r });
+          setDM(function(prior) {
+            var r = Object.assign({}, (prior.responses && typeof prior.responses === 'object' && !Array.isArray(prior.responses)) ? prior.responses : {});
+            r[id] = val;
+            return { responses: r };
+          });
         }
 
         return h('div', null,
@@ -309,7 +355,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'dm-ask', style: { display: 'block', fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 800, marginBottom: 4 } }, 'What am I asking for, in one sentence?'),
-                h('input', { id: 'dm-ask', type: 'text', value: d.ask || '',
+                h('input', { id: 'dm-ask', type: 'text', value: safeStr(d.ask),
                   placeholder: 'e.g. I want my mom to let me ride my bike to school.',
                   onChange: function(e) { setDM({ ask: e.target.value }); },
                   onBlur: function(e) { scanDearManText(e.target.value); },
@@ -317,7 +363,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               ),
               h('div', null,
                 h('label', { htmlFor: 'dm-audience', style: { display: 'block', fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 800, marginBottom: 4 } }, 'Who am I asking?'),
-                h('input', { id: 'dm-audience', type: 'text', value: d.audience || '',
+                h('input', { id: 'dm-audience', type: 'text', value: safeStr(d.audience),
                   placeholder: 'e.g. Mom, Coach Smith, Mr. Patel',
                   onChange: function(e) { setDM({ audience: e.target.value }); },
                   onBlur: function(e) { scanDearManText(e.target.value); },
@@ -351,7 +397,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             ),
             buildMode === 'guided' ? h('div', { 'data-dearman-step-navigator': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: 6, marginTop: 12 } },
               LETTERS.map(function(L, idx) {
-                var response = (d.responses || {})[L.id];
+                var response = respStr(d.responses, L.id);
                 var isDrafted = !!(response && response.trim());
                 var isCurrent = activeStep === idx;
                 var stepState = isCurrent ? 'current' : (isDrafted ? 'complete' : 'upcoming');
@@ -378,7 +424,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           // Step prompt cards
           (buildMode === 'guided' ? [LETTERS[activeStep]] : LETTERS).map(function(L) {
             var idx = LETTERS.indexOf(L);
-            var v = (d.responses || {})[L.id] || '';
+            var v = respStr(d.responses, L.id);
             return h('div', { key: L.id, style: { padding: 14, borderRadius: 10, background: _deBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + L.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
                 h('span', { style: { fontSize: 22, fontWeight: 900, color: _deFg(L.color), fontFamily: 'ui-monospace, monospace', minWidth: 28 } }, L.letter),
@@ -429,14 +475,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       // ═══════════════════════════════════════════════════════════
       function renderScript() {
         var script = buildScript();
-        var hasAny = LETTERS.some(function(L) { var v = (d.responses || {})[L.id]; return v && v.trim(); });
-        var missingSteps = LETTERS.filter(function(L) { var v = (d.responses || {})[L.id]; return !v || !v.trim(); });
+        var hasAny = LETTERS.some(function(L) { var v = respStr(d.responses, L.id); return v && v.trim(); });
+        var missingSteps = LETTERS.filter(function(L) { var v = respStr(d.responses, L.id); return !v || !v.trim(); });
         var reviewCount = LETTERS.length - missingSteps.length;
 
         if (!hasAny) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _deBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📜'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: 36, marginBottom: 8 } }, '📜'),
               h('div', { style: { color: _deFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No script yet'),
               h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12 } }, 'Draft any DEAR MAN step and your script will assemble here. Every step is optional.'),
               h('button', { type: 'button', onClick: function() { goto('home'); }, 'aria-label': 'Build script',
@@ -446,7 +492,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         }
 
         function logPractice() {
-          setDM({ practiceCount: (d.practiceCount || 0) + 1 });
+          setDM(function(prior) { return { practiceCount: (Number(prior.practiceCount) || 0) + 1 }; });
           if (addToast) addToast('Practice logged. Try it again — it gets easier.', 'success');
         }
 
@@ -460,8 +506,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             if (announceToSR) announceToSR('DEAR MAN script copied to clipboard.');
           }
           function fallbackCopy() {
+            var copyField = null;
             try {
-              var copyField = document.createElement('textarea');
+              if (typeof document !== 'object' || !document || !document.body) {
+                if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
+                return;
+              }
+              copyField = document.createElement('textarea');
               copyField.value = script;
               copyField.setAttribute('readonly', '');
               copyField.setAttribute('aria-hidden', 'true');
@@ -471,23 +522,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               document.body.appendChild(copyField);
               copyField.select();
               var didCopy = document.execCommand('copy');
-              document.body.removeChild(copyField);
               if (didCopy) copied();
               else if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
             } catch (e) {
               if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
+            } finally {
+              if (copyField && copyField.parentNode) {
+                try { copyField.parentNode.removeChild(copyField); } catch (_) {}
+              }
             }
           }
-          if (window.SelHub && window.SelHub.copyText) {
-            window.SelHub.copyText(script).then(function(ok) { if (ok) copied(); else fallbackCopy(); });
+          if (typeof window === 'object' && window && window.SelHub && typeof window.SelHub.copyText === 'function') {
+            try {
+              Promise.resolve(window.SelHub.copyText(script)).then(function(ok) { if (ok) copied(); else fallbackCopy(); }, fallbackCopy);
+            } catch (_) { fallbackCopy(); }
           } else fallbackCopy();
         }
 
         return h('div', null,
           // Context
           h('div', { style: { padding: 10, borderRadius: 8, background: _deBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12, fontSize: 12, color: _deFg('#cbd5e1'), lineHeight: 1.6 } },
-            d.audience ? h('div', null, h('strong', { style: { color: _deFg('#93c5fd') } }, 'Asking: '), d.audience) : null,
-            d.ask ? h('div', null, h('strong', { style: { color: _deFg('#93c5fd') } }, 'The ask: '), d.ask) : null
+            safeStr(d.audience) ? h('div', null, h('strong', { style: { color: _deFg('#93c5fd') } }, 'Asking: '), safeStr(d.audience)) : null,
+            safeStr(d.ask) ? h('div', null, h('strong', { style: { color: _deFg('#93c5fd') } }, 'The ask: '), safeStr(d.ask)) : null
           ),
 
           h('div', { 'data-dearman-review-summary': reviewCount, style: { padding: 12, borderRadius: 10, background: reviewCount === LETTERS.length ? 'rgba(34,197,94,0.10)' : 'rgba(245,158,11,0.09)', border: '1px solid ' + (reviewCount === LETTERS.length ? 'rgba(34,197,94,0.35)' : 'rgba(245,158,11,0.32)'), marginBottom: 12 } },
@@ -518,7 +574,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           // Step-by-step view
           h('div', { style: { fontSize: 11, color: _deFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Step-by-step'),
           LETTERS.map(function(L, index) {
-            var v = (d.responses || {})[L.id];
+            var v = respStr(d.responses, L.id);
             var isDrafted = !!(v && v.trim());
             return h('div', { key: L.id, 'data-dearman-review-step': L.id, 'data-dearman-review-step-state': isDrafted ? 'drafted' : 'optional', style: { padding: 10, borderRadius: 8, background: isDrafted ? _deBg('#0f172a') : 'rgba(15,23,42,0.32)', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + (isDrafted ? L.color : '#475569'), marginBottom: 6 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
@@ -537,7 +593,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           // Practice prompts
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginTop: 12, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _deFg('#bfdbfe'), marginBottom: 6 } }, '🪞 Practice before you do it for real'),
-            h('button', { type: 'button', 'data-dearman-start-practice': 'true', onClick: function() { setDM({ view: 'practice', practiceStep: 0, practiceSupport: 'full', practiceReveal: false }); }, 'aria-label': 'Start guided rehearsal',
+            h('button', { type: 'button', 'data-dearman-start-practice': 'true', onClick: function() { scanDearManText([safeStr(d.ask), safeStr(d.audience), script].join(' ').trim()); setDM({ view: 'practice', practiceStep: 0, practiceSupport: 'full', practiceReveal: false }); }, 'aria-label': 'Start guided rehearsal',
               style: { width: '100%', minHeight: 44, marginBottom: 10, padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start guided rehearsal'),
             h('div', { style: { fontSize: 12.5, color: _deFg('#dbeafe'), lineHeight: 1.7 } },
               h('div', null, '• Read your script out loud in private. Hear yourself say it.'),
@@ -563,7 +619,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
       function renderPractice() {
         var practiceParts = LETTERS.map(function(L, index) {
-          var response = (d.responses || {})[L.id];
+          var response = respStr(d.responses, L.id);
           return response && response.trim() ? { letter: L, response: response.trim(), sourceIndex: index } : null;
         }).filter(Boolean);
 
@@ -576,7 +632,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           );
         }
 
-        var practiceIndex = Math.min(practiceParts.length - 1, Math.max(0, Number(d.practiceStep) || 0));
+        var practiceIndex = Math.min(practiceParts.length - 1, Math.max(0, Math.floor(Number(d.practiceStep)) || 0));
         var currentPart = practiceParts[practiceIndex];
         var practiceHint = PRACTICE_HINTS[currentPart.letter.id] || currentPart.letter.prompt;
         var cueRevealed = practiceSupport === 'full' || !!d.practiceReveal;
@@ -584,10 +640,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           ? currentPart.response
           : (practiceSupport === 'starter' ? practiceHint : 'Your drafted words are hidden for this try.');
         function focusPracticeCard(attempt) {
+          if (typeof window !== 'object' || !window || typeof window.setTimeout !== 'function') return;
           window.setTimeout(function() {
-            var card = document.getElementById('dearman-practice-card');
-            if (card) card.focus();
-            else if ((attempt || 0) < 2) focusPracticeCard((attempt || 0) + 1);
+            try {
+              if (typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
+              var card = document.getElementById('dearman-practice-card');
+              if (card && typeof card.focus === 'function') card.focus();
+              else if ((attempt || 0) < 2) focusPracticeCard((attempt || 0) + 1);
+            } catch (_) {}
           }, 0);
         }
         function movePractice(nextIndex) {
@@ -610,7 +670,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           if (announceToSR) announceToSR(nextReveal ? 'Your drafted words are revealed.' : 'Your drafted words are hidden.');
         }
         function finishPractice() {
-          setDM({ view: 'script', practiceStep: 0, practiceReveal: false, practiceCount: (d.practiceCount || 0) + 1 });
+          setDM(function(prior) { return { view: 'script', practiceStep: 0, practiceReveal: false, practiceCount: (Number(prior.practiceCount) || 0) + 1 }; });
           if (addToast) addToast('Rehearsal complete. Your practice has been logged.', 'success');
           if (announceToSR) announceToSR('Rehearsal complete. Returning to your script.');
         }
@@ -719,15 +779,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#dearman-print-region, #dearman-print-region * { visibility: visible !important; } ' +
-              '#dearman-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#dearman-print-region { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff !important; color: #0f172a !important; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#dearman-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #2563eb' } },
               h('div', { style: { fontSize: 10, color: _deFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'DEAR MAN · DBT Assertive Ask'),
-              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, d.ask || 'My ask'),
-              d.audience ? h('div', { style: { fontSize: 13, color: _deFg('#475569'), marginTop: 4 } }, 'For: ' + d.audience) : null
+              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, safeStr(d.ask) || 'My ask'),
+              safeStr(d.audience) ? h('div', { style: { fontSize: 13, color: _deFg('#475569'), marginTop: 4 } }, 'For: ' + safeStr(d.audience)) : null
             ),
 
             // Full script first
@@ -738,7 +799,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
             // Step-by-step breakdown
             LETTERS.map(function(L) {
-              var v = (d.responses || {})[L.id];
+              var v = respStr(d.responses, L.id);
               if (!v || !v.trim()) return null;
               return h('div', { key: L.id, style: { marginBottom: 12, pageBreakInside: 'avoid' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 6, background: _dePrintFill(L.color), border: _deHC ? '1px solid #ffff00' : 'none', color: _deFg('#fff') } },
@@ -764,7 +825,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('dearMan', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('dearMan', h, ctx) : null),
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _deBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _deFg('#93c5fd'), fontSize: 16 } }, 'What DEAR MAN is'),
@@ -864,8 +925,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'DEAR MAN script builder' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _dmBand))
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _dmBand))
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _deHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_deHC ? '#ffff00' : '#ef4444'), color: _deFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
           : null,
         h('div', { id: 'dearman-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'dearman-tab-' + view, tabIndex: 0 },
           h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'DEAR MAN progress', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.22)', color: _deFg('#bfdbfe'), fontSize: 11, lineHeight: 1.5 } },
@@ -885,4 +949,3 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
   });
 
 })();
-}

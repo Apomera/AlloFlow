@@ -23,6 +23,19 @@ const MEETDOCS_TEMPLATES_KEY = 'allo_meetdocs_templates_v1';
 const MEETDOCS_MEETINGS_KEY = 'allo_meetdocs_meetings_v1';
 const MEETDOCS_DRAFT_KEY = 'allo_meetdocs_draft_v1';
 
+function _ensureMeetingDocsA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-meetdocs-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-meetdocs-a11y-css';
+  st.textContent =
+    '[data-meeting-docs="true"] button,[data-meeting-docs="true"] a,[data-meeting-docs="true"] input,[data-meeting-docs="true"] select,[data-meeting-docs="true"] textarea,[data-meeting-docs="true"] summary{touch-action:manipulation;}' +
+    '[data-meeting-docs="true"] button:focus-visible,[data-meeting-docs="true"] a:focus-visible,[data-meeting-docs="true"] input:focus-visible,[data-meeting-docs="true"] select:focus-visible,[data-meeting-docs="true"] textarea:focus-visible,[data-meeting-docs="true"] summary:focus-visible{outline:2px solid #0f766e;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-meeting-docs="true"] button:focus-visible,[data-meeting-docs="true"] a:focus-visible,[data-meeting-docs="true"] input:focus-visible,[data-meeting-docs="true"] select:focus-visible,[data-meeting-docs="true"] textarea:focus-visible,[data-meeting-docs="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-meeting-docs="true"],[data-meeting-docs="true"] *,[data-meeting-docs="true"] *::before,[data-meeting-docs="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 const MEETDOCS_BUILTIN_TEMPLATES = [
   { id: 'sst', builtin: true, name: 'Student Support Team (SST)', sections: [
     { id: 'attendees', title: 'Attendees and roles', hint: 'Who was present, in what role' },
@@ -436,18 +449,19 @@ function MeetingDocsPanel(props) {
       }
       return true;
     });
+    _ensureMeetingDocsA11yCss();
     const first = getFocusable()[0];
     if (!dialog.contains(document.activeElement)) (first || dialog).focus();
     const onKeyDown = (event) => {
       if (event.defaultPrevented || !dialog.isConnected || !isTopTrap()) return;
       if (event.key === 'Escape') {
-        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof onCloseRef.current === 'function') onCloseRef.current();
         return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); dialog.focus(); return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
@@ -713,7 +727,7 @@ function MeetingDocsPanel(props) {
       onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
       onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
     >
-      <div ref={dialogRef} tabIndex={-1} data-help-key="meetdocs_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="meetdocs-title" onClick={(e) => e.stopPropagation()}>
+      <div ref={dialogRef} tabIndex={-1} data-meeting-docs="true" data-help-key="meetdocs_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="meetdocs-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
         <div className="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 px-4 pt-4 pb-2 rounded-t-2xl">
           <div className="flex items-center justify-between gap-2">
@@ -730,6 +744,7 @@ function MeetingDocsPanel(props) {
                 onClick={() => { setTab(tb.id); if (tb.id !== 'meetings') setViewId(null); }}
                 onKeyDown={(e) => {
                   // Full ARIA tabs contract (arrow keys + roving tabindex).
+                  if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                   let next = null;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (tbIdx + 1) % tabs.length;
                   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (tbIdx - 1 + tabs.length) % tabs.length;
@@ -860,7 +875,7 @@ function MeetingDocsPanel(props) {
                 <p className="text-xs text-slate-600">{tt('meetdocs.mask_note', 'Each name is replaced with a code (Person A, Person B…) on this device before anything is sent, and restored locally in the result. Add every student, family, and staff name that appears in your notes.')}</p>
                 <div className="mt-1.5 flex gap-2">
                   <input type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); addMaskName(); } }}
+                    onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); addMaskName(); } }}
                     aria-label={tt('meetdocs.mask_input_aria', 'Name to mask')}
                     placeholder={tt('meetdocs.mask_placeholder', 'e.g. Marcus Rivera')}
                     className="flex-1 min-w-0 min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
@@ -1033,7 +1048,7 @@ function MeetingDocsPanel(props) {
                     value={meetingsQuery}
                     onChange={(e) => setMeetingsQuery(e.target.value)}
                     onKeyDown={(e) => {
-                      if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                      if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                       if (e.key === 'Escape' && meetingsQuery) { e.preventDefault(); e.stopPropagation(); setMeetingsQuery(''); }
                     }}
                     aria-label={tt('meetdocs.meetings_search_aria', 'Filter saved meetings by title or format')}
@@ -1097,7 +1112,7 @@ function MeetingDocsPanel(props) {
                         value={actionQuery}
                         onChange={(e) => setActionQuery(e.target.value)}
                         onKeyDown={(e) => {
-                          if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                          if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                           if (e.key === 'Escape' && actionQuery) { e.preventDefault(); e.stopPropagation(); setActionQuery(''); }
                         }}
                         aria-label={tt('meetdocs.actions_search_aria', 'Filter action items by text or owner')}

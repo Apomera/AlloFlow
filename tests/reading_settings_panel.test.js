@@ -134,7 +134,8 @@ describe('the reading-settings panel', () => {
     expect(setSpy).toHaveBeenLastCalledWith({ fontId: 'opendyslexic' });
     const peach = panel.querySelector('input[type="radio"][value="peach"]'); peach.checked = true; peach.dispatchEvent(new Event('change', { bubbles: true }));
     expect(setSpy).toHaveBeenLastCalledWith({ colorOverlay: 'peach' });
-    const ruler = panel.querySelector('input[type="checkbox"]'); ruler.checked = true; ruler.dispatchEvent(new Event('change', { bubbles: true }));
+    // The syllables checkbox now comes before the ruler, so pick the ruler by its id.
+    const ruler = panel.querySelector('input[type="checkbox"][id$="-ruler"]'); ruler.checked = true; ruler.dispatchEvent(new Event('change', { bubbles: true }));
     expect(setSpy).toHaveBeenLastCalledWith({ readingRuler: true });
     [...panel.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Larger text').click();
     expect(setSpy).toHaveBeenLastCalledWith({ baseFontSize: 23 });

@@ -7,6 +7,15 @@ var useRef = React.useRef;
 var useMemo = React.useMemo;
 var useCallback = React.useCallback;
 var Fragment = React.Fragment;
+function _ensureTextUtilityA11yCss() {
+  if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+  if (document.getElementById("allo-text-utility-a11y-css")) return;
+  const st = document.createElement("style");
+  st.id = "allo-text-utility-a11y-css";
+  st.textContent = ".allo-glossary-term,[data-glossary-tooltip] button,[data-glossary-tooltip] a{touch-action:manipulation;}.allo-glossary-term:focus-visible,[data-glossary-tooltip] button:focus-visible,[data-glossary-tooltip] a:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}@media (forced-colors: active){.allo-glossary-term:focus-visible,[data-glossary-tooltip] button:focus-visible,[data-glossary-tooltip] a:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){.allo-glossary-term,[data-glossary-tooltip],[data-glossary-tooltip] *,[data-glossary-tooltip] *::before,[data-glossary-tooltip] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}";
+  document.head.appendChild(st);
+}
+_ensureTextUtilityA11yCss();
 let _glossaryTipSeq = 0;
 const _glossaryTranslationParts = (value) => {
   if (value && typeof value === "object") return { term: String(value.term || value.word || ""), definition: String(value.definition || value.def || value.text || "") };
@@ -135,6 +144,9 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
     el.style.transform = "none";
   }, [tip]);
   React.useEffect(() => {
+    _ensureTextUtilityA11yCss();
+  }, []);
+  React.useEffect(() => {
     if (!tip) return void 0;
     const close = (event) => {
       if (event?.type === "scroll" && event.target?.nodeType && document.getElementById(tipIdRef.current)?.contains(event.target)) return;
@@ -148,7 +160,7 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
       if (!termRef.current?.contains(event.target) && !document.getElementById(tipIdRef.current)?.contains(event.target)) close();
     };
     const escape = (event) => {
-      if (event.isComposing || event.keyCode === 229) return;
+      if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key === "Escape") close();
     };
     window.addEventListener("scroll", close, true);
@@ -184,8 +196,8 @@ const GlossaryTermSpan = ({ item, artifact, leveledTextLanguage, isDarkBg, isLin
       },
       onBlur: hide,
       onKeyDown: (event) => {
-        if (event.isComposing || event.keyCode === 229) return;
-        if (event.key === "Escape") {
+        if (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229) return;
+        if (event.key === "Escape" && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.stopPropagation();
           hide();
         } else if (readerInteractions && !event.ctrlKey && !event.altKey && !event.metaKey && (event.key === "Enter" || event.key === " ")) {
@@ -854,7 +866,7 @@ try {
     };
     window.__alloOpenDeviceStorageProbe = openDeviceStorageProbe;
     document.addEventListener("keydown", (e) => {
-      if (e.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
       if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === "D" || e.key === "d")) {
         if (isLearnerContextActive()) return;
         e.preventDefault();

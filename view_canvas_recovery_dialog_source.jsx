@@ -2,7 +2,7 @@
 
 // Extracted from AlloFlowANTI.txt (canvas-recovery-dialog).
 function CanvasRecoveryDialogView(props) {
-  const { ALLO_WORKSPACE_RECOVERY, RefreshCw, _alloFormatWorkspaceBytes, alloModelStatus, approveAndRetryCanvasRecoveryStorage, canvasRecoveryBusyId, canvasRecoveryDecisionMade, canvasRecoveryDialogMode, canvasRecoveryDialogRef, canvasRecoveryEraseId, canvasRecoveryError, canvasRecoveryErrorCode, canvasRecoveryImportInputRef, canvasRecoveryRemoveMediaId, canvasRecoveryStore, canvasRecoveryStoreAuthoritative, canvasRecoveryVaultForm, canvasRecoveryVaultState, closeCanvasRecoveryDialog, continueWithoutCanvasRecovery, deleteCachedPdfRemediation, deleteCachedPdfRemediationEntry, downloadKokoroModel, downloadWhisperModel, eraseCanvasRecoverySnapshot, exportCanvasRecoverySnapshot, handleCanvasRecoveryImport, isCanvas, lastPdfAuditResultRef, openCachedPdfRemediation, openCanvasDocumentHubDraft, openCanvasRecoveryManager, pdfActiveRemediationStorageKey, pdfAuditResult, pdfFixResult, pdfRemediationCacheEntries, pdfRemediationDeleteConfirm, refreshStorageManagerInventory, removeCanvasRecoverySnapshotMedia, renderCanvasRecoveryLockedScreen, renderCanvasRecoveryProtectionSection, renderEducatorAccessCodeSection, requestCanvasRecoveryErase, restoreCachedPdfRemediation, restoreCanvasWorkspaceSnapshot, retryCanvasRecoveryStorage, setCanvasRecoveryDialogMode, setCanvasRecoveryEraseId, setCanvasRecoveryRemoveMediaId, setCanvasRecoverySnapshotPinned, setPdfRemediationDeleteConfirm, setStorageRetentionPolicy, startFreshCanvasWorkspace, storageManagerInventory, t } = props;
+  const { ALLO_WORKSPACE_RECOVERY, RefreshCw, _alloFormatWorkspaceBytes, alloModelStatus, approveAndRetryCanvasRecoveryStorage, canvasRecoveryBusyId, canvasRecoveryDecisionMade, canvasRecoveryDialogMode, canvasRecoveryDialogRef, canvasRecoveryEraseId, canvasRecoveryError, canvasRecoveryErrorCode, canvasRecoveryImportInputRef, canvasRecoveryRemoveMediaId, canvasRecoveryStore, canvasRecoveryStoreAuthoritative, canvasRecoveryVaultForm, canvasRecoveryVaultState, closeCanvasRecoveryDialog, continueWithoutCanvasRecovery, deleteCachedPdfRemediation, deleteCachedPdfRemediationEntry, deleteDictionaryCache, dictionaryCacheSummary, downloadKokoroModel, downloadWhisperModel, eraseCanvasRecoverySnapshot, exportCanvasRecoverySnapshot, handleCanvasRecoveryImport, isCanvas, lastPdfAuditResultRef, openCachedPdfRemediation, openCanvasDocumentHubDraft, openCanvasRecoveryManager, pdfActiveRemediationStorageKey, pdfAuditResult, pdfFixResult, pdfRemediationCacheEntries, pdfRemediationDeleteConfirm, refreshStorageManagerInventory, removeCanvasRecoverySnapshotMedia, renderCanvasRecoveryLockedScreen, renderCanvasRecoveryProtectionSection, renderEducatorAccessCodeSection, requestCanvasRecoveryErase, restoreCachedPdfRemediation, restoreCanvasWorkspaceSnapshot, retryCanvasRecoveryStorage, setCanvasRecoveryDialogMode, setCanvasRecoveryEraseId, setCanvasRecoveryRemoveMediaId, setCanvasRecoverySnapshotPinned, setPdfRemediationDeleteConfirm, setStorageRetentionPolicy, startFreshCanvasWorkspace, storageManagerInventory, t } = props;
   // A Deny is remembered for the visit, so a plain retry can no longer ask; offer the approval window.
   const needsStorageApproval = canvasRecoveryErrorCode === 'allo/approval-required' || canvasRecoveryErrorCode === 'allo/approval-denied' || canvasRecoveryErrorCode === 'allo/consent-timeout';
   const _crCopy = (key, fallback) => {
@@ -11,10 +11,26 @@ function CanvasRecoveryDialogView(props) {
       return value && value !== key ? value : fallback;
     } catch (_) { return fallback; }
   };
+  const _formatSavedDate = (value, fallback) => {
+    if (value == null || value === '') return fallback || '';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? (fallback || '') : d.toLocaleString();
+  };
+  const safeRecoverySnapshots = Array.isArray(canvasRecoveryStore?.snapshots) ? canvasRecoveryStore.snapshots : [];
+  const safeStorageInventory = (storageManagerInventory && typeof storageManagerInventory === 'object') ? storageManagerInventory : {};
+  const safeManagedRows = Array.isArray(safeStorageInventory.managed) ? safeStorageInventory.managed : [];
+  const safeDeviceNamespaces = Array.isArray(safeStorageInventory.deviceNamespaces) ? safeStorageInventory.deviceNamespaces : [];
+  const safePdfCacheEntries = Array.isArray(pdfRemediationCacheEntries) ? pdfRemediationCacheEntries : [];
+  const safeModelStatus = (alloModelStatus && typeof alloModelStatus === 'object') ? alloModelStatus : {};
+  const safeVaultState = (canvasRecoveryVaultState && typeof canvasRecoveryVaultState === 'object') ? canvasRecoveryVaultState : {};
+  const safeLastPdfAudit = lastPdfAuditResultRef ? lastPdfAuditResultRef.current : null;
   const fallbackRecoveryRef = React.useRef(null);
   const activeRecoveryDialogRef = canvasRecoveryDialogRef || fallbackRecoveryRef;
   const [snapshotQuery, setSnapshotQuery] = React.useState('');
   const [snapshotFilter, setSnapshotFilter] = React.useState('all');
+  const [dictionaryDeleteConfirm, setDictionaryDeleteConfirm] = React.useState(false);
+  const dictionaryCache = dictionaryCacheSummary && dictionaryCacheSummary.count > 0 ? dictionaryCacheSummary : null;
+  React.useEffect(() => { if (!dictionaryCache) setDictionaryDeleteConfirm(false); }, [Boolean(dictionaryCache)]);
   const _focusRing = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const recoveryStateRef = React.useRef({
     canvasRecoveryDecisionMade,
@@ -29,6 +45,7 @@ function CanvasRecoveryDialogView(props) {
     setPdfRemediationDeleteConfirm,
     snapshotQuery,
     setSnapshotQuery,
+    dictionaryDeleteConfirm,
   });
   recoveryStateRef.current = {
     canvasRecoveryDecisionMade,
@@ -43,6 +60,7 @@ function CanvasRecoveryDialogView(props) {
     setPdfRemediationDeleteConfirm,
     snapshotQuery,
     setSnapshotQuery,
+    dictionaryDeleteConfirm,
   };
   React.useEffect(() => {
     const dialog = activeRecoveryDialogRef && activeRecoveryDialogRef.current;
@@ -110,30 +128,41 @@ function CanvasRecoveryDialogView(props) {
       if (event.defaultPrevented) return;
       if (!dialog.isConnected || !isTopTrap()) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
         const latest = recoveryStateRef.current;
         if (latest.canvasRecoveryEraseId && typeof latest.setCanvasRecoveryEraseId === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setCanvasRecoveryEraseId(null);
           return;
         }
         if (latest.canvasRecoveryRemoveMediaId && typeof latest.setCanvasRecoveryRemoveMediaId === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setCanvasRecoveryRemoveMediaId(null);
           return;
         }
         if (latest.pdfRemediationDeleteConfirm && typeof latest.setPdfRemediationDeleteConfirm === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setPdfRemediationDeleteConfirm(null);
+          return;
+        }
+        if (latest.dictionaryDeleteConfirm) {
+          event.preventDefault();
+          event.stopPropagation();
+          setDictionaryDeleteConfirm(false);
           return;
         }
         if (latest.snapshotQuery && typeof latest.setSnapshotQuery === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.setSnapshotQuery('');
           return;
         }
         if (latest.canvasRecoveryDecisionMade && latest.vaultMode !== 'confirm-recovery-code' && !latest.canvasRecoveryBusyId && typeof latest.closeCanvasRecoveryDialog === 'function') {
           event.preventDefault();
+          event.stopPropagation();
           latest.closeCanvasRecoveryDialog();
         }
         return;
@@ -261,7 +290,7 @@ function CanvasRecoveryDialogView(props) {
                 </p>
               </div>
             ) : canvasRecoveryDialogMode === 'choice' ? (() => {
-              const latest = canvasRecoveryStore.snapshots[0];
+              const latest = safeRecoverySnapshots[0];
               if (!latest) return (
                 <div>
                   <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{t('storage.no_restorable') || 'No restorable workspace was found.'}</p>
@@ -272,13 +301,13 @@ function CanvasRecoveryDialogView(props) {
                 </div>
               );
               const choiceRetention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
-              const savedDate = new Date(latest.savedAt);
+              const savedDateText = _formatSavedDate(latest.savedAt, 'recently');
               return (
                 <>
                   <div className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
                     <div className="font-black text-slate-900">{latest.title}</div>
                     <div className="mt-1 text-sm text-slate-600">
-                      {latest.resourceCount} {latest.resourceCount === 1 ? 'resource' : 'resources'} · {t('storage.saved_label') || 'Saved'} {savedDate.toLocaleString()}
+                      {latest.resourceCount} {latest.resourceCount === 1 ? 'resource' : 'resources'} · {t('storage.saved_label') || 'Saved'} {savedDateText}
                     </div>
                     {latest.assetPolicy === 'text-only' && (
                       <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
@@ -299,20 +328,22 @@ function CanvasRecoveryDialogView(props) {
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={openCanvasRecoveryManager}
                       className={`min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100 ${_focusRing}`}>
-                      {t('storage.manage_saved', { n: canvasRecoveryStore.snapshots.length, max: choiceRetention.maxSnapshots }) || ('Manage saved work (' + canvasRecoveryStore.snapshots.length + ' of ' + choiceRetention.maxSnapshots + ')')}
+                      {t('storage.manage_saved', { n: safeRecoverySnapshots.length, max: choiceRetention.maxSnapshots }) || ('Manage saved work (' + safeRecoverySnapshots.length + ' of ' + choiceRetention.maxSnapshots + ')')}
                     </button>
+                    {isCanvas && (
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
-                      onClick={() => canvasRecoveryImportInputRef.current?.click()}
+                      onClick={() => canvasRecoveryImportInputRef?.current?.click()}
                       className={`min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`}>
                       {t('storage.import_project') || 'Import project file'}
                     </button>
+                    )}
                   </div>
                   <p className="mt-3 text-xs text-slate-600">
                     {t('storage.retention_note', { max: choiceRetention.maxSnapshots, policy: choiceRetention.effectivePolicyId, used: _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) })
                       || ('AlloFlow keeps up to ' + choiceRetention.maxSnapshots + ' recent device workspaces under the ' + choiceRetention.effectivePolicyId + ' policy (' + _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) + ' used). Saving beyond that removes the oldest, so export anything you want to keep for good.')}
                   </p>
                   <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
-                    {canvasRecoveryVaultState.enabled
+                    {safeVaultState.enabled
                       ? 'Shared computer? Protected workspace contents are unreadable after you lock this tab or reload. They remain visible while this tab is unlocked.'
                       : 'Shared computer? Saved work can be opened by another person using this browser profile. Enable optional protection or export and erase important work.'}
                   </p>
@@ -341,14 +372,16 @@ function CanvasRecoveryDialogView(props) {
                       detail: t('storage.preset_standard_detail') || 'Current behavior: targets 20 workspaces / 150 MB and 50 offline resources.'
                     }
                   ];
-                  const origin = storageManagerInventory.origin || {};
-                  const deviceFacts = storageManagerInventory.deviceEstimate;
+                  const origin = safeStorageInventory.origin || {};
+                  const deviceFacts = safeStorageInventory.deviceEstimate;
                   const physicalFacts = isCanvas
                     ? (deviceFacts || { persisted: null, usage: null, quota: null })
                     : origin;
                   const persistence = physicalFacts.persisted;
-                  const capacityMax = Math.max(1, Number(retention.maxSnapshots) || 1);
-                  const capacityCurrent = Math.max(0, Number(retention.count) || 0);
+                  const _rawMax = Number(retention?.maxSnapshots);
+                  const _rawCount = Number(retention?.count);
+                  const capacityMax = Number.isFinite(_rawMax) && _rawMax >= 1 ? _rawMax : 1;
+                  const capacityCurrent = Number.isFinite(_rawCount) && _rawCount >= 0 ? _rawCount : 0;
                   const capacityPct = Math.min(100, Math.round((capacityCurrent / capacityMax) * 100));
                   const capacityNearLimit = retention.overTarget || capacityCurrent >= capacityMax;
                   return (
@@ -361,10 +394,10 @@ function CanvasRecoveryDialogView(props) {
                               {t('storage.status_note') || 'Browser totals are physical estimates. AlloFlow categories and Canvas namespaces are approximate breakdowns and are not added to that total.'}
                             </p>
                           </div>
-                          <button type="button" disabled={storageManagerInventory.loading}
+                          <button type="button" disabled={safeStorageInventory.loading}
                             onClick={() => void refreshStorageManagerInventory()}
                             className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`}>
-                            {storageManagerInventory.loading || alloModelStatus.loading ? 'Refreshing…' : 'Refresh status'}
+                            {safeStorageInventory.loading || safeModelStatus.loading ? 'Refreshing…' : 'Refresh status'}
                           </button>
                         </div>
                         <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -417,8 +450,8 @@ function CanvasRecoveryDialogView(props) {
                           <p className="mt-1 text-xs text-slate-600">{t('storage.speech_models_note') || 'Downloaded once, then kept on this device so voice features work without sending audio anywhere. Removing browser data below also removes these.'}</p>
                           <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
                             {[
-                              { key: 'whisper', label: t('storage.model_whisper_label') || 'Speech recognition (Whisper)', desc: t('storage.model_whisper_desc') || 'Understands what you say, on this device', have: alloModelStatus.whisper, size: '~40 MB', onGet: downloadWhisperModel },
-                              { key: 'kokoro', label: t('storage.model_kokoro_label') || 'Natural voice (Kokoro)', desc: t('storage.model_kokoro_desc') || 'Reads text aloud in a natural voice', have: alloModelStatus.kokoro, size: '~88 MB', onGet: downloadKokoroModel }
+                              { key: 'whisper', label: t('storage.model_whisper_label') || 'Speech recognition (Whisper)', desc: t('storage.model_whisper_desc') || 'Understands what you say, on this device', have: safeModelStatus.whisper, size: '~40 MB', onGet: downloadWhisperModel },
+                              { key: 'kokoro', label: t('storage.model_kokoro_label') || 'Natural voice (Kokoro)', desc: t('storage.model_kokoro_desc') || 'Reads text aloud in a natural voice', have: safeModelStatus.kokoro, size: '~88 MB', onGet: downloadKokoroModel }
                             ].map(m => (
                               <div key={m.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                                 <span className="min-w-0">
@@ -428,9 +461,9 @@ function CanvasRecoveryDialogView(props) {
                                 {m.have ? (
                                   <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800">{'✓ '}{t('storage.model_on_device') || 'On this device'}</span>
                                 ) : (
-                                  <button type="button" onClick={m.onGet} disabled={!!alloModelStatus.busy}
+                                  <button type="button" onClick={m.onGet} disabled={!!safeModelStatus.busy}
                                     className={`shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 ${_focusRing}`}>
-                                    {alloModelStatus.busy === m.key
+                                    {safeModelStatus.busy === m.key
                                       ? (t('storage.model_downloading') || 'Downloading…')
                                       : ((t('storage.model_download', { size: m.size }) || ('Download ' + m.size)))}
                                   </button>
@@ -438,28 +471,66 @@ function CanvasRecoveryDialogView(props) {
                               </div>
                             ))}
                           </div>
-                          {alloModelStatus.bytes > 0 && (
-                            <p className="mt-1 text-xs text-slate-600">{t('storage.model_cache', { size: _alloFormatWorkspaceBytes(alloModelStatus.bytes) }) || ('Model cache on this device: ~' + _alloFormatWorkspaceBytes(alloModelStatus.bytes))}</p>
+                          {safeModelStatus.bytes > 0 && (
+                            <p className="mt-1 text-xs text-slate-600">{t('storage.model_cache', { size: _alloFormatWorkspaceBytes(safeModelStatus.bytes) }) || ('Model cache on this device: ~' + _alloFormatWorkspaceBytes(safeModelStatus.bytes))}</p>
                           )}
                         </div>
-                        {storageManagerInventory.managed.length > 0 && (
+                        {(safeManagedRows.length > 0 || dictionaryCache) && (
                           <div className="mt-4">
                             <h4 className="text-sm font-black text-slate-900">{t('storage.managed_data_title') || 'AlloFlow-managed browser data'}</h4>
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
-                              {storageManagerInventory.managed.map(row => (
+                              {safeManagedRows.map(row => (
                                 <div key={row.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                                   <span className="font-semibold text-slate-700">{row.label} <span className="text-xs font-normal text-slate-600">({row.count})</span></span>
                                   <span className="font-bold text-slate-900">~{_alloFormatWorkspaceBytes(row.approximateBytes)}</span>
                                 </div>
                               ))}
+                              {dictionaryCache && (
+                                <div data-storage-dictionary-row="true" className="px-3 py-2 text-sm">
+                                  <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <span className="min-w-0">
+                                      <span className="font-semibold text-slate-700">{t('storage.dictionary_cache_label') || 'Word data for glossaries'} <span className="text-xs font-normal text-slate-600">({dictionaryCache.count})</span></span>
+                                      <span className="block text-xs font-normal text-slate-600">{t('storage.dictionary_cache_hint') || 'Word meanings looked up for glossaries, kept so they work offline. Safe to delete; they are fetched again when needed.'}</span>
+                                    </span>
+                                    <span className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                      <span className="font-bold text-slate-900">~{_alloFormatWorkspaceBytes(dictionaryCache.approximateBytes)}</span>
+                                      {typeof deleteDictionaryCache === 'function' && (dictionaryDeleteConfirm ? (
+                                        <>
+                                          <button type="button" data-storage-dictionary-confirm="true"
+                                            onClick={() => {
+                                              deleteDictionaryCache();
+                                              setDictionaryDeleteConfirm(false);
+                                              try { activeRecoveryDialogRef.current && activeRecoveryDialogRef.current.focus({ preventScroll: true }); } catch (_) {}
+                                            }}
+                                            className={`min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 ${_focusRing}`}>
+                                            {t('storage.remediation_delete_confirm_one') || 'Confirm delete'}
+                                          </button>
+                                          <button type="button" onClick={() => setDictionaryDeleteConfirm(false)}
+                                            className={`min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 ${_focusRing}`}>
+                                            {t('common.cancel') || 'Cancel'}
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <button type="button" data-storage-dictionary-delete="true" onClick={() => setDictionaryDeleteConfirm(true)}
+                                          className={`min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`}>
+                                          {t('storage.remediation_delete') || 'Delete'}
+                                        </button>
+                                      ))}
+                                    </span>
+                                  </div>
+                                  {dictionaryDeleteConfirm && (
+                                    <p role="alert" className="mt-2 text-xs font-semibold text-red-800">{t('storage.dictionary_cache_delete_warning') || 'Delete the saved word data from this device? Your glossaries are not changed.'}</p>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
-                        {isCanvas && storageManagerInventory.deviceNamespaces.length > 0 && (
+                        {isCanvas && safeDeviceNamespaces.length > 0 && (
                           <div className="mt-4">
                             <h4 className="text-sm font-black text-slate-900">{t('storage.canvas_namespaces_title') || 'Canvas durable-device namespaces'}</h4>
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
-                              {storageManagerInventory.deviceNamespaces.map(row => (
+                              {safeDeviceNamespaces.map(row => (
                                 <div key={row.ns} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                                   <span className="font-semibold text-slate-700">{row.ns} <span className="text-xs font-normal text-slate-600">({row.count})</span></span>
                                   <span className="font-bold text-slate-900">~{_alloFormatWorkspaceBytes(row.bytes)}</span>
@@ -468,9 +539,9 @@ function CanvasRecoveryDialogView(props) {
                             </div>
                           </div>
                         )}
-                        {storageManagerInventory.error && (
+                        {safeStorageInventory.error && (
                           <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">
-                            {storageManagerInventory.error}
+                            {safeStorageInventory.error}
                           </p>
                         )}
                       </section>
@@ -510,7 +581,7 @@ function CanvasRecoveryDialogView(props) {
                     <div className="rounded-xl border border-red-200 bg-red-50 p-3">
                       <p className="text-sm font-semibold text-red-800">{t('storage.not_reread') || 'Saved work has not been safely re-read yet.'}</p>
                       <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={retryCanvasRecoveryStorage}
-                        className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60">
+                        className={`mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 ${_focusRing}`}>
                         {canvasRecoveryBusyId === 'storage-retry' ? (t('storage.checking_short') || 'Checking…') : (t('storage.retry_device_storage') || 'Retry device storage')}
                       </button>
                     </div>
@@ -519,10 +590,10 @@ function CanvasRecoveryDialogView(props) {
                     cache entries live in localStorage; Document Hub drafts live inside the
                     recovery workspaces below. This view does not broaden automatic retention. */}
                 {!pdfAuditResult && (
-                  pdfRemediationCacheEntries.length > 0
+                  safePdfCacheEntries.length > 0
                   || pdfFixResult
-                  || lastPdfAuditResultRef.current
-                  || canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft)
+                  || safeLastPdfAudit
+                  || safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft)
                 ) && (
                   <section aria-labelledby="storage-local-documents-title" className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -533,19 +604,19 @@ function CanvasRecoveryDialogView(props) {
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs font-black uppercase tracking-wide">
-                        {(pdfRemediationCacheEntries.length > 0 || pdfFixResult || lastPdfAuditResultRef.current) && (
-                          <span className="rounded-full bg-emerald-200 px-2.5 py-1 text-emerald-950">{pdfRemediationCacheEntries.length || 1} remediation{(pdfRemediationCacheEntries.length || 1) === 1 ? '' : 's'}</span>
+                        {(safePdfCacheEntries.length > 0 || pdfFixResult || safeLastPdfAudit) && (
+                          <span className="rounded-full bg-emerald-200 px-2.5 py-1 text-emerald-950">{safePdfCacheEntries.length || 1} remediation{(safePdfCacheEntries.length || 1) === 1 ? '' : 's'}</span>
                         )}
-                        {canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && (
+                        {safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft) && (
                           <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-indigo-900">
-                            {canvasRecoveryStore.snapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length} Document Hub draft{canvasRecoveryStore.snapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length === 1 ? '' : 's'}
+                            {safeRecoverySnapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length} Document Hub draft{safeRecoverySnapshots.filter(snapshot => snapshot?.workspace?.builderDraft).length === 1 ? '' : 's'}
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="mt-3 space-y-2">
-                      {pdfRemediationCacheEntries.map(entry => {
-                        const isActive = entry.storageKey === pdfActiveRemediationStorageKey && Boolean(pdfFixResult || lastPdfAuditResultRef.current);
+                      {safePdfCacheEntries.map(entry => {
+                        const isActive = entry.storageKey === pdfActiveRemediationStorageKey && Boolean(pdfFixResult || safeLastPdfAudit);
                         return (
                           <article key={entry.storageKey} className="rounded-xl border border-emerald-200 bg-white p-3">
                             <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
@@ -555,7 +626,7 @@ function CanvasRecoveryDialogView(props) {
                                   {isActive && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-emerald-900">Current</span>}
                                 </div>
                                 <p className="mt-1 text-xs text-slate-600">
-                                  {entry.savedAt ? new Date(entry.savedAt).toLocaleString() : 'Saved on this device'}
+                                  {_formatSavedDate(entry.savedAt, 'Saved on this device')}
                                   {entry.pageCount ? ` · ${entry.pageCount} page${entry.pageCount === 1 ? '' : 's'}` : ''}
                                   {entry.approximateBytes > 0 ? ' · ~' + _alloFormatWorkspaceBytes(entry.approximateBytes) : ''}
                                 </p>
@@ -596,20 +667,20 @@ function CanvasRecoveryDialogView(props) {
                           </article>
                         );
                       })}
-                      {pdfRemediationCacheEntries.length === 0 && (pdfFixResult || lastPdfAuditResultRef.current) && (
+                      {safePdfCacheEntries.length === 0 && (pdfFixResult || safeLastPdfAudit) && (
                         <div className="rounded-xl border border-emerald-200 bg-white p-3">
                           <p className="text-sm font-black text-slate-900">Current remediation</p>
                           <p className="mt-1 text-xs text-slate-600">Available in this session; device-cache storage may be unavailable or still updating.</p>
                           <button type="button" onClick={() => openCachedPdfRemediation(true)} className={`mt-2 min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800 ${_focusRing}`}>Resume</button>
                         </div>
                       )}
-                      {pdfRemediationCacheEntries.length === 0 && !pdfFixResult && !lastPdfAuditResultRef.current && canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && (
+                      {safePdfCacheEntries.length === 0 && !pdfFixResult && !safeLastPdfAudit && safeRecoverySnapshots.some(snapshot => snapshot?.workspace?.builderDraft) && (
                         <div className="rounded-xl border border-indigo-200 bg-white p-3 text-xs leading-relaxed text-slate-700">
                           Document Hub drafts are stored with their saved workspaces below. Choose <strong>Open document</strong> to restore that workspace and continue editing its draft.
                         </div>
                       )}
                     </div>
-                    {pdfRemediationCacheEntries.length > 1 && pdfRemediationDeleteConfirm !== 'all' && (
+                    {safePdfCacheEntries.length > 1 && pdfRemediationDeleteConfirm !== 'all' && (
                       <button type="button" onClick={() => setPdfRemediationDeleteConfirm('all')}
                         className={`mt-3 min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`}>
                         {t('storage.remediation_delete_all') || 'Delete all remediations'}
@@ -626,7 +697,7 @@ function CanvasRecoveryDialogView(props) {
                     )}
                   </section>
                 )}
-                {canvasRecoveryStore.snapshots.length > 0 && (() => {
+                {safeRecoverySnapshots.length > 0 && (() => {
                   const retention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
                   return (
                     <p className="mb-3 rounded-xl bg-slate-50 px-4 py-3 text-xs text-slate-700">
@@ -757,7 +828,7 @@ function CanvasRecoveryDialogView(props) {
                             {snapshot?.workspace?.builderDraft && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black uppercase tracking-wide text-violet-900">Document Hub draft</span>}
                           </div>
                           <div className="mt-1 text-xs text-slate-600">
-                            {snapshot.resourceCount} {snapshot.resourceCount === 1 ? 'resource' : 'resources'} · {new Date(snapshot.savedAt).toLocaleString()}
+                            {snapshot.resourceCount} {snapshot.resourceCount === 1 ? 'resource' : 'resources'} · {_formatSavedDate(snapshot.savedAt, 'Saved on this device')}
                             {snapshot.approximateBytes > 0 && (' · ' + _alloFormatWorkspaceBytes(snapshot.approximateBytes))}
                           </div>
                           <div className={'mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ' + (snapshot.assetPolicy === 'full' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>
@@ -807,7 +878,7 @@ function CanvasRecoveryDialogView(props) {
                           )}
                           <button type="button" onClick={() => exportCanvasRecoverySnapshot(snapshot)}
                             className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
-                            {canvasRecoveryVaultState.enabled ? 'Export readable copy' : 'Export'}
+                            {safeVaultState.enabled ? 'Export readable copy' : 'Export'}
                           </button>
                           {canvasRecoveryEraseId === snapshot.id ? (
                             <>
@@ -851,7 +922,7 @@ function CanvasRecoveryDialogView(props) {
                   )}
                   {isCanvas && (
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
-                    onClick={() => canvasRecoveryImportInputRef.current?.click()}
+                    onClick={() => canvasRecoveryImportInputRef?.current?.click()}
                     className={`min-h-11 flex-1 rounded-xl bg-indigo-50 px-4 py-3 text-center font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-60 ${_focusRing}`}>
                     Import project file
                   </button>

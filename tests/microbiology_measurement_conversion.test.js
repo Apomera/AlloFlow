@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const source = fs.readFileSync('stem_lab/stem_tool_microbiology.js', 'utf8');
 const start = source.indexOf('  var MicroMeasurements =');
-const end = source.indexOf('  window.__MicrobiologyCore =', start);
+// The core now publishes itself through the guarded `_mbWin` alias (if (_mbWin) { ... }), not `window.` directly.
+const end = source.indexOf('  if (_mbWin) {', start);
 if (start < 0 || end < start) throw new Error('Microscope measurement core boundaries were not found');
 const measurements = new Function(source.slice(start, end) + '\nreturn MicroMeasurements;')();
 

@@ -11,6 +11,7 @@ const traverse = traverseModule.default || traverseModule;
 const React = require(resolve('desktop/web-app/node_modules/react'));
 const { createRoot } = require(resolve('desktop/web-app/node_modules/react-dom/client'));
 const { act } = require(resolve('desktop/web-app/node_modules/react-dom/test-utils'));
+const { renderToStaticMarkup } = require(resolve('desktop/web-app/node_modules/react-dom/server'));
 const source = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
 const moduleText = readFileSync(process.env.ALLO_SIDEBAR_CANDIDATE || 'view_sidebar_panels_module.js', 'utf8');
 const shell = readFileSync('AlloFlowANTI.txt', 'utf8');
@@ -43,7 +44,8 @@ afterEach(() => {
 function fixture(name, overrides = {}) {
   const node = functions.find(n => n.id.name === name);
   const props = {};
-  for (const prop of node.body.body[0].declarations[0].id.properties) {
+  const decl = node.body.body.find(st => st.type === 'VariableDeclaration' && st.declarations[0].id.type === 'ObjectPattern' && st.declarations[0].init && st.declarations[0].init.name === 'props');
+  for (const prop of decl.declarations[0].id.properties) {
     const key = prop.key.name;
     props[key] = /^[A-Z]/.test(key) ? () => null : /^(set|handle|open|toggle|capture|start|isGuided|isTool)/.test(key) ? vi.fn() : undefined;
   }
@@ -59,11 +61,18 @@ function fixture(name, overrides = {}) {
     isLiveVerificationHtmlBound: () => false, attachVerificationHtmlProof: vi.fn(),
     ...overrides };
 }
+// The host renders these views as components (React.createElement(View, props)) and they may call hooks
+// (useAiTextAvailable), so read the returned tree from inside a render instead of a bare function call.
+function view(name, p) {
+  let out;
+  renderToStaticMarkup(React.createElement(function ViewProbe() { out = api[name](p); return null; }));
+  return out;
+}
 function all(node) {
   if (!React.isValidElement(node)) return [];
   return [node, ...React.Children.toArray(node.props.children).flatMap(all)];
 }
-function sourceUpload(p) { return all(api.SourceInputShellView(p)).find(n => n.type === 'input' && n.props.accept === '.json'); }
+function sourceUpload(p) { return all(view('SourceInputShellView', p)).find(n => n.type === 'input' && n.props.accept === '.json'); }
 function readers() {
   const created = [];
   vi.stubGlobal('FileReader', class { constructor() { created.push(this); } readAsText = vi.fn(); });
@@ -79,14 +88,20 @@ describe('sidebar shell CDN boundaries', () => {
       const text = source.slice(node.start, node.end);
       const mini = parse(text, { sourceType: 'script', plugins: ['jsx'] });
       const free = new Set(); traverse(mini, { ReferencedIdentifier(p) { if (!p.scope.getBinding(p.node.name)) free.add(p.node.name); } });
-      expect([...free].filter(n => !moduleHelpers.has(n) && !['React', 'window', 'document', 'String', 'Array', 'Number', 'JSON', 'Error', 'FileReader', 'undefined'].includes(n))).toEqual([]);
-      expect(text.includes('useState(')).toBe(false); expect(text.includes('useEffect(')).toBe(false);
+      expect([...free].filter(n => !moduleHelpers.has(n) && !['React', 'window', 'document', 'String', 'Array', 'Number', 'Boolean', 'Math', 'JSON', 'Error', 'FileReader', 'CustomEvent', 'undefined'].includes(n))).toEqual([]);
+      // Host state stays in the host. The host renders these views as components (checked below), so a view may
+      // keep only its own small UI state; pin exactly which, so new state is a deliberate change.
+      const ownState = [...text.matchAll(/const \[(\w+), set\w+\] = React\.useState\(/g)].map(m => m[1]);
+      expect(ownState).toEqual({ GeneratorActionsView: [], SourceInputShellView: ['dismissedTranscriptKey', 'otherWaysOpen'] }[node.id.name]);
+      expect((text.match(/useState\(/g) || []).length).toBe(ownState.length);
+      expect((text.match(/useEffect\(/g) || []).length).toBe({ GeneratorActionsView: 0, SourceInputShellView: 1 }[node.id.name]);
     }
     for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const s = readFileSync(file, 'utf8');
       expect(s.includes('id="tour-generator-actions"')).toBe(false);
       expect(s.includes('id="tour-input-panel"')).toBe(false);
       for (const name of names) expect(s.includes('moduleKey="SidebarPanels.' + name + '"')).toBe(true);
+      for (const name of names) expect(s.slice(s.indexOf('moduleKey="SidebarPanels.' + name + '"')).split('\n')[1].trim().startsWith('{(View) => React.createElement(View, {')).toBe(true);
       expect(s.includes('const pdfProjectLoadEpochRef =')).toBe(true);
       expect(s.includes('window.__alloEnsureSidebarPanels = () =>')).toBe(true);
     }
@@ -100,19 +115,19 @@ describe('sidebar shell CDN boundaries', () => {
     expect(readFileSync('build.js', 'utf8').includes("buildSidebarPanelsModule(src)")).toBe(true);
   });
   it('keeps direct-child tool IDs and host toggle actions', () => {
-    const p = fixture('GeneratorActionsView'); const tree = api.GeneratorActionsView(p);
+    const p = fixture('GeneratorActionsView'); const tree = view('GeneratorActionsView', p);
     expect(tree.props.id).toBe('tour-generator-actions');
     const math = all(tree).find(n => n.props.id === 'tour-tool-math');
     expect(React.Children.toArray(tree.props.children).some(n => n.props?.id === 'tour-tool-math')).toBe(true);
     all(math).find(n => n.type === 'button').props.onClick();
     expect(p.toggleTool).toHaveBeenCalledWith('math');
-    const hidden = api.GeneratorActionsView({ ...p, isGuidedToolVisible: () => false });
+    const hidden = view('GeneratorActionsView', { ...p, isGuidedToolVisible: () => false });
     expect(all(hidden).find(n => n.props.id === 'tour-tool-math').props.style.display).toBe('none');
   });
   it('keeps the source check out of the tool list: it lives in the Source view', () => {
     const inputText = 'Current pasted passage\nwith exact punctuation.';
     const p = fixture('GeneratorActionsView', { expandedTools: ['analysis'], inputText, hasSourceOrAnalysis: true, isProcessing: false });
-    const nodes = all(api.GeneratorActionsView(p));
+    const nodes = all(view('GeneratorActionsView', p));
     expect(nodes.some(node => node.props.id === 'tour-tool-analysis')).toBe(false);
     expect(nodes.some(node => node.type === window.AlloModules.AnalysisPanel)).toBe(false);
     expect(typeof api.SourceView).toBe('function');
@@ -121,7 +136,7 @@ describe('sidebar shell CDN boundaries', () => {
   // effectiveReadingSourceId), and the box names that source (2026-10-30).
   it('names the source the tools will use in Based on, and opens it', () => {
     window.AlloModules.InstructionalContext || new Function('window', readFileSync('instructional_context_module.js', 'utf8'))(window);
-    const choice = p => all(api.GeneratorActionsView(p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
+    const choice = p => all(view('GeneratorActionsView', p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
     const inputText = 'Our town garden opened this spring.';
     const older = { id: 'a1', type: 'analysis', title: 'Older check', data: { originalText: 'An older version of the garden text.' } };
     const base = { inputText, selectedReadingSourceId: '', effectiveReadingSourceId: '__input__', activeUnitId: 'all', history: [older] };
@@ -152,7 +167,7 @@ describe('sidebar shell CDN boundaries', () => {
   // dropdown at the top of the sidebar. It appears once there is a real choice.
   it('shows the reading choice only when there is a choice to make', () => {
     window.AlloModules.InstructionalContext || new Function('window', readFileSync('instructional_context_module.js', 'utf8'))(window);
-    const choice = p => all(api.GeneratorActionsView(p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
+    const choice = p => all(view('GeneratorActionsView', p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
     const inputText = 'Our town garden opened this spring.';
     const base = { inputText, selectedReadingSourceId: '', effectiveReadingSourceId: '__input__', activeUnitId: 'all', sourceRecord: null };
     host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
@@ -181,7 +196,7 @@ describe('sidebar shell CDN boundaries', () => {
     };
     groups.all = [...groups.access, ...groups.engage, ...groups.assess];
     const labels = { 'sidebar.tool_finder_group_access': 'Make accessible', 'sidebar.tool_finder_group_engage': 'Engage', 'sidebar.tool_finder_group_assess': 'Assess & deliver' };
-    const tree = overrides => api.GeneratorActionsView(fixture('GeneratorActionsView', { TOOL_CATALOG_GROUPS: groups, t: k => labels[k] || k, ...overrides }));
+    const tree = overrides => view('GeneratorActionsView', fixture('GeneratorActionsView', { TOOL_CATALOG_GROUPS: groups, t: k => labels[k] || k, ...overrides }));
     const headings = t => all(t).filter(n => n.type === 'h3' && n.props['data-tool-group']);
     expect(headings(tree()).map(n => [n.props['data-tool-group'], n.props.children])).toEqual([['access', 'Make accessible'], ['engage', 'Engage'], ['assess', 'Assess & deliver']]);
     // A filtered or searched list is already one group; Guided Mode shows one step.
@@ -202,17 +217,17 @@ describe('sidebar shell CDN boundaries', () => {
     for (const id of ['tour-tool-dbq', 'ui-tool-quiz', 'tour-tool-lesson-plan']) expect(at(id), id).toBeGreaterThan(at('#assess'));
   });
   it('preserves catalog callbacks and suppresses discovery in Guided Mode', () => {
-    const p = fixture('GeneratorActionsView'); const tree = api.GeneratorActionsView(p);
+    const p = fixture('GeneratorActionsView'); const tree = view('GeneratorActionsView', p);
     const controls = all(tree).find(n => n.type === window.AlloModules.ToolCatalogControls);
     controls.props.onGroupChange('essentials'); expect(p.setToolCatalogQuery).toHaveBeenCalledWith(''); expect(p.setToolCatalogGroup).toHaveBeenCalledWith('essentials');
     controls.props.onCollapse(); expect(p.setIsToolCatalogExpanded).toHaveBeenCalledWith(false);
-    expect(all(api.GeneratorActionsView({ ...p, guidedMode: true })).some(n => n.type === window.AlloModules.ToolCatalogControls)).toBe(false);
+    expect(all(view('GeneratorActionsView', { ...p, guidedMode: true })).some(n => n.type === window.AlloModules.ToolCatalogControls)).toBe(false);
   });
   it('preserves source upload guards, file ref and transcript actions', () => {
     const p = fixture('SourceInputShellView', { expandedTools: ['source-input'], videoTranscriptSourceContext: { title: 'Lesson', wordCount: 20, cueCount: 2, chapterCount: 0 } });
-    const tree = api.SourceInputShellView(p); expect(tree.props.id).toBe('tour-input-panel');
+    const tree = view('SourceInputShellView', p); expect(tree.props.id).toBe('tour-input-panel');
     all(tree).find(n => n.props.id === 'tour-upload-source').props.onClick(); expect(p.fileInputRef.current.click).toHaveBeenCalledOnce();
-    const busy = api.SourceInputShellView({ ...p, isExtracting: true });
+    const busy = view('SourceInputShellView', { ...p, isExtracting: true });
     expect(all(busy).find(n => n.props.id === 'tour-upload-source').props.disabled).toBe(true);
     all(tree).find(n => n.props['aria-label'] === 'a11y.hide_transcript_shortcuts').props.onClick(); expect(p.handleTranscriptSourceAction).toHaveBeenCalledWith('dismiss');
   });

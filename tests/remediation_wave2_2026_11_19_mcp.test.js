@@ -74,8 +74,9 @@ describe('W2-M1: zip_writer Uint8Array/ArrayBuffer binary support & ZIP32 guards
   it('rejects plain objects and enforces ZIP32 name/entry bounds', () => {
     expect(() => makeZip([{ name: 'bad.bin', data: { 0: 137, 1: 80 } }])).toThrow(/Buffer, Uint8Array, or ArrayBuffer/);
     expect(() => makeZip([{ name: 'a'.repeat(65536), data: 'x' }])).toThrow(/65535/);
-    const tooMany = Array.from({ length: 65536 }, (_, i) => ({ name: 'f' + i, data: '' }));
-    expect(() => makeZip(tooMany)).toThrow(/65535/);
+    // 2026-11-21: the entry cap is 0xFFFE, because 0xFFFF in the ZIP32 count field means "see ZIP64".
+    const tooMany = Array.from({ length: 65535 }, (_, i) => ({ name: 'f' + i, data: '' }));
+    expect(() => makeZip(tooMany)).toThrow(/max 65534/);
   });
 
   it('bridges EPUB3 externalized binary images losslessly through exportAltFormat IPC + zip_writer + archive preflight', async () => {
@@ -147,7 +148,9 @@ describe('W2-M2: remediation_narration & narration_plan hardening', () => {
 
   it('keeps raw-byte source hashing, WAV temp cleanup, and read-along EPUB hardening in remediation_narration.cjs', () => {
     const src = readFileSync(resolve(ROOT, 'desktop/mcp/remediation_narration.cjs'), 'utf8');
-    expect(src).toContain('const sourceBytes=fs.readFileSync(o.filePath),sourceHash=hash(sourceBytes);');
+    // Still hashes the raw bytes; the read is now size-bounded and refuses symlinks (readRegularBounded).
+    expect(src).toContain("const sourceBytes=typeof o.readSource==='function'?o.readSource(o.filePath):readRegularBounded(o.filePath,MAX_SOURCE_HTML_BYTES),sourceHash=hash(sourceBytes);");
+    expect(src).toContain("if (ls.isSymbolicLink() || !ls.isFile()) throw Error('Refusing non-regular or symlinked narration file');");
     expect(src).toContain('externalizeImages:false');
     expect(src).toContain('remote-resources');
     expect(src).toContain('await context.close().catch(()=>{})');

@@ -61,7 +61,9 @@ describe('robustness', () => {
   it('uses the CDN-module AI fallback so no host prop change is needed', () => {
     // null from the host means "student AI hidden" and must NOT fall through to the
     // window global (2026-09-14); only an absent prop does, and never to a blocked one.
-    expect(source).toContain("const surpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);");
+    // Same fallback, now named _rawSurpriseAi and then passed through the panel's AI gate.
+    expect(source).toContain("const _rawSurpriseAi = props.callGemini !== undefined ? props.callGemini : (typeof window !== 'undefined' && typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked ? window.callGemini : null);");
+    expect(source).toContain("const surpriseAi = aiTextAvailable && _spAiKindUsable('text', _rawSurpriseAi) ? _rawSurpriseAi : null;");
   });
 
   it('renders nothing when no AI backend is reachable', () => {

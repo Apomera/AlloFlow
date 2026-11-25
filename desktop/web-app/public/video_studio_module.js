@@ -30,14 +30,15 @@
       vsLive.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
       document.body.appendChild(vsLive);
     }
-    // WCAG 2.1 AA: reduced motion + visible focus
-    if (document.head && !document.getElementById('vs-a11y-css')) {
+    // WCAG 2.1 AA: reduced motion + visible focus + touch-action
+    if (document.head && typeof document.getElementById === 'function' && !document.getElementById('vs-a11y-css')) {
       var vsA11y = document.createElement('style');
       vsA11y.id = 'vs-a11y-css';
       vsA11y.textContent = [
         '@media (prefers-reduced-motion: reduce) { .vs-root, .vs-root *, .vs-root *::before, .vs-root *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; } }',
         '.vs-root :where(button,input,select,textarea,a,[tabindex]):focus-visible { outline: 3px solid #0f172a !important; outline-offset: 3px !important; box-shadow: 0 0 0 2px #fff !important; border-radius: 6px; }',
         '@media (forced-colors: active) { .vs-root :where(button,input,select,textarea,a,[tabindex]):focus-visible { outline-color: Highlight !important; box-shadow: none !important; } }',
+        '.vs-root :where(button,input,select,textarea,a,[role="button"]) { touch-action: manipulation; }',
         '.vs-root button { min-width: 24px; min-height: 24px; }'
       ].join('\n');
       document.head.appendChild(vsA11y);
@@ -4771,14 +4772,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var initial = initialFocusRef.current || focusable()[0] || dialog;
       if (initial && typeof initial.focus === 'function') initial.focus();
       function onKeyDown(event) {
-        if (!event || event.isComposing || event.keyCode === 229) return;
+        if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (stack[stack.length - 1] !== trap) return;
         if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.preventDefault();
           if (onEscapeRef.current) onEscapeRef.current();
           return;
         }
-        if (event.key !== 'Tab') return;
+        if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
         var items = focusable();
         if (!items.length) {
           event.preventDefault();
@@ -5352,7 +5353,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4' },
             h('p', { className: 'text-sm text-slate-700 mb-3' }, statusLine),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: openStudio,
                 className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 text-sm',
                 'data-help-key': 'video_studio_open_button'
@@ -5367,7 +5368,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           propsRef.current.onOpenCinematicStudio && h('div', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-3 mb-4 flex items-center justify-between gap-3 flex-wrap' },
             h('p', { className: 'text-xs text-slate-600 flex-1', style: { minWidth: '200px' } },
               T('video_studio.cinematic_hint', 'Generating a video with AI instead of recording one? Cinematic Studio helps you craft and debug prompts for NotebookLM Video Overviews and other AI video generators — and caption their output.')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function () { try { propsRef.current.onOpenCinematicStudio(); } catch (_) {} },
               className: 'px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 shrink-0',
               'data-help-key': 'video_studio_cinematic_entry'
@@ -5394,7 +5395,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                         placeholder: T('video_studio.hosted_link_ph', 'Optional hosted link — upload the downloaded file yourself (YouTube/Drive/LMS), then paste the https:// link'),
                         'aria-label': T('video_studio.hosted_link_label', 'Hosted video link (optional)'),
                         className: 'flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2 py-1.5 text-slate-700',
-                        onKeyDown: function (e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') setHostedUrl(v, e.target.value); },
+                        onKeyDown: function (e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') setHostedUrl(v, e.target.value); },
                         onBlur: function (e) { setHostedUrl(v, e.target.value); }
                       }),
                       v.hostedUrl && h('a', {
@@ -5403,45 +5404,45 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                       }, T('video_studio.hosted_link_test', 'Test link ↗'))
                     ),
                     h('div', { className: 'flex flex-wrap gap-2' },
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type)); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-semibold hover:bg-slate-700'
                       }, T('video_studio.download_video', '⬇ Video file')),
-                      v.vtt && h('button', {
+                      v.vtt && h('button', { type: 'button',
                         onClick: function () { downloadBlob(new Blob([v.vtt], { type: 'text/vtt' }), (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + '.vtt'); },
                         className: 'px-3 py-1.5 rounded-lg bg-slate-600 text-white text-xs font-semibold hover:bg-slate-500'
                       }, T('video_studio.download_vtt', '⬇ Captions (.vtt)')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { downloadAccessPacket(v); },
                         className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800',
                         title: T('video_studio.access_packet_title', 'Downloads transcript, captions when available, and metadata for accessibility review.')
                       }, T('video_studio.access_packet', 'Accessibility packet')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { downloadAccessPacket(v, { audience: 'student_family' }); },
                         className: 'px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-800',
                         title: T('video_studio.student_packet_title', 'Downloads a student/family-friendly packet with transcript, captions, chapters, and a plain sharing note.')
                       }, T('video_studio.student_packet', 'Student/family packet')),
-                      v.vtt && h('button', {
+                      v.vtt && h('button', { type: 'button',
                         onClick: function () { sendTranscriptResource(v); },
                         className: 'px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-700 text-xs font-semibold hover:bg-emerald-50',
                         title: T('video_studio.transcript_to_source_title', 'Loads the video transcript into AlloFlow Source so existing quiz and support tools can use it.')
                       }, T('video_studio.transcript_to_source', 'Send transcript to Source')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { downloadBundle(v); },
                         className: 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700',
                         title: T('video_studio.bundle_title', 'One shareable file (.allopack zip) holding the video, its captions, and the metadata reference. Drop it into the Studio to re-edit.')
                       }, T('video_studio.download_bundle', '📦 Bundle (.allopack)')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { sendRefToHistory(v); },
                         className: 'px-3 py-1.5 rounded-lg bg-violet-700 text-white text-xs font-semibold hover:bg-violet-600',
                         title: T('video_studio.ref_history_title', 'Saves a small video card (title, duration, thumbnail, checksum, hosted link if set — never the video bytes) into Resource History so it travels with packs.')
                       }, T('video_studio.ref_history', '🎞 Save to Resource History')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function () { copyPackRef(v); },
                         className: 'px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-xs font-semibold hover:bg-indigo-50',
                         title: T('video_studio.ref_title', 'Copies a small JSON reference (title, duration, checksum, thumbnail) — never the video bytes — for embedding in a resource pack.')
                       }, T('video_studio.copy_ref', '📎 Copy pack reference')),
-                      h('button', {
+                      h('button', { type: 'button',
                         onClick: function (event) { requestRemoveTake(v, event.currentTarget); },
                         className: 'px-3 py-1.5 rounded-lg border border-rose-300 text-rose-700 text-xs font-semibold hover:bg-rose-50',
                         title: T('video_studio.remove_title', 'Removes this video from the gallery and this device. Files you already downloaded or bundled are not affected.')

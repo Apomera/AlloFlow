@@ -4,10 +4,13 @@
  * artifacts from companion tools into the Research Hub.
  */
 (function (root, factory) {
-  var api = factory(root);
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root) root.AlloFlowToolIntegration = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
+  var safeRoot = (root && (typeof root === 'object' || typeof root === 'function')) ? root : null;
+  var api = factory(safeRoot);
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (safeRoot) safeRoot.AlloFlowToolIntegration = api;
+})((typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window
+  : ((typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis
+    : ((typeof self !== 'undefined' && self && (typeof self === 'object' || typeof self === 'function')) ? self : null)), function (root) {
   'use strict';
 
   var SDK_VERSION = '1.0.0';
@@ -16,8 +19,44 @@
   var METHOD_PACKS = Object.freeze(['scientific_investigation', 'engineering_design', 'humanistic_interpretation', 'community_qualitative', 'civic_policy', 'creative_cultural']);
   var RECEIPT_FIELDS = Object.freeze(['softwareVersion', 'sourceRecordId', 'parameters', 'randomSeed', 'limitations', 'datasetVersion', 'transformations']);
 
+  function isPlainRecord(value) {
+    return !!(value && typeof value === 'object' && !Array.isArray(value));
+  }
+
+  function safeStr(value) {
+    if (value == null || typeof value === 'symbol' || typeof value === 'function') return '';
+    try { return String(value); } catch (_) { return ''; }
+  }
+
   function stripCtl(value) {
-    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return safeStr(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/g, '');
+  }
+
+  function formatErr(error) {
+    var msg = (error && typeof error === 'object' && hasOwn.call(error, 'message') && typeof error.message === 'string') ? error.message : safeStr(error);
+    return stripCtl(msg).trim().slice(0, 300) || 'Unknown error';
+  }
+
+  function parseTimestamp(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+    if (value instanceof Date) {
+      var ms = value.getTime();
+      return Number.isFinite(ms) ? ms : NaN;
+    }
+    if (typeof value === 'string') {
+      var trimmed = value.trim();
+      if (!trimmed) return NaN;
+      var parsed = Date.parse(trimmed);
+      return Number.isFinite(parsed) ? parsed : NaN;
+    }
+    return NaN;
+  }
+
+  function deepFreeze(value) {
+    if (!value || (typeof value !== 'object' && typeof value !== 'function') || Object.isFrozen(value)) return value;
+    Object.freeze(value);
+    Object.keys(value).forEach(function (k) { deepFreeze(value[k]); });
+    return value;
   }
 
   function clone(value, maxChars) {
@@ -32,70 +71,99 @@
   }
 
   function safeFilename(raw, fallback) {
-    var cleaned = String(raw || '').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '').slice(0, 120);
+    var cleaned = (typeof raw === 'string' ? raw : '').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '').slice(0, 120);
     return cleaned || fallback;
   }
 
   function nonEmpty(value) {
+    if (value === undefined || value === null || typeof value === 'symbol' || typeof value === 'function') return false;
     if (Array.isArray(value)) return value.length > 0;
-    if (value && typeof value === 'object') return Object.keys(value).length > 0;
-    return value !== undefined && value !== null && String(value).trim() !== '';
+    if (typeof value === 'object') return Object.keys(value).length > 0;
+    return safeStr(value).trim() !== '';
   }
 
   function validateContract(contract, options) {
-    var c = (contract && typeof contract === 'object' && !Array.isArray(contract)) ? contract : {};
+    var c = isPlainRecord(contract) ? contract : {};
+    var opts = isPlainRecord(options) ? options : {};
     var errors = [];
     var warnings = [];
-    var now = options && options.now !== undefined ? new Date(options.now).getTime() : Date.now();
-    if (options && options.now !== undefined && !isFinite(now)) errors.push('review clock is invalid');
-    if (c.schemaVersion !== 1) errors.push('schemaVersion must be 1');
-    if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(String(c.id || ''))) errors.push('id must be a stable lowercase identifier');
+    var hasNow = hasOwn.call(opts, 'now') && opts.now !== undefined;
+    var now = hasNow ? parseTimestamp(opts.now) : Date.now();
+    if (hasNow && !isFinite(now)) errors.push('review clock is invalid');
+    if (!hasOwn.call(c, 'schemaVersion') || c.schemaVersion !== 1) errors.push('schemaVersion must be 1');
+    if (!hasOwn.call(c, 'id') || typeof c.id !== 'string' || !/^[a-z0-9][a-z0-9_-]{1,79}$/.test(c.id)) errors.push('id must be a stable lowercase identifier');
     ['name', 'version', 'reviewedAt', 'reviewAfter'].forEach(function (field) {
       if (!hasOwn.call(c, field) || !nonEmpty(c[field])) errors.push(field + ' is required');
     });
-    var reviewedAt = Date.parse(String(c.reviewedAt || ''));
-    var reviewAfter = Date.parse(String(c.reviewAfter || ''));
+    var reviewedAt = hasOwn.call(c, 'reviewedAt') ? parseTimestamp(c.reviewedAt) : NaN;
+    var reviewAfter = hasOwn.call(c, 'reviewAfter') ? parseTimestamp(c.reviewAfter) : NaN;
     if (!isFinite(reviewedAt) || !isFinite(reviewAfter) || reviewAfter <= reviewedAt) errors.push('review window is invalid');
     if (isFinite(reviewAfter) && isFinite(now) && reviewAfter < now) {
-      if (options && options.allowOverdue === true) warnings.push('integration review is overdue');
+      if (opts.allowOverdue === true) warnings.push('integration review is overdue');
       else errors.push('integration review is overdue');
     }
-    if (!c.license || !nonEmpty(c.license.spdx || c.license.name)) errors.push('license metadata is required');
-    if (!c.citation || !nonEmpty(c.citation.text)) errors.push('citation guidance is required');
-    if (!Array.isArray(c.supportedMethodPacks) || !c.supportedMethodPacks.length || c.supportedMethodPacks.length > 16 || c.supportedMethodPacks.some(function (pack) { return METHOD_PACKS.indexOf(pack) === -1; })) errors.push('supportedMethodPacks is invalid');
-    if (!c.capabilities || c.capabilities.captureArtifact !== true) errors.push('captureArtifact capability must be true');
-    if (!c.privacy || c.privacy.learnerApprovalRequired !== true) errors.push('learner approval must be required');
-    if (c.privacy && c.privacy.sanitizerRequired === true && !nonEmpty(c.privacy.sanitizerId)) errors.push('sanitizerId is required when sanitizerRequired is true');
-    var required = c.reproducibility && c.reproducibility.requiredFields;
-    if (!Array.isArray(required) || required.length > 16 || required.indexOf('softwareVersion') === -1 || required.indexOf('limitations') === -1 || required.some(function (field) { return RECEIPT_FIELDS.indexOf(field) === -1; })) errors.push('reproducibility.requiredFields is invalid');
+    var lic = hasOwn.call(c, 'license') && isPlainRecord(c.license) ? c.license : null;
+    var licVal = lic ? ((hasOwn.call(lic, 'spdx') && lic.spdx) || (hasOwn.call(lic, 'name') && lic.name)) : null;
+    if (!lic || !nonEmpty(licVal)) errors.push('license metadata is required');
+    var cit = hasOwn.call(c, 'citation') && isPlainRecord(c.citation) ? c.citation : null;
+    if (!cit || !hasOwn.call(cit, 'text') || !nonEmpty(cit.text)) errors.push('citation guidance is required');
+    var packs = hasOwn.call(c, 'supportedMethodPacks') ? c.supportedMethodPacks : null;
+    if (!Array.isArray(packs) || !packs.length || packs.length > 16 || packs.some(function (pack) { return typeof pack !== 'string' || METHOD_PACKS.indexOf(pack) === -1; })) errors.push('supportedMethodPacks is invalid');
+    var caps = hasOwn.call(c, 'capabilities') && isPlainRecord(c.capabilities) ? c.capabilities : null;
+    if (!caps || !hasOwn.call(caps, 'captureArtifact') || caps.captureArtifact !== true) errors.push('captureArtifact capability must be true');
+    var priv = hasOwn.call(c, 'privacy') && isPlainRecord(c.privacy) ? c.privacy : null;
+    if (!priv || !hasOwn.call(priv, 'learnerApprovalRequired') || priv.learnerApprovalRequired !== true) errors.push('learner approval must be required');
+    if (priv && hasOwn.call(priv, 'sanitizerRequired') && priv.sanitizerRequired === true && (!hasOwn.call(priv, 'sanitizerId') || !nonEmpty(priv.sanitizerId))) errors.push('sanitizerId is required when sanitizerRequired is true');
+    var repro = hasOwn.call(c, 'reproducibility') && isPlainRecord(c.reproducibility) ? c.reproducibility : null;
+    var required = repro && hasOwn.call(repro, 'requiredFields') ? repro.requiredFields : null;
+    if (!Array.isArray(required) || required.length > 16 || required.indexOf('softwareVersion') === -1 || required.indexOf('limitations') === -1 || required.some(function (field) { return typeof field !== 'string' || RECEIPT_FIELDS.indexOf(field) === -1; })) errors.push('reproducibility.requiredFields is invalid');
     return { ok: errors.length === 0, errors: errors, warnings: warnings };
   }
 
   function validateReceipt(receipt, contract) {
     var errors = [];
-    var required = contract && contract.reproducibility && Array.isArray(contract.reproducibility.requiredFields) ? contract.reproducibility.requiredFields : [];
-    if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) return { ok: false, errors: ['reproducibilityReceipt is required'] };
-    required.forEach(function (field) { if (!hasOwn.call(receipt, field) || !nonEmpty(receipt[field])) errors.push('reproducibilityReceipt.' + field + ' is required'); });
+    var required = contract && isPlainRecord(contract.reproducibility) && Array.isArray(contract.reproducibility.requiredFields) ? contract.reproducibility.requiredFields : [];
+    if (!isPlainRecord(receipt)) return { ok: false, errors: ['reproducibilityReceipt is required'] };
+    required.forEach(function (field) {
+      if (typeof field !== 'string') return;
+      if (!hasOwn.call(receipt, field) || !nonEmpty(receipt[field])) errors.push('reproducibilityReceipt.' + field + ' is required');
+    });
     return { ok: errors.length === 0, errors: errors };
   }
 
   function findResearchHub() {
-    var candidates = [root];
-    try { if (root && root.opener) candidates.push(root.opener); } catch (_) {}
-    try { if (root && root.parent && root.parent !== root) candidates.push(root.parent); } catch (_) {}
-    try { if (root && root.top && root.top !== root) candidates.push(root.top); } catch (_) {}
+    var candidates = [];
+    var pushUnique = function (cand) {
+      if (cand && candidates.indexOf(cand) === -1) candidates.push(cand);
+    };
+    pushUnique(root);
+    try { if (root && root.opener) pushUnique(root.opener); } catch (_) {}
+    try { if (root && root.parent && root.parent !== root) pushUnique(root.parent); } catch (_) {}
+    try { if (root && root.top && root.top !== root) pushUnique(root.top); } catch (_) {}
+    var rootOrigin = '';
+    try { rootOrigin = (root && root.location && typeof root.location.origin === 'string') ? root.location.origin : ''; } catch (_) {}
     for (var i = 0; i < candidates.length; i++) {
       try {
-        if (candidates[i] && candidates[i].ResearchHub && typeof candidates[i].ResearchHub.captureArtifact === 'function') return candidates[i].ResearchHub;
+        var cand = candidates[i];
+        if (cand !== root && rootOrigin && rootOrigin !== 'null') {
+          var candOrigin = (cand && cand.location && typeof cand.location.origin === 'string') ? cand.location.origin : '';
+          if (candOrigin && candOrigin !== rootOrigin) continue;
+        }
+        if (cand && cand.ResearchHub && typeof cand.ResearchHub.captureArtifact === 'function') return cand.ResearchHub;
       } catch (_) {}
     }
     return null;
   }
 
   function createAdapter(options) {
-    options = (options && typeof options === 'object') ? options : {};
+    options = isPlainRecord(options) ? options : {};
     var contract = clone(options.contract);
-    var vOpts = Object.assign({}, options.validationOptions || {});
+    var vOpts = {};
+    if (isPlainRecord(options.validationOptions)) {
+      Object.keys(options.validationOptions).forEach(function (k) {
+        if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') vOpts[k] = options.validationOptions[k];
+      });
+    }
     if (vOpts.strictReviewWindow !== true && vOpts.allowOverdue === undefined) vOpts.allowOverdue = true;
     var contractCheck = validateContract(contract, vOpts);
     if (!contractCheck.ok) throw new Error('Invalid integration contract: ' + contractCheck.errors.join('; '));
@@ -109,10 +177,10 @@
 
     function finalizeCapture(rawCapture) {
       var capture = clone(rawCapture, MAX_CAPTURE_CHARS);
-      if (!capture || typeof capture !== 'object' || Array.isArray(capture)) return { ok: false, reason: 'Capture builder must return a bounded JSON-serializable object.' };
+      if (!isPlainRecord(capture)) return { ok: false, reason: 'Capture builder must return a bounded JSON-serializable object.' };
       if (typeof options.sanitizeCapture === 'function') {
-        try { capture = clone(options.sanitizeCapture(capture), MAX_CAPTURE_CHARS); } catch (error) { return { ok: false, reason: 'Capture sanitizer failed: ' + String(error && error.message || error) }; }
-        if (!capture || typeof capture !== 'object' || Array.isArray(capture)) return { ok: false, reason: 'Capture sanitizer must return a bounded JSON-serializable object.' };
+        try { capture = clone(options.sanitizeCapture(capture), MAX_CAPTURE_CHARS); } catch (error) { return { ok: false, reason: 'Capture sanitizer failed: ' + formatErr(error) }; }
+        if (!isPlainRecord(capture)) return { ok: false, reason: 'Capture sanitizer must return a bounded JSON-serializable object.' };
       }
       capture.sourceToolId = contract.id;
       capture.sourceToolName = contract.name;
@@ -131,15 +199,20 @@
 
     function prepare(payload) {
       var built;
-      try { built = options.buildCapture(clone(payload)); } catch (error) { return { ok: false, reason: 'Capture builder failed: ' + String(error && error.message || error) }; }
+      try { built = options.buildCapture(clone(payload)); } catch (error) { return { ok: false, reason: 'Capture builder failed: ' + formatErr(error) }; }
       return finalizeCapture(built);
     }
 
     function capture(payload) {
       var prepared = prepare(payload);
       if (!prepared.ok) return prepared;
-      var hub = typeof options.resolveResearchHub === 'function' ? options.resolveResearchHub() : findResearchHub();
-      if (!hub) return { ok: false, unavailable: true, reason: 'Research Hub is unavailable in this window. Download the prepared artifact instead.', preparedCapture: prepared.capture };
+      var hub = null;
+      try {
+        hub = typeof options.resolveResearchHub === 'function' ? options.resolveResearchHub() : findResearchHub();
+      } catch (error) {
+        return { ok: false, reason: 'Research Hub lookup failed: ' + formatErr(error), preparedCapture: prepared.capture };
+      }
+      if (!hub || typeof hub.captureArtifact !== 'function') return { ok: false, unavailable: true, reason: 'Research Hub is unavailable in this window. Download the prepared artifact instead.', preparedCapture: prepared.capture };
       try {
         if (contract.privacy && contract.privacy.sanitizerRequired === true && typeof hub.registerCaptureSanitizer === 'function') {
           hub.registerCaptureSanitizer(contract.id, contract.privacy.sanitizerId, options.sanitizeCapture);
@@ -147,20 +220,20 @@
         var result = hub.captureArtifact(prepared.capture);
         return result && typeof result === 'object' ? result : { ok: !!result };
       } catch (error) {
-        return { ok: false, reason: 'Research Hub capture failed: ' + String(error && error.message || error), preparedCapture: prepared.capture };
+        return { ok: false, reason: 'Research Hub capture failed: ' + formatErr(error), preparedCapture: prepared.capture };
       }
     }
 
     function download(payload, filename) {
       var prepared;
       var unchangedPrepared = false;
-      if (payload && typeof payload === 'object' && !Array.isArray(payload) && preparedCaptures && preparedCaptures.has(payload)) {
+      if (isPlainRecord(payload) && preparedCaptures && preparedCaptures.has(payload)) {
         try { unchangedPrepared = JSON.stringify(payload) === preparedCaptures.get(payload); } catch (_) { unchangedPrepared = false; }
       }
       if (unchangedPrepared) {
         prepared = { ok: true, capture: clone(payload, MAX_CAPTURE_CHARS) };
         if (!prepared.capture) return { ok: false, reason: 'Prepared artifact could not be serialized.' };
-      } else if (payload && typeof payload === 'object' && !Array.isArray(payload) && payload.sourceToolId === contract.id) {
+      } else if (isPlainRecord(payload) && payload.sourceToolId === contract.id) {
         prepared = finalizeCapture(payload);
       } else {
         prepared = prepare(payload);
@@ -168,26 +241,33 @@
       if (!prepared.ok) return prepared;
       if (!root || !root.document || !root.document.body || typeof root.Blob !== 'function' || !root.URL || typeof root.URL.createObjectURL !== 'function') return { ok: false, reason: 'Download is unavailable in this environment.', preparedCapture: prepared.capture };
       var blob = new root.Blob([JSON.stringify(prepared.capture, null, 2)], { type: 'application/json' });
-      var url = root.URL.createObjectURL(blob);
-      var anchor = root.document.createElement('a');
+      var url = null;
+      var anchor = null;
       try {
+        url = root.URL.createObjectURL(blob);
+        anchor = root.document.createElement('a');
         anchor.href = url;
         anchor.download = safeFilename(filename, contract.id + '-artifact.json');
         anchor.style.display = 'none';
         root.document.body.appendChild(anchor);
         anchor.click();
       } finally {
-        if (anchor.parentNode) anchor.remove();
-        if (typeof root.setTimeout === 'function') {
-          root.setTimeout(function () { try { root.URL.revokeObjectURL(url); } catch (_) {} }, 1000);
-        } else {
-          try { root.URL.revokeObjectURL(url); } catch (_) {}
+        if (anchor && anchor.parentNode) {
+          if (typeof anchor.remove === 'function') anchor.remove();
+          else anchor.parentNode.removeChild(anchor);
+        }
+        if (url) {
+          if (typeof root.setTimeout === 'function') {
+            root.setTimeout(function () { try { root.URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          } else {
+            try { root.URL.revokeObjectURL(url); } catch (_) {}
+          }
         }
       }
       return { ok: true, capture: prepared.capture };
     }
 
-    return Object.freeze({ contract: clone(contract), prepare: prepare, capture: capture, download: download });
+    return Object.freeze({ contract: deepFreeze(clone(contract)), prepare: prepare, capture: capture, download: download });
   }
 
   return Object.freeze({

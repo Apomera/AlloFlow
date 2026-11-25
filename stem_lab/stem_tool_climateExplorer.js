@@ -119,60 +119,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
   // Time scale: 2025-2065 in 5-year increments (8 turns).
   // ═══════════════════════════════════════════════════════
 
+  // Source audit 2026-11-23 (part 2). Facts below were checked; numbers with no
+  // source found were removed. Grid: Maine Dept of Energy Resources, 2024 gas
+  // ~44% of in-state generation (maine.gov/energy/about/energy-profile). Laws:
+  // 2019 (80% renewable by 2030), LD 1868 signed 20 Jun 2025 (100% clean by
+  // 2040). BOEM Gulf of Maine wind energy area 2024. Transport 49% of fossil CO2
+  // (Maine DEP 10th GHG report, 2021 data). US transport split: EPA Fast Facts.
+  // Federal EV credits ended 30 Sep 2025 (irs.gov/clean-vehicle-tax-credits).
+  // Oil heat ~50-56% of homes, highest in US (EIA state profile; Governor,
+  // Sep 2025). Heat pumps: 100,000 passed in 2023, new goal 175,000 more by
+  // 2027 (Governor's Office, Jul 2023). Forest 89% of land (USDA FS); forest
+  // sink ~14.8 MMT CO2e/yr 2017-2021 (UMaine CRSF). Gulf of Maine 97% (GMRI
+  // 2022 update). Jan 2024 storms + $21.2M waterfront grants (Governor, Jul
+  // 2024). Justice40 ended Jan 2025 (GAO-25-107516). Sipayik plan 2024 (Inside
+  // Climate News, Aug 2025). Wabanaki energy workforce (Tribal Business News).
   var POLICY_SECTORS = [
     {
       id: 'energyGrid', name: 'Energy Grid', icon: '⚡', color: '#fbbf24',
       role: 'Generation mix + storage',
-      desc: 'Maine\'s electricity supply. Currently about 30% hydro, 20% wind, 6% solar, the rest natural gas + biomass + imported nuclear. Renewable share has to rise sharply for transportation and building electrification to be worth doing.',
+      desc: 'Maine\'s electricity supply. In 2024 natural gas made about 44% of the electricity generated in Maine; hydropower, wind, wood and solar made most of the rest (Maine Department of Energy Resources). The cleaner the grid, the more electric cars and heat pumps cut emissions.',
       defaultState: { decarb: 35, resilience: 50, support: 55 }, targets: { decarb: 85, resilience: 70, support: 70 },
       deepDive: {
-        knowledge: 'Maine\'s electricity grid sits inside ISO-New England, the regional grid operator. Generation mix matters because every other sector that electrifies (transport, buildings, industry) inherits the grid\'s carbon intensity. A heat pump on a coal grid emits more carbon than a natural-gas furnace; on a clean grid it is roughly 4x cleaner than a furnace. Storage at grid scale is the single missing piece for high renewable penetration.',
-        casework: 'Maine\'s 2019 climate law set 80% renewable electricity by 2030 and 100% by 2050. The state has fought over the New England Clean Energy Connect transmission line (HQ hydropower import) since 2019. Offshore wind in the Gulf of Maine is in early planning; the federal Bureau of Ocean Energy Management identified lease areas in 2024. Wabanaki nations have led objections to several inland transmission lines through their territories.',
-        modernContext: 'The biggest near-term levers are utility-scale solar (Maine has been adding ~200 MW/year), distributed solar (now over 800 MW), grid-scale battery storage (early), and energy efficiency (cheapest carbon abatement). Long-term, offshore wind is potentially transformative. Transmission siting is the chronic bottleneck.'
+        knowledge: 'Maine\'s electricity grid sits inside ISO-New England, the regional grid operator. Generation mix matters because every other sector that electrifies (transport, buildings, industry) inherits the grid\'s carbon intensity. The cleaner the grid, the bigger the cut from each heat pump and electric car. Grid-scale storage is one of the main missing pieces for a grid with a lot of solar and wind.',
+        casework: 'Maine\'s 2019 climate law set 80% renewable electricity by 2030. A 2025 law (LD 1868) set a requirement of 100% clean electricity by 2040. The state has argued over the New England Clean Energy Connect transmission line, which brings hydropower from Quebec, since 2019. Offshore wind in the Gulf of Maine is in early planning; in 2024 the federal Bureau of Ocean Energy Management named a wind energy area there.',
+        modernContext: 'Near-term levers include utility-scale solar, rooftop and community solar, grid-scale battery storage (still early), and energy efficiency. Long-term, offshore wind could be transformative. Finding places to build new transmission lines is a long-running bottleneck.'
       }
     },
     {
       id: 'transportation', name: 'Transportation', icon: '🚊', color: '#0ea5e9',
       role: 'EV + transit + walkability',
-      desc: 'Maine\'s largest direct emissions source (about 50% of state CO₂ output). Long rural commutes, limited transit, near-zero passenger rail. EV adoption is climbing but still under 5% of registrations. The bigger lever may be reducing vehicle-miles-traveled through housing density and remote work.',
+      desc: 'Maine\'s largest emissions source: about half of the state\'s CO₂ from burning fossil fuels (Maine DEP, 2021 data). Long rural commutes, limited transit, little passenger rail. Another lever is driving fewer miles, through closer-together housing and remote work.',
       defaultState: { decarb: 25, resilience: 45, support: 50 }, targets: { decarb: 70, resilience: 60, support: 65 },
       deepDive: {
-        knowledge: 'Transportation emissions break down roughly: 60% light-duty vehicles, 20% medium/heavy trucks, 10% aviation, 10% other. Maine\'s rural geography makes per-capita VMT (vehicle-miles traveled) higher than the national average. EVs cut tailpipe emissions to zero and reduce lifecycle emissions about 50% on Maine\'s current grid (more as the grid cleans). Transit and walkability cut emissions PER TRIP and reduce total VMT.',
-        casework: 'Massachusetts and California EV rebate programs moved registrations from below 1% to above 10% in under a decade. Maine\'s Efficiency Maine EV rebate program offers $500-$7,500 depending on income; uptake has been steady. Portland has been adding bus rapid transit and protected bike lanes; smaller cities lag. Federal IRA tax credits (up to $7,500 new, $4,000 used EV) plus state rebates can stack.',
-        modernContext: 'Rural EV adoption faces a charging-anxiety problem more than an economic one. Federal funding for highway-corridor fast charging (NEVI program) is now in deployment phase. Heavy-duty truck electrification is slower; hydrogen is being explored. School bus electrification is well-funded under the EPA Clean School Bus Program.'
+        knowledge: 'Across the US, transportation emissions break down roughly: about 57% cars and light trucks, 23% medium and heavy trucks, 9% aircraft, and the rest rail, ships, pipelines and other (EPA, 2022 data). EVs have no tailpipe emissions, and their lifetime emissions fall as the grid gets cleaner. Transit and walkability cut emissions PER TRIP and reduce total vehicle-miles traveled (VMT).',
+        casework: 'Efficiency Maine has offered rebates on electric vehicles. Federal EV tax credits (up to $7,500 for a new EV and $4,000 for a used one) ended for vehicles bought after September 30, 2025 (IRS), so state programs now matter more.',
+        modernContext: 'Rural drivers need chargers along highways and in small towns. Heavy-duty truck electrification is slower; hydrogen is being explored. Some school districts have used the federal EPA Clean School Bus Program to buy electric buses.'
       }
     },
     {
       id: 'buildings', name: 'Buildings', icon: '🏠', color: '#ec4899',
       role: 'Heat pumps + retrofits + codes',
-      desc: 'Buildings account for about 30% of Maine emissions (heating dominant; Maine has the highest oil-heat share in the US). Heat pumps work in Maine winter and have been the state\'s defining decarbonization win. Retrofits of older housing stock are the hard, expensive work.',
+      desc: 'Heating is the big building emission source: Maine has the largest share of homes heated by oil in the US (EIA). Heat pumps work in Maine winters and have been the state\'s defining decarbonization win. Retrofits of older housing are the hard, expensive work.',
       defaultState: { decarb: 40, resilience: 55, support: 65 }, targets: { decarb: 75, resilience: 70, support: 75 },
       deepDive: {
-        knowledge: 'Maine has 60-70% of homes heated by oil, the highest share in the country. Cold-climate heat pumps now work efficiently to -15°F, which covers most Maine winters. A heat pump delivers about 3 units of heat per unit of electricity (a furnace delivers about 0.85 of fossil-fuel energy). Even on a partially-fossil grid, heat pumps cut heating emissions about 50%. Building envelope upgrades (insulation, air sealing) are usually a bigger lifetime saving than the heat-pump unit itself.',
-        casework: 'Maine met its goal of 100,000 heat pumps installed in 2023, two years ahead of schedule. The state has set a new target of 275,000 by 2027. Efficiency Maine rebates ($1,200-$3,200 depending on income) plus federal tax credits make installation accessible. The state codes for new residential construction were updated in 2022 to require heat-pump-ready electrical service.',
-        modernContext: 'The big remaining problem is older housing stock with poor envelopes; heat pumps work but bills rise without insulation. The Maine Affordable Housing Coalition has connected energy upgrades to housing affordability work. Wabanaki Public Health and Wellness has run weatherization programs for tribal housing units. Commercial buildings lag residential.'
+        knowledge: 'About half of Maine homes heat mainly with fuel oil, the highest share in the country (EIA; Maine Governor\'s Office: 50% in 2024). Cold-climate heat pumps keep working in very cold weather. A heat pump delivers about 3 units of heat per unit of electricity (US Department of Energy); a furnace gives back less heat than the fuel energy it burns. Insulation and air sealing cut how much heat a home needs in the first place.',
+        casework: 'Maine passed its goal of 100,000 new heat pumps in 2023, two years ahead of schedule, and set a new goal of 175,000 more by 2027, for 275,000 in all (Governor\'s Office, 2023). Efficiency Maine rebates help families pay for them.',
+        modernContext: 'The big remaining problem is older housing with leaky walls and roofs; heat pumps work, but bills can rise without insulation. Wabanaki tribes are training their own members as energy auditors and heat-pump technicians (Tribal Business News). Renters are harder to reach, because the owner decides on upgrades.'
       }
     },
     {
       id: 'workingLands', name: 'Working Lands', icon: '🌲', color: '#16a34a',
       role: 'Forests + ag soils + blue carbon',
-      desc: 'Maine is 89% forested, the most forested state by percentage. Working forests sequester roughly 6 million tons CO₂ annually. Agricultural soils, salt marshes, and seagrass beds are smaller but additive carbon sinks. This is one of Maine\'s climate advantages most states lack.',
+      desc: 'Maine is about 89% forested by land area, the most forested state by percentage (USDA Forest Service). Its forests take in about 15 million metric tons of CO₂e a year (University of Maine, 2017-2021). Farm soils, salt marshes, and seagrass beds are smaller but added carbon sinks. This is one of Maine\'s climate advantages most states lack.',
       defaultState: { decarb: 60, resilience: 65, support: 70 }, targets: { decarb: 80, resilience: 80, support: 80 },
       deepDive: {
         knowledge: 'A managed working forest stores carbon in standing trees, soil, and the long-lived wood products that come out of it. Carbon flux depends on harvest intensity, regeneration speed, and the fate of harvested wood (long-lived structural lumber retains carbon for decades; pulp/paper releases it in years). Salt marshes and eelgrass sequester carbon faster per acre than tropical forests; Maine has substantial coastline acreage in both. Agricultural soils gain carbon under cover-cropping, perennials, and reduced tillage.',
-        casework: 'The Maine Climate Action Plan (2020, updated 2024) targets a doubling of working-forest carbon storage by 2050 and 25% increase in coastal blue-carbon habitat. The Wabanaki Cultural Heritage Forest project has worked toward land-back as climate policy. The Northern Forest Center supports community-scale forest stewardship.',
-        modernContext: 'The dominant tension is between protected forest (high carbon, lower jobs) and working forest (slightly lower carbon, supports rural economy). Most Maine climate planners argue for high-quality working-forest management over either pure preservation or industrial-scale clearcutting. Salt marsh restoration has lagged but recent federal funding accelerated several projects.'
+        casework: 'Maine\'s climate action plan, Maine Won\'t Wait (2020, updated 2024), includes strategies for forests, farms and natural carbon storage. The Northern Forest Center supports community-scale forest stewardship.',
+        modernContext: 'A common tension is between forest set aside for protection and working forest that supports rural jobs. Both store carbon, and how a forest is harvested changes how much it keeps.'
       }
     },
     {
       id: 'adaptation', name: 'Adaptation + Resilience', icon: '🌊', color: '#06b6d4',
       role: 'Coastal + heat + flood + fire',
-      desc: 'Maine is already experiencing climate impacts: sea level rising about 4 mm/year along the coast, more intense rainstorms, warming Gulf of Maine waters that affected lobster, increased winter ticks driving moose decline. Adaptation is not optional; the question is who pays and who gets protected.',
+      desc: 'Maine is already experiencing climate impacts: rising seas along the coast, more intense rainstorms, a fast-warming Gulf of Maine that has affected lobster, and more winter ticks, which harm moose. Adaptation is not optional; the question is who pays and who gets protected.',
       defaultState: { decarb: 20, resilience: 30, support: 50 }, targets: { decarb: 35, resilience: 75, support: 70 },
       deepDive: {
         knowledge: 'Adaptation includes coastal protection (seawalls, managed retreat, salt-marsh restoration), urban heat (cooling centers, tree planting, building reflectivity), inland flooding (stormwater systems, floodplain restoration), wildfire (defensible space, prescribed burning), and infrastructure resilience (grid hardening, road elevation). Some adaptation reduces emissions too (urban trees, salt marshes); some does not (seawalls). Just-transition framing matters: who benefits from adaptation investment is a justice question.',
-        casework: 'The Gulf of Maine has warmed faster than about 97% of the global ocean. Maine\'s lobster industry has shifted northward and inland landings have dropped. The 2018 and 2023 coastal storms damaged hundreds of working waterfronts. Maine has begun coastal-bluff retreat planning in towns like South Portland. Federal BRIC (Building Resilient Infrastructure and Communities) grants have funded several Maine projects.',
-        modernContext: 'The hardest adaptation questions are about managed retreat: when does the state stop subsidizing coastal property insurance? Maine\'s Coastal Hazards Office and the Casco Bay Estuary Partnership lead a lot of this work. Wabanaki coastal communities (Sipayik, Indian Township, Pleasant Point) face acute sea-level and erosion risks.'
+        casework: 'Since the early 1980s the Gulf of Maine has warmed faster than about 97% of the world\'s ocean surface (Gulf of Maine Research Institute, 2022). Lobsters have shifted north as the water warms. Back-to-back storms in January 2024 damaged many working waterfronts; the state then gave resilience grants to help rebuild them.',
+        modernContext: 'The hardest adaptation questions are about managed retreat: when should people and buildings move back from the riskiest coast? The Maine Coastal Program and the Casco Bay Estuary Partnership work on coastal planning. The Passamaquoddy community at Sipayik (Pleasant Point) faces rising seas and erosion, and adopted a climate action plan in 2024.'
       }
     },
     {
@@ -182,8 +196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       defaultState: { decarb: 25, resilience: 30, support: 50 }, targets: { decarb: 45, resilience: 60, support: 75 },
       deepDive: {
         knowledge: 'Climate justice asks who bears costs and who reaps benefits. Frontline communities face higher heat exposure (urban heat islands), more polluted air (highway corridors), more flooding (low-lying neighborhoods, coastal mobile-home parks), and less capacity to relocate or rebuild. Just transition asks the same question for workers in fossil-fuel industries: how are they supported as that industry shrinks. Indigenous climate justice involves both impact (Wabanaki coastal communities face acute sea-level risk) and authority (Indigenous communities lead some of the most innovative climate work in Maine).',
-        casework: 'The federal Justice40 Initiative (40% of federal climate spending to disadvantaged communities) has driven several Maine programs. The Maine Climate Council included a Equity Subcommittee in its 2020 planning process. Wabanaki Public Health and Wellness has run weatherization, heat-pump, and EV-charger installation specifically for Wabanaki households. The Sunrise Movement Maine has organized around climate-justice framing.',
-        modernContext: 'Without equity foundations, climate policy collapses politically: utility-scale solar in low-income neighborhoods that does not lower local energy bills, EV rebates that only reach wealthy households, retrofit programs that miss renters. The strongest climate-policy results have come from programs that ARE the justice work, not programs that "add" justice afterward.'
+        casework: 'The federal Justice40 Initiative (2021-2025) aimed to send 40% of the benefits of some federal climate investments to disadvantaged communities; it was ended in January 2025 (GAO). Wabanaki tribes are building their own clean-energy workforce. Youth groups in Maine have organized around climate justice.',
+        modernContext: 'Climate programs can lose public support when benefits miss the people who need them most: solar that does not lower local bills, EV rebates that mostly reach wealthy households, retrofit programs that miss renters. Designing for fairness from the start helps programs last.'
       }
     }
   ];
@@ -293,7 +307,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
     color: 'emerald',
     category: 'science',
     questHooks: [
-      { id: 'calculate_footprint', label: 'Calculate your carbon footprint', icon: '\uD83D\uDC63', check: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0; }, progress: function(d) { return (d.ccTransport || 0) + (d.ccFood || 0) + (d.ccEnergy || 0) > 0 ? 'Calculated!' : 'Adjust sliders'; } },
+      // Answered = a saved whole-number option index. The old check summed the
+      // indexes, so walk + plants + solar (all index 0) never counted, while a
+      // single click on "Car" did.
+      { id: 'calculate_footprint', label: 'Calculate your carbon footprint', icon: '\uD83D\uDC63', check: function(d) { return ['ccTransport', 'ccFood', 'ccEnergy', 'ccWaste'].every(function(k) { return Number.isInteger(d[k]) && d[k] >= 0; }); }, progress: function(d) { var n = ['ccTransport', 'ccFood', 'ccEnergy', 'ccWaste'].filter(function(k) { return Number.isInteger(d[k]) && d[k] >= 0; }).length; return n === 4 ? 'Calculated!' : n + '/4 questions answered'; } },
       { id: 'explore_renewables', label: 'Design a renewable energy mix', icon: '\u2600\uFE0F', check: function(d) { return !!(d.renewablesDesigned || ['rsSolar', 'rsWind', 'rsHydro', 'rsNuclear'].some(function(k) { return typeof d[k] === 'number'; })); }, progress: function(d) { return (d.renewablesDesigned || ['rsSolar', 'rsWind', 'rsHydro', 'rsNuclear'].some(function(k) { return typeof d[k] === 'number'; })) ? 'Designed!' : 'Not yet'; } },
       { id: 'view_all_tabs', label: 'Explore 3 Climate Explorer sections', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.tabsVisited)).length >= 3; }, progress: function(d) { return Object.keys(Object.assign({}, d.tabsViewed, d.tabsVisited)).length + '/3 sections'; } }
     ],
@@ -377,13 +394,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // that is out of range, fractional, or a non-numeric string -- and
       // CARBON.<cat>.opts[bad].kg then threw, blanking the whole lab through
       // the shell's unkeyed error boundary. Clamp to a real option instead.
-      // Same shape as WeldLab's persistedIndex(), defaulting rather than -1
-      // because these four always need a valid selection.
+      // Same shape as WeldLab's persistedIndex(): -1 means "not answered yet".
+      // These used to default to option 0 (walk, plants, solar, compost), so a
+      // student who had answered nothing was told "900 kg, under the Paris
+      // target" -- the greenest answers presented as theirs.
       function ccIndex(raw, len) {
+        if (raw == null || raw === '' || typeof raw === 'boolean') return -1;
         var n = (typeof raw === 'number') ? raw : parseFloat(raw);
-        if (!isFinite(n)) return 0;
+        if (!isFinite(n)) return -1;
         n = Math.floor(n);
-        return (n >= 0 && n < len) ? n : 0;
+        return (n >= 0 && n < len) ? n : -1;
       }
       // NOTE: CARBON is declared far below this line. `var` hoists the
       // declaration but not the assignment, so its option counts cannot be
@@ -499,23 +519,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ── Badge definitions ──
       var BADGES = [
         { id: 'firstCalc', icon: '\uD83E\uDDEE', label: t('stem.climateExplorer.first_calculation', 'First Calculation'), desc: t('stem.climateExplorer.calculate_your_carbon_footprint', 'Calculate your carbon footprint') },
-        { id: 'lowFootprint', icon: '\uD83C\uDF33', label: t('stem.climateExplorer.low_footprint', 'Low Footprint'), desc: t('stem.climateExplorer.get_below_2_000_kg_co_year', 'Get below 2,000 kg CO\u2082/year') },
-        { id: 'dataDiver', icon: '\uD83D\uDCCA', label: t('stem.climateExplorer.data_diver', 'Data Diver'), desc: t('stem.climateExplorer.try_all_3_scale_views', 'Try all 3 scale views') },
+        { id: 'lowFootprint', icon: '\uD83C\uDF33', label: t('stem.climateExplorer.low_footprint', 'Low Footprint'), desc: t('stem.climateExplorer.get_below_2_000_kg_co2e_year_v2', 'Get below 2,000 kg CO\u2082e a year') },
+        { id: 'dataDiver', icon: '\uD83D\uDCCA', label: t('stem.climateExplorer.data_diver', 'Data Diver'), desc: t('stem.climateExplorer.scale_check_badge_v2', 'Explain how the School, City and Country totals grow') },
         { id: 'netZero', icon: '\u2600\uFE0F', label: t('stem.climateExplorer.net_zero_designer', 'Net Zero Designer'), desc: t('stem.climateExplorer.design_5_fossil_energy_mix', 'Design <5% fossil energy mix') },
-        { id: 'scenarioTester', icon: '\u26A1', label: t('stem.climateExplorer.scenario_tester', 'Scenario Tester'), desc: t('stem.climateExplorer.try_all_4_energy_scenarios', 'Try all 4 energy scenarios') },
-        { id: 'justiceExplorer', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.justice_explorer', 'Justice Explorer'), desc: t('stem.climateExplorer.explore_5_vulnerable_regions', 'Explore 5+ vulnerable regions') },
-        { id: 'solutionScholar', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solution_scholar', 'Solution Scholar'), desc: t('stem.climateExplorer.read_all_8_solution_cards', 'Read all 8 solution cards') },
-        { id: 'actionPlanner', icon: '\u270A', label: t('stem.climateExplorer.action_planner', 'Action Planner'), desc: t('stem.climateExplorer.open_the_action_plan', 'Open the action plan') },
+        { id: 'scenarioTester', icon: '\u26A1', label: t('stem.climateExplorer.scenario_tester', 'Scenario Tester'), desc: t('stem.climateExplorer.rs_check_badge_v2', 'Predict which starting mix stays Reliable, then test all 4') },
+        { id: 'justiceExplorer', icon: '\u2696\uFE0F', label: t('stem.climateExplorer.justice_explorer', 'Justice Explorer'), desc: t('stem.climateExplorer.cj_check_badge_v2', 'Use the emissions evidence to spot climate injustice') },
+        { id: 'solutionScholar', icon: '\uD83D\uDCA1', label: t('stem.climateExplorer.solution_scholar', 'Solution Scholar'), desc: t('stem.climateExplorer.read_all_8_solution_cards_v2', 'Finish all 8 Drawdown Sleuth rounds with 6 or more right') },
+        { id: 'actionPlanner', icon: '\u270A', label: t('stem.climateExplorer.action_planner', 'Action Planner'), desc: t('stem.climateExplorer.open_the_action_plan_v2', 'Save a plan of cuts worked out by your carbon calculator') },
         { id: 'quizChampion', icon: '\uD83E\uDDE0', label: t('stem.climateExplorer.quiz_champion', 'Quiz Champion'), desc: t('stem.climateExplorer.answer_8_questions_correctly', 'Answer 8+ questions correctly') },
         { id: 'aiConsultant', icon: '\uD83E\uDD16', label: t('stem.climateExplorer.ai_consultant', 'AI Consultant'), desc: t('stem.climateExplorer.get_ai_analysis_of_your_mix', 'Get AI analysis of your mix') },
-        { id: 'allTabs', icon: '\uD83C\uDF0D', label: t('stem.climateExplorer.full_explorer', 'Full Explorer'), desc: t('stem.climateExplorer.visit_all_six_tabs', 'Visit all six tabs') },
+        { id: 'allTabs', icon: '\uD83C\uDF0D', label: t('stem.climateExplorer.full_explorer', 'Full Explorer'), desc: t('stem.climateExplorer.visit_all_six_tabs_v2', 'Make a prediction in all 3 predict-first activities: carbon, Keeling Curve and tipping points') },
         { id: 'climateChampion', icon: '\uD83C\uDFC6', label: t('stem.climateExplorer.climate_champion', 'Climate Champion'), desc: t('stem.climateExplorer.earn_10_badges', 'Earn 10+ badges') },
         { id: 'habitMaster', icon: '\uD83D\uDCCA', label: t('stem.climateExplorer.habit_master', 'Habit Master'), desc: t('stem.climateExplorer.set_5_detailed_habit_sliders', 'Set 5+ detailed habit sliders') },
         { id: 'pledger', icon: '\u270A', label: t('stem.climateExplorer.climate_pledger', 'Climate Pledger'), desc: t('stem.climateExplorer.commit_to_3_personal_pledges', 'Commit to 3+ personal pledges') },
         { id: 'consistent', icon: '\uD83D\uDD25', label: t('stem.climateExplorer.on_the_streak', 'On the Streak'), desc: t('stem.climateExplorer.check_in_on_a_pledge_7_times', 'Check in on a pledge 7+ times') },
         { id: 'reporter', icon: '\uD83D\uDCC4', label: t('stem.climateExplorer.climate_reporter', 'Climate Reporter'), desc: t('stem.climateExplorer.export_your_climate_report', 'Export your climate report') },
         { id: 'planner', icon: '\uD83C\uDFAF', label: t('stem.climateExplorer.drawdown_planner', 'Drawdown Planner'), desc: t('stem.climateExplorer.stack_5_drawdown_solutions', 'Stack 5+ Drawdown solutions') },
-        { id: 'gigaton', icon: '\uD83D\uDCAB', label: t('stem.climateExplorer.gigaton_thinker', 'Gigaton Thinker'), desc: t('stem.climateExplorer.build_a_solution_mix_totaling_200_gt', 'Reach the classroom 200-point threshold using displayed scenario estimates') }
+        { id: 'gigaton', icon: '\uD83D\uDCAB', label: t('stem.climateExplorer.gigaton_thinker', 'Gigaton Thinker'), desc: t('stem.climateExplorer.build_a_solution_mix_totaling_200_gt_v2', 'Reach the classroom 200-point threshold using displayed scenario estimates') }
       ];
 
       // ── Hope Meter milestones (moved after carbonTotal() definition) ──
@@ -535,12 +555,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         lines.push('- **Quiz score:** ' + (d.quizCorrect || 0) + '/' + (d.quizTotal || 0));
         lines.push('');
         // Quick estimate
-        if (ct && ct.total) {
+        if (ct && ct.complete && ct.total) {
           lines.push('## Quick Footprint Estimate');
           lines.push('- **Total:** ' + ct.total.toLocaleString() + ' kg CO\u2082e/yr');
           lines.push('- Transport: ' + ct.transport + ' kg · Food: ' + ct.food + ' kg · Energy: ' + ct.energy + ' kg · Waste: ' + ct.waste + ' kg');
           lines.push('- Equivalent to ' + Math.round(ct.total / TREES_PER_YEAR) + ' trees working a whole year');
+          if (ccPredictionCurrent && ccLevers.top > 0) {
+            var topLever = ccLevers.rows[0];
+            lines.push('- Predicted biggest cut: ' + CC_LEVER_LABELS[ccPrediction.pick] + ' · Model says: ' + CC_LEVER_LABELS[topLever.cat] + ' (saves ' + Math.round(topLever.save).toLocaleString() + ' kg/yr)');
+          }
           lines.push('');
+        }
+        if (d.kcPredict && d.kcPredict.locked === true && typeof d.kcPredict.val === 'number' && isFinite(d.kcPredict.val)) {
+          lines.push('- Keeling prediction for ' + KEELING_LATEST.y + ': ' + Number(d.kcPredict.val).toFixed(1) + ' ppm (NOAA measured ' + KEELING_LATEST.ppm.toFixed(2) + ')');
+        }
+        if (Number.isInteger(d.tpPredict)) {
+          lines.push('- Tipping prediction at 2°C: ' + d.tpPredict + ' systems past their best guess (assessment says ' + TIPPING_POINTS.filter(function(tp) { return TIPPING_RANGES[tp.id] && tp.threshold <= 2; }).length + ' of ' + Object.keys(TIPPING_RANGES).length + ')');
         }
         // Detailed footprint + breakdown
         if (granular.total > 0) {
@@ -574,7 +604,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           if (activeHabits.length > 0) {
             lines.push('### Active habits');
             activeHabits.forEach(function(h) {
-              lines.push('- ' + h.item.emoji + ' **' + h.item.label + '** — ' + h.freq + ' ' + h.item.unit + ' → ' + Math.round(h.kg).toLocaleString() + ' kg/yr');
+              lines.push('- ' + h.item.emoji + ' **' + h.item.label + '** — ' + h.freq + ' ' + h.item.unit + ' → ' + (typeof h.item.kg === 'number' ? Math.round(h.kg).toLocaleString() + ' kg CO₂e/yr' : 'not counted (no reliable number yet)'));
             });
             lines.push('');
           }
@@ -593,7 +623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             lines.push('- Your footprint is closest to **' + near.emoji + ' ' + near.country + '** (' + (near.kg / 1000).toFixed(1) + ' t)');
           }
           lines.push('- Paris-aligned target by 2030: **2.3 t** per person');
-          lines.push('- Global average: **4.5 t** per person');
+          lines.push('- World average (2024, fossil CO₂): **' + (GLOBAL_AVG_KG / 1000).toFixed(1) + ' t** per person');
           lines.push('');
         }
         // Energy mix
@@ -794,6 +824,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         if (addToast) addToast(b ? b.icon + ' ' + b.label + '!' : '\uD83C\uDFC5 Badge earned!', 'success');
       }
 
+      // Full Explorer = a committed prediction in each of the three predict-first activities.
+      // over holds a value just written in this click (state is a render-time capture).
+      function predictionsMade(over) {
+        var o = over || {};
+        var cc = 'ccPrediction' in o ? o.ccPrediction : d.ccPrediction;
+        var kc = 'kcPredict' in o ? o.kcPredict : d.kcPredict;
+        var tp = 'tpPredict' in o ? o.tpPredict : d.tpPredict;
+        return (cc && typeof cc === 'object' && typeof cc.pick === 'string' ? 1 : 0) + (kc && typeof kc === 'object' && kc.locked === true ? 1 : 0) + (Number.isInteger(tp) ? 1 : 0);
+      }
+      function checkAllPredictions(over) { if (predictionsMade(over) >= 3 && !badges.allTabs) earnBadge('allTabs'); }
+
       // ── Track tab visits ──
       function visitTab(tid) {
         upd('tab', tid);
@@ -810,46 +851,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           var nv = Object.assign({}, tabsVisited);
           nv[tid] = true;
           upd('tabsVisited', nv);
-          awardXP(5);
-          if (Object.keys(nv).length >= 6) earnBadge('allTabs');
+          // No XP and no badge for opening a tab: they come from answers, predictions and saved work.
         }
       }
 
       // ══════════════════════════════════════
       //  CARBON CALCULATOR DATA
       // ══════════════════════════════════════
+      // Quick calculator: every kg below is worked out from these factors (sources checked 2026-11-23).
+      //  car: EPA, about 400 g CO2 per mile (epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle)
+      //  bus: EPA GHG Emission Factors Hub 2025, Table 10, Bus 0.066 kg CO2 per passenger-mile (epa.gov/climateleadership/ghg-emission-factors-hub)
+      //  grid 0.81 and coal 2.31 lb CO2 per kWh, 2023 (eia.gov/tools/faqs/faq.php?id=74); a US home 10,791 kWh a year, 2022 (faq.php?id=97)
+      //  waste: 4.9 lb per person per day, 2018 (epa.gov/facts-and-figures-about-materials-waste-and-recycling/national-overview-facts-and-figures-materials);
+      //  Hub 2025 Table 9 (WARM, metric tons CO2e per short ton, no avoided emissions): mixed MSW landfilled 0.58,
+      //  mixed recyclables recycled 0.09, food waste composted 0.11.
+      //  Assumptions, stated on screen: 5 miles each way on 180 school days, 3 in a carpool, a home shared by 3
+      //  people, and waste split in thirds. Food stays on Scarborough et al. 2014 (kg CO2e per person per year).
+      var QC = {
+        schoolMiles: 2 * 5 * 180, carKgPerMile: 0.400, busKgPerPassengerMile: 0.066, carpoolRiders: 3,
+        homeKwh: 10791, homePeople: 3, gridKgPerKwh: 0.81 * 0.45359237, coalKgPerKwh: 2.31 * 0.45359237,
+        wasteShortTons: 4.9 * 365 / 2000, landfillT: 0.58, recycleT: 0.09, compostT: 0.11
+      };
+      function qcRound(kg) { return Math.round(kg / 10) * 10; }
+      var QC_KG = (function () {
+        var kwh = QC.homeKwh / QC.homePeople, w = QC.wasteShortTons * 1000;
+        return {
+          transport: [0, qcRound(QC.schoolMiles * QC.busKgPerPassengerMile), qcRound(QC.schoolMiles * QC.carKgPerMile), qcRound(QC.schoolMiles * QC.carKgPerMile / QC.carpoolRiders)],
+          energy: [0, qcRound(kwh * QC.gridKgPerKwh), qcRound(kwh * QC.coalKgPerKwh)],
+          waste: [qcRound(w * (QC.recycleT + QC.compostT + QC.landfillT) / 3), qcRound(w * (QC.recycleT + 2 * QC.landfillT) / 3), qcRound(w * QC.landfillT)]
+        };
+      })();
       var CARBON = {
         transport: {
           label: t('stem.climateExplorer.how_do_you_get_to_school', 'How do you get to school?'), emoji: '\uD83D\uDE8C',
           opts: [
-            { label: t('stem.climateExplorer.walk_bike', 'Walk / Bike'), emoji: '\uD83D\uDEB6', kg: 0, desc: t('stem.climateExplorer.zero_emissions_your_legs_are_the_green', 'Zero emissions! Your legs are the greenest engine.') },
-            { label: t('stem.climateExplorer.school_bus', 'School Bus'), emoji: '\uD83D\uDE8C', kg: 300, desc: t('stem.climateExplorer.shared_ride_about_0_3_kg_co_per_studen', 'Shared ride \u2014 about 0.3 kg CO\u2082 per student per trip.') },
-            { label: t('stem.climateExplorer.car_alone', 'Car (alone)'), emoji: '\uD83D\uDE97', kg: 1200, desc: t('stem.climateExplorer.a_car_emits_0_21_kg_co_km_solo_trips_a', 'A car emits ~0.24 kg CO\u2082/km. Solo trips add up fast.') },
-            { label: t('stem.climateExplorer.carpool', 'Carpool'), emoji: '\uD83D\uDE99', kg: 400, desc: t('stem.climateExplorer.splitting_rides_cuts_per_person_emissi', 'Splitting rides cuts per-person emissions by 50-75%.') }
+            { label: t('stem.climateExplorer.walk_bike', 'Walk / Bike'), emoji: '\uD83D\uDEB6', kg: QC_KG.transport[0], desc: t('stem.climateExplorer.zero_emissions_your_legs_are_the_green', 'Zero emissions! Your legs are the greenest engine.') },
+            { label: t('stem.climateExplorer.school_bus', 'School Bus'), emoji: '\uD83D\uDE8C', kg: QC_KG.transport[1], desc: t('stem.climateExplorer.shared_ride_about_0_3_kg_co_per_studen_v2', 'Shared ride. One bus carries many students, so each share is small.') },
+            { label: t('stem.climateExplorer.car_alone', 'Car (alone)'), emoji: '\uD83D\uDE97', kg: QC_KG.transport[2], desc: t('stem.climateExplorer.a_car_emits_0_21_kg_co_km_solo_trips_a_v2', 'A typical car puts out about 400 g of CO\u2082 per mile (EPA). Solo trips add up fast.') },
+            { label: t('stem.climateExplorer.carpool', 'Carpool'), emoji: '\uD83D\uDE99', kg: QC_KG.transport[3], desc: t('stem.climateExplorer.splitting_rides_cuts_per_person_emissi_v2', 'Three riders share one car\u2019s CO\u2082, so each share is one third.') }
           ]
         },
         food: {
           label: t('stem.climateExplorer.what_do_you_usually_eat', 'What do you usually eat?'), emoji: '\uD83C\uDF5E',
           opts: [
-            { label: t('stem.climateExplorer.mostly_plant_based', 'Mostly plant-based'), emoji: '\uD83E\uDD57', kg: 600, desc: t('stem.climateExplorer.fruits_veggies_grains_beans_lowest_foo', 'Fruits, veggies, grains, beans \u2014 lowest food footprint.') },
-            { label: t('stem.climateExplorer.a_mix_of_everything', 'A mix of everything'), emoji: '\uD83C\uDF71', kg: 1200, desc: t('stem.climateExplorer.some_meat_some_veggies_average_diet', 'Some meat, some veggies. Average diet.') },
-            { label: t('stem.climateExplorer.lots_of_meat_dairy', 'Lots of meat & dairy'), emoji: '\uD83E\uDD69', kg: 2500, desc: t('stem.climateExplorer.beef_produces_60_kg_co_per_kg_of_meat', 'Beef produces 60 kg CO\u2082 per kg of meat.') }
+            { label: t('stem.climateExplorer.mostly_plant_based', 'Mostly plant-based'), emoji: '\uD83E\uDD57', kg: 1390, desc: t('stem.climateExplorer.fruits_veggies_grains_beans_lowest_foo_v2', 'Fruits, veggies, grains, beans. Lowest of these three in a large UK diet study (Scarborough et al., 2014).') },
+            { label: t('stem.climateExplorer.a_mix_of_everything', 'A mix of everything'), emoji: '\uD83C\uDF71', kg: 2060, desc: t('stem.climateExplorer.some_meat_some_veggies_average_diet_v2', 'Some meat most days. A medium-meat diet in the same UK study.') },
+            { label: t('stem.climateExplorer.lots_of_meat_dairy', 'Lots of meat & dairy'), emoji: '\uD83E\uDD69', kg: 2620, desc: t('stem.climateExplorer.beef_produces_60_kg_co_per_kg_of_meat_v2', 'Beef and lamb have the biggest footprints of common foods (Poore and Nemecek, 2018).') }
           ]
         },
         energy: {
           label: t('stem.climateExplorer.what_powers_your_home', 'What powers your home?'), emoji: '\u26A1',
           opts: [
-            { label: t('stem.climateExplorer.solar_wind', 'Solar / Wind'), emoji: '\u2600\uFE0F', kg: 200, desc: t('stem.climateExplorer.near_zero_operational_emissions', 'Near-zero operational emissions.') },
-            { label: t('stem.climateExplorer.grid_average', 'Grid average'), emoji: '\uD83D\uDD0C', kg: 2000, desc: t('stem.climateExplorer.us_grid_0_4_kg_co_per_kwh', 'US grid: ~0.4 kg CO\u2082 per kWh.') },
-            { label: t('stem.climateExplorer.mostly_fossil_fuels', 'Mostly fossil fuels'), emoji: '\uD83C\uDFED', kg: 4000, desc: t('stem.climateExplorer.coal_heavy_grids_up_to_1_kg_co_kwh', 'Coal-heavy grids: up to 1 kg CO\u2082/kWh.') }
+            { label: t('stem.climateExplorer.solar_wind', 'Solar / Wind'), emoji: '\u2600\uFE0F', kg: QC_KG.energy[0], desc: t('stem.climateExplorer.near_zero_operational_emissions_v2', 'No CO\u2082 while making power. Building the panels and turbines adds some, which this quick count leaves out.') },
+            { label: t('stem.climateExplorer.grid_average', 'Grid average'), emoji: '\uD83D\uDD0C', kg: QC_KG.energy[1], desc: t('stem.climateExplorer.us_grid_0_4_kg_co_per_kwh_v2', 'US grid: about 0.81 lb (0.37 kg) of CO\u2082 per kWh (EIA, 2023).') },
+            { label: t('stem.climateExplorer.mostly_fossil_fuels', 'Mostly fossil fuels'), emoji: '\uD83C\uDFED', kg: QC_KG.energy[2], desc: t('stem.climateExplorer.coal_heavy_grids_up_to_1_kg_co_kwh_v2', 'Worked out as coal power: about 2.31 lb (1.05 kg) of CO\u2082 per kWh (EIA, 2023).') }
           ]
         },
         waste: {
           label: t('stem.climateExplorer.what_happens_to_your_trash', 'What happens to your trash?'), emoji: '\u267B\uFE0F',
           opts: [
-            { label: t('stem.climateExplorer.compost_recycle', 'Compost & recycle'), emoji: '\uD83C\uDF31', kg: 100, desc: t('stem.climateExplorer.composting_diverts_methane_producing_w', 'Composting diverts methane-producing waste.') },
-            { label: t('stem.climateExplorer.recycle_some', 'Recycle some'), emoji: '\u267B\uFE0F', kg: 500, desc: t('stem.climateExplorer.recycling_saves_1_ton_co_per_ton_of_ma', 'Recycling saves ~1 ton CO\u2082 per ton of material.') },
-            { label: t('stem.climateExplorer.mostly_landfill', 'Mostly landfill'), emoji: '\uD83D\uDDD1\uFE0F', kg: 1000, desc: t('stem.climateExplorer.landfills_produce_methane_28_more_pote', 'Landfills produce methane (28\u00D7 more potent than CO\u2082).') }
+            { label: t('stem.climateExplorer.compost_recycle', 'Compost & recycle'), emoji: '\uD83C\uDF31', kg: QC_KG.waste[0], desc: t('stem.climateExplorer.composting_diverts_methane_producing_w', 'Composting diverts methane-producing waste.') },
+            { label: t('stem.climateExplorer.recycle_some', 'Recycle some'), emoji: '\u267B\uFE0F', kg: QC_KG.waste[1], desc: t('stem.climateExplorer.recycling_saves_1_ton_co_per_ton_of_ma_v2', 'Recycling saves the energy needed to make new material.') },
+            { label: t('stem.climateExplorer.mostly_landfill', 'Mostly landfill'), emoji: '\uD83D\uDDD1\uFE0F', kg: QC_KG.waste[2], desc: t('stem.climateExplorer.landfills_produce_methane_ar6_v3', 'Landfills make methane. Over 100 years it warms about 27 times as much as the same mass of CO\u2082 (IPCC, 2021).') }
           ]
         }
       };
@@ -867,97 +930,147 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var TREES_PER_YEAR = 22; // kg CO2 per tree per year
 
       // ══════════════════════════════════════
-      //  GRANULAR HABIT TRACKER
-      //  kg CO₂e per activity (sourced from IPCC AR6, Our World in Data, Poore & Nemecek 2018,
-      //  Berners-Lee "How Bad Are Bananas?" 3rd ed., IEA 2020 streaming estimate, Google 2025 AI prompt estimate)
+      //  GRANULAR HABIT TRACKER (source audit 2026-11-23, follow-up)
+      //  Every kg below is worked out from GT. kg: null = no primary source found, so the habit is
+      //  tracked (slider, pledges) but not counted, and no number is shown.
+      //  car 0.400 kg CO2/mile: epa.gov/greenvehicles/greenhouse-gas-emissions-typical-passenger-vehicle
+      //  bus 0.066, transit rail 0.093, air medium haul (300-2300 mi) 0.129, long haul 0.163 kg CO2 per
+      //  passenger-mile; natural gas 53.06 kg CO2/mmBtu: EPA GHG Emission Factors Hub 2025, Tables 1 + 10
+      //  grid 0.81 lb CO2/kWh, 2023: eia.gov/tools/faqs/faq.php?id=74 (same as the quick calculator)
+      //  food, kg CO2e per kg (world means): Poore & Nemecek 2018 via ourworldindata.org/grapher/ghg-per-kg-poore
+      //  dishwasher 307 kWh/yr (10 CFR 430.32(f)) over 215 cycles (appendix C1); dryer CEF 3.73 lb/kWh
+      //  (430.32(h)) on the 8.45 lb test load (appendix D1); central AC SEER2 13.4 (430.32(c))
+      //  shower 2.5 gal/min standard head: epa.gov/watersense/showerheads; washer 20 gal standard, water
+      //  heating ~90% of its energy: energystar.gov/products/clothes_washers; heat pump COP 3: DOE 2-4x
+      //  streaming 36 g CO2/hr (2019): IEA, Kamiya 2020; AI text 0.03 g: Google Aug 2025 (arxiv 2508.15734);
+      //  AI image 1.6 g max: Luccioni et al. 2023; jeans 33.4 kg: Levi Strauss LCA 2015; phone 56 kg: Apple
+      //  iPhone 16 PER 2024; laptop 120 kg: Apple MacBook Air 13 M4 PER 2025; waste: Hub 2025 Table 9 (WARM)
+      //  Methane GWP100: IPCC AR6 WG1 Table 7.15, 27.0 non-fossil / 29.8 fossil.
+      //  Aviation non-CO2: Lee et al. 2021, Atmos. Environ. 244:117834, net ERF 100.9 vs CO2 34.3 mW/m2.
       // ══════════════════════════════════════
-      // Each item: id, emoji, label, kg (per activity occurrence), unit ('days/week' or 'per year'),
-      // max (max frequency for slider), default freq, category, freqLabel
+      var GT = (function () {
+        var mi = 25 / 1.609344, grid = 0.81 * 0.45359237, therm = 5.306, btuPerKwh = 3412.14;
+        var waterBtu = function (gal, dF) { return gal * 8.34 * dF; };
+        return {
+          grid: grid, therm: therm, tripMiles: mi, bagLb: 15, heatBtu: 30000,
+          car: 0.400 * mi, bus: 0.066 * mi, rail: 0.093 * mi, ev: 0.30 * mi * grid,
+          flightShort: 2 * (1500 / 1.609344) * 0.129, flightLong: 2 * (8000 / 1.609344) * 0.163,
+          food: { beef: 99.48, lamb: 39.72, pork: 12.31, poultry: 9.87, fish: 13.63, cheese: 23.88, eggs: 4.67, tofu: 3.16, coffee: 28.53 },
+          heatGas: 0.3 * therm, heatPump: 30000 / btuPerKwh / 3 * grid, ac: 36000 / 13.4 / 1000 * grid,
+          shower: waterBtu(25, 60) / 100000 * therm, laundry: waterBtu(20, 30) / 100000 * therm,
+          dryer: 8.45 / 3.73 * grid, dishwasher: 307 / 215 * grid,
+          landfill: 15 / 2000 * 580, recycle: 15 / 2000 * 90, compost: 15 / 2000 * 110
+        };
+      })();
+      function gtR(kg) { return Math.round(kg * 10) / 10; }
+      var GT_MEAL_KG = 0.1;
+      // Each item: id, emoji, label, kg per occurrence (null = not counted), unit, max (slider), note
       var GRANULAR_ITEMS = {
         transport: [
-          { id: 'car_solo',    emoji: '🚗', label: t('stem.climateExplorer.drive_solo_avg_25_km_trip', 'Drive solo (avg 25 km trip)'),   kg: 6.1,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.typical_us_gas_car_0_21_kg_co_e_km', 'Typical US gas car: about 0.24 kg CO₂e/km.') },
-          { id: 'car_pool',    emoji: '🚙', label: t('stem.climateExplorer.carpool_25_km_split_3', 'Carpool (25 km, split ×3)'),     kg: 2.0,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.carpool_of_3_cuts_per_person_emissions', 'Carpool of 3 cuts per-person emissions 65%.') },
-          { id: 'bus',         emoji: '🚌', label: t('stem.climateExplorer.bus_ride_25_km', 'Bus ride (25 km)'),              kg: 1.2,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.city_bus_avg_0_05_kg_passenger_km', 'City bus avg: 0.05 kg/passenger-km.') },
-          { id: 'train',       emoji: '🚆', label: t('stem.climateExplorer.train_subway_25_km', 'Train / subway (25 km)'),       kg: 0.9,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.electric_rail_is_4_cleaner_than_a_car', 'Electric rail is 4× cleaner than a car.') },
-          { id: 'ev',          emoji: '🔌', label: t('stem.climateExplorer.ev_on_mixed_grid_25_km', 'EV on mixed grid (25 km)'),     kg: 1.3,  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.improves_as_the_grid_decarbonizes', 'Improves as the grid decarbonizes.') },
+          { id: 'car_solo',    emoji: '🚗', label: t('stem.climateExplorer.drive_solo_avg_25_km_trip', 'Drive solo (avg 25 km trip)'),   kg: gtR(GT.car),  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.typical_us_gas_car_kg_per_km_v3', 'A typical car puts out about 400 g of CO₂ per mile, or 0.25 kg per km (EPA).') },
+          { id: 'car_pool',    emoji: '🚙', label: t('stem.climateExplorer.carpool_25_km_split_3', 'Carpool (25 km, split ×3)'),     kg: gtR(GT.car / 3),  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.carpool_of_3_cuts_per_person_emissions_v2', 'Splitting one car 3 ways cuts each share to about a third.') },
+          { id: 'bus',         emoji: '🚌', label: t('stem.climateExplorer.bus_ride_25_km', 'Bus ride (25 km)'),              kg: gtR(GT.bus),  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.bus_rider_share_epa_v3', 'US average: about 66 g of CO₂ per rider per mile (EPA). Each rider’s share depends on how full the bus is.') },
+          { id: 'train',       emoji: '🚆', label: t('stem.climateExplorer.train_subway_25_km', 'Train / subway (25 km)'),       kg: gtR(GT.rail),  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.subway_rider_share_epa_v3', 'US subway and tram average: about 93 g of CO₂ per rider per mile (EPA). Much lower than driving alone.') },
+          { id: 'ev',          emoji: '🔌', label: t('stem.climateExplorer.ev_on_mixed_grid_25_km', 'EV on mixed grid (25 km)'),     kg: gtR(GT.ev),  max: 14, unit: 'trips/week', note: t('stem.climateExplorer.ev_assumption_grid_v3', 'Assumes 30 kWh per 100 miles on the US grid (0.81 lb of CO₂ per kWh, EIA). Gets lower as the grid gets cleaner.') },
           { id: 'walk_bike',   emoji: '🚴', label: t('stem.climateExplorer.walk_bike_any_distance', 'Walk / bike (any distance)'),   kg: 0,    max: 14, unit: 'trips/week', note: t('stem.climateExplorer.zero_emissions_also_health_benefits', 'Zero emissions. Also health benefits.') },
-          { id: 'flight_short',emoji: '✈️', label: t('stem.climateExplorer.short_flight_1_500_km', 'Short flight (1,500 km)'),     kg: 250,  max: 12, unit: 'flights/year', note: t('stem.climateExplorer.aviation_has_2_3_warming_impact_beyond', 'Aviation has 2-3× warming impact beyond CO₂ alone.') },
-          { id: 'flight_long', emoji: '🛫', label: t('stem.climateExplorer.long_flight_8_000_km', 'Long flight (8,000 km)'),      kg: 1600, max: 12, unit: 'flights/year', note: t('stem.climateExplorer.one_long_haul_round_trip_3_tons_a_year', 'One long-haul round-trip = ~3 tons — a year of driving for many.') }
+          { id: 'flight_short',emoji: '✈️', label: t('stem.climateExplorer.short_round_trip_flight_1500_km', 'Round-trip flight (1,500 km each way)'),     kg: Math.round(GT.flightShort / 10) * 10,  max: 12, unit: 'flights/year', note: t('stem.climateExplorer.aviation_non_co2_lee_2021_v3', 'Counts CO₂ only (EPA: 129 g per passenger-mile). Planes also warm the air in other ways, like contrails. In 2018 those effects plus CO₂ warmed about 3 times as much as the CO₂ alone (Lee et al., 2021).') },
+          { id: 'flight_long', emoji: '🛫', label: t('stem.climateExplorer.long_round_trip_flight_8000_km', 'Round-trip flight (8,000 km each way)'),      kg: Math.round(GT.flightLong / 10) * 10, max: 12, unit: 'flights/year', note: t('stem.climateExplorer.long_round_trip_share_v3', 'One long round trip: about {kg} kg of CO₂ (EPA: 163 g per passenger-mile). That is {pct}% of the 2.3 t yearly 1.5°C share.').replace('{kg}', (Math.round(GT.flightLong / 10) * 10).toLocaleString()).replace('{pct}', Math.round(Math.round(GT.flightLong / 10) * 10 / 2300 * 100)) }
         ],
         food: [
-          { id: 'beef',        emoji: '🥩', label: t('stem.climateExplorer.beef_meal', 'Beef meal'),                   kg: 7.5,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.60_kg_co_e_per_kg_of_beef_highest_of_a', '60 kg CO₂e per kg of beef — highest of any food.') },
-          { id: 'lamb',        emoji: '🐑', label: t('stem.climateExplorer.lamb_meal', 'Lamb meal'),                   kg: 5.9,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.second_highest_emitter_after_beef', 'Second-highest emitter, after beef.') },
-          { id: 'pork',        emoji: '🥓', label: t('stem.climateExplorer.pork_meal', 'Pork meal'),                   kg: 2.3,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.moderate_7_kg_co_e_kg', 'Moderate — 7 kg CO₂e/kg.') },
-          { id: 'chicken',     emoji: '🍗', label: t('stem.climateExplorer.chicken_poultry_meal', 'Chicken / poultry meal'),     kg: 1.6,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.lowest_emission_meat', 'Lowest-emission meat.') },
-          { id: 'fish',        emoji: '🐟', label: t('stem.climateExplorer.fish_meal', 'Fish meal'),                   kg: 1.4,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.varies_farmed_salmon_higher_wild_cod_l', 'Varies: farmed salmon higher, wild cod lower.') },
-          { id: 'cheese',      emoji: '🧀', label: t('stem.climateExplorer.cheese_dairy_serving', 'Cheese / dairy serving'),     kg: 0.7,  max: 21, unit: 'servings/week', note: t('stem.climateExplorer.dairy_cattle_also_produce_methane', 'Dairy cattle also produce methane.') },
-          { id: 'vegetarian',  emoji: '🥗', label: t('stem.climateExplorer.vegetarian_meal', 'Vegetarian meal'),             kg: 0.6,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.about_1_10_the_impact_of_a_beef_meal', 'About 1/10 the impact of a beef meal.') },
-          { id: 'vegan',       emoji: '🥬', label: t('stem.climateExplorer.vegan_meal', 'Vegan meal'),                  kg: 0.4,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.beans_rice_veggies_lowest_possible_foo', 'Beans + rice + veggies = lowest possible footprint.') },
-          { id: 'coffee',      emoji: '☕', label: t('stem.climateExplorer.coffee_take_out_cup', 'Coffee (take-out cup)'),       kg: 0.21, max: 21, unit: 'cups/week', note: t('stem.climateExplorer.disposable_cups_add_50_vs_home_brewed', 'Disposable cups add ~50% vs. home-brewed.') },
-          { id: 'foodwaste',   emoji: '🗑️', label: t('stem.climateExplorer.food_thrown_away_1_meal', 'Food thrown away (1 meal)'),   kg: 1.3,  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.food_waste_8_of_global_emissions', 'Food waste = 8% of global emissions.') }
+          { id: 'beef',        emoji: '🥩', label: t('stem.climateExplorer.beef_meal', 'Beef meal'),                   kg: gtR(GT.food.beef * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.beef_per_kg_poore_v3', 'About {f} kg CO₂e per kg of beef from beef herds, the highest of the foods in a big world study (Poore and Nemecek, 2018). A meal here counts 100 g of the main food.').replace('{f}', Math.round(GT.food.beef)) },
+          { id: 'lamb',        emoji: '🐑', label: t('stem.climateExplorer.lamb_meal', 'Lamb meal'),                   kg: gtR(GT.food.lamb * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.lamb_per_kg_poore_v3', 'About {f} kg CO₂e per kg. The second-highest meat, after beef.').replace('{f}', Math.round(GT.food.lamb)) },
+          { id: 'pork',        emoji: '🥓', label: t('stem.climateExplorer.pork_meal', 'Pork meal'),                   kg: gtR(GT.food.pork * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.pork_per_kg_poore_v3', 'About {f} kg CO₂e per kg.').replace('{f}', Math.round(GT.food.pork)) },
+          { id: 'chicken',     emoji: '🍗', label: t('stem.climateExplorer.chicken_poultry_meal', 'Chicken / poultry meal'),     kg: gtR(GT.food.poultry * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.poultry_per_kg_poore_v3', 'About {f} kg CO₂e per kg: the lowest of these meats.').replace('{f}', Math.round(GT.food.poultry)) },
+          { id: 'fish',        emoji: '🐟', label: t('stem.climateExplorer.fish_meal', 'Fish meal'),                   kg: gtR(GT.food.fish * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.farmed_fish_per_kg_poore_v3', 'Counted as farmed fish: about {f} kg CO₂e per kg. Different fish vary a lot.').replace('{f}', Math.round(GT.food.fish)) },
+          { id: 'cheese',      emoji: '🧀', label: t('stem.climateExplorer.cheese_dairy_serving', 'Cheese / dairy serving'),     kg: gtR(GT.food.cheese * 0.03),  max: 21, unit: 'servings/week', note: t('stem.climateExplorer.cheese_serving_poore_v3', 'Counted as 30 g of cheese (about {f} kg CO₂e per kg). Dairy cattle also make methane.').replace('{f}', Math.round(GT.food.cheese)) },
+          { id: 'vegetarian',  emoji: '🥗', label: t('stem.climateExplorer.vegetarian_meal', 'Vegetarian meal'),             kg: gtR(GT.food.eggs * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.vegetarian_eggs_ratio_v3', 'Counted as 100 g of eggs: about 1/{n} of a beef meal.').replace('{n}', Math.round(gtR(GT.food.beef * GT_MEAL_KG) / gtR(GT.food.eggs * GT_MEAL_KG))) },
+          { id: 'vegan',       emoji: '🥬', label: t('stem.climateExplorer.vegan_meal', 'Vegan meal'),                  kg: gtR(GT.food.tofu * GT_MEAL_KG),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.vegan_tofu_low_v3', 'Counted as 100 g of tofu. Beans, peas and tofu are among the lowest-footprint protein foods.') },
+          { id: 'coffee',      emoji: '☕', label: t('stem.climateExplorer.coffee_take_out_cup', 'Coffee (take-out cup)'),       kg: gtR(GT.food.coffee * 0.007), max: 21, unit: 'cups/week', note: t('stem.climateExplorer.coffee_grounds_only_v3', 'Counts about 7 g of ground coffee (about {f} kg CO₂e per kg). The cup, lid and milk add more.').replace('{f}', Math.round(GT.food.coffee)) },
+          { id: 'foodwaste',   emoji: '🗑️', label: t('stem.climateExplorer.food_thrown_away_1_meal', 'Food thrown away (1 meal)'),   kg: gtR(CARBON.food.opts[1].kg / 365 / 3),  max: 21, unit: 'meals/week', note: t('stem.climateExplorer.food_waste_unep_v3', 'Counted as a third of a day of a medium-meat diet (Scarborough et al., 2014). Lost and wasted food is linked to 8 to 10% of the world’s greenhouse gases (UNEP, 2024).') }
         ],
         energy: [
-          { id: 'heat_gas',    emoji: '🔥', label: t('stem.climateExplorer.gas_heating_running_1_hr', 'Gas heating running (1 hr)'),  kg: 1.5,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.natural_gas_2_kg_therm_winter_only', 'Natural gas: about 5.3 kg CO₂ per therm. Winter only.') },
-          { id: 'ac',          emoji: '❄️', label: t('stem.climateExplorer.ac_running_1_hr', 'AC running (1 hr)'),           kg: 0.9,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.us_grid_average_lower_in_ca_higher_in_', 'US grid average; lower in CA, higher in WV.') },
-          { id: 'heat_pump',   emoji: '🌡️', label: t('stem.climateExplorer.heat_pump_1_hr_heating', 'Heat pump (1 hr heating)'),   kg: 0.3,  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.4_more_efficient_than_gas_furnace', '4× more efficient than gas furnace.') },
-          { id: 'shower',      emoji: '🚿', label: t('stem.climateExplorer.10_minute_hot_shower', '10-minute hot shower'),        kg: 0.7,  max: 14,  unit: 'showers/week', note: t('stem.climateExplorer.shorter_shower_linear_savings', 'Shorter shower = linear savings.') },
-          { id: 'laundry_warm',emoji: '👕', label: t('stem.climateExplorer.laundry_load_warm_wash', 'Laundry load (warm wash)'),    kg: 0.8,  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.cold_wash_saves_75_of_this', 'Cold wash saves 75% of this.') },
-          { id: 'dryer',       emoji: '🌀', label: t('stem.climateExplorer.electric_clothes_dryer', 'Electric clothes dryer'),      kg: 2.4,  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.line_drying_zero_emissions', 'Line drying = zero emissions.') },
-          { id: 'dishwasher',  emoji: '🍽️', label: t('stem.climateExplorer.dishwasher_cycle', 'Dishwasher cycle'),            kg: 0.5,  max: 14,  unit: 'cycles/week', note: t('stem.climateExplorer.full_loads_2_more_efficient', 'Full loads 2× more efficient.') }
+          { id: 'heat_gas',    emoji: '🔥', label: t('stem.climateExplorer.gas_heating_running_1_hr', 'Gas heating running (1 hr)'),  kg: gtR(GT.heatGas),  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.gas_heat_assumption_v3', 'Natural gas: about 5.3 kg of CO₂ per therm (EPA). Assumes 30,000 Btu (0.3 therm) of gas an hour. Winter only.') },
+          { id: 'ac',          emoji: '❄️', label: t('stem.climateExplorer.ac_running_1_hr', 'AC running (1 hr)'),           kg: gtR(GT.ac),  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.ac_assumption_seer2_v3', 'Assumes a 3-ton central AC (36,000 Btu an hour) at the US minimum rating for new units (SEER2 13.4), on the US grid.') },
+          { id: 'heat_pump',   emoji: '🌡️', label: t('stem.climateExplorer.heat_pump_1_hr_heating', 'Heat pump (1 hr heating)'),   kg: gtR(GT.heatPump),  max: 168, unit: 'hours/week', note: t('stem.climateExplorer.heat_pump_same_heat_v3', 'Gives the same 30,000 Btu of heat as the gas row. Heat pumps move 2 to 4 times more heat than the electricity they use (US Department of Energy); this row uses 3.') },
+          { id: 'shower',      emoji: '🚿', label: t('stem.climateExplorer.10_minute_hot_shower', '10-minute hot shower'),        kg: gtR(GT.shower),  max: 14,  unit: 'showers/week', note: t('stem.climateExplorer.shower_assumption_v3', 'Assumes a standard showerhead, 2.5 gallons a minute (EPA), and water warmed 60°F by gas. A WaterSense head (2.0 gallons a minute) cuts this by a fifth.') },
+          { id: 'laundry_warm',emoji: '👕', label: t('stem.climateExplorer.laundry_load_warm_wash', 'Laundry load (warm wash)'),    kg: gtR(GT.laundry),  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.laundry_assumption_v3', 'Assumes 20 gallons (a standard washer, ENERGY STAR) warmed 30°F by gas. Heating water is about 90% of a washer’s energy, so cold washes use much less.') },
+          { id: 'dryer',       emoji: '🌀', label: t('stem.climateExplorer.electric_clothes_dryer', 'Electric clothes dryer'),      kg: gtR(GT.dryer),  max: 14,  unit: 'loads/week', note: t('stem.climateExplorer.dryer_doe_standard_v3', 'A dryer that just meets the US standard uses about 2.3 kWh for an 8.45 lb test load (DOE). Line drying = zero emissions.') },
+          { id: 'dishwasher',  emoji: '🍽️', label: t('stem.climateExplorer.dishwasher_cycle', 'Dishwasher cycle'),            kg: gtR(GT.dishwasher),  max: 14,  unit: 'cycles/week', note: t('stem.climateExplorer.dishwasher_doe_limit_v3', 'At the US limit: 307 kWh a year over 215 loads, about 1.4 kWh a load (DOE). Running only full loads means fewer cycles.') }
         ],
         digital: [
-          { id: 'netflix_hd',  emoji: '📺', label: t('stem.climateExplorer.streaming_hd_video_1_hr', 'Streaming HD video (1 hr)'),   kg: 0.036, max: 50, unit: 'hours/week', note: t('stem.climateExplorer.netflix_2023_report_lower_than_older_e', 'IEA 2020 estimate, lower than older estimates.') },
-          { id: 'stream_4k',   emoji: '🎬', label: t('stem.climateExplorer.streaming_4k_video_1_hr', 'Streaming 4K video (1 hr)'),   kg: 0.12,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.4k_uses_4_the_bandwidth_of_hd', '4K uses about 2 to 3 times the data of HD.') },
-          { id: 'gaming',      emoji: '🎮', label: t('stem.climateExplorer.console_gaming_1_hr', 'Console gaming (1 hr)'),       kg: 0.1,   max: 50, unit: 'hours/week', note: t('stem.climateExplorer.ps5_xbox_draw_150_200w', 'PS5/Xbox draw 150-200W.') },
-          { id: 'videocall',   emoji: '📹', label: t('stem.climateExplorer.video_call_1_hr', 'Video call (1 hr)'),           kg: 0.06,  max: 40, unit: 'hours/week', note: t('stem.climateExplorer.camera_off_reduces_by_95', 'Camera-off reduces by ~95%.') },
-          { id: 'pc_work',     emoji: '💻', label: t('stem.climateExplorer.pc_work_school_1_hr', 'PC work / school (1 hr)'),     kg: 0.05,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.laptop_1_3_of_desktop', 'Laptop ~1/3 of desktop.') },
+          { id: 'netflix_hd',  emoji: '📺', label: t('stem.climateExplorer.streaming_hd_video_1_hr', 'Streaming HD video (1 hr)'),   kg: 0.036, max: 50, unit: 'hours/week', note: t('stem.climateExplorer.iea_streaming_36g_v3', 'IEA estimate for an average hour of streaming video in 2019: about 36 g of CO₂. Most of the energy (72%) is the screen you watch on.') },
+          { id: 'stream_4k',   emoji: '🎬', label: t('stem.climateExplorer.streaming_4k_video_1_hr', 'Streaming 4K video (1 hr)'),   kg: null,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.4k_more_data_iea_v3', 'A 4K stream sends about 7 GB of data an hour (IEA), more than HD.') },
+          { id: 'gaming',      emoji: '🎮', label: t('stem.climateExplorer.console_gaming_1_hr', 'Console gaming (1 hr)'),       kg: null,   max: 50, unit: 'hours/week', note: t('stem.climateExplorer.ps5_xbox_draw_150_200w_v2', 'Game consoles draw much more power than a phone.') },
+          { id: 'videocall',   emoji: '📹', label: t('stem.climateExplorer.video_call_1_hr', 'Video call (1 hr)'),           kg: null,  max: 40, unit: 'hours/week', note: t('stem.climateExplorer.camera_off_obringer_v3', 'Turning the camera off sends much less data. One study estimated it cuts a call’s data footprint by about 96% (Obringer et al., 2021).') },
+          { id: 'pc_work',     emoji: '💻', label: t('stem.climateExplorer.pc_work_school_1_hr', 'PC work / school (1 hr)'),     kg: null,  max: 50, unit: 'hours/week', note: t('stem.climateExplorer.laptop_1_3_of_desktop_v2', 'A laptop uses less power than a desktop computer.') },
           { id: 'ai_text',     emoji: '💬', label: t('stem.climateExplorer.ai_text_chat_chatgpt_claude_gemini', 'AI text chat (ChatGPT/Claude/Gemini)'), kg: 0.00003, max: 500, unit: 'queries/week', note: t('stem.climateExplorer.3g_co_e_per_text_prompt_long_context_1', 'Well under 1g CO\u2082e per text prompt (Google 2025: about 0.03g). Long prompts cost more.') },
-          { id: 'ai_image',    emoji: '🎨', label: t('stem.climateExplorer.ai_image_generation', 'AI image generation'),                   kg: 0.015, max: 100, unit: 'images/week', note: t('stem.climateExplorer.dall_e_midjourney_stable_diffusion_10_', 'DALL-E / Midjourney / Stable Diffusion: ~10 to 30g per image. Much heavier than a text prompt.') },
-          { id: 'ai_video',    emoji: '🎥', label: t('stem.climateExplorer.ai_video_generation_short_clip', 'AI video generation (short clip)'),      kg: 0.15,  max: 50,  unit: 'clips/week', note: t('stem.climateExplorer.sora_runway_kling_100_500g_per_clip_sc', 'Sora / Runway / Kling: ~100 to 500g per clip. Scales linearly with clip length + resolution. Much heavier than a text prompt.') },
-          { id: 'ai_voice',    emoji: '🎙️', label: t('stem.climateExplorer.ai_voice_tts_generation', 'AI voice / TTS generation'),            kg: 0.002, max: 100, unit: 'clips/week', note: t('stem.climateExplorer.elevenlabs_murf_openai_tts_1_3g_per_sh', 'ElevenLabs / Murf / OpenAI TTS: ~1–3g per short clip.') },
-          { id: 'ai_code',     emoji: '👨‍💻', label: t('stem.climateExplorer.ai_code_assistant_completion', 'AI code assistant completion'),         kg: 0.005, max: 500, unit: 'completions/week', note: t('stem.climateExplorer.copilot_cursor_claude_code_long_contex', 'Copilot / Cursor / Claude Code: long-context code prompts ~5g each.') }
+          { id: 'ai_image',    emoji: '🎨', label: t('stem.climateExplorer.ai_image_generation', 'AI image generation'),                   kg: 0.0016, max: 100, unit: 'images/week', note: t('stem.climateExplorer.dall_e_midjourney_stable_diffusion_10__v2', 'The models tested used up to about 1.6 g per image (Luccioni et al., 2023). Much more than a text prompt.') },
+          { id: 'ai_video',    emoji: '🎥', label: t('stem.climateExplorer.ai_video_generation_short_clip', 'AI video generation (short clip)'),      kg: null,  max: 50,  unit: 'clips/week', note: t('stem.climateExplorer.ai_video_few_measurements_v3', 'Few public measurements exist yet. Video needs far more computing than text.') },
+          { id: 'ai_voice',    emoji: '🎙️', label: t('stem.climateExplorer.ai_voice_tts_generation', 'AI voice / TTS generation'),            kg: null, max: 100, unit: 'clips/week', note: t('stem.climateExplorer.ai_voice_few_measurements_v3', 'Few public measurements exist yet.') },
+          { id: 'ai_code',     emoji: '👨‍💻', label: t('stem.climateExplorer.ai_code_assistant_completion', 'AI code assistant completion'),         kg: null, max: 500, unit: 'completions/week', note: t('stem.climateExplorer.ai_code_few_measurements_v3', 'Few public measurements exist yet. Long code prompts need more computing than short chats.') }
         ],
         shopping: [
-          { id: 'tshirt',      emoji: '👕', label: t('stem.climateExplorer.new_t_shirt', 'New T-shirt'),                 kg: 7,   max: 52, unit: 'purchases/year', note: t('stem.climateExplorer.polyester_lifetime_of_oil_extraction', 'Polyester = lifetime of oil extraction.') },
-          { id: 'jeans',       emoji: '👖', label: t('stem.climateExplorer.new_jeans', 'New jeans'),                   kg: 33,  max: 20, unit: 'purchases/year', note: t('stem.climateExplorer.secondhand_zero_emissions', 'Secondhand = ~zero emissions.') },
-          { id: 'smartphone',  emoji: '📱', label: t('stem.climateExplorer.new_smartphone', 'New smartphone'),              kg: 70,  max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.keep_phones_3_years_to_halve_annual_im', 'Keep phones 3+ years to halve annual impact.') },
-          { id: 'laptop',      emoji: '💻', label: t('stem.climateExplorer.new_laptop', 'New laptop'),                  kg: 300, max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.manufacturing_dominates_laptop_emissio', 'Manufacturing dominates laptop emissions.') },
-          { id: 'online_order',emoji: '📦', label: t('stem.climateExplorer.online_shipment_single_box', 'Online shipment (single box)'),kg: 0.5, max: 52, unit: 'orders/week', note: t('stem.climateExplorer.2_day_shipping_3_slower_shipping', '2-day shipping = 3× slower shipping.') },
-          { id: 'fastfashion', emoji: '🛍️', label: t('stem.climateExplorer.fast_fashion_bundle', 'Fast fashion bundle'),         kg: 25,  max: 24, unit: 'purchases/year', note: t('stem.climateExplorer.shein_temu_avg_25_kg_per_order', 'Shein/Temu avg: 25 kg per order.') }
+          { id: 'tshirt',      emoji: '👕', label: t('stem.climateExplorer.new_t_shirt', 'New T-shirt'),                 kg: null,   max: 52, unit: 'purchases/year', note: t('stem.climateExplorer.polyester_lifetime_of_oil_extraction_v2', 'Polyester is made from oil.') },
+          { id: 'jeans',       emoji: '👖', label: t('stem.climateExplorer.new_jeans', 'New jeans'),                   kg: 33,  max: 20, unit: 'purchases/year', note: t('stem.climateExplorer.jeans_levi_lca_v3', 'One maker’s study of one pair (Levi Strauss, 2015): about 33 kg CO₂e over its whole life. Washing and drying are about a third of that. Buying secondhand skips the making part.') },
+          { id: 'smartphone',  emoji: '📱', label: t('stem.climateExplorer.new_smartphone', 'New smartphone'),              kg: 56,  max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.phone_apple_per_v3', 'One maker’s report for one phone (Apple, 2024): about 56 kg CO₂e over its whole life, 80% of it from making it. Keeping a phone longer spreads that over more years.') },
+          { id: 'laptop',      emoji: '💻', label: t('stem.climateExplorer.new_laptop', 'New laptop'),                  kg: 120, max: 4,  unit: 'purchases/year', note: t('stem.climateExplorer.laptop_apple_per_v3', 'One maker’s report for one thin laptop (Apple, 2025): about 120 kg CO₂e over its whole life. Making it is the biggest part.') },
+          { id: 'online_order',emoji: '📦', label: t('stem.climateExplorer.online_shipment_single_box', 'Online shipment (single box)'),kg: null, max: 52, unit: 'orders/week', note: t('stem.climateExplorer.2_day_shipping_3_slower_shipping_v2', 'Combining orders into one box means fewer deliveries.') },
+          { id: 'fastfashion', emoji: '🛍️', label: t('stem.climateExplorer.fast_fashion_bundle', 'Fast fashion bundle'),         kg: null,  max: 24, unit: 'purchases/year', note: t('stem.climateExplorer.shein_temu_avg_25_kg_per_order_v2', 'Cheap clothes worn only a few times add up fast.') }
         ],
         waste: [
-          { id: 'landfill',    emoji: '🗑️', label: t('stem.climateExplorer.landfill_trash_1_bag', 'Landfill trash (1 bag)'),      kg: 4.5, max: 7,  unit: 'bags/week', note: t('stem.climateExplorer.landfills_produce_methane_28_more_pote_2', 'Landfills produce methane (28× more potent than CO₂).') },
-          { id: 'recycle',     emoji: '♻️', label: t('stem.climateExplorer.recycling_diverted_1_bag', 'Recycling diverted (1 bag)'),  kg: -1.5, max: 7, unit: 'bags/week', note: t('stem.climateExplorer.negative_recycling_avoids_emissions', 'Negative! Recycling avoids emissions.') },
-          { id: 'compost',     emoji: '🌱', label: t('stem.climateExplorer.composting_1_bag', 'Composting (1 bag)'),          kg: -2,  max: 7,  unit: 'bags/week', note: t('stem.climateExplorer.avoids_methane_and_builds_soil_carbon', 'Avoids methane AND builds soil carbon.') },
-          { id: 'bottled_water',emoji: '💧', label: t('stem.climateExplorer.bottled_water', 'Bottled water'),              kg: 0.08, max: 50, unit: 'bottles/week', note: t('stem.climateExplorer.tap_water_500_cleaner_emissions_wise', 'Tap water = ~500× cleaner emissions-wise.') }
+          { id: 'landfill',    emoji: '🗑️', label: t('stem.climateExplorer.landfill_trash_1_bag', 'Landfill trash (1 bag)'),      kg: gtR(GT.landfill), max: 7,  unit: 'bags/week', note: t('stem.climateExplorer.landfill_bag_methane_ar6_v3', 'A bag here is 15 lb of trash, about 3 days of one person’s trash (EPA). Landfills make methane: over 100 years it warms about 27 times as much as the same mass of CO₂ (IPCC, 2021).') },
+          { id: 'recycle',     emoji: '♻️', label: t('stem.climateExplorer.recycling_1_bag_v3', 'Recycling (1 bag)'),  kg: gtR(GT.recycle), max: 7, unit: 'bags/week', divert: true, note: t('stem.climateExplorer.recycling_bag_saves_v3', 'Counts the trucks and sorting (EPA). Sending a bag to recycling instead of the landfill cuts about {kg} kg.').replace('{kg}', gtR(GT.landfill - GT.recycle)) },
+          { id: 'compost',     emoji: '🌱', label: t('stem.climateExplorer.composting_1_bag', 'Composting (1 bag)'),          kg: gtR(GT.compost),  max: 7,  unit: 'bags/week', divert: true, note: t('stem.climateExplorer.compost_bag_saves_v3', 'Composting food scraps makes far less methane than a landfill. Instead of the landfill, it cuts about {kg} kg a bag (EPA).').replace('{kg}', gtR(GT.landfill - GT.compost)) },
+          { id: 'bottled_water',emoji: '💧', label: t('stem.climateExplorer.bottled_water', 'Bottled water'),              kg: null, max: 50, unit: 'bottles/week', note: t('stem.climateExplorer.tap_water_500_cleaner_emissions_wise_v2', 'Tap water has a much smaller footprint than bottled water.') }
         ]
       };
 
-      // Annual per-capita CO₂e (kg) — 2023 Our World in Data + EDGAR
+      // CO₂ per person from fossil fuels and industry, 2024, rounded to 0.1 t.
+      // Source: Our World in Data / Global Carbon Budget, "Per capita CO₂
+      // emissions" (ourworldindata.org/grapher/co-emissions-per-capita).
+      // These are CO₂ only (not CO₂e), the same unit as the 2.3 t benchmark.
+      var NATIONAL_AVERAGES_SOURCE = 'Our World in Data / Global Carbon Budget, 2024';
+      var GLOBAL_AVG_KG = 4700;
+      var PARIS_SHARE_KG = 2300;
       var NATIONAL_AVERAGES = [
-        { country: 'Qatar',         emoji: '🇶🇦', kg: 35500, rank: 'highest' },
-        { country: 'USA',           emoji: '🇺🇸', kg: 14700, rank: 'high' },
-        { country: 'Australia',     emoji: '🇦🇺', kg: 15100, rank: 'high' },
-        { country: 'Canada',        emoji: '🇨🇦', kg: 14200, rank: 'high' },
-        { country: 'Russia',        emoji: '🇷🇺', kg: 11400, rank: 'high' },
-        { country: 'Germany',       emoji: '🇩🇪', kg: 8100,  rank: 'moderate' },
-        { country: 'Japan',         emoji: '🇯🇵', kg: 7900,  rank: 'moderate' },
-        { country: 'China',         emoji: '🇨🇳', kg: 7400,  rank: 'moderate' },
-        { country: 'UK',            emoji: '🇬🇧', kg: 5200,  rank: 'moderate' },
-        { country: 'Global avg',    emoji: '🌍', kg: 4500,  rank: 'global', highlight: true },
-        { country: 'Mexico',        emoji: '🇲🇽', kg: 2900,  rank: 'low' },
-        { country: 'India',         emoji: '🇮🇳', kg: 1900,  rank: 'low' },
-        { country: 'Paris-aligned', emoji: '🎯', kg: 2300,  rank: 'target', highlight: true, note: t('stem.climateExplorer.what_every_person_needs_to_reach_by_20', 'What every person needs to reach by 2030 to stay below 1.5°C.') },
+        { country: 'Qatar',         emoji: '🇶🇦', kg: 33200, rank: 'highest' },
+        { country: 'Australia',     emoji: '🇦🇺', kg: 14400, rank: 'high' },
+        { country: 'USA',           emoji: '🇺🇸', kg: 14200, rank: 'high' },
+        { country: 'Canada',        emoji: '🇨🇦', kg: 13600, rank: 'high' },
+        { country: 'Russia',        emoji: '🇷🇺', kg: 12300, rank: 'high' },
+        { country: 'China',         emoji: '🇨🇳', kg: 8700,  rank: 'moderate' },
+        { country: 'Japan',         emoji: '🇯🇵', kg: 7800,  rank: 'moderate' },
+        { country: 'Germany',       emoji: '🇩🇪', kg: 6800,  rank: 'moderate' },
+        { country: 'Global avg',    emoji: '🌍', kg: GLOBAL_AVG_KG,  rank: 'global', highlight: true },
+        { country: 'UK',            emoji: '🇬🇧', kg: 4600,  rank: 'moderate' },
+        { country: 'Mexico',        emoji: '🇲🇽', kg: 3600,  rank: 'low' },
+        { country: 'India',         emoji: '🇮🇳', kg: 2200,  rank: 'low' },
+        // Oxfam, IEEP & SEI, "Carbon inequality in 2030" (Nov 2021): the
+        // average CO₂ per person in 2030 that fits a 1.5°C path.
+        { country: '1.5°C share (2030)', emoji: '🎯', kg: PARIS_SHARE_KG,  rank: 'target', highlight: true, note: t('stem.climateExplorer.paris_share_note_v2', 'The average CO₂ per person in 2030 that fits a 1.5°C path (Oxfam, IEEP and SEI, 2021).') },
         { country: 'Bangladesh',    emoji: '🇧🇩', kg: 600,   rank: 'low' },
         { country: 'Kenya',         emoji: '🇰🇪', kg: 400,   rank: 'low' }
       ];
 
+      // One model for every footprint number on this tab: each answer adds the
+      // kg CO2 per year printed on its button. An unanswered question adds
+      // nothing and keeps `complete` false, so no total is shown as the
+      // student's until all four are answered.
+      var CC_KEYS = { transport: 'ccTransport', food: 'ccFood', energy: 'ccEnergy', waste: 'ccWaste' };
+      function carbonFootprintFor(idx) {
+        var out = { answered: 0, total: 0 };
+        Object.keys(CC_KEYS).forEach(function(cat) {
+          var i = idx[CC_KEYS[cat]];
+          var opt = (typeof i === 'number' && i >= 0) ? CARBON[cat].opts[i] : null;
+          out[cat] = opt ? opt.kg : 0;
+          if (opt) out.answered++;
+          out.total += out[cat];
+        });
+        out.complete = out.answered === 4;
+        return out;
+      }
       function carbonTotal() {
-        var tr = CARBON.transport.opts[ccTransport].kg;
-        var fd = CARBON.food.opts[ccFood].kg;
-        var en = CARBON.energy.opts[ccEnergy].kg;
-        var ws = CARBON.waste.opts[ccWaste].kg;
-        return { transport: tr, food: fd, energy: en, waste: ws, total: tr + fd + en + ws };
+        return carbonFootprintFor({ ccTransport: ccTransport, ccFood: ccFood, ccEnergy: ccEnergy, ccWaste: ccWaste });
       }
 
       var ct = carbonTotal();
@@ -965,16 +1078,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // Same sum, but with ONE category overridden by a value that has not
       // reached state yet. Click handlers need this: the cc* variables above
       // are render-time captures, so they cannot see the choice being made.
-      function carbonTotalWith(stateKey, optIdx) {
+      function carbonFootprintWith(stateKey, optIdx) {
         var idx = {
           ccTransport: ccTransport, ccFood: ccFood,
           ccEnergy: ccEnergy, ccWaste: ccWaste
         };
         idx[stateKey] = optIdx;
-        return CARBON.transport.opts[idx.ccTransport].kg +
-          CARBON.food.opts[idx.ccFood].kg +
-          CARBON.energy.opts[idx.ccEnergy].kg +
-          CARBON.waste.opts[idx.ccWaste].kg;
+        return carbonFootprintFor(idx);
+      }
+      function carbonTotalWith(stateKey, optIdx) { return carbonFootprintWith(stateKey, optIdx).total; }
+
+      // "Which ONE change would cut your footprint the most?" For each
+      // category, the saving is what you emit now minus the lowest option in
+      // that category -- straight from the same option table. Ties share the
+      // top spot, so any tied answer counts as right.
+      var CC_LEVER_LABELS = {
+        transport: t('stem.climateExplorer.cc_lever_transport', 'How I get to school'),
+        food: t('stem.climateExplorer.cc_lever_food', 'What I eat'),
+        energy: t('stem.climateExplorer.cc_lever_energy', 'What powers my home'),
+        waste: t('stem.climateExplorer.cc_lever_waste', 'What happens to my trash')
+      };
+      function carbonLevers(foot) {
+        var rows = Object.keys(CC_KEYS).map(function(cat) {
+          var low = CARBON[cat].opts.reduce(function(best, o) { return o.kg < best.kg ? o : best; }, CARBON[cat].opts[0]);
+          return { cat: cat, now: foot[cat], best: low, save: Math.max(0, foot[cat] - low.kg) };
+        });
+        var top = rows.reduce(function(m, r) { return Math.max(m, r.save); }, 0);
+        rows.forEach(function(r) { r.isTop = top > 0 && r.save === top; });
+        rows.sort(function(a, b) { return b.save - a.save; });
+        return { rows: rows, top: top };
+      }
+      var ccSignature = [ccTransport, ccFood, ccEnergy, ccWaste].join(',');
+      var ccPrediction = (d.ccPrediction && typeof d.ccPrediction === 'object' && CC_KEYS[d.ccPrediction.pick] && typeof d.ccPrediction.sig === 'string') ? d.ccPrediction : null;
+      var ccPredictionCurrent = !!(ccPrediction && ccPrediction.sig === ccSignature);
+      var ccLevers = carbonLevers(ct);
+      // Predict first: once all four are answered, the student commits to a
+      // guess about the biggest cut BEFORE the breakdown and benchmarks show.
+      // If every answer is already the lowest option there is nothing to cut,
+      // so there is nothing to predict.
+      var ccNeedsPrediction = ct.complete && ccLevers.top > 0;
+      var ccShowResults = ct.complete && (!ccNeedsPrediction || !!ccPrediction);
+      function predictCarbonLever(cat) {
+        var row = ccLevers.rows.filter(function(r) { return r.cat === cat; })[0];
+        var right = !!(row && row.isTop);
+        upd({ ccPrediction: { pick: cat, sig: ccSignature, at: Date.now() }, carbonStatus: right
+          ? t('stem.climateExplorer.cc_predict_right', 'Your prediction was right. Your results are below.')
+          : t('stem.climateExplorer.cc_predict_saved', 'Prediction saved. Compare it with the results below.') });
+        playSound(right ? 'correct' : 'calculate');
+        if (right) awardXPOnce('carbon-predict', 10);
+        checkAllPredictions({ ccPrediction: { pick: cat } });
+        focusClimate('ce-carbon-predict');
+      }
+      function renderCarbonGate() {
+        if (!ct.complete) {
+          return el('div', { id: 'ce-carbon-progress', style: { padding: 14, borderRadius: 12, background: quizColors.raised, border: '1px dashed ' + quizColors.border, textAlign: 'center', marginTop: 8 } },
+            el('p', { style: { margin: 0, fontSize: 15, fontWeight: 800, color: quizColors.text } },
+              t('stem.climateExplorer.cc_progress', '{n} of 4 questions answered').replace('{n}', ct.answered)),
+            el('p', { style: { margin: '6px 0 0', fontSize: 13, color: quizColors.muted, lineHeight: 1.5 } },
+              t('stem.climateExplorer.cc_progress_help', 'Pick the answer closest to your real life in each group. Your estimate appears when all 4 are answered.')));
+        }
+        if (!ccNeedsPrediction) {
+          return el('p', { id: 'ce-carbon-predict', tabIndex: -1, style: { margin: '8px 0 0', padding: 12, borderRadius: 12, background: quizColors.raised, border: '1px solid ' + quizColors.border, fontSize: 13, lineHeight: 1.5, color: quizColors.text } },
+            t('stem.climateExplorer.cc_already_lowest', 'You picked the lowest-carbon answer in every group, so this calculator has no bigger cut to suggest. The habit tracker below counts more of your life.'));
+        }
+        var pickedRow = ccPrediction ? ccLevers.rows.filter(function(r) { return r.cat === ccPrediction.pick; })[0] : null;
+        var topRows = ccLevers.rows.filter(function(r) { return r.isTop; });
+        var asking = !ccPredictionCurrent;
+        return el('section', { id: 'ce-carbon-predict', role: 'region', tabIndex: -1, 'aria-labelledby': 'ce-carbon-predict-title',
+            style: { marginTop: 8, padding: 14, borderRadius: 12, background: quizColors.raised, border: '2px solid ' + (asking ? quizColors.focus : (pickedRow && pickedRow.isTop ? quizColors.correct : quizColors.border)) } },
+          el('h4', { id: 'ce-carbon-predict-title', style: { margin: '0 0 6px', fontSize: 15, fontWeight: 900, color: quizColors.text } },
+            asking ? '🤔 ' + t('stem.climateExplorer.cc_predict_title', 'Predict first: which ONE change would cut your footprint the most?')
+                   : '🔍 ' + t('stem.climateExplorer.cc_predict_result_title', 'Your prediction, checked')),
+          asking && el('p', { style: { margin: '0 0 10px', fontSize: 13, color: quizColors.muted, lineHeight: 1.5 } },
+            ccPrediction
+              ? t('stem.climateExplorer.cc_predict_again', 'You changed an answer, so predict again for your new choices.')
+              : t('stem.climateExplorer.cc_predict_help', 'Imagine switching ONE group to its lowest-carbon answer. Which switch saves the most? Pick, then see your results.')),
+          asking && el('div', { role: 'group', 'aria-labelledby': 'ce-carbon-predict-title', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 8 } },
+            Object.keys(CC_KEYS).map(function(cat) {
+              return el('button', { key: cat, id: 'ce-carbon-predict-' + cat, type: 'button', onClick: function() { predictCarbonLever(cat); },
+                style: { minHeight: 48, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + quizColors.border, background: quizColors.panel, color: quizColors.text, fontSize: 14, fontWeight: 700, textAlign: 'left', cursor: 'pointer' } },
+                CARBON[cat].emoji + ' ' + CC_LEVER_LABELS[cat]);
+            })),
+          !asking && pickedRow && el('div', null,
+            el('p', { style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800, color: pickedRow.isTop ? quizColors.correct : quizColors.text } },
+              (pickedRow.isTop ? t('stem.climateExplorer.cc_predict_yes', 'Yes!') + ' ' : t('stem.climateExplorer.cc_predict_not_quite', 'Not this time.') + ' ') +
+              t('stem.climateExplorer.cc_predict_biggest', 'Biggest cut: {lever}, switching to {best} saves {kg} kg a year.')
+                .replace('{lever}', CC_LEVER_LABELS[topRows[0].cat]).replace('{best}', topRows[0].best.label).replace('{kg}', Math.round(topRows[0].save).toLocaleString())),
+            el('ul', { style: { margin: '0 0 8px', paddingLeft: 20, fontSize: 13, lineHeight: 1.6, color: quizColors.text } },
+              ccLevers.rows.map(function(r) {
+                return el('li', { key: r.cat, style: { fontWeight: r.cat === pickedRow.cat ? 800 : 400 } },
+                  CC_LEVER_LABELS[r.cat] + ': ' + (r.save > 0
+                    ? t('stem.climateExplorer.cc_lever_row', 'save {kg} kg ({now} now, {low} for {best})').replace('{kg}', Math.round(r.save).toLocaleString()).replace('{now}', r.now.toLocaleString()).replace('{low}', r.best.kg.toLocaleString()).replace('{best}', r.best.label)
+                    : t('stem.climateExplorer.cc_lever_row_zero', 'already the lowest answer')) +
+                  (r.cat === pickedRow.cat ? ' ← ' + t('stem.climateExplorer.cc_your_pick', 'your pick') : ''));
+              })),
+            el('p', { style: { margin: 0, fontSize: 13, color: quizColors.muted, lineHeight: 1.5 } },
+              t('stem.climateExplorer.cc_predict_why', 'Why: the biggest cut is the group with the largest gap between your answer and its lowest option. A group can feel important and still have a small gap.')),
+            renderCarbonPlan()));
+      }
+      // Evidence checks (2026-11-23 follow-up): Data Diver, Scenario Tester and Justice Explorer come from
+      // one answer each, worked out from the tool's own model or data, not from clicks.
+      // cfg: id, stateKey, title, question, options [{key,label}], correct, why(key) -> sentence, lock (predict mode).
+      function evidenceRecord(stateKey) { var r = d[stateKey]; return r && typeof r === 'object' && typeof r.pick === 'string' ? r : null; }
+      function renderEvidenceCheck(cfg) {
+        var C = cfg.colors || quizColors; // the Justice tab draws on its own dark panel
+        var rec = evidenceRecord(cfg.stateKey);
+        var known = rec && cfg.options.some(function(o) { return o.key === rec.pick; }) ? rec : null;
+        var done = !!known && (known.pick === cfg.correct || cfg.lock);
+        return el('section', { id: cfg.id, role: 'region', 'aria-labelledby': cfg.id + '-title', style: { marginTop: 12, marginBottom: 12, padding: 12, borderRadius: 10, background: C.raised, border: '2px solid ' + (known ? (known.pick === cfg.correct ? C.correct : C.border) : C.focus) } },
+          el('h5', { id: cfg.id + '-title', style: { margin: '0 0 4px', fontSize: 14, fontWeight: 900, color: C.text } }, cfg.title),
+          el('p', { id: cfg.id + '-q', style: { margin: '0 0 8px', fontSize: 13, lineHeight: 1.5, color: C.text } }, cfg.question),
+          !done && el('div', { role: 'group', 'aria-labelledby': cfg.id + '-q', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,130px),1fr))', gap: 6 } },
+            cfg.options.map(function(o) {
+              return el('button', { key: o.key, id: cfg.id + '-opt-' + o.key, type: 'button', 'aria-pressed': !!known && known.pick === o.key,
+                onClick: function() {
+                  var right = o.key === cfg.correct;
+                  var patch = {}; patch[cfg.stateKey] = { pick: o.key, right: right, mode: cfg.lock ? 'predict' : 'explain', at: Date.now() };
+                  upd(patch); playSound(right ? 'correct' : 'calculate');
+                  if (cfg.onAnswer) cfg.onAnswer(o.key, right);
+                  if (announceToSR) announceToSR(cfg.why(o.key));
+                },
+                style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: '1px solid ' + C.border, background: C.panel, color: C.text, fontSize: 13, fontWeight: 700, textAlign: 'left', cursor: 'pointer' } }, o.label);
+            })),
+          el('p', { id: cfg.id + '-feedback', role: 'status', 'aria-live': 'polite', style: { margin: known ? '8px 0 0' : 0, fontSize: 13, lineHeight: 1.5, fontWeight: 700, color: known && known.pick === cfg.correct ? C.correct : C.text } },
+            known ? cfg.why(known.pick) : ''));
+      }
+      // Scale views: totals grow in step with the number of people sharing the same choices.
+      var CC_SCALE_PEOPLE = { city: 100000, country: 330000000 };
+      var CC_SCALE_RATIO = CC_SCALE_PEOPLE.country / CC_SCALE_PEOPLE.city;
+      function scaleEvidenceCfg() {
+        var opts = [CC_SCALE_RATIO / 10, CC_SCALE_RATIO / 100, CC_SCALE_RATIO * 10, CC_SCALE_RATIO]; // right answer last here; 2nd (justice) and 3rd (energy) elsewhere
+        return { id: 'ce-carbon-scale-check', stateKey: 'scaleEvidence', correct: String(CC_SCALE_RATIO),
+          title: '📊 ' + t('stem.climateExplorer.scale_check_title', 'Data check'),
+          question: t('stem.climateExplorer.scale_check_q', 'The Country view counts {country} people and the City view counts {city}. The Country total is how many times the City total? Try both views to check.').replace('{country}', CC_SCALE_PEOPLE.country.toLocaleString()).replace('{city}', CC_SCALE_PEOPLE.city.toLocaleString()),
+          options: opts.map(function(v) { return { key: String(v), label: v.toLocaleString() + '×' }; }),
+          why: function(k) {
+            var v = Number(k);
+            if (v === CC_SCALE_RATIO) return t('stem.climateExplorer.scale_check_right', 'Right. Everyone adds the same amount, so the total grows with the number of people: {country} ÷ {city} = {ratio}.').replace('{country}', CC_SCALE_PEOPLE.country.toLocaleString()).replace('{city}', CC_SCALE_PEOPLE.city.toLocaleString()).replace('{ratio}', CC_SCALE_RATIO.toLocaleString());
+            return t('stem.climateExplorer.scale_check_wrong', 'Not quite: {pick} is {factor} times too {dir}. Divide the people: {country} ÷ {city}. Then compare the two totals.').replace('{pick}', v.toLocaleString()).replace('{factor}', Math.round(v > CC_SCALE_RATIO ? v / CC_SCALE_RATIO : CC_SCALE_RATIO / v).toLocaleString()).replace('{dir}', v > CC_SCALE_RATIO ? t('stem.climateExplorer.scale_check_big', 'big') : t('stem.climateExplorer.scale_check_small', 'small')).replace('{country}', CC_SCALE_PEOPLE.country.toLocaleString()).replace('{city}', CC_SCALE_PEOPLE.city.toLocaleString());
+          },
+          onAnswer: function(k, right) { if (right) earnBadge('dataDiver'); } };
+      }
+      // Action plan: choose changes; each saving and the new total come from carbonLevers, the calculator's own numbers.
+      function carbonPlanFor(pick) {
+        var rows = ccLevers.rows.filter(function(r) { return r.save > 0 && pick[r.cat] === true; });
+        var save = rows.reduce(function(sum, r) { return sum + r.save; }, 0);
+        return { rows: rows, save: save, after: ct.total - save };
+      }
+      function renderCarbonPlan() {
+        var choices = ccLevers.rows.filter(function(r) { return r.save > 0; });
+        if (!choices.length) return null;
+        var rawPick = d.ccPlanPick && typeof d.ccPlanPick === 'object' && !Array.isArray(d.ccPlanPick) ? d.ccPlanPick : {};
+        var pick = {}; choices.forEach(function(r) { if (rawPick[r.cat] === true) pick[r.cat] = true; });
+        var plan = carbonPlanFor(pick);
+        var saved = d.ccPlan && typeof d.ccPlan === 'object' && d.ccPlan.sig === ccSignature ? d.ccPlan : null;
+        return el('section', { id: 'ce-carbon-plan', role: 'region', 'aria-labelledby': 'ce-carbon-plan-title', style: { marginTop: 12, padding: 12, borderRadius: 10, background: quizColors.panel, border: '1px solid ' + quizColors.border } },
+          el('h5', { id: 'ce-carbon-plan-title', style: { margin: '0 0 6px', fontSize: 14, fontWeight: 900, color: quizColors.text } }, '\u270A ' + t('stem.climateExplorer.cc_plan_title', 'Build your action plan')),
+          el('p', { style: { margin: '0 0 8px', fontSize: 13, color: quizColors.muted, lineHeight: 1.5 } }, t('stem.climateExplorer.cc_plan_help', 'Pick the changes you could really make. Each saving comes from your answers above.')),
+          el('div', { role: 'group', 'aria-labelledby': 'ce-carbon-plan-title', style: { display: 'grid', gap: 6 } },
+            choices.map(function(r) {
+              var on = !!pick[r.cat];
+              return el('button', { key: r.cat, id: 'ce-carbon-plan-' + r.cat, type: 'button', 'aria-pressed': on,
+                onClick: function() { var next = Object.assign({}, pick); if (on) delete next[r.cat]; else next[r.cat] = true; upd('ccPlanPick', next); },
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, textAlign: 'left', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: quizColors.text, background: on ? quizColors.raised : quizColors.panel, border: (on ? '2px solid ' + quizColors.correct : '1px solid ' + quizColors.border) } },
+                (on ? '\u2611 ' : '\u2610 ') + t('stem.climateExplorer.cc_plan_row', '{lever}: switch to {best}, save {kg} kg').replace('{lever}', CC_LEVER_LABELS[r.cat]).replace('{best}', r.best.label).replace('{kg}', Math.round(r.save).toLocaleString()));
+            })),
+          el('p', { id: 'ce-carbon-plan-sum', role: 'status', 'aria-live': 'polite', style: { margin: '8px 0', fontSize: 14, fontWeight: 800, color: quizColors.text } },
+            plan.rows.length
+              ? t('stem.climateExplorer.cc_plan_sum', 'This plan saves {save} kg a year: from {now} to {after} kg.').replace('{save}', Math.round(plan.save).toLocaleString()).replace('{now}', Math.round(ct.total).toLocaleString()).replace('{after}', Math.round(plan.after).toLocaleString())
+              : t('stem.climateExplorer.cc_plan_empty', 'No changes picked yet.')),
+          el('button', { id: 'ce-carbon-plan-save', type: 'button', disabled: !plan.rows.length,
+            onClick: function() {
+              if (!plan.rows.length) return;
+              upd('ccPlan', { cats: plan.rows.map(function(r) { return r.cat; }), save: Math.round(plan.save), after: Math.round(plan.after), sig: ccSignature, at: Date.now() });
+              earnBadge('actionPlanner');
+              if (announceToSR) announceToSR(t('stem.climateExplorer.cc_plan_saved', 'Plan saved. It saves {save} kg a year.').replace('{save}', Math.round(plan.save).toLocaleString()));
+            },
+            style: { minHeight: 44, padding: '8px 16px', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: plan.rows.length ? 'pointer' : 'not-allowed', opacity: plan.rows.length ? 1 : 0.6, color: quizColors.text, background: quizColors.raised, border: '2px solid ' + quizColors.correct } },
+            t('stem.climateExplorer.cc_plan_save', 'Save my plan')),
+          saved && el('p', { id: 'ce-carbon-plan-saved', style: { margin: '8px 0 0', fontSize: 13, color: quizColors.correct, fontWeight: 700 } },
+            t('stem.climateExplorer.cc_plan_saved_line', 'Saved plan: {save} kg a year less, {after} kg in all.').replace('{save}', Number(saved.save).toLocaleString()).replace('{after}', Number(saved.after).toLocaleString())));
       }
 
       // ── Granular calculator state & helpers ──
@@ -992,7 +1275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // Compute annual kg for a single item given current frequency
       function itemAnnualKg(item, freq) {
-        if (!freq) return 0;
+        if (!freq || typeof item.kg !== 'number') return 0; // kg null: no sourced number, not counted
         if (item.unit === 'flights/year' || item.unit === 'purchases/year') return item.kg * freq;
         return item.kg * freq * 52; // weekly frequency × 52 weeks
       }
@@ -1027,21 +1310,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // ── Hope Meter milestones ──
       var HOPE_MILESTONES = [
-        { id: 'started', label: t('stem.climateExplorer.started_exploring', 'Started Exploring'), check: function() { return Object.keys(tabsVisited).length > 0; } },
+        // Opening a tab is not evidence of anything; a committed prediction is.
+        { id: 'predicted', label: t('stem.climateExplorer.made_a_prediction', 'Made a prediction'), check: function() { return !!ccPrediction || !!(d.kcPredict && d.kcPredict.locked === true) || Number.isInteger(d.tpPredict); } },
         { id: 'calculated', label: t('stem.climateExplorer.calculated_footprint', 'Calculated Footprint'), check: function() { return !!badges.firstCalc; } },
-        { id: 'lowCarbon', label: t('stem.climateExplorer.low_carbon_lifestyle', 'Low-Carbon Lifestyle'), check: function() { return ct.total < 2000; } },
+        { id: 'lowCarbon', label: t('stem.climateExplorer.low_carbon_lifestyle', 'Low-Carbon Lifestyle'), check: function() { return ct.complete && ct.total < 2000; } },
         { id: 'designedMix', label: t('stem.climateExplorer.designed_energy_mix', 'Designed Energy Mix'), check: function() { return rsSolar + rsWind + rsHydro + rsNuclear > 60; } },
         { id: 'netZero', label: t('stem.climateExplorer.near_net_zero_mix', 'Near Net-Zero Mix'), check: function() { return !!badges.netZero; } },
         { id: 'justiceAware', label: t('stem.climateExplorer.explored_justice', 'Explored Justice'), check: function() { return Object.keys(d.regionsViewed || {}).length >= 3; } },
         { id: 'solutions', label: t('stem.climateExplorer.learned_solutions', 'Learned Solutions'), check: function() { return Object.keys(solutionsViewed).length >= 4; } },
         { id: 'action', label: t('stem.climateExplorer.took_action', 'Took Action'), check: function() { return !!badges.actionPlanner; } },
         { id: 'quizAce', label: t('stem.climateExplorer.aced_the_quiz', 'Aced the Quiz'), check: function() { return quizCorrect >= 5; } },
-        { id: 'allTabs', label: t('stem.climateExplorer.explored_everything', 'Explored Everything'), check: function() { return !!badges.allTabs; } }
+        { id: 'allTabs', label: t('stem.climateExplorer.explored_everything_v2', 'Predicted in all 3 activities'), check: function() { return !!badges.allTabs; } }
       ];
       var hopePts = HOPE_MILESTONES.filter(function(m) { return m.check(); }).length;
       var hopePct = Math.round(hopePts / HOPE_MILESTONES.length * 100);
 
-      var scaleMult = ccScale === 'school' ? ccSchoolSize : ccScale === 'city' ? 100000 : 330000000;
+      var scaleMult = ccScale === 'school' ? ccSchoolSize : ccScale === 'city' ? CC_SCALE_PEOPLE.city : CC_SCALE_PEOPLE.country;
       var scaleLabel = ccScale === 'school' ? ccSchoolSize + ' students' : ccScale === 'city' ? '100K city' : 'USA (330M)';
 
       // ══════════════════════════════════════
@@ -1217,10 +1501,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       }
 
       var SCENARIOS = [
-        { label: t('stem.climateExplorer.100_solar_city', '100% Solar City'), mix: [100, 0, 0, 0], storage: 0, desc: t('stem.climateExplorer.cities_like_burlington_vt_already_run_', 'Cities like Burlington, VT already run on 100% renewable electricity!'), hope: 'Solar is now the cheapest electricity source in history.' },
-        { label: t('stem.climateExplorer.balanced_green_mix', 'Balanced Green Mix'), mix: [30, 30, 20, 15], storage: 30, desc: t('stem.climateExplorer.a_diverse_portfolio_is_the_most_resili', 'A diverse portfolio is the most resilient approach.'), hope: 'Sweden and France already achieve over 90% clean electricity.' },
-        { label: t('stem.climateExplorer.wind_powered_future', 'Wind-Powered Future'), mix: [10, 60, 10, 10], storage: 55, desc: t('stem.climateExplorer.denmark_gets_55_of_electricity_from_wi', 'Denmark gets 55% of electricity from wind already.'), hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
-        { label: t('stem.climateExplorer.current_pace', 'Current Pace'), mix: [15, 12, 15, 10], storage: 10, desc: t('stem.climateExplorer.the_world_adds_renewables_faster_than_', 'The world adds renewables faster than ever.'), hope: 'Solar capacity doubles every 2-3 years worldwide.' }
+        { label: t('stem.climateExplorer.100_solar_city', '100% Solar City'), mix: [100, 0, 0, 0], storage: 0, desc: t('stem.climateExplorer.cities_like_burlington_vt_already_run_', 'Cities like Burlington, VT already run on 100% renewable electricity!'), hope: 'Where loans are cheap and sunshine is strong, solar is now the cheapest new electricity ever (IEA, 2020).' },
+        { label: t('stem.climateExplorer.balanced_green_mix', 'Balanced Green Mix'), mix: [30, 30, 20, 15], storage: 30, desc: t('stem.climateExplorer.a_diverse_portfolio_is_the_most_resili', 'A diverse portfolio is the most resilient approach.'), hope: 'In 2024, Sweden and France made over 90% of their electricity without fossil fuels, counting nuclear (Ember, via Our World in Data).' },
+        { label: t('stem.climateExplorer.wind_powered_future', 'Wind-Powered Future'), mix: [10, 60, 10, 10], storage: 55, desc: t('stem.climateExplorer.denmark_wind_over_half_2024_v2', 'Wind made more than half of Denmark’s electricity in 2024.'), hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
+        { label: t('stem.climateExplorer.current_pace', 'Current Pace'), mix: [15, 12, 15, 10], storage: 10, desc: t('stem.climateExplorer.the_world_adds_renewables_faster_than_', 'The world adds renewables faster than ever.'), hope: 'The world’s solar power capacity more than doubled from 2021 to 2024 (IRENA, via Our World in Data).' }
       ];
       var selectedRenewablesPreset=-1;
       SCENARIOS.forEach(function(scenario,index){if(scenario.mix[0]===rsSolar&&scenario.mix[1]===rsWind&&scenario.mix[2]===rsHydro&&scenario.mix[3]===rsNuclear&&(scenario.storage||0)===rsStorage)selectedRenewablesPreset=index;});
@@ -1253,71 +1537,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         var reliable=renewablesReliabilityFor(patch)>=RELIABILITY_TARGET;
         patch.rsControlStatus=t('stem.climateExplorer.renewables_preset_selected','Preset selected: {preset}. {reliability}').replace('{preset}',scenario.label).replace('{reliability}',reliable?t('stem.climateExplorer.sr_reliable','Reliable. This mix can now serve demand around the clock.'):t('stem.climateExplorer.sr_brownout','Brownout risk. This mix no longer has enough firm capacity to meet demand.'));
         patch.rsMixFeedback='';applyRenewablesChange(patch);playSound('scenario');
-        if(Object.keys(visited).length>=SCENARIOS.length&&!badges.scenarioTester)earnBadge('scenarioTester');
+        // Scenario Tester: a prediction first, then all 4 presets tested (or, if all 4 were tried before
+        // predicting, a right answer to the same question). See scenarioEvidenceCfg.
+        var rsRec=evidenceRecord('rsPredict');if(Object.keys(visited).length>=SCENARIOS.length&&rsRec&&rsRec.mode==='predict'&&!badges.scenarioTester)earnBadge('scenarioTester');
+      }
+      function presetPatch(i){var sc=SCENARIOS[i];return {rsSolar:sc.mix[0],rsWind:sc.mix[1],rsHydro:sc.mix[2],rsNuclear:sc.mix[3],rsStorage:sc.storage||0};}
+      function scenarioEvidenceCfg(){
+        var scores=SCENARIOS.map(function(_,i){return renewablesReliabilityFor(presetPatch(i));});
+        var reliable=scores.map(function(s,i){return s>=RELIABILITY_TARGET?i:-1;}).filter(function(i){return i>=0;});
+        if(reliable.length!==1)return null; // the question needs exactly one right answer
+        var right=reliable[0];
+        var triedAll=SCENARIOS.every(function(_,i){return scenariosTried[i]===true;});
+        var rsRec=evidenceRecord('rsPredict');var explain=triedAll&&!(rsRec&&rsRec.mode==='predict');
+        var line=function(i){return t('stem.climateExplorer.rs_check_score','{name} scores {score} of 100 for firm power ({storage} storage points).').replace('{name}',SCENARIOS[i].label).replace('{score}',scores[i]).replace('{storage}',SCENARIOS[i].storage||0);};
+        return { id:'ce-renewables-check', stateKey:'rsPredict', correct:String(right), lock:!explain,
+          title:'⚡ '+(explain?t('stem.climateExplorer.rs_check_title_explain','Evidence check'):t('stem.climateExplorer.rs_check_title','Predict first')),
+          question:explain?t('stem.climateExplorer.rs_check_q_explain','You tried all 4 starting mixes. Which ONE was Reliable, with no brownout risk?'):t('stem.climateExplorer.rs_check_q','Before you test them: which ONE starting mix will be Reliable, with no brownout risk? Then try all 4 to check.'),
+          options:SCENARIOS.map(function(sc,i){return {key:String(i),label:sc.label};}),
+          why:function(k){var i=Number(k);
+            var head=i===right?t('stem.climateExplorer.rs_check_right','Yes.'):t('stem.climateExplorer.rs_check_wrong','Not this one.');
+            var tail=i===right?t('stem.climateExplorer.rs_check_why_right','It needs {target}. Sun and wind count only a little as firm power, so storage has to back them up.').replace('{target}',RELIABILITY_TARGET)
+              :t('stem.climateExplorer.rs_check_why_wrong','It needs {target}. Sun and wind count only a little as firm power unless storage backs them up. The Reliable one: {right}').replace('{target}',RELIABILITY_TARGET).replace('{right}',line(right));
+            return head+' '+line(i)+' '+tail;},
+          onAnswer:function(k,isRight){
+            if(explain){if(isRight)earnBadge('scenarioTester');return;}
+            if(triedAll&&!badges.scenarioTester)earnBadge('scenarioTester');
+          } };
       }
 
       // ══════════════════════════════════════
       //  CLIMATE JUSTICE DATA
       // ══════════════════════════════════════
+      // Source audit 2026-11-23 (part 2). emPct = share of 2025 world CO2 from
+      // fossil fuels and industry, Our World in Data / Global Carbon Budget 2025
+      // (ourworldindata.org/co2-emissions; owid-co2-data.csv, share_global_co2):
+      // 14 Pacific island countries sum to 0.032%; Bangladesh 0.30%; Indonesia +
+      // Vietnam + Philippines 3.5%. Regions with no single country set get
+      // emPct null (no unsourced number). pop kept only where sourced:
+      // Arctic "more than four million" (arctic-council.org/about), Bangladesh
+      // ~170M (2022 census 169.8M). Arctic ~4x: Rantanen et al. 2022,
+      // doi:10.1038/s43247-022-00498-3. Andes 30-50%: Rabatel et al. 2013
+      // (EGU release, egu.eu/news/55). Great Green Wall: unccd.int/our-work/ggwi.
+      // 75%: NAACP/CATF "Fumes Across the Fence-Line" (2017). 1-7 F: EPA
+      // epa.gov/heatislands/learn-about-heat-islands. Removed (no source found):
+      // Sahel 5,400 km, region populations, "~8,000 enrolled", Sipayik wells,
+      // tribal plan years, Maine Climate Council seats, brown ash seed-saving.
+      // Evidence check built from REGIONS: the group with the smallest sourced share of world CO2.
+      function justiceEvidenceCfg() {
+        var order = ['bangladesh', 'pacific', 'seasia'];
+        var rows = order.map(function(id) { return REGIONS.filter(function(r) { return r.id === id && typeof r.emPct === 'number'; })[0]; }).filter(Boolean);
+        if (rows.length < 3) return null;
+        var low = rows.reduce(function(m, r) { return r.emPct < m.emPct ? r : m; }, rows[0]);
+        var byId = {}; rows.forEach(function(r) { byId[r.id] = r; });
+        return { id: 'ce-justice-check', stateKey: 'cjEvidence', correct: low.id,
+          title: '⚖️ ' + t('stem.climateExplorer.cj_check_title', 'Evidence check'),
+          question: t('stem.climateExplorer.cj_check_q', 'Switch to the Emissions view. Which of these makes the smallest share of the world’s CO₂?'),
+          options: rows.map(function(r) { return { key: r.id, label: r.emoji + ' ' + r.name }; }),
+          why: function(k) {
+            var r = byId[k];
+            if (k === low.id) return t('stem.climateExplorer.cj_check_right', 'Right. {name} make about {pct}% of the world’s CO₂ but face {risk} risk. Causing little and being hurt most is what climate injustice means.').replace('{name}', r.name).replace('{pct}', r.emPct).replace('{risk}', r.risk);
+            return t('stem.climateExplorer.cj_check_wrong', 'Not quite: {name} make about {pct}% of the world’s CO₂, about {times} times the {low} share of {lowPct}%. Look again at the Emissions view.').replace('{name}', r.name).replace('{pct}', r.emPct).replace('{times}', Math.round(r.emPct / low.emPct)).replace('{low}', low.name).replace('{lowPct}', low.emPct);
+          },
+          colors: { raised: 'rgba(255,255,255,0.04)', panel: 'rgba(255,255,255,0.03)', text: 'var(--allo-stem-text, #e2e8f0)', muted: 'var(--allo-stem-text-soft, #94a3b8)', border: 'rgba(255,255,255,0.18)', correct: '#6ee7b7', focus: '#f59e0b' },
+          onAnswer: function(k, right) { if (right) earnBadge('justiceExplorer'); } };
+      }
       var REGIONS = [
-        { id: 'pacific', name: t('stem.climateExplorer.pacific_island_nations', 'Pacific Island Nations'), emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: '12M',
-          story: 'Tuvalu, Kiribati, and the Marshall Islands may face severe flooding by 2100, yet produce less than 0.03% of global emissions. Young activists like Litokne Kabua lead advocacy campaigns.',
+        { id: 'pacific', name: t('stem.climateExplorer.pacific_island_nations', 'Pacific Island Nations'), emoji: '\uD83C\uDDEB\uD83C\uDDEF', risk: 'extreme', type: 'Sea level rise, coral bleaching', emPct: 0.03, pop: null,
+          story: 'Tuvalu, Kiribati, and the Marshall Islands may face severe flooding by 2100. All the Pacific island nations together make about 0.03% of the world\u2019s CO\u2082. Young activists like Litokne Kabua lead advocacy campaigns.',
           resilience: 'Coral reef restoration, floating architecture, legal sovereignty campaigns',
           voice: { name: t('stem.climateExplorer.anote_tong', 'Anote Tong'), role: 'Former President of Kiribati', about: 'As President of Kiribati, Tong warned the world that rising seas threaten his nation, and planned for his people to be able to migrate with dignity if they must leave.', source: 'Speeches as President of Kiribati, 2003 to 2016' } },
-        { id: 'arctic', name: t('stem.climateExplorer.arctic_communities', 'Arctic Communities'), emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: 0.1, pop: '4M',
-          story: 'Indigenous Arctic peoples have sustained cultures for millennia. Warming is 3-4\u00D7 faster here. Traditional food systems are changing, but communities lead climate monitoring.',
+        { id: 'arctic', name: t('stem.climateExplorer.arctic_communities', 'Arctic Communities'), emoji: '\u2744\uFE0F', risk: 'extreme', type: 'Permafrost thaw, habitat loss', emPct: null, pop: '4M+',
+          story: 'Indigenous Arctic peoples have sustained cultures for millennia. Since 1979 the Arctic has warmed nearly 4 times faster than the world as a whole. Traditional food systems are changing, but communities lead climate monitoring.',
           resilience: 'Traditional ecological knowledge, community monitoring networks, ice cellars',
           voice: { name: t('stem.climateExplorer.sheila_watt_cloutier', 'Sheila Watt-Cloutier'), role: 'Inuk activist; Nobel Peace Prize nominee', about: 'Watt-Cloutier led a 2005 Inuit petition arguing that climate change harms Inuit human rights, a claim she calls the right to be cold.', source: 'The Right to Be Cold (2015); 2005 Inuit petition to the Inter-American Commission on Human Rights' } },
-        { id: 'sahel', name: t('stem.climateExplorer.sahel_region_africa', 'Sahel Region (Africa)'), emoji: '\uD83C\uDF0D', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: 0.5, pop: '400M',
-          story: 'The Sahel spans 5,400 km across Africa. Despite minimal emissions, it faces severe drought cycles. The Great Green Wall project aims to restore 100 million hectares.',
+        { id: 'sahel', name: t('stem.climateExplorer.sahel_region_africa', 'Sahel Region (Africa)'), emoji: '\uD83C\uDF0D', risk: 'extreme', type: 'Drought, desertification, food insecurity', emPct: null, pop: null,
+          story: 'The Sahel stretches across Africa just south of the Sahara. Its countries emit very little CO₂, yet face severe drought cycles. The Great Green Wall, an 8,000 km band of restored land from Senegal to Djibouti, aims to restore 100 million hectares by 2030.',
           resilience: 'Great Green Wall reforestation, solar-powered irrigation, drought-resistant crops',
           voice: { name: t('stem.climateExplorer.hindou_oumarou_ibrahim', 'Hindou Oumarou Ibrahim'), role: 'Mbororo, Chad; UN Permanent Forum on Indigenous Issues', about: 'Ibrahim founded AFPAT, an association of Indigenous Mbororo women and peoples in Chad, and speaks for Indigenous peoples at UN climate talks. She spoke at the 2016 Paris Agreement signing.', source: 'AFPAT; Paris Agreement signing ceremony, New York, April 2016' } },
-        { id: 'bangladesh', name: t('stem.climateExplorer.bangladesh_south_asia', 'Bangladesh & South Asia'), emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.4, pop: '170M',
-          story: 'Bangladesh contributes 0.4% of emissions but faces some of the worst flooding. Millions may be displaced by 2050. Yet Bangladeshi engineers pioneer floating schools and farms.',
+        { id: 'bangladesh', name: t('stem.climateExplorer.bangladesh_south_asia', 'Bangladesh & South Asia'), emoji: '\uD83C\uDDE7\uD83C\uDDE9', risk: 'extreme', type: 'Flooding, cyclones, displacement', emPct: 0.3, pop: '170M',
+          story: 'Bangladesh makes about 0.3% of the world’s CO₂ but faces some of the worst flooding. Millions may be displaced by 2050. Yet Bangladeshi engineers pioneer floating schools and farms.',
           resilience: 'Floating schools, cyclone shelters, mangrove restoration, early warning systems',
-          voice: { name: t('stem.climateExplorer.saleemul_huq_1952_2023', 'Saleemul Huq (1952\u20132023)'), role: 'Bangladeshi climate scientist; founder of ICCCAD; lead architect of the COP27 Loss & Damage Fund', quote: 'What is clear already is that the world has stepped into the era of Loss and Damage from human-induced climate change.', source: 'ICCCAD blog on the COP27 Loss and Damage Fund, 29 November 2022' } },
-        { id: 'caribbean', name: t('stem.climateExplorer.caribbean_islands', 'Caribbean Islands'), emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: 0.2, pop: '44M',
-          story: 'Caribbean nations face intensifying hurricanes. Hurricane Maria (2017) devastated Dominica and Puerto Rico. Islands now lead in renewable energy transitions.',
+          voice: { name: t('stem.climateExplorer.saleemul_huq_1952_2023', 'Saleemul Huq (1952\u20132023)'), role: 'Bangladeshi climate scientist; director of ICCCAD; a leading voice for the Loss & Damage Fund', quote: 'What is clear already is that the world has stepped into the era of Loss and Damage from human-induced climate change.', source: 'ICCCAD blog on the COP27 Loss and Damage Fund, 29 November 2022' } },
+        { id: 'caribbean', name: t('stem.climateExplorer.caribbean_islands', 'Caribbean Islands'), emoji: '\uD83C\uDDF1\uD83C\uDDE8', risk: 'high', type: 'Hurricanes, coral loss, tourism collapse', emPct: null, pop: null,
+          story: 'Caribbean nations face intensifying hurricanes. Hurricane Maria (2017) devastated Dominica and Puerto Rico. Many islands are now building solar and wind power.',
           resilience: 'Hurricane-resilient building codes, community solar, coral nurseries',
           voice: { name: t('stem.climateExplorer.mia_mottley', 'Mia Mottley'), role: 'Prime Minister of Barbados', quote: '1.5 is what we need to survive. Two degrees is a death sentence for the people of Antigua and Barbuda, for the people of the Maldives...', source: 'COP26 World Leaders Summit opening, Glasgow, 1 November 2021' } },
-        { id: 'ej_usa', name: t('stem.climateExplorer.us_environmental_justice', 'US Environmental Justice'), emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: 15.0, pop: '~40M affected',
-          story: 'In the US, communities of color are 75% more likely to live near polluting facilities. Heat islands in cities can be 10\u00B0F hotter. Environmental justice movements fight for equitable protection.',
+        { id: 'ej_usa', name: t('stem.climateExplorer.us_environmental_justice', 'US Environmental Justice'), emoji: '\uD83C\uDDFA\uD83C\uDDF8', risk: 'high', type: 'Air pollution, heat islands, toxic waste', emPct: null, pop: null,
+          story: 'In the US, African Americans are 75% more likely than white Americans to live in "fence-line" communities next to industrial facilities (NAACP and Clean Air Task Force, 2017). City heat islands run about 1\u20137\u00B0F hotter than nearby rural areas in the daytime (EPA). Environmental justice movements fight for equitable protection.',
           resilience: 'Community air monitoring, urban tree canopy programs, clean energy access initiatives',
           voice: { name: t('stem.climateExplorer.catherine_coleman_flowers', 'Catherine Coleman Flowers'), role: 'Founder, Center for Rural Enterprise & Environmental Justice (Lowndes County, Alabama); MacArthur Fellow', about: 'Flowers brought national attention to failing sewage systems in rural Lowndes County, Alabama, and links clean water and sanitation to environmental justice.', source: 'Waste: One Woman\u2019s Fight Against America\u2019s Dirty Secret (2020); House Oversight subcommittee testimony, June 2021' } },
-        { id: 'seasia', name: t('stem.climateExplorer.southeast_asia_coastal', 'Southeast Asia Coastal'), emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 4.0, pop: '680M',
+        { id: 'seasia', name: t('stem.climateExplorer.southeast_asia_coastal', 'Southeast Asia Coastal'), emoji: '\uD83C\uDDFB\uD83C\uDDF3', risk: 'high', type: 'Typhoons, sea level, saltwater intrusion', emPct: 3.5, pop: null,
           story: 'Vietnam, Philippines, and Indonesia face rising seas and intensifying storms. Jakarta is sinking so fast Indonesia is building a new capital. Communities lead mangrove restoration.',
           resilience: 'Mangrove planting, floating communities, aquaculture adaptation',
-          voice: { name: t('stem.climateExplorer.yeb_sa_o', 'Yeb Sa\u00F1o'), role: 'Filipino climate negotiator; fasted for two weeks at COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness right here in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
-        { id: 'andes', name: t('stem.climateExplorer.andean_communities', 'Andean Communities'), emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: 1.0, pop: '50M',
-          story: 'Andean glaciers provide drinking water for millions. They have lost 30-50% of volume since the 1970s. Indigenous communities combine traditional and modern water management.',
+          voice: { name: t('stem.climateExplorer.yeb_sa_o', 'Yeb Sa\u00F1o'), role: 'Filipino climate negotiator; fasted for two weeks at COP19 after Typhoon Haiyan killed 6,300 people in his country', quote: 'We can stop this madness. Right here, in Warsaw.', source: 'COP19 opening plenary, Warsaw, 11 November 2013' } },
+        { id: 'andes', name: t('stem.climateExplorer.andean_communities', 'Andean Communities'), emoji: '\uD83C\uDDF5\uD83C\uDDEA', risk: 'high', type: 'Glacier retreat, water scarcity', emPct: null, pop: null,
+          story: 'Andean glaciers provide drinking water for millions. Tropical Andes glaciers have shrunk by an average of 30-50% since the 1970s (Rabatel et al., 2013). Indigenous communities combine traditional and modern water management.',
           resilience: 'Ancient qocha (reservoir) systems, glacier monitoring, watershed reforestation',
           voice: { name: t('stem.climateExplorer.tarcila_rivera_zea', 'Tarcila Rivera Zea'), role: 'Quechua activist; founder of CHIRAPAQ (Center for Indigenous Cultures of Peru); member of the UN Permanent Forum on Indigenous Issues (2017 to 2019)', about: 'Rivera Zea has spent more than 30 years defending the rights and cultures of Indigenous peoples in Peru, and founded networks of Indigenous women across the Americas.', source: 'UN Permanent Forum on Indigenous Issues sessions; CHIRAPAQ public statements' } },
-        { id: 'wabanaki', name: t('stem.climateExplorer.wabanaki_nations_maine', 'Wabanaki Nations (Maine)'), emoji: '\uD83C\uDF05', risk: 'high', type: 'Sea level on the coast, warming rivers, ash dieback, shellfish loss', emPct: 0.01, pop: '~8,000 enrolled across 4 nations',
-          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least 12,000 years. "Wabanaki" means "people of the dawn." They contribute almost nothing to global emissions yet face concentrated coastal-climate impacts at home: saltwater intruding on freshwater wells at Sipayik (Pleasant Point), warming Penobscot River water stressing fisheries, brown ash trees (the wood used for traditional Wabanaki baskets) dying from the emerald ash borer expanding north on warmer winters. Wabanaki representatives sit on the Maine Climate Council and have led both adaptation planning and the restoration of the Penobscot River.',
-          resilience: 'Tribal climate adaptation plans (Penobscot Nation 2014, Passamaquoddy 2020), seed-saving of cold-climate brown ash, restoration of the Penobscot River (largest river restoration east of the Mississippi, removed two dams 2012\u20132013), federal recognition as climate-action partners',
-          voice: { name: t('stem.climateExplorer.sherri_mitchell_weh_na_ha_mu_kwasset', 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)'), role: 'Penobscot lawyer, organizer, and author', quote: 'We are taught to consider how our actions today will impact the next seven generations.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (2018); TEDx talks' } }
+        { id: 'wabanaki', name: t('stem.climateExplorer.wabanaki_nations_maine', 'Wabanaki Nations (Maine)'), emoji: '\uD83C\uDF05', risk: 'high', type: 'Rising seas on the coast, ash trees at risk', emPct: null, pop: 'Four nations in Maine',
+          story: 'The Wabanaki Confederacy \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for more than 12,000 years. "Wabanaki" means "people of the dawnland." Their emissions are tiny, yet they face climate impacts at home. At Sipayik (Pleasant Point), rising seas threaten the road to the mainland and the wastewater plant. Brown ash trees, the wood used for traditional Wabanaki baskets, are threatened by the emerald ash borer, an invasive insect. The Penobscot Nation was a partner in restoring the Penobscot River.',
+          resilience: 'A Passamaquoddy climate action plan and resilience committee at Sipayik (2024), a Houlton Band of Maliseet climate action plan (2024), Wabanaki members training as energy auditors and heat-pump technicians, and the Penobscot River restoration (two dams removed in 2012 and 2013, one of the largest river restorations in US history)',
+          voice: { name: t('stem.climateExplorer.sherri_mitchell_weh_na_ha_mu_kwasset', 'Sherri Mitchell (Weh\u2019na Ha\u2019mu Kwasset)'), role: 'Penobscot lawyer, organizer, and author', about: 'Mitchell is a Penobscot lawyer and author. Her book Sacred Instructions shares Indigenous teachings about caring for the Earth and for the generations to come.', source: 'Sacred Instructions: Indigenous Wisdom for Living Spirit-Based Change (North Atlantic Books, 2018)' } }
+        // Wabanaki sources: Inside Climate News, 30 Aug 2025 (Sipayik causeway,
+        // wastewater, 2024 climate action plan); EPA PCAP, Houlton Band of
+        // Maliseet Indians (2024); Tribal Business News (energy workforce);
+        // US Fish and Wildlife Service, Penobscot River Restoration (2016).
       ];
 
       var riskColors = { extreme: '#ef4444', high: '#f59e0b', moderate: '#3b82f6' };
 
       // ══════════════════════════════════════
-      //  HISTORICAL CUMULATIVE CO₂ EMISSIONS (1850 to 2021, Gt, land use included)
-      //  Source: Carbon Brief 2021 analysis; pct = share of its 2,504 Gt total
-      //  Shows who is actually responsible for the CO₂ already in the atmosphere
+      //  HISTORICAL CUMULATIVE CO₂ EMISSIONS (through 2025, Gt, fossil + land use)
+      //  Source: Our World in Data / Global Carbon Budget 2025, owid-co2-data.csv,
+      //  cumulative_co2_including_luc and share_global_cumulative_co2_including_luc
+      //  (world total 2,780 Gt). Cross-check: Carbon Brief 2021 had the US at
+      //  20.3% of 2,504 Gt. The old Africa row (65 Gt, 2.6%) matched no source.
       // ══════════════════════════════════════
       var HISTORICAL_EMISSIONS = [
-        { country: 'USA',            emoji: '🇺🇸', gt: 509, pctGlobal: 20.3 },
-        { country: 'China',          emoji: '🇨🇳', gt: 284, pctGlobal: 11.4 },
-        { country: 'Russia/USSR',    emoji: '🇷🇺', gt: 172, pctGlobal: 6.9 },
-        { country: 'Brazil',         emoji: '🇧🇷', gt: 113, pctGlobal: 4.5 },
-        { country: 'Indonesia',      emoji: '🇮🇩', gt: 103, pctGlobal: 4.1 },
-        { country: 'Germany',        emoji: '🇩🇪', gt: 88,  pctGlobal: 3.5 },
-        { country: 'India',          emoji: '🇮🇳', gt: 85,  pctGlobal: 3.4 },
-        { country: 'UK',             emoji: '🇬🇧', gt: 75,  pctGlobal: 3.0 },
-        { country: 'Japan',          emoji: '🇯🇵', gt: 68,  pctGlobal: 2.7 },
-        { country: 'Canada',         emoji: '🇨🇦', gt: 65,  pctGlobal: 2.6 },
-        { country: 'France',         emoji: '🇫🇷', gt: 34,  pctGlobal: 1.4 },
-        { country: 'All of Africa',  emoji: '🌍', gt: 65,  pctGlobal: 2.6, note: t('stem.climateExplorer.1_4_billion_people', '1.4 billion people.') }
+        { country: 'USA',            emoji: '🇺🇸', gt: 551, pctGlobal: 19.8 },
+        { country: 'China',          emoji: '🇨🇳', gt: 350, pctGlobal: 12.6 },
+        { country: 'Russia',         emoji: '🇷🇺', gt: 214, pctGlobal: 7.7 },
+        { country: 'Brazil',         emoji: '🇧🇷', gt: 135, pctGlobal: 4.9 },
+        { country: 'Germany',        emoji: '🇩🇪', gt: 97,  pctGlobal: 3.5 },
+        { country: 'India',          emoji: '🇮🇳', gt: 95,  pctGlobal: 3.4 },
+        { country: 'Indonesia',      emoji: '🇮🇩', gt: 88,  pctGlobal: 3.2 },
+        { country: 'UK',             emoji: '🇬🇧', gt: 80,  pctGlobal: 2.9 },
+        { country: 'Japan',          emoji: '🇯🇵', gt: 75,  pctGlobal: 2.7 },
+        { country: 'Canada',         emoji: '🇨🇦', gt: 70,  pctGlobal: 2.5 },
+        { country: 'France',         emoji: '🇫🇷', gt: 38,  pctGlobal: 1.4 },
+        { country: 'All of Africa',  emoji: '🌍', gt: 147, pctGlobal: 5.3, note: t('stem.climateExplorer.africa_people_v2', 'About 1.5 billion people.') }
       ];
 
       // ══════════════════════════════════════
@@ -1326,37 +1674,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       // ══════════════════════════════════════
       var YOUTH_LEADERS = [
         { name: t('stem.climateExplorer.greta_thunberg', 'Greta Thunberg'), country: '🇸🇪 Sweden', age: 'since age 15', emoji: '📢',
-          what: 'Started Fridays for Future — a weekly school-strike movement that spread to 170+ countries. Her "How Dare You" speech at the UN in 2019 galvanized millions.',
+          what: 'Started Fridays for Future, a school-strike movement. By September 2019 its strikes reached about 150 countries. Her "How Dare You" speech at the UN in 2019 was seen around the world.',
           quote: '"We cannot solve a crisis without treating it as a crisis."' },
         { name: t('stem.climateExplorer.vanessa_nakate', 'Vanessa Nakate'), country: '🇺🇬 Uganda', age: 'since age 22', emoji: '🌍',
-          what: 'Founded Rise Up Movement. Pushed climate coverage to include African voices after being cropped from a famous youth activist photo. Leads the Green Schools project in East Africa.',
-          quote: '"You cannot have climate justice without racial justice."' },
+          what: 'Founded the Rise Up Movement. Pushed climate coverage to include African voices after being cropped from a news photo of youth activists in 2020. Her Green Schools project brings solar power and clean cookstoves to schools in Uganda.',
+          quote: '"You can\'t have climate justice without gender equality."' },
         { name: t('stem.climateExplorer.autumn_peltier', 'Autumn Peltier'), country: '🇨🇦 Canada', age: 'since age 8', emoji: '💧',
-          what: 'Anishinaabe water protector. Named Chief Water Commissioner of the Anishinabek Nation at 14. Addresses UN on First Nations water rights and climate.',
-          quote: '"We can\'t eat money or drink oil."' },
+          what: 'Anishinaabe water protector. Named Chief Water Commissioner of the Anishinabek Nation in 2019. Has spoken at the UN about First Nations water rights.',
+          quote: '"We can\'t eat money or drink oil." (UN, 2019)' },
         { name: t('stem.climateExplorer.mari_copeny_little_miss_flint', 'Mari Copeny ("Little Miss Flint")'), country: '🇺🇸 USA', age: 'since age 8', emoji: '🚰',
-          what: 'Raised millions for Flint, Michigan water crisis. Distributed 1M+ bottles of water + 25,000+ backpacks of supplies. Connects water quality to environmental justice.',
-          quote: '"I\'m just a kid trying to save the world."' },
-        { name: t('stem.climateExplorer.xiye_bastida', 'Xiye Bastida'), country: '🇲🇽 Mexico/🇺🇸 USA', age: 'since age 13', emoji: '🌾',
-          what: 'Otomi-Toltec climate organizer. Co-founded Re-Earth Initiative. Featured speaker at UN, COP26, and TIME Earth Awards. Bridges Indigenous knowledge with climate action.',
-          quote: '"Indigenous people carry the solutions we need."' },
-        { name: t('stem.climateExplorer.disha_ravi', 'Disha Ravi'), country: '🇮🇳 India', age: 'since age 21', emoji: '🌱',
-          what: 'Co-founded Fridays for Future India. Jailed briefly in 2021 for sharing a climate protest toolkit with farmers — then released on bail after global outcry defending digital activism.',
-          quote: '"You can\'t arrest the movement."' }
+          what: 'At 8, wrote to President Obama about the Flint, Michigan water crisis. Has raised money for bottled water and school supplies for Flint kids. Connects water quality to environmental justice.',
+          quote: null },
+        { name: t('stem.climateExplorer.xiye_bastida', 'Xiye Bastida'), country: '🇲🇽 Mexico/🇺🇸 USA', age: 'climate organizer', emoji: '🌾',
+          what: 'Otomi-Toltec climate organizer. Co-founded the Re-Earth Initiative in 2020 and spoke at the closing of the COP26 World Leaders Summit. Bridges Indigenous knowledge with climate action.',
+          quote: null },
+        { name: t('stem.climateExplorer.disha_ravi', 'Disha Ravi'), country: '🇮🇳 India', age: 'arrested at 22', emoji: '🌱',
+          what: 'A founder of Fridays for Future in India. Arrested in February 2021 over an online toolkit about farmers’ protests. Ten days later a Delhi court granted her bail, calling the evidence "scanty and sketchy."',
+          quote: null }
+        // Sources: Thunberg, COP24 speech (Dec 2018); Sept 2019 strikes in 150
+        // countries (Wikipedia, September 2019 climate strikes); Nakate, UN Women
+        // interview, Mar 2022; Peltier, UN speech Sept 2019 (Global News); Copeny
+        // (AJC 2019); Bastida (reearthin.org team page); Ravi bail order 23 Feb
+        // 2021 (Deccan Herald). Quotes for Copeny, Bastida and Ravi, and the
+        // Nakate "racial justice" line, were not found in any primary source.
       ];
 
       // ══════════════════════════════════════
       //  SOLUTIONS SPOTLIGHT
       // ══════════════════════════════════════
       var SOLUTIONS = [
-        { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: t('stem.climateExplorer.solar_power_revolution', 'Solar Power Revolution'), what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Solar is now the cheapest electricity in history. Could power 40% of US electricity from rooftops alone.' },
-        { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: t('stem.climateExplorer.wind_energy', 'Wind Energy'), what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (55% wind-powered), UK, US, China.', impact: 'One offshore turbine can power 16,000 homes. Wind jobs are among the fastest-growing.' },
-        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (about 96% of new cars sold in 2025 were electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
-        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests take up about 2.6 billion tons of CO\u2082 a year. Land ecosystems together absorb roughly 30% of what humans emit \u2014 forests are the largest single part of that.' },
+        { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: t('stem.climateExplorer.solar_power_revolution', 'Solar Power Revolution'), what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Where loans are cheap and sunshine is strong, solar is now the cheapest electricity in history (IEA, 2020). In theory, rooftops alone could supply about 39% of the electricity sold in the US (NREL, 2016).' },
+        { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: t('stem.climateExplorer.wind_energy', 'Wind Energy'), what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (wind made about 59% of its electricity in 2024), UK, US, China.', impact: 'The maker of one of the biggest offshore turbines says a single one can supply about 16,000 European homes at a windy North Sea site. Wind turbine technician is one of the fastest-growing US jobs.' },
+        { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (about 96% of new cars sold in 2025 were electric), China, Europe, US.', impact: 'Over its whole life, a midsize electric car in the US or Europe makes about 60-70% less greenhouse gas than a gas car. Where grids use more coal, as in India and China, the cut is smaller, and it grows as grids get cleaner (ICCT, 2021).' },
+        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia reported planting 350 million seedlings in one day in 2019. The Great Green Wall spans Africa.', impact: 'Forests take up about 2.6 billion tons of CO\u2082 a year. Land ecosystems together absorb roughly 30% of what humans emit \u2014 forests are the largest single part of that.' },
         { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: t('stem.climateExplorer.carbon_capture', 'Carbon Capture'), what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early. The biggest plant is built to capture up to 36,000 tons a year, but captures far less so far. Goal: billions by 2050.' },
-        { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: t('stem.climateExplorer.ocean_kelp_farms', 'Ocean Kelp Farms'), what: 'Kelp grows 60\u00D7 faster than land trees, absorbing massive CO\u2082 while creating habitat.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Could sequester 1-10 Gt CO\u2082/year while providing food, fertilizer, and biofuel.' },
+        { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: t('stem.climateExplorer.ocean_kelp_farms', 'Ocean Kelp Farms'), what: 'Kelp is a fast-growing seaweed that takes up CO\u2082 and creates habitat for fish.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Scientists are still measuring how much of its carbon stays stored. It also provides food and fertilizer.' },
         { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: t('stem.climateExplorer.green_cities', 'Green Cities'), what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities concentrate about 70% of energy-related emissions, so urban design decides how much energy millions of people need in the first place. That leverage is why it ranks high, not that any single change tops the list.' },
-        { id: 'youth', cat: 'all', emoji: '\u270A', title: t('stem.climateExplorer.youth_climate_movement', 'Youth Climate Movement'), what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (170+ countries), Sunrise Movement.', impact: 'Youth pressure helped pass the EU Green Deal and influenced the Paris Agreement.', highlight: true }
+        { id: 'youth', cat: 'all', emoji: '\u270A', title: t('stem.climateExplorer.youth_climate_movement', 'Youth Climate Movement'), what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (strikes in about 150 countries in 2019), Sunrise Movement.', impact: 'Since 2018, youth school strikes have pushed climate higher on leaders\' agendas.', highlight: true }
       ];
 
       // ══════════════════════════════════════
@@ -1505,28 +1859,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         else window.addEventListener('resize',paint);
         disposeKeelingChart=function(){active=false;if(beaconRaf){cancelAnimationFrame(beaconRaf);beaconRaf=0;}if(observer)observer.disconnect();else window.removeEventListener('resize',paint);};
       }
+      // Annual means rounded from NOAA GML co2_annmean_mlo.txt (file of
+      // 19 Nov 2026); 1958 is a partial-year starting level.
       var KEELING_DATA = [
         { y: 1958, ppm: 315.0 }, { y: 1960, ppm: 316.9 }, { y: 1965, ppm: 320.0 },
-        { y: 1970, ppm: 325.7 }, { y: 1975, ppm: 331.1 }, { y: 1980, ppm: 338.7 },
-        { y: 1985, ppm: 346.1 }, { y: 1990, ppm: 354.4 }, { y: 1995, ppm: 360.9 },
-        { y: 2000, ppm: 369.5 }, { y: 2005, ppm: 379.8 }, { y: 2010, ppm: 389.9 },
-        { y: 2013, ppm: 396.5 }, { y: 2015, ppm: 401.0 }, { y: 2018, ppm: 408.5 },
+        { y: 1970, ppm: 325.7 }, { y: 1975, ppm: 331.1 }, { y: 1980, ppm: 338.8 },
+        { y: 1985, ppm: 346.4 }, { y: 1990, ppm: 354.5 }, { y: 1995, ppm: 361.0 },
+        { y: 2000, ppm: 369.7 }, { y: 2005, ppm: 380.0 }, { y: 2010, ppm: 390.1 },
+        { y: 2013, ppm: 396.7 }, { y: 2015, ppm: 401.0 }, { y: 2018, ppm: 408.7 },
         { y: 2020, ppm: 414.2 }, { y: 2022, ppm: 418.5 }, { y: 2024, ppm: 424.6 }
       ];
+      // The year AFTER the plotted sample. The Keeling tab asks students to
+      // predict it from the trend before showing it.
+      var KEELING_LATEST = { y: 2025, ppm: 427.35, source: 'NOAA Global Monitoring Laboratory, Mauna Loa annual mean CO₂, 2025 (gml.noaa.gov/ccgg/trends)' };
       // Global mean surface temperature anomaly (°C above the 1951-1980 average)
-      // Source: NASA GISS GISTEMP v4
+      // Source: NASA GISS GISTEMP v4, GLB.Ts+dSST J-D annual values (Nov 2026)
       var GLOBAL_TEMP = [
-        { y: 1958, t: 0.07 }, { y: 1965, t: -0.10 }, { y: 1970, t: 0.04 },
-        { y: 1975, t: 0.01 }, { y: 1980, t: 0.27 }, { y: 1985, t: 0.13 },
-        { y: 1990, t: 0.46 }, { y: 1995, t: 0.46 }, { y: 2000, t: 0.42 },
-        { y: 2005, t: 0.69 }, { y: 2010, t: 0.72 }, { y: 2015, t: 0.90 },
+        { y: 1958, t: 0.06 }, { y: 1965, t: -0.11 }, { y: 1970, t: 0.03 },
+        { y: 1975, t: -0.01 }, { y: 1980, t: 0.26 }, { y: 1985, t: 0.12 },
+        { y: 1990, t: 0.45 }, { y: 1995, t: 0.44 }, { y: 2000, t: 0.39 },
+        { y: 2005, t: 0.68 }, { y: 2010, t: 0.72 }, { y: 2015, t: 0.90 },
         { y: 2018, t: 0.85 }, { y: 2020, t: 1.01 }, { y: 2022, t: 0.89 },
         { y: 2023, t: 1.17 }, { y: 2024, t: 1.28 }
       ];
       var KEELING_MILESTONES = [
         { ppm:280,label:t('stem.climateExplorer.keeling_preindustrial_title','Approximate pre-industrial reference'),note:t('stem.climateExplorer.keeling_preindustrial_note','About 280 ppm before large-scale industrialization, reconstructed from ice cores. This reference is outside the plotted 1958–2024 record.') },
         { ppm:315,label:t('stem.climateExplorer.keeling_start_title','Mauna Loa measurements begin in 1958'),note:t('stem.climateExplorer.keeling_start_note','About 315 ppm is the starting level used here. Monitoring began during 1958, so this point is not a complete annual mean.') },
-        { ppm:400,label:t('stem.climateExplorer.keeling_daily_title','A daily threshold crossed in May 2013'),note:t('stem.climateExplorer.keeling_daily_note','A daily Mauna Loa reading passed 400 ppm in 2013. Daily readings and annual averages differ: the sampled 2013 annual mean here is 396.5 ppm.') },
+        { ppm:400,label:t('stem.climateExplorer.keeling_daily_title','A daily threshold crossed in May 2013'),note:t('stem.climateExplorer.keeling_daily_note_v2','A daily Mauna Loa reading passed 400 ppm in 2013. Daily readings and annual averages differ: the 2013 annual mean here is {ppm} ppm.').replace('{ppm}',KEELING_DATA.filter(function(p){return p.y===2013;})[0].ppm.toFixed(1)) },
         { ppm:424.6,label:t('stem.climateExplorer.keeling_archive_title','2024 annual mean in this archive'),note:t('stem.climateExplorer.keeling_archive_note','This rounded historical value is the last CO₂ point in this activity. It is not today’s concentration. Source agencies publish newer observations and may revise past values.') }
       ];
       // Join by year, never by array index: the two source samples have gaps
@@ -1545,55 +1904,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var TIPPING_POINTS = [
         { id: 'coral', emoji: '\uD83E\uDEB8', name: t('stem.climateExplorer.tropical_coral_reef_die_off', 'Tropical Coral Reef Die-off'), threshold: 1.5, status: 'happening',
           desc: t('stem.climateExplorer.mass_coral_bleaching_events_hit_the_gr', 'Mass coral bleaching events hit the Great Barrier Reef in 2016, 2017, 2020, 2022, 2024, and 2025. The IPCC projects that tropical coral reefs would decline by a further 70 to 90% at 1.5\u00B0C of warming. At 2\u00B0C, more than 99% would be lost.'),
-          cascade: 'Loss of 25% of marine biodiversity; collapse of fisheries feeding 500M people; loss of coastal storm protection.' },
+          cascade: 'Reefs are home to about a quarter of ocean species, and hundreds of millions of people rely on them for food and storm protection (NOAA).' },
         { id: 'greenland', emoji: '\u2744\uFE0F', name: t('stem.climateExplorer.greenland_ice_sheet_collapse', 'Greenland Ice Sheet Collapse'), threshold: 1.5, status: 'at-risk',
           desc: t('stem.climateExplorer.the_greenland_ice_sheet_holds_enough_w', 'The Greenland ice sheet holds enough water to raise sea levels 7 meters (23 ft). At ~1.5\u00B0C sustained, melt becomes irreversible over centuries to millennia.'),
           cascade: 'Multi-meter sea level rise over centuries. Coastal cities flooded. Freshwater pulse disrupts Atlantic circulation (see AMOC).' },
         { id: 'amoc', emoji: '\uD83C\uDF0A', name: t('stem.climateExplorer.amoc_collapse_gulf_stream', 'AMOC Collapse (Gulf Stream)'), threshold: 4.0, status: 'weakening',
           desc: t('stem.climateExplorer.the_atlantic_meridional_overturning_ci', 'The Atlantic Meridional Overturning Circulation moves heat from the tropics to Europe. One study estimates it has weakened about 15% since about 1950, but scientists still debate this. Collapse is estimated at about 4\u00B0C of warming, within a range of 1.4 to 8\u00B0C. A full shutdown would cool northern Europe dramatically while disrupting monsoons in Africa and Asia.'),
-          cascade: 'Europe cools 5\u201310\u00B0C. African/Asian monsoons fail. Sea levels rise on US East Coast. Food systems disrupted for billions.' },
+          cascade: 'Northern Europe could turn much colder, rain belts in Africa and Asia could shift, and sea level would rise faster on the US East Coast.' },
         { id: 'amazon', emoji: '\uD83C\uDF34', name: t('stem.climateExplorer.amazon_rainforest_dieback', 'Amazon Rainforest Dieback'), threshold: 3.5, status: 'at-risk',
           desc: t('stem.climateExplorer.the_amazon_generates_half_its_own_rain', 'The Amazon generates half its own rainfall. With 20\u201325% deforestation + rising temperatures, it risks flipping from rainforest to savanna. Some studies suggest the threshold is closer to 2\u00B0C with current deforestation rates.'),
-          cascade: 'Releases 200+ billion tons of stored carbon. Disrupts South American agriculture. Loss of 10%+ of Earth\'s species.' },
+          cascade: 'Would release much of the carbon stored in its trees, change rainfall for South American farms, and threaten the home of about 1 in 10 known species (WWF).' },
         { id: 'permafrost', emoji: '\uD83E\uDDCA', name: t('stem.climateExplorer.permafrost_methane_release', 'Permafrost Methane Release'), threshold: 1.5, status: 'happening',
-          desc: t('stem.climateExplorer.arctic_permafrost_holds_twice_the_carb', 'Arctic permafrost holds twice the carbon currently in the atmosphere. Warming 3\u20134\u00D7 faster than global average, it is already thawing and releasing CO\u2082 and methane (28\u00D7 more potent than CO\u2082 over 100 years).'),
+          desc: t('stem.climateExplorer.arctic_permafrost_holds_twice_the_carb_v2', 'Arctic permafrost holds about twice as much carbon as the air does now. The Arctic is warming 3 to 4 times faster than the world as a whole, so the ground is thawing and giving off CO\u2082 and methane. Over 100 years, methane warms about 27 to 30 times as much as the same mass of CO\u2082 (IPCC, 2021).'),
           cascade: 'Self-reinforcing feedback loop: more warming \u2192 more permafrost thaw \u2192 more emissions \u2192 more warming.' },
         { id: 'westantarctic', emoji: '\uD83D\uDDFB', name: t('stem.climateExplorer.west_antarctic_ice_sheet', 'West Antarctic Ice Sheet'), threshold: 1.5, status: 'at-risk',
           desc: t('stem.climateExplorer.marine_based_ice_sheets_anchored_below', 'Marine-based ice sheets anchored below sea level. Warm ocean water is eroding them from beneath. Thwaites Glacier ("Doomsday Glacier") is the main risk. Collapse would raise sea levels 3.3 meters (11 ft).'),
-          cascade: 'Multi-meter sea level rise. Bangladesh, Florida, Pacific island nations face existential threat.' },
+          cascade: 'Several meters of sea level rise over centuries. Low coasts such as Bangladesh, Florida and Pacific islands face the biggest risk.' },
         { id: 'boreal', emoji: '\uD83C\uDF32', name: t('stem.climateExplorer.boreal_forest_die_off', 'Boreal Forest Die-off'), threshold: 4.0, status: 'future-risk',
           desc: t('stem.climateExplorer.northern_coniferous_forests_russia_can', 'Northern coniferous forests (Russia, Canada, Scandinavia) are stressed by warming, bark beetles, and wildfires. A full transition to grassland could release vast amounts of stored carbon.'),
           cascade: 'Release of stored carbon. Habitat loss for Arctic species. Changes to global weather patterns.' },
         { id: 'gulfofmaine', emoji: '\uD83E\uDD9E', name: t('stem.climateExplorer.gulf_of_maine_rapid_warming', 'Gulf of Maine Rapid Warming'), threshold: 1.0, status: 'happening',
           desc: t('stem.climateExplorer.the_gulf_of_maine_has_warmed_faster_th', 'The Gulf of Maine has warmed faster than about 97% of the world\u2019s oceans since 1982, about 0.84\u00B0F per decade, roughly 3\u00D7 the global ocean average. The cold-water Labrador current has weakened while warm Gulf Stream water reaches further north, fundamentally restructuring the food web in real time. Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq coastal communities have documented these shifts in oral record decades before the satellites confirmed them.'),
-          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Atlantic cod nearly extinct south of Cape Cod. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show about 7.5 inches of sea level rise since 1912, with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
+          cascade: 'Maine lobster nursery grounds shifting north into Canadian waters. Right whales chasing copepods into shipping lanes. Portland-area tide gauges show about 7.5 inches of sea level rise since 1912, with 1.5\u20134 ft projected by 2100, threatening coastal Wabanaki villages and the working waterfronts of every Maine port town.' }
       ];
+      // Armstrong McKay et al. (2022), Science, Table 1: best-guess warming
+      // threshold, its range (°C above pre-industrial), and how long the change
+      // takes to play out once triggered. "permafrost" is the regional
+      // "boreal permafrost abrupt thaw" row; "boreal" is "southern dieback".
+      // The Gulf of Maine is regional warming, not an assessed tipping element.
+      var TIPPING_RANGES = {
+        coral:         { lo: 1.0, hi: 2.0, years: t('stem.climateExplorer.tp_years_coral', 'about 10 years') },
+        greenland:     { lo: 0.8, hi: 3.0, years: t('stem.climateExplorer.tp_years_greenland', 'about 10,000 years (1,000 to 15,000)') },
+        westantarctic: { lo: 1.0, hi: 3.0, years: t('stem.climateExplorer.tp_years_wais', 'about 2,000 years (500 to 13,000)') },
+        permafrost:    { lo: 1.0, hi: 2.3, years: t('stem.climateExplorer.tp_years_permafrost', 'about 200 years (100 to 300)') },
+        amazon:        { lo: 2.0, hi: 6.0, years: t('stem.climateExplorer.tp_years_amazon', 'about 100 years (50 to 200)') },
+        amoc:          { lo: 1.4, hi: 8.0, years: t('stem.climateExplorer.tp_years_amoc', 'about 50 years (15 to 300)') },
+        boreal:        { lo: 1.4, hi: 5.0, years: t('stem.climateExplorer.tp_years_boreal', 'about 100 years') }
+      };
+      // Long-term warming so far, rounded: about 1.3 °C. Forster et al.,
+      // Indicators of Global Climate Change 2025 (ESSD 18, 3889, 2026): observed
+      // 2016-2025 average 1.26 °C above 1850-1900; human-caused level in 2025
+      // 1.37 °C. A single year (2024: 1.52 °C) can run higher.
+      var NOW_WARMING = 1.3;
 
       // ══════════════════════════════════════
       //  PROJECT DRAWDOWN — climate solutions ranked by Gt CO₂e avoidance potential
-      //  Source: Paul Hawken's Project Drawdown (2020 Table of Solutions)
-      //  Gt values = cumulative avoidance 2020–2050 in most-ambitious scenario
+      //  Source: Project Drawdown, The Drawdown Review 2020, "Summary of
+      //  Solutions", Individual Solutions, SCENARIO 2 (pp. 88-90; drawdown.org/
+      //  sites/default/files/pdfs/TheDrawdownReview-2020-Download.pdf). Gt CO2-eq
+      //  reduced or sequestered 2020-2050. Scenario 2 is "roughly in-line with
+      //  1.5 C" (p. 72). Every gt below is Scenario 2; the old list mixed S1 and
+      //  S2. Building Retrofitting is N/A in Drawdown (credited to other rows),
+      //  so that slot now shows Insulation; kelp is not in the 2020 table.
       // ══════════════════════════════════════
+      var DRAWDOWN_SCENARIO_LABEL = 'Project Drawdown 2020, Scenario 2';
       var DRAWDOWN_SOLUTIONS = [
-        { id: 'wind_onshore',  emoji: '🌬️', label: t('stem.climateExplorer.onshore_wind_turbines', 'Onshore Wind Turbines'),     gt: 147, cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_worldwide_in_2024', 'Cheapest electricity worldwide in 2024. Doubling capacity annually in several regions.') },
-        { id: 'solar_farms',   emoji: '☀️', label: t('stem.climateExplorer.utility_scale_solar_farms', 'Utility-Scale Solar Farms'),  gt: 42,  cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_in_history_grid_i', 'Cheapest electricity in history. Grid integration is the main challenge now.') },
-        { id: 'solar_roof',    emoji: '🏠', label: t('stem.climateExplorer.rooftop_solar', 'Rooftop Solar'),              gt: 25,  cat: 'energy',    note: t('stem.climateExplorer.distributed_resilient_typical_5kw_syst', 'Distributed + resilient. Typical 5kW system payback: 6–10 years.') },
-        { id: 'reduced_waste', emoji: '🍽️', label: t('stem.climateExplorer.reduced_food_waste', 'Reduced Food Waste'),         gt: 88,  cat: 'food',      note: t('stem.climateExplorer.1_3_of_food_is_wasted_preventing_waste', '1/3 of food is wasted. Preventing waste avoids methane from landfills AND the emissions to grow the food.') },
-        { id: 'plant_rich',    emoji: '🥗', label: t('stem.climateExplorer.plant_rich_diets', 'Plant-Rich Diets'),           gt: 65,  cat: 'food',      note: t('stem.climateExplorer.not_100_vegan_even_cutting_beef_3_a_we', 'Not 100% vegan — even cutting beef 3× a week has huge impact. Frees land for reforestation.') },
-        { id: 'tropical_forest',emoji: '🌳', label: t('stem.climateExplorer.tropical_forest_restoration', 'Tropical Forest Restoration'), gt: 85, cat: 'nature',  note: t('stem.climateExplorer.restore_125m_hectares_protects_biodive', 'Restore 125M hectares. Protects biodiversity + draws down CO\u2082 via photosynthesis.') },
-        { id: 'temperate_forest',emoji: '🌲', label: t('stem.climateExplorer.temperate_forest_restoration', 'Temperate Forest Restoration'), gt: 19, cat: 'nature', note: t('stem.climateExplorer.plant_where_natural_conditions_support', 'Plant where natural conditions support growth. Co-benefits: cooling, watershed protection.') },
-        { id: 'silvopasture',  emoji: '🐄', label: t('stem.climateExplorer.silvopasture', 'Silvopasture'),               gt: 42,  cat: 'food',      note: t('stem.climateExplorer.integrating_trees_into_grazing_land_li', 'Integrating trees into grazing land. Livestock get shade; soil stores 4× more carbon than bare pasture.') },
-        { id: 'regen_ag',      emoji: '🌾', label: t('stem.climateExplorer.regenerative_agriculture', 'Regenerative Agriculture'),   gt: 14,  cat: 'food',      note: t('stem.climateExplorer.no_till_cover_crops_diverse_rotations_', 'No-till + cover crops + diverse rotations. Builds soil carbon while maintaining yields.') },
-        { id: 'peatlands',     emoji: '🏞️', label: t('stem.climateExplorer.peatlands_protection', 'Peatlands Protection'),       gt: 26,  cat: 'nature',    note: t('stem.climateExplorer.peatlands_store_3_more_carbon_than_for', 'Peatlands store 3× more carbon than forests globally. Drained peat = major emitter.') },
-        { id: 'refrigerants',  emoji: '❄️', label: t('stem.climateExplorer.refrigerant_management', 'Refrigerant Management'),     gt: 57,  cat: 'industry', note: t('stem.climateExplorer.hfcs_are_1_000_9_000_more_potent_than_', 'HFCs are 1,000–9,000× more potent than CO\u2082. Kigali Amendment (2016) is phasing them out.') },
-        { id: 'evs_personal',  emoji: '🚗', label: t('stem.climateExplorer.electric_vehicles_personal', 'Electric Vehicles (personal)'),gt: 11,  cat: 'transport', note: t('stem.climateExplorer.evs_produce_50_70_less_lifetime_emissi', 'EVs produce 50–70% less lifetime emissions than gas — improves as grid cleans up.') },
-        { id: 'efficient_transit', emoji: '🚆', label: t('stem.climateExplorer.public_transit_rail', 'Public Transit + Rail'),   gt: 23,  cat: 'transport', note: t('stem.climateExplorer.electric_trains_move_a_passenger_km_at', 'Electric trains move a passenger-km at 1/10 the emissions of a car.') },
-        { id: 'cycling_walking', emoji: '🚴', label: t('stem.climateExplorer.bike_infrastructure', 'Bike Infrastructure'),      gt: 5,   cat: 'transport', note: t('stem.climateExplorer.dutch_cycling_cities_have_1_3_the_tran', 'Dutch cycling cities have 1/3 the transport emissions. Infrastructure creates the behavior.') },
-        { id: 'buildings_retrofit', emoji: '🏢', label: t('stem.climateExplorer.building_retrofits', 'Building Retrofits'),    gt: 33,  cat: 'energy',   note: t('stem.climateExplorer.insulation_heat_pumps_led_lighting_us_', 'Insulation + heat pumps + LED lighting. US buildings use 40% of primary energy.') },
-        { id: 'heat_pumps',    emoji: '🌡️', label: t('stem.climateExplorer.heat_pumps', 'Heat Pumps'),                 gt: 9,   cat: 'energy',    note: t('stem.climateExplorer.3_4_more_efficient_than_gas_furnaces_w', '3–4× more efficient than gas furnaces. Work to −15°C in modern cold-climate models.') },
-        { id: 'girls_education',emoji: '👩‍🎓', label: t('stem.climateExplorer.girls_education_family_planning', 'Girls\' Education & Family Planning'), gt: 85, cat: 'social', note: t('stem.climateExplorer.consistently_top_ranked_educated_women', 'Consistently top-ranked. Educated women have fewer children AND higher-impact lives. Compounds across generations.') },
-        { id: 'clean_cooking', emoji: '🍳', label: t('stem.climateExplorer.clean_cookstoves', 'Clean Cookstoves'),           gt: 16,  cat: 'social',    note: t('stem.climateExplorer.replaces_wood_charcoal_fires_benefits_', 'Replaces wood/charcoal fires. Benefits: climate + indoor air pollution (kills 4M/yr) + deforestation.') },
-        { id: 'kelp_forests',  emoji: '🌿', label: t('stem.climateExplorer.kelp_reforestation_ocean', 'Kelp Reforestation (ocean)'), gt: 10,  cat: 'nature',    note: t('stem.climateExplorer.grows_60_faster_than_land_trees_seques', 'Grows 60× faster than land trees. Sequesters CO\u2082 + restores fisheries + fertilizer.') }
+        { id: 'wind_onshore',  emoji: '🌬️', label: t('stem.climateExplorer.onshore_wind_turbines', 'Onshore Wind Turbines'),     gt: 147.7, cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_worldwide_in_2024_v2', 'Among the cheapest kinds of new electricity in much of the world.') },
+        { id: 'solar_farms',   emoji: '☀️', label: t('stem.climateExplorer.utility_scale_solar_farms', 'Utility-Scale Solar Farms'),  gt: 119.1, cat: 'energy',    note: t('stem.climateExplorer.cheapest_electricity_in_history_grid_i_v2', 'Where loans are cheap and sunshine is strong, the cheapest electricity in history (IEA, 2020). Fitting it into the grid is the main challenge now.') },
+        { id: 'solar_roof',    emoji: '🏠', label: t('stem.climateExplorer.rooftop_solar', 'Rooftop Solar'),              gt: 68.6,  cat: 'energy',    note: t('stem.climateExplorer.distributed_resilient_typical_5kw_syst_v2', 'Makes power right where people use it.') },
+        { id: 'reduced_waste', emoji: '🍽️', label: t('stem.climateExplorer.reduced_food_waste', 'Reduced Food Waste'),         gt: 94.6,  cat: 'food',      note: t('stem.climateExplorer.1_3_of_food_is_wasted_preventing_waste', '1/3 of food is wasted. Preventing waste avoids methane from landfills AND the emissions to grow the food.') },
+        { id: 'plant_rich',    emoji: '🥗', label: t('stem.climateExplorer.plant_rich_diets', 'Plant-Rich Diets'),           gt: 91.7,  cat: 'food',      note: t('stem.climateExplorer.not_100_vegan_even_cutting_beef_3_a_we_v2', 'Not all-or-nothing: eating less beef and dairy helps even without going vegan. Frees land for forests.') },
+        { id: 'tropical_forest',emoji: '🌳', label: t('stem.climateExplorer.tropical_forest_restoration', 'Tropical Forest Restoration'), gt: 85.1, cat: 'nature',  note: t('stem.climateExplorer.restore_125m_hectares_protects_biodive_v2', 'Protects wildlife and pulls CO₂ from the air as trees grow.') },
+        { id: 'temperate_forest',emoji: '🌲', label: t('stem.climateExplorer.temperate_forest_restoration', 'Temperate Forest Restoration'), gt: 27.8, cat: 'nature', note: t('stem.climateExplorer.plant_where_natural_conditions_support', 'Plant where natural conditions support growth. Co-benefits: cooling, watershed protection.') },
+        { id: 'silvopasture',  emoji: '🐄', label: t('stem.climateExplorer.silvopasture', 'Silvopasture'),               gt: 42.3,  cat: 'food',      note: t('stem.climateExplorer.integrating_trees_into_grazing_land_li_v2', 'Trees on grazing land give animals shade and store carbon in wood and soil.') },
+        { id: 'regen_ag',      emoji: '🌾', label: t('stem.climateExplorer.regenerative_agriculture', 'Regenerative Agriculture'),   gt: 22.3,  cat: 'food',      note: t('stem.climateExplorer.no_till_cover_crops_diverse_rotations_', 'No-till + cover crops + diverse rotations. Builds soil carbon while maintaining yields.') },
+        { id: 'peatlands',     emoji: '🏞️', label: t('stem.climateExplorer.peatlands_protection', 'Peatlands Protection'),       gt: 41.9,  cat: 'nature',    note: t('stem.climateExplorer.peatlands_store_3_more_carbon_than_for_v2', 'Peatlands store about twice as much carbon as all the world’s forests (UNEP). Drained peat releases it.') },
+        { id: 'refrigerants',  emoji: '❄️', label: t('stem.climateExplorer.refrigerant_management', 'Refrigerant Management'),     gt: 57.7,  cat: 'industry', note: t('stem.climateExplorer.hfcs_are_1_000_9_000_more_potent_than__v2', 'Some HFC gases trap thousands of times more heat than CO₂. The 2016 Kigali Amendment is phasing them down.') },
+        { id: 'evs_personal',  emoji: '🚗', label: t('stem.climateExplorer.electric_vehicles_personal', 'Electric Vehicles (personal)'),gt: 15.7,  cat: 'transport', note: t('stem.climateExplorer.evs_lifecycle_icct_v2', 'In the US and Europe, about 60–70% less lifetime greenhouse gas than a gas car (ICCT, 2021). The cut grows as grids get cleaner.') },
+        { id: 'efficient_transit', emoji: '🚆', label: t('stem.climateExplorer.public_transit_v2', 'Public Transit'),   gt: 23.4,  cat: 'transport', note: t('stem.climateExplorer.transit_shared_ride_v2', 'Buses and trains carry many riders at once, so each rider’s share of the emissions is far smaller than driving alone.') },
+        { id: 'cycling_walking', emoji: '🚴', label: t('stem.climateExplorer.bike_infrastructure', 'Bike Infrastructure'),      gt: 6.6,   cat: 'transport', note: t('stem.climateExplorer.dutch_cycling_cities_have_1_3_the_tran_v2', 'Safe bike lanes make biking the easy choice. Infrastructure creates the behavior.') },
+        { id: 'buildings_retrofit', emoji: '🏢', label: t('stem.climateExplorer.building_insulation_v2', 'Building Insulation'),    gt: 19.0,  cat: 'energy',   note: t('stem.climateExplorer.insulation_keeps_heat_v2', 'Keeps heat in during winter and out in summer. US homes and businesses use about 37% of US energy (EIA, 2023).') },
+        { id: 'heat_pumps',    emoji: '🌡️', label: t('stem.climateExplorer.heat_pumps', 'Heat Pumps'),                 gt: 9.3,   cat: 'energy',    note: t('stem.climateExplorer.3_4_more_efficient_than_gas_furnaces_w_v2', 'Move about 3 times more heat than the electricity they use (US Department of Energy). Cold-climate models work below freezing.') },
+        { id: 'girls_education',emoji: '👩‍🎓', label: t('stem.climateExplorer.girls_education_family_planning', 'Girls\' Education & Family Planning'), gt: 85.4, cat: 'social', note: t('stem.climateExplorer.consistently_top_ranked_educated_women_v2', 'Education and health care help families choose their size, which lowers emissions over generations.') },
+        { id: 'clean_cooking', emoji: '🍳', label: t('stem.climateExplorer.clean_cookstoves', 'Clean Cookstoves'),           gt: 72.6,  cat: 'social',    note: t('stem.climateExplorer.replaces_wood_charcoal_fires_benefits__v2', 'Replaces smoky wood and charcoal fires. Household smoke caused about 2.9 million deaths in 2021 (WHO). Also slows forest loss.') }
       ];
 
       // ══════════════════════════════════════
@@ -1621,100 +2004,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // ══════════════════════════════════════
       //  IPCC FUTURE SCENARIOS (SSP pathways)
-      //  Source: IPCC AR6 WG1 Table SPM.1 (temperature by 2100, relative to 1850-1900)
+      //  Source: IPCC AR6 WG1 Table SPM.1 (2081-2100 vs 1850-1900; values checked
+      //  2026-11-23). co2Path wording: AR6 WG1 SPM Box SPM.1 and AR6 SYR (net zero
+      //  ~2050 / ~2070; SSP2-4.5 near current levels to mid-century; SSP3-7.0 and
+      //  SSP5-8.5 roughly double by 2100 / 2050). Sea level ranges: AR6 WG1 SPM
+      //  B.5.3 (2100 vs 1995-2014). The old Gt-in-2050 numbers had no source.
       // ══════════════════════════════════════
       var IPCC_SCENARIOS = [
         { id: 'ssp119', label: 'SSP1-1.9', name: t('stem.climateExplorer.very_low_emissions_paris_aligned', 'Very Low Emissions — Paris-Aligned'),
-          temp2100: 1.4, tempRange: [1.0, 1.8], emissions2050: 0, color: '#22c55e',
+          temp2100: 1.4, tempRange: [1.0, 1.8], co2Path: 'CO\u2082 falls to net zero around 2050, then below zero.', color: '#22c55e',
           likelihood: 'requires unprecedented global cooperation',
-          requires: 'Net-zero CO\u2082 by ~2050. Rapid deployment of all Drawdown solutions. Fossil fuels phased out by 2040 in developed economies.',
+          requires: 'Net-zero CO\u2082 around 2050. Very fast use of clean energy and other climate solutions everywhere.',
           impacts: 'Limits warming near 1.5°C. Most coral reefs still lost but ecosystems hold. Sea level rise: 0.3–0.5m by 2100.' },
         { id: 'ssp126', label: 'SSP1-2.6', name: t('stem.climateExplorer.low_emissions_strong_action', 'Low Emissions — Strong Action'),
-          temp2100: 1.8, tempRange: [1.3, 2.4], emissions2050: 7, color: '#84cc16',
+          temp2100: 1.8, tempRange: [1.3, 2.4], co2Path: 'CO\u2082 falls to net zero around 2070.', color: '#84cc16',
           likelihood: 'achievable with current commitments if fully implemented',
-          requires: 'Net-zero CO\u2082 by ~2075. Rapid renewable expansion + moderate carbon capture. Strong but slower than SSP1-1.9.',
+          requires: 'Net-zero CO\u2082 around 2070. Rapid renewable expansion. Strong but slower than SSP1-1.9.',
           impacts: 'Warming around 2°C. Some tipping points triggered (coral bleaching, Greenland slow loss). Sea level rise: 0.3 to 0.6m.' },
         { id: 'ssp245', label: 'SSP2-4.5', name: t('stem.climateExplorer.middle_of_the_road_current_pledges', 'Middle of the Road — Current Pledges'),
-          temp2100: 2.7, tempRange: [2.1, 3.5], emissions2050: 40, color: '#fbbf24',
+          temp2100: 2.7, tempRange: [2.1, 3.5], co2Path: 'CO\u2082 stays near today\u2019s level until about 2050, then falls slowly.', color: '#fbbf24',
           likelihood: 'roughly where current policies are heading',
           requires: 'Gradual shift from fossil fuels. Renewable growth continues but not fast enough.',
-          impacts: 'Warming ~2.7°C. Major tipping points likely (AMOC weakening, Amazon stress, coral reefs mostly gone). Sea level rise: 0.4 to 0.8m.' },
+          impacts: 'Warming ~2.7°C. Higher risk of passing tipping points (AMOC weakening, Amazon stress); coral reefs mostly gone. Sea level rise: 0.4 to 0.8m.' },
         { id: 'ssp370', label: 'SSP3-7.0', name: t('stem.climateExplorer.high_emissions_regional_rivalry', 'High Emissions — Regional Rivalry'),
-          temp2100: 3.6, tempRange: [2.8, 4.6], emissions2050: 55, color: '#f97316',
+          temp2100: 3.6, tempRange: [2.8, 4.6], co2Path: 'CO\u2082 keeps rising and roughly doubles from today by 2100.', color: '#f97316',
           likelihood: 'emissions still rising; weak policy',
           requires: 'Continued fossil fuel expansion. Limited climate cooperation between countries.',
-          impacts: 'Warming ~3.6°C. Multiple cascading tipping points. Amazon dieback likely. Sea level rise: 0.6 to 0.9m by 2100, multi-meter locked in long-term.' },
+          impacts: 'Warming ~3.6°C. Several tipping points could be passed; Amazon dieback becomes possible. Sea level rise: 0.6 to 0.9m by 2100, and it keeps rising for centuries.' },
         { id: 'ssp585', label: 'SSP5-8.5', name: t('stem.climateExplorer.very_high_fossil_fueled_growth', 'Very High — Fossil-Fueled Growth'),
-          temp2100: 4.4, tempRange: [3.3, 5.7], emissions2050: 85, color: '#ef4444',
+          temp2100: 4.4, tempRange: [3.3, 5.7], co2Path: 'CO\u2082 roughly doubles from today by 2050.', color: '#ef4444',
           likelihood: 'requires active acceleration of coal/oil/gas use',
-          requires: 'Quadrupling coal use, massive fossil fuel expansion. Considered unlikely but reveals worst-case physics.',
-          impacts: 'Warming 4°C+. Mass tipping-point cascade. Parts of Earth uninhabitable for humans in summer. Sea level rise: 0.6 to 1.0m by 2100, 5+ m locked in.' }
+          requires: 'Huge growth in coal, oil and gas use. Considered unlikely, but it shows the worst-case physics.',
+          impacts: 'Warming 4°C+. Many tipping points at risk. Dangerous heat in some regions for part of the year. Sea level rise: 0.6 to 1.0m by 2100, and several meters possible over the following centuries.' }
       ];
 
       var ACTIONS = [
-        { emoji: '\uD83D\uDEB6', text: t('stem.climateExplorer.walk_bike_or_bus_to_school', 'Walk, bike, or bus to school'), impact: 'Saves up to 1,200 kg CO\u2082/year', diff: 'easy' },
-        { emoji: '\uD83E\uDD57', text: t('stem.climateExplorer.try_one_meatless_meal_per_week', 'Try one meatless meal per week'), impact: 'Saves ~200 kg CO\u2082/year', diff: 'easy' },
-        { emoji: '\uD83D\uDCA1', text: t('stem.climateExplorer.turn_off_lights_unplug_chargers', 'Turn off lights & unplug chargers'), impact: 'Saves 100-400 kWh/year', diff: 'easy' },
+        { emoji: '\uD83D\uDEB6', text: t('stem.climateExplorer.walk_bike_or_bus_to_school', 'Walk, bike, or bus to school'), impact: 'Walking instead of riding alone in a car saves about ' + QC_KG.transport[2].toLocaleString() + ' kg CO\u2082 a year (calculator values)', diff: 'easy' },
+        { emoji: '\uD83E\uDD57', text: t('stem.climateExplorer.try_one_meatless_meal_per_week', 'Try one meatless meal per week'), impact: 'Swapping one beef meal a week saves about ' + Math.round((GRANULAR_ITEMS.food[0].kg - GRANULAR_ITEMS.food[6].kg) * 52) + ' kg CO\u2082e a year (habit tracker values)', diff: 'easy' },
+        { emoji: '\uD83D\uDCA1', text: t('stem.climateExplorer.turn_off_lights_unplug_chargers', 'Turn off lights & unplug chargers'), impact: 'Saves electricity every day', diff: 'easy' },
         { emoji: '\uD83D\uDDE3\uFE0F', text: t('stem.climateExplorer.talk_to_your_family_about_energy_choic', 'Talk to your family about energy choices'), impact: 'One conversation can change household habits', diff: 'medium' },
-        { emoji: '\uD83C\uDF31', text: t('stem.climateExplorer.plant_a_tree_or_start_a_school_garden', 'Plant a tree or start a school garden'), impact: '1 tree absorbs ~22 kg CO\u2082/year', diff: 'medium' },
+        { emoji: '\uD83C\uDF31', text: t('stem.climateExplorer.plant_a_tree_or_start_a_school_garden', 'Plant a tree or start a school garden'), impact: '1 grown tree takes in up to ~22 kg CO\u2082/year', diff: 'medium' },
         { emoji: '\uD83D\uDCDD', text: t('stem.climateExplorer.write_a_letter_to_your_representative', 'Write a letter to your representative'), impact: 'Policy changes affect millions', diff: 'medium' },
-        { emoji: '\u267B\uFE0F', text: t('stem.climateExplorer.start_a_recycling_program_at_school', 'Start a recycling program at school'), impact: 'Diverts 30-50% of waste from landfills', diff: 'hard' },
+        { emoji: '\u267B\uFE0F', text: t('stem.climateExplorer.start_a_recycling_program_at_school', 'Start a recycling program at school'), impact: 'Keeps paper, cans and bottles out of the landfill', diff: 'hard' },
         { emoji: '\uD83D\uDCE2', text: t('stem.climateExplorer.organize_a_climate_awareness_event', 'Organize a climate awareness event'), impact: 'Reaches people no single household change can', diff: 'hard' }
       ];
 
       // ══════════════════════════════════════
       //  QUIZ DATA
       // ══════════════════════════════════════
+      // Round 6 (2026-11-23): every wrong option is a real misconception with its own one-line why in QUIZ_MISS
+      // (keyed by question start + option TEXT, because the rotation below moves options). Sources are in QUIZ_WHY.
       var QUIZ = [
-        { q: 'What gas do cars produce that warms the Earth?', opts: ['Pure oxygen gas', 'Carbon dioxide', 'Nitrogen'], a: 1 },
+        { q: 'What gas do cars produce that warms the Earth?', opts: ['Oxygen', 'Carbon dioxide', 'Nitrogen'], a: 1 },
         { q: 'Which uses less energy: walking or driving?', opts: ['Walking', 'Driving', 'They\'re the same'], a: 0 },
-        { q: 'Solar panels get energy from...', opts: ['The wind', 'The Sun', 'Coal'], a: 1 },
-        { q: 'How much CO\u2082 does one tree absorb per year?', opts: ['~2 kg', '~22 kg', '~220 kg'], a: 1 },
+        { q: 'Solar panels get energy from...', opts: ['Warm air around them', 'The Sun', 'The wind'], a: 1 },
+        { q: 'A European agency estimated that one grown tree takes in about how much CO₂ a year?', opts: ['About 2 kg', 'About 22 kg', 'About 220 kg'], a: 1 },
         { q: 'Which energy source has the LOWEST lifecycle emissions?', opts: ['Natural gas', 'Wind', 'Solar'], a: 1 },
-        { q: 'Climate justice means...', opts: ['Long-range weather forecasting systems', 'Fair distribution of climate impacts', 'Carbon trading'], a: 1 },
-        { q: 'The Paris Agreement aims to limit warming to...', opts: ['0.5°C above pre-industrial', '1.5\u00B0C above pre-industrial', '5°C above pre-industrial'], a: 1 },
+        { q: 'Climate justice means...', opts: ['Every country cuts emissions by the same amount', 'Fairness in who causes harm and who is hurt', 'Lowering energy bills for everyone'], a: 1 },
+        { q: 'The Paris Agreement\'s stronger goal is to limit warming to...', opts: ['1.0°C above pre-industrial', '1.5°C above pre-industrial', '3.0°C above pre-industrial'], a: 1 },
         { q: 'Which sector produces the most greenhouse emissions?', opts: ['Transportation', 'Energy & electricity', 'Residential buildings'], a: 1 },
-        { q: 'Methane is how many times more potent than CO\u2082?', opts: ['2\u00D7', '10\u00D7', '28\u00D7'], a: 2 },
-        { q: 'What is the Great Green Wall?', opts: ['A border wall along the Sahara Desert', 'A reforestation project across Africa', 'A type of solar panel'], a: 1 },
+        { q: 'Over 100 years, methane traps about how many times more heat than the same mass of CO₂?', opts: ['2×', '10×', '28×'], a: 2 },
+        { q: 'What is the Great Green Wall?', opts: ['A long stone wall to hold back the Sahara', 'Restoring trees and land across Africa', 'A line of solar farms in the Sahara'], a: 1 },
         // ── Expanded: Keeling Curve & atmospheric CO₂ ──
-        { q: 'In what year did atmospheric CO\u2082 first cross 400 parts per million?', opts: ['1970', '1990', '2013', '2023'], a: 2 },
-        { q: 'The Keeling Curve measures CO\u2082 at what famous location?', opts: ['Antarctica', 'Mauna Loa, Hawaii', 'The North Pole ice cap', 'Mount Everest'], a: 1 },
-        { q: 'Pre-industrial atmospheric CO\u2082 was about:', opts: ['180 ppm', '280 ppm', '380 ppm', '480 ppm'], a: 1 },
+        { q: 'In what year was a daily CO₂ reading above 400 parts per million first reported at Mauna Loa?', opts: ['1970', '1990', '2013', '2023'], a: 2 },
+        { q: 'The Keeling Curve measures CO₂ at what famous location?', opts: ['A busy city, near traffic', 'Mauna Loa, Hawaii', 'The North Pole ice cap', 'Mount Everest'], a: 1 },
+        { q: 'Pre-industrial atmospheric CO₂ was about:', opts: ['180 ppm', '280 ppm', '380 ppm', '480 ppm'], a: 1 },
         // ── Tipping points ──
-        { q: 'Which climate "tipping point" may already be triggered at just 1.5\u00B0C warming?', opts: ['The Sahara turning green', 'Mass coral reef bleaching', 'The Gulf Stream reversing', 'The Moon\'s orbit'], a: 1 },
-        { q: 'The AMOC (Atlantic Meridional Overturning Circulation) is famous because it:', opts: ['Moves deep-sea creatures north', 'Regulates European climate', 'Creates hurricanes', 'Produces oxygen'], a: 1 },
-        { q: 'Why does permafrost melting worry climate scientists?', opts: ['It floods coastlines', 'It releases trapped methane', 'It changes the magnetic compass', 'It kills all plants'], a: 1 },
+        { q: 'Which climate "tipping point" may already be triggered at just 1.5°C warming?', opts: ['The Sahara turning green', 'Tropical coral reefs dying off', 'The Gulf Stream reversing', 'The Amazon rainforest dying back'], a: 1 },
+        { q: 'The AMOC (Atlantic Meridional Overturning Circulation) is famous because it:', opts: ['Moves deep-sea creatures north', 'Regulates European climate', 'Creates hurricanes', 'Controls the ocean tides'], a: 1 },
+        { q: 'Why does permafrost melting worry climate scientists?', opts: ['It raises sea level a lot', 'It releases trapped methane', 'It makes the land reflect more sunlight', 'It stops ocean currents'], a: 1 },
         // ── Phenology / pollinator link ──
-        { q: 'Climate change is disrupting which critical timing for pollinators?', opts: ['Egg laying', 'Flower bloom vs. bee emergence', 'Hibernation depth in winter dens', 'Wing molting'], a: 1 },
-        { q: 'A "phenological mismatch" happens when:', opts: ['Daylight saving clocks shift the growing seasons', 'Flowers bloom before pollinators are active', 'Birds fly upside down', 'Trees grow sideways'], a: 1 },
+        { q: 'Climate change is disrupting which critical timing for pollinators?', opts: ['How many hours of daylight summer has', 'Flower bloom vs. bee emergence', 'What time the sun rises', 'The phases of the Moon'], a: 1 },
+        { q: 'A "phenological mismatch" happens when:', opts: ['Daylight saving clocks shift the growing season', 'Flowers bloom before pollinators are active', 'Two species compete for the same food', 'A species moves to a cooler place'], a: 1 },
         // ── Energy / grid facts ──
         { q: 'Which country generates the highest share of its electricity from wind?', opts: ['United States', 'China', 'Denmark', 'Japan'], a: 2 },
-        { q: 'A modern offshore wind turbine can power approximately how many homes?', opts: ['~160', '~1,600', '~16,000', '~160,000'], a: 2 },
+        { q: 'One large 12-megawatt offshore wind turbine can power about how many European homes, its maker says?', opts: ['~160', '~1,600', '~16,000', '~160,000'], a: 2 },
         // ── Justice ──
+        // Oxfam "Climate Equality" (Nov 2023, 2019 data): richest 10% ~50% of emissions.
         { q: 'What share of global emissions comes from the richest 10% of people?', opts: ['~5%', '~20%', '~50%', '~80%'], a: 2 },
         // ── New content coverage: sectors, Drawdown, budget ──
-        { q: 'What single sector produces roughly a third of global greenhouse emissions?', opts: ['Road transportation', 'Electricity & heat', 'Aviation', 'Agriculture'], a: 1 },
+        { q: 'What single sector produces roughly a third of global greenhouse emissions?', opts: ['Road transportation (cars and trucks)', 'Energy supply (power and heat)', 'Aviation', 'Agriculture'], a: 1 },
         { q: 'Agriculture + land use accounts for roughly what share of global emissions?', opts: ['~5%', '~10%', '~22%', '~50%'], a: 2 },
-        { q: 'According to Project Drawdown, which solution has the largest gigaton avoidance potential by 2050?', opts: ['Electric vehicles', 'Onshore wind turbines', 'Rooftop solar', 'Direct air capture plants'], a: 1 },
-        { q: 'One of Drawdown\'s top-ranked solutions is not a technology — it is:', opts: ['Skyscrapers', 'Girls\' education + family planning', 'Next-generation nuclear fission plants', 'Carbon trading'], a: 1 },
+        { q: 'In Project Drawdown\'s 2020 review, which of these solutions could cut the most emissions by 2050?', opts: ['Electric cars', 'Onshore wind turbines', 'Rooftop solar', 'Direct air capture plants'], a: 1 },
+        { q: 'In Project Drawdown\'s 2020 ranking, one of the top five solutions is not a technology. It is:', opts: ['Banning plastic straws', 'Girls\' education + family planning', 'Next-generation nuclear fission plants', 'Carbon trading'], a: 1 },
         { q: 'Roughly how many years of emissions remain in the 1.5°C carbon budget at today\'s burn rate?', opts: ['~60 years', '~25 years', '~4 years', 'Already exceeded'], a: 2 },
-        { q: 'Which AI workload has the LARGEST per-use carbon footprint?', opts: ['Text chat', 'Image generation', 'Video generation', 'Voice TTS'], a: 2 },
-        { q: 'Global temperature has risen approximately how much above pre-industrial levels (as of 2024)?', opts: ['+0.3°C', '+1.3°C', '+2.5°C', '+4.0°C'], a: 1 },
+        { q: 'In MIT Technology Review\'s 2025 tests, which AI task used the MOST energy?', opts: ['A short chat answer', 'One generated image', 'A 5-second generated video', 'An answer from a very large text model'], a: 2 },
+        { q: 'About how much has long-term warming raised global temperature above pre-industrial levels so far?', opts: ['+0.3°C', '+1.3°C', '+2.5°C', '+4.0°C'], a: 1 },
         // ── IPCC scenarios ──
         { q: 'Which IPCC scenario stays closest to the Paris Agreement 1.5°C target?', opts: ['SSP1-1.9', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'], a: 0 },
         { q: 'Current policies put the world roughly on which IPCC pathway?', opts: ['SSP1-1.9 (Paris-aligned)', 'SSP1-2.6 (strong action)', 'SSP2-4.5 (middle)', 'SSP5-8.5 (fossil-fueled)'], a: 2 },
         { q: 'What does "SSP" stand for in IPCC future scenarios?', opts: ['Solar and Storage Plan', 'Shared Socioeconomic Pathway', 'State Science Policy', 'Sustainable Systems Planning Project'], a: 1 },
         // ── Historical responsibility ──
-        { q: 'Which single country is responsible for approximately 20% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'United Kingdom', 'United States', 'India'], a: 2 },
-        { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company that is owned by the United Nations', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
+        { q: 'Which single country is responsible for approximately 20% of all historical CO₂ emissions since 1850?', opts: ['China', 'United Kingdom', 'United States', 'India'], a: 2 },
+        { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company that is owned by the United Nations', 'A fund that helps hard-hit, vulnerable countries recover', 'A carbon trading scheme', 'A UN court for climate lawsuits'], a: 1 },
         { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 },
-        // \u2500\u2500 Per-capita inversion + climate justice deepening \u2500\u2500
-        { q: 'Since 1850, the US has emitted roughly 1,545 tons of CO\u2082 for each person living there today. For Bangladesh the figure is about 13 tons. The US per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
-        { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 97% of them'], a: 3 },
-        { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half (around 50%)', 'About 10% (around one tenth)', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
-        { q: 'Approximately how many internal displacements have weather disasters caused since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
-        { q: 'The Wabanaki Nations \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
-        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for asylum in any country that has signed the Convention'], a: 2 }
+        // ── Per-capita inversion + climate justice deepening ──
+        { q: 'Counting fossil-fuel CO₂ since records began, the US has emitted about 1,250 tons for each person living there today. For Bangladesh the figure is about 11 tons. The US figure is roughly how many times larger?', opts: ['~10×', '~50×', '~110×', '~1,100×'], a: 2 },
+        { q: 'Compared to the rest of the world’s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 97% of them'], a: 3 },
+        { q: 'At COP28 (2023), rich nations pledged just over $700 million to the new Loss & Damage Fund. That is about what share of the losses developing countries face from climate change each year?', opts: ['Roughly 50%', 'Roughly 10%', 'Roughly 1%', 'Under 0.2%'], a: 3 },
+        // IDMC, "Disaster Displacement: A global review, 2008-2018" (2019): ~265M, about 24M a year.
+        { q: 'Approximately how many internal displacements did disasters cause from 2008 to 2018, by IDMC’s count?', opts: ['~2.6 million', '~26 million', '~265 million', '~2.6 billion'], a: 2 },
+        { q: 'The Wabanaki Nations — Penobscot, Passamaquoddy, Maliseet, and Mi’kmaq — have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
+        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Counted as refugees with full legal protections', 'Given a special "climate refugee" status', 'Not counted as refugees for climate alone', 'Free to claim asylum in any signing country'], a: 2 }
       ];
 
       // Move each question's correct answer onto a cycling target slot. As
@@ -1738,6 +2129,173 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           item.a = target;
         });
       })();
+
+      // One-or-two-sentence explanations, matched by the start of each question.
+      // Shown after any answer, right or wrong, so a wrong pick learns the reason.
+      var QUIZ_WHY = [
+        ['What gas do cars', 'Burning gasoline joins the carbon in fuel with oxygen from the air, which makes carbon dioxide. CO₂ traps heat; oxygen and nitrogen do not.'],
+        ['Which uses less energy: walking', 'Walking runs on food you already eat. A car burns fuel on every trip.'],
+        ['Solar panels get energy', 'Solar panels turn sunlight straight into electricity.'],
+        ['A European agency estimated', 'The European Environment Agency said a mature tree takes in about 22 kg of CO₂ a year. Real trees vary a lot by kind, size and age: a University of Minnesota guide says one tree can take in as much as 10 pounds (about 4.5 kg) a year.'],
+        ['Which energy source has the LOWEST', 'Counting building, running and taking apart, wind on land makes about 11 g of CO₂ per kWh, less than solar (41 to 48 g) and far less than gas (490 g) (IPCC).'],
+        ['Climate justice means', 'Climate justice asks who causes climate change and who is hurt by it. Often the people who emitted least face the worst impacts.'],
+        ['The Paris Agreement', 'In 2015, countries agreed to keep warming well below 2°C and to try to stop at 1.5°C.'],
+        ['Which sector produces the most', 'Making electricity, heat and fuels burns the most fossil fuel: about 34% of all emissions in 2019. Transport was about 15% (IPCC).'],
+        ['Over 100 years, methane', 'Over 100 years a ton of methane traps about 28 times as much heat as a ton of CO₂ (IPCC; the newest IPCC report gives 27 to 30, depending on where the methane comes from). It breaks down sooner, so it is even stronger over 20 years.'],
+        ['What is the Great Green Wall', 'It is an African-led project to restore damaged land, with trees and farms, in a belt about 8,000 km long across Africa, south of the Sahara (UN Convention to Combat Desertification).'],
+        ['In what year was a daily', 'NOAA reported the first daily average above 400 ppm at Mauna Loa on May 9, 2013. The yearly average passed 400 ppm in 2015 (about 401 ppm).'],
+        ['The Keeling Curve measures', 'The Keeling Curve is the record of CO₂ from Mauna Loa Observatory in Hawaii, starting in 1958 (Scripps). The high, remote site samples well-mixed air.'],
+        ['Pre-industrial atmospheric', 'Air bubbles in ice cores show CO₂ was 280 ppm or less before the mid-1700s (NOAA). The 2025 average at Mauna Loa was about 427 ppm.'],
+        ['Which climate "tipping point"', 'A large 2022 review put its best guess for tropical coral reef die-off at about 1.5°C (range 1 to 2°C), close to today’s warming (Armstrong McKay and others).'],
+        ['The AMOC', 'The AMOC is a giant loop of ocean currents that carries tropical heat north, which keeps Western Europe milder than its latitude.'],
+        ['Why does permafrost melting', 'Frozen soil holds old plant carbon. When it thaws, microbes release CO₂ and methane, which cause more warming.'],
+        ['Climate change is disrupting which', 'Warmer springs make many flowers bloom earlier. If bees come out on their usual schedule, they can miss the flowers.'],
+        ['A "phenological mismatch"', 'Phenology is the timing of natural events. A mismatch means two events that used to line up, like blooming and pollinating, no longer do.'],
+        ['Which country generates the highest share', 'Denmark gets more of its electricity from wind than any other country: about 58% in 2024 (Ember, via Our World in Data).'],
+        ['One large 12-megawatt', 'GE, the maker of the 12-megawatt Haliade-X, says one turbine can make enough clean electricity for about 16,000 European homes. That is the maker’s own estimate.'],
+        ['What share of global emissions comes from the richest', 'Oxfam estimates the richest 10% of people caused about half of the emissions from what people buy and use (2019 data).'],
+        ['What single sector produces roughly a third', 'In 2019 the energy supply sector (power plants, heat and fuel production) made about 34% of emissions, the largest share (IPCC).'],
+        ['Agriculture + land use', 'Farming, forests and land use make about 22% of emissions (IPCC): cattle, fertilizer and cutting down forests.'],
+        ['In Project Drawdown\'s 2020 review', 'In Drawdown’s 2020 review (Scenario 2, roughly in line with 1.5°C), onshore wind ranked first: about 148 Gt from 2020 to 2050.'],
+        ['In Project Drawdown\'s 2020 ranking', 'Drawdown counts health and education as one solution: when girls can stay in school and families can get health care, families tend to choose to be smaller. It ranked 2nd in one 2020 scenario and 5th in the other.'],
+        ['Roughly how many years of emissions remain', 'About ' + CARBON_BUDGETS[0].gtRemaining + ' Gt is left for 1.5°C and the world emits about ' + GLOBAL_EMISSIONS_RATE + ' Gt a year, so about ' + Math.round(CARBON_BUDGETS[0].gtRemaining / GLOBAL_EMISSIONS_RATE) + ' years (Global Carbon Budget 2025).'],
+        ['In MIT Technology Review', 'In those tests a five-second video took about 3.4 million joules, more than 700 times one high-quality image. The biggest text model used about 6,700 joules per answer.'],
+        ['About how much has long-term warming', 'Scientists estimate about 1.3°C of long-term warming so far: the 2016–2025 average was 1.26°C (Forster et al., 2026). A single hot year, like 2024, can be higher.'],
+        ['Which IPCC scenario stays closest', 'SSP1-1.9 is the very-low-emissions path, the only one that keeps warming near 1.5°C by 2100 (about 1.4°C for 2081–2100, IPCC).'],
+        ['Current policies put the world', 'UNEP’s 2025 report finds current policies could lead to about 2.8°C of warming this century. That is close to the middle path, SSP2-4.5 (about 2.7°C by 2081–2100, IPCC).'],
+        ['What does "SSP" stand for', 'A Shared Socioeconomic Pathway is a story about how population, economy and policy might change, used to project future emissions.'],
+        ['Which single country is responsible', 'Carbon Brief’s 2021 analysis found the US emitted about 20% of all CO₂ since 1850, more than any other country.'],
+        ['What is the "Loss & Damage" fund', 'Agreed at COP27 in 2022, it is meant to help developing countries that are especially vulnerable to climate change respond to loss and damage (UNFCCC).'],
+        ['Greta Thunberg', 'Thunberg began striking outside the Swedish parliament in 2018. Students around the world joined under the name Fridays for Future.'],
+        ['Counting fossil-fuel CO₂ since records began', 'Divide: 1,250 ÷ 11 is about 114, so roughly 110 times larger (Our World in Data, Global Carbon Budget data to 2023; land-use change not counted).'],
+        ['Compared to the rest of the world', 'Gulf of Maine Research Institute data for 2022 show it warming faster than 97% of the world’s ocean surface.'],
+        ['At COP28 (2023)', 'Cambridge’s sustainability institute (CISL) worked out that “just over $700 million” is less than 0.2% of the losses developing countries face from climate change every year.'],
+        ['Approximately how many internal displacements', 'The Internal Displacement Monitoring Centre counted about 265 million disaster displacements from 2008 to 2018. It counts each time a person is forced from home, so one person can be counted more than once.'],
+        ['The Wabanaki Nations', 'The Abbe Museum in Maine tells more than 12,000 years of Wabanaki history in this homeland.'],
+        ['Under the 1951 UN Refugee Convention', 'The Convention protects people who fear persecution for reasons such as race, religion or political opinion. Climate is not on that list, so people are not refugees under it for climate alone.']
+      ];
+      QUIZ.forEach(function(item) {
+        var hit = QUIZ_WHY.filter(function(row) { return item.q.indexOf(row[0]) === 0; })[0];
+        item.why = hit ? hit[1] : '';
+      });
+      // Why each WRONG option is wrong, keyed by the start of the question and the option text (not its index:
+      // the slot rotation above moves options). Shown only when that option was picked.
+      var QUIZ_MISS = [
+        ['What gas do cars', 'Oxygen', 'Engines use up oxygen from the air to burn fuel. They do not give it off, and oxygen does not trap heat.'],
+        ['What gas do cars', 'Nitrogen', 'Most of the air that goes through an engine is nitrogen, and most of it comes out unchanged. Nitrogen gas does not trap heat.'],
+        ['Which uses less energy: walking', 'Driving', 'A car has to move a heavy machine as well as you, and it burns fuel the whole way. Your legs only move you.'],
+        ['Which uses less energy: walking', 'They\'re the same', 'Moving a heavy car takes far more energy than moving just your body, so they are not the same.'],
+        ['Solar panels get energy', 'Warm air around them', 'Solar panels make electricity from light, not from warm air. They still work on a cold, sunny day.'],
+        ['Solar panels get energy', 'The wind', 'Wind turbines use the wind. Solar panels have no moving parts and run on sunlight.'],
+        ['A European agency estimated', 'About 2 kg', 'Too small for this estimate: the agency gave about 22 kg a year for a grown tree.'],
+        ['A European agency estimated', 'About 220 kg', 'Ten times too big for this estimate. It would take about ten grown trees to take in 220 kg a year.'],
+        ['Which energy source has the LOWEST', 'Natural gas', 'A gas power plant burns fuel the whole time it runs: about 490 g of CO₂ per kWh over its life, more than 40 times wind (IPCC).'],
+        ['Which energy source has the LOWEST', 'Solar', 'Solar is very low too, but making panels takes more energy: about 41 to 48 g per kWh, against 11 g for wind on land (IPCC).'],
+        ['Climate justice means', 'Every country cuts emissions by the same amount', 'Equal cuts sound fair, but countries did not cause equal amounts of warming, and some are hit much harder. Climate justice looks at both.'],
+        ['Climate justice means', 'Lowering energy bills for everyone', 'Cheaper energy can help families, but climate justice is about who causes climate change and who is hurt by it.'],
+        ['The Paris Agreement', '1.0°C above pre-industrial', 'The world has already warmed about 1.3°C, so 1°C could not be the goal. Paris aims for well below 2°C and tries for 1.5°C.'],
+        ['The Paris Agreement', '3.0°C above pre-industrial', 'About 3°C is close to where today’s policies could lead (UNEP 2025: about 2.8°C). It is not the goal.'],
+        ['Which sector produces the most', 'Transportation', 'Transport is big, about 15% of emissions in 2019, but making power, heat and fuels was bigger, about 34% (IPCC).'],
+        ['Which sector produces the most', 'Residential buildings', 'Burning fuel inside buildings made only about 6% of emissions directly in 2019 (IPCC). Their electricity is counted under energy supply.'],
+        ['Over 100 years, methane', '2×', 'Much too low. Over 100 years a ton of methane traps about 28 times the heat of a ton of CO₂ (IPCC).'],
+        ['Over 100 years, methane', '10×', 'Still too low. Over 100 years methane traps about 28 times as much heat as the same mass of CO₂ (IPCC), and even more over 20 years.'],
+        ['What is the Great Green Wall', 'A long stone wall to hold back the Sahara', 'It is not a built wall. People are restoring trees, farms and grassland in a long belt across Africa.'],
+        ['What is the Great Green Wall', 'A line of solar farms in the Sahara', 'The name sounds like a structure, but the project is about bringing back trees and healthy land, not making electricity.'],
+        ['In what year was a daily', '1970', 'In 1970 the yearly average at Mauna Loa was about 326 ppm (NOAA). It took until 2013 for a day above 400.'],
+        ['In what year was a daily', '1990', 'In 1990 the yearly average was about 354 ppm (NOAA). It took until 2013 for a day above 400.'],
+        ['In what year was a daily', '2023', 'By 2023 the yearly average was already about 421 ppm (NOAA), so 400 had been passed years earlier.'],
+        ['The Keeling Curve measures', 'A busy city, near traffic', 'City air has extra CO₂ from nearby traffic. Keeling picked a high, remote mountain so the air shows the average for the whole planet.'],
+        ['The Keeling Curve measures', 'The North Pole ice cap', 'The North Pole is drifting sea ice, so there is no fixed station there. The famous record comes from Mauna Loa, Hawaii.'],
+        ['The Keeling Curve measures', 'Mount Everest', 'The Keeling Curve does not come from Everest. It is the record from Mauna Loa Observatory in Hawaii, starting in 1958 (Scripps).'],
+        ['Pre-industrial atmospheric', '180 ppm', 'About 180 to 200 ppm is what ice cores show in the coldest parts of ice ages, not the time just before industry.'],
+        ['Pre-industrial atmospheric', '380 ppm', 'That level was reached around 2005 (NOAA: about 380 ppm that year).'],
+        ['Pre-industrial atmospheric', '480 ppm', 'CO₂ has not reached 480 ppm yet. The 2025 average at Mauna Loa was about 427 ppm (NOAA).'],
+        ['Which climate "tipping point"', 'The Sahara turning green', 'A wetter, greener Sahel is on scientists’ list, but their best guess for it is about 2.8°C, well above 1.5°C (Armstrong McKay and others 2022).'],
+        ['Which climate "tipping point"', 'The Gulf Stream reversing', 'Scientists worry the larger Atlantic current loop could collapse, not reverse. Their best guess for that is about 4°C, with a wide range of 1.4 to 8°C.'],
+        ['Which climate "tipping point"', 'The Amazon rainforest dying back', 'Amazon dieback is on the list, but the best guess for it is about 3.5°C (range 2 to 6°C), and lower if a lot of forest is cut.'],
+        ['The AMOC', 'Moves deep-sea creatures north', 'Animals ride many currents, but the AMOC matters because it carries tropical heat north.'],
+        ['The AMOC', 'Creates hurricanes', 'Hurricanes get their energy from warm sea water near the surface. The AMOC is a slow loop of currents that moves heat north.'],
+        ['The AMOC', 'Controls the ocean tides', 'Tides come from the pull of the Moon and Sun. The AMOC is a slow loop of ocean currents that carries heat.'],
+        ['Why does permafrost melting', 'It raises sea level a lot', 'Melting glaciers and ice sheets raise sea level. The big worry about thawing permafrost is the old plant carbon it lets out.'],
+        ['Why does permafrost melting', 'It makes the land reflect more sunlight', 'Thawing frozen soil does not make the land shinier. The worry is the carbon gases that microbes release from it.'],
+        ['Why does permafrost melting', 'It stops ocean currents', 'Fresh water from melting ice sheets may weaken ocean currents. Thawing permafrost worries scientists because of the carbon it releases.'],
+        ['Climate change is disrupting which', 'How many hours of daylight summer has', 'Day length is set by Earth’s tilt and orbit, which climate change does not change. Warmth changes when flowers bloom.'],
+        ['Climate change is disrupting which', 'What time the sun rises', 'Sunrise times come from Earth’s turning and tilt, not from climate. Warm springs change when flowers open.'],
+        ['Climate change is disrupting which', 'The phases of the Moon', 'The Moon’s phases do not change with climate. Warmer springs change when flowers bloom, and bees can miss them.'],
+        ['A "phenological mismatch"', 'Daylight saving clocks shift the growing season', 'Clock changes are a human schedule. Plants and animals follow warmth and daylight, not clocks.'],
+        ['A "phenological mismatch"', 'Two species compete for the same food', 'That is competition. A mismatch is about timing: two events that used to line up no longer do.'],
+        ['A "phenological mismatch"', 'A species moves to a cooler place', 'That is a range shift, another effect of warming. A mismatch is about timing, not place.'],
+        ['Which country generates the highest share', 'United States', 'The US makes a lot of wind power in total, but wind was only about 10% of its electricity in 2024 (Ember).'],
+        ['Which country generates the highest share', 'China', 'China builds a lot of wind power, but wind was only about 10% of its electricity in 2024 (Ember).'],
+        ['Which country generates the highest share', 'Japan', 'Wind was only about 1% of Japan’s electricity in 2024 (Ember).'],
+        ['One large 12-megawatt', '~160', 'Far too small. The maker’s estimate for one 12-megawatt turbine is about 16,000 European homes.'],
+        ['One large 12-megawatt', '~1,600', 'Ten times too small. The maker says about 16,000 European homes for one turbine.'],
+        ['One large 12-megawatt', '~160,000', 'Ten times too big. That would take about ten of these turbines.'],
+        ['What share of global emissions comes from the richest', '~5%', 'Much too low. Oxfam estimates the richest tenth of people caused about half of consumption emissions in 2019.'],
+        ['What share of global emissions comes from the richest', '~20%', 'Too low. The richest 1% alone caused about 16%, and the richest 10% about 50% (Oxfam, 2019 data).'],
+        ['What share of global emissions comes from the richest', '~80%', 'Too high. Oxfam’s estimate for the richest 10% is about half.'],
+        ['What single sector produces roughly a third', 'Road transportation (cars and trucks)', 'Road transport is the biggest part of transport, but all transport together was about 15% in 2019 (IPCC).'],
+        ['What single sector produces roughly a third', 'Aviation', 'Flying is a small slice of world emissions, part of the 15% from all transport (IPCC).'],
+        ['What single sector produces roughly a third', 'Agriculture', 'Farming, forests and land use together made about 22% (IPCC), less than energy supply.'],
+        ['Agriculture + land use', '~5%', 'Too low. Farming, forestry and land use made about 22% of emissions in 2019 (IPCC).'],
+        ['Agriculture + land use', '~10%', 'Still too low. Cattle, fertilizer and cutting forests add up to about 22% (IPCC).'],
+        ['Agriculture + land use', '~50%', 'Too high. About 22% came from farming and land use; energy supply alone was about 34% (IPCC).'],
+        ['In Project Drawdown\'s 2020 review', 'Electric cars', 'Electric cars help, but in Drawdown’s 2020 ranking they came far below onshore wind.'],
+        ['In Project Drawdown\'s 2020 review', 'Rooftop solar', 'Rooftop solar ranked high, but below onshore wind in Drawdown’s 2020 Scenario 2.'],
+        ['In Project Drawdown\'s 2020 review', 'Direct air capture plants', 'Drawdown did not rank direct air capture in 2020, and its newer list marks it Not Recommended.'],
+        ['In Project Drawdown\'s 2020 ranking', 'Banning plastic straws', 'Cutting plastic waste helps, but banning straws is not one of Drawdown’s solutions.'],
+        ['In Project Drawdown\'s 2020 ranking', 'Next-generation nuclear fission plants', 'That is a technology, and the question asks for one that is not.'],
+        ['In Project Drawdown\'s 2020 ranking', 'Carbon trading', 'Carbon trading is a way to pay for cuts. Drawdown ranks the cuts themselves, such as wind power, less food waste, and health and education.'],
+        ['Roughly how many years of emissions remain', '~60 years', 'Far too long. About ' + CARBON_BUDGETS[0].gtRemaining + ' Gt is left for 1.5°C and the world emits about ' + GLOBAL_EMISSIONS_RATE + ' Gt a year.'],
+        ['Roughly how many years of emissions remain', '~25 years', 'That is about the budget for 2°C (' + CARBON_BUDGETS[2].gtRemaining.toLocaleString('en-US') + ' Gt, about ' + Math.round(CARBON_BUDGETS[2].gtRemaining / GLOBAL_EMISSIONS_RATE) + ' years). The 1.5°C budget is much smaller.'],
+        ['Roughly how many years of emissions remain', 'Already exceeded', 'Not yet, but close. At today’s rate the 1.5°C budget runs out in about ' + Math.round(CARBON_BUDGETS[0].gtRemaining / GLOBAL_EMISSIONS_RATE) + ' years (Global Carbon Budget 2025).'],
+        ['In MIT Technology Review', 'A short chat answer', 'A short answer from a small text model used about 114 joules, tiny next to a video’s 3.4 million.'],
+        ['In MIT Technology Review', 'One generated image', 'One high-quality image used about 2,300 joules. The 5-second video used more than 700 times that.'],
+        ['In MIT Technology Review', 'An answer from a very large text model', 'The biggest text model used about 6,700 joules per answer: a lot for text, but far below a video’s 3.4 million.'],
+        ['About how much has long-term warming', '+0.3°C', 'Much too low. The 2016–2025 average was about 1.26°C above pre-industrial (Forster et al., 2026).'],
+        ['About how much has long-term warming', '+2.5°C', 'Too high for now. That is closer to where the middle future path could end up by 2081–2100 (IPCC: about 2.7°C).'],
+        ['About how much has long-term warming', '+4.0°C', 'Far too high. That is near the very high emissions path for 2081–2100 (IPCC: about 4.4°C).'],
+        ['Which IPCC scenario stays closest', 'SSP2-4.5', 'SSP2-4.5 is the middle path: about 2.7°C by 2081–2100 (IPCC).'],
+        ['Which IPCC scenario stays closest', 'SSP3-7.0', 'SSP3-7.0 is a high path: about 3.6°C by 2081–2100 (IPCC).'],
+        ['Which IPCC scenario stays closest', 'SSP5-8.5', 'SSP5-8.5 is the very high path: about 4.4°C by 2081–2100 (IPCC).'],
+        ['Current policies put the world', 'SSP1-1.9 (Paris-aligned)', 'That path keeps warming near 1.5°C (about 1.4°C by 2081–2100, IPCC). Current policies point to about 2.8°C (UNEP 2025).'],
+        ['Current policies put the world', 'SSP1-2.6 (strong action)', 'That path gives about 1.8°C by 2081–2100 (IPCC). Current policies point higher, to about 2.8°C (UNEP 2025).'],
+        ['Current policies put the world', 'SSP5-8.5 (fossil-fueled)', 'That path gives about 4.4°C by 2081–2100 (IPCC). Current policies point lower, to about 2.8°C (UNEP 2025).'],
+        ['What does "SSP" stand for', 'Solar and Storage Plan', 'SSPs are about whole societies, not one energy plan: how population, economy and policy could change.'],
+        ['What does "SSP" stand for', 'State Science Policy', 'SSPs are worldwide stories used by IPCC scientists, not one state’s policy.'],
+        ['What does "SSP" stand for', 'Sustainable Systems Planning Project', 'The words sound close, but SSP stands for Shared Socioeconomic Pathway.'],
+        ['Which single country is responsible', 'China', 'China emits the most each year today, but since 1850 its total is about 11%, about half the US share (Carbon Brief 2021).'],
+        ['Which single country is responsible', 'United Kingdom', 'Britain started burning coal early, but its total since 1850 is about 3% (Carbon Brief 2021).'],
+        ['Which single country is responsible', 'India', 'India’s total since 1850 is about 3.4%, far below the US (Carbon Brief 2021).'],
+        ['What is the "Loss & Damage" fund', 'A climate insurance company that is owned by the United Nations', 'It is a fund that gives money to hard-hit countries. It does not sell insurance, and no company owns it.'],
+        ['What is the "Loss & Damage" fund', 'A carbon trading scheme', 'Carbon trading buys and sells permission to emit. This fund helps pay for climate damage.'],
+        ['What is the "Loss & Damage" fund', 'A UN court for climate lawsuits', 'It is a fund, not a court. Countries ask it for money to respond to climate disasters.'],
+        ['Greta Thunberg', 'Sunrise Movement', 'Sunrise Movement is a different youth climate group, based in the United States.'],
+        ['Greta Thunberg', '350.org', '350.org is a different climate group. Its name comes from 350 ppm of CO₂.'],
+        ['Greta Thunberg', 'Extinction Rebellion', 'Extinction Rebellion is a different protest group that started in Britain.'],
+        ['Counting fossil-fuel CO₂ since records began', '~10×', 'Ten times would be about 110 tons per US person. Check: 1,250 ÷ 11 is about 114.'],
+        ['Counting fossil-fuel CO₂ since records began', '~50×', 'Check by dividing: 1,250 ÷ 11 is about 114, more than twice 50.'],
+        ['Counting fossil-fuel CO₂ since records began', '~1,100×', 'Ten times too big. 1,250 ÷ 11 is about 114.'],
+        ['Compared to the rest of the world', 'Slower than average', 'It is the opposite: in 2022 data it warmed faster than 97% of the world’s ocean surface (GMRI).'],
+        ['Compared to the rest of the world', 'About average', 'Not average. In 2022 data it warmed faster than 97% of the world’s ocean surface (GMRI).'],
+        ['Compared to the rest of the world', 'Faster than 75% of them', 'Faster than that: GMRI’s 2022 update puts it ahead of 97% of the world’s ocean surface.'],
+        ['At COP28 (2023)', 'Roughly 50%', 'Far too high. CISL worked out less than 0.2% of the yearly losses.'],
+        ['At COP28 (2023)', 'Roughly 10%', 'Far too high. Just over $700 million is less than 0.2% of the yearly losses (CISL).'],
+        ['At COP28 (2023)', 'Roughly 1%', 'Still too high. CISL worked out less than 0.2%: the losses each year are far larger than the pledges.'],
+        ['Approximately how many internal displacements', '~2.6 million', 'Far too low. IDMC counted about 265 million disaster displacements from 2008 to 2018.'],
+        ['Approximately how many internal displacements', '~26 million', 'That is close to one year: about 24 million a year on average (IDMC). Over the whole period it was about 265 million.'],
+        ['Approximately how many internal displacements', '~2.6 billion', 'Far too high: that would be about a third of all people on Earth. IDMC counted about 265 million.'],
+        ['The Wabanaki Nations', '~500 years', 'About 500 years ago is when Europeans began to arrive. Wabanaki history here is much older.'],
+        ['The Wabanaki Nations', '~2,000 years', 'Much too recent. The Abbe Museum tells more than 12,000 years of Wabanaki history.'],
+        ['The Wabanaki Nations', '~50,000 years', 'Too long. The Abbe Museum’s history of this homeland reaches back more than 12,000 years.'],
+        ['Under the 1951 UN Refugee Convention', 'Counted as refugees with full legal protections', 'Refugee status needs a fear of persecution for reasons like race, religion or politics. Climate alone is not on that list.'],
+        ['Under the 1951 UN Refugee Convention', 'Given a special "climate refugee" status', 'The 1951 Convention has no "climate refugee" status. Some people may still qualify when climate harm mixes with violence or persecution (UNHCR).'],
+        ['Under the 1951 UN Refugee Convention', 'Free to claim asylum in any signing country', 'Each country decides asylum claims one by one, using the Convention’s definition. Nothing is automatic.']
+      ];
+      QUIZ.forEach(function(item) {
+        item.miss = {};
+        QUIZ_MISS.forEach(function(row) { if (item.q.indexOf(row[0]) === 0) item.miss[row[1]] = row[2]; });
+      });
 
 
       // ═══ CANVAS: Donut Chart ═══
@@ -1808,7 +2366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         c.font = 'bold 22px system-ui'; c.textAlign = 'center'; c.textBaseline = 'middle';
         c.fillText(ct.total.toLocaleString(), cx, cy - 6);
         c.fillStyle = quizColors.muted; c.font = '600 11px system-ui';
-        c.fillText('kg CO\u2082/yr', cx, cy + 12);
+        c.fillText('kg CO\u2082e/yr', cx, cy + 12);
         c.restore();
       }
 
@@ -1927,7 +2485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       // ═══ HELPER: stat pill ═══
       function pill(label, value, color) {
-        return el('div', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: color + '15', border: '1px solid ' + color + '30', fontSize: 11, fontWeight: 700, color: color } },
+        return el('div', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: color + '15', border: '1px solid ' + color + '30', fontSize: 12, fontWeight: 700, color: color } },
           el('span', null, label + ': '), el('span', { style: { fontWeight: 900 } }, value));
       }
 
@@ -2020,6 +2578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         'linear-gradient(135deg, var(--allo-stem-deeper, #0d2922) 0%, var(--allo-stem-canvas, #0f172a) 50%, var(--allo-stem-deeper, #0d2922) 100%)';
       var CE_CORE_TABS_UI = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions'];
       var showClimateAdvanced = !!d.showClimateAdvanced || CE_CORE_TABS_UI.indexOf(tab) === -1;
+      var missionOpen = d.missionOpen === true;
       var ceTabTitles = {
         carbon: t('stem.climateExplorer.carbon_calculator', 'Carbon Calculator'),
         renewables: t('stem.climateExplorer.renewables', 'Renewables'),
@@ -2073,8 +2632,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginBottom: 4 } },
               el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, color:quizColors.text } }, 'Climate Explorer'),
               el('span', { className: 'ce-subject-badge', style: { background: quizColors.raised, color: quizColors.correct, border: '1px solid ' + quizColors.correct } }, t('stem.climateExplorer.subject_badge', 'Science \u00B7 Climate Systems')),
-              el('span', { className: 'ce-telemetry-pill', style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, '431.4 ppm CO\u2082'),
-              el('span', { className: 'ce-telemetry-pill', style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, tab === 'renewables' ? (100 - rsFossil) + '% ' + t('stem.climateExplorer.clean_grid_short', 'clean grid') : (ct.total / 1000).toFixed(1) + ' t/yr')
+              el('span', { className: 'ce-telemetry-pill', title: KEELING_LATEST.source, style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, KEELING_LATEST.ppm.toFixed(1) + ' ppm CO\u2082 \u00b7 ' + KEELING_LATEST.y + ' ' + t('stem.climateExplorer.annual_avg_short', 'avg')),
+              (tab === 'renewables' || ct.complete) && el('span', { className: 'ce-telemetry-pill', style: { background: quizColors.raised, color: quizColors.text, border: '1px solid ' + quizColors.border } }, tab === 'renewables' ? (100 - rsFossil) + '% ' + t('stem.climateExplorer.clean_grid_short', 'clean grid') : t('stem.climateExplorer.you_t_per_yr', 'You: {t} t/yr').replace('{t}', (ct.total / 1000).toFixed(1)))
             ),
             el('p', { style: { margin: 0, fontSize: 12, color: quizColors.muted, fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
@@ -2112,12 +2671,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             heroSignal = Math.min(1, heroFossil / 100);
             heroTicker = t('stem.climateExplorer.hero_mix', 'Your energy mix:') + ' ' + heroFossil + '% ' + t('stem.climateExplorer.hero_fossil', 'fossil — watch the sky');
           } else if (tab === 'carbon') {
-            var heroKg = Math.max(ct.total, granular.total);
-            heroSignal = Math.min(1, heroKg / 15000);
-            heroTicker = t('stem.climateExplorer.hero_footprint', 'Your footprint:') + ' ' + Math.round(heroKg).toLocaleString() + ' kg CO₂e/yr · ' + t('stem.climateExplorer.hero_paris', 'Paris target: 2,300');
+            var heroKg = Math.max(ct.complete ? ct.total : 0, granular.total);
+            heroSignal = heroKg > 0 ? Math.min(1, heroKg / 15000) : 0.42;
+            heroTicker = heroKg > 0
+              ? t('stem.climateExplorer.hero_footprint', 'Your footprint:') + ' ' + Math.round(heroKg).toLocaleString() + ' kg CO₂e/yr · ' + t('stem.climateExplorer.hero_paris_v2', '1.5°C-aligned share by 2030: about 2,300 kg')
+              : t('stem.climateExplorer.hero_footprint_pending', 'Answer the 4 questions below to see your footprint.');
           } else {
             heroSignal = 0.42;
-            heroTicker = t('stem.climateExplorer.hero_ppm', 'NOAA Mauna Loa monthly mean, June 2026: 431.44 ppm CO\u2082');
+            heroTicker = t('stem.climateExplorer.hero_ppm_v2', 'NOAA Mauna Loa yearly average, 2025: 427.35 ppm CO₂');
           }
           return el('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
               style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
@@ -2179,6 +2740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 }
                 function lerpCh(a, b, f) { return Math.round(a + (b - a) * f); }
                 function heroDraw() {
+                  cv._ceRafId = 0;
                   if (!cv.isConnected || cv._cePaused) return;
                   var W = cv.clientWidth || 600, H = cv.clientHeight || 130;
                   if (cv.width !== W * 2) { cv.width = W * 2; cv.height = H * 2; }
@@ -2482,9 +3044,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  if (!heroReduced() && !cv._cePaused) requestAnimationFrame(heroDraw);
+                  if (!heroReduced() && !cv._cePaused && cv.isConnected) cv._ceRafId = requestAnimationFrame(heroDraw);
                 }
-                cv._ceResume = function() { cv._cePaused = false; heroDraw(); };
+                cv._ceResume = function() { cv._cePaused = false; if (!cv._ceRafId) heroDraw(); };
                 // Turning the preference OFF has to RESTART the loop: by then it has
                 // already stopped rescheduling itself, so a live read alone would
                 // leave the hero frozen. Turning it ON needs nothing here -- the next
@@ -2500,7 +3062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       } catch (eRM2) {}
                       return;
                     }
-                    if (!heroReduced() && !cv._cePaused) heroDraw();
+                    if (!heroReduced() && !cv._cePaused && !cv._ceRafId) heroDraw();
                   };
                   try {
                     if (typeof heroMQ.addEventListener === 'function') heroMQ.addEventListener('change', onHeroMotionChange);
@@ -2521,8 +3083,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         el('div', { style: { padding: '0 24px 0', margin: '8px 0 0' } },
           el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
             el('span', { style: { fontSize: hopePct >= 80 ? 16 : 13, filter: hopePct >= 80 ? 'drop-shadow(0 0 4px #fbbf24)' : 'none', transition: 'all 0.3s' } }, hopePct >= 100 ? '\uD83C\uDF1F' : hopePct >= 60 ? '\u2600\uFE0F' : '\uD83C\uDF31'),
-            el('span', { style: { color: quizColors.muted, fontSize: 10, fontWeight: 700 } }, 'Hope Meter'),
-            el('span', { style: { color: quizColors.muted, fontSize: 11, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
+            el('span', { style: { color: quizColors.muted, fontSize: 12, fontWeight: 700 } }, 'Hope Meter'),
+            el('span', { style: { color: quizColors.muted, fontSize: 12, marginLeft: 'auto' } }, hopePts + '/' + HOPE_MILESTONES.length)
           ),
           el('div', { style: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
             el('div', { style: { width: hopePct + '%', height: '100%', borderRadius: 2, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', transition: 'width 0.8s ease-out', boxShadow: hopePct >= 50 ? '0 0 8px rgba(34,197,94,0.4)' : 'none' } })
@@ -2531,8 +3093,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
         // ── Badge Panel (collapsible) ──
         el('section', { 'data-climate-mission-panel': 'true',
-          style: { margin:'12px 24px 0',padding:14,borderRadius:12,background:quizColors.panel,border:'1px solid '+quizColors.border,color:quizColors.text } },
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: 12 } },
+          style: { margin:'12px 24px 0',padding:missionOpen?14:10,borderRadius:12,background:quizColors.panel,border:'1px solid '+quizColors.border,color:quizColors.text } },
+          el('div', { style: { display:'flex',flexWrap:'wrap',gap:8,alignItems:'center' } },
+            el('button', { id:'ce-mission-toggle',type:'button','aria-expanded':missionOpen?'true':'false','aria-controls':'ce-mission-body',onClick:function(){upd('missionOpen',!missionOpen);},
+              style:{flex:'1 1 220px',minHeight:44,padding:'8px 12px',borderRadius:8,border:'1px solid '+quizColors.border,background:quizColors.raised,color:quizColors.text,fontSize:13,fontWeight:800,textAlign:'left',cursor:'pointer'} },
+              el('span',{'aria-hidden':true},missionOpen?'\u25BC ':'\u25B6 '),
+              t('stem.climateExplorer.mission_toggle','Shortcuts and progress')+' \u00B7 '+t('stem.climateExplorer.status_hope', 'Hope')+' '+hopePts+'/'+HOPE_MILESTONES.length),
+            el('button', { id:'ce-advanced-toggle',type: 'button', 'aria-expanded': showClimateAdvanced ? 'true' : 'false', 'aria-controls':'ce-tabs',
+              onClick: function() { if(showClimateAdvanced && CE_CORE_TABS_UI.indexOf(tab)===-1) visitTab('carbon'); upd('showClimateAdvanced', !showClimateAdvanced); },
+              style: { flex:'0 1 auto',minHeight:44,padding:'8px 12px',borderRadius:8,border:'1px solid '+quizColors.border,background:quizColors.raised,color:quizColors.text,fontSize:13,fontWeight:900,cursor:'pointer' } },
+              showClimateAdvanced ? t('stem.climateExplorer.hide_advanced_labs', 'Hide advanced labs') : t('stem.climateExplorer.show_advanced_labs', 'Show advanced labs'))),
+          el('div', { id:'ce-mission-body', hidden:!missionOpen, style: { display: missionOpen?'grid':'none', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,230px),1fr))', gap: 12, marginTop: 12 } },
             el('div', null,
               el('div', { style: { fontSize: 12, fontWeight: 900, textTransform: 'uppercase', color:quizColors.correct, letterSpacing: 0, marginBottom: 4 } }, t('stem.climateExplorer.climate_mission', 'Climate mission')),
               el('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ceTabTitles[tab] || t('stem.climateExplorer.climate_explorer', 'Climate Explorer')),
@@ -2563,11 +3134,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { fontSize: 15, fontWeight: 900, color:quizColors.text } }, card.value)
                   );
                 })
-              ),
-              el('button', { id:'ce-advanced-toggle',type: 'button', 'aria-expanded': showClimateAdvanced ? 'true' : 'false', 'aria-controls':'ce-tabs',
-                onClick: function() { if(showClimateAdvanced && CE_CORE_TABS_UI.indexOf(tab)===-1) visitTab('carbon'); upd('showClimateAdvanced', !showClimateAdvanced); },
-                style: { minHeight:44,width:'100%',marginTop:8,padding:'8px 10px',borderRadius:8,border:'1px solid '+quizColors.border,background:quizColors.raised,color:quizColors.text,fontSize:13,fontWeight:900,cursor:'pointer' } },
-                showClimateAdvanced ? t('stem.climateExplorer.hide_advanced_labs', 'Hide advanced labs') : t('stem.climateExplorer.show_advanced_labs', 'Show advanced labs'))
+              )
             )
           )
         ),
@@ -2619,12 +3186,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Topic-accent hero band (swaps with the active tab) ──
         (function() {
           var TAB_META = {
-            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: t('stem.climateExplorer.carbon_calculator_2', 'Carbon Calculator'),     hint: t('stem.climateExplorer.average_us_household_emits_16_tons_co_', 'Average US household emits ~16 tons CO\u2082/yr. The biggest levers are home heating, transport, and diet \u2014 not plastic straws.') },
+            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: t('stem.climateExplorer.carbon_calculator_2', 'Carbon Calculator'),     hint: t('stem.climateExplorer.average_us_person_co2_v2', 'In the US, fossil fuels release about 14 tons of CO\u2082 per person each year (2024). The biggest levers are home energy, travel, and food, not plastic straws.') },
             renewables: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.12)', icon: '\u26A1',         title: t('stem.climateExplorer.renewable_energy', 'Renewable energy'),      hint: t('stem.climateExplorer.solar_wind_are_now_cheaper_than_new_fo', 'Solar + wind are now cheaper than new fossil plants in most markets. The hard part is grid integration, not generation cost.') },
             keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: t('stem.climateExplorer.the_keeling_curve', 'The Keeling Curve'),     hint: t('stem.climateExplorer.keeling_context_hint', 'Compare selected CO₂ and temperature observations from 1958–2024. Read the units, follow the long-term trends, and explore the chart data.') },
             tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: t('stem.climateExplorer.climate_tipping_points', 'Climate tipping points'), hint: t('stem.climateExplorer.thresholds_where_the_system_shifts_sta', 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.') },
-            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: t('stem.climateExplorer.climate_justice_2', 'Climate justice'),       hint: t('stem.climateExplorer.the_countries_that_emitted_the_least_f', 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.') },
-            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: t('stem.climateExplorer.solutions_toolkit', 'Solutions toolkit'),     hint: t('stem.climateExplorer.drawdown_ranks_100_solutions_by_gigato', 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.') },
+            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: t('stem.climateExplorer.climate_justice_2', 'Climate justice'),       hint: t('stem.climateExplorer.the_countries_that_emitted_the_least_f_v2', 'Many countries that emitted the least face some of the worst impacts. Climate is an equity issue too \u2014 vulnerability tracks income, geography, and history.') },
+            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: t('stem.climateExplorer.solutions_toolkit', 'Solutions toolkit'),     hint: t('stem.climateExplorer.drawdown_estimates_v2', 'Project Drawdown estimates how many gigatons of CO\u2082 each solution could avoid from 2020 to 2050. Wind power is near the top, and so are some that surprise people, like cutting food waste.') },
             pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: t('stem.climateExplorer.climate_policy_pathways_40_year_maine_', 'Climate Policy Pathways: 40-year Maine campaign'), hint: 'You are the state\'s lead climate strategist in an illustrative scenario. Six sectors use hand-authored 0-100 indices and feedback rules; results are not forecasts, official targets, or policy recommendations.' },
             forceHunt: { accent: '#0891b2', soft: 'rgba(8,145,178,0.12)', icon: '\u2600\uFE0F', title: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing'), hint: 'Compare an arbitrary teaching index. The controls are not measured forcing values and the output is not a climate projection.' }
           };
@@ -2685,10 +3252,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     isAnswer&&(isCorrect||isChosen)?el('span',{style:{display:'block',marginTop:4,color:isCorrect?quizColors.correct:quizColors.wrong,fontSize:13,fontWeight:800}},
                       (isChosen?t('stem.climateExplorer.quiz_your_answer','Your answer'):'')+(isChosen&&isCorrect?' · ':'')+(isCorrect?t('stem.climateExplorer.quiz_correct_answer','Correct answer'):'')):null);
                 })),
-                isAnswer && el('div',{id:'ce-quiz-feedback',role:'region',tabIndex:-1,'data-ce-quiz-focus':true,'aria-labelledby':'ce-quiz-feedback-title','aria-describedby':'ce-quiz-feedback-detail',style:{padding:12,marginTop:12,border:'1px solid '+quizColors.border,borderRadius:8}},
+                isAnswer && el('div',{id:'ce-quiz-feedback',role:'region',tabIndex:-1,'data-ce-quiz-focus':true,'aria-labelledby':'ce-quiz-feedback-title','aria-describedby':'ce-quiz-feedback-detail ce-quiz-feedback-miss ce-quiz-feedback-why',style:{padding:12,marginTop:12,border:'1px solid '+quizColors.border,borderRadius:8}},
                   el('h3',{id:'ce-quiz-feedback-title',style:{fontSize:17,fontWeight:800,margin:'0 0 6px',color:quizAnswer===q.a?quizColors.correct:quizColors.wrong}},quizAnswer===q.a?t('stem.climateExplorer.quiz_correct','Correct'):t('stem.climateExplorer.quiz_not_quite','Not quite')),
                   el('p',{id:'ce-quiz-feedback-detail',style:{margin:0,color:quizColors.text,fontSize:15}},
-                    t('stem.climateExplorer.quiz_feedback','Your answer: {answer}. Correct answer: {correct}.').replace('{answer}',q.opts[quizAnswer]).replace('{correct}',q.opts[q.a])+(quizAnswer===q.a?' '+t('stem.climateExplorer.quiz_xp','You earned 10 XP.'):''))),
+                    t('stem.climateExplorer.quiz_feedback','Your answer: {answer}. Correct answer: {correct}.').replace('{answer}',q.opts[quizAnswer]).replace('{correct}',q.opts[q.a])+(quizAnswer===q.a?' '+t('stem.climateExplorer.quiz_xp','You earned 10 XP.'):'')),
+                  quizAnswer!==q.a&&q.miss&&q.miss[q.opts[quizAnswer]]&&el('p',{id:'ce-quiz-feedback-miss',style:{margin:'8px 0 0',color:quizColors.text,fontSize:14,lineHeight:1.55}},el('strong',null,t('stem.climateExplorer.quiz_why_not','Why not your answer:')+' '),q.miss[q.opts[quizAnswer]]),
+                  q.why&&el('p',{id:'ce-quiz-feedback-why',style:{margin:'8px 0 0',color:quizColors.text,fontSize:14,lineHeight:1.55}},el('strong',null,t('stem.climateExplorer.quiz_why','Why:')+' '),q.why)),
                 isAnswer && el('button', { id:'ce-quiz-next',type:'button',onClick: function() { upd({quizIdx:(quizIdx+1)%QUIZ.length,quizAnswer:undefined}); focusClimate('ce-quiz-question'); },
                   style: { maxWidth:'100%',minHeight:44,marginTop: 12, padding: '10px 20px', borderRadius: 8, border: '1px solid '+quizColors.border, background:quizColors.raised, color:quizColors.text, fontSize: 15, fontWeight: 700, cursor: 'pointer' } }, t('stem.climateExplorer.quiz_next','Next Question')+' \u2192')
               );
@@ -2751,24 +3320,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     return React.cloneElement(optBtn(val === oi, function() {
                       upd(stateKey, oi);
                       playSound('calculate');
-                      if (!badges.firstCalc) { earnBadge('firstCalc'); }
                       // carbonTotal() reads ccTransport/ccFood/ccEnergy/ccWaste, which are
                       // captured from `d` at RENDER time -- so calling it here returns the
                       // total from BEFORE this click. The badge then landed one click late,
                       // on whatever the student did next. Score the pending choice instead.
-                      var pending = carbonTotalWith(stateKey, oi);
-                      upd('carbonStatus',t('stem.climateExplorer.carbon_choice_updated','{category}: {choice}. Estimated total: {total} kg CO₂ per year.').replace('{category}',cat.label).replace('{choice}',opt.label).replace('{total}',Math.round(pending).toLocaleString()));
-                      if (pending < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
+                      var pendingFoot = carbonFootprintWith(stateKey, oi);
+                      var pending = pendingFoot.total;
+                      upd('carbonStatus', pendingFoot.complete
+                        ? t('stem.climateExplorer.carbon_choice_updated_v2','{category}: {choice}. Estimated total: {total} kg CO₂e per year.').replace('{category}',cat.label).replace('{choice}',opt.label).replace('{total}',Math.round(pending).toLocaleString())
+                        : t('stem.climateExplorer.carbon_choice_partial','{category}: {choice}. {n} of 4 questions answered.').replace('{category}',cat.label).replace('{choice}',opt.label).replace('{n}',pendingFoot.answered));
+                      // A badge for the whole estimate, not for the first click.
+                      if (pendingFoot.complete && !badges.firstCalc) { earnBadge('firstCalc'); }
+                      if (pendingFoot.complete && pending < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
                     },opt.emoji,opt.label,opt.kg+' kg/yr','ce-carbon-choice-'+catKey+'-'+oi),{key:oi});
                   })
                 ),
                 el('div',{id:'ce-carbon-choice-note-'+catKey,style:{marginTop:6,padding:'6px 10px',borderRadius:8,background:quizColors.raised,color:quizColors.muted,fontSize:12,fontStyle:'italic'}},
-                  cat.opts[val].desc)
+                  val >= 0 ? cat.opts[val].desc : t('stem.climateExplorer.cc_not_answered', 'Not answered yet.'))
               );
             }),
 
-            // Results
-            el('div',{style:{padding:16,borderRadius:14,background:quizColors.panel,border:'1px solid '+quizColors.border,marginTop:8}},
+            el('details',{id:'ce-carbon-how',style:{marginBottom:12,padding:'8px 12px',borderRadius:10,background:quizColors.raised,border:'1px solid '+quizColors.border,color:quizColors.text,fontSize:13,lineHeight:1.6}},
+              el('summary',{style:{cursor:'pointer',fontWeight:800,minHeight:44,display:'flex',alignItems:'center'}},t('stem.climateExplorer.cc_how_title','How these numbers are worked out')),
+              el('ul',{style:{margin:'4px 0 0',paddingLeft:18}},
+                el('li',null,t('stem.climateExplorer.cc_how_transport','Getting to school: a 5-mile trip each way on 180 school days ({miles} miles a year). A car puts out about 400 g of CO\u2082 a mile (EPA); a bus about 66 g per rider per mile (EPA, 2025); a carpool splits one car 3 ways.').replace('{miles}',QC.schoolMiles.toLocaleString())),
+                el('li',null,t('stem.climateExplorer.cc_how_food','Food: kg of greenhouse gas per person per year for three UK diets (Scarborough and others, 2014).')),
+                el('li',null,t('stem.climateExplorer.cc_how_energy','Home power: a US home uses about 10,791 kWh of electricity a year (EIA, 2022). Here it is shared by 3 people. The grid puts out 0.81 lb of CO\u2082 per kWh and coal power 2.31 lb (EIA, 2023). Heating with gas or oil is not counted.')),
+                el('li',null,t('stem.climateExplorer.cc_how_waste','Trash: 4.9 lb per person per day (EPA, 2018). Each 2,000 lb of mixed trash in a landfill leads to about 580 kg of greenhouse gas; recycled, about 90 kg; composted food, about 110 kg (EPA, 2025). "Compost & recycle" sends a third each to recycling, compost and landfill; "Recycle some" recycles a third and landfills the rest.')),
+                el('li',null,t('stem.climateExplorer.cc_how_assumptions','The trip length, school days, carpool size, people per home and trash split are classroom assumptions, not measurements. Change them in your head and the totals change too.'))
+              )
+            ),
+            renderCarbonGate(),
+            // Results (only once all 4 are answered and the prediction is in)
+            ccShowResults && el('div',{id:'ce-carbon-results',style:{padding:16,borderRadius:14,background:quizColors.panel,border:'1px solid '+quizColors.border,marginTop:8}},
               // Canvas donut chart
               el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
                 // The canvas is tabbable, so a keyboard user LANDS here. A generic
@@ -2784,11 +3368,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ].slice().sort(function(a, b) { return b.kg - a.kg; });
                   var pct = function(kg) { return ct.total > 0 ? Math.round(kg / ct.total * 100) : 0; };
                   return 'Carbon footprint breakdown. Total ' + Math.round(ct.total).toLocaleString() +
-                    ' kilograms CO2 per year. ' +
+                    ' kilograms CO2e per year (CO2 plus other greenhouse gases counted as CO2). ' +
                     parts.map(function(p) { return p.label + ' ' + Math.round(p.kg).toLocaleString() + ' kilograms, ' + pct(p.kg) + ' percent'; }).join('. ') + '.';
                 })(), role: 'img',
                 style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
-              el('p',{id:'ce-carbon-total',style:{color:quizColors.text,fontSize:16,fontWeight:800,textAlign:'center',margin:'8px 0 12px'}},t('stem.climateExplorer.carbon_total','Estimated total: {total} kg CO₂ per year.').replace('{total}',Math.round(ct.total).toLocaleString())),
+              el('p',{id:'ce-carbon-total',style:{color:quizColors.text,fontSize:16,fontWeight:800,textAlign:'center',margin:'8px 0 12px'}},t('stem.climateExplorer.carbon_total_v2','Estimated total: {total} kg CO₂e per year.').replace('{total}',Math.round(ct.total).toLocaleString())),
               // Legend
               el('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
                 [
@@ -2833,7 +3417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         w >= 54 && el('text', { x: x + w / 2, y: 40, textAnchor: 'middle', fill: '#000000', fontSize: 10.5, fontWeight: 800 }, pct + '%')
                       );
                     }),
-                    el('text', { x: 20, y: 64, fill: quizColors.muted, fontSize: 10.5 }, t('stem.climateExplorer.largest_driver_hint', 'Largest share drives the fastest reduction when changed first.'))
+                    el('text', { x: 20, y: 64, fill: quizColors.muted, fontSize: 10.5 }, t('stem.climateExplorer.largest_share_hint_v2', 'Your largest share is not always your biggest possible cut.'))
                   )
                 );
               })(),
@@ -2841,25 +3425,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               // Tree comparison
               el('div',{style:{marginTop:14,padding:12,borderRadius:10,background:quizColors.raised,border:'1px solid '+quizColors.border,textAlign:'center'}},
                 el('div', { style: { fontSize: 24 } }, '\uD83C\uDF33'),
-                el('div',{style:{color:quizColors.correct,fontSize:14,fontWeight:900}},'That\'s like '+Math.round(ct.total/TREES_PER_YEAR)+' trees working for a whole year'),
-                el('div',{style:{color:quizColors.muted,fontSize:12,marginTop:4}},'Each tree absorbs about 22 kg CO\u2082 per year')
+                el('div',{style:{color:quizColors.correct,fontSize:14,fontWeight:900}},'That\'s like at least '+Math.round(ct.total/TREES_PER_YEAR)+' grown trees working for a whole year'),
+                el('div',{style:{color:quizColors.muted,fontSize:12,marginTop:4}},'A grown tree takes in up to about 22 kg CO\u2082 a year (Arbor Day Foundation); many take in less')
               ),
               // \u2500\u2500 Paris-target gap visualization \u2500\u2500
-              // Horizontal scale showing personal footprint against Paris-aligned (2300 kg),
-              // global average (~4800 kg), and high-emitter band (>10000 kg).
+              // Horizontal scale: the 4 answers against the 2.3 t 1.5°C share and the
+              // world average (GLOBAL_AVG_KG), both per person.
               (function() {
-                var parisKg = 2300;
-                var globalAvgKg = 4800;
+                var parisKg = PARIS_SHARE_KG;
+                var globalAvgKg = GLOBAL_AVG_KG;
                 var scaleMaxKg = Math.max(12000, ct.total * 1.1);
                 var pctOf = function(kg) { return Math.min(100, (kg / scaleMaxKg) * 100); };
                 var youPos = pctOf(ct.total);
                 var status, statusColor;
-                if (ct.total <= parisKg) { status = '\u2713 At or under Paris-aligned target'; statusColor = quizColors.correct; }
-                else if (ct.total <= globalAvgKg) { status = '\u2193 Below global average, still ' + Math.round(ct.total - parisKg) + ' kg over Paris'; statusColor = quizColors.text; }
-                else { status = '\u2191 Above global average \u2014 ' + Math.round(ct.total - parisKg).toLocaleString() + ' kg over Paris target'; statusColor = quizColors.wrong; }
+                // These 4 answers are only part of a footprint. Country averages also
+                // count roads, schools, stores and factories, so 'under the average'
+                // here would mislead. Compare the 4 answers with the 2.3 t share they
+                // would have to fit inside, and say what is missing.
+                if (ct.total <= parisKg) { status = t('stem.climateExplorer.cc_bench_under', 'These 4 answers fit inside the 2.3 t share. The share must also cover everything else you use.'); statusColor = quizColors.correct; }
+                else { status = t('stem.climateExplorer.cc_bench_over', 'These 4 answers alone are {kg} kg over the 2.3 t share.').replace('{kg}', Math.round(ct.total - parisKg).toLocaleString()); statusColor = quizColors.wrong; }
                 return el('div',{style:{marginTop:12,padding:12,borderRadius:10,background:quizColors.raised,border:'1px solid '+quizColors.border}},
                   el('div',{style:{display:'flex',flexWrap:'wrap',gap:8,justifyContent:'space-between',alignItems:'baseline',marginBottom:8}},
-                    el('span',{style:{color:quizColors.text,fontSize:13,fontWeight:800}},'\uD83C\uDF0D Your footprint vs benchmarks'),
+                    el('span',{style:{color:quizColors.text,fontSize:13,fontWeight:800}},'\uD83C\uDF0D ' + t('stem.climateExplorer.cc_bench_title', 'Your 4 answers vs. per-person benchmarks')),
                     el('span',{style:{color:statusColor,fontSize:13,fontWeight:800}},status)
                   ),
                   el('div',{'aria-hidden':true,style:{position:'relative',height:36}},
@@ -2873,22 +3460,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div',{style:{position:'absolute',top:0,left:'calc('+youPos+'% - 3px)',width:6,height:36,border:'2px solid '+quizColors.text,background:quizColors.panel}})
                   ),
                   el('div',{style:{display:'flex',flexWrap:'wrap',gap:12,fontSize:13,color:quizColors.text}},
-                    el('span',null,'Paris 2.3 t'),el('span',null,'Global ~4.8 t'),el('strong',null,'You '+(ct.total/1000).toFixed(2)+' t'))
+                    el('span',null,t('stem.climateExplorer.cc_bench_share','1.5°C share (2030): 2.3 t')),el('span',null,t('stem.climateExplorer.cc_bench_world','World average (2024): {t} t').replace('{t}',(globalAvgKg/1000).toFixed(1))),el('strong',null,t('stem.climateExplorer.cc_bench_you','Your 4 answers: {t} t').replace('{t}',(ct.total/1000).toFixed(2)))),
+                  el('p',{style:{margin:'8px 0 0',fontSize:12,lineHeight:1.5,color:quizColors.muted}},t('stem.climateExplorer.cc_bench_note_v2','Your answers are counted in CO₂e: CO₂ plus methane and other gases, counted as the CO₂ that would warm as much. Country and world averages are fossil CO₂ only, per person, and they include shared things like roads, schools and factories that these 4 questions leave out. Sources: Our World in Data / Global Carbon Budget (2024); Oxfam, IEEP and SEI (2021).'))
                 );
               })()
             ),
 
             // Scale toggle
-            el('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: quizColors.raised, border: '1px solid '+quizColors.border } },
+            ccShowResults && el('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: quizColors.raised, border: '1px solid '+quizColors.border } },
               el('h4', { id:'ce-carbon-scale-title',style: { color: quizColors.text, fontSize: 14, fontWeight: 800, margin:'0 0 10px' } }, '\uD83C\uDF0D What if everyone made your choices?'),
               el('div', { role:'group','aria-labelledby':'ce-carbon-scale-title',style: { display: 'flex', flexWrap:'wrap',gap: 8, marginBottom: 12 } },
                 ['school', 'city', 'country'].map(function(s) {
                   var labels = { school: '\uD83C\uDFEB School', city: '\uD83C\uDFD9\uFE0F City', country: '\uD83C\uDDFA\uD83C\uDDF8 Country' };
                   return el('button', { key:s,id:'ce-carbon-scale-'+s,type:'button','aria-pressed':ccScale===s,'aria-labelledby':'ce-carbon-scale-label-'+s,'aria-describedby':'ce-carbon-scale-result',onClick:function() {
                     if(ccScale===s)return;
-                    upd('ccScale',s); awardXPOnce('scale-' + s, 5); playSound('calculate');
+                    upd('ccScale',s); playSound('calculate');
                     var nsc={};['school','city','country'].forEach(function(known){if(scalesViewed[known]===true)nsc[known]=true;});nsc[s]=true;upd('scalesViewed',nsc);
-                    if(Object.keys(nsc).length>=3&&!badges.dataDiver)earnBadge('dataDiver');
+                    // Data Diver now comes from the scale check below, not from trying all 3 views.
                     upd('carbonStatus',t('stem.climateExplorer.carbon_scale_updated','Scale selected: {scale}. The shared-choice estimate has been updated.').replace('{scale}',labels[s]));
                   },style:{flex:'1 1 100px',minWidth:0,minHeight:44,padding:10,borderRadius:8,border:'2px solid '+(ccScale===s?quizColors.correct:quizColors.border),background:quizColors.panel,color:quizColors.text,fontSize:13,fontWeight:700,cursor:'pointer'} },
                     el('span',{id:'ce-carbon-scale-label-'+s},labels[s]),
@@ -2896,17 +3484,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 })
               ),
               el('div', { id:'ce-carbon-scale-result',style: { textAlign: 'center' } },
-                el('div', { style: { color: quizColors.text, fontSize: 20, fontWeight: 900 } }, t('stem.climateExplorer.carbon_scale_total','{total} thousand metric tons CO₂/yr').replace('{total}',(ct.total*scaleMult/1000000).toFixed(1))),
+                el('div', { style: { color: quizColors.text, fontSize: 20, fontWeight: 900 } }, t('stem.climateExplorer.carbon_scale_total_v2','{total} thousand metric tons CO₂e/yr').replace('{total}',(ct.total*scaleMult/1000000).toFixed(1))),
                 el('div', { style: { color: quizColors.muted, fontSize: 13 } }, 'If all ' + scaleLabel + ' made these choices'),
-                ct.total < 2000 && el('div', { style: { marginTop: 8, color: quizColors.correct, fontSize: 13, fontWeight: 700 } }, '\u2728 Great job! Your footprint is below average. Imagine if everyone did this!')
-              )
+                ct.total < 2000 && el('div', { style: { marginTop: 8, color: quizColors.correct, fontSize: 13, fontWeight: 700 } }, '\u2728 ' + t('stem.climateExplorer.cc_scale_low_v2', 'Low-carbon answers. Shared by many people, small differences add up.'))
+              ),
+              renderEvidenceCheck(scaleEvidenceCfg())
             ),
 
             // ═══ DETAILED HABIT TRACKER ═══
             el('div', { role:'region','aria-labelledby':'ce-carbon-tracker-title',style: { marginTop: 24, paddingTop: 20, borderTop: '1px solid '+quizColors.border } },
               el('div', { style: { textAlign: 'center', marginBottom: 14 } },
                 el('h4', { id:'ce-carbon-tracker-title',style: { color: quizColors.text, fontSize: 16, fontWeight: 900,margin:0 } }, '🔬 Detailed Habit Tracker'),
-                el('p', { style: { color: quizColors.muted, fontSize: 13, margin:'4px 0 0',lineHeight:1.5 } }, 'Quantify ' + Object.keys(GRANULAR_ITEMS).reduce(function(n, c) { return n + GRANULAR_ITEMS[c].length; }, 0) + ' specific habits across ' + Object.keys(GRANULAR_ITEMS).length + ' categories. Move sliders to match your life.')
+                el('p', { style: { color: quizColors.muted, fontSize: 13, margin:'4px 0 0',lineHeight:1.5 } }, 'Quantify ' + Object.keys(GRANULAR_ITEMS).reduce(function(n, c) { return n + GRANULAR_ITEMS[c].length; }, 0) + ' specific habits across ' + Object.keys(GRANULAR_ITEMS).length + ' categories. Move sliders to match your life.' + ' ' + t('stem.climateExplorer.carbon_habits_uncounted_note', '{n} habits have no reliable number yet, so they are tracked but not counted. Totals are kg CO₂e: CO₂ plus other greenhouse gases counted as CO₂.').replace('{n}', Object.keys(GRANULAR_ITEMS).reduce(function(n, c) { return n + GRANULAR_ITEMS[c].filter(function(it) { return typeof it.kg !== 'number'; }).length; }, 0)))
               ),
               // Running total banner
               el('div', { id:'ce-carbon-detailed-total',style: { padding: 14, marginBottom: 16, borderRadius: 12, background:quizColors.raised,border:'1px solid '+quizColors.border,textAlign: 'center' } },
@@ -2940,20 +3529,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   );
                 })
               ),
-              // Per-category accordion with sliders
-              Object.keys(GRANULAR_ITEMS).map(function(cat) {
-                var items = GRANULAR_ITEMS[cat];
-                var isOpen = !!granularExpanded[cat];
-                var catLabels = { transport: '🚗 Transportation', food: '🍽️ Food & Diet', energy: '⚡ Home Energy', digital: '📱 Digital & Streaming', shopping: '🛍️ Shopping & Consumer', waste: '♻️ Waste' };
-                return el('div', { key:cat,style:{marginBottom:8,borderRadius:10,border:'1px solid '+quizColors.border,background:quizColors.raised} },
-                  el('button', { id:'ce-carbon-habits-toggle-'+cat,type:'button',onClick: function() { var ne = Object.assign({}, granularExpanded); ne[cat] = !isOpen; upd('granularExpanded', ne); playSound('tab'); },
-                    'aria-expanded':isOpen,'aria-controls':'ce-carbon-habits-panel-'+cat,'aria-labelledby':'ce-carbon-habits-label-'+cat,
-                    style: { width:'100%',minHeight:44,padding:'10px 14px',border:'none',borderRadius:10,background:quizColors.raised,color:quizColors.text,fontSize:14,fontWeight:800,cursor:'pointer',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:8 } },
-                    el('span',null,el('span',{'aria-hidden':true},isOpen?'▼ ':'▶ '),el('span',{id:'ce-carbon-habits-label-'+cat},catLabels[cat]||cat)),
-                    el('span', { style: { color:quizColors.muted,fontSize:13,fontWeight:600 } }, Math.round(granular.byCat[cat] || 0).toLocaleString() + ' kg/yr')
-                  ),
-                  el('div', { id:'ce-carbon-habits-panel-'+cat,role:'region','aria-labelledby':'ce-carbon-habits-toggle-'+cat,hidden:!isOpen,style:{padding:'4px 14px 14px',borderTop:'1px solid '+quizColors.border} },
-                    isOpen&&items.map(function(item) {
+              // Per-category accordion with sliders. Habits with no reliable number (kg: null) sit together in one
+              // disclosure after the categories (round 6), each still with its slider and pledge.
+              (function() {
+                var renderHabitRow = function(item) {
                       var freq = granularFreq[item.id] || 0;
                       var thisAnnual = itemAnnualKg(item, freq);
                       // "What if I cut 1 per week" impact preview
@@ -2967,8 +3546,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                             el('div', { id:'ce-carbon-habit-note-'+item.id,style:{color:quizColors.muted,fontSize:12,lineHeight:1.5,marginTop:3} }, item.note)
                           ),
                           el('div', { id:'ce-carbon-habit-impact-'+item.id,style:{flex:'0 1 auto',minWidth:0} },
-                            el('div', { style:{color:quizColors.text,fontSize:13,fontWeight:800,fontFamily:'monospace'} }, Math.round(thisAnnual).toLocaleString() + ' kg/yr'),
-                            savings > 1 && el('div', { style:{color:quizColors.muted,fontSize:12,fontWeight:700,marginTop:3} }, '\u2212' + Math.round(savings) + ' kg if cut 1')
+                            typeof item.kg !== 'number'
+                              ? el('div', { style:{color:quizColors.muted,fontSize:12,fontWeight:700,maxWidth:180} }, t('stem.climateExplorer.carbon_habit_not_counted', 'Not counted: no reliable number found yet'))
+                              : el('div', { style:{color:quizColors.text,fontSize:13,fontWeight:800,fontFamily:'monospace'} }, Math.round(thisAnnual).toLocaleString() + ' kg/yr'),
+                            savings > 1 && !item.divert && el('div', { style:{color:quizColors.muted,fontSize:12,fontWeight:700,marginTop:3} }, '\u2212' + Math.round(savings) + ' kg if cut 1')
                           )
                         ),
                         el('div', { style:{display:'flex',flexWrap:'wrap',alignItems:'center',gap:10} },
@@ -2979,7 +3560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           el('span', { style:{color:quizColors.text,fontSize:13,fontFamily:'monospace'} },
                             freq + ' ' + item.unit),
                           // Keep a saved pledge removable even after this habit reaches zero.
-                          (freq>0||carbonPledges[item.id])&&(function() {
+                          ((freq>0&&!item.divert)||carbonPledges[item.id])&&(function() { // a pledge cuts a habit; recycling and compost are not habits to cut
                             var isPledged=!!carbonPledges[item.id];
                             return el('button', { id:'ce-carbon-pledge-toggle-'+item.id,type:'button',onClick:function(){togglePledge(item);},
                               'aria-pressed':isPledged,'aria-label':t('stem.climateExplorer.carbon_pledge_label','Pledge for {habit}').replace('{habit}',item.label),
@@ -2988,10 +3569,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           })()
                         )
                       );
-                    })
+                };
+                var catLabels = { transport: '🚗 Transportation', food: '🍽️ Food & Diet', energy: '⚡ Home Energy', digital: '📱 Digital & Streaming', shopping: '🛍️ Shopping & Consumer', waste: '♻️ Waste' };
+                var uncounted = [];
+                Object.keys(GRANULAR_ITEMS).forEach(function(cat) { GRANULAR_ITEMS[cat].forEach(function(it) { if (typeof it.kg !== 'number') uncounted.push(it); }); });
+                var rows = Object.keys(GRANULAR_ITEMS).map(function(cat) {
+                var items = GRANULAR_ITEMS[cat].filter(function(it) { return typeof it.kg === 'number'; });
+                var isOpen = !!granularExpanded[cat];
+                return el('div', { key:cat,style:{marginBottom:8,borderRadius:10,border:'1px solid '+quizColors.border,background:quizColors.raised} },
+                  el('button', { id:'ce-carbon-habits-toggle-'+cat,type:'button',onClick: function() { var ne = Object.assign({}, granularExpanded); ne[cat] = !isOpen; upd('granularExpanded', ne); playSound('tab'); },
+                    'aria-expanded':isOpen,'aria-controls':'ce-carbon-habits-panel-'+cat,'aria-labelledby':'ce-carbon-habits-label-'+cat,
+                    style: { width:'100%',minHeight:44,padding:'10px 14px',border:'none',borderRadius:10,background:quizColors.raised,color:quizColors.text,fontSize:14,fontWeight:800,cursor:'pointer',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:8 } },
+                    el('span',null,el('span',{'aria-hidden':true},isOpen?'▼ ':'▶ '),el('span',{id:'ce-carbon-habits-label-'+cat},catLabels[cat]||cat)),
+                    el('span', { style: { color:quizColors.muted,fontSize:13,fontWeight:600 } }, Math.round(granular.byCat[cat] || 0).toLocaleString() + ' kg/yr')
+                  ),
+                  el('div', { id:'ce-carbon-habits-panel-'+cat,role:'region','aria-labelledby':'ce-carbon-habits-toggle-'+cat,hidden:!isOpen,style:{padding:'4px 14px 14px',borderTop:'1px solid '+quizColors.border} },
+                    isOpen&&items.map(renderHabitRow)
                   )
                 );
-              }),
+              });
+                var unOpen = !!granularExpanded.uncounted;
+                if (uncounted.length) rows.push(el('div', { key:'uncounted',style:{marginBottom:8,borderRadius:10,border:'1px dashed '+quizColors.border,background:quizColors.raised} },
+                  el('button', { id:'ce-carbon-habits-toggle-uncounted',type:'button',onClick: function() { var ne = Object.assign({}, granularExpanded); ne.uncounted = !unOpen; upd('granularExpanded', ne); playSound('tab'); },
+                    'aria-expanded':unOpen,'aria-controls':'ce-carbon-habits-panel-uncounted','aria-labelledby':'ce-carbon-habits-label-uncounted',
+                    style: { width:'100%',minHeight:44,padding:'10px 14px',border:'none',borderRadius:10,background:quizColors.raised,color:quizColors.text,fontSize:14,fontWeight:800,cursor:'pointer',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:8 } },
+                    el('span',null,el('span',{'aria-hidden':true},unOpen?'▼ ':'▶ '),el('span',{id:'ce-carbon-habits-label-uncounted'},t('stem.climateExplorer.carbon_habits_uncounted_toggle','Habits without a reliable number yet ({n})').replace('{n}',uncounted.length))),
+                    el('span', { style: { color:quizColors.muted,fontSize:13,fontWeight:600 } }, t('stem.climateExplorer.carbon_habits_uncounted_side','not in your total'))
+                  ),
+                  el('div', { id:'ce-carbon-habits-panel-uncounted',role:'region','aria-labelledby':'ce-carbon-habits-toggle-uncounted',hidden:!unOpen,style:{padding:'4px 14px 14px',borderTop:'1px solid '+quizColors.border} },
+                    unOpen&&el('p',{style:{color:quizColors.muted,fontSize:13,lineHeight:1.5,margin:'8px 0 0'}},t('stem.climateExplorer.carbon_habits_uncounted_intro','No reliable number was found for these habits yet, so they are not added to your total. You can still track them and make a pledge.')),
+                    unOpen&&uncounted.map(renderHabitRow)
+                  )
+                ));
+                return rows;
+              })(),
               // National comparison
               el('div', { style: { marginTop: 20 } },
                 el('button', { id:'ce-carbon-compare-toggle',type:'button','aria-expanded':!!granularCompareOpen,'aria-controls':'ce-carbon-compare-panel',onClick: function() { upd('granularCompareOpen', !granularCompareOpen); playSound('action'); },
@@ -3016,10 +3627,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     );
                   }),
                   granularCompareOpen&&el('div', { style:{marginTop:10,padding:10,borderRadius:8,background:quizColors.raised,border:'1px solid '+quizColors.border} },
-                    el('div', { style:{color:quizColors.correct,fontSize:13,fontWeight:800,marginBottom:4} }, '🎯 Paris Agreement target'),
+                    el('div', { style:{color:quizColors.correct,fontSize:13,fontWeight:800,marginBottom:4} }, '🎯 ' + t('stem.climateExplorer.paris_share_title_v2', 'The 1.5°C share')),
                     el('div', { style:{color:quizColors.text,fontSize:13,lineHeight:1.6} },
-                      'To stay below 1.5°C warming, every person on Earth needs to reach ~2.3 t CO\u2082e/yr by 2030. ' +
-                      (granular.total > 0 ? (granular.total <= 2300 ? 'You\'re already there — incredible!' : granular.total <= 4500 ? 'You\'re below global average. Next step: Paris-aligned target.' : granular.total <= 8000 ? 'About global average. Focus on top categories above.' : 'Above average — biggest impact comes from cutting flights, beef, and driving.') : 'Start the sliders above to see where you land.')
+                      t('stem.climateExplorer.paris_share_body_v2', 'A 1.5°C path leaves room for about 2.3 t of CO₂ per person per year by 2030 (Oxfam, IEEP and SEI, 2021). Country bars count all fossil CO₂ per person; your habit total counts only the sliders you set.') + ' ' +
+                      (granular.total > 0 ? (granular.total <= PARIS_SHARE_KG ? t('stem.climateExplorer.paris_share_under_v2', 'Your slider habits fit inside the share. Shared things like roads and schools still need room too.') : t('stem.climateExplorer.paris_share_over_v2', 'Your slider habits alone are above the share. The largest bars in the tracker show where cuts help most.')) : 'Start the sliders above to see where you land.')
                     )
                   )
                 )
@@ -3030,7 +3641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 Object.keys(GRANULAR_ITEMS).forEach(function(cat) {
                   GRANULAR_ITEMS[cat].forEach(function(item) {
                     var freq = granularFreq[item.id] || 0;
-                    if (freq > 0 && item.kg > 0) {
+                    if (freq > 0 && item.kg > 0 && !item.divert) { // fewer recycling or compost bags means more landfill, not a cut
                       var cutOne = itemAnnualKg(item, freq) - itemAnnualKg(item, Math.max(0, freq - 1));
                       if (cutOne > 5) suggestions.push({ item: item, savings: cutOne, currentFreq: freq });
                     }
@@ -3122,7 +3733,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               )
             ),
 
-            // Scenario presets
+            // Scenario presets (predict first, then test: Scenario Tester)
+            (function(){var c=scenarioEvidenceCfg();return c?renderEvidenceCheck(c):null;})(),
             el('h4',{id:'ce-renewables-presets-title',style:{color:quizColors.text,fontSize:14,margin:'0 0 8px'}},t('stem.climateExplorer.renewables_presets','Explore a starting mix')),
             el('div',{id:'ce-renewables-presets',role:'group','aria-labelledby':'ce-renewables-presets-title','aria-describedby':'ce-renewables-current-design',style:{display:'flex',gap:8,marginBottom:10,flexWrap:'wrap'}},
               SCENARIOS.map(function(sc, si) {
@@ -3345,6 +3957,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 'aria-label':__alloOneWord(t('stem.climateExplorer.keeling_chart_accessible_label','Selected historical records, {firstYear} to {lastYear}. Mauna Loa CO2 changes from {firstCO2} to {lastCO2} ppm. Global temperature anomaly changes from {firstTemp} to {lastTemp} degrees Celsius relative to the 1951 to 1980 average. The two records use separate aligned plots.').replace('{firstYear}',KEELING_DATA[0].y).replace('{lastYear}',KEELING_DATA[KEELING_DATA.length-1].y).replace('{firstCO2}',KEELING_DATA[0].ppm.toFixed(1)).replace('{lastCO2}',KEELING_DATA[KEELING_DATA.length-1].ppm.toFixed(1)).replace('{firstTemp}','+'+GLOBAL_TEMP[0].t.toFixed(2)).replace('{lastTemp}','+'+GLOBAL_TEMP[GLOBAL_TEMP.length-1].t.toFixed(2))),
                 'aria-describedby':'ce-keeling-summary ce-keeling-legend'},t('stem.climateExplorer.keeling_chart_fallback','Selected observations are provided in the data table.'))
             ),
+            (function() {
+              var last = KEELING_DATA[KEELING_DATA.length - 1], prev = KEELING_DATA[KEELING_DATA.length - 2];
+              var perYear = (last.ppm - prev.ppm) / (last.y - prev.y);
+              var trendGuess = last.ppm + perYear * (KEELING_LATEST.y - last.y);
+              var kp = d.kcPredict && typeof d.kcPredict === 'object' && !Array.isArray(d.kcPredict) ? d.kcPredict : {};
+              var val = typeof kp.val === 'number' && isFinite(kp.val) ? Math.round(Math.max(415, Math.min(440, kp.val)) * 2) / 2 : Math.round(last.ppm * 2) / 2; // same 0.5 ppm step as the slider, before and after locking
+              var locked = kp.locked === true && typeof kp.val === 'number' && isFinite(kp.val);
+              var off = Math.abs(val - KEELING_LATEST.ppm);
+              function lockKeeling() {
+                if (locked) return;
+                upd('kcPredict', { val: val, locked: true });
+                playSound(off <= 1.5 ? 'correct' : 'calculate');
+                if (off <= 1.5) awardXPOnce('keeling-predict', 10);
+                checkAllPredictions({ kcPredict: { locked: true } });
+                focusClimate('ce-keeling-predict');
+              }
+              return el('section', { id: 'ce-keeling-predict', role: 'region', tabIndex: -1, 'aria-labelledby': 'ce-keeling-predict-title',
+                  style: { padding: 16, borderRadius: 12, background: quizColors.panel, border: '2px solid ' + (locked ? quizColors.border : quizColors.focus), marginBottom: 16 } },
+                el('h4', { id: 'ce-keeling-predict-title', style: { fontSize: 16, fontWeight: 800, margin: '0 0 6px', color: quizColors.text } },
+                  '\uD83D\uDD2E ' + t('stem.climateExplorer.kc_predict_title', 'Predict the next point: {year}').replace('{year}', KEELING_LATEST.y)),
+                el('p', { style: { fontSize: 14, lineHeight: 1.6, margin: '0 0 10px', color: quizColors.muted } },
+                  t('stem.climateExplorer.kc_predict_intro', 'The chart stops at {lastYear}. Use the trend to predict the yearly average CO\u2082 for {year}, then check it against NOAA\u2019s measurement.').replace('{lastYear}', last.y).replace('{year}', KEELING_LATEST.y)),
+                el('label', { htmlFor: 'ce-keeling-predict-input', style: { display: 'block', fontSize: 14, fontWeight: 800, marginBottom: 4, color: quizColors.text } },
+                  t('stem.climateExplorer.kc_predict_label', 'My prediction: {ppm} ppm').replace('{ppm}', val.toFixed(1))),
+                el('input', { id: 'ce-keeling-predict-input', type: 'range', min: 415, max: 440, step: 0.5, value: val, disabled: locked,
+                  'aria-valuetext': val.toFixed(1) + ' ppm',
+                  onChange: function(e) { var v = parseFloat(e.target.value); if (isFinite(v) && !locked) upd('kcPredict', { val: v, locked: false }); },
+                  style: { width: '100%', accentColor: '#06b6d4', height: 32, minHeight: 32, cursor: locked ? 'default' : 'pointer', touchAction: 'none' } }),
+                !locked && el('button', { id: 'ce-keeling-predict-lock', type: 'button', onClick: lockKeeling,
+                  style: { minHeight: 44, marginTop: 8, padding: '10px 16px', borderRadius: 8, border: '1px solid ' + quizColors.border, background: quizColors.raised, color: quizColors.text, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
+                  t('stem.climateExplorer.kc_predict_lock', 'Lock in my prediction')),
+                locked && el('div', { style: { marginTop: 10, fontSize: 14, lineHeight: 1.6, color: quizColors.text } },
+                  el('p', { style: { margin: '0 0 6px', fontWeight: 800, color: off <= 1.5 ? quizColors.correct : quizColors.text } },
+                    t('stem.climateExplorer.kc_predict_result', 'NOAA measured {real} ppm for {year}. You predicted {mine} ppm, off by {off} ppm.').replace('{real}', KEELING_LATEST.ppm.toFixed(2)).replace('{year}', KEELING_LATEST.y).replace('{mine}', val.toFixed(1)).replace('{off}', off.toFixed(1))),
+                  el('p', { style: { margin: '0 0 6px' } },
+                    t('stem.climateExplorer.kc_predict_trend', 'Trend check: from {py} to {ly} CO\u2082 rose {rise} ppm, about {per} ppm a year, so the trend points to about {guess} ppm.').replace('{py}', prev.y).replace('{ly}', last.y).replace('{rise}', (last.ppm - prev.ppm).toFixed(1)).replace('{per}', perYear.toFixed(1)).replace('{guess}', trendGuess.toFixed(1))),
+                  el('p', { style: { margin: 0, color: quizColors.muted } },
+                    t('stem.climateExplorer.kc_predict_why', 'Why it keeps rising: people add CO\u2082 faster than plants and the ocean take it back out, so the yearly average climbs every year. Source: NOAA Global Monitoring Laboratory.'))));
+            })(),
             el('button',{id:'ce-keeling-data-toggle',type:'button','aria-expanded':d.kcDataOpen===true,'aria-controls':'ce-keeling-data-panel',onClick:function(){upd('kcDataOpen',d.kcDataOpen!==true);},
               style:{minHeight:44,padding:'10px 14px',borderRadius:8,border:'1px solid '+quizColors.border,background:quizColors.raised,color:quizColors.text,fontSize:14,fontWeight:700,cursor:'pointer',marginBottom:12}},
               el('span',{'aria-hidden':true},d.kcDataOpen===true?'▼ ':'▶ '),t('stem.climateExplorer.keeling_data_toggle','Read the chart data')),
@@ -3387,6 +4038,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Thresholds beyond which Earth-system changes become self-reinforcing and irreversible on human timescales')
             ),
 
+            // ═══ TIPPING POINT EXPLORER (predict first, then move the warming level) ═══
+            (function() {
+              var TP = TIPPING_POINTS.filter(function(tp) { return !!TIPPING_RANGES[tp.id]; });
+              var PRED_AT = 2.0;
+              var pastAt = function(w) { return TP.filter(function(tp) { return tp.threshold <= w + 1e-9; }); };
+              var answerRows = pastAt(PRED_AT);
+              var answer = answerRows.length;
+              var pred = Number.isInteger(d.tpPredict) && d.tpPredict >= 0 && d.tpPredict <= TP.length ? d.tpPredict : null;
+              var warm = typeof d.tpWarm === 'number' && isFinite(d.tpWarm) ? Math.round(Math.max(1, Math.min(5, d.tpWarm)) * 10) / 10 : NOW_WARMING;
+              var txt = 'var(--allo-stem-text, #e2e8f0)', soft = 'var(--allo-stem-text-soft, #cbd5e1)', line = 'var(--allo-stem-border, #475569)';
+              var statusAt = function(tp) { var r = TIPPING_RANGES[tp.id]; return warm >= tp.threshold - 1e-9 ? 'past' : warm >= r.lo - 1e-9 ? 'possible' : 'below'; };
+              var STATUS = {
+                past: { label: t('stem.climateExplorer.tp_state_past', 'Past best guess'), color: '#fca5a5' },
+                possible: { label: t('stem.climateExplorer.tp_state_possible', 'Inside the range: possible'), color: '#fcd34d' },
+                below: { label: t('stem.climateExplorer.tp_state_below', 'Below the range'), color: '#86efac' }
+              };
+              function predictTip(n) {
+                if (pred != null) return;
+                upd({ tpPredict: n, tpWarm: PRED_AT });
+                playSound(n === answer ? 'correct' : 'calculate');
+                if (Math.abs(n - answer) <= 1) awardXPOnce('tipping-predict', 10);
+                checkAllPredictions({ tpPredict: n });
+                focusClimate('ce-tip-explorer');
+              }
+              var pastNow = pastAt(warm);
+              return el('section', { id: 'ce-tip-explorer', role: 'region', tabIndex: -1, 'aria-labelledby': 'ce-tip-explorer-title',
+                  style: { padding: 16, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid ' + line, marginBottom: 16, color: txt } },
+                el('h4', { id: 'ce-tip-explorer-title', style: { margin: '0 0 6px', fontSize: 16, fontWeight: 900, color: txt } }, '\uD83C\uDF21\uFE0F ' + t('stem.climateExplorer.tp_explorer_title', 'Tipping Point Explorer')),
+                el('p', { style: { margin: '0 0 10px', fontSize: 13, lineHeight: 1.55, color: soft } },
+                  t('stem.climateExplorer.tp_explorer_intro', 'For each system, scientists give a best-guess warming level where it could tip, inside a range of uncertainty (Armstrong McKay et al., 2022). Today we are at about {now}°C.').replace('{now}', NOW_WARMING)),
+                pred == null
+                  ? el('div', null,
+                      el('p', { id: 'ce-tip-predict-q', style: { margin: '0 0 8px', fontSize: 14, fontWeight: 800, color: txt } },
+                        t('stem.climateExplorer.tp_predict_q', 'Predict first: at {w}°C of warming, how many of these {n} systems would be past their best-guess threshold?').replace('{w}', PRED_AT.toFixed(1)).replace('{n}', TP.length)),
+                      el('div', { role: 'group', 'aria-labelledby': 'ce-tip-predict-q', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                        TP.map(function(_, i) { return i; }).concat([TP.length]).map(function(n) {
+                          return el('button', { key: n, id: 'ce-tip-predict-' + n, type: 'button', onClick: function() { predictTip(n); },
+                            style: { minWidth: 48, minHeight: 48, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + line, background: '#0f172a', color: '#f1f5f9', fontSize: 16, fontWeight: 800, cursor: 'pointer' } }, String(n));
+                        })),
+                      el('p', { style: { margin: '8px 0 0', fontSize: 12, color: soft } }, t('stem.climateExplorer.tp_predict_hint', 'The list and warming slider open after you predict.')))
+                  : el('div', null,
+                      el('p', { style: { margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: pred === answer ? '#86efac' : '#fcd34d' } },
+                        (pred === answer ? t('stem.climateExplorer.tp_predict_right', 'Right on.') : Math.abs(pred - answer) <= 1 ? t('stem.climateExplorer.tp_predict_close', 'Close.') : t('stem.climateExplorer.tp_predict_off_v2', 'Not quite.')) + ' ' +
+                        t('stem.climateExplorer.tp_predict_result', 'At {w}°C, {k} of {n} are past their best guess: {names}. You guessed {p}.').replace('{w}', PRED_AT.toFixed(1)).replace('{k}', answer).replace('{n}', TP.length).replace('{names}', answerRows.map(function(tp) { return tp.name; }).join(', ')).replace('{p}', pred)),
+                      el('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: soft } },
+                        t('stem.climateExplorer.tp_predict_why', 'Why: several best guesses sit near 1.5°C, not far above today. But each is a range, not a cliff edge, and big changes like ice sheet loss take centuries or more to play out. That is why every tenth of a degree we avoid matters.')),
+                      el('label', { htmlFor: 'ce-tip-warm', style: { display: 'block', fontSize: 14, fontWeight: 800, color: txt, marginBottom: 4 } },
+                        t('stem.climateExplorer.tp_warm_label', 'Warming level: {w}°C').replace('{w}', warm.toFixed(1))),
+                      el('input', { id: 'ce-tip-warm', type: 'range', min: 1, max: 5, step: 0.1, value: warm,
+                        'aria-valuetext': t('stem.climateExplorer.tp_warm_valuetext', '{w} degrees. {k} of {n} past best guess.').replace('{w}', warm.toFixed(1)).replace('{k}', pastNow.length).replace('{n}', TP.length),
+                        onChange: function(e) { var v = parseFloat(e.target.value); if (isFinite(v)) upd('tpWarm', Math.round(v * 10) / 10); },
+                        style: { width: '100%', accentColor: '#f97316', height: 32, minHeight: 32, cursor: 'pointer', touchAction: 'none' } }),
+                      el('p', { style: { margin: '4px 0 10px', fontSize: 13, fontWeight: 700, color: txt } },
+                        t('stem.climateExplorer.tp_count', '{k} of {n} past their best guess at {w}°C.').replace('{k}', pastNow.length).replace('{n}', TP.length).replace('{w}', warm.toFixed(1))),
+                      el('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 } },
+                        TP.map(function(tp) {
+                          var st = STATUS[statusAt(tp)], r = TIPPING_RANGES[tp.id];
+                          return el('li', { key: tp.id, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: '#0f172a', borderLeft: '4px solid ' + st.color } },
+                            el('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, tp.emoji),
+                            el('span', { style: { flex: '1 1 160px', minWidth: 0, fontSize: 13, fontWeight: 800, color: '#f1f5f9' } }, tp.name),
+                            el('span', { style: { fontSize: 12, fontWeight: 800, color: st.color } }, st.label),
+                            el('span', { style: { flexBasis: '100%', fontSize: 12, color: '#cbd5e1' } },
+                              t('stem.climateExplorer.tp_row_detail', 'Best guess {best}°C, range {lo}–{hi}°C. Plays out over {years}.').replace('{best}', tp.threshold).replace('{lo}', r.lo).replace('{hi}', r.hi).replace('{years}', r.years)));
+                        }))));
+            })(),
+
             // ═══ CARBON BUDGET CLOCK ═══
             (function() {
               var userBurnRate = d.budgetBurnRate != null ? d.budgetBurnRate : GLOBAL_EMISSIONS_RATE;
@@ -3395,7 +4112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 20 } }, '🕐'),
                   el('div', null,
                     el('div', { style: { color: '#fca5a5', fontSize: 14, fontWeight: 900 } }, 'The Carbon Budget Clock'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'How much CO\u2082 can we still emit before warming passes key thresholds?')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'How much CO\u2082 can we still emit before warming passes key thresholds?')
                   )
                 ),
                 // Budget rows
@@ -3406,10 +4123,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { display:'flex',flexWrap:'wrap',alignItems:'center',gap:8,marginBottom:4 } },
                       el('div', { style: { minWidth:80,color:ceLift(b.color),fontSize:13,fontWeight:900 } }, '+' + b.limit + '°C'),
                       el('div', { style: { flex:'1 1 150px',minWidth:0 } },
-                        el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, b.gtRemaining + ' Gt CO\u2082 remaining'),
-                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '→ ' + yearsLeft.toFixed(1) + ' years at ' + userBurnRate + ' Gt/yr pace')
+                        el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } }, b.gtRemaining + ' Gt CO\u2082 remaining'),
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '→ ' + yearsLeft.toFixed(1) + ' years at ' + userBurnRate + ' Gt/yr pace')
                       ),
-                      el('div', { style: { padding: '3px 8px', borderRadius: 10, background: b.color + '20', color: ceLift(b.color), fontSize: 10, fontWeight: 800 } },
+                      el('div', { style: { padding: '3px 8px', borderRadius: 10, background: b.color + '20', color: ceLift(b.color), fontSize: 12, fontWeight: 800 } },
                         yearsLeft < 10 ? '🔥 urgent' : yearsLeft < 20 ? '⚠️ close' : '✅ feasible')
                     ),
                     el('div', { style: { height: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 4, overflow: 'hidden' } },
@@ -3420,20 +4137,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 // Interactive burn rate slider
                 el('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(255,255,255,0.04)' } },
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 } },
-                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, '🎛️ Annual emission rate (slide to simulate action)'),
+                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } }, '🎛️ Annual emission rate (slide to simulate action)'),
                     el('span', { style: { color: ceInk.amber, fontSize: 13, fontWeight: 900, fontFamily: 'monospace' } }, userBurnRate + ' Gt/yr')
                   ),
                   el('input', { type: 'range', min: 0, max: 50, step: 1, value: userBurnRate,
                     onChange: function(e) { upd('budgetBurnRate', parseInt(e.target.value, 10)); playSound('slider'); },
                     'aria-label': t('stem.climateExplorer.annual_global_co2_emission_rate', 'Annual global CO2 emission rate'),
                     style: { width: '100%', accentColor: '#ef4444', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
                     el('span', null, '21 (halved)'),
                     el('span', null, '42 (today ▼)'),
                     el('span', null, '50 (growth)')
                   ),
-                  el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
+                  el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.6 } },
                     userBurnRate === 0 ? '🌟 Net-zero: budgets stop shrinking. Warming stabilizes.' :
                     userBurnRate <= 10 ? '✨ Aggressive decline. Warming slowdown becomes possible.' :
                     userBurnRate <= 21 ? '👍 Halved from today. 1.5°C budget lasts about 8 years instead of 4.' :
@@ -3441,7 +4158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     userBurnRate <= 44 ? '🔥 Business-as-usual. 1.5°C budget gone by about 2030.' :
                     '🚨 Growth trajectory. Paris targets impossible. 2°C likely breached.')
                 ),
-                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5 } },
                   '📚 Budgets are from the Global Carbon Budget 2025, counted from the start of 2026 (50% probability of staying below limit). Every Gt emitted permanently reduces the remaining budget — unlike a bank, there\'s no way to "earn it back." Negative emissions (direct air capture) are still early and expensive. Emission reduction is far cheaper per ton.')
               );
             })(),
@@ -3462,7 +4179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 20 } }, '🔮'),
                   el('div', null,
                     el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 900 } }, 'IPCC Future Scenarios Explorer'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Five pathways the IPCC uses to project climate futures. Your choices + policy choices decide which one we live in.')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Five pathways the IPCC uses to project climate futures. Your choices + policy choices decide which one we live in.')
                   )
                 ),
                 // Scenario buttons
@@ -3472,9 +4189,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     return el('button', { key: s.id, onClick: function() { upd('scenarioPicked', s.id); playSound('scenario'); },
                       'aria-pressed': isActive,
                       style: { padding: '10px 6px', borderRadius: 8, border: '2px solid ' + (isActive ? s.color : 'rgba(255,255,255,0.1)'), background: isActive ? s.color + '20' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.15s' } },
-                      el('div', { style: { color: ceLift(s.color), fontSize: 11, fontWeight: 900, marginBottom: 2 } }, s.label),
+                      el('div', { style: { color: ceLift(s.color), fontSize: 12, fontWeight: 900, marginBottom: 2 } }, s.label),
                       el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 16, fontWeight: 900, fontFamily: 'monospace' } }, '+' + s.temp2100.toFixed(1) + '°C'),
-                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } }, 'by 2100')
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 2 } }, 'by 2100')
                     );
                   })
                 ),
@@ -3484,34 +4201,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: ceLift(picked.color), fontSize: 13, fontWeight: 900 } }, picked.label),
                     el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 700 } }, picked.name)
                   ),
-                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5, marginBottom: 10 } },
+                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 10 } },
                     el('strong', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Temperature by 2100: '),
                     '+' + picked.temp2100.toFixed(1) + '°C (very likely range ' + picked.tempRange[0] + '–' + picked.tempRange[1] + '°C)'),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '📉 Emissions required by 2050'),
-                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
-                      picked.emissions2050 + ' Gt CO\u2082/year (today: ~' + GLOBAL_EMISSIONS_RATE + ' Gt)' +
-                      (picked.emissions2050 === 0 ? ' — net-zero!' : picked.emissions2050 < 20 ? ' — major cuts.' : picked.emissions2050 > 40 ? ' — increased from today.' : ''))
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '📉 What happens to CO\u2082'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5 } },
+                      picked.co2Path + ' (Today: about ' + GLOBAL_EMISSIONS_RATE + ' Gt a year.)')
                   ),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🛠️ What it requires'),
-                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, picked.requires)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🛠️ What it requires'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6 } }, picked.requires)
                   ),
                   el('div', { style: { marginBottom: 8 } },
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🌊 Impacts at this level'),
-                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6 } }, picked.impacts)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 } }, '🌊 Impacts at this level'),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6 } }, picked.impacts)
                   ),
-                  el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: ceLift(picked.color), fontSize: 11, fontWeight: 700, fontStyle: 'italic' } },
+                  el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(255,255,255,0.04)', color: ceLift(picked.color), fontSize: 12, fontWeight: 700, fontStyle: 'italic' } },
                     '📌 Current likelihood: ' + picked.likelihood)
                 ),
-                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
+                el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5 } },
                   '📚 Scenarios from IPCC AR6 Working Group I. SSP = "Shared Socioeconomic Pathway". The number pair (e.g., 1-2.6) combines societal storyline (1–5) with radiative forcing in W/m² by 2100. Current policies put us on track for roughly SSP2-4.5. Each incremental action steers toward the lower-warming lanes.')
               );
             })(),
 
             // Warming-level scale visual
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(248,113,113,0.2)', marginBottom: 16 } },
-              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (degrees C) - scenario values and ranges shown for comparison'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (degrees C) - scenario values and ranges shown for comparison'),
               el('div', { style: { position: 'relative', height: 40, marginBottom: 8 } },
                 // scale is a sibling layer, so the labels hung below it are not drawn over it
                 el('div', { style: { position: 'absolute', inset: 0, borderRadius: 6, background: 'linear-gradient(to right, #22c55e 0%, #fbbf24 30%, #f97316 55%, #ef4444 80%, #991b1b 100%)' } }),
@@ -3521,11 +4237,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   return el('div', { key: temp, style: { position: 'absolute', left: pct + '%', top: -4, height: 48, width: 1, background: 'rgba(255,255,255,0.4)' } });
                 }),
                 // Current position marker
-                el('div', { style: { position: 'absolute', left: ((1.2 / 5.0) * 100) + '%', top: -10, transform: 'translateX(-50%)', color: '#fff', fontSize: 14 } }, '▼'),
-                // Paris 1.5 marker
-                el('div', { style: { position: 'absolute', left: ((1.5 / 5.0) * 100) + '%', top: 44, color: ceInk.amber, fontSize: 9, fontWeight: 800, transform: 'translateX(-50%)' } }, '1.5°C Paris'),
-                el('div', { style: { position: 'absolute', left: ((2.0 / 5.0) * 100) + '%', top: 44, color: '#fdba74', fontSize: 9, fontWeight: 800, transform: 'translateX(-50%)' } }, '2.0°C')
-              )
+                el('div', { style: { position: 'absolute', left: ((NOW_WARMING / 5.0) * 100) + '%', top: -10, transform: 'translateX(-50%)', color: '#fff', fontSize: 14 } }, '\u25BC'),
+                // Labels sit in a wrapping row below the bar: hung absolutely at 390 px,
+                // 'Now', '1.5°C Paris' and '2.0°C' overprinted one another.
+                null
+              ),
+              el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontSize: 12, fontWeight: 800 } },
+                el('span', { style: { color: '#ffffff' } }, '▼ ' + t('stem.climateExplorer.tp_now_marker', 'Now ~{w}°C').replace('{w}', NOW_WARMING)),
+                el('span', { style: { color: ceInk.amber } }, t('stem.climateExplorer.tp_scale_paris', '1.5°C: Paris goal')),
+                el('span', { style: { color: '#fdba74' } }, t('stem.climateExplorer.tp_scale_two', '2°C: Paris says stay well below')),
+                el('span', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontWeight: 600 } }, t('stem.climateExplorer.tp_scale_ticks', 'Bar runs 0 to 5°C; lines at 1, 1.5, 2, 3 and 4°C.')))
             ),
             // Tipping point cards
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%,320px),1fr))', gap: 12, marginBottom: 16 } },
@@ -3539,15 +4260,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800, marginBottom: 2 } }, tp.name),
                       el('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: sc + '20', color: ceLift(sc), fontSize: 9, fontWeight: 800 } }, statusLabels[tp.status] || tp.status),
-                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } }, 'Threshold: ~' + tp.threshold + '°C')
+                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: sc + '20', color: ceLift(sc), fontSize: 12, fontWeight: 800 } }, statusLabels[tp.status] || tp.status),
+                        el('span', { style: { padding: '2px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700 } }, TIPPING_RANGES[tp.id] ? t('stem.climateExplorer.tp_chip', 'Best guess ~{best}°C (range {lo}–{hi}°C) · plays out over {years}').replace('{best}', tp.threshold).replace('{lo}', TIPPING_RANGES[tp.id].lo).replace('{hi}', TIPPING_RANGES[tp.id].hi).replace('{years}', TIPPING_RANGES[tp.id].years) : t('stem.climateExplorer.tp_chip_regional', 'Regional warming, not a global tipping element'))
                       )
                     )
                   ),
-                  el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6, marginBottom: 8 } }, tp.desc),
+                  el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 8 } }, tp.desc),
                   el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.06)', borderLeft: '3px solid ' + sc } },
-                    el('div', { style: { color: ceLift(sc), fontSize: 10, fontWeight: 800, marginBottom: 2 } }, '💥 Cascade effect'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } }, tp.cascade)
+                    el('div', { style: { color: ceLift(sc), fontSize: 12, fontWeight: 800, marginBottom: 2 } }, '💥 Cascade effect'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5 } }, tp.cascade)
                   )
                 );
               })
@@ -3586,7 +4307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 20 } }, '🌊'),
                   el('div', null,
                     el('div', { style: { color: '#93c5fd', fontSize: 13, fontWeight: 900 } }, 'Sea Level Rise Explorer'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'What happens to coastlines at different levels of warming?')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'What happens to coastlines at different levels of warming?')
                   )
                 ),
                 // Slider with labeled steps
@@ -3601,7 +4322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     },
                     'aria-label': t('stem.climateExplorer.sea_level_rise_in_meters', 'Sea level rise in meters'),
                     style: { width: '100%', accentColor: '#3b82f6', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } },
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700 } },
                     SLR_KEYS.map(function(m) {
                       return el('span', { key: m, style: { color: slr === m ? '#93c5fd' : '#cbd5e1' } }, m + ' m');
                     })
@@ -3613,13 +4334,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('div', { style: { color: ceDark ? '#93c5fd' : '#1d4ed8', fontSize: 20, fontWeight: 900, fontFamily: 'monospace' } }, '+' + slr + ' m'),
                     el('div', { style: { color: ceDark ? '#60a5fa' : '#1d4ed8', fontSize: 14, fontWeight: 800 } }, impact.displaced > 0 ? impact.displaced + 'M people displaced' : 'No displacement')
                   ),
-                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.6, marginBottom: impact.cities.length > 0 ? 8 : 0 } }, impact.desc),
-                  impact.cities.length > 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
+                  el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: impact.cities.length > 0 ? 8 : 0 } }, impact.desc),
+                  impact.cities.length > 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5 } },
                     el('strong', { style: { color: ceInk.amber } }, 'Impacted: '),
                     impact.cities.join(' · ')
                   )
                 ),
-                el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontStyle: 'italic' } },
+                el('div', { style: { marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontStyle: 'italic' } },
                   '📚 Sources: IPCC AR6 SROCC; Kopp et al. 2023 probabilistic projections; Climate Central coastal models. The ocean has ~90% of the excess heat and will keep expanding/melting ice for centuries even if emissions stop today.')
               );
             })(),
@@ -3627,13 +4348,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Phenology cross-link (connects to Beehive tool)
             el('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(34,197,94,0.06))', border: '1px solid rgba(251,191,36,0.2)', marginBottom: 12 } },
               el('div', { style: { color: ceInk.amber, fontSize: 12, fontWeight: 800, marginBottom: 6 } }, '🐝 Phenological Mismatch — the silent tipping point'),
-              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
                 'Climate change is decoupling the timing of flowers and pollinators. Apple trees in New England now bloom 11 days earlier than in 1970, but bee emergence has shifted less. When flowers open before bees wake, or after they\'ve already died for the season, whole food webs unravel. Try the Beehive Simulator\'s Bloom Calendar to see which plants depend on which months \u2014 then imagine shifting it all forward.')
             ),
             // Hope note
             el('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' } },
               el('div', { style: { color: ceInk.green, fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '🌱 What this means for action'),
-              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7 } },
+              el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
                 'Tipping points aren\'t destiny. Every tenth of a degree matters: 1.5°C is far better than 1.6°C, and 2.0°C is far better than 2.5°C. The climate system doesn\'t "round up". Every ton of CO\u2082 not emitted reduces the odds of triggering these cascades.')
             )
           ); })(true, ceInkDark),
@@ -3659,26 +4380,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // vulnerability score (exposure). Countries sorted by emissions
             // descending \u2014 and the vulnerability bars systematically go the
             // OTHER way. Visual proof of the inversion in a single panel.
-            // Data sources: Carbon Brief 2023 cumulative analysis + Our
-            // World in Data per-capita historical; vulnerability anchored
-            // to ND-GAIN Country Index (rescaled 0-10).
+            // Data (checked 2026-11-23): perCapTons = cumulative CO2 from fossil
+            // fuels and land use through 2025 divided by 2025 population, from
+            // Our World in Data / Global Carbon Budget 2025 (owid-co2-data.csv,
+            // cumulative_co2_including_luc / population). vuln = ND-GAIN Country
+            // Index vulnerability score, 2024 data (0-1, higher = more
+            // vulnerable), gain.nd.edu download ndgain_countryindex_2026.zip.
+            // The old rows used made-up 0-10 scores and regional averages
+            // (Sahel, Pacific Islands) that no source gave; Chad, Niger and
+            // Kiribati now stand in as single countries.
             (function() {
               var INVERSION = [
-                { country: 'United States',     emoji: '\uD83C\uDDFA\uD83C\uDDF8', perCapTons: 1545, vuln: 3,  pop: '330M' },
-                { country: 'Russia',            emoji: '\uD83C\uDDF7\uD83C\uDDFA', perCapTons: 1180, vuln: 5,  pop: '144M' },
-                { country: 'United Kingdom',    emoji: '\uD83C\uDDEC\uD83C\uDDE7', perCapTons: 1150, vuln: 2,  pop: '67M'  },
-                { country: 'Germany',           emoji: '\uD83C\uDDE9\uD83C\uDDEA', perCapTons: 1055, vuln: 2,  pop: '83M'  },
-                { country: 'Japan',             emoji: '\uD83C\uDDEF\uD83C\uDDF5', perCapTons: 540,  vuln: 4,  pop: '125M' },
-                { country: 'Brazil',            emoji: '\uD83C\uDDE7\uD83C\uDDF7', perCapTons: 525,  vuln: 6,  pop: '215M' },
-                { country: 'China',             emoji: '\uD83C\uDDE8\uD83C\uDDF3', perCapTons: 200,  vuln: 5,  pop: '1.41B' },
-                { country: 'India',             emoji: '\uD83C\uDDEE\uD83C\uDDF3', perCapTons: 38,   vuln: 7,  pop: '1.43B' },
-                { country: 'Sahel (avg)',       emoji: '\uD83C\uDF0D', perCapTons: 18,   vuln: 9,  pop: '400M' },
-                { country: 'Bangladesh',        emoji: '\uD83C\uDDE7\uD83C\uDDE9', perCapTons: 13,   vuln: 10, pop: '170M' },
-                { country: 'Pacific Islands',   emoji: '\uD83C\uDFDD\uFE0F', perCapTons: 7,    vuln: 10, pop: '12M'  },
-                { country: 'D.R. Congo',        emoji: '\uD83C\uDDE8\uD83C\uDDE9', perCapTons: 3,    vuln: 9,  pop: '102M' }
+                { country: 'United States',     emoji: '\uD83C\uDDFA\uD83C\uDDF8', perCapTons: 1587, vuln: 0.32 },
+                { country: 'Russia',            emoji: '\uD83C\uDDF7\uD83C\uDDFA', perCapTons: 1483, vuln: 0.31 },
+                { country: 'United Kingdom',    emoji: '\uD83C\uDDEC\uD83C\uDDE7', perCapTons: 1152, vuln: 0.28 },
+                { country: 'Germany',           emoji: '\uD83C\uDDE9\uD83C\uDDEA', perCapTons: 1151, vuln: 0.30 },
+                { country: 'Brazil',            emoji: '\uD83C\uDDE7\uD83C\uDDF7', perCapTons: 634,  vuln: 0.37 },
+                { country: 'Japan',             emoji: '\uD83C\uDDEF\uD83C\uDDF5', perCapTons: 611,  vuln: 0.35 },
+                { country: 'China',             emoji: '\uD83C\uDDE8\uD83C\uDDF3', perCapTons: 247,  vuln: 0.39 },
+                { country: 'India',             emoji: '\uD83C\uDDEE\uD83C\uDDF3', perCapTons: 65,   vuln: 0.47 },
+                { country: 'Chad (Sahel)',      emoji: '\uD83C\uDDF9\uD83C\uDDE9', perCapTons: 39,   vuln: 0.64 },
+                { country: 'Niger (Sahel)',     emoji: '\uD83C\uDDF3\uD83C\uDDEA', perCapTons: 39,   vuln: 0.59 },
+                { country: 'Bangladesh',        emoji: '\uD83C\uDDE7\uD83C\uDDE9', perCapTons: 17,   vuln: 0.54 },
+                { country: 'Kiribati (Pacific)',emoji: '\uD83C\uDDF0\uD83C\uDDEE', perCapTons: 17,   vuln: 0.53 }
               ];
               var MAX_TONS = 1600;
-              var MAX_VULN = 10;
+              var MAX_VULN = 1;
               return el('div', {
                 style: {
                   padding: 16, marginBottom: 16, borderRadius: 12,
@@ -3688,14 +4415,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               },
                 el('div', { style: { textAlign: 'center', marginBottom: 6 } },
                   el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 900 } }, '\u2696\uFE0F The Inversion \u2014 who caused it vs who pays for it'),
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
-                    'Compare per-capita CO\u2082 emitted since 1850 (responsibility) with climate vulnerability scores from 0\u201310 (exposure). Countries are sorted by emissions. The two measures run in opposite directions down the page \u2014 that is the injustice.')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                    'Compare all the CO\u2082 each country has put into the air, per person today (responsibility), with its climate vulnerability score from 0 to 1 (exposure). Countries are sorted by emissions. As emissions go down the page, vulnerability mostly goes up \u2014 that is the injustice.')
                 ),
                 // Header row \u2014 column labels
                 el('div', { className:'ce-inversion-heading',style: { display:'grid',gridTemplateColumns:'minmax(0,1fr) 130px minmax(0,1fr)',alignItems:'center',gap:8,padding:'8px 0',marginTop:10,marginBottom:4,borderBottom:'1px solid rgba(148,163,184,0.15)' } },
-                  el('div', { style: { textAlign:'right',color:ceDark?'#fca5a5':'#991b1b',fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.05em' } }, 'Caused (tons CO\u2082 / person, cumulative)'),
-                  el('div', { style: { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'Country'),
-                  el('div', { style: { textAlign:'left',color:ceDark?'#c4b5fd':'#6b21a8',fontSize:10,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.05em' } }, 'Exposed (vulnerability 0\u201310)')
+                  el('div', { style: { textAlign:'right',color:ceDark?'#fca5a5':'#991b1b',fontSize: 12,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.05em' } }, 'Caused (tons CO\u2082 / person, cumulative)'),
+                  el('div', { style: { textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700 } }, 'Country'),
+                  el('div', { style: { textAlign:'left',color:ceDark?'#c4b5fd':'#6b21a8',fontSize: 12,fontWeight:800,textTransform:'uppercase',letterSpacing:'0.05em' } }, 'Exposed (vulnerability 0\u20131)')
                 ),
                 // Inversion rows
                 INVERSION.map(function(row, i) {
@@ -3704,8 +4431,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   // Visual cue: rows whose two bars go in opposite directions
                   // (high-emit + low-vuln OR low-emit + high-vuln) are the
                   // injustice cases. Highlight them subtly.
-                  var isInverted = (row.perCapTons > 500 && row.vuln <= 4) ||
-                                   (row.perCapTons < 50 && row.vuln >= 8);
+                  var isInverted = (row.perCapTons > 500 && row.vuln <= 0.35) ||
+                                   (row.perCapTons < 50 && row.vuln >= 0.5);
                   return el('div', { key:row.country,className:'ce-inversion-row',role:'group','aria-labelledby':'ce-inversion-country-'+i,
                     style: {
                       display:'grid',gridTemplateColumns:'minmax(0,1fr) 130px minmax(0,1fr)',
@@ -3714,12 +4441,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       borderRadius: 4
                     }
                   },
-                    el('div', { id:'ce-inversion-country-'+i,className:'ce-inversion-country',style:{minWidth:0,textAlign:'center',color:'var(--allo-stem-text, #e2e8f0)',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:5} },
+                    el('div', { id:'ce-inversion-country-'+i,className:'ce-inversion-country',style:{minWidth:0,textAlign:'center',color:'var(--allo-stem-text, #e2e8f0)',fontSize: 12,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:5} },
                       el('span',{'aria-hidden':true,style:{fontSize:14}},row.emoji),
                       el('span',null,row.country)),
                     // Left: emissions bar (extends RIGHT-TO-LEFT inside its column)
                     el('div', { className:'ce-inversion-caused',style:{minWidth:0,display:'flex',flexWrap:'wrap',justifyContent:'flex-end',alignItems:'center',gap:6} },
-                      el('span', { style: { color:ceDark?'#fca5a5':'#991b1b',fontSize:10,fontWeight:700,fontFamily:'monospace',minWidth:50,textAlign:'right' } },
+                      el('span', { style: { color:ceDark?'#fca5a5':'#991b1b',fontSize: 12,fontWeight:700,fontFamily:'monospace',minWidth:50,textAlign:'right' } },
                         el('span',{className:'ce-inversion-caption'},t('stem.climateExplorer.inversion_caused','Cumulative CO₂ per person:')+' '),
                         row.perCapTons.toLocaleString() + 't'),
                       el('div', {
@@ -3741,9 +4468,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           boxShadow: '0 0 6px rgba(168,85,247,0.25)'
                         }
                       }),
-                      el('span', { style: { color:ceDark?'#c4b5fd':'#6b21a8',fontSize:10,fontWeight:700,fontFamily:'monospace',minWidth:32 } },
+                      el('span', { style: { color:ceDark?'#c4b5fd':'#6b21a8',fontSize: 12,fontWeight:700,fontFamily:'monospace',minWidth:32 } },
                         el('span',{className:'ce-inversion-caption'},t('stem.climateExplorer.inversion_exposed','Vulnerability:')+' '),
-                        row.vuln + '/10')
+                        row.vuln.toFixed(2))
                     )
                   );
                 }),
@@ -3752,10 +4479,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(250,204,21,0.06)', border: '1px solid rgba(250,204,21,0.15)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6
                   }
                 },
-                  '\uD83D\uDCDA Per-capita cumulative emissions from Our World in Data (1850\u20132022) and Carbon Brief 2023. Vulnerability scores rescaled from the ND-GAIN Country Index (University of Notre Dame). Highlighted rows are the clearest inversion cases: rich countries with the deepest historical responsibility but the most adaptive capacity, paired against countries with negligible per-capita emissions and the highest exposure.')
+                  '\uD83D\uDCDA CO\u2082 per person: all fossil-fuel and land-use CO\u2082 through 2025, divided by 2025 population (Our World in Data / Global Carbon Budget 2025). Vulnerability: ND-GAIN Country Index vulnerability score, 2024 data, where 1 is most vulnerable (University of Notre Dame). Highlighted rows are the clearest inversion cases: countries with the most past emissions and low vulnerability, and countries with very small past emissions and high vulnerability.')
               );
             })(),
 
@@ -3774,12 +4501,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 }
               },
                 el('span', { style: { fontSize: 14 } }, regionsViewed >= 5 ? '\uD83C\uDFC5' : '\uD83D\uDD0D'),
-                el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, flex: 1, minWidth: 200 } },
+                el('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, flex: 1, minWidth: 200 } },
                   regionsViewed >= 5
-                    ? 'Justice Witness badge earned. Keep exploring; every region has a different story.'
-                    : 'Click a card to expand its data. Explore at least 5 regions to earn the Justice Witness badge.'
+                    ? 'Justice Explorer badge earned. Keep exploring; every region has a different story.'
+                    : 'Click a card to expand its data. Explore at least 5 regions to earn the Justice Explorer badge.'
                 ),
-                el('span', { style: { fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: regionsViewed >= 5 ? '#86efac' : '#c4b5fd' } }, regionsViewed + ' / 5 explored')
+                el('span', { style: { fontSize: 12, fontFamily: 'monospace', fontWeight: 700, color: regionsViewed >= 5 ? '#86efac' : '#c4b5fd' } }, regionsViewed + ' / 5 explored')
               );
             })(),
 
@@ -3787,11 +4514,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { display:'flex',flexWrap:'wrap',gap:6,marginBottom:16 } },
               [{ id: 'risk', label: t('stem.climateExplorer.risks', '\u26A0\uFE0F Risks') }, { id: 'emissions', label: t('stem.climateExplorer.emissions', '\uD83C\uDFED Emissions') }, { id: 'resilience', label: t('stem.climateExplorer.resilience', '\uD83D\uDCAA Resilience') }].map(function(v) {
                 return el('button', { key: v.id, onClick: function() { upd('cjView', v.id); },
-                  style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: cjView === v.id ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: cjView === v.id ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)', color: cjView === v.id ? '#fbbf24' : '#cbd5e1', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                  style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: cjView === v.id ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)', background: cjView === v.id ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)', color: cjView === v.id ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
                   v.label);
               })
             ),
 
+            // Evidence check (Justice Explorer): read the emissions shares, then answer.
+            (function() { var c = justiceEvidenceCfg(); return c ? renderEvidenceCheck(c) : null; })(),
             // Region cards
             el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%,280px),1fr))', gap: 12 } },
               REGIONS.map(function(r) {
@@ -3803,8 +4532,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     if (!regionsViewed[r.id]) {
                       var nv = Object.assign({}, regionsViewed); nv[r.id] = true;
                       upd('regionsViewed', nv);
-                      awardXP(5);
-                      if (Object.keys(nv).length >= 5) earnBadge('justiceExplorer');
+                      // No XP for opening a card (2026-11-23): XP comes from answers, predictions and saved work.
+                      // Justice Explorer now comes from the evidence check above the cards.
                     }
                   },
                   style: { padding: 14, borderRadius: 12, background: isOpen ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (isOpen ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.08)'), cursor: 'pointer', transition: 'all 0.2s' } },
@@ -3813,27 +4542,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('span', { style: { fontSize: 20 } }, r.emoji),
                     el('div', { style: { flex: 1 } },
                       el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontWeight: 800 } }, r.name),
-                      el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Pop: ' + r.pop)
+                      r.pop && el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (/^\d/.test(r.pop) ? 'Pop: ' : '') + r.pop)
                     ),
-                    el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: ceLift(riskColors[r.risk]), fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
+                    el('span', { style: { padding: '2px 8px', borderRadius: 12, background: riskColors[r.risk] + '20', color: ceLift(riskColors[r.risk]), fontSize: 12, fontWeight: 800, textTransform: 'uppercase' } }, r.risk + ' risk')
                   ),
 
                   // Risk vs emissions bar
-                  cjView === 'emissions' && el('div', { style: { marginTop: 6 } },
-                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } },
-                      el('span', null, 'Share of global emissions'), el('span', null, r.emPct + '%')),
+                  // emPct is null where no source gives one figure for the region.
+                  cjView === 'emissions' && (typeof r.emPct === 'number' ? el('div', { style: { marginTop: 6 } },
+                    el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 2 } },
+                      el('span', null, 'Share of world CO₂ (2025)'), el('span', null, r.emPct + '%')),
                     el('div', { style: { height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                       el('div', { style: { width: Math.min(100, r.emPct * 5) + '%', height: '100%', borderRadius: 3, background: '#ef4444' } })
                     )
-                  ),
+                  ) : el('div', { style: { marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'No sourced emissions share exists for this group, so none is shown.')),
 
-                  cjView === 'risk' && el('div', { style: { marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '\u26A0\uFE0F ' + r.type),
+                  cjView === 'risk' && el('div', { style: { marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '\u26A0\uFE0F ' + r.type),
 
-                  cjView === 'resilience' && el('div', { style: { marginTop: 6, color: '#6ee7b7', fontSize: 10 } }, '\uD83D\uDCAA ' + r.resilience),
+                  cjView === 'resilience' && el('div', { style: { marginTop: 6, color: '#6ee7b7', fontSize: 12 } }, '\uD83D\uDCAA ' + r.resilience),
 
                   // Expanded detail
                   isOpen && el('div', { style: { marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.7, marginBottom: 8 } }, r.story),
+                    el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7, marginBottom: 8 } }, r.story),
                     // Front-line voice \u2014 a documented quote from a named
                     // advocate/leader from this community. Renders only when
                     // the region has a `voice` field. Pulled from on-record
@@ -3846,23 +4576,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         borderTop: '1px solid rgba(96,165,250,0.18)', borderRight: '1px solid rgba(96,165,250,0.18)', borderBottom: '1px solid rgba(96,165,250,0.18)', borderLeft: '3px solid #60a5fa'
                       }
                     },
-                      el('div', { style: { color: '#93c5fd', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
+                      el('div', { style: { color: '#93c5fd', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, '\uD83C\uDF99\uFE0F Voice from the front line'),
                       r.voice.quote ? el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontStyle: 'italic', lineHeight: 1.55, marginBottom: 4 } },
                         '\u201C', r.voice.quote, '\u201D')
                         : r.voice.about && el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.55, marginBottom: 4 } }, r.voice.about),
-                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, fontWeight: 700 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } },
                         r.voice.quote ? '\u2014 ' : '', r.voice.name),
-                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 2, lineHeight: 1.4 } },
                         r.voice.role),
-                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 4, fontStyle: 'italic' } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 4, fontStyle: 'italic' } },
                         '\uD83D\uDCDA ', r.voice.source)
                     ),
                     el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' } },
-                      el('div', { style: { color: ceInk.green, fontSize: 10, fontWeight: 800 } }, '\uD83D\uDCAA Community Resilience'),
-                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5, marginTop: 2 } }, r.resilience)
+                      el('div', { style: { color: ceInk.green, fontSize: 12, fontWeight: 800 } }, '\uD83D\uDCAA Community Resilience'),
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, marginTop: 2 } }, r.resilience)
                     ),
-                    r.emPct < 1 && el('div', { style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(239,68,68,0.08)', color: '#fca5a5', fontSize: 10, textAlign: 'center' } },
-                      '\u26A0\uFE0F This community produces just ' + r.emPct + '% of global emissions but faces ' + r.risk + ' risk \u2014 that\'s climate injustice.')
+                    typeof r.emPct === 'number' && r.emPct < 1 && el('div', { style: { marginTop: 8, padding: 8, borderRadius: 8, background: 'rgba(239,68,68,0.08)', color: '#fca5a5', fontSize: 12, textAlign: 'center' } },
+                      '\u26A0\uFE0F These countries make just ' + r.emPct + '% of the world\u2019s CO\u2082 but face ' + r.risk + ' risk \u2014 that\'s climate injustice.')
                   )
                 );
               })
@@ -3871,65 +4601,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // ═══ HISTORICAL RESPONSIBILITY ═══
             el('div', { style: { marginTop: 24, padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.4)', border: '1px solid rgba(251,146,60,0.25)' } },
               el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900, marginBottom: 4 } }, '📊 Historical Responsibility — who put it there?'),
-              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 12, lineHeight: 1.5 } },
-                'Cumulative CO\u2082 emissions since 1850. Most CO\u2082 already in the atmosphere was emitted by a handful of countries — yet the countries that emitted least face the worst impacts. This is climate injustice in one chart.'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginBottom: 12, lineHeight: 1.5 } },
+                'All CO\u2082 from fossil fuels and land use through 2025 (Our World in Data / Global Carbon Budget 2025). A handful of countries put much of it into the air — yet many countries that emitted the least face some of the worst impacts. This is climate injustice in one chart.'),
               HISTORICAL_EMISSIONS.map(function(h, hi) {
                 var maxGt = HISTORICAL_EMISSIONS[0].gt;
                 var pct = Math.min(100, (h.gt / maxGt) * 100);
                 var barColor = hi === 0 ? '#ef4444' : hi < 3 ? '#f97316' : hi < 7 ? '#fbbf24' : '#60a5fa';
                 return el('div', { key: h.country, style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   el('span', { style: { width: 22, fontSize: 14 } }, h.emoji),
-                  el('span', { style: { width: 120, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } }, h.country),
+                  el('span', { style: { width: 120, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } }, h.country),
                   el('div', { style: { flex: 1, height: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 3, overflow: 'hidden', position: 'relative' } },
                     el('div', { style: { width: pct + '%', height: '100%', background: barColor } })
                   ),
-                  el('span', { style: { width: 80, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, fontFamily: 'monospace' } }, h.gt + ' Gt'),
-                  el('span', { style: { width: 48, textAlign: 'right', color: ceLift(barColor), fontSize: 10, fontWeight: 800, fontFamily: 'monospace' } }, h.pctGlobal.toFixed(1) + '%')
+                  el('span', { style: { width: 80, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' } }, h.gt + ' Gt'),
+                  el('span', { style: { width: 48, textAlign: 'right', color: ceLift(barColor), fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, h.pctGlobal.toFixed(1) + '%')
                 );
               }),
               el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' } },
-                el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔑 The climate injustice in numbers'),
-                el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
-                  '• The USA alone (4% of world population) is responsible for ~20% of all historical CO\u2082.',
+                el('div', { style: { color: '#fca5a5', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '🔑 The climate injustice in numbers'),
+                el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6 } },
+                  '• The USA alone (about 4% of the world’s people) put about 20% of all the CO\u2082 into the air so far.',
                   el('br'),
-                  '• Europe + USA combined: ~40% of historical emissions from <15% of current population.',
+                  '• Europe (including Russia) and the USA together: about 44% of all CO\u2082 so far, from about 13% of today’s people.',
                   el('br'),
-                  '• All of Africa (1.4 billion people, ~18% of world): ~3% of historical emissions — but some of the most severe impacts.',
+                  '• All of Africa (about 1.5 billion people, about 19% of the world): about 5% of all CO\u2082 so far counting land use, or about 3% from fossil fuels alone — but some of the most severe impacts.',
                   el('br'),
-                  '• This is why the 2022 COP27 created the "Loss & Damage" fund — high-emitting countries pay into a pool for vulnerable nations.',
+                  '• This is why COP27 (2022) agreed to create a "Loss & Damage" fund for vulnerable nations. Countries give to it by choice; developed countries are urged to lead.',
                   el('br'),
-                  '• So far, total pledges to that fund are ~0.16% of one year of the lower-bound estimated need (see Loss & Damage Fund tracker below).'
+                  '• So far, total pledges to that fund are about 0.2% of one year of the lowest estimate of need (see the Loss & Damage Fund tracker below).'
                 )
               )
             ),
 
             // ═══ LOSS & DAMAGE FUND TRACKER ═══
             // The COP27 fund was the first international policy mechanism
-            // explicitly designed to address climate injustice — high-emit
-            // countries pay into a pool for "particularly vulnerable"
-            // developing nations. AOSIS (small island states) first
-            // proposed it in 1991, in the UNFCCC talks. It took 31 years to
-            // create. Pedagogically: shows that policy CAN respond to
+            // explicitly designed to address climate injustice. Countries give
+            // by choice, with developed countries urged to lead. Vanuatu, for
+            // AOSIS (small island states), proposed an insurance pool in 1991.
+            // It took 31 years to create.
+            // Sources (2026-11-23): COP28 pledges = Loss and Damage
+            // Collaboration pledge tracker, 1 Dec 2023 (total $770.6M, $115.3M
+            // of it to wider funding arrangements). Total pledged $790.24M as of
+            // 23 Sep 2025: FRLD Board report to COP30, addendum
+            // (unfccc.int cop2025_10a1_cma2025_14a1). Need: SEI 2025 brief
+            // "Implementing innovative finance instruments for loss and damage"
+            // cites $400B-1.6T a year by 2030 (Markandya & Gonzalez-Eguino 2019).
+            // First call for funding requests: launched at COP30, open from
+            // 15 Dec 2025, $250M Barbados Implementation Modalities. Pedagogically: shows that policy CAN respond to
             // inequity, but the gap between pledged and needed is itself
             // the next chapter of the climate justice story.
             (function() {
               var LD_CONTRIB = [
                 { country: 'UAE',         emoji: '🇦🇪', amountUSD: 100,  note: t('stem.climateExplorer.cop28_host_pledge_dec_2023', 'COP28 host pledge, Dec 2023') },
-                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28', '€100M, COP28') },
+                { country: 'Germany',     emoji: '🇩🇪', amountUSD: 100,  note: t('stem.climateExplorer.usd100m_cop28_v2', '$100M, COP28') },
                 { country: 'Italy',       emoji: '🇮🇹', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28_2', '€100M, COP28') },
                 { country: 'France',      emoji: '🇫🇷', amountUSD: 108,  note: t('stem.climateExplorer.100m_cop28_3', '€100M, COP28') },
                 { country: 'UK',          emoji: '🇬🇧', amountUSD: 50,   note: t('stem.climateExplorer.40m_cop28', '£40M, COP28') },
-                { country: 'Denmark',     emoji: '🇩🇰', amountUSD: 50,   note: 'COP28' },
+                { country: 'Denmark',     emoji: '🇩🇰', amountUSD: 25,   note: 'COP28; about $25M of DKK 350M to the Fund' },
                 { country: 'Ireland',     emoji: '🇮🇪', amountUSD: 27,   note: 'COP28' },
                 { country: 'EU',          emoji: '🇪🇺', amountUSD: 27,   note: t('stem.climateExplorer.25m_cop28', '€25M, COP28') },
                 { country: 'Norway',      emoji: '🇳🇴', amountUSD: 25,   note: 'COP28' },
                 { country: 'USA',         emoji: '🇺🇸', amountUSD: 17.5, note: t('stem.climateExplorer.cop28_note_25_of_all_historical_co', 'COP28; note: ~20% of all historical CO₂') },
                 { country: 'Japan',       emoji: '🇯🇵', amountUSD: 10,   note: 'COP28' },
-                { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11,   note: 'COP28' }
+                { country: 'Canada',      emoji: '🇨🇦', amountUSD: 11.6, note: 'C$16M, COP28' }
               ];
-              var pledgedTotalM = LD_CONTRIB.reduce(function(s, c) { return s + c.amountUSD; }, 0);
+              // The bar uses the fund's total pledges (FRLD Board, Sept 2025),
+              // not just the COP28 pledges listed below.
+              var pledgedTotalM = 790;
               var pledgedB = pledgedTotalM / 1000;
-              var neededBPerYr = 400;  // SEI low-end estimate, $B/yr by 2030
+              var neededBPerYr = 400;  // low end of the $400B-1.6T/yr range SEI cites, by 2030
               var pledgedPctOfYearOneNeed = (pledgedB / neededBPerYr) * 100;
               return el('div', {
                 style: {
@@ -3942,26 +4682,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '💰'),
                   el('div', null,
                     el('div', { style: { color: '#7dd3fc', fontSize: 14, fontWeight: 900 } }, 'Loss & Damage Fund — what the world is doing about it'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
-                      'Proposed by small island states in 1991. Created at COP27 (2022). Capitalized at COP28 (2023). First call for projects in December 2025, 34 years after the proposal.')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontStyle: 'italic', marginTop: 2 } },
+                      'Proposed by small island states in 1991. Created at COP27 (2022). First pledges at COP28 (2023). Opened for funding requests in December 2025, 34 years after the proposal.')
                   )
                 ),
                 // Pledged-vs-needed visual
                 el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, fontWeight: 700 } },
-                    el('span', null, 'Pledged so far: ~$' + pledgedTotalM.toFixed(0) + 'M (' + pledgedB.toFixed(2) + 'B)'),
-                    el('span', { style: { color: '#fca5a5' } }, 'Needed: ~$' + neededBPerYr + 'B / year (by 2030, SEI estimate)')
+                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontWeight: 700 } },
+                    el('span', null, 'Pledged so far: about $' + pledgedTotalM.toFixed(0) + 'M (' + pledgedB.toFixed(2) + 'B, Sept 2025)'),
+                    el('span', { style: { color: '#fca5a5' } }, 'Needed: at least $' + neededBPerYr + 'B a year by 2030 (low end of estimates)')
                   ),
                   // Bar — pledged is barely visible against the needed
                   el('div', { style: { height: 18, background: 'rgba(239,68,68,0.18)', borderRadius: 4, overflow: 'hidden', position: 'relative', border: '1px solid rgba(239,68,68,0.35)' } },
                     el('div', { style: { width: Math.max(0.3, pledgedPctOfYearOneNeed) + '%', height: '100%', background: 'linear-gradient(90deg, #4ade80, #22c55e)', minWidth: 2 } })
                   ),
-                  el('div', { style: { color: ceInk.amber, fontSize: 10, marginTop: 6, textAlign: 'center', fontStyle: 'italic' } },
+                  el('div', { style: { color: ceInk.amber, fontSize: 12, marginTop: 6, textAlign: 'center', fontStyle: 'italic' } },
                     'Pledged is roughly ' + pledgedPctOfYearOneNeed.toFixed(2) + '% of the lowest-end estimate of one year of need.')
                 ),
                 // Top contributors
                 el('div', { style: { marginTop: 12 } },
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top contributors so far'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Some of the first pledges (COP28, 2023)'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%,200px),1fr))', gap: 6 } },
                     LD_CONTRIB.map(function(c) {
                       return el('div', { key: c.country,
@@ -3974,10 +4714,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       },
                         el('span', { style: { fontSize: 16 } }, c.emoji),
                         el('div', { style: { flex: 1, minWidth: 0 } },
-                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700 } }, c.country),
-                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.3 } }, c.note)
+                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.3 } }, c.note)
                         ),
-                        el('div', { style: { color: '#86efac', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                        el('div', { style: { color: '#86efac', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } },
                           '$' + c.amountUSD + 'M')
                       );
                     })
@@ -3988,52 +4728,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6
                   }
                 },
                   '🎙️ ',
                   el('strong', { style: { color: '#7dd3fc' } }, 'Saleemul Huq'),
-                  ' (the Bangladeshi voice quoted above) was the lead architect of this fund — he pushed for it across nine consecutive COPs from 2013 to his death in 2023, and lived just long enough to see it formally created. His institute, ICCCAD, petitioned to name it the Loss & Damage Huq Fund.'),
+                  ' (the Bangladeshi voice quoted above) spent many years pushing for loss and damage funding at UN climate talks, and saw the fund agreed at COP27. He died in October 2023, a month before COP28 opened. Scientists and activists have called for the fund to be named after him.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
-                  '📚 Pledges from official COP28 communiqués (Nov–Dec 2023). Need estimate from Stockholm Environment Institute 2023 ($400B/yr lower bound). Contributions converted to USD at end-2023 rates; some pledges remain unfulfilled or extend over multiple years. Updated reporting: UNFCCC Loss and Damage Fund Board minutes.')
+                  '📚 COP28 pledges from the Loss and Damage Collaboration pledge tracker (1 Dec 2023); euro and pound pledges shown in approximate US dollars. Total pledged: Fund Board report to COP30 (Sept 2025). Need: at least $400 billion a year by 2030, the low end of the estimates cited by the Stockholm Environment Institute (2025). Some pledges are paid over several years, and not all have been paid yet.')
               );
             })(),
 
             // ═══ CLIMATE DISPLACEMENT TRACKER ═══
-            // The Internal Displacement Monitoring Centre (IDMC) is the
-            // global authority on this data. Weather-driven displacement
-            // is the most-tracked and most-conservative climate-impact
-            // statistic: it counts actual people forced to move within
-            // their own country (not international refugees, who don't
-            // yet have legal recognition for climate causes). Even on
-            // this conservative measure, ~376 million people have been
-            // displaced since IDMC started tracking in 2008.
+            // The Internal Displacement Monitoring Centre (IDMC) counts each
+            // time a disaster forces someone from home inside their own
+            // country (not people who cross borders). Sources, checked
+            // 2026-11-23: yearly disaster totals from IDMC GRID 2019-2024
+            // (2019 = 24.9M per GRID 2020; the old 23.9 matched no report);
+            // 2022 country figures from GRID 2023 (Pakistan 8.16M, Philippines
+            // 5.44M, China 3.63M, India 2.5M, Nigeria 2.4M); 265M for
+            // 2008-2018 from IDMC "Disaster Displacement: A global review"
+            // (2019). The old "376 million since 2008" had no IDMC source.
+            // Groundswell Part 2 (World Bank 2021): up to 216M by 2050 in the
+            // pessimistic scenario.
             (function() {
               var DISP_BY_YEAR = [
                 { year: 2018, millions: 17.2 },
-                { year: 2019, millions: 23.9 },
+                { year: 2019, millions: 24.9 },
                 { year: 2020, millions: 30.7 },
                 { year: 2021, millions: 23.7 },
-                { year: 2022, millions: 32.6, note: t('stem.climateExplorer.record_year_pakistan_floods_alone_disp', 'Record year — Pakistan floods alone displaced ~8.2M') },
+                { year: 2022, millions: 32.6, note: t('stem.climateExplorer.pakistan_floods_2022_v2', 'Pakistan’s floods alone caused about 8.2M displacements') },
                 { year: 2023, millions: 26.4 }
               ];
               var DISP_BY_COUNTRY_2022_23 = [
-                { country: 'Pakistan',     emoji: '🇵🇰', millions: 8.2, cause: '2022 super-floods' },
-                { country: 'Philippines',  emoji: '🇵🇭', millions: 5.4, cause: 'recurring typhoons' },
-                { country: 'China',        emoji: '🇨🇳', millions: 3.6, cause: 'monsoon flooding' },
-                { country: 'India',        emoji: '🇮🇳', millions: 2.5, cause: 'monsoon + cyclones' },
-                { country: 'Brazil',       emoji: '🇧🇷', millions: 1.7, cause: 'floods + landslides' },
-                { country: 'Bangladesh',   emoji: '🇧🇩', millions: 1.6, cause: 'cyclones + floods' },
-                { country: 'Somalia',      emoji: '🇸🇴', millions: 1.1, cause: 'Horn of Africa drought' },
-                { country: 'Ethiopia',     emoji: '🇪🇹', millions: 1.0, cause: 'drought + floods' }
+                { country: 'Pakistan',     emoji: '🇵🇰', millions: 8.2, cause: '2022 monsoon floods' },
+                { country: 'Philippines',  emoji: '🇵🇭', millions: 5.4, cause: 'typhoons' },
+                { country: 'China',        emoji: '🇨🇳', millions: 3.6, cause: 'floods' },
+                { country: 'India',        emoji: '🇮🇳', millions: 2.5, cause: 'monsoon floods' },
+                { country: 'Nigeria',      emoji: '🇳🇬', millions: 2.4, cause: '2022 floods' }
               ];
               var maxYear = DISP_BY_YEAR.reduce(function(m, x) { return Math.max(m, x.millions); }, 0);
-              var cumulative2008to23 = 376;  // IDMC GRID 2024 cumulative figure
-              var projected2050 = 216;       // World Bank Groundswell, internal-only, 6 regions
+              var cumulative2008to23 = 265;  // IDMC global review: 2008-2018 disaster displacements
+              var projected2050 = 216;       // World Bank Groundswell Part 2, pessimistic scenario, 6 regions
               return el('div', {
                 style: {
                   marginTop: 20, padding: 16, borderRadius: 12,
@@ -4045,18 +4785,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '🧳'),
                   el('div', null,
                     el('div', { style: { color: '#fdba74', fontSize: 14, fontWeight: 900 } }, 'Climate Displacement — the people already moving'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontStyle: 'italic', marginTop: 2 } },
-                      'New people forced to flee their homes by weather disasters each year — within their own country. Counted by the Internal Displacement Monitoring Centre since 2008.')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontStyle: 'italic', marginTop: 2 } },
+                      'Each year the Internal Displacement Monitoring Centre counts how many times disasters force people from their homes within their own country. One person can be counted more than once.')
                   )
                 ),
                 // Year-over-year bar chart
                 el('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.18)' } },
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New weather-driven displacements per year (millions)'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'New disaster displacements per year (millions); most come from floods and storms'),
                   el('div', { style: { display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,90px),1fr))',alignItems:'end',gap:12 } },
                     DISP_BY_YEAR.map(function(y) {
                       var pct = (y.millions / maxYear) * 100;
                       return el('div', { key:y.year,style:{minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:4} },
-                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } }, y.millions + 'M'),
+                        el('div', { style: { color: '#fdba74', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } }, y.millions + 'M'),
                         el('div', {
                           title: y.note || (y.year + ': ' + y.millions + 'M displaced'),
                           style: {
@@ -4066,14 +4806,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                             boxShadow: '0 0 6px rgba(251,146,60,0.3)'
                           }
                         }),
-                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700, fontFamily: 'monospace', marginTop: 2 } }, y.year)
                       );
                     })
                   )
                 ),
                 // Top countries strip
                 el('div', { style: { marginTop: 12 } },
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Top countries displaced, 2022–2023'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, 'Most disaster displacements, 2022'),
                   el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%,220px),1fr))', gap: 6 } },
                     DISP_BY_COUNTRY_2022_23.map(function(c) {
                       return el('div', { key: c.country,
@@ -4085,10 +4825,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       },
                         el('span', { style: { fontSize: 16 } }, c.emoji),
                         el('div', { style: { flex: 1, minWidth: 0 } },
-                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, fontWeight: 700 } }, c.country),
-                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.3 } }, c.cause)
+                          el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 700 } }, c.country),
+                          el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.3 } }, c.cause)
                         ),
-                        el('div', { style: { color: '#fdba74', fontSize: 11, fontWeight: 800, fontFamily: 'monospace' } },
+                        el('div', { style: { color: '#fdba74', fontSize: 12, fontWeight: 800, fontFamily: 'monospace' } },
                           c.millions + 'M')
                       );
                     })
@@ -4104,13 +4844,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 },
                   el('div', { style: { textAlign: 'center' } },
                     el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, '~' + cumulative2008to23 + 'M'),
-                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Cumulative since 2008'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'IDMC tracked total')
+                    el('div', { style: { color: '#fecaca', fontSize: 12, fontWeight: 700, marginTop: 2 } }, 'From 2008 to 2018'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 2, lineHeight: 1.4 } }, 'IDMC global review (2019)')
                   ),
                   el('div', { style: { textAlign: 'center' } },
                     el('div', { style: { color: '#fca5a5', fontSize: 22, fontWeight: 900, fontFamily: 'monospace' } }, 'up to ' + projected2050 + 'M'),
-                    el('div', { style: { color: '#fecaca', fontSize: 10, fontWeight: 700, marginTop: 2 } }, 'Projected by 2050'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell — internal only, 6 regions')
+                    el('div', { style: { color: '#fecaca', fontSize: 12, fontWeight: 700, marginTop: 2 } }, 'Possible by 2050'),
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, marginTop: 2, lineHeight: 1.4 } }, 'World Bank Groundswell, worst-case scenario: moves within countries, 6 regions')
                   )
                 ),
                 // Legal-gap note
@@ -4118,7 +4858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 10, padding: 10, borderRadius: 8,
                     background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.18)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6
                   }
                 },
                   '⚖️ ',
@@ -4126,10 +4866,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   ' people forced across an international border by climate are not yet recognized as refugees under the 1951 UN Refugee Convention, which only covers persecution. In 2020 the UN Human Rights Committee, in Teitiota v. New Zealand, upheld his removal but said countries may not send people back to places where climate change puts their lives at real risk. A landmark non-binding step. The legal category of "climate refugee" is still being built.'),
                 el('div', {
                   style: {
-                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, lineHeight: 1.5, fontStyle: 'italic'
+                    marginTop: 6, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic'
                   }
                 },
-                  '📚 IDMC Global Report on Internal Displacement 2024 (annual data); World Bank Groundswell Part II report (2021, 216M internal climate displaced by 2050 across 6 world regions on current trajectory). Figures exclude international migration, slow-onset displacement, and most drought-related movement, so they are conservative lower bounds.')
+                  '📚 IDMC Global Reports on Internal Displacement 2019–2024 (yearly counts; 2022 countries from the 2023 report) and IDMC’s global review of 2008–2018. World Bank Groundswell Part 2 (2021): up to 216 million people could move within their own countries by 2050 in its worst-case scenario, across 6 world regions. IDMC notes that many displacements still go unrecorded, and these counts leave out people who cross borders.')
               );
             })(),
 
@@ -4139,7 +4879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('span', { style: { fontSize: 20 } }, '✊'),
                 el('div', null,
                   el('div', { style: { color: '#d8b4fe', fontSize: 14, fontWeight: 900 } }, 'Youth Climate Leaders'),
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, 'Real young people leading on climate — you are next.')
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, 'Real young people leading on climate — you are next.')
                 )
               ),
               el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,260px),1fr))', gap: 10, marginTop: 12 } },
@@ -4149,16 +4889,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('span', { style: { fontSize: 22 } }, leader.emoji),
                       el('div', null,
                         el('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, fontWeight: 900 } }, leader.name),
-                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, leader.country + ' · ' + leader.age)
+                        el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, leader.country + ' · ' + leader.age)
                       )
                     ),
-                    el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5, marginBottom: 6 } }, leader.what),
-                    el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', color: '#d8b4fe', fontSize: 10, fontStyle: 'italic', lineHeight: 1.4 } }, leader.quote)
+                    el('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, marginBottom: 6 } }, leader.what),
+                    leader.quote && el('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', color: '#d8b4fe', fontSize: 12, fontStyle: 'italic', lineHeight: 1.4 } }, leader.quote)
                   );
                 })
               ),
-              el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
-                '💡 Every movement needs voices across generations. These are just six — Fridays for Future alone has mobilized students in 170+ countries. You don\'t need to be famous to matter. Local action is where almost every one of these leaders started.')
+              el('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.6 } },
+                '💡 Every movement needs voices across generations. These are just six. Fridays for Future strikes alone reached about 150 countries in 2019. You don\'t need to be famous to matter. Many of these leaders started with something local.')
             ),
 
             // ═══ "YOUR MOVE" ACTION LADDER ═══
@@ -4178,7 +4918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'Anyone, today',
                   difficultyColor: '#86efac',
                   connects: 'Per-capita inversion chart',
-                  why: 'An average American emits ~16 tons CO₂ per year. Average Bangladeshi: ~0.5 tons. Knowing where you actually sit tells you where the leverage is in YOUR life — heating, car, flights, beef are the big four for most US households.',
+                  why: 'The average person in the US emits about 14 tons of CO₂ a year; the average person in Bangladesh, less than 1 ton (Our World in Data). Knowing where you actually sit tells you where the biggest changes are in YOUR life.',
                   how: 'Open the Carbon Calculator tab in this tool and walk through the inputs honestly. Print your number. Set one specific reduction goal for your household.'
                 },
                 {
@@ -4187,8 +4927,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'Anyone, ongoing',
                   difficultyColor: '#86efac',
                   connects: 'Climate Displacement panel',
-                  why: 'IDMC has recorded about 376 million displacements from weather disasters since 2008. Maine resettles refugees every year — many through Portland — and welcoming them is climate action you can do without leaving your zip code.',
-                  how: 'Volunteer with Catholic Charities Maine, Greater Portland Family Promise, or the Immigrant Resource Center of Maine. Tutoring, food drives, and English-conversation partnerships are the most-asked-for roles.'
+                  why: 'IDMC counted about 265 million disaster displacements from 2008 to 2018. Maine welcomes refugees and immigrants every year, and helping new neighbors settle in is something you can do without leaving your zip code.',
+                  how: 'Ask a local group that helps new arrivals, such as Catholic Charities Maine or the Immigrant Resource Center of Maine, what help they need. Tutoring, food drives, and English-conversation partners are common ways to help.'
                 },
                 {
                   rung: 3,
@@ -4196,7 +4936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'Anyone, ~5 minutes',
                   difficultyColor: '#fbbf24',
                   connects: 'Loss & Damage Fund tracker',
-                  why: 'The US pledged $17.5M to the fund despite causing ~20% of historical CO₂. A 100× increase would still be a fraction of what proportional responsibility implies. Constituent calls move this kind of number more than people think.',
+                  why: 'The US pledged $17.5M to the fund at COP28, while it has put about 20% of all CO₂ into the air. Even 100 times that pledge ($1.75 billion) would be about 2% of a 20% share of $400 billion a year.',
                   how: 'Maine has two Senators (Collins, King) and two Representatives (Pingree, Golden), each with constituent comment lines. Call one. Say: "I want to see the US contribution to the COP27 Loss and Damage Fund increased to match our historical responsibility."'
                 },
                 {
@@ -4206,7 +4946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficultyColor: '#fbbf24',
                   connects: 'Front-line voices in the region cards',
                   why: 'Quotes are starting points. Books are arguments. The voices in this tab are scientists, lawyers, organizers, and elected officials — what they wrote tells you why the quote is true.',
-                  how: 'Portland Public Library carries Sherri Mitchell\'s Sacred Instructions, Sheila Watt-Cloutier\'s The Right to Be Cold, and Catherine Coleman Flowers\' Waste in their environmental and Indigenous-studies sections. Ask the reference desk for the climate-justice reading list.'
+                  how: 'Ask your library for Sherri Mitchell\'s Sacred Instructions, Sheila Watt-Cloutier\'s The Right to Be Cold, or Catherine Coleman Flowers\' Waste. A librarian can help you find more climate-justice books.'
                 },
                 {
                   rung: 5,
@@ -4214,7 +4954,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   difficulty: 'High schooler+, periodic',
                   difficultyColor: '#fda4af',
                   connects: 'Youth Climate Leaders + Maine Policy Pathways tab',
-                  why: 'The Maine Climate Council, the Portland City Council climate workgroup, and the Maine Public Utilities Commission all take public comment. This is where the actual policy gets shaped — and youth voices are documented to shift outcomes when they show up.',
+                  why: 'Groups like the Maine Climate Council and the Maine Public Utilities Commission take public comment. This is where the actual policy gets shaped, and young people can speak too.',
                   how: 'Subscribe to Maine Climate Action Now or Maine Youth for Climate Justice. Both list upcoming public meetings, hearings, and youth-led actions across the state.'
                 }
               ];
@@ -4229,7 +4969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '🪜'),
                   el('div', null,
                     el('div', { style: { color: '#86efac', fontSize: 14, fontWeight: 900 } }, 'Your move — climate justice action ladder'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
                       'Awareness without action is the privilege of the unaffected. Each rung connects to a panel above so this is one arc, not five. Some rungs you can do today; some you grow into. Maine-specific channels listed where they exist.')
                   )
                 ),
@@ -4258,17 +4998,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           style: {
                             padding: '2px 8px', borderRadius: 12,
                             background: a.difficultyColor + '15',
-                            color: ceLift(a.difficultyColor), fontSize: 10, fontWeight: 700,
+                            color: ceLift(a.difficultyColor), fontSize: 12, fontWeight: 700,
                             whiteSpace: 'nowrap'
                           }
                         }, a.difficulty)
                       ),
-                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
+                      el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2, marginBottom: 6 } },
                         '↑ connects to: ', a.connects),
-                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55, marginBottom: 6 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 6 } },
                         el('strong', { style: { color: '#7dd3fc' } }, 'Why: '),
                         a.why),
-                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } },
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55 } },
                         el('strong', { style: { color: '#86efac' } }, 'How: '),
                         a.how)
                     );
@@ -4278,7 +5018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 12, padding: 10, borderRadius: 8,
                     background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, fontStyle: 'italic', textAlign: 'center'
                   }
                 },
                   'You don\'t need to climb every rung. You need to climb the next one.')
@@ -4299,13 +5039,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 { year: 1990, label: t('stem.climateExplorer.ipcc_first_assessment_report', 'IPCC First Assessment Report'), what: 'The IPCC warns that human emissions are building up greenhouse gases and will warm the planet, but says clear proof in temperature records is a decade or more away.', tag: 'science', color: '#60a5fa' },
                 { year: 1991, label: t('stem.climateExplorer.aosis_proposes_loss_damage_at_cop1_ber', 'Vanuatu, for AOSIS, proposes a Loss & Damage fund'), what: 'During the talks that created the UNFCCC, Vanuatu, speaking for the Alliance of Small Island States, proposes an international insurance pool for sea level rise damage. Wealthy nations decline.', tag: 'demand', color: ceInk.amber },
                 { year: 1992, label: t('stem.climateExplorer.un_framework_convention_on_climate_cha', 'UN Framework Convention on Climate Change'), what: 'The UNFCCC is opened for signature at the Rio Earth Summit. The treaty creates the COP process. 198 countries are now parties.', tag: 'policy', color: '#22c55e' },
-                { year: 2008, label: t('stem.climateExplorer.idmc_begins_tracking_weather_displacem', 'IDMC begins tracking weather displacement'), what: 'The Internal Displacement Monitoring Centre starts the global database that now documents 376M+ cumulative weather displacements.', tag: 'data', color: '#60a5fa' },
+                { year: 2008, label: t('stem.climateExplorer.idmc_begins_tracking_disaster_displacement_v2', 'IDMC begins counting disaster displacement'), what: 'The Internal Displacement Monitoring Centre starts counting disaster displacements worldwide every year. From 2008 to 2018 it counted about 265 million.', tag: 'data', color: '#60a5fa' },
                 { year: 2009, label: t('stem.climateExplorer.cop15_copenhagen_100b_yr_finance_pledg', 'COP15 Copenhagen — $100B/yr finance pledge'), what: 'Wealthy nations pledge $100B/yr in climate finance to developing countries by 2020. The pledge is met for the first time, late, in 2022.', tag: 'pledge', color: ceInk.amber },
-                { year: 2015, label: t('stem.climateExplorer.paris_agreement_article_8_mentions_l_d', 'Paris Agreement — Article 8 mentions L&D'), what: 'The Paris text formally names "loss and damage associated with climate change impacts" — but explicitly excludes any basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
-                { year: 2020, label: t('stem.climateExplorer.un_hrc_teitiota_v_new_zealand_ruling', 'UN HRC Teitiota v. New Zealand ruling'), what: 'The UN Human Rights Committee finds New Zealand could return Teitiota, but says countries may not send people back to places where climate change puts their lives at real risk. Non-binding but landmark — the first time a UN body recognized climate displacement in a human-rights frame.', tag: 'law', color: '#a855f7' },
-                { year: 2021, label: t('stem.climateExplorer.world_bank_groundswell_part_ii_report', 'World Bank Groundswell Part II report'), what: 'Projects up to 216M people internally climate-displaced by 2050 across 6 world regions on current trajectory.', tag: 'data', color: '#60a5fa' },
+                { year: 2015, label: t('stem.climateExplorer.paris_agreement_article_8_mentions_l_d', 'Paris Agreement — Article 8 mentions L&D'), what: 'Article 8 of the Paris Agreement names "loss and damage associated with the adverse effects of climate change." The decision adopting the Agreement says Article 8 gives no basis for liability or compensation.', tag: 'policy', color: '#22c55e' },
+                { year: 2020, label: t('stem.climateExplorer.un_hrc_teitiota_v_new_zealand_ruling', 'UN HRC Teitiota v. New Zealand ruling'), what: 'The UN Human Rights Committee finds New Zealand could return Teitiota, but says countries may not send people back to places where climate change puts their lives at real risk. The decision is not binding, but it is widely called a landmark for people displaced by climate change.', tag: 'law', color: '#a855f7' },
+                { year: 2021, label: t('stem.climateExplorer.world_bank_groundswell_part_ii_report', 'World Bank Groundswell Part II report'), what: 'In its worst-case scenario, up to 216M people could move within their own countries by 2050 because of climate change, across 6 world regions.', tag: 'data', color: '#60a5fa' },
                 { year: 2022, label: t('stem.climateExplorer.cop27_sharm_el_sheikh_l_d_fund_created', 'COP27 Sharm el-Sheikh — L&D Fund created'), what: 'After about 30 years of demands, the Loss & Damage Fund is formally established. No money attached yet. Saleemul Huq writes that "the world has stepped into the era of Loss and Damage."', tag: 'win', color: '#86efac' },
-                { year: 2023, label: t('stem.climateExplorer.cop28_dubai_l_d_fund_capitalized', 'COP28 Dubai — L&D Fund capitalized'), what: 'Initial pledges total ~$700M, hosted by World Bank for 4 years. Roughly 0.16% of one year of estimated need. Saleemul Huq dies one month before the COP opens; his institute petitions to name it the Loss & Damage Huq Fund.', tag: 'win', color: '#86efac' },
+                { year: 2023, label: t('stem.climateExplorer.cop28_dubai_l_d_fund_capitalized', 'COP28 Dubai — L&D Fund capitalized'), what: 'Initial pledges total about $700M, with the World Bank as interim host. That is less than 0.2% of one year of the lowest estimate of need. Saleemul Huq died one month before the COP opened; many called for the fund to carry his name.', tag: 'win', color: '#86efac' },
                 { year: 2025, label: t('stem.climateExplorer.first_l_d_fund_disbursements', 'L&D Fund opens its first call'), what: 'The fund opened its first call for projects in December 2025, with $250 million for a pilot phase. The slow work of building disbursement criteria, eligibility, and accountability begins.', tag: 'win', color: '#86efac' },
                 { year: 2030, label: t('stem.climateExplorer.ipcc_1_5_c_deadline_target_year', 'IPCC 1.5°C checkpoint (2030)'), what: 'To keep 1.5°C in reach, the IPCC says emissions must fall about 43% below 2019 levels by 2030. The Paris Agreement asks for emissions to peak as soon as possible. Current trajectory points well past this.', tag: 'target', color: '#fda4af', future: true }
               ];
@@ -4320,8 +5060,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('span', { style: { fontSize: 22 } }, '⏳'),
                   el('div', null,
                     el('div', { style: { color: '#c4b5fd', fontSize: 14, fontWeight: 900 } }, 'Climate justice timeline — how long it actually takes'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
-                      'From the first IPCC report (1990) to the fund\'s first call for projects (2025) is 35 years. The big wins on this list are inside your lifetime — most are within the last 10 years. Slow does not mean impossible.')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' } },
+                      'From the first IPCC report (1990) to the fund\'s first call for funding requests (2025) is 35 years. The big wins on this list are inside your lifetime, and several are within the last 10 years. Slow does not mean impossible.')
                   )
                 ),
                 el('div', { style: { marginTop: 12, paddingLeft: 12, borderLeft: '2px solid rgba(139,92,246,0.30)' } },
@@ -4349,11 +5089,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           style: {
                             padding: '1px 7px', borderRadius: 10,
                             background: t.color + '20', color: ceLift(t.color),
-                            fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
+                            fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em'
                           }
                         }, t.tag)
                       ),
-                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } }, t.what)
+                      el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55 } }, t.what)
                     );
                   })
                 ),
@@ -4361,10 +5101,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   style: {
                     marginTop: 6, padding: 10, borderRadius: 8,
                     background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.18)',
-                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
+                    color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, textAlign: 'center', fontStyle: 'italic'
                   }
                 },
-                  'The first proposal to the first payment was 29 years. The next 29 are yours.')
+                  'From the first proposal (1991) to the first call for funding requests (2025) took 34 years. The years ahead are yours.')
               );
             })(),
 
@@ -4378,8 +5118,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: ceInk.indigo, fontSize: 13, fontWeight: 800, marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDDE3\uFE0F Discussion Questions'),
               // Foundational bank
               el('div', { style: { marginBottom: 12 } },
-                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Warm-up'),
-                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.7 } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Warm-up'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.7 } },
                   el('li', null, 'Is it fair that the communities least responsible for climate change are most affected?'),
                   el('li', null, 'What responsibilities do high-emitting countries have?'),
                   el('li', null, 'How can we support communities building resilience?'),
@@ -4388,23 +5128,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               ),
               // Deep-dive bank
               el('div', { style: { paddingTop: 10, borderTop: '1px dashed rgba(99,102,241,0.3)' } },
-                el('div', { style: { color: '#c7d2fe', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Deep-dive — connects to specific panels above'),
-                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.8 } },
+                el('div', { style: { color: '#c7d2fe', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, 'Deep-dive — connects to specific panels above'),
+                el('ol', { style: { margin: 0, paddingLeft: 22, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, lineHeight: 1.8 } },
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Inversion chart: '),
                     'Looking at "Caused vs Exposed", what is the single thing that surprises you most? What story does the chart tell that the historical-totals chart does NOT?'
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Loss & Damage Fund: '),
-                    'Total pledges are about 0.16% of one year of estimated need. Is that "the system is working slowly" or "the system is failing"? Take a side and defend it with one piece of evidence from this tab.'
+                    'Total pledges are about 0.2% of one year of the lowest estimate of need. Is that "the system is working slowly" or "the system is failing"? Take a side and defend it with one piece of evidence from this tab.'
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Climate displacement: '),
-                    'IDMC has recorded ~376 million weather-related displacements inside countries since 2008. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
+                    'IDMC counted about 265 million disaster displacements inside countries from 2008 to 2018. What does that fact mean for how the US, or Maine specifically, should respond? Is welcoming refugees a climate policy?'
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Front-line voices: '),
-                    'Sherri Mitchell teaches the principle of considering "the next seven generations." If you make a climate decision now that helps people 200 years from now but costs you something today, is that fair to ask of you? Of your parents? Of your community?'
+                    'Sherri Mitchell writes about Indigenous teachings that ask people to care for the generations to come. If you make a climate decision now that helps people 200 years from now but costs you something today, is that fair to ask of you? Of your parents? Of your community?'
                   ),
                   el('li', null,
                     el('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Action ladder: '),
@@ -4412,7 +5152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   )
                 )
               ),
-              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6, fontStyle: 'italic' } },
+              el('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.20)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } },
                 '\uD83D\uDC69\u200D\uD83C\uDFEB Teacher note: the deep-dive bank is designed for classroom Socratic seminar — every question has multiple defensible answers. The point is the reasoning students show, not the conclusion they reach.')
             )
           ); })(true, ceInkDark),
@@ -4427,14 +5167,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Eight rounds compare entries in this activity's fixed 2020 scenario
             // catalog. Feedback derives its comparisons from that same catalog.
             (function() {
+              // Every `correct` is the largest Scenario 2 value in its round
+              // (checked by script, 2026-11-23); answer slots vary 1,1,0,3,0,1,2,3.
               var DS_ROUNDS = [
-                { id:1,ids:['refrigerants','solar_roof','evs_personal','heat_pumps'],correct:'refrigerants' },
+                { id:1,ids:['refrigerants','solar_roof','evs_personal','heat_pumps'],correct:'solar_roof' },
                 { id:2,ids:['reduced_waste','wind_onshore','solar_farms','buildings_retrofit'],correct:'wind_onshore' },
-                { id:3,ids:['plant_rich','tropical_forest','cycling_walking','efficient_transit'],correct:'tropical_forest' },
-                { id:4,ids:['girls_education','wind_onshore','solar_farms','buildings_retrofit'],correct:'wind_onshore' },
-                { id:5,ids:['silvopasture','evs_personal','kelp_forests','cycling_walking'],correct:'silvopasture' },
+                { id:3,ids:['plant_rich','tropical_forest','cycling_walking','efficient_transit'],correct:'plant_rich' },
+                { id:4,ids:['buildings_retrofit','clean_cooking','peatlands','girls_education'],correct:'girls_education' },
+                { id:5,ids:['silvopasture','evs_personal','peatlands','cycling_walking'],correct:'silvopasture' },
                 { id:6,ids:['refrigerants','reduced_waste','plant_rich','tropical_forest'],correct:'reduced_waste' },
-                { id:7,ids:['solar_farms','wind_onshore','buildings_retrofit','peatlands'],correct:'wind_onshore' },
+                { id:7,ids:['temperate_forest','regen_ag','solar_farms','efficient_transit'],correct:'solar_farms' },
                 { id:8,ids:['heat_pumps','evs_personal','cycling_walking','refrigerants'],correct:'refrigerants' }
               ];
               function dsCount(value,max){return Number.isSafeInteger(value)&&value>=0?Math.min(value,max):0;}
@@ -4467,6 +5209,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var newScore = dsScore + (correct ? 1 : 0);
                 var newStreak = correct ? (dsStreak + 1) : 0;
                 var newBest = Math.max(dsBest, newStreak);
+                // XP for a right answer, once per round; the badge for a finished game with 6 of 8 or better.
+                if (correct) awardXPOnce('ds-round-' + r.id, 5);
+                if (dsShown.length >= DS_ROUNDS.length && newScore >= Math.ceil(DS_ROUNDS.length * 0.75) && !badges.solutionScholar) earnBadge('solutionScholar');
                 setLabToolData(function(previous){
                   var current=(previous&&previous.climateExplorer)||{};
                   if(current.dsIdx!==dsIdx || (current.dsAnswered===true&&r.ids.indexOf(current.dsPick)>=0)) return previous;
@@ -4597,7 +5342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style:{display:'flex',flexWrap:'wrap',gap:12,justifyContent:'space-between',alignItems:'center',marginBottom:10} },
                   el('div', null,
                     el('h4', { id:'ce-stack-title',style:{color:quizColors.correct,fontSize:16,fontWeight:900,margin:'0 0 6px'} }, '🎯 Solution Stack Builder'),
-                    el('p', { id:'ce-stack-help',style:{color:quizColors.muted,fontSize:12,margin:0,lineHeight:1.5} }, '🏅 Goal: reach the classroom 200-point threshold. Select solutions to compare displayed 2020 Project Drawdown scenario estimates; the simple sum is not a modeled portfolio.')
+                    el('p', { id:'ce-stack-help',style:{color:quizColors.muted,fontSize:12,margin:0,lineHeight:1.5} }, '🏅 Goal: reach the classroom 200-point threshold. Select solutions to compare Project Drawdown 2020 Scenario 2 estimates; the simple sum is not a modeled portfolio.')
                   ),
                   el('p',{id:'ce-stack-summary',role:'status','aria-live':'polite','aria-atomic':true,style:{color:quizColors.text,fontSize:15,fontWeight:800,margin:0,lineHeight:1.5}},(pickedIds.length===1?t('stem.climateExplorer.solution_stack_summary_one','1 solution selected. Sum of displayed estimates: {total} Gt.'):t('stem.climateExplorer.solution_stack_summary','{count} solutions selected. Sum of displayed estimates: {total} Gt.')).replace('{count}',pickedIds.length).replace('{total}',Math.round(totalGt)))
                 ),
@@ -4636,7 +5381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 // Educational footnote
                 el('div', { style:{marginTop:10,padding:8,borderRadius:8,background:quizColors.raised,color:quizColors.muted,fontSize:12,lineHeight:1.5} },
-                  '📚 These values reproduce selected Project Drawdown 2020 scenario estimates for 2020-2050. Gt = gigatons (1 billion metric tons). Do not compare their simple sum with a remaining carbon budget or infer a temperature outcome: solutions interact, share baselines, and face resource constraints.')
+                  '📚 These values are ' + DRAWDOWN_SCENARIO_LABEL + ' estimates for 2020-2050 (The Drawdown Review 2020). Scenario 2 is roughly in line with 1.5°C of warming. Gt = gigatons (1 billion metric tons). Do not compare their simple sum with a remaining carbon budget or infer a temperature outcome: solutions interact, share baselines, and face resource constraints.')
               );
             })(),
 
@@ -4664,9 +5409,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       upd('ssExpanded',isExp?null:s.id);playSound('action');
                       if(!isExp){
                         var nsv={};SOLUTIONS.forEach(function(item){if(solutionsViewed[item.id]===true)nsv[item.id]=true;});
-                        if(!nsv[s.id])awardXP(5);
+                        // Opening a card is not evidence: no XP, no badge (2026-11-23). Solution Scholar comes from Drawdown Sleuth answers.
                         nsv[s.id]=true;upd('solutionsViewed',nsv);
-                        if(Object.keys(nsv).length>=8&&!badges.solutionScholar)earnBadge('solutionScholar');
                       }
                     },
                     style:{display:'flex',alignItems:'center',gap:10,width:'100%',minHeight:44,padding:8,textAlign:'left',fontSize:15,fontWeight:800,color:quizColors.text,background:quizColors.raised,border:'1px solid '+quizColors.border,borderRadius:8,cursor:'pointer'}
@@ -4692,7 +5436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // What Can I Do section
             el('div', { style: { marginTop: 20 } },
-              el('button', { id:'ce-actions-toggle',type:'button','aria-expanded':!!ssShowActions,'aria-controls':'ce-actions-panel',onClick:function(){upd('ssShowActions',!ssShowActions);playSound('action');if(!ssShowActions)earnBadge('actionPlanner');},
+              el('button', { id:'ce-actions-toggle',type:'button','aria-expanded':!!ssShowActions,'aria-controls':'ce-actions-panel',onClick:function(){upd('ssShowActions',!ssShowActions);playSound('action');},
                 style:{width:'100%',minHeight:44,padding:'14px 20px',borderRadius:12,border:'2px solid '+quizColors.border,background:quizColors.raised,color:quizColors.correct,fontSize:14,fontWeight:800,cursor:'pointer'} },
                 (ssShowActions ? '\u25BC' : '\u25B6') + ' What Can I Do?'),
 
@@ -4949,7 +5693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display:'flex',flexWrap:'wrap',alignItems:'flex-start',gap:12,marginBottom:10 } },
                   el('span', { style: { fontSize: 36 } }, def.icon),
                   el('div', { style: { flex:'1 1 180px',minWidth:0 } },
-                    el('div', { style: { fontSize: 11, color:pathInk(def.color),fontWeight:700,letterSpacing:0.5,textTransform:'uppercase' } }, 'Sector deep-dive'),
+                    el('div', { style: { fontSize: 12, color:pathInk(def.color),fontWeight:700,letterSpacing:0.5,textTransform:'uppercase' } }, 'Sector deep-dive'),
                     el('h3', { id:'climate-explorer-deep-dive-title-'+def.id,style:{margin:'2px 0 0',color:quizColors.text,fontSize:20} }, def.name),
                     el('div', { id:'ce-pathway-deep-dive-description',style:{color:pathInk(def.color),fontSize:13,marginTop:4,fontStyle:'italic'} }, def.role)
                   ),
@@ -4958,20 +5702,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,280px),1fr))', gap: 10 } },
                   el('div', { style:{background:quizColors.raised,borderRadius:10,padding:12} },
-                    el('div', { style: { fontSize:11,fontWeight:700,color:quizColors.correct,letterSpacing:0.5,textTransform:'uppercase',marginBottom:6 } }, '\ud83d\udd2c Policy mechanics'),
+                    el('div', { style: { fontSize: 12,fontWeight:700,color:quizColors.correct,letterSpacing:0.5,textTransform:'uppercase',marginBottom:6 } }, '\ud83d\udd2c Policy mechanics'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                   ),
                   el('div', { style:{background:quizColors.raised,borderRadius:10,padding:12} },
-                    el('div', { style: { fontSize: 11, fontWeight: 700, color: ceInk.amber, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
+                    el('div', { style: { fontSize: 12, fontWeight: 700, color: ceInk.amber, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, '\ud83d\udcf0 Case work'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                   ),
                   el('div', { style:{background:quizColors.raised,borderRadius:10,padding:12} },
-                    el('div', { style:{fontSize:11,fontWeight:700,color:pathInk('#38bdf8'),letterSpacing:0.5,textTransform:'uppercase',marginBottom:6} }, '\ud83c\udf0d Maine context'),
+                    el('div', { style:{fontSize: 12,fontWeight:700,color:pathInk('#38bdf8'),letterSpacing:0.5,textTransform:'uppercase',marginBottom:6} }, '\ud83c\udf0d Maine context'),
                     el('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                   )
                 ),
                 applicable.length > 0 ? el('div', { style:{marginTop:12,padding:12,background:quizColors.raised,border:'1px solid '+quizColors.border,borderLeft:'3px solid #15803d',borderRadius:10} },
-                  el('div', { style:{fontSize:11,fontWeight:700,color:quizColors.correct,letterSpacing:0.5,textTransform:'uppercase',marginBottom:6} }, '\ud83d\udee0 What you can do for this sector'),
+                  el('div', { style:{fontSize: 12,fontWeight:700,color:quizColors.correct,letterSpacing:0.5,textTransform:'uppercase',marginBottom:6} }, '\ud83d\udee0 What you can do for this sector'),
                   applicable.map(function(t, i) {
                     return el('div', { key:i,style:{margin:'4px 0',fontSize:12.5,color:quizColors.text,lineHeight:1.5} },
                       el('strong', { style:{color:quizColors.correct} }, t.icon + ' ' + t.name), ' (' + t.hours + 'h): ', t.desc
@@ -5044,8 +5788,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 '- NEVER invoke sacred, ceremonial, or spiritual claims.',
                 '- NEVER use "noble savage" framing or romanticized language about Indigenous peoples.',
                 '- NEVER invent quotes attributed to anyone.',
-                '- DO frame as "documented climate-policy research" or "Maine Climate Action Plan analysis" or "IRA / Justice40 program design".',
-                '- DO acknowledge Wabanaki-led climate work (Wabanaki Public Health and Wellness weatherization programs, Wabanaki Cultural Heritage Forest, Wabanaki-led transmission objections) without speaking for the nations.',
+                '- DO frame as "documented climate-policy research" or "Maine Climate Action Plan analysis" or "federal program design (some federal programs, such as Justice40, ended in 2025)".',
+                '- DO acknowledge Wabanaki-led climate work (for example the Passamaquoddy climate action plan at Sipayik and Wabanaki energy-workforce training) without speaking for the nations.',
                 '- DO stay grounded in observable sector state and concrete techniques.',
                 '- Name 1 or 2 highest-priority moves and explain why, grounded in inter-sector feedback rules.',
                 '- Be direct, observational, useful. No flowery language.',
@@ -5156,8 +5900,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         el('span', { style: { fontSize: 22 } }, s.icon),
                         el('strong', { style: { color: sInk } }, s.name)
                       ),
-                      el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
-                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.climateExplorer.' + (s.id) + '_desc', s.desc)),
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
+                      el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.climateExplorer.' + (s.id) + '_desc_v2', s.desc)),
                       s.deepDive ? el('button', { id:pathDeepDiveTriggerId(s.id),type:'button',onClick:function(event){openPathDeepDive(s.id,event);},'aria-expanded':path.deepDiveSector===s.id,'aria-controls':'ce-pathway-deep-dive','aria-label':t('stem.climateExplorer.sector_deep_dive_for','Sector deep-dive for {sector}').replace('{sector}',s.name),
                         style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: sInk, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                       }, '\ud83d\udcda Sector deep-dive \u2192') : null
@@ -5173,7 +5917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       return el('button', { key:dkey,type:'button',onClick:function(){setPath({difficulty:dkey});},'aria-pressed':picked,
                         style:{background:quizColors.raised,border:(picked?'2px':'1px')+' solid '+(picked?quizColors.correct:quizColors.border),color:quizColors.text,borderRadius:8,padding:'8px 12px',cursor:'pointer',textAlign:'left'} },
                         el('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
-                        el('div', { style:{fontSize:11,color:quizColors.muted,marginTop:2,lineHeight:1.4} }, __alloT('stem.climateExplorer.' + (dkey) + '_desc', df.desc))
+                        el('div', { style:{fontSize: 12,color:quizColors.muted,marginTop:2,lineHeight:1.4} }, __alloT('stem.climateExplorer.' + (dkey) + '_desc', df.desc))
                       );
                     })
                   )
@@ -5215,7 +5959,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                         'Support: ' + Math.round(s.support) + '/' + def.targets.support
                       ),
                       art.text ? el('div', { style: { marginTop: 6, padding: 6, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 6, fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)' } },
-                        el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text
+                        el('span', { style: { fontSize: 14, marginRight: 4 } }, art.icon), art.text,
+                        // The multipliers in sectorArtifact are made up to picture the index; say so.
+                        ' (a picture of the index, not a real count or forecast)'
                       ) : null
                     );
                   })
@@ -5276,7 +6022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       var dlt = Math.round(after - before);
                       var color = quizColors.muted; var arrow = '\u00b7';
                       if (Math.abs(dlt) >= 1) { color = dlt > 0 ? quizColors.correct : quizColors.wrong; arrow = dlt > 0 ? '\u25b2' : '\u25bc'; }
-                      return el('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
+                      return el('span', { style: { color: color, fontSize: 12, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
                     return el('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
                       el('strong', { style:{color:pathInk(def.color),marginRight:8} }, def.icon + ' ' + def.name),
@@ -5311,10 +6057,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style:{padding:'10px 14px',borderRadius:12,marginBottom:12,background:quizColors.panel,border:'1px solid '+quizColors.border,borderLeft:'4px solid '+T_GREEN,display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'} },
                 el('div', null,
                   el('h3', { id:'ce-pathway-year-title',style:{margin:0,fontSize:18,fontWeight:800,color:quizColors.correct} }, 'Period '+pathwayYearLabel(path.year)),
-                  el('div', { id:'ce-pathway-year-difficulty',style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (PATHWAY_DIFFICULTIES[path.difficulty] || PATHWAY_DIFFICULTIES.realist).label)
+                  el('div', { id:'ce-pathway-year-difficulty',style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, (PATHWAY_DIFFICULTIES[path.difficulty] || PATHWAY_DIFFICULTIES.realist).label)
                 ),
                 el('div', null,
-                  el('div', { id:'ce-pathway-hours-label',style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours'),
+                  el('div', { id:'ce-pathway-hours-label',style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Hours'),
                   el('div', { id:'ce-pathway-hours',style: { fontSize: 20, fontWeight: 800, color: ceInk.amber } }, path.hoursLeft + ' / ' + path.hoursPerYear)
                 ),
                 el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
@@ -5336,7 +6082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('span', { style: { fontSize: 22 } }, def.icon),
                       el('div', { style: { flex: 1 } },
                         el('div', { style:{fontWeight:700,color:pathInk(def.color),fontSize:14} }, def.name),
-                        el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
+                        el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                       ),
                       def.deepDive ? el('button', { id:pathDeepDiveTriggerId(s.id),type:'button',onClick:function(event){openPathDeepDive(s.id,event);},'aria-expanded':path.deepDiveSector===s.id,'aria-controls':'ce-pathway-deep-dive','aria-label':t('stem.climateExplorer.sector_deep_dive_for','Sector deep-dive for {sector}').replace('{sector}',def.name),
                         style:{minHeight:44,minWidth:44,background:quizColors.raised,border:'1px solid '+quizColors.border,color:pathInk(def.color),cursor:'pointer',borderRadius:6,padding:'4px 8px',fontSize:14,fontWeight:700} }, '\ud83d\udcda') : null
@@ -5347,9 +6093,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                        ['Sup', Math.round(s.support), s.support < 40 ? '#ef4444' : s.support < 60 ? '#f59e0b' : '#22c55e', def.targets.support]
                       ].map(function(st, si) {
                         return el('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
-                          el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
+                          el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                           el('div', { style:{fontSize:15,fontWeight:800,color:pathInk(st[2])} }, st[1]),
-                          el('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'goal ' + st[3])
+                          el('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'goal ' + st[3])
                         );
                       })
                     ),
@@ -5357,7 +6103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       applicable.filter(function(t) { return t.appliesTo !== 'any'; }).map(function(t) {
                         var disabled = path.hoursLeft < t.hours;
                         return el('button', { key: t.id, onClick: function() { applyPathTech(t.id, s.id); }, disabled: disabled, title: t.desc,
-                          style: { padding: '4px 8px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
+                          style: { padding: '4px 8px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', background: disabled ? '#1e293b' : '#15803d', color: disabled ? '#475569' : '#fff', opacity: disabled ? 0.5 : 1 } },
                           t.icon + ' ' + t.name + ' (' + t.hours + 'h)');
                       })
                     )
@@ -5402,10 +6148,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             var forcingIndex = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
             var state=forcingState(forcingIndex);
             var forcingStates = {
-              runaway: { label: t('stem.climateExplorer.strong_warming', '🔥 Strong warming'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.climateExplorer.positive_feedback_dominates_earth_warm', 'High positive value in this classroom index; it is not a temperature or equilibrium calculation.') },
-              cooling: { label: t('stem.climateExplorer.rapid_cooling', '🧊 Rapid cooling'),   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.climateExplorer.high_albedo_negative_feedback_ice_age_', 'Negative value in this classroom index; it is not an ice-age projection.') },
-              stable:  { label: t('stem.climateExplorer.stable_climate', '🟢 Stable climate'),  color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.climateExplorer.net_forcing_0_w_m_earth_equilibrium', 'Index near zero relative to the activity baseline; this does not establish climate equilibrium.') },
-              paradox: { label: t('stem.climateExplorer.albedo_paradox', '⚖️ Albedo paradox'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.climateExplorer.forcings_partially_offset_climate_slow', 'Inputs partly offset in this classroom index; no rate of climate change is calculated.') }
+              runaway: { label: t('stem.climateExplorer.strong_warming', '🔥 Strong warming'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.climateExplorer.positive_feedback_dominates_earth_warm_v2', 'High positive value in this classroom index; it is not a temperature or equilibrium calculation.') },
+              cooling: { label: t('stem.climateExplorer.rapid_cooling', '🧊 Rapid cooling'),   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.climateExplorer.high_albedo_negative_feedback_ice_age__v2', 'Negative value in this classroom index; it is not an ice-age projection.') },
+              stable:  { label: t('stem.climateExplorer.stable_climate', '🟢 Stable climate'),  color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: t('stem.climateExplorer.net_forcing_0_w_m_earth_equilibrium_v2', 'Index near zero relative to the activity baseline; this does not establish climate equilibrium.') },
+              paradox: { label: t('stem.climateExplorer.albedo_paradox', '⚖️ Albedo paradox'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.climateExplorer.forcings_partially_offset_climate_slow_v2', 'Inputs partly offset in this classroom index; no rate of climate change is calculated.') }
             };
             var sm=forcingStates[state];
             var forcingButtonStyle={minHeight:44,padding:'8px 12px',background:quizColors.raised,color:quizColors.text,border:'1px solid '+quizColors.border,borderRadius:6,fontSize:13,fontWeight:700,cursor:'pointer'};
@@ -5539,7 +6285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('label',{htmlFor:'fh-explanation',style:{display:'block',fontSize:14,fontWeight:700,marginBottom:4}},t('stem.climateExplorer.forcing_explanation','Your explanation')),
                 el('p',{id:'fh-explanation-help',style:{fontSize:12,color:quizColors.muted,margin:'0 0 6px'}},t('stem.climateExplorer.explain_how_albedo_cloud_feedback_and_','Explain how albedo, cloud feedback, and GHGs jointly drive climate state.')),
                 el('textarea',{id:'fh-explanation',value:iq.explanation,onChange:function(e){setIQ({explanation:e.target.value});},'aria-describedby':'fh-explanation-help',style:forcingFieldStyle,rows:3})),
-              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Model limit: arbitrary classroom index = GHG control - albedo control + cloud-feedback control. It omits spectral absorption, latitude, seasons, oceans, ice dynamics, carbon-cycle feedbacks, response times, and uncertainty; labels are prompts, not predictions.')
+              el('div', { style: { marginTop: 8, fontSize: 12, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Model limit: arbitrary classroom index = GHG control - albedo control + cloud-feedback control. It omits spectral absorption, latitude, seasons, oceans, ice dynamics, carbon-cycle feedbacks, response times, and uncertainty; labels are prompts, not predictions.')
             );
           })()
         )

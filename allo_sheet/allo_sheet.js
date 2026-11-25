@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  if (typeof window !== 'object' || !window || typeof document !== 'object' || !document) return;
+
   var Sheet = window.AlloSheetAdapter;
   var Analysis = window.AlloSheetAnalysis;
   var Workspace = window.AlloSheetWorkspace;
@@ -38,8 +40,15 @@
   }
   function currentTableId() { return byId('tableSelect').value.trim(); }
   function announce(message) {
+    if (state.announceTimer) {
+      window.clearTimeout(state.announceTimer);
+      state.announceTimer = null;
+    }
     text(byId('liveStatus'), '');
-    window.setTimeout(function () { text(byId('liveStatus'), message); }, 20);
+    state.announceTimer = window.setTimeout(function () {
+      state.announceTimer = null;
+      text(byId('liveStatus'), message);
+    }, 20);
   }
   function setBadge(node, label, tone) {
     if (!node) return;
@@ -577,8 +586,13 @@
   }
 
   function beginHandshake() {
+    if (state.handshakeTimer) {
+      window.clearTimeout(state.handshakeTimer);
+      state.handshakeTimer = null;
+    }
     var tries = 0;
     function hello() {
+      state.handshakeTimer = null;
       if (state.bridgeReady) return;
       if (tries >= 10) {
         if (state.canvasCandidate && !state.canvasValidated) showCanvasHandshakeUnavailable();
@@ -586,7 +600,7 @@
       }
       tries += 1;
       postToHost({ type: 'allosheet-hello', version: 1 });
-      window.setTimeout(hello, 650);
+      state.handshakeTimer = window.setTimeout(hello, 650);
     }
     hello();
   }
@@ -875,8 +889,8 @@
           }
         });
         var recordFields = Object.create(null);
-        table.columns.forEach(function (column) {
-          var value = Object.prototype.hasOwnProperty.call(row.values, column.key) ? row.values[column.key] : '';
+        columnDetails.forEach(function (detail) {
+          var value = Object.prototype.hasOwnProperty.call(row.values, detail.key) ? row.values[detail.key] : '';
           if (value !== null && typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
             throw inboundArtifactError('Transferred cells may contain only text, numbers, booleans, or empty values.');
           }
@@ -886,10 +900,10 @@
           )) {
             throw inboundArtifactError('A transferred cell contains unsupported control text or exceeds 1,200 characters.');
           }
-          recordFields[keyToField[column.key]] = Sheet.sanitizeScalar(value);
+          recordFields[detail.label] = Sheet.sanitizeScalar(value);
         });
         var recordId = row.id == null ? rowIndex + 1 : row.id;
-        if (typeof recordId !== 'string' && typeof recordId !== 'number') {
+        if (typeof recordId !== 'string' && !(typeof recordId === 'number' && Number.isSafeInteger(recordId))) {
           throw inboundArtifactError('A transferred row identifier is invalid.');
         }
         var rawRecordId = String(recordId);
@@ -898,6 +912,9 @@
           !safeRecordId
           || safeRecordId !== rawRecordId
           || safeRecordId.trim() !== safeRecordId
+          || safeRecordId === '__proto__'
+          || safeRecordId === 'constructor'
+          || safeRecordId === 'prototype'
           || /[\u0000-\u001f\u007f]/.test(safeRecordId)
           || seenRows[safeRecordId]
         ) {
@@ -1901,10 +1918,13 @@
       link.href = url;
       link.download = safeWorkspaceFileName(state.localWorkspaceTitle);
       link.hidden = true;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      try {
+        document.body.appendChild(link);
+        link.click();
+      } finally {
+        if (link && link.parentNode) link.remove();
+        window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      }
       state.localTables.forEach(function (table) {
         table.sourceModified = modifiedTableIds.indexOf(table.id) >= 0;
         table.savePoint = localTableSnapshot(table.columns, table.records);
@@ -2107,10 +2127,13 @@
     link.href = url;
     link.download = base + '_reviewed.csv';
     link.hidden = true;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    try {
+      document.body.appendChild(link);
+      link.click();
+    } finally {
+      if (link && link.parentNode) link.remove();
+      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    }
     var table = currentLocalTable();
     if (table) {
       table.savePoint = localTableSnapshot(table.columns, table.records);
@@ -2424,9 +2447,12 @@
     var top = 28;
     var bottom = 215;
     var positionFractions = Analysis.trendPositionFractions(available);
+    var valueSpan = maximum - minimum;
     var points = available.map(function (group, index) {
       var x = left + positionFractions[index] * (right - left);
-      var y = top + (maximum - Number(group.metric)) / (maximum - minimum) * (bottom - top);
+      var val = Number(group.metric);
+      var yRatio = Number.isFinite(valueSpan) ? (maximum - val) / valueSpan : (maximum / 2 - val / 2) / (maximum / 2 - minimum / 2);
+      var y = top + yRatio * (bottom - top);
       return { x: x, y: y, group: group };
     });
     var svg = svgNode('svg', {
@@ -2521,10 +2547,13 @@
     link.href = url;
     link.download = base + '_analysis.csv';
     link.hidden = true;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    try {
+      document.body.appendChild(link);
+      link.click();
+    } finally {
+      if (link && link.parentNode) link.remove();
+      window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    }
     text(status, 'Analysis result downloaded. It contains grouped labels and calculated metrics only; store it securely.');
     announce('Analysis result CSV downloaded.');
   }
@@ -3085,6 +3114,11 @@
         reject(new Error('AlloFlow AI is not connected.'));
         return;
       }
+      if (state.pendingAgent) {
+        if (state.pendingAgent.timer) window.clearTimeout(state.pendingAgent.timer);
+        state.pendingAgent.reject(new Error('Replaced by a newer assistant request.'));
+        state.pendingAgent = null;
+      }
       var id = 'as-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
       var timer = window.setTimeout(function () {
         if (state.pendingAgent && state.pendingAgent.id === id) state.pendingAgent = null;
@@ -3577,6 +3611,12 @@
     });
     window.addEventListener('pagehide', function () {
       if (state.enginePollTimer) window.clearTimeout(state.enginePollTimer);
+      if (state.handshakeTimer) { window.clearTimeout(state.handshakeTimer); state.handshakeTimer = null; }
+      if (state.announceTimer) { window.clearTimeout(state.announceTimer); state.announceTimer = null; }
+      if (state.pendingAgent) {
+        if (state.pendingAgent.timer) window.clearTimeout(state.pendingAgent.timer);
+        state.pendingAgent = null;
+      }
       postToHost({ type: 'allosheet-closed' });
     });
   }

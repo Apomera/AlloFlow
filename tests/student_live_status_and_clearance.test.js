@@ -33,10 +33,14 @@ describe('student live-session status lives in the header', () => {
   it('opens a modal, named, focus-trapped popover with the four facts and three actions', () => {
     expect(header).toContain('_headerUseFocusTrap(_liveStatusRef, isLiveStatusOpen, handleCloseLiveStatus)');
     expect(header).toContain('aria-labelledby="header-live-status-title"');
+    // The popover is portalled now: the click-away backdrop sits just BEFORE the
+    // dialog, and the dialog ends where the portal fragment closes.
     const start = header.indexOf('data-live-status-dialog=""');
-    const end = header.indexOf('<div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleCloseLiveStatus}>', start);
+    const end = header.indexOf('</>', start);
     expect(start).toBeGreaterThan(0);
     expect(end).toBeGreaterThan(start);
+    expect(header.slice(header.lastIndexOf('{isLiveStatusOpen && _headerPortal(', start), start)).toContain('<div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleCloseLiveStatus}></div>');
+    expect(header.slice(header.lastIndexOf('<div', start), start)).toContain('role="dialog" aria-modal="true"');
     const dialog = header.slice(start, end);
     for (const label of ['Codename', 'Connection', '_liveAiLabel', '_liveConnectionLabel']) expect(dialog).toContain(label);
     expect(dialog).toContain("liveStatus.nickname ? 'Change codename' : 'Set codename'");
@@ -104,12 +108,19 @@ describe('service worker purge spares caches it does not own', () => {
 
 describe('quiz navigation clears the Student Tools launcher on phones', () => {
   it('pads the navigation row on the launcher side below the md breakpoint', () => {
+    // Since the 11-21 redesign the panel has two rows: Review & submit sits in the
+    // top row and Previous / Next in the progress row below. Both keep the clearance.
     const quiz = read('view_quiz_source.jsx');
-    const row = quiz.indexOf("'flex items-center gap-2 flex-wrap pr-20 md:pr-0 '");
-    expect(row).toBeGreaterThan(0);
-    const rowMarkup = quiz.slice(row, quiz.indexOf('Review &amp; submit', row));
-    expect(rowMarkup).toContain("goToAssessmentQuestion(currentQuestionIdx + 1)");
-    expect(read('view_quiz_module.js')).toContain('flex items-center gap-2 flex-wrap pr-20 md:pr-0 ');
+    const top = quiz.indexOf('<div className="flex flex-wrap items-center justify-between gap-2 pr-20 md:pr-0">');
+    expect(top).toBeGreaterThan(0);
+    const progress = quiz.indexOf('<div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2 pr-20 md:pr-0">', top);
+    expect(progress).toBeGreaterThan(top);
+    expect(quiz.slice(top, progress)).toContain('onClick={function () { setReviewOpen(true); }}');
+    const progressRow = quiz.slice(progress, quiz.indexOf('</section>', progress));
+    expect(progressRow).toContain('goToAssessmentQuestion(currentQuestionIdx + 1)');
+    const built = read('view_quiz_module.js');
+    expect(built).toContain('className: "flex flex-wrap items-center justify-between gap-2 pr-20 md:pr-0"');
+    expect(built).toContain('className: "flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2 pr-20 md:pr-0"');
     // The launcher this clears: pinned bottom-right, 12px in, on small screens.
     const fab = read('view_fab_stack_source.jsx');
     expect(fab).toContain('right: calc(12px + env(safe-area-inset-right, 0px)) !important;');
@@ -195,7 +206,10 @@ describe('the status pill and popover follow the app theme (2026-09-15)', () => 
     expect(header).toContain("const _livePanel = _liveDark ? _skin.panel : 'bg-white border-slate-200 text-slate-800';");
     // No hard-coded light surface left on the dialog itself.
     const start = header.indexOf('data-live-status-dialog=""');
-    const dialog = header.slice(start, header.indexOf('<div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleCloseLiveStatus}>', start));
+    const end = header.indexOf('</>', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const dialog = header.slice(start, end);
     expect(dialog).not.toMatch(/className="[^"]*\bbg-white\b/);
     expect(dialog).not.toMatch(/className="[^"]*\btext-slate-800\b/);
     expect(dialog).toContain('${_livePanel}');

@@ -160,7 +160,8 @@ describe('the monolith wires it up', () => {
     // The mailbox card (Forget button + handler) was extracted from ANTI into the share/session surfaces view module.
     for (const f of ['view_share_session_surfaces_source.jsx']) {
       const src = readFileSync(f, 'utf8');
-      const forgetAt = src.indexOf('Forget mailbox');
+      // Forget is two-step now: the handler that forgets sits on the confirm button.
+      const forgetAt = src.indexOf("'Confirm forget mailbox'");
       expect(forgetAt, f).toBeGreaterThan(0);
       // Look back at the handler that precedes the button label.
       const handler = src.slice(Math.max(0, forgetAt - 1200), forgetAt);

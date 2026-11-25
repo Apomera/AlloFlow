@@ -113,7 +113,8 @@ describe('Wave 13 — P0 Security, XSS, Privacy, Role Boundaries & Critical Cras
       })
     );
     const revBtn = Array.from(draftMount.container.querySelectorAll('button[type="button"]'))
-      .find((b) => b.textContent.includes('mastery.submit_revision'));
+      // say() shows the English fallback when t() echoes the key.
+      .find((b) => b.textContent.includes('Submit Revision'));
     expect(revBtn).toBeTruthy();
     expect(revBtn.disabled).toBe(true);
     draftMount.unmount();

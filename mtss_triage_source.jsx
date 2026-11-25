@@ -87,8 +87,21 @@ function mtssToday() {
 // so a line with a tab splits on tabs only; splitting on the comma too read
 // "1,080" as 1. Otherwise ";" then ",", keeping a quoted field ("1,080") whole.
 function mtssSplitRow(line) {
-  if (line.indexOf('\t') !== -1) return line.split('\t');
-  const sep = line.indexOf(';') !== -1 ? ';' : ',';
+  if (line.indexOf('\t') !== -1) {
+    return line.split('\t').map((cell) => {
+      const trimmed = cell.trim();
+      return trimmed.length >= 2 && trimmed[0] === '"' && trimmed[trimmed.length - 1] === '"'
+        ? trimmed.slice(1, -1).replace(/""/g, '"')
+        : trimmed;
+    });
+  }
+  let hasUnquotedSemi = false;
+  let inQ = false;
+  for (const ch of line) {
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === ';' && !inQ) { hasUnquotedSemi = true; break; }
+  }
+  const sep = hasUnquotedSemi ? ';' : ',';
   const out = [];
   let cur = '';
   let quoted = false;
@@ -128,7 +141,7 @@ function mtssParsePaste(text) {
 // Number('') is 0 — an EMPTY cut field must be missing, not zero (the
 // header-parse bug class, now on the input side).
 function mtssNum(v) {
-  if (v == null || String(v).trim() === '') return NaN;
+  if (v == null || typeof v === 'boolean' || typeof v === 'symbol' || String(v).trim() === '') return NaN;
   return Number(v);
 }
 
@@ -137,10 +150,12 @@ function mtssTierOf(score, cutpoints) {
   const t3 = mtssNum(cutpoints && cutpoints.tier3Cut);
   if (!Number.isFinite(score) || !Number.isFinite(t2) || !Number.isFinite(t3)) return null;
   if (cutpoints.higherBetter) {
+    if (!(t3 < t2)) return null;
     if (score >= t2) return 1;
     if (score >= t3) return 2;
     return 3;
   }
+  if (!(t3 > t2)) return null;
   if (score <= t2) return 1;
   if (score <= t3) return 2;
   return 3;
@@ -163,7 +178,7 @@ function mtssBoard(dataset) {
   const seen = new Set();
   (dataset && Array.isArray(dataset.rows) ? dataset.rows : []).forEach((r) => {
     const code = String((r && r.code) || '').trim();
-    const score = Number(r && r.score);
+    const score = mtssNum(r && r.score);
     if (!code || !Number.isFinite(score)) { invalid.push(r); return; }
     if (seen.has(code)) { invalid.push({ ...r, duplicate: true }); return; }
     seen.add(code);
@@ -234,12 +249,13 @@ function mtssSiblingCounts(storage, options) {
       return { walkthroughVisits: 0, disproAnalyses: 0, meetings: 0, spedOpen: 0 };
     }
   }
+  const safeParse = (raw) => JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
   const read = (key, targetStorage) => {
     try {
       const src = targetStorage || storage;
       const raw = src && typeof src.getItem === 'function' ? src.getItem(key) : null;
       if (!raw) return 0;
-      const v = JSON.parse(raw);
+      const v = safeParse(raw);
       return Array.isArray(v) ? v.length : 0;
     } catch (_) { return 0; }
   };
@@ -254,7 +270,7 @@ function mtssSiblingCounts(storage, options) {
       try {
         const raw = spedStorage && typeof spedStorage.getItem === 'function' ? spedStorage.getItem('allo_sped_cases_v1') : null;
         if (!raw) return 0;
-        const v = JSON.parse(raw);
+        const v = safeParse(raw);
         return Array.isArray(v) ? v.filter((c) => c && !c.completedAt).length : 0;
       } catch (_) { return 0; }
     })(),
@@ -281,12 +297,13 @@ function mtssCsv(dataset) {
 
 function mtssDownload(filename, mime, content, addToast, okMsg, failMsg) {
   try {
+    const safeName = String(filename || 'mtss.csv').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-').replace(/\s+/g, '-');
     const url = URL.createObjectURL(new Blob([content], { type: mime }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename;
+    a.download = safeName;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 4000);
     addToast(okMsg, 'info');
   } catch (e) {
     addToast(failMsg + String(e && e.message), 'error');
@@ -295,8 +312,11 @@ function mtssDownload(filename, mime, content, addToast, okMsg, failMsg) {
 
 function mtssAnnounce(message) {
   try {
-    const region = document.getElementById('allo-live-mtss');
-    if (region) { region.textContent = ''; region.textContent = message; }
+    const region = typeof document !== 'undefined' && document.getElementById('allo-live-mtss');
+    if (region) {
+      region.textContent = '';
+      setTimeout(() => { try { if (region.isConnected) region.textContent = message; } catch (_) {} }, 0);
+    }
   } catch (_) {}
 }
 
@@ -315,12 +335,20 @@ function MtssTriagePanel(props) {
     return fallback;
   }, [t]);
 
-  const [datasets, setDatasets] = React.useState(() => { const v = mtssLoad(MTSS_DATASETS_KEY, []); return Array.isArray(v) ? v : []; });
-  const [groups, setGroups] = React.useState(() => { const v = mtssLoad(MTSS_GROUPS_KEY, []); return Array.isArray(v) ? v : []; });
+  const [datasets, setDatasets] = React.useState(() => {
+    const v = mtssLoad(MTSS_DATASETS_KEY, []);
+    return Array.isArray(v) ? v.filter((d) => d && typeof d === 'object') : [];
+  });
+  const [groups, setGroups] = React.useState(() => {
+    const v = mtssLoad(MTSS_GROUPS_KEY, []);
+    return Array.isArray(v) ? v.filter((g) => g && typeof g === 'object') : [];
+  });
+  const datasetsDirtyRef = React.useRef(false);
+  const groupsDirtyRef = React.useRef(false);
   const [tab, setTab] = React.useState('screen');
   const [activeId, setActiveId] = React.useState(null);
   const [form, setForm] = React.useState({ label: '', window: '', higherBetter: true, tier2Cut: '', tier3Cut: '', paste: '' });
-  const [checked, setChecked] = React.useState({});
+  const [checked, setChecked] = React.useState(() => Object.create(null));
   const [groupName, setGroupName] = React.useState('');
   const [groupFocus, setGroupFocus] = React.useState('');
   const [progA, setProgA] = React.useState('');
@@ -330,8 +358,9 @@ function MtssTriagePanel(props) {
   const [armDelete, setArmDelete] = React.useState(null);
   const dialogRef = React.useRef(null);
 
-  React.useEffect(() => { mtssStore(MTSS_DATASETS_KEY, datasets); }, [datasets]);
-  React.useEffect(() => { mtssStore(MTSS_GROUPS_KEY, groups); }, [groups]);
+  React.useEffect(() => { if (datasetsDirtyRef.current) mtssStore(MTSS_DATASETS_KEY, datasets); }, [datasets]);
+  React.useEffect(() => { if (groupsDirtyRef.current) mtssStore(MTSS_GROUPS_KEY, groups); }, [groups]);
+  React.useEffect(() => { setArmDelete(null); }, [tab, activeId]);
 
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
@@ -435,11 +464,17 @@ function MtssTriagePanel(props) {
     };
   }, []);
 
+  const isCheckedCode = (map, code) => Object.prototype.hasOwnProperty.call(map, code) && !!map[code];
+  const vaultLocked = mtssVaultBackend().mode === 'locked';
   const active = activeId ? datasets.find((d) => d.id === activeId) : null;
-  const board = active ? mtssBoard(active) : null;
-  const context = mtssSiblingCounts(typeof localStorage !== 'undefined' ? localStorage : { getItem: () => null });
+  const board = React.useMemo(() => (active ? mtssBoard(active) : null), [active]);
+  const context = React.useMemo(() => mtssSiblingCounts(typeof localStorage !== 'undefined' ? localStorage : { getItem: () => null }), [tab, datasets.length]);
 
   const saveDataset = () => {
+    if (mtssVaultBackend().mode === 'locked') {
+      addToast(tt('mtss.vault_locked', 'Unlock the Sensitive Workspace vault before saving screening windows.'), 'warning');
+      return;
+    }
     // Validate the RAW field values (Number('') is 0 — coercing first would
     // let an empty cut field through as zero), then store real numbers.
     const rawCuts = { higherBetter: !!form.higherBetter, tier2Cut: form.tier2Cut, tier3Cut: form.tier3Cut };
@@ -457,40 +492,50 @@ function MtssTriagePanel(props) {
       rows: parsed.rows,
       savedAt: Date.now(),
     };
+    datasetsDirtyRef.current = true;
     setDatasets((list) => [record, ...list]);
     setActiveId(record.id);
-    setChecked({});
+    setChecked(Object.create(null));
     setForm((f) => ({ ...f, paste: '' }));
     const msg = parsed.rows.length + ' ' + tt('mtss.rows_loaded', 'scores loaded.') + (parsed.skipped.length ? (' ' + parsed.skipped.length + ' ' + tt('mtss.rows_skipped', 'lines skipped.')) : '');
     addToast(msg, parsed.skipped.length ? 'warning' : 'success');
   };
 
-  const toggleChecked = (code) => setChecked((c) => ({ ...c, [code]: !c[code] }));
+  const toggleChecked = (code) => setChecked((c) => {
+    const next = Object.assign(Object.create(null), c);
+    next[code] = !isCheckedCode(c, code);
+    return next;
+  });
 
   const validBoardCodes = React.useMemo(() => {
     if (!board) return new Set();
     return new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
   }, [board]);
 
-  const selectedCount = Object.keys(checked).filter((k) => checked[k] && validBoardCodes.has(k)).length;
+  const selectedCount = Object.keys(checked).filter((k) => isCheckedCode(checked, k) && validBoardCodes.has(k)).length;
 
   const toggleTierSelection = (tier) => {
     if (!board || !board.tiers[tier] || board.tiers[tier].length === 0) return;
     const codes = board.tiers[tier].map((r) => r.code);
-    const allSelected = codes.every((code) => !!checked[code]);
+    const allSelected = codes.every((code) => isCheckedCode(checked, code));
     setChecked((prev) => {
-      const next = { ...prev };
+      const next = Object.assign(Object.create(null), prev);
       codes.forEach((code) => { next[code] = !allSelected; });
       return next;
     });
   };
 
   const createGroup = () => {
+    if (mtssVaultBackend().mode === 'locked') {
+      addToast(tt('mtss.vault_locked_group', 'Unlock the Sensitive Workspace vault before saving groups.'), 'warning');
+      return;
+    }
     if (!active || !board) return;
     const validCodes = new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
-    const members = Object.keys(checked).filter((k) => checked[k] && validCodes.has(k));
+    const members = Object.keys(checked).filter((k) => isCheckedCode(checked, k) && validCodes.has(k));
     if (members.length === 0) { addToast(tt('mtss.need_members', 'Check at least one student.'), 'warning'); return; }
     if (!groupName.trim()) { addToast(tt('mtss.need_group_name', 'Name the group.'), 'warning'); return; }
+    groupsDirtyRef.current = true;
     setGroups((g) => [{
       id: mtssNextId('mg'),
       name: groupName.trim(),
@@ -500,7 +545,7 @@ function MtssTriagePanel(props) {
       members,
       createdAt: mtssToday(),
     }, ...g]);
-    setChecked({});
+    setChecked(Object.create(null));
     setGroupName('');
     setGroupFocus('');
     setTab('groups');
@@ -532,7 +577,7 @@ function MtssTriagePanel(props) {
       style={{ zIndex: 260 }}
       role="presentation"
       onMouseDown={(e) => { backdropDownRef.current = (e.target === e.currentTarget); }}
-      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => { const allow = backdropDownRef.current; backdropDownRef.current = false; if (allow && e.target === e.currentTarget && typeof onClose === 'function') onClose(); }}
     >
       <div ref={dialogRef} tabIndex={-1} data-help-key="mtss_panel" className="allo-docsuite bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ maxHeight: '92vh' }} role="dialog" aria-modal="true" aria-labelledby="mtss-title" onClick={(e) => e.stopPropagation()}>
         {/* Solid, not /95: the host dark theme restyles bg-slate-50 only, so a translucent header stayed light under light text. */}
@@ -569,6 +614,11 @@ function MtssTriagePanel(props) {
         </div>
 
         <div className="p-4" role="tabpanel" id="mtss-tabpanel" aria-labelledby={'mtss-tab-' + tab} tabIndex={-1}>
+          {vaultLocked && (
+            <p role="status" className="text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2 mb-3">
+              {tt('mtss.vault_locked_banner', 'Sensitive Workspace is locked. Unlock it before saving or editing MTSS windows and groups.')}
+            </p>
+          )}
           <p className="text-xs text-slate-600 mb-3">
             {tt('mtss.context_strip', 'Building context (from this device’s Leadership Hub data):')}{' '}
             {context.walkthroughVisits} {tt('mtss.ctx_visits', 'walkthrough visits')} · {context.disproAnalyses} {tt('mtss.ctx_dispro', 'equity analyses')} · {context.spedOpen} {tt('mtss.ctx_sped', 'open SpEd timelines')} · {context.meetings} {tt('mtss.ctx_meetings', 'meeting records')}
@@ -620,7 +670,7 @@ function MtssTriagePanel(props) {
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {datasets.map((d) => (
                     <button key={d.id} type="button" aria-pressed={activeId === d.id}
-                      onClick={() => { setActiveId(d.id); setChecked({}); setBoardQuery(''); }}
+                      onClick={() => { setActiveId(d.id); setChecked(Object.create(null)); setBoardQuery(''); }}
                       className={'min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold ' + (activeId === d.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
                       {d.label} · {d.window}
                     </button>
@@ -631,7 +681,7 @@ function MtssTriagePanel(props) {
               {active && board && (
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <p className="text-xs text-slate-600">{board.total} {tt('mtss.students', 'students')} · {board.invalid.length > 0 ? (board.invalid.length + ' ' + tt('mtss.invalid_rows', 'invalid/duplicate rows ignored')) : ''}</p>
+                    <p className="text-xs text-slate-600">{board.total} {tt('mtss.students', 'students')}{board.invalid.length > 0 ? (' · ' + board.invalid.length + ' ' + tt('mtss.invalid_rows', 'invalid/duplicate rows ignored')) : ''}</p>
                     <div className="flex flex-wrap items-center gap-2">
                       {board.total >= 6 && (
                         <input
@@ -652,7 +702,17 @@ function MtssTriagePanel(props) {
                         className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('mtss.export_csv', 'CSV')}</button>
                       <button type="button"
                         onClick={() => {
-                          if (armDelete === active.id) { setDatasets((l) => l.filter((x) => x.id !== active.id)); setActiveId(null); setChecked({}); setBoardQuery(''); setArmDelete(null); addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info'); }
+                          if (armDelete === active.id) {
+                            datasetsDirtyRef.current = true;
+                            setDatasets((l) => l.filter((x) => x.id !== active.id));
+                            if (progA === active.id) setProgA('');
+                            if (progB === active.id) setProgB('');
+                            setActiveId(null);
+                            setChecked(Object.create(null));
+                            setBoardQuery('');
+                            setArmDelete(null);
+                            addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info');
+                          }
                           else { setArmDelete(active.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this window.')); }
                         }}
                         className={'min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold ' + (armDelete === active.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
@@ -682,7 +742,7 @@ function MtssTriagePanel(props) {
                       const visibleRows = normalizedBoardQuery
                         ? tierRows.filter((r) => String(r.code || '').toLowerCase().indexOf(normalizedBoardQuery) !== -1)
                         : tierRows;
-                      const allTierSelected = tier !== 1 && tierRows.length > 0 && tierRows.every((r) => !!checked[r.code]);
+                      const allTierSelected = tier !== 1 && tierRows.length > 0 && tierRows.every((r) => isCheckedCode(checked, r.code));
                       return (
                         <div key={tier} className={'rounded-xl border p-2 ' + MTSS_TIER_META[tier].cls}>
                           <div className="flex items-start justify-between gap-1.5">
@@ -705,7 +765,7 @@ function MtssTriagePanel(props) {
                               <li key={r.code} className="flex items-center gap-1.5 text-xs">
                                 {tier !== 1 && (
                                   <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2">
-                                    <input type="checkbox" checked={!!checked[r.code]} onChange={() => toggleChecked(r.code)}
+                                    <input type="checkbox" checked={isCheckedCode(checked, r.code)} onChange={() => toggleChecked(r.code)}
                                       aria-label={tt('mtss.check_aria', 'Select for grouping:') + ' ' + r.code} className="w-4 h-4 shrink-0" />
                                   </label>
                                 )}
@@ -730,7 +790,7 @@ function MtssTriagePanel(props) {
                           <button
                             type="button"
                             data-mtss-clear-selected="true"
-                            onClick={() => setChecked({})}
+                            onClick={() => setChecked(Object.create(null))}
                             className="min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
                           >
                             {tt('mtss.clear_selected', 'Clear')}
@@ -774,15 +834,16 @@ function MtssTriagePanel(props) {
                         <span className="block text-xs text-slate-600">{g.measure} · {g.window} · {tt('mtss.started', 'created')} {g.createdAt}</span>
                       </div>
                       <button type="button"
+                        aria-label={(armDelete === g.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')) + ' ' + String(g.name || '')}
                         onClick={() => {
-                          if (armDelete === g.id) { setGroups((l) => l.filter((x) => x.id !== g.id)); setArmDelete(null); addToast(tt('mtss.group_deleted', 'Group deleted.'), 'info'); }
-                          else { setArmDelete(g.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this group.')); }
+                          if (armDelete === g.id) { groupsDirtyRef.current = true; setGroups((l) => l.filter((x) => x.id !== g.id)); setArmDelete(null); addToast(tt('mtss.group_deleted', 'Group deleted.'), 'info'); }
+                          else { setArmDelete(g.id); mtssAnnounce(tt('mtss.delete_group_arm_announce', 'Activate delete again to permanently remove this group.')); }
                         }}
                         className={'shrink-0 min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold ' + (armDelete === g.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
                       >{armDelete === g.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
                     </div>
                     <ul className="mt-1.5 flex flex-wrap gap-1">
-                      {g.members.map((m) => <li key={m} className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">{m}</li>)}
+                      {(Array.isArray(g.members) ? g.members : []).map((m) => <li key={m} className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-800 border border-indigo-200">{m}</li>)}
                     </ul>
                   </li>
                 ))}

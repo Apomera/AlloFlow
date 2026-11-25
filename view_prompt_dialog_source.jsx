@@ -116,12 +116,13 @@ function _promptUseFocusTrap(ref, isOpen, onEscape) {
       if (!dialog.isConnected || !isTopTrap()) return;
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         event.preventDefault();
         event.stopPropagation();
         try { onEscapeRef.current && onEscapeRef.current(); } catch (_) {}
         return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable = getFocusable();
       if (!focusable.length) {
         event.preventDefault();
@@ -150,7 +151,7 @@ function _promptUseFocusTrap(ref, isOpen, onEscape) {
         }
       } catch (_) {}
       restoreSiblings();
-      if (!hadTabIndex) dialog.removeAttribute('tabindex');
+      if (!hadTabIndex && dialog.isConnected) dialog.removeAttribute('tabindex');
       const wasTopTrap = isTopTrap();
       if (trapStack) {
         const trapIndex = trapStack.lastIndexOf(trap);
@@ -219,14 +220,14 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     if (typeof promptDialog.validate === 'function') {
       try {
         const err = promptDialog.validate(value);
-        if (err) { setError(err); return; }
+        if (err) { setError(typeof err === 'string' ? err : String(err)); return; }
       } catch (validationError) {
         setError((validationError && validationError.message) || _promptCopy(t, 'prompt_dialog.invalid_value', 'Please enter a valid value.'));
         return;
       }
     }
     settledRef.current = true;
-    try { promptDialog.onSubmit(value); } catch (_) {}
+    if (typeof promptDialog.onSubmit === 'function') { try { promptDialog.onSubmit(value); } catch (_) {} }
     closePrompt(null);
   }, [promptDialog, closePrompt, value, choiceMode, validChoice, t]);
 
@@ -255,7 +256,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     // Buttons (Cancel, Close, Submit, Choice cards) and choice search input use native activation:
     // Enter on Cancel, Close, or a filter box must never submit the prompt through this shortcut.
     if (e.target?.closest?.('button') || e.target?.getAttribute?.('data-prompt-choice-filter') === 'true') return;
-    if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
+    if (e.key === 'Enter' && !promptDialog.multiline && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
     else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
   }, [handleSubmit, promptDialog.multiline, choiceMode]);
 
@@ -275,9 +276,9 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     value,
     onChange: (e) => { setValue(e.target.value); if (error) setError(null); },
     placeholder: promptDialog.placeholder || '',
-    maxLength: promptDialog.maxLength,
+    maxLength: maxLen > 0 ? maxLen : undefined,
     className: 'w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all motion-reduce:transition-none text-slate-800 placeholder:text-slate-600',
-    'aria-label': promptDialog.message,
+    'aria-label': promptDialog.message || promptDialog.title || _promptCopy(t, 'common.enter_value', 'Enter Value'),
     'aria-invalid': !!error,
     'aria-describedby': error ? 'alloflow-prompt-error' : undefined,
   };
@@ -338,7 +339,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
                 onChange={(e) => setChoiceQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-                  if (e.key === 'Escape' && choiceQuery) {
+                  if (e.key === 'Escape' && !e.altKey && !e.ctrlKey && !e.metaKey && choiceQuery) {
                     e.preventDefault();
                     e.stopPropagation();
                     setChoiceQuery('');
@@ -351,7 +352,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
             {visibleChoices.map((choice, index) => {
               const choiceValue = String(choice.value);
               const checked = value === choiceValue;
-              return <label key={choiceValue} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
+              return <label key={choiceValue + '-' + index} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
                 <input
                   ref={index === initialChoiceFocusIndex ? inputRef : undefined}
                   data-autofocus={index === initialChoiceFocusIndex ? true : undefined}
@@ -375,7 +376,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
           <div>
             {promptDialog.multiline
               ? <textarea {...inputCommonProps} rows={4} />
-              : <input {...inputCommonProps} type={promptDialog.inputType || 'text'} />}
+              : <input {...inputCommonProps} type={({ text: 'text', url: 'url', email: 'email', number: 'number', search: 'search', tel: 'tel', password: 'password' })[promptDialog.inputType] || 'text'} />}
             {(maxLen > 0 || promptDialog.multiline) && (
               <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                 <span>{promptDialog.multiline ? _promptCopy(t, 'prompt_dialog.multiline_hint', 'Ctrl/Cmd + Enter to submit') : ''}</span>

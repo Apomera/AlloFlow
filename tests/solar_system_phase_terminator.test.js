@@ -37,28 +37,38 @@ describe('phase terminators are squashed across the disc, not along it', () => {
       // The swapped form must not come back.
       expect(source).not.toContain("' A 9 ' + (9 * (1 - 2 * illum)) + ' 0 0 '");
 
-      const line = source.split('\n').find((l) => l.includes("'M ' + moonX"));
-      expect(line, 'the Moon terminator path must exist').toBeTruthy();
-      const expr = line.slice(line.indexOf("'M ' + moonX"), line.indexOf(", fill:"));
+      // 2026-11-23 the dial split in two: a top-down orbit (the Moon's far half always
+      // dark, a plain half-disc with no terminator) and a "View from Earth" inset that
+      // draws the lit shape, closed by the terminator arc. Run the shipped inset builder.
+      const top = source.split('\n').find((l) => l.includes("'M ' + moonX"));
+      expect(top, 'the top-down Moon half-shadow must exist').toBeTruthy();
+      expect(top).toContain("' A 9 9 0 0 1 ' + moonX");
+      const start = source.indexOf('var illum = (1 - Math.cos(rad)) / 2;');
+      expect(start, 'the observer-view phase builder must exist').toBeGreaterThan(-1);
+      const end = source.indexOf('// Synodic lunar age', start);
+      const block = source.slice(start, end);
+      expect(block).toContain('var litPath = illum < 0.01');
       // eslint-disable-next-line no-new-func
-      const pathFor = new Function('moonX', 'moonY', 'illum', 'return ' + expr + ';');
+      const view = new Function('normPos', 'var rad = normPos * Math.PI / 180;\n' + block + '\nreturn { d: litPath, r: obsR, illum: illum };');
 
-      const RADIUS = 9;
-      for (const illum of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
-        const { rx, ry } = terminatorRadii(pathFor(100, 100, illum));
+      const RADIUS = view(90).r;
+      for (const pos of [20, 45, 70, 90, 120, 150, 210, 240, 270, 300, 340]) {
+        const { d } = view(pos);
+        const { rx, ry } = terminatorRadii(d);
         // ry must span the disc, or SVG scales both radii up to reach the endpoints
         // and the shadow spills outside the Moon.
-        expect(ry, `illum ${illum}: terminator ry must span the disc`).toBeCloseTo(RADIUS, 6);
-        expect(rx, `illum ${illum}: terminator rx must stay inside the disc`)
+        expect(ry, `orbit ${pos}: terminator ry must span the disc`).toBeCloseTo(RADIUS, 6);
+        expect(rx, `orbit ${pos}: terminator rx must stay inside the disc`)
           .toBeLessThanOrEqual(RADIUS + 1e-9);
       }
 
-      // A straight terminator at the quarters, a full circle at new, nothing at full.
-      expect(terminatorRadii(pathFor(100, 100, 0.5)).rx).toBeCloseTo(0, 6);
-      expect(terminatorRadii(pathFor(100, 100, 0)).rx).toBeCloseTo(RADIUS, 6);
-      expect(terminatorRadii(pathFor(100, 100, 1)).rx).toBeCloseTo(RADIUS, 6);
+      // A straight terminator at the quarters, nothing lit at new, a whole disc at full.
+      expect(terminatorRadii(view(90).d).rx).toBeLessThan(0.5);
+      expect(terminatorRadii(view(270).d).rx).toBeLessThan(0.5);
+      expect(view(0).d).toBe('');
+      expect(view(180).illum).toBeCloseTo(1, 6);
       // The bulge shrinks monotonically from new to quarter.
-      const bulges = [0, 0.2, 0.35, 0.5].map((i) => terminatorRadii(pathFor(100, 100, i)).rx);
+      const bulges = [15, 30, 60, 89].map((p) => terminatorRadii(view(p).d).rx);
       for (let i = 1; i < bulges.length; i++) expect(bulges[i]).toBeLessThan(bulges[i - 1]);
     });
 

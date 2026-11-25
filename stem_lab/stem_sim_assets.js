@@ -8,7 +8,11 @@
  */
 (function (global) {
   'use strict';
-  if (global.StemSimAssets) return;
+  if (!global || typeof global !== 'object' || global.StemSimAssets) return;
+
+  function safeLabel(value) {
+    try { return String(value); } catch (error) { return '[' + typeof value + ']'; }
+  }
 
   function freeze(value) {
     if (value && typeof value === 'object') {
@@ -68,17 +72,25 @@
   function provider(entry) {
     if (!entry) return null;
     if (entry.representation === 'three-object') {
-      var birds = global.AvianWoodlandBirds;
-      if (!birds || birds.version !== VERSION || typeof birds.create !== 'function' || typeof birds.supports !== 'function') return null;
-      // A damaged or incompatible provider must not enable a catalog entry.
-      try { return birds.supports(entry.providerKey) === true ? birds : null; } catch (error) { return null; }
+      try {
+        var birds = global.AvianWoodlandBirds;
+        if (!birds || typeof birds !== 'object' || birds.version !== VERSION ||
+            typeof birds.create !== 'function' || typeof birds.supports !== 'function') return null;
+        // A damaged or incompatible provider must not enable a catalog entry.
+        return birds.supports(entry.providerKey) === true ? birds : null;
+      } catch (error) { return null; }
     }
-    var meadow = global.StemMeadow;
-    return meadow && typeof meadow.vegetation === 'function' ? meadow : null;
+    if (entry.representation === 'triangle-data') {
+      try {
+        var meadow = global.StemMeadow;
+        return meadow && typeof meadow === 'object' && typeof meadow.vegetation === 'function' ? meadow : null;
+      } catch (error) { return null; }
+    }
+    return null;
   }
   function requireEntry(id, version, representation) {
     var entry = get(id, version);
-    if (!entry) throw new RangeError('Unknown shared asset or version: ' + String(id) + '@' + String(version));
+    if (!entry) throw new RangeError('Unknown shared asset or version: ' + safeLabel(id) + '@' + safeLabel(version));
     if (entry.representation !== representation) throw new RangeError('Shared asset requires ' + entry.representation + ': ' + entry.id);
     return entry;
   }
@@ -104,4 +116,4 @@
     create: create,
     createData: createData
   });
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

@@ -141,7 +141,7 @@
       "keyLongestSharePercent": 1.7,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 2100,
-      "distinctDistractorRationaleCount": 2095,
+      "distinctDistractorRationaleCount": 2096,
       "repeatedDistractorRationaleSharePercent": 0.1,
       "largestSharedChoiceSet": 2,
       "advisories": [
@@ -161,14 +161,12 @@
       "constructedResponseWorkshops": 9,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 11,
+      "spacedReviewPlans": 9,
       "sourceCatalog": 3
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 9,
@@ -176,7 +174,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 1400,
+      "checked": 2192,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -433,8 +431,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "4e54b4b689269f7aef280dd0f5ac42cc94e96d1dd2f370f0a59452066ff6eb1e",
-    "learningLibrarySha256": "2597217a9ece19a9dabb3b837f4a7cc7f8e698c03e57a75db0723eb2b6cada4b",
+    "packSha256": "46ef50ab25c997d40b868f2ff885e53b87ef77be595a029f1b991d62bbc3cb47",
+    "learningLibrarySha256": "955d5bdd69f8176760b7810e04ebc574a3eae9a4604631360220467a436bd73b",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-chemistry",
     "factualCrossCheckUrl": "https://openstax.org/details/books/chemistry-2e"
@@ -444,15 +442,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "4e54b4b689269f7aef280dd0f5ac42cc94e96d1dd2f370f0a59452066ff6eb1e",
-      "deploySha256": "4e54b4b689269f7aef280dd0f5ac42cc94e96d1dd2f370f0a59452066ff6eb1e"
+      "sourceSha256": "46ef50ab25c997d40b868f2ff885e53b87ef77be595a029f1b991d62bbc3cb47",
+      "deploySha256": "46ef50ab25c997d40b868f2ff885e53b87ef77be595a029f1b991d62bbc3cb47"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "2597217a9ece19a9dabb3b837f4a7cc7f8e698c03e57a75db0723eb2b6cada4b",
-      "deploySha256": "2597217a9ece19a9dabb3b837f4a7cc7f8e698c03e57a75db0723eb2b6cada4b"
+      "sourceSha256": "955d5bdd69f8176760b7810e04ebc574a3eae9a4604631360220467a436bd73b",
+      "deploySha256": "955d5bdd69f8176760b7810e04ebc574a3eae9a4604631360220467a436bd73b"
     }
   ],
   "releaseBlockers": [

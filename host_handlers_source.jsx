@@ -6114,24 +6114,10 @@ const performHighlight = (elementId) => {
           if (element) {
               const targetKey = Object.keys(__d.UI_ELEMENT_MAP).find(key => __d.UI_ELEMENT_MAP[key] === elementId) || 'Item';
               const displayName = targetKey.charAt(0).toUpperCase() + targetKey.slice(1);
-              __d.highlightElement(elementId);
-              __d.spotlightOpenTimeRef.current = Date.now();
-      __d.setIsSpotlightMode(true);
-              __d.setSpotlightMessage(__d.t('tour.spotlight_message', { name: displayName }));
+              __d.highlightElement(elementId, {
+                  message: { title: displayName, text: __d.t('tour.spotlight_message', { name: displayName }) }
+              });
               __d.setUdlMessages(prev => [...prev, { role: 'model', text: __d.t('chat_guide.highlight_confirm') }]);
-              const rect = element.getBoundingClientRect();
-              if (__d.alloBotRef.current) {
-                  let targetX = rect.right + 200;
-                  let targetY = rect.top - 70;
-                  if (targetX > window.innerWidth - 80) {
-                      targetX = rect.left - 80;
-                  }
-                  if (targetY < 80) {
-                      targetY = rect.bottom + 0;
-                  }
-                  __d.alloBotRef.current.moveTo(targetX, targetY);
-                  __d.setBotSpotlightPos({ x: targetX, y: targetY });
-              }
           } else {
               __d.setUdlMessages(prev => [...prev, { role: 'model', text: __d.t('chat_guide.highlight_error') }]);
           }
@@ -7817,7 +7803,7 @@ const launchPreparedLiveInteraction = (checkpoint, item, audience) => {
       if (!quizAlreadyActive) __d.handleStartLiveSession(item);
     }
   };
-const highlightElement = (elementId) => {
+const highlightElement = (elementId, options) => {
       const stepIndex = __d.tourSteps.findIndex(s => s.id === elementId);
       const toolId = __d.DOM_TO_TOOL_ID_MAP[elementId];
       let delay = 0;
@@ -7839,11 +7825,34 @@ const highlightElement = (elementId) => {
                       bottom: rect.bottom,
                       right: rect.right
                   });
+                  if (__d.isHelpMode && typeof __d.handleToggleIsHelpMode === 'function') __d.handleToggleIsHelpMode();
                   if (stepIndex !== -1) {
                       __d.setTourStep(stepIndex);
+                      if (typeof __d.setSpotlightMessage === 'function') __d.setSpotlightMessage('');
+                  } else {
+                      const fallbackMsg = options && options.message
+                          ? options.message
+                          : (__d.t('tour.spotlight_message', { name: elementId }) || elementId);
+                      if (typeof __d.setSpotlightMessage === 'function') __d.setSpotlightMessage(fallbackMsg);
+                      if (__d.alloBotRef.current) {
+                          const vw = window.innerWidth || 1280;
+                          const vh = window.innerHeight || 800;
+                          const drawerW = vw > 600 ? (vw <= 1120 ? Math.min(436, Math.round(vw * 0.44) + 16) : 516) : 0;
+                          const drawerOnLeft = drawerW > 0 && rect.left > (vw - rect.right);
+                          const openMinX = drawerOnLeft ? (drawerW + 40) : 48;
+                          const openMaxX = drawerOnLeft ? (vw - 64) : Math.max(openMinX, vw - drawerW - 56);
+                          let targetX = drawerOnLeft ? (rect.left - 88) : (rect.right + 100);
+                          let targetY = Math.max(72, Math.min(vh - 150, rect.top + Math.min(80, rect.height * 0.25) - 60));
+                          if (targetX < openMinX || targetX > openMaxX) {
+                              targetX = Math.max(openMinX, Math.min(openMaxX, rect.left + rect.width / 2));
+                              targetY = rect.top >= 140 ? Math.max(24, rect.top - 120) : Math.min(vh - 120, rect.bottom + 36);
+                          }
+                          __d.alloBotRef.current.moveTo(targetX, targetY);
+                          __d.setBotSpotlightPos({ x: targetX, y: targetY });
+                      }
                   }
                   __d.spotlightOpenTimeRef.current = Date.now();
-      __d.setIsSpotlightMode(true);
+                  __d.setIsSpotlightMode(true);
                   __d.setRunTour(true);
               }, 600);
           } else {

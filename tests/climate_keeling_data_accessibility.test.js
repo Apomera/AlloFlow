@@ -54,10 +54,11 @@ describe.each(sources)('Keeling record access: %s',source=>{
   it('provides all 19 joined years with signed temperature and explicit missing samples',async()=>{
     const view=mount(source,{kcDataOpen:true});await settle();
     expect(rows(view)).toEqual([
-      ['1958','315.0','+0.07'],['1960','316.9','Not in sample'],['1965','320.0','-0.10'],['1970','325.7','+0.04'],
-      ['1975','331.1','+0.01'],['1980','338.7','+0.27'],['1985','346.1','+0.13'],['1990','354.4','+0.46'],
-      ['1995','360.9','+0.46'],['2000','369.5','+0.42'],['2005','379.8','+0.69'],['2010','389.9','+0.72'],
-      ['2013','396.5','Not in sample'],['2015','401.0','+0.90'],['2018','408.5','+0.85'],['2020','414.2','+1.01'],
+      // Values re-checked 2026-11-23 against NOAA co2_annmean_mlo.txt and GISS GLB.Ts+dSST.txt.
+      ['1958','315.0','+0.06'],['1960','316.9','Not in sample'],['1965','320.0','-0.11'],['1970','325.7','+0.03'],
+      ['1975','331.1','-0.01'],['1980','338.8','+0.26'],['1985','346.4','+0.12'],['1990','354.5','+0.45'],
+      ['1995','361.0','+0.44'],['2000','369.7','+0.39'],['2005','380.0','+0.68'],['2010','390.1','+0.72'],
+      ['2013','396.7','Not in sample'],['2015','401.0','+0.90'],['2018','408.7','+0.85'],['2020','414.2','+1.01'],
       ['2022','418.5','+0.89'],['2023','Not in sample','+1.17'],['2024','424.6','+1.28']
     ]);
     expect(view.one('#ce-keeling-data-table caption').textContent).toMatch(/1958–2024/);
@@ -79,7 +80,7 @@ describe.each(sources)('Keeling record access: %s',source=>{
   it('gives matching chart values and explanations without implying a monthly or live record',async()=>{
     const view=mount(source,{kcDataOpen:true});await settle();
     const summary=view.one('#ce-keeling-summary').textContent,legend=view.one('#ce-keeling-legend').textContent;
-    expect(summary).toContain('315.0 ppm');expect(summary).toContain('424.6 ppm');expect(summary).toContain('+0.07 °C');expect(summary).toContain('+1.28 °C');
+    expect(summary).toContain('315.0 ppm');expect(summary).toContain('424.6 ppm');expect(summary).toContain('+0.06 °C');expect(summary).toContain('+1.28 °C');
     expect(legend).toMatch(/solid blue.*circles.*dashed amber.*squares/);expect(legend).toContain('1951–1980');
     const panel=view.one('#ce-keeling').textContent;
     expect(panel).toContain('not a live data feed');expect(panel).toContain('do not show that monthly cycle');expect(panel).toContain('Daily readings and annual averages differ');

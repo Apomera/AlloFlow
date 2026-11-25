@@ -92,15 +92,15 @@
       if (options.mode === 'cue') { add(base + '/cue', cue, extra); return; }
       add(base + '/target', card.target, extra);
       if (card.factVerified === true && card.factLocked !== false) {
-        (card.essentialFacts || []).forEach((fact, i) => add(base + '/fact/' + token(fact?.id || i), typeof fact === 'string' ? fact : fact?.text, extra));
+        (Array.isArray(card.essentialFacts) ? card.essentialFacts : []).forEach((fact, i) => add(base + '/fact/' + token(fact?.id || i), typeof fact === 'string' ? fact : fact?.text, extra));
         if (!card.cueNeedsReview) add(base + '/mapping', card.mapping, extra);
       }
       if (card.cueNeedsReview) return;
       add(base + '/cue', cue, extra);
       add(base + '/prompt', card.studentPrompt, extra);
       add(base + '/reasoning-prompt', card.reasoningPrompt, extra);
-      (card.scaffoldSteps || []).forEach((step, i) => add(base + '/support/' + i, step, extra));
-      (card.coachPrompts || []).forEach((prompt, i) => add(base + '/coach/' + i, prompt, extra));
+      (Array.isArray(card.scaffoldSteps) ? card.scaffoldSteps : []).forEach((step, i) => add(base + '/support/' + i, step, extra));
+      (Array.isArray(card.coachPrompts) ? card.coachPrompts : []).forEach((prompt, i) => add(base + '/coach/' + i, prompt, extra));
       if (!card.visualNeedsReview && card.visualReview?.status === 'approved') add(base + '/visual-description', card.visualAlt, extra);
     });
   });
@@ -109,14 +109,17 @@
     const data = typeof normalize === 'function' ? normalize(resource.data) : resource.data || {}, brief = data.brief || {}, supports = data.supports || {};
     add('title', data.title || resource.title); add('directions', data.instructions);
     ['context','role','audience','drivingQuestion','seedDirection','deliverable','evidenceBoundary'].forEach(field => add('brief/' + field, brief[field]));
-    ['criteria','constraints','openQuestions','stakeholders'].forEach(field => (brief[field] || []).forEach((value, i) => add('brief/' + field + '/' + i, value)));
-    if (brief.factVerified === true && brief.factLocked !== false) (brief.lockedLessonFacts || []).forEach((fact, i) => add('brief/fact/' + token(fact?.id || i), typeof fact === 'string' ? fact : fact?.text));
+    ['criteria','constraints','openQuestions','stakeholders'].forEach(field => (Array.isArray(brief[field]) ? brief[field] : []).forEach((value, i) => add('brief/' + field + '/' + i, value)));
+    if (brief.factVerified === true && brief.factLocked !== false) (Array.isArray(brief.lockedLessonFacts) ? brief.lockedLessonFacts : []).forEach((fact, i) => add('brief/fact/' + token(fact?.id || i), typeof fact === 'string' ? fact : fact?.text));
     add('support/frame', supports.frameStarter);
-    ['frameChoices','coachPrompts'].forEach(field => (supports[field] || []).forEach((value, i) => add('support/' + field + '/' + i, value)));
+    ['frameChoices','coachPrompts'].forEach(field => (Array.isArray(supports[field]) ? supports[field] : []).forEach((value, i) => add('support/' + field + '/' + i, value)));
     ['context','move','whyItHelps'].forEach(field => add('support/example/' + field, supports.parallelExample?.[field]));
     const api = modules().AppliedChallenge?._testing;
     const visible = api?.appliedChallengeVisiblePhases ? api.appliedChallengeVisiblePhases(data.scope).map(phase => phase.id) : phases;
-    visible.forEach(phaseId => add('phase/' + phaseId + '/prompt', supports.phasePrompts?.[phaseId], { phaseId }));
+    visible.forEach(phaseId => {
+      const prompt = supports.phasePrompts && Object.prototype.hasOwnProperty.call(supports.phasePrompts, phaseId) ? supports.phasePrompts[phaseId] : undefined;
+      add('phase/' + phaseId + '/prompt', prompt, { phaseId });
+    });
   });
 
   // This is an egress contract, not a second audio store. Only current,
@@ -154,8 +157,9 @@
     const issues = [];
     if (resource?.type === 'memory-aid') {
       const normalize = modules().MemoryAid?._testing?.normalizeMemoryAidCards;
-      const cards = normalize ? normalize(resource.data?.cards, resource.data?.authorshipMode) : resource.data?.cards || [];
+      const cards = normalize ? normalize(resource.data?.cards, resource.data?.authorshipMode) : (Array.isArray(resource.data?.cards) ? resource.data.cards : []);
       cards.forEach(card => {
+        if (!card || typeof card !== 'object') return;
         if (!card.essentialFacts?.length || !card.factVerified || card.factLocked === false) issues.push({ code: 'facts', target: 'facts', cardId: card.id, label: card.target });
         if (card.visualImage && (!text(card.visualAlt) || card.visualReview?.status !== 'approved')) issues.push({ code: !text(card.visualAlt) ? 'description' : 'visual_review', target: 'visual', cardId: card.id, label: card.target });
       });
@@ -163,7 +167,7 @@
       const brief = resource.data?.brief || {};
       if (!brief.lockedLessonFacts?.length || !brief.factVerified || brief.factLocked === false) issues.push({ code: 'facts', target: 'facts' });
     }
-    const entries = Object.values(resource?.karaokeAudio?.entries || {});
+    const entries = Object.values(resource?.karaokeAudio?.entries || {}).slice(0, 320);
     const current = enumerate(resource);
     const store = modules().KaraokeAudioStore;
     const expectedAdapterId = 'alloflow.' + resource?.type + '.read-aloud';
@@ -205,10 +209,11 @@
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
-        const main = ref.current?.closest('main'); if (!main) return;
+        if (!ref.current || ref.current.isConnected === false) return;
+        const main = ref.current.closest('main'); if (!main) return;
         const card = issue.cardId ? [...main.querySelectorAll('[data-studio-card-id]')].find(node => node.dataset.studioCardId === issue.cardId) : main;
         const target = card ? [...card.querySelectorAll('[data-studio-review]')].find(node => node.dataset.studioReview === issue.target) : null;
-        if (target) { target.focus(); target.scrollIntoView?.({ block: 'center' }); }
+        if (target && target.isConnected !== false) { try { target.focus(); } catch (_) {} try { target.scrollIntoView?.({ block: 'center' }); } catch (_) {} }
       }, 0);
     };
     return e('details', { ref, className: 'studio-sharing mb-4 rounded-2xl border border-amber-300 bg-amber-50 text-slate-900 p-3' },
@@ -223,7 +228,7 @@
     'audio/wav': '.wav', 'audio/x-wav': '.wav', 'audio/mpeg': '.mp3', 'audio/mp3': '.mp3', 'audio/ogg': '.ogg', 'audio/webm': '.webm', 'audio/mp4': '.m4a'
   });
   function isSafeAudioUrl(raw) {
-    return typeof raw === 'string' && /^(?:blob:|data:audio\/)/i.test(raw.trim());
+    return typeof raw === 'string' && !/[\u0000-\u001f\u007f]/.test(raw) && /^(?:blob:|data:audio\/)/i.test(raw.trim());
   }
   function clipExtension(resource, segment) {
     const fp = fingerprint(segment.text);
@@ -239,13 +244,24 @@
     const stop = () => { if (current.current) { current.current.onend = current.current.onerror = null; try { window.speechSynthesis?.cancel(); } catch (_) {} current.current = null; } };
     React.useEffect(() => {
       const other = event => { if (event.detail !== id.current) { stop(); setPlaying(false); setPaused(false); } };
+      const onMute = () => { if (window.__alloMuted) { stop(); setPlaying(false); setPaused(false); } };
+      const onVis = () => { if (typeof document !== 'undefined' && document.hidden) { stop(); setPlaying(false); setPaused(false); } };
       window.addEventListener('alloflow:resource-read-aloud-start', other);
       window.addEventListener('alloflow:playback-stopped', other);
-      return () => { stop(); window.removeEventListener('alloflow:resource-read-aloud-start', other); window.removeEventListener('alloflow:playback-stopped', other); };
+      window.addEventListener('alloflow-mute-changed', onMute);
+      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVis);
+      return () => {
+        stop();
+        window.removeEventListener('alloflow:resource-read-aloud-start', other);
+        window.removeEventListener('alloflow:playback-stopped', other);
+        window.removeEventListener('alloflow-mute-changed', onMute);
+        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVis);
+      };
     }, []);
     React.useEffect(() => { stop(); setPlaying(false); setPaused(false); }, [props.text]);
-    return e(window.React.Fragment, null, e('button', { type: 'button', className: 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-teal-600', disabled: !spoken(props.text) || !window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function', onClick: () => {
+    return e(window.React.Fragment, null, e('button', { type: 'button', className: 'min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', disabled: !spoken(props.text) || !window.speechSynthesis || typeof SpeechSynthesisUtterance !== 'function', onClick: () => {
       if (playing) { stop(); setPlaying(false); setPaused(false); return; }
+      if (window.__alloMuted) return;
       props.stopPlayback?.();
       window.dispatchEvent(new CustomEvent('alloflow:resource-read-aloud-start', { detail: id.current }));
       const utterance = new SpeechSynthesisUtterance(spoken(props.text).slice(0, 12000)); current.current = utterance;
@@ -253,7 +269,7 @@
       configureDeviceSpeech(utterance, props.language || props.resource?.language || props.resource?.data?.language || props.resource?.data?.lessonRef?.language || 'English', props.voiceSpeed, props.voiceVolume);
       setPlaying(true); setPaused(false);
       try { window.speechSynthesis.speak(utterance); } catch (_) { current.current = null; setPlaying(false); setPaused(false); }
-    } }, playing ? tr('stop', 'Stop reading') : props.cue ? tr('read_cue', 'Read cue aloud') : tr('read_work', 'Read my writing')), playing && e('button', { type: 'button', className: 'ms-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => { if (!current.current) return; try { if (paused) window.speechSynthesis.resume(); else window.speechSynthesis.pause(); setPaused(!paused); } catch (_) {} } }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')));
+    } }, playing ? tr('stop', 'Stop reading') : props.cue ? tr('read_cue', 'Read cue aloud') : tr('read_work', 'Read my writing')), playing && e('button', { type: 'button', className: 'ms-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1', onClick: () => { if (!current.current) return; try { if (paused) window.speechSynthesis.resume(); else window.speechSynthesis.pause(); setPaused(!paused); } catch (_) {} } }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')));
   }
   function CueControls(props) {
     const segment = enumerate(props.resource, { cardId: props.cardId, mode: 'cue' })[0];
@@ -271,8 +287,12 @@
     const mounted = React.useRef(true);
     const instance = React.useRef('read-' + Math.random().toString(36).slice(2));
     const segments = enumerate(resource, { cardId, mode });
-    const signature = JSON.stringify([resource?.id, segments]);
+    const signature = JSON.stringify([resource?.id == null ? '' : String(resource.id), segments]);
     const aiUsableOk = (() => {
+      try {
+        const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+        if (sp && (sp.aiDisabled === true || sp.aiEnabled === false || (typeof sp.isStudentAiDisabled === 'function' && sp.isStudentAiDisabled()) || (typeof sp.hideStudentAiFeatures === 'function' && sp.hideStudentAiFeatures()))) return false;
+      } catch (_) { return false; }
       if (typeof window.__alloAiUsable !== 'function') return true;
       try { return Boolean(window.__alloAiUsable('tts')); } catch (_) { return false; }
     })();
@@ -282,6 +302,7 @@
       && !window.__alloStudentAiDisabled
       && !window.__alloAiSecretsLocked
       && !window.__alloOfflineOnly
+      && !window.hideStudentAiFeatures
       && !(window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
       && aiUsableOk;
     const current = React.useRef(null);
@@ -292,9 +313,9 @@
     const ready = states.filter(state => state.status === 'ready').length;
     const stale = states.filter(state => state.status === 'stale').length;
     const stop = () => {
-      const state = runtime.current; state.token += 1; state.playController?.abort();
-      if (state.audio) { state.audio.pause(); state.audio.onended = state.audio.onerror = null; state.audio = null; }
-      if (state.utterance) { try { window.speechSynthesis?.cancel(); } catch (_) {} state.utterance = null; }
+      const state = runtime.current; state.token += 1; state.playController?.abort(); state.playController = null;
+      if (state.audio) { try { state.audio.pause(); } catch (_) {} state.audio.onended = state.audio.onerror = null; state.audio = null; }
+      if (state.utterance) { state.utterance.onend = state.utterance.onerror = null; try { window.speechSynthesis?.cancel(); } catch (_) {} state.utterance = null; }
       if (state.finish) { state.finish(); state.finish = null; }
       state.paused = false; state.resume?.(); state.resume = null;
       if (mounted.current) { setActive(-1); setPaused(false); }
@@ -304,6 +325,14 @@
       const refresh = () => setTick(value => value + 1);
       const other = event => { if (event.detail !== instance.current) stop(); };
       const stopped = () => stop();
+      const onMute = () => {
+        const st = runtime.current;
+        if (st.audio) { try { st.audio.muted = Boolean(window.__alloMuted); } catch (_) {} }
+        if (window.__alloMuted && st.utterance) stop();
+      };
+      const onVis = () => {
+        if (typeof document !== 'undefined' && document.hidden && (runtime.current.audio || runtime.current.utterance)) stop();
+      };
       window.addEventListener('alloflow:karaoke-audio-updated', refresh);
       window.addEventListener('alloflow:ai-config-changed', refresh);
       window.addEventListener('alloflow:student-ai-config-changed', refresh);
@@ -311,6 +340,8 @@
       window.addEventListener('storage', refresh);
       window.addEventListener('alloflow:resource-read-aloud-start', other);
       window.addEventListener('alloflow:playback-stopped', stopped);
+      window.addEventListener('alloflow-mute-changed', onMute);
+      if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVis);
       return () => {
         mounted.current = false; stop(); runtime.current.prepare?.abort();
         window.removeEventListener('alloflow:karaoke-audio-updated', refresh);
@@ -320,6 +351,8 @@
         window.removeEventListener('storage', refresh);
         window.removeEventListener('alloflow:resource-read-aloud-start', other);
         window.removeEventListener('alloflow:playback-stopped', stopped);
+        window.removeEventListener('alloflow-mute-changed', onMute);
+        if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVis);
       };
     }, []);
     React.useEffect(() => {
@@ -386,9 +419,11 @@
         if (audio && audio.src !== url) audio.src = url;
       } runtime.current.audio = audio;
               audio.playbackRate = speechSetting(voiceSpeed, 0.5, 2); audio.volume = speechSetting(voiceVolume, 0, 1);
+              if (window.__alloMuted) audio.muted = true;
               audio.onended = finish; audio.onerror = () => reject(new Error('Audio playback failed'));
               Promise.resolve(audio.play()).catch(reject);
             } else if (window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
+              if (window.__alloMuted) { finish(); return; }
               const utterance = new SpeechSynthesisUtterance(segment.text); runtime.current.utterance = utterance;
               configureDeviceSpeech(utterance, segment.language, voiceSpeed, voiceVolume);
               utterance.onend = finish; utterance.onerror = reject;

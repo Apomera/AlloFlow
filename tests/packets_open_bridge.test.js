@@ -167,7 +167,8 @@ describe('the code that does it', () => {
     const shell = SOURCE.slice(SOURCE.indexOf('  function takeHomeShell('), SOURCE.indexOf('  function takeHomeShell(') + 40000);
     expect(shell.match(/localStorage\.\w+\(([^,)]*)/g)).toEqual(['localStorage.setItem(storageKey', 'localStorage.removeItem(storageKey', 'localStorage.getItem(storageKey']);
     expect(shell.match(/postMessage\(/g)).toHaveLength(1);
-    expect(shell).toContain("win.parent !== win && JSON.parse(doc.getElementById('packet-store-snapshot').textContent)");
+    // 2026-11-23: the snapshot is read with safeParse (it drops __proto__ keys) since the 11-21 hardening pass.
+    expect(shell).toContain("win.parent !== win && safeParse(doc.getElementById('packet-store-snapshot').textContent)");
     const report = verify.verifyPacket(FILE);
     expect(report.result).toBe('closed');
     expect(verify.readParts(withSnapshot(FILE, { [KEY]: '{}' })).ok).toBe(true);

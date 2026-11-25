@@ -8,19 +8,29 @@
 // Category: self-awareness
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
 
-  (function() {
-    if (document.getElementById('allo-live-wol')) return;
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife')) return;
+
+  var _wlLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-wol');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-wol';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -29,10 +39,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
 
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-wol-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-wol-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-wol-a11y-css';
     st.textContent =
@@ -97,63 +109,77 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wl_DOMAIN_LIGHT = {'#ef4444':'#b91c1c','#f59e0b':'#92400e','#22c55e':'#166534','#ec4899':'#be185d','#0ea5e9':'#0369a1','#6366f1':'#4338ca','#a855f7':'#7e22ce','#eab308':'#854d0e'};
       var _wlDomain = function(h){ return _wlHC ? '#ffff00' : (_wlL ? (_wl_DOMAIN_LIGHT[h] || h) : h); };
       var _wl_SHORT_LABEL = { romance: 'Romance & love', money: 'Money & finances', friends: 'Friends & social', learning: 'Learning & growth', fun: 'Fun & recreation' };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
-      var onSafetyFlag = ctx.onSafetyFlag || null;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
+      var onSafetyFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
       var _wlBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = (labToolData.wheelOfLife && typeof labToolData.wheelOfLife === 'object') ? labToolData.wheelOfLife : defaultState();
+      var rawWl = labToolData.wheelOfLife;
+      var d = (rawWl && typeof rawWl === 'object' && !Array.isArray(rawWl)) ? rawWl : defaultState();
       function setWOL(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.wheelOfLife && typeof prev.wheelOfLife === 'object') ? prev.wheelOfLife : defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prior = (base.wheelOfLife && typeof base.wheelOfLife === 'object' && !Array.isArray(base.wheelOfLife)) ? base.wheelOfLife : defaultState();
           var resolved = typeof patch === 'function' ? patch(prior) : patch;
+          if (!resolved || typeof resolved !== 'object') return base;
           var next = Object.assign({}, prior, resolved);
           if (resolved && (resolved.ratings || resolved.notes || resolved.focusDomain !== undefined || resolved.nextStep !== undefined)) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { wheelOfLife: next });
+          return Object.assign({}, base, { wheelOfLife: next });
         });
       }
       function scanWheelText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'wheelOfLife', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
-        }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && scan.triggered) {
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+        try {
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var chk = sh.safeRehearseCheck(trimmed, { toolId: 'wheelOfLife', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'wheelOfLife', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _wlLocalCrisisRe.test(trimmed)) {
             blocked = true;
             if (typeof onSafetyFlag === 'function') {
               try { onSafetyFlag({ toolId: 'wheelOfLife', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
             }
           }
-        }
-        if (blocked) {
-          setWOL({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Wheel of Life', contentSnippet: trimmed });
+          if (blocked) {
+            setWOL({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'Wheel of Life', contentSnippet: trimmed });
+            }
+            announceWOL('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.');
           }
-        }
+        } catch (_) {}
         return blocked;
       }
       var VALID_VIEWS = ['wheel', 'rate', 'reflect', 'print', 'about'];
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'wheel';
       function announceWOL(msg) {
         if (!msg) return;
-        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-wol');
-          if (lr) lr.textContent = msg;
-        }
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        try {
+          var lr = ensureLiveRegion();
+          if (lr) { lr.textContent = ''; setTimeout(function() { try { lr.textContent = String(msg); } catch (_) {} }, 20); }
+        } catch (_) {}
       }
-      function goto(v) { setWOL({ view: v }); }
-      function printNow() { try { window.print(); } catch (e) {} }
+      function goto(v) { setWOL({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'wheel' }); }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -186,8 +212,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
           var target = tabs[nextIdx];
           goto(target.id);
           setTimeout(function() {
-            var el = typeof document !== 'undefined' ? document.getElementById('wol-tab-' + target.id) : null;
-            if (el && typeof el.focus === 'function') el.focus();
+            try {
+              var el = (typeof document === 'object' && document && typeof document.getElementById === 'function') ? document.getElementById('wol-tab-' + target.id) : null;
+              if (el && typeof el.focus === 'function') el.focus();
+            } catch (_) {}
           }, 0);
         }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Wheel of Life sections',
@@ -209,18 +237,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _wlHC ? '#000000' : (_wlL ? '#f1f5f9' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _wlBd('#334155'), fontSize: 11, color: _wlFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'A low score on a domain is information, not a failure. The Wheel is a snapshot of right now; in three months your shape will look different. Crisis Text Line: text HOME to 741741.'
+          'A low score on a domain is information, not a failure. The Wheel is a snapshot of right now; in three months your shape will look different. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'
         );
       }
 
       function ratingOf(id) {
-        var raw = (d.ratings && typeof d.ratings === 'object') ? d.ratings[id] : 0;
-        var n = typeof raw === 'number' ? raw : Number(raw);
+        var raw = (d.ratings && typeof d.ratings === 'object' && !Array.isArray(d.ratings) && Object.prototype.hasOwnProperty.call(d.ratings, id)) ? d.ratings[id] : 0;
+        var n = typeof raw === 'number' ? raw : (typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN);
         if (!isFinite(n) || n <= 0) return 0;
         return Math.max(0, Math.min(10, Math.round(n)));
       }
       function noteOf(id) {
-        var raw = (d.notes && typeof d.notes === 'object') ? d.notes[id] : '';
+        var raw = (d.notes && typeof d.notes === 'object' && !Array.isArray(d.notes) && Object.prototype.hasOwnProperty.call(d.notes, id)) ? d.notes[id] : '';
         return typeof raw === 'string' ? raw : '';
       }
       function safeNextStep() {
@@ -294,7 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
         return h('div', null,
           h('div', { style: { padding: 10, borderRadius: 12, background: _wlBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
-            h('svg', { width: '100%', viewBox: '0 0 560 560', style: { maxWidth: 560 }, 'aria-labelledby': 'wol-svg-title wol-svg-desc', role: 'img' },
+            h('svg', { width: '100%', viewBox: '-48 -18 656 616', style: { maxWidth: 560 }, 'aria-labelledby': 'wol-svg-title wol-svg-desc', role: 'img' },
               h('title', { id: 'wol-svg-title' }, 'Wheel of Life radar chart'),
               h('desc', { id: 'wol-svg-desc' }, svgDesc),
               h('defs', null,
@@ -410,7 +438,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         function setRating(id, value, label) {
           var n = typeof value === 'number' && isFinite(value) ? Math.max(1, Math.min(10, Math.round(value))) : 1;
           setWOL(function(prior) {
-            var ratings = Object.assign({}, (prior && prior.ratings && typeof prior.ratings === 'object') ? prior.ratings : {});
+            var ratings = Object.assign({}, (prior && prior.ratings && typeof prior.ratings === 'object' && !Array.isArray(prior.ratings)) ? prior.ratings : {});
             ratings[id] = n;
             return { ratings: ratings };
           });
@@ -418,7 +446,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         }
         function setNote(id, val) {
           setWOL(function(prior) {
-            var notes = Object.assign({}, (prior && prior.notes && typeof prior.notes === 'object') ? prior.notes : {});
+            var notes = Object.assign({}, (prior && prior.notes && typeof prior.notes === 'object' && !Array.isArray(prior.notes)) ? prior.notes : {});
             notes[id] = typeof val === 'string' ? val : String(val || '');
             return { notes: notes };
           });
@@ -447,8 +475,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
               e.preventDefault();
               setRating(dom.id, nextN, dom.label);
               setTimeout(function() {
-                var el = typeof document !== 'undefined' ? document.getElementById('wol-rate-' + dom.id + '-' + nextN) : null;
-                if (el && typeof el.focus === 'function') el.focus();
+                try {
+                  var el = (typeof document === 'object' && document && typeof document.getElementById === 'function') ? document.getElementById('wol-rate-' + dom.id + '-' + nextN) : null;
+                  if (el && typeof el.focus === 'function') el.focus();
+                } catch (_) {}
               }, 0);
             }
             return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid ' + _wlBd('#1e293b'), borderRight: '1px solid ' + _wlBd('#1e293b'), borderBottom: '1px solid ' + _wlBd('#1e293b'), borderLeft: '3px solid ' + domainColor, marginBottom: 10 } },
@@ -604,8 +634,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #d97706' } },
               h('div', { style: { fontSize: 10, color: _wlFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Wheel of Life'),
-              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Wheel of Life'),
-              d.lastUpdated ? h('div', { style: { fontSize: 12, color: _wlFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
+              h('h3', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Wheel of Life'),
+              typeof d.lastUpdated === 'string' && d.lastUpdated ? h('div', { style: { fontSize: 12, color: _wlFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
             DOMAINS.map(function(dom) {
@@ -637,7 +667,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('wheelOfLife', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('wheelOfLife', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _wlBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _wlFg('#fcd34d'), fontSize: 16 } }, 'What the Wheel of Life is'),
             h('p', { style: { margin: '0 0 10px', color: _wlFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -705,12 +735,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       return h('div', { className: 'selh-wol', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Wheel of Life' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _wlBand) : null,
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? window.SelHub.renderCrisisResources(h, _wlBand)
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _wlHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_wlHC ? '#ffff00' : '#ef4444'), color: _wlFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
+          : null,
         h('div', { id: 'wol-tabpanel', role: 'tabpanel', 'aria-labelledby': 'wol-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

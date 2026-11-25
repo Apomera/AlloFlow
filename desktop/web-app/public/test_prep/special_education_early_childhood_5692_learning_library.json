@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-early-childhood-5692-learning-library",
@@ -28,7 +29,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 5,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -231,7 +237,7 @@
             "explanationLabel": "Evidence-based rationale",
             "title": "Evaluating Bilingual Development and Prematurity in Part C",
             "clinicalDescription": "A 26-month-old toddler born at 32 weeks gestation (adjusted age 24 months) from a Mandarin-English home combines two-word phrases in Mandarin, uses 20 English words, and enjoys sibling play. A screening checklist flags \"delayed English vocabulary\" using chronological age and suggests English-only flashcard drills.",
-            "diagnosis": "Use corrected age, measure total conceptual vocabulary across both languages, and co-create routines-based Part C IFSP outcomes for mealtimes.",
+            "diagnosis": "Account for prematurity history alongside the 24-month clinical age-correction cutoff, measure total conceptual vocabulary across both languages, and co-create routines-based Part C IFSP outcomes for mealtimes.",
             "explanation": "DEC Recommended Practices require interpreting early milestones with prematurity correction and dual-language conceptual vocabulary rather than monolingual English norms. Framing home-language development as a deficit or setting family-detached drill goals misrepresents authentic competence and weakens family partnership."
           }
         }
@@ -315,7 +321,7 @@
         },
         {
           "id": "se5692-ch-01-check-05",
-          "prompt": "A young child with a disability is embarrassed when an adult uses babyish materials for a functional routine. What principle should guide revision?",
+          "prompt": "A seven-year-old child with a disability is embarrassed when an adult uses infant or toddler materials for a functional routine. What principle should guide revision?",
           "choices": [
             "Use age-respectful materials while adapting task steps and supports to current young child needs.",
             "Select instructional materials strictly by developmental age estimate so the formatting matches early-childhood readiness charts.",
@@ -896,10 +902,10 @@
           "id": "se5692-ch-04-check-02",
           "prompt": "Which draft annual IEP goal is written in measurable terms?",
           "choices": [
-            "Given a 150-word instructional passage, the young child will read 120 correct words per minute on three consecutive probes.",
-            "During daily small-group literacy lessons, the young child will sustain consistent effort while reading grade-level passages aloud.",
-            "Across independent classroom reading blocks, the young child will develop greater confidence and enjoyment when reading narrative text.",
-            "With continued special education reading instruction, the young child will demonstrate stronger oral reading fluency by spring."
+            "Given a 6-step picture sequence during morning arrival, the child will complete 5 of 6 arrival steps independently on four of five school days.",
+            "During daily classroom transition routines, the child will sustain consistent effort while following teacher directions.",
+            "Across independent classroom center blocks, the child will develop greater confidence and enjoyment during group routines.",
+            "With continued early childhood special education support, the child will demonstrate stronger morning independence by spring."
           ],
           "answerIndex": 0,
           "rationale": "A measurable annual goal states the condition, observable behavior, criterion, and often a consistency requirement. These features permit repeated progress measurement and instructional decisions. For 5692 preparation, apply the decision to developmentally appropriate, family-centered services from birth through age eight and distinguish IDEA Part C IFSP processes from Part B IEP processes when relevant.",
@@ -1127,10 +1133,10 @@
         },
         {
           "id": "se5692-ch-05-check-03",
-          "prompt": "A young child solves equations accurately with a step card. What should happen next?",
+          "prompt": "A young child completes a four-step hand-washing routine accurately using a picture-sequence strip. What should happen next?",
           "choices": [
             "Withdraw the entire scaffold abruptly on the next graded unit and discontinue tracking accuracy data.",
-            "Keep the full step card or organizer in place indefinitely so the young child never experiences reduced support.",
+            "Keep the full picture-sequence strip in place indefinitely so the young child never experiences reduced support.",
             "Fade or simplify the scaffold gradually while monitoring whether independent accuracy holds.",
             "Raise task complexity and add heavier adult prompting simultaneously without checking baseline transfer."
           ],
@@ -1724,9 +1730,9 @@
       "knowledgeChecks": [
         {
           "id": "se5692-ch-08-check-01",
-          "prompt": "A vocabulary test is used to decide whether a young child can solve multistep equations. What is the primary concern?",
+          "prompt": "An expressive picture-naming test is used to decide whether a preschooler has mastered one-to-one counting and cardinality. What is the primary concern?",
           "choices": [
-            "Reliability, because numerical test scores fluctuate whenever vocabulary or spelling tasks are short.",
+            "Reliability, because numerical test scores fluctuate whenever brief picture-naming tasks are short.",
             "Administration efficiency, because brief screening tools take less time than full-length unit exams.",
             "National norming, because classroom skill evaluations must compare young children against national peer samples.",
             "Validity, because the scores do not support the intended construct interpretation and decision."
@@ -4142,7 +4148,7 @@
       "chapterId": "se5692-ch-01",
       "skillId": "development-patterns-context",
       "domainId": "child-development-early-learning",
-      "front": "A young child with a disability is embarrassed when an adult uses babyish materials for a functional routine. What principle should guide revision?",
+      "front": "A seven-year-old child with a disability is embarrassed when an adult uses infant or toddler materials for a functional routine. What principle should guide revision?",
       "back": "Use age-respectful materials while adapting task steps and supports to current young child needs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -4369,7 +4375,7 @@
       "skillId": "ifsp-iep-individualized-planning",
       "domainId": "curriculum-planning-instruction",
       "front": "Which draft annual IEP goal is written in measurable terms?",
-      "back": "Given a 150-word instructional passage, the young child will read 120 correct words per minute on three consecutive probes.",
+      "back": "Given a 6-step picture sequence during morning arrival, the child will complete 5 of 6 arrival steps independently on four of five school days.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
@@ -4478,7 +4484,7 @@
       "chapterId": "se5692-ch-05",
       "skillId": "instruction-intervention-routines",
       "domainId": "curriculum-planning-instruction",
-      "front": "A young child solves equations accurately with a step card. What should happen next?",
+      "front": "A young child completes a four-step hand-washing routine accurately using a picture-sequence strip. What should happen next?",
       "back": "Fade or simplify the scaffold gradually while monitoring whether independent accuracy holds.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -4718,7 +4724,7 @@
       "chapterId": "se5692-ch-08",
       "skillId": "assessment-quality-progress",
       "domainId": "assessment",
-      "front": "A vocabulary test is used to decide whether a young child can solve multistep equations. What is the primary concern?",
+      "front": "An expressive picture-naming test is used to decide whether a preschooler has mastered one-to-one counting and cardinality. What is the primary concern?",
       "back": "Validity, because the scores do not support the intended construct interpretation and decision.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -6609,7 +6615,7 @@
       "sampleOutline": [
         "Compliance gaps: Delaying evaluation until October violates the age-3 IEP deadline, skipping the transition conference breaches the 90-day rule, and predetermining a self-contained class violates LRE.",
         "Required timeline: With five months remaining, immediately convene the parent-approved transition conference (at least 90 days before age 3), secure Part B evaluation consent, and complete eligibility and IEP development prior to late August.",
-        "Program continuity: Translate Liam's current Part C IFSP outcomes and Part B IEP goals around functional language and sensory participation, determine whether late-August ESY or immediate preschool services apply, and examine inclusive Head Start or community preschool with itinerant support.",
+        "Program continuity: Translate Liam's current Part C IFSP outcomes into Part B IEP goals around functional language and sensory participation, determine whether late-August ESY or immediate preschool services apply, and examine inclusive Head Start or community preschool with itinerant support.",
         "Safeguards: Deliver Part B procedural safeguards in accessible language, involve parents as equal IEP team members, and schedule a 30-day post-transition check-in."
       ],
       "references": [
@@ -6719,7 +6725,7 @@
       "checklistLabel": "Before deciding",
       "formulasLabel": "Key IDEA rules, timelines & frameworks",
       "checklist": [
-        "Verify the child’s age and statutory program (birth through 2 under IDEA Part C versus ages 3 through 8 under IDEA Part B Section 619) before drafting service plans.",
+        "Verify the child’s age and statutory program (birth through 2 under IDEA Part C versus ages 3 through 5 under IDEA Part B Section 619 (preschool) and ages 6 through 8 under IDEA Part B Section 611 (school-age)) before drafting service plans.",
         "Embed skill instruction inside motivating natural routines (snack, dressing, play centers, diapering, storytime) rather than isolated drill tables.",
         "Check whether environmental modifications, visual supports, and caregiver coaching are prioritized ahead of adult-dependent hand-over-hand prompting."
       ],
@@ -6805,7 +6811,7 @@
       ],
       "cautions": [
         "Never allow a gap in services at age 3 due to late Part C-to-B referrals; federal law requires the Part B IEP to be active on the child’s third birthday if eligible.",
-        "Do not rely on older siblings, neighbors, or bilingual paraprofessionals untrained in interpreting to translate legal Part C IFSP outcomes and Part B IEP goals meetings.",
+        "Do not rely on older siblings, neighbors, or bilingual paraprofessionals untrained in interpreting to interpret at legal Part C IFSP or Part B IEP meetings.",
         "Avoid treating caregiver coaching as passive parent observation while the therapist works one-on-one with the child; active coaching builds caregiver confidence through joint planning, observation, practice, and reflection."
       ],
       "originalStudyAid": true,
@@ -7219,6 +7225,2566 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "special-education-early-childhood-5692-session-ch-01",
+      "title": "Developmental Patterns, Context, and Relationships guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Developmental Patterns, Context, and Relationships\" (Child Development and Early Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-01",
+      "itemIds": [
+        "se5692-b1-001",
+        "se5692-b1-002",
+        "se5692-b1-003",
+        "se5692-b1-004",
+        "se5692-b1-005",
+        "se5692-b1-006",
+        "se5692-b1-007",
+        "se5692-b1-008",
+        "se5692-b1-009",
+        "se5692-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Developmental Patterns, Context, and Relationships\" and the \"Birth-to-8 Developmental Trajectories, Prematurity & Early Access\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Childhood Developmental Domains & Natural-Environment Learning Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Evaluating Bilingual Development and Prematurity in Part C\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Developmental Patterns, Context, and Relationships\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce IDEA Part C Natural Environments, 45-Day Clocks, and Family-Centered IFSP Outcomes\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-02",
+      "title": "Learner Variability, Disability, Sensory, and Health Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Learner Variability, Disability, Sensory, and Health Access\" (Child Development and Early Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-02",
+      "itemIds": [
+        "se5692-b1-017",
+        "se5692-b1-018",
+        "se5692-b1-019",
+        "se5692-b1-020",
+        "se5692-b1-021",
+        "se5692-b2-010",
+        "se5692-b2-011",
+        "se5692-b2-012",
+        "se5692-b2-013",
+        "se5692-b2-014"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Learner Variability, Disability, Sensory, and Health Access\" and the \"Birth-to-8 Developmental Trajectories, Prematurity & Early Access\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Sensory, Motor, and Health-Access Decision Routine in Early Childhood\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Removing Sensory Barriers and Label Bias in Inclusive Pre-K\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Learner Variability, Disability, Sensory, and Health Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Execute the Age-3 Part C to Part B Transition Sequence Without Eligibility or Service Gaps\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-03",
+      "title": "Adaptive Skills and Inclusive Access guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Adaptive Skills and Inclusive Access\" (Curriculum, Planning, and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-03",
+      "itemIds": [
+        "se5692-b1-026",
+        "se5692-b2-022",
+        "se5692-b2-023",
+        "se5692-b2-024",
+        "se5692-b2-025",
+        "se5692-b2-026",
+        "se5692-b1-022",
+        "se5692-b1-023",
+        "se5692-b1-024",
+        "se5692-b1-025"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Adaptive Skills and Inclusive Access\" and the \"Part C IFSP vs Part B IEP, DEC Practices & Embedded Routines\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Inclusive Early-Learning Adaptation Hierarchy & Self-Help Independence Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Over-Assistance with Low-Tech AT in Daily Routines\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Adaptive Skills and Inclusive Access\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prioritize Authentic Play-Based and Routine-Embedded Early Childhood Assessment\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-04",
+      "title": "IFSP, IEP, Outcomes, and Individualized Planning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"IFSP, IEP, Outcomes, and Individualized Planning\" (Curriculum, Planning, and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-04",
+      "itemIds": [
+        "se5692-b2-037",
+        "se5692-b1-027",
+        "se5692-b1-028",
+        "se5692-b1-029",
+        "se5692-b1-030",
+        "se5692-b1-031",
+        "se5692-b1-032",
+        "se5692-b1-033",
+        "se5692-b1-034",
+        "se5692-b1-035"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"IFSP, IEP, Outcomes, and Individualized Planning\" and the \"Part C IFSP vs Part B IEP, DEC Practices & Embedded Routines\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA Part C (IFSP) to Part B Section 619 (IEP) Transition Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Writing Functional Natural-Environment Part C IFSP Outcomes\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"IFSP, IEP, Outcomes, and Individualized Planning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Embed Naturalistic Learning Opportunities Inside Daily Early Childhood Routines\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-05",
+      "title": "Explicit Instruction, Intervention, and Natural Routines guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Explicit Instruction, Intervention, and Natural Routines\" (Curriculum, Planning, and Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-05",
+      "itemIds": [
+        "se5692-b2-039",
+        "se5692-b2-040",
+        "se5692-b2-041",
+        "se5692-b2-042",
+        "se5692-b2-043",
+        "se5692-b2-044",
+        "se5692-b2-045",
+        "se5692-b2-046",
+        "se5692-b1-038",
+        "se5692-b1-039"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Explicit Instruction, Intervention, and Natural Routines\" and the \"Part C IFSP vs Part B IEP, DEC Practices & Embedded Routines\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Embedded Learning Opportunities & Play-Based Naturalistic Instruction Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Embedding Explicit Trials and Prompt Fading in Play Centers\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Explicit Instruction, Intervention, and Natural Routines\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Family-Centered Coaching and Transdisciplinary Role Release Across Early Teams\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-06",
+      "title": "Instructional Response and Systematic Observation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Instructional Response and Systematic Observation\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-06",
+      "itemIds": [
+        "se5692-b2-047",
+        "se5692-b2-048",
+        "se5692-b2-049",
+        "se5692-b2-050",
+        "se5692-b2-051",
+        "se5692-b2-052",
+        "se5692-b2-053",
+        "se5692-b1-047",
+        "se5692-b1-048",
+        "se5692-b1-049"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Instructional Response and Systematic Observation\" and the \"Authentic Early Assessment, Screening, ECO Outcomes & Monitoring\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Systematic Early-Childhood Observation & MTSS Instructional-Response Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using Objective Multi-Setting Observation Over Trait Labeling\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Instructional Response and Systematic Observation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Use Corrected Age for Preterm Infants and Honor Home Language and Cross-Domain Links\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-07",
+      "title": "Functional, Behavioral, and Ecological Evidence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Functional, Behavioral, and Ecological Evidence\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-07",
+      "itemIds": [
+        "se5692-b1-056",
+        "se5692-b1-057",
+        "se5692-b1-058",
+        "se5692-b2-054",
+        "se5692-b2-055",
+        "se5692-b2-056",
+        "se5692-b2-057",
+        "se5692-b2-058",
+        "se5692-b1-054",
+        "se5692-b1-055"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Functional, Behavioral, and Ecological Evidence\" and the \"Authentic Early Assessment, Screening, ECO Outcomes & Monitoring\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Early Childhood Positive Behavior Support (Pyramid Model) & Emotional Co-Regulation Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing Preschool Exclusion Through Pyramid Model FBA\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Functional, Behavioral, and Ecological Evidence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce IDEA Part C Natural Environments, 45-Day Clocks, and Family-Centered IFSP Outcomes\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-08",
+      "title": "Assessment Quality, Progress Monitoring, and Decisions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment Quality, Progress Monitoring, and Decisions\" (Assessment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-08",
+      "itemIds": [
+        "se5692-b1-060",
+        "se5692-b1-061",
+        "se5692-b1-062",
+        "se5692-b1-063",
+        "se5692-b1-064",
+        "se5692-b1-065",
+        "se5692-b1-066",
+        "se5692-b2-059",
+        "se5692-b2-060",
+        "se5692-b2-061"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment Quality, Progress Monitoring, and Decisions\" and the \"Authentic Early Assessment, Screening, ECO Outcomes & Monitoring\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Purpose-Aligned Early Assessment Quality & Progress-Monitoring Decision Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing Single-Score and Language Bias in Eligibility Decisions\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment Quality, Progress Monitoring, and Decisions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Execute the Age-3 Part C to Part B Transition Sequence Without Eligibility or Service Gaps\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-09",
+      "title": "Evaluation, Eligibility, and Family Knowledge guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Evaluation, Eligibility, and Family Knowledge\" (Partnering and Collaborating) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-09",
+      "itemIds": [
+        "se5692-b2-067",
+        "se5692-b2-068",
+        "se5692-b2-069",
+        "se5692-b2-070",
+        "se5692-b2-071",
+        "se5692-b2-072",
+        "se5692-b2-073",
+        "se5692-b2-074",
+        "se5692-b1-067",
+        "se5692-b1-068"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Evaluation, Eligibility, and Family Knowledge\" and the \"Family-Centered Teams, Coaching & Part C-to-B Transitions\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Play-Based, Authentic & Culturally Responsive Early Assessment Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Eliminating Wait-and-See Delays with Family-Centered Child Find\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Evaluation, Eligibility, and Family Knowledge\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Prioritize Authentic Play-Based and Routine-Embedded Early Childhood Assessment\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-10",
+      "title": "Team Coordination, Communication, and Transitions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Team Coordination, Communication, and Transitions\" (Partnering and Collaborating) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-10",
+      "itemIds": [
+        "se5692-b1-078",
+        "se5692-b1-079",
+        "se5692-b1-080",
+        "se5692-b1-081",
+        "se5692-b1-082",
+        "se5692-b1-083",
+        "se5692-b1-084",
+        "se5692-b2-075",
+        "se5692-b2-076",
+        "se5692-b2-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Team Coordination, Communication, and Transitions\" and the \"Family-Centered Teams, Coaching & Part C-to-B Transitions\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Transdisciplinary Primary-Service-Provider & Early-Transition Coordination Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Coordinating Timely Part C-to-Part B Transition with Translation\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Team Coordination, Communication, and Transitions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Embed Naturalistic Learning Opportunities Inside Daily Early Childhood Routines\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-11",
+      "title": "Rights, Ethics, Equity, and Safeguards guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Rights, Ethics, Equity, and Safeguards\" (Legal and Ethical Practices and Professionalism) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-11",
+      "itemIds": [
+        "se5692-b1-085",
+        "se5692-b1-086",
+        "se5692-b1-087",
+        "se5692-b1-088",
+        "se5692-b1-089",
+        "se5692-b1-090",
+        "se5692-b1-091",
+        "se5692-b2-085",
+        "se5692-b2-086",
+        "se5692-b2-087"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Rights, Ethics, Equity, and Safeguards\" and the \"Early Childhood IDEA Safeguards, Child Find, Privacy & Ethics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA, FERPA, ADA, and DEC Ethical Safeguards in Early Childhood\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Stopping Informal Preschool Exclusions and Consent Violations\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Rights, Ethics, Equity, and Safeguards\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Family-Centered Coaching and Transdisciplinary Role Release Across Early Teams\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-ch-12",
+      "title": "Professional Practice, Collaboration, and Advocacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Practice, Collaboration, and Advocacy\" (Legal and Ethical Practices and Professionalism) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "se5692-ch-12",
+      "itemIds": [
+        "se5692-b1-097",
+        "se5692-b1-098",
+        "se5692-b1-099",
+        "se5692-b1-100",
+        "se5692-b2-092",
+        "se5692-b2-093",
+        "se5692-b2-094",
+        "se5692-b2-095",
+        "se5692-b2-096",
+        "se5692-b2-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Practice, Collaboration, and Advocacy\" and the \"Early Childhood IDEA Safeguards, Child Find, Privacy & Ethics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Transdisciplinary Family-Centered Partnership & Assistive Technology Access Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Respecting Credential Scope and Coaching Families with Evidence\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Practice, Collaboration, and Advocacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Use Corrected Age for Preterm Infants and Honor Home Language and Cross-Domain Links\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-trap-repair-sprint",
+      "title": "Praxis Special Education: Early Childhood/Early Intervention (5692) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "se5692-b1-085",
+        "se5692-b1-067",
+        "se5692-b1-047",
+        "se5692-b1-022",
+        "se5692-b1-001",
+        "se5692-b1-086",
+        "se5692-b1-068",
+        "se5692-b1-048",
+        "se5692-b1-023",
+        "se5692-b1-002",
+        "se5692-b1-087",
+        "se5692-b1-069"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Enforce IDEA Part C Natural Environments, 45-Day Clocks, and Family-Centered IFSP Outcomes\", \"Execute the Age-3 Part C to Part B Transition Sequence Without Eligibility or Service Gaps\", \"Prioritize Authentic Play-Based and Routine-Embedded Early Childhood Assessment\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-session-mixed-capstone",
+      "title": "Praxis Special Education: Early Childhood/Early Intervention (5692) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "se5692-b1-004",
+        "se5692-b1-025",
+        "se5692-b1-050",
+        "se5692-b1-070",
+        "se5692-b1-088",
+        "se5692-b1-015",
+        "se5692-b1-036",
+        "se5692-b1-061",
+        "se5692-b1-081",
+        "se5692-b1-099",
+        "se5692-b2-005",
+        "se5692-b2-022",
+        "se5692-b2-052",
+        "se5692-b2-074",
+        "se5692-b2-094"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied ECSE case workshops, outline a response to \"Evaluate a bilingual toddler through transdisciplinary arena assessment\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-01",
+      "topicId": "se5692-ch-01",
+      "topicLabel": "1. Developmental Patterns, Context, and Relationships",
+      "unitId": "child-development-early-learning",
+      "chapterId": "se5692-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Developmental Patterns, Context, and Relationships\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-02",
+      "topicId": "se5692-ch-02",
+      "topicLabel": "2. Learner Variability, Disability, Sensory, and Health Access",
+      "unitId": "child-development-early-learning",
+      "chapterId": "se5692-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Learner Variability, Disability, Sensory, and Health Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-03",
+      "topicId": "se5692-ch-03",
+      "topicLabel": "3. Adaptive Skills and Inclusive Access",
+      "unitId": "curriculum-planning-instruction",
+      "chapterId": "se5692-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Adaptive Skills and Inclusive Access\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-04",
+      "topicId": "se5692-ch-04",
+      "topicLabel": "4. IFSP, IEP, Outcomes, and Individualized Planning",
+      "unitId": "curriculum-planning-instruction",
+      "chapterId": "se5692-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"IFSP, IEP, Outcomes, and Individualized Planning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-05",
+      "topicId": "se5692-ch-05",
+      "topicLabel": "5. Explicit Instruction, Intervention, and Natural Routines",
+      "unitId": "curriculum-planning-instruction",
+      "chapterId": "se5692-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Explicit Instruction, Intervention, and Natural Routines\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-06",
+      "topicId": "se5692-ch-06",
+      "topicLabel": "6. Instructional Response and Systematic Observation",
+      "unitId": "assessment",
+      "chapterId": "se5692-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Instructional Response and Systematic Observation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-07",
+      "topicId": "se5692-ch-07",
+      "topicLabel": "7. Functional, Behavioral, and Ecological Evidence",
+      "unitId": "assessment",
+      "chapterId": "se5692-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Functional, Behavioral, and Ecological Evidence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-08",
+      "topicId": "se5692-ch-08",
+      "topicLabel": "8. Assessment Quality, Progress Monitoring, and Decisions",
+      "unitId": "assessment",
+      "chapterId": "se5692-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment Quality, Progress Monitoring, and Decisions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-09",
+      "topicId": "se5692-ch-09",
+      "topicLabel": "9. Evaluation, Eligibility, and Family Knowledge",
+      "unitId": "partnering-collaborating",
+      "chapterId": "se5692-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Evaluation, Eligibility, and Family Knowledge\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-10",
+      "topicId": "se5692-ch-10",
+      "topicLabel": "10. Team Coordination, Communication, and Transitions",
+      "unitId": "partnering-collaborating",
+      "chapterId": "se5692-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Team Coordination, Communication, and Transitions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-11",
+      "topicId": "se5692-ch-11",
+      "topicLabel": "11. Rights, Ethics, Equity, and Safeguards",
+      "unitId": "legal-ethical-professionalism",
+      "chapterId": "se5692-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Rights, Ethics, Equity, and Safeguards\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-spaced-ch-12",
+      "topicId": "se5692-ch-12",
+      "topicLabel": "12. Professional Practice, Collaboration, and Advocacy",
+      "unitId": "legal-ethical-professionalism",
+      "chapterId": "se5692-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Practice, Collaboration, and Advocacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "special-education-early-childhood-5692-source-01",
+      "title": "Special Education EC/EI (5692) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5692.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-early-childhood-5692-source-02",
+      "title": "Special Education EC/EI (5692) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/special-education-early-childhoodearly-intervention-5692.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-early-childhood-5692-source-03",
+      "title": "Principles of Child Development and Learning and Implications That Inform Practice",
+      "organization": "National Association for the Education of Young Children (NAEYC)",
+      "url": "https://www.naeyc.org/resources/position-statements/dap/principles",
+      "credibility": "NAEYC is the professional association that publishes this position statement. It is an authoritative primary source for NAEYC’s framework, while users should distinguish professional guidance from a test blueprint or a single empirical study.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-early-childhood-5692-source-04",
+      "title": "Part 300 (Part B) — Assistance To States For The Education Of Children With Disabilities - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-early-childhood-5692-source-05",
+      "title": "Part 303 (Part C) — Early Intervention Program For Infants And Toddlers With Disabilities - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/c",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "special-education-early-childhood-5692-unit-review-01",
+      "unitId": "child-development-early-learning",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Developmental Patterns, Context, and Relationships",
+      "chapterId": "se5692-ch-01",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-01-section-01",
+        "se5692-ch-01-section-02",
+        "se5692-ch-01-section-03",
+        "se5692-ch-01-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-001",
+        "se5692-b1-002",
+        "se5692-b1-003",
+        "se5692-b1-004",
+        "se5692-b1-005",
+        "se5692-b1-006",
+        "se5692-b1-007",
+        "se5692-b1-008",
+        "se5692-b1-009",
+        "se5692-b2-001",
+        "se5692-b2-002",
+        "se5692-b2-003",
+        "se5692-b2-004",
+        "se5692-b2-005",
+        "se5692-b2-006",
+        "se5692-b2-007",
+        "se5692-b2-008",
+        "se5692-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-001",
+        "se5692-b1-002",
+        "se5692-b1-003",
+        "se5692-b1-004",
+        "se5692-b1-005",
+        "se5692-b1-006",
+        "se5692-b1-007",
+        "se5692-b1-008",
+        "se5692-b1-009",
+        "se5692-b2-001",
+        "se5692-b2-002",
+        "se5692-b2-003"
+      ],
+      "purpose": "Consolidate \"Developmental Patterns, Context, and Relationships\" (Child Development and Early Learning) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-02",
+      "unitId": "child-development-early-learning",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Learner Variability, Disability, Sensory, and Health Access",
+      "chapterId": "se5692-ch-02",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-02-section-01",
+        "se5692-ch-02-section-02",
+        "se5692-ch-02-section-03",
+        "se5692-ch-02-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-010",
+        "se5692-b1-011",
+        "se5692-b1-012",
+        "se5692-b1-013",
+        "se5692-b1-014",
+        "se5692-b1-015",
+        "se5692-b1-016",
+        "se5692-b1-017",
+        "se5692-b1-018",
+        "se5692-b1-019",
+        "se5692-b1-020",
+        "se5692-b1-021",
+        "se5692-b2-010",
+        "se5692-b2-011",
+        "se5692-b2-012",
+        "se5692-b2-013",
+        "se5692-b2-014",
+        "se5692-b2-015",
+        "se5692-b2-016",
+        "se5692-b2-017",
+        "se5692-b2-018",
+        "se5692-b2-019",
+        "se5692-b2-020",
+        "se5692-b2-021"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-010",
+        "se5692-b1-011",
+        "se5692-b1-012",
+        "se5692-b1-013",
+        "se5692-b1-014",
+        "se5692-b1-015",
+        "se5692-b1-016",
+        "se5692-b1-017",
+        "se5692-b1-018",
+        "se5692-b1-019",
+        "se5692-b1-020",
+        "se5692-b1-021"
+      ],
+      "purpose": "Consolidate \"Learner Variability, Disability, Sensory, and Health Access\" (Child Development and Early Learning) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-03",
+      "unitId": "curriculum-planning-instruction",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Adaptive Skills and Inclusive Access",
+      "chapterId": "se5692-ch-03",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-03-section-01",
+        "se5692-ch-03-section-02",
+        "se5692-ch-03-section-03",
+        "se5692-ch-03-section-04"
+      ],
+      "itemIds": [
+        "se5692-b2-023",
+        "se5692-b2-024",
+        "se5692-b2-025",
+        "se5692-b2-026",
+        "se5692-b2-027",
+        "se5692-b2-028",
+        "se5692-b2-029",
+        "se5692-b2-030",
+        "se5692-b2-031",
+        "se5692-b2-032",
+        "se5692-b2-033",
+        "se5692-b2-034",
+        "se5692-b2-035",
+        "se5692-b2-036",
+        "se5692-b2-037",
+        "se5692-b2-038",
+        "se5692-b2-039",
+        "se5692-b2-040",
+        "se5692-b2-041",
+        "se5692-b2-042",
+        "se5692-b2-043",
+        "se5692-b2-044",
+        "se5692-b2-045",
+        "se5692-b2-046",
+        "se5692-b1-022",
+        "se5692-b1-023",
+        "se5692-b1-024",
+        "se5692-b1-025",
+        "se5692-b1-026",
+        "se5692-b1-027",
+        "se5692-b1-028",
+        "se5692-b1-029",
+        "se5692-b1-030",
+        "se5692-b1-031",
+        "se5692-b1-032",
+        "se5692-b1-033",
+        "se5692-b1-034",
+        "se5692-b1-035",
+        "se5692-b1-036",
+        "se5692-b1-037",
+        "se5692-b1-038",
+        "se5692-b1-039",
+        "se5692-b1-040",
+        "se5692-b1-041",
+        "se5692-b1-042"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b2-023",
+        "se5692-b2-024",
+        "se5692-b2-025",
+        "se5692-b2-026",
+        "se5692-b2-027",
+        "se5692-b2-028",
+        "se5692-b2-029",
+        "se5692-b2-030",
+        "se5692-b2-031",
+        "se5692-b2-032",
+        "se5692-b2-033",
+        "se5692-b2-034"
+      ],
+      "purpose": "Consolidate \"Adaptive Skills and Inclusive Access\" (Curriculum, Planning, and Instruction) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-04",
+      "unitId": "curriculum-planning-instruction",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: IFSP, IEP, Outcomes, and Individualized Planning",
+      "chapterId": "se5692-ch-04",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-04-section-01",
+        "se5692-ch-04-section-02",
+        "se5692-ch-04-section-03",
+        "se5692-ch-04-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-027",
+        "se5692-b1-028",
+        "se5692-b1-029",
+        "se5692-b1-030",
+        "se5692-b1-031",
+        "se5692-b1-032",
+        "se5692-b1-033",
+        "se5692-b1-034",
+        "se5692-b1-035",
+        "se5692-b1-036",
+        "se5692-b1-037",
+        "se5692-b2-027",
+        "se5692-b2-028",
+        "se5692-b2-029",
+        "se5692-b2-030",
+        "se5692-b2-031",
+        "se5692-b2-032",
+        "se5692-b2-033",
+        "se5692-b2-034",
+        "se5692-b2-035",
+        "se5692-b2-036",
+        "se5692-b2-037"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-027",
+        "se5692-b1-028",
+        "se5692-b1-029",
+        "se5692-b1-030",
+        "se5692-b1-031",
+        "se5692-b1-032",
+        "se5692-b1-033",
+        "se5692-b1-034",
+        "se5692-b1-035",
+        "se5692-b1-036",
+        "se5692-b1-037",
+        "se5692-b2-027"
+      ],
+      "purpose": "Consolidate \"IFSP, IEP, Outcomes, and Individualized Planning\" (Curriculum, Planning, and Instruction) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-05",
+      "unitId": "curriculum-planning-instruction",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Explicit Instruction, Intervention, and Natural Routines",
+      "chapterId": "se5692-ch-05",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-05-section-01",
+        "se5692-ch-05-section-02",
+        "se5692-ch-05-section-03",
+        "se5692-ch-05-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-038",
+        "se5692-b1-039",
+        "se5692-b1-040",
+        "se5692-b1-041",
+        "se5692-b1-042",
+        "se5692-b1-043",
+        "se5692-b1-044",
+        "se5692-b1-045",
+        "se5692-b1-046",
+        "se5692-b2-038",
+        "se5692-b2-039",
+        "se5692-b2-040",
+        "se5692-b2-041",
+        "se5692-b2-042",
+        "se5692-b2-043",
+        "se5692-b2-044",
+        "se5692-b2-045",
+        "se5692-b2-046"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-038",
+        "se5692-b1-039",
+        "se5692-b1-040",
+        "se5692-b1-041",
+        "se5692-b1-042",
+        "se5692-b1-043",
+        "se5692-b1-044",
+        "se5692-b1-045",
+        "se5692-b1-046",
+        "se5692-b2-038",
+        "se5692-b2-039",
+        "se5692-b2-040"
+      ],
+      "purpose": "Consolidate \"Explicit Instruction, Intervention, and Natural Routines\" (Curriculum, Planning, and Instruction) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-06",
+      "unitId": "assessment",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Instructional Response and Systematic Observation",
+      "chapterId": "se5692-ch-06",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-06-section-01",
+        "se5692-ch-06-section-02",
+        "se5692-ch-06-section-03",
+        "se5692-ch-06-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-047",
+        "se5692-b1-048",
+        "se5692-b1-049",
+        "se5692-b1-050",
+        "se5692-b1-051",
+        "se5692-b1-052",
+        "se5692-b1-053",
+        "se5692-b2-047",
+        "se5692-b2-048",
+        "se5692-b2-049",
+        "se5692-b2-050",
+        "se5692-b2-051",
+        "se5692-b2-052",
+        "se5692-b2-053"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-047",
+        "se5692-b1-048",
+        "se5692-b1-049",
+        "se5692-b1-050",
+        "se5692-b1-051",
+        "se5692-b1-052",
+        "se5692-b1-053",
+        "se5692-b2-047",
+        "se5692-b2-048",
+        "se5692-b2-049",
+        "se5692-b2-050",
+        "se5692-b2-051"
+      ],
+      "purpose": "Consolidate \"Instructional Response and Systematic Observation\" (Assessment) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-07",
+      "unitId": "assessment",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Functional, Behavioral, and Ecological Evidence",
+      "chapterId": "se5692-ch-07",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-07-section-01",
+        "se5692-ch-07-section-02",
+        "se5692-ch-07-section-03",
+        "se5692-ch-07-section-04"
+      ],
+      "itemIds": [
+        "se5692-b2-065",
+        "se5692-b2-066",
+        "se5692-b1-047",
+        "se5692-b1-048",
+        "se5692-b1-049",
+        "se5692-b1-050",
+        "se5692-b1-051",
+        "se5692-b1-052",
+        "se5692-b1-053",
+        "se5692-b1-054",
+        "se5692-b1-055",
+        "se5692-b1-056",
+        "se5692-b1-057",
+        "se5692-b1-058",
+        "se5692-b1-059",
+        "se5692-b1-060",
+        "se5692-b1-061",
+        "se5692-b1-062",
+        "se5692-b1-063",
+        "se5692-b1-064",
+        "se5692-b1-065",
+        "se5692-b1-066",
+        "se5692-b2-047",
+        "se5692-b2-048",
+        "se5692-b2-049",
+        "se5692-b2-050",
+        "se5692-b2-051",
+        "se5692-b2-052",
+        "se5692-b2-053",
+        "se5692-b2-054",
+        "se5692-b2-055",
+        "se5692-b2-056",
+        "se5692-b2-057",
+        "se5692-b2-058",
+        "se5692-b2-059",
+        "se5692-b2-060",
+        "se5692-b2-061",
+        "se5692-b2-062",
+        "se5692-b2-063",
+        "se5692-b2-064"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b2-065",
+        "se5692-b2-066",
+        "se5692-b1-047",
+        "se5692-b1-048",
+        "se5692-b1-049",
+        "se5692-b1-050",
+        "se5692-b1-051",
+        "se5692-b1-052",
+        "se5692-b1-053",
+        "se5692-b1-054",
+        "se5692-b1-055",
+        "se5692-b1-056"
+      ],
+      "purpose": "Consolidate \"Functional, Behavioral, and Ecological Evidence\" (Assessment) across 4 lessons and 40 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-08",
+      "unitId": "assessment",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Assessment Quality, Progress Monitoring, and Decisions",
+      "chapterId": "se5692-ch-08",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-08-section-01",
+        "se5692-ch-08-section-02",
+        "se5692-ch-08-section-03",
+        "se5692-ch-08-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-059",
+        "se5692-b1-060",
+        "se5692-b1-061",
+        "se5692-b1-062",
+        "se5692-b1-063",
+        "se5692-b1-064",
+        "se5692-b1-065",
+        "se5692-b1-066",
+        "se5692-b2-059",
+        "se5692-b2-060",
+        "se5692-b2-061",
+        "se5692-b2-062",
+        "se5692-b2-063",
+        "se5692-b2-064",
+        "se5692-b2-065",
+        "se5692-b2-066"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-059",
+        "se5692-b1-060",
+        "se5692-b1-061",
+        "se5692-b1-062",
+        "se5692-b1-063",
+        "se5692-b1-064",
+        "se5692-b1-065",
+        "se5692-b1-066",
+        "se5692-b2-059",
+        "se5692-b2-060",
+        "se5692-b2-061",
+        "se5692-b2-062"
+      ],
+      "purpose": "Consolidate \"Assessment Quality, Progress Monitoring, and Decisions\" (Assessment) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-09",
+      "unitId": "partnering-collaborating",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Evaluation, Eligibility, and Family Knowledge",
+      "chapterId": "se5692-ch-09",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-09-section-01",
+        "se5692-ch-09-section-02",
+        "se5692-ch-09-section-03",
+        "se5692-ch-09-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-067",
+        "se5692-b1-068",
+        "se5692-b1-069",
+        "se5692-b1-070",
+        "se5692-b1-071",
+        "se5692-b1-072",
+        "se5692-b1-073",
+        "se5692-b1-074",
+        "se5692-b2-067",
+        "se5692-b2-068",
+        "se5692-b2-069",
+        "se5692-b2-070",
+        "se5692-b2-071",
+        "se5692-b2-072",
+        "se5692-b2-073",
+        "se5692-b2-074"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-067",
+        "se5692-b1-068",
+        "se5692-b1-069",
+        "se5692-b1-070",
+        "se5692-b1-071",
+        "se5692-b1-072",
+        "se5692-b1-073",
+        "se5692-b1-074",
+        "se5692-b2-067",
+        "se5692-b2-068",
+        "se5692-b2-069",
+        "se5692-b2-070"
+      ],
+      "purpose": "Consolidate \"Evaluation, Eligibility, and Family Knowledge\" (Partnering and Collaborating) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-10",
+      "unitId": "partnering-collaborating",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Team Coordination, Communication, and Transitions",
+      "chapterId": "se5692-ch-10",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-10-section-01",
+        "se5692-ch-10-section-02",
+        "se5692-ch-10-section-03",
+        "se5692-ch-10-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-075",
+        "se5692-b1-076",
+        "se5692-b1-077",
+        "se5692-b1-078",
+        "se5692-b1-079",
+        "se5692-b1-080",
+        "se5692-b1-081",
+        "se5692-b1-082",
+        "se5692-b1-083",
+        "se5692-b1-084",
+        "se5692-b2-075",
+        "se5692-b2-076",
+        "se5692-b2-077",
+        "se5692-b2-078",
+        "se5692-b2-079",
+        "se5692-b2-080",
+        "se5692-b2-081",
+        "se5692-b2-082",
+        "se5692-b2-083",
+        "se5692-b2-084"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-075",
+        "se5692-b1-076",
+        "se5692-b1-077",
+        "se5692-b1-078",
+        "se5692-b1-079",
+        "se5692-b1-080",
+        "se5692-b1-081",
+        "se5692-b1-082",
+        "se5692-b1-083",
+        "se5692-b1-084",
+        "se5692-b2-075",
+        "se5692-b2-076"
+      ],
+      "purpose": "Consolidate \"Team Coordination, Communication, and Transitions\" (Partnering and Collaborating) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-11",
+      "unitId": "legal-ethical-professionalism",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Rights, Ethics, Equity, and Safeguards",
+      "chapterId": "se5692-ch-11",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-11-section-01",
+        "se5692-ch-11-section-02",
+        "se5692-ch-11-section-03",
+        "se5692-ch-11-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-085",
+        "se5692-b1-086",
+        "se5692-b1-087",
+        "se5692-b1-088",
+        "se5692-b1-089",
+        "se5692-b1-090",
+        "se5692-b1-091",
+        "se5692-b2-085",
+        "se5692-b2-086",
+        "se5692-b2-087",
+        "se5692-b2-088",
+        "se5692-b2-089",
+        "se5692-b2-090",
+        "se5692-b2-091"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-085",
+        "se5692-b1-086",
+        "se5692-b1-087",
+        "se5692-b1-088",
+        "se5692-b1-089",
+        "se5692-b1-090",
+        "se5692-b1-091",
+        "se5692-b2-085",
+        "se5692-b2-086",
+        "se5692-b2-087",
+        "se5692-b2-088",
+        "se5692-b2-089"
+      ],
+      "purpose": "Consolidate \"Rights, Ethics, Equity, and Safeguards\" (Legal and Ethical Practices and Professionalism) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-unit-review-12",
+      "unitId": "legal-ethical-professionalism",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Professional Practice, Collaboration, and Advocacy",
+      "chapterId": "se5692-ch-12",
+      "topicDiagnosticRouteIds": [
+        "se5692-ch-12-section-01",
+        "se5692-ch-12-section-02",
+        "se5692-ch-12-section-03",
+        "se5692-ch-12-section-04"
+      ],
+      "itemIds": [
+        "se5692-b1-092",
+        "se5692-b1-093",
+        "se5692-b1-094",
+        "se5692-b1-095",
+        "se5692-b1-096",
+        "se5692-b1-097",
+        "se5692-b1-098",
+        "se5692-b1-099",
+        "se5692-b1-100",
+        "se5692-b2-092",
+        "se5692-b2-093",
+        "se5692-b2-094",
+        "se5692-b2-095",
+        "se5692-b2-096",
+        "se5692-b2-097",
+        "se5692-b2-098",
+        "se5692-b2-099",
+        "se5692-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "se5692-b1-092",
+        "se5692-b1-093",
+        "se5692-b1-094",
+        "se5692-b1-095",
+        "se5692-b1-096",
+        "se5692-b1-097",
+        "se5692-b1-098",
+        "se5692-b1-099",
+        "se5692-b1-100",
+        "se5692-b2-092",
+        "se5692-b2-093",
+        "se5692-b2-094"
+      ],
+      "purpose": "Consolidate \"Professional Practice, Collaboration, and Advocacy\" (Legal and Ethical Practices and Professionalism) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "special-education-early-childhood-5692-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Special Education: Early Childhood/Early Intervention (5692) blueprint domains.",
+      "focus": [
+        "Child Development and Early Learning",
+        "Curriculum, Planning, and Instruction",
+        "Assessment",
+        "Partnering and Collaborating"
+      ],
+      "itemIds": [
+        "se5692-b1-001",
+        "se5692-b1-067",
+        "se5692-b1-023",
+        "se5692-b1-086",
+        "se5692-b1-049",
+        "se5692-b1-004",
+        "se5692-b1-070",
+        "se5692-b1-026",
+        "se5692-b1-089",
+        "se5692-b1-052",
+        "se5692-b1-007",
+        "se5692-b1-073",
+        "se5692-b1-029",
+        "se5692-b1-092",
+        "se5692-b1-055",
+        "se5692-b1-010",
+        "se5692-b1-076",
+        "se5692-b1-032",
+        "se5692-b1-095",
+        "se5692-b1-058",
+        "se5692-b1-013",
+        "se5692-b1-079",
+        "se5692-b1-035",
+        "se5692-b1-098",
+        "se5692-b1-061",
+        "se5692-b1-016",
+        "se5692-b1-082",
+        "se5692-b1-038",
+        "se5692-b2-085",
+        "se5692-b1-064",
+        "se5692-b1-019",
+        "se5692-b2-067",
+        "se5692-b1-041",
+        "se5692-b2-088",
+        "se5692-b2-047",
+        "se5692-b2-001",
+        "se5692-b2-070",
+        "se5692-b1-044",
+        "se5692-b2-091",
+        "se5692-b2-050"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Special Education: Early Childhood/Early Intervention (5692) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Assessment",
+        "Partnering and Collaborating",
+        "Legal and Ethical Practices and Professionalism",
+        "Child Development and Early Learning"
+      ],
+      "itemIds": [
+        "se5692-b1-022",
+        "se5692-b1-085",
+        "se5692-b1-048",
+        "se5692-b1-003",
+        "se5692-b1-069",
+        "se5692-b1-025",
+        "se5692-b1-088",
+        "se5692-b1-051",
+        "se5692-b1-006",
+        "se5692-b1-072",
+        "se5692-b1-028",
+        "se5692-b1-091",
+        "se5692-b1-054",
+        "se5692-b1-009",
+        "se5692-b1-075",
+        "se5692-b1-031",
+        "se5692-b1-094",
+        "se5692-b1-057",
+        "se5692-b1-012",
+        "se5692-b1-078",
+        "se5692-b1-034",
+        "se5692-b1-097",
+        "se5692-b1-060",
+        "se5692-b1-015",
+        "se5692-b1-081",
+        "se5692-b1-037",
+        "se5692-b1-100",
+        "se5692-b1-063",
+        "se5692-b1-018",
+        "se5692-b1-084",
+        "se5692-b1-040",
+        "se5692-b2-087",
+        "se5692-b1-066",
+        "se5692-b1-021",
+        "se5692-b2-069",
+        "se5692-b1-043",
+        "se5692-b2-090",
+        "se5692-b2-049",
+        "se5692-b2-003",
+        "se5692-b2-072"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Special Education: Early Childhood/Early Intervention (5692) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Treating Part C Natural Environments as Clinic Pull-Out and Child-Only Outcomes",
+        "Missing Age-3 Part C to Part B Transition Timelines and Eligibility Shifts",
+        "Replacing Authentic Play-Based Assessment with Rigid Table-Top Standardized Testing"
+      ],
+      "itemIds": [
+        "se5692-b1-047",
+        "se5692-b1-002",
+        "se5692-b1-068",
+        "se5692-b1-024",
+        "se5692-b1-087",
+        "se5692-b1-050",
+        "se5692-b1-005",
+        "se5692-b1-071",
+        "se5692-b1-027",
+        "se5692-b1-090",
+        "se5692-b1-053",
+        "se5692-b1-008",
+        "se5692-b1-074",
+        "se5692-b1-030",
+        "se5692-b1-093",
+        "se5692-b1-056",
+        "se5692-b1-011",
+        "se5692-b1-077",
+        "se5692-b1-033",
+        "se5692-b1-096",
+        "se5692-b1-059",
+        "se5692-b1-014",
+        "se5692-b1-080",
+        "se5692-b1-036",
+        "se5692-b1-099",
+        "se5692-b1-062",
+        "se5692-b1-017",
+        "se5692-b1-083",
+        "se5692-b1-039",
+        "se5692-b2-086",
+        "se5692-b1-065",
+        "se5692-b1-020",
+        "se5692-b2-068",
+        "se5692-b1-042",
+        "se5692-b2-089",
+        "se5692-b2-048",
+        "se5692-b2-002",
+        "se5692-b2-071",
+        "se5692-b1-045",
+        "se5692-b2-092"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "special-education-early-childhood-5692-form-internal-a",
+      "title": "Internal practice form A (Praxis Special Education: Early Childhood/Early Intervention (5692))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "se5692-b1-001",
+        "se5692-b1-067",
+        "se5692-b1-023",
+        "se5692-b1-086",
+        "se5692-b1-049",
+        "se5692-b1-004",
+        "se5692-b1-070",
+        "se5692-b1-026",
+        "se5692-b1-089",
+        "se5692-b1-052",
+        "se5692-b1-007",
+        "se5692-b1-073",
+        "se5692-b1-029",
+        "se5692-b1-092",
+        "se5692-b1-055",
+        "se5692-b1-010",
+        "se5692-b1-076",
+        "se5692-b1-032",
+        "se5692-b1-095",
+        "se5692-b1-058",
+        "se5692-b1-013",
+        "se5692-b1-079",
+        "se5692-b1-035",
+        "se5692-b1-098",
+        "se5692-b1-061",
+        "se5692-b1-016",
+        "se5692-b1-082",
+        "se5692-b1-038",
+        "se5692-b2-085",
+        "se5692-b1-064",
+        "se5692-b1-019",
+        "se5692-b2-067",
+        "se5692-b1-041",
+        "se5692-b2-088",
+        "se5692-b2-047",
+        "se5692-b2-001",
+        "se5692-b2-070",
+        "se5692-b1-044",
+        "se5692-b2-091",
+        "se5692-b2-050",
+        "se5692-b2-004",
+        "se5692-b2-073",
+        "se5692-b2-022",
+        "se5692-b2-094",
+        "se5692-b2-053",
+        "se5692-b2-007",
+        "se5692-b2-076",
+        "se5692-b2-025",
+        "se5692-b2-097",
+        "se5692-b2-056"
+      ],
+      "topicIds": [
+        "se5692-ch-01",
+        "se5692-ch-09",
+        "se5692-ch-03",
+        "se5692-ch-11",
+        "se5692-ch-06",
+        "se5692-ch-04",
+        "se5692-ch-12",
+        "se5692-ch-07",
+        "se5692-ch-02",
+        "se5692-ch-10",
+        "se5692-ch-08",
+        "se5692-ch-05"
+      ],
+      "unitIds": [
+        "child-development-early-learning",
+        "partnering-collaborating",
+        "curriculum-planning-instruction",
+        "legal-ethical-professionalism",
+        "assessment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-form-internal-b",
+      "title": "Internal practice form B (Praxis Special Education: Early Childhood/Early Intervention (5692))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "se5692-b1-022",
+        "se5692-b1-085",
+        "se5692-b1-048",
+        "se5692-b1-003",
+        "se5692-b1-069",
+        "se5692-b1-025",
+        "se5692-b1-088",
+        "se5692-b1-051",
+        "se5692-b1-006",
+        "se5692-b1-072",
+        "se5692-b1-028",
+        "se5692-b1-091",
+        "se5692-b1-054",
+        "se5692-b1-009",
+        "se5692-b1-075",
+        "se5692-b1-031",
+        "se5692-b1-094",
+        "se5692-b1-057",
+        "se5692-b1-012",
+        "se5692-b1-078",
+        "se5692-b1-034",
+        "se5692-b1-097",
+        "se5692-b1-060",
+        "se5692-b1-015",
+        "se5692-b1-081",
+        "se5692-b1-037",
+        "se5692-b1-100",
+        "se5692-b1-063",
+        "se5692-b1-018",
+        "se5692-b1-084",
+        "se5692-b1-040",
+        "se5692-b2-087",
+        "se5692-b1-066",
+        "se5692-b1-021",
+        "se5692-b2-069",
+        "se5692-b1-043",
+        "se5692-b2-090",
+        "se5692-b2-049",
+        "se5692-b2-003",
+        "se5692-b2-072",
+        "se5692-b1-046",
+        "se5692-b2-093",
+        "se5692-b2-052",
+        "se5692-b2-006",
+        "se5692-b2-075",
+        "se5692-b2-024",
+        "se5692-b2-096",
+        "se5692-b2-055",
+        "se5692-b2-009",
+        "se5692-b2-078"
+      ],
+      "topicIds": [
+        "se5692-ch-03",
+        "se5692-ch-11",
+        "se5692-ch-06",
+        "se5692-ch-01",
+        "se5692-ch-09",
+        "se5692-ch-04",
+        "se5692-ch-07",
+        "se5692-ch-10",
+        "se5692-ch-12",
+        "se5692-ch-02",
+        "se5692-ch-08",
+        "se5692-ch-05"
+      ],
+      "unitIds": [
+        "curriculum-planning-instruction",
+        "legal-ethical-professionalism",
+        "assessment",
+        "child-development-early-learning",
+        "partnering-collaborating"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-early-childhood-5692-form-internal-c",
+      "title": "Internal practice form C (Praxis Special Education: Early Childhood/Early Intervention (5692))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "se5692-b1-047",
+        "se5692-b1-002",
+        "se5692-b1-068",
+        "se5692-b1-024",
+        "se5692-b1-087",
+        "se5692-b1-050",
+        "se5692-b1-005",
+        "se5692-b1-071",
+        "se5692-b1-027",
+        "se5692-b1-090",
+        "se5692-b1-053",
+        "se5692-b1-008",
+        "se5692-b1-074",
+        "se5692-b1-030",
+        "se5692-b1-093",
+        "se5692-b1-056",
+        "se5692-b1-011",
+        "se5692-b1-077",
+        "se5692-b1-033",
+        "se5692-b1-096",
+        "se5692-b1-059",
+        "se5692-b1-014",
+        "se5692-b1-080",
+        "se5692-b1-036",
+        "se5692-b1-099",
+        "se5692-b1-062",
+        "se5692-b1-017",
+        "se5692-b1-083",
+        "se5692-b1-039",
+        "se5692-b2-086",
+        "se5692-b1-065",
+        "se5692-b1-020",
+        "se5692-b2-068",
+        "se5692-b1-042",
+        "se5692-b2-089",
+        "se5692-b2-048",
+        "se5692-b2-002",
+        "se5692-b2-071",
+        "se5692-b1-045",
+        "se5692-b2-092",
+        "se5692-b2-051",
+        "se5692-b2-005",
+        "se5692-b2-074",
+        "se5692-b2-023",
+        "se5692-b2-095",
+        "se5692-b2-054",
+        "se5692-b2-008",
+        "se5692-b2-077",
+        "se5692-b2-026",
+        "se5692-b2-098"
+      ],
+      "topicIds": [
+        "se5692-ch-06",
+        "se5692-ch-01",
+        "se5692-ch-09",
+        "se5692-ch-03",
+        "se5692-ch-11",
+        "se5692-ch-04",
+        "se5692-ch-12",
+        "se5692-ch-07",
+        "se5692-ch-02",
+        "se5692-ch-10",
+        "se5692-ch-08",
+        "se5692-ch-05"
+      ],
+      "unitIds": [
+        "assessment",
+        "child-development-early-learning",
+        "partnering-collaborating",
+        "curriculum-planning-instruction",
+        "legal-ethical-professionalism"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

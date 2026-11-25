@@ -33,9 +33,33 @@
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice' },
     symbol: { href: 'packets-symbol-runner.html', name: 'Make Symbol Runner practice' },
     read: { href: 'packets-read-along.html', name: 'Make a read-along' },
+    choice: { href: 'packets-choice.html', name: 'Choice, Sort & Write' },
+    maze: { href: 'packets-maze.html', name: 'CBM-Maze Reading' },
+    manipulatives: { href: 'packets-manipulatives.html', name: 'Visual Math Manipulatives' },
+    stem: { href: 'packets-stem-lab.html', name: 'STEM Labs' },
+    life: { href: 'packets-life-skills.html', name: 'Life Skills & Transition' },
+    aac: { href: 'packets-aac.html', name: 'AAC Boards' },
+    sel: { href: 'packets-sel.html', name: 'Focus & UDL Toolkits' },
+    playlist: { href: 'packets-playlist.html', name: 'Unit Playlists' },
+    compile: { href: 'packets-compile.html', name: 'Compile Activity' },
     results: { href: 'packets-results.html', name: 'Add up results' },
     verify: { href: 'packets-verify.html', name: 'Look inside a file' },
   };
+  function extendedKind(blocks, manifest) {
+    if (!blocks.length) return '';
+    var every = function (re) { return blocks.every(function (b) { return re.test(b.activity); }); };
+    var some = function (re) { return blocks.some(function (b) { return re.test(b.activity); }); };
+    if (some(/^playlist_roadmap$/) || (isObject(manifest && manifest.builder) && /playlist/i.test(String(manifest.builder.name || '')))) return 'playlist';
+    if ((isObject(manifest && manifest.compiled) && manifest.compiled.sourceKind) || some(/^(?:compiled_quiz|compiled_cloze|branching_adventure|anchor_study)$/)) return 'compile';
+    if (every(/^maze_reading$/)) return 'maze';
+    if (every(/^(?:choice_board|concept_sort|sequence_order|tiered_writing)$/)) return 'choice';
+    if (every(/^manip_/)) return 'manipulatives';
+    if (every(/^stem_/)) return 'stem';
+    if (every(/^life_/)) return 'life';
+    if (every(/^aac_board$/)) return 'aac';
+    if (every(/^sel_/)) return 'sel';
+    return '';
+  }
   var WORD = /^[a-z]{2,24}$/;
   var READ_ALONG = 'This is a read-along. Make a read-along makes it, and can open it again.';
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
@@ -209,6 +233,8 @@
     var m = parts.manifest || {}, lesson = parts.lesson;
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var packet = isObject(m.packet) ? m.packet : {};
+    var ext = extendedKind(blocks, m);
+    if (ext) return elsewhere(ext, out);
     // Vocabulary practice and vocabulary checks (packet_vocab_builder.js) are made, and opened again, on their own page.
     if (blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); })) return no('vocab', 'This is vocabulary ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make vocabulary practice makes it, and can open it again.', PAGES.vocab);
     if (blocks.length && blocks.every(function (block) { return block.activity === 'symbol_runner'; })) return no('symbol', 'This is Symbol Runner ' + (packet.mode === 'check' || lesson.mode === 'probe' ? 'check' : 'practice') + '. Make Symbol Runner practice makes it, and can open it again.', PAGES.symbol);
@@ -338,7 +364,9 @@
     var lesson = parts.lesson, m = parts.manifest || {}, packet = isObject(m.packet) ? m.packet : {};
     var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
     var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
+    var ext = extendedKind(blocks, m);
     var kind = !blocks.length ? 'other'
+      : ext ? ext
       : blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
       : blocks.every(function (block) { return block.activity === 'symbol_runner'; }) ? 'symbol'
       : blocks.every(function (block) { return block.activity === 'read_along'; }) ? 'read'
@@ -346,10 +374,23 @@
     return { parts: parts, lesson: lesson, manifest: m, blocks: blocks, kind: kind };
   }
   function elsewhere(kind, out) {
-    var said = { vocab: 'This is vocabulary practice or a vocabulary check. Make vocabulary practice makes it, and can open it again.',
+    var said = {
+      vocab: 'This is vocabulary practice or a vocabulary check. Make vocabulary practice makes it, and can open it again.',
       symbol: 'This is Symbol Runner practice or a Symbol Runner check. Make Symbol Runner practice makes it, and can open it again.',
-      check: 'This is a math check. Make a math check makes it, and can open it again.', math: 'This is math fact practice. Make math fact practice makes it, and can open it again.',
-      words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.', read: READ_ALONG };
+      check: 'This is a math check. Make a math check makes it, and can open it again.',
+      math: 'This is math fact practice. Make math fact practice makes it, and can open it again.',
+      words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.',
+      read: READ_ALONG,
+      choice: 'This is a Choice, Sort & Write file. Choice, Sort & Write makes it, and can open it again.',
+      maze: 'This is a CBM-Maze reading file. CBM-Maze Reading makes it, and can open it again.',
+      manipulatives: 'This is a Visual Math Manipulatives file. Visual Math Manipulatives makes it, and can open it again.',
+      stem: 'This is a STEM Lab file. STEM Labs makes it, and can open it again.',
+      life: 'This is a Life Skills & Transition file. Life Skills & Transition makes it, and can open it again.',
+      aac: 'This is an AAC communication board. AAC Boards makes it, and can open it again.',
+      sel: 'This is a Focus & UDL toolkit. Focus & UDL Toolkits makes it, and can open it again.',
+      playlist: 'This is a Unit Playlist file. Unit Playlists makes it, and can open it again.',
+      compile: 'This is a compiled activity file. Compile Activity makes it, and can open it again.',
+    };
     out.kind = kind; out.why = said[kind] || 'This file was not made on this page.'; out.page = PAGES[kind] || null;
     return out;
   }

@@ -3114,9 +3114,10 @@ var wsActivityExampleText = function (id) {
                 const style = typeof getComputedStyle === 'function' ? getComputedStyle(el) : null;
                 return !style || (style.display !== 'none' && style.visibility !== 'hidden');
             });
+            _ensureWordSoundsSetupA11yCss();
             const focusTimer = setTimeout(() => { const f = getFocusable(); (f[0] || root).focus(); }, 0);
             const onKeyDown = (e) => {
-                if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+                if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (trapStack && trapStack.length > 0 && trapStack[trapStack.length - 1] !== trap) return;
                 if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (typeof onClose === 'function') onClose(); return; }
                 if (e.key !== 'Tab') return;
@@ -3494,7 +3495,7 @@ var wsActivityExampleText = function (id) {
             return <span className={`text-[10px] font-semibold ${good ? 'text-emerald-700' : 'text-amber-700'}`} title={c.note || ''}>{good ? T('word_sounds.voice_pack_sounds_right', '✓ sounds right') : ('⚠ ' + (c.note || T('word_sounds.voice_pack_try_again', 'try again')))}</span>;
         };
         return (
-            <div ref={modalRootRef} tabIndex={-1} className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={T('word_sounds.voice_pack_dialog_label', 'Phoneme Voice Pack editor')}>
+            <div ref={modalRootRef} tabIndex={-1} data-ws-voice-pack-dialog="true" className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={T('word_sounds.voice_pack_dialog_label', 'Phoneme Voice Pack editor')}>
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-700 to-purple-700 text-white">
                         <div>
@@ -4359,7 +4360,7 @@ function useWordSoundsSyllableExitGuard(getDirtyWords, translate) {
     h('div', { ref: noticeRef, role: 'alertdialog', 'aria-modal': true, 'aria-labelledby': titleId, 'aria-describedby': descriptionId,
       'data-syllable-exit-notice': true, className: 'w-full max-w-lg rounded-2xl border border-amber-400 bg-white p-5 text-slate-900 shadow-xl',
       onKeyDownCapture: event => {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         const trapRoot = noticeRef.current;
         const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
         if (Array.isArray(stack) && stack.length > 0 && trapRoot) {
@@ -5906,12 +5907,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 const closedDetails = element.closest('details:not([open])');
                 return !closedDetails || (element.tagName === 'SUMMARY' && element.parentElement === closedDetails);
             });
+            _ensureWordSoundsSetupA11yCss();
             const focusTimer = setTimeout(() => {
                 const focusable = getFocusable();
                 (focusable[0] || root).focus();
             }, 0);
             const handleDialogKeyDown = (event) => {
-                if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                 const top = stack.length ? stack[stack.length - 1] : null;
                 if (top && (top.root || top) !== root) return;
                 if (event.key === 'Escape') {
@@ -8423,6 +8425,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                     {lessonPlan[activity.id]?.enabled && planFineTuneOpen && (
                                                         <div className="mt-1 mb-1 flex items-center gap-3">
                                                         <input aria-label={tf('word_sounds.activity_min_items', '{activity}: minimum items', { activity: activity.label })}
+                                                            aria-valuetext={tf('word_sounds.activity_min_items_value', '{count} items', { count: lessonPlan[activity.id].count })}
                                                             type="range" min="1" max="20" step="1"
                                                             value={lessonPlan[activity.id].count}
                                                             onChange={(e) => setLessonPlan(prev => ({
@@ -8461,7 +8464,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                     placeholder={tf('word_sounds.add_word', 'Add a word...')}
                                                     className="flex-1 min-h-11 p-2 rounded-lg border border-emerald-200 text-sm focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none"
                                                     onKeyDown={(e) => {
-                                                        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                                                        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                                                         if (e.key === 'Enter') {
                                                             e.preventDefault();
                                                             const input = e.target;
@@ -9018,3 +9021,16 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
 // A ~950-line fossil copy sat here for months and repeatedly swallowed edits meant
 // for the live panel (the tri-source phoneme checker was wired only to the fossil).
 // It was deleted 2026-08-11; do not re-add a copy — edit misc_components_source.jsx.
+
+function _ensureWordSoundsSetupA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('allo-ws-setup-a11y-css')) return;
+    const st = document.createElement('style');
+    st.id = 'allo-ws-setup-a11y-css';
+    st.textContent =
+        '[data-ws-setup-dialog="true"] button,[data-ws-setup-dialog="true"] a,[data-ws-setup-dialog="true"] input,[data-ws-setup-dialog="true"] select,[data-ws-setup-dialog="true"] textarea,[data-ws-setup-dialog="true"] summary,[data-ws-voice-pack-dialog="true"] button,[data-ws-voice-pack-dialog="true"] a,[data-ws-voice-pack-dialog="true"] input,[data-ws-voice-pack-dialog="true"] select,[data-ws-voice-pack-dialog="true"] textarea,[data-ws-voice-pack-dialog="true"] summary{touch-action:manipulation;}' +
+        '[data-ws-setup-dialog="true"] button:focus-visible,[data-ws-setup-dialog="true"] a:focus-visible,[data-ws-setup-dialog="true"] input:focus-visible,[data-ws-setup-dialog="true"] select:focus-visible,[data-ws-setup-dialog="true"] textarea:focus-visible,[data-ws-setup-dialog="true"] summary:focus-visible,[data-ws-voice-pack-dialog="true"] button:focus-visible,[data-ws-voice-pack-dialog="true"] a:focus-visible,[data-ws-voice-pack-dialog="true"] input:focus-visible,[data-ws-voice-pack-dialog="true"] select:focus-visible,[data-ws-voice-pack-dialog="true"] textarea:focus-visible,[data-ws-voice-pack-dialog="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+        '@media (forced-colors: active){[data-ws-setup-dialog="true"] button:focus-visible,[data-ws-setup-dialog="true"] a:focus-visible,[data-ws-setup-dialog="true"] input:focus-visible,[data-ws-setup-dialog="true"] select:focus-visible,[data-ws-setup-dialog="true"] textarea:focus-visible,[data-ws-setup-dialog="true"] summary:focus-visible,[data-ws-voice-pack-dialog="true"] button:focus-visible,[data-ws-voice-pack-dialog="true"] a:focus-visible,[data-ws-voice-pack-dialog="true"] input:focus-visible,[data-ws-voice-pack-dialog="true"] select:focus-visible,[data-ws-voice-pack-dialog="true"] textarea:focus-visible,[data-ws-voice-pack-dialog="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+        '@media (prefers-reduced-motion: reduce){[data-ws-setup-dialog="true"],[data-ws-setup-dialog="true"] *,[data-ws-setup-dialog="true"] *::before,[data-ws-setup-dialog="true"] *::after,[data-ws-voice-pack-dialog="true"],[data-ws-voice-pack-dialog="true"] *,[data-ws-voice-pack-dialog="true"] *::before,[data-ws-voice-pack-dialog="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+}

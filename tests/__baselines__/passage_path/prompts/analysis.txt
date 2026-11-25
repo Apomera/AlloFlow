@@ -9,8 +9,10 @@
           5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
           6. Depth of Knowledge: the highest level of Webb's Depth of Knowledge (1 Recall, 2 Skill/Concept, 3 Strategic Thinking, 4 Extended Thinking) that lessons built on this text alone could reasonably reach, with a one-sentence reason. Give 2 or 3 short, concrete ideas for taking students beyond what the text alone supports.
           7. Learner Barriers (optional): short notes (under 20 words each, at most 3 per category) on what could block access to THIS text: "backgroundKnowledge" (knowledge the text assumes), "figurativeLanguage" (idioms and figurative or culturally specific phrases an English learner may misread, quoted from the source), "textStructure" (organization that may confuse readers), "biasRepresentation" (one-sided framing, stereotypes or missing perspectives). Leave a category as an empty array when nothing applies; do not invent problems.
+          8. Key Vocabulary (array of 5-10 challenging Tier 2 academic or Tier 3 domain-specific vocabulary terms worth pre-teaching, quoted directly from the ORIGINAL source text in the ORIGINAL source language; tag each item with "tier": "Academic" for Tier 2 or "Domain-Specific" for Tier 3 and "pos" with its part of speech in this passage (noun, verb, adjective or adverb), or return an empty array only if the passage has no challenging vocabulary).
           Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in English.
-          Always quote source examples and proposed spelling/grammar corrections in the ORIGINAL source language.
+          Keep these two values in English whatever the prose language, because the application translates them: readingLevel.range in the form shown above (e.g. "6th-8th Grade", "K-2nd Grade"), and accuracy.rating as exactly one word: High, Moderate or Low.
+          Always quote source examples, vocabulary terms, and proposed spelling/grammar corrections in the ORIGINAL source language.
           Calculate reading level and all findings from the ORIGINAL SOURCE, never from a translation.
           CRITICAL OUTPUT INSTRUCTION:
           You MUST return VALID JSON. Do not wrap the JSON in markdown code blocks.
@@ -18,11 +20,11 @@
           When populating the "discrepancies" and "verifiedFacts" arrays, you MUST include the bracketed citation numbers (e.g. [1], [2]) exactly as they appear in the Verification Report.
           - Correct: "The text claims X, but sources say Y [1]."
           - Incorrect: "The text claims X, but sources say Y.",
-          
           Required JSON Structure:
           {
             "readingLevel": { "range": "...", "explanation": "..." },
             "concepts": ["..."],
+            "vocabulary": [{ "term": "...", "tier": "Academic", "pos": "noun" }],
             "accuracy": {
                 "rating": "...",
                 "reason": "..."
@@ -35,3 +37,28 @@
           
           Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
         
+
+======== NEXT PROMPT ========
+
+
+                        The previous AI response was meant to be JSON but was returned as conversational text.
+                        Please convert the text below into the required JSON structure.
+                        Required Structure:
+                        {
+                            "readingLevel": { "range": "...", "explanation": "..." },
+                            "concepts": ["..."],
+                            "vocabulary": ["..."],
+                            "accuracy": {
+                                "rating": "...",
+                                "reason": "...",
+                                "discrepancies": ["..."],
+                                "verifiedFacts": ["..."]
+                            },
+                            "grammar": ["..."], "sourceLanguage": "English language name"
+                        }
+                        Input Text to Convert:
+                        """
+                        []
+                        """,
+                        Return ONLY valid JSON.
+                     

@@ -1965,7 +1965,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if(grainCache&&!grainCache.has(ctx)) {
       var doc=ctx.canvas&&ctx.canvas.ownerDocument,pattern=null;
       if(doc&&typeof ctx.createPattern==='function') {
-        var grain=doc.createElement('canvas');grain.width=128;grain.height=96;
+        var grain=doc.createElement('canvas'); if (grain.setAttribute) grain.setAttribute('aria-hidden', 'true');grain.width=128;grain.height=96;
         var gc=grain.getContext('2d'),gr=_seededRand(1202314);
         if(gc) {
           for(var gi=0;gi<430;gi++) {
@@ -2079,7 +2079,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if(!cache.has(ctx)) {
       var doc=ctx.canvas&&ctx.canvas.ownerDocument,mask=null;
       if(doc) {
-        var canvas=doc.createElement('canvas');canvas.width=256;canvas.height=256;
+        var canvas=doc.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');canvas.width=256;canvas.height=256;
         var ink=canvas.getContext('2d');
         if(ink) {
           // Fixed artwork is rasterized once, including braces, mast and pads.
@@ -3234,7 +3234,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         h('label',{style:{fontSize:'12px'}},'Playback speed ',h('select',{'data-environment-rate':true,'aria-label':t("stem.moonmission.a11y_orbit_environment_playback_speed", 'Orbit environment playback speed'),value:d.lunarEnvironmentPlaybackRate,style:button,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60,240].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
         h('button',{type:'button','data-environment-review':true,style:button,onClick:function(ev){action(ev,'end');}},'Review one orbit')),
       h('label',{htmlFor:'mm-environment-time',style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Inspect coast time'),
-      h('input',{id:'mm-environment-time','data-environment-seek':true,type:'range',min:0,max:profile.orbit.period,step:.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#38bdf8'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='Home'?'seek':'end',0);}}}),
+      h('input',{id:'mm-environment-time','data-environment-seek':true,type:'range',min:0,max:profile.orbit.period,step:.1,defaultValue:run.time,'aria-valuetext':Number(run.time||0).toFixed(1)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#38bdf8'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='Home'?'seek':'end',0);}}}),
       h('h4',{style:{fontSize:'13px',margin:'12px 0 6px'}},'Contact timeline'),
       h('div',{'data-environment-events':true,role:'group','aria-label':t("stem.moonmission.a11y_radio_and_eclipse_contacts", 'Radio and eclipse contacts'),style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,210px),1fr))',gap:'8px'}},profile.events.map(function(event,i){return h('button',{key:event.time,type:'button','data-environment-event':i,style:Object.assign({},button,{textAlign:'left'}),onClick:function(ev){action(ev,'event',i);}},h('span',{style:{display:'block',color:'#f8fafc'}},event.label),h('span',{style:{fontSize:'11px',color:'#cbd5e1'}},(event.time/60).toFixed(2)+' min · inspect just after contact'));})),
       d.lunarEnvironmentResult&&h('p',{'data-environment-result':true,role:'status',style:{padding:'12px',border:'1px solid #10b981',borderRadius:'8px',background:'#064e3b',color:'#ecfdf5',fontSize:'13px',lineHeight:1.6}},resultText(profile)),
@@ -3254,8 +3254,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       h('p',{style:{fontSize:'13px',lineHeight:1.65,color:'#cbd5e1'}},'Prograde thrust raises orbital energy. Escape requires positive energy after cutoff; timing rotates the outgoing direction. Compare the burns below, then inspect the separate Earth-return preset. Playing either view pauses the other.'),
       h('p',{'data-departure-fuel-source':p.fuel.source,style:{fontSize:'12px',lineHeight:1.65,color:'#a5f3fc'}},p.fuel.source==='insertion'?'Starting SPS fuel: '+p.fuel.amount.toFixed(1)+' kg carried from your recorded insertion.':'Starting SPS fuel: '+p.fuel.amount.toFixed(1)+' kg from the reference insertion preset; this save has no validated capture.'),
       h('div',{role:'group','aria-label':t("stem.moonmission.a11y_departure_comparisons", 'Departure comparisons'),style:{display:'flex',flexWrap:'wrap',gap:'8px'}},[['short','Short burn',80,0],['reference','Reference burn',151,0],['late','Five minutes late',151,300],['exhaustion','Burn to fuel exhaustion',300,0]].map(function(a){return h('button',{key:a[0],type:'button','data-departure-preset':a[0],style:style,onClick:function(ev){action(ev,'plan',{burnSeconds:a[2],offsetSeconds:a[3]});}},a[1]);})),
-      h('label',{style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Commanded SPS burn (seconds)',h('input',{'data-departure-burn':true,'aria-label':t("stem.moonmission.a11y_commanded_sps_burn_seconds", 'Commanded SPS burn (seconds)'),type:'range',min:0,max:300,step:.5,value:d.departurePlan.burnSeconds,style:{width:'100%',minHeight:'44px',accentColor:'#fb923c'},onChange:function(ev){action(ev,'plan',planInput('burnSeconds',ev.target.value));}})),
-      h('label',{style:{display:'block',fontSize:'12px'}},'Ignition offset from reference (seconds)',h('input',{'data-departure-offset':true,'aria-label':t("stem.moonmission.a11y_ignition_offset_from_reference_seconds", 'Ignition offset from reference (seconds)'),type:'range',min:-600,max:600,step:5,value:d.departurePlan.offsetSeconds,style:{width:'100%',minHeight:'44px',accentColor:'#c4b5fd'},onChange:function(ev){action(ev,'plan',planInput('offsetSeconds',ev.target.value));}})),
+      h('label',{style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Commanded SPS burn (seconds)',h('input',{'data-departure-burn':true,'aria-label':t("stem.moonmission.a11y_commanded_sps_burn_seconds", 'Commanded SPS burn (seconds)'),type:'range',min:0,max:300,step:.5,value:d.departurePlan.burnSeconds,'aria-valuetext':d.departurePlan.burnSeconds.toFixed(1)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#fb923c'},onChange:function(ev){action(ev,'plan',planInput('burnSeconds',ev.target.value));}})),
+      h('label',{style:{display:'block',fontSize:'12px'}},'Ignition offset from reference (seconds)',h('input',{'data-departure-offset':true,'aria-label':t("stem.moonmission.a11y_ignition_offset_from_reference_seconds", 'Ignition offset from reference (seconds)'),type:'range',min:-600,max:600,step:5,value:d.departurePlan.offsetSeconds,'aria-valuetext':d.departurePlan.offsetSeconds.toFixed(0)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#c4b5fd'},onChange:function(ev){action(ev,'plan',planInput('offsetSeconds',ev.target.value));}})),
       h('p',{'data-departure-plan-label':true,style:{fontSize:'12px',color:'#fed7aa'}},d.departurePlan.burnSeconds.toFixed(1)+' s commanded; ignition '+d.departurePlan.offsetSeconds.toFixed(0)+' s from reference'),
       h('label',{style:{fontSize:'12px'}},'Trajectory view ',h('select',{'data-departure-view-control':true,'aria-label':t("stem.moonmission.a11y_departure_trajectory_view", 'Departure trajectory view'),value:d.departureView,style:style,onChange:function(ev){action(ev,'view',ev.target.value);}},h('option',{value:'burn'},'Lunar burn'),h('option',{value:'escape'},'Departure coast'))),
       h('canvas',{'data-departure-canvas':true,role:'img','aria-describedby':'mm-departure-visual-note','aria-label':t("stem.moonmission.a11y_computed_lunar_departure_equal_axis_moon_reference_orbit_finite_burn_and_coast_velocity_ra", 'Computed lunar departure: equal-axis Moon, reference orbit, finite burn and coast, velocity, radio ray and outgoing direction. Measurements and controls follow.'),style:{display:'block',width:'100%',height:'360px',borderRadius:'8px',marginTop:'10px'},ref:function(cv){
@@ -3294,7 +3294,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         h('label',{style:{fontSize:'12px'}},'Playback speed ',h('select',{'data-departure-rate':true,'aria-label':t("stem.moonmission.a11y_departure_playback_speed", 'Departure playback speed'),value:d.departurePlaybackRate,style:style,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60,240].map(function(n){return h('option',{value:n,key:n},n+'×');}))),
         h('button',{type:'button','data-departure-review':true,style:style,onClick:function(ev){action(ev,'review');}},'Review departure result')),
       h('label',{htmlFor:'mm-departure-playback',style:{display:'block',fontSize:'12px',marginTop:'12px'}},'Inspect the computed departure'),
-      h('input',{id:'mm-departure-playback','data-departure-seek':true,type:'range',min:0,max:Math.ceil(p.summary.duration*10)/10,step:.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='End'?'review':'seek',0);}}}),
+      h('input',{id:'mm-departure-playback','data-departure-seek':true,type:'range',min:0,max:Math.ceil(p.summary.duration*10)/10,step:.1,defaultValue:run.time,'aria-valuetext':Number(run.time||0).toFixed(1)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='Home'||ev.key==='End'){ev.preventDefault();action(ev,ev.key==='End'?'review':'seek',0);}}}),
       h('div',{role:'group','aria-label':t("stem.moonmission.a11y_departure_milestones", 'Departure milestones'),style:{display:'flex',flexWrap:'wrap',gap:'8px'}},p.events.map(function(e){return h('button',{key:e.kind,type:'button','data-departure-event':e.kind,style:style,onClick:function(ev){action(ev,'seek',e.time);}},e.label);})),
       d.departureResult&&h('p',{'data-departure-result':d.departureResult.outcome,role:'status',style:{padding:'12px',border:'1px solid #64748b',borderRadius:'8px',fontSize:'13px',lineHeight:1.7,color:'#ecfdf5',background:'#16352c'}},mmDepartureText(d.departureResult)),
       h('details',{'data-departure-model-note':true,style:{fontSize:'12px',lineHeight:1.7,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'Departure model and limits'),
@@ -3359,7 +3359,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         h('label',{style:{fontSize:'13px'}},'Playback speed ',h('select',{'data-approach-rate':true,'aria-label':t("stem.moonmission.a11y_powered_approach_playback_speed", 'Powered approach playback speed'),style:button,value:d.approachPlaybackRate,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
         h('button',{type:'button','data-approach-review':true,style:button,onClick:function(ev){action(ev,'end');}},'Review 300 m handover')),
       h('label',{htmlFor:'moon-powered-approach-time',style:{display:'block',fontSize:'13px',marginTop:'12px'}},'Inspect the computed flight'),
-      h('input',{id:'moon-powered-approach-time','data-approach-seek':true,type:'range',min:0,max:Math.ceil(profile.summary.duration*10)/10,step:0.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='End'){ev.preventDefault();action(ev,'end');}if(ev.key==='Home'){ev.preventDefault();action(ev,'seek',0);}}}),
+      h('input',{id:'moon-powered-approach-time','data-approach-seek':true,type:'range',min:0,max:Math.ceil(profile.summary.duration*10)/10,step:0.1,defaultValue:run.time,'aria-valuetext':Number(run.time||0).toFixed(1)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='End'){ev.preventDefault();action(ev,'end');}if(ev.key==='Home'){ev.preventDefault();action(ev,'seek',0);}}}),
       h('div',{role:'group','aria-label':t("stem.moonmission.a11y_powered_approach_milestones", 'Powered approach milestones'),style:{display:'flex',flexWrap:'wrap',gap:'8px'}},[['approach','Below 200 m/s sideways'],['lowGate','2 km altitude']].map(function(item){return profile.events[item[0]]&&h('button',{key:item[0],type:'button','data-approach-milestone':item[0],style:button,onClick:function(ev){action(ev,'milestone',item[0]);}},item[1]);})),
       h('div',{'data-approach-comparison':true,'aria-label':t("stem.moonmission.a11y_computed_guidance_comparison", 'Computed guidance comparison'),style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px',marginTop:'14px'}},[600,720,900].map(function(duration){var result=mmApproachProfile({duration:duration}).summary;return h('div',{key:duration,style:{padding:'10px',border:'1px solid #475569',borderRadius:'8px',fontSize:'12px',lineHeight:1.6}},h('strong',null,duration+' s guidance'),h('p',{style:{margin:0}},result.propellantUsed.toFixed(0)+' kg used · '+result.propellantRemaining.toFixed(0)+' kg left'),h('p',{style:{margin:0}},'At thrust ceiling: '+result.saturatedSeconds.toFixed(1)+' s'));})),
       d.approachResult&&h('p',{'data-approach-result':true,role:'status',style:{fontSize:'13px',lineHeight:1.6,color:'#a5f3fc'}},'Computed handover: '+d.approachResult.duration.toFixed(1)+' s, '+d.approachResult.propellantUsed.toFixed(0)+' kg propellant used, '+d.approachResult.propellantRemaining.toFixed(0)+' kg remaining. Maximum throttle requested for '+d.approachResult.saturatedSeconds.toFixed(1)+' s.'),
@@ -3675,7 +3675,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (_mmEarthGlintSprite === null) {
       _mmEarthGlintSprite = false;
       try {
-        var sprite = document.createElement('canvas'), size = 512; sprite.width = sprite.height = size;
+        var sprite = document.createElement('canvas'), size = 512; if (sprite.setAttribute) sprite.setAttribute('aria-hidden', 'true'); sprite.width = sprite.height = size;
         var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
         if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
           // Sample the analytic reflection once. A single composite avoids the
@@ -4017,7 +4017,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (_mmAscentMoonLightSprite === null) {
       _mmAscentMoonLightSprite = false;
       try {
-        var sprite = document.createElement('canvas'), size = 256; sprite.width = sprite.height = size;
+        var sprite = document.createElement('canvas'), size = 256; if (sprite.setAttribute) sprite.setAttribute('aria-hidden', 'true'); sprite.width = sprite.height = size;
         var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
         if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
           for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
@@ -4889,7 +4889,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     try {
       var ratio = Math.min(1, 512 / g.width, 384 / g.height);
       var width = Math.max(1, Math.min(512, Math.ceil(g.width * ratio))), height = Math.max(1, Math.min(384, Math.ceil(g.height * ratio)));
-      var sprite = document.createElement('canvas'); sprite.width = width; sprite.height = height;
+      var sprite = document.createElement('canvas'); if (sprite.setAttribute) sprite.setAttribute('aria-hidden', 'true'); sprite.width = width; sprite.height = height;
       var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(width, height);
       if (!image || !image.data || image.data.length !== width * height * 4 || typeof context.putImageData !== 'function') return null;
       for (var row = 0; row < height; row++) for (var col = 0; col < width; col++) {
@@ -5067,7 +5067,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (!Object.prototype.hasOwnProperty.call(_mmLunarOrbitLightSprites, spriteKey)) {
       _mmLunarOrbitLightSprites[spriteKey] = false;
       try {
-        var sprite = document.createElement('canvas'), size = 256; sprite.width = sprite.height = size;
+        var sprite = document.createElement('canvas'), size = 256; if (sprite.setAttribute) sprite.setAttribute('aria-hidden', 'true'); sprite.width = sprite.height = size;
         var context = sprite.getContext('2d'), image = context && typeof context.createImageData === 'function' && context.createImageData(size, size);
         if (image && image.data && image.data.length === size * size * 4 && typeof context.putImageData === 'function') {
           for (var y = 0; y < size; y++) for (var x = 0; x < size; x++) {
@@ -5404,7 +5404,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var g=mmReturnCrewGeometry(sample,radius),size=Math.max(32,Math.min(320,Math.ceil(radius*2)));
     var key=[sample.x,sample.y,sample.time,size].join(':');
     if(!_mmReturnCrewImage||_mmReturnCrewImage.key!==key){
-      var canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;var imageCtx=canvas.getContext('2d');
+      var canvas=document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');canvas.width=size;canvas.height=size;var imageCtx=canvas.getContext('2d');
       if(imageCtx&&typeof imageCtx.createImageData==='function'){
         var image=imageCtx.createImageData(size,size),pixels=image.data,b=mmReturnCrewBasis(sample),atlas=mmReturnCrewSurface();
         var colors=[[32,84,145],[83,119,71],[166,138,88],[224,231,235]];
@@ -6040,7 +6040,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (!cache) {
       var doc = ctx.canvas.ownerDocument || (typeof document !== 'undefined' ? document : null);
       if (!doc || typeof doc.createElement !== 'function') return null;
-      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (!raster) return null;
+      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); if (!raster) return null;
       cache = { canvas: canvas, context: raster, field: null }; ctx.canvas._mmLaunchAtmosphereRaster = cache;
     }
     if (cache.field !== field) {
@@ -6575,7 +6575,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (!cache) {
       var doc = ctx.canvas.ownerDocument || (typeof document !== 'undefined' ? document : null);
       if (!doc || typeof doc.createElement !== 'function') return null;
-      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (!raster) return null;
+      var canvas = doc.createElement('canvas'), raster = canvas.getContext('2d'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true'); if (!raster) return null;
       cache = { canvas: canvas, context: raster, field: null }; ctx.canvas._mmLaunchSurfaceRaster = cache;
     }
     if (cache.field !== field) {
@@ -7373,7 +7373,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (_mmLunarLightMaskLon !== termLon || _mmLunarLightMaskRelief !== relief) {
       _mmLunarLightMaskLon = termLon; _mmLunarLightMaskRelief = relief; _mmLunarLightMask = false;
       try {
-        var mask = document.createElement('canvas'); mask.width = mask.height = 512;
+        var mask = document.createElement('canvas'); if (mask.setAttribute) mask.setAttribute('aria-hidden', 'true'); mask.width = mask.height = 512;
         var mctx = mask.getContext('2d'), pixels = mctx && typeof mctx.createImageData === 'function' && mctx.createImageData(512, 512);
         if (pixels && pixels.data && pixels.data.length === 512 * 512 * 4 && typeof mctx.putImageData === 'function') {
           for (var y = 0; y < 512; y++) for (var x = 0; x < 512; x++) {
@@ -7561,7 +7561,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (sprite === null) {
       sprite = false;
       try {
-        var sc = document.createElement('canvas'); sc.width = sc.height = 512;
+        var sc = document.createElement('canvas'); if (sc.setAttribute) sc.setAttribute('aria-hidden', 'true'); sc.width = sc.height = 512;
         var sctx = sc.getContext('2d');
         if (sctx) { mmPaintMoon(sctx, 256, 256, 256, flatAlbedo); sprite = sc; }
       } catch (e) {}
@@ -7954,7 +7954,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         h('label',{style:{fontSize:'13px'}},'Playback speed ',h('select',{'data-tli-rate':true,'aria-label':t("stem.moonmission.a11y_tli_playback_speed", 'TLI playback speed'),style:button,value:d.tliPlaybackRate,onChange:function(ev){action(ev,'rate',ev.target.value);}},[1,10,60].map(function(n){return h('option',{key:n,value:n},n+'×');}))),
         h('button',{type:'button','data-tli-review':true,style:button,onClick:function(ev){action(ev,'end');}},'Review engine cutoff')),
       h('label',{htmlFor:'moon-injection-time',style:{display:'block',fontSize:'13px',marginTop:'12px'}},'Inspect the computed burn'),
-      h('input',{id:'moon-injection-time','data-tli-seek':true,type:'range',min:0,max:profile.summary.duration,step:0.1,defaultValue:run.time,style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='End'){ev.preventDefault();action(ev,'end');}if(ev.key==='Home'){ev.preventDefault();action(ev,'seek',0);}}}),
+      h('input',{id:'moon-injection-time','data-tli-seek':true,type:'range',min:0,max:profile.summary.duration,step:0.1,defaultValue:run.time,'aria-valuetext':Number(run.time||0).toFixed(1)+' '+t('stem.moonmission.vt_seconds','seconds'),style:{width:'100%',minHeight:'44px',accentColor:'#67e8f9'},onChange:function(ev){action(ev,'seek',ev.target.value);},onKeyDown:function(ev){if(ev.isComposing||(ev.nativeEvent&&ev.nativeEvent.isComposing)||ev.keyCode===229||ev.ctrlKey||ev.metaKey||ev.altKey)return;if(ev.key==='End'){ev.preventDefault();action(ev,'end');}if(ev.key==='Home'){ev.preventDefault();action(ev,'seek',0);}}}),
       h('div',{'data-tli-comparison':true,'aria-label':t("stem.moonmission.a11y_computed_engine_cutoff_comparison", 'Computed engine cutoff comparison'),style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px',marginTop:'14px'}},[300,342,350].map(function(duration){var result=mmTliProfile({duration:duration}).summary;return h('div',{key:duration,style:{padding:'10px',border:'1px solid #475569',borderRadius:'8px',fontSize:'12px',lineHeight:1.6}},h('strong',null,duration+' s · '+(result.outcome==='insufficient'?'short of lunar distance':result.outcome==='escape'?'Earth escape':'reaches lunar distance')),h('p',{style:{margin:0}},result.propellantUsed.toFixed(0)+' kg used'),h('p',{style:{margin:0}},result.apogee===null?'No finite apogee':'Apogee altitude '+(result.apogee/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km'));})),
       d.tliResult&&h('p',{'data-tli-result':true,role:'status',style:{fontSize:'13px',lineHeight:1.6,color:'#a5f3fc'}},'Computed cutoff: '+(d.tliResult.outcome==='insufficient'?'the orbit falls short of lunar distance. Choose a longer burn and review again.':d.tliResult.outcome==='escape'?'positive orbital energy; the craft escapes Earth. Lunar arrival still requires targeting.':'the bound orbit reaches lunar distance. Lunar arrival still requires targeting.')),
       h('details',{'data-tli-model-note':true,style:{fontSize:'13px',lineHeight:1.6,color:'#cbd5e1',marginTop:'12px'}},h('summary',{style:{cursor:'pointer'}},'How this injection model works'),
@@ -11425,7 +11425,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     // above it already carries the accessible name and role=application, and
     // the callout strip carries the flight state as text. A second labelled
     // canvas would only add a duplicate stop for a screen reader.
-    var glCv = document.createElement('canvas');
+    var glCv = document.createElement('canvas'); if (glCv.setAttribute) glCv.setAttribute('aria-hidden', 'true');
     glCv.setAttribute('aria-hidden', 'true');
     glCv.setAttribute('data-descent-gl', 'true');
     glCv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0';
@@ -11609,7 +11609,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     glCv.dataset.descentTerrainMode=renderedTerrain?'mesh-triangles':'analytic';
     var microSize = lowPower ? 128 : 256;
     var microDetail = mmRegolithDetail(microSize, 0x4c4d1969);
-    var groundColorCanvas = document.createElement('canvas'), groundHeightCanvas = document.createElement('canvas');
+    var groundColorCanvas = document.createElement('canvas'), groundHeightCanvas = document.createElement('canvas'); if (groundColorCanvas.setAttribute) groundColorCanvas.setAttribute('aria-hidden', 'true'); if (groundHeightCanvas.setAttribute) groundHeightCanvas.setAttribute('aria-hidden', 'true');
     groundColorCanvas.width = groundColorCanvas.height = groundHeightCanvas.width = groundHeightCanvas.height = microSize;
     var groundCtx = groundColorCanvas.getContext('2d'), heightCtx = groundHeightCanvas.getContext('2d');
     var groundPixels = groundCtx.createImageData(microSize, microSize), heightPixels = heightCtx.createImageData(microSize, microSize);
@@ -12746,6 +12746,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { 'data-landing-plot-axis': 'value', 'aria-hidden': 'true', style: { position: 'relative', height: '148px', color: '#cbd5e1', fontSize: '12px', fontVariantNumeric: 'tabular-nums' } },
                 [0, 0.5, 1].map(function(f) { return h('span', { key: f, style: { position: 'absolute', right: 0, top: yAt(f * ceiling) + '%', transform: 'translateY(-50%)' } }, (f * ceiling).toFixed(ceiling < 10 ? 1 : 0)); })),
               h('div', { 'data-landing-plot-area': label, onClick: inspectChart,
+                onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; var idx = rows.indexOf(selected); if (idx < 0) idx = lastIndex; if (ev.key === 'ArrowLeft') { ev.preventDefault(); inspect(Math.max(0, idx - 1), ev.currentTarget); } else if (ev.key === 'ArrowRight') { ev.preventDefault(); inspect(Math.min(lastIndex, idx + 1), ev.currentTarget); } else if (ev.key === 'Home') { ev.preventDefault(); inspect(0, ev.currentTarget); } else if (ev.key === 'End') { ev.preventDefault(); inspect(lastIndex, ev.currentTarget); } },
                 style: { position: 'relative', minWidth: 0, height: '148px', cursor: 'crosshair', background: '#102035', borderRadius: '4px' } },
                 h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_click_or_tap_to_inspect_a_recorded_sample_or', '{label}. Click or tap to inspect a recorded sample, or use the time slider below.'), { label: label }),
                   style: { display: 'block', width: '100%', height: '100%', overflow: 'visible' } },
@@ -13342,7 +13343,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         // Header — Bespoke Apollo Flight Control Workbench Bar
         h('div', { className: 'mm-hero-bar flex items-center justify-between mb-3 p-3 gap-2 flex-wrap' },
           h('div', { className: 'flex items-center gap-2.5 min-w-0' },
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
                 // Tear down the EVA WebGL loop + looping mission audio before leaving — neither stops itself
                 // on unmount, so exiting mid-EVA used to leak a forever-running render loop + ambient sound.
                 var evaCanvas = document.querySelector('[data-eva-canvas]');
@@ -13570,7 +13571,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('div', { className: 'space-y-2' },
             d.activeEvent.options.map(function(opt, oi) {
               var isOptimal = opt.quality === 'optimal';
-              return h('button', {
+              return h('button', { type: 'button',
                 key: oi,
                 onClick: function() { resolveEvent(d.activeEvent, opt); },
                 className: 'w-full text-left p-3 rounded-lg border transition-all hover:scale-[1.01] active:scale-[0.99] ' +
@@ -13614,7 +13615,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           ),
           d.eventOutcome.impact && h('p', { className: 'mt-2 text-[0.6875rem] font-bold text-amber-200', 'data-moonmission-event-impact': 'true' },
             t('stem.moonmission.flight_impact', 'Flight impact:') + ' ' + d.eventOutcome.impact + '.'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               var target = d.eventPhaseTarget;
               upd('eventOutcome', null);
@@ -13642,7 +13643,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               var isCorrect = oi === QUIZ_BANK[quizIdx].a;
               var isSelected = quizSelectedAnswer === oi;
               var showResult = quizAnswered;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: oi,
                 disabled: quizAnswered,
                 'aria-label': ((showResult && isCorrect) ? __alloAriaFill(t('stem.moonmission.a11y_answer_option_correct_answer', 'Answer option {value1}: {opt}, correct answer'), { value1: oi + 1, opt: opt }) : ((showResult && isSelected) ? __alloAriaFill(t('stem.moonmission.a11y_answer_option_incorrect', 'Answer option {value1}: {opt}, incorrect'), { value1: oi + 1, opt: opt }) : __alloAriaFill(t('stem.moonmission.a11y_answer_option', 'Answer option {value1}: {opt}'), { value1: oi + 1, opt: opt }))),
@@ -13679,7 +13680,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           quizAnswered && h('div', { className: 'bg-sky-500/10 rounded-lg p-2 border border-sky-500/20 mb-3' },
             h('p', { className: 'text-[0.6875rem] text-sky-300' }, '\uD83D\uDCA1 ' + QUIZ_BANK[quizIdx].fact)
           ),
-          quizAnswered && h('button', {
+          quizAnswered && h('button', { type: 'button',
             onClick: function() {
               var nextIdx = quizIdx + 1;
               upd('quizIdx', nextIdx);
@@ -13929,7 +13930,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 Object.keys(DIFFICULTIES).map(function(key) {
                   var diff = DIFFICULTIES[key];
                   var isSelected = difficulty === key;
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: key,
                     role: 'radio',
                     'aria-checked': isSelected ? 'true' : 'false',
@@ -13955,7 +13956,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('p', { className: 'text-[0.6875rem] text-emerald-200/80 mb-2' }, d.aiBriefing
                 ? 'Objectives, quiz, and sample facts are tied to your uploaded text.'
                 : 'Generate mission objectives, quiz questions, and sample descriptions from the text you\'ve loaded (\u223C' + Math.round(sourceText.length / 100) * 100 + ' chars available). Adds ~10-15 sec.'),
-              h('button', {
+              h('button', { type: 'button',
                 disabled: !!d.aiBriefingLoading,
                 'aria-busy': d.aiBriefingLoading ? 'true' : 'false',
                 onClick: function() {
@@ -14020,7 +14021,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           // Max Q comes about two seconds into the flight: too soon to read and answer
           // there, so it is asked before launch and answered during it.
           h('div', { className: 'mb-3' }, predictCard('launch_maxq', false)),
-          h('button', {
+          h('button', { type: 'button',
             // Each phase's action button is named by its visible text, so voice control can
             // say what it sees (WCAG 2.5.3); the fuller line is its title, which a screen
             // reader reads as the description.
@@ -14619,7 +14620,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('label', { style: { fontSize: '12px' } }, 'Launch playback speed ', h('select', { 'aria-label': t("stem.moonmission.a11y_launch_playback_speed", 'Launch playback speed'), value: d.launchPlaybackRate || 30, onChange: function(ev) { launchControl(ev, 'rate', ev.target.value); }, style: flightButton }, [1, 10, 30, 60].map(function(rate) { return h('option', { key: rate, value: rate }, rate + '\u00d7'); }))),
                     h('button', { type: 'button', 'data-launch-result': true, style: flightButton, onClick: function(ev) { launchControl(ev, 'result'); } }, 'Show launch result')),
                   h('label', { htmlFor: 'mm-launch-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Launch playback time'),
-                  h('input', { id: 'mm-launch-playback', 'data-launch-seek': true, type: 'range', min: -5, max: uiLaunch.summary.duration, step: 0.1, defaultValue: uiLaunchTime, onChange: function(ev) { launchControl(ev, 'seek', ev.target.value); }, style: { width: '100%', minHeight: '32px', accentColor: '#38bdf8' } }),
+                  h('input', { id: 'mm-launch-playback', 'data-launch-seek': true, type: 'range', min: -5, max: uiLaunch.summary.duration, step: 0.1, defaultValue: uiLaunchTime, 'aria-valuetext': Number(uiLaunchTime || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), onChange: function(ev) { launchControl(ev, 'seek', ev.target.value); }, style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' } }),
                   h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_launch_milestones", 'Launch milestones'), style: { display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '6px 0 12px' } },
                     [['liftoff', 'Liftoff'], ['maxQ', 'Max Q'], ['stage1', 'First separation'], ['stage2', 'Second separation'], ['cutoff', 'Engine cutoff']].map(function(milestone) {
                       var eventTime = milestone[0] === 'liftoff' ? 0 : uiLaunch.events[milestone[0]] ? uiLaunch.events[milestone[0]].time : uiLaunch.summary.duration;
@@ -14642,7 +14643,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('p', { className: 'text-xs text-slate-400' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
                   h('p', { id: 'mm-launch-description', className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.watch_the_countdown_and_ascent_through', 'Watch the countdown and ascent through Earth\'s atmosphere'))
                 ),
-                h('button', {
+                h('button', { type: 'button',
                   title: t('stem.moonmission.proceed_to_earth_orbit_phase_after_suc', 'Proceed to Earth orbit phase after successful launch'),
                   'data-launch-proceed': true,
                   disabled: eventPending || !(d.launchRun && d.launchRun.recorded && d.launchResult && d.launchResult.outcome === 'orbit'),
@@ -14909,7 +14910,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                   + (tw.secsToGo ? 'Window in about ' + tw.secsToGo + ' s.' : '')),
                 (d.orbitPaused || animPaused) && h('p', { className: 'mt-1 font-normal text-slate-200' }, 'Playback is paused. Use Advance to burn window or Play orbit.')
               ),
-              h('button', {
+              h('button', { type: 'button',
                 title: go
                   ? t('stem.moonmission.execute_tli_in_window', 'Execute trans-lunar injection burn. You are inside the burn window.')
                   : t('stem.moonmission.execute_tli_early', 'Execute trans-lunar injection burn outside the teaching timing window. The measured burn model opens next.'),
@@ -14980,7 +14981,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: '10px', marginTop: '10px' } },
                   [['speedError', 'Departure speed error', -5, 5, 0.1, 'm/s'], ['angleError', 'Departure angle error', -0.05, 0.05, 0.001, '\u00b0'], ['radialDeltaV', 'Radial correction', -20, 20, 0.001, 'm/s'], ['tangentialDeltaV', 'Transverse correction', -20, 20, 0.1, 'm/s']].map(function(item) {
                     return h('div', { key: item[0] }, h('label', { htmlFor: 'mm-transit-' + item[0], style: { display: 'block', color: '#e2e8f0' } }, item[1] + ': ', h('strong', null, d.transitPlan[item[0]].toFixed(item[4] < 0.1 ? 3 : 1) + ' ' + item[5])),
-                      h('input', { id: 'mm-transit-' + item[0], 'data-transit-plan': item[0], 'aria-label': item[1], type: 'range', min: item[2], max: item[3], step: item[4], value: d.transitPlan[item[0]], style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { var next = Object.assign({}, d.transitPlan); next[item[0]] = Number(ev.target.value); transitControl(ev, 'plan', next); } }));
+                      h('input', { id: 'mm-transit-' + item[0], 'data-transit-plan': item[0], 'aria-label': item[1], type: 'range', min: item[2], max: item[3], step: item[4], value: d.transitPlan[item[0]], 'aria-valuetext': d.transitPlan[item[0]].toFixed(item[4] < 0.1 ? 3 : 1) + ' ' + item[5], style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' }, onChange: function(ev) { var next = Object.assign({}, d.transitPlan); next[item[0]] = Number(ev.target.value); transitControl(ev, 'plan', next); } }));
                   })),
                 h('p', { style: { color: '#cbd5e1', lineHeight: 1.6 } }, 'Correction components are commanded delta-v at 24 hours after injection: radial is positive away from Earth; transverse is positive counterclockwise. The direction is fixed in space when the finite burn starts. Changing a plan clears its recorded result.')),
               h('p', { 'data-transit-plan-note': true, style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'This navigation exercise starts from a specified post-injection state. The earlier TLI timing score does not set these departure errors. The next lunar insertion exercise uses a separate arrival and mass preset.'),
@@ -15041,7 +15042,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'data-transit-rate': true, 'aria-label': t("stem.moonmission.a11y_transit_playback_speed", 'Transit playback speed'), value: d.transitPlaybackRate, style: buttonStyle, onChange: function(ev) { transitControl(ev, 'rate', ev.target.value); } }, [1, 60, 600, 3600].map(function(n) { return h('option', { key: n, value: n }, n + '\u00d7'); }))),
                 h('button', { type: 'button', 'data-transit-result': true, style: buttonStyle, onClick: function(ev) { transitControl(ev, 'result'); } }, 'Review arrival result')),
               h('label', { htmlFor: 'mm-transit-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Inspect the computed trajectory'),
-              h('input', { id: 'mm-transit-playback', 'data-transit-seek': true, type: 'range', min: 0, max: Math.ceil(tp.summary.duration * 10) / 10, step: 0.1, defaultValue: tr.time, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { transitControl(ev, 'seek', ev.target.value); } }),
+              h('input', { id: 'mm-transit-playback', 'data-transit-seek': true, type: 'range', min: 0, max: Math.ceil(tp.summary.duration * 10) / 10, step: 0.1, defaultValue: tr.time, 'aria-valuetext': Number(tr.time || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' }, onChange: function(ev) { transitControl(ev, 'seek', ev.target.value); } }),
               h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_outbound_milestones", 'Outbound milestones'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
                 tp.summary.actualBurn > 0 && h('button', { type: 'button', 'data-transit-milestone': 'ignition', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'seek', tp.events.ignition.time); } }, 'Correction ignition'),
                 tp.summary.actualBurn > 0 && h('button', { type: 'button', 'data-transit-milestone': 'burn', style: buttonStyle, onClick: function(ev) { transitControl(ev, 'burn', (tp.events.ignition.time + tp.events.cutoff.time) / 2); } }, 'Inspect correction burn'),
@@ -15086,9 +15087,9 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               h('p', { style: { fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Fire the Service Propulsion System against the direction of travel to reduce orbital energy. Burn timing and duration determine the resulting path. Changing the plan clears its recorded result.'),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,240px),1fr))', gap: '12px', margin: '14px 0' } },
                 h('div', null, h('label', { htmlFor: 'mm-loi-lead', style: { display: 'block', fontSize: '13px', color: '#e2e8f0' } }, 'Ignite ', h('strong', null, d.loiPlan.ignitionLead + ' s'), ' before reference perilune'),
-                  h('input', { id: 'mm-loi-lead', 'data-loi-lead': true, type: 'range', min: 0, max: 600, step: 5, value: d.loiPlan.ignitionLead, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { loiControl(ev, 'plan', { ignitionLead: Number(ev.target.value), burnDuration: d.loiPlan.burnDuration }); } })),
+                  h('input', { id: 'mm-loi-lead', 'data-loi-lead': true, type: 'range', min: 0, max: 600, step: 5, value: d.loiPlan.ignitionLead, 'aria-valuetext': d.loiPlan.ignitionLead.toFixed(0) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' }, onChange: function(ev) { loiControl(ev, 'plan', { ignitionLead: Number(ev.target.value), burnDuration: d.loiPlan.burnDuration }); } })),
                 h('div', null, h('label', { htmlFor: 'mm-loi-duration', style: { display: 'block', fontSize: '13px', color: '#e2e8f0' } }, 'Planned SPS burn: ', h('strong', null, d.loiPlan.burnDuration.toFixed(1) + ' s')),
-                  h('input', { id: 'mm-loi-duration', 'data-loi-duration': true, type: 'range', min: 0, max: 600, step: 0.5, value: d.loiPlan.burnDuration, style: { width: '100%', minHeight: '36px', accentColor: '#fbbf24' }, onChange: function(ev) { loiControl(ev, 'plan', { ignitionLead: d.loiPlan.ignitionLead, burnDuration: Number(ev.target.value) }); } }))),
+                  h('input', { id: 'mm-loi-duration', 'data-loi-duration': true, type: 'range', min: 0, max: 600, step: 0.5, value: d.loiPlan.burnDuration, 'aria-valuetext': d.loiPlan.burnDuration.toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#fbbf24' }, onChange: function(ev) { loiControl(ev, 'plan', { ignitionLead: d.loiPlan.ignitionLead, burnDuration: Number(ev.target.value) }); } }))),
               h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_lunar_insertion_plans", 'Lunar insertion plans'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' } },
                 [['nominal', 'Nominal plan'], ['flyby', 'Compare no burn'], ['overburn', 'Compare long burn']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-loi-preset': item[0], style: buttonStyle, onClick: function(ev) { loiControl(ev, 'plan', item[0] === 'nominal' ? {} : { ignitionLead: MM_LOI.defaultLead, burnDuration: item[0] === 'flyby' ? 0 : 600 }); } }, item[1]); })),
               h('p', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 } }, 'Reference perilune is the closest approach the incoming spacecraft would reach without an engine burn. The playback begins 900 seconds before that reference point.'),
@@ -15145,7 +15146,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': t("stem.moonmission.a11y_lunar_insertion_playback_speed", 'Lunar insertion playback speed'), value: d.loiPlaybackRate, style: buttonStyle, onChange: function(ev) { loiControl(ev, 'rate', ev.target.value); } }, [1, 10, 60, 240].map(function(n) { return h('option', { key: n, value: n }, n + '\u00d7'); }))),
                 h('button', { type: 'button', 'data-loi-result': true, style: buttonStyle, onClick: function(ev) { loiControl(ev, 'result'); } }, 'Review insertion result')),
               h('label', { htmlFor: 'mm-loi-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Inspect the computed encounter'),
-              h('input', { id: 'mm-loi-playback', 'data-loi-seek': true, type: 'range', min: 0, max: Math.ceil(lp.summary.duration * 10) / 10, step: 0.1, defaultValue: lr.time, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { loiControl(ev, 'seek', ev.target.value); } }),
+              h('input', { id: 'mm-loi-playback', 'data-loi-seek': true, type: 'range', min: 0, max: Math.ceil(lp.summary.duration * 10) / 10, step: 0.1, defaultValue: lr.time, 'aria-valuetext': Number(lr.time || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' }, onChange: function(ev) { loiControl(ev, 'seek', ev.target.value); } }),
               h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_lunar_insertion_milestones", 'Lunar insertion milestones'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, [['ignition', 'SPS ignition'], ['cutoff', 'Engine cutoff'], ['periapsis', 'First periapsis']].map(function(item) { var event = lp.events[item[0]]; return event && h('button', { key: item[0], type: 'button', 'data-loi-milestone': item[0], style: buttonStyle, onClick: function(ev) { loiControl(ev, 'seek', event.time); } }, item[1]); })),
               d.loiResult && h('div', { 'data-loi-outcome': d.loiResult.outcome, role: 'status', style: { color: loiReady ? '#86efac' : '#fde68a', fontSize: '13px', lineHeight: 1.6, marginTop: '12px' } },
                 h('p', null, outcomeText(d.loiResult)), h('p', null, 'Actual burn: ' + d.loiResult.actualBurn.toFixed(1) + ' s. SPS propellant used: ' + d.loiResult.propellantUsed.toFixed(0) + ' kg. Engine delta-v: ' + d.loiResult.idealDeltaV.toFixed(0) + ' m/s.')),
@@ -15240,7 +15241,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               )
             ),
             mmRenderDescentHandover(h, d, upd),
-            h('button', {
+            h('button', { type: 'button',
               'data-descent-begin': true,
               title: t('stem.moonmission.begin_powered_descent_piloting', 'Begin powered descent piloting'),
               onClick: function() { var start = mmSelectedDescentStart(d); upd('descentStart', start); upd('descentMode', start.source === 'practice' ? 'practice' : 'approach'); upd('descentStarted', true); },
@@ -15432,7 +15433,9 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                         flightPanel.querySelector('[data-throttle-setting]').textContent = Math.round(throttleSetting * 100) + '%';
                         lever.addEventListener('input', function() {
                           throttleSetting = Math.max(0, Math.min(1, Number(lever.value) / 100));
-                          flightPanel.querySelector('[data-throttle-setting]').textContent = Math.round(throttleSetting * 100) + '%';
+                          var pct = Math.round(throttleSetting * 100);
+                          flightPanel.querySelector('[data-throttle-setting]').textContent = pct + '%';
+                          lever.setAttribute('aria-valuetext', pct + ' ' + t('stem.moonmission.vt_percent_throttle', 'percent throttle'));
                         });
                         var pauseFlight = flightPanel.querySelector('[data-descent-pause]');
                         pauseFlight.addEventListener('click', function() {
@@ -16036,7 +16039,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               ),
               h('label', { htmlFor: 'moon-descent-throttle', style: { display: 'flex', gap: '10px', justifyContent: 'space-between', fontSize: '13px', fontWeight: '700' } },
                 t('stem.moonmission.engine_throttle', 'Engine throttle'), h('span', { 'data-throttle-setting': 'true', 'aria-hidden': 'true' }, '0%')),
-              h('input', { id: 'moon-descent-throttle', 'data-descent-throttle': 'true', type: 'range', min: 0, max: 100, step: 1, defaultValue: 0, 'aria-describedby': 'moon-descent-throttle-help', style: { display: 'block', width: '100%', height: '44px', accentColor: '#fbbf24' } }),
+              h('input', { id: 'moon-descent-throttle', 'data-descent-throttle': 'true', type: 'range', min: 0, max: 100, step: 1, defaultValue: 0, 'aria-valuetext': '0 ' + t('stem.moonmission.vt_percent_throttle', 'percent throttle'), 'aria-describedby': 'moon-descent-throttle-help', style: { display: 'block', width: '100%', height: '44px', accentColor: '#fbbf24' } }),
               h('p', { id: 'moon-descent-throttle-help', style: { fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px' } }, t('stem.moonmission.throttle_help', 'Set a steady throttle, or hold THRUST / W to override it to 100%. Release returns to the slider setting. Set 0% to coast.')),
               h('p', { 'data-descent-guidance': 'true', style: { fontSize: '13px', lineHeight: '1.5', color: '#a5f3fc', margin: '8px 0' } }, t('stem.moonmission.guidance_initial', 'Flight guidance will appear as the descent begins.')),
               mmDescentVectorsView(h, t),
@@ -16068,7 +16071,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               // descentStarted unmounts the canvas, so pressing Begin Descent builds a
               // fresh element (and therefore a fresh sim) rather than hitting the
               // _descentInit guard.
-              d.landingResult && h('button', {
+              d.landingResult && h('button', { type: 'button',
                 'aria-label': t('stem.moonmission.retry_the_powered_descent', 'Retry the powered descent from the start'),
                 onClick: function() {
                   // Before the retry flag existed, an A landing already paid this award.
@@ -16085,7 +16088,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 },
                 className: 'px-4 py-2 rounded-lg text-xs font-bold text-white bg-amber-700 hover:bg-amber-800'
               }, t('stem.moonmission.retry_the_powered_descent', 'Retry the powered descent from the start')),
-              h('button', {
+              h('button', { type: 'button',
                 title: t('stem.moonmission.begin_extravehicular_activity_moonwalk', 'Begin extravehicular activity moonwalk to explore the lunar surface and collect geological samples'),
                 disabled: eventPending || !d.landingResult,
                 onClick: function() {
@@ -16164,7 +16167,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('li', null, t('stem.moonmission.earth_hangs_in_a_fixed_spot_in_the_lun', 'Earth hangs in a fixed spot in the lunar sky because the Moon is tidally locked.'))
               )
             ),
-            h('button', {
+            h('button', { type: 'button',
               title: t('stem.moonmission.begin_eva_on_the_lunar_surface', 'Begin EVA on the lunar surface'),
               onClick: function() { upd('evaStarted', true); },
               className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02]'
@@ -16179,7 +16182,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('span', { style: { fontSize: '48px', marginBottom: '16px' } }, '⚠'),
                 h('h4', { className: 'text-lg font-bold text-red-400 mb-2' }, t('stem.moonmission.moonwalk_3d_mode_unresolved', 'Moonwalk 3D Mode Unresolved')),
                 h('p', { className: 'text-xs text-slate-300 max-w-sm mb-6' }, t('stem.moonmission.webgl_failed_to_initialize_your_browse', 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     upd('webglError', false);
                   },
@@ -16517,7 +16520,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                     var _lunarDetail = mmRegolithDetail(lunarMicroSize, lunarMicroSeed);
                     var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = tCv.height = lunarMicroSize;
                     var tCx = tCv.getContext('2d');
-                    var lunarMicroCv = document.createElement('canvas');
+                    var lunarMicroCv = document.createElement('canvas'); if (lunarMicroCv.setAttribute) lunarMicroCv.setAttribute('aria-hidden', 'true');
                     lunarMicroCv.setAttribute('aria-hidden', 'true');
                     lunarMicroCv.width = lunarMicroCv.height = lunarMicroSize;
                     var lunarMicroCtx = lunarMicroCv.getContext('2d');
@@ -19382,7 +19385,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('p', { className: 'text-xs text-white font-bold' }, t('stem.moonmission.moonwalk_eva_3', '\uD83D\uDC68\u200D\uD83D\uDE80 Moonwalk EVA')),
                 h('p', { className: 'text-[0.6875rem] text-slate-400' }, t('stem.moonmission.explore_collect_samples_jump_in_1_6_gr', 'Explore \u2022 Collect samples \u2022 Jump in 1/6 gravity!'))
               ),
-              h('button', {
+              h('button', { type: 'button',
                 title: __alloAriaFill(t('stem.moonmission.a11y_end_moonwalk_eva_and_return_to_lunar_module_samples', 'End moonwalk EVA and return to Lunar Module. {value1} samples collected.'), { value1: (d.lunarSamples || []).length }),
                 disabled: eventPending,
                 onClick: function() {
@@ -19497,7 +19500,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': t("stem.moonmission.a11y_ascent_playback_speed", 'Ascent playback speed'), style: buttonStyle, value: d.ascentPlaybackRate, onChange: function(ev) { ascentControl(ev, 'rate', ev.target.value); } }, [1, 10, 30, 60].map(function(n) { return h('option', { value: n, key: n }, n + '\u00d7'); }))),
                 h('button', { type: 'button', 'data-ascent-complete-review': true, style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'result'); } }, 'Review insertion')),
               h('label', { htmlFor: 'mm-ascent-playback', style: { display: 'block', fontSize: '12px', marginTop: '12px' } }, 'Inspect the computed ascent'),
-              h('input', { id: 'mm-ascent-playback', 'data-ascent-seek': true, type: 'range', min: 0, max: ap.summary.duration, step: 0.1, defaultValue: ar.time, style: { width: '100%', minHeight: '36px', accentColor: '#38bdf8' }, onChange: function(ev) { ascentControl(ev, 'seek', ev.target.value); } }),
+              h('input', { id: 'mm-ascent-playback', 'data-ascent-seek': true, type: 'range', min: 0, max: ap.summary.duration, step: 0.1, defaultValue: ar.time, 'aria-valuetext': Number(ar.time || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' }, onChange: function(ev) { ascentControl(ev, 'seek', ev.target.value); } }),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, [['liftoff', 'Liftoff'], ['pitch', 'Pitch over'], ['cutoff', 'Engine cutoff']].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-ascent-milestone': item[0], style: buttonStyle, onClick: function(ev) { ascentControl(ev, 'seek', ap.events[item[0]].time); } }, item[1]); })),
               insertionReady && h('p', { 'data-ascent-result': 'orbit', role: 'status', style: { color: '#86efac', fontSize: '13px', lineHeight: 1.6 } }, 'Insertion recorded: ' + (d.ascentResult.perilune / 1000).toFixed(2) + ' \u00d7 ' + (d.ascentResult.apolune / 1000).toFixed(2) + ' km. Burn ' + d.ascentResult.duration.toFixed(1) + ' s; ' + d.ascentResult.propellantRemaining.toFixed(1) + ' kg APS propellant remaining.'),
               !insertionReady && d.ascentStatus && h('p', { role: 'status', style: { color: '#fde68a', fontSize: '12px' } }, 'This save used the earlier ascent animation. Review the computed insertion and complete the docking exercise to continue.'),
@@ -19710,8 +19713,8 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'data-return-rate': true, 'aria-label': t("stem.moonmission.a11y_return_playback_speed", 'Return playback speed'), value: d.returnPlaybackRate, style: returnButtonStyle, onChange: function(ev) { returnControl(ev, 'rate', ev.target.value); } }, [1, 60, 600, 3600].map(function(n) { return h('option', { key: n, value: n }, n + '×'); }))),
                 h('button', { type: 'button', 'data-return-arrival': true, style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'arrival'); } }, 'Review entry interface')),
               h('label', { htmlFor: 'mm-return-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Inspect return trajectory'),
-              h('input', { id: 'mm-return-playback', 'data-return-seek': true, type: 'range', min: 0, max: Math.ceil(rp.summary.duration * 10) / 10, step: 0.1, defaultValue: rr.time, style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' },
-                onChange: function(ev) { returnControl(ev, 'seek', ev.target.value); }, onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'End') { ev.preventDefault(); returnControl(ev, 'arrival'); } } }),
+              h('input', { id: 'mm-return-playback', 'data-return-seek': true, type: 'range', min: 0, max: Math.ceil(rp.summary.duration * 10) / 10, step: 0.1, defaultValue: rr.time, 'aria-valuetext': Number(rr.time || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'), style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' },
+                onChange: function(ev) { returnControl(ev, 'seek', ev.target.value); }, onKeyDown: function(ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'End') { ev.preventDefault(); returnControl(ev, 'arrival'); } } }),
               h('div', { role: 'group', 'aria-label': t("stem.moonmission.a11y_return_milestones", 'Return milestones'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' } },
                 h('button', { type: 'button', 'data-return-milestone': 'final', style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'final'); } }, 'Final 15 minutes'),
                 h('button', { type: 'button', 'data-return-milestone': 'separation', style: returnButtonStyle, onClick: function(ev) { returnControl(ev, 'separation'); } }, 'SM separation')),
@@ -19795,7 +19798,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 t('stem.moonmission.entry_plan_model_note', 'Educational model: a spherical, non-rotating Earth, an approximate atmosphere, fixed capsule mass and drag area. Lift-to-drag is 0.3 above 3 km/s, then lift switches off. Bank responds instantly; crossrange, winds and attitude dynamics are omitted. Parachutes deploy when the model meets altitude and speed conditions. Heating estimates convective energy transfer; shield temperature, ablation and crew survival require additional models.'))
             );
           })(),
-          h('button', {
+          h('button', { type: 'button',
             'data-entry-begin': 'true',
             title: t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at about 39,700 kilometers per hour'),
             disabled: eventPending || !returnReady,
@@ -20421,6 +20424,12 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                   h('div', { 'data-entry-chart-area': key, onClick: function(ev) {
                     var box = ev.currentTarget.getBoundingClientRect();
                     if (box.width > 0) entryAction(ev, 'seek', Math.max(0, Math.min(1, (ev.clientX - box.left) / box.width)) * duration);
+                  }, onKeyDown: function(ev) {
+                    if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+                    if (ev.key === 'ArrowLeft') { ev.preventDefault(); entryAction(ev, 'seek', Math.max(0, uiSample.time - 1)); }
+                    else if (ev.key === 'ArrowRight') { ev.preventDefault(); entryAction(ev, 'seek', Math.min(duration, uiSample.time + 1)); }
+                    else if (ev.key === 'Home') { ev.preventDefault(); entryAction(ev, 'seek', 0); }
+                    else if (ev.key === 'End') { ev.preventDefault(); entryAction(ev, 'seek', duration); }
                   }, style: { position: 'relative', minWidth: 0, height: '148px', cursor: 'crosshair', background: '#102035', borderRadius: '4px' } },
                     h('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-label': __alloAriaFill(t('stem.moonmission.a11y_in_over_entry_time_click_or_tap_to_inspect', '{title} in {unit} over entry time. Click or tap to inspect, or use the playback slider or Inspect peak button.'), { title: title, unit: unit }), style: { display: 'block', width: '100%', height: '100%', overflow: 'visible' } },
                       [0, 50, 100].map(function(y) { return h('line', { key: y, x1: 0, y1: y, x2: 100, y2: y, stroke: '#334155', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
@@ -20453,7 +20462,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('label', { style: { fontSize: '12px' } }, 'Playback speed ', h('select', { 'aria-label': t("stem.moonmission.a11y_playback_speed", 'Playback speed'), value: d.entryPlaybackRate || 30, onChange: function(ev) { entryAction(ev, 'rate', ev.target.value); }, style: entryButtonStyle }, [1, 10, 30, 60].map(function(rate) { return h('option', { key: rate, value: rate }, rate + '\u00d7'); }))),
                 h('button', { type: 'button', 'data-entry-result': true, style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'result'); } }, 'Show entry result')),
               h('label', { htmlFor: 'mm-entry-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Entry playback time'),
-              h('input', { id: 'mm-entry-playback', 'data-entry-seek': true, type: 'range', min: 0, max: uiProfile.summary.duration, step: 0.1, defaultValue: uiSample.time,
+              h('input', { id: 'mm-entry-playback', 'data-entry-seek': true, type: 'range', min: 0, max: uiProfile.summary.duration, step: 0.1, defaultValue: uiSample.time, 'aria-valuetext': Number(uiSample.time || 0).toFixed(1) + ' ' + t('stem.moonmission.vt_seconds', 'seconds'),
                 onChange: function(ev) { entryAction(ev, 'seek', ev.target.value); }, style: { width: '100%', accentColor: '#fb923c', minHeight: '44px' } }),
               h('p', { style: { fontSize: '12px', lineHeight: 1.5, color: '#cbd5e1', margin: '4px 0 12px' } }, 'Click or tap either chart, use Inspect peak, or move the playback slider with the arrow keys to inspect the computed flight. White lines and colored dots follow the current physical time. Show entry result works while paused.'),
               h('div', { 'data-entry-charts': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '10px' } }, entryChart('loadG', 'Aerodynamic load', 'g', 1, '#7dd3fc'), entryChart('heatFlux', 'Convective heat flux', 'MW/m\u00b2', 1e6, '#fdba74')),
@@ -20472,7 +20481,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
                 h('p', null, h('a', { href: 'https://science.nasa.gov/earth/earth-observatory/airglow-over-the-indian-ocean-147367/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'NASA airglow reference')),
                 h('p', null, 'References: ', h('a', { href: 'https://ntrs.nasa.gov/citations/19770009539', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'U.S. Standard Atmosphere'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19710015566', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo entry measurements'), ' \u00b7 ', h('a', { href: 'https://www.nasa.gov/history/throwback-to-apollo-parachute-testing/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo parachute testing'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19750005834', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo lift-vector and load instruments'))));
           })(),
-          h('button', {
+          h('button', { type: 'button',
             'data-entry-complete': true,
             disabled: eventPending || !entryReady,
             title: t("stem.moonmission.a11y_complete_the_mission_with_pacific_ocean_splashdown_once_the_model_records_it", 'Complete the mission with Pacific Ocean splashdown once the model records it.'),
@@ -20793,7 +20802,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
             })(),
 
             glossaryPanel('mt-3 text-left'),
-            h('button', {
+            h('button', { type: 'button',
               title: t('stem.moonmission.reset_and_start_a_new_moon_mission_fro', 'Reset and start a new Moon mission from the beginning'),
               onClick: function() {
                 // Keep this flight: "fly again and beat it" needs something to beat.
@@ -20946,8 +20955,8 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
               })
             ),
             h('div', { className: 'flex gap-1 items-center mb-2 flex-wrap' },
-              h('button', { onClick: logObs, className: 'min-h-[44px] px-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-xs font-bold text-slate-700' }, t('stem.moonmission.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ massRatio: 3, burnDur: 180, isp: 311, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+              h('button', { type: 'button', onClick: logObs, className: 'min-h-[44px] px-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-xs font-bold text-slate-700' }, t('stem.moonmission.log', '📋 Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ massRatio: 3, burnDur: 180, isp: 311, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                 className: 'min-h-[44px] px-3 rounded-lg bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-300' }, t('stem.moonmission.reset', '↺ Reset')),
               (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
             ),
@@ -20966,7 +20975,7 @@ h('div', { 'data-orbit-eclipse': true, style: { display: 'flex', flexWrap: 'wrap
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                'aria-label': t('stem.moonmission.hypothesis_input', 'Mission delta-v hypothesis'), placeholder: t('stem.moonmission.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which lever matters most?'),
               className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); },
               className: 'min-h-[44px] px-3 rounded-lg bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-800 border border-amber-300 mb-2' },
               t('stem.moonmission.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700 leading-relaxed mb-2' },

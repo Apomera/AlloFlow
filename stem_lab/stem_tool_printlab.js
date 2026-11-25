@@ -2151,7 +2151,7 @@
       }
 
       function onTabKey(event, index) {
-        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' && event.key !== 'Home' && event.key !== 'End') return;
         event.preventDefault();
         var next = event.key === 'Home' ? 0 : event.key === 'End' ? TABS.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length;
@@ -3563,6 +3563,7 @@
           '.theme-contrast [data-print-lab] :is(h1,h2,h3,summary,legend,dt){color:#ff0!important}' +
           '.theme-contrast [data-print-lab] button,.theme-contrast [data-print-lab] input,.theme-contrast [data-print-lab] select,.theme-contrast [data-print-lab] textarea{background:#000!important;color:#ff0!important;border:1.5px solid #ff0!important}' +
           'html.theme-contrast [data-print-lab] button[role=tab][aria-selected=true],html.theme-contrast [data-print-lab] button[aria-pressed=true],.theme-contrast [data-print-lab] [role=tab][aria-selected=true],.theme-contrast [data-print-lab] button[aria-pressed=true]{background:#ff0!important;color:#000!important;border:2px solid #ff0!important}' +
+          '[data-print-lab] :is(button,input,select,summary){touch-action:manipulation}' +
           '@media(forced-colors:active){[data-print-lab] button{border:1px solid ButtonText!important}[data-print-lab] button:disabled{border-color:GrayText!important;color:GrayText!important}[data-print-lab] [role=tab][aria-selected=true]{border:2px solid Highlight!important;text-decoration:underline;text-underline-offset:4px}[data-print-lab] :focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}'),
         h('header', {
           className: 'rounded-2xl border border-cyan-800 p-4 sm:p-5',

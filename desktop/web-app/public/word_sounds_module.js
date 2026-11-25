@@ -217,6 +217,10 @@
       // The replay control ("Play word") scales whole, icon and label together.
       '@media (min-width: 900px) and (min-height: 700px) { .word-sounds-root .ws-stu-task button.flex-col.mx-auto.p-4.rounded-2xl { zoom: 1.15; } }',
       '@media (min-width: 900px) and (min-height: 900px) { .word-sounds-root .ws-stu-task button.flex-col.mx-auto.p-4.rounded-2xl { zoom: 1.3; } }',
+      // WCAG 2.2 AA: Scoped touch-action, explicit focus-visible rings, and forced-colors focus parity (never anchored to shared .fixed.inset-0).
+      '.word-sounds-root button, .word-sounds-root input, .word-sounds-root select, .word-sounds-root textarea, .word-sounds-root [role="button"], .word-sounds-root [role="tab"], .word-sounds-minimized button { touch-action: manipulation; }',
+      '.word-sounds-root button:focus-visible, .word-sounds-root input:focus-visible, .word-sounds-root select:focus-visible, .word-sounds-root textarea:focus-visible, .word-sounds-root [role="button"]:focus-visible, .word-sounds-root [role="tab"]:focus-visible, .word-sounds-root [tabindex]:focus-visible, .word-sounds-minimized button:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { .word-sounds-root button:focus-visible, .word-sounds-root input:focus-visible, .word-sounds-root select:focus-visible, .word-sounds-root textarea:focus-visible, .word-sounds-root [role="button"]:focus-visible, .word-sounds-root [role="tab"]:focus-visible, .word-sounds-root [tabindex]:focus-visible, .word-sounds-minimized button:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
     ].join('\n');
     document.head.appendChild(wsA11yStyle);
   }
@@ -3927,7 +3931,7 @@ const WS_CORE = createWordSoundsCore();
         React.createElement("div", null, ts("word_sounds.review_panel_loading") || "📋 Review Panel (loading...)"),
         React.createElement(
           "button",
-          {
+          { type: "button",
             onClick: props.onStartActivity,
             className:
               "px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700",
@@ -4970,6 +4974,7 @@ const WS_CORE = createWordSoundsCore();
       wrong: ["\u2715", ""],
     };
     const wsCardKeyDown = (event, cards, value) => {
+      if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       const key = event.key;
       if (key === "Enter" && cards && cards.selectMode && wsCardState(cards, value) === "selected") {
         // A second Enter on the selected card is Check. (Space replays it.)
@@ -5065,7 +5070,7 @@ const WS_CORE = createWordSoundsCore();
                   },
                     /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label":
                         opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
                           ? ts("word_sounds.correct_answer_aria") || "Correct answer"
@@ -5101,7 +5106,7 @@ const WS_CORE = createWordSoundsCore();
                   }),
                     /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": t("common.listen_to_this_option"),
                       onClick: (e) => {
                         e.stopPropagation();
@@ -5262,7 +5267,7 @@ const WS_CORE = createWordSoundsCore();
             ),
             /*#__PURE__*/ React.createElement(
               "button",
-              {
+              { type: "button",
                 "aria-label": ts("word_sounds.sr_listen_instruction") || "Listen to instruction",
                 // Segmented playback: /X/ tokens play from the phoneme bank.
                 onClick: () => speakInstructionWithPhonemes(data.instruction),
@@ -5287,7 +5292,7 @@ const WS_CORE = createWordSoundsCore();
                     },
                     /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         "aria-label":
                           opt?.toLowerCase() === data.answer?.toLowerCase()
                             ? ts("word_sounds.correct_answer_aria") || "Correct answer"
@@ -5319,7 +5324,7 @@ const WS_CORE = createWordSoundsCore();
                     }),
                     /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         "aria-label": t("common.listen_to_this_option"),
                         onClick: (e) => {
                           e.stopPropagation();
@@ -5676,7 +5681,7 @@ function useWordSoundsSyllableExitGuard(getDirtyWords, translate) {
     h('div', { ref: noticeRef, role: 'alertdialog', 'aria-modal': true, 'aria-labelledby': titleId, 'aria-describedby': descriptionId,
       'data-syllable-exit-notice': true, className: 'w-full max-w-lg rounded-2xl border border-amber-400 bg-white p-5 text-slate-900 shadow-xl',
       onKeyDownCapture: event => {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         const trapRoot = noticeRef.current;
         const stack = typeof window !== 'undefined' ? window.__alloFocusTrapStack : null;
         if (Array.isArray(stack) && stack.length > 0 && trapRoot) {
@@ -6809,7 +6814,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 }),
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": ts("word_sounds.play_word") || "Play word",
                     onClick: () => onPlayAudio(data.word),
                     className:
@@ -6832,7 +6837,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             { className: "flex flex-col items-center gap-3 mb-2" },
             /*#__PURE__*/ React.createElement(
               "button",
-              {
+              { type: "button",
                 "aria-label": ts("word_sounds.hear_word_again") || "Hear Word Again",
                 onClick: () => { if (canInteract()) onPlayAudio(data.word); },
                 disabled: answerLocked,
@@ -6934,6 +6939,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   onDragStart: (e) => handleDragStart(e, letter),
                   onClick: () => handleChipClick(letter),
                   onKeyDown: (e) => {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       handleChipClick(letter);
@@ -6958,7 +6964,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           ),
           /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               "aria-label": ts("word_sounds.check_spelling") || "Check Spelling",
               onClick: handleSubmit,
               disabled: answerLocked || !userSpelling.trim(),
@@ -7095,7 +7101,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               const span = slot ? slot.span || 1 : 1;
               return /*#__PURE__*/ React.createElement(
               "button",
-              {
+              { type: "button",
                 key: i,
                 onClick: () => handleSlotClick(i),
                 disabled: answerLocked || !slot,
@@ -7153,7 +7159,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 .map((chip) =>
                     /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     // Append the chip's text so each chip has a DISTINCT
                     // accessible name (the bare key resolves to "Select
                     // sound" for every chip, masking which sound it is).
@@ -7176,7 +7182,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           ),
           /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               disabled: answerLocked,
               onClick: () => {
                 if (!canInteract()) return;
@@ -7855,7 +7861,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           { className: "flex gap-4" },
           /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               disabled: responseLocked || feedback?.type === "success",
               onClick: () => {
                 if (!canTrace()) return;
@@ -7873,7 +7879,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           ),
           /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               onClick: checkTracing,
               disabled: responseLocked || feedback?.type === "success",
               className:
@@ -8103,7 +8109,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             "data-ws-di-sound-popup": soundPop.sound,
             className: "ws-di-no-print fixed z-[60] w-64 rounded-2xl border border-slate-300 bg-white p-4 text-slate-900 shadow-2xl",
             style: { top: soundPop.top, left: soundPop.left },
-            onKeyDown: (event) => { if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closePop(); } },
+            onKeyDown: (event) => { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); closePop(); } },
           },
           /*#__PURE__*/ React.createElement("p", { className: "text-center text-3xl font-black" }, "/" + soundPop.sound + "/"),
           /*#__PURE__*/ React.createElement(
@@ -9042,10 +9048,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     // and Enter on a focused control, keep their usual meaning.
     const wsPresentKeyAction = (event) => {
       if (!event) return null;
+      if (event.nativeEvent && event.nativeEvent.isComposing) return null; if (event.isComposing || event.keyCode === 229) return null;
       // The reading-settings panel keeps its own keys (Escape closes it).
       if (event.target && typeof event.target.closest === "function" && event.target.closest("[data-allo-reading-settings]")) return null;
       if (event.key === "Escape" || event.key === "Esc") {
-        if (event.isComposing || event.keyCode === 229) return null;
+        if (event.altKey || event.ctrlKey || event.metaKey) return null;
         return "end";
       }
       if (event.altKey || event.ctrlKey || event.metaKey) return null;
@@ -9638,7 +9645,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             }, tr("word_sounds.present_think_seconds", "{n} sec", { n: seconds })))),
             typeof onSpeed === "function" ? h("label", { className: "flex items-center gap-3 text-sm font-semibold" },
               tr("word_sounds.tts_speed", "Speed"),
-              h("input", { type: "range", min: "0.5", max: "1.5", step: "0.25", value: speed, "data-present-speed": "true", onChange: (e) => onSpeed(parseFloat(e.target.value)), className: "w-32" }),
+              h("input", { type: "range", min: "0.5", max: "1.5", step: "0.25", value: speed, "data-present-speed": "true", "aria-valuetext": tr("word_sounds.present_speed_value", "{speed}x", { speed }), onChange: (e) => onSpeed(parseFloat(e.target.value)), className: "w-32" }),
               h("span", { className: "font-mono" }, tr("word_sounds.present_speed_value", "{speed}x", { speed }))) : null),
           h("div", { role: "group", "aria-labelledby": "ws-present-look-label", className: "mb-4", "data-present-look": "true" },
             h("p", { id: "ws-present-look-label", className: "mb-2 font-bold" }, tr("word_sounds.present_look", "Look")),
@@ -9805,7 +9812,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const family = (settings && settings.fontFamily) || "system-ui,-apple-system,'Segoe UI',Arial,sans-serif";
       const italic = ["font-andika-italic", "font-andika-bold-italic"].includes(settings && settings.fontClass);
       let ctx = null;
-      try { ctx = document.createElement("canvas").getContext("2d"); } catch (_) { ctx = null; }
+      try { const _cv = document.createElement("canvas"); _cv.setAttribute("aria-hidden", "true"); ctx = _cv.getContext("2d"); } catch (_) { ctx = null; }
       const ems = (word) => {
         const letters = Math.max(1, [...word].length);
         let measured = 0;
@@ -11011,8 +11018,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             })
           : [];
       const handleDialogKeyDown = (event, onEscape) => {
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === "Escape" && typeof onEscape === "function") {
-          if (event.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.stopPropagation();
           onEscape();
@@ -13320,7 +13327,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   { className: "relative" },
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": ts("word_sounds.hear_word_again") || "Play word audio",
                       onClick: () => playSingle(data.word),
                       className: `w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 group relative mb-4 mx-auto overflow-hidden ${playingIndex === -1 ? "bg-violet-600 text-white ring-4 ring-violet-200 scale-110 shadow-violet-300/50" : "bg-violet-100 hover:bg-violet-200 text-violet-600"}`,
@@ -13351,7 +13358,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   !isEditing &&
                     /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": t("common.play_all_sounds"),
                       onClick: playFullSequence,
                       disabled: isSequencing,
@@ -13411,7 +13418,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   ),
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       onClick: () => { stopSequence(); return onPlayInstruction(data.position, data.soundCount); },
                       className:
                         "min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full bg-slate-100 hover:bg-violet-100 text-slate-600 hover:text-violet-600 transition-colors",
@@ -13477,7 +13484,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       },
                         /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           "aria-label":
                             opt?.toLowerCase() ===
                               data.correctSound?.toLowerCase()
@@ -13520,7 +13527,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       { key: idx, className: "relative group" },
                         /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           "aria-label": (showLetterHints
                             ? ts("word_sounds.choose_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Choose /${String(opt).replace(/^\/+|\/+$/g, "")}/`
                             : ts("word_sounds.choose_sound_n", { n: idx + 1 }) || `Choose Sound ${idx + 1}`) + wsCardSuffix(cards, opt),
@@ -13561,7 +13568,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         // In select mode the whole card plays: no second, smaller target.
                         cards && cards.selectMode ? null : /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           "aria-label": showLetterHints
                             ? ts("word_sounds.listen_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
                             : ts("word_sounds.listen_sound_n", { n: idx + 1 }) || `Listen to Sound ${idx + 1}`,
@@ -13816,7 +13823,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         }),
                           /*#__PURE__*/ React.createElement(
                           "button",
-                          {
+                          { type: "button",
                             onClick: () => onPlayAudio(word),
                             className:
                               "p-2 text-violet-700 hover:text-violet-600",
@@ -13827,7 +13834,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         ),
                           /*#__PURE__*/ React.createElement(
                           "button",
-                          {
+                          { type: "button",
                             onClick: () =>
                               onUpdateOption &&
                               onUpdateOption(i, null, "remove_member"),
@@ -13842,7 +13849,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       ),
                       /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           onClick: () =>
                             onUpdateOption &&
                             onUpdateOption(-1, "", "add_member"),
@@ -13891,7 +13898,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         }),
                           /*#__PURE__*/ React.createElement(
                           "button",
-                          {
+                          { type: "button",
                             onClick: () => onPlayAudio(word),
                             className:
                               "p-2 text-amber-700 hover:text-amber-600",
@@ -13902,7 +13909,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         ),
                           /*#__PURE__*/ React.createElement(
                           "button",
-                          {
+                          { type: "button",
                             onClick: () =>
                               onUpdateOption &&
                               onUpdateOption(i, null, "remove_distractor"),
@@ -13917,7 +13924,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       ),
                       /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           onClick: () =>
                             onUpdateOption &&
                             onUpdateOption(-1, "", "add_distractor"),
@@ -13968,7 +13975,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   ),
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       // Prefer the full instruction sequence ("Find words that
                       // start with the /s/ sound, as in sit") when the parent
                       // provided one. Falls back to the bare target sound for
@@ -14128,7 +14135,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 { className: "flex justify-center mb-3" },
                   /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     onClick: () => playAllOptions(wordBank),
                     className:
                       "flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors font-bold text-sm",
@@ -14155,7 +14162,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                     },
                     /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         onClick: (e) => {
                           e.stopPropagation();
                           hearWord(item.text);
@@ -14169,7 +14176,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                     ),
                     /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         onClick: () => handleWordClick(item),
                         "data-ws-bank-pick": "true",
                         "aria-label": (soundOnlyMode ? (ts("word_sounds.sr_option") || "Option") + " " + (idx + 1) : item.text) +
@@ -22385,6 +22392,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // same move as drag-and-drop, so the Elkonin segmentation activity is
       // operable without a pointer (WCAG 2.1.1). Mirrors the handleMoveKey API.
       const handleKeyDown = (e, item, action) => {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
           e.preventDefault();
           if (typeof action === "function") action();
@@ -22652,7 +22660,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ),
                 /*#__PURE__*/ React.createElement(
               "button",
-              {
+              { type: "button",
                 onClick: () =>
                   wordSoundsActivity === "blending"
                     ? playBlending()
@@ -22671,7 +22679,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           )
           : /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               onClick: () =>
                 wordSoundsActivity === "blending"
                   ? playBlending()
@@ -22749,7 +22757,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ),
               /*#__PURE__*/ React.createElement(
             "button",
-            {
+            { type: "button",
               "aria-label": t("common.read_instructions"),
               onClick: () => {
                 const instKeyMap = {
@@ -22967,7 +22975,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return true;
       };
       const onConstructionEnter = (event, submit) => {
-        if (event.key !== "Enter" || event.repeat || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.key !== "Enter" || event.repeat || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         submit();
       };
@@ -23146,7 +23154,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             !isProbeMode &&
             /*#__PURE__*/ React.createElement(
               "button",
-              {
+              { type: "button",
                 "aria-label": t("common.minimize"),
                 onClick: () => setIsMinimized(true),
                 className:
@@ -23243,7 +23251,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "mt-6" },
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": ts("word_sounds.switch_to_clicking") || "Switch to Clicking",
                       onClick: toggleMicInputMode,
                       className:
@@ -23294,7 +23302,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 { className: "mx-auto" },
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": t("common.voice_input"),
                     onClick: toggleMicInputMode,
                     className:
@@ -23346,7 +23354,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         role: chip ? undefined : "button",
                         tabIndex: chip ? undefined : 0,
                         "aria-label": chip ? undefined : (ts("word_sounds.sr_empty_box", { n: i + 1 }) || ("Empty box " + (i + 1))),
-                        onKeyDown: chip ? undefined : (e) => { if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); handleSegTargetTap("box", i); } },
+                        onKeyDown: chip ? undefined : (e) => { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); handleSegTargetTap("box", i); } },
                         className: `w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-bold transition-all relative ${isError ? "bg-red-50 border-2 border-red-400 text-red-900" : chip ? "scale-100 shadow-md bg-violet-50 border-2 border-violet-400 text-slate-800 ring-2 ring-violet-200" : "bg-white border-2 border-slate-200 text-slate-700"}`,
                       },
                       chip
@@ -23361,6 +23369,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             tabIndex: 0,
                             // Space hears the sound, Enter takes it out (as its label says).
                             onKeyDown: (e) => {
+                              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                               if (e.key === " " || e.key === "Spacebar") { e.preventDefault(); handleAudio("/" + chip.phoneme + "/"); return; }
                               handleKeyDown(e, chip, () => handleMoveKey(chip, "box", i));
                             },
@@ -23397,7 +23406,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "flex justify-center mt-2 mb-4" },
                     /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": t("common.play"),
                       onClick: playSegmentationSequence,
                       "data-help-key": "wordsounds_test_sequence",
@@ -23446,7 +23455,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       )
                       : /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           key: chip.id,
                           draggable: !segCoarse,
                           onDragStart: (e) =>
@@ -23457,6 +23466,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           // Space: the button's own click (hear it and pick it up). Enter: into the next box,
                           // then focus moves to the next sound so a keyboard or switch user keeps their place.
                           onKeyDown: (e) => {
+                            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                             if (e.key === " " || e.key === "Spacebar") return;
                             const pool = e.currentTarget.parentElement;
                             handleKeyDown(e, chip, () => handleMoveKey(chip, "pool"));
@@ -23498,7 +23508,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "flex justify-center gap-3 mt-6" },
                     /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       onClick: () => {
                         if (!isMountedRef.current || submissionLockRef.current) return;
                         // Empty boxes: say so, on screen too (2026-11-18), instead of nothing happening.
@@ -23608,7 +23618,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     },
                         /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         "aria-label": isListening ? ((t("common.cancel") || "Cancel") + " — " + (t("common.microphone") || "Microphone")) : (ts("word_sounds.use_microphone") || "Use Microphone"),
                         "aria-pressed": isListening,
                         onClick: handleMicInput,
@@ -23634,7 +23644,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     { className: "flex flex-col gap-4" },
                           /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         onClick: async () => {
                           const myRun = beginIsolationPlayback();
                           if (myRun === null) return;
@@ -23707,7 +23717,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             },
                                     /*#__PURE__*/ React.createElement(
                               "button",
-                              {
+                              { type: "button",
                                 // Named by what it shows (the word, or
                                 // "Option N" when letters are hidden); it
                                 // was announced as "Volume".
@@ -23739,7 +23749,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                     // In select mode the whole card plays: no second, smaller target.
                                     blendCards && blendCards.selectMode ? null : /*#__PURE__*/ React.createElement(
                               "button",
-                              {
+                              { type: "button",
                                 "aria-label": t(
                                   "common.listen_to_this_option",
                                 ),
@@ -23764,7 +23774,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     wsCardCheck(blendCards),
                           /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         "aria-label": isListening ? ((t("common.cancel") || "Cancel") + " — " + (t("common.microphone") || "Microphone")) : (ts("word_sounds.use_microphone") || "Use Microphone"),
                         "aria-pressed": isListening,
                         onClick: handleMicInput,
@@ -23959,7 +23969,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 { className: "flex gap-3" },
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     onClick: () => playSpellingWord(),
                     className:
                       "flex items-center gap-2 px-5 py-2.5 bg-amber-100 hover:bg-amber-200 rounded-full text-amber-800 font-bold transition-all hover:scale-105 shadow-md",
@@ -23970,7 +23980,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ),
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": t("common.slow_playback"),
                     onClick: () =>
                       playSpellingWord(0.5),
@@ -24064,7 +24074,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": ts("word_sounds.spelling_bee_check") || "Check Spelling",
                     onClick: checkSpellingBee,
                     disabled: submissionLockRef.current || !String(userAnswer || "").trim(),
@@ -24079,7 +24089,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "flex gap-4 text-sm" },
                 /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       disabled: submissionLockRef.current,
                       onClick: () => {
                         if (submissionLockRef.current || isProbeMode) return;
@@ -24100,7 +24110,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       disabled: submissionLockRef.current,
                       onClick: () => {
                         if (submissionLockRef.current || isProbeMode) return;
@@ -24169,7 +24179,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   // Was t("common.volume") ("Volume") — wrong identity for a
                   // control that plays the target word. 2026-11-18 (review): the name starts with the words it shows
                   // ("Hint"), as WCAG 2.5.3 asks, then says what it does.
@@ -24202,6 +24212,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className: `w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-bold uppercase shadow-md transition-all ${isUsed ? "border-slate-200 bg-slate-100 text-slate-600 cursor-not-allowed opacity-50" : "border-violet-300 bg-violet-50 text-violet-700 hover:scale-105 cursor-pointer"}`,
                       onClick: pickLetter,
                       onKeyDown: (e) => {
+                        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           pickLetter();
@@ -24266,7 +24277,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   !useMicInput &&
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       disabled: submissionLockRef.current,
                       onClick: () => {
                         if (editConstructionAnswer("")) setUsedScrambleIndices([]);
@@ -24279,7 +24290,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": ts("word_sounds.word_scramble_check") || "Check Answer",
                       onClick: checkScramble,
                       disabled: submissionLockRef.current || useMicInput || !String(userAnswer || "").trim(),
@@ -24294,7 +24305,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "mt-2" },
                 /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": useMicInput ? (ts("word_sounds.mic_switch_typing") || "Switch to Click Mode") : (ts("word_sounds.mic_switch_mic") || "Use Microphone"),
                       onClick: toggleMicInputMode,
                       className: `flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${useMicInput ? "bg-rose-100 text-rose-700 font-bold" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
@@ -24335,7 +24346,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": ts("word_sounds.missing_letter_hear") || "Hear the word",
                   onClick: () => handleAudio(currentWordSoundsWord),
                   className:
@@ -24379,7 +24390,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   letterOptions.map((letter, idx) =>
                       /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       key: idx,
                       disabled: submissionLockRef.current,
                       onClick: () => {
@@ -24394,7 +24405,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ),
               /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": ts("word_sounds.check_answer") || "Check Answer",
                     onClick: checkMissingLetter,
                     disabled: submissionLockRef.current || useMicInput || !String(userAnswer || "").trim(),
@@ -24407,7 +24418,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   { className: "mt-4" },
                 /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": useMicInput ? (ts("word_sounds.mic_switch_tapping") || "Switch to Click Mode") : (ts("word_sounds.mic_switch_mic") || "Use Microphone"),
                       onClick: toggleMicInputMode,
                       className: `flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${useMicInput ? "bg-rose-100 text-rose-700 font-bold" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
@@ -24458,7 +24469,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.voice_input"),
                   onClick: handleMicInput,
                   className:
@@ -24516,7 +24527,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.voice_input"),
                   onClick: handleMicInput,
                   disabled: isPlayingAudio || isSyllableSequenceBusy || !WS_CORE.syllableReady(syllableData) || !syllableDelivered || syllableDeliveredRef.current !== syllableData,
@@ -24609,7 +24620,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   },
                   /*#__PURE__*/ React.createElement(
                     "button",
-                    {
+                    { type: "button",
                       "aria-label": isListening ? ((t("common.cancel") || "Cancel") + " — " + (t("common.microphone") || "Microphone")) : (ts("word_sounds.use_microphone") || "Use Microphone"),
                       "aria-pressed": isListening,
                       onClick: handleMicInput,
@@ -24701,7 +24712,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.voice_input"),
                   onClick: handleMicInput,
                   className:
@@ -24957,7 +24968,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               isLowercaseBonus &&
                 /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   disabled: submissionLockRef.current,
                   onClick: skipLowercaseTracing,
                   className:
@@ -25002,6 +25013,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               setDraggedItem(null);
             };
             const handleCountKeyDown = (e, num) => {
+              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               // role="button" must activate on Space as well as Enter.
               if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
@@ -25238,7 +25250,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   : /*#__PURE__*/ React.createElement("div", { className: "grid grid-cols-2 gap-4 max-w-md w-full" },
                       // WCAG 2.5.7: dragging is optional. Each image is a native
                       // button whose onClick path supplies the same keyboard/tap result.
-                      ...dChoices.map((w, i) => { const img = imgFor(w); const _cn = dChoiceName(w); return /*#__PURE__*/ React.createElement("button", { key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": _cn },
+                      ...dChoices.map((w, i) => { const img = imgFor(w); const _cn = dChoiceName(w); return /*#__PURE__*/ React.createElement("button", { type: "button", key: "dc-" + i + "-" + w, draggable: !!img, onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; }, onDragEnd: () => setDecodeDragOver(false), onClick: () => dCheck(w), className: "aspect-square bg-white border-2 border-slate-200 rounded-2xl shadow-md hover:border-violet-400 hover:scale-105 transition-all flex items-center justify-center p-2 cursor-grab active:cursor-grabbing", "aria-label": _cn },
                         /*#__PURE__*/ React.createElement("img", { src: dSrc(img), alt: _cn, draggable: false, className: "w-full h-full object-contain rounded-xl pointer-events-none" }));
                       }),
                     ),
@@ -25328,7 +25340,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       // native button whose onClick supplies the same result.
                       ...rsBoard.options.map((w, i) => /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           key: "rs-" + i + "-" + w,
                           draggable: true,
                           onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
@@ -25429,7 +25441,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       // WCAG 2.5.7: dragging is optional — tap does the same.
                       ...rpBoard.options.map((w, i) => /*#__PURE__*/ React.createElement(
                         "button",
-                        {
+                        { type: "button",
                           key: "rp-" + i + "-" + w,
                           draggable: true,
                           onDragStart: (e) => { e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
@@ -25519,7 +25531,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         const img = placed ? smImgFor(placed) : null;
                         return /*#__PURE__*/ React.createElement(
                           "button",
-                          {
+                          { type: "button",
                             key: "sm-slot-" + i,
                             onClick: () => smClear(i),
                             onDragOver: (e) => e.preventDefault(),
@@ -25555,7 +25567,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             const img = smImgFor(w);
                             return /*#__PURE__*/ React.createElement(
                               "button",
-                              {
+                              { type: "button",
                                 key: "sm-tile-" + i + "-" + w,
                                 draggable: !used && !smLocked,
                                 onDragStart: (e) => { if (smLocked) { e.preventDefault(); return; } e.dataTransfer.setData("text/plain", w); e.dataTransfer.effectAllowed = "move"; },
@@ -27332,7 +27344,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               isParentMode &&
                 /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: () => {
                     const date = new Date().toLocaleDateString();
                     // The translated activity name, not the raw id
@@ -27393,7 +27405,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               sessionRecap.missed.length > 0 &&
                 /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "data-ws-practice-missed": "true",
                   onClick: () => {
                     // Each missed word comes back in the activity it was missed
@@ -27424,7 +27436,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               !isProbeMode && probeStartTimeRef.current == null &&
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: () => {
                     resetRuntimeSession();
                     startActivity(wordSoundsActivity);
@@ -27440,7 +27452,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               !isProbeMode && probeStartTimeRef.current == null &&
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: () => {
                     if (!startNextSequenceActivity(true)) {
                       resetRuntimeSession();
@@ -27459,7 +27471,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: closeSessionDialog,
                   className:
                     "w-full py-2 text-white/80 hover:text-white transition-colors",
@@ -27891,7 +27903,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               { className: "flex gap-1" },
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.maximize"),
                   onClick: () => setIsMinimized(false),
                   className: "p-1 hover:bg-white/20 rounded transition-colors",
@@ -27901,7 +27913,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.close_maximize"),
                   onClick: closeSessionDialog,
                   className: "p-1 hover:bg-white/20 rounded transition-colors",
@@ -27969,7 +27981,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ),
                   /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     onClick: () => setIsMinimized(false),
                     className:
                       "w-full py-2 bg-violet-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-violet-700 transition-colors",
@@ -28053,7 +28065,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     // Named like its tooltip (was "Confirm").
                     "aria-label": isEditing
                       ? ts("common.done") || "Done"
@@ -28071,7 +28083,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 !isProbeMode && wordSoundsActivity !== "spelling_bee" &&
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": t("common.voice_input"),
                     onClick: toggleMicInputMode,
                     "aria-pressed": useMicInput,
@@ -28108,7 +28120,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     onClick: () => {
                       if (!isProbeMode) setShowLetterHints((prev) => !prev);
                     },
@@ -28189,7 +28201,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     onClick: () => setPlayInstructions((prev) => !prev),
                     className: `flex items-center gap-1 px-3 py-1 rounded-full border transition-all text-xs font-bold ${playInstructions ? "bg-indigo-100 border-indigo-200 text-indigo-700" : "bg-white/10 border-white/30 text-white/70"}`,
                     title: playInstructions
@@ -28450,7 +28462,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ...__acts.map((activity) =>
                     /*#__PURE__*/ React.createElement(
                       "button",
-                      {
+                      { type: "button",
                         key: activity.id,
                         onClick: () => startActivity(activity.id),
                         className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
@@ -28479,7 +28491,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               (wsImagesUsable || hasPreparedImages) &&
                 /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: () => setAacMode((prev) => !prev),
                   "aria-pressed": !!aacMode,
                   "aria-label": aacMode
@@ -28902,7 +28914,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.minimize_to_background"),
                   onClick: () => setIsMinimized(true),
                   className:
@@ -28913,7 +28925,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   onClick: closeSessionDialog,
                   className:
                     "p-2 hover:bg-white/20 rounded-full transition-colors",
@@ -29051,7 +29063,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 preloadedWords.length > 0 &&
                   /*#__PURE__*/ React.createElement(
                   "button",
-                  {
+                  { type: "button",
                     "aria-label": t("common.review_and_edit_word_list"),
                     onClick: () => setShowReviewPanel(true),
                     className:
@@ -29168,6 +29180,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   React.createElement("div", { className: "text-xs text-emerald-600" },
                     ts("word_sounds.garden_vocab_words", { count: gardenPhonicsWords.length, words: gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : "") }) || (gardenPhonicsWords.length + " words from the student\u2019s vocabulary: " + gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : "")))),
                 React.createElement("button", {
+                  type: "button",
                   onClick: function () {
                     // Apply garden words as the preloaded word list
                     if (setWsPreloadedWords) {
@@ -29182,6 +29195,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className: "px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors whitespace-nowrap"
                 }, ts("word_sounds.use_garden_words") || "📖 Use Garden Words"),
                 React.createElement("button", {
+                  type: "button",
                   onClick: function () { setShowGardenBanner(false); },
                   className: "text-emerald-700 hover:text-emerald-600 text-lg",
                   "aria-label": ts("word_sounds.sr_dismiss") || "Dismiss"
@@ -29266,7 +29280,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
                 /*#__PURE__*/ React.createElement(
                 "button",
-                {
+                { type: "button",
                   "aria-label": t("common.refresh"),
                   onClick: () => fetchWordData(phonemeError),
                   className:

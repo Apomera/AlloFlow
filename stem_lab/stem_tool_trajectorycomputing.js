@@ -51,10 +51,14 @@
     Object.freeze({ id: 'readback', label: 'Machine output read-back' }),
     Object.freeze({ id: 'role-check', label: 'Independent role check' })
   ]);
+  // The transposed-output case quotes the range the model prints (it said 4607.7 m while the printout said 4610.1 m).
+  // The operator's copy swaps the 2nd and 3rd digits of that same printed value.
+  var PRINTED_RANGE_TEXT = computeTrajectory(MISSION).range.toFixed(1);
+  var TRANSPOSED_RANGE_TEXT = PRINTED_RANGE_TEXT.charAt(0) + PRINTED_RANGE_TEXT.charAt(2) + PRINTED_RANGE_TEXT.charAt(1) + PRINTED_RANGE_TEXT.slice(3);
   var SAFEGUARD_CASES = Object.freeze([
     Object.freeze({ id: 'swapped-cards', title: 'Swapped calculation cards', incident: 'Cards 00010006 and 00010007 arrive in reverse order before the machine run.', expected: 'deck-audit', explanation: 'The printed sequence fields let the deck audit catch the swap before computation.' }),
     Object.freeze({ id: 'misspelled-variable', title: 'Misspelled program variable', incident: 'The listing uses RAT where the declared variable is RAD.', expected: 'compiler', explanation: 'The compiler reports the unknown variable before the calculation can finish.' }),
-    Object.freeze({ id: 'transposed-output', title: 'Transposed printed range', incident: 'The printout says 4607.7 m, but the operator records 4067.7 m.', expected: 'readback', explanation: 'A deliberate machine-output read-back compares the transcription with the printed job.' }),
+    Object.freeze({ id: 'transposed-output', title: 'Transposed printed range', incident: 'The printout says ' + PRINTED_RANGE_TEXT + ' m, but the operator records ' + TRANSPOSED_RANGE_TEXT + ' m.', expected: 'readback', explanation: 'A deliberate machine-output read-back compares the transcription with the printed job.' }),
     Object.freeze({ id: 'same-desk-signoff', title: 'Same-desk signoff', incident: 'The calculation and independent verification are assigned to the same desk code.', expected: 'role-check', explanation: 'The role check blocks a signoff that is not independently assigned.' })
   ]);
   var REFLECTION_ERROR_OPTIONS = Object.freeze([
@@ -652,10 +656,9 @@
     '      END'
   ].join('\n');
 
-  var STARTER_PROGRAM = CORRECT_PROGRAM
-    .replace('G=9.81', 'G=9.18')
-    .replace('RAD=ANGLE*3.14159/180.0', 'RAD=ANGEL*3.14159/180.0')
-    .replace('VY=V*SIN(RAD)', 'VY=V*COS(RAD)');
+  // The training listing's planted mistakes: the program station counts these and the compiler's messages (ANGEL trips two checks).
+  var STARTER_MISTAKES = [['G=9.81', 'G=9.18'], ['RAD=ANGLE*3.14159/180.0', 'RAD=ANGEL*3.14159/180.0'], ['VY=V*SIN(RAD)', 'VY=V*COS(RAD)']];
+  var STARTER_PROGRAM = STARTER_MISTAKES.reduce(function (code, pair) { return code.replace(pair[0], function () { return pair[1]; }); }, CORRECT_PROGRAM);
 
   var DIAGNOSTIC_CARDS = Object.freeze({
     E101: Object.freeze({ cardId: 'program', cardSequence: '00010001' }),
@@ -730,6 +733,11 @@
       if (!unique.some(function (prior) { return prior.code === item.code && prior.message === item.message; })) unique.push(item);
     });
     return { pass: unique.length === 0, diagnostics: unique, normalizedLines: lines };
+  }
+
+  // Both counts come from the model: planted mistakes vs. the messages the compiler actually prints for the training listing.
+  function getStarterListingCounts() {
+    return { mistakes: STARTER_MISTAKES.length, messages: compileProgram(STARTER_PROGRAM).diagnostics.length };
   }
 
   function getDiagnosticSelection(source, diagnostic) {
@@ -987,7 +995,10 @@
         ? 'Choose the claim best supported by the controlled comparison.'
         : (correct
           ? 'Supported: changing angle redistributes the same launch speed between horizontal and vertical components.'
-          : 'Recheck the controls: launch speed and gravity stayed fixed; only angle changed.')
+          // Each wrong pick names the input that really stayed fixed (values read from the model's mission constants).
+          : (normalized === 'gravity'
+            ? 'Not supported: gravity stayed ' + MISSION.gravity + ' m/s^2 in both runs. Only the angle changed.'
+            : 'Not supported: launch speed stayed ' + MISSION.speed + ' m/s in both runs. Only the angle changed.'))
     };
   }
 
@@ -1418,6 +1429,7 @@
     expected: EXPECTED,
     correctProgram: CORRECT_PROGRAM,
     starterProgram: STARTER_PROGRAM,
+    getStarterListingCounts: getStarterListingCounts,
     cardLibrary: CARD_LIBRARY,
     correctDeck: CORRECT_DECK.slice(),
     starterDeck: STARTER_DECK.slice(),
@@ -1489,7 +1501,7 @@
       '[data-trajectory-lab] .tc-top{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;color:#fff;margin-bottom:18px}',
       // Header text keeps its own green backing wherever the diagonal crosses it.
       '[data-trajectory-lab] .tc-top>div:first-child{background:#173c32;border-radius:10px;padding:6px 10px 8px;margin:-6px -10px 0}',
-      '[data-trajectory-lab] .tc-kicker{font:700 11px/1.2 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;color:#9ad7c0}',
+      '[data-trajectory-lab] .tc-kicker{font:700 12px/1.2 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;color:#9ad7c0}',
       '[data-trajectory-lab] .tc-title{font:800 clamp(25px,4vw,42px)/1.05 Georgia,serif;margin:5px 0}',
       '[data-trajectory-lab] .tc-subtitle{display:inline-block;max-width:760px;color:#f4fbf7;background:rgba(23,60,50,.92);padding:6px 10px;border-radius:7px;box-shadow:0 2px 0 rgba(10,33,27,.35);font-size:14px}',
       '[data-trajectory-lab] .tc-progress{max-width:480px;margin-top:12px;color:#e9f7f1}',
@@ -1497,7 +1509,7 @@
       '[data-trajectory-lab] .tc-progress-head strong{color:#fff0b5}',
       '[data-trajectory-lab] .tc-progress-track{height:10px;margin-top:6px;border:1px solid #9ad7c0;border-radius:99px;background:#102d27;overflow:hidden}',
       '[data-trajectory-lab] .tc-progress-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9ad7c0,#ffbf47);transition:width .25s ease}',
-      '[data-trajectory-lab] .tc-progress-route{margin:6px 0 0;color:#dcebe5;font-size:11px;line-height:1.35}',
+      '[data-trajectory-lab] .tc-progress-route{margin:6px 0 0;color:#dcebe5;font-size:12px;line-height:1.35}',
       '[data-trajectory-lab] button,[data-trajectory-lab] input,[data-trajectory-lab] select,[data-trajectory-lab] textarea{font:inherit}',
       '[data-trajectory-lab] button:focus-visible,[data-trajectory-lab] input:focus-visible,[data-trajectory-lab] select:focus-visible,[data-trajectory-lab] textarea:focus-visible,[data-trajectory-lab] summary:focus-visible,[data-trajectory-lab] a:focus-visible,[data-trajectory-lab] .tc-chart-frame:focus-visible,[data-trajectory-lab] .tc-heading:focus-visible,[data-trajectory-lab] .tc-replay-summary:focus-visible,[data-trajectory-lab] .tc-replay-table-wrap:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px #173c32}',
       '[data-trajectory-lab] .tc-back,[data-trajectory-lab] .tc-action,[data-trajectory-lab] .tc-small{border:0;border-radius:9px;font-weight:800;cursor:pointer}',
@@ -1512,15 +1524,17 @@
       '[data-trajectory-lab] .tc-tab:disabled{opacity:.68;background:#d7d1b8;color:#4d5b54;border-style:dashed;cursor:not-allowed}',
       '[data-trajectory-lab] .tc-tab.is-complete{border-color:#17633f;background:#e0f2e9;color:#143d2c}',
       '[data-trajectory-lab] .tc-tab.is-complete[aria-selected=true]{background:#17633f;color:#fff}',
-      '[data-trajectory-lab] .tc-tab-icon{display:inline-grid;place-items:center;width:25px;height:25px;margin-right:6px;border:1px solid currentColor;border-radius:50%;font:900 11px/1 ui-monospace,monospace;vertical-align:middle}',
-      '[data-trajectory-lab] .tc-tab-num{display:inline;font:700 10px/1 ui-monospace,monospace;opacity:1}',
+      '[data-trajectory-lab] .tc-tab-icon{display:inline-grid;place-items:center;width:25px;height:25px;margin-right:6px;border:1px solid currentColor;border-radius:50%;font:900 12px/1 ui-monospace,monospace;vertical-align:middle}',
+      '[data-trajectory-lab] .tc-tab-num{display:inline;font:700 12px/1 ui-monospace,monospace;opacity:1}',
       '[data-trajectory-lab] .tc-tab-label{display:block;margin-top:5px}',
       '[data-trajectory-lab] .tc-tabs-mobile-hint{display:none;margin:0 7px 8px;color:#173c32;font-size:12px;font-weight:800}',
       '[data-trajectory-lab] .tc-desk-brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0 4px 7px;border-radius:10px;overflow:hidden;background:#806f45}',
       '[data-trajectory-lab] .tc-desk-brief div{min-width:0;background:#173c32;color:#eef8f2;padding:10px 12px}',
-      '[data-trajectory-lab] .tc-desk-brief dt{color:#9ad7c0;font:800 10px/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}',
+      '[data-trajectory-lab] .tc-desk-brief dt{color:#9ad7c0;font:800 12px/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}',
       '[data-trajectory-lab] .tc-desk-brief dd{margin:4px 0 0;font-size:12px;line-height:1.4;font-weight:700}',
       '[data-trajectory-lab] .tc-desk-audio-row{display:flex;justify-content:flex-end;margin:0 4px 14px}',
+      // Mint ring = 7:1 on the dark green header; dark outer ring = 12:1 where the diagonal leaves beige behind the button.
+      '[data-trajectory-lab] .tc-small.tc-desk-audio{border:2px solid #9ad7c0;box-shadow:0 0 0 2px #0b211b}[data-trajectory-lab] .tc-small.tc-desk-audio:focus-visible{box-shadow:0 0 0 6px #173c32}',
       '[data-trajectory-lab] .tc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(245px,310px);gap:16px;align-items:start}',
       '[data-trajectory-lab] .tc-paper,[data-trajectory-lab] .tc-side{background:var(--tc-paper);border:1px solid #a99e79;border-radius:12px;box-shadow:0 9px 26px rgba(22,38,32,.2)}',
       '[data-trajectory-lab] .tc-paper{padding:clamp(17px,3vw,30px);min-width:0;min-height:520px;background-image:repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(89,112,101,.09) 28px)}',
@@ -1538,14 +1552,14 @@
       '[data-trajectory-lab] .tc-data{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:9px;margin:16px 0}',
       '[data-trajectory-lab] .tc-datum{background:#173c32;color:#fff;border-radius:8px;padding:12px}',
       '[data-trajectory-lab] .tc-datum b{display:block;font:800 18px/1.2 ui-monospace,monospace;color:#fff0b5}',
-      '[data-trajectory-lab] .tc-datum span{font-size:11px;color:#cce3d9}',
+      '[data-trajectory-lab] .tc-datum span{font-size:12px;color:#cce3d9}',
       '[data-trajectory-lab] .tc-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:18px}',
       '[data-trajectory-lab] .tc-formula{font:700 13px/1.5 ui-monospace,monospace;background:#16342d;color:#e9f7f1;border-radius:8px;padding:10px;overflow:auto}',
       '[data-trajectory-lab] .tc-fields{display:grid;grid-template-columns:repeat(2,minmax(190px,1fr));gap:13px;margin:16px 0}',
       '[data-trajectory-lab] .tc-field{display:block;font-weight:800;font-size:13px}',
-      '[data-trajectory-lab] .tc-field input,[data-trajectory-lab] select,[data-trajectory-lab] textarea{width:100%;border:2px solid #7e866e;border-radius:8px;background:#fffdf4;color:#10231b;padding:10px;margin-top:5px}',
+      '[data-trajectory-lab] .tc-field input,[data-trajectory-lab] select,[data-trajectory-lab] textarea{width:100%;min-height:44px;border:2px solid #7e866e;border-radius:8px;background:#fffdf4;color:#10231b;padding:10px;margin-top:5px}',
       '[data-trajectory-lab] input[type=checkbox],[data-trajectory-lab] input[type=radio]{width:24px;height:24px;accent-color:#173c32;vertical-align:middle;margin:0 6px 2px 0}',
-      '[data-trajectory-lab] .tc-field small{display:block;font-weight:500;min-height:18px;margin-top:4px}',
+      '[data-trajectory-lab] .tc-field small{display:block;font-weight:500;font-size:12px;min-height:18px;margin-top:4px}',
       '[data-trajectory-lab] .tc-ok{color:#17633f}[data-trajectory-lab] .tc-bad{color:#9a2e24}',
       '[data-trajectory-lab] .tc-program-workspace{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(250px,.75fr);gap:14px;align-items:start}',
       '[data-trajectory-lab] .tc-code{min-height:360px;resize:vertical;font:600 13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:6}',
@@ -1553,12 +1567,12 @@
       '[data-trajectory-lab] .tc-diagnostic-desk h3{margin:4px 0 8px;font:800 18px/1.2 Georgia,serif;color:#173c32}',
       '[data-trajectory-lab] .tc-diagnostic-card{position:relative;margin:12px 0;padding:12px 12px 12px 24px;border:1px solid #917f49;border-radius:5px;background:#f7efc8;box-shadow:0 2px 0 #c3b787;font:700 12px/1.45 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-diagnostic-card:before{content:"";position:absolute;left:7px;top:7px;bottom:7px;width:7px;background:repeating-linear-gradient(0deg,#8b805b 0 4px,transparent 4px 10px)}',
-      '[data-trajectory-lab] .tc-diagnostic-count{font:800 11px/1.4 ui-monospace,monospace;color:#675c39}',
+      '[data-trajectory-lab] .tc-diagnostic-count{font:800 12px/1.4 ui-monospace,monospace;color:#675c39}',
       '[data-trajectory-lab] .tc-diag{padding:9px 11px;margin:7px 0;border-radius:7px;background:#fff0e8;border:1px solid #d99872;font-size:13px}',
       '[data-trajectory-lab] .tc-card{position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) 84px 72px;gap:8px;align-items:center;background:#f7efc8;border:1px solid #9c8f61;border-radius:5px;padding:8px 9px 8px 20px;margin:7px 0;box-shadow:0 2px 0 #c3b787;font:700 12px/1.25 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-card:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:7px;background:repeating-linear-gradient(0deg,#8b805b 0 4px,transparent 4px 10px);opacity:.65}',
-      '[data-trajectory-lab] .tc-seq{font-size:10px;color:#675c39}',
-      '[data-trajectory-lab] .tc-small{background:#173c32;color:#fff;min-width:31px;min-height:36px;padding:6px 8px}',
+      '[data-trajectory-lab] .tc-seq{font-size:12px;color:#675c39}',
+      '[data-trajectory-lab] .tc-small{background:#173c32;color:#fff;min-width:44px;min-height:44px;padding:6px 10px}',
       '[data-trajectory-lab] .tc-machine{border:8px solid #355348;border-radius:14px;background:#14221e;padding:18px;color:#c9f6df;box-shadow:inset 0 0 0 2px #779184}',
       '[data-trajectory-lab] .tc-lights{display:flex;gap:9px;margin-bottom:12px}.tc-light{width:14px;height:14px;border-radius:50%;background:#55655e}.tc-light.on{background:#ffbd43;box-shadow:0 0 14px #ffbd43;animation:tcLightGlow 2.8s ease-in-out infinite}',
       '[data-trajectory-lab] .tc-batch-process{margin-top:15px;padding-top:14px;border-top:1px solid #779184}',
@@ -1568,13 +1582,14 @@
       '[data-trajectory-lab] .tc-batch-step{min-width:0;border:1px solid #779184;border-radius:7px;background:#203b33;color:#eef8f2;padding:10px}',
       '[data-trajectory-lab] .tc-batch-step.is-ready,[data-trajectory-lab] .tc-batch-step.is-complete{border-color:#9ad7c0;background:#1e493b}',
       '[data-trajectory-lab] .tc-batch-step.is-error{border-color:#ffbf47;background:#4a251a}',
-      '[data-trajectory-lab] .tc-batch-step-no{display:inline-grid;place-items:center;width:25px;height:25px;margin-bottom:7px;border:1px solid currentColor;border-radius:50%;font:900 11px/1 ui-monospace,monospace}',
+      '[data-trajectory-lab] .tc-batch-step-no{display:inline-grid;place-items:center;width:25px;height:25px;margin-bottom:7px;border:1px solid currentColor;border-radius:50%;font:900 12px/1 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-batch-step strong{display:block;color:#fff;font-size:12px}',
-      '[data-trajectory-lab] .tc-batch-step-detail{display:block;min-height:49px;margin-top:5px;color:#dcebe5;font-size:11px;line-height:1.45}',
-      '[data-trajectory-lab] .tc-batch-step-status{display:block;margin-top:8px;color:#fff0b5;font:900 10px/1.3 ui-monospace,monospace;text-transform:uppercase}',
+      '[data-trajectory-lab] .tc-batch-step-detail{display:block;min-height:49px;margin-top:5px;color:#dcebe5;font-size:12px;line-height:1.45}',
+      '[data-trajectory-lab] .tc-batch-step-status{display:block;margin-top:8px;color:#fff0b5;font:900 12px/1.3 ui-monospace,monospace;text-transform:uppercase}',
       '[data-trajectory-lab] .tc-printout{white-space:pre-wrap;background:#f8f1d5;color:#1a2922;border-left:16px dotted #d5c797;padding:18px;font:700 13px/1.55 ui-monospace,monospace;overflow:auto}',
       '[data-trajectory-lab] .tc-chart{display:block;width:100%;height:auto;background:#102d27;border-radius:10px;margin-top:14px}',
       '[data-trajectory-lab] .tc-chart-frame{overflow-x:auto;border-radius:10px}',
+      '[data-trajectory-lab] .tc-chart-frame .tc-chart{min-width:620px}',
       '[data-trajectory-lab] .tc-chart-mobile-hint{display:none;margin:9px 0 0;font-size:12px;font-weight:800;color:#173c32}',
       '[data-trajectory-lab] .tc-check{border:2px solid #2d6653;background:#e0f2e9;border-radius:10px;padding:14px;margin-top:14px}',
       '[data-trajectory-lab] .tc-certificate{border:7px double #173c32;padding:22px;text-align:center;background:#fff9df;margin-top:18px}',
@@ -1582,7 +1597,7 @@
       '[data-trajectory-lab] .tc-reflection h4{margin:0 0 6px;color:#173c32;font:800 18px/1.2 Georgia,serif}',
       '[data-trajectory-lab] .tc-reflection textarea{min-height:96px;resize:vertical}',
       '[data-trajectory-lab] .tc-stamps{display:grid;grid-template-columns:repeat(5,minmax(105px,1fr));gap:8px;list-style:none;padding:0;margin:17px 0}',
-      '[data-trajectory-lab] .tc-stamp{border:2px solid #17633f;border-radius:8px;background:#e0f2e9;color:#143d2c;padding:9px 6px;font:800 11px/1.35 ui-monospace,monospace}',
+      '[data-trajectory-lab] .tc-stamp{border:2px solid #17633f;border-radius:8px;background:#e0f2e9;color:#143d2c;padding:9px 6px;font:800 12px/1.35 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-stamp-symbol{display:block;font-size:19px;line-height:1;margin-bottom:5px}',
       '[data-trajectory-lab] .tc-extension{border:2px solid #9c8f61;border-radius:10px;background:#eee5c6;padding:16px;margin-top:18px}',
       '[data-trajectory-lab] .tc-extension h3{margin:0 0 7px;font:800 20px/1.2 Georgia,serif;color:#173c32}',
@@ -1592,7 +1607,7 @@
       '[data-trajectory-lab] .tc-challenge-card.is-complete{border-color:#17633f;background:#eef8f2}',
       '[data-trajectory-lab] .tc-challenge-icon{display:block;font-size:27px;line-height:1;margin-bottom:10px}',
       '[data-trajectory-lab] .tc-challenge-card strong{display:block;font:800 18px/1.2 Georgia,serif;margin-bottom:7px}',
-      '[data-trajectory-lab] .tc-challenge-status{display:block;margin-bottom:7px;color:#17633f;font:900 11px/1.3 ui-monospace,monospace;text-transform:uppercase}',
+      '[data-trajectory-lab] .tc-challenge-status{display:block;margin-bottom:7px;color:#17633f;font:900 12px/1.3 ui-monospace,monospace;text-transform:uppercase}',
       '[data-trajectory-lab] .tc-challenge-card span:last-child{display:block;font-size:12px;line-height:1.45}',
       '[data-trajectory-lab] .tc-exploration-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;font:800 12px/1.35 ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-exploration-track{height:8px;margin-top:6px;border-radius:99px;background:#c8bc96;overflow:hidden}',
@@ -1605,16 +1620,16 @@
       '[data-trajectory-lab] .tc-replay-input-grid div{min-width:0;border:1px solid #8f8461;border-left-width:5px;border-radius:7px;background:#fffdf4;padding:9px}',
       '[data-trajectory-lab] .tc-replay-input-grid div.is-changed{border-left-color:#a64220;background:#fff0e8}',
       '[data-trajectory-lab] .tc-replay-input-grid div.is-fixed{border-left-color:#17633f;background:#eef8f2}',
-      '[data-trajectory-lab] .tc-replay-input-grid dt{font-size:11px;font-weight:900}',
+      '[data-trajectory-lab] .tc-replay-input-grid dt{font-size:12px;font-weight:900}',
       '[data-trajectory-lab] .tc-replay-input-grid dd{margin:3px 0;font:800 15px/1.25 ui-monospace,monospace}',
-      '[data-trajectory-lab] .tc-replay-input-state{display:block;font-size:11px;font-weight:800}',
+      '[data-trajectory-lab] .tc-replay-input-state{display:block;font-size:12px;font-weight:800}',
       '[data-trajectory-lab] .tc-replay-evidence{margin:15px 0;padding:13px 0;border-top:2px solid #2d6653;border-bottom:2px solid #2d6653}',
       '[data-trajectory-lab] .tc-replay-evidence h5{margin:0 0 9px;color:#173c32;font:800 17px/1.2 Georgia,serif}',
       '[data-trajectory-lab] .tc-replay-evidence-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}',
-      '[data-trajectory-lab] .tc-replay-evidence-key li{min-width:0;border:1px solid #91845d;border-radius:7px;background:#fffdf4;padding:9px;font-size:11px;line-height:1.4}',
+      '[data-trajectory-lab] .tc-replay-evidence-key li{min-width:0;border:1px solid #91845d;border-radius:7px;background:#fffdf4;padding:9px;font-size:12px;line-height:1.4}',
       '[data-trajectory-lab] .tc-replay-evidence-key li.is-current{border:3px solid #a64220;background:#fff0e8;padding:7px}',
       '[data-trajectory-lab] .tc-replay-evidence-key strong,[data-trajectory-lab] .tc-replay-evidence-key span{display:block}',
-      '[data-trajectory-lab] .tc-replay-current{margin-top:6px;color:#712812;font:900 10px/1.3 ui-monospace,monospace;text-transform:uppercase}',
+      '[data-trajectory-lab] .tc-replay-current{margin-top:6px;color:#712812;font:900 12px/1.3 ui-monospace,monospace;text-transform:uppercase}',
       '[data-trajectory-lab] .tc-history-checkpoint{margin-top:14px;border:2px solid #917f49;border-radius:9px;background:#fff8df;padding:12px;font-size:12px;line-height:1.5}',
       '[data-trajectory-lab] .tc-history-checkpoint h4{margin:0 0 6px;font:800 16px/1.2 Georgia,serif;color:#173c32}',
       '[data-trajectory-lab] .tc-history-checkpoint p{margin:6px 0}',
@@ -1626,7 +1641,7 @@
       '[data-trajectory-lab] .tc-chart-legend{display:flex;flex-wrap:wrap;gap:8px 18px;list-style:none;padding:0;margin:9px 0;font-size:12px}',
       '[data-trajectory-lab] .tc-legend-line{display:inline-block;width:34px;border-top:4px solid #6b3f16;margin-right:7px;vertical-align:middle}',
       '[data-trajectory-lab] .tc-legend-line.compare{border-top-color:#17633f;border-top-style:dashed}',
-      '[data-trajectory-lab] .tc-rubric{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}',
+      '[data-trajectory-lab] .tc-rubric{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}',
       '[data-trajectory-lab] .tc-rubric th,[data-trajectory-lab] .tc-rubric td{border:1px solid #91845d;padding:6px;text-align:left;vertical-align:top}',
       '[data-trajectory-lab] .tc-rubric caption{text-align:left;font-weight:900;padding:7px 0}',
       '[data-trajectory-lab] .tc-replay-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid #91845d;border-radius:8px;background:#fffdf4}',
@@ -1648,13 +1663,13 @@
       '[data-trajectory-lab] .tc-print-preview code{display:block;min-width:max-content}',
       '[data-trajectory-lab] .tc-study-grid{display:grid;grid-template-columns:minmax(145px,.65fr) minmax(220px,1.35fr);gap:13px;align-items:start;margin-top:12px}',
       '[data-trajectory-lab] .tc-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}',
-      '[data-trajectory-lab] .tc-result-grid div{background:#173c32;color:#fff;border-radius:7px;padding:10px;font-size:11px}',
+      '[data-trajectory-lab] .tc-result-grid div{background:#173c32;color:#fff;border-radius:7px;padding:10px;font-size:12px}',
       '[data-trajectory-lab] .tc-result-grid b{display:block;color:#fff0b5;font:800 16px ui-monospace,monospace}',
       '[data-trajectory-lab] .tc-ledger-wrap{overflow-x:auto;margin:15px 0;border:1px solid #9c8f61;border-radius:9px;background:#fffdf4}',
       '[data-trajectory-lab] .tc-ledger{width:100%;border-collapse:collapse;font-size:12px}',
       '[data-trajectory-lab] .tc-ledger th,[data-trajectory-lab] .tc-ledger td{padding:9px;border-bottom:1px solid #d4caa7;text-align:left;vertical-align:top}',
-      '[data-trajectory-lab] .tc-ledger th{background:#173c32;color:#fff;font-size:11px;letter-spacing:.04em}',
-      '[data-trajectory-lab] .tc-ledger tr:last-child td{border-bottom:0}[data-trajectory-lab] .tc-ledger code{white-space:nowrap;font-size:11px}',
+      '[data-trajectory-lab] .tc-ledger th{background:#173c32;color:#fff;font-size:12px;letter-spacing:.04em}',
+      '[data-trajectory-lab] .tc-ledger tr:last-child td{border-bottom:0}[data-trajectory-lab] .tc-ledger code{white-space:nowrap;font-size:12px}',
       '[data-trajectory-lab] .tc-reconciliation{margin:16px 0;padding:13px 0;border-top:2px solid #2d6653;border-bottom:2px solid #2d6653}',
       '[data-trajectory-lab] .tc-reconciliation h3{margin:0 0 6px;color:#173c32;font:800 20px/1.2 Georgia,serif}',
       '[data-trajectory-lab] .tc-reconciliation-status{margin:10px 0;padding-left:12px;border-left:5px solid #17633f;font-weight:800;line-height:1.5}',
@@ -1681,12 +1696,13 @@
       '[data-trajectory-lab] .tc-checklist li{border:1px solid #b9ad82;border-radius:6px;padding:8px;background:#f5efd9;font-size:12px;font-weight:700}',
       '[data-trajectory-lab] .tc-side h3{font:800 17px/1.2 Georgia,serif;margin:0 0 9px}',
       '[data-trajectory-lab] .tc-side dl{display:grid;grid-template-columns:1fr auto;gap:7px;font-size:12px;margin:0}.tc-side dt{color:#4d5b54}.tc-side dd{margin:0;font:800 12px ui-monospace,monospace}',
-      '[data-trajectory-lab] details{margin-top:14px;border-top:1px solid #bcb18d;padding-top:11px}.tc-side summary{display:flex;align-items:center;min-height:24px;font-weight:800;cursor:pointer}',
+      '[data-trajectory-lab] details{margin-top:14px;border-top:1px solid #bcb18d;padding-top:11px}.tc-side summary{display:flex;align-items:center;min-height:44px;font-weight:800;cursor:pointer}[data-trajectory-lab] summary{min-height:44px;padding:10px 0;box-sizing:border-box;cursor:pointer}',
       '[data-trajectory-lab] .tc-sources{font-size:12px;line-height:1.55}.tc-sources a{color:#0e5a75;font-weight:800}',
       '[data-trajectory-lab] .tc-glossary{display:grid;grid-template-columns:auto 1fr;gap:6px 9px;font-size:12px;line-height:1.5}.tc-glossary dt{font-weight:900;color:#173c32}.tc-glossary dd{margin:0}',
       '[data-trajectory-lab] .tc-teacher-list{padding-left:18px;font-size:12px;line-height:1.55}',
       '[data-trajectory-lab] .tc-distraction-toggle{display:block;margin-top:13px;padding:10px;border:1px solid #9c8f61;border-radius:8px;background:#fff9df;font-size:12px;font-weight:800;line-height:1.45}',
       '[data-trajectory-lab] .tc-evidence-file{margin-top:13px;border:1px solid #9c8f61;border-radius:8px;background:#fff9df;padding:10px}',
+      '[data-trajectory-lab] .tc-briefing-more{margin:12px 0;border:1px solid #2d6653;border-radius:10px;background:#eef8f2;padding:0 12px}[data-trajectory-lab] .tc-briefing-more>summary{display:flex;align-items:center;min-height:44px;font-weight:800;color:#173c32;gap:10px}[data-trajectory-lab] .tc-briefing-more>summary::after{content:"+";margin-left:auto;font:900 22px/1 Inter,system-ui,sans-serif}[data-trajectory-lab] .tc-briefing-more[open]>summary::after{content:"−"}[data-trajectory-lab] .tc-briefing-more[open]{padding-bottom:4px}',
       '[data-trajectory-lab] .tc-evidence-file summary{min-height:44px;padding:0;border:0;font-size:13px}',
       '[data-trajectory-lab] .tc-evidence-list{list-style:none;padding:0;margin:8px 0 0;font-size:12px;line-height:1.4}',
       '[data-trajectory-lab] .tc-evidence-list li{display:grid;grid-template-columns:20px 1fr;gap:6px;padding:6px 0;border-top:1px solid #d4caa7}',
@@ -1696,7 +1712,7 @@
       '[data-trajectory-lab][data-low-distraction=true] .tc-paper{font-size:105%}',
       '[data-trajectory-lab][data-low-distraction=true] .tc-title,[data-trajectory-lab][data-low-distraction=true] .tc-subtitle{background:#173c32;color:#fff}',
       '@media(max-width:900px){[data-trajectory-lab] .tc-grid,[data-trajectory-lab] .tc-program-workspace{grid-template-columns:minmax(0,1fr)}[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-diagnostic-desk{position:static}[data-trajectory-lab] .tc-data,[data-trajectory-lab] .tc-batch-trace{grid-template-columns:repeat(2,1fr)}}',
-      '@media(max-width:560px){[data-trajectory-lab] .tc-top{flex-direction:column}[data-trajectory-lab] .tc-fields,[data-trajectory-lab] .tc-study-grid,[data-trajectory-lab] .tc-role-grid,[data-trajectory-lab] .tc-report-grid,[data-trajectory-lab] .tc-checklist,[data-trajectory-lab] .tc-signing-list,[data-trajectory-lab] .tc-challenge-grid,[data-trajectory-lab] .tc-stamps,[data-trajectory-lab] .tc-desk-brief,[data-trajectory-lab] .tc-orientation-steps,[data-trajectory-lab] .tc-batch-trace,[data-trajectory-lab] .tc-replay-evidence-key{grid-template-columns:1fr}[data-trajectory-lab] .tc-card{grid-template-columns:32px minmax(0,1fr) 66px}[data-trajectory-lab] .tc-card-actions{grid-column:2/4}[data-trajectory-lab] .tc-data{grid-template-columns:1fr 1fr}[data-trajectory-lab] .tc-result-grid{grid-template-columns:1fr}[data-trajectory-lab] .tc-report-head{display:block}[data-trajectory-lab] .tc-tabs-mobile-hint,[data-trajectory-lab] .tc-chart-mobile-hint{display:block}[data-trajectory-lab] .tc-chart-frame .tc-chart{min-width:620px}[data-trajectory-lab] .tc-batch-step-detail{min-height:0}}',
+      '@media(max-width:560px){[data-trajectory-lab] .tc-top{flex-direction:column}[data-trajectory-lab] .tc-fields,[data-trajectory-lab] .tc-study-grid,[data-trajectory-lab] .tc-role-grid,[data-trajectory-lab] .tc-report-grid,[data-trajectory-lab] .tc-checklist,[data-trajectory-lab] .tc-signing-list,[data-trajectory-lab] .tc-challenge-grid,[data-trajectory-lab] .tc-stamps,[data-trajectory-lab] .tc-desk-brief,[data-trajectory-lab] .tc-orientation-steps,[data-trajectory-lab] .tc-batch-trace,[data-trajectory-lab] .tc-replay-evidence-key{grid-template-columns:1fr}[data-trajectory-lab] .tc-card{grid-template-columns:32px minmax(0,1fr) 66px}[data-trajectory-lab] .tc-card-actions{grid-column:2/4}[data-trajectory-lab] .tc-data{grid-template-columns:1fr 1fr}[data-trajectory-lab] .tc-result-grid{grid-template-columns:1fr}[data-trajectory-lab] .tc-report-head{display:block}[data-trajectory-lab] .tc-tabs-mobile-hint,[data-trajectory-lab] .tc-chart-mobile-hint{display:block}[data-trajectory-lab] .tc-batch-step-detail{min-height:0}}',
       '@keyframes tcEnvBreathe{0%,100%{opacity:.78}50%{opacity:1}}',
       '@keyframes tcGlowBreathe{0%,100%{opacity:.56}50%{opacity:1}}',
       '@keyframes tcArcDashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
@@ -2113,6 +2129,15 @@
       var safeguardInvestigationComplete = !!(safeguardResult && safeguardResult.correct);
       var explorationCount = (angleInvestigationComplete ? 1 : 0) + (replayLearningStatus.questComplete ? 1 : 0) + (safeguardInvestigationComplete ? 1 : 0);
 
+      // Mistake and message counts are read from the compiler model, so the text cannot drift from what it prints.
+      function renderStarterListingNote() {
+        var counts = getStarterListingCounts();
+        var text = t('stem.trajectorycomputing.starter_mistakes_v2_a', 'This listing has ') + counts.mistakes + t('stem.trajectorycomputing.starter_mistakes_v2_b', ' copying mistakes: one number, one variable name, and one trig function. Find and fix them.');
+        if (counts.messages !== counts.mistakes) {
+          text += ' ' + t('stem.trajectorycomputing.starter_messages_v2_a', 'The compiler will show ') + counts.messages + t('stem.trajectorycomputing.starter_messages_v2_b', ' messages, not ') + counts.mistakes + t('stem.trajectorycomputing.starter_messages_v2_c', ', because the misspelled name ANGEL fails two checks on the same line.');
+        }
+        return text;
+      }
       function dataTile(label, value) {
         return h('div', { className: 'tc-datum' }, h('b', null, value), h('span', null, label));
       }
@@ -2122,6 +2147,12 @@
       function stageLabel(id) {
         var item = stages.find(function (stageItem) { return stageItem[0] === id; });
         return item ? item[1] : id;
+      }
+      // Turns a model relation into words that read as a sentence ("about than" was shown before).
+      function relationPhrase(relation) {
+        if (relation === 'about') return t('stem.trajectorycomputing.relation_about_same_as', 'about the same distance as');
+        if (relation === 'longer') return t('stem.trajectorycomputing.relation_longer_than', 'a longer distance than');
+        return t('stem.trajectorycomputing.relation_shorter_than', 'a shorter distance than');
       }
       function countPhrase(count, total, nounKey, nounFallback, stateKey, stateFallback) {
         var phrase = count + ' ' + t('stem.trajectorycomputing.count_of', 'of') + ' ' + total;
@@ -2146,7 +2177,7 @@
             return h('div', { key: labels[index] }, h('dt', null, labels[index]), h('dd', null, value));
           })),
           h('div', { className: 'tc-desk-audio-row' },
-            h('button', { type: 'button', className: 'tc-small', onClick: function () { speak(narration); }, 'aria-label': t('stem.trajectorycomputing.read_desk_summary_aloud_label', 'Read the current desk summary aloud') },
+            h('button', { type: 'button', className: 'tc-small tc-desk-audio', onClick: function () { speak(narration); }, 'aria-label': t('stem.trajectorycomputing.read_desk_summary_aloud_label', 'Read the current desk summary aloud') },
               t('stem.trajectorycomputing.read_desk_summary_aloud', 'Read desk summary aloud')
             )
           )
@@ -2211,6 +2242,8 @@
         if (message === 'Choose the claim best supported by the controlled comparison.') return t('stem.trajectorycomputing.feedback_choose_supported_claim', 'Choose the claim best supported by the controlled comparison.');
         if (message === 'Supported: changing angle redistributes the same launch speed between horizontal and vertical components.') return t('stem.trajectorycomputing.feedback_angle_components_supported', 'Supported: changing angle redistributes the same launch speed between horizontal and vertical components.');
         if (message === 'Recheck the controls: launch speed and gravity stayed fixed; only angle changed.') return t('stem.trajectorycomputing.feedback_recheck_angle_controls', 'Recheck the controls: launch speed and gravity stayed fixed; only angle changed.');
+        if (message.indexOf('Not supported: gravity stayed ') === 0) return t('stem.trajectorycomputing.feedback_angle_gravity_fixed', 'Not supported: gravity stayed {g} m/s^2 in both runs. Only the angle changed.').replace('{g}', String(MISSION.gravity));
+        if (message.indexOf('Not supported: launch speed stayed ') === 0) return t('stem.trajectorycomputing.feedback_angle_speed_fixed', 'Not supported: launch speed stayed {v} m/s in both runs. Only the angle changed.').replace('{v}', String(MISSION.speed));
         return message;
       }
 
@@ -2400,7 +2433,7 @@
           report.batchRun && report.batchRun.id && h('p', null, h('strong', null, t('stem.trajectorycomputing.batch_run_record', 'Batch run record: ')), report.batchRun.id + ' / run ' + report.batchRun.count + '.'),
           report.reproducibilityNote && h('p', null, h('strong', null, t('stem.trajectorycomputing.reproducibility_note', 'Reproducibility note: ')), countPhrase(report.reproducibilityNote.correct, report.reproducibilityNote.total, 'stem.trajectorycomputing.fixed_mission_inputs', 'fixed mission inputs', 'stem.trajectorycomputing.recorded_period', 'recorded.')),
           h('p', null, h('strong', null, t('stem.trajectorycomputing.revision_evidence', 'Revision evidence: ')), report.revisionEvidence.totalAttempts + ' checks across the workflow; diagnostic categories recorded: ' + (report.revisionEvidence.diagnosticCodes.join(', ') || t('stem.trajectorycomputing.none', 'none')) + '. ' + t('stem.trajectorycomputing.revision_privacy_note', 'Discarded code and personal identifiers are not stored.')),
-          report.angleStudy && h('p', null, h('strong', null, t('stem.trajectorycomputing.parameter_study', 'Parameter study: ')), report.angleStudy.angle + ' degrees produced ' + round(report.angleStudy.range, 1) + ' m, ' + report.angleStudy.relation + ' than baseline. Prediction ' + (report.angleStudy.correct ? 'supported.' : 'revised.') + ' Evidence explanation ' + (report.angleStudy.explanationCorrect ? 'supported.' : 'not yet confirmed.')),
+          report.angleStudy && h('p', null, h('strong', null, t('stem.trajectorycomputing.parameter_study', 'Parameter study: ')), report.angleStudy.angle + ' degrees produced ' + round(report.angleStudy.range, 1) + ' m, ' + relationPhrase(report.angleStudy.relation) + ' the 38-degree baseline. Prediction ' + (report.angleStudy.correct ? 'supported.' : 'revised.') + ' Evidence explanation ' + (report.angleStudy.explanationCorrect ? 'supported.' : 'not yet confirmed.')),
           report.replayCard && h('div', null,
             h('p', null, h('strong', null, t('stem.trajectorycomputing.mission_replay_evidence', 'Mission replay evidence: ')), report.replayCard.mission.name + ' produced ' + round(report.replayCard.result.range, 1) + ' m, ' + (report.replayCard.relation === 'about' ? 'about the same as Aurora' : report.replayCard.relation + ' than Aurora') + '.'),
             h('p', null, replayLearningSummary),
@@ -2479,27 +2512,39 @@
         return h('section', { role: 'tabpanel', id: 'tc-panel-briefing', 'aria-labelledby': 'tc-tab-briefing' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.work_order_62_aur_03', 'Work order 62-AUR-03')),
           h('h2', { id: 'tc-stage-heading-briefing', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.the_answer_must_be_trusted_before_the_', 'The answer must be trusted before the vehicle flies.')),
-          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.you_have_joined_the_fictional_national', 'You have joined the fictional National Aeronautics Laboratory as a computation specialist. Aurora Test 3 will release a research capsule from a 30-meter tower. Your team must predict where it lands, translate the method into early scientific code, prepare the card deck, and check the machine independently.')),
-          !orientationDismissed && h('section', { className: 'tc-orientation', 'aria-labelledby': 'tc-orientation-title' },
-            h('h3', { id: 'tc-orientation-title' }, t('stem.trajectorycomputing.how_the_mission_works', 'How the mission works')),
-            h('ol', { className: 'tc-orientation-steps' },
-              h('li', null, h('strong', null, t('stem.trajectorycomputing.build_a_human_reference', 'Build a human reference. ')), t('stem.trajectorycomputing.build_a_human_reference_help', 'Use printed values and hand calculations before seeing machine output.')),
-              h('li', null, h('strong', null, t('stem.trajectorycomputing.prepare_the_machine_job', 'Prepare the machine job. ')), t('stem.trajectorycomputing.prepare_the_machine_job_help', 'Repair code, audit its print format, and protect card order.')),
-              h('li', null, h('strong', null, t('stem.trajectorycomputing.verify_independently', 'Verify independently. ')), t('stem.trajectorycomputing.verify_independently_help', 'Read the output, record fixed inputs, and make a separate GO/HOLD decision.'))
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.you_have_joined_the_fictional_national_v2', 'You have joined the fictional National Aeronautics Laboratory as a computation specialist. Aurora Test 3 will launch a research capsule from the top of a 30-meter tower at 215 m/s. The math starts the moment it leaves the tower. Your team must predict where it lands, translate the method into early scientific code, prepare the card deck, and check the machine independently.')),
+          // One closed disclosure keeps the start button near the top on a phone; every piece stays one tap away.
+          h('details', { className: 'tc-briefing-more' },
+            h('summary', null, t('stem.trajectorycomputing.briefing_more_summary', 'How it works, history, and what the math leaves out')),
+            !orientationDismissed && h('section', { className: 'tc-orientation', 'aria-labelledby': 'tc-orientation-title' },
+              h('h3', { id: 'tc-orientation-title' }, t('stem.trajectorycomputing.how_the_mission_works', 'How the mission works')),
+              h('ol', { className: 'tc-orientation-steps' },
+                h('li', null, h('strong', null, t('stem.trajectorycomputing.build_a_human_reference', 'Build a human reference. ')), t('stem.trajectorycomputing.build_a_human_reference_help', 'Use printed values and hand calculations before seeing machine output.')),
+                h('li', null, h('strong', null, t('stem.trajectorycomputing.prepare_the_machine_job', 'Prepare the machine job. ')), t('stem.trajectorycomputing.prepare_the_machine_job_help', 'Repair code, audit its print format, and protect card order.')),
+                h('li', null, h('strong', null, t('stem.trajectorycomputing.verify_independently', 'Verify independently. ')), t('stem.trajectorycomputing.verify_independently_help', 'Read the output, record fixed inputs, and make a separate GO/HOLD decision.'))
+              ),
+              h('div', { className: 'tc-row' }, action(t('stem.trajectorycomputing.got_it_show_work_order', 'Got it — show my work order'), function () { update({ orientationDismissed: true }); focusResult('tc-main-content'); }))
             ),
-            h('div', { className: 'tc-row' }, action(t('stem.trajectorycomputing.got_it_show_work_order', 'Got it — show my work order'), function () { update({ orientationDismissed: true }); focusResult('tc-main-content'); }))
+            h('div', { className: 'tc-note' }, h('strong', null, t('stem.trajectorycomputing.historical_boundary', 'Historical boundary: ')), t('stem.trajectorycomputing.the_mission_facility_documents_and_int', 'The mission, facility, documents, and interface in this simulation are original and fictional. The workflow is grounded in documented history about women who worked as human computers and later programmed early electronic computers.')),
+            // Physics honesty: drag grows with speed squared, so at 215 m/s it is far from small; the no-air numbers are an upper bound.
+            // Quadratic-drag check (2026-11-24, same launch): no air 4610 m; dense 43 kg 155 mm shell ~3660 m; 100 kg, 0.5 m capsule ~1760 m.
+            h('p', { className: 'tc-note' }, h('strong', null, t('stem.trajectorycomputing.model_note_label', 'Model note: ')), t('stem.trajectorycomputing.model_note_no_air', 'This math leaves out air. At 215 m/s, real air drag would make the capsule land much shorter. The lab keeps the no-air model so every desk can check the same numbers.'))
           ),
-          h('div', { className: 'tc-note' }, h('strong', null, t('stem.trajectorycomputing.historical_boundary', 'Historical boundary: ')), t('stem.trajectorycomputing.the_mission_facility_documents_and_int', 'The mission, facility, documents, and interface in this simulation are original and fictional. The workflow is grounded in documented history about women who worked as human computers and later programmed early electronic computers.')),
           h('div', { className: 'tc-data', 'aria-label': t('stem.trajectorycomputing.mission_constants', 'Mission constants') },
-            dataTile('release speed', '215 m/s'), dataTile('launch angle', '38 degrees'),
+            dataTile('launch speed', '215 m/s'), dataTile('launch angle', '38 degrees'),
             dataTile('initial height', '30 m'), dataTile('landing zone', '4.55-4.70 km')
           ),
           /* Bespoke Aurora-3 Ballistic Launch Profile Blueprint SVG */
+          // minWidth keeps 1 SVG unit = 1 px or more, so the 12-unit labels stay 12 px on a phone; the frame scrolls sideways instead.
           h('div', {
+            className: 'tc-chart-frame',
+            role: 'region',
+            tabIndex: 0,
+            'aria-label': t('stem.trajectorycomputing.scrollable_launch_schematic', 'Scrollable launch schematic'),
             style: {
               margin: '14px 0',
               borderRadius: 10,
-              overflow: 'hidden',
+              overflowX: 'auto',
               backgroundColor: isContrast ? '#000000' : '#0f2922',
               border: isContrast ? '2px solid #ffff00' : '1.5px solid #2d6653'
             }
@@ -2507,8 +2552,8 @@
             h('svg', {
               viewBox: '0 0 640 168',
               role: 'img',
-              'aria-label': t('stem.trajectorycomputing.briefing_blueprint_aria', 'Aurora Test 3 launch schematic showing a 30 meter tower releasing at 215 meters per second at 38 degrees, decomposed into Vx and Vy components, arcing toward the 4.55 to 4.70 kilometer landing zone.'),
-              style: { width: '100%', height: 'auto', display: 'block' }
+              'aria-label': t('stem.trajectorycomputing.briefing_blueprint_aria_v2', 'Aurora Test 3 launch schematic showing a capsule launched from a 30 meter tower at 215 meters per second at 38 degrees, with the speed split into Vx and Vy parts, arcing toward the 4.55 to 4.70 kilometer landing zone.'),
+              style: { width: '100%', minWidth: 640, height: 'auto', display: 'block' }
             },
               !isContrast && h('defs', null,
                 h('linearGradient', { id: 'tc-br-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
@@ -2533,8 +2578,8 @@
                 return h('line', { key: 'gx-' + gx, x1: gx, y1: 16, x2: gx, y2: 146, stroke: isContrast ? '#333333' : '#1f4e42', strokeWidth: 0.8 });
               }),
               /* Blueprint Header */
-              h('text', { x: 20, y: 24, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'FIG 1.0 // AURORA-3 BALLISTIC LAUNCH PROFILE'),
-              h('text', { x: 620, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'g = 9.81 m/s\u00B2'),
+              h('text', { x: 20, y: 24, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'FIG 1.0 // AURORA-3 BALLISTIC LAUNCH PROFILE'),
+              h('text', { x: 620, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#fff0b5', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'g = 9.81 m/s\u00B2'),
               /* Gradient-shaded ballistic trajectory envelope */
               !isContrast && h('path', { className: 'tc-env-breathe', d: 'M 58 138 L 58 112 Q 290 12 518 136 L 518 138 Z', fill: 'url(#tc-br-env)' }),
               /* Ground Datum Line */
@@ -2542,11 +2587,11 @@
               /* 30m Launch Tower with structural truss crossbars */
               h('rect', { x: 48, y: 112, width: 12, height: 26, rx: 1, fill: isContrast ? '#ffff00' : '#d8d0b3', stroke: isContrast ? '#000000' : '#173c32', strokeWidth: 1 }),
               !isContrast && h('path', { d: 'M 49 116 L 59 124 M 59 116 L 49 124 M 49 126 L 59 134 M 59 126 L 49 134', stroke: '#173c32', strokeWidth: 0.8, opacity: 0.55 }),
-              h('text', { x: 54, y: 154, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Y0 = 30m'),
+              h('text', { x: 54, y: 154, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 12, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Y0 = 30m'),
               /* Target Landing Zone Bracket (4.55 - 4.70 km) */
               !isContrast && h('rect', { className: 'tc-zone-pulse', x: 468, y: 127, width: 100, height: 22, rx: 6, fill: '#ffbf47', opacity: 0.12 }),
               h('rect', { x: 472, y: 131, width: 92, height: 14, rx: 3, fill: isContrast ? '#000000' : 'rgba(255,191,71,0.28)', stroke: isContrast ? '#00ff00' : '#ffbf47', strokeWidth: 1.8 }),
-              h('text', { x: 518, y: 156, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'ZONE: 4.55-4.70 km'),
+              h('text', { x: 518, y: 156, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#fff0b5', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'ZONE: 4.55-4.70 km'),
               /* Dual-pass luminous unknown ballistic arc (dashed — student computes exact landing range) */
               !isContrast && h('path', { className: 'tc-glow-breathe', d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.16 }),
               h('path', { className: !isContrast ? 'tc-arc-dash-flow' : undefined, d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5', strokeLinecap: 'round' }),
@@ -2562,15 +2607,16 @@
               h('polygon', { points: '150,57 138,59 144,68', fill: isContrast ? '#ffffff' : '#ff8a5b' }),
               !isContrast && h('circle', { className: 'tc-beacon-pulse', cx: 58, cy: 112, r: 10, fill: 'url(#tc-br-beacon)' }),
               h('circle', { cx: 58, cy: 112, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#000000', strokeWidth: 1.2 }),
-              h('text', { x: 108, y: 74, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#ffcfb8', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V0=215 m/s'),
-              h('text', { x: 106, y: 126, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vx = V cos 38\u00B0'),
-              h('text', { x: 156, y: 88, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vy = V sin 38\u00B0'),
+              /* Labels sit clear of the vector, the tower and the arc at 12-unit text. */
+              h('text', { x: 100, y: 62, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#ffcfb8', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V0=215 m/s'),
+              h('text', { x: 68, y: 128, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vx = V cos 38\u00B0'),
+              h('text', { x: 156, y: 104, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vy = V sin 38\u00B0'),
               /* Apex Milestone Beacon Callout */
               !isContrast && h('circle', { className: 'tc-beacon-pulse', style: { animationDelay: '0.6s' }, cx: 288, cy: 62, r: 11, fill: 'url(#tc-br-beacon)' }),
               !isContrast && h('circle', { className: 'tc-reticle-ring', cx: 288, cy: 62, r: 8, fill: 'none', stroke: '#ffbf47', strokeWidth: 1.2, opacity: 0.6 }),
               h('circle', { cx: 288, cy: 62, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
               !isContrast && h('circle', { cx: 286.8, cy: 60.8, r: 1.2, fill: '#ffffff', opacity: 0.75 }),
-              h('text', { x: 288, y: 47, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
+              h('text', { x: 288, y: 47, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
             )
           ),
           h('h3', null, t('stem.trajectorycomputing.your_assignment', 'Your assignment')),
@@ -2619,10 +2665,14 @@
             var vxOk = worksheetResult && worksheetResult.fields && worksheetResult.fields.vx && worksheetResult.fields.vx.ok;
             var vyOk = worksheetResult && worksheetResult.fields && worksheetResult.fields.vy && worksheetResult.fields.vy.ok;
             return h('div', {
+              className: 'tc-chart-frame',
+              role: 'region',
+              tabIndex: 0,
+              'aria-label': t('stem.trajectorycomputing.scrollable_vector_triangle', 'Scrollable velocity triangle'),
               style: {
                 margin: '12px 0',
                 borderRadius: 9,
-                overflow: 'hidden',
+                overflowX: 'auto',
                 backgroundColor: isContrast ? '#000000' : '#142e27',
                 border: isContrast ? '2px solid #ffff00' : '1.5px solid #2d6653'
               }
@@ -2631,7 +2681,7 @@
                 viewBox: '0 0 460 112',
                 role: 'img',
                 'aria-label': t('stem.trajectorycomputing.vector_triangle_aria', 'Right triangle decomposing launch velocity 215 meters per second at 38 degrees into horizontal Vx and vertical Vy components.'),
-                style: { width: '100%', maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }
+                style: { width: '100%', minWidth: 460, maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }
               },
                 !isContrast && h('defs', null,
                   h('linearGradient', { id: 'tc-wk-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
@@ -2669,15 +2719,15 @@
                 h('circle', { cx: 48, cy: 88, r: 4, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
                 h('rect', { x: 236, y: 76, width: 12, height: 12, fill: 'none', stroke: isContrast ? '#ffffff' : '#cce3d9', strokeWidth: 1.2 }),
                 h('path', { d: 'M 88 88 A 40 40 0 0 0 84 76', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 1.8 }),
-                h('text', { x: 96, y: 82, fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, '38\u00B0'),
-                h('text', { x: 136, y: 42, fill: isContrast ? '#ffff00' : '#ffbf47', fontSize: 11, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V = 215 m/s'),
-                h('text', { x: 148, y: 104, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (vxOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vxOk ? '\u2713 ' : '') + vxDisp),
-                h('text', { x: 258, y: 58, fill: isContrast ? '#00ff00' : (vyOk ? '#86efac' : '#e9f7f1'), fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vyOk ? '\u2713 ' : '') + vyDisp),
+                h('text', { x: 96, y: 82, fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, '38\u00B0'),
+                h('text', { x: 60, y: 40, fill: isContrast ? '#ffff00' : '#ffbf47', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V = 215 m/s'),
+                h('text', { x: 148, y: 104, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (vxOk ? '#86efac' : '#e9f7f1'), fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vxOk ? '\u2713 ' : '') + vxDisp),
+                h('text', { x: 258, y: 58, fill: isContrast ? '#00ff00' : (vyOk ? '#86efac' : '#e9f7f1'), fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, (vyOk ? '\u2713 ' : '') + vyDisp),
                 /* Reference formula box */
                 !isContrast && h('rect', { x: 344, y: 20, width: 106, height: 72, rx: 6, fill: 'rgba(12,35,29,0.75)', stroke: '#2d6653', strokeWidth: 1 }),
-                h('text', { x: 356, y: 40, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'cos 38\u00B0 \u2192 Vx'),
-                h('text', { x: 356, y: 58, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'sin 38\u00B0 \u2192 Vy'),
-                h('text', { x: 356, y: 78, fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Check: Vx\u00B2+Vy\u00B2=V\u00B2')
+                h('text', { x: 356, y: 40, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'cos 38\u00B0 \u2192 Vx'),
+                h('text', { x: 356, y: 58, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 12, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'sin 38\u00B0 \u2192 Vy'),
+                h('text', { x: 356, y: 78, fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 12, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Vx\u00B2+Vy\u00B2=V\u00B2')
               )
             );
           })(),
@@ -2723,8 +2773,13 @@
         return h('section', { role: 'tabpanel', id: 'tc-panel-program', 'aria-labelledby': 'tc-tab-program' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_03_transcription_desk', 'Station 03 / transcription desk')),
           h('h2', { id: 'tc-stage-heading-program', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.debug_the_fortran_style_program', 'Debug the FORTRAN-style program.')),
-          h('p', { className: 'tc-lede' }, mode === 'expert' ? t('stem.trajectorycomputing.audit_listing_independently', 'Audit the listing against your worksheet and compile when ready.') : t('stem.trajectorycomputing.three_transcription_errors', 'Three transcription errors were introduced: one constant, one variable name, and one trigonometric function. Find and repair them.')),
+          h('p', { className: 'tc-lede' }, mode === 'expert' ? t('stem.trajectorycomputing.audit_listing_independently', 'Audit the listing against your worksheet and compile when ready.') : renderStarterListingNote()),
           renderSupportCue('program'),
+          // IBM 704 FORTRAN Programmer's Reference Manual (1956): functions end in F ("the sine function SINF"); text in a FORMAT is a
+          // Hollerith field, e.g. "FORMAT (3HXY = F8.3, ...)"; its statement list has no PROGRAM or REAL statement. PROGRAM and apostrophe
+          // text are in the later FORTRAN 77 standard (ANSI X3J3/90.4 sec. 3.5: "A PROGRAM statement may appear only as the first statement of a main program";
+          // sec. 3.3 "the H or apostrophe edit descriptors in FORMAT statements"; Table 5 lists intrinsic SIN and COS).
+          h('p', { className: 'tc-note' }, h('strong', null, t('stem.trajectorycomputing.fortran_history_note_label', 'History note: ')), t('stem.trajectorycomputing.fortran_history_note', 'This listing is FORTRAN-style, not an exact 1962 program. IBM\'s 1956 FORTRAN named the sine function SINF and printed words with H fields, like 6H TIME=. This lab uses later, easier-to-read forms: SIN, COS, PROGRAM, and words in quotes.')),
           completed.worksheet && h('details', null,
             h('summary', null, t('stem.trajectorycomputing.open_checked_calculation_ledger', 'Open checked calculation ledger')),
             renderLedger(worksheet, 'Human reference used for program audit')
@@ -2853,6 +2908,7 @@
         return h('section', { role: 'tabpanel', id: 'tc-panel-cards', 'aria-labelledby': 'tc-tab-cards' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_04_keypunch_room', 'Station 04 / keypunch room')),
           h('h2', { id: 'tc-stage-heading-cards', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.put_the_card_deck_in_machine_order', 'Put the card deck in machine order.')),
+          // 1956 IBM 704 FORTRAN manual: "Columns 73-80 are not read by FORTRAN and may be punched with any desired identifying information."
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.a_dropped_deck_could_turn_a_correct_pr', 'A dropped deck could turn a correct program into a failed job. Use the printed sequence field from columns 73-80. One pair is out of order.')),
           h('div', { role: 'list', 'aria-label': t('stem.trajectorycomputing.punch_card_deck', 'Punch-card deck') }, deck.map(function (id, index) {
             var card = getCard(id);
@@ -2927,8 +2983,8 @@
             !isContrast && h('circle', { className: 'tc-reticle-ring', style: { animationDelay: '0.6s' }, cx: landX, cy: 212, r: 11.5, fill: 'none', stroke: '#ffbf47', strokeWidth: 1.4, opacity: 0.6 }),
             h('circle', { cx: landX, cy: 212, r: 7, fill: '#ffbf47', stroke: '#102d27', strokeWidth: 1.8 }),
             !isContrast && h('circle', { cx: landX - 2, cy: 210, r: 1.8, fill: '#ffffff', opacity: 0.7 }),
-            h('text', { x: 38, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.0_m', '0 m')),
-            h('text', { x: 563, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.target_zone', 'target zone'))
+            h('text', { x: 38, y: 234, fill: '#d8eee5', fontSize: 14 }, t('stem.trajectorycomputing.0_m', '0 m')),
+            h('text', { x: 555, y: 234, fill: '#d8eee5', fontSize: 14 }, t('stem.trajectorycomputing.target_zone', 'target zone'))
           )),
           h('figcaption', { className: 'tc-lede' }, 'Text alternative: peak height ' + round(EXPECTED.peakHeight, 1) + ' m; flight time ' + round(EXPECTED.flightTime, 2) + ' s; landing distance ' + round(EXPECTED.range, 1) + ' m; predicted landing is inside the 4,550-4,700 m target zone.')
         );
@@ -2944,6 +3000,7 @@
         var baselinePeakY = 212 - (EXPECTED.peakHeight / maxPeak) * plotHeight;
         var comparisonPeakX = 34 + (comparison.result.vx * comparison.result.peakTime / maxRange) * plotWidth;
         var comparisonPeakY = 212 - (comparison.result.peakHeight / maxPeak) * plotHeight;
+        var comparisonIsHigher = comparison.result.peakHeight > EXPECTED.peakHeight;
         var baselineLandingX = 34 + EXPECTED.range / maxRange * plotWidth;
         var comparisonLandingX = 34 + comparison.result.range / maxRange * plotWidth;
         var xTicks = [0, 0.25, 0.5, 0.75, 1];
@@ -2957,9 +3014,9 @@
         return h('figure', { className: 'tc-comparison-figure' },
           h('p', { className: 'tc-chart-mobile-hint' }, t('stem.trajectorycomputing.scroll_comparison_chart_hint', '\u2194 Scroll the comparison chart horizontally to keep axes and annotations readable.')),
           h('div', { className: 'tc-chart-frame', role: 'region', tabIndex: 0, 'aria-label': t('stem.trajectorycomputing.scrollable_comparison_chart', 'Scrollable baseline and comparison trajectory chart') },
-          h('svg', { className: 'tc-chart', viewBox: '0 0 680 270', role: 'img', 'aria-labelledby': 'tc-comparison-title tc-comparison-desc' },
+          h('svg', { className: 'tc-chart', viewBox: '-24 0 704 270', role: 'img', 'aria-labelledby': 'tc-comparison-title tc-comparison-desc' },
             h('title', { id: 'tc-comparison-title' }, t('stem.trajectorycomputing.dual_trajectory_comparison', 'Baseline and comparison trajectory')),
-            h('desc', { id: 'tc-comparison-desc' }, 'Annotated distance-by-height chart. The solid 38-degree baseline peaks at ' + round(EXPECTED.peakHeight, 1) + ' meters and lands at ' + round(EXPECTED.range, 1) + ' meters. The dashed ' + comparison.angle + '-degree path peaks at ' + round(comparison.result.peakHeight, 1) + ' meters and lands at ' + round(comparison.result.range, 1) + ' meters, ' + comparison.relation + ' than baseline. The target zone is shown with a diagonal pattern.'),
+            h('desc', { id: 'tc-comparison-desc' }, 'Annotated distance-by-height chart. The solid 38-degree baseline peaks at ' + round(EXPECTED.peakHeight, 1) + ' meters and lands at ' + round(EXPECTED.range, 1) + ' meters. The dashed ' + comparison.angle + '-degree path peaks at ' + round(comparison.result.peakHeight, 1) + ' meters and lands at ' + round(comparison.result.range, 1) + ' meters, ' + relationPhrase(comparison.relation) + ' the baseline. The target zone is shown with a diagonal pattern.'),
             h('defs', null,
               h('pattern', { id: 'tc-target-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
                 h('rect', { width: 8, height: 8, fill: '#6f351f' }),
@@ -2978,14 +3035,14 @@
               var x = 34 + tick * plotWidth;
               return h('g', { key: 'x-tick-' + index },
                 h('line', { x1: x, y1: 22, x2: x, y2: 212, stroke: '#507268', strokeWidth: 1, strokeDasharray: index === 0 ? undefined : '3 4' }),
-                h('text', { x: x, y: 231, textAnchor: index === 0 ? 'start' : (index === xTicks.length - 1 ? 'end' : 'middle'), fill: '#fff', fontSize: 11 }, Math.round(maxRange * tick).toLocaleString() + ' m')
+                h('text', { x: x, y: 231, textAnchor: index === 0 ? 'start' : (index === xTicks.length - 1 ? 'end' : 'middle'), fill: '#fff', fontSize: 14 }, Math.round(maxRange * tick).toLocaleString() + ' m')
               );
             }),
             yTicks.map(function (tick, index) {
               var y = 212 - tick * plotHeight;
               return h('g', { key: 'y-tick-' + index },
                 h('line', { x1: 34, y1: y, x2: 658, y2: y, stroke: '#507268', strokeWidth: 1, strokeDasharray: index === 0 ? undefined : '3 4' }),
-                h('text', { x: 29, y: y + 4, textAnchor: 'end', fill: '#fff', fontSize: 11 }, Math.round(maxPeak * tick))
+                h('text', { x: 29, y: y + 5, textAnchor: 'end', fill: '#fff', fontSize: 14 }, Math.round(maxPeak * tick))
               );
             }),
             h('rect', { x: zoneX, y: 22, width: zoneWidth, height: 190, fill: 'url(#tc-target-hatch)', opacity: 0.6 }),
@@ -3009,13 +3066,15 @@
             h('circle', { cx: baselineLandingX, cy: 212, r: 6, fill: '#ffcf70', stroke: '#102d27', strokeWidth: 2 }),
             !isContrast && h('rect', { className: 'tc-beacon-pulse', style: { animationDelay: '1.35s' }, x: comparisonLandingX - 9, y: 203, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
             h('rect', { x: comparisonLandingX - 6, y: 206, width: 12, height: 12, rx: 2, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
-            h('text', { x: baselinePeakX, y: baselinePeakY - 10, textAnchor: 'middle', fill: '#fff0b5', fontSize: 11, fontWeight: 800 }, '38\u00b0 peak ' + round(EXPECTED.peakHeight, 0) + ' m'),
-            h('text', { x: comparisonPeakX, y: comparisonPeakY + 19, textAnchor: 'middle', fill: '#c9f6df', fontSize: 11, fontWeight: 800 }, comparison.angle + '\u00b0 peak ' + round(comparison.result.peakHeight, 0) + ' m'),
-            h('text', { x: baselineLandingX - 5, y: 199, textAnchor: 'end', fill: '#fff0b5', fontSize: 11, fontWeight: 800 }, '38\u00b0 lands ' + round(EXPECTED.range, 0) + ' m'),
-            h('text', { x: comparisonLandingX - 5, y: 188, textAnchor: 'end', fill: '#c9f6df', fontSize: 11, fontWeight: 800 }, comparison.angle + '\u00b0 lands ' + round(comparison.result.range, 0) + ' m'),
-            h('text', { x: 346, y: 258, textAnchor: 'middle', fill: '#fff', fontSize: 12, fontWeight: 800 }, t('stem.trajectorycomputing.distance_m', 'Distance (m)')),
-            h('text', { x: 7, y: 118, fill: '#fff', fontSize: 12, transform: 'rotate(-90 7 118)' }, t('stem.trajectorycomputing.height_m', 'Height (m)')),
-            h('text', { x: zoneX + zoneWidth / 2, y: 36, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 900 }, t('stem.trajectorycomputing.target_zone', 'TARGET ZONE'))
+            /* The higher peak is labelled above its marker and the lower one below, so the two labels never stack (46 vs 38 did). */
+            h('text', { x: baselinePeakX, y: comparisonIsHigher ? baselinePeakY + 24 : baselinePeakY - 12, textAnchor: 'middle', fill: '#fff0b5', fontSize: 14, fontWeight: 800, stroke: '#102d27', strokeWidth: 4, paintOrder: 'stroke' }, '38\u00b0 peak ' + round(EXPECTED.peakHeight, 0) + ' m'),
+            h('text', { x: comparisonPeakX, y: comparisonIsHigher ? comparisonPeakY - 12 : comparisonPeakY + 24, textAnchor: 'middle', fill: '#c9f6df', fontSize: 14, fontWeight: 800, stroke: '#102d27', strokeWidth: 4, paintOrder: 'stroke' }, comparison.angle + '\u00b0 peak ' + round(comparison.result.peakHeight, 0) + ' m'),
+            /* Landing labels get a dark halo (they can sit on the hatched zone) and spread apart when the landings are close (e.g. 52 vs 38 deg). */
+            h('text', { x: baselineLandingX - 5, y: 199, textAnchor: 'end', fill: '#fff0b5', fontSize: 14, fontWeight: 800, stroke: '#102d27', strokeWidth: 4, paintOrder: 'stroke' }, '38\u00b0 lands ' + round(EXPECTED.range, 0) + ' m'),
+            h('text', { x: comparisonLandingX - 5, y: Math.abs(comparisonLandingX - baselineLandingX) < 170 ? 178 : 186, textAnchor: 'end', fill: '#c9f6df', fontSize: 14, fontWeight: 800, stroke: '#102d27', strokeWidth: 4, paintOrder: 'stroke' }, comparison.angle + '\u00b0 lands ' + round(comparison.result.range, 0) + ' m'),
+            h('text', { x: 346, y: 260, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 800 }, t('stem.trajectorycomputing.distance_m', 'Distance (m)')),
+            h('text', { x: -10, y: 160, fill: '#fff', fontSize: 14, transform: 'rotate(-90 -10 160)' }, t('stem.trajectorycomputing.height_m', 'Height (m)')),
+            h('text', { x: zoneX + zoneWidth / 2, y: 36, textAnchor: 'middle', fill: '#fff', fontSize: 14, fontWeight: 900, stroke: '#102d27', strokeWidth: 4, paintOrder: 'stroke' }, t('stem.trajectorycomputing.target_zone', 'TARGET ZONE'))
           )),
           h('ul', { className: 'tc-chart-legend', 'aria-label': t('stem.trajectorycomputing.trajectory_legend', 'Trajectory legend') },
             h('li', null, h('span', { className: 'tc-legend-line', 'aria-hidden': 'true' }), t('stem.trajectorycomputing.solid_baseline', 'Solid: 38-degree baseline')),
@@ -3143,16 +3202,33 @@
       }
 
       function renderHistoryCheckpoint() {
+        // Sources checked 2026-11-24. Each entry: [text, link label, URL]. Quotes are verbatim from the linked page.
+        var NASA_LANGLEY_COMPUTERS_URL = 'https://www.nasa.gov/history/langleys-computers-1935-1970/';
+        var NASA_JOHNSON_URL = 'https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/';
+        var NASA_VAUGHAN_URL = 'https://www.nasa.gov/people/dorothy-vaughan/';
+        var FORTRAN_1956_URL = 'https://archive.computerhistory.org/resources/text/Fortran/102649787.05.01.acc.pdf';
         var checkpoints = {
-          briefing: [t('stem.trajectorycomputing.history_checkpoint_briefing', 'Work was organized across calculation and checking roles; this lab uses fictional desk codes instead of learner names.'), t('stem.trajectorycomputing.nasa_biographies', 'NASA biographies')],
-          worksheet: [t('stem.trajectorycomputing.history_checkpoint_worksheet', 'NASA records Katherine Johnson\'s expertise in trajectory calculations and in checking machine-produced results.'), t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography')],
-          program: [t('stem.trajectorycomputing.history_checkpoint_program', 'NASA records Dorothy Vaughan\'s leadership in computing and her expertise as an early FORTRAN programmer.'), t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography')],
-          cards: [t('stem.trajectorycomputing.history_checkpoint_cards', 'This fictional deck models how mathematical instructions had to be prepared as an ordered, machine-readable job.'), t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography')],
-          batch: [t('stem.trajectorycomputing.history_checkpoint_batch', 'Electronic computation changed the tools, while mathematical preparation, debugging, and interpretation remained human responsibilities.'), t('stem.trajectorycomputing.nasa_computing_biographies', 'NASA computing biographies')],
-          verify: [t('stem.trajectorycomputing.history_checkpoint_verify', 'NASA documents independent checking as an essential part of Katherine Johnson\'s trajectory work.'), t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography')]
+          // NASA History, "When the Computer Wore a Skirt": "the calculations, graphs, and other information were checked for accuracy"
+          // (replaces an unsourced "organized across calculation and checking roles").
+          briefing: [t('stem.trajectorycomputing.history_checkpoint_briefing_v2', 'At NASA Langley, the human computers\' calculations and graphs were checked for accuracy before they went back to engineers. This lab uses made-up desk codes, not student names.'), t('stem.trajectorycomputing.nasa_history_langley_computers', 'NASA History: Langley\'s human computers'), NASA_LANGLEY_COMPUTERS_URL],
+          // NASA Johnson biography: "She did trajectory analysis for Alan Shepard's May 1961 mission Freedom 7"; Glenn asked her
+          // "to run the same numbers through the same equations that had been programmed into the computer, but by hand".
+          worksheet: [t('stem.trajectorycomputing.history_checkpoint_worksheet', 'NASA records Katherine Johnson\'s expertise in trajectory calculations and in checking machine-produced results.'), t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography'), NASA_JOHNSON_URL],
+          // NASA Vaughan biography: "head of the National Advisory Committee for Aeronautics' (NACA's) segregated West Area Computing
+          // Unit from 1949 until 1958"; "Dorothy Vaughan became an expert FORTRAN programmer".
+          program: [t('stem.trajectorycomputing.history_checkpoint_program_v2', 'NASA says Dorothy Vaughan led the West Area Computing unit from 1949 to 1958 and became an expert FORTRAN programmer.'), t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography'), NASA_VAUGHAN_URL],
+          // IBM 704 FORTRAN Programmer's Reference Manual (Oct. 15, 1956), PDF page 10: "Columns 73-80 are not read by FORTRAN and may be
+          // punched with any desired identifying information."
+          cards: [t('stem.trajectorycomputing.history_checkpoint_cards_v2', 'IBM\'s 1956 FORTRAN manual says columns 73-80 of a card are not read by FORTRAN, so they can hold ID marks, like the sequence numbers on this deck.'), t('stem.trajectorycomputing.fortran_manual_1956', 'IBM FORTRAN manual, 1956 (Computer History Museum)'), FORTRAN_1956_URL],
+          // NASA History: "human computers took on programming duties as well" (replaces an unsourced interpretive claim).
+          batch: [t('stem.trajectorycomputing.history_checkpoint_batch_v2', 'NASA history says that when the first electronic computers arrived at Langley, human computers took on programming work as well.'), t('stem.trajectorycomputing.nasa_history_langley_computers', 'NASA History: Langley\'s human computers'), NASA_LANGLEY_COMPUTERS_URL],
+          // NASA Johnson biography: "In 1962, as NASA prepared for the orbital mission of John Glenn" ... Glenn asked engineers to have
+          // Johnson "run the same numbers through the same equations that had been programmed into the computer, but by hand, on her
+          // desktop mechanical calculating machine." (replaces "an essential part of" her work, which the page does not say).
+          verify: [t('stem.trajectorycomputing.history_checkpoint_verify_v2', 'Before John Glenn\'s orbital flight in 1962, NASA says he asked for Katherine Johnson to run the computer\'s numbers through the same equations by hand.'), t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography'), NASA_JOHNSON_URL]
         };
         var item = checkpoints[stage] || checkpoints.briefing;
-        var url = (stage === 'program' || stage === 'cards') ? 'https://www.nasa.gov/people/dorothy-vaughan/' : 'https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/';
+        var url = item[2];
         return h('section', { className: 'tc-history-checkpoint', 'aria-labelledby': 'tc-history-checkpoint-title' },
           h('h4', { id: 'tc-history-checkpoint-title' }, t('stem.trajectorycomputing.history_checkpoint', 'History checkpoint') + ' / ' + currentStation[1]),
           h('p', null, item[0]),
@@ -3174,7 +3250,9 @@
         return h('section', { role: 'tabpanel', id: 'tc-panel-batch', 'aria-labelledby': 'tc-tab-batch' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_05_electronic_computation_room', 'Station 05 / electronic computation room')),
           h('h2', { id: 'tc-stage-heading-batch', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.submit_the_deck_as_a_batch_job', 'Submit the deck as a batch job.')),
-          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.early_programmers_did_not_receive_inst', 'Early programmers did not receive instant feedback. A prepared deck was read into the machine and the result returned as a printed listing.')),
+          // Computer History Museum, Revolution: "a typical batch-processed job on a punched-card based computer system"; the 1956 FORTRAN
+          // manual's output statement is "PRINT n, List". Replaces "did not receive instant feedback" (too broad to source).
+          h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.early_programmers_did_not_receive_inst_v2', 'In a batch job, nobody typed and got an answer on a screen. The card deck was read into the machine, and the result came back on a printed listing.')),
           h('div', { className: 'tc-machine', role: 'region', 'aria-label': t('stem.trajectorycomputing.batch_computer_console', 'Batch computer console') },
             h('div', { className: 'tc-lights', 'aria-hidden': 'true' },
               batchTrace.steps.map(function (step) { return h('span', { key: step.id, className: 'tc-light' + (step.state === 'ready' || step.state === 'complete' ? ' on' : '') }); })
@@ -3461,7 +3539,7 @@
                     h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\u2194'), h('strong', null, t('stem.trajectorycomputing.replay_mission', 'Replay mission')), h('span', { className: 'tc-challenge-status' }, replayLearningStatus.questComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : ((replayLearningStatus.hasRun || replayLearningStatus.learningRecorded || replayLearningStatus.unavailableReplay) ? '\u25d0 ' + replayLearningStatus.progress : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.replay_mission_help', 'Run a deterministic fictional case and compare each changed input and output.'))
                   ),
                   h('button', { type: 'button', className: 'tc-challenge-card' + (safeguardInvestigationComplete ? ' is-complete' : ''), onClick: function () { update({ extensionView: 'safeguard' }); focusResult('tc-safeguard-title'); } },
-                    h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\uD83D\uDEE1'), h('strong', null, t('stem.trajectorycomputing.safeguard_lab', 'Safeguard lab')), h('span', { className: 'tc-challenge-status' }, safeguardInvestigationComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : (safeguardResult ? '\u25d0 ' + t('stem.trajectorycomputing.revise_prediction', 'Revise prediction') : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.safeguard_lab_help', 'Inspect an authentic workflow error and predict which human or machine check catches it.'))
+                    h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\uD83D\uDEE1'), h('strong', null, t('stem.trajectorycomputing.safeguard_lab', 'Safeguard lab')), h('span', { className: 'tc-challenge-status' }, safeguardInvestigationComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : (safeguardResult ? '\u25d0 ' + t('stem.trajectorycomputing.revise_prediction_status', 'Revise prediction') : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.safeguard_lab_help', 'Inspect an authentic workflow error and predict which human or machine check catches it.'))
                   ),
                   h('button', { type: 'button', className: 'tc-challenge-card', onClick: function () { update({ reportOpen: true }); focusResult('tc-completion-report'); } },
                     h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\u25a3'), h('strong', null, t('stem.trajectorycomputing.evidence_report', 'Evidence report')), h('span', { className: 'tc-challenge-status' }, t('stem.trajectorycomputing.ready_to_review', 'Ready to review')), h('span', null, t('stem.trajectorycomputing.evidence_report_help', 'Review the audit trail, revision journey, results, and teacher-ready evidence.'))
@@ -3496,7 +3574,7 @@
                 if (typeof ctx.announceToSR === 'function') ctx.announceToSR(t('stem.trajectorycomputing.angle_study_computed', 'Angle study computed. The new range is ') + round(comparison.result.range, 1) + t('stem.trajectorycomputing.meters_period', ' meters.'));
               }, false, !studyPrediction)),
               studyResult && h('div', { className: studyResult.correct ? 'tc-check' : 'tc-diag' },
-                h('p', { role: 'status' }, h('strong', null, studyResult.correct ? t('stem.trajectorycomputing.prediction_supported', 'Prediction supported. ') : t('stem.trajectorycomputing.revise_prediction', 'Revise your prediction. ')), t('stem.trajectorycomputing.angle_result_prefix', 'At ') + studyResult.angle + t('stem.trajectorycomputing.angle_result_relation', ' degrees, the capsule travels ') + studyResult.relation + t('stem.trajectorycomputing.than_baseline_period', ' than the 38-degree baseline.')),
+                h('p', { role: 'status' }, h('strong', null, studyResult.correct ? t('stem.trajectorycomputing.prediction_supported', 'Prediction supported. ') : t('stem.trajectorycomputing.revise_prediction', 'Revise your prediction. ')), t('stem.trajectorycomputing.angle_result_prefix', 'At ') + studyResult.angle + t('stem.trajectorycomputing.angle_result_relation', ' degrees, the capsule travels ') + relationPhrase(studyResult.relation) + t('stem.trajectorycomputing.the_38_degree_baseline_period', ' the 38-degree baseline.')),
                 h('div', { className: 'tc-result-grid' },
                   h('div', null, h('b', null, round(studyResult.result.range, 1) + ' m'), t('stem.trajectorycomputing.new_range', 'new range')),
                   h('div', null, h('b', null, (studyResult.difference >= 0 ? '+' : '') + round(studyResult.difference, 1) + ' m'), t('stem.trajectorycomputing.change_from_baseline', 'change from baseline')),
@@ -3507,11 +3585,16 @@
                 h('fieldset', { className: 'tc-role-box' },
                   h('legend', { style: { fontWeight: 900 } }, t('stem.trajectorycomputing.explain_result_with_evidence', 'Explain the result with evidence')),
                   h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.which_claim_best_explains_angle_result', 'Which claim best explains the changed flight path when only launch angle changed?')),
-                  [
-                    ['components', t('stem.trajectorycomputing.explanation_components', 'The same speed was redistributed between horizontal and vertical components.')],
-                    ['gravity', t('stem.trajectorycomputing.explanation_gravity', 'Gravity changed during the comparison.')],
-                    ['speed', t('stem.trajectorycomputing.explanation_speed', 'The comparison used a faster launch speed.')]
-                  ].map(function (option) {
+                  (function () {
+                    // Similar-length choices; the start position rotates with the chosen angle so the right one moves.
+                    var choices = [
+                      ['gravity', t('stem.trajectorycomputing.explanation_gravity_v2', 'Gravity pulled harder on the steeper or flatter path.')],
+                      ['components', t('stem.trajectorycomputing.explanation_components_v2', 'One speed was split into new sideways and upward parts.')],
+                      ['speed', t('stem.trajectorycomputing.explanation_speed_v2', 'The new angle also gave the capsule a faster launch.')]
+                    ];
+                    var shift = Math.max(0, [30, 38, 46, 52].indexOf(Number(studyResult.angle))) % choices.length;
+                    return choices.slice(shift).concat(choices.slice(0, shift));
+                  })().map(function (option) {
                     return h('label', { key: option[0], style: { display: 'block', marginTop: 7 } },
                       h('input', { type: 'radio', name: 'tc-study-explanation', value: option[0], checked: studyExplanation === option[0], onChange: function () { update({ studyExplanation: option[0], studyExplanationResult: null }); } }), ' ' + option[1]
                     );
@@ -3713,7 +3796,7 @@
                       color: isContrast ? '#ffff00' : '#fff0b5',
                       border: isContrast ? '1px solid #ffff00' : '1px solid rgba(154,215,192,0.5)',
                       fontFamily: 'ui-monospace, monospace',
-                      fontSize: 10.5,
+                      fontSize: 12,
                       fontWeight: 800
                     }
                   }, pill);
@@ -3785,22 +3868,33 @@
               h('details', null,
                 h('summary', null, t('stem.trajectorycomputing.historical_grounding', 'Historical grounding')),
                 h('div', { className: 'tc-sources' },
+                  // Sources (checked 2026-11-24): NASA History "When the Computer Wore a Skirt" (calculations "were checked for accuracy");
+                  // NASA Johnson biography ("She did trajectory analysis for Alan Shepard's May 1961 mission Freedom 7"; the Glenn check);
+                  // NASA Vaughan biography ("head of ... segregated West Area Computing Unit from 1949 until 1958";
+                  // "Dorothy Vaughan became an expert FORTRAN programmer").
                   h('p', null, t('stem.trajectorycomputing.at_naca_and_nasa_teams_of_women_perfor', 'At NACA and NASA, teams of women performed and checked aerospace calculations. Katherine Johnson calculated trajectories and verified electronic-computer results. Dorothy Vaughan led the West Area Computing unit and became an expert FORTRAN programmer.')),
                   h('ul', { className: 'tc-teacher-list' },
-                    h('li', null, t('stem.trajectorycomputing.human_computers_organized_data_used_sh', 'Human computers organized data, used shared tables, applied mathematical procedures, checked one another\'s work, and documented results.')),
-                    h('li', null, t('stem.trajectorycomputing.as_electronic_computers_arrived_mathem', 'As electronic computers arrived, mathematical knowledge remained essential for programming, debugging, and verification.')),
+                    // NASA History: "the majority of computing work involved three components: reading film, running calculations, and
+                    // plotting data"; work "checked for accuracy". Replaces "used shared tables ... checked one another's work" (no source found).
+                    h('li', null, t('stem.trajectorycomputing.human_computers_organized_data_used_sh_v2', 'NASA history says most of the human computers\' work was reading film, running calculations, and plotting data. Their results were checked for accuracy.')),
+                    // NASA History: "human computers took on programming duties as well".
+                    h('li', null, t('stem.trajectorycomputing.as_electronic_computers_arrived_mathem_v2', 'When electronic computers arrived, human computers took on programming work as well.')),
                     h('li', null, t('stem.trajectorycomputing.the_simulation_emphasizes_the_work_pro', 'The simulation emphasizes the work process; it does not turn discrimination or segregation into a game mechanic.'))
                   ),
                   h('p', null, t('stem.trajectorycomputing.this_simulation_uses_those_documented_', 'This simulation uses those documented kinds of work as educational context; it does not recreate a copyrighted story or portray a real person as a fictional character.')),
                   h('p', null, h('a', { href: 'https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_katherine_johnson_biography', 'NASA: Katherine Johnson biography'))),
-                  h('p', null, h('a', { href: 'https://www.nasa.gov/people/dorothy-vaughan/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography')))
+                  h('p', null, h('a', { href: 'https://www.nasa.gov/people/dorothy-vaughan/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_dorothy_vaughan_biography', 'NASA: Dorothy Vaughan biography'))),
+                  h('p', null, h('a', { href: 'https://www.nasa.gov/history/langleys-computers-1935-1970/', target: '_blank', rel: 'noreferrer' }, t('stem.trajectorycomputing.nasa_history_langley_computers', 'NASA History: Langley\'s human computers')))
                 )
               ),
               h('details', null,
                 h('summary', null, t('stem.trajectorycomputing.vocabulary_desk', 'Vocabulary desk')),
                 h('dl', { className: 'tc-glossary' },
                   h('dt', null, t('stem.trajectorycomputing.algorithm', 'Algorithm')), h('dd', null, t('stem.trajectorycomputing.a_repeatable_sequence_of_steps_for_sol', 'A repeatable sequence of steps for solving a problem.')),
+                  // NASA History: "computer" was "a job title, designating someone who performed mathematical equations and calculations by hand."
                   h('dt', null, t('stem.trajectorycomputing.human_computer', 'Human computer')), h('dd', null, t('stem.trajectorycomputing.a_person_employed_to_perform_and_verif', 'A person employed to perform and verify mathematical calculations.')),
+                  // IBM History, Fortran: "In 1957, the IBM Mathematical Formula Translating System, or Fortran, debuted", "providing
+                  // scientists, mathematicians and engineers the ability to input their problems directly into the computer".
                   h('dt', null, 'FORTRAN'), h('dd', null, t('stem.trajectorycomputing.an_early_language_designed_for_scienti', 'An early language designed for scientific and engineering computation.')),
                   h('dt', null, t('stem.trajectorycomputing.compiler', 'Compiler')), h('dd', null, t('stem.trajectorycomputing.a_program_that_translates_source_instr', 'A program that translates source instructions and reports structural errors.')),
                   h('dt', null, t('stem.trajectorycomputing.punch_card', 'Punch card')), h('dd', null, t('stem.trajectorycomputing.a_physical_card_that_encoded_one_line_', 'A physical card that encoded one line of data or program instructions.')),

@@ -53,6 +53,12 @@
       '@media(forced-colors:active){.cs-node-halo,.cs-pcb-sheen{display:none!important;}.cs-current-trace,.cs-scope-trace{animation:none!important;}}'
     ].join('\n');
     document.head.appendChild(mst);
+    if (!document.getElementById('allo-circuitshelf-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-circuitshelf-a11y-css';
+      ast.textContent = '[data-circuitshelf-workbench] :is(button,a,input,select,summary){touch-action:manipulation}[data-circuitshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid #f59e0b;outline-offset:2px}@media (forced-colors:active){[data-circuitshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   var CIRCUIT_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/circuit_shelf/circuit_shelf.html?v=1';

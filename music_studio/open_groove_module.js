@@ -16,31 +16,63 @@
     } catch (_) {}
   }
 
-  if (typeof document !== 'undefined') {
-    if (document.body && !document.getElementById('allo-live-open-groove')) {
-      var live = document.createElement('div');
-      live.id = 'allo-live-open-groove';
-      live.setAttribute('aria-live', 'polite');
-      live.setAttribute('aria-atomic', 'true');
-      live.setAttribute('role', 'status');
-      live.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-      document.body.appendChild(live);
-    }
-    if (document.head && !document.getElementById('og-a11y-css')) {
-      var css = document.createElement('style');
-      css.id = 'og-a11y-css';
-      css.textContent = [
-        '.og-root, .og-root * { box-sizing: border-box; }',
-        '@media (prefers-reduced-motion: reduce) { .og-root *, .og-root *::before, .og-root *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }',
-        '.og-root button:focus-visible, .og-root input:focus-visible, .og-root select:focus-visible, .og-root [tabindex]:focus-visible { outline: 2px solid #0f766e !important; outline-offset: 2px !important; }',
-        '.og-root[data-og-theme="dark"] button:focus-visible, .og-root[data-og-theme="dark"] input:focus-visible, .og-root[data-og-theme="dark"] select:focus-visible, .og-root[data-og-theme="dark"] [tabindex]:focus-visible { outline-color: #facc15 !important; }',
-        '.og-root[data-og-theme="contrast"] button:focus-visible, .og-root[data-og-theme="contrast"] input:focus-visible, .og-root[data-og-theme="contrast"] select:focus-visible, .og-root[data-og-theme="contrast"] [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }',
-        '@media (forced-colors: active) { .og-root { forced-color-adjust: none; } .og-root button, .og-root input, .og-root select, .og-root textarea { forced-color-adjust: auto; } }',
-        '.og-root :focus:not(:focus-visible) { outline: none !important; }',
-        '.theme-contrast .og-root [aria-current="step"], .theme-contrast .og-root [role="status"], .og-root[data-og-theme="contrast"] [aria-current="step"], .og-root[data-og-theme="contrast"] [role="status"] { background: #000000 !important; background-color: #000000 !important; color: #ffff00 !important; border-color: #ffff00 !important; }'
-      ].join('\n');
-      document.head.appendChild(css);
-    }
+  function _ogSetTimeout(fn, ms) {
+    try {
+      if (root && typeof root.setTimeout === 'function') return root.setTimeout(fn, ms);
+      if (typeof setTimeout === 'function') return setTimeout(fn, ms);
+    } catch (_) {}
+    return null;
+  }
+  function _ogClearTimeout(id) {
+    if (id == null) return;
+    try {
+      if (root && typeof root.clearTimeout === 'function') root.clearTimeout(id);
+      else if (typeof clearTimeout === 'function') clearTimeout(id);
+    } catch (_) {}
+  }
+  function _ogSetInterval(fn, ms) {
+    try {
+      if (root && typeof root.setInterval === 'function') return root.setInterval(fn, ms);
+      if (typeof setInterval === 'function') return setInterval(fn, ms);
+    } catch (_) {}
+    return null;
+  }
+  function _ogClearInterval(id) {
+    if (id == null) return;
+    try {
+      if (root && typeof root.clearInterval === 'function') root.clearInterval(id);
+      else if (typeof clearInterval === 'function') clearInterval(id);
+    } catch (_) {}
+  }
+
+  var _ogDoc = (typeof document === 'object' && document !== null) ? document : (root && typeof root.document === 'object' && root.document !== null ? root.document : null);
+  if (_ogDoc) {
+    try {
+      if (_ogDoc.body && !_ogDoc.getElementById('allo-live-open-groove')) {
+        var live = _ogDoc.createElement('div');
+        live.id = 'allo-live-open-groove';
+        live.setAttribute('aria-live', 'polite');
+        live.setAttribute('aria-atomic', 'true');
+        live.setAttribute('role', 'status');
+        live.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+        _ogDoc.body.appendChild(live);
+      }
+      if (_ogDoc.head && !_ogDoc.getElementById('og-a11y-css')) {
+        var css = _ogDoc.createElement('style');
+        css.id = 'og-a11y-css';
+        css.textContent = [
+          '.og-root, .og-root * { box-sizing: border-box; }',
+          '@media (prefers-reduced-motion: reduce) { .og-root *, .og-root *::before, .og-root *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }',
+          '.og-root button:focus-visible, .og-root input:focus-visible, .og-root select:focus-visible, .og-root [tabindex]:focus-visible { outline: 2px solid #0f766e !important; outline-offset: 2px !important; }',
+          '.og-root[data-og-theme="dark"] button:focus-visible, .og-root[data-og-theme="dark"] input:focus-visible, .og-root[data-og-theme="dark"] select:focus-visible, .og-root[data-og-theme="dark"] [tabindex]:focus-visible { outline-color: #facc15 !important; }',
+          '.og-root[data-og-theme="contrast"] button:focus-visible, .og-root[data-og-theme="contrast"] input:focus-visible, .og-root[data-og-theme="contrast"] select:focus-visible, .og-root[data-og-theme="contrast"] [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }',
+          '@media (forced-colors: active) { .og-root { forced-color-adjust: none; } .og-root button, .og-root input, .og-root select, .og-root textarea { forced-color-adjust: auto; } }',
+          '.og-root :focus:not(:focus-visible) { outline: none !important; }',
+          '.theme-contrast .og-root [aria-current="step"], .theme-contrast .og-root [role="status"], .og-root[data-og-theme="contrast"] [aria-current="step"], .og-root[data-og-theme="contrast"] [role="status"] { background: #000000 !important; background-color: #000000 !important; color: #ffff00 !important; border-color: #ffff00 !important; }'
+        ].join('\n');
+        _ogDoc.head.appendChild(css);
+      }
+    } catch (_) {}
   }
 
   function _ogGlobalMuted() {
@@ -190,9 +222,6 @@
     if (!React) return null;
     var h = React.createElement;
     var C = Core || root.OpenGrooveCore || root.AlloModules && root.AlloModules.OpenGrooveCore;
-    var S = Scheduler || root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler;
-    var A = Audio || root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio;
-    var addToast = props.addToast || function () {};
     var themePreferencePair = React.useState(function () { return ogReadThemePreference(root); });
     var themePreference = themePreferencePair[0];
     var setThemePreference = themePreferencePair[1];
@@ -200,6 +229,93 @@
     var systemTheme = systemThemePair[0];
     var setSystemTheme = systemThemePair[1];
     var themeMode = themePreference === 'auto' ? systemTheme : themePreference;
+    var styles = getOpenGrooveStyles(themeMode);
+    var dependencyTick = React.useState(0);
+    var setDependencyTick = dependencyTick[1];
+
+    function changeThemePreference(value) {
+      var next = ogNormalizeThemePreference(value);
+      setThemePreference(next);
+      ogStoreThemePreference(root, next);
+      ogAnnounce('Theme ' + ogThemeLabel(next, next === 'auto' ? systemTheme : next));
+    }
+
+    React.useEffect(function () {
+      if (C) return undefined;
+      var id = _ogSetInterval(function () {
+        var nextCore = root.OpenGrooveCore || root.AlloModules && root.AlloModules.OpenGrooveCore || null;
+        if (nextCore) {
+          Core = nextCore;
+          Scheduler = root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler || Scheduler;
+          Audio = root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio || Audio;
+          setDependencyTick(function (v) { return v + 1; });
+          _ogClearInterval(id);
+        }
+      }, 120);
+      return function () { _ogClearInterval(id); };
+    }, [!!C]);
+
+    React.useEffect(function () {
+      if (!root || typeof root.matchMedia !== 'function') return undefined;
+      var queries = [];
+      try {
+        queries = [
+          root.matchMedia('(forced-colors: active)'),
+          root.matchMedia('(prefers-contrast: more)'),
+          root.matchMedia('(prefers-color-scheme: dark)')
+        ].filter(Boolean);
+      } catch (_) {
+        queries = [];
+      }
+      function refreshTheme() {
+        setSystemTheme(ogDetectSystemTheme(root));
+      }
+      queries.forEach(function (query) {
+        try {
+          if (query.addEventListener) query.addEventListener('change', refreshTheme);
+          else if (query.addListener) query.addListener(refreshTheme);
+        } catch (_) {}
+      });
+      refreshTheme();
+      return function () {
+        queries.forEach(function (query) {
+          try {
+            if (query.removeEventListener) query.removeEventListener('change', refreshTheme);
+            else if (query.removeListener) query.removeListener(refreshTheme);
+          } catch (_) {}
+        });
+      };
+    }, []);
+
+    if (!C) {
+      return h('div', { className: 'og-root', 'data-og-theme': themeMode, 'data-og-theme-preference': themePreference, role: 'dialog', 'aria-modal': true, 'aria-label': 'Open Groove Studio', style: styles.overlay },
+        h('div', { style: styles.panel },
+          h('div', { style: styles.header },
+            h('strong', null, 'Open Groove Studio'),
+            h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X')),
+          h('p', { style: styles.muted }, 'Open Groove core did not load.')));
+    }
+
+    return h(OpenGrooveStudioInner, Object.assign({}, props, {
+      _ogThemePreference: themePreference,
+      _ogSystemTheme: systemTheme,
+      _ogThemeMode: themeMode,
+      _ogChangeThemePreference: changeThemePreference
+    }));
+  }
+
+  function OpenGrooveStudioInner(props) {
+    props = props || {};
+    var React = props.React || root.React;
+    var h = React.createElement;
+    var C = Core || root.OpenGrooveCore || root.AlloModules && root.AlloModules.OpenGrooveCore;
+    var S = Scheduler || root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler;
+    var A = Audio || root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio;
+    var addToast = props.addToast || function () {};
+    var themePreference = props._ogThemePreference;
+    var systemTheme = props._ogSystemTheme;
+    var themeMode = props._ogThemeMode;
+    var changeThemePreference = props._ogChangeThemePreference;
     var styles = getOpenGrooveStyles(themeMode);
     var workspaceModePair = React.useState('learn');
     var workspaceMode = workspaceModePair[0];
@@ -225,62 +341,6 @@
     var draftStatusPair = React.useState('');
     var draftStatus = draftStatusPair[0];
     var setDraftStatus = draftStatusPair[1];
-    var dependencyTick = React.useState(0);
-    var setDependencyTick = dependencyTick[1];
-
-    function changeThemePreference(value) {
-      var next = ogNormalizeThemePreference(value);
-      setThemePreference(next);
-      ogStoreThemePreference(root, next);
-      ogAnnounce('Theme ' + ogThemeLabel(next, next === 'auto' ? systemTheme : next));
-    }
-
-    React.useEffect(function () {
-      if (C) return undefined;
-      var id = root.setInterval(function () {
-        var nextCore = root.OpenGrooveCore || root.AlloModules && root.AlloModules.OpenGrooveCore || null;
-        if (nextCore) {
-          Core = nextCore;
-          Scheduler = root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler || Scheduler;
-          Audio = root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio || Audio;
-          setDependencyTick(function (v) { return v + 1; });
-          root.clearInterval(id);
-        }
-      }, 120);
-      return function () { root.clearInterval(id); };
-    }, [!!C]);
-
-    React.useEffect(function () {
-      if (!root.matchMedia) return undefined;
-      var queries = [
-        root.matchMedia('(forced-colors: active)'),
-        root.matchMedia('(prefers-contrast: more)'),
-        root.matchMedia('(prefers-color-scheme: dark)')
-      ];
-      function refreshTheme() {
-        setSystemTheme(ogDetectSystemTheme(root));
-      }
-      queries.forEach(function (query) {
-        if (query.addEventListener) query.addEventListener('change', refreshTheme);
-        else if (query.addListener) query.addListener(refreshTheme);
-      });
-      refreshTheme();
-      return function () {
-        queries.forEach(function (query) {
-          if (query.removeEventListener) query.removeEventListener('change', refreshTheme);
-          else if (query.removeListener) query.removeListener(refreshTheme);
-        });
-      };
-    }, []);
-
-    if (!C) {
-      return h('div', { className: 'og-root', 'data-og-theme': themeMode, 'data-og-theme-preference': themePreference, role: 'dialog', 'aria-modal': true, 'aria-label': 'Open Groove Studio', style: styles.overlay },
-        h('div', { style: styles.panel },
-          h('div', { style: styles.header },
-            h('strong', null, 'Open Groove Studio'),
-            h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X')),
-          h('p', { style: styles.muted }, 'Open Groove core did not load.')));
-    }
 
     var initialProjectRef = React.useRef(null);
     if (!initialProjectRef.current) initialProjectRef.current = C.ogMakeDemoProject ? C.ogMakeDemoProject() : C.ogCreateProject({ title: 'Open Groove Prototype' });
@@ -532,9 +592,11 @@
         }
         clearTransportSchedule(false);
         var engine = engineRef.current;
+        if (engine && A && typeof A.ogStopAll === 'function') { try { A.ogStopAll(engine); } catch (_) {} }
+        if (engine) { engine._disposed = true; engine.available = false; }
         engineRef.current = null;
         if (engine && engine.ctx && typeof engine.ctx.close === 'function') {
-          try { engine.ctx.close(); } catch (_) {}
+          try { var closeP = engine.ctx.close(); if (closeP && closeP.catch) closeP.catch(function () {}); } catch (_) {}
         }
       };
     }, []);
@@ -651,16 +713,16 @@
 
     function clearTransportSchedule(resetView) {
       var ref = transportRef.current;
-      (ref.timers || []).forEach(function (timerId) { root.clearTimeout(timerId); });
+      (ref.timers || []).forEach(function (timerId) { _ogClearTimeout(timerId); });
       ref.timers = [];
-      if (ref.interval) root.clearInterval(ref.interval);
+      if (ref.interval) _ogClearInterval(ref.interval);
       ref.interval = null;
       if (resetView) setTransportView({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: loopEnabled, tick: 0, barIndex: 0, beat: 1, activeNoteId: null, loopIndex: 0 });
     }
 
     function addTransportTimer(fn, delayMs) {
-      var id = root.setTimeout(fn, Math.max(0, delayMs || 0));
-      transportRef.current.timers.push(id);
+      var id = _ogSetTimeout(fn, Math.max(0, delayMs || 0));
+      if (id != null) transportRef.current.timers.push(id);
       return id;
     }
 
@@ -916,8 +978,10 @@
     }
 
     function ensureAudioEngine(showError) {
-      if (!A) return null;
-      if (!engineRef.current || !engineRef.current.available) engineRef.current = A.ogCreateAudioEngine();
+      if (!A || !mountedRef.current) return null;
+      if (!engineRef.current || !engineRef.current.available || engineRef.current._disposed || (engineRef.current.ctx && engineRef.current.ctx.state === 'closed')) {
+        engineRef.current = A.ogCreateAudioEngine();
+      }
       if (!engineRef.current.available) {
         if (showError) addToast(engineRef.current.reason || 'Audio is unavailable in this browser.', 'error');
         return null;
@@ -927,7 +991,10 @@
         engineRef.current.master.gain.value = effectiveMuted ? 0 : 0.85;
       }
       if (!effectiveMuted && engineRef.current.ctx && engineRef.current.ctx.state === 'suspended' && typeof engineRef.current.ctx.resume === 'function') {
-        try { engineRef.current.ctx.resume(); } catch (_) {}
+        try {
+          var resumeP = engineRef.current.ctx.resume();
+          if (resumeP && typeof resumeP.catch === 'function') resumeP.catch(function () {});
+        } catch (_) {}
       }
       return engineRef.current;
     }
@@ -959,12 +1026,12 @@
     }, []);
 
     function restoreEmbeddedSamplesFor(nextProject, quiet) {
-      if (!A || !A.ogRestoreEmbeddedSamples) return;
+      if (!A || !A.ogRestoreEmbeddedSamples || !mountedRef.current) return;
       var engine = ensureAudioEngine(false);
       if (!engine) return;
-      A.ogRestoreEmbeddedSamples(engine, nextProject).then(function (count) {
-        if (count && !quiet) addToast(count + ' embedded sample' + (count === 1 ? '' : 's') + ' restored.', 'success');
-      });
+      Promise.resolve(A.ogRestoreEmbeddedSamples(engine, nextProject)).then(function (count) {
+        if (mountedRef.current && count && !quiet) addToast(count + ' embedded sample' + (count === 1 ? '' : 's') + ' restored.', 'success');
+      }).catch(function () {});
     }
 
     function stepActive(step) {
@@ -1200,21 +1267,42 @@
     }
 
     function connectMidiInput() {
-      if (!root.navigator || !root.navigator.requestMIDIAccess) {
+      if (!root.navigator || typeof root.navigator.requestMIDIAccess !== 'function') {
         setMidiStatus({ supported: false, connected: false, inputCount: 0, label: 'MIDI unavailable' });
         addToast('MIDI input is not available in this browser.', 'info');
         return;
       }
-      root.navigator.requestMIDIAccess({ sysex: false }).then(function (access) {
-        midiAccessRef.current = access;
-        var count = wireMidiInputs(access);
-        access.onstatechange = function () { wireMidiInputs(access); };
-        addToast(count ? 'MIDI input connected.' : 'No MIDI input found.', count ? 'success' : 'info');
-        ogAnnounce(count ? 'MIDI input connected' : 'No MIDI input found');
-      }, function (err) {
+      try {
+        Promise.resolve(root.navigator.requestMIDIAccess({ sysex: false })).then(function (access) {
+          if (!mountedRef.current) {
+            if (access && access.inputs) {
+              try { access.inputs.forEach(function (input) { input.onmidimessage = null; }); } catch (_) {}
+            }
+            if (access) access.onstatechange = null;
+            return;
+          }
+          var prevAccess = midiAccessRef.current;
+          if (prevAccess && prevAccess !== access) {
+            try {
+              prevAccess.onstatechange = null;
+              if (prevAccess.inputs) prevAccess.inputs.forEach(function (input) { input.onmidimessage = null; });
+            } catch (_) {}
+          }
+          midiAccessRef.current = access;
+          var count = wireMidiInputs(access);
+          access.onstatechange = function () { if (mountedRef.current) wireMidiInputs(access); };
+          addToast(count ? 'MIDI input connected.' : 'No MIDI input found.', count ? 'success' : 'info');
+          ogAnnounce(count ? 'MIDI input connected' : 'No MIDI input found');
+        }, function (err) {
+          if (!mountedRef.current) return;
+          setMidiStatus({ supported: true, connected: false, inputCount: 0, label: 'MIDI blocked' });
+          addToast('MIDI connection failed: ' + (err && err.message || 'permission blocked'), 'error');
+        });
+      } catch (err) {
+        if (!mountedRef.current) return;
         setMidiStatus({ supported: true, connected: false, inputCount: 0, label: 'MIDI blocked' });
         addToast('MIDI connection failed: ' + (err && err.message || 'permission blocked'), 'error');
-      });
+      }
     }
 
     function toggleNote(pitch, step) {
@@ -1448,7 +1536,7 @@
 
     function auditionSynthPatch() {
       triggerNote('C3', 0.8);
-      if (root.setTimeout) root.setTimeout(function () { triggerNote('G3', 0.62); }, 130);
+      _ogSetTimeout(function () { if (mountedRef.current) triggerNote('G3', 0.62); }, 130);
       ogAnnounce('Instrument preview');
     }
 
@@ -2139,6 +2227,7 @@
           var renderer = new runtime.Renderer(mount, runtime.Renderer.Backends.SVG);
           renderer.resize(width, height);
           var context = renderer.getContext();
+          if (!context) throw new Error('VexFlow context unavailable');
           var margin = 10;
           var staveTop = 24;
           var measureWidth = Math.max(96, (width - margin * 2) / visibleMeasures.length);
@@ -2155,7 +2244,7 @@
               else if (typeof staveNote.addAccidental === 'function') staveNote.addAccidental(index, new runtime.Accidental(accidental));
             });
             var articulationGlyphs = { accent: 'a>', staccato: 'a.', tenuto: 'a-', marcato: 'a^' };
-            var articulationNames = (vex.articulations || []).filter(function (value) { return articulationGlyphs[value]; });
+            var articulationNames = (vex.articulations || []).filter(function (value) { return Object.prototype.hasOwnProperty.call(articulationGlyphs, value); });
             if (articulationNames.length && runtime.Articulation && typeof staveNote.addModifier === 'function') {
               try {
                 var articulation = new runtime.Articulation(articulationGlyphs[articulationNames[0]]);
@@ -2823,7 +2912,16 @@
         return;
       }
       recordingStartingRef.current = true;
-      root.navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      var mediaPromise;
+      try {
+        mediaPromise = Promise.resolve(root.navigator.mediaDevices.getUserMedia({ audio: true }));
+      } catch (syncErr) {
+        recordingStartingRef.current = false;
+        setRecording(false);
+        addToast('Recording was not started: ' + (syncErr && syncErr.message || 'permission unavailable'), 'error');
+        return;
+      }
+      mediaPromise.then(function (stream) {
         recordingStartingRef.current = false;
         if (!mountedRef.current) {
           if (stream && typeof stream.getTracks === 'function') {
@@ -2871,7 +2969,18 @@
           if (blob.size) createOwnedSampleSlot(blob);
         };
         recorderRef.current = recorder;
-        recorder.start();
+        try {
+          recorder.start();
+        } catch (startErr) {
+          if (stream && typeof stream.getTracks === 'function') {
+            try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+          }
+          if (streamRef.current === stream) streamRef.current = null;
+          if (recorderRef.current === recorder) recorderRef.current = null;
+          setRecording(false);
+          addToast('Recording was not started: ' + (startErr && startErr.message || 'recorder failed to start'), 'error');
+          return;
+        }
         setRecording(true);
         ogAnnounce('Recording selected pad');
       }).catch(function (err) {
@@ -2885,8 +2994,7 @@
     function stopRecording() {
       var recorder = recorderRef.current;
       if (recorder && recorder.state !== 'inactive') {
-        recorder.stop();
-        return;
+        try { recorder.stop(); return; } catch (_) {}
       }
       var activeStream = streamRef.current;
       streamRef.current = null;
@@ -2901,7 +3009,7 @@
       setLoopEnabled(next);
       transportRef.current.loop = next;
       if (!next) {
-        (transportRef.current.timers || []).forEach(function (timerId) { root.clearTimeout(timerId); });
+        (transportRef.current.timers || []).forEach(function (timerId) { _ogClearTimeout(timerId); });
         transportRef.current.timers = [];
       }
       if (next && playing && engineRef.current && transportRef.current.durationSec) {
@@ -2910,9 +3018,9 @@
         var nextIndex = Math.max(1, Math.floor(elapsed / ref.durationSec) + 1);
         var nextStart = (ref.startTime || engineRef.current.ctx.currentTime) + nextIndex * ref.durationSec;
         if (ref.mode === 'song') {
-          addTransportTimer(function () { scheduleSongCycle(engineRef.current, nextStart, ref.token, ref.durationSec); }, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000);
+          addTransportTimer(function () { scheduleSongCycle(engineRef.current, nextStart, ref.token, ref.durationSec); }, Math.max(25, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000));
         } else {
-          addTransportTimer(function () { schedulePatternCycle(engineRef.current, nextStart, ref.token, nextIndex, ref.durationSec, ref.totalTicks); }, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000);
+          addTransportTimer(function () { schedulePatternCycle(engineRef.current, nextStart, ref.token, nextIndex, ref.durationSec, ref.totalTicks); }, Math.max(25, (nextStart - engineRef.current.ctx.currentTime - 0.14) * 1000));
         }
       }
       addToast('Loop ' + (next ? 'on' : 'off') + '.', 'info');
@@ -2920,32 +3028,40 @@
     }
 
     function schedulePatternCycle(engine, startTime, token, loopIndex, durationSec, lengthTicks) {
-      if (!S || !A || !pattern || transportRef.current.token !== token) return;
+      if (!mountedRef.current || !S || !A || !pattern || !engine || !engine.ctx || engine.ctx.state === 'closed' || engine._disposed || transportRef.current.token !== token) return;
       if (loopIndex > 0 && !transportRef.current.loop) return;
-      var plan = S.ogBuildLoopPlaybackPlan
-        ? S.ogBuildLoopPlaybackPlan(project, {
-          patternId: pattern.id,
-          transportTick: loopIndex * lengthTicks,
-          lookaheadTicks: lengthTicks,
-          originTime: startTime
-        })
-        : S.ogBuildPlaybackPlan(project, { patternId: pattern.id, originTime: startTime });
-      A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      try {
+        var plan = S.ogBuildLoopPlaybackPlan
+          ? S.ogBuildLoopPlaybackPlan(project, {
+            patternId: pattern.id,
+            transportTick: loopIndex * lengthTicks,
+            lookaheadTicks: lengthTicks,
+            originTime: startTime
+          })
+          : S.ogBuildPlaybackPlan(project, { patternId: pattern.id, originTime: startTime });
+        A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      } catch (_) {}
       if (!transportRef.current.loop) return;
+      var nextStart = startTime + durationSec;
+      if (nextStart < engine.ctx.currentTime - 0.05) nextStart = engine.ctx.currentTime + 0.05;
       addTransportTimer(function () {
-        schedulePatternCycle(engine, startTime + durationSec, token, loopIndex + 1, durationSec, lengthTicks);
-      }, (startTime + durationSec - engine.ctx.currentTime - 0.14) * 1000);
+        schedulePatternCycle(engine, nextStart, token, loopIndex + 1, durationSec, lengthTicks);
+      }, Math.max(25, (nextStart - engine.ctx.currentTime - 0.14) * 1000));
     }
 
     function scheduleSongCycle(engine, startTime, token, durationSec) {
-      if (!S || !A || !S.ogBuildArrangementPlaybackPlan || transportRef.current.token !== token) return;
+      if (!mountedRef.current || !S || !A || !S.ogBuildArrangementPlaybackPlan || !engine || !engine.ctx || engine.ctx.state === 'closed' || engine._disposed || transportRef.current.token !== token) return;
       if (!transportRef.current.loop) return;
-      var plan = S.ogBuildArrangementPlaybackPlan(project, { originTime: startTime });
-      A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      try {
+        var plan = S.ogBuildArrangementPlaybackPlan(project, { originTime: startTime });
+        A.ogSchedulePlan(engine, plan, { baseTime: 0 });
+      } catch (_) {}
       if (!transportRef.current.loop) return;
+      var nextStart = startTime + durationSec;
+      if (nextStart < engine.ctx.currentTime - 0.05) nextStart = engine.ctx.currentTime + 0.05;
       addTransportTimer(function () {
-        scheduleSongCycle(engine, startTime + durationSec, token, durationSec);
-      }, (startTime + durationSec - engine.ctx.currentTime - 0.14) * 1000);
+        scheduleSongCycle(engine, nextStart, token, durationSec);
+      }, Math.max(25, (nextStart - engine.ctx.currentTime - 0.14) * 1000));
     }
 
     function playLoop() {
@@ -2999,6 +3115,9 @@
       transportRef.current.token += 1;
       transportRef.current.loop = false;
       clearTransportSchedule(true);
+      if (engineRef.current && A && typeof A.ogStopAll === 'function') {
+        try { A.ogStopAll(engineRef.current); } catch (_) {}
+      }
       setPlaying(false);
       ogAnnounce('Stopped');
     }
@@ -3018,7 +3137,7 @@
 
     function clearPendingDraftAutosave() {
       if (!autosaveTimerRef.current) return;
-      root.clearTimeout(autosaveTimerRef.current);
+      _ogClearTimeout(autosaveTimerRef.current);
       autosaveTimerRef.current = null;
     }
 
@@ -3103,33 +3222,53 @@
     }
 
     function downloadText(filename, text, type) {
+      var url = null;
+      var a = null;
       try {
-        var blob = new Blob([text], { type: type || 'text/plain' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
+        var doc = (typeof document === 'object' && document) ? document : (root && root.document);
+        var UrlApi = (root && root.URL) || (typeof URL !== 'undefined' ? URL : null);
+        var BlobCtor = (root && root.Blob) || (typeof Blob !== 'undefined' ? Blob : null);
+        if (!doc || !doc.body || !UrlApi || typeof UrlApi.createObjectURL !== 'function' || !BlobCtor) {
+          throw new Error('Download is unavailable in this environment');
+        }
+        var blob = new BlobCtor([text], { type: type || 'text/plain' });
+        url = UrlApi.createObjectURL(blob);
+        a = doc.createElement('a');
         a.href = url;
         a.download = filename;
-        document.body.appendChild(a);
+        doc.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+        _ogSetTimeout(function () { try { UrlApi.revokeObjectURL(url); } catch (_) {} }, 500);
       } catch (err) {
+        if (a && a.parentNode) { try { a.remove(); } catch (_) {} }
+        if (url) { try { ((root && root.URL) || URL).revokeObjectURL(url); } catch (_) {} }
         addToast('Download failed: ' + (err && err.message || 'unknown error'), 'error');
       }
     }
 
     function downloadBytes(filename, bytes, type) {
+      var url = null;
+      var a = null;
       try {
-        var blob = new Blob([bytes], { type: type || 'application/octet-stream' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
+        var doc = (typeof document === 'object' && document) ? document : (root && root.document);
+        var UrlApi = (root && root.URL) || (typeof URL !== 'undefined' ? URL : null);
+        var BlobCtor = (root && root.Blob) || (typeof Blob !== 'undefined' ? Blob : null);
+        if (!doc || !doc.body || !UrlApi || typeof UrlApi.createObjectURL !== 'function' || !BlobCtor) {
+          throw new Error('Download is unavailable in this environment');
+        }
+        var blob = new BlobCtor([bytes], { type: type || 'application/octet-stream' });
+        url = UrlApi.createObjectURL(blob);
+        a = doc.createElement('a');
         a.href = url;
         a.download = filename;
-        document.body.appendChild(a);
+        doc.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 500);
+        _ogSetTimeout(function () { try { UrlApi.revokeObjectURL(url); } catch (_) {} }, 500);
       } catch (err) {
+        if (a && a.parentNode) { try { a.remove(); } catch (_) {} }
+        if (url) { try { ((root && root.URL) || URL).revokeObjectURL(url); } catch (_) {} }
         addToast('Download failed: ' + (err && err.message || 'unknown error'), 'error');
       }
     }
@@ -3173,8 +3312,14 @@
         if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
         return;
       }
-      var reader = new FileReader();
+      var ReaderCtor = (root && root.FileReader) || (typeof FileReader === 'function' ? FileReader : null);
+      if (!ReaderCtor) {
+        addToast('File reading is unavailable in this environment.', 'error');
+        return;
+      }
+      var reader = new ReaderCtor();
       reader.onload = function () {
+        if (!mountedRef.current) return;
         var text = String(reader.result || '');
         if (text.length > MAX_MUSICXML_BYTES) {
           addToast('MusicXML content exceeds the 5 MB safety limit.', 'error');
@@ -3185,6 +3330,7 @@
         if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
       };
       reader.onerror = function () {
+        if (!mountedRef.current) return;
         addToast('Could not read MusicXML file.', 'error');
         if (musicXmlInputRef.current) musicXmlInputRef.current.value = '';
       };
@@ -3217,6 +3363,7 @@
 
     function prepareMusicXml() {
       try {
+        if (!pattern) throw new Error('No active pattern.');
         var xml = C.ogBuildMusicXmlSketch(project, pattern.id, synthTrack && synthTrack.id, { clef: staffClef });
         if (jsonRef.current) jsonRef.current.value = xml;
         addToast('MusicXML sketch prepared.', 'success');
@@ -3232,6 +3379,7 @@
 
     function downloadMidi() {
       try {
+        if (!pattern) throw new Error('No active pattern.');
         var midi = C.ogBuildMidiFile(project, pattern.id);
         downloadBytes(safeProjectFilename('-pattern.mid'), midi, 'audio/midi');
         addToast('Pattern MIDI exported.', 'success');
@@ -3266,15 +3414,15 @@
     var licenseReport = C.ogBuildLicenseReport(project);
     var storageReport = C.ogBuildProjectStorageReport ? C.ogBuildProjectStorageReport(project) : { embeddedCount: 0, embeddedBytes: 0 };
     var validation = C.ogValidateProject(project);
-    var notation = C.ogBuildNotationPreview(project, pattern.id);
+    var notation = pattern ? C.ogBuildNotationPreview(project, pattern.id) : { measures: [] };
     var currentMeasure = notation.measures[selectedBar] || { notes: [], drumHits: [] };
-    var compositionNames = C.ogBuildCompositionNomenclature ? C.ogBuildCompositionNomenclature(project, pattern.id) : {
+    var compositionNames = C.ogBuildCompositionNomenclature && pattern ? C.ogBuildCompositionNomenclature(project, pattern.id) : {
       keyName: (project.key && project.key.tonic || 'C') + ' ' + (project.key && project.key.mode || 'minor'),
       scaleDegrees: [],
       measures: notation.measures || []
     };
     var namedMeasure = compositionNames.measures[selectedBar] || currentMeasure;
-    var staffEngraving = C.ogBuildStaffEngraving ? C.ogBuildStaffEngraving(project, pattern.id, {
+    var staffEngraving = C.ogBuildStaffEngraving && pattern ? C.ogBuildStaffEngraving(project, pattern.id, {
       trackId: synthTrack && synthTrack.id,
       selectedBar: selectedBar,
       width: 680,
@@ -3282,8 +3430,9 @@
       slotsPerMeasure: 8,
       clef: staffClef
     }) : null;
+    var staffMeasures = (staffEngraving && Array.isArray(staffEngraving.measures)) ? staffEngraving.measures : [];
     var staffNoteRows = [];
-    (staffEngraving.measures || []).forEach(function (measure) {
+    staffMeasures.forEach(function (measure) {
       (measure.notes || []).forEach(function (note) {
         staffNoteRows.push(Object.assign({}, note, { bar: measure.bar, barIndex: Math.max(0, measure.bar - 1) }));
       });
@@ -3293,7 +3442,7 @@
     var selectedStaffRest = !selectedStaffNote && staffCursor && staffCursor.tool === 'rest' ? staffCursor : null;
     var currentBarStaffNotes = staffNoteRows.filter(function (note) { return note.barIndex === selectedBar; });
     var staffPlaybackActive = !!(transportView.active && transportView.mode === 'pattern');
-    var staffPlaybackBarIndex = staffPlaybackActive ? Math.max(0, Math.min(Math.max(0, (staffEngraving.measures || []).length - 1), (parseInt(transportView.barIndex, 10) || 0))) : -1;
+    var staffPlaybackBarIndex = staffPlaybackActive ? Math.max(0, Math.min(Math.max(0, staffMeasures.length - 1), (parseInt(transportView.barIndex, 10) || 0))) : -1;
     var staffPlaybackNoteId = staffPlaybackActive ? transportView.activeNoteId : null;
     var staffPlaybackNote = staffPlaybackNoteId ? staffNoteRows.filter(function (note) { return note.id === staffPlaybackNoteId; })[0] || null : null;
     var staffPlaybackLabel = staffPlaybackActive
@@ -3330,7 +3479,7 @@
       { value: 'fff', label: 'fff - strongest' },
       { value: 'sfz', label: 'sfz - sudden accent' }
     ];
-    var selectedStaffMeasure = staffEngraving.measures && staffEngraving.measures[selectedBar] || null;
+    var selectedStaffMeasure = staffMeasures[selectedBar] || null;
     var currentBarStaffRests = selectedStaffMeasure && selectedStaffMeasure.rests || [];
     var staffBeatOptions = selectedStaffMeasure && selectedStaffMeasure.slots && selectedStaffMeasure.slots.length
       ? selectedStaffMeasure.slots.map(function (slot) { return { value: slot.startBeat, label: 'Beat ' + slot.startBeat }; })
@@ -3689,6 +3838,14 @@
             'aria-label': automationSpec.label + ' point at step ' + (localStep + 1) + ', ' + formatAutomationValue(automationSpec, point.value),
             onClick: function (ev) {
               if (ev && ev.stopPropagation) ev.stopPropagation();
+              setAutomationStep(localStep);
+              setAutomationValue(point.value);
+              setAutomationCurveMode(point.curve === 'hold' ? 'hold' : 'linear');
+            },
+            onKeyDown: function (ev) {
+              if (!ev || (ev.key !== 'Enter' && ev.key !== ' ' && ev.key !== 'Spacebar')) return;
+              if (ev.preventDefault) ev.preventDefault();
+              if (ev.stopPropagation) ev.stopPropagation();
               setAutomationStep(localStep);
               setAutomationValue(point.value);
               setAutomationCurveMode(point.curve === 'hold' ? 'hold' : 'linear');
@@ -5577,7 +5734,7 @@
     return styles;
   }
 
-  root.AlloModules = root.AlloModules || {};
+  if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
   OpenGrooveStudio.ogAnnounce = ogAnnounce;
   OpenGrooveStudio.OPEN_GROOVE_META = {
     id: 'openGrooveStudio',
@@ -5601,4 +5758,4 @@
     });
   }
   root.AlloModules.OpenGrooveStudio = OpenGrooveStudio;
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

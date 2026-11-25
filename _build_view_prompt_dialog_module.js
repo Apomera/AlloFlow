@@ -43,6 +43,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.PromptDialog) {
     console.log('[CDN] PromptDialog already loaded, skipping');
     return;

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({toolFile:'stem_lab/stem_tool_coasterlab.js',toolId:'coasterLab',width:1440,height:960,
  probes: "document.head.insertAdjacentHTML('beforeend','<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');"});
 test.beforeAll(async()=>{await harness.start();});test.afterAll(async()=>{await harness.stop();});
@@ -17,7 +18,9 @@ test('station explorer frames details responsively and respects manual camera mo
  await expect(page.locator('#clab-btnSceneFocus')).toBeFocused();
  const framed=async()=>(await state()).projected.every((p:any)=>Math.abs(p.x)<=1 && Math.abs(p.y)<=1 && p.z>=-1 && p.z<=1);
  await expect.poll(framed).toBe(true);const overview=(await state()).radius;
+ await openCoasterSettings(page);
  await page.locator('#clab-visualTheme').selectOption('daylight');
+ await closeCoasterSettings(page); // an open drawer shortens the view the overview radius was measured in
  for(const shot of ['platform','forecourt']){
   const button=nav.locator('[data-station-shot="'+shot+'"]');await button.focus();await button.press('Enter');
   await expect(button).toBeFocused();await expect(button).toHaveAttribute('aria-pressed','true');

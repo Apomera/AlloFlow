@@ -40,12 +40,26 @@
     <details class="top-menu">
       <summary>Switch maker</summary>
       <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
         <a href="packets-make.html">Word Sounds</a>
         <a href="packets-vocab.html">Vocabulary</a>
         <a href="packets-math-practice.html">Math Fact Practice</a>
         <a href="packets-check.html">Math Check</a>
         <a href="packets-read-along.html" aria-current="page">Read-Along</a>
         <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
         <a href="packets-present-export.html">Present &amp; print</a>
         <a href="packets-results.html">Add up results</a>
       </nav>
@@ -67,22 +81,22 @@
       <li>The program that runs the voice comes from this site (or AlloFlow's CDN at alloflow-cdn.pages.dev when hosted on a mirror without the engine files), and the page checks it before running it.</li>
       <li>If you press Record on a sentence, this page asks for this device's microphone to record your voice inside this tab. Your recording stays on this device, is not stored and is not uploaded.</li>
       <li>The passage and the recordings stay on this page only while it is open. They are not stored and not uploaded. They go only into the file you save.</li>
-      <li>This page loads sixteen files from this site: the page itself, five stylesheets (packets.css, packets-make.css, packets-voice.css, packets-read-along.css, packets-read-along-print.css), ten scripts (packets-page.js, word_sounds_take_home_loader.js, packet_read_along_builder.js, syllable_table_en.js, packets_voice_engine.js, packets_verify_core.js, packets_reopen.js, packets_handoff.js, packets_zip.js, packets-read-along.js) and the tab icon. When you record or use the computer voice, it loads packets_audio_kit.js and lame.min.js from this site to make recordings smaller.</li>
+      <li>This page loads its files from this site: the page itself, five stylesheets (packets.css, packets-make.css, packets-voice.css, packets-read-along.css, packets-read-along-print.css), ten scripts (packets-page.js, word_sounds_take_home_loader.js, packet_read_along_builder.js, syllable_table_en.js, packets_voice_engine.js, packets_verify_core.js, packets_reopen.js, packets_handoff.js, packets_zip.js, packets-read-along.js) and the tab icon. When you record or use the computer voice, it also loads packets_audio_kit.js and lame.min.js from this site to make recordings smaller. When you open Preview &amp; customize worksheet or Worksheet audio player, it also loads packets-print-cards.css, packets-print-cards.js, and packets_docx.js from this site. When you tick Parts of speech, Word meanings or Offline word pictures in step 4, it also loads the word lists and picture sets for them from this site (packets_vocab_bank_en.js and its word lists, word_sounds_symbols_en.js, reading_symbols_ext_en.js, word_picture_semantic_en.js, word_picture_matcher.js, packets_my_words.js and the picture sets).</li>
       <li>There are no cookies and nothing to sign in to.</li>
     </ul>
     <p id="can-title">The file you save can:</p>
     <ul aria-labelledby="can-title">
       <li>Show the passage a page at a time, and play your recordings of it, one sentence at a time, with the sentence highlighted.</li>
       <li>Play one sentence again when the student presses it, and play more slowly.</li>
-      <li>Show longer words in syllables when the student presses Syllables. The breaks come from a word list on this site, looked up here when you make the file. No AI is used for them.</li>
+      <li>Show longer words in syllables when the student presses Syllables. The breaks come from a word list on this site, looked up here when you make the file. Nothing is generated for them.</li>
       <li>Offer the Reading tools every Packets file has: text size, colors, spacing, letters, a reading focus line and a magnifier.</li>
       <li>Keep the student's place on that device.</li>
     </ul>
     <p id="cannot-title">The file you save cannot:</p>
     <ul aria-labelledby="cannot-title">
-      <li>Run AI. It makes no speech: it only plays the recordings that were made here.</li>
+      <li>Run AI. It plays the recordings that were made here. It makes no speech of its own, unless you turn on the local device voice in step 4: then it can ask the student's device to read with a voice already installed on that device.</li>
       <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
-      <li>Listen to the student, unless you turn on optional student voice practice in step 4 (which stays in the student's browser tab only and is never saved or sent). It never uses the camera.</li>
+      <li>Listen to the student, unless you turn on optional student voice practice in step 4. Then a recording stays in the memory of the student's browser and is never sent. It is saved only if the student presses Save my recording, and then only as a file on that device. The file never uses the camera.</li>
     </ul>
     <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
       <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
@@ -335,7 +349,9 @@
       <div class="actions actions-file">
         <a class="btn" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" hidden>Print on paper</button>
+        <button type="button" class="btn" id="preview-worksheet" hidden>Preview &amp; customize worksheet</button>
         <button type="button" class="btn" id="download-worksheet" hidden>Download worksheet</button>
+        <button type="button" class="btn" id="worksheet-audio" hidden>Worksheet audio player</button>
         <button type="button" class="btn" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
@@ -354,25 +370,25 @@
           <div class="ra-file-opts">
             <div class="ra-support-grid">
               <p class="ra-print-opt ra-support-card">
-                <label class="radio"><input type="checkbox" id="f-pos"> <span><strong>Parts of speech</strong><small class="hint">Highlight nouns, verbs, adjectives, and adverbs with offline dictionaries and grammar rules. No AI.</small></span></label>
+                <label class="radio"><input type="checkbox" id="f-pos"> <span><strong>Parts of speech</strong><small class="hint">Highlight nouns, verbs, adjectives, and adverbs with offline dictionaries and grammar rules. Runs without AI.</small></span></label>
               </p>
               <p class="ra-print-opt ra-support-card">
-                <label class="radio"><input type="checkbox" id="f-dict"> <span><strong>Word meanings</strong><small class="hint">Tap any word for an offline definition from Simple English Wiktionary and WordNet. No AI.</small></span></label>
+                <label class="radio"><input type="checkbox" id="f-dict"> <span><strong>Word meanings</strong><small class="hint">Tap any word for an offline definition from Simple English Wiktionary and WordNet. Runs without AI: nothing is generated. Some meanings were checked and corrected ahead of time with AI help, not by a person, so read them before you give the file to students.</small></span></label>
                 <label class="radio ra-sub-opt" id="f-narrate-glossary-wrap" hidden><input type="checkbox" id="f-narrate-glossary" disabled> <span>Also record Word meanings with this voice</span></label>
                 <span class="hint" id="dict-said" role="status"></span>
               </p>
               <p class="ra-print-opt ra-support-card">
-                <label class="radio"><input type="checkbox" id="f-dict-pics"> <span><strong>Offline word pictures</strong><small class="hint">Pair Mulberry Symbols, OpenMoji, 696 K-12 curriculum diagrams, and your saved pictures from <a href="packets-pictures.html#from=read-along" target="_blank" rel="noopener">Find a picture</a>. No AI.</small></span></label>
+                <label class="radio"><input type="checkbox" id="f-dict-pics"> <span><strong>Offline word pictures</strong><small class="hint">Pair Mulberry Symbols, OpenMoji, 696 K-12 curriculum diagrams, and your saved pictures from <a href="packets-pictures.html#from=read-along" target="_blank" rel="noopener">Find a picture</a>. Runs without AI: pictures are looked up by word, and none is generated.</small></span></label>
                 <span class="hint" id="pics-said" role="status"></span>
               </p>
               <p class="ra-print-opt ra-support-card">
-                <label class="radio"><input type="checkbox" id="f-simple-bar"> <span><strong>Simple toolbar for early readers</strong><small class="hint">Keep only Read to me, Syllables, and Word meanings in front; tuck extra views under More tools.</small></span></label>
+                <label class="radio"><input type="checkbox" id="f-simple-bar" checked> <span><strong>Simple toolbar for early readers</strong><small class="hint">Students see the main buttons; the others are behind More tools in the file. Untick to show every button.</small></span></label>
               </p>
               <p class="ra-print-opt ra-support-card">
                 <label class="radio"><input type="checkbox" id="f-device-voice"> <span><strong>Tap a word to hear it (local device voice)</strong><small class="hint">Uses only a voice already installed on the student's device (never an internet voice) for single words or unrecorded lines.</small></span></label>
               </p>
               <p class="ra-print-opt ra-support-card">
-                <label class="radio"><input type="checkbox" id="f-student-mic"> <span><strong>Student voice practice</strong><small class="hint">Let students record and listen back to their own voice. Stays in their tab only and is never saved or sent.</small></span></label>
+                <label class="radio"><input type="checkbox" id="f-student-mic"> <span><strong>Student voice practice</strong><small class="hint">Let students record and listen back to their own voice. The recording stays in their browser and is never sent. It is saved only if the student presses Save my recording, and then only to their own device. Students need to open the file directly in a browser (the Open a practice file page blocks the microphone).</small></span></label>
               </p>
             </div>
             <div id="pos-customizer" class="ra-subpanel" hidden>
@@ -517,7 +533,7 @@
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">
     <p>Free to use. Open source, license AGPL-3.0. Kokoro is licensed Apache-2.0.</p>
-    <p><a href="./">More from AlloFlow</a></p>
+    <p><a href="packets-feedback.html#from-packets-read-along">Send feedback</a> <a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
 </body>

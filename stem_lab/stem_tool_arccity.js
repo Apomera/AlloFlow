@@ -1442,6 +1442,12 @@
     st.id = 'allo-arccity-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}.theme-contrast [data-stem-tool-shell=\"arccity\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h):is([aria-label],[title]):not(:has(*)){text-shadow:0 0 1px #000,0 0 1px #000,0 0 1px #000!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-arccity-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-arccity-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"arccity\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"arccity\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   (function () {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2441,7 +2447,7 @@
   function arcGlowTexture(THREE) {
     if (_arcGlowTex) return _arcGlowTex;
     try {
-      var c = document.createElement('canvas'); c.width = c.height = 128;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = 128;
       var g = c.getContext('2d'), grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.35, '#737373'); grad.addColorStop(1, '#000000');
       g.fillStyle = '#000000'; g.fillRect(0, 0, 128, 128); g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
@@ -2471,7 +2477,7 @@
   function arcHorizonGlow(THREE, color, width, height, z) {
     var tex = null;
     try {
-      var c = document.createElement('canvas'); c.width = 4; c.height = 128;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 4; c.height = 128;
       var g = c.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, 128);
       grad.addColorStop(0, '#000000'); grad.addColorStop(0.55, '#141414'); grad.addColorStop(0.85, '#6a6a6a'); grad.addColorStop(1, '#ffffff');
       g.fillStyle = '#000000'; g.fillRect(0, 0, 4, 128); g.fillStyle = grad; g.fillRect(0, 0, 4, 128); tex = new THREE.CanvasTexture(c);
@@ -2507,7 +2513,7 @@
   function arcHazardTexture(THREE) {
     if (_arcHazardTex) return _arcHazardTex;
     try {
-      var c = document.createElement('canvas'); c.width = c.height = 64;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = c.height = 64;
       var g = c.getContext('2d');
       g.fillStyle = '#516074'; g.fillRect(0, 0, 64, 64);
       g.strokeStyle = '#c8b26a'; g.lineWidth = 9;
@@ -5093,7 +5099,7 @@
           return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 9, opacity: battleLocked ? 0.55 : 1 } },
             h('label', { key: 'label', htmlFor: 'arc-battle-' + name, style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: INK, fontSize: 12, marginBottom: 4 } }, h('span', { key: 'txt' }, spec.label), h('span', { key: 'val', style: { fontWeight: 800 } }, display)),
             h('div', { key: 'inputs', className: 'arc-battle-param-inputs', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 86px', gap: 8, alignItems: 'center' } },
-              h('input', { key: 'range', id: 'arc-battle-' + name, type: 'range', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', accentColor: BEAM } }),
+              h('input', { key: 'range', id: 'arc-battle-' + name, type: 'range', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, 'aria-valuetext': spec.label + ': ' + display, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', minHeight: 44, accentColor: BEAM } }),
               h('input', { key: 'number', type: 'number', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, 'aria-label': spec.label + ' exact value', onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', boxSizing: 'border-box', padding: '6px 7px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-panel, #ffffff)', color: INK } })));
         }
 

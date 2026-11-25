@@ -86,6 +86,12 @@ window.StemLab = window.StemLab || {
       '.ml-preset-btn{padding:5px 10px;min-height:28px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;transition:transform .12s,border-color .15s,background-color .15s;}' +
       '.ml-preset-btn:hover{transform:translateY(-1px);}';
     document.head.appendChild(st);
+    if (!document.getElementById('allo-machinelab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-machinelab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"machineLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"machineLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // ═══════════════════════════════════════════════════════════════════
   // PURE MATH — no DOM, no React, no state. Everything the student is
@@ -4870,6 +4876,7 @@ window.StemLab = window.StemLab || {
     var c;
     try {
       c = document.createElement('canvas');
+      if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
       c.width = size; c.height = size;
       var g = c.getContext('2d');
       if (!g) return null;
@@ -4918,6 +4925,7 @@ window.StemLab = window.StemLab || {
     var c, g;
     try {
       c = document.createElement('canvas');
+      if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
       c.width = 256; c.height = 128;
       g = c.getContext('2d');
       if (!g) return null;
@@ -8122,7 +8130,7 @@ window.StemLab = window.StemLab || {
             BANDS.map(function (bnd) {
               var on = bnd === band;
               return h('button', {
-                key: bnd,
+                key: bnd, type: 'button',
                 'aria-pressed': on ? 'true' : 'false',
                 onClick: function () { upd('bandOverride', bnd); },
                 style: {
@@ -8135,7 +8143,7 @@ window.StemLab = window.StemLab || {
               }, BAND_LABELS[bnd]);
             })),
           d.bandOverride ? h('button', {
-            key: 'reset',
+            key: 'reset', type: 'button',
             onClick: function () { upd('bandOverride', null); },
             style: {
               padding: '4px 9px', borderRadius: 8, cursor: 'pointer',
@@ -12085,7 +12093,7 @@ window.StemLab = window.StemLab || {
             bench.k2Choices.map(function (opt) {
               var picked = d.benchChoice === opt.id;
               return h('button', {
-                key: opt.id, className: 'ml-proof-choice',
+                key: opt.id, type: 'button', className: 'ml-proof-choice',
                 onClick: function () { submitChoice(opt); },
                 'aria-pressed': picked ? 'true' : 'false',
                 style: {
@@ -12124,7 +12132,7 @@ window.StemLab = window.StemLab || {
                 }
               }),
               h('button', {
-                key: 'go', className: 'ml-proof-check', onClick: submitTyped,
+                key: 'go', type: 'button', className: 'ml-proof-check', onClick: submitTyped,
                 style: {
                   minWidth: 0, minHeight: 48, padding: '12px 18px', borderRadius: 10, cursor: 'pointer', overflowWrap: 'anywhere',
                   border: '1px solid ' + T.accent, background: T.accent,
@@ -12153,7 +12161,7 @@ window.StemLab = window.StemLab || {
                 }
               }),
               h('button', {
-                key: 'go', className: 'ml-proof-check', onClick: submitTyped,
+                key: 'go', type: 'button', className: 'ml-proof-check', onClick: submitTyped,
                 style: {
                   minWidth: 0, minHeight: 48, padding: '12px 18px', borderRadius: 10, cursor: 'pointer', overflowWrap: 'anywhere',
                   border: '1px solid ' + T.accent, background: T.accent,
@@ -12295,7 +12303,7 @@ window.StemLab = window.StemLab || {
         }, views.map(function (v, viewIndex) {
           var on = (d.view || 'machines') === v.id;
           return h('button', {
-            key: v.id, id: 'machinelab-tab-' + v.id, role: 'tab',
+            key: v.id, id: 'machinelab-tab-' + v.id, role: 'tab', type: 'button',
             'aria-selected': on ? 'true' : 'false',
             'aria-controls': 'machinelab-panel-' + v.id,
             tabIndex: on ? 0 : -1,
@@ -12476,7 +12484,7 @@ window.StemLab = window.StemLab || {
             h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
               __alloT('stem.machinelab.energy_ledger', 'Energy ledger')),
             h('button', {
-              key: 'tog',
+              key: 'tog', type: 'button',
               'aria-pressed': d.ledgerAsTable ? 'true' : 'false',
               onClick: function () { upd('ledgerAsTable', !d.ledgerAsTable); },
               style: {
@@ -12672,7 +12680,7 @@ window.StemLab = window.StemLab || {
         }, MACHINES.map(function (mm) {
           var on = mm.id === machineId;
           return h('button', {
-            key: mm.id, 'aria-pressed': on ? 'true' : 'false',
+            key: mm.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
             onClick: function () {
               // Switching engines is a clean reset: do not let an in-flight
               // shot from the previous machine continue through the new model,
@@ -13056,7 +13064,7 @@ window.StemLab = window.StemLab || {
         if (typeof ctx.callTTS !== 'function' || !text) return null;   // older host, or no voice
         if (typeof window !== 'undefined' && window._alloQrBlocked === true) return null;
         return h('button', {
-          key: key || 'tts',
+          key: key || 'tts', type: 'button',
           onClick: function () { speak(text); },
           title: __alloT('stem.machinelab.read_aloud', 'Read aloud'),
           'aria-label': __alloT('stem.machinelab.read_aloud', 'Read aloud'),
@@ -13326,7 +13334,7 @@ window.StemLab = window.StemLab || {
                     ? __alloT('stem.machinelab.not_modelled', 'in the build')
                     : fmt(p.value, 2) + p.unit),
                   h('button', {
-                    key: 'go',
+                    key: 'go', type: 'button',
                     onClick: function () { updMulti({ view: 'machines', bench: p.bench, benchResult: null, benchPrediction: '', benchChoice: null }); },
                     'aria-label': __alloT('stem.machinelab.aria_open_bench', 'Open the bench for ') + p.part,
                     style: {
@@ -13590,7 +13598,7 @@ window.StemLab = window.StemLab || {
                 style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10 }
               }, [
                 h('button', {
-                  key: 'go', onClick: fire, disabled: !!d.animating,
+                  key: 'go', type: 'button', onClick: fire, disabled: !!d.animating,
                   style: {
                     padding: '8px 16px', borderRadius: 9, cursor: d.animating ? 'default' : 'pointer',
                     border: '1px solid ' + T.accent,
@@ -13601,7 +13609,7 @@ window.StemLab = window.StemLab || {
                   ? __alloT('stem.machinelab.loosing', 'Away!')
                   : __alloT('stem.machinelab.test_fire', 'Test fire')),
                 h('button', {
-                  key: 'save', onClick: saveDesign,
+                  key: 'save', type: 'button', onClick: saveDesign,
                   style: {
                     padding: '8px 14px', borderRadius: 9, cursor: 'pointer',
                     border: '1px solid ' + T.border, background: T.card, color: T.text,
@@ -13884,7 +13892,7 @@ window.StemLab = window.StemLab || {
                   }
                 }),
                 h('button', {
-                  key: 'fire', onClick: fire, disabled: !!d.animating || !preview,
+                  key: 'fire', type: 'button', onClick: fire, disabled: !!d.animating || !preview,
                   style: {
                     padding: '9px 20px', borderRadius: 8,
                     cursor: (d.animating || !preview) ? 'not-allowed' : 'pointer',
@@ -13908,7 +13916,7 @@ window.StemLab = window.StemLab || {
                 h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                   __alloT('stem.machinelab.flight_path', 'Flight path')),
                 ((Array.isArray(d.shotHistory) ? d.shotHistory : []).length > 1) ? h('button', {
-                  key: 'ov', 'aria-pressed': (d.showOverlay !== false) ? 'true' : 'false',
+                  key: 'ov', type: 'button', 'aria-pressed': (d.showOverlay !== false) ? 'true' : 'false',
                   onClick: function () { upd('showOverlay', d.showOverlay === false); },
                   style: {
                     padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
@@ -13958,7 +13966,7 @@ window.StemLab = window.StemLab || {
                 GRAVITY_PRESETS.map(function (gp) {
                   var on = Math.abs((d.gravity || 9.81) - gp.g) < 0.01;
                   return h('button', {
-                    key: gp.id, 'aria-pressed': on ? 'true' : 'false',
+                    key: gp.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
                     onClick: function () { upd('gravity', gp.g); },
                     style: {
                       padding: '5px 11px', borderRadius: 8, cursor: 'pointer',
@@ -14046,7 +14054,7 @@ window.StemLab = window.StemLab || {
                   h('span', { key: 'p' }, ': ' + u.part)
                 ]),
                 h('button', {
-                  key: 'go',
+                  key: 'go', type: 'button',
                   onClick: function () { updMulti({ view: 'build', machine: u.machine.id }); },
                   'aria-label': __alloT('stem.machinelab.aria_open_machine', 'Open the ') + machineLabel(u.machine.id),
                   style: {
@@ -15423,7 +15431,7 @@ window.StemLab = window.StemLab || {
           }, WALL_PRESETS.map(function (wp) {
             var on = wp.id === (d.wallPreset || 'curtain');
             return h('button', {
-              key: wp.id, 'aria-pressed': on ? 'true' : 'false',
+              key: wp.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
               onClick: function () { resetWall(wp.id); },
               style: {
                 padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
@@ -15434,7 +15442,7 @@ window.StemLab = window.StemLab || {
             }, wp.icon + ' ' + wp.label);
           }).concat(canImport ? [
             h('button', {
-              key: '_import',
+              key: '_import', type: 'button',
               'aria-pressed': (d.wallPreset === 'imported') ? 'true' : 'false',
               onClick: importArch,
               style: {
@@ -15540,7 +15548,7 @@ window.StemLab = window.StemLab || {
 
               card([
                 h('button', {
-                  key: 'loose',
+                  key: 'loose', type: 'button',
                   onClick: loose,
                   disabled: !!wallBreached || !!d.siegeFlight,
                   style: {
@@ -15555,7 +15563,7 @@ window.StemLab = window.StemLab || {
                   ? __alloT('stem.machinelab.breached_btn', 'Breached')
                   : (d.siegeFlight ? __alloT('stem.machinelab.in_flight', 'In flight…') : __alloT('stem.machinelab.loose', 'Loose!'))),
                 h('button', {
-                  key: 'reset',
+                  key: 'reset', type: 'button',
                   onClick: function () { resetWall(d.wallPreset); },
                   style: {
                     padding: '11px 18px', borderRadius: 10, cursor: 'pointer',
@@ -15627,7 +15635,7 @@ window.StemLab = window.StemLab || {
                   h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                     __alloT('stem.machinelab.wall_state', 'Wall state')),
                   h('button', {
-                    key: 'tog', 'aria-pressed': d.wallAsTable ? 'true' : 'false',
+                    key: 'tog', type: 'button', 'aria-pressed': d.wallAsTable ? 'true' : 'false',
                     onClick: function () { upd('wallAsTable', !d.wallAsTable); },
                     style: {
                       padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
@@ -15949,7 +15957,7 @@ window.StemLab = window.StemLab || {
             }, style: { minHeight: 42, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', border: '1px solid ' + T.border,
               background: T.card, color: T.text, fontSize: 13, fontWeight: 700 } }, __alloT('stem.machinelab.rec_download', 'Download text record')),
             (typeof navigator !== 'undefined' && navigator.clipboard) ? h('button', {
-              key: 'copy',
+              key: 'copy', type: 'button',
               onClick: function () {
                 try {
                   (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(asText).then(function () {
@@ -16009,7 +16017,7 @@ window.StemLab = window.StemLab || {
           }),
 
           h('button', {
-            key: 'log',
+            key: 'log', type: 'button',
             onClick: function () {
               var entry = { projMass: d.projMass, rows: MACHINES.map(function (mm) {
                 var sh = _machineMath.shot(inputsFor(mm.id));
@@ -16025,7 +16033,7 @@ window.StemLab = window.StemLab || {
           }, '📋 ' + __alloT('stem.machinelab.iq_log', 'Log this comparison')),
 
           !d.iqStuck ? h('button', {
-            key: 'stuck',
+            key: 'stuck', type: 'button',
             onClick: function () { upd('iqStuck', true); },
             style: {
               padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
@@ -17164,7 +17172,7 @@ window.StemLab = window.StemLab || {
           }, TOPICS.map(function (tp) {
             var on = tp.id === topic;
             return h('button', {
-              key: tp.id, role: 'tab', 'aria-selected': on ? 'true' : 'false',
+              key: tp.id, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
               onClick: function () { upd('manualTopic', tp.id); },
               style: {
                 padding: '6px 12px', borderRadius: 999, cursor: 'pointer',
@@ -17274,7 +17282,7 @@ window.StemLab = window.StemLab || {
               LEVELS.map(function (L) {
                 var on = L.id === level;
                 return h('button', {
-                  key: L.id, 'aria-pressed': on ? 'true' : 'false',
+                  key: L.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
                   onClick: function () { upd('aiLevel', L.id); },
                   style: {
                     padding: '4px 9px', marginRight: 4, borderRadius: 8, cursor: 'pointer',
@@ -17285,7 +17293,7 @@ window.StemLab = window.StemLab || {
                 }, L.label);
               })),
             h('button', {
-              key: 'go', onClick: explain, disabled: !!d.aiLoading,
+              key: 'go', type: 'button', onClick: explain, disabled: !!d.aiLoading,
               'aria-label': __alloT('stem.machinelab.aria_explain', 'Generate an explanation at the selected level'),
               style: {
                 padding: '5px 12px', borderRadius: 8, cursor: 'pointer',

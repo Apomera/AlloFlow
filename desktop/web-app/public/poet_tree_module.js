@@ -46,11 +46,12 @@
   // are still tappable. (3) explicit focus-visible ring on erasure word tokens —
   // browser default focus on <span tabindex=0> is unreliable across Safari/Firefox.
   (function () {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('pt-a11y-css')) return;
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('pt-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'pt-a11y-css';
     st.textContent = [
       '@media (prefers-reduced-motion: reduce) { .pt-tool *, .pt-tool *::before, .pt-tool *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }',
+      '.pt-tool button, .pt-tool input, .pt-tool select, .pt-tool textarea, .pt-tool [role="tab"], .pt-tool [role="button"], .pt-erasure-word { touch-action: manipulation; }',
       '.pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline: 3px solid #0f766e !important; outline-offset: 2px !important; }',
       '@media (forced-colors: active) { .pt-tool button:focus-visible, .pt-tool input:focus-visible, .pt-tool textarea:focus-visible, .pt-tool select:focus-visible, .pt-tool [tabindex]:focus-visible { outline-color: CanvasText !important; } }',
       '.pt-erasure-word { display: inline-block; min-width: 24px; min-height: 24px; line-height: 24px; text-align: center; }',
@@ -2198,7 +2199,7 @@
     }, []);
 
     function handleDeleteDialogKeyDown(ev) {
-      if (!ev || ev.isComposing || ev.keyCode === 229) return;
+      if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
       if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
         ev.preventDefault();
         ev.stopPropagation();
@@ -3664,10 +3665,10 @@
       ),
       e('p', { style: { fontSize: '11px', color: '#475569', margin: '4px 0 8px', lineHeight: 1.45 } }, revisionHistory.length > 0 ? 'Earlier versions stay on this device. Restore one to keep exploring without losing the current draft.' : 'Save a local checkpoint to preserve this draft before you make a bigger change.'),
       e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
-        poemText.trim() && e('button', { onClick: saveRevisionCheckpoint, 'aria-label': 'Save a local revision checkpoint', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Save checkpoint'),
-        e('button', { onClick: function () { if (revisionImportRef.current) revisionImportRef.current.click(); }, 'aria-label': 'Import revision history from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import JSON'),
-        e('button', { onClick: exportRevisionHistory, 'aria-label': 'Download revision history as JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Export JSON'),
-        e('button', { onClick: clearRevisionHistory, 'aria-label': 'Clear local revision history', style: { padding: '5px 9px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Clear history'),
+        poemText.trim() && e('button', { type: 'button', onClick: saveRevisionCheckpoint, 'aria-label': 'Save a local revision checkpoint', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Save checkpoint'),
+        e('button', { type: 'button', onClick: function () { if (revisionImportRef.current) revisionImportRef.current.click(); }, 'aria-label': 'Import revision history from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import JSON'),
+        e('button', { type: 'button', onClick: exportRevisionHistory, 'aria-label': 'Download revision history as JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Export JSON'),
+        e('button', { type: 'button', onClick: clearRevisionHistory, 'aria-label': 'Clear local revision history', style: { padding: '5px 9px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Clear history'),
         e('input', { ref: revisionImportRef, type: 'file', accept: 'application/json,.json', onChange: importRevisionHistory, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree revision history JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } })
       ),
       currentDraftCompare && e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 8px', marginBottom: '8px', background: '#ecfeff', border: '1px solid #99f6e4', borderRadius: '7px', flexWrap: 'wrap' } },
@@ -3675,7 +3676,7 @@
           e('strong', { style: { display: 'block', fontSize: '11px', color: TEAL_DARK } }, 'Current draft'),
           e('span', { style: { display: 'block', fontSize: '10px', color: '#475569' } }, (currentDraftCompare.title || 'Untitled') + ' - ' + (form ? form.name : 'Free Verse') + ' - live')
         ),
-        e('button', { onClick: function () { toggleRevisionCompare(CURRENT_DRAFT_COMPARE_ID); }, 'aria-pressed': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'true' : 'false', 'aria-label': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Remove current draft from comparison' : 'Compare current draft', style: { padding: '5px 9px', background: compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL_LIGHT : '#fff', color: TEAL_DARK, border: '1px solid ' + (compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL : '#99f6e4'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Selected' : 'Compare')
+        e('button', { type: 'button', onClick: function () { toggleRevisionCompare(CURRENT_DRAFT_COMPARE_ID); }, 'aria-pressed': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'true' : 'false', 'aria-label': compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Remove current draft from comparison' : 'Compare current draft', style: { padding: '5px 9px', background: compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL_LIGHT : '#fff', color: TEAL_DARK, border: '1px solid ' + (compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? TEAL : '#99f6e4'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, compareRevisionIds.indexOf(CURRENT_DRAFT_COMPARE_ID) >= 0 ? 'Selected' : 'Compare')
       ),
       compareRevisionIds.length === 1 && e('p', { style: { fontSize: '10px', color: '#475569', margin: '0 0 8px' } }, 'Select one more version to compare side by side.'),
       revisionComparePanel,
@@ -3688,8 +3689,8 @@
               e('strong', { style: { display: 'block', fontSize: '11px', color: '#334155' } }, revision.label || 'Saved version'),
               e('span', { style: { display: 'block', fontSize: '10px', color: '#64748b' } }, (revision.title || 'Untitled') + ' - ' + (revisionForm ? revisionForm.name : 'Free Verse') + ' - ' + (revision.savedAt ? new Date(revision.savedAt).toLocaleString() : 'local'))
             ),
-            e('button', { onClick: function () { restoreRevision(revision); }, 'aria-label': 'Restore ' + (revision.label || 'revision') + ' of ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Restore'),
-            e('button', { onClick: function () { toggleRevisionCompare(revision.id); }, 'aria-pressed': isCompared ? 'true' : 'false', 'aria-label': (isCompared ? 'Remove ' : 'Compare ') + (revision.label || 'revision') + ' ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: isCompared ? TEAL_LIGHT : '#fff', color: isCompared ? TEAL_DARK : '#475569', border: '1px solid ' + (isCompared ? TEAL : '#cbd5e1'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, isCompared ? 'Selected' : 'Compare')
+            e('button', { type: 'button', onClick: function () { restoreRevision(revision); }, 'aria-label': 'Restore ' + (revision.label || 'revision') + ' of ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Restore'),
+            e('button', { type: 'button', onClick: function () { toggleRevisionCompare(revision.id); }, 'aria-pressed': isCompared ? 'true' : 'false', 'aria-label': (isCompared ? 'Remove ' : 'Compare ') + (revision.label || 'revision') + ' ' + (revision.title || 'Untitled'), style: { padding: '5px 9px', background: isCompared ? TEAL_LIGHT : '#fff', color: isCompared ? TEAL_DARK : '#475569', border: '1px solid ' + (isCompared ? TEAL : '#cbd5e1'), borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, isCompared ? 'Selected' : 'Compare')
           );
         })
       )
@@ -3701,8 +3702,8 @@
         e('span', { style: { display: 'block', fontSize: '10px', color: '#64748b' } }, 'Keep a local JSON copy of your saved poems.')
       ),
       e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-        e('button', { onClick: function () { if (libraryImportRef.current) libraryImportRef.current.click(); }, 'aria-label': 'Import saved Library from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import library'),
-        e('button', { onClick: exportLibrary, disabled: !saved.length, 'aria-label': 'Download saved Library as JSON', style: { padding: '5px 9px', background: saved.length ? '#fff' : '#e2e8f0', color: saved.length ? TEAL_DARK : '#94a3b8', border: '1px solid ' + (saved.length ? '#99f6e4' : '#cbd5e1'), borderRadius: '6px', cursor: saved.length ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Export library'),
+        e('button', { type: 'button', onClick: function () { if (libraryImportRef.current) libraryImportRef.current.click(); }, 'aria-label': 'Import saved Library from JSON', style: { padding: '5px 9px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Import library'),
+        e('button', { type: 'button', onClick: exportLibrary, disabled: !saved.length, 'aria-label': 'Download saved Library as JSON', style: { padding: '5px 9px', background: saved.length ? '#fff' : '#e2e8f0', color: saved.length ? TEAL_DARK : '#94a3b8', border: '1px solid ' + (saved.length ? '#99f6e4' : '#cbd5e1'), borderRadius: '6px', cursor: saved.length ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Export library'),
         e('input', { ref: libraryImportRef, type: 'file', accept: 'application/json,.json', onChange: importLibrary, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree Library JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } })
       )
     );
@@ -3715,10 +3716,10 @@
             e('h2', { id: 'pt-poettree-title', style: { fontSize: '18px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'PoetTree'),
             e('p', { style: { fontSize: '11px', color: '#475569', margin: 0 } }, tr('Form, write, hear, share — your poems with structure and AI feedback.'))
           ),
-          e('button', { onClick: function () { setPrivacyOpen(function (open) { return !open; }); }, 'aria-expanded': privacyOpen ? 'true' : 'false', 'aria-controls': 'pt-privacy-panel', 'aria-label': 'Open privacy and data controls',
+          e('button', { type: 'button', onClick: function () { setPrivacyOpen(function (open) { return !open; }); }, 'aria-expanded': privacyOpen ? 'true' : 'false', 'aria-controls': 'pt-privacy-panel', 'aria-label': 'Open privacy and data controls',
             style: { padding: '6px 10px', background: privacyOpen ? TEAL : '#fff', color: privacyOpen ? '#fff' : TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }
           }, 'Privacy'),
-          onClose && e('button', { onClick: onClose, autoFocus: true, 'data-alloflow-close-on-escape': 'true', 'aria-label': tr('Close PoetTree'),
+          onClose && e('button', { type: 'button', onClick: onClose, autoFocus: true, 'data-alloflow-close-on-escape': 'true', 'aria-label': tr('Close PoetTree'),
             style: { padding: '6px 14px', background: '#fff', color: '#0f172a', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }
           }, '✕ Close')
         ),
@@ -3727,6 +3728,7 @@
         e('div', { role: 'tablist', 'aria-label': 'PoetTree sections',
           // WAI-ARIA tabs pattern: arrow keys move focus between tabs, Home/End jump to ends.
           onKeyDown: function (ev) {
+            if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
             var key = ev.key;
             if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
             ev.preventDefault();
@@ -3749,7 +3751,7 @@
         },
           TABS.map(function (t) {
             var active = activeTab === t.id;
-            return e('button', { key: t.id, id: 'pt-tab-' + t.id, role: 'tab',
+            return e('button', { type: 'button', key: t.id, id: 'pt-tab-' + t.id, role: 'tab',
               'aria-selected': active ? 'true' : 'false',
               'aria-controls': 'pt-panel-' + t.id,
               // Roving tabindex: only the active tab is in the tab order. Others are
@@ -3764,7 +3766,7 @@
         privacyOpen && e('div', { id: 'pt-privacy-panel', role: 'region', 'aria-label': 'Privacy and data controls', style: { margin: '10px 18px 0', padding: '12px 14px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '10px' } },
           e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
             e('h3', { style: { margin: 0, fontSize: '14px', color: TEAL_DARK } }, 'Privacy and data controls'),
-            e('button', { onClick: function () { setPrivacyOpen(false); }, 'aria-label': 'Close privacy and data controls', style: { border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, 'Close')
+            e('button', { type: 'button', onClick: function () { setPrivacyOpen(false); }, 'aria-label': 'Close privacy and data controls', style: { border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', fontSize: '12px', fontWeight: 700 } }, 'Close')
           ),
           e('p', { style: { margin: '6px 0 8px', fontSize: '11px', color: '#475569', lineHeight: 1.5 } }, 'Poet Tree keeps drafts, Library poems, and revision history on this device. Cloud helpers send the text needed for the selected feature to the configured provider.'),
           e('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '11px', color: '#334155' } },
@@ -3791,21 +3793,21 @@
             ),
             e('p', { style: { margin: '7px 0', fontSize: '10px', color: '#334155', lineHeight: 1.45 } }, 'A safety copy of your current writing data downloads before either action. Replace swaps in the backup; Merge adds its Library, revisions, and workspaces while leaving your current draft open.'),
             e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              e('button', { onClick: function () { restoreLocalBackup('replace'); }, 'aria-label': 'Replace current local writing data with this backup', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Replace current data'),
-              e('button', { onClick: function () { restoreLocalBackup('merge'); }, 'aria-label': 'Merge this backup with current local writing data', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #0f766e', background: TEAL, color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Merge with current data'),
-              e('button', { onClick: function () { setBackupPreview(null); setBackupPreviewError(''); announcePT('Backup restore canceled.'); }, 'aria-label': 'Cancel backup restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Cancel')
+              e('button', { type: 'button', onClick: function () { restoreLocalBackup('replace'); }, 'aria-label': 'Replace current local writing data with this backup', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Replace current data'),
+              e('button', { type: 'button', onClick: function () { restoreLocalBackup('merge'); }, 'aria-label': 'Merge this backup with current local writing data', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #0f766e', background: TEAL, color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Merge with current data'),
+              e('button', { type: 'button', onClick: function () { setBackupPreview(null); setBackupPreviewError(''); announcePT('Backup restore canceled.'); }, 'aria-label': 'Cancel backup restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Cancel')
             )
           ),
           restoreUndoSnapshot && e('div', { role: 'status', 'aria-label': 'Restore undo available', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginTop: '9px', padding: '7px 9px', background: '#fefce8', border: '1px solid #fde68a', borderRadius: '7px', color: '#854d0e', fontSize: '10px' } },
             e('span', null, 'A previous local state is available for one-step undo.'),
-            e('button', { onClick: undoLocalRestore, 'aria-label': 'Undo last local data restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #ca8a04', background: '#fff', color: '#854d0e', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Undo last restore')
+            e('button', { type: 'button', onClick: undoLocalRestore, 'aria-label': 'Undo last local data restore', style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #ca8a04', background: '#fff', color: '#854d0e', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Undo last restore')
           ),
           e('div', { style: { display: 'flex', gap: '7px', marginTop: '9px', flexWrap: 'wrap' } },
-            e('button', { onClick: discardDraft, disabled: !draftCandidate && !draftStatus, style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: draftCandidate || draftStatus ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Clear local draft'),
-            e('button', { onClick: function () { if (localBackupImportRef.current) localBackupImportRef.current.click(); }, 'aria-label': 'Restore all local Poet Tree data from JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#fff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Restore local backup'),
-            e('button', { onClick: exportAllLocalData, 'aria-label': 'Download all local Poet Tree data as JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#ecfeff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Export all local data'),
+            e('button', { type: 'button', onClick: discardDraft, disabled: !draftCandidate && !draftStatus, style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: draftCandidate || draftStatus ? 'pointer' : 'not-allowed', fontSize: '10px', fontWeight: 700 } }, 'Clear local draft'),
+            e('button', { type: 'button', onClick: function () { if (localBackupImportRef.current) localBackupImportRef.current.click(); }, 'aria-label': 'Restore all local Poet Tree data from JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#fff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Restore local backup'),
+            e('button', { type: 'button', onClick: exportAllLocalData, 'aria-label': 'Download all local Poet Tree data as JSON', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #99f6e4', background: '#ecfeff', color: TEAL_DARK, cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Export all local data'),
             e('input', { ref: localBackupImportRef, type: 'file', accept: 'application/json,.json', onChange: importAllLocalData, tabIndex: -1, 'aria-hidden': 'true', 'aria-label': 'Choose a PoetTree local backup JSON file', style: { position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' } }),
-            e('button', { onClick: eraseAllLocalData, 'aria-label': 'Erase all local Poet Tree data', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Erase all local data'),
+            e('button', { type: 'button', onClick: eraseAllLocalData, 'aria-label': 'Erase all local Poet Tree data', style: { padding: '5px 9px', borderRadius: '6px', border: '1px solid #fda4af', background: '#fff1f2', color: '#9f1239', cursor: 'pointer', fontSize: '10px', fontWeight: 800 } }, 'Erase all local data'),
             e('span', { style: { alignSelf: 'center', fontSize: '10px', color: '#64748b' } }, 'Erasing writing data preserves your cloud privacy preference. You can re-enable cloud tools at any time.')
           )
         ),
@@ -3849,7 +3851,7 @@
                 placeholder: 'e.g. "Where I\'m From"',
                 style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', background: '#fff', boxSizing: 'border-box' }
               }),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: saveAsAssignment,
                 disabled: !teacherPrompt.trim() && !form,
                 'aria-label': tr('Save as Assignment — PoetTree setup in My Resources'),
@@ -3862,7 +3864,7 @@
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', marginTop: '6px' } },
               FORMS.map(function (f) {
                 var selected = form && form.id === f.id;
-                return e('button', { key: f.id,
+                return e('button', { type: 'button', key: f.id,
                   onClick: function () { setForm(f); announcePT('Selected form: ' + f.name); },
                   'aria-pressed': selected ? 'true' : 'false',
                   style: { textAlign: 'left', padding: '14px', borderRadius: '12px', border: selected ? '2px solid ' + TEAL : '1px solid #e5e7eb', background: selected ? TEAL_LIGHT : '#fff', cursor: 'pointer' }
@@ -3904,7 +3906,7 @@
                   })
                 )
               ),
-              e('button', { onClick: function () { setActiveTab('write'); announcePT('Ready to write a ' + form.name + '.'); },
+              e('button', { type: 'button', onClick: function () { setActiveTab('write'); announcePT('Ready to write a ' + form.name + '.'); },
                 style: { marginTop: '10px', padding: '8px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
               }, tr('Start writing →'))
             )
@@ -3916,8 +3918,8 @@
               e('strong', null, 'A local draft is available'),
               e('span', null, ' from ' + (draftCandidate.savedAt ? new Date(draftCandidate.savedAt).toLocaleString() : 'your last session') + '.'),
               e('div', { style: { display: 'flex', gap: '6px', marginTop: '7px', flexWrap: 'wrap' } },
-                e('button', { onClick: restoreDraft, style: { padding: '5px 10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Restore draft'),
-                e('button', { onClick: discardDraft, style: { padding: '5px 10px', background: '#fff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Discard')
+                e('button', { type: 'button', onClick: restoreDraft, style: { padding: '5px 10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Restore draft'),
+                e('button', { type: 'button', onClick: discardDraft, style: { padding: '5px 10px', background: '#fff', color: '#1e3a8a', border: '1px solid #93c5fd', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Discard')
               )
             ),
             draftStatus && e('div', { role: 'status', 'aria-live': 'polite', style: { color: '#475569', fontSize: '10px' } }, draftStatus + (draftSavedAt ? ' ' + new Date(draftSavedAt).toLocaleTimeString() : '')),
@@ -3936,15 +3938,15 @@
                 )
               ),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '8px' } },
-                e('button', { onClick: saveCurrentWorkspace, 'aria-label': activeWorkspaceId ? 'Update current workspace' : 'Save current draft as a workspace', style: { padding: '5px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, activeWorkspaceId ? 'Update workspace' : 'Save as workspace'),
-                e('button', { onClick: startNewWorkspace, 'aria-label': 'Start a new draft workspace', style: { padding: '5px 10px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'New workspace'),
-                activeWorkspaceId && e('button', { onClick: deleteActiveWorkspace, 'aria-label': 'Delete current draft workspace', style: { padding: '5px 10px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Delete workspace'),
+                e('button', { type: 'button', onClick: saveCurrentWorkspace, 'aria-label': activeWorkspaceId ? 'Update current workspace' : 'Save current draft as a workspace', style: { padding: '5px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, activeWorkspaceId ? 'Update workspace' : 'Save as workspace'),
+                e('button', { type: 'button', onClick: startNewWorkspace, 'aria-label': 'Start a new draft workspace', style: { padding: '5px 10px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'New workspace'),
+                activeWorkspaceId && e('button', { type: 'button', onClick: deleteActiveWorkspace, 'aria-label': 'Delete current draft workspace', style: { padding: '5px 10px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } }, 'Delete workspace'),
                 workspaceStatus && e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: '#475569' } }, workspaceStatus)
               )
             ),
             rewriteUndo && e('div', { role: 'status', style: { background: '#fefce8', border: '1px solid #fde68a', borderRadius: '8px', padding: '7px 10px', color: '#78350f', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
               e('span', null, 'Your pre-rewrite version is still available.'),
-              e('button', { onClick: undoRewrite, style: { padding: '4px 9px', background: '#fff', color: '#78350f', border: '1px solid #f59e0b', borderRadius: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Undo rewrite')
+              e('button', { type: 'button', onClick: undoRewrite, style: { padding: '4px 9px', background: '#fff', color: '#78350f', border: '1px solid #f59e0b', borderRadius: '5px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Undo rewrite')
             ),
 
             // Form badge + reading-mode toggle
@@ -3952,9 +3954,9 @@
               form
                 ? e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: TEAL_LIGHT, borderRadius: '14px', border: '1px solid #99f6e4', fontSize: '12px', fontWeight: 700, color: TEAL_DARK } },
                     e('span', { 'aria-hidden': 'true' }, form.icon), form.name,
-                    e('button', { onClick: function () { setForm(null); }, 'aria-label': tr('Switch form'), style: { background: 'transparent', border: 'none', color: TEAL_DARK, cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' } }, 'switch'))
+                    e('button', { type: 'button', onClick: function () { setForm(null); }, 'aria-label': tr('Switch form'), style: { background: 'transparent', border: 'none', color: TEAL_DARK, cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' } }, 'switch'))
                 : e('span', { style: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' } }, tr('No form chosen — free verse')),
-              e('button', { onClick: function () { var next = !largeText; setLargeText(next); var prefs = loadJson(STORAGE_PREFS, {}); prefs.largeText = next; savePrefs(prefs); announcePT(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.')); },
+              e('button', { type: 'button', onClick: function () { var next = !largeText; setLargeText(next); var prefs = loadJson(STORAGE_PREFS, {}); prefs.largeText = next; savePrefs(prefs); announcePT(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.')); },
                 'aria-pressed': largeText ? 'true' : 'false',
                 'aria-label': largeText ? tr('Turn off reading-friendly text') : tr('Turn on reading-friendly text'),
                 style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? TEAL : '#d1d5db'), background: largeText ? TEAL_LIGHT : '#fff', color: largeText ? TEAL_DARK : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
@@ -3964,7 +3966,7 @@
             // Title with inline AI title generator
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
               e('label', { htmlFor: 'pt-title', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, tr('Title (optional)')),
-              onCallGemini && e('button', {
+              onCallGemini && e('button', { type: 'button',
                 onClick: generateTitles,
                 disabled: !poemText.trim() || titleLoading,
                 'aria-busy': titleLoading ? 'true' : 'false',
@@ -3979,7 +3981,7 @@
             // Title suggestions chips
             titleSuggestions && Array.isArray(titleSuggestions) && titleSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': tr('Title suggestions'), 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '-4px' } },
               titleSuggestions.map(function (t, ti) {
-                return e('button', { key: ti,
+                return e('button', { type: 'button', key: ti,
                   onClick: function () { setPoemTitle(t); setTitleSuggestions(null); announcePT(tr('Title set to "') + t + '."'); },
                   'aria-label': 'Use title: ' + t,
                   style: { padding: '4px 12px', background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: '14px', fontSize: '12px', cursor: 'pointer', color: '#6b21a8', fontFamily: 'Georgia, serif', fontStyle: 'italic' }
@@ -4007,7 +4009,7 @@
                     text: 'Combine flour, sugar, baking powder, and salt in a large bowl. Whisk together milk, melted butter, and eggs in a separate bowl. Pour the wet ingredients into the dry and stir gently until just combined. Do not overmix. The batter should be slightly lumpy. Heat a griddle or non-stick pan over medium heat. Pour a quarter cup of batter for each pancake. Cook until bubbles form on the surface and the edges look set, about two to three minutes. Flip and cook the other side until golden brown.'
                   }
                 ].map(function (src, si) {
-                  return e('button', { key: si,
+                  return e('button', { type: 'button', key: si,
                     onClick: function () { setFoundSource(src.text); announcePT('Loaded ' + src.label + ' as source.'); },
                     'aria-label': 'Use ' + src.label + ' as source text',
                     style: { padding: '3px 10px', borderRadius: '12px', border: '1px solid #fde68a', background: '#fffbeb', color: '#78350f', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
@@ -4022,7 +4024,7 @@
                 e('p', { style: { fontSize: '10px', color: '#78350f', margin: '0 0 6px', fontWeight: 700 } }, tr('Click words to add them to your poem:')),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                   foundSource.split(/\s+/).filter(Boolean).slice(0, 200).map(function (w, wi) {
-                    return e('button', { key: wi, onClick: function () { addFoundWord(w); },
+                    return e('button', { type: 'button', key: wi, onClick: function () { addFoundWord(w); },
                       'aria-label': 'Add word ' + w + ' to poem',
                       style: { padding: '2px 6px', background: '#fff', border: '1px solid #fde68a', borderRadius: '4px', fontSize: largeText ? '13px' : '11px', cursor: 'pointer', fontFamily: 'Georgia, serif', color: '#1e293b' }
                     }, w);
@@ -4053,7 +4055,7 @@
                     { label: '📜 Old Letter', text: 'My dearest friend, the leaves are falling now, and the wind has a sound I had forgotten. Yesterday I walked the old path and found a single white feather caught in the brambles. I tell myself I am content here, though some nights I still listen for the bell.' },
                     { label: '📰 News brief', text: 'The town council voted unanimously last night to preserve the abandoned lot at the corner of Maple and Third as a community garden. Residents had petitioned for the change for over a year. Volunteers will begin planting in the spring; until then, the lot will be cleared of debris and the soil tested for contamination.' }
                   ].map(function (seed) {
-                    return e('button', { key: seed.label,
+                    return e('button', { type: 'button', key: seed.label,
                       onClick: function () { setErasureSource(seed.text); setErasureKept({}); announcePT(tr('Seed source loaded.')); },
                       'aria-label': 'Use ' + seed.label + ' as source text',
                       style: { padding: '3px 8px', borderRadius: '999px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#1e293b', cursor: 'pointer' }
@@ -4092,11 +4094,11 @@
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' } },
                     e('span', { style: { fontSize: '11px', color: '#475569' } }, tr('Click words to keep · ') + keptCount + ' kept of ' + globalIdx + ' total'),
                     e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                      e('button', { onClick: function () { setErasureKept({}); announcePT(tr('Erasure cleared. All words restored.')); },
+                      e('button', { type: 'button', onClick: function () { setErasureKept({}); announcePT(tr('Erasure cleared. All words restored.')); },
                         'aria-label': tr('Clear all kept words'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '↻ Reset'),
-                      e('button', { onClick: function () {
+                      e('button', { type: 'button', onClick: function () {
                           var allKept = {};
                           for (var i = 0; i < globalIdx; i++) allKept[i] = true;
                           setErasureKept(allKept);
@@ -4104,7 +4106,7 @@
                         'aria-label': tr('Keep all words'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '◻ All'),
-                      e('button', { onClick: function () { setErasureSource(''); setErasureKept({}); },
+                      e('button', { type: 'button', onClick: function () { setErasureSource(''); setErasureKept({}); },
                         'aria-label': tr('Replace source text'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '✎ Replace')
@@ -4126,6 +4128,7 @@
                               });
                             },
                             onKeyDown: function (ev) {
+                              if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                               if (ev.key === 'Enter' || ev.key === ' ') {
                                 ev.preventDefault();
                                 setErasureKept(function (prev) {
@@ -4152,7 +4155,7 @@
                   extractedPoem.trim() && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '12px' } },
                     e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, '✨ Your erasure poem'),
                     e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '13px', color: '#1e293b', margin: 0, lineHeight: 1.7 } }, extractedPoem),
-                    e('button', { onClick: function () { setPoemText(extractedPoem); announcePT(tr('Erasure poem copied into editor.')); addToast && addToast(tr('Copied to editor!'), 'success'); },
+                    e('button', { type: 'button', onClick: function () { setPoemText(extractedPoem); announcePT(tr('Erasure poem copied into editor.')); addToast && addToast(tr('Copied to editor!'), 'success'); },
                       'aria-label': tr('Copy this erasure into the main poem editor below'),
                       style: { marginTop: '8px', padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#0f766e', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                     }, '↓ Use as poem')
@@ -4220,36 +4223,36 @@
 
             // Actions
             e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              e('button', { onClick: savePoem, disabled: !poemText.trim(), 'aria-label': 'Save this poem to Library',
+              e('button', { type: 'button', onClick: savePoem, disabled: !poemText.trim(), 'aria-label': 'Save this poem to Library',
                 style: { padding: '8px 14px', background: poemText.trim() ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save'),
-              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, disabled: !poemText.trim(),
+              onSaveSubmission && e('button', { type: 'button', onClick: saveSubmissionToPortfolio, disabled: !poemText.trim(),
                 'aria-label': tr('Save this poem to your portfolio (My Resources)'),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '📚 Save to Portfolio'),
-              ptTextAi && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
+              ptTextAi && e('button', { type: 'button', onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '✨ Get feedback'),
               // Cross-tool: open this poem in LitLab as a performance script (parent wires the prop).
-              onSendToLitLab && e('button', { onClick: sendToLitLab, disabled: !poemText.trim(),
+              onSendToLitLab && e('button', { type: 'button', onClick: sendToLitLab, disabled: !poemText.trim(),
                 'aria-label': tr('Send this poem to LitLab to perform with character voices'),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#9333ea' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '🎭 Perform in LitLab'),
-              onCallGemini && e('button', { onClick: analyzeMeter, disabled: !poemText.trim() || meterLoading,
+              onCallGemini && e('button', { type: 'button', onClick: analyzeMeter, disabled: !poemText.trim() || meterLoading,
                 'aria-busy': meterLoading ? 'true' : 'false',
                 style: { padding: '8px 14px', background: poemText.trim() && !meterLoading ? '#0891b2' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !meterLoading ? 'pointer' : 'not-allowed' }
               }, meterLoading ? '⏳ Analyzing meter…' : '📏 Analyze meter'),
               // Verifier: line count, syllables (CMU-based word table) and the
               // form's own rules, checked in the page. Hidden for the 'free'
               // form since there are no targets to verify against.
-              form && form.id !== 'free' && e('button', {
+              form && form.id !== 'free' && e('button', { type: 'button',
                 onClick: verifyWithCMU,
                 disabled: !poemText.trim() || cmuLoading,
                 'aria-busy': cmuLoading ? 'true' : 'false',
                 title: 'Checks line count, syllables and the form\'s rules, with syllable counts from the CMU Pronouncing Dictionary',
                 style: { padding: '8px 14px', background: poemText.trim() && !cmuLoading ? '#a21caf' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() && !cmuLoading ? 'pointer' : 'not-allowed' }
               }, cmuLoading ? '⏳ Verifying…' : '📖 Verify with CMU'),
-              onCallTTS && e('button', { onClick: function () { setActiveTab('perform'); },
+              onCallTTS && e('button', { type: 'button', onClick: function () { setActiveTab('perform'); },
                 style: { padding: '8px 14px', background: '#fff', color: TEAL_DARK, border: '1px solid ' + TEAL, borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, '🎙️ Perform')
             ),
@@ -4269,13 +4272,13 @@
                     return e('option', { key: f.id, value: f.id }, f.icon + ' ' + f.name);
                   })
                 ),
-                e('button', { onClick: function () { rewriteAsForm(rewriteTargetId); },
+                e('button', { type: 'button', onClick: function () { rewriteAsForm(rewriteTargetId); },
                   disabled: !rewriteTargetId || rewriteLoading,
                   'aria-busy': rewriteLoading ? 'true' : 'false',
                   'aria-label': rewriteLoading ? tr('Rewriting, please wait') : tr('Rewrite the poem in the chosen form'),
                   style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: rewriteTargetId && !rewriteLoading ? '#7c3aed' : '#e5e7eb', color: rewriteTargetId && !rewriteLoading ? '#fff' : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: rewriteTargetId && !rewriteLoading ? 'pointer' : 'not-allowed' }
                 }, rewriteLoading ? '⏳ Rewriting…' : '🔁 Rewrite'),
-                rewriteResult && e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); },
+                rewriteResult && e('button', { type: 'button', onClick: function () { setRewriteResult(null); setRewriteTargetId(''); },
                   'aria-label': 'Dismiss rewrite preview',
                   style: { marginLeft: 'auto', padding: '4px 10px', background: 'transparent', border: '1px solid #94a3b8', color: '#475569', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
                 }, '✕ Dismiss')
@@ -4289,15 +4292,15 @@
                   rewriteResult.note && e('p', { style: { fontSize: '11px', color: '#475569', margin: '10px 0 0', fontStyle: 'italic', borderTop: '1px dashed #e5e7eb', paddingTop: '8px' } }, '✏️ ' + rewriteResult.note)
                 ),
                 e('div', { style: { display: 'flex', gap: '6px', marginTop: '8px' } },
-                  e('button', { onClick: applyRewrite,
+                  e('button', { type: 'button', onClick: applyRewrite,
                     'aria-label': tr('Replace your poem with this rewrite'),
                     style: { padding: '6px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '✓ Replace mine'),
-                  e('button', { onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(rewriteResult.poem)).then(function () { addToast && addToast(tr('Rewrite copied to clipboard.'), 'success'); }, function () {}); } },
+                  e('button', { type: 'button', onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(rewriteResult.poem)).then(function () { addToast && addToast(tr('Rewrite copied to clipboard.'), 'success'); }, function () {}); } },
                     'aria-label': tr('Copy rewrite to clipboard'),
                     style: { padding: '6px 14px', background: '#fff', color: '#581c87', border: '1px solid #c4b5fd', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '📋 Copy'),
-                  e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); announcePT(tr('Kept original.')); },
+                  e('button', { type: 'button', onClick: function () { setRewriteResult(null); setRewriteTargetId(''); announcePT(tr('Kept original.')); },
                     'aria-label': tr('Keep original poem, discard rewrite'),
                     style: { padding: '6px 14px', background: 'transparent', color: '#475569', border: '1px solid #94a3b8', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, tr('Keep mine'))
@@ -4382,7 +4385,7 @@
 
             // ── Writing helpers (collapsible panel: Daily Prompt, Rhymes, Stronger Verbs) ──
             onCallGemini && e('div', { style: { background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' } },
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { setHelpersOpen(!helpersOpen); },
                 'aria-expanded': helpersOpen ? 'true' : 'false',
                 'aria-controls': 'pt-helpers-panel',
@@ -4397,7 +4400,7 @@
                 e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', marginTop: '10px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Daily Prompt'),
-                    e('button', { onClick: generateDailyPrompt, disabled: dailyPromptLoading,
+                    e('button', { type: 'button', onClick: generateDailyPrompt, disabled: dailyPromptLoading,
                       'aria-busy': dailyPromptLoading ? 'true' : 'false',
                       'aria-label': dailyPromptLoading ? tr('Fetching prompt, please wait') : (dailyPrompt ? tr('Get another prompt') : tr('Get a prompt')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
@@ -4405,7 +4408,7 @@
                   ),
                   dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
                     '"' + dailyPrompt + '"',
-                    e('button', { onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(dailyPrompt)).then(function () { addToast && addToast(tr('Prompt copied.'), 'success'); }, function () {}); } },
+                    e('button', { type: 'button', onClick: function () { if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') { Promise.resolve(navigator.clipboard.writeText(dailyPrompt)).then(function () { addToast && addToast(tr('Prompt copied.'), 'success'); }, function () {}); } },
                       'aria-label': tr('Copy prompt to clipboard'),
                       style: { marginLeft: '8px', padding: '2px 8px', background: 'transparent', border: '1px solid #fcd34d', color: '#78350f', borderRadius: '4px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', verticalAlign: 'middle' }
                     }, '📋 copy')
@@ -4421,11 +4424,11 @@
                   e('div', { style: { display: 'flex', gap: '6px' } },
                     e('input', { id: 'pt-rhyme-input', type: 'text', value: rhymeQuery,
                       onChange: function (ev) { setRhymeQuery(ev.target.value); },
-                      onKeyDown: function (ev) { if (ev && !ev.isComposing && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key === 'Enter') { ev.preventDefault(); fetchRhymes(); } },
+                      onKeyDown: function (ev) { if (ev && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key === 'Enter') { ev.preventDefault(); fetchRhymes(); } },
                       placeholder: 'word to rhyme (e.g. orange, light, hope)',
                       style: { flex: 1, padding: '6px 10px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '12px' }
                     }),
-                    e('button', { onClick: fetchRhymes, disabled: !rhymeQuery.trim() || rhymeLoading,
+                    e('button', { type: 'button', onClick: fetchRhymes, disabled: !rhymeQuery.trim() || rhymeLoading,
                       'aria-busy': rhymeLoading ? 'true' : 'false',
                       'aria-label': rhymeLoading ? tr('Fetching rhymes') : tr('Find rhymes'),
                       style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: rhymeQuery.trim() && !rhymeLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: rhymeQuery.trim() && !rhymeLoading ? 'pointer' : 'not-allowed' }
@@ -4437,7 +4440,7 @@
                       e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Perfect rhymes for "' + rhymeResults.word + '"'),
                       e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                         rhymeResults.perfect.map(function (w, wi) {
-                          return e('button', { key: 'p' + wi, onClick: function () { copyRhyme(w); },
+                          return e('button', { type: 'button', key: 'p' + wi, onClick: function () { copyRhyme(w); },
                             'aria-label': 'Rhyme ' + w + ' — copy to clipboard',
                             style: { padding: '3px 10px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
                           }, w);
@@ -4448,7 +4451,7 @@
                       e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#475569', marginBottom: '4px' } }, 'Slant rhymes (close, not exact)'),
                       e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                         rhymeResults.slant.map(function (w, wi) {
-                          return e('button', { key: 's' + wi, onClick: function () { copyRhyme(w); },
+                          return e('button', { type: 'button', key: 's' + wi, onClick: function () { copyRhyme(w); },
                             'aria-label': 'Slant rhyme ' + w + ' — copy to clipboard',
                             style: { padding: '3px 10px', background: '#fff', border: '1px dashed #99f6e4', borderRadius: '12px', fontSize: '12px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
                           }, w);
@@ -4463,7 +4466,7 @@
                 e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💪 Stronger Verbs'),
-                    e('button', { onClick: findStrongerVerbs, disabled: !poemText.trim() || verbLoading,
+                    e('button', { type: 'button', onClick: findStrongerVerbs, disabled: !poemText.trim() || verbLoading,
                       'aria-busy': verbLoading ? 'true' : 'false',
                       'aria-label': verbLoading ? tr('Analyzing verbs') : tr('Find stronger verbs'),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !verbLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !verbLoading ? 'pointer' : 'not-allowed' }
@@ -4480,7 +4483,7 @@
                           e('span', { style: { fontWeight: 700, color: '#b45309' } }, s.weakVerb),
                           e('span', null, ' → try: '),
                           (s.alternatives || []).map(function (alt, ai) {
-                            return e('button', { key: ai, onClick: function () { copyRhyme(alt); },
+                            return e('button', { type: 'button', key: ai, onClick: function () { copyRhyme(alt); },
                               'aria-label': 'Stronger verb ' + alt + ' — copy to clipboard',
                               style: { display: 'inline-block', margin: '0 3px 2px 0', padding: '2px 8px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '10px', fontSize: '11px', cursor: 'pointer', color: TEAL_DARK }
                             }, alt);
@@ -4496,7 +4499,7 @@
                 e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🌈 Senses Check'),
-                    e('button', { onClick: checkSenses, disabled: !poemText.trim() || sensesLoading,
+                    e('button', { type: 'button', onClick: checkSenses, disabled: !poemText.trim() || sensesLoading,
                       'aria-busy': sensesLoading ? 'true' : 'false',
                       'aria-label': sensesLoading ? tr('Auditing sensory imagery') : tr('Audit which senses your poem uses'),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !sensesLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !sensesLoading ? 'pointer' : 'not-allowed' }
@@ -4536,7 +4539,7 @@
                 e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎶 Sound Devices'),
-                    e('button', { onClick: analyzeSoundDevices, disabled: !poemText.trim() || soundDeviceLoading,
+                    e('button', { type: 'button', onClick: analyzeSoundDevices, disabled: !poemText.trim() || soundDeviceLoading,
                       'aria-busy': soundDeviceLoading ? 'true' : 'false',
                       'aria-label': soundDeviceLoading ? tr('Analyzing sound devices') : 'Analyze alliteration, assonance, consonance, and internal rhyme',
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !soundDeviceLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !soundDeviceLoading ? 'pointer' : 'not-allowed' }
@@ -4589,7 +4592,7 @@
                 onCallImagen && e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎨 Metaphor Visualizer'),
-                    e('button', { onClick: detectMetaphors, disabled: !poemText.trim() || metaphorLoading,
+                    e('button', { type: 'button', onClick: detectMetaphors, disabled: !poemText.trim() || metaphorLoading,
                       'aria-busy': metaphorLoading ? 'true' : 'false',
                       'aria-label': metaphorLoading ? tr('Scanning for metaphors and similes') : (metaphors && Array.isArray(metaphors) ? tr('Re-scan for metaphors') : tr('Find metaphors and similes in this poem')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !metaphorLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !metaphorLoading ? 'pointer' : 'not-allowed' }
@@ -4613,7 +4616,7 @@
                           e('strong', null, 'Vehicle: '), (m.vehicle || '—')
                         ),
                         // Generate / View / Re-roll button
-                        !url && e('button', { onClick: function () { visualizeMetaphor(m); }, disabled: loading,
+                        !url && e('button', { type: 'button', onClick: function () { visualizeMetaphor(m); }, disabled: loading,
                           'aria-busy': loading ? 'true' : 'false',
                           'aria-label': loading ? 'Visualizing ' + (m.vehicle || m.excerpt) : 'Visualize "' + (m.excerpt || '') + '"',
                           style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: loading ? '#cbd5e1' : '#7c3aed', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: loading ? 'wait' : 'pointer' }
@@ -4629,19 +4632,19 @@
                                 var v = ev.target.value;
                                 setMetaphorEditText(function (prev) { var n = Object.assign({}, prev); n[m.id] = v; return n; });
                               },
-                              onKeyDown: function (ev) { if (ev && !ev.isComposing && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key === 'Enter' && edit.trim() && !loading) { ev.preventDefault(); refineMetaphorImage(m); } },
+                              onKeyDown: function (ev) { if (ev && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey && ev.key === 'Enter' && edit.trim() && !loading) { ev.preventDefault(); refineMetaphorImage(m); } },
                               placeholder: 'Tweak this image (e.g. "make it sunset", "add stars")',
                               'aria-label': 'Image edit instruction for ' + (m.vehicle || m.excerpt),
                               disabled: loading,
                               style: { flex: 1, minWidth: '140px', padding: '5px 10px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '11px', background: '#fff' }
                             }),
-                            e('button', { onClick: function () { refineMetaphorImage(m); }, disabled: loading || !edit.trim(),
+                            e('button', { type: 'button', onClick: function () { refineMetaphorImage(m); }, disabled: loading || !edit.trim(),
                               'aria-busy': loading ? 'true' : 'false',
                               'aria-label': 'Apply edit to image',
                               style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: loading || !edit.trim() ? '#cbd5e1' : '#0891b2', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: loading || !edit.trim() ? 'not-allowed' : 'pointer' }
                             }, loading ? '⏳' : '✨ Edit')
                           ),
-                          e('button', { onClick: function () { visualizeMetaphor(m); }, disabled: loading,
+                          e('button', { type: 'button', onClick: function () { visualizeMetaphor(m); }, disabled: loading,
                             'aria-label': tr('Re-roll the image with same prompt'),
                             style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', color: '#475569', fontSize: '10px', fontWeight: 700, cursor: loading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
                           }, loading ? '⏳' : '🔄 Re-roll')
@@ -4656,7 +4659,7 @@
                 onCallImagen && e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎬 Mood Board'),
-                    e('button', { onClick: generateMoodBoard, disabled: !poemText.trim() || stanzaBoardLoading,
+                    e('button', { type: 'button', onClick: generateMoodBoard, disabled: !poemText.trim() || stanzaBoardLoading,
                       'aria-busy': stanzaBoardLoading ? 'true' : 'false',
                       'aria-label': stanzaBoardLoading ? tr('Building mood board, please wait') : (stanzaImages.length > 0 ? tr('Rebuild mood board') : tr('Build mood board for this poem')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !stanzaBoardLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !stanzaBoardLoading ? 'pointer' : 'not-allowed' }
@@ -4676,7 +4679,7 @@
                             ? e('img', { src: s.url, alt: 'AI rendering of stanza ' + (si + 1) + ': ' + s.text.split('\n')[0], style: { width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px', display: 'block' } })
                             : e('div', { style: { width: '100%', aspectRatio: '1', background: '#fef2f2', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', fontSize: '11px', fontStyle: 'italic', textAlign: 'center', padding: '8px' } }, s.error ? 'Failed to render' : tr('No image yet')),
                         // Per-stanza re-roll
-                        e('button', { onClick: function () { rerollStanzaImage(si); }, disabled: s.loading,
+                        e('button', { type: 'button', onClick: function () { rerollStanzaImage(si); }, disabled: s.loading,
                           'aria-label': 'Re-roll stanza ' + (si + 1) + ' image',
                           style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', color: '#475569', fontSize: '10px', fontWeight: 700, cursor: s.loading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
                         }, s.loading ? '⏳' : '🔄 Re-roll')
@@ -4690,7 +4693,7 @@
                 e('div', null,
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎲 Spark Words'),
-                    e('button', { onClick: generateSparks, disabled: sparkLoading,
+                    e('button', { type: 'button', onClick: generateSparks, disabled: sparkLoading,
                       'aria-busy': sparkLoading ? 'true' : 'false',
                       'aria-label': sparkLoading ? tr('Generating spark words') : (sparkWords ? tr('Generate 5 fresh spark words') : tr('Generate 5 spark words')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: sparkLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: sparkLoading ? 'wait' : 'pointer' }
@@ -4698,7 +4701,7 @@
                   ),
                   sparkWords && Array.isArray(sparkWords) && sparkWords.length > 0 && e('div', { role: 'region', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                     sparkWords.map(function (w, wi) {
-                      return e('button', { key: wi, onClick: function () { copyRhyme(w); },
+                      return e('button', { type: 'button', key: wi, onClick: function () { copyRhyme(w); },
                         'aria-label': 'Spark word ' + w + ' — copy to clipboard',
                         style: { padding: '4px 12px', background: TEAL_LIGHT, border: '1px solid #99f6e4', borderRadius: '14px', fontSize: '13px', cursor: 'pointer', color: TEAL_DARK, fontFamily: 'Georgia, serif' }
                       }, w);
@@ -4726,7 +4729,7 @@
                   ),
                   e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own poem on these 5 craft moves before the AI does. Builds reflection.')
                 ),
-                e('button', {
+                e('button', { type: 'button',
                   onClick: function () { setSelfAssessmentSubmitted(true); announcePT(tr('Self-assessment skipped. AI feedback unlocked.')); },
                   'aria-label': tr('Skip self-assessment'),
                   style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
@@ -4747,13 +4750,14 @@
                         setSelfAssessment(function (prev) { var n = Object.assign({}, prev); n[c.id] = v; return n; });
                       },
                       'aria-label': 'Self-rating for ' + c.label + ': ' + val + ' out of 5',
+                      'aria-valuetext': val + ' / 5',
                       style: { width: '110px', accentColor: '#7c3aed' }
                     }),
                     e('div', { style: { background: '#ede9fe', color: '#6b21a8', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '999px', minWidth: '36px', textAlign: 'center' } }, val + '/5')
                   );
                 })
               ),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () {
                   // Fill in any unset criteria with the default 3 so synthesis can read consistent shape.
                   var filled = {};
@@ -4775,14 +4779,14 @@
                   return c.label.split(' ')[0] + ' ' + (selfAssessment[c.id] || 3) + (i < POETRY_RUBRIC_CRITERIA.length - 1 ? ' · ' : '');
                 }).join('')
               ),
-              e('button', {
+              e('button', { type: 'button',
                 onClick: function () { setSelfAssessmentSubmitted(false); },
                 'aria-label': tr('Edit self-assessment'),
                 style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
               }, 'Edit')
             ),
 
-            poemText.trim() && ptTextAi && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
+            poemText.trim() && ptTextAi && e('button', { type: 'button', onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
               'aria-label': aiLoading ? tr('Getting feedback, please wait') : tr('Get AI feedback on this poem'),
               style: { padding: '10px 18px', background: aiLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: aiLoading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
@@ -4815,7 +4819,7 @@
                   e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#86198f', margin: 0 } }, '🎓 Mentor Match'),
                   e('p', { style: { fontSize: '11px', color: '#475569', margin: '2px 0 0' } }, 'Sit with a master poet on a similar theme. Read theirs, then come back to yours.')
                 ),
-                e('button', { onClick: findMentorPoem,
+                e('button', { type: 'button', onClick: findMentorPoem,
                   disabled: mentorLoading,
                   'aria-busy': mentorLoading ? 'true' : 'false',
                   'aria-label': mentorLoading ? tr('Finding a mentor poem, please wait') : (mentorMatch ? tr('Find a different mentor poem') : tr('Find a mentor poem')),
@@ -4881,7 +4885,7 @@
                   ),
                   e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, tr('Pulls from your helpers above into ONE prioritized 3-task plan.'))
                 ),
-                e('button', {
+                e('button', { type: 'button',
                   onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
                   'aria-busy': revisionPlanLoading ? 'true' : 'false',
                   'aria-label': revisionPlanLoading ? tr('Synthesizing revision plan') : (revisionPlan && !revisionPlan.error ? tr('Re-synthesize revision plan') : tr('Build a revision plan')),
@@ -4931,7 +4935,7 @@
                 e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                   ['neutral', 'somber', 'joyful', 'urgent', 'contemplative'].map(function (em) {
                     var sel = emotion === em;
-                    return e('button', { key: em, onClick: function () { setEmotion(em); },
+                    return e('button', { type: 'button', key: em, onClick: function () { setEmotion(em); },
                       'aria-pressed': sel ? 'true' : 'false',
                       'aria-label': 'Reading mood: ' + em,
                       style: { padding: '4px 10px', borderRadius: '14px', border: '1px solid ' + (sel ? TEAL : '#d1d5db'), background: sel ? TEAL_LIGHT : '#fff', color: sel ? TEAL_DARK : '#475569', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
@@ -4942,31 +4946,31 @@
               // Controls
               e('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                 !ttsPlaying
-                  ? e('button', { onClick: playPoem, disabled: !onCallTTS,
+                  ? e('button', { type: 'button', onClick: playPoem, disabled: !onCallTTS,
                       autoFocus: true,
                       
                       style: { padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: onCallTTS ? 'pointer' : 'not-allowed', opacity: onCallTTS ? 1 : 0.5 }
                     }, '▶ Play')
-                  : e('button', { onClick: stopPoem, 'aria-label': tr('Stop playback'),
+                  : e('button', { type: 'button', onClick: stopPoem, 'aria-label': tr('Stop playback'),
                       style: { padding: '10px 20px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
                     }, '⏹ Stop'),
                 form && form.id === 'image-poem' && onCallImagen && e('p', { role: 'note', style: { margin: 0, padding: '8px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '8px', color: '#5b21b6', fontSize: '10px', lineHeight: 1.45 } }, 'Privacy note: the poem text is sent to the configured image model as the image prompt.'),
                 // Image Poem: primary "Imagine It" button shown only when this form is active.
-                onCallImagen && form && form.id === 'image-poem' && e('button', { onClick: generateImagePoem, disabled: imagePoemLoading || !poemText.trim(),
+                onCallImagen && form && form.id === 'image-poem' && e('button', { type: 'button', onClick: generateImagePoem, disabled: imagePoemLoading || !poemText.trim(),
                   'aria-busy': imagePoemLoading ? 'true' : 'false',
                   'aria-label': imagePoemLoading ? tr('Rendering image poem, please wait') : (imagePoemUrl ? tr('Re-render the image poem') : tr('Render the poem as an image')),
                   style: { padding: '10px 18px', background: imagePoemLoading ? '#cbd5e1' : (poemText.trim() ? '#7c3aed' : '#cbd5e1'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: imagePoemLoading || !poemText.trim() ? 'not-allowed' : 'pointer' }
                 }, imagePoemLoading ? '⏳ Imagining…' : (imagePoemUrl ? '🔄 Re-imagine' : '🖼️ Imagine It')),
-                onCallImagen && e('button', { onClick: generateIllustration, disabled: illusLoading,
+                onCallImagen && e('button', { type: 'button', onClick: generateIllustration, disabled: illusLoading,
                   'aria-busy': illusLoading ? 'true' : 'false',
                   'aria-label': illusLoading ? tr('Generating illustration, please wait') : tr('Generate illustration with AI'),
                   style: { padding: '10px 16px', background: illusLoading ? '#cbd5e1' : '#a78bfa', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: illusLoading ? 'wait' : 'pointer' }
                 }, illusLoading ? '⏳ Painting…' : '🎨 Illustrate'),
-                e('button', { onClick: startReadAloud, disabled: !poemText.trim() || readCountdown > 0,
+                e('button', { type: 'button', onClick: startReadAloud, disabled: !poemText.trim() || readCountdown > 0,
                   'aria-label': tr('Read aloud yourself in large-text recital mode'),
                   style: { padding: '10px 16px', background: '#0f766e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() && !readCountdown ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, readCountdown > 0 ? ('… ' + readCountdown) : '🎤 Read aloud'),
-                e('button', { onClick: printBroadside, disabled: !poemText.trim(),
+                e('button', { type: 'button', onClick: printBroadside, disabled: !poemText.trim(),
                   'aria-label': tr('Open a printable broadside of this poem in a new window'),
                   style: { padding: '10px 16px', background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, '🖨️ Broadside')
@@ -4976,7 +4980,7 @@
                 e('img', { src: imagePoemUrl, alt: 'AI rendering of your image poem' + (poemTitle ? ' titled ' + poemTitle : ''), style: { width: '100%', display: 'block' } }),
                 e('figcaption', { style: { padding: '10px 14px', fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
                   e('span', null, '🖼️ Your poem, made visible. Edit your words and re-imagine to see how the image changes.'),
-                  e('button', { onClick: function () { setImagePoemUrl(null); announcePT(tr('Image poem cleared.')); },
+                  e('button', { type: 'button', onClick: function () { setImagePoemUrl(null); announcePT(tr('Image poem cleared.')); },
                     'aria-label': tr('Clear the rendered image poem'),
                     style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: '1px solid #c4b5fd', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', fontWeight: 700 }
                   }, 'Clear')
@@ -4997,7 +5001,7 @@
             return e('div', { ref: readAloudDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Read-aloud recital mode'),
               onClick: function () { if (readAloudActive) advanceReadAloud(); },
               onKeyDown: function (ev) {
-                if (!readAloudActive || !ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+                if (!readAloudActive || !ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                 if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); stopReadAloud(); }
                 else if (ev.key === 'ArrowRight' || ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); advanceReadAloud(); }
                 else if (ev.key === 'ArrowLeft') { ev.preventDefault(); rewindReadAloud(); }
@@ -5020,13 +5024,13 @@
                 ),
                 // Hint + controls (don't propagate clicks to advance)
                 e('div', { onClick: function (ev) { ev.stopPropagation(); }, style: { display: 'flex', gap: '14px', alignItems: 'center', cursor: 'default' } },
-                  e('button', { onClick: rewindReadAloud, 
+                  e('button', { type: 'button', onClick: rewindReadAloud, 
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
-                  e('button', { onClick: advanceReadAloud, autoFocus: true, 
+                  e('button', { type: 'button', onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0f766e', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
-                  e('button', { onClick: stopReadAloud, 'aria-label': tr('Exit read-aloud mode'),
+                  e('button', { type: 'button', onClick: stopReadAloud, 'aria-label': tr('Exit read-aloud mode'),
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '✕ Done')
                 ),
@@ -5102,13 +5106,13 @@
                             return e('option', { key: fid, value: fid }, (f ? f.icon + ' ' + f.name : 'Free verse') + ' (' + formsInLibrary[fid] + ')');
                           })
                         ),
-                        e('button', {
+                        e('button', { type: 'button',
                           onClick: chapbookCurating ? exitChapbookCuration : enterChapbookCuration,
                           'aria-pressed': chapbookCurating ? 'true' : 'false',
                           'aria-label': chapbookCurating ? 'Finish chapbook curation' : 'Choose poems for a custom chapbook',
                           style: { padding: '8px 11px', background: chapbookCurating ? '#fff' : '#fff', color: TEAL_DARK, border: '1px solid #0f766e', borderRadius: '8px', fontWeight: 700, fontSize: '11px', cursor: 'pointer' }
                         }, chapbookCurating ? '✓ Done curating' : '✚ Curate selection'),
-                        e('button', { onClick: function () { printChapbook(chapbookCurating ? '' : chapbookFilter); },
+                        e('button', { type: 'button', onClick: function () { printChapbook(chapbookCurating ? '' : chapbookFilter); },
                           'aria-label': (chapbookCurating ? 'Print selected chapbook of ' : 'Print chapbook of ') + chapbookPrintCount + ' poems',
                           disabled: chapbookPrintCount === 0,
                           style: { padding: '8px 14px', background: chapbookPrintCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: chapbookPrintCount > 0 ? 'pointer' : 'not-allowed' }
@@ -5116,8 +5120,8 @@
                       ),
                       chapbookCurating && e('div', { role: 'group', 'aria-label': 'Chapbook selection controls', style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '9px', paddingTop: '8px', borderTop: '1px solid #99f6e4' } },
                         e('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: TEAL_DARK, fontWeight: 800, marginRight: '2px' } }, chapbookSelectedCount + ' of ' + saved.length + ' selected'),
-                        e('button', { onClick: selectAllChapbookPoems, 'aria-label': 'Select all saved poems for chapbook', style: { padding: '5px 8px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Select all'),
-                        e('button', { onClick: clearChapbookSelection, 'aria-label': 'Clear chapbook selection', style: { padding: '5px 8px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Clear selection'),
+                        e('button', { type: 'button', onClick: selectAllChapbookPoems, 'aria-label': 'Select all saved poems for chapbook', style: { padding: '5px 8px', background: '#fff', color: TEAL_DARK, border: '1px solid #99f6e4', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Select all'),
+                        e('button', { type: 'button', onClick: clearChapbookSelection, 'aria-label': 'Clear chapbook selection', style: { padding: '5px 8px', background: '#fff', color: '#9f1239', border: '1px solid #fda4af', borderRadius: '6px', fontSize: '10px', fontWeight: 700, cursor: 'pointer' } }, 'Clear selection'),
                         e('span', { style: { fontSize: '10px', color: '#475569' } }, 'Check or uncheck poems below to shape the collection.')
                       )
                     ),
@@ -5130,7 +5134,7 @@
                             ? ('Save at least 3 poems first (' + saved.length + ' so far). Then come back to see what patterns are emerging.')
                             : 'A craft-only reflection: what images, sounds, and forms keep showing up.')
                         ),
-                        e('button', { onClick: runThemeTracker,
+                        e('button', { type: 'button', onClick: runThemeTracker,
                           disabled: saved.length < 3 || themeLoading,
                           'aria-busy': themeLoading ? 'true' : 'false',
                           'aria-label': themeLoading ? tr('Analyzing patterns, please wait') : (saved.length < 3 ? tr('Need at least 3 saved poems') : (themeReport ? tr('Re-run pattern analysis') : tr('Find patterns across all saved poems'))),
@@ -5209,8 +5213,8 @@
                           ),
                         ),
                         e('div', { style: { display: 'flex', gap: '6px' } },
-                          e('button', { onClick: function () { loadPoem(p); }, 'aria-label': 'Load ' + p.title, style: { padding: '4px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Open'),
-                          e('button', { onClick: function (ev) { requestPoemDelete(p, ev.currentTarget); }, 'aria-label': 'Delete ' + p.title, style: { padding: '4px 10px', background: '#fff', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Delete')
+                          e('button', { type: 'button', onClick: function () { loadPoem(p); }, 'aria-label': 'Load ' + p.title, style: { padding: '4px 10px', background: TEAL, color: '#fff', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Open'),
+                          e('button', { type: 'button', onClick: function (ev) { requestPoemDelete(p, ev.currentTarget); }, 'aria-label': 'Delete ' + p.title, style: { padding: '4px 10px', background: '#fff', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, 'Delete')
                         )
                       ),
                       e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: '12px', color: '#374151', margin: 0, maxHeight: '120px', overflowY: 'auto', lineHeight: 1.5 } }, p.text.length > 320 ? p.text.slice(0, 320) + '…' : p.text)

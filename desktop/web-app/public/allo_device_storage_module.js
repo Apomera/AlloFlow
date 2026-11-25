@@ -31,10 +31,22 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
-  if (window.AlloModules && window.AlloModules.DeviceStorageModule) {
-    console.log('[CDN] DeviceStorageModule already loaded, skipping');
+  if (typeof window !== 'object' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.DeviceStorageModule) {
+    try { if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[CDN] DeviceStorageModule already loaded, skipping'); } catch (_) {}
     return;
+  }
+
+  function _dsStr(value) {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'symbol') return '';
+    try { return String(value); } catch (_) { return ''; }
+  }
+  function _dsNum(value) {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'symbol' || value === null || value === undefined) return NaN;
+    try { return Number(value); } catch (_) { return NaN; }
   }
 
   var PROTO = 'ds2';
@@ -211,16 +223,17 @@
   function assertRecoveryVersion(value, label) {
     if (value != null && value !== RECOVERY_VERSION) {
       throw recoveryError('allo/recovery-version-unsupported',
-        (label || 'Recovery payload') + ' uses unsupported version ' + String(value) + '.');
+        (label || 'Recovery payload') + ' uses unsupported version ' + _dsStr(value) + '.');
     }
   }
   function recoveryId(value, label, strict) {
-    if (typeof value === 'string' && value.length > 0 && value.length <= 120) return value;
+    if (typeof value === 'string' && value.length > 0 && value.length <= 120 &&
+        value !== '__proto__' && value !== 'constructor' && value !== 'prototype') return value;
     if (strict) throw recoveryError('allo/recovery-mutation-invalid', (label || 'Snapshot') + ' requires a valid id.');
     return null;
   }
   function recoverySavedAt(value, label, strict) {
-    var ms = Date.parse(value || '');
+    var ms = typeof value === 'string' ? Date.parse(value) : NaN;
     if (isFinite(ms)) return new Date(ms).toISOString();
     if (strict) throw recoveryError('allo/recovery-mutation-invalid', (label || 'Snapshot') + ' requires a valid savedAt.');
     return null;
@@ -275,7 +288,13 @@
     snapshot.savedAt = savedAt;
     snapshot.pinned = candidate.pinned === true;
     snapshot.resourceCount = history.length;
-    snapshot.workspace = Object.assign({}, workspace, { history: history });
+    var safeWorkspace = {};
+    Object.keys(workspace).forEach(function (wKey) {
+      if (wKey === '__proto__' || wKey === 'constructor' || wKey === 'prototype') return;
+      safeWorkspace[wKey] = workspace[wKey];
+    });
+    safeWorkspace.history = history;
+    snapshot.workspace = safeWorkspace;
     return snapshot;
   }
   function putRecoveryTombstone(target, id, removedAt) {
@@ -287,7 +306,7 @@
     });
   }
   function normalizeRecoveryTombstones(candidate) {
-    var tombstones = {};
+    var tombstones = Object.create(null);
     if (Array.isArray(candidate)) {
       candidate.forEach(function (id) {
         id = recoveryId(id, 'Recovery tombstone', false);
@@ -308,12 +327,16 @@
   // set stays contiguous. The newest is always kept even when it alone
   // exceeds the budget — never drop the save the teacher just made.
   function capRecoverySnapshots(snapshots, policy, nowMs) {
+    snapshots = Array.isArray(snapshots)
+      ? snapshots.filter(function (item) { return item && typeof item === 'object'; })
+      : [];
     policy = policy || resolveRecoveryPolicy('standard');
-    nowMs = isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+    var parsedNow = _dsNum(nowMs);
+    nowMs = isFinite(parsedNow) ? parsedNow : Date.now();
     if (policy.draftMaxAgeMs && snapshots.length > 1) {
       var newestId = snapshots[0] && snapshots[0].id;
       snapshots = snapshots.filter(function (snapshot) {
-        var draftOnly = Number(snapshot.resourceCount) === 0;
+        var draftOnly = _dsNum(snapshot.resourceCount) === 0;
         var ageMs = Math.max(0, nowMs - Date.parse(snapshot.savedAt));
         return !draftOnly || snapshot.pinned || snapshot.id === newestId || ageMs <= policy.draftMaxAgeMs;
       });
@@ -324,13 +347,15 @@
     });
     var kept = snapshots.filter(function (snapshot) { return own(protectedIds, snapshot.id); });
     var keptBytes = kept.reduce(function (sum, snapshot) {
-      return sum + Math.max(0, Number(snapshot && snapshot.approximateBytes) || 0);
+      var sz = _dsNum(snapshot && snapshot.approximateBytes);
+      return sum + Math.max(0, isFinite(sz) ? sz : 0);
     }, 0);
     for (var i = 0; i < snapshots.length; i++) {
       var candidate = snapshots[i];
       if (own(protectedIds, candidate.id)) continue;
       if (kept.length >= policy.maxSnapshots) break;
-      var size = Math.max(0, Number(candidate.approximateBytes) || 0);
+      var cSize = _dsNum(candidate.approximateBytes);
+      var size = Math.max(0, isFinite(cSize) ? cSize : 0);
       if (keptBytes + size > policy.maxTotalBytes) break;
       keptBytes += size;
       kept.push(candidate);
@@ -379,7 +404,7 @@
     if (own(store.removedSnapshotIds, snapshot.id)) {
       return { store: store, applied: false, reason: 'removed-snapshot' };
     }
-    if (!(Number(snapshot.approximateBytes) > 0)) {
+    if (!(_dsNum(snapshot.approximateBytes) > 0)) {
       try { snapshot.approximateBytes = JSON.stringify(snapshot).length; } catch (_e) { snapshot.approximateBytes = 0; }
     }
     var existing = null;
@@ -395,6 +420,9 @@
     return { store: store, applied: true, reason: 'upserted' };
   }
   function stripRecoveryMedia(snapshot, reason) {
+    if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+      return { assetPolicy: 'text-only', omittedAssets: 0, omittedAssetManifest: [], approximateBytes: 0 };
+    }
     reason = reason || 'user-remove-media';
     var sourceManifest = Array.isArray(snapshot.omittedAssetManifest) ? snapshot.omittedAssetManifest : [];
     var manifest = sourceManifest.slice(0, 500);
@@ -409,11 +437,12 @@
     }
     var seen = Object.create(null);
     manifest.forEach(function (entry) {
-      seen[String(entry && entry.path || '') + '\u0000' + String(entry && entry.kind || '') + '\u0000' + String(entry && entry.reason || '')] = true;
+      seen[_dsStr(entry && entry.path) + '\u0000' + _dsStr(entry && entry.kind) + '\u0000' + _dsStr(entry && entry.reason)] = true;
     });
-    var omitted = Math.max(manifest.length, Number(snapshot.omittedAssets) || 0);
+    var priorOmitted = _dsNum(snapshot.omittedAssets);
+    var omitted = Math.max(manifest.length, isFinite(priorOmitted) ? priorOmitted : 0);
     function record(entry) {
-      var key = String(entry.path || '') + '\u0000' + String(entry.kind || '') + '\u0000' + String(entry.reason || '');
+      var key = _dsStr(entry && entry.path) + '\u0000' + _dsStr(entry && entry.kind) + '\u0000' + _dsStr(entry && entry.reason);
       if (own(seen, key)) return;
       seen[key] = true;
       omitted += 1;
@@ -423,7 +452,9 @@
         manifest[499] = entry;
       }
     }
-    function visit(value, path) {
+    var activeObjects = [];
+    function visit(value, path, depth) {
+      if (depth > 32) return null;
       if (typeof value === 'string') {
         var dataMatch = value.match(/^data:((?:image|audio|video)[/][^;,]+|application[/]pdf)[;,]/i);
         var mediaKey = /(?:image|audio|video|media|attachment|avatar|scene|thumbnail|karaoke|recording)/i.test(path);
@@ -448,19 +479,32 @@
         return null;
       }
       if (Array.isArray(value)) {
-        return value.map(function (item, index) { return visit(item, path + '[' + index + ']'); });
+        if (activeObjects.indexOf(value) !== -1) return null;
+        activeObjects.push(value);
+        try {
+          return value.map(function (item, index) { return visit(item, path + '[' + index + ']', depth + 1); });
+        } finally {
+          activeObjects.pop();
+        }
       }
       if (!value || typeof value !== 'object') return value;
       var prototype = Object.getPrototypeOf(value);
       if (prototype !== Object.prototype && prototype !== null) return value;
-      var out = {};
-      Object.keys(value).forEach(function (key) {
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
-        out[key] = visit(value[key], path ? path + '.' + key : key);
-      });
-      return out;
+      if (activeObjects.indexOf(value) !== -1) return null;
+      activeObjects.push(value);
+      try {
+        var out = {};
+        Object.keys(value).forEach(function (key) {
+          if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+          out[key] = visit(value[key], path ? path + '.' + key : key, depth + 1);
+        });
+        return out;
+      } finally {
+        activeObjects.pop();
+      }
     }
-    var stripped = visit(snapshot, 'snapshot');
+    var stripped = visit(snapshot, 'snapshot', 0);
+    if (!stripped || typeof stripped !== 'object') stripped = {};
     stripped.assetPolicy = 'text-only';
     stripped.omittedAssets = omitted;
     stripped.omittedAssetManifest = manifest;
@@ -476,7 +520,7 @@
     var action = mutation.action;
     if (action !== 'upsert' && action !== 'remove' && action !== 'markLegacyMigrated' &&
         action !== 'setPolicy' && action !== 'setPinned' && action !== 'removeMedia') {
-      throw recoveryError('allo/recovery-mutation-invalid', 'Unknown recovery mutation action: ' + String(action));
+      throw recoveryError('allo/recovery-mutation-invalid', 'Unknown recovery mutation action: ' + _dsStr(action));
     }
     var snapshot = null;
     if (action === 'upsert' || mutation.snapshot != null) {
@@ -516,9 +560,11 @@
       var mediaTarget = null;
       store.snapshots.forEach(function (entry) { if (entry.id === snapshotId) mediaTarget = entry; });
       if (!mediaTarget) return { store: store, applied: false, reason: 'snapshot-not-found' };
-      var previousOmitted = Math.max(0, Number(mediaTarget.omittedAssets) || 0);
+      var prevOmittedNum = _dsNum(mediaTarget.omittedAssets);
+      var previousOmitted = Math.max(0, isFinite(prevOmittedNum) ? prevOmittedNum : 0);
       var stripped = stripRecoveryMedia(mediaTarget, 'user-remove-media');
-      var removedMedia = Math.max(0, Number(stripped.omittedAssets) || 0) > previousOmitted;
+      var strippedOmittedNum = _dsNum(stripped.omittedAssets);
+      var removedMedia = Math.max(0, isFinite(strippedOmittedNum) ? strippedOmittedNum : 0) > previousOmitted;
       if (!removedMedia) return { store: store, applied: false, reason: 'no-media' };
       var normalizedStripped = normalizeRecoverySnapshot(stripped, false);
       if (!normalizedStripped) return { store: store, applied: false, reason: 'would-empty-workspace' };
@@ -647,7 +693,13 @@
       }
       self.bridgeOrigin = bridge.origin;
       self.clientOrigin = currentClientOrigin();
-      var target = new URL(bridge.href);
+      var target;
+      try {
+        target = new URL(bridge.href);
+      } catch (_) {
+        reject(storageError('allo/bridge-url-invalid', 'The device storage bridge URL is invalid.'));
+        return;
+      }
       target.hash = 'allo-ds=' + encodeURIComponent(self.nonce);
       var url = target.href;
       if (self.kind === 'popup') {
@@ -659,7 +711,7 @@
         }
         self.win = win;
       } else {
-        if (!document || !document.body) {
+        if (typeof document === 'undefined' || !document || !document.body) {
           reject(storageError('allo/storage-dom-unavailable', 'Device storage bridge requires document.body.'));
           return;
         }
@@ -765,9 +817,9 @@
           fail(storageError('allo/storage-port-transfer-failed', 'The secure storage connection could not be created. Update and reopen the app and storage bridge.'));
         }
       };
-      window.addEventListener('message', self.onMessage);
+      if (typeof window.addEventListener === 'function') window.addEventListener('message', self.onMessage);
       self.onPageHide = function () { self.teardown(); };
-      window.addEventListener('pagehide', self.onPageHide);
+      if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', self.onPageHide);
 
       var timeoutMs = self.kind === 'popup' ? APPROVAL_TIMEOUT_MS : CONNECT_TIMEOUT_MS;
       self.connectTimer = setTimeout(function () {
@@ -792,10 +844,13 @@
       self.helloTimer = setInterval(sendHello, 250);
       sendHello();
     });
-    return self.connectPromise.then(function (value) {
-      self.connectPromise = null; return value;
+    var pendingConnect = self.connectPromise;
+    return pendingConnect.then(function (value) {
+      if (self.connectPromise === pendingConnect) self.connectPromise = null;
+      return value;
     }, function (error) {
-      self.connectPromise = null; throw error;
+      if (self.connectPromise === pendingConnect) self.connectPromise = null;
+      throw error;
     });
   };
   BridgeTransport.prototype.request = function (op, params) {
@@ -830,8 +885,8 @@
     this.connectTimer = null;
     this.helloTimer = null;
     this.connectReject = null;
-    if (this.onMessage) { window.removeEventListener('message', this.onMessage); this.onMessage = null; }
-    if (this.onPageHide) { window.removeEventListener('pagehide', this.onPageHide); this.onPageHide = null; }
+    if (this.onMessage) { if (typeof window.removeEventListener === 'function') window.removeEventListener('message', this.onMessage); this.onMessage = null; }
+    if (this.onPageHide) { if (typeof window.removeEventListener === 'function') window.removeEventListener('pagehide', this.onPageHide); this.onPageHide = null; }
     if (this.port) {
       try { this.port.postMessage({ allo: PROTO, nonce: this.nonce, type: 'allo-bridge-disconnect' }); } catch (_) {}
       this.port.onmessage = null; this.port.onmessageerror = null;
@@ -863,6 +918,11 @@
   function directDb() {
     if (_directDb) return _directDb;
     _directDb = new Promise(function (resolve, reject) {
+      if (typeof indexedDB === 'undefined' || !indexedDB || typeof indexedDB.open !== 'function') {
+        _directDb = null;
+        reject(storageError('allo/idb-unavailable', 'IndexedDB is unavailable in this environment.'));
+        return;
+      }
       var req;
       try {
         req = indexedDB.open(DIRECT_DB, 1);
@@ -899,7 +959,7 @@
   }
   function readOriginStorageFacts() {
     var facts = { persisted: null, usage: null, quota: null };
-    if (!navigator.storage) return Promise.resolve(facts);
+    if (typeof navigator === 'undefined' || !navigator || !navigator.storage) return Promise.resolve(facts);
     var tasks = [];
     if (typeof navigator.storage.persisted === 'function') {
       tasks.push(Promise.resolve(navigator.storage.persisted()).then(function (value) {
@@ -908,8 +968,10 @@
     }
     if (typeof navigator.storage.estimate === 'function') {
       tasks.push(Promise.resolve(navigator.storage.estimate()).then(function (estimate) {
-        facts.usage = Math.max(0, Number(estimate && estimate.usage) || 0);
-        facts.quota = Math.max(0, Number(estimate && estimate.quota) || 0);
+        var u = _dsNum(estimate && estimate.usage);
+        var q = _dsNum(estimate && estimate.quota);
+        facts.usage = Math.max(0, isFinite(u) ? u : 0);
+        facts.quota = Math.max(0, isFinite(q) ? q : 0);
       }).catch(function () {}));
     }
     return Promise.all(tasks).then(function () { return facts; });
@@ -920,7 +982,14 @@
       return directDb().then(function (db) {
         return new Promise(function (resolve, reject) {
           var mode = (op === 'get' || op === 'list' || op === 'getAll' || op === 'namespaces') ? 'readonly' : 'readwrite';
-          var t = db.transaction(DIRECT_STORE, mode);
+          var t;
+          try {
+            t = db.transaction(DIRECT_STORE, mode);
+          } catch (txErr) {
+            _directDb = null;
+            reject(txErr || storageError('allo/idb-tx-failed'));
+            return;
+          }
           var store = t.objectStore(DIRECT_STORE);
           var k = params && (params.ns + ' ' + params.key);
           var result;
@@ -1008,7 +1077,7 @@
             result = { pong: true, proto: PROTO };
           } else {
             t.abort();
-            reject(storageError('allo/bad-op', 'Unknown op: ' + op));
+            reject(storageError('allo/bad-op', 'Unknown op: ' + _dsStr(op)));
             return;
           }
           t.oncomplete = function () { resolve(result); };
@@ -1049,7 +1118,9 @@
           try {
             var recBucket = ensureBucket();
             var recoveryResult = applyRecoveryMutation(own(recBucket, key) ? recBucket[key] : null, params.mutation);
-            recBucket[key] = recoveryResult.store;
+            if (recoveryResult && recoveryResult.applied !== false) {
+              recBucket[key] = recoveryResult.store;
+            }
             return Promise.resolve(recoveryResult);
           } catch (error) { return Promise.reject(error); }
         case 'delete': if (readBucket) delete readBucket[key]; return Promise.resolve(true);
@@ -1061,7 +1132,7 @@
         }));
         case 'estimate': return Promise.resolve({ persisted: null, usage: null, quota: null });
         case 'ping': return Promise.resolve({ pong: true, proto: PROTO });
-        default: return Promise.reject(storageError('allo/bad-op', 'Unknown op: ' + op));
+        default: return Promise.reject(storageError('allo/bad-op', 'Unknown op: ' + _dsStr(op)));
       }
     }
   };
@@ -1083,7 +1154,8 @@
   };
   var DENIED = 'allo/approval-denied';
   var TIMED_OUT = 'allo/consent-timeout';
-  var DECLINE_MESSAGES = {};
+  var MAX_WRITE_QUEUE = 500;
+  var DECLINE_MESSAGES = Object.create(null);
   DECLINE_MESSAGES[DENIED] = 'Device storage access was denied. AlloFlow will not ask again until you choose Open device storage.';
   DECLINE_MESSAGES[TIMED_OUT] = 'Device storage was not approved in time. AlloFlow will not ask again until you choose Open device storage.';
 
@@ -1117,25 +1189,38 @@
     return state.flushPromise;
   }
   function guarded(op, params, opts) {
-    if (params && params.ns !== undefined && !validateNs(params.ns)) {
+    var safeParams = (params && typeof params === 'object') ? params : null;
+    if (safeParams && safeParams.ns !== undefined && !validateNs(safeParams.ns)) {
       return Promise.reject(storageError('allo/bad-namespace', 'Namespace must match ' + NS_RE));
     }
-    if ((op === 'get' || op === 'set' || op === 'delete' || op === 'compareAndSwap' || op === 'mutateRecovery') && !validateKey(params.key)) {
+    if ((op === 'get' || op === 'set' || op === 'delete' || op === 'compareAndSwap' || op === 'mutateRecovery') && (!safeParams || !validateKey(safeParams.key))) {
       return Promise.reject(storageError('allo/bad-key', 'Key must be a 1-512 char string.'));
     }
-    if (op === 'mutateRecovery' && (params.ns !== RECOVERY_NAMESPACE || params.key !== RECOVERY_KEY)) {
+    if (op === 'mutateRecovery' && (!safeParams || safeParams.ns !== RECOVERY_NAMESPACE || safeParams.key !== RECOVERY_KEY)) {
       return Promise.reject(storageError('allo/recovery-target-invalid',
         'Atomic recovery mutations are restricted to workspace_recovery/store_v1.'));
     }
     var backend = activeBackend();
     if (backend) {
-      if (state.flushPromise) return state.flushPromise.then(function () { return guarded(op, params, opts); });
-      return backend.request(op, params);
+      if (state.flushPromise) return state.flushPromise.then(function () { return guarded(op, safeParams, opts); });
+      return backend.request(op, safeParams);
     }
     var isWrite = op === 'set' || op === 'delete' || op === 'clearNamespace' ||
       op === 'compareAndSwap' || op === 'mutateRecovery';
     if (isWrite && op !== 'compareAndSwap' && (!opts || opts.queue !== false)) {
-      state.writeQueue.push({ op: op, params: params });
+      if (op === 'set' && safeParams) {
+        for (var qi = state.writeQueue.length - 1; qi >= 0; qi--) {
+          var qItem = state.writeQueue[qi];
+          if (qItem && qItem.op === 'set' && qItem.params && qItem.params.ns === safeParams.ns && qItem.params.key === safeParams.key) {
+            state.writeQueue[qi] = { op: op, params: safeParams };
+            return Promise.resolve({ queued: true });
+          }
+        }
+      }
+      if (state.writeQueue.length >= MAX_WRITE_QUEUE) {
+        return Promise.reject(storageError('allo/queue-full', 'Device storage write queue is full. Reconnect storage and try again.'));
+      }
+      state.writeQueue.push({ op: op, params: safeParams });
       return Promise.resolve({ queued: true });
     }
     return Promise.reject(storageError('allo/storage-disconnected',
@@ -1282,25 +1367,25 @@
       var iframeRun = iframeT.connect(bridgeUrl).then(function () {
         return iframeT.request('probe', { channel: 'iframe' });
       }).then(function (r) { out.iframe = r; }, function (e) {
-        out.iframe = { error: e.code || String(e && e.message || e) };
+        out.iframe = { error: (e && e.code) || _dsStr(e && e.message || e) };
       }).then(function () { iframeT.teardown(); });
       var popupT = new BridgeTransport('popup');
       var popupRun = popupT.connect(bridgeUrl).then(function () {
         return popupT.request('probe', { channel: 'popup' });
       }).then(function (r) { out.popup = r; }, function (e) {
-        out.popup = { error: e.code || String(e && e.message || e) };
+        out.popup = { error: (e && e.code) || _dsStr(e && e.message || e) };
       }).then(function () { popupT.teardown(); });
       return Promise.all([iframeRun, popupRun]).then(function () {
         function verdict(r) {
           if (!r || r.error) return 'FAILED: ' + (r && r.error);
-          if (r.previous) return 'PERSISTS across sessions (seen ' + r.current.count + 'x, last ' + r.previous.t + ')';
+          if (r.previous) return 'PERSISTS across sessions (seen ' + (r.current && r.current.count) + 'x, last ' + r.previous.t + ')';
           return 'first run on this device — run again in a FRESH Canvas session to confirm persistence';
         }
         out.summary = { popup: verdict(out.popup), iframe: verdict(out.iframe) };
         return out;
       });
     },
-    _internal: {
+    _internal: Object.freeze({
       buildEnvelope: buildEnvelope,
       isValidResponse: isValidResponse,
       makeNonce: makeNonce,
@@ -1316,7 +1401,7 @@
       stripRecoveryMedia: stripRecoveryMedia,
       PROTO: PROTO,
       DEFAULT_BRIDGE_URL: DEFAULT_BRIDGE_URL
-    }
+    })
   };
 
   // ── On-screen probe panel (no DevTools needed) ───────────────────
@@ -1326,7 +1411,8 @@
   var _probePanel = null;
   function confirmDeviceStorageErase(info, opener) {
     return new Promise(function (resolve) {
-      if (!document.body) { resolve(false); return; }
+      if (typeof document === 'undefined' || !document || !document.body) { resolve(false); return; }
+      var safeInfo = (info && typeof info === 'object') ? info : {};
       var blocked = Array.prototype.slice.call(document.body.children).map(function (el) {
         return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
       });
@@ -1346,7 +1432,7 @@
       title.style.cssText = 'margin:0 0 10px;font-size:20px;line-height:1.3;color:#0f172a;';
       var description = document.createElement('p');
       description.id = 'allo-device-storage-confirm-description';
-      description.textContent = String(info.count) + ' record(s) in ' + info.ns + ' will be permanently removed from this device. This cannot be undone.';
+      description.textContent = _dsStr(safeInfo.count) + ' record(s) in ' + _dsStr(safeInfo.ns) + ' will be permanently removed from this device. This cannot be undone.';
       description.style.cssText = 'margin:0 0 20px;color:#334155;';
       var actions = document.createElement('div');
       actions.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-end;';
@@ -1383,6 +1469,7 @@
       };
       var onDialogKey = function (event) {
         if (event.key === 'Escape') {
+          if (event.isComposing || event.keyCode === 229) return;
           event.preventDefault();
           event.stopPropagation();
           finish(false);
@@ -1444,6 +1531,7 @@
     panel._alloClose = close;
     var onKey = function (e) {
       if (e.key === 'Escape' && !document.querySelector('[data-allo-device-storage-confirm]')) {
+        if (e.isComposing || e.keyCode === 229) return;
         e.preventDefault();
         e.stopPropagation();
         close(true);
@@ -1509,13 +1597,16 @@
     out.setAttribute('aria-live', 'polite');
     out.style.cssText = 'white-space:pre-wrap;word-break:break-word;font-size:12px;';
 
+    var dataLoadSeq = 0;
     dataBtn.onclick = function () {
       if (isProbeBlockedForLearner()) {
         out.textContent = 'Viewing stored app data is disabled in student mode.';
         return;
       }
+      var loadId = ++dataLoadSeq;
       out.textContent = 'Loading stored data…';
       api.ready().then(function () { return api.namespaces(); }).then(function (list) {
+        if (loadId !== dataLoadSeq) return;
         out.textContent = '';
         if (!list || !list.length) {
           out.textContent = 'Nothing stored by the app on this device yet (backend: ' + state.backendName + ').';
@@ -1561,7 +1652,7 @@
           var dac = window.AlloModules && window.AlloModules.DeviceAccessCode;
           if (!dac || typeof dac.isConfigured !== 'function' || !dac.isConfigured()) return Promise.resolve(true);
           return new Promise(function (resolve) {
-            if (!document || !document.body) { resolve(false); return; }
+            if (typeof document === 'undefined' || !document || !document.body) { resolve(false); return; }
             var background = [];
             Array.prototype.slice.call(document.body.children).forEach(function (child) {
               if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK') return;
@@ -1656,7 +1747,7 @@
               if (finished) return;
               submit.disabled = true;
               err.textContent = '';
-              Promise.resolve(dac.verify(input.value)).then(function (res) {
+              Promise.resolve().then(function () { return dac.verify(input.value); }).then(function (res) {
                 if (finished) return;
                 submit.disabled = false;
                 if (res && res.ok) { finish(true); return; }
@@ -1696,7 +1787,7 @@
                 a.download = 'alloflow_' + info.ns + '_export.json';
                 a.click();
                 setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
-              }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + (e.code || e.message))); });
+              }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + ((e && (e.code || e.message)) || _dsStr(e)))); });
             });
           };
           var del = document.createElement('button');
@@ -1711,7 +1802,7 @@
               confirmDeviceStorageErase(info, del).then(function (confirmed) {
                 if (confirmed) {
                   api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); }).catch(function (e) {
-                    probeNotice('Erase failed: ' + ((e && (e.code || e.message)) || e));
+                    probeNotice('Erase failed: ' + ((e && (e.code || e.message)) || _dsStr(e)));
                   });
                 }
               });
@@ -1721,11 +1812,16 @@
           out.appendChild(line);
         });
       }).catch(function (e) {
-        out.textContent = 'Could not load stored data: ' + (e && (e.code || e.message) || e);
+        if (loadId !== dataLoadSeq) return;
+        out.textContent = 'Could not load stored data: ' + ((e && (e.code || e.message)) || _dsStr(e));
       });
     };
 
     runBtn.onclick = function () {
+      if (isProbeBlockedForLearner()) {
+        out.textContent = 'Device storage review is disabled in student mode.';
+        return;
+      }
       runBtn.disabled = true;
       runBtn.textContent = '… probing (up to ~15s)';
       out.textContent = '';
@@ -1736,7 +1832,7 @@
           '(popup needs the click you just made; iframe needs no gesture — ' +
           'if the iframe persists, features can save silently)';
       }, function (err) {
-        out.textContent = 'Probe failed: ' + (err && (err.code || err.message) || err);
+        out.textContent = 'Probe failed: ' + ((err && (err.code || err.message)) || _dsStr(err));
       }).then(function () {
         runBtn.disabled = false;
         runBtn.textContent = '▶ Run probe again';
@@ -1753,7 +1849,7 @@
   };
 
   window.alloDeviceStorage = api;
-  window.AlloModules = window.AlloModules || {};
+  if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
   window.AlloModules.DeviceStorageModule = true;
-  console.log('[DeviceStorage] adapter registered (backend: lazy)');
+  try { if (typeof console !== 'undefined' && console && typeof console.log === 'function') console.log('[DeviceStorage] adapter registered (backend: lazy)'); } catch (_) {}
 })();

@@ -27,6 +27,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.FabStack) {
     console.log('[CDN] FabStack already loaded, skipping');
     return;

@@ -60,8 +60,7 @@
       "schoolbox-lan": "Preferred classroom path. Use the teacher Desktop runtime and LAN Share listener on the local network; Firestore live-session creation is blocked from Desktop.",
       "local-preview": "Single-device preview only; students on other devices cannot join.",
       "district-server": "Reserved for a future district-controlled server command center.",
-      "byo-firebase": "Explicit opt-in for a school or district-owned Firebase project.",
-      "alloflow-demo-cloud": "Explicit demo-only cloud mode; not intended for real student data."
+      "byo-firebase": "Explicit opt-in for a school or district-owned Firebase project."
     },
     "lanBridge": {
       "status": "hardened-foundation",

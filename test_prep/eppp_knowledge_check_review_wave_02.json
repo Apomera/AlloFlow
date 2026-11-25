@@ -118,7 +118,7 @@
         "Decline to use the father's repair shop under rural practice standards because any financial transaction with a client's parent constitutes an unethical dual relationship."
       ],
       "answerIndex": 2,
-      "rationale": "Standard 3.05 does not make every overlapping role unethical and does not use ?unavoidable? as a complete safe harbor. The psychologist should assess prospectively whether this limited business contact could reasonably impair objectivity, competence, or effectiveness or create exploitation or harm, while considering the child, caregiver, local alternatives, confidentiality, power, and foreseeable future contact. If the risks are acceptably low, the transaction may be permissible with thoughtful boundary management; if material risks emerge, the psychologist should seek another arrangement. A promise not to discuss therapy does not eliminate every risk.",
+      "rationale": "Standard 3.05 does not make every overlapping role unethical and does not use “unavoidable” as a complete safe harbor. The psychologist should assess prospectively whether this limited business contact could reasonably impair objectivity, competence, or effectiveness or create exploitation or harm, while considering the child, caregiver, local alternatives, confidentiality, power, and foreseeable future contact. If the risks are acceptably low, the transaction may be permissible with thoughtful boundary management; if material risks emerge, the psychologist should seek another arrangement. A promise not to discuss therapy does not eliminate every risk.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.apa.org/ethics/code"
@@ -131,7 +131,7 @@
           "whyReputable": "Official APA Ethics Code containing Standards 3.05, 9.04, and 9.11 on multiple relationships, test-data release, and protection of test materials."
         }
       ],
-      "reviewNote": "Removed the implication that ?unavoidable? is the Ethics Code test and added prospective risk assessment and boundary management.",
+      "reviewNote": "Removed the implication that “unavoidable” is the Ethics Code test and added prospective risk assessment and boundary management.",
       "reviewDate": "2026-07-23",
       "reviewMode": "claim-level-source-review-and-editorial-rewrite",
       "reviewWave": "knowledge-check-wave-02",
@@ -254,7 +254,7 @@
           "whyReputable": "Current NIH guidance explaining that depression is treatable, can affect cognition, may coexist with dementia, and requires medical and psychological evaluation."
         }
       ],
-      "reviewNote": "Rejected both ?pseudodementia? certainty and age-based dementia assumptions in favor of a broad, function-centered evaluation.",
+      "reviewNote": "Rejected both “pseudodementia” certainty and age-based dementia assumptions in favor of a broad, function-centered evaluation.",
       "reviewDate": "2026-07-23",
       "reviewMode": "claim-level-source-review-and-editorial-rewrite",
       "reviewWave": "knowledge-check-wave-02",
@@ -527,7 +527,7 @@
         "Whenever an adolescent selects an exploratory or socially unconventional option that caregivers or adult authorities judge imprudent"
       ],
       "answerIndex": 2,
-      "rationale": "A qualified dual-systems account predicts larger adolescent-adult differences most often in ?hot? contexts involving immediate rewards, emotional arousal, stress, fatigue, or salient peers, rather than in calm settings that allow deliberation. The model describes average developmental tendencies and interacting systems; it does not say every adolescent lacks reasoning capacity, that the brain becomes adult on a particular birthday, or that any choice an adult dislikes is immature. Individual development, experience, culture, opportunity, supportive relationships, and the direction of peer influence all matter, and adolescent exploration can be adaptive.",
+      "rationale": "A qualified dual-systems account predicts larger adolescent-adult differences most often in “hot” contexts involving immediate rewards, emotional arousal, stress, fatigue, or salient peers, rather than in calm settings that allow deliberation. The model describes average developmental tendencies and interacting systems; it does not say every adolescent lacks reasoning capacity, that the brain becomes adult on a particular birthday, or that any choice an adult dislikes is immature. Individual development, experience, culture, opportunity, supportive relationships, and the direction of peer influence all matter, and adolescent exploration can be adaptive.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.nationalacademies.org/read/25388/chapter/2",
@@ -602,7 +602,7 @@
         "History — unrelated life events occurring between therapy sessions distort posttreatment improvement ratings"
       ],
       "answerIndex": 1,
-      "rationale": "The design is especially vulnerable to experimenter expectancy and biased outcome measurement because the same person strongly favors the treatment, delivers it, knows the condition, and makes a judgment-based improvement rating. Beliefs can influence treatment delivery, interactions, thresholds, and interpretation even without deliberate distortion. Psychotherapy trials often cannot blind therapists or participants, so ?double-blind? is not a universal solution. Important safeguards include independent assessors masked to condition where feasible, standardized outcomes, preregistered scoring and time points, fidelity monitoring, balanced expertise, transparent allegiance disclosure, and sensitivity analyses.",
+      "rationale": "The design is especially vulnerable to experimenter expectancy and biased outcome measurement because the same person strongly favors the treatment, delivers it, knows the condition, and makes a judgment-based improvement rating. Beliefs can influence treatment delivery, interactions, thresholds, and interpretation even without deliberate distortion. Psychotherapy trials often cannot blind therapists or participants, so “double-blind” is not a universal solution. Important safeguards include independent assessors masked to condition where feasible, standardized outcomes, preregistered scoring and time points, fidelity monitoring, balanced expertise, transparent allegiance disclosure, and sensitivity analyses.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08",

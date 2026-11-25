@@ -86,6 +86,24 @@ function wcopPost(url, body) {
   });
 }
 
+function wcopSafeJsonParse(raw, maxLen) {
+  if (typeof raw !== 'string') return null;
+  if (maxLen && raw.length > maxLen) return null;
+  try {
+    return JSON.parse(raw, (key, val) => (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val);
+  } catch (_) {
+    return null;
+  }
+}
+
+function wcopIsBlockedKey(key) {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype';
+}
+
+function wcopOwn(obj, key) {
+  return !!obj && typeof key === 'string' && !wcopIsBlockedKey(key) && Object.prototype.hasOwnProperty.call(obj, key);
+}
+
 function wcopLoadConnection() {
   try {
     const raw = window.localStorage.getItem(WCOP_STORE_KEY);
@@ -97,8 +115,15 @@ function wcopLoadConnection() {
     try {
       token = window.sessionStorage ? (window.sessionStorage.getItem(WCOP_TOKEN_KEY) || '') : '';
     } catch (err) { token = ''; }
-    const saved = JSON.parse(raw);
-    const execUrl = saved && typeof saved.execUrl === 'string' ? saved.execUrl : '';
+    const saved = wcopSafeJsonParse(raw, 65536);
+    let execUrl = saved && typeof saved.execUrl === 'string' ? saved.execUrl : '';
+    if (execUrl) {
+      const coreMod = wcopCore();
+      if (coreMod && typeof coreMod.validateExecUrl === 'function') {
+        const checked = coreMod.validateExecUrl(execUrl);
+        execUrl = checked && checked.ok ? checked.value : '';
+      }
+    }
     const owner = saved && typeof saved.owner === 'string' ? saved.owner : '';
     const legacyToken = saved && typeof saved.token === 'string' ? saved.token : '';
     if (!token && legacyToken) {
@@ -137,12 +162,18 @@ function wcopScenarios() {
   return (window.AlloModules && window.AlloModules.WalkthroughCopilotScenarios) || null;
 }
 
+let _wcopAnnounceTimer = 0;
 function wcopAnnounce(message) {
   try {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
     const region = document.getElementById('allo-live-wcop');
-    if (!region) return;
+    if (!region || !region.isConnected) return;
+    if (_wcopAnnounceTimer) window.clearTimeout(_wcopAnnounceTimer);
     region.textContent = '';
-    window.setTimeout(() => { region.textContent = message; }, 30);
+    _wcopAnnounceTimer = window.setTimeout(() => {
+      _wcopAnnounceTimer = 0;
+      if (region.isConnected) region.textContent = message;
+    }, 30);
   } catch (err) { /* announcing must never break the panel */ }
 }
 
@@ -554,9 +585,11 @@ function WalkthroughCopilotPanel(props) {
   }, []);
 
   const componentLabels = React.useMemo(() => {
-    const map = {};
+    const map = Object.create(null);
     if (!fixtures || !fixtures.PORTLAND_FRAMEWORK) return map;
-    fixtures.PORTLAND_FRAMEWORK.components.forEach((c) => { map[c.id] = c.id + ' ' + c.label; });
+    fixtures.PORTLAND_FRAMEWORK.components.forEach((c) => {
+      if (c && typeof c.id === 'string' && !wcopIsBlockedKey(c.id)) map[c.id] = c.id + ' ' + c.label;
+    });
     return map;
   }, [fixtures]);
 
@@ -616,31 +649,33 @@ function WalkthroughCopilotPanel(props) {
       if (!isTopTrap()) return;
       if (event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof closeRef.current === 'function') closeRef.current();
         return;
       }
       if (event.key !== 'Tab') return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) {
         event.preventDefault();
-        dialog.focus();
+        try { dialog.focus(); } catch (_) {}
         return;
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (!dialog.contains(document.activeElement)) {
         event.preventDefault();
-        (event.shiftKey ? last : first).focus();
+        try { (event.shiftKey ? last : first).focus(); } catch (_) {}
         return;
       }
       if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
         event.preventDefault();
-        last.focus();
+        try { last.focus(); } catch (_) {}
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        first.focus();
+        try { first.focus(); } catch (_) {}
       }
     };
     document.addEventListener('keydown', onKeyDown);
@@ -724,14 +759,15 @@ function WalkthroughCopilotPanel(props) {
   }
 
   function lockAndAnalyze() {
+    if (!scenario) return;
     const created = core.createDraft({
       framework: fixtures.PORTLAND_FRAMEWORK,
       sourceNotes: notes,
       collectionType: 'practice'
     });
-    if (!created.ok) { setProblem(created.errors[0].message); return; }
+    if (!created.ok) { setProblem(created.errors?.[0]?.message || 'Could not create draft.'); return; }
     const analyzed = core.validateSuggestions(created.value, scenario.candidates);
-    if (!analyzed.ok) { setProblem(analyzed.errors[0].message); return; }
+    if (!analyzed.ok) { setProblem(analyzed.errors?.[0]?.message || 'Could not validate suggestions.'); return; }
     setProblem('');
     setDraft(analyzed.value);
     setCopiedMap({});
@@ -741,7 +777,7 @@ function WalkthroughCopilotPanel(props) {
 
   function decide(id, decision, text) {
     const report = core.decideSuggestion(draft, id, decision, text);
-    if (!report.ok) { setProblem(report.errors[0].message); return; }
+    if (!report.ok) { setProblem(report.errors?.[0]?.message || 'Could not record decision.'); return; }
     setProblem('');
     setDraft(report.value);
     setEditingId(null);
@@ -758,20 +794,24 @@ function WalkthroughCopilotPanel(props) {
   }
 
   function setDisclosureText(value) {
-    const next = JSON.parse(JSON.stringify(draft));
+    if (!draft) return;
+    const next = wcopSafeJsonParse(JSON.stringify(draft));
+    if (!next || !next.disclosure) return;
     next.disclosure.text = value;
     setDraft(next);
   }
 
   function toggleFormative() {
-    const next = JSON.parse(JSON.stringify(draft));
+    if (!draft) return;
+    const next = wcopSafeJsonParse(JSON.stringify(draft));
+    if (!next || !next.disclosure) return;
     next.disclosure.includeFormativeSentence = !next.disclosure.includeFormativeSentence;
     setDraft(next);
   }
 
   function compare() {
     const report = core.compareToReference(scenario, draft);
-    if (!report.ok) { setProblem(report.errors[0].message); return; }
+    if (!report.ok) { setProblem(report.errors?.[0]?.message || 'Could not compare to reference.'); return; }
     setProblem('');
     setComparison(report.value);
     wcopAnnounce('Comparison ready. ' + report.value.agreements.length + ' agreements, '
@@ -783,7 +823,7 @@ function WalkthroughCopilotPanel(props) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(
           () => {
-            if (mountedRef.current && what) setCopiedMap((prev) => Object.assign({}, prev, { [what]: true }));
+            if (mountedRef.current && what && !wcopIsBlockedKey(what)) setCopiedMap((prev) => Object.assign({}, prev, { [what]: true }));
             wcopAnnounce(what + ' copied.');
           },
           () => wcopAnnounce('Could not copy. Select the text and copy manually.')
@@ -971,6 +1011,7 @@ function WalkthroughCopilotPanel(props) {
     }
     setArmClearReal(false);
     connEpochRef.current += 1;
+    deliveringRef.current = false;
     core.clearDraft(draft);
     setDraft(null);
     setScenario(null);
@@ -1010,12 +1051,12 @@ function WalkthroughCopilotPanel(props) {
       + (liveMode ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-violet-300 bg-violet-50 text-violet-800')
   },
     React.createElement('span', null, liveMode ? 'Real observation' : 'Practice mode'),
-    React.createElement('span', { className: 'opacity-60 font-normal' }, '|'),
+    React.createElement('span', { className: 'opacity-60 font-normal', 'aria-hidden': 'true' }, '|'),
     React.createElement('span', { className: 'font-normal' },
       liveMode
         ? 'Affirmed by ' + affirmedBy + ' for this session only.'
         : 'Synthetic practice only. Nothing here is a record of a real observation.'),
-    React.createElement('span', { className: 'opacity-60 font-normal' }, '|'),
+    React.createElement('span', { className: 'opacity-60 font-normal', 'aria-hidden': 'true' }, '|'),
     React.createElement('span', { className: 'font-normal' }, 'Nothing is saved. Closing discards everything.')
   );
 
@@ -1060,7 +1101,7 @@ function WalkthroughCopilotPanel(props) {
       checks: affirmChecks,
       name: affirmName,
       message: affirmMessage,
-      onCheck: (key, value) => setAffirmChecks((current) => Object.assign({}, current, { [key]: value })),
+      onCheck: (key, value) => { if (!wcopIsBlockedKey(key)) setAffirmChecks((current) => Object.assign({}, current, { [key]: value })); },
       onName: setAffirmName,
       onAffirm: affirmApproval,
       onCancel: () => { setAffirmMessage(''); setStage('capture'); }
@@ -1301,7 +1342,7 @@ function WalkthroughCopilotPanel(props) {
   } else if (stage === 'copy' && draft) {
     const output = core.buildFormOutput(draft, fixtures.SAMPLE_FIELD_MAP);
     const copyFields = output.ok ? output.value.contextFields.concat(output.value.fields) : [];
-    const copiedFieldCount = copyFields.filter((f) => !!copiedMap[f.key]).length;
+    const copiedFieldCount = copyFields.filter((f) => !!(wcopOwn(copiedMap, f.key) && copiedMap[f.key])).length;
     bodyNode = output.ok
       ? React.createElement('div', null,
         React.createElement('h3', { className: 'font-bold text-slate-800 mb-1' }, 'Copy into your walkthrough form'),
@@ -1314,15 +1355,15 @@ function WalkthroughCopilotPanel(props) {
             'data-wcop-copy-all': 'true',
             onClick: () => copyText(output.value.copyAll, 'All fields'),
             className: 'min-h-11 px-4 py-2 rounded text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 '
-              + (copiedMap['All fields'] ? 'bg-emerald-700 text-white' : 'bg-teal-700 text-white hover:bg-teal-800')
-          }, copiedMap['All fields'] ? 'Copy everything · ✓ Copied' : 'Copy everything'),
+              + (wcopOwn(copiedMap, 'All fields') && copiedMap['All fields'] ? 'bg-emerald-700 text-white' : 'bg-teal-700 text-white hover:bg-teal-800')
+          }, wcopOwn(copiedMap, 'All fields') && copiedMap['All fields'] ? 'Copy everything · ✓ Copied' : 'Copy everything'),
           copiedFieldCount > 0 ? React.createElement('span', {
             'data-wcop-copied-progress': 'true',
             className: 'rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 tabular-nums'
           }, copiedFieldCount + '/' + copyFields.length + ' fields copied') : null
         ),
         copyFields.map((f, i) => {
-          const isCopied = !!copiedMap[f.key];
+          const isCopied = !!(wcopOwn(copiedMap, f.key) && copiedMap[f.key]);
           return React.createElement('div', {
             key: 'f' + i,
             className: 'rounded border p-3 mb-2 '
@@ -1361,7 +1402,8 @@ function WalkthroughCopilotPanel(props) {
                   'Teacher school email'),
                 React.createElement('input', {
                   id: 'wcop-send-to',
-                  type: 'text',
+                  type: 'email',
+                  autoComplete: 'email',
                   className: 'w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600',
                   placeholder: t('walkthrough_copilot.email_placeholder', 'teacher@yourschool.org'),
                   value: sendTo,
@@ -1384,7 +1426,7 @@ function WalkthroughCopilotPanel(props) {
             + (armClearReal ? 'border-rose-600 bg-rose-50 text-rose-800 font-semibold' : 'border-slate-300')
         }, armClearReal ? 'Confirm clear and start over' : 'Clear and start over')
       )
-      : React.createElement(WcopFlag, { tone: 'stop' }, output.errors[0].message);
+      : React.createElement(WcopFlag, { tone: 'stop' }, output.errors?.[0]?.message || 'Could not build form output.');
   }
 
   const panelContent = React.createElement('div', { className: 'p-4', 'data-testid': 'wcop-panel' },

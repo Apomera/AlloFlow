@@ -28,12 +28,20 @@
   }
   function _isAiTextBlocked(callGemini) {
     if (callGemini && callGemini._alloQrBlocked) return true;
-    if (window._alloQrBlocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloOfflineOnly === true) return true;
+    if (window._alloQrBlocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloOfflineOnly === true || window.hideStudentAiFeatures === true) return true;
     if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
+    try {
+      var sp = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (sp && (sp.aiDisabled === true || sp.aiEnabled === false || (typeof sp.isStudentAiDisabled === 'function' && sp.isStudentAiDisabled()) || (typeof sp.hideStudentAiFeatures === 'function' && sp.hideStudentAiFeatures()))) return true;
+    } catch (_) { return true; }
     if (typeof window.__alloAiUsable === 'function') {
       try { if (!window.__alloAiUsable('text', callGemini)) return true; } catch (_) { return true; }
     }
     return false;
+  }
+  function _safeBlockQty(block) {
+    var n = Number(block && block.quantity);
+    return Number.isFinite(n) ? Math.max(0, Math.min(30, Math.floor(n))) : 0;
   }
 
   var _lazyIcon = function (name) {
@@ -62,7 +70,7 @@
     var setStemLabCreateMode = props.setStemLabCreateMode || function () {};
     var showAssessmentBuilder = props.showAssessmentBuilder || false;
     var setShowAssessmentBuilder = props.setShowAssessmentBuilder || function () {};
-    var assessmentBlocks = Array.isArray(props.assessmentBlocks) ? props.assessmentBlocks : [];
+    var assessmentBlocks = Array.isArray(props.assessmentBlocks) ? props.assessmentBlocks.filter(function (b) { return b && typeof b === 'object'; }) : [];
     var assessmentRunRef = React.useRef(false);
     var assessmentCacheRef = React.useRef(null);
     var assessmentMountedRef = React.useRef(true);
@@ -204,25 +212,42 @@
     // Escape, restore focus on unmount.
     var dialogRef = React.useRef(null);
     var closeBtnRef = React.useRef(null);
+    var backdropDownRef = React.useRef(false);
     React.useEffect(function () {
       var previouslyFocused = document.activeElement;
-      if (closeBtnRef.current) closeBtnRef.current.focus();
+      if (closeBtnRef.current) { try { closeBtnRef.current.focus(); } catch (_) {} }
       function onKeyDown(e) {
         // MathLive owns keyboard events in its nested dialog, including the
         // Escape event that removes that dialog during capture.
-        if (e.defaultPrevented || (e.target instanceof Node && dialogRef.current && !dialogRef.current.contains(e.target))) return;
+        if (e.defaultPrevented || (typeof Node === 'function' && e.target instanceof Node && dialogRef.current && !dialogRef.current.contains(e.target))) return;
+        if (e.isComposing || e.keyCode === 229) return;
+        if (e.key === 'Escape' && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) return;
         if (e.key === 'Escape') { e.preventDefault(); onClose(); return; }
-        if (e.key !== 'Tab' || !dialogRef.current) return;
-        var focusables = dialogRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey || !dialogRef.current) return;
+        var focusables = Array.prototype.filter.call(
+          dialogRef.current.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'),
+          function (el) {
+            if (el.closest && el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+            if (typeof el.getClientRects === 'function' && el.getClientRects().length === 0) return false;
+            return true;
+          }
+        );
         if (!focusables.length) return;
         var first = focusables[0], last = focusables[focusables.length - 1];
-        if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
-        else if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        if (!dialogRef.current.contains(document.activeElement) || document.activeElement === dialogRef.current) {
+          e.preventDefault();
+          try { (e.shiftKey ? last : first).focus(); } catch (_) {}
+          return;
+        }
+        if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); try { last.focus(); } catch (_) {} } }
+        else if (document.activeElement === last) { e.preventDefault(); try { first.focus(); } catch (_) {} }
       }
       document.addEventListener('keydown', onKeyDown);
       return function () {
         document.removeEventListener('keydown', onKeyDown);
-        if (previouslyFocused && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
+        if (previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+          try { previouslyFocused.focus(); } catch (_) {}
+        }
       };
     }, []);
 
@@ -241,7 +266,7 @@
       && assessmentResult.sections.every(isPreparedForReview)
       && Array.isArray(assessmentResult.content?.problems)
       && assessmentResult.content.problems.some(problem => problem._verification?.reviewRequired === true);
-    var totalAssessmentQty = assessmentBlocks.reduce((sum, block) => sum + (Number(block?.quantity) || 0), 0);
+    var totalAssessmentQty = assessmentBlocks.reduce((sum, block) => sum + _safeBlockQty(block), 0);
     var assessmentGenerateLabel = assessmentReviewOnly ? 'Prepared - open to review'
       : (assessmentBusy ? 'Preparing (' : assessmentMatchesSettings && assessmentResult.content?.preparation?.status === 'partial'
         ? 'Retry incomplete sections (' : 'Generate All (')
@@ -386,7 +411,7 @@
             nb[idx] = { ...nb[idx], quantity: Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)) };
             setAssessmentBlocks(nb);
           },
-          className: "w-16 px-2 py-1.5 min-h-[44px] text-sm font-mono border border-slate-400 rounded-lg text-center",
+          className: "w-16 px-2 py-1.5 min-h-[44px] text-sm font-mono border border-slate-400 rounded-lg text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
           "aria-label": "Quantity"
         }), block.type === 'fluency' && /*#__PURE__*/React.createElement("span", {
           className: "px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-full"
@@ -395,7 +420,7 @@
         }, "\uD83E\uDDF1 Hands-on")), block.type === 'manipulative' && React.createElement('select', {
           value: block.manipulativeTool || '',
           'aria-label': 'Block ' + (idx + 1) + ' manipulative',
-          className: 'w-full min-h-[44px] px-3 py-2 text-sm border border-slate-400 rounded-lg',
+          className: 'w-full min-h-[44px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600',
           onChange: e => setAssessmentBlocks(assessmentBlocks.map((item, i) => i === idx ? { ...item, manipulativeTool: e.target.value } : item))
         }, React.createElement('option', {value:''}, 'Choose the best manipulative'),
           (window.AlloModules?.MathManipulativeGrader?.activityOptions || []).map(option => React.createElement('option', {key:option.id,value:option.id}, option.label))), /*#__PURE__*/React.createElement("input", {
@@ -485,7 +510,7 @@
             }
             if (assessmentRunRef.current) return;
             if (_isAiTextBlocked(callGemini)) { addToast('AI text generation is disabled or locked right now.', 'warning'); return; }
-            if (nonFluencyBlocks.reduce((sum, block) => sum + Number(block.quantity || 0), 0) > 200) { addToast('An assessment can contain up to 200 problems. Reduce the section quantities and try again.', 'warning'); return; }
+            if (nonFluencyBlocks.reduce((sum, block) => sum + _safeBlockQty(block), 0) > 200) { addToast('An assessment can contain up to 200 problems. Reduce the section quantities and try again.', 'warning'); return; }
             const helpers = window.AlloModules && window.AlloModules.GenerationHelpers;
             if (!helpers || typeof helpers.generateMathAssessment !== 'function') { addToast('Math preparation is still loading. Please try again.', 'warning'); return; }
             assessmentRunRef.current = true;
@@ -507,10 +532,14 @@
               setAssessmentResult(result);
               if (Array.isArray(result.content.problems) && result.content.problems.length) {
                 const item = { id: result.id, type: 'math', data: result.content, title: result.content.title, meta: (mathSubject || 'Math') + ' - Assessment', timestamp: new Date(), config: { grade: gradeLevel, language: props.leveledTextLanguage || 'English' } };
-                setHistory(previous => previous.some(entry => entry.id === item.id) ? previous.map(entry => entry.id === item.id ? item : entry) : [...previous, item]);
+                setHistory(previous => {
+                  const list = Array.isArray(previous) ? previous : [];
+                  return list.some(entry => entry && entry.id === item.id) ? list.map(entry => entry && entry.id === item.id ? item : entry) : [...list, item];
+                });
               }
               const p = result.content.preparation;
-              addToast(p.requested + ' requested, ' + (p.prepared ?? p.accepted) + ' prepared, ' + (p.verified || 0) + ' answer calculations verified, ' + p.reviewRequired + ' need teacher review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.verificationStatus === 'verified' ? 'success' : 'warning');
+              const missingCount = Math.max(0, (Number(p.requested) || 0) - (Number(p.accepted) || 0));
+              addToast(p.requested + ' requested, ' + (p.prepared ?? p.accepted) + ' prepared, ' + (p.verified || 0) + ' answer calculations verified, ' + p.reviewRequired + ' need teacher review; ' + missingCount + ' missing.', p.verificationStatus === 'verified' ? 'success' : 'warning');
             }).catch(error => { if (assessmentMountedRef.current) addToast('Assessment preparation failed. Please try again.', 'error'); })
               .finally(() => { assessmentRunRef.current = false; if (assessmentMountedRef.current) setAssessmentBusy(false); });
           },
@@ -533,11 +562,11 @@
                   ...b
                 })),
                 subject: mathSubject || 'General Math',
-                totalProblems: assessmentBlocks.reduce((s, b) => s + (Number(b?.quantity) || 0), 0),
+                totalProblems: assessmentBlocks.reduce((s, b) => s + _safeBlockQty(b), 0),
                 results: null
               }
             };
-            setHistory(prev => [...prev, stemAssessment]);
+            setHistory(prev => [...(Array.isArray(prev) ? prev : []), stemAssessment]);
             addToast('Assessment plan saved to Resources (' + assessmentBlocks.length + ' blocks). Generated questions are saved separately.', 'success');
           },
           className: "min-h-[44px] py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-800 hover:to-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
@@ -639,11 +668,12 @@
           // The visible "Quantity:" caption beside this slider is a <span>, which
           // names nothing. An unnamed range input announces only a bare number.
           "aria-label": "Quantity",
-          className: "flex-1 h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+          className: "flex-1 min-h-[44px] h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
         }), /*#__PURE__*/React.createElement("span", {
           className: "text-sm font-bold text-indigo-700 w-8 text-center"
         }, mathQuantity))), /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": tr("math.generate_problems_aria", "Generate math problems"),
           onClick: () => {
+            if (_isAiTextBlocked(callGemini)) { addToast('AI text generation is disabled or locked right now.', 'warning'); return; }
             // Resolve the mode ONCE and hand it to handleGenerateMath as
             // modeOverride. This button used to stage the mode and navigate to
             // the math view without ever generating — the teacher had to find
@@ -690,20 +720,20 @@
           // @tool volume
           id: 'volume',
           icon: '📦',
-          label: t('stem.assessment.volume_explorer')
+          label: t('stem.assessment.volume_explorer') || 'Volume Explorer'
         }, {
           id: 'numberline',
           icon: '📏',
-          label: t('stem.assessment.number_line')
+          label: t('stem.assessment.number_line') || 'Number Line'
         }, {
           // @tool areamodel
           id: 'areamodel',
           icon: '🟧',
-          label: t('stem.assessment.area_model')
+          label: t('stem.assessment.area_model') || 'Area Model'
         }, {
           id: 'fractionViz',
           icon: '🍕',
-          label: t('stem.assessment.fraction_lab')
+          label: t('stem.assessment.fraction_lab') || 'Fraction Lab'
         }].map(tool => /*#__PURE__*/React.createElement("button", { type: "button", "aria-label": "Open " + tool.label,
           key: tool.id,
           onClick: () => {
@@ -718,7 +748,12 @@
 
     return React.createElement("div", {
       className: "fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4",
-      onClick: function (e) { if (e.target === e.currentTarget) onClose(); }
+      onMouseDown: function (e) { backdropDownRef.current = e.target === e.currentTarget; },
+      onClick: function (e) {
+        var startedOnBackdrop = backdropDownRef.current;
+        backdropDownRef.current = false;
+        if (startedOnBackdrop && e.target === e.currentTarget) onClose();
+      }
     }, React.createElement("div", {
       ref: dialogRef,
       role: "dialog",

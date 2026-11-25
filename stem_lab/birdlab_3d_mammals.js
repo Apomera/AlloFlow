@@ -5,12 +5,17 @@
  */
 (function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
   var TAU = Math.PI * 2, TICK = 1 / 120;
   function clamp(value, lo, hi) { return Math.max(lo, Math.min(hi, value)); }
   function smooth(value) { value = clamp(value, 0, 1); return value * value * value * (10 + value * (-15 + 6 * value)); }
   function angle(value) { return Math.atan2(Math.sin(value), Math.cos(value)); }
+  function hasObserverPos(observer) {
+    return !!(observer && observer.position && Number.isFinite(observer.position.x) && Number.isFinite(observer.position.z));
+  }
 
   function create(THREE, scene, options) {
+    if (!THREE || !THREE.Group) throw new Error('BirdLab3DMammals.create requires THREE.');
     options = options || {};
     var high = options.quality !== 'low', resources = [], disposed = false, mode = 'guided';
     var highContrast = !!options.highContrast;
@@ -26,7 +31,8 @@
     var furRimUniform = { value: highContrast ? 0.0 : 1.0 };
     var height = typeof options.groundHeight === 'function' ? options.groundHeight : function () { return 0; };
     var blocked = typeof options.isBlocked === 'function' ? options.isBlocked : function () { return false; };
-    var root = new THREE.Group(); root.name = 'birdlab-woodland-mammals'; root.visible = false; scene.add(root);
+    var root = new THREE.Group(); root.name = 'birdlab-woodland-mammals'; root.visible = false;
+    if (scene && typeof scene.add === 'function') scene.add(root);
     var animal = new THREE.Group(); animal.name = 'woodland-gray-squirrel'; root.add(animal);
     function keep(value) { resources.push(value); return value; }
     function color(value) { return new THREE.Color(value).convertSRGBToLinear(); }
@@ -358,7 +364,7 @@
       return true;
     }
     function avoidsObserver(toX, toZ, observer) {
-      if (!observer || !observer.position) return true;
+      if (!hasObserverPos(observer)) return true;
       var dx = toX - x, dz = toZ - z, lengthSq = dx * dx + dz * dz;
       var projection = clamp(((observer.position.x - x) * dx + (observer.position.z - z) * dz) / Math.max(lengthSq, 1e-9), 0, 1);
       var closest = Math.hypot(x + dx * projection - observer.position.x, z + dz * projection - observer.position.z);
@@ -371,7 +377,8 @@
       if (kind === 'handle') seedConsumed = false;
     }
     function chooseRoute(escape, observer) {
-      var awayX = observer ? x - observer.position.x : Math.sin(heading), awayZ = observer ? z - observer.position.z : Math.cos(heading);
+      var validObserver = hasObserverPos(observer);
+      var awayX = validObserver ? x - observer.position.x : Math.sin(heading), awayZ = validObserver ? z - observer.position.z : Math.cos(heading);
       var desired = escape ? Math.atan2(awayX, awayZ) : heading + (random() - .5) * 2.5;
       for (var i = 0; i < 12; i++) {
         var routeHeading = desired + (random() - .5) * (escape ? 2.4 : 3.6);
@@ -394,7 +401,7 @@
     }
     function select(observer) {
       if (cooldown > 0) { begin('recover', Math.min(2.5, cooldown)); return; }
-      if (alertness > .72 && observer) { chooseRoute(true, observer); return; }
+      if (alertness > .72 && hasObserverPos(observer)) { chooseRoute(true, observer); return; }
       if (alertness > .30) { begin('watch', 1.2 + random() * 1.2); return; }
       var choice = random();
       if (choice < .37) chooseRoute(false, observer);
@@ -419,7 +426,7 @@
     }
     function alert(observer, dt) {
       var targetAlert = 0; observerRange = null;
-      if (observer && observer.position) {
+      if (hasObserverPos(observer)) {
         var dx = observer.position.x - x, dz = observer.position.z - z;
         observerRange = Math.hypot(dx, dz); observerYaw = Math.atan2(dx, dz);
         var comfort = observer.crouching ? 1.35 : 1.9;
@@ -434,7 +441,7 @@
       clock += dt; cooldown = Math.max(0, cooldown - dt); alert(observer, dt);
       // Finish moving and settle both paws before selecting another destination.
       // A resting animal first raises its head instead of teleporting into flight.
-      if (action.kind !== 'scurry' && action.kind !== 'escape' && cooldown === 0 && alertness > .72 && observer) {
+      if (action.kind !== 'scurry' && action.kind !== 'escape' && cooldown === 0 && alertness > .72 && hasObserverPos(observer)) {
         if (upright > .22 || action.kind === 'watch') chooseRoute(true, observer);
         else if (action.kind !== 'watch') begin('watch', .48);
       } else if ((action.kind === 'search' || action.kind === 'handle') && alertness > .33 && cooldown === 0) begin('watch', 1.3);
@@ -656,7 +663,7 @@
             var remainingStride = Math.min((1 - phasePart) * stride, Math.max(0, action.distance - gaitDistance));
             footToWorld(localX, localZ + stride * duty * (leg.front ? .12 : .48) + remainingStride, leg.swingTo);
           }
-          var swing = clamp((phasePart - leg.releasePhase) / (1 - leg.releasePhase), 0, 1);
+          var swing = clamp((phasePart - leg.releasePhase) / Math.max(1e-6, 1 - leg.releasePhase), 0, 1);
           var recovery = swing;
           // The fourth-power arch leaves the ground and arrives with zero
           // vertical velocity and acceleration. A restrained toe release uses
@@ -826,11 +833,13 @@
       return out ? out.copy(focus) : focus.clone();
     }
     function dispose() {
-      if (disposed) return; disposed = true; scene.remove(root);
+      if (disposed) return; disposed = true;
+      if (root.parent) root.parent.remove(root);
+      else if (scene && typeof scene.remove === 'function') scene.remove(root);
       resources.forEach(function (resource) { resource.dispose(); }); resources.length = 0;
     }
     reset();
     return { root: root, setMode: setMode, update: update, snapshot: snapshot, getFocus: getFocus, dispose: dispose };
   }
   global.BirdLab3DMammals = { create: create };
-})(window);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

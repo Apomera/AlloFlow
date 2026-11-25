@@ -87,6 +87,17 @@ function TimelineView(props) {
   const [studyMaskMode, setStudyMaskMode] = React.useState('none'); // 'none' | 'labels' | 'events'
   const [revealedSteps, setRevealedSteps] = React.useState(() => new Set());
   const [speakingSequence, setSpeakingSequence] = React.useState(false);
+  const [timelineActionNotice, setTimelineActionNotice] = React.useState('');
+  const announceTimeline = msg => {
+    const clean = String(msg || '').trim();
+    if (!clean) return;
+    setTimelineActionNotice(clean);
+    if (typeof props.announceToSR === 'function') {
+      try {
+        props.announceToSR(clean);
+      } catch (_) {}
+    }
+  };
   const timelineMountedRef = React.useRef(true);
   const speakingSequenceRef = React.useRef(false);
   const seqSpeechListenerRef = React.useRef(null);
@@ -310,8 +321,9 @@ function TimelineView(props) {
       control: active.dataset.timelineMove
     } : null;
     props.handleTimelineMove(from, to);
+    announceTimeline(_timelineReviewLabel(t, 'timeline.moved_sr', 'Moved item {from} to position {to}.').replace('{from}', String(from + 1)).replace('{to}', String(to + 1)));
   };
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     const request = timelineMoveFocus.current;
     if (!request) return;
     if (generatedContent?.id !== request.resourceId || !isEditingTimeline) {
@@ -357,7 +369,9 @@ function TimelineView(props) {
   var toggleRevealStep = function (idx) {
     setRevealedSteps(function (prev) {
       var next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);else next.add(idx);
+      var revealing = !next.has(idx);
+      if (revealing) next.add(idx);else next.delete(idx);
+      announceTimeline(revealing ? _timelineReviewLabel(t, 'timeline.step_revealed_sr', 'Step {n} revealed.').replace('{n}', String(idx + 1)) : _timelineReviewLabel(t, 'timeline.step_hidden_sr', 'Step {n} hidden.').replace('{n}', String(idx + 1)));
       return next;
     });
   };
@@ -445,13 +459,14 @@ function TimelineView(props) {
   });
   return /*#__PURE__*/React.createElement("div", {
     ref: timelineEditorRef,
+    "data-timeline-view": "true",
     className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("style", null, '[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible{outline:3px solid #4338ca;outline-offset:2px}@media(max-width:639px){[data-timeline-move-controls]{flex-direction:row;margin-top:0}[data-timeline-fields]{flex-basis:100%;order:1}}@media(forced-colors:active){[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible{outline-color:Highlight}}'), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("style", null, '[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible,[data-timeline-view="true"] button:focus-visible,[data-timeline-view="true"] input:focus-visible,[data-timeline-view="true"] summary:focus-visible{outline:3px solid #4338ca;outline-offset:2px}[data-timeline-view="true"] button,[data-timeline-view="true"] input,[data-timeline-view="true"] summary,[data-timeline-view="true"] label{touch-action:manipulation;box-sizing:border-box}.theme-contrast [data-timeline-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}@media(max-width:639px){[data-timeline-move-controls]{flex-direction:row;margin-top:0}[data-timeline-fields]{flex-basis:100%;order:1}}@media(forced-colors:active){[data-timeline-row]:focus-visible,[data-timeline-move]:focus-visible,[data-timeline-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-timeline-view="true"] button,[data-timeline-view="true"] input,[data-timeline-view="true"] summary{border-color:ButtonText!important}}@media(prefers-reduced-motion:reduce){[data-timeline-view="true"] *{animation:none!important;transition:none!important}}'), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     className: "sr-only"
-  }, isRevisingTimeline ? t('timeline.revising') : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? _timelineReviewLabel(t, 'timeline.ai_review.running', 'Running AI review') : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : ''), (isTeacherMode || isIndependentMode) && /*#__PURE__*/React.createElement("div", {
+  }, isRevisingTimeline ? t('timeline.revising') || 'Revising…' : isAutoFixingTimeline ? t('timeline.validation.fixing') || 'Fixing timeline' : isVerifyingTimeline ? _timelineReviewLabel(t, 'timeline.ai_review.running', 'Running AI review') : Object.values(isGeneratingTimelineImage || {}).some(Boolean) ? t('timeline.visuals.generating') || 'Generating timeline image' : timelineActionNotice), (isTeacherMode || isIndependentMode) && /*#__PURE__*/React.createElement("div", {
     "data-timeline-toolbar": true,
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
@@ -461,31 +476,32 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetIsTimelineGameToTrue,
-    className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    className: "min-h-11 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14,
     "aria-hidden": "true"
-  }), " ", isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), " ", isTeacherMode ? t('timeline.preview_game') || 'Preview Activity' : t('timeline.launch_sequencer') || 'Launch Sequencer'), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-pressed": !!isEditingTimeline,
     onClick: handleToggleIsEditingTimeline,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`
+    className: `min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`
   }, isEditingTimeline ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14,
     "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14,
     "aria-hidden": "true"
-  }), isEditingTimeline ? t('timeline.done_editing') : t('timeline.edit_sequence')), /*#__PURE__*/React.createElement("div", {
+  }), isEditingTimeline ? t('timeline.done_editing') || 'Done Editing' : t('timeline.edit_sequence') || 'Edit Sequence'), /*#__PURE__*/React.createElement("div", {
     "data-help-key": "timeline_image_size",
-    className: "flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm",
+    className: "min-h-11 flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm",
     title: t('timeline.image_size_tooltip') || 'Resize sequence images'
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14,
-    className: "text-indigo-400",
+    className: "text-indigo-600",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.range_slider') || 'Image size',
+    "aria-valuetext": `${timelineImageSize} pixels`,
     type: "range",
     min: "64",
     max: "300",
@@ -494,7 +510,7 @@ function TimelineView(props) {
     onChange: e => {
       if (typeof setTimelineImageSize === 'function') setTimelineImageSize(Number(e.target.value));
     },
-    className: "w-20 h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+    className: "w-20 min-h-11 bg-transparent rounded-lg cursor-pointer accent-indigo-600"
   })))), !isEditingTimeline && (isTeacherMode || isIndependentMode) && timelineItems.length >= 2 && /*#__PURE__*/React.createElement("div", {
     "data-timeline-study-bar": true,
     className: "flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2"
@@ -515,18 +531,25 @@ function TimelineView(props) {
       onClick: function () {
         setStudyMaskMode(mKey);
         setRevealedSteps(new Set());
+        announceTimeline(mLabel);
       },
-      className: `min-h-9 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${studyMaskMode === mKey ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50'}`
+      className: `min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${studyMaskMode === mKey ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50'}`
     }, mLabel);
   }), studyMaskMode !== 'none' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-timeline-reveal-toggle": true,
     onClick: function () {
-      if (timelineAllRevealed) setRevealedSteps(new Set());else setRevealedSteps(new Set(timelineItems.map(function (_, i) {
-        return i;
-      })));
+      if (timelineAllRevealed) {
+        setRevealedSteps(new Set());
+        announceTimeline(_timelineReviewLabel(t, 'timeline.all_hidden_sr', 'All steps hidden.'));
+      } else {
+        setRevealedSteps(new Set(timelineItems.map(function (_, i) {
+          return i;
+        })));
+        announceTimeline(_timelineReviewLabel(t, 'timeline.all_revealed_sr', 'All steps revealed.'));
+      }
     },
-    className: "min-h-9 px-3 py-1 rounded-full text-xs font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    className: "min-h-11 px-3 py-1 rounded-full text-xs font-semibold text-indigo-800 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, timelineAllRevealed ? _timelineReviewLabel(t, 'timeline.hide_all_steps', 'Hide all') : _timelineReviewLabel(t, 'timeline.reveal_all_steps', 'Reveal all'), " (", revealedSteps.size, "/", timelineItems.length, ")")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-timeline-listen-all": true,
@@ -537,24 +560,34 @@ function TimelineView(props) {
       }).join('. ');
       speakTimelineText(allSpoken, true);
     },
-    className: `min-h-9 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${speakingSequence ? 'bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-200' : 'bg-white text-indigo-800 border-indigo-200 hover:bg-indigo-50'}`
+    className: `min-h-11 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${speakingSequence ? 'bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-200' : 'bg-white text-indigo-800 border-indigo-200 hover:bg-indigo-50'}`
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, speakingSequence ? '⏹️' : '🔊'), /*#__PURE__*/React.createElement("span", null, speakingSequence ? _timelineReviewLabel(t, 'common.stop', 'Stop') : _timelineReviewLabel(t, 'timeline.listen_sequence', 'Listen to sequence')))), isTeacherMode && generatedContent?.data && /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-3 rounded-lg border border-slate-400 shadow-sm flex flex-wrap gap-2 items-center"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
-    className: "text-indigo-500",
+    className: "text-indigo-600",
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.timeline_revise_placeholder'),
+    "aria-label": t('common.timeline_revise_placeholder') || 'Describe changes to revise the timeline',
     type: "text",
     value: timelineRevisionInput || '',
     onChange: e => {
       if (typeof setTimelineRevisionInput === 'function') setTimelineRevisionInput(e.target.value);
     },
+    onKeyDown: e => {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Enter' && timelineRevisionInput?.trim() && !isRevisingTimeline && timelineTextAiUsable) {
+        e.preventDefault();
+        if (typeof handleTimelineRevision === 'function') handleTimelineRevision();
+      } else if (e.key === 'Escape' && timelineRevisionInput) {
+        e.preventDefault();
+        if (typeof setTimelineRevisionInput === 'function') setTimelineRevisionInput('');
+      }
+    },
     placeholder: t('timeline.revise_placeholder'),
-    className: "flex-grow min-w-[200px] text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-indigo-600"
+    className: "flex-grow min-w-[200px] min-h-11 text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
@@ -562,7 +595,7 @@ function TimelineView(props) {
     },
     disabled: isRevisingTimeline || !timelineRevisionInput?.trim() || !timelineTextAiUsable,
     title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    className: "min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, isRevisingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
     className: reducedMotion ? '' : 'animate-spin',
@@ -570,17 +603,17 @@ function TimelineView(props) {
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     "aria-hidden": "true"
-  }), isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button'))), isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }), isRevisingTimeline ? t('timeline.revising') || 'Revising…' : t('timeline.revise_button') || 'Revise')), isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "bg-amber-50 border border-amber-200 rounded-lg shadow-sm p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("details", {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("summary", {
-    className: "cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800"
+    className: "min-h-11 cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800"
   }, /*#__PURE__*/React.createElement(AlertTriangle, {
     size: 14,
-    className: "text-amber-600",
+    className: "text-amber-800",
     "aria-hidden": "true"
   }), t('timeline.validation.issues_header', {
     count: generatedContent.data.validationIssues.length
@@ -595,7 +628,7 @@ function TimelineView(props) {
     },
     disabled: isAutoFixingTimeline || !timelineTextAiUsable,
     title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
-    className: "shrink-0 self-start flex items-center gap-1 px-2.5 py-1.5 min-h-8 rounded-full text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
+    className: "shrink-0 self-start flex items-center gap-1 px-3 py-1.5 min-h-11 rounded-full text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
     "aria-busy": isAutoFixingTimeline
   }, isAutoFixingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 12,
@@ -637,7 +670,7 @@ function TimelineView(props) {
       if (typeof handleVerifyTimelineAccuracy === 'function') handleVerifyTimelineAccuracy();
     },
     disabled: isVerifyingTimeline || !timelineTextAiUsable,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
+    className: "min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "aria-busy": isVerifyingTimeline,
     title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : _timelineReviewLabel(t, 'timeline.ai_review.tooltip', 'Ask AI to review these items. No external sources are checked.')
   }, isVerifyingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
@@ -662,7 +695,7 @@ function TimelineView(props) {
   }, timelineModeDef.label) : generatedContent.data.autoDetected ? /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleLockTimelineMode,
-    className: "bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-xs font-bold shadow-sm hover:bg-amber-100 transition-colors",
+    className: "min-h-11 bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-xs font-bold shadow-sm hover:bg-amber-100 transition-colors",
     title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
     "aria-label": `${t('timeline.detected_label') || 'Detected'}: ${timelineModeDef.label} — ${t('timeline.click_to_lock_aria') || 'Click to lock this mode'}`
   }, /*#__PURE__*/React.createElement("span", {
@@ -855,7 +888,7 @@ function TimelineView(props) {
       "aria-hidden": "true"
     })), /*#__PURE__*/React.createElement("label", {
       "data-timeline-upload-image": idx,
-      className: "inline-flex min-h-7 cursor-pointer items-center justify-center rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs font-bold text-slate-700 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-indigo-600",
+      className: "inline-flex min-h-11 cursor-pointer items-center justify-center rounded border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 focus-within:ring-2 focus-within:ring-indigo-600",
       title: t('timeline.visuals.upload_image_title') || 'Upload image from device'
     }, _timelineReviewLabel(t, 'common.upload', 'Upload'), /*#__PURE__*/React.createElement("input", {
       type: "file",
@@ -888,14 +921,14 @@ function TimelineView(props) {
         });
       },
       "aria-label": `${t('timeline.visuals.remove_image_aria') || 'Remove image for'} ${timelinePositionLabel(idx)}`,
-      className: "inline-flex min-h-7 items-center justify-center rounded border border-rose-200 bg-white px-1.5 py-0.5 text-xs font-bold text-rose-700 hover:bg-rose-50"
+      className: "inline-flex min-h-11 items-center justify-center rounded border border-rose-200 bg-white px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50"
     }, _timelineReviewLabel(t, 'common.clear', 'Clear'))), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      "aria-label": `${t('common.delete')} ${timelinePositionLabel(idx)}${item.event ? ': ' + item.event : ''}`,
+      "aria-label": `${t('common.delete') || 'Delete'} ${timelinePositionLabel(idx)}${item.event ? ': ' + item.event : ''}`,
       onClick: () => {
         if (typeof handleDeleteTimelineStep === 'function') handleDeleteTimelineStep(idx);
       },
-      className: "min-w-8 min-h-8 inline-flex items-center justify-center p-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors mt-1",
+      className: "min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 text-slate-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors mt-1",
       title: t('timeline.remove_step_title')
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 16,
@@ -912,7 +945,7 @@ function TimelineView(props) {
         if (typeof handleGenerateTimelineItemImage === 'function') handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.");
       },
       disabled: isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
-      className: "min-h-8 text-xs bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 font-bold disabled:opacity-50",
+      className: "min-h-11 text-xs bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-3 py-1 rounded flex items-center justify-center gap-1 font-bold disabled:opacity-50",
       title: !timelineImageAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
     }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
@@ -934,12 +967,18 @@ function TimelineView(props) {
         }));
       },
       placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
-      className: "text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700 min-w-0",
+      className: "min-h-11 text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-700 min-w-0",
       onKeyDown: e => {
         if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === 'Enter' && String(timelineRefinementInputs[idx] || '').trim() && !isGeneratingTimelineImage[idx] && timelineImageAiUsable) {
           e.preventDefault();
           if (typeof handleGenerateTimelineItemImage === 'function') handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
+        } else if (e.key === 'Escape' && String(timelineRefinementInputs[idx] || '')) {
+          e.preventDefault();
+          if (typeof setTimelineRefinementInputs === 'function') setTimelineRefinementInputs(prev => ({
+            ...prev,
+            [idx]: ''
+          }));
         }
       }
     }), /*#__PURE__*/React.createElement("button", {
@@ -948,7 +987,7 @@ function TimelineView(props) {
         if (typeof handleGenerateTimelineItemImage === 'function') handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
       },
       disabled: !String(timelineRefinementInputs[idx] || '').trim() || isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
-      className: "min-h-8 min-w-8 inline-flex items-center justify-center bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
       "aria-label": t('common.apply_edit') || 'Apply edit'
     }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
@@ -961,11 +1000,11 @@ function TimelineView(props) {
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleAddTimelineStep,
-    className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
+    className: "w-full min-h-11 py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('timeline.add_step'))) : isTeacherMode || isIndependentMode ? timelineItems.map((item, idx) => {
+  }), " ", t('timeline.add_step') || 'Add Step')) : isTeacherMode || isIndependentMode ? timelineItems.map((item, idx) => {
     const safeImg = _safeTimelineImageSrc(item.image);
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
@@ -994,7 +1033,7 @@ function TimelineView(props) {
       type: "button",
       "data-timeline-reveal-label": idx,
       onClick: () => toggleRevealStep(idx),
-      className: "min-h-8 inline-flex items-center gap-1 rounded border border-dashed border-indigo-400 bg-indigo-50/70 px-2.5 py-0.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+      className: "min-h-11 inline-flex items-center gap-1 rounded border border-dashed border-indigo-400 bg-indigo-50/70 px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "👁"), " ", _timelineReviewLabel(t, 'timeline.reveal_label', 'Reveal label')) : /*#__PURE__*/React.createElement("span", {
@@ -1010,7 +1049,7 @@ function TimelineView(props) {
       },
       "aria-label": (t('common.listen') || 'Listen') + (item.date ? ': ' + item.date : ''),
       title: t('a11y.read_aloud') || 'Listen',
-      className: "shrink-0 min-h-8 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+      className: "shrink-0 min-h-11 inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     }, /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "🔊"), /*#__PURE__*/React.createElement("span", null, t('common.listen') || 'Listen'))), studyMaskMode === 'events' && !revealedSteps.has(idx) ? /*#__PURE__*/React.createElement("button", {
@@ -1047,7 +1086,7 @@ function TimelineView(props) {
             return next;
           });
         },
-        className: "ml-auto min-w-6 min-h-6 inline-flex items-center justify-center text-red-700 hover:text-red-900 p-1 rounded",
+        className: "ml-auto min-w-11 min-h-11 inline-flex items-center justify-center text-red-700 hover:text-red-900 p-1 rounded",
         "aria-label": t('timeline.validation.dismiss') || 'Dismiss verification concern',
         title: t('timeline.validation.dismiss') || 'Dismiss'
       }, /*#__PURE__*/React.createElement(X, {
@@ -1059,10 +1098,10 @@ function TimelineView(props) {
     })(), item.verification && item.verification.factual === true && item.verification.position === true && (item.verification.rationale ? /*#__PURE__*/React.createElement("details", {
       className: "mt-2 group"
     }, /*#__PURE__*/React.createElement("summary", {
-      className: "inline-flex items-center gap-1 text-xs bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors"
+      className: "min-h-11 inline-flex items-center gap-1 text-xs bg-emerald-50 border border-emerald-200 rounded px-2.5 py-1 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 11,
-      className: "text-emerald-600",
+      className: "text-emerald-700",
       "aria-hidden": "true"
     }), _timelineReviewLabel(t, 'timeline.ai_review.no_issue', 'AI review: no issue flagged'), /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true",
@@ -1073,7 +1112,7 @@ function TimelineView(props) {
       className: "mt-2 inline-flex items-center gap-1 text-xs bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 11,
-      className: "text-emerald-600",
+      className: "text-emerald-700",
       "aria-hidden": "true"
     }), " ", _timelineReviewLabel(t, 'timeline.ai_review.no_issue', 'AI review: no issue flagged'))))));
   }) : /*#__PURE__*/React.createElement("div", {
@@ -1084,13 +1123,13 @@ function TimelineView(props) {
     className: "bg-indigo-100 p-4 rounded-full mb-4"
   }, /*#__PURE__*/React.createElement(ListOrdered, {
     size: 48,
-    className: "text-indigo-500",
+    className: "text-indigo-600",
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h3", {
     className: "text-xl font-black text-slate-700 mb-2"
-  }, t('timeline.ready_title')), /*#__PURE__*/React.createElement("p", {
+  }, t('timeline.ready_title') || 'Ready to Order the Timeline?'), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-4 max-w-md"
-  }, bt(t('timeline.ready_desc'))), timelineItems.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, bt(t('timeline.ready_desc') || '')), timelineItems.length > 0 && /*#__PURE__*/React.createElement("div", {
     "data-timeline-preview-pills": true,
     className: "flex flex-wrap items-center justify-center gap-2 mb-6"
   }, /*#__PURE__*/React.createElement("span", {
@@ -1107,7 +1146,7 @@ function TimelineView(props) {
     size: 24,
     className: "fill-current text-yellow-300",
     "aria-hidden": "true"
-  }), " ", t('timeline.start_activity')), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('timeline.start_activity') || 'Start Timeline Activity'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-timeline-listen-intro": true,
     onClick: () => speakTimelineText([t('timeline.ready_title'), t('timeline.ready_desc'), timelineItems.length ? `${timelineItems.length} steps` : '', timelineProgressionLabel ? `Order by ${timelineProgressionLabel}` : ''].filter(Boolean).join('. '), false),

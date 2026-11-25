@@ -1,6 +1,7 @@
 /** Auto-generated first-wave cold-path CDN module. */
 (function() {
 'use strict';
+if (typeof window === 'undefined') return;
 var React = window.React;
 if (!React) { console.error('[FullPackRunView] React not found on window'); return; }
 window.AlloModules = window.AlloModules || {};
@@ -30,7 +31,7 @@ function FullPackRunView(props) {
     Trash2,
     _alloDiagnosticReason,
     _alloGenerationHelpersDeps,
-    aiCapability,
+    aiCapability: _rawAiCapability,
     createGuidedHomeworkShare,
     currentUiLanguage,
     differentiationCustomGrades,
@@ -95,15 +96,30 @@ function FullPackRunView(props) {
     universalImageStyle,
     useEmojis
   } = props;
+  const aiCapability = _rawAiCapability && typeof _rawAiCapability === 'object' ? _rawAiCapability : {};
+  const _own = (obj, key) => obj && key != null && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
+  const _finPos = value => {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
+  const _safeStringify = value => {
+    try {
+      return JSON.stringify(value);
+    } catch (_) {
+      return '';
+    }
+  };
+  const studentAiBlocked = typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true || window.AlloModules?.StudentPolicy?.hideStudentAiFeatures?.() === true || window.AlloModules?.StudentPolicy?.isAiDisabled?.() === true);
   const isRunActive = ['running', 'retrying', 'planning'].includes(fullPackRun?.status);
   const activeActionLabel = fullPackRun?.status === 'planning' ? t('fullpack.status_planning') || 'Planning' : fullPackRun?.status === 'retrying' ? t('fullpack.status_retrying') || 'Retrying' : t('fullpack.status_running') || 'Generating';
-  const packSizeLabel = isAutoConfigEnabled ? {
+  const _packSizeLabels = {
     Auto: t('fullpack.option_auto'),
     '5': t('fullpack.option_short'),
     '8': t('fullpack.option_standard'),
     '12': t('fullpack.option_deep'),
     All: t('fullpack.option_all')
-  }[resourceCount] || resourceCount : t('fullpack.current_settings') || 'Current settings';
+  };
+  const packSizeLabel = isAutoConfigEnabled ? _own(_packSizeLabels, resourceCount) || resourceCount : t('fullpack.current_settings') || 'Current settings';
   // Guided Mode has its own delivery chooser beside the pack generator.
   // Outside Guided Mode, expose the same routes once there is work to deliver.
   const deliveryGroups = Array.isArray(GUIDED_DELIVERY_GROUPS) ? GUIDED_DELIVERY_GROUPS : [];
@@ -116,12 +132,12 @@ function FullPackRunView(props) {
   const testLatestStudentLink = () => {
     // The host helper also records the Guided "learner view tested" evidence.
     if (typeof props.previewGuidedStudentAssignment === 'function') return props.previewGuidedStudentAssignment();
-    if (latestStudentShare?.url) return openStudentQrPreview(latestStudentShare.url, 'homework link as a student');
+    if (latestStudentShare?.url && typeof openStudentQrPreview === 'function') return openStudentQrPreview(latestStudentShare.url, 'homework link as a student');
     return false;
   };
   return /*#__PURE__*/React.createElement(PackContainer, {
     style: {
-      display: !guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || guidedActiveSteps[guidedStep]?.id === '_final' && isRunActive ? undefined : 'none'
+      display: !guidedMode || guidedActiveSteps?.[guidedStep]?.id === 'package-deliver' || guidedActiveSteps?.[guidedStep]?.id === '_final' && isRunActive ? undefined : 'none'
     },
     id: "tour-tool-fullpack",
     "data-help-key": "tool_fullpack",
@@ -147,7 +163,7 @@ function FullPackRunView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive,
-    onClick: () => openExportPreview('print'),
+    onClick: () => typeof openExportPreview === 'function' && openExportPreview('print'),
     className: "min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, t('fullpack.delivery_document_builder') || 'Open Document Builder'), typeof openExportPreview === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -191,13 +207,13 @@ function FullPackRunView(props) {
     className: "mt-1.5 grid gap-2 pb-1"
   }, deliveryGroups.map(group => /*#__PURE__*/React.createElement("div", {
     role: "listitem",
-    key: group.id,
+    key: group?.id || group?.label,
     className: "rounded-xl border border-indigo-100 bg-white/90 p-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black text-indigo-900"
-  }, group.label), /*#__PURE__*/React.createElement("div", {
+  }, group?.label), /*#__PURE__*/React.createElement("div", {
     className: "mt-0.5 text-xs leading-relaxed text-slate-600"
-  }, group.options.join(' · '))))), /*#__PURE__*/React.createElement("p", {
+  }, Array.isArray(group?.options) ? group.options.join(' · ') : '')))), /*#__PURE__*/React.createElement("p", {
     className: "mt-1.5 pb-1 text-xs leading-relaxed text-slate-600"
   }, t('fullpack.delivery_notes') || 'QTI requires a quiz. H5P appears for compatible quiz or study-card content and needs matching H5P libraries at the destination. Storybook and Persona exports live inside those resource views. Homework sharing method and expiry depend on deployment.'))), /*#__PURE__*/React.createElement("details", {
     "data-testid": "full-pack-options",
@@ -212,7 +228,7 @@ function FullPackRunView(props) {
     className: "ms-2"
   }, packSizeLabel), isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && fullPackTargetGroup !== 'none' && /*#__PURE__*/React.createElement("span", {
     className: "mt-0.5 block"
-  }, fullPackTargetGroup === 'all' ? t('fullpack.group_all') || 'All Groups' : rosterKey.groups[fullPackTargetGroup]?.name)), /*#__PURE__*/React.createElement(ChevronDown, {
+  }, fullPackTargetGroup === 'all' ? t('fullpack.group_all') || 'All Groups' : _own(rosterKey.groups, fullPackTargetGroup)?.name)), /*#__PURE__*/React.createElement(ChevronDown, {
     size: 14,
     "aria-hidden": "true",
     className: "shrink-0 transition-transform motion-reduce:transition-none group-open/options:rotate-180"
@@ -268,7 +284,7 @@ function FullPackRunView(props) {
   }, t('fullpack.group_all') || '\u{1F3AF} All Groups'), Object.entries(rosterKey.groups).map(([gid, g]) => /*#__PURE__*/React.createElement("option", {
     key: gid,
     value: gid
-  }, g.name)))))), !aiCapability.text && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled) && /*#__PURE__*/React.createElement("button", {
+  }, g.name)))))), !aiCapability.text && !studentAiBlocked && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "sidebar_ai_setup_notice",
     onClick: () => {
@@ -288,7 +304,7 @@ function FullPackRunView(props) {
       selectToolFromCatalog('package-deliver');
       return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack();
     },
-    disabled: !hasSourceOrAnalysis || isProcessing || isRunActive || !aiCapability.text,
+    disabled: !hasSourceOrAnalysis || isProcessing || isRunActive || !aiCapability.text || studentAiBlocked,
     "aria-busy": isProcessing || isRunActive,
     className: `group min-h-11 w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
@@ -348,7 +364,7 @@ function FullPackRunView(props) {
       interrupted: 'border-amber-200 bg-amber-50 text-amber-900',
       stopped: 'border-slate-300 bg-slate-100 text-slate-700'
     };
-    const _generationHelpersModule = window.AlloModules && window.AlloModules.GenerationHelpers;
+    const _generationHelpersModule = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.GenerationHelpers : null;
     const fullPackEditableTypes = (() => {
       const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'venn', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'alignment-report', 'math', 'gemini-bridge'];
       const supplied = _generationHelpersModule && typeof _generationHelpersModule.getFullPackEditableResourceTypes === 'function' ? _generationHelpersModule.getFullPackEditableResourceTypes() : fallback;
@@ -388,21 +404,22 @@ function FullPackRunView(props) {
     const planSummaries = sections.map(section => section && section.preflight).filter(Boolean);
     const planSelected = planSummaries.reduce((sum, plan) => sum + (plan.selected?.length || 0), 0);
     const planSkipped = planSummaries.reduce((sum, plan) => sum + (plan.skipped?.length || 0), 0);
-    const planGenerations = planSummaries.reduce((sum, plan) => sum + (plan.estimatedResourceGenerations || 0), 0);
-    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations || 0), 0);
-    const planReused = planSummaries.reduce((sum, plan) => sum + Math.max(0, Number(plan.generationMatrix?.summary?.actions?.reuse) || 0), 0);
-    const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
-    const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
+    const planGenerations = planSummaries.reduce((sum, plan) => sum + _finPos(plan.estimatedResourceGenerations), 0);
+    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations), 0);
+    const planReused = planSummaries.reduce((sum, plan) => sum + _finPos(plan.generationMatrix?.summary?.actions?.reuse), 0);
+    const planImageCalls = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.imageCalls), 0);
+    const planMinutes = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.estimatedMinutes), 0);
     const capacityWarnings = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warnings || [])));
     const capacityWarningCodes = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warningCodes || [])));
     const capacityProfiles = planSummaries.map(plan => plan.capacity).filter(Boolean);
     const providerSummary = Array.from(new Set(capacityProfiles.map(capacity => [capacity.provider, capacity.model].filter(Boolean).join(' · ')).filter(Boolean))).join(', ');
     const usesObservedEstimate = capacityProfiles.some(capacity => capacity.estimateBasis === 'observed-device-history');
-    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => ({
+    const _warningCodeMap = {
       'local-serial': t('fullpack.warning_local_serial') || 'Local models run this pack sequentially; keep the app open and consider a smaller pack for faster completion.',
       'large-pack': t('fullpack.warning_large_pack') || 'Large pack: provider rate limits are more likely. Consider fewer resources or groups.',
       'image-quota': t('fullpack.warning_image_quota') || 'Image generation may extend the run and consume additional provider quota.'
-    })[code]).filter(Boolean) : capacityWarnings;
+    };
+    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => _own(_warningCodeMap, code)).filter(Boolean) : capacityWarnings;
     const allRows = sections.flatMap(buildRows);
     const settled = allRows.filter(row => row && !['queued', 'running', 'retrying'].includes(row.status)).length;
     const total = allRows.length;
@@ -412,8 +429,8 @@ function FullPackRunView(props) {
     const inProgressRows = allRows.filter(row => row && ['queued', 'running', 'retrying'].includes(row.status)).length;
     const attentionRows = allRows.filter(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)).length;
     const progress = total ? Math.round(settled / total * 100) : 0;
-    const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
-    const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
+    const elapsedSeconds = Math.max(0, Math.round(_finPos(fullPackRun.elapsedMs) / 1000));
+    const currentRosterSignature = _safeStringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
       const profile = group?.profile || {};
       return {
         id,
@@ -436,7 +453,7 @@ function FullPackRunView(props) {
       };
     }));
     const reviewedGenerationConfig = fullPackRun?.settingsSnapshot?.fullPackGenerationConfig || null;
-    const currentGenerationConfig = _generationHelpersModule && typeof _generationHelpersModule.getFullPackGenerationConfigSnapshot === 'function' ? _generationHelpersModule.getFullPackGenerationConfigSnapshot(_alloGenerationHelpersDeps()) : null;
+    const currentGenerationConfig = _generationHelpersModule && typeof _generationHelpersModule.getFullPackGenerationConfigSnapshot === 'function' && typeof _alloGenerationHelpersDeps === 'function' ? _generationHelpersModule.getFullPackGenerationConfigSnapshot(_alloGenerationHelpersDeps()) : null;
     const comparableGenerationConfig = Boolean(reviewedGenerationConfig?.fingerprint && currentGenerationConfig?.fingerprint);
     const currentPlanSettings = {
       gradeLevel,
@@ -485,7 +502,7 @@ function FullPackRunView(props) {
     const originalPlanSettings = Object.assign({}, fullPackRun.settingsSnapshot || {}, {
       fullPackGenerationConfigFingerprint: comparableGenerationConfig ? reviewedGenerationConfig.fingerprint : null
     });
-    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => JSON.stringify(originalPlanSettings[key] ?? null) !== JSON.stringify(currentPlanSettings[key] ?? null)) : [];
+    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => _safeStringify(originalPlanSettings[key] ?? null) !== _safeStringify(currentPlanSettings[key] ?? null)) : [];
     const formatPlanValue = (value, key) => {
       if (key === 'fullPackGenerationConfigFingerprint') return t('fullpack.configuration_snapshot') || 'Reviewed configuration snapshot';
       if (value === undefined || value === null || value === '') return t('fullpack.not_set') || 'Not set';
@@ -518,8 +535,8 @@ function FullPackRunView(props) {
     }, planReused, " ", t('fullpack.reused_short') || 'reused'), planImageCalls > 0 && /*#__PURE__*/React.createElement("span", {
       className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-800 tabular-nums"
     }, planImageCalls, " ", t('fullpack.image_calls') || 'image calls'))), /*#__PURE__*/React.createElement("span", {
-      className: `shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`
-    }, statusLabels[fullPackRun.status] || fullPackRun.status)), fullPackRun.persistenceWarning && /*#__PURE__*/React.createElement("div", {
+      className: `shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${_own(statusStyles, fullPackRun.status) || statusStyles.queued}`
+    }, _own(statusLabels, fullPackRun.status) || fullPackRun.status)), fullPackRun.persistenceWarning && /*#__PURE__*/React.createElement("div", {
       "data-testid": "full-pack-storage-warning",
       role: "status",
       className: "mx-3 mt-2 flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-950"
@@ -675,7 +692,7 @@ function FullPackRunView(props) {
       const sectionAdaptedCount = rows.filter(row => row && row.type === 'simplified').length;
       const sectionAdaptedTextPolicy = ['include', 'omit', 'prohibited'].includes(sectionInstructionalContext.adaptedTextPolicy) ? sectionInstructionalContext.adaptedTextPolicy : sectionAdaptedCount > 0 ? 'include' : 'omit';
       const sectionPrimaryTextAccess = sectionInstructionalContext.primaryTextAccess === 'required' ? 'required' : 'available';
-      const sectionHasPrimary = rows.some(row => row && (row.type === 'analysis' || row.instructionalText?.role === 'primary')) || history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary')) || Boolean(String(inputText || '').trim())
+      const sectionHasPrimary = rows.some(row => row && (row.type === 'analysis' || row.instructionalText?.role === 'primary')) || Array.isArray(history) && history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary')) || Boolean(String(inputText || '').trim())
       // A reviewed source fingerprint/length means this plan is anchored
       // to source text even when Analyze Source is not itself a plan row.
       || Number(section?.preflight?.sourceTextChars || 0) > 0 || Boolean(String(section?.preflight?.sourceFingerprint || '').trim());
@@ -709,9 +726,10 @@ function FullPackRunView(props) {
         const rowReuseVariantCount = rowGenerationVariants.filter(variant => variant && variant.action === 'reuse').length;
         const rowVariantGrades = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.grade).filter(Boolean)));
         const rowVariantLanguages = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.language).filter(Boolean)));
+        const rowElapsedMs = _finPos(row.elapsedMs);
         const rowStatus = /*#__PURE__*/React.createElement("span", {
-          className: `shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${statusStyles[row.status] || statusStyles.queued}`
-        }, statusLabels[row.status] || row.status || t('fullpack.status_queued') || 'Queued', row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : '');
+          className: `shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${_own(statusStyles, row.status) || statusStyles.queued}`
+        }, _own(statusLabels, row.status) || row.status || t('fullpack.status_queued') || 'Queued', rowElapsedMs > 0 ? ` · ${Math.max(1, Math.round(rowElapsedMs / 1000))}s` : '');
         if (fullPackRun.status === 'ready') {
           const snapshot = section.settingsSnapshot || originalPlanSettings;
           const differentiation = section.preflight?.differentiation;
@@ -750,13 +768,16 @@ function FullPackRunView(props) {
             className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
             "aria-label": (t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle
           }, rowTypeOptions.map(type => {
-            const disabled = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
+            const disabledStandards = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
+            const disabledProhibited = type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited' && type !== row.type;
+            const disabled = disabledStandards || disabledProhibited;
             const label = type === 'simplified' ? t('common.adapted_text') || 'Adapted text' : getDefaultTitle(type) || String(type).replace(/-/g, ' ');
+            const disabledReason = disabledProhibited ? t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard' : t('fullpack.requires_standards') || 'requires standards';
             return /*#__PURE__*/React.createElement("option", {
               key: type,
               value: type,
               disabled: disabled
-            }, label, disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : '');
+            }, label, disabled ? ` (${disabledReason})` : '');
           }))), /*#__PURE__*/React.createElement("label", {
             className: "block font-bold text-slate-900"
           }, /*#__PURE__*/React.createElement("span", {
@@ -804,7 +825,7 @@ function FullPackRunView(props) {
             const all = output === 'All Selected Languages';
             const base = native ? all ? app : output : 'English';
             const mode = matrixSettings.translationMode || snapshot.translationMode || 'auto';
-            const helpers = window.AlloModules?.TextPipelineHelpers;
+            const helpers = typeof window !== 'undefined' ? window.AlloModules?.TextPipelineHelpers : null;
             const choices = helpers?.translationTargetChoices?.(base, app, snapshot.selectedLanguages || []);
             const policy = helpers?.resolveTranslationPolicy?.(mode, base, app, choices);
             const companion = policy ? policy.enabled ? policy.target : '' : mode === 'off' ? '' : mode === 'auto' ? app : mode;
@@ -977,13 +998,16 @@ function FullPackRunView(props) {
         onChange: event => setFullPackAddType(event.target.value),
         className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
       }, fullPackEditableTypes.map(type => {
-        const disabled = type === 'alignment-report' && !sectionHasStandards || type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited';
+        const disabledStandards = type === 'alignment-report' && !sectionHasStandards;
+        const disabledProhibited = type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited';
+        const disabled = disabledStandards || disabledProhibited;
         const label = type === 'simplified' ? t('common.adapted_text') || 'Adapted text' : getDefaultTitle(type) || String(type).replace(/-/g, ' ');
+        const disabledReason = disabledProhibited ? t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard' : t('fullpack.requires_standards') || 'requires standards';
         return /*#__PURE__*/React.createElement("option", {
           key: type,
           value: type,
           disabled: disabled
-        }, label, disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : '');
+        }, label, disabled ? ` (${disabledReason})` : '');
       }))), /*#__PURE__*/React.createElement("button", {
         type: "button",
         "data-testid": "full-pack-add-resource",
@@ -992,7 +1016,7 @@ function FullPackRunView(props) {
           type: fullPackAddType,
           directive: ''
         }, sectionGroupId),
-        disabled: !fullPackAddType || fullPackAddType === 'alignment-report' && !sectionHasStandards,
+        disabled: !fullPackAddType || fullPackAddType === 'alignment-report' && !sectionHasStandards || fullPackAddType === 'simplified' && sectionAdaptedTextPolicy === 'prohibited',
         className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
       }, /*#__PURE__*/React.createElement(Plus, {
         size: 12,
@@ -1047,7 +1071,7 @@ function FullPackRunView(props) {
     }), showCompletedFullPackRows ? t('fullpack.hide_completed') || 'Hide completed' : t('fullpack.show_completed') || 'Show completed'), fullPackRun.status === 'ready' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "full-pack-refresh-plan",
-      disabled: !aiCapability.text,
+      disabled: !aiCapability.text || studentAiBlocked,
       onClick: handlePlanFullPack,
       className: "inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(RefreshCw, {
@@ -1056,7 +1080,7 @@ function FullPackRunView(props) {
     }), t('fullpack.refresh_plan') || 'Refresh plan'), retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "full-pack-retry",
-      disabled: !aiCapability.text,
+      disabled: !aiCapability.text || studentAiBlocked,
       onClick: handleRetryFailedFullPack,
       className: "inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
     }, /*#__PURE__*/React.createElement(RefreshCw, {

@@ -7,7 +7,8 @@ import fs from 'node:fs';
 
 const source = fs.readFileSync('view_sidebar_panels_source.jsx', 'utf8');
 const strings = new Function('return (' + fs.readFileSync('ui_strings.js', 'utf8').replace(/^\s*/, '') + '\n)')();
-const start = source.indexOf('const _savedProject = JSON.parse(ev.target.result);');
+// The parse drops prototype keys since 2026-11-21 (reviver), so anchor on the call, not its arguments.
+const start = source.indexOf('const _savedProject = JSON.parse(ev.target.result');
 const end = source.indexOf('// Ignore any serialized runtime snapshot', start);
 
 function check(fileValue, { crypto = null, translate = {} } = {}) {

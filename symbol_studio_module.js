@@ -370,6 +370,10 @@
     // area scrolls: roots were overflow:hidden, so a short frame (Canvas with the chat open)
     // cut Board Builder and Sequences off with no way to reach the rest. A scrolling root lets
     // flexbox shrink an inner scroller to nothing, so the result areas keep a floor.
+    style.textContent += '.ss-modal-root button,.ss-modal-root input,.ss-modal-root select,.ss-modal-root textarea,.ss-modal-root [role="tab"],.ss-modal-root [role="button"],.ss-modal-root [role="gridcell"]{touch-action:manipulation}'
+      + '.ss-modal-root button:focus-visible,.ss-modal-root input:focus-visible,.ss-modal-root select:focus-visible,.ss-modal-root textarea:focus-visible,.ss-modal-root [role="tab"]:focus-visible,.ss-modal-root [role="button"]:focus-visible,.ss-modal-root [tabindex]:focus-visible{outline:2px solid #7c3aed;outline-offset:2px}'
+      + '@media (forced-colors:active){.ss-modal-root button:focus-visible,.ss-modal-root input:focus-visible,.ss-modal-root select:focus-visible,.ss-modal-root textarea:focus-visible,.ss-modal-root [role="tab"]:focus-visible,.ss-modal-root [role="button"]:focus-visible,.ss-modal-root [tabindex]:focus-visible{outline:2px solid Highlight!important;outline-offset:2px!important}}'
+      + '@media (prefers-reduced-motion:reduce){.ss-modal-root,.ss-modal-root *,.ss-modal-root *::before,.ss-modal-root *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}';
     style.textContent += '@media screen and (min-width:801px){.ss-body{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}'
       + '.ss-setup-toggle{display:flex;grid-column:1/-1;grid-row:1;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:6px 16px;border:0;border-bottom:1px solid #e5e7eb;background:#f5f3ff;color:#5b21b6;font-weight:700;font-size:12px;text-align:left;cursor:pointer}'
       + '.ss-settings{grid-column:1;grid-row:2;min-height:0}.ss-settings[data-expanded=false]{display:none!important}.ss-workspace{grid-column:2;grid-row:2;min-height:0}'
@@ -8211,6 +8215,7 @@
         'aria-label': t.label + ' tab',
         tabIndex: active ? 0 : -1,
         onKeyDown: function (ev) {
+          if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
           var idx = TABS.findIndex(function (x) { return x.id === t.id; });
           var target = null;
           if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') target = TABS[(idx + 1) % TABS.length];
@@ -9108,7 +9113,7 @@
             e('input', {
               type: 'text', value: questInput, autoFocus: true,
               onChange: function (ev) { setQuestInput(ev.target.value); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') checkSpelling(); },
+              onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') checkSpelling(); },
               placeholder: t('symbol_studio.type_the_label','Type the label...'),
               'aria-label': t('symbol_studio.spell_the_symbol_label','Spell the symbol label'),
               disabled: !!questFeedback,
@@ -10272,6 +10277,7 @@
           e('span', { style: { fontSize: '12px', flexShrink: 0 }, title: t('symbol_studio.plant_a_word_the_student_tried_to_say_but_co','Plant a word the student tried to say but couldn\'t find on any board') }, '💫'),
           e('input', { type: 'text', value: wishInput, onChange: function (ev) { setWishInput(ev.target.value); },
             onKeyDown: function (ev) {
+              if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
               if (ev.key === 'Enter' && wishInput.trim()) {
                 var label = wishInput.trim();
                 var newWish = { label: label, category: 'other', note: 'Student reached for this word', ts: new Date().toISOString(), profileId: activeProfileId || 'default' };
@@ -10984,7 +10990,7 @@
                 key: item.id,
                 role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
-                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + TEAL_BORDER, borderRadius: '14px', background: TEAL_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(13,148,136,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -11037,7 +11043,7 @@
                 key: item.id,
                 role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
-                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + AMBER_BORDER, borderRadius: '14px', background: AMBER_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(217,119,6,0.2)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -11084,7 +11090,7 @@
                 key: item.id,
                 role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                 onClick: function () { speakCell(item.label); },
-                onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                 style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '14px 10px 10px', border: '2px solid ' + BLUE_BORDER, borderRadius: '14px', background: BLUE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s, box-shadow 0.1s', position: 'relative' },
                 onMouseOver: function (ev) { ev.currentTarget.style.boxShadow = '0 4px 14px rgba(37,99,235,0.18)'; ev.currentTarget.style.transform = 'translateY(-2px)'; },
                 onMouseOut: function (ev) { ev.currentTarget.style.boxShadow = 'none'; ev.currentTarget.style.transform = 'none'; }
@@ -11127,7 +11133,7 @@
                     key: level,
                     role: 'button', tabIndex: 0, 'aria-pressed': isSelected, 'aria-label': 'Pain level ' + level + ', ' + lbl.split('\n')[1],
                     onClick: function () { setBcPainLevel(isSelected ? null : level); speakCell(lbl.replace('\n', ', ')); },
-                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                    onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { width: 52, padding: '8px 4px', borderRadius: '10px', background: PAIN_COLORS[i], border: isSelected ? '3px solid #1e293b' : '3px solid transparent', cursor: 'pointer', textAlign: 'center', boxShadow: isSelected ? '0 0 0 3px rgba(0,0,0,0.2)' : 'none', transition: 'transform 0.1s', transform: isSelected ? 'scale(1.12)' : 'scale(1)' }
                   },
                     e('div', { style: { fontWeight: 800, fontSize: '16px', color: i < 7 ? '#111827' : '#fff', textShadow: i < 7 ? 'none' : '0 1px 2px rgba(0,0,0,0.4)' } }, level),
@@ -11147,7 +11153,7 @@
                     key: item.id,
                     role: 'button', tabIndex: 0, 'aria-label': 'Speak ' + item.label,
                     onClick: function () { speakCell(item.label); },
-                    onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                    onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                     style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '12px 8px 8px', border: '2px solid ' + ROSE_BORDER, borderRadius: '12px', background: ROSE_LIGHT, cursor: 'pointer', transition: 'transform 0.1s' },
                     onMouseOver: function (ev) { ev.currentTarget.style.transform = 'translateY(-2px)'; },
                     onMouseOut: function (ev) { ev.currentTarget.style.transform = 'none'; }
@@ -11202,7 +11208,7 @@
                   key: item.id,
                   role: 'button', tabIndex: 0, 'aria-pressed': isCurrent, 'aria-label': 'Step ' + (idx + 1) + ', ' + item.label,
                   onClick: function () { setTwStep(idx); speakCell(item.label); },
-                  onKeyDown: function (ev) { if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
+                  onKeyDown: function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.target === ev.currentTarget && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ev.currentTarget.click(); } },
                   style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '10px 8px 8px', border: '2px solid ' + (isCurrent ? INDIGO : INDIGO_BORDER), borderRadius: '12px', background: isCurrent ? INDIGO_LIGHT : '#fff', cursor: 'pointer', outline: isCurrent ? '2px solid ' + INDIGO : '2px solid transparent', transition: 'all 0.1s' }
                 },
                   e('div', { style: { fontSize: '9px', fontWeight: 700, color: isCurrent ? INDIGO : '#6b7280', marginBottom: '2px' } }, 'STEP ' + (idx + 1)),
@@ -11314,7 +11320,7 @@
             id: 'comm-builder-goal', type: 'text',
             value: cbGoalText,
             onChange: function (ev) { setCbGoalText(ev.target.value); },
-            onKeyDown: async function (ev) { if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
+            onKeyDown: async function (ev) { if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter' && cbGoalText.trim() && !cbGoalBusy) { ev.preventDefault(); if (!(await confirmReplaceBoard())) return; setCbGoalBusy(true); buildBoardFromGoal(cbGoalText).finally(function () { setCbGoalBusy(false); }); } },
             placeholder: t('symbol_studio.e_g_request_a_break_at_recess_ask_a_peer_to','e.g. request a break at recess, ask a peer to play, tell me you need help'),
             style: Object.assign({}, S.input, { margin: 0, fontSize: '13px' }),
             'aria-label': t('symbol_studio.communication_goal','Communication goal')
@@ -11966,8 +11972,8 @@
         ref: photoDialogRef, tabIndex: -1,
         role: 'dialog', 'aria-modal': 'true', 'aria-label': t('symbol_studio.find_a_photo','Find a photo'),
         onKeyDown: function (ev) {
-          if (ev.isComposing || ev.keyCode === 229) return;
-          if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setPhotoOpen(false); return; }
+          if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
+          if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); ev.stopPropagation(); setPhotoOpen(false); return; }
           if (ev.key !== 'Tab') return;
           ev.stopPropagation();
           var controls = Array.prototype.filter.call(ev.currentTarget.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]'), function (el) {
@@ -12007,8 +12013,8 @@
         ref: mulberryDialogRef, tabIndex: -1,
         role: 'dialog', 'aria-modal': 'true', 'aria-label': t('symbol_studio.find_a_validated_mulberry_symbol','Find a validated Mulberry symbol'),
         onKeyDown: function (ev) {
-          if (ev.isComposing || ev.keyCode === 229) return;
-          if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); setMulberryOpen(false); return; }
+          if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
+          if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); ev.stopPropagation(); setMulberryOpen(false); return; }
           if (ev.key !== 'Tab') return;
           ev.stopPropagation();
           var controls = Array.prototype.filter.call(ev.currentTarget.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href]'), function (el) {
@@ -12041,7 +12047,7 @@
             e('input', {
               type: 'text', value: mulberryQuery, autoFocus: true,
               onChange: function (ev) { setMulberryQuery(ev.target.value); },
-              onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229) return; if (ev.key === 'Enter') runMulberrySearch(); },
+              onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') runMulberrySearch(); },
               placeholder: t('symbol_studio.search_a_word_e_g_happy_bathroom_more','Search a word, e.g. happy, bathroom, more'), 'aria-label': t('symbol_studio.search_mulberry_symbols','Search Mulberry symbols'),
               style: Object.assign({}, S.input, { flex: 1 })
             }),
@@ -12128,7 +12134,7 @@
           })(),
           symMode === 'single'
             ? e('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
-                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') genSingle(); }, placeholder: t('symbol_studio.e_g_wash_hands','e.g. wash hands'), 'aria-label': t('symbol_studio.symbol_label','Symbol label'), style: S.input, autoFocus: true })),
+                e('div', null, e('label', { style: S.lbl }, 'Label'), e('input', { type: 'text', value: symLabel, onChange: function (ev) { setSymLabel(ev.target.value); }, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') genSingle(); }, placeholder: t('symbol_studio.e_g_wash_hands','e.g. wash hands'), 'aria-label': t('symbol_studio.symbol_label','Symbol label'), style: S.input, autoFocus: true })),
                 e('div', null, e('label', { style: S.lbl }, 'Context (optional)'), e('input', { type: 'text', value: symDesc, onChange: function (ev) { setSymDesc(ev.target.value); }, placeholder: t('symbol_studio.e_g_hygiene_routine','e.g. hygiene routine'), 'aria-label': t('symbol_studio.symbol_context','Symbol context'), style: S.input })),
                 e('div', null,
                   e('label', { style: S.lbl }, 'Topic (optional)'),
@@ -12192,7 +12198,7 @@
                 e('button', { onClick: function () { deleteSymbol(selectedItem.id); }, 'aria-label': 'Delete ' + selectedItem.label + ' symbol', style: S.btn('#fee2e2', '#b91c1c', false) }, '🗑️')
               ),
               e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
-                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.key === 'Enter' && symRefine[selectedItem.id]) { ev.preventDefault(); if (selectedItem.locked) createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); else refineSymbol(selectedItem.id, symRefine[selectedItem.id]); } }, placeholder: selectedItem.locked ? 'Describe a new variant; the original stays locked' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
+                e('input', { type: 'text', value: symRefine[selectedItem.id] || '', onChange: function (ev) { var v = ev.target.value; setSymRefine(function (p) { var n = Object.assign({}, p); n[selectedItem.id] = v; return n; }); }, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter' && symRefine[selectedItem.id]) { ev.preventDefault(); if (selectedItem.locked) createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); else refineSymbol(selectedItem.id, symRefine[selectedItem.id]); } }, placeholder: selectedItem.locked ? 'Describe a new variant; the original stays locked' : 'Edit: make it a girl, add red X, change background...', 'aria-label': 'Refinement instruction for ' + selectedItem.label, style: Object.assign({}, S.input, { border: '1px solid #fbbf24' }) }),
                 e('button', { onClick: function () { if (symRefine[selectedItem.id]) refineSymbol(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked, 'aria-label': 'Apply refinement to ' + selectedItem.label, style: S.btn('#fef3c7', '#92400e', !symRefine[selectedItem.id] || !!symLoading[selectedItem.id] || !!selectedItem.locked) }, '✏️ Apply'),
                 e('button', { onClick: function () { createSymbolVariant(selectedItem.id, symRefine[selectedItem.id]); }, disabled: !symRefine[selectedItem.id] || !!symLoading[selectedItem.id], 'aria-label': 'Save refinement as a new variant of ' + selectedItem.label, style: S.btn('#ede9fe', PURPLE, !symRefine[selectedItem.id] || !!symLoading[selectedItem.id]) }, '✨ New Variant')
               ),
@@ -12203,7 +12209,7 @@
               ),
               e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block', marginBottom: '7px' }) },
                 'Search aliases',
-                e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: t('symbol_studio.restroom_toilet_washroom','restroom, toilet, washroom'), 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
+                e('input', { type: 'text', key: selectedItem.id, value: Object.prototype.hasOwnProperty.call(symAliasDraft, selectedItem.id) ? symAliasDraft[selectedItem.id] : (selectedItem.aliases || []).join(', '), onChange: function (ev) { var value = ev.target.value; setSymAliasDraft(function (prev) { var next = Object.assign({}, prev); next[selectedItem.id] = value; return next; }); }, onBlur: function (ev) { setSymbolAliases(selectedItem.id, ev.target.value); }, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') { ev.preventDefault(); ev.currentTarget.blur(); } }, placeholder: t('symbol_studio.restroom_toilet_washroom','restroom, toilet, washroom'), 'aria-label': 'Search aliases for ' + selectedItem.label, style: Object.assign({}, S.input, { marginTop: '3px' }) })
               ),
               e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block' }) },
                 'Word type (AAC color)',
@@ -12216,7 +12222,7 @@
               ),
               e('label', { style: Object.assign({}, S.lblOnLight, { display: 'block' }) },
                 'Topics (comma-separated)',
-                e('input', { key: 'topics-' + selectedItem.id + '-' + selectedItem.topicTags.join(','), type: 'text', defaultValue: selectedItem.topicTags.join(', '), 'aria-label': 'Topics for ' + selectedItem.label, style: S.input, onKeyDown: function (event) { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } }, onBlur: function (event) {
+                e('input', { key: 'topics-' + selectedItem.id + '-' + selectedItem.topicTags.join(','), type: 'text', defaultValue: selectedItem.topicTags.join(', '), 'aria-label': 'Topics for ' + selectedItem.label, style: S.input, onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } }, onBlur: function (event) {
                   var topics = event.target.value.split(','); var id = selectedItem.id;
                   var work = startSymbolWork('taxonomy-' + id); if (!work) return;
                   commitSymbolBank(function (current) { return current.map(function (asset) { return asset.id === id ? normalizeBankAsset(Object.assign({}, asset, { topicTags: topics, updatedAt: Date.now() })) : asset; }); }, work);
@@ -12440,7 +12446,7 @@
         e('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap', flexShrink: 0 } },
           e('div', { className: 'ss-board-topic', style: { flex: 1, minWidth: '200px' } },
             e('label', { style: S.lbl }, 'Topic'),
-            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: t('symbol_studio.e_g_morning_routine_feelings_playground','e.g. morning routine, feelings, playground'), 'aria-label': t('symbol_studio.board_topic','Board topic'), style: S.input, autoFocus: true })
+            e('input', { type: 'text', value: boardTopic, onChange: function (ev) { setBoardTopic(ev.target.value); }, onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') generateBoardFromTopic(); }, placeholder: t('symbol_studio.e_g_morning_routine_feelings_playground','e.g. morning routine, feelings, playground'), 'aria-label': t('symbol_studio.board_topic','Board topic'), style: S.input, autoFocus: true })
           ),
           e('button', { onClick: generateBoardFromTopic, disabled: !boardTopic.trim() || boardGenerating, 'aria-label': t('symbol_studio.generate_word_list','Generate word list'), style: S.btn(PURPLE, '#fff', !boardTopic.trim() || boardGenerating) }, boardGenerating ? '⏳ Writing...' : '📝 Generate Word List'),
           boardWords.length > 0 && e('button', { onClick: generateBoardImages, disabled: isLoading, 'aria-label': t('symbol_studio.generate_images','Generate images'), style: S.btn('#047857', '#fff', isLoading) }, isLoading ? '⏳ Generating...' : '✨ Generate Images'),
@@ -12671,7 +12677,7 @@
               type: 'text',
               value: sentenceInput,
               onChange: function (ev) { setSentenceInput(ev.target.value); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') parseTextToSymbols(); },
+              onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') parseTextToSymbols(); },
               placeholder: t('symbol_studio.e_g_i_want_to_go_to_the_park_today','e.g. I want to go to the park today'),
               'aria-label': t('symbol_studio.sentence_to_map_to_symbols','Sentence to map to symbols'),
               style: Object.assign({}, S.input, { flex: 1, borderColor: '#86efac' })
@@ -12915,7 +12921,7 @@
             e('input', {
               type: 'text', value: schedTopic,
               onChange: function (ev) { setSchedTopic(ev.target.value); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') generateSequenceFromTopic(); },
+              onKeyDown: function (ev) { if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') generateSequenceFromTopic(); },
               placeholder: t('symbol_studio.e_g_getting_ready_for_school_planting_a_seed','e.g. getting ready for school, planting a seed, beginning-middle-end'),
               'aria-label': t('symbol_studio.sequence_topic_or_task','Sequence topic or task'), style: S.input
             })
@@ -13372,7 +13378,7 @@
               type: 'text',
               value: newBookTitle,
               onChange: function (event) { setNewBookTitle(event.target.value); },
-              onKeyDown: function (event) { if (event.key === 'Enter') createBook(); },
+              onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter') createBook(); },
               placeholder: t('symbol_studio.e_g_school_day_communication_supports','e.g. School Day Communication Supports'),
               'aria-label': t('symbol_studio.new_visual_pack_name','New Visual Pack name'),
               style: S.input
@@ -13757,6 +13763,7 @@
         document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
       };
       var handleUseDialogKeyDown = function (ev) {
+        if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.key !== 'Tab') return;
         var controls = Array.prototype.filter.call(
           ev.currentTarget.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
@@ -14037,7 +14044,7 @@
         // IEP trials are clinician-recorded only. Scanning does not auto-log a trial.
       };      var advanceScan = function () { setScanIndex(function (prev) { return (prev + 1) % (scanCells.length || 1); }); };
       var handleScanKeyDown = function (ev) {
-        if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.code === 'Escape') { ev.preventDefault(); ev.stopPropagation(); exitScan(); return; }
         if (ev.key === 'Tab') {
           var controls = Array.prototype.filter.call(
@@ -14155,6 +14162,7 @@
 
     // Focus trap handler for modal — keep Tab within the dialog.
     var handleModalKeyDown = function (ev) {
+      if (!ev || ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); onClose && onClose(); return; }
       if (ev.key !== 'Tab') return;
       var modal = modalRef.current;

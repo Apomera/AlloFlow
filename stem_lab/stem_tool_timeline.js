@@ -50,6 +50,12 @@
       '@media (forced-colors: active) { [data-timeline-studio] .tl-deco-glow, [data-timeline-studio] .tl-lens-sheen, [data-timeline-studio] .tl-crest-sheen { display: none !important; } [data-timeline-studio] .tl-axis-flow, [data-timeline-studio] .tl-pin-glint, [data-timeline-studio] .tl-hand-poise, [data-timeline-studio] .tl-beacon-pulse { animation: none !important; transform: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
+    if (!document.getElementById('allo-timeline-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-timeline-a11y-css';
+      ast.textContent = '[data-timeline-studio] :is(button,a,input,select,summary){touch-action:manipulation}[data-timeline-studio] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid #f59e0b;outline-offset:2px}@media (forced-colors:active){[data-timeline-studio] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   var TIMELINE_STUDIO_CDN_URL = 'https://alloflow-cdn.pages.dev/timeline_studio/timeline_studio.html?v=1';

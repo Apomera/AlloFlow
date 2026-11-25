@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <title>Page Not Found | AlloFlow</title>
+  <meta name="description" content="The page you asked for could not be found. Browse AlloFlow's tool finder, Quick Practice &amp; Checks, Teacher Guide, or homepage.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="icon" type="image/svg+xml" href="https://apomera.github.io/AlloFlow/allobot.svg">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --ink: #0f172a;
+      --body: #334155;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --indigo: #3730a3;
+      --indigo-soft: #eef2ff;
+      --teal: #0f766e;
+      --focus: #3730a3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --surface: #131c31;
+        --ink: #f1f5f9;
+        --body: #dbe4f0;
+        --muted: #a8b6cc;
+        --line: #293855;
+        --indigo: #a5b4fc;
+        --indigo-soft: #1e2752;
+        --teal: #5eead4;
+        --focus: #fbbf24;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--body);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+    }
+    .skip-link {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      background: #1e1b4b;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      outline: 3px solid #fbbf24;
+      outline-offset: 2px;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .topbar {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand svg { width: 24px; height: 24px; color: var(--indigo); flex-shrink: 0; }
+    .top-cta {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    @media (prefers-color-scheme: dark) {
+      .top-cta { background: #4338ca; color: #ffffff; }
+    }
+    .top-cta:hover { opacity: 0.92; text-decoration: underline; }
+    main {
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 48px 20px 72px;
+      flex: 1;
+    }
+    .kicker {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: var(--indigo-soft);
+      color: var(--indigo);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: var(--ink);
+      font-size: clamp(1.9rem, 4.5vw, 2.75rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      margin: 0 0 28px;
+      max-width: 62ch;
+      font-size: 1.05rem;
+      color: var(--muted);
+    }
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .search-box label {
+      display: block;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-row input[type="search"] {
+      flex: 1 1 240px;
+      min-height: 44px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--ink);
+      font: inherit;
+    }
+    .search-row button {
+      min-height: 44px;
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 10px;
+      background: #4338ca;
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .search-row button:hover { background: #3730a3; }
+    h2 {
+      margin: 0 0 16px;
+      color: var(--ink);
+      font-size: 1.25rem;
+    }
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .links-grid a {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      height: 100%;
+      padding: 18px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .links-grid a:hover {
+      border-color: var(--indigo);
+      transform: translateY(-2px);
+    }
+    .links-grid strong {
+      color: var(--indigo);
+      font-size: 1rem;
+    }
+    .links-grid span {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+    footer {
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      padding: 20px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--indigo); font-weight: 600; }
+    @media (max-width: 780px) {
+      .links-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px) {
+      .links-grid { grid-template-columns: 1fr; }
+      main { padding: 32px 16px 56px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .links-grid a { transition: none; }
+      .links-grid a:hover { transform: none; }
+    }
+    @media (forced-colors: active) {
+      .search-box, .links-grid a, .top-cta, .search-row button { border: 1px solid CanvasText; }
+      a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid Highlight !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header>
+    <div class="topbar">
+      <a class="brand" data-site-href="./" href="https://apomera.github.io/AlloFlow/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/>
+          <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
+          <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
+        </svg>
+        AlloFlow
+      </a>
+      <a class="top-cta" data-site-href="launch.html" href="https://apomera.github.io/AlloFlow/launch.html">Launch AlloFlow</a>
+    </div>
+  </header>
+
+  <main id="main-content" tabindex="-1">
+    <p class="kicker">Error 404</p>
+    <h1>We couldn&rsquo;t find that page.</h1>
+    <p class="lede">The link may have moved or been mistyped. Search for an AlloFlow tool below, or jump directly to one of the main sections.</p>
+
+    <form class="search-box" id="notFoundSearchForm" action="https://apomera.github.io/AlloFlow/tools.html" method="get" role="search">
+      <label for="notFoundQuery">Search AlloFlow tools and guides</label>
+      <div class="search-row">
+        <input id="notFoundQuery" name="q" type="search" placeholder="Try water cycle, phonics, WCAG, glossary, or SEL">
+        <button type="submit">Search tools</button>
+      </div>
+    </form>
+
+    <h2>Popular destinations</h2>
+    <ul class="links-grid">
+      <li>
+        <a data-site-href="./" href="https://apomera.github.io/AlloFlow/">
+          <strong>AlloFlow Homepage</strong>
+          <span>Overview, classroom example, and starting points.</span>
+        </a>
+      </li>
+      <li>
+        <a data-site-href="tools.html" href="https://apomera.github.io/AlloFlow/tools.html">
+          <strong>Find a Tool</strong>
+          <span>Filter classroom tools and browse all 152 shareable STEM links.</span>
+        </a>
+      </li>
+      <li>
+        <a data-site-href="packets.html" href="https://apomera.github.io/AlloFlow/packets.html">
+          <strong>Quick Practice &amp; Checks</strong>
+          <span>Offline word sounds, vocabulary, math facts, and 25 starter packs. Runs without AI.</span>
+        </a>
+      </li>
+      <li>
+        <a data-site-href="guide/index.html" href="https://apomera.github.io/AlloFlow/guide/index.html">
+          <strong>Teacher Guide</strong>
+          <span>Searchable classroom workflows, saving, privacy, and troubleshooting.</span>
+        </a>
+      </li>
+      <li>
+        <a data-site-href="principles.html" href="https://apomera.github.io/AlloFlow/principles.html">
+          <strong>How AlloFlow is Designed</strong>
+          <span>Three feature tests, five commitments, and student-AI boundaries.</span>
+        </a>
+      </li>
+      <li>
+        <a data-site-href="for-districts.html" href="https://apomera.github.io/AlloFlow/for-districts.html">
+          <strong>For Districts &amp; IT</strong>
+          <span>Deployment options, privacy summary, allowlist domains, and pilot info.</span>
+        </a>
+      </li>
+    </ul>
+  </main>
+
+  <footer>
+    <p>AlloFlow is open source under AGPL v3. Looking for a broken link? <a data-site-href="feedback.html" href="https://apomera.github.io/AlloFlow/feedback.html">Report it on the feedback page</a>.</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var base = /^\/AlloFlow(?:\/|$)/i.test(window.location.pathname) ? '/AlloFlow/' : '/';
+      document.querySelectorAll('a[data-site-href]').forEach(function (link) {
+        var rel = link.getAttribute('data-site-href');
+        link.setAttribute('href', rel === './' ? base : base + rel);
+      });
+      var form = document.getElementById('notFoundSearchForm');
+      if (form) form.setAttribute('action', base + 'tools.html');
+      var icon = document.querySelector('link[rel="icon"]');
+      if (icon) icon.setAttribute('href', base + 'allobot.svg');
+    })();
+  </script>
+</body>
+</html>

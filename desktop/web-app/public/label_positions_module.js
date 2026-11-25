@@ -9,9 +9,9 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
-  if (window.AlloModules && window.AlloModules.LabelPositions) {
-    console.log('[CDN] LabelPositionsModule already loaded, skipping');
+  if (typeof window === 'undefined' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.LabelPositions) {
+    if (typeof console !== 'undefined' && console.log) console.log('[CDN] LabelPositionsModule already loaded, skipping');
     return;
   }
 
@@ -29,12 +29,12 @@
 
   window.LABEL_POSITIONS = LABEL_POSITIONS;
 
-  window.AlloModules = window.AlloModules || {};
+  window.AlloModules = (window.AlloModules && typeof window.AlloModules === 'object') ? window.AlloModules : {};
   window.AlloModules.LabelPositions = Object.freeze({ LABEL_POSITIONS: LABEL_POSITIONS });
 
   if (typeof window._upgradeLabelPositions === 'function') {
-    try { window._upgradeLabelPositions(); } catch (e) { console.warn('[LabelPositions] upgrade hook failed:', e && e.message ? e.message : String(e)); }
+    try { window._upgradeLabelPositions(); } catch (e) { if (typeof console !== 'undefined' && console.warn) console.warn('[LabelPositions] upgrade hook failed:', e && e.message ? e.message : String(e)); }
   }
 
-  console.log('[CDN] LabelPositionsModule loaded — ' + Object.keys(LABEL_POSITIONS).length + ' positions');
+  if (typeof console !== 'undefined' && console.log) console.log('[CDN] LabelPositionsModule loaded — ' + Object.keys(LABEL_POSITIONS).length + ' positions');
 })();

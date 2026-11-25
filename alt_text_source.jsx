@@ -744,6 +744,7 @@ async function bakeCreditBand(dataUrl, creditLine, options) {
   const width = symbol ? 640 : Math.min(960, naturalWidth);
   const artHeight = symbol ? 640 : Math.round(naturalHeight * (width / naturalWidth));
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
   try {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('The picture could not be opened.');
@@ -778,6 +779,7 @@ async function cropImageBottom(dataUrl, pixels) {
   const band = Math.max(0, Math.round(Number(pixels) || 0));
   if (!img.naturalWidth || img.naturalHeight - band < 1) throw new Error('The picture could not be opened.');
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
   try {
     canvas.width = img.naturalWidth; canvas.height = img.naturalHeight - band;
     const ctx = canvas.getContext('2d');
@@ -810,6 +812,7 @@ async function shrinkImageDataUrl(dataUrl, maxSide, options) {
     ? Math.min(1, side / naturalWidth, (side * 2) / naturalHeight)
     : Math.min(1, side / Math.max(naturalWidth, naturalHeight));
   const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
   try {
     canvas.width = Math.max(1, Math.round(naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(naturalHeight * scale));
@@ -979,6 +982,7 @@ function ClassroomImagePicker(props) {
     ? (state.withheld + state.unchecked === 1 ? tr('images_withheld_one', '1 photo was not shown because it could not be confirmed as classroom-appropriate.') : tr('images_withheld', '{count} photos were not shown because they could not be confirmed as classroom-appropriate.', { count: state.withheld + state.unchecked }))
     : '';
   const tabClass = (active) => 'min-h-11 rounded-xl px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 ' + (active ? 'bg-sky-700 text-white' : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50');
+  React.useEffect(() => { _ensureAltTextA11yCss(); }, []);
   return (
     <div className="rounded-xl border border-slate-300 bg-white p-3" data-classroom-image-picker="">
       {allowed.length > 1 && (
@@ -1024,11 +1028,26 @@ function ClassroomImagePicker(props) {
 // Shared edit-mode control. Mirrors the PDF audit's per-image field: text,
 // provenance, quality badge, decorative toggle, regenerate. Every tool's edit
 // mode drops this in so the six image-bearing surfaces behave identically.
+function _ensureAltTextA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-alt-text-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-alt-text-a11y-css';
+  st.textContent =
+    '[data-classroom-image-picker] button,[data-classroom-image-picker] input,[data-alt-text-field] button,[data-alt-text-field] input,[data-alt-text-field] textarea{touch-action:manipulation;}' +
+    '[data-classroom-image-picker] button:focus-visible,[data-classroom-image-picker] input:focus-visible,[data-alt-text-field] button:focus-visible,[data-alt-text-field] input:focus-visible,[data-alt-text-field] textarea:focus-visible{outline:2px solid #0284c7;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-classroom-image-picker] button:focus-visible,[data-classroom-image-picker] input:focus-visible,[data-alt-text-field] button:focus-visible,[data-alt-text-field] input:focus-visible,[data-alt-text-field] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-classroom-image-picker] *,[data-classroom-image-picker] *::before,[data-classroom-image-picker] *::after,[data-alt-text-field] *,[data-alt-text-field] *::before,[data-alt-text-field] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+_ensureAltTextA11yCss();
+
 function ImageAltField(props) {
   const {
     id, value, onChange, source, decorative, onDecorativeChange, onRegenerate, busy, disabled,
     figcaptionText, nearbyText, label, t,
   } = props;
+  React.useEffect(() => { _ensureAltTextA11yCss(); }, []);
   const [, setAiRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiRevision(v => v + 1);
@@ -1062,7 +1081,7 @@ function ImageAltField(props) {
   const regenerateAiBlocked = aiLocked || !hostAiUsable || Boolean(hostDoor && hostDoor.disabled);
   const SetupNotice = !studentAiOff && typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
   return (
-    <div className="rounded-xl border border-slate-300 bg-white p-3" data-alt-source={sourceKey || undefined}>
+    <div className="rounded-xl border border-slate-300 bg-white p-3" data-alt-text-field="true" data-alt-source={sourceKey || undefined}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         {decorative
           ? <span className="text-xs font-black text-slate-800">{label || tr('field_label', 'Image description')}</span>

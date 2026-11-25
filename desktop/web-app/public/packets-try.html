@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- "Try it" on either maker opens this page. It shows the file that maker has just built: a practice file
+     or a math check. Such a file carries its script and its styles inside itself, and a browser hands this page's
+     rule down to the file it shows. So this page, and only this page, has to allow inline script and style.
+     The file runs in a sandboxed frame: it cannot read anything this site keeps in the browser.
+     connect-src blob: lets the page read the built file from the maker tab; frame-src blob: lets it show it.
+     Nothing on this page can reach the network. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; font-src data:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>Try the file</title>
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<script src="packets-try.js" defer></script>
+</head>
+<body class="try-page">
+<a class="skip" href="#try-main">Skip to preview</a>
+<!-- Present (packets-try.js) slides #try-top away; the pointer on this strip at the top edge brings it back. -->
+<div class="try-peek" aria-hidden="true"></div>
+<div id="try-top" class="try-top">
+  <div class="try-head">
+    <header class="try-bar">
+      <h1>Preview</h1>
+      <p>This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.</p>
+    </header>
+    <button type="button" id="try-present" class="btn btn-small try-present-btn" aria-pressed="false" hidden>Present</button>
+  </div>
+  <div id="try-edit" class="try-edit" role="region" aria-label="Teacher tools" hidden></div>
+  <button type="button" id="try-tab" class="try-tab" aria-expanded="false" aria-controls="try-top" aria-label="Top bar" hidden><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</div>
+<main id="try-main" tabindex="-1" class="try-main">
+  <p id="try-wait" class="try-problem" role="status">Opening the file.</p>
+  <div id="try-problem" class="try-problem" hidden>
+    <h2>The preview is not here any more</h2>
+    <p>A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again. Or start a new file.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="packets.html">Back to Packets</a>
+    </div>
+  </div>
+  <noscript><p class="try-problem">The preview needs JavaScript.</p></noscript>
+</main>
+</body>
+</html>

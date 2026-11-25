@@ -11,9 +11,9 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
-  if (window.AlloModules && window.AlloModules.VoiceConfig) {
-    console.log('[CDN] VoiceConfigModule already loaded, skipping');
+  if (typeof window === 'undefined' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.VoiceConfig) {
+    if (typeof console !== 'undefined' && console.log) console.log('[CDN] VoiceConfigModule already loaded, skipping');
     return;
   }
   function freezeCatalog(list) {
@@ -123,7 +123,7 @@ const FROZEN_EDGE_TTS_VOICES = freezeCatalog(EDGE_TTS_VOICES);
     window.AVAILABLE_VOICES = AVAILABLE_VOICES;
   }
 
-  window.AlloModules = window.AlloModules || {};
+  window.AlloModules = (window.AlloModules && typeof window.AlloModules === 'object') ? window.AlloModules : {};
   window.AlloModules.VoiceConfig = Object.freeze({
     GEMINI_VOICES: FROZEN_GEMINI_VOICES,
     KOKORO_VOICES: FROZEN_KOKORO_VOICES,
@@ -132,8 +132,8 @@ const FROZEN_EDGE_TTS_VOICES = freezeCatalog(EDGE_TTS_VOICES);
   });
 
   if (typeof window._upgradeVoiceConfig === 'function') {
-    try { window._upgradeVoiceConfig(); } catch (e) { console.warn('[VoiceConfig] upgrade hook failed', e); }
+    try { window._upgradeVoiceConfig(); } catch (e) { if (typeof console !== 'undefined' && console.warn) console.warn('[VoiceConfig] upgrade hook failed', e); }
   }
 
-  console.log('[CDN] VoiceConfigModule loaded — ' + GEMINI_VOICES.length + ' Gemini, ' + KOKORO_VOICES.length + ' Kokoro, ' + EDGE_TTS_VOICES.length + ' Edge voices');
+  if (typeof console !== 'undefined' && console.log) console.log('[CDN] VoiceConfigModule loaded — ' + GEMINI_VOICES.length + ' Gemini, ' + KOKORO_VOICES.length + ' Kokoro, ' + EDGE_TTS_VOICES.length + ' Edge voices');
 })();

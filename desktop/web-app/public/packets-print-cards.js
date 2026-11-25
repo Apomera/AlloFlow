@@ -278,6 +278,287 @@
     }
     return '';
   }
+  // Canonical single-story school handwriting strokes (sky y=0, midline y=50, base y=100, descender y=145).
+  var WS_TRACE_STROKES = {
+    a: 'E 22 75 22 25 -30 -390|M 44 50 L 44 100',
+    b: 'M 0 0 L 0 100|E 22 75 22 25 180 540',
+    c: 'E 22 75 22 25 -40 -320',
+    d: 'E 22 75 22 25 -30 -390|M 44 0 L 44 100',
+    e: 'M 2 75 L 44 75 E 22 75 22 25 0 -320',
+    f: 'E 34 14 13 14 -20 -180 L 21 100|M 6 50 L 40 50',
+    g: 'E 22 75 22 25 -30 -390|M 44 50 L 44 125 E 24 125 20 20 0 150',
+    h: 'M 0 0 L 0 100|M 0 72 E 22 72 22 22 180 360 L 44 100',
+    i: 'M 0 50 L 0 100|D 0 28',
+    j: 'M 24 50 L 24 125 E 6 125 18 18 0 160|D 24 28',
+    k: 'M 0 0 L 0 100|M 38 50 L 2 78 L 40 100',
+    l: 'M 0 0 L 0 100',
+    m: 'M 0 50 L 0 100|M 0 70 E 15 70 15 20 180 360 L 30 100|M 30 70 E 45 70 15 20 180 360 L 60 100',
+    n: 'M 0 50 L 0 100|M 0 72 E 21 72 21 22 180 360 L 42 100',
+    o: 'E 23 75 23 25 -70 -430',
+    p: 'M 0 50 L 0 145|E 22 75 22 25 180 540',
+    q: 'E 22 75 22 25 -30 -390|M 44 50 L 44 145',
+    r: 'M 0 50 L 0 100|M 0 74 E 20 74 20 22 180 310',
+    s: 'E 22 62.5 20 12.5 -20 -270 E 22 87.5 20 12.5 -90 160',
+    t: 'M 16 14 L 16 100|M 0 50 L 34 50',
+    u: 'M 0 50 L 0 78 E 21 78 21 22 180 0 L 42 50|M 42 50 L 42 100',
+    v: 'M 0 50 L 22 100 L 44 50',
+    w: 'M 0 50 L 15 100 L 30 50 L 45 100 L 60 50',
+    x: 'M 0 50 L 42 100|M 42 50 L 0 100',
+    y: 'M 0 50 L 22 100|M 44 50 L 8 145',
+    z: 'M 0 50 L 42 50 L 0 100 L 42 100',
+    A: 'M 30 0 L 0 100|M 30 0 L 60 100|M 11 64 L 49 64',
+    B: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 24 22 24 -90 90 L 0 48|M 0 48 L 28 48 E 28 74 24 26 -90 90 L 0 100',
+    C: 'E 45 50 45 50 -40 -320',
+    D: 'M 0 0 L 0 100|M 0 0 L 16 0 E 16 50 40 50 -90 90 L 0 100',
+    E: 'M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50|M 0 100 L 44 100',
+    F: 'M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50',
+    G: 'E 45 50 45 50 -40 -360 L 58 50',
+    H: 'M 0 0 L 0 100|M 50 0 L 50 100|M 0 50 L 50 50',
+    I: 'M 20 0 L 20 100|M 0 0 L 40 0|M 0 100 L 40 100',
+    J: 'M 40 0 L 40 74 E 20 74 20 26 0 165',
+    K: 'M 0 0 L 0 100|M 46 0 L 2 52 L 48 100',
+    L: 'M 0 0 L 0 100 L 42 100',
+    M: 'M 0 0 L 0 100|M 0 0 L 32 64 L 64 0 L 64 100',
+    N: 'M 0 0 L 0 100|M 0 0 L 52 100 L 52 0',
+    O: 'E 45 50 45 50 -90 -450',
+    P: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52',
+    Q: 'E 45 50 45 50 -90 -450|M 58 72 L 92 104',
+    R: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52|M 24 52 L 50 100',
+    S: 'E 42 25 38 25 -20 -270 E 42 75 38 25 -90 160',
+    T: 'M 26 0 L 26 100|M 0 0 L 52 0',
+    U: 'M 0 0 L 0 66 E 25 66 25 34 180 0 L 50 0',
+    V: 'M 0 0 L 26 100 L 52 0',
+    W: 'M 0 0 L 18 100 L 36 0 L 54 100 L 72 0',
+    X: 'M 0 0 L 52 100|M 52 0 L 0 100',
+    Y: 'M 0 0 L 26 50|M 52 0 L 26 50 L 26 100',
+    Z: 'M 0 0 L 52 0 L 0 100 L 52 100'
+  };
+
+  function wsParseLetterStrokes(ch) {
+    var spec = Object.prototype.hasOwnProperty.call(WS_TRACE_STROKES, ch) ? WS_TRACE_STROKES[ch] : '';
+    if (!spec) return null;
+    var rawStrokes = spec.split('|');
+    var strokes = [];
+    var minX = Infinity, maxX = -Infinity, maxY = 100;
+    rawStrokes.forEach(function (part) {
+      var toks = part.trim().split(/\s+/).filter(Boolean);
+      var i = 0, pts = [], isDot = false, dotPt = null;
+      while (i < toks.length) {
+        var cmd = toks[i++];
+        if (cmd === 'M' || cmd === 'L') {
+          var px = Number(toks[i++]), py = Number(toks[i++]);
+          if (Number.isFinite(px) && Number.isFinite(py)) pts.push([px, py]);
+        } else if (cmd === 'E') {
+          var cx = Number(toks[i++]), cy = Number(toks[i++]);
+          var rx = Number(toks[i++]), ry = Number(toks[i++]);
+          var a0 = Number(toks[i++]), a1 = Number(toks[i++]);
+          if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(rx) && Number.isFinite(ry) && Number.isFinite(a0) && Number.isFinite(a1)) {
+            var steps = Math.max(8, Math.ceil(Math.abs(a1 - a0) / 10));
+            for (var s = 0; s <= steps; s++) {
+              var ang = (a0 + (a1 - a0) * (s / steps)) * Math.PI / 180;
+              var ex = cx + rx * Math.cos(ang);
+              var ey = cy + ry * Math.sin(ang);
+              if (!pts.length || Math.hypot(ex - pts[pts.length - 1][0], ey - pts[pts.length - 1][1]) > 0.4) {
+                pts.push([ex, ey]);
+              }
+            }
+          }
+        } else if (cmd === 'D') {
+          var dx = Number(toks[i++]), dy = Number(toks[i++]);
+          if (Number.isFinite(dx) && Number.isFinite(dy)) {
+            isDot = true;
+            dotPt = [dx, dy];
+          }
+        }
+      }
+      if (isDot && dotPt) {
+        minX = Math.min(minX, dotPt[0] - 4);
+        maxX = Math.max(maxX, dotPt[0] + 4);
+        maxY = Math.max(maxY, dotPt[1]);
+        strokes.push({ dot: true, x: dotPt[0], y: dotPt[1] });
+      } else if (pts.length >= 2) {
+        pts.forEach(function (pt) {
+          if (pt[0] < minX) minX = pt[0];
+          if (pt[0] > maxX) maxX = pt[0];
+          if (pt[1] > maxY) maxY = pt[1];
+        });
+        strokes.push({ dot: false, pts: pts });
+      }
+    });
+    if (!strokes.length || !Number.isFinite(minX)) return null;
+    return { strokes: strokes, minX: minX, maxX: maxX, hasDescender: maxY > 106 };
+  }
+
+  function wsLetterStrokeCue(letter) {
+    var ch = String(letter || '').trim().charAt(0);
+    if (!ch) return '';
+    var parsed = wsParseLetterStrokes(ch);
+    if (!parsed) return 'Trace the guide letters along the lines, then write ' + ch + ' on your own.';
+    var n = parsed.strokes.length;
+    var first = parsed.strokes[0];
+    var dirHint = 'follow the arrow';
+    if (first && !first.dot && first.pts.length >= 2) {
+      var p0 = first.pts[0];
+      var p1 = first.pts[Math.min(first.pts.length - 1, 3)];
+      var dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+      if (dy > Math.abs(dx) * 1.4 && dy > 6) dirHint = 'pull straight down';
+      else if (dx > Math.abs(dy) * 1.4 && dx > 6) dirHint = 'go left to right';
+      else if (dx < -4 && dy <= 10) dirHint = 'curve left and around';
+      else if (dy > 4 && dx < -3) dirHint = 'slant down left';
+      else if (dy > 4 && dx > 3) dirHint = 'slant down right';
+    }
+    if (n === 1) return '1 stroke: Start at dot 1 and ' + dirHint + '.';
+    return n + ' strokes: Start at dot 1 (' + dirHint + '), then follow dots 2' + (n > 2 ? ' to ' + n : '') + ' in order.';
+  }
+
+  function buildLetterTracingStripSvg(letter, options) {
+    var ch = String(letter || 'A').trim().charAt(0) || 'A';
+    var opts = options && typeof options === 'object' ? options : {};
+    var scaffolded = opts.scaffolded !== false;
+    var standalone = !!opts.standalone;
+    var parsed = wsParseLetterStrokes(ch);
+    var hasDesc = !!(parsed && parsed.hasDescender);
+    var W = 600;
+    var topY = 18;
+    var H = hasDesc ? 174 : 134;
+    var nsAttr = standalone ? (' xmlns="ht' + 'tp:' + '/' + '/www.' + 'w3.org/2000/svg"') : '';
+    var out = [
+      '<svg' + nsAttr + ' class="ws-trace-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="Primary handwriting strip for letter ' + wsEsc(ch) + '">',
+      '<title>Trace letter ' + wsEsc(ch) + (parsed ? ' (' + parsed.strokes.length + (parsed.strokes.length === 1 ? ' stroke' : ' strokes') + ')' : '') + '</title>',
+      '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="#ffffff"/>',
+      // Sky line, dashed midline, solid baseline (+ optional descender rule)
+      '<line x1="8" y1="' + topY + '" x2="' + (W - 8) + '" y2="' + topY + '" stroke="#000000" stroke-width="1.6"/>',
+      '<line x1="8" y1="' + (topY + 50) + '" x2="' + (W - 8) + '" y2="' + (topY + 50) + '" stroke="#707070" stroke-width="1.2" stroke-dasharray="6 5"/>',
+      '<line x1="8" y1="' + (topY + 100) + '" x2="' + (W - 8) + '" y2="' + (topY + 100) + '" stroke="#000000" stroke-width="1.9"/>'
+    ];
+    if (hasDesc) {
+      out.push('<line x1="8" y1="' + (topY + 142) + '" x2="' + (W - 8) + '" y2="' + (topY + 142) + '" stroke="#999999" stroke-width="1" stroke-dasharray="3 4"/>');
+    }
+
+    var slots = 5;
+    var padX = 18;
+    var slotW = (W - padX * 2) / slots;
+
+    if (!parsed) {
+      // Fallback for non-ASCII / digit characters
+      for (var fi = 0; fi < (scaffolded ? 3 : 2); fi++) {
+        var fx = (padX + slotW * (fi + 0.5)).toFixed(1);
+        var isModel = fi === 0;
+        out.push('<text x="' + fx + '" y="' + (topY + 94) + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="94" '
+          + (isModel ? 'fill="#000000"' : 'fill="none" stroke="#767676" stroke-width="2" stroke-dasharray="5 4"')
+          + '>' + wsEsc(ch) + '</text>');
+      }
+      out.push('</svg>');
+      return out.join('');
+    }
+
+    var midGlyphX = (parsed.minX + parsed.maxX) / 2;
+    var glyphSpan = Math.max(1, parsed.maxX - parsed.minX);
+    var scale = glyphSpan > 78 ? (78 / glyphSpan) : 1;
+
+    function mapPt(pt, cxSlot) {
+      return [
+        cxSlot + (pt[0] - midGlyphX) * scale,
+        topY + pt[1] * scale + (1 - scale) * 100
+      ];
+    }
+    function pathD(pts, cxSlot) {
+      var segs = [];
+      for (var i = 0; i < pts.length; i++) {
+        var mp = mapPt(pts[i], cxSlot);
+        segs.push((i === 0 ? 'M ' : 'L ') + mp[0].toFixed(1) + ' ' + mp[1].toFixed(1));
+      }
+      return segs.join(' ');
+    }
+    function arrowAt(pts, cxSlot) {
+      if (pts.length < 2) return '';
+      var mapped = pts.map(function (pt) { return mapPt(pt, cxSlot); });
+      var totalLen = 0;
+      for (var i = 1; i < mapped.length; i++) {
+        totalLen += Math.hypot(mapped[i][0] - mapped[i - 1][0], mapped[i][1] - mapped[i - 1][1]);
+      }
+      if (totalLen < 12) return '';
+      var target = Math.min(20, Math.max(11, totalLen * 0.32));
+      var acc = 0, ax = mapped[0][0], ay = mapped[0][1], ux = 0, uy = 1;
+      for (var j = 1; j < mapped.length; j++) {
+        var dx = mapped[j][0] - mapped[j - 1][0];
+        var dy = mapped[j][1] - mapped[j - 1][1];
+        var segLen = Math.hypot(dx, dy);
+        if (segLen < 0.01) continue;
+        if (acc + segLen >= target || j === mapped.length - 1) {
+          var t = Math.max(0, Math.min(1, (target - acc) / segLen));
+          ax = mapped[j - 1][0] + dx * t;
+          ay = mapped[j - 1][1] + dy * t;
+          ux = dx / segLen;
+          uy = dy / segLen;
+          break;
+        }
+        acc += segLen;
+      }
+      var tipX = ax + ux * 6.5, tipY = ay + uy * 6.5;
+      var baseX = ax - ux * 3.5, baseY = ay - uy * 3.5;
+      var px = -uy * 4.8, py = ux * 4.8;
+      return '<polygon points="'
+        + tipX.toFixed(1) + ',' + tipY.toFixed(1) + ' '
+        + (baseX + px).toFixed(1) + ',' + (baseY + py).toFixed(1) + ' '
+        + (baseX - px).toFixed(1) + ',' + (baseY - py).toFixed(1)
+        + '" fill="#000000" stroke="#ffffff" stroke-width="0.9"/>';
+    }
+
+    var guideCount = scaffolded ? 2 : 1;
+    var firstStroke = parsed.strokes[0];
+    var startOrigin = firstStroke.dot ? [firstStroke.x, firstStroke.y] : firstStroke.pts[0];
+
+    for (var si = 0; si < slots; si++) {
+      var cxSlot = padX + slotW * (si + 0.5);
+      if (si === 0) {
+        // Slot 1: Solid model letter with numbered stroke start dots and direction arrows
+        parsed.strokes.forEach(function (st) {
+          if (st.dot) {
+            var dp = mapPt([st.x, st.y], cxSlot);
+            out.push('<circle cx="' + dp[0].toFixed(1) + '" cy="' + dp[1].toFixed(1) + '" r="4.5" fill="#000000"/>');
+          } else {
+            out.push('<path d="' + pathD(st.pts, cxSlot) + '" fill="none" stroke="#000000" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>');
+          }
+        });
+        // Stroke badges & directional arrows on model
+        parsed.strokes.forEach(function (st, sIdx) {
+          if (!scaffolded && sIdx > 0) return;
+          var sp = st.dot ? mapPt([st.x, st.y], cxSlot) : mapPt(st.pts[0], cxSlot);
+          if (!st.dot && scaffolded) {
+            var arr = arrowAt(st.pts, cxSlot);
+            if (arr) out.push(arr);
+          }
+          var badgeR = scaffolded ? 8 : 5;
+          out.push('<circle cx="' + sp[0].toFixed(1) + '" cy="' + sp[1].toFixed(1) + '" r="' + badgeR + '" fill="#000000" stroke="#ffffff" stroke-width="1.6"/>');
+          if (scaffolded) {
+            out.push('<text x="' + sp[0].toFixed(1) + '" y="' + (sp[1] + 3.6).toFixed(1) + '" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="10.5" font-weight="700" fill="#ffffff">' + (sIdx + 1) + '</text>');
+          }
+        });
+      } else if (si <= guideCount) {
+        // Dashed tracing guide letter(s) with start dot
+        parsed.strokes.forEach(function (st) {
+          if (st.dot) {
+            var gdp = mapPt([st.x, st.y], cxSlot);
+            out.push('<circle cx="' + gdp[0].toFixed(1) + '" cy="' + gdp[1].toFixed(1) + '" r="4.2" fill="none" stroke="#767676" stroke-width="2" stroke-dasharray="3 2"/>');
+          } else {
+            out.push('<path d="' + pathD(st.pts, cxSlot) + '" fill="none" stroke="#767676" stroke-width="4.4" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round"/>');
+          }
+        });
+        var gs = mapPt(startOrigin, cxSlot);
+        out.push('<circle cx="' + gs[0].toFixed(1) + '" cy="' + gs[1].toFixed(1) + '" r="4.2" fill="#ffffff" stroke="#000000" stroke-width="1.8"/>');
+        out.push('<circle cx="' + gs[0].toFixed(1) + '" cy="' + gs[1].toFixed(1) + '" r="1.6" fill="#000000"/>');
+      } else {
+        // Independent writing slot: clean starting dot on primary rules
+        var indPt = mapPt(startOrigin, cxSlot);
+        out.push('<circle cx="' + indPt[0].toFixed(1) + '" cy="' + indPt[1].toFixed(1) + '" r="3.4" fill="#444444"/>');
+      }
+    }
+
+    out.push('</svg>');
+    return out.join('');
+  }
+
   function wsSynthesizeItem(activity, rawEntry, idx, allWords, ctx) {
     var entry = typeof rawEntry === 'string' ? { word: rawEntry } : (rawEntry && typeof rawEntry === 'object' ? rawEntry : {});
     var word = String(entry.word || entry.targetWord || entry.term || entry.printed || entry.target || '').trim();
@@ -540,6 +821,655 @@
     return boards;
   }
 
+  // ---------------------------------------------------------------------------
+  // Shared Worksheet Customizer helpers (Word Sounds, Vocabulary, Read-Along)
+  // ---------------------------------------------------------------------------
+  function wsNormalizeDensity(value) {
+    var s = String(value == null ? '' : value).trim().toLowerCase();
+    return s === 'compact' || s === 'primary' ? s : 'standard';
+  }
+  function wsToBoolMap(raw) {
+    var out = Object.create(null);
+    if (!raw) return out;
+    if (Array.isArray(raw)) {
+      raw.forEach(function (k) {
+        var s = String(k == null ? '' : k).trim();
+        if (s && s !== '__proto__' && s !== 'constructor' && s !== 'prototype') out[s] = true;
+      });
+      return out;
+    }
+    if (typeof raw === 'object') {
+      Object.keys(raw).forEach(function (k) {
+        if (k && k !== '__proto__' && k !== 'constructor' && k !== 'prototype' && raw[k]) out[k] = true;
+      });
+    }
+    return out;
+  }
+  function wsMergeBoolMaps() {
+    var out = Object.create(null);
+    for (var i = 0; i < arguments.length; i++) {
+      var m = wsToBoolMap(arguments[i]);
+      Object.keys(m).forEach(function (k) { out[k] = true; });
+    }
+    return out;
+  }
+  function wsNormalizeOverrides(raw) {
+    var out = Object.create(null);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    Object.keys(raw).forEach(function (k) {
+      if (!k || k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+      var v = raw[k];
+      if (!v || typeof v !== 'object') return;
+      var entry = {};
+      if (typeof v.heading === 'string') entry.heading = v.heading;
+      else if (typeof v.label === 'string') entry.heading = v.label;
+      else if (typeof v.title === 'string') entry.heading = v.title;
+      if (typeof v.directions === 'string') entry.directions = v.directions;
+      if (entry.heading !== undefined || entry.directions !== undefined) out[k] = entry;
+    });
+    return out;
+  }
+  function wsMergeOverrides() {
+    var out = Object.create(null);
+    for (var i = 0; i < arguments.length; i++) {
+      var ov = wsNormalizeOverrides(arguments[i]);
+      Object.keys(ov).forEach(function (k) {
+        out[k] = Object.assign({}, out[k] || {}, ov[k]);
+      });
+    }
+    return out;
+  }
+  function wsNormalizeItemOrder(raw) {
+    var out = Object.create(null);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    var keys = Object.keys(raw);
+    var added = 0;
+    for (var i = 0; i < keys.length && added < 32; i++) {
+      var k = String(keys[i] == null ? '' : keys[i]).trim();
+      if (!k || k.length > 64 || k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      var arr = raw[keys[i]];
+      if (!Array.isArray(arr) || !arr.length) continue;
+      var seen = Object.create(null);
+      var clean = [];
+      for (var j = 0; j < arr.length && clean.length < 200; j++) {
+        var n = Math.floor(Number(arr[j]));
+        if (!isFinite(n) || n < 0 || n >= 500 || seen[n]) continue;
+        seen[n] = true;
+        clean.push(n);
+      }
+      if (clean.length) {
+        out[k] = clean;
+        added++;
+      }
+    }
+    return out;
+  }
+  function wsMergeItemOrders() {
+    var out = Object.create(null);
+    for (var i = 0; i < arguments.length; i++) {
+      var m = wsNormalizeItemOrder(arguments[i]);
+      Object.keys(m).forEach(function (k) { out[k] = m[k].slice(); });
+    }
+    return out;
+  }
+  function wsApplyItemOrder(items, itemOrder, secKey, altKey) {
+    var list = Array.isArray(items) ? items : [];
+    if (list.length < 2 || !itemOrder || typeof itemOrder !== 'object') return list.slice();
+    var order = (secKey && Array.isArray(itemOrder[secKey]) && itemOrder[secKey].length)
+      ? itemOrder[secKey]
+      : ((altKey && Array.isArray(itemOrder[altKey]) && itemOrder[altKey].length) ? itemOrder[altKey] : null);
+    if (!order) return list.slice();
+    var byOrig = Object.create(null);
+    list.forEach(function (it, idx) {
+      var oid = it && typeof it.origIndex === 'number' ? it.origIndex : idx;
+      byOrig[oid] = it;
+    });
+    var used = Object.create(null);
+    var out = [];
+    order.forEach(function (oid) {
+      if (byOrig[oid] && !used[oid]) {
+        used[oid] = true;
+        out.push(byOrig[oid]);
+      }
+    });
+    list.forEach(function (it, idx) {
+      var oid = it && typeof it.origIndex === 'number' ? it.origIndex : idx;
+      if (!used[oid]) {
+        used[oid] = true;
+        out.push(it);
+      }
+    });
+    return out;
+  }
+  function wsNormalizeItemTextOverrides(raw) {
+    var out = Object.create(null);
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    var keys = Object.keys(raw);
+    var added = 0;
+    for (var i = 0; i < keys.length && added < 200; i++) {
+      var k = String(keys[i] == null ? '' : keys[i]).trim();
+      if (!k || k.length > 96 || k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      if (typeof raw[keys[i]] !== 'string') continue;
+      var val = String(raw[keys[i]]).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim();
+      if (val.length > 240) val = val.slice(0, 240).trim();
+      if (val) {
+        out[k] = val;
+        added++;
+      }
+    }
+    return out;
+  }
+  function wsMergeItemTextOverrides() {
+    var out = Object.create(null);
+    for (var i = 0; i < arguments.length; i++) {
+      var m = wsNormalizeItemTextOverrides(arguments[i]);
+      Object.keys(m).forEach(function (k) { out[k] = m[k]; });
+    }
+    return out;
+  }
+  function wsItemTextOverride(map, key, altKey) {
+    if (!map || typeof map !== 'object') return '';
+    if (key && typeof map[key] === 'string' && map[key].trim()) return map[key].trim();
+    if (altKey && typeof map[altKey] === 'string' && map[altKey].trim()) return map[altKey].trim();
+    return '';
+  }
+  function wsDefaultItemPrompt(activity, it) {
+    if (!it || typeof it !== 'object') return '';
+    if (activity === 'isolation') return 'What is the ' + String(it.positionName || 'target') + ' sound in ' + String(it.word || '') + '?';
+    if (activity === 'rhyming') return 'Circle the word that rhymes with ' + String(it.word || '') + ':';
+    if (activity === 'word_families') return 'Word family: -' + String(it.rime || '') + ' (like ' + String(it.word || '') + ')';
+    if (activity === 'letter_tracing') {
+      var letters = (it.parts || []).map(function (p) { return p.letter; }).join(' and ');
+      return 'Trace ' + letters + ' (for ' + String(it.word || '') + ')';
+    }
+    if (activity === 'orthography' || activity === 'spelling_bee') return 'Listen to your teacher and write the word:';
+    if (activity === 'manipulation') return String(it.prompt || '');
+    if (activity === 'read_sentence') return String(it.before || '') + '___' + String(it.after || '');
+    if (activity === 'mapping') return 'Listen and write each sound in a box:';
+    if (activity === 'word_scramble') return 'Unscramble the letters:';
+    if (activity === 'read_passage') return 'Read the story:';
+    return '';
+  }
+  function wsCreateDefaultCustom(baseTitle) {
+    return {
+      title: String(baseTitle == null ? '' : baseTitle).trim(),
+      subtitle: '',
+      headerFields: { classPeriod: false, score: false },
+      density: 'standard',
+      hiddenSections: Object.create(null),
+      hiddenItems: Object.create(null),
+      sectionOverrides: Object.create(null),
+      itemOrder: Object.create(null),
+      itemTextOverrides: Object.create(null)
+    };
+  }
+  function wsCloneCustom(cust) {
+    var c = cust && typeof cust === 'object' ? cust : wsCreateDefaultCustom('');
+    return {
+      title: String(c.title || '').trim(),
+      subtitle: String(c.subtitle || '').trim(),
+      headerFields: {
+        classPeriod: !!(c.headerFields && c.headerFields.classPeriod),
+        score: !!(c.headerFields && c.headerFields.score)
+      },
+      density: wsNormalizeDensity(c.density),
+      hiddenSections: wsToBoolMap(c.hiddenSections),
+      hiddenItems: wsToBoolMap(c.hiddenItems),
+      sectionOverrides: wsNormalizeOverrides(c.sectionOverrides),
+      itemOrder: wsNormalizeItemOrder(c.itemOrder),
+      itemTextOverrides: wsNormalizeItemTextOverrides(c.itemTextOverrides)
+    };
+  }
+  function wsExtractCustom(src, opts, defaultTitle) {
+    var s = src && typeof src === 'object' ? src : {};
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var sc = s.custom && typeof s.custom === 'object' ? s.custom : {};
+    var oc = o.custom && typeof o.custom === 'object' ? o.custom : {};
+    var pickStr = function () {
+      for (var i = 0; i < arguments.length; i++) {
+        if (typeof arguments[i] === 'string' && arguments[i].trim()) return arguments[i].trim();
+      }
+      return '';
+    };
+    var title = pickStr(o.title, oc.title, sc.title, s.title, defaultTitle) || defaultTitle;
+    var subtitle = typeof o.subtitle === 'string' ? o.subtitle.trim()
+      : (typeof oc.subtitle === 'string' ? oc.subtitle.trim()
+        : (typeof sc.subtitle === 'string' ? sc.subtitle.trim()
+          : (typeof s.subtitle === 'string' ? s.subtitle.trim() : '')));
+    var hfSrc = (s.headerFields && typeof s.headerFields === 'object') ? s.headerFields : {};
+    var hfSc = (sc.headerFields && typeof sc.headerFields === 'object') ? sc.headerFields : {};
+    var hfOc = (oc.headerFields && typeof oc.headerFields === 'object') ? oc.headerFields : {};
+    var hfOpt = (o.headerFields && typeof o.headerFields === 'object') ? o.headerFields : {};
+    var pickBool = function (key) {
+      if (hfOpt[key] !== undefined) return !!hfOpt[key];
+      if (hfOc[key] !== undefined) return !!hfOc[key];
+      if (hfSc[key] !== undefined) return !!hfSc[key];
+      if (hfSrc[key] !== undefined) return !!hfSrc[key];
+      return false;
+    };
+    var density = wsNormalizeDensity(
+      o.density !== undefined ? o.density
+        : (oc.density !== undefined ? oc.density
+          : (sc.density !== undefined ? sc.density : s.density))
+    );
+    var hiddenSections = wsMergeBoolMaps(
+      s.hiddenSections, s.hiddenParts, sc.hiddenSections, sc.hiddenParts,
+      o.hiddenSections, o.hiddenParts, oc.hiddenSections, oc.hiddenParts
+    );
+    var hiddenItems = wsMergeBoolMaps(s.hiddenItems, sc.hiddenItems, o.hiddenItems, oc.hiddenItems);
+    var sectionOverrides = wsMergeOverrides(s.sectionOverrides, sc.sectionOverrides, o.sectionOverrides, oc.sectionOverrides);
+    var itemOrder = wsMergeItemOrders(s.itemOrder, sc.itemOrder, o.itemOrder, oc.itemOrder);
+    var itemTextOverrides = wsMergeItemTextOverrides(s.itemTextOverrides, sc.itemTextOverrides, o.itemTextOverrides, oc.itemTextOverrides);
+    return {
+      title: title,
+      subtitle: subtitle,
+      headerFields: { classPeriod: pickBool('classPeriod'), score: pickBool('score') },
+      density: density,
+      hiddenSections: hiddenSections,
+      hiddenParts: hiddenSections,
+      hiddenItems: hiddenItems,
+      sectionOverrides: sectionOverrides,
+      itemOrder: itemOrder,
+      itemTextOverrides: itemTextOverrides
+    };
+  }
+  function wsSectionOverride(overrides, key, altKey) {
+    if (!overrides || typeof overrides !== 'object') return null;
+    if (key && overrides[key]) return overrides[key];
+    if (altKey && overrides[altKey]) return overrides[altKey];
+    return null;
+  }
+  function wsApplySectionCopy(overrides, key, altKey, defaultHeading, defaultDirections) {
+    var ov = wsSectionOverride(overrides, key, altKey);
+    var heading = (ov && typeof ov.heading === 'string' && ov.heading.trim()) ? ov.heading.trim() : defaultHeading;
+    var directions = (ov && typeof ov.directions === 'string') ? ov.directions : defaultDirections;
+    return { heading: heading, directions: directions };
+  }
+  function wsIsItemHidden(hiddenItems, secKey, origIdx, altKey) {
+    if (!hiddenItems) return false;
+    if (hiddenItems[secKey + ':' + origIdx] || hiddenItems[secKey + '::' + origIdx]) return true;
+    if (altKey && (hiddenItems[altKey + ':' + origIdx] || hiddenItems[altKey + '::' + origIdx])) return true;
+    return false;
+  }
+  function wsCountHidden(map) {
+    if (!map || typeof map !== 'object') return 0;
+    return Object.keys(map).filter(function (k) { return !!map[k]; }).length;
+  }
+  function wsHeaderMetaHtml(headerFields) {
+    var hf = headerFields && typeof headerFields === 'object' ? headerFields : {};
+    var parts = [
+      '<span class="ws-meta-field"><span>Name:</span><span class="ws-meta-line"></span></span>',
+      '<span class="ws-meta-field"><span>Date:</span><span class="ws-meta-line"></span></span>'
+    ];
+    if (hf.classPeriod) {
+      parts.push('<span class="ws-meta-field"><span>Class / Period:</span><span class="ws-meta-line"></span></span>');
+    }
+    if (hf.score) {
+      parts.push('<span class="ws-meta-field"><span>Score:</span><span class="ws-score-line"><span class="ws-score-blank"></span> / <span class="ws-score-blank"></span></span></span>');
+    }
+    return '<div class="ws-meta">' + parts.join('') + '</div>';
+  }
+  function wsSubtitleHtml(subtitle) {
+    var s = String(subtitle == null ? '' : subtitle).trim();
+    return s ? '<p class="ws-subtitle">' + wsEsc(s) + '</p>' : '';
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reusable Teacher Worksheet Presets & Reopenable HTML/JSON Templates
+  // ---------------------------------------------------------------------------
+  var WS_PRESETS_KEY = 'alloflow-packets-ws-presets/1';
+  var WS_PRESETS_MAX = 20;
+  var WS_TEMPLATE_MAX_BYTES = 200 * 1024;
+  var WS_TEMPLATE_KIND_LABELS = {
+    'word-sounds': 'Word Sounds',
+    vocab: 'Vocabulary',
+    'read-along': 'Read-Along'
+  };
+  function wsTrimLimit(value, maxLen) {
+    var s = String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim();
+    return s.length > maxLen ? s.slice(0, maxLen).trim() : s;
+  }
+  function wsNormalizeTemplateKind(raw) {
+    var s = String(raw == null ? '' : raw).trim().toLowerCase();
+    if (s === 'word-sounds' || s === 'word_sounds' || s === 'ws') return 'word-sounds';
+    if (s === 'vocab' || s === 'vocabulary') return 'vocab';
+    if (s === 'read-along' || s === 'read_along' || s === 'ra') return 'read-along';
+    return '';
+  }
+  function wsTemplateKindLabel(kind) {
+    var k = wsNormalizeTemplateKind(kind);
+    return WS_TEMPLATE_KIND_LABELS[k] || 'Worksheet';
+  }
+  function wsPlainBoolMap(raw, maxEntries, maxKeyLen) {
+    var m = wsToBoolMap(raw);
+    var out = {};
+    var limitN = maxEntries || 200;
+    var limitK = maxKeyLen || 96;
+    var keys = Object.keys(m).sort();
+    var added = 0;
+    for (var i = 0; i < keys.length && added < limitN; i++) {
+      var clean = wsTrimLimit(keys[i], limitK);
+      if (!clean || clean === '__proto__' || clean === 'constructor' || clean === 'prototype') continue;
+      out[clean] = true;
+      added++;
+    }
+    return out;
+  }
+  function wsPlainOverrides(raw) {
+    var m = wsNormalizeOverrides(raw);
+    var out = {};
+    var keys = Object.keys(m).sort();
+    var added = 0;
+    for (var i = 0; i < keys.length && added < 32; i++) {
+      var k = wsTrimLimit(keys[i], 64);
+      if (!k || k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+      var v = m[keys[i]];
+      var entry = {};
+      if (typeof v.heading === 'string') {
+        var h = wsTrimLimit(v.heading, 120);
+        if (h) entry.heading = h;
+      }
+      if (typeof v.directions === 'string') {
+        entry.directions = wsTrimLimit(v.directions, 240);
+      }
+      if (entry.heading !== undefined || entry.directions !== undefined) {
+        out[k] = entry;
+        added++;
+      }
+    }
+    return out;
+  }
+  function wsNormalizeTemplateOptions(kind, rawOpts) {
+    var o = rawOpts && typeof rawOpts === 'object' && !Array.isArray(rawOpts) ? rawOpts : {};
+    var out = {};
+    var pickBool = function () {
+      for (var i = 0; i < arguments.length; i++) {
+        var key = arguments[i];
+        if (Object.prototype.hasOwnProperty.call(o, key) && o[key] !== undefined) return !!o[key];
+      }
+      return undefined;
+    };
+    if (kind === 'word-sounds') {
+      var p = pickBool('pictures', 'picturesOn', 'showPictures');
+      var ak = pickBool('answerKey', 'answerKeyOn', 'includeAnswerKey');
+      var h = pickBool('hints', 'hintsOn', 'showHints');
+      var sy = pickBool('syllables', 'syllablesOn', 'showSyllables');
+      if (p !== undefined) out.pictures = p;
+      if (ak !== undefined) out.answerKey = ak;
+      if (h !== undefined) out.hints = h;
+      if (sy !== undefined) out.syllables = sy;
+    } else if (kind === 'vocab') {
+      var wb = pickBool('wordBank', 'wordBankOn', 'showWordBank');
+      var vp = pickBool('pictures', 'picturesOn', 'showPictures');
+      var vak = pickBool('answerKey', 'answerKeyOn', 'includeAnswerKey');
+      var vsy = pickBool('syllables', 'syllablesOn', 'showSyllables');
+      if (wb !== undefined) out.wordBank = wb;
+      if (vp !== undefined) out.pictures = vp;
+      if (vak !== undefined) out.answerKey = vak;
+      if (vsy !== undefined) out.syllables = vsy;
+    } else if (kind === 'read-along') {
+      var rsy = pickBool('syllables', 'showSyllables');
+      var rb = pickBool('bold', 'showBold');
+      var rsu = pickBool('supports', 'showSupports');
+      var rak = pickBool('answerKey', 'answerKeyOn', 'includeAnswerKey');
+      if (rsy !== undefined) out.syllables = rsy;
+      if (rb !== undefined) out.bold = rb;
+      if (rsu !== undefined) out.supports = rsu;
+      if (rak !== undefined) out.answerKey = rak;
+      if (Object.prototype.hasOwnProperty.call(o, 'writeLines') && o.writeLines !== undefined) {
+        out.writeLines = raNormalizeWriteLines(o.writeLines);
+      }
+    }
+    return out;
+  }
+  function wsSafeInlineJson(obj, space) {
+    return JSON.stringify(obj, null, space || 0)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
+  }
+  function wsPlainItemOrder(raw) {
+    var m = wsNormalizeItemOrder(raw);
+    var out = {};
+    Object.keys(m).sort().forEach(function (k) {
+      out[k] = m[k].slice();
+    });
+    return out;
+  }
+  function wsPlainItemTextOverrides(raw) {
+    var m = wsNormalizeItemTextOverrides(raw);
+    var out = {};
+    Object.keys(m).sort().forEach(function (k) {
+      out[k] = m[k];
+    });
+    return out;
+  }
+  function wsBuildTemplateObject(kind, customState, opts) {
+    var k = wsNormalizeTemplateKind(kind) || 'word-sounds';
+    var src = customState && typeof customState === 'object' ? customState : {};
+    var c = wsExtractCustom(src, {}, '');
+    var rawOpts = opts && typeof opts === 'object' ? opts : (src.options && typeof src.options === 'object' ? src.options : {});
+    return {
+      kind: k,
+      schema: 1,
+      title: wsTrimLimit(c.title, 120),
+      subtitle: wsTrimLimit(c.subtitle, 200),
+      headerFields: {
+        classPeriod: !!(c.headerFields && c.headerFields.classPeriod),
+        score: !!(c.headerFields && c.headerFields.score)
+      },
+      density: wsNormalizeDensity(c.density),
+      sectionOverrides: wsPlainOverrides(c.sectionOverrides),
+      hiddenSections: wsPlainBoolMap(c.hiddenSections, 32, 64),
+      hiddenItems: wsPlainBoolMap(c.hiddenItems, 200, 96),
+      itemOrder: wsPlainItemOrder(c.itemOrder),
+      itemTextOverrides: wsPlainItemTextOverrides(c.itemTextOverrides),
+      options: wsNormalizeTemplateOptions(k, rawOpts)
+    };
+  }
+  function serializeWorksheetTemplate(kind, customState, opts, formatOpts) {
+    var payload = wsBuildTemplateObject(kind, customState, opts);
+    var indent = formatOpts && formatOpts.pretty ? 2 : 0;
+    return wsSafeInlineJson(payload, indent);
+  }
+  function wsTemplateScriptTag(kind, customOrModel, opts) {
+    return '<template id="alloflow-worksheet-template">'
+      + serializeWorksheetTemplate(kind, customOrModel, opts)
+      + '</template>';
+  }
+  function wsUtf8ByteLength(str) {
+    var total = 0;
+    for (var i = 0; i < str.length; i++) {
+      var code = str.charCodeAt(i);
+      if (code < 0x80) total += 1;
+      else if (code < 0x800) total += 2;
+      else if (code >= 0xD800 && code <= 0xDBFF && i + 1 < str.length) { total += 4; i++; }
+      else total += 3;
+    }
+    return total;
+  }
+  function extractWorksheetTemplate(textOrJson) {
+    if (typeof textOrJson !== 'string') {
+      return { ok: false, why: 'No worksheet template text was provided.' };
+    }
+    var raw = textOrJson.charCodeAt(0) === 0xFEFF ? textOrJson.slice(1) : textOrJson;
+    if (!raw.trim()) {
+      return { ok: false, why: 'No worksheet template text was provided.' };
+    }
+    if (raw.length > WS_TEMPLATE_MAX_BYTES || (raw.length > (WS_TEMPLATE_MAX_BYTES / 3) && wsUtf8ByteLength(raw) > WS_TEMPLATE_MAX_BYTES)) {
+      return { ok: false, why: 'This file is larger than the 200 KB worksheet template limit.' };
+    }
+    var trimmed = raw.trim();
+    var jsonText = '';
+    var source = 'json';
+    if (trimmed.charAt(0) === '{') {
+      jsonText = trimmed;
+      source = 'json';
+    } else {
+      var m;
+      var tplRe = /<template\b([^>]*)>([\s\S]*?)<\/template\s*>/gi;
+      while ((m = tplRe.exec(raw))) {
+        var tAttrs = m[1] || '';
+        var tIdM = /\bid\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i.exec(tAttrs);
+        var tIdVal = tIdM ? String(tIdM[1] || tIdM[2] || tIdM[3] || '').trim().toLowerCase() : '';
+        if (tIdVal === 'alloflow-worksheet-template') {
+          jsonText = String(m[2] || '').trim();
+          source = 'html';
+          break;
+        }
+      }
+      if (!jsonText) {
+        var tagRe = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
+        while ((m = tagRe.exec(raw))) {
+          var attrs = m[1] || '';
+          var idM = /\bid\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i.exec(attrs);
+          var typeM = /\btype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/i.exec(attrs);
+          var idVal = idM ? String(idM[1] || idM[2] || idM[3] || '').trim().toLowerCase() : '';
+          var typeVal = typeM ? String(typeM[1] || typeM[2] || typeM[3] || '').trim().toLowerCase() : '';
+          if (idVal === 'alloflow-worksheet-template' && typeVal === 'application/json') {
+            jsonText = String(m[2] || '').trim();
+            source = 'html';
+            break;
+          }
+        }
+      }
+      if (!jsonText) {
+        return { ok: false, why: 'This file does not contain a saved AlloFlow worksheet template.' };
+      }
+    }
+    var parsed = null;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (_) {
+      return { ok: false, why: 'Invalid JSON in worksheet template.' };
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { ok: false, why: 'Unsupported worksheet template format or version.' };
+    }
+    if (parsed.schema !== 1) {
+      return { ok: false, why: 'Unsupported worksheet template format or version.' };
+    }
+    var kind = wsNormalizeTemplateKind(parsed.kind);
+    if (!kind) {
+      return { ok: false, why: 'Unknown worksheet template type.' };
+    }
+    var tpl = {
+      kind: kind,
+      schema: 1,
+      title: wsTrimLimit(parsed.title, 120),
+      subtitle: wsTrimLimit(parsed.subtitle, 200),
+      headerFields: {
+        classPeriod: !!(parsed.headerFields && parsed.headerFields.classPeriod),
+        score: !!(parsed.headerFields && parsed.headerFields.score)
+      },
+      density: wsNormalizeDensity(parsed.density),
+      sectionOverrides: wsPlainOverrides(parsed.sectionOverrides),
+      hiddenSections: wsPlainBoolMap(parsed.hiddenSections || parsed.hiddenParts, 32, 64),
+      hiddenItems: wsPlainBoolMap(parsed.hiddenItems, 200, 96),
+      itemOrder: wsPlainItemOrder(parsed.itemOrder),
+      itemTextOverrides: wsPlainItemTextOverrides(parsed.itemTextOverrides),
+      options: wsNormalizeTemplateOptions(kind, parsed.options)
+    };
+    return {
+      ok: true,
+      source: source,
+      template: tpl,
+      kind: tpl.kind,
+      schema: tpl.schema,
+      title: tpl.title,
+      subtitle: tpl.subtitle,
+      headerFields: tpl.headerFields,
+      density: tpl.density,
+      sectionOverrides: tpl.sectionOverrides,
+      hiddenSections: tpl.hiddenSections,
+      hiddenItems: tpl.hiddenItems,
+      itemOrder: tpl.itemOrder,
+      itemTextOverrides: tpl.itemTextOverrides,
+      options: tpl.options
+    };
+  }
+  function wsGetStorage(storageWin) {
+    try {
+      var st = storageWin && storageWin.localStorage;
+      if (!st || typeof st.getItem !== 'function' || typeof st.setItem !== 'function') return null;
+      return st;
+    } catch (_) {
+      return null;
+    }
+  }
+  function wsSanitizePresetEntry(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var name = wsTrimLimit(raw.name, 50);
+    if (!name) return null;
+    var kind = wsNormalizeTemplateKind(raw.kind) || 'word-sounds';
+    var id = wsTrimLimit(raw.id, 64) || ('p_' + wsHash(name.toLowerCase()).toString(36));
+    return {
+      id: id,
+      name: name,
+      kind: kind,
+      savedAt: Number(raw.savedAt) || 0,
+      subtitle: wsTrimLimit(raw.subtitle, 200),
+      headerFields: {
+        classPeriod: !!(raw.headerFields && raw.headerFields.classPeriod),
+        score: !!(raw.headerFields && raw.headerFields.score)
+      },
+      density: wsNormalizeDensity(raw.density),
+      sectionOverrides: wsPlainOverrides(raw.sectionOverrides),
+      hiddenSections: wsPlainBoolMap(raw.hiddenSections || raw.hiddenParts, 32, 64),
+      options: wsNormalizeTemplateOptions(kind, raw.options)
+    };
+  }
+  function wsLoadPresets(storageWin) {
+    var st = wsGetStorage(storageWin);
+    if (!st) return [];
+    var rawStr = '';
+    try {
+      rawStr = st.getItem(WS_PRESETS_KEY) || '';
+    } catch (_) {
+      return [];
+    }
+    if (!rawStr) return [];
+    var parsed = null;
+    try {
+      parsed = JSON.parse(rawStr);
+    } catch (_) {
+      return [];
+    }
+    var arr = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.presets) ? parsed.presets : []);
+    var out = [];
+    var seen = Object.create(null);
+    for (var i = 0; i < arr.length && out.length < WS_PRESETS_MAX; i++) {
+      var clean = wsSanitizePresetEntry(arr[i]);
+      if (!clean || seen[clean.id]) continue;
+      seen[clean.id] = true;
+      out.push(clean);
+    }
+    return out;
+  }
+  function wsSavePresets(storageWin, list) {
+    var st = wsGetStorage(storageWin);
+    if (!st) {
+      return { ok: false, why: 'Browser storage is unavailable on this device. Use Save template (.json) instead.' };
+    }
+    var cleaned = [];
+    var seen = Object.create(null);
+    (Array.isArray(list) ? list : []).forEach(function (item) {
+      if (cleaned.length >= WS_PRESETS_MAX) return;
+      var entry = wsSanitizePresetEntry(item);
+      if (!entry || seen[entry.id]) return;
+      seen[entry.id] = true;
+      cleaned.push(entry);
+    });
+    try {
+      st.setItem(WS_PRESETS_KEY, JSON.stringify({ schema: 1, presets: cleaned }));
+      return { ok: true, presets: cleaned };
+    } catch (_) {
+      return { ok: false, why: 'Browser storage is unavailable on this device. Use Save template (.json) instead.' };
+    }
+  }
+
   function normalizeWorksheetModel(lessonOrState, rawOptions) {
     var src = lessonOrState && typeof lessonOrState === 'object' ? lessonOrState : {};
     var opts = rawOptions && typeof rawOptions === 'object' ? rawOptions : {};
@@ -548,7 +1478,9 @@
       || (lesson && Array.isArray(lesson.blocks) && lesson.blocks.length ? lesson.blocks : null);
     var imagesMap = src.images || (lesson && lesson.images) || {};
     var manifest = src.manifest || null;
-    var title = String(opts.title || src.title || (lesson && lesson.title) || 'Word Sounds Activity Worksheet').trim() || 'Word Sounds Activity Worksheet';
+    var defaultTitle = String(src.title || (lesson && lesson.title) || 'Word Sounds Activity Worksheet').trim() || 'Word Sounds Activity Worksheet';
+    var custom = wsExtractCustom(src, opts, defaultTitle);
+    var title = custom.title;
     var preset = String(opts.preset || src.preset || '').trim().toLowerCase();
     var rawPic = opts.pictures !== undefined ? opts.pictures
       : (opts.showPictures !== undefined ? opts.showPictures
@@ -588,12 +1520,32 @@
       return typeof e === 'string' ? e.trim() : String((e && (e.word || e.targetWord || e.term)) || '').trim();
     }).filter(Boolean);
 
-    var sections = [];
+    var allSections = [];
+    var seenActCount = Object.create(null);
+    var pushRawSection = function (act, items) {
+      var meta = WS_ACTIVITIES[act] || { label: act.replace(/_/g, ' '), directions: 'Complete each item below.' };
+      var countForAct = seenActCount[act] || 0;
+      seenActCount[act] = countForAct + 1;
+      var secKey = countForAct === 0 ? act : (act + '_' + countForAct);
+      var tagged = items.map(function (it, idx) {
+        it.origIndex = idx;
+        it.itemKey = secKey + ':' + idx;
+        return it;
+      });
+      allSections.push({
+        key: secKey,
+        activity: act,
+        defaultLabel: meta.label,
+        defaultDirections: meta.directions,
+        label: meta.label,
+        directions: meta.directions,
+        items: tagged
+      });
+    };
     if (blocks && blocks.length) {
       blocks.forEach(function (block) {
         if (!block || !Array.isArray(block.items) || !block.items.length) return;
         var act = String(block.activity || 'mapping');
-        var meta = WS_ACTIVITIES[act] || { label: act.replace(/_/g, ' '), directions: 'Complete each item below.' };
         var bWords = block.items.map(function (it) { return String((it && (it.word || it.target)) || '').trim(); }).filter(Boolean);
         var items = block.items.map(function (it, idx) { return wsSynthesizeItem(act, it, idx, bWords.length ? bWords : allWordStrings, ctx); });
         if (act === 'letter_tracing') {
@@ -605,7 +1557,7 @@
             return true;
           });
         }
-        sections.push({ activity: act, label: meta.label, directions: meta.directions, items: items });
+        if (items.length) pushRawSection(act, items);
       });
     } else if (rawWordList.length) {
       var actList = (Array.isArray(opts.activities) && opts.activities.length ? opts.activities : null)
@@ -615,7 +1567,6 @@
       actList.forEach(function (actId) {
         var act = String(actId || '').trim();
         if (!act) return;
-        var meta = WS_ACTIVITIES[act] || { label: act.replace(/_/g, ' '), directions: 'Complete each item below.' };
         var items = rawWordList.map(function (entry, idx) { return wsSynthesizeItem(act, entry, idx, allWordStrings, ctx); }).filter(function (it) { return it.word; });
         if (act === 'letter_tracing') {
           var seenLt2 = Object.create(null);
@@ -626,9 +1577,56 @@
             return true;
           });
         }
-        if (items.length) sections.push({ activity: act, label: meta.label, directions: meta.directions, items: items });
+        if (items.length) pushRawSection(act, items);
       });
     }
+
+    // Apply customizer item reordering, inline text overrides, section visibility, copy overrides, and item filters.
+    var sections = [];
+    allSections.forEach(function (rawSec) {
+      var orderedRaw = wsApplyItemOrder(rawSec.items, custom.itemOrder, rawSec.key, rawSec.activity);
+      var prepared = orderedRaw.map(function (it) {
+        var clone = Object.assign({}, it);
+        clone.origWord = clone.word;
+        clone.defaultPrompt = wsDefaultItemPrompt(rawSec.activity, clone);
+        var altItemKey = rawSec.activity !== rawSec.key ? (rawSec.activity + ':' + clone.origIndex) : '';
+        var ovText = wsItemTextOverride(custom.itemTextOverrides, clone.itemKey, altItemKey);
+        if (ovText) {
+          clone.customPrompt = ovText;
+          if (rawSec.activity === 'manipulation') {
+            clone.prompt = ovText;
+          } else if (rawSec.activity === 'read_sentence') {
+            var bm = /_{3,}/.exec(ovText);
+            if (bm) {
+              clone.before = ovText.slice(0, bm.index);
+              clone.after = ovText.slice(bm.index + bm[0].length);
+              clone.customPromptNoBlank = false;
+            } else {
+              clone.before = ovText;
+              clone.after = '';
+              clone.customPromptNoBlank = true;
+            }
+          }
+        }
+        return clone;
+      });
+      rawSec.items = prepared;
+      if (custom.hiddenSections[rawSec.key] || custom.hiddenSections[rawSec.activity]) return;
+      var visibleItems = prepared.filter(function (it) {
+        return !wsIsItemHidden(custom.hiddenItems, rawSec.key, it.origIndex, rawSec.activity);
+      });
+      if (!visibleItems.length) return;
+      var copy = wsApplySectionCopy(custom.sectionOverrides, rawSec.key, rawSec.activity, rawSec.defaultLabel, rawSec.defaultDirections);
+      sections.push({
+        key: rawSec.key,
+        activity: rawSec.activity,
+        defaultLabel: rawSec.defaultLabel,
+        defaultDirections: rawSec.defaultDirections,
+        label: copy.heading,
+        directions: copy.directions,
+        items: visibleItems
+      });
+    });
 
     // Collect every word that might need a picture and resolve pictures + attribution.
     var picWords = [], seenPicWord = Object.create(null);
@@ -709,7 +1707,17 @@
 
     return {
       title: title,
+      subtitle: custom.subtitle,
+      headerFields: custom.headerFields,
+      density: custom.density,
       sections: sections,
+      allSections: allSections,
+      hiddenSections: custom.hiddenSections,
+      hiddenParts: custom.hiddenParts,
+      hiddenItems: custom.hiddenItems,
+      sectionOverrides: custom.sectionOverrides,
+      itemOrder: custom.itemOrder,
+      itemTextOverrides: custom.itemTextOverrides,
       picturesOn: picturesOn,
       answerKeyOn: answerKeyOn,
       hintsOn: hintsOn,
@@ -749,9 +1757,12 @@
     '.ws-noprint{margin:0 0 12px;padding:8px 12px;border:1px solid #000000;font-size:13px;background:#ffffff;color:#000000}',
     '.ws-header{border-bottom:2px solid #000000;padding-bottom:10px;margin-bottom:14px}',
     '.ws-title{margin:0 0 10px;font-size:22px;font-weight:700;color:#000000}',
+    '.ws-subtitle{margin:-4px 0 10px;font-size:14px;font-style:italic;color:#000000}',
     '.ws-meta{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:14px;font-weight:700}',
     '.ws-meta-field{display:inline-flex;align-items:baseline;gap:8px;flex:1 1 200px}',
     '.ws-meta-line{flex:1 1 auto;border-bottom:1.5px solid #000000;min-width:110px;height:16px}',
+    '.ws-score-line{display:inline-flex;align-items:baseline;gap:6px}',
+    '.ws-score-blank{display:inline-block;width:44px;border-bottom:1.5px solid #000000;height:16px}',
     '.ws-section{margin-top:18px}',
     '.ws-section-head{break-after:avoid;page-break-after:avoid;margin-bottom:8px}',
     '.ws-section-title{margin:0 0 4px;font-size:17px;font-weight:700;color:#000000}',
@@ -796,8 +1807,9 @@
     '.ws-sort-col-head{margin:0 0 8px;padding-bottom:6px;border-bottom:1.5px solid #000000;font-size:14px;font-weight:700;text-align:center}',
     '.ws-sort-line{height:28px;border-bottom:1px solid #808080}',
     '.ws-trace-wrap{display:flex;flex-direction:column;gap:10px;margin-top:8px}',
-    '.ws-trace-row{position:relative;display:flex;align-items:flex-end;gap:22px;height:78px;max-width:560px;border-top:2px solid #000000;border-bottom:2px solid #000000;padding:0 12px;background:#ffffff}',
-    '.ws-trace-row::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1.5px dashed #808080}',
+    '.ws-trace-row{display:flex;flex-direction:column;gap:3px;max-width:600px;background:#ffffff;break-inside:avoid;page-break-inside:avoid}',
+    '.ws-trace-svg{display:block;width:100%;height:auto;max-height:92px}',
+    '.ws-trace-cue{margin:0;font-size:11.5px;font-style:italic;color:#333333}',
     '.ws-trace-letter{position:relative;z-index:1;font-size:66px;line-height:.88;font-weight:400;font-family:Arial,Helvetica,sans-serif;color:#808080}',
     '@supports (-webkit-text-stroke:1px #000000){.ws-trace-letter{color:#ffffff;-webkit-text-stroke:1.6px #808080}}',
     '.ws-scoops{display:inline-flex;gap:8px;align-items:center;margin-top:6px}',
@@ -814,6 +1826,38 @@
     '.ws-key h2{margin:0 0 8px;font-size:18px}.ws-key h3{margin:12px 0 4px;font-size:15px}',
     '.ws-key-list{margin:4px 0 10px;padding-left:24px;font-size:14px;line-height:1.55}',
     '.ws-key-list li{margin:4px 0;break-inside:avoid;page-break-inside:avoid}',
+    'body.ws-density-compact{line-height:1.25;font-size:13px}',
+    'body.ws-density-compact .ws-header{padding-bottom:6px;margin-bottom:8px}',
+    'body.ws-density-compact .ws-title{font-size:19px;margin-bottom:6px}',
+    'body.ws-density-compact .ws-section{margin-top:10px}',
+    'body.ws-density-compact .ws-section-title{font-size:15px}',
+    'body.ws-density-compact .ws-directions{font-size:12px}',
+    'body.ws-density-compact .ws-item{padding:6px 0;gap:8px}',
+    'body.ws-density-compact .ws-word{font-size:18px}',
+    'body.ws-density-compact .ws-pic{width:48px;height:48px}',
+    'body.ws-density-compact .ws-box{width:34px;height:34px}',
+    'body.ws-density-compact .ws-line{height:24px;margin-top:4px}',
+    'body.ws-density-compact .ws-trace-svg{max-height:70px}',
+    'body.ws-density-compact .ws-trace-letter{font-size:52px}',
+    'body.ws-density-primary{line-height:1.5;font-size:17px}',
+    'body.ws-density-primary .ws-title{font-size:28px}',
+    'body.ws-density-primary .ws-subtitle{font-size:16px}',
+    'body.ws-density-primary .ws-meta{font-size:17px}',
+    'body.ws-density-primary .ws-section{margin-top:24px}',
+    'body.ws-density-primary .ws-section-title{font-size:21px}',
+    'body.ws-density-primary .ws-directions{font-size:16px}',
+    'body.ws-density-primary .ws-item{padding:14px 0;gap:16px}',
+    'body.ws-density-primary .ws-num{font-size:19px;min-width:34px}',
+    'body.ws-density-primary .ws-prompt{font-size:17px}',
+    'body.ws-density-primary .ws-word{font-size:26px}',
+    'body.ws-density-primary .ws-pic{width:78px;height:78px}',
+    'body.ws-density-primary .ws-box{width:54px;height:54px}',
+    'body.ws-density-primary .ws-tile{min-width:44px;height:48px;font-size:24px}',
+    'body.ws-density-primary .ws-choice{font-size:19px;padding:6px 18px}',
+    'body.ws-density-primary .ws-bubble{min-width:44px;height:44px;font-size:19px}',
+    'body.ws-density-primary .ws-line{height:54px;margin-top:10px}',
+    'body.ws-density-primary .ws-trace-svg{max-height:118px}',
+    'body.ws-density-primary .ws-trace-letter{font-size:84px}',
     '@media print{body{margin:0;max-width:none;padding:0}.ws-noprint{display:none}.ws-key{break-before:page;page-break-before:always;margin-top:0;border-top:none}}'
   ].join('');
 
@@ -870,7 +1914,8 @@
           var bank = model.hintsOn && it.bank && it.bank.length
             ? '<div class="ws-bank"><span class="ws-bank-label">Letter bank:</span>' + it.bank.map(function (g) { return '<span class="ws-chip">' + wsEsc(g) + '</span>'; }).join('') + '</div>'
             : '';
-          inner = '<div class="ws-row">' + pic + '<div class="ws-boxes" data-sound-boxes="' + it.soundCount + '">' + boxes + '</div></div>' + bank;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + pic + '<div class="ws-boxes" data-sound-boxes="' + it.soundCount + '">' + boxes + '</div></div>' + bank;
         } else if (act === 'missing_letter') {
           var mlPic = picTag(it.word, neutralAlt, false);
           var mlWord = '<div class="ws-missing">' + it.letters.map(function (ch, ci) {
@@ -879,25 +1924,29 @@
           var mlChoices = '<ul class="ws-choices">' + (it.choices || []).map(function (c) {
             return '<li class="ws-choice">' + wsEsc(c) + '</li>';
           }).join('') + '</ul>';
-          inner = '<div class="ws-row">' + mlPic + mlWord + '</div>' + mlChoices;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + mlPic + mlWord + '</div>' + mlChoices;
         } else if (act === 'word_scramble') {
           var wsPic = picTag(it.word, neutralAlt, false);
           var tiles = '<div class="ws-tiles">' + (it.tiles || []).map(function (t) {
             return '<span class="ws-tile">' + wsEsc(t) + '</span>';
           }).join('') + '</div>';
-          inner = '<div class="ws-row">' + wsPic + tiles + '</div><div class="ws-line"></div>';
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + wsPic + tiles + '</div><div class="ws-line"></div>';
         } else if (act === 'counting') {
           var ctPic = picTag(it.word, '', false);
           var bubbles = '<ul class="ws-bubbles">' + (it.values || ['1', '2', '3', '4', '5', '6']).map(function (v) {
             return '<li class="ws-bubble">' + wsEsc(v) + '</li>';
           }).join('') + '</ul>';
-          inner = '<div class="ws-row">' + ctPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + bubbles;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + ctPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + bubbles;
         } else if (act === 'isolation') {
           var isoPic = picTag(it.word, '', false);
           var isoChoices = '<ul class="ws-choices">' + (it.choices || []).map(function (c) {
             return '<li class="ws-choice">' + wsEsc(wsSoundLabel(c)) + '</li>';
           }).join('') + '</ul>';
-          inner = '<p class="ws-prompt">What is the ' + wsEsc(it.positionName) + ' sound in ' + fmt(it.word, allowSyl) + '?</p>'
+          var isoPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('What is the ' + wsEsc(it.positionName) + ' sound in ' + fmt(it.word, allowSyl) + '?');
+          inner = '<p class="ws-prompt">' + isoPromptHtml + '</p>'
             + '<div class="ws-row">' + isoPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + isoChoices;
         } else if (act === 'segmentation') {
           var segPic = picTag(it.word, '', false);
@@ -906,20 +1955,23 @@
           var segBank = model.hintsOn && it.chips && it.chips.length
             ? '<div class="ws-bank"><span class="ws-bank-label">Sound bank:</span>' + it.chips.map(function (s) { return '<span class="ws-chip">' + wsEsc(wsSoundLabel(s)) + '</span>'; }).join('') + '</div>'
             : '';
-          inner = '<div class="ws-row">' + segPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span><div class="ws-tap-dots" data-tap-dots="' + it.slotCount + '">' + dots + '</div></div>'
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + segPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span><div class="ws-tap-dots" data-tap-dots="' + it.slotCount + '">' + dots + '</div></div>'
             + '<div class="ws-line"></div>' + segBank;
         } else if (act === 'blending') {
           var seq = '<div class="ws-sounds-seq">' + (it.sounds || []).map(wsSoundLabel).map(wsEsc).join(' \u00b7 ') + '</div>';
           var bChoices = it.choices && it.choices.length
             ? '<ul class="ws-choices">' + it.choices.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
             : '';
-          inner = seq + '<div class="ws-line"></div>' + bChoices;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + seq + '<div class="ws-line"></div>' + bChoices;
         } else if (act === 'rhyming') {
           var rhPic = picTag(it.word, '', false);
           var rhChoices = '<ul class="ws-choices">' + (it.choices || []).map(function (c) {
             return '<li class="ws-choice">' + picTag(c, '', true) + '<span>' + fmt(c, allowSyl) + '</span></li>';
           }).join('') + '</ul>';
-          inner = '<p class="ws-prompt">Circle the word that rhymes with ' + fmt(it.word, allowSyl) + ':</p>'
+          var rhPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('Circle the word that rhymes with ' + fmt(it.word, allowSyl) + ':');
+          inner = '<p class="ws-prompt">' + rhPromptHtml + '</p>'
             + '<div class="ws-row">' + rhPic + '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + rhChoices;
         } else if (act === 'word_families') {
           var wfPic = picTag(it.word, '', false);
@@ -931,16 +1983,21 @@
             + '<span class="ws-build-slot"><span class="ws-build-blank"></span><span>' + wsEsc(it.rime) + '</span></span>'
             + '<span class="ws-build-slot"><span class="ws-build-blank"></span><span>' + wsEsc(it.rime) + '</span></span>'
             + '</div>';
-          inner = '<p class="ws-prompt">Word family: -' + wsEsc(it.rime) + ' (like ' + fmt(it.word, allowSyl) + ')</p>'
+          var wfPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('Word family: -' + wsEsc(it.rime) + ' (like ' + fmt(it.word, allowSyl) + ')');
+          inner = '<p class="ws-prompt">' + wfPromptHtml + '</p>'
             + '<div class="ws-row">' + wfPic + '<span class="ws-word">-' + wsEsc(it.rime) + '</span></div>' + wfList + buildSlots;
         } else if (act === 'letter_tracing') {
           var ltPic = picTag(it.word, '', false);
           var rowsHtml = (it.parts || []).map(function (part) {
-            var guides = '';
-            for (var gi = 0; gi < 3; gi++) guides += '<span class="ws-trace-letter">' + wsEsc(part.letter) + '</span>';
-            return '<div class="ws-trace-row" data-trace-case="' + wsEsc(part.kind || 'letter') + '">' + guides + '</div>';
+            var stripSvg = buildLetterTracingStripSvg(part.letter, { scaffolded: model.hintsOn });
+            var cue = wsLetterStrokeCue(part.letter);
+            return '<div class="ws-trace-row" data-trace-case="' + wsEsc(part.kind || 'letter') + '">'
+              + stripSvg
+              + (cue ? '<p class="ws-trace-cue">' + wsEsc(cue) + '</p>' : '')
+              + '</div>';
           }).join('');
-          inner = '<div class="ws-row">' + ltPic + '<p class="ws-prompt">Trace ' + wsEsc(it.parts.map(function (p) { return p.letter; }).join(' and ')) + ' (for ' + wsEsc(it.word) + ')</p></div>'
+          var ltPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('Trace ' + wsEsc(it.parts.map(function (p) { return p.letter; }).join(' and ')) + ' (for ' + wsEsc(it.word) + ')');
+          inner = '<div class="ws-row">' + ltPic + '<p class="ws-prompt">' + ltPromptHtml + '</p></div>'
             + '<div class="ws-trace-wrap">' + rowsHtml + '</div>';
         } else if (act === 'orthography' || act === 'spelling_bee') {
           var spPic = picTag(it.word, neutralAlt, false);
@@ -954,7 +2011,8 @@
               scaffold += '<div class="ws-bank"><span class="ws-bank-label">Letters:</span>' + it.letterBank.map(function (l) { return '<span class="ws-chip">' + wsEsc(l) + '</span>'; }).join('') + '</div>';
             }
           }
-          inner = '<p class="ws-prompt">Listen to your teacher and write word #' + n + ':</p>'
+          var spPromptHtml = it.customPrompt ? wsEsc(it.customPrompt) : ('Listen to your teacher and write word #' + n + ':');
+          inner = '<p class="ws-prompt">' + spPromptHtml + '</p>'
             + '<div class="ws-row">' + spPic + scaffold + '</div><div class="ws-line"></div>';
         } else if (act === 'syllable_counting') {
           var scPic = picTag(it.word, '', false);
@@ -962,13 +2020,15 @@
             return '<li class="ws-bubble">' + wsEsc(v) + '</li>';
           }).join('') + '</ul>';
           var scoops = '<div class="ws-scoops" aria-hidden="true"><span class="ws-scoop"></span><span class="ws-scoop"></span><span class="ws-scoop"></span></div>';
-          inner = '<div class="ws-row">' + scPic + '<span class="ws-word">' + wsEsc(it.word) + '</span></div>' + scoops + scBubbles;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + scPic + '<span class="ws-word">' + wsEsc(it.word) + '</span></div>' + scoops + scBubbles;
         } else if (act === 'syllable_blending') {
           var sbSeq = '<div class="ws-sounds-seq">' + (it.syllables || []).map(wsEsc).join(' \u00b7 ') + '</div>';
           var sbChoices = it.choices && it.choices.length
             ? '<ul class="ws-choices">' + it.choices.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
             : '';
-          inner = sbSeq + '<div class="ws-line"></div>' + sbChoices;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + sbSeq + '<div class="ws-line"></div>' + sbChoices;
         } else if (act === 'manipulation') {
           var mChoices = it.choices && it.choices.length
             ? '<ul class="ws-choices">' + it.choices.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
@@ -982,10 +2042,13 @@
                 return '<li class="ws-choice">' + (img || wsEsc(c.text)) + '</li>';
               }).join('') + '</ul>'
             : '';
-          inner = '<div class="ws-row"><span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + dChecks + dPics;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row"><span class="ws-word">' + fmt(it.word, allowSyl) + '</span></div>' + dChecks + dPics;
         } else if (act === 'read_sentence') {
           var rsPic = picTag(it.word, neutralAlt, false);
-          var rsSentence = '<p class="ws-prompt">' + fmt(it.before, allowSyl) + '<span class="ws-blank" aria-label="blank"></span>' + fmt(it.after, allowSyl) + '</p>';
+          var rsSentence = it.customPromptNoBlank
+            ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>'
+            : '<p class="ws-prompt">' + fmt(it.before, allowSyl) + '<span class="ws-blank" aria-label="blank"></span>' + fmt(it.after, allowSyl) + '</p>';
           var rsChoices = '<ul class="ws-choices">' + (it.options || []).map(function (c) {
             return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>';
           }).join('') + '</ul>';
@@ -1003,10 +2066,12 @@
           var rpChoices = it.options && it.options.length
             ? '<ul class="ws-choices">' + it.options.map(function (c) { return '<li class="ws-choice">' + fmt(c, allowSyl) + '</li>'; }).join('') + '</ul>'
             : '<div class="ws-line"></div>';
-          inner = rpBody + rpFluency + rpChoices;
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + rpBody + rpFluency + rpChoices;
         } else {
           var fPic = !hidePic ? picTag(it.word, '', false) : '';
-          inner = '<div class="ws-row">' + fPic + (!hideWord ? '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span>' : '') + '</div><div class="ws-line"></div>';
+          inner = (it.customPrompt ? '<p class="ws-prompt">' + wsEsc(it.customPrompt) + '</p>' : '')
+            + '<div class="ws-row">' + fPic + (!hideWord ? '<span class="ws-word">' + fmt(it.word, allowSyl) + '</span>' : '') + '</div><div class="ws-line"></div>';
         }
 
         secKeyLines.push(wsKeyEntryText(act, it));
@@ -1050,15 +2115,22 @@
       '<title>' + wsEsc(model.title) + ' \u2014 Activity Worksheet</title>',
       '<style>' + WS_STANDALONE_CSS + '</style>',
       '</head>',
-      '<body>',
+      '<body class="ws-density-' + wsEsc(model.density || 'standard') + '">',
       '<p class="ws-noprint">Print from your browser menu (Ctrl+P or Cmd+P). Keep the scale at 100%.</p>',
       '<header class="ws-header">',
       '<h1 class="ws-title">' + wsEsc(model.title) + '</h1>',
-      '<div class="ws-meta"><span class="ws-meta-field"><span>Name:</span><span class="ws-meta-line"></span></span><span class="ws-meta-field"><span>Date:</span><span class="ws-meta-line"></span></span></div>',
+      wsSubtitleHtml(model.subtitle),
+      wsHeaderMetaHtml(model.headerFields),
       '</header>',
       sectionsHtml || '<p>No worksheet items are available yet.</p>',
       creditsHtml,
       keyHtml,
+      wsTemplateScriptTag('word-sounds', model, {
+        pictures: model.picturesOn,
+        answerKey: model.answerKeyOn,
+        hints: model.hintsOn,
+        syllables: model.syllablesOn
+      }),
       '</body>',
       '</html>'
     ].join('\n');
@@ -1080,7 +2152,13 @@
     '.vocab-pic-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;border:1.5px solid #000000;border-radius:6px;background:#ffffff;break-inside:avoid;page-break-inside:avoid}',
     '.vocab-pic-num{align-self:flex-start;font-size:13px;font-weight:700}',
     '.vocab-pic-img{display:block;width:86px;height:86px;object-fit:contain;background:#ffffff}',
-    '.vocab-pic-line{width:100%;height:24px;border-bottom:1.5px solid #000000}'
+    '.vocab-pic-line{width:100%;height:24px;border-bottom:1.5px solid #000000}',
+    'body.ws-density-compact .vocab-match-word,body.ws-density-compact .vocab-match-def{padding:5px 0;font-size:12.5px}',
+    'body.ws-density-compact .vocab-cloze-text{font-size:13px}',
+    'body.ws-density-compact .vocab-pic-img{width:64px;height:64px}',
+    'body.ws-density-primary .vocab-match-word,body.ws-density-primary .vocab-match-def{padding:11px 0;font-size:17px}',
+    'body.ws-density-primary .vocab-cloze-text{font-size:18px;line-height:1.75}',
+    'body.ws-density-primary .vocab-pic-line{height:38px}'
   ].join('');
 
   function vocabLetterLabel(idx) {
@@ -1123,10 +2201,1130 @@
       answer: word
     };
   }
+  // ---------------------------------------------------------------------------
+  // CTOPP-2-style Word Sounds Worksheet Audio Companion (Plan + Offline HTML)
+  // ---------------------------------------------------------------------------
+  function wsAudioSafeUri(raw) {
+    var s = String(raw == null ? '' : raw).trim();
+    return /^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/i.test(s) ? s : '';
+  }
+  function wsAudioResolveClip(id, audioMap) {
+    if (!id || !audioMap || typeof audioMap !== 'object') return '';
+    var key = String(id).trim();
+    if (!key) return '';
+    var val = audioMap[key];
+    if (typeof val === 'string' && wsAudioSafeUri(val)) return key;
+    return '';
+  }
+  function wsAudioItemSpec(act, it, secLabel, numInSection, audioMap) {
+    var raw = it && it.item && typeof it.item === 'object' ? it.item : {};
+    var promptClips = [];
+    var mainClips = [];
+    var choiceClips = [];
+    var segmented = false;
+    var addClip = function (arr, id) {
+      var k = wsAudioResolveClip(id, audioMap);
+      if (k) arr.push(k);
+    };
+    if (act === 'blending') {
+      addClip(promptClips, raw.promptAudio);
+      if (Array.isArray(raw.sounds) && raw.sounds.length) {
+        raw.sounds.forEach(function (cid) { addClip(mainClips, cid); });
+        segmented = mainClips.length > 1;
+      }
+      if (!mainClips.length) addClip(mainClips, raw.wordAudio);
+    } else if (act === 'syllable_blending') {
+      addClip(promptClips, raw.promptAudio);
+      var sClips = Array.isArray(raw.clips) && raw.clips.length
+        ? raw.clips
+        : (Array.isArray(raw.units) ? raw.units.map(function (u) { return u && u.audio; }) : []);
+      sClips.forEach(function (cid) { addClip(mainClips, cid); });
+      segmented = mainClips.length > 1;
+      if (!mainClips.length) addClip(mainClips, raw.wordAudio);
+    } else if (act === 'manipulation') {
+      if (Array.isArray(raw.instruction) && raw.instruction.length) {
+        raw.instruction.forEach(function (cid) { addClip(mainClips, cid); });
+      }
+      if (!mainClips.length) {
+        addClip(promptClips, raw.promptAudio);
+        addClip(mainClips, raw.wordAudio);
+      }
+    } else if (act === 'letter_tracing') {
+      if (Array.isArray(raw.introAudio) && raw.introAudio.length) {
+        raw.introAudio.forEach(function (cid) { addClip(mainClips, cid); });
+      } else {
+        addClip(promptClips, raw.promptAudio);
+        addClip(mainClips, raw.letterAudio);
+        addClip(mainClips, raw.wordAudio);
+      }
+    } else if (act === 'rhyming') {
+      addClip(promptClips, raw.promptAudio);
+      addClip(mainClips, raw.wordAudio);
+      if (Array.isArray(raw.choices)) {
+        raw.choices.forEach(function (c) { addClip(choiceClips, c && c.audio); });
+      }
+    } else {
+      addClip(promptClips, raw.promptAudio);
+      addClip(mainClips, raw.wordAudio);
+      if (!mainClips.length && Array.isArray(raw.introAudio)) {
+        raw.introAudio.forEach(function (cid) { addClip(mainClips, cid); });
+      }
+    }
+    var script = '';
+    if (act === 'blending' && it.sounds && it.sounds.length) {
+      script = 'Say the sounds with a pause: ' + it.sounds.map(wsSoundLabel).join(' ... ');
+    } else if (act === 'syllable_blending' && it.syllables && it.syllables.length) {
+      script = 'Say the syllables with a pause: ' + it.syllables.join(' ... ');
+    } else if (act === 'manipulation' && it.prompt) {
+      script = it.prompt;
+    } else if (act === 'isolation') {
+      script = 'Listen for the ' + (it.positionName || 'target') + ' sound in "' + it.word + '".';
+    } else if (act === 'letter_tracing') {
+      script = 'Trace ' + (it.parts || []).map(function (p) { return p.letter; }).join(' and ') + ' for "' + it.word + '".';
+    } else if (act === 'orthography' || act === 'spelling_bee') {
+      script = 'Listen and write spelling word #' + numInSection + '.';
+    } else if (act === 'rhyming' && it.choices && it.choices.length) {
+      script = 'Word: "' + it.word + '". Choices: ' + it.choices.join(', ') + '.';
+    } else {
+      script = 'Word: "' + it.word + '".';
+    }
+    if (it && it.customPrompt) {
+      script = String(it.customPrompt);
+    }
+    return {
+      numInSection: numInSection,
+      sectionLabel: secLabel,
+      activity: act,
+      word: String(it.word || ''),
+      script: script,
+      answer: wsKeyEntryText(act, it),
+      promptClips: promptClips,
+      mainClips: mainClips,
+      choiceClips: choiceClips,
+      segmented: segmented,
+      hasAudio: (promptClips.length + mainClips.length + choiceClips.length) > 0
+    };
+  }
+  function buildWordSoundsAudioPlan(lessonOrState, options) {
+    var src = lessonOrState && typeof lessonOrState === 'object' ? lessonOrState : {};
+    var lesson = src.lesson && typeof src.lesson === 'object' ? src.lesson : (Array.isArray(src.blocks) ? src : null);
+    var audioMap = src.audio || (lesson && lesson.audio) || {};
+    var model = normalizeWorksheetModel(lessonOrState, options);
+    var sections = [];
+    var flat = [];
+    var usedAudio = Object.create(null);
+    var rememberClips = function (arr) {
+      (arr || []).forEach(function (cid) {
+        if (cid && !usedAudio[cid] && wsAudioSafeUri(audioMap[cid])) usedAudio[cid] = audioMap[cid];
+      });
+    };
+    model.sections.forEach(function (sec) {
+      var secItems = [];
+      if (sec.activity === 'sound_sort') {
+        var boards = buildSoundSortBoards(sec.items);
+        var chipAudioByWord = Object.create(null);
+        sec.items.forEach(function (it) {
+          var raw = it && it.item && typeof it.item === 'object' ? it.item : {};
+          if (raw.wordAudio && it.word) chipAudioByWord[String(it.word).toLowerCase()] = raw.wordAudio;
+          (raw.chips || []).forEach(function (c) {
+            if (c && c.text && c.audio) chipAudioByWord[String(c.text).toLowerCase()] = c.audio;
+          });
+        });
+        boards.forEach(function (b, bIdx) {
+          var clips = [];
+          b.bank.forEach(function (w) {
+            var k = wsAudioResolveClip(chipAudioByWord[String(w).toLowerCase()], audioMap);
+            if (k) clips.push(k);
+          });
+          var entry = {
+            index: flat.length,
+            numInSection: bIdx + 1,
+            sectionLabel: sec.label,
+            activity: sec.activity,
+            word: 'Sort board ' + (bIdx + 1),
+            script: 'Word bank: ' + b.bank.join(', '),
+            answer: b.columns.map(function (c) { return c.heading + ': ' + (c.words.join(', ') || '(none)'); }).join(' | '),
+            promptClips: [],
+            mainClips: clips,
+            choiceClips: [],
+            segmented: clips.length > 1,
+            hasAudio: clips.length > 0
+          };
+          rememberClips(clips);
+          secItems.push(entry);
+          flat.push(entry);
+        });
+      } else {
+        sec.items.forEach(function (it, idx) {
+          var spec = wsAudioItemSpec(sec.activity, it, sec.label, idx + 1, audioMap);
+          spec.index = flat.length;
+          rememberClips(spec.promptClips);
+          rememberClips(spec.mainClips);
+          rememberClips(spec.choiceClips);
+          secItems.push(spec);
+          flat.push(spec);
+        });
+      }
+      if (secItems.length) {
+        var isScored = sec.activity !== 'letter_tracing';
+        secItems.forEach(function (it) { it.scored = isScored; });
+        sections.push({
+          activity: sec.activity,
+          label: sec.label,
+          directions: sec.directions,
+          scored: isScored,
+          items: secItems
+        });
+      }
+    });
+    return {
+      kind: 'word-sounds',
+      title: model.title,
+      sections: sections,
+      items: flat,
+      audio: usedAudio,
+      clipCount: Object.keys(usedAudio).length,
+      hasSoundGap: true,
+      hasDirections: true
+    };
+  }
+  function wsAudioNormText(text) {
+    return String(text == null ? '' : text).replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+  function wsAudioExtractUri(val) {
+    if (typeof val === 'string') return wsAudioSafeUri(val);
+    if (val && typeof val === 'object') return wsAudioSafeUri(val.uri || val.dataUri || val.src || '');
+    return '';
+  }
+  function buildVocabAudioPlan(rawState, options) {
+    var src = Array.isArray(rawState) ? { entries: rawState } : (rawState && typeof rawState === 'object' ? rawState : {});
+    var model = normalizeVocabWorksheetModel(src, options);
+    var wordMap = Object.create(null);
+    var meaningMap = Object.create(null);
+    var addWordMap = function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      Object.keys(obj).forEach(function (k) {
+        var uri = wsAudioExtractUri(obj[k]);
+        if (uri) wordMap[wsAudioNormText(k)] = uri;
+      });
+    };
+    var addMeaningMap = function (obj) {
+      if (!obj || typeof obj !== 'object') return;
+      Object.keys(obj).forEach(function (k) {
+        var uri = wsAudioExtractUri(obj[k]);
+        if (uri) meaningMap[wsAudioNormText(k)] = uri;
+      });
+    };
+    addWordMap(src.clips);
+    addWordMap(src.wordClips);
+    addMeaningMap(src.meaningClips);
+    var lesson = src.lesson && typeof src.lesson === 'object' ? src.lesson : null;
+    if (lesson && lesson.audio && typeof lesson.audio === 'object') {
+      var lAudio = lesson.audio;
+      (lesson.blocks || []).forEach(function (blk) {
+        (blk && blk.items || []).forEach(function (it) {
+          if (!it || typeof it !== 'object') return;
+          var wKey = wsAudioNormText(it.word || it.target || '');
+          var wClipId = it.wordAudio || it.audio || '';
+          if (wKey && wClipId && lAudio[wClipId] && !wordMap[wKey]) {
+            var wu = wsAudioExtractUri(lAudio[wClipId]);
+            if (wu) wordMap[wKey] = wu;
+          }
+          if (it.prompt && it.promptAudio && lAudio[it.promptAudio]) {
+            var pu = wsAudioExtractUri(lAudio[it.promptAudio]);
+            if (pu && !meaningMap[wsAudioNormText(it.prompt)]) meaningMap[wsAudioNormText(it.prompt)] = pu;
+          }
+          (it.choices || it.options || []).forEach(function (ch) {
+            if (!ch || typeof ch !== 'object') return;
+            var ct = wsAudioNormText(ch.text || ch.label || '');
+            var ca = ch.audio && lAudio[ch.audio] ? wsAudioExtractUri(lAudio[ch.audio]) : '';
+            if (ct && ca) {
+              if (String(ch.audio).charAt(0) === 'm') { if (!meaningMap[ct]) meaningMap[ct] = ca; }
+              else if (!wordMap[ct]) wordMap[ct] = ca;
+            }
+          });
+        });
+      });
+    }
+    var usedAudio = Object.create(null);
+    var clipSeq = 0;
+    var clipKeyByUri = Object.create(null);
+    var regClip = function (prefix, uri) {
+      var safe = wsAudioSafeUri(uri);
+      if (!safe) return '';
+      if (clipKeyByUri[safe]) return clipKeyByUri[safe];
+      var cid = prefix + '_' + (++clipSeq);
+      usedAudio[cid] = safe;
+      clipKeyByUri[safe] = cid;
+      return cid;
+    };
+    var sections = [];
+    var flat = [];
+    var pushSection = function (activity, label, directions, scored, list) {
+      if (!list.length) return;
+      sections.push({ activity: activity, label: label, directions: directions, scored: !!scored, items: list });
+    };
+
+    // Part 1 — Match the Word to Its Meaning (or Write Each Meaning)
+    var hp = model.hiddenParts || Object.create(null);
+    var ov = model.sectionOverrides || Object.create(null);
+    var p1Items = [];
+    if (!hp.matching && model.matchWords.length) {
+      var p1CopyA = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Vocabulary Words', 'Play each vocabulary word while students match it to the lettered meaning.');
+      model.matchWords.forEach(function (it) {
+        var cid = regClip('vw', wordMap[wsAudioNormText(it.word)] || '');
+        var entry = {
+          index: flat.length,
+          numInSection: it.num,
+          sectionLabel: p1CopyA.heading,
+          activity: 'vocab_matching',
+          word: it.word,
+          script: 'Word #' + it.num + ': "' + it.word + '"',
+          answer: it.answerLetter + ' (' + it.meaning + ')',
+          promptClips: [],
+          mainClips: cid ? [cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: true,
+          hasAudio: !!cid
+        };
+        p1Items.push(entry);
+        flat.push(entry);
+      });
+      pushSection('vocab_matching', p1CopyA.heading, p1CopyA.directions, true, p1Items);
+    } else if (!hp.matching && model.entries.length) {
+      var p1CopyB = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Vocabulary Words', 'Play each vocabulary word while students write its meaning.');
+      model.entries.forEach(function (e, idx) {
+        var cid = regClip('vw', wordMap[wsAudioNormText(e.word)] || '');
+        var entry = {
+          index: flat.length,
+          numInSection: idx + 1,
+          sectionLabel: p1CopyB.heading,
+          activity: 'vocab_matching',
+          word: e.word,
+          script: 'Word #' + (idx + 1) + ': "' + e.word + '"',
+          answer: 'Teacher-checked meaning',
+          promptClips: [],
+          mainClips: cid ? [cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: true,
+          hasAudio: !!cid
+        };
+        p1Items.push(entry);
+        flat.push(entry);
+      });
+      pushSection('vocab_matching', p1CopyB.heading, p1CopyB.directions, true, p1Items);
+    }
+
+    // Part 1B — Meanings Read-Aloud (A-Z) whenever meaning recordings exist
+    var defClips = hp.matching ? [] : model.matchDefs.map(function (d) {
+      return { def: d, cid: regClip('vm', meaningMap[wsAudioNormText(d.meaning)] || '') };
+    });
+    if (defClips.some(function (x) { return !!x.cid; })) {
+      var p1bItems = [];
+      defClips.forEach(function (x, idx) {
+        var entry = {
+          index: flat.length,
+          numInSection: idx + 1,
+          numLabel: x.def.letter,
+          sectionLabel: 'Part 1B \u2014 Meanings Read-Aloud',
+          activity: 'vocab_meanings',
+          word: 'Meaning ' + x.def.letter,
+          script: x.def.letter + '. ' + x.def.meaning,
+          answer: 'Read-aloud reference (' + x.def.letter + ')',
+          promptClips: [],
+          mainClips: x.cid ? [x.cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: false,
+          hasAudio: !!x.cid
+        };
+        p1bItems.push(entry);
+        flat.push(entry);
+      });
+      pushSection('vocab_meanings', 'Part 1B \u2014 Meanings Read-Aloud', 'Play each lettered definition (A, B, C...) aloud to support matching on paper.', false, p1bItems);
+    }
+
+    // Word Bank Read-Aloud (segmented with configurable pause)
+    if (model.wordBankOn && model.wordBank.length) {
+      var bankCids = [];
+      model.wordBank.forEach(function (w) {
+        var cid = regClip('vw', wordMap[wsAudioNormText(w)] || '');
+        if (cid) bankCids.push(cid);
+      });
+      if (bankCids.length) {
+        var wbEntry = {
+          index: flat.length,
+          numInSection: 1,
+          sectionLabel: 'Word Bank Read-Aloud',
+          activity: 'vocab_bank',
+          word: 'Word Bank',
+          script: 'Word Bank: ' + model.wordBank.join(' \u00b7 '),
+          answer: 'Reference word bank',
+          promptClips: [],
+          mainClips: bankCids,
+          choiceClips: [],
+          segmented: bankCids.length > 1,
+          scored: false,
+          hasAudio: true
+        };
+        flat.push(wbEntry);
+        pushSection('vocab_bank', 'Word Bank Read-Aloud', 'Play the Word Bank aloud before students complete Part 2.', false, [wbEntry]);
+      }
+    }
+
+    // Part 2 — Fill in the Blank (never leaks the blanked answer word in script)
+    if (!hp.cloze && model.clozeItems.length) {
+      var p2Copy = wsApplySectionCopy(ov, 'cloze', null, 'Part 2 \u2014 Fill in the Blank', 'Read each blanked sentence aloud while students write the vocabulary word.');
+      var p2Items = [];
+      model.clozeItems.forEach(function (it) {
+        var scriptText = it.hasCloze
+          ? (it.before + '_____' + it.after)
+          : it.prompt;
+        var entry = {
+          index: flat.length,
+          numInSection: it.num,
+          sectionLabel: p2Copy.heading,
+          activity: 'vocab_cloze',
+          word: 'Sentence #' + it.num,
+          script: scriptText,
+          answer: it.hasCloze ? (it.answer + ' \u2014 "' + it.completed + '"') : ('Sentence using "' + it.word + '"'),
+          promptClips: [],
+          mainClips: [],
+          choiceClips: [],
+          segmented: false,
+          scored: true,
+          hasAudio: false
+        };
+        p2Items.push(entry);
+        flat.push(entry);
+      });
+      pushSection('vocab_cloze', p2Copy.heading, p2Copy.directions, true, p2Items);
+    }
+
+    // Part 3 — Name the Picture
+    if (!hp.pictures && model.pictureItems.length) {
+      var p3Copy = wsApplySectionCopy(ov, 'pictures', null, 'Part 3 \u2014 Name the Picture', 'Students look at each numbered picture and write the matching vocabulary word.');
+      var p3Items = [];
+      model.pictureItems.forEach(function (it, idx) {
+        var entry = {
+          index: flat.length,
+          numInSection: idx + 1,
+          sectionLabel: p3Copy.heading,
+          activity: 'vocab_pictures',
+          word: 'Picture #' + (idx + 1),
+          script: 'Picture #' + (idx + 1) + ' \u2014 look at the picture and write the matching word.',
+          answer: it.word,
+          promptClips: [],
+          mainClips: [],
+          choiceClips: [],
+          segmented: false,
+          scored: true,
+          hasAudio: false
+        };
+        p3Items.push(entry);
+        flat.push(entry);
+      });
+      pushSection('vocab_pictures', p3Copy.heading, p3Copy.directions, true, p3Items);
+    }
+
+    return {
+      kind: 'vocab',
+      title: model.title,
+      sections: sections,
+      items: flat,
+      audio: usedAudio,
+      clipCount: Object.keys(usedAudio).length,
+      hasSoundGap: true,
+      hasDirections: false
+    };
+  }
+  function buildReadAlongAudioPlan(rawState, options) {
+    var src = rawState && typeof rawState === 'object' ? rawState : {};
+    var opts = options && typeof options === 'object' ? options : {};
+    var rawTitle = String(opts.title || src.title || 'Read along').replace(/\s+/g, ' ').trim() || 'Read along';
+    var custom = wsExtractCustom(src, opts, rawTitle);
+    var title = custom.title;
+    var hp = custom.hiddenParts || Object.create(null);
+    var ov = custom.sectionOverrides || Object.create(null);
+    var hi = custom.hiddenItems || Object.create(null);
+    var showSupports = opts.showSupports !== undefined ? !!opts.showSupports : (src.showSupports !== undefined ? !!src.showSupports : true);
+    var sentences = Array.isArray(src.sentences) ? src.sentences : [];
+    var clips = src.clips && typeof src.clips === 'object' ? src.clips : {};
+    var clipByNorm = Object.create(null);
+    Object.keys(clips).forEach(function (k) {
+      var uri = wsAudioExtractUri(clips[k]);
+      if (uri) clipByNorm[wsAudioNormText(k)] = uri;
+    });
+    var usedAudio = Object.create(null);
+    var clipSeq = 0;
+    var clipKeyByUri = Object.create(null);
+    var regClip = function (prefix, uri) {
+      var safe = wsAudioSafeUri(uri);
+      if (!safe) return '';
+      if (clipKeyByUri[safe]) return clipKeyByUri[safe];
+      var cid = prefix + '_' + (++clipSeq);
+      usedAudio[cid] = safe;
+      clipKeyByUri[safe] = cid;
+      return cid;
+    };
+    var sections = [];
+    var flat = [];
+
+    // Part 1 — Passage Read-Aloud (sentence by sentence)
+    var p1Items = [];
+    var sentNum = 0;
+    var p1Copy = wsApplySectionCopy(ov, 'passage', null, 'Part 1 \u2014 Passage Read-Aloud', 'Play one sentence at a time while students follow along or echo-read on paper.');
+    if (!hp.passage) {
+      sentences.forEach(function (row, idx) {
+        var txt = typeof row === 'string' ? row : (row && typeof row.text === 'string' ? row.text : '');
+        txt = txt.replace(/\s+/g, ' ').trim();
+        if (!txt) return;
+        sentNum++;
+        var rawKey = row && typeof row.key === 'string' ? row.key : '';
+        var uri = (rawKey && wsAudioExtractUri(clips[rawKey]))
+          || wsAudioExtractUri(clips[txt])
+          || clipByNorm[wsAudioNormText(txt)]
+          || wsAudioExtractUri(clips[String(idx)])
+          || (row && wsAudioExtractUri(row.audio || row.audioUri || row.clip))
+          || '';
+        var cid = regClip('ra', uri);
+        var entry = {
+          index: flat.length,
+          numInSection: sentNum,
+          sectionLabel: p1Copy.heading,
+          activity: 'read_along_passage',
+          word: 'Sentence #' + sentNum,
+          script: txt,
+          answer: 'Read-aloud follow-along',
+          promptClips: [],
+          mainClips: cid ? [cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: false,
+          hasAudio: !!cid
+        };
+        p1Items.push(entry);
+        flat.push(entry);
+      });
+    }
+    if (p1Items.length) {
+      sections.push({
+        activity: 'read_along_passage',
+        label: p1Copy.heading,
+        directions: p1Copy.directions,
+        scored: false,
+        items: p1Items
+      });
+    }
+
+    // Part 2 — Reading Notes & Visual Supports (when present)
+    var sups = (Array.isArray(src.customSupports) ? src.customSupports : []).filter(function (s) {
+      return s && typeof s === 'object' && String(s.text || '').trim();
+    });
+    if (!hp.supports && showSupports && sups.length) {
+      var p2Copy = wsApplySectionCopy(ov, 'supports', null, 'Part 2 \u2014 Reading Notes', 'Play or read aloud each note anchored to the passage.');
+      var p2Items = [];
+      sups.forEach(function (sup, idx) {
+        var cid = regClip('ras', sup.audioUri || sup.audio || '');
+        var label = sup.quote
+          ? String(sup.quote).trim() + (sup.line != null ? ' (sentence ' + (Number(sup.line) + 1) + ')' : '')
+          : (sup.line != null ? 'Sentence ' + (Number(sup.line) + 1) : 'Note #' + (idx + 1));
+        var entry = {
+          index: flat.length,
+          numInSection: idx + 1,
+          sectionLabel: p2Copy.heading,
+          activity: 'read_along_supports',
+          word: label,
+          script: label + ': ' + String(sup.text || '').trim(),
+          answer: 'Reading support note',
+          promptClips: [],
+          mainClips: cid ? [cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: false,
+          hasAudio: !!cid
+        };
+        p2Items.push(entry);
+        flat.push(entry);
+      });
+      sections.push({
+        activity: 'read_along_supports',
+        label: p2Copy.heading,
+        directions: p2Copy.directions,
+        scored: false,
+        items: p2Items
+      });
+    }
+
+    // Part 3 — Check Your Understanding (matches printed worksheet Part 4)
+    var allQs = (Array.isArray(src.questions) ? src.questions : []).filter(function (q) {
+      return q && typeof q === 'object' && String(q.prompt || '').trim();
+    }).map(function (q, origIdx) {
+      var itemKey = 'writing:' + origIdx;
+      var ovPrompt = wsItemTextOverride(custom.itemTextOverrides, itemKey, 'q:' + origIdx);
+      return Object.assign({}, q, {
+        origIndex: origIdx,
+        itemKey: itemKey,
+        prompt: ovPrompt || String(q.prompt || '').trim()
+      });
+    });
+    var qs = wsApplyItemOrder(allQs, custom.itemOrder, 'writing', 'questions').filter(function (q) {
+      return !wsIsItemHidden(hi, 'writing', q.origIndex, 'q');
+    });
+    if (!hp.writing && qs.length) {
+      var p3Copy = wsApplySectionCopy(ov, 'writing', null, 'Part 3 \u2014 Check Your Understanding', 'Read each comprehension question aloud while students answer on their worksheet.');
+      var p3Items = [];
+      qs.forEach(function (q, idx) {
+        var cid = regClip('raq', q.audioUri || q.audio || '');
+        var isMc = q.kind === 'mc' && Array.isArray(q.choices) && q.choices.length > 0;
+        var scriptText = String(q.prompt || '').trim();
+        var ansText = 'Open response (teacher-checked)';
+        if (isMc) {
+          var ansIdx = (typeof q.answer === 'number' && q.answer >= 0 && q.answer < q.choices.length) ? q.answer : 0;
+          scriptText += ' Choices: ' + q.choices.map(function (c, ci) { return vocabLetterLabel(ci) + '. ' + c; }).join(' | ');
+          ansText = vocabLetterLabel(ansIdx) + ' \u2014 ' + q.choices[ansIdx];
+        }
+        var entry = {
+          index: flat.length,
+          numInSection: idx + 1,
+          sectionLabel: p3Copy.heading,
+          activity: 'read_along_questions',
+          word: 'Question #' + (idx + 1),
+          script: scriptText,
+          answer: ansText,
+          promptClips: [],
+          mainClips: cid ? [cid] : [],
+          choiceClips: [],
+          segmented: false,
+          scored: true,
+          hasAudio: !!cid
+        };
+        p3Items.push(entry);
+        flat.push(entry);
+      });
+      sections.push({
+        activity: 'read_along_questions',
+        label: p3Copy.heading,
+        directions: p3Copy.directions,
+        scored: true,
+        items: p3Items
+      });
+    }
+
+    return {
+      kind: 'read-along',
+      title: title,
+      sections: sections,
+      items: flat,
+      audio: usedAudio,
+      clipCount: Object.keys(usedAudio).length,
+      hasSoundGap: false,
+      hasDirections: false
+    };
+  }
+  function wsAudioCsvCell(value) {
+    var s = String(value == null ? '' : value);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+    if (/[",\r\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  function wsAudioTodayIso() {
+    try {
+      var d = new Date();
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1);
+      var day = String(d.getDate());
+      return y + '-' + (m.length < 2 ? '0' + m : m) + '-' + (day.length < 2 ? '0' + day : day);
+    } catch (_) {
+      return '';
+    }
+  }
+  function wsAudioSetupSummary(plan, opts) {
+    var p = plan && typeof plan === 'object' ? plan : {};
+    var o = opts && typeof opts === 'object' ? opts : {};
+    var parts = [
+      'Speed: ' + (o.slow ? 'Slow (0.8x)' : 'Standard (1.0x)'),
+      'Response pause: ' + (Number(o.autoSec) > 0 ? (Number(o.autoSec) + 's auto-advance') : 'Manual')
+    ];
+    if (p.hasSoundGap) parts.push('Sound gap: ' + ((Number(o.gapMs) || 700) / 1000).toFixed(1) + 's');
+    if (p.hasDirections) {
+      parts.push('Directions: ' + (o.dirMode === 'every' ? 'Every item' : (o.dirMode === 'none' ? 'Words / sounds only' : 'First item per section')));
+    }
+    return parts.join(' \u00b7 ');
+  }
+  function buildAudioScoresCsv(plan, scoreState, options) {
+    var p = plan && typeof plan === 'object' ? plan : { title: 'Worksheet', sections: [], items: [] };
+    var st = scoreState && typeof scoreState === 'object' ? scoreState : {};
+    var stItems = st.items && typeof st.items === 'object' ? st.items : {};
+    var student = String(st.studentName || '').trim();
+    var examiner = String(st.examiner || '').trim();
+    var dateStr = String(st.date || '').trim() || wsAudioTodayIso();
+    var setupStr = wsAudioSetupSummary(p, options);
+    var rows = [
+      ['Student', 'Date', 'Examiner', 'Section', 'Item', 'Prompt', 'Expected Answer', 'Scored', 'Score', 'Repeats', 'Notes', 'Audio Setup']
+    ];
+    var totalScored = 0, totalCorrect = 0, totalMarked = 0, totalRepeats = 0, rowIdx = 0;
+    (p.sections || []).forEach(function (sec) {
+      var scored = sec.scored !== false;
+      (sec.items || []).forEach(function (it) {
+        var key = it && it.index != null ? String(it.index) : String(rowIdx);
+        var rec = stItems[key] || stItems[String(rowIdx)] || {};
+        rowIdx++;
+        var tag = it && it.numLabel ? String(it.numLabel) : String(it && it.numInSection != null ? it.numInSection : rowIdx);
+        var scoreOut = '';
+        if (scored) {
+          totalScored++;
+          if (rec.score === 1 || rec.score === 0) {
+            scoreOut = String(rec.score);
+            totalMarked++;
+            if (rec.score === 1) totalCorrect++;
+          }
+        } else if (rec.done || rec.score === 1) {
+          scoreOut = 'Done';
+        }
+        var reps = Number(rec.repeats) > 0 ? Math.floor(Number(rec.repeats)) : 0;
+        totalRepeats += reps;
+        rows.push([
+          student,
+          dateStr,
+          examiner,
+          sec.label || '',
+          tag,
+          (it && it.script) || '',
+          scored ? ((it && it.answer) || '') : '',
+          scored ? 'Yes' : 'Practice only',
+          scoreOut,
+          reps > 0 ? String(reps) : '0',
+          rec.note ? String(rec.note).trim() : '',
+          setupStr
+        ]);
+      });
+    });
+    var pctStr = totalScored > 0 && totalMarked > 0 ? (Math.round((totalCorrect / totalScored) * 100) + '%') : '';
+    rows.push([
+      student,
+      dateStr,
+      examiner,
+      'SUMMARY',
+      totalScored > 0 ? (totalMarked + '/' + totalScored + ' scored') : 'Unscored',
+      String(p.title || 'Worksheet'),
+      pctStr,
+      totalScored > 0 ? 'Total' : 'Practice only',
+      totalScored > 0 && totalMarked > 0 ? (totalCorrect + '/' + totalScored) : '',
+      String(totalRepeats),
+      st.notes ? String(st.notes).trim() : '',
+      setupStr
+    ]);
+    return '\uFEFF' + rows.map(function (cols) {
+      return cols.map(wsAudioCsvCell).join(',');
+    }).join('\r\n') + '\r\n';
+  }
+  function wsAudioResultsActivityId(rawAct, kind) {
+    var a = String(rawAct || '').trim();
+    if (a === 'vocab_matching' || a === 'vocab_meanings' || a === 'vocab_bank') return 'vocab_meaning';
+    if (a === 'vocab_cloze') return 'vocab_blank';
+    if (a === 'vocab_pictures') return 'vocab_picture';
+    if (a.indexOf('ra_') === 0 || kind === 'read-along') return 'read_along';
+    return a || (kind === 'vocab' ? 'vocab_meaning' : 'isolation');
+  }
+  function buildAudioResultsJson(plan, scoreState, options) {
+    var p = plan && typeof plan === 'object' ? plan : { title: 'Worksheet', kind: 'word-sounds', sections: [], items: [] };
+    var st = scoreState && typeof scoreState === 'object' ? scoreState : {};
+    var stItems = st.items && typeof st.items === 'object' ? st.items : {};
+    var o = options && typeof options === 'object' ? options : {};
+    var title = String(p.title || 'Worksheet').trim() || 'Worksheet';
+    var kind = String(p.kind || 'word-sounds').trim() || 'word-sounds';
+    var slugBase = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'worksheet';
+    var nowIso = '';
+    try { nowIso = new Date().toISOString(); } catch (_) { nowIso = wsAudioTodayIso() + 'T12:00:00.000Z'; }
+    var datePart = String(st.date || '').trim() || wsAudioTodayIso();
+    var localStamp = datePart ? (datePart + 'T12:00:00') : nowIso.slice(0, 19);
+    var student = String(st.studentName || '').trim() || 'Student';
+    var examiner = String(st.examiner || '').trim();
+    var activityTitles = Object.create(null);
+    var outItems = [];
+    var rowIdx = 0;
+
+    (p.sections || []).forEach(function (sec) {
+      var isScored = sec.scored !== false;
+      var mappedAct = wsAudioResultsActivityId(sec.activity, kind);
+      if (sec.label && !activityTitles[mappedAct]) activityTitles[mappedAct] = String(sec.label);
+      (sec.items || []).forEach(function (it) {
+        var key = it && it.index != null ? String(it.index) : String(rowIdx);
+        var rec = stItems[key] || stItems[String(rowIdx)] || {};
+        rowIdx++;
+        var val = isScored && (rec.score === 1 || rec.score === 0) ? rec.score : null;
+        var reps = Number(rec.repeats) > 0 ? Math.floor(Number(rec.repeats)) : 0;
+        var noteTxt = rec.note ? String(rec.note).trim() : '';
+        var attempted = isScored ? (val !== null) : !!(rec.done || rec.score === 1);
+        var itemWord = String((it && (it.word || it.numLabel)) || ('#' + (it && it.numInSection != null ? it.numInSection : rowIdx)));
+        var itemTarget = String((it && it.answer) || '');
+        outItems.push({
+          n: rowIdx,
+          itemId: 'ws-audio-' + rowIdx,
+          activity: mappedAct,
+          word: itemWord,
+          target: itemTarget,
+          responses: attempted ? [val === 1 ? (itemTarget || 'correct') : (noteTxt || 'incorrect')] : [],
+          correct: val === 1,
+          firstTry: val === 1 && reps === 0,
+          attempts: attempted ? (1 + reps) : 0,
+          scored: isScored,
+          practice: !isScored,
+          done: attempted,
+          ms: 0,
+          supports: {
+            source: 'paper_audio',
+            slow: o.slow ? '1' : '0',
+            repeats: String(reps)
+          },
+          flag: noteTxt ? 'teacher_note' : ''
+        });
+      });
+    });
+
+    return {
+      kind: 'alloflow-take-home-result',
+      schemaVersion: 3,
+      sessionId: 'ws-audio-' + slugBase + '-' + String(Date.now ? Date.now() : '1'),
+      lessonId: 'ws-audio-' + slugBase,
+      lessonTitle: title,
+      packet: {
+        id: 'worksheet-audio-' + kind + '-' + slugBase,
+        version: '1',
+        form: 'Paper+Audio',
+        mode: 'practice',
+        title: title
+      },
+      learner: student,
+      examiner: examiner,
+      audioSetup: wsAudioSetupSummary(p, o),
+      notes: st.notes ? String(st.notes).trim() : '',
+      startedLocal: localStamp,
+      finishedLocal: localStamp,
+      startedAt: nowIso,
+      finishedAt: nowIso,
+      durationMs: 0,
+      activityTitles: activityTitles,
+      items: outItems
+    };
+  }
+  function buildAudioScoringSheetHtml(plan, options) {
+    var p = plan && typeof plan === 'object' ? plan : { title: 'Worksheet', sections: [], items: [] };
+    var o = options && typeof options === 'object' ? options : {};
+    var title = String(p.title || 'Worksheet').trim() || 'Worksheet';
+    var condParts = [];
+    condParts.push('Speed: ' + (o.slow ? 'Slow (0.8x)' : 'Standard (1.0x)'));
+    condParts.push('Response pause: ' + (Number(o.autoSec) > 0 ? (Number(o.autoSec) + 's auto-advance') : 'Manual'));
+    if (p.hasSoundGap) condParts.push('Sound gap: ' + ((Number(o.gapMs) || 700) / 1000).toFixed(1) + 's');
+    if (p.hasDirections) condParts.push('Directions: ' + (o.dirMode === 'every' ? 'Every item' : (o.dirMode === 'none' ? 'Words / sounds only' : 'First item per section')));
+
+    var st = o.scoreState && typeof o.scoreState === 'object' ? o.scoreState : null;
+    var stItems = st && st.items && typeof st.items === 'object' ? st.items : null;
+    var stStudent = st && st.studentName ? String(st.studentName).trim() : '';
+    var stDate = st && st.date ? String(st.date).trim() : '';
+    var stExaminer = st && st.examiner ? String(st.examiner).trim() : '';
+    var stNotes = st && st.notes ? String(st.notes).trim() : '';
+
+    var totalScored = 0, totalCorrect = 0, totalMarked = 0, anyRepeats = false, gIdx = 0;
+    var secHtml = (p.sections || []).map(function (sec) {
+      var scored = sec.scored !== false;
+      var items = sec.items || [];
+      if (scored) totalScored += items.length;
+      var secCorrect = 0, secMarked = 0;
+      var headCols = scored
+        ? '<th class="sc-col-num">#</th><th class="sc-col-prompt">Item / Audio Prompt</th><th class="sc-col-ans">Expected Answer</th><th class="sc-col-score">Score</th><th class="sc-col-rep">Rep.</th><th class="sc-col-notes">Notes / Error Pattern</th>'
+        : '<th class="sc-col-num">#</th><th class="sc-col-prompt">Item / Audio Prompt</th><th class="sc-col-done">Done</th><th class="sc-col-notes">Notes</th>';
+      var rowsHtml = items.map(function (it) {
+        var k = it && it.index != null ? String(it.index) : String(gIdx);
+        var rec = stItems ? (stItems[k] || stItems[String(gIdx)] || null) : null;
+        gIdx++;
+        var tag = it.numLabel ? String(it.numLabel) : String(it.numInSection);
+        var reps = rec && Number(rec.repeats) > 0 ? Math.floor(Number(rec.repeats)) : 0;
+        var noteTxt = rec && rec.note ? String(rec.note).trim() : '';
+        if (reps > 0) anyRepeats = true;
+        if (scored) {
+          var val = rec && (rec.score === 1 || rec.score === 0) ? rec.score : null;
+          if (val !== null) {
+            secMarked++;
+            totalMarked++;
+            if (val === 1) { secCorrect++; totalCorrect++; }
+          }
+          return '<tr>'
+            + '<td class="sc-num">' + wsEsc(tag) + '</td>'
+            + '<td class="sc-prompt">' + wsEsc(it.script) + '</td>'
+            + '<td class="sc-ans">' + wsEsc(it.answer) + '</td>'
+            + '<td class="sc-score"><span class="sc-bub' + (val === 1 ? ' is-picked' : '') + '">1</span> <span class="sc-bub' + (val === 0 ? ' is-picked' : '') + '">0</span></td>'
+            + '<td class="sc-rep">' + (reps > 0 ? wsEsc(String(reps)) : '') + '</td>'
+            + '<td class="sc-notes">' + wsEsc(noteTxt) + '</td>'
+            + '</tr>';
+        }
+        var isDone = !!(rec && (rec.done || rec.score === 1));
+        return '<tr>'
+          + '<td class="sc-num">' + wsEsc(tag) + '</td>'
+          + '<td class="sc-prompt">' + wsEsc(it.script) + '</td>'
+          + '<td class="sc-done"><span class="sc-box' + (isDone ? ' is-checked' : '') + '">' + (isDone ? '\u2713' : '') + '</span></td>'
+          + '<td class="sc-notes">' + wsEsc(noteTxt) + '</td>'
+          + '</tr>';
+      }).join('');
+      var subLine = scored
+        ? '<p class="sc-sub">Section subtotal: '
+          + (secMarked > 0 ? ('<strong>' + secCorrect + '</strong>') : '<span class="sc-blank-sm"></span>')
+          + ' / ' + items.length
+          + (secMarked > 0 ? (' (' + Math.round((secCorrect / Math.max(1, items.length)) * 100) + '%)') : '')
+          + '</p>'
+        : '<p class="sc-sub">Practice / listening only (not scored).</p>';
+      return '<section class="sc-sec">'
+        + '<h2>' + wsEsc(sec.label) + '</h2>'
+        + '<table class="sc-tbl"><thead><tr>' + headCols + '</tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+        + subLine
+        + '</section>';
+    }).join('\n');
+
+    var totalPct = totalScored > 0 ? Math.round((totalCorrect / totalScored) * 100) : 0;
+    var slowChk = totalMarked > 0 && !!o.slow;
+    var summaryHtml = '<section class="sc-summary">'
+      + '<h2>Summary &amp; Observations</h2>'
+      + (totalScored > 0
+        ? '<p class="sc-total"><strong>Total scored:</strong> '
+          + (totalMarked > 0 ? ('<strong>' + totalCorrect + '</strong>') : '<span class="sc-blank-md"></span>')
+          + ' / ' + totalScored + ' &nbsp;&nbsp; <strong>Percent:</strong> '
+          + (totalMarked > 0 ? ('<strong>' + totalPct + '</strong>') : '<span class="sc-blank-sm"></span>')
+          + ' %</p>'
+        : '<p class="sc-total"><strong>Completion:</strong> All items in this sheet are practice or listening only (unscored).</p>')
+      + '<p class="sc-checks">'
+      + '<span><span class="sc-box' + (slowChk ? ' is-checked' : '') + '">' + (slowChk ? '\u2713' : '') + '</span> Used slow playback (0.8x)</span>'
+      + '<span><span class="sc-box"></span> Needed extra wait time</span>'
+      + '<span><span class="sc-box' + (anyRepeats ? ' is-checked' : '') + '">' + (anyRepeats ? '\u2713' : '') + '</span> Repeated items</span>'
+      + '<span><span class="sc-box"></span> Self-corrected</span>'
+      + '<span><span class="sc-box"></span> Fatigue / took a break</span>'
+      + '</p>'
+      + '<p class="sc-focus-lbl">Next teaching focus / notes:</p>'
+      + (stNotes ? ('<p class="sc-note-val">' + wsEsc(stNotes) + '</p><div class="sc-line"></div>') : '<div class="sc-line"></div><div class="sc-line"></div>')
+      + '</section>';
+
+    var css = [
+      '@page{margin:12mm}',
+      '*{box-sizing:border-box}',
+      'body{margin:0;padding:14px;background:#ffffff;color:#000000;font:12pt/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}',
+      '.sc-noprint{margin:0 0 12px;padding:8px 10px;border:1px solid #000;font-size:10pt;background:#f5f5f5}',
+      '@media print{body{padding:0}.sc-noprint{display:none!important}}',
+      'header{border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:12px}',
+      'h1{margin:0 0 6px;font-size:16pt;line-height:1.2}',
+      '.sc-meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:10.5pt;margin-bottom:6px}',
+      '.sc-meta-line{display:inline-block;min-width:110px;border-bottom:1px solid #000;padding:0 4px}',
+      '.sc-cond{margin:0;font-size:9.5pt;color:#222}',
+      '.sc-sec{margin:0 0 14px;break-inside:avoid-page}',
+      '.sc-sec h2{margin:0 0 5px;font-size:12pt;border-bottom:1px solid #000;padding-bottom:2px}',
+      '.sc-tbl{width:100%;border-collapse:collapse;font-size:10pt}',
+      '.sc-tbl th,.sc-tbl td{border:1px solid #000;padding:4px 6px;vertical-align:top;text-align:left}',
+      '.sc-tbl th{background:#f0f0f0;font-weight:700}',
+      '.sc-tbl tr{break-inside:avoid;page-break-inside:avoid}',
+      '.sc-col-num,.sc-num{width:28px;text-align:center;font-weight:700}',
+      '.sc-col-score,.sc-score{width:64px;text-align:center;white-space:nowrap}',
+      '.sc-col-rep,.sc-rep{width:38px;text-align:center}',
+      '.sc-col-done,.sc-done{width:46px;text-align:center}',
+      '.sc-col-notes,.sc-notes{width:24%}',
+      '.sc-bub{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:1.5px solid #000;border-radius:50%;font-size:9pt;font-weight:700}',
+      '.sc-bub.is-picked{background:#000;color:#fff}',
+      '.sc-box{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1.5px solid #000;vertical-align:-2px;margin-right:4px;font-size:9pt;font-weight:700;line-height:1}',
+      '.sc-box.is-checked{background:#000;color:#fff}',
+      '.sc-sub{margin:5px 0 0;font-size:10pt;font-weight:700;text-align:right}',
+      '.sc-blank-sm{display:inline-block;width:36px;border-bottom:1.5px solid #000}',
+      '.sc-blank-md{display:inline-block;width:54px;border-bottom:1.5px solid #000}',
+      '.sc-summary{border:1.5px solid #000;padding:10px 12px;margin-top:12px;break-inside:avoid;page-break-inside:avoid}',
+      '.sc-summary h2{margin:0 0 6px;font-size:12pt}',
+      '.sc-total{margin:0 0 8px;font-size:10.5pt}',
+      '.sc-checks{margin:0 0 10px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:9.5pt}',
+      '.sc-focus-lbl{margin:0 0 4px;font-size:10pt;font-weight:700}',
+      '.sc-note-val{margin:2px 0 6px;font-size:10pt}',
+      '.sc-line{height:22px;border-bottom:1px solid #000;margin-bottom:4px}'
+    ].join('');
+
+    return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+      + '<meta http-equiv="Content-Security-Policy" content="' + WS_CSP + '">\n'
+      + '<meta name="referrer" content="no-referrer">\n'
+      + '<title>' + wsEsc(title) + ' \u2014 Teacher Record &amp; Scoring Sheet</title>\n'
+      + '<style>' + css + '</style>\n</head>\n<body>\n'
+      + '<p class="sc-noprint">Teacher Record &amp; Scoring Sheet (for teacher eyes only). Print at 100% scale.</p>\n'
+      + '<header><h1>' + wsEsc(title) + ' \u2014 Teacher Record &amp; Scoring Sheet</h1>'
+      + '<div class="sc-meta"><span>Student / Code Name: <span class="sc-meta-line">' + wsEsc(stStudent) + '</span></span><span>Date: <span class="sc-meta-line">' + wsEsc(stDate) + '</span></span><span>Examiner: <span class="sc-meta-line">' + wsEsc(stExaminer) + '</span></span></div>'
+      + '<p class="sc-cond">Audio setup: ' + wsEsc(condParts.join(' \u00b7 ')) + '</p></header>\n'
+      + secHtml + '\n' + summaryHtml + '\n</body>\n</html>\n';
+  }
+  function buildWordSoundsScoringSheetHtml(lessonOrState, options) {
+    return buildAudioScoringSheetHtml(buildWordSoundsAudioPlan(lessonOrState, options), options);
+  }
+  function buildVocabScoringSheetHtml(rawState, options) {
+    return buildAudioScoringSheetHtml(buildVocabAudioPlan(rawState, options), options);
+  }
+  function buildReadAlongScoringSheetHtml(rawState, options) {
+    return buildAudioScoringSheetHtml(buildReadAlongAudioPlan(rawState, options), options);
+  }
+  function buildAudioCompanionHtmlFromPlan(plan) {
+    var p = plan && typeof plan === 'object' ? plan : { title: 'Worksheet', sections: [], items: [], audio: {} };
+    var safeJson = function (obj) {
+      return JSON.stringify(obj).replace(/<\//g, '<\\/').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    };
+    var payload = {
+      kind: p.kind || 'word-sounds',
+      title: p.title,
+      hasSoundGap: p.hasSoundGap !== false,
+      hasDirections: !!p.hasDirections,
+      sections: (p.sections || []).map(function (s) {
+        return {
+          activity: s.activity,
+          label: s.label,
+          directions: s.directions,
+          scored: s.scored !== false,
+          itemIndices: (s.items || []).map(function (i) { return i.index; })
+        };
+      }),
+      items: p.items || [],
+      audio: p.audio || {}
+    };
+    var css = [
+      ':root{--bg:#f4f6fb;--surface:#ffffff;--ink:#181e2c;--muted:#4d5669;--accent:#3d3aa8;--on-accent:#ffffff;--accent-soft:#eef0ff;--line:#d5dbe7;--line-strong:#aeb8cc;--note:#eef1f8;--radius:12px}',
+      '@media (prefers-color-scheme:dark){:root{--bg:#121722;--surface:#1b2232;--ink:#eef1f8;--muted:#b2bbd0;--accent:#a5a8ff;--on-accent:#111522;--accent-soft:#252a4a;--line:#323b52;--line-strong:#4b5775;--note:#20283b}}',
+      '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}',
+      'main{max-width:52rem;margin:0 auto;padding:1.25rem 1rem 3rem;display:flex;flex-direction:column;gap:1rem}',
+      'header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:0.75rem 1rem}',
+      '.head-copy{flex:1 1 20rem;min-width:0}header h1{margin:0;font-size:clamp(1.4rem,1.2rem + 1vw,1.95rem)}header p{margin:0.35rem 0 0;color:var(--muted)}',
+      '.card{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);padding:1.15rem}',
+      '.stage{border:2px solid var(--accent);display:flex;flex-direction:column;gap:0.75rem}',
+      '.meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.4rem 0.75rem}',
+      '.badge{display:inline-flex;align-items:center;padding:0.2rem 0.65rem;border-radius:999px;background:var(--accent-soft);border:1px solid var(--accent);font-size:0.85rem;font-weight:700}',
+      '.counter{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}',
+      '.item-title{margin:0;font-size:clamp(1.25rem,1.1rem + 0.8vw,1.6rem)}.script{margin:0;color:var(--muted)}',
+      '.ans{margin:0;padding:0.55rem 0.8rem;border-radius:8px;background:var(--note);border-left:4px solid var(--accent);font-weight:600}.ans[hidden]{display:none}',
+      '.row{display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center}',
+      'button{font:inherit;font-weight:600;min-height:44px;padding:0.45rem 0.9rem;border-radius:8px;border:1.5px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer}',
+      'button:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}',
+      'button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}',
+      'button:disabled{opacity:0.5;cursor:not-allowed}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}',
+      '.head-acts{display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center}',
+      '.score-panel{border-top:1px solid var(--line);padding-top:0.75rem;display:flex;flex-direction:column;gap:0.55rem}',
+      '.score-meta{display:flex;flex-wrap:wrap;gap:0.5rem 0.75rem;align-items:center}',
+      '.score-meta input,.score-note{min-height:44px;padding:0.4rem 0.65rem;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:0.92rem}',
+      '.score-meta input{flex:1 1 9.5rem;min-width:0}.score-note{flex:1 1 14rem;min-width:0}',
+      '.score-pill{display:inline-flex;align-items:center;padding:0.25rem 0.65rem;border-radius:999px;background:var(--note);border:1px solid var(--line-strong);font-size:0.86rem;font-weight:700;font-variant-numeric:tabular-nums}',
+      '.score-tag{display:inline-flex;align-items:center;gap:0.35rem;font-size:0.82rem;font-weight:700;color:var(--accent);margin-top:0.15rem}.score-tag[hidden]{display:none}',
+      '.bar{height:8px;border-radius:999px;background:var(--note);border:1px solid var(--line);overflow:hidden}.bar[hidden]{display:none}.bar span{display:block;height:100%;width:0%;background:var(--accent)}',
+      '.status{margin:0;font-weight:600;min-height:1.4em}.keys{margin:0;font-size:0.88rem;color:var(--muted)}',
+      '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:0.75rem 1rem;align-items:end}',
+      '.field{display:flex;flex-direction:column;gap:0.3rem}.field label{font-size:0.88rem;font-weight:700}',
+      'select{width:100%;min-height:44px;padding:0.45rem 0.7rem;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit}',
+      '.chks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:0.4rem 1.5rem;align-items:center;padding-top:0.5rem;border-top:1px solid var(--line)}',
+      '.chk{display:inline-flex;align-items:center;gap:0.5rem;min-height:44px;font-weight:600;cursor:pointer}.chk input{width:18px;height:18px;margin:0;accent-color:var(--accent)}',
+      '.sec h2{margin:0 0 0.25rem;font-size:1.1rem}.sec p{margin:0 0 0.65rem;color:var(--muted);font-size:0.92rem}',
+      '.list{list-style:none;margin:0;padding:0;display:grid;gap:0.45rem}',
+      '.row-item{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem 0.75rem;padding:0.5rem 0.7rem;border:1.5px solid var(--line);border-radius:8px;background:var(--bg)}',
+      '.row-item.is-active{border-color:var(--accent);background:var(--accent-soft)}.row-item.is-played .num{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}',
+      '.num{flex:none;min-width:32px;height:32px;padding:0 6px;border-radius:999px;border:1.5px solid var(--line-strong);background:var(--surface);font-weight:700;display:inline-flex;align-items:center;justify-content:center}',
+      '.body{flex:1 1 13rem;min-width:0}.lbl{display:block;font-weight:700}.sub{display:block;font-size:0.86rem;color:var(--muted)}.item-ans{display:block;font-size:0.86rem;font-weight:600;color:var(--accent)}.item-ans[hidden]{display:none}',
+      '.print-record{display:none}',
+      '@media print{@page{margin:12mm}body{background:#fff;color:#000;font-size:11pt}main{display:none!important}.print-record{display:block!important}.pr-head{border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}.pr-head h1{margin:0 0 5px;font-size:15pt}.pr-meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:10pt;margin:0 0 4px}.pr-line{display:inline-block;min-width:105px;border-bottom:1px solid #000;padding:0 4px}.pr-cond{margin:0;font-size:9.5pt;color:#222}.pr-sec{margin:0 0 12px}.pr-sec h2{margin:0 0 4px;font-size:11.5pt;border-bottom:1px solid #000;padding-bottom:2px}.pr-tbl{width:100%;border-collapse:collapse;font-size:9.5pt}.pr-tbl th,.pr-tbl td{border:1px solid #000;padding:4px 5px;vertical-align:top;text-align:left}.pr-tbl th{background:#f0f0f0}.pr-tbl tr{break-inside:avoid;page-break-inside:avoid}.pr-num{width:28px;text-align:center;font-weight:700}.pr-sc{width:62px;text-align:center;white-space:nowrap}.pr-rep{width:34px;text-align:center}.pr-dn{width:42px;text-align:center}.pr-nt{width:24%}.pr-b{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border:1.5px solid #000;border-radius:50%;font-size:8.5pt;font-weight:700}.pr-b.is-picked{background:#000;color:#fff}.pr-bx{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border:1.5px solid #000;vertical-align:-2px;margin-right:4px;font-size:8.5pt;font-weight:700;line-height:1}.pr-bx.is-checked{background:#000;color:#fff}.pr-sub{margin:4px 0 0;font-size:9.5pt;font-weight:700;text-align:right}.pr-bs{display:inline-block;width:36px;border-bottom:1.5px solid #000}.pr-sum{border:1.5px solid #000;padding:9px 11px;margin-top:10px;break-inside:avoid}.pr-sum h2{margin:0 0 5px;font-size:11.5pt}.pr-obs{display:flex;flex-wrap:wrap;gap:5px 14px;font-size:9.5pt;margin:6px 0 8px}.pr-wl{height:20px;border-bottom:1px solid #000;margin-bottom:4px}}',
+      '@media (forced-colors:active){.card,.row-item{border:2px solid CanvasText}.row-item.is-active{border-color:Highlight}}',
+      '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}'
+    ].join('\n');
+    var script = [
+      '(function(){',
+      '"use strict";',
+      'var DATA=' + safeJson(payload) + ';',
+      'var app=document.getElementById("app");',
+      'var prHost=document.getElementById("print-record");',
+      'var el=function(t,c,txt){var n=document.createElement(t);if(c)n.className=c;if(txt!=null)n.textContent=txt;return n;};',
+      'var idx=0,runId=0,playing=false,curAudio=null,timer=null,raf=0,played={},showAns=false,slow=false,autoSec=0,gapMs=700,dirMode="section";',
+      'var scoreMap={},studentName="",examinerName="";',
+      'var recOf=function(i){var k=String(i);if(!scoreMap[k])scoreMap[k]={score:null,repeats:0,done:false,note:""};return scoreMap[k];};',
+      'var tagOf=function(it){return it.numLabel?String(it.numLabel):"#"+it.numInSection;};',
+      'var todayIso=function(){var d=new Date(),m=String(d.getMonth()+1),dy=String(d.getDate());return d.getFullYear()+"-"+(m.length<2?"0"+m:m)+"-"+(dy.length<2?"0"+dy:dy);};',
+      'var csvCell=function(v){var s=String(v==null?"":v);if(/^[=+\\-@\\t\\r]/.test(s))s="\'"+s;return /[",\\r\\n]/.test(s)?"\\""+s.replace(/"/g,"\\"\\"")+"\\"":s;};',
+      'var head=el("header","",null);var hc=el("div","head-copy");hc.appendChild(el("h1","",DATA.title+" \u2014 Worksheet Audio Player"));',
+      'hc.appendChild(el("p","","Offline teacher play-along companion with live scoring. Matches the printed worksheet item numbers 1-to-1. Works with no internet."));',
+      'head.appendChild(hc);var ha=el("div","head-acts");var bRes=el("button","","Save for Add Up Results (.json)");bRes.type="button";bRes.id="download-results-json";var bCsv=el("button","","Download scores (.csv)");bCsv.type="button";bCsv.id="download-csv";var bPrint=el("button","","Print scoring sheet");bPrint.type="button";bPrint.id="print-scoring";ha.appendChild(bRes);ha.appendChild(bCsv);ha.appendChild(bPrint);head.appendChild(ha);app.appendChild(head);',
+      'var stage=el("section","card stage");var meta=el("div","meta");var badge=el("span","badge");var counter=el("span","counter");meta.appendChild(badge);meta.appendChild(counter);stage.appendChild(meta);',
+      'var itemTitle=el("h2","item-title");var scriptLine=el("p","script");var ansBox=el("p","ans");ansBox.hidden=true;',
+      'var playbar=el("div","row");',
+      'var bPrev=el("button","","Prev"),bPlay=el("button","primary","Play item"),bRep=el("button","","Replay"),bStop=el("button","","Stop"),bNext=el("button","","Next");',
+      '[bPrev,bPlay,bRep,bStop,bNext].forEach(function(b){b.type="button";playbar.appendChild(b);});',
+      'var scorePanel=el("div","score-panel");',
+      'var sMeta=el("div","score-meta");var iStu=el("input","");iStu.type="text";iStu.maxLength=48;iStu.placeholder="Student / code name (optional)";iStu.setAttribute("aria-label","Student or code name");iStu.addEventListener("input",function(){studentName=iStu.value;buildPrintRecord();});',
+      'var iExam=el("input","");iExam.type="text";iExam.maxLength=48;iExam.placeholder="Examiner (optional)";iExam.setAttribute("aria-label","Examiner name");iExam.addEventListener("input",function(){examinerName=iExam.value;buildPrintRecord();});',
+      'var sPill=el("span","score-pill","No items scored yet");var bClr=el("button","","Clear scores");bClr.type="button";',
+      '[iStu,iExam,sPill,bClr].forEach(function(n){sMeta.appendChild(n);});scorePanel.appendChild(sMeta);',
+      'var sRow=el("div","row");var bM1=el("button","","Correct (1)"),bM0=el("button","","Incorrect (0)"),bMRep=el("button","","+ Repeat (0)"),bMDone=el("button","","Mark done");',
+      '[bM1,bM0,bMRep,bMDone].forEach(function(b){b.type="button";sRow.appendChild(b);});',
+      'var iNote=el("input","score-note");iNote.type="text";iNote.maxLength=120;iNote.placeholder="Quick item note or error pattern (optional)";iNote.setAttribute("aria-label","Item note");',
+      'sRow.appendChild(iNote);scorePanel.appendChild(sRow);',
+      'var barWrap=el("div","bar");barWrap.hidden=true;var barFill=el("span");barWrap.appendChild(barFill);',
+      'var status=el("p","status");status.setAttribute("role","status");',
+      'var keys=el("p","keys","Shortcuts: Space = Play/Stop, R = Replay, Left / Right = Prev / Next, 1 = Correct, 0 = Incorrect, P = +Repeat.");',
+      '[itemTitle,scriptLine,ansBox,playbar,scorePanel,barWrap,status,keys].forEach(function(n){stage.appendChild(n);});app.appendChild(stage);',
+      'var ctrl=el("section","card grid");',
+      'var mkSel=function(id,lbl,opts,val,fn){var f=el("div","field");var l=el("label","",lbl);l.htmlFor=id;var s=el("select");s.id=id;opts.forEach(function(o){var op=el("option","",o[1]);op.value=String(o[0]);if(String(o[0])===String(val))op.selected=true;s.appendChild(op);});s.addEventListener("change",function(){fn(s.value);buildPrintRecord();});f.appendChild(l);f.appendChild(s);ctrl.appendChild(f);};',
+      'mkSel("auto","Auto-advance response pause",[["0","Manual (teacher clicks Next)"],["3","3 seconds"],["5","5 seconds"],["8","8 seconds"],["12","12 seconds"]],0,function(v){autoSec=Number(v)||0;});',
+      'if(DATA.hasSoundGap)mkSel("gap","Sound gap",[["400","0.4s (quick)"],["700","0.7s (standard)"],["1000","1.0s (CTOPP-style)"]],700,function(v){gapMs=Number(v)||700;});',
+      'if(DATA.hasDirections)mkSel("dir","Spoken directions",[["section","First item per section"],["every","Every item"],["none","Words / sounds only"]],"section",function(v){dirMode=v;});',
+      'var chkWrap=el("div","chks");var cSlow=el("label","chk");var iSlow=el("input");iSlow.type="checkbox";iSlow.addEventListener("change",function(){slow=iSlow.checked;buildPrintRecord();});cSlow.appendChild(iSlow);cSlow.appendChild(el("span","","Slow playback (0.8x)"));chkWrap.appendChild(cSlow);',
+      'var cAns=el("label","chk");var iAns=el("input");iAns.type="checkbox";iAns.addEventListener("change",function(){showAns=iAns.checked;sync();});cAns.appendChild(iAns);cAns.appendChild(el("span","","Show teacher answers"));chkWrap.appendChild(cAns);',
+      'ctrl.appendChild(chkWrap);app.appendChild(ctrl);',
+      'var rows=[];var scoredByIdx={};',
+      'DATA.sections.forEach(function(sec){var sEl=el("section","card sec");sEl.appendChild(el("h2","",sec.label));sEl.appendChild(el("p","",sec.directions));var ul=el("ul","list");',
+      'sec.itemIndices.forEach(function(gi){scoredByIdx[gi]=sec.scored!==false;var it=DATA.items[gi];var t=tagOf(it);var li=el("li","row-item");var num=el("span","num",t);var bd=el("div","body");bd.appendChild(el("span","lbl",it.sectionLabel+" "+t+(it.hasAudio?"":" (read aloud)")));bd.appendChild(el("span","sub",it.script));var ia=el("span","item-ans","Answer: "+it.answer);ia.hidden=true;bd.appendChild(ia);var stg=el("span","score-tag","");stg.hidden=true;bd.appendChild(stg);var pb=el("button","","Play "+t);pb.type="button";pb.addEventListener("click",function(){idx=gi;sync();playCurrent();});li.appendChild(num);li.appendChild(bd);li.appendChild(pb);ul.appendChild(li);rows[gi]={li:li,num:num,ia:ia,stg:stg};});',
+      'sEl.appendChild(ul);app.appendChild(sEl);});',
+      'function scoreStats(){var scTot=0,mk=0,ok=0,repAny=false;DATA.sections.forEach(function(sec){if(sec.scored===false)return;sec.itemIndices.forEach(function(gi){scTot++;var r=scoreMap[String(gi)];if(r&&r.repeats>0)repAny=true;if(r&&(r.score===1||r.score===0)){mk++;if(r.score===1)ok++;}});});return{scTot:scTot,mk:mk,ok:ok,repAny:repAny};}',
+      'function buildPrintRecord(){if(!prHost)return;while(prHost.firstChild)prHost.removeChild(prHost.firstChild);var st=scoreStats();var hd=el("div","pr-head");hd.appendChild(el("h1","",DATA.title+" \u2014 Teacher Record & Scoring Sheet"));var mt=el("p","pr-meta");[["Student / Code Name: ",studentName.trim()],["Date: ",st.mk>0||studentName.trim()?todayIso():""],["Examiner: ",examinerName.trim()]].forEach(function(pair){var sp=el("span","",pair[0]);sp.appendChild(el("span","pr-line",pair[1]));mt.appendChild(sp);});hd.appendChild(mt);var cp=["Speed: "+(slow?"Slow (0.8x)":"Standard (1.0x)"),"Response pause: "+(autoSec>0?autoSec+"s auto-advance":"Manual")];if(DATA.hasSoundGap)cp.push("Sound gap: "+(gapMs/1000).toFixed(1)+"s");if(DATA.hasDirections)cp.push("Directions: "+(dirMode==="every"?"Every item":dirMode==="none"?"Words / sounds only":"First item per section"));hd.appendChild(el("p","pr-cond","Audio setup: "+cp.join(" \u00b7 ")));prHost.appendChild(hd);var tot=0;DATA.sections.forEach(function(sec){var sc=sec.scored!==false;var sEl=el("section","pr-sec");sEl.appendChild(el("h2","",sec.label));var tbl=el("table","pr-tbl");var thead=el("thead");var htr=el("tr");(sc?[["pr-num","#"],["","Item / Audio Prompt"],["","Expected Answer"],["pr-sc","Score"],["pr-rep","Rep."],["pr-nt","Notes"]]:[["pr-num","#"],["","Item / Audio Prompt"],["pr-dn","Done"],["pr-nt","Notes"]]).forEach(function(c){htr.appendChild(el("th",c[0],c[1]));});thead.appendChild(htr);tbl.appendChild(thead);var tb=el("tbody");var secOk=0,secMk=0;if(sc)tot+=sec.itemIndices.length;sec.itemIndices.forEach(function(gi){var it=DATA.items[gi];var r=scoreMap[String(gi)]||{};var tr=el("tr");tr.appendChild(el("td","pr-num",it.numLabel?String(it.numLabel):String(it.numInSection)));tr.appendChild(el("td","",it.script));if(sc){tr.appendChild(el("td","",it.answer));var val=r.score===1||r.score===0?r.score:null;if(val!==null){secMk++;if(val===1)secOk++;}var tdS=el("td","pr-sc");tdS.appendChild(el("span","pr-b"+(val===1?" is-picked":""),"1"));tdS.appendChild(document.createTextNode(" "));tdS.appendChild(el("span","pr-b"+(val===0?" is-picked":""),"0"));tr.appendChild(tdS);tr.appendChild(el("td","pr-rep",r.repeats>0?String(r.repeats):""));tr.appendChild(el("td","pr-nt",r.note||""));}else{var tdD=el("td","pr-dn");tdD.appendChild(el("span","pr-bx"+(r.done?" is-checked":""),r.done?"\u2713":""));tr.appendChild(tdD);tr.appendChild(el("td","pr-nt",r.note||""));}tb.appendChild(tr);});tbl.appendChild(tb);sEl.appendChild(tbl);var sub=el("p","pr-sub");if(sc){sub.appendChild(document.createTextNode("Section subtotal: "));if(secMk>0){sub.appendChild(el("strong","",String(secOk)));sub.appendChild(document.createTextNode(" / "+sec.itemIndices.length+" ("+Math.round(secOk/Math.max(1,sec.itemIndices.length)*100)+"%)"));}else{sub.appendChild(el("span","pr-bs"));sub.appendChild(document.createTextNode(" / "+sec.itemIndices.length));}}else{sub.textContent="Practice / listening only (not scored).";}sEl.appendChild(sub);prHost.appendChild(sEl);});var sm=el("section","pr-sum");sm.appendChild(el("h2","","Summary & Observations"));var tp=el("p","");if(tot>0){tp.appendChild(el("strong","","Total scored: "));if(st.mk>0){tp.appendChild(el("strong","",st.ok+" / "+tot+" ("+Math.round(st.ok/tot*100)+"%)"));}else{tp.appendChild(el("span","pr-bs"));tp.appendChild(document.createTextNode(" / "+tot));}}else{tp.textContent="Practice / listening sheet (unscored).";}sm.appendChild(tp);var ob=el("p","pr-obs");[["Used slow (0.8x)",st.mk>0&&slow],["Needed extra wait time",false],["Repeated items",st.repAny],["Self-corrected",false],["Fatigue / break",false]].forEach(function(pair){var sp=el("span");sp.appendChild(el("span","pr-bx"+(pair[1]?" is-checked":""),pair[1]?"\u2713":""));sp.appendChild(document.createTextNode(pair[0]));ob.appendChild(sp);});sm.appendChild(ob);sm.appendChild(el("p","","Next teaching focus / notes:"));sm.appendChild(el("div","pr-wl"));sm.appendChild(el("div","pr-wl"));prHost.appendChild(sm);}',
+      'function downloadScoresCsv(){var st=scoreStats();var dt=todayIso();var cp=["Speed: "+(slow?"Slow (0.8x)":"Standard (1.0x)"),"Response pause: "+(autoSec>0?autoSec+"s auto-advance":"Manual")];if(DATA.hasSoundGap)cp.push("Sound gap: "+(gapMs/1000).toFixed(1)+"s");if(DATA.hasDirections)cp.push("Directions: "+(dirMode==="every"?"Every item":dirMode==="none"?"Words / sounds only":"First item per section"));var setup=cp.join(" \u00b7 ");var out=[["Student","Date","Examiner","Section","Item","Prompt","Expected Answer","Scored","Score","Repeats","Notes","Audio Setup"]];var totRep=0;DATA.sections.forEach(function(sec){var sc=sec.scored!==false;sec.itemIndices.forEach(function(gi){var it=DATA.items[gi];var r=scoreMap[String(gi)]||{};var rp=r.repeats>0?r.repeats:0;totRep+=rp;out.push([studentName.trim(),dt,examinerName.trim(),sec.label,it.numLabel?String(it.numLabel):String(it.numInSection),it.script,sc?it.answer:"",sc?"Yes":"Practice only",sc?(r.score===1||r.score===0?String(r.score):""):(r.done?"Done":""),String(rp),r.note||"",setup]);});});out.push([studentName.trim(),dt,examinerName.trim(),"SUMMARY",st.scTot>0?(st.mk+"/"+st.scTot+" scored"):"Unscored",DATA.title,st.scTot>0&&st.mk>0?(Math.round(st.ok/st.scTot*100)+"%"):"",st.scTot>0?"Total":"Practice only",st.scTot>0&&st.mk>0?(st.ok+"/"+st.scTot):"",String(totRep),"",setup]);var csv="\\uFEFF"+out.map(function(row){return row.map(csvCell).join(",");}).join("\\r\\n")+"\\r\\n";var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=(DATA.title||"worksheet").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")+"-scores.csv";a.hidden=true;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_){}},10000);status.textContent="Downloaded scores (.csv).";}',
+      'function mapActId(a,k){a=String(a||"");if(a==="vocab_matching"||a==="vocab_meanings"||a==="vocab_bank")return"vocab_meaning";if(a==="vocab_cloze")return"vocab_blank";if(a==="vocab_pictures")return"vocab_picture";if(a.indexOf("ra_")===0||k==="read-along")return"read_along";return a||(k==="vocab"?"vocab_meaning":"isolation");}',
+      'function downloadResultsJson(){var dt=todayIso();var nowIso=new Date().toISOString();var slugBase=(DATA.title||"worksheet").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48)||"worksheet";var actTitles={};var items=[];var rowN=0;DATA.sections.forEach(function(sec){var sc=sec.scored!==false;var ma=mapActId(sec.activity,DATA.kind);if(sec.label&&!actTitles[ma])actTitles[ma]=sec.label;sec.itemIndices.forEach(function(gi){var it=DATA.items[gi];var r=scoreMap[String(gi)]||{};rowN++;var val=sc&&(r.score===1||r.score===0)?r.score:null;var rp=r.repeats>0?r.repeats:0;var nt=(r.note||"").trim();var att=sc?(val!==null):!!r.done;items.push({n:rowN,itemId:"ws-audio-"+rowN,activity:ma,word:String(it.word||it.numLabel||("#"+it.numInSection)),target:String(it.answer||""),responses:att?[val===1?(it.answer||"correct"):(nt||"incorrect")]:[],correct:val===1,firstTry:val===1&&rp===0,attempts:att?(1+rp):0,scored:sc,practice:!sc,done:att,ms:0,supports:{source:"paper_audio",slow:slow?"1":"0",repeats:String(rp)},flag:nt?"teacher_note":""});});});var obj={kind:"alloflow-take-home-result",schemaVersion:3,sessionId:"ws-audio-"+slugBase+"-"+Date.now(),lessonId:"ws-audio-"+slugBase,lessonTitle:DATA.title||"Worksheet",packet:{id:"worksheet-audio-"+(DATA.kind||"word-sounds")+"-"+slugBase,version:"1",form:"Paper+Audio",mode:"practice",title:DATA.title||"Worksheet"},learner:studentName.trim()||"Student",examiner:examinerName.trim(),startedLocal:dt+"T12:00:00",finishedLocal:dt+"T12:00:00",startedAt:nowIso,finishedAt:nowIso,durationMs:0,activityTitles:actTitles,items:items};var blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json;charset=utf-8"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=slugBase+"-results.json";a.hidden=true;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){try{URL.revokeObjectURL(url);}catch(_){}},10000);status.textContent="Saved Add Up Results file (.json).";}',
+      'bRes.addEventListener("click",downloadResultsJson);',
+      'bCsv.addEventListener("click",downloadScoresCsv);',
+      'bPrint.addEventListener("click",function(){buildPrintRecord();window.print();});',
+      'function stopAll(){runId++;playing=false;if(timer){clearTimeout(timer);timer=null;}if(raf){cancelAnimationFrame(raf);raf=0;}if(curAudio){try{curAudio.pause();curAudio.currentTime=0;}catch(_){}curAudio=null;}barWrap.hidden=true;barFill.style.width="0%";bPlay.textContent="Play item";}',
+      'function sync(){if(!DATA.items.length){itemTitle.textContent="No items in this worksheet.";return;}var it=DATA.items[idx]||DATA.items[0];var t=tagOf(it);var sc=scoredByIdx[idx]!==false;var rec=recOf(idx);var st=scoreStats();badge.textContent=it.sectionLabel;counter.textContent="Item "+(idx+1)+" of "+DATA.items.length+" (Section "+t+")";itemTitle.textContent=it.sectionLabel+" \u2014 "+t;scriptLine.textContent=it.script;ansBox.textContent="Teacher key: "+it.answer;ansBox.hidden=!showAns;bPrev.disabled=idx<=0;bNext.disabled=idx>=DATA.items.length-1;bM1.hidden=!sc;bM0.hidden=!sc;bMRep.hidden=!sc;bMDone.hidden=sc;bM1.setAttribute("aria-pressed",rec.score===1?"true":"false");bM0.setAttribute("aria-pressed",rec.score===0?"true":"false");bMRep.textContent="+ Repeat ("+(rec.repeats||0)+")";bMDone.setAttribute("aria-pressed",rec.done?"true":"false");if(document.activeElement!==iNote)iNote.value=rec.note||"";sPill.textContent=st.scTot>0?(st.mk>0?("Scored: "+st.ok+" / "+st.mk+" ("+Math.round(st.ok/st.mk*100)+"%) \u00b7 "+st.mk+"/"+st.scTot+" done"):"No items scored yet ("+st.scTot+" items)"):"Practice / listening only";rows.forEach(function(r,ri){if(!r)return;var rt=tagOf(DATA.items[ri]);var rr=scoreMap[String(ri)];r.li.classList.toggle("is-active",ri===idx);r.li.classList.toggle("is-played",!!played[ri]);r.num.textContent=played[ri]?"\u2713 "+rt:rt;r.ia.hidden=!showAns;var bits=[];if(rr){if(rr.score===1)bits.push("Score: 1");else if(rr.score===0)bits.push("Score: 0");else if(rr.done)bits.push("Done");if(rr.repeats>0)bits.push("Rep: "+rr.repeats);if(rr.note)bits.push(rr.note);}r.stg.textContent=bits.join(" \u00b7 ");r.stg.hidden=!bits.length;});buildPrintRecord();}',
+      'bM1.addEventListener("click",function(){var r=recOf(idx);r.score=r.score===1?null:1;sync();});',
+      'bM0.addEventListener("click",function(){var r=recOf(idx);r.score=r.score===0?null:0;sync();});',
+      'bMRep.addEventListener("click",function(){var r=recOf(idx);r.repeats=(r.repeats||0)+1;sync();});',
+      'bMDone.addEventListener("click",function(){var r=recOf(idx);r.done=!r.done;sync();});',
+      'iNote.addEventListener("input",function(){var r=recOf(idx);r.note=iNote.value;buildPrintRecord();var rw=rows[idx];if(rw){var bits=[];if(r.score===1)bits.push("Score: 1");else if(r.score===0)bits.push("Score: 0");else if(r.done)bits.push("Done");if(r.repeats>0)bits.push("Rep: "+r.repeats);if(r.note)bits.push(r.note);rw.stg.textContent=bits.join(" \u00b7 ");rw.stg.hidden=!bits.length;}});',
+      'bClr.addEventListener("click",function(){scoreMap={};iNote.value="";status.textContent="Cleared all item scores.";sync();});',
+      'function playClip(cid,mine){return new Promise(function(res){var uri=DATA.audio[cid];if(!uri||mine!==runId){res();return;}var a=new Audio(uri);curAudio=a;a.playbackRate=slow?0.8:1;var done=function(){if(curAudio===a)curAudio=null;res();};a.onended=done;a.onerror=done;try{var p=a.play();if(p&&p.catch)p.catch(done);}catch(_){done();}});}',
+      'function waitMs(ms,mine,showBar){return new Promise(function(res){if(mine!==runId||ms<=0){res();return;}if(showBar){barWrap.hidden=false;var t0=Date.now();var stepBar=function(){if(mine!==runId){barWrap.hidden=true;return;}var f=Math.min(1,(Date.now()-t0)/ms);barFill.style.width=Math.round(f*100)+"%";if(f<1)raf=requestAnimationFrame(stepBar);};raf=requestAnimationFrame(stepBar);}timer=setTimeout(function(){timer=null;barWrap.hidden=true;res();},ms);});}',
+      'function playCurrent(isReplay){stopAll();var it=DATA.items[idx];if(!it)return;if(isReplay&&played[idx]&&scoredByIdx[idx]!==false){var rr=recOf(idx);rr.repeats=(rr.repeats||0)+1;sync();}var mine=++runId;playing=true;bPlay.textContent="Playing...";var seq=[];var useDir=DATA.hasDirections&&(dirMode==="every"||(dirMode==="section"&&it.numInSection===1));if(useDir)it.promptClips.forEach(function(c){seq.push({id:c,gap:320});});it.mainClips.forEach(function(c,ci){seq.push({id:c,gap:ci<it.mainClips.length-1?(it.segmented?gapMs:280):0});});if(it.choiceClips.length){if(seq.length)seq[seq.length-1].gap=420;it.choiceClips.forEach(function(c,ci){seq.push({id:c,gap:ci<it.choiceClips.length-1?420:0});});}if(!seq.length){status.textContent="Read aloud: "+it.script;played[idx]=true;playing=false;bPlay.textContent="Play item";sync();return;}status.textContent="Playing "+it.sectionLabel+" "+tagOf(it)+"...";var chain=Promise.resolve();seq.forEach(function(step){chain=chain.then(function(){return playClip(step.id,mine);}).then(function(){return step.gap?waitMs(step.gap,mine,false):null;});});chain.then(function(){if(mine!==runId)return;played[idx]=true;sync();if(autoSec>0&&idx<DATA.items.length-1){status.textContent="Response window ("+autoSec+"s) before next item...";return waitMs(autoSec*1000,mine,true).then(function(){if(mine!==runId)return;idx++;sync();playCurrent(false);});}playing=false;bPlay.textContent="Play item";status.textContent="Finished "+it.sectionLabel+" "+tagOf(it)+".";});}',
+      'bPlay.addEventListener("click",function(){if(playing)stopAll();else playCurrent(false);});',
+      'bRep.addEventListener("click",function(){playCurrent(true);});',
+      'bStop.addEventListener("click",function(){stopAll();status.textContent="Stopped.";});',
+      'bPrev.addEventListener("click",function(){if(idx>0){stopAll();idx--;sync();}});',
+      'bNext.addEventListener("click",function(){if(idx<DATA.items.length-1){stopAll();idx++;sync();}});',
+      'document.addEventListener("keydown",function(e){var tag=(e.target&&e.target.tagName)||"";if(tag==="SELECT"||tag==="INPUT"||tag==="TEXTAREA")return;if(e.code==="Space"){e.preventDefault();if(playing)stopAll();else playCurrent(false);}else if(e.key==="r"||e.key==="R"){e.preventDefault();playCurrent(true);}else if(e.key==="ArrowRight"){e.preventDefault();if(idx<DATA.items.length-1){stopAll();idx++;sync();}}else if(e.key==="ArrowLeft"){e.preventDefault();if(idx>0){stopAll();idx--;sync();}}else if(e.key==="1"){e.preventDefault();var r1=recOf(idx);if(scoredByIdx[idx]!==false)r1.score=r1.score===1?null:1;else r1.done=!r1.done;sync();}else if(e.key==="0"&&scoredByIdx[idx]!==false){e.preventDefault();var r0=recOf(idx);r0.score=r0.score===0?null:0;sync();}else if((e.key==="p"||e.key==="P")&&scoredByIdx[idx]!==false){e.preventDefault();var rp=recOf(idx);rp.repeats=(rp.repeats||0)+1;sync();}});',
+      'buildPrintRecord();sync();',
+      '})();'
+    ].join('\n');
+    return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+      + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; media-src data:; img-src data:; connect-src \'none\'; form-action \'none\'; base-uri \'none\'">\n'
+      + '<meta name="referrer" content="no-referrer">\n'
+      + '<title>' + wsEsc(p.title) + ' \u2014 Worksheet Audio Player</title>\n'
+      + '<style>\n' + css + '\n</style>\n</head>\n<body>\n<main id="app" aria-label="Worksheet audio player"></main>\n<section id="print-record" class="print-record" aria-label="Printable teacher record and scoring sheet"></section>\n<script>\n' + script + '\n</script>\n</body>\n</html>\n';
+  }
+  function buildWordSoundsAudioCompanionHtml(lessonOrState, options) {
+    return buildAudioCompanionHtmlFromPlan(buildWordSoundsAudioPlan(lessonOrState, options));
+  }
+  function buildVocabAudioCompanionHtml(rawState, options) {
+    return buildAudioCompanionHtmlFromPlan(buildVocabAudioPlan(rawState, options));
+  }
+  function buildReadAlongAudioCompanionHtml(rawState, options) {
+    return buildAudioCompanionHtmlFromPlan(buildReadAlongAudioPlan(rawState, options));
+  }
+
   function normalizeVocabWorksheetModel(rawState, rawOptions) {
     var src = Array.isArray(rawState) ? { entries: rawState } : (rawState && typeof rawState === 'object' ? rawState : {});
     var opts = rawOptions && typeof rawOptions === 'object' ? rawOptions : {};
-    var title = String(opts.title || src.title || 'Vocabulary Practice Worksheet').trim() || 'Vocabulary Practice Worksheet';
+    var defaultTitle = String(src.title || 'Vocabulary Practice Worksheet').trim() || 'Vocabulary Practice Worksheet';
+    var custom = wsExtractCustom(src, opts, defaultTitle);
+    var title = custom.title;
     var preset = String(opts.preset || src.preset || '').trim().toLowerCase();
     var rawBank = opts.wordBank !== undefined ? opts.wordBank
       : (opts.showWordBank !== undefined ? opts.showWordBank
@@ -1165,7 +3363,7 @@
         : (Array.isArray(src.rows) ? src.rows
           : (Array.isArray(src.words) ? src.words : [])));
     var seen = Object.create(null);
-    var entries = [];
+    var allEntries = [];
     rawList.forEach(function (raw) {
       var obj = typeof raw === 'string' ? { word: raw } : (raw && typeof raw === 'object' ? raw : null);
       if (!obj) return;
@@ -1189,17 +3387,40 @@
         if (isPicture(cand)) directUri = cand;
         else if (typeof picRaw.svg === 'string' && /^<svg[\s>]/i.test(picRaw.svg.trim())) directUri = svgUri(picRaw.svg.trim());
       }
-      entries.push({
+      var baseCloze = vocabClozeParts({ word: word, blank: blank, blankAnswer: blankAnswer, example: example });
+      var defaultClozeText = baseCloze.hasCloze
+        ? (baseCloze.before + '___' + baseCloze.after)
+        : baseCloze.prompt;
+      allEntries.push({
+        origIndex: allEntries.length,
+        itemKey: key,
         word: word,
+        defaultMeaning: meaning,
         meaning: meaning,
         example: example,
         blank: blank,
         blankAnswer: blankAnswer,
+        defaultClozeText: defaultClozeText,
+        customCloze: '',
         noPicture: noPicture,
         directUri: directUri,
         pictureSet: String(obj.pictureSet || obj.pictureSource || '').trim(),
         pictureCredit: obj.pictureCredit || (picRaw && typeof picRaw === 'object' ? picRaw.credit : null) || null
       });
+    });
+
+    var orderedAllEntries = wsApplyItemOrder(allEntries, custom.itemOrder, 'words', 'entries').map(function (e) {
+      var clone = Object.assign({}, e);
+      var ovMeaning = wsItemTextOverride(custom.itemTextOverrides, 'meaning:' + clone.origIndex, 'meaning:' + clone.itemKey);
+      if (ovMeaning) clone.meaning = ovMeaning;
+      var ovCloze = wsItemTextOverride(custom.itemTextOverrides, 'cloze:' + clone.origIndex, 'cloze:' + clone.itemKey)
+        || wsItemTextOverride(custom.itemTextOverrides, 'words:' + clone.origIndex, String(clone.origIndex));
+      if (ovCloze) clone.customCloze = ovCloze;
+      return clone;
+    });
+
+    var entries = orderedAllEntries.filter(function (e) {
+      return !(custom.hiddenItems[e.itemKey] || custom.hiddenItems['word:' + e.itemKey] || custom.hiddenItems[String(e.origIndex)]);
     });
 
     var words = entries.map(function (e) { return e.word; });
@@ -1252,6 +3473,16 @@
 
     // Part 2 — Fill in the Blank
     var clozeItems = entries.map(function (e, idx) {
+      if (e.customCloze) {
+        var bm = /_{3,}/.exec(e.customCloze);
+        if (bm) {
+          var b0 = e.customCloze.slice(0, bm.index);
+          var a0 = e.customCloze.slice(bm.index + bm[0].length);
+          var ans0 = String(e.blankAnswer || e.word).trim() || e.word;
+          return { num: idx + 1, word: e.word, hasCloze: true, before: b0, after: a0, answer: ans0, completed: b0 + ans0 + a0 };
+        }
+        return { num: idx + 1, word: e.word, hasCloze: false, prompt: e.customCloze, answer: e.word };
+      }
       return Object.assign({ num: idx + 1, word: e.word }, vocabClozeParts(e));
     });
 
@@ -1264,7 +3495,11 @@
 
     return {
       title: title,
+      subtitle: custom.subtitle,
+      headerFields: custom.headerFields,
+      density: custom.density,
       entries: entries,
+      allEntries: orderedAllEntries,
       words: words,
       wordBank: wordBank,
       wordBankOn: wordBankOn,
@@ -1276,6 +3511,12 @@
       matchDefs: numberedDefs,
       clozeItems: clozeItems,
       pictureItems: pictureItems,
+      hiddenSections: custom.hiddenSections,
+      hiddenParts: custom.hiddenParts,
+      hiddenItems: custom.hiddenItems,
+      sectionOverrides: custom.sectionOverrides,
+      itemOrder: custom.itemOrder,
+      itemTextOverrides: custom.itemTextOverrides,
       computeCredits: computeCredits
     };
   }
@@ -1285,6 +3526,8 @@
     var fmt = function (text) {
       return wsFormatSyllableText(text, model.syllablesOn, model.syllablesSrc);
     };
+    var hp = model.hiddenParts || Object.create(null);
+    var ov = model.sectionOverrides || Object.create(null);
 
     var bankHtml = model.wordBankOn && model.wordBank.length
       ? '<div class="vocab-bank" data-vocab-word-bank="true"><span class="ws-bank-label">Word Bank:</span>'
@@ -1296,7 +3539,8 @@
     var keySections = [];
 
     // Part 1 — Match the Word to Its Meaning
-    if (model.matchWords.length) {
+    if (!hp.matching && model.matchWords.length) {
+      var p1Copy = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Match the Word to Its Meaning', 'Write the letter of the matching meaning on the line next to each word.');
       var wordsCol = '<ol class="vocab-match-words">' + model.matchWords.map(function (item) {
         return '<li class="vocab-match-word"><span class="ws-num">' + item.num + '.</span><span class="vocab-match-blank" aria-label="letter blank"></span><span class="ws-word">' + fmt(item.word) + '</span></li>';
       }).join('') + '</ol>';
@@ -1305,36 +3549,38 @@
       }).join('') + '</ol>';
       partsHtml.push(
         '<section class="ws-section" data-vocab-part="matching">'
-        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 1 \u2014 Match the Word to Its Meaning</h2>'
-        + '<p class="ws-directions">Write the letter of the matching meaning on the line next to each word.</p></div>'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p1Copy.heading) + '</h2>'
+        + '<p class="ws-directions">' + wsEsc(p1Copy.directions) + '</p></div>'
         + '<div class="vocab-match-grid">' + wordsCol + defsCol + '</div></section>'
       );
       keySections.push({
-        heading: 'Part 1 \u2014 Match the Word to Its Meaning',
+        heading: p1Copy.heading,
         lines: model.matchWords.map(function (item) {
           return item.word + ' \u2014 ' + item.answerLetter + ' (' + item.meaning + ')';
         })
       });
-    } else if (model.entries.length) {
+    } else if (!hp.matching && model.entries.length) {
+      var p1CopyW = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Write Each Meaning', 'Write what each vocabulary word means on the line.');
       partsHtml.push(
         '<section class="ws-section" data-vocab-part="matching">'
-        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 1 \u2014 Write Each Meaning</h2>'
-        + '<p class="ws-directions">Write what each vocabulary word means on the line.</p></div>'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p1CopyW.heading) + '</h2>'
+        + '<p class="ws-directions">' + wsEsc(p1CopyW.directions) + '</p></div>'
         + '<ol class="ws-list">' + model.entries.map(function (e, i) {
           return '<li class="ws-item"><span class="ws-num">' + (i + 1) + '.</span><div class="ws-body"><span class="ws-word">' + fmt(e.word) + '</span><div class="ws-line"></div></div></li>';
         }).join('') + '</ol></section>'
       );
       keySections.push({
-        heading: 'Part 1 \u2014 Write Each Meaning',
+        heading: p1CopyW.heading,
         lines: model.entries.map(function (e) { return e.word + ' \u2014 Teacher-checked student meaning.'; })
       });
     }
 
     // Part 2 — Fill in the Blank
-    if (model.clozeItems.length) {
-      var clozeDir = model.wordBankOn
+    if (!hp.cloze && model.clozeItems.length) {
+      var defaultClozeDir = model.wordBankOn
         ? 'Choose a word from the Word Bank to complete each sentence. Write the word on the line.'
         : 'Write the vocabulary word that best completes each sentence.';
+      var p2Copy = wsApplySectionCopy(ov, 'cloze', null, 'Part 2 \u2014 Fill in the Blank', defaultClozeDir);
       var clozeListHtml = '<ol class="ws-list">' + model.clozeItems.map(function (item) {
         var inner = item.hasCloze
           ? '<p class="vocab-cloze-text">' + wsEsc(item.before) + '<span class="vocab-cloze-blank" aria-label="blank"></span>' + wsEsc(item.after) + '</p>'
@@ -1343,12 +3589,12 @@
       }).join('') + '</ol>';
       partsHtml.push(
         '<section class="ws-section" data-vocab-part="cloze">'
-        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 2 \u2014 Fill in the Blank</h2>'
-        + '<p class="ws-directions">' + wsEsc(clozeDir) + '</p></div>'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p2Copy.heading) + '</h2>'
+        + '<p class="ws-directions">' + wsEsc(p2Copy.directions) + '</p></div>'
         + clozeListHtml + '</section>'
       );
       keySections.push({
-        heading: 'Part 2 \u2014 Fill in the Blank',
+        heading: p2Copy.heading,
         lines: model.clozeItems.map(function (item) {
           return item.hasCloze
             ? item.answer + ' \u2014 "' + item.completed + '"'
@@ -1358,7 +3604,8 @@
     }
 
     // Part 3 — Name the Picture
-    if (model.pictureItems.length) {
+    if (!hp.pictures && model.pictureItems.length) {
+      var p3Copy = wsApplySectionCopy(ov, 'pictures', null, 'Part 3 \u2014 Name the Picture', 'Look at each picture. Write the matching vocabulary word on the line underneath.');
       var tilesHtml = '<ol class="vocab-pic-grid">' + model.pictureItems.map(function (item, idx) {
         var n = idx + 1;
         return '<li class="vocab-pic-tile">'
@@ -1369,12 +3616,12 @@
       }).join('') + '</ol>';
       partsHtml.push(
         '<section class="ws-section" data-vocab-part="pictures">'
-        + '<div class="ws-section-head"><h2 class="ws-section-title">Part 3 \u2014 Name the Picture</h2>'
-        + '<p class="ws-directions">Look at each picture. Write the matching vocabulary word on the line underneath.</p></div>'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p3Copy.heading) + '</h2>'
+        + '<p class="ws-directions">' + wsEsc(p3Copy.directions) + '</p></div>'
         + tilesHtml + '</section>'
       );
       keySections.push({
-        heading: 'Part 3 \u2014 Name the Picture',
+        heading: p3Copy.heading,
         lines: model.pictureItems.map(function (item) { return item.word; })
       });
     }
@@ -1399,6 +3646,22 @@
         + '</section>';
     }
 
+    var vocabTplHiddenItems = {};
+    var vocabTplItemTextOverrides = {};
+    (model.allEntries || []).forEach(function (e) {
+      var idxStr = String(e.origIndex);
+      var isHidden = !!(model.hiddenItems && (model.hiddenItems[e.itemKey] || model.hiddenItems['word:' + e.itemKey] || model.hiddenItems[idxStr]));
+      if (isHidden) {
+        vocabTplHiddenItems[idxStr] = true;
+        return;
+      }
+      var ovM = wsItemTextOverride(model.itemTextOverrides, 'meaning:' + idxStr, 'meaning:' + e.itemKey);
+      if (ovM) vocabTplItemTextOverrides['meaning:' + idxStr] = ovM;
+      var ovC = wsItemTextOverride(model.itemTextOverrides, 'cloze:' + idxStr, 'cloze:' + e.itemKey)
+        || wsItemTextOverride(model.itemTextOverrides, 'words:' + idxStr, idxStr);
+      if (ovC) vocabTplItemTextOverrides['cloze:' + idxStr] = ovC;
+    });
+
     return [
       '<!doctype html>',
       '<html lang="en">',
@@ -1410,16 +3673,497 @@
       '<title>' + wsEsc(model.title) + ' \u2014 Vocabulary Practice Worksheet</title>',
       '<style>' + VOCAB_STANDALONE_CSS + '</style>',
       '</head>',
-      '<body>',
+      '<body class="ws-density-' + wsEsc(model.density || 'standard') + '">',
       '<p class="ws-noprint">Print from your browser menu (Ctrl+P or Cmd+P). Keep the scale at 100%.</p>',
       '<header class="ws-header">',
       '<h1 class="ws-title">' + wsEsc(model.title) + '</h1>',
-      '<div class="ws-meta"><span class="ws-meta-field"><span>Name:</span><span class="ws-meta-line"></span></span><span class="ws-meta-field"><span>Date:</span><span class="ws-meta-line"></span></span></div>',
+      wsSubtitleHtml(model.subtitle),
+      wsHeaderMetaHtml(model.headerFields),
       '</header>',
       bankHtml,
       partsHtml.length ? partsHtml.join('\n') : '<p>No vocabulary words are available yet.</p>',
       creditsHtml,
       keyHtml,
+      wsTemplateScriptTag('vocab', Object.assign({}, model, {
+        hiddenItems: vocabTplHiddenItems,
+        itemTextOverrides: vocabTplItemTextOverrides
+      }), {
+        wordBank: model.wordBankOn,
+        pictures: model.picturesOn,
+        answerKey: model.answerKeyOn,
+        syllables: model.syllablesOn
+      }),
+      '</body>',
+      '</html>'
+    ].join('\n');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Read-Along Printable Worksheet Model & Standalone Offline HTML Builder
+  // ---------------------------------------------------------------------------
+  var RA_STANDALONE_CSS = VOCAB_STANDALONE_CSS + [
+    '.ra-passage{padding:12px 14px;border:1.5px solid #000000;background:#ffffff;font-size:16px;line-height:1.75;color:#000000}',
+    '.ra-subhead{margin:12px 0 6px;font-size:16px;font-weight:700;color:#000000}',
+    '.ra-para{margin:0 0 10px}.ra-para:last-child{margin-bottom:0}',
+    '.ra-sup-list{list-style:none;margin:8px 0 0;padding:0}',
+    '.ra-sup-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #808080;break-inside:avoid;page-break-inside:avoid}',
+    '.ra-sup-img{display:block;width:52px;height:52px;object-fit:contain;border:1px solid #808080;padding:2px;background:#ffffff;flex:none}',
+    '.ra-sup-body{flex:1 1 auto;min-width:0;font-size:14px}',
+    '.ra-sup-quote{font-weight:700}',
+    '.ra-write-lines{margin-top:10px}',
+    '.ra-write-line{height:34px;border-bottom:1.5px solid #000000;border-top:1px dashed #808080;margin-bottom:6px}',
+    '.ra-check-list{list-style:none;margin:10px 0 0;padding:0}',
+    '.ra-check-item{margin:0 0 14px;break-inside:avoid;page-break-inside:avoid}',
+    '.ra-check-prompt{margin:0 0 6px;font-size:15px}',
+    '.ra-mc-choices{list-style:none;margin:4px 0 0 16px;padding:0}',
+    '.ra-mc-choice{display:flex;align-items:baseline;gap:8px;margin:4px 0;font-size:14px}',
+    '.ra-mc-box{display:inline-block;width:13px;height:13px;border:1.5px solid #000000;border-radius:50%;flex:none;position:relative;top:2px}',
+    'body.ws-density-compact .ra-passage{font-size:14px;line-height:1.5;padding:9px 10px}',
+    'body.ws-density-compact .ra-write-line{height:24px;margin-bottom:4px}',
+    'body.ws-density-primary .ra-passage{font-size:19px;line-height:1.95;padding:16px 18px}',
+    'body.ws-density-primary .ra-subhead{font-size:20px}',
+    'body.ws-density-primary .ra-check-prompt{font-size:18px}',
+    'body.ws-density-primary .ra-mc-choice{font-size:17px}',
+    'body.ws-density-primary .ra-write-line{height:52px;margin-bottom:8px}'
+  ].join('');
+
+  function raCleanLang(value) {
+    var s = String(value == null ? '' : value).trim();
+    return /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/i.test(s) ? s.toLowerCase() : 'en';
+  }
+  function raIsRtlLang(lang) {
+    var rb = root && root.AlloPacketReadAlong;
+    if (rb && typeof rb.isRtlLang === 'function') return !!rb.isRtlLang(lang);
+    return /^(?:ar|he|iw|fa|ur|ps|yi|sd)(?:-|$)/i.test(raCleanLang(lang));
+  }
+  function raFallbackSplitPassage(text) {
+    var raw = String(text == null ? '' : text).replace(/\r\n?/g, '\n').trim();
+    if (!raw) return [];
+    var out = [];
+    raw.split(/\n[ \t]*\n+/).forEach(function (para, pi) {
+      var first = true;
+      para.split('\n').forEach(function (line) {
+        var trimmed = line.replace(/\s+/g, ' ').trim();
+        if (!trimmed || /^-{3,}$/.test(trimmed)) return;
+        var hm = /^(#{1,3})\s+(.+)$/.exec(trimmed);
+        if (hm) {
+          out.push({ text: hm[2].trim(), heading: hm[1].length, para: first && pi > 0 });
+          first = false;
+          return;
+        }
+        out.push({ text: trimmed, para: first && pi > 0 });
+        first = false;
+      });
+    });
+    return out;
+  }
+  function raApplySyllables(rawText, lang, showSyllables, syllableLookup) {
+    var str = String(rawText == null ? '' : rawText);
+    if (!showSyllables) return str;
+    var rb = root && root.AlloPacketReadAlong;
+    if (lang === 'es' && rb && typeof rb.syllableText === 'function' && typeof rb.syllabifySpanish === 'function') {
+      var esOut = rb.syllableText(str, rb.syllabifySpanish, { spanish: true });
+      return esOut || str;
+    }
+    if (lang === 'en') {
+      var lookup = syllableLookup || (root && root.AlloModules && root.AlloModules.SyllableTableEn) || null;
+      if (rb && typeof rb.syllableText === 'function' && typeof lookup === 'function') {
+        var enOut = rb.syllableText(str, lookup);
+        return enOut || str;
+      }
+      if (lookup) {
+        return str.replace(/[A-Za-z]+/g, function (tok) {
+          var parts = tok.length >= 4 ? wsLookupSyllables(tok, lookup) : null;
+          return (parts && parts.length > 1) ? parts.join('\u00b7') : tok;
+        });
+      }
+    }
+    return str;
+  }
+  function raBoldHtml(textStr, withBold) {
+    var str = String(textStr == null ? '' : textStr);
+    if (!withBold) return wsEsc(str);
+    var re = /[A-Za-z\u00C0-\u024F\u00b7]+/g, m, last = 0, out = '';
+    while ((m = re.exec(str))) {
+      if (m.index > last) out += wsEsc(str.slice(last, m.index));
+      var tok = m[0];
+      var plainLen = tok.replace(/\u00b7/g, '').length;
+      if (plainLen < 2) {
+        out += wsEsc(tok);
+      } else {
+        var targetLetters = plainLen <= 3 ? Math.max(1, plainLen - 1) : Math.ceil(plainLen * 0.45);
+        var seen = 0, cutIdx = 0;
+        for (var ci = 0; ci < tok.length; ci++) {
+          if (tok.charAt(ci) !== '\u00b7') seen++;
+          cutIdx = ci + 1;
+          if (seen >= targetLetters) break;
+        }
+        out += '<strong>' + wsEsc(tok.slice(0, cutIdx)) + '</strong>' + (cutIdx < tok.length ? wsEsc(tok.slice(cutIdx)) : '');
+      }
+      last = m.index + tok.length;
+    }
+    if (last < str.length) out += wsEsc(str.slice(last));
+    return out;
+  }
+  function raNormalizeWriteLines(val) {
+    var n = Math.floor(Number(val));
+    if (!isFinite(n) || n < 1) return 5;
+    return Math.min(15, n);
+  }
+  function buildReadAlongWorksheetModel(rawState, rawOptions) {
+    var src = rawState && typeof rawState === 'object' ? rawState : {};
+    var opts = rawOptions && typeof rawOptions === 'object' ? rawOptions : {};
+    var defaultTitle = String(src.title || 'Read along').replace(/\s+/g, ' ').trim() || 'Read along';
+    var custom = wsExtractCustom(src, opts, defaultTitle);
+    var title = custom.title;
+    var lang = raCleanLang(opts.lang || src.lang || 'en');
+    var isRtl = opts.isRtl !== undefined ? !!opts.isRtl : (src.isRtl !== undefined ? !!src.isRtl : raIsRtlLang(lang));
+    var rb = root && root.AlloPacketReadAlong;
+    var rawSentences = Array.isArray(src.sentences) && src.sentences.length
+      ? src.sentences
+      : (typeof src.text === 'string' && src.text.trim()
+          ? (rb && typeof rb.splitPassage === 'function' ? rb.splitPassage(src.text) : raFallbackSplitPassage(src.text))
+          : []);
+    var showSyllables = opts.showSyllables !== undefined ? !!opts.showSyllables
+      : (opts.syllables !== undefined ? !!opts.syllables : !!src.showSyllables);
+    var showBold = opts.showBold !== undefined ? !!opts.showBold
+      : (opts.bold !== undefined ? !!opts.bold : !!src.showBold);
+    var showSupports = opts.showSupports !== undefined ? !!opts.showSupports
+      : (opts.supports !== undefined ? !!opts.supports : (src.showSupports !== undefined ? !!src.showSupports : true));
+    var answerKeyOn = opts.answerKey !== undefined ? !!opts.answerKey
+      : (opts.includeAnswerKey !== undefined ? !!opts.includeAnswerKey
+        : (src.includeAnswerKey !== undefined ? !!src.includeAnswerKey
+          : (src.answerKey !== undefined ? !!src.answerKey : true)));
+    var writeLines = raNormalizeWriteLines(opts.writeLines !== undefined ? opts.writeLines : (src.writeLines !== undefined ? src.writeLines : 5));
+    var syllableLookup = opts.syllableLookup || src.syllableLookup || (root && root.AlloModules && root.AlloModules.SyllableTableEn) || null;
+
+    // Group sentences into paragraphs (headings remain separate entries with heading: 1..3).
+    var paragraphs = [];
+    if (Array.isArray(src.paragraphs) && src.paragraphs.length && !rawSentences.length) {
+      src.paragraphs.forEach(function (p) {
+        if (!p) return;
+        var t = typeof p === 'string' ? p.trim() : String(p.text || '').trim();
+        if (!t) return;
+        paragraphs.push({ text: t, heading: (p && typeof p === 'object' && p.heading) ? Number(p.heading) : 0 });
+      });
+    } else {
+      var curBuf = [];
+      var flushBuf = function () {
+        if (!curBuf.length) return;
+        paragraphs.push({ text: curBuf.join(' '), heading: 0 });
+        curBuf = [];
+      };
+      rawSentences.forEach(function (row, idx) {
+        var txt = typeof row === 'string' ? row.trim() : (row && typeof row.text === 'string' ? row.text.trim() : '');
+        if (!txt) return;
+        var h = row && typeof row === 'object' && (row.heading === 1 || row.heading === 2 || row.heading === 3) ? row.heading : 0;
+        if (h) {
+          flushBuf();
+          paragraphs.push({ text: txt, heading: h });
+          return;
+        }
+        if (row && typeof row === 'object' && (row.para || row.pageBreak) && idx > 0) flushBuf();
+        curBuf.push(txt);
+      });
+      flushBuf();
+    }
+
+    var allSupports = (Array.isArray(src.customSupports) ? src.customSupports : []).filter(function (sup) {
+      return sup && typeof sup === 'object' && String(sup.text || '').trim();
+    }).map(function (sup, idx) {
+      var uri = isPicture(String(sup.imgUri || '').trim()) ? String(sup.imgUri).trim() : '';
+      return {
+        id: sup.id || ('sup' + (idx + 1)),
+        line: sup.line != null ? Number(sup.line) : null,
+        quote: String(sup.quote || '').trim(),
+        text: String(sup.text || '').trim(),
+        imgUri: uri,
+        alt: String(sup.alt || sup.quote || 'Support picture').trim(),
+        audioUri: sup.audioUri || sup.audio || ''
+      };
+    });
+    var customSupports = showSupports ? allSupports.slice() : [];
+
+    // Part 3 — Key Words matching (quoted customSupports + wordMeanings)
+    var allKeyWords = [];
+    var seenKey = Object.create(null);
+    var addKeyWord = function (rawWord, rawMeaning) {
+      var w = String(rawWord || '').replace(/\s+/g, ' ').trim();
+      var m = String(rawMeaning || '').replace(/\s+/g, ' ').trim();
+      if (!w || !m) return;
+      var k = w.toLowerCase();
+      if (seenKey[k]) return;
+      seenKey[k] = true;
+      allKeyWords.push({ word: w, meaning: m });
+    };
+    allSupports.forEach(function (sup) { if (sup.quote && sup.text) addKeyWord(sup.quote, sup.text); });
+    if (Array.isArray(src.wordMeanings)) {
+      src.wordMeanings.forEach(function (entry) {
+        if (!entry || typeof entry !== 'object') return;
+        addKeyWord(entry.word || entry.w, entry.meaning || entry.def || entry.d);
+      });
+    } else if (src.wordMeanings && typeof src.wordMeanings === 'object') {
+      Object.keys(src.wordMeanings).sort().forEach(function (k) {
+        var entry = src.wordMeanings[k];
+        if (!entry || typeof entry !== 'object') return;
+        addKeyWord(entry.word || entry.w || k, entry.meaning || entry.def || entry.d);
+      });
+    }
+
+    var matchWords = [];
+    var matchDefs = [];
+    if (allKeyWords.length >= 2) {
+      var seedBase = title + '|' + allKeyWords.map(function (it) { return it.word; }).join(',');
+      var shuffledDefs = wsShuffle(allKeyWords.map(function (it, idx) {
+        return { wordIdx: idx, word: it.word, meaning: it.meaning };
+      }), 'ramatch|' + seedBase);
+      if (shuffledDefs.every(function (d, i) { return d.wordIdx === i; })) {
+        shuffledDefs.push(shuffledDefs.shift());
+      }
+      var letterByIdx = Object.create(null);
+      matchDefs = shuffledDefs.map(function (d, i) {
+        var letter = vocabLetterLabel(i);
+        letterByIdx[d.wordIdx] = letter;
+        return { letter: letter, wordIdx: d.wordIdx, word: d.word, meaning: d.meaning };
+      });
+      matchWords = allKeyWords.map(function (it, idx) {
+        var ltr = letterByIdx[idx] || '';
+        return { num: idx + 1, word: it.word, meaning: it.meaning, answerLetter: ltr, letter: ltr };
+      });
+    }
+
+    // Part 4 — Comprehension questions (or open writing lines when empty)
+    var rawQs = (rb && typeof rb.cleanQuestions === 'function')
+      ? rb.cleanQuestions(src.questions)
+      : (Array.isArray(src.questions) ? src.questions.slice(0, 6) : []);
+    var allQuestions = [];
+    rawQs.forEach(function (q, idx) {
+      if (!q || typeof q !== 'object') return;
+      var prompt = String(q.prompt || '').replace(/\s+/g, ' ').trim();
+      if (!prompt) return;
+      var isMc = q.kind === 'mc' && Array.isArray(q.choices) && q.choices.length > 0;
+      var choices = isMc ? q.choices.map(function (c) { return String(c || '').trim(); }).filter(Boolean) : [];
+      var ans = isMc && typeof q.answer === 'number' && q.answer >= 0 && q.answer < choices.length ? q.answer : 0;
+      allQuestions.push({
+        origIndex: allQuestions.length,
+        itemKey: 'writing:' + allQuestions.length,
+        id: q.id || ('q' + (idx + 1)),
+        kind: isMc && choices.length ? 'mc' : 'open',
+        defaultPrompt: prompt,
+        prompt: prompt,
+        choices: choices,
+        answer: ans,
+        audioUri: q.audioUri || q.audio || ''
+      });
+    });
+    var orderedQuestions = wsApplyItemOrder(allQuestions, custom.itemOrder, 'writing', 'questions').map(function (q) {
+      var clone = Object.assign({}, q);
+      var ovPrompt = wsItemTextOverride(custom.itemTextOverrides, clone.itemKey, 'q:' + clone.origIndex);
+      if (ovPrompt) clone.prompt = ovPrompt;
+      return clone;
+    });
+    var visibleQuestions = orderedQuestions.filter(function (q) {
+      return !wsIsItemHidden(custom.hiddenItems, 'writing', q.origIndex, 'q');
+    }).map(function (q, idx) {
+      return Object.assign({}, q, { num: idx + 1 });
+    });
+
+    return {
+      _isReadAlongModel: true,
+      title: title,
+      subtitle: custom.subtitle,
+      headerFields: custom.headerFields,
+      density: custom.density,
+      lang: lang,
+      isRtl: isRtl,
+      showSyllables: showSyllables,
+      showBold: showBold,
+      showSupports: showSupports,
+      answerKeyOn: answerKeyOn,
+      writeLines: writeLines,
+      syllableLookup: syllableLookup,
+      sentences: rawSentences,
+      paragraphs: paragraphs,
+      customSupports: customSupports,
+      allSupports: allSupports,
+      allKeyWords: allKeyWords,
+      matchWords: matchWords,
+      matchDefs: matchDefs,
+      questions: visibleQuestions,
+      allQuestions: orderedQuestions,
+      hiddenSections: custom.hiddenSections,
+      hiddenParts: custom.hiddenParts,
+      hiddenItems: custom.hiddenItems,
+      sectionOverrides: custom.sectionOverrides,
+      itemOrder: custom.itemOrder,
+      itemTextOverrides: custom.itemTextOverrides
+    };
+  }
+
+  function raDefaultPassageDirections(model) {
+    if (model.showSyllables && model.showBold) return 'Longer words are shown with syllable dots and bold word starts.';
+    if (model.showSyllables) return 'Longer words are shown with syllable dots.';
+    if (model.showBold) return 'Word starts are bolded to guide reading.';
+    return '';
+  }
+
+  function buildReadAlongWorksheetHtmlFromModel(modelOrState, rawOptions) {
+    var model = (modelOrState && modelOrState._isReadAlongModel && !rawOptions)
+      ? modelOrState
+      : buildReadAlongWorksheetModel(modelOrState, rawOptions);
+    var hp = model.hiddenParts || Object.create(null);
+    var ov = model.sectionOverrides || Object.create(null);
+    var fmtHtml = function (rawText) {
+      var withSyl = raApplySyllables(rawText, model.lang, model.showSyllables, model.syllableLookup);
+      return raBoldHtml(withSyl, model.showBold);
+    };
+
+    var partsHtml = [];
+    var keySections = [];
+
+    // Part 1 — Read the Passage
+    if (!hp.passage) {
+      var p1Copy = wsApplySectionCopy(ov, 'passage', null, 'Part 1 \u2014 Read the Passage', raDefaultPassageDirections(model));
+      var passInner = model.paragraphs.map(function (p) {
+        if (p.heading) return '<h3 class="ra-subhead">' + fmtHtml(p.text) + '</h3>';
+        return '<p class="ra-para">' + fmtHtml(p.text) + '</p>';
+      }).join('');
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="passage">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p1Copy.heading) + '</h2>'
+        + (p1Copy.directions ? '<p class="ws-directions">' + wsEsc(p1Copy.directions) + '</p>' : '')
+        + '</div>'
+        + '<div class="ra-passage"' + (model.isRtl ? ' dir="rtl"' : '') + '>'
+        + (passInner || '<p class="ra-para"></p>')
+        + '</div></section>'
+      );
+    }
+
+    // Part 2 — Reading Notes & Visual Supports
+    if (!hp.supports && model.showSupports && model.customSupports.length) {
+      var p2Copy = wsApplySectionCopy(ov, 'supports', null, 'Part 2 \u2014 Reading Notes & Visual Supports', 'Use these notes and pictures to help you understand the passage.');
+      var supHtml = model.customSupports.map(function (sup) {
+        var label = sup.quote
+          ? sup.quote + (sup.line != null ? ' (sentence ' + (sup.line + 1) + ')' : '')
+          : (sup.line != null ? 'Sentence ' + (sup.line + 1) : 'Note');
+        var imgTag = sup.imgUri
+          ? '<img class="ra-sup-img" src="' + wsEsc(sup.imgUri) + '" alt="' + wsEsc(sup.alt || sup.quote || 'Support picture') + '">'
+          : '';
+        return '<li class="ra-sup-item">' + imgTag
+          + '<div class="ra-sup-body"><strong class="ra-sup-quote">' + wsEsc(label) + ':</strong> '
+          + '<span>' + wsEsc(sup.text) + '</span></div></li>';
+      }).join('');
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="supports">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p2Copy.heading) + '</h2>'
+        + (p2Copy.directions ? '<p class="ws-directions">' + wsEsc(p2Copy.directions) + '</p>' : '')
+        + '</div><ul class="ra-sup-list">' + supHtml + '</ul></section>'
+      );
+    }
+
+    // Part 3 — Match the Key Words
+    if (!hp.matching && model.matchWords.length) {
+      var p3Copy = wsApplySectionCopy(ov, 'matching', null, 'Part 3 \u2014 Match the Key Words', 'Write the letter of the matching meaning on the line next to each word.');
+      var wCol = '<ol class="vocab-match-words">' + model.matchWords.map(function (it) {
+        return '<li class="vocab-match-word"><span class="ws-num">' + it.num + '.</span><span class="vocab-match-blank" aria-label="letter blank"></span><span class="ws-word">' + wsEsc(it.word) + '</span></li>';
+      }).join('') + '</ol>';
+      var dCol = '<ol class="vocab-match-defs">' + model.matchDefs.map(function (def) {
+        return '<li class="vocab-match-def"><span class="vocab-match-letter">' + wsEsc(def.letter) + '.</span><span>' + wsEsc(def.meaning) + '</span></li>';
+      }).join('') + '</ol>';
+      partsHtml.push(
+        '<section class="ws-section" data-ra-part="matching">'
+        + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p3Copy.heading) + '</h2>'
+        + (p3Copy.directions ? '<p class="ws-directions">' + wsEsc(p3Copy.directions) + '</p>' : '')
+        + '</div><div class="vocab-match-grid">' + wCol + dCol + '</div></section>'
+      );
+      keySections.push({
+        heading: p3Copy.heading,
+        lines: model.matchWords.map(function (it) { return it.word + ' \u2014 ' + it.answerLetter + ' (' + it.meaning + ')'; })
+      });
+    }
+
+    // Part 4 — Comprehension Questions or Write About What You Read
+    if (!hp.writing) {
+      if (model.questions.length) {
+        var p4CopyQ = wsApplySectionCopy(ov, 'writing', null, 'Part 4 \u2014 Check Your Understanding', 'Answer each question below about what you read.');
+        var qItemsHtml = model.questions.map(function (q, idx) {
+          var n = idx + 1;
+          if (q.kind === 'mc' && q.choices && q.choices.length) {
+            var chHtml = '<ul class="ra-mc-choices">' + q.choices.map(function (c, ci) {
+              return '<li class="ra-mc-choice"><span class="ra-mc-box" aria-hidden="true"></span><span class="vocab-match-letter">' + wsEsc(vocabLetterLabel(ci)) + '.</span><span>' + wsEsc(c) + '</span></li>';
+            }).join('') + '</ul>';
+            return '<li class="ra-check-item"><p class="ra-check-prompt"><strong>' + n + '.</strong> ' + wsEsc(q.prompt) + '</p>' + chHtml + '</li>';
+          }
+          return '<li class="ra-check-item"><p class="ra-check-prompt"><strong>' + n + '.</strong> ' + wsEsc(q.prompt) + '</p><div class="ra-write-lines"><div class="ra-write-line"></div><div class="ra-write-line"></div></div></li>';
+        }).join('');
+        partsHtml.push(
+          '<section class="ws-section" data-ra-part="writing">'
+          + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p4CopyQ.heading) + '</h2>'
+          + (p4CopyQ.directions ? '<p class="ws-directions">' + wsEsc(p4CopyQ.directions) + '</p>' : '')
+          + '</div><ol class="ra-check-list">' + qItemsHtml + '</ol></section>'
+        );
+        keySections.push({
+          heading: p4CopyQ.heading,
+          lines: model.questions.map(function (q) {
+            if (q.kind === 'mc' && q.choices && q.choices.length) {
+              return q.prompt + ' \u2014 ' + vocabLetterLabel(q.answer) + '. ' + (q.choices[q.answer] || '');
+            }
+            return q.prompt + ' \u2014 Open response (answers will vary)';
+          })
+        });
+      } else {
+        var p4CopyW = wsApplySectionCopy(ov, 'writing', null, 'Part 4 \u2014 Write About What You Read', 'Write a summary, main idea, or response about the passage on the lines below.');
+        var wLines = '';
+        for (var wi = 0; wi < model.writeLines; wi++) wLines += '<div class="ra-write-line"></div>';
+        partsHtml.push(
+          '<section class="ws-section" data-ra-part="writing">'
+          + '<div class="ws-section-head"><h2 class="ws-section-title">' + wsEsc(p4CopyW.heading) + '</h2>'
+          + (p4CopyW.directions ? '<p class="ws-directions">' + wsEsc(p4CopyW.directions) + '</p>' : '')
+          + '</div><div class="ra-write-lines">' + wLines + '</div></section>'
+        );
+      }
+    }
+
+    var keyHtml = '';
+    if (model.answerKeyOn && keySections.length) {
+      keyHtml = '<section class="ws-key" data-answer-key="true" aria-label="Teacher answer key">'
+        + '<p class="ws-key-banner">' + wsEsc(WS_KEY_NOTICE) + '</p>'
+        + '<h2>Teacher Answer Key</h2>'
+        + keySections.map(function (sec) {
+            return '<h3>' + wsEsc(sec.heading) + '</h3><ol class="ws-key-list">' + sec.lines.map(function (line) {
+              return '<li>' + wsEsc(line) + '</li>';
+            }).join('') + '</ol>';
+          }).join('')
+        + '</section>';
+    }
+
+    return [
+      '<!doctype html>',
+      '<html lang="' + wsEsc(model.lang) + '"' + (model.isRtl ? ' dir="rtl"' : '') + '>',
+      '<head>',
+      '<meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width,initial-scale=1">',
+      '<meta http-equiv="Content-Security-Policy" content="' + WS_CSP + '">',
+      '<meta name="referrer" content="no-referrer">',
+      '<title>' + wsEsc(model.title) + ' \u2014 Read-Along Worksheet</title>',
+      '<style>' + RA_STANDALONE_CSS + '</style>',
+      '</head>',
+      '<body class="ws-density-' + wsEsc(model.density || 'standard') + '">',
+      '<p class="ws-noprint">Print from your browser menu (Ctrl+P or Cmd+P). Keep the scale at 100%.</p>',
+      '<header class="ws-header">',
+      '<h1 class="ws-title">' + wsEsc(model.title) + '</h1>',
+      wsSubtitleHtml(model.subtitle),
+      wsHeaderMetaHtml(model.headerFields),
+      '</header>',
+      partsHtml.length ? partsHtml.join('\n') : '<p>No worksheet sections are visible.</p>',
+      keyHtml,
+      wsTemplateScriptTag('read-along', model, {
+        syllables: model.showSyllables,
+        bold: model.showBold,
+        supports: model.showSupports,
+        answerKey: model.answerKeyOn,
+        writeLines: model.writeLines
+      }),
       '</body>',
       '</html>'
     ].join('\n');
@@ -1498,18 +4242,46 @@
     var loadingSyllables = false;
     var wsView = null, wsNodes = {}, wsState = null, wsOwn = null, wsRun = 0, wsOpener = null, wsBusy = false, wsNote = '', wsSyllableNote = '';
     var wsOptions = { pictures: true, answerKey: true, hints: true, syllables: false };
+    var wsCustom = wsCreateDefaultCustom(''), wsCustomizer = null;
     var vocabView = null, vocabNodes = {}, vocabState = null, vocabOwn = null, vocabRun = 0, vocabOpener = null, vocabBusy = false, vocabNote = '', vocabSyllableNote = '';
     var vocabOptions = { wordBank: true, pictures: true, answerKey: true, syllables: false };
+    var vocabCustom = wsCreateDefaultCustom(''), vocabCustomizer = null;
+    var raView = null, raNodes = {}, raState = null, raRun = 0, raOpener = null, raSyllableNote = '';
+    var raOptions = { syllables: false, bold: false, supports: true, answerKey: true, writeLines: 5 };
+    var raCustom = wsCreateDefaultCustom(''), raCustomizer = null;
+    var customizerList = [];
+    var docxWait = null;
+    var audioView = null, audioNodes = {}, audioState = null, audioPlan = null, audioOpener = null;
+    var audioIdx = 0, audioRunId = 0, audioPlaying = false, audioEl = null, audioTimer = null, audioRaf = 0, audioPlayed = Object.create(null);
+    var audioOpts = { autoSec: 0, gapMs: 700, dirMode: 'section', slow: false, showAns: false };
+    var audioScores = { studentName: '', examiner: '', items: Object.create(null), notes: '' };
+    var audioScoredByIdx = Object.create(null);
     function onDocKeyDown(event) {
       var cardsOpen = !!(view && !view.hidden);
       var wsOpen = !!(wsView && !wsView.hidden);
       var vocabOpen = !!(vocabView && !vocabView.hidden);
-      if (!cardsOpen && !wsOpen && !vocabOpen) return;
+      var raOpen = !!(raView && !raView.hidden);
+      var audioOpen = !!(audioView && !audioView.hidden);
+      if (!cardsOpen && !wsOpen && !vocabOpen && !raOpen && !audioOpen) return;
       if (event.key === 'Escape' && !event.defaultPrevented) {
         event.preventDefault();
-        if (vocabOpen) closeVocabWorksheet();
+        if (audioOpen) closeWorksheetAudio();
+        else if (raOpen) closeReadAlongWorksheet();
+        else if (vocabOpen) closeVocabWorksheet();
         else if (wsOpen) closeWorksheet();
         else close();
+        return;
+      }
+      if (audioOpen && !event.defaultPrevented) {
+        var tag = (event.target && event.target.tagName) || '';
+        if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (event.code === 'Space') { event.preventDefault(); if (audioPlaying) stopAudioPlayback('Paused.'); else playCurrentAudioItem(false); }
+        else if (event.key === 'r' || event.key === 'R') { event.preventDefault(); playCurrentAudioItem(true); }
+        else if (event.key === 'ArrowRight') { event.preventDefault(); stepAudioItem(1); }
+        else if (event.key === 'ArrowLeft') { event.preventDefault(); stepAudioItem(-1); }
+        else if (event.key === '1') { event.preventDefault(); toggleAudioItemScore(audioIdx, 1); }
+        else if (event.key === '0' && audioScoredByIdx[audioIdx] !== false) { event.preventDefault(); toggleAudioItemScore(audioIdx, 0); }
+        else if ((event.key === 'p' || event.key === 'P') && audioScoredByIdx[audioIdx] !== false) { event.preventDefault(); bumpAudioItemRepeat(audioIdx); }
       }
     }
 
@@ -1555,7 +4327,11 @@
         }
         if (vocabOptions.syllables) {
           vocabSyllableNote = TEXT.syllablesFailed;
-          drawVocabWorksheet();
+          drawVocabWorksheet({ keepStructure: true });
+        }
+        if (raOptions.syllables) {
+          raSyllableNote = TEXT.syllablesFailed;
+          drawReadAlongWorksheet({ keepStructure: true });
         }
       };
       try {
@@ -1585,9 +4361,11 @@
           syllableNote = '';
           wsSyllableNote = '';
           vocabSyllableNote = '';
+          raSyllableNote = '';
           draw();
-          drawWorksheet();
-          drawVocabWorksheet();
+          drawWorksheet({ keepStructure: true });
+          drawVocabWorksheet({ keepStructure: true });
+          drawReadAlongWorksheet({ keepStructure: true });
         };
         sc.onerror = function () {
           if (settled) return;
@@ -1693,10 +4471,15 @@
       nodes.print = el('button', 'btn btn-primary', TEXT.print);
       nodes.print.type = 'button';
       nodes.print.addEventListener('click', function () { if (!busy && state && state.words.length) win.print(); });
+      nodes.docx = el('button', 'btn', 'Download Word cards (.docx)');
+      nodes.docx.type = 'button';
+      nodes.docx.id = 'pc-cards-docx';
+      nodes.docx.addEventListener('click', downloadWordCardsDocx);
       nodes.back = el('button', 'btn', TEXT.back);
       nodes.back.type = 'button';
       nodes.back.addEventListener('click', close);
       actions.appendChild(nodes.print);
+      actions.appendChild(nodes.docx);
       actions.appendChild(nodes.back);
       bar.appendChild(actions);
       nodes.tip = el('p', 'pc-hint', TEXT.tip);
@@ -1799,6 +4582,7 @@
       var words = state.words;
       while (nodes.sheets.firstChild) nodes.sheets.removeChild(nodes.sheets.firstChild);
       nodes.print.disabled = busy || !words.length;
+      if (nodes.docx) nodes.docx.disabled = busy || !words.length;
       nodes.options.hidden = !words.length;
       nodes.tip.hidden = !words.length;
       var canShowPictures = !!(state.pictures || state.symbols || state.own || state.matcher);
@@ -1839,6 +4623,8 @@
       if (!view) build();
       if (wsView && !wsView.hidden) { wsRun++; wsView.hidden = true; }
       if (vocabView && !vocabView.hidden) { vocabRun++; vocabView.hidden = true; }
+      if (raView && !raView.hidden) { raRun++; raView.hidden = true; }
+      if (audioView && !audioView.hidden) { stopAudioPlayback(); audioView.hidden = true; }
       var mine = ++run;
       var s = given || {};
       var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
@@ -1863,6 +4649,8 @@
       return gather(mine).then(function () { if (mine === run) { busy = false; draw(); } });
     }
     function close() {
+      if (audioView && !audioView.hidden && (!view || view.hidden)) { closeWorksheetAudio(); return; }
+      if (raView && !raView.hidden && (!view || view.hidden)) { closeReadAlongWorksheet(); return; }
       if (vocabView && !vocabView.hidden && (!view || view.hidden)) { closeVocabWorksheet(); return; }
       if (wsView && !wsView.hidden && (!view || view.hidden)) { closeWorksheet(); return; }
       if (!view || view.hidden) return;
@@ -1876,11 +4664,1046 @@
       while (nodes.sheets.firstChild) nodes.sheets.removeChild(nodes.sheets.firstChild);
       if (opener && typeof opener.focus === 'function' && doc.contains(opener)) opener.focus();
     }
+    function downloadWordCardsDocx() {
+      if (busy || !state || !state.words || !state.words.length) return Promise.resolve(false);
+      var shows = cardsShow();
+      var shownPics = shows === 'word' ? Object.create(null) : pictures;
+      var formatCardWord = function (word) {
+        if (!options.syllables) return word;
+        return String(word).replace(/[A-Za-z]+/g, function (tok) {
+          var parts = tok.length >= 4 ? lookupSyllableParts(tok) : null;
+          return parts && parts.length > 1 ? parts.join('\u00b7') : tok;
+        });
+      };
+      var cardList = state.words.map(function (w) {
+        var p = shownPics[w];
+        return { word: w, displayWord: formatCardWord(w), pictureUri: p && p.uri ? p.uri : '' };
+      });
+      var docModel = {
+        title: state.title || TEXT.title,
+        cards: cardList,
+        size: options.size,
+        shows: shows,
+        lines: options.lines,
+        pages: options.pages,
+        credits: creditsFor(state.words, shownPics, state.symbols, state.creditLine)
+      };
+      if (nodes.said) nodes.said.textContent = 'Preparing Word cards (.docx)...';
+      return Promise.all([ensureZip(), ensureDocx()]).then(function (loaded) {
+        var zipLib = loaded[0], docx = loaded[1];
+        if (!zipLib || !docx || typeof docx.buildWordCardsDocx !== 'function' || typeof docx.downloadDocx !== 'function') {
+          if (nodes.said) nodes.said.textContent = 'Word export could not load right now. Try Print instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, docModel).then(function (prepared) {
+          try {
+            var res = docx.buildWordCardsDocx(prepared, {
+              zip: zipLib,
+              filename: wsSlug(state.title || 'word-cards') + '-word-cards' + DOCX_EXT
+            });
+            docx.downloadDocx(res, win, doc);
+            if (nodes.said) nodes.said.textContent = 'Downloaded Word cards (.docx).';
+            return true;
+          } catch (_) {
+            if (nodes.said) nodes.said.textContent = 'Could not build the Word cards document right now.';
+            return false;
+          }
+        });
+      });
+    }
     function wire(button, getState) {
       if (!button || typeof getState !== 'function') return false;
       button.hidden = false;
       button.addEventListener('click', function () { opener = button; open(getState()); });
       return true;
+    }
+
+    // -------------------------------------------------------------------------
+    // On-demand .docx loader & shared Live Worksheet Customizer UI
+    // -------------------------------------------------------------------------
+    function ensureDocx() {
+      var existing = (win && win.AlloPacketDocx) || (root && root.AlloPacketDocx);
+      if (existing && typeof existing.downloadDocx === 'function') return Promise.resolve(existing);
+      if (docxWait) return docxWait;
+      if (!doc || !doc.createElement) return Promise.resolve(null);
+      docxWait = new Promise(function (resolve) {
+        var settled = false;
+        var finish = function () {
+          if (settled) return;
+          settled = true;
+          var mod = (win && win.AlloPacketDocx) || (root && root.AlloPacketDocx) || null;
+          if (!mod) docxWait = null;
+          resolve(mod);
+        };
+        try {
+          var existingScript = doc.querySelector && doc.querySelector('script[data-allo-docx="1"]');
+          if (existingScript) {
+            existingScript.addEventListener('load', finish);
+            existingScript.addEventListener('error', finish);
+            if (typeof win.setTimeout === 'function') win.setTimeout(finish, 4000);
+            return;
+          }
+          var sc = doc.createElement('script');
+          sc.src = 'packets_docx.js';
+          sc.async = true;
+          sc.setAttribute('data-allo-docx', '1');
+          sc.onload = finish;
+          sc.onerror = finish;
+          (doc.head || doc.documentElement || doc.body).appendChild(sc);
+        } catch (_) {
+          docxWait = null;
+          resolve(null);
+        }
+      });
+      return docxWait;
+    }
+    var DOCX_EXT = '.' + 'docx';
+    var ZIP_EXT = '.' + 'zip';
+    var zipWait = null;
+    function ensureZip() {
+      var existing = (win && win.AlloPacketZip) || (root && root.AlloPacketZip);
+      if (existing && typeof existing.create === 'function') return Promise.resolve(existing);
+      if (zipWait) return zipWait;
+      if (!doc || !doc.createElement) return Promise.resolve(null);
+      zipWait = new Promise(function (resolve) {
+        var settled = false;
+        var finish = function () {
+          if (settled) return;
+          settled = true;
+          var mod = (win && win.AlloPacketZip) || (root && root.AlloPacketZip) || null;
+          if (!mod) zipWait = null;
+          resolve(mod);
+        };
+        try {
+          var existingScript = doc.querySelector && doc.querySelector('script[data-allo-zip="1"]');
+          if (existingScript) {
+            existingScript.addEventListener('load', finish);
+            existingScript.addEventListener('error', finish);
+            if (typeof win.setTimeout === 'function') win.setTimeout(finish, 4000);
+            return;
+          }
+          var sc = doc.createElement('script');
+          sc.src = 'packets_zip.js';
+          sc.async = true;
+          sc.setAttribute('data-allo-zip', '1');
+          sc.onload = finish;
+          sc.onerror = finish;
+          (doc.head || doc.documentElement || doc.body).appendChild(sc);
+        } catch (_) {
+          zipWait = null;
+          resolve(null);
+        }
+      });
+      return zipWait;
+    }
+    function prepareDocxModelAsync(docx, docModel) {
+      if (docx && typeof docx.prepareImagesAsync === 'function') {
+        return Promise.resolve().then(function () {
+          return docx.prepareImagesAsync(docModel, win, doc);
+        }).then(function (prepared) {
+          return prepared || docModel;
+        }, function () {
+          return docModel;
+        });
+      }
+      return Promise.resolve(docModel);
+    }
+    function collectImageUriMap(origModel, preparedModel) {
+      var map = Object.create(null);
+      if (!origModel || !preparedModel) return map;
+      var note = function (a, b) {
+        if (typeof a === 'string' && a && typeof b === 'string' && b && a !== b) map[a] = b;
+      };
+      if (Array.isArray(origModel.sections) && Array.isArray(preparedModel.sections)) {
+        origModel.sections.forEach(function (sec, si) {
+          var pSec = preparedModel.sections[si];
+          if (!sec || !pSec || !Array.isArray(sec.items) || !Array.isArray(pSec.items)) return;
+          sec.items.forEach(function (it, ii) {
+            var pIt = pSec.items[ii];
+            if (it && pIt) {
+              note(it.pictureUri, pIt.pictureUri);
+              if (Array.isArray(it.parts) && Array.isArray(pIt.parts)) {
+                it.parts.forEach(function (pt, pi) {
+                  var pPt = pIt.parts[pi];
+                  if (pt && pPt) note(pt.traceStripUri, pPt.traceStripUri);
+                });
+              }
+            }
+          });
+        });
+      }
+      if (Array.isArray(origModel.pictureItems) && Array.isArray(preparedModel.pictureItems)) {
+        origModel.pictureItems.forEach(function (it, ii) {
+          var pIt = preparedModel.pictureItems[ii];
+          if (it && pIt) note(it.uri, pIt.uri);
+        });
+      }
+      if (Array.isArray(origModel.customSupports) && Array.isArray(preparedModel.customSupports)) {
+        origModel.customSupports.forEach(function (sup, si) {
+          var pSup = preparedModel.customSupports[si];
+          if (sup && pSup) note(sup.imgUri, pSup.imgUri);
+        });
+      }
+      return map;
+    }
+    function applyImageUriMap(docModel, uriMap) {
+      if (!docModel || !uriMap) return docModel;
+      var keys = Object.keys(uriMap);
+      if (!keys.length) return docModel;
+      if (Array.isArray(docModel.sections)) {
+        docModel.sections.forEach(function (sec) {
+          (sec && Array.isArray(sec.items) ? sec.items : []).forEach(function (it) {
+            if (it && it.pictureUri && uriMap[it.pictureUri]) it.pictureUri = uriMap[it.pictureUri];
+            if (it && Array.isArray(it.parts)) {
+              it.parts.forEach(function (pt) {
+                if (pt && pt.traceStripUri && uriMap[pt.traceStripUri]) pt.traceStripUri = uriMap[pt.traceStripUri];
+              });
+            }
+          });
+        });
+      }
+      if (Array.isArray(docModel.pictureItems)) {
+        docModel.pictureItems.forEach(function (it) {
+          if (it && it.uri && uriMap[it.uri]) it.uri = uriMap[it.uri];
+        });
+      }
+      if (Array.isArray(docModel.customSupports)) {
+        docModel.customSupports.forEach(function (sup) {
+          if (sup && sup.imgUri && uriMap[sup.imgUri]) sup.imgUri = uriMap[sup.imgUri];
+        });
+      }
+      return docModel;
+    }
+    function downloadZipBlob(zipParts, filename) {
+      if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return false;
+      var blob = new win.Blob(zipParts, { type: 'application/zip' });
+      var url = win.URL.createObjectURL(blob);
+      var link = doc.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+      if (typeof win.setTimeout === 'function') {
+        win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      }
+      return true;
+    }
+    function appendWorksheetHeaderDom(header, model) {
+      header.appendChild(el('h2', 'pc-ws-title', model.title));
+      if (model.subtitle) header.appendChild(el('p', 'pc-ws-subtitle', model.subtitle));
+      var meta = el('div', 'pc-ws-meta');
+      ['Name:', 'Date:'].forEach(function (lbl) {
+        var f = el('span', 'pc-ws-meta-field');
+        f.appendChild(el('span', '', lbl));
+        f.appendChild(el('span', 'pc-ws-meta-line'));
+        meta.appendChild(f);
+      });
+      var hf = model.headerFields || {};
+      if (hf.classPeriod) {
+        var cf = el('span', 'pc-ws-meta-field');
+        cf.appendChild(el('span', '', 'Class / Period:'));
+        cf.appendChild(el('span', 'pc-ws-meta-line'));
+        meta.appendChild(cf);
+      }
+      if (hf.score) {
+        var sf = el('span', 'pc-ws-meta-field');
+        sf.appendChild(el('span', '', 'Score:'));
+        var sl = el('span', 'pc-ws-score-line');
+        sl.appendChild(el('span', 'pc-ws-score-blank'));
+        sl.appendChild(doc.createTextNode(' / '));
+        sl.appendChild(el('span', 'pc-ws-score-blank'));
+        sf.appendChild(sl);
+        meta.appendChild(sf);
+      }
+      header.appendChild(meta);
+    }
+    function readTextFile(file) {
+      if (!file) return Promise.resolve('');
+      if (typeof file.text === 'function') {
+        return Promise.resolve().then(function () { return file.text(); });
+      }
+      if (typeof win.FileReader === 'function') {
+        return new Promise(function (resolve, reject) {
+          var reader = new win.FileReader();
+          reader.onload = function () { resolve(typeof reader.result === 'string' ? reader.result : ''); };
+          reader.onerror = function () { reject(new Error('Could not read file.')); };
+          reader.readAsText(file);
+        });
+      }
+      return Promise.reject(new Error('File reading is unavailable.'));
+    }
+    function createCustomizerUi(prefix, kind, getCustom, callbacks) {
+      var details = el('details', 'pc-options pc-customizer');
+      details.id = 'pc-' + prefix + '-customizer';
+      var summary = el('summary', '');
+      summary.appendChild(el('span', '', 'Customize worksheet'));
+      var badge = el('span', 'pc-cust-badge', '');
+      badge.id = 'pc-' + prefix + '-cust-badge';
+      summary.appendChild(badge);
+      details.appendChild(summary);
+
+      var body = el('div', 'pc-options-body pc-cust-body');
+
+      // Reusable device presets + shareable JSON / reopenable HTML worksheet templates
+      var tplGroup = el('fieldset', 'pc-cust-group pc-cust-templates');
+      tplGroup.id = 'pc-' + prefix + '-cust-templates';
+      tplGroup.appendChild(el('legend', 'pc-cust-legend', 'Templates & presets'));
+
+      var presetRow = el('div', 'pc-cust-tpl-row');
+      var presetSelect = el('select', 'pc-cust-select pc-cust-tpl-select');
+      presetSelect.id = 'pc-' + prefix + '-cust-preset-select';
+      presetSelect.setAttribute('aria-label', 'Saved worksheet presets');
+
+      var presetNameInput = el('input', 'pc-cust-input pc-cust-tpl-name');
+      presetNameInput.type = 'text';
+      presetNameInput.id = 'pc-' + prefix + '-cust-preset-name';
+      presetNameInput.maxLength = 50;
+      presetNameInput.placeholder = 'Preset name (e.g. Grade 1 Primary)';
+      presetNameInput.setAttribute('aria-label', 'Worksheet preset name');
+
+      var savePresetBtn = el('button', 'btn btn-small pc-cust-tpl-btn', 'Save preset');
+      savePresetBtn.type = 'button';
+      savePresetBtn.id = 'pc-' + prefix + '-cust-preset-save';
+
+      var deletePresetBtn = el('button', 'btn btn-small pc-cust-tpl-btn', 'Delete');
+      deletePresetBtn.type = 'button';
+      deletePresetBtn.id = 'pc-' + prefix + '-cust-preset-delete';
+      deletePresetBtn.setAttribute('aria-label', 'Delete selected preset');
+      deletePresetBtn.disabled = true;
+
+      presetRow.appendChild(presetSelect);
+      presetRow.appendChild(presetNameInput);
+      presetRow.appendChild(savePresetBtn);
+      presetRow.appendChild(deletePresetBtn);
+      tplGroup.appendChild(presetRow);
+
+      var fileRow = el('div', 'pc-cust-tpl-files');
+      var exportTplBtn = el('button', 'btn btn-small pc-cust-tpl-btn', 'Save template (.json)');
+      exportTplBtn.type = 'button';
+      exportTplBtn.id = 'pc-' + prefix + '-cust-tpl-export';
+
+      var importTplBtn = el('button', 'btn btn-small pc-cust-tpl-btn', 'Load template / worksheet');
+      importTplBtn.type = 'button';
+      importTplBtn.id = 'pc-' + prefix + '-cust-tpl-import';
+
+      var tplFileInput = el('input');
+      tplFileInput.type = 'file';
+      tplFileInput.id = 'pc-' + prefix + '-cust-tpl-file';
+      tplFileInput.accept = '.json,.html,.htm,application/json,text/html';
+      tplFileInput.setAttribute('aria-label', 'Load worksheet template or HTML worksheet');
+      tplFileInput.hidden = true;
+
+      fileRow.appendChild(exportTplBtn);
+      fileRow.appendChild(importTplBtn);
+      fileRow.appendChild(tplFileInput);
+      tplGroup.appendChild(fileRow);
+
+      var tplStatus = el('p', 'pc-cust-tpl-status', '');
+      tplStatus.id = 'pc-' + prefix + '-cust-tpl-status';
+      tplStatus.setAttribute('role', 'status');
+      tplStatus.setAttribute('aria-live', 'polite');
+      tplGroup.appendChild(tplStatus);
+
+      body.appendChild(tplGroup);
+
+      var topGrid = el('div', 'pc-cust-grid');
+
+      var titleWrap = el('div', 'pc-cust-field');
+      var titleLbl = el('label', '', 'Worksheet title');
+      titleLbl.htmlFor = 'pc-' + prefix + '-cust-title';
+      var titleInput = el('input', 'pc-cust-input');
+      titleInput.type = 'text';
+      titleInput.id = 'pc-' + prefix + '-cust-title';
+      titleInput.maxLength = 120;
+      titleInput.addEventListener('input', function () {
+        var c = getCustom();
+        c.title = titleInput.value;
+        callbacks.onUpdate({ keepStructure: true });
+      });
+      titleWrap.appendChild(titleLbl);
+      titleWrap.appendChild(titleInput);
+      topGrid.appendChild(titleWrap);
+
+      var subWrap = el('div', 'pc-cust-field');
+      var subLbl = el('label', '', 'Subtitle or teacher note (optional)');
+      subLbl.htmlFor = 'pc-' + prefix + '-cust-subtitle';
+      var subInput = el('input', 'pc-cust-input');
+      subInput.type = 'text';
+      subInput.id = 'pc-' + prefix + '-cust-subtitle';
+      subInput.maxLength = 200;
+      subInput.placeholder = 'Optional note printed under the title';
+      subInput.addEventListener('input', function () {
+        var c = getCustom();
+        c.subtitle = subInput.value;
+        callbacks.onUpdate({ keepStructure: true });
+      });
+      subWrap.appendChild(subLbl);
+      subWrap.appendChild(subInput);
+      topGrid.appendChild(subWrap);
+
+      var densWrap = el('div', 'pc-cust-field');
+      var densLbl = el('label', '', 'Page density & writing size');
+      densLbl.htmlFor = 'pc-' + prefix + '-cust-density';
+      var densSelect = el('select', 'pc-cust-select');
+      densSelect.id = 'pc-' + prefix + '-cust-density';
+      [
+        ['compact', 'Compact (fit more on 1 page)'],
+        ['standard', 'Standard (default)'],
+        ['primary', 'Primary / Large (bigger text & taller lines)']
+      ].forEach(function (pair) {
+        var opt = el('option', '', pair[1]);
+        opt.value = pair[0];
+        if (pair[0] === 'standard') opt.selected = true;
+        densSelect.appendChild(opt);
+      });
+      densSelect.addEventListener('change', function () {
+        var c = getCustom();
+        c.density = wsNormalizeDensity(densSelect.value);
+        callbacks.onUpdate({ keepStructure: true });
+      });
+      densWrap.appendChild(densLbl);
+      densWrap.appendChild(densSelect);
+      topGrid.appendChild(densWrap);
+      body.appendChild(topGrid);
+
+      var hfGroup = el('fieldset', 'pc-cust-group');
+      hfGroup.appendChild(el('legend', 'pc-cust-legend', 'Extra header fields (Name & Date are always shown)'));
+      var hfRow = el('div', 'pc-cust-headers');
+      var makeHeaderChk = function (id, labelText, fieldKey) {
+        var lbl = el('label', 'radio pc-radio pc-check pc-cust-check');
+        var inp = el('input');
+        inp.type = 'checkbox';
+        inp.id = id;
+        inp.addEventListener('change', function () {
+          var c = getCustom();
+          if (!c.headerFields) c.headerFields = { classPeriod: false, score: false };
+          c.headerFields[fieldKey] = !!inp.checked;
+          lbl.classList.toggle('is-on', !!inp.checked);
+          callbacks.onUpdate({ keepStructure: true });
+        });
+        lbl.appendChild(inp);
+        lbl.appendChild(el('span', '', labelText));
+        hfRow.appendChild(lbl);
+        return inp;
+      };
+      var classBox = makeHeaderChk('pc-' + prefix + '-cust-class', 'Class / Period', 'classPeriod');
+      var scoreBox = makeHeaderChk('pc-' + prefix + '-cust-score', 'Score: ___ / ___', 'score');
+      hfGroup.appendChild(hfRow);
+      body.appendChild(hfGroup);
+
+      var secGroup = el('fieldset', 'pc-cust-group');
+      secGroup.appendChild(el('legend', 'pc-cust-legend', 'Sections & directions'));
+      var sectionsHost = el('div', 'pc-cust-sections');
+      secGroup.appendChild(sectionsHost);
+      body.appendChild(secGroup);
+
+      var sharedGroup = el('fieldset', 'pc-cust-group');
+      sharedGroup.hidden = true;
+      sharedGroup.appendChild(el('legend', 'pc-cust-legend', 'Items (hide, reorder, or edit)'));
+      var sharedHost = el('div', 'pc-cust-items');
+      sharedGroup.appendChild(sharedHost);
+      body.appendChild(sharedGroup);
+
+      var expandedEditors = Object.create(null);
+      var pendingFocusAttr = null;
+
+      var footer = el('div', 'pc-cust-footer');
+      var hiddenCountEl = el('span', 'pc-cust-hidden-count', '');
+      hiddenCountEl.id = 'pc-' + prefix + '-cust-hidden-count';
+      hiddenCountEl.setAttribute('role', 'status');
+      var restoreBtn = el('button', 'btn btn-small pc-cust-restore', 'Restore all items');
+      restoreBtn.type = 'button';
+      restoreBtn.id = 'pc-' + prefix + '-cust-restore';
+      restoreBtn.addEventListener('click', function () {
+        var c = getCustom();
+        c.hiddenItems = Object.create(null);
+        callbacks.onUpdate({ keepStructure: false });
+      });
+      var resetBtn = el('button', 'btn btn-small pc-cust-reset', 'Reset customizations');
+      resetBtn.type = 'button';
+      resetBtn.id = 'pc-' + prefix + '-cust-reset';
+      resetBtn.addEventListener('click', function () {
+        expandedEditors = Object.create(null);
+        presetSelect.value = '';
+        deletePresetBtn.disabled = true;
+        tplStatus.textContent = '';
+        callbacks.onReset();
+      });
+      footer.appendChild(hiddenCountEl);
+      footer.appendChild(restoreBtn);
+      footer.appendChild(resetBtn);
+      body.appendChild(footer);
+
+      details.appendChild(body);
+
+      var makeItemRow = function (secKey, item, pos, total, allItemsInSec, onToggled) {
+        var c = getCustom();
+        var itemKey = item.key;
+        var label = item.label;
+        var indexNum = pos + 1;
+        var origIdx = typeof item.origIndex === 'number' ? item.origIndex : pos;
+        var isHidden = !!(c.hiddenItems && c.hiddenItems[itemKey]);
+        var editFields = Array.isArray(item.editFields) ? item.editFields : [];
+
+        var row = el('div', 'pc-cust-item-row' + (isHidden ? ' is-hidden' : ''));
+        row.setAttribute('data-cust-row', itemKey);
+        row.setAttribute('data-cust-orig-idx', String(origIdx));
+
+        var main = el('div', 'pc-cust-item-main');
+        var btn = el('button', 'pc-cust-chip' + (isHidden ? ' is-hidden' : ''));
+        btn.type = 'button';
+        btn.setAttribute('data-cust-item', itemKey);
+        var syncChip = function () {
+          var cur = getCustom();
+          var hid = !!(cur.hiddenItems && cur.hiddenItems[itemKey]);
+          row.classList.toggle('is-hidden', hid);
+          btn.classList.toggle('is-hidden', hid);
+          btn.setAttribute('aria-pressed', hid ? 'true' : 'false');
+          btn.textContent = hid ? ('Restore: ' + label) : ('#' + indexNum + ' ' + label);
+          btn.setAttribute('aria-label', hid ? ('Restore item ' + label) : ('Hide item ' + indexNum + ': ' + label));
+        };
+        syncChip();
+        btn.addEventListener('click', function () {
+          var cur = getCustom();
+          if (!cur.hiddenItems) cur.hiddenItems = Object.create(null);
+          if (cur.hiddenItems[itemKey]) delete cur.hiddenItems[itemKey];
+          else cur.hiddenItems[itemKey] = true;
+          syncChip();
+          if (typeof onToggled === 'function') onToggled();
+          callbacks.onUpdate({ keepStructure: true });
+        });
+        main.appendChild(btn);
+
+        var btns = el('div', 'pc-cust-item-btns');
+        var moveItem = function (delta) {
+          var targetPos = pos + delta;
+          if (targetPos < 0 || targetPos >= total) return;
+          var cur = getCustom();
+          if (!cur.itemOrder) cur.itemOrder = Object.create(null);
+          var order = allItemsInSec.map(function (entry, idx) {
+            return typeof entry.origIndex === 'number' ? entry.origIndex : idx;
+          });
+          var tmp = order[pos];
+          order[pos] = order[targetPos];
+          order[targetPos] = tmp;
+          var natural = order.slice().sort(function (a, b) { return a - b; });
+          var isNatural = order.every(function (v, idx) { return v === natural[idx]; });
+          if (isNatural) delete cur.itemOrder[secKey];
+          else cur.itemOrder[secKey] = order;
+          var nextDir = (delta < 0 && targetPos === 0) ? 'down' : ((delta > 0 && targetPos === total - 1) ? 'up' : (delta < 0 ? 'up' : 'down'));
+          pendingFocusAttr = { section: secKey, origIdx: String(origIdx), dir: nextDir };
+          callbacks.onUpdate({ keepStructure: false });
+        };
+
+        var upBtn = el('button', 'btn btn-small pc-cust-move', '\u2191');
+        upBtn.type = 'button';
+        upBtn.setAttribute('data-cust-move', 'up');
+        upBtn.setAttribute('data-cust-section', secKey);
+        upBtn.setAttribute('data-cust-orig-idx', String(origIdx));
+        upBtn.setAttribute('aria-label', 'Move item ' + indexNum + ' up');
+        upBtn.disabled = pos === 0 || total < 2;
+        upBtn.addEventListener('click', function () { moveItem(-1); });
+        btns.appendChild(upBtn);
+
+        var downBtn = el('button', 'btn btn-small pc-cust-move', '\u2193');
+        downBtn.type = 'button';
+        downBtn.setAttribute('data-cust-move', 'down');
+        downBtn.setAttribute('data-cust-section', secKey);
+        downBtn.setAttribute('data-cust-orig-idx', String(origIdx));
+        downBtn.setAttribute('aria-label', 'Move item ' + indexNum + ' down');
+        downBtn.disabled = pos >= total - 1 || total < 2;
+        downBtn.addEventListener('click', function () { moveItem(1); });
+        btns.appendChild(downBtn);
+
+        var editorBox = null;
+        if (editFields.length) {
+          var hasFieldOverride = function () {
+            var cur = getCustom();
+            return editFields.some(function (f) {
+              return !!(cur.itemTextOverrides && cur.itemTextOverrides[f.key]);
+            });
+          };
+          var isOpen = !!expandedEditors[itemKey];
+          var editBtn = el('button', 'btn btn-small pc-cust-edit-btn' + (hasFieldOverride() ? ' is-edited' : ''), 'Edit');
+          editBtn.type = 'button';
+          editBtn.setAttribute('data-cust-edit-toggle', itemKey);
+          editBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          editBtn.setAttribute('aria-label', 'Edit item ' + indexNum + ' wording');
+
+          editorBox = el('div', 'pc-cust-item-editor');
+          editorBox.setAttribute('data-cust-editor', itemKey);
+          editorBox.hidden = !isOpen;
+
+          var firstInp = null;
+          editFields.forEach(function (field, fIdx) {
+            var fWrap = el('div', 'pc-cust-field');
+            var inpId = 'pc-' + prefix + '-edit-' + secKey.replace(/[^a-z0-9_-]/gi, '') + '-' + origIdx + '-' + fIdx;
+            var fLbl = el('label', '', field.label || 'Custom wording');
+            fLbl.htmlFor = inpId;
+            var inp = el('input', 'pc-cust-input');
+            inp.type = 'text';
+            inp.id = inpId;
+            inp.maxLength = 240;
+            inp.placeholder = field.placeholder || 'Type custom wording for this item';
+            inp.setAttribute('data-cust-edit-input', field.key);
+            var curOv = c.itemTextOverrides && c.itemTextOverrides[field.key];
+            inp.value = curOv || (field.defaultValue || '');
+            inp.addEventListener('input', function () {
+              var cur = getCustom();
+              if (!cur.itemTextOverrides) cur.itemTextOverrides = Object.create(null);
+              var rawVal = inp.value;
+              var trimVal = rawVal.trim();
+              var defTrim = String(field.defaultValue || '').trim();
+              if (!trimVal || trimVal === defTrim) delete cur.itemTextOverrides[field.key];
+              else cur.itemTextOverrides[field.key] = rawVal;
+              editBtn.classList.toggle('is-edited', hasFieldOverride());
+              callbacks.onUpdate({ keepStructure: true });
+            });
+            fWrap.appendChild(fLbl);
+            fWrap.appendChild(inp);
+            editorBox.appendChild(fWrap);
+            if (!firstInp) firstInp = inp;
+          });
+
+          editBtn.addEventListener('click', function () {
+            var nextOpen = editorBox.hidden;
+            editorBox.hidden = !nextOpen;
+            if (nextOpen) expandedEditors[itemKey] = true;
+            else delete expandedEditors[itemKey];
+            editBtn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+            if (nextOpen && firstInp && typeof firstInp.focus === 'function') firstInp.focus();
+          });
+          btns.appendChild(editBtn);
+        }
+
+        main.appendChild(btns);
+        row.appendChild(main);
+        if (editorBox) row.appendChild(editorBox);
+        return row;
+      };
+
+      var sync = function (desc, syncOpts) {
+        var c = getCustom();
+        var d = desc || { defaultTitle: '', sections: [], sharedItems: [], hasItemToggles: false };
+        var keepStructure = !!(syncOpts && syncOpts.keepStructure);
+        var curTitle = c.title != null ? String(c.title) : String(d.defaultTitle || '');
+        if (doc.activeElement !== titleInput) titleInput.value = curTitle;
+        if (doc.activeElement !== subInput) subInput.value = String(c.subtitle || '');
+        densSelect.value = wsNormalizeDensity(c.density);
+        classBox.checked = !!(c.headerFields && c.headerFields.classPeriod);
+        if (classBox.parentNode) classBox.parentNode.classList.toggle('is-on', classBox.checked);
+        scoreBox.checked = !!(c.headerFields && c.headerFields.score);
+        if (scoreBox.parentNode) scoreBox.parentNode.classList.toggle('is-on', scoreBox.checked);
+
+        var hiddenItemCount = wsCountHidden(c.hiddenItems);
+        var hiddenSecCount = wsCountHidden(c.hiddenSections);
+        var editsCount = 0;
+        if (curTitle.trim() && d.defaultTitle && curTitle.trim() !== String(d.defaultTitle).trim()) editsCount++;
+        if (String(c.subtitle || '').trim()) editsCount++;
+        if (classBox.checked) editsCount++;
+        if (scoreBox.checked) editsCount++;
+        if (wsNormalizeDensity(c.density) !== 'standard') editsCount++;
+        editsCount += hiddenSecCount + hiddenItemCount;
+        Object.keys(c.sectionOverrides || {}).forEach(function (k) {
+          var ov = c.sectionOverrides[k];
+          if (ov && ((typeof ov.heading === 'string' && ov.heading.trim()) || typeof ov.directions === 'string')) editsCount++;
+        });
+        Object.keys(c.itemOrder || {}).forEach(function (k) {
+          if (Array.isArray(c.itemOrder[k]) && c.itemOrder[k].length) editsCount++;
+        });
+        Object.keys(c.itemTextOverrides || {}).forEach(function (k) {
+          if (typeof c.itemTextOverrides[k] === 'string' && c.itemTextOverrides[k].trim()) editsCount++;
+        });
+        badge.textContent = editsCount > 0 ? (count(editsCount, 'edit')) : '';
+
+        var hasToggles = !!d.hasItemToggles;
+        hiddenCountEl.hidden = !hasToggles;
+        restoreBtn.hidden = !hasToggles;
+        if (hasToggles) {
+          hiddenCountEl.textContent = hiddenItemCount > 0
+            ? (count(hiddenItemCount, 'item') + ' hidden')
+            : 'All items shown';
+          restoreBtn.disabled = hiddenItemCount === 0;
+        }
+
+        if (keepStructure) return;
+
+        while (sectionsHost.firstChild) sectionsHost.removeChild(sectionsHost.firstChild);
+        var secs = Array.isArray(d.sections) ? d.sections : [];
+        secGroup.hidden = secs.length === 0;
+        secs.forEach(function (sec, secIdx) {
+          var secHidden = !!(c.hiddenSections && c.hiddenSections[sec.key]);
+          var ov = (c.sectionOverrides && c.sectionOverrides[sec.key]) || {};
+          var card = el('div', 'pc-cust-sec-card' + (secHidden ? ' is-hidden' : ''));
+          card.setAttribute('data-cust-section', sec.key);
+
+          var topRow = el('div', 'pc-cust-sec-top');
+          var toggleLbl = el('label', 'radio pc-radio pc-check pc-cust-sec-toggle');
+          var toggleBox = el('input');
+          toggleBox.type = 'checkbox';
+          toggleBox.id = 'pc-' + prefix + '-sec-vis-' + secIdx;
+          toggleBox.checked = !secHidden;
+          toggleBox.setAttribute('data-cust-sec-vis', sec.key);
+          toggleLbl.classList.toggle('is-on', toggleBox.checked);
+          toggleLbl.appendChild(toggleBox);
+          toggleLbl.appendChild(el('span', '', sec.defaultHeading));
+          var countSpan = el('span', 'pc-cust-sec-count', '');
+          var updateSecCount = function () {
+            var cur = getCustom();
+            var isHid = !!(cur.hiddenSections && cur.hiddenSections[sec.key]);
+            if (isHid) { countSpan.textContent = 'Hidden'; return; }
+            if (Array.isArray(sec.items) && sec.items.length) {
+              var visN = sec.items.filter(function (it) { return !(cur.hiddenItems && cur.hiddenItems[it.key]); }).length;
+              countSpan.textContent = visN + ' of ' + count(sec.items.length, 'item');
+            } else {
+              countSpan.textContent = 'Shown';
+            }
+          };
+          updateSecCount();
+          toggleBox.addEventListener('change', function () {
+            var cur = getCustom();
+            if (!cur.hiddenSections) cur.hiddenSections = Object.create(null);
+            if (toggleBox.checked) delete cur.hiddenSections[sec.key];
+            else cur.hiddenSections[sec.key] = true;
+            toggleLbl.classList.toggle('is-on', toggleBox.checked);
+            card.classList.toggle('is-hidden', !toggleBox.checked);
+            updateSecCount();
+            callbacks.onUpdate({ keepStructure: true });
+          });
+          topRow.appendChild(toggleLbl);
+          topRow.appendChild(countSpan);
+          card.appendChild(topRow);
+
+          var fieldsRow = el('div', 'pc-cust-sec-fields');
+          var hField = el('div', 'pc-cust-field');
+          var hLbl = el('label', '', 'Section heading');
+          hLbl.htmlFor = 'pc-' + prefix + '-sec-h-' + secIdx;
+          var hInp = el('input', 'pc-cust-input');
+          hInp.type = 'text';
+          hInp.id = 'pc-' + prefix + '-sec-h-' + secIdx;
+          hInp.maxLength = 120;
+          hInp.value = (typeof ov.heading === 'string' && ov.heading.trim()) ? ov.heading : sec.defaultHeading;
+          hInp.setAttribute('data-cust-sec-heading', sec.key);
+          hInp.addEventListener('input', function () {
+            var cur = getCustom();
+            if (!cur.sectionOverrides) cur.sectionOverrides = Object.create(null);
+            var existingOv = cur.sectionOverrides[sec.key] || {};
+            if (hInp.value.trim() === sec.defaultHeading) delete existingOv.heading;
+            else existingOv.heading = hInp.value;
+            if (existingOv.heading === undefined && existingOv.directions === undefined) delete cur.sectionOverrides[sec.key];
+            else cur.sectionOverrides[sec.key] = existingOv;
+            callbacks.onUpdate({ keepStructure: true });
+          });
+          hField.appendChild(hLbl);
+          hField.appendChild(hInp);
+          fieldsRow.appendChild(hField);
+
+          var dField = el('div', 'pc-cust-field');
+          var dLbl = el('label', '', 'Directions');
+          dLbl.htmlFor = 'pc-' + prefix + '-sec-d-' + secIdx;
+          var dInp = el('input', 'pc-cust-input');
+          dInp.type = 'text';
+          dInp.id = 'pc-' + prefix + '-sec-d-' + secIdx;
+          dInp.maxLength = 240;
+          dInp.value = typeof ov.directions === 'string' ? ov.directions : (sec.defaultDirections || '');
+          dInp.setAttribute('data-cust-sec-dir', sec.key);
+          dInp.addEventListener('input', function () {
+            var cur = getCustom();
+            if (!cur.sectionOverrides) cur.sectionOverrides = Object.create(null);
+            var existingOv = cur.sectionOverrides[sec.key] || {};
+            if (dInp.value === (sec.defaultDirections || '')) delete existingOv.directions;
+            else existingOv.directions = dInp.value;
+            if (existingOv.heading === undefined && existingOv.directions === undefined) delete cur.sectionOverrides[sec.key];
+            else cur.sectionOverrides[sec.key] = existingOv;
+            callbacks.onUpdate({ keepStructure: true });
+          });
+          dField.appendChild(dLbl);
+          dField.appendChild(dInp);
+          fieldsRow.appendChild(dField);
+          card.appendChild(fieldsRow);
+
+          if (Array.isArray(sec.items) && sec.items.length) {
+            var itemsBox = el('div', 'pc-cust-items');
+            itemsBox.appendChild(el('span', 'pc-cust-items-label', 'Items in this section (hide, reorder, or edit):'));
+            sec.items.forEach(function (it, iIdx) {
+              itemsBox.appendChild(makeItemRow(sec.key, it, iIdx, sec.items.length, sec.items, updateSecCount));
+            });
+            card.appendChild(itemsBox);
+          }
+
+          sectionsHost.appendChild(card);
+        });
+
+        while (sharedHost.firstChild) sharedHost.removeChild(sharedHost.firstChild);
+        var shared = Array.isArray(d.sharedItems) ? d.sharedItems : [];
+        var sharedSecKey = d.sharedSectionKey || 'words';
+        sharedGroup.hidden = shared.length === 0;
+        shared.forEach(function (it, idx) {
+          sharedHost.appendChild(makeItemRow(sharedSecKey, it, idx, shared.length, shared));
+        });
+        if (pendingFocusAttr) {
+          var pf = pendingFocusAttr;
+          pendingFocusAttr = null;
+          var moveTarget = details.querySelector(
+            'button.pc-cust-move[data-cust-section="' + pf.section + '"][data-cust-orig-idx="' + pf.origIdx + '"][data-cust-move="' + pf.dir + '"]'
+          );
+          if (moveTarget && !moveTarget.disabled && typeof moveTarget.focus === 'function') moveTarget.focus();
+        }
+        refreshPresets();
+      };
+
+      var apiObj = null;
+      var refreshPresets = function (selectedId) {
+        var keep = selectedId !== undefined ? String(selectedId || '') : String(presetSelect.value || '');
+        var list = wsLoadPresets(win);
+        while (presetSelect.firstChild) presetSelect.removeChild(presetSelect.firstChild);
+        var ph = el('option', '', 'Saved presets...');
+        ph.value = '';
+        presetSelect.appendChild(ph);
+        var matched = false;
+        list.forEach(function (p) {
+          var opt = el('option', '', p.name);
+          opt.value = p.id;
+          if (keep && p.id === keep) {
+            opt.selected = true;
+            matched = true;
+          }
+          presetSelect.appendChild(opt);
+        });
+        presetSelect.value = matched ? keep : '';
+        deletePresetBtn.disabled = !matched;
+      };
+      var refreshAllCustomizers = function (selectedForSelf) {
+        refreshPresets(selectedForSelf);
+        customizerList.forEach(function (inst) {
+          if (inst !== apiObj && typeof inst.refreshPresets === 'function') inst.refreshPresets();
+        });
+      };
+      var resetTemplatesUi = function () {
+        expandedEditors = Object.create(null);
+        presetNameInput.value = '';
+        tplStatus.textContent = '';
+        refreshPresets('');
+      };
+      var applyPresetEntry = function (preset) {
+        var c = getCustom();
+        c.subtitle = String(preset.subtitle || '');
+        c.headerFields = {
+          classPeriod: !!(preset.headerFields && preset.headerFields.classPeriod),
+          score: !!(preset.headerFields && preset.headerFields.score)
+        };
+        c.density = wsNormalizeDensity(preset.density);
+        var sameKind = preset.kind === kind;
+        if (sameKind) {
+          c.sectionOverrides = wsNormalizeOverrides(preset.sectionOverrides);
+          c.hiddenSections = wsToBoolMap(preset.hiddenSections);
+          c.hiddenParts = c.hiddenSections;
+        }
+        var post = typeof callbacks.onApplyOptions === 'function' ? callbacks.onApplyOptions(preset.options || {}) : null;
+        callbacks.onUpdate({ keepStructure: false });
+        if (post && typeof post.afterDraw === 'function') post.afterDraw();
+        tplStatus.textContent = sameKind
+          ? ('Applied preset "' + preset.name + '".')
+          : ('Applied layout and options from preset "' + preset.name + '".');
+      };
+      var applyLoadedTemplate = function (tpl) {
+        var c = getCustom();
+        var sameKind = tpl.kind === kind;
+        if (sameKind && tpl.title) c.title = tpl.title;
+        c.subtitle = String(tpl.subtitle || '');
+        c.headerFields = {
+          classPeriod: !!(tpl.headerFields && tpl.headerFields.classPeriod),
+          score: !!(tpl.headerFields && tpl.headerFields.score)
+        };
+        c.density = wsNormalizeDensity(tpl.density);
+        if (sameKind) {
+          c.sectionOverrides = wsNormalizeOverrides(tpl.sectionOverrides);
+          c.hiddenSections = wsToBoolMap(tpl.hiddenSections);
+          c.hiddenParts = c.hiddenSections;
+          var rawHiddenItems = wsToBoolMap(tpl.hiddenItems);
+          c.hiddenItems = typeof callbacks.normalizeHiddenItems === 'function'
+            ? callbacks.normalizeHiddenItems(rawHiddenItems)
+            : rawHiddenItems;
+          c.itemOrder = wsNormalizeItemOrder(tpl.itemOrder);
+          c.itemTextOverrides = wsNormalizeItemTextOverrides(tpl.itemTextOverrides);
+        }
+        var post = typeof callbacks.onApplyOptions === 'function' ? callbacks.onApplyOptions(tpl.options || {}) : null;
+        presetSelect.value = '';
+        deletePresetBtn.disabled = true;
+        callbacks.onUpdate({ keepStructure: false });
+        if (post && typeof post.afterDraw === 'function') post.afterDraw();
+        if (sameKind) {
+          tplStatus.textContent = tpl.title
+            ? ('Loaded worksheet template "' + tpl.title + '".')
+            : 'Loaded worksheet template.';
+        } else {
+          tplStatus.textContent = 'Loaded layout settings from a ' + wsTemplateKindLabel(tpl.kind) + ' template (sections kept for this worksheet).';
+        }
+      };
+
+      presetSelect.addEventListener('change', function () {
+        var id = String(presetSelect.value || '');
+        deletePresetBtn.disabled = !id;
+        if (!id) return;
+        var list = wsLoadPresets(win);
+        var found = null;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === id) { found = list[i]; break; }
+        }
+        if (!found) {
+          refreshPresets('');
+          tplStatus.textContent = 'That preset is no longer saved on this device.';
+          return;
+        }
+        applyPresetEntry(found);
+      });
+
+      var handleSavePreset = function () {
+        var name = wsTrimLimit(presetNameInput.value, 50);
+        if (!name) {
+          tplStatus.textContent = 'Enter a preset name first.';
+          if (typeof presetNameInput.focus === 'function') presetNameInput.focus();
+          return;
+        }
+        var c = wsCloneCustom(getCustom());
+        var optsSnap = typeof callbacks.getOptions === 'function' ? callbacks.getOptions() : {};
+        var existing = wsLoadPresets(win);
+        var lowName = name.toLowerCase();
+        var prev = null;
+        var rest = [];
+        for (var i = 0; i < existing.length; i++) {
+          if (existing[i].name.toLowerCase() === lowName) prev = existing[i];
+          else rest.push(existing[i]);
+        }
+        var id = (prev && prev.id) || ('p_' + wsHash(lowName + '|' + Date.now() + '|' + rest.length).toString(36));
+        var entry = {
+          id: id,
+          name: name,
+          kind: kind,
+          savedAt: Date.now(),
+          subtitle: c.subtitle,
+          headerFields: c.headerFields,
+          density: c.density,
+          sectionOverrides: wsPlainOverrides(c.sectionOverrides),
+          hiddenSections: wsPlainBoolMap(c.hiddenSections, 32, 64),
+          options: wsNormalizeTemplateOptions(kind, optsSnap)
+        };
+        var saved = wsSavePresets(win, [entry].concat(rest).slice(0, WS_PRESETS_MAX));
+        if (!saved.ok) {
+          tplStatus.textContent = saved.why;
+          return;
+        }
+        presetNameInput.value = '';
+        refreshAllCustomizers(entry.id);
+        tplStatus.textContent = 'Saved preset "' + entry.name + '" on this device.';
+      };
+      savePresetBtn.addEventListener('click', handleSavePreset);
+      presetNameInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          handleSavePreset();
+        }
+      });
+
+      deletePresetBtn.addEventListener('click', function () {
+        var id = String(presetSelect.value || '');
+        if (!id) return;
+        var existing = wsLoadPresets(win);
+        var removed = null;
+        var remaining = [];
+        for (var i = 0; i < existing.length; i++) {
+          if (existing[i].id === id) removed = existing[i];
+          else remaining.push(existing[i]);
+        }
+        if (!removed) {
+          refreshAllCustomizers('');
+          return;
+        }
+        var saved = wsSavePresets(win, remaining);
+        if (!saved.ok) {
+          tplStatus.textContent = saved.why;
+          return;
+        }
+        refreshAllCustomizers('');
+        tplStatus.textContent = 'Deleted preset "' + removed.name + '".';
+      });
+
+      exportTplBtn.addEventListener('click', function () {
+        var c = wsCloneCustom(getCustom());
+        var defTitle = typeof callbacks.getDefaultTitle === 'function' ? callbacks.getDefaultTitle() : '';
+        if (!c.title && defTitle) c.title = defTitle;
+        var optsSnap = typeof callbacks.getOptions === 'function' ? callbacks.getOptions() : {};
+        var jsonText = serializeWorksheetTemplate(kind, c, optsSnap, { pretty: true });
+        if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') {
+          tplStatus.textContent = 'File download is not available in this browser.';
+          return;
+        }
+        var blob = new win.Blob([jsonText], { type: 'application/json;charset=utf-8' });
+        var url = win.URL.createObjectURL(blob);
+        var link = doc.createElement('a');
+        link.href = url;
+        link.download = wsSlug(c.title || kind) + '-worksheet-template.' + 'json';
+        link.hidden = true;
+        doc.body.appendChild(link);
+        link.click();
+        doc.body.removeChild(link);
+        if (typeof win.setTimeout === 'function') {
+          win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+        }
+        tplStatus.textContent = 'Saved worksheet template (.json).';
+      });
+
+      importTplBtn.addEventListener('click', function () {
+        tplFileInput.click();
+      });
+      tplFileInput.addEventListener('change', function () {
+        var file = tplFileInput.files && tplFileInput.files[0];
+        try { tplFileInput.value = ''; } catch (_) {}
+        if (!file) return;
+        if (typeof file.size === 'number' && file.size > WS_TEMPLATE_MAX_BYTES) {
+          tplStatus.textContent = 'Could not load template: This file is larger than the 200 KB worksheet template limit.';
+          return;
+        }
+        readTextFile(file).then(function (text) {
+          var res = extractWorksheetTemplate(text);
+          if (!res.ok) {
+            tplStatus.textContent = 'Could not load template: ' + (res.why || 'Invalid template file.');
+            return;
+          }
+          applyLoadedTemplate(res.template);
+        }, function () {
+          tplStatus.textContent = 'Could not read the selected file.';
+        });
+      });
+
+      apiObj = {
+        details: details,
+        badge: badge,
+        titleInput: titleInput,
+        subtitleInput: subInput,
+        densitySelect: densSelect,
+        classBox: classBox,
+        scoreBox: scoreBox,
+        hiddenCount: hiddenCountEl,
+        restoreBtn: restoreBtn,
+        resetBtn: resetBtn,
+        presetSelect: presetSelect,
+        presetNameInput: presetNameInput,
+        savePresetBtn: savePresetBtn,
+        deletePresetBtn: deletePresetBtn,
+        exportTplBtn: exportTplBtn,
+        importTplBtn: importTplBtn,
+        tplFileInput: tplFileInput,
+        tplStatus: tplStatus,
+        refreshPresets: refreshPresets,
+        resetTemplatesUi: resetTemplatesUi,
+        sync: sync
+      };
+      customizerList.push(apiObj);
+      refreshPresets('');
+      return apiObj;
     }
 
     // -------------------------------------------------------------------------
@@ -1965,7 +5788,19 @@
     }
     function wsCurrentInput() {
       if (!wsState) return {};
+      var c = wsCloneCustom(wsCustom);
       return Object.assign({}, wsState, {
+        title: c.title || wsState.title,
+        subtitle: c.subtitle,
+        headerFields: c.headerFields,
+        density: c.density,
+        hiddenSections: c.hiddenSections,
+        hiddenParts: c.hiddenSections,
+        hiddenItems: c.hiddenItems,
+        sectionOverrides: c.sectionOverrides,
+        itemOrder: c.itemOrder,
+        itemTextOverrides: c.itemTextOverrides,
+        custom: c,
         own: wsOwn || (typeof wsState.own === 'object' ? wsState.own : null),
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
@@ -1973,9 +5808,43 @@
         syllables: wsOptions.syllables
       });
     }
+    function buildWsDocxModel(model) {
+      var docSections = (model.sections || []).map(function (sec) {
+        var clonedItems = (sec.items || []).map(function (it) {
+          var p = model.picturesOn ? model.pictureFor(it.origWord || it.word) : null;
+          if (model.picturesOn) {
+            if (sec.activity === 'rhyming') (it.choices || []).forEach(function (c) { model.pictureFor(c); });
+            if (sec.activity === 'sound_sort') (it.chips || []).forEach(function (c) { model.pictureFor(c.text); });
+          }
+          var extra = { pictureUri: p && p.uri ? p.uri : '' };
+          if (sec.activity === 'letter_tracing' && Array.isArray(it.parts)) {
+            extra.parts = it.parts.map(function (pt) {
+              var ch = String((pt && pt.letter) || '');
+              return Object.assign({}, pt, {
+                traceStripUri: svgUri(buildLetterTracingStripSvg(ch, { scaffolded: model.hintsOn, standalone: true })),
+                strokeCue: wsLetterStrokeCue(ch)
+              });
+            });
+          }
+          return Object.assign({}, it, extra);
+        });
+        return Object.assign({}, sec, { items: clonedItems });
+      });
+      return {
+        title: model.title,
+        subtitle: model.subtitle,
+        headerFields: model.headerFields,
+        density: model.density,
+        sections: docSections,
+        answerKeyOn: model.answerKeyOn,
+        hintsOn: model.hintsOn,
+        credits: model.computeCredits()
+      };
+    }
     function downloadWorksheetHtml() {
       if (wsBusy || !wsState) return;
-      var html = buildWordSoundsWorksheetHtml(wsCurrentInput(), {
+      var input = wsCurrentInput();
+      var html = buildWordSoundsWorksheetHtml(input, {
         pictures: wsOptions.pictures,
         answerKey: wsOptions.answerKey,
         hints: wsOptions.hints,
@@ -1986,13 +5855,127 @@
       var url = win.URL.createObjectURL(blob);
       var link = doc.createElement('a');
       link.href = url;
-      link.download = wsSlug(wsState.title) + '-activity-worksheet' + '.html';
+      link.download = wsSlug(input.title || wsState.title) + '-activity-worksheet.' + 'html';
       link.hidden = true;
       doc.body.appendChild(link);
       link.click();
       doc.body.removeChild(link);
       if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
       if (wsNodes.said) wsNodes.said.textContent = 'Downloaded standalone HTML worksheet.';
+    }
+    function downloadWorksheetDocx() {
+      if (wsBusy || !wsState) return Promise.resolve(false);
+      var input = wsCurrentInput();
+      var model = normalizeWorksheetModel(input, {
+        pictures: wsOptions.pictures,
+        answerKey: wsOptions.answerKey,
+        hints: wsOptions.hints,
+        syllables: wsOptions.syllables
+      });
+      if (!model.sections.length) return Promise.resolve(false);
+      var docModel = buildWsDocxModel(model);
+      if (wsNodes.said) wsNodes.said.textContent = 'Preparing Word document (.docx)...';
+      return ensureDocx().then(function (docx) {
+        if (!docx || typeof docx.buildWordSoundsDocx !== 'function' || typeof docx.downloadDocx !== 'function') {
+          if (wsNodes.said) wsNodes.said.textContent = 'Word export could not load right now. Try Download HTML worksheet instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, docModel).then(function (prepared) {
+          try {
+            var res = docx.buildWordSoundsDocx(prepared, {
+              filename: wsSlug(model.title) + '-activity-worksheet' + DOCX_EXT
+            });
+            docx.downloadDocx(res, win, doc);
+            if (wsNodes.said) wsNodes.said.textContent = 'Downloaded Word document (.docx).';
+            return true;
+          } catch (_) {
+            if (wsNodes.said) wsNodes.said.textContent = 'Could not build the Word document right now.';
+            return false;
+          }
+        });
+      });
+    }
+    function downloadWorksheetDocxPack() {
+      if (wsBusy || !wsState) return Promise.resolve(false);
+      var input = wsCurrentInput();
+      var scaffModel = normalizeWorksheetModel(input, {
+        pictures: true,
+        answerKey: false,
+        hints: true,
+        syllables: true
+      });
+      if (!scaffModel.sections.length) return Promise.resolve(false);
+      var indepModel = normalizeWorksheetModel(input, {
+        pictures: wsOptions.pictures,
+        answerKey: false,
+        hints: false,
+        syllables: false
+      });
+      var keyModel = normalizeWorksheetModel(input, {
+        pictures: wsOptions.pictures,
+        answerKey: true,
+        hints: wsOptions.hints,
+        syllables: wsOptions.syllables
+      });
+      var scaffDoc = buildWsDocxModel(scaffModel);
+      var indepDoc = buildWsDocxModel(indepModel);
+      var keyDoc = buildWsDocxModel(keyModel);
+      keyDoc.title = (keyModel.title || 'Word Sounds Worksheet') + ' \u2014 Teacher Answer Key';
+      var scorePlan = buildWordSoundsAudioPlan(input, {
+        pictures: wsOptions.pictures,
+        answerKey: true,
+        hints: wsOptions.hints,
+        syllables: wsOptions.syllables
+      });
+      if (wsNodes.said) wsNodes.said.textContent = 'Preparing editable print pack (4 Word files)...';
+      return Promise.all([ensureZip(), ensureDocx()]).then(function (loaded) {
+        var zipLib = loaded[0];
+        var docx = loaded[1];
+        if (!zipLib || typeof zipLib.create !== 'function' || !docx || typeof docx.buildWordSoundsDocx !== 'function' || typeof docx.buildScoringSheetDocx !== 'function') {
+          if (wsNodes.said) wsNodes.said.textContent = 'Editable print pack could not load right now. Try Download Word (.docx) instead.';
+          return false;
+        }
+        return Promise.all([
+          prepareDocxModelAsync(docx, scaffDoc),
+          prepareDocxModelAsync(docx, indepDoc)
+        ]).then(function (preps) {
+          var preparedScaff = preps[0];
+          var preparedIndep = preps[1];
+          try {
+            var uriMap = Object.assign(
+              collectImageUriMap(scaffDoc, preparedScaff),
+              collectImageUriMap(indepDoc, preparedIndep)
+            );
+            applyImageUriMap(keyDoc, uriMap);
+            var f1 = '01-Worksheet-Scaffolded' + DOCX_EXT;
+            var f2 = '02-Worksheet-Independent' + DOCX_EXT;
+            var f3 = '03-Teacher-Answer-Key' + DOCX_EXT;
+            var f4 = '04-Teacher-Scoring-Sheet' + DOCX_EXT;
+            var d1 = docx.buildWordSoundsDocx(preparedScaff, { zip: zipLib, filename: f1 });
+            var d2 = docx.buildWordSoundsDocx(preparedIndep, { zip: zipLib, filename: f2 });
+            var d3 = docx.buildWordSoundsDocx(keyDoc, { zip: zipLib, filename: f3 });
+            var d4 = docx.buildScoringSheetDocx(scorePlan, {
+              zip: zipLib,
+              filename: f4,
+              slow: audioOpts.slow,
+              autoSec: audioOpts.autoSec,
+              gapMs: audioOpts.gapMs,
+              dirMode: audioOpts.dirMode
+            });
+            var packZip = zipLib.create();
+            packZip.add(f1, d1.bytes);
+            packZip.add(f2, d2.bytes);
+            packZip.add(f3, d3.bytes);
+            packZip.add(f4, d4.bytes);
+            var ok = downloadZipBlob(packZip.finish(), wsSlug(scaffModel.title) + '-editable-print-pack' + ZIP_EXT);
+            if (wsNodes.said) wsNodes.said.textContent = ok ? 'Downloaded editable print pack (4 Word files in .zip).' : 'File download is not available in this browser.';
+            return ok;
+          } catch (_) {
+            if (wsNodes.said) wsNodes.said.textContent = 'Could not build the editable print pack right now.';
+            return false;
+          }
+        });
+      });
     }
     function buildWorksheetView() {
       wsView = el('div', 'pc pc-ws-view');
@@ -2015,11 +5998,31 @@
       wsNodes.download = el('button', 'btn', 'Download HTML worksheet');
       wsNodes.download.type = 'button';
       wsNodes.download.addEventListener('click', downloadWorksheetHtml);
+      wsNodes.docx = el('button', 'btn', 'Download Word (.docx)');
+      wsNodes.docx.type = 'button';
+      wsNodes.docx.id = 'pc-ws-docx';
+      wsNodes.docx.addEventListener('click', downloadWorksheetDocx);
+      wsNodes.docxPack = el('button', 'btn', 'Editable print pack (.zip)');
+      wsNodes.docxPack.type = 'button';
+      wsNodes.docxPack.id = 'pc-ws-docx-pack';
+      wsNodes.docxPack.addEventListener('click', downloadWorksheetDocxPack);
+      wsNodes.audioBtn = el('button', 'btn', 'Worksheet audio player');
+      wsNodes.audioBtn.type = 'button';
+      wsNodes.audioBtn.hidden = true;
+      wsNodes.audioBtn.addEventListener('click', function () {
+        if (!wsState) return;
+        var stCopy = wsCurrentInput();
+        audioOpener = wsOpener || wsNodes.audioBtn;
+        openWorksheetAudio(stCopy);
+      });
       wsNodes.back = el('button', 'btn', TEXT.back);
       wsNodes.back.type = 'button';
       wsNodes.back.addEventListener('click', closeWorksheet);
       actions.appendChild(wsNodes.print);
       actions.appendChild(wsNodes.download);
+      actions.appendChild(wsNodes.docx);
+      actions.appendChild(wsNodes.docxPack);
+      actions.appendChild(wsNodes.audioBtn);
       actions.appendChild(wsNodes.back);
       bar.appendChild(actions);
       wsNodes.presets = el('div', 'pc-presets');
@@ -2053,7 +6056,7 @@
           wsSyncOptionClasses();
           wsSyncPresetButtons();
           if (typeof onToggle === 'function') onToggle(box.checked);
-          else drawWorksheet();
+          else drawWorksheet({ keepStructure: true });
         });
         wrap.appendChild(box);
         wrap.appendChild(el('span', '', labelText));
@@ -2064,21 +6067,68 @@
         if (checked && wsState && (wsState.symbols || wsState.own || wsState.matcher)) {
           var mine = ++wsRun;
           wsNote = '';
-          drawWorksheet();
-          gatherWorksheet(mine).then(function () { if (mine === wsRun) { wsBusy = false; drawWorksheet(); } });
+          drawWorksheet({ keepStructure: true });
+          gatherWorksheet(mine).then(function () { if (mine === wsRun) { wsBusy = false; drawWorksheet({ keepStructure: true }); } });
           return;
         }
-        drawWorksheet();
+        drawWorksheet({ keepStructure: true });
       });
       makeToggle('pc-ws-answer-key', 'Include teacher answer key', 'answerKey');
       makeToggle('pc-ws-hints', 'Include hints (letter banks and sound boxes)', 'hints');
       makeToggle('pc-ws-syllables', TEXT.syllables, 'syllables', function (checked) {
         wsSyllableNote = '';
         if (checked) ensureSyllablesLoaded();
-        drawWorksheet();
+        drawWorksheet({ keepStructure: true });
       });
       wsNodes.options.appendChild(body);
       bar.appendChild(wsNodes.options);
+      wsCustomizer = createCustomizerUi('ws', 'word-sounds', function () { return wsCustom; }, {
+        onUpdate: function (opts) { drawWorksheet(opts); },
+        onReset: function () {
+          wsCustom = wsCreateDefaultCustom(wsState ? wsState.title : 'Word Sounds Activity Worksheet');
+          drawWorksheet();
+        },
+        getDefaultTitle: function () { return wsState ? wsState.title : 'Word Sounds Activity Worksheet'; },
+        getOptions: function () {
+          return { pictures: !!wsOptions.pictures, answerKey: !!wsOptions.answerKey, hints: !!wsOptions.hints, syllables: !!wsOptions.syllables };
+        },
+        onApplyOptions: function (o) {
+          var opts = o && typeof o === 'object' ? o : {};
+          var picTurnedOn = false;
+          if (typeof opts.pictures === 'boolean') {
+            if (opts.pictures && !wsOptions.pictures) picTurnedOn = true;
+            wsOptions.pictures = opts.pictures;
+            if (wsNodes.picturesBox) wsNodes.picturesBox.checked = wsOptions.pictures;
+          }
+          if (typeof opts.answerKey === 'boolean') {
+            wsOptions.answerKey = opts.answerKey;
+            if (wsNodes.answerKeyBox) wsNodes.answerKeyBox.checked = wsOptions.answerKey;
+          }
+          if (typeof opts.hints === 'boolean') {
+            wsOptions.hints = opts.hints;
+            if (wsNodes.hintsBox) wsNodes.hintsBox.checked = wsOptions.hints;
+          }
+          if (typeof opts.syllables === 'boolean') {
+            wsOptions.syllables = opts.syllables;
+            if (wsNodes.syllablesBox) wsNodes.syllablesBox.checked = wsOptions.syllables;
+            wsSyllableNote = '';
+            if (wsOptions.syllables) ensureSyllablesLoaded();
+          }
+          wsSyncOptionClasses();
+          wsSyncPresetButtons();
+          return {
+            afterDraw: function () {
+              if (picTurnedOn && wsState && (wsState.symbols || wsState.own || wsState.matcher)) {
+                var mine = ++wsRun;
+                wsNote = '';
+                gatherWorksheet(mine).then(function () { if (mine === wsRun) { wsBusy = false; drawWorksheet({ keepStructure: true }); } });
+              }
+            }
+          };
+        }
+      });
+      wsNodes.customizer = wsCustomizer.details;
+      bar.appendChild(wsCustomizer.details);
       wsView.appendChild(bar);
       wsNodes.sheets = el('div', 'pc-sheets');
       wsView.appendChild(wsNodes.sheets);
@@ -2095,18 +6145,11 @@
       return true;
     }
     function renderWorksheetSheet(model) {
-      var sheet = el('section', 'pc-sheet pc-ws-sheet');
+      var sheet = el('section', 'pc-sheet pc-ws-sheet pc-density-' + (model.density || 'standard'));
+      sheet.setAttribute('data-density', model.density || 'standard');
       sheet.setAttribute('aria-label', model.title);
       var header = el('header', 'pc-ws-header');
-      header.appendChild(el('h2', 'pc-ws-title', model.title));
-      var meta = el('div', 'pc-ws-meta');
-      ['Name:', 'Date:'].forEach(function (lbl) {
-        var f = el('span', 'pc-ws-meta-field');
-        f.appendChild(el('span', '', lbl));
-        f.appendChild(el('span', 'pc-ws-meta-line'));
-        meta.appendChild(f);
-      });
-      header.appendChild(meta);
+      appendWorksheetHeaderDom(header, model);
       sheet.appendChild(header);
 
       var keyBlocks = [];
@@ -2159,6 +6202,7 @@
           var body = el('div', 'pc-ws-body');
 
           if (act === 'mapping') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var row = el('div', 'pc-ws-row');
             appendPicNode(row, model, it.word, neutralAlt, false);
             var boxes = el('div', 'pc-ws-boxes');
@@ -2173,6 +6217,7 @@
               body.appendChild(bank);
             }
           } else if (act === 'missing_letter') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var mlRow = el('div', 'pc-ws-row');
             appendPicNode(mlRow, model, it.word, neutralAlt, false);
             var mlWord = el('div', 'pc-ws-missing');
@@ -2191,6 +6236,7 @@
             (it.choices || []).forEach(function (c) { mlUl.appendChild(el('li', 'pc-ws-choice', c)); });
             body.appendChild(mlUl);
           } else if (act === 'word_scramble') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var wsRow = el('div', 'pc-ws-row');
             appendPicNode(wsRow, model, it.word, neutralAlt, false);
             var tiles = el('div', 'pc-ws-tiles');
@@ -2199,6 +6245,7 @@
             body.appendChild(wsRow);
             body.appendChild(el('div', 'pc-ws-line'));
           } else if (act === 'counting') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var ctRow = el('div', 'pc-ws-row');
             appendPicNode(ctRow, model, it.word, '', false);
             ctRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
@@ -2207,7 +6254,9 @@
             (it.values || ['1', '2', '3', '4', '5', '6']).forEach(function (v) { ctUl.appendChild(el('li', 'pc-ws-bubble', v)); });
             body.appendChild(ctUl);
           } else if (act === 'isolation') {
-            body.appendChild(wsWordNode('p', 'pc-ws-prompt', 'What is the ' + it.positionName + ' sound in ' + it.word + '?', allowSyl, model.syllablesSrc));
+            body.appendChild(it.customPrompt
+              ? el('p', 'pc-ws-prompt', it.customPrompt)
+              : wsWordNode('p', 'pc-ws-prompt', 'What is the ' + it.positionName + ' sound in ' + it.word + '?', allowSyl, model.syllablesSrc));
             var isoRow = el('div', 'pc-ws-row');
             appendPicNode(isoRow, model, it.word, '', false);
             isoRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
@@ -2216,6 +6265,7 @@
             (it.choices || []).forEach(function (c) { isoUl.appendChild(el('li', 'pc-ws-choice', wsSoundLabel(c))); });
             body.appendChild(isoUl);
           } else if (act === 'segmentation') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var segRow = el('div', 'pc-ws-row');
             appendPicNode(segRow, model, it.word, '', false);
             segRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
@@ -2232,6 +6282,7 @@
               body.appendChild(sBank);
             }
           } else if (act === 'blending') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             body.appendChild(el('div', 'pc-ws-sounds-seq', (it.sounds || []).map(wsSoundLabel).join(' \u00b7 ')));
             body.appendChild(el('div', 'pc-ws-line'));
             if (it.choices && it.choices.length) {
@@ -2240,7 +6291,9 @@
               body.appendChild(bUl);
             }
           } else if (act === 'rhyming') {
-            body.appendChild(wsWordNode('p', 'pc-ws-prompt', 'Circle the word that rhymes with ' + it.word + ':', allowSyl, model.syllablesSrc));
+            body.appendChild(it.customPrompt
+              ? el('p', 'pc-ws-prompt', it.customPrompt)
+              : wsWordNode('p', 'pc-ws-prompt', 'Circle the word that rhymes with ' + it.word + ':', allowSyl, model.syllablesSrc));
             var rhRow = el('div', 'pc-ws-row');
             appendPicNode(rhRow, model, it.word, '', false);
             rhRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
@@ -2254,7 +6307,9 @@
             });
             body.appendChild(rhUl);
           } else if (act === 'word_families') {
-            body.appendChild(wsWordNode('p', 'pc-ws-prompt', 'Word family: -' + it.rime + ' (like ' + it.word + ')', allowSyl, model.syllablesSrc));
+            body.appendChild(it.customPrompt
+              ? el('p', 'pc-ws-prompt', it.customPrompt)
+              : wsWordNode('p', 'pc-ws-prompt', 'Word family: -' + it.rime + ' (like ' + it.word + ')', allowSyl, model.syllablesSrc));
             var wfRow = el('div', 'pc-ws-row');
             appendPicNode(wfRow, model, it.word, '', false);
             wfRow.appendChild(el('span', 'pc-ws-word', '-' + it.rime));
@@ -2275,18 +6330,24 @@
           } else if (act === 'letter_tracing') {
             var ltRow = el('div', 'pc-ws-row');
             appendPicNode(ltRow, model, it.word, '', false);
-            ltRow.appendChild(el('p', 'pc-ws-prompt', 'Trace ' + it.parts.map(function (p) { return p.letter; }).join(' and ') + ' (for ' + it.word + ')'));
+            ltRow.appendChild(el('p', 'pc-ws-prompt', it.customPrompt || ('Trace ' + it.parts.map(function (p) { return p.letter; }).join(' and ') + ' (for ' + it.word + ')')));
             body.appendChild(ltRow);
             var tWrap = el('div', 'pc-ws-trace-wrap');
             (it.parts || []).forEach(function (part) {
               var tRow = el('div', 'pc-ws-trace-row');
               tRow.setAttribute('data-trace-case', part.kind || 'letter');
-              for (var gi = 0; gi < 3; gi++) tRow.appendChild(el('span', 'pc-ws-trace-letter', part.letter));
+              var stripImg = el('img', 'pc-ws-trace-strip');
+              stripImg.src = svgUri(buildLetterTracingStripSvg(part.letter, { scaffolded: model.hintsOn, standalone: true }));
+              stripImg.alt = 'Primary handwriting tracing strip for letter ' + String(part.letter || '');
+              stripImg.decoding = 'sync';
+              tRow.appendChild(stripImg);
+              var cueTxt = wsLetterStrokeCue(part.letter);
+              if (cueTxt) tRow.appendChild(el('p', 'pc-ws-trace-cue', cueTxt));
               tWrap.appendChild(tRow);
             });
             body.appendChild(tWrap);
           } else if (act === 'orthography' || act === 'spelling_bee') {
-            body.appendChild(el('p', 'pc-ws-prompt', 'Listen to your teacher and write word #' + n + ':'));
+            body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt || ('Listen to your teacher and write word #' + n + ':')));
             var spRow = el('div', 'pc-ws-row');
             appendPicNode(spRow, model, it.word, neutralAlt, false);
             if (model.hintsOn) {
@@ -2305,6 +6366,7 @@
             }
             body.appendChild(el('div', 'pc-ws-line'));
           } else if (act === 'syllable_counting') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var scRow = el('div', 'pc-ws-row');
             appendPicNode(scRow, model, it.word, '', false);
             scRow.appendChild(el('span', 'pc-ws-word', it.word));
@@ -2317,6 +6379,7 @@
             (it.values || ['1', '2', '3', '4', '5']).forEach(function (v) { scUl.appendChild(el('li', 'pc-ws-bubble', v)); });
             body.appendChild(scUl);
           } else if (act === 'syllable_blending') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             body.appendChild(el('div', 'pc-ws-sounds-seq', (it.syllables || []).join(' \u00b7 ')));
             body.appendChild(el('div', 'pc-ws-line'));
             if (it.choices && it.choices.length) {
@@ -2333,6 +6396,7 @@
               body.appendChild(mUl);
             }
           } else if (act === 'decoding') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var decRow = el('div', 'pc-ws-row');
             decRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
             body.appendChild(decRow);
@@ -2358,11 +6422,15 @@
             appendPicNode(rsRow, model, it.word, neutralAlt, false);
             var rsWrap = el('div');
             var rsP = el('p', 'pc-ws-prompt');
-            rsP.appendChild(wsWordNode('span', '', it.before, allowSyl, model.syllablesSrc));
-            var rsBlank = el('span', 'pc-ws-blank');
-            rsBlank.setAttribute('aria-label', 'blank');
-            rsP.appendChild(rsBlank);
-            rsP.appendChild(wsWordNode('span', '', it.after, allowSyl, model.syllablesSrc));
+            if (it.customPromptNoBlank) {
+              rsP.textContent = it.customPrompt;
+            } else {
+              rsP.appendChild(wsWordNode('span', '', it.before, allowSyl, model.syllablesSrc));
+              var rsBlank = el('span', 'pc-ws-blank');
+              rsBlank.setAttribute('aria-label', 'blank');
+              rsP.appendChild(rsBlank);
+              rsP.appendChild(wsWordNode('span', '', it.after, allowSyl, model.syllablesSrc));
+            }
             rsWrap.appendChild(rsP);
             var rsUl = el('ul', 'pc-ws-choices');
             (it.options || []).forEach(function (c) { rsUl.appendChild(wsWordNode('li', 'pc-ws-choice', c, allowSyl, model.syllablesSrc)); });
@@ -2376,6 +6444,7 @@
             rsRow.appendChild(rsWrap);
             body.appendChild(rsRow);
           } else if (act === 'read_passage') {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var pass = el('div', 'pc-ws-passage');
             (it.lines || []).forEach(function (ln) {
               if (ln.before != null || ln.after != null) {
@@ -2407,6 +6476,7 @@
               body.appendChild(el('div', 'pc-ws-line'));
             }
           } else {
+            if (it.customPrompt) body.appendChild(el('p', 'pc-ws-prompt', it.customPrompt));
             var fbRow = el('div', 'pc-ws-row');
             appendPicNode(fbRow, model, it.word, '', false);
             fbRow.appendChild(wsWordNode('span', 'pc-ws-word', it.word, allowSyl, model.syllablesSrc));
@@ -2446,7 +6516,7 @@
       }
       return sheet;
     }
-    function drawWorksheet() {
+    function drawWorksheet(drawOpts) {
       if (!wsView || !wsState) return;
       while (wsNodes.sheets.firstChild) wsNodes.sheets.removeChild(wsNodes.sheets.firstChild);
       var model = normalizeWorksheetModel(wsCurrentInput(), {
@@ -2455,15 +6525,58 @@
         hints: wsOptions.hints,
         syllables: wsOptions.syllables
       });
+      var hasBaseContent = model.allSections.length > 0;
       var hasContent = model.sections.length > 0;
       wsNodes.print.disabled = wsBusy || !hasContent;
       wsNodes.download.disabled = wsBusy || !hasContent;
-      wsNodes.options.hidden = !hasContent;
-      if (wsNodes.presets) wsNodes.presets.hidden = !hasContent;
-      wsNodes.tip.hidden = !hasContent;
+      if (wsNodes.docx) wsNodes.docx.disabled = wsBusy || !hasContent;
+      if (wsNodes.docxPack) wsNodes.docxPack.disabled = wsBusy || !hasContent;
+      if (wsNodes.audioBtn) {
+        var wsAud = wsState && (wsState.audio || (wsState.lesson && wsState.lesson.audio));
+        wsNodes.audioBtn.hidden = !(hasContent && wsAud && Object.keys(wsAud).length > 0);
+      }
+      wsNodes.options.hidden = !hasBaseContent;
+      if (wsNodes.customizer) wsNodes.customizer.hidden = !hasBaseContent;
+      if (wsNodes.presets) wsNodes.presets.hidden = !hasBaseContent;
+      wsNodes.tip.hidden = !hasBaseContent;
       wsSyncPresetButtons();
-      if (!hasContent) {
+      if (wsCustomizer && hasBaseContent) {
+        wsCustomizer.sync({
+          defaultTitle: wsState.title || 'Word Sounds Activity Worksheet',
+          hasItemToggles: true,
+          sections: model.allSections.map(function (s) {
+            return {
+              key: s.key,
+              defaultHeading: s.defaultLabel,
+              defaultDirections: s.defaultDirections,
+              items: s.items.map(function (it) {
+                var lbl = s.activity === 'letter_tracing' && it.parts && it.parts.length
+                  ? (it.parts.map(function (p) { return p.letter; }).join('/') + ' (' + it.word + ')')
+                  : (it.word || 'Item');
+                return {
+                  key: it.itemKey,
+                  origIndex: it.origIndex,
+                  label: lbl,
+                  editFields: [
+                    {
+                      key: it.itemKey,
+                      label: 'Prompt or wording for "' + lbl + '"',
+                      defaultValue: it.defaultPrompt || '',
+                      placeholder: 'Optional prompt or wording for this item'
+                    }
+                  ]
+                };
+              })
+            };
+          })
+        }, drawOpts);
+      }
+      if (!hasBaseContent) {
         wsNodes.said.textContent = TEXT.nothing;
+        return;
+      }
+      if (!hasContent) {
+        wsNodes.said.textContent = 'All sections or items are currently hidden. Open Customize worksheet to show or restore them.';
         return;
       }
       if (wsBusy) {
@@ -2506,17 +6619,25 @@
       if (!wsView) buildWorksheetView();
       if (view && !view.hidden) { run++; view.hidden = true; }
       if (vocabView && !vocabView.hidden) { vocabRun++; vocabView.hidden = true; }
+      if (raView && !raView.hidden) { raRun++; raView.hidden = true; }
+      if (audioView && !audioView.hidden) { stopAudioPlayback(); audioView.hidden = true; }
       var mine = ++wsRun;
       var s = given || {};
       var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
+      var baseTitle = String(s.title || (s.lesson && s.lesson.title) || 'Word Sounds Activity Worksheet').trim();
       wsState = Object.assign({}, s, {
-        title: String(s.title || (s.lesson && s.lesson.title) || 'Word Sounds Activity Worksheet').trim(),
+        title: baseTitle,
         symbols: s.symbols || null,
         matcher: s.matcher !== undefined ? s.matcher : defaultMatcher,
         loadPictures: s.loadPictures || null,
         own: s.own || null,
         creditLine: typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine
       });
+      wsCustom = wsExtractCustom(s, {}, baseTitle);
+      if (wsCustomizer) {
+        wsCustomizer.details.open = false;
+        wsCustomizer.resetTemplatesUi();
+      }
       wsOwn = typeof s.own === 'object' && typeof s.own !== 'function' ? s.own : null;
       wsBusy = false; wsNote = ''; wsSyllableNote = '';
       var initPreset = String(s.preset || '').trim().toLowerCase();
@@ -2641,7 +6762,19 @@
     }
     function vocabCurrentInput() {
       if (!vocabState) return {};
+      var c = wsCloneCustom(vocabCustom);
       return Object.assign({}, vocabState, {
+        title: c.title || vocabState.title,
+        subtitle: c.subtitle,
+        headerFields: c.headerFields,
+        density: c.density,
+        hiddenSections: c.hiddenSections,
+        hiddenParts: c.hiddenSections,
+        hiddenItems: c.hiddenItems,
+        sectionOverrides: c.sectionOverrides,
+        itemOrder: c.itemOrder,
+        itemTextOverrides: c.itemTextOverrides,
+        custom: c,
         own: vocabOwn || (typeof vocabState.own === 'object' ? vocabState.own : null),
         wordBank: vocabOptions.wordBank,
         pictures: vocabOptions.pictures,
@@ -2649,9 +6782,32 @@
         syllables: vocabOptions.syllables
       });
     }
+    function buildVocabDocxModel(model) {
+      var hp = model.hiddenParts || Object.create(null);
+      return {
+        title: model.title,
+        subtitle: model.subtitle,
+        headerFields: model.headerFields,
+        density: model.density,
+        wordBankOn: model.wordBankOn,
+        wordBank: model.wordBank,
+        entries: model.entries,
+        matchWords: hp.matching ? [] : model.matchWords,
+        matchDefs: hp.matching ? [] : model.matchDefs,
+        clozeItems: hp.cloze ? [] : model.clozeItems,
+        pictureItems: hp.pictures ? [] : (model.pictureItems || []).map(function (it) {
+          return { word: it.word, uri: it.uri };
+        }),
+        answerKeyOn: model.answerKeyOn,
+        hiddenParts: hp,
+        sectionOverrides: model.sectionOverrides,
+        credits: model.computeCredits()
+      };
+    }
     function downloadVocabWorksheetHtml() {
       if (vocabBusy || !vocabState) return;
-      var html = buildVocabWorksheetHtml(vocabCurrentInput(), {
+      var input = vocabCurrentInput();
+      var html = buildVocabWorksheetHtml(input, {
         wordBank: vocabOptions.wordBank,
         pictures: vocabOptions.pictures,
         answerKey: vocabOptions.answerKey,
@@ -2662,13 +6818,120 @@
       var url = win.URL.createObjectURL(blob);
       var link = doc.createElement('a');
       link.href = url;
-      link.download = wsSlug(vocabState.title || 'vocabulary') + '-vocabulary-worksheet' + '.html';
+      link.download = wsSlug(input.title || vocabState.title || 'vocabulary') + '-vocabulary-worksheet.' + 'html';
       link.hidden = true;
       doc.body.appendChild(link);
       link.click();
       doc.body.removeChild(link);
       if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
       if (vocabNodes.said) vocabNodes.said.textContent = 'Downloaded standalone HTML vocabulary worksheet.';
+    }
+    function downloadVocabWorksheetDocx() {
+      if (vocabBusy || !vocabState) return Promise.resolve(false);
+      var input = vocabCurrentInput();
+      var model = normalizeVocabWorksheetModel(input, {
+        wordBank: vocabOptions.wordBank,
+        pictures: vocabOptions.pictures,
+        answerKey: vocabOptions.answerKey,
+        syllables: vocabOptions.syllables
+      });
+      if (!model.entries.length) return Promise.resolve(false);
+      var docModel = buildVocabDocxModel(model);
+      if (vocabNodes.said) vocabNodes.said.textContent = 'Preparing Word document (.docx)...';
+      return ensureDocx().then(function (docx) {
+        if (!docx || typeof docx.buildVocabDocx !== 'function' || typeof docx.downloadDocx !== 'function') {
+          if (vocabNodes.said) vocabNodes.said.textContent = 'Word export could not load right now. Try Download HTML worksheet instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, docModel).then(function (prepared) {
+          try {
+            var res = docx.buildVocabDocx(prepared, {
+              filename: wsSlug(model.title || 'vocabulary') + '-vocabulary-worksheet' + DOCX_EXT
+            });
+            docx.downloadDocx(res, win, doc);
+            if (vocabNodes.said) vocabNodes.said.textContent = 'Downloaded Word document (.docx).';
+            return true;
+          } catch (_) {
+            if (vocabNodes.said) vocabNodes.said.textContent = 'Could not build the Word document right now.';
+            return false;
+          }
+        });
+      });
+    }
+    function downloadVocabDocxPack() {
+      if (vocabBusy || !vocabState) return Promise.resolve(false);
+      var input = vocabCurrentInput();
+      var scaffModel = normalizeVocabWorksheetModel(input, {
+        wordBank: true,
+        pictures: true,
+        answerKey: false,
+        syllables: true
+      });
+      if (!scaffModel.entries.length) return Promise.resolve(false);
+      var indepModel = normalizeVocabWorksheetModel(input, {
+        wordBank: false,
+        pictures: vocabOptions.pictures,
+        answerKey: false,
+        syllables: false
+      });
+      var keyModel = normalizeVocabWorksheetModel(input, {
+        wordBank: vocabOptions.wordBank,
+        pictures: vocabOptions.pictures,
+        answerKey: true,
+        syllables: vocabOptions.syllables
+      });
+      var scaffDoc = buildVocabDocxModel(scaffModel);
+      var indepDoc = buildVocabDocxModel(indepModel);
+      var keyDoc = buildVocabDocxModel(keyModel);
+      keyDoc.title = (keyModel.title || 'Vocabulary Practice Worksheet') + ' \u2014 Teacher Answer Key';
+      var scorePlan = buildVocabAudioPlan(input, {
+        wordBank: vocabOptions.wordBank,
+        pictures: vocabOptions.pictures,
+        answerKey: true,
+        syllables: vocabOptions.syllables
+      });
+      if (vocabNodes.said) vocabNodes.said.textContent = 'Preparing editable print pack (4 Word files)...';
+      return Promise.all([ensureZip(), ensureDocx()]).then(function (loaded) {
+        var zipLib = loaded[0];
+        var docx = loaded[1];
+        if (!zipLib || typeof zipLib.create !== 'function' || !docx || typeof docx.buildVocabDocx !== 'function' || typeof docx.buildScoringSheetDocx !== 'function') {
+          if (vocabNodes.said) vocabNodes.said.textContent = 'Editable print pack could not load right now. Try Download Word (.docx) instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, scaffDoc).then(function (preparedScaff) {
+          try {
+            var uriMap = collectImageUriMap(scaffDoc, preparedScaff);
+            applyImageUriMap(indepDoc, uriMap);
+            applyImageUriMap(keyDoc, uriMap);
+            var f1 = '01-Worksheet-Scaffolded' + DOCX_EXT;
+            var f2 = '02-Worksheet-Independent' + DOCX_EXT;
+            var f3 = '03-Teacher-Answer-Key' + DOCX_EXT;
+            var f4 = '04-Teacher-Scoring-Sheet' + DOCX_EXT;
+            var d1 = docx.buildVocabDocx(preparedScaff, { zip: zipLib, filename: f1 });
+            var d2 = docx.buildVocabDocx(indepDoc, { zip: zipLib, filename: f2 });
+            var d3 = docx.buildVocabDocx(keyDoc, { zip: zipLib, filename: f3 });
+            var d4 = docx.buildScoringSheetDocx(scorePlan, {
+              zip: zipLib,
+              filename: f4,
+              slow: audioOpts.slow,
+              autoSec: audioOpts.autoSec,
+              gapMs: audioOpts.gapMs,
+              dirMode: audioOpts.dirMode
+            });
+            var packZip = zipLib.create();
+            packZip.add(f1, d1.bytes);
+            packZip.add(f2, d2.bytes);
+            packZip.add(f3, d3.bytes);
+            packZip.add(f4, d4.bytes);
+            var ok = downloadZipBlob(packZip.finish(), wsSlug(scaffModel.title || 'vocabulary') + '-editable-print-pack' + ZIP_EXT);
+            if (vocabNodes.said) vocabNodes.said.textContent = ok ? 'Downloaded editable print pack (4 Word files in .zip).' : 'File download is not available in this browser.';
+            return ok;
+          } catch (_) {
+            if (vocabNodes.said) vocabNodes.said.textContent = 'Could not build the editable print pack right now.';
+            return false;
+          }
+        });
+      });
     }
     function buildVocabWorksheetView() {
       vocabView = el('div', 'pc pc-ws-view pc-vocab-view');
@@ -2691,11 +6954,30 @@
       vocabNodes.download = el('button', 'btn', 'Download HTML worksheet');
       vocabNodes.download.type = 'button';
       vocabNodes.download.addEventListener('click', downloadVocabWorksheetHtml);
+      vocabNodes.docx = el('button', 'btn', 'Download Word (.docx)');
+      vocabNodes.docx.type = 'button';
+      vocabNodes.docx.id = 'pc-vocab-docx';
+      vocabNodes.docx.addEventListener('click', downloadVocabWorksheetDocx);
+      vocabNodes.docxPack = el('button', 'btn', 'Editable print pack (.zip)');
+      vocabNodes.docxPack.type = 'button';
+      vocabNodes.docxPack.id = 'pc-vocab-docx-pack';
+      vocabNodes.docxPack.addEventListener('click', downloadVocabDocxPack);
+      vocabNodes.audioBtn = el('button', 'btn', 'Worksheet audio player');
+      vocabNodes.audioBtn.type = 'button';
+      vocabNodes.audioBtn.hidden = true;
+      vocabNodes.audioBtn.addEventListener('click', function () {
+        if (!vocabState) return;
+        audioOpener = vocabOpener || vocabNodes.audioBtn;
+        openVocabAudio(vocabCurrentInput());
+      });
       vocabNodes.back = el('button', 'btn', TEXT.back);
       vocabNodes.back.type = 'button';
       vocabNodes.back.addEventListener('click', closeVocabWorksheet);
       actions.appendChild(vocabNodes.print);
       actions.appendChild(vocabNodes.download);
+      actions.appendChild(vocabNodes.docx);
+      actions.appendChild(vocabNodes.docxPack);
+      actions.appendChild(vocabNodes.audioBtn);
       actions.appendChild(vocabNodes.back);
       bar.appendChild(actions);
 
@@ -2722,7 +7004,7 @@
         vocabOptions.wordBank = !!wbBox.checked;
         vocabSyncOptionClasses();
         vocabSyncPresetButtons();
-        drawVocabWorksheet();
+        drawVocabWorksheet({ keepStructure: true });
       });
       wbWrap.appendChild(wbBox);
       wbWrap.appendChild(el('span', '', 'Word bank'));
@@ -2744,7 +7026,7 @@
           vocabSyncOptionClasses();
           vocabSyncPresetButtons();
           if (typeof onToggle === 'function') onToggle(box.checked);
-          else drawVocabWorksheet();
+          else drawVocabWorksheet({ keepStructure: true });
         });
         wrap.appendChild(box);
         wrap.appendChild(el('span', '', labelText));
@@ -2755,39 +7037,99 @@
         if (checked && vocabState && (vocabState.symbols || vocabState.own || vocabState.matcher)) {
           var mine = ++vocabRun;
           vocabNote = '';
-          drawVocabWorksheet();
-          gatherVocabWorksheet(mine).then(function () { if (mine === vocabRun) { vocabBusy = false; drawVocabWorksheet(); } });
+          drawVocabWorksheet({ keepStructure: true });
+          gatherVocabWorksheet(mine).then(function () { if (mine === vocabRun) { vocabBusy = false; drawVocabWorksheet({ keepStructure: true }); } });
           return;
         }
-        drawVocabWorksheet();
+        drawVocabWorksheet({ keepStructure: true });
       });
       makeVocabToggle('pc-vocab-answer-key', 'Include teacher answer key', 'answerKey');
       makeVocabToggle('pc-vocab-syllables', TEXT.syllables, 'syllables', function (checked) {
         vocabSyllableNote = '';
         if (checked) ensureSyllablesLoaded();
-        drawVocabWorksheet();
+        drawVocabWorksheet({ keepStructure: true });
       });
       vocabNodes.options.appendChild(body);
       bar.appendChild(vocabNodes.options);
+      vocabCustomizer = createCustomizerUi('vocab', 'vocab', function () { return vocabCustom; }, {
+        onUpdate: function (opts) { drawVocabWorksheet(opts); },
+        onReset: function () {
+          vocabCustom = wsCreateDefaultCustom(vocabState ? vocabState.title : 'Vocabulary Practice Worksheet');
+          drawVocabWorksheet();
+        },
+        getDefaultTitle: function () { return vocabState ? vocabState.title : 'Vocabulary Practice Worksheet'; },
+        getOptions: function () {
+          return { wordBank: !!vocabOptions.wordBank, pictures: !!vocabOptions.pictures, answerKey: !!vocabOptions.answerKey, syllables: !!vocabOptions.syllables };
+        },
+        normalizeHiddenItems: function (rawMap) {
+          var out = Object.create(null);
+          var base = vocabState ? normalizeVocabWorksheetModel(vocabState, { pictures: false }) : null;
+          var byWord = Object.create(null);
+          if (base && Array.isArray(base.allEntries)) {
+            base.allEntries.forEach(function (e) {
+              byWord[e.itemKey] = String(e.origIndex);
+              byWord['word:' + e.itemKey] = String(e.origIndex);
+            });
+          }
+          Object.keys(rawMap || {}).forEach(function (k) {
+            if (!rawMap[k]) return;
+            var low = String(k).toLowerCase();
+            out[byWord[low] !== undefined ? byWord[low] : k] = true;
+          });
+          return out;
+        },
+        onApplyOptions: function (o) {
+          var opts = o && typeof o === 'object' ? o : {};
+          var picTurnedOn = false;
+          if (typeof opts.wordBank === 'boolean') {
+            vocabOptions.wordBank = opts.wordBank;
+            if (vocabNodes.wordBankBox) vocabNodes.wordBankBox.checked = vocabOptions.wordBank;
+          }
+          if (typeof opts.pictures === 'boolean') {
+            if (opts.pictures && !vocabOptions.pictures) picTurnedOn = true;
+            vocabOptions.pictures = opts.pictures;
+            if (vocabNodes.picturesBox) vocabNodes.picturesBox.checked = vocabOptions.pictures;
+          }
+          if (typeof opts.answerKey === 'boolean') {
+            vocabOptions.answerKey = opts.answerKey;
+            if (vocabNodes.answerKeyBox) vocabNodes.answerKeyBox.checked = vocabOptions.answerKey;
+          }
+          if (typeof opts.syllables === 'boolean') {
+            vocabOptions.syllables = opts.syllables;
+            if (vocabNodes.syllablesBox) vocabNodes.syllablesBox.checked = vocabOptions.syllables;
+            vocabSyllableNote = '';
+            if (vocabOptions.syllables) ensureSyllablesLoaded();
+          }
+          vocabSyncOptionClasses();
+          vocabSyncPresetButtons();
+          return {
+            afterDraw: function () {
+              if (picTurnedOn && vocabState && (vocabState.symbols || vocabState.own || vocabState.matcher)) {
+                var mine = ++vocabRun;
+                vocabNote = '';
+                gatherVocabWorksheet(mine).then(function () { if (mine === vocabRun) { vocabBusy = false; drawVocabWorksheet({ keepStructure: true }); } });
+              }
+            }
+          };
+        }
+      });
+      vocabNodes.customizer = vocabCustomizer.details;
+      bar.appendChild(vocabCustomizer.details);
       vocabView.appendChild(bar);
       vocabNodes.sheets = el('div', 'pc-sheets');
       vocabView.appendChild(vocabNodes.sheets);
       doc.body.appendChild(vocabView);
     }
     function renderVocabWorksheetSheet(model) {
-      var sheet = el('section', 'pc-sheet pc-ws-sheet pc-vocab-sheet');
+      var sheet = el('section', 'pc-sheet pc-ws-sheet pc-vocab-sheet pc-density-' + (model.density || 'standard'));
+      sheet.setAttribute('data-density', model.density || 'standard');
       sheet.setAttribute('aria-label', model.title);
       var header = el('header', 'pc-ws-header');
-      header.appendChild(el('h2', 'pc-ws-title', model.title));
-      var meta = el('div', 'pc-ws-meta');
-      ['Name:', 'Date:'].forEach(function (lbl) {
-        var f = el('span', 'pc-ws-meta-field');
-        f.appendChild(el('span', '', lbl));
-        f.appendChild(el('span', 'pc-ws-meta-line'));
-        meta.appendChild(f);
-      });
-      header.appendChild(meta);
+      appendWorksheetHeaderDom(header, model);
       sheet.appendChild(header);
+
+      var hp = model.hiddenParts || Object.create(null);
+      var ov = model.sectionOverrides || Object.create(null);
 
       if (model.wordBankOn && model.wordBank.length) {
         var bank = el('div', 'pc-vocab-bank');
@@ -2802,71 +7144,77 @@
       var keySections = [];
 
       // Part 1 — Match the Word to Its Meaning
-      var p1Sec = el('section', 'pc-ws-section');
-      p1Sec.setAttribute('data-vocab-part', 'matching');
-      var p1Head = el('div', 'pc-ws-section-head');
-      if (model.matchWords.length) {
-        p1Head.appendChild(el('h3', 'pc-ws-section-title', 'Part 1 \u2014 Match the Word to Its Meaning'));
-        p1Head.appendChild(el('p', 'pc-ws-directions', 'Write the letter of the matching meaning on the line next to each word.'));
-        p1Sec.appendChild(p1Head);
-        var grid = el('div', 'pc-vocab-match-grid');
-        var wList = el('ol', 'pc-vocab-match-words');
-        model.matchWords.forEach(function (item) {
-          var li = el('li', 'pc-vocab-match-word');
-          li.appendChild(el('span', 'pc-ws-num', item.num + '.'));
-          var blank = el('span', 'pc-vocab-match-blank');
-          blank.setAttribute('aria-label', 'letter blank');
-          li.appendChild(blank);
-          li.appendChild(vocabWordNode('span', 'pc-ws-word', item.word, model.syllablesSrc));
-          wList.appendChild(li);
-        });
-        var dList = el('ol', 'pc-vocab-match-defs');
-        model.matchDefs.forEach(function (def) {
-          var li = el('li', 'pc-vocab-match-def');
-          li.appendChild(el('span', 'pc-vocab-match-letter', def.letter + '.'));
-          li.appendChild(el('span', '', def.meaning));
-          dList.appendChild(li);
-        });
-        grid.appendChild(wList);
-        grid.appendChild(dList);
-        p1Sec.appendChild(grid);
-        keySections.push({
-          heading: 'Part 1 \u2014 Match the Word to Its Meaning',
-          lines: model.matchWords.map(function (item) {
-            return item.word + ' \u2014 ' + item.answerLetter + ' (' + item.meaning + ')';
-          })
-        });
-      } else {
-        p1Head.appendChild(el('h3', 'pc-ws-section-title', 'Part 1 \u2014 Write Each Meaning'));
-        p1Head.appendChild(el('p', 'pc-ws-directions', 'Write what each vocabulary word means on the line.'));
-        p1Sec.appendChild(p1Head);
-        var fbList = el('ol', 'pc-ws-list');
-        model.entries.forEach(function (e, i) {
-          var li = el('li', 'pc-ws-item');
-          li.appendChild(el('span', 'pc-ws-num', (i + 1) + '.'));
-          var b = el('div', 'pc-ws-body');
-          b.appendChild(vocabWordNode('span', 'pc-ws-word', e.word, model.syllablesSrc));
-          b.appendChild(el('div', 'pc-ws-line'));
-          li.appendChild(b);
-          fbList.appendChild(li);
-        });
-        p1Sec.appendChild(fbList);
-        keySections.push({
-          heading: 'Part 1 \u2014 Write Each Meaning',
-          lines: model.entries.map(function (e) { return e.word + ' \u2014 Teacher-checked student meaning.'; })
-        });
+      if (!hp.matching) {
+        var p1Sec = el('section', 'pc-ws-section');
+        p1Sec.setAttribute('data-vocab-part', 'matching');
+        var p1Head = el('div', 'pc-ws-section-head');
+        if (model.matchWords.length) {
+          var p1Copy = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Match the Word to Its Meaning', 'Write the letter of the matching meaning on the line next to each word.');
+          p1Head.appendChild(el('h3', 'pc-ws-section-title', p1Copy.heading));
+          if (p1Copy.directions) p1Head.appendChild(el('p', 'pc-ws-directions', p1Copy.directions));
+          p1Sec.appendChild(p1Head);
+          var grid = el('div', 'pc-vocab-match-grid');
+          var wList = el('ol', 'pc-vocab-match-words');
+          model.matchWords.forEach(function (item) {
+            var li = el('li', 'pc-vocab-match-word');
+            li.appendChild(el('span', 'pc-ws-num', item.num + '.'));
+            var blank = el('span', 'pc-vocab-match-blank');
+            blank.setAttribute('aria-label', 'letter blank');
+            li.appendChild(blank);
+            li.appendChild(vocabWordNode('span', 'pc-ws-word', item.word, model.syllablesSrc));
+            wList.appendChild(li);
+          });
+          var dList = el('ol', 'pc-vocab-match-defs');
+          model.matchDefs.forEach(function (def) {
+            var li = el('li', 'pc-vocab-match-def');
+            li.appendChild(el('span', 'pc-vocab-match-letter', def.letter + '.'));
+            li.appendChild(el('span', '', def.meaning));
+            dList.appendChild(li);
+          });
+          grid.appendChild(wList);
+          grid.appendChild(dList);
+          p1Sec.appendChild(grid);
+          keySections.push({
+            heading: p1Copy.heading,
+            lines: model.matchWords.map(function (item) {
+              return item.word + ' \u2014 ' + item.answerLetter + ' (' + item.meaning + ')';
+            })
+          });
+        } else {
+          var p1CopyW = wsApplySectionCopy(ov, 'matching', null, 'Part 1 \u2014 Write Each Meaning', 'Write what each vocabulary word means on the line.');
+          p1Head.appendChild(el('h3', 'pc-ws-section-title', p1CopyW.heading));
+          if (p1CopyW.directions) p1Head.appendChild(el('p', 'pc-ws-directions', p1CopyW.directions));
+          p1Sec.appendChild(p1Head);
+          var fbList = el('ol', 'pc-ws-list');
+          model.entries.forEach(function (e, i) {
+            var li = el('li', 'pc-ws-item');
+            li.appendChild(el('span', 'pc-ws-num', (i + 1) + '.'));
+            var b = el('div', 'pc-ws-body');
+            b.appendChild(vocabWordNode('span', 'pc-ws-word', e.word, model.syllablesSrc));
+            b.appendChild(el('div', 'pc-ws-line'));
+            li.appendChild(b);
+            fbList.appendChild(li);
+          });
+          p1Sec.appendChild(fbList);
+          keySections.push({
+            heading: p1CopyW.heading,
+            lines: model.entries.map(function (e) { return e.word + ' \u2014 Teacher-checked student meaning.'; })
+          });
+        }
+        sheet.appendChild(p1Sec);
       }
-      sheet.appendChild(p1Sec);
 
       // Part 2 — Fill in the Blank
-      if (model.clozeItems.length) {
+      if (!hp.cloze && model.clozeItems.length) {
+        var defaultClozeDir = model.wordBankOn
+          ? 'Choose a word from the Word Bank to complete each sentence. Write the word on the line.'
+          : 'Write the vocabulary word that best completes each sentence.';
+        var p2Copy = wsApplySectionCopy(ov, 'cloze', null, 'Part 2 \u2014 Fill in the Blank', defaultClozeDir);
         var p2Sec = el('section', 'pc-ws-section');
         p2Sec.setAttribute('data-vocab-part', 'cloze');
         var p2Head = el('div', 'pc-ws-section-head');
-        p2Head.appendChild(el('h3', 'pc-ws-section-title', 'Part 2 \u2014 Fill in the Blank'));
-        p2Head.appendChild(el('p', 'pc-ws-directions', model.wordBankOn
-          ? 'Choose a word from the Word Bank to complete each sentence. Write the word on the line.'
-          : 'Write the vocabulary word that best completes each sentence.'));
+        p2Head.appendChild(el('h3', 'pc-ws-section-title', p2Copy.heading));
+        if (p2Copy.directions) p2Head.appendChild(el('p', 'pc-ws-directions', p2Copy.directions));
         p2Sec.appendChild(p2Head);
         var cList = el('ol', 'pc-ws-list');
         model.clozeItems.forEach(function (item) {
@@ -2891,7 +7239,7 @@
         p2Sec.appendChild(cList);
         sheet.appendChild(p2Sec);
         keySections.push({
-          heading: 'Part 2 \u2014 Fill in the Blank',
+          heading: p2Copy.heading,
           lines: model.clozeItems.map(function (item) {
             return item.hasCloze
               ? item.answer + ' \u2014 "' + item.completed + '"'
@@ -2901,12 +7249,13 @@
       }
 
       // Part 3 — Name the Picture
-      if (model.pictureItems.length) {
+      if (!hp.pictures && model.pictureItems.length) {
+        var p3Copy = wsApplySectionCopy(ov, 'pictures', null, 'Part 3 \u2014 Name the Picture', 'Look at each picture. Write the matching vocabulary word on the line underneath.');
         var p3Sec = el('section', 'pc-ws-section');
         p3Sec.setAttribute('data-vocab-part', 'pictures');
         var p3Head = el('div', 'pc-ws-section-head');
-        p3Head.appendChild(el('h3', 'pc-ws-section-title', 'Part 3 \u2014 Name the Picture'));
-        p3Head.appendChild(el('p', 'pc-ws-directions', 'Look at each picture. Write the matching vocabulary word on the line underneath.'));
+        p3Head.appendChild(el('h3', 'pc-ws-section-title', p3Copy.heading));
+        if (p3Copy.directions) p3Head.appendChild(el('p', 'pc-ws-directions', p3Copy.directions));
         p3Sec.appendChild(p3Head);
         var pGrid = el('ol', 'pc-vocab-pic-grid');
         model.pictureItems.forEach(function (item, idx) {
@@ -2926,7 +7275,7 @@
         p3Sec.appendChild(pGrid);
         sheet.appendChild(p3Sec);
         keySections.push({
-          heading: 'Part 3 \u2014 Name the Picture',
+          heading: p3Copy.heading,
           lines: model.pictureItems.map(function (item) { return item.word; })
         });
       }
@@ -2953,7 +7302,7 @@
       }
       return sheet;
     }
-    function drawVocabWorksheet() {
+    function drawVocabWorksheet(drawOpts) {
       if (!vocabView || !vocabState) return;
       while (vocabNodes.sheets.firstChild) vocabNodes.sheets.removeChild(vocabNodes.sheets.firstChild);
       var model = normalizeVocabWorksheetModel(vocabCurrentInput(), {
@@ -2962,24 +7311,86 @@
         answerKey: vocabOptions.answerKey,
         syllables: vocabOptions.syllables
       });
-      var hasContent = model.entries.length > 0;
+      var hp = model.hiddenParts || Object.create(null);
+      var hasBaseContent = model.allEntries.length > 0;
+      var visiblePartCount = (!hp.matching && model.entries.length > 0 ? 1 : 0)
+        + (!hp.cloze && model.clozeItems.length > 0 ? 1 : 0)
+        + (!hp.pictures && model.pictureItems.length > 0 ? 1 : 0);
+      var hasContent = model.entries.length > 0 && visiblePartCount > 0;
       vocabNodes.print.disabled = vocabBusy || !hasContent;
       vocabNodes.download.disabled = vocabBusy || !hasContent;
-      vocabNodes.options.hidden = !hasContent;
-      if (vocabNodes.presets) vocabNodes.presets.hidden = !hasContent;
-      vocabNodes.tip.hidden = !hasContent;
+      if (vocabNodes.docx) vocabNodes.docx.disabled = vocabBusy || !hasContent;
+      if (vocabNodes.docxPack) vocabNodes.docxPack.disabled = vocabBusy || !hasContent;
+      vocabNodes.options.hidden = !hasBaseContent;
+      if (vocabNodes.customizer) vocabNodes.customizer.hidden = !hasBaseContent;
+      if (vocabNodes.presets) vocabNodes.presets.hidden = !hasBaseContent;
+      vocabNodes.tip.hidden = !hasBaseContent;
       vocabSyncPresetButtons();
-      if (!hasContent) {
+      if (vocabCustomizer && hasBaseContent) {
+        var vocabSecDefs = [
+          {
+            key: 'matching',
+            defaultHeading: model.matchWords.length ? 'Part 1 \u2014 Match the Word to Its Meaning' : 'Part 1 \u2014 Write Each Meaning',
+            defaultDirections: model.matchWords.length ? 'Write the letter of the matching meaning on the line next to each word.' : 'Write what each vocabulary word means on the line.'
+          },
+          {
+            key: 'cloze',
+            defaultHeading: 'Part 2 \u2014 Fill in the Blank',
+            defaultDirections: model.wordBankOn
+              ? 'Choose a word from the Word Bank to complete each sentence. Write the word on the line.'
+              : 'Write the vocabulary word that best completes each sentence.'
+          }
+        ];
+        if (model.pictureItems.length > 0 || vocabOptions.pictures) {
+          vocabSecDefs.push({
+            key: 'pictures',
+            defaultHeading: 'Part 3 \u2014 Name the Picture',
+            defaultDirections: 'Look at each picture. Write the matching vocabulary word on the line underneath.'
+          });
+        }
+        vocabCustomizer.sync({
+          defaultTitle: vocabState.title || 'Vocabulary Practice Worksheet',
+          hasItemToggles: true,
+          sections: vocabSecDefs,
+          sharedSectionKey: 'words',
+          sharedItems: model.allEntries.map(function (e) {
+            var idxStr = String(e.origIndex);
+            return {
+              key: idxStr,
+              origIndex: e.origIndex,
+              label: e.word,
+              editFields: [
+                {
+                  key: 'meaning:' + idxStr,
+                  label: 'Part 1 meaning for "' + e.word + '"',
+                  defaultValue: e.defaultMeaning || '',
+                  placeholder: 'Meaning shown in Part 1'
+                },
+                {
+                  key: 'cloze:' + idxStr,
+                  label: 'Part 2 fill-in-the-blank sentence (use ___ for blank)',
+                  defaultValue: e.defaultClozeText || '',
+                  placeholder: 'Sentence with ___ for the blank'
+                }
+              ]
+            };
+          })
+        }, drawOpts);
+      }
+      if (!hasBaseContent) {
         vocabNodes.said.textContent = TEXT.nothing;
+        return;
+      }
+      if (!hasContent) {
+        vocabNodes.said.textContent = 'All sections or words are currently hidden. Open Customize worksheet to show or restore them.';
         return;
       }
       if (vocabBusy) {
         vocabNodes.said.textContent = vocabNote;
         return;
       }
-      var partCount = 2 + (model.pictureItems.length ? 1 : 0);
       var extra = (vocabNote ? ' ' + vocabNote : '') + (vocabOptions.syllables && vocabSyllableNote ? ' ' + vocabSyllableNote : '');
-      vocabNodes.said.textContent = count(model.entries.length, 'word') + ', ' + count(partCount, 'part') + ' ready to print or download.' + extra;
+      vocabNodes.said.textContent = count(model.entries.length, 'word') + ', ' + count(visiblePartCount, 'part') + ' ready to print or download.' + extra;
       vocabNodes.sheets.appendChild(renderVocabWorksheetSheet(model));
     }
     function gatherVocabWorksheet(mine) {
@@ -3013,12 +7424,15 @@
       if (!vocabView) buildVocabWorksheetView();
       if (view && !view.hidden) { run++; view.hidden = true; }
       if (wsView && !wsView.hidden) { wsRun++; wsView.hidden = true; }
+      if (raView && !raView.hidden) { raRun++; raView.hidden = true; }
+      if (audioView && !audioView.hidden) { stopAudioPlayback(); audioView.hidden = true; }
       var mine = ++vocabRun;
       var s = Array.isArray(given) ? { entries: given } : (given || {});
       var o = opts && typeof opts === 'object' ? opts : {};
       var defaultMatcher = root && (root.AlloWordPictureMatcher || (root.AlloModules && root.AlloModules.WordPictureMatcher)) || null;
+      var baseTitle = String(o.title || s.title || 'Vocabulary Practice Worksheet').trim();
       vocabState = Object.assign({}, s, {
-        title: String(o.title || s.title || 'Vocabulary Practice Worksheet').trim(),
+        title: baseTitle,
         symbols: o.symbols !== undefined ? o.symbols : (s.symbols || null),
         matcher: o.matcher !== undefined ? o.matcher : (s.matcher !== undefined ? s.matcher : defaultMatcher),
         loadPictures: o.loadPictures || s.loadPictures || null,
@@ -3026,6 +7440,11 @@
         creditLine: typeof o.creditLine === 'function' ? o.creditLine
           : (typeof s.creditLine === 'function' ? s.creditLine : root && root.AlloPacketMyWords && root.AlloPacketMyWords.creditLine)
       });
+      vocabCustom = wsExtractCustom(s, o, baseTitle);
+      if (vocabCustomizer) {
+        vocabCustomizer.details.open = false;
+        vocabCustomizer.resetTemplatesUi();
+      }
       vocabOwn = typeof vocabState.own === 'object' && typeof vocabState.own !== 'function' ? vocabState.own : null;
       vocabBusy = false; vocabNote = ''; vocabSyllableNote = '';
       var initPreset = String(o.preset || s.preset || '').trim().toLowerCase();
@@ -3044,6 +7463,15 @@
       if (vocabNodes.picturesBox) vocabNodes.picturesBox.checked = vocabOptions.pictures;
       if (vocabNodes.answerKeyBox) vocabNodes.answerKeyBox.checked = vocabOptions.answerKey;
       if (vocabNodes.syllablesBox) vocabNodes.syllablesBox.checked = vocabOptions.syllables;
+      if (vocabNodes.audioBtn) {
+        var hasVocabClips = !!(vocabState && (
+          (vocabState.wordClips && Object.keys(vocabState.wordClips).length)
+          || (vocabState.clips && Object.keys(vocabState.clips).length)
+          || (vocabState.meaningClips && Object.keys(vocabState.meaningClips).length)
+          || (vocabState.lesson && vocabState.lesson.audio && Object.keys(vocabState.lesson.audio).length)
+        ));
+        vocabNodes.audioBtn.hidden = !hasVocabClips;
+      }
       vocabSyncOptionClasses();
       vocabSyncPresetButtons();
       if (vocabOptions.syllables) ensureSyllablesLoaded();
@@ -3077,14 +7505,1505 @@
       button.addEventListener('click', function () { vocabOpener = button; openVocabWorksheet(getState()); });
       return true;
     }
+
+    // -------------------------------------------------------------------------
+    // Read-Along Interactive Worksheet Preview & Customizer (pure DOM)
+    // -------------------------------------------------------------------------
+    function raAppendFormattedText(parent, rawText, model) {
+      var withSyl = raApplySyllables(rawText, model.lang, model.showSyllables, model.syllableLookup);
+      if (!model.showBold) {
+        parent.appendChild(doc.createTextNode(withSyl));
+        return;
+      }
+      var re = /[A-Za-z\u00C0-\u024F\u00b7]+/g, m, last = 0;
+      while ((m = re.exec(withSyl))) {
+        if (m.index > last) parent.appendChild(doc.createTextNode(withSyl.slice(last, m.index)));
+        var tok = m[0];
+        var plainLen = tok.replace(/\u00b7/g, '').length;
+        if (plainLen < 2) {
+          parent.appendChild(doc.createTextNode(tok));
+        } else {
+          var targetLetters = plainLen <= 3 ? Math.max(1, plainLen - 1) : Math.ceil(plainLen * 0.45);
+          var seen = 0, cutIdx = 0;
+          for (var ci = 0; ci < tok.length; ci++) {
+            if (tok.charAt(ci) !== '\u00b7') seen++;
+            cutIdx = ci + 1;
+            if (seen >= targetLetters) break;
+          }
+          parent.appendChild(el('strong', '', tok.slice(0, cutIdx)));
+          if (cutIdx < tok.length) parent.appendChild(doc.createTextNode(tok.slice(cutIdx)));
+        }
+        last = m.index + tok.length;
+      }
+      if (last < withSyl.length) parent.appendChild(doc.createTextNode(withSyl.slice(last)));
+    }
+    function raSyncOptionClasses() {
+      if (!raView) return;
+      Array.prototype.forEach.call(raView.querySelectorAll('.pc-radio input'), function (input) {
+        if (input.parentNode) input.parentNode.classList.toggle('is-on', !!input.checked);
+      });
+    }
+    function raHasClips(st) {
+      if (!st || typeof st !== 'object') return false;
+      if (st.clips && typeof st.clips === 'object' && Object.keys(st.clips).length > 0) return true;
+      if (Array.isArray(st.customSupports) && st.customSupports.some(function (s) { return !!(s && (s.audioUri || s.audio)); })) return true;
+      if (Array.isArray(st.questions) && st.questions.some(function (q) { return !!(q && (q.audioUri || q.audio)); })) return true;
+      return false;
+    }
+    function raCurrentInput() {
+      if (!raState) return {};
+      var c = wsCloneCustom(raCustom);
+      return Object.assign({}, raState, {
+        title: c.title || raState.title,
+        subtitle: c.subtitle,
+        headerFields: c.headerFields,
+        density: c.density,
+        hiddenSections: c.hiddenSections,
+        hiddenParts: c.hiddenSections,
+        hiddenItems: c.hiddenItems,
+        sectionOverrides: c.sectionOverrides,
+        itemOrder: c.itemOrder,
+        itemTextOverrides: c.itemTextOverrides,
+        custom: c,
+        showSyllables: raOptions.syllables,
+        showBold: raOptions.bold,
+        showSupports: raOptions.supports,
+        includeAnswerKey: raOptions.answerKey,
+        answerKey: raOptions.answerKey,
+        writeLines: raOptions.writeLines
+      });
+    }
+    function buildReadAlongDocxModel(model) {
+      var hp = model.hiddenParts || Object.create(null);
+      return {
+        title: model.title,
+        subtitle: model.subtitle,
+        headerFields: model.headerFields,
+        density: model.density,
+        lang: model.lang,
+        isRtl: model.isRtl,
+        passageDirections: raDefaultPassageDirections(model),
+        paragraphs: hp.passage ? [] : model.paragraphs,
+        customSupports: (hp.supports || !model.showSupports) ? [] : (model.customSupports || []).map(function (sup) {
+          return Object.assign({}, sup);
+        }),
+        matchWords: hp.matching ? [] : model.matchWords,
+        matchDefs: hp.matching ? [] : model.matchDefs,
+        questions: hp.writing ? [] : model.questions,
+        writeLines: hp.writing ? 0 : model.writeLines,
+        answerKeyOn: model.answerKeyOn,
+        hiddenParts: hp,
+        sectionOverrides: model.sectionOverrides
+      };
+    }
+    function downloadReadAlongWorksheetHtml() {
+      if (!raState) return;
+      var input = raCurrentInput();
+      var model = buildReadAlongWorksheetModel(input);
+      var html = buildReadAlongWorksheetHtmlFromModel(model);
+      if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return;
+      var blob = new win.Blob([html], { type: 'text/html;charset=utf-8' });
+      var url = win.URL.createObjectURL(blob);
+      var link = doc.createElement('a');
+      link.href = url;
+      link.download = wsSlug(model.title || 'read-along') + '-read-along-worksheet.' + 'html';
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+      if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      if (raNodes.said) raNodes.said.textContent = 'Downloaded standalone HTML read-along worksheet.';
+    }
+    function downloadReadAlongWorksheetDocx() {
+      if (!raState) return Promise.resolve(false);
+      var input = raCurrentInput();
+      var model = buildReadAlongWorksheetModel(input);
+      var docModel = buildReadAlongDocxModel(model);
+      if (raNodes.said) raNodes.said.textContent = 'Preparing Word document (.docx)...';
+      return ensureDocx().then(function (docx) {
+        if (!docx || typeof docx.buildReadAlongDocx !== 'function' || typeof docx.downloadDocx !== 'function') {
+          if (raNodes.said) raNodes.said.textContent = 'Word export could not load right now. Try Download HTML worksheet instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, docModel).then(function (prepared) {
+          try {
+            var res = docx.buildReadAlongDocx(prepared, {
+              filename: wsSlug(model.title || 'read-along') + '-read-along-worksheet' + DOCX_EXT
+            });
+            docx.downloadDocx(res, win, doc);
+            if (raNodes.said) raNodes.said.textContent = 'Downloaded Word document (.docx).';
+            return true;
+          } catch (_) {
+            if (raNodes.said) raNodes.said.textContent = 'Could not build the Word document right now.';
+            return false;
+          }
+        });
+      });
+    }
+    function downloadReadAlongDocxPack() {
+      if (!raState) return Promise.resolve(false);
+      var input = raCurrentInput();
+      var scaffModel = buildReadAlongWorksheetModel(input, {
+        showSyllables: true,
+        showBold: true,
+        showSupports: true,
+        answerKey: false
+      });
+      if (!scaffModel.paragraphs.length) return Promise.resolve(false);
+      var indepModel = buildReadAlongWorksheetModel(input, {
+        showSyllables: false,
+        showBold: false,
+        showSupports: false,
+        answerKey: false
+      });
+      var keyModel = buildReadAlongWorksheetModel(input, {
+        showSyllables: raOptions.syllables,
+        showBold: raOptions.bold,
+        showSupports: raOptions.supports,
+        answerKey: true,
+        writeLines: raOptions.writeLines
+      });
+      var scaffDoc = buildReadAlongDocxModel(scaffModel);
+      var indepDoc = buildReadAlongDocxModel(indepModel);
+      var keyDoc = buildReadAlongDocxModel(keyModel);
+      keyDoc.title = (keyModel.title || 'Read-Along Worksheet') + ' \u2014 Teacher Answer Key';
+      var scorePlan = buildReadAlongAudioPlan(input, { showSupports: raOptions.supports });
+      if (raNodes.said) raNodes.said.textContent = 'Preparing editable print pack (4 Word files)...';
+      return Promise.all([ensureZip(), ensureDocx()]).then(function (loaded) {
+        var zipLib = loaded[0];
+        var docx = loaded[1];
+        if (!zipLib || typeof zipLib.create !== 'function' || !docx || typeof docx.buildReadAlongDocx !== 'function' || typeof docx.buildScoringSheetDocx !== 'function') {
+          if (raNodes.said) raNodes.said.textContent = 'Editable print pack could not load right now. Try Download Word (.docx) instead.';
+          return false;
+        }
+        return prepareDocxModelAsync(docx, scaffDoc).then(function (preparedScaff) {
+          try {
+            var uriMap = collectImageUriMap(scaffDoc, preparedScaff);
+            applyImageUriMap(indepDoc, uriMap);
+            applyImageUriMap(keyDoc, uriMap);
+            var f1 = '01-Worksheet-Scaffolded' + DOCX_EXT;
+            var f2 = '02-Worksheet-Independent' + DOCX_EXT;
+            var f3 = '03-Teacher-Answer-Key' + DOCX_EXT;
+            var f4 = '04-Teacher-Scoring-Sheet' + DOCX_EXT;
+            var d1 = docx.buildReadAlongDocx(preparedScaff, { zip: zipLib, filename: f1 });
+            var d2 = docx.buildReadAlongDocx(indepDoc, { zip: zipLib, filename: f2 });
+            var d3 = docx.buildReadAlongDocx(keyDoc, { zip: zipLib, filename: f3 });
+            var d4 = docx.buildScoringSheetDocx(scorePlan, {
+              zip: zipLib,
+              filename: f4,
+              slow: audioOpts.slow,
+              autoSec: audioOpts.autoSec,
+              gapMs: audioOpts.gapMs,
+              dirMode: audioOpts.dirMode
+            });
+            var packZip = zipLib.create();
+            packZip.add(f1, d1.bytes);
+            packZip.add(f2, d2.bytes);
+            packZip.add(f3, d3.bytes);
+            packZip.add(f4, d4.bytes);
+            var ok = downloadZipBlob(packZip.finish(), wsSlug(scaffModel.title || 'read-along') + '-editable-print-pack' + ZIP_EXT);
+            if (raNodes.said) raNodes.said.textContent = ok ? 'Downloaded editable print pack (4 Word files in .zip).' : 'File download is not available in this browser.';
+            return ok;
+          } catch (_) {
+            if (raNodes.said) raNodes.said.textContent = 'Could not build the editable print pack right now.';
+            return false;
+          }
+        });
+      });
+    }
+    function buildReadAlongWorksheetView() {
+      raView = el('div', 'pc pc-ws-view pc-ra-view');
+      raView.id = 'print-read-along-worksheet-view';
+      raView.hidden = true;
+      var bar = el('div', 'pc-bar');
+      raNodes.heading = el('h1', '', 'Read-along worksheet');
+      raNodes.heading.id = 'pc-ra-heading';
+      raNodes.heading.tabIndex = -1;
+      raView.setAttribute('role', 'region');
+      raView.setAttribute('aria-labelledby', 'pc-ra-heading');
+      bar.appendChild(raNodes.heading);
+      raNodes.said = el('p', 'pc-said');
+      raNodes.said.setAttribute('role', 'status');
+      bar.appendChild(raNodes.said);
+
+      var actions = el('p', 'pc-actions');
+      raNodes.print = el('button', 'btn btn-primary', TEXT.print);
+      raNodes.print.type = 'button';
+      raNodes.print.addEventListener('click', function () { if (raState) win.print(); });
+      raNodes.download = el('button', 'btn', 'Download HTML worksheet');
+      raNodes.download.type = 'button';
+      raNodes.download.addEventListener('click', downloadReadAlongWorksheetHtml);
+      raNodes.docx = el('button', 'btn', 'Download Word (.docx)');
+      raNodes.docx.type = 'button';
+      raNodes.docx.id = 'pc-ra-docx';
+      raNodes.docx.addEventListener('click', downloadReadAlongWorksheetDocx);
+      raNodes.docxPack = el('button', 'btn', 'Editable print pack (.zip)');
+      raNodes.docxPack.type = 'button';
+      raNodes.docxPack.id = 'pc-ra-docx-pack';
+      raNodes.docxPack.addEventListener('click', downloadReadAlongDocxPack);
+      raNodes.audioBtn = el('button', 'btn', 'Worksheet audio player');
+      raNodes.audioBtn.type = 'button';
+      raNodes.audioBtn.hidden = true;
+      raNodes.audioBtn.addEventListener('click', function () {
+        if (!raState) return;
+        audioOpener = raOpener || raNodes.audioBtn;
+        openReadAlongAudio(raCurrentInput());
+      });
+      raNodes.back = el('button', 'btn', TEXT.back);
+      raNodes.back.type = 'button';
+      raNodes.back.addEventListener('click', closeReadAlongWorksheet);
+      actions.appendChild(raNodes.print);
+      actions.appendChild(raNodes.download);
+      actions.appendChild(raNodes.docx);
+      actions.appendChild(raNodes.docxPack);
+      actions.appendChild(raNodes.audioBtn);
+      actions.appendChild(raNodes.back);
+      bar.appendChild(actions);
+
+      raNodes.tip = el('p', 'pc-hint', TEXT.tip);
+      bar.appendChild(raNodes.tip);
+
+      raNodes.options = el('details', 'pc-options');
+      raNodes.options.appendChild(el('summary', '', 'Worksheet options'));
+      var optBody = el('div', 'pc-options-body');
+      var makeRaToggle = function (id, labelText, key, onToggle) {
+        var wrap = el('label', 'radio pc-radio pc-check'), box = el('input');
+        box.type = 'checkbox'; box.id = id; box.checked = !!raOptions[key];
+        wrap.classList.toggle('is-on', box.checked);
+        box.addEventListener('change', function () {
+          raOptions[key] = !!box.checked;
+          raSyncOptionClasses();
+          if (typeof onToggle === 'function') onToggle(box.checked);
+          else drawReadAlongWorksheet({ keepStructure: true });
+        });
+        wrap.appendChild(box);
+        wrap.appendChild(el('span', '', labelText));
+        raNodes[key + 'Box'] = box;
+        raNodes[key + 'Wrap'] = wrap;
+        optBody.appendChild(wrap);
+      };
+      makeRaToggle('pc-ra-syllables', TEXT.syllables, 'syllables', function (checked) {
+        raSyllableNote = '';
+        if (checked && (!raState || raCleanLang(raState.lang || 'en') === 'en')) ensureSyllablesLoaded();
+        drawReadAlongWorksheet({ keepStructure: true });
+      });
+      makeRaToggle('pc-ra-bold', 'Bold word starts', 'bold');
+      makeRaToggle('pc-ra-supports', 'Include reading notes', 'supports', function () {
+        drawReadAlongWorksheet();
+      });
+      makeRaToggle('pc-ra-answer-key', 'Include teacher answer key', 'answerKey');
+
+      var linesRow = el('div', 'pc-ra-opt-row');
+      var linesField = el('div', 'pc-ra-opt-field');
+      var linesLbl = el('label', '', 'Writing lines (when no questions)');
+      linesLbl.htmlFor = 'pc-ra-write-lines';
+      var linesSel = el('select', 'pc-ra-opt-select');
+      linesSel.id = 'pc-ra-write-lines';
+      [['3', '3 writing lines'], ['5', '5 writing lines (default)'], ['8', '8 writing lines']].forEach(function (pair) {
+        var o = el('option', '', pair[1]);
+        o.value = pair[0];
+        if (Number(pair[0]) === raOptions.writeLines) o.selected = true;
+        linesSel.appendChild(o);
+      });
+      linesSel.addEventListener('change', function () {
+        raOptions.writeLines = raNormalizeWriteLines(linesSel.value);
+        drawReadAlongWorksheet({ keepStructure: true });
+      });
+      linesField.appendChild(linesLbl);
+      linesField.appendChild(linesSel);
+      linesRow.appendChild(linesField);
+      raNodes.writeLinesSelect = linesSel;
+      raNodes.writeLinesRow = linesRow;
+      optBody.appendChild(linesRow);
+
+      raNodes.options.appendChild(optBody);
+      bar.appendChild(raNodes.options);
+
+      raCustomizer = createCustomizerUi('ra', 'read-along', function () { return raCustom; }, {
+        onUpdate: function (opts) { drawReadAlongWorksheet(opts); },
+        onReset: function () {
+          raCustom = wsCreateDefaultCustom(raState ? raState.title : 'Read along');
+          drawReadAlongWorksheet();
+        },
+        getDefaultTitle: function () { return raState ? raState.title : 'Read along'; },
+        getOptions: function () {
+          return { syllables: !!raOptions.syllables, bold: !!raOptions.bold, supports: !!raOptions.supports, answerKey: !!raOptions.answerKey, writeLines: raOptions.writeLines };
+        },
+        onApplyOptions: function (o) {
+          var opts = o && typeof o === 'object' ? o : {};
+          if (typeof opts.syllables === 'boolean') {
+            raOptions.syllables = opts.syllables;
+            if (raNodes.syllablesBox) raNodes.syllablesBox.checked = raOptions.syllables;
+            raSyllableNote = '';
+            if (raOptions.syllables && (!raState || raCleanLang(raState.lang || 'en') === 'en')) ensureSyllablesLoaded();
+          }
+          if (typeof opts.bold === 'boolean') {
+            raOptions.bold = opts.bold;
+            if (raNodes.boldBox) raNodes.boldBox.checked = raOptions.bold;
+          }
+          if (typeof opts.supports === 'boolean') {
+            raOptions.supports = opts.supports;
+            if (raNodes.supportsBox) raNodes.supportsBox.checked = raOptions.supports;
+          }
+          if (typeof opts.answerKey === 'boolean') {
+            raOptions.answerKey = opts.answerKey;
+            if (raNodes.answerKeyBox) raNodes.answerKeyBox.checked = raOptions.answerKey;
+          }
+          if (opts.writeLines !== undefined) {
+            raOptions.writeLines = raNormalizeWriteLines(opts.writeLines);
+            if (raNodes.writeLinesSelect) raNodes.writeLinesSelect.value = String(raOptions.writeLines);
+          }
+          raSyncOptionClasses();
+          return null;
+        }
+      });
+      raNodes.customizer = raCustomizer.details;
+      bar.appendChild(raCustomizer.details);
+
+      raView.appendChild(bar);
+      raNodes.sheets = el('div', 'pc-sheets');
+      raView.appendChild(raNodes.sheets);
+      doc.body.appendChild(raView);
+    }
+    function renderReadAlongWorksheetSheet(model) {
+      var sheet = el('section', 'pc-sheet pc-ws-sheet pc-ra-sheet pc-density-' + (model.density || 'standard'));
+      sheet.setAttribute('data-density', model.density || 'standard');
+      sheet.setAttribute('aria-label', model.title);
+      if (model.isRtl) sheet.setAttribute('dir', 'rtl');
+      var header = el('header', 'pc-ws-header');
+      appendWorksheetHeaderDom(header, model);
+      sheet.appendChild(header);
+
+      var hp = model.hiddenParts || Object.create(null);
+      var ov = model.sectionOverrides || Object.create(null);
+      var keySections = [];
+
+      // Part 1 — Read the Passage
+      if (!hp.passage) {
+        var p1Copy = wsApplySectionCopy(ov, 'passage', null, 'Part 1 \u2014 Read the Passage', raDefaultPassageDirections(model));
+        var p1Sec = el('section', 'pc-ws-section');
+        p1Sec.setAttribute('data-ra-part', 'passage');
+        var p1Head = el('div', 'pc-ws-section-head');
+        p1Head.appendChild(el('h3', 'pc-ws-section-title', p1Copy.heading));
+        if (p1Copy.directions) p1Head.appendChild(el('p', 'pc-ws-directions', p1Copy.directions));
+        p1Sec.appendChild(p1Head);
+        var passBox = el('div', 'pc-ra-passage');
+        if (model.isRtl) passBox.setAttribute('dir', 'rtl');
+        if (model.paragraphs.length) {
+          model.paragraphs.forEach(function (pg) {
+            var node = pg.heading ? el('h4', 'pc-ra-subhead') : el('p', 'pc-ra-para');
+            raAppendFormattedText(node, pg.text, model);
+            passBox.appendChild(node);
+          });
+        } else {
+          passBox.appendChild(el('p', 'pc-ra-para', ''));
+        }
+        p1Sec.appendChild(passBox);
+        sheet.appendChild(p1Sec);
+      }
+
+      // Part 2 — Reading Notes & Visual Supports
+      if (!hp.supports && model.showSupports && model.customSupports.length) {
+        var p2Copy = wsApplySectionCopy(ov, 'supports', null, 'Part 2 \u2014 Reading Notes & Visual Supports', 'Use these notes and pictures to help you understand the passage.');
+        var p2Sec = el('section', 'pc-ws-section');
+        p2Sec.setAttribute('data-ra-part', 'supports');
+        var p2Head = el('div', 'pc-ws-section-head');
+        p2Head.appendChild(el('h3', 'pc-ws-section-title', p2Copy.heading));
+        if (p2Copy.directions) p2Head.appendChild(el('p', 'pc-ws-directions', p2Copy.directions));
+        p2Sec.appendChild(p2Head);
+        var sList = el('ul', 'pc-ra-sup-list');
+        model.customSupports.forEach(function (sup) {
+          var li = el('li', 'pc-ra-sup-item');
+          if (sup.imgUri) {
+            var img = el('img', 'pc-ra-sup-img');
+            img.src = sup.imgUri;
+            img.alt = sup.alt || sup.quote || 'Support picture';
+            img.decoding = 'sync';
+            li.appendChild(img);
+          }
+          var body = el('div', 'pc-ra-sup-body');
+          var lbl = sup.quote
+            ? sup.quote + (sup.line != null ? ' (sentence ' + (sup.line + 1) + ')' : '')
+            : (sup.line != null ? 'Sentence ' + (sup.line + 1) : 'Note');
+          body.appendChild(el('strong', 'pc-ra-sup-quote', lbl + ': '));
+          body.appendChild(el('span', '', sup.text));
+          li.appendChild(body);
+          sList.appendChild(li);
+        });
+        p2Sec.appendChild(sList);
+        sheet.appendChild(p2Sec);
+      }
+
+      // Part 3 — Match the Key Words
+      if (!hp.matching && model.matchWords.length) {
+        var p3Copy = wsApplySectionCopy(ov, 'matching', null, 'Part 3 \u2014 Match the Key Words', 'Write the letter of the matching meaning on the line next to each word.');
+        var p3Sec = el('section', 'pc-ws-section');
+        p3Sec.setAttribute('data-ra-part', 'matching');
+        var p3Head = el('div', 'pc-ws-section-head');
+        p3Head.appendChild(el('h3', 'pc-ws-section-title', p3Copy.heading));
+        if (p3Copy.directions) p3Head.appendChild(el('p', 'pc-ws-directions', p3Copy.directions));
+        p3Sec.appendChild(p3Head);
+        var grid = el('div', 'pc-vocab-match-grid');
+        var wList = el('ol', 'pc-vocab-match-words');
+        model.matchWords.forEach(function (item) {
+          var li = el('li', 'pc-vocab-match-word');
+          li.appendChild(el('span', 'pc-ws-num', item.num + '.'));
+          var blank = el('span', 'pc-vocab-match-blank');
+          blank.setAttribute('aria-label', 'letter blank');
+          li.appendChild(blank);
+          li.appendChild(el('span', 'pc-ws-word', item.word));
+          wList.appendChild(li);
+        });
+        var dList = el('ol', 'pc-vocab-match-defs');
+        model.matchDefs.forEach(function (def) {
+          var li = el('li', 'pc-vocab-match-def');
+          li.appendChild(el('span', 'pc-vocab-match-letter', def.letter + '.'));
+          li.appendChild(el('span', '', def.meaning));
+          dList.appendChild(li);
+        });
+        grid.appendChild(wList);
+        grid.appendChild(dList);
+        p3Sec.appendChild(grid);
+        sheet.appendChild(p3Sec);
+        keySections.push({
+          heading: p3Copy.heading,
+          lines: model.matchWords.map(function (it) { return it.word + ' \u2014 ' + it.answerLetter + ' (' + it.meaning + ')'; })
+        });
+      }
+
+      // Part 4 — Comprehension Questions or Write About What You Read
+      if (!hp.writing) {
+        var p4Sec = el('section', 'pc-ws-section');
+        p4Sec.setAttribute('data-ra-part', 'writing');
+        var p4Head = el('div', 'pc-ws-section-head');
+        if (model.questions.length) {
+          var p4CopyQ = wsApplySectionCopy(ov, 'writing', null, 'Part 4 \u2014 Check Your Understanding', 'Answer each question below about what you read.');
+          p4Head.appendChild(el('h3', 'pc-ws-section-title', p4CopyQ.heading));
+          if (p4CopyQ.directions) p4Head.appendChild(el('p', 'pc-ws-directions', p4CopyQ.directions));
+          p4Sec.appendChild(p4Head);
+          var qList = el('ol', 'pc-ra-check-list');
+          model.questions.forEach(function (q, idx) {
+            var n = idx + 1;
+            var li = el('li', 'pc-ra-check-item');
+            var promptEl = el('p', 'pc-ra-check-prompt');
+            promptEl.appendChild(el('strong', '', n + '. '));
+            promptEl.appendChild(doc.createTextNode(q.prompt));
+            li.appendChild(promptEl);
+            if (q.kind === 'mc' && q.choices && q.choices.length) {
+              var ul = el('ul', 'pc-ra-mc-choices');
+              q.choices.forEach(function (c, ci) {
+                var cLi = el('li', 'pc-ra-mc-choice');
+                var bx = el('span', 'pc-ra-mc-box');
+                bx.setAttribute('aria-hidden', 'true');
+                cLi.appendChild(bx);
+                cLi.appendChild(el('span', 'pc-vocab-match-letter', vocabLetterLabel(ci) + '.'));
+                cLi.appendChild(el('span', '', c));
+                ul.appendChild(cLi);
+              });
+              li.appendChild(ul);
+            } else {
+              var wWrap = el('div', 'pc-ra-write-lines');
+              wWrap.appendChild(el('div', 'pc-ra-write-line'));
+              wWrap.appendChild(el('div', 'pc-ra-write-line'));
+              li.appendChild(wWrap);
+            }
+            qList.appendChild(li);
+          });
+          p4Sec.appendChild(qList);
+          keySections.push({
+            heading: p4CopyQ.heading,
+            lines: model.questions.map(function (q) {
+              if (q.kind === 'mc' && q.choices && q.choices.length) {
+                return q.prompt + ' \u2014 ' + vocabLetterLabel(q.answer) + '. ' + (q.choices[q.answer] || '');
+              }
+              return q.prompt + ' \u2014 Open response (answers will vary)';
+            })
+          });
+        } else {
+          var p4CopyW = wsApplySectionCopy(ov, 'writing', null, 'Part 4 \u2014 Write About What You Read', 'Write a summary, main idea, or response about the passage on the lines below.');
+          p4Head.appendChild(el('h3', 'pc-ws-section-title', p4CopyW.heading));
+          if (p4CopyW.directions) p4Head.appendChild(el('p', 'pc-ws-directions', p4CopyW.directions));
+          p4Sec.appendChild(p4Head);
+          var linesBox = el('div', 'pc-ra-write-lines');
+          for (var wi = 0; wi < model.writeLines; wi++) linesBox.appendChild(el('div', 'pc-ra-write-line'));
+          p4Sec.appendChild(linesBox);
+        }
+        sheet.appendChild(p4Sec);
+      }
+
+      if (model.answerKeyOn && keySections.length) {
+        var keySec = el('section', 'pc-ws-key');
+        keySec.setAttribute('data-answer-key', 'true');
+        keySec.setAttribute('aria-label', 'Teacher answer key');
+        keySec.appendChild(el('p', 'pc-ws-key-banner', WS_KEY_NOTICE));
+        keySec.appendChild(el('h3', 'pc-ws-section-title', 'Teacher Answer Key'));
+        keySections.forEach(function (sec) {
+          keySec.appendChild(el('h4', '', sec.heading));
+          var ol = el('ol', 'pc-ws-key-list');
+          sec.lines.forEach(function (line) { ol.appendChild(el('li', '', line)); });
+          keySec.appendChild(ol);
+        });
+        sheet.appendChild(keySec);
+      }
+
+      return sheet;
+    }
+    function drawReadAlongWorksheet(drawOpts) {
+      if (!raView || !raState) return;
+      while (raNodes.sheets.firstChild) raNodes.sheets.removeChild(raNodes.sheets.firstChild);
+      var model = buildReadAlongWorksheetModel(raCurrentInput());
+      var hp = model.hiddenParts || Object.create(null);
+      var hasBaseContent = model.paragraphs.length > 0;
+      var visibleParts = (!hp.passage ? 1 : 0)
+        + (!hp.supports && model.showSupports && model.customSupports.length ? 1 : 0)
+        + (!hp.matching && model.matchWords.length ? 1 : 0)
+        + (!hp.writing ? 1 : 0);
+      var hasContent = hasBaseContent && visibleParts > 0;
+
+      raNodes.print.disabled = !hasContent;
+      raNodes.download.disabled = !hasContent;
+      if (raNodes.docx) raNodes.docx.disabled = !hasContent;
+      if (raNodes.docxPack) raNodes.docxPack.disabled = !hasContent;
+      if (raNodes.audioBtn) raNodes.audioBtn.hidden = !(hasContent && raHasClips(raState));
+      if (raNodes.supportsWrap) raNodes.supportsWrap.hidden = model.allSupports.length === 0;
+      if (raNodes.writeLinesRow) raNodes.writeLinesRow.hidden = model.questions.length > 0;
+      raNodes.options.hidden = !hasBaseContent;
+      if (raNodes.customizer) raNodes.customizer.hidden = !hasBaseContent;
+      raNodes.tip.hidden = !hasBaseContent;
+
+      if (raCustomizer && hasBaseContent) {
+        var raSecDefs = [
+          {
+            key: 'passage',
+            defaultHeading: 'Part 1 \u2014 Read the Passage',
+            defaultDirections: raDefaultPassageDirections(model)
+          }
+        ];
+        if (model.allSupports.length > 0 && model.showSupports) {
+          raSecDefs.push({
+            key: 'supports',
+            defaultHeading: 'Part 2 \u2014 Reading Notes & Visual Supports',
+            defaultDirections: 'Use these notes and pictures to help you understand the passage.'
+          });
+        }
+        if (model.matchWords.length > 0) {
+          raSecDefs.push({
+            key: 'matching',
+            defaultHeading: 'Part 3 \u2014 Match the Key Words',
+            defaultDirections: 'Write the letter of the matching meaning on the line next to each word.'
+          });
+        }
+        raSecDefs.push({
+          key: 'writing',
+          defaultHeading: model.allQuestions.length ? 'Part 4 \u2014 Check Your Understanding' : 'Part 4 \u2014 Write About What You Read',
+          defaultDirections: model.allQuestions.length
+            ? 'Answer each question below about what you read.'
+            : 'Write a summary, main idea, or response about the passage on the lines below.',
+          items: model.allQuestions.length ? model.allQuestions.map(function (q) {
+            var snip = q.prompt.length > 36 ? (q.prompt.slice(0, 35).trim() + '\u2026') : q.prompt;
+            return {
+              key: q.itemKey,
+              origIndex: q.origIndex,
+              label: snip,
+              editFields: [
+                {
+                  key: q.itemKey,
+                  label: 'Question prompt',
+                  defaultValue: q.defaultPrompt || q.prompt || '',
+                  placeholder: 'Edit comprehension question'
+                }
+              ]
+            };
+          }) : null
+        });
+        raCustomizer.sync({
+          defaultTitle: raState.title || 'Read along',
+          hasItemToggles: model.allQuestions.length > 0,
+          sections: raSecDefs
+        }, drawOpts);
+      }
+
+      if (!hasBaseContent) {
+        raNodes.said.textContent = 'No passage text is available yet. Type a passage first, then come back here.';
+        return;
+      }
+      if (!hasContent) {
+        raNodes.said.textContent = 'All sections are currently hidden. Open Customize worksheet to show them.';
+        return;
+      }
+      var extra = raOptions.syllables && raSyllableNote ? (' ' + raSyllableNote) : '';
+      raNodes.said.textContent = count(model.paragraphs.length, 'paragraph') + ', ' + count(visibleParts, 'part') + ' ready to print or download.' + extra;
+      raNodes.sheets.appendChild(renderReadAlongWorksheetSheet(model));
+    }
+    function openReadAlongWorksheet(given, opts) {
+      if (!raView) buildReadAlongWorksheetView();
+      if (view && !view.hidden) { run++; view.hidden = true; }
+      if (wsView && !wsView.hidden) { wsRun++; wsView.hidden = true; }
+      if (vocabView && !vocabView.hidden) { vocabRun++; vocabView.hidden = true; }
+      if (audioView && !audioView.hidden) { stopAudioPlayback(); audioView.hidden = true; }
+      raRun++;
+      var s = given && typeof given === 'object' ? given : {};
+      var o = opts && typeof opts === 'object' ? opts : {};
+      var baseTitle = String(o.title || s.title || 'Read along').replace(/\s+/g, ' ').trim() || 'Read along';
+      raState = Object.assign({}, s, { title: baseTitle });
+      raSyllableNote = '';
+      raOptions.syllables = o.showSyllables !== undefined ? !!o.showSyllables : (o.syllables !== undefined ? !!o.syllables : !!s.showSyllables);
+      raOptions.bold = o.showBold !== undefined ? !!o.showBold : (o.bold !== undefined ? !!o.bold : !!s.showBold);
+      raOptions.supports = o.showSupports !== undefined ? !!o.showSupports : (s.showSupports !== undefined ? !!s.showSupports : true);
+      raOptions.answerKey = o.answerKey !== undefined ? !!o.answerKey : (o.includeAnswerKey !== undefined ? !!o.includeAnswerKey : (s.includeAnswerKey !== undefined ? !!s.includeAnswerKey : true));
+      raOptions.writeLines = raNormalizeWriteLines(o.writeLines !== undefined ? o.writeLines : (s.writeLines !== undefined ? s.writeLines : 5));
+      if (raNodes.syllablesBox) raNodes.syllablesBox.checked = raOptions.syllables;
+      if (raNodes.boldBox) raNodes.boldBox.checked = raOptions.bold;
+      if (raNodes.supportsBox) raNodes.supportsBox.checked = raOptions.supports;
+      if (raNodes.answerKeyBox) raNodes.answerKeyBox.checked = raOptions.answerKey;
+      if (raNodes.writeLinesSelect) raNodes.writeLinesSelect.value = String(raOptions.writeLines);
+      raCustom = wsExtractCustom(s, o, baseTitle);
+      if (raCustomizer) {
+        raCustomizer.details.open = false;
+        raCustomizer.resetTemplatesUi();
+      }
+      raSyncOptionClasses();
+      if (raOptions.syllables && raCleanLang(raState.lang || 'en') === 'en') ensureSyllablesLoaded();
+      raOpener = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : raOpener;
+      raView.hidden = false;
+      if (!docEscBound && doc && typeof doc.addEventListener === 'function') {
+        doc.addEventListener('keydown', onDocKeyDown);
+        docEscBound = true;
+      }
+      doc.body.classList.add('pc-on');
+      drawReadAlongWorksheet();
+      if (typeof win.scrollTo === 'function') { try { win.scrollTo(0, 0); } catch (_) {} }
+      raNodes.heading.focus();
+    }
+    function closeReadAlongWorksheet() {
+      if (!raView || raView.hidden) return;
+      raRun++;
+      raView.hidden = true;
+      if (docEscBound && doc && typeof doc.removeEventListener === 'function') {
+        doc.removeEventListener('keydown', onDocKeyDown);
+        docEscBound = false;
+      }
+      doc.body.classList.remove('pc-on');
+      while (raNodes.sheets.firstChild) raNodes.sheets.removeChild(raNodes.sheets.firstChild);
+      if (raOpener && typeof raOpener.focus === 'function' && doc.contains(raOpener)) raOpener.focus();
+    }
+    function wireReadAlongWorksheet(button, getState) {
+      if (!button || typeof getState !== 'function') return false;
+      button.hidden = false;
+      button.addEventListener('click', function () { raOpener = button; openReadAlongWorksheet(getState()); });
+      return true;
+    }
+
+    // -------------------------------------------------------------------------
+    // CTOPP-2-style Word Sounds Worksheet Audio Companion overlay (pure DOM)
+    // -------------------------------------------------------------------------
+    function stopAudioPlayback(msg) {
+      audioRunId++;
+      audioPlaying = false;
+      if (audioTimer && win.clearTimeout) { try { win.clearTimeout(audioTimer); } catch (_) {} audioTimer = null; }
+      if (audioRaf && win.cancelAnimationFrame) { try { win.cancelAnimationFrame(audioRaf); } catch (_) {} audioRaf = 0; }
+      if (audioEl) { try { audioEl.pause(); audioEl.currentTime = 0; } catch (_) {} audioEl = null; }
+      if (audioNodes.barWrap) audioNodes.barWrap.hidden = true;
+      if (audioNodes.barFill) audioNodes.barFill.style.width = '0%';
+      if (audioNodes.playBtn) audioNodes.playBtn.textContent = 'Play item';
+      if (msg && audioNodes.status) audioNodes.status.textContent = msg;
+    }
+    function stepAudioItem(delta) {
+      if (!audioPlan || !audioPlan.items.length) return;
+      var next = Math.max(0, Math.min(audioPlan.items.length - 1, audioIdx + delta));
+      if (next === audioIdx) return;
+      stopAudioPlayback();
+      audioIdx = next;
+      syncAudioUi();
+    }
+    function audioTagOf(it) {
+      return it && it.numLabel ? String(it.numLabel) : ('#' + (it ? it.numInSection : 1));
+    }
+    function audioScoreRec(i) {
+      var k = String(i);
+      if (!audioScores.items[k]) audioScores.items[k] = { score: null, repeats: 0, done: false, note: '' };
+      return audioScores.items[k];
+    }
+    function audioScoreStats() {
+      var scTot = 0, mk = 0, ok = 0, repAny = false, hasAny = !!(audioScores.studentName.trim() || audioScores.examiner.trim() || audioScores.notes.trim());
+      ((audioPlan && audioPlan.sections) || []).forEach(function (sec) {
+        var sc = sec.scored !== false;
+        (sec.items || []).forEach(function (it) {
+          var r = audioScores.items[String(it.index)];
+          if (r) {
+            if (r.repeats > 0) { repAny = true; hasAny = true; }
+            if (r.note && String(r.note).trim()) hasAny = true;
+            if (r.done) hasAny = true;
+          }
+          if (!sc) return;
+          scTot++;
+          if (r && (r.score === 1 || r.score === 0)) {
+            mk++;
+            hasAny = true;
+            if (r.score === 1) ok++;
+          }
+        });
+      });
+      return { scTot: scTot, mk: mk, ok: ok, repAny: repAny, hasAny: hasAny };
+    }
+    function audioScorePayload() {
+      var st = audioScoreStats();
+      if (!st.hasAny) return null;
+      return {
+        studentName: audioScores.studentName.trim(),
+        examiner: audioScores.examiner.trim(),
+        date: wsAudioTodayIso(),
+        items: audioScores.items,
+        notes: audioScores.notes.trim()
+      };
+    }
+    function toggleAudioItemScore(i, val) {
+      if (!audioPlan || !audioPlan.items || !audioPlan.items[i]) return;
+      var rec = audioScoreRec(i);
+      if (audioScoredByIdx[i] === false) {
+        rec.done = !rec.done;
+      } else {
+        rec.score = rec.score === val ? null : val;
+      }
+      syncAudioUi();
+      renderScoreSheetDom();
+    }
+    function bumpAudioItemRepeat(i) {
+      if (!audioPlan || !audioPlan.items || !audioPlan.items[i]) return;
+      var rec = audioScoreRec(i);
+      rec.repeats = (Number(rec.repeats) || 0) + 1;
+      syncAudioUi();
+      renderScoreSheetDom();
+    }
+    function renderScoreSheetDom() {
+      var host = audioNodes.scoreSheet;
+      if (!host || !audioPlan) return;
+      while (host.firstChild) host.removeChild(host.firstChild);
+      var stats = audioScoreStats();
+      var hd = el('div', 'pc-score-head');
+      hd.appendChild(el('h2', '', (audioPlan.title || 'Worksheet') + ' \u2014 Teacher Record & Scoring Sheet'));
+      var mt = el('p', 'pc-score-meta');
+      [
+        ['Student / Code Name: ', audioScores.studentName.trim()],
+        ['Date: ', stats.hasAny ? wsAudioTodayIso() : ''],
+        ['Examiner: ', audioScores.examiner.trim()]
+      ].forEach(function (pair) {
+        var sp = el('span', '', pair[0]);
+        sp.appendChild(el('span', 'pc-score-line', pair[1]));
+        mt.appendChild(sp);
+      });
+      hd.appendChild(mt);
+      var cond = [
+        'Speed: ' + (audioOpts.slow ? 'Slow (0.8x)' : 'Standard (1.0x)'),
+        'Response pause: ' + (audioOpts.autoSec > 0 ? (audioOpts.autoSec + 's auto-advance') : 'Manual')
+      ];
+      if (audioPlan.hasSoundGap) cond.push('Sound gap: ' + ((Number(audioOpts.gapMs) || 700) / 1000).toFixed(1) + 's');
+      if (audioPlan.hasDirections) cond.push('Directions: ' + (audioOpts.dirMode === 'every' ? 'Every item' : (audioOpts.dirMode === 'none' ? 'Words / sounds only' : 'First item per section')));
+      hd.appendChild(el('p', 'pc-score-cond', 'Audio setup: ' + cond.join(' \u00b7 ')));
+      host.appendChild(hd);
+
+      var totalScored = 0;
+      (audioPlan.sections || []).forEach(function (sec) {
+        var sc = sec.scored !== false;
+        var sEl = el('section', 'pc-score-sec');
+        sEl.appendChild(el('h3', '', sec.label));
+        var tbl = el('table', 'pc-score-tbl');
+        var thead = el('thead');
+        var htr = el('tr');
+        var cols = sc
+          ? [['pc-score-num', '#'], ['', 'Item / Audio Prompt'], ['', 'Expected Answer'], ['pc-score-sc', 'Score'], ['pc-score-rep', 'Rep.'], ['pc-score-nt', 'Notes / Error Pattern']]
+          : [['pc-score-num', '#'], ['', 'Item / Audio Prompt'], ['pc-score-dn', 'Done'], ['pc-score-nt', 'Notes']];
+        cols.forEach(function (c) { htr.appendChild(el('th', c[0], c[1])); });
+        thead.appendChild(htr);
+        tbl.appendChild(thead);
+        var tb = el('tbody');
+        var items = sec.items || [];
+        var secOk = 0, secMk = 0;
+        if (sc) totalScored += items.length;
+        items.forEach(function (it) {
+          var rec = audioScores.items[String(it.index)] || {};
+          var tr = el('tr');
+          tr.appendChild(el('td', 'pc-score-num', it.numLabel ? String(it.numLabel) : String(it.numInSection)));
+          tr.appendChild(el('td', '', it.script));
+          if (sc) {
+            var val = (rec.score === 1 || rec.score === 0) ? rec.score : null;
+            if (val !== null) { secMk++; if (val === 1) secOk++; }
+            tr.appendChild(el('td', '', it.answer));
+            var tdS = el('td', 'pc-score-sc');
+            tdS.appendChild(el('span', 'pc-score-bub' + (val === 1 ? ' is-picked' : ''), '1'));
+            tdS.appendChild(doc.createTextNode(' '));
+            tdS.appendChild(el('span', 'pc-score-bub' + (val === 0 ? ' is-picked' : ''), '0'));
+            tr.appendChild(tdS);
+            tr.appendChild(el('td', 'pc-score-rep', rec.repeats > 0 ? String(rec.repeats) : ''));
+            tr.appendChild(el('td', 'pc-score-nt', rec.note ? String(rec.note).trim() : ''));
+          } else {
+            var tdD = el('td', 'pc-score-dn');
+            tdD.appendChild(el('span', 'pc-score-box' + (rec.done ? ' is-checked' : ''), rec.done ? '\u2713' : ''));
+            tr.appendChild(tdD);
+            tr.appendChild(el('td', 'pc-score-nt', rec.note ? String(rec.note).trim() : ''));
+          }
+          tb.appendChild(tr);
+        });
+        tbl.appendChild(tb);
+        sEl.appendChild(tbl);
+        var sub = el('p', 'pc-score-sub');
+        if (sc) {
+          sub.appendChild(doc.createTextNode('Section subtotal: '));
+          if (secMk > 0) {
+            sub.appendChild(el('strong', '', String(secOk)));
+            sub.appendChild(doc.createTextNode(' / ' + items.length + ' (' + Math.round((secOk / Math.max(1, items.length)) * 100) + '%)'));
+          } else {
+            sub.appendChild(el('span', 'pc-score-blank'));
+            sub.appendChild(doc.createTextNode(' / ' + items.length));
+          }
+        } else {
+          sub.textContent = 'Practice / listening only (not scored).';
+        }
+        sEl.appendChild(sub);
+        host.appendChild(sEl);
+      });
+
+      var sum = el('section', 'pc-score-sum');
+      sum.appendChild(el('h3', '', 'Summary & Observations'));
+      var totP = el('p', '');
+      if (totalScored > 0) {
+        totP.appendChild(el('strong', '', 'Total scored: '));
+        if (stats.mk > 0) {
+          totP.appendChild(el('strong', '', stats.ok + ' / ' + totalScored + ' (' + Math.round((stats.ok / totalScored) * 100) + '%)'));
+        } else {
+          totP.appendChild(el('span', 'pc-score-blank'));
+          totP.appendChild(doc.createTextNode(' / ' + totalScored));
+        }
+      } else {
+        totP.textContent = 'Practice / listening sheet (unscored).';
+      }
+      sum.appendChild(totP);
+      var obs = el('p', 'pc-score-obs');
+      [
+        ['Used slow playback (0.8x)', stats.mk > 0 && !!audioOpts.slow],
+        ['Needed extra wait time', false],
+        ['Repeated items', !!stats.repAny],
+        ['Self-corrected', false],
+        ['Fatigue / took a break', false]
+      ].forEach(function (pair) {
+        var sp = el('span');
+        sp.appendChild(el('span', 'pc-score-box' + (pair[1] ? ' is-checked' : ''), pair[1] ? '\u2713' : ''));
+        sp.appendChild(doc.createTextNode(pair[0]));
+        obs.appendChild(sp);
+      });
+      sum.appendChild(obs);
+      sum.appendChild(el('p', '', 'Next teaching focus / notes:'));
+      sum.appendChild(el('div', 'pc-score-wline'));
+      sum.appendChild(el('div', 'pc-score-wline'));
+      host.appendChild(sum);
+    }
+    function syncAudioUi() {
+      if (!audioView || !audioPlan) return;
+      var list = audioPlan.items || [];
+      if (!list.length) {
+        audioNodes.itemTitle.textContent = 'No worksheet items available.';
+        audioNodes.script.textContent = '';
+        audioNodes.ans.hidden = true;
+        audioNodes.prevBtn.disabled = true;
+        audioNodes.nextBtn.disabled = true;
+        audioNodes.playBtn.disabled = true;
+        return;
+      }
+      var it = list[audioIdx] || list[0];
+      var tag = audioTagOf(it);
+      var isScored = audioScoredByIdx[audioIdx] !== false;
+      var rec = audioScoreRec(audioIdx);
+      var stats = audioScoreStats();
+      audioNodes.badge.textContent = it.sectionLabel;
+      audioNodes.counter.textContent = 'Item ' + (audioIdx + 1) + ' of ' + list.length + ' (Worksheet ' + tag + ')';
+      audioNodes.itemTitle.textContent = it.sectionLabel + ' \u2014 ' + tag;
+      audioNodes.script.textContent = it.script;
+      audioNodes.ans.textContent = 'Teacher key: ' + it.answer;
+      audioNodes.ans.hidden = !audioOpts.showAns;
+      audioNodes.prevBtn.disabled = audioIdx <= 0;
+      audioNodes.nextBtn.disabled = audioIdx >= list.length - 1;
+      audioNodes.playBtn.disabled = false;
+      if (audioNodes.mark1) {
+        audioNodes.mark1.hidden = !isScored;
+        audioNodes.mark1.setAttribute('aria-pressed', rec.score === 1 ? 'true' : 'false');
+      }
+      if (audioNodes.mark0) {
+        audioNodes.mark0.hidden = !isScored;
+        audioNodes.mark0.setAttribute('aria-pressed', rec.score === 0 ? 'true' : 'false');
+      }
+      if (audioNodes.markRep) {
+        audioNodes.markRep.hidden = !isScored;
+        audioNodes.markRep.textContent = '+ Repeat (' + (rec.repeats || 0) + ')';
+      }
+      if (audioNodes.markDone) {
+        audioNodes.markDone.hidden = isScored;
+        audioNodes.markDone.setAttribute('aria-pressed', rec.done ? 'true' : 'false');
+      }
+      if (audioNodes.itemNote && doc.activeElement !== audioNodes.itemNote) {
+        audioNodes.itemNote.value = rec.note || '';
+      }
+      if (audioNodes.runningScore) {
+        audioNodes.runningScore.textContent = stats.scTot > 0
+          ? (stats.mk > 0
+            ? ('Scored: ' + stats.ok + ' / ' + stats.mk + ' (' + Math.round((stats.ok / stats.mk) * 100) + '%) \u00b7 ' + stats.mk + '/' + stats.scTot + ' done')
+            : ('No items scored yet (' + stats.scTot + ' scored items)'))
+          : 'Practice / listening only';
+      }
+      (audioNodes.rows || []).forEach(function (r, ri) {
+        if (!r) return;
+        var rt = audioTagOf(list[ri]);
+        var rr = audioScores.items[String(ri)];
+        r.li.classList.toggle('is-active', ri === audioIdx);
+        r.li.classList.toggle('is-played', !!audioPlayed[ri]);
+        r.num.textContent = audioPlayed[ri] ? '\u2713 ' + rt : rt;
+        r.ans.hidden = !audioOpts.showAns;
+        if (r.scoreTag) {
+          var bits = [];
+          if (rr) {
+            if (rr.score === 1) bits.push('Score: 1');
+            else if (rr.score === 0) bits.push('Score: 0');
+            else if (rr.done) bits.push('Done');
+            if (rr.repeats > 0) bits.push('Rep: ' + rr.repeats);
+            if (rr.note && String(rr.note).trim()) bits.push(String(rr.note).trim());
+          }
+          r.scoreTag.textContent = bits.join(' \u00b7 ');
+          r.scoreTag.hidden = !bits.length;
+        }
+      });
+    }
+    function playOneAudioClip(cid, mine) {
+      return new Promise(function (resolve) {
+        var uri = audioPlan && audioPlan.audio ? audioPlan.audio[cid] : '';
+        if (!uri || mine !== audioRunId || typeof win.Audio !== 'function') { resolve(); return; }
+        var a = new win.Audio(uri);
+        audioEl = a;
+        try { a.playbackRate = audioOpts.slow ? 0.8 : 1; } catch (_) {}
+        var done = function () { if (audioEl === a) audioEl = null; resolve(); };
+        a.onended = done;
+        a.onerror = done;
+        try {
+          var p = a.play();
+          if (p && typeof p.catch === 'function') p.catch(done);
+        } catch (_) { done(); }
+      });
+    }
+    function waitAudioMs(ms, mine, showBar) {
+      return new Promise(function (resolve) {
+        if (mine !== audioRunId || ms <= 0 || typeof win.setTimeout !== 'function') { resolve(); return; }
+        if (showBar && audioNodes.barWrap && audioNodes.barFill) {
+          audioNodes.barWrap.hidden = false;
+          var t0 = Date.now();
+          var stepBar = function () {
+            if (mine !== audioRunId) { audioNodes.barWrap.hidden = true; return; }
+            var f = Math.min(1, (Date.now() - t0) / ms);
+            audioNodes.barFill.style.width = Math.round(f * 100) + '%';
+            if (f < 1 && typeof win.requestAnimationFrame === 'function') audioRaf = win.requestAnimationFrame(stepBar);
+          };
+          if (typeof win.requestAnimationFrame === 'function') audioRaf = win.requestAnimationFrame(stepBar);
+        }
+        audioTimer = win.setTimeout(function () {
+          audioTimer = null;
+          if (audioNodes.barWrap) audioNodes.barWrap.hidden = true;
+          resolve();
+        }, ms);
+      });
+    }
+    function playCurrentAudioItem(isReplay) {
+      stopAudioPlayback();
+      if (!audioPlan || !audioPlan.items.length) return;
+      var it = audioPlan.items[audioIdx];
+      if (!it) return;
+      if (isReplay && audioPlayed[audioIdx] && audioScoredByIdx[audioIdx] !== false) {
+        bumpAudioItemRepeat(audioIdx);
+      }
+      var mine = ++audioRunId;
+      audioPlaying = true;
+      audioNodes.playBtn.textContent = 'Playing...';
+      var seq = [];
+      var useDir = !!(audioPlan && audioPlan.hasDirections) && (audioOpts.dirMode === 'every' || (audioOpts.dirMode === 'section' && it.numInSection === 1));
+      if (useDir) it.promptClips.forEach(function (c) { seq.push({ id: c, gap: 320 }); });
+      it.mainClips.forEach(function (c, ci) {
+        seq.push({ id: c, gap: ci < it.mainClips.length - 1 ? (it.segmented ? audioOpts.gapMs : 280) : 0 });
+      });
+      if (it.choiceClips && it.choiceClips.length) {
+        if (seq.length) seq[seq.length - 1].gap = 420;
+        it.choiceClips.forEach(function (c, ci) { seq.push({ id: c, gap: ci < it.choiceClips.length - 1 ? 420 : 0 }); });
+      }
+      if (!seq.length) {
+        audioPlayed[audioIdx] = true;
+        audioPlaying = false;
+        audioNodes.playBtn.textContent = 'Play item';
+        audioNodes.status.textContent = 'No recording for this item \u2014 read aloud: ' + it.script;
+        syncAudioUi();
+        return;
+      }
+      var itTag = audioTagOf(it);
+      audioNodes.status.textContent = 'Playing ' + it.sectionLabel + ' ' + itTag + '...';
+      var chain = Promise.resolve();
+      seq.forEach(function (st) {
+        chain = chain.then(function () { return playOneAudioClip(st.id, mine); })
+          .then(function () { return st.gap ? waitAudioMs(st.gap, mine, false) : null; });
+      });
+      chain.then(function () {
+        if (mine !== audioRunId) return;
+        audioPlayed[audioIdx] = true;
+        syncAudioUi();
+        if (audioOpts.autoSec > 0 && audioIdx < audioPlan.items.length - 1) {
+          audioNodes.status.textContent = 'Response window (' + audioOpts.autoSec + 's) before next item...';
+          return waitAudioMs(audioOpts.autoSec * 1000, mine, true).then(function () {
+            if (mine !== audioRunId) return;
+            audioIdx++;
+            syncAudioUi();
+            playCurrentAudioItem(false);
+          });
+        }
+        audioPlaying = false;
+        audioNodes.playBtn.textContent = 'Play item';
+        audioNodes.status.textContent = 'Finished ' + it.sectionLabel + ' ' + itTag + '.';
+      });
+    }
+    function downloadWorksheetAudioCsv() {
+      if (!audioPlan) return;
+      var csv = buildAudioScoresCsv(audioPlan, {
+        studentName: audioScores.studentName.trim(),
+        examiner: audioScores.examiner.trim(),
+        date: wsAudioTodayIso(),
+        items: audioScores.items,
+        notes: audioScores.notes.trim()
+      }, audioOpts);
+      if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return;
+      var blob = new win.Blob([csv], { type: 'text/csv;charset=utf-8' });
+      var url = win.URL.createObjectURL(blob);
+      var link = doc.createElement('a');
+      link.href = url;
+      link.download = wsSlug((audioPlan && audioPlan.title) || 'worksheet') + '-scores.csv';
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+      if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      if (audioNodes.said) audioNodes.said.textContent = 'Downloaded scoring results (.csv).';
+    }
+    function downloadWorksheetAudioResultsJson() {
+      if (!audioPlan) return;
+      var payloadObj = buildAudioResultsJson(audioPlan, {
+        studentName: audioScores.studentName.trim(),
+        examiner: audioScores.examiner.trim(),
+        date: wsAudioTodayIso(),
+        items: audioScores.items,
+        notes: audioScores.notes.trim()
+      }, audioOpts);
+      if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return;
+      var blob = new win.Blob([JSON.stringify(payloadObj, null, 2)], { type: 'application/json;charset=utf-8' });
+      var url = win.URL.createObjectURL(blob);
+      var link = doc.createElement('a');
+      link.href = url;
+      link.download = wsSlug((audioPlan && audioPlan.title) || 'worksheet') + '-results.' + 'json';
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+      if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      if (audioNodes.said) audioNodes.said.textContent = 'Saved Add Up Results file (.json).';
+    }
+    function downloadWorksheetAudioHtml() {
+      if (!audioPlan) return;
+      var html = buildAudioCompanionHtmlFromPlan(audioPlan);
+      if (typeof win.Blob !== 'function' || !win.URL || typeof win.URL.createObjectURL !== 'function') return;
+      var blob = new win.Blob([html], { type: 'text/html;charset=utf-8' });
+      var url = win.URL.createObjectURL(blob);
+      var link = doc.createElement('a');
+      link.href = url;
+      var suffix = audioPlan.kind === 'vocab' ? '-vocab-audio-companion.' : (audioPlan.kind === 'read-along' ? '-read-along-audio-companion.' : '-worksheet-audio-companion.');
+      link.download = wsSlug((audioPlan && audioPlan.title) || 'worksheet') + suffix + 'html';
+      link.hidden = true;
+      doc.body.appendChild(link);
+      link.click();
+      doc.body.removeChild(link);
+      if (typeof win.setTimeout === 'function') win.setTimeout(function () { try { win.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
+      if (audioNodes.said) audioNodes.said.textContent = 'Downloaded standalone offline audio player (.html).';
+    }
+    function buildAudioCompanionView() {
+      audioView = el('div', 'pc pc-audio-view');
+      audioView.id = 'worksheet-audio-view';
+      audioView.hidden = true;
+      var bar = el('div', 'pc-bar');
+      audioNodes.heading = el('h1', '', 'Worksheet audio player');
+      audioNodes.heading.id = 'pc-audio-heading';
+      audioNodes.heading.tabIndex = -1;
+      audioView.setAttribute('role', 'region');
+      audioView.setAttribute('aria-labelledby', 'pc-audio-heading');
+      bar.appendChild(audioNodes.heading);
+      audioNodes.said = el('p', 'pc-said');
+      audioNodes.said.setAttribute('role', 'status');
+      bar.appendChild(audioNodes.said);
+      var actions = el('p', 'pc-actions');
+      audioNodes.download = el('button', 'btn btn-primary', 'Download offline audio player (.html)');
+      audioNodes.download.type = 'button';
+      audioNodes.download.id = 'pc-audio-download';
+      audioNodes.download.addEventListener('click', downloadWorksheetAudioHtml);
+      audioNodes.printScore = el('button', 'btn', 'Print scoring sheet');
+      audioNodes.printScore.type = 'button';
+      audioNodes.printScore.id = 'pc-audio-print-score';
+      audioNodes.printScore.addEventListener('click', function () {
+        renderScoreSheetDom();
+        if (typeof win.print === 'function') win.print();
+      });
+      audioNodes.docxScore = el('button', 'btn', 'Download scoring sheet (.docx)');
+      audioNodes.docxScore.type = 'button';
+      audioNodes.docxScore.id = 'pc-audio-docx-score';
+      audioNodes.docxScore.addEventListener('click', function () {
+        if (!audioPlan) return;
+        if (audioNodes.said) audioNodes.said.textContent = 'Preparing scoring sheet (.docx)...';
+        ensureDocx().then(function (docx) {
+          if (!docx || typeof docx.buildScoringSheetDocx !== 'function' || typeof docx.downloadDocx !== 'function') {
+            if (audioNodes.said) audioNodes.said.textContent = 'Word export could not load right now. Try Print scoring sheet instead.';
+            return;
+          }
+          try {
+            var res = docx.buildScoringSheetDocx(audioPlan, {
+              slow: audioOpts.slow,
+              autoSec: audioOpts.autoSec,
+              gapMs: audioOpts.gapMs,
+              dirMode: audioOpts.dirMode,
+              scoreState: audioScorePayload()
+            });
+            docx.downloadDocx(res, win, doc);
+            if (audioNodes.said) audioNodes.said.textContent = 'Downloaded scoring sheet (.docx).';
+          } catch (_) {
+            if (audioNodes.said) audioNodes.said.textContent = 'Could not build the scoring sheet document right now.';
+          }
+        });
+      });
+      audioNodes.csvScore = el('button', 'btn', 'Download scores (.csv)');
+      audioNodes.csvScore.type = 'button';
+      audioNodes.csvScore.id = 'pc-audio-csv';
+      audioNodes.csvScore.addEventListener('click', downloadWorksheetAudioCsv);
+      audioNodes.resultsJson = el('button', 'btn', 'Save for Add Up Results (.json)');
+      audioNodes.resultsJson.type = 'button';
+      audioNodes.resultsJson.id = 'pc-audio-results-json';
+      audioNodes.resultsJson.addEventListener('click', downloadWorksheetAudioResultsJson);
+      audioNodes.back = el('button', 'btn', TEXT.back);
+      audioNodes.back.type = 'button';
+      audioNodes.back.addEventListener('click', closeWorksheetAudio);
+      actions.appendChild(audioNodes.download);
+      actions.appendChild(audioNodes.printScore);
+      actions.appendChild(audioNodes.docxScore);
+      actions.appendChild(audioNodes.csvScore);
+      actions.appendChild(audioNodes.resultsJson);
+      actions.appendChild(audioNodes.back);
+      bar.appendChild(actions);
+      audioView.appendChild(bar);
+
+      var wrap = el('div', 'pc-audio-wrap');
+      var stage = el('section', 'pc-audio-stage');
+      var meta = el('div', 'pc-audio-stage-meta');
+      audioNodes.badge = el('span', 'pc-audio-badge', '');
+      audioNodes.counter = el('span', 'pc-audio-counter', '');
+      meta.appendChild(audioNodes.badge);
+      meta.appendChild(audioNodes.counter);
+      stage.appendChild(meta);
+      audioNodes.itemTitle = el('h2', 'pc-audio-title', '');
+      audioNodes.script = el('p', 'pc-audio-script', '');
+      audioNodes.ans = el('p', 'pc-audio-answer', '');
+      audioNodes.ans.hidden = true;
+      var playbar = el('div', 'pc-audio-playbar');
+      audioNodes.prevBtn = el('button', 'btn btn-small', 'Prev');
+      audioNodes.playBtn = el('button', 'btn btn-primary', 'Play item');
+      audioNodes.replayBtn = el('button', 'btn btn-small', 'Replay');
+      audioNodes.stopBtn = el('button', 'btn btn-small', 'Stop');
+      audioNodes.nextBtn = el('button', 'btn btn-small', 'Next');
+      [audioNodes.prevBtn, audioNodes.playBtn, audioNodes.replayBtn, audioNodes.stopBtn, audioNodes.nextBtn].forEach(function (b) { b.type = 'button'; playbar.appendChild(b); });
+      audioNodes.prevBtn.addEventListener('click', function () { stepAudioItem(-1); });
+      audioNodes.nextBtn.addEventListener('click', function () { stepAudioItem(1); });
+      audioNodes.playBtn.addEventListener('click', function () { if (audioPlaying) stopAudioPlayback('Stopped.'); else playCurrentAudioItem(false); });
+      audioNodes.replayBtn.addEventListener('click', function () { playCurrentAudioItem(true); });
+      audioNodes.stopBtn.addEventListener('click', function () { stopAudioPlayback('Stopped.'); });
+
+      // Live examiner scoring panel
+      var scorePanel = el('div', 'pc-audio-score-panel');
+      var scoreMeta = el('div', 'pc-audio-score-meta');
+      audioNodes.studentInp = el('input', 'pc-audio-score-input');
+      audioNodes.studentInp.type = 'text';
+      audioNodes.studentInp.id = 'pc-audio-student';
+      audioNodes.studentInp.maxLength = 48;
+      audioNodes.studentInp.placeholder = 'Student / code name (optional)';
+      audioNodes.studentInp.setAttribute('aria-label', 'Student or code name');
+      audioNodes.studentInp.addEventListener('input', function () {
+        audioScores.studentName = audioNodes.studentInp.value;
+        renderScoreSheetDom();
+      });
+      audioNodes.examinerInp = el('input', 'pc-audio-score-input');
+      audioNodes.examinerInp.type = 'text';
+      audioNodes.examinerInp.id = 'pc-audio-examiner';
+      audioNodes.examinerInp.maxLength = 48;
+      audioNodes.examinerInp.placeholder = 'Examiner (optional)';
+      audioNodes.examinerInp.setAttribute('aria-label', 'Examiner name');
+      audioNodes.examinerInp.addEventListener('input', function () {
+        audioScores.examiner = audioNodes.examinerInp.value;
+        renderScoreSheetDom();
+      });
+      audioNodes.runningScore = el('span', 'pc-audio-score-pill', 'No items scored yet');
+      audioNodes.runningScore.id = 'pc-audio-running';
+      audioNodes.clearScores = el('button', 'btn btn-small', 'Clear scores');
+      audioNodes.clearScores.type = 'button';
+      audioNodes.clearScores.id = 'pc-audio-clear-scores';
+      audioNodes.clearScores.addEventListener('click', function () {
+        audioScores.items = Object.create(null);
+        if (audioNodes.itemNote) audioNodes.itemNote.value = '';
+        if (audioNodes.status) audioNodes.status.textContent = 'Cleared all item scores.';
+        syncAudioUi();
+        renderScoreSheetDom();
+      });
+      scoreMeta.appendChild(audioNodes.studentInp);
+      scoreMeta.appendChild(audioNodes.examinerInp);
+      scoreMeta.appendChild(audioNodes.runningScore);
+      scoreMeta.appendChild(audioNodes.clearScores);
+      scorePanel.appendChild(scoreMeta);
+
+      var scoreRow = el('div', 'pc-audio-score-row');
+      audioNodes.mark1 = el('button', 'btn btn-small pc-audio-score-btn', 'Correct (1)');
+      audioNodes.mark1.type = 'button';
+      audioNodes.mark1.id = 'pc-audio-mark-1';
+      audioNodes.mark1.setAttribute('aria-pressed', 'false');
+      audioNodes.mark1.addEventListener('click', function () { toggleAudioItemScore(audioIdx, 1); });
+      audioNodes.mark0 = el('button', 'btn btn-small pc-audio-score-btn', 'Incorrect (0)');
+      audioNodes.mark0.type = 'button';
+      audioNodes.mark0.id = 'pc-audio-mark-0';
+      audioNodes.mark0.setAttribute('aria-pressed', 'false');
+      audioNodes.mark0.addEventListener('click', function () { toggleAudioItemScore(audioIdx, 0); });
+      audioNodes.markRep = el('button', 'btn btn-small pc-audio-score-btn', '+ Repeat (0)');
+      audioNodes.markRep.type = 'button';
+      audioNodes.markRep.id = 'pc-audio-mark-rep';
+      audioNodes.markRep.addEventListener('click', function () { bumpAudioItemRepeat(audioIdx); });
+      audioNodes.markDone = el('button', 'btn btn-small pc-audio-score-btn', 'Mark done');
+      audioNodes.markDone.type = 'button';
+      audioNodes.markDone.id = 'pc-audio-mark-done';
+      audioNodes.markDone.setAttribute('aria-pressed', 'false');
+      audioNodes.markDone.hidden = true;
+      audioNodes.markDone.addEventListener('click', function () { toggleAudioItemScore(audioIdx, 1); });
+      audioNodes.itemNote = el('input', 'pc-audio-score-note');
+      audioNodes.itemNote.type = 'text';
+      audioNodes.itemNote.id = 'pc-audio-item-note';
+      audioNodes.itemNote.maxLength = 120;
+      audioNodes.itemNote.placeholder = 'Quick note or error pattern (optional)';
+      audioNodes.itemNote.setAttribute('aria-label', 'Item note or error pattern');
+      audioNodes.itemNote.addEventListener('input', function () {
+        var rec = audioScoreRec(audioIdx);
+        rec.note = audioNodes.itemNote.value;
+        syncAudioUi();
+        renderScoreSheetDom();
+      });
+      [audioNodes.mark1, audioNodes.mark0, audioNodes.markRep, audioNodes.markDone, audioNodes.itemNote].forEach(function (n) { scoreRow.appendChild(n); });
+      scorePanel.appendChild(scoreRow);
+
+      audioNodes.barWrap = el('div', 'pc-audio-progress-wrap');
+      audioNodes.barWrap.hidden = true;
+      audioNodes.barFill = el('span', 'pc-audio-progress-fill');
+      audioNodes.barWrap.appendChild(audioNodes.barFill);
+      audioNodes.status = el('p', 'pc-audio-status', '');
+      audioNodes.status.setAttribute('role', 'status');
+      stage.appendChild(audioNodes.itemTitle);
+      stage.appendChild(audioNodes.script);
+      stage.appendChild(audioNodes.ans);
+      stage.appendChild(playbar);
+      stage.appendChild(scorePanel);
+      stage.appendChild(audioNodes.barWrap);
+      stage.appendChild(audioNodes.status);
+      stage.appendChild(el('p', 'pc-audio-keys', 'Shortcuts: Space = Play/Stop, R = Replay, Left / Right = Prev / Next, 1 = Correct, 0 = Incorrect, P = +Repeat.'));
+      wrap.appendChild(stage);
+
+      var ctrls = el('section', 'pc-audio-controls');
+      var makeCtrlSel = function (id, lblText, optPairs, initVal, onChange) {
+        var box = el('div', 'pc-audio-ctrl');
+        var l = el('label', '', lblText);
+        l.htmlFor = id;
+        var s = el('select');
+        s.id = id;
+        optPairs.forEach(function (pair) {
+          var o = el('option', '', pair[1]);
+          o.value = String(pair[0]);
+          if (String(pair[0]) === String(initVal)) o.selected = true;
+          s.appendChild(o);
+        });
+        s.addEventListener('change', function () { onChange(s.value); renderScoreSheetDom(); });
+        box.appendChild(l);
+        box.appendChild(s);
+        ctrls.appendChild(box);
+        return box;
+      };
+      audioNodes.autoBox = makeCtrlSel('pc-audio-auto', 'Auto-advance response pause', [['0', 'Manual (click Next)'], ['3', '3 seconds'], ['5', '5 seconds'], ['8', '8 seconds'], ['12', '12 seconds']], audioOpts.autoSec, function (v) { audioOpts.autoSec = Number(v) || 0; });
+      audioNodes.gapBox = makeCtrlSel('pc-audio-gap', 'Sound gap', [['400', '0.4s (quick)'], ['700', '0.7s (standard)'], ['1000', '1.0s (CTOPP-style)']], audioOpts.gapMs, function (v) { audioOpts.gapMs = Number(v) || 700; });
+      audioNodes.dirBox = makeCtrlSel('pc-audio-dir', 'Spoken directions', [['section', 'First item per section'], ['every', 'Every item'], ['none', 'Words / sounds only']], audioOpts.dirMode, function (v) { audioOpts.dirMode = v; });
+      var chkBox = el('div', 'pc-audio-checks');
+      var slowLbl = el('label', 'pc-audio-check'), slowInp = el('input');
+      slowInp.type = 'checkbox'; slowInp.id = 'pc-audio-slow'; slowInp.checked = audioOpts.slow;
+      slowInp.addEventListener('change', function () { audioOpts.slow = !!slowInp.checked; renderScoreSheetDom(); });
+      slowLbl.appendChild(slowInp); slowLbl.appendChild(el('span', '', 'Slow playback (0.8x)'));
+      var ansLbl = el('label', 'pc-audio-check'), ansInp = el('input');
+      ansInp.type = 'checkbox'; ansInp.id = 'pc-audio-show-ans'; ansInp.checked = audioOpts.showAns;
+      ansInp.addEventListener('change', function () { audioOpts.showAns = !!ansInp.checked; syncAudioUi(); });
+      ansLbl.appendChild(ansInp); ansLbl.appendChild(el('span', '', 'Show teacher answers'));
+      chkBox.appendChild(slowLbl); chkBox.appendChild(ansLbl);
+      ctrls.appendChild(chkBox);
+      wrap.appendChild(ctrls);
+
+      audioNodes.listHost = el('div', 'pc-audio-sections');
+      wrap.appendChild(audioNodes.listHost);
+      audioView.appendChild(wrap);
+      audioNodes.scoreSheet = el('section', 'pc-score-sheet');
+      audioNodes.scoreSheet.id = 'pc-audio-score-sheet';
+      audioNodes.scoreSheet.setAttribute('aria-label', 'Printable teacher record and scoring sheet');
+      audioView.appendChild(audioNodes.scoreSheet);
+      doc.body.appendChild(audioView);
+    }
+    function openAudioPlan(plan, given) {
+      if (!audioView) buildAudioCompanionView();
+      if (view && !view.hidden) { run++; view.hidden = true; }
+      if (wsView && !wsView.hidden) { wsRun++; wsView.hidden = true; }
+      if (vocabView && !vocabView.hidden) { vocabRun++; vocabView.hidden = true; }
+      if (raView && !raView.hidden) { raRun++; raView.hidden = true; }
+      stopAudioPlayback();
+      audioState = given || {};
+      audioPlan = plan || { kind: 'word-sounds', title: 'Worksheet', sections: [], items: [], audio: {}, clipCount: 0, hasSoundGap: true, hasDirections: true };
+      audioIdx = 0;
+      audioPlayed = Object.create(null);
+      audioScores = { studentName: '', examiner: '', items: Object.create(null), notes: '' };
+      audioScoredByIdx = Object.create(null);
+      if (audioNodes.studentInp) audioNodes.studentInp.value = '';
+      if (audioNodes.examinerInp) audioNodes.examinerInp.value = '';
+      if (audioNodes.itemNote) audioNodes.itemNote.value = '';
+      if (audioNodes.gapBox) audioNodes.gapBox.hidden = !audioPlan.hasSoundGap;
+      if (audioNodes.dirBox) audioNodes.dirBox.hidden = !audioPlan.hasDirections;
+      audioNodes.heading.textContent = (audioPlan.title || 'Worksheet') + ' \u2014 Worksheet audio player';
+      var secWord = audioPlan.kind === 'word-sounds' ? 'activity' : 'section';
+      var secWordMany = audioPlan.kind === 'word-sounds' ? 'activities' : 'sections';
+      audioNodes.said.textContent = count(audioPlan.sections.length, secWord, secWordMany) + ', ' + count(audioPlan.items.length, 'item') + ' (' + count(audioPlan.clipCount, 'recording') + ' ready offline).';
+      audioNodes.status.textContent = 'Press Play item or Space to begin with #1.';
+      while (audioNodes.listHost.firstChild) audioNodes.listHost.removeChild(audioNodes.listHost.firstChild);
+      audioNodes.rows = [];
+      audioPlan.sections.forEach(function (sec) {
+        var secEl = el('section', 'pc-audio-sec');
+        secEl.appendChild(el('h3', 'pc-audio-sec-head', sec.label));
+        secEl.appendChild(el('p', 'pc-audio-sec-dir', sec.directions));
+        var ul = el('ul', 'pc-audio-list');
+        sec.items.forEach(function (it) {
+          audioScoredByIdx[it.index] = sec.scored !== false;
+          var tag = audioTagOf(it);
+          var li = el('li', 'pc-audio-item');
+          var num = el('span', 'pc-audio-num', tag);
+          var body = el('div', 'pc-audio-item-body');
+          body.appendChild(el('span', 'pc-audio-item-label', it.sectionLabel + ' ' + tag + (it.hasAudio ? '' : ' (read aloud)')));
+          body.appendChild(el('span', 'pc-audio-item-sub', it.script));
+          var ans = el('span', 'pc-audio-item-ans', 'Answer: ' + it.answer);
+          ans.hidden = !audioOpts.showAns;
+          body.appendChild(ans);
+          var scoreTag = el('span', 'pc-audio-item-score', '');
+          scoreTag.hidden = true;
+          body.appendChild(scoreTag);
+          var playBtn = el('button', 'btn btn-small', 'Play ' + tag);
+          playBtn.type = 'button';
+          playBtn.addEventListener('click', function () {
+            audioIdx = it.index;
+            syncAudioUi();
+            playCurrentAudioItem(false);
+          });
+          li.appendChild(num);
+          li.appendChild(body);
+          li.appendChild(playBtn);
+          ul.appendChild(li);
+          audioNodes.rows[it.index] = { li: li, num: num, ans: ans, scoreTag: scoreTag };
+        });
+        secEl.appendChild(ul);
+        audioNodes.listHost.appendChild(secEl);
+      });
+      renderScoreSheetDom();
+      audioOpener = doc.activeElement && doc.activeElement !== doc.body ? doc.activeElement : audioOpener;
+      audioView.hidden = false;
+      if (!docEscBound && doc && typeof doc.addEventListener === 'function') {
+        doc.addEventListener('keydown', onDocKeyDown);
+        docEscBound = true;
+      }
+      doc.body.classList.add('pc-on');
+      syncAudioUi();
+      if (typeof win.scrollTo === 'function') { try { win.scrollTo(0, 0); } catch (_) {} }
+      audioNodes.heading.focus();
+    }
+    function openWorksheetAudio(given) {
+      openAudioPlan(buildWordSoundsAudioPlan(given || {}, {}), given);
+    }
+    function openVocabAudio(given, opts) {
+      openAudioPlan(buildVocabAudioPlan(given || {}, opts || {}), given);
+    }
+    function openReadAlongAudio(given, opts) {
+      openAudioPlan(buildReadAlongAudioPlan(given || {}, opts || {}), given);
+    }
+    function closeWorksheetAudio() {
+      if (!audioView || audioView.hidden) return;
+      stopAudioPlayback();
+      audioView.hidden = true;
+      if (docEscBound && doc && typeof doc.removeEventListener === 'function') {
+        doc.removeEventListener('keydown', onDocKeyDown);
+        docEscBound = false;
+      }
+      doc.body.classList.remove('pc-on');
+      if (audioOpener && typeof audioOpener.focus === 'function' && doc.contains(audioOpener)) audioOpener.focus();
+    }
+    function wireWorksheetAudio(button, getState, opts) {
+      if (!button || typeof getState !== 'function') return false;
+      if (opts && opts.show) button.hidden = false;
+      button.addEventListener('click', function () { audioOpener = button; openWorksheetAudio(getState()); });
+      return true;
+    }
+    function wireVocabAudio(button, getState, opts) {
+      if (!button || typeof getState !== 'function') return false;
+      if (opts && opts.show) button.hidden = false;
+      button.addEventListener('click', function () { audioOpener = button; openVocabAudio(getState()); });
+      return true;
+    }
+    function wireReadAlongAudio(button, getState, opts) {
+      if (!button || typeof getState !== 'function') return false;
+      if (opts && opts.show) button.hidden = false;
+      button.addEventListener('click', function () { audioOpener = button; openReadAlongAudio(getState()); });
+      return true;
+    }
+
     return {
       open: open, close: close, wire: wire, options: options, view: function () { return view; },
       openWorksheet: openWorksheet, closeWorksheet: closeWorksheet, wireWorksheet: wireWorksheet,
       worksheetOptions: wsOptions, worksheetView: function () { return wsView; },
       buildWordSoundsWorksheetHtml: buildWordSoundsWorksheetHtml,
+      buildWordSoundsAudioPlan: buildWordSoundsAudioPlan,
+      buildWordSoundsAudioCompanionHtml: buildWordSoundsAudioCompanionHtml,
+      buildWordSoundsScoringSheetHtml: buildWordSoundsScoringSheetHtml,
+      buildVocabAudioPlan: buildVocabAudioPlan,
+      buildVocabAudioCompanionHtml: buildVocabAudioCompanionHtml,
+      buildVocabScoringSheetHtml: buildVocabScoringSheetHtml,
+      buildReadAlongAudioPlan: buildReadAlongAudioPlan,
+      buildReadAlongAudioCompanionHtml: buildReadAlongAudioCompanionHtml,
+      buildReadAlongScoringSheetHtml: buildReadAlongScoringSheetHtml,
+      buildAudioScoringSheetHtml: buildAudioScoringSheetHtml,
+      buildAudioScoresCsv: buildAudioScoresCsv,
+      buildAudioResultsJson: buildAudioResultsJson,
+      buildLetterTracingStripSvg: buildLetterTracingStripSvg,
+      wsLetterStrokeCue: wsLetterStrokeCue,
+      openWorksheetAudio: openWorksheetAudio, closeWorksheetAudio: closeWorksheetAudio, wireWorksheetAudio: wireWorksheetAudio,
+      openVocabAudio: openVocabAudio, wireVocabAudio: wireVocabAudio,
+      openReadAlongAudio: openReadAlongAudio, wireReadAlongAudio: wireReadAlongAudio,
+      worksheetAudioView: function () { return audioView; },
       openVocabWorksheet: openVocabWorksheet, closeVocabWorksheet: closeVocabWorksheet, wireVocabWorksheet: wireVocabWorksheet,
       vocabWorksheetOptions: vocabOptions, vocabWorksheetView: function () { return vocabView; },
-      buildVocabWorksheetHtml: buildVocabWorksheetHtml
+      buildVocabWorksheetHtml: buildVocabWorksheetHtml,
+      openReadAlongWorksheet: openReadAlongWorksheet, closeReadAlongWorksheet: closeReadAlongWorksheet, wireReadAlongWorksheet: wireReadAlongWorksheet,
+      readAlongWorksheetOptions: raOptions, readAlongWorksheetView: function () { return raView; },
+      buildReadAlongWorksheetModel: buildReadAlongWorksheetModel,
+      buildReadAlongWorksheetHtmlFromModel: buildReadAlongWorksheetHtmlFromModel,
+      normalizeWorksheetModel: normalizeWorksheetModel,
+      normalizeVocabWorksheetModel: normalizeVocabWorksheetModel,
+      serializeWorksheetTemplate: serializeWorksheetTemplate,
+      extractWorksheetTemplate: extractWorksheetTemplate,
+      WS_PRESETS_KEY: WS_PRESETS_KEY,
+      WS_TEMPLATE_MAX_BYTES: WS_TEMPLATE_MAX_BYTES
     };
   }
 
@@ -3093,13 +9012,35 @@
   api.SIZES = SIZES;
   api.TEXT = TEXT;
   api.WS_ACTIVITIES = WS_ACTIVITIES;
+  api.WS_PRESETS_KEY = WS_PRESETS_KEY;
+  api.WS_TEMPLATE_MAX_BYTES = WS_TEMPLATE_MAX_BYTES;
   api.create = create;
   api.layout = layout;
   api.lengthClass = lengthClass;
   api.picturesOf = picturesOf;
   api.creditsFor = creditsFor;
+  api.normalizeWorksheetModel = normalizeWorksheetModel;
+  api.normalizeVocabWorksheetModel = normalizeVocabWorksheetModel;
+  api.serializeWorksheetTemplate = serializeWorksheetTemplate;
+  api.extractWorksheetTemplate = extractWorksheetTemplate;
   api.buildWordSoundsWorksheetHtml = buildWordSoundsWorksheetHtml;
+  api.buildWordSoundsAudioPlan = buildWordSoundsAudioPlan;
+  api.buildWordSoundsAudioCompanionHtml = buildWordSoundsAudioCompanionHtml;
+  api.buildWordSoundsScoringSheetHtml = buildWordSoundsScoringSheetHtml;
+  api.buildVocabAudioPlan = buildVocabAudioPlan;
+  api.buildVocabAudioCompanionHtml = buildVocabAudioCompanionHtml;
+  api.buildVocabScoringSheetHtml = buildVocabScoringSheetHtml;
+  api.buildReadAlongAudioPlan = buildReadAlongAudioPlan;
+  api.buildReadAlongAudioCompanionHtml = buildReadAlongAudioCompanionHtml;
+  api.buildReadAlongScoringSheetHtml = buildReadAlongScoringSheetHtml;
+  api.buildAudioScoringSheetHtml = buildAudioScoringSheetHtml;
+  api.buildAudioScoresCsv = buildAudioScoresCsv;
+  api.buildAudioResultsJson = buildAudioResultsJson;
+  api.buildLetterTracingStripSvg = buildLetterTracingStripSvg;
+  api.wsLetterStrokeCue = wsLetterStrokeCue;
   api.buildVocabWorksheetHtml = buildVocabWorksheetHtml;
+  api.buildReadAlongWorksheetModel = buildReadAlongWorksheetModel;
+  api.buildReadAlongWorksheetHtmlFromModel = buildReadAlongWorksheetHtmlFromModel;
 
   if (root) {
     root.AlloPacketPrintCards = api;

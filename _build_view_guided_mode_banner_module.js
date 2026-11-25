@@ -28,6 +28,7 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.GuidedModeBanner) {
     console.log('[CDN] GuidedModeBanner already loaded, skipping');
     return;

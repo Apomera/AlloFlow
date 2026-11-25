@@ -477,7 +477,9 @@ describe('Universal Bionic Reading runtime and resource views', () => {
       generatedContent: { id: 'r1', type: 'simplified', data: 'Bright sunlight warms the green plants quickly.' },
       isAnalyzingPos: false,
       setIsAnalyzingPos: () => {},
-      setGeneratedContent: (next) => { saved = next; },
+      // The handler now commits through a functional update that only replaces the
+      // resource it started on; apply it to that same resource.
+      setGeneratedContent: (next) => { saved = typeof next === 'function' ? next(deps.generatedContent) : next; },
       setHistory: () => {},
       addToast: (msg, kind) => { toasts.push({ msg, kind }); },
       t: (k) => k,
@@ -856,7 +858,8 @@ describe('Universal Bionic Reading runtime and resource views', () => {
       generatedContent: { id: 'es1', type: 'simplified', data: 'La educación natural ayuda rápidamente a las plantas verdes.' },
       isAnalyzingPos: false,
       setIsAnalyzingPos: () => {},
-      setGeneratedContent: (next) => { saved = next; },
+      // Functional update applied to the same resource (see the English test above).
+      setGeneratedContent: (next) => { saved = typeof next === 'function' ? next({ id: 'es1', type: 'simplified' }) : next; },
       setHistory: () => {},
       addToast: (msg, kind) => { toasts.push({ msg, kind }); },
       t: (k) => k,

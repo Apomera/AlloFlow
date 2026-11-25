@@ -17,7 +17,7 @@ describe('the dedication', () => {
       const mod = readFileSync(file, 'utf8');
       expectAnchorCount(mod, '"data-dedication": true', 1, { file });
       // The About tab ends with the accessibility note; the Atlas tab follows it.
-      const tail = sliceBetween(mod, 'React.createElement(AccessibilityNote, { t })', 'React.createElement(AtlasTab, { t, onRequestClose', { file });
+      const tail = sliceBetween(mod, 'React.createElement(AccessibilityNote, { t, onReportProblem: openReportFromInfo })', 'React.createElement(AtlasTab, { t, onRequestClose', { file });
       expect(tail).toContain('"data-dedication": true');
       expect(tail).toContain('t("about.maker") || "' + MAKER + '"');
       expect(tail).toContain('t("about.dedication") || "' + LINE + '"');

@@ -242,7 +242,10 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
   });
   it('the DOMParser path disarms handlers, schemes, nested frames, meta-refresh, and blocks external loads via CSP', () => {
     expect(dp).toContain("if (/^on/i.test(n)) { try { el.setAttribute('data-allo-neutralized-' + n, attr.value); } catch (_) {} el.removeAttribute(n); }");
-    expect(dp).toMatch(/\(javascript\|vbscript\)\\s\*:\/i\.test\(attr\.value \|\| ''\)\) el\.setAttribute\(n, 'about:blank#neutralized'\)/);
+    // Scheme test now runs on the value with control/space characters stripped, and also
+    // blocks data:text/html.
+    expect(dp).toContain("const compactVal = String(attr.value || '').replace(/[\\u0000-\\u0020]+/g, '');");
+    expect(dp).toContain("/^(?:javascript:|vbscript:|data:text\\/html)/i.test(compactVal)) el.setAttribute(n, 'about:blank#neutralized');");
     expect(dp).toContain("if (tag === 'iframe' || tag === 'frame' || tag === 'embed' || tag === 'object') {");
     expect(dp).toContain("default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:;");
     expect(dp).toContain('const _safeHtml = _neutralizeForAuditFrame(htmlContent);');
@@ -294,7 +297,7 @@ describe('#17 — OOXML decompression budgets on DECLARED sizes', () => {
     expectArchiveLimit(() => _ooxmlGuardArchive(fakeZip([_mb(50)]), _mb(0.25), 'Word'), /zip-bomb shaped/);
   });
   it('wiring: both extractors guard BEFORE inflating; media checks declared size before decoding', () => {
-    expect(dp).toContain("_ooxmlGuardArchive(await window.JSZip.loadAsync(_gBytes), _gBytes.length, 'Word');");
+    expect(dp).toMatch(/_gZip = await window\.JSZip\.loadAsync\(_gBytes\);\s*_ooxmlGuardArchive\(_gZip, _gBytes\.length, 'Word'\);/);
     expect(dp).toContain("_ooxmlGuardArchive(zip, bytes.length, 'PowerPoint');");
     expect(dp).toContain('const _declared = _ooxmlDeclaredSize(f);');
   });

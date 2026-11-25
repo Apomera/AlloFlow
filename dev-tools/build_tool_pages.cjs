@@ -144,9 +144,20 @@ function render(tool) {
 <meta property="og:title" content="${esc(tool.label)}">
 <meta property="og:description" content="${esc(tool.desc)}">
 <meta property="og:url" content="${esc(pageUrl)}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="${PAGES_BASE}assets/alloflow-social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(tool.label)}">
 <meta name="twitter:description" content="${esc(tool.desc)}">
+<meta name="twitter:image" content="${PAGES_BASE}assets/alloflow-social-preview.png">
+<meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+<link rel="icon" type="image/svg+xml" href="allobot.svg">
+<link rel="apple-touch-icon" href="allobot.png">
+<link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
 <script src="tool-page.js" defer></script>
@@ -209,7 +220,7 @@ ${hasManual
 </main>
 <footer class="tool-page-footer">
     <p><a href="tools.html">Find a Tool</a> · <a href="manuals.html">Manuals</a> ·
-        <a href="./">AlloFlow home</a></p>
+        <a href="principles.html">Principles</a> · <a href="./">AlloFlow home</a></p>
 </footer>
 </body>
 </html>

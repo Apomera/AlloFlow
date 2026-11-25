@@ -15,6 +15,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloMathRenderer && typeof window.AlloMathRenderer.renderToString === 'function' &&
       window.AlloMathSpeech && typeof window.AlloMathSpeech.toSpeech === 'function') return;
 
@@ -154,6 +155,7 @@
       (function tryAt(index) {
         if (isReady()) { resolve({ url: 'preloaded', index: -1 }); return; }
         if (index >= urls.length) { reject(new Error('all script sources failed')); return; }
+        if (typeof document !== 'object' || !document || !document.head) { reject(new Error('DOM unavailable for script load')); return; }
         var script = document.createElement('script');
         if (index > 0 || (urls[index] && String(urls[index]).indexOf('https://') === 0)) {
           script.crossOrigin = 'anonymous';
@@ -165,9 +167,11 @@
         script.src = urls[index];
         script.async = true;
         var settled = false;
+        var cleanupScript = function () { script.onload = null; script.onerror = null; };
         var timer = setTimeout(function () {
           if (settled) return;
           settled = true;
+          cleanupScript();
           try { script.remove(); } catch (_) {}
           tryAt(index + 1);
         }, 15000);
@@ -175,6 +179,7 @@
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          cleanupScript();
           if (isReady()) resolve({ url: urls[index], index: index });
           else { try { script.remove(); } catch (_) {} tryAt(index + 1); }
         };
@@ -182,10 +187,20 @@
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          cleanupScript();
           try { script.remove(); } catch (_) {}
           tryAt(index + 1);
         };
-        document.head.appendChild(script);
+        try {
+          document.head.appendChild(script);
+        } catch (_) {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            cleanupScript();
+            tryAt(index + 1);
+          }
+        }
       })(0);
     });
   }
@@ -194,6 +209,7 @@
     return new Promise(function (resolve, reject) {
       (function tryAt(index) {
         if (index >= urls.length) { reject(new Error('all stylesheet sources failed')); return; }
+        if (typeof document !== 'object' || !document || !document.head) { reject(new Error('DOM unavailable for stylesheet load')); return; }
         var existing = null;
         var existingLinks = document.querySelectorAll('link[data-allo-temml-css]');
         for (var i = 0; i < existingLinks.length; i += 1) {
@@ -215,9 +231,11 @@
         link.href = urls[index];
         link.setAttribute('data-allo-temml-css', urls[index]);
         var settled = false;
+        var cleanupLink = function () { link.onload = null; link.onerror = null; };
         var timer = setTimeout(function () {
           if (settled) return;
           settled = true;
+          cleanupLink();
           try { link.remove(); } catch (_) {}
           tryAt(index + 1);
         }, 15000);
@@ -225,25 +243,37 @@
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          cleanupLink();
           resolve({ url: urls[index], index: index });
         };
         link.onerror = function () {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          cleanupLink();
           try { link.remove(); } catch (_) {}
           tryAt(index + 1);
         };
-        document.head.appendChild(link);
+        try {
+          document.head.appendChild(link);
+        } catch (_) {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            cleanupLink();
+            tryAt(index + 1);
+          }
+        }
       })(0);
     });
   }
 
   function ensureTemmlStyles(settings) {
-    if (_temmlCssSource && document.querySelector('link[data-allo-temml-css]')) return Promise.resolve();
+    if (_temmlCssSource && typeof document === 'object' && document && document.querySelector('link[data-allo-temml-css]')) return Promise.resolve();
     if (_temmlCssPromise) return _temmlCssPromise;
     _temmlCssPromise = loadStyleChain(sourceUrls(TEMML_CSS_URLS, settings)).then(function (result) {
       _temmlCssSource = result.url;
+      _temmlCssPromise = null;
     }).catch(function (error) {
       _temmlCssPromise = null;
       throw error;
@@ -259,6 +289,7 @@
         typeof window.SRE.setupEngine === 'function');
     }).then(function (result) {
       _sreSource = result.url;
+      _scriptPromise = null;
     }).catch(function (error) {
       _scriptPromise = null;
       throw error;
@@ -275,6 +306,7 @@
         return !!(window.temml && typeof window.temml.renderToString === 'function');
       }).then(function (result) {
         _temmlSource = result.url;
+        _temmlPromise = null;
       }).catch(function (error) {
         _temmlPromise = null;
         throw error;
@@ -282,29 +314,36 @@
       runtime = _temmlPromise;
     }
     return runtime.then(function () {
-      return includeStyles ? ensureTemmlStyles(settings) : null;
+      return includeStyles ? ensureTemmlStyles(settings).catch(function () { return null; }) : null;
     });
   }
 
+  function safeStr(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return ''; }
+  }
+
   function normalizedLanguageName(lang) {
-    var value = String(lang || '').toLowerCase().trim();
+    var value = safeStr(lang).toLowerCase().trim();
     try { value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
-    return value.replace(/[_-].*$/, '').replace(/\s+/g, ' ');
+    value = value.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    return value.replace(/[_-].*$/, '').trim();
   }
 
   function resolveLocale(lang, settings) {
     if (!lang) return 'en';
     var name = normalizedLanguageName(lang);
+    if (!name) return 'en';
     if (Object.prototype.hasOwnProperty.call(LANG_NAME_TO_LOCALE, name)) return LANG_NAME_TO_LOCALE[name];
-    var code = name.slice(0, 2);
-    if (Object.prototype.hasOwnProperty.call(SUPPORTED_LOCALES, code)) return code;
+    if (name.length === 2 && Object.prototype.hasOwnProperty.call(SUPPORTED_LOCALES, name)) return name;
     return settings.unsupportedLocale === 'english' ? 'en' : null;
   }
 
   function settleEngine(features) {
     return Promise.resolve()
       .then(function () { return window.SRE.setupEngine(features); })
-      .then(function () { return window.SRE.engineReady(); });
+      .then(function () { return typeof window.SRE.engineReady === 'function' ? window.SRE.engineReady() : undefined; });
   }
 
   function setupProfiles(locale, settings, mapBase) {
@@ -335,7 +374,13 @@
     return ensureSreScript(settings).then(function () {
       var expectedPrefix = [locale, settings.domain, settings.style].join('|') + '|';
       if (_engineSignature && _engineSignature.indexOf(expectedPrefix) === 0) {
-        return window.SRE.engineReady();
+        if (typeof window.SRE.engineReady === 'function') {
+          return Promise.resolve(window.SRE.engineReady()).catch(function (err) {
+            _engineSignature = null;
+            throw err;
+          });
+        }
+        return Promise.resolve();
       }
       _engineSignature = null;
       return setupEngineAt(locale, settings, sourceUrls(MATHMAPS_URLS, settings), 0);
@@ -424,7 +469,7 @@
       walk(root);
       var out = root.outerHTML;
       if (!out || !/^<math[\s>]/i.test(out)) return null;
-      if (/<(?:script|img|svg|iframe|object|embed|style|form|a)\b|<[^>]*\bon[a-z]+\s*=|<[^>]*\b(?:javascript|vbscript)\s*:/i.test(out)) return null;
+      if (/<(?:script|img|svg|iframe|object|embed|style|form|a)\b|<[^>]*\s+on[a-z]+\s*=|<[^>]*\b(?:javascript|vbscript)\s*:/i.test(out)) return null;
       return out;
     } catch (_) {
       return null;
@@ -461,11 +506,11 @@
 
   function renderMathML(input, opts) {
     var options = opts || {};
-    var src = String(input == null ? '' : input).trim();
+    var src = safeStr(input).trim();
     if (!src) return Promise.resolve(null);
     if (/^<math[\s>]/i.test(src)) return Promise.resolve(sanitizeMathML(src));
     var settings = effectiveSettings(options);
-    return latexToMathML(stripLatexDelims(src), settings, inputDisplayMode(src, options), true);
+    return latexToMathML(stripLatexDelims(src), settings, inputDisplayMode(src, options), true).catch(function () { return null; });
   }
 
   function withTimeout(work, timeoutMs) {
@@ -489,7 +534,7 @@
         .then(function () { return true; }).catch(function () { return false; });
     },
     ready: function () {
-      return !!(window.temml && typeof window.temml.renderToString === 'function' && _temmlCssSource);
+      return !!(window.temml && typeof window.temml.renderToString === 'function');
     },
     diagnostics: function () {
       return {
@@ -508,20 +553,20 @@
   window.AlloMathSpeech = {
     toSpeech: function (input, opts) {
       var options = opts || {};
-      var src = String(input == null ? '' : input).trim();
+      var src = safeStr(input).trim();
       if (!src) return Promise.resolve(null);
       var settings = effectiveSettings(options);
       var locale = resolveLocale(options.lang || options.locale, settings);
       if (!locale) return Promise.resolve(null);
-      var timeoutMs = typeof options.timeoutMs === 'number' && options.timeoutMs > 0
-        ? options.timeoutMs : 10000;
+      var timeoutMs = (typeof options.timeoutMs === 'number' && Number.isFinite(options.timeoutMs) && options.timeoutMs > 0)
+        ? Math.min(options.timeoutMs, 60000) : 10000;
       var mathml = /<math[\s>]/i.test(src)
-        ? Promise.resolve(extractMathElement(src))
+        ? Promise.resolve(typeof DOMParser === 'function' ? sanitizeMathML(src) : extractMathElement(src))
         : latexToMathML(stripLatexDelims(src), settings, true, false);
       var work = mathml.then(function (value) {
         if (!value) return null;
         return withEngine(locale, settings, function () {
-          var spoken = String(window.SRE.toSpeech(value) || '').trim();
+          var spoken = safeStr(window.SRE.toSpeech(value)).trim();
           return spoken || null;
         });
       });
@@ -564,5 +609,7 @@
     }
   };
 
-  console.log('[AlloMathRuntime] offline-first Temml ' + TEMML_VERSION + ' renderer + SRE ' + SRE_VERSION + ' speech ready');
+  if (typeof console === 'object' && console && typeof console.log === 'function') {
+    console.log('[AlloMathRuntime] offline-first Temml ' + TEMML_VERSION + ' renderer + SRE ' + SRE_VERSION + ' speech ready');
+  }
 })();

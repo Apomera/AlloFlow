@@ -194,7 +194,8 @@ describe('2. The shared maker layout', () => {
     const foot = p.d.querySelector('footer.foot');
     expect(foot).not.toBeNull();
     expect(squash(foot.textContent)).toContain('Free to use. Open source, license AGPL-3.0.');
-    expect([...foot.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['More from AlloFlow', './']]);
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect([...foot.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Send feedback', 'packets-feedback.html#from-packets-symbol-runner'], ['More from AlloFlow', './']]);
 
     // The teacher code warns that it cannot be recovered, as the check maker does.
     const codeHint = squash(p.$('sr-code-hint').textContent);

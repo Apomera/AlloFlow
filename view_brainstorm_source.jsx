@@ -1,4 +1,19 @@
 
+function ensureBrainstormPolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-brainstorm-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-brainstorm-a11y-css';
+  st.textContent = [
+    '[data-help-key="brainstorm_panel"] button,[data-help-key="brainstorm_panel"] input,[data-help-key="brainstorm_panel"] select,[data-help-key="brainstorm_panel"] textarea,[data-help-key="brainstorm_panel"] summary{touch-action:manipulation;box-sizing:border-box}',
+    '[data-help-key="brainstorm_panel"] button:focus-visible,[data-help-key="brainstorm_panel"] input:focus-visible,[data-help-key="brainstorm_panel"] select:focus-visible,[data-help-key="brainstorm_panel"] textarea:focus-visible,[data-help-key="brainstorm_panel"] summary:focus-visible{outline:3px solid #4f46e5;outline-offset:2px}',
+    '.theme-contrast [data-help-key="brainstorm_panel"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}',
+    '@media (forced-colors:active){[data-help-key="brainstorm_panel"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-help-key="brainstorm_panel"] button,[data-help-key="brainstorm_panel"] input,[data-help-key="brainstorm_panel"] select,[data-help-key="brainstorm_panel"] textarea,[data-help-key="brainstorm_panel"] summary{border:1px solid ButtonText}}',
+    '@media (prefers-reduced-motion:reduce){[data-help-key="brainstorm_panel"] *,[data-help-key="brainstorm_panel"] *::before,[data-help-key="brainstorm_panel"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'
+  ].join('');
+  document.head.appendChild(st);
+}
+ensureBrainstormPolishCss();
+
 function projectStudentActivityResource(resource) {
   if (!resource || resource.type !== 'brainstorm' || !Array.isArray(resource.data)) return null;
   const text = value => typeof value === 'string' ? value : '';
@@ -178,6 +193,9 @@ function _brainstormSpeakText(raw) {
   var clean = String(raw || '').replace(/\s+/g, ' ').trim();
   if (!clean) return;
   try {
+    if (typeof window !== 'undefined' && (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true || (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()))) {
+      return;
+    }
     if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
       Promise.resolve(window.AlloSpeechPlayer.speak(clean)).catch(function () {});
     } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
@@ -204,7 +222,7 @@ function ActivityResponseField(props) {
       rows={2}
       aria-label={activityT(props.t, 'brainstorm.answer_aria', 'Your answer: {question}', { question: String(props.question || '').slice(0, 160) })}
       placeholder={activityT(props.t, 'brainstorm.answer_placeholder', 'Type your answer...')}
-      className="w-full rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+      className="w-full min-h-11 rounded-lg border border-slate-400 bg-white p-2 text-sm text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
     />
     {DictationBtn ? (
       <div className="mt-1">
@@ -318,6 +336,7 @@ function DiscussionKitBody(props) {
   var lookFors = activityNonEmpty(item.lookFors);
   var answering = !isTeacherMode && typeof props.onAnswer === 'function';
   var [activeResponseKey, setActiveResponseKey] = React.useState('');
+  var [stemAnnouncement, setStemAnnouncement] = React.useState('');
   var defaultStemKey = '';
   if (item.openingQuestion) {
     defaultStemKey = activityResponseKey(item, 'opening', item.openingQuestion);
@@ -336,6 +355,9 @@ function DiscussionKitBody(props) {
     var prev = typeof answers[targetKey] === 'string' ? answers[targetKey] : '';
     var sep = prev && !/\s$/.test(prev) ? ' ' : '';
     props.onAnswer(targetKey, prev + sep + stemText);
+    var msg = activityT(t, 'brainstorm.stem_inserted_sr', 'Inserted talk stem: {stem}', { stem: stemText });
+    setStemAnnouncement(msg);
+    if (typeof props.announceToSR === 'function') props.announceToSR(msg);
   };
   var field = function (key, question) {
     return answering ? <ActivityResponseField t={t} answers={props.answers} onAnswer={props.onAnswer} onFocusKey={setActiveResponseKey} responseKey={key} question={question} /> : null;
@@ -350,6 +372,7 @@ function DiscussionKitBody(props) {
   var discussionAnswered = answering ? discussionKeys.filter(function (k) { return String((props.answers && props.answers[k]) || '').trim().length > 0; }).length : 0;
   return (
     <div data-help-key="brainstorm_discussion_card">
+      {stemAnnouncement ? <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{stemAnnouncement}</div> : null}
       <div className="flex items-start justify-between gap-2 mb-1">
         <h4 className="font-bold text-lg text-indigo-900 flex items-center gap-2">
           <MessageSquare size={18} className="text-cyan-700 shrink-0" aria-hidden="true"/> {activityDisplayText(item.title)}
@@ -594,6 +617,7 @@ function _brainstormAiDoor(kind, t) {
 }
 
 function BrainstormView(props) {
+  ensureBrainstormPolishCss();
   var t = typeof props.t === 'function' ? props.t : function () { return ''; };
   var _bionicHookRef = React.useRef(typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic : function () { return false; });
   var _bionicSub = _bionicHookRef.current();
@@ -638,7 +662,7 @@ function BrainstormView(props) {
                                 className={`min-h-11 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-800' : 'bg-white text-yellow-800 border border-yellow-300 hover:bg-yellow-50'}`}
                             >
                                 {isEditingBrainstorm ? <CheckCircle2 size={14} aria-hidden="true"/> : <Pencil size={14} aria-hidden="true"/>}
-                                {isEditingBrainstorm ? t('common.done_editing') : t('brainstorm.edit')}
+                                {isEditingBrainstorm ? (t('common.done_editing') || 'Done Editing') : (t('brainstorm.edit') || 'Edit Activities')}
                             </button>
                         </div>
                     </div>}
@@ -650,7 +674,7 @@ function BrainstormView(props) {
                                  {isTeacherMode && isEditingBrainstorm && ['discussion', 'jigsaw'].includes(idea.kind) ? (
                                      <ActivityStructuredEditor item={idea} t={t} onChange={(field, value) => handleBrainstormChange(idx, field, value)} />
                                  ) : idea.kind === 'discussion' ? (
-                                     <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} />
+                                     <DiscussionKitBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} announceToSR={props.announceToSR} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} />
                                  ) : idea.kind === 'jigsaw' ? (
                                      <JigsawBody item={idea} t={t} isTeacherMode={isTeacherMode} renderFormattedText={renderFormattedText} answers={learnerAnswers} onAnswer={onAnswer} studentWorkStatus={props.studentWorkStatus} onRetrySave={props.onRetrySave} />
                                  ) : isEditingBrainstorm ? (
@@ -713,7 +737,7 @@ function BrainstormView(props) {
                                  {isTeacherMode && <div className="border-t border-slate-100 pt-3">
                                      {idea.guide ? (
                                          <div className="bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-400" data-help-key="brainstorm_guide">
-                                             <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16} aria-hidden="true"/> {t('brainstorm.teacher_guide')}</h5>
+                                             <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2"><ListChecks size={16} aria-hidden="true"/> {t('brainstorm.teacher_guide') || 'Teacher Guide'}</h5>
                                              {isEditingBrainstorm ? (
                                                  <textarea
                                                      aria-label={t('brainstorm.edit_guide') || 'Edit teacher guide'}
@@ -740,7 +764,7 @@ function BrainstormView(props) {
                                             className="min-h-11 flex items-center gap-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 px-4 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                          >
                                              {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
-                                             {isGeneratingGuide[idx] ? t('brainstorm.creating_guide') : t('brainstorm.generate_guide')}
+                                             {isGeneratingGuide[idx] ? (t('brainstorm.creating_guide') || 'Creating guide…') : (t('brainstorm.generate_guide') || 'Generate Teacher Guide')}
                                          </button>
                                      )}
                                      {idea.guide && (
@@ -837,7 +861,7 @@ function BrainstormView(props) {
                                                                  data-brainstorm-rubric-title={idx}
                                                                  value={typeof idea.rubric.title === 'string' ? idea.rubric.title : ''}
                                                                  onChange={(e) => handleBrainstormChange(idx, 'rubric', { ...idea.rubric, title: e.target.value })}
-                                                                 className="mt-1 block w-full rounded border border-violet-300 bg-white px-2 py-1 text-xs font-normal text-slate-800"
+                                                                 className="mt-1 block w-full min-h-11 rounded border border-violet-300 bg-white px-2.5 py-2 text-xs font-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                              />
                                                          </label>
                                                          {idea.rubric.criteria.map((rawCriterion, criterionIndex) => {
@@ -858,7 +882,7 @@ function BrainstormView(props) {
                                                                              value={typeof criterion.criterion === 'string' ? criterion.criterion : ''}
                                                                              onChange={(e) => updateCriterion({ criterion: e.target.value })}
                                                                              placeholder={t('brainstorm.rubric_criterion') || 'Criterion'}
-                                                                             className="flex-1 min-w-0 rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-800"
+                                                                             className="flex-1 min-w-0 min-h-11 rounded border border-slate-300 px-2.5 py-2 text-xs font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                          />
                                                                          <input
                                                                              type="number"
@@ -872,14 +896,14 @@ function BrainstormView(props) {
                                                                                  if (Number.isFinite(n)) updateCriterion({ weight: Math.max(0, Math.min(100, n)) });
                                                                              }}
                                                                              placeholder="%"
-                                                                             className="w-16 rounded border border-slate-300 px-2 py-1 text-xs text-slate-800"
+                                                                             className="w-20 min-h-11 rounded border border-slate-300 px-2 py-2 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                          />
                                                                          {idea.rubric.criteria.length > 1 && (
                                                                              <button
                                                                                  type="button"
                                                                                  onClick={() => handleBrainstormChange(idx, 'rubric', { ...idea.rubric, criteria: idea.rubric.criteria.filter((_, ci) => ci !== criterionIndex) })}
                                                                                  aria-label={`${t('brainstorm.remove_criterion') || 'Remove criterion'} ${criterionIndex + 1}`}
-                                                                                 className="inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold"
+                                                                                 className="inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                              >×</button>
                                                                          )}
                                                                      </div>
@@ -891,7 +915,7 @@ function BrainstormView(props) {
                                                                                      rows={2}
                                                                                      value={typeof (criterion.levels && criterion.levels[lvl]) === 'string' ? criterion.levels[lvl] : ''}
                                                                                      onChange={(e) => updateLevel(lvl, e.target.value)}
-                                                                                     className="mt-0.5 block w-full rounded border border-slate-300 px-1.5 py-1 text-xs font-normal text-slate-800 resize-y"
+                                                                                     className="mt-0.5 block w-full min-h-11 rounded border border-slate-300 px-2 py-1.5 text-xs font-normal text-slate-800 resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                                                  />
                                                                              </label>
                                                                          ))}
@@ -902,7 +926,7 @@ function BrainstormView(props) {
                                                          <button
                                                              type="button"
                                                              onClick={() => handleBrainstormChange(idx, 'rubric', { ...idea.rubric, criteria: idea.rubric.criteria.concat([{ criterion: 'New Criterion', weight: 25, levels: { '4': '', '3': '', '2': '', '1': '' } }]) })}
-                                                             className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-50"
+                                                             className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-violet-300 bg-white px-3 py-1 text-xs font-bold text-violet-800 hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                          >+ Add criterion</button>
                                                      </div>
                                                  ) : (
@@ -964,7 +988,7 @@ function BrainstormView(props) {
                                                  type="button"
                                                  data-brainstorm-remove-card={idx}
                                                  onClick={() => handleBrainstormChange(idx, 'remove-card')}
-                                                 className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                                                 className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-rose-200 bg-white px-3 py-1 text-xs font-bold text-rose-700 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                              >Remove activity card</button>
                                          </div>
                                      )}
@@ -977,7 +1001,7 @@ function BrainstormView(props) {
                             type="button"
                             data-brainstorm-add-card="true"
                             onClick={() => handleBrainstormChange(null, 'add-card')}
-                            className="w-full min-h-11 py-3 border-2 border-dashed border-amber-300 rounded-xl text-amber-900 font-bold text-xs hover:bg-amber-50 transition-colors flex items-center justify-center gap-2"
+                            className="w-full min-h-11 py-3 border-2 border-dashed border-amber-300 rounded-xl text-amber-900 font-bold text-xs hover:bg-amber-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                         >+ Add activity card</button>
                     )}
                   </div>

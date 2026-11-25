@@ -87,7 +87,7 @@
   function _humLaneAiUsable(c) {
     if (!c || typeof c.ask !== 'function') return false;
     if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
-    if (window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode) return false;
+    if (window.hideStudentAiFeatures === true) return false;
     if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return false;
     if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === 'function' && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
     try { if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return false; } catch (_) { return false; }

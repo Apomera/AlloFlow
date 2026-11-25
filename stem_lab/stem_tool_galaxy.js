@@ -1423,7 +1423,9 @@ function renderGalaxyEvidenceWorkbench(o) {
       [data-bh-events] button { display: flex; flex-direction: column; align-items: flex-start; border-color: #526889; }
       [data-bh-events] button[aria-pressed="true"] { color: #cffafe; border-color: #67e8f9; background: #164e63; }
       [data-bh-events] button span:last-child { font-weight: 400; color: #cbd5e1; font-size: 11px; }
-      [data-galaxy-hr-stage] { cursor: pointer; outline: none; }
+      [data-galaxy-hr-stage] { cursor: pointer; }
+      [data-galaxy-hr-stage]:focus:not(:focus-visible) { outline: none; }
+      [data-galaxy-hr-stage]:focus-visible { outline: 2px solid transparent; }
       [data-galaxy-hr-stage] [data-galaxy-hr-focus] { opacity: 0; }
       [data-galaxy-hr-stage]:focus-visible [data-galaxy-hr-focus] { opacity: 1; }
       [data-galaxy-hr-diagram] svg text { font-family: system-ui, sans-serif; }
@@ -4510,7 +4512,7 @@ if (!window._galaxyHasLoadedOnce) {
               function announce(text) { setText('black-hole-status',text); }
               var configuration = '', experiment = null, experimentTime = 0, released = false, lastPhase = '', previewPath = null, playbackDuration = 0, experimentEvents = [], experimentPrediction = null, comparison = null, distanceProfile = null, comparisonDistanceProfile = null, distanceMaximum = 2, inspectedFragment = -1, fragmentMoments=[], fragmentMomentUi=[], fragmentMomentsRevision=0, fragmentMomentRx=5, fragmentMomentRy=5;
               var launchAngle = .72, scratch = new THREE.Vector3(), redshiftColor = new THREE.Color(0xef583f), debrisUiSignature='';
-              var ringCanvas=document.createElement('canvas');ringCanvas.width=ringCanvas.height=64;
+              var ringCanvas=document.createElement('canvas');if(ringCanvas.setAttribute)ringCanvas.setAttribute('aria-hidden','true');ringCanvas.width=ringCanvas.height=64;
               var ringContext=ringCanvas.getContext('2d');ringContext.lineWidth=8;ringContext.strokeStyle='#111827';ringContext.beginPath();ringContext.arc(32,32,25,0,Math.PI*2);ringContext.stroke();ringContext.lineWidth=4;ringContext.strokeStyle='#a78bfa';ringContext.stroke();
               var fragmentHighlightTexture=new THREE.CanvasTexture(ringCanvas);fragmentHighlightTexture.encoding=THREE.sRGBEncoding;
               var fragmentHighlight=new THREE.Sprite(new THREE.SpriteMaterial({map:fragmentHighlightTexture,transparent:true,depthWrite:false,toneMapped:false}));
@@ -10148,7 +10150,7 @@ if (!window._galaxyHasLoadedOnce) {
             var measurementRulerMaterial = new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.6, depthWrite: false, depthTest: false, blending: THREE.NormalBlending });
             var measurementRulerLine = new THREE.Line(measurementRulerGeometry, measurementRulerMaterial); measurementRulerLine.renderOrder = 18; measurementRulerGroup.add(measurementRulerLine);
             var measurementTickSprites = [];
-            var rulerTickCanvas = document.createElement('canvas'); rulerTickCanvas.width = 64; rulerTickCanvas.height = 64;
+            var rulerTickCanvas = document.createElement('canvas'); if (rulerTickCanvas.setAttribute) rulerTickCanvas.setAttribute('aria-hidden', 'true'); rulerTickCanvas.width = 64; rulerTickCanvas.height = 64;
             var rulerTickCtx = upscaleGalaxyCanvas(rulerTickCanvas, rulerTickCanvas.getContext('2d'));
             rulerTickCtx.lineCap = 'round';
             for (var tickPass = 0; tickPass < 2; tickPass++) {
@@ -13811,7 +13813,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             React.createElement("div", { "data-galaxy-header": "true", className: "gx-hero-deck flex flex-wrap items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-white" })),
+              React.createElement("button", { type: "button", onClick: function () { var cv = galaxyCanvasActive.current; if (cv && cv._galaxyCleanup) cv._galaxyCleanup(); setStemLabTool(null); }, className: "flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white hover:bg-white/20 transition-colors", 'aria-label': __alloT('stem.galaxy.aria_back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-white" })),
 
               React.createElement("svg", { width: 42, height: 42, viewBox: "0 0 64 64", className: "shrink-0", "aria-hidden": "true", focusable: "false" },
                 React.createElement("rect", { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? "#000000" : "#030712", stroke: isContrast ? "#00ff00" : "rgba(165,180,252,0.55)", strokeWidth: 1.8 }),
@@ -14046,6 +14048,7 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("p", { className: "text-xs text-slate-200 leading-relaxed mb-2" },
                           why + ' ' + __alloT('stem.galaxy.fallback_still_works', 'Everything else on this page still works: filters, the object inspector, star life, and the quiz.')),
                         React.createElement("button", {
+                          type: "button",
                           onClick: function () { patchGalaxy({ webglError: false, webglErrorReason: null }); },
                           className: "min-h-[44px] px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-colors text-xs"
                         }, __alloT('stem.galaxy.retry_3d_mode', 'Retry 3D Mode')),
@@ -14704,7 +14707,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     return React.createElement("button", {
 
-                      key: rm.key, "data-galaxy-rotation-model": rm.key, "aria-label": __alloT('stem.galaxy.aria_set_rotation', "Set rotation model: ") + rm.label + " (" + rm.hint + ")", "aria-pressed": on,
+                      key: rm.key, type: "button", "data-galaxy-rotation-model": rm.key, "aria-label": __alloT('stem.galaxy.aria_set_rotation', "Set rotation model: ") + rm.label + " (" + rm.hint + ")", "aria-pressed": on,
 
                       onClick: function () {
 
@@ -15122,7 +15125,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   galaxyReducedMotion && React.createElement("p", { id: "galaxy-time-motion-help", className: "w-full text-xs leading-relaxed text-slate-700" }, __alloT('stem.galaxy.motion_reduce_time_help', 'Reduced motion keeps time-lapse paused. Use the cosmic-age slider to compare stages.')),
 
-                  React.createElement("button", { "aria-label": __alloT('stem.galaxy.aria_illustrate_supernova', 'Show an illustrative core-collapse supernova at a massive-star location'), title: __alloT('stem.galaxy.title_illustrate_supernova', 'Illustrate a massive-star explosion; size and timing are exaggerated'),
+                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.aria_illustrate_supernova', 'Show an illustrative core-collapse supernova at a massive-star location'), title: __alloT('stem.galaxy.title_illustrate_supernova', 'Illustrate a massive-star explosion; size and timing are exaggerated'),
 
                     onClick: function () {
 
@@ -15220,7 +15223,7 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement("p", { className: "rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-800" }, __alloT('stem.galaxy.warp_hint', 'Warp to a landmark, then inspect the evidence card below the workspace.')),
               React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2" },
 
-                WARP_POINTS.map(function (wp, wpIndex) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
+                WARP_POINTS.map(function (wp, wpIndex) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, type: "button", onClick: function () {
                   var cv = galaxyCanvasActive.current; if (cv && cv._galaxyClearSelection) cv._galaxyClearSelection(); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp);
                   var warpInspect = (wp.zoom === 2 && wp.x === 0 && wp.z === 0) ? 'blackHole' : (wp.zoom === 0.8 ? 'galaxyType' : 'spiralArms');
                   var warpDesc = wp.desc || (warpInspect === 'blackHole' ? __alloT('stem.galaxy.warp_blackhole_desc', 'Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.') : null);

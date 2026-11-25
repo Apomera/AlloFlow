@@ -671,6 +671,7 @@ async function bakeCreditBand(dataUrl, creditLine, options) {
   const width = symbol ? 640 : Math.min(960, naturalWidth);
   const artHeight = symbol ? 640 : Math.round(naturalHeight * (width / naturalWidth));
   const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
   try {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("The picture could not be opened.");
@@ -711,6 +712,7 @@ async function cropImageBottom(dataUrl, pixels) {
   const band = Math.max(0, Math.round(Number(pixels) || 0));
   if (!img.naturalWidth || img.naturalHeight - band < 1) throw new Error("The picture could not be opened.");
   const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
   try {
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight - band;
@@ -741,6 +743,7 @@ async function shrinkImageDataUrl(dataUrl, maxSide, options) {
   const naturalHeight = img.naturalHeight || side;
   const scale = opts.fitWidth ? Math.min(1, side / naturalWidth, side * 2 / naturalHeight) : Math.min(1, side / Math.max(naturalWidth, naturalHeight));
   const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
   try {
     canvas.width = Math.max(1, Math.round(naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(naturalHeight * scale));
@@ -895,6 +898,9 @@ function ClassroomImagePicker(props) {
   const status = state.status === "checking" ? tr("images_checking", "Searching and checking each photo for classroom safety...") : state.status === "searching" ? tr("images_searching", "Searching...") : state.status !== "done" ? "" : state.error === "unavailable" ? tr("images_unavailable", "Photos need the AI safety check, which is not available right now, so none are shown.") : state.error === "network" ? tr("images_network", "Could not reach the image library. Check the connection and try again.") : state.error === "timeout" && state.items.length ? state.items.length === 1 ? tr("images_timeout_partial_one", "The search took too long, so it stopped early. Showing the 1 photo checked so far.") : tr("images_timeout_partial", "The search took too long, so it stopped early. Showing the {count} photos checked so far.", { count: state.items.length }) : state.error === "timeout" ? tr("images_timeout", "The search took too long, so it was stopped. Try again, or try a simpler word.") : !state.items.length ? tr("images_none", "No usable results. Try a simpler or more common word.") : state.items.length === 1 ? tr("images_found_one", "1 result.") : tr("images_found", "{count} results.", { count: state.items.length });
   const held = state.status === "done" && tab === "photos" && state.withheld + state.unchecked > 0 ? state.withheld + state.unchecked === 1 ? tr("images_withheld_one", "1 photo was not shown because it could not be confirmed as classroom-appropriate.") : tr("images_withheld", "{count} photos were not shown because they could not be confirmed as classroom-appropriate.", { count: state.withheld + state.unchecked }) : "";
   const tabClass = (active) => "min-h-11 rounded-xl px-3 py-2 text-xs font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 " + (active ? "bg-sky-700 text-white" : "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50");
+  React.useEffect(() => {
+    _ensureAltTextA11yCss();
+  }, []);
   return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-3", "data-classroom-image-picker": "" }, allowed.length > 1 && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": tr("images_source_label", "Image source"), className: "mb-2 flex flex-wrap gap-2" }, allowed.map((source) => /* @__PURE__ */ React.createElement("button", { key: source, type: "button", "aria-pressed": tab === source, onClick: () => {
     stopWork();
     setTab(source);
@@ -933,6 +939,15 @@ function ClassroomImagePicker(props) {
     choosing === item.id ? tr("images_adding", "Adding...") : item.source === "mulberry" ? tr("images_use_symbol", "Use symbol") : tr("images_use_photo", "Use photo")
   )))));
 }
+function _ensureAltTextA11yCss() {
+  if (typeof document === "undefined" || !document.head || typeof document.getElementById !== "function" || typeof document.createElement !== "function") return;
+  if (document.getElementById("allo-alt-text-a11y-css")) return;
+  const st = document.createElement("style");
+  st.id = "allo-alt-text-a11y-css";
+  st.textContent = "[data-classroom-image-picker] button,[data-classroom-image-picker] input,[data-alt-text-field] button,[data-alt-text-field] input,[data-alt-text-field] textarea{touch-action:manipulation;}[data-classroom-image-picker] button:focus-visible,[data-classroom-image-picker] input:focus-visible,[data-alt-text-field] button:focus-visible,[data-alt-text-field] input:focus-visible,[data-alt-text-field] textarea:focus-visible{outline:2px solid #0284c7;outline-offset:2px;}@media (forced-colors: active){[data-classroom-image-picker] button:focus-visible,[data-classroom-image-picker] input:focus-visible,[data-alt-text-field] button:focus-visible,[data-alt-text-field] input:focus-visible,[data-alt-text-field] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}@media (prefers-reduced-motion: reduce){[data-classroom-image-picker] *,[data-classroom-image-picker] *::before,[data-classroom-image-picker] *::after,[data-alt-text-field] *,[data-alt-text-field] *::before,[data-alt-text-field] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}";
+  document.head.appendChild(st);
+}
+_ensureAltTextA11yCss();
 function ImageAltField(props) {
   const {
     id,
@@ -949,6 +964,9 @@ function ImageAltField(props) {
     label,
     t
   } = props;
+  React.useEffect(() => {
+    _ensureAltTextA11yCss();
+  }, []);
   const [, setAiRevision] = React.useState(0);
   React.useEffect(() => {
     const onAiChange = () => setAiRevision((v) => v + 1);
@@ -985,7 +1003,7 @@ function ImageAltField(props) {
   const hostDoor = !studentAiOff && typeof window !== "undefined" && typeof window.__alloAiSetupDoorway === "function" ? window.__alloAiSetupDoorway("text", t) : null;
   const regenerateAiBlocked = aiLocked || !hostAiUsable || Boolean(hostDoor && hostDoor.disabled);
   const SetupNotice = !studentAiOff && typeof window !== "undefined" && window.AlloModules && window.AlloModules.AlloAiSetupNotice ? window.AlloModules.AlloAiSetupNotice : null;
-  return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-3", "data-alt-source": sourceKey || void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, decorative ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-slate-800" }, label || tr("field_label", "Image description")) : /* @__PURE__ */ React.createElement("label", { htmlFor: fieldId, className: "text-xs font-black text-slate-800" }, label || tr("field_label", "Image description")), sourceMeta && /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold " + (toneClass[sourceMeta.tone] || toneClass.sky) }, tr("provenance_" + sourceKey, sourceMeta.label))), /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: decorative === true, disabled, onChange: (event) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-300 bg-white p-3", "data-alt-text-field": "true", "data-alt-source": sourceKey || void 0 }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, decorative ? /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-slate-800" }, label || tr("field_label", "Image description")) : /* @__PURE__ */ React.createElement("label", { htmlFor: fieldId, className: "text-xs font-black text-slate-800" }, label || tr("field_label", "Image description")), sourceMeta && /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold " + (toneClass[sourceMeta.tone] || toneClass.sky) }, tr("provenance_" + sourceKey, sourceMeta.label))), /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: decorative === true, disabled, onChange: (event) => {
     if (typeof onDecorativeChange === "function") onDecorativeChange(event.target.checked);
   }, className: "h-4 w-4 accent-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600" }), tr("decorative_label", "Decorative (screen readers skip it)")), !decorative && /* @__PURE__ */ React.createElement(
     "textarea",

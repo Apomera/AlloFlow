@@ -16,7 +16,7 @@
     const tag = typeof call?._alloflowBackend === 'string' ? call._alloflowBackend : '';
     const descriptor = active && typeof active === 'object' ? active : {};
     const backend = tag || descriptor.backend || (typeof active === 'string' ? active : '') || config.backend || 'gemini';
-    const names = { gemini: 'Gemini', openai: 'OpenAI', claude: 'Claude', ollama: 'Ollama', lmstudio: 'LM Studio', 'alloflow-local': 'AlloFlow Local', custom: 'Custom AI' };
+    const names = { gemini: 'Gemini', openai: 'OpenAI', claude: 'Claude', ollama: 'Ollama', localai: 'LocalAI', lmstudio: 'LM Studio', 'alloflow-local': 'AlloFlow Local', 'onnx-npu': 'On-Device NPU', custom: 'Custom AI' };
     const rawUrl = backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : descriptor.backend === backend ? descriptor.baseUrl : config.backend === backend ? config.baseUrl : '';
     let origin = '';
     try { const url = new URL(rawUrl); if (['https:', 'http:'].includes(url.protocol)) origin = url.origin; } catch (_) {}

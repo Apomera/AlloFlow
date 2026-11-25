@@ -331,14 +331,14 @@ describe('Test Prep Hub live alloflow-diagram-v1 textbook diagram runtime covera
     expect(totalTakeaways).toBeGreaterThanOrEqual(963);
   });
 
-  it('normalizes 199 interactive workshops across 100% of non-EPPP libraries (30/30: 8 AP + 22 Praxis/ParaPro)', () => {
-    const stems = Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS);
-    expect(stems).toHaveLength(30);
+  it('normalizes 207 interactive workshops across 100% of learning libraries (31/31: EPPP + 8 AP + 22 Praxis/ParaPro)', () => {
+    const stems = [...Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS), 'eppp'];
+    expect(stems).toHaveLength(31);
     let totalWorkshops = 0;
     for (const stem of stems) {
       const lib = JSON.parse(fs.readFileSync(resolve(root, `test_prep/${stem}_learning_library.json`), 'utf8'));
       const raw = lib.constructedResponseWorkshops || [];
-      const minWorkshops = stem.startsWith('ap_') ? 2 : 6;
+      const minWorkshops = stem === 'eppp' ? 8 : (stem.startsWith('ap_') ? 2 : 6);
       expect(raw.length, `${stem} workshops count`).toBeGreaterThanOrEqual(minWorkshops);
       const ids = new Set();
       const titles = new Set();
@@ -351,12 +351,12 @@ describe('Test Prep Hub live alloflow-diagram-v1 textbook diagram runtime covera
       expect(ids.size, `${stem} unique workshop ids`).toBe(raw.length);
       expect(titles.size, `${stem} unique workshop titles`).toBe(raw.length);
     }
-    expect(totalWorkshops).toBe(199);
+    expect(totalWorkshops).toBe(207);
   });
 
-  it('provides 158 high-yield Quick Reference cards across 100% of non-EPPP libraries (30/30: 8 AP + 22 Praxis/ParaPro)', () => {
-    const stems = Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS);
-    expect(stems).toHaveLength(30);
+  it('provides 166 high-yield Quick Reference cards across 100% of learning libraries (31/31: EPPP + 8 AP + 22 Praxis/ParaPro)', () => {
+    const stems = [...Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS), 'eppp'];
+    expect(stems).toHaveLength(31);
     let totalCards = 0;
     for (const stem of stems) {
       const lib = JSON.parse(fs.readFileSync(resolve(root, `test_prep/${stem}_learning_library.json`), 'utf8'));
@@ -378,12 +378,12 @@ describe('Test Prep Hub live alloflow-diagram-v1 textbook diagram runtime covera
       expect(ids.size, `${stem} unique quickRef ids`).toBe(cards.length);
       expect(titles.size, `${stem} unique quickRef titles`).toBe(cards.length);
     }
-    expect(totalCards).toBe(158);
+    expect(totalCards).toBe(166);
   });
 
-  it('provides 217 interactive Misconception Playbooks linked to real pack items across 100% of non-EPPP libraries (30/30: 8 AP + 22 Praxis/ParaPro)', () => {
-    const stems = Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS);
-    expect(stems).toHaveLength(30);
+  it('provides 225 interactive Misconception Playbooks linked to real pack items across 100% of learning libraries (31/31: EPPP + 8 AP + 22 Praxis/ParaPro)', () => {
+    const stems = [...Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS), 'eppp'];
+    expect(stems).toHaveLength(31);
     let totalPlaybooks = 0;
     for (const stem of stems) {
       const lib = JSON.parse(fs.readFileSync(resolve(root, `test_prep/${stem}_learning_library.json`), 'utf8'));
@@ -406,6 +406,85 @@ describe('Test Prep Hub live alloflow-diagram-v1 textbook diagram runtime covera
       }
       totalPlaybooks += total;
     }
-    expect(totalPlaybooks).toBe(217);
+    expect(totalPlaybooks).toBe(225);
+  });
+
+  it('provides guided study sessions, spaced-review plans, and public source catalogs across 100% of learning libraries (31/31)', () => {
+    const stems = [...Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS), 'eppp'];
+    expect(stems).toHaveLength(31);
+    let totalSessions = 0;
+    let totalSpaced = 0;
+    let totalSources = 0;
+    for (const stem of stems) {
+      const lib = JSON.parse(fs.readFileSync(resolve(root, `test_prep/${stem}_learning_library.json`), 'utf8'));
+      const sessions = lib.studySessionPlans || [];
+      const spaced = lib.spacedReviewPlans || [];
+      const sources = lib.sourceCatalog || [];
+      expect(sessions.length, `${stem} studySessionPlans`).toBeGreaterThanOrEqual(7);
+      const minSpaced = stem === 'eppp' ? 8 : (lib.chapters || []).length;
+      expect(spaced.length, `${stem} spacedReviewPlans`).toBeGreaterThanOrEqual(minSpaced);
+      expect(sources.length, `${stem} sourceCatalog`).toBeGreaterThanOrEqual(3);
+      const minSessionItems = stem === 'ap_physics_1_foundation_pilot' ? 0 : 10;
+      for (const s of sessions) {
+        expect(s.id && s.title && Array.isArray(s.steps) && s.steps.length >= 3, `${stem}/${s.id} session structure`).toBe(true);
+        if (minSessionItems > 0) {
+          expect(Array.isArray(s.itemIds) && s.itemIds.length >= minSessionItems, `${stem}/${s.id} linked practice items`).toBe(true);
+        }
+      }
+      for (const sp of spaced) {
+        expect(sp.id && sp.topicLabel && Array.isArray(sp.cadenceStages) && sp.cadenceStages.length === 4, `${stem}/${sp.id} spaced stages`).toBe(true);
+      }
+      for (const src of sources) {
+        expect(src.id && src.title && /^https:\/\//i.test(String(src.url || '')), `${stem}/${src.id} sourceCatalog entry`).toBe(true);
+      }
+      totalSessions += sessions.length;
+      totalSpaced += spaced.length;
+      totalSources += sources.length;
+    }
+    expect(totalSessions).toBeGreaterThanOrEqual(390);
+    expect(totalSpaced).toBeGreaterThanOrEqual(355);
+    expect(totalSources).toBeGreaterThanOrEqual(220);
+  });
+
+  it('provides unitReviewRoutes, reviewLadders, and non-overlapping practiceForms across 100% of learning libraries (31/31)', () => {
+    const stems = [...Object.keys(EXPECTED_CONCEPT_DIAGRAM_COUNTS), 'eppp'];
+    expect(stems).toHaveLength(31);
+    let totalUnitRoutes = 0;
+    let totalLadders = 0;
+    let totalForms = 0;
+    for (const stem of stems) {
+      const lib = JSON.parse(fs.readFileSync(resolve(root, `test_prep/${stem}_learning_library.json`), 'utf8'));
+      const unitRoutes = lib.unitReviewRoutes || [];
+      const ladders = lib.reviewLadders || [];
+      const forms = lib.practiceForms || [];
+      const expectedRoutes = stem === 'eppp' ? 8 : (lib.chapters || []).length;
+      expect(unitRoutes.length, `${stem} unitReviewRoutes`).toBe(expectedRoutes);
+      expect(ladders.length, `${stem} reviewLadders`).toBeGreaterThanOrEqual(3);
+      expect(forms.length, `${stem} practiceForms`).toBeGreaterThanOrEqual(3);
+      for (const ur of unitRoutes) {
+        expect(ur.id && ur.chapterId, `${stem}/${ur.id} unitRoute id/chapterId`).toBeTruthy();
+        expect(Array.isArray(ur.itemIds) && ur.itemIds.length >= 10, `${stem}/${ur.id} unitRoute itemIds`).toBe(true);
+      }
+      for (const lad of ladders) {
+        expect(lad.id && (lad.label || lad.title), `${stem}/${lad.id} ladder metadata`).toBeTruthy();
+        expect(Array.isArray(lad.itemIds) && lad.itemIds.length >= 20, `${stem}/${lad.id} ladder itemIds`).toBe(true);
+      }
+      if (stem !== 'ap_physics_1_foundation_pilot') {
+        const seenFormItems = new Set();
+        for (const form of forms) {
+          expect(Array.isArray(form.itemIds) && form.itemIds.length >= 25, `${stem}/${form.id} form itemIds`).toBe(true);
+          for (const id of form.itemIds) {
+            expect(seenFormItems.has(id), `${stem}/${form.id} non-overlapping form item ${id}`).toBe(false);
+            seenFormItems.add(id);
+          }
+        }
+      }
+      totalUnitRoutes += unitRoutes.length;
+      totalLadders += ladders.length;
+      totalForms += forms.length;
+    }
+    expect(totalUnitRoutes).toBe(329);
+    expect(totalLadders).toBeGreaterThanOrEqual(95);
+    expect(totalForms).toBeGreaterThanOrEqual(94);
   });
 });

@@ -31,6 +31,8 @@ run with no internet):
 | CC BY 4.0 | [`licenses/CC-BY-4.0.txt`](./licenses/CC-BY-4.0.txt) |
 | CC BY-SA 4.0 | [`licenses/CC-BY-SA-4.0.txt`](./licenses/CC-BY-SA-4.0.txt) |
 | CC0 1.0 | [`licenses/CC0-1.0.txt`](./licenses/CC0-1.0.txt) |
+| WordNet License (Princeton WordNet 3.1) | [`licenses/Princeton-WordNet-3.1-LICENSE.txt`](./licenses/Princeton-WordNet-3.1-LICENSE.txt) |
+| ODbL 1.0 (OpenStreetMap data) | [`vendor/skyschool-cities/ODbL-1.0.txt`](./vendor/skyschool-cities/ODbL-1.0.txt) |
 
 The short permissive licenses (MIT, ISC, BSD-2-Clause, BSD-3-Clause) are reproduced
 in full at the end of this file; each dependency's specific copyright line is in its
@@ -44,11 +46,18 @@ row below.
 
 ## How the copyleft dependencies are used (compliance posture)
 
-- **GPL / GPL-fork engines loaded at runtime** — liblouis, Piper, Kokoro, eSpeak NG,
-  and Transformers.js models are fetched at runtime from their **own upstream
-  distributions** (e.g. jsDelivr), not rebuilt and redistributed by AlloFlow.
-  AlloFlow links to them at arm's length; their complete corresponding source is at
-  the URLs below.
+- **Copyleft engines loaded at runtime** — liblouis (library and tables
+  LGPL-2.1+; the liblouis-js `easy-api.js` wrapper GPL-3.0) and the eSpeak NG
+  phonics engine (GPL-3.0) are fetched at runtime from their **own upstream
+  distributions** on jsDelivr. The **Piper and Kokoro speech engines are
+  self-hosted**: `app/runtime_assets/engine/` serves their WebAssembly and data
+  files byte-identical to the jsDelivr originals (sha384 pins in
+  `engine_runtime_provenance.json`), and their JavaScript re-bundled into single
+  files by `dev-tools/build_browser_runtime_graphs.cjs` (esbuild; Node-only
+  branches replaced by stubs). Both speech bundles contain **eSpeak NG
+  (GPL-3.0-or-later) compiled to WebAssembly** — in Piper's `piper_phonemize`
+  build and in Kokoro's phonemizer. Their complete corresponding source is at the
+  URLs below.
 - **GPLv2 simulations run in iframes** — CircuitJS1 (GPLv2) and PhET (GPLv3 code)
   are embedded as **separate programs in isolated iframes**, i.e. mere aggregation.
   They must stay iframe-isolated and never be statically linked into the AGPL app;
@@ -59,7 +68,9 @@ row below.
   and the Apache/GPL NOTICES section below.
 - **veraPDF** is dual-licensed **GPLv3+ / MPLv2**; AlloFlow **elects the MPL-2.0**
   option for it.
-- **Share-alike content** — Mulberry Symbols and Wiktionary data are **CC BY-SA**.
+- **Share-alike content** — Mulberry Symbols, OpenMoji, Wiktionary data, the NAWL
+  word list and the HYG star catalog are **CC BY-SA 4.0**; the OpenStreetMap city
+  data in SkySchool is **ODbL 1.0** (attribution and share-alike for the database).
   When a teacher exports an AAC board or material that incorporates them, the
   incorporated symbols/text remain under CC BY-SA and any adaptation of them must be
   shared alike, with attribution preserved. AlloFlow uses them as-is and credits the
@@ -149,16 +160,19 @@ uses an open range.
 | [Tesseract.js](https://tesseract.projectnaptha.com) | OCR of scanned handouts | Apache-2.0 | Copyright (c) 2015 Kevin Kwok and Jerome Wu |
 | [veraPDF](https://verapdf.org) | PDF/UA-1 conformance checks | GPLv3+ / MPLv2 (AlloFlow elects MPL-2.0) | Copyright (c) veraPDF Consortium |
 | [Apache PDFBox](https://pdfbox.apache.org) | PDF parsing inside veraPDF | Apache-2.0 | Copyright 2014 The Apache Software Foundation (see NOTICE below) |
-| [CheerpJ](https://leaningtech.com/cheerpj/) | runs the veraPDF engine in the browser | free for this use (LeaningTech) | © Leaning Technologies Ltd |
+| [CheerpJ](https://cheerpj.com) | runs the veraPDF engine in the browser (`verapdf/verapdf_validator.html`); the CheerpJ 3.1 runtime loads from LeaningTech's own CDN (`cjrtnc.leaningtech.com`) and is not shipped by AlloFlow | **Proprietary — not open source.** CheerpJ's licensing terms (cheerpj.com/docs/licensing) make it free for personal, educational and hobby use and for non-commercial open-source projects that load it from the CheerpJ CDN with a "Built with CheerpJ" credit; business use needs a paid licence | © Leaning Technologies Ltd. Built with CheerpJ |
+| [mathml2omml](https://github.com/fiduswriter/mathml2omml) | converting MathML to Word equations (OMML) in .docx export; v0.5.0 loaded at runtime from jsDelivr, unmodified | LGPL-3.0-or-later ([`licenses/LGPL-3.0.txt`](./licenses/LGPL-3.0.txt)) | Copyright (c) Johannes Wilm / Fidus Writer (package author) |
+| [SheetJS Community Edition](https://sheetjs.com) | reading spreadsheets (.xlsx/.xls/.csv) for import and Lumen; v0.20.3 self-hosted unmodified at `app/runtime_assets/document/sheetjs-0.20.3/` | Apache-2.0 | (C) 2013-present SheetJS (the file's own banner) |
 | [axe-core](https://github.com/dequelabs/axe-core) | accessibility rule checks | MPL-2.0 | Copyright (c) Deque Systems, Inc. |
 | [IBM Equal Access](https://github.com/IBMa/equal-access) | second accessibility checker | Apache-2.0 | Copyright (c) IBM Corp. |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | HTML sanitizing | Apache-2.0 / MPL-2.0 | Copyright (c) 2015 Dr.-Ing. Mario Heiderich, Cure53 |
 | [Harper](https://writewithharper.com) | grammar & spelling checks; v2.4.0 runtime vendored under `vendor/harper/2.4.0/` | Apache-2.0 ([vendored license](./vendor/harper/2.4.0/LICENSE)) | Copyright 2024 Elijah Potter |
 | [Free Dictionary API](https://dictionaryapi.dev) | word definitions/pronunciation | API free; data CC BY-SA (Wiktionary) | Definitions © Wiktionary contributors (CC BY-SA) |
 | [Wiktionary](https://www.wiktionary.org/) reviewed lexical pilot | Small, locally bundled English/French/Spanish word-family, cognate, borrowing, and false-friend records in `lexical_graph_module.js`; each relationship retains its source record URL, review date, and attribution | CC BY-SA 4.0 | © Wiktionary contributors; AlloFlow's reviewed subset and relationship annotations are distributed under CC BY-SA 4.0, with changes identified in the dataset manifest |
-| [liblouis](https://liblouis.io) | UEB Grade 2 braille (.brf) translation | GPLv3 (engine) / LGPL-2.1+ (tables) | Copyright (c) liblouis contributors |
+| [liblouis](https://liblouis.io) | UEB Grade 2 braille (.brf) translation; loaded at runtime from jsDelivr, unmodified: the liblouis C library compiled to JavaScript (`liblouis-build@3.2.0-rc`, tables `unicode.dis` + `en-ueb-g2.ctb`) and the liblouis-js `easy-api.js` wrapper (`liblouis@0.4.0`) | LGPL-2.1-or-later (library and tables; [`licenses/LGPL-2.1.txt`](./licenses/LGPL-2.1.txt)) / GPL-3.0 (liblouis-js wrapper; [`licenses/GPL-3.0.txt`](./licenses/GPL-3.0.txt)) | Copyright (c) liblouis contributors; `en-ueb-g2.ctb` (C) 2004-2008 ViewPlus Technologies, Inc., (C) 2004-2006 JJB Software, Inc., (C) 2016 American Printing House for the Blind, Inc., (C) 2016 Joseph Lee; liblouis-js by Reiner Dolp |
 | [Open Board Format (OBF/OBZ)](https://www.openboardformat.org) | AAC board interchange (Symbol Studio) | open specification | © Open AAC / CoughDrop |
-| [Mulberry Symbols](https://mulberrysymbols.org) | validated AAC symbol set | CC BY-SA | Copyright (c) Steve Lee / Open AAC (share-alike; see note above) |
+| [Mulberry Symbols](https://mulberrysymbols.org) | validated AAC symbol set (Symbol Studio); v3.6.1 vendored in `data/vendor/mulberry/` as the offline pictures for the glossary, Word Sounds, Math Fluency and word practice | CC BY-SA 4.0 ([`licenses/CC-BY-SA-4.0.txt`](./licenses/CC-BY-SA-4.0.txt)) | Copyright 2018-2026 Steve Lee (share-alike; see note above) |
+| [OpenMoji](https://openmoji.org) | second offline picture set (glossary, Word Sounds, Math Fluency, word practice); v17.0.0 vendored in `data/vendor/openmoji/`, SVGs converted to the picture bank | CC BY-SA 4.0 ([`licenses/CC-BY-SA-4.0.txt`](./licenses/CC-BY-SA-4.0.txt)) | All emojis designed by OpenMoji – the open-source emoji and icon project (HfG Schwäbisch Gmünd and contributors). License: CC BY-SA 4.0 |
 | [Global Symbols](https://globalsymbols.com) | open symbol-search service | platform free; symbols under own licenses | © Global Symbols CIC |
 | [KaTeX](https://katex.org) | math typesetting | MIT | Copyright (c) 2013-2020 Khan Academy and other contributors |
 | [Temml](https://temml.org) | LaTeX → MathML | MIT | Copyright (c) 2020 Ron Kok |
@@ -188,6 +202,9 @@ uses an open range.
 | [Human Reference Atlas kidney v1.3](https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/) | bundled female-left 3D reference organ and ontology crosswalk (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
 | [Human Reference Atlas heart v1.3](https://lod.humanatlas.io/ref-organ/heart-female/v1.3/) | bundled female-heart 3D reference organ, ontology crosswalk, and pinned metadata (Anatomy Clinical Atlas; see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2024 Kristen Browne and Heidi Schlehlein; Human Reference Atlas / HuBMAP; derived from the NLM Visible Human Dataset |
 | [Human Reference Atlas renal corpuscle FTU v1.4](https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/) | bundled 2D renal-corpuscle reference illustration, metadata, and Cell Ontology crosswalk for the Anatomy kidney Scale Bridge (see [`ATTRIBUTION.md`](./stem_lab/assets/anatomy/clinical-atlas/ATTRIBUTION.md)) | CC BY 4.0 | Copyright 2026 Rachel Bajema; Human Reference Atlas / HuBMAP |
+| [Human Reference Atlas brain (NIH 3D 3DPX-020960)](https://3d.nih.gov/entries/3DPX-020960) | bundled 141-structure 3D brain for Brain Atlas (`stem_lab/assets/brainatlas/`; re-encoded with meshopt compression, geometry unchanged — see [`ATTRIBUTION.md`](./stem_lab/assets/brainatlas/ATTRIBUTION.md)) | CC BY 4.0 | Human Reference Atlas (HRA), published by NIH 3D (2025); derived from the Allen human brain reference atlas (Ding et al., 2016) |
+| [HYG Database](https://codeberg.org/astronexus/hyg) | naked-eye star catalog (v4.1 subset) for the 3D Observatory (`stem_lab/assets/astronomy/hyg-v41-naked-eye.json`; see [`ATTRIBUTION.md`](./stem_lab/assets/astronomy/ATTRIBUTION.md)) | CC BY-SA 4.0 (the derived subset is shared under the same licence) | HYG Database by David Nash (astronexus), combining the Hipparcos, Yale Bright Star and Gliese catalogs |
+| [NASA Scientific Visualization Studio & Earth Observatory imagery](https://svs.gsfc.nasa.gov) | bundled Blue Marble, Black Marble, Moon (LROC/LOLA) and Hubble Jupiter maps for Scale Explorer, Moon Mission and the Observatory (`stem_lab/assets/astronomy/`; per-image credits in [`ATTRIBUTION.md`](./stem_lab/assets/astronomy/ATTRIBUTION.md)) | Public domain (NASA media guidelines); no NASA endorsement implied | Courtesy NASA/Goddard Space Flight Center Scientific Visualization Studio, NASA Earth Observatory, NASA/ESA/STScI (per-image credits in ATTRIBUTION.md) |
 | [iframe-phone](https://github.com/concord-consortium/iframe-phone) | bridge to the CODAP window | MIT | Copyright (c) 2014 Concord Consortium |
 | [OpenSeadragon](https://openseadragon.github.io) | deep-zoom image viewer (Zoom Gallery) | BSD-3-Clause | Copyright (C) 2009 CodePlex Foundation; (C) 2010-present OpenSeadragon contributors |
 | [Smithsonian Open Access](https://www.si.edu/openaccess) | museum images (Zoom Gallery) | CC0 1.0 | Public domain (CC0) — Smithsonian Institution |
@@ -203,7 +220,12 @@ uses an open range.
 | [Excalidraw](https://excalidraw.com) | the Whiteboard | MIT | Copyright (c) 2020 Excalidraw |
 | [KayKit Dungeon Remastered](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | 3D decoration models (Memory Palace) | CC0 (credit appreciated) | © Kay Lousberg — see [`assets/glb/KAYKIT_LICENSE.txt`](./assets/glb/KAYKIT_LICENSE.txt) |
 | [globe.gl](https://github.com/vasturiano/globe.gl) | interactive 3D globe | MIT | Copyright (c) 2019 Vasco Asturiano |
+| [three-globe example textures](https://github.com/vasturiano/three-globe/tree/master/example/img) | Earth day/night, topology, cloud and star-background images on the Geo tool's globe, loaded at runtime from `three-globe@2.45.6` on unpkg | MIT (three-globe repository); the Earth images are NASA-derived (public domain) — upstream gives no per-image source | three-globe Copyright (c) 2019 Vasco Asturiano; Earth imagery courtesy NASA (origin of the cloud and star images not stated upstream) |
 | [Leaflet](https://leafletjs.com) | interactive maps | BSD-2-Clause | Copyright (c) 2010-present Volodymyr Agafonkin |
+| [MapLibre GL JS](https://maplibre.org) | 3D geographic map in Weather Systems; v5.24.0 loaded at runtime from unpkg/jsDelivr, unmodified | BSD-3-Clause (bundled glfx.js MIT; d3-color portion BSD-3-Clause) | Copyright (c) 2023, MapLibre contributors; Copyright (c) 2020, Mapbox; glfx.js Copyright (C) 2011 by Evan Wallace; d3-color Copyright 2010-2016 Mike Bostock |
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) | building footprints and roads: the bundled SkySchool Portland pack (`vendor/skyschool-cities/`, with its LICENSE.md and ODbL text) and OpenFreeMap vector tiles loaded at runtime in SkySchool and Weather Systems (attribution shown on the map) | ODbL 1.0 ([`vendor/skyschool-cities/ODbL-1.0.txt`](./vendor/skyschool-cities/ODbL-1.0.txt)) | © OpenStreetMap contributors |
+| [meshoptimizer](https://github.com/zeux/meshoptimizer) | decoding the compressed Brain Atlas model; decoder v1.2.0 vendored unmodified in `vendor/meshoptimizer/` with its LICENSE.txt | MIT | Copyright (c) 2016-2026 Arseny Kapoulkine |
+| [TimelineJS](https://timeline.knightlab.com) | the Timeline Studio viewer (`timeline_studio/timeline_studio.html`); v3.9.2 loaded at runtime from jsDelivr, unmodified | MPL-2.0 ([`licenses/MPL-2.0.txt`](./licenses/MPL-2.0.txt)) | Copyright Northwestern University Knight Lab |
 | [world-atlas](https://github.com/topojson/world-atlas) | country-boundary map data (Natural Earth, public domain) | ISC | Copyright 2013-2019 Michael Bostock |
 | [Natural Earth populated places](https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-populated-places/) | 99 selected city coordinates from version 5.1.2, 110m populated places (SCALERANK ≤ 2), rounded to four decimal degrees for Moon Mission; light brightness and spread are illustrative, not satellite radiance or 1969 illumination | Public domain — [bundled provenance notice](./licenses/natural-earth-city-lights-PUBLIC-DOMAIN.txt) | Made with Natural Earth; public-domain data |
 | [A-Frame](https://aframe.io) | WebXR / virtual reality | MIT | Copyright (c) 2015-present A-Frame authors |
@@ -214,7 +236,7 @@ uses an open range.
 | Library | Used for | License | Copyright |
 |---|---|---|---|
 | [Kokoro](https://github.com/hexgrad/kokoro) | neural text-to-speech (primary) | Apache-2.0 | Copyright (c) hexgrad |
-| [Piper](https://github.com/OHF-Voice/piper1-gpl) | neural text-to-speech (40+ languages) | GPLv3 (engine fork) | © Michael Hansen / OHF-Voice and contributors |
+| [Piper](https://github.com/rhasspy/piper) | neural text-to-speech (40+ languages). What loads: [`@mintplex-labs/piper-tts-web`](https://github.com/Mintplex-Labs/piper-tts-web) 1.0.4 (MIT) and the [`@diffusionstudio/piper-wasm`](https://github.com/diffusion-studio/piper-wasm) 1.0.0 `piper_phonemize` build (MIT; a WebAssembly build of rhasspy/piper's phonemizer), on ONNX Runtime Web 1.18.0, self-hosted in `app/runtime_assets/engine/`. Voices are downloaded on demand from the diffusionstudio/piper-voices mirror, each under its own model-card licence. AlloFlow does **not** use the GPLv3 `OHF-Voice/piper1-gpl` engine | MIT (piper-tts-web, piper-wasm, original rhasspy/piper); the phonemizer's bundled eSpeak NG code and `espeak-ng-data` are GPL-3.0-or-later ([`licenses/GPL-3.0.txt`](./licenses/GPL-3.0.txt)) | piper-tts-web © Mintplex Labs; piper-wasm © Konstantin Paulus (Diffusion Studio); Piper © Michael Hansen (rhasspy); eSpeak NG © eSpeak NG contributors |
 | [eSpeak NG](https://github.com/espeak-ng/espeak-ng) | offline grapheme→phoneme (phonics) | GPLv3 | Copyright (c) eSpeak NG contributors |
 | [Transformers.js](https://github.com/huggingface/transformers.js) | in-browser ML (Whisper, translation, image gen) | Apache-2.0 | Copyright (c) Hugging Face |
 | [Helsinki-NLP OPUS-MT](https://github.com/Helsinki-NLP/OPUS-MT) | on-device translation models (Bridge private mode) | CC BY-4.0 | © University of Helsinki / OPUS |
@@ -227,10 +249,17 @@ uses an open range.
 |---|---|---|---|
 | [QR Code Generator](https://github.com/kazuhikoarase/qrcode-generator) | class-join & resource-share QR codes | MIT | Copyright (c) 2009 Kazuhiko Arase |
 | [lz-string](https://github.com/pieroxy/lz-string) | compressing saved work | MIT | Copyright (c) 2013 pieroxy |
+| [jsQR](https://github.com/cozmo/jsQR) | reading student QR codes on the Packets "Collect by sealed QR" page (vendor/jsqr-1.4.0.js, unmodified) | Apache-2.0 | Copyright the jsQR authors (the package names no single holder; Apache-2.0 text in licenses/Apache-2.0.txt) |
 | [idb-keyval](https://github.com/jakearchibald/idb-keyval) | offline browser storage | Apache-2.0 | Copyright (c) Jake Archibald |
 | [jsdiff](https://github.com/kpdecker/jsdiff) | comparing text revisions | BSD-3-Clause | Copyright (c) 2009-2015 Kevin Decker |
 | [CMU Pronouncing Dictionary](https://github.com/cmusphinx/cmudict) | syllable counts and stress for Word Sounds and syllable checking | BSD-2-Clause | Copyright (C) 1993-2015 Carnegie Mellon University |
 | [Moby Hyphenator (Grady Ward)](https://www.gutenberg.org/ebooks/3204) | English syllable divisions | Public domain | Public domain by grant of the author, January 2001 |
+| [CYP-LEX (Children and Young People's Books Lexicon)](https://osf.io/squ49/) | how common a word is in children's books (ages 7-9 band) for Word Sounds word choice and the Packets vocabulary bank; 3 of 27 columns of `main_cyplex79.csv` kept, filtered to Word Sounds words, Zipf rounded (`data/vendor/cyplex/`) | CC BY 4.0 ([`licenses/CC-BY-4.0.txt`](./licenses/CC-BY-4.0.txt)) | Korochkina, M., Marelli, M., Brysbaert, M., & Rastle, K. (2024), Quarterly Journal of Experimental Psychology 77(12), 2418-2438, doi:10.1177/17470218241229694 |
+| [Open English WordNet](https://en-word.net) | word senses, glosses and word families in the Packets vocabulary bank; offline word-to-picture matching in the glossary (`word_picture_semantic_en.js`); 2025 edition, filtered | CC BY 4.0, with the Princeton WordNet License for the underlying data ([`licenses/Princeton-WordNet-3.1-LICENSE.txt`](./licenses/Princeton-WordNet-3.1-LICENSE.txt)) | Copyright (c) 2019-present The Open English WordNet Team; WordNet 3.1 Copyright 2011 by Princeton University. All rights reserved. |
+| [Wiktionary (kaikki.org wiktextract extracts)](https://kaikki.org) | definitions, word forms and usage examples in the Packets vocabulary bank (English and Simple English Wiktionary, filtered and corrected; changes recorded in `data/vendor/vocab/README.md`) | CC BY-SA 4.0 ([`licenses/CC-BY-SA-4.0.txt`](./licenses/CC-BY-SA-4.0.txt)); Wikimedia text also GFDL | © Wiktionary contributors; extracted with Tatu Ylonen's wiktextract (kaikki.org) |
+| [New Academic Word List (NAWL) 1.2](https://www.newgeneralservicelist.com) | academic headwords in the Packets vocabulary bank | CC BY-SA 4.0 ([`licenses/CC-BY-SA-4.0.txt`](./licenses/CC-BY-SA-4.0.txt)) | Charles Browne, Brent Culligan & Joseph Phillips (2013) |
+| [compromise](https://github.com/spencermountain/compromise) | sentence splitting in Text Inquiry (`text_inquiry/text_inquiry.html`); v14.15.1 vendored unmodified in `vendor/compromise/` with its LICENSE | MIT | Copyright (c) 2019 Spencer Kelly |
+| [Chart.js](https://www.chartjs.org) | quiz, flag and trend charts in Student Analytics; v4.4.7 loaded at runtime from jsDelivr (SRI-pinned) | MIT | Copyright (c) 2014-2024 Chart.js Contributors |
 | [jsonrepair](https://github.com/josdejong/jsonrepair) | repairing AI-generated JSON | ISC | Copyright (c) 2020-present Jos de Jong |
 | [lamejs](https://github.com/zhuker/lamejs) | MP3 audio encoding | LGPL-3.0 | Copyright (c) 2013 Zhuker; based on LAME © the LAME developers |
 | [DragDropTouch](https://github.com/Bernardo-Castilho/dragdroptouch) | touch drag-and-drop on tablets | MIT | Copyright (c) 2016-present Bernardo Castilho |
@@ -267,6 +296,7 @@ copies are the SIL OFL-1.1 builds from Fontsource, kept with their licence texts
 | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | interface font | SIL OFL-1.1 | Copyright (c) Tokotype |
 | [Noto](https://fonts.google.com/noto) | Unicode & CJK text in PDFs | SIL OFL-1.1 | Copyright (c) The Noto Project Authors (Google) |
 | [DejaVu](https://dejavu-fonts.github.io) | PDF fallback font | Bitstream Vera / public domain | © Bitstream, Inc.; DejaVu changes public domain |
+| [Tinos](https://github.com/googlefonts/tinos) | Times New Roman-compatible font embedded into remediated PDFs (loaded from `@expo-google-fonts/tinos@0.4.2` on jsDelivr/unpkg, or a first-party copy) | SIL OFL-1.1 ([`licenses/OFL-1.1.txt`](./licenses/OFL-1.1.txt)) | Copyright The Tinos Project Authors (https://github.com/googlefonts/tinos) |
 
 ### Desktop app & local tools
 | Library | Used for | License | Copyright |
@@ -427,6 +457,6 @@ Same as BSD 2-Clause, plus a third clause:
 
 ---
 
-_Last reviewed: 2026-08-12. This NOTICES file mirrors `OSS_CREDITS` in
+_Last reviewed: 2026-11-23. This NOTICES file mirrors `OSS_CREDITS` in
 `view_info_modal_source.jsx`; `dev-tools/check_oss_credits.cjs` fails the build if
 they drift or if a credited library is missing its entry here._

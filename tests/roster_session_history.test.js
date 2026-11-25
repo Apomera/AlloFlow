@@ -189,7 +189,8 @@ describe('privacy-safe roster session summaries', () => {
   it('routes every teacher end surface through the shared preview', () => {
     // The text colour moved to rose-800 for contrast; the routing is what this pins.
     // 2026-11-17: the button also declares type="button" now.
-    expect(shareSurfaces).toContain('<button type="button" onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-');
+    // 2026-11-21: the class list became a template literal (44 px target, shared focus ring).
+    expect(shareSurfaces).toContain('<button type="button" onClick={requestEndLiveSession} className={`w-full min-h-11 text-xs font-bold text-rose-');
     expect(app).toContain('const handleEndLiveSession = () => requestEndLiveSession()');
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");

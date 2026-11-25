@@ -16,13 +16,39 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.FirestoreSync) {
-    console.log('[CDN] FirestoreSyncModule already loaded, skipping');
+  const _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  if (!_win) return;
+  if (_win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.FirestoreSync) {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] FirestoreSyncModule already loaded, skipping');
+    }
     return;
   }
 
   function _isUnsafeProtoKey(k) {
     return k === '__proto__' || k === 'constructor' || k === 'prototype';
+  }
+
+  function _isPlainObj(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const proto = Object.getPrototypeOf(value);
+    return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null;
+  }
+
+  function _fsStr(value) {
+    if (value == null || typeof value === 'symbol') return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+    if (typeof value === 'boolean') return String(value);
+    try { return String(value); } catch (_) { return ''; }
+  }
+
+  function _fsSafeMaxBytes(raw, fallback) {
+    let n = NaN;
+    if (typeof raw === 'number') n = raw;
+    else if (typeof raw === 'string' && raw.trim() !== '') n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.max(1024, Math.min(fallback, Math.floor(n)));
   }
 
   // Recursive object sanitizer. Firestore rejects fields with `undefined`
@@ -107,8 +133,7 @@
 
   function stripMemoryAidPracticeEvidence(value, seen) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
-    const prototype = Object.getPrototypeOf(value);
-    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    if (!Array.isArray(value) && !_isPlainObj(value)) return value;
     const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const cleaned = Array.isArray(value) ? [] : {};
@@ -135,11 +160,10 @@
   // after a resource node identifies itself as a Memory Aid.
   function sanitizeMemoryAidResourceForBoundary(value, seen) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
-    const prototype = Object.getPrototypeOf(value);
-    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
-    if (isMemoryAidBoundaryNode(value)) return stripMemoryAidPracticeEvidence(value);
+    if (!Array.isArray(value) && !_isPlainObj(value)) return value;
     const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
+    if (isMemoryAidBoundaryNode(value)) return stripMemoryAidPracticeEvidence(value, visited);
     const cleaned = Array.isArray(value) ? [] : {};
     visited.set(value, cleaned);
     Object.entries(value).forEach(([key, nestedValue]) => {
@@ -313,7 +337,7 @@
       const hasVisualImage = typeof card.visualImage === 'string' && !!card.visualImage;
       const hasLegacyImage = typeof card.imageUrl === 'string' && !!card.imageUrl;
       if (!hasVisualImage && !hasLegacyImage) return card;
-      const uploaded = String(card.visualSource || '').trim().toLowerCase() === 'uploaded';
+      const uploaded = _fsStr(card.visualSource).trim().toLowerCase() === 'uploaded';
       if ((mode === 'regenerable' && uploaded) || (mode === 'uploaded' && !uploaded)) return card;
       const next = { ...card };
       if (hasVisualImage) delete next.visualImage;
@@ -329,37 +353,47 @@
     return { value: changed ? value : cards, changed };
   }
 
-  function stripMemoryAidArtworkInEnvelopes(value, mode, insideMemoryAid) {
+  function stripMemoryAidArtworkInEnvelopes(value, mode, insideMemoryAid, seen) {
     if (!value || typeof value !== 'object' || value instanceof Date) {
       return { value, changed: false };
     }
-    if (Array.isArray(value)) {
+    const visited = (seen instanceof WeakSet) ? seen : new WeakSet();
+    if (visited.has(value)) return { value, changed: false };
+    visited.add(value);
+    try {
+      if (Array.isArray(value)) {
+        let changed = false;
+        const next = value.map(entry => {
+          const result = stripMemoryAidArtworkInEnvelopes(entry, mode, insideMemoryAid, visited);
+          changed = changed || result.changed;
+          return result.value;
+        });
+        return { value: changed ? next : value, changed };
+      }
+      if (!_isPlainObj(value)) return { value, changed: false };
+      const explicitlyTyped = typeof value.type === 'string' || typeof value.artifactType === 'string';
+      const inMemoryAid = isMemoryAidBoundaryNode(value)
+        ? true
+        : (explicitlyTyped ? false : insideMemoryAid === true);
+      let next = value;
       let changed = false;
-      const next = value.map(entry => {
-        const result = stripMemoryAidArtworkInEnvelopes(entry, mode, insideMemoryAid);
-        changed = changed || result.changed;
-        return result.value;
+      Object.keys(value).forEach(key => {
+        if (_isUnsafeProtoKey(key)) return;
+        const result = inMemoryAid && key === 'cards'
+          ? stripMemoryAidCardArtwork(value[key], mode)
+          : stripMemoryAidArtworkInEnvelopes(value[key], mode, inMemoryAid, visited);
+        if (!result.changed) return;
+        if (!changed) {
+          next = {};
+          Object.keys(value).forEach(k => { if (!_isUnsafeProtoKey(k)) next[k] = value[k]; });
+        }
+        next[key] = result.value;
+        changed = true;
       });
-      return { value: changed ? next : value, changed };
+      return { value: next, changed };
+    } finally {
+      visited.delete(value);
     }
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype !== Object.prototype && prototype !== null) return { value, changed: false };
-    const explicitlyTyped = typeof value.type === 'string' || typeof value.artifactType === 'string';
-    const inMemoryAid = isMemoryAidBoundaryNode(value)
-      ? true
-      : (explicitlyTyped ? false : insideMemoryAid === true);
-    let next = value;
-    let changed = false;
-    Object.keys(value).forEach(key => {
-      const result = inMemoryAid && key === 'cards'
-        ? stripMemoryAidCardArtwork(value[key], mode)
-        : stripMemoryAidArtworkInEnvelopes(value[key], mode, inMemoryAid);
-      if (!result.changed) return;
-      if (!changed) next = { ...value };
-      next[key] = result.value;
-      changed = true;
-    });
-    return { value: next, changed };
   }
 
   // Whole-store artwork that lives beside its own metadata. Removing the store's
@@ -442,9 +476,9 @@
     if (size > CLOUD_ART_BUDGET_BYTES) stripPass(item => stripHeavyArtwork(item, { memoryAidMode: 'uploaded', stripGenericArtwork: false }));
     if (droppedIndexes.size) {
       try {
-        window.__alloLastCloudArtDrop = { items: droppedIndexes.size, bytesAfter: size };
-        if (typeof window.warnLog === 'function') {
-          window.warnLog(`[FirestoreSync] Cloud payload over budget — omitted artwork from ${droppedIndexes.size} history item(s) to fit. Uploaded Memory Aid omissions retain local-only provenance.`);
+        _win.__alloLastCloudArtDrop = { items: droppedIndexes.size, bytesAfter: size };
+        if (typeof _win.warnLog === 'function') {
+          _win.warnLog(`[FirestoreSync] Cloud payload over budget — omitted artwork from ${droppedIndexes.size} history item(s) to fit. Uploaded Memory Aid omissions retain local-only provenance.`);
         }
       } catch (e) { /* diagnostics only */ }
     }
@@ -470,7 +504,7 @@
 
   function trimSessionString(value) {
     if (typeof value !== 'string') return value;
-    if (/^(data:|blob:)/i.test(value)) return null;
+    if (/^\s*(?:data:|blob:)/i.test(value)) return null;
     if (value.length <= SESSION_RESOURCE_STRING_MAX_CHARS) return value;
     return value.slice(0, SESSION_RESOURCE_STRING_MAX_CHARS) + '\n\n[Trimmed for live session sync. Open the teacher pack for the full resource.]';
   }
@@ -478,7 +512,7 @@
   function sanitizeSessionValue(value, keyName, seen) {
     if (value == null) return value;
     if (typeof value === 'string') {
-      if (SESSION_BINARY_FIELD_RE.test(String(keyName || '')) && value.length > 512) return null;
+      if (SESSION_BINARY_FIELD_RE.test(_fsStr(keyName)) && value.length > 512) return null;
       return trimSessionString(value);
     }
     if (typeof value !== 'object' || value instanceof Date) return value;
@@ -525,7 +559,7 @@
     const inferredForm = item.type === 'simplified' ? 'adapted' : 'original';
     let value = raw;
     try {
-      const api = window.AlloModules && window.AlloModules.InstructionalContext;
+      const api = _win.AlloModules && _win.AlloModules.InstructionalContext;
       if (raw && api && typeof api.normalizeInstructionalText === 'function') value = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
       else if (!raw && api && typeof api.getInstructionalText === 'function') value = api.getInstructionalText(item);
     } catch (e) { value = raw; }
@@ -543,8 +577,8 @@
       schemaVersion: 1,
       role,
       form,
-      sourceArtifactId: value.sourceArtifactId == null ? null : String(value.sourceArtifactId),
-      primaryArtifactId: value.primaryArtifactId == null ? null : String(value.primaryArtifactId),
+      sourceArtifactId: value.sourceArtifactId == null ? null : _fsStr(value.sourceArtifactId),
+      primaryArtifactId: value.primaryArtifactId == null ? null : _fsStr(value.primaryArtifactId),
       designationSource: ['educator', 'workflow-default', 'legacy-inferred'].includes(value.designationSource)
         ? value.designationSource : 'legacy-inferred',
       replacementAuthorization: { authorized, source: authorized ? 'educator' : 'none' },
@@ -568,7 +602,7 @@
   function normalizeReadingRoleMetadata(item) {
     if (!item || typeof item !== 'object' || !['analysis', 'simplified'].includes(item.type)) return item;
     const profile = normalizePersistedInstructionalText(item);
-    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const api = _win.AlloModules && _win.AlloModules.InstructionalContext;
     const rawSource = item.sourceInstructionalText || (item.config && item.config.sourceInstructionalText);
     let sourceProfile;
     if (api && typeof api.getSourceInstructionalText === 'function') {
@@ -588,9 +622,11 @@
     const familyId = api && typeof api.getReadingSourceFamilyId === 'function'
       ? api.getReadingSourceFamilyId({ ...item, instructionalText: profile }) : configuredFamily || fallbackFamily;
     const unitValue = item.unitId !== undefined ? item.unitId : item.config && item.config.unitId;
-    const unitId = unitValue == null || ['all', 'uncategorized', ''].includes(String(unitValue)) ? null : String(unitValue).slice(0, 160);
+    const unitStr = unitValue == null ? '' : _fsStr(unitValue);
+    const unitId = !unitStr || ['all', 'uncategorized', ''].includes(unitStr) ? null : unitStr.slice(0, 160);
     const next = { ...item, instructionalText: profile, sourceInstructionalText: sourceProfile, unitId };
-    if (familyId) next.sourceFamilyId = String(familyId).trim().slice(0, 200);
+    const familyStr = familyId ? _fsStr(familyId).trim().slice(0, 200) : '';
+    if (familyStr) next.sourceFamilyId = familyStr;
     if (item.config && typeof item.config === 'object') {
       next.config = { ...item.config, instructionalText: { ...profile } };
       if (rawSource) next.config.sourceInstructionalText = { ...sourceProfile };
@@ -605,7 +641,7 @@
   function validReadingSnapshot(item) {
     const snapshot = item && item.sourceSnapshot;
     if (!snapshot || snapshot.schemaVersion !== 1 || typeof snapshot.text !== 'string') return null;
-    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const api = _win.AlloModules && _win.AlloModules.InstructionalContext;
     if (api && typeof api.getSourceSnapshot === 'function') return api.getSourceSnapshot(item);
     let hash = 2166136261;
     for (let i = 0; i < snapshot.text.length; i++) {
@@ -617,14 +653,14 @@
     const provenance = snapshot.provenance && typeof snapshot.provenance === 'object' ? snapshot.provenance : {};
     return {
       schemaVersion: 1, text: snapshot.text, fingerprint,
-      language: String(snapshot.language || 'English').slice(0, 80),
-      format: String(snapshot.format || 'plain-text').slice(0, 80),
-      sourceArtifactId: snapshot.sourceArtifactId == null ? null : String(snapshot.sourceArtifactId).slice(0, 160),
-      capturedAt: String(snapshot.capturedAt || '').slice(0, 80),
+      language: (_fsStr(snapshot.language) || 'English').slice(0, 80),
+      format: (_fsStr(snapshot.format) || 'plain-text').slice(0, 80),
+      sourceArtifactId: snapshot.sourceArtifactId == null ? null : _fsStr(snapshot.sourceArtifactId).slice(0, 160),
+      capturedAt: _fsStr(snapshot.capturedAt).slice(0, 80),
       provenance: {
-        selection: String(provenance.selection || 'selected-text').slice(0, 100),
-        origin: String(provenance.origin || 'selected-source').slice(0, 100),
-        note: String(provenance.note || '').slice(0, 600)
+        selection: (_fsStr(provenance.selection) || 'selected-text').slice(0, 100),
+        origin: (_fsStr(provenance.origin) || 'selected-source').slice(0, 100),
+        note: _fsStr(provenance.note).slice(0, 600)
       }
     };
   }
@@ -643,7 +679,7 @@
     if (item.dataEncoding === 'json-text/v1') {
       // An explicit envelope must decode, even when its raw bytes match a snapshot.
       canonicalData = null;
-      try { const decoded = typeof item.data === 'string' ? JSON.parse(item.data) : null; if (typeof decoded === 'string') canonicalData = decoded; } catch (_) { /* invalid envelope stays unverified */ }
+      try { const decoded = typeof item.data === 'string' ? JSON.parse(item.data, _fsSafeJsonReviver) : null; if (typeof decoded === 'string') canonicalData = decoded; } catch (_) { /* invalid envelope stays unverified */ }
     }
     const sameText = !!snapshot && typeof canonicalData === 'string' && canonicalData === snapshot.text;
     const missingSharedBody = failureReason === 'live-session-size-limit' && hasOwnReadingSnapshot(item) && typeof item.data !== 'string';
@@ -680,7 +716,7 @@
       }
       delete out.textProfile;
     }
-    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const api = _win.AlloModules && _win.AlloModules.InstructionalContext;
     if (snapshot && out.readingSupports && api && typeof api.validateReadingSupports === 'function') {
       out = { ...out, readingSupports: api.validateReadingSupports(out, out.readingSupports) };
     }
@@ -722,7 +758,7 @@
   // or stale help never enters the session document; no validator, no help.
   function withStudentWordHelpOnly(item) {
     if (!item || typeof item !== 'object' || !Object.prototype.hasOwnProperty.call(item, 'adaptedReadingSupports')) return item;
-    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    const api = _win.AlloModules && _win.AlloModules.InstructionalContext;
     const help = api && typeof api.studentAdaptedReadingSupports === 'function'
       ? api.studentAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
     const out = { ...item };
@@ -737,24 +773,23 @@
   // A "Start blank" resource the teacher has not filled in yet never reaches students.
   function isUnfilledBlankDraft(item) {
     if (!item || !item.lessonPath || !item.lessonPath.seed || item.lessonPath.seed.kind !== 'blank') return false;
-    const minimum = window.AlloModules && window.AlloModules.GenDispatcher && window.AlloModules.GenDispatcher.hasMinimumContent;
+    const minimum = _win.AlloModules && _win.AlloModules.GenDispatcher && _win.AlloModules.GenDispatcher.hasMinimumContent;
     return typeof minimum === 'function' ? !minimum(item.type, item.data) : true;
   }
   function studentFactCheck(node) {
     const text = typeof node.factCheck === 'string' ? node.factCheck : '';
     if (!text.trim() || typeof node.question !== 'string') return '';
-    const quality = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+    const quality = _win.AlloModules && _win.AlloModules.QuizView && _win.AlloModules.QuizView.keyQuality;
     if (quality && typeof quality.studentExplanation === 'function') {
       try { return quality.studentExplanation(node, true) ? text : ''; } catch (_) { return ''; }
     }
     const check = node.keyCheck && typeof node.keyCheck === 'object' ? node.keyCheck : null;
-    if (check && (['confirmed', 'unclear'].indexOf(check.status) < 0 || String(check.checkedKey == null ? '' : check.checkedKey) !== String(node.correctAnswer == null ? '' : node.correctAnswer))) return '';
+    if (check && (['confirmed', 'unclear'].indexOf(check.status) < 0 || _fsStr(check.checkedKey) !== _fsStr(node.correctAnswer))) return '';
     return /\[\[\s*KEY\s*:\s*DISPUTED|CORRECTION\s*\/\s*WARNING|Actual Correct Answer/i.test(text) ? '' : text;
   }
   function stripTeacherOnlyResourceFields(value, memoryAid, seen, appliedChallenge) {
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
-    const prototype = Object.getPrototypeOf(value);
-    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    if (!Array.isArray(value) && !_isPlainObj(value)) return value;
     const visited = (seen instanceof WeakMap) ? seen : new WeakMap();
     if (visited.has(value)) return visited.get(value);
     const scope = !!memoryAid || isMemoryAidBoundaryNode(value);
@@ -770,7 +805,7 @@
       if (value.teacherExample === true && (key === 'items' || key === 'items_en') && Array.isArray(nested)) { out[key] = []; return; }
       if (key === 'factCheck') { if (explanation) out.factCheck = explanation; return; }
       if (key === 'keyCheck') {
-        if (explanation && nested && nested.status === 'confirmed' && String(nested.checkedKey == null ? '' : nested.checkedKey) === String(value.correctAnswer == null ? '' : value.correctAnswer)) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
+        if (explanation && nested && typeof nested === 'object' && nested.status === 'confirmed' && (nested.checkedKey == null || typeof nested.checkedKey !== 'object') && _fsStr(nested.checkedKey) === _fsStr(value.correctAnswer)) out.keyCheck = { status: 'confirmed', checkedKey: nested.checkedKey };
         return;
       }
       out[key] = stripTeacherOnlyResourceFields(nested, scope, visited, inApplied);
@@ -782,7 +817,7 @@
   // boundary. A missing evidence helper withholds the record, not the reading.
   function sanitizeStudentResearchResource(value, seen) {
     const appendix = /^#{1,6}[ \t]+(?:Your Document References|Research Review)[ \t]*:?[ \t]*\r?$/mi;
-    const api = window.AlloModules && (window.AlloModules.StudentSources || window.AlloModules.TextPipelineHelpers?.studentSources);
+    const api = _win.AlloModules && (_win.AlloModules.StudentSources || _win.AlloModules.TextPipelineHelpers?.studentSources);
     const publicText = (text, record) => {
       try {
         if (typeof api?.publicText === 'function') return api.publicText(text, record);
@@ -792,8 +827,7 @@
     };
     if (typeof value === 'string') return publicText(value, null);
     if (!value || typeof value !== 'object' || value instanceof Date) return value;
-    const prototype = Object.getPrototypeOf(value);
-    if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) return value;
+    if (!Array.isArray(value) && !_isPlainObj(value)) return value;
     const report = value.version === 1 && (Array.isArray(value.supplied) && Array.isArray(value.citedIds)
       || Array.isArray(value.items) && value.sourceDecisions && Array.isArray(value.activity));
     if (report) return undefined;
@@ -803,9 +837,9 @@
     visited.set(value, out);
     let reading = typeof value.data === 'string' ? value.data : typeof value.text === 'string' ? value.text : null;
     let decoded = false, withholdEncodedReading = false;
-    if (value.type === 'simplified' && value.dataEncoding === 'json-text/v1' && reading !== null) {
-      try { const parsed = JSON.parse(reading); if (typeof parsed === 'string') { reading = parsed; decoded = true; } } catch (_) {}
-      withholdEncodedReading = !decoded && /(?:^|\\n|\\u000[aAdD]|")#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(reading);
+    if (value.type === 'simplified' && value.dataEncoding === 'json-text/v1' && typeof value.data === 'string') {
+      try { const parsed = JSON.parse(value.data, _fsSafeJsonReviver); if (typeof parsed === 'string') { reading = parsed; decoded = true; } } catch (_) {}
+      withholdEncodedReading = !decoded && /(?:^|\\n|\\u000[aAdD]|")#{1,6}[ \t]+(?:Your Document References|Research Review)/i.test(value.data);
       if (withholdEncodedReading) reading = null;
     }
     let record = null;
@@ -820,8 +854,22 @@
         && ['signature', 'researchEvidence', 'researchPacket', 'reviewedResearch'].some(field => Object.prototype.hasOwnProperty.call(nested, field))) return;
       if (key === 'sourceSnapshot' && nested && typeof nested.text === 'string' && appendix.test(nested.text)) return;
       if (key === 'sourceSnapshot' && nested && typeof nested === 'object' && !Array.isArray(nested)) {
-        const { signature, preview, ...snapshot } = nested;
-        out[key] = sanitizeStudentResearchResource(snapshot, visited);
+        if (visited.has(nested)) {
+          out[key] = visited.get(nested);
+          return;
+        }
+        const snapOut = {};
+        visited.set(nested, snapOut);
+        Object.entries(nested).forEach(([sk, sv]) => {
+          if (_isUnsafeProtoKey(sk) || sk === 'signature' || sk === 'preview') return;
+          if (typeof sv === 'string') {
+            snapOut[sk] = publicText(sv, null);
+          } else {
+            const safeSnapVal = sanitizeStudentResearchResource(sv, visited);
+            if (safeSnapVal !== undefined) snapOut[sk] = safeSnapVal;
+          }
+        });
+        out[key] = snapOut;
         return;
       }
       if (['generationInputText', 'fromText'].includes(key) && typeof nested === 'string' && appendix.test(nested)) return;
@@ -870,14 +918,15 @@
       for (let i = 0; i < resource.length; i++) arr.push(withholdGradedQuizKeys(resource[i], visited));
       return arr;
     }
-    let rawData = resource.type === 'quiz' ? resource.data : null;
-    if (resource.type === 'quiz' && typeof rawData === 'string') {
+    const isQuiz = typeof resource.type === 'string' && resource.type.trim().toLowerCase() === 'quiz';
+    let rawData = isQuiz ? resource.data : null;
+    if (isQuiz && typeof rawData === 'string') {
       try {
         const parsedQuiz = JSON.parse(rawData, _fsSafeJsonReviver);
         if (parsedQuiz && typeof parsedQuiz === 'object' && !Array.isArray(parsedQuiz)) rawData = parsedQuiz;
       } catch (_) {}
     }
-    const data = resource.type === 'quiz' && rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null;
+    const data = isQuiz && rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null;
     if (!data) {
       let changed = false;
       const walked = {};
@@ -893,12 +942,12 @@
     const omit = (value, fields) => Object.fromEntries(Object.entries(value).filter(([key]) => !_isUnsafeProtoKey(key) && fields.indexOf(key) < 0));
     const settings = data.deliverySettings && typeof data.deliverySettings === 'object' ? data.deliverySettings : {};
     if (settings.feedbackTiming !== 'teacher-graded' && settings.feedbackTiming !== 'teacher-release') {
-      return Object.prototype.hasOwnProperty.call(data, 'feedbackReleaseKeys') ? { ...resource, data: omit(data, ['feedbackReleaseKeys']) } : resource;
+      return Object.prototype.hasOwnProperty.call(data, 'feedbackReleaseKeys') ? { ...omit(resource, []), data: omit(data, ['feedbackReleaseKeys']) } : resource;
     }
     const release = data.feedbackReleaseKeys;
     // Only a release for the current version ships: an edit after release
     // must not send the old key to new learners. No signer -> withheld.
-    const quality = window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.keyQuality;
+    const quality = _win.AlloModules && _win.AlloModules.QuizView && _win.AlloModules.QuizView.keyQuality;
     const released = settings.feedbackTiming === 'teacher-release' && release && typeof release === 'object' && typeof release.signature === 'string'
       && release.signature === settings.feedbackReleasedFor && Array.isArray(release.questions)
       && !!quality && typeof quality.feedbackSignature === 'function' && typeof quality.releaseKeyVersion === 'function'
@@ -911,13 +960,14 @@
       });
       return sequenceDisplayOrder(kept);
     }) : data.questions;
-    const out = { ...resource, data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(released ? { feedbackReleaseKeys: release } : {}), questions, answerKeysWithheld: true } };
+    const safeRelease = released ? omit(release, []) : null;
+    const out = { ...omit(resource, []), data: { ...omit(data, ['answerKey', 'distractorReview', 'feedbackReleaseKeys', 'contentReview']), ...(safeRelease ? { feedbackReleaseKeys: safeRelease } : {}), questions, answerKeysWithheld: true } };
     visited.set(resource, out);
     return out;
   }
 
   function prepareSessionResourcesForWrite(resources, options) {
-    const maxBytes = Math.max(1024, Number(options && options.maxBytes) || SESSION_RESOURCE_SYNC_MAX_BYTES);
+    const maxBytes = _fsSafeMaxBytes(options && options.maxBytes, SESSION_RESOURCE_SYNC_MAX_BYTES);
     const source = (Array.isArray(resources) ? resources : []).filter(item => !isUnfilledBlankDraft(item)).map(item => withStudentWordHelpOnly(item)).map(item => withholdGradedQuizKeys(item));
     const cleaned = stripUndefined(sanitizeHistoryForCloud(source).map(item => sanitizeStudentResearchResource(stripTeacherOnlyResourceFields(sanitizeSessionValue(stripMemoryAidTeacherWorkingData(item), 'resource')))));
     const kept = [];
@@ -970,7 +1020,7 @@
           let unresolvedReadingEnvelope = item.type === 'simplified' && item.dataEncoding === 'json-text/v1';
           if (unresolvedReadingEnvelope) {
               try {
-                  const decoded = typeof parsedData === 'string' ? JSON.parse(parsedData) : null;
+                  const decoded = typeof parsedData === 'string' ? JSON.parse(parsedData, _fsSafeJsonReviver) : null;
                   if (typeof decoded === 'string') { parsedData = decoded; unresolvedReadingEnvelope = false; }
               } catch (_) { /* preserve the declared encoding for the received preview */ }
           } else if (typeof parsedData === 'string' && item.dataEncoding !== 'text/v1') {
@@ -1000,8 +1050,8 @@
                   parsedGameData = JSON.parse(parsedGameData, _fsSafeJsonReviver);
                   parsedGameDataOk = true;
               } catch(e) {
-                  if (typeof window.warnLog === 'function') {
-                      window.warnLog('Caught error:', e?.message || e);
+                  if (typeof _win.warnLog === 'function') {
+                      _win.warnLog('Caught error:', e?.message || e);
                   }
               }
           }
@@ -1019,33 +1069,37 @@
 
   // Mirror to window.* so monolith's existing shim references can be
   // upgraded by _upgradeFirestoreSync().
-  window.stripUndefined = stripUndefined;
-  window.stripMemoryAidPracticeEvidence = stripMemoryAidPracticeEvidence;
-  window.sanitizeMemoryAidResourceForBoundary = sanitizeMemoryAidResourceForBoundary;
-  window.sanitizeHistoryForCloud = sanitizeHistoryForCloud;
-  window.hydrateHistory = hydrateHistory;
-  window.estimateJsonBytes = estimateJsonBytes;
-  window.stripHeavyArtwork = stripHeavyArtwork;
-  window.fitArtworkToBudget = fitArtworkToBudget;
-  window.stripReadingSupportPictures = stripReadingSupportPictures;
-  window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
-  window.stripTeacherOnlyResourceFields = stripTeacherOnlyResourceFields;
-  window.sanitizeStudentResearchResource = sanitizeStudentResearchResource;
-  window.withholdGradedQuizKeys = withholdGradedQuizKeys;
-  window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
-  window.normalizeReadingPreservation = normalizeReadingPreservation;
-  window.normalizeReadingRoleMetadata = normalizeReadingRoleMetadata;
-  // Exposed for the student-pack serializer (mailbox/QR channels): packs must
-  // apply the SAME binary-null + string-trim pass the Firebase session path
-  // gets, instead of narrowing items to a five-field allowlist.
-  window.sanitizeSessionValue = sanitizeSessionValue;
+  try {
+    _win.stripUndefined = stripUndefined;
+    _win.stripMemoryAidPracticeEvidence = stripMemoryAidPracticeEvidence;
+    _win.sanitizeMemoryAidResourceForBoundary = sanitizeMemoryAidResourceForBoundary;
+    _win.sanitizeHistoryForCloud = sanitizeHistoryForCloud;
+    _win.hydrateHistory = hydrateHistory;
+    _win.estimateJsonBytes = estimateJsonBytes;
+    _win.stripHeavyArtwork = stripHeavyArtwork;
+    _win.fitArtworkToBudget = fitArtworkToBudget;
+    _win.stripReadingSupportPictures = stripReadingSupportPictures;
+    _win.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
+    _win.stripTeacherOnlyResourceFields = stripTeacherOnlyResourceFields;
+    _win.sanitizeStudentResearchResource = sanitizeStudentResearchResource;
+    _win.withholdGradedQuizKeys = withholdGradedQuizKeys;
+    _win.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
+    _win.normalizeReadingPreservation = normalizeReadingPreservation;
+    _win.normalizeReadingRoleMetadata = normalizeReadingRoleMetadata;
+    // Exposed for the student-pack serializer (mailbox/QR channels): packs must
+    // apply the SAME binary-null + string-trim pass the Firebase session path
+    // gets, instead of narrowing items to a five-field allowlist.
+    _win.sanitizeSessionValue = sanitizeSessionValue;
 
-  // Trigger the monolith's swap-in of shim references.
-  if (typeof window._upgradeFirestoreSync === 'function') {
-    window._upgradeFirestoreSync();
-  }
+    // Trigger the monolith's swap-in of shim references.
+    if (typeof _win._upgradeFirestoreSync === 'function') {
+      _win._upgradeFirestoreSync();
+    }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.FirestoreSync = true;
-  console.log('[CDN] FirestoreSync loaded');
+    if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+    _win.AlloModules.FirestoreSync = true;
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] FirestoreSync loaded');
+    }
+  } catch (_) {}
 })();

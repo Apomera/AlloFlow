@@ -14,7 +14,8 @@ const viewSrc = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx')
 
 describe('Compare popup — after-frame is hardened against AI-injected scripts', () => {
   it('the after-frame iframe is sandboxed (allow-same-origin, not allow-scripts)', () => {
-    expect(viewSrc).toContain('<iframe id="after-frame" sandbox="allow-same-origin">');
+    // The frame now also carries an accessible title.
+    expect(viewSrc).toContain('<iframe id="after-frame" title="Remediated accessible HTML preview" sandbox="allow-same-origin">');
     // allow-scripts would re-open the hole — must NOT be present on this frame
     expect(viewSrc).not.toMatch(/id="after-frame"[^>]*allow-scripts/);
   });

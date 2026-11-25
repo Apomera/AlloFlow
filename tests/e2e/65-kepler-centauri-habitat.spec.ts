@@ -37,7 +37,8 @@ test('Centauri becomes the main new mission and saves evidence-backed plans with
 test('legacy worlds stay intact and the habitat fits a phone with reduced motion',async({page},info)=>{
  await page.setViewportSize({width:360,height:820});await page.emulateMedia({reducedMotion:'reduce'});
  await phone.mount(page,{colony:{name:'Legacy',planet:'Kepler-442b'},colonyPhase:'playing',colonyTurn:3,turnPhase:'day',colonyRes:{food:40,water:30,energy:30,materials:20,science:10},colonyBuildings:['solar'],colonySettlers:[]},undefined,{expectCanvas:false});
- const habitat=page.locator('[data-centauri-habitat]');await expect(page.getByRole('heading',{name:'Kepler-442b',exact:true})).toBeVisible();
+ // A legacy save that still says Kepler-442b is shown at Alpha Centauri: "Kepler" is only the colony's name now.
+ const habitat=page.locator('[data-centauri-habitat]');await expect(page.getByRole('heading',{name:'Centauri Haven (fictional)',exact:true})).toBeVisible();
  await habitat.getByRole('button',{name:/Power loop/}).click();
  await expect(habitat.locator('[data-habitat-projected=energy]')).toHaveText('33');
  await expect(habitat.getByRole('button',{name:'Open construction',exact:true})).toBeDisabled();

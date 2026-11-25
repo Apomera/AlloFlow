@@ -221,7 +221,9 @@ describe('C · memory-aid is registered in every host table', () => {
   it('the generation identity includes the toggles, so a re-run is not served a stale card set', () => {
     const matrix = src('generation_matrix_module.js');
     expect(matrix).toContain("'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts'],");
-    expect(matrix).toContain("timeline: ['timelineMode', 'timelineItemCount', 'timelineTopic', 'includeTimelineVisuals'],");
+    // Timeline identity now uses the normalized config names (mode/itemCount/topic) and
+    // also covers the image style and auto-remove setting.
+    expect(matrix).toMatch(/timeline: \['mode', 'itemCount', 'includeTimelineVisuals', 'topic', 'imageStyle',\s*'autoRemoveWords'\],/);
     expect(matrix).toContain("'memoryAidIncludeVisuals', 'memoryAidIncludeHookFacts', 'includeTimelineVisuals',");
     expect(readFileSync(resolve(process.cwd(), 'desktop/web-app/public/generation_matrix_module.js'), 'utf8')).toBe(matrix);
   });

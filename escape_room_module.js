@@ -9,8 +9,18 @@
 (function() {
   'use strict';
   if (typeof window === 'undefined') return;
-  // WCAG 2.1 AA: Accessibility CSS
-  if (typeof document !== 'undefined' && document.head && !document.getElementById("escape-room-module-a11y")) { var _s = document.createElement("style"); _s.id = "escape-room-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
+  // WCAG 2.2 AA: Accessibility CSS
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("escape-room-module-a11y")) {
+    var _s = document.createElement("style");
+    _s.id = "escape-room-module-a11y";
+    _s.textContent = [
+      "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }",
+      "[data-escape-room-surface] button, [data-escape-room-surface] input, [data-escape-room-surface] select, [data-escape-room-surface] textarea, [data-escape-room-surface] summary, [data-escape-room-surface] [role=\"button\"] { touch-action: manipulation; }",
+      "[data-escape-room-surface] button:focus-visible, [data-escape-room-surface] input:focus-visible, [data-escape-room-surface] select:focus-visible, [data-escape-room-surface] textarea:focus-visible, [data-escape-room-surface] summary:focus-visible, [data-escape-room-surface] [tabindex]:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }",
+      "@media (forced-colors: active) { [data-escape-room-surface] button:focus-visible, [data-escape-room-surface] input:focus-visible, [data-escape-room-surface] select:focus-visible, [data-escape-room-surface] textarea:focus-visible, [data-escape-room-surface] summary:focus-visible, [data-escape-room-surface] [tabindex]:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }"
+    ].join("\n");
+    document.head.appendChild(_s);
+  }
 
   function _erGlobalMuted() {
     try {
@@ -2278,7 +2288,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
 
       // Close button
       puzzleContent.push(
-        h('button', {
+        h('button', { type: 'button',
           key: 'close-btn',
           'aria-label': t('common.close'),
           onClick: function() { setEscapeRoomState(rememberEscapeRoomDraft); },
@@ -2306,7 +2316,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           t('escape_room.type_' + (puzzle.type || 'mcq'))
         )
       );
-      if (props.setIsEscapeTimerRunning) typeHintRow.push(h('button', {
+      if (props.setIsEscapeTimerRunning) typeHintRow.push(h('button', { type: 'button',
         key: 'pause', onClick: toggleTimer, className: 'px-3 py-2 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-purple-400'
       }, t('escape_room.pause')));
       if (escapeHintLadder(puzzle).length > 0) {
@@ -2314,7 +2324,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         var ladder = escapeHintLadder(puzzle), level = escapeHintLevel(escapeRoomState,puzzle);
         var hintsRem = escapeRoomState.hintsRemaining || 0;
         typeHintRow.push(
-          h('button', {
+          h('button', { type: 'button',
             key: 'hint-btn',
             onClick: function() { handlers.handleRevealHint(puzzle.id); },
             disabled: hintsRem <= 0 && !hintUsed,
@@ -2363,7 +2373,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         puzzleContent.push(
           h('div', { key: 'mcq', className: 'grid gap-3', role: 'radiogroup', 'aria-label': t('escape_room.answer_options') || 'Answer options' },
             puzzle.options.map(function(opt, idx) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: idx,
                 onClick: function() { handlers.handleEscapeRoomAnswer(puzzle.id, idx); },
                 role: 'radio',
@@ -2466,7 +2476,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           h('div', { key: 'seq-list', className: 'space-y-2', role: 'list', 'aria-label': t('escape_room.sequence_list_label') || 'Sequence items to reorder' }, seqItems)
         );
         seqChildren.push(
-          h('button', {
+          h('button', { type: 'button',
             key: 'seq-submit',
             onClick: function() {
               var co = (escapeRoomState.sequenceOrder && escapeRoomState.sequenceOrder.length > 0)
@@ -2499,7 +2509,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               h('div', { className: 'grid grid-cols-2 gap-3', role: 'group', 'aria-label': t('escape_room.answer_options') || 'Answer options' },
                 puzzle.wordbank.map(function(word, idx) {
                   var isSelected = escapeRoomState.textInput === word;
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: idx,
                     onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: word }); }); },
                     'aria-pressed': isSelected,
@@ -2529,7 +2539,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           );
         }
         cipherChildren.push(
-          h('button', {
+          h('button', { type: 'button',
             key: 'cipher-submit',
             onClick: function() { handlers.handleCipherAnswer(puzzle.id, escapeRoomState.textInput || ''); },
             disabled: !escapeRoomState.textInput,
@@ -2571,7 +2581,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             h('div', { className: 'space-y-2', role: 'listbox', 'aria-label': t('escape_room.left_column') || 'Left column options' },
               leftItems.map(function(item, idx) {
                 var isSel = escapeRoomState.matchingSelected && escapeRoomState.matchingSelected.item === item && escapeRoomState.matchingSelected.column === 'left';
-                return h('button', {
+                return h('button', { type: 'button',
                   key: idx,
                   onClick: function() { handlers.handleMatchingSelect(puzzle.id, item, 'left'); },
                   onKeyDown: function(e) {
@@ -2596,7 +2606,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             h('div', { className: 'space-y-2', role: 'listbox', 'aria-label': t('escape_room.right_column') || 'Right column options', 'data-matching-column': 'right' },
               rightItems.map(function(item, idx) {
                 var isSel = escapeRoomState.matchingSelected && escapeRoomState.matchingSelected.item === item && escapeRoomState.matchingSelected.column === 'right';
-                return h('button', {
+                return h('button', { type: 'button',
                   key: idx,
                   onClick: function() { handlers.handleMatchingSelect(puzzle.id, item, 'right'); },
                   onKeyDown: function(e) {
@@ -2667,7 +2677,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           )
         );
         scrChildren.push(
-          h('button', {
+          h('button', { type: 'button',
             key: 'scr-submit',
             onClick: function() { handlers.handleScrambleAnswer(puzzle.id, escapeRoomState.textInput || ''); },
             className: 'w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-slate-800'
@@ -2697,7 +2707,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               ),
               h('div', { className: 'flex flex-wrap gap-2 justify-center', role: 'group', 'aria-labelledby': 'fillin-wordbank-label' },
                 puzzle.wordbank.map(function(word, idx) {
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: idx,
                     onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: word }); }); },
                     'aria-pressed': escapeRoomState.textInput === word,
@@ -2735,7 +2745,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           );
         }
         filChildren.push(
-          h('button', {
+          h('button', { type: 'button',
             key: 'fil-submit',
             onClick: function() { handlers.handleFillinAnswer(puzzle.id, escapeRoomState.textInput || ''); },
             disabled: !escapeRoomState.textInput,
@@ -2779,7 +2789,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
             fdp.wordbank.map(function(word, idx) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: idx,
                 onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: word }); }); },
                 'aria-pressed': escapeRoomState.textInput === word,
@@ -2809,6 +2819,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         );
       }
       return h('div', {
+        'data-escape-room-surface': '',
         className: 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4',
         onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); }); },
         role: 'dialog',
@@ -2821,7 +2832,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           className: 'bg-gradient-to-b from-slate-800 to-slate-900 w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] p-8 relative',
           onClick: function(e) { e.stopPropagation(); }
         },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); }); },
             className: 'absolute top-4 right-4 text-slate-300 hover:text-white min-w-11 min-h-11 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded',
             'aria-label': t('escape_room.close') || 'Close'
@@ -2838,7 +2849,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           ),
           h('div', { className: 'space-y-4' },
             answerContent,
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { handlers.handleFinalDoorAnswer(escapeRoomState.textInput || ''); },
               disabled: !escapeRoomState.textInput,
               className: 'w-full p-4 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-900 font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 disabled:cursor-not-allowed'
@@ -2863,7 +2874,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           h('p', { className: 'text-slate-300 italic' }, escapeRoomState.room.description),
           !isEscapeTimerRunning
             ? h('div', { className: 'mt-4' },
-                h('button', {
+                h('button', { type: 'button',
                   'data-escape-room-next': '',
                   'aria-label': escapeRoomState.hasStarted ? t('escape_room.resume') : t('escape_room.start'),
                   onClick: toggleTimer,
@@ -2881,7 +2892,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
             var puzzle = escapeRoomState.puzzles.find(function(p) { return p.linkedObjectId === obj.id; });
             var isSolved = puzzle && escapeRoomState.solvedPuzzles.has(puzzle.id);
             var isDisabled = isSolved || !isEscapeTimerRunning;
-            return h('button', {
+            return h('button', { type: 'button',
               key: obj.id,
               'data-escape-room-next': '',
               onClick: function() { if (!isDisabled) handlers.handleSelectObject(obj); },
@@ -2934,7 +2945,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               : null
           ),
           h('div', { className: 'flex flex-wrap gap-2 items-center' },
-            !terminal && isEscapeTimerRunning && props.setIsEscapeTimerRunning ? h('button', {
+            !terminal && isEscapeTimerRunning && props.setIsEscapeTimerRunning ? h('button', { type: 'button',
               onClick: toggleTimer, className: 'px-3 py-2 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-purple-400'
             }, t('escape_room.pause')) : null,
             // Lives are a visible budget; easy mode uses the existing unlimited sentinel.
@@ -2963,7 +2974,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               )
             ),
             // Sound toggle
-            h('button', {
+            h('button', { type: 'button',
               'aria-label': t('common.volume'),
               onClick: function() { setSoundEnabled(!soundEnabled); if (!soundEnabled) playSound('click'); },
               className: 'p-2 rounded-full transition-colors ' + (soundEnabled ? 'bg-purple-700 text-white' : 'bg-slate-700 text-slate-300')
@@ -2974,7 +2985,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         escapeRoomState.isTrial
           ? h('div', { 'data-escape-room-trial': '', className: 'relative z-10 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400 bg-amber-100 px-4 py-3 text-amber-950' },
               h('p', { className: 'text-sm font-bold' }, t('escape_room.trial_banner') || 'Trial run: you are playing as a student would. No XP is awarded and nothing is sent to the class.'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { handlers.resetEscapeRoom(); },
                 className: 'min-h-11 rounded-lg bg-amber-800 px-4 py-2 text-sm font-bold text-white hover:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500'
               }, t('escape_room.back_to_preview') || 'Back to preview'))
@@ -2988,6 +2999,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               onClick: function() { setEscapeRoomState(rememberEscapeRoomDraft); }
             },
               h('div', {
+                'data-escape-room-surface': '',
                 className: 'bg-slate-800 w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border-4 border-purple-500 shadow-2xl p-6 relative',
                 role: 'dialog',
                 'aria-modal': 'true',
@@ -3061,6 +3073,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         h('div', {
           className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300',
           style: { maxHeight: 'calc(100dvh - 2rem)' },
+          'data-escape-room-surface': '',
           ref: settingsDialogRef,
           tabIndex: -1,
           'aria-label': t('escape_room.settings_btn'),
@@ -3069,7 +3082,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           onClick: function(e) { e.stopPropagation(); }
         },
           // Close button
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); },
             className: 'absolute top-4 right-4 p-2 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors',
             'aria-label': t('common.close')
@@ -3135,6 +3148,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                   min: '5',
                   max: '15',
                   value: escapeRoomState.puzzleCount || 10,
+                  'aria-valuetext': String(escapeRoomState.puzzleCount || 10) + ' / 15',
                   onChange: function(e) {
                     var parsedCount = parseInt(e.target.value, 10);
                     handlers.updateEscapeRoomSetting('puzzleCount', Number.isFinite(parsedCount) ? Math.min(20, Math.max(1, parsedCount)) : 10);
@@ -3159,17 +3173,17 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           // Action buttons
           h('div', { className: 'flex gap-3' },
             hasSaved
-              ? h('button', {
+              ? h('button', { type: 'button',
                   'aria-label': t('common.load_saved_escape_room'),
                   onClick: handlers.loadSavedEscapeRoom,
                   className: 'flex-1 py-3 rounded-xl border-2 border-emerald-600 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
                 }, '\uD83D\uDCC2 ' + (t('escape_room.load_saved') || 'Load Saved'))
               : null,
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); },
               className: 'flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors'
             }, t('common.cancel')),
-            _learnerWithoutAi(props.isTeacherMode) ? null : h('button', {
+            _learnerWithoutAi(props.isTeacherMode) ? null : h('button', { type: 'button',
               'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,
@@ -3441,6 +3455,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         style: { overflowY: 'auto' }
       },
         h('div', {
+          'data-escape-room-surface': '',
           className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-w-3xl w-full mx-4 my-8 max-h-[90vh] transform transition-all animate-in zoom-in-95 duration-300',
           ref: previewDialogRef,
           tabIndex: -1,
@@ -3450,7 +3465,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
           onClick: function(e) { e.stopPropagation(); }
         },
           // Close keeps the room; Discard is the only action that deletes it.
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false, confirmDiscard: false }); }); },
             className: 'absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors z-10',
             'aria-label': t('common.close')

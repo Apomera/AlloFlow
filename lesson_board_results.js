@@ -71,7 +71,7 @@ export function removeReport(storage, appId, owner, report) {
   if (!current || JSON.stringify(current) !== JSON.stringify(report)) throw Error('This report changed. Reopen saved reports before removing it.');
   return writeReports(storage, appId, owner, old, old.reports.filter(item => item.id !== report.id));
 }
-const cell = value => { let text = String(value ?? ''); if (/^[\s]*[=+@-]/.test(text) || /^[\t\r\n]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; };
+const cell = value => { let text = String(value ?? ''); if (/^[\s]*[=+@|-]/.test(text) || /^[\t\r\n]/.test(text)) text = "'" + text; return '"' + text.replaceAll('"', '""') + '"'; };
 export function reportCSV(report) {
   const rows = [['Board', 'Mode', 'Saved at', 'Learner', 'Concept', 'Location', 'Recorded attempts', 'First response correct', 'Latest response correct', 'Improved after review', 'Suggested practice', 'First response', 'Latest response', 'Correct only after the answer was shown']];
   for (const learner of report.learners) for (const location of learner.locations) rows.push([report.boardTitle, report.mode, new Date(report.savedAt).toISOString(), learner.name, report.concepts.find(concept => concept.id === location.conceptId)?.name || '', location.name, location.answered, location.firstCorrect === null ? 'No recorded response' : location.firstCorrect, location.lastCorrect === null ? 'No recorded response' : location.lastCorrect, location.improved, learner.practice.find(item => item.id === location.id)?.reason || '', location.firstResponse || '', location.latestResponse || '', location.assisted === true]);

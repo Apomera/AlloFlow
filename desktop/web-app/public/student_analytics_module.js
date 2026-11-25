@@ -167,12 +167,14 @@ try {
 } catch (e) {}
 
   // WCAG 2.1 AA: Accessibility CSS injection
-  if (typeof document !== 'undefined' && document.head && !document.getElementById('sa-a11y-css')) {
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById('sa-a11y-css')) {
     var saA11yStyle = document.createElement('style');
     saA11yStyle.id = 'sa-a11y-css';
     saA11yStyle.textContent = [
       '@media (prefers-reduced-motion: reduce) { .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
       '.fixed.inset-0 button:focus-visible, .fixed.inset-0 input:focus-visible, .fixed.inset-0 select:focus-visible, .fixed.inset-0 textarea:focus-visible, .fixed.inset-0 [tabindex]:focus-visible { outline: 2px solid #6366f1 !important; outline-offset: 2px !important; border-radius: 4px; }',
+      '@media (forced-colors: active) { .fixed.inset-0 :where(button, input, select, textarea, a, [tabindex]):focus-visible, .allo-docsuite :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '.fixed.inset-0 :where(button, input, select, textarea, a, [role="button"], [role="tab"]), .allo-docsuite :where(button, input, select, textarea, a, [role="button"], [role="tab"]) { touch-action: manipulation; }',
       '.fixed.inset-0 :focus:not(:focus-visible) { outline: none !important; }',
       // Light-mode-only text tweak — scoped off dark/contrast so it does not fight the
       // .theme-dark/.theme-contrast .allo-docsuite remap. The theme class sits on an ANCESTOR
@@ -261,8 +263,8 @@ try {
         if (node && node.isConnected && typeof node.focus === 'function') node.focus();
       }, 0);
       function onKeyDown(event) {
-        if (!node || !event || event.isComposing || event.keyCode === 229) return;
-        if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        if (!node || !event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
+        if (event.key === 'Escape') {
           event.preventDefault();
           event.stopPropagation();
           if (typeof closeRef.current === 'function') closeRef.current();
@@ -3444,7 +3446,7 @@ try {
       'data-ck-save-dialog': measure,
       tabIndex: -1,
       ref: function(el) { if (el && !el.getAttribute('data-ck-focused')) { el.setAttribute('data-ck-focused', '1'); try { el.focus(); } catch (e) {} } },
-      onKeyDown: function(e) { if (e && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); actions.onClose(); } },
+      onKeyDown: function(e) { if (e && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); actions.onClose(); } },
       className: 'mt-2 max-w-xl rounded-lg border border-slate-500 bg-white p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700'
     },
       h('p', { className: 'text-sm font-bold text-slate-900' }, title),
@@ -3647,6 +3649,7 @@ try {
     React.useEffect(function () {
       if (!isActive || !started || !showScoreButtons) return;
       function handleKey(e) {
+        if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         var key = e.key.toLowerCase();
         if ((key === '1' || key === 'c' || key === 'arrowright') && onCorrect) {
@@ -3767,15 +3770,15 @@ try {
         // Bottom scoring bar (for teacher-scored probes)
         showScoreButtons && h('div', { className: 'flex items-center justify-center gap-6 px-6 py-5 bg-slate-50 border-t border-slate-200 shrink-0'
         },
-          h('button', { "aria-label": "Correct",
+          h('button', { type: 'button', "aria-label": "Correct",
             onClick: onCorrect,
             className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-2xl font-black text-xl hover:from-green-800 hover:to-emerald-800 transition-all shadow-xl shadow-green-200 active:scale-95'
           }, '\u2705 Correct', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '1')),
-          h('button', { "aria-label": "Incorrect",
+          h('button', { type: 'button', "aria-label": "Incorrect",
             onClick: onIncorrect,
             className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-2xl font-black text-xl hover:from-red-800 hover:to-rose-800 transition-all shadow-xl shadow-red-200 active:scale-95'
           }, '\u274C Incorrect', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '2')),
-          onSkip && h('button', { "aria-label": "Skip",
+          onSkip && h('button', { type: 'button', "aria-label": "Skip",
             onClick: onSkip,
             className: 'flex items-center gap-2 px-8 py-5 bg-slate-200 text-slate-600 rounded-2xl font-bold text-lg hover:bg-slate-300 transition-all active:scale-95'
           }, 'Skip \u2192', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/30 px-2 py-0.5 rounded' }, 'Space'))
@@ -6255,7 +6258,7 @@ try {
         value: 'Well Below'
       }, 'Well Below Benchmark'))))), React.createElement('div', {
         className: 'flex justify-end gap-2 mt-5'
-      }, React.createElement('button', {
+      }, React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors',
         onClick: () => {
           setShowCBMModal(false);
@@ -6269,7 +6272,7 @@ try {
             benchmark: ''
           });
         }
-      }, 'Cancel'), React.createElement('button', {
+      }, 'Cancel'), React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-bold',
         disabled: !cbmForm.student || !cbmForm.score || !cbmForm.date,
         onClick: () => {
@@ -6508,7 +6511,7 @@ try {
         className: 'text-xs font-bold text-slate-600 uppercase'
       }, 'Survey Timepoint'), React.createElement('div', {
         className: 'flex gap-2 mt-1'
-      }, ...['pre', 'mid', 'post'].map(tp => React.createElement('button', {
+      }, ...['pre', 'mid', 'post'].map(tp => React.createElement('button', { type: 'button',
         key: tp,
         className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ' + (surveyTimepoint === tp ? 'bg-indigo-600 text-white shadow-md' : 'bg-white border border-slate-400 text-slate-600 hover:bg-indigo-50'),
         onClick: () => setSurveyTimepoint(tp)
@@ -6537,7 +6540,7 @@ try {
                 const label = (typeof rawLabel === 'string') ? { text: rawLabel, image: null } : (rawLabel || {});
                 const value = qType === 'mcq' ? (label.text || ('Option ' + (idx + 1))) : (idx + 1);
                 const selected = surveyAnswers[q.id] === value;
-                return React.createElement('button', {
+                return React.createElement('button', { type: 'button',
                   key: idx,
                   className: 'flex-1 min-w-[60px] py-2 px-1 rounded-lg text-xs font-medium transition-all flex flex-col items-center gap-1 ' + (selected ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
                   onClick: () => setSurveyAnswers(p => Object.assign({}, p, { [q.id]: value }))
@@ -6555,14 +6558,14 @@ try {
         }, q.text), innerInput);
       })), React.createElement('div', {
         className: 'flex justify-end gap-2 mt-5'
-      }, React.createElement('button', {
+      }, React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors',
         onClick: () => {
           setShowSurveyModal(null);
           setSurveyAnswers({});
           setSurveyRespondent('');
         }
-      }, 'Cancel'), React.createElement('button', {
+      }, 'Cancel'), React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-bold disabled:opacity-50',
         disabled: !allAnswered || !surveyRespondent.trim(),
         onClick: () => {
@@ -6715,13 +6718,13 @@ try {
               React.createElement('p', { className: 'text-xs text-slate-600 mt-1' },
                 'Replace the built-in RTI templates with study-specific items. Add per-option image icons via the AI image pipeline (text-to-image and image-to-image refinement supported).')
             ),
-            React.createElement('button', {
+            React.createElement('button', { type: 'button',
               className: 'px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
               onClick: () => setShowCustomQuestions(false)
             }, 'Close')
           ),
           React.createElement('div', { className: 'flex gap-2 mb-4 border-b border-slate-200 pb-2' },
-            ...populations.map(p => React.createElement('button', {
+            ...populations.map(p => React.createElement('button', { type: 'button',
               key: p,
               onClick: () => openCustomQuestions(p),
               className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' + (customQuestionsPopulation === p ? 'bg-amber-700 text-white shadow' : 'bg-white border border-slate-400 text-slate-700 hover:bg-amber-50')
@@ -6753,7 +6756,7 @@ try {
                     React.createElement('option', { value: 'freetext' }, 'Free text'),
                     React.createElement('option', { value: 'numeric' }, 'Numeric')
                   ),
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     className: 'px-2 py-1 text-xs bg-red-50 text-red-700 border border-red-300 rounded hover:bg-red-100',
                     onClick: () => cqRemoveQuestion(q.id), title: 'Delete question'
                   }, '✖')
@@ -6779,25 +6782,25 @@ try {
                             className: 'flex-1 px-2 py-1 border border-amber-400 rounded text-xs',
                             autoFocus: true
                           }),
-                          React.createElement('button', {
+                          React.createElement('button', { type: 'button',
                             disabled: cqImageGenBusy || !cqImageGenInput.prompt.trim(),
                             onClick: runCqImageGen,
                             className: 'px-2 py-1 text-xs font-bold rounded ' + (cqImageGenBusy ? 'bg-slate-300 text-slate-600' : 'bg-amber-700 text-white hover:bg-amber-700')
                           }, cqImageGenBusy ? '…' : (cqImageGenInput.mode === 'refine' ? 'Refine' : 'Generate')),
-                          React.createElement('button', {
+                          React.createElement('button', { type: 'button',
                             onClick: () => setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate', field: null }),
                             className: 'px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded'
                           }, '×')
                         ) : React.createElement('div', { className: 'flex gap-1' },
-                          React.createElement('button', {
+                          React.createElement('button', { type: 'button',
                             onClick: () => setCqImageGenInput({ qid: q.id, idx: idx, prompt: '', mode: cell.image ? 'refine' : 'generate', field: fieldName }),
                             className: 'px-2 py-0.5 text-xs font-medium rounded ' + (cell.image ? 'bg-violet-50 text-violet-700 border border-violet-300 hover:bg-violet-100' : 'bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100')
                           }, cell.image ? '✨ Refine icon' : '🖼️ Generate icon'),
-                          cell.image ? React.createElement('button', {
+                          cell.image ? React.createElement('button', { type: 'button',
                             onClick: () => cqUpdateCell(q.id, idx, { image: null }, fieldName),
                             className: 'px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-100 rounded'
                           }, 'Remove icon') : null,
-                          qType === 'mcq' ? React.createElement('button', {
+                          qType === 'mcq' ? React.createElement('button', { type: 'button',
                             onClick: () => cqRemoveOption(q.id, idx),
                             className: 'px-2 py-0.5 text-xs text-red-800 hover:bg-red-50 rounded ml-auto'
                           }, 'Delete option') : null
@@ -6805,7 +6808,7 @@ try {
                       )
                     );
                   }),
-                  qType === 'mcq' ? React.createElement('button', {
+                  qType === 'mcq' ? React.createElement('button', { type: 'button',
                     onClick: () => cqAddOption(q.id),
                     className: 'text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded border border-emerald-300 border-dashed'
                   }, '+ Add option') : null
@@ -6815,17 +6818,17 @@ try {
             })
           ),
           React.createElement('div', { className: 'flex flex-wrap items-center gap-2 mt-4' },
-            React.createElement('button', {
+            React.createElement('button', { type: 'button',
               onClick: cqAddQuestion,
               className: 'px-3 py-1.5 text-xs font-bold bg-emerald-700 text-white rounded-lg hover:bg-emerald-700'
             }, '+ Add Question'),
             React.createElement('span', { className: 'text-xs text-slate-500 italic ml-auto' },
               customQuestionsDraft.length + ' custom question' + (customQuestionsDraft.length === 1 ? '' : 's') + ' for ' + customQuestionsPopulation),
-            React.createElement('button', {
+            React.createElement('button', { type: 'button',
               onClick: () => setShowCustomQuestions(false),
               className: 'px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg'
             }, 'Cancel'),
-            React.createElement('button', {
+            React.createElement('button', { type: 'button',
               onClick: saveCustomQuestions,
               className: 'px-4 py-1.5 text-xs font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-700'
             }, 'Save Custom Items')
@@ -7000,13 +7003,13 @@ try {
         onClick: () => setShowCBMModal(true)
       }, React.createElement('span', { 'aria-hidden': 'true' }, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
         className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
-      }, cbmCount) : null), React.createElement('button', {
+      }, cbmCount) : null), React.createElement('button', { type: 'button',
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('student')
-      }, React.createElement('span', null, '\u{1F9D2}'), 'Student Survey'), React.createElement('button', {
+      }, React.createElement('span', null, '\u{1F9D2}'), 'Student Survey'), React.createElement('button', { type: 'button',
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('teacher')
-      }, React.createElement('span', null, '\u{1F468}\u{200D}\u{1F3EB}'), 'Teacher Survey'), React.createElement('button', {
+      }, React.createElement('span', null, '\u{1F468}\u{200D}\u{1F3EB}'), 'Teacher Survey'), React.createElement('button', { type: 'button',
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-pink-400 hover:bg-pink-50 transition-all text-xs font-medium text-slate-700',
         onClick: () => setShowSurveyModal('parent')
       }, React.createElement('span', null, '\u{1F46A}'), 'Parent/Guardian Survey', surveyCount > 0 ? React.createElement('span', {
@@ -7016,29 +7019,29 @@ try {
         React.createElement('p', { className: 'text-xs font-black text-sky-900' }, '\u{1F517} Send a survey by link or QR (Share & Collect)'),
         React.createElement('p', { className: 'text-xs text-sky-800 mt-0.5' }, 'Families and staff answer from their own phone, no account. Uses the current timepoint (' + (surveyTimepoint || 'unspecified') + ') and your custom items when you have them.'),
         React.createElement('div', { className: 'mt-1.5 grid grid-cols-3 gap-1.5' },
-          ['student', 'teacher', 'parent'].map(population => React.createElement('button', {
+          ['student', 'teacher', 'parent'].map(population => React.createElement('button', { type: 'button',
             key: population,
             className: 'px-2 py-1.5 bg-white rounded-md border border-sky-300 hover:bg-sky-100 text-xs font-bold text-slate-800',
             onClick: () => shareSurveyByLink(population)
           }, population === 'student' ? 'Student link' : population === 'teacher' ? 'Teacher link' : 'Parent link')))),
-      React.createElement('button', {
+      React.createElement('button', { type: 'button',
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
         onClick: () => openCustomQuestions(customQuestionsPopulation || 'student'),
         title: 'Author study-specific survey items (Likert, MCQ, free text, numeric) with optional AI-generated image icons per option.'
       }, React.createElement('span', null, '\u{1F58C}️'), 'Customize Survey Items (custom + image icons)'),
-      React.createElement('button', {
+      React.createElement('button', { type: 'button',
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border-2 border-amber-400 hover:bg-amber-50 transition-all text-xs font-bold text-amber-800 mt-1',
         onClick: () => {
           try { window.dispatchEvent(new CustomEvent('alloflow:open-live-polling')); } catch {}
         },
         title: 'Open the live polling panel. Application data (responses, free text) flows peer-to-peer via WebRTC and never persists on any server. Requires an active session.'
       }, React.createElement('span', null, '\u{1F4CA}'), 'Live Polling (peer-to-peer, no server storage)'),
-      React.createElement('button', {
+      React.createElement('button', { type: 'button',
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg border border-indigo-700 hover:bg-indigo-700 transition-all text-xs font-bold mt-1',
         onClick: exportStudyBundle,
         title: 'Save the active study config plus all surveys, fidelity log, session counter, CBM, and RTI goals as a single JSON file you can re-import in another session.'
       }, React.createElement('span', null, '\u{1F4BE}'), 'Export Study Bundle (JSON)'),
-      React.createElement('button', {
+      React.createElement('button', { type: 'button',
         className: 'col-span-2 flex items-center justify-center gap-2 px-3 py-2 bg-white text-indigo-700 rounded-lg border border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-bold',
         onClick: () => { if (bundleFileInputRef.current) bundleFileInputRef.current.click(); },
         title: 'Restore a previously exported study bundle. Use this when reopening AlloFlow in a fresh Gemini Canvas conversation.'
@@ -7231,10 +7234,10 @@ try {
         placeholder: 'Any additional study notes...'
       }))), React.createElement('div', {
         className: 'flex justify-end gap-2 mt-5'
-      }, React.createElement('button', {
+      }, React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
         onClick: () => setShowResearchSetup(false)
-      }, 'Cancel'), React.createElement('button', {
+      }, 'Cancel'), React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 font-bold',
         onClick: () => {
           toggleResearchMode({
@@ -7277,10 +7280,10 @@ try {
         className: 'text-sm text-slate-600 mb-4'
       }, 'You\'ve completed ' + sessionCounter + ' sessions. Would you like to share your feedback?'), React.createElement('div', {
         className: 'flex gap-2 justify-center'
-      }, React.createElement('button', {
+      }, React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg',
         onClick: () => setShowAutoSurveyPrompt(false)
-      }, 'Skip'), React.createElement('button', {
+      }, 'Skip'), React.createElement('button', { type: 'button',
         className: 'px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold',
         onClick: () => {
           setShowAutoSurveyPrompt(false);
@@ -7405,7 +7408,7 @@ try {
         className: 'text-slate-600'
       }, entry.weekday + ' ' + new Date(entry.date).toLocaleDateString()))))) : null, React.createElement('div', {
         className: 'mt-3 flex gap-2'
-      }, React.createElement('button', {
+      }, React.createElement('button', { type: 'button',
         className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Min', 'Study'];
@@ -7423,7 +7426,7 @@ try {
           document.body.removeChild(link);
           setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
         }
-      }, '\u{1F4C4} Export Fidelity Log'), React.createElement('button', {
+      }, '\u{1F4C4} Export Fidelity Log'), React.createElement('button', { type: 'button',
         className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const allResponses = [];
@@ -9091,7 +9094,7 @@ try {
         return true;
       };
       var onKey = function(e) {
-        if (e.isComposing || e.keyCode === 229) return;
+        if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === 'Escape') {
           if (subModalOpenRef.current) return;
           e.stopPropagation();
@@ -9132,7 +9135,7 @@ try {
       };
     }, [screenerSession && screenerSession.status]);
     var onScreenerKeyDown = function(e) {
-      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeScreenerResults(); return; }
       if (e.key !== 'Tab' || !screenerDialogRef.current) return;
       var root = screenerDialogRef.current;
@@ -9236,7 +9239,7 @@ try {
       className: "text-sm text-slate-600"
     }, t('class_analytics.students_loaded', {
       count: importedStudents.length
-    })))), /*#__PURE__*/React.createElement("button", {
+    })))), /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.close') || 'Close',
       onClick: onClose,
       className: "p-2 hover:bg-slate-200 rounded-lg transition-colors"
@@ -9257,7 +9260,7 @@ try {
       id: 'research',
       label: '📊 Research',
       desc: 'Insights & growth'
-    }].filter(tab => !isParentMode || tab.id === 'assessments').map(tab => /*#__PURE__*/React.createElement("button", {
+    }].filter(tab => !isParentMode || tab.id === 'assessments').map(tab => /*#__PURE__*/React.createElement("button", { type: 'button',
       key: tab.id,
       onClick: () => {
         setAssessmentCenterTab(tab.id);
@@ -9316,7 +9319,7 @@ try {
                 className: 'text-xs px-1.5 py-0.5 rounded-full font-medium ' + (name === activeStudent ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600')
               }, name);
             }),
-            React.createElement("button", {
+            React.createElement("button", { type: 'button',
               onClick: function() {
                 if (screeningQueue.length > 0) {
                   var next = screeningQueue[0];
@@ -9332,7 +9335,7 @@ try {
               className: "text-xs px-2 py-1 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors ml-1"
             }, 'Next \u2192')
           ),
-          !screeningQueueActive && (importedStudents.length + ((rosterKey && rosterKey.students) ? Object.keys(rosterKey.students).filter(function(n) { return !importedStudents.some(function(s) { return (s.nickname || s.name) === n; }); }).length : 0)) > 1 && React.createElement("button", {
+          !screeningQueueActive && (importedStudents.length + ((rosterKey && rosterKey.students) ? Object.keys(rosterKey.students).filter(function(n) { return !importedStudents.some(function(s) { return (s.nickname || s.name) === n; }); }).length : 0)) > 1 && React.createElement("button", { type: 'button',
             onClick: function() {
               var names = importedStudents.map(function(s) { return s.nickname || s.name; });
               // Roster Key students count too: a teacher who works from the
@@ -9415,7 +9418,7 @@ try {
       className: "flex-1 text-xs px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-slate-700",
       placeholder: "End",
       "aria-label": "Report end date"
-    }), (reportStartDate || reportEndDate) && /*#__PURE__*/React.createElement("button", {
+    }), (reportStartDate || reportEndDate) && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         setReportStartDate('');
         setReportEndDate('');
@@ -9424,7 +9427,7 @@ try {
       title: "Clear dates"
     }, "\u2716")), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 mt-1"
-    }, t('learner.leave_empty_all_sessions'))), /*#__PURE__*/React.createElement("button", {
+    }, t('learner.leave_empty_all_sessions'))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => generateStudentFriendlyReport({
         history,
         wordSoundsHistory,
@@ -9470,7 +9473,7 @@ try {
       "aria-haspopup": "dialog",
       "aria-label": "Review Student Analytics data before opening it in AlloSheet",
       className: "min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
-    }, "📊 Open in AlloSheet"), importedStudents.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    }, "📊 Open in AlloSheet"), importedStudents.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.download'),
       "data-help-key": "dashboard_export_csv",
       onClick: handleExportCSV,
@@ -9485,7 +9488,7 @@ try {
     // banks arriving probe results from the live-session roster straight into
     // probe history. The isLive row guards elsewhere stay — cheap, and
     // defensive if a live row shape ever returns. ──
-    , /*#__PURE__*/React.createElement("button", {
+    , /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.toggle_safety_flags'),
       "data-help-key": "dashboard_safety_toggle",
       onClick: () => setSafetyFlaggingVisible(prev => !prev),
@@ -9493,7 +9496,7 @@ try {
       title: safetyFlaggingVisible ? 'Safety flags visible — click to hide' : 'Safety flags hidden — click to show'
     }, /*#__PURE__*/React.createElement(ShieldCheck, {
       size: 16
-    }), " ", safetyFlaggingVisible ? '🛡️ Safety On' : '🛡️ Off'), /*#__PURE__*/React.createElement("button", {
+    }), " ", safetyFlaggingVisible ? '🛡️ Safety On' : '🛡️ Off'), /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.delete'),
       "data-help-key": "dashboard_clear_btn",
       onClick: () => {
@@ -9552,7 +9555,7 @@ try {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
-    }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", {
+    }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.configure_rti_thresholds'),
       onClick: () => setShowRTISettings(true),
       className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-600",
@@ -9690,7 +9693,7 @@ try {
       className: "bg-indigo-100 p-2 rounded-full text-indigo-600"
     }, /*#__PURE__*/React.createElement(Settings, {
       size: 18
-    })), "RTI Threshold Configuration"), /*#__PURE__*/React.createElement("button", {
+    })), "RTI Threshold Configuration"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setShowRTISettings(false),
       className: "p-2 rounded-full hover:bg-slate-100 text-slate-600",
       "aria-label": t('common.close')
@@ -9778,12 +9781,13 @@ try {
         [item.key]: Number(e.target.value)
       })),
       className: "w-24 accent-indigo-600",
-      "aria-label": item.label
+      "aria-label": item.label,
+      "aria-valuetext": String(rtiThresholds[item.key]) + (item.unit || "")
     }), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-indigo-600 w-16 text-right"
     }, rtiThresholds[item.key], item.unit))))), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center justify-between mt-5 pt-4 border-t border-slate-100"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setRtiThresholds({
         quizTier3: 50,
         quizTier2: 80,
@@ -9794,7 +9798,7 @@ try {
         labelChallengeMin: 50
       }),
       className: "text-xs text-slate-600 hover:text-indigo-600 font-medium transition-colors"
-    }, "\u21BA Reset to Defaults"), /*#__PURE__*/React.createElement("button", {
+    }, "\u21BA Reset to Defaults"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setShowRTISettings(false),
       className: "px-5 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md text-sm"
     }, "Done")))), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -9820,7 +9824,7 @@ try {
     }))),
     /* ── Assessment Workflow Guide ── */
     React.createElement("div", { className: "mb-4 bg-gradient-to-br from-slate-50 to-indigo-50/50 rounded-xl border border-slate-400 overflow-hidden" },
-      React.createElement("button", { onClick: function() { setShowAssessmentGuide(function(p) { return !p; }); }, className: "w-full px-4 py-3 flex items-center justify-between hover:bg-white/50 transition-colors", "aria-expanded": showAssessmentGuide ? "true" : "false" },
+      React.createElement("button", { type: 'button', onClick: function() { setShowAssessmentGuide(function(p) { return !p; }); }, className: "w-full px-4 py-3 flex items-center justify-between hover:bg-white/50 transition-colors", "aria-expanded": showAssessmentGuide ? "true" : "false" },
         React.createElement("div", { className: "flex items-center gap-2" },
           React.createElement("span", { className: "text-base" }, "\uD83E\uDDED"),
           React.createElement("span", { className: "text-sm font-bold text-slate-700" }, "Assessment Workflow Guide"),
@@ -9935,7 +9939,7 @@ try {
     }, "\uD83C\uDFAF Practice Mode (No Student)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
       key: s.id || s.nickname,
       value: s.nickname || s.name
-    }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", {
+    }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => launchBenchmarkProbe(probeGradeLevel, probeActivity, wordSoundsProbeForm),
       "aria-label": t('common.run_benchmark_probe'),
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-700 to-purple-700 text-white rounded-lg font-bold text-sm hover:from-violet-800 hover:to-purple-800 transition-all shadow-md"
@@ -9998,7 +10002,7 @@ try {
     }, "\uD83C\uDFAF Practice Mode (No Student)"), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
       key: s.id || s.nickname,
       value: s.nickname || s.name
-    }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", {
+    }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = mathProbeGrade || "1";
         const form = mathProbeForm || "A";
@@ -10039,7 +10043,7 @@ try {
       className: "text-xs text-slate-600 mb-3"
     }, "Nonsense Word Fluency (NWF), Letter Naming Fluency (LNF), Rapid Automatized Naming (RAN), and Decodable ORF (a timed passage built from your Word Sounds pack)."), /*#__PURE__*/React.createElement("div", {
       className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = nwfGrade || 'K';
         const form = nwfForm || 'A';
@@ -10072,7 +10076,7 @@ try {
       className: "font-bold"
     }, "NWF"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600 font-normal"
-    }, t('probes.nwf')))), /*#__PURE__*/React.createElement("button", {
+    }, t('probes.nwf')))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = 'K';
         const form = lnfForm || 'A';
@@ -10103,7 +10107,7 @@ try {
       className: "font-bold"
     }, "LNF"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600 font-normal"
-    }, t('probes.lnf')))), /*#__PURE__*/React.createElement("button", {
+    }, t('probes.lnf')))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = ranGrade || 'K';
         const form = ranForm || 'A';
@@ -10136,7 +10140,7 @@ try {
       className: "font-bold"
     }, "RAN"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600 font-normal"
-    }, t('probes.ran')))), /*#__PURE__*/React.createElement("button", {
+    }, t('probes.ran')))), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: handleLaunchDecodableORF,
       className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
@@ -10165,7 +10169,7 @@ try {
       "aria-live": nwfProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${nwfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
-    }, "\u23F1 ", Math.floor(nwfProbeTimer / 60), ":", String(nwfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(nwfProbeTimer / 60), ":", String(nwfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End NWF probe early?", { title: 'End NWF probe', confirmText: 'End probe' })) {
           clearInterval(nwfProbeTimerRef.current);
@@ -10238,13 +10242,13 @@ try {
         className: "text-6xl font-bold text-slate-800 tracking-[0.15em] font-mono select-none"
       }, currentWord.word)), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-4"
-      }, /*#__PURE__*/React.createElement("button", {
+      }, /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markWord(true),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
-      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
+      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markWord(false),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
-      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
+      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => {
           if (nwfProbeIndex + 1 < nwfProbeWords.length) {
             setNwfProbeIndex(nwfProbeIndex + 1);
@@ -10310,7 +10314,7 @@ try {
       className: "text-2xl font-bold text-indigo-600"
     }, nwfProbeResults.totalScored > 0 ? Math.round(nwfProbeResults.correctWords / nwfProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         setLatestProbeResult({
           student: mathProbeStudent,
@@ -10328,10 +10332,10 @@ try {
       className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-800 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
     renderProbeInterpretation('nwf_cls', nwfProbeResults.cls, nwfProbeGrade, getSeason(), nwfProbeResults),
-    /*#__PURE__*/React.createElement("button", {
+    /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => printClinicalProbeReport('nwf', nwfProbeResults, nwfProbeGrade, nwfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setNwfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), lnfProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -10352,7 +10356,7 @@ try {
       "aria-live": lnfProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${lnfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
-    }, "\u23F1 ", Math.floor(lnfProbeTimer / 60), ":", String(lnfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(lnfProbeTimer / 60), ":", String(lnfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End LNF probe early?", { title: 'End LNF probe', confirmText: 'End probe' })) {
           clearInterval(lnfProbeTimerRef.current);
@@ -10419,13 +10423,13 @@ try {
         className: `flex items-center justify-center w-9 h-9 rounded-lg text-lg font-bold transition-all cursor-default ${idx === lnfProbeIndex ? 'bg-blue-700 text-white ring-2 ring-blue-300 ring-offset-1 scale-110 shadow-lg' : idx < lnfProbeIndex && item.scored ? item.correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700 line-through' : idx < lnfProbeIndex ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 text-slate-600'}`
       }, item.letter))), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-4"
-      }, /*#__PURE__*/React.createElement("button", {
+      }, /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markLetter(true),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
-      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
+      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markLetter(false),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
-      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
+      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => {
           if (lnfProbeIndex + 1 < lnfProbeLetters.length) {
             setLnfProbeIndex(lnfProbeIndex + 1);
@@ -10483,7 +10487,7 @@ try {
       className: "text-2xl font-bold text-indigo-600"
     }, lnfProbeResults.totalScored > 0 ? Math.round(lnfProbeResults.correct / lnfProbeResults.totalScored * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         setLatestProbeResult({
           student: mathProbeStudent,
@@ -10501,10 +10505,10 @@ try {
       className: "w-full mt-2 px-4 py-2 bg-blue-700 text-white rounded-lg font-bold text-sm hover:bg-blue-600 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
     renderProbeInterpretation('lnf', lnfProbeResults.correct, 'K', getSeason(), lnfProbeResults),
-    /*#__PURE__*/React.createElement("button", {
+    /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => printClinicalProbeReport('lnf', lnfProbeResults, 'K', lnfForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setLnfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), ranProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -10523,7 +10527,7 @@ try {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
       className: "tabular-nums px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-700"
-    }, "\u23F1 ", Math.floor(ranProbeElapsed / 60), ":", String(ranProbeElapsed % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(ranProbeElapsed / 60), ":", String(ranProbeElapsed % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End RAN probe early?", { title: 'End RAN probe', confirmText: 'End probe' })) {
           clearInterval(ranProbeTimerRef.current);
@@ -10614,13 +10618,13 @@ try {
         }, isColor ? '' : entry.item);
       })), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-4"
-      }, /*#__PURE__*/React.createElement("button", {
+      }, /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markItem(true),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
-      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
+      }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => markItem(false),
         className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
-      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
+      }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => {
           if (ranProbeIndex + 1 < ranProbeItems.length) {
             setRanProbeIndex(ranProbeIndex + 1);
@@ -10685,7 +10689,7 @@ try {
       className: "text-center text-xs text-slate-600 mb-2"
     }, "Type: ", /*#__PURE__*/React.createElement("span", {
       className: "font-bold capitalize"
-    }, ranProbeResults.subType), " \xB7 Grade ", ranProbeResults.grade), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, ranProbeResults.subType), " \xB7 Grade ", ranProbeResults.grade), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         setLatestProbeResult({
           student: mathProbeStudent,
@@ -10702,10 +10706,10 @@ try {
         addToast(t('toasts.ran_results_saved') + mathProbeStudent, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-800 transition-colors"
-    }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => printClinicalProbeReport('ran', ranProbeResults, ranProbeGrade, ranForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setRanProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), orfProbeActive && /*#__PURE__*/React.createElement("div", {
@@ -10726,7 +10730,7 @@ try {
       "aria-live": orfProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${orfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
-    }, "\u23F1 ", Math.floor(orfProbeTimer / 60), ":", String(orfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(orfProbeTimer / 60), ":", String(orfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End ORF probe early?", { title: 'End ORF probe', confirmText: 'End probe' })) {
           clearInterval(orfProbeTimerRef.current);
@@ -10824,7 +10828,7 @@ try {
       className: "text-2xl font-bold text-indigo-600"
     }, orfProbeResults.wordsAttempted > 0 ? Math.round((orfProbeResults.wordsAttempted - orfProbeResults.errors) / orfProbeResults.wordsAttempted * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         if (orfProbeResults.decodable) {
           // Progress monitoring on CONTROLLED text: banks to probeHistory
@@ -10893,10 +10897,10 @@ try {
     orfProbeResults.decodable ? /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg p-2"
     }, "\uD83D\uDCCF This score tracks progress on the taught patterns in this pack. Decodable-text WCPM is not comparable to grade-level ORF benchmarks \u2014 do not use it for screening or tier decisions.") : renderProbeInterpretation('orf', orfProbeResults.wcpm, orfProbeGrade, getSeason(), orfProbeResults),
-    !orfProbeResults.decodable && /*#__PURE__*/React.createElement("button", {
+    !orfProbeResults.decodable && /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => printClinicalProbeReport('orf', orfProbeResults, orfProbeGrade, mathProbeForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
-    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDDA8\uFE0F Print Clinical Report"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setOrfProbeResults(null),
       className: "w-full mt-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-200 transition-colors"
     }, "Dismiss Results")), /*#__PURE__*/React.createElement("div", {
@@ -10949,7 +10953,7 @@ try {
       value: "B"
     }, "Form B (Winter)"), /*#__PURE__*/React.createElement("option", {
       value: "C"
-    }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", {
+    }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = mnGrade || "1";
         const form = mnForm || "A";
@@ -11016,7 +11020,7 @@ try {
       "aria-live": mnProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
-    }, "\u23F1 ", Math.floor(mnProbeTimer / 60), ":", String(mnProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(mnProbeTimer / 60), ":", String(mnProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End probe early? The answers so far are kept, and you choose whether to save them.", { title: 'End missing number probe', confirmText: 'End probe' })) {
           clearInterval(mnProbeTimerRef.current);
@@ -11098,7 +11102,7 @@ try {
         value: mnProbeAnswer,
         onChange: e => setMnProbeAnswer(saCleanProbeAnswer(e.target.value)),
         onKeyDown: e => {
-          if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+          if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === 'Enter') { e.preventDefault(); submitMnAnswer(); }
         },
         className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-1",
@@ -11186,7 +11190,7 @@ try {
       className: "text-xs text-slate-600"
     }, "Accuracy"))), mnProbeResults.endedEarly && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-amber-800 font-semibold mb-1", "data-probe-ended-early": "missing_number"
-    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       disabled: numeracySaved.missing_number === mnProbeResults,
       style: numeracySaved.missing_number === mnProbeResults ? { background: "#e2e8f0", color: "#1e293b", cursor: "default" } : undefined,
       onClick: () => {
@@ -11227,7 +11231,7 @@ try {
       value: "B"
     }, "Form B (Winter)"), /*#__PURE__*/React.createElement("option", {
       value: "C"
-    }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", {
+    }, "Form C (Spring)")), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => {
         const grade = qdGrade || "K";
         const form = qdForm || "A";
@@ -11281,7 +11285,7 @@ try {
       "aria-live": qdProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${qdProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
-    }, "\u23F1 ", Math.floor(qdProbeTimer / 60), ":", String(qdProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
+    }, "\u23F1 ", Math.floor(qdProbeTimer / 60), ":", String(qdProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End probe early?", { title: 'End quantity discrimination probe', confirmText: 'End probe' })) {
           clearInterval(qdProbeTimerRef.current);
@@ -11319,7 +11323,7 @@ try {
         className: "text-sm text-slate-600 mb-4 font-medium"
       }, "Which number is bigger?"), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-8"
-      }, [problem.left ?? problem.a, problem.right ?? problem.b].map((num, i) => /*#__PURE__*/React.createElement("button", {
+      }, [problem.left ?? problem.a, problem.right ?? problem.b].map((num, i) => /*#__PURE__*/React.createElement("button", { type: 'button',
         key: i,
         onClick: () => {
           const chosen = num;
@@ -11394,7 +11398,7 @@ try {
       className: "text-xs text-slate-600"
     }, "Accuracy"))), qdProbeResults.endedEarly && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-amber-800 font-semibold mb-1", "data-probe-ended-early": "quantity_discrimination"
-    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", { type: 'button',
       disabled: numeracySaved.quantity_discrimination === qdProbeResults,
       style: numeracySaved.quantity_discrimination === qdProbeResults ? { background: "#e2e8f0", color: "#1e293b", cursor: "default" } : undefined,
       onClick: () => {
@@ -11504,7 +11508,7 @@ try {
       className: "text-xs text-amber-600 font-medium"
     }, window.RAN_PROBE_BANKS && window.RAN_PROBE_BANKS[ranGrade || "K"]?.[ranForm || "A"] ? `✅ ${window.RAN_PROBE_BANKS[ranGrade || "K"][ranForm || "A"].type} · ${window.RAN_PROBE_BANKS[ranGrade || "K"][ranForm || "A"].items.length} items` : "⏳ Loading..."))), importedStudents.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 mb-3 items-center"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: generateRTICSV,
       "aria-label": t('common.export_rti_progress_report_as_csv'),
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg font-bold text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md"
@@ -11680,20 +11684,20 @@ try {
         ),
         _acThAddControl(React.createElement, t, takeHomeActions),
         importedStudents.length > 0 && React.createElement(React.Fragment, null,
-          React.createElement("button", {
+          React.createElement("button", { type: 'button',
             onClick: handleExportCSV,
             className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Download, { size: 16 }), t('class_analytics.export_csv')),
-          React.createElement("button", {
+          React.createElement("button", { type: 'button',
             onClick: exportScreeningCSV,
             className: "bg-teal-700 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Download, { size: 16 }), "Screening CSV"),
           renderWordSoundsExportButtons(),
-          React.createElement("button", {
+          React.createElement("button", { type: 'button',
             onClick: generateRTICSV,
             className: "bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Download, { size: 16 }), "RTI Report"),
-          React.createElement("button", {
+          React.createElement("button", { type: 'button',
             onClick: () => { setImportedStudents([]); },
             className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Trash2, { size: 16 }), t('class_analytics.clear_data'))
@@ -11931,13 +11935,13 @@ try {
       className: "bg-white rounded-xl border border-slate-400 p-3"
     }, renderResearchToolbar()), /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setShowCBMModal(true),
       className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
-    }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setShowSurveyModal(true),
       className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-600 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
-    }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setShowResearchSetup(true),
       className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
     }, "\u2699\uFE0F Settings")), typeof renderAutoSurveyPrompt === 'function' && renderAutoSurveyPrompt(), importedStudents.length === 0 ? React.createElement("div", { className: "space-y-4" },
@@ -11978,15 +11982,15 @@ try {
         )
       ),
       React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
-        React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
+        React.createElement("button", { type: 'button', onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
+        React.createElement("button", { type: 'button', onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
+        React.createElement("button", { type: 'button', onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
       )
     ) : /*#__PURE__*/React.createElement("div", {
       className: "space-y-4"
     }, researchStudent ? /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-4"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => setResearchStudent(null),
       className: "text-sm text-indigo-600 hover:text-indigo-800 font-bold"
     }, "\u2190 Back to class"), /*#__PURE__*/React.createElement("span", {
@@ -11994,20 +11998,20 @@ try {
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent),
-    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
-    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast(screenerLabel('toasts.report_writer_unavailable', 'Report Writer is not available in this build.'), 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
+    React.createElement("button", { type: 'button', onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
+    React.createElement("button", { type: 'button', onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast(screenerLabel('toasts.report_writer_unavailable', 'Report Writer is not available in this build.'), 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
     renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-bold text-slate-600 uppercase mb-3"
     }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
-    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
+    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { type: 'button', onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
     typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
       className: "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
     }, importedStudents.map(s => {
       const name = s.name || s;
       const anomalyFlags = typeof computeAnomalyFlags === 'function' && s.stats ? computeAnomalyFlags(s) : [];
-      return /*#__PURE__*/React.createElement("button", {
+      return /*#__PURE__*/React.createElement("button", { type: 'button',
         key: name,
         onClick: () => setResearchStudent(name),
         className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group"
@@ -12189,7 +12193,7 @@ try {
       className: "p-4 border-b border-slate-200 flex items-center justify-between shrink-0"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       "aria-label": t('common.previous'),
       "data-help-key": "dashboard_detail_back",
       onClick: () => setSelectedStudent(null),
@@ -12200,14 +12204,14 @@ try {
       className: "font-bold text-lg"
     }, selectedStudent.name)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
-    }, /*#__PURE__*/React.createElement("button", {
+    }, /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => generateStudentProgressReport(selectedStudent),
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-lg font-bold text-sm hover:from-indigo-800 hover:to-purple-800 transition-all shadow-md",
       "data-help-key": "dashboard_print_parent_report",
       "aria-label": t('common.print_parent_friendly_progress_report')
     }, /*#__PURE__*/React.createElement(Printer, {
       size: 14
-    }), " Print Parent Report"), /*#__PURE__*/React.createElement("button", {
+    }), " Print Parent Report"), /*#__PURE__*/React.createElement("button", { type: 'button',
       onClick: () => generateStudentFriendlyReport({
         history: selectedStudent.history || [],
         wordSoundsHistory: selectedStudent.wordSoundsHistory || selectedStudent.data?.wordSoundsState?.history || [],
@@ -12682,7 +12686,7 @@ try {
             fontSize: '12px',
             fontWeight: 600
           }
-        }))), /*#__PURE__*/React.createElement("button", {
+        }))), /*#__PURE__*/React.createElement("button", { type: 'button',
           onClick: () => {
             const b = document.getElementById(`rti-baseline-${selectedStudent.name}`)?.value;
             const t2 = document.getElementById(`rti-target-${selectedStudent.name}`)?.value;
@@ -12891,7 +12895,7 @@ try {
           color: '#64748b',
           marginLeft: '8px'
         }
-      }, log.frequency, ", ", log.minutes, " min, group of ", log.groupSize)), /*#__PURE__*/React.createElement("button", {
+      }, log.frequency, ", ", log.minutes, " min, group of ", log.groupSize)), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => deleteInterventionLog(selectedStudent.name, log.id),
         style: {
           fontSize: '10px',
@@ -13060,7 +13064,7 @@ try {
           padding: '4px 8px',
           fontSize: '12px'
         }
-      }))), /*#__PURE__*/React.createElement("button", {
+      }))), /*#__PURE__*/React.createElement("button", { type: 'button',
         onClick: () => {
           const { program, frequency, minutes, groupSize, startDate, notes } = interventionDraft;
           if (program && frequency) {

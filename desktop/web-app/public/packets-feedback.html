@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://alloflow-catalog-submit.aaron-pomeranz.workers.dev; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Send feedback</title>
+<meta name="description" content="Tell the people who make AlloFlow Packets what is broken, confusing or useful. You see exactly what is sent before you send it. No name, no email, nothing about students. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_wordlist_en.js" defer></script>
+<script src="packets-feedback.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets.html">Make a file</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. It sends your feedback to AlloFlow only when you press Send, and you see every word first.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li id="proof-reach">This page can reach only one address: AlloFlow's feedback inbox at <code>alloflow-catalog-submit.aaron-pomeranz.workers.dev</code>. The rule below names that one address, and the browser refuses everything else, this site included. Standard practice files, checks, and the core maker and results pages never send anything to AlloFlow; see <a href="packets-it.html">Guide for school IT</a> for the few optional pages that can contact another host.</li>
+      <li id="proof-when">Nothing is sent when the page opens or while you type. A message is sent only when you check the box saying you have read it and press <strong>Send</strong>.</li>
+      <li id="proof-sent">What is sent is exactly what the box "What will be sent" shows: the page you chose, the kind of feedback, your message after it was cleaned, and two words about your device (for example "Chrome" and "computer"). There is no name or email box, nothing can be attached, and this page reads nothing that other Packets pages keep in your browser.</li>
+      <li id="proof-clean">Before you see it, the message is cleaned on this device: anything that looks like an email, a phone or ID number, a date, an address, a web link with details in it, a name, or a diagnosis is replaced with a word in brackets, such as [name]. The inbox checks again and refuses a message that still looks personal.</li>
+      <li id="proof-kept">The inbox keeps each message for 30 days, then deletes it. It keeps no IP address, no browser details beyond those two words, and no location. Like any web request, yours passes through the hosting service, which sees your IP address as every website does.</li>
+      <li>This page runs without AI. The cleaning is a fixed set of rules in this page's script.</li>
+      <li>This page loads its own files from this site: the page, two stylesheets (<code>packets.css</code>, <code>packets-make.css</code>), three scripts (<code>packets-page.js</code>, <code>word_sounds_wordlist_en.js</code>, a word list that tells ordinary words from possible names, and <code>packets-feedback.js</code>) and the icon in the browser tab.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Send feedback</h1>
+    <p class="scope">Tell us what is broken, confusing or useful. Write about the pages, not about a student. Never paste a student's results.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript. Nothing is sent anywhere.</p></noscript>
+
+    <section class="sheet" aria-labelledby="write-title">
+      <h2 id="write-title">Your feedback</h2>
+      <div class="field">
+        <label for="fb-page">Which page is it about?</label>
+        <select id="fb-page">
+          <option value="packets">The front page</option>
+          <option value="packets-make">Word Sounds maker</option>
+          <option value="packets-vocab">Vocabulary maker</option>
+          <option value="packets-math-practice">Math fact practice maker</option>
+          <option value="packets-check">Math check maker</option>
+          <option value="packets-symbol-runner">Symbol Runner maker</option>
+          <option value="packets-read-along">Read-along maker</option>
+          <option value="packets-choice">Choice, Sort &amp; Write maker</option>
+          <option value="packets-maze">Maze Reading maker</option>
+          <option value="packets-manipulatives">Visual Math Manipulatives maker</option>
+          <option value="packets-stem-lab">STEM Labs maker</option>
+          <option value="packets-life-skills">Life Skills &amp; Transition maker</option>
+          <option value="packets-aac">AAC Boards maker</option>
+          <option value="packets-sel">Focus &amp; UDL Toolkits maker</option>
+          <option value="packets-playlist">Unit Playlists maker</option>
+          <option value="packets-packs">Starter Pack Library</option>
+          <option value="packets-compile">Activity Bridge (AlloFlow to Packet)</option>
+          <option value="packets-voice">Recordings with a computer voice</option>
+          <option value="packets-pictures">Find a picture</option>
+          <option value="packets-present-export">Present &amp; print word cards</option>
+          <option value="packets-qr">Collect by sealed QR</option>
+          <option value="packets-open">Open a practice file or check</option>
+          <option value="packets-try">Try it (preview)</option>
+          <option value="packets-results">Add up results</option>
+          <option value="packets-verify">Look inside a file</option>
+          <option value="packets-vocab-lookup">Look up a word online</option>
+          <option value="packets-about">About Packets</option>
+          <option value="packets-it">Guide for school IT</option>
+          <option value="packets-feedback">This feedback page</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+      <fieldset class="block">
+        <legend>What kind of feedback?</legend>
+        <div class="radios" id="fb-kinds">
+          <label class="radio"><input type="radio" name="fb-kind" value="broken"> <span>Something is broken</span></label>
+          <label class="radio"><input type="radio" name="fb-kind" value="confusing"> <span>Something is confusing</span></label>
+          <label class="radio"><input type="radio" name="fb-kind" value="idea"> <span>An idea</span></label>
+          <label class="radio"><input type="radio" name="fb-kind" value="worked"> <span>Something worked well</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="fb-message">Your message</label>
+        <span class="hint" id="fb-message-hint">At most 600 characters. What did you try, and what happened? Please do not name or describe a student.</span>
+        <textarea id="fb-message" rows="6" maxlength="900" aria-describedby="fb-message-hint fb-count"></textarea>
+        <p id="fb-count" class="hint" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="sheet" aria-labelledby="sent-title">
+      <h2 id="sent-title">What will be sent</h2>
+      <p class="hint">This is everything that leaves this device, word for word. Change your message above if something here should not be sent.</p>
+      <dl class="fb-sent">
+        <dt>Page</dt><dd id="fb-sent-page"></dd>
+        <dt>Kind</dt><dd id="fb-sent-kind"></dd>
+        <dt>Device</dt><dd id="fb-sent-device"></dd>
+        <dt>Message</dt><dd><p id="fb-sent-message" class="fb-sent-message"></p></dd>
+      </dl>
+      <p id="fb-cleaned" class="note" hidden></p>
+      <div class="block">
+        <label class="radio"><input type="checkbox" id="fb-read"> <span>I have read what will be sent, and it says nothing about a student or anyone else.</span></label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="fb-send" aria-describedby="fb-said">Send</button>
+        <p id="fb-said" class="actions-note" role="status"></p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

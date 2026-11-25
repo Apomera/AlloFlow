@@ -33,12 +33,26 @@
     <details class="top-menu">
       <summary>Switch maker</summary>
       <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
         <a href="packets-make.html">Word Sounds</a>
         <a href="packets-vocab.html">Vocabulary</a>
         <a href="packets-math-practice.html" aria-current="page">Math Fact Practice</a>
         <a href="packets-check.html">Math Check</a>
         <a href="packets-read-along.html">Read-Along</a>
         <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
         <a href="packets-present-export.html">Present &amp; print</a>
         <a href="packets-results.html">Add up results</a>
       </nav>
@@ -258,10 +272,43 @@
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" aria-describedby="print-note" hidden>Print on paper</button>
         <button type="button" class="btn" id="download-worksheet" hidden>Download worksheet</button>
+        <button type="button" class="btn" id="download-docx" hidden>Download Word (.docx)</button>
         <button type="button" class="btn" id="download-bundle" hidden>Download classroom bundle (.zip)</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
         <p class="actions-note" id="print-note" hidden>For a student with no device: a cover, copy, compare sheet with the same facts, plus an answer key on a sheet of its own.</p>
       </div>
+
+      <details class="batch" id="math-ws-options" hidden>
+        <summary>Worksheet and Word (.docx) options</summary>
+        <div class="batch-body">
+          <p class="hint">Applies to Download worksheet, Download Word (.docx), and the classroom bundle (.zip). Visual models include ten-frames, number lines, dot arrays, and equal-group boxes.</p>
+          <div class="starter-row">
+            <label for="f-ws-support">Support level</label>
+            <select id="f-ws-support">
+              <option value="scaffolded" selected>Scaffolded (with visual models)</option>
+              <option value="independent">Independent (facts only)</option>
+            </select>
+          </div>
+          <div class="starter-row">
+            <label for="f-ws-layout">Problem layout</label>
+            <select id="f-ws-layout">
+              <option value="horizontal" selected>Horizontal (7 + 5 = ___)</option>
+              <option value="vertical">Stacked vertical</option>
+            </select>
+          </div>
+          <div class="starter-row">
+            <label for="f-ws-density">Print size</label>
+            <select id="f-ws-density">
+              <option value="standard" selected>Standard</option>
+              <option value="primary">Large print (K-1)</option>
+              <option value="compact">Compact</option>
+            </select>
+          </div>
+          <p class="row">
+            <label class="radio"><input type="checkbox" id="f-ws-key" checked> Include teacher answer key</label>
+          </p>
+        </div>
+      </details>
 
       <div id="after-save" class="next" tabindex="-1" hidden>
         <h3>Saved. What to do next</h3>
@@ -325,7 +372,7 @@
 <footer class="foot">
   <div class="wrap wrap-narrow foot-row">
     <p>Free to use. Open source, license AGPL-3.0.</p>
-    <p><a href="./">More from AlloFlow</a></p>
+    <p><a href="packets-feedback.html#from-packets-math-practice">Send feedback</a> <a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
 <div id="paper" class="paper" hidden></div>

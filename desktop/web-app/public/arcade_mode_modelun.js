@@ -939,16 +939,23 @@
   // Register the plugin with AlloHaven Arcade.
   // ═══════════════════════════════════════════
   function attachModelUNCrisisA11yCSS() {
-    if (typeof document === 'undefined' || document.getElementById('mun-crisis-a11y-css')) return;
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('mun-crisis-a11y-css')) return;
     var style = document.createElement('style');
     style.id = 'mun-crisis-a11y-css';
     style.textContent = [
+      '[data-arcade-mode="model-un"] button, [data-arcade-mode="model-un"] [role="button"], [data-arcade-mode="model-un"] summary, [data-arcade-mode="model-un"] a, [data-arcade-mode="model-un"] input, [data-arcade-mode="model-un"] select, [data-arcade-mode="model-un"] textarea { touch-action: manipulation; }',
+      '[data-arcade-mode="model-un"] button:focus-visible, [data-arcade-mode="model-un"] [role="button"]:focus-visible, [data-arcade-mode="model-un"] summary:focus-visible, [data-arcade-mode="model-un"] a:focus-visible, [data-arcade-mode="model-un"] input:focus-visible, [data-arcade-mode="model-un"] select:focus-visible, [data-arcade-mode="model-un"] textarea:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }',
       '.mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible, .mun-form-control:focus-visible { outline: 3px solid #fff; outline-offset: 3px; box-shadow: 0 0 0 6px #1d4ed8; }',
       '@media (forced-colors: active) {',
+      '  [data-arcade-mode="model-un"] button:focus-visible, [data-arcade-mode="model-un"] [role="button"]:focus-visible, [data-arcade-mode="model-un"] summary:focus-visible, [data-arcade-mode="model-un"] a:focus-visible, [data-arcade-mode="model-un"] input:focus-visible, [data-arcade-mode="model-un"] select:focus-visible, [data-arcade-mode="model-un"] textarea:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }',
       '  .mun-crisis-control:focus-visible, .mun-crisis-response:focus-visible, .mun-form-control:focus-visible { outline-color: Highlight; box-shadow: none; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  [data-arcade-mode="model-un"] *, [data-arcade-mode="model-un"] *::before, [data-arcade-mode="model-un"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
       '}'
     ].join('\n');
-    if (document.head) document.head.appendChild(style);
+    document.head.appendChild(style);
   }
 
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
@@ -1273,16 +1280,14 @@
           progress: function() { return (window.__alloHavenModelUNStats.backchannelMessagesSent || 0) >= 1 ? 'Done!' : 'Not yet'; } }
       ],
       render: function (ctx) {
+        attachModelUNCrisisA11yCSS();
         var React = ctx.React || window.React;
         var session = ctx.session;
         var inActiveSession = !!(session && session.modeId === 'model-un');
-        if (inActiveSession) {
-          return React.createElement(ModelUNMain, {
-            key: 'mun-' + session.startedAt,
-            ctx: ctx
-          });
-        }
-        return React.createElement(ModelUNLauncherCard, { ctx: ctx });
+        var body = inActiveSession
+          ? React.createElement(ModelUNMain, { key: 'mun-' + session.startedAt, ctx: ctx })
+          : React.createElement(ModelUNLauncherCard, { ctx: ctx });
+        return React.createElement('div', { 'data-arcade-mode': 'model-un' }, body);
       }
     });
   }
@@ -1400,6 +1405,7 @@
 
       // Host class-session CTA
       isInSession && ctx.isHost && !hasOpenClassMUN && h('button', {
+            type: 'button',
         onClick: handleStartClassSession,
         disabled: disabled,
         'aria-label': 'Start a class Model UN session for session ' + ctx.sessionCode,
@@ -1416,6 +1422,7 @@
 
       // Student join CTA
       isInSession && !ctx.isHost && hasOpenClassMUN && h('button', {
+            type: 'button',
         onClick: handleJoinClassSession,
         disabled: disabled,
         'aria-label': 'Join the class Model UN: ' + (classMUN && classMUN.agenda ? classMUN.agenda : ''),
@@ -1432,6 +1439,7 @@
 
       // Solo CTA (with no AI, ModelUNMain runs templated delegates)
       h('button', {
+            type: 'button',
         onClick: handleSoloLaunch,
         disabled: disabled || !canAfford,
         'aria-label': munAiOk(ctx) ? 'Start a solo Model UN simulation (you pick committee + agenda)' : 'Start a solo Model UN practice without AI (you pick committee + agenda)',
@@ -1452,6 +1460,7 @@
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 } },
           QUICK_STARTS.map(function(qs) {
             return h('button', {
+            type: 'button',
               key: qs.id,
               onClick: function() { handleQuickStart(qs.committee, qs.agenda); },
               disabled: disabled || !canAfford,
@@ -1474,6 +1483,7 @@
 
       // Achievement gallery trigger
       h('button', {
+            type: 'button',
         onClick: function() { setGalleryOpen(true); },
         'aria-label': 'View Model UN achievements',
         style: {
@@ -1675,6 +1685,7 @@
       h('div', { style: { fontWeight: 700, marginBottom: 6 } }, 'Phase "' + phase + '" coming soon'),
       h('p', { style: { fontSize: 12, color: '#94a3b8' } }, 'Caucus, voting, and debrief phases ship in the next update. For now, opening speeches are the end of v0.2.'),
       (isHost || isSolo) && h('button', {
+            type: 'button',
         onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES }); },
         style: { marginTop: 12, padding: '8px 16px', background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700 }
       }, '← Back to Opening Speeches')
@@ -1724,6 +1735,7 @@
         COMMITTEES.map(function(c) {
           var picked = modelUn.committeeId === c.id;
           return h('button', {
+            type: 'button',
             key: c.id, onClick: function() { pickCommittee(c.id); },
             style: {
               padding: 12, textAlign: 'left',
@@ -1745,6 +1757,7 @@
         AGENDAS.map(function(a) {
           var picked = modelUn.agendaId === a.id;
           return h('button', {
+            type: 'button',
             key: a.id, onClick: function() { pickAgenda(a.id); },
             style: {
               padding: 10, textAlign: 'left',
@@ -1771,6 +1784,7 @@
         ].map(function(m) {
           var picked = modelUn.assignmentMode === m.id;
           return h('button', {
+            type: 'button',
             key: m.id, onClick: function() { pickAssignmentMode(m.id); },
             style: {
               padding: '6px 12px', fontSize: 12, fontWeight: 600,
@@ -1798,6 +1812,7 @@
 
       // Advance
       h('button', {
+            type: 'button',
         onClick: advance,
         disabled: !modelUn.committeeId || !modelUn.agendaId,
         style: {
@@ -1924,10 +1939,12 @@
       // Quick actions
       h('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
         h('button', {
+            type: 'button',
           onClick: randomizeAll,
           style: { padding: '6px 14px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🎲 Randomize all students'),
         h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ assignedCountries: {} }); setSelectedStu(null); },
           style: { padding: '6px 14px', fontSize: 12, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#fca5a5', border: '1px solid #ef4444', borderRadius: 8, cursor: 'pointer' }
         }, '↻ Clear assignments')
@@ -1948,6 +1965,7 @@
                 var stuCountry = stuIso ? countryById(stuIso) : null;
                 var isSelected = selectedStu === stu.uid;
                 return h('button', {
+            type: 'button',
                   key: stu.uid,
                   onClick: function() { setSelectedStu(isSelected ? null : stu.uid); },
                   style: {
@@ -1979,6 +1997,7 @@
               var isAiSeat = ownerUid && ownerUid.indexOf('ai_') === 0;
               var assignedTaken = !!ownerUid;
               return h('button', {
+            type: 'button',
                 key: iso,
                 onClick: function() {
                   if (selectedStu) {
@@ -2014,10 +2033,12 @@
       // Lock + advance
       h('div', { style: { marginTop: 24, display: 'flex', gap: 8, justifyContent: 'flex-end' } },
         h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.SETUP }); },
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
         }, '← Back to Setup'),
         h('button', {
+            type: 'button',
           onClick: lockRosterAndAdvance,
           style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Lock roster → Briefing →')
@@ -2058,6 +2079,7 @@
       // Top banner with help button
       h('div', { style: { marginBottom: 16, padding: 14, background: 'linear-gradient(135deg, #0c4a6e 0%, #155e75 100%)', borderRadius: 12, position: 'relative' } },
         h('button', {
+            type: 'button',
           onClick: function() { setHelpOpen(true); },
           'aria-label': 'Open vocabulary help panel',
           style: { position: 'absolute', top: 10, right: 10, padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
@@ -2138,10 +2160,12 @@
       // Continue / Phase navigation
       isHost && h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
         h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.ASSIGNMENT }); },
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
         }, '← Back to Assignment'),
         h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.POSITION_PAPER }); },
           style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Open Position Papers →')
@@ -2353,6 +2377,7 @@
 
       h('div', { style: { marginBottom: 16, padding: 14, background: 'linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%)', borderRadius: 12, position: 'relative' } },
         h('button', {
+            type: 'button',
           onClick: function() { setHelpOpen(true); },
           'aria-label': 'Open vocabulary help panel',
           style: { position: 'absolute', top: 10, right: 10, padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
@@ -2382,18 +2407,21 @@
       // AI starter row
       myCountry && agenda && h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
         munAiOk(ctx) && h('button', {
+            type: 'button',
           onClick: aiDraft,
           disabled: status.drafting,
           'aria-busy': status.drafting,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: status.drafting ? '#475569' : '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: status.drafting ? 'wait' : 'pointer' }
         }, status.drafting ? '⏳ Drafting…' : '🤖 AI starter draft'),
         munAiOk(ctx) && h('button', {
+            type: 'button',
           onClick: aiCritique,
           disabled: status.critiquing || !form.stance,
           'aria-busy': status.critiquing,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: status.critiquing ? '#475569' : '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: status.critiquing ? 'wait' : 'pointer' }
         }, status.critiquing ? '⏳ Reviewing…' : '🔎 AI feedback'),
         h('button', {
+            type: 'button',
           onClick: exportPrint,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
         }, '🖨️ Print / PDF')
@@ -2427,6 +2455,7 @@
           !autoSave.pending && autoSave.lastSavedAt > 0 && h('span', { style: { fontSize: 11, color: '#10b981', fontStyle: 'italic' } }, '✓ Auto-saved'),
           h('div', { style: { flex: 1 } }),
           h('button', {
+            type: 'button',
             onClick: savePaper,
             disabled: status.saving || !form.stance,
             style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: status.saving ? '#475569' : '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: status.saving ? 'wait' : 'pointer' }
@@ -2488,10 +2517,12 @@
       // Phase nav
       h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between', marginTop: 8 } },
         isHost && h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.BRIEFING }); },
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
         }, '← Back to Briefing'),
         isHost && h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.OPENING_SPEECHES, currentSpeakerUid: null, speechCount: 0 }); },
           style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Begin Opening Speeches →'),
@@ -3656,16 +3687,19 @@
           )
         ),
         h('button', {
+            type: 'button',
           onClick: function() { setHelpOpen(true); },
           'aria-label': 'Open vocabulary help panel',
           style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
         }, '? Help'),
         // Phase advance
         isHost && allSpoken && h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ phase: PHASES.DRAFT }); },
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Advance to Resolution Drafting →'),
         isHost && !allSpoken && h('button', {
+            type: 'button',
           onClick: async function() {
             var approved = await requestModelUNConfirmation(
               'Some delegates have not spoken yet. Skip to Resolution Drafting anyway?',
@@ -3677,6 +3711,7 @@
           style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
         }, 'Skip to Drafting →'),
         isHost && h('button', {
+            type: 'button',
           onClick: function() { setCaucusModalOpen(true); },
           style: { padding: '6px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(251,191,36,0.18)', color: '#fbbf24', border: '1px solid #fbbf24', borderRadius: 6, cursor: 'pointer' }
         }, '⚖️ Motion for Caucus')
@@ -3729,6 +3764,7 @@
             )
           ),
           (isHost || isSolo) && h('button', {
+            type: 'button',
             onClick: skipSpeaker,
             style: { padding: '4px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', border: '1px solid #ef4444', borderRadius: 6, cursor: 'pointer' }
           }, 'Skip')
@@ -3755,6 +3791,7 @@
           '🤖 Generating speech in character… (this takes 3-6 seconds)'
         ),
         munAiOk(ctx) && currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+            type: 'button',
           onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
           style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Generate AI speech')
@@ -3772,6 +3809,7 @@
             '✓ All delegates have spoken'
           ),
           munNoAi(ctx) && !currentSpeakerUid && queue.some(function(q) { return q.isAi; }) && h('button', {
+            type: 'button',
             'data-mun-hear-delegates': 'true',
             onClick: function() { commitSimulatedSpeeches(queue.filter(function(q) { return q.isAi; }).map(function(q) { return q.uid; })); },
             style: { width: '100%', padding: 8, marginBottom: 8, fontSize: 12, fontWeight: 700, background: 'rgba(14,165,233,0.18)', color: '#e0f2fe', border: '1px solid #0ea5e9', borderRadius: 8, cursor: 'pointer' }
@@ -3783,6 +3821,7 @@
             var rosterEntry = q.isAi ? null : (roster[q.uid] || (isSolo && q.uid === 'me' ? { name: ctx.studentNickname || 'You' } : null));
             var canRecognize = (isHost || isSolo) && !currentSpeakerUid;
             return h('button', {
+            type: 'button',
               key: 'q-' + q.uid,
               onClick: canRecognize ? function() { giveFloorTo(q.uid); } : null,
               disabled: !canRecognize,
@@ -3895,6 +3934,7 @@
             : 'You have the floor — compose your opening speech (120-180 words)'
         ),
         munAiOk(ctx) && h('button', {
+            type: 'button',
           onClick: getStarter,
           disabled: loading,
           title: userPaper && userPaper.stance ? 'AI starter will use your position paper as grounding' : 'AI starter draws from your country profile',
@@ -3953,6 +3993,7 @@
           wordCount + ' word' + (wordCount !== 1 ? 's' : '') + ' · target ' + targetLow + '–' + targetHigh
         ),
         h('button', {
+            type: 'button',
           onClick: handleSubmit,
           disabled: text.trim().length < (shortForm ? 15 : 30),
           style: {
@@ -4134,11 +4175,13 @@
           )
         ),
         h('button', {
+            type: 'button',
           onClick: function() { setDraftHelpOpen(true); },
           'aria-label': 'Open vocabulary help panel',
           style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
         }, '? Help'),
         isHost && h('button', {
+            type: 'button',
           onClick: advanceToVote,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Move to Vote →')
@@ -4176,6 +4219,7 @@
               ].map(function(t) {
                 var picked = clauseType === t.id;
                 return h('button', {
+            type: 'button',
                   key: t.id, onClick: function() { setClauseType(t.id); },
                   style: {
                     flex: 1, padding: '6px 8px', fontSize: 11, fontWeight: 600,
@@ -4209,6 +4253,7 @@
             }),
             h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
               munAiOk(ctx) && h('button', {
+            type: 'button',
                 onClick: handleAIStarter,
                 disabled: aiLoading,
                 style: {
@@ -4218,6 +4263,7 @@
                 }
               }, aiLoading ? '⏳ Generating…' : '✨ AI starter'),
               munAiOk(ctx) && h('button', {
+            type: 'button',
                 onClick: function() {
                   if (!myCountry || !text || text.trim().length < 15) {
                     if (typeof ctx.addToast === 'function') ctx.addToast('Write at least a sentence before requesting AI review.');
@@ -4245,6 +4291,7 @@
                 }
               }, review.loading ? '⏳ Reviewing…' : '🔎 AI review'),
               h('button', {
+            type: 'button',
                 onClick: handleProposeAsHuman,
                 disabled: text.trim().length < 15,
                 style: {
@@ -4264,6 +4311,7 @@
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                   h('span', { style: { fontSize: 11, fontWeight: 700, color: col, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🔎 AI review · ' + r.verdict),
                   h('button', {
+            type: 'button',
                     onClick: function() { setReview({ loading: false, result: null }); },
                     style: { marginLeft: 'auto', padding: '2px 6px', fontSize: 10, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 4, cursor: 'pointer' }
                   }, '✕')
@@ -4311,6 +4359,7 @@
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: 4 } },
               allDelegates.filter(function(d) { return d.isAi; }).map(function(d) {
                 return h('button', {
+            type: 'button',
                   key: 'aip-' + d.uid,
                   onClick: function() { handleAIPropose(d.iso, d.country.name); },
                   disabled: aiLoading,
@@ -4448,6 +4497,7 @@
 
       props.canEdit && h('div', { style: { display: 'flex', gap: 4, marginTop: 8, flexWrap: 'wrap' } },
         h('button', {
+            type: 'button',
           onClick: props.onAdopt,
           style: {
             padding: '3px 8px', fontSize: 10, fontWeight: 700,
@@ -4457,6 +4507,7 @@
           }
         }, c.status === 'adopted' ? '✓ Adopted' : 'Adopt'),
         h('button', {
+            type: 'button',
           onClick: props.onReject,
           style: {
             padding: '3px 8px', fontSize: 10, fontWeight: 700,
@@ -4466,6 +4517,7 @@
           }
         }, c.status === 'rejected' ? '✗ Rejected' : 'Reject'),
         h('button', {
+            type: 'button',
           onClick: props.onOpenAmendments,
           style: {
             padding: '3px 8px', fontSize: 10, fontWeight: 700,
@@ -4475,6 +4527,7 @@
           'aria-label': 'Open amendments for this clause'
         }, '✏️ Amend'),
         h('button', {
+            type: 'button',
           onClick: props.onRemove,
           style: {
             marginLeft: 'auto',
@@ -4561,6 +4614,7 @@
             h('div', { style: { fontSize: 18, fontWeight: 800 } }, 'Moderated Caucus')
           ),
           h('button', {
+            type: 'button',
             onClick: onClose,
             'aria-label': 'Close',
             style: { padding: '4px 10px', fontSize: 14, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
@@ -4572,6 +4626,7 @@
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
             h('div', { style: { fontSize: 11, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 } }, 'AI Suggestions'),
             h('button', {
+            type: 'button',
               onClick: requestSuggestions,
               disabled: loading,
               style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: loading ? '#475569' : '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: loading ? 'wait' : 'pointer' }
@@ -4584,6 +4639,7 @@
             suggestions.map(function(s, i) {
               var picked = topic === s.topic;
               return h('button', {
+            type: 'button',
                 key: i,
                 onClick: function() { setTopic(s.topic); },
                 style: {
@@ -4631,6 +4687,7 @@
         h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
           [5, 8, 10, 15].map(function(m) {
             return h('button', {
+            type: 'button',
               key: m,
               onClick: function() { setDuration(m); },
               style: {
@@ -4647,10 +4704,12 @@
         // Submit / cancel
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8 } },
           h('button', {
+            type: 'button',
             onClick: onClose,
             style: { padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer' }
           }, 'Cancel'),
           h('button', {
+            type: 'button',
             onClick: submit,
             disabled: topic.trim().length < 3,
             style: { padding: '8px 18px', fontSize: 13, fontWeight: 700, background: topic.trim().length >= 3 ? '#fbbf24' : '#475569', color: topic.trim().length >= 3 ? '#0f172a' : '#94a3b8', border: 'none', borderRadius: 8, cursor: topic.trim().length >= 3 ? 'pointer' : 'not-allowed' }
@@ -4774,6 +4833,7 @@
             )
           ),
           h('button', {
+            type: 'button',
             onClick: onClose,
             'aria-label': 'Close amendments panel',
             style: { padding: '4px 8px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
@@ -4798,6 +4858,7 @@
             ].map(function(t) {
               var picked = amType === t.id;
               return h('button', {
+            type: 'button',
                 key: t.id, onClick: function() { setAmType(t.id); },
                 title: t.hint,
                 style: {
@@ -4851,6 +4912,7 @@
           }),
           h('div', { style: { display: 'flex', gap: 6 } },
             munAiOk(ctx) && h('button', {
+            type: 'button',
               onClick: handleAIStarter,
               disabled: loading,
               style: {
@@ -4860,6 +4922,7 @@
               }
             }, loading ? '⏳ Generating…' : '✨ AI suggest'),
             h('button', {
+            type: 'button',
               onClick: handleSubmit,
               disabled: text.trim().length < 5,
               style: {
@@ -4907,6 +4970,7 @@
               am.rationale && h('p', { style: { fontSize: 10, lineHeight: 1.5, color: '#94a3b8', margin: '4px 0 0 0', fontStyle: 'italic' } }, am.rationale),
               isHost && h('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
                 h('button', {
+            type: 'button',
                   onClick: function() { setAmendmentStatus(am.id, am.status === 'adopted' ? 'open' : 'adopted'); },
                   style: {
                     padding: '3px 8px', fontSize: 10, fontWeight: 700,
@@ -4916,6 +4980,7 @@
                   }
                 }, am.status === 'adopted' ? '✓ Adopted' : 'Adopt'),
                 h('button', {
+            type: 'button',
                   onClick: function() { setAmendmentStatus(am.id, am.status === 'rejected' ? 'open' : 'rejected'); },
                   style: {
                     padding: '3px 8px', fontSize: 10, fontWeight: 700,
@@ -5082,6 +5147,7 @@
       // Header
       h('div', { style: { padding: 12, marginBottom: 14, background: 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)', borderRadius: 10, position: 'relative' } },
         h('button', {
+            type: 'button',
           onClick: function() { setVoteHelpOpen(true); },
           'aria-label': 'Open vocabulary help panel',
           style: { position: 'absolute', top: 10, right: 10, padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
@@ -5125,6 +5191,7 @@
           ? h('div', { style: { fontSize: 13, fontWeight: 700, color: '#10b981' } },
               'You voted: ' + (myVote.vote === 'Y' ? '✓ YES' : myVote.vote === 'N' ? '✗ NO' : '○ ABSTAIN'),
               h('button', {
+            type: 'button',
                 onClick: function() {
                   var next = Object.assign({}, finalVotes);
                   delete next[myCountry.iso];
@@ -5139,6 +5206,7 @@
                { vote: 'A', label: '○ ABSTAIN', color: '#94a3b8' }
               ].map(function(opt) {
                 return h('button', {
+            type: 'button',
                   key: opt.vote, onClick: function() { castMyVote(opt.vote); },
                   style: {
                     flex: 1, padding: '8px 12px', fontSize: 13, fontWeight: 700,
@@ -5173,16 +5241,19 @@
       // Host controls
       isHost && h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
         !munNoAi(ctx) && h('button', {
+            type: 'button',
           onClick: triggerAllAIVotes,
           disabled: Object.keys(aiInFlight).length > 0,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Cast all AI votes (' + unvoted.filter(function(d) { return d.isAi; }).length + ')'),
         !revealMode && h('button', {
+            type: 'button',
           onClick: revealAndAdvance,
           disabled: munNoAi(ctx) ? !myVote : voted.length === 0,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: (munNoAi(ctx) ? !myVote : voted.length === 0) ? '#475569' : '#fbbf24', color: (munNoAi(ctx) && !myVote) ? '#fff' : '#000', border: 'none', borderRadius: 8, cursor: (munNoAi(ctx) ? !myVote : voted.length === 0) ? 'not-allowed' : 'pointer' }
         }, munNoAi(ctx) ? '🗳 Reveal tally (simulated delegates vote now)' : '🗳 Reveal tally'),
         revealMode && h('button', {
+            type: 'button',
           onClick: advanceToDebrief,
           style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, 'Continue to Debrief →')
@@ -5491,6 +5562,7 @@
 
         // AI coach feedback (lazy-load via button)
         munAiOk(ctx) && !feedback && !fbLoading && h('button', {
+            type: 'button',
           onClick: generateFeedback,
           style: { width: '100%', padding: '10px 14px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🧠 Get AI coach feedback'),
@@ -5647,10 +5719,12 @@
         ),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           myCountry && h('button', {
+            type: 'button',
             onClick: function() { exportTranscript('personal'); },
             style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '📄 My Personal Transcript'),
           (isHost || isSolo) && h('button', {
+            type: 'button',
             onClick: function() { exportTranscript('class'); },
             style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '📚 Full Class Transcript')
@@ -5660,6 +5734,7 @@
       // Exit
       h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8 } },
         h('button', {
+            type: 'button',
           onClick: exitToLauncher,
           style: { padding: '10px 18px', fontSize: 13, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, isSolo ? '🌐 Run another simulation' : '🌐 Close session')
@@ -5798,10 +5873,12 @@
         ),
         isHost && h('div', { style: { display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' } },
           h('button', {
+            type: 'button',
             onClick: function() { endCaucus('opening'); },
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.18)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, cursor: 'pointer' }
           }, '↩ End caucus → Opening floor'),
           h('button', {
+            type: 'button',
             onClick: function() { endCaucus('draft'); },
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '📜 End caucus → Drafting')
@@ -5845,6 +5922,7 @@
             )
           ),
           (isHost || isSolo) && h('button', {
+            type: 'button',
             onClick: skipSpeaker,
             style: { padding: '4px 10px', fontSize: 11, fontWeight: 600, background: 'rgba(239,68,68,0.18)', color: '#fca5a5', border: '1px solid #ef4444', borderRadius: 6, cursor: 'pointer' }
           }, 'Skip')
@@ -5870,6 +5948,7 @@
           '🤖 Generating focused caucus speech…'
         ),
         munAiOk(ctx) && currentSpeakerUid.indexOf('ai_') === 0 && !aiInFlight[currentSpeakerUid] && (isHost || isSolo) && h('button', {
+            type: 'button',
           onClick: function() { triggerAiSpeech(currentSpeakerUid, assigned[currentSpeakerUid]); },
           style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, background: '#a855f7', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }
         }, '🤖 Generate AI speech')
@@ -5889,6 +5968,7 @@
             var rosterEntry = q.isAi ? null : (roster[q.uid] || (isSolo && q.uid === 'me' ? { name: ctx.studentNickname || 'You' } : null));
             var canRecognize = (isHost || isSolo) && !currentSpeakerUid;
             return h('button', {
+            type: 'button',
               key: 'cq-' + q.uid,
               onClick: canRecognize ? function() { giveFloorTo(q.uid); } : null,
               disabled: !canRecognize,
@@ -6095,6 +6175,7 @@
           )
         ),
         canListen && h('button', {
+            type: 'button',
           onClick: toggleTTS,
           'aria-label': ttsState.playing ? 'Stop read-aloud' : 'Read this speech aloud',
           title: ttsState.playing ? 'Stop' : 'Read aloud',
@@ -6156,6 +6237,7 @@
             )
           ),
           h('button', {
+            type: 'button',
             onClick: onClose,
             'aria-label': 'Close help panel',
             style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer', fontSize: 14 }
@@ -6218,6 +6300,7 @@
           )
         ),
         h('button', {
+            type: 'button',
           onClick: function() { setCollapsed(!collapsed); },
           style: { padding: '4px 10px', fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
         }, collapsed ? 'Show' : 'Hide')
@@ -6429,6 +6512,7 @@
     if (!news) {
       if (isHost && munNoAi(ctx) && munPracticeScenario(agenda)) {
         return h('button', {
+            type: 'button',
           onClick: function() { updateMUN({ news: munPracticeScenario(agenda) }); },
           'data-mun-add-scenario': 'true',
           style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', border: '1px dashed #dc2626', borderRadius: 6, cursor: 'pointer', marginBottom: 10 }
@@ -6436,6 +6520,7 @@
       }
       if (!isHost || !munAiOk(ctx)) return null;
       return h('button', {
+            type: 'button',
         onClick: generateNews,
         disabled: loading,
         style: {
@@ -6504,6 +6589,7 @@
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' } },
             isHost && !crisis && h('button', {
+            type: 'button',
               onClick: openCrisis,
               'aria-label': 'Open crisis response window — 90 seconds',
               style: {
@@ -6513,6 +6599,7 @@
               }
             }, '🚨 Crisis Response (90s)'),
             isHost && h('button', {
+            type: 'button',
               onClick: dismissNews,
               'aria-label': 'Dismiss news',
               style: {
@@ -6855,6 +6942,7 @@
           score.summary && h('p', { style: { fontSize: 11, color: '#cbd5e1', margin: '4px 0 0 0', lineHeight: 1.5 } }, score.summary)
         ),
         h('button', {
+            type: 'button',
           onClick: function() { setDetailOpen(!detailOpen); },
           style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
         }, detailOpen ? 'Hide' : 'Details')
@@ -6942,6 +7030,7 @@
     return h(React.Fragment, null,
       // Floating trigger
       !open && h('button', {
+            type: 'button',
         onClick: function() { setOpen(true); },
         'aria-label': 'Open AI coach',
         style: {
@@ -6971,6 +7060,7 @@
             h('div', { style: { fontSize: 13, fontWeight: 700 } }, myCountry.flag + ' ' + myCountry.name)
           ),
           h('button', {
+            type: 'button',
             onClick: function() { setOpen(false); },
             'aria-label': 'Close coach',
             style: { padding: '4px 8px', fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
@@ -6987,6 +7077,7 @@
             { label: '📜 How do I write a clause?',    q: 'Walk me through writing a strong operative clause in proper MUN format.' }
           ].map(function(item, i) {
             return h('button', {
+            type: 'button',
               key: i,
               onClick: function() { askCoach(item.q); },
               style: { display: 'block', width: '100%', textAlign: 'left', padding: '6px 10px', marginBottom: 4, fontSize: 12, fontWeight: 600, background: 'rgba(99,102,241,0.10)', color: '#c4b5fd', border: '1px solid #4f46e5', borderRadius: 6, cursor: 'pointer' }
@@ -7006,6 +7097,7 @@
             style: { width: '100%', padding: 8, fontSize: 12, lineHeight: 1.4, fontFamily: 'inherit', background: 'rgba(255,255,255,0.04)', color: '#e2e8f0', border: '1px solid #475569', borderRadius: 6, resize: 'vertical', boxSizing: 'border-box' }
           }),
           h('button', {
+            type: 'button',
             onClick: function() { askCoach(); },
             disabled: !question || question.trim().length < 5,
             style: { marginTop: 6, padding: '8px 14px', fontSize: 12, fontWeight: 700, background: question && question.trim().length >= 5 ? '#6366f1' : '#475569', color: '#fff', border: 'none', borderRadius: 6, cursor: question && question.trim().length >= 5 ? 'pointer' : 'not-allowed' }
@@ -7027,6 +7119,7 @@
             )
           ),
           h('button', {
+            type: 'button',
             onClick: function() { setResult(null); setQuestion(''); },
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
           }, '↻ Ask another question')
@@ -7085,6 +7178,7 @@
             h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, 'Estimate the vote tally on the current draft before the Chair calls the vote.')
           ),
           h('button', {
+            type: 'button',
             onClick: predict,
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#0369a1', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '🔍 Predict tally')
@@ -7111,6 +7205,7 @@
           h('div', { style: { fontSize: 14, fontWeight: 800, color: passColor, marginTop: 2 } }, passProspect)
         ),
         h('button', {
+            type: 'button',
           onClick: function() { setResult(null); },
           style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
         }, '↻ Refresh')
@@ -7213,6 +7308,7 @@
             h('div', { style: { fontSize: 11, color: '#94a3b8', marginTop: 2 } }, earned + ' / ' + rows.length + ' earned')
           ),
           h('button', {
+            type: 'button',
             onClick: onClose, 'aria-label': 'Close gallery',
             style: { padding: '4px 10px', fontSize: 14, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
           }, '✕')
@@ -7425,10 +7521,12 @@
         ),
         h('div', { style: { display: 'flex', gap: 6 } },
           munAiOk(ctx) && h('button', {
+            type: 'button',
             onClick: gradeAll,
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '🤖 AI-grade all'),
           anyGraded && h('button', {
+            type: 'button',
             onClick: exportCsv,
             style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
           }, '📥 Export CSV')
@@ -7454,6 +7552,7 @@
                 h('div', { style: { fontSize: 11, color: '#94a3b8' } }, name)
               ),
               !r && !isLoading && h('button', {
+            type: 'button',
                 onClick: function() { gradeOne(uid); },
                 style: { padding: '6px 12px', fontSize: 11, fontWeight: 700, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }
               }, munAiOk(ctx) ? '🤖 Grade' : (selfRated ? '✍️ Rate myself' : '✍️ Score')),
@@ -7482,6 +7581,7 @@
                     [1, 2, 3, 4].map(function(s) {
                       var picked = dd.score === s;
                       return h('button', {
+            type: 'button',
                         key: s,
                         onClick: function() { overrideScore(uid, d.key, s); },
                         'aria-label': 'Set ' + d.label + ' to ' + RUBRIC_SCORE_LABELS[s],
@@ -7656,6 +7756,7 @@
             )
           ),
           h('button', {
+            type: 'button',
             onClick: function() { setOpen(!open); },
             style: { padding: '4px 12px', fontSize: 11, fontWeight: 700, background: open ? '#6366f1' : 'rgba(255,255,255,0.06)', color: open ? '#fff' : '#cbd5e1', border: '1px solid ' + (open ? '#6366f1' : '#475569'), borderRadius: 6, cursor: 'pointer' }
           }, open ? '× Close' : '✉ Open')
@@ -7693,6 +7794,7 @@
             h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 4 } },
               h('span', { style: { fontSize: 10, color: '#94a3b8' } }, text.length + ' / 400'),
               h('button', {
+            type: 'button',
                 onClick: sendMessage,
                 disabled: !toUid || text.trim().length < 3,
                 style: { marginLeft: 'auto', padding: '4px 12px', fontSize: 11, fontWeight: 700, background: (toUid && text.trim().length >= 3) ? '#6366f1' : '#475569', color: '#fff', border: 'none', borderRadius: 4, cursor: (toUid && text.trim().length >= 3) ? 'pointer' : 'not-allowed' }
@@ -7869,6 +7971,7 @@
           var pct = ((ev.at - tStart) / span) * 100;
           var isSel = selected && selected.at === ev.at && selected.label === ev.label;
           return h('button', {
+            type: 'button',
             key: i,
             onClick: function() { setSelected(ev); },
             'aria-label': ev.label,
@@ -7984,6 +8087,7 @@
 
     return h(React.Fragment, null,
       !open && h('button', {
+            type: 'button',
         onClick: function() { setOpen(true); },
         'aria-label': 'Open private notes',
         style: {
@@ -8018,6 +8122,7 @@
             h('div', { style: { fontSize: 11, color: '#cbd5e1' } }, myCountry.flag + ' ' + myCountry.name + ' · only you see this')
           ),
           h('button', {
+            type: 'button',
             onClick: function() { setOpen(false); },
             'aria-label': 'Close notes',
             style: { padding: '4px 8px', fontSize: 12, fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 6, cursor: 'pointer' }
@@ -8035,6 +8140,7 @@
         h('div', { style: { display: 'flex', alignItems: 'center', marginTop: 6, fontSize: 10, color: '#94a3b8' } },
           h('span', null, notes.length + ' / 4000'),
           h('button', {
+            type: 'button',
             onClick: async function() {
               var approved = await requestModelUNConfirmation(
                 'Clear all notes for this Model UN session? This cannot be undone.',

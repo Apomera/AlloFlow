@@ -46,11 +46,22 @@ describe('tour counts match the tools', () => {
       expect(tour.wordsounds_text).toContain(badge);
     }
   });
-  it('no dash left as a mid-sentence bullet, no lost glyph', () => {
-    for (const [k, v] of Object.entries(tour)) {
-      if (typeof v !== 'string') continue;
-      expect(v.split('\n').filter((l) => /\S•\S/.test(l)), k).toEqual([]);
-      expect(v, k).not.toMatch(/ with \?,/);
+  it('no dash left as a mid-sentence bullet, no lost glyph, no inline ### or •, and balanced bold markdown', () => {
+    for (const bag of [tour, ui.ptour || {}]) {
+      for (const [k, v] of Object.entries(bag)) {
+        if (typeof v !== 'string') continue;
+        expect(v.split('\n').filter((l) => /\S•\S/.test(l)), k).toEqual([]);
+        expect(v, k).not.toMatch(/[^\n]###/);
+        expect(v, k).not.toMatch(/\S•/);
+        expect(v, k).not.toMatch(/ with \?,/);
+        const boldMarkers = (v.match(/\*\*/g) || []).length;
+        expect(boldMarkers % 2, k + ' unbalanced **').toBe(0);
+      }
+    }
+    const ptourTexts = Object.entries(ui.ptour || {}).filter(([k]) => k.endsWith('_text'));
+    expect(ptourTexts.length).toBeGreaterThanOrEqual(14);
+    for (const [k, v] of ptourTexts) {
+      expect(v, k).toContain('**Why it matters:**');
     }
   });
 });

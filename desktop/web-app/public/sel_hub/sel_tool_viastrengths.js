@@ -657,7 +657,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           h('div', { style: { padding: 16, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _viaFg('#fcd34d'), fontSize: 16 } }, 'Signature strengths'),
             h('p', { style: { margin: 0, color: _viaFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'Of the 24 strengths, the 5 that feel most central to who you are are called your "signature strengths." Signature strengths share three features: (1) you recognize yourself in them, (2) they energize you when you use them, and (3) using them makes you feel more like yourself. The interesting research finding is that consciously using a signature strength in a new way each day for a week reliably increases happiness and decreases depressive symptoms (Seligman et al., 2005).'
+              'Of the 24 strengths, the 5 that feel most central to who you are are called your "signature strengths." Signature strengths share three features: (1) you recognize yourself in them, (2) they energize you when you use them, and (3) using them makes you feel more like yourself. The interesting research finding is that consciously using a signature strength in a new way each day for a week was followed by more happiness and fewer depressive symptoms in one well-known experiment by Seligman et al. (2005). Later replications report smaller, less consistent effects.'
             )
           ),
 

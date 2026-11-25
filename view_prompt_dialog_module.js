@@ -6,6 +6,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.PromptDialog) {
     console.log('[CDN] PromptDialog already loaded, skipping');
     return;
@@ -131,6 +132,7 @@ function _promptUseFocusTrap(ref, isOpen, onEscape) {
       if (!dialog.isConnected || !isTopTrap()) return;
       if (event.key === "Escape") {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         event.preventDefault();
         event.stopPropagation();
         try {
@@ -139,7 +141,7 @@ function _promptUseFocusTrap(ref, isOpen, onEscape) {
         }
         return;
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable = getFocusable();
       if (!focusable.length) {
         event.preventDefault();
@@ -181,7 +183,7 @@ function _promptUseFocusTrap(ref, isOpen, onEscape) {
       } catch (_) {
       }
       restoreSiblings();
-      if (!hadTabIndex) dialog.removeAttribute("tabindex");
+      if (!hadTabIndex && dialog.isConnected) dialog.removeAttribute("tabindex");
       const wasTopTrap = isTopTrap();
       if (trapStack) {
         const trapIndex = trapStack.lastIndexOf(trap);
@@ -254,7 +256,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
       try {
         const err = promptDialog.validate(value);
         if (err) {
-          setError(err);
+          setError(typeof err === "string" ? err : String(err));
           return;
         }
       } catch (validationError) {
@@ -263,9 +265,11 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
       }
     }
     settledRef.current = true;
-    try {
-      promptDialog.onSubmit(value);
-    } catch (_) {
+    if (typeof promptDialog.onSubmit === "function") {
+      try {
+        promptDialog.onSubmit(value);
+      } catch (_) {
+      }
     }
     closePrompt(null);
   }, [promptDialog, closePrompt, value, choiceMode, validChoice, t]);
@@ -291,7 +295,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const handleDialogKeyDown = React.useCallback((e) => {
     if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
     if (e.target?.closest?.("button") || e.target?.getAttribute?.("data-prompt-choice-filter") === "true") return;
-    if (e.key === "Enter" && !promptDialog.multiline) {
+    if (e.key === "Enter" && !promptDialog.multiline && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     } else if (e.key === "Enter" && promptDialog.multiline && (e.ctrlKey || e.metaKey)) {
@@ -312,9 +316,9 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
       if (error) setError(null);
     },
     placeholder: promptDialog.placeholder || "",
-    maxLength: promptDialog.maxLength,
+    maxLength: maxLen > 0 ? maxLen : void 0,
     className: "w-full border-2 border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-sm outline-none transition-all motion-reduce:transition-none text-slate-800 placeholder:text-slate-600",
-    "aria-label": promptDialog.message,
+    "aria-label": promptDialog.message || promptDialog.title || _promptCopy(t, "common.enter_value", "Enter Value"),
     "aria-invalid": !!error,
     "aria-describedby": error ? "alloflow-prompt-error" : void 0
   };
@@ -365,7 +369,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
           onChange: (e) => setChoiceQuery(e.target.value),
           onKeyDown: (e) => {
             if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-            if (e.key === "Escape" && choiceQuery) {
+            if (e.key === "Escape" && !e.altKey && !e.ctrlKey && !e.metaKey && choiceQuery) {
               e.preventDefault();
               e.stopPropagation();
               setChoiceQuery("");
@@ -377,7 +381,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
       ), visibleChoices.map((choice, index) => {
         const choiceValue = String(choice.value);
         const checked = value === choiceValue;
-        return /* @__PURE__ */ React.createElement("label", { key: choiceValue, className: "flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 " + (checked ? "border-indigo-600 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400") }, /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("label", { key: choiceValue + "-" + index, className: "flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 " + (checked ? "border-indigo-600 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400") }, /* @__PURE__ */ React.createElement(
           "input",
           {
             ref: index === initialChoiceFocusIndex ? inputRef : void 0,
@@ -395,7 +399,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
             className: "mt-1 h-4 w-4 shrink-0 accent-indigo-600"
           }
         ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 break-words [overflow-wrap:anywhere]" }, /* @__PURE__ */ React.createElement("span", { id: "alloflow-prompt-choice-" + index, className: "block text-sm font-semibold text-slate-900" }, choice.label || choiceValue), choice.description && /* @__PURE__ */ React.createElement("span", { id: "alloflow-prompt-preview-" + index, className: "mt-1 block text-xs leading-relaxed text-slate-700" }, choice.description)));
-      })) : /* @__PURE__ */ React.createElement("div", null, promptDialog.multiline ? /* @__PURE__ */ React.createElement("textarea", { ...inputCommonProps, rows: 4 }) : /* @__PURE__ */ React.createElement("input", { ...inputCommonProps, type: promptDialog.inputType || "text" }), (maxLen > 0 || promptDialog.multiline) && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, promptDialog.multiline ? _promptCopy(t, "prompt_dialog.multiline_hint", "Ctrl/Cmd + Enter to submit") : ""), maxLen > 0 && /* @__PURE__ */ React.createElement("span", { "data-testid": "prompt-dialog-char-count", className: "font-mono font-semibold " + (nearMaxLen ? "text-amber-800" : "text-slate-600") }, value.length, " / ", maxLen))),
+      })) : /* @__PURE__ */ React.createElement("div", null, promptDialog.multiline ? /* @__PURE__ */ React.createElement("textarea", { ...inputCommonProps, rows: 4 }) : /* @__PURE__ */ React.createElement("input", { ...inputCommonProps, type: { text: "text", url: "url", email: "email", number: "number", search: "search", tel: "tel", password: "password" }[promptDialog.inputType] || "text" }), (maxLen > 0 || promptDialog.multiline) && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, promptDialog.multiline ? _promptCopy(t, "prompt_dialog.multiline_hint", "Ctrl/Cmd + Enter to submit") : ""), maxLen > 0 && /* @__PURE__ */ React.createElement("span", { "data-testid": "prompt-dialog-char-count", className: "font-mono font-semibold " + (nearMaxLen ? "text-amber-800" : "text-slate-600") }, value.length, " / ", maxLen))),
       error && /* @__PURE__ */ React.createElement("p", { id: "alloflow-prompt-error", role: "alert", className: "text-xs text-red-600 mt-2 font-semibold" }, error),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-end mt-5" + (choiceMode ? " flex-col sm:flex-row" : "") }, /* @__PURE__ */ React.createElement(
         "button",

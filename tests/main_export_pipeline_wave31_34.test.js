@@ -449,7 +449,8 @@ describe('Wave 32 · H5P Parity, PPTX Memory-Aid Gating & Google Forms Delivery'
       id: 'nt-cornell-notes',
       type: 'note-taking',
       data: { templateType: 'cornell-notes', cues: ['Only a cue'] },
-    }, [])).toMatchObject({ ready: false });
+    }, [])).toMatchObject({ ready: true, total: 1, valid: 1, omitted: 0 }); // both Cornell template names export now
+    expect(h5pCompat({ id: 'nt-cornell-empty', type: 'note-taking', data: { templateType: 'cornell-notes', cues: [''] } }, [])).toMatchObject({ ready: false });
   });
 
   it('gates unverified memory-aid facts/connections/mapping and _summarizeResource flags in PPTX exports', async () => {
@@ -983,7 +984,7 @@ describe('Wave 34 · Submission Inbox Feedback/Grading/CSV & Mirror Parity', () 
     const compileGradeRow = new Function(
       'queue', 'rubrics', 'rowRubrics', 'globalRubric', 'anchors', 'history', 'addToast', 'tr',
       'siResponseEntryModels', 'siLookupTrustedHistoryPrompt', 'siCalibrationSamplesForKey',
-      'setReviewedRows', 'setGrades', 'setGradingRow', 'window',
+      'setReviewedRows', 'setGrades', 'setGradingRow', 'window', 'aiTextAvailable',
       'return (' + gradeRowCode.trim().replace(/^const gradeRow = /, '').replace(/;\s*$/, '') + ');'
     );
     const gradeRow = compileGradeRow(
@@ -1001,7 +1002,8 @@ describe('Wave 34 · Submission Inbox Feedback/Grading/CSV & Mirror Parity', () 
       vi.fn(),
       (updater) => { capturedGrades = typeof updater === 'function' ? updater(capturedGrades) : updater; },
       vi.fn(),
-      window
+      window,
+      true // aiTextAvailable: gradeRow now checks the inbox's AI availability first
     );
 
     const gradeRes = await gradeRow(0, { silent: true });

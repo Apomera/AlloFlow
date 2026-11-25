@@ -11,9 +11,9 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
-  if (window.AlloModules && window.AlloModules.CanvasTips) {
-    console.log('[CDN] CanvasTipsModule already loaded, skipping');
+  if (typeof window === 'undefined' || !window) return;
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.CanvasTips) {
+    if (typeof console !== 'undefined' && console.log) console.log('[CDN] CanvasTipsModule already loaded, skipping');
     return;
   }
 
@@ -31,21 +31,26 @@ const CANVAS_LOADING_TIPS = Object.freeze([
   "📡 Start a Live Session to sync content and quizzes with your students in real time",
 ]);
 function CanvasLoadingTips() {
-  var _R = typeof React !== 'undefined' ? React : (typeof window !== 'undefined' ? window.React : null);
+  var _R = typeof React !== 'undefined' ? React : (typeof window !== 'undefined' && window ? window.React : null);
   if (!_R || typeof _R.useState !== 'function' || typeof _R.useEffect !== 'function' || typeof _R.createElement !== 'function') {
     return null;
   }
   const [tipIdx, setTipIdx] = _R.useState(0);
+  var reducedMotion = false;
+  try {
+    reducedMotion = !!(typeof window !== 'undefined' && window && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (_) {}
   _R.useEffect(() => {
-    if (!CANVAS_LOADING_TIPS.length) return undefined;
-    const timer = setInterval(() => setTipIdx(i => (i + 1) % CANVAS_LOADING_TIPS.length), 4000);
-    return () => clearInterval(timer);
-  }, []);
-  const tipText = CANVAS_LOADING_TIPS.length > 0 ? CANVAS_LOADING_TIPS[tipIdx % CANVAS_LOADING_TIPS.length] : '';
+    if (!CANVAS_LOADING_TIPS.length || reducedMotion || typeof setInterval !== 'function') return undefined;
+    const timer = setInterval(() => setTipIdx(i => ((Number.isFinite(i) && i >= 0 ? Math.floor(i) : 0) + 1) % CANVAS_LOADING_TIPS.length), 4000);
+    return () => { if (typeof clearInterval === 'function') clearInterval(timer); };
+  }, [reducedMotion]);
+  const safeIdx = (Number.isFinite(tipIdx) && tipIdx >= 0) ? (Math.floor(tipIdx) % CANVAS_LOADING_TIPS.length) : 0;
+  const tipText = CANVAS_LOADING_TIPS.length > 0 ? CANVAS_LOADING_TIPS[safeIdx] : '';
   return _R.createElement('p', {
     style: {
       color: '#475569', fontSize: '13px', fontStyle: 'italic',
-      minHeight: '40px', transition: 'opacity 0.5s', lineHeight: 1.5
+      minHeight: '40px', transition: reducedMotion ? 'none' : 'opacity 0.5s', lineHeight: 1.5
     }
   }, tipText);
 }
@@ -53,15 +58,15 @@ function CanvasLoadingTips() {
   window.CANVAS_LOADING_TIPS = CANVAS_LOADING_TIPS;
   window.CanvasLoadingTips = CanvasLoadingTips;
 
-  window.AlloModules = window.AlloModules || {};
+  window.AlloModules = (window.AlloModules && typeof window.AlloModules === 'object') ? window.AlloModules : {};
   window.AlloModules.CanvasTips = Object.freeze({
     CANVAS_LOADING_TIPS: CANVAS_LOADING_TIPS,
     CanvasLoadingTips: CanvasLoadingTips
   });
 
   if (typeof window._upgradeCanvasTips === 'function') {
-    try { window._upgradeCanvasTips(); } catch (e) { console.warn('[CanvasTips] upgrade hook failed:', e && e.message ? e.message : String(e)); }
+    try { window._upgradeCanvasTips(); } catch (e) { if (typeof console !== 'undefined' && console.warn) console.warn('[CanvasTips] upgrade hook failed:', e && e.message ? e.message : String(e)); }
   }
 
-  console.log('[CDN] CanvasTipsModule loaded — ' + CANVAS_LOADING_TIPS.length + ' tips');
+  if (typeof console !== 'undefined' && console.log) console.log('[CDN] CanvasTipsModule loaded — ' + CANVAS_LOADING_TIPS.length + ' tips');
 })();

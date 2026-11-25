@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-learning-disabilities-5383-learning-library",
@@ -28,7 +29,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 5,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -1742,7 +1748,7 @@
             "432"
           ],
           "answerIndex": 3,
-          "rationale": "Multiplication represents equal groups: 18 times 24 and 27 times 16 both equal 432. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+          "rationale": "Multiplication represents equal groups: 18 times 24 equals 432. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
@@ -1762,7 +1768,7 @@
             "1 1/8"
           ],
           "answerIndex": 0,
-          "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, and 1 7/8 - 4/8 = 1 3/8. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+          "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, which simplifies to 1 3/8. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
@@ -1782,7 +1788,7 @@
             "6"
           ],
           "answerIndex": 1,
-          "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 and 7.5 divided by 0.3 both equal 25. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
+          "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 equals 25. For 5383 preparation, connect the response to the learner’s uneven skill profile, explicit and systematic instruction, appropriate access, culturally and linguistically responsive evidence, and observable progress rather than assuming that a learning-disability label predicts performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
             "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
@@ -2239,7 +2245,7 @@
           "choices": [
             "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms.",
             "Section 504 bars disability discrimination and can require accommodations and related aids for equal access.",
-            "Section 504 protections become available after a student first qualifies under an IDEA individual learning profile.",
+            "Section 504 protections become available after a student first qualifies under an IDEA disability category.",
             "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants."
           ],
           "answerIndex": 1,
@@ -7192,6 +7198,2562 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-01",
+      "title": "Development, Variability, Language, and Context guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Development, Variability, Language, and Context\" (Development and Characteristics of Students with Learning Disabilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-01",
+      "itemIds": [
+        "ld5383-b1-001",
+        "ld5383-b1-002",
+        "ld5383-b1-003",
+        "ld5383-b1-004",
+        "ld5383-b1-005",
+        "ld5383-b1-006",
+        "ld5383-b1-007",
+        "ld5383-b1-008",
+        "ld5383-b1-009",
+        "ld5383-b2-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Development, Variability, Language, and Context\" and the \"IDEA SLD 8 Areas, Exclusionary Rules & Neurocognitive Profiles\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Developmental Variability, Language Acquisition & Difference-vs-Disability Screening Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Applying SLD Exclusionary Criteria for an Emergent Bilingual\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Development, Variability, Language, and Context\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply IDEA SLD Exclusionary Rules and Separate Language Difference from Disability\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-02",
+      "title": "Learning-Disability Characteristics and Coexisting Needs guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Learning-Disability Characteristics and Coexisting Needs\" (Development and Characteristics of Students with Learning Disabilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-02",
+      "itemIds": [
+        "ld5383-b1-017",
+        "ld5383-b2-010",
+        "ld5383-b2-011",
+        "ld5383-b2-012",
+        "ld5383-b2-013",
+        "ld5383-b2-014",
+        "ld5383-b2-015",
+        "ld5383-b2-016",
+        "ld5383-b2-017",
+        "ld5383-b1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Learning-Disability Characteristics and Coexisting Needs\" and the \"IDEA SLD 8 Areas, Exclusionary Rules & Neurocognitive Profiles\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"SLD Profile, Coexisting-Needs Analysis & Dual-Need Instructional Alignment Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Processing-Training Software with Targeted LD Instruction\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Learning-Disability Characteristics and Coexisting Needs\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Parent Evaluation Rights Under OSEP Rules and Audit RTI Treatment Fidelity\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-03",
+      "title": "Individualized Curriculum, IEP Goals, and Accessible Resources guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Individualized Curriculum, IEP Goals, and Accessible Resources\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-03",
+      "itemIds": [
+        "ld5383-b2-021",
+        "ld5383-b2-022",
+        "ld5383-b2-023",
+        "ld5383-b2-024",
+        "ld5383-b2-025",
+        "ld5383-b2-026",
+        "ld5383-b2-027",
+        "ld5383-b2-028",
+        "ld5383-b1-018",
+        "ld5383-b1-019"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Individualized Curriculum, IEP Goals, and Accessible Resources\" and the \"Accommodations, Executive Function, UDL & SETT Assistive Tech\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"PLAAFP-to-IEP Goal Architecture, Accommodations & Accessible Curriculum Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Aligning Measurable IEP Goals, Minutes, and Rigorous Access\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Individualized Curriculum, IEP Goals, and Accessible Resources\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Scaffold Math LD Remediation Through Explicit CRA Bridges and Schema-Based Instruction\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-04",
+      "title": "Positive Learning Environments, Self-Regulation, and Behavior guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Positive Learning Environments, Self-Regulation, and Behavior\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-04",
+      "itemIds": [
+        "ld5383-b1-030",
+        "ld5383-b1-031",
+        "ld5383-b1-032",
+        "ld5383-b1-033",
+        "ld5383-b1-034",
+        "ld5383-b1-035",
+        "ld5383-b1-036",
+        "ld5383-b1-037",
+        "ld5383-b1-038",
+        "ld5383-b2-029"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Positive Learning Environments, Self-Regulation, and Behavior\" and the \"Accommodations, Executive Function, UDL & SETT Assistive Tech\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Academic-Frustration FBA, Proactive BIP & Self-Regulation Support Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Addressing Escape-Maintained Reading Frustration Through FBA\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Positive Learning Environments, Self-Regulation, and Behavior\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Teach Writing Explicitly via SRSD Stages, Genre Mnemonics, and Assistive Technology\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-05",
+      "title": "Assistive Technology, Adaptive Access, and Learning Routines guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assistive Technology, Adaptive Access, and Learning Routines\" (Planning and Managing the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-05",
+      "itemIds": [
+        "ld5383-b2-042",
+        "ld5383-b2-043",
+        "ld5383-b1-039",
+        "ld5383-b1-040",
+        "ld5383-b1-041",
+        "ld5383-b1-042",
+        "ld5383-b1-043",
+        "ld5383-b2-039",
+        "ld5383-b2-040",
+        "ld5383-b2-041"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assistive Technology, Adaptive Access, and Learning Routines\" and the \"Accommodations, Executive Function, UDL & SETT Assistive Tech\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Executive Function, Strategy Instruction & Assistive Technology Access Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preventing AT Abandonment Using SETT and Accessible Media\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assistive Technology, Adaptive Access, and Learning Routines\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply CBM Aimlines, the 4-Point Decision Rule, and Diagnostic Error Analysis\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-06",
+      "title": "Structured Literacy, Fluency, Vocabulary, and Comprehension guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Structured Literacy, Fluency, Vocabulary, and Comprehension\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-06",
+      "itemIds": [
+        "ld5383-b2-049",
+        "ld5383-b2-050",
+        "ld5383-b2-051",
+        "ld5383-b2-052",
+        "ld5383-b2-053",
+        "ld5383-b1-044",
+        "ld5383-b1-045",
+        "ld5383-b1-046",
+        "ld5383-b1-047",
+        "ld5383-b1-048"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Structured Literacy, Fluency, Vocabulary, and Comprehension\" and the \"Structured Literacy, SRSD Writing & CRA/Schema Mathematics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Structured Literacy & Evidence-Based Reading Intervention Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Shifting from Three-Cueing and Speed Drills to Structured Literacy\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Structured Literacy, Fluency, Vocabulary, and Comprehension\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Target the Phonological Core of Dyslexia and Pair Access Accommodations with Remediation\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-07",
+      "title": "Written Expression, Spelling, Sentence Construction, and Revision guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Written Expression, Spelling, Sentence Construction, and Revision\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-07",
+      "itemIds": [
+        "ld5383-b2-056",
+        "ld5383-b2-057",
+        "ld5383-b2-058",
+        "ld5383-b2-059",
+        "ld5383-b2-060",
+        "ld5383-b2-061",
+        "ld5383-b1-054",
+        "ld5383-b1-055",
+        "ld5383-b1-056",
+        "ld5383-b1-057"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Written Expression, Spelling, Sentence Construction, and Revision\" and the \"Structured Literacy, SRSD Writing & CRA/Schema Mathematics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Self-Regulated Strategy Development (SRSD) & Written Expression Scaffold Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using SRSD and Sentence Combining Instead of Red-Pen Grading\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Written Expression, Spelling, Sentence Construction, and Revision\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply IDEA SLD Exclusionary Rules and Separate Language Difference from Disability\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-08",
+      "title": "Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction\" (Instruction) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-08",
+      "itemIds": [
+        "ld5383-b1-071",
+        "ld5383-b2-062",
+        "ld5383-b2-063",
+        "ld5383-b2-064",
+        "ld5383-b2-065",
+        "ld5383-b2-066",
+        "ld5383-b2-067",
+        "ld5383-b2-068",
+        "ld5383-b2-069",
+        "ld5383-b2-070"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction\" and the \"Structured Literacy, SRSD Writing & CRA/Schema Mathematics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Mathematics Intervention Sequence: CRA Progression & Schema-Based Problem Solving\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Keyword Hunting with CRA and Schema-Based Math\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Parent Evaluation Rights Under OSEP Rules and Audit RTI Treatment Fidelity\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-09",
+      "title": "Evaluation, Identification, Eligibility, and Placement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Evaluation, Identification, Eligibility, and Placement\" (Identification, Eligibility, and Placement) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-09",
+      "itemIds": [
+        "ld5383-b1-080",
+        "ld5383-b1-081",
+        "ld5383-b1-082",
+        "ld5383-b1-083",
+        "ld5383-b2-072",
+        "ld5383-b2-073",
+        "ld5383-b2-074",
+        "ld5383-b2-075",
+        "ld5383-b2-076",
+        "ld5383-b2-077"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Evaluation, Identification, Eligibility, and Placement\" and the \"SLD Identification Models, Required Observation & Placement\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Specific Learning Disability (SLD) Identification & Exclusionary-Factors Decision Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Stopping RTI Evaluation Delays and Single-Score Placement\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Evaluation, Identification, Eligibility, and Placement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Scaffold Math LD Remediation Through Explicit CRA Bridges and Schema-Based Instruction\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-10",
+      "title": "Law, Ethics, Nondiscrimination, and Educational Rights guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Law, Ethics, Nondiscrimination, and Educational Rights\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-10",
+      "itemIds": [
+        "ld5383-b2-084",
+        "ld5383-b2-085",
+        "ld5383-b2-086",
+        "ld5383-b2-087",
+        "ld5383-b2-088",
+        "ld5383-b2-089",
+        "ld5383-b2-090",
+        "ld5383-b1-084",
+        "ld5383-b1-085",
+        "ld5383-b1-086"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Law, Ethics, Nondiscrimination, and Educational Rights\" and the \"IDEA vs 504/ADA College Transition, Equity & Collaboration\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"IDEA Procedural Safeguards, Nondiscrimination & Legal Compliance Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Enforcing Prior Written Notice, Team Decisions, and FERPA Privacy\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Law, Ethics, Nondiscrimination, and Educational Rights\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Teach Writing Explicitly via SRSD Stages, Genre Mnemonics, and Assistive Technology\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-11",
+      "title": "Family, General-Education, Specialist, and Community Collaboration guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Family, General-Education, Specialist, and Community Collaboration\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-11",
+      "itemIds": [
+        "ld5383-b2-095",
+        "ld5383-b2-096",
+        "ld5383-b1-091",
+        "ld5383-b1-092",
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b2-091",
+        "ld5383-b2-092"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Family, General-Education, Specialist, and Community Collaboration\" and the \"IDEA vs 504/ADA College Transition, Equity & Collaboration\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Curriculum-Based Measurement (CBM), Data-Based Individualization (DBI) & Co-Teaching Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upgrading Co-Teaching, Team Alignment, and Plain-Language Meetings\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Family, General-Education, Specialist, and Community Collaboration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply CBM Aimlines, the 4-Point Decision Rule, and Diagnostic Error Analysis\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-ch-12",
+      "title": "Professional Learning, Advocacy, Supervision, and Boundaries guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Learning, Advocacy, Supervision, and Boundaries\" (Foundations and Professional Responsibilities) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ld5383-ch-12",
+      "itemIds": [
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b1-097",
+        "ld5383-b1-098",
+        "ld5383-b1-099",
+        "ld5383-b1-100",
+        "ld5383-b2-084",
+        "ld5383-b2-085"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Learning, Advocacy, Supervision, and Boundaries\" and the \"IDEA vs 504/ADA College Transition, Equity & Collaboration\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ethical Boundaries, Evidence-Based Practice Vetting & Professional Growth Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upholding Evidence-Based Practice, Clinical Scope, and Fidelity\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Learning, Advocacy, Supervision, and Boundaries\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Target the Phonological Core of Dyslexia and Pair Access Accommodations with Remediation\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-trap-repair-sprint",
+      "title": "Praxis Special Education: Teaching Students with Learning Disabilities (5383) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ld5383-b1-072",
+        "ld5383-b1-084",
+        "ld5383-b1-044",
+        "ld5383-b1-018",
+        "ld5383-b1-001",
+        "ld5383-b1-073",
+        "ld5383-b1-085",
+        "ld5383-b1-045",
+        "ld5383-b1-019",
+        "ld5383-b1-002",
+        "ld5383-b1-074",
+        "ld5383-b1-086"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Apply IDEA SLD Exclusionary Rules and Separate Language Difference from Disability\", \"Protect Parent Evaluation Rights Under OSEP Rules and Audit RTI Treatment Fidelity\", \"Scaffold Math LD Remediation Through Explicit CRA Bridges and Schema-Based Instruction\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-session-mixed-capstone",
+      "title": "Praxis Special Education: Teaching Students with Learning Disabilities (5383) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ld5383-b1-004",
+        "ld5383-b1-021",
+        "ld5383-b1-047",
+        "ld5383-b1-075",
+        "ld5383-b1-087",
+        "ld5383-b1-015",
+        "ld5383-b1-032",
+        "ld5383-b1-058",
+        "ld5383-b2-074",
+        "ld5383-b1-098",
+        "ld5383-b2-009",
+        "ld5383-b1-043",
+        "ld5383-b1-069",
+        "ld5383-b1-073",
+        "ld5383-b2-092"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied SLD case workshops, outline a response to \"Audit Exclusionary Factors and RTI Dosage Before Making an SLD Eligibility Call\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-01",
+      "topicId": "ld5383-ch-01",
+      "topicLabel": "1. Development, Variability, Language, and Context",
+      "unitId": "development-characteristics-learning-disabilities",
+      "chapterId": "ld5383-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Development, Variability, Language, and Context\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-02",
+      "topicId": "ld5383-ch-02",
+      "topicLabel": "2. Learning-Disability Characteristics and Coexisting Needs",
+      "unitId": "development-characteristics-learning-disabilities",
+      "chapterId": "ld5383-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Learning-Disability Characteristics and Coexisting Needs\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-03",
+      "topicId": "ld5383-ch-03",
+      "topicLabel": "3. Individualized Curriculum, IEP Goals, and Accessible Resources",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "ld5383-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Individualized Curriculum, IEP Goals, and Accessible Resources\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-04",
+      "topicId": "ld5383-ch-04",
+      "topicLabel": "4. Positive Learning Environments, Self-Regulation, and Behavior",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "ld5383-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Positive Learning Environments, Self-Regulation, and Behavior\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-05",
+      "topicId": "ld5383-ch-05",
+      "topicLabel": "5. Assistive Technology, Adaptive Access, and Learning Routines",
+      "unitId": "planning-managing-learning-environment",
+      "chapterId": "ld5383-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assistive Technology, Adaptive Access, and Learning Routines\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-06",
+      "topicId": "ld5383-ch-06",
+      "topicLabel": "6. Structured Literacy, Fluency, Vocabulary, and Comprehension",
+      "unitId": "instruction",
+      "chapterId": "ld5383-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Structured Literacy, Fluency, Vocabulary, and Comprehension\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-07",
+      "topicId": "ld5383-ch-07",
+      "topicLabel": "7. Written Expression, Spelling, Sentence Construction, and Revision",
+      "unitId": "instruction",
+      "chapterId": "ld5383-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Written Expression, Spelling, Sentence Construction, and Revision\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-08",
+      "topicId": "ld5383-ch-08",
+      "topicLabel": "8. Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction",
+      "unitId": "instruction",
+      "chapterId": "ld5383-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-09",
+      "topicId": "ld5383-ch-09",
+      "topicLabel": "9. Evaluation, Identification, Eligibility, and Placement",
+      "unitId": "identification-eligibility-placement",
+      "chapterId": "ld5383-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Evaluation, Identification, Eligibility, and Placement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-10",
+      "topicId": "ld5383-ch-10",
+      "topicLabel": "10. Law, Ethics, Nondiscrimination, and Educational Rights",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "ld5383-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Law, Ethics, Nondiscrimination, and Educational Rights\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-11",
+      "topicId": "ld5383-ch-11",
+      "topicLabel": "11. Family, General-Education, Specialist, and Community Collaboration",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "ld5383-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Family, General-Education, Specialist, and Community Collaboration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-spaced-ch-12",
+      "topicId": "ld5383-ch-12",
+      "topicLabel": "12. Professional Learning, Advocacy, Supervision, and Boundaries",
+      "unitId": "foundations-professional-responsibilities",
+      "chapterId": "ld5383-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Learning, Advocacy, Supervision, and Boundaries\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "special-education-learning-disabilities-5383-source-01",
+      "title": "Teaching Students with Learning Disabilities (5383) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5383.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-source-02",
+      "title": "Teaching Students with Learning Disabilities (5383) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/special-education-teaching-students-with-learning-disabilities-5383.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-source-03",
+      "title": "Sec. 300.309 Determining the existence of a specific learning disability - Individuals with Disabilities Education Act",
+      "organization": "Office of Special Education Programs, U.S. Department of Education",
+      "url": "https://sites.ed.gov/idea/regs/b/d/300.309",
+      "credibility": "Office of Special Education Programs, U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-source-04",
+      "title": "Providing Reading Interventions for Students in Grades 4–9",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/29",
+      "credibility": "The WWC and IES developed the guide through expert-panel analysis and a systematic evidence review. Its recommendation-specific evidence ratings should be considered when translating the guidance into instruction.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-source-05",
+      "title": "WWC | Assisting Students Struggling with Mathematics: Intervention in the Elementary Grades",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/26",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-01",
+      "unitId": "development-characteristics-learning-disabilities",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Development, Variability, Language, and Context",
+      "chapterId": "ld5383-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-01-section-01",
+        "ld5383-ch-01-section-02",
+        "ld5383-ch-01-section-03",
+        "ld5383-ch-01-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-001",
+        "ld5383-b1-002",
+        "ld5383-b1-003",
+        "ld5383-b1-004",
+        "ld5383-b1-005",
+        "ld5383-b1-006",
+        "ld5383-b1-007",
+        "ld5383-b1-008",
+        "ld5383-b1-009",
+        "ld5383-b2-001",
+        "ld5383-b2-002",
+        "ld5383-b2-003",
+        "ld5383-b2-004",
+        "ld5383-b2-005",
+        "ld5383-b2-006",
+        "ld5383-b2-007",
+        "ld5383-b2-008",
+        "ld5383-b2-009"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-001",
+        "ld5383-b1-002",
+        "ld5383-b1-003",
+        "ld5383-b1-004",
+        "ld5383-b1-005",
+        "ld5383-b1-006",
+        "ld5383-b1-007",
+        "ld5383-b1-008",
+        "ld5383-b1-009",
+        "ld5383-b2-001",
+        "ld5383-b2-002",
+        "ld5383-b2-003"
+      ],
+      "purpose": "Consolidate \"Development, Variability, Language, and Context\" (Development and Characteristics of Students with Learning Disabilities) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-02",
+      "unitId": "development-characteristics-learning-disabilities",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Learning-Disability Characteristics and Coexisting Needs",
+      "chapterId": "ld5383-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-02-section-01",
+        "ld5383-ch-02-section-02",
+        "ld5383-ch-02-section-03",
+        "ld5383-ch-02-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-010",
+        "ld5383-b1-011",
+        "ld5383-b1-012",
+        "ld5383-b1-013",
+        "ld5383-b1-014",
+        "ld5383-b1-015",
+        "ld5383-b1-016",
+        "ld5383-b1-017",
+        "ld5383-b2-010",
+        "ld5383-b2-011",
+        "ld5383-b2-012",
+        "ld5383-b2-013",
+        "ld5383-b2-014",
+        "ld5383-b2-015",
+        "ld5383-b2-016",
+        "ld5383-b2-017"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-010",
+        "ld5383-b1-011",
+        "ld5383-b1-012",
+        "ld5383-b1-013",
+        "ld5383-b1-014",
+        "ld5383-b1-015",
+        "ld5383-b1-016",
+        "ld5383-b1-017",
+        "ld5383-b2-010",
+        "ld5383-b2-011",
+        "ld5383-b2-012",
+        "ld5383-b2-013"
+      ],
+      "purpose": "Consolidate \"Learning-Disability Characteristics and Coexisting Needs\" (Development and Characteristics of Students with Learning Disabilities) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-03",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Individualized Curriculum, IEP Goals, and Accessible Resources",
+      "chapterId": "ld5383-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-03-section-01",
+        "ld5383-ch-03-section-02",
+        "ld5383-ch-03-section-03",
+        "ld5383-ch-03-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-019",
+        "ld5383-b1-020",
+        "ld5383-b1-021",
+        "ld5383-b1-022",
+        "ld5383-b1-023",
+        "ld5383-b1-024",
+        "ld5383-b1-025",
+        "ld5383-b1-026",
+        "ld5383-b1-027",
+        "ld5383-b1-028",
+        "ld5383-b2-018",
+        "ld5383-b2-019",
+        "ld5383-b2-020",
+        "ld5383-b2-021",
+        "ld5383-b2-022",
+        "ld5383-b2-023",
+        "ld5383-b2-024",
+        "ld5383-b2-025",
+        "ld5383-b2-026",
+        "ld5383-b2-027",
+        "ld5383-b2-028"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-019",
+        "ld5383-b1-020",
+        "ld5383-b1-021",
+        "ld5383-b1-022",
+        "ld5383-b1-023",
+        "ld5383-b1-024",
+        "ld5383-b1-025",
+        "ld5383-b1-026",
+        "ld5383-b1-027",
+        "ld5383-b1-028",
+        "ld5383-b2-018"
+      ],
+      "purpose": "Consolidate \"Individualized Curriculum, IEP Goals, and Accessible Resources\" (Planning and Managing the Learning Environment) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-04",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Positive Learning Environments, Self-Regulation, and Behavior",
+      "chapterId": "ld5383-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-04-section-01",
+        "ld5383-ch-04-section-02",
+        "ld5383-ch-04-section-03",
+        "ld5383-ch-04-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-029",
+        "ld5383-b1-030",
+        "ld5383-b1-031",
+        "ld5383-b1-032",
+        "ld5383-b1-033",
+        "ld5383-b1-034",
+        "ld5383-b1-035",
+        "ld5383-b1-036",
+        "ld5383-b1-037",
+        "ld5383-b1-038",
+        "ld5383-b2-029",
+        "ld5383-b2-030",
+        "ld5383-b2-031",
+        "ld5383-b2-032",
+        "ld5383-b2-033",
+        "ld5383-b2-034",
+        "ld5383-b2-035",
+        "ld5383-b2-036",
+        "ld5383-b2-037",
+        "ld5383-b2-038"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-029",
+        "ld5383-b1-030",
+        "ld5383-b1-031",
+        "ld5383-b1-032",
+        "ld5383-b1-033",
+        "ld5383-b1-034",
+        "ld5383-b1-035",
+        "ld5383-b1-036",
+        "ld5383-b1-037",
+        "ld5383-b1-038",
+        "ld5383-b2-029",
+        "ld5383-b2-030"
+      ],
+      "purpose": "Consolidate \"Positive Learning Environments, Self-Regulation, and Behavior\" (Planning and Managing the Learning Environment) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-05",
+      "unitId": "planning-managing-learning-environment",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Assistive Technology, Adaptive Access, and Learning Routines",
+      "chapterId": "ld5383-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-05-section-01",
+        "ld5383-ch-05-section-02",
+        "ld5383-ch-05-section-03",
+        "ld5383-ch-05-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-019",
+        "ld5383-b1-020",
+        "ld5383-b1-021",
+        "ld5383-b1-022",
+        "ld5383-b1-023",
+        "ld5383-b1-024",
+        "ld5383-b1-025",
+        "ld5383-b1-026",
+        "ld5383-b1-027",
+        "ld5383-b1-028",
+        "ld5383-b1-029",
+        "ld5383-b1-030",
+        "ld5383-b1-031",
+        "ld5383-b1-032",
+        "ld5383-b1-033",
+        "ld5383-b1-034",
+        "ld5383-b1-035",
+        "ld5383-b1-036",
+        "ld5383-b1-037",
+        "ld5383-b1-038",
+        "ld5383-b1-039",
+        "ld5383-b1-040",
+        "ld5383-b1-041",
+        "ld5383-b1-042",
+        "ld5383-b1-043",
+        "ld5383-b2-018",
+        "ld5383-b2-019",
+        "ld5383-b2-020",
+        "ld5383-b2-021",
+        "ld5383-b2-022",
+        "ld5383-b2-023",
+        "ld5383-b2-024",
+        "ld5383-b2-025",
+        "ld5383-b2-026",
+        "ld5383-b2-027",
+        "ld5383-b2-028",
+        "ld5383-b2-029",
+        "ld5383-b2-030",
+        "ld5383-b2-031",
+        "ld5383-b2-032",
+        "ld5383-b2-033",
+        "ld5383-b2-034",
+        "ld5383-b2-035",
+        "ld5383-b2-036"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-019",
+        "ld5383-b1-020",
+        "ld5383-b1-021",
+        "ld5383-b1-022",
+        "ld5383-b1-023",
+        "ld5383-b1-024",
+        "ld5383-b1-025",
+        "ld5383-b1-026",
+        "ld5383-b1-027",
+        "ld5383-b1-028",
+        "ld5383-b1-029"
+      ],
+      "purpose": "Consolidate \"Assistive Technology, Adaptive Access, and Learning Routines\" (Planning and Managing the Learning Environment) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-06",
+      "unitId": "instruction",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Structured Literacy, Fluency, Vocabulary, and Comprehension",
+      "chapterId": "ld5383-ch-06",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-06-section-01",
+        "ld5383-ch-06-section-02",
+        "ld5383-ch-06-section-03",
+        "ld5383-ch-06-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-044",
+        "ld5383-b1-045",
+        "ld5383-b1-046",
+        "ld5383-b1-047",
+        "ld5383-b1-048",
+        "ld5383-b1-049",
+        "ld5383-b1-050",
+        "ld5383-b1-051",
+        "ld5383-b1-052",
+        "ld5383-b1-053",
+        "ld5383-b2-044",
+        "ld5383-b2-045",
+        "ld5383-b2-046",
+        "ld5383-b2-047",
+        "ld5383-b2-048",
+        "ld5383-b2-049",
+        "ld5383-b2-050",
+        "ld5383-b2-051",
+        "ld5383-b2-052",
+        "ld5383-b2-053"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-044",
+        "ld5383-b1-045",
+        "ld5383-b1-046",
+        "ld5383-b1-047",
+        "ld5383-b1-048",
+        "ld5383-b1-049",
+        "ld5383-b1-050",
+        "ld5383-b1-051",
+        "ld5383-b1-052",
+        "ld5383-b1-053",
+        "ld5383-b2-044",
+        "ld5383-b2-045"
+      ],
+      "purpose": "Consolidate \"Structured Literacy, Fluency, Vocabulary, and Comprehension\" (Instruction) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-07",
+      "unitId": "instruction",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Written Expression, Spelling, Sentence Construction, and Revision",
+      "chapterId": "ld5383-ch-07",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-07-section-01",
+        "ld5383-ch-07-section-02",
+        "ld5383-ch-07-section-03",
+        "ld5383-ch-07-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-054",
+        "ld5383-b1-055",
+        "ld5383-b1-056",
+        "ld5383-b1-057",
+        "ld5383-b1-058",
+        "ld5383-b1-059",
+        "ld5383-b1-060",
+        "ld5383-b1-061",
+        "ld5383-b2-054",
+        "ld5383-b2-055",
+        "ld5383-b2-056",
+        "ld5383-b2-057",
+        "ld5383-b2-058",
+        "ld5383-b2-059",
+        "ld5383-b2-060",
+        "ld5383-b2-061"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-054",
+        "ld5383-b1-055",
+        "ld5383-b1-056",
+        "ld5383-b1-057",
+        "ld5383-b1-058",
+        "ld5383-b1-059",
+        "ld5383-b1-060",
+        "ld5383-b1-061",
+        "ld5383-b2-054",
+        "ld5383-b2-055",
+        "ld5383-b2-056",
+        "ld5383-b2-057"
+      ],
+      "purpose": "Consolidate \"Written Expression, Spelling, Sentence Construction, and Revision\" (Instruction) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-08",
+      "unitId": "instruction",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction",
+      "chapterId": "ld5383-ch-08",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-08-section-01",
+        "ld5383-ch-08-section-02",
+        "ld5383-ch-08-section-03",
+        "ld5383-ch-08-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-062",
+        "ld5383-b1-063",
+        "ld5383-b1-064",
+        "ld5383-b1-065",
+        "ld5383-b1-066",
+        "ld5383-b1-067",
+        "ld5383-b1-068",
+        "ld5383-b1-069",
+        "ld5383-b1-070",
+        "ld5383-b1-071",
+        "ld5383-b2-062",
+        "ld5383-b2-063",
+        "ld5383-b2-064",
+        "ld5383-b2-065",
+        "ld5383-b2-066",
+        "ld5383-b2-067",
+        "ld5383-b2-068",
+        "ld5383-b2-069",
+        "ld5383-b2-070",
+        "ld5383-b2-071"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-062",
+        "ld5383-b1-063",
+        "ld5383-b1-064",
+        "ld5383-b1-065",
+        "ld5383-b1-066",
+        "ld5383-b1-067",
+        "ld5383-b1-068",
+        "ld5383-b1-069",
+        "ld5383-b1-070",
+        "ld5383-b1-071",
+        "ld5383-b2-062",
+        "ld5383-b2-063"
+      ],
+      "purpose": "Consolidate \"Mathematics Concepts, Procedures, Problem Solving, and Strategy Instruction\" (Instruction) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-09",
+      "unitId": "identification-eligibility-placement",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Evaluation, Identification, Eligibility, and Placement",
+      "chapterId": "ld5383-ch-09",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-09-section-01",
+        "ld5383-ch-09-section-02",
+        "ld5383-ch-09-section-03",
+        "ld5383-ch-09-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-072",
+        "ld5383-b1-073",
+        "ld5383-b1-074",
+        "ld5383-b1-075",
+        "ld5383-b1-076",
+        "ld5383-b1-077",
+        "ld5383-b1-078",
+        "ld5383-b1-079",
+        "ld5383-b1-080",
+        "ld5383-b1-081",
+        "ld5383-b1-082",
+        "ld5383-b1-083",
+        "ld5383-b2-072",
+        "ld5383-b2-073",
+        "ld5383-b2-074",
+        "ld5383-b2-075",
+        "ld5383-b2-076",
+        "ld5383-b2-077",
+        "ld5383-b2-078",
+        "ld5383-b2-079",
+        "ld5383-b2-080",
+        "ld5383-b2-081",
+        "ld5383-b2-082",
+        "ld5383-b2-083"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-072",
+        "ld5383-b1-073",
+        "ld5383-b1-074",
+        "ld5383-b1-075",
+        "ld5383-b1-076",
+        "ld5383-b1-077",
+        "ld5383-b1-078",
+        "ld5383-b1-079",
+        "ld5383-b1-080",
+        "ld5383-b1-081",
+        "ld5383-b1-082",
+        "ld5383-b1-083"
+      ],
+      "purpose": "Consolidate \"Evaluation, Identification, Eligibility, and Placement\" (Identification, Eligibility, and Placement) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-10",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Law, Ethics, Nondiscrimination, and Educational Rights",
+      "chapterId": "ld5383-ch-10",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-10-section-01",
+        "ld5383-ch-10-section-02",
+        "ld5383-ch-10-section-03",
+        "ld5383-ch-10-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-084",
+        "ld5383-b1-085",
+        "ld5383-b1-086",
+        "ld5383-b1-087",
+        "ld5383-b1-088",
+        "ld5383-b1-089",
+        "ld5383-b1-090",
+        "ld5383-b2-084",
+        "ld5383-b2-085",
+        "ld5383-b2-086",
+        "ld5383-b2-087",
+        "ld5383-b2-088",
+        "ld5383-b2-089",
+        "ld5383-b2-090"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-084",
+        "ld5383-b1-085",
+        "ld5383-b1-086",
+        "ld5383-b1-087",
+        "ld5383-b1-088",
+        "ld5383-b1-089",
+        "ld5383-b1-090",
+        "ld5383-b2-084",
+        "ld5383-b2-085",
+        "ld5383-b2-086",
+        "ld5383-b2-087",
+        "ld5383-b2-088"
+      ],
+      "purpose": "Consolidate \"Law, Ethics, Nondiscrimination, and Educational Rights\" (Foundations and Professional Responsibilities) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-11",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Family, General-Education, Specialist, and Community Collaboration",
+      "chapterId": "ld5383-ch-11",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-11-section-01",
+        "ld5383-ch-11-section-02",
+        "ld5383-ch-11-section-03",
+        "ld5383-ch-11-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-091",
+        "ld5383-b1-092",
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b2-091",
+        "ld5383-b2-092",
+        "ld5383-b2-093",
+        "ld5383-b2-094",
+        "ld5383-b2-095",
+        "ld5383-b2-096"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-091",
+        "ld5383-b1-092",
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b2-091",
+        "ld5383-b2-092",
+        "ld5383-b2-093",
+        "ld5383-b2-094",
+        "ld5383-b2-095",
+        "ld5383-b2-096"
+      ],
+      "purpose": "Consolidate \"Family, General-Education, Specialist, and Community Collaboration\" (Foundations and Professional Responsibilities) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-unit-review-12",
+      "unitId": "foundations-professional-responsibilities",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Professional Learning, Advocacy, Supervision, and Boundaries",
+      "chapterId": "ld5383-ch-12",
+      "topicDiagnosticRouteIds": [
+        "ld5383-ch-12-section-01",
+        "ld5383-ch-12-section-02",
+        "ld5383-ch-12-section-03",
+        "ld5383-ch-12-section-04"
+      ],
+      "itemIds": [
+        "ld5383-b1-091",
+        "ld5383-b1-092",
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b1-097",
+        "ld5383-b1-098",
+        "ld5383-b1-099",
+        "ld5383-b1-100",
+        "ld5383-b2-084",
+        "ld5383-b2-085",
+        "ld5383-b2-086",
+        "ld5383-b2-087",
+        "ld5383-b2-088",
+        "ld5383-b2-089",
+        "ld5383-b2-090",
+        "ld5383-b2-091",
+        "ld5383-b2-092",
+        "ld5383-b2-093",
+        "ld5383-b2-094",
+        "ld5383-b2-095",
+        "ld5383-b2-096",
+        "ld5383-b2-097",
+        "ld5383-b2-098",
+        "ld5383-b2-099",
+        "ld5383-b2-100",
+        "ld5383-b1-084",
+        "ld5383-b1-085",
+        "ld5383-b1-086",
+        "ld5383-b1-087",
+        "ld5383-b1-088",
+        "ld5383-b1-089",
+        "ld5383-b1-090"
+      ],
+      "mixedPracticeItemIds": [
+        "ld5383-b1-091",
+        "ld5383-b1-092",
+        "ld5383-b1-093",
+        "ld5383-b1-094",
+        "ld5383-b1-095",
+        "ld5383-b1-096",
+        "ld5383-b1-097",
+        "ld5383-b1-098",
+        "ld5383-b1-099",
+        "ld5383-b1-100",
+        "ld5383-b2-084",
+        "ld5383-b2-085"
+      ],
+      "purpose": "Consolidate \"Professional Learning, Advocacy, Supervision, and Boundaries\" (Foundations and Professional Responsibilities) across 4 lessons and 34 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "special-education-learning-disabilities-5383-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Special Education: Teaching Students with Learning Disabilities (5383) blueprint domains.",
+      "focus": [
+        "Development and Characteristics of Students with Learning Disabilities",
+        "Planning and Managing the Learning Environment",
+        "Instruction",
+        "Identification, Eligibility, and Placement"
+      ],
+      "itemIds": [
+        "ld5383-b1-001",
+        "ld5383-b1-072",
+        "ld5383-b1-019",
+        "ld5383-b1-085",
+        "ld5383-b1-046",
+        "ld5383-b1-004",
+        "ld5383-b1-075",
+        "ld5383-b1-022",
+        "ld5383-b1-088",
+        "ld5383-b1-049",
+        "ld5383-b1-007",
+        "ld5383-b1-078",
+        "ld5383-b1-025",
+        "ld5383-b1-091",
+        "ld5383-b1-052",
+        "ld5383-b1-010",
+        "ld5383-b1-081",
+        "ld5383-b1-028",
+        "ld5383-b1-094",
+        "ld5383-b1-055",
+        "ld5383-b1-013",
+        "ld5383-b2-072",
+        "ld5383-b1-031",
+        "ld5383-b1-097",
+        "ld5383-b1-058",
+        "ld5383-b1-016",
+        "ld5383-b2-075",
+        "ld5383-b1-034",
+        "ld5383-b1-100",
+        "ld5383-b1-061",
+        "ld5383-b2-002",
+        "ld5383-b2-078",
+        "ld5383-b1-037",
+        "ld5383-b2-086",
+        "ld5383-b1-064",
+        "ld5383-b2-005",
+        "ld5383-b2-081",
+        "ld5383-b1-040",
+        "ld5383-b2-089",
+        "ld5383-b1-067"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Special Education: Teaching Students with Learning Disabilities (5383) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Instruction",
+        "Identification, Eligibility, and Placement",
+        "Foundations and Professional Responsibilities",
+        "Development and Characteristics of Students with Learning Disabilities"
+      ],
+      "itemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-084",
+        "ld5383-b1-045",
+        "ld5383-b1-003",
+        "ld5383-b1-074",
+        "ld5383-b1-021",
+        "ld5383-b1-087",
+        "ld5383-b1-048",
+        "ld5383-b1-006",
+        "ld5383-b1-077",
+        "ld5383-b1-024",
+        "ld5383-b1-090",
+        "ld5383-b1-051",
+        "ld5383-b1-009",
+        "ld5383-b1-080",
+        "ld5383-b1-027",
+        "ld5383-b1-093",
+        "ld5383-b1-054",
+        "ld5383-b1-012",
+        "ld5383-b1-083",
+        "ld5383-b1-030",
+        "ld5383-b1-096",
+        "ld5383-b1-057",
+        "ld5383-b1-015",
+        "ld5383-b2-074",
+        "ld5383-b1-033",
+        "ld5383-b1-099",
+        "ld5383-b1-060",
+        "ld5383-b2-001",
+        "ld5383-b2-077",
+        "ld5383-b1-036",
+        "ld5383-b2-085",
+        "ld5383-b1-063",
+        "ld5383-b2-004",
+        "ld5383-b2-080",
+        "ld5383-b1-039",
+        "ld5383-b2-088",
+        "ld5383-b1-066",
+        "ld5383-b2-007",
+        "ld5383-b2-083"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Special Education: Teaching Students with Learning Disabilities (5383) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Ignoring SLD Exclusionary Criteria and Mistaking Lack of Instruction or ELL Status for SLD",
+        "Using RTI to Delay Parent-Requested Evaluations or Judging Nonresponse Without Fidelity Data",
+        "Skipping the Concrete-Representational-Abstract (CRA) Progression in Math Remediation"
+      ],
+      "itemIds": [
+        "ld5383-b1-044",
+        "ld5383-b1-002",
+        "ld5383-b1-073",
+        "ld5383-b1-020",
+        "ld5383-b1-086",
+        "ld5383-b1-047",
+        "ld5383-b1-005",
+        "ld5383-b1-076",
+        "ld5383-b1-023",
+        "ld5383-b1-089",
+        "ld5383-b1-050",
+        "ld5383-b1-008",
+        "ld5383-b1-079",
+        "ld5383-b1-026",
+        "ld5383-b1-092",
+        "ld5383-b1-053",
+        "ld5383-b1-011",
+        "ld5383-b1-082",
+        "ld5383-b1-029",
+        "ld5383-b1-095",
+        "ld5383-b1-056",
+        "ld5383-b1-014",
+        "ld5383-b2-073",
+        "ld5383-b1-032",
+        "ld5383-b1-098",
+        "ld5383-b1-059",
+        "ld5383-b1-017",
+        "ld5383-b2-076",
+        "ld5383-b1-035",
+        "ld5383-b2-084",
+        "ld5383-b1-062",
+        "ld5383-b2-003",
+        "ld5383-b2-079",
+        "ld5383-b1-038",
+        "ld5383-b2-087",
+        "ld5383-b1-065",
+        "ld5383-b2-006",
+        "ld5383-b2-082",
+        "ld5383-b1-041",
+        "ld5383-b2-090"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "special-education-learning-disabilities-5383-form-internal-a",
+      "title": "Internal practice form A (Praxis Special Education: Teaching Students with Learning Disabilities (5383))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ld5383-b1-001",
+        "ld5383-b1-072",
+        "ld5383-b1-019",
+        "ld5383-b1-085",
+        "ld5383-b1-046",
+        "ld5383-b1-004",
+        "ld5383-b1-075",
+        "ld5383-b1-022",
+        "ld5383-b1-088",
+        "ld5383-b1-049",
+        "ld5383-b1-007",
+        "ld5383-b1-078",
+        "ld5383-b1-025",
+        "ld5383-b1-091",
+        "ld5383-b1-052",
+        "ld5383-b1-010",
+        "ld5383-b1-081",
+        "ld5383-b1-028",
+        "ld5383-b1-094",
+        "ld5383-b1-055",
+        "ld5383-b1-013",
+        "ld5383-b2-072",
+        "ld5383-b1-031",
+        "ld5383-b1-097",
+        "ld5383-b1-058",
+        "ld5383-b1-016",
+        "ld5383-b2-075",
+        "ld5383-b1-034",
+        "ld5383-b1-100",
+        "ld5383-b1-061",
+        "ld5383-b2-002",
+        "ld5383-b2-078",
+        "ld5383-b1-037",
+        "ld5383-b2-086",
+        "ld5383-b1-064",
+        "ld5383-b2-005",
+        "ld5383-b2-081",
+        "ld5383-b1-040",
+        "ld5383-b2-089",
+        "ld5383-b1-067",
+        "ld5383-b2-008",
+        "ld5383-b2-091",
+        "ld5383-b1-069",
+        "ld5383-b2-018",
+        "ld5383-b2-011",
+        "ld5383-b2-094",
+        "ld5383-b2-044",
+        "ld5383-b2-021",
+        "ld5383-b2-014",
+        "ld5383-b2-097"
+      ],
+      "topicIds": [
+        "ld5383-ch-01",
+        "ld5383-ch-09",
+        "ld5383-ch-03",
+        "ld5383-ch-10",
+        "ld5383-ch-06",
+        "ld5383-ch-11",
+        "ld5383-ch-02",
+        "ld5383-ch-07",
+        "ld5383-ch-04",
+        "ld5383-ch-12",
+        "ld5383-ch-08",
+        "ld5383-ch-05"
+      ],
+      "unitIds": [
+        "development-characteristics-learning-disabilities",
+        "identification-eligibility-placement",
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities",
+        "instruction"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-form-internal-b",
+      "title": "Internal practice form B (Praxis Special Education: Teaching Students with Learning Disabilities (5383))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ld5383-b1-018",
+        "ld5383-b1-084",
+        "ld5383-b1-045",
+        "ld5383-b1-003",
+        "ld5383-b1-074",
+        "ld5383-b1-021",
+        "ld5383-b1-087",
+        "ld5383-b1-048",
+        "ld5383-b1-006",
+        "ld5383-b1-077",
+        "ld5383-b1-024",
+        "ld5383-b1-090",
+        "ld5383-b1-051",
+        "ld5383-b1-009",
+        "ld5383-b1-080",
+        "ld5383-b1-027",
+        "ld5383-b1-093",
+        "ld5383-b1-054",
+        "ld5383-b1-012",
+        "ld5383-b1-083",
+        "ld5383-b1-030",
+        "ld5383-b1-096",
+        "ld5383-b1-057",
+        "ld5383-b1-015",
+        "ld5383-b2-074",
+        "ld5383-b1-033",
+        "ld5383-b1-099",
+        "ld5383-b1-060",
+        "ld5383-b2-001",
+        "ld5383-b2-077",
+        "ld5383-b1-036",
+        "ld5383-b2-085",
+        "ld5383-b1-063",
+        "ld5383-b2-004",
+        "ld5383-b2-080",
+        "ld5383-b1-039",
+        "ld5383-b2-088",
+        "ld5383-b1-066",
+        "ld5383-b2-007",
+        "ld5383-b2-083",
+        "ld5383-b1-042",
+        "ld5383-b2-009",
+        "ld5383-b2-092",
+        "ld5383-b1-070",
+        "ld5383-b2-019",
+        "ld5383-b2-012",
+        "ld5383-b2-095",
+        "ld5383-b2-045",
+        "ld5383-b2-022",
+        "ld5383-b2-015"
+      ],
+      "topicIds": [
+        "ld5383-ch-03",
+        "ld5383-ch-10",
+        "ld5383-ch-06",
+        "ld5383-ch-01",
+        "ld5383-ch-09",
+        "ld5383-ch-11",
+        "ld5383-ch-07",
+        "ld5383-ch-02",
+        "ld5383-ch-04",
+        "ld5383-ch-12",
+        "ld5383-ch-08",
+        "ld5383-ch-05"
+      ],
+      "unitIds": [
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities",
+        "instruction",
+        "development-characteristics-learning-disabilities",
+        "identification-eligibility-placement"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "special-education-learning-disabilities-5383-form-internal-c",
+      "title": "Internal practice form C (Praxis Special Education: Teaching Students with Learning Disabilities (5383))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ld5383-b1-044",
+        "ld5383-b1-002",
+        "ld5383-b1-073",
+        "ld5383-b1-020",
+        "ld5383-b1-086",
+        "ld5383-b1-047",
+        "ld5383-b1-005",
+        "ld5383-b1-076",
+        "ld5383-b1-023",
+        "ld5383-b1-089",
+        "ld5383-b1-050",
+        "ld5383-b1-008",
+        "ld5383-b1-079",
+        "ld5383-b1-026",
+        "ld5383-b1-092",
+        "ld5383-b1-053",
+        "ld5383-b1-011",
+        "ld5383-b1-082",
+        "ld5383-b1-029",
+        "ld5383-b1-095",
+        "ld5383-b1-056",
+        "ld5383-b1-014",
+        "ld5383-b2-073",
+        "ld5383-b1-032",
+        "ld5383-b1-098",
+        "ld5383-b1-059",
+        "ld5383-b1-017",
+        "ld5383-b2-076",
+        "ld5383-b1-035",
+        "ld5383-b2-084",
+        "ld5383-b1-062",
+        "ld5383-b2-003",
+        "ld5383-b2-079",
+        "ld5383-b1-038",
+        "ld5383-b2-087",
+        "ld5383-b1-065",
+        "ld5383-b2-006",
+        "ld5383-b2-082",
+        "ld5383-b1-041",
+        "ld5383-b2-090",
+        "ld5383-b1-068",
+        "ld5383-b1-043",
+        "ld5383-b2-010",
+        "ld5383-b2-093",
+        "ld5383-b1-071",
+        "ld5383-b2-020",
+        "ld5383-b2-013",
+        "ld5383-b2-096",
+        "ld5383-b2-046",
+        "ld5383-b2-023"
+      ],
+      "topicIds": [
+        "ld5383-ch-06",
+        "ld5383-ch-01",
+        "ld5383-ch-09",
+        "ld5383-ch-03",
+        "ld5383-ch-10",
+        "ld5383-ch-11",
+        "ld5383-ch-02",
+        "ld5383-ch-04",
+        "ld5383-ch-07",
+        "ld5383-ch-12",
+        "ld5383-ch-08",
+        "ld5383-ch-05"
+      ],
+      "unitIds": [
+        "instruction",
+        "development-characteristics-learning-disabilities",
+        "identification-eligibility-placement",
+        "planning-managing-learning-environment",
+        "foundations-professional-responsibilities"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

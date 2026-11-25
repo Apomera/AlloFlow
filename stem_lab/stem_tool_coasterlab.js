@@ -62,7 +62,10 @@
 
 
   var CLAB_CSS = ".clab-root{\n    --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f;\n    --line:#26364a; --line2:#31465e;\n    --ink:#e8eef4; --ink2:#9fb0c1; --ink3:#66788a;\n    --accent:#f2a63c; --accent-dim:#8a5f22;\n    --ke:#3f8fd2; --pe:#c05fa0; --heat:#c47c2f;\n    --good:#59c98d; --warn:#f2c14e; --bad:#e5484d;\n    --mono:\"Cascadia Code\",Consolas,\"SF Mono\",ui-monospace,Menlo,monospace;\n    --sans:\"Segoe UI\",system-ui,-apple-system,\"Helvetica Neue\",sans-serif;\n  }.clab-root *{box-sizing:border-box}.clab-root [hidden]{display:none !important}.clab-root #clab-app{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);\n       color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}.clab-root /* ---------- top bar ---------- */\n  #clab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;\n       padding:0 14px;height:52px;flex:none;background:var(--panel);\n       border-bottom:1px solid var(--line)}.clab-root .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.clab-root .brand .name{font-weight:700;letter-spacing:.14em;font-size:15px}.clab-root .brand .name em{color:var(--accent);font-style:normal}.clab-root .brand .sub{color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.clab-root .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.clab-root button{font-family:var(--sans);font-size:13px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:6px 12px;cursor:pointer}.clab-root button:hover{border-color:var(--accent-dim)}.clab-root button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root button.primary{background:var(--accent);border-color:var(--accent);color:#22160a;font-weight:700}.clab-root button.primary:hover{filter:brightness(1.08)}.clab-root button.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}.clab-root button:disabled{opacity:.45;cursor:default}.clab-root button.danger{color:var(--bad);border-color:var(--bad)}.clab-root .clab-sel{font-family:var(--sans);font-size:12.5px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:5px 8px;cursor:pointer}.clab-root .clab-sel:hover{border-color:var(--accent-dim)}.clab-root .clab-sel:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root /* ---------- main split ---------- */\n  #clab-main{display:flex;flex:1;min-height:0}.clab-root #clab-side{width:346px;flex:none;display:flex;flex-direction:column;background:var(--panel);\n        border-right:1px solid var(--line);min-height:0}.clab-root #clab-tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}.clab-root #clab-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink3);\n               padding:10px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;\n               border-bottom:2px solid transparent}.clab-root #clab-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}.clab-root #clab-side section{overflow-y:auto;padding:14px;flex:1;min-height:0}.clab-root .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);\n           margin:0 0 6px;font-weight:600}.clab-root .card{background:var(--card);border:1px solid var(--line);border-radius:8px;\n        padding:12px;margin-bottom:12px}.clab-root .card h3{margin:0 0 6px;font-size:13px;font-weight:600}.clab-root .hint{color:var(--ink2);font-size:12.5px;margin:0 0 10px}.clab-root .hint b{color:var(--ink)}.clab-root kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);\n      border:1px solid var(--line2);border-radius:4px;padding:0 5px}.clab-root .row{display:flex;gap:8px;align-items:center;margin:8px 0}.clab-root .row label{flex:none;width:64px;color:var(--ink2);font-size:12px}.clab-root .row input[type=range]{flex:1;accent-color:var(--accent)}.clab-root .row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n            width:64px;text-align:right;color:var(--ink)}.clab-root .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.clab-root .coords{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}.clab-root /* ---------- certification ---------- */\n  .marker-legend{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.clab-root .marker-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2)}.clab-root .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.clab-root .prob .given{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n               color:var(--ink2);background:var(--panel2);border-radius:6px;padding:7px 9px;margin:8px 0}.clab-root .prob .ask{font-size:13px;margin:6px 0}.clab-root .ansrow{display:flex;gap:8px;align-items:center;margin-top:8px}.clab-root .ansrow input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;\n      width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);\n      border-radius:6px;padding:6px 8px;font-size:13px}.clab-root .ansrow input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root .ansrow .unit{color:var(--ink3);font-size:12px;width:40px}.clab-root .verdict{font-size:12px;font-weight:600;margin-left:auto}.clab-root .verdict.ok{color:var(--good)}.clab-root .verdict.no{color:var(--bad)}.clab-root details.work{margin-top:8px}.clab-root details.work summary{cursor:pointer;color:var(--ink3);font-size:12px}.clab-root details.work div{font-family:var(--mono);font-size:11.5px;color:var(--ink2);\n                   padding:6px 0 0;line-height:1.7}.clab-root table.cert{width:100%;border-collapse:collapse;font-family:var(--mono);\n             font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:8px}.clab-root table.cert th{color:var(--ink3);font-weight:600;text-align:right;padding:4px 6px;\n                border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.06em}.clab-root table.cert td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ink)}.clab-root table.cert th:first-child,.clab-root table.cert td:first-child{text-align:left}.clab-root .certbanner{border-radius:8px;padding:12px;margin-top:12px;font-weight:600;font-size:14px;\n              border:1px solid var(--line2);background:var(--panel2)}.clab-root .certbanner.pass{border-color:var(--good);color:var(--good)}.clab-root .certbanner.fail{border-color:var(--bad);color:var(--bad)}.clab-root /* ---------- report ---------- */\n  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.clab-root .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}.clab-root .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}.clab-root .stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;margin-top:2px}.clab-root .stat .v small{font-size:11px;color:var(--ink3)}.clab-root .rating{margin:10px 0}.clab-root .rating .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:4px}.clab-root .rating .lbl .num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}.clab-root .rbar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}.clab-root .rbar i{display:block;height:100%;border-radius:4px}.clab-root .modebtn.on{border-color:var(--accent);color:var(--accent)}.clab-root .choice button{display:block;width:100%;text-align:left;margin-top:6px}.clab-root .choice button.on{border-color:var(--accent);color:var(--accent);background:rgba(242,166,60,.08)}.clab-root .exline{font-size:12.5px;margin:6px 0;color:var(--ink2)}.clab-root .exline b.ok{color:var(--good)}.clab-root .exline b.no{color:var(--bad)}.clab-root .mission{display:flex;gap:10px;align-items:flex-start;background:var(--card);\n           border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}.clab-root .mission .mi{font-size:19px;flex:none;width:26px;text-align:center;filter:grayscale(1);opacity:.55}.clab-root .mission.done .mi{filter:none;opacity:1}.clab-root .mission .mt{font-size:13px;font-weight:600}.clab-root .mission.done .mt{color:var(--good)}.clab-root .mission .md{font-size:12px;color:var(--ink2)}.clab-root .mission .stamp{margin-left:auto;flex:none;font-size:11px;color:var(--good);font-weight:700}.clab-root #clab-gball{width:64px;height:64px;display:block;margin-top:4px;border-radius:6px}.clab-root .chart{width:100%;height:74px;display:block;margin:2px 0 6px}.clab-root .chlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:6px}.clab-root .chnote{font-family:var(--mono);font-size:10px;color:var(--ink3);margin:2px 0 0}.clab-root .viol{display:flex;flex-direction:column;gap:6px;margin-top:10px}.clab-root .viol span{font-size:12px;color:var(--bad);background:rgba(229,72,77,.08);\n             border:1px solid rgba(229,72,77,.35);border-radius:6px;padding:5px 9px}.clab-root .viol span.okline{color:var(--good);background:rgba(89,201,141,.07);border-color:rgba(89,201,141,.3)}.clab-root /* ---------- viewport & HUD ---------- */\n  #clab-viewport{flex:1;position:relative;min-width:0;min-height:0;background:#121a24}.clab-root #clab-gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.clab-root #clab-hud{position:absolute;left:12px;bottom:12px;display:flex;gap:14px;align-items:flex-end;\n       background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:10px;\n       padding:10px 14px;pointer-events:none;backdrop-filter:blur(3px)}.clab-root .hudcol{display:flex;flex-direction:column;gap:2px}.clab-root .hudk{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}.clab-root .hudv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;line-height:1.1}.clab-root .hudv small{font-size:10.5px;color:var(--ink3)}.clab-root .gmeter{width:120px}.clab-root .gtrack{position:relative;height:9px;background:var(--panel2);border-radius:5px;margin-top:5px;overflow:hidden}.clab-root .gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(229,72,77,.28)}.clab-root .gtrack .zero{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--ink3)}.clab-root .gtrack .fill{position:absolute;top:1px;bottom:1px;background:var(--accent);border-radius:4px}.clab-root .gval{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;margin-top:3px}.clab-root .gval.hot{color:var(--bad)}.clab-root .ebar{display:flex;width:170px;height:12px;border-radius:6px;overflow:hidden;\n        background:var(--panel2);margin-top:5px}.clab-root .ebar i{display:block;height:100%}.clab-root .ebar i+i{border-left:2px solid var(--bg)}.clab-root .elegend{display:flex;gap:8px;margin-top:4px;font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}.clab-root .elegend b{font-weight:600}.clab-root .elegend .ke{color:var(--ke)}.clab-root .elegend .pe{color:var(--pe)}.clab-root .elegend .heat{color:var(--heat)}.clab-root #clab-xrayLegend{position:absolute;top:12px;right:12px;background:rgba(15,21,28,.85);\n              border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:190px;\n              pointer-events:none;backdrop-filter:blur(3px)}.clab-root .xbar{height:10px;border-radius:5px;margin-top:6px;\n        background:linear-gradient(90deg,#c05fa0 0%,#3f8fd2 18%,#4a5865 28%,#f2a63c 57%,#e5484d 100%)}.clab-root .xlabels{display:flex;justify-content:space-between;font-family:var(--mono);\n           font-size:9.5px;color:var(--ink3);margin-top:3px}.clab-root .photo img{width:100%;border-radius:6px;display:block}.clab-root .photo a{color:var(--accent);font-size:12px}.clab-root #clab-guide{position:absolute;inset:24px;max-width:820px;margin:0 auto;overflow-y:auto;\n         background:rgba(15,21,28,.96);border:1px solid var(--line2);border-radius:14px;\n         padding:16px 18px;backdrop-filter:blur(5px);z-index:8}.clab-root .gd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clab-root .gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.clab-root .gd-grid .card{margin:0}.clab-root .gd-grid h3{margin:0 0 6px;font-size:13px}@media (max-width:900px){.clab-root .gd-grid{grid-template-columns:1fr} }.clab-root .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);\n          padding:0;cursor:pointer}.clab-root .swatch.on{border-color:var(--ink);outline:2px solid var(--accent)}.clab-root #clab-rideQ{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);\n         width:min(470px,92%);background:rgba(15,21,28,.95);border:1px solid var(--line2);\n         border-radius:12px;padding:14px 16px;backdrop-filter:blur(4px)}.clab-root .rq-top{display:flex;justify-content:space-between;align-items:baseline}.clab-root .rq-pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent)}.clab-root #clab-rqTimer{display:block;height:4px;background:var(--panel2);border-radius:2px;margin:8px 0 10px;overflow:hidden}.clab-root #clab-rqTimerFill{display:block;height:100%;background:var(--accent);width:100%}.clab-root #clab-rqText{margin:0 0 10px;font-size:14px}.clab-root #clab-rqText b{color:var(--accent)}.clab-root .clab-viz{height:74px;margin:0 0 10px;display:none}.clab-root .clab-viz svg{display:block;height:100%;width:100%}.clab-root .clab-viz.on{display:block}.clab-root .clab-viz .clab-ans{transform-box:fill-box;transform-origin:center}.clab-root .clab-viz .clab-ans.reveal{fill:var(--good) !important;filter:drop-shadow(0 0 5px rgba(89,201,141,.75));animation:clabAnsPop .62s cubic-bezier(.2,.8,.2,1)}@keyframes clabAnsPop{0%{transform:scaleX(.06) scale(.72)}58%{transform:scaleX(1) scale(1.42)}100%{transform:scaleX(1) scale(1)}}.clab-root .clab-spark{position:absolute;width:var(--sz,7px);height:var(--sz,7px);border-radius:50%;pointer-events:none;opacity:0;animation:clabSpark .8s ease-out var(--delay,0ms) forwards}.clab-root .clab-spark.diamond{border-radius:1px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.clab-root .clab-spark.streak{width:calc(var(--sz,7px) * 1.8);height:3px;border-radius:3px}@keyframes clabSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}@media (prefers-reduced-motion:reduce){.clab-root .clab-viz .clab-ans.reveal{animation:none}.clab-root .clab-spark{display:none}}.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto;overscroll-behavior:contain;z-index:6}@media (max-width:760px),(max-height:620px){.clab-root #clab-rideQ{top:8px;bottom:auto;max-height:calc(100% - 16px)}}.clab-root .clab-build-start{border-color:rgba(242,166,60,.5);background:linear-gradient(145deg,rgba(242,166,60,.12),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--accent)}.clab-root .clab-build-start h3{font-size:16px}.clab-root .clab-build-steps{display:grid;gap:5px;margin:10px 0 12px;padding:0;list-style:none;counter-reset:build}.clab-root .clab-build-steps li{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}.clab-root .clab-build-steps li:before{counter-increment:build;content:counter(build);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#22160a;font:700 11px var(--mono)}.clab-root .clab-node-prompt{border-style:dashed}.clab-root .clab-build-coach{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(242,166,60,.6);border-radius:999px;background:rgba(15,21,28,.88);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}.clab-root .clab-build-coach small{display:block;color:var(--ink2);font-size:10px}.clab-root .clab-node-beacon{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,166,60,.14);animation:clabBeacon 1.8s ease-in-out infinite}@keyframes clabBeacon{50%{box-shadow:0 0 0 10px rgba(242,166,60,0)}}.clab-root #clab-viewport.ride-question-open:after{content:\"\";position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 55%,rgba(15,21,28,.18),rgba(15,21,28,.62));pointer-events:none}.clab-root #clab-rideQ:not([hidden]){animation:clabCardIn .28s ease-out}.clab-root #clab-rideQ.is-correct{border-color:rgba(89,201,141,.85);box-shadow:0 0 0 1px rgba(89,201,141,.18),0 16px 44px rgba(0,0,0,.38),0 0 28px rgba(89,201,141,.12)}.clab-root #clab-rideQ.is-wrong{border-color:rgba(229,72,77,.8);box-shadow:0 0 0 1px rgba(229,72,77,.14),0 16px 44px rgba(0,0,0,.38)}@keyframes clabCardIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}.clab-root .rq-scorebox{position:relative;display:flex;align-items:center;gap:7px}.clab-root .rq-streak{padding:2px 7px;border-radius:999px;background:rgba(242,166,60,.14);border:1px solid rgba(242,166,60,.34);color:var(--accent);font:700 10px var(--mono)}.clab-root .rq-delta{position:absolute;right:0;top:16px;color:var(--good);font:800 13px var(--mono);opacity:0}.clab-root .rq-delta.on{animation:clabScoreGain .75s ease-out}@keyframes clabScoreGain{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1.12)}}.clab-root #clab-rqTimerFill{transition:width .1s linear,background .2s}.clab-root #clab-rqTimer.urgent #clab-rqTimerFill{background:#e98436}.clab-root #clab-rqTimer.critical #clab-rqTimerFill{background:var(--bad);animation:clabTimerPulse .55s ease-in-out infinite alternate}.clab-root #clab-rqTimer.done #clab-rqTimerFill{background:var(--good)}@keyframes clabTimerPulse{to{filter:brightness(1.5)}}.clab-root .choice button{position:relative;min-height:40px;padding-left:42px;transition:border-color .18s,background .18s,color .18s,transform .18s}.clab-root .choice button:before{content:attr(data-key);position:absolute;left:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--panel);border:1px solid var(--line2);color:var(--ink2);font:700 10px var(--mono)}.clab-root .choice button.picked{border-color:var(--accent)}.clab-root .choice button.correct{border-color:var(--good);color:var(--good);background:rgba(89,201,141,.11)}.clab-root .choice button.correct:before{content:\"✓\";border-color:var(--good);color:var(--good)}.clab-root .choice button.wrong{border-color:var(--bad);color:#ffb4b6;background:rgba(229,72,77,.1)}.clab-root .choice button.wrong:before{content:\"×\";border-color:var(--bad);color:var(--bad)}.clab-root .choice button:disabled{opacity:1}.clab-root #clab-rqTimer.failed #clab-rqTimerFill{background:var(--bad)}.clab-root #clab-rqNumRow.correct input{border-color:var(--good);box-shadow:0 0 0 2px rgba(89,201,141,.12)}.clab-root #clab-rqNumRow.wrong input{border-color:var(--bad);box-shadow:0 0 0 2px rgba(229,72,77,.1)}.clab-root #clab-rqFeed:not(:empty){padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.035);border-left:3px solid var(--line2)}.clab-root #clab-rideQ.is-correct #clab-rqFeed{border-left-color:var(--good);background:rgba(89,201,141,.07)}.clab-root #clab-rideQ.is-wrong #clab-rqFeed{border-left-color:var(--bad);background:rgba(229,72,77,.06)}.clab-root .clab-viz.on{padding:4px 8px;border:1px solid rgba(49,70,94,.72);border-radius:8px;background:linear-gradient(180deg,rgba(63,143,210,.055),rgba(89,201,141,.025))}.clab-root .ride-result-grid{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:10px 0}.clab-root .ride-accuracy{--pct:0;display:grid;place-items:center;width:90px;height:90px;border-radius:50%;background:conic-gradient(var(--good) calc(var(--pct) * 1%),var(--panel2) 0);position:relative}.clab-root .ride-accuracy:before{content:\"\";position:absolute;inset:8px;border-radius:50%;background:var(--panel)}.clab-root .ride-accuracy span{position:relative;text-align:center;font:800 20px var(--mono)}.clab-root .ride-accuracy small{display:block;color:var(--ink3);font:600 9px var(--sans);text-transform:uppercase;letter-spacing:.08em}.clab-root .ride-checkpoints{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.clab-root .ride-checkpoints i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:11px;background:var(--panel2);border:1px solid var(--line2)}.clab-root .ride-checkpoints i.ok{color:var(--good);border-color:rgba(89,201,141,.5);background:rgba(89,201,141,.08)}.clab-root .ride-checkpoints i.no{color:var(--bad);border-color:rgba(229,72,77,.45);background:rgba(229,72,77,.07)}@media (prefers-reduced-motion:reduce){.clab-root .clab-node-beacon,.clab-root #clab-rideQ:not([hidden]),.clab-root .rq-delta.on,.clab-root #clab-rqTimer.critical #clab-rqTimerFill{animation:none}}@media (max-width:760px){.clab-root .clab-build-coach{top:48px;max-width:90%}.clab-root .ride-result-grid{grid-template-columns:1fr}.clab-root .ride-accuracy{margin:auto}}.clab-root #clab-rideEnd{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);\n           width:min(400px,92%);background:rgba(15,21,28,.96);border:1px solid var(--line2);\n           border-radius:12px;padding:16px 18px;backdrop-filter:blur(4px)}.clab-root #clab-rideEnd .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;color:var(--accent)}.clab-root #clab-rideEnd .exline{margin:4px 0}.clab-root #clab-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);\n          background:rgba(22,31,41,.94);border:1px solid var(--line2);border-radius:8px;\n          padding:9px 18px;font-size:13.5px;pointer-events:none;max-width:70%;text-align:center}.clab-root #clab-banner.pass{border-color:var(--good);color:var(--good)}.clab-root #clab-banner.fail{border-color:var(--bad);color:var(--bad)}.clab-root #clab-err{position:absolute;inset:auto 12px 12px 12px;background:#2a1214;border:1px solid var(--bad);\n       color:#ffb4b6;border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;z-index:9}@media (prefers-reduced-motion:reduce){.clab-root *{scroll-behavior:auto} }@media (max-width:760px){.clab-root #clab-main{flex-direction:column}.clab-root #clab-side{width:100%;max-height:46%;border-right:0;border-bottom:1px solid var(--line)}\n  }.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note{margin:8px 0 0;color:var(--ink3);font-size:11px}.clab-root .clab-element-card{border-color:rgba(63,143,210,.38)}.clab-root .clab-element-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.clab-root .clab-element-btn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:48px;padding:7px 9px;text-align:left}.clab-root .clab-element-btn b{font-size:12px}.clab-root .clab-element-btn small{color:var(--ink3);font-size:10px}.clab-root .clab-element-wide{grid-column:1/-1}.clab-root .clab-safety-card{border-color:rgba(242,193,78,.34)}.clab-root .clab-safety-summary{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px}.clab-root .clab-safety-summary:before{content:\"!\";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.45);color:var(--warn);font:800 12px var(--mono)}.clab-root .clab-safety-summary.safe{color:var(--good)}.clab-root .clab-safety-summary.safe:before{content:\"✓\";background:rgba(89,201,141,.12);border-color:rgba(89,201,141,.42);color:var(--good)}.clab-root .clab-safety-list{display:grid;gap:7px;margin-top:9px}.clab-root .clab-safety-item{display:grid;grid-template-columns:22px 1fr auto;gap:7px;align-items:start;padding:8px;border:1px solid rgba(242,193,78,.28);border-radius:7px;background:rgba(242,193,78,.055)}.clab-root .clab-safety-item.bad{border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.055)}.clab-root .clab-safety-num{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#241b08;font:800 10px var(--mono)}.clab-root .clab-safety-item.bad .clab-safety-num{background:var(--bad);color:white}.clab-root .clab-safety-copy b{display:block;font-size:11.5px}.clab-root .clab-safety-copy small{display:block;color:var(--ink2);font-size:10.5px;line-height:1.35;margin-top:2px}.clab-root .clab-safety-jump{padding:4px 7px;font-size:10px;white-space:nowrap}@media (max-width:760px){.clab-root .clab-element-btn{min-height:44px}}\n";
-  var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <select id=\"clab-rideTimer\" class=\"clab-sel\" title=\"Time limit for each Ride &amp; Solve question\" aria-label=\"Question time limit\">\n        <option value=\"on\">⏱ Timer: on</option>\n        <option value=\"relaxed\">⏱ Timer: relaxed (3×)</option>\n        <option value=\"off\">⏱ Timer: off</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.\n            <b>Lab packet</b> bundles the design, guided notebook, conditions, challenge, and latest measured ride evidence.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
+  // the Missions tab lists this many; the header pill used to say "N/6" (the quest
+  // threshold), so a student with 9 missions read "9/6" while the tab said "9 of 15"
+  var CLAB_MISSION_TOTAL = 15;
+  var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <select id=\"clab-rideTimer\" class=\"clab-sel\" title=\"Time limit for each Ride &amp; Solve question\" aria-label=\"Question time limit\">\n        <option value=\"on\">⏱ Timer: on</option>\n        <option value=\"relaxed\">⏱ Timer: relaxed (3×)</option>\n        <option value=\"off\">⏱ Timer: off</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.\n            <b>Lab packet</b> bundles the design, guided notebook, conditions, challenge, and latest measured ride evidence.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n          <p class=\"hint clab-calc-rule\" id=\"clab-calcRule\">A check says match, close or not yet. After 3 tries on one answer, wait 15 s between checks. Your tries go in your report.</p>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
 
   CLAB_HTML = CLAB_HTML.replace('<p class="eyebrow" id="clab-missionProgress">', '<section class="card clab-pit-card" id="clab-physicsPit" aria-labelledby="clab-pitTitle"></section><p class="eyebrow" id="clab-missionProgress">');
   CLAB_HTML = CLAB_HTML.replace('<div class="card clab-build-start"', '<section class="card clab-pit-card" id="clab-pitExperiment" aria-label="Physics pit stop experiment" hidden></section><div class="card clab-build-start"');
@@ -252,6 +255,9 @@
   .clab-root .clab-lap-ticks b{position:absolute;top:-3px;width:2px;height:12px;background:var(--ink2);transform:translateX(-1px)}
   .clab-root .clab-lap-ticks b:after{content:attr(data-label);position:absolute;top:11px;left:50%;transform:translateX(-50%);white-space:nowrap;color:var(--ink3);font:9px var(--mono);letter-spacing:0;text-transform:none}
   @media (max-width:900px){.clab-root #clab-lapHud{top:92px}.clab-root .clab-lap-ticks b:after{display:none}}
+  /* While the lap bar shows (a run), the desktop banner goes below it and the dispatch countdown, not behind them. */
+  @media (min-width:761px){.clab-root:has(#clab-lapHud:not([hidden])):not(:has(#clab-stationViews:not([hidden]),[data-scene-focus="true"],[data-piece-preview="true"])) #clab-banner{top:142px;z-index:4}}
+  @media (min-width:761px) and (max-width:900px){.clab-root:has(#clab-lapHud:not([hidden])):not(:has(#clab-stationViews:not([hidden]),[data-scene-focus="true"],[data-piece-preview="true"])) #clab-banner{top:208px}}
   .clab-root #clab-btnComfort[aria-pressed="true"]{border-color:var(--good);color:var(--good)}
   .clab-root .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
   @media (max-width:1120px){.clab-root .clab-minimap{display:none}.clab-root #clab-hud{gap:10px}.clab-root #clab-hud .hudcol{padding-left:8px}}
@@ -370,11 +376,37 @@
   .theme-contrast .clab-starter-chip:hover:not(:disabled),.theme-contrast .clab-root button:hover:not(:disabled){background:#00ff00!important;color:#000000!important;border-color:#00ff00!important}
   .theme-contrast .clab-root button.primary,.theme-contrast .clab-root button[aria-pressed="true"],.theme-contrast .clab-root button.on{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important}
   `;
+  /* @clab-phone-layout-start */
+  CLAB_CSS += `
+  .clab-root .clab-lap-ticks b:after{font-size:12px;color:var(--ink2)}
+  .clab-root .rq-top{gap:8px;align-items:center}
+  .clab-root .clab-rq-read{margin-left:auto;min-height:44px;padding:4px 12px;font-size:13px;white-space:nowrap}
+  .clab-root .clab-rq-nextrow{margin-top:10px}
+  .clab-root .clab-rq-nextrow:has(#clab-rqNext[hidden]){display:none}
+  .clab-root #clab-rqNext{width:100%;min-height:44px;font-size:14px}
+  @media (max-width:760px){
+    .clab-energy-schematic,.clab-starter-bar{display:none}
+    .clab-root{height:max(600px,calc(100svh - 16px))!important}
+    .clab-root #clab-side{max-height:40%}
+    .clab-root #clab-app[data-running] #clab-side{display:none}
+    .clab-root #clab-viewTools{top:8px;bottom:auto;left:8px;right:8px;max-width:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px}
+    .clab-root #clab-viewTools button{min-height:44px;padding:4px 6px;font-size:12px;white-space:normal;line-height:1.2}
+    .clab-root .clab-build-coach{top:68px}
+    .clab-root #clab-lapHud{top:68px;left:8px;right:8px;width:auto;transform:none}
+  }
+  /* reading-text floor: 12px for notes, card captions and the instrument labels */
+  .clab-root .chnote,.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note,.clab-root .clab-element-btn small,.clab-root .clab-element-btn .clab-element-cost,.clab-root .clab-safety-copy small,.clab-root .clab-safety-copy b,.clab-root .clab-build-coach small,.clab-root .clab-inquiry-prompt,.clab-root details.work div,.clab-root .clab-story-step p,.clab-root .clab-story-step small,.clab-root .clab-cer-grid p,.clab-root .clab-replay label,.clab-root .clab-replay output,.clab-root .chlabel,.clab-root .stat .k,.clab-root .vkey,.clab-root .clab-node-lens span,.clab-root .clab-mechanism,.clab-root .clab-goal-readout,.clab-root .clab-evidence-status,.clab-root .clab-pit-route small,.clab-root .clab-pit-figure figcaption,.clab-root .clab-pit-note-stages small,.clab-root .md,.clab-root .eyebrow,.clab-root .clab-safety-jump{font-size:12px}
+  .clab-root #clab-hud .hudk{font-size:12px;letter-spacing:.04em}
+  .clab-root #clab-hud .elegend,.clab-root #clab-hud .elegend output,.clab-root .clab-energy-reference,.clab-root #clab-hud .gval,.clab-root .clab-state-pill,.clab-telemetry-pill,.clab-subject-badge,.clab-starter-label{font-size:12px}
+  .clab-root .clab-safety-item.bad .clab-safety-num{color:#1d0507}
+  `;
+  /* @clab-phone-layout-end */
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
   CLAB_HTML = CLAB_HTML
     .replace('<button id="clab-btnCheck">Check predictions</button>', '<button id="clab-btnCheck">Check calculations</button>')
     .replace('Explore = quick predictions, Engineer = real numbers. File predictions', 'Explore = ungraded pre-ride hypotheses, Engineer = calculation concept checks. Complete the calculations')
-    .replace('<span class="eyebrow" id="clab-rqTag" style="margin:0">Checkpoint</span>', '<span class="eyebrow" id="clab-rqTag" style="margin:0">Concept check</span>');
+    .replace('<span class="eyebrow" id="clab-rqTag" style="margin:0">Checkpoint</span>', '<span class="eyebrow" id="clab-rqTag" style="margin:0">Concept check</span><button type="button" id="clab-rqRead" class="ghost clab-rq-read" aria-label="Read the question aloud" title="Read the question aloud">🔊 Read</button>');
+  CLAB_HTML = CLAB_HTML.replace('<p id="clab-rqFeed" class="exline" role="status" aria-live="polite" aria-atomic="true" style="min-height:18px;margin:8px 0 0"></p>', '<p id="clab-rqFeed" class="exline" role="status" aria-live="polite" aria-atomic="true" style="min-height:18px;margin:8px 0 0"></p><div class="btnrow clab-rq-nextrow"><button type="button" id="clab-rqNext" class="primary" aria-describedby="clab-rqFeed" hidden>Continue the ride ▶</button></div>');
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
   var packetShare = '<button id="clab-btnPacketExport" class="ghost" type="button">⬆ Lab packet</button><button id="clab-btnPacketImport" class="ghost" type="button">⬇ Open packet</button>';
   CLAB_HTML = CLAB_HTML.replace('<button id="clab-btnImport">⬇ Import</button>', '<button id="clab-btnImport">⬇ Import</button>' + packetShare);
@@ -411,6 +443,101 @@
   CLAB_HTML = CLAB_HTML.replace('Cycle camera: orbit, onboard, chase', 'Cycle camera: orbit, onboard, chase, scenic');
   CLAB_HTML = CLAB_HTML.replace('camera: orbit → onboard → chase, and pick', 'camera: orbit → onboard → chase → scenic, and pick');
   CLAB_HTML = CLAB_HTML.replace('Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.', 'Interactive 3-D coaster track visualization. Direction arrows point around the circuit and illuminated rings mark major ride sections. Section portals remain visible during runs and carry distinct crown shapes for lift, launch, drop, inversion, turn, valley, and brake landmarks. The next portal grows as the train approaches and settles after passage. A tapered hoop trail and arrow identify the train position and direction in orbit and scenic views. The lead car carries a raised forward arrow and casts a tapered beam across the track in darker environments. Visible couplers show how the cars articulate through curves, and the rear lamp brightens on the brake run. High-contrast wheel markers rotate with each car’s traveled distance and remain still in reduced-motion mode. Theme-aware side light strips outline every car and brighten with speed. Numbered row plates identify front, middle, and back positions directly on the 3-D train. The active row gains a diamond marker and enlarged number plate, so selection is not conveyed by color alone. A side catwalk marks the lift hill, while center fins and paired lamps mark the brake run. Brake fins rise and paired lamps brighten when the train enters the brake run. Moving chain dogs climb the lift beside the train in chain mode. Launch mode uses paired stator banks with a repeating three-phase energy pattern. Platform edge lights sweep toward the exit during dispatch, while loading gates open before departure. The station pairs a three-aspect signal with an overhead word-and-number dispatch board. Use the Build panel controls to select and edit track nodes.');
+  CLAB_HTML = CLAB_HTML.replace('pick the <b>topic</b> &amp; <b>grade</b> in the top bar:', 'pick the <b>topic</b> &amp; <b>grade</b> under ⚙ Settings:');
+  CLAB_HTML = CLAB_HTML.replace('and pick the <b>row</b>\n            you ride in', 'and pick the <b>row</b>\n            you ride in (⚙ Settings)');
+  /* @clab-settings-start
+     The top bar held 18 controls in three rows (four on a tablet). The ones a
+     student uses every minute stay in view; the rest move into ONE "Settings"
+     drawer under the bar. Nodes are moved, not rebuilt, so every id, label,
+     listener and keyboard stop survives. The open state lasts for the session. */
+  var CLAB_SETTINGS_KEY = 'coaster_lab_settings_open';
+  var CLAB_SETTINGS_GROUPS = [
+    ['clab-settingsRide', 'Ride & Solve questions', ['clab-rideTopic', 'clab-rideGrade', 'clab-rideTimer', 'clab-rideAiSubject']],
+    ['clab-settingsView', 'View', ['clab-seatSel', 'clab-btnView', 'clab-trackViz', 'clab-btnVectors', 'clab-btnSceneFocus']],
+    ['clab-settingsLook', 'Look, sound & motion', ['clab-visualTheme', 'clab-btnFx', 'clab-btnSound', 'clab-btnComfort']],
+    ['clab-settingsPhysics', 'Physics', ['clab-btnFric']]
+  ];
+  function clabBuildSettings(rootEl, store){
+    var controls = rootEl.querySelector('#clab-top .controls');
+    if (!controls || rootEl.querySelector('#clab-btnSettings')) return null;
+    var doc = rootEl.ownerDocument;
+    var toggle = doc.createElement('button');
+    toggle.type = 'button';
+    toggle.id = 'clab-btnSettings';
+    toggle.className = 'clab-settings-toggle';
+    toggle.title = 'Ride & Solve questions, view, look, sound, motion and friction';
+    toggle.setAttribute('aria-controls', 'clab-settings');
+    toggle.innerHTML = '⚙ Settings <span class="clab-caret" aria-hidden="true">▾</span>';
+    var panel = doc.createElement('div');
+    panel.id = 'clab-settings';
+    panel.setAttribute('role', 'group');
+    panel.setAttribute('aria-label', 'Coaster Lab settings');
+    CLAB_SETTINGS_GROUPS.forEach(function (g) {
+      var box = doc.createElement('div');
+      box.id = g[0];
+      box.className = 'clab-settings-group';
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-labelledby', g[0] + 'Label');
+      var label = doc.createElement('span');
+      label.id = g[0] + 'Label';
+      label.className = 'clab-settings-label';
+      label.textContent = g[1];
+      box.appendChild(label);
+      g[2].forEach(function (id) { var el = controls.querySelector('#' + id); if (el) box.appendChild(el); });
+      panel.appendChild(box);
+    });
+    controls.appendChild(toggle);
+    controls.appendChild(panel);
+    function setOpen(open, remember){
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      if (remember) { try { if (store) store.setItem(CLAB_SETTINGS_KEY, open ? 'open' : 'shut'); } catch (_e) {} }
+    }
+    toggle.addEventListener('click', function () { setOpen(panel.hidden, true); });
+    panel.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;   // an open select list keeps its own Escape
+      e.stopPropagation();
+      setOpen(false, true);
+      toggle.focus();
+    });
+    var saved = null;
+    try { saved = store ? store.getItem(CLAB_SETTINGS_KEY) : null; } catch (_e) {}
+    setOpen(saved === 'open', false);
+    return { toggle: toggle, panel: panel, setOpen: setOpen };
+  }
+  CLAB_CSS += `
+  .clab-root #clab-top .controls{flex-wrap:wrap}
+  .clab-root .clab-settings-toggle[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+  .clab-root .clab-caret{display:inline-block;transition:transform .15s}
+  .clab-root .clab-settings-toggle[aria-expanded="true"] .clab-caret{transform:rotate(180deg)}
+  .clab-root #clab-top #clab-settings{flex:1 0 100%;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px 16px;padding:8px 0 2px;border-top:1px solid var(--line)}
+  .clab-root .clab-settings-group{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .clab-root .clab-settings-group>*{flex:none}
+  .clab-root #clab-settings #clab-visualTheme,.clab-root #clab-settings #clab-trackViz{max-width:none}
+  .clab-root #clab-top:has(#clab-settings:not([hidden])){align-items:flex-start}
+  .clab-root #clab-top:has(#clab-settings:not([hidden])) .brand{padding-top:7px}
+  .clab-root .clab-settings-label{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);margin-right:2px}
+  @media (prefers-reduced-motion:reduce){.clab-root .clab-caret{transition:none}}
+  .clab-root .verdict.far{color:var(--bad)}
+  .clab-root .verdict.close{color:var(--warn)}
+  .clab-root .verdict.wait{color:var(--ink2)}
+  .clab-root .clab-calc-rule{flex:1 0 100%;margin:2px 0 0;font-size:12px}
+  @media (max-width:760px){
+    .clab-root #clab-top{max-height:none;overflow:visible}
+    .clab-root #clab-top .controls{flex-wrap:wrap;overflow-x:visible;gap:6px}
+    .clab-root #clab-top .controls button,.clab-root #clab-top .controls select,.clab-root #clab-top .controls input{min-height:44px}
+    /* on a phone the drawer drops OVER the lab, so an open drawer never squeezes the build panel to nothing */
+    .clab-root #clab-top #clab-settings{position:absolute;left:0;right:0;top:100%;z-index:10;justify-content:flex-start;max-height:min(62vh,440px);overflow-y:auto;padding:10px 12px 12px;background:var(--panel);border-bottom:1px solid var(--line2);box-shadow:0 16px 32px rgba(0,0,0,.45)}
+    .clab-root .clab-settings-group{flex:1 0 100%}
+    .clab-root .clab-settings-group>.clab-settings-label{flex:1 0 100%}
+    /* the phone view-button row sits at the top; the station explorer covered Fit coaster */
+    .clab-root #clab-stationViews{top:70px;left:8px;max-width:calc(100% - 16px)}
+    /* the view buttons and station explorer own the top, so banners sit just above the instruments */
+    .clab-root #clab-banner,.clab-root [data-station-shot] #clab-banner{top:auto;bottom:var(--clab-view-bottom,120px);left:8px;right:8px;transform:none;max-width:none;z-index:5;padding:8px 12px}
+    .clab-root #clab-viewport:has(#clab-rideQ:not([hidden]),#clab-rideEnd:not([hidden]),#clab-guide:not([hidden])) #clab-banner{bottom:8px}
+  }
+  `;
+  /* @clab-settings-end */
 
   function bootCoasterLab(rootEl, THREE, bridge){
 'use strict';
@@ -523,7 +650,7 @@ const BRAKE_LEN = 55, STOP_AT = 4;   // brake run starts before the final turn (
 const BRAKE_DECEL = 8;               // m/s² the brakes pull — the sim AND the Ride & Solve brake questions
 const CAR_GAP = 2.6;                 // a real train is a LENGTH, not a point
 let TRAIN_CARS = 5;                  // how many cars THIS design runs — see design.cars
-const LIM = { gvMax: 6.0, gvMin: -1.5, glat: 1.3 };  // comfort limits (ASTM-ish)
+const LIM = { gvMax: 6.0, gvMin: -1.5, glat: 1.3 };  // this lab's simplified peak limits (model choice, not a standard's numbers)
 const TOL = { v: 0.06, g: 0.35, bank: 5 };           // grading tolerances
 const COL = {
   accent: 0xf2a63c, ke: 0x3f8fd2, pe: 0xc05fa0, heat: 0xc47c2f,
@@ -3627,8 +3754,18 @@ function rideSectionAt(S){
 function syncLapMilestones(){
   const ticks = __clabGet('clab-lapTicks');
   if(!ticks || !track || !analysis) return;
-  ticks.innerHTML = lapMilestones().map(([label, s]) =>
-    `<b style="left:${Math.max(0, Math.min(100, s / track.L * 100))}%" data-label="${label}"></b>`).join('');
+  // Labels sit centered under their ticks; two close ticks used to print on top
+  // of each other ("Drop" + "Banked turn"). Keep every tick, name only the ones
+  // with room. The section name above the rail still says where the train is.
+  let lastLabeled = -Infinity;
+  ticks.innerHTML = lapMilestones()
+    .map(([label, s]) => [label, Math.max(0, Math.min(100, s / track.L * 100))])
+    .sort((p, q) => p[1] - q[1])
+    .map(([label, pct]) => {
+      const room = pct - lastLabeled >= 22;
+      if(room) lastLabeled = pct;
+      return `<b style="left:${pct}%" data-label="${room ? label : ''}" title="${label}"></b>`;
+    }).join('');
 }
 let lastLapSection = '';
 function updateLapHUD(){
@@ -4068,7 +4205,7 @@ function renderProblems(){
   certResultEl.innerHTML = '';
   preds = {};
   for(const id of Object.keys(typed)){ const el = __clabGet(id); if(el) el.value = typed[id]; }
-  if(hadChecked && Object.keys(typed).length) checkPredictions();
+  if(hadChecked && Object.keys(typed).length) checkPredictions('auto');
   const applyBank = __clabGet('clab-btnApplyCertBank');
   if(applyBank) applyBank.addEventListener('click', applyCertBankAnswer);
   const showTurn = __clabGet('clab-btnShowCertTurn');
@@ -4109,7 +4246,8 @@ function renderExplore(){
   const card = (q, eyebrow, ask, opts) => {
     let h = `<div class="card prob"><p class="eyebrow">${eyebrow}</p><p class="ask">${ask}</p>
              <div class="choice" data-q="${q}">`;
-    for(const [v, label] of opts) h += `<button data-v="${v}">${label}</button>`;
+    // the measured answer is usually the second option as written; mix the order
+    shuffleRideChoices(opts).forEach(([v, label], i) => { h += `<button data-v="${v}" data-key="${String.fromCharCode(65 + i)}">${label}</button>`; });
     return h + '</div></div>';
   };
   let html = '';
@@ -4243,22 +4381,42 @@ function gradeExplore(tele){
   banner('Evidence ready — explain one match or difference.', '', 3000);
 }
 
+/* mode 'auto' = renderProblems re-checking after a design change: it re-grades
+   answers already checked, and never checks a newly typed one for free. */
 function checkPredictions(){
   if(!analysis) return;
   const a = analysis.ans;
+  const auto = arguments[0] === 'auto';   // a click passes its event
+  const now = Date.now();
+  let changed = false;
   const grade = (id, truth, tolAbs, tolRel) => {
     // renderProblems writes these unprefixed (inP1 / vP1); a 'clab-' lookup
     // found nothing, so no answer was ever graded and certification never passed.
     const el = __clabGet('in' + id);
     const v = __clabGet('v' + id);
     if(!el || truth == null) return null;
-    const x = parseFloat(el.value);
-    if(!isFinite(x)){ v.textContent = 'enter a value'; v.className = 'verdict no'; return null; }
-    const rel = Math.abs(x - truth) / Math.max(Math.abs(truth), 1e-6);
-    const ok = tolRel != null ? rel <= tolRel : Math.abs(x - truth) <= tolAbs;
-    v.textContent = ok ? '✓ matches physics' : `✗ off by ${fmt(rel * 100, 0)}% — recheck`;
-    v.className = 'verdict ' + (ok ? 'ok' : 'no');
-    return { x, truth, ok };
+    const typed = parseFloat(el.value);
+    const lastX = parseFloat(calcTries.last[id]);
+    if(!isFinite(typed)){
+      if(!auto){ v.textContent = 'enter a value'; v.className = 'verdict no'; }
+      return null;
+    }
+    const gate = auto ? { fresh: false, wait: 0 } : calcCheckGate(calcTries, id, typed, now);
+    const held = auto ? String(typed) !== calcTries.last[id] : gate.wait > 0;
+    if(held && !isFinite(lastX)){ v.textContent = ''; v.className = 'verdict'; return null; }
+    const x = held ? lastX : typed;
+    const verdict = calcVerdict(x, truth, tolAbs, tolRel);
+    if(gate.fresh && !gate.wait){
+      calcTries.tries[id] = (calcTries.tries[id] || 0) + 1;
+      calcTries.last[id] = String(typed);
+      calcTries.at[id] = now;
+      if(verdict === 'ok' && calcTries.seen[id]) calcTries.afterData[id] = true;
+      changed = true;
+    }
+    if(gate.wait){ v.textContent = `⏳ wait ${gate.wait} s`; v.className = 'verdict wait'; }
+    else if(held){ v.textContent = ''; v.className = 'verdict'; }
+    else { v.textContent = CALC_VERDICT_TEXT[verdict]; v.className = 'verdict ' + verdict; }
+    return { x, truth, ok: verdict === 'ok' };
   };
   preds.p0  = grade('P0',  a.vL,    null, TOL.v);
   preds.p1  = grade('P1',  a.vB,    null, TOL.v);
@@ -4275,7 +4433,64 @@ function checkPredictions(){
   }
   preds.p3  = grade('P3',  gTruth,  TOL.g, null);
   preds.p4  = grade('P4',  a.bankD, TOL.bank, null);
+  if(changed) saveCalcTries();
 }
+/* @clab-calc-checks-start
+   "Check calculations" used to answer "off by 12%" every time it was pressed,
+   so a number could be found by guessing instead of by physics. A check now
+   says match / close / not yet. Each answer gets CALC_QUICK_TRIES quick
+   checks; after that a changed answer waits CALC_WAIT_MS from its last check.
+   An unchanged answer re-checks free. Tries are kept for the report card, and
+   so is an answer that first matched after an inspection showed the model. */
+const CALC_QUICK_TRIES = 3;
+const CALC_WAIT_MS = 15000;
+const CALC_CLOSE_FACTOR = 2.5;   // "close" = within 2.5x the grading tolerance
+const CALC_TRIES_KEY = 'coaster_lab_calc_tries';
+const CALC_IDS = ['P0', 'P1', 'P2a', 'P2b', 'P3', 'P4'];
+const CALC_VERDICT_TEXT = { ok: '✓ matches physics', close: '≈ close, recheck a step', far: '✗ not yet, rework it' };
+function freshCalcTries(){ return { tries: {}, last: {}, at: {}, seen: {}, afterData: {} }; }
+function loadCalcTries(){
+  const out = freshCalcTries();
+  try{
+    const raw = JSON.parse(localStorage.getItem(CALC_TRIES_KEY) || 'null');
+    if(raw && typeof raw === 'object'){
+      for(const id of CALC_IDS){
+        const n = raw.tries && raw.tries[id];
+        if(Number.isFinite(n) && n > 0) out.tries[id] = Math.floor(n);
+        if(raw.last && typeof raw.last[id] === 'string') out.last[id] = raw.last[id];
+        if(raw.at && Number.isFinite(raw.at[id])) out.at[id] = raw.at[id];
+        if(raw.seen && raw.seen[id] === true) out.seen[id] = true;
+        if(raw.afterData && raw.afterData[id] === true) out.afterData[id] = true;
+      }
+    }
+  }catch(_e){}
+  return out;
+}
+let calcTries = loadCalcTries();
+function saveCalcTries(){ try{ localStorage.setItem(CALC_TRIES_KEY, JSON.stringify(calcTries)); }catch(_e){} }
+/* Is this a new answer for problem id, and how many seconds must it wait? */
+function calcCheckGate(state, id, x, now){
+  if(state.last[id] === String(x)) return { fresh: false, wait: 0 };
+  // capped, so a clock set backwards never makes the wait longer than CALC_WAIT_MS
+  const left = (state.tries[id] || 0) >= CALC_QUICK_TRIES ? Math.min(CALC_WAIT_MS, CALC_WAIT_MS - (now - (state.at[id] || 0))) : 0;
+  return { fresh: true, wait: left > 0 ? Math.ceil(left / 1000) : 0 };
+}
+function calcVerdict(x, truth, tolAbs, tolRel){
+  const err = Math.abs(x - truth);
+  const rel = err / Math.max(Math.abs(truth), 1e-6);
+  if(tolRel != null ? rel <= tolRel : err <= tolAbs) return 'ok';
+  return (tolRel != null ? rel <= tolRel * CALC_CLOSE_FACTOR : err <= tolAbs * CALC_CLOSE_FACTOR) ? 'close' : 'far';
+}
+function calcTriesTotals(state){
+  let checks = 0, afterData = 0;
+  for(const id of CALC_IDS){ checks += state.tries[id] || 0; if(state.afterData[id]) afterData += 1; }
+  return { checks, afterData };
+}
+function calcTriesText(t){
+  return `${t.checks} calculation check${t.checks === 1 ? '' : 's'}` +
+    (t.afterData ? `, ${t.afterData} matched only after an inspection showed the model's value` : '');
+}
+/* @clab-calc-checks-end */
 
 function gradeCertRun(tele){
   const a = analysis;
@@ -4287,7 +4502,7 @@ function gradeCertRun(tele){
     const ok = tolRel != null
       ? Math.abs(pred.x - meas) / Math.max(Math.abs(meas), 1e-6) <= tolRel
       : Math.abs(pred.x - meas) <= tolAbs;
-    rows.push({ name, pred: pred.x, meas, unit, ok });
+    rows.push({ name, pred: pred.x, meas, unit, ok, src: pred });
   };
   if(a.L) row('v after launch', preds.p0, cap.L && cap.L.v, 'm/s', null, TOL.v);
   row('v at B',      preds.p1,  cap.B && cap.B.v,  'm/s', null, TOL.v);
@@ -4298,7 +4513,7 @@ function gradeCertRun(tele){
     const vBMeas = cap.B.v;
     const p1ok = preds.p1 && vBMeas > 0 && Math.abs(preds.p1.x - vBMeas) / vBMeas <= TOL.v;
     const ecf = p1ok ? 1 + (gBMeas - 1) * (preds.p1.x / vBMeas) ** 2 : gBMeas;
-    rows.push({ name: 'seat g at B', pred: preds.p3.x, meas: gBMeas, unit: 'g',
+    rows.push({ name: 'seat g at B', pred: preds.p3.x, meas: gBMeas, unit: 'g', src: preds.p3,
                 ok: Math.abs(preds.p3.x - gBMeas) <= TOL.g || Math.abs(preds.p3.x - ecf) <= TOL.g });
   }
   /* Check 4 is two things: the calculated angle, and the turn as built. Grade
@@ -4308,13 +4523,16 @@ function gradeCertRun(tele){
   const bankNow = (design.points[certIdx] || {}).bank || 0;
   const sideOk = !!(cap.D && Math.abs(cap.D.gLat) <= TOL.g);
   if(a.D && preds.p4){
-    rows.push({ name: 'bank angle at D', pred: preds.p4.x, meas: a.ans.bankD, unit: '°', dp: 0, ok: !!preds.p4.ok });
+    rows.push({ name: 'bank angle at D', pred: preds.p4.x, meas: a.ans.bankD, unit: '°', dp: 0, ok: !!preds.p4.ok, src: preds.p4 });
   }
   if(a.D && cap.D){
     rows.push({ name: `side g at D (node ${certIdx} banked ${fmt(bankNow, 0)}°)`, predText: 'goal ≈ 0 g',
                 meas: cap.D.gLat, unit: 'g', ok: sideOk });
   }
 
+  for(const [k, id] of [['p0', 'P0'], ['p1', 'P1'], ['p2b', 'P2b'], ['p3', 'P3'], ['p4', 'P4']]){
+    if(preds[k] && rows.some(r => r.src === preds[k])) calcTries.seen[id] = true;
+  }
   const anyMissing = ['p1', 'p3'].some(k => !preds[k]) || (a.C && !preds.p2b) || (a.L && !preds.p0) || (a.D && !preds.p4);
   const loopSafe = !a.C || (cap.C && cap.C.v >= Math.sqrt(G0 * a.C.r) - 0.05);
   const completed = tele.status === 'complete';
@@ -4334,6 +4552,8 @@ function gradeCertRun(tele){
   }
   html += '</table>';
   if(anyMissing) html += '<p class="hint" style="margin-top:8px">Some calculations were never checked — fill them in and press “Check calculations”.</p>';
+  const tries = calcTriesTotals(calcTries);
+  html += `<p class="hint" id="clab-calcTries" style="margin-top:8px">Tries so far: ${calcTriesText(tries)}.</p>`;
   if(a.D && cap.D && preds.p4){
     if(preds.p4.ok && !sideOk) html += `<p class="hint" style="margin-top:8px">Your bank angle is right, but node ${certIdx} is still banked ${fmt(bankNow, 0)}° on the track. Press “Bank node ${certIdx} to my answer” in check 4, then inspect again.</p>`;
     else if(!preds.p4.ok && sideOk) html += '<p class="hint" style="margin-top:8px">The turn rides level as built, but your calculated angle is off — recheck tan θ = v²/(g·r) using the speed at D.</p>';
@@ -4356,7 +4576,10 @@ function gradeCertRun(tele){
     const now = new Date();
     const localDay = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     try{ localStorage.setItem('coaster_lab_certified', localDay); }catch(_e){}
+    try{ localStorage.setItem('coaster_lab_certified_checks', JSON.stringify(tries)); }catch(_e){}
+    calcTries = freshCalcTries();
   }
+  saveCalcTries();
 }
 
 /* ---------------- simulation ---------------- */
@@ -4388,6 +4611,8 @@ function startRun(cert){
     return;
   }
   sim.running = true; sim.cert = cert; sim.done = false;
+  // phones fold the build panel away while the train runs (see the layout CSS)
+  __clabGet('clab-app').setAttribute('data-running', 'true');
   if(guidedState === 'building') setGuidedState('testing');
   if(buildCoach) buildCoach.hidden = true;
   sim.paused = false; sim.ride = false; sim.exploreCheck = false;
@@ -4417,6 +4642,7 @@ function startRun(cert){
 }
 function stopRun(){
   sim.running = false; sim.done = true;
+  __clabGet('clab-app').removeAttribute('data-running');
   handleGroup.visible = true;
   safetyGroup.visible = !__clabGet('clab-tab-build').hidden;
   syncElementPalette();
@@ -4598,8 +4824,8 @@ function stepSim(dtFrame){
    the train manufacturer's number, not the track's. The same track with a
    different train posts a different height. What IS teachable is the chain —
    forces decide the restraint, the restraint decides the torso sizes it fits,
-   and that is what gets posted — so the bands below are what rides of each class
-   typically post, always shown with that reasoning attached. */
+   and that is what gets posted. No height numbers are shown: "typical" bands per
+   restraint class had no primary source (removed 2026-11-23). */
 const SUSTAIN_CURVES = {
   pos: [[0.2, 6.0], [1.0, 4.5], [2.0, 3.5], [4.0, 3.0]],   // pressed into the seat
   neg: [[0.2, 1.5], [1.0, 1.2], [2.0, 1.0]],               // lifted out of it
@@ -4687,22 +4913,22 @@ function seatSummary(seats){
     airSpread: Math.max(...rows.map(r => r.airtime)) - Math.min(...rows.map(r => r.airtime))
   };
 }
-const RIDER_KG = 45;   // a typical 12-year-old — the age band these rides are built around
+const RIDER_KG = 45;   // model rider mass: a round model choice, not a standard (CDC median at age 12 is ~40-42 kg)
+/* Restraint classes are THIS LAB'S rule (forces -> restraint), not an industry
+   rule: some real inverting coasters run lap bars only
+   (en.wikipedia.org/wiki/Roller_coaster_train, checked 2026-11-23). */
 const RESTRAINT_CLASSES = {
   simple: {
     name: 'Simple lap bar',
-    why: 'Nothing on this ride ever lifts riders off the seat, so gravity does the holding and a plain bar is enough.',
-    band: { inLo: 36, inHi: 42, cmLo: 91, cmHi: 107 }
+    why: 'Nothing on this ride lifts riders off the seat, so gravity does the holding. In this lab, a plain lap bar is enough.'
   },
   ratchet: {
     name: 'Ratcheting lap bar + seat belt',
-    why: 'This ride has airtime — riders come off the seat — so the bar has to latch shut and stay shut, with a belt as the backup.',
-    band: { inLo: 42, inHi: 48, cmLo: 107, cmHi: 122 }
+    why: 'This ride has airtime, so riders come off the seat. In this lab, that needs a bar that latches shut and stays shut, with a belt as a backup.'
   },
   harness: {
     name: 'Over-the-shoulder harness',
-    why: 'Riders go inverted or get pulled hard off the seat, so the restraint has to hold the upper body, not just the lap.',
-    band: { inLo: 48, inHi: 54, cmLo: 122, cmHi: 137 }
+    why: 'Riders go upside down or get pulled hard off the seat, so this lab gives the ride a shoulder harness. Some real looping rides use a locking lap bar instead.'
   }
 };
 function restraintSpec(tele){
@@ -4724,7 +4950,7 @@ function restraintSpec(tele){
   const pull = Math.max(0, -minG);
   const holdN = pull * RIDER_KG * 9.81;
   return {
-    key, name: spec.name, why: spec.why, band: spec.band,
+    key, name: spec.name, why: spec.why,
     inversions, minG, riderKg: RIDER_KG, seats,
     worstSeat: seats ? seatLabel(seats.worstIdx, seats.n) : null,
     holdN: Math.round(holdN),
@@ -4779,7 +5005,10 @@ function renderSeatCard(tele){
   </div>`;
 }
 /* The rider-safety card: what has to hold the rider down, how hard it has to
-   pull, whether any force was HELD too long, and why real rides post a height. */
+   pull, whether any force was HELD too long, and why real rides post a height.
+   Sources (checked 2026-11-23): Six Flags ADA guides say height limits rest on
+   restraint fit and maturity; Queensland WHS: the manufacturer stipulates rider
+   limits such as minimum height; restraints often do not adjust to rider size. */
 function renderRiderSafety(tele){
   const r = restraintSpec(tele);
   const w = (tele.sus && tele.sus.worst) || freshSustain().worst;
@@ -4795,7 +5024,6 @@ function renderRiderSafety(tele){
     held.push(`<span>⚠ <b>${AX[axis][0]}</b> at ${fmt(x.level, 1)} g for ${fmt(x.dur, 1)} s —
       held that long the guideline is ${fmt(sustainLimit(axis, x.dur), 1)} g. ${AX[axis][1]}</span>`);
   }
-  const b = r.band;
   return `<div class="card">
     <p class="eyebrow">Rider safety · what holds you in</p>
     <h3 style="margin:0 0 6px">${r.name}</h3>
@@ -4812,12 +5040,12 @@ function renderRiderSafety(tele){
          <p class="chnote">Advisory: certification still grades on peak force. Real standards limit g by how long it is held, and this is a simplified version of that idea.</p>`
       : '<div class="viol" style="margin-top:0"><span class="okline">✓ No force is held long enough to matter</span></div>'}
     <p class="eyebrow" style="margin:12px 0 4px">Why rides post a height</p>
-    <p class="hint" style="margin:0">A height sign is really a <b>restraint</b> sign. The forces decide
+    <p class="hint" style="margin:0">A height sign is partly a <b>restraint</b> sign. The forces decide
       which restraint the ride needs; the restraint has a fixed range of travel, so it only closes
-      properly on torsos within a certain size; height is the quick thing a park can measure at the gate.
-      Rides needing a ${r.name.toLowerCase()} typically post around
-      <b>${b.inLo}–${b.inHi} in (${b.cmLo}–${b.cmHi} cm)</b>.</p>
-    <p class="chnote">That band is what rides of this class usually post — it is not calculated from your
+      properly on bodies within a certain size; height is a quick thing a park can measure at the gate.
+      Parks also use height as a rough guide to the maturity a ride needs.
+      Your ride needs the <b>${r.name.toLowerCase()}</b>, so its sign would depend on that restraint.</p>
+    <p class="chnote">This lab does not give your ride a height — it is not calculated from your
       track. The real number comes from the train manufacturer's restraint, so the same track with a
       different train can post a different height.</p>
   </div>`;
@@ -5500,7 +5728,7 @@ function guidedEvidenceTarget(trace, goal, hillS){
 function guidedEvidenceFocusPoint(tele, goal){
   const trace = tele && Array.isArray(tele.trace) ? tele.trace : [];
   let hillS = null;
-  if(goal === 'hill20' && track && Array.isArray(track.pos) && Array.isArray(track.s) && design && Array.isArray(design.points) && design.points.length){
+  if(goal === 'hill20' && track && Array.isArray(track.pos) && track.s && track.s.length && design && Array.isArray(design.points) && design.points.length){
     const highest = design.points.reduce((best, point) => Number(point.y) > Number(best.y) ? point : best, design.points[0]);
     let bestIndex = 0, bestDistance = Infinity;
     for(let index = 0; index < track.pos.length; index++){
@@ -5671,9 +5899,11 @@ function guidedAdaptiveRecommendation(history){
   const labels = { hill20: '20 m hill', airtime3: '3 s airtime', gentle4: '< 4.0 g' };
   adaptiveProgressTrackEl.innerHTML = progress.items.map(item => {
     const color = item.active ? 'var(--accent)' : item.evidence || item.passed ? 'var(--good)' : item.runs ? 'var(--warn)' : 'var(--line2)';
+    // a step not started keeps its dim border, but its words stay readable (line2 text was 1.5:1)
+    const ink = color === 'var(--line2)' ? 'var(--ink2)' : color;
     const badge = progress.mastered && item.evidence && item.passed ? 'MASTERED' : item.active ? 'CURRENT' : item.evidence ? 'VALIDATED' : item.passed ? 'GOAL MET' : item.runs ? 'PRACTICE' : 'QUEUED';
     const detail = item.evidence && item.passed ? 'goal + controlled evidence' : item.evidence ? 'controlled comparison' : item.passed ? 'target reached' : item.runs ? 'keep testing' : 'not started';
-    return '<span data-clab-adaptive-step="' + item.goal + '" role="listitem" style="display:flex;flex-direction:column;gap:3px;min-width:0;padding:7px 6px;border:1px solid ' + color + ';border-radius:5px;background:var(--card2)"><b style="font-size:11px;color:' + color + ';overflow-wrap:anywhere">' + guidedHtmlEscape(labels[item.goal] || 'Challenge') + '</b><small class="chnote" style="color:' + color + '">' + badge + '</small><small class="chnote" style="overflow-wrap:anywhere">' + detail + '</small></span>';
+    return '<span data-clab-adaptive-step="' + item.goal + '" role="listitem" style="display:flex;flex-direction:column;gap:3px;min-width:0;padding:7px 6px;border:1px solid ' + color + ';border-radius:5px;background:var(--card2)"><b style="font-size:12px;color:' + ink + ';overflow-wrap:anywhere">' + guidedHtmlEscape(labels[item.goal] || 'Challenge') + '</b><small class="chnote" style="color:' + ink + '">' + badge + '</small><small class="chnote" style="overflow-wrap:anywhere">' + detail + '</small></span>';
   }).join('');
   if(adaptiveProgressCountEl) adaptiveProgressCountEl.textContent = progress.mastered ? 'Pathway mastered - 3/3 validated' : progress.goalsMet + '/3 goals met - ' + progress.evidenceReady + '/3 validated';
   if(adaptiveProgressHintEl){
@@ -6354,7 +6584,7 @@ function renderReport(tele){
       '</div>';
   }
   /* park economics — playful, derived from geometry and ratings */
-  html += `<div class="card"><p class="eyebrow">Park economics (est.)</p>
+  html += `<div class="card"><p class="eyebrow">Park economics · game numbers, not real prices</p>
     <p class="hint" style="margin:0">Build cost <b>$${sc.cost.toLocaleString()}</b> ·
     ticket <b>$${sc.ticket.toFixed(2)}</b> · <b>${sc.riders.toLocaleString()}</b> riders/day
     → <b>$${Math.round(sc.daily).toLocaleString()}</b>/day.
@@ -6446,6 +6676,24 @@ const MISSIONS = [
 const MISSION_KEY = 'coaster_lab_missions_v1';
 let missionsDone = {};
 try{ missionsDone = JSON.parse(localStorage.getItem(MISSION_KEY) || '{}') || {}; }catch(_e){}
+/* @clab-mission-origin-start
+   A ready-made layout is a starting point, not an answer. Loading the Classic
+   Looper and pressing Run used to stamp "Loop the loop" and "Ejector seat"; the
+   Barrel Roll stamped two more, enough for the 6-mission quest without touching
+   a node. Design missions now need a track the student has changed since a
+   template, the generator or "Reset design" loaded it. */
+const DESIGN_ORIGIN_KEY = 'coaster_lab_design_origin';
+const ORIGIN_FREE_MISSIONS = ['first'];
+let designOrigin = '';
+try{ designOrigin = localStorage.getItem(DESIGN_ORIGIN_KEY) || ''; }catch(_e){}
+function markDesignOrigin(){
+  designOrigin = JSON.stringify(design.points);
+  try{ localStorage.setItem(DESIGN_ORIGIN_KEY, designOrigin); }catch(_e){}
+}
+function designIsUnchangedLayout(){
+  return !!designOrigin && JSON.stringify(design.points) === designOrigin;
+}
+/* @clab-mission-origin-end */
 
 function renderMissions(){
   const list = __clabGet('clab-missionList');
@@ -6459,12 +6707,17 @@ function renderMissions(){
     </div>`).join('');
 }
 function missionEvent(ev, ctx){
-  const fresh = [];
+  const fresh = [], held = [];
+  const unchanged = ev === 'run' && designIsUnchangedLayout();
   for(const m of MISSIONS){
     if(m.ev !== ev || missionsDone[m.id]) continue;
     let ok = true;
     try{ ok = m.check ? !!m.check(ctx) : true; }catch(_e){ ok = false; }
+    if(ok && unchanged && ORIGIN_FREE_MISSIONS.indexOf(m.id) < 0){ held.push(m); continue; }
     if(ok){ missionsDone[m.id] = Date.now(); fresh.push(m); }
+  }
+  if(held.length && !fresh.length){
+    banner('This run would earn ' + held.map(m => m.name).join(' · ') + ' — change the starting layout to make it yours, then run again.', '', 4600);
   }
   if(fresh.length){
     try{ localStorage.setItem(MISSION_KEY, JSON.stringify(missionsDone)); }catch(_e){}
@@ -7532,18 +7785,29 @@ function guidedActualSpeed(tele){
   return peakV > firstV + 4 ? 'speedUp' : 'slowDown';
 }
 function guidedPeakZone(tele){
-  if(!tele || !Array.isArray(tele.trace) || !tele.trace.length || !track || !Array.isArray(track.y)) return 'track';
+  // track.y / .s / .Ty are Float64Arrays: Array.isArray() is false for them, which used to
+  // send every run to 'track' (no force hypothesis could ever match).
+  if(!tele || !Array.isArray(tele.trace) || !tele.trace.length || !track || !track.y || !track.y.length) return 'track';
   const peak = tele.trace.reduce((best, point) => point.g > best.g ? point : best, tele.trace[0]);
-  const y = trackAt(peak.s).y;
-  let lo = Infinity, hi = -Infinity;
-  for (let i = 0; i < track.y.length; i++) {
-    const val = track.y[i];
-    if (val < lo) lo = val;
-    if (val > hi) hi = val;
-  }
-  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return 'track';
-  const ratio = (y - lo) / Math.max(1, hi - lo);
-  return ratio < 0.35 ? 'valley' : ratio > 0.68 ? 'hill' : 'turn';
+  /* Name the place by the track's own shape there, not by its height. A flat
+     banked turn low on the course used to be called a "valley", which marked a
+     correct "turn" prediction as wrong. The path bends one of two ways: down-
+     and-up (vertical curvature, a valley or a crest) or sideways (a turn). */
+  if(!Array.isArray(track.T) || track.T.length !== M) return 'track';
+  trackAt(peak.s);
+  const i = TMP.i, k = 3, ds = Math.max(1e-6, 2 * k * track.L / M);
+  const T = track.T[i], Ta = track.T[(i + k) % M], Tb = track.T[(i - k + M) % M];
+  const dx = (Ta.x - Tb.x) / ds, dy = (Ta.y - Tb.y) / ds, dz = (Ta.z - Tb.z) / ds;
+  // sideways = level and square to the direction of travel; the rest of the bend
+  // lies in the upright plane of travel (a loop stays there all the way round)
+  const lx = -T.z, lz = T.x, ll = Math.hypot(lx, lz);
+  if(ll < 0.2) return 'valley';               // going nearly straight up or down: inside a loop
+  const kSideways = Math.abs((dx * lx + dz * lz) / ll);
+  // upright normal = side x T, which points to the sky for level track
+  const nx = (-lz * T.y) / ll, ny = (lz * T.x - lx * T.z) / ll, nz = (lx * T.y) / ll;
+  const kUpright = dx * nx + dy * ny + dz * nz;
+  if(!Number.isFinite(kSideways) || !Number.isFinite(kUpright)) return 'track';
+  return kSideways > Math.abs(kUpright) ? 'turn' : (kUpright > 0 ? 'valley' : 'hill');
 }
 function guidedTraceSnapshot(tele){
   const raw = tele && Array.isArray(tele.trace) ? tele.trace : [];
@@ -8904,6 +9168,16 @@ function applySceneFocus(announce){
   rootEl.dataset.sceneFocus = String(sceneFocus);
   sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
   sceneFocusButton.textContent = sceneFocus ? 'Restore panels' : 'Scene focus';
+  // The button lives in the Settings drawer, which may be shut. While the
+  // panels are hidden it is the only way back, so it waits in the bar.
+  const settingsToggle = rootEl.querySelector('#clab-btnSettings');
+  const settingsHome = rootEl.querySelector('#clab-settingsView');
+  if(settingsToggle && settingsHome && (sceneFocus ? sceneFocusButton.nextSibling !== settingsToggle : sceneFocusButton.parentNode !== settingsHome)){
+    const hadFocus = document.activeElement === sceneFocusButton;
+    if(sceneFocus) settingsToggle.parentNode.insertBefore(sceneFocusButton, settingsToggle);
+    else settingsHome.appendChild(sceneFocusButton);
+    if(hadFocus) (sceneFocusButton.closest('[hidden]') ? settingsToggle : sceneFocusButton).focus();
+  }
   if(announce) banner(sceneFocus ? 'Scene focus on. Use Restore panels to return to editing.' : 'Editing panels restored.', '', 2400);
 }
 sceneFocusButton.addEventListener('click', () => {
@@ -8987,7 +9261,7 @@ for(const b of rootEl.querySelectorAll('button.tpl')){
     if(!(await clabConfirm(`Load the “${b.textContent.trim()}” template? Your current design will be replaced.`, { title: 'Load template', confirmText: 'Replace design', cancelText: 'Keep design', tone: 'warning' }, 'Template confirmation is unavailable, so your design was kept.'))) return;
     design = normalizeDesign(TEMPLATES[b.dataset.tpl]());
     selIdx = -1;
-    fullRebuild(); syncPointCard(); saveDesign();
+    fullRebuild(); syncPointCard(); saveDesign(); markDesignOrigin();
     banner('Starting layout loaded — every glowing node is yours to reshape.', 'pass', 3000);
   });
 }
@@ -8996,7 +9270,7 @@ __clabGet('clab-btnResetDesign').addEventListener('click', async () => {
   if(!(await clabConfirm('Restore the starter layout? Your current design will be lost.', { title: 'Restore starter layout', confirmText: 'Restore layout', cancelText: 'Keep design', tone: 'warning' }, 'Starter-layout confirmation is unavailable, so your design was kept.'))) return;
   design = normalizeDesign(defaultDesign());
   selIdx = -1;
-  fullRebuild(); syncPointCard(); saveDesign();
+  fullRebuild(); syncPointCard(); saveDesign(); markDesignOrigin();
 });
 
 /* ---- generated coasters -------------------------------------------------
@@ -9102,7 +9376,7 @@ function generateCoaster(seed, style){
   if(!best) return null;
   lastGeneratedSeed = best.seed;
   syncPointCard();
-  saveDesign();
+  saveDesign(); markDesignOrigin();
   return best;
 }
 const randomBtn = __clabGet('clab-btnRandom');
@@ -9498,8 +9772,28 @@ const rq = {
   unit: __clabGet('clab-rqUnit'), feed: __clabGet('clab-rqFeed'),
   score: __clabGet('clab-rqScore'), streak: __clabGet('clab-rqStreak'), delta: __clabGet('clab-rqDelta'),
   timer: __clabGet('clab-rqTimer'), fill: __clabGet('clab-rqTimerFill'), viewport: __clabGet('clab-viewport'),
-  go: __clabGet('clab-rqGo'), end: __clabGet('clab-rideEnd'), endBody: __clabGet('clab-rideEndBody')
+  go: __clabGet('clab-rqGo'), end: __clabGet('clab-rideEnd'), endBody: __clabGet('clab-rideEndBody'),
+  next: __clabGet('clab-rqNext'), read: __clabGet('clab-rqRead')
 };
+/* Read the question and its choices aloud (younger riders tap answers they may
+   not read yet). The host read-aloud voice first, then the browser voice. */
+function readRideQuestionAloud(){
+  if(!rq.text) return;
+  const parts = [rq.text.textContent.replace(/\s+/g, ' ').trim()];
+  rq.choices.querySelectorAll('button').forEach(b => parts.push((b.dataset.key ? b.dataset.key + ': ' : '') + b.textContent.trim() + '.'));
+  const fed = rq.feed.textContent.trim();
+  if(fed) parts.push(fed);
+  const text = parts.filter(Boolean).join(' ');
+  if(!text) return;
+  try{
+    if(window.StemListen && typeof window.StemListen.speak === 'function'){ window.StemListen.speak(text); return; }
+    if(window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function'){
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    }
+  }catch(_e){}
+}
+if(rq.read) rq.read.addEventListener('click', readRideQuestionAloud);
 
 /* ---- Ride & Solve: topic + grade adaptation --------------------------------
    Checkpoint questions can pose arithmetic (add / subtract / multiply / divide /
@@ -9634,16 +9928,16 @@ function genElementMath(topic, band, f, avoid){
   if(wantSub){
     if(has(f.crestH) && has(f.valleyH) && f.crestH > f.valleyH)
       add('sub-drop', '−', f.crestH, f.valleyH, f.crestH - f.valleyH,
-        'You\'re cresting at <b>' + f.crestH + ' m</b> and the valley below sits at <b>' + f.valleyH + ' m</b>. How many metres will you drop?', 'm');
+        'You\'re cresting at <b>' + f.crestH + ' m</b> and the valley below sits at <b>' + f.valleyH + ' m</b>. How many meters will you drop?', 'm');
     if(has(f.liveH) && has(f.valleyH) && f.liveH > f.valleyH)
       add('sub-here', '−', f.liveH, f.valleyH, f.liveH - f.valleyH,
-        'Right now at this ' + feat + ' you\'re <b>' + f.liveH + ' m</b> up and the valley ahead is <b>' + f.valleyH + ' m</b>. How many more metres will you fall?', 'm');
+        'Right now at this ' + feat + ' you\'re <b>' + f.liveH + ' m</b> up and the valley ahead is <b>' + f.valleyH + ' m</b>. How many more meters will you fall?', 'm');
     if(has(f.loopH) && has(f.crestH) && f.crestH > f.loopH)
       add('sub-loop', '−', f.crestH, f.loopH, f.crestH - f.loopH,
         'The loop tops out at <b>' + f.loopH + ' m</b>, below the first crest of <b>' + f.crestH + ' m</b>. How much lower is the loop?', 'm');
     if(has(f.trackLen) && has(f.liveS) && f.trackLen > f.liveS)
       add('sub-left', '−', f.trackLen, f.liveS, f.trackLen - f.liveS,
-        'This circuit is <b>' + f.trackLen + ' m</b> of track and you have covered <b>' + f.liveS + ' m</b>. How many metres are left in the lap?', 'm');
+        'This circuit is <b>' + f.trackLen + ' m</b> of track and you have covered <b>' + f.liveS + ' m</b>. How many meters are left in the lap?', 'm');
     const seats = rp(), cap = cars * seats, boarded = _ri(0, cap);
     add('sub-seats', '−', cap, boarded, cap - boarded,
       'The train\'s <b>' + cars + '</b> cars each seat <b>' + seats + '</b> (<b>' + cap + '</b> seats). Only <b>' + boarded + '</b> riders boarded. How many empty seats?', 'seats');
@@ -9687,7 +9981,7 @@ function genElementMath(topic, band, f, avoid){
     if(has(f.crestH) && has(f.valleyH) && f.crestH > f.valleyH){
       const drop = f.crestH - f.valleyH, n = splitOf(drop, 2, 9);
       if(n) add('div-drop', '÷', drop, n, drop / n,
-        'This drop falls <b>' + drop + ' m</b> (from ' + f.crestH + ' m down to ' + f.valleyH + ' m) and is marked with <b>' + n + '</b> equally spaced height flags. How many metres apart?', 'm');
+        'This drop falls <b>' + drop + ' m</b> (from ' + f.crestH + ' m down to ' + f.valleyH + ' m) and is marked with <b>' + n + '</b> equally spaced height flags. How many meters apart?', 'm');
     }
     if(has(f.trackLen)){
       const n = splitOf(f.trackLen, 2, 8);
@@ -9869,10 +10163,10 @@ function buildRideStops(){
       : [
         { key: 'lsm-x-push', text: 'The launch motor is behind you now. What keeps the train going?',
           choices: [['energy', 'The energy it already has'], ['motor', 'The motor keeps pushing'], ['air', 'The air pushes it along']],
-          correct: 'energy', explain: 'After the launch it is gravity and the energy bank, nothing else.' },
+          correct: 'energy', explain: 'After the launch it is gravity and the energy bank, nothing else.', why: { motor: "The motor only pushes on the launch track. Past it, nothing pushes the train.", air: "Air pushes against the train and slows it a little. It never pushes it along." } },
         { key: 'lsm-x-climb', text: 'Climbing towards the first crest, the speedometer will…',
           choices: [['drop', 'Drop'], ['grow', 'Grow'], ['same', 'Stay the same']], correct: 'drop',
-          explain: 'Going up trades speed for height.' }
+          explain: 'Going up trades speed for height.', why: { grow: "Speed only grows going down. Going up, gravity pulls back on the train.", same: "Gravity pulls back on a climbing train, so it cannot keep its speed." } }
       ] });
   }
 
@@ -9906,16 +10200,16 @@ function buildRideStops(){
     : [
       { key: 'crest-x-fast', text: 'The big valley is coming up. Compared to right now, down there you\'ll be moving…',
         choices: [['faster', 'Faster'], ['slower', 'Slower'], ['same', 'The same']], correct: 'faster',
-        explain: 'Falling turns height into speed — watch the speedometer!' },
+        explain: 'Falling turns height into speed — watch the speedometer!', why: { slower: "Going down, gravity pulls the train forward, so it speeds up.", same: "The drop turns height into motion, so the speed has to change." } },
       { key: 'crest-x-mass', text: 'A heavier train runs this same track under ideal conditions. At the valley it would be moving…',
-        choices: [['same', 'Exactly as fast'], ['faster', 'Faster'], ['slower', 'Slower']], correct: 'same',
-        explain: 'Mass cancels: ½mv² = mgh, so every train reaches the same speed.' },
+        choices: [['same', 'Just as fast as a light train'], ['faster', 'Faster than a light train'], ['slower', 'Slower than a light train']], correct: 'same',
+        explain: 'Mass cancels: ½mv² = mgh, so every train reaches the same speed.', why: { faster: "A heavier train has more weight pulling it, but also more mass to move. The two cancel.", slower: "Mass does not slow a train here. With no friction, every train reaches the same speed." } },
       { key: 'crest-x-bar', text: 'On the way down, the blue KINETIC part of the energy bar will…',
         choices: [['grow', 'Grow'], ['shrink', 'Shrink'], ['same', 'Not change']], correct: 'grow',
-        explain: 'Height (purple) turns into motion (blue). The total stays put.' },
+        explain: 'Height (purple) turns into motion (blue). The total stays put.', why: { shrink: "Kinetic energy is motion. The train speeds up going down, so the blue part grows.", same: "Height is turning into motion, so the blue part cannot stay the same." } },
       { key: 'crest-x-seat', text: 'At the bottom of the drop, the seat will push you…',
         choices: [['harder', 'Harder than normal'], ['less', 'Less than normal'], ['same', 'Exactly as now']],
-        correct: 'harder', explain: 'Curving upward needs extra force, so the seat pushes above 1 g.' }
+        correct: 'harder', explain: 'Curving upward needs extra force, so the seat pushes above 1 g.', why: { less: "Riders feel lighter over the top of a hill, not at the bottom of a dip.", same: "Curving upward needs an extra push, so the seat cannot push the same as now." } }
     ] });
 
   if(a.C){
@@ -9941,16 +10235,16 @@ function buildRideStops(){
       ]
       : [
         { key: 'loop-x-light', text: 'Upside-down at the very top, you\'ll feel…',
-          choices: [['heavy', 'Extra heavy'], ['light', 'Light — almost floating'], ['same', 'Normal']], correct: 'light',
-          explain: 'Near the weightless limit the seat barely pushes — watch the seat-g meter!' },
+          choices: [['heavy', 'Heavier than normal'], ['light', 'Lighter than normal'], ['same', 'Just like normal']], correct: 'light',
+          explain: 'Near the weightless limit the seat barely pushes — watch the seat-g meter!', why: { heavy: "Riders feel heavy at the bottom of a loop, where the track curves up under them.", same: "At the top, gravity does most of the turning, so the seat pushes much less than normal." } },
         { key: 'loop-x-slow', text: 'Where on the loop will the train be moving slowest?',
           choices: [['top', 'At the very top'], ['bottom', 'At the bottom'], ['side', 'Halfway up the side']],
-          correct: 'top', explain: 'The top is the highest point, so the most speed has been traded for height.' },
-        { key: 'loop-x-hold', text: 'What keeps the train on the rail at the top of a loop?',
-          choices: [['circle', 'It needs a downward pull to keep curving, and gravity supplies it'],
-                    ['nothing', 'Nothing — it is weightless up there'],
-                    ['strap', 'Only the shoulder restraints']],
-          correct: 'circle', explain: 'Going in a circle needs a force toward the centre. At the top, that is downward — gravity.' }
+          correct: 'top', explain: 'The top is the highest point, so the most speed has been traded for height.', why: { bottom: "The bottom is the lowest point, so the train is fastest there.", side: "The train keeps climbing past the side, so it keeps slowing until the top." } },
+        { key: 'loop-x-hold', text: 'At the top of the loop, what pulls the train down so its path keeps curving?',
+          choices: [['circle', 'Gravity, with help from the track'],
+                    ['nothing', 'Nothing, because riders are weightless'],
+                    ['strap', 'Only the harness on each rider']],
+          correct: 'circle', explain: 'Going in a circle needs a force toward the center. At the top, that is downward — gravity.', why: { nothing: "Gravity never switches off. Riders feel light because gravity is busy bending their path.", strap: "The harness only keeps riders in their seats. It does not bend the path of the train." } }
       ] });
 
     /* C: past the inversion, looking at the flagged turn */
@@ -9977,15 +10271,15 @@ function buildRideStops(){
       ]
       : [
         { key: 'inv-x-ke', text: 'Heading back down the other side, your kinetic energy…',
-          choices: [['grows', 'Grows — the blue bar swells'], ['shrinks', 'Shrinks'], ['same', 'Stays the same']],
-          correct: 'grows', explain: 'Height turns back into speed on the way down.' },
+          choices: [['grows', 'Grows'], ['shrinks', 'Shrinks'], ['same', 'Stays the same']],
+          correct: 'grows', explain: 'Height turns back into speed on the way down. Watch the blue bar swell.', why: { shrinks: "Going down turns height into motion, so kinetic energy goes up.", same: "The train speeds up on the way down, so its kinetic energy changes." } },
         { key: 'inv-x-bank', text: 'Why do engineers bank the turns?',
-          choices: [['seat', 'So the seat pushes riders toward the middle of the turn instead of sideways'],
-                    ['fast', 'To make the train go faster'], ['track', 'To use less track']],
-          correct: 'seat', explain: 'Tilting the track turns an uncomfortable sideways push into a push through the seat.' },
+          choices: [['seat', 'So the seat pushes riders into the turn'],
+                    ['fast', 'So the train goes faster in the turn'], ['track', 'So the turn takes up less ground']],
+          correct: 'seat', explain: 'Tilting the track turns an uncomfortable sideways push into a push through the seat.', why: { fast: "Banking adds no energy. The speed comes from the hills.", track: "A banked turn can be the same size as a flat one. Banking changes the push riders feel." } },
         { key: 'inv-x-tight', text: 'A tighter turn taken at the same speed needs…',
           choices: [['more', 'More bank'], ['less', 'Less bank'], ['same', 'The same bank']],
-          correct: 'more', explain: 'tan θ = v²/(gr): a smaller radius means a bigger angle.' }
+          correct: 'more', explain: 'tan θ = v²/(gr): a smaller radius means a bigger angle.', why: { less: "A tighter turn needs a bigger push toward the middle, so it needs more bank, not less.", same: "The best bank depends on the radius. Change the radius and the angle changes." } }
       ] });
   } else {
     /* no inversion: the valley stop asks about coasting and the turn ahead */
@@ -10007,13 +10301,13 @@ function buildRideStops(){
       : [
         { key: 'val-x-slow', text: 'Climbing the next hill, your speed will…',
           choices: [['grow', 'Grow'], ['drop', 'Drop'], ['same', 'Stay the same']], correct: 'drop',
-          explain: 'Climbing trades speed for height.' },
+          explain: 'Climbing trades speed for height.', why: { grow: "Climbing works against gravity, so the train slows down.", same: "Gravity pulls back on a climbing train, so its speed must change." } },
         { key: 'val-x-pe', text: 'Climbing the next hill, the purple POTENTIAL part of the energy bar…',
           choices: [['grows', 'Grows'], ['shrinks', 'Shrinks'], ['same', 'Stays put']], correct: 'grows',
-          explain: 'Height is stored energy — the purple bar fills as you climb.' },
+          explain: 'Height is stored energy — the purple bar fills as you climb.', why: { shrinks: "Potential energy is stored height. Going higher stores more, not less.", same: "The train is gaining height, so its stored energy changes." } },
         { key: 'val-x-stall', text: 'If the next hill were TALLER than the first crest, the train would…',
-          choices: [['stall', 'Stall part way up and roll back'], ['over', 'Just make it over'], ['faster', 'Speed up to get over']],
-          correct: 'stall', explain: 'You can never coast higher than you started. That is the whole energy budget.' }
+          choices: [['stall', 'Stall part way up and roll back'], ['over', 'Just barely make it over the top'], ['faster', 'Speed up enough to get over it']],
+          correct: 'stall', explain: 'You can never coast higher than you started. That is the whole energy budget.', why: { over: "Getting over would take more energy than the first drop gave. There is none to spare.", faster: "Nothing pushes the train once the chain lets go, so it cannot speed up while climbing." } }
       ] });
   }
 
@@ -10048,17 +10342,17 @@ function buildRideStops(){
       : (lateTurn ? [
         { key: 'brk-x-heat', text: 'The brakes ahead will slow the train. Where does its energy of motion go?',
           choices: [['heat', 'Into heat in the brakes'], ['height', 'Into height'], ['gone', 'It just disappears']],
-          correct: 'heat', explain: 'Energy never disappears — brakes turn motion into heat.' },
+          correct: 'heat', explain: 'Energy never disappears — brakes turn motion into heat.', why: { height: "The brake run is flat, so the train does not climb. The energy goes into the brakes.", gone: "Energy never just disappears. It changes form, and here it becomes heat." } },
         { key: 'brk-x-sq', text: 'If the train arrived at the brakes twice as fast, they would need…',
           choices: [['four', 'About four times the distance'], ['two', 'About twice the distance'], ['same', 'The same distance']],
-          correct: 'four', explain: 'Stopping distance goes as v², so doubling the speed quadruples it.' }
+          correct: 'four', explain: 'Stopping distance goes as v², so doubling the speed quadruples it.', why: { two: "Kinetic energy goes as speed squared. Twice the speed is four times the energy to remove.", same: "A faster train has more energy to get rid of, so the brakes need more distance." } }
       ] : [
         { key: 'd-x-fast', text: 'The big drop is next. At the bottom you\'ll be moving…',
-          choices: [['faster', 'Faster than now'], ['slower', 'Slower'], ['same', 'The same']],
-          correct: 'faster', explain: 'Height turns into speed on the way down.' },
+          choices: [['faster', 'Faster'], ['slower', 'Slower'], ['same', 'The same']],
+          correct: 'faster', explain: 'Height turns into speed on the way down.', why: { slower: "Going down, gravity pulls the train forward, so it speeds up.", same: "The drop turns height into motion, so the speed has to change." } },
         { key: 'd-x-bar', text: 'Watch the energy bar on the way down. The purple POTENTIAL part will…',
           choices: [['shrink', 'Shrink'], ['grow', 'Grow'], ['same', 'Stay the same']], correct: 'shrink',
-          explain: 'Height is being spent to buy speed.' }
+          explain: 'Height is being spent to buy speed.', why: { grow: "Potential energy is height. The train is losing height, so the purple part shrinks.", same: "The train is going down, so its stored height energy changes." } }
       ]) });
   }
   /* Chain lift. Without a loop or a launch a ride had only three checkpoints
@@ -10076,15 +10370,15 @@ function buildRideStops(){
         { key: 'lift-gain', text: `The chain will lift you from h = ${g2(live.h)} m to the crest at h = ${g2(a.A.h)} m.
              How much energy does that store in each kilogram of train?`,
           unit: 'J/kg', answer: G0 * Math.max(0, a.A.h - live.h), tolRel: 0.07,
-          explain: 'Lifting stores gravitational energy: g·Δh, about 9.8 J per kilogram for every metre.' }
+          explain: 'Lifting stores gravitational energy: g·Δh, about 9.8 J per kilogram for every meter.' }
       ]
       : [
         { key: 'lift-x-speed', text: 'All the way up the chain lift, the train\'s speed will…',
           choices: [['grow', 'Keep growing'], ['same', 'Stay the same'], ['drop', 'Keep dropping']], correct: 'same',
-          explain: 'The chain hauls the train at one steady speed until it lets go at the crest.' },
+          explain: 'The chain hauls the train at one steady speed until it lets go at the crest.', why: { grow: "The chain sets the speed. It does not let the train go faster on the lift.", drop: "The chain motor keeps pulling, so the train does not slow down on the lift." } },
         { key: 'lift-x-source', text: 'On the lift the purple POTENTIAL part of the energy bar keeps growing. Where does that energy come from?',
           choices: [['gravity', 'Gravity, pulling it up the hill'], ['motor', 'The chain motor'], ['speed', 'The train\'s own speed']],
-          correct: 'motor', explain: 'The chain motor does work lifting the train, and that work is stored as height.' }
+          correct: 'motor', explain: 'The chain motor does work lifting the train, and that work is stored as height.', why: { gravity: "Gravity pulls down the hill, never up it. Something else must do the lifting.", speed: "The speed stays the same on the lift, so the energy cannot come from it." } }
       ] });
   }
   return stops.filter(onTrack).sort((p, q) => p.s - q.s);
@@ -10112,9 +10406,19 @@ function startRide(){
   startRun(false);
   sim.ride = true;
   const _rideMsg = rideTopic === 'ai'
-    ? (rideAiSubject ? ('Ride & Solve — quick ' + rideAiSubject + ' questions. Buckle up!') : 'Type a topic in the top bar for AI questions. Using math for now — buckle up!')
+    ? (rideAiSubject ? ('Ride & Solve — quick ' + rideAiSubject + ' questions. Buckle up!') : 'Type a topic under ⚙ Settings for AI questions. Using math for now — buckle up!')
     : 'Ride & Solve — quick questions at the checkpoints. Buckle up!';
   banner(_rideMsg, '', 3000);
+}
+/* Choices are written with the right answer first; show them in a fresh order
+   each time so "always tap A" is not a strategy. Fisher-Yates on a copy. */
+function shuffleRideChoices(choices){
+  const out = choices.slice();
+  for(let i = out.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+  }
+  return out;
 }
 function pauseForQuestion(){
   sim.paused = true;
@@ -10178,8 +10482,10 @@ function pauseForQuestion(){
   rq.delta.classList.remove('on'); rq.delta.textContent = '';
   rq.num.disabled = false;
   rq.go.disabled = false;
+  if(rq.next) rq.next.hidden = true;
   let focusTarget = null;
   if(ride.current.choices){
+    if(typeof shuffleRideChoices === 'function') ride.current.choices = shuffleRideChoices(ride.current.choices);
     rq.numRow.hidden = true;
     rq.choices.hidden = false;
     rq.choices.innerHTML = ride.current.choices
@@ -10310,7 +10616,8 @@ function submitRideAnswer(val, instant){
     }
   } else {
     ride.streak = 0;
-    rq.feed.innerHTML = `<b class="no">✗</b>${val == null ? ' Time!' : ''}${shown} ${q.explain}`;
+    const whyWrong = (q.choices && val != null && q.why && q.why[val]) ? ' ' + q.why[val] : '';
+    rq.feed.innerHTML = `<b class="no">✗</b>${val == null ? ' Time!' : ''}${whyWrong}${shown} ${q.explain}`;
     blip(196, 0.25, 0.1);
   }
   rq.score.textContent = `${ride.score} pts`;
@@ -10326,13 +10633,21 @@ function submitRideAnswer(val, instant){
     ride.resumeId = null;
     __clabResources.rideResumeId = null;
     if(!ride.active || ride.idx !== answerIdx) return;
+    if(rq.next) rq.next.hidden = true;
     rq.box.hidden = true;
     rq.viewport.classList.remove('ride-question-open');
     ride.idx++;
     sim.paused = false;
   };
+  /* The explanation is the lesson, so it stays up until the student moves on.
+     Only a right answer with the clock on keeps the quick automatic pace. */
   if(instant) resume();
-  else {
+  else if(rq.next && !(ok && rideTimerMode === 'on')){
+    rq.next.hidden = false;
+    rq.next.onclick = () => { rq.next.hidden = true; resume(); };
+    // let focus scroll the card: on a short stage the button sits below the explanation
+    try{ rq.next.focus(); }catch(_e){}
+  } else {
     ride.resumeId = setTimeout(resume, ok ? 1300 : 2600);
     __clabResources.rideResumeId = ride.resumeId;
   }
@@ -10397,6 +10712,7 @@ function rideCardFacts(){
     done: MISSIONS.filter(m => missionsDone[m.id]).map(m => m.name),
     total: MISSIONS.length,
     certDate: get('coaster_lab_certified'),
+    certChecks: (() => { try{ const t = JSON.parse(get('coaster_lab_certified_checks') || 'null'); return t && Number.isFinite(t.checks) ? t : null; }catch(_e){ return null; } })(),
     best: get('coaster_lab_ride_best'),
     tele: lastTele,
     prediction: predictionEvidence(lastTele),
@@ -10459,7 +10775,7 @@ function buildRideCard(cb){
       ['Top speed', t ? `${fmt(t.maxV * 3.6, 0)} km/h` : '—'],
       ['Seat g', t ? `${fmt(t.maxGV, 1)} max · ${fmt(t.minGV, 1)} min` : '—'],
       ['Airtime', t ? `${fmt(t.airtime, 1)} s` : '—'],
-      ['Inspection', f.certDate ? 'CERTIFIED ' + f.certDate : 'not yet certified'],
+      ['Inspection', f.certDate ? 'CERTIFIED ' + f.certDate + (f.certChecks ? ` · ${f.certChecks.checks} checks` : '') : 'not yet certified'],
       ['Ride & Solve', f.best ? f.best + ' best' : '—']
     ];
     if(f.seed) rows.push(['Generated', '#' + f.seed]);
@@ -10477,8 +10793,7 @@ function buildRideCard(cb){
     text('RIDER SAFETY', PAD + 14, by + 24, C.ink3, '600 11px Segoe UI, sans-serif');
     if(f.spec){
       text(f.spec.name, PAD + 14, by + 48, C.accent, '700 17px Segoe UI, sans-serif');
-      const b = f.spec.band;
-      let ty = wrap(`${f.spec.why} Rides of this class typically post ${b.inLo}–${b.inHi} in (${b.cmLo}–${b.cmHi} cm) — the restraint's number, not the track's.`,
+      let ty = wrap(`${f.spec.why} A real ride's height sign depends on its restraint, not only its track.`,
         PAD + 14, by + 72, W - PAD * 2 - 28, 18, C.ink2, '13px Segoe UI, sans-serif');
       if(f.seats && f.seats.n > 1){
         wrap(`Rows: front ${fmt(f.seats.rows[0].minGV, 2)} g, worst ${seatLabel(f.seats.worstIdx, f.seats.n).toLowerCase()} ${fmt(f.seats.worstMin, 2)} g.` +
@@ -10519,12 +10834,11 @@ __clabGet('clab-btnSummary').addEventListener('click', async () => {
     `Design: ${f.nodes} nodes · ${f.prop} · track ${f.length} m` +
       (f.inverts ? ' · has inversion' : '') + (f.seed ? ' · generated #' + f.seed : ''),
     `Missions: ${doneList.length}/${f.total}` + (doneList.length ? ' — ' + doneList.join(', ') : ''),
-    `Inspection: ${certDate ? 'CERTIFIED (' + certDate + ')' : 'not yet certified'}`,
+    `Inspection: ${certDate ? 'CERTIFIED (' + certDate + ')' + (f.certChecks ? ' after ' + calcTriesText(f.certChecks) : '') : 'not yet certified'}`,
     `Best Ride & Solve score: ${best || '—'}`,
     lastTele ? `Last run: ${lastTele.status} · top ${fmt(lastTele.maxV * 3.6, 0)} km/h · max ${fmt(lastTele.maxGV, 1)} g` : 'Last run: none',
     f.spec ? `Restraint the forces demand: ${f.spec.name}` +
-      (f.spec.holdKg > 0 ? ` (holds a ${f.spec.riderKg} kg rider with ~${f.spec.holdKg} kg of pull)` : '') +
-      ` · rides like this typically post ${f.spec.band.inLo}-${f.spec.band.inHi} in` : null,
+      (f.spec.holdKg > 0 ? ` (holds a ${f.spec.riderKg} kg rider with ~${f.spec.holdKg} kg of pull)` : '') : null,
     (f.seats && f.seats.n > 1)
       ? `Rows: front ${fmt(f.seats.rows[0].minGV, 2)} g, worst ${seatLabel(f.seats.worstIdx, f.seats.n).toLowerCase()} ${fmt(f.seats.worstMin, 2)} g`
       : null
@@ -11223,7 +11537,7 @@ function animate(){
     if(fpsAcc > 5){
       if(fpsN / fpsAcc < 22){
         fpsSuggested = true;
-        banner('Running slow? Try FX: Lite in the top bar.', '', 4200);
+        banner('Running slow? Try FX: Lite under ⚙ Settings.', '', 4200);
       }
       fpsAcc = 0; fpsN = 0;
     }
@@ -11489,6 +11803,7 @@ rootEl._lab = {
   elementPreview: kind => buildElementPoints(kind, design.points[Math.max(0, selIdx)], design.points[(Math.max(0, selIdx) + 1) % design.points.length]),
   safetyFindings: () => safetyFindings.map(f => ({ ...f })),
   missions: () => Object.keys(missionsDone),
+  peakZone: tele => guidedPeakZone(tele || lastTele),
   /* drive a full Ride & Solve synchronously; pauseOnly stops at 1st question */
   rideTest: pauseOnly => {
     if(!ride.active) startRide();
@@ -11584,7 +11899,7 @@ rootEl._lab = {
     placeTrain(); placeCamera();
     return { s: +s.toFixed(1), L: track ? +track.L.toFixed(1) : 0, hits };
   },
-  loadTemplate: name => { if(!TEMPLATES[name]) return false; design = normalizeDesign(TEMPLATES[name]()); fullRebuild(); return true; },
+  loadTemplate: name => { if(!TEMPLATES[name]) return false; design = normalizeDesign(TEMPLATES[name]()); fullRebuild(); markDesignOrigin(); return true; },
   loadDesignObject: raw => { design = normalizeDesign(raw); selIdx = -1; fullRebuild(); return safetyFindings.map(f => f.kind); },
   thirdPersonClearance: (s, mode = 'chase') => {
     const prev = { S: sim.S, cam: camMode };
@@ -11832,6 +12147,9 @@ return { destroy: __clabDestroy };
             try {
               note.remove();
               el.innerHTML = CLAB_HTML;
+              var clabSession = null;
+              try { clabSession = window.sessionStorage; } catch (_ssErr) {}
+              clabBuildSettings(el, clabSession);
               var eng = bootCoasterLab(el, THREE, bridge);
               el._clabCleanup = eng && eng.destroy;
             } catch (err) {
@@ -11888,7 +12206,7 @@ return { destroy: __clabDestroy };
           ),
           h('div', { className: 'clab-telemetry-strip', role: 'group', 'aria-label': __alloT('stem.coasterlab.telemetry_aria', 'Coaster engineering progress telemetry') },
             h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_runs', 'Test Runs:') + ' ' + _clabRuns),
-            h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_missions', 'Missions:') + ' ' + _clabMs.missionCount + '/6'),
+            h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_missions', 'Missions:') + ' ' + Math.min(_clabMs.missionCount, CLAB_MISSION_TOTAL) + '/' + CLAB_MISSION_TOTAL),
             h('span', { className: 'clab-telemetry-pill' }, _clabMs.certified ? __alloT('stem.coasterlab.pill_cert_pass', 'Inspection: Certified') : __alloT('stem.coasterlab.pill_cert_pending', 'Inspection: In Progress')),
             h('span', { className: 'clab-telemetry-pill' }, __alloT('stem.coasterlab.pill_grade', 'Level:') + ' ' + _gradeBadge)
           ),

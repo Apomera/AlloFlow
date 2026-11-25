@@ -168,7 +168,8 @@ describe('checks', () => {
     expect(src).toContain('if (/[0-9]/.test(typed)) rec.typed = typed.slice(0, 20);');
   });
   it('young students\' checks say a grown-up reads the first page', () => {
-    expect(TH.CHECK_LABELS.check_ready_adult).toBe('For a young student: a grown-up reads this page aloud before the student presses Begin.');
+    // 2026-11-23: "presses Start", the word on the button (check_begin); it said "presses Begin".
+    expect(TH.CHECK_LABELS.check_ready_adult).toBe('For a young student: a grown-up reads this page aloud before the student presses Start.');
   });
 });
 

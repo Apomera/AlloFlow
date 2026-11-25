@@ -135,21 +135,18 @@
       "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 40,
       "remediationPlaybooks": 40,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 10,
+      "spacedReviewPlans": 8,
       "sourceCatalog": 4
     },
-    "emptyLibraryLayers": [
-      "studySessionPlans",
-      "spacedReviewPlans"
-    ],
+    "emptyLibraryLayers": [],
     "lessonDepth": {
       "chapterCount": 8,
       "sectionCount": 24,
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 640,
+      "checked": 1177,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -232,8 +229,8 @@
     "everyTopicHasDiagnosticAndRemediation": true
   },
   "inputs": {
-    "packSha256": "57abf8b7f3a433cb070652ef76c4881bc5f39e0c1193f4aa95b28f8c68112b45",
-    "learningLibrarySha256": "dc77d6af97955bb21db68f0cbcd1453ede94317d0f046fbdf64d5b79701ec2b7",
+    "packSha256": "cf30200405c64fefecf03c77d85e1aa8e6e469fea82b8c886f078875078f4bc0",
+    "learningLibrarySha256": "6f4a92e12568f914e9929102dd6a17659304ae08133445d6ea38e4a9ac8a4787",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
     "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-calculus-ab/exam",
     "reviewedAt": "2026-08-25"

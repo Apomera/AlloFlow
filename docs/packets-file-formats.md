@@ -7,7 +7,7 @@ For developers and school IT. This document says what is inside the files that P
 3. the file that "Save all of this as one file" makes on the Add up results page,
 4. the rules for versions.
 
-It describes what the code does as of 2026-11-19. The code is the final word. Where the code and its comments disagree, or where this document could not settle a point from the code, it says so in [Known differences](#5-known-differences).
+It describes what the code does as of 2026-11-19 (section 6, sealed QR results: as of 2026-11-23). The code is the final word. Where the code and its comments disagree, or where this document could not settle a point from the code, it says so in [Known differences](#5-known-differences).
 
 The code that writes and reads these files:
 
@@ -213,12 +213,12 @@ Each item:
 | `n` | Its place, from 1. |
 | `itemId`, `activity`, `word` | As in the lesson. A Symbol Runner item id ends in `-new` or `-known` in a rehearsal file, and from 2026-11-17 an item with something to ignore (color words, the middle letter, dots and digits) has `-match` or `-conflict` before that: whether the two things on the card agree. The readers count the two kinds apart from the id. |
 | `target` | The right answer, or `null`. In a check, the answer is unscrambled only when the results are made. |
-| `responses` | Each answer, in order (text, at most 80 characters each). |
+| `responses` | Each answer, in order (text, at most 80 characters each). A read-along page (from 2026-11-23): first `read` or `played`, then one entry for each answer to its "Check your understanding" questions: a typed answer as `2: <text>` (at most 240 characters), a choice as `1: Mia (right)`, `1: Mia (right, try 2)`, `1: Soup (not right)` or `1: Soup (not right, 3 tries)`. These answers do not change any count: a read-along is not scored. |
 | `attempts`, `firstTry`, `correct`, `done` | The number of answers and the outcome. |
-| `ms` | The time on the item, from its being shown to its being done, not counting time the page was hidden. |
+| `ms` | The time on the item, from its being shown to its being done, not counting time the page was hidden. From 2026-11-23 the time on a read-along page adds up when the student comes back to it in the same opening of the file. |
 | `supports` | Name to count: each help used (for example `questionReplays`, `wordReplays`, `soundListens`) and each reading tool. |
-| `practice` | `null`, or a value that marks an unscored item (`practice` for a check's sample item; the readers also accept `traced`, `skipped` and `read`). |
-| `flag` | `""`, `skipped`, `time_up`, `resumed` (shown before, in an earlier opening of the file) or `paused` (a check's item set aside during a pause). |
+| `practice` | `null`, or a value that marks an unscored item (`practice` for a check's sample item; the readers also accept `traced`, `skipped`, `read` and `played`). A read-along page is `read` when the student started something on it (Read to me, a sentence, the next or the previous sentence, Auto pace) and `played` when the file turned to it or played it by itself (Auto-advance, Auto pace) and the student started nothing on it. A `played` page the student later comes back to and reads becomes `read`. Both are in `summary.practised`. |
+| `flag` | `""`, `skipped`, `time_up`, `resumed` (shown before, in an earlier opening of the file; from 2026-11-23 never for a page looked at again in the same opening) or `paused` (a check's item set aside during a pause). |
 | `digitsCorrect`, `digitsPossible` | A check only: whole numbers, or `null`. |
 | `recallMs` | From 2026-11-17, math fact practice only (cover, copy, compare; rehearsal): the time from the fact being covered (or, for a card that starts covered, from its being shown) to the first answer from memory, in ms, not counting time the page was hidden. Absent when it was not timed (the file was reloaded in between). It is in the JSON only: the CSV item rows are unchanged. |
 
@@ -333,11 +333,13 @@ The button saves `results-all__<YYYY-MM-DD>.json` (`sample-results-all__...` for
 | `goalDates` | `[{ learner, measure, date }]`: optional goal dates (`YYYY-MM-DD`), added on 2026-11-17. |
 | `paper` | `[{ learner, measure, name, date, value, note }]`: paper scores typed on the page (kept apart from screen results), added on 2026-11-17. |
 
-Each session holds `sessionId`, `learner`, `packetId`, `packetVersion`, `title`, `mode` (`practice`, or `probe` for a check), `form`, `startedLocal`, `finishedLocal`, `start`, `date`, `dateFromFile`, `durationS`, `activeS`, `items`, `stated` (the score as the file stated it), `attempt`, `integrity` (`ok`, `changed`, `absent` or `unchecked`), `source` (`csv` or `json`) and `sourceFile`. The page also saves the counts it worked out, but on reading it ignores them: every value is read again as untrusted text, and every count is made again from the items. A session with no item done is dropped.
+Each session holds `sessionId`, `learner`, `packetId`, `packetVersion`, `title`, `mode` (`practice`, or `probe` for a check), `form`, `startedLocal`, `finishedLocal`, `start`, `date`, `dateFromFile`, `durationS`, `activeS`, `items`, `stated` (the score as the file stated it), `attempt`, `integrity` (`ok`, `changed`, `absent` or `unchecked`), `source` (`csv` or `json`) and `sourceFile`. The page also saves the counts it worked out, but on reading it ignores them: every value is read again as untrusted text, and every count is made again from the items. A session with no item done is dropped. From 2026-11-23 the page also works out, for a read-along, what its pages hold (`readAlong`: the pages in the file, the pages read, the pages only played, the time on the pages, and the answers to "Check your understanding" under each page; see `responses` in 2.2). It is made again from the items each time and is not written to this file: the fields above are unchanged.
 
 ### 3.2 "Save a summary (CSV)"
 
 `results-summary__<YYYY-MM-DD>.csv`: one row for each result, with the same cell rules as 2.4. Its columns, in order: `learner`, `date`, `measure`, `form`, `score`, `score_unit`, `accuracy_pct`, `first_try_pct`, `items_given`, `items_attempted`, `duration_s`, `flags`, `session_id`, `packet_id`, `packet_version`, `integrity`, `source_file`, `title`, `measure_name`, `accuracy_of_attempted_pct`, `active_s`. The last four were added on 2026-11-13, at the end.
+
+From 2026-11-23 the `flags` column of a check may hold `same_answer`, a note the page counts from the answers (it is not in the student's file): at least 8 answers were given, at least 8 in 10 of them were the same answer, and at least half of those were not right. It is a note only; the score is as counted.
 
 ---
 
@@ -381,15 +383,15 @@ When a teacher opts in (via `packets-qr.html` or `opts.qrPublicKey` in `word_sou
 |---|---|---|
 | Teacher public key | `AFPK1.<base64url>` | 32-byte X25519 public key (49 characters total). Safe to embed inside student packets (`lesson.qr = { k, fp }`) or share with a co-teacher. |
 | Teacher private key file | `kind: "alloflow-packet-qr-key"`, `version: 1` | Local `.json` file (`alloflow-qr-key__<fp>.json`) holding `label`, `createdAt`, `fingerprint`, `publicKey`, and `secretKey` (`AFSK1.<base64url>`, 32-byte X25519 private scalar). |
-| Key ID (`fp`) | 8 lowercase hex chars | First 4 bytes of `SHA-256(publicKeyBytes)`, shown under the student QR and in `manifest.qr.keyFingerprint` so teacher and packet keys can be matched visually and verified by Look inside a file. |
-| Sealed QR payload | `AFQR1:<BASE32>` | RFC 4648 Base32 uppercase (`A-Z`, `2-7`, no padding) encoded in ISO 18004 QR Alphanumeric Mode (Versions 1–30, EC level L) and rendered as a 1-bit `data:image/png;base64,...` image (never a URL, no `http://` strings). |
+| Key ID (`fp`) | 8 lowercase hex chars | First 4 bytes of `SHA-256("AFPK1|" + publicKeyBytes)` (the six ASCII bytes `AFPK1|`, then the 32 key bytes; `fingerprintOf` in `packets_qr_crypto.js`), shown under the student QR and in `manifest.qr.keyFingerprint` so teacher and packet keys can be matched visually and verified by Look inside a file. |
+| Sealed QR payload | `AFQR1:<BASE32>` | RFC 4648 Base32 uppercase (`A-Z`, `2-7`, no padding) encoded in ISO 18004 QR Alphanumeric Mode (Versions 1–30 except 23, EC level L; from 2026-11-23 a code that would fit version 23 uses 24, because jsQR 1.4.0, the reader `packets-qr.html` uses where the browser has none, cannot read version 23) and rendered as a 1-bit `data:image/png;base64,...` image (never a URL, no `http://` strings). |
 
 ### 6.1 Wire envelope (`AFQR1:`)
 
 After Base32 decoding, the binary envelope is:
 
 1. `version` (1 byte): `0x01`
-2. `keyFingerprint` (4 bytes): first 4 bytes of `SHA-256(teacherPublicKey)`
+2. `keyFingerprint` (4 bytes): the Key ID above, first 4 bytes of `SHA-256("AFPK1|" + teacherPublicKeyBytes)`
 3. `ephemeralPublicKey` (32 bytes): fresh per-display X25519 public key generated with `crypto.getRandomValues`
 4. `nonce` (12 bytes): fresh random ChaCha20-Poly1305 nonce
 5. `ciphertext || tag` (variable + 16-byte Poly1305 MAC):
@@ -397,5 +399,50 @@ After Base32 decoding, the binary envelope is:
    - Symmetric key (32 bytes): `HKDF-SHA-256(ikm = sharedSecret, salt = ephemeralPub || teacherPub || nonce, info = "alloflow-packet-qr-v1")` (RFC 5869)
    - AEAD: `ChaCha20-Poly1305(key, nonce, plaintext = compactResultJsonUtf8, aad = "AFQR1|" + keyFingerprintHex)` (RFC 8439)
 
-Long packets (> 1050 UTF-8 bytes compact JSON) preserve full summary totals and all missed/retried items while condensing first-try items (`tr: 1`) so results always fit inside a single scannable QR. When unlocked on `packets-qr.html`, each result expands into standard AlloFlow CSVs with SHA-256 check values for download or handoff to `packets-results.html`.
+The code is encrypted, not signed. Anyone who has a sealed file has the public key, and so can make a code that opens with the teacher's key. A code that was changed or cut short is refused, but a code does not prove which student made it, any more than a results file does.
+
+### 6.2 The plaintext (payload version 2, from 2026-11-23)
+
+The plaintext is compact JSON of at most 1,050 UTF-8 bytes (`MAX_QR_PLAINTEXT`), written by `compactResult` and read by `expandResult`.
+
+**The rule: every item is always in the code, with everything that is counted from it.** The results reader counts every number from the items (section 2), so a payload that left items out would give a wrong score. What may be left out to fit is only what describes an item, in a fixed order, and the payload says which.
+
+| Field | Meaning |
+|---|---|
+| `v` | `2` |
+| `sid`, `pid`, `rev`, `t`, `l`, `f` | Session id, packet id, packet version, title, learner, form (absent when empty) |
+| `m` | `1` for a check; absent for practice |
+| `s`, `e` | Start and finish on the learner's clock. `e` is only `HH:MM:SS` when the date and the offset are those of `s` |
+| `du`, `a` | `duration_s`, and `active_s` (absent when the file has none) |
+| `sum` | The six numbers of the file's own summary: items, done, first try, after retry, missed, practised. For display on the teacher page only; nothing is counted from them |
+| `at` | Activity titles |
+| `sc` | A check's score line, short keys, a value left out when it is the default |
+| `A` | The activity ids, in order of first use |
+| `K` | One character for each item (base64url alphabet): bit 1 first try, 2 correct, 4 done, 8 practice, and the tries (0 to 3) times 16 |
+| `G` | One character for each item (0-9, a-z): its place in `A`. Absent when there is one activity |
+| `D` | Two characters for each item: digits correct, digits possible (0-9, a-z; `-` for none). Absent when no item has digits |
+| `X` | By item number, only where needed: `at` tries above 3, `n` an item number that is not its place, `f` flag, `p` a practice kind other than `practice`, `dc`/`dp` digits above 35 |
+| `S`, `P` | The names of the helps used, and for each item `0` or pairs of (place in `S`, count) |
+| `rs` | `[recall_items, recall_median_ms]`, as the results file states them |
+| `R` | The wording: for each item the end of its id, the word, the target, the answers (`1` when the one answer is the target) and the time |
+| `c`, `cn`, `O`, `pt` | What was left out, below |
+
+What is left out, when the whole does not fit:
+
+| `c` | Left out | Still there |
+|---|---|---|
+| absent | Nothing. The teacher page rebuilds the same item rows as the student's own results file, cell for cell | Everything |
+| `1` | The time on each item | Wording of every item |
+| `2` | Also the wording of items right at the first try, as many as do not fit. `R` rows then start with the item's place. `cn[0]` is how many items have no wording | Wording of every item that was missed, tried again, flagged, practice or not reached. `O` keeps what is counted from an item id (new or known, matching or conflicting) |
+| `3` | Also the wording of the missed items that do not fit (`cn[1]` of them), and which item each help was used on (`pt` holds the totals) | Every count |
+
+A result whose counted part alone does not fit (several hundred items) is not sealed: `sealResult` throws an error with `code: "too_long"`, and the file tells the student to save the results file instead.
+
+**Version 1** (files sealed on 2026-11-22) kept only missed items in a long result (`tr: 1`). No right score can be counted from that, so `unsealResult` refuses such a code with the reason `old_condensed`. A version 1 code that holds every item still opens.
+
+### 6.3 The results file the teacher page writes
+
+`packets-qr.html` turns each unlocked code into a results CSV (section 2.4) with a SHA-256 check value over the rebuilt item rows. Its `#summary` row carries two more cells, outside the check value: `source=sealed_qr` and `qr_left_out=` 0 to 3 (`c` above). The results reader sets `qrShort` from them and adds the note `qr_short` when it is above 0. On the Add up results page, the student's own results file replaces a copy that left something out.
+
+The sealed file needs `BigInt` (Safari and iOS 14 or later). Where it is missing, the file still starts; only the QR button fails, with a message to save the results file.
 

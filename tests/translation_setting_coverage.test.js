@@ -59,7 +59,10 @@ describe('the setting reaches every emitting path in the audit', () => {
 
   it('lesson plan, family guide and study guide all take a translationPolicy', () => {
     for (const fn of ['buildLessonPlanPrompt', 'buildParentGuidePrompt', 'buildStudyGuidePrompt']) {
-      const sig = promptsLib.slice(promptsLib.indexOf(`const ${fn} = ({`));
+      // The builders now take one `opts` object and destructure it on the first line.
+      const at = promptsLib.indexOf(`const ${fn} = (opts) => {`);
+      expect(at, `${fn} found`).toBeGreaterThan(-1);
+      const sig = promptsLib.slice(at);
       expect(sig.slice(0, 300), `${fn} accepts translationPolicy`).toContain('translationPolicy');
       expect(sig.slice(0, 400), `${fn} resolves it`).toContain('_xlateFor(translationPolicy, language)');
     }
@@ -110,8 +113,11 @@ describe('the setting reaches every emitting path in the audit', () => {
   it('the math and quiz helper copies honour it too', () => {
     for (const [name, src] of [['generation_helpers', genHelpers], ['math_helpers', mathHelpers]]) {
       expect(src, `${name} resolves a policy`).toContain('const _xlate = (typeof resolveTranslationPolicy === \'function\')');
-      expect(src, `${name} uses the resolved target`).toContain("_xlate.target + ' translation in parentheses.'");
     }
+    expect(mathHelpers, 'math_helpers uses the resolved target').toContain("_xlate.target + ' translation in parentheses.'");
+    // generation_helpers now sanitizes the resolved target before it enters the prompt.
+    expect(genHelpers, 'generation_helpers uses the resolved target').toContain("const safeMathXlateTarget = _ghCleanToken(_xlate.target || 'English', 80);");
+    expect(genHelpers.split("safeMathXlateTarget + ' translation in parentheses.'").length - 1).toBe(3);
     // 14a2d9cfa (2026-09-26): the policy is spread into a 4th argument that also carries adaptation controls.
     expect(genHelpers).toMatch(/generateBilingualText\(prompt, effectiveLanguage, callGemini, \{\s*\.\.\._xlate,/);
   });

@@ -78,10 +78,10 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 24.8,
-      "keyLongestSharePercent": 20,
-      "keyLongerByQuarterSharePercent": 3.6,
+      "keyLongestSharePercent": 16.4,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1500,
-      "distinctDistractorRationaleCount": 1471,
+      "distinctDistractorRationaleCount": 1500,
       "repeatedDistractorRationaleSharePercent": 0.1,
       "largestSharedChoiceSet": 34,
       "advisories": [
@@ -101,14 +101,12 @@
       "constructedResponseWorkshops": 2,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 7,
+      "spacedReviewPlans": 5,
       "sourceCatalog": 5
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 5,
@@ -116,7 +114,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 1000,
+      "checked": 1572,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -133,13 +131,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_psychology_pilot.json",
-      "byteLength": 2467540,
-      "sha256": "fe050b824a2f09b1a44ed308e9d69a6870097ed67630cb03091edfcbe9c37813"
+      "byteLength": 2408162,
+      "sha256": "6ea6abc8ef77725a18792a80afaa05392769f4773ad4e871d7f6551ddd84f93e"
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
-      "byteLength": 550068,
-      "sha256": "892cfff50f1f55e4b71435adc63646e4e819d3290669ad3c626e84e8a8817bf7"
+      "byteLength": 599535,
+      "sha256": "2fe25781916996ca41df8727486e3e3a3496229016d88823a39eb1403b0a9d01"
     }
   },
   "standard": {
@@ -374,16 +372,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "fe050b824a2f09b1a44ed308e9d69a6870097ed67630cb03091edfcbe9c37813",
-      "deploySha256": "fe050b824a2f09b1a44ed308e9d69a6870097ed67630cb03091edfcbe9c37813",
+      "sourceSha256": "6ea6abc8ef77725a18792a80afaa05392769f4773ad4e871d7f6551ddd84f93e",
+      "deploySha256": "6ea6abc8ef77725a18792a80afaa05392769f4773ad4e871d7f6551ddd84f93e",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "892cfff50f1f55e4b71435adc63646e4e819d3290669ad3c626e84e8a8817bf7",
-      "deploySha256": "892cfff50f1f55e4b71435adc63646e4e819d3290669ad3c626e84e8a8817bf7",
+      "sourceSha256": "2fe25781916996ca41df8727486e3e3a3496229016d88823a39eb1403b0a9d01",
+      "deploySha256": "2fe25781916996ca41df8727486e3e3a3496229016d88823a39eb1403b0a9d01",
       "note": "Source and deployment bytes are identical."
     }
   ],
@@ -1542,9 +1540,9 @@
       "expertGateItems": 500,
       "psychometricBoundaryItems": 500,
       "keyedOptionMeanWords": 4.112,
-      "distractorOptionMeanWords": 4.085,
-      "keyedToDistractorMeanRatio": 1.007,
-      "uniquelyLongestKeyedOptions": 54,
+      "distractorOptionMeanWords": 4.13,
+      "keyedToDistractorMeanRatio": 0.996,
+      "uniquelyLongestKeyedOptions": 48,
       "severeKeyedLengthCueItems": 0,
       "optionLengthMetrics": [
         {
@@ -1934,13 +1932,13 @@
         {
           "id": "ap-psych-u2-013",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u2-014",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -1982,13 +1980,13 @@
         {
           "id": "ap-psych-u4-013",
           "keyedWords": 3,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-014",
           "keyedWords": 3,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -2198,13 +2196,13 @@
         {
           "id": "ap-psych-u3-021",
           "keyedWords": 2,
-          "longestDistractorWords": 1,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
           "id": "ap-psych-u3-022",
           "keyedWords": 2,
-          "longestDistractorWords": 1,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
@@ -2300,13 +2298,13 @@
         {
           "id": "ap-psych-u2-026",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u2-027",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -2828,13 +2826,13 @@
         {
           "id": "ap-psych-u4-042",
           "keyedWords": 3,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-043",
           "keyedWords": 3,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -2912,7 +2910,7 @@
         {
           "id": "ap-psych-u2-048",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -2966,13 +2964,13 @@
         {
           "id": "ap-psych-u5-045",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-046",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -3086,13 +3084,13 @@
         {
           "id": "ap-psych-u5-049",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-050",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -3842,13 +3840,13 @@
         {
           "id": "ap-psych-u1-079",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 4,
           "severeCue": false
         },
         {
           "id": "ap-psych-u1-080",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 4,
           "severeCue": false
         },
         {
@@ -4232,7 +4230,7 @@
         {
           "id": "ap-psych-u2-092",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -4250,7 +4248,7 @@
         {
           "id": "ap-psych-u3-091",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -4286,13 +4284,13 @@
         {
           "id": "ap-psych-u5-089",
           "keyedWords": 4,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-090",
           "keyedWords": 4,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -4334,7 +4332,7 @@
         {
           "id": "ap-psych-u2-093",
           "keyedWords": 2,
-          "longestDistractorWords": 2,
+          "longestDistractorWords": 3,
           "severeCue": false
         },
         {
@@ -11008,8 +11006,8 @@
         {
           "id": "ap-psych-u4-069",
           "keyedOverlap": 0,
-          "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": -1,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
           "uniqueStemKeyTerms": [],
           "advisory": false
         },
@@ -12547,15 +12545,11 @@
         },
         {
           "id": "ap-psych-u2-019",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-020",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-017",
@@ -12565,9 +12559,7 @@
         },
         {
           "id": "ap-psych-u3-018",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-019",
@@ -12595,9 +12587,7 @@
         },
         {
           "id": "ap-psych-u4-020",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-017",
@@ -12617,33 +12607,23 @@
         },
         {
           "id": "ap-psych-u1-021",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-022",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-023",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-024",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-021",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-022",
@@ -12675,15 +12655,11 @@
         },
         {
           "id": "ap-psych-u4-021",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-022",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-023",
@@ -12707,15 +12683,11 @@
         },
         {
           "id": "ap-psych-u5-023",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-024",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-025",
@@ -12763,15 +12735,11 @@
         },
         {
           "id": "ap-psych-u3-027",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-028",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-025",
@@ -12835,15 +12803,11 @@
         },
         {
           "id": "ap-psych-u2-031",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-032",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-029",
@@ -12957,15 +12921,11 @@
         },
         {
           "id": "ap-psych-u4-034",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-035",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-036",
@@ -12989,15 +12949,11 @@
         },
         {
           "id": "ap-psych-u1-037",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-038",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-039",
@@ -13007,9 +12963,7 @@
         },
         {
           "id": "ap-psych-u1-040",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-037",
@@ -13035,15 +12989,11 @@
         },
         {
           "id": "ap-psych-u3-038",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-039",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-040",
@@ -13083,9 +13033,7 @@
         },
         {
           "id": "ap-psych-u5-040",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-041",
@@ -13117,15 +13065,11 @@
         },
         {
           "id": "ap-psych-u2-043",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-044",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-041",
@@ -13163,27 +13107,19 @@
         },
         {
           "id": "ap-psych-u5-041",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-042",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-043",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-044",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-045",
@@ -13237,9 +13173,7 @@
         },
         {
           "id": "ap-psych-u3-048",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-045",
@@ -13249,15 +13183,11 @@
         },
         {
           "id": "ap-psych-u4-046",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-047",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-048",
@@ -13299,9 +13229,7 @@
         },
         {
           "id": "ap-psych-u1-052",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-049",
@@ -13323,9 +13251,7 @@
         },
         {
           "id": "ap-psych-u3-049",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-050",
@@ -13373,21 +13299,15 @@
         },
         {
           "id": "ap-psych-u1-053",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-054",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-055",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-056",
@@ -13401,21 +13321,15 @@
         },
         {
           "id": "ap-psych-u2-054",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-055",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-056",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-053",
@@ -13507,15 +13421,11 @@
         },
         {
           "id": "ap-psych-u3-058",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-059",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-060",
@@ -13535,15 +13445,11 @@
         },
         {
           "id": "ap-psych-u4-059",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-060",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-057",
@@ -13559,15 +13465,11 @@
         },
         {
           "id": "ap-psych-u5-059",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-060",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-061",
@@ -13619,9 +13521,7 @@
         },
         {
           "id": "ap-psych-u4-061",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-062",
@@ -13637,15 +13537,11 @@
         },
         {
           "id": "ap-psych-u5-061",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-062",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-063",
@@ -13675,9 +13571,7 @@
         },
         {
           "id": "ap-psych-u1-068",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-065",
@@ -13693,15 +13587,11 @@
         },
         {
           "id": "ap-psych-u2-067",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-068",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-065",
@@ -13757,9 +13647,7 @@
         },
         {
           "id": "ap-psych-u1-069",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-070",
@@ -13793,15 +13681,11 @@
         },
         {
           "id": "ap-psych-u3-069",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-070",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-071",
@@ -13829,9 +13713,7 @@
         },
         {
           "id": "ap-psych-u4-072",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-069",
@@ -13901,15 +13783,11 @@
         },
         {
           "id": "ap-psych-u4-073",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-074",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-075",
@@ -13959,9 +13837,7 @@
         },
         {
           "id": "ap-psych-u2-078",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-079",
@@ -13985,15 +13861,11 @@
         },
         {
           "id": "ap-psych-u3-079",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-080",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-077",
@@ -14025,15 +13897,11 @@
         },
         {
           "id": "ap-psych-u5-079",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-080",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-081",
@@ -14049,15 +13917,11 @@
         },
         {
           "id": "ap-psych-u1-083",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-084",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-081",
@@ -14113,15 +13977,11 @@
         },
         {
           "id": "ap-psych-u5-081",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-082",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-083",
@@ -14133,9 +13993,7 @@
         },
         {
           "id": "ap-psych-u1-085",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-086",
@@ -14167,9 +14025,7 @@
         },
         {
           "id": "ap-psych-u2-088",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-085",
@@ -14191,21 +14047,15 @@
         },
         {
           "id": "ap-psych-u4-085",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-086",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-087",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-088",
@@ -14245,9 +14095,7 @@
         },
         {
           "id": "ap-psych-u2-089",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-090",
@@ -14269,9 +14117,7 @@
         },
         {
           "id": "ap-psych-u3-090",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-091",
@@ -14407,21 +14253,15 @@
         },
         {
           "id": "ap-psych-u1-098",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-099",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u1-100",
-          "choiceIndexes": [
-            1
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u2-097",
@@ -14439,9 +14279,7 @@
         },
         {
           "id": "ap-psych-u2-100",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-097",
@@ -14455,15 +14293,11 @@
         },
         {
           "id": "ap-psych-u3-099",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u3-100",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u4-097",
@@ -14485,33 +14319,23 @@
         },
         {
           "id": "ap-psych-u4-100",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-097",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-098",
-          "choiceIndexes": [
-            3
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-099",
-          "choiceIndexes": [
-            0
-          ]
+          "choiceIndexes": []
         },
         {
           "id": "ap-psych-u5-100",
-          "choiceIndexes": [
-            2
-          ]
+          "choiceIndexes": []
         }
       ],
       "promptFlowMetrics": [
@@ -17403,7 +17227,7 @@
     }
   },
   "editorialReviewQueue": {
-    "count": 173,
+    "count": 86,
     "advisories": [
       {
         "check": "categorical-cue-review",
@@ -17457,29 +17281,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u2-019",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-020",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u3-017",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-018",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17497,27 +17300,6 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-020",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-021",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-022",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u1-023",
@@ -17525,45 +17307,10 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-023",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-024",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u2-021",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-021",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-021",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-022",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17583,20 +17330,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u5-023",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-024",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u3-025",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -17609,24 +17342,10 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-027",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u3-028",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-028",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17640,20 +17359,6 @@
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
         "recordId": "ap-psych-u2-030",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-031",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-032",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -17693,13 +17398,6 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-034",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u4-035",
@@ -17709,35 +17407,7 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u4-035",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-037",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-038",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u1-039",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-040",
         "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -17751,20 +17421,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u3-038",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-039",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u5-038",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -17773,13 +17429,6 @@
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
         "recordId": "ap-psych-u5-039",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-040",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -17800,43 +17449,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u2-043",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-044",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u4-044",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-041",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-042",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-043",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17844,13 +17458,6 @@
         "asset": "pack",
         "recordId": "ap-psych-u5-044",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-044",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17877,29 +17484,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u3-048",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u4-045",
         "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-046",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-047",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17926,36 +17512,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-052",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-052",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-049",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-053",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-054",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -17968,36 +17526,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-055",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-053",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-054",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-055",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-056",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18017,20 +17547,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u3-058",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-059",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u4-057",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18039,20 +17555,6 @@
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
         "recordId": "ap-psych-u4-058",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-059",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-060",
         "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -18068,41 +17570,6 @@
         "asset": "pack",
         "recordId": "ap-psych-u5-058",
         "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-059",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-060",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-061",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-061",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-062",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18129,13 +17596,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-068",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-065",
         "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18144,20 +17604,6 @@
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
         "recordId": "ap-psych-u2-066",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-067",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-068",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -18178,29 +17624,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-069",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u1-070",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-069",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-070",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18220,22 +17645,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u4-072",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-076",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-073",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18248,21 +17659,7 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u4-074",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-077",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-078",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -18281,24 +17678,10 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-079",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u3-080",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-080",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18318,20 +17701,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u5-079",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-080",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u1-081",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18346,20 +17715,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-083",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-084",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u4-083",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18369,27 +17724,6 @@
         "asset": "pack",
         "recordId": "ap-psych-u4-084",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-081",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-082",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-085",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18416,13 +17750,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u2-088",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u3-088",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18430,43 +17757,8 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u4-085",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-086",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-087",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-089",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u3-089",
         "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-090",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
       {
@@ -18500,27 +17792,6 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u1-098",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-099",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u1-100",
-        "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u2-099",
         "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
@@ -18528,28 +17799,7 @@
       {
         "check": "feedback-opening-restatement-review",
         "asset": "pack",
-        "recordId": "ap-psych-u2-100",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
         "recordId": "ap-psych-u3-098",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-099",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u3-100",
         "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       },
@@ -18575,45 +17825,10 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-100",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-097",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-098",
-        "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-099",
-        "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u5-100",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "feedback-opening-restatement-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-100",
-        "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release.",
         "requiresHumanJudgment": true
       }
     ],
@@ -18844,7 +18059,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 37,
-      "minimumChoiceFeedbackWords": 18,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19405,8 +18620,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 51,
-      "minimumChoiceFeedbackWords": 45,
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19417,8 +18632,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 55,
-      "minimumChoiceFeedbackWords": 49,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19506,8 +18721,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 58,
-      "minimumChoiceFeedbackWords": 50,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19518,8 +18733,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 49,
+      "rationaleWords": 27,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19693,14 +18908,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19710,14 +18920,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19744,14 +18949,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19831,14 +19031,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19896,14 +19091,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19913,14 +19103,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19934,14 +19119,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19951,14 +19132,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19972,14 +19148,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20026,8 +19198,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 53,
-      "minimumChoiceFeedbackWords": 47,
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20038,8 +19210,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 58,
-      "minimumChoiceFeedbackWords": 52,
+      "rationaleWords": 27,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20073,14 +19245,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20090,14 +19257,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20165,14 +19327,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20182,14 +19339,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20260,8 +19412,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 58,
-      "minimumChoiceFeedbackWords": 52,
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20272,8 +19424,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 60,
-      "minimumChoiceFeedbackWords": 54,
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20329,14 +19481,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20350,14 +19497,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20545,14 +19688,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20562,14 +19700,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 30,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20904,14 +20037,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20925,14 +20053,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21002,14 +20126,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21019,14 +20138,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21053,14 +20167,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21135,14 +20244,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 38,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21152,14 +20256,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21275,14 +20374,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21374,14 +20468,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21391,14 +20480,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21469,8 +20553,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 53,
-      "minimumChoiceFeedbackWords": 47,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21481,8 +20565,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 52,
-      "minimumChoiceFeedbackWords": 46,
+      "rationaleWords": 25,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21509,14 +20593,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21526,14 +20605,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 24,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21543,14 +20617,9 @@
       "practiceId": "P3",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21564,14 +20633,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21659,8 +20724,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 54,
-      "minimumChoiceFeedbackWords": 48,
+      "rationaleWords": 29,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21671,8 +20736,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 55,
-      "minimumChoiceFeedbackWords": 49,
+      "rationaleWords": 23,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21728,14 +20793,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21762,14 +20822,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21779,14 +20834,9 @@
       "practiceId": "P3",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21814,8 +20864,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 56,
-      "minimumChoiceFeedbackWords": 50,
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21826,8 +20876,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 61,
-      "minimumChoiceFeedbackWords": 55,
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21838,8 +20888,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 61,
-      "minimumChoiceFeedbackWords": 55,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21850,8 +20900,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 64,
-      "minimumChoiceFeedbackWords": 58,
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21907,14 +20957,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21977,14 +21022,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22079,8 +21119,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 51,
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22091,8 +21131,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 51,
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22103,8 +21143,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 60,
-      "minimumChoiceFeedbackWords": 54,
+      "rationaleWords": 38,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22115,8 +21155,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 61,
-      "minimumChoiceFeedbackWords": 55,
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22126,14 +21166,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22143,14 +21178,9 @@
       "practiceId": "P3",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22164,14 +21194,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22210,14 +21236,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22227,14 +21248,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22244,14 +21260,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22363,8 +21374,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 51,
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22375,8 +21386,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 51,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22387,8 +21398,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 59,
-      "minimumChoiceFeedbackWords": 53,
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22399,8 +21410,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 61,
-      "minimumChoiceFeedbackWords": 55,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22523,14 +21534,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22540,14 +21546,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22603,14 +21604,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22620,14 +21616,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22671,14 +21662,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22688,14 +21674,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 32,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22849,14 +21830,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22902,14 +21878,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22919,14 +21890,9 @@
       "practiceId": "P3",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 32,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23011,14 +21977,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23062,14 +22023,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23079,14 +22035,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23191,8 +22142,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 57,
-      "minimumChoiceFeedbackWords": 49,
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23250,14 +22201,9 @@
       "practiceId": "P3",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23356,14 +22302,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23373,14 +22314,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23415,8 +22351,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 58,
-      "minimumChoiceFeedbackWords": 50,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 16,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23460,14 +22396,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23674,14 +22605,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 38,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23695,14 +22621,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23809,8 +22731,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 61,
-      "minimumChoiceFeedbackWords": 55,
+      "rationaleWords": 27,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23821,8 +22743,8 @@
       "answerIndex": 1,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 62,
-      "minimumChoiceFeedbackWords": 56,
+      "rationaleWords": 22,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23849,14 +22771,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23924,14 +22841,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23945,14 +22857,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24044,14 +22952,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24061,14 +22964,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24112,14 +23010,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 16,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24129,14 +23022,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 30,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24300,14 +23188,9 @@
       "practiceId": "P3",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24317,14 +23200,9 @@
       "practiceId": "P3",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24358,14 +23236,9 @@
       "practiceId": "P3",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "editorialAdvisories": [],
+      "rationaleWords": 40,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24461,14 +23334,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "rationaleWords": 35,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24491,8 +23360,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 53,
-      "minimumChoiceFeedbackWords": 47,
+      "rationaleWords": 29,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24531,14 +23400,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24548,14 +23412,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24565,14 +23424,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 27,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24690,14 +23544,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 32,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24732,8 +23581,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 50,
-      "minimumChoiceFeedbackWords": 44,
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24760,14 +23609,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24778,8 +23622,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 56,
-      "minimumChoiceFeedbackWords": 50,
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24850,8 +23694,8 @@
       "answerIndex": 3,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 59,
-      "minimumChoiceFeedbackWords": 53,
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24862,8 +23706,8 @@
       "answerIndex": 2,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 60,
-      "minimumChoiceFeedbackWords": 54,
+      "rationaleWords": 23,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -24951,8 +23795,8 @@
       "answerIndex": 0,
       "findings": [],
       "editorialAdvisories": [],
-      "rationaleWords": 51,
-      "minimumChoiceFeedbackWords": 45,
+      "rationaleWords": 29,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25169,14 +24013,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25186,14 +24025,9 @@
       "practiceId": "P2",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 30,
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25203,14 +24037,9 @@
       "practiceId": "P3",
       "answerIndex": 1,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 1 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25261,14 +24090,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "editorialAdvisories": [],
+      "rationaleWords": 39,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25307,14 +24131,9 @@
       "practiceId": "P3",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25324,14 +24143,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25392,14 +24206,9 @@
       "practiceId": "P3",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 38,
+      "minimumChoiceFeedbackWords": 21,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25409,14 +24218,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25426,14 +24230,9 @@
       "practiceId": "P2",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 3 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 20,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25443,14 +24242,9 @@
       "practiceId": "P2",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 0 opens with only the option label plus a correctness claim; add explanation before release."
-        }
-      ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 24,
+      "editorialAdvisories": [],
+      "rationaleWords": 36,
+      "minimumChoiceFeedbackWords": 19,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -25464,14 +24258,10 @@
         {
           "check": "categorical-cue-review",
           "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        },
-        {
-          "check": "feedback-opening-restatement-review",
-          "message": "Choice feedback at zero-based position(s) 2 opens with only the option label plus a correctness claim; add explanation before release."
         }
       ],
-      "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     }

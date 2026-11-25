@@ -110,7 +110,7 @@ window.StemLab = window.StemLab || {
       '#allo-free-forms button:focus-visible, #allo-free-forms input:focus-visible, #allo-free-forms select:focus-visible, #allo-free-forms textarea:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
       '#allo-free-forms input::placeholder, #allo-free-forms textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
       '#allo-free-forms .ff-sidebar .text-slate-500, #allo-free-forms .text-slate-500 { color: #cbd5e1 !important; }',
-      '#allo-free-forms :is(.border-slate-600, .border-slate-700) { border-color: #475569 !important; }',
+      '#allo-free-forms :is(.border-slate-600, .border-slate-700) { border-color: #64748b !important; }',
       '#allo-free-forms .border-violet-700 { border-color: #8b5cf6 !important; }',
       '#allo-free-forms .ff-hero { background: linear-gradient(135deg, rgba(30,41,59,0.92), rgba(15,23,42,0.96)); border: 1px solid rgba(139,92,246,0.38); border-radius: 14px; }',
       '#allo-free-forms .ff-surface { background: rgba(15,23,42,0.82); border: 1px solid #334155; }',
@@ -1031,7 +1031,7 @@ window.StemLab = window.StemLab || {
       // ═══ UI ═══
       var BTN = 'min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer inline-flex items-center justify-center gap-1.5';
       var BTN_GHOST = BTN + ' bg-slate-800/80 border-slate-500 text-slate-100 hover:bg-slate-700 disabled:opacity-45 disabled:cursor-not-allowed';
-      var BTN_HOT = BTN + ' bg-violet-600 border-violet-400 text-white hover:bg-violet-500 disabled:opacity-45 disabled:cursor-not-allowed shadow-sm';
+      var BTN_HOT = BTN + ' bg-violet-600 border-violet-400 text-white hover:bg-violet-700 disabled:opacity-45 disabled:cursor-not-allowed shadow-sm';
       var GROUP_ACCENTS = ['#a78bfa', '#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#fb923c'];
 
       var FORM_FAMILY = {

@@ -98,9 +98,10 @@ describe('Info modal accessibility', () => {
 
   it('keeps clipped metadata, footnotes, and search placeholders at readable contrast', () => {
     expect(source).toContain('text-[11px] text-slate-600 font-medium mb-2">{item.owner}');
-    expect(source).toContain('tracking-[0.2em] text-slate-600">Cross-hub connections');
+    expect(source).toContain("tracking-[0.2em] text-slate-600\">{t('about.atlas_journeys_eyebrow') || 'Cross-hub connections'}");
     expect(source.match(/text-\[10px\] text-slate-600 leading-relaxed pt-1 border-t/g)).toHaveLength(3);
-    expect(source).toContain('text-[10px] text-slate-600 leading-relaxed mt-2');
+    // The accessibility footnote sits beside its "Report a barrier" button.
+    expect(source).toContain('<p className="text-[10px] text-slate-600 leading-relaxed">\n          {t(\'about.a11y_footer\')');
     expect(source.match(/placeholder:text-slate-600/g)).toHaveLength(2);
     expect(source).not.toContain('placeholder:text-slate-400');
   });

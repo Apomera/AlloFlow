@@ -16,7 +16,14 @@
 // "allo-sd-turbo" so the download happens once per device.
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window._sdTurbo) return;
+
+  function notifyProgress(onProgress, payload) {
+    if (typeof onProgress === 'function') {
+      try { onProgress(payload); } catch (_) {}
+    }
+  }
 
   var ORT_ESM = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs';
   var ORT_WASM_BASE = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
@@ -35,7 +42,7 @@
   var LATENT = { channels: 4, height: 64, width: 64 };
   var IMAGE_SIZE = 512;
 
-  var state = { ort: null, tokenizer: null, sessions: {}, initPromise: null };
+  var state = { ort: null, tokenizer: null, sessions: {}, initPromise: null, genQueue: Promise.resolve() };
 
   // ── pure pipeline math (exposed via __internals for node-side tests) ──────
   function randnLatents(count, noiseSigma) {
@@ -57,9 +64,11 @@
   }
   // One Euler step at gamma=0: denoised = sample - sigma*eps, then scale for VAE.
   function denoiseToVaeLatents(sample, noisePred, sigma, vaeScaling) {
-    var out = new Float32Array(sample.length);
-    for (var i = 0; i < sample.length; i++) {
-      out[i] = (sample[i] - sigma * noisePred[i]) / vaeScaling;
+    var len = Math.min(sample ? sample.length : 0, noisePred ? noisePred.length : 0);
+    var scale = Number.isFinite(vaeScaling) && vaeScaling !== 0 ? vaeScaling : VAE_SCALING;
+    var out = new Float32Array(len);
+    for (var i = 0; i < len; i++) {
+      out[i] = (sample[i] - sigma * noisePred[i]) / scale;
     }
     return out;
   }
@@ -71,7 +80,8 @@
       for (var x = 0; x < width; x++) {
         var p = y * width + x;
         for (var c = 0; c < 3; c++) {
-          var v = data[c * plane + p] / 2 + 0.5;
+          var raw = data ? data[c * plane + p] : 0;
+          var v = Number.isFinite(raw) ? (raw / 2 + 0.5) : 0;
           rgba[p * 4 + c] = Math.max(0, Math.min(255, Math.round(v * 255)));
         }
         rgba[p * 4 + 3] = 255;
@@ -85,6 +95,7 @@
     var u32buf = new Uint32Array(f32buf.buffer);
     var out = new Uint16Array(f32.length);
     for (var i = 0; i < f32.length; i++) {
+      if (Number.isNaN(f32[i])) { out[i] = 0x7e00; continue; }
       f32buf[0] = f32[i];
       var bits = u32buf[0];
       var sign = (bits >>> 16) & 0x8000;
@@ -112,7 +123,7 @@
 
   async function supported() {
     try {
-      if (!navigator.gpu) return false;
+      if (typeof navigator === 'undefined' || !navigator || !navigator.gpu) return false;
       var adapter = await navigator.gpu.requestAdapter();
       return Boolean(adapter);
     } catch (_) { return false; }
@@ -120,22 +131,28 @@
 
   async function fetchModel(url, label, onProgress) {
     var cache = null;
-    try { cache = await caches.open(CACHE_NAME); } catch (_) {}
+    try { if (typeof caches !== 'undefined' && caches && typeof caches.open === 'function') cache = await caches.open(CACHE_NAME); } catch (_) {}
     if (cache) {
-      var hit = await cache.match(url);
-      if (hit) {
-        var hitLen = Number(hit.headers && hit.headers.get && hit.headers.get('content-length')) || 0;
-        if (hitLen > MAX_MODEL_BYTES) {
-          try { await cache.delete(url); } catch (_) {}
-        } else {
-          var cachedBuf = await hit.arrayBuffer();
-          if (cachedBuf.byteLength > MAX_MODEL_BYTES || cachedBuf.byteLength < 1024) {
+      try {
+        var hit = await cache.match(url);
+        if (hit) {
+          var hitLen = Number(hit.headers && hit.headers.get && hit.headers.get('content-length')) || 0;
+          if (hitLen > MAX_MODEL_BYTES) {
             try { await cache.delete(url); } catch (_) {}
           } else {
-            if (onProgress) onProgress({ file: label, pct: 1, cached: true });
-            return cachedBuf;
+            var cachedBuf = await hit.arrayBuffer();
+            if (cachedBuf.byteLength > MAX_MODEL_BYTES) {
+              try { await cache.delete(url); } catch (_) {}
+            } else if (cachedBuf.byteLength === 0) {
+              try { await cache.delete(url); } catch (_) {}
+            } else {
+              notifyProgress(onProgress, { file: label, pct: 1, cached: true });
+              return cachedBuf;
+            }
           }
         }
+      } catch (_) {
+        try { await cache.delete(url); } catch (_2) {}
       }
     }
     var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
@@ -148,9 +165,10 @@
     resetStall();
     var cachePutPromise = null;
     try {
-      var response = await fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
-      if (!response.ok) throw new Error(label + ' download failed (HTTP ' + response.status + ')');
-      var total = Number(response.headers.get('content-length')) || 0;
+      var fetchOpts = ctrl ? { signal: ctrl.signal, credentials: 'omit' } : { credentials: 'omit' };
+      var response = await fetch(url, fetchOpts);
+      if (!response || !response.ok) throw new Error(label + ' download failed (HTTP ' + (response ? response.status : 'unknown') + ')');
+      var total = Number(response.headers && response.headers.get && response.headers.get('content-length')) || 0;
       if (total > MAX_MODEL_BYTES) {
         try { if (response.body && typeof response.body.cancel === 'function') response.body.cancel(); } catch (_) {}
         throw new Error(label + ' exceeds maximum model size limit');
@@ -160,9 +178,22 @@
       // to CacheStorage in parallel (no JS-heap copy), and when the server
       // reports a length we read straight into ONE preallocated buffer — peak
       // stays ~1x file size instead of the previous ~3-4x.
-      if (cache) {
+      if (cache && typeof response.clone === 'function') {
         try { cachePutPromise = cache.put(url, response.clone()).catch(function () { /* quota — still usable this session */ }); }
         catch (_) { cachePutPromise = null; }
+      }
+      if (!response.body || typeof response.body.getReader !== 'function') {
+        resetStall();
+        var whole = await response.arrayBuffer();
+        if (whole.byteLength > MAX_MODEL_BYTES) {
+          throw new Error(label + ' exceeded maximum model size limit');
+        }
+        if ((total > 0 && whole.byteLength !== total) || whole.byteLength === 0) {
+          throw new Error(label + ' download was truncated (' + whole.byteLength + ' of ' + total + ' bytes)');
+        }
+        notifyProgress(onProgress, { file: label, pct: 1 });
+        if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
+        return whole;
       }
       var reader = response.body.getReader();
       var received = 0;
@@ -172,7 +203,9 @@
         resetStall();
         var step = await reader.read();
         if (step.done) break;
+        if (!step.value || !step.value.length) continue;
         if (received + step.value.length > MAX_MODEL_BYTES) {
+          try { if (ctrl) ctrl.abort(); } catch (_) {}
           try { if (typeof reader.cancel === 'function') reader.cancel(); } catch (_) {}
           throw new Error(label + ' exceeded maximum model size limit');
         }
@@ -189,9 +222,9 @@
           chunks.push(step.value);
         }
         received += step.value.length;
-        if (onProgress && total) onProgress({ file: label, pct: Math.min(1, received / total) });
+        if (total) notifyProgress(onProgress, { file: label, pct: Math.min(1, received / total) });
       }
-      if ((total > 0 && received !== total) || received < 1024) {
+      if ((total > 0 && received !== total) || received === 0) {
         throw new Error(label + ' download was truncated (' + received + ' of ' + total + ' bytes)');
       }
       if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
@@ -217,9 +250,17 @@
     var keys = Object.keys(state.sessions || {});
     for (var i = 0; i < keys.length; i++) {
       var s = state.sessions[keys[i]];
-      try { if (s && typeof s.release === 'function') s.release(); } catch (_) {}
+      try {
+        if (s && typeof s.release === 'function') {
+          var rel = s.release();
+          if (rel && typeof rel.catch === 'function') rel.catch(function () {});
+        }
+      } catch (_) {}
     }
     state.sessions = {};
+    state.ort = null;
+    state.tokenizer = null;
+    if (window._sdTurbo) window._sdTurbo.ready = false;
   }
 
   async function init(onProgress) {
@@ -235,7 +276,7 @@
       throw new Error('Remote SD-Turbo download is disabled in this mode');
     }
     if (state.initPromise) return state.initPromise;
-    state.initPromise = (async function () {
+    var currentInit = (async function () {
       if (!(await supported())) throw new Error('This device/browser has no WebGPU — local image generation is unavailable.');
       if (typeof window.__alloLoadVerifiedRuntime !== 'function') throw new Error('Verified image runtime delivery is unavailable');
       var ortModule = await window.__alloLoadVerifiedRuntime('ort121');
@@ -253,7 +294,7 @@
         var m = MODELS[i];
         var modelUrl = MODEL_BASE + m.file;
         var bytes = await fetchModel(modelUrl, m.key, onProgress);
-        if (onProgress) onProgress({ file: m.key, pct: 1, stage: 'loading' });
+        notifyProgress(onProgress, { file: m.key, pct: 1, stage: 'loading' });
         try {
           state.sessions[m.key] = await ort.InferenceSession.create(bytes, {
             executionProviders: ['webgpu'],
@@ -269,17 +310,23 @@
           });
         } catch (sessionErr) {
           try {
-            var cache = await caches.open(CACHE_NAME);
-            await cache.delete(modelUrl);
+            if (typeof caches !== 'undefined' && caches && typeof caches.open === 'function') {
+              var cache = await caches.open(CACHE_NAME);
+              await cache.delete(modelUrl);
+            }
           } catch (_) {}
           throw sessionErr;
         }
       }
       window._sdTurbo.ready = true;
       return true;
-    })();
-    try { return await state.initPromise; }
-    catch (error) { releasePartialSessions(); state.initPromise = null; throw error; }
+    })().catch(function (error) {
+      releasePartialSessions();
+      if (state.initPromise === currentInit) state.initPromise = null;
+      throw error;
+    });
+    state.initPromise = currentInit;
+    return currentInit;
   }
 
   function makeFloatTensor(session, name, data, dims) {
@@ -304,21 +351,32 @@
   function getInputMeta(session, name) {
     try {
       if (!session || !session.inputMetadata) return null;
-      var byName = session.inputMetadata[name];
+      var byName = Object.prototype.hasOwnProperty.call(session.inputMetadata, name) ? session.inputMetadata[name] : null;
       if (byName) return byName;
       var names = Array.isArray(session.inputNames) ? session.inputNames : [];
       var index = names.indexOf(name);
-      return index >= 0 ? session.inputMetadata[index] : null;
+      return index >= 0 && Object.prototype.hasOwnProperty.call(session.inputMetadata, index) ? session.inputMetadata[index] : null;
     } catch (_) { return null; }
   }
   function tensorToFloat32(tensor) {
     if (tensor.type === 'float16') {
       var data = tensor.data;
-      // Respect the view's offset/length: reinterpreting the whole backing
-      // buffer from 0 corrupts outputs when ort hands back a pooled view.
-      var u16 = ArrayBuffer.isView(data)
-        ? new Uint16Array(data.buffer, data.byteOffset, data.length)
-        : new Uint16Array(data);
+      var u16;
+      if (data instanceof Uint16Array) {
+        u16 = data;
+      } else if (ArrayBuffer.isView(data)) {
+        // Respect the view's byteOffset/byteLength safely even for Uint8Array
+        // views or unaligned byte offsets returned from pooled WASM/WebGPU memory.
+        var elemCount = Math.floor(data.byteLength / 2);
+        if ((data.byteOffset % 2) === 0 && (data.byteLength % 2) === 0) {
+          u16 = new Uint16Array(data.buffer, data.byteOffset, elemCount);
+        } else {
+          var aligned = data.buffer.slice(data.byteOffset, data.byteOffset + elemCount * 2);
+          u16 = new Uint16Array(aligned);
+        }
+      } else {
+        u16 = new Uint16Array(data);
+      }
       return fromHalf(u16);
     }
     return tensor.data instanceof Float32Array ? tensor.data : new Float32Array(tensor.data);
@@ -343,10 +401,10 @@
     return names[0] || wanted[0];
   }
   function pickOutput(outputs, preferred) {
-    if (!outputs) return null;
+    if (!outputs || typeof outputs !== 'object') return null;
     var wanted = Array.isArray(preferred) ? preferred : [preferred];
     for (var i = 0; i < wanted.length; i++) {
-      if (looksLikeTensor(outputs[wanted[i]])) return outputs[wanted[i]];
+      if (Object.prototype.hasOwnProperty.call(outputs, wanted[i]) && looksLikeTensor(outputs[wanted[i]])) return outputs[wanted[i]];
     }
     var keys = Object.keys(outputs);
     for (var w = 0; w < wanted.length; w++) {
@@ -361,52 +419,112 @@
     return null;
   }
 
-  async function generate(prompt, options) {
+  function _collectDisposables(list, mapOrTensor) {
+    if (!mapOrTensor) return;
+    if (typeof mapOrTensor.dispose === 'function') {
+      if (list.indexOf(mapOrTensor) < 0) list.push(mapOrTensor);
+      return;
+    }
+    if (typeof mapOrTensor === 'object') {
+      var keys = Object.keys(mapOrTensor);
+      for (var i = 0; i < keys.length; i++) {
+        var v = mapOrTensor[keys[i]];
+        if (v && typeof v.dispose === 'function' && list.indexOf(v) < 0) list.push(v);
+      }
+    }
+  }
+
+  async function _runGenerate(prompt, options) {
     if (!window._sdTurbo.ready) throw new Error('Local image generator is not loaded yet.');
     var ort = state.ort;
     var opts = options || {};
-    var encoded = await state.tokenizer(String(prompt || 'a drawing'), {
-      padding: 'max_length', max_length: 77, truncation: true, return_tensor: false,
-    });
-    var ids = encoded.input_ids;
-    var idsInt32 = new Int32Array(77);
-    for (var i = 0; i < 77; i++) idsInt32[i] = Number(ids[i] || 0);
-    var textInputName = pickSessionName(state.sessions.text_encoder, 'inputNames', ['input_ids'], 0);
-    var textFeed = {};
-    textFeed[textInputName] = new ort.Tensor('int32', idsInt32, [1, 77]);
-    var textOut = await state.sessions.text_encoder.run(textFeed);
-    var hidden = pickOutput(textOut, ['last_hidden_state', 'hidden_states', 'encoder_hidden_states']);
-    if (!hidden) throw new Error('SD-Turbo text encoder returned no usable hidden-state tensor.');
+    var disposables = [];
+    var canvas = null;
+    try {
+      var encoded = await state.tokenizer(String(prompt || 'a drawing'), {
+        padding: 'max_length', max_length: 77, truncation: true, return_tensor: false,
+      });
+      var rawIds = encoded && encoded.input_ids;
+      var ids = (rawIds && typeof rawIds === 'object' && !Array.isArray(rawIds) && !ArrayBuffer.isView(rawIds) && rawIds.data)
+        ? rawIds.data
+        : rawIds;
+      if (!ids || typeof ids.length !== 'number') {
+        throw new Error('SD-Turbo tokenizer returned invalid input_ids.');
+      }
+      var idsInt32 = new Int32Array(77);
+      for (var i = 0; i < 77; i++) idsInt32[i] = Number(ids[i] || 0);
+      var textInputName = pickSessionName(state.sessions.text_encoder, 'inputNames', ['input_ids'], 0);
+      var textFeed = {};
+      textFeed[textInputName] = new ort.Tensor('int32', idsInt32, [1, 77]);
+      _collectDisposables(disposables, textFeed);
+      var textOut = await state.sessions.text_encoder.run(textFeed);
+      _collectDisposables(disposables, textOut);
+      var hidden = pickOutput(textOut, ['last_hidden_state', 'hidden_states', 'encoder_hidden_states']);
+      if (!hidden) throw new Error('SD-Turbo text encoder returned no usable hidden-state tensor.');
 
-    var latentCount = LATENT.channels * LATENT.height * LATENT.width;
-    var latents = randnLatents(latentCount, SIGMA);
-    var scaled = scaleModelInputs(latents, SIGMA);
-    var unetSampleName = pickSessionName(state.sessions.unet, 'inputNames', ['sample', 'latent_model_input', 'latents'], 0);
-    var unetTimestepName = pickSessionName(state.sessions.unet, 'inputNames', ['timestep', 'timesteps', 't'], 1);
-    var unetHiddenName = pickSessionName(state.sessions.unet, 'inputNames', ['encoder_hidden_states', 'text_embeds', 'context'], 2);
-    var unetFeed = {};
-    unetFeed[unetSampleName] = makeFloatTensor(state.sessions.unet, unetSampleName, scaled, [1, LATENT.channels, LATENT.height, LATENT.width]);
-    unetFeed[unetTimestepName] = makeTimestepTensor(state.sessions.unet, unetTimestepName, TIMESTEP);
-    unetFeed[unetHiddenName] = hidden;
-    var unetOut = await state.sessions.unet.run(unetFeed);
-    var noisePredTensor = pickOutput(unetOut, ['out_sample', 'sample', 'noise_pred', 'latent']);
-    if (!noisePredTensor) throw new Error('SD-Turbo UNet returned no usable noise tensor.');
-    var noisePred = tensorToFloat32(noisePredTensor);
-    var vaeLatents = denoiseToVaeLatents(latents, noisePred, SIGMA, VAE_SCALING);
-    var vaeInputName = pickSessionName(state.sessions.vae_decoder, 'inputNames', ['latent_sample', 'sample', 'latents'], 0);
-    var vaeFeed = {};
-    vaeFeed[vaeInputName] = makeFloatTensor(state.sessions.vae_decoder, vaeInputName, vaeLatents, [1, LATENT.channels, LATENT.height, LATENT.width]);
-    var vaeOut = await state.sessions.vae_decoder.run(vaeFeed);
-    var imageTensor = pickOutput(vaeOut, ['sample', 'out_sample', 'image', 'images']);
-    if (!imageTensor) throw new Error('SD-Turbo VAE returned no usable image tensor.');
-    var image = tensorToFloat32(imageTensor);
-    var rgba = chwToRgba(image, IMAGE_SIZE, IMAGE_SIZE);
-    var canvas = document.createElement('canvas');
-    canvas.setAttribute('aria-hidden', 'true');
-    canvas.width = IMAGE_SIZE;
-    canvas.height = IMAGE_SIZE;
-    canvas.getContext('2d').putImageData(new ImageData(rgba, IMAGE_SIZE, IMAGE_SIZE), 0, 0);
-    return canvas.toDataURL(opts.mime || 'image/png');
+      var latentCount = LATENT.channels * LATENT.height * LATENT.width;
+      var latents = randnLatents(latentCount, SIGMA);
+      var scaled = scaleModelInputs(latents, SIGMA);
+      var unetSampleName = pickSessionName(state.sessions.unet, 'inputNames', ['sample', 'latent_model_input', 'latents'], 0);
+      var unetTimestepName = pickSessionName(state.sessions.unet, 'inputNames', ['timestep', 'timesteps', 't'], 1);
+      var unetHiddenName = pickSessionName(state.sessions.unet, 'inputNames', ['encoder_hidden_states', 'text_embeds', 'context'], 2);
+      var unetFeed = {};
+      unetFeed[unetSampleName] = makeFloatTensor(state.sessions.unet, unetSampleName, scaled, [1, LATENT.channels, LATENT.height, LATENT.width]);
+      unetFeed[unetTimestepName] = makeTimestepTensor(state.sessions.unet, unetTimestepName, TIMESTEP);
+      unetFeed[unetHiddenName] = hidden;
+      _collectDisposables(disposables, unetFeed);
+      var unetOut = await state.sessions.unet.run(unetFeed);
+      _collectDisposables(disposables, unetOut);
+      var noisePredTensor = pickOutput(unetOut, ['out_sample', 'sample', 'noise_pred', 'latent']);
+      if (!noisePredTensor) throw new Error('SD-Turbo UNet returned no usable noise tensor.');
+      var noisePred = tensorToFloat32(noisePredTensor);
+      var vaeLatents = denoiseToVaeLatents(latents, noisePred, SIGMA, VAE_SCALING);
+      var vaeInputName = pickSessionName(state.sessions.vae_decoder, 'inputNames', ['latent_sample', 'sample', 'latents'], 0);
+      var vaeFeed = {};
+      vaeFeed[vaeInputName] = makeFloatTensor(state.sessions.vae_decoder, vaeInputName, vaeLatents, [1, LATENT.channels, LATENT.height, LATENT.width]);
+      _collectDisposables(disposables, vaeFeed);
+      var vaeOut = await state.sessions.vae_decoder.run(vaeFeed);
+      _collectDisposables(disposables, vaeOut);
+      var imageTensor = pickOutput(vaeOut, ['sample', 'out_sample', 'image', 'images']);
+      if (!imageTensor) throw new Error('SD-Turbo VAE returned no usable image tensor.');
+      var image = tensorToFloat32(imageTensor);
+      var rgba = chwToRgba(image, IMAGE_SIZE, IMAGE_SIZE);
+      if (typeof document === 'undefined' || !document || typeof document.createElement !== 'function') {
+        throw new Error('Canvas rendering is unavailable in this environment.');
+      }
+      canvas = document.createElement('canvas');
+      canvas.setAttribute('aria-hidden', 'true');
+      canvas.width = IMAGE_SIZE;
+      canvas.height = IMAGE_SIZE;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('2D canvas context is unavailable for SD-Turbo rendering.');
+      var imgData = typeof ImageData === 'function'
+        ? new ImageData(rgba, IMAGE_SIZE, IMAGE_SIZE)
+        : (typeof ctx.createImageData === 'function' ? Object.assign(ctx.createImageData(IMAGE_SIZE, IMAGE_SIZE), {}) : null);
+      if (!imgData) throw new Error('ImageData is unavailable for SD-Turbo rendering.');
+      if (typeof ImageData !== 'function' && imgData.data && typeof imgData.data.set === 'function') {
+        imgData.data.set(rgba);
+      }
+      ctx.putImageData(imgData, 0, 0);
+      return canvas.toDataURL(opts.mime || 'image/png');
+    } finally {
+      for (var d = 0; d < disposables.length; d++) {
+        try { if (disposables[d] && typeof disposables[d].dispose === 'function') disposables[d].dispose(); } catch (_) {}
+      }
+      if (canvas) {
+        try { canvas.width = 0; canvas.height = 0; } catch (_) {}
+      }
+    }
+  }
+
+  function generate(prompt, options) {
+    if (!window._sdTurbo.ready) return Promise.reject(new Error('Local image generator is not loaded yet.'));
+    var task = state.genQueue.then(
+      function () { return _runGenerate(prompt, options); },
+      function () { return _runGenerate(prompt, options); }
+    );
+    state.genQueue = task.then(function () {}, function () {});
+    return task;
   }
 
   window._sdTurbo = {
@@ -421,10 +539,13 @@
       chwToRgba: chwToRgba,
       toHalf: toHalf,
       fromHalf: fromHalf,
+      tensorToFloat32: tensorToFloat32,
       pickSessionName: pickSessionName,
       pickOutput: pickOutput,
       constants: { SIGMA: SIGMA, TIMESTEP: TIMESTEP, VAE_SCALING: VAE_SCALING },
     },
   };
-  console.log('[SD-Turbo] Loader registered (WebGPU local image generation)');
+  if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+    console.log('[SD-Turbo] Loader registered (WebGPU local image generation)');
+  }
 })();

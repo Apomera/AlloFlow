@@ -111,6 +111,16 @@
         }
         d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
 
+        function updateAnchorOffset() {
+            var nav = d.querySelector('.navbar');
+            var navH = nav && nav.getBoundingClientRect ? Math.round(nav.getBoundingClientRect().height) : 0;
+            var barH = bar && bar.getBoundingClientRect ? Math.round(bar.getBoundingClientRect().height) : 0;
+            var total = (navH > 0 ? navH : 64) + (barH > 0 ? barH : 60);
+            root.style.setProperty('--mn-rtools-offset', total + 'px');
+        }
+        window.addEventListener('resize', updateAnchorOffset);
+        updateAnchorOffset();
+
         function announce(msg) {
             if (status) status.textContent = msg;
         }
@@ -174,6 +184,7 @@
             var opening = panel.hasAttribute('hidden');
             if (opening) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
             toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+            updateAnchorOffset();
         });
         panel.addEventListener('keydown', function (e) {
             if (e.isComposing || e.keyCode === 229) return;
@@ -181,6 +192,7 @@
                 e.preventDefault();
                 panel.setAttribute('hidden', '');
                 toggle.setAttribute('aria-expanded', 'false');
+                updateAnchorOffset();
                 toggle.focus();
             }
         });
@@ -276,10 +288,12 @@
         }
 
         function sync() {
+            var rawOffset = parseInt(root.style.getPropertyValue('--mn-rtools-offset'), 10);
+            var threshold = Number.isFinite(rawOffset) && rawOffset > 0 ? rawOffset + 24 : 140;
             var current = pairs[0].link;
             for (var i = 0; i < pairs.length; i++) {
                 var rect = pairs[i].target.getBoundingClientRect();
-                if (rect.top <= 140) current = pairs[i].link;
+                if (rect.top <= threshold) current = pairs[i].link;
             }
             setCurrent(current);
         }

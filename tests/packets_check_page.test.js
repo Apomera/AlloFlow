@@ -17,7 +17,8 @@ const ADDRESS = 'https://packets.test/site/packets-check.html';
 const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'";
 // 2026-11-14 (T1/makers2): packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added for reopen & batch .zip.
 // 2026-11-17: packets_check_directions.js added: the recordings of the directions of the two checks for the youngest students.
-const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_check_directions.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-check.js'];
+// 2026-11-25 (Wave 42): packets_docx.js added for offline Word (.docx) export while preserving packets-check.js's zero-script-injection invariant.
+const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_check_directions.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets_docx.js', 'packets-check.js'];
 // Said on every page that makes or shows a check, word for word.
 const WHAT_A_CHECK_IS = 'A check to see how a student is doing. It is not for a grade and it is not a standardized test.';
 const PROOF_LINE = 'This page runs without AI. No account. Nothing you choose leaves your device.';
@@ -265,7 +266,8 @@ describe('the page as files', () => {
     expect(new Set([...doc.querySelectorAll('[id]')].map((node) => node.id)).size).toBe(doc.querySelectorAll('[id]').length);
     expect(doc.querySelector('a.skip').getAttribute('href')).toBe('#main');
     expect(doc.querySelector('header') && doc.querySelector('main#main') && doc.querySelector('footer') && doc.querySelector('nav[aria-label="Steps"]')).toBeTruthy();
-    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['More from AlloFlow']);
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['Send feedback', 'More from AlloFlow']);
     expect([...doc.querySelectorAll('link[rel="icon"]')].map((link) => link.getAttribute('href'))).toEqual(['packets-mark.svg']);
     // A heading the page moves focus to is read out and shows no box; controls keep their outline.
     for (const id of ['step-1-title', 'step-2-title', 'step-3-title', 'after-save', 'reopen-note']) expect(doc.getElementById(id).getAttribute('tabindex'), id).toBe('-1');
@@ -351,9 +353,10 @@ describe('the page as files', () => {
     // 2026-11-14 (T1/makers2): 14 files in all, and total script size is ~0.86 MB ("about 0.9 MB").
     const files = new Set([PAGE, ...[...doc.querySelectorAll('link[href], script[src]')].map((node) => node.getAttribute('href') || node.getAttribute('src'))]);
     // 2026-11-17: 15 with packets_check_directions.js.
-    expect(files.size).toBe(15);
+    // 2026-11-25 (Wave 42): 16 with packets_docx.js for offline Word (.docx) export.
+    expect(files.size).toBe(16);
     expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(3);
-    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads fifteen files, all from this site: the page itself, three stylesheets (one is only for printing), ten scripts and the icon in the browser tab.');
+    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads sixteen files, all from this site: the page itself, three stylesheets (one is only for printing), eleven scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
     // Re-pinned 2026-11-13 (release b) from about 0.6 MB: the engine carries two-tab, time-up-away and failed-sound handling.
@@ -365,7 +368,8 @@ describe('the page as files', () => {
     // Re-pinned 2026-11-19 (Waves 5-7): take-home loader parity/a11y + worksheet/roster paste (~1.20 MB, still "about 1 MB").
     // Re-pinned 2026-11-21: preview-only nav token bridge (+7.3 KB) on top of prior loader/builder growth (~1.32 MB).
     // Re-pinned 2026-11-22 (Show my teacher): deskside conferencing fold + coded check focus box (~1.39 MB).
-    expect(megabytes).toBeLessThan(1.42);
+    // Re-pinned 2026-11-25 (Wave 42) from 1.52: packets_docx.js (+163 KB) added statically for offline .docx export (~1.71 MB across 11 scripts).
+    expect(megabytes).toBeLessThan(1.80);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -1274,13 +1278,14 @@ describe('the paper copy', () => {
     expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the student.');
     // 2026-11-14 (T1/makers2): paper copy uses "Practice. These do not count." and step 3 now holds title, code name and batch .zip inputs.
     expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Practice. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);
-    // One button, beside saving the file, with a line that says what it prints.
+    // Paper copy + Word (.docx) export buttons beside saving the file (Wave 42 adds #download-docx).
     const actions = doc.getElementById('save').parentNode;
-    expect([...actions.querySelectorAll('button, a')].map((node) => node.id)).toEqual(['back-3', 'try', 'print', 'save']);
+    expect([...actions.querySelectorAll('button, a')].map((node) => node.id)).toEqual(['back-3', 'try', 'print', 'download-docx', 'save']);
     const button = doc.getElementById('print');
     expect([button.textContent, button.className, button.hidden, button.getAttribute('aria-describedby')]).toEqual(['Print a paper copy', 'btn', true, 'print-note']);
     expect(doc.getElementById('print-note').textContent).toBe('For a student with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
-    expect([...doc.getElementById('step-3').querySelectorAll('input, select, textarea')].map((n) => n.id)).toEqual(['f-title', 'f-batch-names', 'batch-file', 'f-batch-rotate']);
+    // 2026-11-25 (Wave 45): #check-docx-options adds #f-docx-density and #f-docx-key inside step-3.
+    expect([...doc.getElementById('step-3').querySelectorAll('input, select, textarea')].map((n) => n.id)).toEqual(['f-title', 'f-docx-density', 'f-docx-key', 'f-batch-names', 'batch-file', 'f-batch-rotate']);
 
     // Everything in the print stylesheet is for print: the screen is untouched.
     const css = read(PRINT_CSS);

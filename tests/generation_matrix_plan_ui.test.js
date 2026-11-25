@@ -27,11 +27,16 @@ describe('Blueprint generation-matrix review UI', () => {
   });
 
   it('invalidates the frozen matrix when an educator changes a type or directive', () => {
-    expect(source.match(/generationVariants = \[\]/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source.match(/generationIdentity = null/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source.match(/generationAction = null/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source.match(/explicitVariantKey = null/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(source.match(/variantKeyDerived = false/g)?.length).toBeGreaterThanOrEqual(2);
+    // Both handlers now rebuild the item as an object literal with the frozen
+    // decisions reset, rather than assigning fields one by one.
+    for (const handler of ['const handleTypeChange = (index, newType) => {', 'const handleDirectiveChange = (index, newText) => {']) {
+      const at = source.indexOf(handler);
+      expect(at, handler).toBeGreaterThan(-1);
+      const body = source.slice(at, source.indexOf('syncChanges(newItems);', at));
+      for (const reset of ['generationVariants: [],', 'generationIdentity: null,', 'generationAction: null,', 'explicitVariantKey: null,', 'variantKeyDerived: false,']) {
+        expect(body, handler + ' ' + reset).toContain(reset);
+      }
+    }
   });
 
   it('previews the total calls, reuse, audiences, languages, and each row impact', () => {
@@ -45,7 +50,7 @@ describe('Blueprint generation-matrix review UI', () => {
   });
 
   it('treats partial rows as settled and exposes every runtime variant for preview', () => {
-    expect(source).toContain("partial:     { label: t('blueprint.status_partial')");
+    expect(source).toContain("partial:     { label: _pSay(t, 'blueprint.status_partial', 'Partial')");
     expect(source).toContain("r.status === 'partial'");
     expect(source).toContain('data-testid="bp-variant-results"');
     expect(source).toContain('data-testid="bp-variant-result"');

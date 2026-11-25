@@ -273,7 +273,8 @@ describe('saving, sounds, names, the screen-reader line and print', () => {
 
   it('screen() clears the screen-reader line; primary buttons print in the text color', async () => {
     const html = await wsFile(['counting']);
-    expect(html).toContain('@media print{button.primary{color:inherit;box-shadow:none}}');
+    // 2026-11-23: the rule now shares its print block with the print colors (11-19); what matters is that it is inside one.
+    expect(html).toMatch(/@media print\{[^@]*button\.primary\{color:inherit;box-shadow:none\}\}/);
     const t = open(html);
     t.d.getElementById('live').textContent = 'Sound 3 is in box 3.';
     t.start(); await wait(5);

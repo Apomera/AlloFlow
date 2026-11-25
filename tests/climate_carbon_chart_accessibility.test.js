@@ -62,24 +62,26 @@ afterEach(async()=>{
 
 describe.each(paths)('Carbon chart accessibility: %s',path=>{
   it('keeps exact total and category values readable without canvas and updates them with the actual selection',async()=>{
-    const view=mountTool(path,{ ccTransport:2,ccFood:2,ccEnergy:2,ccWaste:2 }); await settle();
+    const view=mountTool(path,{ ccTransport:2,ccFood:2,ccEnergy:2,ccWaste:2,ccPrediction:{pick:'energy',sig:'2,2,2,2'} }); await settle();
     const chart=view.one(selector),total=view.one('#ce-carbon-total');
     expect(chart.getAttribute('role')).toBe('img'); expect(total).toBeTruthy();
-    expect(total.textContent).toContain(format(8700)); expect(total.textContent).toMatch(/kg|kilograms/i);
-    expect(chart.getAttribute('aria-label')).toContain('Total '+format(8700)+' kilograms');
-    for(const [label,value] of [['Transport',1200],['Food',2500],['Energy',4000],['Waste',1000]]) {
+    // Food values now follow Scarborough et al. 2014 (high-meat diet 2,620 kg CO2e a year).
+    // 2026-11-23: transport, energy and waste are worked out from EPA/EIA factors (720 + 2620 + 3770 + 520).
+    expect(total.textContent).toContain(format(7630)); expect(total.textContent).toMatch(/kg|kilograms/i);
+    expect(chart.getAttribute('aria-label')).toContain('Total '+format(7630)+' kilograms');
+    for(const [label,value] of [['Transport',720],['Food',2620],['Energy',3770],['Waste',520]]) {
       expect(legend(chart,label,value)).toBeTruthy();
       expect(chart.getAttribute('aria-label')).toContain(label+' '+format(value)+' kilograms');
     }
     const walking=view.one('#ce-carbon-choice-transport-0'); await activate(walking);
     expect(document.activeElement).toBe(walking); expect(legend(chart,'Transport',0)).toBeTruthy();
-    expect(view.one('#ce-carbon-total').textContent).toContain(format(7500));
-    expect(chart.getAttribute('aria-label')).toContain('Total '+format(7500)+' kilograms');
+    expect(view.one('#ce-carbon-total').textContent).toContain(format(6910));
+    expect(chart.getAttribute('aria-label')).toContain('Total '+format(6910)+' kilograms');
     expect(chart.getAttribute('aria-label')).toContain('Transport 0 kilograms, 0 percent');
   });
 
   it('redraws centered total and units when the theme changes while retaining the same values and text alternatives',async()=>{
-    const view=mountTool(path,{},true); await settle();
+    const view=mountTool(path,{ccTransport:0,ccFood:0,ccEnergy:0,ccWaste:0},true); await settle(); // 0+1390+0+230 (2026-11-23 worked-out values)
     const chart=view.one(selector),record=drawings.get(chart),label=chart.getAttribute('aria-label');
     expect(record).toBeTruthy(); expect(record.text).toHaveLength(2);
     const primary=[],secondary=[];
@@ -88,11 +90,11 @@ describe.each(paths)('Carbon chart accessibility: %s',path=>{
       if(primary.length){ view.theme(theme); await settle(); expect(record.text).toHaveLength(previousDrawCount+2); }
       expect(view.one(selector)).toBe(chart); expect(chart.getAttribute('aria-label')).toBe(label);
       const [total,units]=record.text.slice(-2);
-      expect(total.text).toBe(format(900)); expect(units.text).toBe('kg CO₂/yr');
+      expect(total.text).toBe(format(1620)); expect(units.text).toBe('kg CO₂e/yr');
       expect(total.align).toBe('center'); expect(units.align).toBe('center');
       expect(total.baseline).toBe('middle'); expect(units.baseline).toBe('middle'); expect(units.x).toBe(total.x);
-      expect(textColor(total.color)).toBe(legend(chart,'Food',600).style.color);
-      expect(view.one('#ce-carbon-total').textContent).toContain(format(900));
+      expect(textColor(total.color)).toBe(legend(chart,'Food',1390).style.color);
+      expect(view.one('#ce-carbon-total').textContent).toContain(format(1620));
       primary.push(total.color); secondary.push(units.color);
     }
     expect(new Set(primary.slice(0,3)).size).toBe(3); expect(new Set(secondary.slice(0,3)).size).toBe(3);

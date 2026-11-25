@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <title>How AlloFlow is designed | AlloFlow</title>
+    <meta name="description"
+        content="The principles behind AlloFlow: teacher-first preparation, three tests for features, five commitments, student AI defaults, and plain-language limits.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://apomera.github.io/AlloFlow/principles.html">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="AlloFlow">
+    <meta property="og:url" content="https://apomera.github.io/AlloFlow/principles.html">
+    <meta property="og:title" content="How AlloFlow is designed | AlloFlow">
+    <meta property="og:description" content="AlloFlow does the preparation so teachers can do the teaching. Read the three tests, five commitments, and architectural choices behind the project.">
+    <meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apomera.github.io/AlloFlow/principles.html">
+    <meta name="twitter:title" content="How AlloFlow is designed | AlloFlow">
+    <meta name="twitter:description" content="AlloFlow does the preparation so teachers can do the teaching. Read the three tests, five commitments, and architectural choices behind the project.">
+    <meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+    <meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation, illustrated with science, document, communication, and search symbols.">
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/Outfit-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="vendor/fonts/PlusJakartaSans-latin.woff2" crossorigin>
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="promotion-wave3.css">
+    <link rel="stylesheet" href="promotion-wave3-shell.css">
+    <link rel="stylesheet" href="promo-nav-breakpoint.css">
+    <link rel="stylesheet" href="principles.css">
+    <script src="site.js" defer></script>
+    <script src="vendor/lucide-promo-subset.min.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": "https://apomera.github.io/AlloFlow/principles.html#page",
+          "url": "https://apomera.github.io/AlloFlow/principles.html",
+          "name": "How AlloFlow is designed | AlloFlow",
+          "description": "The principles and design rationale behind AlloFlow: teacher-first preparation, three tests for features, five commitments, student AI defaults, and plain-language limits.",
+          "dateModified": "2026-11-24",
+          "isPartOf": {"@id": "https://apomera.github.io/AlloFlow/#website"},
+          "about": {"@id": "https://apomera.github.io/AlloFlow/#software"}
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://apomera.github.io/AlloFlow/#website",
+          "name": "AlloFlow",
+          "url": "https://apomera.github.io/AlloFlow/"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://apomera.github.io/AlloFlow/#software",
+          "name": "AlloFlow",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web Browser, Windows, macOS",
+          "url": "https://apomera.github.io/AlloFlow/",
+          "codeRepository": "https://github.com/Apomera/AlloFlow",
+          "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+          "isAccessibleForFree": true,
+          "author": {
+            "@type": "Person",
+            "name": "Aaron Pomeranz",
+            "jobTitle": "School Psychologist"
+          }
+        }
+      ]
+    }
+    </script>
+</head>
+
+<body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <nav class="navbar" aria-label="Primary">
+        <div class="navbar-inner">
+            <a href="./" class="nav-logo"><i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i> AlloFlow</a>
+            <div class="nav-links" data-site-nav="primary">
+                <a href="tools.html">Find a Tool</a>
+                <a href="packets.html">Quick Practice &amp; Checks</a>
+                <a href="features.html">Features</a>
+                <a href="remediation.html">Remediation</a>
+                <a href="ways-to-use.html">Ways to Use</a>
+                <a href="for-districts.html">For Districts</a>
+                <a href="manuals.html">Manuals</a>
+                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
+            </div>
+            <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
+        </div>
+    </nav>
+
+    <!-- shared mobile nav:start -->
+    <div id="mobileNav" class="mobile-nav" role="dialog" aria-modal="true" aria-label="Site navigation" aria-hidden="true" hidden>
+        <button type="button" class="close-btn" aria-label="Close menu">&times;</button>
+        <section class="mobile-nav-group" aria-label="Explore">
+            <span class="mobile-nav-heading">Explore</span>
+            <a href="./">Home</a>
+            <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
+            <a href="features.html">Features</a>
+            <a href="tour.html">Visual Tour</a>
+            <a href="library.html">Lesson Library</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Accessibility and setup">
+            <span class="mobile-nav-heading">Accessibility &amp; Setup</span>
+            <a href="remediation.html">Remediation</a>
+            <a href="accessibility_demo.html">Accessibility Lab</a>
+            <a href="whitepaper.html">White Paper</a>
+            <a href="ways-to-use.html">Ways to Use</a>
+            <a href="for-districts.html">For Districts</a>
+            <a href="manuals.html">Manuals</a>
+        </section>
+        <section class="mobile-nav-group" aria-label="Project and launch">
+            <span class="mobile-nav-heading">Project</span>
+            <a href="about.html">About</a>
+            <a href="principles.html" aria-current="page">Principles</a>
+            <a href="feedback.html">Feedback</a>
+            <a href="https://github.com/Apomera/AlloFlow" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="launch.html" class="mobile-nav-cta">Launch AlloFlow</a>
+        </section>
+    </div>
+    <noscript>
+        <style>.mobile-menu-btn{display:none!important}</style>
+        <nav class="noscript-nav" aria-label="Site navigation without JavaScript">
+            <a href="./">Home</a><a href="about.html">About</a><a href="principles.html" aria-current="page">Principles</a><a href="tools.html">Find a Tool</a><a href="packets.html">Quick Practice &amp; Checks</a><a href="manuals.html">Manuals</a><a href="feedback.html">Feedback</a><a href="launch.html">Launch AlloFlow</a>
+        </nav>
+    </noscript>
+<!-- shared mobile nav:end -->
+
+    <header class="principles-hero">
+        <div class="principles-inner">
+            <p class="promo-kicker">Principles &amp; design rationale</p>
+            <h1>How AlloFlow is designed</h1>
+            <p class="principles-promise">AlloFlow does the preparation so teachers can do the teaching.</p>
+            <div class="principles-hero__body">
+                <p>Differentiating one lesson five ways by hand, late at night, is the work that burns teachers out and pulls their attention away from students. AlloFlow takes on that labor: leveled companions, glossaries, practice, checks, accessible copies. The part only a person can do stays with the teacher: noticing a student, knowing them, deciding what they need next.</p>
+                <p>AI in a classroom can quietly move a student's attention, and their relationships, onto a screen. We think the opposite is possible. A tool brings more humanity into a room when it does the work that crowds people out. The principles below are how we hold AlloFlow to that.</p>
+            </div>
+            <p class="principles-updated">Behavior claims on this page were last checked against the AlloFlow codebase on <time datetime="2026-11-24">November 24, 2026</time>.</p>
+            <div class="principles-hero__actions no-print">
+                <button type="button" class="principles-print-btn" onclick="window.print()">Print / Save PDF</button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="principles-jump" aria-label="On this page">
+        <div class="principles-jump__inner">
+            <span class="principles-jump__label">On this page</span>
+            <ul>
+                <li><a href="#our-principles">Our principles</a></li>
+                <li><a href="#teachers-generate-first">Teachers generate first</a></li>
+                <li><a href="#why-built-this-way">Architectural choices</a></li>
+                <li><a href="#openness-and-limits">Openness &amp; limits</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main-content" tabindex="-1">
+        <section id="our-principles" class="principles-section" aria-labelledby="principles-heading">
+            <div class="principles-inner">
+                <p class="principles-eyebrow">Our principles</p>
+                <h2 id="principles-heading">Three tests and five commitments</h2>
+                <p class="principles-section-lede">We judge every feature against three tests. Five commitments keep those tests honest.</p>
+
+                <h3 class="principles-subhead">Three tests for every feature</h3>
+                <ol class="principles-tests-grid">
+                    <li class="principles-test-card">
+                        <span class="principles-test-badge" aria-hidden="true">1</span>
+                        <h4>Time</h4>
+                        <p>It gives a teacher minutes back with a student. A feature should remove preparation work, not add screen management. If it needs more teacher clicks than the task it replaces, it fails.</p>
+                    </li>
+                    <li class="principles-test-card">
+                        <span class="principles-test-badge" aria-hidden="true">2</span>
+                        <h4>Handoff</h4>
+                        <p>It ends by sending the student back to people. A good activity finishes with a conversation, a partner, a group discussion, or a question for the teacher. A student should not finish a lesson having talked only to software.</p>
+                    </li>
+                    <li class="principles-test-card">
+                        <span class="principles-test-badge" aria-hidden="true">3</span>
+                        <h4>Seeing</h4>
+                        <p>It helps the teacher understand the student, not just score them. Evidence should show how a student thinks, where they got stuck, and what helped. Automated numbers are labeled as estimates until a person reviews them.</p>
+                    </li>
+                </ol>
+                <p class="principles-status-note"><strong>Where we are today:</strong> Time and Seeing shape what ships now; building clear human handoffs into every activity is ongoing work.</p>
+
+                <h3 class="principles-subhead">Five commitments</h3>
+                <ol class="principles-commitments">
+                    <li>
+                        <span class="principles-commitment-num" aria-hidden="true">1</span>
+                        <div>
+                            <h4>The teacher is the author.</h4>
+                            <p>AI writes drafts. A teacher reviews them before students see them, and the teacher's judgment is final.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="principles-commitment-num" aria-hidden="true">2</span>
+                        <div>
+                            <h4>The original stays.</h4>
+                            <p>Adapted readings, glossaries, and other supports sit beside the original text. They do not replace it.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="principles-commitment-num" aria-hidden="true">3</span>
+                        <div>
+                            <h4>Collect less, forget by default.</h4>
+                            <p>No student accounts. Codenames instead of names. Live classroom messages expire on their own.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="principles-commitment-num" aria-hidden="true">4</span>
+                        <div>
+                            <h4>Work without AI when it can.</h4>
+                            <p>Practice, checks, and many activities run with no AI and no account, including offline.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="principles-commitment-num" aria-hidden="true">5</span>
+                        <div>
+                            <h4>Say only what is true.</h4>
+                            <p>AlloFlow is open source under AGPL v3. We describe what it does today and say plainly what we have not measured or verified.</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="teachers-generate-first" class="principles-section principles-section--tint" aria-labelledby="generate-first-heading">
+            <div class="principles-inner">
+                <p class="principles-eyebrow">Why AlloFlow is built this way</p>
+                <h2 id="generate-first-heading">Teachers generate first, then share</h2>
+                <p class="principles-section-lede">The teacher uses AI while preparing. Students receive the reviewed result, not a live AI.</p>
+
+                <div class="principles-split">
+                    <div class="principles-panel">
+                        <h3>Why we chose it</h3>
+                        <ul class="principles-list">
+                            <li><strong>A person checks what students see.</strong> AI makes mistakes and carries bias, and the students least able to catch an error are often the ones a differentiated resource is for. Preparing first gives the teacher a chance to read, fix, and approve every resource before it reaches a student.</li>
+                            <li><strong>Every student gets the version the teacher approved.</strong> When each student generates their own content, thirty students get thirty unreviewed versions. When the teacher prepares once, the class gets one reviewed set, differentiated on purpose.</li>
+                            <li><strong>Less computing for the same lesson.</strong> One generation, reviewed and reused by a whole class, takes far fewer AI requests than every student generating their own quizzes, readings, and images. Fewer requests mean less computing and less energy. We have not measured AlloFlow's energy use, so we do not publish a figure.</li>
+                            <li><strong>Students need no AI account.</strong> A shared lesson runs on a student's device without a provider key, sign-in, or connection to an AI service.</li>
+                        </ul>
+                    </div>
+
+                    <div class="principles-panel">
+                        <h3>What AlloFlow does today</h3>
+                        <ul class="principles-list">
+                            <li>Lessons shared through QR homework links, the Class Mailbox, live sessions, and lesson packs open with student AI turned off. If the setting is missing or unclear, AI stays off. A student cannot turn it on by editing the link.</li>
+                            <li>AI image generation is blocked for students when student AI is off.</li>
+                            <li>A teacher can let students connect their own AI provider only after confirming that every student in the project is 18 or older, for adult education and college classes.</li>
+                            <li>A <strong>Hide student AI tools</strong> switch removes student-facing AI from a project while the teacher keeps their authoring tools.</li>
+                            <li>The spoken sounds in <a href="packets.html">Quick Practice &amp; Checks</a> were generated once, ahead of time. Students hear recordings; nothing is generated while they practice.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <aside class="principles-callout" aria-labelledby="direct-ai-heading">
+                    <h3 id="direct-ai-heading">When students use AI directly</h3>
+                    <p>Some activities are built for a student to talk with AI: the Socratic tutor, and the story and images in Adventure Mode. They reach a student only where an adult has already chosen to run AlloFlow with AI:</p>
+                    <ul>
+                        <li>A district that has enabled Gemini for student accounts and permits AlloFlow in Gemini Canvas.</li>
+                        <li>A school or teacher that set up a local AI model on a device. In a student role, AlloFlow ignores any AI key saved on that device and uses only the local model.</li>
+                        <li>A parent or homeschooling family running AlloFlow in Gemini Canvas with their own Google account.</li>
+                    </ul>
+                    <p>The adult in charge decides. The tutor is on by default in these places because that adult has already chosen AI for their students. They can turn off the tutor, or all student AI, in the project's settings, and can lock Adventure settings. Every shared link keeps student AI off.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section id="why-built-this-way" class="principles-section" aria-labelledby="choices-heading">
+            <div class="principles-inner">
+                <p class="principles-eyebrow">Architectural choices</p>
+                <h2 id="choices-heading">How those principles show up in the software</h2>
+                <p class="principles-section-lede">Each design boundary below is built into the workflows rather than left as a reminder on a poster.</p>
+
+                <div class="principles-rationale-grid">
+                    <article id="original-text" class="principles-rationale-card">
+                        <h3>The original text stays</h3>
+                        <p>An adapted reading is a companion to the original, not a replacement. AlloFlow marks adapted text as supplemental by default and lets students view the original, the adapted version, or both.</p>
+                        <p>Simplifying a text can quietly remove the idea the lesson is about. Keeping the original in view keeps every student connected to the same shared text and the same class discussion.</p>
+                    </article>
+
+                    <article id="without-ai" class="principles-rationale-card">
+                        <h3>Practice that runs without AI</h3>
+                        <p><a href="packets.html">Quick Practice &amp; Checks</a> makes offline practice files and checks in the browser&mdash;word sounds, math facts, vocabulary, and more. Core makers use no AI, no account, and no uploads, and student practice files work completely offline (two optional teacher voice pages run a local voice model on your device, and lookup helpers connect only when asked).</p>
+                        <p>Many classroom needs do not require AI, and a tool that works without it is cheaper, more private, and more dependable.</p>
+                    </article>
+
+                    <article id="data-and-privacy" class="principles-rationale-card">
+                        <h3>No student accounts, and live data that expires</h3>
+                        <p>Students join with generated codenames instead of names or accounts. When a teacher uses the Class Mailbox for live lessons, it runs on the teacher's own Google account, not AlloFlow servers. Its live messages expire within 45 minutes and session markers within 6 hours. Schools can also run live lessons on their own Firebase deployment or local Desktop setup.</p>
+                        <p>In a student role, AlloFlow does not use an AI key saved on that device. Data a tool never collects cannot leak, be sold, or be misused. See the <a href="guide/privacy-and-responsible-ai.html">privacy and responsible AI chapter</a> for full data-path details.</p>
+                    </article>
+
+                    <article id="your-provider" class="principles-rationale-card">
+                        <h3>Your provider, your hardware</h3>
+                        <p>AlloFlow runs in Gemini Canvas, in a browser with a provider of your choice, or on AlloFlow Desktop with local models. A school can also run its own server.</p>
+                        <p>Schools differ in budgets, contracts, and privacy rules, so AlloFlow lets them choose where AI runs rather than choosing for them. <a href="ways-to-use.html">Compare access paths &rarr;</a></p>
+                    </article>
+
+                    <article id="numbers-are-drafts" class="principles-rationale-card principles-rationale-card--wide">
+                        <h3>Numbers are drafts until a person reviews them</h3>
+                        <p>Automated reading-fluency estimates keep the original estimate alongside the teacher's corrections. In the Report Writer, extracted scores start unverified and lock only when a reviewer verifies them.</p>
+                        <p>Our guidance is direct: no AI output, dashboard pattern, or automated score should be the sole basis for a grade with consequences, a placement, a disability decision, or a behavior plan. Read the full decision boundary in <a href="guide/privacy-and-responsible-ai.html#keep-human-decisions-human">Keep human decisions human</a>.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="openness-and-limits" class="principles-section principles-section--dark" aria-labelledby="openness-heading">
+            <div class="principles-inner">
+                <p class="principles-eyebrow">Openness &amp; limits</p>
+                <h2 id="openness-heading">Inspect the code, the process, and what is still unfinished</h2>
+                <p class="principles-section-lede">A tool that sits between teachers and students should be plain about how it is licensed, how it is built, and where its evidence stops.</p>
+
+                <div class="principles-dark-grid">
+                    <article id="open-source">
+                        <h3>Open source</h3>
+                        <p>AlloFlow is licensed under <a href="https://github.com/Apomera/AlloFlow/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">GNU AGPL v3</a> with no license fee. Districts can inspect the code, host their own copy, and change it. A tool that sits between teachers and students should be open to the people it affects.</p>
+                    </article>
+
+                    <article id="how-it-is-built">
+                        <h3>How AlloFlow is built</h3>
+                        <p>AlloFlow is built the same way it asks teachers to work. A practicing school psychologist sets the instructional and clinical direction, uses AI coding tools to draft code and documentation, and reviews and tests changes against automated checks before anything ships. AI accelerates the labor; a person stays accountable for what reaches a classroom.</p>
+                    </article>
+
+                    <article id="accessibility">
+                        <h3>Accessibility as ongoing work</h3>
+                        <p>We review AlloFlow against WCAG 2.2 A and AA and publish our <a href="https://github.com/Apomera/AlloFlow/blob/main/VPAT-2.5-WCAG-AlloFlow.md" target="_blank" rel="noopener noreferrer">accessibility conformance report</a>, including what has not been tested. It is a working review, not a certification. Real assistive-technology testing with screen readers is still needed.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="principles-section principles-next" aria-labelledby="next-heading">
+            <div class="principles-inner">
+                <h2 id="next-heading">See the principles in practice</h2>
+                <p>Try the static classroom example, review district deployment questions, or inspect the official project record.</p>
+                <div class="principles-actions">
+                    <a class="btn-primary" href="./#classroom-example">See the classroom example</a>
+                    <a class="btn-secondary" href="for-districts.html">Read the district brief</a>
+                    <a class="btn-secondary" href="about.html">Official project facts</a>
+                    <a class="btn-secondary" href="packets.html">Try Quick Practice &amp; Checks</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i> AlloFlow</div>
+            <p>An open-source project for educators. Not affiliated with Google.</p>
+            <!-- shared footer links:start -->
+            <nav class="footer-links footer-link-groups" aria-label="Footer">
+                <div class="footer-link-group"><span class="footer-link-heading">Explore</span><a href="tools.html">Find a Tool</a><a href="features.html">Features</a><a href="tour.html">Visual Tour</a><a href="library.html">Lesson Library</a><a href="students.html">Students</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Learn &amp; support</span><a href="manuals.html">Manuals &amp; Guides</a><a href="guide/index.html">Teacher Guide</a><a href="guide/quick-reference.html">Quick Reference</a><a href="educator-evaluation-manual.html">Evaluation Manual</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Accessibility</span><a href="remediation.html">Remediation</a><a href="accessibility_demo.html">Accessibility Lab</a><a href="whitepaper.html">White Paper</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Get started</span><a href="launch.html">Launch AlloFlow</a><a href="ways-to-use.html">Ways to Use</a><a href="for-districts.html">For Districts</a><a href="calculator.html">Cost Planner</a></div>
+                <div class="footer-link-group"><span class="footer-link-heading">Project</span><a href="about.html">About</a><a href="principles.html" aria-current="page">Principles</a><a href="feedback.html">Feedback</a><a href="https://github.com/Apomera/AlloFlow">GitHub</a><a href="https://github.com/Apomera/AlloFlow#readme">Docs</a><a href="https://www.youtube.com/@AlloFlow" target="_blank" rel="noopener noreferrer">YouTube</a><a href="mailto:aaron.pomeranz@maine.edu">Contact</a></div>
+            </nav>
+<!-- shared footer links:end -->
+        </div>
+    </footer>
+
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
+    </button>
+    <script>
+        const backBtn = document.querySelector('.back-to-top');
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 500);
+            }, { passive: true });
+        }
+    </script>
+</body>
+
+</html>

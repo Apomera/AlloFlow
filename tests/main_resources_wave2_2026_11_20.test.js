@@ -57,13 +57,17 @@ describe('AlloFlow Main Resources Wave 2 — AI Grounding, Keyless Parity & Auth
     const T = window.AlloModules.AppliedChallenge?._testing;
     expect(typeof T?.appliedChallengePromptContextSnapshot).toBe('function');
 
-    const longSource = 'X'.repeat(2500) + ' DETAIL_PAST_1400 ' + 'Y'.repeat(19000);
+    // The per-turn prompt budget was tightened on 2026-11-21 (b26e60c442): the excerpt
+    // is capped at 1200 characters, with the truncation stated to the model.
+    const longSource = 'X'.repeat(1000) + ' DETAIL_BEFORE_1200 ' + 'Y'.repeat(19000) + ' DETAIL_PAST_CAP';
     const snap = JSON.parse(T.appliedChallengePromptContextSnapshot(
       { title: 'Water Plan', family: 'design', brief: { lockedLessonFacts: ['Watersheds filter runoff'] } },
       { sourceExcerpt: longSource }
     ));
-    expect(snap.lessonSourceExcerpt).toContain('DETAIL_PAST_1400');
-    expect(snap.lessonSourceCoverage).toContain('First 20000 of');
+    expect(snap.lessonSourceExcerpt).toContain('DETAIL_BEFORE_1200');
+    expect(snap.lessonSourceExcerpt).not.toContain('DETAIL_PAST_CAP');
+    expect(snap.lessonSourceExcerpt.endsWith(' [...]')).toBe(true);
+    expect(snap.lessonSourceCoverage).toContain('First 1200 of ' + longSource.length + ' characters supplied');
   });
 
   it('Writing Supports handleMasteryGrading fences untrusted inputs and raises relevance-gate limit', async () => {

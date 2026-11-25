@@ -70,6 +70,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     if (document.head) document.head.appendChild(st);
   })();
 
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-firstresponse-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-firstresponse-a11y-css';
+    st.textContent = [
+      '[data-fr-substrate="true"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [data-stem-tool-shell="firstResponse"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '[data-fr-substrate="true"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="firstResponse"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; border-radius: 6px; }',
+      '@media (forced-colors: active) { [data-fr-substrate="true"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="firstResponse"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [data-fr-substrate="true"] *, [data-stem-tool-shell="firstResponse"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // ─────────────────────────────────────────────────────────
   // BODY POSITION IN 3D — compression placement + recovery position
   //
@@ -5823,6 +5836,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('label', { htmlFor: 'fr-bpm-slider', style: { fontSize: 12, color: T.muted } }, __alloT('stem.firstresponse.bpm_label', 'BPM:')),
                 h('input', { id: 'fr-bpm-slider', type: 'range', min: 100, max: 120, step: 1, value: bpm,
                   'aria-label': __alloT('stem.firstresponse.sr_beats_per_minute_currently', 'Beats per minute, currently {n}').replace('{n}', bpm),
+                  'aria-valuetext': __alloT('stem.firstresponse.sr_beats_per_minute_currently', 'Beats per minute, currently {n}').replace('{n}', bpm),
                   onChange: function(e) { upd('cprBpm', parseInt(e.target.value, 10)); },
                   style: { width: 200 }, 'data-fr-focusable': true })
               ),
@@ -6471,7 +6485,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           var p = bleedPracticeRef.current;
           if (p.phase !== 'pressure' && p.phase !== 'packPressure') return;
           if (e && e.type === 'keydown') {
-            if (e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return;
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return;
             e.preventDefault();
           }
           if (p.holding) return;
@@ -9893,6 +9907,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       'TARGET RATE - ' + coachBpm + ' bpm'),
                     h('input', { id: 'fr-body-coach-bpm', type: 'range', min: 100, max: 120, step: 1, value: coachBpm,
                       'aria-label': 'Target compression rate, ' + coachBpm + ' beats per minute',
+                      'aria-valuetext': __alloT('stem.firstresponse.sr_beats_per_minute_currently', 'Beats per minute, currently {n}').replace('{n}', coachBpm),
                       onChange: function (e) { upd('b3dCoachBpm', parseInt(e.target.value, 10)); },
                       style: { width: '100%', marginBottom: 8 } }),
                     note(ageInfo.icon + ' ' + ageInfo.label + ' hand position', ageInfo.hands, 'ok'),
@@ -10173,7 +10188,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.muted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, iq[s.k])),
                     H('input', { id: 'dc-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': s.l }));
+                      style: { width: '100%' }, 'aria-label': s.l, 'aria-valuetext': iq[s.k] + '%' }));
                 })
               ),
               H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },

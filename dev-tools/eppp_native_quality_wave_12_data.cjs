@@ -262,7 +262,7 @@ module.exports = {
       "expectedActionRank": 7,
       "expectedAnswerIndex": 2,
       "expectedPrompt": "In the REBT ABCDE framework, the letter D refers to:",
-      "prompt": "After a critical email from a supervisor, a client concludes, ?A mistake proves I am worthless,? then experiences shame and avoids work. After mapping the event, belief, and consequence in rational-emotive treatment, which intervention represents the next active change step?",
+      "prompt": "After a critical email from a supervisor, a client concludes, “A mistake proves I am worthless,” then experiences shame and avoids work. After mapping the event, belief, and consequence in rational-emotive treatment, which intervention represents the next active change step?",
       "choices": [
         "Gather additional details about the supervisor's email and postpone evaluating the client's conclusion until the external event is fully reconstructed",
         "Classify the shame response diagnostically and treat the supervisor's criticism as the direct cause of the emotional and behavioral consequence",

@@ -7,6 +7,15 @@ var _alloMailboxCallWithRetry = function() {
   if (typeof call !== 'function') return Promise.reject(new Error('Shared activity mailbox transport is not ready'));
   return call.apply(window, arguments);
 };
+function _ensureSharedActivityA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-shared-activity-a11y-css')) return;
+  const style = document.createElement('style');
+  style.id = 'allo-shared-activity-a11y-css';
+  style.textContent = '[data-shared-activity] button,[data-shared-activity] [role="button"],[data-shared-activity] summary,[data-shared-activity] a,[data-shared-activity] input,[data-shared-activity] select,[data-shared-activity] textarea{touch-action:manipulation;}' + '[data-shared-activity] button:focus-visible,[data-shared-activity] [role="button"]:focus-visible,[data-shared-activity] summary:focus-visible,[data-shared-activity] a:focus-visible,[data-shared-activity] input:focus-visible,[data-shared-activity] select:focus-visible,[data-shared-activity] textarea:focus-visible{outline:2px solid #0284c7;outline-offset:2px;}' + '@media (forced-colors: active){[data-shared-activity] button:focus-visible,[data-shared-activity] [role="button"]:focus-visible,[data-shared-activity] summary:focus-visible,[data-shared-activity] a:focus-visible,[data-shared-activity] input:focus-visible,[data-shared-activity] select:focus-visible,[data-shared-activity] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' + '@media (prefers-reduced-motion: reduce){[data-shared-activity] *,[data-shared-activity] *::before,[data-shared-activity] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(style);
+}
+_ensureSharedActivityA11yCss();
 const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   activity,
   mailbox,
@@ -225,7 +234,11 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   }
   const actor = transport.actor();
   const Surface = isTeacher ? Views.QuestionBoardTeacher : Views.QuestionBoardStudent;
+  React.useEffect(() => {
+    _ensureSharedActivityA11yCss();
+  }, []);
   return /*#__PURE__*/React.createElement("div", {
+    "data-shared-activity": "true",
     className: "space-y-2",
     "aria-busy": busy
   }, busy && /*#__PURE__*/React.createElement("p", {
@@ -249,7 +262,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   }, "Your name"), (displayName || actor?.uid) && (armStartFresh ? /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1",
     onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -1585,6 +1598,9 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }
   }, [credVersion, getCredStorage, isQuestionBoard, isTeacher, storageKey]);
   const activeCredentialSlot = credentialRoster.find(item => item.active) || null;
+  React.useEffect(() => {
+    _ensureSharedActivityA11yCss();
+  }, []);
 
   // Deliberately placed AFTER every hook in this component. An early return
   // higher up would change hook order when the activity type changes and
@@ -1599,6 +1615,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     });
   }
   return /*#__PURE__*/React.createElement("section", {
+    "data-shared-activity": "true",
     "aria-busy": busy,
     className: "min-w-0 break-words rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left",
     "aria-label": `Shared ${activityMeta.title.toLowerCase()}`
@@ -1645,7 +1662,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, item.label)), armStartFresh ? /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1",
     onKeyDown: e => {
-      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();

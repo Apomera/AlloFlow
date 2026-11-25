@@ -429,7 +429,8 @@ describe('2. Monochrome CSS & Packets Maker wiring invariants', () => {
     ]);
 
     const makeJs = read('packets-make.js');
-    expect(makeJs).toContain("cards.wireWorksheet($('print-worksheet'), function () {");
+    // Wave 41 refactored the inline callback into named helper wordSoundsWorksheetState shared with wireWorksheetAudio.
+    expect(makeJs).toContain("cards.wireWorksheet($('print-worksheet'), wordSoundsWorksheetState)");
     expect(makeJs).toContain('blocks: lastLesson && Array.isArray(lastLesson.blocks) ? lastLesson.blocks : null');
     expect(makeJs).toContain('window.AlloWordPictureMatcher');
   });

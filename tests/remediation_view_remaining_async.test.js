@@ -109,7 +109,7 @@ describe('remaining remediation view async ownership', () => {
     expect(legacy).toContain('_commitAsyncHtmlIfCurrent(_legacyTranslationToken');
     expect(legacy).toContain('_commitAsyncHtmlIfCurrent(_legacySimplifyToken');
 
-    const easyRead = around('const _easyReadOperation =', 500, 6500);
+    const easyRead = around('const _easyReadOperation =', 500, 7000);
     expect(easyRead).toContain('_remediationOperationSourceIsCurrent(_easyReadOperation)');
     expect(easyRead).toContain('_toastForRemediationOperation(_easyReadOperation');
     expect(easyRead).toContain('_completeRemediationOperation(_easyReadOperation)');

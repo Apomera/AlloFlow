@@ -16,11 +16,11 @@
 (function registerAvailabilityPollContract(root, factory) {
     const api = factory();
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
+    if (root && typeof root === 'object') {
         root.AlloModules = root.AlloModules || {};
         root.AlloModules.AvailabilityPollContract = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createAvailabilityPollContract() {
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null), function createAvailabilityPollContract() {
     'use strict';
 
     const VERSION = 1;
@@ -41,12 +41,36 @@
     function isSafeKey(key) {
         return typeof key === 'string' && key.length > 0 && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
     }
+    function safeNumber(val) {
+        if (typeof val === 'number') return Number.isFinite(val) ? val : NaN;
+        if (typeof val === 'string' && val.trim() !== '') {
+            const parsed = Number(val);
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+        return NaN;
+    }
+    function safeInt(val) {
+        if (typeof val === 'number') return Number.isFinite(val) ? Math.trunc(val) : NaN;
+        if (typeof val === 'string') {
+            const trimmed = val.trim();
+            if (!trimmed) return NaN;
+            const parsed = parseInt(trimmed, 10);
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+        return NaN;
+    }
     function safeTimestamp(val) {
-        if (typeof val !== 'string' && typeof val !== 'number') return NaN;
-        return Date.parse(val);
+        if (typeof val === 'number') return Number.isFinite(val) ? val : NaN;
+        if (typeof val === 'string') return val.trim() ? Date.parse(val) : NaN;
+        return NaN;
     }
     function resolveNow(now) {
         return (typeof now === 'number' && Number.isFinite(now)) ? now : Date.now();
+    }
+    function deepFreeze(obj) {
+        if (!obj || typeof obj !== 'object') return obj;
+        Object.keys(obj).forEach(function (k) { deepFreeze(obj[k]); });
+        return Object.freeze(obj);
     }
 
     // ── Tally ────────────────────────────────────────────────────────────────
@@ -95,8 +119,10 @@
         const opts = Array.isArray(counted && counted.options) ? counted.options.slice(0, LIMITS.OPTIONS) : [];
         opts.forEach(function (opt) {
             if (!opt || typeof opt !== 'object' || !isSafeKey(opt.id)) return;
-            const yes = Number.isFinite(Number(opt.yes)) ? Math.max(0, Number(opt.yes)) : 0;
-            const maybe = Number.isFinite(Number(opt.maybe)) ? Math.max(0, Number(opt.maybe)) : 0;
+            const rawYes = safeNumber(opt.yes);
+            const rawMaybe = safeNumber(opt.maybe);
+            const yes = Number.isFinite(rawYes) ? Math.max(0, rawYes) : 0;
+            const maybe = Number.isFinite(rawMaybe) ? Math.max(0, rawMaybe) : 0;
             if (yes > bestYes || (yes === bestYes && maybe > bestMaybe)) {
                 bestYes = yes;
                 bestMaybe = maybe;
@@ -114,9 +140,9 @@
     // return rows in anonymous mode then the mode is a promise the storage does
     // not keep, whatever the UI chooses to render.
     function visibilityFor(config, counted, isHost, now) {
-        const parsedMin = parseInt(config && config.minParticipants, 10);
+        const parsedMin = safeInt(config && config.minParticipants);
         const minParticipants = Number.isFinite(parsedMin) && parsedMin >= 1 ? parsedMin : 3;
-        const rawCount = Number(counted && counted.participantCount);
+        const rawCount = safeNumber(counted && counted.participantCount);
         const count = Number.isFinite(rawCount) && rawCount > 0 ? rawCount : 0;
         const revealed = count >= minParticipants;
         // Retention outranks permission. Past deleteAt the rows do not exist, so
@@ -221,6 +247,15 @@
         if (!adapter || typeof adapter !== 'object') {
             return { ok: false, failures: [{ fixture: '*', check: 'adapter', expected: 'object', actual: String(adapter) }], fixtures: FIXTURES.length };
         }
+        const requiredMethods = ['tally', 'best', 'visibility', 'isClosed', 'retentionDue'];
+        const missing = requiredMethods.filter(function (m) { return typeof adapter[m] !== 'function'; });
+        if (missing.length) {
+            return {
+                ok: false,
+                failures: missing.map(function (m) { return { fixture: '*', check: 'adapter.' + m, expected: 'function', actual: typeof adapter[m] }; }),
+                fixtures: FIXTURES.length
+            };
+        }
         const failures = [];
         const note = function (fixture, what, expected, actual) {
             failures.push({
@@ -259,7 +294,7 @@
         return { ok: failures.length === 0, failures: failures, fixtures: FIXTURES.length };
     }
 
-    Object.freeze(FIXTURES);
+    deepFreeze(FIXTURES);
     return Object.freeze({
         VERSION: VERSION,
         LIMITS: LIMITS,

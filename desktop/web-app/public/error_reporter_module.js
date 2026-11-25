@@ -942,7 +942,21 @@
     return fallback || key;
   }
 
+  function _ensureErrorReporterA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('allo-err-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-err-a11y-css';
+    st.textContent =
+      '#allo-err-badge,#allo-err-panel button,#allo-err-panel [role="button"],#allo-err-panel summary,#allo-err-panel a,#allo-err-panel input,#allo-err-panel select,#allo-err-panel textarea{touch-action:manipulation;}' +
+      '#allo-err-badge:focus-visible,#allo-err-panel button:focus-visible,#allo-err-panel [role="button"]:focus-visible,#allo-err-panel summary:focus-visible,#allo-err-panel a:focus-visible,#allo-err-panel input:focus-visible,#allo-err-panel select:focus-visible,#allo-err-panel textarea:focus-visible{outline:2px solid #0f766e;outline-offset:2px;}' +
+      '@media (forced-colors: active){#allo-err-badge:focus-visible,#allo-err-panel button:focus-visible,#allo-err-panel [role="button"]:focus-visible,#allo-err-panel summary:focus-visible,#allo-err-panel a:focus-visible,#allo-err-panel input:focus-visible,#allo-err-panel select:focus-visible,#allo-err-panel textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+      '@media (prefers-reduced-motion: reduce){#allo-err-badge,#allo-err-panel *,#allo-err-panel *::before,#allo-err-panel *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+  }
+
   function ensureBadge() {
+    _ensureErrorReporterA11yCss();
     if (badge) return;
     badge = document.createElement('button');
     badge.id = 'allo-err-badge';
@@ -963,6 +977,7 @@
     ].join(';');
     badge.onclick = function () { openPanel(); };
     badge.onkeydown = function (ev) {
+      if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openPanel(); }
     };
     document.body.appendChild(badge);
@@ -1919,6 +1934,7 @@
       closePanel(); return;
     }
     if (!document.body) return;
+    _ensureErrorReporterA11yCss();
     panelTrigger = document.activeElement;
     panelBackgroundNodes = [];
     Array.prototype.slice.call(document.body.children).forEach(function (child) {
@@ -1960,11 +1976,13 @@
     // ESC closes
     panel.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape') {
+        if ((ev.nativeEvent && ev.nativeEvent.isComposing) || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.isComposing || ev.keyCode === 229 || descriptionComposing) return;
         ev.preventDefault();
         closePanel();
       }
       if (ev.key === 'Tab') {
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         var controls = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), summary, a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [contenteditable="true"], [tabindex]'))
           .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden], [inert], [aria-hidden="true"]'); });
         var first = controls[0], last = controls[controls.length - 1];

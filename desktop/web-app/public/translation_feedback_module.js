@@ -26,9 +26,9 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.TranslationFeedback) {
-    console.log('[TranslationFeedback] Already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[TranslationFeedback] Already loaded, skipping');
     return;
   }
   window.AlloModules = window.AlloModules || {};
@@ -49,11 +49,18 @@
     }
     catch (_) { return true; }
   }
+  function safeStr(text) {
+    if (text == null) return '';
+    if (typeof text === 'string') return text;
+    if (typeof text === 'number' || typeof text === 'boolean') return String(text);
+    return '';
+  }
   function stripControlChars(text) {
-    return String(text == null ? '' : text).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return safeStr(text).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
   }
   function scrubFeedbackText(text, maxLen) {
-    var s = stripControlChars(text).trim().slice(0, maxLen || 1000);
+    var limit = maxLen || 1000;
+    var s = stripControlChars(text).trim().slice(0, limit);
     try {
       var ir = window.AlloModules && window.AlloModules.IdentifierRedaction;
       if (ir) {
@@ -61,7 +68,7 @@
         if (typeof ir.scrubRosterNames === 'function') s = ir.scrubRosterNames(s);
       }
     } catch (_) {}
-    return s;
+    return safeStr(s).trim().slice(0, limit);
   }
   function safeJsonParse(raw) {
     if (typeof raw !== 'string' || raw.length > 5 * 1024 * 1024) return null;
@@ -121,9 +128,11 @@
         if (parsedCache && typeof parsedCache === 'object') { EN = flatten(parsedCache); EN_LOADING = false; return; }
       }
     } catch (_) {}
+    var enTimer = null;
     try {
+      if (typeof fetch !== 'function') { EN_LOADING = false; return; }
       var enCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      var enTimer = enCtrl ? setTimeout(function () { try { enCtrl.abort(); } catch (_) {} }, 10000) : null;
+      enTimer = enCtrl ? setTimeout(function () { try { enCtrl.abort(); } catch (_) {} }, 10000) : null;
       var enOpts = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
       if (enCtrl) enOpts.signal = enCtrl.signal;
       fetch('./ui_strings.js', enOpts)
@@ -136,8 +145,11 @@
           else EN_LOADING = false;
         })
         .catch(function () { EN_LOADING = false; })
-        .finally(function () { if (enTimer) clearTimeout(enTimer); });
-    } catch (_) { EN_LOADING = false; }
+        .finally(function () { if (enTimer) { clearTimeout(enTimer); enTimer = null; } });
+    } catch (_) {
+      if (enTimer) { clearTimeout(enTimer); enTimer = null; }
+      EN_LOADING = false;
+    }
   }
   function englishFor(key) {
     if (!key || !EN) return '';
@@ -170,7 +182,7 @@
   function ensurePill() {
     if (typeof document === 'undefined' || !document.body) return;
     ensureA11yStyle();
-    if (pill) return;
+    if (pill && pill.isConnected) return;
     pill = document.createElement('button');
     pill.type = 'button';
     pill.id = 'allo-tfb-pill';
@@ -237,7 +249,13 @@
       'position:fixed', 'inset:0', 'z-index:2147483647', 'background:rgba(0,0,0,0.5)',
       'display:flex', 'align-items:center', 'justify-content:center', 'padding:16px'
     ].join(';');
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeModal(); });
+    var backdropDown = false;
+    overlay.addEventListener('mousedown', function (e) { backdropDown = (e.target === overlay); });
+    overlay.addEventListener('click', function (e) {
+      var allow = backdropDown;
+      backdropDown = false;
+      if (allow && e.target === overlay) closeModal();
+    });
 
     var keyRow = ctx.key
       ? '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">String ID</div>' +
@@ -311,9 +329,9 @@
     }
     function onDocKeydown(e) {
       if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
-      if (!isTopTrap()) return;
-      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
-      if (e.key === 'Tab') {
+      if (!overlay || !overlay.isConnected || !isTopTrap()) return;
+      if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
+      if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         var items = focusablesInPanel();
         if (!items.length) { e.preventDefault(); return; }
         e.preventDefault(); e.stopPropagation();
@@ -323,18 +341,20 @@
       }
     }
     function onDocFocusin(e) {
-      if (!isTopTrap()) return;
+      if (!overlay || !overlay.isConnected || !isTopTrap()) return;
       if (!panel.contains(e.target)) {
         var items = focusablesInPanel();
-        if (items.length) items[0].focus();
+        if (items.length) { try { items[0].focus(); } catch (_) {} }
       }
     }
     var activeSubmitCtrl = null;
+    var activeSubmitTimer = null;
     document.addEventListener('keydown', onDocKeydown, true);
     document.addEventListener('focusin', onDocFocusin, true);
     activeModalCleanup = function () {
       document.removeEventListener('keydown', onDocKeydown, true);
       document.removeEventListener('focusin', onDocFocusin, true);
+      if (activeSubmitTimer) { clearTimeout(activeSubmitTimer); activeSubmitTimer = null; }
       if (activeSubmitCtrl) { try { activeSubmitCtrl.abort(); } catch (_) {} activeSubmitCtrl = null; }
     };
 
@@ -349,32 +369,38 @@
       if (button) { button.disabled = true; button.textContent = 'Sending disabled'; }
     }
 
-    function showThanks() {
+    function showThanks(submittedLang) {
+      var displayLang = submittedLang || lang;
       panel.innerHTML =
         '<div style="text-align:center;padding:12px">' +
           '<div style="font-size:34px" aria-hidden="true">🌍</div>' +
           '<h2 id="allo-tfb-title" style="margin:8px 0;font:700 17px system-ui;color:#0f172a">Thank you!</h2>' +
           '<p style="margin:0 0 16px;font:13px/1.5 system-ui;color:#475569">' +
-            'Your ' + esc(lang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.' +
+            'Your ' + esc(displayLang) + ' suggestion was sent for review. Maintainers apply accepted fixes to the language pack.' +
           '</p>' +
           '<button id="allo-tfb-done" type="button" style="min-height:44px;padding:9px 16px;border-radius:8px;border:none;background:#0f766e;color:#fff;font:700 13px system-ui;cursor:pointer">Done</button>' +
         '</div>';
       var done = panel.querySelector('#allo-tfb-done');
-      done.onclick = closeModal; done.focus();
+      if (done) { done.onclick = closeModal; try { done.focus(); } catch (_) {} }
     }
 
     $('allo-tfb-send').onclick = function () {
       if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       if (inFlight) return;
       var errEl = $('allo-tfb-err');
-      var suggested = stripControlChars($('allo-tfb-suggest').value || '').trim();
-      if (!suggested) { errEl.textContent = 'Please enter your suggested translation.'; errEl.style.display = 'block'; return; }
+      var suggested = scrubFeedbackText($('allo-tfb-suggest').value || '', 1000);
+      if (!suggested) {
+        errEl.textContent = 'Please enter your suggested translation.';
+        errEl.style.display = 'block';
+        try { $('allo-tfb-suggest').focus(); } catch (_) {}
+        return;
+      }
       var curEl = panel.querySelector('#allo-tfb-current');
       var payload = {
-        language: stripControlChars($('allo-tfb-lang').value || lang).trim().slice(0, 60),
+        language: scrubFeedbackText($('allo-tfb-lang').value || lang, 60) || lang,
         key: stripControlChars(ctx.key || '').trim().slice(0, 160),
         current: scrubFeedbackText(ctx.current || (curEl ? curEl.value : ''), 1000),
-        suggested: scrubFeedbackText(suggested, 1000),
+        suggested: suggested,
         english: stripControlChars(english || '').trim().slice(0, 1000),
         note: scrubFeedbackText($('allo-tfb-note').value, 500)
       };
@@ -388,31 +414,44 @@
         errEl.style.display = 'block';
         sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
       };
+      var submitCtrl = null;
+      var submitTimer = null;
+      var cleanupSubmit = function () {
+        if (submitTimer) {
+          clearTimeout(submitTimer);
+          if (activeSubmitTimer === submitTimer) activeSubmitTimer = null;
+          submitTimer = null;
+        }
+        if (activeSubmitCtrl === submitCtrl) activeSubmitCtrl = null;
+        if (myToken === currentModalToken) inFlight = false;
+      };
       try {
         if (communityFeedbackBlocked()) { inFlight = false; showManagedBlock(); return; }
+        if (typeof fetch !== 'function') { showSendFailure(); return; }
+        if (activeSubmitTimer) { clearTimeout(activeSubmitTimer); activeSubmitTimer = null; }
         if (activeSubmitCtrl) { try { activeSubmitCtrl.abort(); } catch (_) {} }
-        var submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        submitCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
         activeSubmitCtrl = submitCtrl;
-        var submitTimer = submitCtrl ? setTimeout(function () { try { submitCtrl.abort(); } catch (_) {} }, 15000) : null;
+        submitTimer = submitCtrl ? setTimeout(function () { try { submitCtrl.abort(); } catch (_) {} }, 15000) : null;
+        activeSubmitTimer = submitTimer;
         var submitOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
         if (submitCtrl) submitOpts.signal = submitCtrl.signal;
         fetch(SUBMIT_URL, submitOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
           .then(function (res) {
             if (myToken !== currentModalToken || !overlay || !overlay.isConnected) return;
-            if (res.ok && res.j && res.j.ok && res.j.storage === 'private') { inFlight = false; showThanks(); }
+            if (res.ok && res.j && typeof res.j === 'object' && !Array.isArray(res.j) && res.j.ok === true && res.j.storage === 'private') { inFlight = false; showThanks(payload.language); }
             else showSendFailure();
           })
           .catch(function () {
             if (myToken !== currentModalToken || !overlay || !overlay.isConnected) return;
             showSendFailure();
           })
-          .finally(function () {
-            if (submitTimer) clearTimeout(submitTimer);
-            if (activeSubmitCtrl === submitCtrl) activeSubmitCtrl = null;
-            if (myToken === currentModalToken) inFlight = false;
-          });
-      } catch (_) { showSendFailure(); }
+          .finally(cleanupSubmit);
+      } catch (_) {
+        cleanupSubmit();
+        showSendFailure();
+      }
     };
     var first = $('allo-tfb-suggest'); if (first) first.focus();
   }
@@ -432,7 +471,8 @@
     overlay = null;
     var opener = modalOpener;
     modalOpener = null;
-    if (wasTop && validOpenerEl(opener)) opener.focus();
+    openerBeforePill = null;
+    if (wasTop && validOpenerEl(opener)) { try { opener.focus(); } catch (_) {} }
   }
 
   window.AlloModules.TranslationFeedback = Object.freeze({
@@ -440,5 +480,5 @@
     openModal: openModal,       // open directly (e.g. from a menu item)
     _version: '1'
   });
-  console.log('[TranslationFeedback] loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[TranslationFeedback] loaded');
 })();

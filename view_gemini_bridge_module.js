@@ -637,6 +637,14 @@ function BridgeSendModal(props) {
     _bridgeStopListening();
     if (typeof setBridgeF2FListening === "function") setBridgeF2FListening(null);
     setBridgeSendOpen(false);
+    if (activeSessionCode && isTeacherMode) {
+      try {
+        const sRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
+        updateDoc(sRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch((err) => warnLog("Bridge cleanup error:", err));
+      } catch (err) {
+        warnLog("Bridge cleanup error:", err);
+      }
+    }
   };
   const bridgeSendDialogRef = _useBridgeDialogFocus(bridgeSendOpen && isTeacherMode, closeBridgeSendModal);
   React.useEffect(() => {

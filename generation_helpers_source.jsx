@@ -104,7 +104,7 @@ const _ghScreenCrisis = (text) => {
 };
 const _ghIsPolicyAiBlocked = () => {
   if (typeof window === 'undefined') return false;
-  if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window._alloQrBlocked === true || !!window.__alloQrStudentMode || window.__alloOfflineOnly === true) return true;
+  if (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true) return true;
   const mp = window.ALLOFLOW_MANAGED_AI_POLICY;
   if (mp != null) {
     if (typeof mp !== 'object' || mp.enabled === false) return true;

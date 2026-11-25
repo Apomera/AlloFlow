@@ -1200,6 +1200,19 @@
       report.qr = { enabled: true, fingerprint: mQrFp, algorithm: mQrAlg };
       plain.about.push('Sealed QR results: enabled for teacher key ' + mQrFp + (mQrAlg ? ' (' + mQrAlg + ')' : '') + '. Encrypted on this device; no internet connection.' + (verdictOf('sealed-qr') === AGREE ? ' The data block agrees.' : ''));
     }
+    var biCodes = lesson && isObject(L.bilingual) && Array.isArray(L.bilingual.codes)
+      ? L.bilingual.codes.map(function (code) { return show(code, 12); }).filter(Boolean)
+      : [];
+    if (biCodes.length) {
+      plain.about.push('Home-language directions: ' + biCodes.join(', ') + ' (bundled inside the file; no internet translation).');
+    }
+    if (lesson && L.stationMode === true) {
+      plain.about.push('Station Mode: on for shared devices (clears student work between turns).');
+    }
+    var lessonBlocks = lesson && Array.isArray(L.blocks) ? L.blocks.filter(isObject) : [];
+    if (lessonBlocks.length && lessonBlocks.every(function (b) { return /^(?:sel_|aac_board$)/.test(String(b.activity || '')); })) {
+      plain.about.push('Non-scored support toolkit: personal notes stay on screen unless the student chooses to share them.');
+    }
     plain.about.push('Inside the file: ' + count(report.counts.sounds, 'recorded sound') + ' and ' + count(report.counts.pictures, 'picture') + '. Size: ' + report.sizeText + '.');
 
     if (!policyTag) plain.reach.push('It has no policy line, so nothing stops its code from connecting to any address.');

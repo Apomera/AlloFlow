@@ -14315,7 +14315,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               if (view === 'compare') {
                 return h('div', { key: 'rings', className: 'allo-tree-ring-card', 'aria-hidden': 'true' }, [
                   h('div', { key: 'dial', style: { width: 42, height: 42, borderRadius: '50%', border: '2px solid ' + ringStroke, background: trackFill, display: 'grid', placeItems: 'center', flexShrink: 0 } },
-                    h('span', { style: { fontSize: 11, fontWeight: 900, color: ringStroke } }, ringCount + '/5')
+                    h('span', { style: { fontSize: 11, fontWeight: 900, color: (isContrast || isDark) ? ringStroke : '#065f46' } }, ringCount + '/5')
                   ),
                   h('div', { key: 'meta', style: { flex: 1, minWidth: 0 } }, [
                     h('div', { key: 'l1', style: { fontSize: 10, fontWeight: 800, color: ringSub, letterSpacing: '.06em' } }, 'CAMBIUM RINGS · ' + ringCount + '/5'),

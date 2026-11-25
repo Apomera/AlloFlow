@@ -1067,6 +1067,7 @@ window.StemLab = window.StemLab || {
         (dismissRef.current || dialog).focus();
       };
       var onKeyDown = function(event) {
+        if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           dismissHandlerRef.current();
@@ -1384,7 +1385,8 @@ window.StemLab = window.StemLab || {
           // NEVER removed — so Alt+1..5 kept mutating molecule state even after navigating to another tool).
           useEffect(function() {
             function onKey(e) {
-              if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+              if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey) return;
+              if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT' || e.target.isContentEditable)) return;
               if (e.altKey && SHORTCUTS[e.key]) { e.preventDefault(); upd('moleculeMode', SHORTCUTS[e.key]); }
             }
             document.addEventListener('keydown', onKey);
@@ -3992,7 +3994,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ── Viewer Mode ──
 
             mode === 'viewer' && React.createElement("div", { className: "mol-studio", 'data-molecule-studio': true, style: { '--mol-accent': isContrast ? '#ffff00' : isDark ? '#5eead4' : '#0f766e', '--mol-accent-ink': isDark ? '#042f2e' : '#ffffff' } },
-              React.createElement('style', null, "\n.mol-studio{--mol-ink:var(--allo-stem-text,#0f172a);--mol-muted:var(--allo-stem-text-soft,#475569);--mol-panel:var(--allo-stem-panel,#f8fafc);--mol-canvas:var(--allo-stem-canvas,#fff);--mol-line:var(--allo-stem-border,#cbd5e1);color:var(--mol-ink)}\n.mol-studio .mol-library{border:1px solid var(--mol-line);border-radius:16px;padding:12px;margin-bottom:14px;background:var(--mol-panel)}\n.mol-studio .mol-section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px}\n.mol-studio .mol-section-heading h4{font-size:14px;font-weight:800;margin:0;color:var(--mol-ink)}\n.mol-studio .mol-section-heading p{font-size:12px;margin:0;color:var(--mol-muted)}\n.mol-studio .mol-preset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;max-height:218px;overflow-y:auto;padding:3px;scrollbar-gutter:stable;overscroll-behavior:contain}\n.mol-studio .mol-preset{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-width:0;min-height:68px;padding:10px 28px 10px 12px;border:1px solid var(--mol-line);border-radius:11px;background:var(--mol-canvas);color:var(--mol-ink);text-align:start;white-space:normal;overflow-wrap:anywhere}\n.mol-studio .mol-preset strong{font-size:19px;line-height:1.15;letter-spacing:-.02em}\n.mol-studio .mol-preset span{font-size:11px;line-height:1.35;color:var(--mol-muted)}\n.mol-studio .mol-preset[aria-pressed=true]{border:2px solid var(--mol-accent,#0f766e);padding:9px 27px 9px 11px;box-shadow:inset 4px 0 0 var(--mol-accent,#0f766e)}\n.mol-studio .mol-preset[aria-pressed=true]::after{content:'✓';position:absolute;right:9px;top:10px;color:var(--mol-accent,#0f766e);font-weight:900}\n.mol-studio button:focus-visible{outline:3px solid var(--mol-accent,#0f766e);outline-offset:2px}\n.mol-studio .mol-toolbar{background:var(--mol-panel);border:1px solid var(--mol-line);border-radius:14px;padding:10px;gap:8px}\n.mol-studio .mol-toolbar span{color:var(--mol-ink)}\n.mol-studio .mol-toolbar button{background:var(--mol-canvas);color:var(--mol-ink);border-color:var(--mol-line);min-height:44px}\n.mol-studio .mol-toolbar button[aria-pressed=true],.mol-studio [data-molecule-camera-control=fit]{background:var(--mol-accent,#0f766e);color:var(--mol-accent-ink,#fff);border-color:var(--mol-accent,#0f766e)}\n.mol-studio .mol-model-note{color:var(--mol-muted);font-size:12px;line-height:1.6;padding:0 4px}\n.mol-studio .mol-composition{margin-top:14px;border:1px solid var(--mol-line);border-radius:14px;background:var(--mol-panel);padding:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}\n.mol-studio .mol-formula{font-size:24px;font-weight:850;line-height:1.2;color:var(--mol-ink)}\n.mol-studio .mol-caption{font-size:12px;color:var(--mol-muted);margin:0 0 4px}\n.mol-studio .mol-atom-key{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}\n.mol-studio .mol-atom-key li{display:flex;align-items:center;gap:7px;background:var(--mol-canvas);border:1px solid var(--mol-line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--mol-ink)}\n.mol-studio .mol-atom-dot{width:14px;height:14px;flex-shrink:0;border-radius:50%;border:1px solid var(--mol-muted);box-shadow:inset 0 2px 3px #ffffff50}\n.mol-studio .mol-lens{border:1px solid var(--mol-line);border-top:3px solid var(--mol-accent,#0f766e);border-radius:16px!important;background:var(--mol-panel);padding:16px;margin-top:16px}\n.mol-studio .mol-lens h4,.mol-studio .mol-lens dd{color:var(--mol-ink)}\n.mol-studio .mol-lens p,.mol-studio .mol-lens dt{color:var(--mol-muted)}\n.mol-studio .mol-lens dl>div,.mol-studio .mol-lens h4+span{border-color:var(--mol-line);background:var(--mol-canvas);border-radius:10px!important;padding:10px;color:var(--mol-ink)}\n@media(max-width:400px){.mol-studio .mol-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mol-studio .mol-library{padding:8px}.mol-studio .mol-preset{min-height:72px}.mol-studio .mol-lens{padding:12px}}\n@media(forced-colors:active){.mol-studio{--mol-accent:Highlight;--mol-accent-ink:HighlightText}.mol-studio .mol-preset[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.mol-studio .mol-atom-dot{forced-color-adjust:none}}\n"),
+              React.createElement('style', null, "\n.mol-studio{--mol-ink:var(--allo-stem-text,#0f172a);--mol-muted:var(--allo-stem-text-soft,#475569);--mol-panel:var(--allo-stem-panel,#f8fafc);--mol-canvas:var(--allo-stem-canvas,#fff);--mol-line:var(--allo-stem-border,#cbd5e1);color:var(--mol-ink)}\n.mol-studio :is(button,input,select,textarea,summary){touch-action:manipulation;box-sizing:border-box}\n.mol-studio .mol-library{border:1px solid var(--mol-line);border-radius:16px;padding:12px;margin-bottom:14px;background:var(--mol-panel)}\n.mol-studio .mol-section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px}\n.mol-studio .mol-section-heading h4{font-size:14px;font-weight:800;margin:0;color:var(--mol-ink)}\n.mol-studio .mol-section-heading p{font-size:12px;margin:0;color:var(--mol-muted)}\n.mol-studio .mol-preset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;max-height:218px;overflow-y:auto;padding:3px;scrollbar-gutter:stable;overscroll-behavior:contain}\n.mol-studio .mol-preset{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-width:0;min-height:68px;padding:10px 28px 10px 12px;border:1px solid var(--mol-line);border-radius:11px;background:var(--mol-canvas);color:var(--mol-ink);text-align:start;white-space:normal;overflow-wrap:anywhere}\n.mol-studio .mol-preset strong{font-size:19px;line-height:1.15;letter-spacing:-.02em}\n.mol-studio .mol-preset span{font-size:11px;line-height:1.35;color:var(--mol-muted)}\n.mol-studio .mol-preset[aria-pressed=true]{border:2px solid var(--mol-accent,#0f766e);padding:9px 27px 9px 11px;box-shadow:inset 4px 0 0 var(--mol-accent,#0f766e)}\n.mol-studio .mol-preset[aria-pressed=true]::after{content:'✓';position:absolute;right:9px;top:10px;color:var(--mol-accent,#0f766e);font-weight:900}\n.mol-studio button:focus-visible{outline:3px solid var(--mol-accent,#0f766e);outline-offset:2px}\n.theme-contrast .mol-studio :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}\n.mol-studio .mol-toolbar{background:var(--mol-panel);border:1px solid var(--mol-line);border-radius:14px;padding:10px;gap:8px}\n.mol-studio .mol-toolbar span{color:var(--mol-ink)}\n.mol-studio .mol-toolbar button{background:var(--mol-canvas);color:var(--mol-ink);border-color:var(--mol-line);min-height:44px}\n.mol-studio .mol-toolbar button[aria-pressed=true],.mol-studio [data-molecule-camera-control=fit]{background:var(--mol-accent,#0f766e);color:var(--mol-accent-ink,#fff);border-color:var(--mol-accent,#0f766e)}\n.mol-studio .mol-model-note{color:var(--mol-muted);font-size:12px;line-height:1.6;padding:0 4px}\n.mol-studio .mol-composition{margin-top:14px;border:1px solid var(--mol-line);border-radius:14px;background:var(--mol-panel);padding:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}\n.mol-studio .mol-formula{font-size:24px;font-weight:850;line-height:1.2;color:var(--mol-ink)}\n.mol-studio .mol-caption{font-size:12px;color:var(--mol-muted);margin:0 0 4px}\n.mol-studio .mol-atom-key{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}\n.mol-studio .mol-atom-key li{display:flex;align-items:center;gap:7px;background:var(--mol-canvas);border:1px solid var(--mol-line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--mol-ink)}\n.mol-studio .mol-atom-dot{width:14px;height:14px;flex-shrink:0;border-radius:50%;border:1px solid var(--mol-muted);box-shadow:inset 0 2px 3px #ffffff50}\n.mol-studio .mol-lens{border:1px solid var(--mol-line);border-top:3px solid var(--mol-accent,#0f766e);border-radius:16px!important;background:var(--mol-panel);padding:16px;margin-top:16px}\n.mol-studio .mol-lens h4,.mol-studio .mol-lens dd{color:var(--mol-ink)}\n.mol-studio .mol-lens p,.mol-studio .mol-lens dt{color:var(--mol-muted)}\n.mol-studio .mol-lens dl>div,.mol-studio .mol-lens h4+span{border-color:var(--mol-line);background:var(--mol-canvas);border-radius:10px!important;padding:10px;color:var(--mol-ink)}\n@media(max-width:400px){.mol-studio .mol-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mol-studio .mol-library{padding:8px}.mol-studio .mol-preset{min-height:72px}.mol-studio .mol-lens{padding:12px}}\n@media(prefers-reduced-motion:reduce){.mol-studio *{animation:none!important;transition:none!important}}\n@media(forced-colors:active){.mol-studio{--mol-accent:Highlight;--mol-accent-ink:HighlightText}.mol-studio .mol-preset[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.mol-studio :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}.mol-studio :is(button,input,select,textarea,[role=\"progressbar\"]){border-color:ButtonText!important}.mol-studio .mol-atom-dot{forced-color-adjust:none}}\n"),
 
               React.createElement('section', { className: 'mol-library', 'aria-labelledby': 'molecule-library-title' },
                 React.createElement('div', { className: 'mol-section-heading' },
@@ -4023,7 +4025,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       'aria-label': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
                       'data-fs-out': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
                       'data-fs-in': __alloT('stem.molecule.exit_fullscreen', 'Exit fullscreen 3D molecular model (Escape)'),
-                      style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.5)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                      style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 44, height: 44, minWidth: 44, minHeight: 44, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.5)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
                     }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                     webglFail ? React.createElement("div", {
                       role: "alert",
@@ -4060,8 +4062,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, (typeof d.formula === 'string' && d.formula) ? d.formula : "No formula")
                     ),
                     xrSupported && React.createElement("button", {
+                      type: "button",
                       onClick: function() { if (vrRef.current && vrRef.current.enterVR) vrRef.current.enterVR(); },
-                      className: "absolute bottom-3 left-3 px-2.5 py-1.5 rounded-md text-[0.625rem] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
+                      className: "absolute bottom-3 left-3 min-h-[44px] px-3 py-2 rounded-md text-[0.6875rem] font-bold shadow border backdrop-blur-sm transition-colors active:scale-[0.97]",
                       style: { background: "#4f46e5", color: "#fff", borderColor: "rgba(79,70,229,0.8)" },
                       'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
                       title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
@@ -4135,6 +4138,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         onMouseDown: e => { e.preventDefault(); upd('dragging', i); },
                         'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown',
                         onKeyDown: e => {
+                          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
                           var dx = 0, dy = 0;
                           if (e.key === 'ArrowLeft') dx = -10;
                           else if (e.key === 'ArrowRight') dx = 10;
@@ -4226,7 +4230,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   const el = getEl(sym);
 
-                  return React.createElement("button", { "aria-label": __alloT('stem.molecule.add_element', "Add Element"), key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
+                  return React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.add_element', "Add Element"), key: sym, onClick: () => addElement(sym), className: "w-12 h-12 rounded-lg flex flex-col items-center justify-center font-bold text-xs border-2 transition-all hover:scale-110 hover:shadow-md active:scale-95 " + (catColors[el?.cat] || 'bg-slate-100 text-slate-600 border-slate-200'), title: el?.name || sym },
 
                     React.createElement("span", { className: "text-sm font-black" }, sym),
 
@@ -4256,7 +4260,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700 tracking-tight" }, "\u00D7" + count),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.molecule.remove_element', "Remove Element"), onClick: () => removeElement(sym), className: "transition-colors ml-1 w-8 h-8 rounded-full bg-red-100 text-red-800 text-sm font-bold hover:bg-red-200 flex items-center justify-center active:scale-[0.97]" }, "\u2212")
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.remove_element', "Remove Element"), onClick: () => removeElement(sym), className: "transition-colors ml-1 min-w-11 min-h-11 rounded-full bg-red-100 text-red-800 text-sm font-bold hover:bg-red-200 flex items-center justify-center active:scale-[0.97]" }, "\u2212")
 
                     );
 
@@ -4268,9 +4272,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               React.createElement("div", { className: "flex gap-2 mb-4" },
 
-                React.createElement("button", { onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.molecule.combine', "\u2697\uFE0F Combine!")),
+                React.createElement("button", { type: "button", onClick: tryCraft, disabled: Object.keys(selectedEls).length === 0, className: "flex-1 min-h-11 px-4 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl hover:from-emerald-700 hover:to-teal-700 shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.molecule.combine', "\u2697\uFE0F Combine!")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.molecule.clear', "Clear"), onClick: clearElements, className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]" }, __alloT('stem.molecule.clear_2', "\uD83D\uDD04 Clear"))
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.clear', "Clear"), onClick: clearElements, className: "min-h-11 px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]" }, __alloT('stem.molecule.clear_2', "\uD83D\uDD04 Clear"))
 
               ),
 
@@ -4360,7 +4364,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   { sym: 'Ag', color: '#cbd5e1', label: __alloT('stem.molecule.silver', 'Silver') },
 
-                ].map(a => React.createElement("button", { "aria-label": "Add " + a.label + " atom to canvas",
+                ].map(a => React.createElement("button", { type: "button", "aria-label": "Add " + a.label + " atom to canvas",
 
                   key: a.sym,
 
@@ -4563,6 +4567,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       onFocus: () => upd('buildFocusedAtom', i),
                       onBlur: () => { if (d.buildFocusedAtom === i) upd('buildFocusedAtom', null); },
                       onKeyDown: e => {
+                        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
                         var dx = 0, dy = 0;
                         if (e.key === 'ArrowLeft') dx = -10;
                         else if (e.key === 'ArrowRight') dx = 10;
@@ -4766,13 +4771,13 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                 (d.buildAtoms || []).length >= 2 && d.buildBondFrom === null && React.createElement("div", { className: "flex gap-1" },
 
-                  (d.buildAtoms || []).map((a, i) => React.createElement("button", { "aria-label": "Start bond from atom " + a.el,
+                  (d.buildAtoms || []).map((a, i) => React.createElement("button", { type: "button", "aria-label": "Start bond from atom " + a.el,
 
                     key: 'bf' + i,
 
                     onClick: () => { upd('buildBondFrom', i); },
 
-                    className: "w-7 h-7 rounded-full flex items-center justify-center text-[0.6875rem] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
+                    className: "min-w-11 min-h-11 rounded-full flex items-center justify-center text-[0.6875rem] font-bold border-2 border-white hover:scale-110 transition-transform shadow-sm",
 
                     style: { backgroundColor: a.color, color: getReadableSwatchTextColor(a.color) },
 
@@ -4784,11 +4789,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                 // Clear all
 
-                React.createElement("button", { "aria-label": __alloT('stem.molecule.clear_all', "Clear All"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.clear_all', "Clear All"),
 
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildBondMode', false); upd('buildCheckResult', null); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all ml-auto active:scale-[0.97]"
+                  className: "min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all ml-auto active:scale-[0.97]"
 
                 }, __alloT('stem.molecule.clear_all_2', "\uD83D\uDDD1\uFE0F Clear All"))
 
@@ -4843,7 +4848,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               (d.buildAtoms || []).length > 0 && React.createElement("div", { className: "mt-3 flex gap-2" },
 
-                React.createElement("button", { "aria-label": __alloT('stem.molecule.check_built_molecule', "Check built molecule"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.check_built_molecule', "Check built molecule"),
 
                   onClick: () => {
 
@@ -4927,7 +4932,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                 }, __alloT('stem.molecule.check_molecule', "\u{1F50D} Check Molecule")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.molecule.random_challenge', "Random Challenge"),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.random_challenge', "Random Challenge"),
 
                   onClick: () => {
 
@@ -5517,9 +5522,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       detail && React.createElement("p", { className: "text-xs text-slate-700 mt-2 leading-relaxed italic" }, detail.desc),
 
-                      detail && React.createElement("button", { "aria-label": __alloT('stem.molecule.speak_text', "Speak Text"),
+                      detail && React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.speak_text', "Speak Text"),
                         onClick: () => speakText(selectedElementRecord.name + '. ' + detail.desc),
-                        className: "transition-colors mt-2 px-2 py-1 rounded-md border border-slate-300 bg-white/80 text-[0.625rem] font-bold text-slate-700 hover:bg-white inline-flex items-center active:scale-[0.97]"
+                        className: "transition-colors mt-2 min-h-11 px-3 py-2 rounded-md border border-slate-300 bg-white/80 text-xs font-bold text-slate-700 hover:bg-white inline-flex items-center active:scale-[0.97]"
                       }, "🔊 Hear summary"),
 
                     ),
@@ -5629,7 +5634,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        visibleRelatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[0.6875rem] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")")),
+                        visibleRelatedCompounds.map((comp, i) => React.createElement("button", { type: "button", "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "min-h-11 px-3 py-1.5 bg-emerald-50 rounded-full text-xs font-bold text-emerald-800 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")")),
 
                         relatedCompounds.length > 4 && React.createElement("button", {
                           type: "button",
@@ -6351,11 +6356,11 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
               // Reaction selector
               React.createElement("div", { className: "flex gap-1 mb-4 flex-wrap" },
-                REACTIONS.map((r, idx) => React.createElement("button", { "aria-label": "Select reaction: " + r.name,
+                REACTIONS.map((r, idx) => React.createElement("button", { type: "button", "aria-label": "Select reaction: " + r.name,
                   key: r.id,
                   onClick: () => initReaction(idx),
-                  className: "px-2 py-1 rounded-lg text-xs font-bold transition-all " +
-                    (currentReactionIdx === idx && reactionCoeffs ? 'bg-indigo-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]')
+                  className: "min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " +
+                    (currentReactionIdx === idx && reactionCoeffs ? 'bg-indigo-600 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-[0.97]')
                 }, r.emoji + " " + (idx + 1)))
               ),
 
@@ -6390,6 +6395,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[i] + ". Use Arrow Keys to adjust.",
                             tabIndex: 0,
                             onKeyDown: (e) => {
+                              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
                               if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
                                 e.preventDefault(); setCoeff(i, 1);
                                 if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient increased to " + Math.min(9, coeffs[i] + 1));
@@ -6400,16 +6406,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             },
                             className: "flex items-center gap-0.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none rounded-lg p-0.5"
                           },
-                            React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
+                            React.createElement("button", { type: "button", "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(i, -1),
                               tabIndex: -1,
-                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
+                              className: "transition-colors min-w-11 min-h-11 rounded-full bg-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
                             React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" + (isContrast ? " text-white" : "") }, coeffs[i]),
-                            React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
+                            React.createElement("button", { type: "button", "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(i, 1),
                               tabIndex: -1,
-                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
+                              className: "transition-colors min-w-11 min-h-11 rounded-full bg-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "+")
                           ),
                           React.createElement("span", { className: "text-sm font-bold text-slate-700 mt-0.5 bg-slate-50 px-2 py-0.5 rounded border" }, term.formula)
@@ -6427,6 +6433,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             "aria-label": "Coefficient for " + term.formula + ". Current value is " + coeffs[r.left.length + i] + ". Use Arrow Keys to adjust.",
                             tabIndex: 0,
                             onKeyDown: (e) => {
+                              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
                               if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
                                 e.preventDefault(); setCoeff(r.left.length + i, 1);
                                 if (typeof announceToSR === 'function') announceToSR(term.formula + " coefficient increased to " + Math.min(9, coeffs[r.left.length + i] + 1));
@@ -6437,16 +6444,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                             },
                             className: "flex items-center gap-0.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none rounded-lg p-0.5"
                           },
-                            React.createElement("button", { "aria-label": "Decrease coefficient for " + term.formula,
+                            React.createElement("button", { type: "button", "aria-label": "Decrease coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, -1),
                               tabIndex: -1,
-                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
+                              className: "transition-colors min-w-11 min-h-11 rounded-full bg-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "−"),
                             React.createElement("span", { className: "w-8 text-center text-lg font-black text-indigo-700 font-mono tracking-tight" + (isContrast ? " text-white" : "") }, coeffs[r.left.length + i]),
-                            React.createElement("button", { "aria-label": "Increase coefficient for " + term.formula,
+                            React.createElement("button", { type: "button", "aria-label": "Increase coefficient for " + term.formula,
                               onClick: () => setCoeff(r.left.length + i, 1),
                               tabIndex: -1,
-                              className: "transition-colors w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
+                              className: "transition-colors min-w-11 min-h-11 rounded-full bg-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-300 flex items-center justify-center active:scale-[0.97]"
                             }, "+")
                           ),
                           React.createElement("span", { className: "text-sm font-bold text-slate-700 mt-0.5 bg-slate-50 px-2 py-0.5 rounded border" }, term.formula)
@@ -6479,14 +6486,14 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                   // Submit button
                   React.createElement("div", { className: "flex gap-2" },
-                    React.createElement("button", { "aria-label": __alloT('stem.molecule.check_balance', "Check Balance"),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.check_balance', "Check Balance"),
                       onClick: submitReaction,
                       disabled: reactionResult === 'correct',
-                      className: "flex-1 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all disabled:opacity-40"
+                      className: "flex-1 min-h-11 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all disabled:opacity-40"
                     }, __alloT('stem.molecule.check_balance_2', "⚖️ Check Balance")),
-                    React.createElement("button", { "aria-label": __alloT('stem.molecule.next', "Next"),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.next', "Next"),
                       onClick: () => { const next = (currentReactionIdx + 1) % REACTIONS.length; initReaction(next); },
-                      className: "px-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]"
+                      className: "min-h-11 px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors active:scale-[0.97]"
                     }, __alloT('stem.molecule.next_2', "➡️ Next"))
                   ),
 
@@ -6547,22 +6554,26 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       value: aiQuestion,
                       "aria-label": __alloT('stem.molecule.ask_the_chemistry_tutor_about_elements', "Ask the chemistry tutor about elements, compounds, or reactions"),
                       onChange: (e) => upd('aiQuestion', e.target.value),
-                      onKeyDown: (e) => { if (e.key === 'Enter') askChemTutor(aiQuestion); },
+                      onKeyDown: (e) => {
+                        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
+                        if (e.key === 'Enter') { e.preventDefault(); askChemTutor(aiQuestion); }
+                        else if (e.key === 'Escape' && aiQuestion) { e.preventDefault(); upd('aiQuestion', ''); }
+                      },
                       placeholder: __alloT('stem.molecule.ask_about_any_element_compound_or_reac', "Ask about any element, compound, or reaction..."),
-                      className: "flex-1 px-3 py-2 rounded-lg border border-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className: "flex-1 min-h-11 px-3 py-2 rounded-lg border border-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"
                     }),
-                    React.createElement("button", { "aria-label": __alloT('stem.molecule.ask_chem_tutor', "Ask Chem Tutor"),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.ask_chem_tutor', "Ask Chem Tutor"),
                       onClick: () => askChemTutor(aiQuestion),
                       disabled: aiLoading || !aiQuestion,
-                      className: "px-3 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-all active:scale-[0.97]"
+                      className: "min-h-11 px-3 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition-all active:scale-[0.97]"
                     }, aiLoading ? "⏳" : "🔬 Ask")
                   ),
                   React.createElement("div", { className: "flex gap-1 mb-2 flex-wrap" },
                     ["What is an ionic bond?", "Why is water a polar molecule?", "How does rust form?", "What is pH?"].map(q =>
-                      React.createElement("button", { "aria-label": "Ask: " + q,
+                      React.createElement("button", { type: "button", "aria-label": "Ask: " + q,
                         key: q,
                         onClick: () => { upd('aiQuestion', q); askChemTutor(q); },
-                        className: "px-2 py-1 rounded text-[0.6875rem] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors active:scale-[0.97]"
+                        className: "min-h-11 px-3 py-1.5 rounded text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors active:scale-[0.97]"
                       }, q)
                     )
                   ),
@@ -6571,9 +6582,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       React.createElement("span", { className: "text-lg flex-shrink-0" }, "🧑‍🔬"),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-xs text-indigo-700 leading-relaxed" }, aiAnswer),
-                        React.createElement("button", { "aria-label": __alloT('stem.molecule.read_aloud', "Read Aloud"),
+                        React.createElement("button", { type: "button", "aria-label": __alloT('stem.molecule.read_aloud', "Read Aloud"),
                           onClick: () => speakText(aiAnswer),
-                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[0.6875rem] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 active:scale-[0.97]"
+                          className: "transition-colors mt-1 min-h-11 px-3 py-1.5 rounded text-xs font-bold bg-indigo-100 text-indigo-800 hover:bg-indigo-200 active:scale-[0.97]"
                         }, __alloT('stem.molecule.read_aloud_2', "🔊 Read Aloud"))
                       )
                     )
@@ -7038,9 +7049,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               VSEPR_GEOMETRIES.map(function(g) {
                 var sel = g.id === pickedId;
                 return React.createElement('button', {
+                  type: 'button',
                   key: g.id,
                   onClick: function() { setExp({ vseprPicked: g.id }); },
-                  className: 'text-left px-2.5 py-1.5 rounded-md text-[0.6875rem] font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'transition-colors bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.97]'),
+                  className: 'min-h-11 text-left px-2.5 py-1.5 rounded-md text-xs font-bold border ' + (sel ? 'bg-indigo-100 border-indigo-400 text-indigo-900' : 'transition-colors bg-white border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.97]'),
                   style: { borderLeftWidth: 4, borderLeftColor: g.color }
                 }, g.name);
               })
@@ -9071,6 +9083,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
+                    type: 'button',
                     key: opt.id,
                     disabled: revealed,
                     onClick: function() {
@@ -9079,7 +9092,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       setBM({ cases: newCases });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
-                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                    className: 'min-h-11 px-2.5 py-1.5 rounded text-xs font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
                   }, opt.label);
                 })
               ),
@@ -9114,6 +9127,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               // Reveal button — DISABLED until commitment is complete (H5 mechanic)
               React.createElement('div', { className: 'flex items-center gap-2' },
                 React.createElement('button', {
+                  type: 'button',
                   disabled: !canReveal,
                   onClick: function() {
                     var newCases = Object.assign({}, state.cases);
@@ -9121,7 +9135,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     var bonus = st.pick === c.correct ? 1 : 0;
                     setBM({ cases: newCases, score: (state.score || 0) + bonus });
                   },
-                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors min-h-11 px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Revealed' : 'Reveal answer'),
                 !canReveal && !st.revealed && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' },
                   st.pick == null ? 'Pick a bond type first' : 'Tick at least one evidence checkbox'
@@ -9301,11 +9315,12 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
+                    type: 'button',
                     key: opt.id,
                     disabled: revealed,
                     'aria-pressed': picked ? 'true' : 'false',
                     onClick: function() { updateCase(kase.id, { pick: opt.id, socraticStep: 0 }); },
-                    className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
+                    className: 'min-h-11 px-2.5 py-1.5 rounded text-xs font-bold border transition-colors focus:ring-2 focus:ring-indigo-400 focus:outline-none ' + bg
                   }, opt.label);
                 })
               ),
@@ -9321,20 +9336,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   var pos = (st.ranking || []).indexOf(chip);
                   var picked = pos >= 0;
                   return React.createElement('button', {
+                    type: 'button',
                     key: chip,
                     disabled: st.revealed,
                     onClick: function() { toggleRank(chip); },
-                    className: 'px-2 py-1 rounded text-[0.625rem] font-semibold border transition-colors ' +
-                      (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
+                    className: 'min-h-11 px-2.5 py-1.5 rounded text-xs font-semibold border transition-colors ' +
+                      (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-700 border-slate-300 hover:bg-amber-50 active:scale-[0.97]')
                   }, (picked ? '#' + (pos + 1) + ' ' : '') + RATIONALE_CHIPS[chip]);
                 })
               ),
               // (3) Reveal + multi-step Socratic on wrong
               React.createElement('div', { className: 'flex items-center gap-2 mt-2' },
                 React.createElement('button', {
+                  type: 'button',
                   disabled: !canReveal,
                   onClick: function() { updateCase(kase.id, { revealed: true }); var bonus = (st.pick === kase.correct ? 1 : 0) + (rankCorrect ? 1 : 0); setSM({ score: (state.score || 0) + bonus }); },
-                  className: 'transition-colors px-3 py-1 rounded text-[0.6875rem] font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
+                  className: 'transition-colors min-h-11 px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-300 focus:outline-none active:scale-[0.97]'
                 }, st.revealed ? '✓ Checked' : 'Check answer'),
                 !canReveal && !st.revealed && React.createElement('span', { className: 'text-[0.625rem] text-slate-500 italic' },
                   st.pick == null ? 'Pick a solvent first' : 'Rank at least 2 reasoning chips'),
@@ -9357,9 +9374,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 st.socraticStep >= 3 && React.createElement('div', { className: 'pl-3 text-indigo-800 font-semibold' },
                   '→ No. The correct solvent is ' + (SOLVENT_OPTS.find(function(o) { return o.id === kase.correct; }) || {}).label + ' because: ' + kase.explanation),
                 React.createElement('button', {
+                  type: 'button',
                   onClick: function() { updateCase(kase.id, { socraticStep: Math.min((st.socraticStep || 0) + 1, 3) }); },
                   disabled: (st.socraticStep || 0) >= 3,
-                  className: 'transition-colors mt-1 px-2 py-0.5 rounded text-[0.625rem] font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 active:scale-[0.97]'
+                  className: 'transition-colors mt-1 min-h-11 px-3 py-1.5 rounded text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-40 active:scale-[0.97]'
                 }, (st.socraticStep || 0) >= 3 ? 'Walkthrough complete' : 'Show next step →')
               ),
               // CORRECT-PATH explanation

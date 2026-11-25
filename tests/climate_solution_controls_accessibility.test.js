@@ -70,15 +70,15 @@ describe.each(paths)('Climate solution controls: %s', path => {
     expect(wind.getAttribute('aria-label')).toBe(name);
     expect(wind.textContent).toContain('Selected');
     expect(view.one('#'+wind.getAttribute('aria-describedby'))?.textContent).toBeTruthy();
-    expect(status.textContent).toBe('1 solution selected. Sum of displayed estimates: 147 Gt.');
+    expect(status.textContent).toBe('1 solution selected. Sum of displayed estimates: 148 Gt.');
     await activate(waste);
-    expect(status.textContent).toBe('2 solutions selected. Sum of displayed estimates: 235 Gt.');
+    expect(status.textContent).toBe('2 solutions selected. Sum of displayed estimates: 242 Gt.');
     expect(view.state().badges.gigaton).toBeTruthy();
     await activate(wind);
     expect(document.activeElement).toBe(wind);
     expect(wind.getAttribute('aria-pressed')).toBe('false');
     expect(wind.textContent).toContain('Not selected');
-    expect(status.textContent).toBe('1 solution selected. Sum of displayed estimates: 88 Gt.');
+    expect(status.textContent).toBe('1 solution selected. Sum of displayed estimates: 95 Gt.');
     expect(view.one('#ce-stack').textContent).toContain('simple sum is not a modeled portfolio');
   });
 
@@ -86,9 +86,11 @@ describe.each(paths)('Climate solution controls: %s', path => {
     const view=mountTool(path,{drawdownPicked:{wind_onshore:true,solar_farms:'true',reduced_waste:1,bogus1:true,bogus2:true,bogus3:true,bogus4:true}});
     expect(view.one('#ce-stack-summary').textContent).toContain('1 solution selected.');
     expect(view.all('#ce-stack button[aria-pressed="true"]')).toHaveLength(1);
-    await activate(view.one('#ce-stack-solar_roof'));
-    expect(view.state().drawdownPicked).toEqual({wind_onshore:true,solar_roof:true});
-    expect(view.one('#ce-stack-summary').textContent).toContain('2 solutions selected. Sum of displayed estimates: 172 Gt.');
+    // Heat pumps keeps this real two-row sum (147.7 + 9.3) under the 200 Gt badge line,
+    // so any award here would come from the bogus saved keys.
+    await activate(view.one('#ce-stack-heat_pumps'));
+    expect(view.state().drawdownPicked).toEqual({wind_onshore:true,heat_pumps:true});
+    expect(view.one('#ce-stack-summary').textContent).toContain('2 solutions selected. Sum of displayed estimates: 157 Gt.');
     expect(view.state().badges?.planner).toBeUndefined();
     expect(view.award).not.toHaveBeenCalled();
   });
@@ -116,24 +118,49 @@ describe.each(paths)('Climate solution controls: %s', path => {
     expect([...panel.querySelectorAll('h5')].map(node=>node.textContent)).toEqual(['What','Where','📈 Impact']);
     expect(panel.querySelectorAll('p')).toHaveLength(3);
     expect(panel.textContent).toContain('Panels that turn sunlight into electricity');
-    expect(view.award).toHaveBeenCalledTimes(1);
+    // 2026-11-23: opening a card is not evidence, so it earns no XP (it used to give 5).
+    expect(view.award).not.toHaveBeenCalled();
     await activate(button); await activate(button);
-    expect(view.award).toHaveBeenCalledTimes(1);
+    expect(view.award).not.toHaveBeenCalled();
     expect(document.activeElement).toBe(button);
   });
 
-  it('counts only valid completed reads toward the eight-solution badge', async () => {
+  it('tracks valid card reads but gives no XP or badge for them', async () => {
     const view=mountTool(path,{solutionsViewed:{solar:'true',unknown1:true,unknown2:true,unknown3:true,unknown4:true,unknown5:true,unknown6:true,unknown7:true}});
     await activate(view.one('#ce-solution-toggle-solar'));
     expect(view.state().solutionsViewed).toEqual({solar:true});
-    expect(view.state().badges?.solutionScholar).toBeUndefined();
-    expect(view.award).toHaveBeenCalledExactlyOnceWith('climateExplorer',5);
     const remaining=view.all('[id^="ce-solution-toggle-"]').filter(button=>button.id!=='ce-solution-toggle-solar');
     expect(remaining).toHaveLength(7);
     for(const button of remaining)await activate(button);
     expect(Object.keys(view.state().solutionsViewed)).toHaveLength(8);
-    expect(Number.isSafeInteger(view.state().badges.solutionScholar)).toBe(true);
-    expect(view.state().badges.solutionScholar).toBeGreaterThan(0);
+    expect(view.state().badges?.solutionScholar).toBeUndefined();
+    expect(view.award).not.toHaveBeenCalled();
+  });
+
+  it('earns Solution Scholar by finishing Drawdown Sleuth with 6 or more of 8 right, and XP for each right answer once', async () => {
+    // Round 1 (index 0): the largest of these four is solar_roof. Seven rounds are already done.
+    const lastRound={dsOpen:true,dsIdx:0,dsShown:[1,2,3,4,5,6,7,0],dsRounds:7,dsAnswered:false,dsPick:null};
+    const five=mountTool(path,Object.assign({dsScore:5},lastRound));
+    await activate(five.one('#ce-ds-answer-solar_roof'));
+    expect(five.state().dsScore).toBe(6);
+    expect(Number.isSafeInteger(five.state().badges.solutionScholar)).toBe(true);
+    expect(five.award.mock.calls.map(c=>c.slice(0,2))).toEqual([['climateExplorer',5],['climateExplorer',15]]); // the answer, then the badge
+  });
+
+  it('gives no Solution Scholar for 5 of 8', async () => {
+    const lastRound={dsOpen:true,dsIdx:0,dsShown:[1,2,3,4,5,6,7,0],dsRounds:7,dsAnswered:false,dsPick:null};
+    const four=mountTool(path,Object.assign({dsScore:4},lastRound));
+    await activate(four.one('#ce-ds-answer-solar_roof'));
+    expect(four.state().dsScore).toBe(5);
+    expect(four.state().badges?.solutionScholar).toBeUndefined();
+  });
+
+  it('gives no XP for a wrong Drawdown Sleuth answer', async () => {
+    const lastRound={dsOpen:true,dsIdx:0,dsShown:[1,2,3,4,5,6,7,0],dsRounds:7,dsAnswered:false,dsPick:null};
+    const wrong=mountTool(path,Object.assign({dsScore:5},lastRound));
+    await activate(wrong.one('#ce-ds-answer-heat_pumps'));   // a wrong answer: no XP, and 5 of 8 is short of 6
+    expect(wrong.award).not.toHaveBeenCalled();
+    expect(wrong.state().badges?.solutionScholar).toBeUndefined();
   });
 
   it('exposes the selected category, announces the actual result count and retains filter focus', async () => {

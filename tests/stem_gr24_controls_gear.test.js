@@ -47,7 +47,14 @@ async function render(extra) {
   await flush();
 }
 const bar = () => host.querySelector('.stem-lab-actionbar');
-const controlsBtn = () => bar().querySelector('button[aria-label="Controls settings"]');
+// 2026-11-23: Controls is an item in the top bar's "More" menu; the bar's own icon button
+// with a word in a span is now More. controlsBtn opens the menu when it is closed.
+const moreBtn = () => bar().querySelector(':scope > button[data-stem-more-toggle]');
+const controlsBtn = async () => {
+  const sel = '#stem-lab-more-menu button[aria-label="Controls settings"]';
+  if (!host.querySelector(sel)) { await act(async () => { moreBtn().click(); }); await flush(); }
+  return host.querySelector(sel);
+};
 // Text a header button shows outside any span: the phone rule cannot hide it.
 const bareWords = (b) => Array.from(b.childNodes).filter((n) => n.nodeType === 3 && /\p{L}/u.test(n.textContent)).map((n) => n.textContent);
 
@@ -66,14 +73,28 @@ describe('header Controls button: gear icon + word in a span', () => {
     it(view + ' view: no header button shows a word outside a span (the phone rule hides spans)', async () => {
       await render(extra);
       const buttons = Array.from(bar().querySelectorAll(':scope > button'));
-      expect(buttons.length).toBeGreaterThan(3);
+      expect(buttons.length).toBe(3); // Listen, More, Close (2026-11-23)
       for (const b of buttons) expect(bareWords(b), (b.getAttribute('aria-label') || '') + ' has bare text').toEqual([]);
     });
   }
 
-  it('shows an aria-hidden gear that is not a span (so it stays on phones) and the word "Controls" in a span', async () => {
+  it('the bar\'s More button: an aria-hidden icon that is not a span (so it stays on phones) and the word in a span', async () => {
     await render({ isTeacherMode: true });
-    const b = controlsBtn();
+    const b = moreBtn();
+    expect(b).toBeTruthy();
+    const icon = Array.from(b.children).find((c) => c.getAttribute('aria-hidden') === 'true');
+    expect(icon.tagName).not.toBe('SPAN');
+    expect(icon.style.fontStyle).toBe('normal');
+    const span = b.querySelector('span');
+    expect(span.textContent).toBe('More');
+    expect(b.getAttribute('aria-label')).toContain(span.textContent);
+    expect(b.className).toMatch(/\bflex\b/);
+    expect(b.className).toMatch(/\bitems-center\b/);
+  });
+
+  it('the Controls menu item keeps its aria-hidden gear (not a span) and the word "Controls" in a span', async () => {
+    await render({ isTeacherMode: true });
+    const b = await controlsBtn();
     expect(b).toBeTruthy();
     const icon = Array.from(b.children).find((c) => c.getAttribute('aria-hidden') === 'true');
     expect(icon, 'no aria-hidden icon').toBeTruthy();
@@ -87,8 +108,8 @@ describe('header Controls button: gear icon + word in a span', () => {
     expect(b.getAttribute('aria-label')).toBe('Controls settings');
     expect(b.getAttribute('title')).toBe('Controls settings');
     expect(b.getAttribute('aria-label')).toContain(span.textContent);
-    expect(b.className).toMatch(/\bflex\b/);
-    expect(b.className).toMatch(/\bitems-center\b/);
+    expect(b.getAttribute('role')).toBe('menuitem');
+    expect(b.className).toMatch(/\bstem-lab-more-item\b/); // flex row, 44 px, from the hub CSS
   });
 
   it('the 640 px rule hides button spans and only spans, and keeps the 36 px button', async () => {
@@ -103,10 +124,14 @@ describe('header Controls button: gear icon + word in a span', () => {
   it('same handler: a press opens the Controls panel, a second press closes it', async () => {
     await render({ isTeacherMode: true });
     expect(host.querySelector('[data-stem-controls-panel]')).toBeNull();
-    await act(async () => { controlsBtn().click(); });
+    const first = await controlsBtn();
+    await act(async () => { first.click(); });
     await flush();
     expect(host.querySelector('[data-stem-controls-panel]')).toBeTruthy();
-    await act(async () => { controlsBtn().click(); });
+    expect(host.querySelector('#stem-lab-more-menu'), 'the menu closes after a choice').toBeNull();
+    expect(document.activeElement, 'focus returns to More').toBe(moreBtn());
+    const second = await controlsBtn();
+    await act(async () => { second.click(); });
     await flush();
     expect(host.querySelector('[data-stem-controls-panel]')).toBeNull();
   });

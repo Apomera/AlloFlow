@@ -252,7 +252,7 @@ describe('B3: applySheetReadingSupports() element skipping and bionic weight con
     const fcBionic = media.applySheetReadingSupports(fcHtml, { bold: true });
     expect(fcBionic.slice(15)).not.toContain('!');
     expect(fcBionic).toContain('data-awp-bionic="1"');
-    expect(fcBionic).toContain('.word,.frayer-word,.sort-word-text,.bank-word,.bingo-word,.loop-word,.wall-word{font-weight:400}b[data-awp-bionic]{font-weight:800}');
+    expect(fcBionic).toContain('.word,.frayer-word,.sort-word-text,.bank-word,.bingo-word,.loop-word,.wall-word,.ws-word{font-weight:400}b[data-awp-bionic]{font-weight:800}');
 
     const fcDoc = new JSDOM(fcBionic).window.document;
     // Print button inside .noprint is NOT bionic-bolded.

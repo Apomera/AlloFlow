@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-school-librarian-5312-learning-library",
@@ -28,7 +29,7 @@
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
     "sourceItemsSha256": "fd6280b834ffc690d8d767ddf2b9353b447bfb4fcfb50cf9885aac4c973dd24b",
-    "learningLibrarySha256": "ad56ee24aa04a26a9e1f781d5870b356361738a1c96c7ea967e3f4f8a806969a",
+    "learningLibrarySha256": "37b284f03a0beecef53dedc33ebab9cd80aec8048f2586afb22805b78fb4fc6e",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

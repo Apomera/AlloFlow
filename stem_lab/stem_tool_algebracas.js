@@ -27,6 +27,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       '.cas-step-ripple{animation:casStepRipple 560ms ease-out forwards;transform-box:fill-box;transform-origin:center}' +
       '@media (prefers-reduced-motion: reduce){.cas-beacon-pulse,.cas-step-ripple{animation:none!important}}';
     document.head.appendChild(st);
+    if (!document.getElementById('allo-algebracas-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-algebracas-a11y-css';
+      ast.textContent = '[data-stem-tool-shell="algebraCAS"] :is(button,input,select,summary){touch-action:manipulation}[data-stem-tool-shell="algebraCAS"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid #7c3aed;outline-offset:2px}@media (forced-colors:active){[data-stem-tool-shell="algebraCAS"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -1629,7 +1635,7 @@ onSpeak: function(formats) {
                   h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                     h('input', { id: id, type: 'text', value: String(inputs[i] || ''), maxLength: 200, readOnly: ok, 'aria-describedby': checks[i] ? id + '-fb' : undefined, 'aria-invalid': checks[i] && !ok ? 'true' : undefined,
                       onChange: function(e) { setWorked({ workedInputs: withKey(inputs, i, e.target.value), workedChecks: withKey(checks, i, null) }); },
-                      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkBlank(i); } }, style: inputStyle }),
+                      onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); checkBlank(i); } }, style: inputStyle }),
                     ok ? null : h('button', { type: 'button', onClick: function() { checkBlank(i); }, disabled: !String(inputs[i] || '').trim(), style: smallBtn }, t('stem.algebraCAS.check_line', 'Check line'))),
                   checks[i] ? h('p', { id: id + '-fb', style: { fontSize: '12px', margin: '4px 0 0', color: TEXT } }, lineMessage(checks[i], s)) : null);
               })),
@@ -1641,7 +1647,7 @@ onSpeak: function(formats) {
               done ? null : h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 h('input', { id: 'cas-own-line', type: 'text', value: same ? String(d.workedLineInput || '') : '', maxLength: 200, 'aria-describedby': fb ? 'cas-own-line-fb' : undefined,
                   onChange: function(e) { setWorked({ workedLines: lines, workedLineInput: e.target.value, workedLineFeedback: null }); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); checkOwnLine(); } }, style: inputStyle }),
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); checkOwnLine(); } }, style: inputStyle }),
                 h('button', { type: 'button', onClick: checkOwnLine, disabled: !(same && String(d.workedLineInput || '').trim()), style: smallBtn }, t('stem.algebraCAS.check_line', 'Check line')),
                 h('button', { type: 'button', onClick: showHint, style: smallBtn }, t('stem.algebraCAS.show_next_step', 'Hint: next step'))),
               fb ? h('p', { id: 'cas-own-line-fb', style: { fontSize: '12px', margin: '6px 0 0', color: TEXT, fontWeight: fb.kind === 'solved' ? 700 : 400 } }, feedbackText(fb)) : null) : null
@@ -1662,6 +1668,7 @@ onSpeak: function(formats) {
             return h('button', { key: t.id, id: 'stem-algebracas-tab-' + t.id,
               onClick: function() { upd('tab', t.id); },
               onKeyDown: function(e) {
+                if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
                 var next = tabIndex;
                 if (e.key === 'ArrowRight') next = (tabIndex + 1) % TABS.length;
                 else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + TABS.length) % TABS.length;
@@ -1691,7 +1698,7 @@ onSpeak: function(formats) {
             ),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' } },
               h('input', { type: 'text', value: expression, onChange: function(e) { updMulti({ expression: e.target.value, result: null, verify: null, stepCheck: null }); },
-                onKeyDown: function(e) { if (e.key === 'Enter') handleSolve(); },
+                onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') handleSolve(); },
                 placeholder: 'e.g. ' + ((EXAMPLES[mode] || [])[0] || '2x + 5 = 13'),
                 'aria-label': t('stem.algebraCAS.algebra_expression_input', 'Algebra expression input'),
                 style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
@@ -1878,7 +1885,7 @@ onSpeak: function(formats) {
               !practiceFeedback ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' } },
                 h('input', { type: 'text', value: practiceAnswer,
                   onChange: function(e) { upd('practiceAnswer', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') handlePracticeCheck(); },
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') handlePracticeCheck(); },
                   placeholder: t('stem.algebraCAS.your_answer', 'Your answer...'),
                   'aria-label': t('stem.algebraCAS.practice_answer_input', 'Practice answer input'),
                   style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
@@ -2349,7 +2356,7 @@ onSpeak: function(formats) {
                 h('div', {style:{display:'flex',flexWrap:'wrap',alignItems:'end',gap:8}},
                   h('div', {style:{flex:'1 1 130px',minWidth:0}},
                     h('label', {htmlFor:'balance-trial-x',style:{display:'block',fontSize:13,fontWeight:700,marginBottom:4}},t('stem.algebraCAS.trial_value_label','Value of x')),
-                    h('input', {id:'balance-trial-x',type:'text',value:draft,maxLength:128,'aria-describedby':'balance-trial-help','aria-invalid':trial && !trial.ok && trial.reason==='value'?true:undefined,onChange:function(e){updMulti({scaleTrialValue:e.target.value,scaleTrialChecked:null});},onKeyDown:function(e){if(e.key==='Enter'){e.preventDefault();submit(draft);}},style:{width:'100%',minHeight:44,boxSizing:'border-box',padding:8,borderRadius:8,border:'1px solid '+MUTED,background:BG,color:TEXT,fontSize:16}})
+                    h('input', {id:'balance-trial-x',type:'text',value:draft,maxLength:128,'aria-describedby':'balance-trial-help','aria-invalid':trial && !trial.ok && trial.reason==='value'?true:undefined,onChange:function(e){updMulti({scaleTrialValue:e.target.value,scaleTrialChecked:null});},onKeyDown:function(e){if(e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();submit(draft);}},style:{width:'100%',minHeight:44,boxSizing:'border-box',padding:8,borderRadius:8,border:'1px solid '+MUTED,background:BG,color:TEXT,fontSize:16}})
                   ),
                   h('button', {type:'button',onClick:function(){submit(draft);},disabled:predictOn&&!choice,'aria-describedby':predictOn&&!choice?'balance-trial-predict-first':undefined,style:Object.assign({},buttonStyle,{background:BTN_FLAT,color:BTN_TEXT,opacity:predictOn&&!choice?0.55:1})},t('stem.algebraCAS.trial_check','Check value'))
                 ),
@@ -2470,7 +2477,7 @@ onSpeak: function(formats) {
               h('div', { style: { fontSize: '11px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.enter_equation', 'Enter Equation')),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 h('input', { type: 'text', value: scaleEq, onChange: function(e) { updMulti({scaleEq:e.target.value,scaleSteps:[],scaleSolved:false,scaleNotice:'',scaleTrialChecked:null,scalePreviousEq:'',scaleTileStep:null,scaleOpResult:null}); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '', scaleTileStep: null, scaleOpResult: null }); },
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') updMulti({ scaleSteps: [], scaleSolved: false, scaleNotice: '', scaleTrialChecked: null, scalePreviousEq: '', scaleTileStep: null, scaleOpResult: null }); },
                   placeholder: t('stem.algebraCAS.e_g_3x_5_14', 'e.g. 3x + 5 = 14'),
                   'aria-label': t('stem.algebraCAS.balance_scale_equation_input', 'Balance scale equation input'),
                   style: { flex: '1 1 160px', minWidth: 0, padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontFamily: 'monospace', fontSize: '13px' },
@@ -2581,7 +2588,7 @@ onSpeak: function(formats) {
             ),
             h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
               h('input', { type: 'text', value: tutorInput, onChange: function(e) { upd('tutorInput', e.target.value); },
-                onKeyDown: function(e) { if (e.key === 'Enter') handleTutorSend(); },
+                onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') handleTutorSend(); },
                 placeholder: t('stem.algebraCAS.ask_about_algebra', 'Ask about algebra...'),
                 'aria-label': t('stem.algebraCAS.ask_the_algebra_tutor', 'Ask the algebra tutor'),
                 style: { flex: '1', padding: '8px 12px', borderRadius: '10px', background: CARD, border: '1px solid ' + BORDER, color: TEXT, outline: '2px solid transparent', outlineOffset: '2px', fontSize: '12px' },

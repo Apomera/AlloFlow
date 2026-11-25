@@ -15,7 +15,8 @@ const csp = (doc) => doc.querySelector('meta[http-equiv="Content-Security-Policy
 describe('the front door says what each maker makes, at the sizes the makers state', () => {
   it('"a short check", not only "a math check": vocabulary files can be checks too', () => {
     const door = parse('packets.html');
-    expect(squash(door.querySelector('.lead').textContent)).toBe('Make a practice file or a short check for your students in three steps. '
+    // 2026-11-23 (owner, front-door review): "in a few steps". "Three" was false of a read-along, which has four.
+    expect(squash(door.querySelector('.lead').textContent)).toBe('Make a practice file or a short check for your students in a few steps. '
       + 'A student opens it, completes it and saves a results file that you can open in a spreadsheet.');
     expect(squash(parse('packets-vocab.html').querySelector('#modes').textContent)).toContain('A check');
   });
@@ -62,7 +63,8 @@ describe('the vocabulary maker is exact about what it fetches and where AI was u
   it('it says the meanings marked checked were checked with AI help, not by a person, as the word list itself records', () => {
     const bank = read('packets_vocab_bank_en.js');
     // 2026-11-13: the science and social-studies pass updates the dates and puts the editing note last.
-    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12, 13 and 14, 2026[^"]*Not reviewed by a person\./);
+    // 2026-11-23: the 100-word sample of extended words (batch 70) adds its date.
+    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12, 13, 14 and 23, 2026[^"]*Not reviewed by a person\./);
     // 2026-11-17 (review D13): the badges say AI-checked and not checked.
     expect(squash(doc.getElementById('legend').textContent)).toBe('AI-checked This meaning was checked with AI help when the word list was prepared, not by a person. not checked No one has checked this meaning. Read these first.');
     const sources = squash(doc.getElementById('sources').textContent);
@@ -81,7 +83,8 @@ describe('the guide for school IT and Find a picture say what is true of every p
     const fact = Object.fromEntries([...guidePage.querySelectorAll('.facts-table tr')].map((row) => [row.querySelector('th').textContent, squash(row.querySelector('td').textContent)]));
     expect(fact['License and code']).toContain('packet_vocab_builder.js (vocabulary practice and checks)');
     expect(fact["What this site's server can see"]).toContain('the Word Sounds and vocabulary makers ask only for the ones they need');
-    expect(fact['What leaves the device, and when']).toContain('A vocabulary file reads aloud only with a voice that runs on the device');
+    // 2026-11-23: a vocabulary file also plays the recordings stored in it (words, and meanings where the site has them).
+    expect(fact['What leaves the device, and when']).toContain('A vocabulary file plays the recordings stored in it (words, and meanings where this site has them, made ahead of time with the same computer voice) and otherwise reads aloud only with a voice that runs on the device');
     expect(fact['The class mailbox kind']).toContain("Files made on this site's maker pages have no mailbox.");
     expect(read('word_sounds_take_home_loader.js')).toContain('localService === true');
   });
@@ -90,10 +93,11 @@ describe('the guide for school IT and Find a picture say what is true of every p
     const line = squash(parse('packets-pictures.html').getElementById('proof-reach').textContent);
     expect(line).not.toContain('The other pages cannot connect to any other website');
     // 2026-11-16: four, with the two pages that use the computer voice (each downloads the Kokoro voice from Hugging Face when asked).
-    expect(line).toContain('the guide for school IT names the four that can, and what they send');
+    // 2026-11-23: five, with Send feedback (packets-feedback.html), which reaches AlloFlow's feedback inbox when the teacher presses Send.
+    expect(line).toContain('the guide for school IT names the five that can, and what they send');
     const others = readdirSync('.').filter((f) => /^packets[\w-]*\.html$/.test(f) && f !== 'packets-pictures.html')
       .filter((f) => /connect-src[^;]*https:\/\//.test(csp(parse(f))));
-    expect(others.sort()).toEqual(['packets-open.html', 'packets-read-along.html', 'packets-vocab-lookup.html', 'packets-voice.html']);
+    expect(others.sort()).toEqual(['packets-feedback.html', 'packets-open.html', 'packets-read-along.html', 'packets-vocab-lookup.html', 'packets-voice.html']);
     const guide = squash(parse('packets-it.html').body.textContent);
     for (const f of others) expect(guide, f).toContain(f);
   });

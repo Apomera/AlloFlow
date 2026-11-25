@@ -80,6 +80,19 @@ function _educatorAlloSheetTheme() {
   return 'dark';
 }
 
+function _ensureEducatorHubA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-educator-hub-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-educator-hub-a11y-css';
+  st.textContent =
+    '[data-educator-hub-modal="true"] button,[data-educator-hub-modal="true"] a,[data-educator-hub-modal="true"] input,[data-educator-hub-modal="true"] select,[data-educator-hub-modal="true"] summary{touch-action:manipulation;}' +
+    '[data-educator-hub-modal="true"] button:focus-visible,[data-educator-hub-modal="true"] a:focus-visible,[data-educator-hub-modal="true"] input:focus-visible,[data-educator-hub-modal="true"] select:focus-visible,[data-educator-hub-modal="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-educator-hub-modal="true"] button:focus-visible,[data-educator-hub-modal="true"] a:focus-visible,[data-educator-hub-modal="true"] input:focus-visible,[data-educator-hub-modal="true"] select:focus-visible,[data-educator-hub-modal="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-educator-hub-modal="true"],[data-educator-hub-modal="true"] *,[data-educator-hub-modal="true"] *::before,[data-educator-hub-modal="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
+
 function EducatorHubModal(props) {
   const {
     handleFileUpload = (() => {}), openExportPreview = (() => {}), pdfAuditResult, pdfFixLoading, pdfFixResult,
@@ -266,6 +279,7 @@ function EducatorHubModal(props) {
         return true;
       });
     };
+    _ensureEducatorHubA11yCss();
     const first = getFocusable()[0];
     try { (first || dialog).focus(); } catch (_) {}
     const onKeyDown = function (event) {
@@ -273,10 +287,10 @@ function EducatorHubModal(props) {
       if (!isTopTrap()) return;
       if (!dialog.isConnected) return;
       if (event.key === 'Escape') {
-        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault(); event.stopPropagation(); closeHandlerRef.current && closeHandlerRef.current(); return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || event.ctrlKey || event.metaKey || event.altKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) { event.preventDefault(); try { dialog.focus(); } catch (_) {} return; }
       const firstItem = focusable[0], lastItem = focusable[focusable.length - 1];
@@ -479,7 +493,7 @@ function EducatorHubModal(props) {
               so the theme-dark gradient/text remaps never reached its pastel cards. Opting into
               the scope class inherits the existing dark remap (from-*-50 -> dark, text -> light).
               No-op in light mode (all .allo-docsuite rules are .theme-dark / .theme-contrast). */}
-          <div ref={dialogRef} tabIndex={-1} data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle">
+          <div ref={dialogRef} tabIndex={-1} data-educator-hub-modal="true" data-help-key="educator_hub_modal_panel" className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 id="educator-hub-title" className="text-xl font-bold text-slate-800 flex items-center gap-2"><span aria-hidden="true">🛠️</span> {t('educator_hub.title') || 'Educator Tools'}</h2>
@@ -498,7 +512,7 @@ function EducatorHubModal(props) {
                   value={hubQuery}
                   onChange={(event) => setHubQuery(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                     if (event.key === 'Enter') {
                       event.preventDefault();
                       launchSingleVisibleHubMatch();

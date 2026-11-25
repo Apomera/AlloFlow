@@ -69,6 +69,14 @@ async function mount(initial, ctxOverrides = {}) {
 
 const launchButton = () => container.querySelector('[data-skatelab-launch="true"]');
 const launch = () => act(async () => { launchButton().click(); });
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const chooseFirstAnswer = () => act(async () => { container.querySelector('[data-skatelab-predict] input[type="radio"]').click(); });
 const xpIds = (spy) => spy.mock.calls.map((call) => call[0]);
 
@@ -124,6 +132,7 @@ describe('the Moon hang-time guess after a reveal', () => {
   it('a guess copied from the revealed Moon air time does not complete the mission', async () => {
     const awardXP = vi.fn();
     const state = await mount(seed({ activeMission: 'moon_hang' }), { awardXP });
+    await toPrompt('hp_moon');
     expect(container.querySelector('#sk-predict-question').textContent).toMatch(/Moon/);
     await chooseFirstAnswer();
     await launch();
@@ -204,6 +213,7 @@ describe('the run button during a ride', () => {
 describe('focus after the reveal', () => {
   it('"Try this to see why" moves focus to the new setup\'s guess, not to the page', async () => {
     await mount(seed());
+    await toPrompt('hp_moon');
     await chooseFirstAnswer();
     await launch();
     const tryButton = [...container.querySelectorAll('button')].find((button) => /Try this to see why/.test(button.textContent));

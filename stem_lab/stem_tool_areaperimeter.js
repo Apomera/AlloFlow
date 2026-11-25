@@ -41,6 +41,12 @@
       apReduceStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
       document.head.appendChild(apReduceStyle);
     }
+    if (!document.getElementById('allo-areaperimeter-a11y-css')) {
+      var apA11yStyle = document.createElement('style');
+      apA11yStyle.id = 'allo-areaperimeter-a11y-css';
+      apA11yStyle.textContent = '@media (forced-colors:active){[data-stem-tool-shell="areaPerimeter"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(apA11yStyle);
+    }
     if (!document.getElementById('allo-ap-motion-css')) {
       var apMotionStyle = document.createElement('style');
       apMotionStyle.id = 'allo-ap-motion-css';
@@ -2063,8 +2069,9 @@
             key: 'input', id: id, type: 'range', min: min, max: max, step: 1, value: value,
             disabled: max <= min || !!disabledFlag,
             onChange: function(event) { onChange(Number(event.target.value)); },
-            style: { width: '100%', minHeight: '28px', accentColor: COLORS.teal },
-            'aria-label': label
+            style: { width: '100%', minHeight: '44px', accentColor: COLORS.teal },
+            'aria-label': label,
+            'aria-valuetext': label + ': ' + (shown == null ? String(value) : shown)
           })
         ]);
       }
@@ -2199,6 +2206,7 @@
       }
 
       function handleModeKeyDown(event, index, list) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         var nextIndex = index;
         if (event.key === 'ArrowRight') nextIndex = (index + 1) % list.length;
         else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + list.length) % list.length;
@@ -2436,6 +2444,7 @@
                 onPointerUp: function(event) { apGridHandlers.paintUp(event); },
                 onPointerCancel: function(event) { apGridHandlers.paintUp(event); },
                 onKeyDown: function(event) {
+                  if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
                     apGridHandlers.tile(c, r);
@@ -4491,6 +4500,7 @@
               'aria-label': t('stem.areaperimeter.marker_label', 'Ruler marker'),
               'aria-valuemin': 0, 'aria-valuemax': ruler.max, 'aria-valuenow': marker, 'aria-valuetext': markerText(marker),
               onKeyDown: function(event) {
+                if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                 var next = marker;
                 if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = marker + ruler.minor;
                 else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = marker - ruler.minor;
@@ -4768,6 +4778,7 @@
               onFocus: function() { apGridHandlers.blobFocus(cell.key); },
               onClick: function() { apGridHandlers.blob(cell); },
               onKeyDown: function(event) {
+                if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                 if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); apGridHandlers.blob(cell); return; }
                 var c = cell.c, r = cell.r;
                 if (event.key === 'ArrowRight') c = Math.min(blob.cols - 1, c + 1);

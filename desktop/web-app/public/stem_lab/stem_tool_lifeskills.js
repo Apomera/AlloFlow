@@ -10443,7 +10443,9 @@ window.StemLab = window.StemLab || {
       var rawSupport = asText(d.lsSupportMode);
       var lsSupportMode = ['plain', 'standard', 'steam'].indexOf(rawSupport) !== -1 ? rawSupport : 'standard';
       var rawDomain = asText(d.lsDomain);
-      var lsDomain = SUBTOOL_DOMAINS.some(function(dom) { return dom.id === rawDomain; }) ? rawDomain : 'all';
+      // Nothing stored -> open on "Start & Practice" (4 tabs), not all 33. A stored
+      // choice, including 'all', is honoured. The "All 33" chip is always in the row.
+      var lsDomain = SUBTOOL_DOMAINS.some(function(dom) { return dom.id === rawDomain; }) ? rawDomain : 'start';
       var lsTabSearch = asText(d.lsTabSearch);
       var rawInlineLab = asText(d.lsInlineLab);
       var lsInlineLab = ['capstone', 'safety', 'repair', 'kitchen', 'laundry', 'transit'].indexOf(rawInlineLab) !== -1 ? rawInlineLab : '';
@@ -13556,7 +13558,9 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', 'aria-label': __alloT('stem.lifeskills.aria_module_tabs', 'Life skills modules') },
           SUBTOOLS.map(function(st, tabIndex) {
             var active = tab === st.id;
-            var matchesDomain = !domainAllowedIds || domainAllowedIds.indexOf(st.id) !== -1;
+            // The search box says it searches all 33 tabs, so typed text looks past the
+            // domain chip (with the 4-tab default it would otherwise find almost nothing).
+            var matchesDomain = !!searchNeedle || !domainAllowedIds || domainAllowedIds.indexOf(st.id) !== -1;
             var matchesSearch = !searchNeedle || (st.label + ' ' + st.id).toLowerCase().indexOf(searchNeedle) !== -1;
             var matchesFilter = matchesDomain && matchesSearch;
             return h('button', { key: st.id, id: 'lifeskills-tab-' + st.id,

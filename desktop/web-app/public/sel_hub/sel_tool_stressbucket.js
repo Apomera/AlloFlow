@@ -28,6 +28,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
   'use strict';
 
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-stressbucket')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-stressbucket';
@@ -38,6 +39,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  // Focus ring, touch behaviour, reduced motion and forced-colors, scoped to the tool root.
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-stressbucket-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stressbucket-a11y-css';
+    st.textContent =
+      '.selh-stressbucket button:focus-visible, .selh-stressbucket a:focus-visible, .selh-stressbucket input:focus-visible, .selh-stressbucket select:focus-visible, .selh-stressbucket summary:focus-visible, .selh-stressbucket [tabindex]:focus-visible { outline: 3px solid #0d9488; outline-offset: 2px; }' +
+      '.selh-stressbucket button, .selh-stressbucket a, .selh-stressbucket summary { touch-action: manipulation; }' +
+      '@media (prefers-reduced-motion: reduce) { .selh-stressbucket * { transition: none !important; animation: none !important; } }' +
+      '@media (forced-colors: active) { .selh-stressbucket button { border: 1px solid ButtonText !important; } .selh-stressbucket [aria-selected="true"] { border: 3px solid Highlight !important; } .selh-stressbucket :focus-visible { outline: 3px solid Highlight !important; } }';
+    document.head.appendChild(st);
+  })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   var WEIGHTS = [
     { value: 1, label: 'Light',  color: '#22c55e' },
@@ -290,10 +309,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
       var _sbkT = (ctx && ctx.theme) || {};
       var _sbkHC = !!_sbkT.isContrast, _sbkL = !_sbkHC && !_sbkT.isDark;
       var _sbk_BGL = {'#0b1220':'#f1f5f9','#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sbk_BGH = {'#0b1220':'#000000','#0f172a':'#000000','#1e293b':'#000000','#fb7185':'#000000','#7c3aed':'#000000','#ef4444':'#000000','#fff':'#000000','#dc2626':'#000000'};
-      var _sbk_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#99f6e4':'#0f766e','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fed7aa':'#9a3412','#fb7185':'#be123c','#22c55e':'#15803d','#facc15':'#a16207','#f97316':'#c2410c','#ef4444':'#b91c1c','#e2e8f0':'#1e293b','#a78bfa':'#6d28d9','#fde68a':'#92400e','#c4b5fd':'#5b21b6','#e9d5ff':'#581c87','#fcd34d':'#78350f'}, _sbk_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#fb7185':'#ffff00','#22c55e':'#ffff00','#facc15':'#ffff00','#f97316':'#ffff00','#ef4444':'#ffff00','#e2e8f0':'#ffff00','#a78bfa':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#c4b5fd':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00'};
+      var _sbk_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#99f6e4':'#115e59','#fecaca':'#b91c1c','#fca5a5':'#991b1b','#fed7aa':'#9a3412','#fb7185':'#be123c','#22c55e':'#15803d','#facc15':'#a16207','#f97316':'#c2410c','#ef4444':'#b91c1c','#e2e8f0':'#1e293b','#a78bfa':'#6d28d9','#fde68a':'#92400e','#c4b5fd':'#5b21b6','#e9d5ff':'#581c87','#fcd34d':'#78350f'}, _sbk_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fecaca':'#ffff00','#fca5a5':'#ffff00','#fed7aa':'#ffff00','#fb7185':'#ffff00','#22c55e':'#ffff00','#facc15':'#ffff00','#f97316':'#ffff00','#ef4444':'#ffff00','#e2e8f0':'#ffff00','#a78bfa':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#c4b5fd':'#ffff00','#e9d5ff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00'};
       var _sbk_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sbk_BDH = {'#334155':'#ffff00','#ef4444':'#ffff00','#1e293b':'#ffff00','#fb7185':'#ffff00','#a78bfa':'#ffff00','#475569':'#ffff00','#14b8a6':'#ffff00','#f59e0b':'#ffff00','#cbd5e1':'#ffff00','#0d9488':'#ffff00'};
       var _sbkBg = function(h){ return _sbkHC ? (_sbk_BGH[h]||h) : (_sbkL ? (_sbk_BGL[h]||h) : h); };
-      var _sbkFg = function(h){ return _sbkHC ? (_sbk_FGH[h]||h) : (_sbkL ? (_sbk_FGL[h]||h) : h); };
+      // Dark-mode foreground remap: red-500 is 3.89:1 as TEXT on the slate-800 rows
+      // of the Edit list ("Crushing"); red-400 is the same hue at 5.29:1.
+      var _sbk_FGD = {'#ef4444':'#f87171'};
+      var _sbkFg = function(h){ return _sbkHC ? (_sbk_FGH[h]||h) : (_sbkL ? (_sbk_FGL[h]||h) : (_sbk_FGD[h]||h)); };
       var _sbkBd = function(h){ return _sbkHC ? (_sbk_BDH[h]||h) : (_sbkL ? (_sbk_BDL[h]||h) : h); };
       // white text needs a 700-weight fill (1.4.3); HC uses solid black + yellow border
       var _sbkSolid = function(c){ return _sbkHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#7c3aed':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
@@ -309,6 +331,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
       var d = labToolData.stressBucket || defaultState();
       function setSB(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
           var prior = (prev && prev.stressBucket) || defaultState();
           var next = Object.assign({}, prior, patch);
@@ -341,14 +364,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
         }
         return blocked;
       }
+      // The live region is created at load but was never written to, so section
+      // changes and list edits were silent to screen readers. Prefer the host
+      // announcer: the hub is an aria-modal dialog and this tool's own region
+      // sits outside it.
+      function announceSB(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        if (typeof document === 'undefined') return;
+        var region = document.getElementById('allo-live-stressbucket');
+        if (!region) return;
+        region.textContent = '';
+        setTimeout(function() { region.textContent = msg; }, 30);
+      }
       var view = d.view || 'bucket';
-      function goto(v) { setSB({ view: v }); }
+      var SB_TAB_LABELS = { bucket: 'My Bucket', edit: 'Edit', reflect: 'Reflect', print: 'Print view', about: 'About' };
+      function goto(v) {
+        setSB({ view: v });
+        if (SB_TAB_LABELS[v]) announceSB(SB_TAB_LABELS[v] + ' section shown');
+      }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _sbkFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _sbkBd('#334155'), borderRadius: 8, padding: '6px 10px', minHeight: 44, cursor: 'pointer', color: _sbkFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _sbkFg('#5eead4'), fontSize: 22, fontWeight: 900 } }, '🪣 Stress Bucket'),
             h('div', { style: { fontSize: 12, color: _sbkFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A visual of what is filling your bucket and what is draining it.')
@@ -369,12 +409,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           tabs.map(function(t, idx) {
             var active = view === t.id;
             return h('button', {
+              type: 'button',
               key: t.id,
               id: 'sb-tab-' + t.id,
               'aria-controls': 'sb-panel-' + t.id,
               tabIndex: active ? 0 : -1,
               onClick: function() { goto(t.id); },
               onKeyDown: function(e) {
+                if (isImeComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
                 var nextIdx = idx;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
@@ -389,7 +431,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 }, 0);
               },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#14b8a6' : '#334155'),
+              style: { padding: '6px 12px', minHeight: 44, borderRadius: 8, border: '1px solid ' + (active ? '#14b8a6' : '#334155'),
                 background: active ? 'rgba(20,184,166,0.18)' : _sbkBg('#1e293b'),
                 color: active ? _sbkFg('#99f6e4') : _sbkFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
@@ -432,13 +474,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
         if (stressors.length === 0 && taps.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(20,184,166,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _sbkL ? '#f0fdfa' : 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(20,184,166,0.4)', textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🪣'),
               h('h3', { style: { margin: '0 0 8px', color: _sbkFg('#99f6e4'), fontSize: 18 } }, 'Your bucket is empty'),
               h('p', { style: { margin: '0 0 14px', color: _sbkFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Add what is currently pouring INTO your bucket (stressors) and what is draining it OUT (the practices, people, and time that help). The visual will show whether you are net-filling or net-draining.'),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start filling my bucket',
-                style: { padding: '10px 22px', borderRadius: 10, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Start filling my bucket',
+                style: { padding: '10px 22px', minHeight: 44, borderRadius: 10, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start filling my bucket')
             ),
             h('div', {
@@ -485,9 +527,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
         var capacityUsed = Math.round(fill);
 
         function balanceStat(label, value, detail, color) {
+          // Four longhands: with `border` + `borderTop` on one element, a theme switch
+          // that changes only the shorthand wiped the 3px accent (and React warned).
+          var statEdge = '1px solid ' + _sbkBd('#334155');
           return h('div', {
             key: label,
-            style: { padding: '10px 12px', borderRadius: 10, background: _sbkBg('#1e293b'), border: '1px solid ' + _sbkBd('#334155'), borderTop: '3px solid ' + _sbkBd(color), minHeight: 72 }
+            style: { padding: '10px 12px', borderRadius: 10, background: _sbkBg('#1e293b'), borderTop: '3px solid ' + _sbkBd(color), borderRight: statEdge, borderBottom: statEdge, borderLeft: statEdge, minHeight: 72 }
           },
             h('div', { style: { color: _sbkFg(color), fontSize: 20, fontWeight: 900, lineHeight: 1 } }, value),
             h('div', { style: { marginTop: 5, color: _sbkFg('#e2e8f0'), fontSize: 11, fontWeight: 800 } }, label),
@@ -626,7 +671,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _sbkFg('#5eead4'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _sbkBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this bucket as text'),
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _sbkFg('#5eead4'), fontWeight: 700, padding: '14px 10px', minHeight: 44, boxSizing: 'border-box', borderRadius: 6, background: _sbkBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read this bucket as text'),
             h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _sbkBg('#0f172a'), border: '1px solid #1e293b' } },
               h('p', { style: { margin: '0 0 8px', color: _sbkFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, svgDesc),
               stressors.length > 0 ? h('div', { style: { marginBottom: 8 } },
@@ -660,7 +705,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                       var w = WEIGHTS.find(function(w) { return w.value === s.weight; }) || WEIGHTS[1];
                       return h('li', { key: i }, s.label, h('span', { style: { color: _sbkFg(w.color), marginLeft: 6 } }, '(' + w.label + ')'));
                     }))
-                : h('div', { style: { fontSize: 11, color: _sbkFg('#64748b'), fontStyle: 'italic' } }, '(none added)')
+                : h('div', { style: { fontSize: 11, color: _sbkFg('#94a3b8'), fontStyle: 'italic' } }, '(none added)')
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: _sbkBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: _sbkFg('#a78bfa'), marginBottom: 8 } }, '🛟 Outflow ' + '(' + outflow + ')'),
@@ -670,7 +715,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                       var c = CAPACITIES.find(function(c) { return c.value === t.capacity; }) || CAPACITIES[0];
                       return h('li', { key: i }, t.label, h('span', { style: { color: _sbkFg('#a78bfa'), marginLeft: 6 } }, '(' + c.label + ')'));
                     }))
-                : h('div', { style: { fontSize: 11, color: _sbkFg('#64748b'), fontStyle: 'italic' } }, '(none added)')
+                : h('div', { style: { fontSize: 11, color: _sbkFg('#94a3b8'), fontStyle: 'italic' } }, '(none added)')
             )
           ),
 
@@ -680,13 +725,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           ) : null,
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit bucket',
-              style: { padding: '10px 20px', borderRadius: 10, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit bucket',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Edit'),
-            h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+            h('button', { type: 'button', onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _sbkBd('#475569'), background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Print',
+              style: { padding: '10px 20px', minHeight: 44, borderRadius: 10, border: '1px solid ' + _sbkBd('#475569'), background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           // Escalation callout — naming the bucket is useful, but some buckets need more than self-help
@@ -712,14 +757,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         var overflowList = Array.isArray(d.overflowSigns) ? d.overflowSigns : [];
+        // Field boundary: 3:1 on the light card, yellow in high contrast; dark is unchanged.
+        var inputEdge = '1px solid ' + (_sbkL ? '#64748b' : _sbkBd('#334155'));
+        // List edits are announced politely, except when the crisis check has just
+        // taken over the screen: the support resources must not be talked over.
         function addStressor() {
           var lbl = document.getElementById('sb-stressor-input');
           var w = document.getElementById('sb-stressor-weight');
           if (!lbl || !lbl.value.trim()) { if (typeof addToast === 'function') addToast('Add a label first, then press the button again.', 'info'); return; }
           var trimmed = lbl.value.trim();
-          scanStressText(trimmed);
+          var flagged = scanStressText(trimmed);
           var entry = { label: trimmed, weight: parseInt(w ? w.value : '2', 10) };
           setSB({ stressors: ((Array.isArray(d.stressors) ? d.stressors : [])).concat([entry]) });
+          if (!flagged) announceSB('Added stressor: ' + trimmed);
           lbl.value = '';
         }
         function addTap() {
@@ -727,18 +777,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           var c = document.getElementById('sb-tap-capacity');
           if (!lbl || !lbl.value.trim()) { if (typeof addToast === 'function') addToast('Add a label first, then press the button again.', 'info'); return; }
           var trimmed = lbl.value.trim();
-          scanStressText(trimmed);
+          var flagged = scanStressText(trimmed);
           var entry = { label: trimmed, capacity: parseInt(c ? c.value : '2', 10) };
           setSB({ taps: ((Array.isArray(d.taps) ? d.taps : [])).concat([entry]) });
+          if (!flagged) announceSB('Added tap: ' + trimmed);
           lbl.value = '';
         }
         function addOverflow(value) {
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var trimmed = value.trim();
-          scanStressText(trimmed);
+          var flagged = scanStressText(trimmed);
           var current = overflowList.slice();
           if (current.indexOf(trimmed) === -1) current.push(trimmed);
           setSB({ overflowSigns: current });
+          if (!flagged && current.length > overflowList.length) announceSB('Added overflow sign: ' + trimmed);
         }
         function addOverflowFromInput() {
           var el = document.getElementById('sb-overflow-input');
@@ -748,18 +800,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
         }
         function removeStressor(i) {
           var nx = ((Array.isArray(d.stressors) ? d.stressors : [])).slice();
-          nx.splice(i, 1);
+          var gone = nx.splice(i, 1)[0];
           setSB({ stressors: nx });
+          announceSB('Removed stressor: ' + ((gone && gone.label) || ''));
         }
         function removeTap(i) {
           var nx = ((Array.isArray(d.taps) ? d.taps : [])).slice();
-          nx.splice(i, 1);
+          var gone = nx.splice(i, 1)[0];
           setSB({ taps: nx });
+          announceSB('Removed tap: ' + ((gone && gone.label) || ''));
         }
         function removeOverflow(i) {
           var nx = overflowList.slice();
-          nx.splice(i, 1);
+          var gone = nx.splice(i, 1)[0];
           setSB({ overflowSigns: nx });
+          announceSB('Removed overflow sign: ' + (gone || ''));
         }
 
         return h('div', null,
@@ -772,28 +827,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 6, background: _sbkBg('#1e293b') } },
                   h('span', { style: { width: 50, fontSize: 11, color: _sbkFg(w.color), fontWeight: 700, textTransform: 'uppercase' } }, w.label),
                   h('span', { style: { flex: 1, fontSize: 13, color: _sbkFg('#e2e8f0') } }, s.label),
-                  h('button', { onClick: function() { removeStressor(i); }, 'aria-label': 'Remove stressor: ' + s.label,
-                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('button', { type: 'button', onClick: function() { removeStressor(i); }, 'aria-label': 'Remove stressor: ' + s.label,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid ' + _sbkBd('#475569'), color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
                 );
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sb-stressor-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add stressor'),
               h('input', { id: 'sb-stressor-input', type: 'text', placeholder: 'A stressor...',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addStressor(); } },
-                style: { flex: 2, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
+                onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Enter') { e.preventDefault(); addStressor(); } },
+                style: { flex: 2, minWidth: 180, minHeight: 44, boxSizing: 'border-box', padding: 8, borderRadius: 6, border: inputEdge, background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
               h('select', { id: 'sb-stressor-weight', defaultValue: '2', 'aria-label': 'Weight for new stressor',
-                style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
+                style: { minHeight: 44, padding: 8, borderRadius: 6, border: inputEdge, background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
                 WEIGHTS.map(function(w) { return h('option', { key: w.value, value: w.value }, w.label); })),
-              h('button', { onClick: addStressor, 'aria-label': 'Add stressor',
-                style: { padding: '8px 14px', borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#fb7185'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+              h('button', { type: 'button', onClick: addStressor, 'aria-label': 'Add stressor',
+                style: { padding: '8px 14px', minHeight: 44, borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#fb7185'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _sbkFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _sbkFg('#94a3b8'), padding: '14px 0', minHeight: 44, boxSizing: 'border-box' } }, 'Need ideas? Tap a starter'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 STRESSOR_STARTERS.map(function(s, si) {
-                  return h('button', { key: si, onClick: function() { setSB({ stressors: ((Array.isArray(d.stressors) ? d.stressors : [])).concat([{ label: s, weight: 2 }]) }); }, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #fb718566', background: _sbkBg('#0f172a'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } }, '+ ' + s);
+                  return h('button', { key: si, type: 'button', onClick: function() { setSB({ stressors: ((Array.isArray(d.stressors) ? d.stressors : [])).concat([{ label: s, weight: 2 }]) }); announceSB('Added stressor: ' + s); }, 'aria-label': 'Add starter: ' + s,
+                    style: { padding: '8px 12px', minHeight: 44, borderRadius: 14, border: '1px solid #fb718566', background: _sbkBg('#0f172a'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '+ ' + s);
                 })
               )
             )
@@ -808,28 +863,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: 8, borderRadius: 6, background: _sbkBg('#1e293b') } },
                   h('span', { style: { width: 80, fontSize: 11, color: _sbkFg('#a78bfa'), fontWeight: 700, textTransform: 'uppercase' } }, c.label),
                   h('span', { style: { flex: 1, fontSize: 13, color: _sbkFg('#e2e8f0') } }, t.label),
-                  h('button', { onClick: function() { removeTap(i); }, 'aria-label': 'Remove tap: ' + t.label,
-                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid #475569', color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('button', { type: 'button', onClick: function() { removeTap(i); }, 'aria-label': 'Remove tap: ' + t.label,
+                    style: { minWidth: 24, minHeight: 24, background: 'transparent', border: '1px solid ' + _sbkBd('#475569'), color: _sbkFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
                 );
               })
             ) : null,
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sb-tap-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add tap'),
               h('input', { id: 'sb-tap-input', type: 'text', placeholder: 'A practice or person that drains the bucket...',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addTap(); } },
-                style: { flex: 2, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
+                onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Enter') { e.preventDefault(); addTap(); } },
+                style: { flex: 2, minWidth: 180, minHeight: 44, boxSizing: 'border-box', padding: 8, borderRadius: 6, border: inputEdge, background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
               h('select', { id: 'sb-tap-capacity', defaultValue: '2', 'aria-label': 'Capacity for new tap',
-                style: { padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
+                style: { minHeight: 44, padding: 8, borderRadius: 6, border: inputEdge, background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } },
                 CAPACITIES.map(function(c) { return h('option', { key: c.value, value: c.value }, c.label); })),
-              h('button', { onClick: addTap, 'aria-label': 'Add tap',
-                style: { padding: '8px 14px', borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#7c3aed'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+              h('button', { type: 'button', onClick: addTap, 'aria-label': 'Add tap',
+                style: { padding: '8px 14px', minHeight: 44, borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#7c3aed'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _sbkFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _sbkFg('#94a3b8'), padding: '14px 0', minHeight: 44, boxSizing: 'border-box' } }, 'Need ideas? Tap a starter'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 TAP_STARTERS.map(function(s, si) {
-                  return h('button', { key: si, onClick: function() { setSB({ taps: ((Array.isArray(d.taps) ? d.taps : [])).concat([{ label: s, capacity: 2 }]) }); }, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid #a78bfa66', background: _sbkBg('#0f172a'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } }, '+ ' + s);
+                  return h('button', { key: si, type: 'button', onClick: function() { setSB({ taps: ((Array.isArray(d.taps) ? d.taps : [])).concat([{ label: s, capacity: 2 }]) }); announceSB('Added tap: ' + s); }, 'aria-label': 'Add starter: ' + s,
+                    style: { padding: '8px 12px', minHeight: 44, borderRadius: 14, border: '1px solid #a78bfa66', background: _sbkBg('#0f172a'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '+ ' + s);
                 })
               )
             )
@@ -844,8 +899,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
                   overflowList.map(function(s, i) {
                     return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px', borderRadius: 14, background: _sbkBg('#1e293b'), border: '1px solid rgba(239,68,68,0.4)', fontSize: 12, color: _sbkFg('#fecaca') } },
                       h('span', null, s),
-                      h('button', { onClick: function() { removeOverflow(i); }, 'aria-label': 'Remove overflow sign: ' + s,
-                        style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _sbkFg('#94a3b8'), cursor: 'pointer', fontSize: 11 } }, '✕')
+                      h('button', { type: 'button', onClick: function() { removeOverflow(i); }, 'aria-label': 'Remove overflow sign: ' + s,
+                        style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _sbkFg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕')
                     );
                   })
                 )
@@ -853,18 +908,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               h('label', { htmlFor: 'sb-overflow-input', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Add overflow sign'),
               h('input', { id: 'sb-overflow-input', type: 'text', placeholder: 'How does overflow show up in YOU?',
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); addOverflowFromInput(); } },
-                style: { flex: 1, minWidth: 180, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: addOverflowFromInput, 'aria-label': 'Add overflow sign',
-                style: { padding: '8px 14px', borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#ef4444'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Enter') { e.preventDefault(); addOverflowFromInput(); } },
+                style: { flex: 1, minWidth: 180, minHeight: 44, boxSizing: 'border-box', padding: 8, borderRadius: 6, border: inputEdge, background: _sbkBg('#1e293b'), color: _sbkFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: addOverflowFromInput, 'aria-label': 'Add overflow sign',
+                style: { padding: '8px 14px', minHeight: 44, borderRadius: 6, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkSolid('#ef4444'), color: _sbkFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _sbkFg('#94a3b8') } }, 'Need ideas? Tap a starter'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _sbkFg('#94a3b8'), padding: '14px 0', minHeight: 44, boxSizing: 'border-box' } }, 'Need ideas? Tap a starter'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 OVERFLOW_STARTERS.map(function(s, si) {
                   var already = overflowList.indexOf(s) !== -1;
-                  return h('button', { key: si, onClick: function() { addOverflow(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid rgba(239,68,68,0.5)', background: already ? _sbkBg('#1e293b') : _sbkBg('#0f172a'), color: already ? _sbkFg('#64748b') : _sbkFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  return h('button', { key: si, type: 'button', onClick: function() { addOverflow(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
+                    style: { padding: '8px 12px', minHeight: 44, borderRadius: 14, border: '1px solid rgba(239,68,68,0.5)', background: already ? _sbkBg('#1e293b') : _sbkBg('#0f172a'), color: already ? _sbkFg('#64748b') : _sbkFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 12, opacity: already ? 0.5 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -957,9 +1012,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _sbkFg('#99f6e4'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('bucket'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', minHeight: 44, borderRadius: 8, border: _sbkHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sbkHC ? '#000000' : 'linear-gradient(135deg, #115e59 0%, #0f766e 100%)', color: _sbkFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('bucket'); }, 'aria-label': 'Back',
+              style: { padding: '8px 18px', minHeight: 44, borderRadius: 8, border: '1px solid ' + _sbkBd('#475569'), background: _sbkBg('#1e293b'), color: _sbkFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
@@ -1052,7 +1107,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           h('div', { style: { padding: 16, borderRadius: 12, background: _sbkBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _sbkFg('#5eead4'), fontSize: 16 } }, '📚 Sources and learn more'),
             h('div', { style: { fontSize: 12, color: _sbkFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources for the Stress Bucket model.'),
-            sourceCard('Brabban, A. and Turkington, D. (2002)', '"The Search for Meaning: Detecting Congruence Between Symptom Content and Personal Meaning in Psychosis," in A. Morrison (Ed.), A Casebook of Cognitive Therapy for Psychosis, Routledge', 'The clinical chapter where the Stress Bucket as taught today is presented in CBT for psychosis. Foundational publication.', null),
+            sourceCard('Brabban, A. and Turkington, D. (2002)', '"The Search for Meaning: Detecting Congruence Between Life Events, Underlying Schema and Psychotic Symptoms," in A. P. Morrison (Ed.), A Casebook of Cognitive Therapy for Psychosis, Brunner-Routledge', 'The clinical chapter where the Stress Bucket as taught today is presented in CBT for psychosis. Foundational publication.', null),
             sourceCard('Turkington, D., Kingdon, D., and Weiden, P. J. (2006)', '"Cognitive Behavior Therapy for Schizophrenia," American Journal of Psychiatry, 163(3), 365-373', 'Peer-reviewed overview of CBT for psychosis including the bucket model in clinical practice.', null),
             sourceCard('NHS Mental Health Self-Help', 'nhs.uk/mental-health/self-help', 'UK NHS resources, including the Stress Bucket framing in Improving Access to Psychological Therapies (IAPT) self-help materials.', 'https://www.nhs.uk/mental-health/self-help/'),
             sourceCard('Mind UK', 'mind.org.uk', 'UK mental-health charity; Stress Bucket adapted for accessible public-facing mental health education. Free resources.', 'https://www.mind.org.uk/')
@@ -1083,7 +1138,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
           h('div', { style: { fontSize: 11, color: _sbkFg('#5eead4'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _sbkFg('#99f6e4'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _sbkFg('#99f6e4'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 2 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _sbkFg('#99f6e4'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _sbkFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -1096,7 +1151,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
       else if (view === 'about') body = renderAbout();
       else body = renderBucket();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Stress Bucket' },
+      return h('div', { className: 'selh-stressbucket', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Stress Bucket' },
         header(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _sbkBand))

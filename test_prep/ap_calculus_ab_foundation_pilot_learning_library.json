@@ -15001,7 +15001,7 @@
         "Identify the dependent variable, independent variable, equilibria (where dy/dt = 0), and proportionality structure in the differential equation.",
         "Test a proposed solution by differentiating it and comparing LHS and RHS identically, then checking the initial condition.",
         "Read sign and magnitude of dy/dt across population levels to describe monotonic approach toward or away from equilibrium.",
-        "Contrast unbounded exponential growth (dy/dt = kP) with carrying-capacity-limited logistic behavior (inflection at half capacity)."
+        "Contrast unbounded exponential growth (dP/dt = kP) with carrying-capacity-limited logistic behavior (inflection at half capacity)."
       ],
       "selfCheck": [
         "Differential-equation interpretation explains what dy/dt = 0 implies about equilibrium levels.",
@@ -15107,7 +15107,11 @@
     "richLessonPrototypes": 8,
     "sourceReviewedChapters": 8,
     "releaseEligibleRecords": 0,
-    "glossaryTerms": 24
+    "glossaryTerms": 24,
+    "studySessions": 10,
+    "unitReviewRoutes": 8,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "accessibility": {
     "contentForm": "text-first, linear lessons, plain-text math notation, single-choice items, optional flows, and unscored planning workshops",
@@ -15255,7 +15259,7 @@
     {
       "id": "ap-calc-ab-gloss-04",
       "term": "Limit definition of the derivative",
-      "definition": "The instantaneous rate of change f'(x) = lim(h->0) [f(x + h) - f(x)] / h, or equivalently lim(x->a) [f(x) - f(a)] / (x - a), giving the tangent-line slope whenever the finite limit exists.",
+      "definition": "The instantaneous rate of change f'(x) = lim(h->0) [f(x + h) - f(x)] / h, or at a point x = a, f'(a) = lim(x->a) [f(x) - f(a)] / (x - a), giving the tangent-line slope whenever the finite limit exists.",
       "aliases": [
         "Difference quotient limit"
       ],
@@ -15921,6 +15925,1832 @@
         "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
         "https://apcentral.collegeboard.org/courses/ap-calculus-ab"
       ]
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-01",
+      "title": "Unit 1: Limits and Continuity guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 1: Limits and Continuity\" (Unit 1: Limits and Continuity) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-01",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-001",
+        "ap-calculus-ab-foundation-pilot-item-002",
+        "ap-calculus-ab-foundation-pilot-item-003",
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-005",
+        "ap-calculus-ab-foundation-pilot-item-006",
+        "ap-calculus-ab-foundation-pilot-item-007",
+        "ap-calculus-ab-foundation-pilot-item-008",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 1: Limits and Continuity\" and the \"Limits and Continuity original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Limits, continuity classification, and Intermediate Value Theorem flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Limits and Continuity: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 1: Limits and Continuity\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Defining Limits and Using Limit Notation remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-02",
+      "title": "Unit 2: Differentiation: Definition and Fundamental Properties guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 2: Differentiation: Definition and Fundamental Properties\" (Unit 2: Differentiation: Definition and Fundamental Properties) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-02",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-018",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-020",
+        "ap-calculus-ab-foundation-pilot-item-091",
+        "ap-calculus-ab-foundation-pilot-item-092",
+        "ap-calculus-ab-foundation-pilot-item-093",
+        "ap-calculus-ab-foundation-pilot-item-094",
+        "ap-calculus-ab-foundation-pilot-item-095",
+        "ap-calculus-ab-foundation-pilot-item-096",
+        "ap-calculus-ab-foundation-pilot-item-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 2: Differentiation: Definition and Fundamental Properties\" and the \"Derivative Foundations original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Limit definition of derivative to differentiation rule selection flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Derivative Foundations: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 2: Differentiation: Definition and Fundamental Properties\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Limits Using Algebraic Manipulation remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-03",
+      "title": "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 3: Differentiation: Composite, Implicit, and Inverse Functions\" (Unit 3: Differentiation: Composite, Implicit, and Inverse Functions) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-03",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-105",
+        "ap-calculus-ab-foundation-pilot-item-106",
+        "ap-calculus-ab-foundation-pilot-item-107",
+        "ap-calculus-ab-foundation-pilot-item-108",
+        "ap-calculus-ab-foundation-pilot-item-109",
+        "ap-calculus-ab-foundation-pilot-item-110",
+        "ap-calculus-ab-foundation-pilot-item-021",
+        "ap-calculus-ab-foundation-pilot-item-022",
+        "ap-calculus-ab-foundation-pilot-item-023",
+        "ap-calculus-ab-foundation-pilot-item-024"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 3: Differentiation: Composite, Implicit, and Inverse Functions\" and the \"Advanced Differentiation original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Composite, implicit, inverse, and higher-order differentiation flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Advanced Differentiation: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 3: Differentiation: Composite, Implicit, and Inverse Functions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Types of Discontinuities remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-04",
+      "title": "Unit 4: Contextual Applications of Differentiation guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 4: Contextual Applications of Differentiation\" (Unit 4: Contextual Applications of Differentiation) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-04",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-032",
+        "ap-calculus-ab-foundation-pilot-item-033",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-035",
+        "ap-calculus-ab-foundation-pilot-item-036",
+        "ap-calculus-ab-foundation-pilot-item-037",
+        "ap-calculus-ab-foundation-pilot-item-038",
+        "ap-calculus-ab-foundation-pilot-item-039",
+        "ap-calculus-ab-foundation-pilot-item-040",
+        "ap-calculus-ab-foundation-pilot-item-111"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 4: Contextual Applications of Differentiation\" and the \"Contextual Derivatives original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Contextual derivatives, rectilinear motion, related rates, and local linearity flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Contextual Derivatives: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 4: Contextual Applications of Differentiation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Infinite Limits and Asymptotic Behavior remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-05",
+      "title": "Unit 5: Analytical Applications of Differentiation guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 5: Analytical Applications of Differentiation\" (Unit 5: Analytical Applications of Differentiation) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-05",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-049",
+        "ap-calculus-ab-foundation-pilot-item-050",
+        "ap-calculus-ab-foundation-pilot-item-121",
+        "ap-calculus-ab-foundation-pilot-item-122",
+        "ap-calculus-ab-foundation-pilot-item-123",
+        "ap-calculus-ab-foundation-pilot-item-124",
+        "ap-calculus-ab-foundation-pilot-item-125",
+        "ap-calculus-ab-foundation-pilot-item-126",
+        "ap-calculus-ab-foundation-pilot-item-127",
+        "ap-calculus-ab-foundation-pilot-item-128"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 5: Analytical Applications of Differentiation\" and the \"Derivative Analysis original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"MVT, critical-point tests, concavity, and optimization justification flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Derivative Analysis: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 5: Analytical Applications of Differentiation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Intermediate Value Theorem remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-06",
+      "title": "Unit 6: Integration and Accumulation of Change guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 6: Integration and Accumulation of Change\" (Unit 6: Integration and Accumulation of Change) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-06",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-136",
+        "ap-calculus-ab-foundation-pilot-item-137",
+        "ap-calculus-ab-foundation-pilot-item-138",
+        "ap-calculus-ab-foundation-pilot-item-139",
+        "ap-calculus-ab-foundation-pilot-item-140",
+        "ap-calculus-ab-foundation-pilot-item-051",
+        "ap-calculus-ab-foundation-pilot-item-052",
+        "ap-calculus-ab-foundation-pilot-item-053",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-055"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 6: Integration and Accumulation of Change\" and the \"Integration and Accumulation original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Riemann sums, definite integral properties, FTC, and u-substitution flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Integration and Accumulation: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 6: Integration and Accumulation of Change\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Derivative Definition and Notation remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-07",
+      "title": "Unit 7: Differential Equations guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 7: Differential Equations\" (Unit 7: Differential Equations) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-07",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-063",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-065",
+        "ap-calculus-ab-foundation-pilot-item-066",
+        "ap-calculus-ab-foundation-pilot-item-067",
+        "ap-calculus-ab-foundation-pilot-item-068",
+        "ap-calculus-ab-foundation-pilot-item-069",
+        "ap-calculus-ab-foundation-pilot-item-070",
+        "ap-calculus-ab-foundation-pilot-item-141",
+        "ap-calculus-ab-foundation-pilot-item-142"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 7: Differential Equations\" and the \"Differential Equations original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Differential equation modeling, slope fields, separation, and particular solutions flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Differential Equations: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 7: Differential Equations\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Differentiability and Continuity remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-ch-08",
+      "title": "Unit 8: Applications of Integration guided study session",
+      "sessionType": "unit-launch",
+      "purpose": "Move through \"Unit 8: Applications of Integration\" (Unit 8: Applications of Integration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "ap-calc-ab-ch-08",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-080",
+        "ap-calculus-ab-foundation-pilot-item-151",
+        "ap-calculus-ab-foundation-pilot-item-152",
+        "ap-calculus-ab-foundation-pilot-item-153",
+        "ap-calculus-ab-foundation-pilot-item-154",
+        "ap-calculus-ab-foundation-pilot-item-155",
+        "ap-calculus-ab-foundation-pilot-item-156",
+        "ap-calculus-ab-foundation-pilot-item-157",
+        "ap-calculus-ab-foundation-pilot-item-158",
+        "ap-calculus-ab-foundation-pilot-item-159"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Unit 8: Applications of Integration\" and the \"Applications of Integration original quick reference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Average value, net accumulation, area between curves, and solids of revolution flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Work through the step-by-step worked example in \"Applications of Integration: foundations\" without peeking, compare with the common misconceptions box, and complete the chapter checks."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Unit 8: Applications of Integration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Power and Linearity Rules remediation playbook\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-trap-repair-sprint",
+      "title": "AP Calculus AB Foundation Pilot misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-029",
+        "ap-calculus-ab-foundation-pilot-item-039"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the misconception playbooks tab and note the top two error patterns you want to watch for."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-session-mixed-capstone",
+      "title": "AP Calculus AB Foundation Pilot mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-085",
+        "ap-calculus-ab-foundation-pilot-item-095",
+        "ap-calculus-ab-foundation-pilot-item-105",
+        "ap-calculus-ab-foundation-pilot-item-115",
+        "ap-calculus-ab-foundation-pilot-item-125",
+        "ap-calculus-ab-foundation-pilot-item-135",
+        "ap-calculus-ab-foundation-pilot-item-145"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Limits, continuity, and theorem conditions\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-01",
+      "topicId": "ap-calc-ab-ch-01",
+      "topicLabel": "1. Unit 1: Limits and Continuity",
+      "unitId": "limits-and-continuity",
+      "chapterId": "ap-calc-ab-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 1: Limits and Continuity\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-02",
+      "topicId": "ap-calc-ab-ch-02",
+      "topicLabel": "2. Unit 2: Differentiation: Definition and Fundamental Properties",
+      "unitId": "differentiation-definition-and-fundamental-properties",
+      "chapterId": "ap-calc-ab-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 2: Differentiation: Definition and Fundamental Properties\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-03",
+      "topicId": "ap-calc-ab-ch-03",
+      "topicLabel": "3. Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+      "unitId": "differentiation-composite-implicit-inverse-functions",
+      "chapterId": "ap-calc-ab-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 3: Differentiation: Composite, Implicit, and Inverse Functions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-04",
+      "topicId": "ap-calc-ab-ch-04",
+      "topicLabel": "4. Unit 4: Contextual Applications of Differentiation",
+      "unitId": "contextual-applications-of-differentiation",
+      "chapterId": "ap-calc-ab-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 4: Contextual Applications of Differentiation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-05",
+      "topicId": "ap-calc-ab-ch-05",
+      "topicLabel": "5. Unit 5: Analytical Applications of Differentiation",
+      "unitId": "analytical-applications-of-differentiation",
+      "chapterId": "ap-calc-ab-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 5: Analytical Applications of Differentiation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-06",
+      "topicId": "ap-calc-ab-ch-06",
+      "topicLabel": "6. Unit 6: Integration and Accumulation of Change",
+      "unitId": "integration-and-accumulation-of-change",
+      "chapterId": "ap-calc-ab-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 6: Integration and Accumulation of Change\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-07",
+      "topicId": "ap-calc-ab-ch-07",
+      "topicLabel": "7. Unit 7: Differential Equations",
+      "unitId": "differential-equations",
+      "chapterId": "ap-calc-ab-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 7: Differential Equations\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-spaced-ch-08",
+      "topicId": "ap-calc-ab-ch-08",
+      "topicLabel": "8. Unit 8: Applications of Integration",
+      "unitId": "applications-of-integration",
+      "chapterId": "ap-calc-ab-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Unit 8: Applications of Integration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework a worked example under a changed condition",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-01",
+      "unitId": "limits-and-continuity",
+      "unitNumber": 1,
+      "unitLabel": "Unit 1: Unit 1: Limits and Continuity",
+      "chapterId": "ap-calc-ab-ch-01",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-01-section-01",
+        "ap-calc-ab-ch-01-section-02",
+        "ap-calc-ab-ch-01-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-001",
+        "ap-calculus-ab-foundation-pilot-item-002",
+        "ap-calculus-ab-foundation-pilot-item-003",
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-005",
+        "ap-calculus-ab-foundation-pilot-item-006",
+        "ap-calculus-ab-foundation-pilot-item-007",
+        "ap-calculus-ab-foundation-pilot-item-008",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-010",
+        "ap-calculus-ab-foundation-pilot-item-081",
+        "ap-calculus-ab-foundation-pilot-item-082",
+        "ap-calculus-ab-foundation-pilot-item-083",
+        "ap-calculus-ab-foundation-pilot-item-084",
+        "ap-calculus-ab-foundation-pilot-item-085",
+        "ap-calculus-ab-foundation-pilot-item-086",
+        "ap-calculus-ab-foundation-pilot-item-087",
+        "ap-calculus-ab-foundation-pilot-item-088",
+        "ap-calculus-ab-foundation-pilot-item-089",
+        "ap-calculus-ab-foundation-pilot-item-090"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-001",
+        "ap-calculus-ab-foundation-pilot-item-002",
+        "ap-calculus-ab-foundation-pilot-item-003",
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-005",
+        "ap-calculus-ab-foundation-pilot-item-006",
+        "ap-calculus-ab-foundation-pilot-item-007",
+        "ap-calculus-ab-foundation-pilot-item-008",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-010",
+        "ap-calculus-ab-foundation-pilot-item-081",
+        "ap-calculus-ab-foundation-pilot-item-082"
+      ],
+      "purpose": "Consolidate \"Unit 1: Limits and Continuity\" (Unit 1: Limits and Continuity) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-02",
+      "unitId": "differentiation-definition-and-fundamental-properties",
+      "unitNumber": 2,
+      "unitLabel": "Unit 2: Unit 2: Differentiation: Definition and Fundamental Properties",
+      "chapterId": "ap-calc-ab-ch-02",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-02-section-01",
+        "ap-calc-ab-ch-02-section-02",
+        "ap-calc-ab-ch-02-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-011",
+        "ap-calculus-ab-foundation-pilot-item-012",
+        "ap-calculus-ab-foundation-pilot-item-013",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-015",
+        "ap-calculus-ab-foundation-pilot-item-016",
+        "ap-calculus-ab-foundation-pilot-item-017",
+        "ap-calculus-ab-foundation-pilot-item-018",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-020",
+        "ap-calculus-ab-foundation-pilot-item-091",
+        "ap-calculus-ab-foundation-pilot-item-092",
+        "ap-calculus-ab-foundation-pilot-item-093",
+        "ap-calculus-ab-foundation-pilot-item-094",
+        "ap-calculus-ab-foundation-pilot-item-095",
+        "ap-calculus-ab-foundation-pilot-item-096",
+        "ap-calculus-ab-foundation-pilot-item-097",
+        "ap-calculus-ab-foundation-pilot-item-098",
+        "ap-calculus-ab-foundation-pilot-item-099",
+        "ap-calculus-ab-foundation-pilot-item-100"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-011",
+        "ap-calculus-ab-foundation-pilot-item-012",
+        "ap-calculus-ab-foundation-pilot-item-013",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-015",
+        "ap-calculus-ab-foundation-pilot-item-016",
+        "ap-calculus-ab-foundation-pilot-item-017",
+        "ap-calculus-ab-foundation-pilot-item-018",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-020",
+        "ap-calculus-ab-foundation-pilot-item-091",
+        "ap-calculus-ab-foundation-pilot-item-092"
+      ],
+      "purpose": "Consolidate \"Unit 2: Differentiation: Definition and Fundamental Properties\" (Unit 2: Differentiation: Definition and Fundamental Properties) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-03",
+      "unitId": "differentiation-composite-implicit-inverse-functions",
+      "unitNumber": 3,
+      "unitLabel": "Unit 3: Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+      "chapterId": "ap-calc-ab-ch-03",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-03-section-01",
+        "ap-calc-ab-ch-03-section-02",
+        "ap-calc-ab-ch-03-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-021",
+        "ap-calculus-ab-foundation-pilot-item-022",
+        "ap-calculus-ab-foundation-pilot-item-023",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-025",
+        "ap-calculus-ab-foundation-pilot-item-026",
+        "ap-calculus-ab-foundation-pilot-item-027",
+        "ap-calculus-ab-foundation-pilot-item-028",
+        "ap-calculus-ab-foundation-pilot-item-029",
+        "ap-calculus-ab-foundation-pilot-item-030",
+        "ap-calculus-ab-foundation-pilot-item-101",
+        "ap-calculus-ab-foundation-pilot-item-102",
+        "ap-calculus-ab-foundation-pilot-item-103",
+        "ap-calculus-ab-foundation-pilot-item-104",
+        "ap-calculus-ab-foundation-pilot-item-105",
+        "ap-calculus-ab-foundation-pilot-item-106",
+        "ap-calculus-ab-foundation-pilot-item-107",
+        "ap-calculus-ab-foundation-pilot-item-108",
+        "ap-calculus-ab-foundation-pilot-item-109",
+        "ap-calculus-ab-foundation-pilot-item-110"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-021",
+        "ap-calculus-ab-foundation-pilot-item-022",
+        "ap-calculus-ab-foundation-pilot-item-023",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-025",
+        "ap-calculus-ab-foundation-pilot-item-026",
+        "ap-calculus-ab-foundation-pilot-item-027",
+        "ap-calculus-ab-foundation-pilot-item-028",
+        "ap-calculus-ab-foundation-pilot-item-029",
+        "ap-calculus-ab-foundation-pilot-item-030",
+        "ap-calculus-ab-foundation-pilot-item-101",
+        "ap-calculus-ab-foundation-pilot-item-102"
+      ],
+      "purpose": "Consolidate \"Unit 3: Differentiation: Composite, Implicit, and Inverse Functions\" (Unit 3: Differentiation: Composite, Implicit, and Inverse Functions) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-04",
+      "unitId": "contextual-applications-of-differentiation",
+      "unitNumber": 4,
+      "unitLabel": "Unit 4: Unit 4: Contextual Applications of Differentiation",
+      "chapterId": "ap-calc-ab-ch-04",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-04-section-01",
+        "ap-calc-ab-ch-04-section-02",
+        "ap-calc-ab-ch-04-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-031",
+        "ap-calculus-ab-foundation-pilot-item-032",
+        "ap-calculus-ab-foundation-pilot-item-033",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-035",
+        "ap-calculus-ab-foundation-pilot-item-036",
+        "ap-calculus-ab-foundation-pilot-item-037",
+        "ap-calculus-ab-foundation-pilot-item-038",
+        "ap-calculus-ab-foundation-pilot-item-039",
+        "ap-calculus-ab-foundation-pilot-item-040",
+        "ap-calculus-ab-foundation-pilot-item-111",
+        "ap-calculus-ab-foundation-pilot-item-112",
+        "ap-calculus-ab-foundation-pilot-item-113",
+        "ap-calculus-ab-foundation-pilot-item-114",
+        "ap-calculus-ab-foundation-pilot-item-115",
+        "ap-calculus-ab-foundation-pilot-item-116",
+        "ap-calculus-ab-foundation-pilot-item-117",
+        "ap-calculus-ab-foundation-pilot-item-118",
+        "ap-calculus-ab-foundation-pilot-item-119",
+        "ap-calculus-ab-foundation-pilot-item-120"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-031",
+        "ap-calculus-ab-foundation-pilot-item-032",
+        "ap-calculus-ab-foundation-pilot-item-033",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-035",
+        "ap-calculus-ab-foundation-pilot-item-036",
+        "ap-calculus-ab-foundation-pilot-item-037",
+        "ap-calculus-ab-foundation-pilot-item-038",
+        "ap-calculus-ab-foundation-pilot-item-039",
+        "ap-calculus-ab-foundation-pilot-item-040",
+        "ap-calculus-ab-foundation-pilot-item-111",
+        "ap-calculus-ab-foundation-pilot-item-112"
+      ],
+      "purpose": "Consolidate \"Unit 4: Contextual Applications of Differentiation\" (Unit 4: Contextual Applications of Differentiation) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-05",
+      "unitId": "analytical-applications-of-differentiation",
+      "unitNumber": 5,
+      "unitLabel": "Unit 5: Unit 5: Analytical Applications of Differentiation",
+      "chapterId": "ap-calc-ab-ch-05",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-05-section-01",
+        "ap-calc-ab-ch-05-section-02",
+        "ap-calc-ab-ch-05-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-041",
+        "ap-calculus-ab-foundation-pilot-item-042",
+        "ap-calculus-ab-foundation-pilot-item-043",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-045",
+        "ap-calculus-ab-foundation-pilot-item-046",
+        "ap-calculus-ab-foundation-pilot-item-047",
+        "ap-calculus-ab-foundation-pilot-item-048",
+        "ap-calculus-ab-foundation-pilot-item-049",
+        "ap-calculus-ab-foundation-pilot-item-050",
+        "ap-calculus-ab-foundation-pilot-item-121",
+        "ap-calculus-ab-foundation-pilot-item-122",
+        "ap-calculus-ab-foundation-pilot-item-123",
+        "ap-calculus-ab-foundation-pilot-item-124",
+        "ap-calculus-ab-foundation-pilot-item-125",
+        "ap-calculus-ab-foundation-pilot-item-126",
+        "ap-calculus-ab-foundation-pilot-item-127",
+        "ap-calculus-ab-foundation-pilot-item-128",
+        "ap-calculus-ab-foundation-pilot-item-129",
+        "ap-calculus-ab-foundation-pilot-item-130"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-041",
+        "ap-calculus-ab-foundation-pilot-item-042",
+        "ap-calculus-ab-foundation-pilot-item-043",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-045",
+        "ap-calculus-ab-foundation-pilot-item-046",
+        "ap-calculus-ab-foundation-pilot-item-047",
+        "ap-calculus-ab-foundation-pilot-item-048",
+        "ap-calculus-ab-foundation-pilot-item-049",
+        "ap-calculus-ab-foundation-pilot-item-050",
+        "ap-calculus-ab-foundation-pilot-item-121",
+        "ap-calculus-ab-foundation-pilot-item-122"
+      ],
+      "purpose": "Consolidate \"Unit 5: Analytical Applications of Differentiation\" (Unit 5: Analytical Applications of Differentiation) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-06",
+      "unitId": "integration-and-accumulation-of-change",
+      "unitNumber": 6,
+      "unitLabel": "Unit 6: Unit 6: Integration and Accumulation of Change",
+      "chapterId": "ap-calc-ab-ch-06",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-06-section-01",
+        "ap-calc-ab-ch-06-section-02",
+        "ap-calc-ab-ch-06-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-051",
+        "ap-calculus-ab-foundation-pilot-item-052",
+        "ap-calculus-ab-foundation-pilot-item-053",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-055",
+        "ap-calculus-ab-foundation-pilot-item-056",
+        "ap-calculus-ab-foundation-pilot-item-057",
+        "ap-calculus-ab-foundation-pilot-item-058",
+        "ap-calculus-ab-foundation-pilot-item-059",
+        "ap-calculus-ab-foundation-pilot-item-060",
+        "ap-calculus-ab-foundation-pilot-item-131",
+        "ap-calculus-ab-foundation-pilot-item-132",
+        "ap-calculus-ab-foundation-pilot-item-133",
+        "ap-calculus-ab-foundation-pilot-item-134",
+        "ap-calculus-ab-foundation-pilot-item-135",
+        "ap-calculus-ab-foundation-pilot-item-136",
+        "ap-calculus-ab-foundation-pilot-item-137",
+        "ap-calculus-ab-foundation-pilot-item-138",
+        "ap-calculus-ab-foundation-pilot-item-139",
+        "ap-calculus-ab-foundation-pilot-item-140"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-051",
+        "ap-calculus-ab-foundation-pilot-item-052",
+        "ap-calculus-ab-foundation-pilot-item-053",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-055",
+        "ap-calculus-ab-foundation-pilot-item-056",
+        "ap-calculus-ab-foundation-pilot-item-057",
+        "ap-calculus-ab-foundation-pilot-item-058",
+        "ap-calculus-ab-foundation-pilot-item-059",
+        "ap-calculus-ab-foundation-pilot-item-060",
+        "ap-calculus-ab-foundation-pilot-item-131",
+        "ap-calculus-ab-foundation-pilot-item-132"
+      ],
+      "purpose": "Consolidate \"Unit 6: Integration and Accumulation of Change\" (Unit 6: Integration and Accumulation of Change) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-07",
+      "unitId": "differential-equations",
+      "unitNumber": 7,
+      "unitLabel": "Unit 7: Unit 7: Differential Equations",
+      "chapterId": "ap-calc-ab-ch-07",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-07-section-01",
+        "ap-calc-ab-ch-07-section-02",
+        "ap-calc-ab-ch-07-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-061",
+        "ap-calculus-ab-foundation-pilot-item-062",
+        "ap-calculus-ab-foundation-pilot-item-063",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-065",
+        "ap-calculus-ab-foundation-pilot-item-066",
+        "ap-calculus-ab-foundation-pilot-item-067",
+        "ap-calculus-ab-foundation-pilot-item-068",
+        "ap-calculus-ab-foundation-pilot-item-069",
+        "ap-calculus-ab-foundation-pilot-item-070",
+        "ap-calculus-ab-foundation-pilot-item-141",
+        "ap-calculus-ab-foundation-pilot-item-142",
+        "ap-calculus-ab-foundation-pilot-item-143",
+        "ap-calculus-ab-foundation-pilot-item-144",
+        "ap-calculus-ab-foundation-pilot-item-145",
+        "ap-calculus-ab-foundation-pilot-item-146",
+        "ap-calculus-ab-foundation-pilot-item-147",
+        "ap-calculus-ab-foundation-pilot-item-148",
+        "ap-calculus-ab-foundation-pilot-item-149",
+        "ap-calculus-ab-foundation-pilot-item-150"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-061",
+        "ap-calculus-ab-foundation-pilot-item-062",
+        "ap-calculus-ab-foundation-pilot-item-063",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-065",
+        "ap-calculus-ab-foundation-pilot-item-066",
+        "ap-calculus-ab-foundation-pilot-item-067",
+        "ap-calculus-ab-foundation-pilot-item-068",
+        "ap-calculus-ab-foundation-pilot-item-069",
+        "ap-calculus-ab-foundation-pilot-item-070",
+        "ap-calculus-ab-foundation-pilot-item-141",
+        "ap-calculus-ab-foundation-pilot-item-142"
+      ],
+      "purpose": "Consolidate \"Unit 7: Differential Equations\" (Unit 7: Differential Equations) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-unit-review-08",
+      "unitId": "applications-of-integration",
+      "unitNumber": 8,
+      "unitLabel": "Unit 8: Unit 8: Applications of Integration",
+      "chapterId": "ap-calc-ab-ch-08",
+      "topicDiagnosticRouteIds": [
+        "ap-calc-ab-ch-08-section-01",
+        "ap-calc-ab-ch-08-section-02",
+        "ap-calc-ab-ch-08-section-03"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-071",
+        "ap-calculus-ab-foundation-pilot-item-072",
+        "ap-calculus-ab-foundation-pilot-item-073",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-075",
+        "ap-calculus-ab-foundation-pilot-item-076",
+        "ap-calculus-ab-foundation-pilot-item-077",
+        "ap-calculus-ab-foundation-pilot-item-078",
+        "ap-calculus-ab-foundation-pilot-item-079",
+        "ap-calculus-ab-foundation-pilot-item-080",
+        "ap-calculus-ab-foundation-pilot-item-151",
+        "ap-calculus-ab-foundation-pilot-item-152",
+        "ap-calculus-ab-foundation-pilot-item-153",
+        "ap-calculus-ab-foundation-pilot-item-154",
+        "ap-calculus-ab-foundation-pilot-item-155",
+        "ap-calculus-ab-foundation-pilot-item-156",
+        "ap-calculus-ab-foundation-pilot-item-157",
+        "ap-calculus-ab-foundation-pilot-item-158",
+        "ap-calculus-ab-foundation-pilot-item-159",
+        "ap-calculus-ab-foundation-pilot-item-160"
+      ],
+      "mixedPracticeItemIds": [
+        "ap-calculus-ab-foundation-pilot-item-071",
+        "ap-calculus-ab-foundation-pilot-item-072",
+        "ap-calculus-ab-foundation-pilot-item-073",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-075",
+        "ap-calculus-ab-foundation-pilot-item-076",
+        "ap-calculus-ab-foundation-pilot-item-077",
+        "ap-calculus-ab-foundation-pilot-item-078",
+        "ap-calculus-ab-foundation-pilot-item-079",
+        "ap-calculus-ab-foundation-pilot-item-080",
+        "ap-calculus-ab-foundation-pilot-item-151",
+        "ap-calculus-ab-foundation-pilot-item-152"
+      ],
+      "purpose": "Consolidate \"Unit 8: Applications of Integration\" (Unit 8: Applications of Integration) across 3 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "ap-calculus-ab-foundation-pilot-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all AP Calculus AB Foundation Pilot blueprint domains.",
+      "focus": [
+        "Unit 1: Limits and Continuity",
+        "Unit 2: Differentiation: Definition and Fundamental Properties",
+        "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+        "Unit 4: Contextual Applications of Differentiation"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-001",
+        "ap-calculus-ab-foundation-pilot-item-031",
+        "ap-calculus-ab-foundation-pilot-item-061",
+        "ap-calculus-ab-foundation-pilot-item-012",
+        "ap-calculus-ab-foundation-pilot-item-042",
+        "ap-calculus-ab-foundation-pilot-item-072",
+        "ap-calculus-ab-foundation-pilot-item-023",
+        "ap-calculus-ab-foundation-pilot-item-053",
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-015",
+        "ap-calculus-ab-foundation-pilot-item-045",
+        "ap-calculus-ab-foundation-pilot-item-075",
+        "ap-calculus-ab-foundation-pilot-item-026",
+        "ap-calculus-ab-foundation-pilot-item-056",
+        "ap-calculus-ab-foundation-pilot-item-007",
+        "ap-calculus-ab-foundation-pilot-item-037",
+        "ap-calculus-ab-foundation-pilot-item-067",
+        "ap-calculus-ab-foundation-pilot-item-018",
+        "ap-calculus-ab-foundation-pilot-item-048",
+        "ap-calculus-ab-foundation-pilot-item-078",
+        "ap-calculus-ab-foundation-pilot-item-029",
+        "ap-calculus-ab-foundation-pilot-item-059",
+        "ap-calculus-ab-foundation-pilot-item-010",
+        "ap-calculus-ab-foundation-pilot-item-040",
+        "ap-calculus-ab-foundation-pilot-item-070",
+        "ap-calculus-ab-foundation-pilot-item-091",
+        "ap-calculus-ab-foundation-pilot-item-121",
+        "ap-calculus-ab-foundation-pilot-item-151",
+        "ap-calculus-ab-foundation-pilot-item-102",
+        "ap-calculus-ab-foundation-pilot-item-132",
+        "ap-calculus-ab-foundation-pilot-item-083",
+        "ap-calculus-ab-foundation-pilot-item-113",
+        "ap-calculus-ab-foundation-pilot-item-143",
+        "ap-calculus-ab-foundation-pilot-item-094",
+        "ap-calculus-ab-foundation-pilot-item-124",
+        "ap-calculus-ab-foundation-pilot-item-154",
+        "ap-calculus-ab-foundation-pilot-item-105",
+        "ap-calculus-ab-foundation-pilot-item-135"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply AP Calculus AB Foundation Pilot frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Unit 3: Differentiation: Composite, Implicit, and Inverse Functions",
+        "Unit 4: Contextual Applications of Differentiation",
+        "Unit 5: Analytical Applications of Differentiation",
+        "Unit 6: Integration and Accumulation of Change"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-011",
+        "ap-calculus-ab-foundation-pilot-item-041",
+        "ap-calculus-ab-foundation-pilot-item-071",
+        "ap-calculus-ab-foundation-pilot-item-022",
+        "ap-calculus-ab-foundation-pilot-item-052",
+        "ap-calculus-ab-foundation-pilot-item-003",
+        "ap-calculus-ab-foundation-pilot-item-033",
+        "ap-calculus-ab-foundation-pilot-item-063",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-025",
+        "ap-calculus-ab-foundation-pilot-item-055",
+        "ap-calculus-ab-foundation-pilot-item-006",
+        "ap-calculus-ab-foundation-pilot-item-036",
+        "ap-calculus-ab-foundation-pilot-item-066",
+        "ap-calculus-ab-foundation-pilot-item-017",
+        "ap-calculus-ab-foundation-pilot-item-047",
+        "ap-calculus-ab-foundation-pilot-item-077",
+        "ap-calculus-ab-foundation-pilot-item-028",
+        "ap-calculus-ab-foundation-pilot-item-058",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-039",
+        "ap-calculus-ab-foundation-pilot-item-069",
+        "ap-calculus-ab-foundation-pilot-item-020",
+        "ap-calculus-ab-foundation-pilot-item-050",
+        "ap-calculus-ab-foundation-pilot-item-080",
+        "ap-calculus-ab-foundation-pilot-item-101",
+        "ap-calculus-ab-foundation-pilot-item-131",
+        "ap-calculus-ab-foundation-pilot-item-082",
+        "ap-calculus-ab-foundation-pilot-item-112",
+        "ap-calculus-ab-foundation-pilot-item-142",
+        "ap-calculus-ab-foundation-pilot-item-093",
+        "ap-calculus-ab-foundation-pilot-item-123",
+        "ap-calculus-ab-foundation-pilot-item-153",
+        "ap-calculus-ab-foundation-pilot-item-104",
+        "ap-calculus-ab-foundation-pilot-item-134",
+        "ap-calculus-ab-foundation-pilot-item-085",
+        "ap-calculus-ab-foundation-pilot-item-115",
+        "ap-calculus-ab-foundation-pilot-item-145"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every AP Calculus AB Foundation Pilot domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Unit 5: Analytical Applications of Differentiation",
+        "Unit 6: Integration and Accumulation of Change",
+        "Unit 7: Differential Equations",
+        "Unit 8: Applications of Integration"
+      ],
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-021",
+        "ap-calculus-ab-foundation-pilot-item-051",
+        "ap-calculus-ab-foundation-pilot-item-002",
+        "ap-calculus-ab-foundation-pilot-item-032",
+        "ap-calculus-ab-foundation-pilot-item-062",
+        "ap-calculus-ab-foundation-pilot-item-013",
+        "ap-calculus-ab-foundation-pilot-item-043",
+        "ap-calculus-ab-foundation-pilot-item-073",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-005",
+        "ap-calculus-ab-foundation-pilot-item-035",
+        "ap-calculus-ab-foundation-pilot-item-065",
+        "ap-calculus-ab-foundation-pilot-item-016",
+        "ap-calculus-ab-foundation-pilot-item-046",
+        "ap-calculus-ab-foundation-pilot-item-076",
+        "ap-calculus-ab-foundation-pilot-item-027",
+        "ap-calculus-ab-foundation-pilot-item-057",
+        "ap-calculus-ab-foundation-pilot-item-008",
+        "ap-calculus-ab-foundation-pilot-item-038",
+        "ap-calculus-ab-foundation-pilot-item-068",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-049",
+        "ap-calculus-ab-foundation-pilot-item-079",
+        "ap-calculus-ab-foundation-pilot-item-030",
+        "ap-calculus-ab-foundation-pilot-item-060",
+        "ap-calculus-ab-foundation-pilot-item-081",
+        "ap-calculus-ab-foundation-pilot-item-111",
+        "ap-calculus-ab-foundation-pilot-item-141",
+        "ap-calculus-ab-foundation-pilot-item-092",
+        "ap-calculus-ab-foundation-pilot-item-122",
+        "ap-calculus-ab-foundation-pilot-item-152",
+        "ap-calculus-ab-foundation-pilot-item-103",
+        "ap-calculus-ab-foundation-pilot-item-133",
+        "ap-calculus-ab-foundation-pilot-item-084",
+        "ap-calculus-ab-foundation-pilot-item-114",
+        "ap-calculus-ab-foundation-pilot-item-144",
+        "ap-calculus-ab-foundation-pilot-item-095",
+        "ap-calculus-ab-foundation-pilot-item-125",
+        "ap-calculus-ab-foundation-pilot-item-155"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "ap-calculus-ab-foundation-pilot-form-internal-a",
+      "title": "Internal practice form A (AP Calculus AB Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-001",
+        "ap-calculus-ab-foundation-pilot-item-031",
+        "ap-calculus-ab-foundation-pilot-item-061",
+        "ap-calculus-ab-foundation-pilot-item-012",
+        "ap-calculus-ab-foundation-pilot-item-042",
+        "ap-calculus-ab-foundation-pilot-item-072",
+        "ap-calculus-ab-foundation-pilot-item-023",
+        "ap-calculus-ab-foundation-pilot-item-053",
+        "ap-calculus-ab-foundation-pilot-item-004",
+        "ap-calculus-ab-foundation-pilot-item-034",
+        "ap-calculus-ab-foundation-pilot-item-064",
+        "ap-calculus-ab-foundation-pilot-item-015",
+        "ap-calculus-ab-foundation-pilot-item-045",
+        "ap-calculus-ab-foundation-pilot-item-075",
+        "ap-calculus-ab-foundation-pilot-item-026",
+        "ap-calculus-ab-foundation-pilot-item-056",
+        "ap-calculus-ab-foundation-pilot-item-007",
+        "ap-calculus-ab-foundation-pilot-item-037",
+        "ap-calculus-ab-foundation-pilot-item-067",
+        "ap-calculus-ab-foundation-pilot-item-018",
+        "ap-calculus-ab-foundation-pilot-item-048",
+        "ap-calculus-ab-foundation-pilot-item-078",
+        "ap-calculus-ab-foundation-pilot-item-029",
+        "ap-calculus-ab-foundation-pilot-item-059",
+        "ap-calculus-ab-foundation-pilot-item-010",
+        "ap-calculus-ab-foundation-pilot-item-040",
+        "ap-calculus-ab-foundation-pilot-item-070",
+        "ap-calculus-ab-foundation-pilot-item-091",
+        "ap-calculus-ab-foundation-pilot-item-121",
+        "ap-calculus-ab-foundation-pilot-item-151",
+        "ap-calculus-ab-foundation-pilot-item-102",
+        "ap-calculus-ab-foundation-pilot-item-132",
+        "ap-calculus-ab-foundation-pilot-item-083",
+        "ap-calculus-ab-foundation-pilot-item-113",
+        "ap-calculus-ab-foundation-pilot-item-143",
+        "ap-calculus-ab-foundation-pilot-item-094",
+        "ap-calculus-ab-foundation-pilot-item-124",
+        "ap-calculus-ab-foundation-pilot-item-154",
+        "ap-calculus-ab-foundation-pilot-item-105",
+        "ap-calculus-ab-foundation-pilot-item-135",
+        "ap-calculus-ab-foundation-pilot-item-086",
+        "ap-calculus-ab-foundation-pilot-item-116",
+        "ap-calculus-ab-foundation-pilot-item-146",
+        "ap-calculus-ab-foundation-pilot-item-097",
+        "ap-calculus-ab-foundation-pilot-item-127",
+        "ap-calculus-ab-foundation-pilot-item-157",
+        "ap-calculus-ab-foundation-pilot-item-108",
+        "ap-calculus-ab-foundation-pilot-item-138",
+        "ap-calculus-ab-foundation-pilot-item-089",
+        "ap-calculus-ab-foundation-pilot-item-119"
+      ],
+      "topicIds": [
+        "ap-calc-ab-ch-01",
+        "ap-calc-ab-ch-04",
+        "ap-calc-ab-ch-07",
+        "ap-calc-ab-ch-02",
+        "ap-calc-ab-ch-05",
+        "ap-calc-ab-ch-08",
+        "ap-calc-ab-ch-03",
+        "ap-calc-ab-ch-06"
+      ],
+      "unitIds": [
+        "limits-and-continuity",
+        "contextual-applications-of-differentiation",
+        "differential-equations",
+        "differentiation-definition-and-fundamental-properties",
+        "analytical-applications-of-differentiation",
+        "applications-of-integration",
+        "differentiation-composite-implicit-inverse-functions",
+        "integration-and-accumulation-of-change"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-form-internal-b",
+      "title": "Internal practice form B (AP Calculus AB Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-011",
+        "ap-calculus-ab-foundation-pilot-item-041",
+        "ap-calculus-ab-foundation-pilot-item-071",
+        "ap-calculus-ab-foundation-pilot-item-022",
+        "ap-calculus-ab-foundation-pilot-item-052",
+        "ap-calculus-ab-foundation-pilot-item-003",
+        "ap-calculus-ab-foundation-pilot-item-033",
+        "ap-calculus-ab-foundation-pilot-item-063",
+        "ap-calculus-ab-foundation-pilot-item-014",
+        "ap-calculus-ab-foundation-pilot-item-044",
+        "ap-calculus-ab-foundation-pilot-item-074",
+        "ap-calculus-ab-foundation-pilot-item-025",
+        "ap-calculus-ab-foundation-pilot-item-055",
+        "ap-calculus-ab-foundation-pilot-item-006",
+        "ap-calculus-ab-foundation-pilot-item-036",
+        "ap-calculus-ab-foundation-pilot-item-066",
+        "ap-calculus-ab-foundation-pilot-item-017",
+        "ap-calculus-ab-foundation-pilot-item-047",
+        "ap-calculus-ab-foundation-pilot-item-077",
+        "ap-calculus-ab-foundation-pilot-item-028",
+        "ap-calculus-ab-foundation-pilot-item-058",
+        "ap-calculus-ab-foundation-pilot-item-009",
+        "ap-calculus-ab-foundation-pilot-item-039",
+        "ap-calculus-ab-foundation-pilot-item-069",
+        "ap-calculus-ab-foundation-pilot-item-020",
+        "ap-calculus-ab-foundation-pilot-item-050",
+        "ap-calculus-ab-foundation-pilot-item-080",
+        "ap-calculus-ab-foundation-pilot-item-101",
+        "ap-calculus-ab-foundation-pilot-item-131",
+        "ap-calculus-ab-foundation-pilot-item-082",
+        "ap-calculus-ab-foundation-pilot-item-112",
+        "ap-calculus-ab-foundation-pilot-item-142",
+        "ap-calculus-ab-foundation-pilot-item-093",
+        "ap-calculus-ab-foundation-pilot-item-123",
+        "ap-calculus-ab-foundation-pilot-item-153",
+        "ap-calculus-ab-foundation-pilot-item-104",
+        "ap-calculus-ab-foundation-pilot-item-134",
+        "ap-calculus-ab-foundation-pilot-item-085",
+        "ap-calculus-ab-foundation-pilot-item-115",
+        "ap-calculus-ab-foundation-pilot-item-145",
+        "ap-calculus-ab-foundation-pilot-item-096",
+        "ap-calculus-ab-foundation-pilot-item-126",
+        "ap-calculus-ab-foundation-pilot-item-156",
+        "ap-calculus-ab-foundation-pilot-item-107",
+        "ap-calculus-ab-foundation-pilot-item-137",
+        "ap-calculus-ab-foundation-pilot-item-088",
+        "ap-calculus-ab-foundation-pilot-item-118",
+        "ap-calculus-ab-foundation-pilot-item-148",
+        "ap-calculus-ab-foundation-pilot-item-099",
+        "ap-calculus-ab-foundation-pilot-item-129"
+      ],
+      "topicIds": [
+        "ap-calc-ab-ch-02",
+        "ap-calc-ab-ch-05",
+        "ap-calc-ab-ch-08",
+        "ap-calc-ab-ch-03",
+        "ap-calc-ab-ch-06",
+        "ap-calc-ab-ch-01",
+        "ap-calc-ab-ch-04",
+        "ap-calc-ab-ch-07"
+      ],
+      "unitIds": [
+        "differentiation-definition-and-fundamental-properties",
+        "analytical-applications-of-differentiation",
+        "applications-of-integration",
+        "differentiation-composite-implicit-inverse-functions",
+        "integration-and-accumulation-of-change",
+        "limits-and-continuity",
+        "contextual-applications-of-differentiation",
+        "differential-equations"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot-form-internal-c",
+      "title": "Internal practice form C (AP Calculus AB Foundation Pilot)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "ap-calculus-ab-foundation-pilot-item-021",
+        "ap-calculus-ab-foundation-pilot-item-051",
+        "ap-calculus-ab-foundation-pilot-item-002",
+        "ap-calculus-ab-foundation-pilot-item-032",
+        "ap-calculus-ab-foundation-pilot-item-062",
+        "ap-calculus-ab-foundation-pilot-item-013",
+        "ap-calculus-ab-foundation-pilot-item-043",
+        "ap-calculus-ab-foundation-pilot-item-073",
+        "ap-calculus-ab-foundation-pilot-item-024",
+        "ap-calculus-ab-foundation-pilot-item-054",
+        "ap-calculus-ab-foundation-pilot-item-005",
+        "ap-calculus-ab-foundation-pilot-item-035",
+        "ap-calculus-ab-foundation-pilot-item-065",
+        "ap-calculus-ab-foundation-pilot-item-016",
+        "ap-calculus-ab-foundation-pilot-item-046",
+        "ap-calculus-ab-foundation-pilot-item-076",
+        "ap-calculus-ab-foundation-pilot-item-027",
+        "ap-calculus-ab-foundation-pilot-item-057",
+        "ap-calculus-ab-foundation-pilot-item-008",
+        "ap-calculus-ab-foundation-pilot-item-038",
+        "ap-calculus-ab-foundation-pilot-item-068",
+        "ap-calculus-ab-foundation-pilot-item-019",
+        "ap-calculus-ab-foundation-pilot-item-049",
+        "ap-calculus-ab-foundation-pilot-item-079",
+        "ap-calculus-ab-foundation-pilot-item-030",
+        "ap-calculus-ab-foundation-pilot-item-060",
+        "ap-calculus-ab-foundation-pilot-item-081",
+        "ap-calculus-ab-foundation-pilot-item-111",
+        "ap-calculus-ab-foundation-pilot-item-141",
+        "ap-calculus-ab-foundation-pilot-item-092",
+        "ap-calculus-ab-foundation-pilot-item-122",
+        "ap-calculus-ab-foundation-pilot-item-152",
+        "ap-calculus-ab-foundation-pilot-item-103",
+        "ap-calculus-ab-foundation-pilot-item-133",
+        "ap-calculus-ab-foundation-pilot-item-084",
+        "ap-calculus-ab-foundation-pilot-item-114",
+        "ap-calculus-ab-foundation-pilot-item-144",
+        "ap-calculus-ab-foundation-pilot-item-095",
+        "ap-calculus-ab-foundation-pilot-item-125",
+        "ap-calculus-ab-foundation-pilot-item-155",
+        "ap-calculus-ab-foundation-pilot-item-106",
+        "ap-calculus-ab-foundation-pilot-item-136",
+        "ap-calculus-ab-foundation-pilot-item-087",
+        "ap-calculus-ab-foundation-pilot-item-117",
+        "ap-calculus-ab-foundation-pilot-item-147",
+        "ap-calculus-ab-foundation-pilot-item-098",
+        "ap-calculus-ab-foundation-pilot-item-128",
+        "ap-calculus-ab-foundation-pilot-item-158",
+        "ap-calculus-ab-foundation-pilot-item-109",
+        "ap-calculus-ab-foundation-pilot-item-139"
+      ],
+      "topicIds": [
+        "ap-calc-ab-ch-03",
+        "ap-calc-ab-ch-06",
+        "ap-calc-ab-ch-01",
+        "ap-calc-ab-ch-04",
+        "ap-calc-ab-ch-07",
+        "ap-calc-ab-ch-02",
+        "ap-calc-ab-ch-05",
+        "ap-calc-ab-ch-08"
+      ],
+      "unitIds": [
+        "differentiation-composite-implicit-inverse-functions",
+        "integration-and-accumulation-of-change",
+        "limits-and-continuity",
+        "contextual-applications-of-differentiation",
+        "differential-equations",
+        "differentiation-definition-and-fundamental-properties",
+        "analytical-applications-of-differentiation",
+        "applications-of-integration"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
     }
   ]
 }

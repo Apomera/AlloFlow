@@ -22,9 +22,15 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined' || !window) return;
   if (window.AlloModules && window.AlloModules.UIFontLibrary) {
     console.log('[CDN] UIFontLibraryModule already loaded, skipping');
     return;
+  }
+  function _isRemoteFontBlocked() {
+    try {
+      return window._isDesktopBundledApp === true || window.__alloOfflineOnly === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true;
+    } catch (_) { return true; }
   }
 
 const FONT_OPTIONS = [
@@ -73,25 +79,32 @@ const FONT_OPTIONS = [
 ];
 if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {
-    if (document.getElementById('alloflow-ui-font-library-css')) return;
     const fontLoads = Object.create(null);
     window.__alloEnsureUIFont = function (fontId) {
         // Italic variants share the complete Andika stylesheet, even on first use.
         const loadId = fontId === 'andika-italic' || fontId === 'andika-bold-italic' ? 'andika' : fontId;
         const option = FONT_OPTIONS.find(f => f.id === loadId);
         if (!option || !option.googleFont || option.id === 'inter') return Promise.resolve(true);
+        if (_isRemoteFontBlocked() || typeof document === 'undefined' || !document.head) return Promise.resolve(false);
         if (fontLoads[option.id]) return fontLoads[option.id];
         fontLoads[option.id] = new Promise(resolve => {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
+            link.referrerPolicy = 'no-referrer';
             link.dataset.alloflowUiFont = option.id;
             link.href = `https://fonts.googleapis.com/css2?family=${option.googleFont}&display=swap`;
             link.onload = () => resolve(true);
-            link.onerror = () => { delete fontLoads[option.id]; resolve(false); };
+            link.onerror = () => {
+                delete fontLoads[option.id];
+                try { if (link.parentNode) link.parentNode.removeChild(link); } catch (_) {}
+                resolve(false);
+            };
             document.head.appendChild(link);
         });
         return fontLoads[option.id];
     };
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('alloflow-ui-font-library-css')) return;
     const style = document.createElement('style');
     style.id = 'alloflow-ui-font-library-css';
     style.textContent = `
@@ -415,7 +428,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 
     @media (prefers-reduced-motion: reduce) {
       .animate-spin, .animate-pulse, .animate-bounce, .animate-ping,
-      [class*="animate-in"], [class*="slide-in"], [class*="fade-in"], [class*="zoom-in"] {
+      [class*="animate-in"], [class*="slide-in"], [class*="fade-in"], [class*="zoom-in"],
+      [class*="fixed"][class*="inset-0"], [class*="fixed"][class*="inset-0"] > div {
         animation: none !important;
         transition: none !important;
       }
@@ -470,11 +484,11 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
   function openReadingSettings(options) {
     options = options || {};
     var api = window.__alloReadingSettings;
-    if (!readingSettingsAvailable()) return null;
+    if (!readingSettingsAvailable() || typeof document === 'undefined' || !document.body) return null;
     var opener = options.opener || null;
     if (rsActive) { var same = rsActive.opener && rsActive.opener === opener; rsActive.close(!same); if (same) return null; }
     var doc = document;
-    if (!doc.getElementById('allo-reading-settings-css')) {
+    if (!doc.getElementById('allo-reading-settings-css') && doc.head) {
       var st = doc.createElement('style'); st.id = 'allo-reading-settings-css'; st.textContent = RS_CSS; doc.head.appendChild(st);
     }
     var t = options.t;
@@ -489,14 +503,16 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
       return n;
     };
-    var s = api.get();
+    var _rawS = api.get();
+    var s = (_rawS && typeof _rawS === 'object') ? _rawS : {};
+    var _num = function (v, def) { var n = Number(v); return Number.isFinite(n) ? n : def; };
     var panel = el('div', { 'class': 'allo-reading-settings', role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': uid + '-title', 'data-allo-reading-settings': 'true', id: uid });
     var closeBtn = el('button', { type: 'button', 'aria-label': tx('common.close', 'Close'), text: '×' });
     panel.appendChild(el('div', { 'class': 'rs-head' }, [el('h2', { id: uid + '-title', text: tx('reading_settings.title', 'Reading settings') }), closeBtn]));
     // Font
     var fontSel = el('select', { id: uid + '-font' });
     (s.fonts || []).forEach(function (f) { var o = el('option', { value: f.id, text: f.label }); fontSel.appendChild(o); });
-    fontSel.value = s.fontId;
+    fontSel.value = s.fontId || 'default';
     panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'for': uid + '-font', 'class': 'rs-label', text: tx('settings.text.font_family', 'Font Family') }), fontSel]));
     // Ranges
     var range = function (key, label, min, max, step, value, format) {
@@ -506,14 +522,14 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       var row = el('div', { 'class': 'rs-row' }, [el('div', { 'class': 'rs-label' }, [el('label', { 'for': uid + '-' + key, text: label }), out])]);
       return { row: row, input: input, out: out, format: format };
     };
-    var size = range('size', tx('settings.text.size', 'Size'), 10, 48, 1, s.baseFontSize, function (v) { return Math.round(v) + ' px'; });
+    var size = range('size', tx('settings.text.size', 'Size'), 10, 48, 1, _num(s.baseFontSize, 16), function (v) { return Math.round(_num(v, 16)) + ' px'; });
     var smaller = el('button', { type: 'button', 'aria-label': tx('reading_settings.smaller', 'Smaller text'), text: 'A−' });
     var larger = el('button', { type: 'button', 'aria-label': tx('reading_settings.larger', 'Larger text'), text: 'A+' });
     size.row.appendChild(el('div', { 'class': 'rs-line' }, [smaller, size.input, larger]));
     panel.appendChild(size.row);
-    var lh = range('line', tx('settings.text.line_height', 'Line Height'), 1, 2.5, 0.1, s.lineHeight, function (v) { return Number(v).toFixed(1); });
+    var lh = range('line', tx('settings.text.line_height', 'Line Height'), 1, 2.5, 0.1, _num(s.lineHeight, 1.6), function (v) { return _num(v, 1.6).toFixed(1); });
     lh.row.appendChild(lh.input); panel.appendChild(lh.row);
-    var ls = range('spacing', tx('settings.text.spacing', 'Letter Spacing'), 0, 0.2, 0.01, s.letterSpacing, function (v) { return Number(v).toFixed(2) + ' em'; });
+    var ls = range('spacing', tx('settings.text.spacing', 'Letter Spacing'), 0, 0.2, 0.01, _num(s.letterSpacing, 0), function (v) { return _num(v, 0).toFixed(2) + ' em'; });
     ls.row.appendChild(ls.input); panel.appendChild(ls.row);
     // Bionic reading, syllable breaks, and reading theme.
     var bionic = null, sylls = null, themeSel = null;
@@ -526,10 +542,15 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     sylls.checked = isSyllablesOn();
     panel.appendChild(el('div', { 'class': 'rs-row' }, [el('label', { 'class': 'rs-check', 'for': uid + '-syllables' }, [sylls, el('span', { text: tx('settings.text.syllables', 'Syllable Breaks (a·b·c)') })])]));
     if (Array.isArray(s.readingThemes) && s.readingThemes.length) {
-      var themeKeys = { highContrast: 'contrast', dyslexia: 'easy_read' };
-      var themeNames = { default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast', blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read', dim: 'Dim' };
+      var themeKeys = Object.assign(Object.create(null), { highContrast: 'contrast', dyslexia: 'easy_read' });
+      var themeNames = Object.assign(Object.create(null), { default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast', blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read', dim: 'Dim' });
       themeSel = el('select', { id: uid + '-theme', 'aria-describedby': uid + '-theme-scope' });
-      s.readingThemes.forEach(function (id) { themeSel.appendChild(el('option', { value: id, text: tx('header.reading_theme_' + (themeKeys[id] || id), themeNames[id] || id) })); });
+      s.readingThemes.forEach(function (id) {
+        if (typeof id !== 'string') return;
+        var tk = Object.prototype.hasOwnProperty.call(themeKeys, id) ? themeKeys[id] : id;
+        var tn = Object.prototype.hasOwnProperty.call(themeNames, id) ? themeNames[id] : id;
+        themeSel.appendChild(el('option', { value: id, text: tx('header.reading_theme_' + tk, tn) }));
+      });
       themeSel.value = s.readingTheme || 'default';
       panel.appendChild(el('div', { 'class': 'rs-row' }, [
         el('label', { 'for': uid + '-theme', 'class': 'rs-label', text: tx('header.reading_theme_aria', 'Reading theme') }),
@@ -598,9 +619,9 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     if (themeSel) themeSel.addEventListener('change', function () { api.set({ readingTheme: themeSel.value }); });
     reset.addEventListener('click', function () { api.set({ baseFontSize: 16, lineHeight: 1.6, letterSpacing: 0 }); });
     var refresh = function (n) {
-      n = n || api.get();
-      if (fontSel.value !== n.fontId) fontSel.value = n.fontId;
-      [[size, n.baseFontSize], [lh, n.lineHeight], [ls, n.letterSpacing]].forEach(function (pair) {
+      n = (n && typeof n === 'object') ? n : (api.get() || {});
+      if (n.fontId && fontSel.value !== n.fontId) fontSel.value = n.fontId;
+      [[size, _num(n.baseFontSize, 16)], [lh, _num(n.lineHeight, 1.6)], [ls, _num(n.letterSpacing, 0)]].forEach(function (pair) {
         if (doc.activeElement !== pair[0].input) pair[0].input.value = String(pair[1]);
         pair[0].out.textContent = pair[0].format(pair[1]);
       });
@@ -614,7 +635,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       if (themeSel && n.readingTheme && themeSel.value !== n.readingTheme) themeSel.value = n.readingTheme;
     };
     var onSyllablesEvent = function () { if (sylls) sylls.checked = isSyllablesOn(); };
-    window.addEventListener('alloflow:syllables-changed', onSyllablesEvent);
+    if (typeof window.addEventListener === 'function') window.addEventListener('alloflow:syllables-changed', onSyllablesEvent);
     var unsubscribe = typeof api.subscribe === 'function' ? api.subscribe(refresh) : function () {};
     container.appendChild(panel);
     // Place it by the opener (bottom sheet on narrow screens, by CSS).
@@ -629,7 +650,11 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     };
     place();
     if (opener) { opener.setAttribute('aria-expanded', 'true'); opener.setAttribute('aria-controls', uid); }
-    var focusables = function () { return Array.prototype.slice.call(panel.querySelectorAll('button,select,input')).filter(function (n) { return !n.disabled; }); };
+    var focusables = function () {
+      return Array.prototype.slice.call(panel.querySelectorAll('button,select,input')).filter(function (n) {
+        return !n.disabled && !n.hidden && !(n.closest && n.closest('[hidden]'));
+      });
+    };
     var onKey = function (e) {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handle.close(true); return; }
       if (e.key !== 'Tab') return;
@@ -643,7 +668,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var onDown = function (e) { if (!panel.contains(e.target) && !(opener && opener.contains(e.target))) handle.close(false); };
     panel.addEventListener('keydown', onKey);
     doc.addEventListener('pointerdown', onDown, true);
-    window.addEventListener('resize', place);
+    if (typeof window.addEventListener === 'function') window.addEventListener('resize', place);
     closeBtn.addEventListener('click', function () { handle.close(true); });
     var handle = {
       opener: opener,
@@ -651,12 +676,14 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       close: function (returnFocus) {
         if (rsActive !== handle) return;
         rsActive = null;
-        unsubscribe();
-        window.removeEventListener('alloflow:syllables-changed', onSyllablesEvent);
+        if (typeof unsubscribe === 'function') { try { unsubscribe(); } catch (_) {} }
+        if (typeof window.removeEventListener === 'function') {
+          window.removeEventListener('alloflow:syllables-changed', onSyllablesEvent);
+          window.removeEventListener('resize', place);
+        }
         doc.removeEventListener('pointerdown', onDown, true);
-        window.removeEventListener('resize', place);
         panel.remove();
-        if (opener) { opener.setAttribute('aria-expanded', 'false'); }
+        if (opener) { opener.setAttribute('aria-expanded', 'false'); opener.removeAttribute('aria-controls'); }
         if (returnFocus && opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
         if (typeof options.onClose === 'function') { try { options.onClose(); } catch (_) {} }
       },
@@ -671,18 +698,33 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
   // embedded data for offline files (their security policy blocks remote fonts).
   var OPEN_DYSLEXIC = [['400', 'https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-400-normal.woff'], ['700', 'https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/files/opendyslexic-latin-700-normal.woff']];
   function readerSettingsNow() { return readingSettingsAvailable() ? window.__alloReadingSettings.get() : null; }
+  function _safeCssScope(raw) {
+    var s = typeof raw === 'string' ? raw.trim() : '';
+    if (!s || s.length > 120 || /[{};<>@]|url\s*\(/i.test(s) || !/^[A-Za-z0-9_\s.#:\[\]="\-()>*+~]+$/.test(s)) return 'body';
+    return s;
+  }
+  function _safeCssFontFamily(raw) {
+    var s = typeof raw === 'string' ? raw.trim() : '';
+    if (!s || s.length > 160 || !/^[A-Za-z0-9\s,'"-]+$/.test(s)) return '';
+    return s;
+  }
   function readerExportCss(settings, options) {
     var s = settings || readerSettingsNow();
     if (!s) return '';
     options = options || {};
-    var scope = options.scope || 'body';
+    var scope = _safeCssScope(options.scope || 'body');
     var skip = ':not(svg):not(svg *):not(math):not(math *)';
     var rules = [];
-    if (s.fontFamily) rules.push(scope + ',' + scope + ' *' + skip + '{font-family:' + s.fontFamily + ' !important}');
+    var safeFamily = _safeCssFontFamily(s.fontFamily);
+    if (safeFamily) rules.push(scope + ',' + scope + ' *' + skip + '{font-family:' + safeFamily + ' !important}');
     if (s.fontClass === 'font-andika-italic' || s.fontClass === 'font-andika-bold-italic') rules.push(scope + ' *' + skip + '{font-style:italic}');
     if (s.fontClass === 'font-andika-bold-italic') rules.push(scope + ' *' + skip + '{font-weight:700 !important}');
     if (Number.isFinite(s.baseFontSize) && options.size !== false) rules.push('html{font-size:' + Math.max(10, Math.min(48, s.baseFontSize)) + 'px}');
-    rules.push(scope + ' :is(p,li,dd,dt,td,th,h1,h2,h3,h4,h5,h6,span,div,label,figcaption,button,a)' + skip + '{line-height:' + (Number(s.lineHeight) || 1.6) + ' !important;letter-spacing:' + (Number(s.letterSpacing) || 0) + 'em !important}');
+    var rawLh = Number(s.lineHeight);
+    var safeLh = Number.isFinite(rawLh) && rawLh > 0 ? Math.max(1, Math.min(3, rawLh)) : 1.6;
+    var rawLs = Number(s.letterSpacing);
+    var safeLs = Number.isFinite(rawLs) ? Math.max(0, Math.min(0.5, rawLs)) : 0;
+    rules.push(scope + ' :is(p,li,dd,dt,td,th,h1,h2,h3,h4,h5,h6,span,div,label,figcaption,button,a)' + skip + '{line-height:' + safeLh + ' !important;letter-spacing:' + safeLs + 'em !important}');
     return rules.join('\n');
   }
   function fontOption(fontId) {
@@ -702,16 +744,20 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var o = fontOption(fontId || (readerSettingsNow() || {}).fontId);
     var none = { head: '', css: '' };
     if (!o || (o.id !== 'opendyslexic' && !o.googleFont)) return Promise.resolve(none);
+    if (_isRemoteFontBlocked()) return Promise.resolve(none);
     var cssUrl = o.googleFont ? 'https://fonts.googleapis.com/css2?family=' + o.googleFont + '&display=swap' : '';
     if (!options.embed) {
       if (o.id === 'opendyslexic') return Promise.resolve({ head: '', css: OPEN_DYSLEXIC.map(function (w) { return "@font-face{font-family:'OpenDyslexic';src:url('" + w[1] + "') format('woff');font-weight:" + w[0] + ';font-display:swap}'; }).join('') });
       return Promise.resolve({ head: '<link rel="stylesheet" href="' + cssUrl + '">', css: '' });
     }
-    var limit = options.maxBytes || 3 * 1024 * 1024, used = 0;
+    var rawLimit = Number(options.maxBytes);
+    var limit = (Number.isFinite(rawLimit) && rawLimit > 0) ? Math.min(rawLimit, 10 * 1024 * 1024) : (3 * 1024 * 1024), used = 0;
     var fetchTimed = function (url) {
       var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
       var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 8000) : null;
-      return fetch(url, ctrl ? { signal: ctrl.signal } : undefined).finally(function () { if (timer) clearTimeout(timer); });
+      var init = { credentials: 'omit', referrerPolicy: 'no-referrer' };
+      if (ctrl) init.signal = ctrl.signal;
+      return fetch(url, init).finally(function () { if (timer) clearTimeout(timer); });
     };
     var fetchFont = function (url) {
       return fetchTimed(url).then(function (r) { if (!r.ok) throw new Error('font ' + r.status); return r.arrayBuffer(); }).then(function (buf) {
@@ -723,7 +769,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     var job = o.id === 'opendyslexic'
       ? Promise.all(OPEN_DYSLEXIC.map(function (w) { return fetchFont(w[1]).then(function (b64) { return "@font-face{font-family:'OpenDyslexic';src:url(data:font/woff;base64," + b64 + ") format('woff');font-weight:" + w[0] + ';font-display:swap}'; }); })).then(function (parts) { return parts.join(''); })
       : fetchTimed(cssUrl).then(function (r) { if (!r.ok) throw new Error('css ' + r.status); return r.text(); }).then(function (css) {
-          var urls = []; css.replace(/url\((['"]?)([^'")]+)\1\)/g, function (m, q, u) { if (urls.indexOf(u) < 0) urls.push(u); return m; });
+          if (typeof css !== 'string' || /[<>]/.test(css)) throw new Error('unsafe css');
+          var urls = []; css.replace(/url\((['"]?)([^'")]+)\1\)/g, function (m, q, u) { if (/^https:\/\/fonts\.gstatic\.com\//i.test(u) && urls.indexOf(u) < 0 && urls.length < 20) urls.push(u); return m; });
           return Promise.all(urls.map(function (u) { return fetchFont(u).then(function (b64) { return [u, 'data:' + mime(u) + ';base64,' + b64]; }); })).then(function (pairs) {
             pairs.forEach(function (p) { css = css.split(p[0]).join(p[1]); });
             return css;
@@ -802,7 +849,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
       sc.async = true;
       sc.setAttribute('data-allo-syllable-table', '1');
       sc.onload = function () { _syllableTableLoading = false; notifySyllablesChanged(); };
-      sc.onerror = function () { _syllableTableLoading = false; };
+      sc.onerror = function () { _syllableTableLoading = false; try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {} };
       (document.head || document.documentElement).appendChild(sc);
     } catch (_) { _syllableTableLoading = false; }
   }
@@ -873,7 +920,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     return out;
   }
   function splitSyllables(word, langHint) {
-    if (typeof word !== 'string' || word.length < 4 || !/^[A-Za-z\u00C0-\u024F]+$/.test(word)) return null;
+    if (typeof word !== 'string' || word.length < 4 || word.length > 64 || !/^[A-Za-z\u00C0-\u024F]+$/.test(word)) return null;
     var lower = word.normalize ? word.normalize('NFC').toLowerCase() : word.toLowerCase();
     var hint = String(langHint || '').trim().toLowerCase();
     var docLang = '';
@@ -898,9 +945,11 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     syncBionicAttr(isBionicOnlyOn());
     syncSyllablesAttr(_syllablesOn);
     if (_syllablesOn) ensureSyllableTable();
-    window.addEventListener('alloflow:reading-settings-changed', function (ev) {
-      if (ev && ev.detail && typeof ev.detail.bionic === 'boolean') syncBionicAttr(ev.detail.bionic);
-    });
+    if (typeof window.addEventListener === 'function') {
+      window.addEventListener('alloflow:reading-settings-changed', function (ev) {
+        if (ev && ev.detail && typeof ev.detail.bionic === 'boolean') syncBionicAttr(ev.detail.bionic);
+      });
+    }
   }
   function useAlloBionic(explicit) {
     var R = typeof window !== 'undefined' ? window.React : null;
@@ -1137,7 +1186,8 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
   function _safePictureSvg(svg) {
     if (typeof svg !== 'string' || !svg || svg.length > 260000) return false;
     if (!/<svg[\s>]/i.test(svg)) return false;
-    if (/<(?:script|foreignObject|iframe|object|embed)\b|on[a-z]+\s*=|javascript:/i.test(svg)) return false;
+    var cleaned = svg.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    if (/<!(?:DOCTYPE|ENTITY)\b|<(?:script|foreignObject|iframe|object|embed|animate|set|handler|link|meta|base)\b|on[a-z]+\s*=|(?:javascript|vbscript):|(?:xlink:)?href\s*=\s*['"]?\s*https?:/i.test(cleaned)) return false;
     return true;
   }
   function lookupWordPicture(word) {
@@ -1200,7 +1250,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
         sc.async = true;
         sc.setAttribute(attr, '1');
         sc.onload = function () { resolve(true); };
-        sc.onerror = function () { resolve(false); };
+        sc.onerror = function () { try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {} resolve(false); };
         (document.head || document.documentElement).appendChild(sc);
       });
     };
@@ -1216,7 +1266,9 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
         tasks.push(ext.load().catch(function () {}));
       }
       return Promise.all(tasks).then(function () {
-        return !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+        var ready = !!(window.AlloWordPictureMatcher || (window.AlloModules && window.AlloModules.WordPictureMatcher));
+        if (!ready) _wordPicturesPromise = null;
+        return ready;
       });
     }, function () {
       _wordPicturesPromise = null;

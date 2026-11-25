@@ -76,7 +76,7 @@ window.StemLab = window.StemLab || {
       '[data-stem-theme=dark] [data-dna-tool] .dna-grade-bar,.theme-dark [data-dna-tool] .dna-grade-bar{background:#f6f8f4}',
       '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500,.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],[data-dna-scenario-steps]) .text-slate-500{color:#475569!important}',
       '[data-stem-theme=dark] [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60),.theme-dark [data-dna-tool] :is([data-dna-recommendation],[data-dna-guided],.bg-white\\/60,.bg-white\\/70,.bg-white\\/80,.bg-white\\/90,.bg-indigo-50\\/60,.bg-violet-50\\/60){background-color:#f6f8f4!important}',
-      '[data-dna-tool] button{min-height:36px}',
+      '[data-dna-tool] button{min-height:44px}[data-dna-tool] :is(button,input,select,textarea,summary){touch-action:manipulation;box-sizing:border-box}.theme-contrast [data-dna-tool] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}@media(forced-colors:active){[data-dna-tool] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-dna-tool] [role="progressbar"]{border:1px solid CanvasText!important}}',
       '[data-dna-scenario-challenge]{min-width:0;overflow-wrap:anywhere}',
       '[data-dna-scenario-challenge] :is(button,select,textarea){min-height:44px;min-width:44px;max-width:100%;white-space:normal;overflow-wrap:anywhere}',
       '[data-dna-scenario-challenge] :is(fieldset,label){min-width:0}[data-dna-scenario-challenge] label:has(input[type=radio]){min-height:44px}',
@@ -156,7 +156,7 @@ window.StemLab = window.StemLab || {
       '@media(max-width:420px){[data-dna-tool] [data-dna-ms-answers]{grid-template-columns:minmax(0,1fr)}}',
       '@media(forced-colors:active){[data-dna-tool] :is(#dna-report-toggle,[data-dna-lab-report] :is(button,textarea,input,select),[data-dna-guided] button,[data-dna-reading-frame-explorer] :is(button,[tabindex]),[data-dna-mutation-sleuth] :is(button,#dna-ms-vignette)):focus-visible{outline-color:Highlight!important}}',
       '.dna-command-header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px 17px;border:1px solid var(--dna-line);border-top:4px solid var(--dna-violet);border-radius:14px;background:var(--allo-stem-canvas,#fff);box-shadow:0 12px 30px rgba(15,23,42,.08)}',
-      '.dna-back-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--dna-line);border-radius:10px;background:#fff;color:#475569;transition:transform .18s ease,border-color .18s ease}',
+      '.dna-back-button{min-width:44px;min-height:44px;width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--dna-line);border-radius:10px;background:#fff;color:#475569;transition:transform .18s ease,border-color .18s ease}',
       '.dna-back-button:hover{transform:translateX(-2px);border-color:#a78bfa}',
       '[data-stem-theme=dark] [data-dna-tool] .dna-back-button,.theme-dark [data-dna-tool] .dna-back-button{background:#1e293b;border-color:#475569;color:#e2e8f0}',
       '[data-stem-theme=dark] [data-dna-tool] .dna-back-button:hover,.theme-dark [data-dna-tool] .dna-back-button:hover{background:#334155;border-color:#a78bfa;color:#ffffff}',
@@ -186,11 +186,11 @@ window.StemLab = window.StemLab || {
       '.dna-live-status{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #d8e5c2;border-radius:999px;background:#f4fae8;color:#3f6212;font-size:10px;font-weight:850}',
       '.dna-live-status i{width:7px;height:7px;border-radius:50%;background:#65a30d;box-shadow:0 0 0 4px rgba(101,163,13,.12)}',
       '.dna-xp-chip{padding:7px 10px;border:1px solid #fde68a;border-radius:999px;background:#fffbeb;color:#92400e;font-size:10px;font-weight:900}',
-      '.dna-snapshot-button{min-height:38px!important;padding:0 14px;border:1px solid #5b21b6;border-radius:10px;background:#6d28d9;color:#fff;font-size:11px;font-weight:900;box-shadow:3px 3px 0 #c4b5fd;transition:transform .18s ease,box-shadow .18s ease}',
+      '.dna-snapshot-button{min-height:44px!important;padding:0 14px;border:1px solid #5b21b6;border-radius:10px;background:#6d28d9;color:#fff;font-size:11px;font-weight:900;box-shadow:3px 3px 0 #c4b5fd;transition:transform .18s ease,box-shadow .18s ease}',
       '.dna-snapshot-button:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 #c4b5fd}',
       '.dna-grade-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:8px 10px;border:1px solid var(--dna-line);border-radius:12px;background:rgba(255,255,255,.8);scrollbar-width:thin}',
       '.dna-grade-label{flex:none;margin-right:4px;color:#475569;font-size:9px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}',
-      '.dna-grade-option{flex:none;min-height:32px!important;padding:0 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#526174;font-size:10px;font-weight:850}',
+      '.dna-grade-option{flex:none;min-height:44px!important;padding:0 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#526174;font-size:10px;font-weight:850}',
       '.dna-grade-option:hover{border-color:#a78bfa;background:#faf5ff}',
       '.dna-grade-option[data-active="true"]{border-color:#6d28d9;background:#6d28d9;color:#fff;box-shadow:0 4px 10px rgba(109,40,217,.18)}',
       '.dna-grade-level{flex:none;margin-left:auto;padding:6px 9px;border-radius:999px;background:#f5f3ff;color:#6d28d9;font-size:9px;font-weight:850}',
@@ -1037,7 +1037,7 @@ window.StemLab = window.StemLab || {
       // Selection-only radio groups share keyboard navigation; scored answer
       // buttons deliberately keep native button behavior instead.
       function navigateDnaRadio(event) {
-        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229)) return;
         var key = event.key;
         if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].indexOf(key) < 0) return;
         var group = event.currentTarget.closest('[role="radiogroup"]');
@@ -5071,6 +5071,7 @@ window.StemLab = window.StemLab || {
         announceToSR('Switched to ' + (target ? target.label : nextTab));
       }
       function handleDnaTabKeyDown(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || (event.nativeEvent && event.nativeEvent.keyCode === 229)) return;
         var key = event.key;
         if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
         event.preventDefault();
@@ -5150,8 +5151,8 @@ window.StemLab = window.StemLab || {
 
         // ═══ COMMAND HEADER ═══
         h("div", { className: "dna-command-header" },
-          h("button", { onClick: function() { setStemLabTool(null); announceToSR(__alloT('stem.dna.sr_returned_to_tool_grid', 'Returned to tool grid')); }, className: "dna-back-button", 'aria-label': t('stem.dna.back_to_tools', 'Back to tools') },
-            h(ArrowLeft, { size: 18 })),
+          h("button", { type: "button", onClick: function() { setStemLabTool(null); announceToSR(__alloT('stem.dna.sr_returned_to_tool_grid', 'Returned to tool grid')); }, className: "dna-back-button", 'aria-label': t('stem.dna.back_to_tools', 'Back to tools') },
+            h(ArrowLeft, { size: 18, "aria-hidden": "true" })),
           h("div", { className: "dna-brand-lockup" },
             h("div", { className: "dna-brand-mark", "aria-hidden": "true" },
               h("svg", { viewBox: "0 0 40 40", width: 34, height: 34, "aria-hidden": "true", focusable: "false" },
@@ -5199,15 +5200,15 @@ window.StemLab = window.StemLab || {
                 })
               );
             })(),
-              h("button", { onClick: exportDnaEvidence, className: "min-h-[38px] rounded-lg border border-slate-300 bg-white px-3 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
-              h("button", { type: "button", id: "dna-report-toggle", onClick: toggleDnaReport, 'aria-expanded': dnaReportOpen, 'aria-controls': dnaReportOpen ? 'dna-lab-report-panel' : undefined, className: "min-h-[38px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100" }, 'Lab report'),
+              h("button", { type: "button", onClick: exportDnaEvidence, className: "min-h-[44px] rounded-lg border border-slate-300 bg-white px-3 text-[0.6875rem] font-black text-slate-700 hover:bg-slate-50", 'aria-label': t('stem.dna.export_evidence', 'Export DNA evidence summary') }, '\uD83D\uDCC4 Evidence'),
+              h("button", { type: "button", id: "dna-report-toggle", onClick: toggleDnaReport, 'aria-expanded': dnaReportOpen, 'aria-controls': dnaReportOpen ? 'dna-lab-report-panel' : undefined, className: "min-h-[44px] rounded-lg border border-amber-300 bg-amber-50 px-3 text-[0.6875rem] font-black text-amber-900 hover:bg-amber-100" }, 'Lab report'),
           h("div", { className: "flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1", "data-dna-view-mode": dnaFocusMode ? "focus" : "explore", role: "group", "aria-label": __alloT('stem.dna.a11y_dna_lab_view_mode', 'DNA Lab view mode') },
             h("button", { type: "button", onClick: function() { setDnaFocusMode(true); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (dnaFocusMode ? "bg-violet-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": dnaFocusMode }, "Focus"),
             h("button", { type: "button", onClick: function() { setDnaFocusMode(false); }, className: "rounded-md px-2 py-1 text-[0.625rem] font-black " + (!dnaFocusMode ? "bg-slate-700 text-white" : "text-slate-600 hover:bg-slate-100"), "aria-pressed": !dnaFocusMode }, "Explore")
           ),
           h("span", { className: "dna-live-status" }, h("i", { "aria-hidden": "true" }), "Sequence ready"),
             h("span", { className: "dna-xp-chip", 'aria-label': __alloAriaFill(__alloT('stem.dna.a11y_of_100_experience_points', '{value} of 100 experience points'), { value: getStemXP('dnaLab') }) }, "\u2B50 " + getStemXP('dnaLab') + "/100"),
-            h("button", { onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dna-' + Date.now(), tool: 'dnaLab', label: 'DNA: ' + dnaSeq.substring(0, 12) + '...', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "dna-snapshot-button", 'aria-label': t('stem.dna.snapshot', 'Save DNA snapshot') }, t('stem.dna.snapshot', "\uD83D\uDCF8 Snapshot"))
+            h("button", { type: "button", onClick: function() { setToolSnapshots(function(prev) { return prev.concat([{ id: 'dna-' + Date.now(), tool: 'dnaLab', label: 'DNA: ' + dnaSeq.substring(0, 12) + '...', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "dna-snapshot-button", 'aria-label': t('stem.dna.snapshot', 'Save DNA snapshot') }, t('stem.dna.snapshot', "\uD83D\uDCF8 Snapshot"))
           )
         ),
 
@@ -5216,6 +5217,7 @@ window.StemLab = window.StemLab || {
           h("span", { className: "dna-grade-label" }, t('stem.dna.grade', "Reading level")),
           GRADE_BANDS.map(function(gb) {
             return h("button", {
+              type: "button",
               key: gb,
               onClick: function() { upd('dnaGradeOverride', gb); addToast('\uD83C\uDF93 Grade set to ' + gb, 'success'); },
               className: "dna-grade-option",
@@ -5242,6 +5244,7 @@ window.StemLab = window.StemLab || {
           visibleDnaSubtools.map(function(tb, tabIndex) {
             var isActive = tab === tb.id;
             return h("button", {
+              type: "button",
               key: tb.id,
               id: "dna-tab-" + tb.id,
               role: "tab",
@@ -5302,6 +5305,7 @@ window.StemLab = window.StemLab || {
                     return routeTool ? routeTool.label : null;
                   }).filter(Boolean).join(' · ');
                   return h("button", {
+                    type: "button",
                     key: route.id,
                     onClick: function() { switchDnaTab(route.tools[0]); },
                     className: "dna-route-card",
@@ -5744,7 +5748,7 @@ window.StemLab = window.StemLab || {
                   h("button", { type: 'button', onClick: function() { setDnaStrandView('template'); }, 'aria-pressed': dnaStrandView === 'template', className: "rounded-md border px-2 py-1 text-[0.625rem] font-bold " + (dnaStrandView === 'template' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-600') }, "Template 3' -> 5'")
                 )
               ),              h("div", { className: "dna-preset-picker" },
-                h("button", { onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR(__alloT('stem.dna.sr_random_sequence', 'Random sequence')); }, className: "transition-colors px-3 py-2 text-[0.6875rem] font-bold bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.random', "\uD83C\uDFB2 Random")),
+                h("button", { type: "button", onClick: function() { updMulti({ dnaSequence: randomDNA(21), mRNA: '', protein: [], animStep: 0 }); announceToSR(__alloT('stem.dna.sr_random_sequence', 'Random sequence')); }, className: "transition-colors px-3 py-2 text-[0.6875rem] font-bold bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.random', "\uD83C\uDFB2 Random")),
                 h("label", null,
                   h("span", { className: "sr-only" }, "Example DNA sequence"),
                   h("select", { defaultValue: "", 'aria-label': __alloT('stem.dna.a11y_load_an_example_dna_sequence', 'Load an example DNA sequence'), onChange: function(event) {
@@ -5765,8 +5769,8 @@ window.StemLab = window.StemLab || {
             ),
             h("div", { className: "flex flex-wrap gap-1", role: "group", "data-dna-sequence": true, 'aria-label': __alloAriaFill(__alloT('stem.dna.a11y_editable', 'Editable {strandLabel}'), { strandLabel: strandLabel }) },
               strandSequence.split('').map(function(base, idx) {
-                return h("button", { key: idx, onClick: function() { cycleDisplayedBase(idx); },
-                  className: "w-8 h-8 rounded-lg font-mono font-bold text-white text-sm hover:scale-110 transition-all", style: { background: BASE_COLORS[base], color: BASE_TEXT_COLORS[base] || '#ffffff' }, 'aria-label': (dnaStrandView === 'template' ? __alloAriaFill(__alloT('stem.dna.a11y_base_on_template_strand', 'Base {value1}: {base} on template strand'), { value1: idx + 1, base: base }) : __alloAriaFill(__alloT('stem.dna.a11y_base_on_coding_strand', 'Base {value1}: {base} on coding strand'), { value1: idx + 1, base: base }))
+                return h("button", { type: "button", key: idx, onClick: function() { cycleDisplayedBase(idx); },
+                  className: "min-w-11 min-h-11 rounded-lg font-mono font-bold text-white text-sm hover:scale-110 transition-all", style: { background: BASE_COLORS[base], color: BASE_TEXT_COLORS[base] || '#ffffff' }, 'aria-label': (dnaStrandView === 'template' ? __alloAriaFill(__alloT('stem.dna.a11y_base_on_template_strand', 'Base {value1}: {base} on template strand'), { value1: idx + 1, base: base }) : __alloAriaFill(__alloT('stem.dna.a11y_base_on_coding_strand', 'Base {value1}: {base} on coding strand'), { value1: idx + 1, base: base }))
                 }, base);
               })
             ),
@@ -6061,8 +6065,8 @@ window.StemLab = window.StemLab || {
               t('stem.dna.ribosome_translation_simulator', 'Ribosome Translation Simulator')
             ),
             h("div", { className: "flex items-center gap-3 mt-4" },
-              h("button", { onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else if (dnaSelectedReadingFrame.startIndex >= 0) { updMulti({ transStep: 0, builtProtein: [], transPlaying: true, protein: [] }); } }, disabled: dnaSelectedReadingFrame.startIndex < 0, className: "px-4 py-2 text-sm font-bold rounded-xl disabled:cursor-not-allowed disabled:opacity-45 " + (transPlaying ? "bg-amber-700 text-white" : "transition-colors bg-emerald-700 text-white hover:bg-emerald-700 active:scale-[0.97]") }, transPlaying ? "\u23F8 Pause" : dnaSelectedReadingFrame.startIndex >= 0 ? "\u25B6 Translate frame +" + dnaSelectedReadingFrame.frame : "No AUG in frame +" + dnaSelectedReadingFrame.frame),
-              h("button", { onClick: function() { updMulti({ transStep: 0, builtProtein: [], transPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-600 rounded-xl" }, t('stem.dna.reset_3', "\u21BA Reset"))
+              h("button", { type: "button", onClick: function() { if (transPlaying) updMulti({ transPlaying: false }); else if (dnaSelectedReadingFrame.startIndex >= 0) { updMulti({ transStep: 0, builtProtein: [], transPlaying: true, protein: [] }); } }, disabled: dnaSelectedReadingFrame.startIndex < 0, className: "px-4 py-2 text-sm font-bold rounded-xl disabled:cursor-not-allowed disabled:opacity-45 " + (transPlaying ? "bg-amber-700 text-white" : "transition-colors bg-emerald-700 text-white hover:bg-emerald-700 active:scale-[0.97]") }, transPlaying ? "\u23F8 Pause" : dnaSelectedReadingFrame.startIndex >= 0 ? "\u25B6 Translate frame +" + dnaSelectedReadingFrame.frame : "No AUG in frame +" + dnaSelectedReadingFrame.frame),
+              h("button", { type: "button", onClick: function() { updMulti({ transStep: 0, builtProtein: [], transPlaying: false }); }, className: "px-3 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" }, t('stem.dna.reset_3', "\u21BA Reset"))
             )
           )
         ),
@@ -6086,12 +6090,12 @@ window.StemLab = window.StemLab || {
               )
             ),
             h("div", { className: "flex gap-2 flex-wrap" },
-              h("button", { onClick: function() { applyMutation('substitution'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.substitution', "\uD83D\uDD04 Substitution")),
-              h("button", { onClick: function() { applyMutation('insertion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.insertion', "\u2795 Insertion")),
-              h("button", { onClick: function() { applyMutation('deletion'); }, disabled: dnaSeq.length <= 6, className: "px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
-              h("button", { onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset")),
-              h("button", { onClick: undoLatestMutation, disabled: !(d.mutationLog && d.mutationLog.length), className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 transition-all active:scale-[0.97]" }, "Undo last"),
-              h("button", { type: "button", id: "dna-save-experiment", "data-dna-checkpoint-controls": true, "aria-describedby": "dna-checkpoint-save-help", onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]" }, "Save experiment")
+              h("button", { type: "button", onClick: function() { applyMutation('substitution'); }, className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.substitution', "\uD83D\uDD04 Substitution")),
+              h("button", { type: "button", onClick: function() { applyMutation('insertion'); }, className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.insertion', "\u2795 Insertion")),
+              h("button", { type: "button", onClick: function() { applyMutation('deletion'); }, disabled: dnaSeq.length <= 6, className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
+              h("button", { type: "button", onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset")),
+              h("button", { type: "button", onClick: undoLatestMutation, disabled: !(d.mutationLog && d.mutationLog.length), className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 transition-all active:scale-[0.97]" }, "Undo last"),
+              h("button", { type: "button", id: "dna-save-experiment", "data-dna-checkpoint-controls": true, "aria-describedby": "dna-checkpoint-save-help", onClick: saveDnaExperiment, className: "min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]" }, "Save experiment")
             ),
             h("div", { "data-dna-checkpoint-controls": true, className: "rounded-lg border border-amber-600 bg-white p-3 text-xs text-slate-700" },
               h("p", { id: "dna-checkpoint-save-help", className: "m-0" }, "Save experiment keeps a sequence checkpoint and its recorded edits. The newest eight checkpoints are kept; saving a ninth removes the oldest. Your comparison reflection is kept."),
@@ -6364,7 +6368,7 @@ window.StemLab = window.StemLab || {
               : h("p", { className: "mt-3 mb-0 rounded-lg border border-dashed border-indigo-200 bg-white/70 p-3 text-[0.6875rem] text-slate-600" }, "Choose two different saved experiments to open the side-by-side comparison.")
           ),
           callGemini && h("div", { className: "mt-2" },
-            h("button", { onClick: function() {
+            h("button", { type: "button", onClick: function() {
               if (d.aiExplainLoading) return;
               upd('aiExplainLoading', true); upd('aiExplain', '');
               var gradeCtx = gradeText('kindergarten (ages 5-7), very simple words', '3rd-5th grade (ages 8-10)', '6th-8th grade (ages 11-13), use scientific terms', '9th-12th grade (ages 14-18), use advanced biology terminology');
@@ -6618,7 +6622,7 @@ window.StemLab = window.StemLab || {
                 [{ t: 'nonpolar', c: '#f59e0b', l: 'Nonpolar' }, { t: 'polar', c: '#3b82f6', l: 'Polar' }, { t: 'positive', c: '#ef4444', l: 'Positive (+)' }, { t: 'negative', c: '#a855f7', l: 'Negative (\u2212)' }].map(function(lg) { return h("span", { key: lg.t, className: "flex items-center gap-1" }, h("span", { className: "w-3 h-3 rounded-full", style: { background: lg.c } }), lg.l); })
               ),
               callGemini && h("div", { className: "pt-2 border-t border-slate-100" },
-                h("button", { onClick: function() {
+                h("button", { type: "button", onClick: function() {
                   if (d.aiProteinLoading) return;
                   upd('aiProteinLoading', true);
                   var gradeCtx = gradeText('kindergarten, very simple', '3rd-5th grade', '6th-8th grade, scientific terms', '9th-12th grade, advanced biochemistry');
@@ -7090,8 +7094,8 @@ window.StemLab = window.StemLab || {
               h("div", { className: "space-y-3 border-t border-slate-200 p-4" },
                 h("p", { className: "text-xs leading-relaxed text-slate-600" }, content),
                 h("div", { className: "flex flex-wrap gap-2 border-t border-slate-100 pt-2" },
-                  h("button", { onClick: function() { updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: "rounded-lg bg-violet-50 px-3 py-1.5 text-[0.6875rem] font-bold text-violet-600 transition-all hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.try_it', '\uD83D\uDD2C Try It')),
-                  callTTS && h("button", { onClick: function() { callTTS(content, undefined, undefined, { force: true }); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
+                  h("button", { type: "button", onClick: function() { updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: "rounded-lg bg-violet-50 px-3 py-1.5 text-[0.6875rem] font-bold text-violet-700 transition-all hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.try_it', '\uD83D\uDD2C Try It')),
+                  callTTS && h("button", { type: "button", onClick: function() { callTTS(content, undefined, undefined, { force: true }); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
                 )
               )
             );

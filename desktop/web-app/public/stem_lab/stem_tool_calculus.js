@@ -3414,11 +3414,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.save();
           c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
           c.lineCap = 'round';
-          if (!isHC) {
-            c.strokeStyle = 'rgba(52,211,153,0.18)'; c.lineWidth = 9;
-            c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(sx1, sy1); c.stroke();
-            c.shadowColor = '#34d399'; c.shadowBlur = 10;
-          }
+          // Glow comes from the shadow only: a wide faint halo band measured 1.42:1 on the dark ground.
+          if (!isHC) { c.shadowColor = '#34d399'; c.shadowBlur = 10; }
           c.strokeStyle = isHC ? '#00ff00' : 'rgba(52,211,153,0.92)'; c.lineWidth = isHC ? 2.4 : 2.1;
           c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(sx1, sy1); c.stroke();
           if (!isHC) {

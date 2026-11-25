@@ -247,16 +247,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'banana',     name: 'Banana',               emoji: '🍌', cat: 'fruit',     serving: '1 medium (118 g)', kcal: 105, c: 27, p: 1.3, f: 0.4, fib: 3.1, tags: ['potassium','b6'] },
     { id: 'broccoli',   name: 'Broccoli (cooked)',    emoji: '🥦', cat: 'vegetable', serving: '1 cup (156 g)',    kcal: 55,  c: 11, p: 4,   f: 0.6, fib: 5,   tags: ['vitC','vitK','folate','fiber'] },
     { id: 'spinach',    name: 'Spinach (raw)',        emoji: '🥬', cat: 'vegetable', serving: '1 cup (30 g)',     kcal: 7,   c: 1,  p: 0.9, f: 0.1, fib: 0.7, tags: ['vitK','folate','iron'] },
-    { id: 'sweetPot',   name: 'Sweet potato (baked)', emoji: '🍠', cat: 'vegetable', serving: '1 medium (130 g)', kcal: 105, c: 24, p: 2,   f: 0.1, fib: 4,   tags: ['vitA','potassium','fiber'] },
+    { id: 'sweetPot',   name: 'Sweet potato (baked)', emoji: '🍠', cat: 'vegetable', serving: '1 medium (114 g)', kcal: 105, c: 24, p: 2,   f: 0.1, fib: 4,   tags: ['vitA','potassium','fiber'] },
     { id: 'chicken',    name: 'Chicken breast',       emoji: '🍗', cat: 'protein',   serving: '3 oz (85 g) cooked', kcal: 140, c: 0, p: 26, f: 3,   fib: 0,   tags: ['protein','b6','niacin'] },
-    { id: 'salmon',     name: 'Salmon',               emoji: '🐟', cat: 'protein',   serving: '3 oz (85 g) cooked', kcal: 205, c: 0, p: 22, f: 13,  fib: 0,   tags: ['protein','omega3','vitD','b12'] },
+    { id: 'salmon',     name: 'Salmon (Atlantic, farmed)', emoji: '🐟', cat: 'protein',   serving: '3 oz (85 g) cooked', kcal: 175, c: 0, p: 19, f: 10.5, fib: 0,   tags: ['protein','omega3','vitD','b12'] },
     { id: 'egg',        name: 'Egg',                  emoji: '🥚', cat: 'protein',   serving: '1 large (50 g)',     kcal: 70,  c: 0.6, p: 6, f: 5, fib: 0,   tags: ['protein','choline','b12','vitD'] },
     { id: 'yogurt',     name: 'Greek yogurt (plain)', emoji: '🥣', cat: 'protein',   serving: '6 oz (170 g)',     kcal: 100, c: 8,  p: 17,  f: 0.7, fib: 0,   tags: ['protein','calcium','b12'] },
     { id: 'lentils',    name: 'Lentils (cooked)',     emoji: '🫘', cat: 'legume',    serving: '1/2 cup (99 g)',   kcal: 115, c: 20, p: 9,   f: 0.4, fib: 7.8, tags: ['protein','folate','iron','fiber'] },
     { id: 'blackBeans', name: 'Black beans (cooked)', emoji: '🫘', cat: 'legume',    serving: '1/2 cup (86 g)',   kcal: 115, c: 20, p: 8,   f: 0.5, fib: 7.5, tags: ['protein','folate','magnesium','fiber'] },
     { id: 'rice',       name: 'Brown rice (cooked)',  emoji: '🍚', cat: 'grain',     serving: '1 cup (195 g)',    kcal: 215, c: 45, p: 5,   f: 1.8, fib: 3.5, tags: ['manganese','b-complex','fiber'] },
     { id: 'oats',       name: 'Oats (dry)',           emoji: '🌾', cat: 'grain',     serving: '1/2 cup (40 g)',   kcal: 150, c: 27, p: 5,   f: 3,   fib: 4,   tags: ['betaGlucan','manganese','fiber'] },
-    { id: 'wholeBread', name: 'Whole-wheat bread',    emoji: '🍞', cat: 'grain',     serving: '1 slice (28 g)',   kcal: 80,  c: 14, p: 4,   f: 1,   fib: 2,   tags: ['fiber','b-complex'] },
+    { id: 'wholeBread', name: 'Whole-wheat bread',    emoji: '🍞', cat: 'grain',     serving: '1 slice (32 g)',   kcal: 80,  c: 14, p: 4,   f: 1,   fib: 2,   tags: ['fiber','b-complex'] },
     { id: 'almonds',    name: 'Almonds',              emoji: '🥜', cat: 'fat',       serving: '1 oz (28 g, ~23)', kcal: 165, c: 6,  p: 6,   f: 14,  fib: 4,   tags: ['vitE','magnesium','fiber'] }
   ];
 
@@ -264,51 +264,75 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   FOODS.forEach(function(f) { FOOD_BY_ID[f.id] = f; });
 
   // ─────────────────────────────────────────────────────
-  // VITAMINS — 13 entries, NIH ODS Fact Sheets + USDA sources
+  // VITAMINS — the 13 vitamins plus choline (a vitamin-like essential nutrient).
+  // ACCURACY AUDIT 2026-11-24. Every `rda` value is copied from Table 1 (RDA or AI) of the NIH ODS
+  // Health Professional fact sheet for that nutrient, https://ods.od.nih.gov/factsheets/<Name>-HealthProfessional/
+  // (retrieved 2026-11-24). Ages 9-13 and 14-18 are shown first because the tool is for students.
+  // Old values were adult-only ranges, and iron said '8 mg/day boys' (ODS: 11 mg for boys 14-18).
+  // Vitamin D winter claim: Webb, Kline & Holick, J Clin Endocrinol Metab 1988;67:373-8 (PMID 2839537):
+  //   "Human skin ... exposed to sunlight on cloudless days in Boston (42.2 degrees N) from November through
+  //   February produced no previtamin D3. In Edmonton (52 degrees N) this ineffective winter period extended from
+  //   October through March." (Old text said Oct-Mar for Maine and that deficiency is WIDESPREAD; ODS VitaminD:
+  //   "evidence suggests that the majority of people have sufficient serum concentrations of vitamin D".)
+  // Biotin: ODS Biotin: hair/nail claims "are supported, at best, by only a few case reports and small studies."
   // ─────────────────────────────────────────────────────
   var VITAMINS = [
-    { id: 'vitA',  name: 'Vitamin A',     emoji: '👁️', soluble: 'fat',  function: 'Vision (especially low-light), immune function, skin and lining of organs, healthy growth.', sources: 'Sweet potato, carrots, leafy greens, eggs, liver, fortified dairy.', deficiency: 'Night blindness, dry skin, weakened immunity. Common globally in regions with limited diet variety; rare in the US.', rda: '700–900 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'vitC',  name: 'Vitamin C',     emoji: '🍊', soluble: 'water', function: 'Builds collagen for skin / blood vessels / wound healing, antioxidant, helps your body absorb iron from plant foods.', sources: 'Citrus, bell peppers, strawberries, broccoli, kiwi, tomatoes.', deficiency: 'Bruising, slow wound healing; severe deficiency causes scurvy (rare in modern US).', rda: '75–90 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'vitD',  name: 'Vitamin D',     emoji: '☀️', soluble: 'fat',  function: 'Helps absorb calcium for bones and teeth, supports immune function, may support mood. Your skin makes vitamin D from sunlight — but at Maine\'s latitude, the sun is too low Oct–Mar to make any.', sources: 'Fatty fish (salmon, sardines, mackerel), egg yolks, fortified milk, fortified plant milks. Sunshine spring through fall.', deficiency: 'Bone weakness (rickets in kids, osteomalacia in adults), increased risk of stress fractures. WIDESPREAD in Maine winters — many Mainers benefit from a supplement under a doctor\'s guidance.', rda: '600–800 IU/day (adults); higher under medical supervision', cite: 'NIH ODS · Maine winter latitude noted in clinical literature' },
-    { id: 'vitE',  name: 'Vitamin E',     emoji: '🥜', soluble: 'fat',  function: 'Antioxidant — protects cells from damage. Helps the immune system.', sources: 'Almonds, sunflower seeds, leafy greens, vegetable oils.', deficiency: 'Rare in the US; can cause nerve and muscle problems in severe cases.', rda: '15 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'vitK',  name: 'Vitamin K',     emoji: '🥬', soluble: 'fat',  function: 'Blood clotting, bone health.', sources: 'Leafy greens (spinach, kale, collards), broccoli, soybean oil.', deficiency: 'Rare in healthy adults. Newborns receive a vitamin K injection at birth to prevent bleeding.', rda: '90–120 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'b1',    name: 'B1 — Thiamin',  emoji: '⚡', soluble: 'water', function: 'Helps cells convert food into energy, supports nerve function.', sources: 'Pork, whole grains, beans, fortified cereals.', deficiency: 'Beriberi (rare in modern US). Mild deficiency: fatigue, irritability.', rda: '1.1–1.2 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'b2',    name: 'B2 — Riboflavin', emoji: '🌟', soluble: 'water', function: 'Energy metabolism, helps eyes and skin stay healthy.', sources: 'Dairy, eggs, lean meat, leafy greens, fortified grains.', deficiency: 'Cracked lips, sore throat (rare in US).', rda: '1.1–1.3 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'b3',    name: 'B3 — Niacin',   emoji: '🔋', soluble: 'water', function: 'Energy metabolism, DNA repair, supports skin and digestive system.', sources: 'Poultry, fish, peanuts, fortified grains.', deficiency: 'Severe deficiency causes pellagra (very rare). Mild: fatigue.', rda: '14–16 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'b6',    name: 'B6 — Pyridoxine', emoji: '🧠', soluble: 'water', function: 'Amino acid metabolism, brain development, immune function. Helps make neurotransmitters (mood-relevant).', sources: 'Poultry, fish, potatoes, bananas, fortified cereals.', deficiency: 'Anemia, depression-like symptoms (rare in well-fed populations).', rda: '1.3–1.7 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'b9',    name: 'B9 — Folate',   emoji: '🧬', soluble: 'water', function: 'DNA synthesis, red blood cell formation, fetal neural-tube development. Critical in pregnancy.', sources: 'Leafy greens, lentils, asparagus, fortified grains.', deficiency: 'Anemia. In pregnancy: neural-tube birth defects. US grain fortification has greatly reduced this.', rda: '400 mcg/day adults; 600 mcg in pregnancy', cite: 'NIH ODS · CDC' },
-    { id: 'b12',   name: 'B12 — Cobalamin', emoji: '🩸', soluble: 'water', function: 'Nerve function, red blood cell formation, DNA synthesis.', sources: 'ANIMAL PRODUCTS ONLY — meat, fish, eggs, dairy. Fortified plant milks and nutritional yeast for vegans.', deficiency: 'Anemia, nerve damage, dementia-like symptoms. RELEVANT FOR VEGANS / VEGETARIANS — supplement is standard practice.', rda: '2.4 mcg/day (adults)', cite: 'NIH ODS · NIH MedlinePlus' },
-    { id: 'b7',    name: 'B7 — Biotin',   emoji: '🥚', soluble: 'water', function: 'Fatty acid metabolism, supports hair / skin / nails.', sources: 'Eggs, nuts, sweet potato, salmon. Made by gut bacteria too.', deficiency: 'Very rare. Hair thinning, rash.', rda: '30 mcg/day (adults; AI)', cite: 'NIH ODS' },
-    { id: 'choline', name: 'Choline',     emoji: '🥚', soluble: 'water', function: 'Brain development, liver function, cell membrane structure. Critical in pregnancy.', sources: 'Eggs (yolks), beef, fish, soybeans, peanuts.', deficiency: 'Fatty liver, muscle damage. Many Americans don\'t hit the recommended intake.', rda: '425–550 mg/day (adults; AI)', cite: 'NIH ODS' }
+    { id: 'vitA',  name: 'Vitamin A',     emoji: '👁️', soluble: 'fat',  function: 'Vision (especially low-light), immune function, skin and lining of organs, healthy growth.', sources: 'Sweet potato, carrots, leafy greens, eggs, fortified milk.', deficiency: 'Night blindness, dry eyes and skin, weaker immunity. Common in some low-income countries; rare in the US. Too much from supplements can be harmful.', rda: 'Ages 9–13: 600 mcg. Ages 14–18: 900 mcg (boys), 700 mcg (girls). (RAE, per day)', cite: 'NIH ODS Vitamin A fact sheet' },
+    { id: 'vitC',  name: 'Vitamin C',     emoji: '🍊', soluble: 'water', function: 'Builds collagen for skin / blood vessels / wound healing, antioxidant, helps your body absorb iron from plant foods.', sources: 'Citrus, bell peppers, strawberries, broccoli, kiwi, tomatoes.', deficiency: 'Bruising, slow wound healing; severe deficiency causes scurvy (rare in the US today).', rda: 'Ages 9–13: 45 mg. Ages 14–18: 75 mg (boys), 65 mg (girls). Adults: 90 / 75 mg.', cite: 'NIH ODS Vitamin C fact sheet' },
+    { id: 'vitD',  name: 'Vitamin D',     emoji: '☀️', soluble: 'fat',  function: 'Helps your body absorb calcium for bones and teeth, and supports the immune system. Your skin makes vitamin D from sunlight, but not in winter far from the equator. A study in Boston, just south of Maine, found winter sunlight made no vitamin D in skin from November through February.', sources: 'Fatty fish (salmon, sardines, mackerel), egg yolks, fortified milk, fortified plant milks. Sunshine in the warmer months.', deficiency: 'Weak bones (rickets in kids, osteomalacia in adults). Food alone rarely gives enough, so fortified foods matter. Ask a doctor before taking a supplement; a blood test can check your level.', rda: '600 IU (15 mcg) a day for ages 1–70, teens included. Upper limit for ages 9 and up: 4,000 IU.', cite: 'NIH ODS Vitamin D fact sheet · Webb, Kline & Holick 1988 (Boston winter sunlight)' },
+    { id: 'vitE',  name: 'Vitamin E',     emoji: '🥜', soluble: 'fat',  function: 'Antioxidant — protects cells from damage. Helps the immune system.', sources: 'Almonds, sunflower seeds, leafy greens, vegetable oils.', deficiency: 'Rare in the US; can cause nerve and muscle problems in severe cases.', rda: 'Ages 9–13: 11 mg. Ages 14 and up: 15 mg.', cite: 'NIH ODS Vitamin E fact sheet' },
+    { id: 'vitK',  name: 'Vitamin K',     emoji: '🥬', soluble: 'fat',  function: 'Blood clotting, bone health.', sources: 'Leafy greens (spinach, kale, collards), broccoli, soybean oil.', deficiency: 'Rare in healthy adults. Newborns receive a vitamin K shot at birth to prevent bleeding.', rda: 'Ages 9–13: 60 mcg. Ages 14–18: 75 mcg. Adults: 120 mcg (men), 90 mcg (women). (Adequate Intake)', cite: 'NIH ODS Vitamin K fact sheet' },
+    { id: 'b1',    name: 'B1 — Thiamin',  emoji: '⚡', soluble: 'water', function: 'Helps cells convert food into energy, supports nerve function.', sources: 'Pork, whole grains, beans, fortified cereals.', deficiency: 'Beriberi (rare in the US today). Early signs can include tiredness and irritability.', rda: 'Ages 9–13: 0.9 mg. Ages 14–18: 1.2 mg (boys), 1.0 mg (girls).', cite: 'NIH ODS Thiamin fact sheet' },
+    { id: 'b2',    name: 'B2 — Riboflavin', emoji: '🌟', soluble: 'water', function: 'Energy metabolism, helps eyes and skin stay healthy.', sources: 'Dairy, eggs, lean meat, leafy greens, fortified grains.', deficiency: 'Cracked lips, sore throat (rare in US).', rda: 'Ages 9–13: 0.9 mg. Ages 14–18: 1.3 mg (boys), 1.0 mg (girls).', cite: 'NIH ODS Riboflavin fact sheet' },
+    { id: 'b3',    name: 'B3 — Niacin',   emoji: '🔋', soluble: 'water', function: 'Energy metabolism, DNA repair, supports skin and digestive system.', sources: 'Poultry, fish, peanuts, fortified grains.', deficiency: 'Severe deficiency causes pellagra (very rare in the US).', rda: 'Ages 9–13: 12 mg. Ages 14–18: 16 mg (boys), 14 mg (girls). (NE)', cite: 'NIH ODS Niacin fact sheet' },
+    { id: 'b5',    name: 'B5 — Pantothenic acid', emoji: '🔄', soluble: 'water', function: 'Part of coenzyme A, which cells use to turn food into energy and to build fats.', sources: 'Found in almost all foods. Rich sources: beef, chicken, whole grains, some vegetables.', deficiency: 'Rare except with severe malnutrition. Can cause numbness and burning of the hands and feet, headache and tiredness.', rda: 'Ages 9–13: 4 mg. Ages 14 and up: 5 mg. (Adequate Intake)', cite: 'NIH ODS Pantothenic Acid fact sheet' },
+    { id: 'b6',    name: 'B6 — Pyridoxine', emoji: '🧠', soluble: 'water', function: 'Amino acid metabolism, brain development, immune function. Helps make brain chemical messengers (neurotransmitters).', sources: 'Poultry, fish, potatoes, bananas, fortified cereals.', deficiency: 'Anemia, skin rash, depression and confusion (rare in the US).', rda: 'Ages 9–13: 1.0 mg. Ages 14–18: 1.3 mg (boys), 1.2 mg (girls).', cite: 'NIH ODS Vitamin B6 fact sheet' },
+    { id: 'b9',    name: 'B9 — Folate',   emoji: '🧬', soluble: 'water', function: 'DNA synthesis, red blood cell formation, fetal neural-tube development. Critical in pregnancy.', sources: 'Leafy greens, lentils, asparagus, fortified grains.', deficiency: 'Anemia. In pregnancy: neural-tube birth defects. US grain fortification has greatly reduced this.', rda: 'Ages 9–13: 300 mcg. Ages 14 and up: 400 mcg; 600 mcg in pregnancy. (DFE)', cite: 'NIH ODS Folate fact sheet · CDC' },
+    { id: 'b12',   name: 'B12 — Cobalamin', emoji: '🩸', soluble: 'water', function: 'Nerve function, red blood cell formation, DNA synthesis.', sources: 'Found naturally only in animal foods: meat, fish, eggs, dairy. Fortified plant milks, fortified cereals and fortified nutritional yeast for vegans.', deficiency: 'Anemia, tiredness, nerve problems (numbness, tingling), memory trouble. People who eat a vegan diet need fortified foods or a supplement.', rda: 'Ages 9–13: 1.8 mcg. Ages 14 and up: 2.4 mcg.', cite: 'NIH ODS Vitamin B12 fact sheet' },
+    { id: 'b7',    name: 'B7 — Biotin',   emoji: '🥚', soluble: 'water', function: 'Helps enzymes break down fats, carbohydrates and protein. Claims that biotin pills improve hair and nails have little evidence.', sources: 'Eggs, nuts, sweet potato, salmon, beef liver.', deficiency: 'Very rare. Thinning hair, red scaly rash.', rda: 'Ages 9–13: 20 mcg. Ages 14–18: 25 mcg. Adults: 30 mcg. (Adequate Intake)', cite: 'NIH ODS Biotin fact sheet' },
+    { id: 'choline', name: 'Choline (vitamin-like, not a vitamin)', emoji: '🥚', soluble: 'water', function: 'Brain development, liver function, cell membrane structure. Critical in pregnancy.', sources: 'Eggs (yolks), beef, fish, soybeans, peanuts.', deficiency: 'Fatty liver, muscle damage (rare). Many Americans eat less than the recommended amount.', rda: 'Ages 9–13: 375 mg. Ages 14–18: 550 mg (boys), 400 mg (girls). (Adequate Intake)', cite: 'NIH ODS Choline fact sheet' }
   ];
 
   // ─────────────────────────────────────────────────────
-  // MINERALS — 15 entries, NIH ODS sources
+  // MINERALS — 15 entries. Intake values from Table 1 of each NIH ODS fact sheet (see VITAMINS note).
+  // Iron risk: ODS Iron: "infants, young children, teenage girls, pregnant women, and premenopausal women are at
+  //   risk of obtaining insufficient amounts" and "The requirement for iron is 1.8 times higher for people who follow
+  //   vegetarian diets". (Removed: an AAP 'ADHD-like symptoms' claim with no source found.)
+  // Magnesium: ODS: "many people consume less than the recommended amounts of magnesium" (was 'most adults';
+  //   'anxiety-like symptoms' removed, not in ODS). Potassium: ODS 2019 AIs (old text gave 2300-3400 'adults').
+  // Sodium: CDC About Sodium and Health (cdc.gov/salt/about): Americans consume "more than 3,300 milligrams (mg)
+  //   of sodium per day, on average"; Dietary Guidelines 2020-2025: under 2,300 mg/day for ages 14+, 1,800 mg for
+  //   ages 9-13. (Old '50-80% over' and '1500 mg ideal' removed.) Chloride AI: NASEM DRI tables, 2.3 g ages 14-50.
+  // Fluoride: CDC, Ten Great Public Health Achievements 1900-1999 (MMWR 1999;48:241) lists fluoridation.
   // ─────────────────────────────────────────────────────
   var MINERALS = [
-    { id: 'calcium',    name: 'Calcium',    emoji: '🦴', kind: 'macro', function: 'Builds bones and teeth, muscle contraction, nerve signaling, blood clotting.', sources: 'Dairy, fortified plant milks, leafy greens, sardines (with bones), tofu set with calcium sulfate.', deficiency: 'Osteoporosis (later in life), increased fracture risk. Adolescent years are PEAK bone-building years — intake during teens shapes lifelong bone density.', rda: '1300 mg/day teens (highest of any age group)', cite: 'NIH ODS' },
-    { id: 'iron',       name: 'Iron',       emoji: '🩸', kind: 'trace', function: 'Hemoglobin (carries oxygen in blood), brain function, immune system.', sources: 'Red meat, lentils, spinach, beans, fortified cereals. Pair plant-iron foods with vitamin C (citrus, peppers) to boost absorption.', deficiency: 'Iron-deficiency anemia: fatigue, brain fog, pale skin, weakness. HIGH-RISK GROUPS: menstruating teens (especially girls), athletes, vegetarians. AAP notes iron deficiency can present with ADHD-like symptoms in adolescents.', rda: '8 mg/day boys, 15 mg/day girls (15+); 18 mg/day for menstruating adults', cite: 'NIH ODS · AAP' },
-    { id: 'magnesium',  name: 'Magnesium',  emoji: '🌿', kind: 'macro', function: 'Muscle and nerve function, energy production, blood sugar regulation, sleep.', sources: 'Dark chocolate, almonds, spinach, avocado, black beans.', deficiency: 'Common in US (most adults under-consume). Mild: muscle cramps, fatigue, anxiety-like symptoms.', rda: '310–420 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'phosphorus', name: 'Phosphorus', emoji: '🦴', kind: 'macro', function: 'Bone and tooth structure, ATP (your cellular energy currency), DNA.', sources: 'Dairy, meat, fish, nuts, beans.', deficiency: 'Rare in healthy people. Weakness, bone pain in severe cases.', rda: '1250 mg/day teens', cite: 'NIH ODS' },
-    { id: 'potassium',  name: 'Potassium',  emoji: '🍌', kind: 'macro', function: 'Heart rhythm, muscle contraction, blood pressure regulation, fluid balance.', sources: 'Banana, potato, sweet potato, beans, leafy greens, orange juice.', deficiency: 'Most Americans don\'t hit recommended intake. Severe deficiency: weakness, irregular heartbeat.', rda: '2300–3400 mg/day (adults; AI)', cite: 'NIH ODS' },
-    { id: 'sodium',     name: 'Sodium',     emoji: '🧂', kind: 'macro', function: 'Nerve signaling, fluid balance.', sources: 'Table salt, processed foods, restaurant foods, bread, soups.', deficiency: 'Very rare in modern diet. Most Americans get TOO MUCH sodium (linked to high blood pressure). Average US intake is 50–80% over recommended limits.', rda: 'Limit to <2300 mg/day; 1500 mg ideal', cite: 'NIH ODS · CDC' },
-    { id: 'chloride',   name: 'Chloride',   emoji: '🧂', kind: 'macro', function: 'Fluid balance, makes stomach acid for digestion.', sources: 'Table salt (sodium chloride), seaweed, tomatoes, olives.', deficiency: 'Rare; comes alongside sodium in most foods.', rda: '2300 mg/day (adults; AI)', cite: 'NIH ODS' },
-    { id: 'zinc',       name: 'Zinc',       emoji: '🛡️', kind: 'trace', function: 'Immune function, wound healing, growth, taste and smell.', sources: 'Oysters, beef, pumpkin seeds, lentils, fortified cereals.', deficiency: 'Impaired immunity, slow wound healing, growth delays in kids.', rda: '8–11 mg/day (adults)', cite: 'NIH ODS' },
-    { id: 'iodine',     name: 'Iodine',     emoji: '🦋', kind: 'trace', function: 'Makes thyroid hormones, which regulate metabolism, growth, and brain development.', sources: 'Iodized salt, fish, shellfish, dairy, seaweed.', deficiency: 'Goiter (enlarged thyroid), hypothyroidism, cognitive impairment in pregnancy. Iodized salt programs largely eliminated this in the US.', rda: '150 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'selenium',   name: 'Selenium',   emoji: '🌰', kind: 'trace', function: 'Antioxidant, thyroid hormone production, immune function.', sources: 'Brazil nuts (very rich — 1–2 nuts covers daily need), fish, eggs, brown rice.', deficiency: 'Weakened immunity. Deficiency exists in some areas of China where soil is selenium-poor; rare in US.', rda: '55 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'copper',     name: 'Copper',     emoji: '🧡', kind: 'trace', function: 'Helps body use iron, supports connective tissue, nerve cells, immune function.', sources: 'Shellfish, nuts, seeds, dark chocolate, organ meats.', deficiency: 'Anemia, weakened bones. Rare.', rda: '900 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'manganese',  name: 'Manganese',  emoji: '🌾', kind: 'trace', function: 'Bone formation, blood sugar regulation, energy metabolism.', sources: 'Whole grains, nuts, leafy greens, tea.', deficiency: 'Very rare in humans.', rda: '1.8–2.3 mg/day (adults; AI)', cite: 'NIH ODS' },
-    { id: 'chromium',   name: 'Chromium',   emoji: '🌽', kind: 'trace', function: 'Helps insulin work properly to regulate blood sugar.', sources: 'Whole grains, broccoli, grape juice, meats.', deficiency: 'Impaired blood-sugar regulation (rare).', rda: '25–35 mcg/day (adults; AI)', cite: 'NIH ODS' },
-    { id: 'molybdenum', name: 'Molybdenum', emoji: '🌱', kind: 'trace', function: 'Helps enzymes break down toxic byproducts of metabolism.', sources: 'Legumes, whole grains, nuts.', deficiency: 'Extremely rare.', rda: '45 mcg/day (adults)', cite: 'NIH ODS' },
-    { id: 'fluoride',   name: 'Fluoride',   emoji: '🦷', kind: 'trace', function: 'Strengthens teeth and bones, prevents cavities.', sources: 'Fluoridated tap water, tea, fish (bones), toothpaste (topical).', deficiency: 'Increased risk of dental cavities. CDC ranks community water fluoridation as one of the top 10 public health achievements of the 20th century.', rda: '3–4 mg/day (adults; AI)', cite: 'NIH ODS · CDC' }
+    { id: 'calcium',    name: 'Calcium',    emoji: '🦴', kind: 'macro', function: 'Builds bones and teeth, muscle contraction, nerve signaling, blood clotting.', sources: 'Dairy, fortified plant milks, leafy greens, sardines (with bones), tofu set with calcium sulfate.', deficiency: 'Weaker bones and a higher fracture risk later in life (osteoporosis). The teen years are a peak time for building bone.', rda: '1,300 mg a day for ages 9–18 (adults 19–50 need 1,000 mg).', cite: 'NIH ODS Calcium fact sheet' },
+    { id: 'iron',       name: 'Iron',       emoji: '🩸', kind: 'trace', function: 'Hemoglobin (carries oxygen in blood), brain function, immune system.', sources: 'Red meat, lentils, spinach, beans, fortified cereals. Pair plant-iron foods with vitamin C (citrus, peppers) to boost absorption.', deficiency: 'Iron-deficiency anemia: tiredness, weakness, pale skin, trouble concentrating. Teen girls are at higher risk because of blood lost in periods. People who eat vegetarian need about 1.8 times as much iron, and athletes should keep an eye on it too.', rda: 'Ages 9–13: 8 mg. Ages 14–18: 11 mg (boys), 15 mg (girls). Adults 19–50: 8 mg (men), 18 mg (women).', cite: 'NIH ODS Iron fact sheet' },
+    { id: 'magnesium',  name: 'Magnesium',  emoji: '🌿', kind: 'macro', function: 'Muscle and nerve function, energy production, blood sugar regulation, bone structure.', sources: 'Pumpkin seeds, almonds, spinach, black beans, whole grains.', deficiency: 'Many Americans eat less than recommended, and teens are among those most likely to fall short. Real deficiency is uncommon; signs include tiredness, weakness and, later, muscle cramps.', rda: 'Ages 9–13: 240 mg. Ages 14–18: 410 mg (boys), 360 mg (girls).', cite: 'NIH ODS Magnesium fact sheet' },
+    { id: 'phosphorus', name: 'Phosphorus', emoji: '🦴', kind: 'macro', function: 'Bone and tooth structure, ATP (your cellular energy currency), DNA.', sources: 'Dairy, meat, fish, nuts, beans.', deficiency: 'Rare in healthy people. Weakness, bone pain in severe cases.', rda: '1,250 mg a day for ages 9–18 (adults: 700 mg).', cite: 'NIH ODS Phosphorus fact sheet' },
+    { id: 'potassium',  name: 'Potassium',  emoji: '🍌', kind: 'macro', function: 'Heart rhythm, muscle contraction, blood pressure regulation, fluid balance.', sources: 'Banana, potato, sweet potato, beans, leafy greens, orange juice.', deficiency: 'Most Americans eat less than recommended, so the Dietary Guidelines call it a nutrient of public health concern. Severe deficiency: weakness, irregular heartbeat.', rda: 'Ages 9–13: 2,500 mg (boys), 2,300 mg (girls). Ages 14–18: 3,000 mg (boys), 2,300 mg (girls). (Adequate Intake)', cite: 'NIH ODS Potassium fact sheet' },
+    { id: 'sodium',     name: 'Sodium',     emoji: '🧂', kind: 'macro', function: 'Nerve signaling, fluid balance.', sources: 'Table salt, packaged and restaurant foods, bread, soups.', deficiency: 'Very rare. Most Americans get more than the limit: the average is more than 3,300 mg a day (CDC). High intake is linked to high blood pressure.', rda: 'Limit: under 2,300 mg a day for ages 14 and up; under 1,800 mg for ages 9–13.', cite: 'Dietary Guidelines for Americans 2020–2025 · CDC' },
+    { id: 'chloride',   name: 'Chloride',   emoji: '🧂', kind: 'macro', function: 'Fluid balance, makes stomach acid for digestion.', sources: 'Table salt (sodium chloride), seaweed, tomatoes, olives.', deficiency: 'Rare; comes alongside sodium in most foods.', rda: 'Ages 9–50: 2,300 mg. (Adequate Intake)', cite: 'National Academies DRI tables' },
+    { id: 'zinc',       name: 'Zinc',       emoji: '🛡️', kind: 'trace', function: 'Immune function, wound healing, growth, taste and smell.', sources: 'Oysters, beef, pumpkin seeds, lentils, fortified cereals.', deficiency: 'Weaker immunity, slow wound healing, slowed growth in kids.', rda: 'Ages 9–13: 8 mg. Ages 14–18: 11 mg (boys), 9 mg (girls).', cite: 'NIH ODS Zinc fact sheet' },
+    { id: 'iodine',     name: 'Iodine',     emoji: '🦋', kind: 'trace', function: 'Makes thyroid hormones, which regulate metabolism, growth, and brain development.', sources: 'Iodized salt, fish, shellfish, dairy, seaweed.', deficiency: 'Goiter (enlarged thyroid), hypothyroidism; in pregnancy it can harm the baby\'s brain development. Iodized salt largely ended goiter in the US.', rda: 'Ages 9–13: 120 mcg. Ages 14 and up: 150 mcg.', cite: 'NIH ODS Iodine fact sheet' },
+    { id: 'selenium',   name: 'Selenium',   emoji: '🌰', kind: 'trace', function: 'Antioxidant, thyroid hormone production, immune function.', sources: 'Brazil nuts (one nut can have more than a day\'s worth, so eat only a few), fish, eggs, brown rice.', deficiency: 'Rare in the US. It occurs in some parts of China where soil is low in selenium.', rda: 'Ages 9–13: 40 mcg. Ages 14 and up: 55 mcg.', cite: 'NIH ODS Selenium fact sheet' },
+    { id: 'copper',     name: 'Copper',     emoji: '🧡', kind: 'trace', function: 'Helps body use iron, supports connective tissue, nerve cells, immune function.', sources: 'Shellfish, nuts, seeds, dark chocolate, organ meats.', deficiency: 'Anemia, weakened bones. Rare.', rda: 'Ages 9–13: 700 mcg. Ages 14–18: 890 mcg. Adults: 900 mcg.', cite: 'NIH ODS Copper fact sheet' },
+    { id: 'manganese',  name: 'Manganese',  emoji: '🌾', kind: 'trace', function: 'Bone formation, blood sugar regulation, energy metabolism.', sources: 'Whole grains, nuts, leafy greens, tea.', deficiency: 'Very rare in humans.', rda: 'Ages 9–13: 1.9 mg (boys), 1.6 mg (girls). Ages 14–18: 2.2 mg (boys), 1.6 mg (girls). (Adequate Intake)', cite: 'NIH ODS Manganese fact sheet' },
+    { id: 'chromium',   name: 'Chromium',   emoji: '🌽', kind: 'trace', function: 'Helps insulin work properly to regulate blood sugar.', sources: 'Whole grains, broccoli, grape juice, meats.', deficiency: 'Impaired blood-sugar regulation (rare).', rda: 'Ages 9–13: 25 mcg (boys), 21 mcg (girls). Ages 14–18: 35 mcg (boys), 24 mcg (girls). (Adequate Intake)', cite: 'NIH ODS Chromium fact sheet' },
+    { id: 'molybdenum', name: 'Molybdenum', emoji: '🌱', kind: 'trace', function: 'Helps enzymes break down toxic byproducts of metabolism.', sources: 'Legumes, whole grains, nuts.', deficiency: 'Extremely rare.', rda: 'Ages 9–13: 34 mcg. Ages 14–18: 43 mcg. Adults: 45 mcg.', cite: 'NIH ODS Molybdenum fact sheet' },
+    { id: 'fluoride',   name: 'Fluoride',   emoji: '🦷', kind: 'trace', function: 'Strengthens teeth and bones, prevents cavities.', sources: 'Fluoridated tap water, tea, fish (bones), toothpaste (topical).', deficiency: 'More tooth decay (cavities). The CDC lists community water fluoridation as one of ten great public health achievements of the 20th century.', rda: 'Ages 9–13: 2 mg. Ages 14–18: 3 mg. (Adequate Intake)', cite: 'NIH ODS Fluoride fact sheet · CDC' }
   ];
 
   // ─────────────────────────────────────────────────────
-  // ESSENTIAL FATTY ACIDS — omega-3 (Maine fisheries angle), omega-6
+  // ESSENTIAL FATTY ACIDS — omega-3, omega-6. ODS Omega-3 fact sheet: ALA AIs by age (Table 1); AHA advisories
+  //   "recommend one to two servings of seafood per week"; depression: "a 2015 Cochrane Review ... found insufficient
+  //   evidence" (old 'Harvard research links ... lower depression risk' and 'AHA: 250-500 mg EPA+DHA' removed: the
+  //   AHA advice is servings of seafood, not mg). Omega-6 'excess causes inflammation' softened: ODS cites Fritsche 2008,
+  //   'Too much linoleic acid promotes inflammation - doesn't it?' (evidence does not support a simple yes).
   // ─────────────────────────────────────────────────────
   var EFAS = [
-    { id: 'omega3', name: 'Omega-3 (EPA/DHA)', emoji: '🐟', function: 'Brain structure (DHA is a major component of brain tissue), heart rhythm, anti-inflammatory effects. Harvard research links higher omega-3 intake to lower depression risk and better cardiovascular outcomes.', sources: 'Fatty fish: salmon, mackerel, sardines, herring (Maine fisheries are a powerhouse). Walnuts and flax provide ALA, a precursor your body partially converts.', deficiency: 'No formal "deficiency disease," but most Americans fall short of recommended intake. Linked to higher inflammation and some mood/cardiovascular concerns.', rda: 'AHA: 250–500 mg combined EPA + DHA per day for healthy adults; 2 fatty-fish meals per week.', cite: 'AHA · Harvard T.H. Chan School of Public Health' },
-    { id: 'omega6', name: 'Omega-6 (Linoleic acid)', emoji: '🌻', function: 'Cell membrane structure, immune signaling, healthy skin.', sources: 'Vegetable oils (sunflower, corn, soybean), nuts, seeds, poultry. Most Americans get plenty — often more than needed.', deficiency: 'Very rare in US diet. Excess (relative to omega-3) may contribute to inflammation per some research.', rda: 'AI 12–17 g/day (adults)', cite: 'NIH ODS' }
+    { id: 'omega3', name: 'Omega-3 (ALA, EPA, DHA)', emoji: '🐟', function: 'Part of every cell membrane. DHA is a major building block of the brain and eyes. Omega-3s also help the heart and blood vessels work.', sources: 'Fatty fish: salmon, mackerel, sardines, herring. Walnuts, flax, chia and canola oil give ALA, which your body turns into small amounts of EPA and DHA.', deficiency: 'True deficiency is rare in the US. Research on omega-3 and mood is still mixed.', rda: 'ALA: ages 9–13: 1.2 g (boys), 1.0 g (girls); ages 14–18: 1.6 g (boys), 1.1 g (girls). (Adequate Intake) No US amount is set for EPA + DHA; the American Heart Association suggests 1–2 servings of seafood a week.', cite: 'NIH ODS Omega-3 fact sheet · American Heart Association' },
+    { id: 'omega6', name: 'Omega-6 (Linoleic acid)', emoji: '🌻', function: 'Cell membrane structure, immune signaling, healthy skin.', sources: 'Vegetable oils (sunflower, corn, soybean), nuts, seeds, poultry. Most Americans get plenty.', deficiency: 'Very rare in the US. Whether a lot of omega-6 causes inflammation is still debated by researchers.', rda: 'Ages 9–13: 12 g (boys), 10 g (girls). Ages 14–18: 16 g (boys), 11 g (girls). (Adequate Intake)', cite: 'National Academies DRI tables' }
   ];
 
   // ══════════════════════════════════════════════════════════════════
@@ -317,7 +341,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // 120+ module-scope React components for student-built nutrition habits.
   // Frame: PHYSIOLOGY-FIRST, NEVER calorie-counting or restriction.
   // Data persists via ctx.update (parent tool state). All client-side.
-  // NEDA helpline (1-800-931-2237 / text NEDA to 741741) visible in any tool
+  // Eating-disorder help contacts visible in any tool that touches body image, restriction or ED territory.
+  // NEDA closed its helpline in 2023; its old number now forwards to the National Alliance for Eating
+  // Disorders helpline 1-866-662-1235 (Mon-Fri 9am-7pm ET, allianceforeatingdisorders.com/helpline-acquisition).
+  // 24/7: call or text 988; text HOME to 741741 (Crisis Text Line). Audit 2026-11-24.
   // that touches body image, restriction, or eating-disorder territory.
   // Sources cited inline per component: USDA, NIH ODS, AAP, Harvard T.H. Chan,
   // NEDA, NATA, ACSM, AHA, AHA Pediatrics, MyPlate.gov.
@@ -334,32 +361,37 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // AHA, NEDA, NATA, ACSM, Maine state agencies). Used by My Nutrition Kit
   // tools below for autocomplete, presets, and education content.
 
+  // ACCURACY AUDIT 2026-11-24: every row was compared with USDA FoodData Central SR Legacy (2018-04 release,
+  // https://fdc.nal.usda.gov/download-datasets) at the gram weight its name states. Fields more than 20% (and more
+  // than a small rounding margin) away were replaced with the USDA value. Script + FDC ids:
+  // C:/tmp/sports_labs_1123/nutritionlab/fdc_compare.cjs. Not in SR Legacy, left as-is: fortified cereal, oat
+  // milk, sprouted-grain bread (brand labels vary), farro. vitA = mcg RAE, vitC/na/k/ca/mg/fe = mg.
   var NUTRITION_KIT_FOOD_DB = [
     { id: 'apple', name: 'Apple (1 medium)', kcal: 95, c: 25, p: 0.5, f: 0.3, fib: 4.4, na: 2, k: 195, ca: 11, mg: 9, fe: 0.2, vitC: 8, vitA: 5 },
     { id: 'banana', name: 'Banana (1 medium)', kcal: 105, c: 27, p: 1.3, f: 0.4, fib: 3.1, na: 1, k: 422, ca: 6, mg: 32, fe: 0.3, vitC: 10, vitA: 3 },
     { id: 'orange', name: 'Orange (1 medium)', kcal: 60, c: 15, p: 1.2, f: 0.2, fib: 3.1, na: 0, k: 237, ca: 60, mg: 14, fe: 0.1, vitC: 70, vitA: 6 },
-    { id: 'berries-mix', name: 'Mixed berries (1 cup)', kcal: 70, c: 17, p: 1.1, f: 0.4, fib: 4.5, na: 1, k: 130, ca: 22, mg: 14, fe: 0.4, vitC: 30, vitA: 4 },
-    { id: 'avocado', name: 'Avocado (1/2)', kcal: 120, c: 6, p: 1.5, f: 11, fib: 5, na: 5, k: 345, ca: 6, mg: 19, fe: 0.3, vitC: 6, vitA: 4 },
-    { id: 'spinach-raw', name: 'Spinach raw (1 cup)', kcal: 7, c: 1, p: 0.9, f: 0.1, fib: 0.7, na: 24, k: 167, ca: 30, mg: 24, fe: 0.8, vitC: 9, vitA: 56 },
-    { id: 'kale', name: 'Kale (1 cup chopped)', kcal: 33, c: 7, p: 2.9, f: 0.6, fib: 1.3, na: 25, k: 299, ca: 90, mg: 30, fe: 1.1, vitC: 80, vitA: 192 },
-    { id: 'broccoli-cooked', name: 'Broccoli cooked (1 cup)', kcal: 55, c: 11, p: 4, f: 0.6, fib: 5, na: 64, k: 457, ca: 62, mg: 33, fe: 1, vitC: 101, vitA: 60 },
-    { id: 'sweet-potato', name: 'Sweet potato baked (1 medium)', kcal: 105, c: 24, p: 2, f: 0.1, fib: 4, na: 41, k: 542, ca: 43, mg: 31, fe: 0.7, vitC: 22, vitA: 438 },
+    { id: 'berries-mix', name: 'Mixed berries: blueberries + strawberries (1 cup)', kcal: 70, c: 17, p: 1.1, f: 0.4, fib: 3.3, na: 1, k: 173, ca: 22, mg: 14, fe: 0.4, vitC: 51, vitA: 4 },
+    { id: 'avocado', name: 'Avocado, Hass (1/2)', kcal: 120, c: 6, p: 1.5, f: 11, fib: 5, na: 5, k: 345, ca: 6, mg: 19, fe: 0.3, vitC: 6, vitA: 4 },
+    { id: 'spinach-raw', name: 'Spinach raw (1 cup)', kcal: 7, c: 1, p: 0.9, f: 0.1, fib: 0.7, na: 24, k: 167, ca: 30, mg: 24, fe: 0.8, vitC: 9, vitA: 141 },
+    { id: 'kale', name: 'Kale raw (1 cup chopped, loosely packed)', kcal: 7, c: 0.9, p: 0.6, f: 0.6, fib: 1.3, na: 25, k: 73, ca: 53, mg: 7, fe: 0.3, vitC: 20, vitA: 51 },
+    { id: 'broccoli-cooked', name: 'Broccoli cooked (1 cup)', kcal: 55, c: 11, p: 4, f: 0.6, fib: 5, na: 64, k: 457, ca: 62, mg: 33, fe: 1, vitC: 101, vitA: 120 },
+    { id: 'sweet-potato', name: 'Sweet potato baked (1 medium)', kcal: 105, c: 24, p: 2, f: 0.1, fib: 4, na: 41, k: 542, ca: 43, mg: 31, fe: 0.7, vitC: 22, vitA: 1096 },
     { id: 'carrot', name: 'Carrot (1 medium)', kcal: 25, c: 6, p: 0.5, f: 0.1, fib: 1.7, na: 42, k: 195, ca: 20, mg: 7, fe: 0.2, vitC: 4, vitA: 509 },
     { id: 'tomato', name: 'Tomato (1 medium)', kcal: 22, c: 4.8, p: 1.1, f: 0.2, fib: 1.5, na: 6, k: 292, ca: 12, mg: 14, fe: 0.3, vitC: 17, vitA: 51 },
     { id: 'bell-pepper-red', name: 'Bell pepper red (1 medium)', kcal: 37, c: 7, p: 1.2, f: 0.4, fib: 2.5, na: 4, k: 251, ca: 8, mg: 14, fe: 0.5, vitC: 152, vitA: 187 },
-    { id: 'cucumber', name: 'Cucumber (1 medium)', kcal: 45, c: 11, p: 2, f: 0.3, fib: 1.5, na: 6, k: 442, ca: 48, mg: 39, fe: 0.8, vitC: 8, vitA: 11 },
-    { id: 'lettuce-romaine', name: 'Romaine lettuce (1 cup)', kcal: 8, c: 1.5, p: 0.6, f: 0.1, fib: 1, na: 4, k: 116, ca: 16, mg: 7, fe: 0.5, vitC: 2, vitA: 81 },
+    { id: 'cucumber', name: 'Cucumber with peel (1 whole, 8 in long)', kcal: 45, c: 11, p: 2, f: 0.3, fib: 1.5, na: 6, k: 442, ca: 48, mg: 39, fe: 0.8, vitC: 8, vitA: 11 },
+    { id: 'lettuce-romaine', name: 'Romaine lettuce (1 cup)', kcal: 8, c: 1.5, p: 0.6, f: 0.1, fib: 1, na: 4, k: 116, ca: 16, mg: 7, fe: 0.5, vitC: 2, vitA: 205 },
     { id: 'mushrooms', name: 'Mushrooms white (1 cup)', kcal: 15, c: 2.3, p: 2.2, f: 0.2, fib: 0.7, na: 4, k: 220, ca: 2, mg: 8, fe: 0.4, vitC: 2, vitA: 0 },
     { id: 'onion', name: 'Onion yellow (1 medium)', kcal: 44, c: 10, p: 1.2, f: 0.1, fib: 1.9, na: 4, k: 161, ca: 23, mg: 11, fe: 0.2, vitC: 7, vitA: 1 },
     { id: 'garlic', name: 'Garlic (1 clove)', kcal: 4, c: 1, p: 0.2, f: 0, fib: 0.1, na: 0, k: 12, ca: 5, mg: 1, fe: 0, vitC: 1, vitA: 0 },
     { id: 'chicken-breast', name: 'Chicken breast (3 oz cooked)', kcal: 140, c: 0, p: 26, f: 3, fib: 0, na: 50, k: 256, ca: 6, mg: 26, fe: 0.4, vitC: 0, vitA: 4 },
-    { id: 'salmon-cooked', name: 'Salmon (3 oz cooked)', kcal: 205, c: 0, p: 22, f: 13, fib: 0, na: 60, k: 369, ca: 9, mg: 24, fe: 0.3, vitC: 0, vitA: 16 },
+    { id: 'salmon-cooked', name: 'Salmon, Atlantic farmed (3 oz cooked)', kcal: 175, c: 0, p: 19, f: 10.5, fib: 0, na: 52, k: 326, ca: 9, mg: 24, fe: 0.3, vitC: 0, vitA: 59 },
     { id: 'egg-large', name: 'Egg large (1)', kcal: 70, c: 0.6, p: 6, f: 5, fib: 0, na: 70, k: 67, ca: 28, mg: 6, fe: 0.9, vitC: 0, vitA: 80 },
     { id: 'greek-yogurt', name: 'Greek yogurt plain (6 oz)', kcal: 100, c: 8, p: 17, f: 0.7, fib: 0, na: 65, k: 240, ca: 200, mg: 24, fe: 0.1, vitC: 0, vitA: 5 },
-    { id: 'cottage-cheese', name: 'Cottage cheese low-fat (1/2 cup)', kcal: 90, c: 4, p: 12, f: 2.5, fib: 0, na: 350, k: 110, ca: 70, mg: 8, fe: 0.1, vitC: 0, vitA: 4 },
+    { id: 'cottage-cheese', name: 'Cottage cheese low-fat (1/2 cup)', kcal: 90, c: 4, p: 12, f: 2.5, fib: 0, na: 459, k: 110, ca: 70, mg: 8, fe: 0.1, vitC: 0, vitA: 4 },
     { id: 'cheddar', name: 'Cheddar cheese (1 oz)', kcal: 115, c: 0.4, p: 7, f: 9.5, fib: 0, na: 180, k: 28, ca: 200, mg: 8, fe: 0.2, vitC: 0, vitA: 87 },
     { id: 'milk-whole', name: 'Whole milk (1 cup)', kcal: 150, c: 12, p: 8, f: 8, fib: 0, na: 105, k: 322, ca: 276, mg: 24, fe: 0.1, vitC: 0, vitA: 112 },
-    { id: 'tofu-firm', name: 'Tofu firm (1/2 cup)', kcal: 95, c: 2, p: 10, f: 6, fib: 1, na: 9, k: 150, ca: 215, mg: 38, fe: 3.4, vitC: 0, vitA: 5 },
+    { id: 'tofu-firm', name: 'Tofu firm, calcium-set (1/2 cup)', kcal: 95, c: 2, p: 10, f: 6, fib: 1, na: 9, k: 150, ca: 215, mg: 38, fe: 2, vitC: 0, vitA: 5 },
     { id: 'tempeh', name: 'Tempeh (3 oz)', kcal: 165, c: 8, p: 17, f: 9, fib: 0, na: 7, k: 343, ca: 92, mg: 67, fe: 2.2, vitC: 0, vitA: 6 },
     { id: 'lentils-cooked', name: 'Lentils cooked (1/2 cup)', kcal: 115, c: 20, p: 9, f: 0.4, fib: 7.8, na: 2, k: 365, ca: 19, mg: 36, fe: 3.3, vitC: 1, vitA: 0 },
     { id: 'black-beans', name: 'Black beans cooked (1/2 cup)', kcal: 115, c: 20, p: 8, f: 0.5, fib: 7.5, na: 1, k: 305, ca: 23, mg: 60, fe: 1.8, vitC: 0, vitA: 0 },
@@ -367,14 +399,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'kidney-beans', name: 'Kidney beans cooked (1/2 cup)', kcal: 110, c: 20, p: 8, f: 0.4, fib: 5.7, na: 1, k: 358, ca: 31, mg: 37, fe: 2, vitC: 1, vitA: 0 },
     { id: 'edamame', name: 'Edamame shelled (1/2 cup)', kcal: 95, c: 8, p: 9, f: 4, fib: 4, na: 5, k: 338, ca: 49, mg: 50, fe: 1.8, vitC: 5, vitA: 8 },
     { id: 'oats-dry', name: 'Oats dry (1/2 cup)', kcal: 150, c: 27, p: 5, f: 3, fib: 4, na: 0, k: 145, ca: 21, mg: 56, fe: 2, vitC: 0, vitA: 0 },
-    { id: 'brown-rice', name: 'Brown rice cooked (1 cup)', kcal: 215, c: 45, p: 5, f: 1.8, fib: 3.5, na: 10, k: 84, ca: 20, mg: 84, fe: 0.8, vitC: 0, vitA: 0 },
+    { id: 'brown-rice', name: 'Brown rice cooked (1 cup)', kcal: 215, c: 45, p: 5, f: 1.8, fib: 3.5, na: 10, k: 154, ca: 20, mg: 84, fe: 0.8, vitC: 0, vitA: 0 },
     { id: 'quinoa-cooked', name: 'Quinoa cooked (1 cup)', kcal: 220, c: 39, p: 8, f: 3.5, fib: 5.2, na: 13, k: 318, ca: 31, mg: 118, fe: 2.8, vitC: 0, vitA: 0 },
-    { id: 'whole-wheat-bread', name: 'Whole wheat bread (1 slice)', kcal: 80, c: 14, p: 4, f: 1, fib: 2, na: 144, k: 70, ca: 27, mg: 23, fe: 0.7, vitC: 0, vitA: 0 },
-    { id: 'pasta-whole-wheat', name: 'Whole wheat pasta cooked (1 cup)', kcal: 175, c: 37, p: 7.5, f: 0.8, fib: 6, na: 4, k: 62, ca: 21, mg: 42, fe: 1.5, vitC: 0, vitA: 0 },
+    { id: 'whole-wheat-bread', name: 'Whole wheat bread (1 slice)', kcal: 80, c: 14, p: 4, f: 1, fib: 2, na: 144, k: 70, ca: 52, mg: 23, fe: 0.7, vitC: 0, vitA: 0 },
+    { id: 'pasta-whole-wheat', name: 'Whole wheat pasta cooked (1 cup)', kcal: 175, c: 37, p: 7.5, f: 0.8, fib: 4.6, na: 4, k: 112, ca: 21, mg: 63, fe: 2, vitC: 0, vitA: 0 },
     { id: 'almonds', name: 'Almonds (1 oz, ~23 nuts)', kcal: 165, c: 6, p: 6, f: 14, fib: 4, na: 0, k: 200, ca: 76, mg: 76, fe: 1, vitC: 0, vitA: 0 },
     { id: 'walnuts', name: 'Walnuts (1 oz, ~14 halves)', kcal: 185, c: 4, p: 4, f: 18, fib: 2, na: 1, k: 125, ca: 27, mg: 45, fe: 0.8, vitC: 0, vitA: 1 },
-    { id: 'peanut-butter', name: 'Peanut butter (2 tbsp)', kcal: 190, c: 7, p: 7, f: 16, fib: 2, na: 140, k: 200, ca: 17, mg: 49, fe: 0.6, vitC: 0, vitA: 0 },
-    { id: 'chia-seeds', name: 'Chia seeds (1 tbsp)', kcal: 60, c: 5, p: 2, f: 4, fib: 4, na: 1, k: 49, ca: 76, mg: 30, fe: 0.8, vitC: 0, vitA: 0 },
+    { id: 'peanut-butter', name: 'Peanut butter, salted (2 tbsp)', kcal: 190, c: 7, p: 7, f: 16, fib: 2, na: 140, k: 200, ca: 17, mg: 49, fe: 0.6, vitC: 0, vitA: 0 },
+    { id: 'chia-seeds', name: 'Chia seeds (1 tbsp)', kcal: 60, c: 5, p: 2, f: 4, fib: 4, na: 1, k: 49, ca: 76, mg: 40, fe: 0.8, vitC: 0, vitA: 0 },
     { id: 'flax-seeds', name: 'Flax seeds (1 tbsp ground)', kcal: 37, c: 2, p: 1.3, f: 3, fib: 2, na: 2, k: 57, ca: 18, mg: 27, fe: 0.4, vitC: 0, vitA: 0 },
     { id: 'olive-oil', name: 'Olive oil (1 tbsp)', kcal: 120, c: 0, p: 0, f: 14, fib: 0, na: 0, k: 0, ca: 0, mg: 0, fe: 0.1, vitC: 0, vitA: 0 },
     { id: 'butter', name: 'Butter (1 tbsp)', kcal: 100, c: 0, p: 0.1, f: 11, fib: 0, na: 90, k: 3, ca: 3, mg: 0, fe: 0, vitC: 0, vitA: 97 },
@@ -382,20 +414,20 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'maple-syrup', name: 'Maple syrup (1 tbsp)', kcal: 52, c: 13, p: 0, f: 0, fib: 0, na: 2, k: 41, ca: 13, mg: 4, fe: 0.2, vitC: 0, vitA: 0 },
     { id: 'dark-chocolate', name: 'Dark chocolate 70% (1 oz)', kcal: 170, c: 13, p: 2, f: 12, fib: 3, na: 7, k: 200, ca: 21, mg: 64, fe: 3.4, vitC: 0, vitA: 6 },
     { id: 'tuna-can', name: 'Tuna canned in water (3 oz)', kcal: 90, c: 0, p: 20, f: 1, fib: 0, na: 230, k: 200, ca: 11, mg: 26, fe: 1.4, vitC: 0, vitA: 17 },
-    { id: 'sardines', name: 'Sardines canned (3 oz)', kcal: 175, c: 0, p: 21, f: 9.7, fib: 0, na: 320, k: 365, ca: 325, mg: 35, fe: 2.5, vitC: 0, vitA: 96 },
-    { id: 'shrimp', name: 'Shrimp cooked (3 oz)', kcal: 85, c: 0, p: 18, f: 1.1, fib: 0, na: 805, k: 220, ca: 70, mg: 33, fe: 2.6, vitC: 2, vitA: 19 },
-    { id: 'beef-lean', name: 'Beef lean (3 oz cooked)', kcal: 165, c: 0, p: 25, f: 7, fib: 0, na: 53, k: 270, ca: 7, mg: 22, fe: 2.5, vitC: 0, vitA: 0 },
-    { id: 'turkey-breast', name: 'Turkey breast (3 oz cooked)', kcal: 125, c: 0, p: 26, f: 1.6, fib: 0, na: 55, k: 251, ca: 12, mg: 27, fe: 0.7, vitC: 0, vitA: 0 },
+    { id: 'sardines', name: 'Sardines canned (3 oz)', kcal: 175, c: 0, p: 21, f: 9.7, fib: 0, na: 261, k: 365, ca: 325, mg: 35, fe: 2.5, vitC: 0, vitA: 27 },
+    { id: 'shrimp', name: 'Shrimp cooked (3 oz)', kcal: 85, c: 0, p: 18, f: 1.1, fib: 0, na: 805, k: 145, ca: 70, mg: 33, fe: 0.3, vitC: 2, vitA: 77 },
+    { id: 'beef-lean', name: 'Beef lean (3 oz cooked)', kcal: 165, c: 0, p: 25, f: 4.9, fib: 0, na: 53, k: 270, ca: 7, mg: 22, fe: 1.7, vitC: 0, vitA: 0 },
+    { id: 'turkey-breast', name: 'Turkey breast (3 oz cooked)', kcal: 125, c: 0, p: 26, f: 1.6, fib: 0, na: 84, k: 251, ca: 12, mg: 27, fe: 0.7, vitC: 0, vitA: 0 },
     { id: 'pork-tenderloin', name: 'Pork tenderloin (3 oz cooked)', kcal: 120, c: 0, p: 22, f: 3, fib: 0, na: 48, k: 365, ca: 6, mg: 24, fe: 0.9, vitC: 0, vitA: 2 },
-    { id: 'cottage-cheese-2', name: 'Cottage cheese (1/2 cup)', kcal: 90, c: 4, p: 12, f: 2.5, fib: 0, na: 350, k: 110, ca: 70, mg: 8, fe: 0.1, vitC: 0, vitA: 4 },
+    { id: 'cottage-cheese-2', name: 'Cottage cheese (1/2 cup)', kcal: 90, c: 4, p: 12, f: 2.5, fib: 0, na: 459, k: 110, ca: 70, mg: 8, fe: 0.1, vitC: 0, vitA: 4 },
     { id: 'pumpkin-seeds', name: 'Pumpkin seeds (1 oz)', kcal: 158, c: 4, p: 9, f: 14, fib: 1.7, na: 5, k: 226, ca: 15, mg: 156, fe: 2.5, vitC: 1, vitA: 4 },
-    { id: 'sunflower-seeds', name: 'Sunflower seeds (1 oz)', kcal: 164, c: 6, p: 5.5, f: 14.4, fib: 2.4, na: 1, k: 226, ca: 20, mg: 91, fe: 1, vitC: 0, vitA: 1 },
+    { id: 'sunflower-seeds', name: 'Sunflower seeds (1 oz)', kcal: 164, c: 6, p: 5.5, f: 14.4, fib: 2.4, na: 1, k: 181, ca: 20, mg: 91, fe: 1, vitC: 0, vitA: 1 },
     { id: 'fortified-cereal', name: 'Fortified cereal (1 cup)', kcal: 110, c: 26, p: 2, f: 1, fib: 3, na: 200, k: 50, ca: 100, mg: 24, fe: 18, vitC: 6, vitA: 150 },
     { id: 'cottage-cheese-full', name: 'Cottage cheese full-fat (1/2 cup)', kcal: 110, c: 4, p: 12, f: 5, fib: 0, na: 350, k: 110, ca: 70, mg: 8, fe: 0.1, vitC: 0, vitA: 50 },
-    { id: 'plant-milk-soy', name: 'Soy milk fortified (1 cup)', kcal: 100, c: 9, p: 7, f: 4, fib: 1, na: 90, k: 300, ca: 300, mg: 60, fe: 1, vitC: 0, vitA: 90 },
+    { id: 'plant-milk-soy', name: 'Soy milk fortified (1 cup)', kcal: 100, c: 12, p: 7, f: 4, fib: 1, na: 114, k: 300, ca: 300, mg: 36, fe: 1, vitC: 0, vitA: 134 },
     { id: 'oat-milk', name: 'Oat milk (1 cup)', kcal: 120, c: 16, p: 3, f: 5, fib: 2, na: 100, k: 390, ca: 350, mg: 24, fe: 0.4, vitC: 0, vitA: 75 },
-    { id: 'wild-blueberry', name: 'Wild blueberries (1 cup)', kcal: 80, c: 19, p: 1.1, f: 0.4, fib: 4.5, na: 1, k: 117, ca: 9, mg: 9, fe: 0.5, vitC: 14, vitA: 4 },
-    { id: 'maine-lobster', name: 'Lobster (3 oz cooked)', kcal: 75, c: 0, p: 16, f: 0.7, fib: 0, na: 295, k: 230, ca: 50, mg: 30, fe: 0.3, vitC: 0, vitA: 20 },
+    { id: 'wild-blueberry', name: 'Wild blueberries, frozen (1 cup)', kcal: 80, c: 19, p: 1.1, f: 0.4, fib: 6.2, na: 1, k: 117, ca: 9, mg: 9, fe: 0.5, vitC: 2, vitA: 4 },
+    { id: 'maine-lobster', name: 'Lobster (3 oz cooked)', kcal: 75, c: 0, p: 16, f: 0.7, fib: 0, na: 413, k: 230, ca: 82, mg: 30, fe: 0.3, vitC: 0, vitA: 20 },
     { id: 'mango', name: 'Mango (1 cup chunks)', kcal: 100, c: 25, p: 1, f: 0.6, fib: 2.6, na: 2, k: 277, ca: 16, mg: 17, fe: 0.2, vitC: 60, vitA: 89 },
     { id: 'pineapple', name: 'Pineapple (1 cup chunks)', kcal: 82, c: 22, p: 0.9, f: 0.2, fib: 2.3, na: 2, k: 180, ca: 21, mg: 19, fe: 0.5, vitC: 79, vitA: 5 },
     { id: 'cantaloupe', name: 'Cantaloupe (1 cup)', kcal: 53, c: 13, p: 1.3, f: 0.3, fib: 1.5, na: 25, k: 427, ca: 14, mg: 19, fe: 0.4, vitC: 58, vitA: 270 },
@@ -406,29 +438,29 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'pomegranate', name: 'Pomegranate seeds (1/2 cup)', kcal: 72, c: 16, p: 1.5, f: 1, fib: 3.5, na: 3, k: 205, ca: 9, mg: 11, fe: 0.3, vitC: 9, vitA: 0 },
     { id: 'asparagus', name: 'Asparagus (1 cup cooked)', kcal: 40, c: 7, p: 4.3, f: 0.4, fib: 3.6, na: 25, k: 405, ca: 41, mg: 19, fe: 1.6, vitC: 14, vitA: 89 },
     { id: 'beets', name: 'Beets (1 cup cooked)', kcal: 75, c: 17, p: 2.9, f: 0.3, fib: 3.4, na: 131, k: 519, ca: 28, mg: 39, fe: 1.3, vitC: 6, vitA: 3 },
-    { id: 'brussel-sprouts', name: 'Brussels sprouts (1 cup cooked)', kcal: 56, c: 11, p: 4, f: 0.8, fib: 4.1, na: 33, k: 494, ca: 56, mg: 32, fe: 1.9, vitC: 75, vitA: 60 },
-    { id: 'cabbage', name: 'Cabbage (1 cup cooked)', kcal: 35, c: 8, p: 2, f: 0.1, fib: 2.9, na: 13, k: 196, ca: 72, mg: 16, fe: 0.3, vitC: 56, vitA: 7 },
+    { id: 'brussel-sprouts', name: 'Brussels sprouts (1 cup cooked)', kcal: 56, c: 11, p: 4, f: 0.8, fib: 4.1, na: 33, k: 494, ca: 56, mg: 32, fe: 1.9, vitC: 97, vitA: 60 },
+    { id: 'cabbage', name: 'Cabbage (1 cup cooked)', kcal: 35, c: 8, p: 2, f: 0.1, fib: 2.9, na: 13, k: 294, ca: 72, mg: 16, fe: 0.3, vitC: 56, vitA: 7 },
     { id: 'cauliflower', name: 'Cauliflower (1 cup cooked)', kcal: 29, c: 5, p: 2.3, f: 0.6, fib: 2.9, na: 19, k: 176, ca: 20, mg: 9, fe: 0.4, vitC: 55, vitA: 1 },
-    { id: 'zucchini', name: 'Zucchini (1 cup cooked)', kcal: 27, c: 5, p: 1.7, f: 0.5, fib: 1.8, na: 9, k: 295, ca: 23, mg: 22, fe: 0.4, vitC: 16, vitA: 50 },
+    { id: 'zucchini', name: 'Zucchini (1 cup cooked)', kcal: 27, c: 5, p: 1.7, f: 0.5, fib: 1.8, na: 9, k: 475, ca: 23, mg: 34, fe: 0.4, vitC: 23, vitA: 101 },
     { id: 'eggplant', name: 'Eggplant (1 cup cooked)', kcal: 35, c: 8.6, p: 0.8, f: 0.2, fib: 2.5, na: 1, k: 122, ca: 6, mg: 11, fe: 0.2, vitC: 1, vitA: 2 },
     { id: 'bell-pepper-green', name: 'Bell pepper green (1 medium)', kcal: 24, c: 6, p: 1, f: 0.2, fib: 1.7, na: 4, k: 175, ca: 12, mg: 11, fe: 0.4, vitC: 95, vitA: 18 },
     { id: 'jalapeno', name: 'Jalapeño (1 medium)', kcal: 4, c: 0.9, p: 0.2, f: 0.1, fib: 0.4, na: 0, k: 26, ca: 2, mg: 2, fe: 0.1, vitC: 17, vitA: 6 },
-    { id: 'kale-cooked', name: 'Kale cooked (1 cup)', kcal: 36, c: 7.3, p: 2.5, f: 0.5, fib: 2.6, na: 30, k: 296, ca: 94, mg: 23, fe: 1, vitC: 53, vitA: 172 },
+    { id: 'kale-cooked', name: 'Kale cooked (1 cup)', kcal: 36, c: 7.3, p: 2.5, f: 0.5, fib: 4.7, na: 30, k: 170, ca: 177, mg: 23, fe: 1, vitC: 21, vitA: 172 },
     { id: 'butternut', name: 'Butternut squash (1 cup cooked)', kcal: 82, c: 22, p: 1.8, f: 0.2, fib: 6.6, na: 8, k: 582, ca: 84, mg: 60, fe: 1.2, vitC: 31, vitA: 1144 },
-    { id: 'corn', name: 'Sweet corn (1 cup)', kcal: 132, c: 29, p: 5, f: 1.8, fib: 4.2, na: 23, k: 416, ca: 4, mg: 43, fe: 0.7, vitC: 12, vitA: 13 },
-    { id: 'peas', name: 'Green peas (1 cup)', kcal: 117, c: 21, p: 7.9, f: 0.6, fib: 7.4, na: 7, k: 357, ca: 35, mg: 44, fe: 2.1, vitC: 22, vitA: 80 },
-    { id: 'green-beans', name: 'Green beans (1 cup cooked)', kcal: 44, c: 10, p: 2.4, f: 0.4, fib: 4, na: 1, k: 209, ca: 55, mg: 22, fe: 1.6, vitC: 12, vitA: 44 },
+    { id: 'corn', name: 'Sweet corn (1 cup)', kcal: 132, c: 29, p: 5, f: 1.8, fib: 4.2, na: 2, k: 416, ca: 4, mg: 43, fe: 0.7, vitC: 12, vitA: 13 },
+    { id: 'peas', name: 'Green peas, raw (1 cup)', kcal: 117, c: 21, p: 7.9, f: 0.6, fib: 7.4, na: 7, k: 357, ca: 35, mg: 44, fe: 2.1, vitC: 58, vitA: 55 },
+    { id: 'green-beans', name: 'Green beans (1 cup cooked)', kcal: 44, c: 10, p: 2.4, f: 0.4, fib: 4, na: 1, k: 209, ca: 55, mg: 22, fe: 0.8, vitC: 12, vitA: 44 },
     { id: 'cilantro', name: 'Cilantro (1/4 cup)', kcal: 1, c: 0.1, p: 0.1, f: 0, fib: 0.1, na: 1, k: 13, ca: 4, mg: 1, fe: 0.1, vitC: 1, vitA: 17 },
     { id: 'basil-fresh', name: 'Basil fresh (1/4 cup)', kcal: 1, c: 0.2, p: 0.1, f: 0, fib: 0.1, na: 0, k: 18, ca: 11, mg: 4, fe: 0.2, vitC: 1, vitA: 22 },
-    { id: 'parsley', name: 'Parsley fresh (1/4 cup)', kcal: 5, c: 1, p: 0.5, f: 0.1, fib: 0.5, na: 8, k: 84, ca: 21, mg: 8, fe: 0.9, vitC: 20, vitA: 124 },
+    { id: 'parsley', name: 'Parsley fresh (1/4 cup)', kcal: 5, c: 1, p: 0.5, f: 0.1, fib: 0.5, na: 8, k: 84, ca: 21, mg: 8, fe: 0.9, vitC: 20, vitA: 63 },
     { id: 'mint', name: 'Mint fresh (1/4 cup)', kcal: 2, c: 0.4, p: 0.2, f: 0, fib: 0.2, na: 1, k: 17, ca: 11, mg: 3, fe: 0.5, vitC: 1, vitA: 22 },
     { id: 'ginger', name: 'Ginger (1 tbsp grated)', kcal: 5, c: 1, p: 0.1, f: 0, fib: 0.1, na: 1, k: 24, ca: 1, mg: 2, fe: 0, vitC: 0, vitA: 0 },
-    { id: 'turmeric', name: 'Turmeric (1 tsp)', kcal: 8, c: 1.4, p: 0.2, f: 0.2, fib: 0.5, na: 1, k: 56, ca: 4, mg: 4, fe: 0.9, vitC: 0, vitA: 0 },
+    { id: 'turmeric', name: 'Turmeric (1 tsp)', kcal: 8, c: 1.4, p: 0.2, f: 0.2, fib: 0.5, na: 1, k: 56, ca: 4, mg: 4, fe: 1.7, vitC: 0, vitA: 0 },
     { id: 'tahini', name: 'Tahini (2 tbsp)', kcal: 178, c: 6.4, p: 5.1, f: 16.1, fib: 2.8, na: 35, k: 138, ca: 128, mg: 28, fe: 2.6, vitC: 0, vitA: 0 },
-    { id: 'hummus', name: 'Hummus (1/4 cup)', kcal: 105, c: 9, p: 4, f: 6, fib: 3, na: 240, k: 100, ca: 30, mg: 18, fe: 0.9, vitC: 2, vitA: 0 },
-    { id: 'olive', name: 'Olives (10 medium)', kcal: 50, c: 3, p: 0.4, f: 5, fib: 1.5, na: 425, k: 14, ca: 16, mg: 1, fe: 0.4, vitC: 0, vitA: 19 },
-    { id: 'pickle', name: 'Pickle dill (1 spear)', kcal: 5, c: 1, p: 0.2, f: 0.1, fib: 0.6, na: 700, k: 50, ca: 12, mg: 5, fe: 0.2, vitC: 1, vitA: 4 },
-    { id: 'kimchi', name: 'Kimchi (1/2 cup)', kcal: 22, c: 4, p: 1.5, f: 0.3, fib: 1.5, na: 670, k: 220, ca: 33, mg: 9, fe: 0.6, vitC: 6, vitA: 80 },
+    { id: 'hummus', name: 'Hummus (1/4 cup)', kcal: 147, c: 9, p: 4, f: 11, fib: 3, na: 240, k: 193, ca: 30, mg: 47, fe: 1.6, vitC: 2, vitA: 0 },
+    { id: 'olive', name: 'Olives, ripe (10 large)', kcal: 50, c: 3, p: 0.4, f: 5, fib: 1.5, na: 323, k: 14, ca: 39, mg: 1, fe: 2.8, vitC: 0, vitA: 19 },
+    { id: 'pickle', name: 'Pickle dill (1 spear)', kcal: 5, c: 1, p: 0.2, f: 0.1, fib: 0.6, na: 283, k: 50, ca: 12, mg: 5, fe: 0.2, vitC: 1, vitA: 4 },
+    { id: 'kimchi', name: 'Kimchi (1/2 cup)', kcal: 11, c: 1.8, p: 1.5, f: 0.3, fib: 1.5, na: 374, k: 113, ca: 33, mg: 9, fe: 1.9, vitC: 0, vitA: 4 },
     { id: 'sauerkraut', name: 'Sauerkraut (1/2 cup)', kcal: 14, c: 3, p: 0.7, f: 0.1, fib: 2, na: 461, k: 116, ca: 21, mg: 8, fe: 1.2, vitC: 9, vitA: 1 },
     { id: 'tempeh-3oz', name: 'Tempeh (3 oz)', kcal: 165, c: 8, p: 17, f: 9, fib: 0, na: 7, k: 343, ca: 92, mg: 67, fe: 2.2, vitC: 0, vitA: 6 },
     { id: 'edamame-pod', name: 'Edamame in pods (1 cup)', kcal: 188, c: 14, p: 17, f: 8, fib: 8, na: 9, k: 676, ca: 98, mg: 99, fe: 3.5, vitC: 9, vitA: 16 },
@@ -447,13 +479,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     { id: 'macadamia', name: 'Macadamia nuts (1 oz)', kcal: 204, c: 4, p: 2.2, f: 21.5, fib: 2.4, na: 1, k: 104, ca: 24, mg: 37, fe: 1.1, vitC: 0, vitA: 0 },
     { id: 'brazil-nut', name: 'Brazil nuts (1 oz, ~6 nuts)', kcal: 187, c: 3, p: 4, f: 19, fib: 2, na: 1, k: 187, ca: 45, mg: 107, fe: 0.7, vitC: 0, vitA: 0 },
     { id: 'sesame-seeds', name: 'Sesame seeds (1 tbsp)', kcal: 52, c: 2.1, p: 1.6, f: 4.5, fib: 1.1, na: 1, k: 42, ca: 88, mg: 32, fe: 1.3, vitC: 0, vitA: 0 },
-    { id: 'hemp-seeds', name: 'Hemp seeds (1 tbsp)', kcal: 57, c: 1.7, p: 3.3, f: 4.5, fib: 0.8, na: 1, k: 60, ca: 7, mg: 64, fe: 1, vitC: 0, vitA: 0 },
-    { id: 'sunflower-butter', name: 'Sunflower butter (2 tbsp)', kcal: 200, c: 8, p: 7, f: 17, fib: 2, na: 130, k: 200, ca: 60, mg: 100, fe: 1.5, vitC: 0, vitA: 0 },
-    { id: 'almond-butter', name: 'Almond butter (2 tbsp)', kcal: 196, c: 7, p: 7, f: 18, fib: 3.3, na: 75, k: 240, ca: 111, mg: 89, fe: 1.1, vitC: 0, vitA: 0 },
+    { id: 'hemp-seeds', name: 'Hemp seeds (1 tbsp)', kcal: 57, c: 1.7, p: 3.3, f: 4.5, fib: 0.8, na: 1, k: 120, ca: 7, mg: 64, fe: 1, vitC: 0, vitA: 0 },
+    { id: 'sunflower-butter', name: 'Sunflower butter, salted (2 tbsp)', kcal: 200, c: 8, p: 7, f: 17, fib: 2, na: 106, k: 200, ca: 20, mg: 100, fe: 1.5, vitC: 0, vitA: 0 },
+    { id: 'almond-butter', name: 'Almond butter, salted (2 tbsp)', kcal: 196, c: 7, p: 7, f: 18, fib: 3.3, na: 75, k: 240, ca: 111, mg: 89, fe: 1.1, vitC: 0, vitA: 0 },
     { id: 'avocado-toast-bread', name: 'Sprouted-grain bread (1 slice)', kcal: 80, c: 15, p: 4, f: 0.5, fib: 3, na: 75, k: 80, ca: 0, mg: 24, fe: 1, vitC: 0, vitA: 0 },
     { id: 'cottage-low', name: 'Cottage cheese 1% (1/2 cup)', kcal: 81, c: 3.4, p: 14, f: 1.2, fib: 0, na: 459, k: 116, ca: 69, mg: 6, fe: 0.1, vitC: 0, vitA: 5 },
     { id: 'mozzarella', name: 'Mozzarella part-skim (1 oz)', kcal: 72, c: 0.8, p: 6.9, f: 4.5, fib: 0, na: 175, k: 24, ca: 222, mg: 7, fe: 0.1, vitC: 0, vitA: 50 },
-    { id: 'parmesan-grated', name: 'Parmesan grated (2 tbsp)', kcal: 43, c: 0.4, p: 3.8, f: 2.9, fib: 0, na: 175, k: 11, ca: 138, mg: 4, fe: 0.1, vitC: 0, vitA: 28 }
+    { id: 'parmesan-grated', name: 'Parmesan grated (2 tbsp)', kcal: 43, c: 0.4, p: 3.8, f: 2.9, fib: 0, na: 175, k: 11, ca: 85, mg: 4, fe: 0.1, vitC: 0, vitA: 28 }
   ];
 
   var NUTRITION_KIT_RECIPE_SEED = [
@@ -477,7 +509,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, omega-3, gluten-free, sheet-pan',
       ingredients: '4 salmon fillets (4-6 oz each)\n1 lb broccoli florets\n1 lb baby potatoes halved\n2 tbsp olive oil\n2 cloves garlic minced\nSalt + pepper + lemon',
       steps: '1. Preheat oven to 425°F.\n2. Toss potatoes with olive oil, garlic, salt, pepper. Roast 15 min.\n3. Add broccoli to pan, toss with more oil.\n4. Place salmon on pan, season with salt + pepper + lemon zest.\n5. Roast another 12-15 min until salmon flakes.\n6. Squeeze lemon juice over everything.',
-      notes: 'High-protein, high-omega-3, Maine-relevant. ~$5/serving.'
+      notes: 'Salmon gives protein and omega-3 fats. Maine-relevant.'
     },
     {
       id: 'lentil-soup',
@@ -488,7 +520,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'soup, vegan, high-fiber, budget, batch-cook',
       ingredients: '1 tbsp olive oil\n1 onion diced\n2 carrots diced\n2 cloves garlic minced\n1 tsp cumin\n1 tsp turmeric\n1 cup red lentils\n6 cups vegetable broth\n1 lemon (juiced)\n2 cups spinach\nSalt + pepper',
       steps: '1. Heat oil in large pot. Sauté onion + carrots 5 min.\n2. Add garlic + spices, cook 1 min.\n3. Add lentils + broth. Bring to boil.\n4. Simmer 20 min until lentils soft.\n5. Stir in lemon juice + spinach.\n6. Season. Serve warm.',
-      notes: 'Freezes great. ~$1.50/serving.'
+      notes: 'Freezes great. Budget-friendly.'
     },
     {
       id: 'taco-bowl',
@@ -499,7 +531,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, vegetarian, customizable, gluten-free',
       ingredients: '1 can black beans drained + rinsed\n1 cup brown rice cooked\n1 cup corn (frozen ok)\n1 avocado diced\n1 cup salsa\n1 cup shredded cheese (or vegan)\nLime + cilantro\nOptional: chicken/tofu',
       steps: '1. Warm beans with cumin in a pan, 5 min.\n2. Layer rice, beans, corn in bowls.\n3. Top with salsa, cheese, avocado.\n4. Squeeze lime, sprinkle cilantro.',
-      notes: 'Build-your-own friendly. ~$3/serving.'
+      notes: 'Build-your-own friendly.'
     },
     {
       id: 'greek-bowl',
@@ -521,7 +553,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'breakfast, high-protein, athlete-friendly',
       ingredients: '1 ripe banana\n2 eggs\n1/2 cup rolled oats\n1 tsp baking powder\n1/2 tsp vanilla\nPinch salt\nOptional: berries, chocolate chips',
       steps: '1. Blend all ingredients until smooth.\n2. Heat lightly oiled pan over medium heat.\n3. Pour 1/4 cup batter per pancake.\n4. Cook 2 min, flip, 1 min more.\n5. Stack + top with fruit or syrup.',
-      notes: '~20g protein per serving. Easy post-workout.'
+      notes: 'Protein + carbohydrate: a good after-practice meal.'
     },
     {
       id: 'stir-fry-tofu',
@@ -542,8 +574,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       servings: 8,
       tags: 'breakfast, batch-cook, freezable',
       ingredients: '8 large flour tortillas\n8 eggs scrambled\n1 can black beans\n2 cups potatoes diced + roasted\n2 cups shredded cheese\nSalsa, hot sauce',
-      steps: '1. Scramble eggs, set aside.\n2. Lay tortillas flat.\n3. Add eggs, beans, potatoes, cheese.\n4. Roll tight, wrap in foil.\n5. Freeze. Reheat 90 sec microwave (unwrapped) or 20 min oven (foil on).',
-      notes: 'Make 8, eat one a morning for 2 weeks.'
+      steps: '1. Scramble eggs, set aside.\n2. Lay tortillas flat.\n3. Add eggs, beans, potatoes, cheese.\n4. Roll tight, wrap in foil.\n5. Freeze. Reheat in the microwave (unwrapped) or oven (foil on) until steaming hot (165°F).',
+      notes: 'Make a batch, freeze them, and reheat one each morning.'
     },
     {
       id: 'tuna-melt',
@@ -587,7 +619,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'breakfast, batch-cook, freezable',
       ingredients: '3 cups rolled oats\n2 cups milk\n2 eggs\n1/4 cup maple syrup\n1 tsp vanilla\n2 cups frozen blueberries (or apples + cinnamon)\n1/2 cup chopped walnuts',
       steps: '1. Preheat oven 350°F.\n2. Mix oats, milk, eggs, syrup, vanilla.\n3. Fold in fruit + nuts.\n4. Pour in greased 9x9 dish.\n5. Bake 35 min until set.\n6. Cut into squares, reheat each morning.',
-      notes: 'Maine blueberry-friendly. Lasts 5 days.'
+      notes: 'Maine blueberry-friendly. Keeps 3 to 4 days in the fridge (USDA leftovers guide).'
     },
     {
       id: 'salmon-cakes',
@@ -631,7 +663,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'breakfast, vegetarian, no-cook, quick',
       ingredients: '2 slices whole-grain bread\n1 ripe avocado\n1 tbsp lemon juice\nSalt + red pepper flakes\nOptional toppings: poached egg, feta, cherry tomatoes, microgreens, everything bagel seasoning',
       steps: '1. Toast bread.\n2. Mash avocado with lemon + salt.\n3. Spread thick on toast.\n4. Top generously.',
-      notes: 'Add an egg = breakfast that holds you 4 hours.'
+      notes: 'Add an egg for more protein.'
     },
     {
       id: 'one-pot-pasta',
@@ -642,7 +674,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, vegetarian, one-pot, budget',
       ingredients: '12 oz pasta\n1 can crushed tomatoes (28 oz)\n3 cups water\n2 cloves garlic\n1 tsp oregano\n1 tsp basil\n1/2 cup parmesan\nOlive oil + salt + pepper',
       steps: '1. Combine pasta, tomatoes, water, garlic, herbs in large pot.\n2. Bring to boil, then reduce to simmer.\n3. Cook 12-15 min stirring occasionally until pasta tender + sauce thick.\n4. Stir in parmesan + olive oil.',
-      notes: 'One pot, dinner in 20 min. $1.50/serving. Holy grail recipe.'
+      notes: 'One pot, dinner in 20 min. Budget-friendly.'
     },
     {
       id: 'rice-cooker-chicken',
@@ -675,7 +707,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, budget, customizable',
       ingredients: '4 large baking potatoes\nButter + sour cream + cheese + chives\nChili (canned or homemade)\nBroccoli (steamed)\nBacon bits\nGreek yogurt',
       steps: '1. Preheat oven 425°F. Scrub potatoes, prick, rub with oil.\n2. Bake 60 min.\n3. Set out toppings buffet-style.\n4. Slit potatoes + load.',
-      notes: 'Everyone customizes their own. ~$1.50/serving.'
+      notes: 'Everyone customizes their own. Budget-friendly.'
     },
     {
       id: 'lentil-tacos',
@@ -741,7 +773,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, customizable, dorm-friendly',
       ingredients: '2 cups rice (cooked)\n1/4 cup cilantro chopped\n2 limes (zest + juice)\n1 tbsp olive oil\nBowl: black beans + corn + diced tomato + avocado + cheese + protein (chicken/tofu)',
       steps: '1. Cook rice + stir in lime + cilantro + oil.\n2. Layer rice + beans + corn + tomato + avocado.\n3. Add protein on top.\n4. Squeeze more lime.',
-      notes: 'Chipotle-style at home. Customizable. ~$3/serving.'
+      notes: 'Burrito-bowl style at home. Customizable.'
     },
     {
       id: 'grilled-cheese',
@@ -774,7 +806,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'breakfast, no-cook, vegan, meal-prep',
       ingredients: '1/4 cup chia seeds\n1 cup milk (or plant milk)\n1 tbsp maple syrup\n1/2 tsp vanilla\nToppings: berries, granola, nut butter',
       steps: '1. Whisk all ingredients in jar.\n2. Wait 10 min, whisk again to break clumps.\n3. Refrigerate 2+ hours.\n4. Top + eat.',
-      notes: '~10g fiber per serving. Gut-health friendly. Lasts 5 days.'
+      notes: 'Chia seeds add fiber. Keeps 3 to 4 days in the fridge.'
     },
     {
       id: 'pumpkin-soup',
@@ -796,7 +828,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, soup, comfort',
       ingredients: '8 oz rice noodles\n6 cups beef broth\n1 inch ginger sliced\n3 star anise\n1 cinnamon stick\n2 cloves\n8 oz beef sirloin sliced very thin\nToppings: bean sprouts + Thai basil + lime + jalapeño + cilantro',
       steps: '1. Simmer broth with spices 20 min.\n2. Strain.\n3. Cook noodles per package.\n4. Place noodles + raw beef in bowls.\n5. Pour hot broth over (cooks beef instantly).\n6. Top.',
-      notes: 'Real pho takes 8 hours; this 30-min version captures essentials.'
+      notes: 'Traditional pho broth simmers for hours; this 30-min version is a shortcut.'
     },
     {
       id: 'easy-curry',
@@ -807,7 +839,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'dinner, vegan, batch-cook, budget',
       ingredients: '2 cans chickpeas drained\n1 onion diced\n3 cloves garlic\n1 inch ginger\n1 tbsp curry powder\n1 can crushed tomatoes\n1 can coconut milk\nFresh cilantro + rice for serving',
       steps: '1. Sauté onion + garlic + ginger.\n2. Add curry powder, toast 1 min.\n3. Add chickpeas + tomatoes + coconut milk.\n4. Simmer 15 min.\n5. Serve over rice with cilantro.',
-      notes: 'Pantry-staple meal. ~$2/serving. Freezes well.'
+      notes: 'Pantry-staple meal. Freezes well.'
     },
     {
       id: 'meatballs',
@@ -851,7 +883,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'breakfast, no-cook, high-protein, quick',
       ingredients: '1 cup Greek yogurt\n1/2 cup granola\n1/2 cup berries\n1 tbsp honey\n1 tbsp chia seeds\n1 tbsp nut butter',
       steps: '1. Yogurt in bowl.\n2. Top with everything.\n3. Eat.',
-      notes: '~25g protein in 3 min. Perfect quick breakfast.'
+      notes: 'Greek yogurt gives protein. Ready in 3 min.'
     },
     {
       id: 'salmon-rice-bowl',
@@ -917,7 +949,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       tags: 'soup, vegan, budget, batch-cook',
       ingredients: '1 cup red lentils\n1 onion + 2 carrots diced\n3 cloves garlic\n1 tbsp cumin\n1 tsp coriander\n1 tsp turmeric\n6 cups vegetable broth\n1 lemon (juiced)\nFresh cilantro',
       steps: '1. Sauté onion, carrots 5 min.\n2. Add garlic + spices, toast 1 min.\n3. Add lentils + broth.\n4. Simmer 20 min until lentils break down.\n5. Stir in lemon juice + cilantro.',
-      notes: 'Cheap + nutritious + cozy. ~$1/serving. Freezes great.'
+      notes: 'Cheap + cozy. Freezes great.'
     },
     {
       id: 'beef-tacos',
@@ -988,178 +1020,224 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   ];
 
   var NUTRITION_KIT_MAINE_SEASONAL_CALENDAR = [
-    { month: 1, name: 'January', produce: ['Stored squash (butternut, acorn)', 'Stored potatoes', 'Stored carrots', 'Cabbage', 'Apples (storage)', 'Sauerkraut'], proteins: ['Frozen Maine seafood', 'Stored beans', 'Eggs (year-round)'], notes: 'Maple sap starts running late month if warm.', tradition: 'Winter root cellars sustain Maine for centuries.' },
-    { month: 2, name: 'February', produce: ['Sprouts (indoor)', 'Stored apples (Cortland keeps best)', 'Stored squash', 'Maple sap'], proteins: ['Cod (winter run)', 'Mackerel', 'Frozen blueberries'], notes: 'Greenhouse spinach starts.', tradition: 'Sap-collecting begins. Cabin-fever cooking month.' },
-    { month: 3, name: 'March', produce: ['Maple syrup (Maine Maple Sunday 4th Sun)', 'Stored apples', 'Microgreens', 'Sprouts'], proteins: ['Cod', 'Smelt (run)', 'Maple-cured pork'], notes: 'Maple Sunday — 4th Sunday in March. State holiday.', tradition: 'Sugarbush season, maple-on-snow, sugar-on-snow parties.' },
-    { month: 4, name: 'April', produce: ['Fiddleheads (mid-late month)', 'Wild leeks', 'Asparagus (late)', 'Greenhouse greens', 'Rhubarb (very late)'], proteins: ['Spring lamb', 'Spring eggs', 'Striped bass return'], notes: 'Fiddleheads are Maine\'s first wild green of year. Avoid raw (must cook).', tradition: 'Foraging season opens.' },
-    { month: 5, name: 'May', produce: ['Rhubarb', 'Asparagus', 'Spinach', 'Lettuce', 'Radishes', 'Strawberries (late)'], proteins: ['Striped bass', 'Cod', 'Lamb', 'Halibut'], notes: 'CSA shares often start.', tradition: 'Garden planting season.' },
-    { month: 6, name: 'June', produce: ['Strawberries (peak)', 'Asparagus', 'Snap peas', 'Salad greens', 'Radishes', 'Spinach', 'Garlic scapes', 'Rhubarb'], proteins: ['Striped bass', 'Halibut', 'Pollock'], notes: 'Wild strawberries — small, sweet, intense.', tradition: 'Strawberry shortcake season.' },
-    { month: 7, name: 'July', produce: ['Blueberries (start)', 'Cherries', 'Lettuce', 'Peas', 'Beans', 'Summer squash', 'Cucumbers', 'Carrots', 'Broccoli'], proteins: ['Lobster (peak)', 'Mackerel', 'Halibut', 'Striped bass'], notes: 'Lobster harvest peaks.', tradition: 'Lobster festival (Rockland) end of month.' },
-    { month: 8, name: 'August', produce: ['Wild blueberries (peak)', 'Sweet corn', 'Tomatoes', 'Cucumbers', 'Zucchini', 'Beans', 'Peppers', 'Beets', 'Stone fruit'], proteins: ['Lobster', 'Mackerel', 'Tuna (Atlantic bluefin)', 'Pollock'], notes: 'Wild blueberry harvest peak — Down East fields.', tradition: 'Blueberry festivals + canning + jam.' },
-    { month: 9, name: 'September', produce: ['Apples (start)', 'Pears', 'Pumpkins', 'Squash', 'Tomatoes', 'Corn', 'Beans', 'Cabbage', 'Kale', 'Brussels sprouts (start)'], proteins: ['Lobster (continues)', 'Striped bass (run south)', 'Mackerel'], notes: 'Maine apples come in: Cortland, Macoun, Honeycrisp.', tradition: 'Common Ground Country Fair (MOFGA), apple picking.' },
-    { month: 10, name: 'October', produce: ['Apples (peak)', 'Pumpkins', 'Winter squash', 'Cabbage', 'Brussels sprouts', 'Cauliflower', 'Carrots', 'Potatoes', 'Beets', 'Cranberries'], proteins: ['Lobster (winding down)', 'Bluefish'], notes: 'Peak apple month. Cider mills open.', tradition: 'Apple picking, cider donuts, harvest dinners.' },
-    { month: 11, name: 'November', produce: ['Apples (storage)', 'Cabbage', 'Brussels sprouts', 'Potatoes', 'Squash', 'Carrots', 'Turnips', 'Cranberries', 'Late kale'], proteins: ['Turkey (local)', 'Eggs', 'Frozen seafood'], notes: 'Garden mostly done. Storage produce dominates.', tradition: 'Thanksgiving — local turkey, cranberries, squash.' },
-    { month: 12, name: 'December', produce: ['Storage apples', 'Storage squash', 'Cabbage', 'Stored potatoes', 'Brussels sprouts (early)', 'Citrus (imported)'], proteins: ['Frozen seafood', 'Stored beans'], notes: 'Winter cooking begins.', tradition: 'Christmas baking, hot chocolate, soups, stews.' }
+    { month: 1, name: 'January', produce: ['Apples (stored)', 'Potatoes', 'Carrots', 'Beets', 'Cabbage', 'Winter squash', 'Onions', 'Parsnips', 'Rutabagas'], proteins: ['Beef', 'Pork', 'Dry beans'], notes: 'Farmers markets sell stored crops and greenhouse microgreens.', tradition: 'Root cellars and storage crops carry Maine through winter.' },
+    { month: 2, name: 'February', produce: ['Apples (stored)', 'Potatoes', 'Carrots', 'Cabbage', 'Winter squash', 'Microgreens', 'Mushrooms'], proteins: ['Beef', 'Pork', 'Dry beans'], notes: 'Stored crops plus greenhouse greens.', tradition: 'Winter soups and stews.' },
+    { month: 3, name: 'March', produce: ['Maple syrup', 'Apples (stored)', 'Potatoes', 'Carrots', 'Microgreens'], proteins: ['Beef', 'Pork', 'Dry beans'], notes: 'Maine Maple Sunday is the fourth Sunday in March. It is a yearly event at sugarhouses, not a state holiday.', tradition: 'Sugarhouse visits on Maine Maple Sunday weekend.' },
+    { month: 4, name: 'April', produce: ['Maple syrup', 'Fiddleheads (late April in southern Maine)', 'Stored apples and potatoes', 'Microgreens'], proteins: ['Beef', 'Pork', 'Dry beans'], notes: 'Fiddleheads must always be cooked: boil 15 minutes or steam 10 to 12 minutes (UMaine Extension). Never eat them raw.', tradition: 'Foraging season opens.' },
+    { month: 5, name: 'May', produce: ['Fiddleheads (mid to late May up north)', 'Greens', 'Spinach', 'Radishes', 'Scallions', 'Parsnips'], proteins: ['Eggs', 'Beef', 'Chicken', 'Lamb', 'Pork', 'Goat'], notes: 'Many outdoor farmers markets open for the season.', tradition: 'Garden planting season.' },
+    { month: 6, name: 'June', produce: ['Asparagus', 'Rhubarb', 'Peas', 'Greens (kale, chard, lettuce, spinach)', 'Radishes', 'Salad turnips'], proteins: ['Eggs', 'Chicken', 'Beef', 'Lamb', 'Pork'], notes: 'First full month of fresh local greens.', tradition: 'Rhubarb desserts.' },
+    { month: 7, name: 'July', produce: ['Strawberries (early July)', 'Blueberries', 'Raspberries', 'Peas', 'Zucchini', 'Summer squash', 'Broccoli', 'Carrots', 'Cucumbers', 'Garlic scapes', 'Corn (mid July)'], proteins: ['Eggs', 'Chicken', 'Beef', 'Lobster'], notes: 'Maine Open Farm Day is the fourth Sunday in July (maine.gov).', tradition: 'Strawberry shortcake.' },
+    { month: 8, name: 'August', produce: ['Blueberries', 'Corn', 'Tomatoes', 'Cucumbers', 'Zucchini', 'Beans', 'Peppers', 'Beets', 'Peaches', 'Melons'], proteins: ['Eggs', 'Chicken', 'Beef', 'Lobster'], notes: 'The Maine Lobster Festival in Rockland is held around the first weekend in August.', tradition: 'Blueberry pies, canning and jam.' },
+    { month: 9, name: 'September', produce: ['Apples', 'Tomatoes', 'Corn', 'Beans', 'Cabbage', 'Kale', 'Squash', 'Pumpkins', 'Melons', 'Raspberries'], proteins: ['Eggs', 'Chicken', 'Beef', 'Pork', 'Lobster'], notes: 'Apple season begins.', tradition: 'Common Ground Country Fair (MOFGA), apple picking.' },
+    { month: 10, name: 'October', produce: ['Apples', 'Pears', 'Pumpkins', 'Winter squash', 'Brussels sprouts', 'Cabbage', 'Cauliflower', 'Carrots', 'Potatoes', 'Leeks', 'Sweet potatoes'], proteins: ['Eggs', 'Beef', 'Pork', 'Chicken'], notes: 'Cider and apples at most markets.', tradition: 'Apple picking, cider, harvest dinners.' },
+    { month: 11, name: 'November', produce: ['Apples', 'Brussels sprouts', 'Cabbage', 'Carrots', 'Kale', 'Leeks', 'Parsnips', 'Potatoes', 'Squash', 'Turnips'], proteins: ['Eggs', 'Beef', 'Pork', 'Turkey'], notes: 'Outdoor markets wind down; storage crops take over.', tradition: 'Thanksgiving with local squash and potatoes.' },
+    { month: 12, name: 'December', produce: ['Apples', 'Cranberries', 'Beets', 'Brussels sprouts', 'Cabbage', 'Carrots', 'Onions', 'Potatoes', 'Squash', 'Sweet potatoes'], proteins: ['Beef', 'Pork', 'Dry beans'], notes: 'Winter markets sell stored crops.', tradition: 'Holiday baking, soups and stews.' }
   ];
 
+  // ACCURACY AUDIT 2026-11-24: rewritten for students. Daily needs + Upper Limits are the ages 14-18 values
+  // from the NIH ODS Health Professional fact sheets (Table 1 RDA/AI, ULs table). Quotes:
+  // - ODS Exercise and Athletic Performance: AND, DoC and ACSM say "there is no justification for their use by
+  //   young athletes"; "much of the research on these supplements involves young adults ... and not adolescents".
+  // - ODS Omega-3: "FDA has concluded that dietary supplements providing no more than 5 g/day EPA and DHA are safe".
+  // - ODS Vitamin B12: "The FNB did not establish a UL for vitamin B12 because of its low potential for toxicity".
+  // - ODS Vitamin K: "The FNB did not establish ULs for vitamin K because of its low potential for toxicity".
+  // - ODS Ashwagandha: "long-term safety is not known"; "adverse effects on liver function"; "might also affect
+  //   thyroid function". AASM Health Advisory (2022), Melatonin Use in Children and Adolescents: parents should
+  //   "discuss this decision with a pediatric health care professional"; content can differ from the label.
+  // - ODS Iron: "at least 43 U.S. children died from ingesting supplements containing high doses of iron" (1983-2000).
+  // - NCCIH Turmeric: "Highly bioavailable formulations of curcumin ... may harm your liver." NCCIH Glucosamine:
+  //   "studies have had inconsistent results". NCCIH CoQ10: "naturally present in the human body".
+  // Removed as unsourced: brand names (KSM-66, Suntheanine), "crosses blood-brain barrier", "NAC banned by sports
+  // orgs", "Glycinate best for sleep", turmeric 8000 mg "upper", melatonin 10 mg "upper".
   var NUTRITION_KIT_SUPPLEMENT_REF = [
-    { name: 'Vitamin D3', maineReason: 'Maine winter sun gap (Oct-Mar)', dose: '1000-2000 IU/day', upperLimit: '4000 IU adults', form: 'D3 better than D2', notes: 'Take with fat for absorption. Most Mainers benefit.' },
-    { name: 'Multivitamin', maineReason: 'Variable diet insurance', dose: '1 tablet/day', upperLimit: 'Per label', form: 'Adolescent-formulated', notes: 'Not necessary if eating well + varied. Useful for picky eaters or strict diets.' },
-    { name: 'Omega-3 fish oil', maineReason: 'Brain + heart, gap if low fish intake', dose: '500-1000 mg EPA+DHA/day', upperLimit: '3000 mg', form: 'Triglyceride form better absorbed', notes: 'Best for non-fish eaters. Maine fish eaters often get enough from food.' },
-    { name: 'Iron', maineReason: 'Menstruating teens, athletes, vegetarians', dose: 'Per MD — TEST FIRST', upperLimit: '45 mg', form: 'Heme iron (animal) better absorbed; ferrous bisglycinate gentler', notes: 'Test ferritin BEFORE supplementing. Too much iron is harmful.' },
-    { name: 'B12', maineReason: 'Vegans + strict vegetarians', dose: '500-1000 mcg/day', upperLimit: 'No upper (water-soluble)', form: 'Methylcobalamin or cyanocobalamin', notes: 'B12 only from animal foods or fortified plant foods.' },
-    { name: 'Folate', maineReason: 'Pregnancy planning, vegetarians', dose: '400-800 mcg/day', upperLimit: '1000 mcg', form: 'Methylfolate or folic acid', notes: 'Critical in early pregnancy (neural tube). US grains fortified.' },
-    { name: 'Calcium', maineReason: 'Dairy-low diets, peak bone-building', dose: '500-1000 mg/day', upperLimit: '2500 mg', form: 'Calcium citrate (better absorbed) or carbonate (with food)', notes: 'Food first (dairy, fortified plant milk, leafy greens). Split doses.' },
-    { name: 'Magnesium', maineReason: 'Sleep, muscle cramps, anxiety', dose: '200-400 mg/day', upperLimit: '350 mg from supplements', form: 'Glycinate (best for sleep), citrate (laxative effect)', notes: 'Most Americans under-consume. Glycinate form recommended.' },
-    { name: 'Zinc', maineReason: 'Immune, wound healing', dose: '15-25 mg/day', upperLimit: '40 mg', form: 'Zinc picolinate or citrate', notes: 'Long-term high doses block copper.' },
-    { name: 'Vitamin C', maineReason: 'Immune support, iron absorption', dose: '500-1000 mg/day', upperLimit: '2000 mg', form: 'Buffered ascorbate gentler on stomach', notes: 'Excess is peed out. Stomach upset > 1000 mg.' },
-    { name: 'Probiotic', maineReason: 'Gut health, post-antibiotic', dose: '5-20 billion CFU', upperLimit: 'Variable', form: 'Multi-strain with prebiotic', notes: 'Refrigerated forms generally more viable. Strain matters.' },
-    { name: 'Iodine', maineReason: 'Thyroid (vegan diet, no iodized salt)', dose: '150 mcg/day', upperLimit: '1100 mcg', form: 'Kelp or potassium iodide', notes: 'Iodized salt usually covers needs. Excess harms thyroid.' },
-    { name: 'Vitamin K2 (MK-7)', maineReason: 'Bone + cardiovascular health, vegan', dose: '90-180 mcg/day', upperLimit: 'No upper', form: 'MK-7 form preferred', notes: 'Newer research suggests benefits beyond what K1 provides.' },
-    { name: 'Choline', maineReason: 'Brain function, low in vegan diets', dose: '425-550 mg/day', upperLimit: '3500 mg', form: 'Choline bitartrate or alpha-GPC', notes: 'Eggs are richest food source. Many Americans under-consume.' },
-    { name: 'Selenium', maineReason: 'Thyroid, antioxidant', dose: '55-200 mcg/day', upperLimit: '400 mcg', form: 'Selenomethionine', notes: '1-2 Brazil nuts/day covers it. Excess is toxic.' },
-    { name: 'Coenzyme Q10', maineReason: 'Mitochondrial support, statin users', dose: '100-200 mg/day', upperLimit: 'No formal upper', form: 'Ubiquinol better absorbed than ubiquinone', notes: 'Mostly relevant for adults on statins or with heart conditions.' },
-    { name: 'Creatine', maineReason: 'Athletic performance, strength', dose: '3-5 g/day', upperLimit: 'No upper at recommended doses', form: 'Monohydrate (most researched)', notes: 'Most-researched sports supplement. Safe for healthy teens 16+.' },
-    { name: 'Protein powder', maineReason: 'Athletes, vegetarians short on protein', dose: '20-30 g/serving', upperLimit: 'Variable', form: 'Whey (animal) or pea/rice (vegan)', notes: 'Food-first; supplement when food doesn\'t hit needs.' },
-    { name: 'Melatonin', maineReason: 'Sleep onset issues, jet lag', dose: '0.3-3 mg', upperLimit: '10 mg short-term', form: 'Sustained-release or quick', notes: 'AAP: caution in adolescents. Sleep hygiene first. Off-label long-term use under-studied.' },
-    { name: 'Glucosamine', maineReason: 'Joint support (older athletes, OA)', dose: '1500 mg/day', upperLimit: '1500 mg', form: 'Glucosamine sulfate', notes: 'Mixed evidence; works for some, not all.' },
-    { name: 'Turmeric/Curcumin', maineReason: 'Inflammation', dose: '500-1000 mg/day', upperLimit: '8000 mg', form: 'Curcumin with black pepper (piperine) for absorption', notes: 'Poor absorption without piperine or fat.' },
-    { name: 'Magnesium L-threonate', maineReason: 'Brain/cognitive function', dose: '1500-2000 mg/day', upperLimit: 'See magnesium', form: 'L-threonate (crosses blood-brain barrier)', notes: 'Newer form for cognitive support.' },
-    { name: 'Ashwagandha', maineReason: 'Stress, anxiety', dose: '300-600 mg/day', upperLimit: '600 mg', form: 'KSM-66 standardized', notes: 'Not for pregnancy, autoimmune conditions, or with thyroid meds.' },
-    { name: 'L-theanine', maineReason: 'Calm focus, anxiety', dose: '100-400 mg/day', upperLimit: 'No formal upper', form: 'Suntheanine form', notes: 'Often paired with caffeine for focused calm.' },
-    { name: 'NAC (N-Acetyl Cysteine)', maineReason: 'Antioxidant, lung health', dose: '600-1800 mg/day', upperLimit: 'No formal upper', form: 'Standard NAC', notes: 'Banned by some sports orgs. Check before use as athlete.' },
-    { name: 'Fish oil (high-EPA)', maineReason: 'Depression/mood support', dose: '1000-2000 mg EPA/day', upperLimit: '3000 mg', form: 'Triglyceride form, high-EPA ratio', notes: 'Higher EPA than DHA may better support mood (research evolving).' },
-    { name: 'Beetroot powder', maineReason: 'Athletic endurance', dose: '500 mg/day', upperLimit: 'No upper', form: 'Standardized powder', notes: 'Nitrates improve oxygen efficiency. Eat real beets for similar effect.' },
-    { name: 'Collagen', maineReason: 'Joint, skin, gut support', dose: '10-20 g/day', upperLimit: 'No formal upper', form: 'Hydrolyzed peptides', notes: 'Animal-derived. Evidence emerging — not magic.' },
-    { name: 'Spirulina', maineReason: 'Iron, B-vitamins (vegan)', dose: '1-3 g/day', upperLimit: '3 g', form: 'Pure spirulina (third-party tested)', notes: 'Heavy-metal contamination is a risk — buy reputable brands.' },
-    { name: 'Cod liver oil', maineReason: 'Omega-3 + vit D + vit A (Maine traditional)', dose: 'Per label', upperLimit: 'Watch vit A toxicity', form: 'Liquid or capsule', notes: 'Maine traditional remedy. Watch combined vit A if also multivit.' }
+    { name: 'Vitamin D', maineReason: 'People who get little sun or few fortified foods (milk, fortified plant milk)', dose: 'Ages 14–18 need 600 IU (15 mcg) a day from all sources', upperLimit: '4,000 IU a day (ages 9 and up)', form: 'D3 or D2', notes: 'Food alone rarely gives enough, so fortified foods matter. Ask a doctor before taking a supplement; a blood test can check your level.' },
+    { name: 'Multivitamin', maineReason: 'People who cannot eat a varied diet', dose: 'Not needed by most teens who eat a varied diet', upperLimit: 'Check every nutrient against its upper limit', form: 'Age-appropriate formula', notes: 'A doctor or dietitian can say whether one is useful for you.' },
+    { name: 'Omega-3 fish oil', maineReason: 'People who eat little or no fish', dose: 'No US daily amount is set for EPA + DHA. The AHA suggests 1–2 servings of seafood a week', upperLimit: 'No official upper limit; FDA considers up to 5 g a day of EPA + DHA from supplements safe for adults', form: 'Fish oil, or algae oil (vegan)', notes: 'Food first: fatty fish twice a week covers most people.' },
+    { name: 'Iron', maineReason: 'Teen girls with heavy periods, vegetarians, some athletes', dose: 'Ages 14–18 need 11 mg (boys) or 15 mg (girls) a day from all sources', upperLimit: '45 mg a day (ages 14 and up)', form: 'Only with a doctor', notes: 'Get a blood test first. Too much iron is harmful. Keep iron pills away from young children: an overdose can kill them.' },
+    { name: 'B12', maineReason: 'People who eat a vegan diet', dose: 'Ages 14 and up need 2.4 mcg a day', upperLimit: 'No upper limit set (low risk of harm)', form: 'Fortified foods or a supplement', notes: 'B12 is found naturally only in animal foods, so vegans need fortified foods or a supplement.' },
+    { name: 'Folate (folic acid)', maineReason: 'Anyone who could become pregnant', dose: 'Ages 14 and up need 400 mcg DFE a day from all sources', upperLimit: '800 mcg of folic acid a day (ages 14–18)', form: 'Folic acid', notes: 'US grain products are fortified with folic acid.' },
+    { name: 'Calcium', maineReason: 'People who eat little dairy or fortified plant milk', dose: 'Ages 9–18 need 1,300 mg a day from all sources', upperLimit: '3,000 mg a day (ages 9–18)', form: 'Citrate or carbonate (carbonate with food)', notes: 'Food first: milk, yogurt, fortified plant milk, calcium-set tofu.' },
+    { name: 'Magnesium', maineReason: 'Rarely needed from pills', dose: 'Ages 14–18 need 410 mg (boys) or 360 mg (girls) a day from all sources', upperLimit: '350 mg a day from supplements only (ages 9 and up)', form: 'Several forms', notes: 'Too much from supplements can cause diarrhea. Food first: seeds, nuts, beans, whole grains.' },
+    { name: 'Zinc', maineReason: 'Rarely needed from pills', dose: 'Ages 14–18 need 11 mg (boys) or 9 mg (girls) a day', upperLimit: '34 mg a day (ages 14–18)', form: 'Several forms', notes: 'Taking too much for a long time can cause low copper.' },
+    { name: 'Vitamin C', maineReason: 'Rarely needed from pills', dose: 'Ages 14–18 need 75 mg (boys) or 65 mg (girls) a day', upperLimit: '1,800 mg a day (ages 14–18)', form: 'Ascorbic acid', notes: 'One orange has about 70 mg. Large doses can cause stomach upset and diarrhea.' },
+    { name: 'Probiotic', maineReason: 'Ask a doctor', dose: 'No daily need', upperLimit: 'No official upper limit', form: 'Many strains; effects depend on the strain', notes: 'Research results differ by strain and by health problem. People with weak immune systems should talk to a doctor first.' },
+    { name: 'Iodine', maineReason: 'People who use no iodized salt and eat little dairy or seafood', dose: 'Ages 14 and up need 150 mcg a day', upperLimit: '900 mcg a day (ages 14–18)', form: 'Potassium iodide', notes: 'Iodized salt usually covers needs. Too much iodine can harm the thyroid.' },
+    { name: 'Vitamin K', maineReason: 'Rarely needed from pills', dose: 'Ages 14–18 need 75 mcg a day (Adequate Intake)', upperLimit: 'No upper limit set', form: 'K1 or K2', notes: 'Leafy greens are rich sources. People taking blood thinners must talk to a doctor.' },
+    { name: 'Choline', maineReason: 'People who eat no eggs or meat', dose: 'Ages 14–18 need 550 mg (boys) or 400 mg (girls) a day (Adequate Intake)', upperLimit: '3,000 mg a day (ages 14–18)', form: 'Several forms', notes: 'Eggs are one of the richest food sources.' },
+    { name: 'Selenium', maineReason: 'Rarely needed from pills', dose: 'Ages 14 and up need 55 mcg a day', upperLimit: '400 mcg a day (ages 14 and up)', form: 'Several forms', notes: 'One Brazil nut can have more than a full day of selenium, so eat only a few. Too much is toxic.' },
+    { name: 'Coenzyme Q10', maineReason: 'Mostly studied in adults with heart problems', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Your body makes its own.' },
+    { name: 'Creatine', maineReason: 'Marketed to athletes', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Sports nutrition experts (AND, Dietitians of Canada, ACSM) say there is no justification for supplements in young athletes; most research is in adults.' },
+    { name: 'Protein powder', maineReason: 'Marketed to athletes', dose: 'Most teens get enough protein from food. Ages 14–18 need about 46–52 g a day', upperLimit: 'No official upper limit', form: '—', notes: 'Food first. Ask a dietitian before using one.' },
+    { name: 'Melatonin', maineReason: 'Sleep problems', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'The American Academy of Sleep Medicine says to talk with a health care professional first. Better sleep habits help many sleep problems. Product amounts often differ from the label.' },
+    { name: 'Glucosamine', maineReason: 'Studied in adults with joint pain', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Research in adults is mixed.' },
+    { name: 'Turmeric / curcumin', maineReason: 'Marketed for inflammation', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Turmeric as a cooking spice is fine. NIH says some strong curcumin pills may harm the liver.' },
+    { name: 'Magnesium L-threonate', maineReason: 'Marketed for the brain', dose: 'A form of magnesium. Not recommended for teens unless a doctor suggests it.', upperLimit: 'Counts toward the magnesium supplement limit (350 mg)', form: '—', notes: 'Brain claims are not well supported in people.' },
+    { name: 'Ashwagandha', maineReason: 'Marketed for stress', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'NIH ODS: long-term safety is not known; there are reports of liver problems and thyroid effects.' },
+    { name: 'L-theanine', maineReason: 'Marketed for calm', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Found naturally in tea. Research in teens is very limited.' },
+    { name: 'NAC (N-acetyl cysteine)', maineReason: 'Used in hospitals as a medicine', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Used as a medicine for some poisonings; only use with a doctor.' },
+    { name: 'Fish oil (high-EPA)', maineReason: 'Studied for mood', dose: 'High-dose omega-3 pills: not recommended for teens unless a doctor suggests it.', upperLimit: 'See omega-3 fish oil', form: '—', notes: 'Mood research is mixed. Depression needs care from a doctor or therapist.' },
+    { name: 'Beetroot powder', maineReason: 'Marketed for endurance', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Beets and leafy greens give the same nitrates as food.' },
+    { name: 'Collagen', maineReason: 'Marketed for joints and skin', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Your body makes collagen from protein and vitamin C in food.' },
+    { name: 'Spirulina', maineReason: 'Marketed as a superfood', dose: 'Not a nutrient. Not recommended for teens unless a doctor suggests it.', upperLimit: 'No official upper limit', form: '—', notes: 'Ask a doctor first. It does not replace a varied diet.' },
+    { name: 'Cod liver oil', maineReason: 'Traditional source of omega-3 and vitamins A and D', dose: 'Ask a doctor first', upperLimit: 'Watch vitamin A: 2,800 mcg a day upper limit (ages 14–18)', form: '—', notes: 'It is very high in vitamin A, which can be toxic. Do not combine with other vitamin A supplements.' }
   ];
 
   var NUTRITION_KIT_ALLERGEN_REF = [
-    { name: 'Milk (dairy)', topNine: true, hiddenSources: ['Whey protein in bars', 'Butter in breaded foods', 'Casein in non-dairy creamers', 'Caramel color (some)', 'Lactose in pills'], severity: 'Variable — IgE allergy can be anaphylactic; intolerance is GI', schoolNotes: 'School can offer dairy-free alternatives. Most pizza cheese contains dairy.', emergencyMed: 'EpiPen if IgE-allergic + anaphylaxis history' },
-    { name: 'Eggs', topNine: true, hiddenSources: ['Mayo + dressings', 'Pasta (egg-based)', 'Some pretzels (egg wash)', 'Marshmallows', 'Egg substitute', 'Some vaccines (yellow fever)'], severity: 'Often anaphylactic in children; many outgrow', schoolNotes: 'Egg-free baking accommodations available. Watch hidden in baked goods.', emergencyMed: 'EpiPen if anaphylactic' },
-    { name: 'Peanut', topNine: true, hiddenSources: ['Asian cuisine sauces', 'Granola bars', 'Cross-contamination in bakeries', 'Some chili recipes', 'African dishes'], severity: 'Highly anaphylactic potential — top cause of food-anaphylaxis deaths', schoolNotes: 'Peanut-free zones common. Read every label.', emergencyMed: 'EpiPen standard. Both at school + home.' },
-    { name: 'Tree nuts', topNine: true, hiddenSources: ['Pesto (pine nuts)', 'Marzipan (almonds)', 'Worcestershire (anchovies + walnuts)', 'Granola', 'Asian dishes', 'Holiday baking'], severity: 'Often anaphylactic. NOT peanut-allergic ≠ tree-nut-allergic, separate', schoolNotes: 'Often grouped with peanut bans. Specify which nuts.', emergencyMed: 'EpiPen' },
-    { name: 'Soy', topNine: true, hiddenSources: ['Most processed foods (lecithin)', 'Asian sauces', 'Many veg burgers', 'Some breads', 'Some chocolates', 'Edamame = soy'], severity: 'Usually mild but can be anaphylactic', schoolNotes: 'Soy hides everywhere. Read labels constantly.', emergencyMed: 'Antihistamine usually; EpiPen if anaphylactic' },
-    { name: 'Wheat', topNine: true, hiddenSources: ['Soy sauce (most)', 'Many sausages', 'Beer', 'Modified food starch (sometimes)', 'Couscous (is wheat)', 'Seitan = wheat gluten'], severity: 'Wheat allergy ≠ celiac ≠ gluten sensitivity', schoolNotes: 'Cafeterias often have gluten-free options.', emergencyMed: 'Allergy: EpiPen possible. Celiac: not allergy but autoimmune.' },
-    { name: 'Fish', topNine: true, hiddenSources: ['Caesar dressing (anchovies)', 'Worcestershire sauce', 'Asian fish sauce', 'Some fertilizers', 'Some glucosamine supplements'], severity: 'Often anaphylactic', schoolNotes: 'Maine seafood-heavy state. Common.', emergencyMed: 'EpiPen' },
-    { name: 'Shellfish', topNine: true, hiddenSources: ['Asian sauces', 'Fish sauce (some)', 'Imitation seafood (often contains shellfish)', 'Glucosamine supplements'], severity: 'Often anaphylactic + lifelong', schoolNotes: 'Crustaceans (shrimp/lobster) vs mollusks (oysters/clams) often separate allergies. Maine context: lobster industry — watch.', emergencyMed: 'EpiPen' },
-    { name: 'Sesame', topNine: true, hiddenSources: ['Tahini (sesame paste)', 'Hummus', 'Many breads (toppings)', 'Asian dishes', 'Spice blends', 'Some falafel', 'Halvah'], severity: 'Often anaphylactic. Added to top 9 in 2021.', schoolNotes: 'Schools still adjusting labeling. Many breads now contain.', emergencyMed: 'EpiPen' },
-    { name: 'Corn', topNine: false, hiddenSources: ['Almost all processed foods (corn syrup, corn starch)', 'Many medications + vitamins', 'Baking powder', 'Powdered sugar', 'Some vinegar'], severity: 'Rare but extremely difficult to avoid', schoolNotes: 'Severe corn allergy = personal food only. Major life adaptation.', emergencyMed: 'EpiPen if anaphylactic' },
-    { name: 'Nightshades', topNine: false, hiddenSources: ['Tomatoes, peppers, potatoes, eggplant', 'Paprika', 'Tomato in many sauces'], severity: 'Usually mild inflammation/GI — not classic allergy', schoolNotes: 'More restriction than allergy. Often debated.', emergencyMed: 'Usually not needed' },
-    { name: 'Sulfites', topNine: false, hiddenSources: ['Dried fruits', 'Wine', 'Lemon juice (bottled)', 'Some dried potato products', 'Some salad bar prep'], severity: 'Can trigger asthma severely', schoolNotes: 'Salad bar prep often contains sulfites for color preservation.', emergencyMed: 'Inhaler if asthmatic' }
+    { name: 'Milk (dairy)', topNine: true, hiddenSources: ['Whey protein in bars', 'Butter in breaded foods', 'Casein in some "non-dairy" creamers', 'Some medicines (lactose filler)'], severity: 'A milk allergy can cause a severe reaction. Lactose intolerance is different: it upsets the stomach but is not an allergy.', schoolNotes: 'Ask the cafeteria about dairy-free choices. Pizza cheese is dairy.', emergencyMed: 'Epinephrine (EpiPen) if prescribed' },
+    { name: 'Eggs', topNine: true, hiddenSources: ['Mayo + dressings', 'Pasta (egg-based)', 'Some pretzels (egg wash)', 'Some marshmallows', 'Some egg substitutes', 'Some vaccines (yellow fever) — ask a doctor'], severity: 'Can cause severe reactions. Many children outgrow it.', schoolNotes: 'Egg-free baking accommodations available. Watch hidden in baked goods.', emergencyMed: 'Epinephrine (EpiPen) if prescribed' },
+    { name: 'Peanut', topNine: true, hiddenSources: ['Asian cuisine sauces', 'Granola bars', 'Cross-contamination in bakeries', 'Some chili recipes', 'African dishes'], severity: 'Can cause severe, life-threatening reactions.', schoolNotes: 'Some schools have peanut-free tables. Read every label.', emergencyMed: 'Epinephrine (EpiPen) if prescribed. Keep one at school.' },
+    { name: 'Tree nuts', topNine: true, hiddenSources: ['Pesto (often pine nuts or walnuts)', 'Marzipan (almonds)', 'Granola', 'Some sauces', 'Holiday baking'], severity: 'Can cause severe reactions. Peanut and tree nut allergies are different, but some people have both.', schoolNotes: 'Often grouped with peanut bans. Specify which nuts.', emergencyMed: 'EpiPen' },
+    { name: 'Soy', topNine: true, hiddenSources: ['Soy lecithin in some processed foods', 'Soy sauce and some other sauces', 'Many veggie burgers', 'Some breads', 'Some chocolates', 'Edamame = soy'], severity: 'Often mild, but it can cause a severe reaction.', schoolNotes: 'Soy is in many packaged foods. Read labels.', emergencyMed: 'Follow your allergy action plan' },
+    { name: 'Wheat', topNine: true, hiddenSources: ['Soy sauce (most)', 'Many sausages', 'Beer', 'Modified food starch (sometimes)', 'Couscous (is wheat)', 'Seitan = wheat gluten'], severity: 'Wheat allergy ≠ celiac ≠ gluten sensitivity', schoolNotes: 'Cafeterias often have gluten-free options.', emergencyMed: 'Allergy: follow your action plan. Celiac disease is not an allergy; it is an autoimmune condition.' },
+    { name: 'Fish', topNine: true, hiddenSources: ['Caesar dressing (anchovies)', 'Worcestershire sauce (anchovies)', 'Fish sauce'], severity: 'Can cause severe reactions. Often lifelong.', schoolNotes: 'Seafood is common at Maine events. Ask what is in a dish.', emergencyMed: 'EpiPen' },
+    { name: 'Shellfish', topNine: true, hiddenSources: ['Some sauces (shrimp paste, some fish sauces)', 'Imitation seafood (may contain crab)', 'Some glucosamine supplements (made from shells)'], severity: 'Can cause severe reactions. Often lifelong.', schoolNotes: 'US labels must name crustacean shellfish (shrimp, crab, lobster). Mollusks (clams, oysters, scallops) are not one of the 9 major allergens, so labels may not list them. Lobster is everywhere in Maine.', emergencyMed: 'EpiPen' },
+    { name: 'Sesame', topNine: true, hiddenSources: ['Tahini (sesame paste)', 'Hummus', 'Many breads (toppings)', 'Asian dishes', 'Spice blends', 'Some falafel', 'Halvah'], severity: 'Can cause severe reactions. The FASTER Act (2021) made sesame the 9th major allergen; labels must list it since January 1, 2023.', schoolNotes: 'Some bakeries now add sesame on purpose. Read bread labels.', emergencyMed: 'EpiPen' },
+    { name: 'Corn', topNine: false, hiddenSources: ['Almost all processed foods (corn syrup, corn starch)', 'Many medications + vitamins', 'Baking powder', 'Powdered sugar', 'Some vinegar'], severity: 'Rare, but hard to avoid because corn is in many ingredients.', schoolNotes: 'An allergist can help plan safe school food.', emergencyMed: 'Epinephrine (EpiPen) if prescribed' },
+    { name: 'Nightshades', topNine: false, hiddenSources: ['Tomatoes, peppers, potatoes, eggplant', 'Paprika', 'Tomato in many sauces'], severity: 'A true allergy to these foods is uncommon. Talk to an allergist before cutting foods out.', schoolNotes: 'Not one of the 9 major allergens.', emergencyMed: 'Follow your allergy action plan' },
+    { name: 'Sulfites', topNine: false, hiddenSources: ['Dried fruits', 'Bottled lemon juice', 'Some dried potato products'], severity: 'Can trigger asthma attacks in some people with asthma.', schoolNotes: 'Since 1986 the FDA has not allowed sulfites on fresh fruits and vegetables meant to be eaten raw (like salad bars). Packaged foods must list them.', emergencyMed: 'Follow your asthma action plan' }
   ];
 
   var NUTRITION_KIT_COOKING_TECH = [
-    { name: 'Roasting', tools: 'Oven, sheet pan', tempF: '400-450', usedFor: 'Vegetables, chicken pieces, fish fillets, potatoes', why: 'High heat caramelizes natural sugars (Maillard reaction) for deep flavor.', mistakes: 'Crowded pan = steaming not roasting. Use 1+ layers.' },
+    { name: 'Roasting', tools: 'Oven, sheet pan', tempF: '400-450', usedFor: 'Vegetables, chicken pieces, fish fillets, potatoes', why: 'High heat caramelizes natural sugars (Maillard reaction) for deep flavor.', mistakes: 'Crowded pan = steaming, not roasting. Spread food in one layer.' },
     { name: 'Sautéing', tools: 'Pan, oil', tempF: '350-400', usedFor: 'Vegetables, small protein pieces, garlic + aromatics', why: 'Quick high-heat method preserves texture + color.', mistakes: 'Cold pan = sticking. Heat pan first, then add oil.' },
-    { name: 'Boiling', tools: 'Pot, water', tempF: '212', usedFor: 'Pasta, rice (some methods), eggs, vegetables', why: 'Simple, fast, hands-off.', mistakes: 'Salt the water — for pasta should taste like sea.' },
-    { name: 'Steaming', tools: 'Pot + steamer basket', tempF: '212', usedFor: 'Veggies, dumplings, fish', why: 'Preserves nutrients better than boiling (no water-leaching).', mistakes: 'Letting water dry out and scorching the pot.' },
+    { name: 'Boiling', tools: 'Pot, water', tempF: '212 (at sea level)', usedFor: 'Pasta, rice (some methods), eggs, vegetables', why: 'Simple, fast, hands-off. Water boils at a lower temperature high in the mountains.', mistakes: 'Letting the pot boil over. Lower the heat once it boils.' },
+    { name: 'Steaming', tools: 'Pot + steamer basket', tempF: '212', usedFor: 'Veggies, dumplings, fish', why: 'Less vitamin C and other water-soluble vitamins leach out than when food sits in boiling water.', mistakes: 'Letting water dry out and scorching the pot.' },
     { name: 'Braising', tools: 'Heavy pot with lid', tempF: '300-325', usedFor: 'Tough cuts (chuck, shanks), greens', why: 'Slow + moist heat breaks down collagen for tender meat.', mistakes: 'Boiling too vigorously = tough meat. Should barely simmer.' },
     { name: 'Stir-frying', tools: 'Wok or large skillet', tempF: '450+', usedFor: 'Veggies + protein cut small', why: 'Very high heat, fast cook = crisp + tender, retains nutrients.', mistakes: 'Pan not hot enough = steaming. Wait for smoking-hot pan.' },
     { name: 'Grilling', tools: 'Grill (gas/charcoal)', tempF: '350-500', usedFor: 'Steaks, burgers, fish, veggie skewers', why: 'Direct flame char + smoke flavor.', mistakes: 'Flipping too often. Let crust form first.' },
     { name: 'Poaching', tools: 'Saucepan + liquid', tempF: '160-180', usedFor: 'Eggs, fish, delicate proteins, fruit', why: 'Gentle cook prevents toughening of delicate proteins.', mistakes: 'Letting water boil — should look like champagne bubbles.' },
-    { name: 'Baking', tools: 'Oven', tempF: 'Recipe-specific', usedFor: 'Bread, cakes, casseroles, sheet meals', why: 'All-around dry heat — controlled environment.', mistakes: 'Opening oven repeatedly drops temp + ruins baking.' },
+    { name: 'Baking', tools: 'Oven', tempF: 'Recipe-specific', usedFor: 'Bread, cakes, casseroles, sheet meals', why: 'All-around dry heat — controlled environment.', mistakes: 'Opening the oven again and again lets heat out.' },
     { name: 'Pan-searing', tools: 'Heavy skillet (cast iron ideal)', tempF: '450+', usedFor: 'Steaks, chops, fish, scallops', why: 'Hot crust = deep flavor (Maillard).', mistakes: 'Wet protein = no crust. Pat dry first. Don\'t move while searing.' },
-    { name: 'Slow-cooking', tools: 'Slow cooker / Crock-Pot', tempF: 'Low 200 / High 300', usedFor: 'Stews, chili, pulled pork, soups', why: 'Hands-off + tenderizes tough cuts.', mistakes: 'Adding dairy at start = curdles. Add at end.' },
-    { name: 'Pressure cooking (Instant Pot)', tools: 'Pressure cooker', tempF: '240+', usedFor: 'Beans, rice, stocks, tough meats, hard-boiled eggs', why: 'Cooks 3-10x faster than stove. Excellent for legumes.', mistakes: 'Forgetting to release pressure safely. Read manual.' },
+    { name: 'Slow-cooking', tools: 'Slow cooker', tempF: '170-280 (USDA)', usedFor: 'Stews, chili, pulled pork, soups', why: 'Hands-off + tenderizes tough cuts. USDA: always thaw meat or poultry before it goes in.', mistakes: 'Putting frozen meat in the slow cooker, or reheating leftovers in it (USDA says not to).' },
+    { name: 'Pressure cooking (Instant Pot)', tools: 'Pressure cooker', tempF: 'About 250 (at 15 psi)', usedFor: 'Beans, rice, stocks, tough meats, hard-boiled eggs', why: 'Higher pressure raises the boiling point, so food cooks much faster than in an open pot.', mistakes: 'Forgetting to release pressure safely. Read manual.' },
     { name: 'Blanching', tools: 'Pot of boiling water + ice bath', tempF: '212 then 32', usedFor: 'Prepping veggies for freezing, removing tomato skins', why: 'Brief shock cooks lightly + ice-bath locks color.', mistakes: 'Skipping ice bath — continues cooking + loses color.' },
     { name: 'Toasting nuts', tools: 'Dry pan or oven', tempF: '325 oven', usedFor: 'Almonds, walnuts, pecans, sesame seeds', why: 'Releases oils + deepens flavor dramatically.', mistakes: 'Walking away — burns fast. Watch + stir.' },
-    { name: 'Caramelizing onions', tools: 'Skillet + low heat', tempF: '300', usedFor: 'Soups, sandwiches, pasta, dips', why: 'Slow break-down of onion sugars to deep sweet flavor.', mistakes: 'Cranking heat to rush it — burns instead of caramelizing.' },
+    { name: 'Caramelizing onions', tools: 'Skillet + low heat', tempF: 'Low heat', usedFor: 'Soups, sandwiches, pasta, dips', why: 'Slow break-down of onion sugars to deep sweet flavor.', mistakes: 'Cranking heat to rush it — burns instead of caramelizing.' },
     { name: 'Mise en place', tools: 'Knife + cutting board + bowls', tempF: 'N/A', usedFor: 'All recipes', why: 'French for "everything in place." Prep + measure all ingredients BEFORE you start cooking. Prevents chaos.', mistakes: 'Starting to cook before all ingredients are ready.' },
-    { name: 'Resting meat', tools: 'Cutting board + foil', tempF: 'N/A', usedFor: 'All meat after cooking', why: 'Let meat rest 5-10 min before cutting — juices redistribute.', mistakes: 'Cutting immediately = dry meat, juices on the board.' },
+    { name: 'Resting meat', tools: 'Cutting board', tempF: 'N/A', usedFor: 'Steaks, chops and roasts after cooking', why: 'USDA counts a 3-minute rest after 145°F as part of safe cooking for beef, pork, veal and lamb steaks, chops and roasts.', mistakes: 'Cutting before the 3-minute rest.' },
     { name: 'Reducing sauce', tools: 'Wide pan', tempF: 'Simmer', usedFor: 'Thickening + concentrating flavor', why: 'Evaporating water concentrates everything — flavor intensifies.', mistakes: 'Using narrow pot — slower evaporation.' },
-    { name: 'Whisking eggs', tools: 'Whisk', tempF: 'N/A', usedFor: 'Scrambles, omelets, batters', why: 'Incorporates air for fluffier texture.', mistakes: 'Adding salt too early — gets watery eggs.' },
+    { name: 'Whisking eggs', tools: 'Whisk', tempF: 'N/A', usedFor: 'Scrambles, omelets, batters', why: 'Incorporates air for fluffier texture.', mistakes: 'Stopping too soon leaves streaks of white.' },
     { name: 'Folding (batter)', tools: 'Spatula', tempF: 'N/A', usedFor: 'Combining whipped cream/egg whites into batter', why: 'Preserves air bubbles for light texture.', mistakes: 'Stirring instead of folding — deflates everything.' },
-    { name: 'Resting bread dough', tools: 'Bowl + cloth', tempF: 'Warm room', usedFor: 'Yeast breads', why: 'Yeast needs time to develop flavor + rise.', mistakes: 'Rushing the rise. Let it double.' },
-    { name: 'Tempering chocolate', tools: 'Bowl + thermometer', tempF: '88-90', usedFor: 'Chocolate-dipped foods', why: 'Crystallizes chocolate properly for shiny + snappy result.', mistakes: 'Overheating — chocolate seizes.' },
-    { name: 'Marinating', tools: 'Bowl + ziplock', tempF: 'Fridge', usedFor: 'Meat, tofu, vegetables', why: 'Adds flavor + can tenderize (acid-based).', mistakes: 'Too long in acid-marinade — meat gets mushy. 30 min - 4 hrs for most.' },
-    { name: 'Brining', tools: 'Container + water + salt', tempF: 'Fridge', usedFor: 'Turkey, chicken, pork, fish', why: 'Salt water osmosis = juicier meat.', mistakes: 'Pre-brined meat (most supermarket turkey) — don\'t brine again.' },
+    { name: 'Resting bread dough', tools: 'Bowl + cloth', tempF: 'Warm room', usedFor: 'Yeast breads', why: 'Yeast needs time to develop flavor + rise.', mistakes: 'Rushing the rise. Many recipes say to let it about double.' },
+    { name: 'Tempering chocolate', tools: 'Bowl + thermometer', tempF: '88-90', usedFor: 'Chocolate-dipped foods', why: 'Careful heating and cooling gives shiny chocolate that snaps.', mistakes: 'Overheating burns it, and a drop of water makes it clump (seize).' },
+    { name: 'Marinating', tools: 'Bowl + ziplock', tempF: 'Fridge', usedFor: 'Meat, tofu, vegetables', why: 'Adds flavor. Always marinate in the fridge (USDA).', mistakes: 'Leaving meat in a very acidic marinade too long can make it mushy.' },
+    { name: 'Brining', tools: 'Container + water + salt', tempF: 'Fridge', usedFor: 'Turkey, chicken, pork, fish', why: 'Salt soaks in and changes the meat proteins so they hold more water. Brine in the fridge.', mistakes: 'Brining meat that is already salted. Check the label for "enhanced" or "contains a solution".' },
     { name: 'Deglazing', tools: 'Skillet + liquid', tempF: '350+', usedFor: 'Pan sauces after searing meat', why: 'Scrapes browned bits ("fond") into liquid for flavor.', mistakes: 'Adding cold liquid to very hot pan — splatters everywhere.' },
     { name: 'Reducing fond into sauce', tools: 'Same pan', tempF: 'Simmer', usedFor: 'Pan-sauce finishing', why: 'Concentrates the deglazed liquid + adds butter for richness.', mistakes: 'Boiling after butter added — sauce breaks.' },
     { name: 'Knife skills: chiffonade', tools: 'Sharp knife', tempF: 'N/A', usedFor: 'Basil, mint, leafy greens', why: 'Long thin strips for garnish + even cooking.', mistakes: 'Bruising leaves with dull knife.' },
     { name: 'Knife skills: julienne', tools: 'Sharp knife', tempF: 'N/A', usedFor: 'Carrots, potatoes, peppers — matchsticks', why: 'Even cooking + visual appeal.', mistakes: 'Uneven sizes = uneven cooking.' },
     { name: 'Knife skills: dicing', tools: 'Sharp knife', tempF: 'N/A', usedFor: 'Onions, peppers, carrots — uniform cubes', why: 'Even cooking + plating.', mistakes: 'Tip up = injury risk. Keep tip on board, rock blade.' },
-    { name: 'Knife sharpening', tools: 'Honing rod, sharpener', tempF: 'N/A', usedFor: 'Maintaining all knives', why: 'Sharp knife = safer (less slipping) + faster work.', mistakes: 'Honing ≠ sharpening. Hone weekly, sharpen 1-2x/year.' }
+    { name: 'Knife sharpening', tools: 'Honing rod, sharpener', tempF: 'N/A', usedFor: 'Maintaining all knives', why: 'Sharp knife = safer (less slipping) + faster work.', mistakes: 'Honing is not sharpening: honing straightens the edge, sharpening grinds a new one.' }
   ];
 
+  // ACCURACY AUDIT 2026-11-24: rewritten (see C:/tmp/sports_labs_1123/nutritionlab/batch6_symptoms.cjs).
+  // No supplement or dosing advice for students. Sleep: AASM consensus (Paruthi et al., J Clin Sleep Med 2016;
+  // 12:785): "Teenagers 13 to 18 years of age should sleep 8 to 10 hours per 24 hours on a regular basis".
   var NUTRITION_KIT_SYMPTOM_NUTRIENT = [
-    { symptom: 'Persistent fatigue', candidates: 'Iron deficiency (esp menstruating teens), B12 deficiency (vegans), vitamin D deficiency, sleep debt, undereating', firstStep: 'Test ferritin + CBC + vit D + TSH at doctor.' },
-    { symptom: 'Brain fog / poor concentration', candidates: 'Dehydration, glucose volatility, omega-3 low, sleep debt, iron low (esp girls), vitamin D low', firstStep: 'Hydrate + balance meals (protein + carb + fat) + check iron.' },
-    { symptom: 'Mood drops', candidates: 'Omega-3 low, vitamin D low, blood sugar swings, magnesium low, B-complex low, sleep debt', firstStep: 'Track food + mood for 2 weeks. Consider vit D + omega-3.' },
-    { symptom: 'Frequent muscle cramps', candidates: 'Dehydration, electrolyte imbalance (sodium/potassium/magnesium), low calcium', firstStep: 'Hydrate, add salt + bananas (potassium). Magnesium glycinate may help.' },
-    { symptom: 'Bone pain / stress fractures', candidates: 'Vitamin D deficiency (Maine winter), calcium intake low, low energy availability', firstStep: 'Test vit D, eval dietary calcium. Imaging if pain persistent.' },
-    { symptom: 'Hair loss / thinning', candidates: 'Iron deficiency, undereating (chronic restriction), thyroid disorders, biotin (rare)', firstStep: 'Test ferritin + TSH. Ensure adequate protein + calories.' },
-    { symptom: 'Brittle nails', candidates: 'Iron, biotin, protein insufficiency, undereating', firstStep: 'Adequate protein + iron-rich foods. Biotin supplement only if other causes ruled out.' },
-    { symptom: 'Dry skin', candidates: 'Essential fatty acid low (omega-3), vitamin A low, dehydration, vitamin E low', firstStep: 'Increase fatty fish + nuts/seeds. Hydrate. Topical care.' },
-    { symptom: 'Frequent colds', candidates: 'Vitamin D low, zinc low, vitamin C low, sleep debt, chronic undereating', firstStep: 'Vit D + zinc + sleep. Food-first vit C (citrus, peppers, broccoli).' },
-    { symptom: 'Constipation', candidates: 'Low fiber, dehydration, low movement, magnesium low', firstStep: 'Aim 25-35g fiber + 64+ oz water + walk daily. Magnesium citrate if needed.' },
-    { symptom: 'Frequent diarrhea', candidates: 'Food intolerance (lactose, gluten, FODMAPs), magnesium excess, IBS, stress', firstStep: 'Track 2 weeks. Reduce suspected triggers. See GI if persistent.' },
-    { symptom: 'Bloating', candidates: 'FODMAP-sensitivity, swallowing air, food intolerance, dysbiosis', firstStep: 'Slow eating, identify triggers, consider RD-guided low-FODMAP trial.' },
-    { symptom: 'Headaches', candidates: 'Dehydration, caffeine withdrawal, low blood sugar, food triggers (varies by person), sleep issues', firstStep: 'Hydrate + eat regularly + sleep. Track patterns 4-6 weeks.' },
-    { symptom: 'Insomnia', candidates: 'Caffeine late in day, screen time, magnesium low, late heavy meals, anxiety', firstStep: 'Cap caffeine by 2pm, screen-off by 9pm, magnesium glycinate may help, eat by 7pm.' },
-    { symptom: 'Athletic plateaus', candidates: 'Undereating (especially carbs), low iron, inadequate recovery, low protein', firstStep: 'Calculate energy needs + protein needs. RED-S screening with sports MD.' },
-    { symptom: 'Cold hands/feet', candidates: 'Iron deficiency, hypothyroidism, low body weight, peripheral circulation', firstStep: 'Test ferritin + TSH. Layer warmly. Adequate calorie intake.' },
-    { symptom: 'Cracks at mouth corners', candidates: 'B vitamin deficiency (riboflavin, B12, iron)', firstStep: 'Eval diet for variety. Consider B-complex if low intake.' },
-    { symptom: 'Bruising easily', candidates: 'Vitamin C low, vitamin K low, platelet dysfunction', firstStep: 'Citrus + greens. See doctor if severe.' },
-    { symptom: 'Slow wound healing', candidates: 'Zinc low, vitamin C low, protein insufficient, diabetes', firstStep: 'Adequate protein + vit C + zinc-rich foods (oysters, meat, seeds).' },
-    { symptom: 'Numbness/tingling extremities', candidates: 'B12 deficiency (vegans, esp), pinched nerve', firstStep: 'B12 test. Neurological eval if persistent.' },
-    { symptom: 'Cravings (sweet)', candidates: 'Restriction-rebound, blood sugar swings, magnesium low, sleep deprivation, hormonal cycle', firstStep: 'Eat enough carbs at regular intervals. Sleep. Curiosity not control.' },
-    { symptom: 'Cravings (salt)', candidates: 'Heavy sweat (athletes), low sodium intake, hormonal cycle, restriction', firstStep: 'For athletes: add salt. For others: ensure not under-eating overall.' },
-    { symptom: 'Loss of appetite', candidates: 'Stress, depression, medication side effect, illness, ARFID, chronic undereating', firstStep: 'Track 1 week. If persistent + concerning: medical + mental health support.' },
-    { symptom: 'Frequent UTIs', candidates: 'Dehydration, cranberry/vit C low, hygiene factors', firstStep: 'Adequate water. Cranberry (food or supplement). See doctor if recurrent.' },
-    { symptom: 'Acne', candidates: 'Hormonal (mostly), high-glycemic diet, dairy in some, low omega-3', firstStep: 'Diet adjustments after dermatology assessment. Not just food.' },
-    { symptom: 'Heart palpitations', candidates: 'Caffeine excess, magnesium low, dehydration, low electrolytes, anxiety', firstStep: 'Reduce caffeine. Hydrate. Magnesium + potassium. See doctor if persistent.' },
-    { symptom: 'PMS / cramping', candidates: 'Magnesium low, omega-3 low, B6 low, iron loss, hormonal', firstStep: 'Magnesium + omega-3. Iron-rich foods around period. RD/MD support if severe.' },
-    { symptom: 'Poor cold tolerance', candidates: 'Underweight, iron low, thyroid, low body fat (esp athletes)', firstStep: 'Adequate intake. Test TSH + iron.' },
-    { symptom: 'Eye dryness', candidates: 'Omega-3 low, vitamin A low, dehydration, screen time', firstStep: 'Fatty fish + sweet potato + carrots. Hydrate. 20-20-20 screen rule.' },
-    { symptom: 'Slow recovery from workouts', candidates: 'Under-fueling, low protein, low carbs, inadequate sleep, dehydration', firstStep: 'Add 20-25g protein post-workout. Adequate carbs throughout day. Sleep 8+.' }
+    { symptom: 'Persistent fatigue', candidates: 'Low iron (more common in teen girls), low B12 (vegan diets), not eating enough, sleep debt. Many non-food causes too.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. A doctor can order blood tests for iron and B12.' },
+    { symptom: 'Brain fog / poor concentration', candidates: 'Mild dehydration, skipped meals, sleep debt, low iron.', firstStep: 'Drink water through the day, eat regular meals, and get enough sleep. If it lasts, see a doctor.' },
+    { symptom: 'Mood drops', candidates: 'Skipped meals and sleep debt can play a part, but mood has many causes.', firstStep: 'Talk with a trusted adult, school counselor or doctor. In a crisis, call or text 988.' },
+    { symptom: 'Frequent muscle cramps', candidates: 'Dehydration and heavy sweating during exercise. Low potassium or magnesium are less common causes.', firstStep: 'Drink fluids before, during and after exercise. If cramps keep coming back, see a doctor.' },
+    { symptom: 'Bone pain / stress fractures', candidates: 'Low vitamin D or calcium, not eating enough for your activity (low energy availability).', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. Bone pain with training needs a medical check.' },
+    { symptom: 'Hair loss / thinning', candidates: 'Low iron, not eating enough, thyroid problems. Biotin shortage is very rare.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. A doctor can check iron and thyroid levels.' },
+    { symptom: 'Brittle nails', candidates: 'Low iron, not eating enough protein, not eating enough overall.', firstStep: 'Eat regular meals with protein and iron-rich foods. See a doctor if it lasts. Biotin pills have little evidence for nails.' },
+    { symptom: 'Dry skin', candidates: 'Dry air, hot showers, eczema. Low vitamin A or essential fats are rare causes.', firstStep: 'Use moisturizer and drink water. See a doctor if it is severe.' },
+    { symptom: 'Frequent colds', candidates: 'Sleep debt, stress and not eating enough. Low zinc or vitamin D are possible but less common.', firstStep: 'Sleep, regular meals with fruits and vegetables, and hand washing. See a doctor if you are sick very often.' },
+    { symptom: 'Constipation', candidates: 'Low fiber, not enough fluid, little movement.', firstStep: 'Add fiber slowly (fruit, vegetables, beans, whole grains), drink fluids, move every day. See a doctor if it lasts.' },
+    { symptom: 'Frequent diarrhea', candidates: 'Food intolerance (such as lactose), infection, IBS, stress.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. Keep a simple food and symptom log to share.' },
+    { symptom: 'Bloating', candidates: 'Eating fast, swallowing air, gas-forming foods, food intolerance.', firstStep: 'Eat slowly. If it lasts or hurts, see a doctor or registered dietitian.' },
+    { symptom: 'Headaches', candidates: 'Dehydration, skipped meals, caffeine withdrawal, sleep problems.', firstStep: 'Drink water, eat regular meals and sleep. See a doctor if headaches are frequent or severe.' },
+    { symptom: 'Insomnia', candidates: 'Caffeine late in the day, screens at night, stress, big late meals.', firstStep: 'Avoid caffeine in the afternoon and evening and keep a regular sleep schedule. See a doctor if it lasts.' },
+    { symptom: 'Athletic plateaus', candidates: 'Not eating enough (especially carbohydrates), low iron, poor recovery and sleep.', firstStep: 'Talk with your coach and a sports doctor or registered dietitian. Eating too little for your training is a health risk (RED-S).' },
+    { symptom: 'Cold hands/feet', candidates: 'Low iron, thyroid problems, not eating enough, circulation problems.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse.' },
+    { symptom: 'Cracks at mouth corners', candidates: 'Low riboflavin (B2) or iron; also lip licking and infections.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse.' },
+    { symptom: 'Bruising easily', candidates: 'Low vitamin C or vitamin K (rare); some medicines and blood problems.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. Easy bruising always needs a medical check.' },
+    { symptom: 'Slow wound healing', candidates: 'Low protein, zinc or vitamin C; diabetes.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse.' },
+    { symptom: 'Numbness/tingling extremities', candidates: 'Low B12 (vegan diets), nerve problems.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. A doctor can check B12.' },
+    { symptom: 'Cravings (sweet)', candidates: 'Long gaps between meals, not eating enough, poor sleep.', firstStep: 'Eat regular meals and snacks. Cravings are normal. If eating feels out of control, talk to a trusted adult.' },
+    { symptom: 'Cravings (salt)', candidates: 'Heavy sweating, not eating enough.', firstStep: 'Athletes who sweat a lot can talk with a coach or dietitian about fluids and salt.' },
+    { symptom: 'Loss of appetite', candidates: 'Stress, depression, illness, medicine side effects, eating disorders (including ARFID).', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. Mental health support can help too.' },
+    { symptom: 'Frequent UTIs', candidates: 'Not drinking enough fluid is one factor. Infections need medical care.', firstStep: 'See a doctor. Drink fluids through the day.' },
+    { symptom: 'Acne', candidates: 'Mostly hormones. Diet links (high-sugar foods, milk) are still being studied.', firstStep: 'Talk with a doctor or dermatologist. Do not cut out food groups without medical advice.' },
+    { symptom: 'Heart palpitations', candidates: 'Too much caffeine (energy drinks), dehydration, anxiety.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse. Avoid energy drinks.' },
+    { symptom: 'PMS / cramping', candidates: 'Hormones. Heavy periods raise the risk of low iron.', firstStep: 'Eat iron-rich foods. See a doctor if periods are very heavy or painful.' },
+    { symptom: 'Poor cold tolerance', candidates: 'Low body weight, low iron, thyroid problems.', firstStep: 'Tell a parent or trusted adult and see a doctor or school nurse.' },
+    { symptom: 'Eye dryness', candidates: 'Screen time, dry air, allergies. Low vitamin A is rare in the US.', firstStep: 'Take screen breaks. See a doctor or eye doctor if it lasts.' },
+    { symptom: 'Slow recovery from workouts', candidates: 'Not eating enough, low protein or carbohydrate, too little sleep, dehydration.', firstStep: 'Eat a meal or snack with protein and carbohydrate after training, drink fluids, and sleep. Teens need 8-10 hours (AASM).' }
   ];
 
+  // ROUND 2: "healthAngle" rewritten as neutral notes. Cut: red wine advice, "anti-inflammatory" spice claims,
+  // antioxidant superlatives, "French paradox", "maple = unrefined sugar", longevity and pre-contact diet claims.
+  // Kept facts: beans + grains complement each other's amino acids (protein complementation, standard nutrition
+  // teaching); teff is gluten-free; Japan's life expectancy is among the highest (WHO) — stated without a diet cause.
   var NUTRITION_KIT_CULTURAL_CUISINE_REF = [
-    { region: 'Mexico', staples: 'Corn, beans, rice, tomatoes, chiles, avocado', signatures: 'Tacos, tamales, mole, pozole, chiles rellenos', traditions: 'Día de los Muertos foods (pan de muerto, mole). Three Sisters (corn + beans + squash) Indigenous origin.', healthAngle: 'Beans + corn = complementary protein. Avocado healthy fats. Salsa = vitamin C.' },
-    { region: 'Italy', staples: 'Pasta, olive oil, tomatoes, garlic, herbs, parmesan', signatures: 'Pasta dishes, pizza, risotto, gelato, espresso', traditions: 'Sunday family dinner, slow cooking, regional pride (Italy has 20+ distinct cuisines).', healthAngle: 'Mediterranean diet = heart-healthy. Olive oil, vegetables, moderate red wine for adults.' },
-    { region: 'Japan', staples: 'Rice, fish, seaweed, soy, vegetables, miso', signatures: 'Sushi, ramen, tempura, miso soup, bento', traditions: 'Hara hachi bu (eat to 80% full). Aesthetic + seasonal plating.', healthAngle: 'One of longest-lived populations. Fish + sea vegetables + green tea.' },
-    { region: 'India', staples: 'Rice, lentils, wheat, spices, dairy (some), vegetables', signatures: 'Curry, biryani, dal, naan, dosa, chai', traditions: 'Regional + religious variety. Vegetarianism strong. Ayurvedic dietary principles.', healthAngle: 'Turmeric + spice anti-inflammatory. Lentils high protein + fiber. Ghee = saturated.' },
-    { region: 'China', staples: 'Rice, noodles, soy, vegetables, fish, pork', signatures: 'Stir fry, dim sum, dumplings, hot pot, regional cuisines (8 main)', traditions: 'Family-style serving, balanced meals (5 flavors), tea culture.', healthAngle: 'Vegetable-heavy. Quick cooking preserves nutrients. Watch sodium in restaurant dishes.' },
-    { region: 'Thailand', staples: 'Rice, fish sauce, coconut, chiles, herbs, lime, vegetables', signatures: 'Pad thai, tom yum, green curry, mango sticky rice', traditions: 'Balance of sweet/sour/salty/spicy in every meal. Fresh herbs.', healthAngle: 'Coconut oil + fish + herbs. Watch for sugar in pad thai + sauces.' },
-    { region: 'Greece', staples: 'Olive oil, fish, lamb, vegetables, yogurt, feta, herbs', signatures: 'Souvlaki, moussaka, spanakopita, gyros, dolmas', traditions: 'Long meals, family-style, lots of bread + dips. Mediterranean diet origin.', healthAngle: 'Mediterranean = heart-healthy. Olive oil + fish + vegetables abundant.' },
-    { region: 'Lebanon/Middle East', staples: 'Wheat (bulgur, pita), lamb, chickpeas, tahini, herbs, yogurt', signatures: 'Hummus, falafel, tabbouleh, shawarma, baba ghanoush', traditions: 'Mezze (small plates), pita-based meals, mint + parsley everywhere.', healthAngle: 'Chickpeas + legumes high protein. Tahini = sesame nutrients. Vegetable-rich.' },
-    { region: 'West Africa', staples: 'Rice, yam, plantain, peanut, palm oil, fish, leafy greens', signatures: 'Jollof rice, peanut stew, fufu, suya', traditions: 'Family-style + communal eating. Strong regional variations.', healthAngle: 'Peanut + greens nutrient-dense. Watch palm oil saturated fats.' },
-    { region: 'Ethiopia', staples: 'Injera (teff flatbread), lentils, vegetables, berbere spice', signatures: 'Doro wat, misir wat, injera, kitfo', traditions: 'Shared platter eating (no utensils), strong spice culture, vegan options for fasting.', healthAngle: 'Teff is gluten-free + high iron + calcium. Lentils high protein. Berbere = capsaicin.' },
-    { region: 'Vietnam', staples: 'Rice, fish sauce, herbs, vegetables, pork, fish', signatures: 'Pho, banh mi, spring rolls, fresh rice paper rolls', traditions: 'Fresh herbs as integral component. Light + bright flavors.', healthAngle: 'Pho = bone broth + greens. Banh mi has fiber. Light cooking preserves nutrients.' },
-    { region: 'Brazil', staples: 'Rice, beans, cassava, beef, fish, tropical fruits', signatures: 'Feijoada (bean stew), pão de queijo, açaí, churrasco', traditions: 'Sunday feijoada family meal. Açaí + tropical fruit abundance.', healthAngle: 'Rice + beans = complete protein. Açaí + tropical fruit high antioxidants.' },
-    { region: 'France', staples: 'Wheat, butter, dairy, wine, meat, vegetables', signatures: 'Baguette, croissant, coq au vin, ratatouille, crème brûlée', traditions: 'Slow + intentional dining, cheese as course, regional variation (Provence vs Brittany vs Alsace).', healthAngle: 'French paradox — high-fat diet with low heart disease (debated; possibly portion + walking culture).' },
-    { region: 'Korea', staples: 'Rice, kimchi, soy, seafood, vegetables, fermented foods', signatures: 'Kimchi, bibimbap, bulgogi, Korean BBQ, tteokbokki', traditions: 'Fermented foods at every meal (kimchi), banchan (side dishes), seasonal.', healthAngle: 'Fermented = gut microbiome. Vegetable-heavy. Watch sodium in kimchi + sauces.' },
-    { region: 'Caribbean', staples: 'Rice, beans, plantain, fish, jerk spice, coconut, tropical fruits', signatures: 'Jerk chicken, rice + peas, ackee + saltfish, curry goat, jerk fish', traditions: 'Strong African + European + Indigenous + Indian influences. Family + community meals.', healthAngle: 'Tropical fruit + fish + beans. Jerk spice anti-inflammatory.' },
-    { region: 'Russia/Eastern Europe', staples: 'Potato, beet, cabbage, dairy, mushrooms, rye, fish', signatures: 'Borscht, pierogi, blinis, kasha, herring', traditions: 'Preserving foods for winter (pickling, fermenting), tea culture.', healthAngle: 'Fermented + pickled foods for gut. Beets + cabbage high in nutrients.' },
-    { region: 'Indigenous North America', staples: 'Three Sisters (corn + beans + squash), wild rice, game, fish, foraged plants', signatures: 'Fry bread (post-colonial), wild rice, salmon, bison', traditions: 'Three Sisters Indigenous agriculture. Food sovereignty + traditional preparation.', healthAngle: 'Pre-contact diets often nutrient-dense. Modern Indigenous food movements reclaim traditional foods.' },
-    { region: 'Maine/New England', staples: 'Seafood (lobster, scallops, clams), maple, blueberries, potatoes, hardy greens', signatures: 'Lobster roll, clam chowder, baked beans, blueberry pie, fish chowder, maple syrup', traditions: 'Seasonal eating, preserving, hunting/fishing traditions, community meals.', healthAngle: 'Omega-3 from seafood. Wild blueberries antioxidant-rich. Maple = unrefined sugar.' },
-    { region: 'Southern US', staples: 'Corn (grits, cornbread), greens (collards, turnip), beans, rice, pork, sweet potato', signatures: 'Fried chicken, gumbo, jambalaya, mac & cheese, cornbread, grits, sweet potato pie', traditions: 'Sunday dinner, soul food (African American), Creole + Cajun influences.', healthAngle: 'Greens + beans nutrient-dense. Frying + sodium are major concerns. Reclaiming heritage cooking + nutrition together.' },
-    { region: 'Pacific Islander', staples: 'Taro, coconut, fish, fruit, pork, breadfruit', signatures: 'Poke, kalua pork, poi, lau lau, tropical fruit', traditions: 'Imu (underground oven) cooking, fishing, sharing meals.', healthAngle: 'Traditional diet high fish + plants. Modern processed food shift has hurt indigenous health.' }
+    { region: 'Mexico', staples: 'Corn, beans, rice, tomatoes, chiles, avocado', signatures: 'Tacos, tamales, mole, pozole, chiles rellenos', traditions: 'Día de los Muertos foods (pan de muerto, mole). The Three Sisters (corn, beans, squash) come from Indigenous farming.', healthAngle: 'Beans and corn together supply all the essential amino acids.' },
+    { region: 'Italy', staples: 'Pasta, olive oil, tomatoes, garlic, herbs, parmesan', signatures: 'Pasta dishes, pizza, risotto, gelato, espresso', traditions: 'Sunday family dinner, slow cooking, strong regional cooking styles.', healthAngle: 'Olive oil, vegetables, beans and grains are everyday foods.' },
+    { region: 'Japan', staples: 'Rice, fish, seaweed, soy, vegetables, miso', signatures: 'Sushi, ramen, tempura, miso soup, bento', traditions: 'The Okinawan saying hara hachi bu means "eat until 80% full." Seasonal plating.', healthAngle: 'Fish, soy foods, seaweed and vegetables are common. Miso and soy sauce add salt.' },
+    { region: 'India', staples: 'Rice, lentils, wheat, spices, dairy (some), vegetables', signatures: 'Curry, biryani, dal, naan, dosa, chai', traditions: 'Many regional and religious traditions. Vegetarian eating is common.', healthAngle: 'Lentils and beans give protein and fiber.' },
+    { region: 'China', staples: 'Rice, noodles, soy, vegetables, fish, pork', signatures: 'Stir fry, dim sum, dumplings, hot pot', traditions: 'Family-style sharing. Many regional cuisines ("Eight Great Cuisines" is one common grouping). Tea culture.', healthAngle: 'Quick stir-frying keeps vegetables crisp. Sauces can add a lot of salt.' },
+    { region: 'Thailand', staples: 'Rice, fish sauce, coconut, chiles, herbs, lime, vegetables', signatures: 'Pad thai, tom yum, green curry, mango sticky rice', traditions: 'Balance of sweet, sour, salty and spicy. Fresh herbs.', healthAngle: 'Fresh herbs and vegetables are common. Some sauces add sugar and salt.' },
+    { region: 'Greece', staples: 'Olive oil, fish, lamb, vegetables, yogurt, feta, herbs', signatures: 'Souvlaki, moussaka, spanakopita, gyros, dolmas', traditions: 'Long family-style meals with bread and dips.', healthAngle: 'Olive oil, fish, vegetables and beans are everyday foods.' },
+    { region: 'Lebanon/Middle East', staples: 'Wheat (bulgur, pita), lamb, chickpeas, tahini, herbs, yogurt', signatures: 'Hummus, falafel, tabbouleh, shawarma, baba ghanoush', traditions: 'Mezze (many small plates), pita meals, mint and parsley.', healthAngle: 'Chickpeas give protein and fiber. Tahini is made from sesame seeds.' },
+    { region: 'West Africa', staples: 'Rice, yam, plantain, peanut, palm oil, fish, leafy greens', signatures: 'Jollof rice, peanut stew, fufu, suya', traditions: 'Family-style and shared meals. Strong regional differences.', healthAngle: 'Peanuts and leafy greens are common.' },
+    { region: 'Ethiopia', staples: 'Injera (teff flatbread), lentils, vegetables, berbere spice', signatures: 'Doro wat, misir wat, injera, kitfo', traditions: 'Shared platter, eaten by hand with injera. Many vegan dishes for religious fasting days.', healthAngle: 'Teff is a gluten-free grain. Lentils give protein and fiber.' },
+    { region: 'Vietnam', staples: 'Rice, fish sauce, herbs, vegetables, pork, fish', signatures: 'Pho, banh mi, fresh spring rolls', traditions: 'Fresh herbs at almost every meal. Light, bright flavors.', healthAngle: 'Fresh herbs and vegetables are common. Broths and fish sauce add salt.' },
+    { region: 'Brazil', staples: 'Rice, beans, cassava, beef, fish, tropical fruits', signatures: 'Feijoada (bean stew), pão de queijo, açaí, churrasco', traditions: 'Sunday feijoada family meal. Many tropical fruits.', healthAngle: 'Rice and beans together supply all the essential amino acids.' },
+    { region: 'France', staples: 'Wheat, butter, dairy, meat, vegetables', signatures: 'Baguette, croissant, coq au vin, ratatouille, crème brûlée', traditions: 'Slow meals, cheese as its own course, regional styles (Provence, Brittany, Alsace).', healthAngle: 'Meals are often eaten slowly at the table.' },
+    { region: 'Korea', staples: 'Rice, kimchi, soy, seafood, vegetables, fermented foods', signatures: 'Kimchi, bibimbap, bulgogi, Korean BBQ, tteokbokki', traditions: 'Fermented foods and many small side dishes (banchan) at meals.', healthAngle: 'Lots of vegetables. Kimchi and sauces add salt.' },
+    { region: 'Caribbean', staples: 'Rice, beans, plantain, fish, jerk spice, coconut, tropical fruits', signatures: 'Jerk chicken, rice and peas, ackee and saltfish, curry goat', traditions: 'African, European, Indigenous and Indian influences. Family and community meals.', healthAngle: 'Beans, fish and fruit are common.' },
+    { region: 'Russia/Eastern Europe', staples: 'Potato, beet, cabbage, dairy, mushrooms, rye, fish', signatures: 'Borscht, pierogi, blini, kasha, herring', traditions: 'Pickling and fermenting food for winter. Tea culture.', healthAngle: 'Beets, cabbage and other vegetables store well through winter.' },
+    { region: 'Indigenous North America', staples: 'Three Sisters (corn, beans, squash), wild rice, game, fish, foraged plants', signatures: 'Wild rice dishes, salmon, bison; fry bread (began with government food rations)', traditions: 'Three Sisters farming. Food sovereignty movements bring back traditional foods.', healthAngle: 'Corn, beans and squash grown together feed people and the soil.' },
+    { region: 'Maine/New England', staples: 'Seafood (lobster, scallops, clams), maple, blueberries, potatoes, hardy greens', signatures: 'Lobster roll, clam chowder, baked beans, blueberry pie, fish chowder, maple syrup', traditions: 'Seasonal eating, preserving, hunting and fishing traditions, community suppers.', healthAngle: 'Seafood gives protein and omega-3 fats. Maple syrup is a sugar.' },
+    { region: 'Southern US', staples: 'Corn (grits, cornbread), greens (collards, turnip), beans, rice, pork, sweet potato', signatures: 'Fried chicken, gumbo, jambalaya, mac and cheese, cornbread, grits, sweet potato pie', traditions: 'Sunday dinner, soul food (African American), Creole and Cajun influences.', healthAngle: 'Greens, beans and sweet potatoes are traditional staples.' },
+    { region: 'Pacific Islander', staples: 'Taro, coconut, fish, fruit, pork, breadfruit', signatures: 'Poke, kalua pork, poi, lau lau, tropical fruit', traditions: 'Imu (underground oven) cooking, fishing, shared meals.', healthAngle: 'Traditional meals center on fish, taro and plants.' }
   ];
 
+  // ROUND 2 (2026-11-24): every row matched to USDA FSIS / FoodSafety.gov / CDC / FDA wording. fsis.usda.gov and
+  // foodsafety.gov refuse automated fetches (Akamai "Access Denied"), so quotes come from those pages' indexed text:
+  // - FoodSafety.gov chart: beef, pork, veal, lamb steaks/chops/roasts 145 °F "and allow to rest for at least 3
+  //   minutes"; ground meats 160 °F; all poultry 165 °F; fish and shellfish 145 °F; egg dishes 160 °F; leftovers
+  //   and casseroles 165 °F.
+  // - FSIS Danger Zone: bacteria grow between 40 °F and 140 °F; "Never leave food out of refrigeration over 2 hours.
+  //   If the temperature is above 90 °F, food should not be left out more than 1 hour."
+  // - FSIS Freezing: "Food stored constantly at 0 °F will always be safe. Only the quality suffers with lengthy
+  //   freezer storage." FSIS Leftovers: refrigerate within 2 hours; "Use most cooked leftovers within 3 to 4 days";
+  //   "Reheat leftovers to 165 °F".
+  // - FSIS Big Thaw: refrigerator, cold water ("changing the water every 30 minutes"), microwave; cook cold-water and
+  //   microwave-thawed food immediately; "Perishable foods should never be thawed on the counter, or in hot water".
+  // - FSIS marinades: marinate in the refrigerator; marinade used on raw meat must be boiled before reuse as a sauce.
+  // - FSIS Molds: hard cheese "Cut off at least 1 inch around and below the mold spot"; soft cheese and bread: discard.
+  // - FSIS Food Product Dating: "Use-By" is "not a safety date except for when used on infant formula"; dates are
+  //   about quality. FSIS Shelf-Stable: never use food from "leaking, bulging, or badly dented cans".
+  // - foodsafety.gov 4 Steps: separate cutting boards for produce and for raw meat, poultry, seafood; wash boards,
+  //   dishes, utensils and counters with hot, soapy water. CDC handwashing: scrub at least 20 seconds; sanitizers
+  //   "may not be as effective when hands are visibly dirty or greasy".
+  // - CDC botulism: "pressure canning is the only recommended method for canning low-acid foods"; do not feed honey to
+  //   a child younger than 1 year. CDC Listeria: soft cheese from unpasteurized milk; heat deli meats until steaming.
+  // - FDA seafood: pregnant people, young children, older adults and people with weak immune systems should avoid raw
+  //   or undercooked fish or shellfish. CDC Salmonella attribution: chicken, fruits, seeded vegetables, pork, beef,
+  //   turkey; "sprouts ... raw cookie dough, and flour" in outbreaks. CDC IFSAC: E. coli O157 mostly leafy greens and beef.
   var NUTRITION_KIT_FOOD_SAFETY_REF = [
-    { topic: 'Safe minimum internal temps', details: 'Beef/lamb/pork steaks/roasts: 145°F + 3-min rest. Ground meat: 160°F. Poultry: 165°F. Fish: 145°F. Eggs: 160°F. Leftovers reheated: 165°F.', source: 'USDA Food Safety' },
-    { topic: 'Time-temperature danger zone', details: '40-140°F (4-60°C) is the danger zone. Don\'t leave perishables out > 2 hrs (> 1 hr if room > 90°F).', source: 'USDA' },
-    { topic: 'Fridge temperature', details: 'Should be at or below 40°F (4°C). Use a fridge thermometer to verify — many home fridges run too warm.', source: 'USDA' },
-    { topic: 'Freezer temperature', details: '0°F (-18°C). Most foods stay safe indefinitely; quality declines after 2-3 months.', source: 'USDA' },
-    { topic: 'Hand washing', details: '20 seconds with soap + water before/after handling raw meat, fish, eggs. Soap > sanitizer for greasy hands.', source: 'CDC' },
-    { topic: 'Cross-contamination', details: 'Separate raw meat cutting board + utensils. Wash hands + surfaces after raw protein contact.', source: 'USDA' },
-    { topic: 'Thawing meat safely', details: 'In fridge (slow, safe), in cold water (faster, change water q30 min), in microwave (fastest, cook immediately). NEVER on counter at room temp.', source: 'USDA' },
-    { topic: 'Marinating safely', details: 'Marinate in fridge, not counter. Don\'t reuse marinade unless boiled first.', source: 'USDA' },
-    { topic: 'Leftovers', details: 'Cool quickly (within 2 hrs), store ≤3-4 days in fridge. Reheat to 165°F. When in doubt, throw out.', source: 'USDA' },
-    { topic: 'Raw eggs', details: 'Risk of Salmonella. Cook eggs until yolk + white firm. Cookie dough with raw eggs = risk. Pasteurized eggs safe raw (Caesar dressing, mousse).', source: 'CDC' },
-    { topic: 'Raw fish (sushi)', details: 'Quality sushi-grade fish from reputable source. Pregnant + immune-compromised should avoid all raw fish.', source: 'FDA' },
-    { topic: 'Listeria-risk foods', details: 'Soft cheeses (brie, feta unpasteurized), deli meats (heat to 165°F if pregnant), raw sprouts, unpasteurized milk. Pregnant + immune-compromised at highest risk.', source: 'CDC' },
-    { topic: 'Botulism risk', details: 'Home-canned low-acid foods (vegetables, meat). Honey for infants (<1 yr — never give honey).', source: 'CDC' },
-    { topic: 'Canned food safety', details: 'Discard cans that are dented, bulging, leaking, or rusted. After opening, transfer to glass/plastic + refrigerate.', source: 'USDA' },
-    { topic: 'Allergen cross-contact', details: 'For severe allergies, even trace amounts (shared utensils, fryer oil, prep surfaces) can trigger reactions. Restaurants should be told clearly.', source: 'FARE' },
-    { topic: 'Mold on food', details: 'Hard cheese: cut 1 inch around mold + use. Soft cheese, soft fruit, bread: discard whole. Some molds produce mycotoxins.', source: 'USDA' },
-    { topic: 'Use-by vs Best-by', details: '"Use-by" = safety date. "Best-by" = quality date — usually safe past date. Most US dates are quality-only.', source: 'USDA' },
-    { topic: 'Hot water on dishes', details: 'Hot water + soap removes bacteria better than just rinsing. Sanitize cutting boards with bleach solution or dishwasher.', source: 'CDC' },
-    { topic: 'Salmonella vehicles', details: 'Raw poultry, eggs (rare in US), raw sprouts, undercooked beef, raw flour (yes!), contaminated produce (lettuce outbreaks).', source: 'CDC' },
-    { topic: 'E. coli vehicles', details: 'Undercooked ground beef, contaminated leafy greens, raw milk, raw sprouts, contaminated water.', source: 'CDC' }
+    { topic: 'Safe cooking temperatures', details: 'Beef, pork, veal and lamb steaks, chops and roasts: 145°F, then rest 3 minutes. Ground meats: 160°F. All poultry (including ground): 165°F. Fish and shellfish: 145°F. Egg dishes: 160°F. Leftovers and casseroles: 165°F. Use a food thermometer; color is not a safe check.', source: 'USDA FSIS / FoodSafety.gov' },
+    { topic: 'The Danger Zone', details: 'Bacteria grow fastest between 40°F and 140°F. Do not leave perishable food out more than 2 hours, or more than 1 hour if it is above 90°F.', source: 'USDA FSIS' },
+    { topic: 'Fridge temperature', details: 'Keep your fridge at 40°F or below. An appliance thermometer lets you check.', source: 'USDA FSIS' },
+    { topic: 'Freezer temperature', details: 'Keep your freezer at 0°F or below. Food kept frozen at 0°F stays safe; only the taste and texture slowly get worse.', source: 'USDA FSIS' },
+    { topic: 'Hand washing', details: 'Scrub with soap and water for at least 20 seconds, before and after handling raw meat, fish or eggs. Hand sanitizer may not work as well when hands are greasy or dirty.', source: 'CDC' },
+    { topic: 'Keep raw foods apart', details: 'Use one cutting board for fresh produce and another for raw meat, poultry or seafood. Wash boards, dishes, tools and counters with hot, soapy water after raw meat touches them.', source: 'FoodSafety.gov' },
+    { topic: 'Thawing safely', details: 'Thaw in the fridge (slowest and safest), in cold water in a leak-proof bag (change the water every 30 minutes), or in the microwave. Cook cold-water or microwave-thawed food right away. Never thaw on the counter.', source: 'USDA FSIS' },
+    { topic: 'Marinating safely', details: 'Marinate in the fridge, not on the counter. Marinade that touched raw meat must be boiled before you use it as a sauce, or set some aside before the raw meat goes in.', source: 'USDA FSIS' },
+    { topic: 'Leftovers', details: 'Put leftovers in the fridge within 2 hours. Eat most cooked leftovers within 3 to 4 days. Reheat to 165°F.', source: 'USDA FSIS' },
+    { topic: 'Raw eggs and raw dough', details: 'Raw eggs can carry Salmonella. Cook eggs until the yolk and white are firm. Raw cookie dough and raw flour have been linked to outbreaks, so do not eat raw dough.', source: 'CDC' },
+    { topic: 'Raw fish (sushi)', details: 'People who are pregnant, young children, older adults and people with weak immune systems should avoid raw or undercooked fish and shellfish.', source: 'FDA' },
+    { topic: 'Listeria', details: 'Higher-risk foods include soft cheese made from unpasteurized (raw) milk and deli meats. People who are pregnant or have weak immune systems should heat deli meats until steaming hot.', source: 'CDC' },
+    { topic: 'Botulism', details: 'Home-canned low-acid foods (vegetables, meat, fish) must be pressure-canned; a boiling-water canner does not protect against botulism. Never give honey to a baby younger than 1 year.', source: 'CDC' },
+    { topic: 'Canned food', details: 'Do not use food from cans that are leaking, bulging or badly dented, or jars with loose or bulging lids.', source: 'USDA FSIS' },
+    { topic: 'Allergen cross-contact', details: 'For a severe food allergy, even a tiny amount from a shared knife, fryer oil or counter can cause a reaction. Tell restaurant and cafeteria staff clearly.', source: 'FARE' },
+    { topic: 'Mold on food', details: 'Hard cheese: cut off at least 1 inch around and below the mold, then use the rest. Soft cheese and bread with mold: throw them away.', source: 'USDA FSIS' },
+    { topic: '"Use by" and "Best if used by" dates', details: 'These dates are about quality, not safety. The one exception is infant formula: do not use it after its "Use by" date. Food that smells or looks spoiled should not be eaten.', source: 'USDA FSIS' },
+    { topic: 'Washing dishes and boards', details: 'Wash cutting boards, dishes, tools and counters with hot, soapy water, especially after raw meat, poultry, seafood or eggs.', source: 'FoodSafety.gov' },
+    { topic: 'Where Salmonella comes from', details: 'Chicken, turkey, pork, beef, eggs, fruits, sprouts and other vegetables. Raw cookie dough and flour have also caused outbreaks.', source: 'CDC' },
+    { topic: 'Where E. coli O157 comes from', details: 'Most illnesses are linked to leafy greens and other row crops, and to beef. Cook ground beef to 160°F.', source: 'CDC' }
   ];
 
   var NUTRITION_KIT_KITCHEN_TOOLS_REF = [
@@ -1318,154 +1396,104 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   function nlBodyNote() {
     return nlH('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.25)', fontSize: 12, color: '#0f172a', lineHeight: 1.55, marginBottom: 12 } },
       nlH('strong', { style: { color: '#0f766e' } }, '💚 Body note: '),
-      'This tool is about awareness, not control. No calorie targets, no good/bad food labels. If logging feels like restriction or you find yourself counting obsessively, take a break and talk with a trusted adult or NEDA at 1-800-931-2237.'
+      'This tool is about awareness, not control. No calorie targets, no good/bad food labels. If logging feels like restriction or you find yourself counting obsessively, take a break and talk with a trusted adult, or call the eating disorder helpline at 1-866-662-1235.'
     );
   }
   function nlNEDABanner() {
     return nlH('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.30)', fontSize: 12, color: '#0f172a', lineHeight: 1.6, marginBottom: 12 } },
-      nlH('strong', { style: { color: '#0f766e' } }, '💚 NEDA Helpline: '),
+      nlH('strong', { style: { color: '#0f766e' } }, '💚 Eating disorder helpline: '),
       'If you or a friend struggle with eating, body image, or restriction: call ',
-      nlH('strong', null, '1-800-931-2237'),
-      ' or text ',
-      nlH('strong', null, 'NEDA'), ' to ', nlH('strong', null, '741741'),
-      '. Free, confidential, no waiting.'
+      nlH('strong', null, '1-866-662-1235'),
+      ' (Mon-Fri, 9am-7pm ET). Any time: text ',
+      nlH('strong', null, 'HOME'), ' to ', nlH('strong', null, '741741'),
+      ' or call or text ', nlH('strong', null, '988'), '. Free and confidential.'
     );
   }
 
+  // ROUND 2 (2026-11-24): trimmed from 45 rows (many treatment-center ads) to lines verified on each operator's own
+  // page, plus Maine programs verified on their own sites. Quotes:
+  // - allianceforeatingdisorders.com/helpline-acquisition: "(866) 662-1235"; "Monday through Friday, 9:00 am to 7:00 pm
+  //   EST"; NEDA's old number "will automatically re-direct to The Alliance's helpline at 866-662-1235".
+  // - 988lifeline.org: "The 988 Lifeline is available 24/7/365"; call or text 988; chat at chat.988lifeline.org.
+  // - crisistextline.org: "Text HOME to 741741 from anywhere in the United States – 24/7, free, confidential."
+  // - anad.org/get-support/eating-disorders-helpline: "1-888-375-7767"; "Monday-Friday, 9am-9pm CST"; "Our free eating
+  //   disorders Helpline provides emotional support and referrals"; "free peer support".
+  // - thetrevorproject.org/get-help: "Call us at 1-866-488-7386"; "texting 'START' to 678-678"; "24/7, 365 days a year".
+  // - nami.org/support-education/nami-helpline: "NAMI HelpLine is available M-F, 10 a.m. – 10 p.m. ET. Call
+  //   800-950-6264, text NAMI to 62640 ... In a crisis, call or text 988 (24/7)."
+  // - samhsa.gov/find-help/helplines/national-helpline: "1-800-662-HELP (4357)"; "free, confidential, 24/7,
+  //   365-day-a-year treatment referral and information service (in English and Spanish)".
+  // - feast-ed.org: "provide parents and caregivers with ... peer support, education ... free programs and services".
+  // - maine.gov/dhhs/about/contact/hotlines: "Maine Crisis Line (MCL) 1-888-568-1112 (Voice) or 711 (Maine Relay)";
+  //   "free and confidential ... 24 hours a day, 7 days a week".
+  // - 211maine.org: "Dial 211"; "Text Your Zip Code To 898-211"; "Accessible 24-7 | all languages | completely
+  //   confidential".
+  // - northernlighthealth.org/EatingDisorders: "the unique needs of all ages in Maine, now available virtually"; "Call
+  //   our Behavioral Health Resource Center at 1-800-640-1211".
+  // - sweetser.org: "the New England Eating Disorders Program provides ... care for children, adolescents, and adults
+  //   of all genders"; "call our PromiseLine 1-800-434-3000".
   var NUTRITION_KIT_NEDA_RESOURCES = [
-    { name: 'NEDA Helpline', contact: '1-800-931-2237', when: 'M-Th 11am-9pm ET; F 11am-5pm ET', kind: 'Phone helpline', notes: 'Trained volunteers + treatment referrals. Free, confidential.' },
-    { name: 'NEDA Text Line', contact: 'Text "NEDA" to 741741', when: '24/7', kind: 'Text support', notes: 'Crisis Text Line in partnership with NEDA. For when calling feels too hard.' },
-    { name: 'NEDA Online Chat', contact: 'myneda.org', when: 'M-Th 9am-9pm ET; F 9am-5pm ET', kind: 'Chat', notes: 'Web chat with trained volunteers.' },
-    { name: '988 Suicide + Crisis Lifeline', contact: '988 (call or text)', when: '24/7', kind: 'Crisis line', notes: 'For any mental health crisis, including ED-related distress.' },
-    { name: 'Crisis Text Line', contact: 'Text HOME to 741741', when: '24/7', kind: 'Text crisis', notes: 'For any mental health crisis.' },
-    { name: 'Trevor Project (LGBTQ+ youth)', contact: '1-866-488-7386 or text START to 678-678', when: '24/7', kind: 'LGBTQ+ youth crisis', notes: 'For LGBTQ+ youth in crisis, including ED + body image.' },
-    { name: 'Project HEAL', contact: 'theprojectheal.org', when: 'Online application', kind: 'Treatment scholarships', notes: 'Free ED treatment scholarships + insurance navigation. Equity-focused.' },
-    { name: 'F.E.A.S.T. (parent/family support)', contact: 'feast-ed.org', when: 'Online community', kind: 'Family support', notes: 'Parent + family support for ED. Forums, education, advocacy.' },
-    { name: 'NAMI HelpLine', contact: '1-800-950-NAMI (6264)', when: 'M-F 10am-10pm ET', kind: 'Mental health', notes: 'National Alliance on Mental Illness. ED often co-occurs with anxiety/depression.' },
-    { name: 'SAMHSA Treatment Locator', contact: 'findtreatment.gov or 1-800-662-4357', when: '24/7', kind: 'Treatment search', notes: 'Substance Abuse + Mental Health Services Administration treatment finder.' },
-    { name: 'Acceptance and Commitment Therapy resources', contact: 'contextualscience.org', when: 'Online', kind: 'Therapy framework', notes: 'ACT is evidence-based for ED + anxiety + chronic conditions.' },
-    { name: 'EDGE (Eating Disorder Geographic Evaluator)', contact: 'edge.byu.edu', when: 'Online tool', kind: 'Self-screening', notes: 'Free anonymous self-screening tool, evidence-based.' },
-    { name: 'IAEDP Member Search (treatment providers)', contact: 'iaedp.com', when: 'Online directory', kind: 'Provider search', notes: 'International Association of Eating Disorders Professionals — find credentialed providers.' },
-    { name: 'Recovery Record (app)', contact: 'recoveryrecord.com', when: 'App', kind: 'Recovery tracking', notes: 'Evidence-based ED recovery tracking app. Used clinically.' },
-    { name: 'Rise Up + Recover (app)', contact: 'app store', when: 'App', kind: 'Recovery tracking', notes: 'Free ED recovery app from Recovery Warriors. CBT-aligned.' },
-    { name: 'Yale Rudd Center weight stigma toolkit', contact: 'uconnruddcenter.org', when: 'Online resources', kind: 'Anti-stigma education', notes: 'Resources on weight stigma — major contributor to ED.' },
-    { name: 'Renfrew Center (national ED treatment)', contact: 'renfrewcenter.com', when: 'Inquiry online', kind: 'Treatment center', notes: 'Major ED-specific treatment provider. Insurance + scholarships.' },
-    { name: 'Maine ED therapists (Akari Care, etc.)', contact: 'Search Psychology Today for ED specialist + Maine', when: 'Individual schedules', kind: 'Local Maine providers', notes: 'Akari Care + several outpatient providers in Portland/Bangor.' },
-    { name: 'Open Path Collective (sliding-scale therapy)', contact: 'openpathcollective.org', when: 'Online directory', kind: 'Affordable therapy', notes: 'Therapy at $30-80/session. Some ED specialists.' },
-    { name: 'School counselor', contact: 'Your school', when: 'School hours', kind: 'Immediate support', notes: 'School counselors can be a first step + refer to outside ED treatment.' },
-    { name: 'NIMH (National Institute of Mental Health)', contact: 'nimh.nih.gov', when: 'Online resources', kind: 'Education', notes: 'Federal research-based mental health info, including ED + body image.' },
-    { name: 'Maine Bureau of Health Services', contact: 'maine.gov/dhhs/mecdc', kind: 'State health resources', when: 'Business hours', notes: 'Maine state mental health + nutrition resources.' },
-    { name: 'JED Foundation (teen mental health)', contact: 'jedfoundation.org', when: 'Online', kind: 'Resource hub', notes: 'Comprehensive teen mental health + ED education + support.' },
-    { name: 'BEAM (Black Emotional and Mental Health Collective)', contact: 'beam.community', when: 'Online', kind: 'Identity-affirming support', notes: 'Mental health resources by + for Black communities.' },
-    { name: 'NQTTCN (National Queer Trans Therapists of Color)', contact: 'nqttcn.com', when: 'Online directory', kind: 'Identity-affirming therapy', notes: 'Therapist directory for queer + trans people of color.' },
-    { name: 'Trans Lifeline', contact: '1-877-565-8860', when: '24/7', kind: 'Crisis (trans)', notes: 'Trans peer support hotline. Run by + for trans community.' },
-    { name: 'The Body Positive', contact: 'thebodypositive.org', when: 'Online programs', kind: 'Body acceptance education', notes: 'Body-acceptance education for teens + young adults.' },
-    { name: 'F.E.A.S.T. Parent Forum', contact: 'forum.feast-ed.org', when: 'Online community', kind: 'Parent support', notes: 'Active parent community for ED + adolescents. 24/7 support.' },
-    { name: 'Brave Movement', contact: 'bravemovement.com', when: 'Online', kind: 'Recovery community', notes: 'Online community for body-image + ED recovery.' },
-    { name: 'Eating Disorder Foundation', contact: 'eatingdisorderfoundation.org', when: 'Online + Denver-based programming', kind: 'Education + treatment', notes: 'Non-profit ED education + treatment access.' },
-    { name: 'Athletes Against Anorexia', contact: 'athletesagainstanorexia.com', when: 'Online', kind: 'Athlete-specific support', notes: 'For athletes struggling with ED. Sport-aware messaging.' },
-    { name: 'TheBodyPositiveGirl (Instagram + book)', contact: 'thebodypositive.org', when: 'Online', kind: 'Education + community', notes: 'Body positivity education founded by Connie Sobczak + Elizabeth Scott.' },
-    { name: 'Diabetes + Eating Disorders (T1DE)', contact: 'wearediabetes.org', when: 'Online resources', kind: 'T1D-specific ED support', notes: 'Diabulimia awareness + support for T1D adolescents.' },
-    { name: 'ANAD (National Association of Anorexia Nervosa)', contact: 'anad.org', when: 'M-F + helpline', kind: 'ED support', notes: 'Free peer support + helpline. anad.org/help.' },
-    { name: 'Allies in Recovery', contact: 'alliesinrecovery.net', when: 'Online + paid', kind: 'Family training', notes: 'CRAFT-based family training for loved ones in recovery (ED + substance).' },
-    { name: 'Body Project (Stanford)', contact: 'bodyproject.com', when: 'Online + groups', kind: 'Body image intervention', notes: 'Evidence-based body image intervention for adolescent girls. Free + adapted versions available.' },
-    { name: 'Maine Eating Disorders Coalition', contact: 'meedc.org', when: 'Online resources', kind: 'Maine-specific ED', notes: 'State-level ED advocacy + resource directory.' },
-    { name: 'Akari Care (Portland Maine)', contact: 'akaricare.com', when: 'Business hours', kind: 'ED treatment', notes: 'Maine-based outpatient + IOP ED treatment. Sliding scale available.' },
-    { name: 'Center for Discovery (national)', contact: 'centerfordiscovery.com', when: '24/7 admissions', kind: 'ED treatment centers', notes: 'National network of ED residential + IOP centers. Insurance + financial aid.' },
-    { name: 'Walden Eating Disorders (NE)', contact: 'waldeneatingdisorders.com', when: 'Business hours', kind: 'ED treatment (Northeast)', notes: 'Northeast US ED treatment, including Maine + Massachusetts.' },
-    { name: 'NEDA Walks (community fundraisers)', contact: 'nedawalk.org', when: 'Annual events', kind: 'Community + awareness', notes: 'Community walks to raise ED awareness + fund NEDA programs.' },
-    { name: 'BEDA (Binge Eating Disorder Assoc)', contact: 'bedaonline.com', when: 'Online resources', kind: 'BED-specific', notes: 'Binge Eating Disorder-specific education + support.' },
-    { name: 'Center for Mindful Eating', contact: 'thecenterformindfuleating.org', when: 'Online education', kind: 'Mindful eating training', notes: 'Mindfulness-based eating awareness training (MB-EAT).' },
-    { name: 'Trillium Mental Health (Bangor)', contact: 'trilliummentalhealth.com', when: 'Business hours', kind: 'Maine mental health', notes: 'Bangor-area mental health + nutrition counseling.' },
-    { name: 'Health at Every Size (HAES) Community', contact: 'haescommunity.com', when: 'Online directory', kind: 'HAES-aligned providers', notes: 'Find HAES-aligned therapists + dietitians by state.' },
-    { name: 'EDReferral (ED-specific provider search)', contact: 'edreferral.com', when: 'Online directory', kind: 'Provider search', notes: 'Specifically searches ED-credentialed providers (CEDS, CEDS-C).' },
-    { name: 'Maine Adolescent Medicine (Maine Health)', contact: 'mainehealth.org/maine-medical-center/services/medical-services/adolescent-medicine', when: 'Business hours', kind: 'Adolescent medical care', notes: 'Adolescent-specialized medical care, including ED + nutrition concerns.' },
-    {
-      name: 'Maine 211 Mental Health',
-      contact: '211 (call) or 211maine.org',
-      when: '24/7',
-      kind: 'Resource referral',
-      notes: 'Confidential statewide referral to mental health + food access services.'
-    },
-    {
-      name: 'Center for Discovery (Maine)',
-      contact: 'centerfordiscovery.com',
-      when: '24/7 admissions',
-      kind: 'ED treatment',
-      notes: 'National network with Maine programming. Residential + IOP + outpatient. Insurance + financial aid.'
-    },
-    {
-      name: 'Veritas Collaborative (NE region)',
-      contact: 'veritascollaborative.com',
-      when: 'Business hours',
-      kind: 'ED treatment',
-      notes: 'Specialty ED treatment for adolescents + adults. PHP + IOP + outpatient.'
-    },
-    {
-      name: 'McCallum Place (national)',
-      contact: 'mccallumplace.com',
-      when: '24/7 admissions',
-      kind: 'ED treatment',
-      notes: 'National ED treatment, including specialty programs for athletes + males with EDs.'
-    },
-    {
-      name: 'IAEDP Foundation Scholarships',
-      contact: 'iaedpfoundation.com',
-      when: 'Application-based',
-      kind: 'Treatment scholarships',
-      notes: 'Scholarships for ED treatment when insurance falls short.'
-    },
-    {
-      name: 'NAMI (mental health support)',
-      contact: '1-800-950-NAMI (6264)',
-      when: 'M-F 10am-10pm ET',
-      kind: 'Mental health helpline',
-      notes: 'National Alliance on Mental Illness. ED co-occurs with anxiety/depression in most cases — comprehensive support.'
-    }
+    { name: 'National Alliance for Eating Disorders Helpline', contact: '1-866-662-1235', when: 'Mon-Fri, 9 am-7 pm ET', kind: 'Eating disorder helpline', notes: 'Help and referrals for eating disorders. Calls to the old NEDA helpline number now come here (NEDA closed its helpline in 2023).' },
+    { name: '988 Suicide & Crisis Lifeline', contact: 'Call or text 988, or chat at 988lifeline.org', when: '24/7', kind: 'Crisis line', notes: 'Free and confidential. For any mental health crisis, including eating disorder distress.' },
+    { name: 'Crisis Text Line', contact: 'Text HOME to 741741', when: '24/7', kind: 'Crisis text line', notes: 'Free and confidential, anywhere in the United States.' },
+    { name: 'ANAD Helpline', contact: '1-888-375-7767 or anad.org', when: 'Mon-Fri, 9 am-9 pm Central Time', kind: 'Eating disorder helpline', notes: 'Free emotional support and referrals. ANAD also runs free peer support groups.' },
+    { name: 'The Trevor Project (LGBTQ+ young people)', contact: '1-866-488-7386, or text START to 678-678', when: '24/7', kind: 'Crisis line', notes: 'Free and confidential crisis counseling.' },
+    { name: 'NAMI HelpLine', contact: '1-800-950-6264, or text NAMI to 62640', when: 'Mon-Fri, 10 am-10 pm ET', kind: 'Mental health information', notes: 'Information and support. It is not a crisis line: in a crisis, call or text 988.' },
+    { name: 'SAMHSA National Helpline', contact: '1-800-662-4357', when: '24/7', kind: 'Treatment referral', notes: 'Free, confidential help finding treatment, in English and Spanish.' },
+    { name: 'F.E.A.S.T. (for parents and caregivers)', contact: 'feast-ed.org', when: 'Online', kind: 'Family support', notes: 'Free peer support and learning for families of someone with an eating disorder.' },
+    { name: 'School counselor or school nurse', contact: 'Your school', when: 'School days', kind: 'Talk to someone', notes: 'A good first person to tell. They can help you find more support.' },
+    { name: 'Maine Crisis Line', contact: '1-888-568-1112 (or 711 Maine Relay)', when: '24/7', kind: 'Maine crisis line', notes: 'Free and confidential support for anyone in Maine having a mental health crisis.' },
+    { name: '211 Maine', contact: 'Dial 211, or text your ZIP code to 898-211', when: '24/7', kind: 'Maine help finder', notes: 'Free, confidential help finding local services, including mental health care and food.' },
+    { name: 'Northern Light Health Eating Disorder Care', contact: '1-800-640-1211 or northernlighthealth.org/EatingDisorders', when: 'Call to learn more', kind: 'Maine eating disorder care', notes: 'Eating disorder care for all ages in Maine, offered fully online (virtual).' },
+    { name: 'Sweetser New England Eating Disorders Program', contact: '1-800-434-3000 or sweetser.org', when: 'Call to learn more', kind: 'Maine eating disorder care', notes: 'Eating disorder care for children, teens and adults in Maine.' }
   ];
 
   var NUTRITION_KIT_MAINE_RESOURCES = [
-    { name: 'Good Shepherd Food Bank', contact: 'gsfb.org', kind: 'Food bank', service: 'Distributes to 600+ Maine pantries. Volunteer + receive food.' },
+    { name: 'Good Shepherd Food Bank', contact: 'gsfb.org', kind: 'Food bank', service: 'Works with about 550 partner agencies across Maine (gsfb.org, 2026). Volunteer + receive food.' },
     { name: 'Wayside Soup Kitchen (Portland)', contact: 'waysidesoupkitchen.org', kind: 'Soup kitchen', service: 'Daily meals in Portland. Volunteer-driven.' },
     { name: 'Maine SNAP application', contact: 'my-maine-connection.org', kind: 'Food assistance', service: 'Apply online for SNAP (food stamps) in Maine.' },
     { name: 'Maine WIC', contact: 'maine.gov/dhhs/mecdc/population-health/wic', kind: 'Food assistance for pregnant/postpartum/kids <5', service: 'Free nutritious food + nutrition education.' },
-    { name: 'Maine Free School Meals (universal)', contact: 'Through your school', kind: 'School meals', service: 'All Maine students eat free breakfast + lunch (since 2021).' },
-    { name: 'Maine Harvest Bucks', contact: 'mainefederationoffarmersmarkets.com', kind: 'SNAP doubling', service: 'Double SNAP at participating Maine farmers markets.' },
+    { name: 'Maine Free School Meals (universal)', contact: 'Through your school', kind: 'School meals', service: 'All Maine public school students can get free school breakfast and lunch (state law passed in 2021).' },
+    { name: 'Maine Harvest Bucks', contact: 'mainefarmersmarkets.org', kind: 'SNAP doubling', service: 'Double SNAP at participating Maine farmers markets.' },
     { name: 'MOFGA (Maine Organic Farmers + Gardeners)', contact: 'mofga.org', kind: 'Organic farming + education', service: 'Common Ground Fair, classes, beginner farmer resources.' },
     { name: 'UMaine Cooperative Extension', contact: 'extension.umaine.edu', kind: 'Education', service: 'Free Maine-specific nutrition, gardening, preservation classes.' },
-    { name: 'Maine Federation of Farmers Markets', contact: 'mainefederationoffarmersmarkets.com', kind: 'Market directory', service: 'Find a Maine farmers market + their days/seasons.' },
+    { name: 'Maine Federation of Farmers Markets', contact: 'mainefarmersmarkets.org', kind: 'Market directory', service: 'Find a Maine farmers market + their days/seasons.' },
     { name: 'Maine Department of Marine Resources', contact: 'maine.gov/dmr', kind: 'Seafood regulation', service: 'Maine seafood safety + sustainability info.' },
     { name: 'Maine Lobstermen\'s Community Alliance', contact: 'mlcalliance.org', kind: 'Industry support', service: 'Maine lobster industry advocacy + education.' },
     { name: 'Maine 211', contact: '211 (call) or 211maine.org', kind: 'Resource directory', service: 'Maine-wide referral system for food, housing, mental health.' },
     { name: 'Preble Street (Portland)', contact: 'preblestreet.org', kind: 'Food + homelessness services', service: 'Soup kitchen + food security advocacy in Portland.' },
     { name: 'Healthy Acadia (Down East Maine)', contact: 'healthyacadia.org', kind: 'Community health', service: 'Food security + nutrition programming in Down East Maine.' },
     { name: 'Maine Equal Justice', contact: 'maineequaljustice.org', kind: 'Legal advocacy', service: 'Food access policy advocacy + SNAP enrollment assistance.' },
-    { name: 'Maine Memorial Day Hunger Initiative', contact: 'Through United Way', kind: 'Summer feeding', service: 'Summer programs for kids who normally eat free school meals.' },
-    { name: 'King Middle School (Portland) student feedback', contact: 'Cafeteria manager or principal', kind: 'School-specific', service: 'Provide feedback on school food. Maine Universal Free Meals applies.' },
-    { name: 'Akari Care (Maine eating disorder treatment)', contact: 'akaricare.com', kind: 'ED treatment', service: 'Maine-based eating disorder outpatient treatment.' },
+    { name: 'Your school cafeteria', contact: 'Cafeteria manager or principal', kind: 'School-specific', service: 'Give feedback on school food. Maine\'s universal free school meals law covers your school.' },
     { name: 'NAMI Maine', contact: 'namimaine.org', kind: 'Mental health', service: 'Maine chapter of NAMI. Mental health support + advocacy.' },
     { name: 'Maine Crisis Line', contact: '1-888-568-1112', kind: 'Crisis', service: '24/7 mental health crisis line for Maine residents.' }
   ];
 
+  // ACCURACY AUDIT 2026-11-24: per-sport kcal/hour ranges removed (no source found; they vary with body size and
+  // effort). Dance: Arcelus et al., Eur Eat Disord Rev 2014;22:92-101 (PMID 24277724): "dancers had a three times
+  // higher risk of suffering from eating disorders". Supplements: NIH ODS Exercise fact sheet, AND/DoC/ACSM: "there
+  // is no justification for their use by young athletes". Iron: ODS: "Teenage girls and premenopausal women are at
+  // increased risk of obtaining insufficient amounts of iron". During-exercise carbs 30-60 g/h: ACSM/AND/DoC 2016
+  // position stand (Thomas et al., Med Sci Sports Exerc 2016;48:543).
   var NUTRITION_KIT_SPORTS_FUEL_REF = [
-    { sport: 'Cross-country running', kcalPerHour: '600-800', preFuel: '300-500 kcal complex carbs + protein 2-3 hr before', duringFuel: '30-60 g carbs/hr if >60 min', postFuel: '20-25 g protein + 1 g carb/kg within 30 min', hydration: '600-1000 mL/hr in heat', notes: 'High glycogen demand. Iron deficiency common in runners — especially female athletes.' },
-    { sport: 'Swimming', kcalPerHour: '500-800', preFuel: 'Light + easily digestible 1-2 hr before', duringFuel: 'Sports drink during long sets >60 min', postFuel: 'Recovery within 30 min critical', hydration: 'Easily overlooked in water — track', notes: 'Pool chlorine may mask sweat. Carb-heavy sport.' },
-    { sport: 'Football (American)', kcalPerHour: '300-500 (interval)', preFuel: 'Pasta dinner night before + breakfast', duringFuel: 'Halftime carbs + electrolytes', postFuel: 'Protein-heavy + carbs', hydration: '1-2 L during practice in heat', notes: 'Heat illness is top concern. Position-dependent.' },
-    { sport: 'Soccer', kcalPerHour: '600-900', preFuel: 'Pasta + lean protein 3 hr before', duringFuel: 'Halftime sports drink + banana', postFuel: 'Within 30 min — chocolate milk works', hydration: '600-800 mL/hr', notes: '90+ min of mixed-intensity. Glycogen-depleting.' },
-    { sport: 'Basketball', kcalPerHour: '500-700', preFuel: 'Carbs + protein 2-3 hr before', duringFuel: 'Sports drink + small snack at halftime', postFuel: 'Protein + carbs within 30-60 min', hydration: '500-800 mL/hr', notes: 'Indoor sport, but still high sweat in long games.' },
-    { sport: 'Hockey', kcalPerHour: '500-700', preFuel: 'Carb-heavy 2-3 hr before game', duringFuel: 'Between-period carbs + electrolytes', postFuel: 'Protein within 30-60 min', hydration: '600-1000 mL/game', notes: 'Heavy sweating despite cold rink. Track hydration carefully.' },
-    { sport: 'Wrestling', kcalPerHour: '400-600 (interval)', preFuel: 'Steady fueling all day; no last-minute weight cuts', duringFuel: 'Light + easy between matches', postFuel: 'Replenish well; matches often multi-day tournaments', hydration: 'Critical for weight class management', notes: 'Weight-cutting is a major health concern. Work with sports RD.' },
-    { sport: 'Track + field (sprints)', kcalPerHour: '300-500 (interval)', preFuel: 'Pre-meet carbs night before + morning of', duringFuel: 'Easy carbs + water between events', postFuel: 'Protein + carbs', hydration: '500 mL/hr in summer', notes: 'Sprint-power events. Less glycogen demand than distance.' },
-    { sport: 'Track + field (distance)', kcalPerHour: '600-900', preFuel: 'Carb-load 2-3 days for races >90 min', duringFuel: '30-60 g carbs/hr', postFuel: 'Recovery is critical', hydration: '600-800 mL/hr', notes: 'Glycogen-demanding. Practice fueling on training runs.' },
-    { sport: 'Cross-country skiing', kcalPerHour: '700-1000', preFuel: 'High-carb meal + protein 2-3 hr before', duringFuel: 'Gels + sports drink + bars', postFuel: 'Within 30 min — recovery is key', hydration: '500-1000 mL/hr even in cold', notes: 'Often underestimated cold-weather hydration needs. Maine winter sport.' },
-    { sport: 'Volleyball', kcalPerHour: '300-500 (interval)', preFuel: 'Pre-match meal 2-3 hr before', duringFuel: 'Banana/orange between sets', postFuel: 'Protein + carbs within 30 min', hydration: '500 mL/hr', notes: 'Indoor with high sweat in long matches.' },
-    { sport: 'Lacrosse', kcalPerHour: '500-700', preFuel: 'Pasta dinner night before + breakfast', duringFuel: 'Sports drink between quarters', postFuel: 'Standard 4:1 carb-protein recovery', hydration: '500-700 mL/hr', notes: 'Mixed-intensity sport with sustained periods.' },
-    { sport: 'Tennis', kcalPerHour: '400-600', preFuel: 'Standard pre-game 2-3 hr before', duringFuel: 'Banana + electrolytes between sets', postFuel: 'Standard recovery', hydration: '500-800 mL/hr in heat', notes: 'Singles vs doubles dramatically different intensity.' },
-    { sport: 'Golf', kcalPerHour: '200-300 (walking)', preFuel: 'Steady breakfast', duringFuel: 'Snacks every 4-6 holes (nuts, fruit)', postFuel: 'Regular meal post-round', hydration: '400-600 mL/hr', notes: 'Long duration, low intensity. Don\'t under-fuel just because intensity is low.' },
-    { sport: 'Weightlifting', kcalPerHour: '300-500', preFuel: 'Carbs + protein 60-90 min before', duringFuel: 'Sip water between sets', postFuel: '20-30 g protein within 30 min', hydration: 'Steady throughout', notes: 'Protein-priority sport. Creatine supplementation common after age 16.' },
-    { sport: 'CrossFit/HIIT', kcalPerHour: '600-900', preFuel: 'Carbs + protein 60-90 min before', duringFuel: 'Sports drink + electrolytes', postFuel: '20-30 g protein + carbs within 30 min', hydration: '600-800 mL/hr', notes: 'High intensity = high recovery demand.' },
-    { sport: 'Dance', kcalPerHour: '300-500', preFuel: 'Light + carb-heavy 2 hr before', duringFuel: 'Sports drink + small snacks', postFuel: 'Protein + carbs within 30-60 min', hydration: '500 mL/hr', notes: 'High prevalence of disordered eating in dance — work with RD if culture is unhealthy.' },
-    { sport: 'Marching band', kcalPerHour: '200-400', preFuel: 'Pre-rehearsal meal + bridging snacks', duringFuel: 'Water + electrolytes; high heat in summer uniforms', postFuel: 'Standard recovery', hydration: '500-800 mL in heat', notes: 'Underestimated for nutrition needs. Heat illness in summer rehearsals.' }
+    { sport: 'Cross-country running', preFuel: '300-500 kcal complex carbs + protein 2-3 hr before', duringFuel: '30-60 g carbs/hr if >60 min', postFuel: '20-25 g protein + 1 g carb/kg within 30 min', hydration: '600-1000 mL/hr in heat', notes: 'Uses a lot of stored carbohydrate (glycogen). Female athletes are at higher risk of low iron.' },
+    { sport: 'Swimming', preFuel: 'Light + easily digestible 1-2 hr before', duringFuel: 'Sports drink during long sets >60 min', postFuel: 'Recovery within 30 min critical', hydration: 'Easy to forget in the water: keep a bottle on deck', notes: 'You still lose fluid while swimming. Long practices use a lot of carbohydrate.' },
+    { sport: 'Football (American)', preFuel: 'Pasta dinner night before + breakfast', duringFuel: 'Halftime carbs + electrolytes', postFuel: 'Protein-heavy + carbs', hydration: '1-2 L during practice in heat', notes: 'Heat illness is top concern. Position-dependent.' },
+    { sport: 'Soccer', preFuel: 'Pasta + lean protein 3 hr before', duringFuel: 'Halftime sports drink + banana', postFuel: 'Within 30 min — chocolate milk works', hydration: '600-800 mL/hr', notes: '90+ min of mixed-intensity. Glycogen-depleting.' },
+    { sport: 'Basketball', preFuel: 'Carbs + protein 2-3 hr before', duringFuel: 'Sports drink + small snack at halftime', postFuel: 'Protein + carbs within 30-60 min', hydration: '500-800 mL/hr', notes: 'Indoor sport, but still high sweat in long games.' },
+    { sport: 'Hockey', preFuel: 'Carb-heavy 2-3 hr before game', duringFuel: 'Between-period carbs + electrolytes', postFuel: 'Protein within 30-60 min', hydration: '600-1000 mL/game', notes: 'Heavy sweating despite cold rink. Track hydration carefully.' },
+    { sport: 'Wrestling', preFuel: 'Steady fueling all day; no last-minute weight cuts', duringFuel: 'Light + easy between matches', postFuel: 'Replenish well; matches often multi-day tournaments', hydration: 'Critical for weight class management', notes: 'Weight-cutting is a major health concern. Work with sports RD.' },
+    { sport: 'Track + field (sprints)', preFuel: 'Pre-meet carbs night before + morning of', duringFuel: 'Easy carbs + water between events', postFuel: 'Protein + carbs', hydration: '500 mL/hr in summer', notes: 'Sprint-power events. Less glycogen demand than distance.' },
+    { sport: 'Track + field (distance)', preFuel: 'Carb-load 2-3 days for races >90 min', duringFuel: '30-60 g carbs/hr', postFuel: 'Recovery is critical', hydration: '600-800 mL/hr', notes: 'Glycogen-demanding. Practice fueling on training runs.' },
+    { sport: 'Cross-country skiing', preFuel: 'High-carb meal + protein 2-3 hr before', duringFuel: 'Gels + sports drink + bars', postFuel: 'Within 30 min — recovery is key', hydration: '500-1000 mL/hr even in cold', notes: 'Often underestimated cold-weather hydration needs. Maine winter sport.' },
+    { sport: 'Volleyball', preFuel: 'Pre-match meal 2-3 hr before', duringFuel: 'Banana/orange between sets', postFuel: 'Protein + carbs within 30 min', hydration: '500 mL/hr', notes: 'Indoor with high sweat in long matches.' },
+    { sport: 'Lacrosse', preFuel: 'Pasta dinner night before + breakfast', duringFuel: 'Sports drink between quarters', postFuel: 'Carbs + protein at the next meal or snack', hydration: '500-700 mL/hr', notes: 'Mixed-intensity sport with sustained periods.' },
+    { sport: 'Tennis', preFuel: 'Standard pre-game 2-3 hr before', duringFuel: 'Banana + electrolytes between sets', postFuel: 'Standard recovery', hydration: '500-800 mL/hr in heat', notes: 'Singles vs doubles dramatically different intensity.' },
+    { sport: 'Golf', preFuel: 'Steady breakfast', duringFuel: 'Snacks every 4-6 holes (nuts, fruit)', postFuel: 'Regular meal post-round', hydration: '400-600 mL/hr', notes: 'Long duration, low intensity. Don\'t under-fuel just because intensity is low.' },
+    { sport: 'Weightlifting', preFuel: 'Carbs + protein 60-90 min before', duringFuel: 'Sip water between sets', postFuel: '20-30 g protein within 30 min', hydration: 'Steady throughout', notes: 'Protein from regular meals covers most teens. Experts see no reason for supplements in young athletes.' },
+    { sport: 'CrossFit/HIIT', preFuel: 'Carbs + protein 60-90 min before', duringFuel: 'Sports drink + electrolytes', postFuel: '20-30 g protein + carbs within 30 min', hydration: '600-800 mL/hr', notes: 'High intensity = high recovery demand.' },
+    { sport: 'Dance', preFuel: 'Light + carb-heavy 2 hr before', duringFuel: 'Sports drink + small snacks', postFuel: 'Protein + carbs within 30-60 min', hydration: '500 mL/hr', notes: 'Dancers have a higher risk of eating disorders. Talk to a trusted adult or a registered dietitian if the culture around food feels unhealthy.' },
+    { sport: 'Marching band', preFuel: 'Pre-rehearsal meal + bridging snacks', duringFuel: 'Water + electrolytes; high heat in summer uniforms', postFuel: 'Standard recovery', hydration: '500-800 mL in heat', notes: 'Underestimated for nutrition needs. Heat illness in summer rehearsals.' }
   ];
 
   // ══════════════════════════════════════════════════════════════════
@@ -1590,7 +1618,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#0c4a6e' } },
           nlH('span', null, 'Daily target:'),
           nlH('input', { type: 'number', value: targetMl, onChange: function(e) { setTarget(parseInt(e.target.value) || 2500); }, 'aria-label': __alloNLT('stem.nutritionlab.a11y_daily_water_target_in_milliliters', 'Daily water target in milliliters'), style: { width: 80, padding: '3px 6px', borderRadius: 4, border: '1px solid #bae6fd', fontSize: 12 } }),
-          nlH('span', null, 'mL (NAM AI: ~2700 for teen girls, ~3700 for teen boys)')
+          nlH('span', null, 'mL (NAM AI from drinks, ages 14–18: about 1,800 girls / 2,600 boys)')
         )
       ),
       nlCard(null,
@@ -1680,7 +1708,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('AAP guidance: snacking 2-3x daily is normal for adolescents whose growth + activity demand frequent fueling. Awareness of WHY (hunger/energy/emotion) is more useful than restriction.')
+      nlEvidenceFooter('Snacks are a normal part of how growing, active teens fuel up. Knowing WHY you are eating (hunger, energy, emotion) is more useful than restriction.')
     );
   }
 
@@ -1745,7 +1773,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('USDA National School Lunch Program meets ⅓ of daily nutrition needs. Free/reduced eligibility = ~30M US students. Tracking helps you see your own patterns + advocate for menu improvements.')
+      nlEvidenceFooter('The USDA National School Lunch Program serves about 29 million students a day. Tracking helps you see your own patterns and speak up for menu improvements.')
     );
   }
 
@@ -1792,7 +1820,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#9f1239' } },
           nlH('span', null, 'Daily target:'),
           nlH('input', { type: 'number', value: dailyTarget, onChange: function(e) { setData({ entries: entries, dailyTarget: parseInt(e.target.value) || 56 }); }, style: { width: 60, padding: '3px 6px', borderRadius: 4, border: '1px solid #fecaca', fontSize: 12 } }),
-          nlH('span', null, 'g (RDA ~0.85 g/kg — teens: ~46g girls, ~52g boys; athletes: 1.2-1.7 g/kg)')
+          nlH('span', null, 'g (RDA ~0.85 g/kg — teens: ~46g girls, ~52g boys; adult athletes: 1.2–2.0 g/kg)')
         )
       ),
       nlCard(null,
@@ -1818,7 +1846,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('USDA/AAP: adolescent protein RDA 0.85 g/kg body weight, with athletes 1.2-1.7 g/kg (ISSN position). Protein is muscle/bone repair, immune function, and enzyme building — not "diet food" — and is best spread across all meals.')
+      nlEvidenceFooter('NIH ODS: the teen protein RDA is about 0.85 g per kg of body weight; sports groups (ACSM/AND/DoC 2016) suggest 1.2-2.0 g/kg for adult athletes. Protein repairs muscle and bone, supports immunity and builds enzymes, and is best spread across meals.')
     );
   }
 
@@ -1849,7 +1877,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { name: 'Chia seeds (1T)', g: 4 }, { name: 'Sweet potato', g: 4 }, { name: 'Whole-wheat bread', g: 2 }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Fiber Tracker', 'Most Americans get half their recommended fiber', '#a16207'),
+      nlSection('My Fiber Tracker', 'Most Americans do not get enough fiber (Dietary Guidelines)', '#a16207'),
       nlBodyNote(),
       nlCard({ style: { background: '#fef3c7', border: '1px solid #fcd34d' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 } },
@@ -1862,7 +1890,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#78350f' } },
           nlH('span', null, 'Target:'),
           nlH('input', { type: 'number', value: dailyTarget, onChange: function(e) { setData({ entries: entries, dailyTarget: parseInt(e.target.value) || 28 }); }, style: { width: 60, padding: '3px 6px', borderRadius: 4, border: '1px solid #fcd34d', fontSize: 12 } }),
-          nlH('span', null, 'g (DGA: 25g women, 38g men; 14g per 1000 kcal)')
+          nlH('span', null, 'g (Dietary Guidelines: about 14 g per 1,000 calories; label Daily Value 28 g)')
         )
       ),
       nlCard(null,
@@ -1888,7 +1916,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('Dietary Guidelines for Americans + Harvard T.H. Chan: fiber feeds gut microbiome, slows glucose absorption, supports satiety. Only ~5% of Americans hit the daily target. Variety matters more than total — different plants feed different gut bacteria.')
+      nlEvidenceFooter('Dietary Guidelines for Americans 2020-2025: more than 90% of women and 97% of men do not get the recommended fiber. Fiber feeds gut microbes, slows glucose absorption and helps you feel full. Different plants feed different gut bacteria.')
     );
   }
 
@@ -1990,7 +2018,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var quick = [
       { name: 'Milk (8 oz)', mg: 300 }, { name: 'Yogurt (6 oz)', mg: 250 }, { name: 'Cheddar (1 oz)', mg: 200 },
       { name: 'Tofu firm (½ c)', mg: 250 }, { name: 'Almonds (1 oz)', mg: 75 }, { name: 'Sardines (3 oz w/bones)', mg: 325 },
-      { name: 'Kale (1 c cooked)', mg: 95 }, { name: 'Fortified plant milk (1 c)', mg: 300 }, { name: 'Fortified OJ (8 oz)', mg: 350 }
+      { name: 'Kale (1 c cooked)', mg: 177 }, { name: 'Fortified plant milk (1 c)', mg: 300 }, { name: 'Fortified OJ (8 oz)', mg: 350 }
     ];
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Calcium Tracker', 'Adolescence = peak bone-building. Now matters for life.', '#94a3b8'),
@@ -2028,7 +2056,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('NIH ODS + AAP: 90% of adult bone mass is built by age 18. Calcium intake during adolescence directly shapes peak bone mineral density and lifelong fracture/osteoporosis risk. Pair with vitamin D for absorption.')
+      nlEvidenceFooter('NIH: up to 90% of peak bone mass is built by age 18 in girls and age 20 in boys. Calcium in the teen years helps build that bone. Vitamin D helps you absorb calcium.')
     );
   }
 
@@ -2102,7 +2130,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('NIH ODS + AAP: iron deficiency is the #1 nutrient deficiency in the US. High-risk groups: menstruating teens, vegetarians, athletes. Iron-deficiency anemia presents with fatigue, attention problems (can mimic ADHD), and exercise intolerance.')
+      nlEvidenceFooter('NIH ODS: teen girls, people with heavy periods, vegetarians and some athletes are more likely to run low on iron. Iron-deficiency anemia can cause tiredness, weakness and trouble concentrating. A blood test is the only way to know.')
     );
   }
 
@@ -2133,14 +2161,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { value: 'fortified', label: '🥚 Omega-3 enriched (eggs, etc.)' }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Omega-3 Tracker', 'Brain structure, heart rhythm, mood — Maine waters are an omega-3 powerhouse', '#0e7490'),
+      // NIH ODS Omega-3 fact sheet: "DHA is concentrated in the brain and the retina".
+nlSection('My Omega-3 Tracker', 'Omega-3 DHA is concentrated in the brain and the eyes (NIH ODS)', '#0e7490'),
       nlBodyNote(),
       nlCard({ style: { background: '#ecfeff', border: '1px solid #67e8f9' } },
         nlH('strong', { style: { fontSize: 14, color: '#155e75' } }, 'This week: ' + weekFishMeals + ' / ' + weeklyTarget + ' fatty-fish meals'),
         nlH('div', { style: { width: '100%', height: 12, borderRadius: 6, background: '#fff', overflow: 'hidden', marginTop: 6 } },
           nlH('div', { style: { width: pct + '%', height: '100%', background: 'linear-gradient(90deg, #22d3ee, #0e7490)' } })
         ),
-        nlH('div', { style: { fontSize: 12, color: '#155e75', marginTop: 8 } }, 'AHA: 2 servings/week fatty fish (salmon, mackerel, sardines, herring). Vegan/no-fish: walnuts/flax/algae oil (~250-500 mg EPA+DHA/day).')
+        nlH('div', { style: { fontSize: 12, color: '#155e75', marginTop: 8 } }, 'AHA: 2 servings/week fatty fish (salmon, mackerel, sardines, herring). No fish? Walnuts, flax and chia give ALA; algae oil gives DHA.')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -2151,7 +2180,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       entries.length === 0
-        ? nlEmpty('No omega-3 logged yet. Maine fisheries (Atlantic salmon, mackerel, sardines) are a regional advantage.')
+        ? nlEmpty('No omega-3 logged yet. Fatty fish, walnuts, flax, and chia are all sources.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             entries.slice(0, 20).map(function(e) {
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 8, background: '#ecfeff', borderLeft: '3px solid #0e7490' } },
@@ -2167,7 +2196,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('AHA + Harvard T.H. Chan: EPA + DHA (the long-chain omega-3s in fatty fish) support brain DHA, cardiac rhythm, and inflammation regulation. ALA (walnut/flax) is partially converted to EPA/DHA in the body. Maine fisheries are a sustainable, regional source.')
+      // NIH ODS Omega-3 fact sheet (checked 2026-11-24): omega-3s are "components of the phospholipids that form the structures of cell membranes"; "DHA, in particular,
+      // is especially high in the retina, brain, and sperm"; "ALA can be converted into EPA and then to DHA, but the conversion ... is very limited". The same sheet says supplements
+      // "did not affect ... arrhythmia" in a large review, so the "cardiac rhythm" and "inflammation regulation" claims were cut.
+      nlEvidenceFooter('NIH Office of Dietary Supplements: EPA and DHA (the long-chain omega-3s in fatty fish) are part of the outer layer of every cell. DHA is found in high amounts in the brain and in the retina (the back of the eye). Your body can turn ALA (walnuts, flax) into EPA and DHA, but only a small amount.')
     );
   }
 
@@ -2258,7 +2290,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlCard({ style: { background: '#e0f2fe', border: '1px solid #38bdf8' } },
         nlH('strong', { style: { fontSize: 12, color: '#075985', display: 'block', marginBottom: 6 } }, 'How if-then plans work'),
         nlH('div', { style: { fontSize: 12, color: '#075985', lineHeight: 1.6 } },
-          'Decisions in the moment are exhausting. Pre-decide what you\'ll do when a specific trigger happens, and your brain auto-routes the behavior. Research shows if-then plans double goal-achievement rates.'
+          'Decisions in the moment are exhausting. Pre-decide what you\'ll do when a specific trigger happens, and your brain auto-routes the behavior. A review of 94 studies (Gollwitzer and Sheeran, 2006) found if-then plans help people reach their goals.'
         )
       ),
       nlCard(null,
@@ -2295,7 +2327,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Gollwitzer (1999): implementation intentions ("if X then Y" plans) double the rate at which behavioral goals are achieved compared to goal intentions alone. Works because it transfers behavior control from conscious deliberation to environmental cue.')
+      nlEvidenceFooter('Gollwitzer & Sheeran (2006 meta-analysis): "if X, then Y" plans make people more likely to follow through on goals, because a cue in the environment starts the behavior.')
     );
   }
 
@@ -2789,7 +2821,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { width: '100%', height: 10, borderRadius: 5, background: '#fff', overflow: 'hidden', marginTop: 6 } },
           nlH('div', { style: { width: consistency + '%', height: '100%', background: 'linear-gradient(90deg, #14b8a6, #0d9488)' } })
         ),
-        nlH('div', { style: { fontSize: 12, color: '#0f766e', marginTop: 6 } }, 'Not 100% is healthy. Perfectionism is a risk factor for disordered eating.')
+        nlH('div', { style: { fontSize: 12, color: '#0f766e', marginTop: 6 } }, 'Not 100% is healthy. Perfect days are not the goal.')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -2816,7 +2848,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Habits research (Lally, Duhigg): 80% consistency >> 100% then burnout. Self-compassion research (Neff): being kind to yourself after a "miss" predicts faster return to the habit than self-criticism.')
+      nlEvidenceFooter('Habits research (Lally et al., 2010): missing one day did not undo habit building. Self-compassion research (Neff): being kind to yourself after a miss helps you get back on track.')
     );
   }
 
@@ -2917,7 +2949,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Tribole & Resch (Intuitive Eating, 2020): the hunger-fullness scale is a tool for rebuilding interoceptive awareness — the ability to read internal body signals. Most adolescents have it disrupted by years of external food rules.')
+      nlEvidenceFooter('Tribole & Resch (Intuitive Eating, 2020): the hunger-fullness scale is a tool for noticing internal body signals (interoceptive awareness).')
     );
   }
 
@@ -3452,7 +3484,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Symptom logs are diagnostic gold for GI specialists. Brings 2-3 weeks of data to your doctor visit — they\'ll appreciate it. Stress, sleep, and meal pacing affect GI as much as specific foods.')
+      nlEvidenceFooter('Symptom logs help GI doctors. Bring a few weeks of notes to your doctor visit — they\'ll appreciate it. Stress, sleep, and meal pacing affect GI as much as specific foods.')
     );
   }
 
@@ -6012,7 +6044,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               )
             );
           }),
-      nlEvidenceFooter('USDA food-waste data: ~30-40% of US food supply is wasted, much at the home level due to inventory unawareness. Tracking what\'s on hand → less waste + lower grocery bills.')
+      nlEvidenceFooter('USDA food-waste data: an estimated 30-40% of the US food supply is wasted. Tracking what\'s on hand → less waste + lower grocery bills.')
     );
   }
 
@@ -6081,7 +6113,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('USDA Food Plans: an adolescent on the Thrifty Plan spends ~$60/wk; Low-Cost ~$80/wk. SNAP benefits + school meals fill gaps. Awareness ≠ deprivation — it\'s knowing where to shift.')
+      nlEvidenceFooter('USDA Food Plans estimate what a healthy diet costs at different budgets. SNAP benefits and school meals help fill gaps. Awareness is not deprivation; it is knowing where to shift.')
     );
   }
 
@@ -6598,7 +6630,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Food Adventures', 'Try new foods at YOUR pace — looking at it counts', '#a855f7'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#faf5ff', border: '1px solid #d8b4fe', marginBottom: 12, fontSize: 12, color: '#6b21a8', lineHeight: 1.55 } },
         nlH('strong', null, '🌱 Tiny steps count. '),
-        'Sensory exposure builds tolerance gradually. Looking → smelling → touching → tasting → eating is a real progression. No pressure, no reward; observation only.'
+        'Small steps can help: look, then smell, then touch, then taste. Go at your own pace. No pressure, no reward; observation only.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -6877,7 +6909,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlBodyNote(),
       nlCard({ style: { background: '#fefce8', border: '1px solid #fde047' } },
         nlH('strong', { style: { fontSize: 14, color: '#854d0e' } }, 'Last 7 days: ate breakfast ' + ateCount + '/' + weekLogs.length + ' tracked days'),
-        nlH('div', { style: { fontSize: 12, color: '#854d0e', marginTop: 4 } }, 'AAP: regular breakfast linked to better attention, mood, and academic performance — especially in adolescents.')
+        nlH('div', { style: { fontSize: 12, color: '#854d0e', marginTop: 4 } }, 'Breakfast is fuel for the morning. Not hungry early? A small snack later counts too.')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -6911,7 +6943,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('USDA + AAP: school breakfast program (BIC, "Breakfast in the Classroom") increases participation 40-80% over traditional cafeteria-only. Adolescent breakfast skippers report lower attention, higher mood volatility, more afternoon crashes.')
+      nlEvidenceFooter('FRAC: Breakfast in the Classroom programs raise school breakfast participation. Eating in the morning helps many students feel ready to learn.')
     );
   }
 
@@ -6983,7 +7015,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Hypoglycemia + adolescent attention research: bridging snacks (every 3-4 hrs) prevent glucose dips that hit attention + mood hardest. For T1D students with diabetes, emergency glucose is medically required — not optional.')
+      nlEvidenceFooter('Regular meals and snacks help keep energy steady. For students with type 1 diabetes, fast-acting sugar for lows is medically required, not optional.')
     );
   }
 
@@ -7035,7 +7067,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('ACSM + IOC consensus statements: athletes who plan pre/during/post fueling perform 5-15% better and recover faster. Adolescent under-fueling (esp. female athletes — RED-S) is a top sports medicine concern.')
+      nlEvidenceFooter('ACSM/AND/DoC (2016): planning what to eat before, during and after training supports performance and recovery. Under-fueling (RED-S), especially in female athletes, is a serious sports medicine concern.')
     );
   }
 
@@ -7056,15 +7088,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ plans: plans.filter(function(p) { return p.id !== id; }) }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Test-Day Fuel Plan', 'Brain runs on glucose + sleep — not last-minute cramming + caffeine', '#dc2626'),
+      nlSection('My Test-Day Fuel Plan', 'Plan sleep and a normal meal before a test', '#dc2626'),
       nlCard({ style: { background: '#fef2f2', border: '1px solid #fecaca' } },
         nlH('strong', { style: { fontSize: 12, color: '#7f1d1d', display: 'block', marginBottom: 6 } }, 'Test-day basics (NIH cognitive neuroscience)'),
         nlH('ul', { style: { fontSize: 12, color: '#7f1d1d', lineHeight: 1.6, paddingLeft: 18, margin: 0 } },
-          nlH('li', null, 'Sleep > caffeine. 8+ hrs the night before > any energy drink.'),
-          nlH('li', null, 'Eat a real breakfast 60-90 min before the test. Carbs + protein + a little fat.'),
-          nlH('li', null, 'Hydrate — dehydration cuts attention 10-20% (Adan 2012).'),
-          nlH('li', null, 'Avoid sugar-only spikes; they crash 60-90 min later (mid-test).'),
-          nlH('li', null, 'A bridging snack at 90+ min into a long test = sustained attention.')
+          // CDC "About Sleep" (cdc.gov/sleep/about): "Teen 13–17 years 8–10 hours".
+          nlH('li', null, 'Sleep first. Teens need 8 to 10 hours a night (CDC). Skip energy drinks.'),
+          nlH('li', null, 'Eat breakfast before the test: carbs + protein + a little fat.'),
+          nlH('li', null, 'Drink water: even mild dehydration can hurt attention (Adan, 2012 review).'),
+          nlH('li', null, 'A mixed meal keeps you going longer than sugar alone.'),
+          nlH('li', null, 'For a very long test day, pack a snack for the break.')
         )
       ),
       nlCard(null,
@@ -7098,7 +7131,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Cognitive performance research (Walker, Why We Sleep; Adan 2012 dehydration & cognition): test-day performance is shaped 24-48 hrs before the test, not the morning of. Sleep > breakfast > caffeine in that order of priority.')
+      nlEvidenceFooter('AASM: teens need 8-10 hours of sleep. Sleep in the nights before a test matters for memory and attention; mild dehydration can also hurt concentration (Adan, 2012).')
     );
   }
 
@@ -7138,7 +7171,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       packs.length === 0
-        ? nlEmpty('No packs yet. Mid-event hunger is preventable, and avoiding it = better mood + focus.')
+        ? nlEmpty('No packs yet. Packing a snack ahead means you are not stuck hungry mid-event.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             packs.map(function(p) {
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
@@ -7289,7 +7322,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('NATA position statement on hydration: ~1.25× body-mass loss replacement post-exercise (e.g., 1 kg lost = 1250 mL). Sweat rate varies 2-4× between individuals — generic "8 cups" advice underfuels heavy sweaters.')
+      nlEvidenceFooter('ACSM (2007): sweat rates vary a lot between people, so weigh yourself before and after practice to see how much fluid you lose, then drink to replace it.')
     );
   }
 
@@ -7315,7 +7348,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       'Eggs + toast + fruit', 'Pasta + meat sauce'
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Recovery Meals', 'Post-workout = 20g protein + carbs within 30-60 min', '#16a34a'),
+      nlSection('My Recovery Meals', 'After training: carbs + protein (about 0.3 g protein per kg body weight)', '#16a34a'),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.workout, onChange: function(e) { setForm(Object.assign({}, form, { workout: e.target.value })); }, placeholder: 'What I did' }),
@@ -7355,7 +7388,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('IOC consensus: recovery window 30-60 min post-exercise prioritizes 20-25g protein + 1g carb/kg body mass for glycogen + protein synthesis. Chocolate milk research (Pritchett et al.) is gold standard for affordability + completeness.')
+      nlEvidenceFooter('ACSM/AND/DoC (2016): carbohydrate and protein after hard training support recovery. Chocolate milk is one low-cost option that has been studied.')
     );
   }
 
@@ -7429,15 +7462,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ runs: runs.filter(function(r) { return r.id !== id; }) }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Endurance Fuel Log', 'Long runs/rides need carbs every 30-45 min after 60 min', '#a855f7'),
+      nlSection('My Endurance Fuel Log', 'Carbs during long sessions (AND / Dietitians of Canada / ACSM, 2016)', '#a855f7'),
       nlCard({ style: { background: '#faf5ff', border: '1px solid #d8b4fe' } },
         nlH('strong', { style: { fontSize: 12, color: '#6b21a8', display: 'block', marginBottom: 6 } }, 'Endurance fueling reference (ACSM)'),
         nlH('ul', { style: { fontSize: 12, color: '#6b21a8', lineHeight: 1.6, paddingLeft: 18, margin: 0 } },
-          nlH('li', null, '<60 min: water is enough'),
-          nlH('li', null, '60-90 min: 30g carbs/hr (e.g., 1 gel, banana, sports drink)'),
-          nlH('li', null, '90-150 min: 60g carbs/hr (gel + sports drink)'),
-          nlH('li', null, '>150 min: 90g carbs/hr (multiple sources to use both glucose + fructose transporters)'),
-          nlH('li', null, 'Sodium: 300-700 mg/L of sports drink in heat')
+          nlH('li', null, 'Under 45 min: carbs not needed'),
+          nlH('li', null, '45-75 min, hard effort: small amounts (even a mouth rinse)'),
+          nlH('li', null, '1 to 2.5 hours: 30-60 g carbs per hour (e.g., banana, sports drink)'),
+          nlH('li', null, 'Over 2.5 to 3 hours: up to 90 g per hour, from a mix of sugars')
         )
       ),
       nlCard(null,
@@ -7562,7 +7594,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Carb-Loading Plan', 'Pre-race glycogen prep (>90-min events)', '#f59e0b'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fffbeb', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f', lineHeight: 1.55 } },
         nlH('strong', null, '🔬 Modern carb-load (Bergstrom updated): '),
-        '2-3 days before event, 8-12 g carb/kg body weight while tapering training. Older 7-day depletion-load protocols are outdated.'
+        'For events over 90 minutes: 10-12 g carbohydrate per kg body weight per day for the 36-48 hours before (AND / Dietitians of Canada / ACSM, 2016). Older 7-day depletion plans are no longer used.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -7592,7 +7624,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('IOC + Burke 2017: modern carb-load (8-12 g/kg, 36-48 hrs pre-event, with training taper) is more practical and effective than 1980s "depletion-then-load" protocols. Only beneficial for events lasting >90 min at sustained intensity.')
+      nlEvidenceFooter('ACSM/AND/DoC (2016): carbohydrate loading (10-12 g per kg body weight per day for 36-48 hours) only helps for events longer than about 90 minutes.')
     );
   }
 
@@ -7815,7 +7847,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Allergen Tracker', 'Critical info — share with school, friends, restaurants', '#dc2626'),
       nlH('div', { style: { padding: 12, borderRadius: 8, background: '#fee2e2', border: '2px solid #fca5a5', marginBottom: 12, fontSize: 12, color: '#7f1d1d', lineHeight: 1.55 } },
         nlH('strong', null, '⚠️ Allergy safety: '),
-        'If you have severe allergies, this tool is for documentation only. Always carry emergency meds (Epi-Pen) if prescribed. Share allergen card with cafeteria + school nurse + bus driver. In Maine, school nurses can administer epinephrine via standing orders.'
+        // Maine 20-A MRSA §6305(2)-(3) (checked 2026-11-24): a school "may authorize adoption of a collaborative practice agreement"; it "permits a physician ... to prescribe an
+        // epinephrine automated device and direct a school nurse ... to administer an epinephrine automated device in good faith to any student experiencing anaphylaxis".
+        // The law says "collaborative practice agreement", not "standing orders", and it is a school's choice: reworded.
+        'If you have severe allergies, this tool is for keeping notes only. Always carry your epinephrine auto-injector if a doctor prescribed one. Share your allergy card with the cafeteria, the school nurse, and the bus driver. Maine law lets a school make an agreement with a doctor so the school nurse can give epinephrine to any student having a severe allergic reaction (anaphylaxis) at school. Ask your school nurse if your school has one.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -7853,7 +7888,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('FALCPA (Food Allergen Labeling and Consumer Protection Act): top 9 allergens must be labeled. FARE + AAP: school 504/IHP plans are legal accommodations for severe food allergies — request one if needed.')
+      nlEvidenceFooter('FALCPA and the FASTER Act (2021): the 9 major food allergens, including sesame, must be labeled. FARE + AAP: a 504 plan or health plan at school is a legal accommodation for severe food allergies; ask for one if needed.')
     );
   }
 
@@ -8079,7 +8114,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Lactose Log', 'Track tolerance + replacement calcium sources', '#0ea5e9'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#e0f2fe', border: '1px solid #38bdf8', marginBottom: 12, fontSize: 12, color: '#075985', lineHeight: 1.55 } },
         nlH('strong', null, '💙 Lactose intolerance facts: '),
-        '70% of world adults are lactose intolerant — that\'s normal mammalian biology, not a disease. Most people tolerate small amounts; hard cheese + yogurt have minimal lactose. Get calcium from leafy greens, fortified plant milks, sardines (with bones), tofu.'
+        'Many people make less lactase (the enzyme that digests milk sugar) as they grow up. That is normal biology, not a disease. Most people tolerate small amounts; hard cheese + yogurt have minimal lactose. Get calcium from leafy greens, fortified plant milks, sardines (with bones), tofu.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8112,7 +8147,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('NIH NIDDK: most people with lactose intolerance can tolerate 12g lactose/day (~1 cup milk) split across the day. Lactaid (lactase enzyme) lets you eat dairy without symptoms. No need to give up cheese — hard cheese has <1g/oz.')
+      nlEvidenceFooter('NIH NIDDK: most people with lactose intolerance can have up to 12 g of lactose (about 1 cup of milk) with no or minor symptoms. Lactase enzyme pills help some people. Hard cheeses are low in lactose.')
     );
   }
 
@@ -8148,7 +8183,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My IBS Food + Trigger Log', 'Food + stress + sleep all shape IBS — log them together', '#16a34a'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac', marginBottom: 12, fontSize: 12, color: '#166534', lineHeight: 1.55 } },
         nlH('strong', null, '🌿 IBS reality: '),
-        'Triggers vary by person. Common offenders (high-FODMAP foods): onion, garlic, wheat, dairy, beans, certain fruits. Stress + poor sleep = often as triggering as food. Working with a dietitian on a structured low-FODMAP trial (4-6 wks) is the evidence-based approach.'
+        // Monash FODMAP high/low foods page (checked 2026-11-24): fructans in "garlic, leek, onion"; "wheat pasta"; lactose in
+        // "soft cheeses, milk and yoghurt"; GOS in "red kidney beans, split peas"; fructose in "apples, pears, mangoes";
+        // "It is essential to consult with a dietitian before commencing a FODMAP diet." Unsourced stress claim and 4-6 wks cut.
+        'Triggers vary by person. Some high-FODMAP foods: onion, garlic, wheat, milk, beans, apples, and pears. Stress and sleep are worth logging too. Talk with a dietitian before starting a low-FODMAP diet; do not cut foods long-term on your own.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8283,12 +8321,21 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { value: 'ovulation', label: 'Ovulation' },
       { value: 'pms', label: 'PMS' }
     ];
-    var common_triggers = ['Aged cheese', 'Red wine', 'Chocolate', 'Citrus', 'Cured meats (nitrates)', 'MSG', 'Aspartame', 'Caffeine (or withdrawal)', 'Skipping meals'];
+    // ROUND 3: sourced, age-appropriate list (the wine and sweetener items were cut). NINDS migraine page (checked 2026-11-24):
+    // "These factors differ from person to person and include: Sudden changes in the weather ... Too much or not enough
+    // sleep ... Emotional stress ... Loud or sudden noises ... Low blood sugar or skipped meals ... Bright or flashing lights".
+    // American Migraine Foundation, Top 10 Migraine Triggers: "About 1/3 of people with migraine say dehydration is a trigger".
+    // MedlinePlus 000709: "Caffeine withdrawal"; foods: "Chocolate", "Dairy foods, especially certain cheeses", "Foods with
+    // monosodium glutamate (MSG)", "Fruits (avocado, banana, citrus fruit)", "Meats containing nitrates (bacon, hot dogs, salami, cured meats)".
+    var common_triggers = ['Skipped meals', 'Too much or too little sleep', 'Not drinking enough water', 'Stress', 'Caffeine withdrawal', 'Bright or flashing lights', 'Loud noises', 'Sudden weather changes'];
+    var food_triggers = ['Chocolate', 'Aged cheese', 'Cured meats with nitrates', 'Foods with MSG', 'Citrus fruit'];
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Migraine Trigger Log', 'Food + sleep + hormones + weather — log them all for pattern', '#7c2d12'),
       nlCard({ style: { background: '#fef2f2', border: '1px solid #fecaca' } },
-        nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '💡 Common food triggers (individual!): '),
-        nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 4 } }, common_triggers.join(' · '))
+        nlH('strong', { style: { fontSize: 12, color: '#7f1d1d' } }, '💡 Common migraine triggers (they differ from person to person): '),
+        nlH('div', { 'data-nl-migraine-triggers': 'true', style: { fontSize: 12, color: '#7f1d1d', marginTop: 4 } }, common_triggers.join(' · ')),
+        nlH('div', { 'data-nl-migraine-foods': 'true', style: { fontSize: 12, color: '#7f1d1d', marginTop: 6 } }, nlH('strong', null, 'Foods some people react to: '), food_triggers.join(' · ')),
+        nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 6 } }, 'Talk with a doctor or school nurse before cutting out any food. Sources: NIH NINDS, MedlinePlus, American Migraine Foundation.')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8308,13 +8355,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             )
           ),
           nlSelect({ value: form.hormones, onChange: function(e) { setForm(Object.assign({}, form, { hormones: e.target.value })); } }, horm_opts),
-          nlInput({ value: form.weather, onChange: function(e) { setForm(Object.assign({}, form, { weather: e.target.value })); }, placeholder: 'Weather (pressure changes are common triggers)' }),
+          nlInput({ value: form.weather, onChange: function(e) { setForm(Object.assign({}, form, { weather: e.target.value })); }, placeholder: 'Weather (sudden changes can be a trigger)' }),
           nlTextarea({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes', rows: 2 }),
           nlBtn({ onClick: add }, '+ Log day')
         )
       ),
       logs.length === 0
-        ? nlEmpty('No logs. Migraine triggers are highly individual; 6-8 weeks of data reveals YOURS.')
+        ? nlEmpty('No logs yet. Triggers differ from person to person. A few weeks of notes can help you and your doctor spot your own pattern.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             logs.slice(0, 30).map(function(l) {
               return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 8, background: l.migraine ? '#fee2e2' : '#f0fdf4', borderLeft: '3px solid ' + (l.migraine ? '#dc2626' : '#16a34a') } },
@@ -8330,7 +8377,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('AMF + AAN: migraine trigger logs are the diagnostic gold standard for trigger identification. Bring 8 weeks of logs to a headache specialist. Stress + sleep are often more powerful triggers than any single food.')
+      nlEvidenceFooter('A headache log helps you and a doctor look for triggers. NIH NINDS suggests writing down sleep, stress, weather, and the food and drinks from the last 24 hours.')
     );
   }
 
@@ -8351,7 +8398,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ logs: logs.filter(function(l) { return l.id !== id; }) }); }
     var gl_opts = [
-      { value: 'low', label: '🟢 Low GL (protein/fat heavy)' },
+      // Harvard Nutrition Source, Carbohydrates and Blood Sugar: "A food's glycemic load is determined by multiplying its glycemic index by the amount of carbohydrate";
+      // its low-GL list includes kidney beans, black beans and lentils. Low GL means little or slow carbohydrate, not "protein/fat heavy".
+      { value: 'low', label: '🟢 Low GL (few carbs, or beans)' },
       { value: 'mod', label: '🟡 Moderate (mixed)' },
       { value: 'high', label: '🔴 High GL (refined carbs)' }
     ];
@@ -8362,10 +8411,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { value: 'cardio', label: '🏃 Cardio' }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My PCOS Nutrition Log', 'PCOS-aware tracking — insulin sensitivity + inflammation', '#be185d'),
+      nlSection('My PCOS Nutrition Log', 'Meals, movement, and how you feel, for you and your care team', '#be185d'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fdf2f8', border: '1px solid #f9a8d4', marginBottom: 12, fontSize: 12, color: '#9f1239', lineHeight: 1.55 } },
-        nlH('strong', null, '🌸 PCOS evidence-based nutrition: '),
-        'Moderating refined carbs + adding protein/fiber/healthy fat supports insulin sensitivity. Strength training is more effective than cardio alone. This is NOT a "weight-loss diet" — restriction worsens PCOS hormonally. Work with an RD specializing in PCOS.'
+        // 2023 International PCOS Guideline (Teede et al., JCEM 108(10):2447): 3.3.1 "there is no evidence to support any 1 type of
+        // diet composition over another"; 3.3.2 "Any diet composition consistent with population guidelines for healthy eating will
+        // have health benefits"; 3.3.3 avoid "unduly restrictive and nutritionally unbalanced diets"; 3.4.1 "there is a lack of
+        // evidence supporting any 1 type and intensity of exercise being better than another". The old "strength beats cardio" line contradicted it.
+        nlH('strong', null, '🌸 What the 2023 international PCOS guideline says: '),
+        'No one diet and no one type of exercise has been shown to work better than another for PCOS. Any healthy eating pattern and any regular activity help. Avoid very strict diets. This is NOT a weight-loss tool. Work with a dietitian or doctor who knows PCOS.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8391,7 +8444,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       logs.length === 0
-        ? nlEmpty('No logs. Tracking glycemic load + protein + movement helps you see what supports YOUR insulin sensitivity.')
+        ? nlEmpty('No logs. Notes on meals, movement, and how you feel can help you and your care team spot patterns.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             logs.slice(0, 30).map(function(l) {
               return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 8, background: '#fdf2f8', borderLeft: '3px solid #be185d' } },
@@ -8454,12 +8507,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Health-literacy research: 40-80% of medical info is forgotten immediately after visits. Writing instructions in the patient\'s own words while still in the room improves adherence by 2-3x.')
+      nlEvidenceFooter('Kessels (2003): 40-80% of medical information is forgotten right away. Writing instructions in your own words before you leave helps you remember them.')
     );
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // ═══ WAVE 9: MENTAL HEALTH × FOOD (10 tools, NEDA-aligned) ═══
+  // ═══ WAVE 9: MENTAL HEALTH × FOOD (10 tools, eating-disorder-aware; no organization has reviewed or endorsed this kit) ═══
   // ══════════════════════════════════════════════════════════════════
 
   // 77) PersonalNourishVsRestrict — restriction awareness
@@ -8558,7 +8611,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       logs.length === 0
-        ? nlEmpty('No logs yet. Naming food anxiety reduces its grip — Pennebaker writing research.')
+        ? nlEmpty('No logs yet. Writing feelings down helps some people (Pennebaker\'s expressive-writing research).')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             logs.slice(0, 30).map(function(l) {
               return nlH('div', { key: l.id, style: { padding: 8, borderRadius: 8, background: '#faf5ff', borderLeft: '3px solid #7c3aed' } },
@@ -8600,7 +8653,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlNEDABanner(),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfdf5', border: '1px solid #6ee7b7', marginBottom: 12, fontSize: 12, color: '#065f46', lineHeight: 1.55 } },
         nlH('strong', null, '💚 If you\'re in ED recovery: '),
-        'You are not alone. Recovery is non-linear. After a hard moment (binge, restriction, purge urge), the most important thing is to eat your next regular meal. This log helps you mark that act of self-care.'
+        'You are not alone. Recovery is non-linear. After a hard moment (binge, restriction, purge urge), a helpful next step is to eat your next regular meal or snack, even a small one. This log helps you mark that act of self-care.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8634,7 +8687,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Eating disorder recovery (Project HEAL, NEDA, Lock & Le Grange FBT): eating the next regular meal is the most important action after any ED-related event. Self-compassion (Neff) speeds recovery vs self-criticism.')
+      // Centre for Clinical Interventions (Western Australia Dept of Health), Break Free from ED, module 8 "Binge Eating" (PDF read 2026-11-24):
+      // "The best thing you can do after a binge eating episode is get straight back on track with regular eating and have something to eat when it's time for
+      // your next meal or snack." Kristin Neff, self-compassion.org/what-is-self-compassion (read 2026-11-24): "Self-compassion simply involves doing a U-turn and
+      // giving yourself the same compassion you'd naturally show a friend". Round 5 cut the unsourced "Project HEAL, NEDA, Lock & Le Grange FBT" attribution,
+      // "the most important action", and "self-compassion speeds recovery".
+      nlEvidenceFooter('A Western Australia health department clinic (Centre for Clinical Interventions) advises that after a binge, the best step is to get back to regular eating and eat when it is time for your next meal or snack. If you have a care team, follow their plan first. Self-compassion (Kristin Neff) means giving yourself the same kindness you would give a friend.')
     );
   }
 
@@ -8670,7 +8728,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       practices.length === 0
-        ? nlEmpty('No practices yet. Self-compassion is a skill — Neff studies show it can be learned in 8 weeks.')
+        ? nlEmpty('No practices yet. Self-compassion is a skill you can practice.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             practices.slice(0, 30).map(function(p) {
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#fdf2f8', borderLeft: '4px solid #ec4899' } },
@@ -8713,7 +8771,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlNEDABanner(),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fee2e2', border: '1px solid #fca5a5', marginBottom: 12, fontSize: 12, color: '#7f1d1d', lineHeight: 1.55 } },
         nlH('strong', null, '🚨 Diet culture sounds like: '),
-        '"Earn your food." "Cheat days." "Clean eating." "Get your body back." "What I eat in a day." "Almond mom." "Hot girl walk." Every one is a sales pitch from a $250B industry.'
+        '"Earn your food." "Cheat days." "Clean eating." "Get your body back." "What I eat in a day." "Almond mom." "Hot girl walk." Every one is selling something.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8733,7 +8791,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       exposures.length === 0
-        ? nlEmpty('No logs yet. The average adolescent sees 200+ diet messages/day on social media. Logging them makes them visible.')
+        ? nlEmpty('No logs yet. Logging diet messages you see makes them easier to notice.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             exposures.slice(0, 30).map(function(e) {
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 8, background: '#fee2e2', borderLeft: '3px solid #dc2626' } },
@@ -8749,7 +8807,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Christy Harrison (Anti-Diet, 2019); Sonya Renee Taylor (The Body Is Not An Apology); NEDA: chronic diet-culture exposure correlates with body dissatisfaction, ED onset, and disordered eating across all body sizes.')
+      // Neumark-Sztainer D, et al. "Obesity, disordered eating, and eating disorders in a longitudinal study of adolescents: how do dieters fare 5 years later?"
+      // J Am Diet Assoc 2006 (PMID 16567152; abstract read 2026-11-24 via Europe PMC): 2,516 adolescents; "Dieting and unhealthful weight-control behaviors predict
+      // outcomes related to obesity and eating disorders 5 years later." Round 5 cut the unsourced "NEDA: chronic diet-culture exposure correlates with ..." line.
+      nlEvidenceFooter('Books: Christy Harrison, Anti-Diet (2019); Sonya Renee Taylor, The Body Is Not An Apology. Research: a 5-year study of 2,516 teens (Project EAT, 2006) found that dieting and unhealthy weight-control habits predicted later binge eating and eating disorders. Noticing diet messages is a first step in not following them.')
     );
   }
 
@@ -8785,7 +8846,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Social Media Food Audit', 'What is your algorithm feeding YOU?', '#ec4899'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fdf2f8', border: '1px solid #fbcfe8', marginBottom: 12, fontSize: 12, color: '#9f1239', lineHeight: 1.55 } },
         nlH('strong', null, '🤖 The algorithm: '),
-        'TikTok pushes ED content to teen accounts within 39 min of joining (Center for Countering Digital Hate, 2022). Audit + unfollow + report = real action.'
+        'In a 2022 test, TikTok showed eating disorder content to new teen accounts within 8 minutes (Center for Countering Digital Hate). Audit + unfollow + report = real action.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8811,11 +8872,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Surgeon General Advisory (2023): social media is a contributing factor in youth mental health crisis. CCDH research: TikTok pushes ED content to vulnerable teens. Curating your feed is mental-health action.')
+      nlEvidenceFooter('U.S. Surgeon General Advisory (2023): social media can harm youth mental health, including body image. CCDH (Deadly by Design, 2022) found TikTok showed eating disorder content to teen test accounts. Curating your feed is a mental-health action.')
     );
   }
 
-  // 83) PersonalNEDAResources — NEDA resources tracker
+  // 83) PersonalNEDAResources — eating disorder help library (the id is historical; not affiliated with NEDA)
   function PersonalNEDAResources(props) {
     if (!R_NL) return null;
     var data = props.data || { saved: [] };
@@ -8840,17 +8901,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { value: 'app', label: '📱 App' }
     ];
     var defaults = [
-      { name: 'NEDA Helpline 1-800-931-2237', kind: 'helpline' },
-      { name: 'Crisis Text Line — text NEDA to 741741', kind: 'helpline' },
+      { name: 'Eating disorder helpline 1-866-662-1235 (National Alliance for Eating Disorders)', kind: 'helpline' },
+      { name: 'Crisis Text Line — text HOME to 741741', kind: 'helpline' },
       { name: 'Intuitive Eating by Tribole & Resch', kind: 'reading' },
       { name: 'Anti-Diet by Christy Harrison', kind: 'reading' },
       { name: 'Maintenance Phase podcast', kind: 'podcast' },
       { name: 'Food Psych Podcast', kind: 'podcast' },
-      { name: 'Recovery Record app', kind: 'app' },
       { name: 'F.E.A.S.T. (parent support)', kind: 'support' }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My NEDA Resource Library', 'Save what helps you — keep within reach', '#10b981'),
+      nlSection('My Eating Disorder Help Library', 'Save what helps you — keep within reach', '#10b981'),
       nlNEDABanner(),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -8861,10 +8921,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       nlCard({ style: { background: '#ecfdf5', border: '1px dashed #6ee7b7' } },
-        nlH('strong', { style: { fontSize: 12, color: '#065f46', display: 'block', marginBottom: 6 } }, '💡 Suggested NEDA-aligned resources (tap to add)'),
+        nlH('strong', { style: { fontSize: 12, color: '#065f46', display: 'block', marginBottom: 6 } }, '💡 Ideas to start with (tap to add)'),
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
           defaults.map(function(d) {
-            return nlH('button', { key: d.name, onClick: function() { setForm(Object.assign({}, form, { resource: d.name, kind: d.kind })); }, style: { textAlign: 'left', padding: 6, borderRadius: 6, border: '1px solid #6ee7b7', background: '#fff', fontSize: 12, color: '#065f46', cursor: 'pointer' } }, d.name);
+            return nlH('button', { key: d.name, type: 'button', onClick: function() { setForm(Object.assign({}, form, { resource: d.name, kind: d.kind })); }, style: { textAlign: 'left', minHeight: 44, padding: '8px 10px', borderRadius: 6, border: '1px solid #6ee7b7', background: '#fff', fontSize: 12, color: '#065f46', cursor: 'pointer' } }, d.name);
           })
         )
       ),
@@ -8882,7 +8942,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('NEDA (myneda.org): free educational content, support groups, treatment locator. Project HEAL: free treatment scholarships + insurance navigation. Both are evidence-aligned + free.')
+      // nationaleatingdisorders.org (checked 2026-11-24): "Start your journey with our screening tool and find treatment options, support groups, and helpful resources."
+      // theprojectheal.org (checked 2026-11-24): "Free Eating Disorder Support Groups", "Insurance Resource Hub", "We remove financial barriers through Cash Assistance".
+      nlEvidenceFooter('NEDA (nationaleatingdisorders.org) has a screening tool and helps you find treatment and support groups. Project HEAL (theprojectheal.org) runs free support groups, has an insurance help page, and gives cash help to pay for treatment. Neither group made or reviewed this kit.')
     );
   }
 
@@ -8966,7 +9028,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       entries.length === 0
-        ? nlEmpty('No entries. Cognitive reframing + body appreciation are both evidence-based.')
+        ? nlEmpty('No entries. Reframing a harsh thought is a skill you can practice.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             entries.slice(0, 30).map(function(e) {
               return nlH('div', { key: e.id, style: { padding: 8, borderRadius: 8, background: '#fdf2f8', borderLeft: '3px solid #ec4899' } },
@@ -9217,7 +9279,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Future Food Self', 'Hershfield: vivid future self drives present choices', '#3b82f6'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#eff6ff', border: '1px solid #93c5fd', marginBottom: 12, fontSize: 12, color: '#1e40af', lineHeight: 1.55 } },
         nlH('strong', null, '🔮 Imagining your future self: '),
-        'Research (Hershfield, Stanford) shows people make healthier choices today when they vividly imagine their future self. Be specific — relationships, joy, body trust, the meals you cook.'
+        'Research by Hal Hershfield (UCLA) links feeling close to your future self with choices that help you later. Be specific — relationships, joy, body trust, the meals you cook.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -9627,7 +9689,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine Farm to School Network + MOFGA: eating Maine-grown supports local farms (~$2 multiplier for the local economy per $1 spent) AND tends to be picked riper, so often more nutrient-dense.')
+      nlEvidenceFooter('Maine Farm to School Network + MOFGA: eating Maine-grown food supports local farms and teaches where food comes from.')
     );
   }
 
@@ -9666,7 +9728,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       visits.length === 0
-        ? nlEmpty('No visits logged. Maine has 100+ farmers markets — find your local at mainefederationoffarmersmarkets.com')
+        ? nlEmpty('No visits logged. Find your local market at mainefarmersmarkets.org')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             visits.slice(0, 30).map(function(v) {
               return nlH('div', { key: v.id, style: { padding: 10, borderRadius: 8, background: '#f7fee7', borderLeft: '4px solid #65a30d' } },
@@ -9868,7 +9930,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine foraging: state forests permit modest personal foraging. NEVER take more than 1/3 of any patch. MOFGA + Wild Mushrooms of Maine (book) + Maine Forager guides are evidence-based.')
+      nlEvidenceFooter('Foraging rules depend on who owns the land, so ask permission and follow posted rules. Never eat a wild plant or mushroom unless an expert has confirmed what it is.')
     );
   }
 
@@ -10044,7 +10106,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine lobster fishery is one of the most sustainably managed in the world (MSC certified). Lobster: high-protein, low-fat, source of zinc + B12. A great Maine food story.')
+      nlEvidenceFooter('Lobster is high in protein and a source of zinc and B12, and the Maine lobster fishery is a big part of Maine\'s food story.')
     );
   }
 
@@ -10101,7 +10163,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine Maple Producers Association: ME is the 3rd-largest US maple producer. Sap-to-syrup ratio is ~40:1 — gallons of sap per gallon of syrup. Wonderful cultural + nutrition science overlap (sucrose, mineral content).')
+      nlEvidenceFooter('USDA NASS: Maine is the 3rd-largest US maple syrup producer. It takes about 40 gallons of sap to make 1 gallon of syrup (University of Vermont). Maple syrup is mostly sucrose.')
     );
   }
 
@@ -10153,7 +10215,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine Restaurant Association + Local First: independent restaurants recirculate ~3x more revenue locally than chains. Eating out is also food + cultural literacy + a social experience.')
+      nlEvidenceFooter('Eating out at local restaurants supports local businesses, and it is also food culture and a social experience.')
     );
   }
 
@@ -10240,7 +10302,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('NIH Office of Dietary Supplements: most adolescents don\'t need supplements if diet is varied. Real needs: vegan B12, Maine-winter vit D, iron deficiency anemia, prescribed micronutrients. Beware "gummy vitamin" mega-doses.')
+      nlEvidenceFooter('NIH Office of Dietary Supplements: most teens who eat a varied diet do not need supplements. Real needs include B12 for vegans and nutrients a doctor finds low on a blood test. Gummy vitamins are easy to over-eat.')
     );
   }
 
@@ -10273,10 +10335,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { name: 'Celsius (12 oz)', mg: 200 }, { name: 'Dark chocolate (1 oz)', mg: 12 }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Caffeine Tracker', 'AAP: teens should cap at 100mg/day', '#7c2d12'),
+      nlSection('My Caffeine Tracker', 'AAP: teens, no more than 100 mg a day', '#7c2d12'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f', lineHeight: 1.55 } },
         nlH('strong', null, '⚠ Energy drinks ≠ regular soda: '),
-        '300-400mg caffeine in a single can is common. AAP recommends ZERO energy drinks for adolescents. Multiple teen ER visits + cardiac events per year from energy-drink overuse.'
+        'Energy drinks can contain large amounts of caffeine (CDC). The American Academy of Pediatrics recommends that teens not drink energy drinks at all.'
       ),
       nlCard({ style: { background: '#fee2e2', border: '1px solid #fca5a5' } },
         nlH('strong', { style: { fontSize: 14, color: '#7f1d1d' } }, 'Today: ' + todayMg + ' / ' + dailyLimit + ' mg'),
@@ -10286,7 +10348,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 12, color: '#7f1d1d' } },
           nlH('span', null, 'Daily limit:'),
           nlH('input', { type: 'number', value: dailyLimit, onChange: function(e) { setData({ logs: logs, dailyLimit: parseInt(e.target.value) || 100 }); }, style: { width: 60, padding: '3px 6px', borderRadius: 4, border: '1px solid #fca5a5', fontSize: 12 } }),
-          nlH('span', null, 'mg (AAP: 100mg teens, 0 under 12, 0 energy drinks ever)')
+          nlH('span', null, 'mg (AAP: teens no more than 100 mg a day; no energy drinks)')
         )
       ),
       nlCard(null,
@@ -10314,7 +10376,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('AAP + FDA: teens under 18 should cap caffeine at 100mg/day. NO energy drinks recommended for any age <18. Late-day caffeine (after 2pm) disrupts adolescent sleep, which compounds tiredness next day → more caffeine = vicious cycle.')
+      nlEvidenceFooter('The American Medical Association suggests teens have no more than 100 mg of caffeine a day, and the AAP says energy drinks have no place in kids\' and teens\' diets. Caffeine late in the day can delay sleep.')
     );
   }
 
@@ -10567,7 +10629,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Registered Dietitian Log', 'Sessions with an RD — track plan + progress', '#16a34a'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdf4', border: '1px solid #6ee7b7', marginBottom: 12, fontSize: 12, color: '#065f46', lineHeight: 1.55 } },
         nlH('strong', null, '💚 Why an RD?: '),
-        'Registered Dietitians are the only credential with required clinical training (Master\'s + 1200hr internship + national exam). Insurance often covers visits for ED, diabetes, allergies. Maine RDs at MaineHealth + EMHS systems.'
+        // CDR (cdrnet.org/RDNeligibility, checked 2026-11-24): "A minimum of a graduate degree from a USDE-recognized accredited institution"; supervised practice through an
+        // ACEND-accredited program; then the registration exam. CDR states no hour count for U.S. pathways, so "at least 1,000 hours" was cut.
+        // Round 5 (read 2026-11-24): MaineHealth, Maine Medical Center Clinical Nutrition: "Our registered dietitian nutritionists offer one-on-one nutrition counseling and
+        // education." Northern Light Health, Mercy Hospital cancer care Nutritional services: "our registered dietitian provides personalized nutrition support".
+        // "Insurance often covers visits for eating disorders, diabetes and allergies" had no source: replaced with ask-your-plan guidance.
+        'Registered Dietitians have required training: a graduate degree, supervised practice in an accredited program, and a national exam. Ask your family\'s health plan whether it covers dietitian visits. In Maine, MaineHealth and Northern Light Health both have registered dietitians.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -10580,7 +10647,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       sessions.length === 0
-        ? nlEmpty('No RD sessions logged. Maine resources: Akari Care + EMHS + MaineHealth dietitians.')
+        ? nlEmpty('No RD sessions logged. To find a dietitian, ask your doctor or school nurse. In Maine, MaineHealth and Northern Light Health both have registered dietitians.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             sessions.map(function(s) {
               return nlH('div', { key: s.id, style: { padding: 10, borderRadius: 8, background: '#f0fdf4', borderLeft: '4px solid #16a34a' } },
@@ -10597,7 +10664,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Academy of Nutrition and Dietetics: RD MNT (Medical Nutrition Therapy) is evidence-based + insurance-billable. Common conditions: ED, T1D, celiac, IBS, kidney disease, sports nutrition.')
+      // medicare.gov/coverage/medical-nutrition-therapy-services (read 2026-11-24): "You must have diabetes or kidney disease, or you've had a kidney transplant in the
+      // last 36 months." "Only a registered dietitian (or nutrition professional who meets certain requirements)". Round 5 cut the unsourced Academy attribution
+      // ("evidence-based + insurance-billable") and the condition list.
+      nlEvidenceFooter('Medical nutrition therapy (MNT) is nutrition care from a registered dietitian for a health condition. Medicare, for example, covers it for diabetes and kidney disease. Other health plans differ, so ask yours.')
     );
   }
 
@@ -10621,7 +10691,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Readiness Check', 'MI scales — for any nutrition change you\'re considering', '#0d9488'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdfa', border: '1px solid #5eead4', marginBottom: 12, fontSize: 12, color: '#0f766e', lineHeight: 1.55 } },
         nlH('strong', null, '🧭 Motivational Interviewing rulers: '),
-        'Importance × Confidence × Readiness. If any score is <5, the change won\'t stick yet. Address the lowest first.'
+        'Importance × Confidence × Readiness. Start by working on the lowest score.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -10840,7 +10910,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Sleep + Nutrition Link', 'They affect each other — log both together', '#3b82f6'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#dbeafe', border: '1px solid #93c5fd', marginBottom: 12, fontSize: 12, color: '#1e40af', lineHeight: 1.55 } },
         nlH('strong', null, '💙 The connection: '),
-        'Poor sleep → cravings + impulsivity + insulin resistance next day (Spiegel, Walker). Late meals + caffeine + screens disrupt sleep. Tracking both shows YOUR pattern.'
+        // Spiegel et al., Ann Intern Med 2004 (PMID 15583226), "12 healthy men": "Short sleep duration in young, healthy men is
+        // associated with decreased leptin levels, increased ghrelin levels, and increased hunger and appetite."
+        'In a small lab study of 12 young men, short sleep made them hungrier (Spiegel et al., 2004). Tracking sleep and meals together shows YOUR pattern.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -10885,7 +10957,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Walker (Why We Sleep): adolescents need 8-10 hrs sleep. Sleep < 7 hrs = next-day insulin resistance + carb cravings (~300 extra kcal). Caffeine after 2pm blocks adenosine and delays sleep onset 60-90 min.')
+      nlEvidenceFooter('AASM: teens 13-18 need 8-10 hours of sleep. Short sleep is linked to more hunger and less energy the next day. Caffeine late in the day can delay sleep.')
     );
   }
 
@@ -11172,7 +11244,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('FARE + ADA + JDRF + Beyond Celiac: 504 plans are powerful legal tools for any documented food-related condition. Maine schools are obligated under federal law to provide reasonable accommodations + cannot retaliate for requests.')
+      nlEvidenceFooter('FARE + ADA + Breakthrough T1D + Beyond Celiac: a 504 plan is a legal tool for documented food-related conditions. Under federal law, schools must provide reasonable accommodations and may not retaliate for a request.')
     );
   }
 
@@ -11551,7 +11623,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Community garden research (Alaimo): community garden participation increases vegetable intake, civic engagement, and mental health outcomes. Maine has 70+ community gardens, many with youth programming.')
+      nlEvidenceFooter('Community garden research (Alaimo et al., 2008): people in households with a community gardener ate more fruits and vegetables. Many Maine community gardens have youth programs.')
     );
   }
 
@@ -11575,7 +11647,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Food Pantry Volunteer Log', 'Food access work — see the local food system from inside', '#84cc16'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f7fee7', border: '1px solid #bef264', marginBottom: 12, fontSize: 12, color: '#3f6212', lineHeight: 1.55 } },
         nlH('strong', null, '🌱 Maine food access: '),
-        '1 in 8 Mainers face food insecurity. Good Shepherd Food Bank + 600+ pantries serve them. Volunteering = learning + service.'
+        'Good Shepherd Food Bank works with about 550 partner agencies across Maine (gsfb.org, 2026). Volunteering = learning + service.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -11641,7 +11713,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       notes.length === 0
-        ? nlEmpty('No notes. SNAP application is free, takes ~30 min. Maine connects via my-maine-connection.org.')
+        ? nlEmpty('No notes. Applying for SNAP is free. In Maine, apply at my-maine-connection.org.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             notes.map(function(n) {
               return nlH('div', { key: n.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
@@ -11654,7 +11726,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Maine Equal Justice + Good Shepherd: SNAP underutilized 20-40% in eligible Maine households due to stigma + complexity. Universal Free School Meals in ME (passed 2021) — all students eat free.')
+      nlEvidenceFooter('Maine Equal Justice + Good Shepherd: stigma and paperwork keep some eligible families from using SNAP. Maine\'s universal school meals law (2021) lets all public school students eat free.')
     );
   }
 
@@ -11706,7 +11778,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Home cooking literature: even 1-2 home-cooked meals/week shifts overall diet quality + family dinner frequency. Skill compounds — every meal cooked is permanent capacity.')
+      nlEvidenceFooter('Cooking skills build with practice: every meal you cook makes the next one easier.')
     );
   }
 
@@ -11976,7 +12048,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Budget meal research (Good and Cheap, Brown 2014): nutritious meals at $4-5/serving are doable with smart shopping. USDA Thrifty Food Plan calibrates to this range.')
+      nlEvidenceFooter('Good and Cheap (Leanne Brown, 2014) is a free cookbook written for people eating on a SNAP budget.')
     );
   }
 
@@ -12030,7 +12102,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Home-version research: most takeout favorites are makeable at home for 1/3-1/4 the cost. Practicing builds cooking skill + spending awareness.')
+      nlEvidenceFooter('Many takeout favorites can be made at home for less money. Practicing builds cooking skill and spending awareness.')
     );
   }
 
@@ -12231,7 +12303,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#dcfce7', border: '2px solid #16a34a' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#166534' } }, picked.name),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#166534', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#166534', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#166534', marginTop: 8, lineHeight: 1.8 } },
           nlH('div', null, '⚡ ', nlH('strong', null, 'Energy: '), picked.kcal + ' kcal'),
@@ -12250,7 +12322,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(f) {
-          return nlH('button', { key: f.id, onClick: function() { setPicked(f); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', fontSize: 12, color: '#0f172a', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' } },
+          return nlH('button', { key: f.id, onClick: function() { setPicked(f); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', fontSize: 12, color: '#0f172a', cursor: 'pointer', minHeight: 44, display: 'flex', justifyContent: 'space-between' } },
             nlH('span', null, f.name),
             nlH('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)', fontFamily: 'ui-monospace, Menlo, monospace' } }, f.kcal + ' kcal · P' + f.p + ' C' + f.c + ' F' + f.f)
           );
@@ -12348,7 +12420,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('Maine Seasonal Calendar', 'What\'s in season + traditional Maine foods', '#16a34a'),
       nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 } },
         NUTRITION_KIT_MAINE_SEASONAL_CALENDAR.map(function(m) {
-          return nlH('button', { key: m.month, onClick: function() { setMonth(m.month); }, style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #16a34a', background: month === m.month ? '#16a34a' : '#fff', color: month === m.month ? '#fff' : '#166534', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, m.name);
+          return nlH('button', { key: m.month, onClick: function() { setMonth(m.month); }, style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #16a34a', background: month === m.month ? '#16a34a' : '#fff', color: month === m.month ? '#fff' : '#166534', fontSize: 12, fontWeight: 700, cursor: 'pointer', minHeight: 44 }, 'aria-pressed': month === m.month }, m.name);
         })
       ),
       nlCard({ style: { background: '#f0fdf4', border: '2px solid #16a34a' } },
@@ -12372,7 +12444,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           )
         )
       ),
-      nlEvidenceFooter('Maine Department of Agriculture Conservation and Forestry + UMaine Extension Cooperative + Maine Federation of Farmers Markets. Eating seasonally supports local farms + tastes better + costs less.')
+      nlEvidenceFooter('Produce lists: Maine Federation of Farmers\' Markets, "What\'s In Season?" (2026). Event dates: Maine Department of Agriculture, Conservation and Forestry. Fiddlehead safety: UMaine Extension. What is in season changes with weather and place.')
     );
   }
 
@@ -12383,7 +12455,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var ps = R_NL.useState(null); var picked = ps[0]; var setPicked = ps[1];
     var visible = NUTRITION_KIT_SUPPLEMENT_REF.filter(function(s) { return !search || s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0; });
     return nlH('div', { style: { padding: 14 } },
-      nlSection('Supplement Reference', 'NIH ODS-based — 30+ common supplements', '#0891b2'),
+      nlSection('Supplement Reference', 'NIH ODS-based: ' + NUTRITION_KIT_SUPPLEMENT_REF.length + ' supplements, with teen daily needs and limits', '#0891b2'),
+      nlH('p', { 'data-nl-adult-banner': 'true', style: { fontSize: 12, fontWeight: 700, color: '#4c1d95', background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: 8, padding: 8, margin: '0 0 10px' } }, 'For teachers and families. Students: talk with a parent, school nurse or doctor before taking any supplement.'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfeff', border: '1px solid #67e8f9', marginBottom: 12, fontSize: 12, color: '#155e75', lineHeight: 1.55 } },
         nlH('strong', null, '⚕ Always consult your doctor or pharmacist BEFORE starting any supplement. '),
         'This reference is educational, not medical advice. Drug interactions are real.'
@@ -12393,11 +12466,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#ecfeff', border: '2px solid #0891b2' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#155e75' } }, '💊 ' + picked.name),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#155e75', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#155e75', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#155e75', marginTop: 8, lineHeight: 1.8 } },
-          nlH('div', null, nlH('strong', null, '💡 Why use: '), picked.maineReason),
-          nlH('div', null, nlH('strong', null, '📏 Dose: '), picked.dose),
+          nlH('div', null, nlH('strong', null, '💡 Who it is for: '), picked.maineReason),
+          nlH('div', null, nlH('strong', null, '📏 Daily need: '), picked.dose),
           nlH('div', null, nlH('strong', null, '⚠ Upper limit: '), picked.upperLimit),
           nlH('div', null, nlH('strong', null, '🧪 Form: '), picked.form),
           nlH('div', null, nlH('strong', null, '📝 Notes: '), picked.notes)
@@ -12405,7 +12478,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(s) {
-          return nlH('button', { key: s.name, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #67e8f9', background: '#fff', fontSize: 12, color: '#155e75', cursor: 'pointer' } },
+          return nlH('button', { key: s.name, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #67e8f9', background: '#fff', fontSize: 12, color: '#155e75', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, s.name), ' — ', s.dose
           );
         })
@@ -12427,7 +12500,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#fee2e2', border: '2px solid #dc2626' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#7f1d1d' } }, '⚠ ' + picked.name + (picked.topNine ? ' (Top 9)' : '')),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 8, lineHeight: 1.7 } },
           nlH('div', null, nlH('strong', null, '🔍 Hidden sources:')),
@@ -12441,12 +12514,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         NUTRITION_KIT_ALLERGEN_REF.map(function(a) {
-          return nlH('button', { key: a.name, onClick: function() { setPicked(a); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid ' + (a.topNine ? '#dc2626' : '#fca5a5'), background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer' } },
+          return nlH('button', { key: a.name, onClick: function() { setPicked(a); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid ' + (a.topNine ? '#dc2626' : '#fca5a5'), background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, '⚠ ' + a.name), a.topNine ? ' (Top 9)' : ''
           );
         })
       ),
-      nlEvidenceFooter('FALCPA (Food Allergen Labeling Act): top 9 must be labeled. FARE (foodallergy.org) is the leading US allergy advocacy + education org.')
+      nlEvidenceFooter('FALCPA and the FASTER Act (2021): the 9 major allergens, including sesame, must be labeled. FARE (foodallergy.org) is the leading US allergy advocacy + education org.')
     );
   }
 
@@ -12463,7 +12536,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#f0fdfa', border: '2px solid #0d9488' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#0f766e' } }, '🔪 ' + picked.name),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#0f766e', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#0f766e', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#0f766e', marginTop: 8, lineHeight: 1.7 } },
           nlH('div', null, nlH('strong', null, '🔧 Tools: '), picked.tools),
@@ -12475,7 +12548,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(t) {
-          return nlH('button', { key: t.name, onClick: function() { setPicked(t); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #5eead4', background: '#fff', fontSize: 12, color: '#0f766e', cursor: 'pointer' } },
+          return nlH('button', { key: t.name, onClick: function() { setPicked(t); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #5eead4', background: '#fff', fontSize: 12, color: '#0f766e', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, '🔪 ' + t.name), ' — ', t.usedFor
           );
         })
@@ -12491,17 +12564,18 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var ps = R_NL.useState(null); var picked = ps[0]; var setPicked = ps[1];
     var visible = NUTRITION_KIT_SYMPTOM_NUTRIENT.filter(function(s) { return !search || s.symptom.toLowerCase().indexOf(search.toLowerCase()) >= 0; });
     return nlH('div', { style: { padding: 14 } },
-      nlSection('Symptom → Nutrient Reference', 'Common symptoms that might link to nutrition (clinical screening tool — NOT diagnosis)', '#a855f7'),
+      nlSection('Symptom → Nutrient Reference', 'Common symptoms that can have a nutrition link (for learning, NOT diagnosis)', '#a855f7'),
+      nlH('p', { 'data-nl-adult-banner': 'true', style: { fontSize: 12, fontWeight: 700, color: '#4c1d95', background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: 8, padding: 8, margin: '0 0 10px' } }, 'For teachers and families. Students: talk with a parent, school nurse or doctor if a symptom worries you.'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#faf5ff', border: '1px solid #d8b4fe', marginBottom: 12, fontSize: 12, color: '#5b21b6', lineHeight: 1.55 } },
         nlH('strong', null, '⚕ Important: '),
-        'This is a screening tool, not a diagnosis. Many of these symptoms have non-nutrition causes too. Always work with a doctor for persistent symptoms.'
+        'This is for learning, not diagnosis. Most of these symptoms have non-nutrition causes too. Do not start supplements on your own; a doctor can test what is really going on.'
       ),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search symptoms...' }),
       nlH('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       picked ? nlCard({ style: { background: '#faf5ff', border: '2px solid #a855f7' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#5b21b6' } }, '🔬 ' + picked.symptom),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#5b21b6', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#5b21b6', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#5b21b6', marginTop: 8, lineHeight: 1.7 } },
           nlH('div', null, nlH('strong', null, '🎯 Possible nutrition factors: '), picked.candidates),
@@ -12510,7 +12584,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(s) {
-          return nlH('button', { key: s.symptom, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #d8b4fe', background: '#fff', fontSize: 12, color: '#5b21b6', cursor: 'pointer' } },
+          return nlH('button', { key: s.symptom, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #d8b4fe', background: '#fff', fontSize: 12, color: '#5b21b6', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, s.symptom)
           );
         })
@@ -12532,7 +12606,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#fdf4ff', border: '2px solid #c026d3' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#86198f' } }, '🌍 ' + picked.region),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#86198f', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#86198f', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#86198f', marginTop: 8, lineHeight: 1.7 } },
           nlH('div', null, nlH('strong', null, '🌾 Staples: '), picked.staples),
@@ -12543,7 +12617,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(c) {
-          return nlH('button', { key: c.region, onClick: function() { setPicked(c); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #f0abfc', background: '#fff', fontSize: 12, color: '#86198f', cursor: 'pointer' } },
+          return nlH('button', { key: c.region, onClick: function() { setPicked(c); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #f0abfc', background: '#fff', fontSize: 12, color: '#86198f', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, '🌍 ' + c.region)
           );
         })
@@ -12565,14 +12639,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#fef2f2', border: '2px solid #dc2626' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#7f1d1d' } }, '🛡 ' + picked.topic),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 8, lineHeight: 1.7 } }, picked.details),
         nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 8, fontStyle: 'italic' } }, 'Source: ' + picked.source)
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(s) {
-          return nlH('button', { key: s.topic, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #fecaca', background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer' } },
+          return nlH('button', { key: s.topic, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #fecaca', background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer', minHeight: 44 } },
             nlH('strong', null, '🛡 ' + s.topic)
           );
         })
@@ -12590,7 +12664,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('Kitchen Tool Guide', 'What you actually need — essential vs nice', '#0891b2'),
       nlH('div', { style: { display: 'flex', gap: 4, marginBottom: 12 } },
         ['all', 'Essential', 'Helpful', 'Nice', 'Standard'].map(function(f) {
-          return nlH('button', { key: f, onClick: function() { setFilter(f); }, style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #67e8f9', background: filter === f ? '#67e8f9' : '#fff', color: '#155e75', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, f);
+          return nlH('button', { key: f, onClick: function() { setFilter(f); }, style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #67e8f9', background: filter === f ? '#67e8f9' : '#fff', color: '#155e75', fontSize: 12, fontWeight: 700, cursor: 'pointer', minHeight: 44 } }, f);
         })
       ),
       nlH('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 8 } }, visible.length + ' shown'),
@@ -12620,8 +12694,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var ss = R_NL.useState(''); var search = ss[0]; var setSearch = ss[1];
     var visible = NUTRITION_KIT_NEDA_RESOURCES.filter(function(r) { return !search || (r.name + ' ' + r.notes).toLowerCase().indexOf(search.toLowerCase()) >= 0; });
     return nlH('div', { style: { padding: 14 } },
-      nlSection('NEDA + Crisis Resource Directory', 'Curated mental-health-around-food resources', '#10b981'),
+      nlSection('Eating Disorder + Crisis Help Lines', 'Free help lines and Maine programs', '#10b981'),
       nlNEDABanner(),
+      nlH('p', { 'data-nl-checked': 'true', style: { fontSize: 12, color: '#065f46', margin: '0 0 10px', fontWeight: 700 } }, 'Checked November 2026 on each group\'s own website. Listings change, so check the number before you rely on it.'),
       nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search resources...' }),
       nlH('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', margin: '8px 0' } }, visible.length + ' shown'),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -12634,7 +12709,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('All resources are independently vetted as evidence-aligned + youth-friendly. Most are free + confidential.')
+      nlEvidenceFooter('Each phone number and set of hours was copied from the group\'s own website in November 2026. Listings change. In an emergency, call 911.')
     );
   }
 
@@ -12674,11 +12749,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       picked ? nlCard({ style: { background: '#fef2f2', border: '2px solid #dc2626' } },
         nlH('div', { style: { display: 'flex', justifyContent: 'space-between' } },
           nlH('strong', { style: { fontSize: 16, color: '#7f1d1d' } }, '🏃 ' + picked.sport),
-          nlH('button', { onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer' } }, '✕ close')
+          nlH('button', { type: 'button', onClick: function() { setPicked(null); }, style: { background: 'transparent', border: 'none', color: '#7f1d1d', fontSize: 12, cursor: 'pointer', minHeight: 44, minWidth: 44 } }, '✕ close')
         ),
         nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 8, lineHeight: 1.7 } },
-          nlH('div', null, nlH('strong', null, '⚡ Calories/hour: '), picked.kcalPerHour),
-          nlH('div', null, nlH('strong', null, '⏰ Pre-fuel: '), picked.preFuel),
+                    nlH('div', null, nlH('strong', null, '⏰ Pre-fuel: '), picked.preFuel),
           nlH('div', null, nlH('strong', null, '🔋 During: '), picked.duringFuel),
           nlH('div', null, nlH('strong', null, '🔧 Post-fuel: '), picked.postFuel),
           nlH('div', null, nlH('strong', null, '💧 Hydration: '), picked.hydration),
@@ -12687,8 +12761,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ) : null,
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
         visible.map(function(s) {
-          return nlH('button', { key: s.sport, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer' } },
-            nlH('strong', null, '🏃 ' + s.sport), ' · ', s.kcalPerHour, ' kcal/hr'
+          return nlH('button', { key: s.sport, onClick: function() { setPicked(s); }, style: { textAlign: 'left', padding: 8, borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', fontSize: 12, color: '#7f1d1d', cursor: 'pointer', minHeight: 44 } },
+            nlH('strong', null, '🏃 ' + s.sport)
           );
         })
       ),
@@ -12855,7 +12929,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Family Health History', 'Family patterns inform — but never determine — your future', '#3b82f6'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#eff6ff', border: '1px solid #93c5fd', marginBottom: 12, fontSize: 12, color: '#1e40af', lineHeight: 1.55 } },
         nlH('strong', null, '💙 Family history matters: '),
-        'For T2D, heart disease, hypertension, celiac, allergies — knowing your family history shapes preventive care. Lifestyle dramatically modifies risk; genes are not destiny.'
+        'For T2D, heart disease, hypertension, celiac, allergies — knowing your family history shapes preventive care. Family history is one part of risk; daily habits are another.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -12883,7 +12957,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('CDC family health history initiative: ~33% of common health conditions have family-history component. Bring this info to your annual physical — your PCP will appreciate it.')
+      nlEvidenceFooter('CDC: knowing your family health history can help you and your doctor spot health risks early. Bring it to your next checkup.')
     );
   }
 
@@ -12964,7 +13038,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { r: 'I have the right to eat school meals without judgment', s: 'USDA NSLP + Maine universal free', a: 'All Maine students' },
       { r: 'I have the right to refuse food at family meals', s: 'Body autonomy + AAP guidance', a: 'Adolescents 12+' },
       { r: 'I have the right to dietary accommodations for documented conditions', s: 'Section 504 + IDEA', a: 'Students with documented allergies, T1D, ED, ARFID, celiac' },
-      { r: 'I have the right to choose vegetarianism/veganism', s: 'AAP supports plant-based diets for adolescents', a: 'Adolescents 12+' },
+      // Position of the Academy of Nutrition and Dietetics: Vegetarian Diets (J Acad Nutr Diet 2016): "appropriately planned vegetarian,
+// including vegan, diets are healthful, nutritionally adequate" ... "appropriate for all stages of the life cycle, including ... adolescence".
+{ r: 'I have the right to choose vegetarianism/veganism', s: 'Academy of Nutrition and Dietetics (2016): well-planned vegetarian and vegan diets can meet teen needs', a: 'Adolescents 12+' },
       { r: 'I have the right to confidential ED treatment in some states', s: 'State-specific minor consent laws', a: 'Check Maine specifics' },
       { r: 'I have the right to ask my doctor questions privately', s: 'AAP adolescent care guidelines', a: 'Adolescents 12+ generally' }
     ];
@@ -13184,11 +13260,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { name: 'Pasta sauce (1/2 cup)', g: 7 }, { name: 'Chocolate bar (1 oz)', g: 14 }, { name: 'Donut', g: 18 }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Added Sugar Awareness', 'Awareness > restriction. AHA: <36 g/day teens', '#a16207'),
+      nlSection('My Added Sugar Awareness', 'Awareness > restriction. AHA: under 25 g a day for ages 2-18', '#a16207'),
       nlBodyNote(),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f', lineHeight: 1.55 } },
         nlH('strong', null, '🍯 Note: '),
-        'Added sugars (added during processing) ≠ natural sugars in fruit. AHA: <25g women, <36g men/teens. Awareness for THINK, not as a daily score.'
+        'Added sugars (added during processing) ≠ natural sugars in fruit. AHA (2016): under 25 g (about 6 teaspoons) a day for ages 2-18. Use this to notice, not as a daily score.'
       ),
       nlCard({ style: { background: '#fef3c7', border: '1px solid #fcd34d' } },
         nlH('strong', { style: { fontSize: 14, color: '#78350f' } }, 'Today: ' + todayG + ' / ' + dailyLimit + ' g added sugar'),
@@ -13219,7 +13295,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('AHA + WHO + Dietary Guidelines: limit added sugar to <10% of daily kcal. Most Americans hit 20-25%. SUGAR ISN\'T POISON — awareness + balance > restriction.')
+      nlEvidenceFooter('Dietary Guidelines 2020-2025 + WHO: keep added sugars under 10% of daily calories (ages 2 and up). Americans average about 13%. Sugar is not poison; awareness and balance beat restriction.')
     );
   }
 
@@ -13249,7 +13325,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { name: 'Pickle', mg: 700 }, { name: 'Ramen (instant pack)', mg: 1500 }, { name: 'Fast-food burger', mg: 1100 }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Sodium Awareness', 'CDC: 90% of US teens exceed daily limit', '#0e7490'),
+      nlSection('My Sodium Awareness', 'CDC: about 9 in 10 US kids ages 6-18 eat more sodium than recommended', '#0e7490'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfeff', border: '1px solid #67e8f9', marginBottom: 12, fontSize: 12, color: '#155e75', lineHeight: 1.55 } },
         nlH('strong', null, '🧂 Note: '),
         'Heavy sweaters/athletes need MORE sodium, not less. This tool is for typical teens; athletes should consult sports RDs.'
@@ -13283,7 +13359,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('CDC + AHA: <2300mg/day adults; 1500mg ideal. Most Americans get 3400+ mg. Top contributors: bread, cured meats, soups, condiments, pizza.')
+      nlEvidenceFooter('Dietary Guidelines + CDC: under 2,300 mg of sodium a day for teens and adults. Americans average more than 3,300 mg. Top sources: bread, cured meats, soups, condiments, pizza.')
     );
   }
 
@@ -13297,15 +13373,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var form = ps[0]; var setForm = ps[1];
     function save() { setData({ plan: form }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Maine Vitamin D Strategy', 'Oct-Mar: zero sun-D in Maine. Plan accordingly.', '#fbbf24'),
+      nlSection('My Maine Vitamin D Strategy', 'About Nov–Feb: little or no vitamin D from the sun in Maine. Plan your food sources.', '#fbbf24'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f', lineHeight: 1.55 } },
         nlH('strong', null, '☀ Maine winter sun: '),
-        'At Maine\'s latitude (43-47°N), the sun is too low Oct through Mar to make vitamin D. EVERY Mainer needs a plan: food + supplement.'
+        'At Maine\'s latitude (43-47°N), the winter sun (about November through February) is too low for skin to make vitamin D. Plan fortified foods and fish, and talk with a doctor before taking any supplement.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-          nlInput({ value: form.dose || '', onChange: function(e) { setForm(Object.assign({}, form, { dose: e.target.value })); }, placeholder: 'My winter D3 dose (e.g., 1000-2000 IU/day)' }),
-          nlInput({ value: form.brand || '', onChange: function(e) { setForm(Object.assign({}, form, { brand: e.target.value })); }, placeholder: 'Brand I trust' }),
+          nlInput({ value: form.dose || '', onChange: function(e) { setForm(Object.assign({}, form, { dose: e.target.value })); }, placeholder: 'Supplement my doctor recommended, if any' }),
+          nlInput({ value: form.brand || '', onChange: function(e) { setForm(Object.assign({}, form, { brand: e.target.value })); }, placeholder: 'Product name (if a doctor recommended one)' }),
           nlTextarea({ value: form.foodSources || '', onChange: function(e) { setForm(Object.assign({}, form, { foodSources: e.target.value })); }, placeholder: 'My food sources (fatty fish, eggs, fortified milk)', rows: 2 }),
           nlInput({ value: form.testDate || '', onChange: function(e) { setForm(Object.assign({}, form, { testDate: e.target.value })); }, placeholder: 'Last vit D test date' }),
           nlInput({ value: form.testResult || '', onChange: function(e) { setForm(Object.assign({}, form, { testResult: e.target.value })); }, placeholder: 'Test result (ng/mL)' }),
@@ -13313,7 +13389,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           nlBtn({ onClick: save, variant: 'warning' }, '✓ Save my D strategy')
         )
       ),
-      nlEvidenceFooter('NIH ODS + Vit D Council: target serum 30-50 ng/mL. Maine winter vit D status: many Mainers test < 20 ng/mL. Discuss dosing with MD.')
+      nlEvidenceFooter('NIH ODS: the Food and Nutrition Board says blood levels of 20 ng/mL or more are enough for most people; some groups use 30 ng/mL. Talk with a doctor before taking a supplement.')
     );
   }
 
@@ -13336,9 +13412,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var m_opts = [{ value: 'breakfast', label: '☀ Breakfast' }, { value: 'lunch', label: '🌞 Lunch' }, { value: 'dinner', label: '🌇 Dinner' }, { value: 'snack', label: '🍎 Snack' }];
     var total = strategies.reduce(function(sum, s) { return sum + (s.grams || 0); }, 0);
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Fiber Strategy', 'Plan fiber-rich foods at each meal — daily target ~28g', '#a16207'),
+      nlSection('My Fiber Strategy', 'Plan fiber-rich foods at each meal (label Daily Value: 28 g)', '#a16207'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f' } },
-        nlH('strong', null, 'Strategy total: ' + total + ' g/day · DGA target: 25-38 g/day')
+        nlH('strong', null, 'Strategy total: ' + total + ' g/day · label Daily Value: 28 g/day')
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -13351,7 +13427,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       strategies.length === 0
-        ? nlEmpty('No strategy yet. Spread fiber across all meals for steady gut benefit.')
+        ? nlEmpty('No strategy yet. Try adding a fiber food at more than one meal.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             strategies.map(function(s) {
               return nlH('div', { key: s.id, style: { padding: 8, borderRadius: 8, background: '#fef3c7', borderLeft: '3px solid #a16207', display: 'flex', justifyContent: 'space-between' } },
@@ -13360,7 +13436,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Harvard T.H. Chan: fiber comes in soluble (oats, beans) + insoluble (whole grains, veggies) — both matter. Variety > total. Increase fiber slowly (+5g/wk) to avoid GI upset.')
+      nlEvidenceFooter('Harvard T.H. Chan: fiber comes in soluble (oats, beans) and insoluble (whole grains, vegetables) forms, and both matter. Add fiber slowly and drink water to avoid stomach upset.')
     );
   }
 
@@ -13385,7 +13461,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     strategies.forEach(function(s) { byMeal[s.meal] = (byMeal[s.meal] || 0) + s.grams; });
     var total = strategies.reduce(function(sum, s) { return sum + s.grams; }, 0);
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Protein Distribution', 'Spread protein 20-30g per meal for muscle synthesis (ISSN)', '#be123c'),
+      nlSection('My Protein Distribution', 'Spread protein across meals (ISSN 2017: about 20-40 g per meal for athletes)', '#be123c'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca', marginBottom: 12, fontSize: 12, color: '#9f1239' } },
         nlH('strong', null, 'Daily total: ' + total + ' g')
       ),
@@ -13417,7 +13493,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('ISSN: ~20-25g protein per meal optimizes muscle protein synthesis (esp for athletes + lifters). 100g in 1 meal less effective than 25g x 4 meals.')
+      nlEvidenceFooter('ISSN (2017): about 20-40 g of protein per meal, spread through the day, supports muscle building in athletes.')
     );
   }
 
@@ -13534,10 +13610,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ entries: entries.filter(function(e) { return e.id !== id; }) }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Gut Health Journal', 'Microbiome diversity + signals — Harvard/Stanford research', '#16a34a'),
+      nlSection('My Gut Health Journal', 'Notice how food, sleep and stress line up with how your gut feels', '#16a34a'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac', marginBottom: 12, fontSize: 12, color: '#166534', lineHeight: 1.55 } },
         nlH('strong', null, '🦠 Microbiome basics: '),
-        '30+ different plants/week = more diverse gut bugs = better gut health. Fermented foods feed beneficial bacteria. Stress + sleep deficit alter microbiome rapidly.'
+        'In the American Gut study (2018), people who ate more than 30 kinds of plants a week had more varied gut microbes than people who ate 10 or fewer. Scientists do not yet know exactly what that means for health.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -13572,7 +13648,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('American Gut + Tim Spector\'s ZOE research: 30+ different plants/week is the strongest predictor of gut diversity. Fermented foods compound the benefit.')
+      nlEvidenceFooter('American Gut Project (McDonald et al., 2018): people who ate more than 30 different plants a week had more diverse gut microbes than people who ate 10 or fewer. Fermented foods may help too.')
     );
   }
 
@@ -13603,7 +13679,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlNEDABanner(),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfdf5', border: '1px solid #6ee7b7', marginBottom: 12, fontSize: 12, color: '#065f46', lineHeight: 1.55 } },
         nlH('strong', null, '💚 What IE is: '),
-        'Intuitive Eating is the evidence-based anti-diet framework. NOT just "eat what you want" — a structured approach to rebuilding interoceptive trust. ~140+ peer-reviewed studies.'
+        'Intuitive Eating is an anti-diet approach. It is NOT just "eat what you want"; it is about relearning your body\'s hunger and fullness signals.'
       ),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
         principles.map(function(p) {
@@ -13620,7 +13696,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('Tribole & Resch, Intuitive Eating (4th ed, 2020). 140+ peer-reviewed studies support IE for ED prevention + recovery + general well-being. Available at most libraries.')
+      nlEvidenceFooter('Tribole & Resch, Intuitive Eating (4th ed., 2020). Many studies have looked at intuitive eating and well-being. Available at most libraries.')
     );
   }
 
@@ -13699,10 +13775,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ checkins: checkins.filter(function(c) { return c.id !== id; }) }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Hair Loss Screening', 'Common in restriction + iron deficiency — track + tell MD', '#a855f7'),
+      nlSection('My Hair Loss Screening', 'Track it and tell a doctor', '#a855f7'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#faf5ff', border: '1px solid #d8b4fe', marginBottom: 12, fontSize: 12, color: '#5b21b6', lineHeight: 1.55 } },
-        nlH('strong', null, '🩺 Hair shedding can signal: '),
-        'iron deficiency (esp menstruating), thyroid issues, undereating, stress, postpartum, autoimmune. If persistent: check ferritin + TSH at MD.'
+        // MedlinePlus 003246 (Hair loss): "Severe emotional stress", "High fever or severe infection", "Crash diets, especially those
+        // that do not contain enough protein", "Anemia", "Thyroid diseases".
+        nlH('strong', null, '🩺 Hair shedding can come from: '),
+        'stress, a high fever or illness, crash diets without enough protein, anemia, or thyroid disease (MedlinePlus). If it keeps happening, tell a doctor; a blood test can check some of these.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -13745,7 +13823,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Telogen effluvium (stress-induced hair shedding) usually 3-6 months after trigger. Iron deficiency, thyroid disorders, undereating are also common causes. See MD if persistent.')
+      nlEvidenceFooter('Stress-related hair shedding (telogen effluvium) usually starts 2-3 months after the stressful event (American Academy of Dermatology). Low iron, thyroid problems and under-eating are other causes. See a doctor if it lasts.')
     );
   }
 
@@ -13769,7 +13847,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Accountability Partners', 'People who check in with you about your nutrition goals', '#3b82f6'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#eff6ff', border: '1px solid #93c5fd', marginBottom: 12, fontSize: 12, color: '#1e40af', lineHeight: 1.55 } },
         nlH('strong', null, '🤝 Why accountability works: '),
-        'Telling someone about your goal makes you 65% more likely to follow through. With check-ins, 95% (ASTD research).'
+        'A check-in partner can help you notice progress and keep going.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -13790,7 +13868,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       partners.length === 0
-        ? nlEmpty('No partners yet. Even ONE check-in person doubles your odds.')
+        ? nlEmpty('No partners yet. Even one check-in person can help.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             partners.map(function(p) {
               return nlH('div', { key: p.id, style: { padding: 10, borderRadius: 8, background: '#eff6ff', borderLeft: '4px solid #3b82f6' } },
@@ -13953,7 +14031,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Letter-to-future-self research (Hershfield, Stanford): self-continuity exercises strengthen long-term decision making + emotional regulation in adolescents.')
+      nlEvidenceFooter('Future-self research (Hal Hershfield, UCLA): feeling connected to your future self is linked with choices that help you later. Most of this research is with adults.')
     );
   }
 
@@ -14270,7 +14348,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           form.signsLow ? nlH('div', { style: { fontStyle: 'italic', marginTop: 4 } }, '⚠ My low-hydration signs: ' + form.signsLow) : null
         )
       ) : null,
-      nlEvidenceFooter('NAM AI: ~2700 mL teen girls, ~3700 mL teen boys (most from drinks; ~20% from food). Strategy beats constant tracking; once it\'s habit, you don\'t need to count.')
+      nlEvidenceFooter('NAM AI, ages 14–18: total water 2,300 mL (girls) / 3,300 mL (boys); about 80% comes from drinks and 20% from food. Strategy beats constant tracking; once it\'s habit, you don\'t need to count.')
     );
   }
 
@@ -14299,7 +14377,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { key: 'water', label: '💧 Water (8oz glasses)', max: 16 }
     ];
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Food Group Check', 'USDA MyPlate-aligned daily check — variety, not numbers obsession', '#65a30d'),
+      nlSection('My Food Group Check', 'Daily check based on USDA MyPlate food groups — variety, not numbers obsession', '#65a30d'),
       nlBodyNote(),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
@@ -14348,7 +14426,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var seeds = [
       { t: 'Macronutrient', d: 'Carbs, protein, fat. Provide energy. Need in large amounts.' },
       { t: 'Micronutrient', d: 'Vitamins + minerals. No energy. Critical metabolic roles.' },
-      { t: 'RDA', d: 'Recommended Dietary Allowance. Daily intake covers 97% of healthy people.' },
+      // NIH ODS: "Average daily level of intake sufficient to meet the nutrient requirements of nearly all (97%-98%) healthy individuals".
+{ t: 'RDA', d: 'Recommended Dietary Allowance. Enough for nearly all (97–98%) healthy people.' },
       { t: 'AI', d: 'Adequate Intake. Used when RDA can\'t be set due to insufficient data.' },
       { t: '% Daily Value', d: 'On food labels, % of recommended daily intake based on 2000 kcal.' },
       { t: 'Glycemic Index', d: 'How fast a food raises blood glucose (relative to glucose).' },
@@ -14600,7 +14679,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Deep reflection cadence research: 2x/year deep reflection outperforms daily journaling for sustained identity-level change. Daily often becomes mechanical.')
+      nlEvidenceFooter('Looking back on your habits every so often can help you notice what is working. Choose a rhythm that feels useful, not mechanical.')
     );
   }
 
@@ -14751,7 +14830,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     function remove(id) { setData({ days: days.filter(function(d) { return d.id !== id; }) }); }
     var total = form.vegetables + form.fruits + form.grains + form.protein;
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My MyPlate Visualizer', 'Set today\'s plate proportions — USDA MyPlate-aligned', '#16a34a'),
+      nlSection('My MyPlate Visualizer', 'Set today\'s plate proportions — based on USDA MyPlate', '#16a34a'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac', marginBottom: 12, fontSize: 12, color: '#166534', lineHeight: 1.55 } },
         nlH('strong', null, '🍽 MyPlate: '),
         '½ plate fruits + vegetables; ¼ whole grains; ¼ protein. Dairy/calcium-fortified on the side.'
@@ -15005,7 +15084,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Phone-Free Meal Log', 'Eat without scrolling — notice the difference', '#a855f7'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#faf5ff', border: '1px solid #d8b4fe', marginBottom: 12, fontSize: 12, color: '#5b21b6', lineHeight: 1.55 } },
         nlH('strong', null, '📱 Why this matters: '),
-        'Eating + scrolling splits attention. Mindful meals — even one a day — boost satisfaction + reduce mindless overeating (Crum et al. research).'
+        'Eating + scrolling splits attention. In a review of 24 studies, eating while distracted was linked to eating more later (Robinson et al., 2013).'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -15164,7 +15243,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           form.thanksTo ? nlH('div', { style: { fontStyle: 'italic' } }, nlH('strong', null, '💚 Thanks: '), form.thanksTo) : null
         )
       ) : null,
-      nlEvidenceFooter('You\'ve worked with 200+ tools across 18 waves. The kit is meant to be re-visited as life shifts. Take what helps, leave what doesn\'t. — built with care, evidence, and respect for student autonomy.')
+      nlEvidenceFooter('The kit is meant to be revisited as life shifts. Take what helps, leave what doesn\'t. Built with care, evidence, and respect for student autonomy.')
     );
   }
 
@@ -15177,14 +15256,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         [
           { icon: '💧', label: 'Drink water now', text: 'Take 5 sips of water. Notice the temperature, the taste. Done.', color: '#0ea5e9' },
           { icon: '🍎', label: 'Snack now', text: 'Quick options: apple + nut butter, yogurt, cheese stick, banana + peanut butter, hummus + crackers.', color: '#10b981' },
-          { icon: '😰', label: 'Food anxiety hit', text: 'You\'re safe. Anxiety passes. Eat the food slowly + breathe. If persistent, call NEDA 1-800-931-2237.', color: '#dc2626' },
-          { icon: '🚨', label: 'Allergic reaction', text: 'If anaphylaxis (swelling, breathing): EpiPen + 911. If mild: Benadryl + watch + call doctor.', color: '#dc2626' },
-          { icon: '🩸', label: 'Low blood sugar (T1D)', text: '15g fast carb (juice, glucose tab). Wait 15 min. Recheck. Adult/911 if BG <50 or symptoms persist.', color: '#7c3aed' },
+          { icon: '😰', label: 'Food anxiety hit', text: 'You\'re safe. Anxiety passes. Eat the food slowly + breathe. If it keeps happening, call the eating disorder helpline 1-866-662-1235 or text HOME to 741741.', color: '#dc2626' },
+          { icon: '🚨', label: 'Allergic reaction', text: 'Follow your allergy action plan. Trouble breathing, swelling or feeling faint: use epinephrine (EpiPen) if you have one and call 911. Tell an adult right away.', color: '#dc2626' },
+          { icon: '🩸', label: 'Low blood sugar (T1D)', text: 'Follow your diabetes plan. Usual rule (ADA): 15 g fast carbs (juice or glucose tabs), recheck in 15 minutes, repeat if still low. Tell an adult. Call 911 if the person cannot swallow or passes out.', color: '#7c3aed' },
           { icon: '🥄', label: 'Low spoons', text: 'Safe foods. Frozen meal. Take-out without judgment. Cereal + milk counts. Eat something.', color: '#a855f7' },
-          { icon: '💔', label: 'After ED moment', text: 'Eat your next regular meal. No making up. Self-compassion. Call NEDA or a trusted person.', color: '#10b981' },
+          { icon: '💔', label: 'After ED moment', text: 'Eat your next regular meal. No making up. Self-compassion. Call the eating disorder helpline (1-866-662-1235) or a trusted person.', color: '#10b981' },
           { icon: '⚡', label: 'Energy crashing', text: 'Mixed snack (carb + protein): apple + cheese, banana + nut butter, crackers + hummus.', color: '#f59e0b' },
           { icon: '🍴', label: 'Hungry but no time', text: 'Grab-and-go: nuts, fruit, granola bar, yogurt cup. Eat in 60 sec; better than skipping.', color: '#16a34a' },
-          { icon: '🤕', label: 'Sick / nausea', text: 'BRAT (bananas, rice, applesauce, toast). Sip water. Ginger tea. Easy on stomach.', color: '#0d9488' }
+          { icon: '🤕', label: 'Sick / nausea', text: 'Sip fluids often. Plain foods like toast, rice or bananas may sit easier. Tell an adult, and see a doctor if you cannot keep fluids down.', color: '#0d9488' }
         ].map(function(action) {
           return nlH('div', { key: action.label, style: { padding: 12, borderRadius: 10, background: action.color + '15', border: '1px solid ' + action.color + '50', borderLeft: '4px solid ' + action.color } },
             nlH('div', { style: { fontSize: 24, marginBottom: 4 } }, action.icon),
@@ -15193,7 +15272,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('In-the-moment guidance — designed for quick reference. Save NEDA (1-800-931-2237) + 988 to your phone for crisis access.')
+      nlEvidenceFooter('In-the-moment guidance — designed for quick reference. Save 1-866-662-1235 (eating disorder helpline) and 988 to your phone.')
     );
   }
 
@@ -15201,17 +15280,17 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   function PersonalKitOnboarding(props) {
     if (!R_NL) return null;
     return nlH('div', { style: { padding: 14 } },
-      nlSection('Welcome to My Nutrition Kit', 'How to use this 200+ tool kit', '#0d9488'),
+      nlSection('Welcome to My Nutrition Kit', 'How to use this ' + nlKitCounts().tools + '-tool kit', '#0d9488'),
       nlCard({ style: { background: 'linear-gradient(135deg, #ecfdf5, #ddf2e6)', border: '2px solid #10b981' } },
         nlH('h2', { style: { fontSize: 22, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 12 } }, '🥗 Welcome!'),
         nlH('div', { style: { fontSize: 14, color: '#065f46', lineHeight: 1.7 } },
-          nlH('p', null, 'This is My Nutrition Kit — 200+ tools to build your own evidence-based nutrition practice. Built by a school psychologist, designed for adolescents, NEDA-aligned, Maine-relevant.'),
+          nlH('p', null, 'This is My Nutrition Kit — ' + nlKitCounts().tools + ' tools to build your own nutrition practice. Built by a school psychologist, designed for adolescents, eating-disorder-aware, Maine-relevant. No organization has reviewed or endorsed it.'),
           nlH('h3', { style: { marginTop: 12, marginBottom: 4 } }, '🎯 Where to start:'),
           nlH('ul', { style: { paddingLeft: 20 } },
             nlH('li', null, nlH('strong', null, 'Daily Check-In: '), '5 basics every day — quick start'),
             nlH('li', null, nlH('strong', null, 'Kit Overview: '), 'stats dashboard — see what\'s active'),
             nlH('li', null, nlH('strong', null, 'Search bar: '), 'find tools by keyword'),
-            nlH('li', null, nlH('strong', null, 'Category filters: '), '13 themed categories'),
+            nlH('li', null, nlH('strong', null, 'Category filters: '), '12 themed categories'),
             nlH('li', null, nlH('strong', null, 'Quick Actions: '), 'in-the-moment guidance'),
             nlH('li', null, nlH('strong', null, 'Reference tools: '), 'food DB, recipes, allergens, etc.')
           ),
@@ -15219,21 +15298,21 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           nlH('ul', { style: { paddingLeft: 20 } },
             nlH('li', null, 'Physiology-first, never restriction'),
             nlH('li', null, 'No calorie targets, no "good/bad" foods'),
-            nlH('li', null, 'NEDA helpline (1-800-931-2237) always visible for mental-health tools'),
+            nlH('li', null, 'Eating disorder helpline (1-866-662-1235) and 988 always visible for mental-health tools'),
             nlH('li', null, 'All data stays in your browser — no server, no tracking'),
             nlH('li', null, 'Use what serves you; ignore what doesn\'t')
           ),
           nlH('h3', { style: { marginTop: 12, marginBottom: 4 } }, '⚠ When to seek more help:'),
           nlH('ul', { style: { paddingLeft: 20 } },
             nlH('li', null, 'Persistent symptoms = see your doctor'),
-            nlH('li', null, 'Food/body distress = NEDA helpline (1-800-931-2237) or 988'),
+            nlH('li', null, 'Food/body distress = eating disorder helpline (1-866-662-1235) or 988'),
             nlH('li', null, 'Allergic reactions = always carry EpiPen + tell adults'),
             nlH('li', null, 'Eating disorder concerns = a doctor + RD specializing in ED')
           ),
           nlH('p', { style: { marginTop: 12, fontStyle: 'italic' } }, 'Built with care. Take what helps. — Aaron')
         )
       ),
-      nlEvidenceFooter('Approach: evidence-based, physiology-first, anti-diet-culture, Maine-relevant, NEDA-aligned. Sources cited inline per tool.')
+      nlEvidenceFooter('Approach: evidence-based, physiology-first, anti-diet-culture, Maine-relevant, eating-disorder-aware. Sources cited inline per tool. No organization has reviewed or endorsed this kit.')
     );
   }
 
@@ -15267,7 +15346,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           );
         })
       ),
-      nlEvidenceFooter('UX research: power users emerge after ~3 weeks of regular use. The kit rewards exploration over rigid adherence.')
+      nlEvidenceFooter('The kit rewards exploration over rigid adherence.')
     );
   }
 
@@ -15458,7 +15537,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Breakfast Combos', 'Pre-designed breakfasts: protein + carb + fat', '#facc15'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fefce8', border: '1px solid #fde047', marginBottom: 12, fontSize: 12, color: '#854d0e', lineHeight: 1.55 } },
         nlH('strong', null, '🥚 Balanced breakfast formula: '),
-        '20g protein + complex carb + healthy fat. Keeps you full + steady-energy until lunch. Saves you from glucose crash + mid-morning vending machine.'
+        'Protein + a whole-grain carb + some fat makes a filling breakfast.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -15625,7 +15704,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       meals.length === 0
-        ? nlEmpty('No after-practice meals logged. Recovery fuel within 30 min = better next-day training.')
+        ? nlEmpty('No after-practice meals logged. Quick refueling matters most when your next hard session is less than 8 hours away.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             meals.slice(0, 30).map(function(m) {
               return nlH('div', { key: m.id, style: { padding: 8, borderRadius: 8, background: '#fef2f2', borderLeft: '3px solid #dc2626' } },
@@ -15634,7 +15713,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('ACSM consensus: 30-60 min post-exercise window for muscle recovery + glycogen restoration. Even simple combos (milk + apple) work.')
+      nlEvidenceFooter('ACSM/AND/DoC (2016): eating carbohydrate and protein after exercise supports recovery. Even simple combos (milk + apple) work.')
     );
   }
 
@@ -15678,7 +15757,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Student voice initiatives improve cafeteria participation 15-25%. School Nutrition Association welcomes student input. Persistent advocacy wins.')
+      nlEvidenceFooter('The School Nutrition Association welcomes student input on school meals. Persistent, respectful advocacy can change menus.')
     );
   }
 
@@ -15732,7 +15811,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Career exploration research: informational interviews + shadowing accelerate identity formation. Maine has UMaine + Husson nutrition programs.')
+      nlEvidenceFooter('Career exploration research: informational interviews + shadowing accelerate identity formation. Maine\'s ACEND-accredited dietetics program is at UMaine (Orono).')
     );
   }
 
@@ -15753,7 +15832,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function remove(id) { setData({ practices: practices.filter(function(p) { return p.id !== id; }) }); }
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Meal-Time Gratitude', '3 thanks before eating — research-backed practice', '#84cc16'),
+      nlSection('My Meal-Time Gratitude', '3 thanks before eating', '#84cc16'),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.meal, onChange: function(e) { setForm(Object.assign({}, form, { meal: e.target.value })); }, placeholder: 'Meal' }),
@@ -15776,7 +15855,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Emmons + McCullough gratitude research: 3x weekly gratitude practice raises wellbeing in 2-4 weeks. Pre-meal pause is naturally repeated.')
+      nlEvidenceFooter('Emmons & McCullough (2003): people who regularly wrote down things they were grateful for reported better well-being. A pre-meal pause is an easy place to practice.')
     );
   }
 
@@ -15805,7 +15884,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Seasonal Energy + Eating Patterns', 'Track how your body shifts across seasons (esp Maine)', '#16a34a'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac', marginBottom: 12, fontSize: 12, color: '#166534', lineHeight: 1.55 } },
         nlH('strong', null, '🌅 Maine seasonality: '),
-        'Winter sun gap → vit D drops, mood shifts, often more carb cravings (carbs boost serotonin). Summer → lighter eating, more fresh produce, more activity. Plan + adjust.'
+        'Seasons can change how you eat and feel. In a Maine winter the sun is too low for your skin to make vitamin D, so plan food sources. Summer brings more fresh local produce. Plan and adjust.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -15877,7 +15956,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Transition research (Levine): freshman year eating shifts are predictable. Pre-planning + maintaining 2-3 home habits eases the transition.')
+      nlEvidenceFooter('Eating patterns often change when you start a new school. Planning ahead and keeping 2-3 home habits can ease the change.')
     );
   }
 
@@ -15901,7 +15980,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlNEDABanner(),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef2f2', border: '2px solid #fca5a5', marginBottom: 12, fontSize: 12, color: '#7f1d1d', lineHeight: 1.55 } },
         nlH('strong', null, '⚠ Honest screening: '),
-        'These are signs of chronic under-eating. NOT diagnosis. If 3+ are high (thoughts/cravings) or low (energy/mood/period/sleep), talk to your doctor or NEDA.'
+        'These can be signs of not eating enough over time. NOT a diagnosis. If several are high (thoughts/cravings) or low (energy/mood/period/sleep), talk to your doctor or call the eating disorder helpline (1-866-662-1235).'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -15935,7 +16014,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       checks.length === 0
-        ? nlEmpty('No check-ins yet. Quarterly honest screen is healthy. If concerning: NEDA 1-800-931-2237.')
+        ? nlEmpty('No check-ins yet. Quarterly honest screen is healthy. If concerning: eating disorder helpline 1-866-662-1235.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
             checks.slice(0, 20).map(function(c) {
               return nlH('div', { key: c.id, style: { padding: 8, borderRadius: 8, background: '#fef2f2', borderLeft: '3px solid #dc2626' } },
@@ -15976,7 +16055,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('strong', { style: { fontSize: 14, color: '#1e40af', display: 'block', marginBottom: 8 } }, '🏃 If you\'re an athlete'),
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#1e40af' } },
           nlH('div', null, '• Sport Fuel Log around each practice'),
-          nlH('div', null, '• Recovery Meal within 30 min after'),
+          nlH('div', null, '• Recovery Meal after practice'),
           nlH('div', null, '• Sweat Rate Test 3-4x/season'),
           nlH('div', null, '• Rest-Day Nutrition Log for steady fuel')
         )
@@ -15988,13 +16067,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           nlH('div', null, '• Self-Compassion Practice daily'),
           nlH('div', null, '• Safety Contacts ALWAYS visible'),
           nlH('div', null, '• Restriction Check-In monthly (honest)'),
-          nlH('div', null, '• NEDA Resources + Safety Contacts saved'),
+          nlH('div', null, '• Eating disorder help library + safety contacts saved'),
           nlH('div', null, '• Body Image Practice + Journal'),
-          nlH('div', null, '• ', nlH('strong', null, 'NEDA: 1-800-931-2237 / text NEDA to 741741')),
+          nlH('div', null, '• ', nlH('strong', null, 'Eating disorder helpline: 1-866-662-1235 / text HOME to 741741 / 988')),
           nlH('div', null, '• Recovery is non-linear. Be patient with yourself.')
         )
       ),
-      nlEvidenceFooter('Habit science (Wood + Clear): pairing kit tools with existing daily anchors (meals, bedtime) makes them stick. Pick 2-3 tools — not all 200+.')
+      nlEvidenceFooter('Habit science (Wood; Clear): pairing a new habit with an existing daily anchor (meals, bedtime) helps it stick. Pick 2-3 tools, not all of them.')
     );
   }
 
@@ -16006,13 +16085,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlCard({ style: { background: '#f0fdfa' } },
         nlH('div', { style: { fontSize: 13, color: '#0f766e', lineHeight: 1.7 } },
           nlH('h2', { style: { fontSize: 18, fontWeight: 900, marginBottom: 8 } }, '🥗 Why this kit?'),
-          nlH('p', null, 'Most adolescent nutrition tools are calorie counters dressed up. They train disordered eating in vulnerable students.'),
-          nlH('p', null, 'This kit is different. It\'s built by a school psychologist for adolescents — physiology-first, NEDA-aligned, Maine-relevant, anti-diet-culture. Every tool is evidence-based, sourced inline. No tracking servers. No subscriptions. No ads.'),
+          nlH('p', null, 'Many nutrition apps are built around counting calories. This kit is not.'),
+          nlH('p', null, 'This kit is different. It\'s built by a school psychologist for adolescents — physiology-first, eating-disorder-aware, Maine-relevant, anti-diet-culture. Many tools name their sources. No organization has reviewed or endorsed it. No tracking servers. No subscriptions. No ads.'),
           nlH('h2', { style: { fontSize: 18, fontWeight: 900, marginTop: 14, marginBottom: 8 } }, '🌟 Design principles'),
           nlH('ul', { style: { paddingLeft: 20 } },
             nlH('li', null, nlH('strong', null, 'Physiology-first: '), 'What your body uses food for — never weight management as primary goal'),
-            nlH('li', null, nlH('strong', null, 'Evidence-based: '), 'Every claim sourced from NIH, USDA, AAP, Harvard T.H. Chan, etc.'),
-            nlH('li', null, nlH('strong', null, 'NEDA-aligned: '), 'Eating-disorder-aware, anti-restriction, helpline visible'),
+            nlH('li', null, nlH('strong', null, 'Sourced: '), 'Sources include NIH, USDA, CDC, and AAP; many tools name theirs.'),
+            nlH('li', null, nlH('strong', null, 'Eating-disorder-aware: '), 'anti-restriction, helpline visible'),
             nlH('li', null, nlH('strong', null, 'Adolescent-respectful: '), 'Builds your autonomy + critical thinking + voice'),
             nlH('li', null, nlH('strong', null, 'Privacy-first: '), 'Browser-local data only; no servers, no tracking, no ads'),
             nlH('li', null, nlH('strong', null, 'Maine-relevant: '), 'Fisheries, farmers markets, school nutrition, winter vit D'),
@@ -16020,13 +16099,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             nlH('li', null, nlH('strong', null, 'Take-what-helps: '), 'Use 2 tools, use 50, use 200. Skip what doesn\'t fit you.')
           ),
           nlH('h2', { style: { fontSize: 18, fontWeight: 900, marginTop: 14, marginBottom: 8 } }, '📚 Sources'),
-          nlH('p', null, 'USDA FoodData Central · NIH Office of Dietary Supplements · AAP · Harvard T.H. Chan School of Public Health · NEDA · NATA · ACSM · IOC · AHA · ISSN · Cochrane Reviews · MyPlate.gov · Maine state agencies (DHHS, DACF, DMR) · UMaine Cooperative Extension · MOFGA · Maine Federation of Farmers Markets · MaineHealth · Akari Care'),
+          nlH('p', null, 'USDA FoodData Central · NIH Office of Dietary Supplements · AAP · Harvard T.H. Chan School of Public Health · NEDA · NATA · ACSM · IOC · AHA · ISSN · Cochrane Reviews · MyPlate.gov · Maine state agencies (DHHS, DACF, DMR) · UMaine Cooperative Extension · MOFGA · Maine Federation of Farmers Markets · MaineHealth · Northern Light Health'),
           nlH('h2', { style: { fontSize: 18, fontWeight: 900, marginTop: 14, marginBottom: 8 } }, '⚠ Disclaimers'),
           nlH('ul', { style: { paddingLeft: 20 } },
             nlH('li', null, 'NOT a medical service. For medical advice, see a clinician.'),
-            nlH('li', null, 'NOT therapy. For mental health crisis, call 988 or NEDA 1-800-931-2237.'),
+            nlH('li', null, 'NOT therapy. For a mental health crisis, call or text 988.'),
             nlH('li', null, 'NOT a meal plan. Designed to build YOUR practice, not impose one.'),
-            nlH('li', null, 'NOT a calorie-counting tool. If you find yourself counting obsessively, take a break + talk to NEDA.')
+            nlH('li', null, // NEDA closed its helpline in 2023 (see the resource list); the Alliance line is the verified one.
+'NOT a calorie-counting tool. If you find yourself counting obsessively, take a break and talk to a trusted adult, or call the National Alliance for Eating Disorders helpline (1-866-662-1235).')
           ),
           nlH('h2', { style: { fontSize: 18, fontWeight: 900, marginTop: 14, marginBottom: 8 } }, '🌳 Closing'),
           nlH('p', { style: { fontStyle: 'italic' } }, 'Built with care for students who deserve better than diet-culture nutrition tools. — Aaron Pomeranz, PsyD')
@@ -16173,7 +16253,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Tim Spector ZOE research: 30+ different plants/week = strongest gut diversity predictor. Variety > volume for gut health.')
+      nlEvidenceFooter('American Gut Project (McDonald et al., mSystems 2018): eating more than 30 kinds of plants a week went with more varied gut microbes than 10 or fewer. This is an observed link, not proof of cause.')
     );
   }
 
@@ -16337,7 +16417,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Mantra research (Jeena Cho, mindfulness): short, personally meaningful phrases interrupt automatic thought patterns in 5-15 seconds. Pre-prepared = available when you need them.')
+      nlEvidenceFooter('A short, personally meaningful phrase prepared ahead of time can help you pause an automatic thought.')
     );
   }
 
@@ -16404,7 +16484,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My "Saved Meals" Log', 'Times I almost skipped — and what I did instead', '#f59e0b'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#fef3c7', border: '1px solid #fcd34d', marginBottom: 12, fontSize: 12, color: '#78350f', lineHeight: 1.55 } },
         nlH('strong', null, '⚠ Why this matters: '),
-        'Missed meals = energy crashes + worse mood + worse focus. Plus pattern of missing = signs of restriction. Tracking "saves" builds the habit of eating.'
+        'Every meal you get in counts. If you skip meals often, tell a trusted adult. Tracking "saves" builds the habit of eating.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -16446,7 +16526,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlCard({ style: { background: 'linear-gradient(135deg, #ecfdf5, #ddf2e6)', border: '2px solid #10b981' } },
         nlH('h2', { style: { fontSize: 24, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 12 } }, '🌳 My Nutrition Kit Journey'),
         nlH('div', { style: { fontSize: 13, color: '#065f46', lineHeight: 1.7, marginBottom: 12 } },
-          nlH('p', null, 'This kit had 228+ personal tools, 8 reference libraries, 13 categories, and an evidence-base spanning 20+ years of nutrition + adolescent health research.'),
+          nlH('p', null, 'This kit had ' + nlKitCounts().tools + ' personal tools, reference libraries and ' + nlKitCounts().categories + ' categories, built on nutrition and adolescent health sources.'),
           nlH('p', null, 'You\'re here. That counts. Whether you used 3 tools or 100, the act of engaging with food + body in a thoughtful, evidence-based, anti-diet-culture way IS the practice.')
         ),
         nlInput({ value: form.startDate || '', onChange: function(e) { setForm(Object.assign({}, form, { startDate: e.target.value })); }, placeholder: 'When I started using this kit' }),
@@ -16519,7 +16599,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Daily snapshot research: 4-dimensional check-ins outperform single-metric (e.g., "how was your day") for spotting patterns. 30 seconds beats nothing.')
+      nlEvidenceFooter('A quick daily check-in on a few areas (energy, mood, sleep, food) can help you spot patterns over time.')
     );
   }
 
@@ -16613,7 +16693,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Food-rule deconstruction (Tribole & Resch, intuitive eating principle 1 + 4): unlearning inherited rules requires naming them, noticing their effects, and choosing new approaches. Process takes years; documenting accelerates it.')
+      nlEvidenceFooter('Food-rule deconstruction (Tribole & Resch, Intuitive Eating principles 1 and 4): unlearning food rules starts with naming them, noticing their effects, and choosing new approaches. Writing them down helps.')
     );
   }
 
@@ -16638,7 +16718,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
     var weekCount = ingredients.filter(function(i) { return new Date(i.date) >= weekAgo; }).length;
     return nlH('div', { style: { padding: 14 } },
-      nlSection('My Plant Variety Counter', '30+ different plants/week = gut microbiome gold (ZOE research)', '#65a30d'),
+      nlSection('My Plant Variety Counter', 'Count the kinds of plants you eat in a week (American Gut study)', '#65a30d'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#f7fee7', border: '1px solid #bef264', marginBottom: 12, fontSize: 12, color: '#3f6212', lineHeight: 1.55 } },
         nlH('strong', null, '🌱 This week: ' + weekCount + ' different plants'),
         nlH('div', { style: { width: '100%', height: 12, borderRadius: 6, background: '#fff', overflow: 'hidden', marginTop: 6 } },
@@ -16653,7 +16733,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       ingredients.length === 0
-        ? nlEmpty('No plants logged. Each unique plant = a different phytochemical for your gut bugs.')
+        ? nlEmpty('No plants logged. Each new kind of plant counts toward your week.')
         : nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
             ingredients.slice(0, 100).map(function(i) {
               return nlH('div', { key: i.id, style: { padding: '4px 8px', borderRadius: 6, background: '#dcfce7', border: '1px solid #16a34a', fontSize: 12, color: '#065f46', display: 'flex', alignItems: 'center', gap: 4 } },
@@ -16662,7 +16742,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('ZOE study (Spector, 2018): 30 different plants/week = healthiest gut microbiome. Spices count. Coffee counts. Variety > quantity.')
+      nlEvidenceFooter('American Gut Project (McDonald et al., 2018): eating more than 30 different plants a week was linked to more diverse gut microbes. Spices, herbs, nuts and seeds count.')
     );
   }
 
@@ -16699,7 +16779,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         )
       ),
       debriefs.length === 0
-        ? nlEmpty('No debriefs yet. Writing within 24 hrs of a visit doubles what you remember.')
+        ? nlEmpty('No debriefs yet. Write notes soon after a visit, while you still remember.')
         : nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
             debriefs.slice(0, 20).map(function(d) {
               return nlH('div', { key: d.id, style: { padding: 10, borderRadius: 8, background: '#ecfeff', borderLeft: '4px solid #0891b2' } },
@@ -16711,7 +16791,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Health literacy research: 40-80% of medical info is lost within hours. Writing it down within 24 hrs preserves 2-3x more. Bring questions next time based on this.')
+      nlEvidenceFooter('Kessels (2003): 40-80% of medical information is forgotten right away. Writing it down soon after a visit helps you remember. Bring questions next time.')
     );
   }
 
@@ -16769,7 +16849,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlCard({ style: { background: 'linear-gradient(135deg, #ecfdf5, #dcfce7)', border: '2px solid #10b981' } },
         nlH('div', { style: { fontSize: 14, color: '#065f46', lineHeight: 1.7 } },
           nlH('h2', { style: { fontSize: 22, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 16 } }, '🎓 You did it.'),
-          nlH('p', null, 'You built a personal nutrition practice using 235+ evidence-based tools. That\'s the work. It\'s real.'),
+          nlH('p', null, 'You built a personal nutrition practice using the tools in this kit. That\'s the work. It\'s real.'),
           nlH('p', null, 'You can graduate from this kit anytime. The skills, awareness, vocabulary, and identity you\'ve built — those go with you. Permanent capacity.'),
           nlH('h3', { style: { marginTop: 14 } }, '🌱 What you take with you:'),
           nlH('ul', { style: { paddingLeft: 20 } },
@@ -16778,7 +16858,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             nlH('li', null, 'Your personal hunger/fullness fluency'),
             nlH('li', null, 'A library of recipes + cooking skills'),
             nlH('li', null, 'Self-advocacy in medical + school + family settings'),
-            nlH('li', null, 'NEDA-aligned framework for food + mental health'),
+            nlH('li', null, 'An eating-disorder-aware approach to food + mental health'),
             nlH('li', null, 'Identity: someone who thinks about food + body with care')
           ),
           nlH('h3', { style: { marginTop: 14 } }, '💚 The kit is here when you need it:'),
@@ -16967,7 +17047,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Spice + culinary literacy (Samin Nosrat, Salt Fat Acid Heat): mastering 20-30 spices = ability to cook 80% of world cuisines + endless variation at home.')
+      nlEvidenceFooter('Salt Fat Acid Heat (Samin Nosrat): learning how a few basic elements work lets you cook many cuisines with endless variation.')
     );
   }
 
@@ -16984,7 +17064,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlSection('My Lifelong Nutrition Kit', 'The 5-10 practices I\'ll carry across my life', '#10b981'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfdf5', border: '1px solid #6ee7b7', marginBottom: 12, fontSize: 12, color: '#065f46', lineHeight: 1.55 } },
         nlH('strong', null, '🌳 What survives: '),
-        'Of 240+ tools you\'ve explored, which 5-10 practices will actually travel with you across decades? Name them — you become someone who does these things.'
+        'Of all the tools you\'ve explored, which 5-10 practices will actually travel with you across decades? Name them — you become someone who does these things.'
       ),
       nlCard({ style: { background: 'linear-gradient(135deg, #ecfdf5, #f0fdf4)' } },
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -17011,7 +17091,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           )
         )
       ) : null,
-      nlEvidenceFooter('Identity-based change (Clear) + values-based action (Hayes/ACT): naming the 5-10 practices you ARE becoming makes them part of your identity. Decades of compound benefit.')
+      nlEvidenceFooter('Identity-based change (Clear) + values-based action (Hayes, ACT): naming the practices you are becoming helps make them part of who you are.')
     );
   }
 
@@ -17105,7 +17185,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Receipt-tracking research: households that track even monthly receipts reduce food waste 20% + reallocate budget toward priorities like produce.')
+      nlEvidenceFooter('Looking back at what you bought can help you waste less food and spend more on priorities like produce.')
     );
   }
 
@@ -17118,7 +17198,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { fontSize: 60, textAlign: 'center', marginBottom: 16 } }, '🌳'),
         nlH('h1', { style: { fontSize: 28, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 16 } }, 'You showed up.'),
         nlH('div', { style: { fontSize: 14, color: '#065f46', lineHeight: 1.8, textAlign: 'center' } },
-          nlH('p', { style: { marginBottom: 12 } }, 'This kit had 240+ tools. You don\'t have to use them all. You don\'t have to be perfect with the ones you do use.'),
+          nlH('p', { style: { marginBottom: 12 } }, 'This kit has ' + nlKitCounts().tools + ' tools. You don\'t have to use them all. You don\'t have to be perfect with the ones you do use.'),
           nlH('p', { style: { marginBottom: 12 } }, 'What you DID was care enough to try. Care enough about your body. Care enough to question diet culture. Care enough to learn. Care enough to ask better questions.'),
           nlH('p', { style: { marginBottom: 12, fontWeight: 700, fontSize: 16 } }, 'That care is the practice.'),
           nlH('p', { style: { marginBottom: 12 } }, 'Carry it forward. Pass it on. The work was never the tools — it was who you became using them.'),
@@ -17129,7 +17209,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: '#ecfdf5', border: '1px dashed #6ee7b7', fontSize: 12, color: '#065f46', lineHeight: 1.6, textAlign: 'center', marginTop: 16 } },
         nlH('strong', null, '💚 Always: '),
-        'NEDA Helpline 1-800-931-2237 · Text NEDA to 741741 · 988 Suicide & Crisis Lifeline · Maine Crisis 1-888-568-1112'
+        'Eating disorder helpline 1-866-662-1235 (Mon-Fri) · Text HOME to 741741 · 988 Suicide & Crisis Lifeline · Maine Crisis Line 1-888-568-1112'
       )
     );
   }
@@ -17160,8 +17240,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Deep Gratitude Letters', 'Long-form thanks to people who shaped your food story', '#ec4899'),
       nlH('div', { style: { padding: 10, borderRadius: 8, background: 'linear-gradient(135deg, #fdf2f8, #fce7f3)', border: '1px solid #f9a8d4', marginBottom: 12, fontSize: 12, color: '#9f1239', lineHeight: 1.55 } },
-        nlH('strong', null, '💌 Research-backed: '),
-        'Writing a deep gratitude letter to someone who shaped you (Seligman: "letters of gratitude") is one of the most consistently positive interventions in positive psychology. Optional to send.'
+        nlH('strong', null, '💌 Gratitude letters: '),
+        'Writing a gratitude letter is a practice studied in positive psychology (Seligman and colleagues, 2005). Sending it is up to you.'
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -17170,7 +17250,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           nlTextarea({ value: form.body, onChange: function(e) { setForm(Object.assign({}, form, { body: e.target.value })); }, placeholder: 'The letter — be specific. What did they do? How did it shape you? What do you want them to know?', rows: 10 }),
           nlH('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#9f1239' } },
             nlH('input', { type: 'checkbox', checked: form.sent, onChange: function(e) { setForm(Object.assign({}, form, { sent: e.target.checked })); } }),
-            nlH('span', null, 'I gave them this letter (optional — research shows just writing it works)')
+            nlH('span', null, 'I gave them this letter (optional)')
           ),
           nlBtn({ onClick: add }, '+ Save gratitude letter')
         )
@@ -17193,7 +17273,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               );
             })
           ),
-      nlEvidenceFooter('Seligman gratitude letter research: 6-week wellbeing boost from writing + delivering. 4-week boost from writing alone. Most impactful single positive psychology intervention.')
+      nlEvidenceFooter('Seligman et al. (2005): writing and delivering a gratitude letter raised happiness for about a month.')
     );
   }
 
@@ -17309,8 +17389,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       ),
       nlH('div', { style: { padding: 12, borderRadius: 10, background: '#ecfdf5', border: '2px dashed #6ee7b7', marginTop: 16, textAlign: 'center', fontSize: 12, color: '#065f46', lineHeight: 1.6 } },
         nlH('strong', null, '💚 If you ever need help, these are real, free, 24/7:'), nlH('br', null),
-        nlH('span', null, 'NEDA Helpline: 1-800-931-2237'), nlH('br', null),
-        nlH('span', null, 'Crisis Text Line: Text NEDA to 741741'), nlH('br', null),
+                nlH('span', null, 'Crisis Text Line: Text HOME to 741741'), nlH('br', null),
         nlH('span', null, '988 Suicide & Crisis Lifeline'), nlH('br', null),
         nlH('span', null, 'Maine Crisis Line: 1-888-568-1112'), nlH('br', null),
         nlH('span', { style: { fontSize: 12, marginTop: 8, display: 'block' } }, 'You are not alone. Take what helps. Leave what doesn\'t. — Aaron')
@@ -17328,26 +17407,25 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Kit Compendium', 'Complete index of every tool in this kit', '#0d9488'),
       nlCard({ style: { background: 'linear-gradient(135deg, #ecfdf5, #f0fdfa)', border: '2px solid #10b981', padding: 20 } },
-        nlH('h2', { style: { fontSize: 24, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 16 } }, '🥗 248-Tool Nutrition Kit'),
+        nlH('h2', { style: { fontSize: 24, fontWeight: 900, color: '#065f46', textAlign: 'center', marginBottom: 16 } }, '🥗 My Nutrition Kit'),
         nlH('div', { style: { fontSize: 14, color: '#065f46', lineHeight: 1.7 } },
           nlH('p', null, 'This kit contains:'),
           nlH('ul', { style: { paddingLeft: 20 } },
-            nlH('li', null, nlH('strong', null, '248 personal tools'), ' across 13 categories'),
-            nlH('li', null, nlH('strong', null, '8 reference libraries'), ' (food DB, recipes, supplements, allergens, etc.)'),
-            nlH('li', null, nlH('strong', null, '60+ foods'), ' in USDA-sourced nutrition database'),
-            nlH('li', null, nlH('strong', null, '30+ recipes'), ' starter library'),
-            nlH('li', null, nlH('strong', null, '12 months'), ' of Maine seasonal calendar'),
-            nlH('li', null, nlH('strong', null, '30+ supplements'), ' with NIH-sourced dosing'),
-            nlH('li', null, nlH('strong', null, '12 top allergens'), ' with hidden sources + safety'),
-            nlH('li', null, nlH('strong', null, '30 cooking techniques'), ' with method + mistakes'),
-            nlH('li', null, nlH('strong', null, '30 symptoms'), ' mapped to candidate nutrient deficiencies'),
-            nlH('li', null, nlH('strong', null, '20 global cuisines'), ' with staples + traditions'),
-            nlH('li', null, nlH('strong', null, '18 sports'), ' with fueling + hydration guidance'),
-            nlH('li', null, nlH('strong', null, '20 Maine resources'), ' from Good Shepherd to MOFGA to Akari Care'),
-            nlH('li', null, nlH('strong', null, '20 NEDA-aligned resources'), ' for ED awareness + support')
+            nlH('li', null, nlH('strong', null, nlKitCounts().tools + ' personal tools'), ' across ' + nlKitCounts().categories + ' categories'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_FOOD_DB.length + ' foods'), ' in a USDA-checked nutrition database'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_RECIPE_SEED.length + ' recipes'), ' in the starter library'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_MAINE_SEASONAL_CALENDAR.length + ' months'), ' of Maine seasonal calendar'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_SUPPLEMENT_REF.length + ' supplements'), ' with NIH-sourced teen daily needs and limits (for teachers and families)'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_ALLERGEN_REF.length + ' allergens'), ' with hidden sources + safety'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_COOKING_TECH.length + ' cooking techniques'), ' with method + mistakes'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_SYMPTOM_NUTRIENT.length + ' symptoms'), ' with possible nutrition links (for teachers and families)'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_CULTURAL_CUISINE_REF.length + ' global cuisines'), ' with staples + traditions'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_SPORTS_FUEL_REF.length + ' sports'), ' with fueling + hydration guidance'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_MAINE_RESOURCES.length + ' Maine resources'), ' from Good Shepherd to MOFGA'),
+            nlH('li', null, nlH('strong', null, NUTRITION_KIT_NEDA_RESOURCES.length + ' help lines and programs'), ' for eating disorder and crisis help')
           ),
-          nlH('p', { style: { marginTop: 14 } }, nlH('strong', null, 'Categories: '), 'Food Log · Goals · Body Listening · Cooking · Cultural · School · Sports · Medical · Mental Health · Reflection · Maine · System'),
-          nlH('p', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: '#dcfce7', fontStyle: 'italic' } }, '"This kit is built so you can use 5 tools or 248. The goal is that you build a personal practice with what serves you. Take what helps. Leave what doesn\'t."')
+          nlH('p', { style: { marginTop: 14 } }, nlH('strong', null, 'Categories: '), nlKitCounts().categoryLabels.join(' · ')),
+          nlH('p', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: '#dcfce7', fontStyle: 'italic' } }, '"This kit is built so you can use 5 tools or all of them. The goal is that you build a personal practice with what serves you. Take what helps. Leave what doesn\'t."')
         )
       ),
       nlCard({ style: { background: '#fff7ed', border: '1px solid #fdba74', marginTop: 12 } },
@@ -17359,10 +17437,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       nlCard({ style: { background: '#fef2f2', border: '1px solid #fecaca', marginTop: 12 } },
         nlH('strong', { style: { fontSize: 13, color: '#7f1d1d' } }, '⚠ Always remember'),
         nlH('div', { style: { fontSize: 12, color: '#7f1d1d', marginTop: 4, lineHeight: 1.6 } },
-          'This kit is educational + reflective — NOT a medical service, NOT therapy, NOT diagnosis. For any persistent concern: see a doctor. For ED or body distress: NEDA 1-800-931-2237. For crisis: 988. Maine students: school counselor + 211 Maine.'
+          'This kit is educational + reflective — NOT a medical service, NOT therapy, NOT diagnosis. For any persistent concern: see a doctor. For eating or body distress: eating disorder helpline 1-866-662-1235 (Mon-Fri). For crisis: 988. Maine students: school counselor + 211 Maine.'
         )
       ),
-      nlEvidenceFooter('Every tool in this kit is evidence-sourced. Every page cites specific researchers/orgs (Tribole, Resch, Bacon, NEDA, NIH ODS, AAP, USDA, MOFGA, etc.). Built with respect for adolescent autonomy + scientific accuracy + anti-diet-culture values.')
+      nlEvidenceFooter('Many tools name their sources (USDA, NIH ODS, AAP, CDC and others); facts were re-checked in November 2026. Reflection and habit tools are practice ideas, not research findings. Built with respect for adolescent autonomy and anti-diet-culture values.')
     );
   }
 
@@ -17387,11 +17465,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('p', { style: { fontSize: 14, color: '#854d0e', textAlign: 'center', lineHeight: 1.7 } }, 'This certifies that'),
         nlInput({ value: form.name || '', onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'My name', style: { textAlign: 'center', fontSize: 20, fontWeight: 800, color: '#7c2d12', padding: 10, marginTop: 12, marginBottom: 12, background: 'transparent', border: 'none', borderBottom: '2px solid #facc15' } }),
         nlH('p', { style: { fontSize: 14, color: '#854d0e', textAlign: 'center', lineHeight: 1.7 } }, 'has built a personal nutrition practice using:'),
-        nlH('div', { style: { fontSize: 18, fontWeight: 700, color: '#7c2d12', textAlign: 'center', margin: '12px 0', padding: 12, borderRadius: 8, background: '#fff' } }, '249 tools · 13 categories · 8 reference libraries'),
+        nlH('div', { style: { fontSize: 18, fontWeight: 700, color: '#7c2d12', textAlign: 'center', margin: '12px 0', padding: 12, borderRadius: 8, background: '#fff' } }, nlKitCounts().tools + ' tools · ' + nlKitCounts().categories + ' categories · reference libraries'),
         nlH('p', { style: { fontSize: 14, color: '#854d0e', textAlign: 'center', lineHeight: 1.7 } }, 'with a foundation of:'),
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, alignItems: 'center' } },
           nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ Physiology-first nutrition science'),
-          nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ NEDA-aligned mental health awareness'),
+          nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ Eating-disorder-aware mental health content'),
           nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ Anti-diet-culture critical thinking'),
           nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ Maine-relevant food + community literacy'),
           nlH('div', { style: { fontSize: 12, color: '#7c2d12' } }, '✓ Self-advocacy across medical + school settings'),
@@ -17418,12 +17496,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // ═══ MY NUTRITION KIT HUB + MASTER ROUTER ═══
   // ══════════════════════════════════════════════════════════════════
 
-  function MyNutritionKitHub(props) {
-    if (!R_NL) return null;
-    var d = props.d || {};
-    var navigate = props.navigate;
-    var ss = R_NL.useState(''); var search = ss[0]; var setSearch = ss[1];
-    var cs = R_NL.useState('all'); var category = cs[0]; var setCategory = cs[1];
+  // The hub's categories and tools (round 5): the one source for every kit count shown anywhere in this tool.
+  function nlKitHubLists() {
     var categories = [
       { id: 'all', label: 'All', color: '#0d9488' },
       { id: 'food-log', label: 'Food Log', color: '#059669' },
@@ -17498,7 +17572,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'longDay', icon: '🎒', label: 'Long-Day Pack', desc: 'Field trips + performances', cat: 'school' },
       { id: 'sportFuel', icon: '🏋', label: 'Sport Fuel Log', desc: 'Track + tune', cat: 'sport' },
       { id: 'sweatRate', icon: '💧', label: 'Sweat Rate Tests', desc: 'Personal hydration', cat: 'sport' },
-      { id: 'recoveryMeal', icon: '🔧', label: 'Recovery Meals', desc: '30-60 min post', cat: 'sport' },
+      { id: 'recoveryMeal', icon: '🔧', label: 'Recovery Meals', desc: 'Carbs + protein after training', cat: 'sport' },
       { id: 'gameDay', icon: '🏆', label: 'Game-Day Plan', desc: 'Race-day routine', cat: 'sport' },
       { id: 'longRun', icon: '🏃', label: 'Endurance Fuel', desc: 'Long sessions', cat: 'sport' },
       { id: 'electrolytes', icon: '🧂', label: 'Electrolyte Log', desc: 'Sodium + potassium', cat: 'sport' },
@@ -17522,7 +17596,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'selfCompass', icon: '💖', label: 'Self-Compassion', desc: 'Neff practice', cat: 'mental' },
       { id: 'dietCulture', icon: '🚨', label: 'Diet Culture Log', desc: 'Notice + name', cat: 'mental' },
       { id: 'socialAudit', icon: '📱', label: 'Social Media Audit', desc: 'Algorithm check', cat: 'mental' },
-      { id: 'nedaResource', icon: '💚', label: 'NEDA Resources', desc: 'Library of what helps', cat: 'mental' },
+      { id: 'nedaResource', icon: '💚', label: 'My Help Library', desc: 'Save the help that works for you', cat: 'mental' },
       { id: 'safetyContact', icon: '☎', label: 'Safety Contacts', desc: 'Who to call', cat: 'mental' },
       { id: 'bodyImage', icon: '🌷', label: 'Body Image Journal', desc: 'Reframing practice', cat: 'mental' },
       { id: 'refusal', icon: '🗣', label: 'Refusal Scripts', desc: 'Diet-talk responses', cat: 'mental' },
@@ -17581,19 +17655,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'groceryHaul', icon: '🛒', label: 'Grocery Hauls', desc: 'Shopping patterns', cat: 'cooking' },
       { id: 'nutritionSkill', icon: '🏆', label: 'Skill Journey', desc: 'Milestones marked', cat: 'reflect' },
       { id: 'dailyCheckin', icon: '⭐', label: 'Daily Check-In', desc: '5 basics every day', cat: 'system' },
-      { id: 'foodDB', icon: '📊', label: 'Food Nutrient Database', desc: '60+ USDA-sourced foods', cat: 'system' },
+      { id: 'foodDB', icon: '📊', label: 'Food Nutrient Database', desc: NUTRITION_KIT_FOOD_DB.length + ' USDA-sourced foods', cat: 'system' },
       { id: 'recipeLib', icon: '📚', label: 'Recipe Library', desc: NUTRITION_KIT_RECIPE_SEED.length + ' recipes to save, scale, and plan', cat: 'cooking' },
       { id: 'maineCalendar', icon: '📅', label: 'Maine Seasonal Calendar', desc: 'What to eat each month', cat: 'maine' },
-      { id: 'supplementRef', icon: '💊', label: 'Supplement Reference', desc: '30 supplements, evidence-based', cat: 'medical' },
+      { id: 'supplementRef', icon: '💊', label: 'Supplement Reference', desc: 'Daily needs and upper limits', cat: 'medical', adults: true },
       { id: 'allergenRef', icon: '⚠', label: 'Allergen Reference', desc: 'Top 9 + common allergens', cat: 'medical' },
-      { id: 'techniqueRef', icon: '🔪', label: 'Cooking Technique Reference', desc: '30 fundamental techniques', cat: 'cooking' },
-      { id: 'symptomRef', icon: '🔬', label: 'Symptom-Nutrient Reference', desc: 'Screening tool, not diagnosis', cat: 'medical' },
-      { id: 'cuisineRef', icon: '🌍', label: 'Global Cuisine Reference', desc: '20 cultural cuisines', cat: 'culture' },
+      { id: 'techniqueRef', icon: '🔪', label: 'Cooking Technique Reference', desc: NUTRITION_KIT_COOKING_TECH.length + ' fundamental techniques', cat: 'cooking' },
+      { id: 'symptomRef', icon: '🔬', label: 'Symptom-Nutrient Reference', desc: 'For learning, not diagnosis', cat: 'medical', adults: true },
+      { id: 'cuisineRef', icon: '🌍', label: 'Global Cuisine Reference', desc: NUTRITION_KIT_CULTURAL_CUISINE_REF.length + ' cultural cuisines', cat: 'culture' },
       { id: 'safetyRef', icon: '🛡', label: 'Food Safety Reference', desc: 'USDA + CDC + FDA basics', cat: 'cooking' },
       { id: 'toolRef', icon: '🔧', label: 'Kitchen Tool Guide', desc: 'What you actually need', cat: 'cooking' },
-      { id: 'nedaRef', icon: '💚', label: 'NEDA + Crisis Directory', desc: 'Curated mental-health resources', cat: 'mental' },
+      { id: 'nedaRef', icon: '💚', label: 'Eating Disorder + Crisis Help', desc: 'Free help lines, checked Nov 2026', cat: 'mental' },
       { id: 'maineRef', icon: '🌲', label: 'Maine Resource Directory', desc: 'Local Maine food + services', cat: 'maine' },
-      { id: 'sportFuelRef', icon: '🏃', label: 'Sports Fueling Reference', desc: '18 sports — fueling guide', cat: 'sport' },
+      { id: 'sportFuelRef', icon: '🏃', label: 'Sports Fueling Reference', desc: NUTRITION_KIT_SPORTS_FUEL_REF.length + ' sports — fueling guide', cat: 'sport' },
       { id: 'learning', icon: '📚', label: 'Learning Journal', desc: 'What I learn about nutrition', cat: 'reflect' },
       { id: 'quarterly', icon: '📅', label: 'Quarterly Reflection', desc: '4x year, not daily', cat: 'reflect' },
       { id: 'myth', icon: '⚠', label: 'Myth Buster Log', desc: 'Notice + debunk', cat: 'reflect' },
@@ -17607,7 +17681,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'sodium', icon: '🧂', label: 'Sodium Awareness', desc: 'Most Americans exceed', cat: 'food-log' },
       { id: 'vitDStrategy', icon: '☀', label: 'Maine Vit D Strategy', desc: 'Winter no-sun plan', cat: 'maine' },
       { id: 'fiberStrategy', icon: '🌾', label: 'Fiber Strategy', desc: 'Plan fiber across meals', cat: 'food-log' },
-      { id: 'proteinDistribute', icon: '💪', label: 'Protein Distribution', desc: '20-30g per meal', cat: 'food-log' },
+      { id: 'proteinDistribute', icon: '💪', label: 'Protein Distribution', desc: 'Spread across the day', cat: 'food-log' },
       { id: 'community', icon: '👥', label: 'Nutrition Community', desc: 'People in my food life', cat: 'reflect' },
       { id: 'parentLetter', icon: '💜', label: 'Letter to Parents', desc: 'Write what they need to know', cat: 'mental' },
       { id: 'gutHealth', icon: '🦠', label: 'Gut Health Journal', desc: 'Microbiome + symptom tracking', cat: 'body' },
@@ -17624,7 +17698,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'timeline', icon: '📍', label: 'Nutrition Timeline', desc: 'Major life food shifts', cat: 'reflect' },
       { id: 'snackArsenal', icon: '🎒', label: 'Snack Arsenal', desc: 'Snacks for every situation', cat: 'food-log' },
       { id: 'hydrationStrategy', icon: '💧', label: 'Hydration Strategy', desc: 'Daily plan, not constant tracking', cat: 'food-log' },
-      { id: 'foodGroup', icon: '🍽', label: 'Food Group Check', desc: 'MyPlate-aligned daily check', cat: 'food-log' },
+      { id: 'foodGroup', icon: '🍽', label: 'Food Group Check', desc: 'Daily check using MyPlate food groups', cat: 'food-log' },
       { id: 'vocab', icon: '📖', label: 'Nutrition Vocabulary', desc: 'Build precise language', cat: 'reflect' },
       { id: 'rotation', icon: '🍳', label: 'Weekly Recipe Rotation', desc: 'Go-to meal per day', cat: 'cooking' },
       { id: 'language', icon: '🗣', label: 'Eating Language Reframe', desc: 'Swap diet-culture phrases', cat: 'mental' },
@@ -17671,7 +17745,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'selfCheckIn', icon: '📊', label: 'Daily Self Check-In', desc: '30-sec wellness snapshot', cat: 'system' },
       { id: 'strengthMap', icon: '💪', label: 'Body System Strength Map', desc: 'Self-rate body strengths', cat: 'body' },
       { id: 'noRules', icon: '🚫', label: 'Food Rules I\'m Unlearning', desc: 'Identify + dismantle inherited rules', cat: 'mental' },
-      { id: 'plantCounter', icon: '🌱', label: 'Plant Variety Counter', desc: '30+ plants/week for gut health', cat: 'food-log' },
+      { id: 'plantCounter', icon: '🌱', label: 'Plant Variety Counter', desc: 'Plant variety each week', cat: 'food-log' },
       { id: 'debrief', icon: '🩺', label: 'Medical Visit Debrief', desc: 'Capture within 24 hrs', cat: 'medical' },
       { id: 'cohortReflect', icon: '📍', label: 'Year-over-Year Reflection', desc: 'See your change', cat: 'reflect' },
       { id: 'graduation', icon: '🎓', label: 'Kit Graduation', desc: 'When you\'re ready, take it with you', cat: 'system' },
@@ -17690,17 +17764,35 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       { id: 'compendium', icon: '📚', label: 'Kit Compendium', desc: 'Full master overview', cat: 'system' },
       { id: 'seal', icon: '🏆', label: 'My Kit Certificate', desc: 'Self-certified completion', cat: 'system' }
     ];
+    return { categories: categories, allTools: allTools };
+  }
+  function nlKitCounts() {
+    var L = nlKitHubLists();
+    var cats = L.categories.filter(function(c) { return c.id !== 'all'; });
+    return { tools: L.allTools.length, categories: cats.length, categoryLabels: cats.map(function(c) { return c.label; }) };
+  }
+
+  function MyNutritionKitHub(props) {
+    if (!R_NL) return null;
+    var d = props.d || {};
+    var navigate = props.navigate;
+    var ss = R_NL.useState(''); var search = ss[0]; var setSearch = ss[1];
+    var cs = R_NL.useState('all'); var category = cs[0]; var setCategory = cs[1];
+    var hubLists = nlKitHubLists(); var categories = hubLists.categories; var allTools = hubLists.allTools;
+    // Supplement and symptom tables are for teachers and families (round 2): kept, but behind one disclosure.
+    var adultTools = allTools.filter(function(t) { return t.adults; });
     var visible = allTools.filter(function(t) {
       var matchSearch = !search || (t.label + ' ' + t.desc).toLowerCase().indexOf(search.toLowerCase()) >= 0;
       var matchCat = category === 'all' || t.cat === category;
-      return matchSearch && matchCat;
+      return !t.adults && matchSearch && matchCat;
     });
     return nlH('div', { style: { padding: 14 } },
       nlH('div', { style: { padding: '20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, #047857, #0f766e)', color: '#fff', boxShadow: '0 4px 14px rgba(13,148,136,0.25)' } },
         nlH('div', { style: { fontSize: 12, color: '#ecfdf5', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🥗 My Nutrition Kit'),
-        nlH('div', { style: { fontSize: 22, fontWeight: 900, marginBottom: 6 } }, 'Personal evidence-based nutrition tools'),
+        nlH('div', { style: { fontSize: 22, fontWeight: 900, marginBottom: 6 } }, 'Personal nutrition tools'),
+        // Round 5: "evidence-based" dropped; many tools are reflection and habit ideas, not research findings.
         nlH('div', { style: { fontSize: 13, lineHeight: 1.55, opacity: 0.95 } },
-          allTools.length + ' tools to build YOUR personal nutrition practice. Physiology-first, NEDA-aligned, Maine-relevant. All data stays in your browser.'
+          allTools.length + ' tools to build YOUR personal nutrition practice. Physiology-first, eating-disorder-aware, Maine-relevant. All data stays in your browser.'
         )
       ),
       nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
@@ -17715,6 +17807,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
           categories.map(function(c) {
             return nlH('button', { key: c.id, onClick: function() { setCategory(c.id); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + nlInk(c.color), background: category === c.id ? nlInk(c.color) : '#fff', color: category === c.id ? '#fff' : nlInk(c.color), fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, c.label);
+          })
+        )
+      ),
+      nlH('details', { 'data-nl-adult-refs': 'true', style: { marginBottom: 12, padding: '4px 12px', borderRadius: 10, border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#4c1d95' } },
+        nlH('summary', { style: { cursor: 'pointer', fontSize: 13, fontWeight: 800, minHeight: 44, display: 'flex', alignItems: 'center' } }, 'For teachers and families (' + adultTools.length + ' reference tables)'),
+        nlH('p', { style: { fontSize: 12, lineHeight: 1.55, margin: '8px 0' } }, 'Supplement doses and symptom lists are for adults helping a student. Students: if something feels wrong with your body, tell a parent, school nurse or doctor.'),
+        nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+          adultTools.map(function(t) {
+            return nlH('button', { key: t.id, type: 'button', onClick: function() { navigate(t.id); }, 'aria-label': t.label + ': ' + t.desc,
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid #7c3aed', background: '#fff', color: '#4c1d95', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, t.icon + ' ' + t.label);
           })
         )
       ),
@@ -18218,7 +18320,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     fiber:      { regions: ['gut', 'heart', 'liver'],
                   note: 'Feeds gut microbes (which make short-chain fatty acids), slows sugar spikes, and helps the liver clear cholesterol.' },
     water:      { regions: ['kidneys', 'blood', 'brain', 'muscles', 'skin'],
-                  note: 'Blood is about 90% water. Kidney filtering, temperature control, joint cushioning and concentration all ride on it.' },
+                  note: 'Plasma, the liquid part of blood, is about 90% water. Kidney filtering, temperature control, joint cushioning and concentration all ride on it.' },
     vitA:       { regions: ['eyes', 'immune', 'skin'],
                   note: 'Becomes the retina\'s light-sensing pigment and keeps the linings of the eyes, gut and airways intact.' },
     vitC:       { regions: ['skin', 'immune', 'blood', 'bones'],
@@ -18235,14 +18337,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   note: 'A cofactor in energy metabolism; eyes and skin show a shortage first.' },
     b3:         { regions: ['skin', 'gut', 'brain'],
                   note: 'Energy metabolism and DNA repair. Severe shortage (pellagra) hits skin, digestion and cognition.' },
-    b6:         { regions: ['brain', 'immune', 'blood'],
+    b5:         { regions: ['liver', 'muscles', 'brain'],
+                  note: 'Part of coenzyme A, which every cell uses to burn food for energy and to build fats.' },
+    b6:       { regions: ['brain', 'immune', 'blood'],
                   note: 'Makes neurotransmitters, supports immune cells and helps build hemoglobin.' },
     b9:         { regions: ['blood', 'brain'],
                   note: 'DNA synthesis for fast-dividing cells: new red blood cells and, in pregnancy, the neural tube.' },
     b12:        { regions: ['brain', 'blood'],
                   note: 'Keeps nerve insulation healthy and lets bone marrow make normal red blood cells.' },
     b7:         { regions: ['skin'],
-                  note: 'Fatty-acid metabolism that keeps hair, skin and nails renewing.' },
+                  note: 'Helps enzymes use fats, carbs and protein. A rare shortage shows up as thinning hair and a skin rash.' },
     choline:    { regions: ['brain', 'liver'],
                   note: 'Builds cell membranes and the neurotransmitter acetylcholine; moves fat out of the liver.' },
     calcium:    { regions: ['bones', 'muscles', 'brain', 'heart'],
@@ -18288,16 +18392,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
   // Resting energy share by body region. The Energy & Metabolism module already
   // teaches these numbers as bars; the map shows the same fact on the body, which
   // is where "your brain is 2% of you and eats 20% of your fuel" actually lands.
-  // Healthy-adult averages: Wang et al. (2010), Brody, Nutritional Biochemistry.
-  // The five named organs plus "everything else" sum to 100.
+  // Adult averages: Ko & Jung, Nutrients 2021, Table 2 (men/women mean; Elia's organ rates). Five organs + rest = 100.
   var BODY_ENERGY_SHARE = {
     muscles: { pct: 22, note: 'Even at rest, muscle holds tone and runs its own baseline metabolism. It is a big share because there is a lot of it.' },
-    liver:   { pct: 21, note: 'Never idle: processing nutrients, storing and releasing glucose, building blood proteins, clearing waste.' },
+    liver:   { pct: 18, note: 'Never idle: processing nutrients, storing and releasing glucose, building blood proteins, clearing waste.' },
     brain:   { pct: 20, note: 'About 2% of body weight, about 20% of resting energy — and higher in children and adolescents, whose brains are still building.' },
     heart:   { pct: 9,  note: 'Roughly 100,000 beats a day, with no rest periods. Small organ, relentless demand.' },
-    kidneys: { pct: 8,  note: 'Filter about 180 litres of plasma a day - around 60 times your plasma volume - to hold salts and water steady.' }
+    kidneys: { pct: 8,  note: 'Filter about 180 liters of plasma a day, around 60 times your plasma volume, to hold salts and water steady.' }
   };
-  var BODY_ENERGY_OTHER_PCT = 20;   // skin, gut, immune cells, bone, blood, fat
+  var BODY_ENERGY_OTHER_PCT = 23;   // skin, gut, immune cells, bone, blood, fat
   var BODY_ENERGY_MAX_PCT = 22;
 
   // Graded levels for the 3D figure. The shell reads levels as 0..1 per mesh and
@@ -19078,6 +19181,27 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     slot.impl = impl;
     return slot.Type;
   }
+  // Macro Inquiry model (round 3): ONE function feeds the widget's state, pie, scores, reveal and feedback. Energy share
+  // uses 4 kcal/g carb and protein, 9 kcal/g fat. Fullness and sugar-spike are a made-up classroom model (labelled on screen).
+  var NL_MACRO_STATE_IDS = ['keto', 'lowcarb', 'balanced', 'highcarb', 'sugarheavy'];
+  function nlMacroStateOf(share) { return share < 0.10 ? 'keto' : share < 0.30 ? 'lowcarb' : share < 0.55 ? 'balanced' : share < 0.75 ? 'highcarb' : 'sugarheavy'; }
+  // Floor to 0.1 % so a share just under a band edge (29.97 %) never prints as the edge itself (30.0 %).
+  function nlPctFloor1(x) { return Math.floor(x * 1000 + 1e-6) / 10; }
+  function nlMacroModel(carbs, protein, fat, fiber) {
+    var cKcal = carbs * 4, pKcal = protein * 4, fKcal = fat * 9, totalKcal = cKcal + pKcal + fKcal;
+    var pC = totalKcal > 0 ? cKcal / totalKcal : 0.33;
+    var pP = totalKcal > 0 ? pKcal / totalKcal : 0.33;
+    var pF = totalKcal > 0 ? fKcal / totalKcal : 0.33;
+    var grams = carbs + protein + fat, gC = grams > 0 ? carbs / grams : 0.33;
+    return {
+      cKcal: cKcal, pKcal: pKcal, fKcal: fKcal, totalKcal: totalKcal, pC: pC, pP: pP, pF: pF,
+      carbPct: nlPctFloor1(pC), proteinPct: Math.round(pP * 1000) / 10, fatPct: Math.round(pF * 1000) / 10,
+      fullness: pP * 100 * 1.5 + fiber * 1.0 + pF * 100 * 0.7 + pC * 100 * 0.3,
+      spike: Math.max(0, Math.min(100, pC * 100 * 1.3 - fiber * 1.4)),
+      state: nlMacroStateOf(pC), gramPct: nlPctFloor1(gC), gramState: nlMacroStateOf(gC)
+    };
+  }
+  window.StemLab.NutritionMacroModel = { model: nlMacroModel, stateOf: nlMacroStateOf, states: NL_MACRO_STATE_IDS.slice() };
   var __alloNLCtx = null;
   // Module-scope translator: the render-scoped __alloT closes over ctx and is
   // not in scope in the helpers below, so those calls would throw.
@@ -19264,9 +19388,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var bigCards = [
           {
             id: 'myNutritionKit', title: __alloT('stem.nutritionlab.my_nutrition_kit', 'My Nutrition Kit'), icon: '🥗',
-            subtitle: __alloT('stem.nutritionlab.127_personal_evidence_based_tools', '127 personal, evidence-based tools'),
-            desc: __alloT('stem.nutritionlab.build_your_own_nutrition_practice_meal', 'Build your own nutrition practice: meal logs, hydration, goals, body-listening, cooking, cultural foods, sports fuel, mental-health x food, NEDA-aligned recovery support, Maine seasonal eating, and more. Physiology-first, never restriction. All data stays in your browser.'),
-            bullets: ['127 personal tools across 13 categories', 'NEDA-aligned content + safety contacts', 'Maine-specific (fisheries, farmers markets, seasons)', 'Privacy-first — no server sync'],
+            subtitle: __alloT('stem.nutritionlab.kit_personal_tools_count_v2', '{n} personal tools').replace('{n}', String(nlKitCounts().tools)),
+            desc: __alloT('stem.nutritionlab.build_your_own_nutrition_practice_meal_v2', 'Build your own nutrition practice: meal logs, hydration, goals, body-listening, cooking, cultural foods, sports fuel, mental-health x food, eating-disorder-aware recovery support, Maine seasonal eating, and more. Physiology-first, never restriction. All data stays in your browser.'),
+            bullets: [nlKitCounts().tools + ' tools across ' + nlKitCounts().categories + ' categories', 'Eating-disorder-aware content + safety contacts', 'Maine-specific (fisheries, farmers markets, seasons)', 'Privacy-first — no server sync'],
             color: 'from-emerald-700 to-teal-800',
             ring: 'ring-emerald-500/40',
             ready: true
@@ -19284,7 +19408,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             id: 'bodyMap', title: __alloT('stem.nutritionlab.bm_card_title', 'Nutrient Body Map'), icon: '🫀',
             subtitle: __alloT('stem.nutritionlab.bm_card_subtitle', '3D — where each nutrient goes to work'),
             desc: __alloT('stem.nutritionlab.bm_card_desc', 'Pick any nutrient and watch the organs that use it glow on a glass 3D figure, with a stream tracing the route from your gut. Click an organ to see everything it depends on. Then predict before you look: which region is iron\'s main address?'),
-            bullets: ['12 body regions × 35 nutrients, NIH ODS sourced', 'Turn, tilt and zoom the figure — keyboard too', 'Predict-then-check challenges', 'Hands off from the Macro Lab plate and the Atlas'],
+            bullets: [BODY_REGIONS.length + ' body regions × ' + Object.keys(BODY_NUTRIENT_MAP).length + ' nutrients, NIH ODS sourced', 'Turn, tilt and zoom the figure — keyboard too', 'Predict-then-check challenges', 'Hands off from the Macro Lab plate and the Atlas'],
             color: 'from-fuchsia-700 to-violet-800',
             ring: 'ring-fuchsia-500/40',
             ready: true,
@@ -19303,7 +19427,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             id: 'labelReader', title: __alloT('stem.nutritionlab.food_label_reader', 'Food Label Reader'), icon: '🏷️',
             subtitle: __alloT('stem.nutritionlab.decode_a_nutrition_facts_panel_like_a_', 'Decode a Nutrition Facts panel like a pro'),
             desc: __alloT('stem.nutritionlab.real_style_nutrition_facts_panels_from', 'Real-style Nutrition Facts panels from common foods. Decode serving-size traps, % Daily Value, added sugars, sodium. Progressive challenges from a simple granola bar up to a multi-serving frozen meal that lies about its real serving count.'),
-            bullets: ['4–5 progressive challenges', 'Serving-size deception drills', '% DV, added sugars, sodium', 'FDA label spec aligned'],
+            bullets: ['4–5 progressive challenges', 'Serving-size deception drills', '% DV, added sugars, sodium', 'Based on the FDA label rules'],
             color: 'from-cyan-700 to-blue-800',
             ring: 'ring-cyan-500/40',
             ready: true
@@ -19337,15 +19461,15 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           {
             id: 'foodMood', title: __alloT('stem.nutritionlab.food_mental_health', 'Food & Mental Health'), icon: '🧠',
             subtitle: __alloT('stem.nutritionlab.real_research_careful_framing', 'Real research, careful framing'),
-            desc: __alloT('stem.nutritionlab.omega_3_depression_iron_adhd_style_fat', 'Omega-3 + depression, iron + ADHD-style fatigue, sugar crashes, caffeine + adolescent anxiety, gut-brain axis. Contributing factors, not cures.'),
+            desc: __alloT('stem.nutritionlab.omega_3_depression_iron_focus_v2', 'Omega-3 + depression, iron + energy and focus, the sugar-rush myth, caffeine + anxiety, gut-brain axis. Contributing factors, not cures.'),
             color: 'from-indigo-700 to-blue-800',
             ring: 'ring-indigo-500/40',
             ready: true
           },
           {
             id: 'edAwareness', title: __alloT('stem.nutritionlab.eating_disorder_awareness', 'Eating Disorder Awareness'), icon: '💚',
-            subtitle: __alloT('stem.nutritionlab.neda_aligned_opt_in_content_warning', 'NEDA-aligned · opt-in content warning'),
-            desc: __alloT('stem.nutritionlab.spectrum_of_disordered_eating_signs_to', 'Spectrum of disordered eating, signs to watch for, online content red flags + algorithm-awareness, how to support a friend, what to do if it\'s you, recovery paths. NEDA + Surgeon General sourced. Gated by content warning.'),
+            subtitle: __alloT('stem.nutritionlab.ed_aware_opt_in_content_warning', 'Eating-disorder-aware · opt-in content warning'),
+            desc: __alloT('stem.nutritionlab.spectrum_of_disordered_eating_signs_to_v2', 'Spectrum of disordered eating, signs to watch for, online content red flags + algorithm-awareness, how to support a friend, what to do if it\'s you, recovery paths. Uses public information from NEDA and the U.S. Surgeon General; neither has reviewed this tool. Gated by content warning.'),
             color: 'from-teal-700 to-emerald-800',
             ring: 'ring-teal-500/40',
             ready: true
@@ -19361,7 +19485,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           {
             id: 'careerPaths', title: __alloT('stem.nutritionlab.career_pathways', 'Career Pathways'), icon: '🎓',
             subtitle: __alloT('stem.nutritionlab.rdn_public_health_food_science', 'RDN, public health, food science'),
-            desc: __alloT('stem.nutritionlab.registered_dietitian_master_s_1200hr_i', 'Registered Dietitian (Master\'s + 1200hr internship), public health nutritionist, food scientist, sports nutritionist, school nutrition director. UMaine + Husson programs.'),
+            desc: __alloT('stem.nutritionlab.registered_dietitian_grad_practice_v3', 'Registered Dietitian (graduate degree + supervised practice + national exam), public health nutritionist, food scientist, sports nutritionist, school nutrition director. Maine: University of Maine.'),
             color: 'from-blue-700 to-indigo-800',
             ring: 'ring-blue-600/40',
             ready: true
@@ -19392,8 +19516,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           },
           {
             id: 'macroInquiry', title: __alloT('stem.nutritionlab.macro_inquiry', 'Macro Inquiry'), icon: '🔬',
-            subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios', 'Explore energy state from macro ratios'),
-            desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib', 'Move the carbohydrate, protein, fat, and fiber controls and observe how the modeled energy state changes. The live model also shows a satiety estimate and fiber-adjusted glycemic-index proxy; record a hypothesis or pattern you notice.'),
+            subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios_v2', 'Predict the energy state, then check the model'),
+            desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib_v3', 'Set carbohydrate, protein, fat, and fiber, predict the energy state, then check it against the model. It also shows two made-up classroom scores (fullness and sugar spike) with their formulas; record a hypothesis or pattern you notice.'),
             color: 'from-teal-700 to-emerald-800',
             ring: 'ring-teal-500/40',
             ready: true
@@ -19489,9 +19613,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             // Live non-spoiler telemetry strip
             h('div', { className: 'nl-telemetry-strip' },
               h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDED ' + __alloT('stem.nutritionlab.telemetry_explored', 'Modules Explored: ') + visitedCount + ' / ' + totalCount),
-              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDEC ' + __alloT('stem.nutritionlab.telemetry_nutrients', '35 Nutrients · 12 Body Regions')),
-              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDD57 ' + __alloT('stem.nutritionlab.telemetry_foods', '119+ USDA Foods')),
-              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDF0 ' + __alloT('stem.nutritionlab.telemetry_kit', '127 Personal Kit Tools'))
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDEC ' + __alloT('stem.nutritionlab.telemetry_nutrients_v2', '{n} Nutrients · {r} Body Regions').replace('{n}', String(Object.keys(BODY_NUTRIENT_MAP).length)).replace('{r}', String(BODY_REGIONS.length))),
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDD57 ' + __alloT('stem.nutritionlab.telemetry_foods_v2', '{n} USDA Foods').replace('{n}', String(NUTRITION_KIT_FOOD_DB.length))),
+              h('span', { className: 'nl-telemetry-pill' }, '\uD83E\uDDF0 ' + __alloT('stem.nutritionlab.telemetry_kit_v2', '{n} Personal Kit Tools').replace('{n}', String(nlKitCounts().tools)))
             ),
             // Physiology-first Nutrient Pathway Schematic (inline SVG, >=10.5px labels, non-spoiler)
             h('div', { className: 'nl-pathway-strip' },
@@ -19544,9 +19668,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', null,
                 h('div', { className: 'font-bold text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.a_note_on_how_this_tool_talks_about_fo', 'A note on how this tool talks about food')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.no_food_is_bad_no_body_type_is_right_t', 'No food is "bad." No body type is "right." This tool covers nutrition science the way a registered dietitian or doctor would — focused on what nutrients do for your body and brain, not what to avoid. If you or a friend are struggling with eating, the NEDA helpline is '),
-                  h('strong', { className: 'font-mono text-emerald-900' }, '1-800-931-2237'),
-                  __alloT('stem.nutritionlab.text_neda_to_741741', ' (text "NEDA" to 741741).'))
+                  __alloT('stem.nutritionlab.no_food_is_bad_no_body_type_is_right_t_v2', 'No food is "bad." No body type is "right." This tool covers nutrition science the way a registered dietitian or doctor would — focused on what nutrients do for your body and brain, not what to avoid. If you or a friend are struggling with eating, the National Alliance for Eating Disorders helpline is '),
+                  h('strong', { className: 'font-mono text-emerald-900' }, '1-866-662-1235'),
+                  __alloT('stem.nutritionlab.helpline_hours_and_24_7_v2', ' (Mon-Fri, 9am-7pm ET). Any time, day or night: text HOME to 741741 or call or text 988.'))
               )
             )
           ),
@@ -19598,7 +19722,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🌱'),
               h('div', null,
                 h('div', { className: 'font-bold text-slate-800' },
-                  allDone ? 'All modules explored — full nutrition path complete!' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
+                  allDone ? 'All modules opened. Revisit any of them to go deeper.' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
                 ),
                 h('div', { className: 'text-xs text-slate-700' },
                   allDone ? 'Revisit any module to deepen your understanding.' : 'Open each card below to learn its specialty.')
@@ -19634,7 +19758,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 [
                   { label: __alloT('stem.nutritionlab.modules_seen', 'Modules seen'), value: visitedCount + '/' + totalCount },
                   { label: __alloT('stem.nutritionlab.core_modules', 'Core modules'), value: bigCards.length },
-                  { label: __alloT('stem.nutritionlab.quick_labs', 'Quick labs'), value: miniCards.length },
+                  { label: __alloT('stem.nutritionlab.quick_labs_v2', 'Quick labs'), value: miniCards.length },
                   { label: __alloT('stem.nutritionlab.frame', 'Frame'), value: __alloT('stem.nutritionlab.physiology_first', 'Physiology-first') }
                 ].map(function(card) {
                   return h('div', { key: card.label, className: 'rounded-xl border border-white/10 bg-slate-950/30 p-3 text-center' },
@@ -20179,7 +20303,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }, [tab]);
 
         var tabs = [
-          { id: 'vitamins', label: __alloT('stem.nutritionlab.vitamins_13', 'Vitamins (13)'), data: VITAMINS },
+          { id: 'vitamins', label: __alloT('stem.nutritionlab.vitamins_13_plus_choline', 'Vitamins (13) + choline'), data: VITAMINS },
           { id: 'minerals', label: __alloT('stem.nutritionlab.minerals_15', 'Minerals (15)'), data: MINERALS },
           { id: 'efas',     label: __alloT('stem.nutritionlab.essential_fatty_acids', 'Essential Fatty Acids'), data: EFAS }
         ];
@@ -20269,10 +20393,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             // Lifts the BirdLab Climate Pressure 4-card grid pattern.
             (function() {
               var PRIORITIES = [
-                { id: 'vitD',     emoji: '☀️', name: __alloT('stem.nutritionlab.vitamin_d', 'Vitamin D'),  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b', ink: '#92400e' },
-                { id: 'iron',     emoji: '🩸', name: __alloT('stem.nutritionlab.iron', 'Iron'),       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626', ink: '#991b1b' },
-                { id: 'mag',      emoji: '🌿', name: __alloT('stem.nutritionlab.magnesium', 'Magnesium'),  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a', ink: '#166534' },
-                { id: 'b12',      emoji: '🥛', name: __alloT('stem.nutritionlab.vitamin_b12', 'Vitamin B12'), why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed', ink: '#5b21b6' },
+                { id: 'vitD',     emoji: '☀️', name: __alloT('stem.nutritionlab.vitamin_d', 'Vitamin D'),  why: 'Maine winter sun makes little or none', function_: 'Calcium absorption + immunity', symptom: 'Weak bones (rickets in kids)', stripe: '#f59e0b', ink: '#92400e' },
+                { id: 'iron',     emoji: '🩸', name: __alloT('stem.nutritionlab.iron', 'Iron'),       why: 'Teen girls at higher risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Tiredness, weakness, trouble concentrating', stripe: '#dc2626', ink: '#991b1b' },
+                { id: 'mag',      emoji: '🌿', name: __alloT('stem.nutritionlab.magnesium', 'Magnesium'),  why: 'Teens often eat less than recommended',      function_: 'Muscle + nerve + energy + blood sugar', symptom: 'Tiredness, weakness; later, cramps', stripe: '#16a34a', ink: '#166534' },
+                { id: 'b12',      emoji: '🥛', name: __alloT('stem.nutritionlab.vitamin_b12', 'Vitamin B12'), why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, memory trouble', stripe: '#7c3aed', ink: '#5b21b6' },
                 { id: 'calcium',  emoji: '🦴', name: __alloT('stem.nutritionlab.calcium', 'Calcium'),    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9', ink: '#075985' }
               ];
               return h('div', { className: 'rounded-2xl overflow-hidden border-2 border-rose-300 shadow bg-gradient-to-br from-rose-50 via-amber-50 to-emerald-50' },
@@ -20436,30 +20560,33 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             { label: __alloT('stem.nutritionlab.vitamin_d_2', 'Vitamin D'), val: '0 mcg', dv: '0%' },
             { label: __alloT('stem.nutritionlab.calcium_2', 'Calcium'),   val: '6 mg',  dv: '0%' },
             { label: __alloT('stem.nutritionlab.iron_2', 'Iron'),      val: '0.7 mg', dv: '4%' },
-            { label: __alloT('stem.nutritionlab.potassium', 'Potassium'), val: '50 mg', dv: '1%' }
+            { label: __alloT('stem.nutritionlab.potassium', 'Potassium'), val: '50 mg', dv: '0%' }
           ],
           questions: [
             {
               q: 'How many calories does ONE bar contain?',
               choices: ['90 calories', '180 calories', '24 calories', '70 calories'],
               answer: 0,
+              why: [null, '180 would be two bars. This package holds one serving, so one bar is 90 calories.', '24 is the bar\'s weight in grams (24 g), not its calories.', '70 is the sodium in milligrams, not the calories.'],
               explain: 'The Calories line shows 90 per serving, and the label says servings per container = 1. So one bar = 90 cal.'
             },
             {
               q: 'The bar lists 7 g total sugars. How much of that is ADDED sugar?',
               choices: ['1 g', '6 g', '0 g', '7 g'],
               answer: 1,
+              why: ['1 g is the sugar that was NOT added (7 − 6). The added sugar is 6 g.', null, 'The label has an "Includes 6 g Added Sugars" line, so it is not 0 g.', '7 g is ALL the sugar. Only part of it, 6 g, is added.'],
               explain: 'The "Includes 6 g Added Sugars" line is part of the 7 g total sugars, not an extra amount. The remaining 1 g is not added sugar. This panel alone does not identify the ingredients supplying it.'
             },
             {
               q: 'The label shows 12% Daily Value for added sugars. What does that mean?',
               choices: [
-                '12 bars equal one label serving',
+                'It takes 12 bars to make up one label serving of this product',
                 'One bar provides 12% of the FDA Daily Value for added sugars',
-                'The bar contains 12 g of sugar',
-                '12% of the bar is sugar by weight'
+                'The bar contains 12 grams of sugar in every single serving',
+                '12% of the bar\'s total weight comes from added sugar'
               ],
               answer: 1,
+              why: ['%DV is not a count of bars. It compares one serving to a daily reference amount.', null, 'The added sugar is 6 g, not 12 g. The 12 is a percent of the 50 g Daily Value.', '%DV compares to the 50 g Daily Value, not the bar\'s weight. (6 g is 25% of the 24 g bar.)'],
               explain: 'The FDA label Daily Value for added sugars is 50 g. Here, 6 ÷ 50 × 100 = 12%. Daily Values are reference amounts for interpreting labels, not a personalized eating plan.'
             }
           ]
@@ -20490,30 +20617,33 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             { label: __alloT('stem.nutritionlab.vitamin_d_3', 'Vitamin D'), val: '0 mcg', dv: '0%' },
             { label: __alloT('stem.nutritionlab.calcium_3', 'Calcium'),   val: '0 mg',  dv: '0%' },
             { label: __alloT('stem.nutritionlab.iron_3', 'Iron'),      val: '0.4 mg', dv: '2%' },
-            { label: __alloT('stem.nutritionlab.potassium_2', 'Potassium'), val: '350 mg', dv: '7%' }
+            { label: __alloT('stem.nutritionlab.potassium_2', 'Potassium'), val: '350 mg', dv: '8%' }
           ],
           questions: [
             {
               q: 'How many calories are shown for the WHOLE practice bag?',
               choices: ['150', '300', '75', '450'],
               answer: 1,
+              why: ['150 is for one serving. The bag holds 2 servings.', null, '75 is half a serving. The bag holds 2 servings, so multiply, do not divide.', '450 would be 3 servings. This bag has 2.'],
               explain: 'The practice label lists two servings per container. The whole bag contains 2 × 150 = 300 calories. This describes the amount of energy; it does not recommend a portion.'
             },
             {
               q: 'Using the listed sodium amount, about how much sodium is in the whole practice bag?',
               choices: ['170 mg (7% DV)', '85 mg (3% DV)', '340 mg (15% DV)', '500 mg (22% DV)'],
               answer: 2,
+              why: ['170 mg is one serving. The bag has 2 servings.', '85 mg is half a serving. Multiply by 2 instead.', null, '500 mg is too high: 2 × 170 mg = 340 mg.'],
               explain: '170 mg × 2 = 340 mg. Using the FDA sodium Daily Value of 2,300 mg, 340 ÷ 2,300 × 100 is about 15%. Multiplying the rounded 7% on the label gives 14%; small differences can result from rounding.'
             },
             {
               q: 'What does the serving size on a Nutrition Facts label tell you?',
               choices: [
-                'The amount everyone should eat',
+                'The amount the FDA says everyone should eat at one time to stay healthy and fit',
                 'The amount used for the listed nutrient values, based on typical consumption',
-                'How many people must share the package',
-                'Whether the food is good or bad'
+                'How many people the package is meant to be shared between at one meal',
+                'Whether the food counts as a good choice or a bad choice for your diet'
               ],
               answer: 1,
+              why: ['A serving size is not advice on how much to eat. It is the amount the numbers describe.', null, 'Servings per container tells how many servings are in the package, not how many people share it.', 'A label does not rate foods as good or bad. It lists amounts.'],
               explain: 'FDA serving-size rules are based on amounts people typically consume. A label serving is not advice on how much to eat. Check the serving size and servings per container before doing the arithmetic.'
             }
           ]
@@ -20544,7 +20674,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             { label: __alloT('stem.nutritionlab.vitamin_d_4', 'Vitamin D'), val: '0 mcg', dv: '0%' },
             { label: __alloT('stem.nutritionlab.calcium_4', 'Calcium'),   val: '180 mg', dv: '15%' },
             { label: __alloT('stem.nutritionlab.iron_4', 'Iron'),      val: '1.5 mg', dv: '8%' },
-            { label: __alloT('stem.nutritionlab.potassium_3', 'Potassium'), val: '350 mg', dv: '7%' }
+            { label: __alloT('stem.nutritionlab.potassium_3', 'Potassium'), val: '350 mg', dv: '8%' }
           ],
           questions: [
             {
@@ -20556,6 +20686,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 '720 cal, 2160 mg sodium'
               ],
               answer: 2,
+              why: ['That is one serving. Half the box is 1.5 servings.', 'That is half of ONE serving. Half the box is 1.5 servings.', null, 'That is the whole box (3 servings), not half.'],
               explain: 'Half of three servings is 1.5 servings. Multiply each per-serving amount by 1.5: 360 calories and 1,080 mg sodium. A fraction of a package is not always the same fraction of one label serving.'
             },
             {
@@ -20567,17 +20698,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'Exactly 100% DV'
               ],
               answer: 1,
+              why: ['31% is one serving. The box has 3 servings.', null, '10% is about a third of one serving. Multiply by 3, do not divide.', '3 × 31% is about 93%, not 100%, and rounded labels cannot give an exact answer.'],
               explain: 'Three servings × 31% gives about 93% DV. Using the listed amount instead gives 2,160 mg ÷ 2,300 mg × 100, or about 94% DV. The difference comes from rounding the per-serving percentage; neither result is a personalized recommendation.'
             },
             {
               q: 'How can you compare this lasagna with another lasagna that lists a different serving size?',
               choices: [
-                'Compare only the pictures on the packages',
+                'Compare only the pictures and serving suggestions printed on each package',
                 'Convert the nutrient amounts to the same weight of each food',
-                'Assume one serving always weighs the same',
-                'Use only the largest number on each label'
+                'Assume one serving always weighs the same, whatever the brand',
+                'Use only the largest number shown on each of the two labels'
               ],
               answer: 1,
+              why: ['Pictures do not show nutrient amounts.', null, 'Serving sizes differ between brands, so one serving may not weigh the same.', 'The biggest number on each label may be for a different nutrient or amount.'],
               explain: 'Compare equal amounts, such as 100 g of each lasagna. Divide each nutrient amount by that label\'s serving weight, then multiply by the comparison weight. This keeps a different serving size from being mistaken for a different nutrient concentration.'
             }
           ]
@@ -20627,6 +20760,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'Sugar substitutes'
               ],
               answer: 1,
+              why: ['It is not an error: milk naturally contains sugar.', null, 'Added sugars must be listed. 0 g added means none was added.', 'Sugar substitutes are not counted in the sugars line. Milk sugar (lactose) is.'],
               explain: 'Lactose occurs naturally in milk. Total sugars includes naturally occurring sugars and any added sugars. Zero added sugars does not mean zero total sugars, and the two lines should not be added together.'
             },
             {
@@ -20638,6 +20772,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'Less in vanilla, because the flavoring replaces some of the natural lactose'
               ],
               answer: 1,
+              why: ['Plain lists 0 g added and vanilla lists 14 g, so they are not the same.', null, '8 g is the plain yogurt\'s total carbs, not the added-sugar difference.', 'Vanilla lists 14 g added sugars and plain lists 0 g, so vanilla has more.'],
               explain: 'Vanilla lists 14 g added sugars and plain lists 0 g for the same 170 g portion. The difference is 14 g. This compares one nutrient; it does not rate the whole food or decide what someone should choose.'
             },
             {
@@ -20649,12 +20784,16 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 'The added-sugars line refers to a different serving size'
               ],
               answer: 1,
+              why: ['20 + 14 counts the added sugars twice. The 14 g are already inside the 20 g.', null, '6 g is only the sugar that was NOT added. All the sugar is 20 g.', 'Every line on the label uses the same serving size.'],
               explain: 'Added sugars are a subset of total sugars. Here, 20 g total minus 14 g added leaves 6 g naturally occurring sugars. Adding 20 and 14 would count the added sugars twice.'
             }
           ]
         }
       ];
 
+      // %DV check 2026-11-24: every printed %DV was recomputed from FDA Daily Values (fat 78 g, sat fat 20 g, chol 300 mg,
+      // sodium 2,300 mg, carbs 275 g, fiber 28 g, added sugars 50 g, vit D 20 mcg, Ca 1,300 mg, Fe 18 mg, K 4,700 mg,
+      // B12 2.4 mcg) with the 21 CFR 101.9(c)(8)(iii) rounding rules; potassium rows fixed (were 1% / 7% / 7%).
       // The authored labels cluster correct answers at choice index 1,
       // so "always pick B" would nearly ace every challenge. Rotate each question's
       // choices deterministically (stable across renders, so stored answer
@@ -20665,6 +20804,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           var shift = (li * 5 + qi * 7 + 3) % len;
           if (!shift) return;
           q.choices = q.choices.slice(shift).concat(q.choices.slice(0, shift));
+          if (q.why) q.why = q.why.slice(shift).concat(q.why.slice(0, shift));
           q.answer = (q.answer - shift + len) % len;
         });
       });
@@ -20888,7 +21028,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         }, correct ? '✓ ' + choice : wrong ? '↻ ' + choice : choice);
                       })),
                     picked !== null && h('div', { id: 'nutrition-label-feedback-' + qi, className: 'mt-3 p-3 rounded-lg text-sm bg-slate-100 text-slate-800', 'aria-live': 'polite' },
-                      h('strong', null, picked === q.answer ? text('label_correct_prefix', 'Correct. ') : text('label_revisit_prefix', 'Revisit the label. ')), q.explain)
+                      h('strong', null, picked === q.answer ? text('label_correct_prefix', 'Correct. ') : text('label_revisit_prefix', 'Revisit the label. ')),
+                      picked !== q.answer && q.why && q.why[picked] ? h('span', { 'data-nl-why': 'true' }, q.why[picked] + ' ') : null,
+                      q.explain)
                   );
                 }),
                 h('div', { className: 'flex flex-wrap gap-2' },
@@ -20957,30 +21099,29 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
         // Topic-accent hero metadata — keys off tab id so each section feels distinct.
         var TAB_META = {
-          atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: __alloT('stem.nutritionlab.atp_your_cellular_energy_currency', 'ATP — your cellular energy currency'), hint: __alloT('stem.nutritionlab.every_cell_holds_50g_of_atp_and_recycl', 'Every cell holds ~50g of ATP and recycles it ~1,000× per day.') },
+          atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: __alloT('stem.nutritionlab.atp_your_cellular_energy_currency', 'ATP — your cellular energy currency'), hint: __alloT('stem.nutritionlab.body_holds_250g_atp_v2', 'Your body holds only about 250 g of ATP but remakes about its own weight in ATP each day.') },
           systems:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '🔥', title: __alloT('stem.nutritionlab.three_energy_systems_run_side_by_side', 'Three energy systems run side by side'), hint: __alloT('stem.nutritionlab.pcr_glycolysis_oxidative_each_peaks_at', 'PCr · glycolysis · oxidative — each peaks at a different duration.') },
           distribution: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '🧠', title: __alloT('stem.nutritionlab.where_your_energy_actually_goes_at_res', 'Where your energy actually goes at rest'), hint: __alloT('stem.nutritionlab.brain_20_of_resting_energy_at_only_2_o', 'Brain ≈ 20% of resting energy at only ~2% of body weight.') }
         };
 
-        // Resting energy distribution (approximate, healthy adult average)
-        // Source: Brody, Nutritional Biochemistry (1999); Wang et al., 2010
+        // Resting energy by organ: the same numbers as the Body Map (BODY_ENERGY_SHARE, Ko & Jung 2021).
         var ENERGY_DIST = [
-          { organ: 'Liver',           pct: 21, color: 'bg-rose-500',    note: __alloT('stem.nutritionlab.constantly_processing_nutrients_detoxi', 'Constantly processing nutrients, detoxifying, making proteins.') },
-          { organ: 'Skeletal muscle', pct: 22, color: 'bg-orange-500',  note: __alloT('stem.nutritionlab.even_at_rest_muscles_maintain_tone_and', 'Even at rest, muscles maintain tone and run baseline metabolism.') },
-          { organ: 'Brain',           pct: 20, color: 'bg-violet-500',  note: __alloT('stem.nutritionlab.neurons_fire_constantly_brain_uses_20_', 'Neurons fire constantly. Brain uses ~20% of resting energy despite being ~2% of body weight.') },
-          { organ: 'Heart',           pct: 9,  color: 'bg-red-600',     note: __alloT('stem.nutritionlab.beats_100_000_times_day_never_stops', 'Beats ~100,000 times/day, never stops.') },
-          { organ: 'Kidneys',         pct: 8,  color: 'bg-amber-500',   note: __alloT('stem.nutritionlab.filter_your_entire_blood_volume_60_tim', 'Filter your entire blood volume ~60 times/day.') },
-          { organ: 'Other tissues',   pct: 20, color: 'bg-slate-500',   note: __alloT('stem.nutritionlab.skin_gut_immune_cells_fat_tissue_nervo', 'Skin, gut, immune cells, fat tissue, nervous system.') }
+          { organ: 'Liver',           pct: BODY_ENERGY_SHARE.liver.pct, color: 'bg-rose-500',    note: __alloT('stem.nutritionlab.constantly_processing_nutrients_detoxi', 'Constantly processing nutrients, detoxifying, making proteins.') },
+          { organ: 'Skeletal muscle', pct: BODY_ENERGY_SHARE.muscles.pct, color: 'bg-orange-500',  note: __alloT('stem.nutritionlab.even_at_rest_muscles_maintain_tone_and', 'Even at rest, muscles maintain tone and run baseline metabolism.') },
+          { organ: 'Brain',           pct: BODY_ENERGY_SHARE.brain.pct, color: 'bg-violet-500',  note: __alloT('stem.nutritionlab.neurons_fire_constantly_brain_uses_20_', 'Neurons fire constantly. Brain uses ~20% of resting energy despite being ~2% of body weight.') },
+          { organ: 'Heart',           pct: BODY_ENERGY_SHARE.heart.pct,  color: 'bg-red-600',     note: __alloT('stem.nutritionlab.beats_100_000_times_day_never_stops', 'Beats ~100,000 times/day, never stops.') },
+          { organ: 'Kidneys',         pct: BODY_ENERGY_SHARE.kidneys.pct,  color: 'bg-amber-500',   note: __alloT('stem.nutritionlab.filter_your_plasma_60_times_v2', 'Filter about 180 liters of plasma a day, about 60 times all the plasma you have.') },
+          { organ: 'Other tissues',   pct: BODY_ENERGY_OTHER_PCT, color: 'bg-slate-500',   note: __alloT('stem.nutritionlab.skin_gut_immune_cells_fat_tissue_nervo', 'Skin, gut, immune cells, fat tissue, nervous system.') }
         ];
 
         var ACTIVITY_KCAL = [
-          { activity: 'Sleep',         kcalPerMin: 1.0,  desc: __alloT('stem.nutritionlab.slightly_below_bmr_brain_and_organs_ar', 'Slightly below BMR. Brain and organs are still busy.') },
-          { activity: 'Sit / read',    kcalPerMin: 1.2,  desc: __alloT('stem.nutritionlab.bmr_baseline_plus_a_tiny_bit_for_postu', 'BMR baseline plus a tiny bit for posture.') },
-          { activity: 'Walk (3 mph)',  kcalPerMin: 4.0,  desc: __alloT('stem.nutritionlab.most_accessible_activity_for_nearly_an', 'Most accessible activity for nearly any body.') },
-          { activity: 'Bike (light)',  kcalPerMin: 6.0,  desc: __alloT('stem.nutritionlab.joint_friendly_sustained_exercise', 'Joint-friendly, sustained exercise.') },
-          { activity: 'Run (6 mph)',   kcalPerMin: 10,   desc: __alloT('stem.nutritionlab.aerobic_system_in_full_use_oxidative_g', 'Aerobic system in full use; oxidative + glycolysis.') },
-          { activity: 'Swim laps',     kcalPerMin: 9,    desc: __alloT('stem.nutritionlab.whole_body_low_impact_high_energy', 'Whole-body, low-impact, high-energy.') },
-          { activity: 'Sprint (max)',  kcalPerMin: 20,   desc: __alloT('stem.nutritionlab.phosphocreatine_anaerobic_glycolysis_c', 'Phosphocreatine + anaerobic glycolysis. Cannot sustain.') }
+          { activity: 'Sleep',         met: 1.0,  desc: __alloT('stem.nutritionlab.slightly_below_bmr_brain_and_organs_ar', 'Slightly below BMR. Brain and organs are still busy.') },
+          { activity: 'Sit / read',    met: 1.3,  desc: __alloT('stem.nutritionlab.bmr_baseline_plus_a_tiny_bit_for_postu', 'BMR baseline plus a tiny bit for posture.') },
+          { activity: 'Walk (3 mph)',  met: 3.8,  desc: __alloT('stem.nutritionlab.most_accessible_activity_for_nearly_an', 'Most accessible activity for nearly any body.') },
+          { activity: 'Bike (10 mph)', met: 4.0,  desc: __alloT('stem.nutritionlab.joint_friendly_sustained_exercise', 'Joint-friendly, sustained exercise.') },
+          { activity: 'Run (6 mph)',   met: 9.3,   desc: __alloT('stem.nutritionlab.aerobic_system_in_full_use_oxidative_g', 'Aerobic system in full use; oxidative + glycolysis.') },
+          { activity: 'Swim laps (fast)', met: 9.8,    desc: __alloT('stem.nutritionlab.whole_body_low_impact_high_energy', 'Whole-body, low-impact, high-energy.') },
+          { activity: 'Sprint (max)',  met: null,   desc: __alloT('stem.nutritionlab.phosphocreatine_anaerobic_glycolysis_c', 'Phosphocreatine + anaerobic glycolysis. Cannot sustain.') }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -20989,7 +21130,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
               h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, __alloT('stem.nutritionlab.how_your_body_actually_makes_and_uses_', 'How your body actually makes and uses energy')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                __alloT('stem.nutritionlab.this_module_covers_the_biology_of_ener', 'This module covers the BIOLOGY of energy — molecules, cells, organ systems. Numbers like "BMR" and "kcal/min" are descriptive (this is what your body is doing), not prescriptive (this is your daily target). Different bodies need different amounts. Growth, illness, sleep quality, weather, and life stage all change the numbers. None of this is a goal to hit.'))
+                __alloT('stem.nutritionlab.this_module_covers_biology_mets_v2', 'This module covers the BIOLOGY of energy — molecules, cells, organ systems. Numbers like "BMR" and "METs" are descriptive (this is what your body is doing), not prescriptive (this is your daily target). Different bodies need different amounts. Growth, illness, sleep quality, weather, and life stage all change the numbers. None of this is a goal to hit.'))
             ),
             // Tab strip
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.energy_metabolism_sections', 'Energy metabolism sections'), className: 'flex flex-wrap gap-2' },
@@ -21064,7 +21205,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   )
                 ),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.your_body_holds_only_50_g_of_atp_at_an', 'Your body holds only ~50 g of ATP at any moment, but recycles it constantly: each ATP molecule cycles ATP → ADP → ATP about 1,000+ times per day. Total ATP turnover roughly equals your body weight per day. The recycling happens in tiny organelles called mitochondria, which use oxygen and food (glucose, fatty acids) to charge ADP back into ATP.'))
+                  __alloT('stem.nutritionlab.your_body_holds_only_250_g_of_atp_v2', 'Your body holds only about 250 g of ATP at any moment, but recycles it constantly: each ATP molecule cycles ATP → ADP → ATP hundreds of times a day. The ATP you remake in a day weighs about as much as your whole body. The recycling happens in tiny organelles called mitochondria, which use oxygen and food (glucose, fatty acids) to charge ADP back into ATP.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.mitochondria_the_cellular_powerhouses', 'Mitochondria — the cellular powerhouses')),
@@ -21078,7 +21219,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('p', null,
                     __alloT('stem.nutritionlab.cells_with_high_energy_demand_have', 'Cells with high energy demand have '),
                     h('strong', null, __alloT('stem.nutritionlab.lots_of_mitochondria', 'lots of mitochondria')),
-                    __alloT('stem.nutritionlab.heart_muscle_5_000_per_cell_liver_brai', ': heart muscle (~5,000 per cell), liver, brain. Endurance training increases mitochondrial density in your muscles — that\'s a big part of why trained athletes can sustain effort longer.'))
+                    __alloT('stem.nutritionlab.heart_muscle_thousands_per_cell_v2', ': heart muscle (thousands per cell)'))
                 )
               )
             ),
@@ -21146,7 +21287,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.where_your_energy_actually_goes', 'Where your energy actually goes')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  __alloT('stem.nutritionlab.even_when_you_re_resting_your_body_use', 'Even when you\'re resting, your body uses energy. The minimum to keep your heart beating, brain firing, lungs breathing, kidneys filtering, and core temperature stable is called Basal Metabolic Rate (BMR). Most adolescents have a BMR somewhere between 1,200 and 1,800 kcal/day — the wide range is normal biological variation.'))
+                  __alloT('stem.nutritionlab.even_when_you_re_resting_your_body_use_v2', 'Even when you\'re resting, your body uses energy. The minimum to keep your heart beating, brain firing, lungs breathing, kidneys filtering, and core temperature stable is called Basal Metabolic Rate (BMR). BMR differs a lot from person to person with body size, age and growth; that range is normal biological variation.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.resting_energy_distribution_by_organ', 'Resting energy distribution by organ')),
@@ -21165,7 +21306,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   })
                 ),
                 h('div', { className: 'mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-slate-800 italic' },
-                  __alloT('stem.nutritionlab.these_percentages_describe_a_healthy_a', 'These percentages describe a healthy adult at rest. Children and adolescents typically have a brain that uses an even larger share (up to 50% in young kids) because of growth and learning.')),
+                  __alloT('stem.nutritionlab.these_percentages_describe_a_healthy_a_v2', 'These percentages describe adults at rest. A child\'s brain uses a much larger share: about two thirds of resting energy around age 4 to 5 (Kuzawa et al., 2014), falling toward the adult share through the teen years.')),
                 // The same five organs, on the body they belong to. A bar chart
                 // says how much; the figure says where, and the second half is what
                 // makes the two-percent-of-you brain fact land.
@@ -21185,15 +21326,17 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.activity_adds_energy_use_on_top_of_bmr', 'Activity adds energy use on top of BMR')),
                 h('p', { className: 'text-sm text-slate-800 mb-3' },
-                  __alloT('stem.nutritionlab.these_are_descriptive_averages_actual_', 'These are descriptive averages — actual energy use varies with body size, fitness, and how hard you\'re going.')),
+                  __alloT('stem.nutritionlab.these_are_descriptive_averages_actual_', 'These are descriptive averages — actual energy use varies with body size, fitness, and how hard you\'re going.'),
+                  ' ',
+                  __alloT('stem.nutritionlab.met_explainer_v2', '1 MET is your energy use sitting quietly; a 4-MET activity uses about 4 times as much. Values: 2024 Adult Compendium of Physical Activities.')),
                 h('div', { className: 'space-y-2' },
                   ACTIVITY_KCAL.map(function(a, i) {
                     var maxBar = 100;
-                    var barW = clamp((a.kcalPerMin / 20) * maxBar, 5, maxBar);
+                    var barW = a.met == null ? maxBar : clamp((a.met / 15) * maxBar, 5, maxBar);
                     return h('div', { key: i, className: 'p-2 bg-slate-50 rounded border border-slate-200' },
                       h('div', { className: 'flex items-center justify-between text-sm mb-1' },
                         h('span', { className: 'font-bold text-slate-800' }, a.activity),
-                        h('span', { className: 'font-mono text-slate-700' }, '~' + a.kcalPerMin + ' kcal/min')
+                        h('span', { className: 'font-mono text-slate-700' }, a.met == null ? __alloT('stem.nutritionlab.met_too_brief_v2', 'very high, only for seconds') : a.met + ' METs')
                       ),
                       h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
                         h('div', { className: 'h-full bg-emerald-500', style: { width: barW + '%' } })
@@ -21209,7 +21352,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('div', null,
                     h('div', { className: 'font-bold text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.important_framing', 'Important framing')),
                     h('p', { className: 'text-sm text-slate-800' },
-                      __alloT('stem.nutritionlab.your_body_needs_at_least_your_bmr_wort', 'Your body needs at least your BMR worth of energy to keep its essential systems working. Eating well below BMR for an extended time forces the body to slow metabolism, break down muscle, weaken immunity, and impair concentration. The goal isn\'t to "minimize calories" — it\'s to give your body what it needs to do its job. If anything in this module triggers worry about how much you\'re eating, please talk with a trusted adult, your doctor, or NEDA (1-800-931-2237).'))
+                      __alloT('stem.nutritionlab.your_body_needs_at_least_your_bmr_wort_v2', 'Your body needs at least your BMR worth of energy to keep its essential systems working. Eating well below BMR for an extended time makes the body slow its metabolism, break down muscle, weaken immunity, and impair concentration. The goal isn\'t to "minimize calories" — it\'s to give your body what it needs to do its job. If anything in this module triggers worry about how much you\'re eating, please talk with a trusted adult, your doctor, or the eating disorder helpline (1-866-662-1235).'))
                   )
                 )
               )
@@ -21227,7 +21370,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 '"You should eat to your TDEE exactly" — TDEE estimates are population averages with wide error bars. Hunger, energy levels, and growth are better daily signals than a calculator.'
               ],
               extension: 'Track ONE day of activity (not food). Note how many minutes you spent walking, sitting, sleeping, and any structured exercise. Use the kcal/min table to estimate the activity portion of your day. Then notice: this is descriptive — what does it tell you about how your body partitioned its work today?',
-              sources: 'ATP and mitochondria from Lehninger Principles of Biochemistry. Energy-system breakdown adapted from ACSM Guidelines for Exercise Testing. Resting energy distribution from Brody, Nutritional Biochemistry (1999) and Wang et al., American Journal of Clinical Nutrition (2010).'
+              sources: 'ATP and mitochondria from Lehninger Principles of Biochemistry. Energy-system breakdown adapted from ACSM Guidelines for Exercise Testing. Resting energy by organ from Ko & Jung, Nutrients (2021), Table 2, using organ energy rates from Elia (also given in Wang et al., American Journal of Clinical Nutrition, 2010). Brain 2% of weight and 20% of energy: Raichle & Gusnard, PNAS (2002).'
             })
             )
           )
@@ -21287,7 +21430,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           name: __alloT('stem.nutritionlab.small_intestine', 'Small Intestine'),
           time: '3–5 hours',
           pH: '6–7 (neutralized by pancreatic bicarbonate)',
-          mechanical: 'Wave-like peristalsis moves food through 20+ feet of intestinal tube. Villi and microvilli give a surface area roughly the size of a tennis court for absorption.',
+          mechanical: 'Wave-like peristalsis moves food through 20+ feet of intestinal tube. Villi and microvilli multiply the surface for absorption: the whole gut lining is about 32 square meters, around half a badminton court. (Older textbooks said a tennis court; newer measurements are smaller.)',
           chemical: 'Bile from the gallbladder emulsifies fats. Pancreatic enzymes (amylase, lipase, trypsin, chymotrypsin) finish digesting carbs, fats, and proteins. THIS IS WHERE MOST NUTRIENT ABSORPTION HAPPENS.',
           macros: {
             carb: 'Pancreatic amylase finishes the job. Sugars are absorbed across the intestinal wall and enter the bloodstream, raising blood glucose.',
@@ -21597,12 +21740,12 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           claim: 'Eating gluten-free is healthier for everyone.',
           choices: [
             'True — gluten causes low-grade inflammation in everyone, so cutting it lowers bloating, fatigue, and joint pain even in people without celiac disease, and the gluten-free versions of foods are formulated to be healthier.',
-            'False — only people with celiac disease (~1%) or non-celiac gluten sensitivity (~6%) benefit. Many gluten-free products are LESS fortified and HIGHER in sugar/fat.',
+            'False — people with celiac disease (about 1%) or a diagnosed gluten sensitivity need it. For others there is no proven benefit, and many gluten-free products are less fortified.',
             'True for athletes.',
             'True if you have headaches.'
           ],
           answer: 1,
-          explain: 'Celiac disease is a real autoimmune condition that affects ~1% of the population — for those people, eating gluten causes intestinal damage and they MUST avoid it. Non-celiac gluten sensitivity is also real for some. For everyone else, research shows no benefit to gluten avoidance. Wheat-based foods are often fortified with iron and folate; gluten-free substitutes often aren\'t. Gluten-free baked goods are also typically higher in sugar and fat to compensate for texture.',
+          explain: 'Celiac disease is a real autoimmune condition that affects ~1% of the population — for those people, eating gluten causes intestinal damage and they MUST avoid it. Non-celiac gluten sensitivity is also real for some. For everyone else, research shows no benefit to gluten avoidance. Wheat-based foods are often fortified with iron and folate; gluten-free substitutes often aren\'t. Some gluten-free baked goods also add extra sugar or fat for texture, so check the label.',
           cite: 'NIDDK (NIH National Institute of Diabetes and Digestive and Kidney Diseases) · Mayo Clinic · Harvard T.H. Chan'
         },
         {
@@ -21615,7 +21758,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'True after age 30.'
           ],
           answer: 1,
-          explain: 'Dietary fat is essential — your body uses it for cell membranes, hormone production, and absorbing fat-soluble vitamins (A, D, E, K). The 1980s "fat-free" craze led food makers to replace fat with refined carbs and sugar, which arguably worsened health outcomes. Healthy diets in research (Mediterranean, DASH) include 25-35% calories from fat. Quality matters more than total: olive oil, nuts, avocado, fish — all "fatty" foods, all linked to good health outcomes.',
+          explain: 'Dietary fat is essential — your body uses it for cell membranes, hormone production, and absorbing fat-soluble vitamins (A, D, E, K). The 1980s "fat-free" craze led food makers to replace fat with refined carbs and sugar, which arguably worsened health outcomes. The Dietary Guidelines range for kids and teens (ages 4–18) is 25–35% of calories from fat. Quality matters more than total: olive oil, nuts, avocado, fish — all "fatty" foods, all linked to good health outcomes.',
           cite: 'Harvard T.H. Chan · NIH Health Information · USDA Dietary Guidelines'
         },
         {
@@ -21654,7 +21797,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'True for organic chicken.'
           ],
           answer: 1,
-          explain: 'A 2012 Stanford meta-analysis of 200+ studies found no significant nutrient differences between organic and conventional produce. The 2014 British Journal of Nutrition meta-analysis found small differences in some antioxidants. Organic IS regulated for pesticide use, soil practices, and animal welfare — those are valid reasons to choose organic if you can afford it. But "more nutritious" isn\'t supported by the evidence base.',
+          explain: 'A 2012 Stanford meta-analysis of 200+ studies found no significant nutrient differences between organic and conventional produce. A 2014 British Journal of Nutrition meta-analysis found higher levels of some antioxidants in organic crops; scientists still debate whether that changes health. Organic IS regulated for pesticide use, soil practices, and animal welfare — those are valid reasons to choose organic if you can afford it. But "more nutritious" isn\'t supported by the evidence base.',
           cite: 'Smith-Spangler et al., Annals of Internal Medicine 2012 (Stanford meta-analysis) · USDA · British Journal of Nutrition 2014'
         },
         {
@@ -21667,7 +21810,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'True only for athletes.'
           ],
           answer: 1,
-          explain: 'The "8 glasses" rule has no clear scientific origin and isn\'t a Mayo Clinic or NIH guideline. The Institute of Medicine\'s reference values are ~3.7 L/day for men and ~2.7 L/day for women — but ~20% of that comes from food (especially fruits and veggies), and the rest from any beverage (not just water). Hot weather, exercise, illness, and pregnancy raise needs. Healthy people can rely on thirst and the color of their urine (pale yellow = adequate; dark = drink more).',
+          explain: 'The "8 glasses" rule has no clear scientific origin and isn\'t a Mayo Clinic or NIH guideline. The Institute of Medicine\'s reference values are about 3.7 L/day for men and 2.7 L/day for women (teens 14–18: 3.3 L boys, 2.3 L girls) — but about 20% of that comes from food (especially fruits and veggies), and the rest from any beverage (not just water). Hot weather, exercise, illness, and pregnancy raise needs. Healthy people can rely on thirst and the color of their urine (pale yellow = adequate; dark = drink more).',
           cite: 'Institute of Medicine · Mayo Clinic · NIH'
         },
         {
@@ -21693,7 +21836,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             'True only if you want to lose weight.'
           ],
           answer: 1,
-          explain: 'The "breakfast is most important" framing came partly from cereal-industry marketing in the early 20th century. Research on breakfast eating IS mixed: kids in school benefit from morning food (multiple studies); adults show variable results. What\'s consistent: total daily nutrition matters more than meal timing for most healthy people. If breakfast helps you fuel your morning, eat it. If you\'re not hungry until 10 AM, that\'s also fine. Eating disorders sometimes manifest as RIGID rules about breakfast — flexibility is itself a sign of a healthy relationship with food.',
+          explain: 'Research on breakfast eating IS mixed: kids in school benefit from morning food (multiple studies); adults show variable results. What\'s consistent: total daily nutrition matters more than meal timing for most healthy people. If breakfast helps you fuel your morning, eat it. If you\'re not hungry until 10 AM, that\'s also fine. Eating disorders sometimes manifest as RIGID rules about breakfast — flexibility is itself a sign of a healthy relationship with food.',
           cite: 'Harvard T.H. Chan · BMJ meta-analysis 2019 · CDC'
         }
       ];
@@ -21839,71 +21982,71 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           id: 'omega3',
           title: __alloT('stem.nutritionlab.omega_3_fatty_acids_and_depression', 'Omega-3 fatty acids and depression'),
           icon: '🐟',
-          claim: 'Higher omega-3 (EPA + DHA) intake is associated with lower rates of depression in observational studies. Some clinical trials show omega-3 supplementation as an ADJUNCT (alongside therapy and medication) helps treatment-resistant depression.',
-          mechanism: 'DHA is a major structural component of brain cell membranes. EPA may have anti-inflammatory effects; some depression involves inflammation. Both reduce omega-6/omega-3 ratio imbalance common in standard Western diets.',
-          food: 'Fatty fish: salmon, mackerel, sardines, herring, anchovies. The American Heart Association recommends 2 fatty-fish meals per week. ALA (in walnuts, flax, chia) is partially converted in your body, but conversion rate is low; whole-fish sources are more reliable.',
+          claim: 'People who eat more fish have a somewhat lower risk of depression in observational studies. Trials of omega-3 pills for depression are mixed: a 2015 Cochrane review found the evidence too weak to say they help.',
+          mechanism: 'DHA is a major structural component of brain cell membranes. EPA may have anti-inflammatory effects, and some depression involves inflammation. Scientists are still testing these ideas.',
+          food: 'Fatty fish: salmon, mackerel, sardines, herring, anchovies. The American Heart Association suggests 1–2 servings of seafood a week. ALA (in walnuts, flax, chia) is partially converted in your body, but conversion rate is low; whole-fish sources are more reliable.',
           caution: 'Omega-3s are an ADJUNCT, not a treatment. They are not a substitute for therapy or prescribed medication. If you are struggling with depression, please reach out to a doctor, therapist, school counselor, or call/text 988 (Suicide & Crisis Lifeline).',
           cite: 'Harvard T.H. Chan · Cochrane Review on Omega-3 and Depression · AHA'
         },
         {
           id: 'iron',
-          title: __alloT('stem.nutritionlab.iron_and_adhd_style_fatigue', 'Iron and ADHD-style fatigue'),
+          title: __alloT('stem.nutritionlab.iron_energy_and_focus_v2', 'Iron, energy and focus'),
           icon: '🩸',
-          claim: 'AAP notes iron deficiency in adolescents can present with fatigue, brain fog, and attention symptoms similar to ADHD. Some studies suggest treating iron deficiency in adolescents with low ferritin can improve attention and energy.',
+          claim: 'Iron deficiency can cause tiredness, low energy and trouble concentrating (NIH ODS). Teen girls are at higher risk because of blood lost in periods. These symptoms have many other causes too, so a blood test is the only way to know.',
           mechanism: 'Iron is required for hemoglobin (oxygen transport) and for several brain neurotransmitter pathways. Low iron means tissues — including brain — get less oxygen and fewer neurotransmitter precursors.',
-          food: 'Heme iron (best absorbed): red meat, poultry, fish. Non-heme iron: lentils, beans, spinach, fortified cereals. Pair plant-iron foods with vitamin C (citrus, peppers, broccoli) to roughly DOUBLE absorption.',
+          food: 'Heme iron (best absorbed): red meat, poultry, fish. Non-heme iron: lentils, beans, spinach, fortified cereals. Pair plant-iron foods with vitamin C (citrus, peppers, broccoli) to absorb more of the iron.',
           caution: 'Self-supplementing iron is NOT recommended. Iron levels should be checked by a doctor (ferritin blood test) before supplementation; iron overload can damage the liver. If a teen has fatigue + brain fog, ask a doctor to check iron status — especially for menstruating teens.',
-          cite: 'AAP (American Academy of Pediatrics) · NIH ODS · Cochrane Review on Iron in Adolescents'
+          cite: 'NIH ODS Iron fact sheet'
         },
         {
           id: 'sugar',
           title: __alloT('stem.nutritionlab.blood_sugar_swings_and_mood', 'Blood sugar swings and mood'),
           icon: '📉',
-          claim: 'Big swings in blood sugar (a sugar-heavy snack on an empty stomach, then a crash 1-2 hours later) can trigger irritability, fatigue, and difficulty concentrating. This is most pronounced in adolescents and during periods of stress.',
-          mechanism: 'A large pulse of simple sugar triggers a large insulin response, which can drive blood sugar BELOW baseline (reactive hypoglycemia). Brain depends on steady glucose; rapid drops feel like brain fog, irritability, or shakiness.',
+          claim: 'The "sugar rush" is a myth. A 2019 review of 31 studies found sugar did not improve mood, and people felt more tired and less alert in the hour after eating it.',
+          mechanism: 'Your brain runs mostly on glucose, and your body keeps blood sugar in a narrow range. Meals that mix carbohydrate with protein, fat and fiber are absorbed more slowly, which gives steadier energy.',
           food: 'Pair simple sugars with protein, fat, or fiber to slow absorption: an apple with peanut butter (vs apple alone), oatmeal with nuts (vs sugary cereal), yogurt with berries (vs candy). Whole-food meals smooth the curve.',
           caution: 'Persistent severe hypoglycemia or extreme reactivity to sugar is NOT normal. If you experience shakiness, sweating, or fainting after meals, talk to a doctor — this can indicate diabetes, prediabetes, or other conditions worth investigating.',
-          cite: 'Harvard T.H. Chan · NIDDK (NIH) · Mayo Clinic'
+          cite: 'Mantantzis et al., Neuroscience & Biobehavioral Reviews 2019 · NIDDK (NIH)'
         },
         {
           id: 'caffeine',
           title: __alloT('stem.nutritionlab.caffeine_and_adolescent_anxiety', 'Caffeine and adolescent anxiety'),
           icon: '☕',
-          claim: 'Adolescents process caffeine more slowly than adults — caffeine\'s half-life is roughly 5-7 hours in teens (vs 5 hours in adults), but baseline anxiety sensitivity is higher. Energy drinks combine high caffeine with high sugar AND other stimulants. AAP advises against energy drinks for anyone under 18.',
-          mechanism: 'Caffeine blocks adenosine receptors (creating wakefulness) but also stimulates adrenaline release. In sensitive individuals (more common in adolescence), this can trigger or worsen anxiety symptoms — racing heart, jitteriness, rumination, sleep disruption.',
-          food: 'Most major sources: coffee (~95 mg/cup), black tea (~50 mg/cup), green tea (~30 mg/cup), soda (~35 mg/can), energy drinks (~80-300+ mg/can), chocolate (small amounts). AAP guidance: NO caffeine for kids under 12; very limited for teens.',
+          claim: 'Caffeine can make anxiety, a racing heart and sleep problems worse. The American Academy of Pediatrics says energy drinks have no place in the diets of children and teens. The American Medical Association suggests teens have no more than 100 mg of caffeine a day.',
+          mechanism: 'Caffeine blocks adenosine receptors (creating wakefulness) but also stimulates adrenaline release. In sensitive people, this can trigger or worsen anxiety symptoms — racing heart, jitteriness, rumination, sleep disruption.',
+          food: 'Most major sources: coffee (~95 mg/cup), black tea (~50 mg/cup), green tea (~30 mg/cup), soda (~35 mg/can), energy drinks (~80-300+ mg/can), chocolate (small amounts).',
           caution: 'If you have anxiety, panic attacks, or sleep problems, reducing caffeine is one of the easiest things to try. Cut gradually to avoid withdrawal headaches. Talk to a doctor or therapist if anxiety persists — caffeine reduction is supportive, not a substitute for proper care.',
-          cite: 'AAP · NIH NIMH · Mayo Clinic'
+          cite: 'AAP Clinical Report on sports and energy drinks (2011) · NIH ODS · USDA FoodData Central'
         },
         {
           id: 'gutBrain',
           title: __alloT('stem.nutritionlab.the_gut_brain_axis', 'The gut-brain axis'),
           icon: '🦠',
-          claim: 'Your gut and brain are connected via the vagus nerve, immune signaling, and microbiome metabolites. About 90% of your body\'s serotonin (a mood-relevant neurotransmitter) is made in the gut. Research increasingly links gut microbiome composition to mood, anxiety, and stress response — though much of this is still being studied.',
+          claim: 'Your gut and brain are connected via the vagus nerve, immune signaling, and microbiome metabolites. Much of your body\'s serotonin (a chemical messenger) is made in the gut, although gut serotonin does not travel into the brain. Research increasingly links gut microbiome composition to mood, anxiety, and stress response — though much of this is still being studied.',
           mechanism: 'Gut bacteria ferment fiber into short-chain fatty acids (especially butyrate), which influence brain function via inflammation pathways. Microbiome composition is shaped by diet (especially fiber), antibiotics, stress, and genetics.',
           food: 'Fiber-rich foods feed beneficial gut bacteria: lentils, beans, oats, fruits, vegetables, whole grains. Fermented foods (yogurt, kefir, sauerkraut, kimchi) contain live bacteria that may help diversify the gut microbiome.',
           caution: 'The gut-brain axis is real and increasingly well-studied, BUT specific probiotic supplements are NOT regulated by the FDA the way medications are. The evidence base is still developing. Eat fiber and fermented foods for general health; treat specific probiotic claims with skepticism.',
-          cite: 'Harvard T.H. Chan · NIH · Sonnenburg & Bäckhed, Nature 2016 · BMJ Gut journal'
+          cite: 'Yano et al., Cell 2015 · Sonnenburg & Bäckhed, Nature 2016'
         },
         {
           id: 'vitD',
           title: __alloT('stem.nutritionlab.vitamin_d_and_mood_especially_in_maine', 'Vitamin D and mood (especially in Maine)'),
           icon: '☀️',
-          claim: 'Some research links low vitamin D to higher rates of depression, particularly seasonal patterns (Seasonal Affective Disorder, SAD). Maine\'s northern latitude means many residents have low vitamin D from October through March — sunlight is too low-angled for skin to make vitamin D from UVB.',
+          claim: 'Some research links low vitamin D to higher rates of depression, particularly seasonal patterns (Seasonal Affective Disorder, SAD). In winter at Maine\'s latitude the sun is too low for skin to make vitamin D: a Boston study found none was made from November through February.',
           mechanism: 'Vitamin D receptors are present throughout the brain. Vitamin D may regulate serotonin synthesis. Causation is debated — low D may CONTRIBUTE to mood symptoms or simply CORRELATE with general health and outdoor activity.',
-          food: 'Fatty fish (salmon, sardines), egg yolks, fortified milk and plant milks, fortified cereals. Sunshine (UVB) — but at Maine latitude, only May through September provides enough UV angle.',
-          caution: 'If you live in Maine and feel low through winter, ask a doctor to check vitamin D (a simple blood test). MANY Mainers benefit from a winter supplement — but dose should be guided by blood level, not guessed. Vitamin D toxicity is real at megadoses.',
-          cite: 'NIH ODS · Maine clinical literature on northern latitude vitamin D · NIMH on SAD'
+          food: 'Fatty fish (salmon, sardines), egg yolks, fortified milk and plant milks, fortified cereals. Sunshine (UVB) in the warmer months.',
+          caution: 'If you feel low through the winter, talk to a doctor. They can check vitamin D with a blood test and look at other causes of low mood. Do not guess at supplement doses: too much vitamin D is harmful.',
+          cite: 'NIH ODS Vitamin D fact sheet · Webb, Kline & Holick 1988 · NIMH on seasonal affective disorder'
         },
         {
           id: 'hydration',
           title: __alloT('stem.nutritionlab.hydration_and_concentration', 'Hydration and concentration'),
           icon: '💧',
-          claim: 'Even mild dehydration (1-2% body weight in fluid loss) measurably impairs attention, short-term memory, and mood in studies. This is especially relevant during exercise, hot weather, illness, or busy days when you forget to drink.',
-          mechanism: 'Brain is ~75% water. Fluid loss reduces blood volume, alters electrolyte balance, and stresses the system. Adolescents have higher relative water turnover than adults.',
+          claim: 'Even mild dehydration (losing 1-2% of body weight as fluid) can impair attention and memory in studies. This is especially relevant during exercise, hot weather, illness, or busy days when you forget to drink.',
+          mechanism: 'The brain is about three-quarters water. Fluid loss reduces blood volume and changes the balance of salts in the body.',
           food: 'Plain water is sufficient for most needs. Fruits and vegetables contribute meaningful water (a watermelon slice is ~92% water). Sports drinks are useful only for sustained hard exercise (>60 min) — for everyday use, water is better.',
           caution: 'If you feel persistently fatigued, dizzy, or unable to concentrate even with adequate water, see a doctor. Hydration is supportive — it\'s not a treatment for clinical attention or mood disorders.',
-          cite: 'Institute of Medicine · NIH · Mayo Clinic'
+          cite: 'Institute of Medicine · Riebl & Davy 2013 (ACSM Health & Fitness Journal) · USDA FoodData Central'
         }
       ];
 
@@ -21994,7 +22137,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               questions: [
                 'Why is "diet alone treats depression" a dangerous claim, even when research shows real diet-mood connections?',
                 'A friend tells you they read online that "going gluten-free cured their anxiety." How would you talk with them about this without dismissing their experience?',
-                'AAP advises NO caffeine for kids under 12 and very limited intake for teens. What does this say about how the AAP weighs evidence vs popular practice?'
+                'The AAP says energy drinks have no place in the diets of children and teens, even though many teens drink them. Why might doctors make a recommendation that differs from popular practice?'
               ],
               misconceptions: [
                 '"You can\'t address mental health through food at all" — this is also wrong. Iron deficiency, vitamin D deficiency, blood-sugar swings, and dehydration can all worsen mental-health symptoms. Nutrition is part of comprehensive care.',
@@ -22021,7 +22164,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       //     a search vocabulary for vulnerable users — instead, frame: trust
       //     the signal that content feels like glorifying being sick)
       //   ✓ Body diversity normalized
-      //   ✓ NEDA helpline visible at top AND bottom of every screen
+      //   ✓ eating disorder helpline (National Alliance; NEDA closed its line in 2023) visible at top AND bottom of every screen
       //   ✓ Maine-specific resources (Maine 211, Maine Behavioral Healthcare)
       //   ✓ "Most people recover with support" framing throughout
       //   ✓ Spectrum framing — disordered eating is a continuum, not binary
@@ -22043,10 +22186,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', null,
                 h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.help_is_available_right_now', 'Help is available right now: ')),
                 h('span', { className: 'text-slate-800' },
-                  __alloT('stem.nutritionlab.neda_helpline', 'NEDA helpline '),
-                  h('strong', { className: 'font-mono text-emerald-900' }, '1-800-931-2237'),
+                  __alloT('stem.nutritionlab.ed_helpline_mon_fri_v2', 'Eating disorder helpline (Mon-Fri) '),
+                  h('strong', { className: 'font-mono text-emerald-900' }, '1-866-662-1235'),
                   __alloT('stem.nutritionlab.text', ' · text '),
-                  h('strong', { className: 'font-mono text-emerald-900' }, 'NEDA'),
+                  h('strong', { className: 'font-mono text-emerald-900' }, 'HOME'),
                   ' to ',
                   h('strong', { className: 'font-mono text-emerald-900' }, '741741'),
                   __alloT('stem.nutritionlab.988_crisis_lifeline_maine_211_or_talk_', ' · 988 Crisis Lifeline · Maine 211 · or talk with a trusted adult.'))
@@ -22083,8 +22226,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('ul', { className: 'list-disc list-inside mt-1 ml-2 space-y-1' },
                     h('li', null, __alloT('stem.nutritionlab.talking_with_a_trusted_adult_before_co', 'Talking with a trusted adult before continuing')),
                     h('li', null, __alloT('stem.nutritionlab.skipping_this_module_and_exploring_oth', 'Skipping this module and exploring others in NutritionLab')),
-                    h('li', null, __alloT('stem.nutritionlab.calling_neda_right_now', 'Calling NEDA right now: '), h('strong', { className: 'font-mono' }, '1-800-931-2237'), __alloT('stem.nutritionlab.mon_thu_11am_9pm_fri_11am_5pm_et', ' (Mon-Thu 11am-9pm, Fri 11am-5pm ET)')),
-                    h('li', null, __alloT('stem.nutritionlab.texting', 'Texting '), h('strong', { className: 'font-mono' }, 'NEDA'), ' to ', h('strong', { className: 'font-mono' }, '741741'), __alloT('stem.nutritionlab.for_24_7_crisis_support', ' for 24/7 crisis support'))
+                    h('li', null, __alloT('stem.nutritionlab.calling_ed_helpline_v2', 'Calling the eating disorder helpline: '), h('strong', { className: 'font-mono' }, '1-866-662-1235'), __alloT('stem.nutritionlab.mon_fri_9am_7pm_et_v2', ' (Mon-Fri, 9am-7pm ET)')),
+                    h('li', null, __alloT('stem.nutritionlab.texting', 'Texting '), h('strong', { className: 'font-mono' }, 'HOME'), ' to ', h('strong', { className: 'font-mono' }, '741741'), __alloT('stem.nutritionlab.for_24_7_crisis_support', ' for 24/7 crisis support'))
                   )
                 ),
                 h('div', { className: 'flex flex-col sm:flex-row gap-3 pt-2' },
@@ -22199,7 +22342,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.online_content_red_flags', 'Online content red flags')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.a_lot_of_what_shapes_how_people_think_', 'A LOT of what shapes how people think about food and bodies today comes from social media — TikTok, Instagram, YouTube, Snapchat. Some of this content is helpful (registered dietitians, intuitive eating coaches, body-diverse fitness creators). A lot of it is not. The 2023 Surgeon General Advisory on Social Media and Youth Mental Health flagged content that promotes disordered eating as a documented driver of body-image concerns and eating disorders in adolescents. Recognizing the patterns is itself protective.')),
+                  __alloT('stem.nutritionlab.a_lot_of_what_shapes_v2', 'A LOT of what shapes how people think about food and bodies today comes from social media — TikTok, Instagram, YouTube, Snapchat. Some of this content is helpful (registered dietitians, body-diverse fitness creators). A lot of it is not. The 2023 U.S. Surgeon General Advisory on Social Media and Youth Mental Health warned that social media may feed body dissatisfaction and disordered eating, especially among adolescent girls. Recognizing the patterns is itself protective.')),
                 h('div', { className: 'p-3 bg-violet-50 border border-violet-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-violet-900' }, __alloT('stem.nutritionlab.how_algorithms_feed_this', 'How algorithms feed this: ')),
                   __alloT('stem.nutritionlab.recommendation_algorithms_the_for_you_', 'Recommendation algorithms (the "For You" page, IG Reels, YouTube\'s "Up Next") track what you watch and feed you more of it. A single search for "weight loss" or lingering on a body-comparison reel can cascade into an increasingly extreme feed. The algorithm doesn\'t know what\'s good for you — it knows what holds your attention. Strong feelings (especially anxiety, comparison, or self-criticism) hold attention well, which is why harmful content surfaces.'))
@@ -22211,11 +22354,19 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     { icon: '🍽️', t: '"What I eat in a day" videos showing tiny / extreme intake', d: 'Especially when posed as aspirational. Real intake varies day-to-day and across bodies; a single curated day is not a template.' },
                     { icon: '🔢', t: 'On-screen calorie counts or "calorie debt" framing', d: 'Calorie content is a real piece of nutrition science, but using it as a moral scoreboard ("I\'ve earned this") trains numerical fixation.' },
                     { icon: '⚖️', t: 'Before / after body transformation reels', d: 'These compress months or years of weight changes (often unsustainable or unhealthy) into 15 seconds. They imply a one-way "improvement" frame that flattens body diversity.' },
-                    { icon: '🚫', t: '"Foods I would never eat" or "fear food" content', d: 'Builds a good-vs-bad food binary that has no nutritional basis and is a documented contributor to disordered eating.' },
-                    { icon: '👀', t: 'Body checking — measuring, mirror angles, comparing parts', d: 'Repeatedly examining body parts is a clinical sign of eating disorder thinking. Content that normalizes this trains the same habits in viewers.' },
+                    // NEDA warning signs page (checked 2026-11-24) lists: "Refuses to eat certain foods, and often eliminates whole food groups (carbohydrates, fats, etc.)".
+                    // The old "documented contributor" causal claim had no source: cut.
+                    { icon: '🚫', t: '"Foods I would never eat" or "fear food" content', d: 'Sorts food into "good" and "bad" and teaches you to fear some foods. Refusing certain foods, or cutting out whole food groups like carbs or fats, is on NEDA\'s list of eating disorder warning signs.' },
+                    // Shafran R, Fairburn CG, Robinson P, Lask B. "Body checking and its avoidance in eating disorders." Int J Eat Disord 2004;35:93-101 (abstract read 2026-11-24):
+                    // "The majority (92%) of the patients in Study 1 checked their bodies to assess their shape or weight and this was associated significantly with eating
+                    // disorder symptoms." The old "trains the same habits in viewers" causal claim had no source: cut.
+                    { icon: '👀', t: 'Body checking — measuring, mirror angles, comparing parts', d: 'Checking your body over and over to judge your shape or weight is strongly linked to eating disorders. In one study, 92% of patients with an eating disorder did it. If a video makes you start checking your own body, mute it.' },
                     { icon: '✨', t: '"Clean eating" / "earning" food / detox / cleanse / reset language', d: 'Wellness aesthetic packaging on what is functionally restrictive eating. The implicit logic is that some foods make you "dirty" and need to be undone — this is not how nutrition works.' },
                     { icon: '🏃', t: 'Fitness creators selling extreme restriction as "discipline"', d: 'Genuine fitness coaching exists. Content that ties food restriction to identity ("I\'m the kind of person who can resist") often crosses a line.' },
-                    { icon: '💊', t: 'Detox teas, appetite suppressants, fat burners, weight-loss pills', d: 'These are diet products marketed as wellness. FDA does not approve most for safety or efficacy. Some have caused real harm including liver damage and cardiac events.' },
+                    // NIH ODS, Dietary Supplements for Weight Loss (checked 2026-11-24): "Unlike drugs, dietary supplements do not require premarket review or approval by FDA."
+                    // Same sheet, green tea extract: "linked to liver damage in at least 50 case reports since 2006"; bitter orange products: reported "ventricular fibrillation,
+                    // ischemic stroke, myocardial infarction, and death". FDA, Weight Loss Product Notifications: many products "are likely to be contaminated with dangerous hidden ingredients."
+                    { icon: '💊', t: 'Detox teas, appetite suppressants, fat burners, weight-loss pills', d: 'These are diet products sold as wellness. Unlike medicines, supplements do not need FDA approval before they are sold. NIH reports liver damage linked to green tea extract pills and heart problems reported with bitter orange products. FDA warns that many weight-loss products contain hidden drug ingredients.' },
                     { icon: '🤐', t: 'Coded language and emojis that signal pro-restriction communities', d: 'These exist and are designed to evade platform moderation. We won\'t list specific terms here (it would function as a search list). If you encounter content that feels like it\'s glorifying being sick, trust that signal — block, mute, and report.' }
                   ].map(function(rf, i) {
                     return h('div', { key: i, className: 'flex items-start gap-3 p-3 bg-slate-50 rounded border border-slate-200' },
@@ -22235,7 +22386,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '1.'),
                     h('span', null,
                       h('strong', null, __alloT('stem.nutritionlab.use_platform_tools', 'Use platform tools. ')),
-                      __alloT('stem.nutritionlab.on_tiktok_long_press_a_video_not_inter', 'On TikTok, long-press a video → "Not interested." On Instagram, three-dot menu → "Not interested." On YouTube, three-dot menu → "Don\'t recommend channel." Each tap retrains the algorithm. After a few days the feed shifts.'))
+                      // TikTok Support, For You (checked 2026-11-24): "Not interested: If you don't care for a specific post, you can share feedback that you're not interested, and
+                      // we'll show you fewer posts like that." YouTube Help 6342839: "Click Not interested"; "Select Don't recommend channel". The "after a few days" timing had no source: cut.
+                      __alloT('stem.nutritionlab.platform_not_interested_v2', 'On TikTok, press and hold a post, then tap "Not interested." TikTok says it will then show you fewer posts like that. On YouTube, open the three-dot menu and pick "Not interested" or "Don\'t recommend channel." Look for the same kind of button on other apps.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '2.'),
@@ -22253,13 +22406,18 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '4.'),
                     h('span', null,
                       h('strong', null, __alloT('stem.nutritionlab.report_content_that_promotes_eating_di', 'Report content that promotes eating disorders. ')),
-                      __alloT('stem.nutritionlab.every_major_platform_has_a_category_fo', 'Every major platform has a category for this. Reporting is anonymous; the creator doesn\'t see you reported them. NEDA tracks platform responses and pushes for stronger moderation.'))
+                      // Round 5, checked 2026-11-24. YouTube Help 2802027 "Report inappropriate videos, channels & other content on YouTube": "Under the video, tap More" then Report.
+                      // TikTok Support, For You page: "Learn more about how to report content on TikTok." Instagram Help Center article title: "Report an inappropriate post on
+                      // Instagram" (help.instagram.com/346407705484947). "Every major platform" was broader than these sources: narrowed to the three checked apps.
+                      __alloT('stem.nutritionlab.report_post_three_apps_v3', 'TikTok, Instagram and YouTube all let you report a post. Look for "Report" in the post\'s menu (often the three dots or "More"). You can also mute or unfollow accounts that make you feel worse.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '5.'),
                     h('span', null,
                       h('strong', null, __alloT('stem.nutritionlab.take_breaks_when_you_notice_the_spiral', 'Take breaks when you notice the spiral. ')),
-                      __alloT('stem.nutritionlab.if_you_ve_been_on_a_platform_for_30_mi', 'If you\'ve been on a platform for 30 minutes and feel worse about yourself than when you started, close it. Body comparison is one of the most well-documented harms of social media.'))
+                      // U.S. Surgeon General Advisory, Social Media and Youth Mental Health (2023; archived PDF read 2026-11-24):"Social comparison driven by social media is associated with body
+                      // dissatisfaction, disordered eating, and depressive symptoms." The old claim that it is the best-documented harm had no source: cut.
+                      __alloT('stem.nutritionlab.take_breaks_30_minutes_v2', 'If you\'ve been on a platform for 30 minutes and feel worse about yourself than when you started, close it. The U.S. Surgeon General (2023) reported that comparing yourself with others on social media is linked to feeling bad about your body.'))
                   ),
                   h('li', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-emerald-700 font-bold flex-shrink-0' }, '6.'),
@@ -22281,8 +22439,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('strong', null, __alloT('stem.nutritionlab.common_sense_media', 'Common Sense Media ')),
                     __alloT('stem.nutritionlab.commonsensemedia_org_independent_revie', '(commonsensemedia.org) — independent reviews of platforms, apps, and content from a kid/family lens')),
                   h('li', null,
-                    h('strong', null, __alloT('stem.nutritionlab.neda_social_media_body_image', 'NEDA Social Media + Body Image ')),
-                    __alloT('stem.nutritionlab.nationaleatingdisorders_org_research_b', '(nationaleatingdisorders.org) — research-backed guidance and free educator toolkits')),
+                    // NEDA toolkits page (checked 2026-11-24): "NEDA Toolkits are free resources ... including parents and caregivers,
+                    // educators and school staff, coaches and athletic trainers". "Research-backed" and the social-media heading were unverified: cut.
+                    h('strong', null, __alloT('stem.nutritionlab.neda_social_media_body_image_v2', 'National Eating Disorders Association (NEDA) ')),
+                    __alloT('stem.nutritionlab.nationaleatingdisorders_org_research_b_v2', '(nationaleatingdisorders.org) — information about eating disorders and free toolkits for educators, parents, and coaches')),
                   h('li', null,
                     h('strong', null, __alloT('stem.nutritionlab.u_s_surgeon_general_s_2023_advisory_on', 'U.S. Surgeon General\'s 2023 Advisory on Social Media and Youth Mental Health ')),
                     __alloT('stem.nutritionlab.hhs_gov_surgeongeneral_official_report', '(hhs.gov/surgeongeneral) — official report on documented harms and what platforms / families / schools can do')),
@@ -22320,7 +22480,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 ),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.when_to_tell_an_adult', 'When to tell an adult: ')),
-                  __alloT('stem.nutritionlab.if_a_friend_s_health_or_safety_is_at_r', 'If a friend\'s health or safety is at risk — they\'ve mentioned hurting themselves, are passing out, can\'t function in daily life, or you\'re seriously worried — tell a trusted adult right away. Telling someone who can help is not a betrayal; it\'s the most loyal thing a friend can do. NEDA, school counselors, and parents are all good places to start.'))
+                  __alloT('stem.nutritionlab.if_a_friend_s_health_or_safety_is_at_r_v2', 'If a friend\'s health or safety is at risk — they\'ve mentioned hurting themselves, are passing out, can\'t function in daily life, or you\'re seriously worried — tell a trusted adult right away. Telling someone who can help is not a betrayal; it\'s the most loyal thing a friend can do. The eating disorder helpline (1-866-662-1235), school counselors and parents are all good places to start. In an emergency, call 911.'))
               )
             ),
             section === 'self' && h('div', { className: 'space-y-4' },
@@ -22344,11 +22504,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       '.'
                     ),
                     h('li', null,
-                      h('strong', null, __alloT('stem.nutritionlab.for_ed_specific_support_24_7', 'For ED-specific support 24/7: ')),
-                      __alloT('stem.nutritionlab.neda_helpline_2', 'NEDA helpline '),
-                      h('span', { className: 'font-mono font-bold' }, '1-800-931-2237'),
-                      __alloT('stem.nutritionlab.mon_fri_business_hours_or_text', ' (Mon-Fri business hours) or text '),
-                      h('span', { className: 'font-mono font-bold' }, 'NEDA'),
+                      h('strong', null, __alloT('stem.nutritionlab.for_ed_specific_support_v2', 'For eating disorder support: ')),
+                      __alloT('stem.nutritionlab.ed_helpline_name_v2', 'National Alliance for Eating Disorders helpline '),
+                      h('span', { className: 'font-mono font-bold' }, '1-866-662-1235'),
+                      __alloT('stem.nutritionlab.mon_fri_9am_7pm_or_text_v2', ' (Mon-Fri, 9am-7pm ET), or any time text '),
+                      h('span', { className: 'font-mono font-bold' }, 'HOME'),
                       ' to ',
                       h('span', { className: 'font-mono font-bold' }, '741741'),
                       __alloT('stem.nutritionlab.24_7_crisis_text_free_confidential_tra', ' (24/7 crisis text). Free, confidential, trained.')
@@ -22402,7 +22562,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             // Bottom resource bar — always visible at exit
             ResourceBar(),
             h(TeacherNotes, {
-              standards: ['Maine Health Education Standards · Mental Health', 'NEDA Educator Toolkit', 'CTE Family & Consumer Sciences', 'U.S. Surgeon General Advisory on Social Media and Youth Mental Health (2023)', 'Media Literacy / ISTE Digital Citizen'],
+              standards: ['Maine Health Education Standards · Mental Health', 'CTE Family & Consumer Sciences', 'U.S. Surgeon General Advisory on Social Media and Youth Mental Health (2023)', 'Media Literacy / ISTE Digital Citizen'],
               questions: [
                 'Eating disorders affect people of every body size, gender, race, age, and background. Why does the "thin teenage girl" stereotype cause real harm?',
                 'What\'s the difference between an occasional hard day around food (part of being human) and a pattern that warrants concern?',
@@ -22464,10 +22624,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
 
         var TAB_META = {
-          seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem', 'Maine winters are a vitamin D problem'), hint: __alloT('stem.nutritionlab.at_43_47_n_oct_mar_sun_is_too_low_for_', 'At 43–47°N, Oct–Mar sun is too low for skin to make D — no matter how long you’re outside.') },
+          seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem', 'Maine winters are a vitamin D problem'), hint: __alloT('stem.nutritionlab.at_43_47_n_winter_sun_too_low_v2', 'At 43–47°N, the winter sun (about November through February) is too low for skin to make vitamin D, no matter how long you are outside.') },
           fisheries: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '🐟',   title: __alloT('stem.nutritionlab.cold_water_fisheries_omega_3_powerhous', 'Cold-water fisheries → omega-3 powerhouse'), hint: __alloT('stem.nutritionlab.maine_lobster_herring_and_farm_raised_', 'Maine lobster, herring, and farm-raised salmon are world-class EPA/DHA sources.') },
           access:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🚗',   title: __alloT('stem.nutritionlab.rural_distance_seasonal_employment_rea', 'Rural distance + seasonal employment = real food-access issues'), hint: __alloT('stem.nutritionlab.aroostook_and_washington_counties_have', 'Aroostook and Washington counties have documented food deserts and long drive times.') },
-          school:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '🍱',   title: __alloT('stem.nutritionlab.free_school_meals_snap_basics', 'Free school meals + SNAP basics'), hint: __alloT('stem.nutritionlab.maine_is_the_second_state_to_permanent', 'Maine is the second state to permanently fund free meals for all K-12 kids (2022).') },
+          school:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '🍱',   title: __alloT('stem.nutritionlab.free_school_meals_snap_basics', 'Free school meals + SNAP basics'), hint: __alloT('stem.nutritionlab.maine_second_state_free_meals_v2', 'In 2021 Maine became the second state (days after California) to pass a law for free school meals for all public-school students.') },
           local:     { accent: '#a16207', soft: 'rgba(161,98,7,0.10)',   icon: '🌾',   title: __alloT('stem.nutritionlab.local_food_systems_wabanaki_food_sover', 'Local food systems + Wabanaki food sovereignty'), hint: __alloT('stem.nutritionlab.csas_farmers_markets_and_tribal_food_s', 'CSAs, farmers markets, and tribal food-sovereignty efforts shape what’s actually on Maine plates.') }
         };
 
@@ -22477,7 +22637,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'bg-stone-100 border-2 border-stone-300 rounded-2xl p-5' },
               h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, __alloT('stem.nutritionlab.nutrition_science_as_it_actually_plays', 'Nutrition science as it actually plays out in Maine')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                __alloT('stem.nutritionlab.maine_s_geography_climate_history_and_', 'Maine\'s geography, climate, history, and economy all shape what food looks like here. Long winters and northern latitude make vitamin D a documented public-health issue. World-class cold-water fisheries make Maine an omega-3 powerhouse. Rural distances and seasonal employment create real food-access challenges. Maine became the second state in the country to permanently fund free school meals for all kids. This module names the realities students live inside.'))
+                __alloT('stem.nutritionlab.maine_s_geography_climate_v2', 'Maine\'s geography, climate, history, and economy all shape what food looks like here. Long winters and a northern latitude limit how much vitamin D skin can make. Cold-water fisheries supply fish rich in omega-3s. Rural distances and seasonal work create real food-access challenges. Maine was the second state to pass a law for free school meals for all students. This module names the realities students live inside.'))
             ),
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.maine_food_reality_sections', 'Maine Food Reality sections'), className: 'flex flex-wrap gap-2' },
               tabs.map(function(t, tabIndex) {
@@ -22526,13 +22686,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem_2', 'Maine winters are a vitamin D problem')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.maine_sits_at_roughly_43_47_n_latitude', 'Maine sits at roughly 43-47°N latitude. From October through March, the sun angle is too low for human skin to make vitamin D from sunlight, no matter how much time you spend outside. Most Mainers are vitamin D insufficient through winter. The Maine CDC has flagged this as a documented public-health issue.')),
+                  __alloT('stem.nutritionlab.maine_sits_at_43_47_n_v2', 'Maine sits at roughly 43–47°N latitude. A study in Boston (42°N) found that winter sunlight made no vitamin D in skin from November through February, and the gap is longer farther north. That is why fortified foods matter in winter.')),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.why_this_matters', 'Why this matters: ')),
                   __alloT('stem.nutritionlab.vitamin_d_supports_calcium_absorption_', 'Vitamin D supports calcium absorption (bones), immune function, and possibly mood (some research links low D to seasonal affective disorder). Adolescents are in peak bone-building years — adequate D matters more than usual.')),
                 h('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-emerald-900' }, __alloT('stem.nutritionlab.what_works_in_maine', 'What works in Maine: ')),
-                  __alloT('stem.nutritionlab.fatty_fish_salmon_sardines_herring_egg', 'Fatty fish (salmon, sardines, herring), egg yolks, fortified milk and plant milks, fortified cereals. Many Mainers benefit from a winter vitamin D supplement — but dose should be guided by a blood test (ask your doctor for a 25-hydroxy vitamin D test). Don\'t guess.'))
+                  __alloT('stem.nutritionlab.fatty_fish_salmon_sardines_v2', 'Fatty fish (salmon, sardines, herring), egg yolks, fortified milk and plant milks, fortified cereals. If you think you might be low, ask a doctor; a blood test (25-hydroxy vitamin D) can check. Do not guess at supplement doses.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-2' },
                 h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.local_growing_season_is_short', 'Local growing season is short')),
@@ -22544,13 +22704,13 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_is_an_omega_3_powerhouse', 'Maine is an omega-3 powerhouse')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.maine_s_cold_north_atlantic_waters_sup', 'Maine\'s cold North Atlantic waters support some of the richest fatty-fish populations in the world. Cold water means more omega-3 (EPA + DHA) per gram of fish — these fats serve as antifreeze in cold-water species. Maine fisheries land roughly $700M+ in seafood per year (DMR, varies year to year), making it Maine\'s most economically significant agricultural sector after wild blueberries.'))
+                  __alloT('stem.nutritionlab.maine_cold_atlantic_fish_v2', 'The cold waters of the Gulf of Maine support fish such as mackerel and herring that are rich in omega-3 fats (EPA + DHA). Fishing is a major part of Maine\'s economy (Maine Department of Marine Resources).'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.maine_s_key_fatty_fish', 'Maine\'s key fatty fish')),
                 h('div', { className: 'space-y-2' },
                   [
-                    { fish: 'Atlantic salmon (farmed)', omega3: '~2.3 g per 3oz serving', note: __alloT('stem.nutritionlab.cooke_aquaculture_in_eastern_maine_hig', 'Cooke Aquaculture in eastern Maine. Higher omega-3 than wild salmon due to feed.') },
+                    { fish: 'Atlantic salmon (farmed)', omega3: '~2.3 g per 3oz serving', note: __alloT('stem.nutritionlab.cooke_aquaculture_v2', 'Cooke Aquaculture in eastern Maine. USDA data show farmed Atlantic salmon with somewhat more omega-3 per serving than wild Atlantic salmon; it depends on the feed.') },
                     { fish: 'Atlantic herring', omega3: '~2.0 g per 3oz', note: __alloT('stem.nutritionlab.maine_s_most_abundant_pelagic_fish_oft', 'Maine\'s most abundant pelagic fish. Often canned as sardines.') },
                     { fish: 'Atlantic mackerel', omega3: '~1.8 g per 3oz', note: __alloT('stem.nutritionlab.strong_flavored_oily_fish_underused_in', 'Strong-flavored oily fish; underused in American kitchens.') },
                     { fish: 'Atlantic sardines (canned)', omega3: '~1.5 g per 3oz', note: __alloT('stem.nutritionlab.tiny_fish_lower_mercury_canned_sardine', 'Tiny fish = lower mercury. Canned sardines are cheap and shelf-stable.') },
@@ -22575,7 +22735,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.food_access_in_maine_is_uneven', 'Food access in Maine is uneven')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.the_usda_tracks_food_deserts_areas_whe', 'The USDA tracks "food deserts" — areas where residents have limited access to affordable, nutritious food. In Maine, the most affected areas are Aroostook County (the largest county east of the Mississippi by area, with the lowest population density), Washington County (down east), and pockets of inland rural Penobscot, Piscataquis, and Somerset counties. Lewiston and parts of Portland also have urban food-access challenges.'))
+                  __alloT('stem.nutritionlab.usda_food_access_v2', 'The USDA tracks "food deserts" — areas where residents have limited access to affordable, nutritious food. In rural Maine, long distances in places like Aroostook and Washington counties make access harder, and some neighborhoods in cities like Lewiston and Portland also face food-access challenges.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.what_food_access_actually_means', 'What "food access" actually means')),
@@ -22614,7 +22774,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.school_meals_maine_led_the_country', 'School meals — Maine led the country')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.in_2022_maine_became_the_second_state_', 'In 2022, Maine became the second state in the U.S. (after California) to permanently fund free school breakfast and lunch for ALL public-school students, regardless of family income. The law (LD 1679, signed by Governor Mills) eliminated the means-tested application process and the social stigma that came with it. Other states have since followed.')),
+                  __alloT('stem.nutritionlab.in_2021_maine_second_state_v2', 'In July 2021, Maine became the second state in the U.S. (just days after California) to pass a law giving free school breakfast and lunch to ALL public-school students, regardless of family income. It started in the 2022–23 school year. It removed the income application and the stigma that came with it. Other states have since followed.')),
                 h('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-blue-900' }, __alloT('stem.nutritionlab.why_universal_free_meals_matter', 'Why universal free meals matter: ')),
                   __alloT('stem.nutritionlab.research_shows_kids_who_eat_breakfast_', 'Research shows kids who eat breakfast at school perform better academically, have fewer behavioral incidents, and have better attendance. Removing the application step means kids who qualify but were embarrassed to apply now eat. Maine\'s law also expanded local-food sourcing into school cafeterias.'))
@@ -22622,10 +22782,10 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.snap_the_federal_food_assistance_progr', 'SNAP — the federal food-assistance program')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  __alloT('stem.nutritionlab.snap_supplemental_nutrition_assistance', 'SNAP (Supplemental Nutrition Assistance Program, formerly food stamps) provides monthly food benefits to eligible low-income families. In Maine, ~13% of residents receive SNAP at any given time (USDA). Benefits are loaded onto an EBT card and used at most grocery stores, farmers markets, and some online retailers.')),
+                  __alloT('stem.nutritionlab.snap_maine_share_v2', 'SNAP (Supplemental Nutrition Assistance Program, formerly food stamps) provides monthly food benefits to eligible low-income families. In 2025 about 12% of Mainers (around 166,000 people a month) received SNAP (USAFacts, from USDA data). Benefits are loaded onto an EBT card and used at most grocery stores, farmers markets, and some online retailers.')),
                 h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-slate-800' },
                   h('strong', { className: 'text-amber-900' }, __alloT('stem.nutritionlab.common_misconception', 'Common misconception: ')),
-                  __alloT('stem.nutritionlab.snap_is_not_a_flat_amount_per_family_t', 'SNAP is not a flat amount per family. The benefit is calculated based on income, household size, expenses, and other factors. Average benefit is roughly $6 per person per day in Maine — meaningful, but tight. SNAP can be used for groceries (including seeds and food-producing plants) but not for prepared hot food, alcohol, or non-food items.'))
+                  __alloT('stem.nutritionlab.snap_not_flat_amount_v2', 'SNAP is not a flat amount per family. The benefit is calculated based on income, household size, expenses, and other factors. Benefits help, but they are often tight. SNAP can be used for groceries (including seeds and food-producing plants) but not for prepared hot food, alcohol, or non-food items.'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.nutritionlab.good_shepherd_food_bank_maine_food_pan', 'Good Shepherd Food Bank + Maine food-pantry network')),
@@ -22640,7 +22800,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_s_local_food_economy', 'Maine\'s local food economy')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  __alloT('stem.nutritionlab.maine_has_more_farms_per_capita_than_m', 'Maine has more farms per capita than most states and a vibrant local food economy: farmers markets in nearly every town, CSA (community-supported agriculture) shares from spring through fall, regional food hubs, an active aquaculture industry, and signature crops like wild blueberries (Maine produces about 99% of U.S. wild blueberries, mostly from Washington and Hancock counties).'))
+                  __alloT('stem.nutritionlab.maine_local_food_v2', 'Maine has a strong local food economy: farmers markets, CSA (community-supported agriculture) shares from spring through fall, regional food hubs, an active aquaculture industry, and signature crops like wild blueberries (Maine grows nearly all of the wild blueberries harvested in the U.S., mostly in Washington and Hancock counties).'))
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.wabanaki_food_sovereignty', 'Wabanaki food sovereignty')),
@@ -22655,14 +22815,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, __alloT('stem.nutritionlab.climate_change_is_reshaping_maine_food', 'Climate change is reshaping Maine food')),
                 h('p', { className: 'text-sm text-slate-800' },
-                  __alloT('stem.nutritionlab.the_gulf_of_maine_is_warming_faster_th', 'The Gulf of Maine is warming faster than 99% of the world\'s ocean (Gulf of Maine Research Institute). Lobster populations are shifting north into Canadian waters; cod stocks remain depressed. On land, the growing season is lengthening (by ~15 days since 1900) but with more extreme weather. New crops (peaches, kiwi, longer-season corn) are now possible; some traditional crops face new challenges.'))
+                  __alloT('stem.nutritionlab.gulf_of_maine_warming_v2', 'The Gulf of Maine is warming faster than about 98% of the world\'s ocean (Gulf of Maine Research Institute). Lobster populations are shifting north; cod stocks remain low. On land, the growing season is about 16 days longer than in 1950 (University of Maine), with more extreme weather. Some new crops are now possible; some traditional crops face new challenges.'))
               )
             ),
             h(TeacherNotes, {
               standards: ['Maine Learning Results · Health Education + Social Studies', 'CTE Family & Consumer Sciences', 'NGSS HS-LS2-7 (Human impact on ecosystems)'],
               questions: [
                 'Why does Maine\'s latitude make vitamin D a public-health issue rather than just a personal one?',
-                'Maine became the 2nd state to permanently fund free school meals for all kids. What problem was that policy designed to solve, beyond just hunger?',
+                'Maine was the 2nd state to pass a law for free school meals for all kids. What problem was that policy designed to solve, beyond just hunger?',
                 'Food deserts persist even in a country that produces enormous amounts of food. What does that imply about the difference between food production and food ACCESS?',
                 'How might Wabanaki food sovereignty efforts inform broader thinking about local food systems in Maine?'
               ],
@@ -22722,41 +22882,42 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             time: '4 years',
             what: 'Undergraduate degree from an ACEND-accredited Didactic Program in Dietetics (DPD) — typically a B.S. in Nutrition, Food Science, or related. Coursework: organic chemistry, biochemistry, anatomy & physiology, microbiology, medical nutrition therapy, food science, community nutrition.',
             pay: 'No professional pay yet — student stage',
-            how: 'Apply to ACEND-accredited DPD program. Maine: UMaine Orono (Human Nutrition + Foods, B.S.), Husson University (DPD pathway).'
+            how: 'Apply to an ACEND-accredited DPD program. In Maine: University of Maine, Orono (B.S. Food Science and Human Nutrition, dietetics concentration).'
           },
           {
             tier: 2, name: __alloT('stem.nutritionlab.supervised_practice_dietetic_internshi', 'Supervised Practice (Dietetic Internship)'),
             time: '~10-12 months',
-            what: '1200 hours of supervised practice in clinical, community, and food-service settings. Highly competitive — fewer slots than applicants. Many internships are now combined Master\'s programs (since the 2024 RDN exam requirement change).',
+            // umaine.edu/dietetic-internship-ispp (checked 2026-11-24): "graduate courses are fully online (30 credit hours) with an in-person supervised practice experience (1072 hours)".
+            what: 'Supervised practice in clinical, community, and food-service settings, through an accredited program (the UMaine internship has 1,072 hours). Spots can be competitive. Many internships now come with a master\'s degree (since the 2024 graduate-degree rule).',
             pay: 'Often unpaid or low stipend; some are paid through hospital systems',
-            how: 'Apply through D&D Digital matching service (similar to medical-residency match). Acceptance rate ~50% nationally. Plan B options if not matched.'
+            how: 'Apply through the D&D Digital matching service (similar to a medical-residency match). Have a Plan B in case you are not matched.'
           },
           {
             tier: 3, name: __alloT('stem.nutritionlab.master_s_degree_new_2024_requirement', 'Master\'s degree (NEW 2024 requirement)'),
             time: '~2 years (often combined with internship)',
-            what: 'As of January 2024, the RDN exam REQUIRES a Master\'s degree (in addition to the bachelor\'s + internship). This is a major change from pre-2024 requirements. Most programs now combine Master\'s coursework with the internship.',
+            what: 'As of January 2024, the RDN exam REQUIRES a graduate degree (usually a Master\'s) (in addition to the bachelor\'s + internship). This is a major change from pre-2024 requirements. Most programs now combine Master\'s coursework with the internship.',
             pay: 'Student stage — but combined programs often include some stipend or paid work',
-            how: 'Apply to ACEND-accredited Coordinated Program (CP) or graduate program. Husson has a combined Master\'s + DI option in development.'
+            how: 'Apply to an ACEND-accredited graduate program; many now combine the Master\'s and the supervised practice. UMaine offers a dietetic internship.'
           },
           {
             tier: 4, name: __alloT('stem.nutritionlab.cdr_registration_examination', 'CDR Registration Examination'),
             time: 'Take after completing internship + Master\'s',
-            what: 'National exam administered by the Commission on Dietetic Registration. Pass rate ~70% first attempt. Multi-section, computer-based, ~3 hours.',
-            pay: '~$200 exam fee. After passing: RDN credential = job-ready',
-            how: 'Apply through CDR. Study materials: CDR study guides, JeanInman, Pocket Prep RD app.'
+            what: 'National computer-based exam given by the Commission on Dietetic Registration (CDR).',
+            pay: 'There is an exam fee. After passing: RDN credential = job-ready',
+            how: 'Apply through CDR. Use CDR study guides and practice tests.'
           },
           {
             tier: 5, name: __alloT('stem.nutritionlab.entry_level_rdn', 'Entry-level RDN'),
             time: 'First job after credentialing',
             what: 'Hospital clinical RDN, community nutrition educator, WIC nutritionist, school nutrition director, long-term-care facility RDN. State licensure may also be required (Maine DOES require license to practice as RDN — check Maine Office of Professional and Occupational Regulation).',
-            pay: '$50-65K typical entry; varies by setting (hospital > community in most cases)',
+            pay: 'BLS: median pay for dietitians was $76,400 in May 2025; the lowest-paid 10% earned less than $49,090. Entry pay is usually below the median.',
             how: 'Job boards, professional networks (Maine Academy of Nutrition and Dietetics), hospital career sites.'
           },
           {
             tier: 6, name: __alloT('stem.nutritionlab.specialized_senior_rdn', 'Specialized / Senior RDN'),
             time: '5+ years experience',
             what: 'Specialized practice: pediatric, oncology, kidney disease, sports nutrition, eating disorders, diabetes education (CDCES credential), bariatric, food allergy. Some go into private practice; others move into academia, food industry R&D, public health policy.',
-            pay: '$70-95K typical mid-career; private practice and food industry can exceed $100K with experience',
+            pay: 'BLS: the top 10% of dietitians earned more than $103,720 in May 2025.',
             how: 'Specialty certifications (e.g., CSP for pediatric, CSO for oncology, CDCES for diabetes), professional networking, often a Master\'s thesis in the area.'
           }
         ];
@@ -22770,7 +22931,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           { name: __alloT('stem.nutritionlab.food_industry_r_d', 'Food Industry / R&D'), icon: '🔬', desc: __alloT('stem.nutritionlab.food_companies_kraft_general_mills_mai', 'Food companies (Kraft, General Mills, Maine-based companies like Stonewall Kitchen). Product formulation, nutrition labeling, marketing review.'), pay: '$70-120K typical' },
           { name: __alloT('stem.nutritionlab.pediatric_rdn', 'Pediatric RDN'), icon: '👶', desc: __alloT('stem.nutritionlab.children_s_hospitals_pediatric_clinics', 'Children\'s hospitals, pediatric clinics, feeding-disorder programs. Specialized in growth, allergy, NICU nutrition, eating disorders.'), pay: '$60-90K' },
           { name: __alloT('stem.nutritionlab.eating_disorder_rdn', 'Eating Disorder RDN'), icon: '💚', desc: __alloT('stem.nutritionlab.specialized_clinics_residential_treatm', 'Specialized clinics, residential treatment centers, outpatient practices. Often paired with therapist; works under medical team. Highly specialized training.'), pay: '$60-90K' },
-          { name: __alloT('stem.nutritionlab.private_practice_counseling', 'Private Practice / Counseling'), icon: '💼', desc: __alloT('stem.nutritionlab.self_employed_or_small_group_build_cli', 'Self-employed or small group. Build client base over time. Telehealth options. Insurance billing varies by state.'), pay: 'Wide range; $30-150K+ depending on practice size' }
+          { name: __alloT('stem.nutritionlab.private_practice_counseling', 'Private Practice / Counseling'), icon: '💼', desc: __alloT('stem.nutritionlab.self_employed_or_small_group_build_cli', 'Self-employed or small group. Build client base over time. Telehealth options. Insurance billing varies by state.'), pay: 'Varies widely with practice size' }
         ];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -22782,7 +22943,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 h('div', null,
                   h('h2', { className: 'text-2xl font-black mb-1' }, __alloT('stem.nutritionlab.nutrition_careers_clear_and_honest', 'Nutrition careers — clear and honest')),
                   h('p', { className: 'text-sm opacity-95 leading-relaxed' },
-                    __alloT('stem.nutritionlab.the_registered_dietitian_nutritionist_', 'The Registered Dietitian Nutritionist (RDN) credential is the gold standard. As of 2024, RDN requires a Master\'s degree, an accredited supervised-practice internship (1200 hours), and passing a national exam. There are also paths in public health, food science, sports, and school nutrition that don\'t require RDN but offer related careers. This module is honest about timelines, pay, and the recent 2024 Master\'s change.'))
+                    // cdrnet.org/graduatedegree (checked 2026-11-24): "Effective January 1, 2024, the minimum degree requirement for eligibility to take the registration examination
+                    // for dietitians changed from a bachelor's degree to a graduate degree."
+                    __alloT('stem.nutritionlab.the_rdn_credential_v3', 'The Registered Dietitian Nutritionist (RDN) credential is the gold standard. As of 2024, the RDN requires a graduate degree, supervised practice in an accredited program, and passing a national exam. There are also paths in public health, food science, sports, and school nutrition that don\'t require RDN but offer related careers. This module is honest about timelines, pay, and the 2024 graduate-degree change.'))
                 )
               )
             ),
@@ -22812,7 +22975,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             view === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 [
-                  { stat: '$55-95K', label: __alloT('stem.nutritionlab.typical_rdn_pay', 'typical RDN pay'), sub: 'wide range by setting + region', color: 'text-emerald-700' },
+                  // BLS Occupational Outlook Handbook, Dietitians and Nutritionists (read 2026-11-24): "The median annual wage for dietitians and nutritionists was $76,400 in
+                  // May 2025." "The lowest 10 percent earned less than $49,090, and the highest 10 percent earned more than $103,720." The old "$55-95K" range had no source.
+                  { stat: '$76,400', label: __alloT('stem.nutritionlab.median_dietitian_pay_v2', 'median dietitian pay (May 2025)'), sub: 'Half earn more, half earn less. Entry pay is lower.', color: 'text-emerald-700' },
                   { stat: '~7 yrs', label: __alloT('stem.nutritionlab.school_supervised_practice', 'school + supervised practice'), sub: 'undergrad + grad + internship', color: 'text-blue-700' },
                   { stat: '2024', label: __alloT('stem.nutritionlab.master_s_now_required', 'Master\'s now required'), sub: 'major change for the RDN credential', color: 'text-amber-700' }
                 ].map(function(s, i) {
@@ -22838,7 +23003,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('div', { className: 'font-bold text-emerald-800 mb-1' }, __alloT('stem.nutritionlab.the_good', '✓ The good')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
                       h('li', null, __alloT('stem.nutritionlab.real_evidence_based_way_to_help_people', 'Real, evidence-based way to help people')),
-                      h('li', null, __alloT('stem.nutritionlab.stable_demand_every_hospital_and_schoo', 'Stable demand — every hospital and school needs nutrition staff')),
+                      // BLS OOH (read 2026-11-24): "Employment of dietitians and nutritionists is projected to grow 8 percent from 2025 to 2035", "much faster than the average for all
+                      // occupations"; in its largest-employers list hospitals (state, local, and private) have the biggest share, 27%. "Every hospital and school needs nutrition staff" had no source: cut.
+                      h('li', null, __alloT('stem.nutritionlab.job_growth_bls_v2', 'Growing field: the U.S. Bureau of Labor Statistics expects dietitian jobs to grow 8% from 2025 to 2035, much faster than average. Hospitals employ the most.')),
                       h('li', null, __alloT('stem.nutritionlab.diverse_settings_clinical_community_pu', 'Diverse settings: clinical, community, public health, industry')),
                       h('li', null, __alloT('stem.nutritionlab.path_to_private_practice_flexibility_o', 'Path to private practice + flexibility over time')),
                       h('li', null, __alloT('stem.nutritionlab.maine_has_a_tight_supportive_professio', 'Maine has a tight, supportive professional community'))
@@ -22848,8 +23015,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.nutritionlab.the_hard_parts', '⚠ The hard parts')),
                     h('ul', { className: 'space-y-1 list-disc list-inside' },
                       h('li', null, __alloT('stem.nutritionlab.7_year_path_with_a_master_s_requiremen', '7+ year path with a Master\'s requirement')),
-                      h('li', null, __alloT('stem.nutritionlab.internship_match_is_competitive_50_mat', 'Internship match is competitive (~50% match rate)')),
-                      h('li', null, __alloT('stem.nutritionlab.entry_pay_50_65k_is_modest_for_the_edu', 'Entry pay ($50-65K) is modest for the education investment')),
+                      h('li', null, __alloT('stem.nutritionlab.internship_match_competitive_v2', 'Internship spots can be competitive')),
+                      h('li', null, __alloT('stem.nutritionlab.entry_pay_modest_v2', 'Entry pay is modest for the years of education')),
                       h('li', null, __alloT('stem.nutritionlab.insurance_coverage_of_nutrition_counse', 'Insurance coverage of nutrition counseling is uneven')),
                       h('li', null, __alloT('stem.nutritionlab.working_with_eating_disorders_requires', 'Working with eating disorders requires emotional sustainability'))
                     )
@@ -22896,11 +23063,11 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-500 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.maine_education_programs', 'Maine education programs')),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  __alloT('stem.nutritionlab.maine_has_a_small_but_solid_set_of_nut', 'Maine has a small but solid set of nutrition programs. The two main pathways are at UMaine (Orono) and Husson (Bangor).')),
+                  __alloT('stem.nutritionlab.maine_nutrition_programs_v2', 'Maine has a small set of nutrition programs. The ACEND-accredited dietetics (RDN) pathway is at the University of Maine in Orono; other schools offer related degrees.')),
                 h('div', { className: 'space-y-3' },
                   [
-                    { name: __alloT('stem.nutritionlab.university_of_maine_human_nutrition_fo', 'University of Maine — Human Nutrition + Foods'), loc: 'Orono', what: 'B.S. Human Nutrition, ACEND-accredited DPD pathway. Strong agricultural-school context. Internships often through northeast hospital systems.', site: 'umaine.edu/foodsciencehumannutrition' },
-                    { name: __alloT('stem.nutritionlab.husson_university_dietetics', 'Husson University — Dietetics'), loc: 'Bangor', what: 'B.S. + integrated DPD pathway. Smaller program, hands-on faculty. Combined Master\'s pathway expanding for the new 2024 RDN requirement.', site: 'husson.edu' },
+                    { name: __alloT('stem.nutritionlab.university_of_maine_human_nutrition_fo', 'University of Maine — Human Nutrition + Foods'), loc: 'Orono', what: 'B.S. Food Science and Human Nutrition with an ACEND-accredited dietetics program, plus a dietetic internship.', site: 'umaine.edu/foodandagriculture' },
+                    { name: __alloT('stem.nutritionlab.husson_nutrition_health_v2', 'Husson University — Nutrition and Health'), loc: 'Bangor', what: 'B.S. in Nutrition and Health (nutrition, wellness, health promotion). Not an accredited dietetics (RDN) program.', site: 'husson.edu' },
                     { name: __alloT('stem.nutritionlab.university_of_southern_maine_public_he', 'University of Southern Maine — Public Health'), loc: 'Portland', what: 'Not RDN-track, but B.S. and M.P.H. options for those interested in public-health nutrition (food policy, community programming, epidemiology).', site: 'usm.maine.edu' },
                     { name: __alloT('stem.nutritionlab.university_of_new_england_health_scien', 'University of New England — Health Sciences'), loc: 'Biddeford / Portland', what: 'M.S. Applied Nutrition (online program) — popular for working professionals adding the Master\'s required for the 2024 RDN exam.', site: 'online.une.edu' }
                   ].map(function(p, i) {
@@ -22973,14 +23140,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var DRI = { protein: 50, fiber: 28, vitD: 15, omega3: 1.3, iron: 12, calcium: 1300 };
         var FOODS = [
           // Breakfast
-          { id: 'bOatBlue', meal: 'breakfast', icon: '🫐', name: __alloT('stem.nutritionlab.maine_wild_blueberries_on_oatmeal', 'Maine wild blueberries on oatmeal'), protein: 7, fiber: 5, vitD: 0.5, omega3: 0.4, iron: 2.5, calcium: 105, note: __alloT('stem.nutritionlab.maine_wild_blueberries_pack_33_more_an', 'Maine wild blueberries pack 33% more antioxidants than cultivated.') },
+          { id: 'bOatBlue', meal: 'breakfast', icon: '🫐', name: __alloT('stem.nutritionlab.maine_wild_blueberries_on_oatmeal', 'Maine wild blueberries on oatmeal'), protein: 7, fiber: 5, vitD: 0.5, omega3: 0.4, iron: 2.5, calcium: 105, note: __alloT('stem.nutritionlab.maine_wild_blueberries_fiber_v2', 'Wild blueberries are a Maine crop; oatmeal adds fiber and iron.') },
           { id: 'bEggs',    meal: 'breakfast', icon: '🍳', name: __alloT('stem.nutritionlab.two_eggs_any_style', 'Two eggs, any style'),                protein: 12, fiber: 0, vitD: 2.0, omega3: 0.1, iron: 1.8, calcium: 50, note: __alloT('stem.nutritionlab.eggs_are_one_of_the_few_natural_vitami', 'Eggs are one of the few natural vitamin-D foods.') },
           { id: 'bYogurt',  meal: 'breakfast', icon: '🍯', name: __alloT('stem.nutritionlab.greek_yogurt_with_honey', 'Greek yogurt with honey'),            protein: 17, fiber: 0, vitD: 1.5, omega3: 0,   iron: 0.1, calcium: 230, note: __alloT('stem.nutritionlab.calcium_standout', 'Calcium standout.') },
           { id: 'bToast',   meal: 'breakfast', icon: '🍞', name: __alloT('stem.nutritionlab.whole_grain_toast_with_butter', 'Whole-grain toast with butter'),      protein: 4, fiber: 3, vitD: 0.2, omega3: 0.05, iron: 1.4, calcium: 35, note: __alloT('stem.nutritionlab.quick_carbs_fiber_low_everything_else', 'Quick carbs + fiber, low everything else.') },
           { id: 'bCereal',  meal: 'breakfast', icon: '🥣', name: __alloT('stem.nutritionlab.fortified_cereal_with_milk', 'Fortified cereal with milk'),         protein: 8, fiber: 3, vitD: 3.5, omega3: 0.05, iron: 9.0, calcium: 320, note: __alloT('stem.nutritionlab.fortified_iron_vit_d_calcium_nutrient_', 'Fortified iron + vit D + calcium — nutrient-dense for the price.') },
           // Lunch
           { id: 'lLobster', meal: 'lunch',     icon: '🦞', name: __alloT('stem.nutritionlab.lobster_roll_maine_summer', 'Lobster roll (Maine summer)'),         protein: 22, fiber: 1, vitD: 0,   omega3: 0.2, iron: 0.8, calcium: 90, note: __alloT('stem.nutritionlab.maine_lobster_protein_dense_vit_d_negl', 'Maine lobster — protein-dense; vit D negligible.') },
-          { id: 'lTuna',    meal: 'lunch',     icon: '🐟', name: __alloT('stem.nutritionlab.tuna_sandwich_canned_light', 'Tuna sandwich (canned light)'),        protein: 24, fiber: 2, vitD: 1.0, omega3: 0.5, iron: 2.2, calcium: 70, note: __alloT('stem.nutritionlab.canned_light_tuna_solid_omega_3_low_me', 'Canned light tuna — solid omega-3, low mercury.') },
+          { id: 'lTuna',    meal: 'lunch',     icon: '🐟', name: __alloT('stem.nutritionlab.tuna_sandwich_canned_light', 'Tuna sandwich (canned light)'),        protein: 24, fiber: 2, vitD: 1.0, omega3: 0.5, iron: 2.2, calcium: 70, note: __alloT('stem.nutritionlab.canned_light_tuna_best_choice_v2', 'Canned light tuna — an FDA "Best Choice" lower-mercury fish.') },
           { id: 'lTurkey',  meal: 'lunch',     icon: '🥪', name: __alloT('stem.nutritionlab.turkey_sandwich_on_whole_wheat', 'Turkey sandwich on whole wheat'),     protein: 22, fiber: 4, vitD: 0.2, omega3: 0.1, iron: 2.5, calcium: 180, note: __alloT('stem.nutritionlab.balanced_protein_fiber', 'Balanced protein + fiber.') },
           { id: 'lSalad',   meal: 'lunch',     icon: '🥗', name: __alloT('stem.nutritionlab.mixed_greens_with_chickpeas_feta', 'Mixed greens with chickpeas & feta'), protein: 14, fiber: 8, vitD: 0,   omega3: 0.2, iron: 4.0, calcium: 220, note: __alloT('stem.nutritionlab.iron_fiber_standout_add_citrus_for_iro', 'Iron + fiber standout. Add citrus for iron absorption.') },
           { id: 'lPizza',   meal: 'lunch',     icon: '🍕', name: __alloT('stem.nutritionlab.cheese_pizza_school_slice', 'Cheese pizza (school slice)'),        protein: 12, fiber: 2, vitD: 0.3, omega3: 0,   iron: 2.0, calcium: 220, note: __alloT('stem.nutritionlab.calcium_from_cheese_modest_fiber_iron', 'Calcium from cheese; modest fiber/iron.') },
@@ -23055,7 +23222,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             else if (pct < 50) deficits.push({ label: n.l, pct: pct });
           });
           var maineHighlight =
-            totals.vitD < 7 ? 'Your day is low in vitamin D — common for Mainers in winter (latitude 43–47°N). Real-world fix: fortified milk/cereal, eggs, fatty fish, or a winter supplement (talk to a doctor).'
+            totals.vitD < 7 ? 'Your day is low in vitamin D. Few foods have much, and Maine\'s winter sun makes little or none. Real-world fix: fortified milk/cereal, eggs, fatty fish; ask a doctor before taking a supplement.'
             : totals.omega3 < 0.5 ? 'Your day is low in omega-3 — Maine has world-class fisheries (salmon, herring, sardines) that make this easy to fix.'
             : totals.iron < 6 ? 'Your day is low in iron — adolescents (especially menstruating teens) have high iron needs. Pair plant iron with vitamin C for absorption.'
             : 'Your day looks pretty balanced. Maine context — winter vitamin D and adolescent iron — both look covered.';
@@ -23197,9 +23364,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       function DeficiencyDetective() {
         var NUTRIENTS = [
           { id: 'vitD',    label: __alloT('stem.nutritionlab.vitamin_d_5', 'Vitamin D'), color: '#f59e0b', icon: '☀️',
-            def: 'Skin makes it from sunlight; few foods (fatty fish, fortified milk). At Maine\'s latitude, sun is too low Oct–Mar. Bone health + immune.' },
+            def: 'Skin makes it from sunlight; few foods (fatty fish, fortified milk). In a Maine winter (about Nov–Feb) the sun is too low to make it. Bone health + immune.' },
           { id: 'iron',    label: __alloT('stem.nutritionlab.iron_5', 'Iron'),      color: '#dc2626', icon: '🩸',
-            def: 'Carries oxygen via hemoglobin. Plant iron (lentils, spinach) absorbs poorly without vitamin C. Menstruating teens + endurance athletes high-risk.' },
+            def: 'Carries oxygen via hemoglobin. Plant iron (lentils, spinach) absorbs poorly without vitamin C. Teen girls (periods) and endurance athletes are at higher risk.' },
           { id: 'b12',     label: 'B12',       color: '#a855f7', icon: '🧬',
             def: 'Animal products only (meat, fish, eggs, dairy) + fortified plant milks. Vegans + PPI-users + older adults at risk. Nerve + RBC formation.' },
           { id: 'folate',  label: __alloT('stem.nutritionlab.folate', 'Folate'),    color: '#16a34a', icon: '🥬',
@@ -23211,25 +23378,25 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         ];
         var V = [
           { id: 1, scenario: '17-year-old in Maine, runs cross-country. Recurring stress fractures since November. Spends most of the day indoors at school; rarely drinks fortified dairy and takes no supplement.', correct: 'vitD',
-            why: 'Maine winter latitude (43–47°N): sun is too low Oct–Mar to make vitamin D in skin. Indoor adolescent + low dietary D + stress fractures = canonical D deficiency. Maine CDC has flagged this as a documented public-health concern.' },
+            why: 'Maine sits at 43–47°N. A Boston study (42°N) found winter sun made no vitamin D in skin from November through February, and the gap is longer farther north. Indoor days + little fortified food + stress fractures point to low vitamin D. (Low calcium or not eating enough for training can also cause stress fractures, so a doctor checks all three.)' },
           { id: 2, scenario: '14-year-old girl, started menstruating 6 months ago. Persistent fatigue, brain fog, and "ADHD-like" inattention in class. Vegetarian diet (no red meat). Pale conjunctivae on exam.', correct: 'iron',
-            why: 'Menstruating teen + plant-only iron source + fatigue + cognitive symptoms = classic iron-deficiency anemia. AAP notes iron deficiency can present with ADHD-like inattention before frank anemia. Pair plant iron with vitamin C for absorption.' },
+            why: 'Teen periods + plant-only iron + tiredness + trouble concentrating = classic iron-deficiency pattern. Only a blood test can confirm it. Pair plant iron with vitamin C for absorption.' },
           { id: 3, scenario: '21-year-old, strict vegan for 3 years. Tingling and numbness in feet for 6 months; mild memory issues. Does not take a B12 supplement; relies on "B12 in nutritional yeast" but eats it inconsistently.', correct: 'b12',
-            why: 'B12 is exclusively in animal products (meat, fish, eggs, dairy) + fortified foods. Vegan without consistent fortified-food or supplement intake = certain B12 deficiency by 2–4 years. Tingling + memory = subacute combined degeneration of spinal cord. Standard recommendation: B12 supplement for ALL vegans.' },
+            why: 'B12 is found naturally only in animal foods; vegans get it from fortified foods or supplements. Body stores can last a few years, then levels fall. Tingling, numbness and memory trouble are classic signs of low B12. NIH ODS: fortified foods or B12 supplements can substantially reduce the risk.' },
           { id: 4, scenario: '28-year-old, just learned she is 8 weeks pregnant — was not taking prenatal vitamins beforehand. Family history includes a relative born with spina bifida. Asks what supplement to start now and whether she should have started earlier.', correct: 'folate',
             why: 'Folate for neural-tube defect prevention works MOST in the first 28 days of pregnancy — often before someone knows they are pregnant. CDC recommends 400 mcg folic acid daily for ALL women of reproductive age, not just those trying to conceive. The U.S. grain-fortification program has reduced (but not eliminated) NTDs.' },
           { id: 5, scenario: '13-year-old girl, lactose intolerant since age 8. Drinks unfortified almond milk only. Sustained a stress fracture during cross-country. DEXA scan shows low bone density for age.', correct: 'calcium',
-            why: 'Lactose intolerance + unfortified plant milk = chronic low calcium intake during PEAK bone-building years (ages 9–18). Adolescent calcium RDA is 1300 mg/day — the highest of any age group. Lifelong bone density is largely set by 20. Switching to FORTIFIED plant milk (check label for 30% DV calcium) is the easy fix.' },
+            why: 'Lactose intolerance + unfortified plant milk = chronic low calcium intake during PEAK bone-building years (ages 9–18). Adolescent calcium RDA is 1300 mg/day — the highest of any age group. Up to 90% of peak bone mass is built by about age 18–20 (NIH). Switching to a calcium-FORTIFIED plant milk (check the label) is an easy fix.' },
           { id: 6, scenario: '35-year-old recent immigrant from a low-iodine soil region in central Asia. No iodized salt at home for years. Visible neck swelling (goiter); cold-intolerant; sluggish; recent weight gain; family history of thyroid disease.', correct: 'iodine',
-            why: 'Goiter + hypothyroid signs + low-iodine soil region (no iodized salt) = iodine deficiency causing thyroid enlargement and hypothyroidism. The U.S. iodized-salt program (1924) nearly eliminated this domestically, but it remains common in many parts of the world. First-line treatment: thyroid evaluation + iodized salt + possibly levothyroxine.' },
+            why: 'Goiter + hypothyroid signs + low-iodine soil region (no iodized salt) = iodine deficiency causing thyroid enlargement and hypothyroidism. The U.S. iodized-salt program (1924) nearly eliminated this domestically, but it remains common in many parts of the world. This needs a medical thyroid evaluation.' },
           { id: 7, scenario: '68-year-old on omeprazole (a PPI) daily for 5 years for GERD. Recent CBC shows macrocytic anemia (high MCV); reports tingling in hands; not vegetarian, eats normal mixed diet.', correct: 'b12',
-            why: 'Long-term PPI use blocks gastric acid production — and gastric acid is required to release B12 from food protein. Even with adequate dietary B12, absorption fails. Macrocytic anemia + neuropathy + PPI = textbook PPI-induced B12 deficiency. AGA and gastroenterology guidelines recommend monitoring B12 in long-term PPI users.' },
+            why: 'Long-term PPI use blocks gastric acid production — and gastric acid is required to release B12 from food protein. Even with adequate dietary B12, absorption fails. Large red blood cells + tingling + long-term PPI use point to low B12 (NIH ODS: PPIs can interfere with B12 absorption from food).' },
           { id: 8, scenario: '19-year-old male training for his first marathon. Persistent fatigue despite "iron-rich" diet. Hemoglobin is normal but ferritin (iron stores) is 12 ng/mL (very low). Not vegetarian.', correct: 'iron',
-            why: 'Endurance athletes lose iron through foot-strike hemolysis (RBCs damaged by repeated impact), GI micro-bleeding, and sweat. Ferritin can be very low BEFORE hemoglobin drops — "non-anemic iron deficiency" is real and causes fatigue + reduced performance. Ferritin <30 ng/mL is now the threshold for treatment in athletes (vs <12 in general).' },
+            why: 'Athletes lose extra iron: in sweat, from red blood cells broken by foot strikes on hard ground, and from some gut bleeding with pain medicines (NIH ODS). Iron stores (ferritin) can run low before hemoglobin drops. A doctor decides whether and how to treat it.' },
           { id: 9, scenario: '6-month-old, exclusively breastfed, born in November in northern New England. Mother is not taking a vitamin D supplement, and the infant has never received one. Pediatric exam notes early bowing of the legs.', correct: 'vitD',
-            why: 'Breast milk has very low vitamin D regardless of maternal intake. AAP recommends 400 IU vitamin D supplement for ALL exclusively breastfed infants from birth onward. Bowing legs = nutritional rickets, which is increasing again in the US after decades of decline. Easy prevention; sad to miss.' },
+            why: 'Breast milk has very low vitamin D regardless of maternal intake. AAP recommends 400 IU vitamin D supplement for ALL exclusively breastfed infants from birth onward. Bowing legs can be a sign of rickets. Easy to prevent.' },
           { id: 10, scenario: '65-year-old postmenopausal woman; recent vertebral compression fracture from a minor fall. DEXA shows osteoporosis. Reports lifelong "low dairy" diet and no calcium supplementation.', correct: 'calcium',
-            why: 'Postmenopausal women lose ~1–2% bone density per year for the first 5–10 years after menopause. A lifetime of low calcium intake compounds this. Treatment includes calcium + vitamin D, weight-bearing exercise, and often pharmacotherapy (bisphosphonates). Adolescent calcium intake (vignette #5) prevents this 50 years later.' }
+            why: 'Women lose bone faster in the years after menopause, and a lifetime of low calcium adds to the loss. Doctors treat osteoporosis with calcium, vitamin D, exercise and often medicine. Building strong bones as a teen (vignette #5) lowers the risk later in life.' }
         ];
 
         // ★ A vignette index off toolData is untrusted: a project file can carry
@@ -23407,7 +23574,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // HYDRATION LAB
       // Water, your body, and the science of staying hydrated.
       // PHYSIOLOGY-FIRST framing throughout: water is a body input,
-      // never an appetite suppressant. NEDA-aware copy: no language
+      // never an appetite suppressant. Eating-disorder-aware copy: no language
       // that frames hydration as a substitute for eating.
       // ─────────────────────────────────────────────────────
 
@@ -23442,7 +23609,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         { hex: '#fafad9', n: 2, label: __alloT('stem.nutritionlab.pale_yellow', 'Pale yellow'),   status: 'Hydrated',           note: __alloT('stem.nutritionlab.the_classic_well_hydrated_target_color', 'The classic "well-hydrated" target color most clinicians teach.') },
         { hex: '#f3edaa', n: 3, label: __alloT('stem.nutritionlab.light_yellow', 'Light yellow'),  status: 'Hydrated',           note: __alloT('stem.nutritionlab.still_in_the_green_zone_body_has_enoug', 'Still in the green zone. Body has enough water for routine function.') },
         { hex: '#e6db5c', n: 4, label: __alloT('stem.nutritionlab.yellow', 'Yellow'),        status: 'Borderline',         note: __alloT('stem.nutritionlab.drink_water_in_the_next_hour_not_an_em', 'Drink water in the next hour. Not an emergency, but you are trending toward thirsty.') },
-        { hex: '#d3b73c', n: 5, label: __alloT('stem.nutritionlab.dark_yellow', 'Dark yellow'),   status: 'Mildly dehydrated',  note: __alloT('stem.nutritionlab.about_1_2_body_weight_fluid_deficit_at', 'About 1-2% body-weight fluid deficit. Attention, mood, short-term memory measurably drop here. Drink now.') },
+        { hex: '#d3b73c', n: 5, label: __alloT('stem.nutritionlab.dark_yellow', 'Dark yellow'),   status: 'Mildly dehydrated',  note: __alloT('stem.nutritionlab.about_1_2_body_weight_fluid_deficit_at_v2', 'Possibly a 1-2% body-weight fluid loss. Even mild dehydration can affect attention and memory. Drink now.') },
         { hex: '#b08c2a', n: 6, label: __alloT('stem.nutritionlab.amber', 'Amber'),         status: 'Dehydrated',         note: __alloT('stem.nutritionlab.definitely_behind_sip_water_steadily_o', 'Definitely behind. Sip water steadily over the next 1-2 hours. Avoid soda or caffeine right now.') },
         { hex: '#8b6420', n: 7, label: 'Brown-amber',   status: 'Very dehydrated',    note: __alloT('stem.nutritionlab.if_this_is_post_exercise_or_after_illn', 'If this is post-exercise or after illness, rehydrate with water + a salty snack or oral rehydration solution.') },
         { hex: '#6b4015', n: 8, label: __alloT('stem.nutritionlab.dark_brown', 'Dark brown'),    status: 'Severely dehydrated', note: __alloT('stem.nutritionlab.or_possibly_a_sign_of_something_else_m', 'Or possibly a sign of something else (medication, liver, blood in urine). If you cannot rehydrate or it persists, see a clinician.') }
@@ -23470,9 +23637,9 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         {
           id: 'soda', name: __alloT('stem.nutritionlab.soda_cola', 'Soda (cola)'), icon: '🥤',
           sodium: 35, sugar: 26, caffeine: 30, kcal: 100,
-          efficacy: 'Provides fluid but the sugar and caffeine produce a small diuretic effect. Net hydration is positive but lower per ounce than water or a sports drink.',
-          when: 'Occasional. Not a hydration tool. The 26 g of sugar per cup is well above the daily added-sugar guideline for adolescents.',
-          source: 'USDA FoodData Central; AAP added-sugar guidance'
+          efficacy: 'Provides fluid. In a 2016 study, cola kept people about as hydrated as water over 4 hours, but it brings sugar and caffeine.',
+          when: 'Occasional. The 26 g of sugar in one cup is about the whole daily added-sugar limit (25 g) the American Heart Association suggests for kids and teens.',
+          source: 'USDA FoodData Central; Maughan 2016 (beverage hydration index); AHA added-sugar statement 2017'
         },
         {
           id: 'milk', name: __alloT('stem.nutritionlab.milk_1', 'Milk (1%)'), icon: '🥛',
@@ -23489,7 +23656,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         // partial object from an older save keeps every field it is missing, and
         // normalise the four numbers — a string there does not crash, it silently
         // makes every derived readout NaN.
-        var MACRO_IQ_DEFAULTS = { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var MACRO_IQ_DEFAULTS = { carbs: 50, protein: 20, fat: 30, fiber: 25, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [], pred: null, tally: { n: 0, hit: 0 } };
         var iq = (function (raw) {
           var base = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
           var out = Object.assign({}, MACRO_IQ_DEFAULTS, base);
@@ -23498,31 +23665,71 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             out[k] = isFinite(n) ? n : MACRO_IQ_DEFAULTS[k];
           });
           if (!Array.isArray(out.log)) out.log = [];
+          if (!out.pred || typeof out.pred !== 'object' || NL_MACRO_STATE_IDS.indexOf(out.pred.pick) < 0) out.pred = null;
+          if (!out.tally || typeof out.tally !== 'object' || !isFinite(out.tally.n) || !isFinite(out.tally.hit)) out.tally = { n: 0, hit: 0 };
           return out;
         })(d.macroInquiry);
         function setIQ(patch) { upd('macroInquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         var total = iq.carbs + iq.protein + iq.fat; // grams — for the "total macros" readout
-        // Macro split must be by ENERGY (kcal), not grams: the % labels, the DGA-AMDR state
-        // buckets, and the pie all describe calorie share. Fat is 9 kcal/g vs 4 for carb/protein,
-        // so a grams-based split understated fat's share and mislabeled the energy state.
-        var cKcal = iq.carbs * 4, pKcal = iq.protein * 4, fKcal = iq.fat * 9;
-        var totalKcal = cKcal + pKcal + fKcal;
-        var pC = totalKcal > 0 ? cKcal / totalKcal : 0.33;
-        var pP = totalKcal > 0 ? pKcal / totalKcal : 0.33;
-        var pF = totalKcal > 0 ? fKcal / totalKcal : 0.33;
-        // satiety proxy: protein + fiber + fat dominate
-        var satiety = pP * 100 * 1.5 + iq.fiber * 1.0 + pF * 100 * 0.7 + pC * 100 * 0.3;
-        var fiberAdjGI = Math.max(0, Math.min(100, pC * 100 * 1.3 - iq.fiber * 1.4));
-        var state = pC < 0.10 ? 'keto' : pC < 0.30 ? 'lowcarb' : pC < 0.55 ? 'balanced' : pC < 0.75 ? 'highcarb' : 'sugarheavy';
+        // ROUND 3: one model (nlMacroModel, module scope) feeds the state, the pie, both scores, the reveal and its feedback.
+        // The split is by ENERGY (kcal), not grams: fat is 9 kcal/g vs 4 for carb/protein.
+        var mm = nlMacroModel(iq.carbs, iq.protein, iq.fat, iq.fiber);
+        var pC = mm.pC, pP = mm.pP, pF = mm.pF;
+        var satiety = mm.fullness, fiberAdjGI = mm.spike; // MADE-UP CLASSROOM MODEL, shown on screen as such
+        var state = mm.state;
+        // Predict first: state, pie, curve and scores stay hidden until the student commits a prediction for THESE settings.
+        var pred = iq.pred;
+        var revealed = !!pred && pred.c === iq.carbs && pred.p === iq.protein && pred.f === iq.fat && pred.fb === iq.fiber;
+        var STATE_LABEL = {
+          keto: __alloT('stem.nutritionlab.ketogenic', 'Ketogenic'),
+          lowcarb: __alloT('stem.nutritionlab.macro_state_lowcarb', 'Low-carb'),
+          balanced: __alloT('stem.nutritionlab.balanced', 'Balanced'),
+          highcarb: __alloT('stem.nutritionlab.macro_state_highcarb', 'High-carb'),
+          sugarheavy: __alloT('stem.nutritionlab.macro_state_veryhigh', 'Very high-carb')
+        };
+        var STATE_RANGE = {
+          keto: __alloT('stem.nutritionlab.macro_range_keto', 'under 10%'),
+          lowcarb: __alloT('stem.nutritionlab.macro_range_lowcarb', '10% to under 30%'),
+          balanced: __alloT('stem.nutritionlab.macro_range_balanced', '30% to under 55%'),
+          highcarb: __alloT('stem.nutritionlab.macro_range_highcarb', '55% to under 75%'),
+          sugarheavy: __alloT('stem.nutritionlab.macro_range_veryhigh', '75% or more')
+        };
+        // Recommended carb range: IOM DRI AMDR table (as reproduced by Health Canada, checked 2026-11-24): "4–18 years" "45–65%".
         var sm = ({
-          keto: { label: __alloT('stem.nutritionlab.ketogenic', 'Ketogenic'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.nutritionlab.carbs_10_of_macros_body_shifts_to_fat_', 'Carbs <10% of macros. Body shifts to fat oxidation; ketone production likely after several days.') },
-          lowcarb: { label: 'Low-carb', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.nutritionlab.carbs_10_30_stable_blood_sugar_likely_', 'Carbs 10–30%. Stable blood sugar likely; common Mediterranean/paleo range.') },
-          balanced: { label: __alloT('stem.nutritionlab.balanced', 'Balanced'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.nutritionlab.carbs_30_55_within_the_broader_balance', 'Carbs 30–55%. Within the broader balanced range; the full Dietary Guidelines for Americans AMDR for carbs is 45–65%, so the upper end of this bucket and the start of "high-carb" both still fall inside DGA. Sustainable for most people.') },
-          highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.nutritionlab.carbs_55_75_the_55_65_segment_is_squar', 'Carbs 55–75%. The 55–65% segment is squarely within the DGA AMDR. The 65–75% segment is the endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.') },
-          sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.nutritionlab.carbs_75_with_low_fiber_high_glycemic_', 'Carbs >75% with low fiber → high glycemic load. Common in heavily-processed snack-dominated days, but well above the US average (NHANES puts US carb intake at ~46–50%).') }
+          keto: { color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.nutritionlab.macro_desc_keto_v2', 'Carbs are under 10% of the calories. In this model that is called ketogenic. Doctors use a ketogenic diet as a supervised treatment for some epilepsy; it is not a diet to try on your own.') },
+          lowcarb: { color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.nutritionlab.carbs_10_30_below_dga_range_v3', 'Carbs are 10% to under 30% of the calories. That is below the recommended range for ages 4–18 (45–65%). Very low-carb eating makes it harder to get enough fiber and fuel for growth and sports.') },
+          balanced: { color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.nutritionlab.macro_desc_balanced_v2', 'Carbs are 30% to under 55% of the calories. The recommended range for ages 4–18 is 45–65%, so only the top part of this band (45–55%) is inside it.') },
+          highcarb: { color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.nutritionlab.macro_desc_highcarb_v2', 'Carbs are 55% to under 75% of the calories. The 55–65% part is inside the recommended range for ages 4–18 (45–65%); above 65% is more than the range.') },
+          sugarheavy: { color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.nutritionlab.macro_desc_veryhigh_v2', 'Carbs are 75% or more of the calories, above the recommended range for ages 4–18 (45–65%). In this model, fiber does not change the state; it only lowers the sugar-spike score.') }
         })[state];
-        // SVG: stacked bar + macro pie + live glycemic/metabolic waveform
+        sm.label = STATE_LABEL[state];
+        var NEUTRAL = { color: '#93c5fd', bg: '#0f172a', border: '#475569' };
+        var vis = revealed ? sm : NEUTRAL;
+        function fill(str, map) { Object.keys(map).forEach(function (k) { str = str.split('{' + k + '}').join(String(map[k])); }); return str; }
+        function commit(id) {
+          if (mm.totalKcal <= 0 || revealed) return;
+          var hit = id === state;
+          setIQ({ pred: { pick: id, c: iq.carbs, p: iq.protein, f: iq.fat, fb: iq.fiber }, tally: { n: iq.tally.n + 1, hit: iq.tally.hit + (hit ? 1 : 0) } });
+        }
+        function feedback() {
+          var hit = pred.pick === state;
+          var lines = [];
+          lines.push(hit
+            ? fill(__alloT('stem.nutritionlab.macro_fb_hit', '✓ Your prediction matched the model: {state}.'), { state: sm.label })
+            : fill(__alloT('stem.nutritionlab.macro_fb_miss', 'Not this time. You predicted {pick} ({range}).'), { pick: STATE_LABEL[pred.pick], range: STATE_RANGE[pred.pick] }));
+          lines.push(fill(__alloT('stem.nutritionlab.macro_fb_calc', 'Carbs: {g} g × 4 = {ck} kcal out of {tk} kcal in all = {pct}% of the calories, so the model says {state} ({range}).'),
+            { g: iq.carbs, ck: mm.cKcal, tk: mm.totalKcal, pct: mm.carbPct.toFixed(1), state: sm.label, range: STATE_RANGE[state] }));
+          if (!hit && mm.gramState === pred.pick) {
+            lines.push(fill(__alloT('stem.nutritionlab.macro_fb_grams', 'You may have used grams: carbs are {g} of {tg} g ({gp}%). Fat has 9 kcal per gram and carbs 4, so fat takes a bigger share of the calories than of the grams.'),
+              { g: iq.carbs, tg: total, gp: mm.gramPct.toFixed(1) }));
+          } else if (!hit) {
+            lines.push(NL_MACRO_STATE_IDS.indexOf(pred.pick) < NL_MACRO_STATE_IDS.indexOf(state)
+              ? __alloT('stem.nutritionlab.macro_fb_low', 'Your pick was too low: carbs give more of the calories than you thought. Protein has 4 kcal per gram and fat has 9.')
+              : __alloT('stem.nutritionlab.macro_fb_high', 'Your pick was too high: carbs give less of the calories than you thought. Fat has 9 kcal per gram, so a little fat adds a lot of calories.'));
+          }
+          return lines;
+        }
         var cy = 66;
         function arc(start, end, r, ir) {
           var a0 = start * 2 * Math.PI - Math.PI / 2;
@@ -23537,90 +23744,120 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var giPeakY = 152 - Math.round((fiberAdjGI / 100) * 26);
         var giPeakX = Math.round(64 + (1 - fiberAdjGI / 100) * 32);
         var giCurveD = 'M 14 152 C 34 152 ' + (giPeakX - 18) + ' ' + giPeakY + ' ' + giPeakX + ' ' + giPeakY + ' C ' + (giPeakX + 26) + ' ' + giPeakY + ' 148 150 186 152';
+        var btnFocus = 'focus:outline-none focus:ring-2 ring-sky-300';
         return h('div', { className: 'p-4' },
-          h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state', 'Macro Inquiry — Explore the Energy State') }),
-          h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.nutritionlab.macro_inquiry_widget', '🔬 Macro Inquiry Widget')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.nutritionlab.set_carbohydrate_protein_fat_grams_plu', 'Set carbohydrate, protein, fat, and fiber, then observe how the modeled energy state changes. The result updates live; record a hypothesis or pattern you notice.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
-            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.8 } }, sm.desc),
-            h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },
+          h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state_v2', 'Macro Inquiry — Predict the Energy State') }),
+          h('div', { 'data-nl-macro-revealed': revealed ? 'true' : 'false', style: { padding: 16, borderRadius: 12, background: vis.bg, border: '1px solid ' + vis.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: vis.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.nutritionlab.macro_inquiry_widget', '🔬 Macro Inquiry Widget')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.9, lineHeight: 1.4 } }, __alloT('stem.nutritionlab.set_carbohydrate_protein_fat_grams_plu_v2', 'Set carbohydrate, protein, fat, and fiber. Predict the energy state, then check it against the model. Change any slider to predict again.')),
+            revealed && h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + mm.carbPct.toFixed(1) + '% carb / ' + mm.proteinPct.toFixed(1) + '% protein / ' + mm.fatPct.toFixed(1) + '% fat ' + __alloT('stem.nutritionlab.macro_of_calories', '(of calories)')),
+            revealed && h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.9 } }, sm.desc),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginBottom: 10 } },
               h('svg', { width: 200, height: 164, viewBox: '0 0 200 164', 'aria-hidden': 'true', focusable: 'false', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
-                h('circle', { cx: 100, cy: cy, r: 54, fill: 'none', stroke: sm.color, strokeWidth: 1, strokeDasharray: '4 5', opacity: 0.42, className: 'nl-svg-fx nl-anim-orbit' }),
-                pC > 0.001 && h('path', { d: arc(0, pC, 48, 25), fill: '#22d3ee', opacity: 0.88 }),
-                pP > 0.001 && h('path', { d: arc(pC, pC + pP, 48, 25), fill: '#4ade80', opacity: 0.88 }),
-                pF > 0.001 && h('path', { d: arc(pC + pP, 1, 48, 25), fill: '#fb923c', opacity: 0.88 }),
+                h('circle', { cx: 100, cy: cy, r: 54, fill: 'none', stroke: vis.color, strokeWidth: 1, strokeDasharray: '4 5', opacity: 0.42, className: 'nl-svg-fx nl-anim-orbit' }),
+                revealed && pC > 0.001 && h('path', { d: arc(0, pC, 48, 25), fill: '#22d3ee', opacity: 0.88 }),
+                revealed && pP > 0.001 && h('path', { d: arc(pC, pC + pP, 48, 25), fill: '#4ade80', opacity: 0.88 }),
+                revealed && pF > 0.001 && h('path', { d: arc(pC + pP, 1, 48, 25), fill: '#fb923c', opacity: 0.88 }),
+                !revealed && h('circle', { cx: 100, cy: cy, r: 36.5, fill: 'none', stroke: '#334155', strokeWidth: 23 }),
                 h('circle', { cx: 100, cy: cy, r: 46, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, className: 'nl-svg-fx nl-anim-shimmer' }),
-                h('text', { x: 100, y: cy + 1, textAnchor: 'middle', fill: sm.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
-                h('text', { x: 100, y: cy + 15, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10.5 }, __alloT('stem.nutritionlab.total_macros', 'total macros')),
-                // Live glycemic/metabolic energy curve with phosphor glow & tracking beacon
+                h('text', { x: 100, y: cy + 1, textAnchor: 'middle', fill: vis.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
+                h('text', { x: 100, y: cy + 15, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, revealed ? __alloT('stem.nutritionlab.macro_total_short', 'in all') : '?'),
                 h('line', { x1: 14, y1: 152, x2: 186, y2: 152, stroke: '#334155', strokeWidth: 1 }),
-                h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 5.5, strokeLinecap: 'round', className: 'nl-svg-fx nl-anim-glow' }),
-                h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 1.8, strokeLinecap: 'round' }),
-                h('path', { d: giCurveD, fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.65, className: 'nl-svg-fx nl-anim-flow' }),
-                h('circle', { cx: giPeakX, cy: giPeakY, r: 6.5, fill: 'none', stroke: sm.color, strokeWidth: 1.4, className: 'nl-svg-fx nl-anim-dv-halo' }),
-                h('circle', { cx: giPeakX, cy: giPeakY, r: 2.8, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.4 })
+                revealed && h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 5.5, strokeLinecap: 'round', className: 'nl-svg-fx nl-anim-glow' }),
+                revealed && h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 1.8, strokeLinecap: 'round' }),
+                revealed && h('path', { d: giCurveD, fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.65, className: 'nl-svg-fx nl-anim-flow' }),
+                revealed && h('circle', { cx: giPeakX, cy: giPeakY, r: 6.5, fill: 'none', stroke: sm.color, strokeWidth: 1.4, className: 'nl-svg-fx nl-anim-dv-halo' }),
+                revealed && h('circle', { cx: giPeakX, cy: giPeakY, r: 2.8, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.4 }),
+                !revealed && h('text', { x: 100, y: 145, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, __alloT('stem.nutritionlab.macro_hidden_svg', 'Predict to see the result'))
               ),
-              h('div', { style: { flex: '1 1 auto', fontSize: 12 } },
+              h('div', { style: { flex: '1 1 160px', fontSize: 12 } },
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#22d3ee', marginRight: 6, verticalAlign: 'middle' } }), 'Carbs: ', h('b', null, iq.carbs + 'g')),
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#4ade80', marginRight: 6, verticalAlign: 'middle' } }), 'Protein: ', h('b', null, iq.protein + 'g')),
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#fb923c', marginRight: 6, verticalAlign: 'middle' } }), 'Fat: ', h('b', null, iq.fat + 'g')),
-                h('div', { style: { marginTop: 10, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                  h('div', { style: { fontSize: 12, opacity: 0.6 } }, __alloT('stem.nutritionlab.satiety_index', 'Satiety index')),
-                  h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, satiety.toFixed(0))
+                h('div', { style: { marginTop: 10, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + vis.border } },
+                  h('div', { style: { fontSize: 12, opacity: 0.9 } }, __alloT('stem.nutritionlab.macro_fullness_model_label', 'Fullness score (made-up model)')),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: vis.color } }, revealed ? satiety.toFixed(0) : '?')
                 ),
-                h('div', { style: { marginTop: 6, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                  h('div', { style: { fontSize: 12, opacity: 0.6 } }, __alloT('stem.nutritionlab.fiber_adj_glycemic_proxy', 'Fiber-adj glycemic proxy')),
-                  h('div', { style: { fontSize: 13, fontWeight: 700, color: sm.color } }, fiberAdjGI.toFixed(0))
+                h('div', { style: { marginTop: 6, padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + vis.border } },
+                  h('div', { style: { fontSize: 12, opacity: 0.9 } }, __alloT('stem.nutritionlab.macro_spike_model_label', 'Sugar-spike score (made-up model)')),
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: vis.color } }, revealed ? fiberAdjGI.toFixed(0) : '?')
                 )
               )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
+            !revealed && h('div', { 'data-nl-macro-predict': 'open', role: 'group', 'aria-labelledby': 'nl-macro-predict-q', style: { padding: 10, borderRadius: 8, background: '#0a0a1a', border: '1px solid #475569', marginBottom: 10 } },
+              h('div', { id: 'nl-macro-predict-q', style: { fontSize: 13, fontWeight: 800, color: '#e8f0f5', marginBottom: 4 } }, __alloT('stem.nutritionlab.macro_predict_prompt', 'Predict first: which energy state is this mix?')),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.4 } }, mm.totalKcal > 0
+                ? __alloT('stem.nutritionlab.macro_predict_hint', 'The model sorts by the share of CALORIES that come from carbs. Each button shows its carb range. Tap your prediction.')
+                : __alloT('stem.nutritionlab.macro_predict_empty', 'All sliders are at 0 g. Move carbs, protein, or fat above 0 first.')),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                NL_MACRO_STATE_IDS.map(function (id) {
+                  return h('button', { key: id, type: 'button', 'data-nl-macro-pick': id, disabled: mm.totalKcal <= 0, onClick: function () { commit(id); },
+                    'aria-label': fill(__alloT('stem.nutritionlab.macro_pick_aria', 'Predict {state}: carbs {range} of the calories'), { state: STATE_LABEL[id], range: STATE_RANGE[id] }),
+                    className: btnFocus,
+                    style: { flex: '1 1 120px', minHeight: 44, padding: '6px 8px', borderRadius: 8, border: '1px solid #64748b', background: '#1e293b', color: '#f1f5f9', fontSize: 12, fontWeight: 700, cursor: mm.totalKcal > 0 ? 'pointer' : 'not-allowed', opacity: mm.totalKcal > 0 ? 1 : 0.6, lineHeight: 1.25 } },
+                    STATE_LABEL[id], h('br'), h('span', { style: { fontWeight: 400, color: '#cbd5e1' } }, STATE_RANGE[id]));
+                })
+              )
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite', 'data-nl-macro-feedback': revealed ? (pred.pick === state ? 'hit' : 'miss') : 'none' },
+              revealed && h('div', { style: { padding: 10, borderRadius: 8, background: '#0a0a1a', border: '1px solid ' + sm.border, marginBottom: 10, fontSize: 12, lineHeight: 1.5 } },
+                feedback().map(function (line, i) { return h('p', { key: i, style: { margin: i ? '6px 0 0' : 0, fontWeight: i ? 400 : 800, color: i ? '#e8f0f5' : sm.color } }, line); }),
+                h('p', { style: { margin: '6px 0 0', color: '#cbd5e1' } }, __alloT('stem.nutritionlab.macro_fb_again', 'Change any slider to make a new prediction.'))
+              )
+            ),
+            iq.tally.n > 0 && h('div', { 'data-nl-macro-tally': iq.tally.hit + '/' + iq.tally.n, style: { fontSize: 12, color: '#cbd5e1', marginBottom: 10 } },
+              fill(__alloT('stem.nutritionlab.macro_tally', 'Predictions made: {n} · matched the model: {hit}'), { n: iq.tally.n, hit: iq.tally.hit })),
+            h('p', { 'data-nl-model-note': 'true', style: { margin: '0 0 10px', padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + vis.border, fontSize: 12, lineHeight: 1.5, color: '#e8f0f5' } },
+              h('strong', { style: { color: vis.color } }, __alloT('stem.nutritionlab.macro_model_note_title', 'Made-up classroom model. ')),
+              __alloT('stem.nutritionlab.macro_model_note_body', 'These two scores are not real measurements and not a published index. Fullness score = 1.5 × protein % + 0.7 × fat % + 0.3 × carb % + fiber grams. Sugar-spike score = 1.3 × carb % − 1.4 × fiber grams (kept between 0 and 100). Real glycemic index values are measured in lab tests of single foods, such as in the University of Sydney GI database.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.carbs_g', 'Carbs (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.carbs)),
-                h('input', { type: 'range', min: 0, max: 300, step: 5, value: iq.carbs, onChange: function(e) { setKey('carbs', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.carbs_g', 'Carbs (g)')), h('span', { style: { color: vis.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.carbs)),
+                h('input', { type: 'range', min: 0, max: 300, step: 5, value: iq.carbs, onChange: function(e) { setKey('carbs', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 32 } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.protein_g', 'Protein (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.protein)),
-                h('input', { type: 'range', min: 0, max: 200, step: 5, value: iq.protein, onChange: function(e) { setKey('protein', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.protein_g', 'Protein (g)')), h('span', { style: { color: vis.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.protein)),
+                h('input', { type: 'range', min: 0, max: 200, step: 5, value: iq.protein, onChange: function(e) { setKey('protein', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 32 } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fat_g', 'Fat (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fat)),
-                h('input', { type: 'range', min: 0, max: 150, step: 2, value: iq.fat, onChange: function(e) { setKey('fat', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fat_g', 'Fat (g)')), h('span', { style: { color: vis.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fat)),
+                h('input', { type: 'range', min: 0, max: 150, step: 2, value: iq.fat, onChange: function(e) { setKey('fat', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 32 } })
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fiber_g', 'Fiber (g)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fiber)),
-                h('input', { type: 'range', min: 0, max: 100, step: 1, value: iq.fiber, onChange: function(e) { setKey('fiber', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.nutritionlab.fiber_g', 'Fiber (g)')), h('span', { style: { color: vis.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.fiber)),
+                h('input', { type: 'range', min: 0, max: 100, step: 1, value: iq.fiber, onChange: function(e) { setKey('fiber', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 32 } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-              h('button', { onClick: function() {
+              revealed && h('button', { type: 'button', className: btnFocus, onClick: function() {
                 var t = new Date().toISOString().slice(11, 19);
-                setIQ({ log: iq.log.concat([{ t: t, c: iq.carbs, p: iq.protein, f: iq.fat, fb: iq.fiber, sat: satiety.toFixed(0), gi: fiberAdjGI.toFixed(0), state: sm.label }]) });
-              }, style: { flex: 1, padding: 6, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.nutritionlab.log_this_macro_profile', '📋 Log this macro profile')),
-              h('button', { onClick: function() { setIQ({ carbs: 50, protein: 20, fat: 30, fiber: 25 }); }, style: { padding: '6px 10px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.nutritionlab.reset', 'Reset'))
+                setIQ({ log: iq.log.concat([{ t: t, c: iq.carbs, p: iq.protein, f: iq.fat, fb: iq.fiber, sat: satiety.toFixed(0), gi: fiberAdjGI.toFixed(0), state: sm.label, pick: STATE_LABEL[pred.pick] }]) });
+              }, style: { flex: 1, minHeight: 44, padding: 6, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.nutritionlab.log_this_macro_profile', '📋 Log this macro profile')),
+              h('button', { type: 'button', className: btnFocus, onClick: function() { setIQ({ carbs: 50, protein: 20, fat: 30, fiber: 25 }); }, style: { minHeight: 44, padding: '6px 10px', fontSize: 12, borderRadius: 6, border: '1px solid #475569', background: '#0a0a1a', color: '#cbd5e1', cursor: 'pointer' } }, __alloT('stem.nutritionlab.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 12, fontFamily: 'monospace', lineHeight: 1.4 } },
-              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · c' + e.c + ' p' + e.p + ' f' + e.f + ' fb' + e.fb + ' → sat ' + e.sat + ' gi ' + e.gi); })
+              iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + (e.pick ? ' (you said ' + e.pick + ')' : '') + ' · c' + e.c + ' p' + e.p + ' f' + e.f + ' fb' + e.fb + ' → fullness ' + e.sat + ' · spike ' + e.gi + ' (model)'); })
             ),
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec', 'Your hypothesis (which macro most affects satiety? Glycemic load? They\'re different.)')),
-            h('textarea', { value: iq.hypothesis, 'aria-label': __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec', 'Your hypothesis about which macro most affects satiety and glycemic load'), onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.e_g_fiber_blunts_the_glycemic_load_alm', 'e.g., fiber blunts the glycemic load almost 1-for-1 with carb increase...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.nutritionlab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.nutritionlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
+            h('label', { htmlFor: 'nl-macro-hypothesis', style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.9, marginBottom: 4 } }, __alloT('stem.nutritionlab.your_hypothesis_which_macro_most_affec_v2', 'Your hypothesis: which macro moves the fullness score most? Which moves the sugar-spike score most?')),
+            h('textarea', { id: 'nl-macro-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.macro_hypothesis_placeholder_v2', 'e.g., I think protein moves the fullness score most, because...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + vis.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
+            !iq.stuckRevealed && h('button', { type: 'button', className: btnFocus, onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 44, padding: '6px 10px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #475569', background: '#0a0a1a', color: vis.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.nutritionlab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + vis.border, fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 700, color: vis.color, marginBottom: 4 } }, __alloT('stem.nutritionlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
                 h('li', null, __alloT('stem.nutritionlab.why_might_a_high_carb_meal_feel_differ', 'Why might a "high-carb" meal feel different at 200g of oats vs 200g of white rice + sugar?')),
                 h('li', null, __alloT('stem.nutritionlab.how_does_fat_slow_glycemic_response_tr', 'How does fat slow glycemic response? Try 80g carbs with 5g fat vs 30g fat.')),
                 h('li', null, __alloT('stem.nutritionlab.a_100g_protein_day_what_trade_offs_wou', 'A 100g protein day — what trade-offs would you need to make in the other macros to keep total calories sensible?')),
-                h('li', null, __alloT('stem.nutritionlab.when_could_ketogenic_help_or_harm_cons', 'When could ketogenic help or harm? Consider: ketogenic-diet therapy for refractory epilepsy is well-established (decades of RCTs); nutrient gaps, hypoglycemia risk on diabetes meds, social/sustainability cost, and contested questions about long-term kidney/cardiovascular impact are all open. (For CKD specifically, high-protein patterns are the more-supported concern; isolated ketosis-vs-CKD evidence is mixed.)'))
+                // Cochrane review (Martin-McGill et al., 2020, PMID 32588435): "The evidence suggests that KDs could demonstrate
+                // effectiveness in children with drug-resistant epilepsy". The old trial-count and kidney claims were unsourced: cut.
+                h('li', null, __alloT('stem.nutritionlab.when_could_ketogenic_help_or_harm_v2', 'When could a ketogenic diet help or harm? Doctors use it, with close supervision, for some children whose seizures do not stop with medicine (Cochrane review, 2020). What could be hard about it for a growing teen?'))
               )
             ),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
-              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6, minHeight: 44 } },
+              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 20, height: 20 } }),
               h('span', null, __alloT('stem.nutritionlab.i_can_explain_why_this_macro_split_yie', 'I can explain why this macro split yields this energy state.'))
             ),
-            iq.understood && h('textarea', { value: iq.explanation, 'aria-label': __alloT('stem.nutritionlab.explain_macro_split_energy_state', 'Explain why this macro split yields this energy state'), onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 12, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.nutritionlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Satiety + GI proxies are illustrative; real glycemic response varies with food matrix, cooking, and individual metabolism. Not medical advice.'))
+            iq.understood && h('textarea', { value: iq.explanation, 'aria-label': __alloT('stem.nutritionlab.explain_macro_split_energy_state', 'Explain why this macro split yields this energy state'), onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.nutritionlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + vis.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
+            h('p', { style: { margin: 0, fontSize: 12, fontStyle: 'italic', color: '#cbd5e1' } }, __alloT('stem.nutritionlab.inquiry_widget_footer_v2', 'Inquiry widget: your prediction is a hypothesis, not a grade. The fullness and sugar-spike scores are made-up teaching scores; real blood-sugar response depends on the food, how it is cooked, and the person. Not medical advice.'))
           )
         );
       }
@@ -23748,7 +23985,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'bg-sky-50 border-2 border-sky-300 rounded-2xl p-5' },
               h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, __alloT('stem.nutritionlab.hydration_is_body_function_not_body_sh', 'Hydration is body function, not body shape.')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                __alloT('stem.nutritionlab.roughly_60_of_your_body_weight_is_wate', 'Roughly 60% of your body weight is water. Every cell uses it. The brain runs about 75% water and the first thing that drops with mild dehydration (1-2% body-weight fluid loss) is attention, short-term memory, and mood. This lab covers four things: how much fluid you actually need, how to read your own body for status, which drinks help and which do not, and how to handle hydration as a student athlete. Hydration is never a substitute for eating. If you find yourself using water to feel full or skip meals, talk to a trusted adult and call NEDA at 1-800-931-2237.'))
+                __alloT('stem.nutritionlab.roughly_60_of_your_body_weight_is_wate_v2', 'Up to 60% of an adult\'s body weight is water. Every cell uses it. The brain is about three-quarters water, and even mild dehydration (losing 1-2% of body weight as fluid) can make it harder to pay attention and remember. This lab covers four things: how much fluid you actually need, how to read your own body for status, which drinks help and which do not, and how to handle hydration as a student athlete. Hydration is never a substitute for eating. If you find yourself using water to feel full or skip meals, talk to a trusted adult or call the eating disorder helpline at 1-866-662-1235.'))
             ),
             // Tabs
             h('div', { role: 'tablist', 'aria-label': __alloT('stem.nutritionlab.hydration_lab_sections', 'Hydration Lab sections'), className: 'flex flex-wrap gap-2' },
@@ -23873,7 +24110,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   h('li', null, __alloT('stem.nutritionlab.persistent_dark_urine_despite_drinking', 'Persistent dark urine despite drinking water? See a clinician — could be liver, medication, or blood-related.'))
                 ),
                 h('p', { className: 'text-[0.75rem] italic text-slate-700 mt-2' },
-                  __alloT('stem.nutritionlab.if_you_find_yourself_using_water_to_fe', 'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. NEDA helpline: 1-800-931-2237.'))
+                  __alloT('stem.nutritionlab.if_you_find_yourself_using_water_to_fe_v2', 'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. Eating disorder helpline: 1-866-662-1235.'))
               )
             ),
 
@@ -24457,7 +24694,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       h('span', { className: 'font-mono text-slate-800' }, BODY_ENERGY_OTHER_PCT + '%')
                     ),
                     h('div', { className: 'text-xs text-slate-700 leading-snug' },
-                      __alloT('stem.nutritionlab.bm_energy_other_note', 'Skin, gut, immune cells, bone, blood and fat tissue. Individually small, together a fifth of the bill.'))
+                      __alloT('stem.nutritionlab.bm_energy_other_note_v2', 'Skin, gut, immune cells, bone, blood and fat tissue. Each is small; together they use almost a quarter.'))
                   ),
                   h('div', { className: 'p-3 rounded-lg bg-violet-50 border border-violet-200' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, __alloT('stem.nutritionlab.bm_energy_headline', 'The number worth remembering')),
@@ -24465,7 +24702,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       __alloT('stem.nutritionlab.bm_energy_headline_copy', 'Your brain is about 2% of your body weight and spends about 20% of your resting energy — and a teenage brain, still building connections, spends a larger share than an adult one. Thinking is expensive, and it is paid for out of what you eat.'))
                   ),
                   h('p', { className: 'text-[0.75rem] text-slate-700 italic' },
-                    __alloT('stem.nutritionlab.bm_energy_source', 'Healthy-adult averages from Wang et al. (2010) and Brody, Nutritional Biochemistry. Real shares vary with body composition, age and health — these describe the pattern, not a person.')),
+                    __alloT('stem.nutritionlab.bm_energy_source_v2', 'Adult averages from Ko and Jung (2021), using organ energy rates from Elia (1992). Real shares vary with body size, age and health. These describe the pattern, not a person.')),
                   h('button', {
                     type: 'button', onClick: function () { goto('energyBalance'); },
                     className: 'px-3 py-1.5 rounded-lg bg-amber-800 text-white text-xs font-bold hover:bg-amber-900 focus:outline-none focus:ring-2 ring-amber-500/40'
@@ -24662,7 +24899,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 '"Bones are finished growing by high school" — peak bone mass is reached in the mid-to-late twenties, so calcium, vitamin D and weight-bearing activity in the teen years set the lifetime baseline.'
               ],
               extension: 'Choose one region and one nutrient it depends on. Use the NIH Office of Dietary Supplements Fact Sheet for that nutrient (ods.od.nih.gov) to find the specific enzyme, protein or hormone that uses it there, then add ONE sentence to the region\'s description that a 7th grader could understand.',
-              sources: 'Nutrient functions and deficiency consequences from NIH Office of Dietary Supplements Fact Sheets (ods.od.nih.gov). Organ energy use from Wang et al. (2010). Vitamin A and childhood blindness from the World Health Organization. Peak bone mass timing from NIH Osteoporosis and Related Bone Diseases resources. The figure is a schematic teaching model, not an anatomical atlas.'
+              sources: 'Nutrient functions and deficiency consequences from NIH Office of Dietary Supplements Fact Sheets (ods.od.nih.gov). Organ energy use from Ko & Jung, Nutrients (2021), using organ rates from Elia; brain share from Raichle & Gusnard, PNAS (2002); childhood brain energy from Kuzawa et al., PNAS (2014). Vitamin A and childhood blindness from the World Health Organization. Peak bone mass timing from NIH Osteoporosis and Related Bone Diseases resources. The figure is a schematic teaching model, not an anatomical atlas.'
             })
           )
         );

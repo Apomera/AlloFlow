@@ -63,9 +63,12 @@ function buildRunner() {
   const block = src.slice(start, end);
   expect(block, 'block must be the persistent-label implementation').toContain('_solarLabelCache');
   // eslint-disable-next-line no-new-func
+  // The block reads the Labels / Dwarf planets toggles the loop derives from the canvas dataset.
+  expect(src).toContain("const showLabels = canvas.dataset.showLabels !== 'false';");
+  expect(src).toContain("const showDwarfs = canvas.dataset.showDwarfs === 'true';");
   return new Function(
-    'labelContainer', 'planetMeshes', 'camera', 'W', 'H', 'canvas', 'document',
-    block,
+    'labelContainer', 'planetMeshes', 'camera', 'W', 'H', 'canvas', 'document', 'dwarfMeshes',
+    "var showLabels = canvas.dataset.showLabels !== 'false'; var showDwarfs = canvas.dataset.showDwarfs === 'true';\n" + block,
   );
 }
 
@@ -185,7 +188,9 @@ describe('solarSystem — orrery label stability', () => {
   it('drives the orbit integrator and the Earth-days clock off one shared base rate', () => {
     expect(src).toMatch(/const SOLAR_BASE_RATE = [\d.]+;/);
     expect(src).toMatch(/time \+= SOLAR_BASE_RATE \* speed;/);
-    expect(src).toMatch(/var timeScale = SOLAR_BASE_RATE \* speed \* \(isPaused \? 0 : 1\);/);
+    // Ephemeris (real-date) mode holds the planets at that date, so it stops the integrator like Pause does.
+    expect(src).toMatch(/var timeScale = SOLAR_BASE_RATE \* speed \* \(isPaused \|\| ephemerisMode \? 0 : 1\);/);
+    expect(src).toMatch(/if \(!isPaused && !ephemerisMode\) \{\s*time \+= SOLAR_BASE_RATE \* speed;/);
     // A stray literal here is how the clock and the planets drift apart.
     expect(src.match(/0\.008 \* speed/g) || []).toEqual([]);
   });

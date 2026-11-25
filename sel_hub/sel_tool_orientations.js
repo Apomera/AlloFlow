@@ -9,20 +9,28 @@
 // Category: inner-work
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations'))) {
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
+
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')) return;
 
   // WCAG 4.1.3 live region
-  (function() {
-    if (document.getElementById('allo-live-orientations')) return;
+  function ensureLiveRegion() {
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return null;
+    var existing = document.getElementById('allo-live-orientations');
+    if (existing) return existing;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-orientations';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -31,10 +39,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
+    return liveRegion;
+  }
+  ensureLiveRegion();
 
   (function() {
-    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-orientations-a11y-css')) return;
+    if (typeof document !== 'object' || !document || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-orientations-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-orientations-a11y-css';
     st.textContent =
@@ -329,20 +339,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       var _ori_FGD = {'#dc2626':'#ef4444','#7c3aed':'#a78bfa','#a855f7':'#c084fc','#16a34a':'#4ade80','#0d9488':'#2dd4bf','#ec4899':'#f472b6'};
       var _oriFg = function(h){ return _oriHC ? (_ori_FGH[h]||h) : (_oriL ? (_ori_FGL[h]||h) : (_ori_FGD[h]||h)); };
       var _oriBd = function(h){ return _oriHC ? (_ori_BDH[h]||h) : (_oriL ? (_ori_BDL[h]||h) : h); };
+      if (!ctx || typeof ctx !== 'object' || !ctx.React || typeof ctx.React.createElement !== 'function') return null;
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var announceToSR = ctx.announceToSR;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : null;
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : null;
 
       var rawD = labToolData.orientations;
       var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
       function setOR(patch) {
         setLabToolData(function(prev) {
-          var prior = (prev && prev.orientations && typeof prev.orientations === 'object' && !Array.isArray(prev.orientations)) ? prev.orientations : defaultState();
-          return Object.assign({}, prev, { orientations: Object.assign({}, prior, patch) });
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prior = (base.orientations && typeof base.orientations === 'object' && !Array.isArray(base.orientations)) ? base.orientations : defaultState();
+          return Object.assign({}, base, { orientations: Object.assign({}, prior, patch) });
         });
       }
 
@@ -350,13 +362,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'library';
       function announceOR(msg) {
         if (!msg) return;
-        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
-        if (typeof document !== 'undefined') {
-          var lr = document.getElementById('allo-live-orientations');
-          if (lr) lr.textContent = msg;
-        }
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); return; } catch (_) {} }
+        try {
+          var lr = ensureLiveRegion();
+          if (lr) { lr.textContent = ''; setTimeout(function() { try { lr.textContent = String(msg); } catch (_) {} }, 20); }
+        } catch (_) {}
       }
-      function goto(v) { setOR({ view: v, detailId: null, compareId: null }); }
+      function goto(v) { setOR({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'library', detailId: null, compareId: null }); }
 
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -388,8 +400,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           var target = tabs[nextIdx];
           goto(target.id);
           setTimeout(function() {
-            var el = typeof document !== 'undefined' ? document.getElementById('ori-tab-' + target.id) : null;
-            if (el && typeof el.focus === 'function') el.focus();
+            try {
+              var el = (typeof document === 'object' && document && typeof document.getElementById === 'function') ? document.getElementById('ori-tab-' + target.id) : null;
+              if (el && typeof el.focus === 'function') el.focus();
+            } catch (_) {}
           }, 0);
         }
         return h('div', { role: 'tablist', 'aria-label': 'Orientations sections',
@@ -411,7 +425,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         return h('div', {
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _oriHC ? '#000000' : (_oriL ? '#f8fafc' : 'rgba(15,23,42,0.5)'), border: '1px solid ' + _oriBd('#334155'), fontSize: 11, color: _oriFg('#94a3b8'), lineHeight: 1.55, fontStyle: 'italic' }
         },
-          'This tool offers honest summary. It is not authoritative on any of these traditions. Each is lived in real communities by real practitioners; if you find yourself drawn to one, follow that to its actual teachers and texts.'
+          'This tool offers honest summary. It is not authoritative on any of these traditions. Each is lived in real communities by real practitioners; if you find yourself drawn to one, follow that to its actual teachers and texts. If big questions about suffering feel heavy, talk with a trusted adult, call or text 988, or text HOME to 741741.'
         );
       }
 
@@ -565,7 +579,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
       // ═══════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('orientations', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('orientations', h, ctx) : null),
           h('div', { style: { padding: 14, borderRadius: 12, background: _oriBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 8px', color: _oriFg('#c4b5fd'), fontSize: 16 } }, 'What this tool is for'),
             h('p', { style: { margin: '0 0 10px', color: _oriFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.75 } },
@@ -609,7 +623,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
         function axisById(id) { for (var i = 0; i < AXES.length; i++) if (AXES[i].id === id) return AXES[i]; return AXES[0]; }
         var aX = axisById(d.compassX || 'unit'), aY = axisById(d.compassY || 'ground');
         var cx = aX.id, cy = aY.id;
-        var W = 600, H = 440, mL = 76, mR = 30, mT = 44, mB = 74;
+        var W = 600, H = 440, mL = 44, mR = 30, mT = 48, mB = 74;
         var pw = W - mL - mR, ph = H - mT - mB;
         function px(v) { return mL + v * pw; }
         function py(v) { return mT + (1 - v) * ph; }
@@ -655,8 +669,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
           h('line', { x1: mL, y1: mT, x2: mL, y2: mT + ph, stroke: '#334155' }),
           h('text', { x: mL, y: H - 30, fontSize: 11, fill: _oriFg('#94a3b8') }, '◀ ' + aX.left),
           h('text', { x: mL + pw, y: H - 30, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, aX.right + ' ▶'),
-          h('text', { x: mL - 8, y: mT + 6, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, aY.right + ' ▲'),
-          h('text', { x: mL - 8, y: mT + ph, textAnchor: 'end', fontSize: 11, fill: _oriFg('#94a3b8') }, '▼ ' + aY.left),
+          h('text', { x: mL, y: mT - 12, textAnchor: 'start', fontSize: 11, fill: _oriFg('#94a3b8') }, '▲ ' + aY.right),
+          h('text', { x: mL, y: mT + ph + 16, textAnchor: 'start', fontSize: 11, fill: _oriFg('#94a3b8') }, '▼ ' + aY.left),
           nodes
         );
         function caveat(ax) {
@@ -704,4 +718,3 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('orientations')))
   });
 
 })();
-}

@@ -19,20 +19,30 @@ const _videoStudioReducedMotion = () => (
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 );
 const _videoStudioAiTextUsable = (callGemini) => {
-  if (typeof window !== 'undefined' && (
-    window.__alloStudentAiDisabled === true ||
-    window.__alloAiSecretsLocked === true ||
-    window.__alloQrStudentMode === true ||
-    window._alloQrBlocked === true ||
-    (window.ALLOFLOW_MANAGED_AI_POLICY != null && (
-      window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false ||
-      window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 ||
-      !Array.isArray(window.ALLOFLOW_MANAGED_AI_POLICY.connections) ||
-      window.ALLOFLOW_MANAGED_AI_POLICY.connections.length === 0
-    ))
-  )) return false;
+  if (typeof window !== 'undefined') {
+    if (
+      window.__alloStudentAiDisabled === true ||
+      window.__alloAiSecretsLocked === true ||
+      window.__alloQrStudentMode === true ||
+      window._alloQrBlocked === true ||
+      window.__alloOfflineOnly === true ||
+      window.hideStudentAiFeatures === true ||
+      (window.ALLOFLOW_MANAGED_AI_POLICY != null && (
+        window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false ||
+        window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 ||
+        !Array.isArray(window.ALLOFLOW_MANAGED_AI_POLICY.connections) ||
+        window.ALLOFLOW_MANAGED_AI_POLICY.connections.length === 0
+      ))
+    ) return false;
+    try {
+      const sp = window.AlloModules && window.AlloModules.StudentPolicy;
+      if (sp && typeof sp.isAiHidden === 'function' && sp.isAiHidden()) return false;
+    } catch (_) { return false; }
+  }
   if (callGemini && callGemini._alloQrBlocked === true) return false;
-  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', callGemini));
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+    try { return Boolean(window.__alloAiUsable('text', callGemini)); } catch (_) { return false; }
+  }
   return Boolean(callGemini);
 };
 const _safePlainCopy = (obj) => {
@@ -69,7 +79,7 @@ function VideoStudioHostBridgeView(props) {
                 t,
                 callGemini: aiTextUsable ? callGemini : null,
                 getCoachAiInfo: () => {
-                    const profile = (_alloCmdCtxRef.current || _alloCmdCtx())?.aiProviderProfile || {};
+                    const profile = ((_alloCmdCtxRef && _alloCmdCtxRef.current) || (typeof _alloCmdCtx === 'function' ? _alloCmdCtx() : null))?.aiProviderProfile || {};
                     const info = {};
                     // Only these configuration labels cross the popup bridge.
                     ['backend', 'provider', 'model', 'visionModel', 'fallbackModel'].forEach(key => {
@@ -84,7 +94,7 @@ function VideoStudioHostBridgeView(props) {
                     if (!transcript) throw new Error('Transcript is empty.');
                     const titleBase = String(resource?.data?.title || resource?.title || 'Video transcript').replace(/\s+transcript$/i, '').trim().slice(0, 120) || 'Video transcript';
                     const captionCount = Array.isArray(resource?.data?.cues) ? resource.data.cues.length : 0;
-                    const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                    const newId = Date.now().toString() + Math.random().toString(36).slice(2, 11);
                     const item = {
                         id: newId,
                         type: 'video-transcript',
@@ -101,12 +111,15 @@ function VideoStudioHostBridgeView(props) {
                         config: {},
                         source: 'video_studio'
                     };
-                    setHistory(prev => [...prev, item]);
+                    setHistory(prev => [...(Array.isArray(prev) ? prev : []), item]);
                     setInputText(transcript);
                     setSourceTopic(titleBase);
                     setGeneratedContent(item);
                     setActiveSidebarTab('create');
-                    setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+                    setExpandedTools(prev => {
+                        const list = Array.isArray(prev) ? prev : [];
+                        return list.includes('source-input') ? list : ['source-input', ...list];
+                    });
                     setActiveView('input');
                     addToast('Transcript sent to Source. Use the existing quiz and support tools from there.', 'success');
                     return { id: newId };
@@ -117,8 +130,9 @@ function VideoStudioHostBridgeView(props) {
                     if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
                     const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
                     const safeHostedUrl = _safeVideoHostedUrl(ref.hostedUrl);
-                    const safeDur = Math.max(0, Math.round(Number(ref.durationSec) || 0));
-                    const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                    const _rawDur = Math.max(0, Math.round(Number(ref.durationSec) || 0));
+                    const safeDur = Number.isFinite(_rawDur) ? _rawDur : 0;
+                    const newRefId = Date.now().toString() + Math.random().toString(36).slice(2, 11);
                     const safeRefData = _safePlainCopy(ref);
                     if ('thumbnailDataUrl' in safeRefData) safeRefData.thumbnailDataUrl = _safeVideoThumbDataUrl(safeRefData.thumbnailDataUrl);
                     const refItem = {
@@ -133,7 +147,7 @@ function VideoStudioHostBridgeView(props) {
                         config: {},
                         source: 'video_studio'
                     };
-                    setHistory(prev => [...prev, refItem]);
+                    setHistory(prev => [...(Array.isArray(prev) ? prev : []), refItem]);
                     return { id: newRefId };
                 },
                 onGetOfficialTutorial: async (tutorialId) => {
@@ -156,13 +170,14 @@ function VideoStudioHostBridgeView(props) {
                     if (list.length !== 2) throw new Error('The Text Adaptation tutorial manifest is incomplete.');
                     const stopWanted = () => !!(_planRunRef.current?.stop || (hooks && hooks.shouldStop && hooks.shouldStop()));
                     _officialTutorialSnapshotRef.current = _officialTutorialSnapshotRef.current || {
-                        inputText, generatedContent, activeView, gradeLevel, expandedTools: expandedTools.slice()
+                        inputText, generatedContent, activeView, gradeLevel, expandedTools: Array.isArray(expandedTools) ? expandedTools.slice() : []
                     };
                     _planRunRef.current = { running: true, stop: false };
                     const fixtureSource = 'Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis. Chlorophyll captures light energy in the leaves. The plant stores some sugar and releases oxygen into the air.';
                     const fixtureAdapted = '## Photosynthesis\n\nPlants make their own food. Leaves capture energy from sunlight. Roots bring in water, and leaves take in carbon dioxide from the air. The plant uses these materials to make sugar for energy. Oxygen is released back into the air.';
                     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
                     const spotlight = async anchorId => {
+                        if (typeof document === 'undefined' || !document.body) return;
                         let el = null;
                         for (let attempt = 0; !el && attempt < 20 && !stopWanted(); attempt++) { el = document.getElementById(anchorId); if (!el) await wait(100); }
                         if (!el) throw new Error('Tutorial target is not visible: ' + anchorId);
@@ -171,20 +186,28 @@ function VideoStudioHostBridgeView(props) {
                         const priorOutline = el.style.outline;
                         const priorOffset = el.style.outlineOffset;
                         let cursorMarker = null;
+                        let spotlightRafId = null;
                         try {
                             el.style.outline = '4px solid #f59e0b';
                             el.style.outlineOffset = '5px';
                             if (!hooks || hooks.cursorEmphasis !== false) {
                                 const rect = el.getBoundingClientRect();
+                                const rawLeft = Math.max(4, Math.min((window.innerWidth || 800) - 38, rect.left + rect.width / 2 - 17));
+                                const rawTop = Math.max(4, Math.min((window.innerHeight || 600) - 38, rect.top + rect.height / 2 - 17));
+                                const safeLeft = Number.isFinite(rawLeft) ? rawLeft : 4;
+                                const safeTop = Number.isFinite(rawTop) ? rawTop : 4;
                                 cursorMarker = document.createElement('div');
                                 cursorMarker.setAttribute('aria-hidden', 'true');
-                                cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2)' + (reducedMotion ? '' : ';transition:transform .25s ease,opacity .25s ease');
+                                cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + safeLeft + 'px;top:' + safeTop + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2)' + (reducedMotion ? '' : ';transition:transform .25s ease,opacity .25s ease');
                                 document.body.appendChild(cursorMarker);
-                                if (!reducedMotion) requestAnimationFrame(() => { if (cursorMarker) cursorMarker.style.transform = 'scale(.72)'; });
+                                if (!reducedMotion && typeof requestAnimationFrame === 'function') {
+                                    spotlightRafId = requestAnimationFrame(() => { if (cursorMarker && cursorMarker.isConnected) cursorMarker.style.transform = 'scale(.72)'; });
+                                }
                             }
                             await wait(650);
                         } finally {
-                            if (cursorMarker) cursorMarker.remove();
+                            if (spotlightRafId != null && typeof cancelAnimationFrame === 'function') { try { cancelAnimationFrame(spotlightRafId); } catch (_) {} }
+                            if (cursorMarker) { try { cursorMarker.remove(); } catch (_) {} }
                             el.style.outline = priorOutline;
                             el.style.outlineOffset = priorOffset;
                         }
@@ -201,11 +224,17 @@ function VideoStudioHostBridgeView(props) {
                             if (hooks && hooks.onStep) hooks.onStep(i, 'start', step.label, (actionBeat && actionBeat.text) || step.label);
                             if (step.id === 'source-input') {
                                 setActiveView('input');
-                                setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+                                setExpandedTools(prev => {
+                                    const cur = Array.isArray(prev) ? prev : [];
+                                    return cur.includes('source-input') ? cur : ['source-input', ...cur];
+                                });
                                 setInputText(fixtureSource);
                             } else {
                                 setGradeLevel('5th Grade');
-                                setExpandedTools(prev => prev.includes('simplified') ? prev : [...prev, 'simplified']);
+                                setExpandedTools(prev => {
+                                    const cur = Array.isArray(prev) ? prev : [];
+                                    return cur.includes('simplified') ? cur : [...cur, 'simplified'];
+                                });
                                 setGeneratedContent({ id: 'official-text-adaptation-fixture', type: 'simplified', title: 'Photosynthesis - Grade 5 adaptation', data: fixtureAdapted, timestamp: new Date(), config: { gradeLevel: '5th Grade' }, source: 'official-tutorial' });
                                 setActiveView('simplified');
                             }
@@ -307,8 +336,11 @@ function VideoStudioHostBridgeView(props) {
                     _planRunRef.current = { running: true, stop: false };
                     const stopWanted = () => (!!_planRunRef.current?.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
                     const cursorMarkers = new Set();
+                    const cursorRafIds = new Set();
+                    const cursorTimers = new Set();
                     const emphasizeCursorTarget = (cmd, label) => {
                         if (!options || options.cursorEmphasis === false) return;
+                        if (typeof document === 'undefined' || !document.body) return;
                         const needle = String(label || (cmd && cmd.label) || '').trim().toLowerCase();
                         let target = null;
                         const directId = cmd && (cmd.anchorId || cmd.targetId);
@@ -323,15 +355,35 @@ function VideoStudioHostBridgeView(props) {
                             }) || null;
                         }
                         if (!target && document.activeElement && document.activeElement !== document.body) target = document.activeElement;
-                        const rect = target && target.getBoundingClientRect ? target.getBoundingClientRect() : { left: window.innerWidth / 2 - 1, top: window.innerHeight / 2 - 1, width: 2, height: 2 };
+                        const rect = target && target.getBoundingClientRect ? target.getBoundingClientRect() : { left: (window.innerWidth || 800) / 2 - 1, top: (window.innerHeight || 600) / 2 - 1, width: 2, height: 2 };
                         const reducedMotion = _videoStudioReducedMotion();
+                        const rawLeft = Math.max(4, Math.min((window.innerWidth || 800) - 36, rect.left + rect.width / 2 - 16));
+                        const rawTop = Math.max(4, Math.min((window.innerHeight || 600) - 36, rect.top + rect.height / 2 - 16));
+                        const safeLeft = Number.isFinite(rawLeft) ? rawLeft : 4;
+                        const safeTop = Number.isFinite(rawTop) ? rawTop : 4;
                         const marker = document.createElement('div');
                         marker.setAttribute('aria-hidden', 'true');
-                        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 36, rect.left + rect.width / 2 - 16)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 36, rect.top + rect.height / 2 - 16)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18)' + (reducedMotion ? '' : ';transform:scale(1.2);transition:transform .3s ease,opacity .3s ease');
+                        marker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:32px;height:32px;border:4px solid #f59e0b;border-radius:999px;left:' + safeLeft + 'px;top:' + safeTop + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.18)' + (reducedMotion ? '' : ';transform:scale(1.2);transition:transform .3s ease,opacity .3s ease');
                         document.body.appendChild(marker);
                         cursorMarkers.add(marker);
-                        if (!reducedMotion) requestAnimationFrame(() => { marker.style.transform = 'scale(.7)'; });
-                        setTimeout(() => { if (!reducedMotion) marker.style.opacity = '0'; setTimeout(() => { cursorMarkers.delete(marker); marker.remove(); }, reducedMotion ? 0 : 320); }, 700);
+                        if (!reducedMotion && typeof requestAnimationFrame === 'function') {
+                            const rafId = requestAnimationFrame(() => {
+                                cursorRafIds.delete(rafId);
+                                if (marker.isConnected) marker.style.transform = 'scale(.7)';
+                            });
+                            cursorRafIds.add(rafId);
+                        }
+                        const t1 = setTimeout(() => {
+                            cursorTimers.delete(t1);
+                            if (!reducedMotion && marker.isConnected) marker.style.opacity = '0';
+                            const t2 = setTimeout(() => {
+                                cursorTimers.delete(t2);
+                                cursorMarkers.delete(marker);
+                                try { marker.remove(); } catch (_) {}
+                            }, reducedMotion ? 0 : 320);
+                            cursorTimers.add(t2);
+                        }, 700);
+                        cursorTimers.add(t1);
                     };
                     try {
                         if (rehearsal) {
@@ -339,8 +391,8 @@ function VideoStudioHostBridgeView(props) {
                             let previewCompleted = 0;
                             for (let i = 0; i < previewList.length; i++) {
                                 if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
-                                const readyItem = readiness.items[i] || {};
-                                const previewLabel = readyItem.label || previewList[i].commandId;
+                                const readyItem = (Array.isArray(readiness.items) && readiness.items[i]) || {};
+                                const previewLabel = readyItem.label || (previewList[i] && previewList[i].commandId) || ('Step ' + (i + 1));
                                 try { if (hooks && hooks.onStep) hooks.onStep(i, 'start', previewLabel, 'Checking: ' + previewLabel + '.'); } catch (_) {}
                                 await new Promise(resolve => setTimeout(resolve, 220));
                                 if (stopWanted()) return { ok: false, stopped: true, completed: previewCompleted, reason: 'Rehearsal stopped by the teacher.' };
@@ -376,9 +428,11 @@ function VideoStudioHostBridgeView(props) {
                         const stateSummaryForAudit = () => {
                             try {
                                 const liveCtx = _alloCmdCtxRef.current || _alloCmdCtx();
+                                if (!liveCtx || typeof liveCtx !== 'object') return null;
                                 const summary = {};
                                 let kept = 0;
                                 for (const key of Object.keys(liveCtx)) {
+                                    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
                                     if (SENSITIVE_AUDIT_KEY_RE.test(key)) continue;
                                     const value = liveCtx[key];
                                     if (typeof value === 'boolean' || (typeof value === 'number' && Number.isFinite(value)) || (typeof value === 'string' && ALLOWED_AUDIT_STRING_KEYS.has(key) && value.length <= 60)) {
@@ -455,6 +509,10 @@ function VideoStudioHostBridgeView(props) {
                         addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
                         return { ok: true, completed, stateSummary: stateSummaryForAudit() };
                     } finally {
+                        cursorRafIds.forEach(id => { try { if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(id); } catch (_) {} });
+                        cursorRafIds.clear();
+                        cursorTimers.forEach(id => { try { clearTimeout(id); } catch (_) {} });
+                        cursorTimers.clear();
                         cursorMarkers.forEach(marker => { try { marker.remove(); } catch (_) {} });
                         cursorMarkers.clear();
                         _planRunRef.current = { running: false, stop: false };

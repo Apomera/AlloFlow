@@ -22,7 +22,7 @@
 
   function getRuntimeModule(injected) {
     if (injected) return injected;
-    return typeof window !== 'undefined' && window.AlloModules
+    return typeof window === 'object' && window && window.AlloModules
       ? window.AlloModules.AgentCoreOpenAIMediaRuntime : null;
   }
 
@@ -30,10 +30,28 @@
     return Number.isFinite(value) && value >= 0;
   }
 
+  function roundUsd(value) {
+    return Math.round(value * 1e6) / 1e6;
+  }
+
   function dateValue(value) {
-    if (typeof value !== 'string' && typeof value !== 'number') return NaN;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+    if (typeof value !== 'string') return NaN;
     var parsed = Date.parse(value);
     return Number.isFinite(parsed) ? parsed : NaN;
+  }
+
+  function isValidPolicySourceUrl(rawUrl) {
+    if (typeof rawUrl !== 'string' || rawUrl.length > 2048 || /[\u0000-\u0020\u007F]/.test(rawUrl)) return false;
+    try {
+      var parsed = new URL(rawUrl);
+      if (parsed.protocol !== 'https:') return false;
+      if (parsed.hostname !== 'developers.openai.com' && parsed.hostname !== 'platform.openai.com') return false;
+      if (parsed.username || parsed.password || parsed.port) return false;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   function safeCloneSnapshot(value) {
@@ -54,7 +72,7 @@
     if (!policy || typeof policy !== 'object') return 'pricing-policy-required';
     if (policy.schemaVersion !== '1.0') return 'pricing-policy-schema-unsupported';
     if (policy.provider !== expectedProvider || policy.model !== expectedModel) return 'pricing-policy-provider-model-mismatch';
-    if (typeof policy.sourceUrl !== 'string' || !/^https:\/\/(developers|platform)\.openai\.com\//.test(policy.sourceUrl)) {
+    if (!isValidPolicySourceUrl(policy.sourceUrl)) {
       return 'pricing-policy-source-invalid';
     }
     var effective = dateValue(policy.effectiveAt);
@@ -69,7 +87,9 @@
   }
 
   function decodedBase64Length(value) {
-    var clean = String(value || '').replace(/\s/g, '');
+    if (typeof value !== 'string' || !value) return 0;
+    if (value.length > DEFAULT_MAX_DECODED_BYTES * 4) return Infinity;
+    var clean = value.replace(/\s/g, '');
     if (!clean) return 0;
     var padding = clean.endsWith('==') ? 2 : (clean.endsWith('=') ? 1 : 0);
     return Math.max(0, Math.floor(clean.length * 3 / 4) - padding);
@@ -84,9 +104,29 @@
     if (typeof opts.fetchAuthorized !== 'function') throw new Error('Runtime fetchAuthorized is required');
     if (typeof opts.authorizeProductionExecution !== 'function') throw new Error('Production authorization callback is required');
 
+    var executionEnabled = opts.executionEnabled === true;
+    var authorizeProductionExecution = opts.authorizeProductionExecution;
     var model = opts.model || 'gpt-image-2';
-    var pricingPolicy = opts.pricingPolicy;
-    var altTextPolicy = opts.altTextPolicy || null;
+    var pricingPolicy = opts.pricingPolicy && typeof opts.pricingPolicy === 'object'
+      ? Object.freeze({
+          schemaVersion: opts.pricingPolicy.schemaVersion,
+          provider: opts.pricingPolicy.provider,
+          model: opts.pricingPolicy.model,
+          sourceUrl: opts.pricingPolicy.sourceUrl,
+          effectiveAt: opts.pricingPolicy.effectiveAt,
+          expiresAt: opts.pricingPolicy.expiresAt,
+          estimateImageCost: opts.pricingPolicy.estimateImageCost,
+          calculateImageCost: opts.pricingPolicy.calculateImageCost
+        })
+      : opts.pricingPolicy;
+    var altTextPolicy = opts.altTextPolicy && typeof opts.altTextPolicy === 'object'
+      ? Object.freeze({
+          billing: opts.altTextPolicy.billing,
+          upperBoundUsd: opts.altTextPolicy.upperBoundUsd,
+          operations: opts.altTextPolicy.operations,
+          createAltText: opts.altTextPolicy.createAltText
+        })
+      : null;
     var originalFetch = opts.fetchAuthorized;
     var originalAltText = altTextPolicy && altTextPolicy.createAltText;
     var now = typeof opts.now === 'function' ? opts.now : function () { return new Date(); };
@@ -108,9 +148,9 @@
     var executionState = null;
 
     function policyStatus() {
-      if (typeof window !== 'undefined') {
+      if (typeof window === 'object' && window) {
         if (window._isDesktopBundledApp === true) return 'desktop-bundled-cloud-disabled';
-        if (window.__alloOfflineOnly === true || window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true) {
+        if (window.__alloOfflineOnly === true || window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || Boolean(window.__alloQrStudentMode)) {
           return 'student-or-locked-ai-disabled';
         }
         if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) {
@@ -124,7 +164,8 @@
           }
         }
       }
-      var current = now();
+      var current;
+      try { current = now(); } catch (_) { return 'runtime-clock-invalid'; }
       var nowMs = current instanceof Date ? current.getTime() : dateValue(current);
       if (!Number.isFinite(nowMs)) return 'runtime-clock-invalid';
       return validateDatedPolicy(pricingPolicy, 'openai-api', model, nowMs);
@@ -150,6 +191,12 @@
         ? Number(response.headers.get('content-length')) : NaN;
       var maxJsonBytes = Math.ceil(maxDecodedBytes * 4 / 3) + 65536;
       if (Number.isFinite(declaredLength) && declaredLength > maxJsonBytes) {
+        try {
+          if (response && response.body && typeof response.body.cancel === 'function') {
+            var cancelP = response.body.cancel();
+            if (cancelP && typeof cancelP.catch === 'function') cancelP.catch(function () {});
+          }
+        } catch (_) {}
         throw guardError('openai-image-response-too-large', 'OpenAI returned image data larger than the configured managed-asset limit.');
       }
       var body;
@@ -217,30 +264,35 @@
     var innerOptions = Object.assign({}, opts, {
       fetchAuthorized: guardedFetch,
       estimateCost: function (input) {
-        var amount = pricingPolicy.estimateImageCost(input);
-        return { upperBoundUsd: amount };
+        try {
+          var amount = pricingPolicy.estimateImageCost(input);
+          return { upperBoundUsd: amount };
+        } catch (_) {
+          return { upperBoundUsd: NaN };
+        }
       },
-      calculateActualCost: function (input) { return pricingPolicy.calculateImageCost(input); },
-      createAltText: guardedCreateAltText
+      calculateActualCost: function (input) {
+        try { return pricingPolicy.calculateImageCost(input); } catch (_) { return NaN; }
+      },
+      createAltText: typeof originalAltText === 'function' ? guardedCreateAltText : undefined
     });
     var inner = runtimeModule.createGuardedOpenAIMediaAdapter(innerOptions, opts.adapterModule);
 
     function prepare(requestInput) {
-      if (opts.executionEnabled !== true) return { ready: false, code: 'production-execution-disabled' };
+      if (!executionEnabled) return { ready: false, code: 'production-execution-disabled' };
       var policyCode = policyStatus();
       if (policyCode) return { ready: false, code: policyCode };
-      var basePlan;
-      try { basePlan = inner.prepare(requestInput); }
-      catch (error) { throw error; }
+      var safeInput = safeCloneSnapshot(requestInput);
+      var basePlan = inner.prepare(safeInput);
       if (!basePlan.ready) return basePlan;
       var alt = altTextBudget(basePlan.request);
       if (!alt.ok) return { ready: false, code: alt.code, request: basePlan.request, provider: basePlan.provider };
       var operations = maxImageAttempts + alt.operations;
-      var upperBoundUsd = (basePlan.estimate.upperBoundUsd * maxImageAttempts) + alt.upperBoundUsd;
+      var upperBoundUsd = roundUsd((basePlan.estimate.upperBoundUsd * maxImageAttempts) + alt.upperBoundUsd);
       if (operations > basePlan.request.providerPolicy.maxOperations) {
         return { ready: false, code: 'aggregate-operation-limit-exceeded', request: basePlan.request, provider: basePlan.provider };
       }
-      if (upperBoundUsd > basePlan.request.providerPolicy.maxCostUsd) {
+      if (upperBoundUsd > roundUsd(basePlan.request.providerPolicy.maxCostUsd)) {
         return {
           ready: false, code: 'aggregate-cost-limit-exceeded', request: basePlan.request,
           provider: basePlan.provider, estimate: { upperBoundUsd: upperBoundUsd, currency: 'USD' }
@@ -255,31 +307,31 @@
 
     async function execute(requestInput) {
       if (inFlight) throw guardError('production-adapter-busy', 'This production media adapter permits only one execution at a time.');
-      var snapshotInput = safeCloneSnapshot(requestInput);
-      var plan = prepare(snapshotInput);
-      if (!plan.ready) throw guardError(plan.code, 'Production OpenAI media preflight did not authorize execution.');
-      var prodAuthorized = false;
-      try {
-        prodAuthorized = opts.authorizeProductionExecution({
-          request: plan.request, provider: plan.provider, estimate: plan.estimate,
-          operationUpperBound: plan.operationUpperBound, pricingPolicy: {
-            effectiveAt: pricingPolicy.effectiveAt, expiresAt: pricingPolicy.expiresAt, sourceUrl: pricingPolicy.sourceUrl
-          }
-        }) === true;
-      } catch (_) {
-        prodAuthorized = false;
-      }
-      if (!prodAuthorized) {
-        throw guardError('production-execution-not-authorized', 'The runtime did not authorize the aggregate production media budget.');
-      }
       inFlight = true;
-      executionState = { imageAttempts: 0, altActualCostUsd: 0, altOperations: 0 };
       try {
+        var snapshotInput = safeCloneSnapshot(requestInput);
+        var plan = prepare(snapshotInput);
+        if (!plan.ready) throw guardError(plan.code, 'Production OpenAI media preflight did not authorize execution.');
+        var prodAuthorized = false;
+        try {
+          prodAuthorized = authorizeProductionExecution({
+            request: plan.request, provider: plan.provider, estimate: plan.estimate,
+            operationUpperBound: plan.operationUpperBound, pricingPolicy: {
+              effectiveAt: pricingPolicy.effectiveAt, expiresAt: pricingPolicy.expiresAt, sourceUrl: pricingPolicy.sourceUrl
+            }
+          }) === true;
+        } catch (_) {
+          prodAuthorized = false;
+        }
+        if (!prodAuthorized) {
+          throw guardError('production-execution-not-authorized', 'The runtime did not authorize the aggregate production media budget.');
+        }
+        executionState = { imageAttempts: 0, altActualCostUsd: 0, altOperations: 0 };
         var result = await inner.execute(snapshotInput);
-        var totalCost = result.usage.actualCostUsd + executionState.altActualCostUsd;
+        var totalCost = roundUsd(result.usage.actualCostUsd + executionState.altActualCostUsd);
         var totalOperations = executionState.imageAttempts + executionState.altOperations;
         var usage = { operations: totalOperations, actualCostUsd: totalCost, currency: 'USD' };
-        if (totalCost > plan.request.providerPolicy.maxCostUsd || totalOperations > plan.request.providerPolicy.maxOperations) {
+        if (totalCost > roundUsd(plan.request.providerPolicy.maxCostUsd) || totalOperations > plan.request.providerPolicy.maxOperations) {
           try {
             if (result && result.asset && result.asset.handle && opts.assetStore && typeof opts.assetStore.remove === 'function') {
               opts.assetStore.remove(result.asset.handle);
@@ -305,7 +357,7 @@
     validateDatedPolicy: validateDatedPolicy
   });
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.AgentCoreOpenAIMediaProductionGuard = API;
   }

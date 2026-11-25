@@ -804,15 +804,15 @@ function SessionModal({
               onClick={() => handleCopyValue('join', liveJoinUrl)}
               className={`w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all motion-reduce:transition-none break-all focus-visible:ring-2 focus-visible:ring-cyan-600 border ${copiedTarget === 'join' ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'text-cyan-800 hover:text-cyan-900 bg-white border-cyan-300 hover:border-cyan-400'}`}
             >
-              {copiedTarget === 'join' ? (<>✓ {tr('session.join_link_copied', 'Student join link copied')}</>) : (<>Copy student join link <Copy size={12} aria-hidden="true"/></>)}
+              {copiedTarget === 'join' ? (<>✓ {tr('session.join_link_copied', 'Student join link copied')}</>) : (<>{tr('mailbox.copy_link', 'Copy link')} <Copy size={12} aria-hidden="true"/></>)}
             </button>
             <input aria-label="Selectable student join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
             <div className={`mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? 'hidden' : ''}`}>
               <button type="button" onClick={testStudentJoin} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-xs font-bold text-emerald-900 hover:border-emerald-500">
-                Test as student <ExternalLink size={12} aria-hidden="true"/>
+                {tr('share_collect.test_as_student', 'Test as student')} <ExternalLink size={12} aria-hidden="true"/>
               </button>
               <button type="button" onClick={printLiveQr} disabled={!liveQrSvg} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50">
-                Print QR <Printer size={12} aria-hidden="true"/>
+                {tr('share_collect.print_qr', 'Print QR')} <Printer size={12} aria-hidden="true"/>
               </button>
             </div>
             <p className="text-xs text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${effectiveAiPolicy === 'student-byok' ? 'Students may connect their own AI provider for this tab.' : 'AI generation stays off.'} The link stops working when the session ends.`}</p>

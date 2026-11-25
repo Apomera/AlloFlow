@@ -3,7 +3,7 @@
  */
 (function (global) {
   'use strict';
-  if (global.RaptorDistanceFieldwork) return;
+  if (!global || typeof global !== 'object' || global.RaptorDistanceFieldwork) return;
 
   var PLANS = {
     human: { title: 'Bracket the human reference', limitField: 'referenceLimit' },
@@ -27,7 +27,8 @@
     if (!deps || typeof id !== 'string' || !own(PLANS, id)) return null;
     var reference = deps.evidence.snapshot(deps.model.normalize({ version: 1, distance: 40, cycles: 12, contrast: 95 }));
     if (!reference) return null;
-    var metrics = deps.model.metrics(reference), limit = metrics && metrics[PLANS[id].limitField];
+    var metrics = deps.model.metrics(reference), limitField = PLANS[id].limitField;
+    var limit = metrics && typeof metrics === 'object' && own(metrics, limitField) ? metrics[limitField] : NaN;
     if (typeof limit !== 'number' || !Number.isFinite(limit) || limit <= 0) return null;
     return { id: id, title: PLANS[id].title, limit: limit, reference: reference };
   }
@@ -35,8 +36,10 @@
     var deps = dependencies();
     if (!deps || typeof prediction !== 'string' || !own(PREDICTIONS, prediction)) return null;
     var settings = deps.evidence.snapshot(raw);
-    if (!settings || settings.cycles !== 12 || settings.contrast !== 95) return null;
-    var metrics = deps.model.metrics(settings), frequency = metrics && metrics.cyclesPerDegree;
+    if (!settings || settings.cycles !== 12 || settings.contrast !== 95 ||
+        typeof settings.distance !== 'number' || !Number.isFinite(settings.distance)) return null;
+    var metrics = deps.model.metrics(settings);
+    var frequency = metrics && typeof metrics === 'object' && own(metrics, 'cyclesPerDegree') ? metrics.cyclesPerDegree : NaN;
     if (typeof frequency !== 'number' || !Number.isFinite(frequency) || frequency <= 0) return null;
     return { settings: settings, prediction: prediction, frequency: frequency };
   }
@@ -44,7 +47,7 @@
     var selected = plan(id);
     if (!selected || !Array.isArray(rawTrials)) return null;
     var trials = [];
-    rawTrials.forEach(function (raw) {
+    function ingest(raw) {
       if (!plain(raw) || !own(raw, 'settings') || !own(raw, 'prediction')) return;
       // Serialized frequency, correctness and bracket labels are not evidence.
       // Recompute frequency from the strictly validated original conditions.
@@ -55,14 +58,26 @@
       }
       trials.push(clean);
       if (trials.length > 8) trials.shift();
-    });
+    }
+    if (rawTrials.length > 4096) {
+      var indices = Object.keys(rawTrials).map(Number).filter(function (n) {
+        return Number.isInteger(n) && n >= 0 && n < rawTrials.length;
+      }).sort(function (a, b) { return a - b; });
+      for (var k = 0; k < indices.length; k++) ingest(rawTrials[indices[k]]);
+    } else {
+      for (var idx = 0; idx < rawTrials.length; idx++) {
+        if (!own(rawTrials, idx)) continue;
+        ingest(rawTrials[idx]);
+      }
+    }
     var below = null, above = null;
-    trials.forEach(function (sample) {
+    for (var s = 0; s < trials.length; s++) {
+      var sample = trials[s];
       var distance = sample.settings.distance;
       if (sample.frequency <= selected.limit) {
         if (!below || distance > below.distance) below = { distance: distance, frequency: sample.frequency };
       } else if (!above || distance < above.distance) above = { distance: distance, frequency: sample.frequency };
-    });
+    }
     var width = below && above ? above.distance - below.distance : null;
     return {
       trials: trials, below: below, above: above, width: width,
@@ -70,4 +85,4 @@
     };
   }
   global.RaptorDistanceFieldwork = Object.freeze({ version: 1, plan: plan, trial: trial, summarize: summarize });
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

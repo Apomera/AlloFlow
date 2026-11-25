@@ -126,14 +126,12 @@
       "constructedResponseWorkshops": 5,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 7,
+      "spacedReviewPlans": 5,
       "sourceCatalog": 4
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 5,
@@ -141,7 +139,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 520,
+      "checked": 1079,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -308,16 +306,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "7a2e0d3cfc8f98e79b5ed9129478525c1428b0513d70160ed3f1509533e1e4b4",
-      "deploySha256": "7a2e0d3cfc8f98e79b5ed9129478525c1428b0513d70160ed3f1509533e1e4b4",
+      "sourceSha256": "8a545187b6ca79ee4f899f3d13488286749748d353febbb0752700a4be4dcd44",
+      "deploySha256": "8a545187b6ca79ee4f899f3d13488286749748d353febbb0752700a4be4dcd44",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "8ac35fdc75520b69b1ce0f259350d5d07806a2c4bc5eb76e8df866c497ea689a",
-      "deploySha256": "8ac35fdc75520b69b1ce0f259350d5d07806a2c4bc5eb76e8df866c497ea689a",
+      "sourceSha256": "e94acab10fee418c4edc3785de9882f70873a7f77bab96e8cba94a2a51548f07",
+      "deploySha256": "e94acab10fee418c4edc3785de9882f70873a7f77bab96e8cba94a2a51548f07",
       "note": "Source and deployment bytes are identical."
     }
   ],

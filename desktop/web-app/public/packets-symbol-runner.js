@@ -479,6 +479,9 @@
 
   function syncPacketModeUi() {
     var isCheck = packetModeValue() === 'check';
+    // 2026-11-23: the page heading says which kind of file is being made.
+    var heading = doc.querySelector('main h1');
+    if (heading) heading.textContent = isCheck ? 'Make a Symbol Runner check' : 'Make Symbol Runner practice';
     if (checkOptionsBox) checkOptionsBox.hidden = !isCheck;
     if (rehearsalCheck) {
       rehearsalCheck.disabled = isCheck;
@@ -2288,7 +2291,7 @@
   }
   bindEvents();
   drawSetChooser();
-  // Step 2's Settings fold says on its top line what the settings are now.
+  // Step 2's "More options" fold (named Settings until 2026-11-23) says on its top line what the settings are now.
   function drawSettingsNow() {
     var nowEl = doc.getElementById('sr-more-2-now');
     if (!nowEl) return;

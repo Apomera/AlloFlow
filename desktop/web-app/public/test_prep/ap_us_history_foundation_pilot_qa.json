@@ -175,14 +175,12 @@
       "constructedResponseWorkshops": 3,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 6,
-      "studySessionPlans": 0,
-      "spacedReviewPlans": 0,
+      "studySessionPlans": 11,
+      "spacedReviewPlans": 9,
       "sourceCatalog": 5
     },
     "emptyLibraryLayers": [
-      "topicDiagnosticRoutes",
-      "studySessionPlans",
-      "spacedReviewPlans"
+      "topicDiagnosticRoutes"
     ],
     "lessonDepth": {
       "chapterCount": 9,
@@ -190,7 +188,7 @@
       "sectionsPerChapter": 3
     },
     "crossReferences": {
-      "checked": 1200,
+      "checked": 1983,
       "unresolvedCount": 0,
       "unresolved": {},
       "examples": []
@@ -207,13 +205,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_us_history_foundation_pilot.json",
-      "byteLength": 3087022,
-      "sha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f"
+      "byteLength": 3091756,
+      "sha256": "9378e1ef1d9b2db0a4664cb9d8ed43e8f59ee9a51921a5ef8aa97b1f29677b07"
     },
     "learningLibrary": {
       "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
-      "byteLength": 642357,
-      "sha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25"
+      "byteLength": 722268,
+      "sha256": "be38da691ab836f7c9152032e2d349ae062500a1f6a48318b66eccc03a020078"
     }
   },
   "standard": {
@@ -484,16 +482,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f",
-      "deploySha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f",
+      "sourceSha256": "9378e1ef1d9b2db0a4664cb9d8ed43e8f59ee9a51921a5ef8aa97b1f29677b07",
+      "deploySha256": "9378e1ef1d9b2db0a4664cb9d8ed43e8f59ee9a51921a5ef8aa97b1f29677b07",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25",
-      "deploySha256": "b0d8fa16c2abb01b5166e7c0d6e6aeb989d138c26db18a17ae39fe62698bad25",
+      "sourceSha256": "be38da691ab836f7c9152032e2d349ae062500a1f6a48318b66eccc03a020078",
+      "deploySha256": "be38da691ab836f7c9152032e2d349ae062500a1f6a48318b66eccc03a020078",
       "note": "Source and deployment bytes are identical."
     }
   ],

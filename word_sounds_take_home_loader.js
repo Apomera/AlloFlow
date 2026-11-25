@@ -42,7 +42,8 @@
       var at = typeof location !== 'undefined' ? location : null;
       // Not a test or local address (.test is reserved for testing; localhost and 127.0.0.1 are this computer).
       var local = /(?:^|\.)(?:test|localhost)$|^127\.|^\[?::1\]?$/.test(String(at && at.hostname || ''));
-      if (at && !local && /^https?:$/.test(at.protocol) && /\/packets[\w.-]*\.html$/.test(at.pathname)) return at.host + at.pathname.replace(/[^/]*$/, '') + 'packets-open.html';
+      // 2026-11-23: with or without ".html" (Cloudflare Pages serves /packets-make.html as /packets-make).
+      if (at && !local && /^https?:$/.test(at.protocol) && /\/packets[\w.-]*$/.test(at.pathname)) return at.host + at.pathname.replace(/[^/]*$/, '') + 'packets-open.html';
     } catch (_) {}
     return 'apomera.github.io/AlloFlow/packets-open.html';
   }
@@ -185,6 +186,10 @@
     tools_reset: 'Reset',
     tools_close: 'Close',
     progress_all: 'Question {n} of {total} in all',
+    // 2026-11-23: these three were written in the code (the Continue note, and the place in a file with its own order).
+    continue_page: '(Page {n} of {total})',
+    continue_question: '(Question {n} of {total})',
+    progress_own: 'Question {n} of {total} ({activity})',
     tools_choices: 'Read the choices when a question opens',
     tools_choices_hint: 'Each answer choice is played or read aloud in turn. Press Stop, or choose an answer, to stop it.',
     tools_directions: 'Spoken directions',
@@ -239,7 +244,8 @@
     check_ready_timed: 'You have {time}. Do as many as you can.',
     check_ready_untimed: 'There is no clock. Take your time.',
     check_ready_one_try: 'You get one try for each one. You cannot go back.',
-    check_ready_adult: 'For a young student: a grown-up reads this page aloud before the student presses Begin.',
+    // 2026-11-23: "presses Start", the word on the button (check_begin); it said "presses Begin".
+    check_ready_adult: 'For a young student: a grown-up reads this page aloud before the student presses Start.',
     // 2026-11-17: a check that carries a recording of these lines (lesson.directions) has a button that plays them.
     check_ready_hear: 'Hear the directions',
     check_ready_adult_hear: 'For a young student: press Hear the directions, or a grown-up reads this page aloud, before the student presses Start.',
@@ -350,9 +356,46 @@
     qr_copy: 'Copy sealed code',
     qr_copied: 'Sealed code copied.',
     qr_copy_manual: 'Copy this sealed code into Collect by sealed QR:',
-    qr_trimmed: 'Long packet: all missed and retried items plus full totals are included; some first-try items were condensed to fit in one QR.',
-    qr_error: 'Could not make the sealed QR in this browser. Save the CSV file instead.',
+    // 2026-11-23: every question is always counted in the code. What may be left out to fit is the time on each question
+    // and some of the wording (packets_qr_crypto.js compactResult); a result too long for one code is refused.
+    qr_trimmed: 'Every question is counted in this QR code. To fit in one code, some details are left out (the time on each question, or the words of some questions). The saved results file has all of them.',
+    qr_too_long: 'This result is too long for one QR code. Save the results file and hand that in instead.',
+    qr_error: 'Could not make the sealed QR in this browser. Save the results file instead.',
     qr_about: 'Sealed QR results: enabled for teacher key {fp} (X25519 + HKDF-SHA-256 + ChaCha20-Poly1305). The code is encrypted on this device and cannot be read without the teacher\'s private key. Nothing is sent over the internet.',
+  };
+
+  // Shared-device Station Kiosk labels (travel ONLY when stationMode is enabled).
+  var STATION_MAX_QUEUE = 15;
+  var STATION_LABELS = {
+    station_next_student: 'Ready for next student',
+    station_cleared: 'Ready for the next student. Previous answers were cleared from this screen.',
+    station_queued_note: 'Results sealed into the station deck ({n} ready for teacher).',
+    station_full_note: 'Station deck is full ({max} ready). Ask your teacher to scan and clear the deck before the next student.',
+    station_deck_button: 'Teacher Station Deck ({n} ready)',
+    station_deck_title: 'Teacher Station Deck',
+    station_deck_empty: 'No sealed student results in the station deck yet.',
+    station_deck_item: 'Student {n} of {total} \u00b7 {label}',
+    station_deck_prev: 'Previous',
+    station_deck_next: 'Next',
+    station_deck_clear: 'Clear deck',
+    station_deck_cleared: 'Station deck cleared.',
+    station_deck_hide: 'Hide deck',
+    station_deck_note: 'Kept in tab memory only, never saved to browser storage. Closing this tab clears the deck.',
+    station_teacher_fold: 'For the teacher',
+    station_about: 'Shared-device station mode: clears each student session for the next student without reloading and holds up to {max} encrypted QR codes in tab memory only (never in browser storage).',
+  };
+
+  // Rule-based deterministic mastery scaffolding labels (travel ONLY when lesson.adaptiveScaffold is enabled).
+  var ADAPTIVE_LABELS = {
+    adaptive_hint_title: 'Worked example and strategy hint',
+    adaptive_reinforce_banner: 'Extra practice: try this one again with the hint below.',
+    adaptive_reinforce_queued: 'We added 1 gentle extra practice item at the end of this section.',
+    adaptive_stretch_title: 'Great streak!',
+    adaptive_stretch_body: 'You got {n} right in a row on the first try. Want to try a Stretch Challenge?',
+    adaptive_stretch_button: 'Try a Stretch Challenge',
+    adaptive_stretch_banner: 'Stretch Challenge (optional bonus)',
+    adaptive_default_hint: 'Check each part of "{word}" carefully before choosing your answer.',
+    adaptive_default_example: 'Worked example: look at "{word}" and check why "{target}" fits, then use the same step next.',
   };
 
   function str(value) { return value == null ? '' : String(value); }
@@ -1204,6 +1247,18 @@
         // 2026-11-13: a tip, never a fail: the first stroke started far from the start dot.
         letter_tracing_start_one: 'Start at the green dot 1.',
         letter_tracing_start_more: 'Start at the green dot 1.',
+        // 2026-11-25 (Wave 39): stroke-by-stroke coaching, directionality tips, Show how model, and missed-spot cues.
+        letter_tracing_demo: 'Show how',
+        letter_tracing_demo_playing: 'Watch how to trace the letter {letter}.',
+        letter_tracing_stroke_of: 'Stroke {n} of {total}',
+        letter_tracing_stroke_ok: 'Nice stroke {n}! Now start at green dot {next}.',
+        letter_tracing_stroke_start_n: 'For stroke {n}, start at green dot {n}.',
+        letter_tracing_dir_down: 'Try starting at the top and pulling down from dot {n}.',
+        letter_tracing_dir_right: 'Try going from left to right from dot {n}.',
+        letter_tracing_dir_curve: 'Curve around to the left from dot {n}, following the arrow.',
+        letter_tracing_dir_arrow: 'Follow the arrow from dot {n}.',
+        letter_tracing_ready: 'Looks good! Press I traced it when you are ready.',
+        letter_tracing_missed_spots: 'Keep going. Trace over the highlighted spots.',
       },
       prepare: function (w, env) {
         var word = String((w && (w.targetWord || w.word || w.term)) || '').trim();
@@ -1337,16 +1392,38 @@
             line: cv('--line', '#94a3b8'),
             accent: cv('--accent', '#3d3aa8'),
             ok: cv('--ok', '#1d6b3a'),
+            warn: cv('--warn', '#8a4b00'),
           };
         };
-        var drawGuide = function () {
+        var missedHighlight = null;
+        var demoTimer = null, demoRaf = 0, demoRunning = false;
+        var stopDemo = function () {
+          demoRunning = false;
+          if (ink && ink.style) ink.style.opacity = '';
+          if (demoTimer) { try { win.clearTimeout(demoTimer); } catch (_) {} demoTimer = null; }
+          if (demoRaf && win.cancelAnimationFrame) { try { win.cancelAnimationFrame(demoRaf); } catch (_) {} demoRaf = 0; }
+        };
+        var drawMissed = function (pal) {
+          if (!missedHighlight || !missedHighlight.length) return;
+          gg.save();
+          gg.strokeStyle = pal.warn; gg.fillStyle = pal.warn; gg.lineWidth = 2.5; gg.setLineDash([4, 3]);
+          missedHighlight.forEach(function (pt) {
+            gg.globalAlpha = 0.2; gg.beginPath(); gg.arc(pt.x, pt.y, 14, 0, Math.PI * 2); gg.fill();
+            gg.globalAlpha = 0.94; gg.beginPath(); gg.arc(pt.x, pt.y, 14, 0, Math.PI * 2); gg.stroke();
+          });
+          gg.restore();
+        };
+        var drawGuide = function (demoFrame) {
           if (!gg) return;
           var pal = palette();
           gg.save();
           gg.globalAlpha = pal.hc ? 0.42 : 0.24;
           paint(gg, pal.muted, 0);
           gg.restore();
-          if (!shape) return;
+          if (!shape) {
+            drawMissed(pal);
+            return;
+          }
           // Writing lines behind the letter: top, a dashed middle, the base line.
           gg.globalCompositeOperation = 'destination-over';
           [[0, pal.hc ? 0.55 : 0.7, []], [50, pal.hc ? 0.55 : 0.7, [8, 7]], [100, pal.hc ? 0.9 : 0.85, []]].forEach(function (row) {
@@ -1358,18 +1435,53 @@
           });
           gg.globalCompositeOperation = 'source-over';
           gg.setLineDash([]);
+          // Highlight missed letter regions right on the stroke centroids when student taps "I traced it" early.
+          drawMissed(pal);
           // A thin dashed line down the middle of each stroke, then a numbered start dot and an arrow.
-          gg.save();
-          gg.globalAlpha = pal.hc ? 0.9 : 0.85;
-          gg.lineWidth = 2; gg.strokeStyle = pal.muted; gg.setLineDash([5, 6]);
-          shape.strokes.forEach(function (st) {
+          var sLenNow = Array.isArray(strokes) ? strokes.length : 0;
+          var activeIdx = demoFrame ? demoFrame.strokeIdx : Math.min(sLenNow, shape.strokes.length - 1);
+          shape.strokes.forEach(function (st, si) {
             if (st.dot) return;
+            gg.save();
+            var isCur = si === activeIdx;
+            gg.globalAlpha = isCur ? (pal.hc ? 1 : 0.95) : (si < activeIdx ? 0.4 : (pal.hc ? 0.85 : 0.75));
+            gg.lineWidth = isCur ? 3 : 2;
+            gg.strokeStyle = isCur ? pal.accent : pal.muted;
+            gg.setLineDash([5, 6]);
             gg.beginPath(); gg.moveTo(st.pts[0][0], st.pts[0][1]);
             st.pts.slice(1).forEach(function (p) { gg.lineTo(p[0], p[1]); });
             gg.stroke();
+            gg.restore();
           });
-          gg.restore();
           gg.setLineDash([]);
+          // Animated / stepped stroke demonstration overlay ("Show how").
+          if (demoFrame && shape.strokes[demoFrame.strokeIdx]) {
+            var dst = shape.strokes[demoFrame.strokeIdx];
+            gg.save();
+            gg.strokeStyle = pal.accent; gg.fillStyle = pal.accent;
+            gg.lineWidth = pen * 0.68; gg.lineCap = 'round'; gg.lineJoin = 'round';
+            gg.globalAlpha = 0.55;
+            if (dst.dot) {
+              gg.beginPath(); gg.arc(dst.pts[0][0], dst.pts[0][1], pen * 0.45, 0, Math.PI * 2); gg.fill();
+            } else {
+              var totalLen = 0;
+              for (var di = 1; di < dst.pts.length; di++) totalLen += Math.hypot(dst.pts[di][0] - dst.pts[di - 1][0], dst.pts[di][1] - dst.pts[di - 1][1]);
+              var drawDist = totalLen * Math.max(0, Math.min(1, demoFrame.t));
+              var leftD = drawDist, tipX = dst.pts[0][0], tipY = dst.pts[0][1];
+              gg.beginPath(); gg.moveTo(tipX, tipY);
+              for (var di2 = 1; di2 < dst.pts.length; di2++) {
+                var sdx = dst.pts[di2][0] - dst.pts[di2 - 1][0], sdy = dst.pts[di2][1] - dst.pts[di2 - 1][1], slen = Math.hypot(sdx, sdy);
+                if (!slen) continue;
+                if (leftD >= slen) { tipX = dst.pts[di2][0]; tipY = dst.pts[di2][1]; gg.lineTo(tipX, tipY); leftD -= slen; }
+                else { var sf = leftD / slen; tipX = dst.pts[di2 - 1][0] + sdx * sf; tipY = dst.pts[di2 - 1][1] + sdy * sf; gg.lineTo(tipX, tipY); break; }
+              }
+              gg.stroke();
+              gg.globalAlpha = 0.95;
+              gg.beginPath(); gg.arc(tipX, tipY, 9, 0, Math.PI * 2); gg.fill();
+              gg.lineWidth = 2.5; gg.strokeStyle = pal.card; gg.stroke();
+            }
+            gg.restore();
+          }
           // 2026-11-13: no dot, number or arrow covers another. Dot 1 is at its real start. Each later stroke takes the
           // cheapest place for its dot (its real start; a little way along the stroke; beside or behind the start, with
           // a short line to it) that is 36 px from every earlier dot and 24 px from every earlier arrow, inside the box,
@@ -1418,24 +1530,38 @@
             if (best.a) arrows.push(best.a);
           });
           // Short lines from moved dots to their real starts, then the arrows, then the dots.
-          dots.forEach(function (m) {
+          dots.forEach(function (m, ni) {
             if (!m.lead) return;
+            gg.save();
+            gg.globalAlpha = ni < activeIdx ? 0.45 : 1;
             gg.beginPath(); gg.lineWidth = 2; gg.strokeStyle = pal.ok; gg.moveTo(m.lead[0], m.lead[1]); gg.lineTo(m.p[0], m.p[1]); gg.stroke();
             gg.beginPath(); gg.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
+            gg.restore();
           });
-          arrows.forEach(function (a) {
+          arrows.forEach(function (a, ai) {
+            gg.save();
+            gg.globalAlpha = ai < activeIdx ? 0.45 : 1;
             gg.beginPath(); gg.fillStyle = pal.ok;
             gg.moveTo(a.x + a.ux * 10, a.y + a.uy * 10);
             gg.lineTo(a.x - a.ux * 6 - a.uy * 8, a.y - a.uy * 6 + a.ux * 8);
             gg.lineTo(a.x - a.ux * 6 + a.uy * 8, a.y - a.uy * 6 - a.ux * 8);
             gg.closePath(); gg.fill();
+            gg.restore();
           });
           // The dots, last first, so dot 1 is on top. Always number dot 1 so start cues never rely on color alone (WCAG 1.4.1).
           for (var n = dots.length - 1; n >= 0; n--) {
             var p = dots[n].p;
+            var isAct = shape.strokes.length > 1 && n === activeIdx;
+            gg.save();
+            gg.globalAlpha = n < activeIdx ? 0.55 : 1;
+            if (isAct) {
+              gg.beginPath(); gg.arc(p[0], p[1], R + 4, 0, Math.PI * 2);
+              gg.lineWidth = 3; gg.strokeStyle = pal.accent; gg.stroke();
+            }
             gg.beginPath(); gg.arc(p[0], p[1], R, 0, Math.PI * 2); gg.fillStyle = pal.ok; gg.fill();
             gg.lineWidth = 2; gg.strokeStyle = pal.card; gg.stroke();
             gg.fillStyle = pal.card; gg.font = 'bold 14px system-ui, sans-serif'; gg.textAlign = 'center'; gg.textBaseline = 'middle'; gg.fillText(String(n + 1), p[0], p[1] + 1);
+            gg.restore();
           }
         };
         var retintInk = function () {
@@ -1479,10 +1605,11 @@
           undo.disabled = !has;
           undo.setAttribute('aria-disabled', has ? 'false' : 'true');
         };
-        var wipe = function () { first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); };
+        var wipe = function () { stopDemo(); missedHighlight = null; first = null; firstDone = false; drawing = false; activeId = null; last = null; strokes = []; curStroke = null; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } updateUndo(); drawGuide(); };
         ink.addEventListener('pointerdown', function (e) {
           // Ignore secondary touches (palm rest / second finger on iPad) and non-left mouse buttons.
           if (ctx.isDone() || drawing || e.isPrimary === false || (e.pointerType === 'mouse' && e.button !== 0)) return;
+          if (demoRunning || missedHighlight) { stopDemo(); missedHighlight = null; drawGuide(); }
           drawing = true; activeId = e.pointerId != null ? e.pointerId : null; last = spot(e);
           curStroke = [last]; strokes.push(curStroke);
           line(last, last);
@@ -1498,17 +1625,98 @@
           if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
           line(last, p); last = p; e.preventDefault();
         });
-        // A stroke longer than 24 px is the first stroke (a tap is not); far from dot 1 (35 px, as the app), a tip.
-        var startTip = function () {
-          if (firstDone || !first || first.len <= 24) return;
-          firstDone = true;
-          var dot = shape && shape.strokes[0] && shape.strokes[0].pts[0];
-          if (!dot || Math.sqrt((first.x - dot[0]) * (first.x - dot[0]) + (first.y - dot[1]) * (first.y - dot[1])) <= 35) return;
-          note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
+        // Stroke path & directionality coaching (gentle, never punitive).
+        var strokePathLen = function (pts) {
+          var t = 0;
+          for (var i = 1; i < pts.length; i++) t += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+          return t;
+        };
+        var signedTurnArea = function (pts, isArr) {
+          var n = pts.length;
+          if (n < 4) return 0;
+          var cx = 0, cy = 0;
+          for (var i = 0; i < n; i++) { cx += isArr ? pts[i][0] : pts[i].x; cy += isArr ? pts[i][1] : pts[i].y; }
+          cx /= n; cy /= n;
+          var sum = 0;
+          for (var j = 1; j < n; j++) {
+            var x1 = (isArr ? pts[j - 1][0] : pts[j - 1].x) - cx, y1 = (isArr ? pts[j - 1][1] : pts[j - 1].y) - cy;
+            var x2 = (isArr ? pts[j][0] : pts[j].x) - cx, y2 = (isArr ? pts[j][1] : pts[j].y) - cy;
+            sum += x1 * y2 - y1 * x2;
+          }
+          return sum;
+        };
+        var coachStroke = function (pts, idx) {
+          if (!shape || !pts || !pts.length) return;
+          var slen = strokePathLen(pts);
+          var gIdx = Math.min(idx, shape.strokes.length - 1);
+          var gst = shape.strokes[gIdx];
+          if (!gst) return;
+          // 1. Directionality check first (catches bottom-to-top, right-to-left, and clockwise vs counterclockwise curves)
+          if (slen > 24 && !gst.dot && gst.pts.length >= 2 && pts.length >= 2 && idx < shape.strokes.length) {
+            var gStart = gst.pts[0], gEnd = gst.pts[gst.pts.length - 1];
+            var gDx = gEnd[0] - gStart[0], gDy = gEnd[1] - gStart[1];
+            var gChord = Math.hypot(gDx, gDy);
+            var gLen = 0;
+            for (var gi = 1; gi < gst.pts.length; gi++) gLen += Math.hypot(gst.pts[gi][0] - gst.pts[gi - 1][0], gst.pts[gi][1] - gst.pts[gi - 1][1]);
+            if (gLen > 40 && gChord < gLen * 0.45) {
+              var gWind = signedTurnArea(gst.pts, true);
+              var sWind = signedTurnArea(pts, false);
+              if (Math.abs(gWind) > 600 && Math.abs(sWind) > 400 && (gWind * sWind < 0)) {
+                firstDone = true;
+                note.textContent = ctx.fmt(L.letter_tracing_dir_curve || 'Curve around to the left from dot {n}, following the arrow.', { n: idx + 1 });
+                return;
+              }
+            } else if (gChord >= 28) {
+              var sDx = pts[pts.length - 1].x - pts[0].x, sDy = pts[pts.length - 1].y - pts[0].y;
+              var sChord = Math.hypot(sDx, sDy);
+              if (sChord >= 22) {
+                var cos = (sDx * gDx + sDy * gDy) / (sChord * gChord);
+                if (cos < -0.45) {
+                  firstDone = true;
+                  if (gDy > Math.abs(gDx) * 1.1) note.textContent = ctx.fmt(L.letter_tracing_dir_down || 'Try starting at the top and pulling down from dot {n}.', { n: idx + 1 });
+                  else if (gDx > Math.abs(gDy) * 1.1) note.textContent = ctx.fmt(L.letter_tracing_dir_right || 'Try going from left to right from dot {n}.', { n: idx + 1 });
+                  else note.textContent = ctx.fmt(L.letter_tracing_dir_arrow || 'Follow the arrow from dot {n}.', { n: idx + 1 });
+                  return;
+                }
+              }
+            }
+          }
+          // 2. Stroke 0 start check (keeps exact original 24 px / 35 px rule)
+          if (!firstDone && slen > 24) {
+            firstDone = true;
+            var dot0 = shape.strokes[0] && shape.strokes[0].pts[0];
+            if (dot0 && Math.hypot(pts[0].x - dot0[0], pts[0].y - dot0[1]) > 35) {
+              note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
+              return;
+            }
+          }
+          if (slen <= 24 && !gst.dot) return;
+          // 3. Subsequent stroke start check on multi-stroke letters
+          if (idx > 0 && idx < shape.strokes.length && !gst.dot) {
+            var dotN = gst.pts[0];
+            if (dotN && Math.hypot(pts[0].x - dotN[0], pts[0].y - dotN[1]) > 44) {
+              note.textContent = ctx.fmt(L.letter_tracing_stroke_start_n || 'For stroke {n}, start at green dot {n}.', { n: idx + 1 });
+              return;
+            }
+          }
+          // 4. Positive progress cue for multi-stroke letters or ready-to-check completion
+          if (strokes.length < shape.strokes.length) {
+            note.textContent = ctx.fmt(L.letter_tracing_stroke_ok || 'Nice stroke {n}! Now start at green dot {next}.', { n: strokes.length, next: strokes.length + 1 });
+          } else {
+            var chk = measure();
+            if (chk.done >= 0.6 && chk.stray <= 0.5) {
+              note.textContent = L.letter_tracing_ready || 'Looks good! Press I traced it when you are ready.';
+            }
+          }
         };
         var stop = function (e) {
           if (!drawing || (e && activeId != null && e.pointerId !== activeId)) return;
-          startTip(); drawing = false; activeId = null; last = null; curStroke = null; updateUndo();
+          var finishedStroke = curStroke;
+          var finishedIdx = strokes.length - 1;
+          drawing = false; activeId = null; last = null; curStroke = null;
+          coachStroke(finishedStroke, finishedIdx);
+          updateUndo();
+          drawGuide();
         };
         ink.addEventListener('pointerup', stop);
         ink.addEventListener('pointercancel', stop);
@@ -1516,6 +1724,7 @@
         var themeObs = null, schemeMq = null;
         var onTheme = function () {
           if (!ctx.root.isConnected) {
+            stopDemo();
             if (themeObs) { try { themeObs.disconnect(); } catch (_) {} themeObs = null; }
             if (schemeMq && schemeMq.removeEventListener) { try { schemeMq.removeEventListener('change', onTheme); } catch (_) {} schemeMq = null; }
             return;
@@ -1535,35 +1744,83 @@
         // the strokes cover, and how much ink lands well away from the letter (scribbling over
         // the whole box is not tracing). Every other pixel is enough.
         var measure = function () {
-          if (!gg || !pg) return { done: 1, stray: 0 };
+          if (!gg || !pg) return { done: 1, stray: 0, missed: [] };
           var mask = doc.createElement('canvas'); mask.width = px; mask.height = px;
           var mg = mask.getContext('2d'); paint(mg, '#000', shape ? pen * 1.25 : 0);
           var halo = doc.createElement('canvas'); halo.width = px; halo.height = px;
           var hg = halo.getContext('2d'); paint(hg, '#000', shape ? pen * 2.6 : size * 0.14);
           var m = mg.getImageData(0, 0, px, px).data, h = hg.getImageData(0, 0, px, px).data, p = pg.getImageData(0, 0, px, px).data;
-          var G = 7, cell = px / G, want = [], got = [], all = 0, away = 0;
+          var G = 7, cell = px / G, want = [], got = [], cxSum = [], cySum = [], all = 0, away = 0;
           for (var y = 0; y < px; y += 2 * k) {
             for (var x = 0; x < px; x += 2 * k) {
               var i = (y * px + x) * 4 + 3, c = Math.floor(y / cell) * G + Math.floor(x / cell), on = p[i] > 0;
-              if (m[i] > 128) { want[c] = (want[c] || 0) + 1; if (on) got[c] = (got[c] || 0) + 1; }
+              if (m[i] > 128) {
+                want[c] = (want[c] || 0) + 1;
+                cxSum[c] = (cxSum[c] || 0) + x / k;
+                cySum[c] = (cySum[c] || 0) + y / k;
+                if (on) got[c] = (got[c] || 0) + 1;
+              }
               if (on) { all++; if (h[i] <= 128) away++; }
             }
           }
-          var cells = 0, covered = 0;
-          for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) { cells++; if ((got[c2] || 0) / want[c2] >= 0.35) covered++; }
-          return { done: cells ? covered / cells : 0, stray: all ? away / all : 0 };
+          var cells = 0, covered = 0, missed = [];
+          for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) {
+            cells++;
+            if ((got[c2] || 0) / want[c2] >= 0.35) covered++;
+            else {
+              var mx = cxSum[c2] / want[c2], my = cySum[c2] / want[c2];
+              if (!missed.some(function (q) { return Math.hypot(q.x - mx, q.y - my) < 26; })) missed.push({ x: mx, y: my });
+            }
+          }
+          return { done: cells ? covered / cells : 0, stray: all ? away / all : 0, missed: missed };
+        };
+        var playDemo = function () {
+          if (ctx.isDone() || !shape || !shape.strokes.length) return;
+          stopDemo();
+          missedHighlight = null;
+          demoRunning = true;
+          if (ink && ink.style) ink.style.opacity = '0.2';
+          ctx.support('traceDemo');
+          note.textContent = ctx.fmt(L.letter_tracing_demo_playing || 'Watch how to trace the letter {letter}.', { letter: parts[at].letter });
+          var reduced = (doc.documentElement && doc.documentElement.getAttribute('data-lt-motion') === '1')
+            || !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches)
+            || typeof win.requestAnimationFrame !== 'function';
+          var si = 0;
+          var nextStroke = function () {
+            if (!demoRunning || !ctx.root.isConnected) { stopDemo(); return; }
+            if (si >= shape.strokes.length) { stopDemo(); drawGuide(); return; }
+            if (reduced) {
+              drawGuide({ strokeIdx: si, t: 1 });
+              si++;
+              demoTimer = win.setTimeout(nextStroke, 680);
+              return;
+            }
+            var t0 = Date.now(), dur = shape.strokes[si].dot ? 320 : 780;
+            var stepFrame = function () {
+              if (!demoRunning || !ctx.root.isConnected) { stopDemo(); return; }
+              var f = Math.min(1, (Date.now() - t0) / dur);
+              drawGuide({ strokeIdx: si, t: f });
+              if (f < 1) { demoRaf = win.requestAnimationFrame(stepFrame); }
+              else { si++; demoTimer = win.setTimeout(nextStroke, 240); }
+            };
+            demoRaf = win.requestAnimationFrame(stepFrame);
+          };
+          nextStroke();
         };
         var question = ctx.el('p', { class: 'letters', 'data-trace-question': '', style: 'margin:0 0 2px' });
         var tools = ctx.el('p', { class: 'muted', style: 'margin:0;font-size:0.875rem', text: L.letter_tracing_tools || '' });
         var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0;font-size:0.9rem' });
         var how = ctx.el('p', { class: 'muted', 'data-trace-how': '', style: 'margin:4px 0 0;font-size:0.9rem' });
-        var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
+        var note = ctx.el('p', { class: 'letters', 'data-trace-note': '', 'aria-live': 'polite', style: 'margin:4px 0 0;min-height:1.2em' });
         var skipLower = ctx.el('button', { type: 'button', 'data-trace-skip-lowercase': '', hidden: true, on: { click: function () {
           if (ctx.isDone()) return;
           ctx.support('lowercaseSkipped');
           ctx.practice('traced', L.letter_tracing_traced);
         } }, text: L.letter_tracing_skip_lowercase });
+        var demoBtn = ctx.el('button', { type: 'button', 'data-trace-demo': '', on: { click: playDemo }, text: L.letter_tracing_demo || 'Show how' });
         var showPart = function () {
+          stopDemo();
+          missedHighlight = null;
           var part = parts[at];
           shape = layout(part);
           var named = { letter: part.letter };
@@ -1575,21 +1832,29 @@
           stepLine.hidden = parts.length < 2;
           how.textContent = !shape ? '' : shape.strokes.length > 1 ? L.letter_tracing_how_more : L.letter_tracing_how_one;
           how.hidden = !shape;
+          demoBtn.hidden = !shape;
           skipLower.hidden = !(at > 0 && part.kind === 'lowercase');
           // 2026-11-18: on the lowercase part only its own skip shows: "Skip (not traced)" there marked the capital, traced
           // already, as not traced (the app hides it too).
           if (skip) skip.hidden = !skipLower.hidden;
-          drawGuide();
           wipe();
         };
         var buttons = [];
         if (item.letterAudio) buttons.push(ctx.el('button', { type: 'button', on: { click: function () { ctx.support('letterReplays'); ctx.play(item.letterAudio); } }, text: L.letter_tracing_hear_letter }));
         if (item.wordAudio || item.promptAudio) buttons.push(ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio || item.promptAudio); } }, text: L.hear_word }));
+        buttons.push(demoBtn);
         var done = ctx.el('button', { type: 'button', class: 'primary', 'data-trace-done': '', on: { click: function () {
           if (ctx.isDone()) return;
+          stopDemo();
           var m = measure();
-          if (m.stray > 0.5) { note.textContent = L.letter_tracing_stay; return; }
-          if (m.done < 0.6) { note.textContent = L.letter_tracing_more; return; }
+          if (m.stray > 0.5) { missedHighlight = null; drawGuide(); note.textContent = L.letter_tracing_stay; return; }
+          if (m.done < 0.6) {
+            missedHighlight = m.missed && m.missed.length ? m.missed : null;
+            drawGuide();
+            note.textContent = missedHighlight ? (L.letter_tracing_missed_spots || L.letter_tracing_more) : L.letter_tracing_more;
+            return;
+          }
+          missedHighlight = null;
           if (at < parts.length - 1) {
             at++;
             showPart();
@@ -1602,13 +1867,16 @@
         } }, text: L.letter_tracing_done });
         undo = ctx.el('button', { type: 'button', 'data-trace-undo': '', hidden: true, disabled: true, 'aria-disabled': 'true', on: { click: function () {
           if (ctx.isDone() || !strokes.length) return;
+          stopDemo();
+          missedHighlight = null;
           strokes.pop();
           if (!strokes.length) { first = null; firstDone = false; note.textContent = ''; }
           redrawInk();
+          drawGuide();
           updateUndo();
         } }, text: L.letter_tracing_undo || 'Undo stroke' });
         var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; wipe(); note.textContent = ''; } }, text: L.letter_tracing_clear });
-        var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
+        var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; stopDemo(); ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
         ctx.root.appendChild(question);
         var metaKids = [];
         if (item.word) metaKids.push(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.1rem;margin:0' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
@@ -1622,7 +1890,7 @@
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:6px;gap:8px' }, [done, undo, clear, skipLower, skip]));
         showPart();
         return {
-          reveal: function () { [done, undo, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
+          reveal: function () { stopDemo(); [done, undo, clear, skipLower, skip, demoBtn].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); if (undo) undo.disabled = true; },
         };
       },
     };
@@ -6181,6 +6449,10 @@
     // Practice adapter: a passage read aloud, one sentence at a time (read_along). Made by
     // packet_read_along_builder.js on "Make a read-along". Listening practice, never scored: the student
     // presses "I have read this page" and the item is recorded as practice "read".
+    // 2026-11-23: a page the file turned to and read out by itself (Auto-advance, or Auto pace in One sentence) is
+    // recorded as practice "played"; "read" is kept for a page the child turned to, or started something on (Read to me,
+    // a sentence pressed, Next sentence). The answers to "Check your understanding" are kept with the place
+    // (ctx.checkNote) and go into the saved results; they are never scored.
     // One item is one page of the passage: its sentences, each with a recording that was made ahead of
     // time on the teacher's device. This file makes no speech: it only plays those recordings.
     // "Read to me" reads the page from the top (or from the sentence last pressed), marking the sentence
@@ -6235,13 +6507,16 @@
         read_along_checks_heading: 'Check your understanding',
         read_along_checks_right: 'Nice work!',
         read_along_checks_retry: 'Try another choice.',
-        read_along_checks_open_note: 'Stays on this device only.',
+        // 2026-11-23: the answers are kept with the place and written into the saved results (ctx.checkNote), and the note
+        // says so (it said "Stays on this device only.", and the answers were lost on a page turn).
+        read_along_checks_open_note: 'Your answers are saved with your results. Your teacher sees them when you hand in your work.',
         read_along_rec: 'Record my voice',
         read_along_rec_stop: 'Stop recording',
         read_along_rec_play: 'Play my voice',
         read_along_rec_save: 'Save my recording',
         read_along_rec_clear: 'Clear',
-        read_along_rec_note: 'Stays on this device only. Nothing is saved or sent.',
+        // 2026-11-23: true beside "Save my recording", which saves a file (it said "Nothing is saved or sent.").
+        read_along_rec_note: 'Your recording stays in this browser and is never sent. It is saved only if you press Save my recording, and then only to this device.',
         read_along_rec_recording: 'Recording sentence {n}...',
         read_along_rec_ready: 'Your recording for sentence {n} is ready to play back.',
         read_along_rec_denied: 'Microphone permission was refused.',
@@ -6252,6 +6527,28 @@
         read_along_finish: 'Finish',
         read_along_prev: 'Previous page',
         read_along_done_said: 'Good reading.',
+        // 2026-11-23: a file made to read with the device's own voice, on a device that has none for the passage.
+        read_along_device_read: 'Read with device voice',
+        // 2026-11-23: words that are always on the page were written in the code, so a translated file showed them in English.
+        read_along_jump: 'Jump to page',
+        read_along_page_n: 'Page {n}',
+        read_along_bookmark: 'Bookmark',
+        read_along_bookmarked: 'Bookmarked',
+        read_along_bookmark_go: 'Go to bookmark',
+        read_along_bookmark_go_n: 'Go to bookmark (Page {n})',
+        read_along_tap: 'Tap:',
+        read_along_tap_group: 'Tap a word mode',
+        read_along_tap_sentence: 'Sentence',
+        read_along_tap_speak: 'Speak word',
+        read_along_tap_define: 'Define',
+        read_along_tap_sounds: 'Sounds',
+        read_along_more_tools: 'More tools',
+        read_along_fewer_tools: 'Fewer tools',
+        read_along_helpers: 'Reading helpers',
+        read_along_keys: 'Keyboard shortcuts',
+        read_along_keys_text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.',
+        read_along_no_voice: 'This device has no voice of its own, so it cannot read this aloud. You can still read the words yourself.',
+        read_along_no_voice_lang: 'This device has no voice for the language of this passage, so it cannot read it aloud. You can still read the words yourself.',
       },
       // p: { lines: [{ text, audio: clip id or '', syl: the text with a dot at each syllable break, pos: compact "i:tag,...", para: true when a new paragraph starts here }], heading, page, pages, pageMode, lang }
       // A clip id names a recording in lesson.audio. A line with no clip is shown and skipped by "Read to me".
@@ -6389,6 +6686,18 @@
         supports.forEach(function (s) { if (s && s.id) { supportById[s.id] = s; (supportsByLine[String(s.line)] = supportsByLine[String(s.line)] || []).push(s); } });
         var hasSupportAudio = supports.some(function (s) { return !!s.audio; });
         var devVoice = typeof ctx.deviceVoice === 'function' ? ctx.deviceVoice(item.lang) : null, hasDevVoice = !!(devVoice && devVoice.available && devVoice.available());
+        // Why the file's device voice cannot read this page: 'language' (no voice for this language) or 'none'.
+        var noVoiceWhy = (devVoice && !hasDevVoice) ? (typeof devVoice.why === 'function' ? (devVoice.why() || 'none') : 'none') : '';
+        // A page the file turned to by itself (Auto-advance, Auto pace) is the child's own once they start something on it.
+        var ownPage = !(ctx.nav && typeof ctx.nav === 'object' && ctx.nav.autoPlay);
+        var own = function () { ownPage = true; };
+        // The page is over: 'read' (the child's own page) or 'played'. A 'played' page read later becomes 'read'.
+        var record = function (text, options) {
+          var kind = ownPage ? 'read' : 'played';
+          if (ctx.isDone() && !(kind === 'read' && typeof ctx.practiceKind === 'function' && ctx.practiceKind() === 'played')) return false;
+          ctx.practice(kind, kind === 'read' ? text : '', options);
+          return true;
+        };
         var readWithSupports = hasSupports && (hasSupportAudio || hasDevVoice) && readPref('withSupports', 'with-supports', false);
         var showBold = readPref('bold', 'bold', false);
         var showPosLabels = readPref('posLabels', 'pos-labels', false);
@@ -6421,9 +6730,9 @@
           var pageLabel = ctx.el('p', { class: 'muted', style: 'margin:0', 'data-read-along-page': '', text: ctx.fmt(L.read_along_page, { n: item.page, total: item.pages }) });
           var pageBarItems = [pageLabel];
           if (isMultiPage && typeof ctx.goto === 'function') {
-            jumpSel = ctx.el('select', { class: 'ra-page-jump', 'aria-label': 'Jump to page', 'data-read-along-jump': '' }, allPages.map(function (pg, pi) {
+            jumpSel = ctx.el('select', { class: 'ra-page-jump', 'aria-label': L.read_along_jump || 'Jump to page', 'data-read-along-jump': '' }, allPages.map(function (pg, pi) {
               var hLine = Array.isArray(pg.lines) ? pg.lines.filter(function (l) { return l && l.heading; })[0] : null;
-              var lbl = 'Page ' + (pi + 1) + (hLine ? (' \u2014 ' + String(hLine.text || '').slice(0, 28)) : (pg.heading ? (' \u2014 ' + String(pg.heading).slice(0, 28)) : ''));
+              var lbl = ctx.fmt(L.read_along_page_n || 'Page {n}', { n: pi + 1 }) + (hLine ? (' \u2014 ' + String(hLine.text || '').slice(0, 28)) : (pg.heading ? (' \u2014 ' + String(pg.heading).slice(0, 28)) : ''));
               return ctx.el('option', { value: String(pi), text: lbl });
             }));
             jumpSel.value = String(pageIdx);
@@ -6436,16 +6745,16 @@
             });
             pageBarItems.push(jumpSel);
             if (typeof ctx.bookmark === 'function') {
-              bmBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark': '', 'aria-pressed': 'false', text: 'Bookmark' });
-              bmGoBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark-go': '', hidden: true, text: 'Go to bookmark' });
+              bmBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark': '', 'aria-pressed': 'false', text: L.read_along_bookmark || 'Bookmark' });
+              bmGoBtn = B({ class: 'ra-bookmark-btn', 'data-read-along-bookmark-go': '', hidden: true, text: L.read_along_bookmark_go || 'Go to bookmark' });
               var syncBookmark = function () {
                 var bm = ctx.bookmark();
                 var here = !!(bm && bm.page === pageIdx);
                 bmBtn.setAttribute('aria-pressed', String(here));
-                bmBtn.textContent = here ? 'Bookmarked' : 'Bookmark';
+                bmBtn.textContent = here ? (L.read_along_bookmarked || 'Bookmarked') : (L.read_along_bookmark || 'Bookmark');
                 if (bm && bm.page !== pageIdx && bm.page >= 0 && bm.page < allPages.length) {
                   bmGoBtn.hidden = false;
-                  bmGoBtn.textContent = 'Go to bookmark (Page ' + (bm.page + 1) + ')';
+                  bmGoBtn.textContent = ctx.fmt(L.read_along_bookmark_go_n || 'Go to bookmark (Page {n})', { n: bm.page + 1 });
                 } else {
                   bmGoBtn.hidden = true;
                 }
@@ -6731,7 +7040,8 @@
             if (from < item.lines.length - 1) { setActiveSentence(from + 1, true); return true; }
             if (isMultiPage && pageIdx < allPages.length - 1 && typeof ctx.goto === 'function') {
               if (cache) { cache.chunkPaceMs = chunkPaceMs; cache.chunkMood = chunkMood; }
-              if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+              if (!keepAuto) own();
+              record('', { quiet: true });
               ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: keepAuto ? 'chunk' : false });
               return true;
             }
@@ -6832,7 +7142,7 @@
           if (index >= 0 && nodes[index] && typeof nodes[index].scrollIntoView === 'function') { try { nodes[index].scrollIntoView({ block: 'nearest' }); } catch (_) {} }
         };
         var playButton = hasAudio ? B({ class: 'primary', 'data-read-along-play': '', text: L.read_along_play }) : null;
-        var devReadButton = (!hasAudio && hasDevVoice) ? B({ class: 'primary', 'data-read-along-device-read': '', text: 'Read with device voice' }) : null;
+        var devReadButton = (!hasAudio && hasDevVoice) ? B({ class: 'primary', 'data-read-along-device-read': '', text: L.read_along_device_read || 'Read with device voice' }) : null;
         var restartButton = (hasAudio || hasDevVoice || showMultiSent) ? B({ 'data-read-along-restart': '', text: L.read_along_restart || 'Restart' }) : null;
         var autoButton = ((hasAudio || hasDevVoice) && showMultiSent) ? B({ 'data-read-along-auto': '', text: L.read_along_auto || 'Auto-advance' }) : null;
         var sylButton = hasSyl ? B({ 'data-read-along-syllables': '', text: L.read_along_syllables }) : null;
@@ -6922,7 +7232,7 @@
         var setPlaying = function (on) {
           playing = on;
           if (playButton) playButton.textContent = on ? L.read_along_stop : L.read_along_play;
-          if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : 'Read with device voice';
+          if (devReadButton) devReadButton.textContent = on ? L.read_along_stop : (L.read_along_device_read || 'Read with device voice');
         };
         var haltPlaybackOnly = function (keepPause) {
           if (pageTurnTimer && win.clearTimeout) { win.clearTimeout(pageTurnTimer); pageTurnTimer = 0; }
@@ -7007,6 +7317,7 @@
           setPlaying(false);
           setActiveSentence(i, true);
           playedAny = true;
+          own();
           if (countSupport !== false) ctx.support('lineReplays');
           mark(i);
           var finishOne = function (ok) {
@@ -7030,7 +7341,7 @@
           pageTurnTimer = win.setTimeout(function () {
             pageTurnTimer = 0;
             if (mine !== run || guardMic()) { setPlaying(false); return; }
-            if (!ctx.isDone()) ctx.practice('read', '', { quiet: true });
+            record('', { quiet: true });
             ctx.goto(pageIdx + 1, { fromLine: 0, autoPlay: mode });
           }, 700);
           return true;
@@ -7073,6 +7384,7 @@
         if (playButton) playButton.addEventListener('click', function () {
           if (guardMic()) return;
           if (playing) { halt(true); return; }
+          own();
           ctx.support('readThroughs');
           var startAt = finishedRun ? 0 : from;
           finishedRun = false;
@@ -7110,6 +7422,7 @@
         if (devReadButton) devReadButton.addEventListener('click', function () {
           if (guardMic()) return;
           if (playing) { halt(false); return; }
+          own();
           ctx.support('readThroughs');
           var startAt = finishedRun ? 0 : from;
           finishedRun = false;
@@ -7167,6 +7480,18 @@
         if (restartButton && !item.simpleBar) mainControls.push(restartButton);
         if (autoButton && !item.simpleBar) mainControls.push(autoButton);
         if (mainControls.length) dock.appendChild(ctx.el('div', { class: 'ra-bar-main', 'data-read-along-main-bar': '' }, mainControls));
+        // The file was made to read with the device's own voice, and this device has none for this page: say so plainly.
+        if (noVoiceWhy && !hasAudio) dock.appendChild(ctx.el('p', { class: 'muted', style: 'margin:6px 0 0', 'data-read-along-no-voice': noVoiceWhy, text: noVoiceWhy === 'language' ? L.read_along_no_voice_lang : L.read_along_no_voice }));
+        // Chrome hands over its voices a moment after the page opens: the page is drawn again when one for this language is there.
+        if (noVoiceWhy && typeof devVoice.watch === 'function' && typeof ctx.goto === 'function') {
+          devVoice.watch(function redraw() {
+            if (!ctx.root.isConnected) return;
+            // Not under a child who is listening or recording: once they have stopped.
+            if (playing || (mic && typeof mic.isRecording === 'function' && mic.isRecording())) { if (win.setTimeout) win.setTimeout(redraw, 1500); return; }
+            halt(false);
+            ctx.goto(pageIdx, { fromLine: from });
+          });
+        }
         var coreStudy = [], extraStudy = [];
         if (sylButton) coreStudy.push(sylButton);
         if (posButton) coreStudy.push(posButton);
@@ -7178,12 +7503,12 @@
         if (chunkButton) extraStudy.push(chunkButton);
         extraStudy.push(rsvpButton, crawlButton);
         var tapChoices = [];
-        if (hasAudio) tapChoices.push(['sentence', 'Sentence']);
-        if (hasDevVoice) tapChoices.push(['speak', 'Speak word']);
-        if (hasDef) tapChoices.push(['define', 'Define']);
-        if (hasSyl) tapChoices.push(['sounds', 'Sounds']);
+        if (hasAudio) tapChoices.push(['sentence', L.read_along_tap_sentence || 'Sentence']);
+        if (hasDevVoice) tapChoices.push(['speak', L.read_along_tap_speak || 'Speak word']);
+        if (hasDef) tapChoices.push(['define', L.read_along_tap_define || 'Define']);
+        if (hasSyl) tapChoices.push(['sounds', L.read_along_tap_sounds || 'Sounds']);
         if (tapChoices.length >= 2) {
-          var tapNodes = [ctx.el('span', { text: 'Tap:' })];
+          var tapNodes = [ctx.el('span', { text: L.read_along_tap || 'Tap:' })];
           tapChoices.forEach(function (tc) {
             var b = B({ 'data-tap-mode': tc[0], text: tc[1] });
             press(b, tc[0] === tapMode);
@@ -7191,21 +7516,21 @@
             tapBtns[tc[0]] = b;
             tapNodes.push(b);
           });
-          extraStudy.push(ctx.el('div', { class: 'ra-tap-bar', role: 'group', 'aria-label': 'Tap a word mode', 'data-read-along-tap-bar': '' }, tapNodes));
+          extraStudy.push(ctx.el('div', { class: 'ra-tap-bar', role: 'group', 'aria-label': L.read_along_tap_group || 'Tap a word mode', 'data-read-along-tap-bar': '' }, tapNodes));
         }
         if (item.simpleBar) {
           var extraWrap = ctx.el('div', { class: 'ra-extra-tools', 'data-read-along-extra-tools': '', hidden: true }, extraStudy);
-          var moreBtn = B({ 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: 'More tools' });
+          var moreBtn = B({ 'data-read-along-more-tools': '', 'aria-expanded': 'false', text: L.read_along_more_tools || 'More tools' });
           moreBtn.addEventListener('click', function () {
             var open = extraWrap.hidden;
             extraWrap.hidden = !open;
             moreBtn.setAttribute('aria-expanded', String(open));
-            moreBtn.textContent = open ? 'Fewer tools' : 'More tools';
+            moreBtn.textContent = open ? (L.read_along_fewer_tools || 'Fewer tools') : (L.read_along_more_tools || 'More tools');
           });
           coreStudy.push(moreBtn);
-          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat([extraWrap])));
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': L.read_along_helpers || 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat([extraWrap])));
         } else {
-          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat(extraStudy)));
+          ctx.root.appendChild(ctx.el('div', { class: 'ra-tools-bar', role: 'group', 'aria-label': L.read_along_helpers || 'Reading helpers', 'data-read-along-tools-bar': '' }, coreStudy.concat(extraStudy)));
         }
         if (posLegend) ctx.root.appendChild(posLegend);
         var handleWordClick = function (ev) {
@@ -7324,11 +7649,12 @@
             ctx.el('option', { value: 'pulse', text: 'Pulse' }),
           ]);
           chunkMoodSel.value = chunkMood;
-          sentPrevBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(-1, false); });
-          sentNextBtn.addEventListener('click', function () { if (guardMic()) return; halt(false); stepChunk(1, false); });
+          sentPrevBtn.addEventListener('click', function () { if (guardMic()) return; own(); halt(false); stepChunk(-1, false); });
+          sentNextBtn.addEventListener('click', function () { if (guardMic()) return; own(); halt(false); stepChunk(1, false); });
           chunkAutoBtn.addEventListener('click', function () {
             if (guardMic()) return;
             chunkAutoOn = !chunkAutoOn;
+            if (chunkAutoOn) own();
             press(chunkAutoBtn, chunkAutoOn);
             if (chunkAutoOn) scheduleChunkTimer(); else stopChunkTimers();
           });
@@ -7354,35 +7680,50 @@
         else if (hasPos) applyPosTheme();
         applyChunkView();
         if (Array.isArray(item.questions) && item.questions.length) {
+          var keepNote = typeof ctx.checkNote === 'function';
           var qNodes = item.questions.map(function (q, qi) {
             var qid = q.id || ('q' + (qi + 1));
             var card = ctx.el('div', { class: 'ra-chk-q', 'data-check-q': qid }, [
               ctx.el('p', { class: 'ra-chk-p', text: (qi + 1) + '. ' + q.prompt }),
             ]);
+            // What was given before (a page turned back to, or the file opened again) is shown again.
+            var kept = keepNote ? ctx.checkNote(qid) : null;
             if (q.kind === 'mc' && Array.isArray(q.choices)) {
               var fb = ctx.el('p', { class: 'ra-chk-fb', 'aria-live': 'polite', 'data-check-feedback': qid });
-              var optBtns = [];
+              var optBtns = [], picks = kept && kept.n > 0 ? kept.n : 0;
+              var showPick = function (ci) {
+                optBtns.forEach(function (b, bi) { b.setAttribute('aria-pressed', String(bi === ci)); });
+                var ok = typeof q.answer === 'number' ? ci === q.answer : true;
+                fb.textContent = ok ? (L.read_along_checks_right || 'Nice work!') : (L.read_along_checks_retry || 'Try another choice.');
+                fb.setAttribute('data-ok', ok ? '1' : '0');
+              };
               q.choices.forEach(function (ch, ci) {
                 var ob = B({ 'data-check-choice': String(ci), 'aria-pressed': 'false', text: ch });
                 ob.addEventListener('click', function () {
-                  optBtns.forEach(function (b, bi) { b.setAttribute('aria-pressed', String(bi === ci)); });
-                  var ok = typeof q.answer === 'number' ? ci === q.answer : true;
-                  fb.textContent = ok ? (L.read_along_checks_right || 'Nice work!') : (L.read_along_checks_retry || 'Try another choice.');
-                  fb.setAttribute('data-ok', ok ? '1' : '0');
+                  showPick(ci);
+                  picks++;
+                  if (keepNote) ctx.checkNote(qid, { c: ci, n: picks });
                   use('comprehensionCheck');
                 });
                 optBtns.push(ob);
               });
               card.appendChild(ctx.el('div', { class: 'ra-chk-opts', role: 'group', 'aria-label': q.prompt }, optBtns));
               card.appendChild(fb);
+              if (kept && typeof kept.c === 'number' && kept.c >= 0 && kept.c < optBtns.length) showPick(kept.c);
             } else {
-              card.appendChild(ctx.el('textarea', { class: 'ra-chk-open', rows: '3', 'aria-label': q.prompt, 'data-check-open': qid }));
-              card.appendChild(ctx.el('p', { class: 'muted', style: 'margin:4px 0 0;font-size:.86rem', text: L.read_along_checks_open_note || 'Stays on this device only.' }));
+              var openBox = ctx.el('textarea', { class: 'ra-chk-open', rows: '3', maxlength: '240', 'aria-label': q.prompt, 'data-check-open': qid });
+              if (kept && typeof kept.t === 'string') openBox.value = kept.t;
+              openBox.addEventListener('input', function () {
+                if (keepNote) ctx.checkNote(qid, { t: String(openBox.value || '').slice(0, 240) });
+                if (String(openBox.value || '').trim()) use('comprehensionCheck');
+              });
+              card.appendChild(openBox);
             }
             return card;
           });
           ctx.root.appendChild(ctx.el('section', { class: 'ra-checks', 'aria-label': L.read_along_checks_heading || 'Check your understanding', 'data-read-along-checks': '' }, [
             ctx.el('h3', { text: L.read_along_checks_heading || 'Check your understanding' }),
+            keepNote ? ctx.el('p', { class: 'muted', style: 'margin:0 0 6px;font-size:.86rem', 'data-check-note': '', text: L.read_along_checks_open_note }) : null,
           ].concat(qNodes)));
         }
         if (mic && mic.el) {
@@ -7400,14 +7741,13 @@
         done.addEventListener('click', function () {
           if (guardMic()) return;
           halt(false);
-          if (!ctx.isDone()) ctx.practice('read', L.read_along_done_said, { advance: true });
-          else if (typeof ctx.goNext === 'function') ctx.goNext();
+          if (!record(L.read_along_done_said, { advance: true }) && typeof ctx.goNext === 'function') ctx.goNext();
         });
         navButtons.push(done);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, navButtons));
         ctx.root.appendChild(ctx.el('details', { class: 'ra-keys-hint', 'data-read-along-keys-hint': '' }, [
-          ctx.el('summary', { text: 'Keyboard shortcuts' }),
-          ctx.el('p', { text: 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
+          ctx.el('summary', { text: L.read_along_keys || 'Keyboard shortcuts' }),
+          ctx.el('p', { text: L.read_along_keys_text || 'Space: play or pause. Left / Right arrows: previous or next sentence. Home / End: first or last sentence. R: replay sentence.' }),
         ]));
         var printAll = null;
         var renderPrintAll = function () {
@@ -7958,6 +8298,7 @@
               if (guardMic()) return true;
               if (playing) halt(hasAudio);
               else {
+                own();
                 ctx.support('readThroughs');
                 var startAt = finishedRun ? 0 : from;
                 finishedRun = false;
@@ -7980,7 +8321,7 @@
             if (key === 'ArrowRight') {
               if (guardMic()) return true;
               if (chunkMode || !hasAudio) {
-                if (canNextSent()) { halt(false); stepChunk(1, false); return true; }
+                if (canNextSent()) { own(); halt(false); stepChunk(1, false); return true; }
               } else {
                 var nextIdx = playedAny ? findAudio(from + 1, 1) : findAudio(0, 1);
                 if (nextIdx >= 0) { playLine(nextIdx, true); return true; }
@@ -7989,7 +8330,7 @@
             if (key === 'ArrowLeft') {
               if (guardMic()) return true;
               if (chunkMode || !hasAudio) {
-                if (canPrevSent()) { halt(false); stepChunk(-1, false); return true; }
+                if (canPrevSent()) { own(); halt(false); stepChunk(-1, false); return true; }
               } else {
                 var prevIdx = playedAny ? findAudio(from - 1, -1) : findAudio(item.lines.length - 1, -1);
                 if (prevIdx >= 0) { playLine(prevIdx, true); return true; }
@@ -8017,6 +8358,7 @@
           allowRevisit: true,
           reveal: function () { halt(false); },
           stop: function () {
+            if (devVoice && typeof devVoice.unwatch === 'function') devVoice.unwatch();
             halt(false, true);
             if (printAll && win.removeEventListener) win.removeEventListener('beforeprint', renderPrintAll);
           },
@@ -8300,9 +8642,16 @@
                   style: 'font-size:clamp(1.05rem,5vw,1.8rem);font-weight:800;line-height:1.1;margin:4px 0;letter-spacing:clamp(0.02em,0.8vw,0.08em)',
                 }, fNodes));
               } else {
+                var srTxt = String(item.word || '').trim();
+                var srNoSpace = srTxt.indexOf(' ') < 0;
+                var srStyle = (srNoSpace && srTxt.length >= 8)
+                  ? 'font-size:clamp(0.75rem,3vw,1.6rem);font-weight:900;line-height:1.15;margin:4px 0;max-width:100%;white-space:nowrap'
+                  : (srNoSpace && srTxt.length >= 4)
+                    ? 'font-size:clamp(0.92rem,3.9vw,1.9rem);font-weight:900;line-height:1.15;margin:4px 0;max-width:100%;white-space:nowrap'
+                    : 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:break-word';
                 children.push(ctx.el('span', {
                   'data-sr-symbol': item.word,
-                  style: 'font-size:clamp(1.25rem,6.5vw,2.4rem);font-weight:900;line-height:1.1;margin:4px 0;max-width:100%;overflow-wrap:anywhere',
+                  style: srStyle,
                   text: item.word,
                 }));
               }
@@ -9230,7 +9579,7 @@
     '@media (max-width:480px){[data-step] .lt-bar{margin:-56px 0 8px}[data-step] .lt-bar{flex-wrap:wrap}}',
     '@media (max-width:480px){[data-step] [data-player-stop-audio]{flex-basis:100%}}',
     '@media (max-width:480px){.choices:not([style]):has(>.choice:nth-child(4)){grid-template-columns:1fr 1fr;gap:10px}.choices:not([style]):has(>.choice:nth-child(4))>.choice:not([style]){flex-direction:column;padding:8px}.choices:not([style]):has(>.choice:nth-child(4))>.choice>button{flex:none;padding-inline:8px;overflow-wrap:anywhere}}',
-    '@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px;--map-sz:86px;--map-h:66px;--map-box:94px;--map-span:184px;--map-span-box:196px;--ws-tile:70px;--ws-box-w:76px;--ws-box-h:78px;--trace-sz:360px;--sr-lane:680px;--sr-keys:640px}main{max-width:min(1080px,90vw);padding:32px 28px 56px}.card{padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,42px)}.choices{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.slots{gap:16px}.row{gap:14px}.picture{max-width:220px;max-height:220px}[data-seg-tray]{gap:18px!important;margin:18px 0!important}[data-read-along-text]{max-width:46rem;margin-inline:auto}}',
+    '@media (min-width:960px){:root{--seg-sz:78px;--seg-box:94px;--map-sz:86px;--map-h:66px;--map-box:94px;--map-span:184px;--map-span-box:196px;--ws-tile:70px;--ws-box-w:76px;--ws-box-h:78px;--trace-sz:360px;--sr-lane:680px;--sr-keys:640px}main{max-width:min(1080px,90vw);padding:32px 28px 56px}.card{padding:clamp(24px,3vw,36px) clamp(24px,3.5vw,42px)}.choices{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.slots{gap:16px}.row{gap:14px}.picture{max-width:220px;max-height:220px}[data-seg-tray]{gap:18px!important;margin:18px 0!important}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
     '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size="3"]{font-size:175%}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
     '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000;--hover:#ffffff28;--c0:#ffeb3b;--c1:#00e5ff;--c2:#7dff8f;--c3:#ff8ef0;--c4:#ffb74d;--c5:#9ec5ff;--c0b:#000;--c1b:#000;--c2b:#000;--c3b:#000;--c4b:#000;--c5b:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}[data-lt-colors="1"] .progress{background:var(--soft);border:1px solid var(--line)}',
@@ -9251,14 +9600,14 @@
     '[data-lt-font="3"] body,[data-tool=font-3]{font-family:Georgia,"Times New Roman",Times,serif}[data-lt-font="4"] body,[data-tool=font-4]{font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",system-ui,sans-serif}',
     '[data-lt-font="5"] body,[data-tool=font-5]{font-family:ui-monospace,"SF Mono",Consolas,monospace}[data-lt-font="6"] body,[data-tool=font-6]{font-family:"OpenDyslexic","OpenDyslexic3","Atkinson Hyperlegible",system-ui,sans-serif}',
     '.lt-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}.lt-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 8px}.lt-panel{clear:both;display:flex;flex-direction:column}.lt-panel:not(.lt-m) [data-tool-group=lens]{display:none}.lt-more{margin:8px 0;border-top:1px solid var(--line);order:1}.lt-panel [data-tool-group=lens]{order:2}.lt-panel>.row:last-child{order:3}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
-    '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
+    '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}.lt-panel [aria-pressed=true]:not(:focus-visible){outline:none}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
     '.lt-ruler{position:fixed;left:0;right:0;height:2.4em;pointer-events:none;z-index:40;transform:translateY(-50%);background:rgba(254,240,138,.36);border-top:2px solid rgba(202,138,4,.75);border-bottom:2px solid rgba(202,138,4,.75)}.lt-ruler[data-ruler-size=tall]{height:4.4em}.lt-ruler[data-ruler-tint=sky]{background:rgba(125,211,252,.32);border-color:rgba(2,132,199,.75)}.lt-ruler[data-ruler-tint=rose]{background:rgba(253,164,175,.32);border-color:rgba(225,29,72,.7)}.lt-ruler[data-ruler-tint=mint]{background:rgba(134,239,172,.32);border-color:rgba(22,163,74,.7)}.lt-ruler[data-ruler-tint=line]{height:0!important;background:none;border-top:0;border-bottom:3px solid var(--accent)}.lt-ruler-sub{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex-basis:100%;margin-top:4px}.lt-ruler-sub button{min-height:34px;padding:4px 9px;font-size:.86rem}',
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
     '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
     '.ra-bionic{font-weight:800}',
     '.lt-custom-colors{display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex-basis:100%;margin-top:4px}.lt-custom-colors label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:.92rem}.lt-custom-colors input[type=color]{width:38px;min-height:38px;padding:2px;border-radius:8px;cursor:pointer}.lt-custom-size{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex-basis:100%;margin-top:4px;font-size:.92rem}.lt-custom-size input[type=range]{width:140px;min-height:36px;padding:0;border:0}',
-    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.ra-word-active,.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens,.lt-ruler,.ra-mic-bar,.ra-resume-bar,.ra-def-box{display:none!important}}',
+    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.ra-word-active,.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}[data-feedback]:not(:empty)::before,.done-star::after{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens,.lt-ruler,.progress,[data-read-aloud],[data-hear-all],.ra-mic-bar,.ra-resume-bar,.ra-def-box{display:none!important}}',
     // 2026-11-13/19: printed with backgrounds off (including Dark / High Contrast), force dark ink on white paper.
     '@media print{:root,[data-lt-colors]{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#f5f5f5;--ok:#000;--ok-bg:#fff;--warn:#000;--warn-bg:#fff;color-scheme:light}button.primary{color:inherit;box-shadow:none}}',
   ].join('\n');
@@ -9289,14 +9638,14 @@
     '.ra-crawl-view{flex:1;min-height:220px;overflow:hidden;position:relative;border-radius:14px;padding:24px;perspective:360px;cursor:pointer}.ra-crawl-text{max-width:34rem;margin:0 auto;font-size:clamp(1.35rem,3vw,2rem);line-height:1.8;font-weight:700;transform-origin:50% 100%}.ra-crawl-view:not(.is-flat) .ra-crawl-text{position:absolute;left:0;right:0;top:100%;padding:0 16px;transform:rotateX(18deg)}.ra-crawl-view.is-flat{overflow:auto;perspective:none}.ra-crawl-page-sep{margin:1.2em 0 .6em;font-size:.7em;letter-spacing:.08em;text-transform:uppercase;opacity:.75;border-top:1px solid currentColor;padding-top:.5em}.ra-crawl-h{margin:.9em 0 .35em;line-height:1.3}.ra-crawl-h1{font-size:1.3em}.ra-crawl-h2{font-size:1.15em}.ra-crawl-end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(0,0,0,.72);text-align:center;padding:20px}.ra-crawl-end h3{margin:0;font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:.14em}',
     '.ra-page-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 6px}.ra-page-jump{min-height:36px;max-width:220px;font:inherit;font-size:.9rem;padding:4px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-bookmark-btn{min-height:36px;padding:4px 10px;font-size:.88rem;border-radius:999px;border:1px solid var(--line);background:var(--card)}.ra-bookmark-btn[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.ra-jump-note{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;border:1px solid var(--accent);border-radius:10px;background:var(--soft);font-size:.92rem}.ra-jump-note button{min-height:36px;padding:4px 10px;font-size:.88rem}',
     '.ra-mic-mode{min-height:40px;font:inherit;font-size:.92rem;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-ov-scope{min-height:36px;font:inherit;font-size:.9rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}.ra-ov-progress{margin:0}.ra-print-all{display:none}',
-    '.ra-dock.is-sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:6px}.ra-bar-main{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0}.ra-tools-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-extra-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;flex-basis:100%;padding-top:8px;border-top:1px dashed var(--line)}.ra-tools-bar button{min-height:38px;padding:6px 11px;font-size:.92rem;border-radius:999px;background:var(--card)}.ra-tools-bar button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}',
+    '.ra-dock.is-sticky{position:sticky;top:0;z-index:5;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:6px}.ra-bar-main{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0}.ra-tools-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin:6px 0 10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-extra-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;flex-basis:100%;padding-top:8px;border-top:1px dashed var(--line)}.ra-tools-bar button{min-height:44px;padding:6px 11px;font-size:.92rem;border-radius:999px;background:var(--card)}.ra-tools-bar button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}',
     '.ra-tap-bar{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 6px;border:1px solid var(--line);border-radius:999px;background:var(--card)}.ra-tap-bar>span{font-size:.82rem;font-weight:700;color:var(--muted);padding:0 4px}.ra-tap-bar button{min-height:34px;padding:4px 10px;font-size:.86rem;border-radius:999px}',
     '.ra-progress{height:5px;border-radius:999px;background:var(--soft);overflow:hidden;margin:4px 0 8px}.ra-progress-fill{display:block;height:100%;background:var(--accent)}',
     '.ra-sounds-card{margin:10px 0 12px;padding:12px 14px;border:1px solid var(--accent);border-radius:12px;background:var(--soft)}.ra-syl-tiles{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.ra-syl-tile{display:inline-block;padding:6px 12px;border-radius:10px;background:var(--card);border:2px solid var(--accent);font-weight:800;font-size:1.25rem}',
     '.ra-keys-hint{margin:8px 0;font-size:.88rem;color:var(--muted)}.ra-keys-hint summary{cursor:pointer;font-weight:600}.ra-keys-hint p{margin:6px 0 0}',
     '[data-read-along-text] button[data-read-along-line]:hover{background:var(--hover)}[data-chunk-mood="popin"] [data-read-along-line]:not([hidden]){font-weight:700;letter-spacing:.01em}[data-chunk-mood="pulse"] [data-read-along-line]:not([hidden]){box-shadow:0 0 0 3px var(--ok-bg),0 0 0 5px var(--accent);border-radius:10px}',
     '.ra-mic-bar{margin:12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.ra-mic-bar .row{margin:0 0 6px}.ra-mic-note{margin:4px 0 0;font-size:.92rem}',
-    '@media print{[data-has-print-all] [data-read-along-text],[data-has-print-all] [data-read-along-dock],[data-has-print-all] [data-read-along-tools-bar],[data-has-print-all] [data-read-along-page-bar],[data-has-print-all] [data-read-along-chunk-nav],[data-has-print-all] [data-read-along-keys-hint],[data-has-print-all] [data-read-along-overlay-jump]{display:none!important}[data-has-print-all] .ra-print-all{display:block!important}.ra-print-page{margin:0 0 18px}.ra-print-page-label{font-size:.85rem;font-weight:700;margin:0 0 6px;color:#333}.ra-print-h{font-weight:800;margin:10px 0 4px}.ra-print-p{margin:0 0 10px;line-height:1.7}}',
+    '@media print{[data-read-along-dock],[data-read-along-tools-bar],[data-read-along-page-bar],[data-read-along-chunk-nav],[data-read-along-keys-hint],[data-read-along-overlay-jump],[data-read-along-done],[data-read-along-prev],.ra-progress,.ra-bar-main,.ra-tools-bar,.ra-keys-hint{display:none!important}.card{border:0;box-shadow:none;padding:0}[data-has-print-all] [data-read-along-text]{display:none!important}[data-has-print-all] .ra-print-all{display:block!important}.ra-print-page{margin:0 0 18px}.ra-print-page-label{font-size:.85rem;font-weight:700;margin:0 0 6px;color:#333}.ra-print-h{font-weight:800;margin:10px 0 4px}.ra-print-p{margin:0 0 10px;line-height:1.7}}',
   ].join('\n');
 
   // ---------------------------------------------------------------------------
@@ -9663,6 +10012,7 @@
     apply();
     return {
       item: function (r) { rec = r && !r.done ? r : null; if (p.bold) paintBold(); scan(); mark(); },
+      reset: function (d) { rec = null; clean(d); apply(); more.open = false; panel.classList.remove('lt-m'); showPanel(false); },
       dock: function (h) { h.parentNode.insertBefore(bar, h.nextSibling); h.parentNode.insertBefore(panel, bar.nextSibling); },
       autoRead: function () { return !!o.choices && p.choices === 1; },
       directionsOnce: function () { return !!o.directions && p.directions === 1; },
@@ -9694,17 +10044,38 @@
     var want = String(lang || 'en').toLowerCase().split('-')[0];
     var speakGen = 0, fbTimer = 0;
     var clearFb = function () { if (fbTimer && win && win.clearTimeout) { win.clearTimeout(fbTimer); fbTimer = 0; } };
-    var pick = function () {
-      if (!syn || typeof syn.getVoices !== 'function') return null;
+    var locals = function () {
+      if (!syn || typeof syn.getVoices !== 'function') return [];
       var list = [];
       try { list = syn.getVoices() || []; } catch (_) { list = []; }
-      var local = list.filter(function (v) { return v && v.localService === true; });
-      if (!local.length) return null;
-      return local.filter(function (v) { return String(v.lang || '').toLowerCase().indexOf(want) === 0; })[0] || local[0];
+      return list.filter(function (v) { return v && v.localService === true; });
     };
+    // 2026-11-23: only a voice OF the passage's language, as the vocabulary files do (takeHomeVocab). Before, any
+    // on-device voice was taken, so a Spanish passage was read out by an English voice.
+    var forLang = function (v) { var l = String(v.lang || '').toLowerCase().replace('_', '-'); return l === want || l.indexOf(want + '-') === 0; };
+    var pick = function () { return locals().filter(forLang)[0] || null; };
     var stop = function () { speakGen++; clearFb(); try { if (syn && typeof syn.cancel === 'function') syn.cancel(); } catch (_) {} };
+    // watch(cb): Chrome hands over its list of voices a moment after the page opens. cb runs once, when a voice for
+    // this language is there (the voiceschanged event, and three looks for a browser that has no such event).
+    var watching = null, looks = [];
+    var unwatch = function () {
+      if (watching && syn && typeof syn.removeEventListener === 'function') { try { syn.removeEventListener('voiceschanged', watching); } catch (_) {} }
+      watching = null;
+      looks.forEach(function (t) { try { win.clearTimeout(t); } catch (_) {} });
+      looks = [];
+    };
     return {
       available: function () { return !!pick(); },
+      // '' when there is a voice; 'language' when the device has voices but none for this language; 'none' when it has none.
+      why: function () { return pick() ? '' : (locals().length ? 'language' : 'none'); },
+      watch: function (cb) {
+        unwatch();
+        if (!syn || typeof cb !== 'function') return;
+        var mine = watching = function () { if (watching === mine && pick()) { unwatch(); cb(); } };
+        if (typeof syn.addEventListener === 'function') { try { syn.addEventListener('voiceschanged', mine); } catch (_) {} }
+        if (win && win.setTimeout) [300, 1000, 3000].forEach(function (ms) { looks.push(win.setTimeout(mine, ms)); });
+      },
+      unwatch: unwatch,
       stop: stop,
       speak: function (text, onEnd, onWord) {
         var v = pick();
@@ -9764,6 +10135,7 @@
 
   // Optional local-only student voice practice (embedded ONLY when teacher opts in on a read-along practice file).
   // Click-gated, in-memory blob URLs per sentence/page in RAM sessionCache only, never stored in localStorage, never saved to results, never transmitted.
+  // 2026-11-23: "Save my recording" downloads the clip to the device, so the words say so (they said "Nothing is saved").
   function takeHomeStudentMic(doc, win, el, L, opts) {
     var o = opts || {};
     var curIdx = 0, curTotal = 1;
@@ -9783,7 +10155,7 @@
     var playBtn = el('button', { type: 'button', 'data-student-rec-play': '', hidden: true, text: L.read_along_rec_play || 'Play my voice' });
     var saveBtn = el('button', { type: 'button', 'data-student-rec-save': '', hidden: true, text: L.read_along_rec_save || 'Save my recording' });
     var clearBtn = el('button', { type: 'button', 'data-student-rec-clear': '', hidden: true, text: L.read_along_rec_clear || 'Clear' });
-    var status = el('p', { class: 'muted ra-mic-note', 'aria-live': 'polite', 'data-student-rec-status': '', text: L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.' });
+    var status = el('p', { class: 'muted ra-mic-note', 'aria-live': 'polite', 'data-student-rec-status': '', text: L.read_along_rec_note || 'Your recording stays in this browser and is never sent. It is saved only if you press Save my recording, and then only to this device.' });
     var wrap = el('div', { class: 'ra-mic-bar', 'data-student-mic': '' }, [
       el('div', { class: 'row' }, [recBtn, modeSel, playBtn, saveBtn, clearBtn]),
       status,
@@ -9805,7 +10177,7 @@
           ? (takeMode === 'page'
             ? (L.read_along_rec_ready_page || 'Your recording for this page is ready to play back.')
             : say(L.read_along_rec_ready, 'Your recording for sentence {n} is ready to play back.', curIdx + 1))
-          : (L.read_along_rec_note || 'Stays on this device only. Nothing is saved or sent.');
+          : (L.read_along_rec_note || 'Your recording stays in this browser and is never sent. It is saved only if you press Save my recording, and then only to this device.');
       }
     };
     var stopTracks = function () {
@@ -10041,9 +10413,9 @@
     var screenId = 0;
     var namePrompted = false;
     var sessionCache = Object.create(null);
-    var pendingNav = null;
+    var pendingNav = null, startVoice = null, st, ad, bi;
     var items = [];
-    lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
+    lesson.blocks.forEach(function (b, k) { b.items.forEach(function (it, i) { items.push({ activity: b.activity, item: it, n: i + 1, total: b.items.length, bi: k }); }); });
     // 2026-11-18: the file's own order (lesson.sequence), when it names each question once; "2 of 5" stays per activity.
     var ownOrder = false;
     if (Array.isArray(lesson.sequence) && lesson.mode !== 'probe' && lesson.sequence.length === items.length) {
@@ -10052,13 +10424,13 @@
       var ordered = lesson.sequence.map(function (id) { var e = byId[id]; delete byId[id]; return e; });
       if (ordered.every(Boolean)) {
         ownOrder = true;
-        items = ordered.map(function (e) { place[e.activity] = (place[e.activity] || 0) + 1; return { activity: e.activity, item: e.item, n: place[e.activity], total: e.total }; });
+        items = ordered.map(function (e) { place[e.activity] = (place[e.activity] || 0) + 1; return { activity: e.activity, item: e.item, n: place[e.activity], total: e.total, bi: e.bi }; });
       }
     }
     // The missed questions once more (lesson.repeatMissed, practice files only): appended after the others, by their places.
-    var baseCount = items.length, repeatMissed = lesson.repeatMissed === true && lesson.mode !== 'probe';
+    var baseItems = items.slice(), repeatMissed = lesson.repeatMissed === true && lesson.mode !== 'probe';
     var addAgain = function (list) {
-      if (items.length !== baseCount) return;
+      if (items.some(function (e) { return e.again; })) return;
       list.forEach(function (at, k) { var e = items[at]; items.push({ activity: e.activity, item: Object.assign({}, e.item, { id: String(e.item.id) + '-again' }), n: k + 1, total: list.length, again: true }); });
     };
     var fmt = function (template, params) {
@@ -10075,8 +10447,9 @@
       (children || []).forEach(function (c) { if (c) node.appendChild(typeof c === 'string' ? doc.createTextNode(c) : c); });
       return node;
     };
+    var rst = function () { items.length = 0; items.push.apply(items, baseItems); };
     var fresh = function () {
-      if (typeof baseCount === 'number' && items.length > baseCount) items.length = baseCount;
+      rst();
       return { name: '', index: 0, startedAt: null, finishedAt: null, savedFile: null, sent: null,
         items: items.map(function (e) { return { itemId: e.item.id, activity: e.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} }; }) };
     };
@@ -10126,8 +10499,10 @@
     };
     var load = function () {
       var parsed = stored();
-      if (parsed && repeatMissed && Array.isArray(parsed.again) && parsed.again.every(function (n) { return n === Math.floor(n) && n >= 0 && n < baseCount; })
-        && Array.isArray(parsed.items) && parsed.items.length === baseCount + parsed.again.length) addAgain(parsed.again);
+      rst();
+      if (parsed && ad && parsed.adaptive) ad.restore(parsed, items);
+      if (parsed && repeatMissed && Array.isArray(parsed.again) && parsed.again.every(function (n) { return n === Math.floor(n) && n >= 0 && n < items.length; })
+        && Array.isArray(parsed.items) && parsed.items.length === items.length + parsed.again.length) addAgain(parsed.again);
       return parsed && Array.isArray(parsed.items) && parsed.items.length === items.length ? parsed : null;
     };
     var storePrefs = function () {
@@ -10161,7 +10536,9 @@
       clock.rec.ms = Math.round(clock.ms);
     };
     // The item on the clock is the one the reading tools count for.
-    var clockStart = function (rec) { clock = { rec: rec, ms: 0, from: doc.hidden ? null : now() }; if (tools) tools.item(rec); };
+    // 2026-11-23: clockStart(rec, ms) goes on from ms: a read-along page turned back to in the same opening of the file.
+    var clockStart = function (rec, ms) { clock = { rec: rec, ms: Math.max(0, Number(ms) || 0), from: doc.hidden ? null : now() }; if (tools) tools.item(rec); };
+    var clockedHere = Object.create(null);
     var clockStop = function () { clockLap(); clock = null; if (tools) tools.item(null); };
     var clockHold = function (on) { if (clock) { clockLap(); clock.held = on; clock.from = on || doc.hidden ? null : now(); } };
     doc.addEventListener('visibilitychange', function () {
@@ -10202,7 +10579,7 @@
     // rate: optional playback speed (e.g. 0.5 for "Hear it slowly"). onProgress(cur, dur): optional word-sweep hook. startAt: optional resume offset in seconds.
     var play = function (id, rate, onProgress, startAt) {
       stop();
-      var src = id && lesson.audio[id];
+      var src = id && lesson.audio && lesson.audio[id];
       if (!src || !tab.owner) return Promise.resolve(false);
       var mine = playToken;
       if (!audioEl) { try { audioEl = new win.Audio(); } catch (_) { return Promise.resolve(false); } }
@@ -10495,6 +10872,7 @@
       ];
       if (check) texts = check.about(texts);
       if (lesson.qr && L.qr_about) texts.push(fmt(L.qr_about, { fp: lesson.qr.fp || '' }));
+      if (st) texts.push(st.about());
       var panel = el('div', { class: 'card about', id: 'about-panel', hidden: true, 'data-about': '' }, [
         el('ul', {}, texts.filter(Boolean).map(function (t) { return el('li', { text: t }); })),
       ]);
@@ -10507,6 +10885,13 @@
 
     var renderStart = function () {
       savingFile = '';
+      // 2026-11-23: the start screen may be the next child on a shared device. What the last reader kept in memory
+      // (voice recordings, reading-view choices) goes, and the recordings are released, not only hidden.
+      Object.keys(sessionCache).forEach(function (k) {
+        var held = k === 'micClips' && sessionCache[k] && typeof sessionCache[k] === 'object' ? sessionCache[k] : null;
+        if (held) Object.keys(held).forEach(function (c) { if (held[c] && held[c].url) { try { win.URL.revokeObjectURL(held[c].url); } catch (_) {} } });
+        delete sessionCache[k];
+      });
       var prior = load();
       if (check && check.resume(prior)) return;
       var given = givenName;
@@ -10560,17 +10945,28 @@
       if (given) nameInput.value = given;
       var info = about();
       buttons.push(info.button);
+      // 2026-11-23: a file made to read with the device's own voice says so here (L.intro). On a device with no voice
+      // of its own for the passage's language, the start screen says that instead (L.intro_no_voice, from the builder),
+      // and goes back to L.intro if the browser hands over its voices a moment later (Chrome).
+      var introLine = el('p', { 'data-intro': '', text: L.intro });
+      if (kit.deviceVoice && L.intro_no_voice && items.length) {
+        if (startVoice) startVoice.unwatch();
+        startVoice = kit.deviceVoice(win, items[0].item.lang);
+        if (!startVoice.available()) { introLine.textContent = L.intro_no_voice; startVoice.watch(function () { introLine.textContent = L.intro; }); }
+      }
       screen(lesson.title, [
         el('div', { class: 'card' }, [
-          el('p', { text: L.intro }),
+          bi && bi.v('start'),
+          introLine,
           // Whose answers Continue goes on with (the name field is left for the student now at the device).
           resumable ? el('p', { class: 'muted', 'data-continue-note': '' }, [
             prior.name ? el('span', { 'data-continue-name': '', text: fmt(L.continue_whose, { name: prior.name }) }) : null,
             prior.name && items.length ? ' ' : null,
-            items.length ? el('span', { 'data-continue-progress': '', text: '(' + (items.every(function (e) { return e.activity === 'read_along'; }) ? 'Page ' : 'Question ') + Math.min((prior.index || 0) + 1, items.length) + ' of ' + items.length + ')' }) : null,
+            items.length ? el('span', { 'data-continue-progress': '', text: fmt(items.every(function (e) { return e.activity === 'read_along'; }) ? L.continue_page : L.continue_question, { n: Math.min((prior.index || 0) + 1, items.length), total: items.length }) }) : null,
           ]) : null,
           el('label', { for: 'learner-name', text: L.learner_label }), nameInput, namePrompt,
           el('div', { class: 'row', style: 'margin-top:16px' }, buttons), overBox,
+          st && st.start(),
         ]),
       ], true);
       main.appendChild(info.panel);
@@ -10580,7 +10976,7 @@
       // At the end of the first time through: the questions missed on the first try, once more, as practice.
       if (state.index >= items.length && repeatMissed && !state.again) {
         var missed = [];
-        for (var m = 0; m < baseCount; m++) { var r0 = state.items[m]; if (r0 && r0.done && !r0.practice && !r0.firstTry && items[m].activity !== 'letter_tracing' && items[m].activity !== 'read_along') missed.push(m); }
+        for (var m = 0; m < items.length; m++) { var r0 = state.items[m], e0 = items[m]; if (!e0.ad && !e0.again && r0 && r0.done && !r0.practice && !r0.firstTry && e0.activity !== 'letter_tracing' && e0.activity !== 'read_along') missed.push(m); }
         state.again = missed;
         if (missed.length) {
           addAgain(missed);
@@ -10614,9 +11010,10 @@
         nextButton.hidden = false;
         if (!silentFocus) nextButton.focus();
       };
-      var finishItem = function (correct) {
+      var finishItem = function (correct, reopen) {
         clockStop();
         rec.done = true; rec.correct = correct; rec.firstTry = correct && rec.attempts === 1;
+        if (!reopen && ad) ad.onDone(state, items, entry, rec, area, nextButton, save, renderItem);
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
         nextButton.hidden = false;
@@ -10638,7 +11035,7 @@
       };
       var ctx = {
         root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters, skipDirections: skipDirections, noFocus: silentFocus,
-        sessionCache: sessionCache, nav: navOpts, goto: gotoPage,
+        sessionCache: sessionCache, nav: navOpts, goto: gotoPage, bilingual: bi && bi.ctx,
         pages: raEntries ? raEntries.map(function (e) { return e.item; }) : undefined,
         soundGap: function () { return tools && tools.soundGap ? tools.soundGap() : 500; },
         slow: function () { return !!(tools && tools.slow && tools.slow()); },
@@ -10646,6 +11043,24 @@
         noVoice: function (on) { if (tools && tools.noVoice) tools.noVoice(on); },
         toolPref: function (k, v) { if (!tools) return null; if (arguments.length > 1) { if (tools.setExtra) tools.setExtra(k, v); return v ? 1 : 0; } return tools.getExtra ? tools.getExtra(k) : null; },
         place: function (v) { if (arguments.length > 0) { var n = Math.max(0, Math.floor(Number(v) || 0)); if (n > 0) rec.place = n; else delete rec.place; save(); return n; } return Math.max(0, Math.floor(Number(rec.place) || 0)); },
+        // 2026-11-23: what the student gave to a "Check your understanding" question of a read-along page: checkNote(id)
+        // reads it, checkNote(id, { t: typed words }) or checkNote(id, { c: choice number, n: picks so far }) keeps it,
+        // checkNote(id, null) removes it. Kept with the place (rec.notes), so it is there after a page turn or a reload,
+        // and written into the saved results (resultFile). Never scored.
+        checkNote: function (id, v) {
+          var key = String(id == null ? '' : id).slice(0, 40);
+          if (!/^[A-Za-z0-9_-]{1,40}$/.test(key)) return null;
+          if (arguments.length > 1) {
+            var notes = rec.notes && typeof rec.notes === 'object' && !Array.isArray(rec.notes) ? rec.notes : (rec.notes = {});
+            var typed = v && typeof v.t === 'string' ? v.t.slice(0, 240) : '', c = v ? Math.floor(Number(v.c)) : NaN;
+            if (typed) notes[key] = { t: typed };
+            else if (v && v.t == null && c >= 0 && c <= 9) notes[key] = { c: c, n: Math.max(1, Math.min(99, Math.floor(Number(v.n)) || 1)) };
+            else delete notes[key];
+            if (!Object.keys(notes).length) delete rec.notes;
+            save();
+          }
+          return rec.notes && Object.prototype.hasOwnProperty.call(rec.notes, key) ? rec.notes[key] : null;
+        },
         bookmark: function (v) {
           if (arguments.length > 0) {
             if (v == null) delete state.bookmark;
@@ -10685,11 +11100,15 @@
         isDone: function () { return rec.done; },
         attempts: function () { return rec.attempts; },
         // Practice that is never scored: 'traced' or 'skipped' (Letter Trace), 'read' (a page of a read-along).
+        // 2026-11-23: and 'played', a read-along page the file turned to and read out by itself (Auto-advance, Auto
+        // pace). 'read' is kept for a page the child started. A 'played' page the child reads later becomes 'read'.
+        practiceKind: function () { return rec.practice || ''; },
         practice: function (status, text, options) {
-          if (rec.done) return;
-          var kind = status === 'skipped' ? 'skipped' : status === 'read' ? 'read' : 'traced';
-          rec.attempts++;
-          rec.responses.push(kind);
+          var kind = status === 'skipped' ? 'skipped' : status === 'read' ? 'read' : status === 'played' ? 'played' : 'traced';
+          var readNow = rec.done && rec.practice === 'played' && kind === 'read';
+          if (rec.done && !readNow) return;
+          if (readNow) rec.responses = rec.responses.map(function (r) { return r === 'played' ? 'read' : r; });
+          else { rec.attempts++; rec.responses.push(kind); }
           rec.practice = kind;
           if (options && options.quiet) {
             clockLap();
@@ -10715,7 +11134,8 @@
         feedback: function (text) { if (rec.done) return; feedback.className = 'status'; feedback.removeAttribute('data-missed'); feedback.textContent = text ? String(text) : ''; },
         answer: function (response, isCorrect, options) {
           if (rec.done) return rec.correct ? 'correct' : 'missed';
-          var o = options || {};
+          var o = options || {}, fb = lesson.feedback || {};
+          if (o.flag && !rec.flag) rec.flag = String(o.flag).slice(0, 40);
           var max = Number(item.maxAttempts) > 0 ? Number(item.maxAttempts) : 2;
           // Two choices and no set number of tries: one try, since a second try could not miss.
           var offered = Array.isArray(item.choices) ? item.choices.length : Array.isArray(item.options) ? item.options.length : 0;
@@ -10724,7 +11144,7 @@
           rec.responses.push(typeof response === 'string' ? response.slice(0, 80) : JSON.stringify(response).slice(0, 200));
           if (isCorrect) {
             feedback.className = 'status ok'; feedback.textContent = o.correctText || L.correct;
-            var praise = lesson.feedback.correct;
+            var praise = fb.correct || [];
             finishItem(true);
             var cheered = play(praise.length ? praise[state.index % praise.length] : null), mine = screenId;
             // payoff(): the read-back, after the praise.
@@ -10736,7 +11156,7 @@
             // On a phone the line can be below the choices, out of sight: bring it just into view (no animation).
             try { if (typeof feedback.scrollIntoView === 'function') feedback.scrollIntoView({ block: 'nearest' }); } catch (_) {}
             save();
-            play(lesson.feedback.retry);
+            play(fb.retry);
             return 'retry';
           }
           feedback.className = 'status warn'; feedback.textContent = o.missedText || L.missed; feedback.setAttribute('data-missed', '');
@@ -10748,21 +11168,29 @@
       // Where the student is in the whole file, when it has more than one activity.
       screen(entry.again ? fmt(L.again_of, { n: entry.n, total: entry.total }) : fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
         entry.total < items.length ? el('p', { class: ownOrder ? '' : 'muted', 'data-progress': '', style: ownOrder ? 'margin:0;font-weight:700' : 'margin:0',
-          text: ownOrder ? 'Question ' + (state.index + 1) + ' of ' + items.length + ' (' + activityTitle(entry.activity) + ')' : fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
+          text: ownOrder ? fmt(L.progress_own, { n: state.index + 1, total: items.length, activity: activityTitle(entry.activity) }) : fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
         el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (state.index + 1) / items.length) + '%' })]),
-        el('div', { class: 'card' }, [area, feedback, nextButton]),
+        el('div', { class: 'card' }, [bi && bi.v('item', item), ad && ad.banner(entry), area, feedback, nextButton]),
       ]);
       keyItem = { area: area, item: item, shownAt: shownAt, replay: function () { ctx.support('questionReplays'); } };
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
       activeHandle = handle;
       keyItem.handle = handle;
       // Reopened on an answered item: show its outcome, do not ask again (except revisit-enabled pages like Read Along).
-      if (rec.done) { if (!(handle && handle.allowRevisit)) { if (rec.practice) finishPractice(); else finishItem(rec.correct); } }
+      // 2026-11-23: a read-along page turned back to in THIS opening of the file (clockedHere, in memory): its time goes
+      // on adding up, and it is not "resumed". Before, looking back a page set the time to 0 and the flag.
+      var clockKey = (state.sessionId || '') + ':' + state.index;
+      var again = !!clockedHere[clockKey] && !!(handle && handle.allowRevisit);
+      if (rec.done) {
+        if (!(handle && handle.allowRevisit)) { if (rec.practice) finishPractice(); else finishItem(rec.correct, true); }
+        else if (again) clockStart(rec, rec.ms);
+      }
       else {
         // Shown before in an earlier opening of the file: the time counts from now.
-        if (rec.shown) rec.flag = 'resumed';
-        rec.shown = true; rec.ms = 0;
-        clockStart(rec);
+        if (rec.shown && !again) rec.flag = 'resumed';
+        rec.shown = true; if (!again) rec.ms = 0;
+        clockStart(rec, again ? rec.ms : 0);
+        clockedHere[clockKey] = true;
         save();
         var openingAudio = item.introAudio || [];
         if (skipDirections && openingAudio.length) {
@@ -10785,6 +11213,26 @@
     // The integrity value detects accidental edits, not deliberate ones: FNV-1a
     // at once, replaced by SHA-256 when the browser has made it (renderFinish).
     var sealed = null, savingFile = '';
+    // 2026-11-23: the answers to a read-along page's "Check your understanding" questions (rec.notes, ctx.checkNote), as
+    // lines for that page's responses, after its 'read' or 'played': "1: the words typed" (240 characters at most), or
+    // "2: the choice picked (right)" / "(not right)" when the question has a keyed answer, with the picks it took when
+    // more than one: "(right, try 2)", "(not right, 3 tries)". They are a record for the teacher: nothing is scored,
+    // and no count in the summary changes.
+    var checkNotes = function (item, r) {
+      var qs = item && Array.isArray(item.questions) ? item.questions : [], notes = r && r.notes && typeof r.notes === 'object' ? r.notes : null, out = [];
+      if (!notes) return out;
+      qs.forEach(function (q, qi) {
+        var id = q.id || ('q' + (qi + 1)), v = Object.prototype.hasOwnProperty.call(notes, id) ? notes[id] : null;
+        if (!v || typeof v !== 'object') return;
+        if (q.kind === 'mc' && Array.isArray(q.choices)) {
+          var c = Math.floor(Number(v.c)), n = Math.max(1, Math.floor(Number(v.n)) || 1);
+          if (!(c >= 0 && c < q.choices.length)) return;
+          var keyed = typeof q.answer === 'number' ? (c === q.answer ? ' (right' + (n > 1 ? ', try ' + n : '') + ')' : ' (not right' + (n > 1 ? ', ' + n + ' tries' : '') + ')') : '';
+          out.push((qi + 1) + ': ' + String(q.choices[c]).slice(0, 240) + keyed);
+        } else if (typeof v.t === 'string' && v.t.replace(/\s+/g, ' ').trim()) out.push((qi + 1) + ': ' + v.t.replace(/\s+/g, ' ').trim().slice(0, 240));
+      });
+      return out;
+    };
     var resultFile = function () {
       var out = {
         kind: 'alloflow-take-home-result', schemaVersion: 3, player: lesson.player, sessionId: state.sessionId || '',
@@ -10799,8 +11247,8 @@
         items: items.map(function (e, i) {
           var r = state.items[i];
           return { n: i + 1, itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
-            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, ms: r.ms || 0,
-            supports: r.supports, practice: r.practice || null, flag: r.flag || '', typed: r.typed || undefined,
+            responses: r.responses.concat(checkNotes(e.item, r)), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, ms: r.ms || 0,
+            supports: r.supports, practice: r.practice || null, flag: r.flag || '', typed: r.typed || undefined, adaptiveReason: r.adaptiveReason,
             // 2026-11-17: from Cover it (or from the card being shown) to the first answer from memory, ms.
             recallMs: r.laps && r.laps.recall != null ? r.laps.recall : undefined };
         }),
@@ -10931,10 +11379,10 @@
         } }, text: L.send });
         if (state.sent) sendButton.setAttribute('aria-disabled', 'true');
       }
-      var startOver = function () {
-        put(null);
-        state = null;
-        if (tools) storePrefs();
+      var startOver = function (stn) {
+        put(null); state = null;
+        if (stn) { namePrompted = false; bi && bi.setLang(''); tools && tools.reset(lesson.defaultTools); }
+        else if (tools) storePrefs();
         renderStart();
       };
       // Practice again throws this attempt away: ask first unless it was sent
@@ -10945,26 +11393,27 @@
       var confirmBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'practice-again-text', hidden: true, 'data-practice-confirm': '',
         on: { keydown: function (e) { if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); keepButton.click(); } } } }, [
         confirmText,
-        el('div', { class: 'row' }, [keepButton, el('button', { type: 'button', 'data-practice-start-over': '', on: { click: startOver }, text: L.start_over })]),
+        el('div', { class: 'row' }, [keepButton, el('button', { type: 'button', 'data-practice-start-over': '', on: { click: function () { startOver(); } }, text: L.start_over })]),
       ]);
       var againButton = el('button', { type: 'button', 'data-practice-again': '', on: { click: function () {
         if (state.sent || state.savedFile) { startOver(); return; }
         confirmBox.hidden = false; confirmText.focus();
       } }, text: L.practice_again });
-      var qrBox = kit.qr && kit.qrLib && lesson.qr && lesson.qr.k ? kit.qr({ doc: doc, win: win, el: el, fmt: fmt, L: L, qr: lesson.qr, lib: kit.qrLib, getResult: resultFile, announce: announce, showText: showText }) : null;
-      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, qr: qrBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
+      var biEnd = bi && bi.v('finish'), su = st && st.finish(resultFile, function () { startOver(1); });
+      var qrBox = kit.qr && kit.qrLib && lesson.qr && lesson.qr.k ? kit.qr(Object.assign({}, ex, { qr: lesson.qr, getResult: resultFile, showText: showText, onSealed: su && su.onSealed })) : null;
+      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, qr: qrBox, st: su, bi: biEnd, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       // A star for finishing (drawn by the style rules), and each activity's own result when the file has several.
       // In the file's own order, by id.
-      var recOf = Object.create(null);
-      if (ownOrder) state.items.forEach(function (r) { if (r) recOf[r.itemId] = r; });
+      var recOf = ownOrder || ad ? Object.create(null) : null;
+      if (recOf) state.items.forEach(function (r) { if (r) recOf[r.itemId] = r; });
       var at = 0, tally = lesson.blocks.map(function (b) {
         var t = 0, f = 0, pt = 0, pd = 0;
-        b.items.forEach(function (it) { var r = ownOrder ? recOf[it.id] : state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
+        b.items.forEach(function (it) { var r = recOf ? recOf[it.id] : state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
         // Practice (Letter Trace) has its own row: how many were done, never a score.
         return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_activity || '{first} of {total}', { first: f, total: t }) })])
           : pt ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_practice, { done: pd, total: pt }) })]) : null;
       }).filter(Boolean);
-      var practiceTotal = state.items.filter(function (r, i) { return !(items[i] && items[i].again) && (r.practice || (items[i] && items[i].activity === 'letter_tracing')); }).length;
+      var practiceTotal = state.items.filter(function (r, i) { var e = items[i]; return !(e && (e.again || e.ad)) && (r.practice || (e && e.activity === 'letter_tracing')); }).length;
       var againDone = state.items.filter(function (r, i) { return items[i] && items[i].again && r.done; }).length;
       // 2026-11-22: Show my teacher — concise 3-second deskside conferencing summary inside a collapsed fold.
       var conferCard = (function () {
@@ -11017,11 +11466,13 @@
           ]) : el('p', { 'data-confer-focus': '', text: L.confer_all_first })) : null,
           el('p', { class: 'muted', 'data-confer-supports': '', text: supList.length ? fmt(L.confer_supports, { list: supList.join(', ') }) : L.confer_supports_none }),
           qrBox,
+          su && su.deck,
           el('p', { class: 'muted', style: 'margin:6px 0 0', text: L.confer_note }),
         ]);
       })();
       screen(L.done_title, [
         el('div', { class: 'card' }, [
+          biEnd,
           el('div', { class: 'hero' }, [el('span', { class: 'done-star', 'aria-hidden': 'true' }),
             // A file of practice only (Letter Trace) says how much was done, not "0 of 0".
             el('p', { class: 'letters', text: s.items || !practiceTotal ? fmt(L.done_summary, { first: s.firstTry, total: s.items }) : fmt(L.done_practice, { done: s.practised, total: practiceTotal }) }),
@@ -11031,6 +11482,8 @@
           // Until it is saved or sent: the one thing left to do, in plain words.
           !(state.sent || state.savedFile) ? el('p', { class: 'letters', 'data-last-step': '', text: L.done_last_step }) : null,
           el('div', { class: 'row big-row' }, [sendButton, csvButton]),
+          su && su.nextBar,
+          su && su.status,
           fileStatus,
           // A closing date that has passed is said outside the fold: it changes what the student does.
           closedNote ? el('p', { class: 'muted', text: closedNote }) : null,
@@ -11069,6 +11522,8 @@
     } } }, [el('span', { 'aria-hidden': 'true', text: String.fromCharCode(0x25A0) + ' ' }), L.stop_audio || 'Stop audio']);
     var toolBar = doc.querySelector('.lt-bar');
     if (toolBar) toolBar.appendChild(stopBtn);
+    var ex = { doc: doc, win: win, el: el, fmt: fmt, L: L, lesson: lesson, announce: announce, lib: kit.qrLib, bar: toolBar, sup: function (k) { var c = state && state.items[state.index]; if (c && !c.done) { c.supports[k] = (c.supports[k] || 0) + 1; save(); } } };
+    st = kit.station && kit.station(ex); ad = kit.adaptive && kit.adaptive(ex); bi = kit.bilingual && kit.bilingual(ex);
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var ensureNavState = function () {
       if (state) return false;
@@ -11222,7 +11677,7 @@
     '.qr-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}',
     '.qr-panel{margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);text-align:center}',
     '.qr-frame{display:inline-block;padding:8px;background:#ffffff;border:1px solid #d5dbe3;border-radius:10px;forced-color-adjust:none}',
-    '.qr-img{display:block;width:min(280px,100%);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;forced-color-adjust:none}',
+    '.qr-img{display:block;width:min(440px,100%);height:auto;image-rendering:pixelated;image-rendering:crisp-edges;forced-color-adjust:none}',
     '.qr-fp{margin:8px 0 4px;font-size:.9rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}',
     '.qr-code{margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;word-break:break-all;text-align:start;max-height:78px;overflow:auto;user-select:all}',
     '@media (forced-colors:active){.qr-frame{background:#ffffff;border:2px solid CanvasText;forced-color-adjust:none}.qr-img{forced-color-adjust:none}}',
@@ -11260,13 +11715,15 @@
         noteLine.textContent = fmt(L.qr_note, { fp: sealed.fingerprint });
         trimLine.hidden = !sealed.truncated;
         codeBox.textContent = sealed.code;
+        if (typeof opts.onSealed === 'function') opts.onSealed(sealed);
         opts.announce(fmt(L.qr_alt, { fp: sealed.fingerprint }));
-      } catch (_) {
+      } catch (err) {
+        var why = err && err.code === 'too_long' && L.qr_too_long ? L.qr_too_long : L.qr_error;
         clearFrame();
         status.hidden = false;
         status.className = 'status warn';
-        status.textContent = L.qr_error;
-        opts.announce(L.qr_error);
+        status.textContent = why;
+        opts.announce(why);
       }
     };
     var toggleBtn = el('button', { type: 'button', 'data-qr-toggle': '', 'aria-expanded': 'false', on: { click: function () { setVisible(!shown); } }, text: L.qr_show });
@@ -11295,6 +11752,381 @@
       status,
     ]);
     return el('div', { class: 'qr-wrap', 'data-qr-wrap': '' }, [toggleBtn, panel]);
+  }
+
+  // Shared-device Station Kiosk styles and runtime (travel ONLY when stationMode is enabled).
+  var STATION_CSS = [
+    '.station-bar{margin:14px 0 6px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}',
+    '.station-note{margin:6px 0;text-align:center;font-size:.92rem}',
+    '.station-deck-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}',
+    '.station-deck-panel{margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft);text-align:center}',
+    '.station-deck-head{margin:0 0 8px;font-weight:700;font-size:1rem}',
+    '.station-deck-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px}',
+    '.station-start-fold{margin-top:14px;border-top:1px solid var(--line);padding-top:4px}',
+    '.station-start-fold summary{cursor:pointer;padding:10px 0;font-weight:700;color:var(--ink)}',
+    '@media (forced-colors:active){.station-deck-panel{border:2px solid CanvasText}}',
+  ].join('\n');
+
+  function takeHomeStation(opts) {
+    var doc = opts.doc, win = opts.win, el = opts.el, fmt = opts.fmt, L = opts.L, qr = opts.qr || (opts.lesson && opts.lesson.qr), lib = opts.lib;
+    var MAX_Q = 15;
+    // In-tab-memory only: encrypted AFQR1 entries are NEVER written to browser storage.
+    var queue = [];
+    var clearedSids = Object.create(null);
+    var maskLabel = function (name, slotNum) {
+      var s = String(name == null ? '' : name).replace(/\s+/g, ' ').trim().slice(0, 60);
+      if (!s) return 'Student ' + slotNum;
+      var parts = s.split(' ').filter(Boolean).slice(0, 2);
+      var out = parts.map(function (w) {
+        var chars = Array.from ? Array.from(w) : w.split('');
+        var first = chars[0] || '';
+        return chars.length <= 1 ? first + '*' : first + '***';
+      }).join(' ');
+      return out || ('Student ' + slotNum);
+    };
+    var shortTime = function (iso) {
+      var m = /T(\d{2}:\d{2})/.exec(String(iso || ''));
+      if (m) return m[1];
+      var d = new Date();
+      var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+      return pad(d.getHours()) + ':' + pad(d.getMinutes());
+    };
+    var enqueue = function (resultObj, preSealed) {
+      if (!qr || !qr.k || !lib || typeof lib.sealResult !== 'function') return { ok: false, count: queue.length };
+      var sid = String((resultObj && resultObj.sessionId) || '');
+      if (!preSealed && sid && clearedSids[sid]) return { ok: false, cleared: true, count: queue.length };
+      for (var i = 0; i < queue.length; i++) {
+        if (sid && queue[i].sid === sid) {
+          if (preSealed && preSealed.code) {
+            queue[i].code = preSealed.code;
+            queue[i].fp = preSealed.fingerprint || queue[i].fp;
+            queue[i].truncated = !!preSealed.truncated;
+          }
+          return { ok: true, duplicate: true, count: queue.length, entry: queue[i] };
+        }
+      }
+      if (queue.length >= MAX_Q) return { ok: false, full: true, count: queue.length };
+      if (sid && clearedSids[sid]) delete clearedSids[sid];
+      var sealed = preSealed && preSealed.code ? preSealed : lib.sealResult(resultObj, qr.k);
+      var label = maskLabel(resultObj && (resultObj.learner || resultObj.learnerName), queue.length + 1);
+      var entry = {
+        sid: sid || ('slot-' + (queue.length + 1) + '-' + Date.now()),
+        code: sealed.code,
+        fp: sealed.fingerprint || qr.fp || '',
+        truncated: !!sealed.truncated,
+        label: label + ' \u00b7 ' + shortTime(resultObj && resultObj.finishedLocal),
+      };
+      queue.push(entry);
+      return { ok: true, count: queue.length, entry: entry };
+    };
+    var renderDeckControl = function () {
+      var shown = false, idx = 0;
+      var metaLine = el('p', { class: 'station-deck-head', 'data-station-deck-meta': '' });
+      var frame = el('div', { class: 'qr-frame', 'data-station-deck-frame': '' });
+      var fpLine = el('p', { class: 'qr-fp', 'data-station-deck-fp': '' });
+      var trimLine = el('p', { class: 'muted', 'data-station-deck-trimmed': '', hidden: true, text: L.qr_trimmed || '' });
+      var codeBox = el('pre', { class: 'qr-code', 'data-station-deck-code': '', tabindex: '0', 'aria-label': L.station_deck_title });
+      var emptyLine = el('p', { class: 'muted', 'data-station-deck-empty': '', hidden: true, text: L.station_deck_empty });
+      var statusLine = el('p', { class: 'status', 'data-station-deck-status': '', role: 'status', 'aria-live': 'polite', hidden: true });
+      var clearDom = function () {
+        while (frame.firstChild) frame.removeChild(frame.firstChild);
+        codeBox.textContent = '';
+      };
+      var paintBtn = function () {
+        toggleBtn.textContent = fmt(L.station_deck_button, { n: queue.length });
+        toggleBtn.setAttribute('aria-expanded', shown ? 'true' : 'false');
+      };
+      var paintSlide = function () {
+        paintBtn();
+        statusLine.hidden = true;
+        statusLine.textContent = '';
+        if (!shown) { clearDom(); return; }
+        if (!queue.length) {
+          clearDom();
+          metaLine.textContent = L.station_deck_title;
+          fpLine.textContent = '';
+          frame.hidden = true;
+          codeBox.hidden = true;
+          trimLine.hidden = true;
+          emptyLine.hidden = false;
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          copyBtn.disabled = true;
+          clearBtn.disabled = true;
+          return;
+        }
+        if (idx >= queue.length) idx = queue.length - 1;
+        if (idx < 0) idx = 0;
+        var entry = queue[idx];
+        emptyLine.hidden = true;
+        frame.hidden = false;
+        codeBox.hidden = false;
+        metaLine.textContent = fmt(L.station_deck_item, { n: idx + 1, total: queue.length, label: entry.label });
+        while (frame.firstChild) frame.removeChild(frame.firstChild);
+        frame.appendChild(lib.qrImgEl(doc, entry.code, fmt(L.qr_alt || 'Sealed QR {fp}', { fp: entry.fp })));
+        fpLine.textContent = 'Key ID: ' + entry.fp;
+        trimLine.hidden = !entry.truncated;
+        codeBox.textContent = entry.code;
+        prevBtn.disabled = idx <= 0;
+        nextBtn.disabled = idx >= queue.length - 1;
+        copyBtn.disabled = false;
+        clearBtn.disabled = false;
+      };
+      var setDeckShown = function (next) {
+        shown = !!next;
+        panel.hidden = !shown;
+        if (shown && idx >= queue.length) idx = Math.max(0, queue.length - 1);
+        paintSlide();
+      };
+      var toggleBtn = el('button', { type: 'button', 'data-station-deck-open': '', 'aria-expanded': 'false', on: { click: function () { setDeckShown(!shown); } }, text: fmt(L.station_deck_button, { n: queue.length }) });
+      var prevBtn = el('button', { type: 'button', 'data-station-deck-prev': '', on: { click: function () { if (idx > 0) { idx--; paintSlide(); } } }, text: L.station_deck_prev });
+      var nextBtn = el('button', { type: 'button', 'data-station-deck-next': '', on: { click: function () { if (idx < queue.length - 1) { idx++; paintSlide(); } } }, text: L.station_deck_next });
+      var copyBtn = el('button', { type: 'button', 'data-station-deck-copy': '', on: { click: function () {
+        var cur = queue[idx];
+        if (!cur) return;
+        var fallback = function () { codeBox.focus(); };
+        try {
+          win.navigator.clipboard.writeText(cur.code).then(function () {
+            statusLine.hidden = false;
+            statusLine.className = 'status ok';
+            statusLine.textContent = L.qr_copied || 'Sealed code copied.';
+            opts.announce(statusLine.textContent);
+          }, fallback);
+        } catch (_) { fallback(); }
+      } }, text: L.qr_copy || 'Copy sealed code' });
+      var clearBtn = el('button', { type: 'button', 'data-station-deck-clear': '', on: { click: function () {
+        queue.forEach(function (item) { if (item && item.sid) clearedSids[item.sid] = 1; });
+        queue.length = 0;
+        idx = 0;
+        paintSlide();
+        statusLine.hidden = false;
+        statusLine.className = 'status';
+        statusLine.textContent = L.station_deck_cleared;
+        opts.announce(L.station_deck_cleared);
+      } }, text: L.station_deck_clear });
+      var hideBtn = el('button', { type: 'button', 'data-station-deck-hide': '', on: { click: function () { setDeckShown(false); toggleBtn.focus(); } }, text: L.station_deck_hide });
+      var panel = el('div', { class: 'station-deck-panel', 'data-station-deck-panel': '', hidden: true, on: { keydown: function (e) {
+        if ((e.key === 'Escape' || e.key === 'Esc') && !e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          setDeckShown(false);
+          toggleBtn.focus();
+        }
+      } } }, [
+        metaLine, emptyLine, frame, fpLine, trimLine, codeBox,
+        el('div', { class: 'station-deck-nav' }, [prevBtn, nextBtn, copyBtn, clearBtn, hideBtn]),
+        el('p', { class: 'muted', text: L.station_deck_note }),
+        statusLine,
+      ]);
+      var wrap = el('div', { class: 'station-deck-wrap', 'data-station-deck': '' }, [toggleBtn, panel]);
+      wrap._refresh = paintBtn;
+      return wrap;
+    };
+    var aboutText = function () { return L.station_about ? fmt(L.station_about, { max: MAX_Q }) : ''; };
+    var startFold = function () {
+      if (!queue.length) return null;
+      return el('details', { class: 'station-start-fold', 'data-station-start-teacher': '' }, [
+        el('summary', { text: L.station_teacher_fold || 'For the teacher' }),
+        renderDeckControl(),
+      ]);
+    };
+    var finishControls = function (getResult, reset) {
+      var status = null, deck = null;
+      var hasQr = !!(qr && qr.k && lib && typeof lib.sealResult === 'function');
+      if (hasQr) {
+        try {
+          var qRes = enqueue(getResult());
+          if (qRes && qRes.full) status = el('p', { class: 'status warn station-note', 'data-station-status': 'full', text: fmt(L.station_full_note, { max: MAX_Q }) });
+          else if (qRes && qRes.ok) status = el('p', { class: 'muted station-note', 'data-station-status': 'queued', text: fmt(L.station_queued_note, { n: qRes.count }) });
+        } catch (_) {}
+        deck = renderDeckControl();
+      }
+      var nextBtn = el('button', { type: 'button', class: 'primary big', 'data-station-next': '', on: { click: function () {
+        if (hasQr) { try { enqueue(getResult()); } catch (_) {} }
+        reset();
+        opts.announce(L.station_cleared || 'Ready for the next student.');
+      } }, text: L.station_next_student });
+      return {
+        nextBtn: nextBtn,
+        nextBar: el('div', { class: 'station-bar' }, [nextBtn]),
+        status: status,
+        deck: deck,
+        onSealed: function (sealedObj) {
+          try {
+            enqueue(getResult(), sealedObj);
+            if (deck && deck._refresh) deck._refresh();
+          } catch (_) {}
+        },
+      };
+    };
+    return {
+      enqueue: enqueue,
+      renderDeckControl: renderDeckControl,
+      about: aboutText,
+      start: startFold,
+      finish: finishControls,
+      count: function () { return queue.length; },
+      clear: function () { queue.length = 0; },
+    };
+  }
+
+  // Rule-based deterministic mastery scaffolding (travel ONLY when lesson.adaptiveScaffold is enabled).
+  var ADAPTIVE_CSS = [
+    '.ad-banner{margin:0 0 12px;padding:10px 14px;border-radius:12px;border:1px solid var(--accent);background:var(--soft);font-weight:600}',
+    '.ad-banner p{margin:0}.ad-banner-sub{margin-top:4px;font-weight:400}',
+    '.ad-card{margin:14px 0 6px;padding:14px 16px;border-radius:14px;border:2px solid var(--accent);background:var(--soft)}',
+    '.ad-card h3{margin:0 0 6px;font-size:1.05rem}.ad-card p{margin:6px 0}',
+    '.ad-example{padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-weight:600}',
+    '@media (forced-colors:active){.ad-banner,.ad-card,.ad-example{border:2px solid CanvasText}}',
+  ].join('\n');
+
+  function takeHomeAdaptive(opts) {
+    var lesson = opts.lesson, L = opts.L, el = opts.el, fmt = opts.fmt, announce = opts.announce;
+    var cfg = lesson.adaptiveScaffold && typeof lesson.adaptiveScaffold === 'object' ? lesson.adaptiveScaffold : {};
+    var missThreshold = Number(cfg.missThreshold) >= 1 ? Math.floor(Number(cfg.missThreshold)) : 2;
+    var streakThreshold = Number(cfg.streakThreshold) >= 1 ? Math.floor(Number(cfg.streakThreshold)) : 4;
+    var maxReinforcements = Number(cfg.maxReinforcements) >= 1 ? Math.floor(Number(cfg.maxReinforcements)) : 4;
+
+    var skillOf = function (entry) {
+      var it = entry && entry.item ? entry.item : {};
+      var raw = it.skill || it.skillTag || it.tag || (entry && entry.activity) || 'item';
+      return String(raw).replace(/\s+/g, ' ').trim().slice(0, 40) || 'item';
+    };
+    var hintDataFor = function (entry) {
+      var it = entry && entry.item ? entry.item : {};
+      var skill = skillOf(entry);
+      var hints = cfg.hints && typeof cfg.hints === 'object' ? cfg.hints : {};
+      var examples = cfg.workedExamples && typeof cfg.workedExamples === 'object' ? cfg.workedExamples : {};
+      var hint = (typeof it.hint === 'string' && it.hint.trim()) || hints[skill] || hints[entry.activity] || fmt(L.adaptive_default_hint, { word: it.word || '' });
+      var example = (typeof it.workedExample === 'string' && it.workedExample.trim()) || examples[skill] || examples[entry.activity]
+        || (it.target != null && String(it.target) !== '' ? fmt(L.adaptive_default_example, { word: it.word || '', target: String(it.target) }) : '');
+      return { skill: skill, hint: hint, example: example };
+    };
+    var stretchForBlock = function (blockIndex, activity) {
+      var raw = lesson.stretchItems;
+      if (!raw) return [];
+      var list = Array.isArray(raw)
+        ? raw.filter(function (it) { return it && typeof it === 'object' && (!it.activity || it.activity === activity) && (it.blockIndex == null || Number(it.blockIndex) === blockIndex); })
+        : (typeof raw === 'object' && Array.isArray(raw[activity]) ? raw[activity] : []);
+      return list.filter(function (it) { return it && typeof it === 'object'; });
+    };
+    var ensureState = function (st) {
+      if (!st.adaptive || typeof st.adaptive !== 'object') {
+        st.adaptive = { misses: {}, streak: 0, reinforced: 0, inserted: [], stretchUnlocked: {}, stretchAccepted: {} };
+      }
+      var a = st.adaptive;
+      if (!a.misses || typeof a.misses !== 'object') a.misses = {};
+      if (!Array.isArray(a.inserted)) a.inserted = [];
+      if (!a.stretchUnlocked || typeof a.stretchUnlocked !== 'object') a.stretchUnlocked = {};
+      if (!a.stretchAccepted || typeof a.stretchAccepted !== 'object') a.stretchAccepted = {};
+      return a;
+    };
+    var restoreInserted = function (st, items) {
+      var a = st && st.adaptive;
+      if (!a || !Array.isArray(a.inserted)) return;
+      a.inserted.forEach(function (ins) {
+        if (!ins || !ins.entry || typeof ins.at !== 'number') return;
+        var pos = Math.max(0, Math.min(items.length, Math.floor(ins.at)));
+        items.splice(pos, 0, ins.entry);
+      });
+    };
+    var renderBanner = function (entry) {
+      if (!entry || !entry.ad) return null;
+      if (entry.ad === 'reinforce') {
+        var h = entry.adaptiveHint || {};
+        return el('div', { class: 'ad-banner', 'data-adaptive-banner': 'reinforce', role: 'note' }, [
+          el('p', { text: L.adaptive_reinforce_banner }),
+          h.hint ? el('p', { class: 'ad-banner-sub', text: h.hint }) : null,
+        ]);
+      }
+      if (entry.ad === 'stretch') {
+        return el('div', { class: 'ad-banner', 'data-adaptive-banner': 'stretch', role: 'note', text: L.adaptive_stretch_banner });
+      }
+      return null;
+    };
+    var onDone = function (st, items, entry, rec, area, nextButton, save, renderItem) {
+      var idx = st.index;
+      if (!entry || entry.again || entry.ad || rec.practice) return;
+      var a = ensureState(st);
+      var skill = skillOf(entry);
+      if (rec.correct) {
+        a.misses[skill] = 0;
+      } else {
+        a.misses[skill] = (Number(a.misses[skill]) || 0) + 1;
+        if (a.misses[skill] >= missThreshold) {
+          a.misses[skill] = 0;
+          var info = hintDataFor(entry);
+          var reason = 'consecutive_misses_' + skill.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24);
+          rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {};
+          rec.supports.adaptiveScaffold = (Number(rec.supports.adaptiveScaffold) || 0) + 1;
+          if (!rec.flag) rec.flag = 'adaptive_scaffold';
+          rec.adaptiveReason = reason;
+          var queued = false;
+          if (a.reinforced < maxReinforcements) {
+            var insertAt = idx + 1;
+            while (insertAt < items.length && items[insertAt].bi === entry.bi) insertAt++;
+            a.reinforced++;
+            var reinfItem = Object.assign({}, entry.item, { id: String(entry.item.id) + '-reinforce-' + a.reinforced });
+            var reinfEntry = { activity: entry.activity, item: reinfItem, n: a.reinforced, total: a.reinforced, bi: entry.bi, ad: 'reinforce', adaptiveHint: info };
+            var reinfRec = { itemId: reinfItem.id, activity: entry.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: { adaptiveReinforce: 1 }, practice: 'practice', flag: 'adaptive_reinforce', adaptiveReason: reason };
+            items.splice(insertAt, 0, reinfEntry);
+            st.items.splice(insertAt, 0, reinfRec);
+            a.inserted.push({ at: insertAt, entry: reinfEntry });
+            queued = true;
+            if (nextButton) nextButton.textContent = idx === items.length - 1 ? L.finish : L.next;
+          }
+          var card = el('section', { class: 'ad-card', 'data-adaptive-card': 'scaffold', 'aria-label': L.adaptive_hint_title }, [
+            el('h3', { text: L.adaptive_hint_title }),
+            info.hint ? el('p', { 'data-adaptive-hint': '', text: info.hint }) : null,
+            info.example ? el('p', { class: 'ad-example', 'data-adaptive-example': '', text: info.example }) : null,
+            queued ? el('p', { class: 'muted', 'data-adaptive-queued': '', text: L.adaptive_reinforce_queued }) : null,
+          ]);
+          area.appendChild(card);
+          announce(L.adaptive_hint_title + '. ' + (info.hint || '') + (queued ? ' ' + L.adaptive_reinforce_queued : ''));
+        }
+      }
+      if (rec.firstTry) {
+        a.streak = (Number(a.streak) || 0) + 1;
+        if (a.streak >= streakThreshold) a.stretchUnlocked[String(entry.bi)] = true;
+      } else {
+        a.streak = 0;
+      }
+      var bKey = String(entry.bi);
+      var atBlockEnd = idx === items.length - 1 || items[idx + 1].bi !== entry.bi;
+      if (atBlockEnd && a.stretchUnlocked[bKey] && !a.stretchAccepted[bKey]) {
+        var stretchList = stretchForBlock(entry.bi, entry.activity);
+        if (stretchList.length) {
+          var stretchBtn = el('button', { type: 'button', class: 'primary', 'data-adaptive-stretch': '', on: { click: function () {
+            if (a.stretchAccepted[bKey]) return;
+            a.stretchAccepted[bKey] = true;
+            var pos = idx + 1;
+            var sReason = 'first_try_streak_' + streakThreshold;
+            stretchList.forEach(function (stItem, si) {
+              var sId = String(stItem.id || ('stretch-' + entry.bi + '-' + (si + 1)));
+              var sAct = stItem.activity || entry.activity;
+              var cloned = Object.assign({}, stItem, { id: sId });
+              var sEntry = { activity: sAct, item: cloned, n: si + 1, total: stretchList.length, bi: entry.bi, ad: 'stretch' };
+              var sRec = { itemId: sId, activity: sAct, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: { adaptiveStretch: 1 }, practice: 'practice', flag: 'adaptive_stretch', adaptiveReason: sReason };
+              items.splice(pos + si, 0, sEntry);
+              st.items.splice(pos + si, 0, sRec);
+              a.inserted.push({ at: pos + si, entry: sEntry });
+            });
+            st.index = pos;
+            save();
+            renderItem();
+          } }, text: L.adaptive_stretch_button });
+          area.appendChild(el('section', { class: 'ad-card', 'data-adaptive-card': 'stretch', 'aria-label': L.adaptive_stretch_title }, [
+            el('h3', { text: L.adaptive_stretch_title }),
+            el('p', { text: fmt(L.adaptive_stretch_body, { n: streakThreshold }) }),
+            el('div', { class: 'row' }, [stretchBtn]),
+          ]));
+        }
+      }
+    };
+    return {
+      restore: restoreInserted,
+      banner: renderBanner,
+      onDone: onDone,
+    };
   }
 
   // Scrambled answers and the teacher-code lock. Used here to seal a check and
@@ -11498,7 +12330,10 @@
     var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
     var hush = function (fromShell) { sayToken++; clearSay(); if (synth) try { synth.cancel(); } catch (_) {} if (!fromShell && ctx.stop) ctx.stop(); };
     var cleanSay = function (text) { return isPicture ? text : text.replace(/_{2,}/g, ', blank, '); };
-    var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(cleanSay(c.text)); };
+    // 2026-11-23: one voice per question. Recordings play only when every choice has one; else the device voice reads
+    // them all, so no choice stands out by its voice (a teacher's own meaning has no recording).
+    var allClipped = item.choices.length > 0 && item.choices.every(function (c) { return !!c.audio; });
+    var sayChoice = function (c) { return allClipped ? ctx.play(c.audio) : say(cleanSay(c.text)); };
     var sayAsk = function () {
       var q = L[P + 'question'];
       if (isPicture && !pictured) return say(q);
@@ -11514,7 +12349,7 @@
     var showReaders = function () {
       var on = !!(synth && voice());
       readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
-      if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+      if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || allClipped);
       if (typeof ctx.noVoice === 'function') ctx.noVoice(!!item.read && !on);
     };
     var blanks = [];
@@ -11571,7 +12406,7 @@
         : ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 200px;min-width:0;overflow-wrap:anywhere;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
           on: { click: function () { pick(i); } } }, isPicture ? [number, c.text] : [number].concat(marked(c.text)));
       var box = ctx.el('li', { class: 'choice', style: pictured ? '' : 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
-        pictured ? null : reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+        pictured ? null : reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], allClipped)]);
       boxes.push(box); picks.push(b); tried.push(false);
       list.appendChild(box);
     });
@@ -11964,6 +12799,12 @@
     var readyScreen = function () {
       var first = items.filter(function (e) { return !e.item.practice; })[0];
       var how = first ? L[first.activity + '_directions'] : '';
+      // 2026-11-23: a Symbol Runner check says what to do here, before the clock (its questions' own task line, such as
+      // "Name the ink color"; with more than one task in the check, the general line). It first showed with the clock running.
+      if (first && first.activity === 'symbol_runner' && !how) {
+        var tasks = items.filter(function (e) { return !e.item.practice && e.activity === 'symbol_runner'; }).map(function (e) { return typeof e.item.prompt === 'string' ? e.item.prompt : ''; });
+        how = (tasks[0] && tasks.every(function (t) { return t === tasks[0]; }) ? tasks[0] : '') || L.symbol_runner_direct || '';
+      }
       // 2026-11-17: the recordings of this screen's own lines, when the file carries them all (lesson.directions,
       // put in by the check maker). Played only when the button is pressed; the clock still starts at Start.
       var said = Array.isArray(lesson.directions) ? lesson.directions.filter(function (id) { return typeof id === 'string' && !!(lesson.audio && lesson.audio[id]); }) : [];
@@ -12311,6 +13152,7 @@
             el('div', { class: 'row' }, [code, el('button', { type: 'button', 'data-teacher-show': '', on: { click: tryCode }, text: L.check_teacher_show })]), message];
         }
         if (p.qr) teacher.push(p.qr);
+        if (p.st && p.st.deck) teacher.push(p.st.deck);
         // Start over asks first when results have not been saved yet. Preserves baked-in givenName on personalized files; clears typed names on shared devices.
         var doAgain = function () {
           var next = api.fresh();
@@ -12331,11 +13173,14 @@
         ]);
         api.screen(L.check_done_title, [
           el('div', { class: 'card' }, [
+            p.bi || null,
             c.completion === 'time' ? el('p', { text: L.check_time_up }) : null,
             el('p', { class: 'letters', text: fmt(L.check_done_count, { done: answered, total: scoredTotal }) }),
             el('p', { text: fmt(L.check_done_time, { time: clockText(sc.elapsedS * 1000) }) }),
             el('p', { text: L.check_about }),
             el('div', { class: 'row' }, [p.send, p.csv, again, p.about.button]),
+            p.st && p.st.nextBar,
+            p.st && p.st.status,
             p.more, againBox, p.status, p.copyBox,
             el('p', { class: 'muted', text: p.note }),
           ]),
@@ -12405,6 +13250,54 @@
     return null;
   }
 
+  function resolveStationBilingual(opts) {
+    if (opts && opts.stationBilingual && typeof opts.stationBilingual.bilingualBundle === 'function') return opts.stationBilingual;
+    if (root && root.AlloPacketStationBilingual && typeof root.AlloPacketStationBilingual.bilingualBundle === 'function') return root.AlloPacketStationBilingual;
+    if (typeof require === 'function') {
+      try { return require('./packets_station_bilingual.js'); } catch (_) {}
+    }
+    return null;
+  }
+
+  function normalizeExtraAdapters(rawExtra) {
+    var map = {}, cssList = [];
+    if (!rawExtra || typeof rawExtra !== 'object' || Array.isArray(rawExtra)) return { map: map, css: '' };
+    Object.keys(rawExtra).forEach(function (id) {
+      if (id === '__proto__' || id === 'constructor' || id === 'prototype' || !/^[a-z][a-z0-9_]{0,39}$/.test(id)) {
+        throw new Error('Invalid extraAdapters activity id: ' + id);
+      }
+      var spec = rawExtra[id];
+      var fn = typeof spec === 'function' ? spec : (spec && typeof spec === 'object' ? spec.render : null);
+      if (typeof fn !== 'function') throw new Error('extraAdapters.' + id + ' must be a render function or { render: fn }');
+      if (/\[native code\]/.test(fn.toString())) throw new Error('extraAdapters.' + id + ' render function must be a plain serializable function');
+      var title = spec && typeof spec === 'object' && typeof spec.title === 'string' && spec.title.trim()
+        ? spec.title.trim()
+        : id.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      var entry = {
+        id: id,
+        title: title,
+        render: fn,
+        labels: spec && typeof spec === 'object' && spec.labels && typeof spec.labels === 'object' ? spec.labels : null,
+      };
+      if (spec && typeof spec === 'object' && typeof spec.score === 'function') entry.score = spec.score;
+      if (spec && typeof spec === 'object' && typeof spec.answer === 'function') entry.answer = spec.answer;
+      if (spec && typeof spec === 'object' && spec.keypad === true) entry.keypad = true;
+      if (spec && typeof spec === 'object' && typeof spec.css === 'string' && spec.css.trim()) cssList.push(spec.css.trim());
+      map[id] = entry;
+    });
+    return { map: map, css: cssList.join('\n') };
+  }
+
+  function sanitizeExtraCss(rawCss) {
+    var s = typeof rawCss === 'string' ? rawCss.trim() : '';
+    if (!s) return '';
+    if (/<\/\s*style\b/i.test(s)) throw new Error('extraCss cannot contain a closing style tag');
+    if (/(?:https?|wss?|ftp):\/\/|@import\b|javascript:|expression\s*\(/i.test(s)) {
+      throw new Error('extraCss cannot reference external addresses, @import, javascript:, or expression()');
+    }
+    return s;
+  }
+
   function buildHtml(lesson, options) {
     var opts = options || {};
     var core = opts.core;
@@ -12412,14 +13305,54 @@
     // A check (mode 'probe') is sealed here, whoever built the lesson: its
     // answers are scrambled and opts.teacherCode becomes a salted hash.
     var probe = lesson.mode === 'probe';
-    var adapters = Object.assign({}, ADAPTERS, CHECK_ADAPTERS, opts.adapters || {});
-    var used = lesson.blocks.map(function (b) { return b.activity; }).filter(function (id, i, all) { return all.indexOf(id) === i; });
+    var extraSpec = normalizeExtraAdapters(opts.extraAdapters);
+    var extraMap = extraSpec.map;
+    var extraCss = sanitizeExtraCss([extraSpec.css, typeof opts.extraCss === 'string' ? opts.extraCss : ''].filter(Boolean).join('\n'));
+    var adapters = Object.assign({}, ADAPTERS, CHECK_ADAPTERS, opts.adapters || {}, extraMap);
+    var adaptiveOn = !probe && !!(lesson.adaptiveScaffold || opts.adaptiveScaffold);
+    var used = lesson.blocks.map(function (b) { return b.activity; });
+    if (adaptiveOn && lesson.stretchItems) {
+      if (Array.isArray(lesson.stretchItems)) {
+        lesson.stretchItems.forEach(function (it) { if (it && it.activity && adapters[it.activity]) used.push(it.activity); });
+      } else if (typeof lesson.stretchItems === 'object') {
+        Object.keys(lesson.stretchItems).forEach(function (k) { if (adapters[k]) used.push(k); });
+      }
+    }
+    used = used.filter(function (id, i, all) { return all.indexOf(id) === i; });
+    used.forEach(function (id) {
+      if (!adapters[id] || typeof adapters[id].render !== 'function') throw new Error('Unknown activity adapter: ' + id);
+    });
     // Only a file with a Word Sounds activity grades by sound.
     var hasCore = !!core && typeof core.soundAnswerMatches === 'function';
-    if (!hasCore && !(probe && used.every(function (id) { return !!CHECK_ADAPTERS[id] && !(opts.adapters && opts.adapters[id]); }))) throw new Error('buildHtml needs WS_CORE');
+    var noCoreNeeded = used.length > 0 && used.every(function (id) { return !!extraMap[id] || (probe && !!CHECK_ADAPTERS[id] && !(opts.adapters && opts.adapters[id])); });
+    if (!hasCore && !noCoreNeeded) throw new Error('buildHtml needs WS_CORE');
+    if (Object.keys(extraMap).length) {
+      var extraTitles = Object.assign({}, lesson.activityTitles || {});
+      var addedTitle = false;
+      used.forEach(function (id) {
+        if (extraMap[id] && !extraTitles[id]) { extraTitles[id] = extraMap[id].title; addedTitle = true; }
+      });
+      if (addedTitle) lesson = Object.assign({}, lesson, { activityTitles: extraTitles });
+    }
     // A check never shows a word's picture, so it carries none.
     if (probe && (lesson.pictures || hasWordPictures(lesson))) lesson = withoutWordPictures(lesson);
     if (probe) lesson = sealCheck(lesson, adapters, opts.teacherCode);
+    // Optional deterministic mastery scaffolding (opt-in via lesson.adaptiveScaffold or opts.adaptiveScaffold).
+    if (adaptiveOn && opts.adaptiveScaffold && !lesson.adaptiveScaffold) {
+      lesson = Object.assign({}, lesson, { adaptiveScaffold: opts.adaptiveScaffold });
+    }
+    // Optional curated offline Bilingual / Home-Language Bridge (opt-in via lesson.homeLanguages / lesson.bilingualGlossary).
+    var rawHomeLangs = opts.homeLanguages != null ? opts.homeLanguages : lesson.homeLanguages;
+    var rawGlossary = opts.bilingualGlossary != null ? opts.bilingualGlossary : lesson.bilingualGlossary;
+    var bilingualMod = null, bilingualData = null;
+    if (rawHomeLangs || rawGlossary) {
+      bilingualMod = resolveStationBilingual(opts);
+      if (!bilingualMod || typeof bilingualMod.bilingualBundle !== 'function' || typeof bilingualMod.takeHomeBilingual !== 'function') {
+        throw new Error('buildHtml with homeLanguages or bilingualGlossary needs AlloPacketStationBilingual');
+      }
+      bilingualData = bilingualMod.bilingualBundle(rawHomeLangs, rawGlossary);
+      if (bilingualData) lesson = Object.assign({}, lesson, { bilingual: bilingualData });
+    }
     // Optional zero-network sealed QR results (opt-in via opts.qrPublicKey: AFPK1....).
     var qrCrypto = null, qrSpec = null;
     if (opts.qrPublicKey) {
@@ -12429,11 +13362,18 @@
       if (!qrSpec) throw new Error('Invalid teacher QR public key (expected AFPK1....)');
       lesson = Object.assign({}, lesson, { qr: { k: qrSpec.publicKey, fp: qrSpec.fingerprint } });
     }
+    // Optional shared-device Station Kiosk mode (opt-in via opts.stationMode or lesson.stationMode).
+    var stationOn = opts.stationMode === true || (opts.stationMode !== false && lesson.stationMode === true);
+    if (stationOn) {
+      lesson = Object.assign({}, lesson, { stationMode: true });
+    }
     // Word pictures: their words and their code travel only in a practice file that has some.
     var pictured = !probe && !!lesson.pictures && !!lesson.pictures.rule && hasWordPictures(lesson);
     var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {}, pictured ? PICTURE_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
+    if (adaptiveOn) Object.assign(labels, ADAPTIVE_LABELS);
     if (qrSpec) Object.assign(labels, QR_LABELS);
+    if (stationOn) Object.assign(labels, STATION_LABELS);
     Object.assign(labels, opts.labels || {});
     // 2026-11-17: the practice end screen got words of its own that day (save_work, saving_work, grown_ups,
     // grown_ups_file). A translation made before them has none: its file keeps the words it does have for the same
@@ -12447,7 +13387,10 @@
     var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n[ \t]+/g, '\n').replace(/\n{2,}/g, '\n'); };
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + stripSrc(adapters[id].render); }).join(',\n') + '}';
     var pictureParts = pictured ? 'renders=(' + takeHomePictures.toString() + ')(renders,lesson.pictures.rule,labels);\n' : '';
+    var adaptiveParts = !adaptiveOn ? '' : 'kit.adaptive=' + stripSrc(takeHomeAdaptive) + ';\n';
+    var bilingualParts = !bilingualData ? '' : 'kit.bilingual=' + stripSrc(bilingualMod.takeHomeBilingual) + ';\n';
     var qrParts = !qrSpec ? '' : '/*afqr-start*/kit.qrLib=' + qrCrypto.studentEmbedSource() + ';\nkit.qr=' + stripSrc(takeHomeQr) + ';\n/*afqr-end*/\n';
+    var stationParts = !stationOn ? '' : '/*afstation-start*/kit.station=' + stripSrc(takeHomeStation) + ';\n/*afstation-end*/\n';
     // A check carries its own flow, the SHA-256 that reads its answers and the
     // scoring of its activities. TextEncoder is stood in for where a browser
     // has none, so the answers can always be read.
@@ -12460,7 +13403,7 @@
     var hasRaPos = hasReadAlong && lesson.blocks.some(function (b) { return b.activity === 'read_along' && b.items.some(function (it) { return Array.isArray(it.lines) && it.lines.some(function (l) { return !!l.pos; }); }); });
     var hasRaChecks = hasReadAlong && lesson.blocks.some(function (b) { return b.activity === 'read_along' && b.items.some(function (it) { return Array.isArray(it.questions) && it.questions.length; }); });
     var hasVocab = used.some(function (id) { return /^vocab_/.test(id); });
-    var hasKeypad = used.some(function (id) { return /^(math_|missing_number$)/.test(id); });
+    var hasKeypad = used.some(function (id) { return /^(math_|missing_number$)/.test(id) || !!(extraMap[id] && extraMap[id].keypad); });
     var hasStudentMic = !probe && lesson.studentMic === true && hasReadAlong;
     var hasDeviceVoice = !probe && lesson.deviceVoice === true && hasReadAlong;
     var sharedParts = (hasVocab ? 'kit.vocabChoice=' + stripSrc(takeHomeVocab) + ';\n' : '')
@@ -12474,7 +13417,7 @@
     // its exact hash. The reading tools go in every file, without their indentation (1 KB less).
     var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
       + ';\nvar renders=' + renders + ';\nvar kit={csv:' + stripSrc(packetCsv) + ',\nhash:' + stripSrc(hashText) + ',\ntools:' + stripSrc(takeHomeTools) + ',\nmailbox:' + (mailbox ? stripSrc(takeHomeMailbox) : 'null')
-      + '};\n' + sharedParts + checkParts + pictureParts + qrParts + '(' + stripSrc(takeHomeShell) + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+      + '};\n' + sharedParts + checkParts + pictureParts + adaptiveParts + bilingualParts + qrParts + stationParts + '(' + stripSrc(takeHomeShell) + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (FONT_CSS ? '; font-src data:' : '')
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
@@ -12498,8 +13441,11 @@
     if (qrSpec) {
       manifest.qr = { keyFingerprint: qrSpec.fingerprint, algorithm: 'X25519+HKDF-SHA256+ChaCha20-Poly1305', network: 'none' };
     }
+    if (stationOn) {
+      manifest.stationMode = true;
+    }
     if (hasStudentMic) {
-      manifest.microphone = 'Optional student voice practice: asks for the microphone only when the student presses Record my voice, keeps the recording in tab memory only until cleared or closed, and never saves or sends it.';
+      manifest.microphone = 'Optional student voice practice: asks for the microphone only when the student presses Record my voice. The recording is kept in the memory of this browser tab until it is cleared, a new student starts or the tab is closed, and it is never sent anywhere. It is saved as a file on this device only when the student presses Save my recording.';
     }
     if (probe) {
       var all = lesson.blocks.reduce(function (list, b) { return list.concat(b.items); }, []);
@@ -12518,7 +13464,7 @@
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'
-      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + (FONT_CSS ? FONT_CSS + '\n' : '') + CSS + (hasReadAlong ? '\n' + RA_CSS : '') + (hasRaPos ? '\n' + RA_POS_CSS : '') + (hasRaChecks ? '\n' + RA_CHECKS_CSS : '') + (probe ? '\n' + CHECK_CSS : '') + (qrSpec ? '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/' : '') + '</style></head>'
+      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + (FONT_CSS ? FONT_CSS + '\n' : '') + CSS + (hasReadAlong ? '\n' + RA_CSS : '') + (hasRaPos ? '\n' + RA_POS_CSS : '') + (hasRaChecks ? '\n' + RA_CHECKS_CSS : '') + (probe ? '\n' + CHECK_CSS : '') + (adaptiveOn ? '\n' + ADAPTIVE_CSS : '') + (bilingualData && bilingualMod.BILINGUAL_CSS ? '\n' + bilingualMod.BILINGUAL_CSS : '') + (extraCss ? '\n/*afextra-css*/\n' + extraCss + '\n/*end-afextra-css*/' : '') + (qrSpec ? '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/' : '') + (stationOn ? '\n/*afstation-css*/\n' + STATION_CSS + '\n/*end-afstation-css*/' : '') + '</style></head>'
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
       + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p>' + (openHere ? '<p data-no-script data-open-here>' + escapeHtml(openHere) + '</p>' : '') + '</div><p id="live" class="sr" aria-live="polite"></p></main>'
@@ -12578,18 +13524,31 @@
     } catch (_) {
       return { ok: false, error: 'not_packet', message: 'Could not parse the lesson or labels inside this packet.' };
     }
+    var stationOn = opts.stationMode === true || (opts.stationMode !== false && lessonObj.stationMode === true);
+    if (stationOn && rawScript.slice(shellIdx).indexOf('kit.station') < 0) {
+      return { ok: false, error: 'older_packet', message: 'This packet was made with an older version of AlloFlow. Remake it to enable station mode.' };
+    }
     lessonObj.qr = { k: qrSpec.publicKey, fp: qrSpec.fingerprint };
+    if (stationOn) lessonObj.stationMode = true;
+    else if (opts.stationMode === false) delete lessonObj.stationMode;
     Object.keys(QR_LABELS).forEach(function (k) { if (labelsObj[k] == null) labelsObj[k] = QR_LABELS[k]; });
+    if (stationOn) {
+      Object.keys(STATION_LABELS).forEach(function (k) { if (labelsObj[k] == null) labelsObj[k] = STATION_LABELS[k]; });
+    } else if (opts.stationMode === false) {
+      Object.keys(STATION_LABELS).forEach(function (k) { delete labelsObj[k]; });
+    }
     var stripSrc = function (fn) { return fn.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n[ \t]+/g, '\n').replace(/\n{2,}/g, '\n'); };
     var qrParts = '/*afqr-start*/kit.qrLib=' + qrCrypto.studentEmbedSource() + ';\nkit.qr=' + stripSrc(takeHomeQr) + ';\n/*afqr-end*/\n';
+    var stationParts = !stationOn ? '' : '/*afstation-start*/kit.station=' + stripSrc(takeHomeStation) + ';\n/*afstation-end*/\n';
 
     var updatedScript = rawScript.slice(0, l0 + lessonMark.length)
       + safeJson(lessonObj)
       + labelsMark + safeJson(labelsObj)
       + rawScript.slice(l2);
     updatedScript = updatedScript.replace(/\/\*afqr-start\*\/[\s\S]*?\/\*afqr-end\*\/\n?/g, '');
+    updatedScript = updatedScript.replace(/\/\*afstation-start\*\/[\s\S]*?\/\*afstation-end\*\/\n?/g, '');
     var newShellIdx = updatedScript.lastIndexOf('(function takeHomeShell(');
-    updatedScript = updatedScript.slice(0, newShellIdx) + qrParts + updatedScript.slice(newShellIdx);
+    updatedScript = updatedScript.slice(0, newShellIdx) + qrParts + stationParts + updatedScript.slice(newShellIdx);
     updatedScript = updatedScript.replace(/\r\n?/g, '\n');
 
     var digest = sha256(updatedScript);
@@ -12603,9 +13562,13 @@
     manifestObj.csp = newCsp;
     manifestObj.scriptSha256 = digest.hex;
     manifestObj.qr = { keyFingerprint: qrSpec.fingerprint, algorithm: 'X25519+HKDF-SHA256+ChaCha20-Poly1305', network: 'none' };
+    if (stationOn) manifestObj.stationMode = true;
+    else if (opts.stationMode === false) delete manifestObj.stationMode;
 
-    var oldStyle = html.slice(styleStart + 7, styleEnd).replace(/\n?\/\*afqr-css\*\/[\s\S]*?\/\*end-afqr-css\*\//g, '');
-    var newStyle = oldStyle + '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/';
+    var oldStyle = html.slice(styleStart + 7, styleEnd)
+      .replace(/\n?\/\*afqr-css\*\/[\s\S]*?\/\*end-afqr-css\*\//g, '')
+      .replace(/\n?\/\*afstation-css\*\/[\s\S]*?\/\*end-afstation-css\*\//g, '');
+    var newStyle = oldStyle + '\n/*afqr-css*/\n' + QR_CSS + '\n/*end-afqr-css*/' + (stationOn ? '\n/*afstation-css*/\n' + STATION_CSS + '\n/*end-afstation-css*/' : '');
 
     // Splice regions from back to front so offsets never shift.
     var out = html.slice(0, sStart + scriptTag.length) + updatedScript + html.slice(sEnd);
@@ -12613,7 +13576,7 @@
     out = out.slice(0, styleStart + 7) + newStyle + out.slice(styleEnd);
     var c2 = cspRe.exec(out);
     out = out.slice(0, c2.index) + c2[1] + newCsp + c2[3] + out.slice(c2.index + c2[0].length);
-    return { ok: true, html: out, fingerprint: qrSpec.fingerprint, scriptSha256: digest.hex, title: str(lessonObj.title || manifestObj.title || '') };
+    return { ok: true, html: out, fingerprint: qrSpec.fingerprint, scriptSha256: digest.hex, title: str(lessonObj.title || manifestObj.title || ''), stationMode: stationOn };
   }
 
   // Teacher side: read returned result files (v1 Find Sounds files too).
@@ -12645,12 +13608,14 @@
     // Up to 600 items, as the Packets results page and Class Analytics read (a Word Sounds file can have 13 x 40).
     var cut = data.items.length > 600;
     var items = data.items.slice(0, 600).map(function (it) {
-      return { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
+      var parsedItem = { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
         target: str(it && it.target).slice(0, 40), attempts: Math.max(0, Math.min(9, Number(it && it.attempts) || 0)),
         firstTry: !!(it && it.firstTry), correct: !!(it && it.correct), done: !!(it && it.done),
-        practice: it && (it.practice === 'traced' || it.practice === 'skipped' || it.practice === 'practice' || it.practice === 'read') ? it.practice : null,
+        // 2026-11-23: 'played' (a read-along page the file read out by itself). A read-along page may also carry the
+        // answers to its "Check your understanding" questions: up to 6 more lines, of up to 260 characters each.
+        practice: it && (it.practice === 'traced' || it.practice === 'skipped' || it.practice === 'practice' || it.practice === 'read' || it.practice === 'played') ? it.practice : null,
         typed: it && /^-?[0-9]{1,20}$/.test(String(it.typed || '')) ? String(it.typed) : undefined,
-        responses: Array.isArray(it && it.responses) ? it.responses.slice(0, 6).map(function (r) { return str(r).slice(0, 80); }) : [],
+        responses: Array.isArray(it && it.responses) ? it.responses.slice(0, it.activity === 'read_along' ? 8 : 6).map(function (r) { return str(r).slice(0, it.activity === 'read_along' ? 260 : 80); }) : [],
         // Supports used (replays, hints): counts only, a bounded set of names.
         supports: (function (s) {
           var out = {};
@@ -12660,6 +13625,8 @@
           });
           return out;
         })(it && it.supports) };
+      if (it && typeof it.adaptiveReason === 'string' && it.adaptiveReason.trim()) parsedItem.adaptiveReason = str(it.adaptiveReason).slice(0, 80);
+      return parsedItem;
     });
     var summary = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
     var byActivityMap = Object.create(null);
@@ -12808,6 +13775,9 @@
     PICTURE_RULE: PICTURE_RULE, PICTURE_LABELS: PICTURE_LABELS, _pictures: takeHomePictures,
     // Sealed QR results (opt-in via opts.qrPublicKey or attachQrKey).
     QR_LABELS: QR_LABELS, attachQrKey: attachQrKey, _qr: takeHomeQr,
+    // Station Mode and Deterministic Adaptive Scaffolding (opt-in).
+    STATION_MAX_QUEUE: STATION_MAX_QUEUE, STATION_LABELS: STATION_LABELS, _station: takeHomeStation,
+    ADAPTIVE_LABELS: ADAPTIVE_LABELS, _adaptive: takeHomeAdaptive,
     // Reading tools, in every file: see takeHomeTools.
     _tools: takeHomeTools,
     _vocabChoice: takeHomeVocab,

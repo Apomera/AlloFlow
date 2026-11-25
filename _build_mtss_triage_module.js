@@ -45,12 +45,13 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloModules && window.AlloModules.MtssTriage) {
-    console.log('[CDN] MtssTriage already loaded, skipping');
+    if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] MtssTriage already loaded, skipping');
     return;
   }
   (function() {
-    if (document.getElementById('allo-live-mtss')) return;
+    if (typeof document !== 'object' || !document || !document.body || document.getElementById('allo-live-mtss')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-mtss';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -61,7 +62,7 @@ const outputCode = `/**
     document.body.appendChild(liveRegion);
   })();
   var React = window.React;
-  if (!React) { console.error('[MtssTriage] React not found on window'); return; }
+  if (!React) { if (typeof console === 'object' && console && typeof console.error === 'function') console.error('[MtssTriage] React not found on window'); return; }
 
 ${compiled}
 
@@ -79,7 +80,7 @@ ${compiled}
       mtssCsv: mtssCsv
     }
   };
-  console.log('[CDN] MtssTriage loaded');
+  if (typeof console === 'object' && console && typeof console.log === 'function') console.log('[CDN] MtssTriage loaded');
 })();
 `;
 

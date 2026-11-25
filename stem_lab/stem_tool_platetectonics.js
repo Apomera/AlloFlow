@@ -1126,7 +1126,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               __alloT('stem.platetectonics.epi_show_fit', 'Show triangulated fit')
             )
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: reset,
             className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'transition-colors bg-slate-800 text-slate-200 hover:bg-slate-700' : 'transition-colors bg-emerald-200 text-emerald-900 hover:bg-emerald-300')
           }, __alloT('stem.platetectonics.epi_reset_control', '↻ Reset stations and epicenter')),
@@ -1139,7 +1139,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           // instead of this 540x360 map. A student saving their triangulation
           // got a picture of something else entirely. The ref was in scope the
           // whole time.
-          h('button', {
+          h('button', { type: 'button',
             'aria-label': __alloT('stem.platetectonics.save_epicenter_png_aria', 'Save this triangulation map as a PNG image'),
             onClick: function() {
               var _c = canvasRef.current;
@@ -1581,7 +1581,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       inspectionOutline.name = 'boundary-feature-outline';
       inspectionOutline.renderOrder = 5; inspectionOutline.frustumCulled = false;
       inspectionOutline.visible = false; inspectionGroup.add(inspectionOutline);
-      var markerCanvas = document.createElement('canvas');
+      var markerCanvas = document.createElement('canvas'); if (markerCanvas.setAttribute) markerCanvas.setAttribute('aria-hidden', 'true');
       markerCanvas.width = markerCanvas.height = 64;
       var markerCtx = markerCanvas.getContext('2d');
       markerCtx.clearRect(0, 0, 64, 64);
@@ -1619,7 +1619,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       });
     }
     function topTex(base, paint, size) {
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.width = cv.height = size || 256;
       var c = cv.getContext('2d');
       c.fillStyle = base; c.fillRect(0, 0, cv.width, cv.height);
@@ -1987,7 +1987,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // faces the camera, which is what a depth label needs while the block turns.
     function makeLabel(text, hex, scaleUnits) {
       var pad = 8, fs = 40, resolution = 2;
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
       c2.font = 'bold ' + fs + 'px sans-serif';
@@ -3098,7 +3098,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
 
     // ── Textures ───────────────────────────────────────────────────────────────
     function canvasTex(w, hh, paint) {
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.setAttribute('aria-hidden', 'true');
       cv.width = w; cv.height = hh;
       paint(cv.getContext('2d'), w, hh);
@@ -3338,7 +3338,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     // faces the camera, which is what an anatomy label needs while the model turns.
     function makeLabel(text, hex) {
       var pad = 12, fs = 40, density = 2;
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.setAttribute('aria-hidden', 'true');
       var c2 = cv.getContext('2d');
       c2.font = 'bold ' + fs + 'px system-ui, sans-serif';
@@ -4799,7 +4799,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   var PtErupt2D = (function () {
     var sprites = null;
     function sprite(w, paint) {
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.width = cv.height = w;
       paint(cv.getContext('2d'), w);
       return cv;
@@ -6932,6 +6932,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
             // is not something to leave to a pointer.
             tabIndex: tectGlLive ? 0 : -1,
             onKeyDown: function (ev) {
+              if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.altKey || ev.metaKey) return;
               var k = ev.key, step = ev.shiftKey ? 24 : 8;
               var patch = null;
               if (k === 'ArrowLeft') patch = { rotY: view3d.rotY - step };
@@ -7937,7 +7938,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                   h('input', { type: 'number', min: 5, max: 85, step: 1, value: dipAngleDraft, disabled: s.dipLocked, 'data-pt-slab-angle-number': 'true', 'aria-describedby': 'pt-ql-angle-help' + (s.dipLocked ? '' : ' pt-ql-entry-help'), className: 'w-16 min-h-11 rounded-lg border px-2 ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-900'),
                     onChange: function (e) { setDipAngleDraft(e.target.value); },
                     onBlur: commitSlabAngle,
-                    onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); commitSlabAngle(); } } }), '°')),
+                    onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); commitSlabAngle(); } } }), '°')),
               !s.dipLocked && h('p', { id: 'pt-ql-entry-help', className: 'text-sm leading-relaxed mb-2' }, __alloT('stem.platetectonics.ql_angle_entry_help', 'Type an angle, then press Enter or leave the field to update your line.')),
               h('div', { 'data-pt-slab-legend': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 text-sm mb-2' },
                 h('span', { className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, borderTop: '3px dashed #d97706' } }), __alloT('stem.platetectonics.ql_legend_guess', 'Your estimate (dashed)')),
@@ -8805,7 +8806,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       ),
       h('p', { className: 'text-[12px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
         __alloT('stem.platetectonics.fl_workflow', 'Choose one change, predict its effect, then observe plate A. Each test pauses when its outcome is ready to compare. Reset starts a fresh model and keeps your completed observations.')),
-      act && h('fieldset', { ref: predictionRef, tabIndex: -1, 'aria-describedby': 'pt-forces-prediction-baseline', className: card + ' border-2 focus:outline-none ' + (isDark ? 'border-amber-500' : 'border-amber-500'), 'data-pt-forces-predict': s.pending },
+      act && h('fieldset', { ref: predictionRef, tabIndex: -1, 'aria-describedby': 'pt-forces-prediction-baseline', className: card + ' border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ' + (isDark ? 'border-amber-500' : 'border-amber-500'), 'data-pt-forces-predict': s.pending },
         h('legend', { className: 'px-1 text-sm font-black ' + (isDark ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.platetectonics.fl_predict', 'Predict first')),
         h('p', { id: 'pt-forces-prediction-baseline', 'data-pt-forces-baseline': w.vA.toFixed(1), className: 'text-[13px] mb-2' },
           __alloT('stem.platetectonics.fl_prediction_baseline', 'Before this change, plate A moves at {v} cm per year. Compare its speed after the change.').replace('{v}', w.vA.toFixed(1))),
@@ -9240,7 +9241,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           h('span', { className: 'sr-only' }, __alloT('stem.platetectonics.hl_exact_rate', 'Exact line speed in centimetres per year')),
           h('input', { type: 'number', inputMode: 'decimal', min: 1, max: 20, step: 0.1, 'data-pt-hotspot-rate-number': 'true', 'aria-describedby': 'pt-hl-rate-help', disabled: committed,
             value: committed ? cmYr(saved.est) : s.rateText, onChange: function (e) { upd({ rateText: e.target.value }); }, onBlur: function () { if (!committed) commitRateText(); },
-            onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); commitRateText(); } },
+            onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); commitRateText(); } },
             className: 'w-20 min-h-10 rounded-lg border px-2 text-sm ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-900') }),
           __alloT('stem.platetectonics.hl_cm_year_unit', 'cm/year'))),
         h('div', { className: 'rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-700' : 'bg-slate-50 border-slate-300'), 'data-pt-hotspot-compare': calculationPoint.id },
@@ -14595,17 +14596,17 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                         !m.done && React.createElement('span', { className: 'block text-[12px] ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, m.hint)));
                   })),
                 React.createElement('div', { className: 'mt-3 flex gap-2 flex-wrap' },
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     onClick: function() { upd({ showLabels: !showLabels }); },
                     'aria-pressed': showLabels,
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showLabels ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-red-700 border border-red-200'))
                   }, showLabels ? __alloT('stem.platetectonics.btn_hide_labels', 'Hide labels') : __alloT('stem.platetectonics.btn_show_labels', 'Show labels')),
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     onClick: function() { upd({ showConvection: !showConvection }); },
                     'aria-pressed': showConvection,
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
                   }, showConvection ? __alloT('stem.platetectonics.btn_hide_currents', 'Hide currents') : __alloT('stem.platetectonics.btn_show_currents', 'Show currents')),
-                  React.createElement('button', {
+                  React.createElement('button', { type: 'button',
                     onClick: function() { upd({ ptDrift: !ptDrift }); if (typeof announceToSR === 'function') announceToSR(ptDrift ? __alloT('stem.platetectonics.sr_drift_paused', 'Mantle drift paused. Plates now move only when you move them.') : __alloT('stem.platetectonics.sr_drift_on_simplified', 'Drift on. The plates now move with the simplified mantle flow drawn below them.')); },
                     'aria-pressed': ptDrift,
                     title: __alloT('stem.platetectonics.drift_tooltip_simplified', 'Let the plates drift with a simplified mantle flow, or freeze them so only you move them'),
@@ -14616,7 +14617,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     onClick: function() { upd({ simTab: 'forces', _ptCategory: 'sim_quiz', _ptPicked: true }); },
                     className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-900 text-emerald-300 border border-slate-700' : 'bg-white text-emerald-800 border border-emerald-400')
                   }, __alloT('stem.platetectonics.to_forces_btn', '⚖️ What really moves plates?')),
-                  React.createElement('button', Object.assign({
+                  React.createElement('button', Object.assign({ type: 'button',
                     onClick: eruptClick
                   }, eruptBtnProps('px-3 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-700 to-red-600 text-white shadow-md focus:ring-2 focus:ring-yellow-500 focus:outline-none')),
                     ptErupting ? __alloT('stem.platetectonics.erupting', 'Erupting...') : __alloT('stem.platetectonics.btn_trigger_eruption', 'Trigger eruption'))
@@ -17306,7 +17307,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
             return function () { cancelAnimationFrame(frame); };
           }, [simTab, ptTopicFocusTick[0]]);
           function onPtKey(e) {
-            if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey) return;
+            if (e.defaultPrevented || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.altKey || e.metaKey) return;
             var tgt = e.target || {};
             var tn = (tgt.tagName || '').toUpperCase();
             if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
@@ -17514,7 +17515,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 function setCat(cid) { upd({ _ptCategory: cid, _ptSearch: "" }); }
                 var els = [];
                 els.push(React.createElement("div", { key: "top", className: "flex flex-wrap items-center gap-2 w-full mb-3 justify-center" },
-                  React.createElement("button", {
+                  React.createElement("button", { type: 'button',
                     onClick: function() { setCat(null); upd({ _ptPicked: false }); },
                     className: "px-3 py-1 rounded-lg text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (atHub ? "bg-red-700 text-white" : (isDark ? "transition-colors bg-slate-900 text-red-400 hover:bg-slate-800 border border-slate-700" : "transition-colors bg-slate-100 text-red-700 hover:bg-red-50 border border-red-300"))
                   }, __alloT('stem.platetectonics.hub', "🏠 Hub")),
@@ -17689,7 +17690,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 if (!atHub && activeCat && !searchTerm) {
                   els.push(React.createElement("div", { key: "cat-tabs", role: "tablist", "aria-label": activeCat.label + " tools", className: "flex flex-wrap justify-center gap-1 w-full",
                     onKeyDown: function (e) {
-                      if (e.ctrlKey || e.altKey || e.metaKey || e.target.getAttribute('role') !== 'tab') return;
+                      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.altKey || e.metaKey || e.target.getAttribute('role') !== 'tab') return;
                       var current = activeCat.tabs.indexOf(e.target.id.replace('pt-tab-', ''));
                       var next = current;
                       if (e.key === 'ArrowRight') next = (current + 1) % activeCat.tabs.length;
@@ -17886,6 +17887,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     // for. Movement runs through the same settleBoundary() the drag
                     // uses, so quakes, eruptions, counters and XP all still fire.
                     onKeyDown: function (e) {
+                      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.altKey || e.metaKey) return;
                       var el = canvasRef._last;
                       if (!el || !el._ptKb) return;
                       var k = e.key;
@@ -17967,6 +17969,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                       // the buttons beside it, and never landed on the thing itself.
                       tabIndex: ptVent3D ? 0 : -1,
                       onKeyDown: function (ev) {
+                        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.altKey || ev.metaKey) return;
                         var k = ev.key, step = ev.shiftKey ? 24 : 8;
                         var handled = true;
                         if (k === 'ArrowLeft') VentGL.nudge(-step, 0);
@@ -18456,10 +18459,10 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 React.createElement("label", { htmlFor: "pt-speed-control", className: "text-xs font-bold " + (isDark ? "text-red-400" : "text-red-700") },
                   React.createElement("span", null, __alloT('stem.platetectonics.speed', "\u23F1 Speed:")),
                   React.createElement("span", { className: "ml-2 font-black" }, speed + "\u00D7"),
-                  React.createElement("input", { id: "pt-speed-control", type: "range", "aria-label": __alloT('stem.platetectonics.simulation_speed_multiplier', "Simulation speed multiplier"), min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-full mt-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" })
+                  React.createElement("input", { id: "pt-speed-control", type: "range", "aria-label": __alloT('stem.platetectonics.simulation_speed_multiplier', "Simulation speed multiplier"), "aria-valuetext": speed + "×", min: "0.5", max: "4", step: "0.5", value: speed, onChange: function(e) { upd({ speed: parseFloat(e.target.value) }); }, className: "w-full min-h-11 mt-1 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none" })
                 ),
 
-                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.labels', "Labels"), "aria-pressed": showLabels,
+                React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.labels', "Labels"), "aria-pressed": showLabels,
 
                   onClick: function() { upd({ showLabels: !showLabels }); },
 
@@ -18467,7 +18470,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
 
                 }, __alloT('stem.platetectonics.labels_2', "\uD83C\uDFF7 Labels")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.platetectonics.currents', "Currents"), "aria-pressed": showConvection,
+                React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.currents', "Currents"), "aria-pressed": showConvection,
 
                   onClick: function() { upd({ showConvection: !showConvection }); },
 
@@ -18476,7 +18479,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 }, __alloT('stem.platetectonics.currents_2', "\uD83C\uDF00 Currents")),
 
                 // 🌋 Erupt! button
-                React.createElement("button", Object.assign({
+                React.createElement("button", Object.assign({ type: 'button',
                   "aria-label": __alloT('stem.platetectonics.aria_trigger_eruption', "Trigger a volcanic eruption in the plate tectonics simulation"),
                   'data-pt-erupt': 'true',
                   onClick: eruptClick,
@@ -18520,7 +18523,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                       React.createElement("div", { className: "text-sm font-bold " + (isDark ? "text-purple-300" : "text-purple-700") }, __alloT('stem.platetectonics.ai_tectonics_tutor', "AI tectonics tutor")),
                       React.createElement("div", { className: "text-[12px] " + (isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.platetectonics.ai_closed_sub', "Ask for an explanation of the boundary you made, or let the tutor coach you with questions."))
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { type: 'button',
                       onClick: function() { upd({ aiCoachOpen: true }); },
                       className: "transition-colors px-3 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, __alloT('stem.platetectonics.ai_open', "Open AI coach"))
@@ -18624,7 +18627,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.platetectonics.reading_level', "Reading level") },
                       LEVELS.map(function (L) {
                         var active = aiLevel === L.id;
-                        return React.createElement("button", {
+                        return React.createElement("button", { type: 'button',
                           key: L.id,
                           onClick: function () { upd({ aiLevel: L.id }); },
                           "aria-label": __alloT('stem.platetectonics.aria_reading_level', 'Reading level: {level}').replace('{level}', L.label) + (active ? __alloT('stem.platetectonics.aria_selected_suffix', ' (selected)') : ""),
@@ -18633,13 +18636,13 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                         }, L.label);
                       })
                     ),
-                    React.createElement("button", {
+                    React.createElement("button", { type: 'button',
                       onClick: explain,
                       disabled: aiLoading,
                       "aria-label": __alloT('stem.platetectonics.aria_generate_at_level', 'Generate AI explanation at {level} level').replace('{level}', ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5')),
                       className: "transition-colors px-3 py-1 rounded-lg text-[12px] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
                     }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain')),
-                    React.createElement("button", {
+                    React.createElement("button", { type: 'button',
                       onClick: function() { upd({ aiCoachOpen: false }); },
                       className: "transition-colors px-2 py-1 rounded-lg text-[12px] font-bold " + (isDark ? "bg-slate-900 text-purple-300 border border-purple-900 hover:bg-slate-800" : "bg-white text-purple-700 border border-purple-200 hover:bg-purple-100"),
                       "aria-label": __alloT('stem.platetectonics.aria_close_tutor', "Close AI tectonics tutor")
@@ -18732,7 +18735,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     React.createElement("label", { htmlFor: 'pt-eq-magnitude', className: "text-sm font-bold " + (isDark ? "text-red-200" : "text-red-800") }, __alloT('stem.platetectonics.magnitude_mw', "Magnitude (Mw):")),
                     React.createElement("output", { htmlFor: 'pt-eq-magnitude', className: "text-lg font-black px-3 py-1 rounded-lg", style: { background: eqMagnitude >= 7 ? '#b91c1c' : eqMagnitude >= 5 ? '#b45309' : '#15803d', color: 'white' } }, eqMagnitude.toFixed(1))
                   ),
-                  React.createElement("input", { id: 'pt-eq-magnitude', type: "range", "aria-label": __alloT('stem.platetectonics.earthquake_magnitude_moment', "Earthquake magnitude on the moment magnitude scale, M w, from 1 to 9"), 'aria-describedby': 'pt-eq-magnitude-help', min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "w-full min-w-0 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none", style: { minHeight: 32 } }),
+                  React.createElement("input", { id: 'pt-eq-magnitude', type: "range", "aria-label": __alloT('stem.platetectonics.earthquake_magnitude_moment', "Earthquake magnitude on the moment magnitude scale, M w, from 1 to 9"), "aria-valuetext": __alloT('stem.platetectonics.vt_mw', "Mw") + " " + eqMagnitude.toFixed(1), 'aria-describedby': 'pt-eq-magnitude-help', min: "1", max: "9", step: "0.1", value: eqMagnitude, onChange: function(e) { upd({ eqMagnitude: parseFloat(e.target.value) }); setTimeout(checkChallenges, 50); }, className: "w-full min-w-0 accent-red-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none", style: { minHeight: 44 } }),
                   React.createElement('p', { id: 'pt-eq-magnitude-help', className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.eq_magnitude_help', 'Magnitude measures earthquake size. At a fixed distance, increasing it makes this model trace taller without changing the arrival times.'))
                 ),
 
@@ -18753,9 +18756,9 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     id: 'pt-eq-distance', type: "range", 'aria-describedby': 'pt-eq-distance-help',
                     "aria-label": __alloT('stem.platetectonics.distance_to_epicenter_km',
                       "Distance from the recording station to the epicenter, in kilometres, from 100 to 2000. Moving this apart changes how long after the P wave the S wave arrives."),
-                    min: "100", max: "2000", step: "50", value: eqDistKm,
+                    min: "100", max: "2000", step: "50", value: eqDistKm, "aria-valuetext": Math.round(eqDistKm) + " " + __alloT('stem.platetectonics.vt_km', "km"),
                     onChange: function(e) { upd({ eqDistKm: parseFloat(e.target.value) }); },
-                    className: "w-full min-w-0 accent-sky-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none", style: { minHeight: 32 }
+                    className: "w-full min-w-0 accent-sky-500 focus:ring-2 focus:ring-yellow-500 focus:outline-none", style: { minHeight: 44 }
                   }),
                   React.createElement('p', { id: 'pt-eq-distance-help', className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.platetectonics.eq_distance_help', 'At a fixed magnitude, a farther station records later arrivals and a larger S–P gap. This model also reduces trace height with distance.'))
                 ),
@@ -18919,7 +18922,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 ),
 
                 // Timeline slider
-                React.createElement('input', { type: 'range', 'aria-label': __alloT('stem.platetectonics.timeline_era', 'timeline era'), min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full accent-red-500 mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none' }),
+                React.createElement('input', { type: 'range', 'aria-label': __alloT('stem.platetectonics.timeline_era', 'timeline era'), 'aria-valuetext': (ERAS[timelineEra] && ERAS[timelineEra].name ? ERAS[timelineEra].name : String(timelineEra)), min: '0', max: String(ERAS.length - 1), step: '1', value: timelineEra, onChange: function(e) { upd({ timelineEra: parseInt(e.target.value), timelapsePlaying: false }); }, className: 'w-full min-h-11 accent-red-500 mb-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none' }),
 
                 React.createElement('p', { className: 'text-xs leading-relaxed mb-3 ' + (isDark ? 'text-slate-300' : 'text-slate-700'), 'data-pt-timelapse-note': 'true' },
                   __alloT('stem.platetectonics.era_playback_scale_note', 'Time-lapse visits each snapshot at the same pace, not at a constant geological speed. It stops at Modern. The bars below show the actual time spans.')),
@@ -19101,7 +19104,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 React.createElement('div', { className: 'grid grid-cols-4 md:grid-cols-8 gap-1.5 mb-4' },
                   ERAS.map(function(era, ei) {
                     var isActive = ei === timelineEra;
-                    return React.createElement('button', {
+                    return React.createElement('button', { type: 'button',
                       key: ei,
                       'data-pt-era': String(ei),
                       onClick: function() {
@@ -19183,6 +19186,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                   'aria-label': __alloT('stem.platetectonics.globe_surface_aria', 'Schematic Earth surface globe: {era}.').replace('{era}', ERAS[timelineEra].name), role: 'img',
                   'aria-describedby': 'pt-globe-controls-help', 'aria-keyshortcuts': 'ArrowLeft ArrowRight Home',
                   onKeyDown: function (e) {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.altKey || e.metaKey) return;
                     if (['ArrowLeft', 'ArrowRight', 'Home'].indexOf(e.key) < 0) return;
                     e.preventDefault();
                     var node = e.currentTarget, lon = Number.isFinite(node._geoLongitude) ? node._geoLongitude : -20;
@@ -19873,7 +19877,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
 
                   qz.opts.map(function(opt, oi) {
 
-                    return React.createElement("button", { key: oi,
+                    return React.createElement("button", { type: 'button', key: oi,
 
                       // Addressable, so a test and the screenshot harness can answer
                       // a question the way a student does.
@@ -19964,7 +19968,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     return React.createElement("div", { className: "p-3 rounded-xl border border-orange-200 bg-orange-50/50" },
                       React.createElement("div", { className: "flex items-center justify-between" },
                         React.createElement("span", { className: "text-xs font-bold text-orange-700" }, "🔍 " + __alloT('stem.platetectonics.quiz_concept_label', "Concept: {c}").replace('{c}', TECT_CONCEPT_NAME[qz.concept] || qz.concept)),
-                        !lookedUp && React.createElement("button", {
+                        !lookedUp && React.createElement("button", { type: 'button',
                           onClick: function() {
                             var newList = (vocabLookedUp || []).slice();
                             if (newList.indexOf(qz.concept) === -1) {
@@ -19985,7 +19989,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
 
                   React.createElement("div", { className: "text-center pt-2" },
 
-                    React.createElement("button", { "aria-label": __alloT('stem.platetectonics.next_question', "Next Question"),
+                    React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.next_question', "Next Question"),
 
                       'data-pt-quiz-next': 'true',
 
@@ -20044,7 +20048,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     __alloT('stem.platetectonics.quiz_shelf_open_now', 'The reference cards below are open again now that the pass is done.')),
 
                   React.createElement("div", { className: "text-center pt-1" },
-                    React.createElement("button", {
+                    React.createElement("button", { type: 'button',
                       'data-pt-quiz-restart': 'true',
                       ref: function(el) { if (el && document.activeElement === document.body) el.focus(); },
                       onClick: function() {
@@ -20075,7 +20079,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     React.createElement("span", null, __alloT('stem.platetectonics.tectonics_myths', "Tectonics: myth or fact?")),
                     React.createElement("span", { className: "px-1.5 py-0.5 rounded text-[12px] font-bold " + (isDark ? "bg-violet-950 text-violet-200" : "bg-violet-100 text-violet-800") }, ptBand)
                   ),
-                  React.createElement("button", { "aria-label": __alloT('stem.platetectonics.start_a_myth', "Start a tectonics myth"),
+                  React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.start_a_myth', "Start a tectonics myth"),
                     onClick: ptStartMyth,
                     className: "px-3 py-1 rounded-lg text-[12px] font-bold transition-all bg-violet-600 text-white hover:bg-violet-700 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                   }, m ? "🔄 New Myth" : "▶ Start")
@@ -20085,7 +20089,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     " ", ptSpeakButton(React.createElement, ptSpeak, m.s, __alloT('stem.platetectonics.read_the_statement', 'the statement'), __alloT, isDark)),
                   !m.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                     [true, false].map(function(val) {
-                      return React.createElement("button", { key: String(val),
+                      return React.createElement("button", { type: 'button', key: String(val),
                         "aria-label": __alloT('stem.platetectonics.aria_answer_value', 'Answer {value}').replace('{value}', val ? __alloT('stem.platetectonics.sr_word_true', 'true') : __alloT('stem.platetectonics.sr_word_false', 'false')),
                         onClick: function() { ptAnswerMyth(val); },
                         className: "p-3 rounded-xl text-sm font-bold border-2 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "border-violet-900/50 bg-slate-900 text-slate-200 hover:border-violet-500" : "border-violet-200 bg-white text-slate-700 hover:border-violet-400 hover:bg-violet-50")
@@ -20114,7 +20118,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
 
             React.createElement("div", { className: "mt-6" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.platetectonics.toggle_educational_panel_earth_layers_', "Toggle educational panel: Earth Layers and Plate Boundaries"),
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.toggle_educational_panel_earth_layers_', "Toggle educational panel: Earth Layers and Plate Boundaries"),
 
                 'data-pt-education-toggle': 'true',
                 'aria-expanded': !!showEdu,
@@ -20245,7 +20249,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                     // The chip carries its own count, so picking a tier and
                     // finding a different number of cards is impossible.
                     var n = tier === 'all' ? PLATE_DB.length : PLATE_DB.filter(function (pl) { return pl.tier === tier; }).length;
-                    return React.createElement('button', { key: tier, onClick: function() { upd({ _plateTier: tier }); },
+                    return React.createElement('button', { type: 'button', key: tier, onClick: function() { upd({ _plateTier: tier }); },
                       'aria-pressed': active ? 'true' : 'false', 'data-pt-tier-chip': tier, 'data-pt-tier-count': String(n),
                       className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-red-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-red-700 border border-red-300 hover:bg-red-50')) },
                       (tier === 'all' ? 'All Plates' : tier.charAt(0).toUpperCase() + tier.slice(1)) + ' (' + n + ')');
@@ -20298,7 +20302,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'transform', 'convergent', 'normal', 'thrust', 'divergent'].map(function(ft) {
                     var active = (d._faultType || 'all') === ft;
-                    return React.createElement('button', { key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-amber-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-amber-700 border border-amber-300 hover:bg-amber-50')) }, ft);
+                    return React.createElement('button', { type: 'button', key: ft, onClick: function() { upd({ _faultType: ft }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-amber-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-amber-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-amber-700 border border-amber-300 hover:bg-amber-50')) }, ft);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -20327,7 +20331,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 React.createElement('div', { className: 'flex gap-2 text-xs mb-3' },
                   [['year', 'Year'], ['deaths', 'Deaths'], ['mag', 'Magnitude']].map(function(sm) {
                     var active = (d._tsunamiSort || 'year') === sm[0];
-                    return React.createElement('button', { key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-blue-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-blue-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-blue-700 border border-blue-300 hover:bg-blue-50')) }, 'Sort: ' + sm[1]);
+                    return React.createElement('button', { type: 'button', key: sm[0], onClick: function() { upd({ _tsunamiSort: sm[0] }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-blue-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-blue-400 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-blue-700 border border-blue-300 hover:bg-blue-50')) }, 'Sort: ' + sm[1]);
                   })
                 ),
                 React.createElement('div', { className: 'space-y-1' },
@@ -20387,7 +20391,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function(g) {
                     var active = (d._rockGroup || 'all') === g;
-                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
+                    return React.createElement('button', { type: 'button', key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
                   })
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
@@ -34503,7 +34507,7 @@ var d = (_rawPt && typeof _rawPt === 'object' && !Array.isArray(_rawPt)) ? _rawP
 
             React.createElement("div", { className: "mt-6 text-center" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.platetectonics.back_to_tools', "Back to Tools"),
+              React.createElement("button", { type: 'button', "aria-label": __alloT('stem.platetectonics.back_to_tools', "Back to Tools"),
 
                 onClick: function() { ptSaveForceBeforeExit(); setStemLabTool(null); },
 

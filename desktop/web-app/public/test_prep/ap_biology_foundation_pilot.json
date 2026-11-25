@@ -1513,7 +1513,7 @@
         "The pH changes dramatically because buffers prevent every possible reaction."
       ],
       "answerIndex": 1,
-      "rationale": "A buffer resists a large pH change by using a weak-acid and conjugate-base pair to absorb added acid or base.",
+      "rationale": "A biological buffer consists of a weak acid and its conjugate base in equilibrium; when HCl adds free H+ ions, the conjugate base binds most of them, preventing a large drop in solution pH.",
       "choiceRationales": [
         "This option is not the best answer because diluting a strong acid lowers its concentration, yet a buffer resists pH shifts around its own buffering range rather than forcing the solution to pH 7.",
         "A buffer resists a large pH change by using a weak-acid and conjugate-base pair to absorb added acid or base.",
@@ -1780,7 +1780,7 @@
         "They are proteins that catalyze transport reactions."
       ],
       "answerIndex": 0,
-      "rationale": "Amphipathic phospholipids form bilayers with polar heads facing water and nonpolar tails facing inward.",
+      "rationale": "Phospholipids are amphipathic molecules with polar phosphate heads and nonpolar fatty-acid tails, causing them to self-assemble in water into a selectively permeable bilayer with hydrophobic tails shielded inside.",
       "choiceRationales": [
         "Amphipathic phospholipids form bilayers with polar heads facing water and nonpolar tails facing inward.",
         "This option is not the best answer because only the polar phosphate head is hydrophilic, whereas the two nonpolar fatty-acid tails repel water and drive spontaneous bilayer assembly.",
@@ -2314,7 +2314,7 @@
         "Direct digestion of extracellular material by ribosomes"
       ],
       "answerIndex": 2,
-      "rationale": "Ribosomes on rough ER synthesize proteins, and the Golgi modifies and sorts many proteins for delivery.",
+      "rationale": "In the endomembrane system, ribosomes bound to rough ER translate proteins destined for export or membranes, and the Golgi apparatus chemically modifies, sorts, and packages those proteins into secretory vesicles.",
       "choiceRationales": [
         "This option is not the best answer because Chromosomes store hereditary information in the nucleus or nucleoid.",
         "This option is not the best answer because Mitochondria are associated with much ATP production, not rough ER and Golgi together.",
@@ -2670,7 +2670,7 @@
         "Adding a molecule that permanently unfolds the enzyme"
       ],
       "answerIndex": 2,
-      "rationale": "More substrate can outcompete a reversible competitive inhibitor for access to the active site.",
+      "rationale": "Because a reversible competitive inhibitor binds directly to the enzyme active site in competition with the substrate, raising substrate concentration increases the probability that substrate occupies active sites and restores reaction rate.",
       "choiceRationales": [
         "This option is not the best answer because Removing enzyme removes the reaction rather than reducing competition.",
         "This option is not the best answer because removing all substrate eliminates enzyme-substrate collisions completely, stopping product formation rather than overcoming competitive inhibition.",
@@ -2937,7 +2937,7 @@
         "Respiration must be high because ATP cannot be stored or used."
       ],
       "answerIndex": 1,
-      "rationale": "Cells can regulate energy pathways so that abundant ATP signals reduced demand for additional ATP production.",
+      "rationale": "Cellular respiration is regulated via allosteric negative feedback: abundant ATP binds allosteric sites on key glycolytic enzymes such as phosphofructokinase, inhibiting catabolism when cellular energy supply already meets demand.",
       "choiceRationales": [
         "This option is not the best answer because Feedback often decreases pathway activity when products are abundant.",
         "Cells can regulate energy pathways so that abundant ATP signals reduced demand for additional ATP production.",
@@ -3026,7 +3026,7 @@
         "Phosphorylation permanently destroys all relay proteins."
       ],
       "answerIndex": 2,
-      "rationale": "Sequential activation can amplify a signal and connect receptor binding to changes in cell activity.",
+      "rationale": "In a phosphorylation cascade, each activated protein kinase phosphorylates and activates multiple downstream relay molecules, exponentially amplifying a tiny extracellular ligand signal into a robust cellular response.",
       "choiceRationales": [
         "This option is not the best answer because intracellular kinase relay steps propagate and progressively multiply the signal from the receptor into the cytoplasm rather than blocking transmission.",
         "This option is not the best answer because Cell response depends on receptor and intracellular context.",
@@ -3293,7 +3293,7 @@
         "It prevents all DNA repair from occurring anywhere in the whole cell."
       ],
       "answerIndex": 1,
-      "rationale": "Checkpoint proteins can pause progression while damage is repaired or direct the cell toward apoptosis.",
+      "rationale": "The G1/S DNA-damage checkpoint halts cell-cycle progression before DNA replication begins, giving repair enzymes time to fix lesions—or triggering apoptosis if unrepairable—so mutations are not copied into daughter cells.",
       "choiceRationales": [
         "This option is not the best answer because A checkpoint delays progression rather than forcing immediate mitosis.",
         "Checkpoint proteins can pause progression while damage is repaired or direct the cell toward apoptosis.",
@@ -3560,7 +3560,7 @@
         "Replacing every allele with a dominant allele"
       ],
       "answerIndex": 0,
-      "rationale": "Crossing over during prophase I creates recombinant chromosomes with new combinations of alleles.",
+      "rationale": "During prophase I of meiosis, synapsed homologous chromosomes exchange corresponding nonsister chromatid segments at chiasmata, generating recombinant chromosomes with novel combinations of maternal and paternal alleles.",
       "choiceRationales": [
         "Crossing over during prophase I creates recombinant chromosomes with new combinations of alleles.",
         "This option is not the best answer because meiotic crossing over swaps corresponding segments between nonsister chromatids to generate new allele combinations rather than making homologs identical.",
@@ -3649,7 +3649,7 @@
         "All of the gametes receive both of the alleles at both of the two loci involved."
       ],
       "answerIndex": 1,
-      "rationale": "Independent assortment produces gametes with combinations of alleles from different chromosome pairs.",
+      "rationale": "Because homologous pairs of nonhomologous chromosomes align randomly along the metaphase I plate, Mendel's law of independent assortment ensures that inheriting a particular allele at one locus does not alter allele probabilities at the other.",
       "choiceRationales": [
         "This option is not the best answer because independent orientation of nonhomologous chromosome pairs during metaphase I produces both parental and recombinant allele combinations in gametes.",
         "Independent assortment produces gametes with combinations of alleles from different chromosome pairs.",
@@ -3738,7 +3738,7 @@
         "Three-fourths"
       ],
       "answerIndex": 2,
-      "rationale": "A cross of Aa by Aa produces AA, Aa, Aa, and aa combinations, so one of four is homozygous recessive.",
+      "rationale": "In a monohybrid Aa x Aa cross, each parent transmits the recessive a allele with probability 1/2, so independent fertilization yields genotypes in a 1 AA : 2 Aa : 1 aa ratio, making 1/4 of offspring homozygous recessive.",
       "choiceRationales": [
         "This option is not the best answer because A recessive genotype can appear when both parents contribute the recessive allele.",
         "This option is not the best answer because One-half is the expected heterozygous fraction in this cross.",
@@ -3827,7 +3827,7 @@
         "An intermediate phenotype produced by the heterozygous genotype"
       ],
       "answerIndex": 3,
-      "rationale": "Incomplete dominance produces a heterozygote phenotype intermediate between the two homozygotes.",
+      "rationale": "Under incomplete dominance, neither allele completely masks the other in heterozygotes, so combining one red allele and one white allele yields an intermediate pink phenotype distinct from both homozygotes.",
       "choiceRationales": [
         "This option is not the best answer because under complete dominance the heterozygote would display the same red flower color as the red homozygote rather than an intermediate pink hue.",
         "This option is not the best answer because the described cross attributes the pink flowers to allelic interaction in heterozygotes rather than to an environmental temperature effect.",
@@ -4005,7 +4005,7 @@
         "A cross involving a different species with no shared gene"
       ],
       "answerIndex": 1,
-      "rationale": "A homozygous recessive tester reveals a recessive allele if the unknown parent contributes it to offspring.",
+      "rationale": "Crossing a dominant-phenotype individual with a homozygous recessive tester (aa) ensures that any recessive allele carried by the unknown parent appears in roughly half of the offspring, cleanly distinguishing AA from Aa.",
       "choiceRationales": [
         "This option is not the best answer because An unknown partner makes offspring patterns harder to interpret.",
         "A homozygous recessive tester reveals a recessive allele if the unknown parent contributes it to offspring.",
@@ -4094,7 +4094,7 @@
         "The two strands contain no hydrogen bonds between bases."
       ],
       "answerIndex": 2,
-      "rationale": "Opposite 5-prime to 3-prime orientations allow complementary base pairing and directional replication.",
+      "rationale": "The two sugar-phosphate strands of a DNA double helix run in opposite chemical orientations—one 5-prime to 3-prime and its partner 3-prime to 5-prime—which enables proper antiparallel hydrogen bonding between complementary base pairs.",
       "choiceRationales": [
         "This option is not the best answer because paired DNA strands orient 5-prime to 3-prime in opposite directions and carry complementary rather than identical base sequences.",
         "This option is not the best answer because DNA strands are nucleotide polymers, not amino-acid polymers.",
@@ -4183,7 +4183,7 @@
         "Each daughter DNA duplex has one parental strand and one newly built strand."
       ],
       "answerIndex": 3,
-      "rationale": "The parental strands separate and each serves as a template for a new complementary strand.",
+      "rationale": "During semiconservative DNA replication, helicase unwinds the double helix so each original parental strand acts as a template for a newly synthesized complementary strand, leaving every daughter duplex half old and half new.",
       "choiceRationales": [
         "This option is not the best answer because each replicated duplex retains one original template strand paired with one new complementary strand, rather than consisting exclusively of new DNA.",
         "This option is not the best answer because DNA replication copies the genome so that mitotic division distributes a complete set of replicated DNA molecules to both daughter cells.",
@@ -4361,7 +4361,7 @@
         "A chromosomal nondisjunction event"
       ],
       "answerIndex": 1,
-      "rationale": "The genetic code is redundant, so some substitutions do not change the encoded amino acid.",
+      "rationale": "Because the genetic code is degenerate—multiple codons often specify the same amino acid, especially differing at the third wobble base—a point substitution that preserves the encoded amino acid is a synonymous (silent) mutation.",
       "choiceRationales": [
         "This option is not the best answer because A frameshift results from insertion or deletion not divisible by three.",
         "The genetic code is redundant, so some substitutions do not change the encoded amino acid.",
@@ -4628,7 +4628,7 @@
         "A cell wall that encloses the entire reaction mixture used"
       ],
       "answerIndex": 0,
-      "rationale": "Primers provide starting points and define the sequence segment copied through repeated cycles.",
+      "rationale": "In PCR, forward and reverse oligonucleotide primers anneal to complementary flanking sequences on opposite DNA strands, providing free 3-prime OH ends for Taq polymerase and strictly defining the start and end boundaries of amplification.",
       "choiceRationales": [
         "Primers provide starting points and define the sequence segment copied through repeated cycles.",
         "This option is not the best answer because PCR uses deoxynucleoside triphosphates (dNTPs) as building blocks rather than ATP, and nucleotides provide substrates without defining target sequence endpoints.",
@@ -4717,7 +4717,7 @@
         "Variation occurs only after reproduction and cannot be inherited."
       ],
       "answerIndex": 1,
-      "rationale": "Natural selection requires heritable variation linked to differential survival or reproduction.",
+      "rationale": "Natural selection alters population allele frequencies over generations only when heritable phenotypic variation already exists and individuals with advantageous variants exhibit higher differential survival and reproductive success.",
       "choiceRationales": [
         "This option is not the best answer because Without variation or differential reproduction, selection cannot shift frequencies.",
         "Natural selection requires heritable variation linked to differential survival or reproduction.",
@@ -4895,7 +4895,7 @@
         "0.16"
       ],
       "answerIndex": 3,
-      "rationale": "The frequency of allele a is 0.4, so the expected recessive homozygote frequency is q squared, or 0.16.",
+      "rationale": "In Hardy-Weinberg equilibrium, p + q = 1; with p = 0.6 for allele A, q = 1 - 0.6 = 0.4 for allele a, so the expected frequency of homozygous recessive aa individuals is q^2 = (0.4)^2 = 0.16.",
       "choiceRationales": [
         "This option is not the best answer because the value 0.24 equals pq (0.6 times 0.4), whereas the expected frequency of homozygous recessive aa individuals is q squared, or 0.4 squared, which equals 0.16.",
         "This option is not the best answer because the value 0.36 equals p squared (0.6 squared), which gives the expected frequency of homozygous dominant AA individuals rather than homozygous recessive aa individuals.",
@@ -4984,7 +4984,7 @@
         "Assortative mating that guarantees random allele frequencies"
       ],
       "answerIndex": 0,
-      "rationale": "A sudden reduction in population size can leave a chance sample of alleles, producing drift.",
+      "rationale": "A catastrophic event like a wildfire that drastically shrinks population size leaves a random subset of surviving alleles, illustrating a population bottleneck—a classic form of non-adaptive genetic drift.",
       "choiceRationales": [
         "A sudden reduction in population size can leave a chance sample of alleles, producing drift.",
         "This option is not the best answer because Selection requires differential reproductive success tied to a trait.",
@@ -5607,7 +5607,7 @@
         "Resource partitioning reduces direct competition."
       ],
       "answerIndex": 3,
-      "rationale": "Using different parts of the habitat can reduce niche overlap and allow competing species to coexist.",
+      "rationale": "When two insectivorous bird species forage in different microhabitats (bark versus foliage) within the same trees, resource partitioning reduces niche overlap and interspecific competition, enabling stable coexistence.",
       "choiceRationales": [
         "This option is not the best answer because Competitive exclusion is a possible outcome of complete overlap, not the described partitioning.",
         "This option is not the best answer because the scenario describes distinct foraging microhabitats within the same trees and gives no evidence of a predator eliminating resource overlap.",
@@ -6585,16 +6585,16 @@
       "choices": [
         "Exactly 0.00 M, because water enters the model at any low sucrose concentration.",
         "Exactly 0.60 M, because the largest concentration always stops osmosis entirely.",
-        "Between 0.20 M and 0.40 M sucrose, near 0.33 M if the trend is roughly linear.",
+        "Between 0.20 M and 0.40 M sucrose, near 0.34 M if the trend is roughly linear.",
         "At 0.20 M, because any positive mass change means that no water crosses at all."
       ],
       "answerIndex": 2,
-      "rationale": "The isotonic point is where net mass change is approximately zero, so it lies between the concentrations producing gain and loss; linear interpolation gives about 0.33 M.",
+      "rationale": "The isotonic concentration occurs where net mass change equals 0 percent, lying between 0.20 M (+5%) and 0.40 M (-2%); linear interpolation gives 0.20 + (5 / 7)(0.20) = 0.343 M, or approximately 0.34 M sucrose.",
       "choiceRationales": [
-        "This option is not the best answer because A positive mass change indicates net water entry, not an isotonic condition.",
-        "This option is not the best answer because The isotonic value need not equal the largest tested concentration.",
-        "The isotonic point is where net mass change is approximately zero, so it lies between the concentrations producing gain and loss; linear interpolation gives about 0.33 M.",
-        "This option is not the best answer because Water can cross membranes even when net movement is zero."
+        "This option is not the best answer because 0.00 M is pure water, which is strongly hypotonic and drives substantial net water entry and mass gain rather than isotonic equilibrium.",
+        "This option is not the best answer because 0.60 M lies beyond the hypertonic 0.40 M solution where the cell already loses water, so it would cause even greater mass loss rather than zero net osmosis.",
+        "The isotonic point occurs at zero net mass change between 0.20 M (+5%) and 0.40 M (-2%); linear interpolation gives 0.20 + (5/7)(0.20) = 0.343 M, or about 0.34 M.",
+        "This option is not the best answer because a +5 percent mass gain at 0.20 M demonstrates net water entry into the cell model rather than balanced osmotic equilibrium."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -7027,7 +7027,7 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "argue",
-      "prompt": "An antibiotic that inhibits bacterial ribosomes reduces protein synthesis in isolated mitochondria but not in the cell nucleus. Which claim is best supported?",
+      "prompt": "An antibiotic that inhibits bacterial ribosomes reduces protein synthesis in isolated mitochondria but not on cytosolic ribosomes translating nuclear-encoded mRNAs. Which claim is best supported?",
       "choices": [
         "Mitochondria contain no genetic material and depend entirely on extracellular proteins.",
         "The nucleus evolved from a bacterium because nuclear DNA is circular.",
@@ -7035,12 +7035,12 @@
         "Mitochondria retain ribosomal features resembling prokaryotic translation machinery."
       ],
       "answerIndex": 3,
-      "rationale": "Differential sensitivity to a bacterial ribosome inhibitor is consistent with the endosymbiotic evidence that mitochondria retain bacterial-like translation components.",
+      "rationale": "Selective sensitivity of mitochondrial protein synthesis to a bacterial ribosome inhibitor, while eukaryotic cytosolic translation of nuclear-encoded mRNAs remains unaffected, supports endosymbiotic evidence that mitochondria retain prokaryotic-like ribosomes.",
       "choiceRationales": [
-        "This option is not the best answer because Mitochondria contain DNA and also import many proteins made elsewhere.",
-        "This option is not the best answer because The result concerns mitochondrial translation, not evidence that the nucleus is bacterial in origin.",
-        "This option is not the best answer because Many mitochondrial proteins are encoded by nuclear genes and synthesized in the cytosol.",
-        "Differential sensitivity to a bacterial ribosome inhibitor is consistent with the endosymbiotic evidence that mitochondria retain bacterial-like translation components."
+        "This option is not the best answer because mitochondria contain their own circular DNA and ribosomes to synthesize a subset of organellar proteins while importing most others from the cytosol.",
+        "This option is not the best answer because the antibiotic selectively impairs bacterial-like mitochondrial translation rather than indicating that the eukaryotic nucleus has bacterial ancestry or circular chromosomes.",
+        "This option is not the best answer because nuclear genes encode the vast majority of mitochondrial proteins, which are translated on cytosolic ribosomes and then imported into the organelle.",
+        "Selective sensitivity of mitochondrial translation to a bacterial ribosome inhibitor supports endosymbiotic evidence that mitochondria retain prokaryotic-like translation machinery."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -7214,7 +7214,7 @@
         "The data prove the enzyme has the same optimum temperature and pH."
       ],
       "answerIndex": 1,
-      "rationale": "The measured rate is greatest at pH 8, so the experiment supports a pH optimum near 8 under its conditions.",
+      "rationale": "Enzyme activity peaks at 18 units per minute at pH 8 and falls at both lower (pH 4, 6) and higher (pH 10) values, demonstrating that active-site ionization is optimized near pH 8 within the tested range.",
       "choiceRationales": [
         "This option is not the best answer because a positive rate of 4 units per minute at pH 4 demonstrates measurable residual catalytic activity rather than complete inactivation across all pH values.",
         "The measured rate is greatest at pH 8, so the experiment supports a pH optimum near 8 under its conditions.",
@@ -8375,7 +8375,7 @@
         "9/16"
       ],
       "answerIndex": 2,
-      "rationale": "The probability of aa is 1/4, and the probability of B_ is 3/4; independent events multiply to give 3/16.",
+      "rationale": "For two independently assorting loci in an AaBb x AaBb cross, the probability of aa is 1/4 and the probability of at least one dominant B allele (BB or Bb) is 3/4; by the multiplication rule, P(aa and B_) = (1/4)(3/4) = 3/16.",
       "choiceRationales": [
         "This option is not the best answer because 1/16 is the probability of aaBB, not aa with any dominant B allele.",
         "This option is not the best answer because 1/4 is the probability of aa alone and does not include the B-locus condition.",
@@ -8464,7 +8464,7 @@
         "Incomplete dominance, in which the heterozygote has an intermediate phenotype."
       ],
       "answerIndex": 3,
-      "rationale": "The intermediate heterozygote and 1:2:1 phenotypic ratio are characteristic of incomplete dominance.",
+      "rationale": "When heterozygotes display a blended pink phenotype intermediate between red and white homozygotes, a self-cross produces a 1 red : 2 pink : 1 white phenotypic ratio matching the genotypic ratio—the hallmark of incomplete dominance.",
       "choiceRationales": [
         "This option is not the best answer because Complete dominance would commonly produce a 3:1 phenotype ratio in this cross.",
         "This option is not the best answer because Codominance displays both phenotypes rather than a blended intermediate in the stated pattern.",
@@ -8731,7 +8731,7 @@
         "5-prime-ATG CCT-3-prime"
       ],
       "answerIndex": 2,
-      "rationale": "RNA polymerase builds the complementary RNA strand 5-prime to 3-prime, using uracil in place of thymine.",
+      "rationale": "RNA polymerase reads the DNA template 3-prime to 5-prime and synthesizes an antiparallel 5-prime to 3-prime mRNA strand using uracil instead of thymine, transcribing 3-prime-TAC GGA-5-prime into 5-prime-AUG CCU-3-prime.",
       "choiceRationales": [
         "This option is not the best answer because This sequence does not correctly complement the template or use RNA base pairing.",
         "This option is not the best answer because The product is conventionally written 5-prime to 3-prime, not in the opposite direction.",
@@ -9981,7 +9981,7 @@
         "A decrease of 120 individuals"
       ],
       "answerIndex": 0,
-      "rationale": "Net change equals births plus immigration minus deaths minus emigration: 80 + 20 - 30 - 10 = 60.",
+      "rationale": "Population size change combines additions (births plus immigration) minus removals (deaths plus emigration): delta N = (80 + 20) - (30 + 10) = 100 - 40 = +60, a net increase of 60 individuals.",
       "choiceRationales": [
         "Net change equals births plus immigration minus deaths minus emigration: 80 + 20 - 30 - 10 = 60.",
         "This option is not the best answer because a net gain of 20 counts only the immigrants while ignoring both the 50-individual excess of births over deaths (80 minus 30) and the 10 emigrants.",
@@ -12658,7 +12658,7 @@
         "Independent assortment predicts equal numbers in all four classes, so the data cannot fit the model."
       ],
       "answerIndex": 2,
-      "rationale": "For 160 offspring, a 9:3:3:1 expectation is approximately 90, 30, 30, and 10, close to the observed counts.",
+      "rationale": "Out of 160 total offspring, an independent-assortment 9:3:3:1 ratio expects 90, 30, 30, and 10 individuals per class; the observed counts of 90, 28, 31, and 11 fit those expectations closely within random sampling variation.",
       "choiceRationales": [
         "This option is not the best answer because Linked genes can produce recombinants, and the observed ratio is not evidence of no recombination.",
         "This option is not the best answer because Phenotype class size alone cannot identify the number of crossover events.",
@@ -12837,7 +12837,7 @@
         "Type A and type B are impossible because codominance prevents phenotype expression."
       ],
       "answerIndex": 0,
-      "rationale": "The cross can produce IAIB, IAi, IBi, or ii, corresponding to AB, A, B, or O phenotypes.",
+      "rationale": "Because IA and IB are codominant and both dominate i, an IAi x IBi cross can yield IAIB (type AB), IAi (type A), IBi (type B), or ii (type O), making all four ABO blood-type phenotypes possible.",
       "choiceRationales": [
         "The cross can produce IAIB, IAi, IBi, or ii, corresponding to AB, A, B, or O phenotypes.",
         "This option is not the best answer because Codominance makes IA and IB both visible in IAIB but does not eliminate the other genotypes.",
@@ -13372,7 +13372,7 @@
         "Three amino acids, because every codon encodes an amino acid"
       ],
       "answerIndex": 2,
-      "rationale": "AUG initiates methionine, GCU encodes alanine, and UGA is a stop codon rather than an amino-acid codon.",
+      "rationale": "Ribosomal translation reads mRNA codons 5-prime to 3-prime: AUG initiates synthesis with methionine, GCU adds alanine, and UGA recruits a release factor as a stop codon, terminating translation after a two-amino-acid dipeptide.",
       "choiceRationales": [
         "This option is not the best answer because Ribosomes read codons from the 5-prime end in the stated order.",
         "This option is not the best answer because UGA is a stop codon that recruits a release factor to terminate translation, whereas tryptophan is encoded by the codon UGG.",
@@ -14353,12 +14353,12 @@
         "Approximately 2,000 turtles"
       ],
       "answerIndex": 1,
-      "rationale": "The estimate is M times C divided by R: 40 marked, multiplied by 50 captured, divided by 10 recaptured, equals 200.",
+      "rationale": "Using the Lincoln-Petersen mark-recapture estimator N = (M x C) / R, multiplying 40 initially marked turtles by 50 turtles in the second sample and dividing by 10 marked recaptures gives N = (40 x 50) / 10 = 200 turtles.",
       "choiceRationales": [
-        "This option is not the best answer because Twenty would result from dividing the first capture by the later capture without using recapture.",
-        "The estimate is M times C divided by R: 40 marked, multiplied by 50 captured, divided by 10 recaptured, equals 200.",
-        "This option is not the best answer because Ninety is the sum of the two sample sizes and is not the estimator.",
-        "This option is not the best answer because Two thousand reverses the relationship between the recaptured fraction and population size."
+        "This option is not the best answer because 20 turtles is one-tenth of the Lincoln-Petersen estimate (40 x 50 / 10 = 200), a tenfold error from dividing by 100 instead of the 10 marked recaptures.",
+        "Using N = (M x C) / R, multiplying 40 marked turtles by 50 captured turtles and dividing by 10 marked recaptures estimates a population size of 200 turtles.",
+        "This option is not the best answer because 90 turtles simply adds the two sample sizes (40 + 50) rather than scaling the marked count by the recapture proportion.",
+        "This option is not the best answer because 2,000 turtles equals the raw product M x C (40 times 50) without dividing by the 10 marked turtles recaptured in the second sample."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -14533,7 +14533,7 @@
         "Sea stars act as a keystone predator whose removal sharply alters community structure."
       ],
       "answerIndex": 3,
-      "rationale": "A predator whose effect on community composition is large relative to its abundance can have a keystone role.",
+      "rationale": "Removing sea stars allows competitively dominant mussels to monopolize rocky-shore space and exclude other species, demonstrating that sea stars function as a keystone predator with a disproportionately large effect on community diversity.",
       "choiceRationales": [
         "This option is not the best answer because sea stars are heterotrophic predatory consumers that regulate prey populations rather than autotrophic primary producers that synthesize organic matter.",
         "This option is not the best answer because Increased mussel dominance can reduce other species through competition and does not establish mutualism.",
@@ -19089,12 +19089,12 @@
         "Predation explains the result because seeds capture and consume the competing species."
       ],
       "answerIndex": 2,
-      "rationale": "Partitioning a limiting resource reduces niche overlap, lowering competition and allowing species with different resource use to coexist.",
+      "rationale": "Dividing seed sizes reduces niche overlap between the two competing granivore species, lowering direct interspecific competition for the limiting seed supply and enabling stable coexistence via resource partitioning.",
       "choiceRationales": [
-        "This option is not the best answer because The coexistence treatment shows that differences in resource use can avoid complete exclusion.",
-        "This option is not the best answer because A species harmed by another is not automatically engaged in mutualism.",
-        "Partitioning a limiting resource reduces niche overlap, lowering competition and allowing species with different resource use to coexist.",
-        "This option is not the best answer because Seeds are resources in this example, not predators consuming the fish or plant species."
+        "This option is not the best answer because coexistence after dividing seed sizes shows that species can specialize on distinct resource subsets rather than always occupying identical niches.",
+        "This option is not the best answer because mutualism requires a net benefit for both interacting species, whereas one species declined when forced to share the undivided seed supply.",
+        "Partitioning the limiting seed supply by size reduces niche overlap and weakens interspecific competition, allowing both competing species to coexist.",
+        "This option is not the best answer because seeds are a shared food resource consumed by the two competing species, not predators that capture and eat the animals."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -21407,20 +21407,20 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "calculate",
-      "prompt": "In a species with 2n = 8, homologous chromosomes separate normally in meiosis I, but sister chromatids fail to separate in one meiosis II cell. Which gamete outcomes are expected from that meiosis?",
+      "prompt": "In a species with 2n = 8, homologous chromosomes separate normally in meiosis I, but sister chromatids of one chromosome fail to separate in one meiosis II cell. Which gamete outcomes are expected from that meiosis?",
       "choices": [
-        "One gamete gets six chromosomes, one gets two, and two get four chromosomes.",
+        "One gamete gets five chromosomes, one gets three, and two get four chromosomes.",
         "All four gametes have four chromosomes because meiosis I proceeded normally.",
-        "Two of the gametes have six chromosomes and the other two have two chromosomes.",
+        "Two of the gametes have five chromosomes and the other two have three chromosomes.",
         "One gamete has eight chromosomes while the remaining three have none at all."
       ],
       "answerIndex": 0,
-      "rationale": "A meiosis II nondisjunction event affects two gametes from one daughter cell, producing n-plus-one and n-minus-one products, while the other two remain normal haploid gametes.",
+      "rationale": "For 2n = 8, the normal haploid number is n = 4. After normal meiosis I, sister-chromatid nondisjunction of one chromosome in one meiosis II cell yields one n + 1 (5) and one n - 1 (3) gamete, while the other meiosis II cell produces two normal n = 4 gametes.",
       "choiceRationales": [
-        "A meiosis II nondisjunction event affects two gametes from one daughter cell, producing n-plus-one and n-minus-one products, while the other two remain normal haploid gametes.",
-        "This option is not the best answer because Normal meiosis I does not prevent a later sister-chromatid separation error.",
-        "This option is not the best answer because Only one of the two meiosis II divisions has the error, so two gametes remain normal.",
-        "This option is not the best answer because The chromosome counts change by one relative to the haploid number four, not by four or eight."
+        "With 2n = 8 (n = 4), meiosis II nondisjunction of one chromosome in one cell yields one gamete with 5 (n + 1) and one with 3 (n - 1), while the normal meiosis II cell yields two gametes with 4 chromosomes.",
+        "This option is not the best answer because normal homolog separation during meiosis I does not prevent a sister-chromatid nondisjunction error in meiosis II from producing aneuploid gametes.",
+        "This option is not the best answer because two gametes with 5 and two with 3 would result from meiosis I nondisjunction affecting both secondary cells, not from a single meiosis II error.",
+        "This option is not the best answer because nondisjunction of one chromosome shifts chromosome counts by one relative to the haploid number four, not by four or eight chromosomes."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -24090,7 +24090,7 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "trace",
-      "prompt": "A DNA template strand has the sequence 3-prime-TAC-CGA-5-prime. A substitution changes the second template codon to TAT. Which consequence is most likely during transcription and translation?",
+      "prompt": "A DNA template strand has the sequence 3-prime-CGA-TAC-5-prime. A substitution changes the second template triplet from TAC to TAT. Which consequence is most likely during transcription and translation?",
       "choices": [
         "The mRNA codon changes from UAC to UAU, but translation is unchanged because DNA is not transcribed.",
         "The DNA change adds an entire chromosome so the ribosome produces two proteins.",
@@ -24098,12 +24098,12 @@
         "The substitution removes all phosphate groups from the mRNA backbone."
       ],
       "answerIndex": 2,
-      "rationale": "The template sequence is complementary to mRNA, so TAC produces AUG while TAT produces AUA; those codons specify different amino acids.",
+      "rationale": "RNA polymerase reads the DNA template 3-prime to 5-prime to build a complementary 5-prime to 3-prime mRNA: the second template triplet 3-prime-TAC-5-prime yields 5-prime-AUG-3-prime (methionine), while 3-prime-TAT-5-prime yields 5-prime-AUA-3-prime (isoleucine).",
       "choiceRationales": [
-        "This option is not the best answer because The stated strand is the template, so the mRNA sequence is complementary rather than identical, and transcription does occur.",
-        "This option is not the best answer because A single-base substitution does not add a chromosome or necessarily create a second protein.",
-        "The template sequence is complementary to mRNA, so TAC produces AUG while TAT produces AUA; those codons specify different amino acids.",
-        "This option is not the best answer because Base substitution changes sequence information rather than removing every phosphate group from RNA."
+        "This option is not the best answer because the stated strand is the DNA template, so mRNA is transcribed as its complementary sequence (AUG to AUA) rather than copying template bases directly as UAC to UAU.",
+        "This option is not the best answer because a single-base point substitution alters one codon within the existing gene rather than adding a whole chromosome or generating a second separate protein.",
+        "RNA polymerase reads the 3-prime to 5-prime DNA template complementarily, so changing the second template triplet from TAC to TAT shifts the mRNA codon from AUG (methionine) to AUA (isoleucine).",
+        "This option is not the best answer because a base substitution alters only the nitrogenous base at that nucleotide position and leaves the sugar-phosphate backbone of the mRNA completely intact."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -24985,7 +24985,7 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "calculate",
-      "prompt": "At 35 degrees Celsius, a C4 plant fixes carbon at 18 units in normal air and 17 units at elevated carbon dioxide. A C3 plant increases from 8 to 15 units under the same change. Which conclusion is best supported?",
+      "prompt": "At 35 degrees Celsius, a C4 plant fixes carbon at 17 units in normal air and 18 units at elevated carbon dioxide. A C3 plant increases from 8 to 15 units under the same change. Which conclusion is best supported?",
       "choices": [
         "The C3 plant shows a stronger carbon-fixation response to higher carbon dioxide in this test.",
         "The C4 plant cannot photosynthesize at 35 degrees Celsius because its rate is nearly unchanged.",
@@ -24993,12 +24993,12 @@
         "The C3 plant fixes less carbon at elevated carbon dioxide because its rate remains below 18 units."
       ],
       "answerIndex": 0,
-      "rationale": "The relevant comparison is the change within each plant type: C3 rises by 7 units, whereas C4 rises by 1 unit under these conditions.",
+      "rationale": "Comparing the within-plant change between normal and elevated carbon dioxide shows the C3 plant increases by 7 units (from 8 to 15), whereas the C4 plant rises by only 1 unit (from 17 to 18) because its carbon-concentrating pathway already approaches saturation.",
       "choiceRationales": [
-        "The relevant comparison is the change within each plant type: C3 rises by 7 units, whereas C4 rises by 1 unit under these conditions.",
-        "This option is not the best answer because A nearly unchanged rate still represents photosynthesis and does not show complete failure.",
-        "This option is not the best answer because The experiment supports a condition-specific response and cannot establish a universal rule for every environment.",
-        "This option is not the best answer because Response size is determined by the change between treatments, not by whether the final value exceeds another species value."
+        "Comparing changes within each plant type shows that C3 fixation rises by 7 units (8 to 15), whereas C4 fixation rises by only 1 unit (17 to 18) under these conditions.",
+        "This option is not the best answer because fixing 17 to 18 units of carbon demonstrates active, high-rate photosynthesis at 35 degrees Celsius rather than an inability to photosynthesize.",
+        "This option is not the best answer because data from one temperature and two carbon dioxide levels establish a condition-specific comparison rather than a universal rule for every environment.",
+        "This option is not the best answer because the C3 plant increased from 8 to 15 units (+7), and comparing response size requires examining the change within each species rather than comparing final totals alone."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -30632,20 +30632,20 @@
       "difficulty": "moderate",
       "cognitiveDemand": "application",
       "cognitiveProcess": "calculate",
-      "prompt": "A plant with genotype IAIB is crossed with a plant with genotype IBi. Which phenotype proportions are expected if the alleles are codominant?",
+      "prompt": "An individual with genotype IAIB has children with an individual of genotype IBi. If IA and IB are codominant and both are dominant over i, which blood-type phenotype proportions are expected among their offspring?",
       "choices": [
-        "All offspring type A because IA is dominant over IB and i.",
-        "One-fourth type A, one-fourth type B, and one-half type O.",
-        "One-half type O and one-half type AB because both parents contribute recessive alleles.",
-        "One-half type B offspring and one-half type AB offspring."
+        "All offspring are type A because the IA allele is dominant over both IB and i.",
+        "One-fourth type A, one-fourth type B, and one-half type O offspring.",
+        "One-half type O and one-half type AB because both parents pass on i alleles.",
+        "One-half type B, one-fourth type A, and one-fourth type AB offspring."
       ],
       "answerIndex": 3,
-      "rationale": "The first parent produces IA or IB gametes, and the second produces IB or i gametes, yielding IBIB or IBi type B and IAIB type AB.",
+      "rationale": "Crossing IAIB (gametes IA and IB) with IBi (gametes IB and i) yields four equally likely genotypes: 1/4 IAIB (type AB), 1/4 IAi (type A), 1/4 IBIB (type B), and 1/4 IBi (type B), giving 1/2 type B, 1/4 type A, and 1/4 type AB offspring.",
       "choiceRationales": [
-        "This option is not the best answer because IA and IB are codominant rather than one being dominant over the other.",
-        "This option is not the best answer because The cross cannot produce type A or type O because the required allele combinations are absent.",
-        "This option is not the best answer because The first parent has no i allele, so every offspring receives either IA or IB.",
-        "The first parent produces IA or IB gametes, and the second produces IB or i gametes, yielding IBIB or IBi type B and IAIB type AB."
+        "This option is not the best answer because IA and IB are codominant rather than IA masking IB, and gametes carrying IB can combine with IB or i to produce type B offspring as well as type AB.",
+        "This option is not the best answer because type O requires the ii genotype, which is impossible when the IAIB parent carries no i allele, and combining IBIB with IBi yields one-half type B rather than one-fourth.",
+        "This option is not the best answer because the IAIB parent lacks the recessive i allele altogether, so no child can inherit two i alleles to express type O blood.",
+        "The Punnett square for IAIB x IBi produces 1/4 IAIB (type AB), 1/4 IAi (type A), and 2/4 IBIB or IBi (type B), yielding one-half type B, one-fourth type A, and one-fourth type AB."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -35307,7 +35307,7 @@
       "difficulty": "moderate",
       "cognitiveDemand": "application",
       "cognitiveProcess": "classify",
-      "prompt": "A heterozygous red-flowered plant crossed with another heterozygote produces red, pink, and white offspring in approximately a 1:2:1 ratio. Which inheritance pattern is most consistent?",
+      "prompt": "A heterozygous pink-flowered plant crossed with another heterozygote produces red, pink, and white offspring in approximately a 1:2:1 ratio. Which inheritance pattern is most consistent?",
       "choices": [
         "Complete dominance, in which the heterozygote must have the same phenotype as the dominant homozygote.",
         "Codominance, in which the heterozygote must display two separate fully expressed colors.",
@@ -35315,12 +35315,12 @@
         "Incomplete dominance, in which the heterozygote has an intermediate phenotype."
       ],
       "answerIndex": 3,
-      "rationale": "An intermediate heterozygote phenotype and a 1:2:1 outcome support incomplete dominance at the flower-color locus.",
+      "rationale": "When heterozygous parents display an intermediate pink phenotype and their cross produces red, pink, and white offspring in a 1:2:1 phenotypic ratio matching the 1:2:1 genotypic ratio, the locus exhibits incomplete dominance.",
       "choiceRationales": [
-        "This option is not the best answer because Complete dominance predicts a 3:1 phenotype ratio for a heterozygote cross under simple Mendelian assumptions.",
-        "This option is not the best answer because Codominance would display both parental products rather than an intermediate blended phenotype.",
-        "This option is not the best answer because The stated cross involves one locus and does not provide evidence for masking between two genes.",
-        "An intermediate heterozygote phenotype and a 1:2:1 outcome support incomplete dominance at the flower-color locus."
+        "This option is not the best answer because complete dominance makes heterozygotes match one homozygous parent and yields a 3:1 phenotypic ratio from a heterozygote cross rather than 1:2:1.",
+        "This option is not the best answer because codominance expresses both parental phenotypes distinctly side by side rather than producing a blended intermediate pink color in heterozygotes.",
+        "This option is not the best answer because recessive epistasis involves masking between two separate gene loci (such as a 9:3:4 ratio) rather than a single-locus 1:2:1 cross.",
+        "Crossing two intermediate pink heterozygotes to obtain 1 red : 2 pink : 1 white offspring matches the genotypic ratio and is the classic signature of incomplete dominance."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -36116,7 +36116,7 @@
       "difficulty": "advanced",
       "cognitiveDemand": "application",
       "cognitiveProcess": "evaluate",
-      "prompt": "A population has p = 0.60 and q = 0.40, but observed genotype frequencies are 0.49 AA, 0.42 Aa, and 0.09 aa. Which conclusion is most defensible?",
+      "prompt": "A population has p = 0.60 and q = 0.40, but observed genotype frequencies are 0.50 AA, 0.20 Aa, and 0.30 aa. Which conclusion is most defensible?",
       "choices": [
         "Proportions deviate from Hardy-Weinberg expectations, without identifying the violated assumption.",
         "The population must be in equilibrium because p plus q equals one.",
@@ -36124,12 +36124,12 @@
         "The population cannot reproduce because all three genotype classes are present."
       ],
       "answerIndex": 0,
-      "rationale": "Expected frequencies are 0.36 AA, 0.48 Aa, and 0.16 aa, so the observed distribution differs; additional evidence is needed to distinguish selection, migration, drift, or nonrandom mating.",
+      "rationale": "The observed genotypes confirm p = 0.50 + 0.20/2 = 0.60 and q = 0.30 + 0.20/2 = 0.40, yet Hardy-Weinberg equilibrium predicts p^2 = 0.36 AA, 2pq = 0.48 Aa, and q^2 = 0.16 aa; this heterozygote deficit shows non-equilibrium without proving which specific assumption failed.",
       "choiceRationales": [
-        "Expected frequencies are 0.36 AA, 0.48 Aa, and 0.16 aa, so the observed distribution differs; additional evidence is needed to distinguish selection, migration, drift, or nonrandom mating.",
-        "This option is not the best answer because p plus q equaling one is required for allele frequencies but does not prove genotype equilibrium.",
-        "This option is not the best answer because Several evolutionary or mating processes can alter genotype frequencies, so mutation is not the only explanation.",
-        "This option is not the best answer because The presence of three genotype classes is compatible with reproduction and does not prevent a population from reproducing."
+        "With p = 0.50 + 0.10 = 0.60 and q = 0.30 + 0.10 = 0.40, expected Hardy-Weinberg frequencies are 0.36 AA, 0.48 Aa, and 0.16 aa; the observed 0.50, 0.20, and 0.30 deviate without identifying the exact cause.",
+        "This option is not the best answer because allele frequencies always sum to one (p + q = 1) in any two-allele population, so that sum alone does not establish Hardy-Weinberg genotype equilibrium.",
+        "This option is not the best answer because nonrandom mating such as inbreeding, selection, migration, or drift can each produce a heterozygote deficit, so mutation cannot be concluded without additional data.",
+        "This option is not the best answer because a population carrying AA, Aa, and aa genotypes can actively reproduce even when its genotype distribution departs from random-mating equilibrium."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -36844,7 +36844,7 @@
         "8,000 cells"
       ],
       "answerIndex": 0,
-      "rationale": "Nine hours contains three doubling intervals, so 500 times 2 cubed equals 500 times 8, or 4,000 cells.",
+      "rationale": "Under unrestricted exponential growth, a 9-hour span contains 9 / 3 = 3 complete doubling intervals, so the initial 500 bacteria grow to N = 500 * 2^3 = 500 * 8 = 4,000 cells.",
       "choiceRationales": [
         "Nine hours contains three doubling intervals, so 500 times 2 cubed equals 500 times 8, or 4,000 cells.",
         "This option is not the best answer because reaching 1,000 cells accounts for only one 3-hour doubling interval from 500 cells, whereas 9 hours spans three full doublings (500 to 1,000 to 2,000 to 4,000 cells).",
@@ -41336,18 +41336,18 @@
       "cognitiveProcess": "calculate",
       "prompt": "A fish population increases from 500 to 550 individuals during one month, with 90 births, 30 deaths, 20 immigrants, and 30 emigrants. What is the per-capita population growth rate for the month?",
       "choices": [
-        "0.02, because only the immigration and emigration determine the population growth.",
-        "0.20, because the 90 births and 30 immigrants are added without counting any losses.",
+        "-0.02, because only net migration of 20 immigrants minus 30 emigrants determines growth.",
+        "0.22, because the 90 births and 20 immigrants are added without counting any losses.",
         "0.10, because the net gain of 50 divided by the starting 500 animals equals 0.10.",
         "1.10, because the final population of 550 is divided by the initial population size."
       ],
       "answerIndex": 2,
-      "rationale": "Net change equals 90 plus 20 minus 30 minus 30, or 50; dividing by the initial 500 gives a per-capita growth rate of 0.10.",
+      "rationale": "Total population change combines all additions minus removals: delta N = (90 births + 20 immigrants) - (30 deaths + 30 emigrants) = 110 - 60 = +50 fish; dividing by the initial 500 fish gives a per-capita growth rate of 50 / 500 = 0.10 per month.",
       "choiceRationales": [
-        "This option is not the best answer because Births, deaths, immigration, and emigration all contribute to population change.",
-        "This option is not the best answer because Ignoring deaths and emigration overestimates the net increase.",
-        "Net change equals 90 plus 20 minus 30 minus 30, or 50; dividing by the initial 500 gives a per-capita growth rate of 0.10.",
-        "This option is not the best answer because The final-to-initial ratio is 1.10, but the per-capita growth rate describes the fractional increase, 0.10."
+        "This option is not the best answer because -0.02 accounts only for net migration ((20 - 30) / 500) and ignores the 90 births and 30 deaths that produce an overall population increase.",
+        "This option is not the best answer because 0.22 sums only additions ((90 + 20) / 500 = 110 / 500) while omitting the 30 deaths and 30 emigrants that must be subtracted.",
+        "Net change equals (90 + 20) - (30 + 30) = +50 individuals, and dividing 50 by the initial 500 fish yields a monthly per-capita growth rate of 0.10.",
+        "This option is not the best answer because 1.10 is the finite multiplication factor (550 / 500 = 1 + r) rather than the per-capita growth rate r = 0.10."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -44220,12 +44220,12 @@
         "The inhibitor prevents all receptor binding and must therefore lower the reporter response."
       ],
       "answerIndex": 2,
-      "rationale": "Phosphodiesterases terminate cAMP signals by breaking down the second messenger; inhibiting them can prolong signaling after the receptor is no longer stimulated.",
+      "rationale": "Phosphodiesterase terminates intracellular cAMP signaling by hydrolyzing cAMP into AMP; inhibiting this enzyme prevents breakdown of the second messenger and prolongs the cAMP-dependent reporter response after the hormone pulse ends.",
       "choiceRationales": [
-        "This option is not the best answer because Phosphodiesterases regulate intracellular cAMP rather than producing the extracellular hormone.",
-        "This option is not the best answer because cAMP is a small intracellular second messenger, not a membrane lipid or DNA precursor.",
-        "Phosphodiesterases terminate cAMP signals by breaking down the second messenger; inhibiting them can prolong signaling after the receptor is no longer stimulated.",
-        "This option is not the best answer because The prolonged response is consistent with signal persistence, not necessarily increased receptor binding."
+        "This option is not the best answer because phosphodiesterase is an intracellular enzyme that degrades cyclic AMP rather than synthesizing extracellular hormones or increasing ligand-receptor binding.",
+        "This option is not the best answer because cyclic AMP is a small nucleotide-derived intracellular second messenger, not a structural membrane lipid that can be converted into genomic DNA.",
+        "Phosphodiesterase degrades intracellular cAMP into AMP, so inhibiting it slows cAMP clearance and prolongs the second-messenger signal after the hormone pulse.",
+        "This option is not the best answer because the observation shows a prolonged reporter response rather than a lowered one, and phosphodiesterase inhibition acts on intracellular cAMP breakdown rather than blocking receptor binding."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -45382,17 +45382,17 @@
       "prompt": "A population is in Hardy-Weinberg equilibrium and has a recessive phenotype frequency of 0.04. What fraction of the population is expected to be heterozygous?",
       "choices": [
         "0.04, because the recessive phenotype frequency is the heterozygote frequency.",
-        "0.16, because p squared is the expected heterozygote frequency.",
+        "0.16, because p times q is the expected heterozygote frequency.",
         "0.80, because the dominant allele frequency is the same as the heterozygote frequency.",
         "0.32, because q is 0.20, p is 0.80, and 2pq equals 2 times 0.80 times 0.20."
       ],
       "answerIndex": 3,
-      "rationale": "The recessive phenotype represents q squared, so q is 0.20 and p is 0.80; the expected heterozygote frequency is 2pq, or 0.32.",
+      "rationale": "Under Hardy-Weinberg equilibrium, the recessive phenotype frequency equals q^2 = 0.04, giving q = sqrt(0.04) = 0.20 and p = 1 - 0.20 = 0.80; therefore the expected heterozygote frequency is 2pq = 2(0.80)(0.20) = 0.32.",
       "choiceRationales": [
-        "This option is not the best answer because The recessive phenotype frequency estimates q squared, not the heterozygote class.",
-        "This option is not the best answer because p squared is the dominant homozygote frequency under the model.",
-        "This option is not the best answer because Allele frequency and heterozygote genotype frequency are different quantities.",
-        "The recessive phenotype represents q squared, so q is 0.20 and p is 0.80; the expected heterozygote frequency is 2pq, or 0.32."
+        "This option is not the best answer because 0.04 equals q squared, the frequency of homozygous recessive individuals rather than the frequency of heterozygous carriers.",
+        "This option is not the best answer because 0.16 equals p times q (0.80 times 0.20), omitting the factor of 2 in 2pq required to count both Aa and aA heterozygote allele combinations.",
+        "This option is not the best answer because 0.80 is the dominant allele frequency p (1 minus 0.20), which is a single-allele proportion rather than the diploid heterozygote genotype frequency.",
+        "Because q^2 = 0.04 gives q = 0.20 and p = 0.80, the expected heterozygote frequency is 2pq = 2(0.80)(0.20) = 0.32."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
@@ -45828,7 +45828,7 @@
       "difficulty": "moderate",
       "cognitiveDemand": "application",
       "cognitiveProcess": "calculate",
-      "prompt": "A producer community contains 10,000 kilojoules of biomass energy, herbivores contain 1,000 kilojoules, and primary consumers contain 100 kilojoules. Which conclusion is best supported?",
+      "prompt": "A producer community contains 10,000 kilojoules of biomass energy, herbivores contain 1,000 kilojoules, and secondary consumers contain 100 kilojoules. Which conclusion is best supported?",
       "choices": [
         "About 10 percent of autotroph energy entered herbivore tissue, and about 10 percent of that reached the next trophic level.",
         "All 10,000 kilojoules moved up to the next trophic level because all of the energy is conserved without any losses at all.",
@@ -45836,12 +45836,12 @@
         "The data prove that both matter and energy are simply destroyed during each of the trophic transfer steps in the community."
       ],
       "answerIndex": 0,
-      "rationale": "The biomass-energy values show roughly one-tenth transfer between adjacent levels, with the remainder used in metabolism, lost as heat, or not assimilated.",
+      "rationale": "Energy drops from 10,000 kJ in producers to 1,000 kJ in herbivores (primary consumers) to 100 kJ in secondary consumers, showing roughly 10 percent transfer efficiency per trophic step while most energy is dissipated as metabolic heat or left unassimilated.",
       "choiceRationales": [
-        "The biomass-energy values show roughly one-tenth transfer between adjacent levels, with the remainder used in metabolism, lost as heat, or not assimilated.",
-        "This option is not the best answer because Energy is conserved overall but is dispersed and less available for biological work at higher levels.",
-        "This option is not the best answer because Consumers do not concentrate all ingested energy into new biomass.",
-        "This option is not the best answer because Matter can be recycled even though usable energy is dissipated; the data do not show that matter is destroyed."
+        "The biomass-energy values decline tenfold across successive trophic levels (10,000 to 1,000 to 100 kJ), consistent with roughly 10 percent transfer efficiency per step.",
+        "This option is not the best answer because although total energy is conserved thermodynamically, roughly 90 percent is dissipated as metabolic heat or unassimilated waste rather than entering the next trophic level.",
+        "This option is not the best answer because available chemical energy decreases sharply from 10,000 kJ in producers down to 100 kJ in secondary consumers rather than concentrating upward.",
+        "This option is not the best answer because nutrient atoms are recycled through ecosystems while usable chemical energy dissipates as heat; declining biomass energy does not mean matter is destroyed."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",

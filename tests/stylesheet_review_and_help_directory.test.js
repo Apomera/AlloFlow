@@ -156,7 +156,11 @@ describe('neutral expert-help directory', () => {
     const s = built.indexOf('function _helpDirectoryDescs(t) {');
     const e = built.indexOf('function buildPdfPipelineTourSteps(', s);
     expect(s > 0 && e > s).toBe(true);
-    const AlloHelpDirectory = new Function('React', built.slice(s, e) + '\nreturn AlloHelpDirectory;')(React);
+    // The links are filtered through the module's real http(s)-only URL guard; slice it too.
+    const hs = built.indexOf('function _viewSafeHttpUrl(url) {');
+    const he = built.indexOf('\nfunction ', hs + 1);
+    expect(hs > 0 && he > hs).toBe(true);
+    const AlloHelpDirectory = new Function('React', built.slice(hs, he) + '\n' + built.slice(s, e) + '\nreturn AlloHelpDirectory;')(React);
     const t = (key) => key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), ui) || '';
     const html = ReactDOMServer.renderToStaticMarkup(React.createElement(AlloHelpDirectory, { t, idBase: 'probe' }));
     const doc = new DOMParser().parseFromString(html, 'text/html');

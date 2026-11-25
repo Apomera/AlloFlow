@@ -66,7 +66,8 @@ describe.each(paths)('Climate Renewables controls: %s',path=>{
     const view=mountTool(path,{scenariosTried:{0:'true',1:1,unknown1:true,unknown2:true,unknown3:true,unknown4:true}});
     await activate(view.one('#ce-renewables-preset-0'));expect(view.state().scenariosTried).toEqual({0:true});expect(view.state().badges?.scenarioTester).toBeUndefined();
     for(const index of [1,2,3])await activate(view.one('#ce-renewables-preset-'+index));
-    expect(view.state().scenariosTried).toEqual({0:true,1:true,2:true,3:true});expect(view.state().badges.scenarioTester).toBeGreaterThan(0);
+    expect(view.state().scenariosTried).toEqual({0:true,1:true,2:true,3:true});expect(view.state().badges?.scenarioTester).toBeUndefined(); // 2026-11-23: trying all 4 is not enough
+    await activate(view.one('#ce-renewables-check-opt-2'));expect(view.state().badges.scenarioTester).toBeGreaterThan(0); // the one Reliable mix, from the reliability model
     const awarded=view.award.mock.calls.length;await activate(view.one('#ce-renewables-preset-3'));expect(view.award.mock.calls).toHaveLength(awarded);
   });
 

@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-core-5752-learning-library",
@@ -32,7 +33,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 8,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 6,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -483,15 +489,15 @@
         },
         {
           "id": "core5752-ch-02-check-03",
-          "prompt": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp. Here, \"leggy\" means tall and weak from insufficient light.\" What does the quoted word mean in context?",
+          "prompt": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp.\" What does the word \"leggy\" mean in context?",
           "choices": [
             "Formally disqualified under institutional policy or legal guidelines.",
-            "Physically narrow or slender in its literal geometric dimensions.",
+            "Streamlined or narrowed deliberately for faster movement through water.",
             "Intentionally lighthearted or playful in its rhetorical delivery.",
-            "Insufficiently developed or substantiated for the intended purpose."
+            "Tall, thin, and weak from stretching toward insufficient light."
           ],
           "answerIndex": 3,
-          "rationale": "The surrounding explanation supplies the contextual meaning: development is inadequate for the stated purpose.",
+          "rationale": "Moving the seedlings closer to the lamp supplies the context clue: \"leggy\" describes seedlings growing tall, spindly, and weak from insufficient light.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1483,7 +1489,7 @@
             "42"
           ],
           "answerIndex": 2,
-          "rationale": "Multiplication represents equal groups: 18 times 24 and 27 times 16 both equal 432. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Multiplication represents equal groups: 18 times 24 equals 432. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1502,7 +1508,7 @@
             "1 3/8"
           ],
           "answerIndex": 3,
-          "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, and 1 7/8 - 4/8 = 1 3/8. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, which simplifies to 1 3/8. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1521,7 +1527,7 @@
             "15"
           ],
           "answerIndex": 0,
-          "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 and 7.5 divided by 0.3 both equal 25.",
+          "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 equals 25.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1708,7 +1714,7 @@
             "$20"
           ],
           "answerIndex": 0,
-          "rationale": "The remaining fraction is 75% of $80, or 50% of $120; each calculation gives $60. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "The remaining price after a 25% discount is 75% of $80, which equals $60. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1721,13 +1727,13 @@
           "id": "core5752-ch-08-check-03",
           "prompt": "A car travels 180 miles in 3 hours at a constant rate. What is the rate?",
           "choices": [
-            "120 per hour",
-            "60 per hour",
-            "540 per hour",
-            "45 per hour"
+            "120 miles per hour",
+            "60 miles per hour",
+            "540 miles per hour",
+            "45 miles per hour"
           ],
           "answerIndex": 1,
-          "rationale": "A constant unit rate is total quantity divided by time: 180/3 and 240/4 both equal 60 per hour. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "A constant unit rate is total distance divided by time: 180 miles divided by 3 hours equals 60 miles per hour. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1746,7 +1752,7 @@
             "0.024"
           ],
           "answerIndex": 2,
-          "rationale": "There are 100 centimeters per meter and 1,000 meters per kilometer, so both conversions produce 240 in the requested unit.",
+          "rationale": "There are 100 centimeters per meter, so multiplying 2.4 meters by 100 produces 240 centimeters.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1759,13 +1765,13 @@
           "id": "core5752-ch-08-check-05",
           "prompt": "On a map, 1 inch represents 12 miles. Two towns are 3.5 inches apart. What is the actual distance?",
           "choices": [
-            "15.5",
-            "36",
-            "48",
-            "42"
+            "15.5 miles",
+            "36 miles",
+            "48 miles",
+            "42 miles"
           ],
           "answerIndex": 3,
-          "rationale": "Multiply the scale value, 12, by the measured length, 3.5, to obtain 42 actual units. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Multiply the scale value of 12 miles per inch by the measured length of 3.5 inches to obtain 42 miles. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1895,7 +1901,7 @@
             "18"
           ],
           "answerIndex": 0,
-          "rationale": "With five ordered values, the median is the third value, which is 15 in both sets. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "With five ordered values (12, 15, 15, 18, 20), the median is the middle (third) value, which is 15. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1914,7 +1920,7 @@
             "22"
           ],
           "answerIndex": 1,
-          "rationale": "The required total is mean times count. Subtracting the known values gives 72 - 52 = 20 and 100 - 80 = 20.",
+          "rationale": "The required total is mean times count (4 × 18 = 72). Subtracting the three known scores (14 + 17 + 21 = 52) gives 72 - 52 = 20.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2101,7 +2107,7 @@
             "11.4"
           ],
           "answerIndex": 1,
-          "rationale": "Range is maximum minus minimum: 18 - 4 and 36 - 22 both equal 14. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Range is maximum minus minimum: 18 - 4 equals 14. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2326,7 +2332,7 @@
             "8x - 7"
           ],
           "answerIndex": 3,
-          "rationale": "Distribute and combine constants: 8x - 12 + 5 and 8x + 2 - 9 both simplify to 8x - 7. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Distribute 4 across (2x - 3) and combine constants: 8x - 12 + 5 simplifies to 8x - 7. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2383,7 +2389,7 @@
             "1/2"
           ],
           "answerIndex": 2,
-          "rationale": "Slope is change in y divided by change in x: (13 - 5)/(4 - 0) and (15 - 7)/(6 - 2) both equal 2. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Slope is change in y divided by change in x: (13 - 5)/(4 - 0) = 8/4 = 2. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2513,7 +2519,7 @@
             "54 square units"
           ],
           "answerIndex": 3,
-          "rationale": "Rectangle area is 9 times 6, and triangle area is one-half times 12 times 9; both equal 54 square units.",
+          "rationale": "Rectangle area is length times width: multiplying 9 units by 6 units equals 54 square units, whereas 30 is the perimeter 2(9 + 6).",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2589,7 +2595,7 @@
             "84 cubic units"
           ],
           "answerIndex": 3,
-          "rationale": "Volume is the product of length, width, and height: 3 x 4 x 7 and 2 x 6 x 7 both equal 84. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "rationale": "Volume is the product of length, width, and height: 3 × 4 × 7 equals 84 cubic units. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -3967,8 +3973,8 @@
       "skillId": "reading-craft-structure-language",
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
-      "front": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp. Here, \"leggy\" means tall and weak from insufficient light.\" What does the quoted word mean in context?",
-      "back": "Insufficiently developed or substantiated for the intended purpose.",
+      "front": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp.\" What does the word \"leggy\" mean in context?",
+      "back": "Tall, thin, and weak from stretching toward insufficient light.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -7383,7 +7389,7 @@
           "id": "practice",
           "label": "Targeted practice",
           "instruction": "Solve three Core Data/Geometry items: (1) find the missing fourth score when the mean of four scores is 18 and three are 14, 17, and 21; (2) explain how a y-axis starting at 95 exaggerates bars of 98 and 100; (3) compute both the new side length and new area when a square of side 4 is enlarged by scale factor 3.",
-          "requiredOutput": "Report fourth score = 20 (total 72 − 52), note that a non-zero baseline inflates visual difference (2.5× bar height for a 2% numeric gap), and distinguish new side = 12 (×3) from new area = 144 (×9)."
+          "requiredOutput": "Report fourth score = 20 (total 72 − 52), note that a non-zero baseline inflates visual difference (5/3 ≈ 1.67× bar height for a ~2% numeric gap), and distinguish new side = 12 (×3) from new area = 144 (×9)."
         },
         {
           "order": 4,
@@ -7394,6 +7400,2519 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "praxis-core-5752-session-ch-01",
+      "title": "Main Ideas, Supporting Details, and Inferences guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Main Ideas, Supporting Details, and Inferences\" (Reading: Key Ideas and Details) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-01",
+      "itemIds": [
+        "core5752-b1-001",
+        "core5752-b1-002",
+        "core5752-b1-003",
+        "core5752-b1-004",
+        "core5752-b1-005",
+        "core5752-b1-006",
+        "core5752-b1-007",
+        "core5752-b1-008",
+        "core5752-b1-009",
+        "core5752-b1-010"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Main Ideas, Supporting Details, and Inferences\" and the \"Main Ideas, Evidence & Text-Grounded Inference\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Reading Comprehension & Evidence Verification Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Preserving Scope and Qualifications in a Reading Passage Summary\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Main Ideas, Supporting Details, and Inferences\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Filter Out Narrow Details and Extreme Inferences in Core Reading\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-02",
+      "title": "Craft, Structure, Tone, and Vocabulary in Context guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Craft, Structure, Tone, and Vocabulary in Context\" (Reading: Craft, Structure, and Language) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-02",
+      "itemIds": [
+        "core5752-b1-021",
+        "core5752-b1-022",
+        "core5752-b1-023",
+        "core5752-b1-024",
+        "core5752-b2-014",
+        "core5752-b2-015",
+        "core5752-b2-016",
+        "core5752-b2-017",
+        "core5752-b2-018",
+        "core5752-b2-019"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Craft, Structure, Tone, and Vocabulary in Context\" and the \"Rhetorical Purpose, Tone, Structure & Context Clues\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Craft, Structure, Tone & Context-Clue Analysis Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Resolving Contextual Meaning Through Contrast Clues and Tone\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Craft, Structure, Tone, and Vocabulary in Context\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Calibrate Author Tone and Distinguish Content from Rhetorical Function\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-03",
+      "title": "Arguments, Visual Information, and Paired Texts guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Arguments, Visual Information, and Paired Texts\" (Reading: Integration of Knowledge and Ideas) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-03",
+      "itemIds": [
+        "core5752-b2-026",
+        "core5752-b2-027",
+        "core5752-b2-028",
+        "core5752-b2-029",
+        "core5752-b2-030",
+        "core5752-b2-031",
+        "core5752-b2-032",
+        "core5752-b2-033",
+        "core5752-b2-034",
+        "core5752-b2-035"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Arguments, Visual Information, and Paired Texts\" and the \"Argument Evaluation, Visual Data & Paired Passages\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Argument Evaluation, Visual Data & Paired-Text Integration Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Separating Absolute and Relative Change on a Truncated Bar Graph\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Arguments, Visual Information, and Paired Texts\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Run the Clause-Boundary, Subject-Core, and Modifier-Anchor Audit\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-04",
+      "title": "Argument, Organization, Revision, and Synthesis guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Argument, Organization, Revision, and Synthesis\" (Writing: Text Types, Purposes, and Production) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-04",
+      "itemIds": [
+        "core5752-b1-043",
+        "core5752-b1-044",
+        "core5752-b1-045",
+        "core5752-b2-038",
+        "core5752-b2-039",
+        "core5752-b2-040",
+        "core5752-b2-041",
+        "core5752-b2-042",
+        "core5752-b2-043",
+        "core5752-b2-044"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Argument, Organization, Revision, and Synthesis\" and the \"Argumentative & Source-Based Essays and Revision\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Argumentative & Source-Based Essay Architecture\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Repairing a Misleading Paragraph Transition During Passage Revision\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Argument, Organization, Revision, and Synthesis\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lock In Multiplicative Scaling and Original-Base Percent Equations\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-05",
+      "title": "Usage, Sentence Structure, Mechanics, and Word Choice guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Usage, Sentence Structure, Mechanics, and Word Choice\" (Writing: Language and Research Skills) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-05",
+      "itemIds": [
+        "core5752-b1-054",
+        "core5752-b1-055",
+        "core5752-b2-046",
+        "core5752-b2-047",
+        "core5752-b2-048",
+        "core5752-b2-049",
+        "core5752-b2-050",
+        "core5752-b2-051",
+        "core5752-b2-052",
+        "core5752-b2-053"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Usage, Sentence Structure, Mechanics, and Word Choice\" and the \"Standard English Conventions, Usage & Research Literacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Sentence Clarity, Grammar & Usage Editing Checklist Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Fixing a Dangling Modifier, Parallelism Break, and Tense Shift\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Usage, Sentence Structure, Mechanics, and Word Choice\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Signs, Inequality Direction, and Slope-Intercept Meaning\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-06",
+      "title": "Research Strategy, Source Credibility, Citation, and Synthesis guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Research Strategy, Source Credibility, Citation, and Synthesis\" (Writing: Language and Research Skills) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-06",
+      "itemIds": [
+        "core5752-b1-059",
+        "core5752-b1-060",
+        "core5752-b1-061",
+        "core5752-b1-062",
+        "core5752-b1-063",
+        "core5752-b2-056",
+        "core5752-b2-057",
+        "core5752-b2-058",
+        "core5752-b2-059",
+        "core5752-b2-060"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Research Strategy, Source Credibility, Citation, and Synthesis\" and the \"Standard English Conventions, Usage & Research Literacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Research Inquiry, Source Credibility & Attribution Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Eliminating Patchwriting and Restoring Accurate Source Attribution\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Research Strategy, Source Credibility, Citation, and Synthesis\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Center, Sampling Scope, and 1D/2D/3D Geometry Measures\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-07",
+      "title": "Number Forms, Operations, and Quantitative Reasoning guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Number Forms, Operations, and Quantitative Reasoning\" (Mathematics: Number and Quantity) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-07",
+      "itemIds": [
+        "core5752-b1-064",
+        "core5752-b1-065",
+        "core5752-b1-066",
+        "core5752-b1-067",
+        "core5752-b1-068",
+        "core5752-b1-069",
+        "core5752-b1-070",
+        "core5752-b2-064",
+        "core5752-b2-065",
+        "core5752-b2-066"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Number Forms, Operations, and Quantitative Reasoning\" and the \"Number Operations, Ratios, Percents & Measurement\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Number Forms, Properties & Quantitative Verification Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Applying Prime Factorization to Separate GCF and LCM Problems\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Number Forms, Operations, and Quantitative Reasoning\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Filter Out Narrow Details and Extreme Inferences in Core Reading\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-08",
+      "title": "Ratios, Proportions, Percent, Rates, and Measurement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Ratios, Proportions, Percent, Rates, and Measurement\" (Mathematics: Number and Quantity) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-08",
+      "itemIds": [
+        "core5752-b1-072",
+        "core5752-b1-073",
+        "core5752-b1-074",
+        "core5752-b1-075",
+        "core5752-b1-076",
+        "core5752-b2-071",
+        "core5752-b2-072",
+        "core5752-b2-073",
+        "core5752-b2-074",
+        "core5752-b2-075"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Ratios, Proportions, Percent, Rates, and Measurement\" and the \"Number Operations, Ratios, Percents & Measurement\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Number & Quantity Reasoning: Fractions, Ratios, Proportions & Percents Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Squaring Scale Factors and Converting Square Feet to Square Yards\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Ratios, Proportions, Percent, Rates, and Measurement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Calibrate Author Tone and Distinguish Content from Rhetorical Function\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-09",
+      "title": "Data Displays and Descriptive Measures guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Data Displays and Descriptive Measures\" (Mathematics: Data, Statistics, and Probability) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-09",
+      "itemIds": [
+        "core5752-b2-079",
+        "core5752-b2-080",
+        "core5752-b2-081",
+        "core5752-b2-082",
+        "core5752-b1-077",
+        "core5752-b1-078",
+        "core5752-b1-079",
+        "core5752-b1-080",
+        "core5752-b1-081",
+        "core5752-b1-082"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Data Displays and Descriptive Measures\" and the \"Descriptive Statistics, Sampling & Probability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Geometry, Measurement & Statistical Data Interpretation Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Comparing Two Quiz Distributions Sharing an Identical Mean\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Data Displays and Descriptive Measures\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Run the Clause-Boundary, Subject-Core, and Modifier-Anchor Audit\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-10",
+      "title": "Statistics, Sampling, Study Design, and Probability guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Statistics, Sampling, Study Design, and Probability\" (Mathematics: Data, Statistics, and Probability) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-10",
+      "itemIds": [
+        "core5752-b1-086",
+        "core5752-b1-087",
+        "core5752-b1-088",
+        "core5752-b2-083",
+        "core5752-b2-084",
+        "core5752-b2-085",
+        "core5752-b2-086",
+        "core5752-b2-087",
+        "core5752-b2-088",
+        "core5752-b1-083"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Statistics, Sampling, Study Design, and Probability\" and the \"Descriptive Statistics, Sampling & Probability\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Sampling, Study Design, Inference & Probability Reasoning Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Evaluating Margin of Error Claims in a Statewide Teacher Poll\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Statistics, Sampling, Study Design, and Probability\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lock In Multiplicative Scaling and Original-Base Percent Equations\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-11",
+      "title": "Algebraic Expressions, Equations, Inequalities, and Functions guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Algebraic Expressions, Equations, Inequalities, and Functions\" (Mathematics: Algebra and Geometry) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-11",
+      "itemIds": [
+        "core5752-b2-093",
+        "core5752-b2-094",
+        "core5752-b1-089",
+        "core5752-b1-090",
+        "core5752-b1-091",
+        "core5752-b1-092",
+        "core5752-b1-093",
+        "core5752-b1-094",
+        "core5752-b2-089",
+        "core5752-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Algebraic Expressions, Equations, Inequalities, and Functions\" and the \"Linear/Quadratic Algebra, Functions & 2D/3D Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Algebra & Functions Problem-Solving Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Interpreting Slope and Intercept in a Linear Print-Cost Model\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Algebraic Expressions, Equations, Inequalities, and Functions\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Signs, Inequality Direction, and Slope-Intercept Meaning\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-ch-12",
+      "title": "Geometry, Similarity, Area, Surface Area, and Volume guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Geometry, Similarity, Area, Surface Area, and Volume\" (Mathematics: Algebra and Geometry) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "core5752-ch-12",
+      "itemIds": [
+        "core5752-b1-100",
+        "core5752-b2-095",
+        "core5752-b2-096",
+        "core5752-b2-097",
+        "core5752-b2-098",
+        "core5752-b2-099",
+        "core5752-b2-100",
+        "core5752-b1-095",
+        "core5752-b1-096",
+        "core5752-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Geometry, Similarity, Area, Surface Area, and Volume\" and the \"Linear/Quadratic Algebra, Functions & 2D/3D Geometry\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Geometry Dimension, Similarity & Measurement Formula Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Distinguishing Open-Top Surface Area from Soil Capacity Volume\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Geometry, Similarity, Area, Surface Area, and Volume\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Center, Sampling Scope, and 1D/2D/3D Geometry Measures\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-trap-repair-sprint",
+      "title": "Praxis Core Academic Skills for Educators: Combined (5752) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "core5752-b1-001",
+        "core5752-b1-014",
+        "core5752-b1-046",
+        "core5752-b1-064",
+        "core5752-b1-089",
+        "core5752-b1-077",
+        "core5752-b1-002",
+        "core5752-b1-015",
+        "core5752-b1-047",
+        "core5752-b1-065",
+        "core5752-b1-090",
+        "core5752-b1-078"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Filter Out Narrow Details and Extreme Inferences in Core Reading\", \"Calibrate Author Tone and Distinguish Content from Rhetorical Function\", \"Run the Clause-Boundary, Subject-Core, and Modifier-Anchor Audit\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-session-mixed-capstone",
+      "title": "Praxis Core Academic Skills for Educators: Combined (5752) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "core5752-b1-004",
+        "core5752-b1-017",
+        "core5752-b1-028",
+        "core5752-b1-041",
+        "core5752-b1-049",
+        "core5752-b1-067",
+        "core5752-b1-080",
+        "core5752-b1-092",
+        "core5752-b2-002",
+        "core5752-b2-017",
+        "core5752-b2-026",
+        "core5752-b2-044",
+        "core5752-b1-060",
+        "core5752-b2-065",
+        "core5752-b2-079"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Access and flexibility in public services\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "praxis-core-5752-spaced-ch-01",
+      "topicId": "core5752-ch-01",
+      "topicLabel": "1. Main Ideas, Supporting Details, and Inferences",
+      "unitId": "reading-key-ideas-details",
+      "chapterId": "core5752-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Main Ideas, Supporting Details, and Inferences\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-02",
+      "topicId": "core5752-ch-02",
+      "topicLabel": "2. Craft, Structure, Tone, and Vocabulary in Context",
+      "unitId": "reading-craft-structure-language",
+      "chapterId": "core5752-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Craft, Structure, Tone, and Vocabulary in Context\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-03",
+      "topicId": "core5752-ch-03",
+      "topicLabel": "3. Arguments, Visual Information, and Paired Texts",
+      "unitId": "reading-integration-knowledge-ideas",
+      "chapterId": "core5752-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Arguments, Visual Information, and Paired Texts\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-04",
+      "topicId": "core5752-ch-04",
+      "topicLabel": "4. Argument, Organization, Revision, and Synthesis",
+      "unitId": "writing-text-types-production",
+      "chapterId": "core5752-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Argument, Organization, Revision, and Synthesis\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-05",
+      "topicId": "core5752-ch-05",
+      "topicLabel": "5. Usage, Sentence Structure, Mechanics, and Word Choice",
+      "unitId": "writing-language-research",
+      "chapterId": "core5752-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Usage, Sentence Structure, Mechanics, and Word Choice\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-06",
+      "topicId": "core5752-ch-06",
+      "topicLabel": "6. Research Strategy, Source Credibility, Citation, and Synthesis",
+      "unitId": "writing-language-research",
+      "chapterId": "core5752-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Research Strategy, Source Credibility, Citation, and Synthesis\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-07",
+      "topicId": "core5752-ch-07",
+      "topicLabel": "7. Number Forms, Operations, and Quantitative Reasoning",
+      "unitId": "math-number-quantity",
+      "chapterId": "core5752-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Number Forms, Operations, and Quantitative Reasoning\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-08",
+      "topicId": "core5752-ch-08",
+      "topicLabel": "8. Ratios, Proportions, Percent, Rates, and Measurement",
+      "unitId": "math-number-quantity",
+      "chapterId": "core5752-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Ratios, Proportions, Percent, Rates, and Measurement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-09",
+      "topicId": "core5752-ch-09",
+      "topicLabel": "9. Data Displays and Descriptive Measures",
+      "unitId": "math-data-statistics-probability",
+      "chapterId": "core5752-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Data Displays and Descriptive Measures\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-10",
+      "topicId": "core5752-ch-10",
+      "topicLabel": "10. Statistics, Sampling, Study Design, and Probability",
+      "unitId": "math-data-statistics-probability",
+      "chapterId": "core5752-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Statistics, Sampling, Study Design, and Probability\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-11",
+      "topicId": "core5752-ch-11",
+      "topicLabel": "11. Algebraic Expressions, Equations, Inequalities, and Functions",
+      "unitId": "math-algebra-geometry",
+      "chapterId": "core5752-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Algebraic Expressions, Equations, Inequalities, and Functions\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-spaced-ch-12",
+      "topicId": "core5752-ch-12",
+      "topicLabel": "12. Geometry, Similarity, Area, Surface Area, and Volume",
+      "unitId": "math-algebra-geometry",
+      "chapterId": "core5752-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Geometry, Similarity, Area, Surface Area, and Volume\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "praxis-core-5752-source-01",
+      "title": "Praxis Core (5752) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "praxis-core-5752-source-02",
+      "title": "Praxis Core (5752) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/core-combined-subtests-5752.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "praxis-core-5752-source-03",
+      "title": "Common Core State Standards for English Language Arts and Literacy",
+      "organization": "Common Core State Standards Initiative",
+      "url": "https://www.thecorestandards.org/ELA-Literacy/",
+      "credibility": "The Common Core State Standards Initiative page is a primary source for the published standards. Adoption and implementation vary by jurisdiction, and the standards are not an assessment blueprint.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "praxis-core-5752-source-04",
+      "title": "Praxis Core (5752) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "praxis-core-5752-source-05",
+      "title": "Praxis Core (5752) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "praxis-core-5752-source-06",
+      "title": "Common Core State Standards for Mathematics",
+      "organization": "Common Core State Standards Initiative",
+      "url": "https://www.thecorestandards.org/Math/",
+      "credibility": "The Common Core State Standards Initiative page is a primary source for the published mathematics standards. Jurisdictions may adopt, revise, or replace them, and they are not an ETS test specification.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "praxis-core-5752-unit-review-01",
+      "unitId": "reading-key-ideas-details",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Main Ideas, Supporting Details, and Inferences",
+      "chapterId": "core5752-ch-01",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-01-section-01",
+        "core5752-ch-01-section-02",
+        "core5752-ch-01-section-03",
+        "core5752-ch-01-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-001",
+        "core5752-b1-002",
+        "core5752-b1-003",
+        "core5752-b1-004",
+        "core5752-b1-005",
+        "core5752-b1-006",
+        "core5752-b1-007",
+        "core5752-b1-008",
+        "core5752-b1-009",
+        "core5752-b1-010",
+        "core5752-b1-011",
+        "core5752-b1-012",
+        "core5752-b1-013",
+        "core5752-b2-001",
+        "core5752-b2-002",
+        "core5752-b2-003",
+        "core5752-b2-004",
+        "core5752-b2-005",
+        "core5752-b2-006",
+        "core5752-b2-007",
+        "core5752-b2-008",
+        "core5752-b2-009",
+        "core5752-b2-010",
+        "core5752-b2-011",
+        "core5752-b2-012",
+        "core5752-b2-013"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-001",
+        "core5752-b1-002",
+        "core5752-b1-003",
+        "core5752-b1-004",
+        "core5752-b1-005",
+        "core5752-b1-006",
+        "core5752-b1-007",
+        "core5752-b1-008",
+        "core5752-b1-009",
+        "core5752-b1-010",
+        "core5752-b1-011",
+        "core5752-b1-012"
+      ],
+      "purpose": "Consolidate \"Main Ideas, Supporting Details, and Inferences\" (Reading: Key Ideas and Details) across 4 lessons and 26 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-02",
+      "unitId": "reading-craft-structure-language",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Craft, Structure, Tone, and Vocabulary in Context",
+      "chapterId": "core5752-ch-02",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-02-section-01",
+        "core5752-ch-02-section-02",
+        "core5752-ch-02-section-03",
+        "core5752-ch-02-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-014",
+        "core5752-b1-015",
+        "core5752-b1-016",
+        "core5752-b1-017",
+        "core5752-b1-018",
+        "core5752-b1-019",
+        "core5752-b1-020",
+        "core5752-b1-021",
+        "core5752-b1-022",
+        "core5752-b1-023",
+        "core5752-b1-024",
+        "core5752-b2-014",
+        "core5752-b2-015",
+        "core5752-b2-016",
+        "core5752-b2-017",
+        "core5752-b2-018",
+        "core5752-b2-019",
+        "core5752-b2-020",
+        "core5752-b2-021",
+        "core5752-b2-022",
+        "core5752-b2-023",
+        "core5752-b2-024"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-014",
+        "core5752-b1-015",
+        "core5752-b1-016",
+        "core5752-b1-017",
+        "core5752-b1-018",
+        "core5752-b1-019",
+        "core5752-b1-020",
+        "core5752-b1-021",
+        "core5752-b1-022",
+        "core5752-b1-023",
+        "core5752-b1-024",
+        "core5752-b2-014"
+      ],
+      "purpose": "Consolidate \"Craft, Structure, Tone, and Vocabulary in Context\" (Reading: Craft, Structure, and Language) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-03",
+      "unitId": "reading-integration-knowledge-ideas",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Arguments, Visual Information, and Paired Texts",
+      "chapterId": "core5752-ch-03",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-03-section-01",
+        "core5752-ch-03-section-02",
+        "core5752-ch-03-section-03",
+        "core5752-ch-03-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-025",
+        "core5752-b1-026",
+        "core5752-b1-027",
+        "core5752-b1-028",
+        "core5752-b1-029",
+        "core5752-b1-030",
+        "core5752-b1-031",
+        "core5752-b1-032",
+        "core5752-b1-033",
+        "core5752-b1-034",
+        "core5752-b1-035",
+        "core5752-b1-036",
+        "core5752-b1-037",
+        "core5752-b2-025",
+        "core5752-b2-026",
+        "core5752-b2-027",
+        "core5752-b2-028",
+        "core5752-b2-029",
+        "core5752-b2-030",
+        "core5752-b2-031",
+        "core5752-b2-032",
+        "core5752-b2-033",
+        "core5752-b2-034",
+        "core5752-b2-035",
+        "core5752-b2-036",
+        "core5752-b2-037"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-025",
+        "core5752-b1-026",
+        "core5752-b1-027",
+        "core5752-b1-028",
+        "core5752-b1-029",
+        "core5752-b1-030",
+        "core5752-b1-031",
+        "core5752-b1-032",
+        "core5752-b1-033",
+        "core5752-b1-034",
+        "core5752-b1-035",
+        "core5752-b1-036"
+      ],
+      "purpose": "Consolidate \"Arguments, Visual Information, and Paired Texts\" (Reading: Integration of Knowledge and Ideas) across 4 lessons and 26 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-04",
+      "unitId": "writing-text-types-production",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Argument, Organization, Revision, and Synthesis",
+      "chapterId": "core5752-ch-04",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-04-section-01",
+        "core5752-ch-04-section-02",
+        "core5752-ch-04-section-03",
+        "core5752-ch-04-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-038",
+        "core5752-b1-039",
+        "core5752-b1-040",
+        "core5752-b1-041",
+        "core5752-b1-042",
+        "core5752-b1-043",
+        "core5752-b1-044",
+        "core5752-b1-045",
+        "core5752-b2-038",
+        "core5752-b2-039",
+        "core5752-b2-040",
+        "core5752-b2-041",
+        "core5752-b2-042",
+        "core5752-b2-043",
+        "core5752-b2-044",
+        "core5752-b2-045"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-038",
+        "core5752-b1-039",
+        "core5752-b1-040",
+        "core5752-b1-041",
+        "core5752-b1-042",
+        "core5752-b1-043",
+        "core5752-b1-044",
+        "core5752-b1-045",
+        "core5752-b2-038",
+        "core5752-b2-039",
+        "core5752-b2-040",
+        "core5752-b2-041"
+      ],
+      "purpose": "Consolidate \"Argument, Organization, Revision, and Synthesis\" (Writing: Text Types, Purposes, and Production) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-05",
+      "unitId": "writing-language-research",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Usage, Sentence Structure, Mechanics, and Word Choice",
+      "chapterId": "core5752-ch-05",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-05-section-01",
+        "core5752-ch-05-section-02",
+        "core5752-ch-05-section-03",
+        "core5752-ch-05-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-046",
+        "core5752-b1-047",
+        "core5752-b1-048",
+        "core5752-b1-049",
+        "core5752-b1-050",
+        "core5752-b1-051",
+        "core5752-b1-052",
+        "core5752-b1-053",
+        "core5752-b1-054",
+        "core5752-b1-055",
+        "core5752-b2-046",
+        "core5752-b2-047",
+        "core5752-b2-048",
+        "core5752-b2-049",
+        "core5752-b2-050",
+        "core5752-b2-051",
+        "core5752-b2-052",
+        "core5752-b2-053",
+        "core5752-b2-054",
+        "core5752-b2-055"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-046",
+        "core5752-b1-047",
+        "core5752-b1-048",
+        "core5752-b1-049",
+        "core5752-b1-050",
+        "core5752-b1-051",
+        "core5752-b1-052",
+        "core5752-b1-053",
+        "core5752-b1-054",
+        "core5752-b1-055",
+        "core5752-b2-046",
+        "core5752-b2-047"
+      ],
+      "purpose": "Consolidate \"Usage, Sentence Structure, Mechanics, and Word Choice\" (Writing: Language and Research Skills) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-06",
+      "unitId": "writing-language-research",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Research Strategy, Source Credibility, Citation, and Synthesis",
+      "chapterId": "core5752-ch-06",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-06-section-01",
+        "core5752-ch-06-section-02",
+        "core5752-ch-06-section-03",
+        "core5752-ch-06-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-056",
+        "core5752-b1-057",
+        "core5752-b1-058",
+        "core5752-b1-059",
+        "core5752-b1-060",
+        "core5752-b1-061",
+        "core5752-b1-062",
+        "core5752-b1-063",
+        "core5752-b2-056",
+        "core5752-b2-057",
+        "core5752-b2-058",
+        "core5752-b2-059",
+        "core5752-b2-060",
+        "core5752-b2-061",
+        "core5752-b2-062",
+        "core5752-b2-063"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-056",
+        "core5752-b1-057",
+        "core5752-b1-058",
+        "core5752-b1-059",
+        "core5752-b1-060",
+        "core5752-b1-061",
+        "core5752-b1-062",
+        "core5752-b1-063",
+        "core5752-b2-056",
+        "core5752-b2-057",
+        "core5752-b2-058",
+        "core5752-b2-059"
+      ],
+      "purpose": "Consolidate \"Research Strategy, Source Credibility, Citation, and Synthesis\" (Writing: Language and Research Skills) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-07",
+      "unitId": "math-number-quantity",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Number Forms, Operations, and Quantitative Reasoning",
+      "chapterId": "core5752-ch-07",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-07-section-01",
+        "core5752-ch-07-section-02",
+        "core5752-ch-07-section-03",
+        "core5752-ch-07-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-064",
+        "core5752-b1-065",
+        "core5752-b1-066",
+        "core5752-b1-067",
+        "core5752-b1-068",
+        "core5752-b1-069",
+        "core5752-b1-070",
+        "core5752-b2-064",
+        "core5752-b2-065",
+        "core5752-b2-066",
+        "core5752-b2-067",
+        "core5752-b2-068",
+        "core5752-b2-069",
+        "core5752-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-064",
+        "core5752-b1-065",
+        "core5752-b1-066",
+        "core5752-b1-067",
+        "core5752-b1-068",
+        "core5752-b1-069",
+        "core5752-b1-070",
+        "core5752-b2-064",
+        "core5752-b2-065",
+        "core5752-b2-066",
+        "core5752-b2-067",
+        "core5752-b2-068"
+      ],
+      "purpose": "Consolidate \"Number Forms, Operations, and Quantitative Reasoning\" (Mathematics: Number and Quantity) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-08",
+      "unitId": "math-number-quantity",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Ratios, Proportions, Percent, Rates, and Measurement",
+      "chapterId": "core5752-ch-08",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-08-section-01",
+        "core5752-ch-08-section-02",
+        "core5752-ch-08-section-03",
+        "core5752-ch-08-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-071",
+        "core5752-b1-072",
+        "core5752-b1-073",
+        "core5752-b1-074",
+        "core5752-b1-075",
+        "core5752-b1-076",
+        "core5752-b2-071",
+        "core5752-b2-072",
+        "core5752-b2-073",
+        "core5752-b2-074",
+        "core5752-b2-075",
+        "core5752-b2-076"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-071",
+        "core5752-b1-072",
+        "core5752-b1-073",
+        "core5752-b1-074",
+        "core5752-b1-075",
+        "core5752-b1-076",
+        "core5752-b2-071",
+        "core5752-b2-072",
+        "core5752-b2-073",
+        "core5752-b2-074",
+        "core5752-b2-075",
+        "core5752-b2-076"
+      ],
+      "purpose": "Consolidate \"Ratios, Proportions, Percent, Rates, and Measurement\" (Mathematics: Number and Quantity) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-09",
+      "unitId": "math-data-statistics-probability",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Data Displays and Descriptive Measures",
+      "chapterId": "core5752-ch-09",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-09-section-01",
+        "core5752-ch-09-section-02",
+        "core5752-ch-09-section-03",
+        "core5752-ch-09-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-077",
+        "core5752-b1-078",
+        "core5752-b1-079",
+        "core5752-b1-080",
+        "core5752-b1-081",
+        "core5752-b1-082",
+        "core5752-b2-077",
+        "core5752-b2-078",
+        "core5752-b2-079",
+        "core5752-b2-080",
+        "core5752-b2-081",
+        "core5752-b2-082"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-077",
+        "core5752-b1-078",
+        "core5752-b1-079",
+        "core5752-b1-080",
+        "core5752-b1-081",
+        "core5752-b1-082",
+        "core5752-b2-077",
+        "core5752-b2-078",
+        "core5752-b2-079",
+        "core5752-b2-080",
+        "core5752-b2-081",
+        "core5752-b2-082"
+      ],
+      "purpose": "Consolidate \"Data Displays and Descriptive Measures\" (Mathematics: Data, Statistics, and Probability) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-10",
+      "unitId": "math-data-statistics-probability",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Statistics, Sampling, Study Design, and Probability",
+      "chapterId": "core5752-ch-10",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-10-section-01",
+        "core5752-ch-10-section-02",
+        "core5752-ch-10-section-03",
+        "core5752-ch-10-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-083",
+        "core5752-b1-084",
+        "core5752-b1-085",
+        "core5752-b1-086",
+        "core5752-b1-087",
+        "core5752-b1-088",
+        "core5752-b2-083",
+        "core5752-b2-084",
+        "core5752-b2-085",
+        "core5752-b2-086",
+        "core5752-b2-087",
+        "core5752-b2-088"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-083",
+        "core5752-b1-084",
+        "core5752-b1-085",
+        "core5752-b1-086",
+        "core5752-b1-087",
+        "core5752-b1-088",
+        "core5752-b2-083",
+        "core5752-b2-084",
+        "core5752-b2-085",
+        "core5752-b2-086",
+        "core5752-b2-087",
+        "core5752-b2-088"
+      ],
+      "purpose": "Consolidate \"Statistics, Sampling, Study Design, and Probability\" (Mathematics: Data, Statistics, and Probability) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-11",
+      "unitId": "math-algebra-geometry",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Algebraic Expressions, Equations, Inequalities, and Functions",
+      "chapterId": "core5752-ch-11",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-11-section-01",
+        "core5752-ch-11-section-02",
+        "core5752-ch-11-section-03",
+        "core5752-ch-11-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-089",
+        "core5752-b1-090",
+        "core5752-b1-091",
+        "core5752-b1-092",
+        "core5752-b1-093",
+        "core5752-b1-094",
+        "core5752-b2-089",
+        "core5752-b2-090",
+        "core5752-b2-091",
+        "core5752-b2-092",
+        "core5752-b2-093",
+        "core5752-b2-094"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-089",
+        "core5752-b1-090",
+        "core5752-b1-091",
+        "core5752-b1-092",
+        "core5752-b1-093",
+        "core5752-b1-094",
+        "core5752-b2-089",
+        "core5752-b2-090",
+        "core5752-b2-091",
+        "core5752-b2-092",
+        "core5752-b2-093",
+        "core5752-b2-094"
+      ],
+      "purpose": "Consolidate \"Algebraic Expressions, Equations, Inequalities, and Functions\" (Mathematics: Algebra and Geometry) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-unit-review-12",
+      "unitId": "math-algebra-geometry",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Geometry, Similarity, Area, Surface Area, and Volume",
+      "chapterId": "core5752-ch-12",
+      "topicDiagnosticRouteIds": [
+        "core5752-ch-12-section-01",
+        "core5752-ch-12-section-02",
+        "core5752-ch-12-section-03",
+        "core5752-ch-12-section-04"
+      ],
+      "itemIds": [
+        "core5752-b1-095",
+        "core5752-b1-096",
+        "core5752-b1-097",
+        "core5752-b1-098",
+        "core5752-b1-099",
+        "core5752-b1-100",
+        "core5752-b2-095",
+        "core5752-b2-096",
+        "core5752-b2-097",
+        "core5752-b2-098",
+        "core5752-b2-099",
+        "core5752-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "core5752-b1-095",
+        "core5752-b1-096",
+        "core5752-b1-097",
+        "core5752-b1-098",
+        "core5752-b1-099",
+        "core5752-b1-100",
+        "core5752-b2-095",
+        "core5752-b2-096",
+        "core5752-b2-097",
+        "core5752-b2-098",
+        "core5752-b2-099",
+        "core5752-b2-100"
+      ],
+      "purpose": "Consolidate \"Geometry, Similarity, Area, Surface Area, and Volume\" (Mathematics: Algebra and Geometry) across 4 lessons and 12 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "praxis-core-5752-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Core Academic Skills for Educators: Combined (5752) blueprint domains.",
+      "focus": [
+        "Reading: Key Ideas and Details",
+        "Reading: Craft, Structure, and Language",
+        "Reading: Integration of Knowledge and Ideas",
+        "Writing: Text Types, Purposes, and Production"
+      ],
+      "itemIds": [
+        "core5752-b1-001",
+        "core5752-b1-038",
+        "core5752-b1-077",
+        "core5752-b1-015",
+        "core5752-b1-047",
+        "core5752-b1-090",
+        "core5752-b1-027",
+        "core5752-b1-066",
+        "core5752-b1-004",
+        "core5752-b1-041",
+        "core5752-b1-080",
+        "core5752-b1-018",
+        "core5752-b1-050",
+        "core5752-b1-093",
+        "core5752-b1-030",
+        "core5752-b1-069",
+        "core5752-b1-007",
+        "core5752-b1-044",
+        "core5752-b1-083",
+        "core5752-b1-021",
+        "core5752-b1-053",
+        "core5752-b1-096",
+        "core5752-b1-033",
+        "core5752-b1-072",
+        "core5752-b1-010",
+        "core5752-b2-039",
+        "core5752-b1-086",
+        "core5752-b1-024",
+        "core5752-b1-056",
+        "core5752-b1-099",
+        "core5752-b1-036",
+        "core5752-b1-075",
+        "core5752-b1-013",
+        "core5752-b2-042",
+        "core5752-b2-077",
+        "core5752-b2-016",
+        "core5752-b1-059",
+        "core5752-b2-090",
+        "core5752-b2-026",
+        "core5752-b2-065"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Core Academic Skills for Educators: Combined (5752) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Reading: Integration of Knowledge and Ideas",
+        "Writing: Text Types, Purposes, and Production",
+        "Writing: Language and Research Skills",
+        "Mathematics: Number and Quantity"
+      ],
+      "itemIds": [
+        "core5752-b1-014",
+        "core5752-b1-046",
+        "core5752-b1-089",
+        "core5752-b1-026",
+        "core5752-b1-065",
+        "core5752-b1-003",
+        "core5752-b1-040",
+        "core5752-b1-079",
+        "core5752-b1-017",
+        "core5752-b1-049",
+        "core5752-b1-092",
+        "core5752-b1-029",
+        "core5752-b1-068",
+        "core5752-b1-006",
+        "core5752-b1-043",
+        "core5752-b1-082",
+        "core5752-b1-020",
+        "core5752-b1-052",
+        "core5752-b1-095",
+        "core5752-b1-032",
+        "core5752-b1-071",
+        "core5752-b1-009",
+        "core5752-b2-038",
+        "core5752-b1-085",
+        "core5752-b1-023",
+        "core5752-b1-055",
+        "core5752-b1-098",
+        "core5752-b1-035",
+        "core5752-b1-074",
+        "core5752-b1-012",
+        "core5752-b2-041",
+        "core5752-b1-088",
+        "core5752-b2-015",
+        "core5752-b1-058",
+        "core5752-b2-089",
+        "core5752-b2-025",
+        "core5752-b2-064",
+        "core5752-b2-002",
+        "core5752-b2-044",
+        "core5752-b2-079"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Core Academic Skills for Educators: Combined (5752) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Confusing Main Idea with a Narrow Detail or Extreme Inference",
+        "Misreading Author Tone and Rhetorical Purpose",
+        "Missing Dangling Modifiers, Subject-Verb Agreement, and Comma Splice Traps"
+      ],
+      "itemIds": [
+        "core5752-b1-025",
+        "core5752-b1-064",
+        "core5752-b1-002",
+        "core5752-b1-039",
+        "core5752-b1-078",
+        "core5752-b1-016",
+        "core5752-b1-048",
+        "core5752-b1-091",
+        "core5752-b1-028",
+        "core5752-b1-067",
+        "core5752-b1-005",
+        "core5752-b1-042",
+        "core5752-b1-081",
+        "core5752-b1-019",
+        "core5752-b1-051",
+        "core5752-b1-094",
+        "core5752-b1-031",
+        "core5752-b1-070",
+        "core5752-b1-008",
+        "core5752-b1-045",
+        "core5752-b1-084",
+        "core5752-b1-022",
+        "core5752-b1-054",
+        "core5752-b1-097",
+        "core5752-b1-034",
+        "core5752-b1-073",
+        "core5752-b1-011",
+        "core5752-b2-040",
+        "core5752-b1-087",
+        "core5752-b2-014",
+        "core5752-b1-057",
+        "core5752-b1-100",
+        "core5752-b1-037",
+        "core5752-b1-076",
+        "core5752-b2-001",
+        "core5752-b2-043",
+        "core5752-b2-078",
+        "core5752-b2-017",
+        "core5752-b1-060",
+        "core5752-b2-091"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "praxis-core-5752-form-internal-a",
+      "title": "Internal practice form A (Praxis Core Academic Skills for Educators: Combined (5752))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "core5752-b1-001",
+        "core5752-b1-038",
+        "core5752-b1-077",
+        "core5752-b1-015",
+        "core5752-b1-047",
+        "core5752-b1-090",
+        "core5752-b1-027",
+        "core5752-b1-066",
+        "core5752-b1-004",
+        "core5752-b1-041",
+        "core5752-b1-080",
+        "core5752-b1-018",
+        "core5752-b1-050",
+        "core5752-b1-093",
+        "core5752-b1-030",
+        "core5752-b1-069",
+        "core5752-b1-007",
+        "core5752-b1-044",
+        "core5752-b1-083",
+        "core5752-b1-021",
+        "core5752-b1-053",
+        "core5752-b1-096",
+        "core5752-b1-033",
+        "core5752-b1-072",
+        "core5752-b1-010",
+        "core5752-b2-039",
+        "core5752-b1-086",
+        "core5752-b1-024",
+        "core5752-b1-056",
+        "core5752-b1-099",
+        "core5752-b1-036",
+        "core5752-b1-075",
+        "core5752-b1-013",
+        "core5752-b2-042",
+        "core5752-b2-077",
+        "core5752-b2-016",
+        "core5752-b1-059",
+        "core5752-b2-090",
+        "core5752-b2-026",
+        "core5752-b2-065",
+        "core5752-b2-003",
+        "core5752-b2-045",
+        "core5752-b2-080",
+        "core5752-b2-019",
+        "core5752-b2-067",
+        "core5752-b2-005",
+        "core5752-b1-063",
+        "core5752-b2-094",
+        "core5752-b2-030",
+        "core5752-b2-083"
+      ],
+      "topicIds": [
+        "core5752-ch-01",
+        "core5752-ch-04",
+        "core5752-ch-09",
+        "core5752-ch-02",
+        "core5752-ch-05",
+        "core5752-ch-11",
+        "core5752-ch-03",
+        "core5752-ch-07",
+        "core5752-ch-10",
+        "core5752-ch-12",
+        "core5752-ch-08",
+        "core5752-ch-06"
+      ],
+      "unitIds": [
+        "reading-key-ideas-details",
+        "writing-text-types-production",
+        "math-data-statistics-probability",
+        "reading-craft-structure-language",
+        "writing-language-research",
+        "math-algebra-geometry",
+        "reading-integration-knowledge-ideas",
+        "math-number-quantity"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-form-internal-b",
+      "title": "Internal practice form B (Praxis Core Academic Skills for Educators: Combined (5752))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "core5752-b1-014",
+        "core5752-b1-046",
+        "core5752-b1-089",
+        "core5752-b1-026",
+        "core5752-b1-065",
+        "core5752-b1-003",
+        "core5752-b1-040",
+        "core5752-b1-079",
+        "core5752-b1-017",
+        "core5752-b1-049",
+        "core5752-b1-092",
+        "core5752-b1-029",
+        "core5752-b1-068",
+        "core5752-b1-006",
+        "core5752-b1-043",
+        "core5752-b1-082",
+        "core5752-b1-020",
+        "core5752-b1-052",
+        "core5752-b1-095",
+        "core5752-b1-032",
+        "core5752-b1-071",
+        "core5752-b1-009",
+        "core5752-b2-038",
+        "core5752-b1-085",
+        "core5752-b1-023",
+        "core5752-b1-055",
+        "core5752-b1-098",
+        "core5752-b1-035",
+        "core5752-b1-074",
+        "core5752-b1-012",
+        "core5752-b2-041",
+        "core5752-b1-088",
+        "core5752-b2-015",
+        "core5752-b1-058",
+        "core5752-b2-089",
+        "core5752-b2-025",
+        "core5752-b2-064",
+        "core5752-b2-002",
+        "core5752-b2-044",
+        "core5752-b2-079",
+        "core5752-b2-018",
+        "core5752-b1-061",
+        "core5752-b2-092",
+        "core5752-b2-028",
+        "core5752-b2-081",
+        "core5752-b2-020",
+        "core5752-b2-068",
+        "core5752-b2-006",
+        "core5752-b2-046",
+        "core5752-b2-095"
+      ],
+      "topicIds": [
+        "core5752-ch-02",
+        "core5752-ch-05",
+        "core5752-ch-11",
+        "core5752-ch-03",
+        "core5752-ch-07",
+        "core5752-ch-01",
+        "core5752-ch-04",
+        "core5752-ch-09",
+        "core5752-ch-12",
+        "core5752-ch-08",
+        "core5752-ch-10",
+        "core5752-ch-06"
+      ],
+      "unitIds": [
+        "reading-craft-structure-language",
+        "writing-language-research",
+        "math-algebra-geometry",
+        "reading-integration-knowledge-ideas",
+        "math-number-quantity",
+        "reading-key-ideas-details",
+        "writing-text-types-production",
+        "math-data-statistics-probability"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "praxis-core-5752-form-internal-c",
+      "title": "Internal practice form C (Praxis Core Academic Skills for Educators: Combined (5752))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "core5752-b1-025",
+        "core5752-b1-064",
+        "core5752-b1-002",
+        "core5752-b1-039",
+        "core5752-b1-078",
+        "core5752-b1-016",
+        "core5752-b1-048",
+        "core5752-b1-091",
+        "core5752-b1-028",
+        "core5752-b1-067",
+        "core5752-b1-005",
+        "core5752-b1-042",
+        "core5752-b1-081",
+        "core5752-b1-019",
+        "core5752-b1-051",
+        "core5752-b1-094",
+        "core5752-b1-031",
+        "core5752-b1-070",
+        "core5752-b1-008",
+        "core5752-b1-045",
+        "core5752-b1-084",
+        "core5752-b1-022",
+        "core5752-b1-054",
+        "core5752-b1-097",
+        "core5752-b1-034",
+        "core5752-b1-073",
+        "core5752-b1-011",
+        "core5752-b2-040",
+        "core5752-b1-087",
+        "core5752-b2-014",
+        "core5752-b1-057",
+        "core5752-b1-100",
+        "core5752-b1-037",
+        "core5752-b1-076",
+        "core5752-b2-001",
+        "core5752-b2-043",
+        "core5752-b2-078",
+        "core5752-b2-017",
+        "core5752-b1-060",
+        "core5752-b2-091",
+        "core5752-b2-027",
+        "core5752-b2-066",
+        "core5752-b2-004",
+        "core5752-b1-062",
+        "core5752-b2-093",
+        "core5752-b2-029",
+        "core5752-b2-082",
+        "core5752-b2-021",
+        "core5752-b2-069",
+        "core5752-b2-007"
+      ],
+      "topicIds": [
+        "core5752-ch-03",
+        "core5752-ch-07",
+        "core5752-ch-01",
+        "core5752-ch-04",
+        "core5752-ch-09",
+        "core5752-ch-02",
+        "core5752-ch-05",
+        "core5752-ch-11",
+        "core5752-ch-10",
+        "core5752-ch-12",
+        "core5752-ch-08",
+        "core5752-ch-06"
+      ],
+      "unitIds": [
+        "reading-integration-knowledge-ideas",
+        "math-number-quantity",
+        "reading-key-ideas-details",
+        "writing-text-types-production",
+        "math-data-statistics-probability",
+        "reading-craft-structure-language",
+        "writing-language-research",
+        "math-algebra-geometry"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

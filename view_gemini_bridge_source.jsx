@@ -451,6 +451,13 @@ function BridgeSendModal(props) {
     _bridgeStopListening();
     if (typeof setBridgeF2FListening === 'function') setBridgeF2FListening(null);
     setBridgeSendOpen(false);
+    // Closing ends the broadcast: clear it from the session so it does not linger for students.
+    if (activeSessionCode && isTeacherMode) {
+      try {
+        const sRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+        updateDoc(sRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(err => warnLog('Bridge cleanup error:', err));
+      } catch (err) { warnLog('Bridge cleanup error:', err); }
+    }
   };
   const bridgeSendDialogRef = _useBridgeDialogFocus(bridgeSendOpen && isTeacherMode, closeBridgeSendModal);
   // Reset the per-send selection globals each time the modal opens. The mode /

@@ -234,7 +234,7 @@
     "choices": [
       "The sound pressure equals 20 dB SPL for every calibrated earphone and test frequency.",
       "The level is expressed relative to the standardized reference-equivalent threshold for that frequency and transducer.",
-      "The listener detects a sound pressure twenty times greater than the standard atmospheric reference pressure of 20 micropascals.",
+      "The listener detects a sound pressure twenty times greater than the standard acoustic reference pressure of 20 micropascals.",
       "The level is twenty decibels above the listener’s uncomfortable loudness level."
     ],
     "answerIndex": 1,
@@ -242,7 +242,7 @@
     "choiceRationales": [
       "Not the best answer. dB HL is frequency- and transducer-referenced, so its numerical value is not universally identical to dB SPL. The dB HL scale incorporates reference-equivalent threshold sound-pressure levels so that zero approximates normal threshold across frequencies for a specified transducer. It cannot be converted to a single identical SPL value without calibration data.",
       "Correct. The dB HL scale incorporates reference-equivalent threshold sound-pressure levels so that zero approximates normal threshold across frequencies for a specified transducer. It cannot be converted to a single identical SPL value without calibration data.",
-      "Not the best answer. A decibel value is logarithmic and dB HL is referenced to normative threshold, not directly to atmospheric pressure. The dB HL scale incorporates reference-equivalent threshold sound-pressure levels so that zero approximates normal threshold across frequencies for a specified transducer. It cannot be converted to a single identical SPL value without calibration data.",
+      "Not the best answer. A decibel value is logarithmic and dB HL is referenced to normative threshold, not directly to the 20-micropascal dB SPL reference pressure. The dB HL scale incorporates reference-equivalent threshold sound-pressure levels so that zero approximates normal threshold across frequencies for a specified transducer. It cannot be converted to a single identical SPL value without calibration data.",
       "Not the best answer. HL does not use an individual uncomfortable level as its reference point. The dB HL scale incorporates reference-equivalent threshold sound-pressure levels so that zero approximates normal threshold across frequencies for a specified transducer. It cannot be converted to a single identical SPL value without calibration data."
     ],
     "skillIds": [

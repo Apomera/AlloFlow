@@ -479,6 +479,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
       ].join('\n');
       document.head.appendChild(st);
     }
+    if (!document.getElementById('allo-eligibility-a11y-css') && document.head) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-eligibility-a11y-css';
+      ast.textContent = '[data-eligibility-root] :is(button,a,input,select,summary),[data-help-key="diagnosis_eligibility_panel"] :is(button,a,input,select,summary){touch-action:manipulation}[data-eligibility-root] :is(button,a,input,select,summary,[tabindex]):focus-visible,[data-help-key="diagnosis_eligibility_panel"] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid #7c3aed;outline-offset:2px}@media (forced-colors:active){[data-eligibility-root] :is(button,a,input,select,summary,[tabindex]):focus-visible,[data-help-key="diagnosis_eligibility_panel"] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   window.StemLab.registerTool('diagnosisEligibility', {
@@ -846,7 +852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
         );
       }
 
-      return h('div', { className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200 motion-reduce:animate-none', style: { color: pal.text, background: pal.bg, borderRadius: 16 } },
+      return h('div', { 'data-eligibility-root': 'true', className: 'max-w-4xl mx-auto p-4 animate-in fade-in duration-200 motion-reduce:animate-none', style: { color: pal.text, background: pal.bg, borderRadius: 16 } },
         h('header', {
           className: 'rounded-2xl p-4 pr-12 mb-5',
           style: { background: pal.heroBg, border: '1px solid ' + pal.border, boxShadow: pal.shadow }

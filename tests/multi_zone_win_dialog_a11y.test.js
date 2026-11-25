@@ -20,7 +20,7 @@ describe('Multi-Zone Sort win dialog accessibility', () => {
   it('returns focus to the game after Play again and respects reduced motion', () => {
     const source = files[0][1];
     expect(source).toContain('gameContainerRef.current?.focus()');
-    expect(source).toContain("reducedMotion ? '' : ' animate-in zoom-in-95 duration-300'");
+    expect(source).toContain("reducedMotion ? '' : ' animate-in motion-reduce:animate-none zoom-in-95 duration-300'");
   });
 
   it('provides 44 CSS-pixel actions and hides the celebration emoji', () => {

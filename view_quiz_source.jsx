@@ -8031,9 +8031,9 @@ var handleRemoveQuizReflection = props.handleRemoveQuizReflection;
     var reviewProgress = draftNamespace ? _quizBuildAttemptProgress(assessmentData, _quizReadWorkingDraft(draftNamespace)) : null;
     var studentFeedbackCopy = gradedMode || deliverySettings.feedbackTiming === 'teacher-graded' ? quizT('quiz.graded.feedback_note', 'Graded: answer feedback is withheld until your teacher checks your work.') : quickCheckActive ? quizT('quiz.quick_check.feedback_note', 'Quick check mode: answer feedback stays hidden until you submit.') : deliverySettings.feedbackTiming === 'immediate' ? 'Practice feedback is available as you check responses.' : deliverySettings.feedbackTiming === 'teacher-release' ? 'Answer feedback stays hidden until you submit and your teacher releases it.' : 'Answer feedback stays hidden until you submit the assessment.';
     var stepperItems = reviewProgress && Array.isArray(reviewProgress.items) ? reviewProgress.items : [];
-    // The navigation row keeps `pr-20 md:pr-0`: on phones the Student Tools
+    // Both rows keep `pr-20 md:pr-0`: on phones the Student Tools
     // launcher is pinned to the bottom-right corner (view_fab_stack, 12px in),
-    // and Next / Review & submit are the row's right-most controls, so without
+    // and Review & submit (top row) and Next (progress row) are right-most, so without
     // that clearance the launcher covered them whenever the row scrolled to the
     // bottom of the screen.
     var learnerAttemptPanel = draftNamespace && !isEditingQuiz && !isPresentationMode && !isReviewGame ? <section data-assessment-student-view={!canFacilitateAssessment ? '' : undefined} className="sticky top-2 z-20 rounded-2xl border border-indigo-200 bg-white/95 p-3.5 shadow-sm backdrop-blur-sm space-y-2.5" aria-label="Assessment progress and submission">
@@ -8051,7 +8051,7 @@ var handleRemoveQuizReflection = props.handleRemoveQuizReflection;
       </div>
       {gradedMode && <p data-assessment-graded-banner className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950">{quizT('quiz.graded.student_banner', 'Graded: answers are not shown here. Your teacher will check them after you submit.')}</p>}
       <AssessmentTimerBar enabled={deliverySettings.timeLimitMinutes > 0} remainingSeconds={assessmentTimer.remainingSeconds} running={assessmentTimer.running} expired={assessmentTimer.expired} warningMinutes={deliverySettings.warningMinutes} extensionMinutes={deliverySettings.extensionMinutes} onTogglePause={toggleAssessmentTimer} onExtend={extendAssessmentTimer} />
-      {(deliverySettings.showProgress || oneQuestionAtATime) && assessmentQuestionCount > 0 && <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2">
+      {(deliverySettings.showProgress || oneQuestionAtATime) && assessmentQuestionCount > 0 && <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2 pr-20 md:pr-0">
         {deliverySettings.showProgress && <span className="text-xs font-bold text-slate-700 shrink-0">{oneQuestionAtATime ? 'Question ' + (currentQuestionIdx + 1) + ' of ' + assessmentQuestionCount : assessmentQuestionCount + ' questions'}</span>}
         {deliverySettings.showProgress && stepperItems.length > 0 && stepperItems.length <= 25 && <nav aria-label="Jump to question" data-assessment-stepper className="flex flex-wrap items-center gap-1">{stepperItems.map(function (item) {
           var isCurrent = oneQuestionAtATime && item.questionIdx === currentQuestionIdx;

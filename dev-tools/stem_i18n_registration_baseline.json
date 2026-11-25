@@ -4,7 +4,7 @@
   "_totals": {
     "tools": 112,
     "called": 78136,
-    "missing": 84
+    "missing": 0
   },
   "tools": {
     "allobotsage": 0,
@@ -38,8 +38,8 @@
     "cyberdefense": 0,
     "dataplot": 0,
     "decomposer": 0,
-    "dinolab": 5,
-    "dissection": 31,
+    "dinolab": 0,
+    "dissection": 0,
     "dna": 0,
     "echolocation": 0,
     "ecosystem": 0,
@@ -103,7 +103,7 @@
     "solarsystem": 0,
     "sourcebook": 0,
     "spaceexplorer": 0,
-    "spacestation": 48,
+    "spacestation": 0,
     "statslab": 0,
     "stewardship": 0,
     "swimlab": 0,

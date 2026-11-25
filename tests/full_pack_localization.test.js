@@ -39,11 +39,13 @@ describe('Full Pack and Blueprint localization coverage', () => {
 
   it('routes Blueprint warning and download controls through translation keys', () => {
     const source = read('persona_ui_source.jsx');
-    expect(source).toContain("t('blueprint.download_diagnostics')");
-    expect(source).toContain("t('blueprint.copy_diagnostics')");
-    expect(source).toContain("t('blueprint.failure_log_help')");
-    expect(source).toContain("t('blueprint.open_error_log')");
-    expect(source).toContain("t('blueprint.saved_run_warning')");
+    // Some controls now go through _pSay(t, key, fallback), the module's t() wrapper
+    // with an English fallback; either form routes the label through the key.
+    const routed = (key) => source.includes(`t('${key}')`) || source.includes(`_pSay(t, '${key}', '`);
+    for (const key of ['blueprint.download_diagnostics', 'blueprint.copy_diagnostics', 'blueprint.failure_log_help', 'blueprint.open_error_log', 'blueprint.saved_run_warning']) {
+      expect(routed(key), key).toBe(true);
+    }
+    expect(source).toContain('var _pSay = function(t, key, fallback, opts) {');
   });
   it('keeps Full Pack failure summaries visible on narrow panels and links to the error log', () => {
     const source = read('view_full_pack_run_source.jsx'); // the Full Pack panel was extracted from ANTI into its own CDN view module

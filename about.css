@@ -371,3 +371,48 @@
         outline-offset: 2px !important;
     }
 }
+
+@media print {
+    .about-hero,
+    .about-section,
+    .about-section--tint,
+    .about-section--dark {
+        padding: 20px 0 !important;
+        background: #fff !important;
+        color: #111827 !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .about-section--dark .about-eyebrow,
+    .about-section--dark h2,
+    .about-section--dark h3,
+    .about-section--dark p,
+    .about-section--dark a {
+        color: #111827 !important;
+    }
+
+    .about-answer-list {
+        background: transparent !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    .about-answer-list article,
+    .about-card,
+    .about-callout,
+    .about-table-wrap {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .about-facts-table caption {
+        background: #f1f5f9 !important;
+        color: #111827 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+    }
+
+    .about-actions {
+        display: none !important;
+    }
+}

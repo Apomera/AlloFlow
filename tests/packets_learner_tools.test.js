@@ -134,9 +134,11 @@ describe('every file carries the reading tools', () => {
     // Re-pinned 2026-11-19 (Wave 11) from 27000: 6-color WCAG-AA theme-harmonized Break it Down chip palettes (--c0..--c5, --c0b..--c5b) across all 8 Reading Tools themes (~27.2 KB).
     // Re-pinned 2026-11-19 (Phase 1 universal Bold start / Bionic reading) from 28000: universal reversible Bold start across all 31 Packet activities inside takeHomeTools (~29.1 KB).
     // Re-pinned 2026-11-22 (Wave 9 shared polish) from 30500: Reduced Motion toggle (data-lt-motion) + custom Bg/Ink luminance contrast cascade (~31.6 KB).
-    expect(bytes).toBeLessThan(32000);
+    // Re-pinned 2026-11-23 from 32000: the tools had grown to 34.6 KB in the 11-22 release (this test was red since then).
+    expect(bytes).toBeLessThan(36000);
     // The copy in the file is the loader's own function, without its indentation.
-    expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
+    // 2026-11-23: the file's copy also leaves out whole-line comments and blank lines (the loader's stripSrc, since 11-21).
+    expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/^[ \t]*\/\/[^\n]*\n/gm, '').replace(/\n[ \t]+/g, '\n').replace(/\n{2,}/g, '\n'));
   });
 
   it('uses only its argument, and says only plain words', () => {
@@ -175,12 +177,14 @@ describe('the button and the panel', () => {
       // 2026-11-12 (look pass), deliberately: four more colors a student may choose (Dark whatever the device says, Ocean,
       // Sunny, Forest), in the same one group, each with a dot of its color.
       ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false', 'Dark=false', 'Ocean=false', 'Sunny=false', 'Forest=false', 'Rose=false']],
-      ['spacing', 'Spacing', ['Normal=true', 'Wider=false']],
+      // 2026-11-23, renewed: the 11-22 release added "Extra wide" here, and to Reading focus a ruler with four colors and three
+      // shapes (this list was red since then). Reading focus now has 11 buttons in one group.
+      ['spacing', 'Spacing', ['Normal=true', 'Wider=false', 'Extra wide=false']],
       // 2026-11-16, deliberately: Letters, the font choice of the app's reader, with the device's own fonts
       // (tests/packets_read_along_2026_11_16.test.js).
       // The same day: the app reader's two reading fonts, inside every file (data/vendor/fonts/source.json).
       ['font', 'Letters', ['Usual=true', 'Lexend=false', 'Atkinson=false', 'Book=false', 'Rounded=false', 'Mono=false', 'OpenDyslexic=false']],
-      ['focus', 'Reading focus', ['Off=true', '1 line=false', '3 lines=false']],
+      ['focus', 'Reading focus', ['Off=true', '1 line=false', '3 lines=false', 'Ruler=false', 'Yellow=true', 'Sky=false', 'Rose=false', 'Mint=false', 'Line=false', 'Slim=true', 'Tall=false']],
       ['lens', 'Magnifier', ['Off=true', 'On=false']],
       // 2026-11-12, deliberately: "Read the choices when a question opens" (hearAllIn; tests/packets_hear_all.test.js). Off by
       // default; shown in this Find Sounds file, whose opening does not play its sound choices.

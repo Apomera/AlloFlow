@@ -2,11 +2,11 @@
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for autoRepair 1`] = `
 {
-  "buttons": 56,
+  "buttons": 61,
   "inputs": 1,
-  "lengthBucket": 302,
-  "sha": "3fad84284fdc1e73",
-  "svgs": 1,
+  "lengthBucket": 321,
+  "sha": "282b7b364002cd57",
+  "svgs": 3,
 }
 `;
 
@@ -14,59 +14,59 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 21,
   "inputs": 4,
-  "lengthBucket": 63,
-  "sha": "aa87d49eff2c4872",
-  "svgs": 0,
+  "lengthBucket": 78,
+  "sha": "d23caee74e09a473",
+  "svgs": 2,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for bikeLab 1`] = `
 {
-  "buttons": 22,
+  "buttons": 31,
   "inputs": 0,
-  "lengthBucket": 111,
-  "sha": "103e74ccdbb8175e",
-  "svgs": 0,
+  "lengthBucket": 152,
+  "sha": "550b440870312395",
+  "svgs": 2,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for codingPlayground 1`] = `
 {
-  "buttons": 46,
+  "buttons": 50,
   "inputs": 0,
-  "lengthBucket": 116,
-  "sha": "e5e5d85c2322c81c",
-  "svgs": 0,
+  "lengthBucket": 133,
+  "sha": "5d6a562d4dda466b",
+  "svgs": 2,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for companionPlanting 1`] = `
 {
-  "buttons": 21,
+  "buttons": 25,
   "inputs": 0,
-  "lengthBucket": 104,
-  "sha": "1fb5a397af95464b",
-  "svgs": 0,
+  "lengthBucket": 123,
+  "sha": "a6a700bc948e9ba1",
+  "svgs": 1,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for decomposer 1`] = `
 {
-  "buttons": 29,
+  "buttons": 31,
   "inputs": 0,
-  "lengthBucket": 165,
-  "sha": "169f836364e8c725",
-  "svgs": 0,
+  "lengthBucket": 200,
+  "sha": "a8fbef548624f526",
+  "svgs": 2,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for economicsLab 1`] = `
 {
-  "buttons": 34,
+  "buttons": 44,
   "inputs": 8,
-  "lengthBucket": 101,
-  "sha": "2ec135bb61cb1904",
-  "svgs": 0,
+  "lengthBucket": 125,
+  "sha": "b262d422c38b0289",
+  "svgs": 2,
 }
 `;
 
@@ -104,9 +104,9 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 13,
   "inputs": 0,
-  "lengthBucket": 148,
-  "sha": "18bd8f831063d70d",
-  "svgs": 0,
+  "lengthBucket": 169,
+  "sha": "abd3fc8df8ee1e68",
+  "svgs": 1,
 }
 `;
 
@@ -114,9 +114,9 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 36,
   "inputs": 5,
-  "lengthBucket": 147,
-  "sha": "9f8295ba5c954bfc",
-  "svgs": 1,
+  "lengthBucket": 155,
+  "sha": "e9d2be7750aad099",
+  "svgs": 2,
 }
 `;
 
@@ -124,29 +124,29 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 16,
   "inputs": 0,
-  "lengthBucket": 57,
-  "sha": "29e3dcefc989976d",
-  "svgs": 0,
+  "lengthBucket": 73,
+  "sha": "34f15109d6440a0c",
+  "svgs": 1,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for petsLab 1`] = `
 {
-  "buttons": 34,
+  "buttons": 39,
   "inputs": 1,
-  "lengthBucket": 170,
-  "sha": "733ab140c29258e8",
-  "svgs": 0,
+  "lengthBucket": 193,
+  "sha": "7d47cc456055ece8",
+  "svgs": 3,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for playlab 1`] = `
 {
-  "buttons": 36,
+  "buttons": 42,
   "inputs": 4,
-  "lengthBucket": 105,
-  "sha": "2916ee26fe755354",
-  "svgs": 0,
+  "lengthBucket": 131,
+  "sha": "0fbaf876701bd1c4",
+  "svgs": 6,
 }
 `;
 
@@ -154,9 +154,9 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 {
   "buttons": 19,
   "inputs": 0,
-  "lengthBucket": 88,
-  "sha": "75335c5ad4eaca6d",
-  "svgs": 0,
+  "lengthBucket": 111,
+  "sha": "317b161d649117da",
+  "svgs": 2,
 }
 `;
 
@@ -175,27 +175,27 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
   "buttons": 2,
   "inputs": 0,
   "lengthBucket": 18,
-  "sha": "c8e19d8b777ab0d7",
+  "sha": "c2e15c13c344c9ed",
   "svgs": 0,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for typingPractice 1`] = `
 {
-  "buttons": 51,
+  "buttons": 54,
   "inputs": 1,
-  "lengthBucket": 218,
-  "sha": "668cfcaf07ae0181",
-  "svgs": 0,
+  "lengthBucket": 295,
+  "sha": "b4d3bdbd37b75e14",
+  "svgs": 2,
 }
 `;
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for worldBuilder 1`] = `
 {
-  "buttons": 11,
+  "buttons": 14,
   "inputs": 5,
-  "lengthBucket": 40,
-  "sha": "3ed29c95b7afe13f",
-  "svgs": 1,
+  "lengthBucket": 79,
+  "sha": "c49d4f7d6e13728d",
+  "svgs": 3,
 }
 `;

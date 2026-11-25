@@ -37,7 +37,14 @@
  */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   if (window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === 'function') return;
+
+  function safeStr(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    try { return String(value); } catch (_) { return ''; }
+  }
 
   var ESPEAK_URLS = [
     'https://cdn.jsdelivr.net/npm/espeak-ng@1.0.2/dist/espeak-ng.js',
@@ -107,7 +114,8 @@
   // as before; every en-* dialect routes to an English voice.
   function resolveVoice(lang) {
     if (!lang) return 'en-us';
-    var s = String(lang).toLowerCase().trim();
+    var s = safeStr(lang).toLowerCase().trim();
+    if (!s) return 'en-us';
     if (Object.prototype.hasOwnProperty.call(LANG_TO_VOICE, s)) return LANG_TO_VOICE[s];
     if (Object.prototype.hasOwnProperty.call(CODE_ALIASES, s)) return CODE_ALIASES[s];
     if (Object.prototype.hasOwnProperty.call(ESPEAK_VOICES, s)) return s;
@@ -193,7 +201,10 @@
     }
     var remoteBlocked = typeof window !== 'undefined' && (
       window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
       window.__ALLO_LOCAL_BOX === true ||
+      Boolean(window.__alloQrStudentMode) ||
+      window._alloQrBlocked === true ||
       window.__alloStudentAiDisabled === true ||
       (typeof navigator !== 'undefined' && navigator.onLine === false)
     );
@@ -211,9 +222,21 @@
       return Promise.reject(new Error('Remote eSpeak CDN is disabled in offline/restricted mode'));
     }
     if (_factoryPromise) return _factoryPromise;
+    var importWithTimeout = function (url) {
+      var timerId = null;
+      var timeoutPromise = new Promise(function (_, reject) {
+        timerId = setTimeout(function () { reject(new Error('espeak-ng source timed out')); }, 15000);
+      });
+      return Promise.race([
+        import(/* webpackIgnore: true */ url),
+        timeoutPromise
+      ]).finally(function () {
+        if (timerId !== null) clearTimeout(timerId);
+      });
+    };
     _factoryPromise = (function tryAt(i) {
       if (i >= urls.length) return Promise.reject(new Error('espeak-ng sources failed'));
-      return import(/* webpackIgnore: true */ urls[i]).then(function (m) {
+      return importWithTimeout(urls[i]).then(function (m) {
         var factory = m && (m.default || m.ESpeakNg || m);
         if (typeof factory !== 'function') throw new Error('espeak-ng: no factory export');
         _factoryReady = true;
@@ -231,28 +254,47 @@
   // returns null if it can't produce exactly `count` non-empty chunks.
   var _TRIGRAPHS = ['igh', 'tch', 'dge'];
   var _DIGRAPHS = ['sh', 'ch', 'th', 'wh', 'ph', 'ng', 'ck', 'qu', 'wr', 'kn', 'gn', 'gh', 'mb', 'ai', 'ay', 'ea', 'ee', 'oa', 'ow', 'oo', 'ou', 'oi', 'oy', 'ar', 'er', 'ir', 'or', 'ur', 'aw', 'au', 'ew'];
+  function splitGraphemeUnits(str) {
+    var codePoints = Array.from(str);
+    var units = [];
+    for (var i = 0; i < codePoints.length; i++) {
+      var ch = codePoints[i];
+      if (units.length > 0 && /^\p{M}$/u.test(ch)) {
+        units[units.length - 1] += ch;
+      } else {
+        units.push(ch);
+      }
+    }
+    return units;
+  }
   function alignGraphemes(word, count) {
+    if (!Number.isInteger(count) || count < 1) return null;
     // Unicode letters kept (Spanish ñ, French é, Cyrillic, Devanagari…) — the
     // old [^a-z'] filter silently DELETED accented letters ("niño" → "nio").
-    // English words contain only a-z' so the English output is unchanged; the
-    // digraph tables below only ever match a-z pairs.
-    var w = String(word || '').toLowerCase().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[^\p{L}\p{M}']/gu, '');
-    if (!w || !count || count < 1) return null;
-    // greedy multi-letter pass
+    // Normalize NFC and group combining marks so NFD inputs never split a base
+    // letter away from its diacritic.
+    var raw = safeStr(word);
+    if (typeof raw.normalize === 'function') raw = raw.normalize('NFC');
+    var w = raw.toLowerCase().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[^\p{L}\p{M}']/gu, '');
+    var units = splitGraphemeUnits(w);
+    if (!units.length) return null;
+    // greedy multi-letter pass on grapheme units
     var greedy = [];
-    for (var i = 0; i < w.length;) {
-      if (i <= w.length - 3 && _TRIGRAPHS.indexOf(w.slice(i, i + 3)) >= 0) { greedy.push(w.slice(i, i + 3)); i += 3; }
-      else if (i <= w.length - 2 && _DIGRAPHS.indexOf(w.slice(i, i + 2)) >= 0) { greedy.push(w.slice(i, i + 2)); i += 2; }
-      else { greedy.push(w[i]); i += 1; }
+    for (var i = 0; i < units.length;) {
+      var tri = i <= units.length - 3 ? units[i] + units[i + 1] + units[i + 2] : '';
+      var di = i <= units.length - 2 ? units[i] + units[i + 1] : '';
+      if (tri && _TRIGRAPHS.indexOf(tri) >= 0) { greedy.push([units[i], units[i + 1], units[i + 2]]); i += 3; }
+      else if (di && _DIGRAPHS.indexOf(di) >= 0) { greedy.push([units[i], units[i + 1]]); i += 2; }
+      else { greedy.push([units[i]]); i += 1; }
     }
-    if (greedy.length === count) return greedy;
+    if (greedy.length === count) return greedy.map(function (u) { return u.join(''); });
     // too many chunks → merge adjacent from the right until count matches
     if (greedy.length > count) {
       var merged = greedy.slice();
-      while (merged.length > count) { var last = merged.pop(); merged[merged.length - 1] += last; }
-      return merged.length === count ? merged : null;
+      while (merged.length > count) { var last = merged.pop(); merged[merged.length - 1] = merged[merged.length - 1].concat(last); }
+      return merged.length === count ? merged.map(function (u) { return u.join(''); }) : null;
     }
-    // too few chunks → split the longest multi-letter chunk until count matches
+    // too few chunks → split the longest multi-unit chunk until count matches
     var chunks = greedy.slice();
     while (chunks.length < count) {
       var idx = -1, len = 1;
@@ -261,7 +303,7 @@
       var c = chunks[idx];
       chunks.splice(idx, 1, c.slice(0, 1), c.slice(1));
     }
-    return chunks.length === count ? chunks : null;
+    return chunks.length === count ? chunks.map(function (u) { return u.join(''); }) : null;
   }
 
   // Which phoneme sequence to hand back for a given voice. English voices get
@@ -304,15 +346,21 @@
      */
     buildPhonemes: function (word, espeak, geminiPhonemes) {
       if (!espeak || !Array.isArray(espeak.ipa) || !espeak.ipa.length) return null;
-      var ipa = espeak.ipa;
+      var ipa = espeak.ipa.filter(function (s) { return typeof s === 'string' && s.trim().length > 0; });
+      if (!ipa.length) return null;
       var gp = Array.isArray(geminiPhonemes) ? geminiPhonemes : [];
       var geminiCount = gp.length;
       var agree = geminiCount === ipa.length;
       var graphemes = null;
+      var normWord = safeStr(word).trim().replace(/[\u2018\u2019\u02BC]/g, "'");
+      if (typeof normWord.normalize === 'function') normWord = normWord.normalize('NFC');
+      normWord = normWord.toLowerCase();
       if (agree && geminiCount) {
         graphemes = gp.map(function (p) { return (typeof p === 'string') ? p : ((p && (p.grapheme || p.g)) || ''); });
+        var joined = graphemes.join('').replace(/[\u2018\u2019\u02BC]/g, "'");
+        if (typeof joined.normalize === 'function') joined = joined.normalize('NFC');
         if (graphemes.some(function (g) { return typeof g !== 'string' || !g.trim(); }) ||
-          graphemes.join('').normalize('NFC').toLowerCase() !== String(word || '').normalize('NFC').toLowerCase()) graphemes = null;
+          joined.toLowerCase() !== normWord) graphemes = null;
       }
       if (!graphemes) graphemes = alignGraphemes(word, ipa.length);
       // A letter can represent more than one sound (box: /b/ /ɑ/ /k/ /s/).
@@ -336,7 +384,9 @@
      * or NULL on any failure. Never throws.
      */
     toPhonemes: function (word, opts) {
-      var w = String(word == null ? '' : word).trim().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u2010-\u2015]/g, '-');
+      var sig = opts && opts.signal;
+      if (sig && sig.aborted) return Promise.resolve(null);
+      var w = safeStr(word).trim().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u2010-\u2015]/g, '-');
       if (!w || w.length > 128 || w.charAt(0) === '-') return Promise.resolve(null);
       // Single tokens only (this seam never needs phrases/digits/symbols).
       if (/[^\p{L}\p{M}'’‑-]/u.test(w) || /\s/.test(w) || !/\p{L}/u.test(w)) return Promise.resolve(null);
@@ -346,11 +396,20 @@
       // confidently wrong sounds — worse than no answer.
       if (!voice) return Promise.resolve(null);
       return loadFactory().then(function (ESpeakNg) {
+        if (sig && sig.aborted) return null;
         return ESpeakNg({
           arguments: ['--ipa', '--sep=_', '-q', '--phonout=/allo_ph.txt', '-v', voice, '--', w]
         }).then(function (inst) {
           var out = '';
-          try { out = inst.FS.readFile('/allo_ph.txt', { encoding: 'utf8' }); } catch (_) { out = ''; }
+          try {
+            if (inst && inst.FS && typeof inst.FS.readFile === 'function') {
+              out = inst.FS.readFile('/allo_ph.txt', { encoding: 'utf8' });
+            }
+          } catch (_) { out = ''; }
+          finally {
+            try { if (inst && inst.FS && typeof inst.FS.unlink === 'function') inst.FS.unlink('/allo_ph.txt'); } catch (_) {}
+          }
+          if (sig && sig.aborted) return null;
           var parsed = parseIpaOutput(out);
           var seq = ipaFromParsed(parsed, voice);
           if (!seq) return null;
@@ -360,5 +419,7 @@
     }
   };
 
-  console.log('[AlloPhonics] phonics_g2p_loader.js ready — window.AlloPhonics.toPhonemes(word) (lazy eSpeak NG G2P, phonics-normalized)');
+  if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+    console.log('[AlloPhonics] phonics_g2p_loader.js ready — window.AlloPhonics.toPhonemes(word) (lazy eSpeak NG G2P, phonics-normalized)');
+  }
 })();

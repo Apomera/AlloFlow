@@ -6,32 +6,42 @@
 // Dual export: under Node/test `module.exports`; in the browser `window.AlloArchaeology`.
 (function (root, factory) {
   var api = factory();
-  if (typeof module === 'object' && module.exports) module.exports = api; // Node / test require
-  if (typeof globalThis !== 'undefined') globalThis.AlloArchaeology = api; // new Function() loader + browser
+  if (typeof module === 'object' && module && module.exports) module.exports = api; // Node / test require
+  if (typeof globalThis !== 'undefined' && globalThis) globalThis.AlloArchaeology = api; // new Function() loader + browser
   else if (root) root.AlloArchaeology = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
   var VERSION = '0.1.0';
+  var MAX_GRID_DIM = 26;
+  var OWN = Object.prototype.hasOwnProperty;
+  function isSafeId(id) {
+    return typeof id === 'string' && id.length > 0 && id !== '__proto__' && id !== 'constructor' && id !== 'prototype';
+  }
+  function clampDim(val, fallback) {
+    var n = Number(val);
+    if (!Number.isFinite(n) || n < 1) return fallback;
+    return Math.min(MAX_GRID_DIM, Math.floor(n));
+  }
 
   // 0 = surface (youngest), last = deepest (oldest). Sterile subsoil holds no artifacts.
-  var DEFAULT_STRATA = [
-    { index: 0, name: 'Topsoil',           material: 'loam',             period: 'modern',         pattern: 'dots' },
-    { index: 1, name: 'Plough soil',       material: 'mixed earth',      period: '1700s-1800s',    pattern: 'lines' },
-    { index: 2, name: 'Destruction layer', material: 'ash and rubble',   period: 'medieval fire',  pattern: 'cross' },
-    { index: 3, name: 'Occupation floor',  material: 'packed clay',      period: 'medieval',       pattern: 'grid' },
-    { index: 4, name: 'Early foundation',  material: 'stone and mortar', period: 'early medieval', pattern: 'brick' },
-    { index: 5, name: 'Sterile subsoil',   material: 'natural gravel',   period: 'pre-human',      pattern: 'none' }
-  ];
+  var DEFAULT_STRATA = Object.freeze([
+    Object.freeze({ index: 0, name: 'Topsoil',           material: 'loam',             period: 'modern',         pattern: 'dots' }),
+    Object.freeze({ index: 1, name: 'Plough soil',       material: 'mixed earth',      period: '1700s-1800s',    pattern: 'lines' }),
+    Object.freeze({ index: 2, name: 'Destruction layer', material: 'ash and rubble',   period: 'medieval fire',  pattern: 'cross' }),
+    Object.freeze({ index: 3, name: 'Occupation floor',  material: 'packed clay',      period: 'medieval',       pattern: 'grid' }),
+    Object.freeze({ index: 4, name: 'Early foundation',  material: 'stone and mortar', period: 'early medieval', pattern: 'brick' }),
+    Object.freeze({ index: 5, name: 'Sterile subsoil',   material: 'natural gravel',   period: 'pre-human',      pattern: 'none' })
+  ]);
 
-  var ARTIFACT_POOL = [
-    { type: 'coin',    label: 'bronze coin',   description: 'A worn bronze coin.' },
-    { type: 'pottery', label: 'pottery sherd', description: 'A fragment of glazed pottery.', fragile: true },
-    { type: 'nail',    label: 'iron nail',     description: 'A hand-forged iron nail.' },
-    { type: 'bone',    label: 'bone tool',     description: 'A worked animal-bone tool.' },
-    { type: 'bead',    label: 'glass bead',    description: 'A small blue glass bead.', fragile: true },
-    { type: 'tile',    label: 'roof tile',     description: 'A fragment of fired roof tile.' }
-  ];
+  var ARTIFACT_POOL = Object.freeze([
+    Object.freeze({ type: 'coin',    label: 'bronze coin',   description: 'A worn bronze coin.' }),
+    Object.freeze({ type: 'pottery', label: 'pottery sherd', description: 'A fragment of glazed pottery.', fragile: true }),
+    Object.freeze({ type: 'nail',    label: 'iron nail',     description: 'A hand-forged iron nail.' }),
+    Object.freeze({ type: 'bone',    label: 'bone tool',     description: 'A worked animal-bone tool.' }),
+    Object.freeze({ type: 'bead',    label: 'glass bead',    description: 'A small blue glass bead.', fragile: true }),
+    Object.freeze({ type: 'tile',    label: 'roof tile',     description: 'A fragment of fired roof tile.' })
+  ]);
 
   // Deterministic PRNG (mulberry32) so a seed always yields the same site.
   function mulberry32(a) {
@@ -43,22 +53,51 @@
     };
   }
 
-  function colLabel(x) { return String.fromCharCode(65 + x); } // 0 -> A
-  function cellName(x, y) { return colLabel(x) + (y + 1); }    // (0,0) -> A1
+  function colLabel(x) {
+    if (typeof x !== 'number' || !Number.isFinite(x) || !Number.isInteger(x) || x < 0 || x >= 26) return '?';
+    return String.fromCharCode(65 + x);
+  } // 0 -> A
+  function cellName(x, y) {
+    var col = colLabel(x);
+    var row = (typeof y === 'number' && Number.isFinite(y) && Number.isInteger(y) && y >= 0) ? (y + 1) : '?';
+    return col + row;
+  }    // (0,0) -> A1
 
   // Build a deterministic dig site. Artifacts land in distinct cells, one per stratum
   // in `artifactStrata` (default 1..4), so finds have a unique chronological order.
   function generateSite(seed, opts) {
-    opts = opts || {};
-    var cols = opts.cols || 6;
-    var rows = opts.rows || 6;
-    var strata = opts.strata || DEFAULT_STRATA;
-    var artifactStrata = opts.artifactStrata || [1, 2, 3, 4];
+    opts = (opts && typeof opts === 'object') ? opts : {};
+    var cols = clampDim(opts.cols, 6);
+    var rows = clampDim(opts.rows, 6);
+    var rawStrata = (Array.isArray(opts.strata) && opts.strata.length > 0) ? opts.strata : DEFAULT_STRATA;
+    var strata = rawStrata.map(function (st, idx) {
+      if (st && typeof st === 'object') return Object.freeze(Object.assign({}, st));
+      return Object.freeze({ index: idx, name: 'Layer ' + idx, material: 'soil', period: 'unknown', pattern: 'none' });
+    });
+    var rawArtifactStrata = Array.isArray(opts.artifactStrata) ? opts.artifactStrata : [1, 2, 3, 4];
+    var maxArtifacts = cols * rows;
+    var artifactStrata = rawArtifactStrata.filter(function (s) {
+      return typeof s === 'number' && Number.isInteger(s) && s >= 0 && s < strata.length;
+    }).slice(0, maxArtifacts);
     var rnd = mulberry32((seed >>> 0) || 1);
-    var used = {};
+    var used = Object.create(null);
+    var maxAttempts = Math.max(64, maxArtifacts * 8);
     var artifacts = artifactStrata.map(function (stratumIndex, i) {
-      var x, y, key;
-      do { x = Math.floor(rnd() * cols); y = Math.floor(rnd() * rows); key = x + ',' + y; } while (used[key]);
+      var x = 0, y = 0, key = '', placed = false;
+      for (var tries = 0; tries < maxAttempts; tries++) {
+        x = Math.floor(rnd() * cols);
+        y = Math.floor(rnd() * rows);
+        key = x + ',' + y;
+        if (!used[key]) { placed = true; break; }
+      }
+      if (!placed) {
+        for (var fx = 0; fx < cols && !placed; fx++) {
+          for (var fy = 0; fy < rows && !placed; fy++) {
+            var fkey = fx + ',' + fy;
+            if (!used[fkey]) { x = fx; y = fy; key = fkey; placed = true; }
+          }
+        }
+      }
       used[key] = true;
       var t = ARTIFACT_POOL[Math.floor(rnd() * ARTIFACT_POOL.length)];
       return { id: 'a' + (i + 1), type: t.type, label: t.label, description: t.description, trueStratum: stratumIndex, x: x, y: y, fragile: !!t.fragile };
@@ -66,29 +105,54 @@
     return { cols: cols, rows: rows, depth: strata.length, strata: strata, artifacts: artifacts, seed: (seed >>> 0) || 1 };
   }
 
+  function safeMap(src) {
+    var out = Object.create(null);
+    if (!src || typeof src !== 'object') return out;
+    var keys = Object.keys(src);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (isSafeId(k)) out[k] = src[k];
+    }
+    return out;
+  }
+
   function initState(site) {
+    var safeSite = (site && typeof site === 'object') ? site : generateSite(1);
+    var cols = clampDim(safeSite.cols, 6);
+    var rows = clampDim(safeSite.rows, 6);
     var dug = [];
-    for (var x = 0; x < site.cols; x++) { dug[x] = []; for (var y = 0; y < site.rows; y++) dug[x][y] = 0; }
-    var status = {}, lost = {};
-    site.artifacts.forEach(function (a) { status[a.id] = 'buried'; lost[a.id] = false; });
-    return { site: site, cursor: { x: 0, y: 0 }, dug: dug, status: status, lostContext: lost, log: [] };
+    for (var x = 0; x < cols; x++) { dug[x] = []; for (var y = 0; y < rows; y++) dug[x][y] = 0; }
+    var status = Object.create(null), lost = Object.create(null);
+    var arts = Array.isArray(safeSite.artifacts) ? safeSite.artifacts : [];
+    arts.forEach(function (a) {
+      if (a && isSafeId(a.id)) { status[a.id] = 'buried'; lost[a.id] = false; }
+    });
+    return { site: safeSite, cursor: { x: 0, y: 0 }, dug: dug, status: status, lostContext: lost, log: [] };
   }
 
   function cloneState(s) {
+    if (!s || typeof s !== 'object' || !s.site || !Array.isArray(s.dug)) return initState(null);
     return {
       site: s.site,
-      cursor: { x: s.cursor.x, y: s.cursor.y },
-      dug: s.dug.map(function (col) { return col.slice(); }),
-      status: Object.assign({}, s.status),
-      lostContext: Object.assign({}, s.lostContext),
-      log: s.log.slice()
+      cursor: { x: (s.cursor && Number.isInteger(s.cursor.x)) ? s.cursor.x : 0, y: (s.cursor && Number.isInteger(s.cursor.y)) ? s.cursor.y : 0 },
+      dug: s.dug.map(function (col) { return Array.isArray(col) ? col.slice() : []; }),
+      status: safeMap(s.status),
+      lostContext: safeMap(s.lostContext),
+      log: Array.isArray(s.log) ? s.log.slice() : []
     };
   }
 
+  function validCoord(s, x, y) {
+    return Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0
+      && Array.isArray(s.dug) && x < s.dug.length
+      && Array.isArray(s.dug[x]) && y < s.dug[x].length;
+  }
+
   function artifactAt(site, x, y, stratum) {
-    for (var i = 0; i < site.artifacts.length; i++) {
-      var a = site.artifacts[i];
-      if (a.x === x && a.y === y && a.trueStratum === stratum) return a;
+    var arts = (site && Array.isArray(site.artifacts)) ? site.artifacts : [];
+    for (var i = 0; i < arts.length; i++) {
+      var a = arts[i];
+      if (a && a.x === x && a.y === y && a.trueStratum === stratum) return a;
     }
     return null;
   }
@@ -97,13 +161,15 @@
   // so a find in stratum n cannot be reached before strata 0..n-1 are removed.
   function exposeCell(state, x, y) {
     var s = cloneState(state);
-    var d = s.dug[x][y];
-    if (d >= s.site.depth) { s.log.push({ action: 'bedrock', x: x, y: y }); return { state: s, exposed: null, stratumIndex: null, atBedrock: true }; }
+    if (!validCoord(s, x, y)) return { state: s, exposed: null, stratumIndex: null, atBedrock: false };
+    var d = Number.isInteger(s.dug[x][y]) && s.dug[x][y] >= 0 ? s.dug[x][y] : 0;
+    var depth = (s.site && Number.isInteger(s.site.depth) && s.site.depth >= 0) ? s.site.depth : 0;
+    if (d >= depth) { s.log.push({ action: 'bedrock', x: x, y: y }); return { state: s, exposed: null, stratumIndex: null, atBedrock: true }; }
     var stratumIndex = d;
     var art = artifactAt(s.site, x, y, stratumIndex);
     s.dug[x][y] = d + 1;
     var exposedId = null;
-    if (art) { s.status[art.id] = 'exposed'; exposedId = art.id; }
+    if (art && isSafeId(art.id)) { s.status[art.id] = 'exposed'; exposedId = art.id; }
     s.log.push({ action: 'excavate', x: x, y: y, stratumIndex: stratumIndex, exposed: exposedId });
     return { state: s, exposed: exposedId, stratumIndex: stratumIndex, atBedrock: false };
   }
@@ -111,14 +177,17 @@
   // Record-before-remove: recording preserves context.
   function recordFind(state, id) {
     var s = cloneState(state);
-    if (s.status[id] === 'exposed') { s.status[id] = 'recorded'; s.log.push({ action: 'record', id: id }); }
+    if (isSafeId(id) && OWN.call(s.status, id) && s.status[id] === 'exposed') {
+      s.status[id] = 'recorded';
+      s.log.push({ action: 'record', id: id });
+    }
     return s;
   }
 
   // Removing a find that was not recorded first loses its context (its dating information).
   function removeFind(state, id) {
     var s = cloneState(state);
-    var st = s.status[id];
+    var st = (isSafeId(id) && OWN.call(s.status, id)) ? s.status[id] : null;
     if (st === 'exposed' || st === 'recorded') {
       s.lostContext[id] = (st !== 'recorded');
       s.status[id] = 'removed';
@@ -129,12 +198,17 @@
 
   // Chronological truth: deeper stratum = older = first. (Law of superposition.)
   function trueChronOrder(site) {
-    return site.artifacts.slice().sort(function (a, b) { return b.trueStratum - a.trueStratum; }).map(function (a) { return a.id; });
+    var arts = (site && Array.isArray(site.artifacts)) ? site.artifacts : [];
+    return arts.filter(function (a) { return a && typeof a === 'object'; })
+      .slice()
+      .sort(function (a, b) { return (Number(b.trueStratum) || 0) - (Number(a.trueStratum) || 0); })
+      .map(function (a) { return a.id; });
   }
 
   function proposeOrdering(state, orderedIds) {
-    var truth = trueChronOrder(state.site);
-    var correct = orderedIds.length === truth.length && orderedIds.every(function (id, i) { return id === truth[i]; });
+    var truth = trueChronOrder(state && state.site);
+    var proposed = Array.isArray(orderedIds) ? orderedIds : [];
+    var correct = proposed.length === truth.length && proposed.every(function (id, i) { return id === truth[i]; });
     return {
       correct: correct,
       trueOrder: truth,
@@ -145,10 +219,13 @@
   }
 
   function scoreSession(state) {
-    var ids = state.site.artifacts.map(function (a) { return a.id; });
-    var found = ids.filter(function (id) { var st = state.status[id]; return st === 'exposed' || st === 'recorded' || st === 'removed'; });
-    var recorded = ids.filter(function (id) { return state.status[id] === 'recorded'; });
-    var lost = ids.filter(function (id) { return state.lostContext[id]; });
+    var arts = (state && state.site && Array.isArray(state.site.artifacts)) ? state.site.artifacts : [];
+    var statusMap = (state && state.status && typeof state.status === 'object') ? state.status : Object.create(null);
+    var lostMap = (state && state.lostContext && typeof state.lostContext === 'object') ? state.lostContext : Object.create(null);
+    var ids = arts.filter(function (a) { return a && isSafeId(a.id); }).map(function (a) { return a.id; });
+    var found = ids.filter(function (id) { var st = OWN.call(statusMap, id) ? statusMap[id] : null; return st === 'exposed' || st === 'recorded' || st === 'removed'; });
+    var recorded = ids.filter(function (id) { return OWN.call(statusMap, id) && statusMap[id] === 'recorded'; });
+    var lost = ids.filter(function (id) { return OWN.call(lostMap, id) && !!lostMap[id]; });
     var contextPreserved = found.length > 0 && lost.length === 0;
     return {
       totalArtifacts: ids.length,
@@ -163,18 +240,29 @@
 
   // Accessible description of a cell — the basis for the gridcell's ARIA label / SR announce.
   function describeCell(state, x, y) {
-    var d = state.dug[x][y];
-    var depth = state.site.depth;
+    if (!state || typeof state !== 'object' || !state.site || !validCoord(state, x, y)) return '';
+    var d = Number.isInteger(state.dug[x][y]) && state.dug[x][y] >= 0 ? state.dug[x][y] : 0;
+    var depth = Number.isInteger(state.site.depth) && state.site.depth >= 0 ? state.site.depth : 0;
     var pos = cellName(x, y);
-    if (d >= depth) return 'Cell ' + pos + '. Fully excavated to sterile subsoil. No further digging.';
-    var stratum = state.site.strata[d];
-    var exposedHere = state.site.artifacts.filter(function (a) { return a.x === x && a.y === y && state.status[a.id] === 'exposed'; })[0];
-    var base = 'Cell ' + pos + '. Dug through ' + d + ' of ' + depth + ' layers. Next layer: ' + stratum.name + ' (' + stratum.period + ').';
+    var statusMap = (state.status && typeof state.status === 'object') ? state.status : Object.create(null);
+    var arts = Array.isArray(state.site.artifacts) ? state.site.artifacts : [];
+    var exposedHere = arts.filter(function (a) {
+      return a && a.x === x && a.y === y && isSafeId(a.id) && OWN.call(statusMap, a.id) && statusMap[a.id] === 'exposed';
+    })[0];
+    if (d >= depth) {
+      var done = 'Cell ' + pos + '. Fully excavated to sterile subsoil. No further digging.';
+      if (exposedHere) done += ' Exposed find: ' + exposedHere.label + '. Record it to preserve context.';
+      return done;
+    }
+    var stratum = Array.isArray(state.site.strata) ? state.site.strata[d] : null;
+    var sName = (stratum && stratum.name) ? stratum.name : ('Layer ' + d);
+    var sPeriod = (stratum && stratum.period) ? stratum.period : 'unknown';
+    var base = 'Cell ' + pos + '. Dug through ' + d + ' of ' + depth + ' layers. Next layer: ' + sName + ' (' + sPeriod + ').';
     if (exposedHere) base += ' Exposed find: ' + exposedHere.label + '. Record it to preserve context.';
     return base;
   }
 
-  return {
+  return Object.freeze({
     VERSION: VERSION,
     DEFAULT_STRATA: DEFAULT_STRATA,
     ARTIFACT_POOL: ARTIFACT_POOL,
@@ -188,5 +276,5 @@
     scoreSession: scoreSession,
     describeCell: describeCell,
     cellName: cellName
-  };
+  });
 });

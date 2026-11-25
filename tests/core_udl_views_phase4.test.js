@@ -546,8 +546,12 @@ describe('Core UDL views Phase 4 runtime regressions', () => {
       (btn) => btn.textContent.includes('concept_map.setup.create_diagram')
     );
     expect(createDiagramBtn).toBeTruthy();
-    expect(createDiagramBtn.disabled).toBe(true);
-    expect(createDiagramBtn.getAttribute('title')).toBe('AI setup required');
+    // Building the diagram does NOT need AI: handleInitializeMap places every node
+    // with a fallback position and only polishes the layout with AI afterwards
+    // (concept_map_handlers_source.jsx, "a keyless install never saw a diagram").
+    // So the curated-concepts Create button stays usable with AI off.
+    expect(createDiagramBtn.disabled).toBe(false);
+    expect(createDiagramBtn.getAttribute('title')).toBeNull();
 
     // Unmount OutlineView cleanly before mounting HintsModal.
     await act(async () => { root.unmount(); });

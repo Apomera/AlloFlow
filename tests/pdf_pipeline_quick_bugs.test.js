@@ -611,7 +611,8 @@ describe('B10: 2026-06-30 EA-consistency sweep (score labels name the governing 
   });
   // #5 batch HTML report has a per-doc Equal Access column (header + cell)
   it('the batch HTML report has an Equal Access column (header + per-row score/fails cell)', () => {
-    expect(dpx).toMatch(/<th>2nd engine \(Equal Access\)<\/th>/);
+    // header cells carry scope="col" since the 2026-11-19 table a11y sweep
+    expect(dpx).toMatch(/<th scope="col">2nd engine \(Equal Access\)<\/th>/);
     expect(dpx).toMatch(/r\?\.secondEngineAudit && typeof r\.secondEngineAudit\.score==='number' \? \(r\.secondEngineAudit\.score/);
   });
   // No-text-layer honesty: the by-construction automated ~100 is shown as "n/a", not a misleading number

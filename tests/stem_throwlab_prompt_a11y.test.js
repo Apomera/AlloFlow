@@ -115,6 +115,14 @@ function mountThrowLab({ prompt, dialogAvailable = true, withResult = false, thr
   return api;
 }
 
+// Since 2026-11-23 the result card holds the verdict until the replay reaches the target
+// (predict, then watch). Tests that read the card finish the flight first, the same way a
+// student can with the replay panel's Done button.
+async function finishFlight() {
+  const done = container.querySelector('button[aria-label="Finish replay analysis and show the full trajectory"]');
+  if (done && !done.disabled) await clickAsync(done);
+}
+
 async function clickAsync(element) {
   await React.act(async () => {
     element.click();
@@ -231,6 +239,7 @@ describe('Throw Lab prompt accessibility', () => {
     const launch = Array.from(container.querySelectorAll('button')).find((button) => button.textContent.includes('THROW PITCH'));
     expect(launch).toBeTruthy();
     await clickAsync(launch);
+    await finishFlight();
 
     expect(app.getData().throwlab.lastResult.trial).toMatchObject({
       mode: 'pitching',
@@ -533,10 +542,10 @@ describe('Throw Lab prompt accessibility', () => {
     expect(rate.getAttribute('data-throwlab-mode-attempts')).toBe('2');
     expect(rate.getAttribute('aria-label')).toContain('50 percent from 2 attempts');
 
-    expect(container.querySelector('#tl-preset-picker-heading').textContent).toBe('1 · Choose a pitch');
-    expect(container.querySelector('#tl-release-controls-heading').textContent).toBe('2 · Tune the release');
-    expect(container.querySelector('#throwlab-launch-controls-heading').textContent).toBe('3 · Call it and launch');
-    expect(container.querySelector('#tl-result-heading').textContent).toBe('4 · Launch to collect evidence');
+    expect(container.querySelector('#tl-preset-picker-heading').textContent).toBe('Choose a pitch');
+    expect(container.querySelector('#tl-release-controls-heading').textContent).toBe('Tune the release');
+    expect(container.querySelector('#throwlab-launch-controls-heading').textContent).toBe('Call it and launch');
+    expect(container.querySelector('#tl-result-heading').textContent).toBe('Launch to collect evidence');
 
     const jump = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'SET UP NEXT REP');
     expect(jump.getAttribute('aria-controls')).toBe('throwlab-launch-controls');
@@ -560,6 +569,7 @@ describe('Throw Lab prompt accessibility', () => {
 
     const launch = Array.from(container.querySelectorAll('#throwlab-launch-controls button')).find((button) => button.textContent.includes('THROW PITCH'));
     await clickAsync(launch);
+    await finishFlight();
 
     const state = app.getData().throwlab;
     expect(state.lastResult.trial).toMatchObject({
@@ -579,10 +589,27 @@ describe('Throw Lab prompt accessibility', () => {
     expect(container.querySelector('[data-throwlab-prediction]').textContent).toContain('descriptive, not scored');
   });
 
+  it('holds the verdict until the ball arrives, then shows it', async () => {
+    mountThrowLab();
+    const launch = Array.from(container.querySelectorAll('#throwlab-launch-controls button')).find((button) => button.textContent.includes('THROW PITCH'));
+    await clickAsync(launch);
+    if (container.querySelector('[data-throwlab-in-flight="true"]')) {
+      // mid-flight: no verdict, no numbers, no next-rep advice yet
+      expect(container.querySelector('[data-throwlab-outcome]')).toBeNull();
+      expect(container.querySelector('[data-throwlab-next-rep]')).toBeNull();
+      expect(container.querySelector('[data-throwlab-flight-time]')).toBeNull();
+    }
+    await finishFlight();
+    expect(container.querySelector('[data-throwlab-in-flight="true"]')).toBeNull();
+    expect(container.querySelector('[data-throwlab-outcome]').getAttribute('data-throwlab-outcome')).toBe('strike');
+    expect(container.querySelector('[data-throwlab-flight-time]').textContent).toMatch(/^0\.4\d s$/);
+  });
+
   it('loads a scientifically controlled next rep by changing exactly one launched variable', async () => {
     const app = mountThrowLab();
     const launch = Array.from(container.querySelectorAll('#throwlab-launch-controls button')).find((button) => button.textContent.includes('THROW PITCH'));
     await clickAsync(launch);
+    await finishFlight();
 
     const baselineResult = app.getData().throwlab.lastResult;
     const trial = baselineResult.trial;

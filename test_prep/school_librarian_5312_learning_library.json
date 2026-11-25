@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-school-librarian-5312-learning-library",
@@ -29,7 +30,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 5,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -405,7 +411,7 @@
         {
           "id": "sl5312-ch-02-section-02",
           "heading": "Staffing, paraprofessionals, and volunteer supervision",
-          "content": "Sustaining daily library operations requires clear role differentiation between certified school librarians and support personnel. While the school librarian leads curriculum collaboration, collection curation, information-literacy instruction, and policy enforcement, trained paraprofessionals, student aides, and parent volunteers handle essential routines such as circulation desk coverage, shelving, book processing, and display upkeep. A written procedures manual standardizes opening and closing routines, emergency protocols, and material repair so service stays consistent during absences. Before any clerk, student helper, or volunteer interacts with patron records, the librarian must provide explicit training on student confidentiality and FERPA expectations.",
+          "content": "Sustaining daily library operations requires clear role differentiation between certified school librarians and support personnel. While the school librarian leads curriculum collaboration, collection curation, information-literacy instruction, and policy enforcement, trained paraprofessionals, student aides, and parent volunteers handle essential routines such as circulation desk coverage, shelving, book processing, and display upkeep. A written procedures manual standardizes opening and closing routines, emergency protocols, and material repair so service stays consistent during absences. Student helpers and parent volunteers should not access confidential patron circulation or academic records under FERPA; any authorized staff clerk with a legitimate educational interest must receive explicit confidentiality and FERPA training before handling records.",
           "keyTerms": [
             "paraprofessional supervision",
             "role differentiation",
@@ -4675,7 +4681,7 @@
       "skillId": "information-access-learning-environment-02",
       "domainId": "information-access-learning-environment",
       "front": "What principle did the U.S. Supreme Court establish in Island Trees School District v. Pico (1982)?",
-      "back": "The Court ruled that school boards may not remove library books simply because they dislike the ideas inside them, affirming students' First Amendment right to receive information and supporting viewpoint-neutral reconsideration.",
+      "back": "In a 4-1-4 plurality decision (not a binding majority opinion), Justice Brennan wrote that school boards may not remove library books simply because they dislike the ideas inside them, affirming students' First Amendment right to receive information and supporting viewpoint-neutral reconsideration.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5312.pdf",
@@ -7573,6 +7579,2601 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "school-librarian-5312-session-ch-01",
+      "title": "Program Vision, Needs Assessment, and Improvement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Program Vision, Needs Assessment, and Improvement\" (Program Administration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-01",
+      "itemIds": [
+        "sl5312-b1-001",
+        "sl5312-b1-002",
+        "sl5312-b1-003",
+        "sl5312-b1-004",
+        "sl5312-b1-005",
+        "sl5312-b1-006",
+        "sl5312-b1-007",
+        "sl5312-b1-008",
+        "sl5312-b2-001",
+        "sl5312-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Program Vision, Needs Assessment, and Improvement\" and the \"AASL Program Vision, Strategic Planning, Budget & Policy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Evidence-Based School Library Program Administration & Strategic Planning Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Evidence-Based Library Budget Stewardship Over Impulse Year-End Purchasing\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Program Vision, Needs Assessment, and Improvement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Follow Board-Approved Reconsideration Policy Instead of Stealth Weeding or Self-Censorship\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-02",
+      "title": "Operations, Budget, Policy, and Evaluation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Operations, Budget, Policy, and Evaluation\" (Program Administration) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-02",
+      "itemIds": [
+        "sl5312-b1-016",
+        "sl5312-b1-017",
+        "sl5312-b1-018",
+        "sl5312-b1-019",
+        "sl5312-b1-020",
+        "sl5312-b2-009",
+        "sl5312-b2-010",
+        "sl5312-b2-011",
+        "sl5312-b2-012",
+        "sl5312-b2-013"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Operations, Budget, Policy, and Evaluation\" and the \"AASL Program Vision, Strategic Planning, Budget & Policy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Library Budget Stewardship, Role Differentiation, Policy Governance & PDSA Reporting Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Upholding Formal Reconsideration Policy Against Quiet Closet Censorship\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Operations, Budget, Policy, and Evaluation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Advance Flexible Scheduling and Co-Taught Curriculum-Integrated Inquiry\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-03",
+      "title": "Collection Development and Inclusive Curation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collection Development and Inclusive Curation\" (Organization and Access) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-03",
+      "itemIds": [
+        "sl5312-b2-031",
+        "sl5312-b2-032",
+        "sl5312-b3-021",
+        "sl5312-b3-022",
+        "sl5312-b3-023",
+        "sl5312-b3-024",
+        "sl5312-b3-025",
+        "sl5312-b3-032",
+        "sl5312-b3-034",
+        "sl5312-b3-035"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collection Development and Inclusive Curation\" and the \"Collection Development, CREW/MUSTIE Weeding, Discovery & Privacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Equitable Collection Development, Curation & Reconsideration Policy Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Transitioning From Rigid Planning-Coverage Scheduling to Equitable Access\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collection Development and Inclusive Curation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Drive Collection Development and CREW Weeding Through Needs Assessment and Curriculum Mapping\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-04",
+      "title": "Organization, Discovery, Scheduling, and Privacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Organization, Discovery, Scheduling, and Privacy\" (Organization and Access) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-04",
+      "itemIds": [
+        "sl5312-b2-039",
+        "sl5312-b3-026",
+        "sl5312-b3-027",
+        "sl5312-b3-028",
+        "sl5312-b3-029",
+        "sl5312-b3-030",
+        "sl5312-b3-031",
+        "sl5312-b3-033",
+        "sl5312-b3-037",
+        "sl5312-b3-038"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Organization, Discovery, Scheduling, and Privacy\" and the \"Collection Development, CREW/MUSTIE Weeding, Discovery & Privacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Cataloging, Classification, Metadata & Accessible Discovery Architecture\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"CREW/MUSTIE Weeding, ILS Inventory Cleanup, and E-Book License Rebalancing\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Organization, Discovery, Scheduling, and Privacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Four-Factor Fair Use, Licensing Terms, and Ethical Attribution Across the School\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-05",
+      "title": "Inquiry, Search, and Source Evaluation guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Inquiry, Search, and Source Evaluation\" (Information Access in the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-05",
+      "itemIds": [
+        "sl5312-b1-041",
+        "sl5312-b1-042",
+        "sl5312-b1-043",
+        "sl5312-b1-044",
+        "sl5312-b1-045",
+        "sl5312-b1-046",
+        "sl5312-b1-047",
+        "sl5312-b2-040",
+        "sl5312-b2-041",
+        "sl5312-b2-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Inquiry, Search, and Source Evaluation\" and the \"Inquiry Models, Lateral Reading, Intellectual Freedom, Fair Use & CIPA\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Iterative Search Strategy, Contextual Source Evaluation & Ethical Use Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Four-Factor Fair Use and OER Alternatives for Workbook Copying and Film Streaming\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Inquiry, Search, and Source Evaluation\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Patron Circulation Confidentiality and Prevent CIPA Overblocking\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-06",
+      "title": "Intellectual Freedom, Copyright, and Digital Citizenship guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Intellectual Freedom, Copyright, and Digital Citizenship\" (Information Access in the Learning Environment) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-06",
+      "itemIds": [
+        "sl5312-b1-050",
+        "sl5312-b1-051",
+        "sl5312-b1-052",
+        "sl5312-b1-053",
+        "sl5312-b1-054",
+        "sl5312-b1-055",
+        "sl5312-b1-056",
+        "sl5312-b1-057",
+        "sl5312-b1-058",
+        "sl5312-b1-059"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Intellectual Freedom, Copyright, and Digital Citizenship\" and the \"Inquiry Models, Lateral Reading, Intellectual Freedom, Fair Use & CIPA\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Intellectual Freedom, Copyright/Fair Use & Student Privacy Safeguards Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Protecting Patron Circulation Privacy While Resolving Over-Blocking CIPA Filters\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Intellectual Freedom, Copyright, and Digital Citizenship\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead with AASL Shared Foundations, Lateral Reading, UDL Access, and Evidence-Based Advocacy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-07",
+      "title": "Collaborative Planning and Instructional Alignment guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Collaborative Planning and Instructional Alignment\" (Teaching and Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-07",
+      "itemIds": [
+        "sl5312-b3-063",
+        "sl5312-b3-064",
+        "sl5312-b3-065",
+        "sl5312-b3-066",
+        "sl5312-b1-060",
+        "sl5312-b1-061",
+        "sl5312-b1-062",
+        "sl5312-b1-063",
+        "sl5312-b1-064",
+        "sl5312-b1-065"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Collaborative Planning and Instructional Alignment\" and the \"Collaborative Co-Teaching, UDL Access, Reading Culture & Learning Commons\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Inquiry-Based Co-Teaching & Information Literacy Research Process\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"UDL Scaffolds for Co-Taught Primary-Source Inquiry Without Lowering Rigor\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Collaborative Planning and Instructional Alignment\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Follow Board-Approved Reconsideration Policy Instead of Stealth Weeding or Self-Censorship\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-08",
+      "title": "Differentiation, Accessibility, and Learning Evidence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Differentiation, Accessibility, and Learning Evidence\" (Teaching and Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-08",
+      "itemIds": [
+        "sl5312-b1-069",
+        "sl5312-b1-070",
+        "sl5312-b1-071",
+        "sl5312-b1-072",
+        "sl5312-b1-073",
+        "sl5312-b1-074",
+        "sl5312-b1-075",
+        "sl5312-b2-068",
+        "sl5312-b2-069",
+        "sl5312-b2-070"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Differentiation, Accessibility, and Learning Evidence\" and the \"Collaborative Co-Teaching, UDL Access, Reading Culture & Learning Commons\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Proactive UDL Access, Assistive Scaffolds & Co-Assessed Inquiry Evidence Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Static Website Checklists With Lateral Reading and SIFT Verification\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Differentiation, Accessibility, and Learning Evidence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Advance Flexible Scheduling and Co-Taught Curriculum-Integrated Inquiry\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-09",
+      "title": "Reading Engagement and Media Literacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Reading Engagement and Media Literacy\" (Teaching and Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-09",
+      "itemIds": [
+        "sl5312-b2-078",
+        "sl5312-b2-079",
+        "sl5312-b2-080",
+        "sl5312-b2-081",
+        "sl5312-b2-082",
+        "sl5312-b2-083",
+        "sl5312-b3-075",
+        "sl5312-b3-076",
+        "sl5312-b3-077",
+        "sl5312-b3-078"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Reading Engagement and Media Literacy\" and the \"Collaborative Co-Teaching, UDL Access, Reading Culture & Learning Commons\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Inclusive Readers' Advisory, SIFT Lateral Verification & Restorative Media Culture\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Vetting Gamified Reading Apps for Student Privacy, Accessibility, and Pedagogy\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Reading Engagement and Media Literacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Drive Collection Development and CREW Weeding Through Needs Assessment and Curriculum Mapping\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-10",
+      "title": "Learning Environments and Purposeful Technology guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Learning Environments and Purposeful Technology\" (Teaching and Learning) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-10",
+      "itemIds": [
+        "sl5312-b3-084",
+        "sl5312-b3-085",
+        "sl5312-b3-086",
+        "sl5312-b3-087",
+        "sl5312-b3-088",
+        "sl5312-b1-084",
+        "sl5312-b1-085",
+        "sl5312-b1-086",
+        "sl5312-b1-087",
+        "sl5312-b1-088"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Learning Environments and Purposeful Technology\" and the \"Collaborative Co-Teaching, UDL Access, Reading Culture & Learning Commons\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Flexible Learning Commons, TPACK/Triple E Tech Vetting, Inquiry Models & Makerspace Creation\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Scaffolding Exploration Uncertainty With Guided Inquiry Design and Pathfinders\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Learning Environments and Purposeful Technology\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Apply Four-Factor Fair Use, Licensing Terms, and Ethical Attribution Across the School\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-11",
+      "title": "Professional Learning and Instructional Leadership guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Professional Learning and Instructional Leadership\" (Professional Development, Leadership, and Advocacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-11",
+      "itemIds": [
+        "sl5312-b1-089",
+        "sl5312-b1-090",
+        "sl5312-b1-091",
+        "sl5312-b1-092",
+        "sl5312-b2-089",
+        "sl5312-b2-090",
+        "sl5312-b2-091",
+        "sl5312-b2-092",
+        "sl5312-b3-089",
+        "sl5312-b3-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Professional Learning and Instructional Leadership\" and the \"Instructional Leadership, Evidence-Based Advocacy & Community Partnerships\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Job-Embedded PD, PLC & Curriculum Leadership, Reciprocal Partnerships & Impact Advocacy\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Data-Driven Library Advocacy When Certified Staffing Faces Budget Reductions\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Professional Learning and Instructional Leadership\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Protect Patron Circulation Confidentiality and Prevent CIPA Overblocking\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-ch-12",
+      "title": "Partnerships, Advocacy, and Program Communication guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Partnerships, Advocacy, and Program Communication\" (Professional Development, Leadership, and Advocacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "sl5312-ch-12",
+      "itemIds": [
+        "sl5312-b2-096",
+        "sl5312-b2-097",
+        "sl5312-b2-098",
+        "sl5312-b2-099",
+        "sl5312-b2-100",
+        "sl5312-b3-095",
+        "sl5312-b3-096",
+        "sl5312-b3-097",
+        "sl5312-b3-098",
+        "sl5312-b3-099"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Partnerships, Advocacy, and Program Communication\" and the \"Instructional Leadership, Evidence-Based Advocacy & Community Partnerships\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"School Library Leadership, Professional Learning & Stakeholder Advocacy Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Audience-Tailored Multilingual Outreach and Virtual Library Portal Revitalization\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Partnerships, Advocacy, and Program Communication\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Lead with AASL Shared Foundations, Lateral Reading, UDL Access, and Evidence-Based Advocacy\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-trap-repair-sprint",
+      "title": "Praxis School Librarian (5312) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "sl5312-b1-021",
+        "sl5312-b1-040",
+        "sl5312-b1-001",
+        "sl5312-b1-025",
+        "sl5312-b1-005",
+        "sl5312-b1-044",
+        "sl5312-b1-022",
+        "sl5312-b1-041",
+        "sl5312-b1-002",
+        "sl5312-b1-026",
+        "sl5312-b1-007",
+        "sl5312-b1-046"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Follow Board-Approved Reconsideration Policy Instead of Stealth Weeding or Self-Censorship\", \"Advance Flexible Scheduling and Co-Taught Curriculum-Integrated Inquiry\", \"Drive Collection Development and CREW Weeding Through Needs Assessment and Curriculum Mapping\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-session-mixed-capstone",
+      "title": "Praxis School Librarian (5312) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "sl5312-b1-004",
+        "sl5312-b1-024",
+        "sl5312-b1-043",
+        "sl5312-b1-063",
+        "sl5312-b1-092",
+        "sl5312-b1-015",
+        "sl5312-b1-035",
+        "sl5312-b1-054",
+        "sl5312-b1-074",
+        "sl5312-b2-091",
+        "sl5312-b2-006",
+        "sl5312-b2-027",
+        "sl5312-b2-045",
+        "sl5312-b1-085",
+        "sl5312-b3-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied school library case workshops, outline a response to \"Needs-based budgeting and transitioning from fixed to flexible scheduling\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "school-librarian-5312-spaced-ch-01",
+      "topicId": "sl5312-ch-01",
+      "topicLabel": "1. Program Vision, Needs Assessment, and Improvement",
+      "unitId": "program-administration",
+      "chapterId": "sl5312-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Program Vision, Needs Assessment, and Improvement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-02",
+      "topicId": "sl5312-ch-02",
+      "topicLabel": "2. Operations, Budget, Policy, and Evaluation",
+      "unitId": "program-administration",
+      "chapterId": "sl5312-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Operations, Budget, Policy, and Evaluation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-03",
+      "topicId": "sl5312-ch-03",
+      "topicLabel": "3. Collection Development and Inclusive Curation",
+      "unitId": "organization-access",
+      "chapterId": "sl5312-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collection Development and Inclusive Curation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-04",
+      "topicId": "sl5312-ch-04",
+      "topicLabel": "4. Organization, Discovery, Scheduling, and Privacy",
+      "unitId": "organization-access",
+      "chapterId": "sl5312-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Organization, Discovery, Scheduling, and Privacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-05",
+      "topicId": "sl5312-ch-05",
+      "topicLabel": "5. Inquiry, Search, and Source Evaluation",
+      "unitId": "information-access-learning-environment",
+      "chapterId": "sl5312-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Inquiry, Search, and Source Evaluation\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-06",
+      "topicId": "sl5312-ch-06",
+      "topicLabel": "6. Intellectual Freedom, Copyright, and Digital Citizenship",
+      "unitId": "information-access-learning-environment",
+      "chapterId": "sl5312-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Intellectual Freedom, Copyright, and Digital Citizenship\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-07",
+      "topicId": "sl5312-ch-07",
+      "topicLabel": "7. Collaborative Planning and Instructional Alignment",
+      "unitId": "teaching-learning",
+      "chapterId": "sl5312-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Collaborative Planning and Instructional Alignment\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-08",
+      "topicId": "sl5312-ch-08",
+      "topicLabel": "8. Differentiation, Accessibility, and Learning Evidence",
+      "unitId": "teaching-learning",
+      "chapterId": "sl5312-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Differentiation, Accessibility, and Learning Evidence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-09",
+      "topicId": "sl5312-ch-09",
+      "topicLabel": "9. Reading Engagement and Media Literacy",
+      "unitId": "teaching-learning",
+      "chapterId": "sl5312-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Reading Engagement and Media Literacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-10",
+      "topicId": "sl5312-ch-10",
+      "topicLabel": "10. Learning Environments and Purposeful Technology",
+      "unitId": "teaching-learning",
+      "chapterId": "sl5312-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Learning Environments and Purposeful Technology\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-11",
+      "topicId": "sl5312-ch-11",
+      "topicLabel": "11. Professional Learning and Instructional Leadership",
+      "unitId": "professional-development-leadership-advocacy",
+      "chapterId": "sl5312-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Professional Learning and Instructional Leadership\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-spaced-ch-12",
+      "topicId": "sl5312-ch-12",
+      "topicLabel": "12. Partnerships, Advocacy, and Program Communication",
+      "unitId": "professional-development-leadership-advocacy",
+      "chapterId": "sl5312-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Partnerships, Advocacy, and Program Communication\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "school-librarian-5312-source-01",
+      "title": "School Librarian (5312) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5312.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-librarian-5312-source-02",
+      "title": "School Librarian (5312) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/school-librarian-5312.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-librarian-5312-source-03",
+      "title": "Home - National School Library Standards",
+      "organization": "American Association of School Librarians (AASL)",
+      "url": "https://standards.aasl.org/",
+      "credibility": "American Association of School Librarians (AASL) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "professional-standards",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-librarian-5312-source-04",
+      "title": "Library Bill of Rights",
+      "organization": "American Library Association (ALA)",
+      "url": "https://www.ala.org/advocacy/intfreedom/librarybill",
+      "credibility": "American Library Association (ALA) is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "school-librarian-5312-source-05",
+      "title": "Circular 21: Reproduction of Copyrighted Works by Educators and Librarians",
+      "organization": "U.S. Copyright Office",
+      "url": "https://www.copyright.gov/circs/circ21.pdf",
+      "credibility": "The U.S. Copyright Office is the federal primary source for this circular. The document is informational, some included guidelines are historical, and it is not individualized legal advice or a substitute for current law.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "school-librarian-5312-unit-review-01",
+      "unitId": "program-administration",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Program Vision, Needs Assessment, and Improvement",
+      "chapterId": "sl5312-ch-01",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-01-section-01",
+        "sl5312-ch-01-section-02",
+        "sl5312-ch-01-section-03",
+        "sl5312-ch-01-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-001",
+        "sl5312-b1-002",
+        "sl5312-b1-003",
+        "sl5312-b1-004",
+        "sl5312-b1-005",
+        "sl5312-b1-006",
+        "sl5312-b1-007",
+        "sl5312-b1-008",
+        "sl5312-b2-001",
+        "sl5312-b2-002",
+        "sl5312-b2-003",
+        "sl5312-b2-004",
+        "sl5312-b2-005",
+        "sl5312-b2-006",
+        "sl5312-b2-007",
+        "sl5312-b2-008",
+        "sl5312-b3-001",
+        "sl5312-b3-002",
+        "sl5312-b3-003",
+        "sl5312-b3-006",
+        "sl5312-b3-007",
+        "sl5312-b3-010",
+        "sl5312-b3-014",
+        "sl5312-b3-018",
+        "sl5312-b3-019",
+        "sl5312-b3-020"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-001",
+        "sl5312-b1-002",
+        "sl5312-b1-003",
+        "sl5312-b1-004",
+        "sl5312-b1-005",
+        "sl5312-b1-006",
+        "sl5312-b1-007",
+        "sl5312-b1-008",
+        "sl5312-b2-001",
+        "sl5312-b2-002",
+        "sl5312-b2-003",
+        "sl5312-b2-004"
+      ],
+      "purpose": "Consolidate \"Program Vision, Needs Assessment, and Improvement\" (Program Administration) across 4 lessons and 26 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-02",
+      "unitId": "program-administration",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Operations, Budget, Policy, and Evaluation",
+      "chapterId": "sl5312-ch-02",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-02-section-01",
+        "sl5312-ch-02-section-02",
+        "sl5312-ch-02-section-03",
+        "sl5312-ch-02-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-009",
+        "sl5312-b1-010",
+        "sl5312-b1-011",
+        "sl5312-b1-012",
+        "sl5312-b1-013",
+        "sl5312-b1-014",
+        "sl5312-b1-015",
+        "sl5312-b1-016",
+        "sl5312-b1-017",
+        "sl5312-b1-018",
+        "sl5312-b1-019",
+        "sl5312-b1-020",
+        "sl5312-b2-009",
+        "sl5312-b2-010",
+        "sl5312-b2-011",
+        "sl5312-b2-012",
+        "sl5312-b2-013",
+        "sl5312-b2-014",
+        "sl5312-b2-015",
+        "sl5312-b2-016",
+        "sl5312-b2-017",
+        "sl5312-b2-018",
+        "sl5312-b2-019",
+        "sl5312-b2-020",
+        "sl5312-b3-004",
+        "sl5312-b3-005",
+        "sl5312-b3-008",
+        "sl5312-b3-009",
+        "sl5312-b3-011",
+        "sl5312-b3-012",
+        "sl5312-b3-013",
+        "sl5312-b3-015",
+        "sl5312-b3-016",
+        "sl5312-b3-017"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-009",
+        "sl5312-b1-010",
+        "sl5312-b1-011",
+        "sl5312-b1-012",
+        "sl5312-b1-013",
+        "sl5312-b1-014",
+        "sl5312-b1-015",
+        "sl5312-b1-016",
+        "sl5312-b1-017",
+        "sl5312-b1-018",
+        "sl5312-b1-019",
+        "sl5312-b1-020"
+      ],
+      "purpose": "Consolidate \"Operations, Budget, Policy, and Evaluation\" (Program Administration) across 4 lessons and 34 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-03",
+      "unitId": "organization-access",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Collection Development and Inclusive Curation",
+      "chapterId": "sl5312-ch-03",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-03-section-01",
+        "sl5312-ch-03-section-02",
+        "sl5312-ch-03-section-03",
+        "sl5312-ch-03-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-021",
+        "sl5312-b1-022",
+        "sl5312-b1-023",
+        "sl5312-b1-024",
+        "sl5312-b1-029",
+        "sl5312-b1-030",
+        "sl5312-b1-031",
+        "sl5312-b1-032",
+        "sl5312-b2-021",
+        "sl5312-b2-022",
+        "sl5312-b2-023",
+        "sl5312-b2-024",
+        "sl5312-b2-029",
+        "sl5312-b2-030",
+        "sl5312-b2-031",
+        "sl5312-b2-032",
+        "sl5312-b3-021",
+        "sl5312-b3-022",
+        "sl5312-b3-023",
+        "sl5312-b3-024",
+        "sl5312-b3-025",
+        "sl5312-b3-032",
+        "sl5312-b3-034",
+        "sl5312-b3-035",
+        "sl5312-b3-036",
+        "sl5312-b3-039"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-021",
+        "sl5312-b1-022",
+        "sl5312-b1-023",
+        "sl5312-b1-024",
+        "sl5312-b1-029",
+        "sl5312-b1-030",
+        "sl5312-b1-031",
+        "sl5312-b1-032",
+        "sl5312-b2-021",
+        "sl5312-b2-022",
+        "sl5312-b2-023",
+        "sl5312-b2-024"
+      ],
+      "purpose": "Consolidate \"Collection Development and Inclusive Curation\" (Organization and Access) across 4 lessons and 26 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-04",
+      "unitId": "organization-access",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Organization, Discovery, Scheduling, and Privacy",
+      "chapterId": "sl5312-ch-04",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-04-section-01",
+        "sl5312-ch-04-section-02",
+        "sl5312-ch-04-section-03",
+        "sl5312-ch-04-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-025",
+        "sl5312-b1-026",
+        "sl5312-b1-027",
+        "sl5312-b1-028",
+        "sl5312-b1-033",
+        "sl5312-b1-034",
+        "sl5312-b1-035",
+        "sl5312-b1-036",
+        "sl5312-b1-037",
+        "sl5312-b1-038",
+        "sl5312-b1-039",
+        "sl5312-b2-025",
+        "sl5312-b2-026",
+        "sl5312-b2-027",
+        "sl5312-b2-028",
+        "sl5312-b2-033",
+        "sl5312-b2-034",
+        "sl5312-b2-035",
+        "sl5312-b2-036",
+        "sl5312-b2-037",
+        "sl5312-b2-038",
+        "sl5312-b2-039",
+        "sl5312-b3-026",
+        "sl5312-b3-027",
+        "sl5312-b3-028",
+        "sl5312-b3-029",
+        "sl5312-b3-030",
+        "sl5312-b3-031",
+        "sl5312-b3-033",
+        "sl5312-b3-037",
+        "sl5312-b3-038"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-025",
+        "sl5312-b1-026",
+        "sl5312-b1-027",
+        "sl5312-b1-028",
+        "sl5312-b1-033",
+        "sl5312-b1-034",
+        "sl5312-b1-035",
+        "sl5312-b1-036",
+        "sl5312-b1-037",
+        "sl5312-b1-038",
+        "sl5312-b1-039",
+        "sl5312-b2-025"
+      ],
+      "purpose": "Consolidate \"Organization, Discovery, Scheduling, and Privacy\" (Organization and Access) across 4 lessons and 31 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-05",
+      "unitId": "information-access-learning-environment",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Inquiry, Search, and Source Evaluation",
+      "chapterId": "sl5312-ch-05",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-05-section-01",
+        "sl5312-ch-05-section-02",
+        "sl5312-ch-05-section-03",
+        "sl5312-ch-05-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-040",
+        "sl5312-b1-041",
+        "sl5312-b1-042",
+        "sl5312-b1-043",
+        "sl5312-b1-044",
+        "sl5312-b1-045",
+        "sl5312-b1-046",
+        "sl5312-b1-047",
+        "sl5312-b2-040",
+        "sl5312-b2-041",
+        "sl5312-b2-042",
+        "sl5312-b2-043",
+        "sl5312-b2-044",
+        "sl5312-b2-045",
+        "sl5312-b2-046",
+        "sl5312-b2-047",
+        "sl5312-b3-040",
+        "sl5312-b3-041",
+        "sl5312-b3-042",
+        "sl5312-b3-043",
+        "sl5312-b3-044",
+        "sl5312-b3-053",
+        "sl5312-b3-054",
+        "sl5312-b3-055",
+        "sl5312-b3-056",
+        "sl5312-b3-057",
+        "sl5312-b3-058"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-040",
+        "sl5312-b1-041",
+        "sl5312-b1-042",
+        "sl5312-b1-043",
+        "sl5312-b1-044",
+        "sl5312-b1-045",
+        "sl5312-b1-046",
+        "sl5312-b1-047",
+        "sl5312-b2-040",
+        "sl5312-b2-041",
+        "sl5312-b2-042",
+        "sl5312-b2-043"
+      ],
+      "purpose": "Consolidate \"Inquiry, Search, and Source Evaluation\" (Information Access in the Learning Environment) across 4 lessons and 27 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-06",
+      "unitId": "information-access-learning-environment",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Intellectual Freedom, Copyright, and Digital Citizenship",
+      "chapterId": "sl5312-ch-06",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-06-section-01",
+        "sl5312-ch-06-section-02",
+        "sl5312-ch-06-section-03",
+        "sl5312-ch-06-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-048",
+        "sl5312-b1-049",
+        "sl5312-b1-050",
+        "sl5312-b1-051",
+        "sl5312-b1-052",
+        "sl5312-b1-053",
+        "sl5312-b1-054",
+        "sl5312-b1-055",
+        "sl5312-b1-056",
+        "sl5312-b1-057",
+        "sl5312-b1-058",
+        "sl5312-b1-059",
+        "sl5312-b2-048",
+        "sl5312-b2-049",
+        "sl5312-b2-050",
+        "sl5312-b2-051",
+        "sl5312-b2-052",
+        "sl5312-b2-053",
+        "sl5312-b2-054",
+        "sl5312-b2-055",
+        "sl5312-b2-056",
+        "sl5312-b2-057",
+        "sl5312-b2-058",
+        "sl5312-b2-059",
+        "sl5312-b3-045",
+        "sl5312-b3-046",
+        "sl5312-b3-047",
+        "sl5312-b3-048",
+        "sl5312-b3-049",
+        "sl5312-b3-050",
+        "sl5312-b3-051",
+        "sl5312-b3-052",
+        "sl5312-b3-059"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-048",
+        "sl5312-b1-049",
+        "sl5312-b1-050",
+        "sl5312-b1-051",
+        "sl5312-b1-052",
+        "sl5312-b1-053",
+        "sl5312-b1-054",
+        "sl5312-b1-055",
+        "sl5312-b1-056",
+        "sl5312-b1-057",
+        "sl5312-b1-058",
+        "sl5312-b1-059"
+      ],
+      "purpose": "Consolidate \"Intellectual Freedom, Copyright, and Digital Citizenship\" (Information Access in the Learning Environment) across 4 lessons and 33 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-07",
+      "unitId": "teaching-learning",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Collaborative Planning and Instructional Alignment",
+      "chapterId": "sl5312-ch-07",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-07-section-01",
+        "sl5312-ch-07-section-02",
+        "sl5312-ch-07-section-03",
+        "sl5312-ch-07-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-060",
+        "sl5312-b1-061",
+        "sl5312-b1-062",
+        "sl5312-b1-063",
+        "sl5312-b1-064",
+        "sl5312-b1-065",
+        "sl5312-b1-066",
+        "sl5312-b1-067",
+        "sl5312-b2-060",
+        "sl5312-b2-061",
+        "sl5312-b2-062",
+        "sl5312-b2-063",
+        "sl5312-b2-064",
+        "sl5312-b2-065",
+        "sl5312-b2-066",
+        "sl5312-b2-067",
+        "sl5312-b3-060",
+        "sl5312-b3-061",
+        "sl5312-b3-062",
+        "sl5312-b3-063",
+        "sl5312-b3-064",
+        "sl5312-b3-065",
+        "sl5312-b3-066"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-060",
+        "sl5312-b1-061",
+        "sl5312-b1-062",
+        "sl5312-b1-063",
+        "sl5312-b1-064",
+        "sl5312-b1-065",
+        "sl5312-b1-066",
+        "sl5312-b1-067",
+        "sl5312-b2-060",
+        "sl5312-b2-061",
+        "sl5312-b2-062",
+        "sl5312-b2-063"
+      ],
+      "purpose": "Consolidate \"Collaborative Planning and Instructional Alignment\" (Teaching and Learning) across 4 lessons and 23 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-08",
+      "unitId": "teaching-learning",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Differentiation, Accessibility, and Learning Evidence",
+      "chapterId": "sl5312-ch-08",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-08-section-01",
+        "sl5312-ch-08-section-02",
+        "sl5312-ch-08-section-03",
+        "sl5312-ch-08-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-068",
+        "sl5312-b1-069",
+        "sl5312-b1-070",
+        "sl5312-b1-071",
+        "sl5312-b1-072",
+        "sl5312-b1-073",
+        "sl5312-b1-074",
+        "sl5312-b1-075",
+        "sl5312-b2-068",
+        "sl5312-b2-069",
+        "sl5312-b2-070",
+        "sl5312-b2-071",
+        "sl5312-b2-072",
+        "sl5312-b2-073",
+        "sl5312-b2-074",
+        "sl5312-b2-075",
+        "sl5312-b3-067",
+        "sl5312-b3-068",
+        "sl5312-b3-069",
+        "sl5312-b3-070",
+        "sl5312-b3-071",
+        "sl5312-b3-072",
+        "sl5312-b3-073",
+        "sl5312-b3-074"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-068",
+        "sl5312-b1-069",
+        "sl5312-b1-070",
+        "sl5312-b1-071",
+        "sl5312-b1-072",
+        "sl5312-b1-073",
+        "sl5312-b1-074",
+        "sl5312-b1-075",
+        "sl5312-b2-068",
+        "sl5312-b2-069",
+        "sl5312-b2-070",
+        "sl5312-b2-071"
+      ],
+      "purpose": "Consolidate \"Differentiation, Accessibility, and Learning Evidence\" (Teaching and Learning) across 4 lessons and 24 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-09",
+      "unitId": "teaching-learning",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Reading Engagement and Media Literacy",
+      "chapterId": "sl5312-ch-09",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-09-section-01",
+        "sl5312-ch-09-section-02",
+        "sl5312-ch-09-section-03",
+        "sl5312-ch-09-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-076",
+        "sl5312-b1-077",
+        "sl5312-b1-078",
+        "sl5312-b1-079",
+        "sl5312-b1-080",
+        "sl5312-b1-081",
+        "sl5312-b1-082",
+        "sl5312-b1-083",
+        "sl5312-b2-076",
+        "sl5312-b2-077",
+        "sl5312-b2-078",
+        "sl5312-b2-079",
+        "sl5312-b2-080",
+        "sl5312-b2-081",
+        "sl5312-b2-082",
+        "sl5312-b2-083",
+        "sl5312-b3-075",
+        "sl5312-b3-076",
+        "sl5312-b3-077",
+        "sl5312-b3-078",
+        "sl5312-b3-079",
+        "sl5312-b3-080",
+        "sl5312-b3-081"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-076",
+        "sl5312-b1-077",
+        "sl5312-b1-078",
+        "sl5312-b1-079",
+        "sl5312-b1-080",
+        "sl5312-b1-081",
+        "sl5312-b1-082",
+        "sl5312-b1-083",
+        "sl5312-b2-076",
+        "sl5312-b2-077",
+        "sl5312-b2-078",
+        "sl5312-b2-079"
+      ],
+      "purpose": "Consolidate \"Reading Engagement and Media Literacy\" (Teaching and Learning) across 4 lessons and 23 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-10",
+      "unitId": "teaching-learning",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Learning Environments and Purposeful Technology",
+      "chapterId": "sl5312-ch-10",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-10-section-01",
+        "sl5312-ch-10-section-02",
+        "sl5312-ch-10-section-03",
+        "sl5312-ch-10-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-084",
+        "sl5312-b1-085",
+        "sl5312-b1-086",
+        "sl5312-b1-087",
+        "sl5312-b1-088",
+        "sl5312-b2-084",
+        "sl5312-b2-085",
+        "sl5312-b2-086",
+        "sl5312-b2-087",
+        "sl5312-b2-088",
+        "sl5312-b3-082",
+        "sl5312-b3-083",
+        "sl5312-b3-084",
+        "sl5312-b3-085",
+        "sl5312-b3-086",
+        "sl5312-b3-087",
+        "sl5312-b3-088"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-084",
+        "sl5312-b1-085",
+        "sl5312-b1-086",
+        "sl5312-b1-087",
+        "sl5312-b1-088",
+        "sl5312-b2-084",
+        "sl5312-b2-085",
+        "sl5312-b2-086",
+        "sl5312-b2-087",
+        "sl5312-b2-088",
+        "sl5312-b3-082",
+        "sl5312-b3-083"
+      ],
+      "purpose": "Consolidate \"Learning Environments and Purposeful Technology\" (Teaching and Learning) across 4 lessons and 17 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-11",
+      "unitId": "professional-development-leadership-advocacy",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Professional Learning and Instructional Leadership",
+      "chapterId": "sl5312-ch-11",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-11-section-01",
+        "sl5312-ch-11-section-02",
+        "sl5312-ch-11-section-03",
+        "sl5312-ch-11-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-089",
+        "sl5312-b1-090",
+        "sl5312-b1-091",
+        "sl5312-b1-092",
+        "sl5312-b2-089",
+        "sl5312-b2-090",
+        "sl5312-b2-091",
+        "sl5312-b2-092",
+        "sl5312-b3-089",
+        "sl5312-b3-090",
+        "sl5312-b3-091",
+        "sl5312-b3-092",
+        "sl5312-b3-093",
+        "sl5312-b3-094"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-089",
+        "sl5312-b1-090",
+        "sl5312-b1-091",
+        "sl5312-b1-092",
+        "sl5312-b2-089",
+        "sl5312-b2-090",
+        "sl5312-b2-091",
+        "sl5312-b2-092",
+        "sl5312-b3-089",
+        "sl5312-b3-090",
+        "sl5312-b3-091",
+        "sl5312-b3-092"
+      ],
+      "purpose": "Consolidate \"Professional Learning and Instructional Leadership\" (Professional Development, Leadership, and Advocacy) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-unit-review-12",
+      "unitId": "professional-development-leadership-advocacy",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Partnerships, Advocacy, and Program Communication",
+      "chapterId": "sl5312-ch-12",
+      "topicDiagnosticRouteIds": [
+        "sl5312-ch-12-section-01",
+        "sl5312-ch-12-section-02",
+        "sl5312-ch-12-section-03",
+        "sl5312-ch-12-section-04"
+      ],
+      "itemIds": [
+        "sl5312-b1-093",
+        "sl5312-b1-094",
+        "sl5312-b1-095",
+        "sl5312-b1-096",
+        "sl5312-b1-097",
+        "sl5312-b1-098",
+        "sl5312-b1-099",
+        "sl5312-b1-100",
+        "sl5312-b2-093",
+        "sl5312-b2-094",
+        "sl5312-b2-095",
+        "sl5312-b2-096",
+        "sl5312-b2-097",
+        "sl5312-b2-098",
+        "sl5312-b2-099",
+        "sl5312-b2-100",
+        "sl5312-b3-095",
+        "sl5312-b3-096",
+        "sl5312-b3-097",
+        "sl5312-b3-098",
+        "sl5312-b3-099",
+        "sl5312-b3-100"
+      ],
+      "mixedPracticeItemIds": [
+        "sl5312-b1-093",
+        "sl5312-b1-094",
+        "sl5312-b1-095",
+        "sl5312-b1-096",
+        "sl5312-b1-097",
+        "sl5312-b1-098",
+        "sl5312-b1-099",
+        "sl5312-b1-100",
+        "sl5312-b2-093",
+        "sl5312-b2-094",
+        "sl5312-b2-095",
+        "sl5312-b2-096"
+      ],
+      "purpose": "Consolidate \"Partnerships, Advocacy, and Program Communication\" (Professional Development, Leadership, and Advocacy) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "school-librarian-5312-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis School Librarian (5312) blueprint domains.",
+      "focus": [
+        "Program Administration",
+        "Organization and Access",
+        "Information Access in the Learning Environment",
+        "Teaching and Learning"
+      ],
+      "itemIds": [
+        "sl5312-b1-001",
+        "sl5312-b1-060",
+        "sl5312-b1-022",
+        "sl5312-b1-090",
+        "sl5312-b1-042",
+        "sl5312-b1-004",
+        "sl5312-b1-063",
+        "sl5312-b1-025",
+        "sl5312-b1-093",
+        "sl5312-b1-045",
+        "sl5312-b1-007",
+        "sl5312-b1-066",
+        "sl5312-b1-028",
+        "sl5312-b1-096",
+        "sl5312-b1-048",
+        "sl5312-b1-010",
+        "sl5312-b1-069",
+        "sl5312-b1-031",
+        "sl5312-b1-099",
+        "sl5312-b1-051",
+        "sl5312-b1-013",
+        "sl5312-b1-072",
+        "sl5312-b1-034",
+        "sl5312-b2-090",
+        "sl5312-b1-054",
+        "sl5312-b1-016",
+        "sl5312-b1-075",
+        "sl5312-b1-037",
+        "sl5312-b2-093",
+        "sl5312-b1-057",
+        "sl5312-b1-019",
+        "sl5312-b1-078",
+        "sl5312-b2-021",
+        "sl5312-b2-096",
+        "sl5312-b2-040",
+        "sl5312-b2-002",
+        "sl5312-b1-081",
+        "sl5312-b2-024",
+        "sl5312-b2-099",
+        "sl5312-b2-043"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis School Librarian (5312) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Information Access in the Learning Environment",
+        "Teaching and Learning",
+        "Professional Development, Leadership, and Advocacy",
+        "Program Administration"
+      ],
+      "itemIds": [
+        "sl5312-b1-021",
+        "sl5312-b1-089",
+        "sl5312-b1-041",
+        "sl5312-b1-003",
+        "sl5312-b1-062",
+        "sl5312-b1-024",
+        "sl5312-b1-092",
+        "sl5312-b1-044",
+        "sl5312-b1-006",
+        "sl5312-b1-065",
+        "sl5312-b1-027",
+        "sl5312-b1-095",
+        "sl5312-b1-047",
+        "sl5312-b1-009",
+        "sl5312-b1-068",
+        "sl5312-b1-030",
+        "sl5312-b1-098",
+        "sl5312-b1-050",
+        "sl5312-b1-012",
+        "sl5312-b1-071",
+        "sl5312-b1-033",
+        "sl5312-b2-089",
+        "sl5312-b1-053",
+        "sl5312-b1-015",
+        "sl5312-b1-074",
+        "sl5312-b1-036",
+        "sl5312-b2-092",
+        "sl5312-b1-056",
+        "sl5312-b1-018",
+        "sl5312-b1-077",
+        "sl5312-b1-039",
+        "sl5312-b2-095",
+        "sl5312-b1-059",
+        "sl5312-b2-001",
+        "sl5312-b1-080",
+        "sl5312-b2-023",
+        "sl5312-b2-098",
+        "sl5312-b2-042",
+        "sl5312-b2-004",
+        "sl5312-b1-083"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis School Librarian (5312) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Stealth Weeding or Quiet Removal Instead of Board Reconsideration Policy",
+        "Fixed-Coverage Scheduling Instead of Flexible Co-Taught Inquiry",
+        "Relying on Circulation-Only Metrics Instead of Needs-Based Collection and CREW Weeding"
+      ],
+      "itemIds": [
+        "sl5312-b1-040",
+        "sl5312-b1-002",
+        "sl5312-b1-061",
+        "sl5312-b1-023",
+        "sl5312-b1-091",
+        "sl5312-b1-043",
+        "sl5312-b1-005",
+        "sl5312-b1-064",
+        "sl5312-b1-026",
+        "sl5312-b1-094",
+        "sl5312-b1-046",
+        "sl5312-b1-008",
+        "sl5312-b1-067",
+        "sl5312-b1-029",
+        "sl5312-b1-097",
+        "sl5312-b1-049",
+        "sl5312-b1-011",
+        "sl5312-b1-070",
+        "sl5312-b1-032",
+        "sl5312-b1-100",
+        "sl5312-b1-052",
+        "sl5312-b1-014",
+        "sl5312-b1-073",
+        "sl5312-b1-035",
+        "sl5312-b2-091",
+        "sl5312-b1-055",
+        "sl5312-b1-017",
+        "sl5312-b1-076",
+        "sl5312-b1-038",
+        "sl5312-b2-094",
+        "sl5312-b1-058",
+        "sl5312-b1-020",
+        "sl5312-b1-079",
+        "sl5312-b2-022",
+        "sl5312-b2-097",
+        "sl5312-b2-041",
+        "sl5312-b2-003",
+        "sl5312-b1-082",
+        "sl5312-b2-025",
+        "sl5312-b2-100"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "school-librarian-5312-form-internal-a",
+      "title": "Internal practice form A (Praxis School Librarian (5312))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sl5312-b1-001",
+        "sl5312-b1-060",
+        "sl5312-b1-022",
+        "sl5312-b1-090",
+        "sl5312-b1-042",
+        "sl5312-b1-004",
+        "sl5312-b1-063",
+        "sl5312-b1-025",
+        "sl5312-b1-093",
+        "sl5312-b1-045",
+        "sl5312-b1-007",
+        "sl5312-b1-066",
+        "sl5312-b1-028",
+        "sl5312-b1-096",
+        "sl5312-b1-048",
+        "sl5312-b1-010",
+        "sl5312-b1-069",
+        "sl5312-b1-031",
+        "sl5312-b1-099",
+        "sl5312-b1-051",
+        "sl5312-b1-013",
+        "sl5312-b1-072",
+        "sl5312-b1-034",
+        "sl5312-b2-090",
+        "sl5312-b1-054",
+        "sl5312-b1-016",
+        "sl5312-b1-075",
+        "sl5312-b1-037",
+        "sl5312-b2-093",
+        "sl5312-b1-057",
+        "sl5312-b1-019",
+        "sl5312-b1-078",
+        "sl5312-b2-021",
+        "sl5312-b2-096",
+        "sl5312-b2-040",
+        "sl5312-b2-002",
+        "sl5312-b1-081",
+        "sl5312-b2-024",
+        "sl5312-b2-099",
+        "sl5312-b2-043",
+        "sl5312-b2-005",
+        "sl5312-b1-084",
+        "sl5312-b2-027",
+        "sl5312-b3-090",
+        "sl5312-b2-046",
+        "sl5312-b2-008",
+        "sl5312-b1-087",
+        "sl5312-b2-030",
+        "sl5312-b3-093",
+        "sl5312-b2-049"
+      ],
+      "topicIds": [
+        "sl5312-ch-01",
+        "sl5312-ch-07",
+        "sl5312-ch-03",
+        "sl5312-ch-11",
+        "sl5312-ch-05",
+        "sl5312-ch-04",
+        "sl5312-ch-12",
+        "sl5312-ch-06",
+        "sl5312-ch-02",
+        "sl5312-ch-08",
+        "sl5312-ch-09",
+        "sl5312-ch-10"
+      ],
+      "unitIds": [
+        "program-administration",
+        "teaching-learning",
+        "organization-access",
+        "professional-development-leadership-advocacy",
+        "information-access-learning-environment"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-form-internal-b",
+      "title": "Internal practice form B (Praxis School Librarian (5312))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sl5312-b1-021",
+        "sl5312-b1-089",
+        "sl5312-b1-041",
+        "sl5312-b1-003",
+        "sl5312-b1-062",
+        "sl5312-b1-024",
+        "sl5312-b1-092",
+        "sl5312-b1-044",
+        "sl5312-b1-006",
+        "sl5312-b1-065",
+        "sl5312-b1-027",
+        "sl5312-b1-095",
+        "sl5312-b1-047",
+        "sl5312-b1-009",
+        "sl5312-b1-068",
+        "sl5312-b1-030",
+        "sl5312-b1-098",
+        "sl5312-b1-050",
+        "sl5312-b1-012",
+        "sl5312-b1-071",
+        "sl5312-b1-033",
+        "sl5312-b2-089",
+        "sl5312-b1-053",
+        "sl5312-b1-015",
+        "sl5312-b1-074",
+        "sl5312-b1-036",
+        "sl5312-b2-092",
+        "sl5312-b1-056",
+        "sl5312-b1-018",
+        "sl5312-b1-077",
+        "sl5312-b1-039",
+        "sl5312-b2-095",
+        "sl5312-b1-059",
+        "sl5312-b2-001",
+        "sl5312-b1-080",
+        "sl5312-b2-023",
+        "sl5312-b2-098",
+        "sl5312-b2-042",
+        "sl5312-b2-004",
+        "sl5312-b1-083",
+        "sl5312-b2-026",
+        "sl5312-b3-089",
+        "sl5312-b2-045",
+        "sl5312-b2-007",
+        "sl5312-b1-086",
+        "sl5312-b2-029",
+        "sl5312-b3-092",
+        "sl5312-b2-048",
+        "sl5312-b2-010",
+        "sl5312-b2-060"
+      ],
+      "topicIds": [
+        "sl5312-ch-03",
+        "sl5312-ch-11",
+        "sl5312-ch-05",
+        "sl5312-ch-01",
+        "sl5312-ch-07",
+        "sl5312-ch-04",
+        "sl5312-ch-12",
+        "sl5312-ch-02",
+        "sl5312-ch-08",
+        "sl5312-ch-06",
+        "sl5312-ch-09",
+        "sl5312-ch-10"
+      ],
+      "unitIds": [
+        "organization-access",
+        "professional-development-leadership-advocacy",
+        "information-access-learning-environment",
+        "program-administration",
+        "teaching-learning"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "school-librarian-5312-form-internal-c",
+      "title": "Internal practice form C (Praxis School Librarian (5312))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "sl5312-b1-040",
+        "sl5312-b1-002",
+        "sl5312-b1-061",
+        "sl5312-b1-023",
+        "sl5312-b1-091",
+        "sl5312-b1-043",
+        "sl5312-b1-005",
+        "sl5312-b1-064",
+        "sl5312-b1-026",
+        "sl5312-b1-094",
+        "sl5312-b1-046",
+        "sl5312-b1-008",
+        "sl5312-b1-067",
+        "sl5312-b1-029",
+        "sl5312-b1-097",
+        "sl5312-b1-049",
+        "sl5312-b1-011",
+        "sl5312-b1-070",
+        "sl5312-b1-032",
+        "sl5312-b1-100",
+        "sl5312-b1-052",
+        "sl5312-b1-014",
+        "sl5312-b1-073",
+        "sl5312-b1-035",
+        "sl5312-b2-091",
+        "sl5312-b1-055",
+        "sl5312-b1-017",
+        "sl5312-b1-076",
+        "sl5312-b1-038",
+        "sl5312-b2-094",
+        "sl5312-b1-058",
+        "sl5312-b1-020",
+        "sl5312-b1-079",
+        "sl5312-b2-022",
+        "sl5312-b2-097",
+        "sl5312-b2-041",
+        "sl5312-b2-003",
+        "sl5312-b1-082",
+        "sl5312-b2-025",
+        "sl5312-b2-100",
+        "sl5312-b2-044",
+        "sl5312-b2-006",
+        "sl5312-b1-085",
+        "sl5312-b2-028",
+        "sl5312-b3-091",
+        "sl5312-b2-047",
+        "sl5312-b2-009",
+        "sl5312-b1-088",
+        "sl5312-b2-031",
+        "sl5312-b3-094"
+      ],
+      "topicIds": [
+        "sl5312-ch-05",
+        "sl5312-ch-01",
+        "sl5312-ch-07",
+        "sl5312-ch-03",
+        "sl5312-ch-11",
+        "sl5312-ch-04",
+        "sl5312-ch-12",
+        "sl5312-ch-06",
+        "sl5312-ch-02",
+        "sl5312-ch-08",
+        "sl5312-ch-09",
+        "sl5312-ch-10"
+      ],
+      "unitIds": [
+        "information-access-learning-environment",
+        "program-administration",
+        "teaching-learning",
+        "organization-access",
+        "professional-development-leadership-advocacy"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

@@ -7,6 +7,18 @@ function _ltsIsGlobalMuted() {
   } catch (_) {}
   return false;
 }
+function _ensureTeachingScriptA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-teaching-script-a11y-css')) return;
+  const st = document.createElement('style');
+  st.id = 'allo-teaching-script-a11y-css';
+  st.textContent =
+    '[data-teaching-script-plan] button,[data-teaching-script-plan] a,[data-teaching-script-plan] input,[data-teaching-script-plan] select,[data-teaching-script-plan] textarea,[data-teaching-script-plan] summary,[data-spoken-directions] button,[data-spoken-directions] a,[data-spoken-directions] input,[data-spoken-directions] select,[data-spoken-directions] textarea,[data-spoken-directions] summary{touch-action:manipulation;}' +
+    '[data-teaching-script-plan] button:focus-visible,[data-teaching-script-plan] a:focus-visible,[data-teaching-script-plan] input:focus-visible,[data-teaching-script-plan] select:focus-visible,[data-teaching-script-plan] textarea:focus-visible,[data-teaching-script-plan] summary:focus-visible,[data-spoken-directions] button:focus-visible,[data-spoken-directions] a:focus-visible,[data-spoken-directions] input:focus-visible,[data-spoken-directions] select:focus-visible,[data-spoken-directions] textarea:focus-visible,[data-spoken-directions] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-teaching-script-plan] button:focus-visible,[data-teaching-script-plan] a:focus-visible,[data-teaching-script-plan] input:focus-visible,[data-teaching-script-plan] select:focus-visible,[data-teaching-script-plan] textarea:focus-visible,[data-teaching-script-plan] summary:focus-visible,[data-spoken-directions] button:focus-visible,[data-spoken-directions] a:focus-visible,[data-spoken-directions] input:focus-visible,[data-spoken-directions] select:focus-visible,[data-spoken-directions] textarea:focus-visible,[data-spoken-directions] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-teaching-script-plan],[data-teaching-script-plan] *,[data-teaching-script-plan] *::before,[data-teaching-script-plan] *::after,[data-spoken-directions],[data-spoken-directions] *,[data-spoken-directions] *::before,[data-spoken-directions] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 function _ltsHardAiBlocked() {
   if (typeof window === 'undefined') return true;
   try {
@@ -109,7 +121,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
         onBackRef.current?.();
         return;
       }
-      if (event.key !== 'Tab' || !node) return;
+      if (event.key !== 'Tab' || !node || event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); node.focus?.(); return; }
       const first = focusable[0];
@@ -122,6 +134,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       const muted = (event && event.detail && event.detail.muted === true) || _ltsIsGlobalMuted();
       if (muted) stop();
     };
+    _ensureTeachingScriptA11yCss();
     document.addEventListener('keydown', onDocumentKeyDown);
     if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onMuteChanged);
     const changed = () => { setFullscreen(!!document.fullscreenElement); if (!document.fullscreenElement) ownsFullscreen.current = false; };
@@ -637,6 +650,7 @@ function LessonTeachingScriptPanel(props) {
   const formReady = !!goal.trim() && !!grade && (inferContext.subject || !!subject) && (inferContext.topic || subject !== 'other' || !!topic.trim()) && durationValid && selectedMaterials.length > 0 && unavailableMaterialIds.length === 0;
   React.useEffect(() => {
     mounted.current = true;
+    _ensureTeachingScriptA11yCss();
     return () => {
       mounted.current = false;
       requestOwner.current += 1;

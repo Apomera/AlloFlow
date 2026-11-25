@@ -107,8 +107,11 @@ describe('Wave 12 — Classroom Polish, Destructive-Action Guards & Responsive L
     expect(removeBtn).toBeTruthy();
     act(() => { removeBtn.click(); });
     expect(onRemoveRecord).not.toHaveBeenCalled();
-    expect(removeBtn.textContent).toContain('Confirm remove');
-    act(() => { removeBtn.click(); });
+    // The first tap now swaps in a separate Confirm remove + Cancel pair.
+    const confirmBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent.includes('Confirm remove'));
+    expect(confirmBtn).toBeTruthy();
+    expect(Array.from(container.querySelectorAll('button')).some((b) => b.textContent.trim() === 'Cancel')).toBe(true);
+    act(() => { confirmBtn.click(); });
     expect(onRemoveRecord).toHaveBeenCalledTimes(1);
     unmount();
   });

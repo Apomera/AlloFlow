@@ -30198,10 +30198,10 @@
                   ]
                 },
                 {
-                  "text": "Changing frames does not change the physical displacement between events.",
+                  "text": "Changing inertial frames does not change acceleration, even though velocity and displacement over time depend on the frame.",
                   "runs": [
                     {
-                      "text": "Changing frames does not change the physical displacement between events."
+                      "text": "Changing inertial frames does not change acceleration, even though velocity and displacement over time depend on the frame."
                     }
                   ]
                 }
@@ -30392,7 +30392,7 @@
           "nonExamples": [
             "One close data point does not validate every time interval.",
             "A residual pattern is not random noise by definition.",
-            "Changing frames does not change the physical displacement between events."
+            "Changing inertial frames does not change acceleration, even though velocity and displacement over time depend on the frame."
           ],
           "commonMisconceptions": [
             "Students often treat a model as universally true after it matches one trial or one graph segment."
@@ -31105,10 +31105,10 @@
                       ]
                     },
                     {
-                      "text": "External interaction",
+                      "text": "Key interaction",
                       "runs": [
                         {
-                          "text": "External interaction"
+                          "text": "Key interaction"
                         }
                       ]
                     },
@@ -31259,7 +31259,7 @@
             "rows": [
               [
                 "System",
-                "External interaction",
+                "Key interaction",
                 "Model role"
               ],
               [

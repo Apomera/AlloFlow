@@ -218,7 +218,7 @@ if (typeof window !== 'undefined') {
       steps: {
         elementary: ['Go to a sink', 'Turn on cold water', 'Splash cold water on your cheeks and forehead', 'Hold a cold wet paper towel on your face for 10 seconds', 'Take a deep breath \u2014 notice how you feel'],
         middle: ['Run cold water at a sink (or get a cold water bottle)', 'Splash cold water on your face, especially your forehead and cheeks', 'Alternatively, hold a cold wet cloth against your face for 15 seconds', 'Take slow breaths while the cold is on your face', 'This triggers an automatic calming reflex \u2014 your body can\u2019t help but slow down'],
-        high: ['Fill a bowl with cold water or prepare a cold, wet cloth', 'Apply cold to the area around your eyes, temples, and forehead (trigeminal nerve territory)', 'Hold for 15-30 seconds while taking slow, paced breaths', 'The mammalian dive reflex activates: heart rate drops, blood pressure lowers, your parasympathetic system engages', 'This is one of the fastest physiological calming techniques available \u2014 part of the DBT TIPP skill']
+        high: ['Fill a bowl with cold water or prepare a cold, wet cloth', 'Apply cold to the area around your eyes, temples, and forehead (trigeminal nerve territory)', 'Hold for 15-30 seconds while taking slow, paced breaths', 'The mammalian dive reflex activates: your heart rate drops and blood flow shifts toward your heart and brain', 'This is a fast-acting DBT TIPP skill. Check with a doctor or school nurse first if you have a heart condition, take medicine that slows your heart, or have an eating disorder. Use cool water, not icy (above 50 degrees F)']
       },
       practiceable: false
     },
@@ -229,7 +229,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Find something soft, something bumpy, and something smooth \u2014 really feel them!',
         middle: 'Focusing on textures pulls your brain out of spiraling thoughts and into the present moment.',
-        high: 'Tactile sensory engagement redirects attentional resources from the amygdala to the somatosensory cortex.'
+        high: 'Focusing on touch gives attention a concrete anchor, which interrupts spiraling thoughts.'
       },
       steps: {
         elementary: ['Find something SOFT (a blanket, stuffed animal, sweater)', 'Touch it slowly \u2014 how does it feel?', 'Now find something ROUGH or BUMPY', 'Touch it slowly \u2014 is it different?', 'Find something SMOOTH \u2014 touch it and take 3 slow breaths'],
@@ -441,7 +441,7 @@ if (typeof window !== 'undefined') {
           'Sit or lie down with tongue tip resting on the alveolar ridge.',
           'Fully exhale through the mouth with an audible whoosh.',
           'Inhale silently through the nose for a 4-count.',
-          'Hold the breath at full inhalation for 7 counts (CO2 builds slightly, increasing vagal sensitivity).',
+          'Hold the breath at full inhalation for 7 counts.',
           'Exhale through the mouth for 8 counts \u2014 the extended exhale stimulates the vagus nerve and slows heart rate.',
           'Complete 4 cycles; do not exceed 8 cycles in early practice as dizziness can occur.',
           'Mechanism: prolonged exhalation increases parasympathetic activity and reduces sympathetic arousal.'
@@ -536,8 +536,8 @@ if (typeof window !== 'undefined') {
           'Exhale slowly and completely through the mouth.',
           'Repeat 1 to 3 cycles; effect is immediate.',
           'Mechanism: the second inhale reinflates collapsed alveoli, allowing rapid CO2 offload.',
-          'Reduces autonomic arousal faster than any other voluntary breath pattern in controlled studies.',
-          'Balban et al. (2023, Cell Reports Medicine) showed 5 min/day reduced anxiety and improved mood vs. mindfulness meditation.'
+          'In one trial, 5 minutes a day improved mood more than mindfulness meditation or box breathing.',
+          'Balban et al. (2023, Cell Reports Medicine): 5 min/day improved positive mood and slowed breathing rate more than mindfulness meditation; anxiety fell in all groups.'
         ]
       },
       evidence: 'Balban, Huberman et al. (2023, Cell Reports Medicine); identified by Jack Feldman lab as a spontaneous reset breath.',
@@ -673,7 +673,7 @@ if (typeof window !== 'undefined') {
         ],
         high: [
           'Choose a still posture, spine neutral.',
-          'Breathe nasally if possible \u2014 engages the parasympathetic-leaning soft-palate receptors.',
+          'Breathe through your nose if you can.',
           'Inhale 3 sec, hold 3 sec, exhale 3 sec.',
           'Complete 10 cycles (~90 seconds).',
           'This serves as a desensitization protocol for those uncomfortable with breath retention.',
@@ -771,7 +771,7 @@ if (typeof window !== 'undefined') {
           'Chronic chest-breathing is associated with higher anxiety baseline \u2014 daily practice retrains this.'
         ]
       },
-      evidence: 'Cornerstone of clinical breathing retraining; Ma et al. (2017) systematic review supports cortisol reduction.',
+      evidence: 'Cornerstone of clinical breathing retraining; a small trial (Ma et al., 2017) found lower cortisol after 8 weeks; Hopper et al. (2019) systematic review.',
       whenToUse: 'Daily foundation practice; great any time, especially when you notice shallow chest breathing.',
       timeNeeded: '5 min',
       practiceable: true
@@ -958,10 +958,10 @@ if (typeof window !== 'undefined') {
           'Open right nostril, exhale right for 4 to 8 sec.',
           'Inhale right for 4 sec; retain; exhale left.',
           'Notice whether this breathing pattern feels comfortable. Claims about balancing brain hemispheres are not established.',
-          'Research: Telles et al. (2014) demonstrated reduced perceived stress and improved cognitive performance after 12 weeks of practice.'
+          'Research: small studies of slow pranayama practiced for 12 weeks report lower perceived stress and some cognitive gains (Sharma et al., 2013, 2014). Alternate-nostril breathing alone is less studied.'
         ]
       },
-      evidence: 'Traditional pranayama; Telles et al. (2014) showed cognitive and ANS benefits; Sharma et al. (2014) blood pressure reduction.',
+      evidence: 'Traditional pranayama; small studies report lower perceived stress and some cognitive gains from slow pranayama (Sharma et al., 2013, 2014).',
       whenToUse: 'Before tests or studying, or when you feel mentally scattered and need to focus.',
       timeNeeded: '3 min',
       practiceable: true
@@ -978,8 +978,8 @@ if (typeof window !== 'undefined') {
       },
       desc: {
         elementary: 'Plug your LEFT nostril and breathe through your right side to feel wake-up energy.',
-        middle: 'Breathing only through the right nostril is activating \u2014 it gently energizes when you feel sluggish.',
-        high: 'Right-nostril dominant breathing preferentially activates the sympathetic nervous system and is associated with increased alertness and metabolic rate.'
+        middle: 'Some people find breathing through the right nostril energizing when they feel sluggish. The evidence for a nostril effect is thin.',
+        high: 'Traditionally described as warming and energizing. A few small studies report short-term changes in heart rate or alertness; the findings are not consistent.'
       },
       steps: {
         elementary: [
@@ -1024,9 +1024,9 @@ if (typeof window !== 'undefined') {
         high: 'Chandra Bhedana (Left Nostril Pranayama)'
       },
       desc: {
-        elementary: 'Plug your RIGHT nostril and breathe through your left side \u2014 it\'s super calming.',
-        middle: 'Breathing only through the left nostril is calming \u2014 it activates the cooling, rest side of your nervous system.',
-        high: 'Left-nostril dominant breathing preferentially activates the parasympathetic nervous system and is associated with reduced blood pressure and increased relaxation.'
+        elementary: 'Plug your RIGHT nostril and breathe slowly through your left side. Slow breathing helps many people feel calm.',
+        middle: 'Some people find slow breathing through the left nostril calming. Slow breathing is the part with good evidence; the nostril you use probably matters little.',
+        high: 'Traditionally described as cooling and calming. A few small studies report short-term changes in heart rate or blood pressure; the findings are not consistent.'
       },
       steps: {
         elementary: [
@@ -1051,8 +1051,7 @@ if (typeof window !== 'undefined') {
           'Inhale through left nostril; optional brief retention.',
           'Exhale through left nostril.',
           'Practice 5 to 10 minutes.',
-          'Some small studies examine physiological effects, but this practice does not reliably produce a particular heart rate, blood pressure, or brain response.',
-          'Research: Shannahoff-Khalsa demonstrated cardiovascular effects across multiple controlled trials.'
+          'Some small studies examine physiological effects, but this practice does not reliably produce a particular heart rate, blood pressure, or brain response.'
         ]
       },
       evidence: 'Shannahoff-Khalsa (2007); Sharma et al. (2014) on blood pressure reduction; traditional pranayama.',
@@ -1072,8 +1071,8 @@ if (typeof window !== 'undefined') {
       },
       desc: {
         elementary: 'Cover your ears and HUMMMM like a bee \u2014 your whole head feels buzzy and calm.',
-        middle: 'Humming during exhale produces nitric oxide and calming vibration. Cover your ears to amplify it.',
-        high: 'Humming exhalation that dramatically increases nasal nitric oxide (15x baseline) and produces vibrational vagal stimulation.'
+        middle: 'A long hum as you breathe out slows your breath and makes a calming vibration. Cover your ears to amplify it.',
+        high: 'Humming exhalation that raises nasal nitric oxide (about 15x) and pairs a soothing vibration with a long, slow exhale.'
       },
       steps: {
         elementary: [
@@ -1098,13 +1097,13 @@ if (typeof window !== 'undefined') {
           'Block external sound with thumbs in ears (Shanmukhi Mudra optional).',
           'Inhale fully through the nose.',
           'On exhale, produce a steady humming sound; feel vibration in the sinuses and skull.',
-          'Mechanism #1: humming increases nasal nitric oxide ~15-fold (Lundberg et al., 2003), which improves vasodilation and respiratory health.',
-          'Mechanism #2: vibration stimulates vagal afferents in the throat and ears, increasing parasympathetic tone.',
+          'Mechanism #1: humming raises the nitric oxide measured in nasal air about 15-fold (Weitzberg & Lundberg, 2002); whether that affects how you feel is not known.',
+          'Mechanism #2: the long, slow hummed exhale slows breathing, which many people find calming.',
           'Mechanism #3: extended exhale further amplifies parasympathetic activity.',
           'Research: Kuppusamy et al. (2018) showed reduced anxiety and improved cognitive performance.'
         ]
       },
-      evidence: 'Lundberg et al. (2003) on humming and nasal nitric oxide; Kuppusamy et al. (2018) on anxiety reduction.',
+      evidence: 'Weitzberg & Lundberg (2002) on humming and nasal nitric oxide; Kuppusamy et al. (2018) on anxiety reduction.',
       whenToUse: 'When you need to calm fast and have privacy \u2014 great for headaches, anger, and overstimulation.',
       timeNeeded: '3 min',
       practiceable: true
@@ -1168,7 +1167,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Just hum your favorite tune on the breath out!',
         middle: 'A simple version of bee breath: hum on every exhale. Easy and powerful.',
-        high: 'Voiced exhalation creating laryngeal vibration and extended exhale, producing vagal stimulation and increased nasal nitric oxide.'
+        high: 'Voiced exhalation creating laryngeal vibration and extended exhale, which slows the breath and raises nasal nitric oxide.'
       },
       steps: {
         elementary: [
@@ -1190,9 +1189,9 @@ if (typeof window !== 'undefined') {
           'Any posture \u2014 even walking.',
           'Inhale nasally; exhale with sustained humming (constant pitch or melody).',
           'Aim for exhale at least twice the duration of inhale.',
-          'Mechanism: humming increases nasal nitric oxide ~15-fold; vibration stimulates vagal afferents; long exhale increases parasympathetic activity.',
+          'Mechanism: humming increases nasal nitric oxide ~15-fold; the long exhale slows breathing and heart rate.',
           'A more accessible alternative to formal Bhramari pranayama.',
-          'Music therapy research shows humming reduces cortisol and increases oxytocin in addition to vagal benefits.'
+          'Humming lengthens the exhale, which many people find calming.'
         ]
       },
       evidence: 'Lundberg et al. (2003) nasal NO; vocal vibration literature in music therapy.',
@@ -1375,7 +1374,7 @@ if (typeof window !== 'undefined') {
           'Sit or stand, posture upright.',
           'Inhale nasally to comfortable capacity.',
           'Exhale with sustained voiced hum; extend duration to your edge without strain.',
-          'Mechanism: humming triples nitric-oxide-related vasodilation in the upper airway and vibrationally stimulates vagal pharyngeal branches.',
+          'Mechanism: a long hummed exhale slows the breath.',
           'The extended exhale further activates parasympathetic tone.',
           'Easier on-ramp than Bhramari since no ear-plugging is required.'
         ]
@@ -2086,7 +2085,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Walk 4 steps as you breathe in, walk 4 steps as you breathe out.',
         middle: 'Match breath to footsteps \u2014 4 steps in, 4 steps out. Calming AND keeps you moving.',
-        high: 'Cadence-paced walking meditation that uses gait rhythm to anchor breath, integrating bilateral motor activity with respiratory regulation.'
+        high: 'Cadence-paced walking meditation that uses gait rhythm to anchor breath, pairing steady steps with slow, even breathing.'
       },
       steps: {
         elementary: [
@@ -2108,7 +2107,7 @@ if (typeof window !== 'undefined') {
           'Begin walking at moderate pace.',
           'Coordinate inhale to 4 steps, exhale to 4 to 6 steps.',
           'Breathe through nose if possible to engage diaphragm and nasal NO production.',
-          'Mechanism: gait provides external pacing; bilateral motor activity supports vagal tone via brainstem cross-talk.',
+          'Your steps give you a steady beat to pace your breath; slow, even breathing is the part with evidence behind it.',
           'Walking meditation has measurable benefits for mood, anxiety, and rumination (Hatta et al. 2018).',
           'Use longer exhale ratio (4/6 or 4/8) for greater calming effect.',
           'Particularly valuable because it interrupts sedentary rumination cycles.'
@@ -2245,11 +2244,11 @@ if (typeof window !== 'undefined') {
           'Hands in "holding a ball" position \u2014 one at face, one at belly, palms inward.',
           'Coordinate weight shift, hand exchange, and breath: inhale right shift; exhale left shift.',
           'This practice combines cross-body movement, body awareness, comfortable breathing, and attention. Notice your own response rather than expecting a particular brain effect.',
-          'Multiple studies (Wang et al. 2014; Yeh et al. 2018) show tai chi reduces anxiety, depression, and blood pressure.',
+          'Multiple studies (Wang et al. 2014; Yeh et al. 2008) show tai chi reduces anxiety, depression, and blood pressure.',
           'A complete mind-body practice; useful even in short bouts.'
         ]
       },
-      evidence: 'Wang et al. (2014, JAMA Internal Medicine) on tai chi for anxiety; Yeh et al. (2018) on cardiovascular benefits.',
+      evidence: 'Wang et al. (2014, International Journal of Behavioral Medicine) meta-analysis on tai chi for depression and anxiety; Yeh et al. (2008) review on tai chi and blood pressure.',
       whenToUse: 'When you want a longer, gentler movement practice for sustained mood regulation.',
       timeNeeded: '5 min',
       practiceable: true
@@ -2385,7 +2384,7 @@ if (typeof window !== 'undefined') {
           'Tongue tip on alveolar ridge throughout.',
           'Complete a full exhale to baseline; then 4-7-8 protocol.',
           'Mechanism: combination of slow rate, retention-induced mild CO2 increase, and extended exhale produces strong parasympathetic shift.',
-          'Sleep medicine context: parasympathetic dominance is a prerequisite for sleep-spindle onset and slow-wave generation.',
+          'Sleep context: a calmer body with a slower heart rate makes it easier to fall asleep.',
           'Most users do not complete 4 cycles before sleep onset.',
           'Should not exceed 8 cycles total to avoid alkalosis-related dizziness.'
         ]
@@ -2511,7 +2510,7 @@ if (typeof window !== 'undefined') {
           'Let the breath in by itself.',
           'Puff out again \u2014 and in.',
           'Try 20 puffs.',
-          'STOP if you feel dizzy.'
+          'Only with an adult. STOP if you feel dizzy. Skip it if you have asthma, seizures, a heart condition, or feel anxious.'
         ],
         middle: [
           'Sit upright with spine tall.',
@@ -2520,7 +2519,7 @@ if (typeof window !== 'undefined') {
           'Let the inhale happen passively (don\'t force it).',
           'Continue puffs at ~1 to 2 per second.',
           'Start with 20 to 30 puffs, then rest with normal breathing.',
-          'AVOID if anxious, pregnant, or with high blood pressure.'
+          'AVOID if anxious, pregnant, or if you have high blood pressure, a heart condition, asthma, or seizures.'
         ],
         high: [
           'Stable seated posture, spine erect, hands on knees.',
@@ -2529,7 +2528,7 @@ if (typeof window !== 'undefined') {
           'Inhalations are passive \u2014 don\'t deliberately inhale.',
           'Begin with 20 to 30 cycles; advanced practitioners do 100+.',
           'Mechanism: activates sympathetic nervous system, increases catecholamines, raises alertness and metabolic rate; oxygenation is largely unchanged but perceived energy increases.',
-          'Contraindications: pregnancy, hypertension, panic/anxiety disorders, glaucoma, recent abdominal surgery, untreated cardiac conditions.',
+          'Contraindications: pregnancy, high blood pressure, heart conditions, epilepsy or seizures, asthma, panic or anxiety disorders, glaucoma, hernia, recent surgery.',
           'Use with care; an activating breath, not a calming one.'
         ]
       },
@@ -2560,7 +2559,7 @@ if (typeof window !== 'undefined') {
           'Breathe OUT strongly through your nose.',
           'In, out, in, out \u2014 both are strong!',
           'Do 10 fast breaths, then rest.',
-          'STOP if you feel dizzy.'
+          'Only with an adult. STOP if you feel dizzy. Skip it if you have asthma, seizures, a heart condition, or feel anxious.'
         ],
         middle: [
           'Sit upright with tall spine.',
@@ -2568,19 +2567,19 @@ if (typeof window !== 'undefined') {
           'Exhale forcefully through the nose, contracting belly.',
           'Both phases are active and equal \u2014 about 1 second each.',
           'Start with 10 to 20 cycles, rest, repeat 1 to 2 more sets.',
-          'AVOID if anxious, pregnant, or with cardiovascular issues.'
+          'AVOID if anxious, pregnant, or if you have high blood pressure, a heart condition, asthma, or seizures.'
         ],
         high: [
           'Stable seated posture, spine erect.',
           'Inhale and exhale through the nose with equal force, both active.',
           'Pace ~1 cycle per second initially; advanced practitioners go faster.',
-          'Mechanism: strong sympathetic activation, increased catecholamines, raised alertness; also expands lung capacity.',
-          'Used in Wim Hof Method (modified version) and various yogic traditions for energy.',
-          'Contraindications: pregnancy, hypertension, anxiety disorders, panic disorder, glaucoma, recent surgery.',
+          'Mechanism: strong sympathetic activation, increased catecholamines, raised alertness.',
+          
+          'Contraindications: pregnancy, high blood pressure, heart conditions, epilepsy or seizures, asthma, panic or anxiety disorders, glaucoma, hernia, recent surgery.',
           'Should be followed by normal breathing and a calming practice if used before bed.'
         ]
       },
-      evidence: 'Traditional pranayama; modified versions in Wim Hof Method research (Kox et al., 2014).',
+      evidence: 'Traditional pranayama; not well studied in children or teens.',
       whenToUse: 'Cold mornings, low-energy days, before workouts \u2014 NOT for anxiety or panic.',
       timeNeeded: '3 min',
       practiceable: true
@@ -2689,7 +2688,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Sit across from a friend and try to breathe at exactly the same time!',
         middle: 'Breathe in sync with a partner \u2014 co-regulation is one of the most powerful nervous-system tools we have.',
-        high: 'Dyadic breath synchronization that leverages co-regulation, mirror neurons, and social-engagement system (polyvagal theory).'
+        high: 'Dyadic breath synchronization that draws on co-regulation: breathing in time with a calm person.'
       },
       steps: {
         elementary: [
@@ -2715,7 +2714,7 @@ if (typeof window !== 'undefined') {
           'Partner synchronizes through visual or tactile cues (hand on partner\'s shoulder is an option).',
           'After 2 to 3 minutes, both breathe independently but stay aware of each other.',
           'Mechanism: co-regulation activates the social engagement system (ventral vagal complex per polyvagal theory).',
-          'Mirror neuron engagement amplifies physiological calming effects.',
+          'Breathing in time with a calm person can help your own breathing slow.',
           'Particularly potent for trauma survivors, anxious children, and conflict de-escalation.'
         ]
       },
@@ -3055,7 +3054,7 @@ if (typeof window !== 'undefined') {
           'Discreet enough for any classroom setting'
         ]
       },
-      evidence: 'Sensory integration research (Ayres, Bundy & Lane); seated proprioceptive work supports sustained attention in students with ADHD and autism.',
+      evidence: 'Sensory integration research (Ayres, Bundy & Lane); some students find seated proprioceptive work helps them stay settled.',
       whenToUse: 'When you feel wiggly or restless during class and need to discharge energy without standing up.',
       timeNeeded: '1 min',
       practiceable: true
@@ -3163,7 +3162,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'A heavy blanket gives you a giant cozy squeeze. Great for calming down and falling asleep.',
         middle: 'Wrap yourself in a weighted blanket (10% of body weight) for deep pressure that lowers anxiety.',
-        high: 'Weighted blankets deliver deep touch pressure that promotes serotonin and melatonin release, supporting sleep and anxiety reduction.'
+        high: 'Weighted blankets give steady deep pressure. Some trials show better sleep and less anxiety in adults; evidence in children is mixed.'
       },
       steps: {
         elementary: [
@@ -3171,20 +3170,20 @@ if (typeof window !== 'undefined') {
           'Lay down on a couch or bed',
           'Pull the blanket up over your body',
           'Feel the heavy hug',
-          'Take slow breaths and rest'
+          'Take slow breaths and rest. Only use a blanket you can take off by yourself, and keep it off your face'
         ],
         middle: [
           'Choose a blanket roughly 10% of your body weight',
           'Lay down comfortably',
           'Cover yourself fully',
           'Stay 15-30 minutes',
-          'Notice your breathing slow'
+          'Notice your breathing slow. Use a blanket you can easily take off yourself, and keep it off your face'
         ],
         high: [
           'Use weighted blanket at 10% body weight',
           'Lay supine or on side in quiet space',
           'Allow 20-30 min for parasympathetic shift',
-          'Deep pressure stimulates serotonin pathways',
+          'Steady deep pressure feels calming to many people',
           'Particularly effective pre-sleep for anxiety',
           'Not recommended for very young children unsupervised',
           'Helpful for autistic and ADHD presentations'
@@ -3724,7 +3723,7 @@ if (typeof window !== 'undefined') {
           'Effective for low-energy or pre-task activation'
         ]
       },
-      evidence: 'Bilateral integration research; cardiovascular activation protocols.',
+      evidence: 'Bilateral coordination practice; aerobic warm-up.',
       whenToUse: 'Sluggish mornings, pre-task warmup, or anytime your energy is low.',
       timeNeeded: '2 min',
       practiceable: true
@@ -3813,7 +3812,7 @@ if (typeof window !== 'undefined') {
           'Particularly grounding when paired with vocalization'
         ]
       },
-      evidence: 'Bilateral coordination and rhythm research (Patel); cerebellar-cortical integration.',
+      evidence: 'Bilateral coordination and rhythm research (Patel); rhythm and coordination practice.',
       whenToUse: 'Group activities, sluggish moments, or focus warmups with friends.',
       timeNeeded: '2 min',
       practiceable: true
@@ -4192,7 +4191,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Punch the air with your fists. Take that, bad feelings!',
         middle: 'Throw punches into the air with intention to discharge anger and frustration safely.',
-        high: 'Shadow boxing channels sympathetic discharge through full-body movement without harming objects or self.'
+        high: 'Shadow boxing gives angry energy a full-body outlet without harming objects or people. Venting alone does not lower anger, so follow it with slow breathing.'
       },
       steps: {
         elementary: [
@@ -4637,12 +4636,12 @@ if (typeof window !== 'undefined') {
       name: {
         elementary: 'Self Hug',
         middle: 'Self-Hug',
-        high: 'Self-Embrace (Oxytocin Release)'
+        high: 'Self-Embrace (Deep Pressure)'
       },
       desc: {
         elementary: 'Give yourself a big squeezy hug. You are wonderful.',
-        middle: 'A 20-second self-hug releases oxytocin and provides deep pressure self-soothing.',
-        high: 'Sustained self-hugging stimulates oxytocin release, supporting parasympathetic shift.'
+        middle: 'A slow self-hug gives deep pressure that many people find soothing.',
+        high: 'Sustained self-hugging gives steady deep pressure; self-soothing touch lowered the cortisol response to stress in one study (Dreisoerner et al., 2021).'
       },
       steps: {
         elementary: [
@@ -4662,14 +4661,14 @@ if (typeof window !== 'undefined') {
         high: [
           'Cross arms over upper chest, hands clasp shoulders',
           'Apply firm, sustained pressure',
-          'Hold 20+ seconds (oxytocin release threshold)',
+          'Hold 20+ seconds, or as long as feels good',
           'Deep pressure stimulates parasympathetic activation',
           'Optional: pair with self-compassion phrase',
           'Research-supported intervention for distress',
           'Always available, requires no equipment'
         ]
       },
-      evidence: 'Oxytocin research (Uvnas-Moberg); deep pressure touch (Grandin); self-compassion (Neff).',
+      evidence: 'Self-soothing touch and cortisol (Dreisoerner et al., 2021); deep pressure touch (Grandin); self-compassion (Neff).',
       whenToUse: 'When you feel alone, sad, anxious, or need self-soothing comfort.',
       timeNeeded: '30 sec',
       practiceable: true
@@ -4863,7 +4862,7 @@ if (typeof window !== 'undefined') {
       name: {
         elementary: 'Bare Feet on Grass',
         middle: 'Barefoot Walking on Grass',
-        high: 'Barefoot Earthing on Natural Surface'
+        high: 'Barefoot Walking on Natural Ground'
       },
       desc: {
         elementary: 'Take off your shoes and walk on the grass. It tickles your feet!',
@@ -4895,7 +4894,7 @@ if (typeof window !== 'undefined') {
           'Honor cultural and traditional grounding practices'
         ]
       },
-      evidence: 'Nature exposure research; foot proprioception (Kavounoudias); grounding hypothesis (Chevalier).',
+      evidence: 'Nature exposure research; foot proprioception (Kavounoudias).',
       whenToUse: 'Stressful days, mood low, need to reconnect with body and earth.',
       timeNeeded: '10 min',
       practiceable: true
@@ -5003,7 +5002,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Drum on your knees with your hands. Make a fast or slow beat!',
         middle: 'Drumming on thighs combines bilateral rhythm, proprioceptive tapping, and motor expression.',
-        high: 'Bilateral rhythmic drumming engages cerebellar timing and emotional regulation circuits.'
+        high: 'Rhythmic two-handed drumming gives attention a steady beat to follow; group drumming has been linked with lower stress.'
       },
       steps: {
         elementary: [
@@ -5026,11 +5025,11 @@ if (typeof window !== 'undefined') {
           'Pair with breath or music',
           'Practices rhythm and coordinating movements',
           'Drum circles show stress reduction effects (Bittman)',
-          'Accessible bilateral stimulation any time',
+          'A steady rhythm you can make anywhere',
           'Effective for restless seated focus'
         ]
       },
-      evidence: 'Drumming therapy research (Bittman); bilateral stimulation in EMDR; rhythm and emotion regulation.',
+      evidence: 'Group drumming and stress research (Bittman et al., 2001); rhythm and mood research. This is not EMDR.',
       whenToUse: 'Restless seated moments, study energizers, or focus warmups.',
       timeNeeded: '2 min',
       practiceable: true
@@ -5137,7 +5136,7 @@ if (typeof window !== 'undefined') {
       },
       desc: {
         elementary: 'Rub your head all over like shampooing your hair.',
-        middle: 'Massage your scalp with fingertips to release tension and stimulate vagal afferents.',
+        middle: 'Massage your scalp with fingertips to release tension.',
         high: 'Scalp massage stimulates cranial nerve afferents and reduces tension headache.'
       },
       steps: {
@@ -5256,7 +5255,7 @@ if (typeof window !== 'undefined') {
           'The trigeminal nerve signals the brainstem to slow your heart and conserve oxygen.',
           'Stay bent for 15 to 30 seconds while the dive reflex activates.',
           'Stand up slowly and observe the drop in sympathetic activation.',
-          'Use as a TIPP skill when you are nearing emotional overwhelm.'
+          'Use as a TIPP skill when you are nearing emotional overwhelm. Check with a doctor or school nurse first if you have a heart condition, take medicine that slows your heart, or have an eating disorder. Use cool water, not icy.'
         ]
       },
       evidence: 'DBT TIPP skill (Linehan); mammalian dive reflex research; trigeminal-cardiac reflex literature.',
@@ -5322,8 +5321,8 @@ if (typeof window !== 'undefined') {
       },
       desc: {
         elementary: 'Put a cold ice pack on the middle of your chest to feel calmer.',
-        middle: 'Cold on your chest slows your heart and helps your body feel safe again.',
-        high: 'Cold on the sternum stimulates parasympathetic outflow via vagal afferents, lowering heart rate and shifting the autonomic state out of sympathetic dominance.'
+        middle: 'A cold pack on your chest is a strong, steady feeling that helps some people settle.',
+        high: 'A cool pack on the chest is a strong, steady sensation some people find settling. The heart-slowing dive reflex comes from cold on the face, not the chest.'
       },
       steps: {
         elementary: [
@@ -5346,13 +5345,13 @@ if (typeof window !== 'undefined') {
           'Wrap an ice pack in a thin barrier to protect skin.',
           'Recline or lie flat to remove gravity demand on the heart.',
           'Place the pack centrally on the sternum.',
-          'Cold input activates the dive-reflex chain and increases vagal tone.',
+          'The steady cold gives your attention one strong sensation to rest on.',
           'Pace breathing at roughly 6 breaths per minute (4 in, 6 out).',
           'Remove after 60 to 90 seconds.',
           'Use when heart is racing or panic is building.'
         ]
       },
-      evidence: 'DBT TIPP (Temperature); polyvagal theory (Porges); cardiac vagal tone literature.',
+      evidence: 'Sensory grounding practice. The DBT TIPP Temperature skill itself uses cold on the face, not the chest.',
       whenToUse: 'Panic attack, racing heart, pre-test physiological overwhelm.',
       timeNeeded: '2 min',
       practiceable: true
@@ -5415,7 +5414,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Drink something really cold, one slow sip at a time.',
         middle: 'A cold drink, sipped slowly with attention, cools your body and gives your brain something steady to focus on.',
-        high: 'Cold liquid in the oropharynx provides interoceptive input and mild vagal stimulation while slow sipping recruits attentional control networks.'
+        high: 'Cold liquid gives a clear body sensation to notice, while slow sipping gives your attention one thing to do.'
       },
       steps: {
         elementary: [
@@ -5650,7 +5649,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Sip warm tea slowly and pay attention to it.',
         middle: 'A warm drink soothes your nervous system and the slow sipping turns it into a small mindfulness practice.',
-        high: 'Warm liquid provides interoceptive warmth, oropharyngeal vagal input, and a structured attentional anchor, useful for low-arousal states and anxiety.'
+        high: 'Warm liquid provides interoceptive warmth and a structured attentional anchor, useful for low-arousal states and anxiety.'
       },
       steps: {
         elementary: [
@@ -5674,7 +5673,7 @@ if (typeof window !== 'undefined') {
           'Prepare warm herbal tea (caffeine-free for nervous-system support).',
           'Cup both hands around the mug for tactile warmth.',
           'Inhale steam: olfactory bulb to limbic priming.',
-          'Sip mindfully; warm liquid in the oropharynx engages vagal tone.',
+          'Sip mindfully; notice the warmth as it goes down.',
           'Notice warmth traveling esophagus to stomach as interoceptive practice.',
           'Continue for 5 to 10 minutes off-screen.',
           'Pairs well with journaling or transition out of high-arousal states.'
@@ -6928,7 +6927,7 @@ if (typeof window !== 'undefined') {
           'Use 15 to 30 minutes.'
         ]
       },
-      evidence: 'Curtin & Rugancha (2005) mandala coloring and anxiety; subsequent replications.',
+      evidence: 'Curry & Kasser (2005) mandala coloring and anxiety; van der Vennet & Serice (2012) replication.',
       whenToUse: 'Test anxiety, post-school decompression, evening wind-down.',
       timeNeeded: '15 min',
       practiceable: true
@@ -9020,7 +9019,7 @@ if (typeof window !== 'undefined') {
           'Breathe into the touched area.',
           'Maintain 30-90 seconds.',
           'Use as bridge when verbal compassion alone is not landing.',
-          'Recognize the mechanism - touch + warm self-talk activates oxytocin/parasympathetic response.'
+          'Recognize the mechanism - touch + warm self-talk can calm the body\'s stress response.'
         ]
       },
       evidence: 'Self-Compassion - Kristin Neff; mammalian caregiving system activation, supported by Porges polyvagal research.',
@@ -9341,10 +9340,10 @@ if (typeof window !== 'undefined') {
           'Channel the activation into engagement with the task.',
           'Use brief breath after each item to recalibrate.',
           'Track performance versus suppression strategy.',
-          'Recognize the mechanism - reappraisal shifts threat to challenge response (Jamieson, Mendes, Nock 2013).'
+          'Recognize the mechanism - reappraisal shifts threat to challenge response (Jamieson, Nock & Mendes 2012).'
         ]
       },
-      evidence: 'Arousal reappraisal - Jamieson, Mendes, Nock (2013) in JEP:General; replicated in classroom contexts.',
+      evidence: 'Arousal reappraisal - Jamieson, Nock & Mendes (2012) in JEP:General; later tested in classroom contexts.',
       whenToUse: 'Right before a test or performance when your body is buzzing.',
       timeNeeded: '2 min',
       practiceable: true
@@ -9384,13 +9383,13 @@ if (typeof window !== 'undefined') {
           'Detect fixed-mindset cognition ("I can\'t do X", "I am not a math person").',
           'Apply the "yet" reframe to shift from trait to process.',
           'Identify next-step learning behavior.',
-          'Treat struggle as evidence of brain growth.',
+          'Treat struggle as a normal part of learning.',
           'Replace global ability statements with skill-specific statements.',
           'Apply across academic, athletic, and social skills.',
           'Recognize the mechanism - growth mindset reframes ability as malleable (Dweck Mindset).'
         ]
       },
-      evidence: 'Growth Mindset - Carol Dweck; replicated in K-12 academic outcomes research.',
+      evidence: 'Growth mindset - Carol Dweck; large studies find small benefits, mainly for students who are struggling (Yeager et al., 2019; Sisk et al., 2018).',
       whenToUse: 'When you are about to give up because you "cannot" do something.',
       timeNeeded: '2 min',
       practiceable: true
@@ -10029,7 +10028,7 @@ if (typeof window !== 'undefined') {
           'Identify hyperarousal (sympathetic dominance) vs hypoarousal (dorsal vagal shutdown) vs window.',
           'Match intervention to state - top-down regulation works only inside the window.',
           'For hyperarousal: paced breathing, cold water, paired sensory input.',
-          'For hypoarousal: movement, bilateral stimulation, sensory engagement.',
+          'For hypoarousal: movement, rhythmic movement (walking, drumming), sensory engagement.',
           'Re-check after intervention.',
           'Recognize the mechanism - polyvagal-informed (Porges); regulation matches autonomic state.'
         ]
@@ -10450,7 +10449,7 @@ if (typeof window !== 'undefined') {
           'Iterate until they say "yes, that\'s it".',
           'Only then offer your perspective.',
           'Expect the conversation to slow down — that\'s the point.',
-          'Notice that being heard often dissolves 50% of a conflict before you respond.'
+          'Notice that being heard often takes a lot of heat out of a conflict before you respond.'
         ]
       },
       evidence: 'Reflective listening — Carl Rogers; Imago dialogue — Harville Hendrix.',
@@ -11069,7 +11068,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Text the word HOME to 741741 if your feelings are really big.',
         middle: 'A free crisis line you can text instead of calling. Type HOME to 741741.',
-        high: 'Crisis Text Line: text HOME to 741741 (US). Free, confidential, 24/7. A trained crisis counselor responds in minutes. No app, no account, doesn\'t show in phone-bill detail.'
+        high: 'Crisis Text Line: text HOME to 741741 (US). Free, confidential, 24/7. A trained crisis counselor responds in minutes. No app, no account. On the big US carriers (AT&T, T-Mobile, Verizon) it is free and does not show on the bill; on other carriers it might.'
       },
       steps: {
         elementary: [
@@ -11207,7 +11206,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Ask someone safe for a hug.',
         middle: 'Asking for a hug from a safe person can settle the body when words don\'t do enough.',
-        high: 'A hug of 20+ seconds from a safe person activates oxytocin and vagal tone — a direct physiological co-regulation intervention.'
+        high: 'A long hug from a safe person is linked with a lower stress response. It is a direct form of co-regulation.'
       },
       steps: {
         elementary: [
@@ -11228,7 +11227,7 @@ if (typeof window !== 'undefined') {
         high: [
           'Choose a person with whom physical touch is genuinely safe and consensual.',
           'Ask explicitly — don\'t assume; consent matters even with family.',
-          'A 20-second hug is the threshold for oxytocin release in studies.',
+          'Longer hugs from someone safe tend to feel more calming; there is no magic number of seconds.',
           'Exhale longer than you inhale while in contact.',
           'For touch-averse users, substitute: hand-hold, side-hug, shoulder lean, or a weighted object.',
           'Stack this with co-regulation: sit near a calm person, share a meal.',
@@ -11483,7 +11482,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Start hard talks gently, not loud.',
         middle: 'How you start a hard conversation predicts how it ends. Begin without criticism or contempt.',
-        high: 'Gottman\'s soft start-up: how a conflict conversation begins predicts 96% of how it ends. Lead with "I", describe the situation, state a positive need.'
+        high: 'Gottman\'s soft start-up: in his couples research, the way a conflict talk began usually predicted how it ended. Lead with "I", describe the situation, state a positive need.'
       },
       steps: {
         elementary: [
@@ -11502,7 +11501,7 @@ if (typeof window !== 'undefined') {
           'Pause for their response.'
         ],
         high: [
-          'How you start predicts how it ends — Gottman\'s 96% rule.',
+          'How you start often shapes how it ends.',
           'Lead with "I feel ___ about ___, and I need ___."',
           'Avoid criticism (attack on character), contempt (mockery), defensiveness, stonewalling.',
           'Describe rather than judge ("the dishes are in the sink", not "you\'re lazy").',
@@ -13141,7 +13140,7 @@ if (typeof window !== 'undefined') {
           'Optionally refine for an actual slam, or keep private.'
         ]
       },
-      evidence: 'Drama therapy + expressive arts therapy: vocal/somatic performance of rage discharges sympathetic activation safely.',
+      evidence: 'Drama therapy and expressive arts practice: voicing rage inside a performance gives it a safe container. Follow with a calming practice; venting alone does not reduce anger.',
       whenToUse: 'When anger is building and you need to move it through your body.',
       timeNeeded: '15-20 minutes',
       practiceable: true
@@ -13284,7 +13283,7 @@ if (typeof window !== 'undefined') {
           'Date and file as a visual journal entry.'
         ]
       },
-      evidence: 'Art therapy (AATA): nonrepresentational affect mapping accesses right-brain processing and preverbal emotion.',
+      evidence: 'Art therapy practice (AATA): abstract mark-making can help express feelings that are hard to put into words.',
       whenToUse: 'When you can\'t name what you feel or words feel inadequate.',
       timeNeeded: '10-20 minutes',
       practiceable: true
@@ -13379,7 +13378,7 @@ if (typeof window !== 'undefined') {
           'Reflect briefly on the felt shift.'
         ]
       },
-      evidence: 'Curry & Kasser (2005): mandala coloring reduced anxiety more than plaid or blank-page coloring. Jungian roots in archetypal symbol.',
+      evidence: 'Curry & Kasser (2005): coloring a mandala or a plaid pattern lowered anxiety more than free drawing on a blank page. Jungian roots in archetypal symbol.',
       whenToUse: 'When anxious, scattered, or unable to settle.',
       timeNeeded: '15-30 minutes',
       practiceable: true
@@ -14292,7 +14291,7 @@ if (typeof window !== 'undefined') {
       desc: {
         elementary: 'Get pots and pans and bang on them like drums.',
         middle: 'Use kitchen pots/pans as drums for a percussion release.',
-        high: 'Loud improvised percussion discharges sympathetic activation through embodied rhythm and volume.'
+        high: 'Loud improvised drumming gives big energy a rhythmic outlet. Follow it with something calming; venting alone does not lower anger.'
       },
       steps: {
         elementary: [
@@ -14982,7 +14981,7 @@ if (typeof window !== 'undefined') {
       explanation: {
         elementary: 'One-mindfully means doing one thing at a time. When you eat, just eat. When you walk, just walk. Your brain feels calmer when it is not juggling.',
         middle: 'One-mindfully means giving your full attention to one activity. Multitasking feels productive but actually drains focus and energy. Doing one thing with full attention works better.',
-        high: 'One-mindfully is the practice of unitary attention. Research shows multitasking degrades performance and increases cortisol; single-tasking is both more efficient and more restorative.'
+        high: 'One-mindfully is the practice of unitary attention. Ophir et al. (2009) found heavy multitaskers are more easily distracted; single-tasking is both more efficient and more restorative.'
       },
       example: 'While studying for chemistry, Lin kept checking her phone, half-watching TV, and worrying about basketball tryouts. She practiced one-mindfully: phone in another room, TV off, all attention on the equations. She finished in 45 minutes what usually took 3 hours.',
       research: 'Linehan, 1993/2014; multitasking research (Ophir, Nass, Wagner, 2009).',
@@ -15097,7 +15096,7 @@ if (typeof window !== 'undefined') {
         'Take a breath and hold it.',
         'Lean over and put your face in the cold water, or hold the cold pack on your eyes and upper cheeks.',
         'Stay for 15 to 30 seconds.',
-        'Come up, breathe, repeat once if needed.'
+        'Come up, breathe, repeat once if needed. Check with a doctor or school nurse first if you have a heart condition, take medicine that slows your heart, or have an eating disorder.'
       ],
       explanation: {
         elementary: 'Cold Reset means putting your face in cold water for a few seconds. Your body has a special trick called the dive reflex that slows your heart down fast. It helps when feelings are way too big.',
@@ -15124,8 +15123,8 @@ if (typeof window !== 'undefined') {
       ],
       explanation: {
         elementary: 'Burn Off the Storm means running, jumping, or doing other big movement for about 10 minutes. The strong feelings have energy in them, and exercise lets your body use that energy up.',
-        middle: 'Intense Exercise burns off the cortisol and adrenaline that big emotions dump into your body. After 10 to 15 minutes of hard cardio, your nervous system shifts toward calm.',
-        high: 'TIPP Intense Exercise metabolizes circulating stress hormones and triggers post-exercise parasympathetic rebound, plus endorphin release. It is most effective for high-arousal emotions like anger or panic.'
+        middle: 'Intense Exercise gives the energy of a big emotion somewhere to go. After 10 to 15 minutes of hard cardio, your body settles and your mood usually lifts.',
+        high: 'TIPP Intense Exercise uses up the energy of high arousal; afterwards the body rebounds toward calm and mood usually lifts. It is most effective for high-arousal emotions like anger or panic.'
       },
       example: 'After a huge fight with his dad, Marcus felt like he might punch a wall. Instead he went outside and ran sprints up the driveway for 12 minutes. He came in sweaty, tired, and able to talk without yelling.',
       research: 'Linehan, 1993/2014; exercise and acute mood regulation (Bartholomew et al., 2005).',
@@ -15148,7 +15147,7 @@ if (typeof window !== 'undefined') {
       explanation: {
         elementary: 'Long-Exhale Breathing means breathing out longer than you breathe in. The slow out-breath turns on your calm switch. Try it whenever your heart races.',
         middle: 'Paced Breathing slows your breath rate to about 5 to 6 breaths per minute with longer exhales. This activates the vagus nerve, which signals your body to calm down.',
-        high: 'TIPP Paced Breathing increases heart rate variability and vagal tone via extended exhalation, shifting autonomic balance toward parasympathetic dominance. Effective within 2 minutes.'
+        high: 'TIPP Paced Breathing increases heart rate variability and vagal tone via extended exhalation, shifting autonomic balance toward parasympathetic dominance. Often effective within a few minutes.'
       },
       example: 'Before her oral presentation, Nia did paced breathing in the bathroom for 3 minutes: in for 4, out for 7. Her shaky hands settled and her voice came out steady.',
       research: 'Linehan, 1993/2014; paced breathing and HRV (Lehrer & Gevirtz, 2014).',
@@ -15338,7 +15337,7 @@ if (typeof window !== 'undefined') {
         middle: 'Intense Sensations means using strong but safe physical input to interrupt emotion. Ice, sour, spicy, hot showers, strong smells all work. The point is to ground in the body, not to hurt yourself.',
         high: 'Intense Sensations interrupts emotional escalation through bottom-up sensory input that demands attention. Must be safe and non-harmful — distinct from self-injury, which DBT specifically aims to replace.'
       },
-      example: 'When self-harm urges hit, Robin held an ice cube in each hand until they went numb, focusing on the burning cold. By the time the ice melted, the urge had dropped to a 3 out of 10. She called her therapist.',
+      example: 'When self-harm urges hit, Robin held a wrapped ice cube in each hand for a minute at a time, focusing on the cold. After a few rounds, the urge had dropped to a 3 out of 10. She called her therapist.',
       research: 'Linehan, 1993/2014; sensory grounding for self-harm urges (specifically a TIPP-adjacent replacement skill).',
       practiceable: true
     },
@@ -15833,10 +15832,10 @@ if (typeof window !== 'undefined') {
       explanation: {
         elementary: 'Eat Steady means eating regularly through the day so your body has fuel. When you are hungry, feelings get bigger. Breakfast, lunch, snack, dinner — that pattern helps your mood.',
         middle: 'Balance Eating means eating regularly and adequately to keep blood sugar stable. Skipping meals, restricting, or only eating junk all spike emotion vulnerability. Steady fuel = steadier emotions.',
-        high: 'Balance Eating addresses how glycemic stability supports emotion regulation. Hunger triggers cortisol and reduces prefrontal control. Reach out for help if eating itself becomes the regulation tool.'
+        high: 'Balance Eating: being very hungry makes most people more irritable and less able to cope. Regular meals help keep moods steadier. Reach out for help if eating itself becomes the regulation tool.'
       },
       example: 'Aisha noticed her mood crashed every afternoon. She tracked and realized she had been skipping lunch. She added a packed lunch and afternoon snack. Mood crashes stopped within a week.',
-      research: 'Linehan, 1993/2014; glucose-emotion regulation research (Gailliot & Baumeister, 2007).',
+      research: 'Linehan, 1993/2014; hunger and irritability (MacCormack & Lindquist, 2019).',
       practiceable: true
     },
     {
@@ -15901,8 +15900,8 @@ if (typeof window !== 'undefined') {
       ],
       explanation: {
         elementary: 'Move Your Body means getting some kind of exercise most days — walks, bike, dance, sports, anything. Your body needs to move to feel good. Even 20 minutes helps a lot.',
-        middle: 'Get Exercise means moving your body regularly because it is one of the strongest mood treatments we have, comparable to medication for mild-moderate depression. Find something you can actually do.',
-        high: 'Get Exercise has near-medication-level effects on depression and anxiety. The dose-response is modest — even 150 min/week of moderate activity meaningfully improves emotion regulation.'
+        middle: 'Get Exercise means moving your body regularly because it is one of the most helpful things for mood; in some studies it helps mild to moderate depression about as much as other treatments. Find something you can actually do.',
+        high: 'Get Exercise can help mild to moderate depression about as much as other treatments in some studies; it works alongside, not in place of, care from a clinician. Even 150 min/week of moderate activity meaningfully improves emotion regulation.'
       },
       example: 'After her dad died, Maya could barely get out of bed. Her therapist asked for a 10-minute walk daily, nothing more. She built up over months and is now running 3 miles, three times a week. Movement is part of her treatment.',
       research: 'Linehan, 1993/2014; exercise as treatment for depression (Schuch et al., 2016 meta-analysis).',
@@ -17016,7 +17015,7 @@ if (typeof window !== 'undefined') {
         'Would I believe this if I felt calm?',
         'What would the evidence say in court?'
       ],
-      research: 'Burns (1980) coined the term emotional reasoning; Beck (1976) describes the link between affect and belief in depression and anxiety.'
+      research: 'Emotional reasoning was described by Beck (1976) and popularized by Burns (1980) in Feeling Good; it links affect and belief in depression and anxiety.'
     },
     {
       id: 'should_statements',
@@ -17080,7 +17079,7 @@ if (typeof window !== 'undefined') {
         'Could I survive if reality did not match this rule?',
         'What does treating this as a must cost me?'
       ],
-      research: 'Albert Ellis (1962) coined "musturbation" in REBT and identified rigid demands as the core driver of disturbance.'
+      research: 'Albert Ellis coined "musturbation" in REBT and identified rigid demands as the core driver of disturbance.'
     },
     {
       id: 'labeling',
@@ -17272,7 +17271,7 @@ if (typeof window !== 'undefined') {
         'What did I actually gain from the effort?',
         'Could I keep doing the good thing without the reward?'
       ],
-      research: 'Burns (1980) named the Heaven\'s Reward Fallacy in Feeling Good as a common cognitive distortion in burnout and resentment.'
+      research: 'McKay, Davis & Fanning (1981), Thoughts & Feelings, named the Heaven\'s Reward Fallacy; common in burnout and resentment.'
     },
     {
       id: 'control_external',
@@ -17304,7 +17303,7 @@ if (typeof window !== 'undefined') {
         'What does feeling powerless protect me from?',
         'What would shift if I claimed even 5% of the agency?'
       ],
-      research: 'Beck (1976) and Burns (1980) discuss external control as a common depressive thought pattern; Seligman\'s (1975) learned helplessness research is foundational.'
+      research: 'McKay, Davis & Fanning (1981) describe the external control fallacy; Seligman\'s (1975) learned helplessness research is foundational.'
     },
     {
       id: 'control_internal',
@@ -17336,7 +17335,7 @@ if (typeof window !== 'undefined') {
         'Am I helping or taking over?',
         'What does it cost me to carry their feelings?'
       ],
-      research: 'Burns (1980) named internal control fallacy; Salkovskis (1985) describes hyper-responsibility in OCD.'
+      research: 'McKay, Davis & Fanning (1981) named the internal control fallacy; Salkovskis (1985) describes hyper-responsibility in OCD.'
     },
     {
       id: 'fallacy_of_fairness',
@@ -17368,7 +17367,7 @@ if (typeof window !== 'undefined') {
         'Does staying angry change the situation?',
         'How could I respond to unfairness with action?'
       ],
-      research: 'Burns (1980) identifies the fairness fallacy as a common distortion in anger; also discussed in Ellis (1962) as low frustration tolerance.'
+      research: 'McKay, Davis & Fanning (1981) list the fallacy of fairness as a common distortion in anger; also discussed in Ellis (1962) as low frustration tolerance.'
     },
     {
       id: 'fallacy_of_change',
@@ -17400,7 +17399,7 @@ if (typeof window !== 'undefined') {
         'What would my life look like if I stopped waiting?',
         'Am I outsourcing my well-being?'
       ],
-      research: 'Burns (1980) names the Fallacy of Change in Feeling Good; central to dysfunctional interpersonal patterns (Beck, 1988).'
+      research: 'McKay, Davis & Fanning (1981), Thoughts & Feelings, name the Fallacy of Change; central to dysfunctional interpersonal patterns (Beck, 1988).'
     },
     {
       id: 'comparison',
@@ -18423,7 +18422,7 @@ if (typeof window !== 'undefined') {
             'Recognize the state: “I\'m in sympathetic activation right now”',
             'Discharge first: vigorous movement for 1–2 minutes to complete the stress cycle',
             'Then downregulate: physiological sigh — double inhale, long exhale, repeat 4x',
-            'Cold exposure: face in cold water 30 seconds triggers dive reflex, slows heart rate',
+            'Cool water on the face for up to 30 seconds triggers the dive reflex and slows heart rate (check with a doctor first if you have a heart condition or an eating disorder)',
             'Ground in present: feet on floor, name 5 things you see, hear, can touch',
             'Co-regulate: call someone whose voice cues safety; eye contact, slow speech',
             'Once heart rate drops, do prefrontal task: write what happened, plan next step'
@@ -18596,14 +18595,14 @@ if (typeof window !== 'undefined') {
           high: [
             'Recognize the state: dorsal vagal shutdown, not laziness or moral failure',
             'Warmth first — raising body temperature gently signals safety',
-            'Bilateral stimulation — walking, drumming, alternating tapping',
+            'Rhythmic movement: walking, drumming, alternating tapping',
             'Strong sensory input — sour, cold, textured — to bring you online without overwhelm',
             'Reach for one human — ventral vagal is contagious; their regulated state can pull you up',
             'Avoid the trap of waiting until you “feel ready” — action precedes motivation in shutdown',
             'If shutdown lasts more than 2 weeks or comes with suicidal thoughts, get clinical support'
           ]
         },
-        research: 'Porges, S. W. (2011). Dana, D. (2018). The Polyvagal Theory in Therapy. Dorsal vagal shutdown is an ancient survival response, evolutionarily older than fight/flight.'
+        research: 'Porges, S. W. (2011). Dana, D. (2018). The Polyvagal Theory in Therapy. Polyvagal theory is a popular but contested model; the claim that shutdown is evolutionarily older than fight/flight is disputed.'
       }
     ],
     expandingTheWindow: {
@@ -18617,7 +18616,7 @@ if (typeof window !== 'undefined') {
         'Practice belly breathing when you\'re calm so you can use it when you\'re not'
       ],
       middle: [
-        'Protect sleep — 7–9 hours, same bedtime, no phone in bed',
+        'Protect sleep: 9 to 12 hours if you are 12 or under, 8 to 10 if you are a teen. Same bedtime, no phone in bed',
         'Move daily — even a 10-minute walk counts',
         'Eat enough — skipping meals shrinks the window fast',
         'Limit screens before bed and after waking up',
@@ -18629,8 +18628,8 @@ if (typeof window !== 'undefined') {
       high: [
         'Prioritize sleep architecture: consistent schedule, dark room, avoid alcohol/THC late',
         'Aerobic exercise 3–5x/week — widens window via BDNF and vagal tone',
-        'Mindfulness or contemplative practice 10+ min/day — thickens prefrontal cortex over time',
-        'Cold exposure (cold shower, plunge) 2–3x/week to train vagal flexibility',
+        'Mindfulness or contemplative practice 10+ min/day: linked to lower stress and better attention',
+        'A brief cool splash on the face helps some people reset. Evidence for cold showers or plunges is thin; skip them if you have a heart condition',
         'Breathwork practice — box breathing, coherent breathing, physiological sigh',
         'Therapy or group work for unresolved trauma — unprocessed trauma keeps the window narrow',
         'Co-regulation — invest in 3–5 secure relationships with reciprocal regulation',
@@ -18667,7 +18666,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'This is your “safe and friendly” feeling. Your body knows you\'re okay, so you can play, learn, and be with friends. Your face smiles easily and your voice sounds warm.',
         middle: 'Ventral vagal is the state where you feel safe enough to connect. Your nervous system has decided the environment and people are okay, so the social engagement system comes online. You can think, learn, joke, listen, and care about other people.',
-        high: 'The ventral vagal branch of the parasympathetic nervous system controls the muscles of the face, middle ear, larynx, and pharynx through cranial nerves V, VII, IX, X, and XI — what Porges calls the social engagement system. When the neuroception of safety is sufficient, this branch dominates, supporting heart rate variability, facial expressivity, vocal prosody, listening to human-frequency sounds, and the capacity for co-regulation. In this model, feeling safe and settled is what makes it easier to learn, focus, and connect with others.'
+        high: 'In polyvagal theory (a popular but contested model), the ventral vagal branch of the parasympathetic nervous system is linked with the muscles of the face, middle ear, larynx, and pharynx through cranial nerves V, VII, IX, X, and XI \u2014 what Porges calls the social engagement system. When the neuroception of safety is sufficient, this branch dominates, supporting heart rate variability, facial expressivity, vocal prosody, listening to human-frequency sounds, and the capacity for co-regulation. In this model, feeling safe and settled is what makes it easier to learn, focus, and connect with others.'
       },
       feelsLike: [
         'Body relaxed but with normal energy',
@@ -18702,7 +18701,7 @@ if (typeof window !== 'undefined') {
       accessingThis: {
         elementary: 'Spend time with people who feel safe to you. Sing a song you like, hum, or whistle. Take slow deep breaths into your belly. Smile at someone, even a pet. Get outside and look at the sky.',
         middle: 'Co-regulate with someone calm — their state is contagious. Hum, sing, or speak slowly with melody (activates the vagus nerve through the larynx). Slow breathing, exhale longer than inhale. Time with a pet or in nature. Notice and name 3 things you\'re grateful for.',
-        high: 'Engage the social engagement system directly: vocal warm-up exercises, humming, singing, gargling (all stimulate the vagus nerve via the pharyngeal muscles). Co-regulation with a ventral-dominant person. Coherent breathing at 5–6 breaths/min increases HRV and vagal tone over time. Polyvagal-informed somatic practice (eye gaze, voice work, gesture). Sustained relationships with safe others are the strongest long-term anchor.'
+        high: 'Engage the social engagement system directly: vocal warm-up exercises, humming, singing, gargling (slow, voiced exhales that many people find settling). Co-regulation with a ventral-dominant person. Coherent breathing at 5\u20136 breaths/min increases HRV and vagal tone over time. Polyvagal-informed somatic practice (eye gaze, voice work, gesture). Sustained relationships with safe others are the strongest long-term anchor.'
       },
       research: 'Porges, S. (2011). The Polyvagal Theory. Norton. Dana, D. (2018). The Polyvagal Theory in Therapy. Norton.'
     },
@@ -18714,7 +18713,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'This is your “alarm on” feeling. Your body thinks something is dangerous, so it gives you a lot of energy to fight back or run away. It\'s not bad — it\'s your body trying to protect you. But it\'s hard to think or learn when this alarm is loud.',
         middle: 'Sympathetic mobilization is the fight-or-flight state. Your body has decided action is needed for survival, so it floods you with energy: faster heart, faster breath, tight muscles, scanning eyes. It\'s adaptive in real danger, but in a classroom or social situation, it can hijack you.',
-        high: 'Sympathetic mobilization is driven by the sympathetic chain ganglia and adrenal medulla, releasing norepinephrine and cortisol. The amygdala signals threat, the HPA axis activates, blood is shunted from digestion and prefrontal cortex to large muscles. It is adaptive for brief, acute threats followed by recovery, not for staying switched on for long stretches; prolonged stress is associated with worse health and a harder time staying regulated over time.'
+        high: 'Sympathetic mobilization is driven by the sympathetic chain ganglia and adrenal medulla, releasing adrenaline and noradrenaline; the slower HPA axis adds cortisol. The amygdala signals threat, blood flow shifts from digestion toward large muscles, and stress chemistry makes careful thinking harder. It is adaptive for brief, acute threats followed by recovery, not for staying switched on for long stretches; prolonged stress is associated with worse health and a harder time staying regulated over time.'
       },
       feelsLike: [
         'Heart pounding, fast pulse',
@@ -18803,8 +18802,8 @@ if (typeof window !== 'undefined') {
       color: '#475569',
       description: {
         elementary: 'This is your “battery empty” feeling. Your body thinks the problem is too big to fight or run from, so it slows everything way down to save energy. You might feel foggy, numb, or like you\'re not really here. It\'s your body trying to protect you, even though it feels bad.',
-        middle: 'Dorsal vagal shutdown is what happens when your nervous system decides a threat is too big to fight or flee. So it conserves energy by going offline: slow heart, slow breath, numb feelings, foggy thinking, withdrawal. It\'s an ancient survival response — evolutionarily older than fight/flight — and it\'s not weakness or laziness.',
-        high: 'Dorsal vagal shutdown is mediated by the unmyelinated dorsal motor nucleus of the vagus. When neuroception detects inescapable threat (real or perceived), the system collapses: bradycardia, hypotension, immobilization, dissociation, analgesia. In trauma populations this becomes a default response, and is linked over time with low mood, dissociation, and the experience of “not being here.” Staying stuck in this state for long periods is hard on the body and is worth support.'
+        middle: 'In polyvagal theory (a popular but contested model), dorsal vagal shutdown is what happens when your nervous system decides a threat is too big to fight or flee. So it conserves energy by going offline: slow heart, slow breath, numb feelings, foggy thinking, withdrawal. It\'s a survival response, and it\'s not weakness or laziness.',
+        high: 'In polyvagal theory (a popular but contested model), dorsal vagal shutdown is attributed to the dorsal motor nucleus of the vagus. When neuroception detects inescapable threat (real or perceived), the system collapses: bradycardia, hypotension, immobilization, dissociation, analgesia. In trauma populations this becomes a default response, and is linked over time with low mood, dissociation, and the experience of \u201Cnot being here.\u201D Staying stuck in this state for long periods is hard on the body and is worth support.'
       },
       feelsLike: [
         'Heavy, slow, like moving through mud',
@@ -18835,9 +18834,9 @@ if (typeof window !== 'undefined') {
       accessingThis: {
         elementary: 'You usually don\'t need to access this on purpose. If you find yourself here, the goal is to leave, not stay.',
         middle: 'You typically don\'t enter this state intentionally. If you\'re here, work on getting back to ventral vagal, often through a brief stop in sympathetic mobilization first (movement, warmth, sensory anchors).',
-        high: 'Clinical intent is to exit, not enter, dorsal shutdown. Treatment approaches include gentle bottom-up somatic work (Sensorimotor Psychotherapy, Somatic Experiencing) that titrates small doses of activation, warmth, bilateral stimulation, and co-regulation. Pharmacotherapy may be needed for chronic dorsal-dominant presentations. Importantly, top-down cognitive interventions often fail because the prefrontal cortex is offline; the work must include the body.'
+        high: 'The aim is to come out of shutdown, not go into it. Gentle movement, warmth and time with a safe person can help in the moment. If shutdown or low mood keeps coming back, talk to a clinician; talking therapies and, for some people, medication are effective.'
       },
-      research: 'Porges, S. (2011). Dana, D. (2018). Ogden, P. (2006). Trauma and the Body. Dorsal vagal shutdown is the oldest vertebrate stress response, present in reptiles and fish.'
+      research: 'Porges, S. (2011). Dana, D. (2018). Ogden, P. (2006). Trauma and the Body. The claim that shutdown is an older reflex than fight-or-flight is disputed.'
     },
     {
       id: 'dorsal_blended',
@@ -18847,7 +18846,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'This is your “quiet and safe” feeling. Your body is still and slow (like the shutdown state), but you know you\'re okay (like the safe state). It feels like cuddling with someone you love, falling asleep when you\'re tired, or being held in a warm bath.',
         middle: 'When dorsal vagal slowing mixes with ventral vagal safety, you get restorative stillness. Your body slows down (slower heart, slower breath) but the social engagement system stays online, so it feels peaceful instead of empty. This is meditation, falling asleep with someone you trust nearby, slow sex, deep listening, and the calm of a bath.',
-        high: 'The dorsal-ventral blend produces immobilization without fear. The slowing of the dorsal branch is held within the safety of the ventral branch, allowing for deep rest, restorative sleep, sexual intimacy with a safe partner, deep meditation, and the kind of stillness that supports healing. This state is required for tissue repair, memory consolidation during sleep, and the rebuilding of vagal tone after sympathetic discharge.'
+        high: 'In polyvagal theory (a contested model), the dorsal-ventral blend produces immobilization without fear. The slowing of the dorsal branch is held within the safety of the ventral branch, allowing for deep rest, restorative sleep, sexual intimacy with a safe partner, deep meditation, and the kind of stillness that supports healing. Deep rest of this kind supports tissue repair and memory consolidation during sleep.'
       },
       feelsLike: [
         'Slow heart, slow breath',
@@ -18912,9 +18911,9 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'Your heart feels really slow and quiet, like it\'s tired.',
         middle: 'Your pulse feels slower and weaker than usual; you might feel light-headed when standing up.',
-        high: 'Bradycardia or perceived slowing, consistent with dorsal vagal activation. Often accompanies dissociation or shutdown states.'
+        high: 'A slow or slowed-feeling heartbeat. It can accompany dissociation or shutdown states, and it is also normal at rest and in fit people.'
       },
-      whatItMeans: 'You may be in a dorsal vagal shutdown state — the body has slowed everything to conserve energy.',
+      whatItMeans: 'You may be in a shutdown state, where the body has slowed things down to conserve energy.',
       whatToDo: 'Gentle activation: stand up slowly, walk around, drink a cool (not cold) sip of water. Avoid sudden intense exertion. If persistent or with light-headedness, get medical evaluation.'
     },
     {
@@ -18951,7 +18950,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'You suddenly notice you haven\'t breathed in a while — you forgot to breathe.',
         middle: 'Catching yourself with breath held, especially during focused work, scrolling, or emails. Sometimes called “screen apnea” or “email apnea.”',
-        high: 'Habitual breath-holding under cognitive load, associated with subtle sympathetic activation and elevated cortisol. Linne Stoltzfus and Linda Stone documented this pattern extensively.'
+        high: 'Habitual breath-holding under cognitive load. Writer Linda Stone named this "email apnea"; it has not been formally studied.'
       },
       whatItMeans: 'Low-grade chronic activation is pausing your breath. Often happens during screen time, hard tasks, or when bracing.',
       whatToDo: 'Set a phone reminder to do 3 conscious breaths every hour. Notice your breath whenever you pick up your phone.'
@@ -19029,7 +19028,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'Food doesn\'t sound good. You don\'t feel hungry even when it\'s mealtime.',
         middle: 'Loss of appetite during stress periods — forgetting to eat, food sounding unappealing.',
-        high: 'Sympathetic activation suppresses ghrelin response and shunts blood from GI tract; chronic loss of appetite can rapidly narrow the window via blood sugar instability and nutrient depletion.'
+        high: 'Stress can switch off hunger cues and slow digestion; chronic loss of appetite can rapidly narrow the window via blood sugar instability and nutrient depletion.'
       },
       whatItMeans: 'Sympathetic activation is suppressing hunger cues. Skipping meals will worsen activation in a few hours.',
       whatToDo: 'Eat anyway, even a small amount. Easy proteins (yogurt, nut butter, smoothie). Set timer to eat every 4 hours regardless of hunger.'
@@ -19305,7 +19304,7 @@ if (typeof window !== 'undefined') {
         high: 'Reduced middle ear muscle tone (under dorsal-leaning states) or hyperacusis (under sympathetic states); also a feature of autism and migraine.'
       },
       whatItMeans: 'Often a sign of narrowed window. The ventral vagal branch normally tunes the middle ear muscles to filter sound; under stress, this filtering fails.',
-      whatToDo: 'Reduce input — quiet space, ear defenders, breaks from loud environments. Long-term: humming and singing strengthen middle ear muscle tone via vagus nerve.'
+      whatToDo: 'Reduce input \u2014 quiet space, ear defenders, breaks from loud environments. Long-term: lower the noise load and get a hearing or sensory check if it persists.'
     },
     {
       id: 'sig_light_sensitive',
@@ -19484,9 +19483,9 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'You cry at things you don\'t usually cry at — commercials, songs, small things.',
         middle: 'Tearfulness with low threshold, often surprising you, sometimes followed by feeling better.',
-        high: 'Emotional tears contain stress hormones and elicit social support; lacrimal release is partly vagal-mediated. Easy tears often signal vagal release after sustained activation.'
+        high: 'Crying often brings a calmer feeling afterwards and draws support from others.'
       },
-      whatItMeans: 'Often release of held activation. Tears literally contain stress hormones that get discharged.',
+      whatItMeans: 'Often a release of held tension. Crying often brings relief afterwards, especially when someone comforts you. The idea that tears flush out stress hormones is not supported.',
       whatToDo: 'Let it happen if you safely can. Crying is regulatory. If you\'re crying many times a day for weeks, consider clinical support — it may signal depression or unresolved grief.'
     },
     {
@@ -19513,7 +19512,7 @@ if (typeof window !== 'undefined') {
         high: 'Amygdala-driven defensive activation under reduced prefrontal regulation; classic narrowed-window response.'
       },
       whatItMeans: 'Window narrowed by underlying chronic load. The current trigger is often not the actual cause.',
-      whatToDo: 'Discharge the activation safely (walk, push wall, scream into pillow), THEN problem-solve. Address chronic load — sleep, stress, unresolved issues.'
+      whatToDo: 'Discharge the activation safely (walk, push against a wall), THEN problem-solve. Address chronic load \u2014 sleep, stress, unresolved issues.'
     },
     {
       id: 'sig_irritable',
@@ -19575,7 +19574,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'Thoughts about wanting to go away or get hurt. These thoughts mean it\'s time to tell a trusted grown-up right now.',
         middle: 'Thoughts of suicide, self-harm, or wanting to disappear. These thoughts need to be told to a trusted adult or crisis line.',
-        high: 'Suicidal ideation — active or passive, with or without plan or intent — always warrants clinical attention. Often emerges from dorsal vagal shutdown when the system perceives no escape.'
+        high: 'Suicidal ideation \u2014 active or passive, with or without plan or intent \u2014 always warrants clinical attention. It often comes when someone feels trapped with no way out.'
       },
       whatItMeans: 'Crisis-level signal. Your nervous system is in a state of perceived inescapability. This is treatable.',
       whatToDo: 'Tell someone now. Call or text 988 (Suicide and Crisis Lifeline). Text HOME to 741741 (Crisis Text Line). This is not weakness — it\'s asking for help when help is needed.'
@@ -19695,7 +19694,7 @@ if (typeof window !== 'undefined') {
         high: 'Akathisia-like restlessness, may be medication-induced, anxiety-driven, or part of sensory dysregulation. Acutely distressing.'
       },
       whatItMeans: 'High distress with high activation. Body wants to escape itself.',
-      whatToDo: 'Immediate strong sensory input: cold shower, weighted blanket, vigorous movement, ice on chest. If recently started a medication, mention to prescriber — may be a side effect.'
+      whatToDo: 'Immediate strong sensory input: cool water on the face, weighted blanket, vigorous movement, a cold pack on the cheeks. If recently started a medication, mention to prescriber \u2014 may be a side effect.'
     },
     {
       id: 'sig_floating',
@@ -19760,7 +19759,7 @@ if (typeof window !== 'undefined') {
         high: 'Discharge of accumulated sympathetic activation that couldn\'t be expressed during the threat. Often misdirected at safe people.'
       },
       whatItMeans: 'Activation that couldn\'t discharge during the threat is coming out now. Common and often misdirected.',
-      whatToDo: 'Discharge physically (run, push, scream into pillow) BEFORE engaging anyone. Then circle back to the original event with awareness.'
+      whatToDo: 'Discharge physically (run, push against a wall) BEFORE engaging anyone. Then circle back to the original event with awareness.'
     },
     {
       id: 'sig_chronic_pain',
@@ -19770,7 +19769,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'Your body hurts in places and the doctor can\'t find what\'s wrong.',
         middle: 'Persistent pain (back, neck, headaches, abdominal) without clear medical cause.',
-        high: 'Chronic pain syndromes often involve central sensitization driven by sustained autonomic dysregulation; intersects with TMS, fibromyalgia, and somatized anxiety/depression.'
+        high: 'Chronic pain syndromes often involve central sensitization driven by sustained autonomic dysregulation; intersects with fibromyalgia and somatized anxiety/depression.'
       },
       whatItMeans: 'Central sensitization — the nervous system\'s threat response is producing pain even without tissue damage. Pain is real, even when origin is autonomic.',
       whatToDo: 'Address underlying autonomic load. Resources: Curable app, pain reprocessing therapy, mind-body work. Doesn\'t replace medical workup, but complements it.'
@@ -19838,7 +19837,7 @@ if (typeof window !== 'undefined') {
           phase: 'Phase 1: Stabilize the body (first 60 seconds)',
           actions: [
             'Get to a safe spot — sit or squat, don\'t try to leave a moving vehicle, don\'t drive',
-            'Cold input: splash cold water on face, hold ice cubes, press cold can to chest. Activates dive reflex, slows heart',
+            'Cold input: splash cold water on face or hold a cold pack to your cheeks. Activates dive reflex, slows heart',
             'Tell yourself: “This is a panic attack. It will peak and pass. Panic attacks don\'t kill people.”',
             'If you can, tell one person nearby: “I\'m having a panic attack. Stay near me, don\'t need to fix it.”'
           ]
@@ -19996,9 +19995,9 @@ if (typeof window !== 'undefined') {
           actions: [
             'Push hard against a wall for 10 seconds, 3 times',
             'Run in place, sprint, do jumping jacks for 2–3 minutes',
-            'Squeeze ice cubes in your hands until they\'re uncomfortable',
-            'Scream into a pillow or in a parked car with windows up',
-            'Tear up paper, hit a pillow hard',
+            'Hold ice wrapped in a cloth for up to a minute',
+            
+            'Walk fast for a few minutes, or tear up scrap paper',
             'NOT: hit walls (injury risk), drive fast (danger), text or call the person (regret)'
           ]
         },
@@ -20041,7 +20040,7 @@ if (typeof window !== 'undefined') {
         'Anger management groups through community mental health',
         'Couples counseling if rage is in primary relationship'
       ],
-      research: 'Rage often reflects underlying threat to identity, attachment, or values, layered with sympathetic flood that takes prefrontal cortex offline. Discharge-then-cognitive protocols outperform cognitive-only approaches when activation is high. Source: Levine, P. (1997); Linehan, M. (1993) DBT.'
+      research: 'Rage often comes with a body surge that makes clear thinking hard. Research favors calming the body first (slow breathing, cool water, time away) over venting; hitting or screaming does not reduce anger. Source: Kj\u00E6rvik & Bushman (2024); Linehan, M. (1993) DBT.'
     },
     {
       id: 'protocol_dissociation',
@@ -20194,7 +20193,7 @@ if (typeof window !== 'undefined') {
       ],
       resources: [
         '988 — Suicide and Crisis Lifeline (US): call or text 988',
-        'Crisis Text Line: text HOME to 741741 (US, UK, Canada, Ireland)',
+        'Crisis Text Line: text HOME to 741741 (US). UK: text SHOUT to 85258. Canada: text CONNECT to 686868. Ireland: text HELLO to 50808',
         '911 — if in immediate physical danger',
         'Trevor Project (LGBTQ+ youth): 1-866-488-7386 or text START to 678-678',
         'Veterans Crisis Line: 988 then press 1, or text 838255',
@@ -20223,7 +20222,7 @@ if (typeof window !== 'undefined') {
         {
           phase: 'Phase 1: Surf the wave (first 16 minutes)',
           actions: [
-            'Urges peak in about 15–20 minutes — if you wait, the intensity drops',
+            'Urges rise, peak and fall. Many ease within about 15 to 30 minutes if you wait, though some take longer',
             'Set a timer for 16 minutes',
             'Remove or put away tools you usually use',
             'Move to a different room than where you usually self-harm',
@@ -20233,12 +20232,12 @@ if (typeof window !== 'undefined') {
         {
           phase: 'Phase 2: Strong alternative sensation (during the 16 minutes)',
           actions: [
-            'Ice cubes in hands until they melt or you can\'t hold them',
-            'Snap a rubber band on wrist (much milder than cutting, gives sensation)',
-            'Cold shower or splash of very cold water',
+            'Hold ice wrapped in a cloth for up to a minute, then switch hands',
+            
+            'Splash of cold water on your face',
             'Hot spicy food, very sour candy',
             'Hard exercise: sprints, push-ups, jumping jacks until breathless',
-            'Punch a pillow hard, scream into it',
+            'Push hard against a wall for 10 seconds, then walk fast',
             'Red marker or temporary tattoo on skin you would have cut'
           ]
         },
@@ -20281,7 +20280,7 @@ if (typeof window !== 'undefined') {
         'Book: “The Tunnel and the Light” by Elisabeth Kubler-Ross for grief connection',
         'Workbook: “Freedom from Self-Harm” by Gratz & Chapman'
       ],
-      research: 'Self-harm is most often a maladaptive emotion regulation strategy, not a suicide attempt. DBT (Linehan) is the most studied intervention with strong evidence. Urge-surfing using the 15-minute wave concept is effective when paired with alternative sensations. Source: Linehan, M. (1993); Klonsky (2007).'
+      research: 'Self-harm is most often a maladaptive emotion regulation strategy, not a suicide attempt. DBT (Linehan) is the most studied intervention with strong evidence. Urge surfing (riding the urge out like a wave) can help, especially when paired with safe alternative sensations. Source: Linehan, M. (1993); Klonsky (2007).'
     },
     {
       id: 'protocol_flashback',
@@ -20337,7 +20336,7 @@ if (typeof window !== 'undefined') {
             'Eat something with protein and fat — stabilizes blood sugar',
             'Limit triggering content for the rest of the day',
             'Note the trigger if you can identify it',
-            'If you don\'t have a trauma therapist, get one — EMDR, IFS, Somatic Experiencing, or trauma-focused CBT all have strong evidence'
+            'If you don\'t have a trauma therapist, get one. Trauma-focused CBT, prolonged exposure, cognitive processing therapy and EMDR have the strongest evidence. Some people also use body-based approaches such as Somatic Experiencing or IFS, which have less research'
           ]
         }
       ],
@@ -20359,7 +20358,7 @@ if (typeof window !== 'undefined') {
         'Book: “The Body Keeps the Score” by Bessel van der Kolk',
         'Workbook: “The Complex PTSD Workbook” by Arielle Schwartz'
       ],
-      research: 'Flashbacks involve activation of the amygdala and hippocampus with limbic re-experiencing without proper temporal tagging. Eyes-open grounding and bilateral sensory input help re-engage the prefrontal cortex. EMDR, prolonged exposure, and CPT have strongest evidence for PTSD. Source: van der Kolk (2014); Foa et al. (2007) Treatments that Work.'
+      research: 'Flashbacks involve activation of the amygdala and hippocampus with limbic re-experiencing without proper temporal tagging. Eyes-open grounding and naming where you are now help bring you back to the present. EMDR, prolonged exposure, and CPT have strongest evidence for PTSD. Source: van der Kolk (2014); Foa et al. (2007) Treatments that Work.'
     },
     {
       id: 'protocol_shutdown',
@@ -20586,7 +20585,7 @@ if (typeof window !== 'undefined') {
         'ADHD coach or therapist (often listed on Therapy Den or Inclusive Therapists)',
         'Psychiatrist for medication evaluation'
       ],
-      research: 'ADHD executive dysfunction is a dopamine-norepinephrine availability issue. Movement temporarily increases dopamine. Body doubling provides external structure that internal structure can\'t. Stimulant medications have the largest effect size of any psychiatric treatment. Source: Faraone et al. (2015) The World Federation of ADHD International Consensus.'
+      research: 'ADHD executive dysfunction is a dopamine-norepinephrine availability issue. Movement temporarily increases dopamine. Body doubling provides external structure that internal structure can\'t. Stimulant medications have some of the largest effect sizes of any psychiatric medicine. Source: Faraone et al. (2021), World Federation of ADHD International Consensus Statement.'
     },
     {
       id: 'protocol_insomnia',
@@ -20681,7 +20680,7 @@ if (typeof window !== 'undefined') {
           actions: [
             'Grief moves in waves. They peak, then ebb. Trying to stop the wave makes it last longer',
             'Find a safe enough spot — alone if needed, with a safe person if available',
-            'Let yourself cry, sob, shake. Tears literally contain stress hormones being released',
+            'Let yourself cry, sob, shake. Crying often brings relief afterwards',
             'Tell yourself: “This is grief. I loved [them/it]. This wave will peak and ebb.”'
           ]
         },
@@ -20809,7 +20808,7 @@ if (typeof window !== 'undefined') {
         'Trusted friend, family member, school counselor, EAP',
         'NAMI Helpline: 1-800-950-6264'
       ],
-      research: 'Emotional tears differ chemically from reflex tears, containing stress hormones (Frey, 1985). Crying activates the parasympathetic nervous system after the initial sympathetic surge, often producing post-cry calm. Suppressing crying does not reduce the underlying state, only delays its expression. Source: Vingerhoets (2013) Why Only Humans Weep.'
+      research: 'Crying often brings relief afterwards, especially when someone offers comfort. The older idea that tears flush out stress hormones (Frey, 1985) has not held up. Suppressing crying does not reduce the underlying state, only delays its expression. Source: Vingerhoets (2013) Why Only Humans Weep.'
     }
   ];
   // \u2500\u2500 Sample Coping Plans Library \u2500\u2500
@@ -20888,7 +20887,7 @@ if (typeof window !== 'undefined') {
       peopleToCall: ['Teacher / professor \u2014 discuss accommodations in advance', 'A trusted peer to practice with', 'School counselor for systematic exposure work', 'A parent or mentor who can listen without fixing'],
       reminders: ['The audience wants me to succeed \u2014 they are not the enemy.', 'I have prepared. My brain has the material even if my voice is shaky.', 'Imperfect delivery + real content beats perfect delivery + empty content.', 'Every speaker I admire was once exactly here.'],
       makeItWork: 'For high-stakes talks, record yourself once on phone the day before. Watching it back is uncomfortable but it cuts the fear of the unknown in half.',
-      clinicalNote: 'If public speaking fear is shaping major life decisions (avoiding classes, dropping a major, refusing jobs), that is social anxiety disorder and is very treatable with therapy.'
+      clinicalNote: 'If public speaking fear is shaping major life decisions (avoiding classes, dropping a major, refusing jobs), that could be social anxiety disorder, which is very treatable with therapy.'
     },
     {
       id: 'performance_anxiety_middle',
@@ -21488,7 +21487,7 @@ if (typeof window !== 'undefined') {
       peopleToCall: ['School counselor', 'A therapist or doctor', 'A parent or trusted adult', 'A friend who knows you are struggling', '988 Suicide & Crisis Lifeline \u2014 for depression too, not just suicide', 'Crisis Text Line \u2014 text HOME to 741741'],
       reminders: ['Depression lies. The things it tells me about myself are not true.', 'Doing the small thing counts.', 'I have felt better before and I will feel better again.', 'Asking for help is the move strong people make.'],
       makeItWork: 'Depression makes "get out of bed" feel like climbing a mountain. Break it: sit up, swing legs over, stand for 10 seconds. Each one is a real win on a depression day.',
-      clinicalNote: 'If low mood, hopelessness, or loss of interest lasts 2+ weeks, this is clinical depression and treatment exists. If you are having any thoughts of suicide or self-harm, please call or text 988 immediately. You are not alone and depression is treatable.'
+      clinicalNote: 'If low mood, hopelessness, or loss of interest lasts 2+ weeks, this could be clinical depression, and treatment exists; a clinician can tell you. If you are having any thoughts of suicide or self-harm, please call or text 988 immediately. You are not alone and depression is treatable.'
     },
     {
       id: 'suicidal_thoughts_high',
@@ -21514,7 +21513,7 @@ if (typeof window !== 'undefined') {
       summary: 'For when the urge to hurt yourself rises \u2014 to release pressure, to feel something, to punish yourself. There are real alternatives. You deserve to learn them.',
       triggers: ['Overwhelming emotional pain', 'Numbness \u2014 needing to feel something', 'Shame, guilt, self-hatred', 'A fight, loss, or trigger', 'Anniversaries of trauma', 'Sometimes no clear trigger'],
       earlyWarning: ['Intrusive image of self-harm', 'Hoarding tools', 'Wearing covering clothes', 'Withdrawing to be alone', 'Feeling "outside" your own body'],
-      strategies: ['Delay \u2014 10 minutes between the urge and the action', 'Cold \u2014 ice cubes, cold shower, frozen orange peel against skin (intense sensation, no harm)', 'Red marker on the spot you would harm \u2014 visual release', 'Hard exercise \u2014 sprint, pushups, jumping jacks until winded', 'Snap a rubber band on your wrist', 'Punch a pillow, scream into a pillow', 'Call a hotline \u2014 talk through the urge', 'Tear up paper, smash ice in the sink, slam doors safely'],
+      strategies: ['Delay \u2014 10 minutes between the urge and the action', 'Cold: ice wrapped in a cloth for up to a minute, or cold water on your face (strong sensation, no harm)', 'Red marker on the spot you would harm \u2014 visual release', 'Hard exercise \u2014 sprint, pushups, jumping jacks until winded', 'Push hard against a wall for 10 seconds, then walk fast', 'Call a hotline \u2014 talk through the urge', 'Tear up paper or scribble hard on it'],
       peopleToCall: ['988 Suicide & Crisis Lifeline (they help with self-harm too)', 'Crisis Text Line \u2014 text HOME to 741741', 'A therapist or counselor', 'A trusted adult (parent, teacher)', 'A friend who knows', 'Self-Injury Outreach & Support (sioutreach.org) for resources'],
       reminders: ['The urge is information about pain, not a command.', 'I have other ways to release this \u2014 I am learning them.', 'My body deserves care, not punishment.', 'Recovery from self-harm is real and possible. People do it every day.'],
       makeItWork: 'If you have self-harmed already, please tell someone and care for the wound \u2014 clean it, bandage it. Shame about it will keep you stuck. Talking about it (with a counselor) is the way out.',
@@ -21529,7 +21528,7 @@ if (typeof window !== 'undefined') {
       summary: 'For the white-hot moment when you want to throw, scream, break, hit. Anger is real. Hurting yourself or someone else is not the answer.',
       triggers: ['Feeling humiliated or disrespected', 'Being told no', 'Frustration that built up all day', 'A sibling or friend pushing your buttons', 'Sensory overload turning to rage', 'Hunger / tiredness (HALT \u2014 hungry, angry, lonely, tired)'],
       earlyWarning: ['Heat rising in face and chest', 'Fists clenching', 'Tunnel vision on what made you mad', 'Wanting to yell / hit / throw', 'Voice getting louder'],
-      strategies: ['LEAVE the room \u2014 physically remove yourself', 'Cold water on face / wrists', 'Hard physical release \u2014 pushups, sprints, hitting a pillow', 'Scream into a pillow (it counts)', 'Squeeze something \u2014 stress ball, fist into other palm', 'Count backward from 100 by 7s (engages thinking brain)', 'Tear paper / smash ice / kick a ball as hard as you can', 'Wait at least 30 minutes before talking \u2014 your prefrontal cortex needs to come back online'],
+      strategies: ['LEAVE the room \u2014 physically remove yourself', 'Cold water on face / wrists', 'Hard physical effort: pushups, wall pushes, a fast walk', 'Squeeze something \u2014 stress ball, fist into other palm', 'Count backward from 100 by 7s (engages thinking brain)', 'Tear up scrap paper or squeeze ice wrapped in a cloth', 'Wait at least 30 minutes before talking \u2014 your prefrontal cortex needs to come back online'],
       peopleToCall: ['A parent (after the wave passes)', 'A counselor \u2014 anger has a learnable skill set', 'A friend who can help you debrief', 'A therapist if rage is a pattern'],
       reminders: ['Feeling rage is human. Acting on rage in a hurtful way is a choice.', 'My anger is real AND I can handle it without hurting anyone.', 'I am not a bad person for feeling this big.', 'I can repair what I broke. Even relationships.'],
       makeItWork: 'If you broke something or said something brutal in a rage, the apology comes AFTER the body is calm \u2014 not during. Wait 30 minutes minimum.',
@@ -21544,7 +21543,7 @@ if (typeof window !== 'undefined') {
       summary: 'High school rage is real and high-stakes \u2014 fights, broken phones, ended relationships, legal trouble. This plan is for getting through the wave without making it worse.',
       triggers: ['Being disrespected, especially publicly', 'Injustice \u2014 at school, in the world, in your family', 'Cumulative frustration', 'Substance use lowering control', 'Sleep deprivation', 'Triggered trauma response'],
       earlyWarning: ['Body temperature rising', 'Tunnel focus on the person/thing', 'Wanting to fight / destroy / scream', 'Internal monologue going dark', 'Loss of perspective \u2014 only this moment matters'],
-      strategies: ['Get away from the trigger \u2014 leave the room, building, situation', 'Walk / run / drive (somewhere safe) \u2014 burn the adrenaline', 'Cold water on face and wrists', 'Slow exhales \u2014 4 in, 8 out (longer exhales calm the nervous system)', 'Punch a pillow, scream in your car or shower', 'Wait at least 30-60 min before any conversation, text, or post', 'Do not get behind the wheel angry', 'After the wave: name what was underneath it (hurt, fear, shame)'],
+      strategies: ['Get away from the trigger \u2014 leave the room, building, situation', 'Walk or run (somewhere safe) until the heat drops', 'Cold water on face and wrists', 'Slow exhales \u2014 4 in, 8 out (longer exhales calm the nervous system)', 'Push hard against a wall for 10 seconds, three times', 'Wait at least 30-60 min before any conversation, text, or post', 'Do not get behind the wheel angry', 'After the wave: name what was underneath it (hurt, fear, shame)'],
       peopleToCall: ['A therapist or counselor', 'A trusted adult who is good in a crisis', 'A friend who is not flammable', 'A parent (when calm)', '988 if the rage is dangerous to you or others'],
       reminders: ['I can feel rage and still not act on it destructively.', 'My anger is data \u2014 there is something real underneath.', 'I can repair what I broke. People do this every day.', 'Rage that I survive is rage that does not define me.'],
       makeItWork: 'If you have been in a fight or trashed your room before, you know your patterns. Identify the early warning sign that you usually miss and write it down. Most rage is preventable at the early-warning stage.',
@@ -21592,7 +21591,7 @@ if (typeof window !== 'undefined') {
       strategies: ['Noise-canceling headphones or earplugs (Loop, Calmer, etc.)', 'Sunglasses or tinted lenses inside', 'Sensory toolkit \u2014 fidget, tactile object, scent strip', 'Find a quiet room \u2014 counselor office, library, sensory room', 'Deep pressure \u2014 squeeze hands, wall push, weighted lap', 'Slow exhales \u2014 longer than inhales', 'Ask for breaks \u2014 "I need 5 minutes"', 'Communicate before the spiral \u2014 "I am at sensory capacity"'],
       peopleToCall: ['School counselor', 'Teachers who know your needs', 'OT / sensory therapist if you have one', 'Parents \u2014 for accommodations conversations', 'Autistic adults online (community is real and helpful)'],
       reminders: ['I am autistic / sensory-different and that is not a problem to fix.', 'I deserve accommodations that work for my brain.', 'The world is loud. I am not too sensitive.', 'Asking for what I need is self-advocacy, not weakness.'],
-      makeItWork: 'A 504 or IEP can include sensory breaks, headphone permission, sunglasses indoors, alternative lunch space, and movement breaks. Ask your counselor what is possible \u2014 accommodations are your right.',
+      makeItWork: 'A 504 or IEP can include sensory breaks, headphone permission, sunglasses indoors, alternative lunch space, and movement breaks. Ask your counselor what is possible \u2014 if you qualify for a 504 plan or IEP, accommodations are your right.',
       clinicalNote: 'If sensory overload is causing daily meltdowns, school refusal, or burnout, please ask for an OT evaluation and explore an autism evaluation if not already done \u2014 accommodations and skill-building exist and help.'
     },
     {
@@ -21788,7 +21787,7 @@ if (typeof window !== 'undefined') {
       peopleToCall: ['A parent (gently \u2014 they may have their own stuff)', 'School counselor', 'A trusted teacher', 'Doctor if eating or exercise feels out of control'],
       reminders: ['Bodies change. That is what they are supposed to do.', 'My worth is not my body shape.', 'The bodies in media are NOT what most bodies look like.', 'I am allowed to like myself today.'],
       makeItWork: 'Social media is the single biggest driver of body image distress. A 2-week break from Instagram / TikTok almost always helps. Try it.',
-      clinicalNote: 'If body image distress is leading to food restriction, purging, excessive exercise, or self-harm, please tell a trusted adult and call the NEDA Helpline (1-800-931-2237). This is the kind of struggle that needs a real professional.'
+      clinicalNote: 'If body image distress is leading to food restriction, purging, excessive exercise, or self-harm, please tell a trusted adult and call the National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays). This is the kind of struggle that needs a real professional.'
     },
     {
       id: 'body_image_high',
@@ -21800,10 +21799,10 @@ if (typeof window !== 'undefined') {
       triggers: ['Mirror and photo moments', 'Beach / pool / locker rooms', 'Social media comparison spirals', 'Comments from peers, family, or partners', 'Major life events (prom, college visits)', 'Hormonal shifts'],
       earlyWarning: ['Daily mirror-checking spirals', 'Food rules getting tighter', 'Exercise as punishment', 'Avoiding social events because of body', 'Hiding your body in clothes', 'Crying or self-attack regularly'],
       strategies: ['Audit your media \u2014 unfollow accounts that hurt, follow diverse bodies', 'Body neutrality (it is enough) > body positivity (must love)', 'Focus on function \u2014 what your body lets you do', 'Movement for joy, not punishment \u2014 dance, walk, hike, sport you like', 'Eat consistently \u2014 restriction fuels body distress', 'Talk to a friend who is also working on this', 'Therapy \u2014 this is one of the most-studied issues and treatment works', 'Notice the inner voice \u2014 whose is it? Is it true?'],
-      peopleToCall: ['A therapist (especially one trained in body image / eating)', 'School counselor', 'A trusted friend or mentor', 'NEDA Helpline \u2014 1-800-931-2237 if it has crossed into eating disorder territory', 'A doctor if exercise or eating is feeling out of control'],
+      peopleToCall: ['A therapist (especially one trained in body image / eating)', 'School counselor', 'A trusted friend or mentor', 'National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays) if it has crossed into eating disorder territory', 'A doctor if exercise or eating is feeling out of control'],
       reminders: ['My body is not a project \u2014 it is the home I live in.', 'The beauty industry is profitable because it makes me feel bad.', 'Most bodies in media are edited and lit and not real.', 'I deserve to enjoy my life now, not when I "fix" my body.'],
       makeItWork: 'A body-image-aware therapist or dietitian can change your life. Body image work is genuine clinical work \u2014 it is not vanity.',
-      clinicalNote: 'If body image distress involves food restriction, binging, purging, or compulsive exercise, please call the NEDA Helpline (1-800-931-2237) and see a professional. Eating disorders have the highest mortality of any mental illness \u2014 early treatment makes a huge difference.'
+      clinicalNote: 'If body image distress involves food restriction, binging, purging, or compulsive exercise, please call the National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays) and see a professional. Eating disorders have among the highest death rates of any mental illness. Early treatment makes a huge difference.'
     },
     {
       id: 'disordered_eating_high',
@@ -21814,11 +21813,11 @@ if (typeof window !== 'undefined') {
       summary: 'For obsessive food thoughts, restriction, binging, purging, or punishing yourself with exercise. This is the kind of struggle that needs a real professional.',
       triggers: ['Big body image distress', 'Stress, anxiety, trauma history', 'Comparison or peer dieting culture', 'Social media (eating disorder content can be addictive)', 'Major life change', 'Sometimes a desire for control when life feels out of control'],
       earlyWarning: ['Food thoughts taking up most of your mental space', 'Rituals around food (counting, weighing, cutting up)', 'Skipping meals or sneaking food', 'Bathroom trips after eating', 'Exercise as punishment for eating', 'Lying about eating habits', 'Cold all the time, hair thinning, periods stopping, weakness'],
-      strategies: ['Tell ONE person \u2014 even just a hint. The secret is part of the disease.', 'Call the NEDA Helpline \u2014 1-800-931-2237 (they help YOU, not just parents)', 'Eat something \u2014 even a small thing. Restriction makes everything worse.', 'Get OFF eating disorder content immediately \u2014 block, unfollow, delete', 'Notice the voice as the disorder, not as you', 'Find a therapist or dietitian trained in eating disorders', 'For purging \u2014 go somewhere with people after meals', 'Be honest with your doctor \u2014 they want to help, not judge'],
-      peopleToCall: ['NEDA Helpline \u2014 1-800-931-2237 (call or text 1-800-931-2237 or chat at nationaleatingdisorders.org)', 'NEDA crisis text \u2014 text NEDA to 741741', 'Your doctor (regular checkup, be honest)', 'A therapist trained in eating disorders', 'A parent or trusted adult \u2014 even via note if speaking is too hard', '988 if you are in crisis'],
+      strategies: ['Tell ONE person \u2014 even just a hint. The secret is part of the disease.', 'Call the National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays). They help YOU, not just parents', 'Eat something \u2014 even a small thing. Restriction makes everything worse.', 'Get OFF eating disorder content immediately \u2014 block, unfollow, delete', 'Notice the voice as the disorder, not as you', 'Find a therapist or dietitian trained in eating disorders', 'For purging \u2014 go somewhere with people after meals', 'Be honest with your doctor \u2014 they want to help, not judge'],
+      peopleToCall: ['National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays)', 'ANAD Helpline 1-888-375-7767. In a crisis, text HOME to 741741 or call or text 988', 'Your doctor (regular checkup, be honest)', 'A therapist trained in eating disorders', 'A parent or trusted adult \u2014 even via note if speaking is too hard', '988 if you are in crisis'],
       reminders: ['I deserve treatment. This is a real illness, not a weakness.', 'My body needs food the way a car needs fuel. There is no morality in that.', 'Recovery is possible. People do it every day.', 'I am more than my body and what it weighs.'],
-      makeItWork: 'You can DM the NEDA Helpline anonymously to talk about whether what you are doing counts as an eating disorder. You do not have to be "sick enough" to ask for help.',
-      clinicalNote: 'Eating disorders have the highest mortality of any mental illness, and early treatment is dramatically more effective than late treatment. PLEASE tell a trusted adult and contact NEDA (1-800-931-2237) today. This is the kind of struggle that needs a real professional. You deserve help.'
+      makeItWork: 'You do not have to be "sick enough" to call a helpline and ask whether what you are doing counts as an eating disorder.',
+      clinicalNote: 'Eating disorders have among the highest death rates of any mental illness, and early treatment works much better than late treatment. PLEASE tell a trusted adult and call the National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays) today. This is the kind of struggle that needs a real professional. You deserve help.'
     },
     {
       id: 'identity_discrimination_high',
@@ -21829,7 +21828,7 @@ if (typeof window !== 'undefined') {
       summary: 'For racism, ableism, antisemitism, Islamophobia, sexism, homophobia, transphobia, classism \u2014 and the constant low-grade hum + acute incidents that come with being targeted.',
       triggers: ['A slur or microaggression in class', 'A teacher who treats you differently', 'News about discrimination against your community', 'Being asked to represent or explain your community', 'Police encounters', 'Being followed in a store'],
       earlyWarning: ['Hypervigilance, exhaustion', 'Imposter syndrome amplified', 'Rage that has nowhere to go', 'Depression, isolation', 'Internalized self-doubt', 'Wanting to assimilate to be safe'],
-      strategies: ['Find your community \u2014 peers, mentors, online spaces that share your identity', 'Document the discrimination \u2014 date, time, what happened, witnesses', 'Report when safe \u2014 Title IX, EEOC, district policies (each system has its own process)', 'Body resets after each incident \u2014 discrimination causes real physiological stress', 'Therapy with a culturally-aware therapist (matters a lot)', 'Engage on YOUR terms \u2014 you do not owe explanations', 'Joy on purpose \u2014 your existence is not just resistance', 'Read voices from your community \u2014 you are not alone in this'],
+      strategies: ['Find your community \u2014 peers, mentors, online spaces that share your identity', 'Document the discrimination \u2014 date, time, what happened, witnesses', 'Report when safe: your school or district, or the US Department of Education Office for Civil Rights (Title VI for race and ancestry, Title IX for sex, Section 504 for disability). The EEOC is for discrimination at a job', 'Body resets after each incident \u2014 discrimination causes real physiological stress', 'Therapy with a culturally-aware therapist (matters a lot)', 'Engage on YOUR terms \u2014 you do not owe explanations', 'Joy on purpose \u2014 your existence is not just resistance', 'Read voices from your community \u2014 you are not alone in this'],
       peopleToCall: ['A counselor or therapist (culturally-aware matters)', 'A trusted adult ally', 'NAACP, ADL, GLSEN, CAIR, Disability Rights orgs depending on context', 'School admin or Title IX coordinator', '988 if in crisis', 'A mentor from your community'],
       reminders: ['Their bigotry is about them, not me.', 'I do not have to educate every person who is wrong.', 'My community has survived more than this \u2014 and so will I.', 'Joy and rest are forms of resistance.'],
       makeItWork: 'You do not have to be the spokesperson for your whole community. You are allowed to just be a teenager. Engagement is a choice, not an obligation.',
@@ -21902,7 +21901,7 @@ if (typeof window !== 'undefined') {
       setup: 'Sit upright in a chair with both feet on the floor, or cross-legged on the ground. Hands can rest on your knees.',
       contraindications: ['If holding the breath makes you panic, drop the holds and just inhale/exhale evenly', 'Skip the holds if pregnant or if you have uncontrolled high blood pressure'],
       script: [
-        { type: 'intro', text: 'This is box breathing. Navy SEALs use it before high-stress missions. It steadies the nervous system in about a minute.' },
+        { type: 'intro', text: 'This is box breathing. Navy SEALs use it before high-stress missions. It often steadies the nervous system within a few minutes.' },
         { type: 'instruction', text: 'Picture a square in your mind. Four equal sides. We will trace one side with each part of the breath.' },
         { type: 'instruction', text: 'Side one. Breathe in through your nose for four counts. One... two... three... four.', pauseSec: 5 },
         { type: 'instruction', text: 'Side two. Hold your breath for four counts. One... two... three... four.', pauseSec: 5 },
@@ -21923,7 +21922,7 @@ if (typeof window !== 'undefined') {
         { id: 'three-count', name: '3-3-3-3 Easier', change: 'Drop to three counts per side if four feels too long' },
         { id: 'five-count', name: '5-5-5-5 Deeper', change: 'Extend to five counts per side once four feels easy' }
       ],
-      whyItWorks: 'Equal-length inhale/exhale with breath retention raises CO2 tolerance, lowers heart rate, and slows the prefrontal-amygdala loop. The geometric visualization gives the mind a single object to track, displacing rumination.',
+      whyItWorks: 'Equal-length inhale/exhale with breath retention slows breathing and tends to lower heart rate. The geometric visualization gives the mind a single object to track, displacing rumination.',
       research: 'Roozbeh et al. (2018) on box breathing and exam anxiety; Russo et al. (2017) on the physiological effects of slow breathing; Jerath et al. (2015) on respiratory modulation of autonomic tone.'
     },
     {
@@ -21957,7 +21956,7 @@ if (typeof window !== 'undefined') {
         { id: 'no-whoosh', name: 'Silent Exhale', change: 'Skip the whoosh sound if you share a room and do not want to wake others' },
         { id: 'eight-cycles', name: 'Extended Eight', change: 'Once practiced, extend to eight cycles for deeper insomnia' }
       ],
-      whyItWorks: 'The long exhale (8 counts) is roughly twice the inhale (4 counts), which strongly engages the parasympathetic nervous system. The breath hold builds CO2, gently dilating blood vessels and inducing the same relaxation cascade as the dive reflex.',
+      whyItWorks: 'The long exhale (8 counts) is twice the inhale (4 counts). Slow breathing with long exhales is linked to a slower heart rate and a calmer state.',
       research: 'Weil (1999) original protocol; Jerath et al. (2006) on pranayamic breathing and autonomic shift; Aktas & Ogce (2024) on 4-7-8 for sleep quality in college students.'
     },
     {
@@ -21972,7 +21971,7 @@ if (typeof window !== 'undefined') {
       setup: 'You can do this standing, sitting, or lying down. No setup needed.',
       contraindications: ['Skip if you have severe asthma during an attack', 'Stop if you feel lightheaded'],
       script: [
-        { type: 'intro', text: 'This is the physiological sigh, popularized by neuroscientist Andrew Huberman. It is the fastest known way to calm the nervous system in real time.' },
+        { type: 'intro', text: 'This is the physiological sigh, popularized by neuroscientist Andrew Huberman. It is a quick way to settle your body.' },
         { type: 'instruction', text: 'It is a double inhale through the nose, followed by a long slow exhale through the mouth.', pauseSec: 3 },
         { type: 'instruction', text: 'Inhale through your nose...', pauseSec: 2 },
         { type: 'instruction', text: 'Then another small sip of breath in through your nose, on top of the first.', pauseSec: 2 },
@@ -21993,7 +21992,7 @@ if (typeof window !== 'undefined') {
         { id: 'pre-test', name: 'Pre-Test Reset', change: 'Three physiological sighs right before any test or performance' }
       ],
       whyItWorks: 'The double inhale reinflates collapsed alveoli in the lungs, allowing for a more complete CO2 offload on the exhale. This rapidly reduces blood acidity and signals safety to the brainstem, faster than any other voluntary technique.',
-      research: 'Balban et al. (2023, Cell Reports Medicine) showed 5 minutes daily of physiological sighing outperformed mindfulness meditation on mood and HRV; Vlemincx et al. (2016) on spontaneous sighs as homeostatic resetters.'
+      research: 'Balban et al. (2023, Cell Reports Medicine) showed 5 minutes daily of physiological sighing outperformed mindfulness meditation on positive mood and breathing rate; Vlemincx et al. (2016) on spontaneous sighs as homeostatic resetters.'
     },
     {
       id: 'coherent-breath',
@@ -22039,7 +22038,7 @@ if (typeof window !== 'undefined') {
         { id: 'short-3-min', name: '3-Minute Mini', change: 'Even three minutes shifts HRV; use this version as a daily anchor' }
       ],
       whyItWorks: 'At ~0.1 Hz breathing (6 breaths/min), respiratory sinus arrhythmia resonates with baroreflex oscillations, producing maximum heart rate variability. High HRV correlates with emotional regulation, vagal tone, and prefrontal cortex engagement.',
-      research: 'Lehrer & Gevirtz (2014) HRV biofeedback meta-analysis; Steffen et al. (2017) on coherent breathing and mood; Brown & Gerbarg (2012) book on breath-based interventions.'
+      research: 'Lehrer & Gevirtz (2014) HRV biofeedback review; Goessl et al. (2017) meta-analysis; Steffen et al. (2017) on coherent breathing and mood; Brown & Gerbarg (2012) book on breath-based interventions.'
     },
     {
       id: 'bhramari-bee',
@@ -22078,8 +22077,8 @@ if (typeof window !== 'undefined') {
         { id: 'high-pitch', name: 'High Bee', change: 'Hum at a higher pitch for alertness (better for fatigue or low mood)' },
         { id: 'with-mantra', name: 'Om Variant', change: 'Replace the hum with a long Om sound for fuller vocal resonance' }
       ],
-      whyItWorks: 'Humming generates nitric oxide in the nasal sinuses (15x more than silent breathing), which dilates blood vessels and increases oxygen uptake. The extended exhale activates the vagus nerve, and the vibration mechanically stimulates the auricular branch of cranial nerve X.',
-      research: 'Lundberg et al. (2002) on humming and nasal nitric oxide; Kuppusamy et al. (2018) on bhramari and autonomic function; Trivedi et al. (2023) on humming for anxiety reduction in adolescents.'
+      whyItWorks: 'Humming moves air through the sinuses and raises the nitric oxide measured in nasal air about 15-fold (Weitzberg & Lundberg, 2002). Whether that changes how you feel is not known; the long, slow exhale is the likely calming part.',
+      research: 'Weitzberg & Lundberg (2002) on humming and nasal nitric oxide; Kuppusamy et al. (2018) on bhramari and autonomic function; Trivedi et al. (2023) on humming for anxiety reduction in adolescents.'
     },
     {
       id: 'three-breath-circuit',
@@ -22109,7 +22108,7 @@ if (typeof window !== 'undefined') {
         { id: 'with-water', name: 'Add Cold Water', change: 'Splash cold water on your face after the three breaths to engage the dive reflex' }
       ],
       whyItWorks: 'Even three deep voluntary breaths interrupt the sympathetic autopilot of panic by engaging the prefrontal cortex (choosing to breathe), activating the diaphragm, and shifting CO2 levels. It buys 15-30 seconds of clarity for next-step decisions.',
-      research: 'Zaccaro et al. (2018) review of slow-breath interventions for acute stress; Ma et al. (2017) on brief breathing and emotion regulation; APA clinical guidelines for panic include controlled breathing as first-line de-escalation.'
+      research: 'Zaccaro et al. (2018) review of slow breathing; Ma et al. (2017) on an 8-week diaphragmatic breathing program. Slow breathing is a common coping aid in panic, though not a first-line treatment by itself.'
     },
     {
       id: 'bedtime-elem',
@@ -22235,8 +22234,8 @@ if (typeof window !== 'undefined') {
         { id: 'shorter-10', name: '10-Minute Cut', change: 'Cut to 10 minutes by grouping regions (whole leg, whole arm, etc.)' },
         { id: 'with-bell', name: 'With Bell', change: 'Use a meditation bell at each region transition' }
       ],
-      whyItWorks: 'Sustained interoceptive attention rewires the salience network and strengthens insula gray matter. Long-form body scans are core to MBSR (Mindfulness-Based Stress Reduction) and show measurable reductions in cortisol, pain perception, and rumination.',
-      research: 'Kabat-Zinn (1990) MBSR foundational text; Hölzl et al. (2011) on insula thickness after 8 weeks of MBSR; Grossman et al. (2004) MBSR meta-analysis.'
+      whyItWorks: 'Long body scans are core to MBSR (Mindfulness-Based Stress Reduction), which shows reductions in stress, pain and rumination in trials. Claims that it changes brain structure have not held up in larger studies.',
+      research: 'Kabat-Zinn (1990) MBSR foundational text; Grossman et al. (2004) MBSR meta-analysis; Kral et al. (2022) found no structural brain change.'
     },
     {
       id: 'pmr-middle',
@@ -22281,7 +22280,7 @@ if (typeof window !== 'undefined') {
         { id: 'with-breath-pair', name: 'Breath-Paired', change: 'Inhale during tension hold, exhale on release' }
       ],
       whyItWorks: 'Tensing then releasing creates contrast that helps the brain register relaxation more vividly than relaxation alone. Repeated practice lowers baseline muscle tone and reduces somatic anxiety symptoms.',
-      research: 'Jacobson (1938) original protocol; Conrad & Roth (2007) meta-analysis on PMR for anxiety; Yu et al. (2007) on PMR and sleep quality in students.'
+      research: 'Jacobson (1938) original protocol; Conrad & Roth (2007) review on PMR for anxiety; Yu et al. (2007) on PMR and sleep quality in students.'
     },
     {
       id: 'mountain-anchor',
@@ -22322,7 +22321,7 @@ if (typeof window !== 'undefined') {
         { id: 'with-drawing', name: 'Draw the Mountain', change: 'After the practice, sketch your mountain in a journal' }
       ],
       whyItWorks: 'Metaphor-based meditation builds a stable self-construct distinct from passing thoughts and feelings. The mountain image gives the nervous system a concrete sense of grounded equanimity that is difficult to access through verbal instruction alone.',
-      research: 'Kabat-Zinn (1994) Wherever You Go There You Are; Kuyken et al. (2010) on metaphor in MBCT; Holzel et al. (2011) on the default mode network shifts in meditation.'
+      research: 'Kabat-Zinn (1994) Wherever You Go There You Are; Kuyken et al. (2010) on metaphor in MBCT; Brewer et al. (2011) on default mode network activity in meditators.'
     },
     {
       id: 'trauma-body-scan',
@@ -22581,7 +22580,7 @@ if (typeof window !== 'undefined') {
         { id: 'written-version', name: 'Write Three Lines', change: 'Write the three phrases in a journal as a daily practice' },
         { id: 'for-others-first', name: 'For Others First', change: 'Send the three phrases to someone else you love first, then redirect to yourself' }
       ],
-      whyItWorks: 'Self-compassion activates the mammalian caregiving system (oxytocin, opioid release) and downregulates threat response. The three components (mindfulness, common humanity, self-kindness) directly counter the three components of self-criticism (rumination, isolation, harshness).',
+      whyItWorks: 'Self-compassion is thought to engage the body\'s caregiving and soothing system and calm the threat response. The three components (mindfulness, common humanity, self-kindness) directly counter the three components of self-criticism (rumination, isolation, harshness).',
       research: 'Neff (2003) self-compassion scale development; Neff & Germer (2013) MSC program RCT; MacBeth & Gumley (2012) meta-analysis on self-compassion and psychopathology.'
     },
     {
@@ -22633,7 +22632,7 @@ if (typeof window !== 'undefined') {
         { id: 'image-version', name: 'Visualized Light', change: 'Imagine warm golden light spreading from your heart with each phrase' }
       ],
       whyItWorks: 'Loving-kindness meditation increases positive affect, decreases self-criticism, and has been shown to elevate vagal tone and reduce inflammation markers over time. It also literally changes brain structure in regions related to empathy and emotion regulation.',
-      research: 'Fredrickson et al. (2008) LKM and positive emotions; Hofmann et al. (2011) meta-analysis on LKM; Salzberg (1995) Lovingkindness foundational text.'
+      research: 'Fredrickson et al. (2008) LKM and positive emotions; Hofmann et al. (2011) review of LKM; Salzberg (1995) Lovingkindness foundational text.'
     },
     {
       id: 'soothing-touch-elem',
@@ -22675,7 +22674,7 @@ if (typeof window !== 'undefined') {
         { id: 'with-stuffed-friend', name: 'With Stuffy', change: 'Hold a stuffed animal and say the phrases to it first, then to yourself' },
         { id: 'caregiver-coregulation', name: 'Co-Regulated', change: 'A trusted grown-up offers the hug and phrases first, then the child does it for themselves' }
       ],
-      whyItWorks: 'Self-touch releases oxytocin and reduces cortisol. Combined with verbal self-soothing, it provides the warmth signal the nervous system needs even when caregiver co-regulation is unavailable.',
+      whyItWorks: 'In one study, self-soothing touch lowered the cortisol response to stress (Dreisoerner et al., 2021). Combined with verbal self-soothing, it provides the warmth signal the nervous system needs even when caregiver co-regulation is unavailable.',
       research: 'Dreisoerner et al. (2021) on self-soothing touch and stress; Field (2014) on touch and child development; Neff & Germer (2013) on supportive self-touch in MSC.'
     },
     {
@@ -23141,9 +23140,9 @@ if (typeof window !== 'undefined') {
       variations: [
         { id: 'with-friend', name: 'With a Trusted Person', change: 'Have someone read this script to you aloud during the attack; their calm voice helps' },
         { id: 'recording', name: 'Pre-Record Yourself', change: 'Record this in your own calm voice when not in panic; play during attacks' },
-        { id: 'cold-version', name: 'Cold Plunge Add-On', change: 'Submerge your face in a bowl of cold water for 30 seconds; activates the mammalian dive reflex' }
+        { id: 'cold-version', name: 'Cold Water Add-On', change: 'Hold your face in a bowl of cool (not icy) water for up to 30 seconds; this activates the mammalian dive reflex. Check with a doctor first if you have a heart condition, take heart-slowing medicine, or have an eating disorder' }
       ],
-      whyItWorks: 'During panic, the prefrontal cortex goes offline and the amygdala takes over. Naming, sensory anchoring, and slow exhalation directly re-engage the prefrontal cortex and the parasympathetic nervous system. The cold water dive reflex slows heart rate within seconds.',
+      whyItWorks: 'During panic, strong fear makes clear thinking harder for a while. Naming, sensory anchoring, and slow exhalation help clear thinking return and engage the parasympathetic nervous system. The cold water dive reflex slows heart rate within seconds.',
       research: 'Barlow (2002) Anxiety and Its Disorders; Craske & Barlow (2007) panic disorder treatment manual; Linehan (2014) DBT TIPP skills.'
     },
     {
@@ -23204,7 +23203,7 @@ if (typeof window !== 'undefined') {
       setup: 'Move any means of self-harm out of reach before starting (give them to a trusted person, put them in your car, lock them up). Sit somewhere you can be undisturbed for sixteen minutes.',
       contraindications: ['If you cannot put means out of reach, call 988 now (call or text)', 'If urges feel non-survivable, this script is not enough; reach out to a crisis line or trusted person'],
       script: [
-        { type: 'intro', text: 'You are having a self-harm urge. Urges are waves. They rise, peak, and fall. Most self-harm urges peak within 10-15 minutes if you do not act on them. We are going to ride this one. Sixteen minutes.' },
+        { type: 'intro', text: 'You are having a self-harm urge. Urges are waves. They rise, peak, and fall. Many ease within about 15 to 30 minutes if you do not act on them, though some take longer. If this one does, stay with a person or a crisis line. We are going to ride this one. Sixteen minutes.' },
         { type: 'invitation', text: 'First: have you put your means out of reach? Razors, sharp objects, pills, anything you would use. Pause and do that now. I will wait.' },
         { type: 'pause', durationSec: 60 },
         { type: 'invitation', text: 'Okay. Means are out of reach. Now we ride the wave.' },
@@ -23216,7 +23215,7 @@ if (typeof window !== 'undefined') {
         { type: 'pause', durationSec: 60 },
         { type: 'invitation', text: 'If the urge says "do it now or it will get worse," that is a lie the urge tells. The urge will peak and pass. Always.' },
         { type: 'pause', durationSec: 60 },
-        { type: 'instruction', text: 'Four minutes in. Try a distress tolerance skill. Hold an ice cube. Snap a rubber band on your wrist. Take a freezing cold shower. The TIPP skills from DBT.', pauseSec: 30 },
+        { type: 'instruction', text: 'Four minutes in. Try a distress tolerance skill. Hold a cold pack on your cheeks for up to 30 seconds, do one minute of fast exercise, or breathe out slowly for longer than you breathe in. These come from the TIPP skills in DBT.', pauseSec: 30 },
         { type: 'invitation', text: 'Or move: do 20 jumping jacks, push-ups, run up and down stairs. Burn the activation through movement.' },
         { type: 'pause', durationSec: 90 },
         { type: 'instruction', text: 'Six minutes in. The peak is near. This is the hardest part. You can do this.', pauseSec: 60 },
@@ -23239,9 +23238,9 @@ if (typeof window !== 'undefined') {
       variations: [
         { id: 'with-safe-person', name: 'On the Phone with Someone', change: 'Do the entire 16 minutes on the phone with a trusted person or crisis line counselor' },
         { id: 'shorter-tipp-version', name: 'TIPP First', change: 'Do TIPP skills (cold water, intense exercise, paced breathing, paired muscle relaxation) for the first 5 minutes before starting the wave timer' },
-        { id: 'paired-replacement', name: 'Replacement Behavior', change: 'During the wave, do a less harmful substitute (red marker on skin, snap rubber band, hold ice) to bridge to non-harm' }
+        { id: 'paired-replacement', name: 'Replacement Behavior', change: 'During the wave, do a harmless substitute (red marker on skin, hold wrapped ice) to bridge to non-harm' }
       ],
-      whyItWorks: 'Urges are not infinite — they follow a wave pattern with a measurable peak (typically 10-15 minutes for most self-harm urges). Urge surfing, developed by Alan Marlatt, teaches people they can experience an urge without acting on it, which weakens the urge-behavior link over time. Means restriction during the wave is critical.',
+      whyItWorks: 'Urges are not infinite \u2014 they follow a wave pattern: they rise, peak and fall (many ease within about 15 to 30 minutes, though some take longer). Urge surfing, developed by Alan Marlatt, teaches people they can experience an urge without acting on it, which weakens the urge-behavior link over time. Means restriction during the wave is critical.',
       research: 'Marlatt (1985) Relapse Prevention urge surfing; Linehan (2014) DBT skills training manual; Bowen et al. (2014) Mindfulness-Based Relapse Prevention. If in crisis: text HOME to 741741 (Crisis Text Line) or call/text 988 (Suicide & Crisis Lifeline).'
     },
     {
@@ -23279,7 +23278,7 @@ if (typeof window !== 'undefined') {
         { type: 'invitation', text: 'Move your body. Stand up if you can. Walk three steps. Movement reminds the body it is here and free.' },
         { type: 'pause', durationSec: 30 },
         { type: 'invitation', text: 'You are back. The flashback has lost its grip. The past was real, and it is over.' },
-        { type: 'close', text: 'When this happens, please reach out to a trauma-informed therapist or call the SAMHSA helpline at 1-800-662-4357. Flashbacks are treatable. EMDR, trauma-focused CBT, and Somatic Experiencing all work. You do not have to live with this alone.' }
+        { type: 'close', text: 'When this happens, please reach out to a trauma-informed therapist or call the SAMHSA helpline at 1-800-662-4357. Flashbacks are treatable. EMDR and trauma-focused CBT work. You do not have to live with this alone.' }
       ],
       variations: [
         { id: 'with-anchor-object', name: 'Anchor Object', change: 'Keep a present-tense object (phone case, bracelet, keychain) you can grab as your "I am in now" anchor' },
@@ -23389,7 +23388,7 @@ if (typeof window !== 'undefined') {
       setup: 'In bed. Lying on your back or side. Tongue placed against the ridge behind your upper front teeth, where it will stay for the whole practice.',
       contraindications: ['Skip the breath holds if you have asthma or panic; do 4-4-8 instead', 'Stop if you feel lightheaded'],
       script: [
-        { type: 'intro', text: 'This is the bedtime version of 4-7-8 breathing, with tongue placement to engage the vagus nerve more deeply. Four cycles. Then you drift.' },
+        { type: 'intro', text: 'This is the bedtime version of 4-7-8 breathing, with your tongue resting behind your top front teeth. Four cycles. Then you drift.' },
         { type: 'instruction', text: 'Place the tip of your tongue on the ridge of tissue just behind your upper front teeth. Keep it there.', pauseSec: 10 },
         { type: 'instruction', text: 'Exhale completely through your mouth, around your tongue, making a soft whoosh.', pauseSec: 6 },
         { type: 'instruction', text: 'Close your mouth. Inhale silently through your nose for four counts. One, two, three, four.', pauseSec: 6 },
@@ -23413,7 +23412,7 @@ if (typeof window !== 'undefined') {
         { id: 'eight-cycles', name: '8 Cycles for Severe Insomnia', change: 'Do 8 cycles instead of 4 for chronic sleep onset issues' },
         { id: 'silent-version', name: 'Silent Exhale', change: 'Skip the whoosh sound if sharing a bed' }
       ],
-      whyItWorks: 'The 2:1 exhale-to-inhale ratio strongly engages the parasympathetic nervous system. Tongue placement on the upper palate engages a branch of the vagus nerve and the lingual proprioceptors, which deepens the relaxation cascade. Repeated for 4 cycles, this produces measurable sleep onset acceleration.',
+      whyItWorks: 'The long exhale slows breathing and heart rate. The tongue position is part of Dr. Weil\'s instructions; it has no proven effect of its own. Many people find four slow cycles a helpful wind-down before sleep.',
       research: 'Weil (1999) protocol; Vierra et al. (2022) on 4-7-8 and pre-sleep anxiety; Brown & Gerbarg (2009) on slow breathing and sleep architecture.'
     }
   ];
@@ -24249,7 +24248,7 @@ if (typeof window !== 'undefined') {
       helpfulResources: [
         'National Center for Homeless Education (nche.ed.gov)',
         'SchoolHouse Connection',
-        'Covenant House for unaccompanied youth (1-800-999-9999)',
+        'National Runaway Safeline 1-800-786-2929 (call, text or chat, 24/7)',
         'Local McKinney-Vento liaison \u2014 every district has one'
       ],
       research: 'Edidin et al. on health of homeless youth; Cutuli et al. on academic resilience in homeless students; NN4Y on unaccompanied homeless youth.'
@@ -24404,10 +24403,10 @@ if (typeof window !== 'undefined') {
         { traditional: 'Body scan', adaptation: 'Functional body scan \u2014 what does this part do for me \u2014 rather than appearance-based', why: 'Avoids body-focus that triggers.' },
         { traditional: 'Exercise as mood booster', adaptation: 'Movement with treatment team guidance; pleasure movement only', why: 'Compulsive exercise risk.' },
         { traditional: 'Gratitude for body', adaptation: 'Gratitude for non-body things; or for what your body lets you do, not how it looks', why: 'Reduces appearance focus.' },
-        { traditional: 'Crisis line', adaptation: 'NEDA Helpline 1-800-931-2237 or Crisis Text Line text NEDA to 741741; ANAD 1-888-375-7767', why: 'ED-fluent support.' }
+        { traditional: 'Crisis line', adaptation: 'National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays); ANAD Helpline 1-888-375-7767; in a crisis, text HOME to 741741 or call or text 988', why: 'ED-fluent support.' }
       ],
       helpfulResources: [
-        'NEDA \u2014 National Eating Disorders Association 1-800-931-2237',
+        'National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays)',
         'ANAD \u2014 National Association of Anorexia Nervosa and Associated Disorders 1-888-375-7767',
         'Project HEAL for treatment access',
         'F.E.A.S.T. for family support'
@@ -24529,7 +24528,7 @@ if (typeof window !== 'undefined') {
         'Survivors of severe abuse may find the difficult-person stage destabilizing; skip without shame.',
         'May surface grief; have support available.'
       ],
-      research: 'Fredrickson et al. (2008) on positive emotions and vagal tone; Hutcherson, Seppala & Gross (2008) on social connectedness; Hofmann, Grossman & Hinton (2011) systematic review; Kang et al. on reduced implicit bias.'
+      research: 'Fredrickson et al. (2008) on positive emotions and personal resources; Hutcherson, Seppala & Gross (2008) on social connectedness; Hofmann, Grossman & Hinton (2011) systematic review; Kang et al. on reduced implicit bias.'
     },
     {
       id: 'cp-tonglen',
@@ -24586,7 +24585,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'RAIN is four steps to help with a big feeling. R is Recognize (what am I feeling?). A is Allow (it is okay to feel it). I is Investigate (where do I feel it in my body?). N is Nurture (be kind to yourself like a friend would).',
         middle: 'RAIN is an acronym for working through a strong emotion: Recognize what is happening, Allow it to be there, Investigate with curiosity (especially in the body), and Nurture yourself with self-compassion. Tara Brach has taught it widely as a way to meet hard moments without getting swept away.',
-        high: 'RAIN was introduced by Michele McDonald and developed by Tara Brach as a four-step inquiry for working with difficult emotions. It draws on Insight Meditation tradition and integrates self-compassion (Neff) in the Nurture step. Brach\'s book RAIN: A Practice of Radical Compassion (2019) gives the full method.'
+        high: 'RAIN was introduced by Michele McDonald and developed by Tara Brach as a four-step inquiry for working with difficult emotions. It draws on Insight Meditation tradition and integrates self-compassion (Neff) in the Nurture step. Brach\'s book Radical Compassion: Learning to Love Yourself and Your World with the Practice of RAIN (2019) gives the full method.'
       },
       steps: {
         elementary: [
@@ -24722,7 +24721,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'The Examen is a way of looking back on your day at bedtime. You think about a moment you felt happy or close to God, a moment that was hard, and then talk to God about tomorrow.',
         middle: 'The Examen is a 5-step daily reflection from St. Ignatius of Loyola: become aware of God\'s presence, review the day with gratitude, notice your emotions, choose one moment to pray about, look toward tomorrow. Many Jesuits and Jesuit-educated students do it nightly.',
-        high: 'The Daily Examen is from the Spiritual Exercises of St. Ignatius of Loyola (1522-1548), structured as a discernment practice. The five movements help one notice God\'s movement in ordinary life, attend to consolation and desolation, and grow in freedom. Pope Francis (a Jesuit) does it daily and has spoken of its centrality.'
+        high: 'The Daily Examen is from the Spiritual Exercises of St. Ignatius of Loyola (1522-1548), structured as a discernment practice. The five movements help one notice God\'s movement in ordinary life, attend to consolation and desolation, and grow in freedom. Pope Francis, a Jesuit, practiced it daily and spoke of its centrality.'
       },
       steps: {
         elementary: [
@@ -24922,7 +24921,7 @@ if (typeof window !== 'undefined') {
           'Begin with niyyah (intention) \u2014 wudu is an act of worship, not just hygiene.',
           'Follow the prescribed sequence with attention to each station.',
           'Cool water on the face activates the diving reflex \u2014 a documented parasympathetic response.',
-          'The sequence engages bilateral attention and sequential motor planning, which calms a busy mind.',
+          'A set order of steps gives a busy mind one thing to follow.',
           'After wudu, sit briefly in stillness before salah; the body has already been prepared.',
           'For non-Muslim students drawn to the sensory pattern: a brief cool-water face-and-hand rinse can offer some of the same regulation without the religious dimension.'
         ]
@@ -25209,7 +25208,7 @@ if (typeof window !== 'undefined') {
         'Panic: short sessions only, eyes open; switch to grounding if activated.',
         'Psychotic features: extended silent practice without support can intensify; consult clinician.'
       ],
-      research: 'Hofmann et al. (2010) meta-analysis on MBSR/MBCT for anxiety and depression; Goyal et al. JAMA (2014) meta-analysis; Brewer on default mode network; Lutz et al. on attention regulation.'
+      research: 'Hofmann et al. (2010) meta-analysis on MBSR/MBCT for anxiety and depression; Goyal et al. JAMA Internal Medicine (2014) meta-analysis; Brewer on default mode network; Lutz et al. on attention regulation.'
     },
     {
       id: 'cp-walking-meditation',
@@ -25219,7 +25218,7 @@ if (typeof window !== 'undefined') {
       description: {
         elementary: 'Walking meditation is when you walk really slowly and pay attention to each step. You notice your foot lifting, moving, and touching the ground. It is a way to be mindful while moving.',
         middle: 'Walking meditation is the practice of bringing full attention to the act of walking \u2014 slowing the pace, feeling each step, syncing breath with steps. Thich Nhat Hanh taught it as a way to "arrive in the present moment with each step." Useful for students who struggle to sit still.',
-        high: 'Walking meditation has deep roots in many Buddhist traditions: Theravada kinhin between sitting periods, Zen walking meditation in monastic schedules, and Thich Nhat Hanh\'s widely-taught practice of mindful walking. It builds the same attention skills as sitting practice while keeping the body engaged \u2014 ideal for ADHD and high-energy students.'
+        high: 'Walking meditation has deep roots in many Buddhist traditions: Theravada cankama (walking back and forth on a set path), Zen kinhin between sitting periods, and Thich Nhat Hanh\'s widely taught mindful walking. It builds the same attention skills as sitting practice while keeping the body engaged \u2014 ideal for ADHD and high-energy students.'
       },
       steps: {
         elementary: [
@@ -25945,7 +25944,7 @@ if (typeof window !== 'undefined') {
         'Mobility limitations: adapted forest bathing exists; some accessible trails in many regions.',
         'Safety in remote areas: go with someone or stay in well-trafficked parks.'
       ],
-      research: 'Li (Yoshifumi Li) on shinrin-yoku and immune function; Park et al. on physiological effects of forest bathing; Hansen et al. (2017) systematic review; Twohig-Bennett & Jones meta-analysis on greenspace and health.'
+      research: 'Qing Li on shinrin-yoku and immune function; Miyazaki and Park et al. on physiological effects of forest bathing; Hansen et al. (2017) systematic review; Twohig-Bennett & Jones meta-analysis on greenspace and health.'
     }
   ];
   STRATEGIES = STRATEGIES
@@ -26826,7 +26825,7 @@ if (typeof window !== 'undefined') {
           library:  { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 the coping toolkit',                hint: 'Cognitive (reframe, name it to tame it), behavioral (move, breathe, ground), social (call a friend, share). Multiple strategies in your back pocket beats one silver bullet \u2014 different stress states need different tools.' },
           practice: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAF', title: 'Practice \u2014 box breathing, 5-4-3-2-1, body scan',  hint: 'Box breathing (4-4-4-4) is what Navy SEALs use to manage acute stress. 5-4-3-2-1 grounding pulls anxious attention back into the present via the senses. Both work because they change physiology, not thoughts.' },
           rehearse: { accent: '#f97316', soft: 'rgba(249,115,22,0.14)',  icon: '\uD83C\uDFAD', title: 'Rehearse \u2014 apply a coping skill in a hard moment', hint: 'Mental rehearsal (Driskell et al., 1994) builds the same neural pathways as practiced response. ' + (_copAiOn ? 'The AI plays the trigger' : 'Each scene plays the trigger') + ' (anxious voice, escalating parent, distant friend, overwhelming environment); you practice what you would do in your body and your mind.' },
-          plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 doubles follow-through compared to vague intentions to cope.' },
+          plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 makes follow-through more likely than vague intentions to cope (Gollwitzer & Sheeran, 2006).' },
           matcher:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2728',         title: 'Matcher \u2014 right tool for the right zone',         hint: 'Yellow-zone overwhelm needs different strategies than red-zone shutdown. Zones of Regulation (Kuypers) gives a shared language; this matcher gives the strategy. Self-knowledge IS regulation.' },
           log:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Practice Log \u2014 what worked and when',             hint: 'Tracking turns coping from reactive to deliberate. Patterns emerge over weeks: which strategy works for which trigger. The log itself becomes a self-knowledge artifact you can show a counselor or trusted adult.' },
           learn:    { accent: '#0d9488', soft: 'rgba(13,148,136,0.14)',  icon: '\uD83C\uDF93', title: 'Learn \u2014 the science behind regulation',           hint: 'DBT skills (Linehan), cognitive distortions (Beck/Burns), window of tolerance (Siegel), polyvagal theory (Porges), and practices from world contemplative traditions. Naming what is happening in your nervous system is the first step in shifting it.' },
@@ -29382,7 +29381,7 @@ if (typeof window !== 'undefined') {
                     h('div', { style: { color: _copFg('#94a3b8'), fontSize: 10 } }, (p.category || '') + ' · ~' + (p.durationMin || '?') + ' min')
                   ),
                   h('button', { type: 'button', 'aria-expanded': showFull, onClick: function() { upd({ openScript: showFull ? null : p.id }); if (soundEnabled) sfxClick(); },
-                    style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: showFull ? _copBg('#334155') : '#14b8a6', color: showFull ? _copFg('#94a3b8') : _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                    style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: showFull ? _copBg('#334155') : _copBg(_copSolid('#14b8a6')), color: showFull ? _copFg('#cbd5e1') : _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                   }, showFull ? 'Close' : 'Open')
                 ),
                 p.contraindications && p.contraindications.length ? h('div', { style: { marginTop: 6, color: _copFg('#fbbf24'), fontSize: 10, lineHeight: 1.4 } }, '⚠️ ' + p.contraindications.join(' · ')) : null,
@@ -29426,7 +29425,7 @@ if (typeof window !== 'undefined') {
                     p.urgency === 'immediate' ? h('span', { style: { padding: '3px 8px', borderRadius: 4, background: _copBg('#7f1d1d'), color: _copFg('#fecaca'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Immediate') :
                     p.urgency === 'urgent' ? h('span', { style: { padding: '3px 8px', borderRadius: 4, background: _copBg('#78350f'), color: _copFg('#fde68a'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, 'Urgent') : null,
                     h('button', { type: 'button', 'aria-expanded': open, onClick: function() { upd({ openCrisis: open ? null : p.id }); if (soundEnabled) sfxClick(); },
-                      style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: open ? _copBg('#334155') : '#14b8a6', color: _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { padding: '8px 14px', minWidth: 44, minHeight: 44, borderRadius: 6, border: 'none', background: open ? _copBg('#334155') : _copBg(_copSolid('#14b8a6')), color: _copFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, open ? 'Close' : 'View')
                   ),
                   open && p.steps ? h('div', { style: { marginTop: 12 } },

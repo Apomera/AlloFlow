@@ -165,7 +165,11 @@ describe('Bug Sweep Wave 9 (2026-11-20) — 61 Fixes Regression Suite', () => {
 
       // #16 withinDateRange allows future/skewed timestamps when range === 'all'
       const now = Date.UTC(2026, 10, 20, 12, 0, 0);
-      expect(Adapter.withinDateRange(now + 600000, 'all', now)).toBe(true);
+      // Superseded: Round 9 Waves 33-35 restored the future-date bound for 'all'
+      // (tests/round9_waves33_35_hardening.test.js, tests/allosheet_transfer_adapter.test.js).
+      // Past data is still included under 'all'; a future stamp is not.
+      expect(Adapter.withinDateRange(now + 600000, 'all', now)).toBe(false);
+      expect(Adapter.withinDateRange(now - 3650 * 86400000, 'all', now)).toBe(true);
       expect(Adapter.withinDateRange('2026-11-20', '30d', Date.UTC(2026, 10, 20, 0, 0, 0))).toBe(true);
     });
 
@@ -175,7 +179,10 @@ describe('Bug Sweep Wave 9 (2026-11-20) — 61 Fixes Regression Suite', () => {
       expect((shareSrc.match(/importMailboxConfig\(file\)/g) || []).length).toBeGreaterThanOrEqual(2);
       // #10 Update notice includes Connect & self-test button
       expect(shareSrc).toContain('mailbox.reconnect_after_update');
-      expect(shareSrc).toMatch(/String\(mbUrlInput \|\| ['"]['"]\)\.trim\(\) === String\(mbConfig\.url \|\| ['"]['"]\)\.trim\(\)/);
+      // The update notice's Connect & self-test refills an empty URL box from the
+      // saved config, and the host handler falls back to mbConfig.url as well.
+      expect(shareSrc).toContain("if (typeof setMbUrlInput === 'function' && mbConfig && mbConfig.url && !String(mbUrlInput || '').trim()) {");
+      expect(readSrc('host_handlers_source.jsx')).toContain("__d._alloCleanMailboxUrl(__d.mbUrlInput || __d.mbConfig?.url || '')");
 
       const liveSrc = readSrc('view_live_lesson_run_module.js');
       // #9 sendDebriefFinding slices up to 250 and handles pendingConfirmation

@@ -316,13 +316,13 @@ window.SelHub = window.SelHub || {
       script: __alloT('sel.crisiscompanion.crisis_resources.namimaine.script', 'Good for non-immediate questions: "How do I help my friend find a therapist?" or "Where do families go for support?" Also: "Does our school host Ending the Silence?"')
     },
 
-    // ── SCHOOL-BASED (works at every public school in the US) ──
+    // ── SCHOOL-BASED (most US public schools have one) ──
     {
       id: 'school', group: 'school',
       label: __alloT('sel.crisiscompanion.crisis_resources.school.label', 'Your school counselor or school psychologist'),
       contact: __alloT('sel.crisiscompanion.crisis_resources.school.contact', 'Walk in, send a note, or ask any teacher to take you'),
       url: null,
-      who: __alloT('sel.crisiscompanion.res_school_who', 'Every public school in the U.S. has trained counselors; most middle and high schools also have a school psychologist'),
+      who: __alloT('sel.crisiscompanion.res_school_who', 'Most public schools have a school counselor, and many share a school psychologist, social worker or nurse. If yours has none, any teacher or the principal can connect you to help'),
       what: __alloT('sel.crisiscompanion.res_school_what', 'They are trained for this. They are bound by confidentiality except for safety. They can connect to outside care, talk to parents with you, and stay with you through it.'),
       script: __alloT('sel.crisiscompanion.crisis_resources.school.script', 'You can say: "I\'m worried about my friend." If you can\'t say it out loud, write it on a sticky note and hand it to them.')
     }
@@ -333,9 +333,9 @@ window.SelHub = window.SelHub || {
   function _selBuild_RESOURCE_GROUPS() { return [
     { id: 'national',      label: __alloT('sel.crisiscompanion.resource_groups.national.label', 'Works anywhere in the U.S.'), desc: __alloT('sel.crisiscompanion.resource_groups.national.desc', 'These four are the universal backbone. Memorize 988.') },
     { id: 'lookup',        label: __alloT('sel.crisiscompanion.resource_groups.lookup.label', 'Find your local help (U.S.)'), desc: __alloT('sel.crisiscompanion.resource_groups.lookup.desc', 'Directory lookups that route you to your specific area\'s services. Useful for ongoing care beyond the crisis call.') },
-    { id: 'international', label: __alloT('sel.crisiscompanion.resource_groups.international.label', 'Outside the U.S.?'), desc: __alloT('sel.crisiscompanion.resource_groups.international.desc', '988, 211, Trevor, and SAMHSA are U.S.-only. These directories cover the rest of the world.') },
+    { id: 'international', label: __alloT('sel.crisiscompanion.resource_groups.international.label', 'Outside the U.S.?'), desc: __alloT('sel.crisiscompanion.resource_groups.international.desc', 'The U.S. services above may not work where you are (Canada has its own 988 and 211). These directories cover the rest of the world.') },
     { id: 'maine',         label: __alloT('sel.crisiscompanion.resource_groups.maine.label', 'Maine partners (named local agencies)'), desc: __alloT('sel.crisiscompanion.resource_groups.maine.desc', 'Specifically named because King Middle and Portland Public Schools are this tool\'s pilot context. If you\'re elsewhere, use the directory lookups above to find your equivalents.') },
-    { id: 'school',        label: __alloT('sel.crisiscompanion.resource_groups.school.label', 'School-based help'), desc: __alloT('sel.crisiscompanion.resource_groups.school.desc', 'Often the easiest adult to reach during the school day. Available in every U.S. public school.') }
+    { id: 'school',        label: __alloT('sel.crisiscompanion.resource_groups.school.label', 'School-based help'), desc: __alloT('sel.crisiscompanion.resource_groups.school.desc', 'Often the easiest adult to reach during the school day. Most U.S. public schools have one; if yours does not, any teacher or the principal can connect you to help.') }
   ]; }
   var RESOURCE_GROUPS = _selBuild_RESOURCE_GROUPS();
 
@@ -482,7 +482,7 @@ window.SelHub = window.SelHub || {
     {
       claim: __alloT('sel.crisiscompanion.myths.0.claim', 'Asking someone if they\'re thinking about suicide will plant the idea.'),
       truth: __alloT('sel.crisiscompanion.myths.0.truth', 'False. Research is consistent and clear: asking does NOT increase risk. It often comes as a relief — the person was waiting for someone to notice. Asking is one of the most protective things a friend can do.'),
-      cite: __alloT('sel.crisiscompanion.myths.0.cite', 'Dazzi et al., Psychological Medicine (2014) meta-analysis · AFSP · QPR Institute · NIMH')
+      cite: __alloT('sel.crisiscompanion.myths.0.cite', 'Dazzi et al., Psychological Medicine (2014) systematic review · AFSP · QPR Institute · NIMH')
     },
     {
       claim: __alloT('sel.crisiscompanion.myths.1.claim', 'People who talk about suicide are just looking for attention. They wouldn\'t actually do anything.'),
@@ -1154,7 +1154,7 @@ window.SelHub = window.SelHub || {
       { id: 'safer',    label: __alloT('sel.crisiscompanion.steps.safer.label', '6. Making my environment safer'),                    color: '#ef4444' }
     ];
     return ccH('div', { style: { padding: 14 } },
-      ccSection('🛡', __alloT('sel.crisiscompanion.ui.my_safety_plan', 'My Safety Plan'), __alloT('sel.crisiscompanion.ui.stanley_brown_2012_strongest_evidence_interventi', 'Stanley + Brown 2012 — strongest-evidence intervention for reducing repeat-attempts. Build YOUR plan when calm.'), '#14b8a6'),
+      ccSection('🛡', __alloT('sel.crisiscompanion.ui.my_safety_plan', 'My Safety Plan'), __alloT('sel.crisiscompanion.ui.stanley_brown_2012_strongest_evidence_interventi', 'Stanley + Brown 2012. A 2018 JAMA Psychiatry study linked safety planning with follow-up to fewer later crises. Build YOUR plan when calm.'), '#14b8a6'),
       ccCrisisBanner(),
       _ccEphemeralSolo ? ccH('div', {
         id: 'cc-kit-shared-device-privacy-banner',
@@ -1179,7 +1179,7 @@ window.SelHub = window.SelHub || {
       ),
       ccH('div', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
         ccH('strong', { style: { color: '#14b8a6' } }, __alloT('sel.crisiscompanion.ui.why_this_works', '🎓 Why this works: ')),
-        __alloT('sel.crisiscompanion.ui.stanley_brown_2012_jama_psychiatry_the', 'Stanley + Brown 2012, JAMA Psychiatry. The act of writing this plan when calm makes it accessible during crisis. Share with someone you trust — counselor, parent, friend.')
+        __alloT('sel.crisiscompanion.ui.stanley_brown_2012_jama_psychiatry_the', 'Stanley + Brown 2012, Cognitive and Behavioral Practice. The act of writing this plan when calm makes it accessible during crisis. Share with someone you trust — counselor, parent, friend.')
       )
     );
   }
@@ -2430,7 +2430,7 @@ window.SelHub = window.SelHub || {
               __alloT('sel.crisiscompanion.ui.are_you_thinking_about_hurting_yourself_2', '"Are you thinking about hurting yourself?" · "Are you having thoughts of suicide?" · "Are you thinking about ending your life?"')),
             h('div', { style: { background: _ccC('#eff6ff'), border: '1px solid #bfdbfe', padding: '10px 12px', borderRadius: '8px', fontSize: '13px', color: _ccC('#1e40af'), lineHeight: 1.7 } },
               h('strong', null, __alloT('sel.crisiscompanion.ui.the_most_cited_barrier_to_asking', '🔬 The most-cited barrier to asking is wrong: ')),
-              __alloT('sel.crisiscompanion.ui.asking_does_not_plant_the_idea', 'Asking does NOT plant the idea. Multiple meta-analyses (Dazzi et al., 2014, Psychological Medicine) and decades of research from AFSP, NIMH, and QPR Institute confirm: asking directly is protective. It often comes as a relief — the person was waiting for someone to notice.'))
+              __alloT('sel.crisiscompanion.ui.asking_does_not_plant_the_idea', 'Asking does NOT plant the idea. A systematic review (Dazzi et al., 2014, Psychological Medicine) and a later meta-analysis (DeCou & Schumann, 2018) found that asking directly does not increase risk. It often comes as a relief — the person was waiting for someone to notice.'))
           ),
           // P
           h('div', { style: { background: _ccC('#fff'), border: '2px solid ' + TEAL_BORDER, borderLeft: '6px solid ' + TEAL, borderRadius: '12px', padding: '16px', marginBottom: '12px' } },

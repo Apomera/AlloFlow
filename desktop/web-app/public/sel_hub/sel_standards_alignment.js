@@ -887,7 +887,7 @@
       howl: [{ area: 'Habits of Mind', note: 'metacognitive awareness of the choice point' }],
       other: [
         { framework: 'CBT', area: 'Cognitive Behavioral Therapy for anger (Beck, Novaco, Deffenbacher)' },
-        { framework: 'Coping Power Program', area: 'Lochman adolescent group-based intervention' },
+        { framework: 'Coping Power Program', area: 'Lochman & Wells pre-adolescent group-based intervention' },
         { framework: 'MTSS', area: 'Tier 1 universal psychoeducation; Tier 2/3 targeted aggression intervention' }
       ],
       crewPrompt: 'Each student names ONE recent trigger and ONE body sign they noticed. Practice the choice-point language as group vocabulary. No incident-reporting; just the framework.',
@@ -933,7 +933,7 @@
         { framework: 'Body Appreciation', area: 'Tylka and Wood-Barcalow framework' },
         { framework: 'Intuitive Eating', area: 'Tribole and Resch anti-diet framework' },
         { framework: 'Health at Every Size', area: 'ASDAH weight-inclusive framework' },
-        { framework: 'NEDA', area: 'Eating disorder education and helpline referral' },
+        { framework: 'NEDA', area: 'Eating disorder education; refers students to current eating-disorder support lines' },
         { framework: 'MTSS', area: 'Tier 1 universal media literacy; clinical eating disorder treatment is Tier 3' }
       ],
       crewPrompt: 'Group activity: each student names one specific thing their body DID for them this week (not how it looked). The functional appreciation frame.',
@@ -1094,7 +1094,7 @@
       ],
       howl: [{ area: 'Habits of Mind', note: 'integrating loss into self-understanding' }],
       other: [
-        { framework: 'Grief Counseling', area: 'Worden\'s Tasks of Mourning (1991, 2018 4th ed.)' },
+        { framework: 'Grief Counseling', area: 'Worden\'s Tasks of Mourning (1982; 5th ed. 2018)' },
         { framework: 'Grief Counseling', area: 'Dual Process Model (Stroebe and Schut, 1999)' },
         { framework: 'Grief Counseling', area: 'Ambiguous Loss framework (Boss, 1999)' },
         { framework: 'MTSS', area: 'Tier 2 / Tier 3, often paired with a counselor' }
@@ -1164,7 +1164,7 @@
       other: [
         { framework: 'Holland RIASEC', area: 'Vocational interest framework (Holland, 1959-1997)' },
         { framework: 'O*NET', area: 'US Department of Labor career database; Interest Profiler validated assessment' },
-        { framework: 'Career Clusters', area: 'US Department of Education 16-cluster framework; CTE pathway alignment' },
+        { framework: 'Career Clusters', area: 'National Career Clusters framework (16 clusters; a 2024 update regroups them into 14); CTE pathway alignment' },
         { framework: 'IDEA / 504', area: 'Transition planning (especially for students 14+ with IEPs)' }
       ],
       crewPrompt: 'Each student shares their Holland code + one career they want to know more about. Group up by Cluster for a 5-minute "what would you ask someone in this field" brainstorm.',

@@ -64,9 +64,12 @@ describe('self-hosted Harper 2.4.0 runtime', () => {
   it('uses one pinned AlloFlow-hosted WASM request and never references jsDelivr for Harper', () => {
     for (const sourcePath of sourceFiles) {
       const source = readFileSync(sourcePath, 'utf8');
-      expect(source).toContain("const assetRoot = 'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0'");
-      expect(source).toContain("_imp(assetRoot + '/index.js')");
-      expect(source).toContain("createBinaryModuleFromUrl(assetRoot + '/harper_wasm_full_bg.wasm', 'full')");
+      // Same-origin vendor copy first (required on desktop), then the AlloFlow CDN copy.
+      expect(source).toContain("new URL('vendor/harper/2.4.0', window.location.href)");
+      expect(source).toContain("'https://alloflow-cdn.pages.dev/vendor/harper/2.4.0'");
+      expect(source).toMatch(/_imp\((?:assetRoot|candidate) \+ '\/index\.js'\)/);
+      expect(source).toMatch(/createBinaryModuleFromUrl\((?:assetRoot|activeRoot) \+ '\/harper_wasm_full_bg\.wasm', 'full'\)/);
+      expect((source.match(/harper_wasm_full_bg\.wasm/g) || []).length).toBe(1);
       expect(source).not.toContain('cdn.jsdelivr.net/npm/harper.js');
       expect(source).not.toContain("assetRoot + '/harper_wasm_bg.wasm'");
       expect(source).toContain('~18 MB');

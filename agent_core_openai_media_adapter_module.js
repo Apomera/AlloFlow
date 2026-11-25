@@ -43,7 +43,7 @@
   }
 
   function defaultBase64ToBytes(base64) {
-    if (typeof base64 !== 'string') {
+    if (typeof base64 !== 'string' || base64.length > MAX_BASE64_CHARS * 2) {
       throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.');
     }
     var cleaned = base64.replace(/\s+/g, '');
@@ -87,14 +87,15 @@
     var FormDataCtor = opts.FormData || (typeof FormData !== 'undefined' ? FormData : null);
     var BlobCtor = opts.Blob || (typeof Blob !== 'undefined' ? Blob : null);
     var base64ToBytes = typeof opts.base64ToBytes === 'function' ? opts.base64ToBytes : defaultBase64ToBytes;
-    var model = opts.model || 'gpt-image-2';
+    var licenseDeclaration = typeof opts.licenseDeclaration === 'string' ? opts.licenseDeclaration : '';
+    var model = opts.model === undefined ? 'gpt-image-2' : opts.model;
 
     if (!contracts || typeof contracts.validateMediaRequest !== 'function') throw new Error('Media contracts are required');
     if (!assetStore || typeof assetStore.importAsset !== 'function' || typeof assetStore.readBytesForAdapter !== 'function') throw new Error('Managed asset store is required');
     if (typeof fetchAuthorized !== 'function') throw new Error('Runtime fetchAuthorized is required');
     if (typeof authorizeExecution !== 'function') throw new Error('Runtime authorizeExecution is required');
     if (typeof estimateCost !== 'function' || typeof calculateActualCost !== 'function') throw new Error('Cost estimation and accounting functions are required');
-    if (!MODEL_RE.test(model)) throw new Error('Only GPT Image 2 or a pinned GPT Image 2 snapshot is allowed');
+    if (typeof model !== 'string' || !MODEL_RE.test(model)) throw new Error('Only GPT Image 2 or a pinned GPT Image 2 snapshot is allowed');
 
     function normalizeRequest(requestInput) {
       var report = contracts.validateMediaRequest(requestInput);
@@ -127,11 +128,16 @@
       var quality = own(QUALITY_MAP, request.output.quality) ? QUALITY_MAP[request.output.quality] : 'medium';
       var outputFormat = own(MIME_TO_FORMAT, request.output.mimeType) ? MIME_TO_FORMAT[request.output.mimeType] : 'png';
       var inputImageCount = request.operation === 'edit' ? 1 + (Array.isArray(request.referenceAssets) ? request.referenceAssets.length : 0) : 0;
-      var estimate = estimateCost({
-        provider: 'openai-api', model: model, operation: request.operation,
-        size: size, quality: quality, outputFormat: outputFormat,
-        inputImageCount: inputImageCount, operations: 1
-      });
+      var estimate;
+      try {
+        estimate = estimateCost({
+          provider: 'openai-api', model: model, operation: request.operation,
+          size: size, quality: quality, outputFormat: outputFormat,
+          inputImageCount: inputImageCount, operations: 1
+        });
+      } catch (_) {
+        estimate = null;
+      }
       if (!estimate || !Number.isFinite(estimate.upperBoundUsd) || estimate.upperBoundUsd < 0) {
         return { ready: false, code: 'cost-estimate-required', request: request, estimate: null, provider: null };
       }
@@ -150,6 +156,12 @@
 
     async function parseResponse(response) {
       if (!response || response.ok !== true) {
+        try {
+          if (response && response.body && typeof response.body.cancel === 'function') {
+            var cancelPromise = response.body.cancel();
+            if (cancelPromise && typeof cancelPromise.catch === 'function') cancelPromise.catch(function () {});
+          }
+        } catch (_) {}
         var status = response && Number.isInteger(response.status) ? response.status : 0;
         throw adapterError('openai-http-error', 'OpenAI image request failed with HTTP status ' + status + '.');
       }
@@ -158,7 +170,11 @@
       catch (_) { throw adapterError('openai-invalid-response', 'OpenAI returned an unreadable image response.'); }
       var base64 = data && data.data && data.data[0] && data.data[0].b64_json;
       if (typeof base64 !== 'string' || !base64) throw adapterError('openai-missing-image', 'OpenAI did not return image data.');
-      return { bytes: base64ToBytes(base64), usage: sanitizeUsage(data.usage), rawUsage: data.usage || {} };
+      var decoded = base64ToBytes(base64);
+      if (!(decoded instanceof Uint8Array) || !decoded.byteLength) {
+        throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.');
+      }
+      return { bytes: decoded, usage: sanitizeUsage(data.usage), rawUsage: data.usage || {} };
     }
 
     function formAppendImage(form, field, bytes, mimeType, filename) {
@@ -216,20 +232,39 @@
     }
 
     async function execute(requestInput) {
-      if (typeof window !== 'undefined' && (
-        window.__alloOfflineOnly === true ||
-        window.__alloQrStudentMode === true ||
-        window._alloQrBlocked === true ||
-        window.__alloStudentAiDisabled === true ||
-        window.__alloAiSecretsLocked === true
-      )) {
-        throw adapterError('execution-not-authorized', 'The runtime did not authorize this metered media operation.');
+      if (typeof window === 'object' && window) {
+        if (
+          window._isDesktopBundledApp === true ||
+          window.__alloOfflineOnly === true ||
+          window.__alloQrStudentMode === true ||
+          Boolean(window.__alloQrStudentMode) ||
+          window._alloQrBlocked === true ||
+          window.__alloStudentAiDisabled === true ||
+          window.__alloStudentView === true ||
+          window.__alloAiSecretsLocked === true ||
+          (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
+        ) {
+          throw adapterError('execution-not-authorized', 'The runtime did not authorize this metered media operation.');
+        }
+        if (typeof window.__alloAiUsable === 'function') {
+          var aiAllowed = false;
+          try { aiAllowed = !!window.__alloAiUsable('images'); } catch (_) { aiAllowed = false; }
+          if (!aiAllowed) {
+            throw adapterError('execution-not-authorized', 'The runtime did not authorize this metered media operation.');
+          }
+        }
       }
       var plan = buildPlan(requestInput);
       if (!plan.ready) throw adapterError(plan.code, 'OpenAI media preflight did not authorize execution.');
+      if (plan.request.accessibility && plan.request.accessibility.altTextRequired && typeof createAltText !== 'function') {
+        throw adapterError('alt-text-provider-required', 'An approved alt-text provider is required.');
+      }
       var authorized = false;
       try {
-        authorized = authorizeExecution({ request: plan.request, estimate: plan.estimate, provider: plan.provider }) === true;
+        var authReq = JSON.parse(JSON.stringify(plan.request));
+        var authEst = Object.assign({}, plan.estimate);
+        var authProv = Object.assign({}, plan.provider);
+        authorized = authorizeExecution({ request: authReq, estimate: authEst, provider: authProv }) === true;
       } catch (_) {
         authorized = false;
       }
@@ -238,11 +273,16 @@
       }
       var response = plan.request.operation === 'edit' ? await callEdit(plan) : await callGeneration(plan);
       var parsed = await parseResponse(response);
-      var actualCostUsd = calculateActualCost({
-        provider: 'openai-api', model: model, operation: plan.request.operation,
-        size: plan.api.size, quality: plan.api.quality,
-        inputImageCount: plan.api.inputImageCount, usage: parsed.rawUsage
-      });
+      var actualCostUsd;
+      try {
+        actualCostUsd = calculateActualCost({
+          provider: 'openai-api', model: model, operation: plan.request.operation,
+          size: plan.api.size, quality: plan.api.quality,
+          inputImageCount: plan.api.inputImageCount, usage: parsed.rawUsage
+        });
+      } catch (_) {
+        actualCostUsd = NaN;
+      }
       if (!Number.isFinite(actualCostUsd) || actualCostUsd < 0) {
         throw adapterError('cost-accounting-failed', 'Actual OpenAI media cost could not be calculated.');
       }
@@ -269,7 +309,7 @@
         height: dimensions.height,
         altText: altText,
         sourceDeclaration: 'Generated or edited with OpenAI ' + model,
-        licenseDeclaration: typeof opts.licenseDeclaration === 'string' ? opts.licenseDeclaration : ''
+        licenseDeclaration: licenseDeclaration
       });
       return {
         schemaVersion: '1.0',
@@ -293,7 +333,7 @@
   });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.AgentCoreOpenAIMediaAdapter = API;
   }

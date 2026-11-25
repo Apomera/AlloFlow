@@ -71,6 +71,13 @@
 //   browser has none, over a storage event, which carries no word (word '' and action '': read again).
 //   The word is never written to local storage.
 //
+// MEANINGS (2026-11-23). A recording of a meaning (the vocabulary maker's text, spaces squeezed) is kept in the media
+// store under 'meaning ' + the first 16 hex digits of sha256("alloflow-meaning|" + text): the key of the meaning
+// recordings made ahead of time (dev-tools/build_packets_meaning_audio.cjs). Needs crypto.subtle; without it the key is ''.
+//   meaningKey(text)          the key, or ''.
+//   getMeaningClips(texts)    { text: clip } for the texts that have one ({} on any trouble).
+//   putMeaningClip(text, clip)  as putMedia(key, { clip }); clip null removes it. Made on packets-voice.html.
+//
 // TWO HELPERS the pages share:
 //   resizeToDataUri(source, maxSide)   source is a File or Blob, or an image, canvas or bitmap that is
 //       already loaded. Resolves to a data: address: PNG, or JPEG for a photo, at most maxSide pixels on
@@ -875,6 +882,38 @@
       }).then(function (entry) { if (!silent) announce('', entry ? 'put' : 'remove'); if (entry) keepAsked(); return entry; }, function (error) { throw storageError(error); });
     }
     function putMedia(rawKey, patch) { return putMediaOne(rawKey, patch, false); }
+
+    // Recordings of meanings (2026-11-23), in the media store under meaningKey(text). See MEANINGS in the contract.
+    var squeezeText = function (t) { return typeof t === 'string' ? t.replace(/\s+/g, ' ').trim() : ''; };
+    function meaningKey(text) {
+      var t = squeezeText(text), subtle = null;
+      try { subtle = home.crypto && home.crypto.subtle; } catch (_) { subtle = null; }
+      if (!t || t.length > 600 || !subtle || typeof subtle.digest !== 'function' || typeof home.TextEncoder !== 'function') return Promise.resolve('');
+      return Promise.resolve().then(function () { return subtle.digest('SHA-256', new home.TextEncoder().encode('alloflow-meaning|' + t)); }).then(function (d) {
+        var b = new Uint8Array(d), s = '';
+        for (var i = 0; i < 8; i++) s += (b[i] < 16 ? '0' : '') + b[i].toString(16);
+        return 'meaning ' + s;
+      }, function () { return ''; });
+    }
+    function getMeaningClips(texts) {
+      var list = [];
+      (Array.isArray(texts) ? texts : []).forEach(function (t) { var k = squeezeText(t); if (k && list.indexOf(k) < 0) list.push(k); });
+      if (!list.length) return Promise.resolve({});
+      return Promise.all(list.map(meaningKey)).then(function (keys) {
+        var want = keys.filter(Boolean);
+        return (want.length ? getManyMedia(want) : Promise.resolve({})).then(function (found) {
+          var out = {};
+          list.forEach(function (t, i) { var e = keys[i] ? found[keys[i]] : null; if (e && e.clip) out[t] = e.clip; });
+          return out;
+        });
+      }).then(null, function () { return {}; });
+    }
+    function putMeaningClip(text, clip) {
+      return meaningKey(text).then(function (key) {
+        if (!key) throw fail('bad_word', 'This meaning cannot be kept in this browser.');
+        return putMediaOne(key, { clip: clip }, false);
+      });
+    }
     function removeMedia(rawKey) {
       var mKey = normalizeMediaKey(rawKey);
       if (!mKey) return Promise.resolve(false);
@@ -890,7 +929,8 @@
     }
 
     return { available: available, get: get, getMany: getMany, put: put, remove: remove, list: list, clear: clear, usage: usage, exportAll: exportAll, importAll: importAll, onChange: onChange,
-      getMedia: getMedia, getManyMedia: getManyMedia, putMedia: putMedia, removeMedia: removeMedia };
+      getMedia: getMedia, getManyMedia: getManyMedia, putMedia: putMedia, removeMedia: removeMedia,
+      meaningKey: meaningKey, getMeaningClips: getMeaningClips, putMeaningClip: putMeaningClip };
   }
 
   var api = create(root);

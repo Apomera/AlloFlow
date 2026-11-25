@@ -227,7 +227,7 @@ describe('finding a picture for a lesson', () => {
     const single = host.querySelectorAll('button[aria-label="Find a symbol or photo"]').length;
     act(() => root.render(React.createElement(ImageView, { ...props(panels, vi.fn()), VisualPanelGrid: () => React.createElement('div', { 'data-panel-grid': '' }) })));
     expect(host.querySelector('[data-panel-grid]'), 'multi-panel view').toBeTruthy();
-    expect(single).toBe(2); // on the picture and in the toolbar
+    expect(single).toBe(1); // only in the toolbar: the copy laid over the picture was a duplicate
     expect(host.querySelectorAll('button[aria-label="Find a symbol or photo"]').length).toBe(0);
   });
 

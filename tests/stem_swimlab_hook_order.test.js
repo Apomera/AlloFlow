@@ -79,7 +79,9 @@ const noop = () => {};
 const VIEWS = [
   'menu', 'howSwimming', 'coldShock', 'ripCurrents', 'reachThrow', 'pfd',
   'iceSafety', 'hypothermia', 'drainEntrap', 'autismWater', 'cumulative',
-  'askLifeguard', 'resources', 'strokeHunt', 'menu',
+  'askLifeguard', 'resources', 'strokeHunt',
+  // Practice labs added 2026-11-23: hook-free like the rest, state in toolData.
+  'ripLab', 'coldLab', 'rescueLab', 'floatLab', 'menu',
 ];
 
 // Stateful host that owns toolData the way StemPluginBridge does, and exposes

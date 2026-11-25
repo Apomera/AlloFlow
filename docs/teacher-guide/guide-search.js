@@ -44,19 +44,34 @@
     return normalize(record.title + ' ' + record.chapter + ' ' + record.text);
   }
 
+  function tokenIndex(haystack, token) {
+    if (!token) return -1;
+    var idx = haystack.indexOf(token);
+    if (idx >= 0) return idx;
+    if (token.length >= 5 && token.slice(-2) === 'es') {
+      idx = haystack.indexOf(token.slice(0, -2));
+      if (idx >= 0) return idx;
+    }
+    if (token.length >= 4 && token.slice(-1) === 's' && token.slice(-2) !== 'ss') {
+      idx = haystack.indexOf(token.slice(0, -1));
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  }
+
   function scoreRecord(record, tokens) {
     var title = normalize(record.title);
     var chapter = normalize(record.chapter);
     var body = normalize(record.text);
     var haystack = title + ' ' + chapter + ' ' + body;
-    if (!tokens.every(function (token) { return haystack.indexOf(token) >= 0; })) return -1;
+    if (!tokens.every(function (token) { return tokenIndex(haystack, token) >= 0; })) return -1;
 
     return tokens.reduce(function (score, token) {
       if (title === token) return score + 18;
       if (title.indexOf(token) === 0) return score + 12;
-      if (title.indexOf(token) >= 0) return score + 8;
-      if (chapter.indexOf(token) >= 0) return score + 4;
-      if (body.indexOf(token) >= 0) return score + 1;
+      if (tokenIndex(title, token) >= 0) return score + 8;
+      if (tokenIndex(chapter, token) >= 0) return score + 4;
+      if (tokenIndex(body, token) >= 0) return score + 1;
       return score;
     }, 0);
   }
@@ -83,7 +98,7 @@
     var normalizedText = normalize(text);
     var tokens = tokenize(query);
     var firstIndex = tokens.reduce(function (best, token) {
-      var index = normalizedText.indexOf(token);
+      var index = tokenIndex(normalizedText, token);
       if (index < 0) return best;
       return best < 0 || index < best ? index : best;
     }, -1);
@@ -216,6 +231,7 @@
 
       input.addEventListener('input', function () {
         render(panel, records, input.value);
+        syncLocation(input.value);
       });
 
       input.addEventListener('keydown', function (event) {

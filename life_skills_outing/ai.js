@@ -2,9 +2,9 @@
 (function (root, factory) {
   'use strict';
   var api = factory();
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.AlloOutingAI = api;
-}(typeof window !== 'undefined' ? window : globalThis, function () {
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  else if (root && typeof root === 'object') root.AlloOutingAI = api;
+}(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null, function () {
   'use strict';
   var CHANNEL = 'allo-life-outing-ai-v1';
   var MAX_TEXT = 700;
@@ -64,8 +64,12 @@
     // No prose recovery, code-fence stripping, or state-bearing fields at this boundary.
     if (typeof raw !== 'string' || raw.length > 4000) return null;
     var parsed;
-    try { parsed = JSON.parse(raw); } catch (_) { return null; }
-    if (!keysOnly(parsed, ['text']) || !safeText(parsed.text, MAX_TEXT)) return null;
+    try {
+      parsed = JSON.parse(raw, function (k, v) {
+        return k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v;
+      });
+    } catch (_) { return null; }
+    if (!keysOnly(parsed, ['text']) || !Object.prototype.hasOwnProperty.call(parsed, 'text') || !safeText(parsed.text, MAX_TEXT)) return null;
     if (/<[^>]*>|https?:\/\/|\[[^\]]*\]\(/i.test(parsed.text)) return null;
     return parsed.text.trim();
   }
@@ -89,11 +93,31 @@
       });
   }
 
+  function makeAbortController() {
+    if (typeof AbortController === 'function') return new AbortController();
+    var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
+    return ctrl;
+  }
+
+  function hostAiAllowed(win, provider) {
+    if (!win || typeof win !== 'object') return true;
+    try {
+      if (win.__alloStudentAiDisabled === true || win.__alloAiSecretsLocked === true || win.__alloQrStudentMode === true) return false;
+      if (provider && provider._alloQrBlocked) return false;
+      if (win.ALLOFLOW_MANAGED_AI_POLICY && win.ALLOFLOW_MANAGED_AI_POLICY.allowAi === false) return false;
+      if (win.StudentPolicy && typeof win.StudentPolicy.isAiAllowed === 'function' && !win.StudentPolicy.isAiAllowed()) return false;
+      if (typeof win.__alloAiUsable === 'function' && !win.__alloAiUsable('text', provider)) return false;
+    } catch (_) {
+      return false;
+    }
+    return true;
+  }
+
   function createHost(options) {
-    options = options || {};
-    var win = options.window || (typeof window !== 'undefined' ? window : null);
+    options = options && typeof options === 'object' ? options : {};
+    var win = options.window && typeof options.window === 'object' ? options.window : (typeof window === 'object' && window !== null ? window : null);
     var source = options.source, origin = options.origin, token = options.token;
-    var live = !!win && !!source && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
+    var live = !!win && typeof win.addEventListener === 'function' && !!source && typeof source.postMessage === 'function' && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
     var provider = typeof options.call === 'function' ? options.call : null;
     var timeoutMs = timeoutValue(options.timeoutMs);
     var runs = new Map(), active = null, providerBusy = null, destroyed = false;
@@ -110,17 +134,18 @@
       if (!operation || operation.settled) return;
       operation.settled = true;
       clearTimeout(operation.timer);
-      operation.controller.abort();
       if (active === operation) active = null;
+      try { if (operation.controller && typeof operation.controller.abort === 'function') operation.controller.abort(); } catch (_) {}
       if (publish !== false) respond(operation.request, response);
     }
     function handle(event) {
+      if (!event || typeof event !== 'object') return;
       var data = event.data;
       if (destroyed || !live || event.source !== source || event.origin !== origin || !record(data) ||
           data.channel !== CHANNEL || data.token !== token) return;
       if (data.type === 'hello') {
         if (!keysOnly(data, ['channel', 'token', 'type', 'requestId']) || !matches(ID, data.requestId)) return;
-        post({ type: 'ready', requestId: data.requestId, available: !!provider });
+        post({ type: 'ready', requestId: data.requestId, available: !!provider && hostAiAllowed(win, provider) });
         return;
       }
       if (data.type === 'cancel') {
@@ -132,7 +157,7 @@
       if (data.type !== 'request' || !keysOnly(data, ['channel', 'token', 'type', 'runId', 'revision', 'requestId', 'payload']) || !owner(data) ||
           !validPayload(data.payload) || data.payload.runId !== data.runId || data.payload.revision !== data.revision) return;
       var payload = data.payload;
-      if (!provider) { respond(data, result(payload)); return; }
+      if (!provider || !hostAiAllowed(win, provider)) { respond(data, result(payload)); return; }
       var state = runs.get(data.runId);
       if (!state) {
         if (runs.size >= 20) { respond(data, result(payload, 'fallback')); return; }
@@ -151,7 +176,7 @@
       // An injected provider may ignore AbortSignal. Keep its physical request locked until it settles.
       if (active || providerBusy || state[payload.kind] >= (payload.kind === 'intro' ? 1 : 3)) { respond(data, result(payload, 'fallback')); return; }
       state[payload.kind] += 1;
-      var operation = { request: data, payload: payload, settled: false, controller: new AbortController(), timer: null };
+      var operation = { request: data, payload: payload, settled: false, controller: makeAbortController(), timer: null };
       active = operation;
       operation.timer = setTimeout(function () { settle(operation, result(payload, 'fallback')); }, timeoutMs);
       Promise.resolve().then(function () {
@@ -173,14 +198,14 @@
       if (destroyed) return;
       if (active) settle(active, result(active.payload, 'fallback'));
       destroyed = true;
-      if (live) win.removeEventListener('message', handle);
+      if (live && typeof win.removeEventListener === 'function') win.removeEventListener('message', handle);
       runs.clear();
     } };
   }
 
   function createClient(options) {
-    options = options || {};
-    var win = options.window || (typeof window !== 'undefined' ? window : null);
+    options = options && typeof options === 'object' ? options : {};
+    var win = options.window && typeof options.window === 'object' ? options.window : (typeof window === 'object' && window !== null ? window : null);
     var token = '', origin = '', source = win && win.opener;
     try {
       var searchStr = (win && win.location && typeof win.location.search === 'string') ? win.location.search : '';
@@ -201,7 +226,7 @@
         win.history.replaceState(null, '', nextUrl || '/');
       }
     } catch (_) { /* Standalone practice remains available. */ }
-    var live = !!win && !!source && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
+    var live = !!win && typeof win.addEventListener === 'function' && !!source && typeof source.postMessage === 'function' && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
     var ready = false, handshaken = false, destroyed = false, pending = null, serial = 0, helloAttempts = 0, helloTimer = null;
     var prefix = Date.now().toString(36) + '-';
     var helloId = prefix + 'hello';
@@ -221,12 +246,15 @@
       if (!operation || operation.settled) return;
       operation.settled = true;
       clearTimeout(operation.timer);
-      if (operation.signal && operation.abort) operation.signal.removeEventListener('abort', operation.abort);
+      if (operation.signal && operation.abort && typeof operation.signal.removeEventListener === 'function') {
+        try { operation.signal.removeEventListener('abort', operation.abort); } catch (_) {}
+      }
       if (cancel) post({ type: 'cancel', runId: operation.payload.runId, revision: operation.payload.revision, requestId: operation.id });
       if (pending === operation) pending = null;
       operation.resolve(response);
     }
     function handle(event) {
+      if (!event || typeof event !== 'object') return;
       var data = event.data;
       if (!live || destroyed || event.source !== source || event.origin !== origin || !record(data) || data.channel !== CHANNEL || data.token !== token) return;
       if (data.type === 'ready') {
@@ -267,9 +295,9 @@
             abort: null, settled: false, timer: null };
           pending = operation;
           operation.timer = setTimeout(function () { finish(operation, result(payload, 'fallback'), true); }, timeoutMs);
-          if (operation.signal) {
+          if (operation.signal && typeof operation.signal.addEventListener === 'function') {
             operation.abort = function () { finish(operation, result(payload, 'fallback'), true); };
-            operation.signal.addEventListener('abort', operation.abort, { once: true });
+            try { operation.signal.addEventListener('abort', operation.abort, { once: true }); } catch (_) {}
           }
           if (!post({ type: 'request', runId: payload.runId, revision: payload.revision, requestId: operation.id, payload: payload }))
             finish(operation, result(payload, 'fallback'));
@@ -280,7 +308,7 @@
         if (pending) finish(pending, result(pending.payload, 'fallback'), true);
         destroyed = true;
         clearTimeout(helloTimer);
-        if (live) win.removeEventListener('message', handle);
+        if (live && typeof win.removeEventListener === 'function') win.removeEventListener('message', handle);
         if (ready) notify(false);
       }
     };

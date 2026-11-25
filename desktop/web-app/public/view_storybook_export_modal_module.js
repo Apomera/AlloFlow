@@ -6,6 +6,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.StorybookExportModal) {
     console.log('[CDN] StorybookExportModal already loaded, skipping');
     return;
@@ -22,11 +23,11 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
     const root = dialogRef.current;
     if (!root || typeof document === "undefined") return void 0;
     const previouslyFocused = document.activeElement;
-    const alloScrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" });
-    const alloScrollLocked = !!document.body;
+    const alloScrollLock = typeof window !== "undefined" ? window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" }) : null;
+    const alloScrollLocked = !!(document.body && alloScrollLock);
     const hiddenSiblings = [];
     if (document.body) {
-      if (++alloScrollLock.count === 1) {
+      if (alloScrollLock && ++alloScrollLock.count === 1) {
         alloScrollLock.prev = document.body.style.overflow;
         document.body.style.overflow = "hidden";
       }
@@ -38,7 +39,8 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
           if (!sibling || sibling === cursor || sibling === root || sibling.contains(root) || seenSiblings.has(sibling)) return;
           const tag = String(sibling.tagName || "").toUpperCase();
           if (tag === "SCRIPT" || tag === "STYLE" || tag === "LINK" || tag === "TEMPLATE") return;
-          if (typeof sibling.matches === "function" && sibling.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
+          const liveSel = '[aria-live], [role="status"], [role="alert"], [data-toast-region]';
+          if (typeof sibling.matches === "function" && sibling.matches(liveSel) || typeof sibling.querySelector === "function" && !!sibling.querySelector(liveSel)) return;
           seenSiblings.add(sibling);
           hiddenSiblings.push({
             node: sibling,
@@ -61,17 +63,17 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
         cursor = parent;
       }
     }
-    const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
+    const trapStack = typeof window !== "undefined" ? window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []) : null;
     const trap = { root };
-    trapStack.push(trap);
-    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    if (trapStack) trapStack.push(trap);
+    const isTopTrap = () => !trapStack || trapStack[trapStack.length - 1] === trap;
     const getFocusable = () => Array.from(root.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
     )).filter((element) => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest("details:not([open])");
       if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
-      if (typeof window.getComputedStyle === "function") {
+      if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
         for (let cur = element; cur && cur !== root; cur = cur.parentElement) {
           const style = window.getComputedStyle(cur);
           if (style && (style.display === "none" || style.visibility === "hidden")) return false;
@@ -84,44 +86,60 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
       if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
       if (event.key === "Escape") {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (!busyRef.current && typeof onCloseRef.current === "function") onCloseRef.current();
         return;
       }
-      if (event.key !== "Tab") return;
+      if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable2 = getFocusable();
       if (!focusable2.length) {
         event.preventDefault();
-        root.focus();
+        try {
+          root.focus();
+        } catch (_) {
+        }
         return;
       }
       const first = focusable2[0];
       const last = focusable2[focusable2.length - 1];
       if (!root.contains(document.activeElement) || document.activeElement === root) {
         event.preventDefault();
-        (event.shiftKey ? last : first).focus();
+        try {
+          (event.shiftKey ? last : first).focus();
+        } catch (_) {
+        }
       } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
-        last.focus();
+        try {
+          last.focus();
+        } catch (_) {
+        }
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        first.focus();
+        try {
+          first.focus();
+        } catch (_) {
+        }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     const focusable = getFocusable();
     const requestedFocus = root.querySelector("[data-autofocus]");
     const initialFocus = requestedFocus && focusable.includes(requestedFocus) ? requestedFocus : focusable[0] || root;
-    initialFocus.focus();
+    try {
+      initialFocus.focus();
+    } catch (_) {
+    }
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      if (alloScrollLocked) {
+      if (alloScrollLocked && alloScrollLock) {
         alloScrollLock.count = Math.max(0, alloScrollLock.count - 1);
         if (alloScrollLock.count === 0 && document.body) document.body.style.overflow = alloScrollLock.prev;
       }
       hiddenSiblings.forEach(({ node, hadAriaHidden, prevAriaHidden, hadInertAttr, prevInertProp }) => {
-        if (!node) return;
+        if (!node || !node.isConnected) return;
         if (!hadAriaHidden || prevAriaHidden === null) node.removeAttribute("aria-hidden");
         else if (prevAriaHidden !== "true") node.setAttribute("aria-hidden", prevAriaHidden);
         if (!prevInertProp) {
@@ -138,10 +156,15 @@ function _useStorybookDialogFocus(dialogRef, onClose, busy) {
         }
       });
       const wasTopTrap = isTopTrap();
-      const trapIndex = trapStack.indexOf(trap);
-      if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      if (trapStack) {
+        const trapIndex = trapStack.indexOf(trap);
+        if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
+      }
       if (wasTopTrap && previouslyFocused && previouslyFocused !== document.body && previouslyFocused !== document.documentElement && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
-        previouslyFocused.focus();
+        try {
+          previouslyFocused.focus();
+        } catch (_) {
+        }
       }
     };
   }, [dialogRef]);
@@ -151,11 +174,16 @@ function StorybookExportModal({
   handleSetShowStorybookExportModalToFalse,
   isProcessing,
   setShowStorybookExportModal,
-  t
-}) {
-  const BookOpen = window.AlloIcons && window.AlloIcons.BookOpen || window.BookOpen || (() => null);
-  const ImageIcon = window.AlloIcons && window.AlloIcons.ImageIcon || window.ImageIcon || (() => null);
-  const Type = window.AlloIcons && window.AlloIcons.Type || window.Type || (() => null);
+  t: _rawT
+} = {}) {
+  const t = typeof _rawT === "function" ? _rawT : ((k) => k);
+  const closeModal = typeof handleSetShowStorybookExportModalToFalse === "function" ? handleSetShowStorybookExportModalToFalse : (() => {
+  });
+  const setModalOpen = typeof setShowStorybookExportModal === "function" ? setShowStorybookExportModal : (() => {
+  });
+  const BookOpen = typeof window !== "undefined" && (window.AlloIcons && window.AlloIcons.BookOpen || window.BookOpen) || (() => null);
+  const ImageIcon = typeof window !== "undefined" && (window.AlloIcons && window.AlloIcons.ImageIcon || window.ImageIcon) || (() => null);
+  const Type = typeof window !== "undefined" && (window.AlloIcons && window.AlloIcons.Type || window.Type) || (() => null);
   const [includeNarration, setIncludeNarration] = React.useState(false);
   const [localProcessing, setLocalProcessing] = React.useState(false);
   const [progress, setProgress] = React.useState(null);
@@ -169,12 +197,15 @@ function StorybookExportModal({
   }, []);
   React.useEffect(() => {
     if (busy && cancelBtnRef.current && typeof cancelBtnRef.current.focus === "function") {
-      cancelBtnRef.current.focus();
+      try {
+        cancelBtnRef.current.focus();
+      } catch (_) {
+      }
     }
   }, [busy]);
-  _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
+  _useStorybookDialogFocus(dialogRef, closeModal, busy);
   const runExport = async (includeImages) => {
-    if (busy || requestRef.current) return;
+    if (busy || requestRef.current || typeof handleExportStorybook !== "function") return;
     const controller = new AbortController();
     requestRef.current = controller;
     setLocalProcessing(true);
@@ -193,7 +224,7 @@ function StorybookExportModal({
       if (controller.signal.aborted) {
         setProgress({ phase: "cancelled", message: "Export stopped. Completed narration is kept for your next attempt." });
       } else if (result !== false) {
-        setShowStorybookExportModal(false);
+        setModalOpen(false);
       } else {
         setProgress({ phase: "error", completed: 0, total: 0, message: "Storybook export could not be completed." });
       }
@@ -206,8 +237,10 @@ function StorybookExportModal({
       }
     }
   };
-  const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
-  const progressCompleted = progressTotal ? Math.min(Number(progress.completed) || 0, progressTotal) : 0;
+  const _rawTotal = progress ? Number(progress.total) : 0;
+  const progressTotal = Number.isFinite(_rawTotal) && _rawTotal > 0 ? Math.floor(_rawTotal) : 0;
+  const _rawCompleted = progress ? Number(progress.completed) : 0;
+  const progressCompleted = progressTotal ? Math.max(0, Math.min(Number.isFinite(_rawCompleted) ? Math.floor(_rawCompleted) : 0, progressTotal)) : 0;
   const progressPercent = progressTotal > 0 ? Math.round(progressCompleted / progressTotal * 100) : 0;
   const progressMessage = progress && progress.message ? progress.message : busy ? "Preparing your Storybook\u2026" : "";
   const progressPhase = progress && progress.phase ? progress.phase : busy ? "story" : "";
@@ -226,7 +259,7 @@ function StorybookExportModal({
           pointerStartedInsideRef.current = false;
           return;
         }
-        if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
+        if (!busy && event.target === event.currentTarget) closeModal();
       }
     },
     /* @__PURE__ */ React.createElement(
@@ -294,7 +327,7 @@ function StorybookExportModal({
             if (requestRef.current) {
               requestRef.current.abort();
               setProgress({ phase: "stopping", message: "Stopping export\u2026 Completed narration will be kept." });
-            } else if (!busy) handleSetShowStorybookExportModalToFalse();
+            } else if (!busy) closeModal();
           },
           disabled: busy && !localProcessing,
           className: "min-h-11 w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 rounded-lg"

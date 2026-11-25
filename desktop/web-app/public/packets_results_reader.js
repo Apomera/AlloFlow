@@ -21,6 +21,10 @@
   var MAX_FILES = 500;               // one drop
   var MAX_ITEMS = 600;               // one result
   var MAX_SESSIONS = 5000;           // one page
+  // 2026-11-23, the note "same_answer" on a check (Aaron's rule, a note only: the score is as counted). At least SAME_MIN
+  // answers given, at least SAME_SHARE of them the same answer, and at least half of those not right (so a check whose right
+  // answers are often the same, as with four ink colors, gets no note when the child was right).
+  var SAME_MIN = 8, SAME_SHARE = 0.8;
   var MIN_GROUP = 5;                 // learners needed before a "middle of this group" is shown
   var MIN_GROUP_HALF = 10;           // learners needed before its "middle half" is shown too (from 5 it moves with one learner)
   var NO_NAME = 'No name typed';
@@ -97,6 +101,57 @@
   var READ_ALONG_STRANDS = [['read_along', 'Read along']];
   var READ_ALONG_ACTIVITIES = {
     read_along: ['Read along', 'read_along'],
+  };
+  var EXTENDED_ACTIVITIES = {
+    concept_sort: ['Concept Sort', OTHER_STRAND[0]],
+    sequence_order: ['Sequencing & Timeline', OTHER_STRAND[0]],
+    tiered_writing: ['Tiered Writing', OTHER_STRAND[0]],
+    choice_board: ['UDL Choice Board', OTHER_STRAND[0]],
+    maze_reading: ['Maze Reading', OTHER_STRAND[0]],
+    manip_base_ten: ['Base-10 Blocks', OTHER_STRAND[0]],
+    manip_fraction_bars: ['Fraction Bars', OTHER_STRAND[0]],
+    manip_number_line: ['Number Line', OTHER_STRAND[0]],
+    manip_balance_scale: ['Balance Scale', OTHER_STRAND[0]],
+    stem_circuit: ['Circuit Lab', OTHER_STRAND[0]],
+    stem_data_explorer: ['Data Explorer Lab', OTHER_STRAND[0]],
+    stem_geometry_grid: ['Geometry Grid Lab', OTHER_STRAND[0]],
+    life_money: ['Making Change & Budgeting', OTHER_STRAND[0]],
+    life_transit: ['Transit & Schedules', OTHER_STRAND[0]],
+    life_kitchen: ['Kitchen & Home Routines', OTHER_STRAND[0]],
+    life_laundry: ['Laundry & Care Sorting', OTHER_STRAND[0]],
+    life_signs: ['Community & Emergency Signs', OTHER_STRAND[0]],
+    aac_board: ['AAC Communication Board', OTHER_STRAND[0]],
+    sel_first_then: ['First-Then & Checklist', OTHER_STRAND[0]],
+    sel_focus_timer: ['Visual Focus Timer', OTHER_STRAND[0]],
+    sel_calm_toolkit: ['Calm-Down Strategy Cards', OTHER_STRAND[0]],
+    sel_udl_reflect: ['UDL Reflection & Goal Check', OTHER_STRAND[0]],
+    compiled_quiz: ['Quiz Activity', OTHER_STRAND[0]],
+    compiled_cloze: ['Fill-in-the-Blank Activity', OTHER_STRAND[0]],
+    branching_adventure: ['Branching Adventure', OTHER_STRAND[0]],
+    anchor_study: ['Anchor Study Guide', OTHER_STRAND[0]],
+    playlist_roadmap: ['Unit Roadmap', OTHER_STRAND[0]],
+  };
+  var EXTENDED_MEASURES = {
+    maze_correct_3m: 'CBM-Maze (3 min)',
+    concept_sort: 'Concept Sort check',
+    sequence_order: 'Sequencing check',
+    manip_base_ten: 'Base-10 Blocks check',
+    manip_fraction_bars: 'Fraction Bars check',
+    manip_number_line: 'Number Line check',
+    manip_balance_scale: 'Balance Scale check',
+    stem_circuit: 'Circuit Lab check',
+    stem_data_explorer: 'Data Explorer check',
+    stem_geometry_grid: 'Geometry Lab check',
+    life_money: 'Money & Budgeting check',
+    life_transit: 'Transit Schedule check',
+    life_kitchen: 'Kitchen Routines check',
+    life_laundry: 'Laundry Sorting check',
+    life_signs: 'Community Signs check',
+    compiled_quiz: 'Quiz check',
+    compiled_cloze: 'Cloze check',
+  };
+  var EXTENDED_MEASURE_UNITS = {
+    maze_correct_3m: 'items_correct',
   };
   // Every group a practice result is counted in, in the order they are shown.
   var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, SYMBOL_STRANDS, READ_ALONG_STRANDS, [OTHER_STRAND]);
@@ -291,6 +346,7 @@
     if (own(VOCAB_ACTIVITIES, id)) return VOCAB_ACTIVITIES[id][0];
     if (own(SYMBOL_ACTIVITIES, id)) return SYMBOL_ACTIVITIES[id][0];
     if (own(READ_ALONG_ACTIVITIES, id)) return READ_ALONG_ACTIVITIES[id][0];
+    if (own(EXTENDED_ACTIVITIES, id)) return EXTENDED_ACTIVITIES[id][0];
     if (!id || id === 'unknown') return 'Activity not recorded';
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain.charAt(0).toUpperCase() + plain.slice(1);
@@ -327,7 +383,10 @@
   // ---------------------------------------------------------------------------
   function makeItem(raw) {
     var activity = activityId(raw.activity);
-    var responses = (Array.isArray(raw.responses) ? raw.responses : []).slice(0, 8).map(function (r) { return text(r, 40); }).filter(Boolean);
+    // 2026-11-23: a read-along page's answers hold "read" or "played" and then the student's answers to its
+    // "Check your understanding" questions, typed ones up to 240 characters: those are kept whole.
+    var answerMax = activity === 'read_along' ? 260 : 40;
+    var responses = (Array.isArray(raw.responses) ? raw.responses : []).slice(0, 8).map(function (r) { return text(r, answerMax); }).filter(Boolean);
     var tries = Math.max(0, Math.min(99, Math.floor(Number(raw.tries)) || 0));
     var flag = idOf(raw.flag, 40);
     // 2026-11-17: a check's item set aside at a pause ("paused", done in the JSON) or left when the time ran out ("time_up", which may
@@ -341,6 +400,54 @@
       attempted: !setAside && (raw.done === true || tries > 0 || responses.length > 0 || correct),
       timeMs: whole(raw.timeMs, 86400000) || 0, supports: text(raw.supports, 200), flag: flag,
       digitsCorrect: whole(raw.digitsCorrect), digitsPossible: whole(raw.digitsPossible) };
+  }
+  // 2026-11-23: what the pages of a read-along hold, counted from the answers (tally puts it on the result as readAlong;
+  // null when the result has no read-along page). A page's first answer is "read" (the student started something on the
+  // page) or "played" (the file turned to the page and read it aloud by itself); the rest are the answers to its "Check
+  // your understanding" questions: "2: the words typed", "1: Mia (right)", "1: Mia (right, try 2)", "1: Soup (not right)",
+  // "1: Soup (not right, 3 tries)". Anything else is kept as plain text. Nothing here is a score.
+  // { pages, read, played, timeMs, answers, byPage: [{ page, word, answers: [{ question, text, result, tries }] }] }
+  // result: 'right', 'not_right', or '' (typed words, or a choice with no keyed answer). A typed answer that itself ends
+  // in "(right)" cannot be told from a choice: the file does not say which kind of question it was.
+  var READ_ALONG_ANSWER_MAX = 240;
+  // The answer most often given on a check, when it is a sign of guessing (see SAME_MIN); otherwise null.
+  // { answer, count, of, wrong }: the answer as first written, how many gave it, of how many answers, how many of those were not right.
+  function sameAnswerOf(items) {
+    var given = [], counts = Object.create(null), shown = Object.create(null), best = '', bestN = 0;
+    (items || []).forEach(function (it) {
+      if (!it || it.practice || !it.attempted || !it.responses || !it.responses.length) return;
+      var raw = String(it.responses[it.responses.length - 1]).trim(), a = raw.toLowerCase();
+      if (!a) return;
+      given.push({ a: a, right: !!it.correct });
+      counts[a] = (counts[a] || 0) + 1;
+      if (!(a in shown)) shown[a] = raw;
+      if (counts[a] > bestN) { bestN = counts[a]; best = a; }
+    });
+    if (given.length < SAME_MIN || bestN < Math.ceil(given.length * SAME_SHARE)) return null;
+    var wrong = given.filter(function (g) { return g.a === best && !g.right; }).length;
+    if (wrong * 2 < bestN) return null;
+    return { answer: shown[best].slice(0, 40), count: bestN, of: given.length, wrong: wrong };
+  }
+  function readAlongAnswer(entry) {
+    var numbered = /^(\d{1,2}): ([\s\S]+)$/.exec(entry);
+    var body = numbered ? numbered[2] : entry;
+    var mark = numbered ? /^([\s\S]+) \((?:(right)(?:, try (\d{1,3}))?|(not right)(?:, (\d{1,3}) tries)?)\)$/.exec(body) : null;
+    return { question: numbered ? Number(numbered[1]) : null, text: (mark ? mark[1] : body).slice(0, READ_ALONG_ANSWER_MAX),
+      result: !mark ? '' : mark[2] ? 'right' : 'not_right', tries: !mark ? null : Number(mark[3] || mark[5]) || 1 };
+  }
+  function readAlongOf(items) {
+    var pages = 0, read = 0, played = 0, timeMs = 0, answers = 0, byPage = [];
+    (items || []).forEach(function (it) {
+      if (!it || it.activity !== 'read_along') return;
+      pages++;
+      timeMs += it.timeMs || 0;
+      var rest = it.responses;
+      if (rest[0] === 'read') { read++; rest = rest.slice(1); } else if (rest[0] === 'played') { played++; rest = rest.slice(1); }
+      if (!rest.length) return;
+      byPage.push({ page: pages, word: it.word, answers: rest.map(readAlongAnswer) });
+      answers += rest.length;
+    });
+    return pages ? { pages: pages, read: read, played: played, timeMs: timeMs, answers: answers, byPage: byPage } : null;
   }
   // The score as the file states it. It is not covered by the file's check value; the answers are,
   // and tally() counts them again and says when the two differ.
@@ -485,6 +592,10 @@
       group.activeS = counted && typeof counted.active_s === 'string' ? whole(counted.active_s, 864000) : null;
       // From 2026-11-17 a math fact practice file also says its typical recall time ("recall_items=8", "recall_median_ms=2100").
       group.recall = counted ? cleanRecall({ items: counted.recall_items, medianMs: counted.recall_median_ms }) : null;
+      // From 2026-11-23 a file written by Collect by sealed QR says so ("source=sealed_qr"), and how much was left out
+      // of the code to fit ("qr_left_out=0" to 3: nothing; the times; the wording of some questions). Every question is
+      // always in it, so the counts are whole; what is left out is detail. The row is outside the check value.
+      group.qrShort = counted && counted.source === 'sealed_qr' ? whole(counted.qr_left_out, 9) || 0 : 0;
       if (group.mode !== 'probe') return;
       group.score = stated ? scoreFromPairs(stated) : null;
       group.attempt = group.score ? group.score.attempt : counted && whole(counted.attempt, 9999) ? whole(counted.attempt, 9999) : null;
@@ -633,14 +744,16 @@
     s.newFacts = null;
     order.forEach(function (a) { if (a.newFacts) s.newFacts = addNewKnown(s.newFacts || newKnown(), a.newFacts); });
     s.wrong = wrongList;
+    // 2026-11-23: the pages of a read-along (read, only played, the time, the answers to its questions), or null.
+    s.readAlong = readAlongOf(s.items);
     var probe = s.mode === 'probe';
     var st = probe ? s.stated : null;
     var firstScored = s.items.filter(function (it) { return !it.practice; })[0] || s.items[0] || null;
     var activity = firstScored ? firstScored.activity : '';
     // With no score line the measure is read from the activity; a score cannot be.
     s.measure = !probe ? 'practice' : (st && st.measure) || (activity === 'math_computation' ? 'math_dcpm' : activity) || 'check';
-    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : own(VOCAB_MEASURES, s.measure) ? VOCAB_MEASURES[s.measure] : own(SYMBOL_MEASURES, s.measure) ? SYMBOL_MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
-    s.unit = st ? st.unit : probe && own(MEASURE_UNITS, s.measure) ? MEASURE_UNITS[s.measure] : '';
+    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : own(VOCAB_MEASURES, s.measure) ? VOCAB_MEASURES[s.measure] : own(SYMBOL_MEASURES, s.measure) ? SYMBOL_MEASURES[s.measure] : own(EXTENDED_MEASURES, s.measure) ? EXTENDED_MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
+    s.unit = st ? st.unit : probe && own(MEASURE_UNITS, s.measure) ? MEASURE_UNITS[s.measure] : probe && own(EXTENDED_MEASURE_UNITS, s.measure) ? EXTENDED_MEASURE_UNITS[s.measure] : '';
     s.unitName = !probe ? FIRST_TRY_UNIT : own(UNITS, s.unit) ? UNITS[s.unit] : s.unit.replace(/_/g, ' ');
     // Notes, as short codes. The page says each one in plain words.
     var flags = [];
@@ -685,12 +798,25 @@
       if (noScore) pushFlag(noScore);
       if (prorated) pushFlag('finished_early');
       if (recounted) pushFlag('score_differs');
+      // A copy collected by QR code that left out the words of some answers (qr_left_out 2 or 3) cannot be judged fairly:
+      // no note. The student's own results file, when added, replaces it and is judged in full.
+      s.sameAnswer = s.qrShort >= 2 ? null : sameAnswerOf(s.items);
+      if (s.sameAnswer) pushFlag('same_answer');
+      if (s.measure === 'maze_correct_3m' && score !== null) {
+        var mazeWrong = Math.max(0, graded - correct);
+        s.mazeNet = { correct: correct, incorrect: mazeWrong, net: Math.max(0, correct - mazeWrong) };
+      } else {
+        s.mazeNet = null;
+      }
+    } else {
+      s.mazeNet = null;
     }
     s.value = probe ? s.score.score : s.summary.firstTryPct;
     s.attempt = probe ? s.score.attempt : null;
     if (s.integrity === 'changed') pushFlag('file_changed');
     if (s.integrity === 'absent') pushFlag('no_check_value');
     if (s.integrity === 'unchecked') pushFlag('not_checked');
+    if (s.qrShort) pushFlag('qr_short');
     if (s.dateFromFile) pushFlag(s.date ? 'date_from_file' : 'no_date');
     s.flags = flags;
     return s;
@@ -727,7 +853,7 @@
     return tally({ sessionId: sid.slice(0, 64), learner: raw.learner, packetId: raw.packetId, packetVersion: raw.packetVersion, title: title || raw.packetId,
       mode: raw.mode, form: raw.form, startedLocal: raw.startedLocal, finishedLocal: raw.finishedLocal, start: start, date: localDate(start), dateFromFile: dateFromFile,
       durationS: raw.durationS, activeS: raw.activeS === undefined ? null : raw.activeS, recall: cleanRecall(raw.recall), items: raw.items, stated: raw.score, attempt: raw.attempt, integrity: check, source: raw.source,
-      sourceFile: text(fileName, 120) });
+      qrShort: whole(raw.qrShort, 9) || 0, sourceFile: text(fileName, 120) });
   }
   function refuse(reason, name) {
     reason = own(REASONS, reason) ? reason : 'not_results';
@@ -791,15 +917,23 @@
       mode: probe ? 'probe' : 'practice', form: text(s.form, 40), startedLocal: text(s.startedLocal, 40), finishedLocal: text(s.finishedLocal, 40),
       start: date && start !== null && start > 0 ? start : 0, date: date, dateFromFile: s.dateFromFile === true || !date, durationS: whole(s.durationS, 864000), activeS: whole(s.activeS, 864000), recall: cleanRecall(s.recall),
       items: items, stated: probe && s.stated && typeof s.stated === 'object' ? cleanScore(s.stated) : null, attempt: whole(s.attempt, 9999), integrity: integrity,
-      source: s.source === 'json' ? 'json' : 'csv', sourceFile: text(s.sourceFile, 120) });
+      source: s.source === 'json' ? 'json' : 'csv', qrShort: whole(s.qrShort, 9) || 0, sourceFile: text(s.sourceFile, 120) });
     return out.summary.done > 0 ? out : null;
   }
   // state: { sessions, merges: [{ from, into }], apart: [[a, b]], goals: [{ learner, measure, value }], savedLocal }
+  // 2026-11-23: readAlong repeats the answers the items already hold, so it is left out of the file; cleanSession
+  // counts it again from the items when the file is read.
+  function withoutReadAlong(s) {
+    if (!s || typeof s !== 'object' || Array.isArray(s) || !own(s, 'readAlong')) return s;
+    var out = {};
+    Object.keys(s).forEach(function (key) { if (key !== 'readAlong') out[key] = s[key]; });
+    return out;
+  }
   function makeBundle(state) {
     state = state || {};
     return { kind: BUNDLE_KIND, version: BUNDLE_VERSION,
       note: 'Results as read by the Add up results page, with the learners counted as one and the goals typed there. It holds what the results files hold. Made on this device.',
-      savedLocal: text(state.savedLocal, 40), sessions: (state.sessions || []).slice(0, MAX_SESSIONS),
+      savedLocal: text(state.savedLocal, 40), sessions: (state.sessions || []).slice(0, MAX_SESSIONS).map(withoutReadAlong),
       merges: (state.merges || []).map(function (row) { return { from: text(row.from, 80), into: text(row.into, 80) }; }),
       apart: (state.apart || []).map(function (row) { return [text(row[0], 80), text(row[1], 80)]; }),
       goals: (state.goals || []).map(function (row) { return { learner: text(row.learner, 80), measure: scalar(row.measure).slice(0, 200), value: number(row.value) }; }),
@@ -899,6 +1033,8 @@
   function seriesKey(s) { return 'check\t' + s.measure + '\t' + s.packetId + (s.untimed ? '\tuntimed' : ''); }
   function formKey(s) { return seriesKey(s) + '\t' + s.form; }
   function setName(packetId, title) {
+    var band = /-g([0-9]{1,2}-[0-9]{1,2})$/i.exec(packetId);
+    if (band) return 'grades ' + band[1];
     var grade = /-g([0-9]{1,2}|k)$/i.exec(packetId);
     if (grade) return 'grade ' + grade[1].toUpperCase();
     if (title && title !== packetId) return title;
@@ -939,6 +1075,7 @@
       learner.strands = Object.create(null);
       learner.checks = Object.create(null);
       learner.forms = Object.create(null);
+      learner.formMazeNets = Object.create(null);
       learner.notes = 0;
       learner.sessions.forEach(function (s) {
         if (s.date > learner.lastDate) learner.lastDate = s.date;
@@ -967,7 +1104,10 @@
         var had = learner.checks[key];
         if (s.value !== null || !had || had.value === null) learner.checks[key] = cell;
         else had.after = cell;
-        if (s.value !== null) learner.forms[form] = s.value;
+        if (s.value !== null) {
+          learner.forms[form] = s.value;
+          if (s.mazeNet) learner.formMazeNets[form] = s.mazeNet.net;
+        }
       });
     });
     checks.forEach(function (series) {
@@ -979,12 +1119,20 @@
     learners.sort(function (a, b) { return a.label.toLowerCase() < b.label.toLowerCase() ? -1 : a.label.toLowerCase() > b.label.toLowerCase() ? 1 : 0; });
     var middles = [];
     formsSeen.forEach(function (row) {
-      var values = [];
-      learners.forEach(function (learner) { if (row.key in learner.forms) values.push(learner.forms[row.key]); });
+      var values = [], mazeNets = [];
+      learners.forEach(function (learner) {
+        if (row.key in learner.forms) values.push(learner.forms[row.key]);
+        if (row.key in learner.formMazeNets) mazeNets.push(learner.formMazeNets[row.key]);
+      });
       if (values.length < MIN_GROUP) return;
       var mid = middle(values);
-      middles.push({ key: row.key, seriesKey: row.series.key, label: row.series.label, form: row.form, unitName: row.series.unitName,
-        n: mid.n, median: mid.median, q1: mid.n >= MIN_GROUP_HALF ? mid.q1 : null, q3: mid.n >= MIN_GROUP_HALF ? mid.q3 : null, min: mid.min, max: mid.max });
+      var entry = { key: row.key, seriesKey: row.series.key, label: row.series.label, form: row.form, unitName: row.series.unitName,
+        n: mid.n, median: mid.median, q1: mid.n >= MIN_GROUP_HALF ? mid.q1 : null, q3: mid.n >= MIN_GROUP_HALF ? mid.q3 : null, min: mid.min, max: mid.max };
+      if (row.series.measure === 'maze_correct_3m' && mazeNets.length >= MIN_GROUP) {
+        var nm = middle(mazeNets);
+        entry.mazeNet = { n: nm.n, median: nm.median, q1: nm.n >= MIN_GROUP_HALF ? nm.q1 : null, q3: nm.n >= MIN_GROUP_HALF ? nm.q3 : null, min: nm.min, max: nm.max };
+      }
+      middles.push(entry);
     });
     var suggestions = [];
     for (var i = 0; i < learners.length; i++) {
@@ -1249,6 +1397,7 @@
     VOCAB_STRANDS: VOCAB_STRANDS.map(function (row) { return row.slice(); }), VOCAB_ACTIVITIES: VOCAB_ACTIVITIES, VOCAB_MEASURES: VOCAB_MEASURES,
     SYMBOL_STRANDS: SYMBOL_STRANDS.map(function (row) { return row.slice(); }), SYMBOL_ACTIVITIES: SYMBOL_ACTIVITIES, SYMBOL_MEASURES: SYMBOL_MEASURES,
     READ_ALONG_STRANDS: READ_ALONG_STRANDS.map(function (row) { return row.slice(); }), READ_ALONG_ACTIVITIES: READ_ALONG_ACTIVITIES,
+    EXTENDED_ACTIVITIES: EXTENDED_ACTIVITIES, EXTENDED_MEASURES: EXTENDED_MEASURES, EXTENDED_MEASURE_UNITS: EXTENDED_MEASURE_UNITS,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers, checkMissedItems: checkMissedItems,

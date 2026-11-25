@@ -2,7 +2,7 @@
 
 A practical guide to what this tool is, how student data flows through it, and what you need to set up before you hand it to a class.
 
-> **Guide status:** Responsible-use reference, reviewed September 8, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.
+> **Guide status:** Responsible-use reference, reviewed November 23, 2026. Product behavior, AI-service terms, crisis resources, and district requirements can change; verify the current release and your approved deployment before student use.
 
 ---
 
@@ -29,7 +29,7 @@ The Hub is designed for local-first use, but **local-first does not mean ephemer
 
 **Understand the active mode:**
 - A solo activity can keep answers and progress in the browser tab, while preferences, safety flags, or recovery data may use browser storage. Closing a tab may discard unsaved activity state, but it is not proof of secure deletion.
-- A local solo session does not create an AlloFlow account. Optional AI calls send the current prompt and relevant student text to the configured AI service; a school-hosted live session can send the progress or safety signals described below to the teacher session.
+- A local solo session does not create an AlloFlow account. Optional AI calls send the current prompt and relevant student text to the configured AI service. A school-hosted live session (not available in Gemini Canvas) saves a progress record to the session database about once a minute; it carries no safety-flag information.
 - Educators generally cannot retrieve an unsaved solo activity after the fact. Exported files, AI-service records, browser storage, and school-controlled live-session records are separate artifacts and must follow district policy.
 
 **The sneakernet save/load pattern:**
@@ -94,7 +94,7 @@ The Hub has a **safety layer** that watches for language suggesting a student ma
 
 **What you, the teacher, can and cannot do:**
 - There is no teacher safety summary, and a flag is not a conversation transcript. This does not mean the text leaves no trace: browser flags can contain excerpts, and activity state, exports, and AI-service records have separate retention behavior.
-- **In every mode, including a live web session**: nothing reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. (The live-session sync once meant to carry a flag count is not delivered.) The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
+- **In every mode, including a live web session**: nothing about a flag reaches you, administrators, or the vendor — no alert, no flag count, no list of which students saw the modal. Flags stay on the student's device. The student sees crisis resources in the moment; adult follow-up depends entirely on someone telling you.
 - For the record: each flag does write a small entry (category plus a ~100-character excerpt) to the **browser's local storage on the student's device**. Treat those excerpts as sensitive data on a shared device. Closing the tab does not clear browser storage; review the current Data & privacy controls and your deployment retention procedures.
 - The in-app consent screen tells students the same story in every mode: the app **cannot notify an adult on its own**, and they should tell a trusted adult directly.
 
@@ -107,7 +107,7 @@ The Hub has a **safety layer** that watches for language suggesting a student ma
 
 ## 5. Parent notification
 
-The Hub's data flow depends on the approved mode: solo activity state may stay local, exports create files, optional AI sends the current prompt to the configured service, and live sessions can send progress summaries or safety signals to the teacher session. Families deserve a description of the mode students will actually use. Norms vary by district; this is a starting template, not a substitute for approved district language.
+The Hub's data flow depends on the approved mode: solo activity state may stay local, exports create files, optional AI sends the current prompt to the configured service, and live sessions save progress summaries to the session database (no safety-flag information, and no safety alerts to the teacher). Families deserve a description of the mode students will actually use. Norms vary by district; this is a starting template, not a substitute for approved district language.
 
 **Sample parent letter (copy and adapt):**
 
@@ -120,7 +120,7 @@ The Hub's data flow depends on the approved mode: solo activity state may stay l
 > - **It is not a test or assessment.** Nothing students do in the Hub is graded or recorded in their school file.
 > - **No AlloFlow student account.** The Hub does not create an AlloFlow login for your child. Unsaved solo activity work is normally not recoverable through the classroom workflow; exports, browser storage, AI use, and live sessions are handled as described in our district-approved setup.
 > - **Optional AI helper.** Some activities can send the text entered into that activity to our district-approved AI service to suggest words or coping ideas. Our technology team has reviewed the service, account type, data protections, retention, and age requirements. [Replace this sentence with your district's approved description, or state that AI features are turned off.]
-> - **Safety support built in.** Some activities can show support guidance when concerning language is detected. Detection and alerts are not guaranteed or a substitute for telling a trusted adult directly. [Describe the support route and locally appropriate resources verified for your approved setup.]
+> - **Safety support built in.** Some activities can show support guidance when concerning language is detected. Detection is not guaranteed, and the Hub does not alert staff, so it is not a substitute for telling a trusted adult directly. [Describe the support route and locally appropriate resources verified for your approved setup.]
 >
 > If you'd prefer your child opt out of Hub activities, or if you have questions, please reach out. I'm happy to walk you through what students will see.
 

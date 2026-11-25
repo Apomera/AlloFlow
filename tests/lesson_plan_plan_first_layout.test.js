@@ -93,6 +93,20 @@ describe('plan-first lesson layout', () => {
     expect(handleExport).not.toHaveBeenCalled();
   });
 
+  it('gives the bottom print button the same name as the top one, since both run the same print', () => {
+    const handleExportPDF = vi.fn();
+    mount(React.createElement(PlanView, props({ handleExportPDF })));
+    const top = host.querySelector('[data-lesson-plan-print-pdf]');
+    const bottom = host.querySelector('[data-lesson-plan-print-bottom]');
+    expect(top, 'top print button').toBeTruthy();
+    expect(bottom, 'bottom print button').toBeTruthy();
+    expect(bottom.textContent.trim()).toBe(top.textContent.trim());
+    expect(bottom.getAttribute('title')).toBe(top.getAttribute('title'));
+    act(() => top.click());
+    act(() => bottom.click());
+    expect(handleExportPDF).toHaveBeenCalledTimes(2);
+  });
+
   it('keeps research detail behind disclosures and hides the reader line offset', () => {
     mount(React.createElement(PlanView, props()));
     openScript();

@@ -181,8 +181,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var _sleT = (ctx && ctx.theme) || {};
       var _sleHC = !!_sleT.isContrast, _sleL = !_sleHC && !_sleT.isDark;
       var _sle_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _sle_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#fff':'#000000','#4f46e5':'#000000'};
-      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f','#bbf7d0':'#166534','#bae6fd':'#075985','#e9d5ff':'#581c87','#22c55e':'#15803d','#f59e0b':'#b45309','#0ea5e9':'#0369a1'}, _sle_FGH = {'#0ea5e9':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#e9d5ff':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
-      var _sle_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _sle_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#e2e8f0':'#ffff00'};
+      var _sle_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#475569','#64748b':'#475569','#c7d2fe':'#312e81','#e2e8f0':'#1e293b','#fca5a5':'#991b1b','#fde68a':'#92400e','#86efac':'#166534','#fcd34d':'#78350f','#bbf7d0':'#166534','#bae6fd':'#075985','#e9d5ff':'#581c87','#22c55e':'#15803d','#f59e0b':'#b45309','#0ea5e9':'#0369a1'}, _sle_FGH = {'#0ea5e9':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#e9d5ff':'#ffff00','#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#c7d2fe':'#ffff00','#e2e8f0':'#ffff00','#fca5a5':'#ffff00','#bbf7d0':'#ffff00','#fde68a':'#ffff00','#bae6fd':'#ffff00','#86efac':'#ffff00','#fff':'#ffff00','#fcd34d':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _sle_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1','#6366f1':'#4338ca','#22c55e':'#15803d','#f59e0b':'#b45309','#0ea5e9':'#0369a1','#ef4444':'#b91c1c','#a855f7':'#7e22ce','#3b82f6':'#1d4ed8','#ec4899':'#be185d'}, _sle_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#6366f1':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#3b82f6':'#ffff00','#ec4899':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#e2e8f0':'#ffff00'};
       var _sleBg = function(h){ return _sleHC ? (_sle_BGH[h]||h) : (_sleL ? (_sle_BGL[h]||h) : h); };
       var _sleFg = function(h){ return _sleHC ? (_sle_FGH[h]||h) : (_sleL ? (_sle_FGL[h]||h) : h); };
       var _sleBd = function(h){ return _sleHC ? (_sle_BDH[h]||h) : (_sleL ? (_sle_BDL[h]||h) : h); };
@@ -207,12 +207,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       var _sleBand = (ctx && ctx.gradeBand) || 'high';
       var _sleGuidance = SLEEP_GUIDANCE[_sleBand] || SLEEP_GUIDANCE.high;
       function setS(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
           var prior = (prev && prev.sleep) || defaultState();
           var next = Object.assign({}, prior, patch);
           next.lastUpdated = todayISO();
           return Object.assign({}, prev, { sleep: next });
         });
+      }
+      function announceSL(msg) {
+        if (!msg) return;
+        if (ctx && typeof ctx.announceToSR === 'function') {
+          try { ctx.announceToSR(msg); } catch (_) {}
+        }
+        if (typeof document === 'undefined') return;
+        var region = document.getElementById('allo-live-sleep');
+        if (!region) return;
+        region.textContent = '';
+        setTimeout(function() { region.textContent = msg; }, 30);
       }
       function scanSleepText(text) {
         var trimmed = String(text || '').trim();
@@ -240,13 +252,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         return blocked;
       }
       var view = d.view || 'home';
-      function goto(v) { setS({ view: v }); }
+      var SLE_TAB_LABELS = { home: 'Why it matters', check: 'My sleep check', barriers: 'Barriers', diary: 'Sleep diary', print: 'Print', about: 'About' };
+      function goto(v, label) {
+        setS({ view: v });
+        var sec = label || SLE_TAB_LABELS[v] || v;
+        if (sec) announceSL(sec + ' section shown');
+      }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _sleFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _sleHC ? '#000000' : (_sleL ? '#ffffff' : 'rgba(255,255,255,0.05)'), border: '1px solid ' + _sleBd('#334155'), borderRadius: 8, padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: _sleFg('#cbd5e1'), fontSize: 14, fontWeight: 700 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _sleFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '😴 Sleep & Rest'),
             h('div', { style: { fontSize: 12, color: _sleFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'The most under-rated public-health intervention.')
@@ -267,13 +284,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           tabs.map(function(t) {
             var active = view === t.id;
-            var tabIndex = tabs.indexOf(t);            return h('button', {
+            var tabIndex = tabs.indexOf(t);
+            return h('button', {
+              type: 'button',
               key: t.id,
               id: 'sleep-tab-' + t.id,
               'aria-controls': 'sleep-panel-' + t.id,
               tabIndex: active ? 0 : -1,
-              onClick: function() { goto(t.id); },
+              onClick: function() { goto(t.id, t.label); },
               onKeyDown: function(event) {
+                if (isImeComposing(event)) return;
                 var nextIndex = tabIndex;
                 if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
                 else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;
@@ -281,16 +301,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                 else if (event.key === 'End') nextIndex = tabs.length - 1;
                 else return;
                 event.preventDefault();
-                goto(tabs[nextIndex].id);
+                goto(tabs[nextIndex].id, tabs[nextIndex].label);
                 setTimeout(function() {
                   var nextTab = document.getElementById('sleep-tab-' + tabs[nextIndex].id);
                   if (nextTab) nextTab.focus();
                 }, 0);
               },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#6366f1' : '#334155'),
-                background: active ? 'rgba(99,102,241,0.18)' : _sleBg('#1e293b'),
-                color: active ? _sleFg('#c7d2fe') : _sleFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              style: { padding: '10px 14px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _sleBd(active ? '#6366f1' : '#334155'),
+                background: active ? (_sleHC ? '#000000' : (_sleL ? '#e0e7ff' : 'rgba(99,102,241,0.18)')) : _sleBg('#1e293b'),
+                color: active ? _sleFg('#c7d2fe') : _sleFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -308,6 +328,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // HOME — why sleep matters
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
+        var cardEdge = '1px solid ' + _sleBd('#1e293b');
         var impactItems = _sleBand === 'elementary'
           ? [
               'Mood and emotional regulation',
@@ -327,12 +348,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             ];
 
         return h('div', null,
-          h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 18, borderRadius: 14, background: _sleHC ? '#000000' : (_sleL ? '#eef2ff' : 'linear-gradient(135deg, rgba(99,102,241,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#c7d2fe' : 'rgba(99,102,241,0.4)')), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _sleFg('#c7d2fe'), marginBottom: 4 } }, _sleGuidance.title),
             h('p', { style: { margin: 0, color: _sleFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } }, _sleGuidance.intro)
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#6366f1'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#c7d2fe'), marginBottom: 10 } }, 'How sleep and body clocks work'),
             h('p', { style: { margin: '0 0 8px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.7 } },
               _sleBand === 'elementary'
@@ -344,7 +365,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ),
 
-          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#ef4444'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fca5a5'), marginBottom: 8 } }, 'What too little sleep can affect'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.85 } },
               impactItems.map(function(item, i) { return h('li', { key: i }, item); })
@@ -352,16 +373,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           ),
 
           h('div', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, marginTop: 14 } }, 'Tools in this lab'),
-          stepCard('Quick sleep check', 'Seven questions to see where your sleep is right now. Takes about 2 minutes.', function() { goto('check'); }, '#22c55e'),
-          stepCard('Common barriers', 'Eight common barriers, with practical ideas. Pick one change to test for a week.', function() { goto('barriers'); }, '#f59e0b'),
-          stepCard('Sleep diary', 'Track sleep for 1-2 weeks to find patterns. Add the one change you are testing so you can review what helped.', function() { goto('diary'); }, '#0ea5e9'),
+          stepCard('Quick sleep check', 'Seven questions to see where your sleep is right now. Takes about 2 minutes.', function() { goto('check', 'My sleep check'); }, '#22c55e'),
+          stepCard('Common barriers', 'Eight common barriers, with practical ideas. Pick one change to test for a week.', function() { goto('barriers', 'Barriers'); }, '#f59e0b'),
+          stepCard('Sleep diary', 'Track sleep for 1-2 weeks to find patterns. Add the one change you are testing so you can review what helped.', function() { goto('diary', 'Sleep diary'); }, '#0ea5e9'),
 
           softPointer()
         );
       }
       function stepCard(title, blurb, onClick, color) {
-        return h('button', { onClick: onClick, 'aria-label': title,
-          style: { width: '100%', textAlign: 'left', padding: 14, borderRadius: 10, borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + color, background: _sleBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _sleFg('#e2e8f0') } },
+        var edge = '1px solid ' + _sleBd('#1e293b');
+        return h('button', { type: 'button', onClick: onClick, 'aria-label': title,
+          style: { width: '100%', minHeight: 52, textAlign: 'left', padding: 14, borderRadius: 10, borderTop: edge, borderRight: edge, borderBottom: edge, borderLeft: '4px solid ' + _sleBd(color), background: _sleBg('#0f172a'), cursor: 'pointer', marginBottom: 8, color: _sleFg('#e2e8f0') } },
           h('div', { style: { fontSize: 14, fontWeight: 800, color: _sleFg(color), marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _sleFg('#94a3b8'), lineHeight: 1.55 } }, blurb)
         );
@@ -371,10 +393,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // SELF-CHECK
       // ═══════════════════════════════════════════════════════════
       function renderCheck() {
-        function setItem(id, val) {
+        var cardEdge = '1px solid ' + _sleBd('#1e293b');
+        var greenEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#bbf7d0' : 'rgba(34,197,94,0.3)'));
+        function setItem(id, val, label) {
           var sc = Object.assign({}, (d.selfCheck || {}));
           sc[id] = val;
           setS({ selfCheck: sc });
+          if (label) announceSL(label);
         }
 
         var sc = d.selfCheck || {};
@@ -399,7 +424,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         if (screens !== undefined && screens >= 1) flags.push({ severity: 'info', text: screens + ' hour(s) of screens in the last hour before bed is a high-impact change you could make. See the Screens barrier.' });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bbf7d0'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _sleHC ? '#000000' : (_sleL ? '#f0fdf4' : 'rgba(34,197,94,0.10)'), borderTop: greenEdge, borderRight: greenEdge, borderBottom: greenEdge, borderLeft: '3px solid ' + _sleBd('#22c55e'), marginBottom: 14, fontSize: 12.5, color: _sleFg('#bbf7d0'), lineHeight: 1.65 } },
             h('strong', null, '✓ Quick sleep check. '),
             _sleGuidance.label + ' Use a typical week, not your best or worst. This is a pattern check, not a diagnosis. You can skip any question.'
           ),
@@ -407,24 +432,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           SELF_CHECK.map(function(item) {
             var v = sc[item.id];
             var hasV = v !== undefined && v !== null;
-            return h('div', { key: item.id, style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1', marginBottom: 8 } },
+            var curV = hasV ? v : item.defaultV;
+            return h('div', { key: item.id, style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#6366f1'), marginBottom: 8 } },
               h('div', { style: { fontSize: 13, color: _sleFg('#e2e8f0'), marginBottom: 8, lineHeight: 1.6 } }, item.text),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-                h('input', { type: 'range', min: item.min, max: item.max, value: hasV ? v : item.defaultV,
+                h('input', { type: 'range', min: item.min, max: item.max, value: curV,
                   onChange: function(e) { setItem(item.id, parseFloat(e.target.value)); },
-                  style: { flex: 1, minWidth: 200 }, 'aria-label': item.text }),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: hasV ? _sleFg('#c7d2fe') : _sleFg('#475569'), minWidth: 60, textAlign: 'right' } }, hasV ? v + ' ' + item.suffix : '–'),
-                !hasV ? h('button', { onClick: function() { setItem(item.id, item.defaultV); }, 'aria-label': 'Set this rating',
-                  style: { padding: '4px 10px', borderRadius: 4, border: '1px solid #6366f1', background: 'transparent', color: _sleFg('#c7d2fe'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Set') : null
+                  style: { flex: 1, minWidth: 200, minHeight: 44 }, 'aria-label': item.text, 'aria-valuetext': curV + ' ' + item.suffix }),
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: hasV ? _sleFg('#c7d2fe') : _sleFg('#94a3b8'), minWidth: 60, textAlign: 'right' } }, hasV ? v + ' ' + item.suffix : '–'),
+                !hasV ? h('button', { type: 'button', onClick: function() { setItem(item.id, item.defaultV, item.text + ' set to ' + item.defaultV + ' ' + item.suffix); }, 'aria-label': 'Set default rating for ' + item.text,
+                  style: { padding: '8px 14px', minHeight: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, border: '1px solid ' + _sleBd('#6366f1'), background: 'transparent', color: _sleFg('#c7d2fe'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Set') : null
               )
             );
           }),
 
           // Flags / interpretation
-          flags.length > 0 ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Sleep check observations', style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10, marginTop: 14 } },
+          flags.length > 0 ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Sleep check observations', style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#f59e0b'), marginBottom: 10, marginTop: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#fde68a'), marginBottom: 8 } }, '🚩 What stands out'),
             flags.map(function(f, i) {
-              var color = f.severity === 'alert' ? '#ef4444' : f.severity === 'warning' ? '#f59e0b' : _sleBd('#0ea5e9');
+              var color = f.severity === 'alert' ? _sleBd('#ef4444') : f.severity === 'warning' ? _sleBd('#f59e0b') : _sleBd('#0ea5e9');
               return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _sleBg('#1e293b'), borderLeft: '3px solid ' + color, marginBottom: 4, fontSize: 12.5, color: _sleFg('#cbd5e1'), lineHeight: 1.65 } }, f.text);
             })
           ) : null,
@@ -437,20 +463,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // BARRIERS
       // ═══════════════════════════════════════════════════════════
       function renderBarriers() {
+        var cardEdge = '1px solid ' + _sleBd('#1e293b');
+        var warnEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#fde68a' : 'rgba(245,158,11,0.3)'));
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _sleFg('#fde68a'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _sleHC ? '#000000' : (_sleL ? '#fffbeb' : 'rgba(245,158,11,0.10)'), borderTop: warnEdge, borderRight: warnEdge, borderBottom: warnEdge, borderLeft: '3px solid ' + _sleBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _sleFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '🚧 The 8 most common barriers. '),
             'Find yours. Pick ONE to work on for a week. One change is easier to test and stick with; stacking changes can come later.'
           ),
 
           BARRIERS.map(function(b) {
-            return h('div', { key: b.id, style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + b.color, marginBottom: 10 } },
+            return h('div', { key: b.id, style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '4px solid ' + _sleBd(b.color), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontSize: 24 } }, b.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, b.icon),
                 h('span', { style: { fontSize: 15, fontWeight: 800, color: _sleInk(b.color) } }, b.label)
               ),
               h('p', { style: { margin: '0 0 10px', color: _sleFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } }, b.what),
-              h('div', { style: { padding: 10, borderRadius: 6, background: _sleBg('#1e293b') } },
+              h('div', { style: { padding: 10, borderRadius: 6, background: _sleBg('#1e293b'), border: '1px solid ' + _sleBd('#334155') } },
                 h('div', { style: { fontSize: 11, color: _sleInk(b.color), fontWeight: 700, marginBottom: 6 } }, '✓ What helps'),
                 h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _sleFg('#e2e8f0'), fontSize: 13, lineHeight: 1.75 } },
                   b.helps.map(function(s, i) { return h('li', { key: i, style: { marginBottom: 3 } }, s); })
@@ -467,6 +495,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // DIARY
       // ═══════════════════════════════════════════════════════════
       function renderDiary() {
+        var cardEdge = '1px solid ' + _sleBd('#1e293b');
+        var skyEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#bae6fd' : 'rgba(14,165,233,0.3)'));
+        var purpEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#e9d5ff' : 'rgba(168,85,247,0.3)'));
+        var inputStyle = { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '8px 10px', borderRadius: 6, border: '1px solid ' + _sleBd('#334155'), background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 13 };
         function addEntry() {
           var dateEl = document.getElementById('sl-date');
           var bedEl = document.getElementById('sl-bed');
@@ -488,6 +520,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           scanSleepText((notes || '') + ' ' + (experiment || ''));
           var entry = { date: date, bedtime: bed, waketime: wake, hours: hours, quality: quality, notes: notes, experiment: experiment };
           setS({ diary: (d.diary || []).concat([entry]) });
+          announceSL('Sleep diary entry added for ' + date);
           if (notesEl) notesEl.value = '';
           if (expEl) expEl.value = '';
         }
@@ -495,6 +528,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           var nx = (d.diary || []).slice();
           nx.splice(i, 1);
           setS({ diary: nx });
+          announceSL('Sleep diary entry removed');
         }
 
         var diary = (d.diary || []).slice().reverse();
@@ -526,22 +560,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
         });
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(14,165,233,0.10)', borderTop: '1px solid rgba(14,165,233,0.3)', borderRight: '1px solid rgba(14,165,233,0.3)', borderBottom: '1px solid rgba(14,165,233,0.3)', borderLeft: '3px solid #0ea5e9', marginBottom: 14, fontSize: 12.5, color: _sleFg('#bae6fd'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _sleHC ? '#000000' : (_sleL ? '#f0f9ff' : 'rgba(14,165,233,0.10)'), borderTop: skyEdge, borderRight: skyEdge, borderBottom: skyEdge, borderLeft: '3px solid ' + _sleBd('#0ea5e9'), marginBottom: 14, fontSize: 12.5, color: _sleFg('#bae6fd'), lineHeight: 1.65 } },
             h('strong', null, '📓 The sleep diary. '),
             'Log for 1-2 weeks to see your pattern. This is a pattern-finding record, not a diagnosis, and it can help you explain what is happening to a trusted adult, school nurse, or clinician.'
           ),
 
           // Stats
           diary.length > 0 ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
-            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #6366f1' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#6366f1') } },
               h('div', { style: { fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Entries'),
               h('div', { style: { fontSize: 22, color: _sleFg('#c7d2fe'), fontWeight: 900 } }, diary.length)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#22c55e') } },
               h('div', { style: { fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Avg hours'),
               h('div', { style: { fontSize: 22, color: _sleFg('#86efac'), fontWeight: 900 } }, avgHours)
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b' } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#f59e0b') } },
               h('div', { style: { fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Avg quality / 10'),
               h('div', { style: { fontSize: 22, color: _sleFg('#fde68a'), fontWeight: 900 } }, avgQuality)
             )
@@ -550,7 +584,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           experimentSummary.length > 0 ? h('div', {
             role: 'region',
             'aria-label': 'Sleep experiment review',
-            style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', marginBottom: 12 }
+            style: { padding: 12, borderRadius: 10, background: _sleHC ? '#000000' : (_sleL ? '#faf5ff' : 'rgba(168,85,247,0.10)'), borderTop: purpEdge, borderRight: purpEdge, borderBottom: purpEdge, borderLeft: '3px solid ' + _sleBd('#a855f7'), marginBottom: 12 }
           },
             h('div', { style: { color: _sleFg('#c7d2fe'), fontSize: 13, fontWeight: 800, marginBottom: 5 } }, 'Small experiment review'),
             h('p', { style: { margin: '0 0 9px', color: _sleFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } },
@@ -558,7 +592,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             ),
             h('div', { role: 'list', 'aria-label': 'Logged sleep experiments', style: { display: 'grid', gap: 6 } },
               experimentSummary.map(function(experiment) {
-                return h('div', { key: experiment.label, role: 'listitem', style: { padding: 9, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid #1e293b', color: _sleFg('#e2e8f0'), fontSize: 11.5, lineHeight: 1.45 } },
+                return h('div', { key: experiment.label, role: 'listitem', style: { padding: 9, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid ' + _sleBd('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 11.5, lineHeight: 1.45 } },
                   h('strong', { style: { color: _sleFg('#e9d5ff') } }, experiment.label),
                   ' \u2014 logged ' + experiment.count + (experiment.count === 1 ? ' time' : ' times'),
                   experiment.avgQuality !== null ? '; average quality ' + experiment.avgQuality + '/10' : '',
@@ -569,43 +603,38 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ) : null,
           // New entry
-          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #0ea5e9', marginBottom: 10 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _sleBg('#0f172a'), borderTop: cardEdge, borderRight: cardEdge, borderBottom: cardEdge, borderLeft: '3px solid ' + _sleBd('#0ea5e9'), marginBottom: 10 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _sleFg('#bae6fd'), marginBottom: 10 } }, '+ Add an entry'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 8 } },
               h('div', null,
-                h('label', { htmlFor: 'sl-date', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Date'),
-                h('input', { id: 'sl-date', type: 'date', defaultValue: todayISO(),
-                  style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12 } })
+                h('label', { htmlFor: 'sl-date', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Date'),
+                h('input', { id: 'sl-date', type: 'date', defaultValue: todayISO(), style: inputStyle })
               ),
               h('div', null,
-                h('label', { htmlFor: 'sl-bed', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Bedtime'),
-                h('input', { id: 'sl-bed', type: 'time', defaultValue: '22:30',
-                  style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12 } })
+                h('label', { htmlFor: 'sl-bed', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Bedtime'),
+                h('input', { id: 'sl-bed', type: 'time', defaultValue: '22:30', style: inputStyle })
               ),
               h('div', null,
-                h('label', { htmlFor: 'sl-wake', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Wake time'),
-                h('input', { id: 'sl-wake', type: 'time', defaultValue: '06:30',
-                  style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12 } })
+                h('label', { htmlFor: 'sl-wake', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Wake time'),
+                h('input', { id: 'sl-wake', type: 'time', defaultValue: '06:30', style: inputStyle })
               ),
               h('div', null,
-                h('label', { htmlFor: 'sl-hours', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Hours slept'),
-                h('input', { id: 'sl-hours', type: 'number', min: 0, max: 14, step: 0.5, defaultValue: 7.5,
-                  style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12 } })
+                h('label', { htmlFor: 'sl-hours', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Hours slept'),
+                h('input', { id: 'sl-hours', type: 'number', min: 0, max: 14, step: 0.5, defaultValue: 7.5, style: inputStyle })
               ),
               h('div', null,
-                h('label', { htmlFor: 'sl-quality', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Quality 0-10'),
-                h('input', { id: 'sl-quality', type: 'number', min: 0, max: 10, defaultValue: 6,
-                  style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12 } })
+                h('label', { htmlFor: 'sl-quality', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Quality 0-10'),
+                h('input', { id: 'sl-quality', type: 'number', min: 0, max: 10, defaultValue: 6, style: inputStyle })
               )
             ),
-            h('label', { htmlFor: 'sl-notes', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'Notes (caffeine, screens, what helped or hurt)'),
+            h('label', { htmlFor: 'sl-notes', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Notes (caffeine, screens, what helped or hurt)'),
             h('input', { id: 'sl-notes', type: 'text', placeholder: 'Optional notes',
-              style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
-            h('label', { htmlFor: 'sl-experiment', style: { display: 'block', fontSize: 10, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 2 } }, 'One change I am testing (optional)'),
+              style: Object.assign({}, inputStyle, { marginBottom: 8 }) }),
+            h('label', { htmlFor: 'sl-experiment', style: { display: 'block', fontSize: 11, color: _sleFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'One change I am testing (optional)'),
             h('input', { id: 'sl-experiment', type: 'text', placeholder: 'e.g. charge phone outside bedroom',
-              style: { width: '100%', padding: 6, borderRadius: 4, border: '1px solid #334155', background: _sleBg('#1e293b'), color: _sleFg('#e2e8f0'), fontSize: 12, marginBottom: 8 } }),
-            h('button', { onClick: addEntry, 'aria-label': 'Add diary entry',
-              style: { padding: '8px 16px', borderRadius: 6, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleSolid('#0ea5e9'), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
+              style: Object.assign({}, inputStyle, { marginBottom: 10 }) }),
+            h('button', { type: 'button', onClick: addEntry, 'aria-label': 'Add diary entry',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 6, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleSolid('#0ea5e9'), color: _sleFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Add entry')
           ),
 
           // Entry list
@@ -614,14 +643,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             diary.slice(0, 14).map(function(e, i) {
               var hasHours = typeof e.hours === 'number' && isFinite(e.hours);
               var hasQuality = typeof e.quality === 'number' && isFinite(e.quality);
-              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: _sleBg('#0f172a'), border: '1px solid ' + _sleBd('#1e293b'), marginBottom: 4, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 11, color: _sleFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', minWidth: 90 } }, e.date),
                 h('span', { style: { fontSize: 12, color: _sleFg('#cbd5e1') } }, '🛏 ' + (e.bedtime || '–') + ' → ⏰ ' + (e.waketime || '–')),
                 h('span', { style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700 } }, hasHours ? e.hours + 'h' : '–'),
                 h('span', { style: { fontSize: 12, color: hasQuality ? (e.quality >= 7 ? _sleFg('#86efac') : e.quality >= 4 ? _sleFg('#fde68a') : _sleFg('#fca5a5')) : _sleFg('#94a3b8') } }, hasQuality ? e.quality + '/10' : '–'),
                 e.notes || e.experiment ? h('span', { style: { flex: 1, fontSize: 11, color: _sleFg('#94a3b8'), fontStyle: 'italic', minWidth: 100 } }, (e.notes ? e.notes : '') + (e.experiment ? (e.notes ? ' | ' : '') + 'Tried: ' + e.experiment : '')) : h('span', { style: { flex: 1 } }),
-                h('button', { onClick: function() { removeEntry(diary.length - 1 - i); }, 'aria-label': 'Remove entry',
-                  style: { background: 'transparent', border: '1px solid #475569', color: _sleFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('button', { type: 'button', onClick: function() { removeEntry(diary.length - 1 - i); }, 'aria-label': 'Remove entry for ' + (e.date || 'date'),
+                  style: { background: 'transparent', border: '1px solid ' + _sleBd('#475569'), color: _sleFg('#94a3b8'), borderRadius: 6, padding: '6px 12px', minHeight: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 13 } }, '✕')
               );
             })
           ) : null,
@@ -634,10 +663,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       // ABOUT
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
+        var warnEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#fde68a' : 'rgba(245,158,11,0.3)'));
+        var indEdge = '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#c7d2fe' : 'rgba(99,102,241,0.3)'));
         return h('div', null,
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('sleep', h, ctx) : null),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _sleBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _sleBg('#0f172a'), border: '1px solid ' + _sleBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _sleFg('#a5b4fc'), fontSize: 16 } }, 'When sleep needs a doctor'),
             h('p', { style: { margin: '0 0 8px', color: _sleFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } }, 'See a doctor if:'),
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: _sleFg('#cbd5e1'), fontSize: 13, lineHeight: 1.85 } },
@@ -655,7 +686,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _sleBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _sleBg('#0f172a'), border: '1px solid ' + _sleBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _sleFg('#a5b4fc'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('AAP (American Academy of Pediatrics, 2014)', 'School Start Times for Adolescents (policy statement)', 'AAP official recommendation: middle and high schools should start no earlier than 8:30am.', 'https://publications.aap.org/pediatrics/article/134/3/642/74175/School-Start-Times-for-Adolescents'),
             sourceCard('CDC', 'Sleep in Middle and High School Students', 'CDC data on adolescent sleep deprivation, school start times, and health impact.', 'https://www.cdc.gov/healthyyouth/health_and_academics/sleep.htm'),
@@ -665,7 +696,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             sourceCard('Walker, M. (2017)', 'Why We Sleep: Unlocking the Power of Sleep and Dreams, Scribner', 'Accessible book on sleep science by a leading researcher.', null)
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _sleHC ? '#000000' : (_sleL ? '#fffbeb' : 'rgba(245,158,11,0.08)'), borderTop: warnEdge, borderRight: warnEdge, borderBottom: warnEdge, borderLeft: '3px solid ' + _sleBd('#f59e0b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _sleFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _sleFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'Most adolescent sleep deprivation is STRUCTURAL: schools start too early, homework is too late, and many adolescents have jobs or caregiving responsibilities that compete with sleep. Sleep hygiene cannot solve a structural problem. It is real work to change schedules within structural constraints.'),
@@ -676,7 +707,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: _sleFg('#c7d2fe'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _sleHC ? '#000000' : (_sleL ? '#eef2ff' : 'rgba(99,102,241,0.10)'), borderTop: indEdge, borderRight: indEdge, borderBottom: indEdge, borderLeft: '3px solid ' + _sleBd('#6366f1'), fontSize: 12.5, color: _sleFg('#c7d2fe'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'For Crew or advisory: a one-week sleep-diary commitment is genuinely transformative for many students. Discuss findings as a group (no judgment, just data). For school psych practice: sleep is often the first lever for adolescent anxiety and depression — treat sleep before assuming the symptoms are primarily psychological. Advocate for later school start times in your district.'
           ),
@@ -686,11 +717,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _sleBg('#1e293b'), border: '1px solid ' + _sleBd('#334155'), marginBottom: 8 } },
           h('div', { style: { fontSize: 11, color: _sleFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
-                style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
+                style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700, textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 2 } }, title + ' ↗')
             : h('div', { style: { fontSize: 13, color: _sleFg('#c7d2fe'), fontWeight: 700, marginBottom: 4 } }, title),
           h('div', { style: { fontSize: 12, color: _sleFg('#cbd5e1'), lineHeight: 1.55 } }, blurb)
         );
@@ -710,18 +741,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
           avgQuality = validQuality.length > 0 ? (validQuality.reduce(function(s, e) { return s + e.quality; }, 0) / validQuality.length).toFixed(1) : '–';
         }
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(99,102,241,0.10)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center', padding: 12, background: _sleHC ? '#000000' : (_sleL ? '#eef2ff' : 'rgba(99,102,241,0.10)'), borderRadius: 8, border: '1px solid ' + (_sleHC ? '#ffff00' : (_sleL ? '#c7d2fe' : 'rgba(99,102,241,0.3)')) } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _sleFg('#c7d2fe'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Sleep diary + self-check summary — useful for a doctor, school nurse, or sleep clinic visit.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _sleFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _sleBg('#1e293b'), color: _sleFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: _sleHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _sleHC ? '#000000' : 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _sleFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('home', 'Why it matters'); }, 'aria-label': 'Back',
+              style: { padding: '10px 18px', minHeight: 44, display: 'inline-flex', alignItems: 'center', borderRadius: 8, border: '1px solid ' + _sleBd('#475569'), background: _sleBg('#1e293b'), color: _sleFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'sleep-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _sleBg('#fff'), color: _sleFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _sleBg('#fff'), color: _sleFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _sleBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
@@ -732,7 +763,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #4f46e5' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _sleBd('#4f46e5') } },
               h('div', { style: { fontSize: 10, color: _sleFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Sleep Diary'),
               h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, 'My sleep'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _sleFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
@@ -765,7 +796,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
               h('div', { style: { background: _sleSolid('#0ea5e9'), border: _sleHC ? '1px solid #ffff00' : 'none', color: _sleFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 8, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Diary entries'),
               h('table', { 'aria-label': 'Sleep diary entries', style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, color: _sleFg('#0f172a') } },
                 h('thead', null,
-                  h('tr', { style: { borderBottom: '2px solid #cbd5e1' } },
+                  h('tr', { style: { borderBottom: '2px solid ' + _sleBd('#cbd5e1') } },
                     h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Date'),
                     h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Bedtime'),
                     h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', fontWeight: 700 } }, 'Wake'),
@@ -778,7 +809,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
                   diary.map(function(e, i) {
                     var hasH = typeof e.hours === 'number' && isFinite(e.hours);
                     var hasQ = typeof e.quality === 'number' && isFinite(e.quality);
-                    return h('tr', { key: i, style: { borderBottom: '1px solid #e2e8f0' } },
+                    return h('tr', { key: i, style: { borderBottom: '1px solid ' + _sleBd('#e2e8f0') } },
                       h('th', { scope: 'row', style: { padding: 5, fontFamily: 'ui-monospace, monospace', textAlign: 'left', fontWeight: 600 } }, e.date),
                       h('td', { style: { padding: 5 } }, e.bedtime || '–'),
                       h('td', { style: { padding: 5 } }, e.waketime || '–'),
@@ -791,7 +822,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
               )
             ) : h('div', { style: { fontSize: 12, color: _sleFg('#475569'), fontStyle: 'italic' } }, 'No diary entries yet.'),
 
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _sleFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid ' + _sleBd('#cbd5e1'), fontSize: 9, color: _sleFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Based on AAP / CDC adolescent sleep guidance. ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -809,7 +840,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sleep'))) {
       else if (view === 'about') body = renderAbout();
       else body = renderHome();
 
-      return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sleep and Rest Lab' },
+      return h('div', { className: 'selh-sleep', style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Sleep and Rest Lab' },
         header(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? h('div', { style: { marginBottom: 12 } }, window.SelHub.renderCrisisResources(h, _sleBand))

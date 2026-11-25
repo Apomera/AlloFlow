@@ -71,7 +71,14 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
 
   // ── Audio ──
   var _absAC = null;
-  function isGloballyMuted() { return typeof window === 'undefined' || (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; }
+  function isGloballyMuted() {
+    if (typeof window === 'undefined') return true;
+    var fnMuted = false;
+    if (typeof window.__alloIsGlobalMuted === 'function') {
+      try { fnMuted = !!window.__alloIsGlobalMuted(); } catch (_) { fnMuted = false; }
+    }
+    return fnMuted || !!window._alloGlobalMute;
+  }
   function getAC() { if (isGloballyMuted()) return null; if (!_absAC) { try { _absAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
   function absTone(f, d, t, v) { if (isGloballyMuted()) return; var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCastReady() { absTone(660, 0.08, 'sine', 0.05); setTimeout(function() { absTone(880, 0.1, 'sine', 0.06); }, 70); }
@@ -160,19 +167,19 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       + ' .abs-inquiry-preset { min-height: 44px; padding: 8px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; border: 1px solid rgba(148,163,184,0.4); background: #0f172a; color: #f1f5f9; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }'
       + ' .abs-inquiry-preset:hover { background: #1e293b; border-color: #a78bfa; }'
       + ' .abs-inquiry-preset:focus-visible { outline: 3px solid #fde047; outline-offset: 2px; }'
-      + ' .dark .abs-workbench { --abs-surface: #0f172a; --abs-surface-2: #1e293b; --abs-border: #334155; --abs-ink: #f8fafc; --abs-muted: #cbd5e1; --abs-accent: #c4b5fd; --abs-accent-soft: #1e1b4b; }'
-      + ' .dark .abs-stage-card { box-shadow: 0 8px 24px rgba(2,6,23,0.45); }'
-      + ' .theme-contrast .abs-workbench { --abs-surface: #000000; --abs-surface-2: #000000; --abs-border: #ffffff; --abs-ink: #ffffff; --abs-muted: #facc15; --abs-accent: #facc15; --abs-accent-soft: #000000; }'
-      + ' .theme-contrast .abs-hero-deck { background: #000000 !important; border: 2px solid #facc15 !important; box-shadow: none !important; color: #ffffff !important; }'
-      + ' .theme-contrast .abs-hero-badge { background: #000000 !important; border: 2px solid #facc15 !important; color: #facc15 !important; }'
-      + ' .theme-contrast .abs-hero-pill { background: #000000 !important; border: 1px solid #ffffff !important; color: #ffffff !important; }'
-      + ' .theme-contrast .abs-hero-pill-gold { border-color: #facc15 !important; color: #facc15 !important; }'
-      + ' .theme-contrast .abs-preset-btn, .theme-contrast .abs-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }'
-      + ' .theme-contrast .abs-preset-btn:hover, .theme-contrast .abs-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
-      + ' .theme-contrast .abs-stage-card { background: #000000 !important; border: 2px solid #ffffff !important; box-shadow: none !important; color: #ffffff !important; }'
-      + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub { color: #facc15 !important; }'
-      + ' .theme-contrast .abs-workbench * { animation: none !important; transition: none !important; }'
-      + ' .theme-contrast .abs-svg-fx { display: none !important; }';
+      + ' .dark .abs-workbench, .abs-workbench[data-abs-dark="1"] { --abs-surface: #0f172a; --abs-surface-2: #1e293b; --abs-border: #334155; --abs-ink: #f8fafc; --abs-muted: #cbd5e1; --abs-accent: #c4b5fd; --abs-accent-soft: #1e1b4b; }'
+      + ' .dark .abs-stage-card, .abs-workbench[data-abs-dark="1"] .abs-stage-card { box-shadow: 0 8px 24px rgba(2,6,23,0.45); }'
+      + ' .theme-contrast .abs-workbench, .abs-workbench[data-abs-hc="1"] { --abs-surface: #000000; --abs-surface-2: #000000; --abs-border: #ffffff; --abs-ink: #ffffff; --abs-muted: #facc15; --abs-accent: #facc15; --abs-accent-soft: #000000; }'
+      + ' .theme-contrast .abs-hero-deck, .abs-workbench[data-abs-hc="1"] .abs-hero-deck { background: #000000 !important; border: 2px solid #facc15 !important; box-shadow: none !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-hero-badge, .abs-workbench[data-abs-hc="1"] .abs-hero-badge { background: #000000 !important; border: 2px solid #facc15 !important; color: #facc15 !important; }'
+      + ' .theme-contrast .abs-hero-pill, .abs-workbench[data-abs-hc="1"] .abs-hero-pill { background: #000000 !important; border: 1px solid #ffffff !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-hero-pill-gold, .abs-workbench[data-abs-hc="1"] .abs-hero-pill-gold { border-color: #facc15 !important; color: #facc15 !important; }'
+      + ' .theme-contrast .abs-preset-btn, .theme-contrast .abs-inquiry-preset, .abs-workbench[data-abs-hc="1"] .abs-preset-btn, .abs-workbench[data-abs-hc="1"] .abs-inquiry-preset { background: #000000 !important; border: 2px solid #facc15 !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-preset-btn:hover, .theme-contrast .abs-inquiry-preset:hover, .abs-workbench[data-abs-hc="1"] .abs-preset-btn:hover, .abs-workbench[data-abs-hc="1"] .abs-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
+      + ' .theme-contrast .abs-stage-card, .abs-workbench[data-abs-hc="1"] .abs-stage-card { background: #000000 !important; border: 2px solid #ffffff !important; box-shadow: none !important; color: #ffffff !important; }'
+      + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub, .abs-workbench[data-abs-hc="1"] .abs-stage-title, .abs-workbench[data-abs-hc="1"] .abs-stage-sub { color: #facc15 !important; }'
+      + ' .theme-contrast .abs-workbench *, .abs-workbench[data-abs-hc="1"] * { animation: none !important; transition: none !important; }'
+      + ' .theme-contrast .abs-svg-fx, .abs-workbench[data-abs-hc="1"] .abs-svg-fx { display: none !important; }';
     document.head.appendChild(_s);
   }
   (function() {
@@ -1500,12 +1507,22 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
     }).catch(function() { return []; });
   }
 
-  // Returns the full question pool for a spell: static bank + cached AI bank.
-  function getMergedBank(spell, aiCache) {
-    var staticBank = spell.challengeBank || [];
-    var aiBank = (aiCache && aiCache[spell.id]) || [];
-    if (aiBank.length === 0) return staticBank;
-    return staticBank.concat(aiBank);
+  // Returns the full question pool for a spell: static bank + cached AI + offline generated bank.
+  function getMergedBank(spell, aiCache, offlineCache) {
+    if (!spell) return [];
+    var staticBank = Array.isArray(spell.challengeBank) ? spell.challengeBank : [];
+    var aiBank = (aiCache && Array.isArray(aiCache[spell.id])) ? aiCache[spell.id] : [];
+    var offlineBank = (offlineCache && Array.isArray(offlineCache[spell.id])) ? offlineCache[spell.id] : [];
+    if (aiBank.length === 0 && offlineBank.length === 0) return staticBank;
+    var seen = {};
+    var out = [];
+    staticBank.concat(aiBank).concat(offlineBank).forEach(function(q) {
+      if (!q || typeof q.prompt !== 'string' || !Array.isArray(q.options) || q.options.length < 2) return;
+      if (seen[q.prompt]) return;
+      seen[q.prompt] = true;
+      out.push(q);
+    });
+    return out;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1524,7 +1541,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
   //   last 'hit'        → 0.6   (slight de-prioritize — they got it)
   //   last 'crit'       → 0.25  (strong de-prioritize — they know it cold)
   //   plus: "stale" bonus +0.5 for any question not seen in 10+ minutes
-  //   plus: aiGenerated questions get +0.3 to surface variety
+  //   plus: aiGenerated / offlineGenerated questions get +0.3 to surface variety
   function pickWeighted(bank, stats) {
     if (!bank || bank.length === 0) return null;
     if (!stats || Object.keys(stats).length === 0) return pickRandom(bank);
@@ -1538,9 +1555,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       else if (s.lastResult === 'crit') w = 0.25;
       // Stale bonus — anything not seen in 10+ minutes gets a small boost
       if (s && s.lastSeen && (now - s.lastSeen) > 600000) w += 0.5;
-      // AI questions get a small variety boost so the merged bank doesn't
+      // Generated questions get a small variety boost so the merged bank doesn't
       // ignore them once SRS has accumulated stats on static questions.
-      if (qq.aiGenerated) w += 0.3;
+      if (qq.aiGenerated || qq.offlineGenerated) w += 0.3;
       return w;
     });
     var total = weights.reduce(function(a, b) { return a + b; }, 0);
@@ -1551,6 +1568,1285 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       if (r <= 0) return bank[i];
     }
     return bank[bank.length - 1];
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ALLOBOTSAGE_ENGINE — Pure deterministic offline synthesizer,
+  // per-distractor misconception diagnosis, & calibration analytics
+  // (Zero React / zero DOM — exported as _engine & window.AlloBotSagePure)
+  // ═══════════════════════════════════════════════════════════════
+  function _sageHash(str) {
+    var hVal = 2166136261 >>> 0;
+    var txt = String(str || '');
+    for (var i = 0; i < txt.length; i++) {
+      hVal ^= txt.charCodeAt(i);
+      hVal = Math.imul(hVal, 16777619) >>> 0;
+    }
+    return hVal >>> 0;
+  }
+
+  function _sagePrng(seedNum) {
+    var state = (seedNum >>> 0) || 1;
+    return function() {
+      state = (state + 0x6D2B79F5) >>> 0;
+      var z = Math.imul(state ^ (state >>> 15), 1 | state);
+      z = (z + Math.imul(z ^ (z >>> 7), 61 | z)) ^ z;
+      return ((z ^ (z >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function _sageGcd(a, b) {
+    var x = Math.abs(Math.round(a));
+    var y = Math.abs(Math.round(b));
+    while (y !== 0) {
+      var tmp = x % y;
+      x = y;
+      y = tmp;
+    }
+    return x || 1;
+  }
+
+  function _sageFrac(n, d) {
+    var g = _sageGcd(n, d);
+    var sn = Math.round(n / g);
+    var sd = Math.round(d / g);
+    return sd === 1 ? String(sn) : (sn + '/' + sd);
+  }
+
+  function _sageRandInt(rng, lo, hi) {
+    return lo + Math.floor(rng() * (hi - lo + 1));
+  }
+
+  function _sageClassifyDomain(spell) {
+    var id = (spell && spell.id) ? String(spell.id) : '';
+    var src = (spell && spell.sourceTool) ? String(spell.sourceTool) : '';
+    var el = (spell && spell.element) ? String(spell.element) : '';
+    if (id === 'fraction_fire') return 'math_fractions';
+    if (id === 'algebra_arc') return 'math_algebra';
+    if (id === 'geometry_grasp') return 'math_geometry';
+    if (id === 'probability_pulse' || id === 'statistic_strike') return 'math_stats';
+    if (id === 'voltage_verse' || src === 'circuit') return 'physics_circuits';
+    if (id === 'prism_proof' || src === 'physics' || el === 'light') return 'physics_conservation';
+    if (src === 'spaceExplorer' || el === 'gravity') return 'space_astronomy';
+    if (src === 'ecosystem' || src === 'aquarium' || src === 'anatomy' || src === 'behaviorLab' || el === 'life' || el === 'water' || el === 'body') return 'ecology_biology';
+    if (src === 'roadReady') return 'road_kinematics';
+    if (src === 'typingPractice' || el === 'precision' || el === 'focus' || el === 'logic') return 'logic_cs';
+    if (src === 'artStudio' || src === 'music' || el === 'color') return 'arts_acoustics';
+    if (src === 'wordSounds' || src === 'writeCraft' || src === 'immersiveReader' || el === 'word' || el === 'sound' || el === 'mind') return 'literacy_logic';
+    if (src === 'mathLab') return 'math_fractions';
+    return 'mixed_stem';
+  }
+
+  function _sageBuildQuestion(prompt, correctText, distractorSpecs, explain, targetSlot, domain) {
+    var used = {};
+    used[String(correctText)] = true;
+    var cleanDistractors = [];
+    for (var i = 0; i < distractorSpecs.length && cleanDistractors.length < 3; i++) {
+      var spec = distractorSpecs[i];
+      if (!spec) continue;
+      var txt = String(spec.text);
+      if (!txt || used[txt]) continue;
+      used[txt] = true;
+      cleanDistractors.push({ text: txt, whyNot: String(spec.whyNot || '') });
+    }
+    var fallbackIdx = 1;
+    while (cleanDistractors.length < 3) {
+      var cand = String(correctText) + ' (' + fallbackIdx + ')';
+      fallbackIdx++;
+      if (!used[cand]) {
+        used[cand] = true;
+        cleanDistractors.push({ text: cand, whyNot: 'This alternative does not satisfy the target relationship.' });
+      }
+    }
+    var slot = ((targetSlot % 4) + 4) % 4;
+    var options = [];
+    var whyNot = [];
+    var dCursor = 0;
+    for (var pos = 0; pos < 4; pos++) {
+      if (pos === slot) {
+        options.push(String(correctText));
+        whyNot.push(null);
+      } else {
+        options.push(cleanDistractors[dCursor].text);
+        whyNot.push(cleanDistractors[dCursor].whyNot);
+        dCursor++;
+      }
+    }
+    return {
+      prompt: String(prompt),
+      options: options,
+      correctIndex: slot,
+      explain: String(explain),
+      whyNot: whyNot,
+      offlineGenerated: true,
+      domain: domain
+    };
+  }
+
+  function _sageGenMathFractions(rng, variant, slot) {
+    if (variant === 0) {
+      var baseNum = _sageRandInt(rng, 2, 5);
+      var baseDen = baseNum + _sageRandInt(rng, 2, 5);
+      var g0 = _sageGcd(baseNum, baseDen);
+      baseNum = Math.round(baseNum / g0);
+      baseDen = Math.round(baseDen / g0);
+      var scale = _sageRandInt(rng, 2, 6);
+      var ans = (baseNum * scale) + '/' + (baseDen * scale);
+      return _sageBuildQuestion(
+        'Which fraction is equivalent to ' + baseNum + '/' + baseDen + ' when scaled by a factor of ' + scale + '?',
+        ans,
+        [
+          { text: (baseNum + scale) + '/' + (baseDen + scale), whyNot: 'Adding ' + scale + ' to both numerator and denominator changes the ratio instead of keeping the fraction equivalent.' },
+          { text: (baseDen * scale) + '/' + (baseNum * scale), whyNot: 'Swapping numerator and denominator forms the reciprocal rather than an equivalent value.' },
+          { text: (baseNum * scale) + '/' + baseDen, whyNot: 'Multiplying only the numerator scales the fraction\'s value by ' + scale + ' instead of keeping it equal.' }
+        ],
+        'Multiplying both numerator and denominator by ' + scale + ' multiplies by ' + scale + '/' + scale + ' = 1, giving ' + ans + '.',
+        slot, 'math_fractions'
+      );
+    }
+    if (variant === 1) {
+      var partA = _sageRandInt(rng, 2, 5);
+      var partB = partA + _sageRandInt(rng, 1, 4);
+      var mult = _sageRandInt(rng, 2, 7);
+      var givenA = partA * mult;
+      var ansB = partB * mult;
+      return _sageBuildQuestion(
+        'A potion mixes ' + partA + ' parts stardust to ' + partB + ' parts crystal. For ' + givenA + ' parts stardust, how many parts crystal keep the same ratio?',
+        String(ansB),
+        [
+          { text: String(partB + (givenA - partA)), whyNot: 'Adding the difference (' + (givenA - partA) + ') breaks proportional scaling; ratios must be multiplied by the same factor (' + mult + ').' },
+          { text: String(givenA), whyNot: 'Using ' + givenA + ' forces a 1:1 ratio instead of preserving ' + partA + ':' + partB + '.' },
+          { text: String(partB * (mult + 1)), whyNot: 'Scaling crystal by ' + (mult + 1) + ' while stardust scales by ' + mult + ' overshoots the ' + partA + ':' + partB + ' proportion.' }
+        ],
+        'Since ' + givenA + ' \u00f7 ' + partA + ' = ' + mult + ', multiply ' + partB + ' by ' + mult + ' to keep the ratio constant: ' + ansB + ' parts crystal.',
+        slot, 'math_fractions'
+      );
+    }
+    if (variant === 2) {
+      var d1 = _sageRandInt(rng, 2, 5);
+      var d2 = d1 + _sageRandInt(rng, 1, 4);
+      var ansSum = _sageFrac(d1 + d2, d1 * d2);
+      return _sageBuildQuestion(
+        'What is 1/' + d1 + ' + 1/' + d2 + ' in simplest form?',
+        ansSum,
+        [
+          { text: _sageFrac(2, d1 + d2), whyNot: 'Adding numerators and denominators straight across (2/(' + d1 + '+' + d2 + ')) skips finding a common denominator.' },
+          { text: '1/' + (d1 * d2), whyNot: '1/' + (d1 * d2) + ' is the product (1/' + d1 + ' \u00d7 1/' + d2 + '), not the sum.' },
+          { text: _sageFrac(d1 + d2, d1 * d2 + 1), whyNot: 'The shared denominator is ' + d1 + ' \u00d7 ' + d2 + ' = ' + (d1 * d2) + ', giving (' + d2 + ' + ' + d1 + ')/' + (d1 * d2) + ' = ' + ansSum + '.' }
+        ],
+        'Convert to common denominator ' + (d1 * d2) + ': ' + d2 + '/' + (d1 * d2) + ' + ' + d1 + '/' + (d1 * d2) + ' = ' + ansSum + '.',
+        slot, 'math_fractions'
+      );
+    }
+    if (variant === 3) {
+      var den = _sageRandInt(rng, 3, 8);
+      var num = _sageRandInt(rng, 1, den - 1);
+      var g1 = _sageGcd(num, den);
+      num = Math.round(num / g1);
+      den = Math.round(den / g1);
+      var unit = _sageRandInt(rng, 2, 7);
+      var whole = den * unit;
+      var ansVal = num * unit;
+      return _sageBuildQuestion(
+        'What is ' + num + '/' + den + ' of ' + whole + '?',
+        String(ansVal),
+        [
+          { text: String(whole - num), whyNot: 'Subtracting ' + num + ' treats a fraction of a quantity like subtraction instead of splitting into ' + den + ' equal parts.' },
+          { text: String(num * den), whyNot: 'Multiplying numerator by denominator ignores the whole amount (' + whole + ').' },
+          { text: String((num + 1) * unit), whyNot: 'Each 1/' + den + ' share equals ' + unit + ', so ' + (num + 1) + ' shares overshoots ' + num + '/' + den + '.' }
+        ],
+        'Split ' + whole + ' into ' + den + ' equal parts (' + unit + ' each), then take ' + num + ' parts: ' + num + ' \u00d7 ' + unit + ' = ' + ansVal + '.',
+        slot, 'math_fractions'
+      );
+    }
+    var pctPool = [20, 25, 40, 60, 75, 80, 30, 70, 90, 10];
+    var pct = pctPool[_sageRandInt(rng, 0, pctPool.length - 1)];
+    var ansFrac = _sageFrac(pct, 100);
+    var compFrac = _sageFrac(100 - pct, 100);
+    var parts = ansFrac.split('/');
+    var flipped = parts.length === 2 ? (parts[1] + '/' + parts[0]) : (ansFrac + '/10');
+    return _sageBuildQuestion(
+      'Which simplified fraction is equal to ' + pct + '%?',
+      ansFrac,
+      [
+        { text: compFrac, whyNot: compFrac + ' equals ' + (100 - pct) + '% (the leftover complement), not ' + pct + '%.' },
+        { text: flipped, whyNot: 'Flipping the fraction creates a value greater than 1 (>100%), whereas ' + pct + '% is less than 1 whole.' },
+        { text: pct + '/10', whyNot: 'Percent means parts per 100 (not parts per 10), so dividing by 10 makes the value tenfold too large.' }
+      ],
+      pct + '% means ' + pct + '/100, which simplifies to ' + ansFrac + '.',
+      slot, 'math_fractions'
+    );
+  }
+
+  function _sageGenMathAlgebra(rng, variant, slot) {
+    if (variant === 0) {
+      var a = _sageRandInt(rng, 2, 6);
+      var x = _sageRandInt(rng, 2, 9);
+      var b = _sageRandInt(rng, 2, 12);
+      var c = a * x + b;
+      return _sageBuildQuestion(
+        'Solve for x: ' + a + 'x + ' + b + ' = ' + c,
+        'x = ' + x,
+        [
+          { text: 'x = ' + Math.round((c + b) / a), whyNot: 'Adding ' + b + ' to ' + c + ' goes the wrong way; use the inverse operation and subtract ' + b + ' first.' },
+          { text: 'x = ' + (c - b), whyNot: (c - b) + ' equals ' + a + 'x before dividing both sides by ' + a + '.' },
+          { text: 'x = ' + (x + 2), whyNot: 'Substituting x = ' + (x + 2) + ' gives ' + (a * (x + 2) + b) + ', which does not balance ' + c + '.' }
+        ],
+        'Subtract ' + b + ' from both sides (' + a + 'x = ' + (c - b) + '), then divide by ' + a + ' to get x = ' + x + '.',
+        slot, 'math_algebra'
+      );
+    }
+    if (variant === 1) {
+      var base = _sageRandInt(rng, 2, 5);
+      var exp = _sageRandInt(rng, 2, 3);
+      var off = _sageRandInt(rng, 2, 9);
+      var powVal = Math.pow(base, exp);
+      var ans = powVal + off;
+      var expSym = exp === 2 ? '\u00b2' : '\u00b3';
+      return _sageBuildQuestion(
+        'Evaluate ' + base + expSym + ' + ' + off + '.',
+        String(ans),
+        [
+          { text: String(base * exp + off), whyNot: 'An exponent means repeated multiplication (' + base + expSym + ' = ' + powVal + '), not ' + base + ' \u00d7 ' + exp + '.' },
+          { text: String(powVal), whyNot: powVal + ' evaluates ' + base + expSym + ' only, omitting the + ' + off + ' term.' },
+          { text: String(powVal - off), whyNot: 'Subtracting ' + off + ' flips the + sign in the expression.' }
+        ],
+        'Evaluate the power first (' + base + expSym + ' = ' + powVal + '), then add ' + off + ' to get ' + ans + '.',
+        slot, 'math_algebra'
+      );
+    }
+    if (variant === 2) {
+      var k = _sageRandInt(rng, 2, 7);
+      var m = _sageRandInt(rng, 2, 8);
+      var ansExpr = k + 'x + ' + (k * m);
+      return _sageBuildQuestion(
+        'Expand using the distributive property: ' + k + '(x + ' + m + ')',
+        ansExpr,
+        [
+          { text: k + 'x + ' + m, whyNot: 'Leaving +' + m + ' unchanged forgets to distribute ' + k + ' to the second term inside parentheses.' },
+          { text: k + 'x + ' + (k + m), whyNot: 'The distributive property multiplies ' + k + ' \u00d7 ' + m + ' = ' + (k * m) + ', rather than adding ' + k + ' + ' + m + '.' },
+          { text: (k + m) + 'x', whyNot: 'Unlike terms x and ' + m + ' cannot be combined into a single coefficient before multiplying.' }
+        ],
+        'Multiply ' + k + ' by both terms inside parentheses: ' + k + '\u00b7x + ' + k + '\u00b7' + m + ' = ' + ansExpr + '.',
+        slot, 'math_algebra'
+      );
+    }
+    if (variant === 3) {
+      var slope = _sageRandInt(rng, 2, 6);
+      var yInt = _sageRandInt(rng, 1, 7);
+      var dx = _sageRandInt(rng, 2, 5);
+      var y2 = yInt + slope * dx;
+      return _sageBuildQuestion(
+        'A line passes through (0, ' + yInt + ') and (' + dx + ', ' + y2 + '). What is its slope?',
+        String(slope),
+        [
+          { text: String(yInt), whyNot: yInt + ' is the y-intercept (starting height at x = 0), not the slope (rate of change).' },
+          { text: String(slope * dx), whyNot: (slope * dx) + ' is only the vertical rise (' + y2 + ' \u2212 ' + yInt + ') without dividing by the horizontal run (' + dx + ').' },
+          { text: _sageFrac(dx, slope * dx), whyNot: 'Dividing run by rise inverts the slope formula; slope is rise \u00f7 run.' }
+        ],
+        'Slope = (y\u2082 \u2212 y\u2081) \u00f7 (x\u2082 \u2212 x\u2081) = (' + y2 + ' \u2212 ' + yInt + ') \u00f7 ' + dx + ' = ' + slope + '.',
+        slot, 'math_algebra'
+      );
+    }
+    var div = _sageRandInt(rng, 3, 8);
+    var quot = _sageRandInt(rng, 4, 11);
+    var prod = div * quot;
+    return _sageBuildQuestion(
+      'Solve for n: n \u00f7 ' + div + ' = ' + quot,
+      'n = ' + prod,
+      [
+        { text: 'n = ' + (quot + div), whyNot: 'Adding ' + div + ' does not undo division; multiplication is the inverse of division.' },
+        { text: 'n = ' + Math.max(1, quot - div), whyNot: 'Subtracting ' + div + ' shrinks n instead of undoing division by ' + div + '.' },
+        { text: 'n = ' + (div * (quot + 1)), whyNot: (div * (quot + 1)) + ' \u00f7 ' + div + ' = ' + (quot + 1) + ', which is 1 too high.' }
+      ],
+      'Multiply both sides by ' + div + ' to undo division: n = ' + quot + ' \u00d7 ' + div + ' = ' + prod + '.',
+      slot, 'math_algebra'
+    );
+  }
+
+  function _sageGenMathGeometry(rng, variant, slot) {
+    if (variant === 0) {
+      var b = _sageRandInt(rng, 2, 7) * 2;
+      var ht = _sageRandInt(rng, 3, 9);
+      var area = (b * ht) / 2;
+      return _sageBuildQuestion(
+        'What is the area of a triangle with base ' + b + ' cm and height ' + ht + ' cm?',
+        area + ' cm\u00b2',
+        [
+          { text: (b * ht) + ' cm\u00b2', whyNot: (b * ht) + ' cm\u00b2 is base \u00d7 height (a full rectangle), forgetting the 1/2 factor for a triangle.' },
+          { text: (b + ht) + ' cm\u00b2', whyNot: 'Adding base and height combines linear edges instead of computing two-dimensional area.' },
+          { text: (2 * (b + ht)) + ' cm\u00b2', whyNot: '2(b + h) computes a rectangle\'s perimeter, not a triangle\'s area.' }
+        ],
+        'Triangle area = \u00bd \u00d7 base \u00d7 height = \u00bd \u00d7 ' + b + ' \u00d7 ' + ht + ' = ' + area + ' cm\u00b2.',
+        slot, 'math_geometry'
+      );
+    }
+    if (variant === 1) {
+      var a1 = _sageRandInt(rng, 25, 75);
+      var a2 = _sageRandInt(rng, 30, 80);
+      var a3 = 180 - a1 - a2;
+      return _sageBuildQuestion(
+        'Two interior angles of a triangle measure ' + a1 + '\u00b0 and ' + a2 + '\u00b0. What is the third angle?',
+        a3 + '\u00b0',
+        [
+          { text: (360 - a1 - a2) + '\u00b0', whyNot: '360\u00b0 is the angle sum of a quadrilateral; a triangle\'s interior angles sum to 180\u00b0.' },
+          { text: (a1 + a2) + '\u00b0', whyNot: (a1 + a2) + '\u00b0 is the sum of the first two angles, before subtracting from 180\u00b0.' },
+          { text: Math.abs(a1 - a2) + '\u00b0', whyNot: 'Subtracting the two known angles does not make all three angles total 180\u00b0.' }
+        ],
+        'Interior angles of any triangle sum to 180\u00b0: 180\u00b0 \u2212 (' + a1 + '\u00b0 + ' + a2 + '\u00b0) = ' + a3 + '\u00b0.',
+        slot, 'math_geometry'
+      );
+    }
+    if (variant === 2) {
+      var scale = _sageRandInt(rng, 1, 5);
+      var leg1 = 3 * scale;
+      var leg2 = 4 * scale;
+      var hyp = 5 * scale;
+      return _sageBuildQuestion(
+        'A right triangle has legs of ' + leg1 + ' m and ' + leg2 + ' m. How long is the hypotenuse?',
+        hyp + ' m',
+        [
+          { text: (leg1 + leg2) + ' m', whyNot: 'Adding legs (' + leg1 + ' + ' + leg2 + ') breaks the Pythagorean theorem; use a\u00b2 + b\u00b2 = c\u00b2, not a + b = c.' },
+          { text: (hyp * hyp) + ' m', whyNot: (hyp * hyp) + ' equals c\u00b2 before taking the square root to find c.' },
+          { text: (6 * scale) + ' m', whyNot: 'Check ' + leg1 + '\u00b2 + ' + leg2 + '\u00b2 = ' + (hyp * hyp) + ', whose square root is ' + hyp + ', not ' + (6 * scale) + '.' }
+        ],
+        'By the Pythagorean theorem: \u221a(' + leg1 + '\u00b2 + ' + leg2 + '\u00b2) = \u221a' + (hyp * hyp) + ' = ' + hyp + ' m.',
+        slot, 'math_geometry'
+      );
+    }
+    if (variant === 3) {
+      var len = _sageRandInt(rng, 4, 11);
+      var wid = _sageRandInt(rng, 2, 7);
+      if (len === wid) len += 2;
+      var perim = 2 * (len + wid);
+      return _sageBuildQuestion(
+        'A rectangular garden is ' + len + ' m long and ' + wid + ' m wide. What is its perimeter?',
+        perim + ' m',
+        [
+          { text: (len * wid) + ' m', whyNot: (len * wid) + ' is the area (length \u00d7 width), not the perimeter around the edges.' },
+          { text: (len + wid) + ' m', whyNot: (len + wid) + ' m counts only one length and one width instead of all four sides.' },
+          { text: (2 * len + wid) + ' m', whyNot: 'Counting only one width omits the opposite edge of the rectangle.' }
+        ],
+        'Perimeter sums all four sides: 2 \u00d7 (' + len + ' + ' + wid + ') = ' + perim + ' m.',
+        slot, 'math_geometry'
+      );
+    }
+    var ang = _sageRandInt(rng, 22, 78);
+    var supp = 180 - ang;
+    return _sageBuildQuestion(
+      'Two angles are supplementary. If one measures ' + ang + '\u00b0, what is the other angle?',
+      supp + '\u00b0',
+      [
+        { text: (90 - ang) + '\u00b0', whyNot: (90 - ang) + '\u00b0 is the complementary angle (summing to 90\u00b0); supplementary angles sum to 180\u00b0.' },
+        { text: (360 - ang) + '\u00b0', whyNot: '360\u00b0 is a full rotation, whereas supplementary angles form a straight 180\u00b0 line.' },
+        { text: ang + '\u00b0', whyNot: 'Equal angles are supplementary only when both equal 90\u00b0; ' + ang + '\u00b0 + ' + ang + '\u00b0 = ' + (2 * ang) + '\u00b0.' }
+      ],
+      'Supplementary angles sum to 180\u00b0, so 180\u00b0 \u2212 ' + ang + '\u00b0 = ' + supp + '\u00b0.',
+      slot, 'math_geometry'
+    );
+  }
+
+  function _sageGenMathStats(rng, variant, slot) {
+    if (variant === 0) {
+      var red = _sageRandInt(rng, 2, 5);
+      var blue = _sageRandInt(rng, 2, 5);
+      var green = _sageRandInt(rng, 1, 4);
+      var tot = red + blue + green;
+      var ans = _sageFrac(red, tot);
+      return _sageBuildQuestion(
+        'A pouch holds ' + red + ' red, ' + blue + ' blue, and ' + green + ' green runes. What is P(red) on one random draw?',
+        ans,
+        [
+          { text: _sageFrac(red, blue + green), whyNot: 'Dividing red by non-red compares part-to-part instead of favorable outcomes over total outcomes (' + tot + ').' },
+          { text: _sageFrac(blue + green, tot), whyNot: 'That is the probability of NOT drawing a red rune (the complement).' },
+          { text: '1/' + red, whyNot: 'Putting the count of red runes in the denominator shrinks probability as red runes increase.' }
+        ],
+        'Probability = favorable \u00f7 total = ' + red + '/' + tot + ' = ' + ans + '.',
+        slot, 'math_stats'
+      );
+    }
+    if (variant === 1) {
+      var mBase = _sageRandInt(rng, 6, 15);
+      var dA = _sageRandInt(rng, 1, 4);
+      var dB = _sageRandInt(rng, 2, 5);
+      var nums = [mBase - dB, mBase - dA, mBase + dA, mBase + dB];
+      var sum4 = mBase * 4;
+      var range4 = (mBase + dB) - (mBase - dB);
+      return _sageBuildQuestion(
+        'What is the mean (average) of the dataset [' + nums.join(', ') + ']?',
+        String(mBase),
+        [
+          { text: String(sum4), whyNot: sum4 + ' is the total sum before dividing by the 4 data points.' },
+          { text: String(range4), whyNot: range4 + ' is the range (maximum minus minimum), not the arithmetic mean.' },
+          { text: String(mBase + dB), whyNot: (mBase + dB) + ' is the largest value (maximum), not the center average.' }
+        ],
+        'Sum the 4 values (' + sum4 + ') and divide by 4: ' + sum4 + ' \u00f7 4 = ' + mBase + '.',
+        slot, 'math_stats'
+      );
+    }
+    if (variant === 2) {
+      var s0 = _sageRandInt(rng, 2, 6);
+      var s1 = s0 + _sageRandInt(rng, 2, 4);
+      var med = s1 + _sageRandInt(rng, 2, 5);
+      var s3 = med + _sageRandInt(rng, 2, 5);
+      var s4 = s3 + _sageRandInt(rng, 2, 6);
+      var unsorted = [s3, s0, s4, med, s1];
+      return _sageBuildQuestion(
+        'What is the median of the values [' + unsorted.join(', ') + ']?',
+        String(med),
+        [
+          { text: String(s4), whyNot: s4 + ' sits in the middle only BEFORE sorting; you must order values from least to greatest first.' },
+          { text: String(s4 - s0), whyNot: (s4 - s0) + ' is the range (spread), not the middle value (median).' },
+          { text: String(s1), whyNot: 'Sorted order is [' + [s0, s1, med, s3, s4].join(', ') + '], so ' + s1 + ' is the 2nd value, not the middle (3rd).' }
+        ],
+        'Sort first: [' + [s0, s1, med, s3, s4].join(', ') + ']. The middle (3rd) value is ' + med + '.',
+        slot, 'math_stats'
+      );
+    }
+    if (variant === 3) {
+      var sides = [4, 6, 8, 10][_sageRandInt(rng, 0, 3)];
+      var ansInd = '1/' + (2 * sides);
+      return _sageBuildQuestion(
+        'You flip a fair coin and roll a fair ' + sides + '-sided die. What is P(Heads AND rolling a 1)?',
+        ansInd,
+        [
+          { text: _sageFrac(sides + 2, 2 * sides), whyNot: 'Adding 1/2 + 1/' + sides + ' applies to mutually exclusive OR events; independent AND events multiply.' },
+          { text: '1/' + sides, whyNot: '1/' + sides + ' accounts only for the die and ignores the 1/2 coin-flip probability.' },
+          { text: _sageFrac(2, sides), whyNot: 'Multiplying by 2 increases probability instead of taking half of 1/' + sides + '.' }
+        ],
+        'For independent events, multiply probabilities: (1/2) \u00d7 (1/' + sides + ') = ' + ansInd + '.',
+        slot, 'math_stats'
+      );
+    }
+    var loV = _sageRandInt(rng, 3, 12);
+    var hiV = loV + _sageRandInt(rng, 8, 22);
+    var mid1 = loV + _sageRandInt(rng, 2, 5);
+    var mid2 = hiV - _sageRandInt(rng, 2, 5);
+    var rngAns = hiV - loV;
+    return _sageBuildQuestion(
+      'What is the range of the dataset [' + [mid2, loV, hiV, mid1].join(', ') + ']?',
+      String(rngAns),
+      [
+        { text: String(hiV + loV), whyNot: 'Range measures spread via max \u2212 min, not max + min.' },
+        { text: String(Math.round((hiV + loV) / 2)), whyNot: 'Averaging the extremes gives the midrange rather than the total spread.' },
+        { text: String(mid2 - mid1), whyNot: 'Range uses the overall maximum (' + hiV + ') and minimum (' + loV + '), not inner values.' }
+      ],
+      'Range = maximum \u2212 minimum = ' + hiV + ' \u2212 ' + loV + ' = ' + rngAns + '.',
+      slot, 'math_stats'
+    );
+  }
+
+  function _sageGenPhysics(rng, variant, slot, isCircuit) {
+    if (variant === 0 || (isCircuit && variant === 3)) {
+      var cur = _sageRandInt(rng, 2, 6);
+      var res = _sageRandInt(rng, 3, 12);
+      var volt = cur * res;
+      return _sageBuildQuestion(
+        'A circuit draws ' + cur + ' A of current through a ' + res + ' \u03a9 resistor. By Ohm\u2019s law, what voltage is across the resistor?',
+        volt + ' V',
+        [
+          { text: (cur + res) + ' V', whyNot: 'Ohm\u2019s law multiplies current by resistance (V = I \u00d7 R); you cannot add amps and ohms.' },
+          { text: _sageFrac(res, cur) + ' V', whyNot: 'Dividing R by I inverts Ohm\u2019s law; higher current through a resistor requires higher voltage.' },
+          { text: _sageFrac(cur, res) + ' V', whyNot: 'Dividing I by R gives the wrong relationship; V = I \u00d7 R.' }
+        ],
+        'Ohm\u2019s law: V = I \u00d7 R = ' + cur + ' A \u00d7 ' + res + ' \u03a9 = ' + volt + ' V.',
+        slot, isCircuit ? 'physics_circuits' : 'physics_conservation'
+      );
+    }
+    if (variant === 1) {
+      var vP = _sageRandInt(rng, 4, 12);
+      var iP = _sageRandInt(rng, 2, 5);
+      var watts = vP * iP;
+      return _sageBuildQuestion(
+        'A lamp runs at ' + vP + ' V and draws ' + iP + ' A. How much electrical power does it use?',
+        watts + ' W',
+        [
+          { text: (vP + iP) + ' W', whyNot: 'Electrical power is P = V \u00d7 I, not V + I.' },
+          { text: _sageFrac(vP, iP) + ' W', whyNot: 'V \u00f7 I computes resistance in ohms, not power in watts.' },
+          { text: Math.max(1, vP - iP) + ' W', whyNot: 'Subtracting current from voltage mixes different physical units.' }
+        ],
+        'Electrical power P = V \u00d7 I = ' + vP + ' V \u00d7 ' + iP + ' A = ' + watts + ' W.',
+        slot, isCircuit ? 'physics_circuits' : 'physics_conservation'
+      );
+    }
+    if (variant === 2) {
+      var totE = _sageRandInt(rng, 6, 15) * 10;
+      var remPe = _sageRandInt(rng, 1, Math.floor(totE / 10) - 2) * 10;
+      var ke = totE - remPe;
+      return _sageBuildQuestion(
+        'A frictionless coaster starts with ' + totE + ' J of potential energy and 0 J of kinetic energy. When potential energy drops to ' + remPe + ' J, what is its kinetic energy?',
+        ke + ' J',
+        [
+          { text: (totE + remPe) + ' J', whyNot: 'Adding ' + remPe + ' J to ' + totE + ' J would create extra energy, violating energy conservation.' },
+          { text: remPe + ' J', whyNot: 'KE equals PE only at the exact midpoint (' + (totE / 2) + ' J), not at ' + remPe + ' J.' },
+          { text: '0 J', whyNot: 'Without friction, lost potential energy converts into kinetic energy rather than vanishing.' }
+        ],
+        'Conservation of mechanical energy: PE + KE = ' + totE + ' J, so KE = ' + totE + ' \u2212 ' + remPe + ' = ' + ke + ' J.',
+        slot, 'physics_conservation'
+      );
+    }
+    if (variant === 3) {
+      var mass = _sageRandInt(rng, 2, 9);
+      var accel = _sageRandInt(rng, 2, 7);
+      var force = mass * accel;
+      return _sageBuildQuestion(
+        'What net force accelerates a ' + mass + ' kg probe at ' + accel + ' m/s\u00b2?',
+        force + ' N',
+        [
+          { text: (mass + accel) + ' N', whyNot: 'Newton\u2019s second law is F = m \u00d7 a, not m + a.' },
+          { text: _sageFrac(mass, accel) + ' N', whyNot: 'Dividing mass by acceleration predicts less force for larger acceleration, reversing F = ma.' },
+          { text: (force * 2) + ' N', whyNot: 'Doubling m \u00d7 a overestimates force; 1 N accelerates 1 kg at 1 m/s\u00b2.' }
+        ],
+        'Newton\u2019s second law: F = m \u00d7 a = ' + mass + ' kg \u00d7 ' + accel + ' m/s\u00b2 = ' + force + ' N.',
+        slot, 'physics_conservation'
+      );
+    }
+    var spd = _sageRandInt(rng, 3, 12);
+    var dur = _sageRandInt(rng, 4, 9);
+    var dist = spd * dur;
+    return _sageBuildQuestion(
+      'A glider travels at a steady ' + spd + ' m/s for ' + dur + ' seconds. How far does it travel?',
+      dist + ' m',
+      [
+        { text: (spd + dur) + ' m', whyNot: 'Distance equals speed \u00d7 time; adding m/s and seconds mixes incompatible units.' },
+        { text: _sageFrac(spd, dur) + ' m', whyNot: 'Dividing speed by time calculates acceleration (m/s\u00b2), not distance (m).' },
+        { text: Math.abs(spd - dur) + ' m', whyNot: 'Subtracting time from speed does not accumulate meters traveled per second.' }
+      ],
+      'At constant speed, distance = speed \u00d7 time = ' + spd + ' m/s \u00d7 ' + dur + ' s = ' + dist + ' m.',
+      slot, 'physics_conservation'
+    );
+  }
+
+  function _sageGenSpace(rng, variant, slot) {
+    if (variant === 0) {
+      var roverM = _sageRandInt(rng, 10, 40) * 5;
+      var grav = [2, 4, 8, 10][_sageRandInt(rng, 0, 3)];
+      var weight = roverM * grav;
+      return _sageBuildQuestion(
+        'A rover has a mass of ' + roverM + ' kg. On a moon with surface gravity ' + grav + ' m/s\u00b2, what is its weight and mass?',
+        weight + ' N; mass stays ' + roverM + ' kg',
+        [
+          { text: weight + ' N; mass drops to ' + Math.round(roverM / 2) + ' kg', whyNot: 'Mass is the amount of matter and stays constant everywhere; only weight changes with gravity.' },
+          { text: (roverM + grav) + ' N; mass stays ' + roverM + ' kg', whyNot: 'Weight is mass \u00d7 gravity (W = mg), not mass + gravity.' },
+          { text: roverM + ' N; weight never changes', whyNot: 'Weight depends on local gravitational acceleration g, so it changes from world to world.' }
+        ],
+        'Weight W = m \u00d7 g = ' + roverM + ' \u00d7 ' + grav + ' = ' + weight + ' N, while mass remains ' + roverM + ' kg everywhere.',
+        slot, 'space_astronomy'
+      );
+    }
+    if (variant === 1) {
+      var kDist = _sageRandInt(rng, 2, 5);
+      var kSq = kDist * kDist;
+      return _sageBuildQuestion(
+        'If the distance between two moons increases by a factor of ' + kDist + ', their gravitational pull becomes:',
+        '1/' + kSq + ' as strong',
+        [
+          { text: '1/' + kDist + ' as strong', whyNot: 'Gravity obeys an inverse-square law (1/r\u00b2), so it weakens faster than 1/r.' },
+          { text: kSq + ' times stronger', whyNot: 'Moving bodies farther apart weakens gravitational attraction rather than strengthening it.' },
+          { text: 'Unchanged', whyNot: 'Gravitational force decreases rapidly as the separation distance grows.' }
+        ],
+        'By Newton\u2019s inverse-square law (F \u221d 1/r\u00b2), scaling distance by ' + kDist + ' scales gravity by 1/' + kDist + '\u00b2 = 1/' + kSq + '.',
+        slot, 'space_astronomy'
+      );
+    }
+    if (variant === 2) {
+      var secs = _sageRandInt(rng, 2, 9);
+      var km = secs * 300000;
+      return _sageBuildQuestion(
+        'Light travels ~300,000 km/s in vacuum. Roughly how far does a laser pulse travel in ' + secs + ' seconds?',
+        km.toLocaleString('en-US') + ' km',
+        [
+          { text: Math.round(300000 / secs).toLocaleString('en-US') + ' km', whyNot: 'Dividing speed by time shrinks distance as time grows; distance = speed \u00d7 time.' },
+          { text: (secs * 30000).toLocaleString('en-US') + ' km', whyNot: 'That drops a factor of ten (30,000 km/s instead of 300,000 km/s).' },
+          { text: (300000 + secs).toLocaleString('en-US') + ' km', whyNot: 'Speed (km/s) and time (s) must be multiplied, not added.' }
+        ],
+        'Distance = c \u00d7 t = 300,000 km/s \u00d7 ' + secs + ' s = ' + km.toLocaleString('en-US') + ' km.',
+        slot, 'space_astronomy'
+      );
+    }
+    if (variant === 3) {
+      var innerAu = _sageRandInt(rng, 1, 3);
+      var outerAu = innerAu + _sageRandInt(rng, 3, 8);
+      return _sageBuildQuestion(
+        'Exoplanet A orbits at ' + innerAu + ' AU and Exoplanet B orbits the same star at ' + outerAu + ' AU. Which completes an orbit faster?',
+        'Exoplanet A (closer orbit)',
+        [
+          { text: 'Exoplanet B (farther orbit)', whyNot: 'Farther planets experience weaker stellar gravity and travel a longer orbital path, so they orbit slower.' },
+          { text: 'Both take the exact same time', whyNot: 'Kepler\u2019s third law (P\u00b2 \u221d a\u00b3) ties orbital period strongly to orbital radius.' },
+          { text: 'Only the more massive planet orbits faster', whyNot: 'Orbital speed around a much heavier star depends on orbital distance, not the planet\u2019s mass.' }
+        ],
+        'By Kepler\u2019s laws, closer orbits (' + innerAu + ' AU vs ' + outerAu + ' AU) have stronger gravity, higher speed, and shorter years.',
+        slot, 'space_astronomy'
+      );
+    }
+    var starPairs = [
+      { hot: 'blue-white', cool: 'red' },
+      { hot: 'blue', cool: 'orange' }
+    ];
+    var sp = starPairs[_sageRandInt(rng, 0, starPairs.length - 1)];
+    return _sageBuildQuestion(
+      'Between a ' + sp.hot + ' star and a ' + sp.cool + ' star of similar size, which has the higher surface temperature?',
+      'The ' + sp.hot + ' star',
+      [
+        { text: 'The ' + sp.cool + ' star', whyNot: 'Even though red/orange feel warm in art, in physics shorter blue wavelengths come from much hotter surfaces.' },
+        { text: 'Both always share the same temperature', whyNot: 'A star\u2019s peak color shifts directly with its surface temperature (Wien\u2019s law).' },
+        { text: 'Color depends only on distance from Earth', whyNot: 'Intrinsic star color reflects photosphere temperature, not mere proximity.' }
+      ],
+      'Hotter objects peak at shorter, higher-energy wavelengths, so ' + sp.hot + ' stars are hotter than ' + sp.cool + ' stars.',
+      slot, 'space_astronomy'
+    );
+  }
+
+  function _sageGenEcology(rng, variant, slot) {
+    if (variant === 0) {
+      var prodE = _sageRandInt(rng, 2, 9) * 1000;
+      var secE = Math.round(prodE / 100);
+      return _sageBuildQuestion(
+        'Producers capture ' + prodE + ' kcal of energy. Using the 10% trophic rule, about how much reaches secondary consumers (2 steps up)?',
+        secE + ' kcal',
+        [
+          { text: Math.round(prodE / 10) + ' kcal', whyNot: Math.round(prodE / 10) + ' kcal is the primary-consumer level (1 step up), not secondary consumers (2 steps up).' },
+          { text: prodE + ' kcal', whyNot: 'Roughly 90% of energy is lost as heat and metabolism at each step, so 100% never transfers.' },
+          { text: Math.round(prodE / 2) + ' kcal', whyNot: 'Trophic transfers retain roughly 10% per level rather than 50%.' }
+        ],
+        'Two 10% steps: ' + prodE + ' \u2192 ' + Math.round(prodE / 10) + ' (primary) \u2192 ' + secE + ' kcal (secondary).',
+        slot, 'ecology_biology'
+      );
+    }
+    if (variant === 1) {
+      var cap = _sageRandInt(rng, 4, 9) * 50;
+      var over = cap + _sageRandInt(rng, 2, 4) * 50;
+      return _sageBuildQuestion(
+        'A reef\u2019s carrying capacity is ' + cap + ' fish, but the population spikes to ' + over + '. What happens next without new resources?',
+        'Competition rises and population declines back toward ' + cap,
+        [
+          { text: 'Population keeps doubling indefinitely', whyNot: 'Limited food, oxygen, and shelter prevent exponential growth above carrying capacity.' },
+          { text: 'Carrying capacity automatically doubles to ' + (cap * 2), whyNot: 'Overshooting a habitat\u2019s limit degrades resources rather than expanding them.' },
+          { text: 'All predators immediately vanish', whyNot: 'Abundant prey tends to sustain or attract predators rather than eliminate them.' }
+        ],
+        'Above carrying capacity (' + cap + '), limiting factors tighten until births and deaths balance near ' + cap + '.',
+        slot, 'ecology_biology'
+      );
+    }
+    if (variant === 2) {
+      return _sageBuildQuestion(
+        'In a healthy aquarium nitrogen cycle, beneficial bacteria convert toxic ammonia (NH\u2083) into which sequence?',
+        'Nitrite (NO\u2082\u207b) first, then less-toxic nitrate (NO\u2083\u207b)',
+        [
+          { text: 'Pure oxygen directly with no intermediate', whyNot: 'Nitrifying bacteria oxidize ammonia stepwise through nitrite to nitrate, not directly into oxygen.' },
+          { text: 'Nitrate first, then back into ammonia', whyNot: 'That reverses the biological oxidation order; nitrite comes before nitrate.' },
+          { text: 'Solid salt crystals that sink harmlessly', whyNot: 'Nitrogen waste stays dissolved as nitrogen compounds that plants or water changes remove.' }
+        ],
+        'Two groups of nitrifying bacteria convert ammonia \u2192 nitrite \u2192 nitrate, keeping fish safe.',
+        slot, 'ecology_biology'
+      );
+    }
+    if (variant === 3) {
+      var hr = _sageRandInt(rng, 6, 10) * 10;
+      var mins = _sageRandInt(rng, 2, 5);
+      var beats = hr * mins;
+      return _sageBuildQuestion(
+        'A resting heart beats ' + hr + ' times per minute to circulate oxygenated blood. How many beats occur in ' + mins + ' minutes?',
+        beats + ' beats',
+        [
+          { text: (hr + mins) + ' beats', whyNot: 'Rate (beats/min) and time (min) multiply; adding them mixes units.' },
+          { text: Math.round(hr / mins) + ' beats', whyNot: 'Dividing heart rate by time shrinks total beats as time increases.' },
+          { text: (beats + hr) + ' beats', whyNot: 'That counts ' + (mins + 1) + ' minutes instead of ' + mins + ' minutes.' }
+        ],
+        'Total beats = rate \u00d7 time = ' + hr + ' bpm \u00d7 ' + mins + ' min = ' + beats + ' beats.',
+        slot, 'ecology_biology'
+      );
+    }
+    return _sageBuildQuestion(
+      'Buckling a seatbelt stops an annoying dashboard chime, so a driver buckles up more often. In behavior science, what is this?',
+      'Negative reinforcement (removing an aversive stimulus increases behavior)',
+      [
+        { text: 'Positive punishment', whyNot: 'Punishment decreases a behavior, whereas buckling up becomes MORE frequent here.' },
+        { text: 'Negative punishment', whyNot: 'Negative punishment removes a pleasant item to reduce behavior; removing an annoyance increases behavior.' },
+        { text: 'Extinction', whyNot: 'Extinction weakens an unrewarded behavior over time rather than strengthening a habit.' }
+      ],
+      'Reinforcement always increases behavior; "negative" means removing an unpleasant stimulus (the chime).',
+      slot, 'ecology_biology'
+    );
+  }
+
+  function _sageGenRoad(rng, variant, slot) {
+    if (variant === 0) {
+      var fps = _sageRandInt(rng, 4, 9) * 10;
+      var sec = _sageRandInt(rng, 3, 4);
+      var gapFt = fps * sec;
+      return _sageBuildQuestion(
+        'At ' + fps + ' ft/s, how many feet do you cover during a safe ' + sec + '-second following gap?',
+        gapFt + ' ft',
+        [
+          { text: (fps + sec) + ' ft', whyNot: 'Distance equals speed \u00d7 time, not speed + time.' },
+          { text: Math.round(fps / sec) + ' ft', whyNot: 'Dividing speed by seconds underestimates the stopping buffer dramatically.' },
+          { text: (fps * 2) + ' ft', whyNot: 'That only leaves a 2-second buffer instead of the full ' + sec + '-second gap.' }
+        ],
+        'Following distance = speed \u00d7 time = ' + fps + ' ft/s \u00d7 ' + sec + ' s = ' + gapFt + ' ft.',
+        slot, 'road_kinematics'
+      );
+    }
+    if (variant === 1) {
+      var factor = _sageRandInt(rng, 2, 3);
+      var sq = factor * factor;
+      return _sageBuildQuestion(
+        'If a vehicle\u2019s speed increases by a factor of ' + factor + ', its kinetic energy and braking distance scale by:',
+        sq + '\u00d7',
+        [
+          { text: factor + '\u00d7', whyNot: 'Kinetic energy grows with the SQUARE of speed (KE = \u00bdmv\u00b2), not linearly.' },
+          { text: (factor + 1) + '\u00d7', whyNot: 'Adding 1 underestimates quadratic scaling (' + factor + '\u00b2 = ' + sq + ').' },
+          { text: '1/' + factor + '\u00d7', whyNot: 'Higher speed demands longer braking distance, never shorter.' }
+        ],
+        'Because kinetic energy scales with v\u00b2, ' + factor + '\u00d7 speed requires ' + factor + '\u00b2 = ' + sq + '\u00d7 braking distance.',
+        slot, 'road_kinematics'
+      );
+    }
+    if (variant === 2) {
+      var mpg = _sageRandInt(rng, 5, 9) * 5;
+      var gals = _sageRandInt(rng, 3, 8);
+      var miles = mpg * gals;
+      return _sageBuildQuestion(
+        'A hybrid averages ' + mpg + ' miles per gallon. How many gallons are needed for a ' + miles + '-mile trip?',
+        gals + ' gallons',
+        [
+          { text: (miles + mpg) + ' gallons', whyNot: 'Fuel needed equals distance \u00f7 mpg; adding miles and mpg mixes units.' },
+          { text: (gals + 2) + ' gallons', whyNot: (gals + 2) + ' gallons at ' + mpg + ' mpg would cover ' + (mpg * (gals + 2)) + ' miles.' },
+          { text: Math.max(1, gals - 1) + ' gallons', whyNot: Math.max(1, gals - 1) + ' gallons only reaches ' + (mpg * Math.max(1, gals - 1)) + ' miles, falling short.' }
+        ],
+        'Gallons = total miles \u00f7 mpg = ' + miles + ' \u00f7 ' + mpg + ' = ' + gals + ' gallons.',
+        slot, 'road_kinematics'
+      );
+    }
+    if (variant === 3) {
+      var reactFt = _sageRandInt(rng, 4, 8) * 10;
+      var brakeFt = _sageRandInt(rng, 7, 14) * 10;
+      var totalStop = reactFt + brakeFt;
+      return _sageBuildQuestion(
+        'A car travels ' + reactFt + ' ft during driver reaction time and ' + brakeFt + ' ft while braking. What is total stopping distance?',
+        totalStop + ' ft',
+        [
+          { text: brakeFt + ' ft', whyNot: 'Braking distance alone ignores the ' + reactFt + ' ft covered before your foot hits the brake.' },
+          { text: (brakeFt - reactFt) + ' ft', whyNot: 'Reaction and braking distances add together rather than canceling out.' },
+          { text: reactFt + ' ft', whyNot: 'Reaction distance only accounts for the time before braking even begins.' }
+        ],
+        'Total stopping distance = reaction distance + braking distance = ' + reactFt + ' + ' + brakeFt + ' = ' + totalStop + ' ft.',
+        slot, 'road_kinematics'
+      );
+    }
+    return _sageBuildQuestion(
+      'Before changing lanes on a multi-lane road, which check catches vehicles hidden from side mirrors?',
+      'A quick shoulder glance into the blind spot after signaling and checking mirrors',
+      [
+        { text: 'Relying on the rearview mirror alone', whyNot: 'Mirrors leave blind zones along the rear quarters where adjacent cars disappear.' },
+        { text: 'Braking sharply before signaling', whyNot: 'Sudden braking without signaling creates a rear-end hazard instead of clearing the lane.' },
+        { text: 'Speeding up without signaling', whyNot: 'Skipping turn signals prevents nearby drivers from anticipating your merge.' }
+      ],
+      'Signal, check mirrors, and glance over your shoulder to confirm the blind spot is clear.',
+      slot, 'road_kinematics'
+    );
+  }
+
+  function _sageGenLogicCs(rng, variant, slot) {
+    if (variant === 0) {
+      var aVal = _sageRandInt(rng, 0, 1) === 1;
+      var bVal = _sageRandInt(rng, 0, 1) === 1;
+      var cVal = _sageRandInt(rng, 0, 1) === 1;
+      var exprRes = (aVal && bVal) || (!cVal);
+      return _sageBuildQuestion(
+        'Evaluate the Boolean logic: (' + (aVal ? 'TRUE' : 'FALSE') + ' AND ' + (bVal ? 'TRUE' : 'FALSE') + ') OR (NOT ' + (cVal ? 'TRUE' : 'FALSE') + ')',
+        exprRes ? 'TRUE' : 'FALSE',
+        [
+          { text: exprRes ? 'FALSE' : 'TRUE', whyNot: 'Check each part: (' + aVal + ' AND ' + bVal + ') is ' + (aVal && bVal) + ', and (NOT ' + cVal + ') is ' + (!cVal) + '; OR needs only one TRUE.' },
+          { text: 'UNDEFINED', whyNot: 'Every Boolean expression with TRUE/FALSE inputs evaluates deterministically to TRUE or FALSE.' },
+          { text: 'BOTH TRUE AND FALSE', whyNot: 'In classical Boolean logic, a statement evaluates to exactly one truth value.' }
+        ],
+        'AND is TRUE only if both inputs are TRUE (' + (aVal && bVal) + '); NOT flips ' + cVal + ' to ' + (!cVal) + '; OR gives ' + (exprRes ? 'TRUE' : 'FALSE') + '.',
+        slot, 'logic_cs'
+      );
+    }
+    if (variant === 1) {
+      var dec = _sageRandInt(rng, 5, 14);
+      var bin = dec.toString(2);
+      while (bin.length < 4) bin = '0' + bin;
+      return _sageBuildQuestion(
+        'Convert the 4-bit binary number ' + bin + ' to base-10 decimal.',
+        String(dec),
+        [
+          { text: String(dec + 2), whyNot: 'Check the place values (8, 4, 2, 1); adding the 1-bits in ' + bin + ' equals ' + dec + ', not ' + (dec + 2) + '.' },
+          { text: String(Math.max(1, dec - 1)), whyNot: 'Check the rightmost 1s bit carefully — place values double from right to left (1, 2, 4, 8).' },
+          { text: String(bin.split('').reduce(function(acc, ch) { return acc + (ch === '1' ? 1 : 0); }, 0)), whyNot: 'Counting how many 1-bits appear ignores binary place values (8, 4, 2, 1).' }
+        ],
+        'Sum the powers of 2 where bit = 1 (8, 4, 2, 1): ' + bin + '\u2082 = ' + dec + '\u2081\u2080.',
+        slot, 'logic_cs'
+      );
+    }
+    if (variant === 2) {
+      var mins = _sageRandInt(rng, 2, 4);
+      var netWpm = _sageRandInt(rng, 25, 55);
+      var errs = _sageRandInt(rng, 2, 6);
+      var totalW = netWpm * mins + errs;
+      return _sageBuildQuestion(
+        'A typist enters ' + totalW + ' words in ' + mins + ' minutes with ' + errs + ' uncorrected errors. What is net WPM: (words \u2212 errors) \u00f7 minutes?',
+        netWpm + ' WPM',
+        [
+          { text: Math.round(totalW / mins) + ' WPM', whyNot: 'Dividing total words without subtracting errors gives gross WPM instead of net WPM.' },
+          { text: (totalW - errs) + ' WPM', whyNot: (totalW - errs) + ' is net words total before dividing by ' + mins + ' minutes.' },
+          { text: Math.round((totalW + errs) / mins) + ' WPM', whyNot: 'Errors reduce net speed rather than adding to it.' }
+        ],
+        'Net WPM = (' + totalW + ' \u2212 ' + errs + ') \u00f7 ' + mins + ' = ' + netWpm + ' WPM.',
+        slot, 'logic_cs'
+      );
+    }
+    if (variant === 3) {
+      var totK = _sageRandInt(rng, 4, 10) * 20;
+      var missK = _sageRandInt(rng, 1, Math.floor(totK / 20)) * 2;
+      var accPct = Math.round(((totK - missK) / totK) * 100);
+      var errPct = Math.round((missK / totK) * 100);
+      return _sageBuildQuestion(
+        'Out of ' + totK + ' keystrokes, ' + missK + ' were errors. What is the typing accuracy?',
+        accPct + '%',
+        [
+          { text: errPct + '%', whyNot: errPct + '% is the error rate, not the accuracy rate (100% \u2212 error rate).' },
+          { text: (totK - missK) + '%', whyNot: (totK - missK) + ' is the raw count of correct keys, not a percentage out of ' + totK + '.' },
+          { text: Math.min(100, accPct + 5) + '%', whyNot: 'Check (' + (totK - missK) + ' \u00f7 ' + totK + ') \u00d7 100 = ' + accPct + '%.' }
+        ],
+        'Accuracy = (' + (totK - missK) + ' \u00f7 ' + totK + ') \u00d7 100 = ' + accPct + '%.',
+        slot, 'logic_cs'
+      );
+    }
+    return _sageBuildQuestion(
+      'Why do touch-typists anchor their index fingers on the F and J home-row bumps?',
+      'To locate every key by touch without looking down, boosting speed and accuracy',
+      [
+        { text: 'Because F and J are the only keys used in coding', whyNot: 'F and J are tactile landmarks for reaching all 26 letters, not the only keys typed.' },
+        { text: 'To type strictly with two index fingers', whyNot: 'Home row distributes keys across all eight fingers plus thumbs.' },
+        { text: 'To turn Caps Lock off automatically', whyNot: 'The bumps are physical orientation guides and do not toggle keyboard modifiers.' }
+      ],
+      'Tactile bumps on F and J let your hands return to home row without breaking visual focus on the screen.',
+      slot, 'logic_cs'
+    );
+  }
+
+  function _sageGenArtsAcoustics(rng, variant, slot) {
+    if (variant === 0) {
+      var bpm = _sageRandInt(rng, 6, 14) * 10;
+      var mins = _sageRandInt(rng, 2, 4);
+      var beats = bpm * mins;
+      return _sageBuildQuestion(
+        'A track plays at ' + bpm + ' BPM for ' + mins + ' minutes. How many beats occur in total?',
+        beats + ' beats',
+        [
+          { text: (bpm + mins) + ' beats', whyNot: 'BPM (beats per minute) multiplies by minutes; adding them mixes units.' },
+          { text: Math.round(bpm / mins) + ' beats', whyNot: 'Dividing tempo by duration shrinks total beats as the song gets longer.' },
+          { text: (bpm * (mins + 1)) + ' beats', whyNot: 'That counts ' + (mins + 1) + ' minutes instead of ' + mins + ' minutes.' }
+        ],
+        'Total beats = BPM \u00d7 minutes = ' + bpm + ' \u00d7 ' + mins + ' = ' + beats + ' beats.',
+        slot, 'arts_acoustics'
+      );
+    }
+    if (variant === 1) {
+      var baseHz = [110, 220, 260, 440][_sageRandInt(rng, 0, 3)];
+      var octs = _sageRandInt(rng, 1, 2);
+      var nextHz = baseHz * Math.pow(2, octs);
+      return _sageBuildQuestion(
+        'A pitch vibrates at ' + baseHz + ' Hz. Raising it by ' + octs + ' octave' + (octs > 1 ? 's' : '') + ' produces what frequency?',
+        nextHz + ' Hz',
+        [
+          { text: (baseHz + octs * 100) + ' Hz', whyNot: 'Octaves double frequency multiplicatively (\u00d72 per octave) rather than adding a fixed Hz step.' },
+          { text: Math.round(baseHz / Math.pow(2, octs)) + ' Hz', whyNot: 'Halving frequency drops the pitch down an octave instead of raising it.' },
+          { text: (baseHz * (octs + 2)) + ' Hz', whyNot: 'Each octave multiplies frequency by 2, so ' + octs + ' octave(s) multiplies by ' + Math.pow(2, octs) + '.' }
+        ],
+        'Each octave doubles frequency: ' + baseHz + ' Hz \u00d7 2^' + octs + ' = ' + nextHz + ' Hz.',
+        slot, 'arts_acoustics'
+      );
+    }
+    if (variant === 2) {
+      var pairs = [
+        { a: 'red', b: 'green', ans: 'yellow', explain: 'Additive RGB light: red + green light stimulates both cones to appear yellow.' },
+        { a: 'red', b: 'blue', ans: 'magenta', explain: 'Additive RGB light: red + blue light combines into magenta.' },
+        { a: 'green', b: 'blue', ans: 'cyan', explain: 'Additive RGB light: green + blue light combines into cyan.' }
+      ];
+      var p = pairs[_sageRandInt(rng, 0, pairs.length - 1)];
+      return _sageBuildQuestion(
+        'On a stage or screen (additive light), mixing ' + p.a + ' light and ' + p.b + ' light produces:',
+        p.ans,
+        [
+          { text: 'black', whyNot: 'Black is the absence of light; adding light wavelengths increases brightness.' },
+          { text: 'brown', whyNot: 'Brown happens with subtractive paint pigments absorbing light, not additive stage light.' },
+          { text: 'gray', whyNot: 'Equal amounts of all three RGB primaries make white/gray, not two primaries alone.' }
+        ],
+        p.explain,
+        slot, 'arts_acoustics'
+      );
+    }
+    if (variant === 3) {
+      var meas = _sageRandInt(rng, 4, 9);
+      var beatsPer = [3, 4, 6][_sageRandInt(rng, 0, 2)];
+      var totB = meas * beatsPer;
+      return _sageBuildQuestion(
+        'A phrase lasts ' + meas + ' measures in ' + beatsPer + '/4 time. How many beats are in the phrase?',
+        totB + ' beats',
+        [
+          { text: (meas + beatsPer) + ' beats', whyNot: 'Each of the ' + meas + ' measures holds ' + beatsPer + ' beats, so multiply rather than add.' },
+          { text: (meas * 4) + ' beats', whyNot: 'The bottom number (4) names the quarter-note beat unit; the top number (' + beatsPer + ') counts beats per measure.' },
+          { text: Math.max(1, meas - beatsPer) + ' beats', whyNot: 'Subtracting beats per measure from measure count does not sum total beats.' }
+        ],
+        'In ' + beatsPer + '/4 time, each measure has ' + beatsPer + ' beats: ' + meas + ' \u00d7 ' + beatsPer + ' = ' + totB + ' beats.',
+        slot, 'arts_acoustics'
+      );
+    }
+    return _sageBuildQuestion(
+      'Why do complementary colors (opposite on the color wheel) stand out strongly when placed side by side?',
+      'They share no overlapping primary hue, creating maximum visual contrast',
+      [
+        { text: 'They have identical wavelengths', whyNot: 'Identical wavelengths produce the same hue, not high-contrast complements.' },
+        { text: 'They always share the same lightness value', whyNot: 'Value (light/dark) is independent of whether two hues sit opposite on the color wheel.' },
+        { text: 'They blend into brighter neon hues in paint', whyNot: 'Mixing complementary paints subtracts wavelengths and neutralizes toward gray/brown.' }
+      ],
+      'Complementary pairs (like blue/orange or red/green) sit opposite on the wheel and maximize chromatic contrast.',
+      slot, 'arts_acoustics'
+    );
+  }
+
+  function _sageGenLiteracy(rng, variant, slot) {
+    if (variant === 0) {
+      var words = [
+        { w: 'imagination', syl: 5, split: 'i-mag-i-na-tion' },
+        { w: 'observatory', syl: 5, split: 'ob-ser-va-to-ry' },
+        { w: 'constellation', syl: 4, split: 'con-stel-la-tion' },
+        { w: 'laboratory', syl: 4, split: 'lab-o-ra-to-ry' },
+        { w: 'telescope', syl: 3, split: 'tel-e-scope' }
+      ];
+      var wd = words[_sageRandInt(rng, 0, words.length - 1)];
+      return _sageBuildQuestion(
+        'How many syllables are in the word "' + wd.w + '"?',
+        String(wd.syl),
+        [
+          { text: String(wd.syl - 1), whyNot: 'Break it aloud (' + wd.split + ') — each spoken vowel sound counts as one syllable (' + wd.syl + ').' },
+          { text: String(wd.syl + 1), whyNot: 'Silent or paired letters do not create extra beats; "' + wd.split + '" has ' + wd.syl + ' syllables.' },
+          { text: String(wd.syl + 2), whyNot: 'Count spoken vowel beats (' + wd.split + '), not individual vowel letters.' }
+        ],
+        '"' + wd.w + '" breaks into ' + wd.syl + ' spoken vowel beats: ' + wd.split + '.',
+        slot, 'literacy_logic'
+      );
+    }
+    if (variant === 1) {
+      var roots = [
+        { prefix: 'bio-', meaning: 'life', example: 'biology / biosphere' },
+        { prefix: 'tele-', meaning: 'far / distant', example: 'telescope / telegraph' },
+        { prefix: 'geo-', meaning: 'Earth / land', example: 'geology / geography' },
+        { prefix: 'micro-', meaning: 'small', example: 'microscope / microbe' }
+      ];
+      var rt = roots[_sageRandInt(rng, 0, roots.length - 1)];
+      var wrongMeanings = roots.filter(function(r) { return r.prefix !== rt.prefix; });
+      return _sageBuildQuestion(
+        'Knowing the Greek root "' + rt.prefix + '" helps decode "' + rt.example + '". What does "' + rt.prefix + '" mean?',
+        rt.meaning,
+        wrongMeanings.map(function(wm) {
+          return { text: wm.meaning, whyNot: '"' + wm.meaning + '" is the meaning of "' + wm.prefix + '" (as in ' + wm.example + '), not "' + rt.prefix + '".' };
+        }),
+        'The root "' + rt.prefix + '" means "' + rt.meaning + '", unlocking words like ' + rt.example + '.',
+        slot, 'literacy_logic'
+      );
+    }
+    if (variant === 2) {
+      return _sageBuildQuestion(
+        'Which revision changes the passive sentence "The comet was tracked by the crew" into active voice?',
+        'The crew tracked the comet.',
+        [
+          { text: 'The comet had been tracked by the crew.', whyNot: 'That keeps the object ("comet") in subject position with a "be + past participle" verb — still passive.' },
+          { text: 'Was the comet tracked by the crew?', whyNot: 'Turning a passive sentence into a question leaves it in passive voice.' },
+          { text: 'The comet was being tracked.', whyNot: 'Dropping the actor ("by the crew") still leaves the sentence passive.' }
+        ],
+        'Active voice puts the doer ("The crew") in the subject slot performing the verb ("tracked").',
+        slot, 'literacy_logic'
+      );
+    }
+    if (variant === 3) {
+      return _sageBuildQuestion(
+        'When an unfamiliar word appears in a science passage, which strategy gives the most reliable clue to its meaning?',
+        'Check surrounding context clues (definitions, contrasts, examples) plus word roots',
+        [
+          { text: 'Skip the entire paragraph without checking meaning', whyNot: 'Skipping key domain vocabulary can break comprehension of the whole claim.' },
+          { text: 'Guess solely from the word\u2019s first letter', whyNot: 'First letters rarely indicate meaning; context and morphology carry actual semantics.' },
+          { text: 'Assume it means the same thing as a shorter rhyming word', whyNot: 'Rhyming words usually have unrelated meanings (e.g., "fusion" vs "illusion").' }
+        ],
+        'Combining context clues (restatements, contrasts, examples) with prefixes/roots reliably decodes new words.',
+        slot, 'literacy_logic'
+      );
+    }
+    return _sageBuildQuestion(
+      'What makes a summary stronger than copying a paragraph word-for-word?',
+      'It distills only the central claim and key supporting evidence in your own words',
+      [
+        { text: 'It includes every minor detail and quote verbatim', whyNot: 'Keeping every minor detail turns a summary into a transcript instead of a synthesis.' },
+        { text: 'It adds personal opinions not present in the source', whyNot: 'An objective summary reports the author\u2019s ideas without injecting outside opinions.' },
+        { text: 'It only copies the first and last sentences', whyNot: 'Key evidence often lives in the middle of a passage, not just the edges.' }
+      ],
+      'Paraphrasing main ideas + core evidence forces active retrieval and checks real understanding.',
+      slot, 'literacy_logic'
+    );
+  }
+
+  function generateOfflineSpellQuestions(spellOrId, seed, existingPrompts) {
+    var spell = (typeof spellOrId === 'string') ? findSpell(spellOrId) : spellOrId;
+    if (!spell) {
+      spell = { id: String(spellOrId || 'sage_general'), name: 'Sage Practice', sourceTool: 'mathLab', element: 'aether' };
+    }
+    var domain = _sageClassifyDomain(spell);
+    var existingSet = {};
+    if (Array.isArray(existingPrompts)) {
+      existingPrompts.forEach(function(p) { if (typeof p === 'string') existingSet[p] = true; });
+    } else if (existingPrompts && typeof existingPrompts === 'object') {
+      if (typeof existingPrompts.forEach === 'function') {
+        existingPrompts.forEach(function(p) { if (typeof p === 'string') existingSet[p] = true; });
+      } else {
+        Object.keys(existingPrompts).forEach(function(k) { if (existingPrompts[k]) existingSet[k] = true; });
+      }
+    }
+    var numericSeed = (typeof seed === 'number' && isFinite(seed)) ? Math.floor(seed) : _sageHash(String(seed || '1'));
+    var baseHash = _sageHash((spell.id || 'spell') + ':' + domain + ':' + numericSeed);
+    var slotBase = baseHash % 4;
+    var results = [];
+    var seenOut = {};
+
+    function produceOne(dom, variant, rng, slot) {
+      if (dom === 'math_fractions') return _sageGenMathFractions(rng, variant, slot);
+      if (dom === 'math_algebra') return _sageGenMathAlgebra(rng, variant, slot);
+      if (dom === 'math_geometry') return _sageGenMathGeometry(rng, variant, slot);
+      if (dom === 'math_stats') return _sageGenMathStats(rng, variant, slot);
+      if (dom === 'physics_circuits') return _sageGenPhysics(rng, variant, slot, true);
+      if (dom === 'physics_conservation') return _sageGenPhysics(rng, variant, slot, false);
+      if (dom === 'space_astronomy') return _sageGenSpace(rng, variant, slot);
+      if (dom === 'ecology_biology') return _sageGenEcology(rng, variant, slot);
+      if (dom === 'road_kinematics') return _sageGenRoad(rng, variant, slot);
+      if (dom === 'logic_cs') return _sageGenLogicCs(rng, variant, slot);
+      if (dom === 'arts_acoustics') return _sageGenArtsAcoustics(rng, variant, slot);
+      if (dom === 'literacy_logic') return _sageGenLiteracy(rng, variant, slot);
+      var mixedDomains = ['math_fractions', 'physics_conservation', 'ecology_biology', 'logic_cs', 'math_geometry'];
+      return produceOne(mixedDomains[variant % mixedDomains.length], variant, rng, slot);
+    }
+
+    var fallbackDomains = ['math_fractions', 'math_algebra', 'math_geometry', 'physics_conservation', 'ecology_biology', 'logic_cs'];
+    for (var qi = 0; qi < 5; qi++) {
+      var targetSlot = (slotBase + qi) % 4;
+      var picked = null;
+      for (var attempt = 0; attempt < 12; attempt++) {
+        var rng = _sagePrng((baseHash + qi * 7919 + attempt * 104729) >>> 0);
+        var activeDom = attempt < 8 ? domain : fallbackDomains[(qi + attempt) % fallbackDomains.length];
+        var cand = produceOne(activeDom, (qi + attempt) % 5, rng, targetSlot);
+        if (cand && !existingSet[cand.prompt] && !seenOut[cand.prompt]) {
+          picked = cand;
+          break;
+        }
+      }
+      if (!picked) {
+        var fallbackRng = _sagePrng((baseHash + qi * 31337 + 99991) >>> 0);
+        picked = _sageGenMathAlgebra(fallbackRng, qi % 5, targetSlot);
+      }
+      if (picked && !seenOut[picked.prompt]) {
+        seenOut[picked.prompt] = true;
+        results.push(picked);
+      }
+    }
+    return results;
+  }
+
+  function _sageExtractNumber(str) {
+    var s = String(str || '').trim();
+    var fracM = s.match(/^(-?\d+)\s*\/\s*(\d+)$/);
+    if (fracM && Number(fracM[2]) !== 0) return Number(fracM[1]) / Number(fracM[2]);
+    var numM = s.match(/-?\d[\d,]*(?:\.\d+)?/);
+    if (!numM) return null;
+    var val = Number(numM[0].replace(/,/g, ''));
+    return isFinite(val) ? val : null;
+  }
+
+  function diagnoseSageDistractor(spellOrId, question, chosenIdx) {
+    var spell = (typeof spellOrId === 'string') ? findSpell(spellOrId) : spellOrId;
+    if (!question || !Array.isArray(question.options) || question.options.length === 0) {
+      return {
+        isCorrect: false,
+        chosenOption: '',
+        correctOption: '',
+        whyNot: 'Review the target domain principle before recasting.',
+        principle: '',
+        summary: 'Review the target domain principle before recasting.'
+      };
+    }
+    var cIdx = (typeof question.correctIndex === 'number' && question.correctIndex >= 0 && question.correctIndex < question.options.length)
+      ? Math.floor(question.correctIndex) : 0;
+    var pIdx = (typeof chosenIdx === 'number' && chosenIdx >= 0 && chosenIdx < question.options.length)
+      ? Math.floor(chosenIdx) : -1;
+    var correctOption = String(question.options[cIdx] || '');
+    var chosenOption = pIdx >= 0 ? String(question.options[pIdx] || '') : '';
+    var principle = String(question.explain || '');
+    if (pIdx === cIdx) {
+      return {
+        isCorrect: true,
+        chosenOption: chosenOption,
+        correctOption: correctOption,
+        whyNot: null,
+        principle: principle,
+        summary: '"' + correctOption + '" matches the target principle: ' + principle
+      };
+    }
+    // 1. Pre-authored or procedurally synthesized per-distractor whyNot
+    if (Array.isArray(question.whyNot) && pIdx >= 0 && typeof question.whyNot[pIdx] === 'string' && question.whyNot[pIdx].trim()) {
+      var authored = question.whyNot[pIdx].trim();
+      return {
+        isCorrect: false,
+        chosenOption: chosenOption,
+        correctOption: correctOption,
+        whyNot: authored,
+        principle: principle,
+        summary: 'Why "' + chosenOption + '" misses: ' + authored + (principle ? ' Target rule: ' + principle : '')
+      };
+    }
+    // 2. Deterministic contrastive misconception diagnosis for static & AI banks
+    var lowerChosen = chosenOption.toLowerCase();
+    var lowerCorrect = correctOption.toLowerCase();
+    var lowerPrompt = String(question.prompt || '').toLowerCase();
+    var domain = _sageClassifyDomain(spell);
+    var reason = '';
+
+    var numChosen = _sageExtractNumber(chosenOption);
+    var numCorrect = _sageExtractNumber(correctOption);
+    if (numChosen !== null && numCorrect !== null && numChosen !== numCorrect) {
+      if (numChosen === -numCorrect) {
+        reason = '"' + chosenOption + '" has the opposite sign of "' + correctOption + '"; re-check the direction or sign rule.';
+      } else if (numCorrect !== 0 && Math.abs(numChosen / numCorrect) >= 1.9 && Math.abs(numChosen / numCorrect) <= 2.1) {
+        reason = '"' + chosenOption + '" is double the target value ("' + correctOption + '") — check whether a factor of 1/2 or divisor was missed.';
+      } else if (numChosen !== 0 && Math.abs(numCorrect / numChosen) >= 1.9 && Math.abs(numCorrect / numChosen) <= 2.1) {
+        reason = '"' + chosenOption + '" is half the target value ("' + correctOption + '") — check whether both sides or a factor of 2 were included.';
+      } else if (numChosen > numCorrect) {
+        reason = '"' + chosenOption + '" overestimates the target value ("' + correctOption + '"); verify the operation and scaling step.';
+      } else {
+        reason = '"' + chosenOption + '" underestimates the target value ("' + correctOption + '"); verify the operation and scaling step.';
+      }
+    } else if (/(volts|amps|ohms|watts|hertz|decibels|bpm|seconds|minutes|hours|days|time|distance|mass|velocity)/.test(lowerChosen)
+      && /(volts|amps|ohms|watts|hertz|decibels|bpm|seconds|minutes|hours|days|time|distance|mass|velocity)/.test(lowerCorrect)) {
+      reason = '"' + chosenOption + '" measures a different physical quantity or scale than "' + correctOption + '" for what the prompt asks.';
+    } else if (/(perimeter|area|volume|circumference|mean|median|mode|range)/.test(lowerChosen)
+      && /(perimeter|area|volume|circumference|mean|median|mode|range)/.test(lowerCorrect)) {
+      reason = '"' + chosenOption + '" describes a different mathematical measure than "' + correctOption + '".';
+    } else if (domain === 'space_astronomy') {
+      reason = '"' + chosenOption + '" does not match the orbital, light-travel, or planetary property asked here; "' + correctOption + '" fits the astronomy rule.';
+    } else if (domain === 'physics_circuits' || domain === 'physics_conservation') {
+      reason = '"' + chosenOption + '" breaks the circuit/conservation relationship tested here, whereas "' + correctOption + '" satisfies it.';
+    } else if (domain === 'ecology_biology') {
+      reason = '"' + chosenOption + '" plays a different biological or ecological role than what the prompt specifies ("' + correctOption + '").';
+    } else if (domain === 'road_kinematics') {
+      reason = '"' + chosenOption + '" increases collision or misjudgment risk under this traffic rule; "' + correctOption + '" is the safe protocol.';
+    } else if (domain === 'arts_acoustics') {
+      reason = '"' + chosenOption + '" reflects a different color or musical property than "' + correctOption + '".';
+    } else if (domain === 'math_fractions' || domain === 'math_algebra' || domain === 'math_geometry' || domain === 'math_stats') {
+      reason = '"' + chosenOption + '" applies a different mathematical rule than the one needed to reach "' + correctOption + '".';
+    } else if (lowerPrompt.indexOf('not') !== -1 || lowerPrompt.indexOf('except') !== -1) {
+      reason = 'Watch the negative wording in the prompt: "' + chosenOption + '" fits the main group, while "' + correctOption + '" is the intended answer.';
+    } else {
+      reason = '"' + chosenOption + '" contrasts with the key concept pointing to "' + correctOption + '".';
+    }
+
+    return {
+      isCorrect: false,
+      chosenOption: chosenOption,
+      correctOption: correctOption,
+      whyNot: reason,
+      principle: principle,
+      summary: 'Why "' + chosenOption + '" misses: ' + reason + (principle ? ' Target principle: ' + principle : '')
+    };
+  }
+
+  function summarizeConfidenceCalibration(statsOrLog) {
+    var buckets = {
+      high: { right: 0, wrong: 0, total: 0, accuracyPct: null },
+      med:  { right: 0, wrong: 0, total: 0, accuracyPct: null },
+      low:  { right: 0, wrong: 0, total: 0, accuracyPct: null }
+    };
+    var total = 0;
+    var totalRight = 0;
+
+    function record(conf, wasRight) {
+      if (conf !== 'high' && conf !== 'med' && conf !== 'low') return;
+      buckets[conf].total++;
+      total++;
+      if (wasRight) {
+        buckets[conf].right++;
+        totalRight++;
+      } else {
+        buckets[conf].wrong++;
+      }
+    }
+
+    if (Array.isArray(statsOrLog)) {
+      statsOrLog.forEach(function(entry) {
+        if (!entry || typeof entry !== 'object') return;
+        record(entry.confidence || entry.lastConfidence, entry.result === 'crit' || entry.result === 'hit');
+      });
+    } else if (statsOrLog && typeof statsOrLog === 'object') {
+      Object.keys(statsOrLog).forEach(function(k) {
+        var st = statsOrLog[k];
+        if (!st || typeof st !== 'object' || !st.lastConfidence) return;
+        record(st.lastConfidence, st.lastResult === 'crit' || st.lastResult === 'hit');
+      });
+    }
+
+    ['high', 'med', 'low'].forEach(function(lvl) {
+      if (buckets[lvl].total > 0) {
+        buckets[lvl].accuracyPct = Math.round((buckets[lvl].right / buckets[lvl].total) * 100);
+      }
+    });
+
+    var overallAccuracy = total > 0 ? Math.round((totalRight / total) * 100) : null;
+    var status = 'uncalibrated';
+    var guidance = 'Tag your confidence before answering to calibrate your feeling-of-knowing.';
+    if (total > 0) {
+      if (buckets.high.total >= 2 && buckets.high.accuracyPct < 70) {
+        status = 'overconfident';
+        guidance = 'Pause to verify before locking in "Know it" — recent high-confidence casts missed at ' + (100 - buckets.high.accuracyPct) + '%.';
+      } else if (buckets.low.total >= 2 && buckets.low.accuracyPct >= 65) {
+        status = 'underconfident';
+        guidance = 'You know more than you think — your "Guessing" picks are landing at ' + buckets.low.accuracyPct + '% accuracy.';
+      } else if (buckets.high.total >= 1 && buckets.high.accuracyPct >= 80) {
+        status = 'calibrated';
+        guidance = 'Strong calibration — your "Know it" calls are landing at ' + buckets.high.accuracyPct + '% accuracy.';
+      } else {
+        status = 'building';
+        guidance = 'Calibration tracking active (' + totalRight + '/' + total + ' right across tagged casts).';
+      }
+    }
+
+    return {
+      total: total,
+      totalRight: totalRight,
+      overallAccuracy: overallAccuracy,
+      buckets: buckets,
+      calibrationStatus: status,
+      calibrationGuidance: guidance
+    };
+  }
+
+  var ALLOBOTSAGE_ENGINE = Object.freeze({
+    generateOfflineSpellQuestions: generateOfflineSpellQuestions,
+    diagnoseSageDistractor: diagnoseSageDistractor,
+    summarizeConfidenceCalibration: summarizeConfidenceCalibration,
+    getMergedBank: getMergedBank,
+    pickWeighted: pickWeighted,
+    computeUnlockedSpells: computeUnlockedSpells,
+    computeNewlyUnlocked: computeNewlyUnlocked,
+    findSpell: findSpell,
+    getSpellDamage: getSpellDamage,
+    upgradeCost: upgradeCost,
+    difficultyById: difficultyById,
+    sectorById: sectorById,
+    sageLocalDate: sageLocalDate,
+    sageIsYesterday: sageIsYesterday,
+    SPELL_COUNT: SPELLBOOK.length
+  });
+  if (typeof window !== 'undefined') {
+    window.AlloBotSagePure = ALLOBOTSAGE_ENGINE;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1573,6 +2869,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
     return slot.Type;
   }
   window.StemLab.registerTool('alloBotSage', {
+    _engine: ALLOBOTSAGE_ENGINE,
     icon: '\uD83E\uDDD9\u200D\u2642\uFE0F',
     label: 'AlloBot: Starbound Sage',
     desc: 'A cozy sci-fi roguelite where AlloBot\u2019s spells unlock as you master other STEAM Lab tools. Cast by demonstrating what you learned.',
@@ -1607,12 +2904,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       { id: 'ai_first_bank',     label: 'Generate AI questions for a spell', icon: '\u2728', check: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); return Object.keys(c).some(function(k) { return (c[k] || []).length > 0; }); }, progress: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); var total = Object.keys(c).reduce(function(t, k) { return t + (c[k] || []).length; }, 0); return total + ' AI questions'; } }
     ],
     render: function(ctx) {
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
       // The back button, the tool label and the spell-list headings sit on the
       // HOST surface - white in light and dark, pure BLACK in the contrast
       // theme, where slate-600 measured 2.77:1.
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var reduceMotion = !!(ctx && ctx.reduceMotion);
+      var isEmbedded = !!(ctx && ctx.embedded);
       var onHostInk = isContrast ? ' text-white' : '';
       var React = (ctx && ctx.React) || (typeof window !== 'undefined' && window.React);
       if (!React) return null;
@@ -1623,36 +2923,133 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       var setStemLabTool = ctx.setStemLabTool || function() {};
       var awardXP = ctx.awardXP || function() {};
       var callGemini = ctx.callGemini || null;
+      var callTTS = typeof ctx.callTTS === 'function' ? ctx.callTTS : null;
       var aiOn = (function() {
-        if (ctx.aiAvailable === false || typeof callGemini !== 'function' || callGemini._alloQrBlocked) return false;
+        if (ctx.aiAvailable === false || ctx.aiHintsEnabled === false || typeof callGemini !== 'function' || callGemini._alloQrBlocked) return false;
         if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && window.__alloAiUsable('text', callGemini) === false) return false; } catch (_) {}
         return true;
       })();
 
-      var d = (toolData.alloBotSage && typeof toolData.alloBotSage === 'object' && !Array.isArray(toolData.alloBotSage)) ? toolData.alloBotSage : {};
-      var aiChallengeCache = (d.aiChallengeCache && typeof d.aiChallengeCache === 'object' && !Array.isArray(d.aiChallengeCache)) ? d.aiChallengeCache : {};
+      function safeObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+      function safeNum(v, fb) { return (typeof v === 'number' && isFinite(v)) ? v : fb; }
 
-      // Helpers to patch alloBotSage state.
-      function updSage(patch) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('alloBotSage', patch); }
-      function updKey(k, v) { if (typeof ctx.update === 'function') ctx.update('alloBotSage', k, v); }
+      var d = safeObj(toolData.alloBotSage);
+      var aiChallengeCache = safeObj(d.aiChallengeCache);
+      var offlineChallengeCache = safeObj(d.offlineChallengeCache);
+      var offlineSeeds = safeObj(d._offlineSeeds);
+      var aiInFlightMap = safeObj(d._aiInFlight);
+      var castCountsMap = safeObj(d.castCounts);
+      var questionStatsMap = safeObj(d.questionStats);
+      var spellLevelsMap = safeObj(d.spellLevels);
+      var sectorsClearedMapAll = safeObj(d.sectorsCleared);
+      var bossesDefeatedMapAll = safeObj(d.bossesDefeated);
+
+      // Pure batched state updaters (React 18 StrictMode safe — never call side effects inside updaterFn).
+      function updateSageAtomic(updaterFn) {
+        var setter = (typeof ctx.setToolData === 'function')
+          ? ctx.setToolData
+          : (typeof ctx.setLabToolData === 'function' ? ctx.setLabToolData : null);
+        if (setter) {
+          setter(function(prev) {
+            var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var cur = (safePrev.alloBotSage && typeof safePrev.alloBotSage === 'object' && !Array.isArray(safePrev.alloBotSage)) ? safePrev.alloBotSage : {};
+            var patch = updaterFn(cur);
+            if (!patch || typeof patch !== 'object') return safePrev;
+            return Object.assign({}, safePrev, { alloBotSage: Object.assign({}, cur, patch) });
+          });
+        } else if (typeof ctx.updateMulti === 'function') {
+          var patchObj = updaterFn(d);
+          if (patchObj && typeof patchObj === 'object') ctx.updateMulti('alloBotSage', patchObj);
+        }
+      }
+      function updSage(patch) {
+        if (!patch || typeof patch !== 'object') return;
+        if (typeof ctx.updateMulti === 'function') ctx.updateMulti('alloBotSage', patch);
+        else updateSageAtomic(function() { return patch; });
+      }
+      function updKey(k, v) {
+        if (typeof ctx.update === 'function') ctx.update('alloBotSage', k, v);
+        else { var p = {}; p[k] = v; updateSageAtomic(function() { return p; }); }
+      }
+
+      // Mute-aware Read Aloud via host ctx.callTTS(..., { force: true }).
+      function readAloud(text) {
+        var clean = String(text || '').trim();
+        if (!clean) return;
+        if (isGloballyMuted()) {
+          addToast(t('stem.allobotsage.audio_muted_toast', 'Audio is muted — unmute in the header to hear Read Aloud.'), 'info');
+          return;
+        }
+        if (callTTS) {
+          try { callTTS(clean, undefined, undefined, { force: true }); } catch (_) {}
+        } else {
+          announceSR(clean);
+        }
+      }
+
+      function readAloudBtn(text, ariaLabel, compact) {
+        if (!text) return null;
+        return h('button', {
+          type: 'button',
+          onClick: function() { readAloud(text); },
+          className: (compact ? 'px-2 py-1 text-[0.625rem]' : 'px-2.5 py-1.5 text-xs')
+            + ' inline-flex items-center gap-1 rounded-lg font-bold bg-violet-100 hover:bg-violet-200 text-violet-900 border border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors shrink-0',
+          'aria-label': ariaLabel || t('stem.allobotsage.read_aloud_aria', 'Read aloud')
+        }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD0A'), h('span', null, t('stem.allobotsage.read_aloud_btn', 'Read aloud')));
+      }
+
+      // Generate or reroll fresh questions for one or more spells.
+      // Seamlessly upgrades to Gemini when aiOn is true, and uses the pure deterministic
+      // offline synthesizer when offline (or if Gemini fails / returns empty).
+      function generateOfflinePackForSpells(spellIds, isReroll) {
+        var validIds = (Array.isArray(spellIds) ? spellIds : []).filter(function(id) { return !!findSpell(id); });
+        if (validIds.length === 0) return 0;
+        var addedTotal = 0;
+        var generatedBySpell = {};
+        var nextSeedBySpell = {};
+        validIds.forEach(function(id) {
+          var sp = findSpell(id);
+          if (!sp) return;
+          var prevSeed = safeNum(offlineSeeds[id], 0);
+          var nextSeed = prevSeed + 1;
+          var existingPrompts = getMergedBank(sp, aiChallengeCache, isReroll ? {} : offlineChallengeCache).map(function(q) { return q.prompt; });
+          var fresh = ALLOBOTSAGE_ENGINE.generateOfflineSpellQuestions(sp, nextSeed, existingPrompts);
+          if (fresh.length > 0) {
+            generatedBySpell[id] = fresh;
+            nextSeedBySpell[id] = nextSeed;
+            addedTotal += fresh.length;
+          }
+        });
+        if (addedTotal > 0) {
+          updateSageAtomic(function(cur) {
+            var curOff = safeObj(cur.offlineChallengeCache);
+            var curSeeds = safeObj(cur._offlineSeeds);
+            return {
+              offlineChallengeCache: Object.assign({}, curOff, generatedBySpell),
+              _offlineSeeds: Object.assign({}, curSeeds, nextSeedBySpell)
+            };
+          });
+        }
+        return addedTotal;
+      }
 
       // ── Persistent state ──
       var phase            = (typeof d.phase === 'string' && d.phase) ? d.phase : 'hub'; // hub | loadout | expedition | debrief
-      var essence          = (typeof d.essence === 'number' && isFinite(d.essence)) ? d.essence : 0;
-      var expeditionsDone  = (typeof d.expeditionsCompleted === 'number' && isFinite(d.expeditionsCompleted)) ? d.expeditionsCompleted : 0;
-      var totalCasts       = (typeof d.totalCasts === 'number' && isFinite(d.totalCasts)) ? d.totalCasts : 0;
-      var critCasts        = (typeof d.critCasts === 'number' && isFinite(d.critCasts)) ? d.critCasts : 0;
+      var essence          = safeNum(d.essence, 0);
+      var expeditionsDone  = safeNum(d.expeditionsCompleted, 0);
+      var totalCasts       = safeNum(d.totalCasts, 0);
+      var critCasts        = safeNum(d.critCasts, 0);
       // Saved state is INPUT: `||` is a NULL guard, not a TYPE guard.
-      var seenSpells = Array.isArray(d.seenSpells) ? d.seenSpells : [];
-      var equippedLoadout = Array.isArray(d.equippedLoadout) ? d.equippedLoadout : [];
+      var seenSpells = Array.isArray(d.seenSpells) ? d.seenSpells.filter(function(x) { return typeof x === 'string'; }) : [];
+      var equippedLoadout = Array.isArray(d.equippedLoadout) ? d.equippedLoadout.filter(function(x) { return typeof x === 'string'; }) : [];
 
       // ── Transient expedition state ──
       // A bare {} passed the old object check and then threw on
       // expedition.enemy.hp and expedition.castLog.length. A partial run is
       // not resumable, so require the fields every consumer reads.
       var expedition = (d.expedition && typeof d.expedition === 'object' && !Array.isArray(d.expedition)
-        && d.expedition.enemy && typeof d.expedition.enemy === 'object'
+        && d.expedition.enemy && typeof d.expedition.enemy === 'object' && !Array.isArray(d.expedition.enemy)
         && Array.isArray(d.expedition.castLog)) ? d.expedition : null;
       // expedition shape: { enemy: {id, hp, maxHp, atk, icon, name, flavor}, turn: 'player'|'enemy', log: [], playerHp, playerMaxHp }
 
@@ -1670,8 +3067,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             newlyUnlocked.forEach(function(id) {
               var s = findSpell(id);
               if (!s) return;
-              try { addToast(s.icon + ' New rune! \u201c' + s.name + '\u201d sparks in your grimoire', 'success'); } catch(e) {}
-              announceSR('New spell unlocked: ' + s.name);
+              try {
+                addToast(
+                  t('stem.allobotsage.toast_new_rune_unlocked', '{icon} New rune! "{name}" sparks in your grimoire')
+                    .replace('{icon}', s.icon)
+                    .replace('{name}', s.name),
+                  'success'
+                );
+              } catch(e) {}
+              announceSR(t('stem.allobotsage.sr_new_spell_unlocked', 'New spell unlocked: {name}').replace('{name}', s.name));
             });
             sfxUnlock();
             updKey('seenSpells', mergedSeen);
@@ -1683,12 +3087,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // ── Shared UI helpers
       // ─────────────────────────────────────────────────
       function backBtn(onClick, label) {
+        var resolvedLabel = label || t('stem.allobotsage.back_label', 'Back');
         return h('button', {
           type: 'button',
           onClick: onClick,
           className: 'transition-colors inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none' + onHostInk,
-          'aria-label': label || 'Back'
-        }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, label || 'Back'));
+          'aria-label': resolvedLabel
+        }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, resolvedLabel));
       }
 
       // Mastery tier from cumulative cast count. Returns null below the first
@@ -1707,6 +3112,20 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         var equipped = opts.equipped;
         var usageCount = opts.usageCount || 0;
         var tier = masteryTier(usageCount);
+        var cardBaseAria = unlocked
+          ? (equipped
+              ? t('stem.allobotsage.aria_spell_equipped', '{name} (equipped)').replace('{name}', s.name)
+              : t('stem.allobotsage.aria_spell_unlocked', '{name} (unlocked)').replace('{name}', s.name))
+          : t('stem.allobotsage.aria_spell_locked', '{name} (locked: {hint})').replace('{name}', s.name).replace('{hint}', s.unlockHint);
+        var cardAria = tier
+          ? t('stem.allobotsage.aria_spell_with_tier', '{base}, {tier} tier ({count} casts)')
+              .replace('{base}', cardBaseAria)
+              .replace('{tier}', tier.name)
+              .replace('{count}', String(usageCount))
+          : cardBaseAria;
+        var tierTitle = tier
+          ? t('stem.allobotsage.title_mastery_tier', '{tier} ({count} casts)').replace('{tier}', tier.name).replace('{count}', String(usageCount))
+          : '';
         return h('button', {
           type: 'button',
           key: s.id,
@@ -1716,7 +3135,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             + (unlocked
               ? (equipped ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white hover:border-violet-400 hover:bg-violet-50/50')
               : 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'),
-          'aria-label': s.name + (unlocked ? (equipped ? ' (equipped)' : ' (unlocked)') : ' (locked: ' + s.unlockHint + ')') + (tier ? ', ' + tier.name + ' tier (' + usageCount + ' casts)' : ''),
+          'aria-label': cardAria,
           style: unlocked ? { boxShadow: '0 1px 0 ' + s.color + '20' } : {}
         },
           h('div', { className: 'flex items-center gap-2 mb-1' },
@@ -1725,7 +3144,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             tier && unlocked && h('span', {
               className: 'text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-md',
               style: { background: tier.bg, border: '1px solid ' + tier.border, color: tier.text },
-              title: tier.name + ' (' + usageCount + ' casts)'
+              title: tierTitle
             }, tier.icon + ' ' + tier.name),
             equipped && h('span', { className: 'ml-auto text-[0.625rem] font-bold text-violet-600 uppercase tracking-wide' }, t('stem.allobotsage.equipped', 'Equipped'))
           ),
@@ -1740,19 +3159,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       }
 
       // AlloBot avatar (simple inline SVG \u2014 wizard variant).
-      // \u2500\u2500\u2500 Param plumbing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-      // mood        \u2014 'idle' | 'happy' | 'sad' | 'hurt' | 'cast' | 'victory'
-      //               'victory' inherits 'happy' colors plus triggers a
-      //               1.4s backflip via the .abs-backflip class.
-      // opts.wandTier \u2014 0..3. Drives the wand-tip aura intensity:
-      //                 0 = no aura (no spells unlocked yet)
-      //                 1 = dim glow ring         (1\u20133 spells)
-      //                 2 = bright glow + flicker (4\u20139 spells)
-      //                 3 = full pulsing aura     (10+ spells)
-      // opts.robeTier \u2014 0..2. 0 = base purple, 1 = brighter saturation
-      //                 (5+ spells), 2 = + gold accent stripe (15+).
-      // opts.idleTwist \u2014 true = adds .abs-idle-twist micro-flourish to wand
-      //                  (Phase C, used on the hub avatar).
       function allobotAvatar(mood, opts) {
         opts = opts || {};
         var wandTier = opts.wandTier || 0;
@@ -1763,16 +3169,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       : mood === 'sad' ? '#94a3b8'
                       : '#6366f1';
         var sadMouth = (mood === 'hurt' || mood === 'sad');
-        // Robe progression: brighter purple at tier 1, gold accent at tier 2.
         var robeFill = robeTier >= 1 ? '#6d28d9' : '#4c1d95';
-        var hatFill  = robeTier >= 1 ? '#5b21b6' : '#4c1d95';
-        // Wand-tier aura: render a halo behind the wand tip whose radius +
-        // opacity scale with tier. Tier 3 also gets a pulsing animation.
         var auraRadius = wandTier === 0 ? 0 : (5 + wandTier * 4);
         var auraOpacity = wandTier === 0 ? 0 : (0.25 + wandTier * 0.20);
         var auraColor = wandTier >= 3 ? '#fde047' : (wandTier >= 2 ? '#fbbf24' : '#a78bfa');
-        var auraClass = wandTier >= 3 ? 'abs-wand-aura' : (wandTier >= 2 ? 'abs-wand-flicker' : '');
-        var wrapperClass = mood === 'victory' ? 'abs-backflip' : 'abs-float';
+        var noAnim = reduceMotion || isContrast;
+        var auraClass = noAnim ? '' : (wandTier >= 3 ? 'abs-wand-aura' : (wandTier >= 2 ? 'abs-wand-flicker' : ''));
+        var wrapperClass = noAnim ? '' : (mood === 'victory' ? 'abs-backflip' : 'abs-float');
         var hc = !!isContrast;
         var uid = 'abs-av-' + mood + '-' + wandTier + '-' + robeTier;
         return h('svg', { viewBox: '0 0 120 140', className: wrapperClass, width: 96, height: 112, 'aria-hidden': 'true' },
@@ -1805,57 +3208,45 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('stop', { offset: '100%', stopColor: auraColor, stopOpacity: 0 })
             )
           ),
-          // Ambient astral crest aura & gentle orbital halo behind AlloBot
-          !hc && h('circle', { className: 'abs-svg-fx abs-halo-breath', cx: 60, cy: 76, r: 44, fill: 'url(#' + uid + '-halo)' }),
-          !hc && h('circle', { className: 'abs-svg-fx abs-orbit-drift', cx: 60, cy: 74, r: 48, fill: 'none', stroke: 'rgba(196,181,253,0.34)', strokeWidth: 1.1, strokeDasharray: '4 6' }),
+          !hc && h('circle', { className: noAnim ? 'abs-svg-fx' : 'abs-svg-fx abs-halo-breath', cx: 60, cy: 76, r: 44, fill: 'url(#' + uid + '-halo)' }),
+          !hc && h('circle', { className: noAnim ? 'abs-svg-fx' : 'abs-svg-fx abs-orbit-drift', cx: 60, cy: 74, r: 48, fill: 'none', stroke: 'rgba(196,181,253,0.34)', strokeWidth: 1.1, strokeDasharray: '4 6' }),
           !hc && h('ellipse', { className: 'abs-svg-fx', cx: 60, cy: 132, rx: 30, ry: 4.5, fill: '#020617', opacity: 0.48 }),
-          // Wand-tip aura (rendered behind wand stick)
           wandTier > 0 && !hc && h('circle', { cx: 112, cy: 64, r: auraRadius, fill: 'url(#' + uid + '-wand)', className: 'abs-svg-fx ' + auraClass }),
-          // Wizard hat with flared brim, ribbon & starlight crest
           h('ellipse', { cx: 60, cy: 45, rx: 28, ry: 5.5, fill: hc ? '#000000' : '#3b0764', stroke: hc ? '#facc15' : '#a78bfa', strokeWidth: 1.2 }),
           h('polygon', { points: '60,3 38,44 82,44', fill: hc ? '#000000' : 'url(#' + uid + '-hat)', stroke: hc ? '#ffffff' : 'rgba(196,181,253,0.45)', strokeWidth: 1.1, strokeLinejoin: 'round' }),
           h('polygon', { points: '55,13 55,44 65,44 65,13', fill: hc ? '#facc15' : '#8b5cf6', opacity: hc ? 0.35 : 0.72 }),
           h('path', { d: 'M 42 40 Q 60 44 78 40', stroke: hc ? '#facc15' : '#fde047', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
-          h('polygon', { className: !hc ? 'abs-star-twinkle' : undefined, points: '60,21 61.5,24.8 65.5,26 61.5,27.2 60,31 58.5,27.2 54.5,26 58.5,24.8', fill: '#fde047' }),
+          h('polygon', { className: !noAnim ? 'abs-star-twinkle' : undefined, points: '60,21 61.5,24.8 65.5,26 61.5,27.2 60,31 58.5,27.2 54.5,26 58.5,24.8', fill: '#fde047' }),
           h('circle', { cx: 60, cy: 6, r: 3.4, fill: '#fbbf24', stroke: '#fef9c3', strokeWidth: 0.8 }),
-          // Body/robe with beveled collar mantle
           h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: hc ? '#000000' : 'url(#' + uid + '-robe)', stroke: hc ? '#ffffff' : 'rgba(167,139,250,0.42)', strokeWidth: 1.3 }),
           !hc && h('path', { className: 'abs-svg-fx', d: 'M 33 102 Q 60 95 87 102', stroke: 'rgba(221,214,254,0.28)', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' }),
-          // Robe gold accent stripe (tier 2 milestone — 15+ spells)
           robeTier >= 2 && h('path', { d: 'M 28 109 Q 60 102 92 109', stroke: '#fde047', strokeWidth: 2.6, fill: 'none', strokeLinecap: 'round' }),
-          // Ear-pods + sculpted ceramic head
           h('rect', { x: 28, y: 63, width: 6, height: 14, rx: 3, fill: hc ? '#facc15' : moodColor }),
           h('rect', { x: 86, y: 63, width: 6, height: 14, rx: 3, fill: hc ? '#facc15' : moodColor }),
           h('circle', { cx: 60, cy: 70, r: 28, fill: hc ? '#000000' : 'url(#' + uid + '-head)', stroke: hc ? '#facc15' : moodColor, strokeWidth: 2.2 }),
-          // Curved visor + specular reflection glint
           h('rect', { x: 40, y: 62, width: 40, height: 15, rx: 7.5, fill: hc ? '#000000' : 'url(#' + uid + '-visor)', stroke: hc ? '#ffffff' : 'rgba(165,243,252,0.55)', strokeWidth: 1 }),
           !hc && h('path', { className: 'abs-svg-fx', d: 'M 45 65.5 L 75 65.5', stroke: '#ffffff', strokeOpacity: 0.45, strokeWidth: 1.5, strokeLinecap: 'round' }),
-          // Eyes with subtle highlight pupils
           h('circle', { cx: 50, cy: 69.5, r: 2.7, fill: hc ? '#facc15' : '#ffffff' }),
           h('circle', { cx: 70, cy: 69.5, r: 2.7, fill: hc ? '#facc15' : '#ffffff' }),
           !hc && h('circle', { className: 'abs-svg-fx', cx: 50.8, cy: 68.7, r: 0.9, fill: '#ecfeff' }),
           !hc && h('circle', { className: 'abs-svg-fx', cx: 70.8, cy: 68.7, r: 0.9, fill: '#ecfeff' }),
-          // Mouth
           h('path', { d: sadMouth ? 'M 52 83 Q 60 77 68 83' : 'M 52 81 Q 60 87 68 81', stroke: hc ? '#ffffff' : moodColor, strokeWidth: 2.2, fill: 'none', strokeLinecap: 'round' }),
-          // Wand stick + golden ferrule + faceted crystal tip
-          h('g', opts.idleTwist ? { className: 'abs-idle-twist' } : null,
+          h('g', (opts.idleTwist && !noAnim) ? { className: 'abs-idle-twist' } : null,
             h('line', { x1: 90, y1: 96, x2: 112, y2: 64, stroke: hc ? '#ffffff' : '#92400e', strokeWidth: 3.4, strokeLinecap: 'round' }),
             h('line', { x1: 106, y1: 72.5, x2: 110, y2: 66.8, stroke: '#fde047', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('circle', { cx: 112, cy: 64, r: 5.2, fill: hc ? '#facc15' : moodColor, stroke: '#ffffff', strokeWidth: 1.1, className: 'abs-pulse' }),
+            h('circle', { cx: 112, cy: 64, r: 5.2, fill: hc ? '#facc15' : moodColor, stroke: '#ffffff', strokeWidth: 1.1, className: noAnim ? '' : 'abs-pulse' }),
             !hc && h('circle', { className: 'abs-svg-fx', cx: 110.8, cy: 62.5, r: 1.6, fill: '#ffffff', opacity: 0.9 })
           )
         );
       }
 
       // \u2500\u2500\u2500 Confetti burst overlay (Phase A) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-      // Renders 18 small colored squares that fly outward + fade. Used on
-      // the debrief screen when result === 'victory'. Pure CSS animation;
-      // unmounts when parent unmounts (no setInterval to clean up).
       function VictoryConfettiBurst() {
+        if (reduceMotion || isContrast) return null;
         var pieces = [];
         var colors = ['#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#a78bfa', '#fde047'];
         for (var ci = 0; ci < 18; ci++) {
-          var angle = (ci / 18) * 6.283; // 2\u03c0
+          var angle = (ci / 18) * 6.283;
           var dist = 60 + Math.random() * 40;
           pieces.push(h('span', {
             key: 'cf-' + ci,
@@ -1919,17 +3310,30 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           else if (newCount >= 3 && !milestones.m3) { milestoneBonus = 10; milestoneLabel = '3-day streak!'; milestones.m3 = todayStr; }
           var totalBonus = bonus + milestoneBonus;
           sfxUnlock();
-          updSage({
-            dailyClaimedOn: todayStr,
-            essence: essence + totalBonus,
-            lastVisit: Date.now(),
-            streak: { count: newCount, lastDate: todayStr, longest: newLongest, milestones: milestones }
+          updateSageAtomic(function(cur) {
+            return {
+              dailyClaimedOn: todayStr,
+              essence: safeNum(cur.essence, essence) + totalBonus,
+              lastVisit: Date.now(),
+              streak: { count: newCount, lastDate: todayStr, longest: newLongest, milestones: milestones }
+            };
           });
           if (milestoneBonus > 0) {
-            addToast('\uD83D\uDD25 ' + milestoneLabel + ' +' + milestoneBonus + ' bonus essence on top of daily!', 'success');
+            addToast(
+              t('stem.allobotsage.toast_streak_milestone', '\uD83D\uDD25 {label} +{bonus} bonus essence on top of daily!')
+                .replace('{label}', milestoneLabel)
+                .replace('{bonus}', String(milestoneBonus)),
+              'success'
+            );
             announceSR('Streak milestone: ' + milestoneLabel + ' Plus ' + milestoneBonus + ' bonus.');
           } else {
-            addToast('\u2B50 Daily bonus: +' + bonus + ' essence (' + n + ' domains tended) \u00B7 ' + newCount + '-day streak', 'success');
+            addToast(
+              t('stem.allobotsage.toast_daily_bonus', '\u2B50 Daily bonus: +{bonus} essence ({domains} domains tended) \u00B7 {streak}-day streak')
+                .replace('{bonus}', String(bonus))
+                .replace('{domains}', String(n))
+                .replace('{streak}', String(newCount)),
+              'success'
+            );
             announceSR('Daily bonus claimed: plus ' + bonus + ' essence. Streak: ' + newCount + ' days.');
           }
         }
@@ -1979,7 +3383,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         var ringCirc = 2 * Math.PI * ringRadius;
         var ringOffset = ringCirc * (1 - Math.min(1, Math.max(0, masteryPct / 100)));
 
-        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6 abs-fade relative', 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-rm': ctx.reduceMotion ? '1' : '0' },
+        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade') + ' relative', 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           // ── Spell Preview Modal (overlay) ──
           // Renders when d.previewingSpellId is set. Shows 2-3 sample challenge
           // questions, per-spell SRS health, and a "Drill in Study Hall" jump.
@@ -2039,8 +3443,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               }
             }
             if (!ps) return null;
-            var bank = getMergedBank(ps, aiChallengeCache);
-            var stats = d.questionStats || {};
+            var bank = getMergedBank(ps, aiChallengeCache, offlineChallengeCache);
+            var stats = questionStatsMap;
             // Per-spell aggregate: total attempts + correct on this spell's questions
             var pAttempts = 0, pCorrect = 0, pSeen = 0;
             bank.forEach(function(qq) {
@@ -2121,7 +3525,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       return h('div', { key: 'samp-' + si, className: 'p-3 rounded-lg border border-slate-200 bg-slate-50' },
                         h('div', { className: 'flex items-center gap-1 mb-1' },
                           h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded', style: { color: samp.color, background: samp.color + '15' } }, samp.tag),
-                          qq.aiGenerated && h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-700' }, t('stem.allobotsage.ai', '✨ AI'))
+                          qq.aiGenerated && h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-700' }, t('stem.allobotsage.ai', '✨ AI')),
+                          qq.offlineGenerated && h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900' }, t('stem.allobotsage.offline_pack_badge', '⚙ Practice Pack'))
                         ),
                         h('p', { className: 'text-[0.75rem] font-semibold text-slate-800 mb-2' }, qq.prompt),
                         h('div', { className: 'space-y-1' },
@@ -2151,7 +3556,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       updSage({ phase: 'practice', practiceSpellId: ps.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, previewingSpellId: null });
                     },
                     className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none',
-                    'aria-label': 'Drill ' + ps.name + ' in Study Hall'
+                    'aria-label': t('stem.allobotsage.aria_drill_in_study_hall', 'Drill {name} in Study Hall').replace('{name}', ps.name)
                   }, t('stem.allobotsage.drill_in_study_hall', '📚 Drill in Study Hall')),
                   h('button', {
                     type: 'button',
@@ -2165,7 +3570,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
 
           // Header
           h('div', { className: 'flex items-center gap-3 mb-4' },
-            backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
+            !isEmbedded && backBtn(function() { sfxClick(); setStemLabTool(null); }, t('stem.allobotsage.back_to_lab', 'Back to Lab')),
             h('div', { className: 'flex-1' }),
             h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spellforge', 'Spellforge'))
           ),
@@ -2253,7 +3658,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   // Streak chip \u2014 color glows when streak is active (>= 1 day) and intensifies at milestones
                   streakDisplay > 0 && h('div', {
                     className: 'abs-hero-pill abs-hero-pill-gold',
-                    title: 'Longest streak: ' + (streakState.longest || streakDisplay) + ' days'
+                    title: t('stem.allobotsage.title_longest_streak', 'Longest streak: {days} days').replace('{days}', String(streakState.longest || streakDisplay))
                   }, '\uD83D\uDD25 ' + streakDisplay + '-day streak'),
                   h('div', { className: 'abs-hero-pill abs-hero-pill-gold' }, '\u2B50 ' + essence + ' ' + t('stem.allobotsage.essence_label', 'essence'))
                 ),
@@ -2454,10 +3859,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           // drill; Review = flashcard queue of questions you got wrong.
           unlockedSpells.length > 0 && (function() {
             // Compute how many tough questions are queued (across the whole grimoire)
-            var statsHub = d.questionStats || {};
+            var statsHub = questionStatsMap;
             var toughCount = 0;
             SPELLBOOK.forEach(function(sp) {
-              var bank = getMergedBank(sp, aiChallengeCache);
+              var bank = getMergedBank(sp, aiChallengeCache, offlineChallengeCache);
               bank.forEach(function(qq) {
                 var st = statsHub[qq.prompt];
                 if (st && st.lastResult === 'backfire') toughCount++;
@@ -2480,7 +3885,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 type: 'button',
                 onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false }); },
                 className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-500 focus:outline-none flex items-center justify-center gap-2',
-                'aria-label': 'Review tough questions \u2014 ' + toughCount + ' queued'
+                'aria-label': t('stem.allobotsage.aria_review_tough_queued', 'Review tough questions \u2014 {count} queued').replace('{count}', String(toughCount))
               },
                 h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
                 h('div', { className: 'text-left' },
@@ -2548,7 +3953,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     return h('div', {
                       key: 'ach-' + h2.id,
                       className: 'flex items-center gap-2 p-2 rounded-lg text-[0.6875rem] ' + (h2.earned ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'),
-                      'aria-label': h2.label + (h2.earned ? ' (earned)' : ' (in progress: ' + h2.progress + ')')
+                      'aria-label': h2.earned
+                        ? t('stem.allobotsage.aria_achievement_earned', '{label} (earned)').replace('{label}', h2.label)
+                        : t('stem.allobotsage.aria_achievement_progress', '{label} (in progress: {progress})').replace('{label}', h2.label).replace('{progress}', String(h2.progress))
                     },
                       h('span', { className: 'text-base', style: { filter: h2.earned ? '' : 'grayscale(0.5) opacity(0.65)' } }, h2.icon),
                       h('div', { className: 'flex-1 min-w-0' },
@@ -2573,7 +3980,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   return h('div', {
                     key: src.key,
                     className: 'text-center p-2 rounded-lg ' + (earned ? 'bg-white border border-amber-200' : 'bg-slate-50 border border-dashed border-slate-300'),
-                    'aria-label': src.label + (earned ? ': ' + tally.count + ' spells earned' : ': no spells yet')
+                    'aria-label': earned
+                      ? t('stem.allobotsage.aria_trophy_earned', '{label}: {count} spells earned').replace('{label}', src.label).replace('{count}', String(tally.count))
+                      : t('stem.allobotsage.aria_trophy_none', '{label}: no spells yet').replace('{label}', src.label)
                   },
                     h('div', { className: 'text-2xl', style: { filter: earned ? '' : 'grayscale(1) opacity(0.5)' } }, src.icon),
                     h('div', { className: 'text-[0.6875rem] font-bold mt-1 ' + (earned ? 'text-amber-900' : 'text-slate-600') }, src.label),
@@ -2588,14 +3997,33 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
 
           // Grimoire
           h('section', { 'aria-label': t('stem.allobotsage.grimoire', 'Grimoire'), className: 'mb-4' },
-            h('h2', { className: 'text-sm font-bold text-slate-700 mb-2 flex items-center gap-2' + onHostInk },
-              h('span', null, t('stem.allobotsage.grimoire_2', '\uD83D\uDCDC Grimoire')),
-              unlockedSpells.length > 0 && h('span', { className: 'text-[0.625rem] font-normal text-slate-600' },
-                '(' + unlockedSpells.length + ' unlocked)'
-              )
+            h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+              h('h2', { className: 'text-sm font-bold text-slate-700 flex items-center gap-2' + onHostInk },
+                h('span', null, t('stem.allobotsage.grimoire_2', '\uD83D\uDCDC Grimoire')),
+                unlockedSpells.length > 0 && h('span', { className: 'text-[0.625rem] font-normal text-slate-600' },
+                  '(' + unlockedSpells.length + ' unlocked)'
+                )
+              ),
+              unlockedSpells.length > 0 && h('button', {
+                type: 'button',
+                onClick: function() {
+                  sfxClick();
+                  var targetIds = unlockedSpells.slice(0, 6).map(function(sp) { return sp.id; });
+                  var added = generateOfflinePackForSpells(targetIds, true);
+                  if (added > 0) {
+                    addToast(
+                      t('stem.allobotsage.toast_offline_grimoire_reroll', '\u2699\uFE0F Practice Generator: +{count} fresh questions ready across your grimoire')
+                        .replace('{count}', String(added)),
+                      'success'
+                    );
+                  }
+                },
+                className: 'ml-auto px-2.5 py-1 rounded-lg text-[0.6875rem] font-bold bg-violet-100 hover:bg-violet-200 text-violet-900 border border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors',
+                'aria-label': t('stem.allobotsage.aria_grimoire_reroll_practice', 'Generate or reroll fresh offline practice questions for unlocked spells')
+              }, t('stem.allobotsage.grimoire_reroll_practice_btn', '\u2699\uFE0F Reroll Practice Pack'))
             ),
             unlockedSpells.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4' },
-              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
+              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: castCountsMap[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
             ),
             lockedSpells.length > 0 && h('div', null,
               h('h3', { className: 'text-[0.6875rem] font-semibold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, 'Yet to discover (' + lockedSpells.length + ')'),
@@ -2613,7 +4041,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                         try { ctx.setStemLabTool(s.sourceTool); } catch(e) {}
                       },
                       className: 'text-[0.625rem] text-slate-500 hover:text-violet-700 font-semibold py-1 px-2 rounded-md hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition flex items-center gap-1 self-end',
-                      'aria-label': 'Open ' + s.sourceLabel + ' to work toward unlocking ' + s.name
+                      'aria-label': t('stem.allobotsage.aria_open_source_tool', 'Open {tool} to work toward unlocking {spell}').replace('{tool}', s.sourceLabel).replace('{spell}', s.name)
                     },
                       h('span', null, '→ Open ' + s.sourceLabel)
                     )
@@ -2651,7 +4079,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           risky: { label: t('stem.allobotsage.risky', 'Risky'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.allobotsage.high_error_cost_low_learner_effort_ai_', 'High error cost + low learner effort + AI in the loop = brittle outputs that look correct but fail in production.') },
           shortcircuit: { label: t('stem.allobotsage.learning_short_circuit', 'Learning short-circuit'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.allobotsage.ai_doing_all_the_work_learner_gets_ans', 'AI doing all the work. Learner gets answer but no understanding. Skills atrophy or never develop.') }
         })[state];
-        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
+        return h('div', { className: 'abs-workbench', 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0', style: { padding: 14, borderRadius: 12, background: isContrast ? '#000000' : sm.bg, border: '1px solid ' + (isContrast ? '#ffffff' : sm.border), color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.allobotsage.ai_workload_inquiry_who_is_doing_the_t', '🔬 AI Workload Inquiry — Who Is Doing The Thinking?')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.allobotsage.set_ai_assistance_level_learner_effort', 'Set AI assistance level, learner effort, task novelty, and error cost, then observe how the modeled learning state changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · learn ' + learnGain.toFixed(1) + ' · risk ' + risk.toFixed(1)),
@@ -2726,8 +4154,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
             h('button', { type: 'button', onClick: function() {
-              var t = new Date().toISOString().slice(11, 19);
-              setIQ({ log: iq.log.concat([{ t: t, ai: iq.aiAssist, le: iq.learnerEffort, nov: iq.novelty, ec: iq.errorCost, lg: learnGain.toFixed(1), rk: risk.toFixed(1), state: sm.label }]) });
+              var stamp = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: stamp, ai: iq.aiAssist, le: iq.learnerEffort, nov: iq.novelty, ec: iq.errorCost, lg: learnGain.toFixed(1), rk: risk.toFixed(1), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.allobotsage.log_this_workload_split', '📋 Log this workload split')),
             h('button', { type: 'button', onClick: function() { setIQ({ aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.reset', 'Reset')),
             h('button', { type: 'button', onClick: function() { updKey('phase', 'hub'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.hub', '← Hub'))
@@ -2763,13 +4191,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         var loadoutSet = {};
         equippedLoadout.forEach(function(id) { loadoutSet[id] = true; });
         var available = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
+        var safeDifficulty = (typeof d.difficulty === 'string' && DIFFICULTY_PROFILES[d.difficulty]) ? d.difficulty : 'standard';
+        var safeSelectedSector = (typeof d.selectedSector === 'string' && d.selectedSector) ? d.selectedSector : 'crystal_nebula';
         function toggleSpell(id) {
           var next;
           if (loadoutSet[id]) {
             next = equippedLoadout.filter(function(x) { return x !== id; });
           } else {
             if (equippedLoadout.length >= 3) {
-              addToast('Loadout is full \u2014 unequip a spell first', 'info');
+              addToast(t('stem.allobotsage.toast_loadout_full', 'Loadout is full \u2014 unequip a spell first'), 'info');
               return;
             }
             next = equippedLoadout.concat([id]);
@@ -2777,11 +4207,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           sfxClick();
           updKey('equippedLoadout', next);
         }
-        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+        return h('div', { className: 'abs-workbench max-w-3xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           h('div', { className: 'flex items-center gap-3 mb-4' },
-            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
+            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.loadout', 'Loadout'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.loadout', 'Loadout'))
           ),
           h('h2', { className: 'text-lg font-bold mb-1' }, t('stem.allobotsage.choose_your_spells', 'Choose your spells')),
           h('p', { className: 'text-sm text-slate-600 mb-4' },
@@ -2794,16 +4224,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           ),
 
           // \u2500\u2500 Difficulty selector (UDL "multiple means of engagement") \u2500\u2500
-          // Students pick their challenge level. Easy = build confidence;
-          // Standard = balanced; Hard = sharpen retrieval speed under pressure.
-          // The reward multiplier rises with difficulty to honor the harder path.
           h('section', { 'aria-label': t('stem.allobotsage.choose_your_challenge_level', 'Choose your challenge level'), className: 'mb-4 p-3 rounded-xl border-2 border-slate-200 bg-white' },
             h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 uppercase tracking-wider mb-2' }, t('stem.allobotsage.challenge_level', '\u2699\ufe0f Challenge level')),
             h('p', { className: 'text-[0.625rem] text-slate-500 mb-2 italic' }, t('stem.allobotsage.pick_what_fits_today_you_can_change_th', 'Pick what fits today. You can change this any expedition. Harder difficulty = bigger essence reward.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
               ['easy', 'standard', 'hard'].map(function(diffId) {
                 var dp = DIFFICULTY_PROFILES[diffId];
-                var picked = (d.difficulty || 'standard') === diffId;
+                var picked = safeDifficulty === diffId;
                 return h('button', {
                   type: 'button',
                   key: 'diff-' + diffId,
@@ -2811,7 +4238,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   className: 'text-left p-2.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'shadow-md' : 'hover:border-slate-400'),
                   style: picked ? { borderColor: dp.color, background: dp.color + '12' } : { borderColor: '#e2e8f0', background: '#fff' },
                   'aria-pressed': picked,
-                  'aria-label': dp.name + ' difficulty. ' + dp.desc + ' Reward multiplier ' + dp.essenceMult + 'x.'
+                  'aria-label': t('stem.allobotsage.aria_difficulty_option', '{name} difficulty. {desc} Reward multiplier {mult}x.')
+                    .replace('{name}', dp.name)
+                    .replace('{desc}', __alloT('stem.allobotsage.' + diffId + '_desc', dp.desc))
+                    .replace('{mult}', String(dp.essenceMult))
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-xl' }, dp.icon),
@@ -2828,39 +4258,39 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           ),
 
           // \u2500\u2500 Loadout presets \u2500\u2500
-          // 3 named slots. With 39 spells in the grimoire, swapping for different
-          // sectors gets tedious; presets let students save common configurations.
           available.length >= 3 && (function() {
-            var presets = d.loadoutPresets || [];
+            var presets = (Array.isArray(d.loadoutPresets) ? d.loadoutPresets : []).filter(function(p) {
+              return p && typeof p === 'object' && typeof p.name === 'string' && Array.isArray(p.spellIds);
+            });
             async function saveAsPreset() {
               if (equippedLoadout.length === 0) {
-                addToast('Equip at least 1 spell before saving a preset', 'info');
+                addToast(t('stem.allobotsage.toast_equip_before_preset', 'Equip at least 1 spell before saving a preset'), 'info');
                 return;
               }
               if (presets.length >= 3) {
-                addToast('Preset slots are full \u2014 delete one to save a new preset', 'info');
+                addToast(t('stem.allobotsage.toast_presets_full', 'Preset slots are full \u2014 delete one to save a new preset'), 'info');
                 return;
               }
               var defaultName = 'Preset ' + (presets.length + 1);
               async function requestPresetName() {
                 var promptModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
                 var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
-                var unavailable = 'Preset naming is unavailable, so your loadout was not saved.';
+                var unavailable = t('stem.allobotsage.toast_preset_naming_unavailable', 'Preset naming is unavailable, so your loadout was not saved.');
                 if (typeof promptModule !== 'function' || typeof promptApi !== 'function') {
                   addToast(unavailable, 'warning');
                   announceSR(unavailable);
                   return null;
                 }
                 try {
-                  return await promptApi('Name this preset:', defaultName, {
-                    title: 'Name loadout preset',
-                    placeholder: 'For example: Crystal Nebula spells',
-                    confirmText: 'Save preset',
-                    cancelText: 'Cancel',
+                  return await promptApi(t('stem.allobotsage.prompt_name_preset', 'Name this preset:'), defaultName, {
+                    title: t('stem.allobotsage.title_name_loadout_preset', 'Name loadout preset'),
+                    placeholder: t('stem.allobotsage.placeholder_preset_example', 'For example: Crystal Nebula spells'),
+                    confirmText: t('stem.allobotsage.confirm_save_preset', 'Save preset'),
+                    cancelText: t('stem.allobotsage.cancel_btn', 'Cancel'),
                     maxLength: 24
                   });
                 } catch (e) {
-                  var failed = 'The preset name dialog could not open, so your loadout was not saved.';
+                  var failed = t('stem.allobotsage.toast_preset_dialog_failed', 'The preset name dialog could not open, so your loadout was not saved.');
                   addToast(failed, 'warning');
                   announceSR(failed);
                   return null;
@@ -2871,14 +4301,21 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               name = (String(name).trim() || defaultName).slice(0, 24);
               sfxClick();
               updKey('loadoutPresets', presets.concat([{ name: name, spellIds: equippedLoadout.slice() }]));
-              addToast('\ud83d\udcbe Saved preset: ' + name, 'success');
+              addToast(t('stem.allobotsage.toast_saved_preset', '\ud83d\udcbe Saved preset: {name}').replace('{name}', name), 'success');
             }
             function loadPreset(p) {
               sfxClick();
-              // Filter to spells that are still unlocked (in case content changed)
               var valid = p.spellIds.filter(function(id) { return currentlyUnlocked.indexOf(id) !== -1; });
               updKey('equippedLoadout', valid);
-              addToast('Loaded preset: ' + p.name + (valid.length < p.spellIds.length ? ' (' + (p.spellIds.length - valid.length) + ' locked spell' + (p.spellIds.length - valid.length > 1 ? 's' : '') + ' skipped)' : ''), 'info');
+              var skipped = p.spellIds.length - valid.length;
+              addToast(
+                skipped > 0
+                  ? t('stem.allobotsage.toast_loaded_preset_skipped', 'Loaded preset: {name} ({skipped} locked skipped)')
+                      .replace('{name}', p.name)
+                      .replace('{skipped}', String(skipped))
+                  : t('stem.allobotsage.toast_loaded_preset', 'Loaded preset: {name}').replace('{name}', p.name),
+                'info'
+              );
             }
             function deletePreset(idx) {
               sfxClick();
@@ -2894,7 +4331,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   onClick: saveAsPreset,
                   disabled: presets.length >= 3 || equippedLoadout.length === 0,
                   className: 'transition-colors text-[0.625rem] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
-                  title: presets.length >= 3 ? 'Preset slots full' : equippedLoadout.length === 0 ? 'Equip at least 1 spell first' : 'Save current loadout as a preset'
+                  title: presets.length >= 3
+                    ? t('stem.allobotsage.title_preset_slots_full', 'Preset slots full')
+                    : equippedLoadout.length === 0
+                      ? t('stem.allobotsage.title_equip_one_first', 'Equip at least 1 spell first')
+                      : t('stem.allobotsage.title_save_current_preset', 'Save current loadout as a preset')
                 }, t('stem.allobotsage.save_current', '+ Save current'))
               ),
               presets.length === 0
@@ -2909,7 +4350,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                           type: 'button',
                           onClick: function() { loadPreset(p); },
                           className: 'flex-1 text-left text-[0.6875rem] font-semibold text-violet-700 hover:underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded',
-                          'aria-label': 'Load preset ' + p.name
+                          'aria-label': t('stem.allobotsage.aria_load_preset', 'Load preset {name}').replace('{name}', p.name)
                         }, '\ud83d\udcc2 ' + p.name),
                         h('div', { className: 'flex items-center gap-1' },
                           p.spellIds.slice(0, 3).map(function(id) {
@@ -2922,7 +4363,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                           onClick: async function() {
                             var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
                             var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
-                            var unavailable = 'Preset deletion is unavailable right now, so the preset was kept.';
+                            var unavailable = t('stem.allobotsage.toast_preset_delete_unavailable', 'Preset deletion is unavailable right now, so the preset was kept.');
                             if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
                               addToast(unavailable, 'warning');
                               announceSR(unavailable);
@@ -2930,7 +4371,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                             }
                             var confirmed = false;
                             try {
-                              confirmed = await confirmApi('Delete preset "' + p.name + '"?', { title: 'Delete loadout preset', confirmText: 'Delete preset', cancelText: 'Keep preset', tone: 'warning' });
+                              confirmed = await confirmApi(
+                                t('stem.allobotsage.confirm_delete_preset_msg', 'Delete preset "{name}"?').replace('{name}', p.name),
+                                {
+                                  title: t('stem.allobotsage.title_delete_loadout_preset', 'Delete loadout preset'),
+                                  confirmText: t('stem.allobotsage.confirm_delete_preset', 'Delete preset'),
+                                  cancelText: t('stem.allobotsage.cancel_keep_preset', 'Keep preset'),
+                                  tone: 'warning'
+                                }
+                              );
                             } catch (e) {
                               addToast(unavailable, 'warning');
                               announceSR(unavailable);
@@ -2940,7 +4389,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                             else announceSR(__alloT('stem.allobotsage.sr_preset_kept', 'Preset kept.'));
                           },
                           className: 'transition-colors text-[0.75rem] text-slate-600 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
-                          'aria-label': 'Delete preset ' + p.name
+                          'aria-label': t('stem.allobotsage.aria_delete_preset', 'Delete preset {name}').replace('{name}', p.name)
                         }, '\ud83d\uddd1')
                       );
                     })
@@ -2948,75 +4397,125 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             );
           })(),
 
-          // AI question bank panel \u2014 pre-load + per-spell AI status.
-          // Only renders when text AI is enabled AND at least 1 spell is equipped.
-          aiOn && equippedLoadout.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.ai_question_banks', 'AI question banks'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50' },
+          // Question Bank panel — Offline Practice Generator when offline, seamlessly upgrading to Gemini when aiOn is true.
+          equippedLoadout.length > 0 && h('section', {
+            'aria-label': aiOn
+              ? t('stem.allobotsage.ai_question_banks', 'AI question banks')
+              : t('stem.allobotsage.offline_practice_generator_aria', 'Offline practice question generator'),
+            className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50'
+          },
             h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
               h('div', null,
-                h('div', { className: 'text-[0.6875rem] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, t('stem.allobotsage.infinite_question_bank', '\u2728 Infinite Question Bank')),
-                h('div', { className: 'text-[0.625rem] text-violet-700 mt-0.5' }, t('stem.allobotsage.static_questions_never_run_out_gemini_', 'Static questions never run out \u2014 Gemini generates fresh ones on top.')),
-                h('div', { className: 'text-[0.625rem] text-amber-700 mt-0.5 font-semibold' }, t('stem.allobotsage.ai_generated_questions_can_be_wrong_ev', '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.'))
+                h('div', { className: 'text-[0.6875rem] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' },
+                  aiOn
+                    ? t('stem.allobotsage.infinite_question_bank', '\u2728 Infinite Question Bank')
+                    : t('stem.allobotsage.offline_practice_generator_title', '\u2699\ufe0f Offline Practice Generator')
+                ),
+                h('div', { className: 'text-[0.625rem] text-violet-700 mt-0.5' },
+                  aiOn
+                    ? t('stem.allobotsage.static_questions_never_run_out_gemini_', 'Static questions never run out \u2014 Gemini generates fresh ones on top.')
+                    : t('stem.allobotsage.offline_practice_generator_desc', 'No internet or AI needed \u2014 synthesize fresh deterministic retrieval-practice packs per spell.')
+                ),
+                aiOn && h('div', { className: 'text-[0.625rem] text-amber-700 mt-0.5 font-semibold' }, t('stem.allobotsage.ai_generated_questions_can_be_wrong_ev', '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.'))
               ),
-              h('button', {
-                type: 'button',
-                onClick: function() {
-                  // Fire off generation for any equipped spell that has no AI cache yet.
-                  // Already-cached spells are skipped (use refresh button to reroll).
-                  if (!aiOn) return;
-                  sfxClick();
-                  var inFlight = Object.assign({}, d._aiInFlight || {});
-                  var promises = [];
-                  equippedLoadout.forEach(function(spellId) {
-                    if (inFlight[spellId]) return;
-                    if ((aiChallengeCache[spellId] || []).length > 0) return;
-                    inFlight[spellId] = true;
-                    var s = findSpell(spellId);
-                    if (!s) return;
-                    promises.push(aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
-                      return { id: spellId, qs: qs };
-                    }));
-                  });
-                  if (promises.length === 0) {
-                    addToast('All equipped spells already have AI questions cached', 'info');
-                    return;
-                  }
-                  updKey('_aiInFlight', inFlight);
-                  addToast('Generating fresh questions for ' + promises.length + ' spell' + (promises.length > 1 ? 's' : '') + '...', 'info');
-                  Promise.all(promises).then(function(results) {
-                    var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                    var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
-                    var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                    var addedCount = 0;
-                    results.forEach(function(r) {
-                      delete freshFlight[r.id];
-                      if (r.qs.length > 0) {
-                        freshCache[r.id] = r.qs;
-                        addedCount += r.qs.length;
+              aiOn
+                ? h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      if (!aiOn) return;
+                      sfxClick();
+                      var inFlight = Object.assign({}, aiInFlightMap);
+                      var promises = [];
+                      equippedLoadout.forEach(function(spellId) {
+                        if (inFlight[spellId]) return;
+                        if ((aiChallengeCache[spellId] || []).length > 0) return;
+                        inFlight[spellId] = true;
+                        var s = findSpell(spellId);
+                        if (!s) return;
+                        promises.push(aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
+                          return { id: spellId, qs: qs };
+                        }));
+                      });
+                      if (promises.length === 0) {
+                        addToast(t('stem.allobotsage.toast_ai_already_cached', 'All equipped spells already have AI questions cached'), 'info');
+                        return;
                       }
-                    });
-                    updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
-                    addToast('+' + addedCount + ' AI questions ready', 'success');
-                  }).catch(function(err) {
-                    // Reset in-flight state so the user can retry — without this, loading spinners freeze
-                    console.warn('[AlloBotSage] Pre-load AI questions failed:', err);
-                    var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                    var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                    equippedLoadout.forEach(function(spellId) { delete freshFlight[spellId]; });
-                    updSage({ _aiInFlight: freshFlight });
-                    addToast('Failed to generate AI questions. Try again.', 'error');
-                  });
-                },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
-              }, t('stem.allobotsage.pre_load', '\u2728 Pre-load'))
+                      updKey('_aiInFlight', inFlight);
+                      addToast(
+                        t('stem.allobotsage.toast_generating_fresh_questions', 'Generating fresh questions for {count} spells...')
+                          .replace('{count}', String(promises.length)),
+                        'info'
+                      );
+                      Promise.all(promises).then(function(results) {
+                        var addedCount = 0;
+                        var emptyIds = [];
+                        results.forEach(function(r) {
+                          if (r && Array.isArray(r.qs) && r.qs.length > 0) {
+                            addedCount += r.qs.length;
+                          } else if (r && r.id) {
+                            emptyIds.push(r.id);
+                          }
+                        });
+                        updateSageAtomic(function(cur) {
+                          var freshCache = Object.assign({}, safeObj(cur.aiChallengeCache));
+                          var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                          results.forEach(function(r) {
+                            if (!r || !r.id) return;
+                            delete freshFlight[r.id];
+                            if (Array.isArray(r.qs) && r.qs.length > 0) {
+                              freshCache[r.id] = r.qs;
+                            }
+                          });
+                          return { aiChallengeCache: freshCache, _aiInFlight: freshFlight };
+                        });
+                        if (addedCount > 0) {
+                          addToast(t('stem.allobotsage.toast_ai_questions_ready', '+{count} AI questions ready').replace('{count}', String(addedCount)), 'success');
+                        } else if (emptyIds.length > 0) {
+                          var offAdded = generateOfflinePackForSpells(emptyIds, true);
+                          addToast(
+                            t('stem.allobotsage.toast_offline_fallback_ready', '\u2699\ufe0f +{count} offline practice questions ready')
+                              .replace('{count}', String(offAdded)),
+                            'info'
+                          );
+                        }
+                      }).catch(function(err) {
+                        console.warn('[AlloBotSage] Pre-load AI questions failed:', err);
+                        updateSageAtomic(function(cur) {
+                          var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                          equippedLoadout.forEach(function(spellId) { delete freshFlight[spellId]; });
+                          return { _aiInFlight: freshFlight };
+                        });
+                        addToast(t('stem.allobotsage.toast_ai_generate_failed', 'Failed to generate AI questions. Try again.'), 'error');
+                      });
+                    },
+                    className: 'transition-colors px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-violet-700 hover:bg-violet-800 focus:ring-2 focus:ring-violet-300 focus:outline-none'
+                  }, t('stem.allobotsage.pre_load', '\u2728 Pre-load'))
+                : h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      sfxClick();
+                      var addedOff = generateOfflinePackForSpells(equippedLoadout, true);
+                      if (addedOff > 0) {
+                        addToast(
+                          t('stem.allobotsage.toast_offline_pack_generated', '\u2699\ufe0f +{count} fresh offline practice questions ready')
+                            .replace('{count}', String(addedOff)),
+                          'success'
+                        );
+                      }
+                    },
+                    className: 'transition-colors px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-violet-700 hover:bg-violet-800 focus:ring-2 focus:ring-violet-300 focus:outline-none',
+                    'aria-label': t('stem.allobotsage.aria_generate_offline_pack', 'Generate fresh offline practice questions for equipped spells')
+                  }, t('stem.allobotsage.generate_offline_pack_btn', '\u2699\ufe0f Generate Pack'))
             ),
-            // Per-spell AI status row
+            // Per-spell question bank status row
             h('div', { className: 'flex flex-col gap-1' },
               equippedLoadout.map(function(spellId) {
                 var s = findSpell(spellId);
                 if (!s) return null;
-                var aiCount = (aiChallengeCache[spellId] || []).length;
+                var aiCount = Array.isArray(aiChallengeCache[spellId]) ? aiChallengeCache[spellId].length : 0;
+                var offCount = Array.isArray(offlineChallengeCache[spellId]) ? offlineChallengeCache[spellId].length : 0;
                 var staticCount = (s.challengeBank || []).length;
-                var inFlight = !!(d._aiInFlight && d._aiInFlight[spellId]);
+                var inFlight = !!aiInFlightMap[spellId];
                 return h('div', {
                   key: 'ai-' + spellId,
                   className: 'flex items-center gap-2 text-[0.6875rem] py-0.5'
@@ -3024,41 +4523,68 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   h('span', { className: 'flex-shrink-0' }, s.icon),
                   h('span', { className: 'font-bold flex-1 truncate', style: { color: s.color } }, s.name),
                   h('span', { className: 'text-slate-600 text-[0.625rem]' }, staticCount + ' static'),
-                  inFlight
-                    ? h('span', { className: 'text-violet-600 text-[0.625rem] font-bold abs-pulse' }, t('stem.allobotsage.generating', '\u23f3 generating...'))
-                    : aiCount > 0
-                      ? h('span', { className: 'text-violet-700 text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
-                      : h('span', { className: 'text-slate-600 text-[0.625rem] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')),
-                  aiCount > 0 && !inFlight && h('button', {
+                  aiOn
+                    ? (inFlight
+                        ? h('span', { className: 'text-violet-600 text-[0.625rem] font-bold' + (reduceMotion ? '' : ' abs-pulse') }, t('stem.allobotsage.generating', '\u23f3 generating...'))
+                        : aiCount > 0
+                          ? h('span', { className: 'text-violet-900 text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
+                          : h('span', { className: 'text-slate-600 text-[0.625rem] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')))
+                    : (offCount > 0
+                        ? h('span', { className: 'text-emerald-900 text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300' }, '\u2699\ufe0f +' + offCount)
+                        : h('span', { className: 'text-slate-600 text-[0.625rem] italic' }, t('stem.allobotsage.offline_ready_hint', 'ready to generate'))),
+                  aiOn && aiCount > 0 && !inFlight && h('button', {
                     type: 'button',
                     onClick: function() {
-                      // Reroll the AI bank for THIS spell.
                       if (!aiOn) return;
                       sfxClick();
-                      var inFlightLocal = Object.assign({}, d._aiInFlight || {});
+                      var inFlightLocal = Object.assign({}, aiInFlightMap);
                       inFlightLocal[spellId] = true;
                       updKey('_aiInFlight', inFlightLocal);
                       aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
-                        var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                        var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
-                        var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                        delete freshFlight[spellId];
-                        if (qs.length > 0) freshCache[spellId] = qs;
-                        updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
-                        if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
+                        updateSageAtomic(function(cur) {
+                          var freshCache = Object.assign({}, safeObj(cur.aiChallengeCache));
+                          var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                          delete freshFlight[spellId];
+                          if (qs.length > 0) freshCache[spellId] = qs;
+                          return { aiChallengeCache: freshCache, _aiInFlight: freshFlight };
+                        });
+                        if (qs.length > 0) {
+                          addToast(
+                            t('stem.allobotsage.toast_spell_rerolled', '\u2728 {name} rerolled (+{count} new)')
+                              .replace('{name}', s.name)
+                              .replace('{count}', String(qs.length)),
+                            'success'
+                          );
+                        }
                       }).catch(function(err) {
-                        // Clear in-flight so the spell can be rerolled again instead of getting stuck
-                        // pii-safe: spell name from the game catalog
-                        console.warn('[AlloBotSage] Reroll failed for ' + s.name + ':', err);
-                        var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                        var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                        delete freshFlight[spellId];
-                        updSage({ _aiInFlight: freshFlight });
-                        addToast('Failed to reroll ' + s.name + '. Try again.', 'error');
+                        console.warn('[AlloBotSage] Reroll failed for ' + spellId + ':', err);
+                        updateSageAtomic(function(cur) {
+                          var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                          delete freshFlight[spellId];
+                          return { _aiInFlight: freshFlight };
+                        });
+                        addToast(t('stem.allobotsage.toast_spell_reroll_failed', 'Failed to reroll {name}. Try again.').replace('{name}', s.name), 'error');
                       });
                     },
-                    'aria-label': 'Regenerate AI questions for ' + s.name,
-                    className: 'transition-colors text-violet-500 hover:text-violet-700 text-[0.625rem] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
+                    'aria-label': t('stem.allobotsage.aria_regenerate_ai_questions', 'Regenerate AI questions for {name}').replace('{name}', s.name),
+                    className: 'transition-colors text-violet-700 hover:text-violet-900 text-[0.625rem] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded px-1'
+                  }, '\ud83d\udd04'),
+                  !aiOn && h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      sfxClick();
+                      var addedOne = generateOfflinePackForSpells([spellId], true);
+                      if (addedOne > 0) {
+                        addToast(
+                          t('stem.allobotsage.toast_offline_spell_rerolled', '\u2699\ufe0f {name} practice pack rerolled (+{count} fresh)')
+                            .replace('{name}', s.name)
+                            .replace('{count}', String(addedOne)),
+                          'success'
+                        );
+                      }
+                    },
+                    'aria-label': t('stem.allobotsage.aria_reroll_offline_questions', 'Reroll offline practice questions for {name}').replace('{name}', s.name),
+                    className: 'transition-colors text-violet-700 hover:text-violet-900 text-[0.625rem] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded px-1'
                   }, '\ud83d\udd04')
                 );
               })
@@ -3071,9 +4597,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               SECTORS.map(function(sec) {
                 var unlocked = expeditionsDone >= sec.unlockAt;
-                var selected = (d.selectedSector || 'crystal_nebula') === sec.id;
-                var labelAria = sec.name + (unlocked ? (selected ? ' (selected)' : ' (unlocked)') : ' (locked: complete ' + sec.unlockAt + ' expeditions)');
-                // Pre-compute the sector's normal + boss pools for the preview
+                var selected = safeSelectedSector === sec.id;
+                var labelAria = unlocked
+                  ? (selected
+                      ? t('stem.allobotsage.aria_sector_selected', '{name} (selected)').replace('{name}', sec.name)
+                      : t('stem.allobotsage.aria_sector_unlocked', '{name} (unlocked)').replace('{name}', sec.name))
+                  : t('stem.allobotsage.aria_sector_locked', '{name} (locked: complete {count} expeditions)').replace('{name}', sec.name).replace('{count}', String(sec.unlockAt));
                 var sectorNormals = ENEMIES.filter(function(e) {
                   return !e.boss && e.sectors && e.sectors.indexOf(sec.id) !== -1;
                 });
@@ -3110,7 +4639,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     )
                   ),
                   h('div', { className: 'text-[0.6875rem] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, __alloT('stem.allobotsage.' + (sec.id) + '_subtitle', sec.subtitle)),
-                  // Boss preview
                   unlocked && sectorBosses.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, t('stem.allobotsage.bosses', 'Bosses')),
                     h('div', { className: 'flex flex-wrap gap-1' },
@@ -3127,7 +4655,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       })
                     )
                   ),
-                  // Enemy preview (normals)
                   unlocked && sectorNormals.length > 0 && h('div', null,
                     h('div', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, 'Foes (' + sectorNormals.length + ')'),
                     h('div', { className: 'flex flex-wrap gap-0.5', 'aria-hidden': 'true' },
@@ -3135,7 +4662,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                         return h('span', {
                           key: en.id,
                           className: 'text-base',
-                          title: en.name + ' \u2014 ' + en.flavor + ' (HP ' + en.hp + ', ATK ' + en.atk + ')'
+                          title: t('stem.allobotsage.title_enemy_stats', '{name} \u2014 {flavor} (HP {hp}, ATK {atk})')
+                            .replace('{name}', en.name)
+                            .replace('{flavor}', en.flavor)
+                            .replace('{hp}', String(en.hp))
+                            .replace('{atk}', String(en.atk))
                         }, en.icon);
                       })
                     )
@@ -3155,14 +4686,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               return spellCard(s, {
                 unlocked: true,
                 equipped: !!loadoutSet[s.id],
-                usageCount: (d.castCounts || {})[s.id] || 0,
+                usageCount: castCountsMap[s.id] || 0,
                 onClick: function() { toggleSpell(s.id); }
               });
             })
           ),
-          // \u2500\u2500 Goal-setting (Locke & Latham: specific + challenging + attainable goals improve performance) \u2500\u2500
-          // Multi-select 3 goal types. State persists in d.selectedGoals so it's
-          // remembered across expeditions. Tracked during run, celebrated at debrief.
+          // \u2500\u2500 Goal-setting \u2500\u2500
           h('section', { 'aria-label': t('stem.allobotsage.set_goals_for_this_expedition', 'Set goals for this expedition'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-violet-50/40' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', null,
@@ -3199,13 +4728,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     onClick: function() { toggleGoal(g.id); },
                     className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'border-violet-500 bg-violet-100' : 'border-slate-200 bg-white hover:border-violet-300'),
                     'aria-pressed': picked,
-                    'aria-label': g.label + (picked ? ' (selected)' : '')
+                    'aria-label': picked
+                      ? t('stem.allobotsage.aria_goal_selected', '{label} (selected)').replace('{label}', g.label)
+                      : g.label
                   },
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-lg' }, g.icon),
                       h('div', { className: 'flex-1' },
                         h('div', { className: 'text-[0.6875rem] font-bold ' + (picked ? 'text-violet-900' : 'text-slate-700') }, g.label),
-                        h('div', { className: 'text-[0.625rem] ' + (picked ? 'text-violet-700' : 'text-slate-400') }, g.desc)
+                        h('div', { className: 'text-[0.625rem] ' + (picked ? 'text-violet-700' : 'text-slate-600') }, g.desc)
                       ),
                       picked && h('span', { className: 'text-violet-700 font-bold' }, '\u2713')
                     )
@@ -3220,15 +4751,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             onClick: function() {
               if (equippedLoadout.length === 0) return;
               sfxClick();
-              var pickedSectorId = d.selectedSector || 'crystal_nebula';
-              var sector = sectorById(pickedSectorId);
-              // Apply the picked difficulty profile to room count, HP, crit window,
-              // and essence reward. The sector's own multiplier stacks on top.
-              var diffProfile = difficultyById(d.difficulty || 'standard');
+              var sector = sectorById(safeSelectedSector);
+              var diffProfile = difficultyById(safeDifficulty);
               var roomsPlan = buildRoomsPlan(sector.id, diffProfile.rooms);
               var firstRoom = roomsPlan[0];
               var combinedEssenceMult = sector.essenceMult * diffProfile.essenceMult;
               var exp = {
+                id: 'exp-' + Date.now() + '-' + sector.id + '-' + expeditionsDone,
                 sectorId: sector.id,
                 sectorName: sector.name,
                 essenceMult: combinedEssenceMult,
@@ -3247,18 +4776,19 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     ? { text: 'A ' + firstRoom.name + ' greets you. ' + firstRoom.flavor, kind: 'info' }
                     : { text: 'A ' + firstRoom.name + ' materializes. ' + firstRoom.flavor, kind: 'info' }
                 ],
+                castLog: [],
                 pendingCast: null,
-                // Snapshot the run-start state so debrief can compute goal progress
-                goals: (d.selectedGoals || []).slice(),
+                lastBackfireFeedback: null,
+                goals: (Array.isArray(d.selectedGoals) ? d.selectedGoals : []).slice(),
                 goalsStartCrits: critCasts,
-                goalsStartInterrupts: ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0),
+                goalsStartInterrupts: safeNum(d.interruptCount, 0),
                 goalsSpellsUsed: {}
               };
               updSage({ phase: 'expedition', expedition: exp });
               announceSR('Expedition begins in the ' + sector.name + ' on ' + diffProfile.name + ' difficulty. ' + firstRoom.name + ' appears in room 1 of ' + diffProfile.rooms + '.');
             },
             className: 'transition-colors w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-300 focus:outline-none'
-          }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (3 rooms)')
+          }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (' + difficultyById(safeDifficulty).rooms + ' rooms)')
         );
       }
 
@@ -3267,31 +4797,40 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // ─────────────────────────────────────────────────
       if (phase === 'expedition' && expedition) {
         var exp = expedition;
-        var enemy = exp.enemy;
-        var pendingCast = exp.pendingCast || null;
-        var spellLevels = d.spellLevels || {};
-        var roomsPlan = exp.roomsPlan || [];
-        var roomIndex = exp.roomIndex || 0;
+        var enemy = safeObj(exp.enemy);
+        var rawPending = exp.pendingCast;
+        var pendingCast = (rawPending && typeof rawPending === 'object' && !Array.isArray(rawPending)
+          && rawPending.challenge && typeof rawPending.challenge === 'object'
+          && Array.isArray(rawPending.challenge.options)) ? rawPending : null;
+        var spellLevels = spellLevelsMap;
+        var roomsPlan = Array.isArray(exp.roomsPlan) ? exp.roomsPlan : [];
+        var roomIndex = safeNum(exp.roomIndex, 0);
         var totalRooms = roomsPlan.length || ROOMS_PER_EXPEDITION;
         var isBossRoom = !!(enemy && enemy.boss);
+        var curPlayerHp = safeNum(exp.playerHp, 60);
+        var curPlayerMaxHp = Math.max(1, safeNum(exp.playerMaxHp, 60));
+        var curEnemyHp = safeNum(enemy.hp, 0);
+        var curEnemyMaxHp = Math.max(1, safeNum(enemy.maxHp, 1));
+        var curEnemyAtk = safeNum(enemy.atk, 10);
 
-        function mutateExp(patch) { updKey('expedition', Object.assign({}, exp, patch)); }
-        function appendLog(entry) {
-          var nl = (exp.log || []).concat([entry]);
-          if (nl.length > 18) nl = nl.slice(-18);
-          mutateExp({ log: nl });
+        function mutateExp(patch) {
+          updateSageAtomic(function(cur) {
+            var curExp = (cur.expedition && typeof cur.expedition === 'object' && !Array.isArray(cur.expedition)) ? cur.expedition : exp;
+            return { expedition: Object.assign({}, curExp, patch) };
+          });
         }
 
-        var sectorMult = (exp.essenceMult != null) ? exp.essenceMult : 1.0;
+        var sectorMult = safeNum(exp.essenceMult, 1.0);
         function scaledReward(baseReward) { return Math.max(1, Math.round(baseReward * sectorMult)); }
 
-        function finishExpedition(victory) {
-          var baseEarned = exp.essenceEarned || 0;
-          var bonus = victory ? scaledReward(5) : 0; // completion bonus for last boss
-          // First-clear bonus: clearing a sector for the first time gives +20 essence
-          // and is logged in d.sectorsCleared so achievements can fire.
-          var sectorsClearedNow = Object.assign({}, d.sectorsCleared || {});
-          var bossesDefeatedNow = Object.assign({}, d.bossesDefeated || {});
+        function finishExpedition(victory, extraEssence, extraRoomsCleared) {
+          var addEss = safeNum(extraEssence, 0);
+          var addRooms = safeNum(extraRoomsCleared, 0);
+          var finalRoomsCleared = safeNum(exp.roomsCleared, 0) + addRooms;
+          var baseEarned = safeNum(exp.essenceEarned, 0) + addEss;
+          var bonus = victory ? scaledReward(5) : 0;
+          var sectorsClearedNow = Object.assign({}, sectorsClearedMapAll);
+          var bossesDefeatedNow = Object.assign({}, bossesDefeatedMapAll);
           var firstClearBonus = 0;
           var firstClearSector = null;
           if (victory) {
@@ -3300,41 +4839,80 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               firstClearBonus = scaledReward(20);
               firstClearSector = exp.sectorName || exp.sectorId;
             }
-            // Track boss defeated (final room boss)
-            var lastRoom = (exp.roomsPlan || [])[(exp.roomsPlan || []).length - 1];
+            var lastRoom = roomsPlan[roomsPlan.length - 1];
             if (lastRoom && lastRoom.boss && lastRoom.id) {
               bossesDefeatedNow[lastRoom.id] = true;
             }
           }
           var reward = baseEarned + bonus + firstClearBonus;
-          announceSR(victory ? 'Expedition complete! +' + reward + ' essence earned.' : 'Expedition ended after ' + (exp.roomsCleared || 0) + ' rooms. +' + reward + ' essence earned.');
-          var debriefPatch = {
-            phase: 'debrief',
-            expedition: Object.assign({}, exp, {
-              result: victory ? 'victory' : 'defeat',
-              reward: reward,
-              firstClearBonus: firstClearBonus,
-              firstClearSector: firstClearSector
-            })
-          };
-          if (victory) {
-            debriefPatch.sectorsCleared = sectorsClearedNow;
-            debriefPatch.bossesDefeated = bossesDefeatedNow;
-            debriefPatch.expeditionsCompleted = expeditionsDone + 1;
-          }
-          updSage(debriefPatch);
+          var expDedupKey = (typeof exp.id === 'string' && exp.id)
+            ? exp.id
+            : ((exp.sectorId || 'sector') + ':' + finalRoomsCleared + ':' + (Array.isArray(exp.castLog) ? exp.castLog.length : 0) + ':' + (enemy.id || 'boss'));
+          var prevCreditedIds = safeObj(d._creditedExpIds);
+          var shouldAwardXp = !!(victory && !prevCreditedIds[expDedupKey]);
+          var xpPoints = 15 + finalRoomsCleared * 3;
+
+          // Single pure batched state transition: merges final room clear, debrief, essence, sector/boss progress, and XP dedup ledger.
+          updateSageAtomic(function(cur) {
+            var curExp = (cur.expedition && typeof cur.expedition === 'object' && !Array.isArray(cur.expedition)) ? cur.expedition : exp;
+            var curCredited = Object.assign({}, safeObj(cur._creditedExpIds));
+            if (cur.phase === 'debrief' && curExp && curExp.id && exp.id && curExp.id === exp.id) {
+              return null;
+            }
+            var curEssence = safeNum(cur.essence, essence);
+            var curExpDone = safeNum(cur.expeditionsCompleted, expeditionsDone);
+            var curSectors = Object.assign({}, safeObj(cur.sectorsCleared), victory ? sectorsClearedNow : {});
+            var curBosses = Object.assign({}, safeObj(cur.bossesDefeated), victory ? bossesDefeatedNow : {});
+            var mergedRooms = Math.max(safeNum(curExp.roomsCleared, 0), finalRoomsCleared);
+            var mergedEarned = Math.max(safeNum(curExp.essenceEarned, 0), baseEarned);
+            var patch = {
+              phase: 'debrief',
+              essence: curEssence + reward,
+              expedition: Object.assign({}, curExp, {
+                pendingCast: null,
+                roomsCleared: mergedRooms,
+                essenceEarned: mergedEarned,
+                result: victory ? 'victory' : 'defeat',
+                reward: reward,
+                firstClearBonus: firstClearBonus,
+                firstClearSector: firstClearSector
+              })
+            };
+            if (victory) {
+              patch.sectorsCleared = curSectors;
+              patch.bossesDefeated = curBosses;
+              patch.expeditionsCompleted = curExpDone + 1;
+              if (!curCredited[expDedupKey]) {
+                curCredited[expDedupKey] = true;
+                var cKeys = Object.keys(curCredited);
+                if (cKeys.length > 80) {
+                  var trimmed = {};
+                  cKeys.slice(-80).forEach(function(ck) { trimmed[ck] = true; });
+                  curCredited = trimmed;
+                }
+                patch._creditedExpIds = curCredited;
+              }
+            }
+            return patch;
+          });
+
+          announceSR(victory ? 'Expedition complete! +' + reward + ' essence earned.' : 'Expedition ended after ' + finalRoomsCleared + ' rooms. +' + reward + ' essence earned.');
           if (victory) {
             sfxVictory();
-            try { awardXP('alloBotSage', 15 + (exp.roomsCleared || 0) * 3); } catch(e) {}
+            if (shouldAwardXp) {
+              try { awardXP('alloBotSage', xpPoints, 'Expedition victory'); } catch(e) {}
+            }
             if (firstClearBonus > 0) {
-              addToast('🏆 First clear of ' + firstClearSector + '! +' + firstClearBonus + ' bonus essence', 'success');
+              addToast(
+                t('stem.allobotsage.toast_first_clear_sector', '\uD83C\uDFC6 First clear of {sector}! +{bonus} bonus essence')
+                  .replace('{sector}', String(firstClearSector || ''))
+                  .replace('{bonus}', String(firstClearBonus)),
+                'success'
+              );
             }
           }
-          updKey('essence', essence + reward);
         }
 
-        // Advance to the next room after clearing the current one.
-        // `clearReward` is the essence granted for clearing THIS room (0 by default).
         function advanceRoom(clearReward) {
           var clearedIdx = roomIndex;
           var reward = clearReward || 0;
@@ -3343,18 +4921,18 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             return null;
           }
           var nextRoom = Object.assign({}, roomsPlan[nextIdx]);
-          var healAmount = Math.round(exp.playerMaxHp * 0.2);
-          var newPlayerHp = Math.min(exp.playerMaxHp, exp.playerHp + healAmount);
+          var healAmount = Math.round(curPlayerMaxHp * 0.2);
+          var newPlayerHp = Math.min(curPlayerMaxHp, curPlayerHp + healAmount);
           var roomLabel = (nextIdx + 1) + ' of ' + totalRooms + (nextRoom.boss ? ' (BOSS)' : nextRoom.type === 'shrine' ? ' (Shrine)' : '');
-          var nextLog = (exp.log || []).concat([
+          var nextLog = (Array.isArray(exp.log) ? exp.log : []).concat([
             { text: '\u2728 Room ' + (clearedIdx + 1) + ' cleared! +' + reward + ' essence. (+' + healAmount + ' HP restored)', kind: 'player' },
-            { text: 'Room ' + roomLabel + ': ' + nextRoom.name + ' appears. ' + nextRoom.flavor, kind: (nextRoom.type === 'shrine' ? 'info' : 'info') }
+            { text: 'Room ' + roomLabel + ': ' + nextRoom.name + ' appears. ' + nextRoom.flavor, kind: 'info' }
           ]);
           if (nextLog.length > 18) nextLog = nextLog.slice(-18);
           mutateExp({
             roomIndex: nextIdx,
-            roomsCleared: (exp.roomsCleared || 0) + 1,
-            essenceEarned: (exp.essenceEarned || 0) + reward,
+            roomsCleared: safeNum(exp.roomsCleared, 0) + 1,
+            essenceEarned: safeNum(exp.essenceEarned, 0) + reward,
             enemy: nextRoom,
             playerHp: newPlayerHp,
             turn: 'player',
@@ -3365,75 +4943,58 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           return nextIdx;
         }
 
-        // Shrine room: rest action (restore HP + small essence).
         function restAtShrine() {
           if (!enemy || enemy.type !== 'shrine') return;
           sfxUnlock();
-          var healAmount = Math.round(exp.playerMaxHp * 0.35);
-          var newPlayerHp = Math.min(exp.playerMaxHp, exp.playerHp + healAmount);
+          var healAmount = Math.round(curPlayerMaxHp * 0.35);
+          var newPlayerHp = Math.min(curPlayerMaxHp, curPlayerHp + healAmount);
           var shrineEssence = scaledReward(3);
           var entry = { text: '\u26E9\uFE0F Rested at the shrine (+' + healAmount + ' HP, +' + shrineEssence + ' essence).', kind: 'player' };
-          // Announce and advance.
-          mutateExp({ playerHp: newPlayerHp, log: (exp.log || []).concat([entry]) });
+          mutateExp({ playerHp: newPlayerHp, log: (Array.isArray(exp.log) ? exp.log : []).concat([entry]) });
           announceSR(__alloT('stem.allobotsage.sr_rested_at_shrine_advancing', 'Rested at shrine. Advancing.'));
-          // Use advanceRoom so shrine "clear" counts toward roomsCleared + gives essence.
           scheduleCombat(function() {
             if (roomIndex < totalRooms - 1) {
               advanceRoom(shrineEssence);
             } else {
-              // Edge case (shouldn\u2019t happen \u2014 boss is always last): just finish.
-              mutateExp({ essenceEarned: (exp.essenceEarned || 0) + shrineEssence, roomsCleared: (exp.roomsCleared || 0) + 1 });
-              scheduleCombat(function() { finishExpedition(true); }, 80);
+              finishExpedition(true, shrineEssence, 1);
             }
           }, 600);
         }
 
-        // Boss telegraph mechanic — bosses cycle through:
-        //   NORMAL → NORMAL → WINDING (telegraph; no damage) → SPECIAL (1.6× dmg)
-        // During the WINDING turn, a CRIT cast interrupts the special, reducing
-        // it to 0.5× damage. This rewards fast accurate retrieval at the
-        // dramatic moments and gives bosses tactical identity beyond bigger HP.
         function enemyTurn() {
           var isBoss = !!enemy.boss;
           var bossPhase = enemy.bossPhase || 'normal';
           var normalCount = enemy.normalCount || 0;
           var entry;
-          var newHp = exp.playerHp;
+          var newHp = curPlayerHp;
           var newEnemy;
-
-          // Each boss has a named special with its own flavor. Falls back to
-          // generic "SPECIAL ATTACK" text if a boss doesn't define them.
           var specName = (enemy.specialName || 'SPECIAL ATTACK');
           var specFlavor = (enemy.specialFlavor || '');
 
           if (isBoss && bossPhase === 'winding') {
-            // SPECIAL attack this turn — was the player able to interrupt?
             var multiplier = enemy.interrupted ? 0.5 : 1.6;
-            var rawDmg = enemy.atk * multiplier;
+            var rawDmg = curEnemyAtk * multiplier;
             var specDmg = Math.max(1, Math.round(rawDmg - Math.floor(Math.random() * 3)));
-            newHp = Math.max(0, exp.playerHp - specDmg);
+            newHp = Math.max(0, curPlayerHp - specDmg);
             entry = enemy.interrupted
               ? { text: '🛡️ ' + enemy.name + '’s ' + specName + ' is staggered — only ' + specDmg + ' dmg lands.', kind: 'enemy' }
               : { text: '💥 ' + enemy.name + ' unleashes ' + specName + ' — ' + specDmg + ' dmg!' + (specFlavor ? ' (' + specFlavor + ')' : ''), kind: 'boss-special' };
             newEnemy = Object.assign({}, enemy, { bossPhase: 'normal', normalCount: 0, interrupted: false });
           } else if (isBoss && normalCount >= 2) {
-            // Time to wind up — no damage this turn, telegraph the special.
             entry = { text: '⚠️ ' + enemy.name + ' begins to gather ' + specName + (specFlavor ? ' — ' + specFlavor : '') + '. CRIT next cast to interrupt!', kind: 'boss-telegraph' };
             newEnemy = Object.assign({}, enemy, { bossPhase: 'winding', interrupted: false });
           } else {
-            // Normal attack — for both bosses (in normal phase) and regular enemies.
-            var dmg = Math.max(1, enemy.atk - Math.floor(Math.random() * 4));
-            newHp = Math.max(0, exp.playerHp - dmg);
+            var dmg = Math.max(1, curEnemyAtk - Math.floor(Math.random() * 4));
+            newHp = Math.max(0, curPlayerHp - dmg);
             entry = { text: enemy.name + ' strikes for ' + dmg + ' damage.', kind: 'enemy' };
             newEnemy = isBoss
               ? Object.assign({}, enemy, { normalCount: normalCount + 1 })
               : enemy;
           }
 
-          var nextLog = (exp.log || []).concat([entry]);
+          var nextLog = (Array.isArray(exp.log) ? exp.log : []).concat([entry]);
           if (nextLog.length > 18) nextLog = nextLog.slice(-18);
           if (newHp <= 0) {
-            // Defeat path
             mutateExp({ playerHp: 0, log: nextLog, enemy: newEnemy });
             scheduleCombat(function() { finishExpedition(false); }, 600);
             return;
@@ -3442,15 +5003,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           announceSR(entry.text + ' Your turn.');
         }
 
-        // If we have a pendingCast, we're in the challenge overlay.
         function startCast(spellId) {
           var s = findSpell(spellId);
           if (!s) return;
           if (exp.turn !== 'player') return;
-          // Merged bank: static + AI cache. AI questions appended to floor.
-          // Pick weighted by SRS stats so recently-failed questions resurface.
-          var bank = getMergedBank(s, aiChallengeCache);
-          var challenge = pickWeighted(bank, d.questionStats || {});
+          var bank = getMergedBank(s, aiChallengeCache, offlineChallengeCache);
+          var challenge = pickWeighted(bank, questionStatsMap);
           if (!challenge) return;
           sfxCastReady();
           mutateExp({
@@ -3460,39 +5018,35 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               startedAt: Date.now(),
               selectedIndex: null,
               resolved: false,
-              aiSourced: !!challenge.aiGenerated
+              aiSourced: !!challenge.aiGenerated,
+              offlineSourced: !!challenge.offlineGenerated
             }
           });
           announceSR('Casting ' + s.name + '. ' + challenge.prompt);
-          // Lazy AI fetch: if no AI cache for this spell yet, fire a background
-          // request. The questions arrive within a few seconds and are merged
-          // for the next cast. THIS cast already used static bank.
-          var existingAi = (aiChallengeCache[spellId] || []);
+          var existingAi = Array.isArray(aiChallengeCache[spellId]) ? aiChallengeCache[spellId] : [];
           if (existingAi.length === 0 && aiOn) {
-            // Mark in-flight so we don't double-fire if startCast runs again.
-            if (!d._aiInFlight || !d._aiInFlight[spellId]) {
-              var inFlight = Object.assign({}, d._aiInFlight || {});
+            if (!aiInFlightMap[spellId]) {
+              var inFlight = Object.assign({}, aiInFlightMap);
               inFlight[spellId] = true;
               updKey('_aiInFlight', inFlight);
               aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
-                var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
-                var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                delete freshFlight[spellId];
-                if (qs.length > 0) {
-                  freshCache[spellId] = qs;
-                  updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
-                } else {
-                  updSage({ _aiInFlight: freshFlight });
-                }
+                updateSageAtomic(function(cur) {
+                  var freshCache = Object.assign({}, safeObj(cur.aiChallengeCache));
+                  var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                  delete freshFlight[spellId];
+                  if (qs.length > 0) {
+                    freshCache[spellId] = qs;
+                    return { aiChallengeCache: freshCache, _aiInFlight: freshFlight };
+                  }
+                  return { _aiInFlight: freshFlight };
+                });
               }).catch(function(err) {
-                // Background generation — student already has bank questions, so silent + log only
-                // pii-safe: spell name from the game catalog
-                console.warn('[AlloBotSage] Background AI generation failed for ' + s.name + ':', err);
-                var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
-                var freshFlight = Object.assign({}, freshD._aiInFlight || {});
-                delete freshFlight[spellId];
-                updSage({ _aiInFlight: freshFlight });
+                console.warn('[AlloBotSage] Background AI generation failed for ' + spellId + ':', err);
+                updateSageAtomic(function(cur) {
+                  var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                  delete freshFlight[spellId];
+                  return { _aiInFlight: freshFlight };
+                });
               });
             }
           }
@@ -3503,13 +5057,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           var s = findSpell(pendingCast.spellId);
           var challenge = pendingCast.challenge;
           if (!s || !challenge) return;
-          var lvl = spellLevels[s.id] || 0;
+          var lvl = safeNum(spellLevels[s.id], 0);
           var leveledBase = getSpellDamage(s, lvl);
-          var elapsed = (Date.now() - pendingCast.startedAt) / 1000;
+          var elapsed = (Date.now() - safeNum(pendingCast.startedAt, Date.now())) / 1000;
           var correct = selectedIndex === challenge.correctIndex;
-          // Crit window varies by difficulty (set at expedition start).
-          // Default to 6s (standard) when older runs replay state without it.
-          var critWindow = (exp.critWindowSec != null) ? exp.critWindowSec : 6;
+          var critWindow = safeNum(exp.critWindowSec, 6);
           var fast = elapsed < critWindow;
           var dmg = 0;
           var result;
@@ -3526,71 +5078,82 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             result = 'backfire';
             sfxBackfire();
           }
-          var newEnemyHp = Math.max(0, enemy.hp - dmg);
+          var diag = !correct ? ALLOBOTSAGE_ENGINE.diagnoseSageDistractor(s, challenge, selectedIndex) : null;
+          var newEnemyHp = Math.max(0, curEnemyHp - dmg);
           var lvlTag = lvl > 0 ? ' [Lv' + lvl + ']' : '';
           var text;
           if (result === 'crit') text = '\u2B50 CRITICAL ' + s.name + lvlTag + ' \u2014 ' + dmg + ' dmg! (' + elapsed.toFixed(1) + 's)';
           else if (result === 'hit') text = s.name + lvlTag + ' strikes for ' + dmg + ' dmg.';
-          else text = '\u26A1 ' + s.name + lvlTag + ' backfires. Enemy grazed for ' + dmg + '. (' + challenge.explain + ')';
-          var nextLog = (exp.log || []).concat([{ text: text, kind: result === 'backfire' ? 'backfire' : 'player' }]);
-          if (nextLog.length > 18) nextLog = nextLog.slice(-18);
-
-          // Stats
-          updKey('totalCasts', totalCasts + 1);
-          if (result === 'crit') updKey('critCasts', critCasts + 1);
-          // Per-spell mastery counter (drives the tier badge in the grimoire)
-          var nextCounts = Object.assign({}, d.castCounts || {});
-          nextCounts[s.id] = (nextCounts[s.id] || 0) + 1;
-          updKey('castCounts', nextCounts);
-          // ── Spaced repetition + confidence ledger ──
-          // Record this question's result so future picks can weight it.
-          // Also captures any confidence level the student set, which over
-          // time lets us detect calibration patterns (overconfidence drives
-          // the worst backfires; under-confidence often masks real knowing).
-          var nextStats = Object.assign({}, d.questionStats || {});
-          var prevStat = nextStats[challenge.prompt] || { attempts: 0, correctCount: 0 };
-          nextStats[challenge.prompt] = {
-            lastResult: result,
-            lastSeen: Date.now(),
-            attempts: (prevStat.attempts || 0) + 1,
-            correctCount: (prevStat.correctCount || 0) + (correct ? 1 : 0),
-            lastConfidence: pendingCast.confidence || null
-          };
-          updKey('questionStats', nextStats);
-
-          // Boss-telegraph interrupt: a CRIT during the boss's WINDING phase
-          // reduces the next special to 0.5×. Logged + announced for clarity.
-          // Also bumps d.interruptCount for the achievement check.
+          else text = '\u26A1 ' + s.name + lvlTag + ' backfires. Enemy grazed for ' + dmg + '. ' + (diag && diag.whyNot ? diag.whyNot + ' ' : '') + '(' + challenge.explain + ')';
           var willInterrupt = !!enemy.boss && enemy.bossPhase === 'winding' && result === 'crit';
-          var nextEnemy = Object.assign({}, enemy, { hp: newEnemyHp });
-          if (willInterrupt) {
-            nextEnemy.interrupted = true;
-            nextLog = nextLog.concat([{ text: '🛡️ ' + enemy.name + '’s special is interrupted by your critical strike!', kind: 'player' }]);
-            if (nextLog.length > 18) nextLog = nextLog.slice(-18);
-            updKey('interruptCount', ((typeof d.interruptCount === 'number' && isFinite(d.interruptCount)) ? d.interruptCount : 0) + 1);
-          }
-          // ── Per-run cast log (fuels the enriched debrief screen) ──
-          // Each entry records: spell id, result, confidence, prompt, was-boss.
-          // Capped at 60 entries to keep state small even on long runs.
-          var nextCastLog = (exp.castLog || []).concat([{
-            spellId: s.id,
-            result: result,
-            confidence: pendingCast.confidence || null,
+          var nowStamp = Date.now();
+          var backfireSnap = diag ? {
+            spellName: s.name,
             prompt: challenge.prompt,
-            wasBoss: !!enemy.boss
-          }]);
-          if (nextCastLog.length > 60) nextCastLog = nextCastLog.slice(-60);
-          // Goal-tracking: mark this spell as used in the run's spells-used set.
-          var nextGoalsSpells = Object.assign({}, exp.goalsSpellsUsed || {});
-          nextGoalsSpells[s.id] = true;
+            chosenOption: diag.chosenOption,
+            correctOption: diag.correctOption,
+            whyNot: diag.whyNot,
+            explain: challenge.explain
+          } : exp.lastBackfireFeedback || null;
 
-          mutateExp({
-            enemy: nextEnemy,
-            pendingCast: Object.assign({}, pendingCast, { selectedIndex: selectedIndex, resolved: true, damage: dmg, result: result }),
-            log: nextLog,
-            castLog: nextCastLog,
-            goalsSpellsUsed: nextGoalsSpells
+          // Single pure batched updater consolidating totalCasts, critCasts, castCounts, questionStats, interruptCount, and expedition!
+          updateSageAtomic(function(cur) {
+            var curExp = (cur.expedition && typeof cur.expedition === 'object' && !Array.isArray(cur.expedition)) ? cur.expedition : exp;
+            var curCounts = Object.assign({}, safeObj(cur.castCounts));
+            curCounts[s.id] = safeNum(curCounts[s.id], 0) + 1;
+            var curStats = Object.assign({}, safeObj(cur.questionStats));
+            var prevStat = safeObj(curStats[challenge.prompt]);
+            curStats[challenge.prompt] = {
+              lastResult: result,
+              lastSeen: nowStamp,
+              attempts: safeNum(prevStat.attempts, 0) + 1,
+              correctCount: safeNum(prevStat.correctCount, 0) + (correct ? 1 : 0),
+              lastConfidence: pendingCast.confidence || null
+            };
+            var curLog = (Array.isArray(curExp.log) ? curExp.log : []).concat([{ text: text, kind: result === 'backfire' ? 'backfire' : 'player' }]);
+            var nextEnemy = Object.assign({}, safeObj(curExp.enemy), { hp: newEnemyHp });
+            if (willInterrupt) {
+              nextEnemy.interrupted = true;
+              curLog = curLog.concat([{ text: '🛡️ ' + enemy.name + '’s special is interrupted by your critical strike!', kind: 'player' }]);
+            }
+            if (curLog.length > 18) curLog = curLog.slice(-18);
+            var nextCastLog = (Array.isArray(curExp.castLog) ? curExp.castLog : []).concat([{
+              spellId: s.id,
+              result: result,
+              confidence: pendingCast.confidence || null,
+              prompt: challenge.prompt,
+              wasBoss: !!enemy.boss
+            }]);
+            if (nextCastLog.length > 60) nextCastLog = nextCastLog.slice(-60);
+            var nextGoalsSpells = Object.assign({}, safeObj(curExp.goalsSpellsUsed));
+            nextGoalsSpells[s.id] = true;
+
+            var patch = {
+              totalCasts: safeNum(cur.totalCasts, totalCasts) + 1,
+              castCounts: curCounts,
+              questionStats: curStats,
+              expedition: Object.assign({}, curExp, {
+                enemy: nextEnemy,
+                pendingCast: Object.assign({}, pendingCast, {
+                  selectedIndex: selectedIndex,
+                  resolved: true,
+                  damage: dmg,
+                  result: result,
+                  whyNot: diag ? diag.whyNot : null,
+                  chosenOption: diag ? diag.chosenOption : null,
+                  correctOption: diag ? diag.correctOption : null
+                }),
+                log: curLog,
+                castLog: nextCastLog,
+                goalsSpellsUsed: nextGoalsSpells,
+                lastBackfireFeedback: backfireSnap
+              })
+            };
+            if (result === 'crit') patch.critCasts = safeNum(cur.critCasts, critCasts) + 1;
+            if (willInterrupt) patch.interruptCount = safeNum(cur.interruptCount, 0) + 1;
+            return patch;
           });
+
           announceSR(text + (willInterrupt ? ' Boss special interrupted!' : ''));
 
           scheduleCombat(function() {
@@ -3599,27 +5162,21 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               if (roomIndex < totalRooms - 1) {
                 advanceRoom(clearReward);
               } else {
-                // Final room cleared \u2192 expedition victory
-                mutateExp({
-                  pendingCast: null,
-                  roomsCleared: (exp.roomsCleared || 0) + 1,
-                  essenceEarned: (exp.essenceEarned || 0) + clearReward
-                });
-                scheduleCombat(function() { finishExpedition(true); }, 100);
+                finishExpedition(true, clearReward, 1);
               }
               return;
             }
-            // Enemy turn
             mutateExp({ pendingCast: null, turn: 'enemy' });
             scheduleCombat(function() { enemyTurn(); }, 550);
-          }, 1400);
+          }, result === 'backfire' ? 2200 : 1400);
         }
 
         // ── Render encounter ──
-        var enemyPct = Math.max(0, Math.min(100, Math.round((enemy.hp / Math.max(1, Number(enemy.maxHp) || 1)) * 100)));
-        var playerPct = Math.max(0, Math.min(100, Math.round((exp.playerHp / Math.max(1, Number(exp.playerMaxHp) || 1)) * 100)));
+        var enemyPct = Math.max(0, Math.min(100, Math.round((curEnemyHp / curEnemyMaxHp) * 100)));
+        var playerPct = Math.max(0, Math.min(100, Math.round((curPlayerHp / curPlayerMaxHp) * 100)));
+        var expLastBackfire = (exp.lastBackfireFeedback && typeof exp.lastBackfireFeedback === 'object') ? exp.lastBackfireFeedback : null;
 
-        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+        return h('div', { className: 'abs-workbench max-w-3xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           // Top bar
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
@@ -3627,7 +5184,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               onClick: async function() {
                 var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
                 var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
-                var unavailable = 'Expedition exit is unavailable right now, so your progress was kept.';
+                var unavailable = t('stem.allobotsage.toast_exit_unavailable', 'Expedition exit is unavailable right now, so your progress was kept.');
                 if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
                   addToast(unavailable, 'warning');
                   announceSR(unavailable);
@@ -3635,7 +5192,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 }
                 var confirmed = false;
                 try {
-                  confirmed = await confirmApi('Abandon this Expedition? Progress in this run will be lost.', { title: 'Abandon expedition', confirmText: 'Abandon expedition', cancelText: 'Keep expedition', tone: 'warning' });
+                  confirmed = await confirmApi(
+                    t('stem.allobotsage.confirm_abandon_msg', 'Abandon this Expedition? Progress in this run will be lost.'),
+                    {
+                      title: t('stem.allobotsage.title_abandon_expedition', 'Abandon expedition'),
+                      confirmText: t('stem.allobotsage.confirm_abandon_btn', 'Abandon expedition'),
+                      cancelText: t('stem.allobotsage.cancel_keep_expedition', 'Keep expedition'),
+                      tone: 'warning'
+                    }
+                  );
                 } catch (e) {
                   addToast(unavailable, 'warning');
                   announceSR(unavailable);
@@ -3648,7 +5213,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   announceSR(__alloT('stem.allobotsage.sr_expedition_abandoned_returned_to_the_hub', 'Expedition abandoned. Returned to the hub.'));
                 } else announceSR(__alloT('stem.allobotsage.sr_expedition_continued', 'Expedition continued.'));
               },
-              className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline'
+              className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline' + onHostInk
             }, t('stem.allobotsage.abandon', 'Abandon')),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-violet-600' },
@@ -3657,33 +5222,33 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     : isBossRoom ? ' \u00b7 Boss'
                     : '')
               ),
-              h('div', { className: 'flex items-center justify-center gap-1 mt-0.5', 'aria-label': 'Room ' + (roomIndex + 1) + ' of ' + totalRooms },
+              h('div', {
+                className: 'flex items-center justify-center gap-1 mt-0.5',
+                'aria-label': t('stem.allobotsage.aria_room_progress', 'Room {current} of {total}')
+                  .replace('{current}', String(roomIndex + 1))
+                  .replace('{total}', String(totalRooms))
+              },
                 roomsPlan.map(function(_r, i) {
-                  var cleared = i < (exp.roomsCleared || 0);
+                  var cleared = i < safeNum(exp.roomsCleared, 0);
                   var current = i === roomIndex;
                   return h('span', {
                     key: 'room-' + i,
-                    className: 'inline-block w-2.5 h-2.5 rounded-full ' + (cleared ? 'bg-emerald-500' : current ? 'bg-violet-500 abs-pulse' : 'bg-slate-300'),
+                    className: 'inline-block w-2.5 h-2.5 rounded-full ' + (cleared ? 'bg-emerald-500' : current ? ('bg-violet-500' + (reduceMotion ? '' : ' abs-pulse')) : 'bg-slate-300'),
                     'aria-hidden': 'true'
                   });
                 }),
-                h('span', { className: 'ml-2 text-[0.625rem] text-slate-600' }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
+                h('span', { className: 'ml-2 text-[0.625rem] text-slate-600' + onHostInk }, 'Room ' + (roomIndex + 1) + '/' + totalRooms)
               )
             ),
-            h('div', { className: 'text-xs text-slate-600' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
+            h('div', { className: 'text-xs text-slate-600' + onHostInk }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
           ),
 
-          // Battlefield (sector-tinted gradient + ambient particles per sector).
-          // Particles are absolutely-positioned children behind the player/enemy
-          // row so they don't interfere with interactions. Each sector gets its
-          // own thematic ambient set: stars (nebula), drifting pages (archive),
-          // spinning gears (clockwork), rising bubbles (deep tide).
+          // Battlefield
           enemy.type !== 'shrine' && h('div', {
             className: 'rounded-2xl p-5 mb-3',
-            style: { background: (sectorById(exp.sectorId).bgGradient || 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'), color: 'white', position: 'relative', overflow: 'hidden', minHeight: '200px' }
+            style: { background: isContrast ? '#000000' : (sectorById(exp.sectorId).bgGradient || 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'), border: isContrast ? '2px solid #ffffff' : 'none', color: 'white', position: 'relative', overflow: 'hidden', minHeight: '200px' }
           },
-            // Ambient particle layer (deterministic seed per sector so positions are stable)
-            h('div', {
+            !reduceMotion && !isContrast && h('div', {
               'aria-hidden': 'true',
               style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
             },
@@ -3692,7 +5257,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 var particles = [];
                 var i;
                 if (sectorId === 'crystal_nebula') {
-                  // 18 small twinkling stars at pseudo-random positions
                   for (i = 0; i < 18; i++) {
                     var sLeft = ((i * 53) % 100);
                     var sTop = ((i * 37) % 100);
@@ -3713,7 +5277,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     }));
                   }
                 } else if (sectorId === 'whispering_archive') {
-                  // 8 drifting glyphs / page fragments
                   var glyphs = ['📜', '✒', '✦', '𝔄', 'ℜ', '✧', '※', '𝔚'];
                   for (i = 0; i < 8; i++) {
                     particles.push(h('span', {
@@ -3731,7 +5294,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     }, glyphs[i]));
                   }
                 } else if (sectorId === 'ember_clockwork') {
-                  // 6 slow-spinning gears
                   for (i = 0; i < 6; i++) {
                     particles.push(h('span', {
                       key: 'gear-' + i,
@@ -3748,7 +5310,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     }, '⚙'));
                   }
                 } else if (sectorId === 'deep_tide') {
-                  // 14 rising bubbles
                   for (i = 0; i < 14; i++) {
                     var bSize = 4 + (i % 4) * 2;
                     particles.push(h('span', {
@@ -3767,7 +5328,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     }));
                   }
                 } else if (sectorId === 'aurora_atelier') {
-                  // 10 drifting brushstrokes / music notes in alternating pink+violet
                   var brushIcons = ['🖌', '♪', '🎨', '♫', '✦', '♩', '🎶', '✧', '🎼', '♬'];
                   var brushColors = ['rgba(244,114,182,0.55)', 'rgba(167,139,250,0.55)', 'rgba(253,224,71,0.5)'];
                   for (i = 0; i < 10; i++) {
@@ -3790,9 +5350,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               })()
             ),
             h('div', { className: 'flex items-center justify-between gap-4', style: { position: 'relative', zIndex: 1 } },
-              // Player
               h('div', { className: 'text-center flex-1' },
-                allobotAvatar(exp.playerHp < exp.playerMaxHp * 0.3 ? 'hurt' : 'happy'),
+                allobotAvatar(curPlayerHp < curPlayerMaxHp * 0.3 ? 'hurt' : 'happy'),
                 h('div', { className: 'text-xs font-bold mt-1' }, 'AlloBot'),
                 h('div', { className: 'w-full h-2 bg-white/20 rounded-full mt-1 overflow-hidden' },
                   h('div', {
@@ -3800,12 +5359,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     style: { width: playerPct + '%', background: playerPct > 50 ? '#34d399' : playerPct > 25 ? '#fbbf24' : '#ef4444' }
                   })
                 ),
-                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, exp.playerHp + ' / ' + exp.playerMaxHp + ' HP')
+                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, curPlayerHp + ' / ' + curPlayerMaxHp + ' HP')
               ),
-              h('div', { className: 'text-3xl text-violet-300 abs-pulse', 'aria-hidden': 'true' }, 'VS'),
-              // Enemy
+              h('div', { className: 'text-3xl text-violet-300' + (reduceMotion ? '' : ' abs-pulse'), 'aria-hidden': 'true' }, 'VS'),
               h('div', { className: 'text-center flex-1' },
-                h('div', { className: 'text-6xl abs-float', style: { filter: enemy.hp < enemy.maxHp * 0.3 ? 'hue-rotate(-30deg)' : '' } }, enemy.icon),
+                h('div', { className: 'text-6xl' + (reduceMotion ? '' : ' abs-float'), style: { filter: curEnemyHp < curEnemyMaxHp * 0.3 ? 'hue-rotate(-30deg)' : '' } }, enemy.icon),
                 h('div', { className: 'text-xs font-bold mt-1' }, enemy.name),
                 h('div', { className: 'w-full h-2 bg-white/20 rounded-full mt-1 overflow-hidden' },
                   h('div', {
@@ -3813,18 +5371,16 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     style: { width: enemyPct + '%', background: '#ef4444' }
                   })
                 ),
-                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, enemy.hp + ' / ' + enemy.maxHp + ' HP')
+                h('div', { className: 'text-[0.625rem] mt-0.5 text-violet-200' }, curEnemyHp + ' / ' + curEnemyMaxHp + ' HP')
               )
             ),
             h('p', { className: 'text-[0.6875rem] text-center text-violet-200 mt-3 italic' }, enemy.flavor)
           ),
 
-          // Boss telegraph warning \u2014 visible when boss is winding up a special.
-          // Shows the boss's NAMED special (e.g., "Cold Reflection") with flavor
-          // so each boss feels distinct, not just bigger HP.
+          // Boss telegraph warning
           enemy.type !== 'shrine' && enemy.boss && enemy.bossPhase === 'winding' && !enemy.interrupted && h('div', {
             role: 'alert',
-            className: 'rounded-xl p-3 mb-3 abs-pulse',
+            className: 'rounded-xl p-3 mb-3' + (reduceMotion ? '' : ' abs-pulse'),
             style: { background: 'linear-gradient(90deg, #7f1d1d 0%, #ef4444 100%)', color: 'white' }
           },
             h('div', { className: 'flex items-center gap-3' },
@@ -3839,7 +5395,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               )
             )
           ),
-          // Boss interrupt confirmation \u2014 shown after a successful interrupt.
+          // Boss interrupt confirmation
           enemy.type !== 'shrine' && enemy.boss && enemy.bossPhase === 'winding' && enemy.interrupted && h('div', {
             role: 'status',
             className: 'rounded-xl p-3 mb-3',
@@ -3854,16 +5410,16 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             )
           ),
 
-          // Shrine room (peaceful \u2014 rest + small essence)
-          enemy.type === 'shrine' && h('div', { className: 'rounded-2xl p-6 mb-3 text-center', style: { background: 'linear-gradient(135deg, #064e3b 0%, #14b8a6 100%)', color: 'white' } },
+          // Shrine room
+          enemy.type === 'shrine' && h('div', { className: 'rounded-2xl p-6 mb-3 text-center', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #064e3b 0%, #14b8a6 100%)', border: isContrast ? '2px solid #ffffff' : 'none', color: 'white' } },
             h('div', { className: 'flex items-center justify-center gap-6 mb-3' },
-              allobotAvatar(exp.playerHp < exp.playerMaxHp * 0.5 ? 'idle' : 'happy'),
-              h('div', { className: 'text-7xl abs-float', 'aria-hidden': 'true' }, enemy.icon)
+              allobotAvatar(curPlayerHp < curPlayerMaxHp * 0.5 ? 'idle' : 'happy'),
+              h('div', { className: 'text-7xl' + (reduceMotion ? '' : ' abs-float'), 'aria-hidden': 'true' }, enemy.icon)
             ),
             h('h3', { className: 'text-lg font-bold' }, enemy.name),
             h('p', { className: 'text-sm text-emerald-100 italic mt-1 mb-4' }, enemy.flavor),
             h('div', { className: 'flex flex-wrap gap-2 justify-center mb-4' },
-              h('div', { className: 'px-3 py-1.5 rounded-lg bg-white/15 text-xs' }, '+' + Math.round(exp.playerMaxHp * 0.35) + ' HP'),
+              h('div', { className: 'px-3 py-1.5 rounded-lg bg-white/15 text-xs' }, '+' + Math.round(curPlayerMaxHp * 0.35) + ' HP'),
               h('div', { className: 'px-3 py-1.5 rounded-lg bg-amber-400/20 text-amber-100 text-xs font-bold' }, '+' + scaledReward(3) + ' \u2B50 Essence')
             ),
             h('button', {
@@ -3873,12 +5429,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             }, t('stem.allobotsage.rest_at_the_shrine', '\u26E9\uFE0F Rest at the shrine'))
           ),
 
-          // Spell bar (combat rooms only, player turn, no active cast)
+          // Spell bar
           enemy.type !== 'shrine' && exp.turn === 'player' && !pendingCast && h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2 mb-3' },
             equippedLoadout.map(function(id) {
               var s = findSpell(id);
               if (!s) return null;
-              var lvl = spellLevels[s.id] || 0;
+              var lvl = safeNum(spellLevels[s.id], 0);
               var leveledDmg = getSpellDamage(s, lvl);
               return h('button', {
                 type: 'button',
@@ -3886,14 +5442,17 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 onClick: function() { startCast(id); },
                 className: 'p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-violet-500 hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition text-left',
                 style: { borderLeft: '4px solid ' + s.color },
-                'aria-label': 'Cast ' + s.name + ' (Level ' + lvl + ') \u2014 ' + leveledDmg + ' base damage'
+                'aria-label': t('stem.allobotsage.aria_cast_spell', 'Cast {name} (Level {level}) \u2014 {damage} base damage')
+                  .replace('{name}', s.name)
+                  .replace('{level}', String(lvl))
+                  .replace('{damage}', String(leveledDmg))
               },
                 h('div', { className: 'flex items-center gap-2' },
                   h('span', { className: 'text-xl' }, s.icon),
                   h('div', { className: 'flex-1 min-w-0' },
                     h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
                       s.name,
-                      lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl)
+                      lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-900 font-bold' }, 'Lv' + lvl)
                     ),
                     h('div', { className: 'text-[0.625rem] text-slate-600' }, leveledDmg + ' dmg \u00b7 ' + s.sourceLabel)
                   )
@@ -3905,14 +5464,21 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           // Cast challenge overlay
           pendingCast && (function() {
             var s = findSpell(pendingCast.spellId);
+            if (!s) return null;
             var c = pendingCast.challenge;
-            var resolved = pendingCast.resolved;
+            var resolved = !!pendingCast.resolved;
             var confidence = pendingCast.confidence || null;
-            // Confidence-calibration metacognitive notes shown after resolve.
-            // Teaches students to compare feeling-of-knowing vs outcome.
-            function calibrationNote(conf, result) {
+            var calSummary = ALLOBOTSAGE_ENGINE.summarizeConfidenceCalibration(questionStatsMap);
+            var castDiag = (resolved && pendingCast.result === 'backfire')
+              ? ALLOBOTSAGE_ENGINE.diagnoseSageDistractor(s, c, pendingCast.selectedIndex)
+              : null;
+            var promptSpeech = s.name + '. ' + c.prompt + ' ' + c.options.map(function(o, oi) { return String.fromCharCode(65 + oi) + ': ' + o; }).join('. ');
+            var explainSpeech = castDiag
+              ? ('Backfire. ' + castDiag.whyNot + ' ' + c.explain)
+              : ((pendingCast.result === 'crit' ? 'Critical hit! ' : 'Hit. ') + c.explain);
+            function calibrationNote(conf, res) {
               if (!conf) return null;
-              var wasCorrect = result === 'hit' || result === 'crit';
+              var wasCorrect = res === 'hit' || res === 'crit';
               if (conf === 'high' && wasCorrect)  return { tone: 'good',    text: t('stem.allobotsage.calibrated_you_said_you_knew_it_and_yo', '🎯 Calibrated: you said you knew it — and you did.') };
               if (conf === 'high' && !wasCorrect) return { tone: 'caution', text: t('stem.allobotsage.overconfident_felt_sure_but_missed_wor', '⚠ Overconfident: felt sure but missed. Worth a second look in Study Hall.') };
               if (conf === 'low'  && wasCorrect)  return { tone: 'good',    text: t('stem.allobotsage.lucky_guess_but_maybe_you_knew_more_th', '🎁 Lucky guess — but maybe you knew more than you thought!') };
@@ -3923,40 +5489,46 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             }
             var calNote = resolved ? calibrationNote(confidence, pendingCast.result) : null;
             return h('div', {
-              className: 'rounded-2xl p-4 mb-3 border-2 abs-fade',
+              className: 'rounded-2xl p-4 mb-3 border-2' + (reduceMotion ? '' : ' abs-fade'),
               style: {
-                borderColor: s.color,
-                background: 'linear-gradient(135deg, #fff 0%, ' + s.color + '15 100%)'
+                borderColor: isContrast ? '#facc15' : s.color,
+                background: isContrast ? '#000000' : ('linear-gradient(135deg, #fff 0%, ' + s.color + '15 100%)')
               }
             },
-              h('div', { className: 'flex items-center gap-2 mb-2' },
-                h('span', { className: 'text-2xl abs-spin', 'aria-hidden': 'true' }, s.icon),
+              h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+                h('span', { className: 'text-2xl' + (reduceMotion ? '' : ' abs-spin'), 'aria-hidden': 'true' }, s.icon),
                 h('div', null,
-                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest', style: { color: s.color } }, t('stem.allobotsage.casting', 'Casting')),
-                  h('div', { className: 'text-base font-bold', style: { color: s.color } }, s.name)
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest', style: { color: isContrast ? '#facc15' : s.color } }, t('stem.allobotsage.casting', 'Casting')),
+                  h('div', { className: 'text-base font-bold', style: { color: isContrast ? '#ffffff' : s.color } }, s.name)
                 ),
-                h('div', { className: 'ml-auto text-[0.625rem] text-slate-600' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
+                pendingCast.offlineSourced && h('span', { className: 'text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300' }, t('stem.allobotsage.offline_pack_badge', '⚙ Practice Pack')),
+                h('div', { className: 'ml-auto flex items-center gap-2' },
+                  readAloudBtn(promptSpeech, t('stem.allobotsage.aria_read_combat_prompt', 'Read combat spell question aloud'), true),
+                  h('div', { className: 'text-[0.625rem] text-slate-600' }, t('stem.allobotsage.faster_correct_critical', 'Faster + correct = critical!'))
+                )
               ),
-              // Surface whether THIS question was AI-generated (tracked as
-              // pendingCast.aiSourced) — a hallucinated answer key would reward
-              // a wrong fact, so the student/teacher should know which questions
-              // to trust. Static, hand-authored questions show no badge.
               pendingCast.aiSourced ? h('div', { className: 'flex items-start gap-1.5 mb-2 px-2 py-1 rounded-lg', style: { background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.4)' } },
                 h('span', { 'aria-hidden': 'true' }, '⚠️'),
                 h('span', { className: 'text-[0.625rem] font-semibold leading-snug', style: { color: '#b45309' } }, t('stem.allobotsage.ai_generated_question_the_marked_answe', 'AI-generated question — the marked answer could be wrong. If it looks off, tell your teacher.'))
               ) : null,
               h('p', { className: 'text-sm font-semibold text-slate-800 mb-3', role: 'group', 'aria-label': t('stem.allobotsage.challenge_prompt', 'Challenge prompt') }, c.prompt),
-              // ── Confidence calibration (optional, metacognitive) ──
-              // Three quick buttons. Picking one is optional — answer is always
-              // clickable. If a level is set, the post-resolve note compares
-              // their feeling-of-knowing to the actual result. Builds calibration.
-              !resolved && h('div', { className: 'mb-3' },
-                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-500 mb-1' }, t('stem.allobotsage.confidence_check_optional', '🧠 Confidence check (optional)')),
+              // ── Pre-Cast Strategy Confidence Calibration (optional, metacognitive) ──
+              !resolved && h('div', { className: 'mb-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1.5' },
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-700' }, t('stem.allobotsage.confidence_check_optional', '🧠 Confidence check (optional)')),
+                  calSummary.total > 0 && h('div', { className: 'text-[0.625rem] font-semibold text-violet-900 bg-violet-100 px-2 py-0.5 rounded-full' },
+                    t('stem.allobotsage.precast_calibration_badge', 'Calibration: {acc}% ({right}/{total})')
+                      .replace('{acc}', String(calSummary.overallAccuracy))
+                      .replace('{right}', String(calSummary.totalRight))
+                      .replace('{total}', String(calSummary.total))
+                  )
+                ),
+                h('div', { className: 'text-[0.625rem] text-slate-600 mb-1.5' }, calSummary.calibrationGuidance),
                 h('div', { className: 'grid grid-cols-3 gap-1.5' },
                   [
-                    { level: 'low',  icon: '🤷', label: t('stem.allobotsage.guessing', 'Guessing'),    color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                    { level: 'med',  icon: '🤔', label: t('stem.allobotsage.pretty_sure', 'Pretty sure'), color: '#3b82f6' },
-                    { level: 'high', icon: '🔥', label: t('stem.allobotsage.know_it', 'Know it'),     color: '#16a34a' }
+                    { level: 'low',  icon: '🤷', label: t('stem.allobotsage.guessing', 'Guessing'),    color: '#475569' },
+                    { level: 'med',  icon: '🤔', label: t('stem.allobotsage.pretty_sure', 'Pretty sure'), color: '#1d4ed8' },
+                    { level: 'high', icon: '🔥', label: t('stem.allobotsage.know_it', 'Know it'),     color: '#15803d' }
                   ].map(function(opt) {
                     var picked = confidence === opt.level;
                     return h('button', {
@@ -3966,9 +5538,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                         sfxClick();
                         mutateExp({ pendingCast: Object.assign({}, pendingCast, { confidence: opt.level }) });
                       },
-                      className: 'text-[0.6875rem] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-slate-50'),
-                      style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#e2e8f0', color: 'var(--allo-stem-text-soft, #64748b)' },
-                      'aria-label': opt.label + (picked ? ' (selected)' : ''),
+                      className: 'text-[0.6875rem] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-white'),
+                      style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#cbd5e1', color: '#334155', background: '#ffffff' },
+                      'aria-label': picked
+                        ? t('stem.allobotsage.aria_confidence_selected', '{label} (selected)').replace('{label}', opt.label)
+                        : opt.label,
                       'aria-pressed': picked
                     },
                       h('span', { className: 'mr-1' }, opt.icon),
@@ -3997,11 +5571,21 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   );
                 })
               ),
-              resolved && h('div', { className: 'mt-3 p-2 rounded-lg bg-slate-50 text-[0.6875rem] text-slate-700' },
-                h('strong', null, pendingCast.result === 'crit' ? 'Critical hit!' : pendingCast.result === 'hit' ? 'Hit.' : 'Backfire.'),
-                ' ', c.explain
+              resolved && h('div', { className: 'mt-3 p-2.5 rounded-lg ' + (castDiag ? 'bg-red-50 border border-red-200 text-red-900' : 'bg-slate-50 border border-slate-200 text-slate-700') + ' text-[0.6875rem]' },
+                h('div', { className: 'flex items-start justify-between gap-2' },
+                  h('div', { className: 'flex-1' },
+                    h('div', null,
+                      h('strong', null, pendingCast.result === 'crit' ? 'Critical hit!' : pendingCast.result === 'hit' ? 'Hit.' : 'Backfire.'),
+                      ' ', c.explain
+                    ),
+                    castDiag && castDiag.whyNot && h('div', { className: 'mt-1.5 pt-1.5 border-t border-red-200 text-red-900' },
+                      h('strong', null, t('stem.allobotsage.why_choice_misses_label', 'Why your choice misses: ')),
+                      castDiag.whyNot
+                    )
+                  ),
+                  readAloudBtn(explainSpeech, t('stem.allobotsage.aria_read_cast_feedback', 'Read cast explanation aloud'), true)
+                )
               ),
-              // Calibration metacognitive feedback — only if student set a confidence
               calNote && h('div', {
                 className: 'mt-2 p-2 rounded-lg text-[0.6875rem] font-medium',
                 style: {
@@ -4013,10 +5597,38 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             );
           })(),
 
+          // Persistent Last Backfire Misconception Review Card (stays readable & listenable after enemy turn)
+          !pendingCast && expLastBackfire && h('div', {
+            className: 'rounded-xl p-3 mb-3 border border-amber-300 bg-amber-50 text-amber-900 text-xs',
+            role: 'region',
+            'aria-label': t('stem.allobotsage.aria_last_backfire_review', 'Last backfire misconception feedback')
+          },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-900 mb-0.5' },
+                  t('stem.allobotsage.last_backfire_heading', '\u26A1 Last Backfire Check') + ' \u00B7 ' + expLastBackfire.spellName
+                ),
+                h('div', { className: 'leading-snug' },
+                  h('strong', null, t('stem.allobotsage.why_choice_misses_label', 'Why your choice misses: ')),
+                  expLastBackfire.whyNot
+                ),
+                h('div', { className: 'mt-1 text-[0.6875rem]' },
+                  h('strong', null, t('stem.allobotsage.target_principle_label', 'Target principle: ')),
+                  expLastBackfire.explain
+                )
+              ),
+              readAloudBtn(
+                expLastBackfire.spellName + ' backfire feedback. ' + expLastBackfire.whyNot + ' Target principle: ' + expLastBackfire.explain,
+                t('stem.allobotsage.aria_read_backfire_review', 'Read last backfire explanation aloud'),
+                true
+              )
+            )
+          ),
+
           // Log
           h('div', { className: 'rounded-xl bg-slate-50 border border-slate-400 p-3 max-h-40 overflow-y-auto' },
             h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-1' }, 'Log'),
-            (exp.log || []).slice().reverse().slice(0, 8).map(function(entry, i) {
+            (Array.isArray(exp.log) ? exp.log : []).slice().reverse().slice(0, 8).map(function(entry, i) {
               var color = entry.kind === 'player' ? 'text-violet-700'
                         : entry.kind === 'enemy'  ? 'text-red-700'
                         : entry.kind === 'backfire' ? 'text-amber-700'
@@ -4066,37 +5678,40 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         });
         // Tough-questions global count (drives the Review CTA)
         var globalToughCount = 0;
-        var statsForToughCount = d.questionStats || {};
+        var statsForToughCount = questionStatsMap;
         Object.keys(statsForToughCount).forEach(function(k) {
-          if (statsForToughCount[k].lastResult === 'backfire') globalToughCount++;
+          if (statsForToughCount[k] && statsForToughCount[k].lastResult === 'backfire') globalToughCount++;
         });
-        var totalCalibrated = Object.keys(runConfidence).reduce(function(t, lvl) { return t + runConfidence[lvl].right + runConfidence[lvl].wrong; }, 0);
-        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 text-center abs-fade' },
-          // \u2500\u2500 Phase A: victory celebration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-          // On result='victory', show a backflipping AlloBot with wand-tier
-          // glow + a confetti burst overlay. The mood='victory' string makes
-          // allobotAvatar swap its wrapper class to .abs-backflip (one full
-          // rotation, ~1.4s). Pieces are positioned absolutely inside the
-          // wrapper so they fountain outward from the avatar's center.
+        var totalCalibrated = Object.keys(runConfidence).reduce(function(acc, lvl) { return acc + runConfidence[lvl].right + runConfidence[lvl].wrong; }, 0);
+        var debriefCalSummary = ALLOBOTSAGE_ENGINE.summarizeConfidenceCalibration(runCastLog);
+        var debriefSummarySpeech = (result === 'victory'
+          ? ('Expedition Complete. You cleared all ' + totalRoomsD + ' rooms of the ' + (expedition.sectorName || 'sector') + ' and earned ' + reward + ' essence.')
+          : ('Valiant effort. Cleared ' + roomsCleared + ' of ' + totalRoomsD + ' rooms and earned ' + reward + ' essence.'))
+          + (runTotals.total > 0 ? (' Casts: ' + runTotals.total + ', criticals: ' + runTotals.crits + ', backfires: ' + runTotals.backfires + '.') : '')
+          + (debriefCalSummary.total > 0 ? (' ' + debriefCalSummary.calibrationGuidance) : '');
+        return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6 text-center' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           result === 'victory' && h('div', {
             style: { position: 'relative', display: 'inline-block', marginBottom: 8 }
           },
             allobotAvatar('victory', {
-              wandTier: unlockedSpells.length >= 10 ? 3 : unlockedSpells.length >= 4 ? 2 : unlockedSpells.length >= 1 ? 1 : 0,
-              robeTier: unlockedSpells.length >= 15 ? 2 : unlockedSpells.length >= 5 ? 1 : 0
+              wandTier: currentlyUnlocked.length >= 10 ? 3 : currentlyUnlocked.length >= 4 ? 2 : currentlyUnlocked.length >= 1 ? 1 : 0,
+              robeTier: currentlyUnlocked.length >= 15 ? 2 : currentlyUnlocked.length >= 5 ? 1 : 0
             }),
             h(stableType('VictoryConfettiBurst', VictoryConfettiBurst), null)
           ),
           h('div', {
             className: 'rounded-2xl p-6 mb-4',
             style: {
-              background: result === 'victory'
-                ? 'linear-gradient(135deg, #065f46 0%, #10b981 100%)'
-                : 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
+              background: isContrast
+                ? '#000000'
+                : (result === 'victory'
+                    ? 'linear-gradient(135deg, #065f46 0%, #10b981 100%)'
+                    : 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)'),
+              border: isContrast ? '2px solid #facc15' : 'none',
               color: 'white'
             }
           },
-            h('div', { className: 'text-6xl mb-2 abs-pulse' }, result === 'victory' ? '\u2728' : '\uD83D\uDCA5'),
+            h('div', { className: 'text-6xl mb-2' + (reduceMotion ? '' : ' abs-pulse') }, result === 'victory' ? '\u2728' : '\uD83D\uDCA5'),
             h('h2', { className: 'text-2xl font-bold mb-1' }, result === 'victory' ? 'Expedition Complete' : 'Valiant Effort'),
             h('p', { className: 'text-sm opacity-90 mb-2' },
               result === 'victory'
@@ -4112,7 +5727,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 });
               })
             ),
-            h('div', { className: 'mt-1 inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence')
+            h('div', { className: 'mt-1 flex flex-wrap items-center justify-center gap-2' },
+              h('div', { className: 'inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence'),
+              readAloudBtn(debriefSummarySpeech, t('stem.allobotsage.aria_read_debrief_feedback', 'Read debrief summary aloud'), false)
+            )
           ),
           // \u2500\u2500 Goal evaluation (Locke & Latham closure) \u2500\u2500
           // For each goal the student picked at the start, check whether they
@@ -4134,7 +5752,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             return h('section', {
               className: 'rounded-xl border-2 p-3 mb-4 text-left',
               style: { borderColor: allMet ? '#16a34a' : '#94a3b8', background: allMet ? '#ecfdf5' : '#f8fafc' },
-              'aria-label': 'Goal progress: ' + metCount + ' of ' + goals.length + ' met'
+              'aria-label': t('stem.allobotsage.aria_goal_progress', 'Goal progress: {met} of {total} met')
+                .replace('{met}', String(metCount))
+                .replace('{total}', String(goals.length))
             },
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider', style: { color: allMet ? '#065f46' : '#475569' } },
@@ -4390,22 +6010,21 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   if (!ta) return;
                   var text = (ta.value || '').trim();
                   if (text.length === 0) {
-                    addToast('Type a quick reflection first (even one sentence helps)', 'info');
+                    addToast(t('stem.allobotsage.toast_type_reflection_first', 'Type a quick reflection first (even one sentence helps)'), 'info');
                     return;
                   }
                   sfxClick();
-                  var nextReflections = (d.reflections || []).concat([{
+                  var nextReflections = (Array.isArray(d.reflections) ? d.reflections : []).concat([{
                     text: text,
                     sectorName: expedition.sectorName || null,
                     difficulty: expedition.difficulty || 'standard',
                     result: result,
                     at: Date.now()
                   }]);
-                  // Cap at 30 most recent
                   if (nextReflections.length > 30) nextReflections = nextReflections.slice(-30);
                   updKey('reflections', nextReflections);
                   ta.value = '';
-                  addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
+                  addToast(t('stem.allobotsage.toast_reflection_saved', '📝 Reflection saved — view it any time in Your Progress'), 'success');
                   announceSR(__alloT('stem.allobotsage.sr_reflection_saved', 'Reflection saved.'));
                 },
                 className: 'transition-colors px-4 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-sky-700 hover:bg-sky-800 focus:ring-2 focus:ring-sky-300 focus:outline-none'
@@ -4436,33 +6055,55 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // ── PHASE: SHOP (spend essence to upgrade spells)
       // ─────────────────────────────────────────────────
       if (phase === 'shop') {
-        var spellLvls = d.spellLevels || {};
+        var spellLvls = spellLevelsMap;
         var unlockedSpells2 = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
 
         function upgrade(spellId) {
           var s = findSpell(spellId);
           if (!s) return;
-          var lvl = spellLvls[spellId] || 0;
-          if (lvl >= SPELL_LEVEL_CAP) { addToast(s.name + ' is already at max level', 'info'); return; }
+          var lvl = safeNum(spellLvls[spellId], 0);
+          if (lvl >= SPELL_LEVEL_CAP) {
+            addToast(t('stem.allobotsage.toast_spell_max_level', '{name} is already at max level').replace('{name}', s.name), 'info');
+            return;
+          }
           var cost = upgradeCost(lvl);
-          if (essence < cost) { addToast('Need ' + cost + ' essence (you have ' + essence + ')', 'error'); return; }
+          if (essence < cost) {
+            addToast(
+              t('stem.allobotsage.toast_need_essence', 'Need {cost} essence (you have {have})')
+                .replace('{cost}', String(cost))
+                .replace('{have}', String(essence)),
+              'error'
+            );
+            return;
+          }
           sfxUnlock();
-          var newLvls = Object.assign({}, spellLvls);
-          newLvls[spellId] = lvl + 1;
-          updSage({ spellLevels: newLvls, essence: essence - cost });
-          addToast('\u2728 ' + s.name + ' \u2192 Lv' + (lvl + 1), 'success');
+          updateSageAtomic(function(cur) {
+            var curLvls = Object.assign({}, safeObj(cur.spellLevels));
+            var curEss = safeNum(cur.essence, essence);
+            var curL = safeNum(curLvls[spellId], lvl);
+            var curCost = upgradeCost(curL);
+            if (curL >= SPELL_LEVEL_CAP || curEss < curCost) return null;
+            curLvls[spellId] = curL + 1;
+            return { spellLevels: curLvls, essence: curEss - curCost };
+          });
+          addToast(
+            t('stem.allobotsage.toast_spell_upgraded', '\u2728 {name} \u2192 Lv{level}')
+              .replace('{name}', s.name)
+              .replace('{level}', String(lvl + 1)),
+            'success'
+          );
           announceSR(s.name + ' upgraded to level ' + (lvl + 1) + '.');
         }
 
-        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+        return h('div', { className: 'abs-workbench max-w-3xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           h('div', { className: 'flex items-center gap-3 mb-4' },
-            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, 'Back to Spellforge'),
+            backBtn(function() { sfxClick(); updKey('phase', 'hub'); }, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.spell_shop_2', 'Spell Shop'))
           ),
-          h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #78350f 0%, #f59e0b 100%)', color: 'white' } },
+          h('div', { className: 'rounded-2xl p-4 mb-4', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #78350f 0%, #f59e0b 100%)', border: isContrast ? '2px solid #facc15' : 'none', color: 'white' } },
             h('div', { className: 'flex items-center gap-3' },
-              h('div', { className: 'text-4xl abs-float' }, '\uD83D\uDD2E'),
+              h('div', { className: 'text-4xl' + (reduceMotion ? '' : ' abs-float') }, '\uD83D\uDD2E'),
               h('div', { className: 'flex-1' },
                 h('h1', { className: 'text-xl font-bold' }, t('stem.allobotsage.etching_workshop', 'Etching Workshop')),
                 h('p', { className: 'text-sm text-amber-100 mt-1' }, t('stem.allobotsage.spend_essence_to_deepen_the_runes_of_e', 'Spend essence to deepen the runes of each spell. Higher levels = more base damage + bigger crits.'))
@@ -4479,7 +6120,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               )
             : h('div', { className: 'space-y-2' },
                 unlockedSpells2.map(function(s) {
-                  var lvl = spellLvls[s.id] || 0;
+                  var lvl = safeNum(spellLvls[s.id], 0);
                   var maxed = lvl >= SPELL_LEVEL_CAP;
                   var cost = maxed ? 0 : upgradeCost(lvl);
                   var canAfford = essence >= cost;
@@ -4494,11 +6135,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { className: 'flex-1 min-w-0' },
                       h('div', { className: 'font-bold text-sm flex items-center gap-1', style: { color: s.color } },
                         s.name,
-                        lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-700 font-bold' }, 'Lv' + lvl),
-                        maxed && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold' }, 'MAX')
+                        lvl > 0 && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-amber-100 text-amber-900 font-bold' }, 'Lv' + lvl),
+                        maxed && h('span', { className: 'text-[0.5625rem] px-1 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold' }, 'MAX')
                       ),
                       h('div', { className: 'text-[0.6875rem] text-slate-600' }, s.sourceLabel),
-                      // Level pips
                       h('div', { className: 'flex gap-1 mt-1' },
                         Array.from({ length: SPELL_LEVEL_CAP }).map(function(_p, i) {
                           return h('span', {
@@ -4528,11 +6168,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       onClick: function() { upgrade(s.id); },
                       className: 'px-3 py-2 rounded-lg font-bold text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none '
                         + (maxed
-                          ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                          ? 'bg-emerald-100 text-emerald-900 cursor-default'
                           : canAfford
                             ? 'transition-colors bg-amber-700 hover:bg-amber-800 text-white'
                             : 'bg-slate-100 text-slate-600 cursor-not-allowed'),
-                      'aria-label': maxed ? s.name + ' is maxed' : 'Upgrade ' + s.name + ' for ' + cost + ' essence'
+                      'aria-label': maxed
+                        ? t('stem.allobotsage.aria_spell_maxed', '{name} is maxed').replace('{name}', s.name)
+                        : t('stem.allobotsage.aria_upgrade_spell', 'Upgrade {name} for {cost} essence').replace('{name}', s.name).replace('{cost}', String(cost))
                     }, maxed ? 'Maxed' : ('\u2B50 ' + cost))
                   );
                 })
@@ -4543,65 +6185,133 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // ─────────────────────────────────────────────────
       // ── PHASE: PRACTICE (Study Hall — untimed drill)
       // ─────────────────────────────────────────────────
-      // Pedagogical core: low-stakes retrieval practice with full explanations
-      // visible after each answer. No timer, no HP, no enemies. SRS still
-      // weights the picks so weak questions resurface; correct answers still
-      // count toward castCounts so mastery tiers advance. This is the
-      // "deliberate practice" mode for students who need more retrievals
-      // before performance.
       if (phase === 'practice') {
-        var practiceSpellId = d.practiceSpellId;
+        var practiceSpellId = typeof d.practiceSpellId === 'string' ? d.practiceSpellId : null;
         var practiceSpell = practiceSpellId ? findSpell(practiceSpellId) : null;
-        var practiceQ = d.practiceQuestion || null;
-        var practiceAnswered = !!(practiceQ && practiceQ.answered);
-        var practiceStats = { correct: 0, attempted: 0 };
-        if (d.practiceSession) { practiceStats = d.practiceSession; }
+        var rawPracticeQ = d.practiceQuestion;
+        var validPracticeQ = (rawPracticeQ && typeof rawPracticeQ === 'object' && !Array.isArray(rawPracticeQ)
+          && rawPracticeQ.q && typeof rawPracticeQ.q === 'object'
+          && typeof rawPracticeQ.q.prompt === 'string' && Array.isArray(rawPracticeQ.q.options) && rawPracticeQ.q.options.length > 0)
+          ? rawPracticeQ : null;
+        var rawSession = safeObj(d.practiceSession);
+        var practiceStats = {
+          correct: safeNum(rawSession.correct, 0),
+          attempted: safeNum(rawSession.attempted, 0)
+        };
 
         function startPractice(spellId) {
           var sp = findSpell(spellId);
           if (!sp) return;
-          var bank = getMergedBank(sp, aiChallengeCache);
-          var q = pickWeighted(bank, d.questionStats || {});
+          var bank = getMergedBank(sp, aiChallengeCache, offlineChallengeCache);
+          var q = pickWeighted(bank, questionStatsMap);
           updSage({ practiceSpellId: spellId, practiceQuestion: { q: q, answered: false, selectedIndex: null }, practiceSession: { correct: 0, attempted: 0 } });
-          announceSR('Study Hall: ' + sp.name + '. ' + q.prompt);
+          if (q) announceSR('Study Hall: ' + sp.name + '. ' + q.prompt);
         }
-        function answerPractice(selectedIndex) {
-          if (!practiceSpell || !practiceQ || practiceAnswered) return;
-          var correct = selectedIndex === practiceQ.q.correctIndex;
-          // Update SRS stats — practice mode classifies as 'hit' (correct, untimed)
-          // or 'backfire' (incorrect). Never 'crit' (no time pressure).
-          var nextStats = Object.assign({}, d.questionStats || {});
-          var prev = nextStats[practiceQ.q.prompt] || { attempts: 0, correctCount: 0 };
-          nextStats[practiceQ.q.prompt] = {
-            lastResult: correct ? 'hit' : 'backfire',
-            lastSeen: Date.now(),
-            attempts: (prev.attempts || 0) + 1,
-            correctCount: (prev.correctCount || 0) + (correct ? 1 : 0)
-          };
-          // Bump per-spell cast count + session stats
-          var nextCounts = Object.assign({}, d.castCounts || {});
-          nextCounts[practiceSpell.id] = (nextCounts[practiceSpell.id] || 0) + 1;
-          var nextSession = {
-            correct: practiceStats.correct + (correct ? 1 : 0),
-            attempted: practiceStats.attempted + 1
-          };
-          updSage({
-            practiceQuestion: Object.assign({}, practiceQ, { answered: true, selectedIndex: selectedIndex, wasCorrect: correct }),
-            questionStats: nextStats,
-            castCounts: nextCounts,
-            practiceSession: nextSession,
-            totalCasts: (d.totalCasts || 0) + 1
-          });
-          if (correct) sfxCastHit(); else sfxBackfire();
-          announceSR((correct ? 'Correct. ' : 'Not quite. ') + practiceQ.q.explain);
+
+        function rerollStudyHallBank(sp) {
+          if (!sp) return;
+          sfxClick();
+          if (aiOn) {
+            if (aiInFlightMap[sp.id]) return;
+            var inFlightLocal = Object.assign({}, aiInFlightMap);
+            inFlightLocal[sp.id] = true;
+            updKey('_aiInFlight', inFlightLocal);
+            addToast(
+              t('stem.allobotsage.toast_study_generating_ai', 'Generating fresh AI questions for {name}...')
+                .replace('{name}', sp.name),
+              'info'
+            );
+            aiGenerateChallenges(sp, callGemini, toolData).then(function(qs) {
+              if (qs.length > 0) {
+                updateSageAtomic(function(cur) {
+                  var freshCache = Object.assign({}, safeObj(cur.aiChallengeCache));
+                  var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                  delete freshFlight[sp.id];
+                  freshCache[sp.id] = qs;
+                  return {
+                    aiChallengeCache: freshCache,
+                    _aiInFlight: freshFlight,
+                    practiceQuestion: { q: qs[0], answered: false, selectedIndex: null }
+                  };
+                });
+                addToast(
+                  t('stem.allobotsage.toast_spell_rerolled', '\u2728 {name} rerolled (+{count} new)')
+                    .replace('{name}', sp.name)
+                    .replace('{count}', String(qs.length)),
+                  'success'
+                );
+              } else {
+                var offQs = ALLOBOTSAGE_ENGINE.generateOfflineSpellQuestions(sp, safeNum(offlineSeeds[sp.id], 0) + 1, getMergedBank(sp, aiChallengeCache, {}).map(function(x) { return x.prompt; }));
+                updateSageAtomic(function(cur) {
+                  var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                  delete freshFlight[sp.id];
+                  var curOff = Object.assign({}, safeObj(cur.offlineChallengeCache));
+                  var curSeeds = Object.assign({}, safeObj(cur._offlineSeeds));
+                  curOff[sp.id] = offQs;
+                  curSeeds[sp.id] = safeNum(curSeeds[sp.id], 0) + 1;
+                  return {
+                    _aiInFlight: freshFlight,
+                    offlineChallengeCache: curOff,
+                    _offlineSeeds: curSeeds,
+                    practiceQuestion: offQs.length > 0 ? { q: offQs[0], answered: false, selectedIndex: null } : cur.practiceQuestion
+                  };
+                });
+                addToast(
+                  t('stem.allobotsage.toast_offline_spell_rerolled', '\u2699\ufe0f {name} practice pack rerolled (+{count} fresh)')
+                    .replace('{name}', sp.name)
+                    .replace('{count}', String(offQs.length)),
+                  'info'
+                );
+              }
+            }).catch(function() {
+              var offQs2 = ALLOBOTSAGE_ENGINE.generateOfflineSpellQuestions(sp, safeNum(offlineSeeds[sp.id], 0) + 1, getMergedBank(sp, aiChallengeCache, {}).map(function(x) { return x.prompt; }));
+              updateSageAtomic(function(cur) {
+                var freshFlight = Object.assign({}, safeObj(cur._aiInFlight));
+                delete freshFlight[sp.id];
+                var curOff = Object.assign({}, safeObj(cur.offlineChallengeCache));
+                var curSeeds = Object.assign({}, safeObj(cur._offlineSeeds));
+                curOff[sp.id] = offQs2;
+                curSeeds[sp.id] = safeNum(curSeeds[sp.id], 0) + 1;
+                return {
+                  _aiInFlight: freshFlight,
+                  offlineChallengeCache: curOff,
+                  _offlineSeeds: curSeeds,
+                  practiceQuestion: offQs2.length > 0 ? { q: offQs2[0], answered: false, selectedIndex: null } : cur.practiceQuestion
+                };
+              });
+              addToast(
+                t('stem.allobotsage.toast_offline_spell_rerolled', '\u2699\ufe0f {name} practice pack rerolled (+{count} fresh)')
+                  .replace('{name}', sp.name)
+                  .replace('{count}', String(offQs2.length)),
+                'info'
+              );
+            });
+            return;
+          }
+          var nextSeed = safeNum(offlineSeeds[sp.id], 0) + 1;
+          var existingPrompts = getMergedBank(sp, aiChallengeCache, {}).map(function(x) { return x.prompt; });
+          var freshPack = ALLOBOTSAGE_ENGINE.generateOfflineSpellQuestions(sp, nextSeed, existingPrompts);
+          if (freshPack.length > 0) {
+            updateSageAtomic(function(cur) {
+              var curOff = Object.assign({}, safeObj(cur.offlineChallengeCache));
+              var curSeeds = Object.assign({}, safeObj(cur._offlineSeeds));
+              curOff[sp.id] = freshPack;
+              curSeeds[sp.id] = nextSeed;
+              return {
+                offlineChallengeCache: curOff,
+                _offlineSeeds: curSeeds,
+                practiceQuestion: { q: freshPack[0], answered: false, selectedIndex: null }
+              };
+            });
+            addToast(
+              t('stem.allobotsage.toast_offline_spell_rerolled', '\u2699\ufe0f {name} practice pack rerolled (+{count} fresh)')
+                .replace('{name}', sp.name)
+                .replace('{count}', String(freshPack.length)),
+              'success'
+            );
+          }
         }
-        function nextPractice() {
-          if (!practiceSpell) return;
-          var bank = getMergedBank(practiceSpell, aiChallengeCache);
-          var q = pickWeighted(bank, d.questionStats || {});
-          updKey('practiceQuestion', { q: q, answered: false, selectedIndex: null });
-          announceSR('Next question. ' + q.prompt);
-        }
+
         function exitPractice() {
           sfxClick();
           updSage({ phase: 'hub', practiceSpellId: null, practiceQuestion: null, practiceSession: null });
@@ -4610,19 +6320,35 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         // Spell-picker subview (no spell chosen yet)
         if (!practiceSpell) {
           var unlockedForPractice = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
-          return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+          return h('div', { className: 'abs-workbench max-w-3xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
             h('div', { className: 'flex items-center gap-3 mb-4' },
-              backBtn(exitPractice, 'Back to Spellforge'),
+              backBtn(exitPractice, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.study_hall_2', 'Study Hall'))
             ),
-            h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
-              h('div', { className: 'flex items-center gap-3' },
-                h('div', { className: 'text-4xl abs-float' }, '📚'),
+            h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', border: isContrast ? '2px solid #facc15' : 'none', color: 'white' } },
+              h('div', { className: 'flex items-center gap-3 flex-wrap' },
+                h('div', { className: 'text-4xl' + (reduceMotion ? '' : ' abs-float') }, '📚'),
                 h('div', { className: 'flex-1' },
                   h('h1', { className: 'text-xl font-bold' }, t('stem.allobotsage.study_hall_3', 'Study Hall')),
                   h('p', { className: 'text-sm text-emerald-100 mt-1' }, t('stem.allobotsage.untimed_practice_no_hp_no_damage_just_', 'Untimed practice. No HP. No damage. Just retrieval + explanations. Failed questions resurface sooner.'))
-                )
+                ),
+                unlockedForPractice.length > 0 && h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    sfxClick();
+                    var addedAll = generateOfflinePackForSpells(unlockedForPractice.slice(0, 6).map(function(s) { return s.id; }), true);
+                    if (addedAll > 0) {
+                      addToast(
+                        t('stem.allobotsage.toast_offline_pack_generated', '\u2699\ufe0f +{count} fresh offline practice questions ready')
+                          .replace('{count}', String(addedAll)),
+                        'success'
+                      );
+                    }
+                  },
+                  className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-900 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-white transition-colors',
+                  'aria-label': t('stem.allobotsage.aria_study_hall_generate_all', 'Generate fresh practice questions for Study Hall spells')
+                }, t('stem.allobotsage.study_hall_generate_pack_btn', '\u2699\ufe0f Fresh Practice Packs'))
               )
             ),
             unlockedForPractice.length === 0
@@ -4630,12 +6356,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   t('stem.allobotsage.no_spells_unlocked_yet_play_other_stem', 'No spells unlocked yet. Play other STEAM Lab tools to unlock spells, then come back here to practice.')
                 )
               : h('div', null,
-                  h('h2', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
+                  h('h2', { className: 'text-[0.6875rem] font-bold text-slate-600 uppercase tracking-wider mb-2' + onHostInk }, t('stem.allobotsage.choose_a_spell_to_practice', '🧪 Choose a spell to practice')),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                     unlockedForPractice.map(function(s) {
-                      // Compute SRS health for this spell — % of its questions answered correctly in last attempt.
-                      var bank = getMergedBank(s, aiChallengeCache);
-                      var stats = d.questionStats || {};
+                      var bank = getMergedBank(s, aiChallengeCache, offlineChallengeCache);
+                      var stats = questionStatsMap;
                       var seen = 0, mistakes = 0;
                       bank.forEach(function(qq) {
                         var st = stats[qq.prompt];
@@ -4648,7 +6373,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                         onClick: function() { sfxClick(); startPractice(s.id); },
                         className: 'text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 focus:ring-2 focus:ring-emerald-400 focus:outline-none transition',
                         style: { borderLeft: '4px solid ' + s.color },
-                        'aria-label': 'Practice ' + s.name + (mistakes > 0 ? ', ' + mistakes + ' tough questions waiting' : '')
+                        'aria-label': mistakes > 0
+                          ? t('stem.allobotsage.aria_practice_spell_tough', 'Practice {name}, {count} tough questions waiting')
+                              .replace('{name}', s.name)
+                              .replace('{count}', String(mistakes))
+                          : t('stem.allobotsage.aria_practice_spell', 'Practice {name}').replace('{name}', s.name)
                       },
                         h('div', { className: 'flex items-center gap-2 mb-1' },
                           h('span', { className: 'text-2xl' }, s.icon),
@@ -4656,7 +6385,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                           mistakes > 0 && h('span', { className: 'ml-auto text-[0.625rem] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded' }, '⚠ ' + mistakes + ' tough')
                         ),
                         h('div', { className: 'text-[0.6875rem] text-slate-600' }, s.sourceLabel + ' · ' + bank.length + ' questions'),
-                        h('div', { className: 'text-[0.625rem] text-slate-400 mt-0.5' },
+                        h('div', { className: 'text-[0.625rem] text-slate-600 mt-0.5' },
                           seen + ' practiced · ' + unseen + ' new'
                         )
                       );
@@ -4666,47 +6395,123 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           );
         }
 
-        // Active question subview
+        // Active question subview (resilient if practiceQuestion was null or malformed)
+        var activeBank = getMergedBank(practiceSpell, aiChallengeCache, offlineChallengeCache);
+        var practiceQ = validPracticeQ || (activeBank.length > 0 ? { q: activeBank[0], answered: false, selectedIndex: null } : null);
+        if (!practiceQ || !practiceQ.q) {
+          return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6', 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
+            backBtn(exitPractice, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge'))
+          );
+        }
+        var practiceAnswered = !!practiceQ.answered;
+        function answerPractice(selectedIndex) {
+          if (!practiceSpell || !practiceQ || practiceAnswered) return;
+          var correct = selectedIndex === practiceQ.q.correctIndex;
+          var diag = ALLOBOTSAGE_ENGINE.diagnoseSageDistractor(practiceSpell, practiceQ.q, selectedIndex);
+          var nowTs = Date.now();
+          updateSageAtomic(function(cur) {
+            var nextStats = Object.assign({}, safeObj(cur.questionStats));
+            var prev = safeObj(nextStats[practiceQ.q.prompt]);
+            nextStats[practiceQ.q.prompt] = {
+              lastResult: correct ? 'hit' : 'backfire',
+              lastSeen: nowTs,
+              attempts: safeNum(prev.attempts, 0) + 1,
+              correctCount: safeNum(prev.correctCount, 0) + (correct ? 1 : 0)
+            };
+            var nextCounts = Object.assign({}, safeObj(cur.castCounts));
+            nextCounts[practiceSpell.id] = safeNum(nextCounts[practiceSpell.id], 0) + 1;
+            var curSess = safeObj(cur.practiceSession);
+            var nextSession = {
+              correct: safeNum(curSess.correct, practiceStats.correct) + (correct ? 1 : 0),
+              attempted: safeNum(curSess.attempted, practiceStats.attempted) + 1
+            };
+            return {
+              practiceQuestion: Object.assign({}, practiceQ, {
+                answered: true,
+                selectedIndex: selectedIndex,
+                wasCorrect: correct,
+                whyNot: diag ? diag.whyNot : null
+              }),
+              questionStats: nextStats,
+              castCounts: nextCounts,
+              practiceSession: nextSession,
+              totalCasts: safeNum(cur.totalCasts, totalCasts) + 1
+            };
+          });
+          if (correct) sfxCastHit(); else sfxBackfire();
+          announceSR((correct ? 'Correct. ' : ('Not quite. ' + (diag && diag.whyNot ? diag.whyNot + ' ' : ''))) + practiceQ.q.explain);
+        }
+        function nextPractice() {
+          if (!practiceSpell) return;
+          var bank = getMergedBank(practiceSpell, aiChallengeCache, offlineChallengeCache);
+          var q = pickWeighted(bank, questionStatsMap);
+          updKey('practiceQuestion', { q: q, answered: false, selectedIndex: null });
+          if (q) announceSR('Next question. ' + q.prompt);
+        }
+
         var pq = practiceQ.q;
-        var bankSize = getMergedBank(practiceSpell, aiChallengeCache).length;
+        var bankSize = activeBank.length;
         var selectedIdx = practiceQ.selectedIndex;
-        var wasCorrect = practiceQ.wasCorrect;
-        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+        var wasCorrect = !!practiceQ.wasCorrect;
+        var practiceDiag = (practiceAnswered && !wasCorrect)
+          ? ALLOBOTSAGE_ENGINE.diagnoseSageDistractor(practiceSpell, pq, selectedIdx)
+          : null;
+        var studyPromptSpeech = practiceSpell.name + '. ' + pq.prompt + ' ' + pq.options.map(function(o, oi) { return String.fromCharCode(65 + oi) + ': ' + o; }).join('. ');
+        var studyExplainSpeech = wasCorrect
+          ? ('Correct. ' + pq.explain)
+          : ('Not quite. ' + (practiceDiag && practiceDiag.whyNot ? practiceDiag.whyNot + ' ' : '') + 'Target principle: ' + pq.explain);
+        return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
               type: 'button',
               onClick: function() { sfxClick(); updSage({ practiceSpellId: null, practiceQuestion: null }); },
-              className: 'transition-colors text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
+              className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline' + onHostInk
             }, t('stem.allobotsage.change_spell', '← Change spell')),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-emerald-700' }, t('stem.allobotsage.study_hall_untimed', '📚 Study Hall — Untimed')),
-              h('div', { className: 'text-[0.6875rem] text-slate-500' },
+              h('div', { className: 'text-[0.6875rem] text-slate-600' + onHostInk },
                 practiceStats.correct + '/' + practiceStats.attempted + ' correct this session · ' + bankSize + ' total questions'
               )
             ),
             h('button', {
               type: 'button',
               onClick: exitPractice,
-              className: 'transition-colors text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline'
+              className: 'transition-colors text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline' + onHostInk
             }, t('stem.allobotsage.end_session', 'End session'))
           ),
-          // Spell header
-          h('div', { className: 'rounded-xl p-3 mb-3 flex items-center gap-3', style: { background: practiceSpell.color + '14', border: '1px solid ' + practiceSpell.color + '40' } },
+          // Spell header + Practice Generator / Reroll
+          h('div', { className: 'rounded-xl p-3 mb-3 flex items-center gap-3 flex-wrap', style: { background: isContrast ? '#000000' : (practiceSpell.color + '14'), border: '1px solid ' + (isContrast ? '#facc15' : (practiceSpell.color + '40')) } },
             h('span', { className: 'text-3xl' }, practiceSpell.icon),
-            h('div', { className: 'flex-1' },
-              h('div', { className: 'font-bold', style: { color: practiceSpell.color } }, practiceSpell.name),
-              h('div', { className: 'text-[0.625rem] text-slate-500' }, practiceSpell.sourceLabel + ' · ' + practiceSpell.element)
-            )
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'font-bold', style: { color: isContrast ? '#facc15' : practiceSpell.color } }, practiceSpell.name),
+              h('div', { className: 'text-[0.625rem] text-slate-600' + onHostInk }, practiceSpell.sourceLabel + ' · ' + practiceSpell.element)
+            ),
+            h('button', {
+              type: 'button',
+              onClick: function() { rerollStudyHallBank(practiceSpell); },
+              className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors',
+              'aria-label': aiOn
+                ? t('stem.allobotsage.aria_study_reroll_ai', 'Generate or reroll fresh AI questions for {name}').replace('{name}', practiceSpell.name)
+                : t('stem.allobotsage.aria_study_reroll_offline', 'Generate or reroll fresh offline practice questions for {name}').replace('{name}', practiceSpell.name)
+            }, aiOn
+              ? t('stem.allobotsage.study_reroll_ai_btn', '\u2728 Fresh AI Pack')
+              : t('stem.allobotsage.study_reroll_offline_btn', '\u2699\ufe0f Reroll Pack'))
           ),
           // Question
           h('div', { className: 'rounded-2xl p-5 mb-3 border-2 border-slate-200 bg-white' },
-            h('p', { className: 'text-sm font-semibold text-slate-800 mb-3 leading-relaxed' }, pq.prompt),
+            h('div', { className: 'flex items-start justify-between gap-2 mb-3' },
+              h('div', { className: 'flex-1' },
+                pq.offlineGenerated && h('span', { className: 'inline-block mb-1 text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300' }, t('stem.allobotsage.offline_pack_badge', '⚙ Practice Pack')),
+                pq.aiGenerated && h('span', { className: 'inline-block mb-1 text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-900 border border-fuchsia-300' }, t('stem.allobotsage.ai', '✨ AI')),
+                h('p', { className: 'text-sm font-semibold text-slate-800 leading-relaxed' }, pq.prompt)
+              ),
+              readAloudBtn(studyPromptSpeech, t('stem.allobotsage.aria_read_study_prompt', 'Read Study Hall question aloud'), true)
+            ),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               pq.options.map(function(opt, oi) {
                 var isSelected = selectedIdx === oi;
                 var isCorrect = oi === pq.correctIndex;
                 var revealed = practiceAnswered;
-                // Color states: unanswered = neutral, answered+correct = green, answered+wrong-selected = red, answered+correct-not-picked = green outline
                 var cls = 'text-left p-3 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition ';
                 if (!revealed) {
                   cls += 'border-slate-200 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50 cursor-pointer';
@@ -4717,13 +6522,20 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 } else {
                   cls += 'border-slate-200 bg-slate-50 opacity-60';
                 }
+                var optAria = revealed
+                  ? (isCorrect
+                      ? t('stem.allobotsage.aria_option_correct', 'Option {num}: {text} (correct)').replace('{num}', String(oi + 1)).replace('{text}', opt)
+                      : isSelected
+                        ? t('stem.allobotsage.aria_option_incorrect', 'Option {num}: {text} (your answer, incorrect)').replace('{num}', String(oi + 1)).replace('{text}', opt)
+                        : t('stem.allobotsage.aria_option_plain', 'Option {num}: {text}').replace('{num}', String(oi + 1)).replace('{text}', opt))
+                  : t('stem.allobotsage.aria_option_plain', 'Option {num}: {text}').replace('{num}', String(oi + 1)).replace('{text}', opt);
                 return h('button', {
                   type: 'button',
                   key: 'opt-' + oi,
                   onClick: revealed ? null : function() { answerPractice(oi); },
                   disabled: revealed,
                   className: cls,
-                  'aria-label': 'Option ' + (oi + 1) + ': ' + opt + (revealed ? (isCorrect ? ' (correct)' : isSelected ? ' (your answer, incorrect)' : '') : '')
+                  'aria-label': optAria
                 },
                   h('span', { className: 'inline-block w-6 font-bold' }, String.fromCharCode(65 + oi) + '.'),
                   opt,
@@ -4732,18 +6544,29 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 );
               })
             ),
-            // Explanation — ALWAYS visible after answer (key pedagogical move)
+            // Explanation + per-distractor whyNot diagnosis
             practiceAnswered && h('div', {
               className: 'mt-4 p-3 rounded-lg',
               style: { background: wasCorrect ? '#ecfdf5' : '#fef2f2', border: '1px solid ' + (wasCorrect ? '#a7f3d0' : '#fecaca') }
             },
-              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1', style: { color: wasCorrect ? '#065f46' : '#991b1b' } },
-                wasCorrect ? '✓ Correct — why this is right' : '✗ Not quite — why the correct answer is right'
-              ),
-              h('div', { className: 'text-[0.75rem] leading-relaxed', style: { color: wasCorrect ? '#065f46' : '#7f1d1d' } }, pq.explain)
+              h('div', { className: 'flex items-start justify-between gap-2' },
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1', style: { color: wasCorrect ? '#065f46' : '#991b1b' } },
+                    wasCorrect ? '✓ Correct — why this is right' : '✗ Not quite — misconception & target principle'
+                  ),
+                  !wasCorrect && practiceDiag && practiceDiag.whyNot && h('div', { className: 'text-[0.75rem] leading-relaxed mb-1.5 text-red-900' },
+                    h('strong', null, t('stem.allobotsage.why_choice_misses_label', 'Why your choice misses: ')),
+                    practiceDiag.whyNot
+                  ),
+                  h('div', { className: 'text-[0.75rem] leading-relaxed', style: { color: wasCorrect ? '#065f46' : '#7f1d1d' } },
+                    !wasCorrect && h('strong', null, t('stem.allobotsage.target_principle_label', 'Target principle: ')),
+                    pq.explain
+                  )
+                ),
+                readAloudBtn(studyExplainSpeech, t('stem.allobotsage.aria_read_study_explanation', 'Read Study Hall explanation aloud'), true)
+              )
             )
           ),
-          // Footer actions
           practiceAnswered && h('div', { className: 'flex gap-2 justify-end' },
             h('button', {
               type: 'button',
@@ -4763,11 +6586,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // 'hit' so it drops back into the normal SRS rotation rather than
       // being permanently boosted.
       if (phase === 'review_mistakes') {
-        var allStats = d.questionStats || {};
-        // Build a list of {spell, question, stat} for every backfired question.
+        var allStats = questionStatsMap;
         var toughList = [];
         SPELLBOOK.forEach(function(sp) {
-          var bank = getMergedBank(sp, aiChallengeCache);
+          var bank = getMergedBank(sp, aiChallengeCache, offlineChallengeCache);
           bank.forEach(function(qq) {
             var st = allStats[qq.prompt];
             if (st && st.lastResult === 'backfire') {
@@ -4775,39 +6597,43 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             }
           });
         });
-        // Sort: most-recently-failed first (so freshest mistakes are top-of-queue)
         toughList.sort(function(a, b) { return (b.stat.lastSeen || 0) - (a.stat.lastSeen || 0); });
 
-        var reviewIdx = d.reviewIdx || 0;
+        var reviewIdx = (Number.isInteger(d.reviewIdx) && d.reviewIdx >= 0) ? d.reviewIdx : 0;
         var reviewRevealed = !!d.reviewRevealed;
         var current = toughList[reviewIdx];
 
         function gotIt() {
           if (!current) return;
           sfxCastHit();
-          var nextStats = Object.assign({}, d.questionStats || {});
-          var prev = nextStats[current.q.prompt] || { attempts: 0, correctCount: 0 };
-          nextStats[current.q.prompt] = {
-            lastResult: 'hit', // Demote from 'backfire' so SRS weight drops
-            lastSeen: Date.now(),
-            attempts: (prev.attempts || 0) + 1,
-            correctCount: (prev.correctCount || 0) + 1
-          };
-          updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
+          var nowTs = Date.now();
+          updateSageAtomic(function(cur) {
+            var nextStats = Object.assign({}, safeObj(cur.questionStats));
+            var prev = safeObj(nextStats[current.q.prompt]);
+            nextStats[current.q.prompt] = {
+              lastResult: 'hit',
+              lastSeen: nowTs,
+              attempts: safeNum(prev.attempts, 0) + 1,
+              correctCount: safeNum(prev.correctCount, 0) + 1
+            };
+            return { questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false };
+          });
           announceSR(__alloT('stem.allobotsage.sr_marked_as_understood_next_question', 'Marked as understood. Next question.'));
         }
         function stillTough() {
           if (!current) return;
           sfxBackfire();
-          // Keep result as backfire (lastSeen updated, attempts bumped)
-          var nextStats = Object.assign({}, d.questionStats || {});
-          var prev = nextStats[current.q.prompt] || { attempts: 0 };
-          nextStats[current.q.prompt] = Object.assign({}, prev, {
-            lastResult: 'backfire',
-            lastSeen: Date.now(),
-            attempts: (prev.attempts || 0) + 1
+          var nowTs = Date.now();
+          updateSageAtomic(function(cur) {
+            var nextStats = Object.assign({}, safeObj(cur.questionStats));
+            var prev = safeObj(nextStats[current.q.prompt]);
+            nextStats[current.q.prompt] = Object.assign({}, prev, {
+              lastResult: 'backfire',
+              lastSeen: nowTs,
+              attempts: safeNum(prev.attempts, 0) + 1
+            });
+            return { questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false };
           });
-          updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
           announceSR(__alloT('stem.allobotsage.sr_still_tough_keeping_in_review_queue_next_question', 'Still tough — keeping in review queue. Next question.'));
         }
         function exitReview() {
@@ -4816,13 +6642,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
 
         if (toughList.length === 0) {
-          return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+          return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
             h('div', { className: 'flex items-center gap-3 mb-4' },
-              backBtn(exitReview, 'Back to Spellforge'),
+              backBtn(exitReview, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
               h('div', { className: 'flex-1' }),
-              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.review', 'Review'))
+              h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.review', 'Review'))
             ),
-            h('div', { className: 'rounded-2xl p-8 text-center', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
+            h('div', { className: 'rounded-2xl p-8 text-center', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', border: isContrast ? '2px solid #facc15' : 'none', color: 'white' } },
               h('div', { className: 'text-6xl mb-3' }, '✨'),
               h('h2', { className: 'text-2xl font-bold mb-2' }, t('stem.allobotsage.clean_slate', 'Clean slate!')),
               h('p', { className: 'text-sm text-emerald-100' }, t('stem.allobotsage.no_questions_in_the_review_queue_eithe', 'No questions in the review queue. Either you haven\'t played enough yet, or you\'re crushing it. Try Study Hall for low-stakes practice, or launch an expedition.'))
@@ -4831,8 +6657,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
 
         if (reviewIdx >= toughList.length) {
-          return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade text-center' },
-            h('div', { className: 'rounded-2xl p-8', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
+          return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6 text-center' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
+            h('div', { className: 'rounded-2xl p-8', style: { background: isContrast ? '#000000' : 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', border: isContrast ? '2px solid #facc15' : 'none', color: 'white' } },
               h('div', { className: 'text-6xl mb-3' }, '🎓'),
               h('h2', { className: 'text-2xl font-bold mb-2' }, t('stem.allobotsage.review_complete', 'Review complete!')),
               h('p', { className: 'text-sm text-emerald-100 mb-4' }, 'You reviewed ' + toughList.length + ' tough question' + (toughList.length > 1 ? 's' : '') + '. Strong work — that\'s how learning sticks.'),
@@ -4842,26 +6668,28 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
 
         var rq = current.q;
-        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+        var reviewSpeech = rq.prompt + (reviewRevealed ? (' Correct answer: ' + rq.options[rq.correctIndex] + '. ' + rq.explain) : '');
+        return h('div', { className: 'abs-workbench max-w-2xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           h('div', { className: 'flex items-center gap-3 mb-3' },
-            backBtn(exitReview, 'Back to Spellforge'),
+            backBtn(exitReview, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
             h('div', { className: 'flex-1 text-center' },
               h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-widest text-red-700' }, t('stem.allobotsage.review_tough_questions', '🎯 Review Tough Questions')),
-              h('div', { className: 'text-[0.6875rem] text-slate-500' }, 'Card ' + (reviewIdx + 1) + ' of ' + toughList.length)
+              h('div', { className: 'text-[0.6875rem] text-slate-600' + onHostInk }, 'Card ' + (reviewIdx + 1) + ' of ' + toughList.length)
             ),
             h('div', { style: { width: '60px' } })
           ),
-          // Spell context
           h('div', { className: 'rounded-xl p-2 mb-3 flex items-center gap-2 text-[0.6875rem]', style: { background: current.spell.color + '14', border: '1px solid ' + current.spell.color + '40' } },
             h('span', null, current.spell.icon),
             h('span', { className: 'font-semibold', style: { color: current.spell.color } }, current.spell.name),
-            h('span', { className: 'text-slate-400' }, '·'),
+            h('span', { className: 'text-slate-600' }, '·'),
             h('span', { className: 'text-slate-600' }, current.spell.sourceLabel),
-            h('span', { className: 'ml-auto text-slate-400' }, current.stat.attempts + ' attempt' + (current.stat.attempts > 1 ? 's' : ''))
+            h('span', { className: 'ml-auto text-slate-600' }, current.stat.attempts + ' attempt' + (current.stat.attempts > 1 ? 's' : ''))
           ),
-          // Question (flashcard style: prompt visible, answer revealed on click)
           h('div', { className: 'rounded-2xl p-5 mb-3 border-2 border-red-200 bg-red-50' },
-            h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-red-700 mb-2' }, t('stem.allobotsage.question', '❓ Question')),
+            h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-red-700' }, t('stem.allobotsage.question', '❓ Question')),
+              readAloudBtn(reviewSpeech, t('stem.allobotsage.aria_read_review_card', 'Read review card aloud'), true)
+            ),
             h('p', { className: 'text-sm font-semibold text-slate-800 leading-relaxed mb-4' }, rq.prompt),
             h('div', { className: 'grid grid-cols-1 gap-1.5' },
               rq.options.map(function(opt, oi) {
@@ -4869,7 +6697,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 return h('div', {
                   key: 'rev-opt-' + oi,
                   className: 'text-[0.75rem] p-2 rounded ' + (reviewRevealed && isCorrect ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-white text-slate-700 border border-slate-200'),
-                  'aria-label': 'Option ' + (oi + 1) + (reviewRevealed && isCorrect ? ' (correct answer)' : '')
+                  'aria-label': (reviewRevealed && isCorrect)
+                    ? t('stem.allobotsage.aria_review_option_correct', 'Option {num} (correct answer)').replace('{num}', String(oi + 1))
+                    : t('stem.allobotsage.aria_review_option_plain', 'Option {num}').replace('{num}', String(oi + 1))
                 },
                   h('span', { className: 'inline-block w-6 font-bold' }, String.fromCharCode(65 + oi) + '.'),
                   opt,
@@ -4887,7 +6717,6 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { className: 'text-[0.75rem] leading-relaxed text-slate-800' }, rq.explain)
             )
           ),
-          // Action buttons (only after reveal)
           reviewRevealed && h('div', { className: 'flex gap-2' },
             h('button', {
               type: 'button',
@@ -4911,45 +6740,43 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
       // students can SEE growth — accuracy, calibration, struggling spells,
       // sectors cleared, bosses defeated, time invested.
       if (phase === 'dashboard') {
-        var dashStats = d.questionStats || {};
-        // Aggregate accuracy across ALL recorded casts.
+        var dashStats = questionStatsMap;
         var totalAttempts = 0, totalCorrect = 0, totalCrits = 0;
         Object.keys(dashStats).forEach(function(k) {
-          totalAttempts += (dashStats[k].attempts || 0);
-          totalCorrect += (dashStats[k].correctCount || 0);
-          if (dashStats[k].lastResult === 'crit') totalCrits++;
+          var st0 = dashStats[k];
+          if (!st0 || typeof st0 !== 'object') return;
+          totalAttempts += safeNum(st0.attempts, 0);
+          totalCorrect += safeNum(st0.correctCount, 0);
+          if (st0.lastResult === 'crit') totalCrits++;
         });
         var accuracyPct = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
-        var critPct = (d.totalCasts || 0) > 0 ? Math.round((d.critCasts || 0) / (d.totalCasts || 1) * 100) : 0;
+        var critPct = totalCasts > 0 ? Math.round(critCasts / totalCasts * 100) : 0;
 
-        // Confidence calibration health across all stats with confidence.
         var calData = { high: { right: 0, total: 0 }, med: { right: 0, total: 0 }, low: { right: 0, total: 0 } };
         Object.keys(dashStats).forEach(function(k) {
           var st = dashStats[k];
-          if (!st.lastConfidence) return;
+          if (!st || typeof st !== 'object' || !st.lastConfidence || !calData[st.lastConfidence]) return;
           var wasRight = st.lastResult === 'hit' || st.lastResult === 'crit';
           calData[st.lastConfidence].total++;
           if (wasRight) calData[st.lastConfidence].right++;
         });
 
-        // Source-tool tallies — for the "mastery domains" panel.
         var sourceTally = {};
         SPELLBOOK.forEach(function(sp) {
           if (!sourceTally[sp.sourceTool]) sourceTally[sp.sourceTool] = { label: sp.sourceLabel, icon: sp.icon, unlocked: 0, total: 0, casts: 0 };
           sourceTally[sp.sourceTool].total++;
           if (currentlyUnlocked.indexOf(sp.id) !== -1) sourceTally[sp.sourceTool].unlocked++;
-          sourceTally[sp.sourceTool].casts += ((d.castCounts || {})[sp.id] || 0);
+          sourceTally[sp.sourceTool].casts += safeNum(castCountsMap[sp.id], 0);
         });
 
-        // Top 3 weakest spells (by accuracy across all attempts, min 3 attempts).
         var spellAccuracy = [];
         SPELLBOOK.forEach(function(sp) {
           if (currentlyUnlocked.indexOf(sp.id) === -1) return;
-          var bank = getMergedBank(sp, aiChallengeCache);
+          var bank = getMergedBank(sp, aiChallengeCache, offlineChallengeCache);
           var attempts = 0, correct = 0;
           bank.forEach(function(qq) {
             var st = dashStats[qq.prompt];
-            if (st) { attempts += st.attempts || 0; correct += st.correctCount || 0; }
+            if (st) { attempts += safeNum(st.attempts, 0); correct += safeNum(st.correctCount, 0); }
           });
           if (attempts >= 3) {
             spellAccuracy.push({ spell: sp, rate: correct / attempts, attempts: attempts });
@@ -4958,21 +6785,19 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         spellAccuracy.sort(function(a, b) { return a.rate - b.rate; });
         var weakest = spellAccuracy.slice(0, 3);
         var strongest = spellAccuracy.slice().reverse().slice(0, 3);
+        var estMinutes = Math.round(totalCasts * 25 / 60);
 
-        // Estimated time invested — rough proxy: each cast ~ 25 seconds (read + answer + result)
-        var estMinutes = Math.round((d.totalCasts || 0) * 25 / 60);
-
-        var sectorsClearedMap = d.sectorsCleared || {};
-        var bossesDefeatedMap = d.bossesDefeated || {};
+        var sectorsClearedMap = sectorsClearedMapAll;
+        var bossesDefeatedMap = bossesDefeatedMapAll;
         var bossesAll = ENEMIES.filter(function(e) { return e.boss; });
 
         function dashBack() { sfxClick(); updKey('phase', 'hub'); }
 
-        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade' },
+        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6' + (reduceMotion ? '' : ' abs-fade'), 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-dark': isDark ? '1' : '0', 'data-abs-rm': reduceMotion ? '1' : '0' },
           h('div', { className: 'flex items-center gap-3 mb-4' },
-            backBtn(dashBack, 'Back to Spellforge'),
+            backBtn(dashBack, t('stem.allobotsage.back_to_spellforge_btn', 'Back to Spellforge')),
             h('div', { className: 'flex-1' }),
-            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
+            h('div', { className: 'text-[0.625rem] text-slate-600 font-semibold uppercase tracking-wider' + onHostInk }, t('stem.allobotsage.your_progress_2', 'Your Progress'))
           ),
           // Headline + AlloBot
           h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)', color: 'white' } },
@@ -5042,7 +6867,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   return h('div', {
                     key: 'dash-boss-' + b.id,
                     className: 'flex flex-col items-center p-1.5 rounded-lg text-center text-[0.5625rem] ' + (defeated ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-60'),
-                    title: b.name + (defeated ? ' (defeated)' : ' (not yet defeated)')
+                    title: defeated
+                      ? t('stem.allobotsage.title_boss_defeated', '{name} (defeated)').replace('{name}', b.name)
+                      : t('stem.allobotsage.title_boss_undefeated', '{name} (not yet defeated)').replace('{name}', b.name)
                   },
                     h('span', { className: 'text-lg', style: { filter: defeated ? '' : 'grayscale(1)' } }, b.icon),
                     h('span', { className: 'truncate w-full font-semibold ' + (defeated ? 'text-amber-900' : 'text-slate-400') }, b.name.replace(/^The /, ''))
@@ -5079,7 +6906,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                         key: 'weak-' + item.spell.id,
                         onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: item.spell.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 } }); },
                         className: 'w-full flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-white border border-rose-200 hover:bg-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none transition text-left',
-                        'aria-label': 'Practice ' + item.spell.name + ' in Study Hall'
+                        'aria-label': t('stem.allobotsage.aria_practice_in_study_hall', 'Practice {name} in Study Hall').replace('{name}', item.spell.name)
                       },
                         h('span', { className: 'text-base' }, item.spell.icon),
                         h('span', { className: 'flex-1 font-semibold', style: { color: item.spell.color } }, item.spell.name),
@@ -5127,12 +6954,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('h2', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600 mb-2' }, t('stem.allobotsage.source_tool_mastery', '🌐 Source-Tool Mastery')),
             h('div', { className: 'space-y-1' },
               Object.keys(sourceTally).map(function(k) {
-                var t = sourceTally[k];
-                var pct = t.total > 0 ? Math.round(t.unlocked / t.total * 100) : 0;
+                var tallyItem = sourceTally[k];
+                var pct = tallyItem.total > 0 ? Math.round(tallyItem.unlocked / tallyItem.total * 100) : 0;
                 return h('div', { key: 'st-' + k, className: 'flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-slate-50 border border-slate-200' },
-                  h('span', { className: 'text-base' }, t.icon),
-                  h('span', { className: 'flex-1 font-semibold text-slate-700' }, t.label),
-                  h('span', { className: 'text-[0.625rem] text-slate-500' }, t.unlocked + '/' + t.total + ' spells · ' + t.casts + ' cast' + (t.casts !== 1 ? 's' : '')),
+                  h('span', { className: 'text-base' }, tallyItem.icon),
+                  h('span', { className: 'flex-1 font-semibold text-slate-700' }, tallyItem.label),
+                  h('span', { className: 'text-[0.625rem] text-slate-500' }, tallyItem.unlocked + '/' + tallyItem.total + ' spells · ' + tallyItem.casts + ' cast' + (tallyItem.casts !== 1 ? 's' : '')),
                   h('div', { className: 'w-16 h-2 rounded-full bg-slate-200 overflow-hidden' },
                     h('div', { className: 'h-full bg-violet-500', style: { width: pct + '%' } })
                   )

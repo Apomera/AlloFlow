@@ -153,6 +153,27 @@ describe('AlloBot dismissal', () => {
     }
     expect(app).toContain('onHide={handleHideBot}');
   });
+
+  // 2026-11-23: the toggle is in the expanded header only and the header is compact by
+  // default, so focus fell to <body>. The compact Help "?" opens the menu that shows the bot again.
+  it('falls back to the compact Help button when the expanded toggle is not on screen', () => {
+    const body = app.slice(app.indexOf('  const handleHideBot = React.useCallback('), app.indexOf('  const handleToggleIsHelpMode = '));
+    const hide = (onScreen) => {
+      const focused = [], visible = [];
+      const document = { querySelector: (selector) => (onScreen.includes(selector) ? { focus: () => focused.push(selector) } : null) };
+      new Function('React', 'document', 'setIsBotVisible', body + '\nreturn handleHideBot;')({ useCallback: (fn) => fn }, document, (value) => visible.push(value))();
+      return { focused, visible };
+    };
+    const EXPANDED = '[data-help-key="header_bot_toggle"]', COMPACT = '[data-compact-help-toggle]';
+    expect(hide([EXPANDED, COMPACT])).toEqual({ focused: [EXPANDED], visible: [false] });
+    expect(hide([COMPACT])).toEqual({ focused: [COMPACT], visible: [false] });
+    expect(hide([])).toEqual({ focused: [], visible: [false] });
+    const header = fs.readFileSync('view_header_source.jsx', 'utf8');
+    expect(header).toContain('data-compact-help-toggle=""');
+    expect(header).toContain("{headerCollapsed && isBotVisible === false && (");
+    expect(header).toContain("homeToolsText('toolbar.show_bot', 'Show AI Assistant')");
+    expect(JSON.parse(fs.readFileSync('ui_strings.js', 'utf8')).toolbar.show_bot).toBe('Show AI Assistant');
+  });
 });
 
 describe('AlloBot orbit controls on touch', () => {

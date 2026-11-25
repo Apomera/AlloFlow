@@ -229,7 +229,9 @@ describe('the pages as files', () => {
       // The maker's line changed on 2026-11-11 (owner): its sound files come in small groups of words, so "nothing leaves" was too strong.
       expect(doc.querySelector('details.proof summary').textContent, file).toContain(file === 'packets-make.html' ? 'This page runs without AI. No account. The words you choose are not uploaded.'
         : 'This page runs without AI. No account. Nothing you choose leaves your device.');
-      expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent), file).toEqual(['More from AlloFlow']);
+      // 2026-11-23: the front door's footer also holds About Packets and the guide for school IT (they were in a note under the cards).
+      // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+      expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent), file).toEqual(file === 'packets.html' ? ['About Packets', 'Guide for school IT', 'Send feedback', 'More from AlloFlow'] : ['Send feedback', 'More from AlloFlow']);
     }
     expect(read('packets.css')).toMatch(/:focus-visible\s*\{[^}]*outline:\s*3px/);
     expect(read('packets.css')).toMatch(/prefers-reduced-motion/);
@@ -272,7 +274,10 @@ describe('the pages as files', () => {
     expect(main.lastElementChild).toBe(about);
     // The front door keeps nothing and loads no word data: it says so in its details and has no such block.
     expect(parse('packets.html').querySelector('details.proof').textContent).toContain('It sets no cookies and stores nothing on your device.');
-    expect(parse('packets.html').querySelectorAll('details')).toHaveLength(1);
+    // 2026-11-23: the front door has three folds of its own besides the details panel (more things to make, check it
+    // yourself, what exists today), all closed; still no "About this page" block, and nothing with a button to forget.
+    expect([...parse('packets.html').querySelectorAll('details')].map((fold) => (fold.id || fold.className) + (fold.hasAttribute('open') ? ' open' : ''))).toEqual(['proof', 'more', 'check', 'today']);
+    expect(parse('packets.html').querySelectorAll('details.about, #about-page, button')).toHaveLength(0);
   });
 
   it('the main site introduces Packets from its home page and tool finder and links to them in the menus', () => {
@@ -309,21 +314,51 @@ describe('the pages as files', () => {
     const doc = parse('packets.html');
     // 2026-11-18 (owner): grouped by what a teacher wants to do (Practice, Check progress, Results and more), the checks
     // given their own cards (each opens its maker set to a check, "#check-mode"), and the student's way in first.
-    const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h3').textContent, links: [...card.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]), text: card.textContent }));
-    expect([...doc.querySelectorAll('.group-title')].map((h) => h.textContent)).toEqual(['Practice', 'Check progress', 'Results and more']);
-    expect(cards.map((card) => [card.title, card.links])).toEqual([
-      ['Make Word Sounds practice', [['Make Word Sounds practice', 'packets-make.html']]],
-      ['Make math fact practice', [['Make math fact practice', 'packets-math-practice.html']]],
-      ['Make vocabulary practice', [['Make vocabulary practice', 'packets-vocab.html#practice-mode']]],
-      ['Make quick naming practice', [['Make quick naming practice', 'packets-symbol-runner.html#practice-mode']]],
-      ['Make a math check', [['Make a math check', 'packets-check.html']]],
-      ['Make a 1-minute naming check', [['Make a 1-minute naming check', 'packets-symbol-runner.html#check-mode']]],
-      ['Make a vocabulary check', [['Make a vocabulary check', 'packets-vocab.html#check-mode']]],
-      ['Add up results', [['Add up results', 'packets-results.html']]],
-      // 2026-11-22: Collect by sealed QR — zero-network public-key encrypted offline QR results companion.
-      ['Collect by sealed QR', [['Collect by sealed QR', 'packets-qr.html']]],
-      ['Present & print word cards', [['Present & print word cards', 'packets-present-export.html']]],
-      ['Check it yourself', [['Check it yourself', '#check']]]]);
+    // 2026-11-23 (owner, after the front-door review: 22 destinations, about 12 phone screens): four subject boxes, each with
+    // plain links as buttons (Practice, Check; Word Sounds has no check), take the place of the seven maker cards, and the rest
+    // sits in closed folds. No destination was removed. Each button's own name (aria-label) is the name its card had.
+    const pairs = (root, selector) => [...root.querySelectorAll(selector)].map((a) => [a.textContent, a.getAttribute('href')]);
+    const subjects = [...doc.querySelectorAll('.door-subjects > .door-subject')].map((box) => ({ title: box.querySelector('h3').textContent,
+      links: [...box.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('aria-label'), a.getAttribute('href')]), text: box.textContent }));
+    expect([...doc.querySelectorAll('.group-title')].map((h) => h.textContent)).toEqual(['Make practice or a check', 'Results']);
+    expect(subjects.map((box) => [box.title, box.links])).toEqual([
+      ['Word Sounds', [['Practice', 'Make Word Sounds practice', 'packets-make.html']]],
+      ['Vocabulary', [['Practice', 'Make vocabulary practice', 'packets-vocab.html#practice-mode'], ['Check', 'Make a vocabulary check', 'packets-vocab.html#check-mode']]],
+      ['Math', [['Practice', 'Make math fact practice', 'packets-math-practice.html'], ['Check', 'Make a math check', 'packets-check.html']]],
+      ['Quick naming', [['Practice', 'Make quick naming practice', 'packets-symbol-runner.html#practice-mode'], ['Check', 'Make a 1-minute naming check', 'packets-symbol-runner.html#check-mode']]]]);
+    // A screen reader's list of links must not read "Practice, Check, Practice, Check": each name stands alone, is on the
+    // page once, and holds the word the button shows (so a person who speaks to the computer can say what they see).
+    const names = [...doc.querySelectorAll('a[href]')].map((a) => a.getAttribute('aria-label') || a.textContent.trim());
+    for (const box of subjects) {
+      for (const [shown, name] of box.links) {
+        expect(name.toLowerCase(), name).toContain(shown.toLowerCase());
+        expect(names.filter((other) => other === name), name).toHaveLength(1);
+      }
+    }
+    // What tells practice from a check is said once, above the boxes.
+    expect(doc.querySelector('.door-subjects').previousElementSibling.textContent).toBe('Practice: students see right or wrong as they go. Check: one try for each question, nothing shown along the way.');
+    // Every destination the page had before 2026-11-23 is still linked. Each is linked once, but the Open page (the student's
+    // way in, and "What a packet is") and the guide for school IT (in "Check it yourself", and the footer).
+    const hrefs = [...doc.querySelectorAll('a[href]')].map((a) => a.getAttribute('href'));
+    expect([...new Set(hrefs)].sort()).toEqual(['#check', '#main', './', 'https://github.com/Apomera/AlloFlow', 'packets-about.html', 'packets-check.html', 'packets-it.html',
+      'packets-make.html', 'packets-math-practice.html', 'packets-open.html', 'packets-pictures.html', 'packets-present-export.html', 'packets-qr.html', 'packets-read-along.html',
+      'packets-results.html', 'packets-symbol-runner.html#check-mode', 'packets-symbol-runner.html#practice-mode', 'packets-verify.html', 'packets-vocab.html#check-mode',
+      // 2026-11-23: and the footer's Send feedback, with this page chosen.
+      'packets-vocab.html#practice-mode', 'packets-voice.html', 'packets.html', 'packets-feedback.html#from-packets',
+      // 2026-11-24: Wave 2-5 offline makers, playlists, starter pack library, and AlloFlow bridge inside #more.
+      'packets-choice.html', 'packets-maze.html', 'packets-manipulatives.html', 'packets-stem-lab.html', 'packets-life-skills.html',
+      'packets-aac.html', 'packets-sel.html', 'packets-playlist.html', 'packets-packs.html', 'packets-compile.html'].sort());
+    expect(hrefs.filter((href, i) => hrefs.indexOf(href) !== i).sort()).toEqual(['packets-it.html', 'packets-open.html', 'packets-packs.html']);
+    expect(pairs(doc, 'a[href="packets-it.html"]').map((pair, i) => [pair[0], !!doc.querySelectorAll('a[href="packets-it.html"]')[i].closest('#check')])).toEqual([['Guide for school IT', true], ['Guide for school IT', false]]);
+    // Results: one box. The QR page is a link inside it, said in plain words (2026-11-22 it was a card of its own that said
+    // "Seal any packet ... zero network": older files are refused there, and "zero network" cannot be proven).
+    const results = doc.querySelector('.door-results');
+    expect(doc.querySelectorAll('.door-results')).toHaveLength(1);
+    expect(pairs(results, 'a')).toEqual([['Add up results', 'packets-results.html'], ['collect results by QR code', 'packets-qr.html']]);
+    expect(results.querySelector('.door-or').textContent).toBe('Or collect results by QR code: you prepare the file on that page, students show a QR code at the end, and you scan it at your desk. Only your key can read it.');
+    expect(doc.body.textContent).not.toMatch(/zero network|\bseal|encrypt|teacher key|100%|three steps/i);
+    // The in-page link to "Check it yourself" is kept, as a line under the results.
+    expect(pairs(doc, 'a[href="#check"]')).toEqual([['Check it yourself', '#check']]);
     // 2026-11-16: the student's way in was a text link 3,215 px down a phone page; it now leads the section.
     const door = doc.querySelector('section[aria-label="What you can do here"] > .student-door');
     expect(door).toBeTruthy();
@@ -332,38 +367,74 @@ describe('the pages as files', () => {
     expect(parse('packets-open.html').querySelector('h1').textContent).toBe('Open a practice file or check');
     // 2026-11-16: the hero is the headline, one line and the scope; the sizes and the voice note sit under the cards, so a maker is on the first screen.
     expect([...doc.querySelector('.hero .wrap').children].map((node) => node.tagName + '.' + node.className)).toEqual(['H1.', 'P.lead', 'P.scope']);
-    // 2026-11-19 (Wave 2B): optional on-device voice tools sit in a demarcated .voice-door block right after the 4 Practice cards.
-    const voiceDoor = doc.querySelector('.voice-door');
-    expect(voiceDoor).toBeTruthy();
+    // 2026-11-19 (Wave 2B): the optional on-device voice tools sit in a block set apart, under the heading that says so plainly.
+    // 2026-11-23: that block is inside the closed fold "More things to make", with the word cards and the pictures; each of
+    // the four is linked once (the two voice pages were linked twice, in a note and in a card).
+    const more = doc.querySelector('section[aria-label="What you can do here"] > details#more.door-fold');
+    expect(more.hasAttribute('open')).toBe(false);
+    expect(more.querySelector(':scope > summary > h2').textContent).toBe('More things to make');
+    const voiceDoor = more.querySelector('.door-voice');
     expect(voiceDoor.querySelector('#voice-door-title').textContent).toBe('With optional computer voice (AI, runs on this device)');
-    expect([...voiceDoor.querySelectorAll('.voice-card a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
+    expect(voiceDoor.textContent).toContain('Two optional pages use a computer voice that runs on your device.');
+    expect(pairs(voiceDoor, 'a')).toEqual([
       ['Make a read-along', 'packets-read-along.html'],
       ['Make recordings with a computer voice', 'packets-voice.html'],
     ]);
-    // 2026-11-17: then the About page (who makes it, how to report a problem).
-    expect([...doc.querySelector('.cards + .door-notes').children].map((node) => node.className)).toEqual(['facts', 'scope']);
-    expect(doc.querySelector('.door-notes a[href="packets-about.html"]').textContent).toBe('About Packets');
+    // 2026-11-24: #more also groups the 10 offline Wave 2-5 makers, playlists, starter pack library, and AlloFlow bridge.
+    expect(pairs(more, 'a')).toEqual([
+      ...pairs(voiceDoor, 'a'),
+      ['Present & print word cards', 'packets-present-export.html'],
+      ['Find a picture', 'packets-pictures.html'],
+      ['Choice, Sort & Write', 'packets-choice.html'],
+      ['Maze Reading', 'packets-maze.html'],
+      ['Visual Math Manipulatives', 'packets-manipulatives.html'],
+      ['STEM Labs', 'packets-stem-lab.html'],
+      ['Life Skills & Transition', 'packets-life-skills.html'],
+      ['AAC Boards', 'packets-aac.html'],
+      ['Focus & UDL Toolkits', 'packets-sel.html'],
+      ['Unit Playlists', 'packets-playlist.html'],
+      ['Starter Pack Library', 'packets-packs.html'],
+      ['Turn an AlloFlow activity into a packet', 'packets-compile.html'],
+    ]);
+    expect(more.textContent).toContain('PowerPoint slides');
+    // 2026-11-17: the About page (who makes it, how to report a problem). 2026-11-23: it and the guide for school IT are in the
+    // footer, and the line of file sizes is in "What a packet is".
+    expect(pairs(doc, 'footer a')).toEqual([['About Packets', 'packets-about.html'], ['Guide for school IT', 'packets-it.html'], ['Send feedback', 'packets-feedback.html#from-packets'], ['More from AlloFlow', './']]);
+    expect(doc.querySelectorAll('.facts')).toHaveLength(1);
+    expect(doc.querySelector('#what .how + .facts').textContent).toMatch(/^One file\. .* Works with no internet\.$/);
     expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
       .toEqual(['Make Word Sounds practice', 'Make math fact practice', 'Make a math check']);
-    expect(cards[0].text).toContain('Hearing sounds, letters and sounds, spelling, rhyme.');
-    expect(cards[1].text).toContain('Feedback on every fact, for learning facts by heart.');
-    expect(cards[4].text).toContain('or your own problems.');
-    expect(cards[1].text).toContain('Three steps. No sound needed.');
-    expect(cards[3].text).toContain('Works offline.');
-    expect(cards[3].text).not.toMatch(/Stroop|flanker|3D|5x8/);
-    expect(cards[8].text).toContain('zero network');
-    expect(cards[9].text).toContain('PowerPoint slides');
-    expect(cards[7].text).toContain('not uploaded');
-    expect(cards[7].text).toContain('each student over time');
-    expect(doc.getElementById('check')).toBeTruthy();
+    // 2026-11-23: one short line in each box. ("Three steps", "No sound needed" and "Works offline" went with the card feet;
+    // the lead says "in a few steps", because a read-along has four.)
+    expect(subjects[0].text).toContain('Hearing sounds, letters and sounds, spelling, rhyme.');
+    expect(subjects[2].text).toContain('Practice: math facts, with feedback on every fact.');
+    expect(subjects[2].text).toContain('or your own problems.');
+    expect(subjects[3].text).toContain('Symbol Runner: students name letters, sounds, words or numbers quickly, one card at a time.');
+    expect(subjects[3].text).not.toMatch(/Stroop|flanker|3D|5x8/);
+    expect(doc.querySelector('.lead').textContent).toContain('in a few steps.');
+    expect(results.textContent).toContain('not uploaded');
+    expect(results.textContent).toContain('each student over time');
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    // Each card is built the same way: a heading that is the card's one link, a line, a foot; packets.css stretches that
-    // link over the whole card (.card a::after). The ones that make a file are filled; the four for what comes after are outlined (2026-11-22: added Collect by sealed QR).
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual([...Array(7).fill('card card-main'), 'card card-go', 'card card-go', 'card card-go', 'card card-go']);
-    for (const card of doc.querySelectorAll('.card')) {
-      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H3', 'P', 'P.card-foot']);
-      expect(!!card.querySelector('h3 > a')).toBe(true);
+    // "What a packet is" stays open. "Check it yourself" and "What exists today" are closed folds that keep their ids: the
+    // in-page link lands on the fold, whose summary (the heading) a person can press with no script, and packets-page.js
+    // opens a fold the address names (see "the two small scripts").
+    expect([...doc.querySelectorAll('main > *')].map((node) => node.tagName + '#' + node.id + (node.hasAttribute('open') ? ' open' : ''))).toEqual(['SECTION#', 'SECTION#', 'SECTION#what', 'DETAILS#check', 'DETAILS#today']);
+    expect(['more', 'check', 'today'].map((id) => doc.querySelector('details#' + id + '[data-open-by-address]:not([open]) > summary > h2').textContent)).toEqual(['More things to make', 'Check it yourself', 'What exists today']);
+    expect(doc.querySelectorAll('[data-open-by-address]')).toHaveLength(3);
+    // Each box is built the same way: a heading, a line, a row of plain links that look like buttons. No link is stretched
+    // over a box now (a box can hold two), so the page has no .card; the .card rules stay in packets.css untouched.
+    expect(doc.querySelectorAll('.card, .cards, .voice-card, .door-notes')).toHaveLength(0);
+    expect(doc.querySelectorAll('.door-subject')).toHaveLength(4);
+    for (const box of doc.querySelectorAll('.door-subject')) {
+      expect([...box.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H3', 'P', 'P.door-btns']);
+      for (const link of box.querySelectorAll('a')) expect([link.className, link.parentElement.className]).toEqual(['btn btn-primary', 'door-btns']);
     }
+    expect(doc.querySelectorAll('main button, main input')).toHaveLength(0);
+    // Wide enough and tall enough to press: a button is 3rem tall (.btn), a fold's summary row 3.25rem, a link in a list 2.75rem.
+    expect(read('packets.css')).toMatch(/\.btn \{[^}]*min-height: 3rem;/);
+    expect(read('packets.css')).toMatch(/\.door-fold > summary, \.door-band > summary \{[^}]*min-height: 3\.25rem;/);
+    expect(read('packets.css')).toMatch(/\.door-more-list a \{[^}]*min-height: 2\.75rem;/);
+    expect(read('packets.css')).toMatch(/\.door-foot-links a \{[^}]*min-height: 2\.75rem;/);
     // The titles of the filled cards are light on the accent, as their text is.
     expect(read('packets.css')).toContain('.card-main h2, .card-main h3, .card-main p, .card-main .card-foot { color: var(--on-accent); }');
     expect(read('packets.css')).toContain('.card .card-links a::after { content: none; }');
@@ -376,7 +447,9 @@ describe('the pages as files', () => {
     expect(css.match(/\.cards \{/g)).toHaveLength(2);
     expect(css).not.toContain('1.15fr');
     const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
-    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks, vocabulary practice, Symbol Runner practice and word card export, with a results file for each student. Read-alongs of your own passage.', 'Being built': 'More words with recordings. More checks for reading skills.' });
+    // 2026-11-23: only what is true. Vocabulary and Symbol Runner make checks too, and Symbol Runner's letter-naming check is a
+    // check of a reading skill that exists, so "More checks for reading skills" is no longer listed as being built.
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice and math checks, vocabulary practice and checks, Symbol Runner naming practice and checks, and 3-minute Maze reading probes, with a results file for each student. Read-alongs of your own passage, word cards to present and print, UDL choice boards and writing frames, visual math manipulatives, STEM labs, life skills simulations, offline AAC boards, focus toolkits, unit playlists and ready-made starter packs.', 'Being built': 'More words with recordings.' });
     // Every builder is named where the builders are listed, and each one exists.
     const verify = doc.querySelector('.verify').textContent;
     for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'packet_symbol_runner_builder.js', 'packet_read_along_builder.js', 'word_sounds_take_home_loader.js']) {
@@ -387,7 +460,9 @@ describe('the pages as files', () => {
     expect([...doc.querySelectorAll('a[href="packets-verify.html"]')].map((a) => a.textContent)).toEqual(['Look inside a file']);
     // What the front door says: one button saves the results; a file preview does not run (as the IT guide says, reported, not yet tested).
     // 2026-11-17: a practice file's main button is "Save my work" (the check keeps "Save results as a spreadsheet file (CSV)").
-    expect(doc.getElementById('what').textContent).toContain('At the end the student presses one button, Save my work. It saves a spreadsheet file (CSV), which you open in a spreadsheet');
+    // 2026-11-23: the page said "one button, Save my work" of every file; it now gives both names, as the file does (below).
+    expect(doc.getElementById('what').textContent).toContain('At the end the student presses Save my work. In a check the button says Save results as a spreadsheet file (CSV). Either one saves a spreadsheet file (CSV), which you open in a spreadsheet');
+    expect([...doc.querySelectorAll('#what strong')].map((node) => node.textContent)).toEqual(['Save my work', 'Save results as a spreadsheet file (CSV)']);
     const preview = [...doc.querySelectorAll('#check li')].find((li) => li.textContent.startsWith('Run inside a file preview.')).textContent;
     expect(preview).toBe('Run inside a file preview. The previews in Google Drive, Google Classroom and the iPad Files app do not run the file. '
       + 'The file then shows a note that asks the student to download it and open it in a browser. Reported, not yet tested by us.');
@@ -397,7 +472,7 @@ describe('the pages as files', () => {
     // What the page says about the file is what the file says about itself.
     const loaderSource = read('word_sounds_take_home_loader.js');
     for (const text of ["about_button: 'About this file'", "never: (mailbox ? [] : ['internet connection']).concat(hasStudentMic ? ['camera', 'cookies', 'AI'] : ['microphone', 'camera', 'cookies', 'AI'])", 'manifest-src \'none\'; connect-src " + connect',
-      'download this file and open it in Chrome, Edge or Safari', "save_csv: 'Save results as a spreadsheet file (CSV)'", '(?:^#|&)learner=']) expect(loaderSource, text).toContain(text);
+      'download this file and open it in Chrome, Edge or Safari', "save_work: 'Save my work'", "save_csv: 'Save results as a spreadsheet file (CSV)'", '(?:^#|&)learner=']) expect(loaderSource, text).toContain(text);
     expect(read('LICENSE')).toContain('GNU AFFERO GENERAL PUBLIC LICENSE');
   });
 
@@ -413,9 +488,10 @@ describe('the pages as files', () => {
     expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     // 2026-11-14: scripts grew from 2.49 MB to ~2.7 MB after expanding the phoneme/wordlist dictionary with vendored K-8 lexicons and regular inflections.
-    expect(read('packets-make.html')).toContain('Getting the word lists, about 3 MB.');
-    expect(megabytes).toBeGreaterThan(2.5);
-    expect(megabytes).toBeLessThan(3.5);
+    // 2026-11-25: scripts grew to ~3.6 MB after adding worksheet preview/customizer, audio companion, scoring sheet, and Step 3 item editor.
+    expect(read('packets-make.html')).toContain('Getting the word lists, about 4 MB.');
+    expect(megabytes).toBeGreaterThan(3.0);
+    expect(megabytes).toBeLessThan(4.5);
   });
 
   it('the maker says exactly what the server can see, now that some sound files depend on the words', () => {
@@ -2096,11 +2172,13 @@ describe('the maker: choose the words yourself, and any number of words', () => 
   // 2026-11-14 (T1): Stage first in Step 2, Include pictures auto-on only when most words have a picture (or Only words with a picture), and >= 10 MB size warning.
   it('places Stage first in step 2, auto-enables Include pictures only when most words have pictures, and warns on >= 10 MB files', async () => {
     const makerDoc = parse('packets-make.html');
-    // 2026-11-16 / 2026-11-21: Level and Sound patterns are on show in step 2 (full-width #pick-top, orphaned .fields removed); sound and position wait under More options.
+    // 2026-11-16 / 2026-11-21: Level is on show in step 2 (full-width #pick-top, orphaned .fields removed); sound and position wait under More options.
+    // 2026-11-23: so do the sound patterns (they were above the words from 11-21). The box's closed line names them.
     const step2Selects = [...makerDoc.querySelectorAll('#step-2 .field select')].map((s) => s.id);
     expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position']);
     expect(makerDoc.getElementById('f-stage').closest('details')).toBeNull();
-    expect(makerDoc.getElementById('shape-field').closest('details')).toBeNull();
+    expect(makerDoc.getElementById('shape-field').closest('details').id).toBe('more-2');
+    expect(makerDoc.getElementById('pick-top').contains(makerDoc.getElementById('shape-field'))).toBe(false);
     // 2026-11-18 (owner): "Level", named by what it practices, not by grade.
     expect(makerDoc.querySelector('label[for="f-stage"]').textContent).toBe('Level');
     for (const id of ['f-sound', 'f-position']) expect(makerDoc.getElementById(id).closest('details').id, id).toBe('more-2');
@@ -2163,6 +2241,24 @@ describe('the two small scripts', () => {
       expect(dom.window.document.querySelector('[data-show-rule]').textContent, file).toBe(CSP[file]);
       dom.window.close();
     }
+    // 2026-11-23: a closed fold of the front door opens when the address names it: on arrival, and when a link on the
+    // page goes to it. Only a fold that asks for it ([data-open-by-address]); the details panel in the header does not.
+    const opens = (hash) => {
+      const dom = new JSDOM(read('packets.html').replace('<details class="proof">', '<details class="proof" id="proof">'), { runScripts: 'outside-only', url: 'https://packets.test/site/packets.html' + hash });
+      dom.window.eval(read('packets-page.js'));
+      return dom;
+    };
+    const open = (dom) => [...dom.window.document.querySelectorAll('details[open]')].map((fold) => fold.id);
+    for (const [hash, want] of [['', []], ['#check', ['check']], ['#today', ['today']], ['#more', ['more']], ['#what', []], ['#proof', []], ['#no-such-id', []]]) {
+      const dom = opens(hash);
+      expect(open(dom), hash).toEqual(want);
+      dom.window.close();
+    }
+    const dom = opens('');
+    dom.window.location.hash = '#check';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(open(dom)).toEqual(['check']);
+    dom.window.close();
   });
 
   it('packets-try.js shows only a file of this site, in a frame that cannot reach the site\'s storage', async () => {
@@ -2253,18 +2349,59 @@ describe('the maker: quick make, the word count, Pick different words and More o
     await first.until(() => first.chips().length > 0, 'the first words');
     expect(first.$('f-stage').value).toBe('K early');
     expect([...first.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual([]);
+    expect(first.$('more-2').open).toBe(false);
+    expect(first.$('more-2-now').textContent).toBe('any sound, any pattern, version A');
     expect(first.$('f-stage').closest('details')).toBeNull();
     expect(first.chips()).toEqual(pickedFor({ count: 30, stage: 'K early' }).words.slice(0, first.fileCount()));
     // Beginning-reader words, not the most common words of all.
     for (const word of first.chips()) expect(dictionary.lookup(word)[0].length, word).toBeLessThanOrEqual(3);
-    // A returning browser (what openMaker stands in for by default): CVC at any grade level, with CVC checked on the visible Sound patterns pills.
+    // A returning browser (what openMaker stands in for by default): CVC at any grade level, with CVC checked on the Sound patterns pills.
+    // 2026-11-23: the pills are under More options, which stays closed and says the pattern on its top line.
     const back = await openMaker();
     back.$('next-1').click();
     await back.until(() => back.chips().length > 0, 'the earlier words');
     expect(back.$('f-stage').value).toBe('');
     expect([...back.$('f-shapes').querySelectorAll('input[data-shape]:checked')].map((b) => b.value)).toEqual(['CVC']);
     expect(back.$('more-2').open).toBe(false);
-    expect(back.$('more-2-now').textContent).toBe('any sound, version A');
+    expect(back.$('more-2-now').textContent).toBe('any sound, CVC pattern, version A');
+  }, 120000);
+
+  // 2026-11-23: the six sound-pattern checkboxes left the default view of step 2 for its More options box.
+  it('the sound patterns are under More options in step 2, still work there, and the closed line says them, also from a preset', async () => {
+    const page = await openMaker({ firstVisit: true });
+    const boxes = () => [...page.$('f-shapes').querySelectorAll('input[data-shape]')];
+    const line = () => page.$('more-2-now').textContent;
+    // All six are there, inside the one box, with their count line and Clear button.
+    expect(boxes().map((b) => b.value)).toEqual(['CVC', 'CCVC', 'CVCC', 'CCVCC', 'CV', 'VC']);
+    for (const id of ['shape-field', 'f-shapes', 'shape-meta', 'shape-clear', 'shape-hint']) expect(page.$(id).closest('details.more').id, id).toBe('more-2');
+    expect(page.$('more-2-pick').contains(page.$('shape-field'))).toBe(true);
+    expect(page.$('more-2').querySelector('summary').contains(page.$('more-2-now'))).toBe(true);
+    // A preset of step 1 sets two patterns: the box stays closed and its top line names them.
+    page.d.querySelector('#quick button[data-recipe="digraphs-blends"]').click();
+    expect(boxes().filter((b) => b.checked).map((b) => b.value)).toEqual(['CCVC', 'CVCC']);
+    expect(page.$('more-2').open).toBe(false);
+    expect(line()).toBe('any sound, CCVC + CVCC patterns, version A');
+    page.d.querySelector('#quick button[data-recipe="blending-cvc"]').click();
+    expect(line()).toBe('any sound, CVC pattern, version A');
+    expect(page.$('more-2').open).toBe(false);
+    page.d.querySelector('#quick button[data-recipe="spelling-practice"]').click();
+    expect(line()).toBe('any sound, any pattern, version A');
+    // Opened by the teacher, the checkboxes work as before: checking, the count line, Clear.
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the words');
+    page.$('more-2').open = true;
+    boxes().find((b) => b.value === 'VC').click();
+    expect(line()).toBe('any sound, VC pattern, version A');
+    expect(page.$('shape-meta').hidden).toBe(false);
+    expect(page.$('shape-count').textContent).toBe('1 selected');
+    expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1')).shape).toBe('VC');
+    page.$('shape-clear').click();
+    expect(boxes().filter((b) => b.checked)).toEqual([]);
+    expect(page.$('shape-meta').hidden).toBe(true);
+    expect(line()).toBe('any sound, any pattern, version A');
+    // Typed words: no sound or pattern applies, so the line does not name one.
+    page.d.querySelector('input[name="mode"][value="own"]').click();
+    expect(line()).toBe('version A');
   }, 120000);
 
   it('Make it with the usual settings goes from step 1 to a built file, and the chips are the words of that file', async () => {
@@ -2373,7 +2510,10 @@ describe('the maker: quick make, the word count, Pick different words and More o
     // 2026-11-21 / 2026-11-22 (Wave 9 P0-1): "Mix the activities" (#f-mix) is surfaced directly below the activities in step 1; More options holds trace, choices & show-letters.
     expect(inside('more-1')).toEqual(['f-trace-cases', 'f-choices', 'f-show-letters']);
     expect(doc.getElementById('f-mix').closest('details.more')).toBeNull();
-    // 2026-11-17 / 2026-11-21: Sound patterns and multi-level toggle sit above the words; More options holds sound, other curricula, version, groups and manual pick.
+    // 2026-11-17 / 2026-11-21: the multi-level toggle sits above the words; More options holds sound, other curricula, version, groups and manual pick.
+    // 2026-11-23: and the sound patterns (#shape-field; its checkboxes are drawn by the script, so they are not in this list).
+    expect(doc.getElementById('shape-field').closest('details.more').id).toBe('more-2');
+    expect(doc.getElementById('shape-field').closest('#more-2-pick')).not.toBeNull();
     expect(inside('more-2')).toEqual(['f-sound', 'f-position', 'f-stage-other', 'version=A', 'version=B', 'version=C', 'f-find', 'f-only-pictures', 'f-add']);
     expect(doc.getElementById('panel-pick').compareDocumentPosition(doc.getElementById('more-2')) & 4).toBeTruthy();
     for (const id of ['group-add', 'pick-list', 'pick-out-box']) expect(doc.getElementById(id).closest('#more-2'), id).not.toBeNull();
@@ -2385,8 +2525,8 @@ describe('the maker: quick make, the word count, Pick different words and More o
       expect(box.querySelector('summary .more-name').textContent, id).toBe('More options');
       expect(box.querySelector('summary .more-now').id, id).toBe(id + '-now');
     }
-    // What stays on show: the activities, mix toggle, level + patterns or typed words, count and words, title, save.
-    for (const id of ['quick-make', 'f-mix', 'next-1', 'f-stage', 'f-multi-stage', 'shape-field', 'f-own', 'pick-shuffle', 'pick-chips', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
+    // What stays on show: the activities, mix toggle, level or typed words, count and words, title, save.
+    for (const id of ['quick-make', 'f-mix', 'next-1', 'f-stage', 'f-multi-stage', 'f-own','pick-shuffle', 'pick-chips', 'f-title', 'save', 'try', 'print-cards', 'open-present-export', 'batch'])
       expect(doc.getElementById(id).closest('details.more'), id).toBeNull();
     const page = await openMaker();
     // Step 1: the groups are boxes, open where an activity is chosen; the line says how many.

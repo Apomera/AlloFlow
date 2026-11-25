@@ -6,7 +6,8 @@ const require=createRequire(import.meta.url);
 const {buildFirstWaveModule}=require('../_build_first_wave_view_modules.js');
 describe('coach provider labels supplied by the app',()=>{
   it('exposes a safe whitelist and reads the current host configuration',()=>{
-    const React={createElement:(type,props,...children)=>({type,props,children})};
+    // The view now re-renders on AI-config events (useState tick + useEffect listener).
+    const React={createElement:(type,props,...children)=>({type,props,children}),useState:(v)=>[v,()=>{}],useEffect:()=>{}};
     const window={React,AlloModules:{}};
     vm.runInNewContext(readFileSync('video_studio_host_bridge_module.js','utf8'),{window,console});
     const ref={current:{aiProviderProfile:{backend:'cloud',provider:'example',model:'text',visionModel:'vision',fallbackModel:'fallback',apiKey:'SECRET',baseUrl:'https://secret.example'}}};

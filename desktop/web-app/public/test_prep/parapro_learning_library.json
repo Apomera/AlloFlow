@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "0.7.0",
   "schemaVersion": 1,
   "libraryId": "parapro-1755-learning-library",
@@ -50,7 +51,12 @@
     "appliedCases": 12,
     "constructedResponseWorkshops": 6,
     "quickReferenceCards": 3,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 5,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -266,7 +272,7 @@
             "A topic states a personal view; a main idea requires a number."
           ],
           "answerIndex": 0,
-          "rationale": "Topic and main idea operate at different levels: one identifies the subject and the other communicates the authors central point about that subject.",
+          "rationale": "Topic and main idea operate at different levels: one identifies the subject and the other communicates the author's central point about that subject.",
           "reviewStatus": "source-reviewed-editorial-pass",
           "references": [
             "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -302,7 +308,7 @@
             "A concise paraphrase capturing major text points"
           ],
           "answerIndex": 2,
-          "rationale": "A summary represents the source rather than adding a readers new judgment. Central ideas and essential relationships belong when they are supported.",
+          "rationale": "A summary represents the source rather than adding a reader's new judgment. Central ideas and essential relationships belong when they are supported.",
           "reviewStatus": "source-reviewed-editorial-pass",
           "references": [
             "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -634,7 +640,7 @@
             "answerLabel": "Best paraprofessional support",
             "explanationLabel": "Instructional rationale",
             "title": "Helping Students Compare a Primary Diary and a Secondary Textbook",
-            "clinicalDescription": "At a sixth-grade social studies station designed by the teacher, two students compare a 1906 earthquake survivor diary entry with a 2022 textbook summary. One student insists the textbook is \"wrong\" because it leaves out the survivor dog and reports citywide rebuilding figures that the diary never mentions.",
+            "clinicalDescription": "At a sixth-grade social studies station designed by the teacher, two students compare a 1906 earthquake survivor diary entry with a 2022 textbook summary. One student insists the textbook is \"wrong\" because it leaves out the survivor's dog and reports citywide rebuilding figures that the diary never mentions.",
             "diagnosis": "Have students log shared facts first, distinguish the primary diary from the secondary textbook, and note how purpose shapes detail selection.",
             "explanation": "Distinguishing factual contradiction from differences in scope, audience, and source type helps students see why primary accounts provide personal immediacy while secondary texts synthesize broader patterns. Calling either source inaccurate or skipping evidence comparison misses the core skill of evaluating viewpoints."
           }
@@ -928,7 +934,7 @@
             "Finish the written assignment without reviewing any steps"
           ],
           "answerIndex": 2,
-          "rationale": "Chunking and visuals increase access while preserving the intended task and the learners active role.",
+          "rationale": "Chunking and visuals increase access while preserving the intended task and the learner's active role.",
           "reviewStatus": "source-reviewed-editorial-pass",
           "references": [
             "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -1204,7 +1210,7 @@
           "id": "parapro-ch-06-section-2",
           "heading": "Expressions and properties",
           "preview": "An expression represents a quantity but does not state equality. Evaluate using substitution and the order of operations. The distributive property multiplies a factor by every term inside parentheses. Combine only like terms, whose variable parts match. Keep the distinction betw",
-          "content": "An expression represents a quantity but does not state equality. Evaluate using substitution and the order of operations. The distributive property multiplies a factor by every term inside parentheses. Combine only like terms, whose variable parts match. Keep the distinction between 2a squared and the square of 2a clear by attending to notation and grouping.",
+          "content": "An expression represents a quantity but does not state equality. Evaluate using substitution and the order of operations. The distributive property multiplies a factor by every term inside parentheses. Combine only like terms, whose variable parts match. Keep the distinction between 2a² and (2a)² clear by attending to notation and grouping.",
           "keyTerms": [
             "expression",
             "distributive property",
@@ -1440,7 +1446,7 @@
             "answerLabel": "Best paraprofessional support",
             "explanationLabel": "Instructional rationale",
             "title": "Scaffolding Straight-Angle Sums and Ordered-Pair Coordinate Plots",
-            "clinicalDescription": "At a fifth-grade geometry table led under the teacher plan, a student finds the angle adjacent to 65 degrees on a straight line by subtracting from 90 degrees (getting 25 degrees). On the next coordinate grid item, the student plots (3, 5) by moving up 3 and right 5, then guesses the distance from (3, 5) to (3, 9).",
+            "clinicalDescription": "At a fifth-grade geometry table led under the teacher's plan, a student finds the angle adjacent to 65 degrees on a straight line by subtracting from 90 degrees (getting 25 degrees). On the next coordinate grid item, the student plots (3, 5) by moving up 3 and right 5, then guesses the distance from (3, 5) to (3, 9).",
             "diagnosis": "Review straight angles equal 180 degrees (180 minus 65 = 115), cue horizontal x before vertical y to plot (3, 5), and find |9 minus 5| = 4 units.",
             "explanation": "Anchoring angle calculations to visual benchmarks (180 degrees for a straight line versus 90 for a right angle) and cueing (x, y) axis order builds dependable spatial accuracy. Allowing the student to eyeball lengths or erasing their plot without naming the x-first rule leaves both habits uncorrected."
           }
@@ -1642,7 +1648,7 @@
             "presentationLabel": "Classroom scenario",
             "answerLabel": "Best paraprofessional support",
             "explanationLabel": "Instructional rationale",
-            "title": "Addressing the Gambler Fallacy in a Hands-On Coin Probability Lab",
+            "title": "Addressing the Gambler's Fallacy in a Hands-On Coin Probability Lab",
             "clinicalDescription": "During a teacher-planned probability lab, a small group flips a fair coin 8 times and tallies 6 heads and 2 tails (75% heads). One student argues the coin is \"broken\" and writes that the 9th flip must land on tails to \"even out\" the results before finishing the reflection sheet.",
             "diagnosis": "Contrast small-sample experimental results (6/8) with theoretical probability (1/2), review independent flips, and pool class trials to show stability.",
             "explanation": "Comparing a short run of 8 trials against combined class data shows students that small samples vary widely while each independent fair flip stays 50/50 and larger samples approach 1/2. Agreeing that tails is \"due\" reinforces the gambler fallacy, and abandoning the activity wastes rich empirical evidence."
@@ -1651,8 +1657,8 @@
         {
           "id": "parapro-ch-08-section-4",
           "heading": "Instruction through representations",
-          "preview": "Begin by eliciting the students strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the lear",
-          "content": "Begin by eliciting the students strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the learner to apply the idea to a new problem. Avoid replacing conceptual work with a rule the student cannot explain.",
+          "preview": "Begin by eliciting the student's strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the lear",
+          "content": "Begin by eliciting the student's strategy and identifying the first point where the reasoning changes. Use number lines, arrays, fraction models, area models, ratio tables, or balance models to expose the relevant structure. Connect the representation to symbols, then ask the learner to apply the idea to a new problem. Avoid replacing conceptual work with a rule the student cannot explain.",
           "keyTerms": [
             "representation",
             "error analysis",
@@ -1735,7 +1741,7 @@
             "Assign unrelated arithmetic drills instead."
           ],
           "answerIndex": 2,
-          "rationale": "Understanding the learners reasoning identifies the specific misconception and supports a targeted representation or prompt.",
+          "rationale": "Understanding the learner's reasoning identifies the specific misconception and supports a targeted representation or prompt.",
           "reviewStatus": "source-reviewed-editorial-pass",
           "references": [
             "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -1826,7 +1832,7 @@
           "id": "parapro-ch-09-section-3",
           "heading": "Modifiers and usage",
           "preview": "Place descriptive phrases near the word they modify. An introductory modifier should logically describe the subject that follows it. Choose words according to meaning and grammatical function: their shows possession, there refers to place or introduces a clause, and they are cont",
-          "content": "Place descriptive phrases near the word they modify. An introductory modifier should logically describe the subject that follows it. Choose words according to meaning and grammatical function: their shows possession, there refers to place or introduces a clause, and they are contracts to theyre. Parallel items should use matching grammatical forms.",
+          "content": "Place descriptive phrases near the word they modify. An introductory modifier should logically describe the subject that follows it. Choose words according to meaning and grammatical function: their shows possession, there refers to place or introduces a clause, and they are contracts to they're. Parallel items should use matching grammatical forms.",
           "keyTerms": [
             "modifier",
             "usage",
@@ -1846,7 +1852,7 @@
             "title": "Using Targeted Questions to Coach Modifier, Usage, and Parallel Edits",
             "clinicalDescription": "While coaching seventh-grade draft revisions under the teacher rubric, a paraprofessional reads: \"Walking to the bus stop, my backpack strap snapped, and their were notebooks spilling everywhere while I ran, tripped, and was dropping my folder.\" The student asks why the sentence sounds awkward.",
             "diagnosis": "Ask who was walking so the student puts \"I\" after the comma, cue \"there\" for existence, and align past verbs (\"ran, tripped, and dropped\").",
-            "explanation": "Focused questioning helps the writer spot the dangling modifier, distinguish \"their\" from \"there,\" and align parallel past-tense verbs while retaining ownership of the revision. Rewriting the sentence directly on the student paper corrects surface mechanics without teaching self-editing strategies."
+            "explanation": "Focused questioning helps the writer spot the dangling modifier, distinguish \"their\" from \"there,\" and align parallel past-tense verbs while retaining ownership of the revision. Rewriting the sentence directly on the student's paper corrects surface mechanics without teaching self-editing strategies."
           }
         },
         {
@@ -1893,7 +1899,7 @@
         {
           "id": "parapro-ch-09-check-2",
           "skillId": "writing-grammar-mechanics",
-          "prompt": "In The box of books is heavy, why is is singular?",
+          "prompt": "In “The box of books is heavy,” why is “is” singular?",
           "choices": [
             "Books is always ignored in writing.",
             "The subject box is singular.",
@@ -2447,8 +2453,8 @@
         {
           "id": "parapro-ch-12-section-3",
           "heading": "Specific feedback and authorship",
-          "preview": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adults preferences for the students meaning. Peer feedback should also cite specific text and use assignment criteria. When sourc",
-          "content": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adults preferences for the students meaning. Peer feedback should also cite specific text and use assignment criteria. When source use is inappropriate, teach accurate quotation, paraphrase, and attribution rather than merely deleting the passage.",
+          "preview": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adult's preferences for the student's meaning. Peer feedback should also cite specific text and use assignment criteria. When sourc",
+          "content": "Effective feedback names the goal, points to exact text, explains the effect, and suggests a strategy. It does not rewrite the paper or substitute the adult's preferences for the student's meaning. Peer feedback should also cite specific text and use assignment criteria. When source use is inappropriate, teach accurate quotation, paraphrase, and attribution rather than merely deleting the passage.",
           "keyTerms": [
             "feedback",
             "authorship",
@@ -2536,7 +2542,7 @@
         {
           "id": "parapro-ch-12-check-3",
           "skillId": "writing-classroom-support",
-          "prompt": "When coaching a young writer on a narrative draft, which question best supports elaboration?",
+          "prompt": "When coaching a young writer who drafted the bare sentence \"The room was messy,\" which question best supports elaboration?",
           "choices": [
             "Can you repeat the word messy five times in a row?",
             "Which sights, sounds, or actions picture the scene?",
@@ -3892,7 +3898,7 @@
       "domainId": "reading",
       "domain": "Reading",
       "front": "What is a minor detail?",
-      "back": "A specific example or fact that can be removed without losing the passage central meaning.",
+      "back": "A specific example or fact that can be removed without losing the passage's central meaning.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -4252,7 +4258,7 @@
       "domainId": "mathematics",
       "domain": "Mathematics",
       "front": "What is absolute value?",
-      "back": "A numbers distance from zero, without regard to direction.",
+      "back": "A number's distance from zero, without regard to direction.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://www.ets.org/pdfs/parapro/1755.pdf",
@@ -7109,6 +7115,2722 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "parapro-session-ch-01",
+      "title": "Main Ideas, Details, and Evidence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Main Ideas, Details, and Evidence\" (Reading) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-01",
+      "itemIds": [
+        "parapro-reading-skills-001",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-007",
+        "parapro-reading-skills-010",
+        "parapro-reading-skills-013",
+        "parapro-reading-skills-016",
+        "parapro-reading-skills-019",
+        "parapro-reading-skills-022",
+        "parapro-reading-skills-025",
+        "parapro-reading-skills-028"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Main Ideas, Details, and Evidence\" and the \"Reading Comprehension & Teacher-Directed Literacy Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Reading Skills & Comprehension Support Routine\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Guiding a Complete Paraphrased Summary Without Rewriting It\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Main Ideas, Details, and Evidence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Ground Every ParaPro Reading Answer in Explicit Text and Table Evidence\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-02",
+      "title": "Inference and Vocabulary in Context guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Inference and Vocabulary in Context\" (Reading) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-02",
+      "itemIds": [
+        "parapro-reading-skills-023",
+        "parapro-reading-skills-026",
+        "parapro-reading-skills-029",
+        "parapro-reading-skills-032",
+        "parapro-reading-skills-035",
+        "parapro-reading-skills-038",
+        "parapro-reading-skills-041",
+        "parapro-reading-skills-044",
+        "parapro-b3-reading-003",
+        "parapro-b3-reading-004"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Inference and Vocabulary in Context\" and the \"Reading Comprehension & Teacher-Directed Literacy Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Inference Verification & Context-Clue Coaching Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Coaching Context Clues and Word Parts Instead of Giving Definitions\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Inference and Vocabulary in Context\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Master No-Calculator Fractions, Decimals, and Percent Bases for ParaPro\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-03",
+      "title": "Text Structure, Features, and Sources guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Text Structure, Features, and Sources\" (Reading) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-03",
+      "itemIds": [
+        "parapro-reading-skills-045",
+        "parapro-b3-reading-005",
+        "parapro-b3-reading-006",
+        "parapro-b3-reading-011",
+        "parapro-b3-reading-012",
+        "parapro-b3-reading-016",
+        "parapro-b3-reading-018",
+        "parapro-b3-reading-022",
+        "parapro-b3-reading-023",
+        "parapro-b4-reading-005"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Text Structure, Features, and Sources\" and the \"Reading Comprehension & Teacher-Directed Literacy Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Text Structure, Features & Source-Comparison Routine\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Helping Students Compare a Primary Diary and a Secondary Textbook\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Text Structure, Features, and Sources\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Order of Operations, Balanced Equations, and Perimeter vs. Area\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-04",
+      "title": "Supporting Reading in the Classroom guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Supporting Reading in the Classroom\" (Reading) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-04",
+      "itemIds": [
+        "parapro-reading-application-022",
+        "parapro-b3-reading-024",
+        "parapro-b3-reading-025",
+        "parapro-b3-reading-026",
+        "parapro-b3-reading-027",
+        "parapro-b3-reading-028",
+        "parapro-b3-reading-029",
+        "parapro-b3-reading-030",
+        "parapro-b3-reading-031",
+        "parapro-b3-reading-032"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Supporting Reading in the Classroom\" and the \"Reading Comprehension & Teacher-Directed Literacy Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Supporting Foundational Reading & Decoding in Small Groups\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Fading Reading Prompts and Sharing Mastery Data With the Teacher\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Supporting Reading in the Classroom\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Eliminate Homophone, Apostrophe, Agreement, and Clause-Join Errors\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-05",
+      "title": "Numbers, Fractions, Decimals, and Percents guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Numbers, Fractions, Decimals, and Percents\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-05",
+      "itemIds": [
+        "parapro-b4-mathematics-006",
+        "parapro-b4-mathematics-007",
+        "parapro-b4-mathematics-008",
+        "parapro-b4-mathematics-011",
+        "parapro-b4-mathematics-012",
+        "parapro-b4-mathematics-023",
+        "parapro-b4-mathematics-024",
+        "parapro-b4-mathematics-025",
+        "parapro-b4-mathematics-033",
+        "parapro-b5-mathematics-001"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Numbers, Fractions, Decimals, and Percents\" and the \"Foundational Math Computation & Classroom Math Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Mathematics Computation & Word-Problem Support Pathway\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Correcting Discount Subtraction and Percent-Change Base Errors\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Numbers, Fractions, Decimals, and Percents\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Coach Student Independence with Graduated Scaffolds Instead of Rescuing\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-06",
+      "title": "Ratios, Proportions, Expressions, and Equations guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Ratios, Proportions, Expressions, and Equations\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-06",
+      "itemIds": [
+        "parapro-b5-mathematics-025",
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-005",
+        "parapro-mathematics-skills-008",
+        "parapro-mathematics-skills-011",
+        "parapro-mathematics-skills-014",
+        "parapro-mathematics-skills-017",
+        "parapro-mathematics-skills-020",
+        "parapro-mathematics-skills-023",
+        "parapro-mathematics-skills-026"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Ratios, Proportions, Expressions, and Equations\" and the \"Foundational Math Computation & Classroom Math Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Ratios, Expressions & Equation-Balance Support Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using Balance Models and Substitution Checks for Linear Equations\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Ratios, Proportions, Expressions, and Equations\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Stay Inside Teacher-Directed Paraprofessional Scope and Reporting Roles\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-07",
+      "title": "Geometry and Measurement guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Geometry and Measurement\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-07",
+      "itemIds": [
+        "parapro-mathematics-skills-015",
+        "parapro-mathematics-skills-018",
+        "parapro-mathematics-skills-021",
+        "parapro-mathematics-skills-024",
+        "parapro-mathematics-skills-027",
+        "parapro-mathematics-skills-030",
+        "parapro-mathematics-skills-033",
+        "parapro-mathematics-skills-036",
+        "parapro-mathematics-skills-039",
+        "parapro-mathematics-skills-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Geometry and Measurement\" and the \"Foundational Math Computation & Classroom Math Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Geometry Measurement, Coordinates & Unit-Conversion Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Scaffolding Straight-Angle Sums and Ordered-Pair Coordinate Plots\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Geometry and Measurement\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Ground Every ParaPro Reading Answer in Explicit Text and Table Evidence\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-08",
+      "title": "Data, Probability, and Supporting Mathematics guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Data, Probability, and Supporting Mathematics\" (Mathematics) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-08",
+      "itemIds": [
+        "parapro-mathematics-application-006",
+        "parapro-mathematics-application-007",
+        "parapro-mathematics-application-008",
+        "parapro-mathematics-application-009",
+        "parapro-mathematics-application-010",
+        "parapro-mathematics-application-011",
+        "parapro-mathematics-application-012",
+        "parapro-mathematics-application-013",
+        "parapro-mathematics-application-014",
+        "parapro-mathematics-application-015"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Data, Probability, and Supporting Mathematics\" and the \"Foundational Math Computation & Classroom Math Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Assisting Students with Visual Math Representations & Data Graphs\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Addressing the Gambler's Fallacy in a Hands-On Coin Probability Lab\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Data, Probability, and Supporting Mathematics\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Master No-Calculator Fractions, Decimals, and Percent Bases for ParaPro\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-09",
+      "title": "Grammar, Usage, and Mechanics guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Grammar, Usage, and Mechanics\" (Writing) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-09",
+      "itemIds": [
+        "parapro-b5-writing-013",
+        "parapro-b5-writing-014",
+        "parapro-b5-writing-015",
+        "parapro-b5-writing-016",
+        "parapro-b5-writing-017",
+        "parapro-b5-writing-018",
+        "parapro-b5-writing-019",
+        "parapro-b5-writing-020",
+        "parapro-writing-skills-001",
+        "parapro-writing-skills-004"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Grammar, Usage, and Mechanics\" and the \"Grammar, Editing, Writing Process & Classroom Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Grammar, Usage & Mechanics Verification Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Using Targeted Questions to Coach Modifier, Usage, and Parallel Edits\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Grammar, Usage, and Mechanics\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Enforce Order of Operations, Balanced Equations, and Perimeter vs. Area\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-10",
+      "title": "Sentence Revision and Clarity guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Sentence Revision and Clarity\" (Writing) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-10",
+      "itemIds": [
+        "parapro-writing-skills-041",
+        "parapro-writing-skills-044",
+        "parapro-b3-writing-010",
+        "parapro-b3-writing-012",
+        "parapro-b3-writing-013",
+        "parapro-b3-writing-014",
+        "parapro-b3-writing-015",
+        "parapro-b3-writing-016",
+        "parapro-b4-writing-015",
+        "parapro-b4-writing-022"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Sentence Revision and Clarity\" and the \"Grammar, Editing, Writing Process & Classroom Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Writing Mechanics, Sentence Editing & Paragraph Organization Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Coaching Logical Transitions and Consistent Verb Tense in Revision\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Sentence Revision and Clarity\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Eliminate Homophone, Apostrophe, Agreement, and Clause-Join Errors\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-11",
+      "title": "Organization, Argument, and Evidence guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Organization, Argument, and Evidence\" (Writing) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-11",
+      "itemIds": [
+        "parapro-writing-skills-024",
+        "parapro-writing-skills-027",
+        "parapro-writing-skills-030",
+        "parapro-writing-skills-033",
+        "parapro-writing-skills-036",
+        "parapro-writing-skills-039",
+        "parapro-writing-skills-042",
+        "parapro-b3-writing-019",
+        "parapro-b3-writing-020",
+        "parapro-b3-writing-021"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Organization, Argument, and Evidence\" and the \"Grammar, Editing, Writing Process & Classroom Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Paragraph Coherence, Evidence & Document-Revision Flow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Teaching Genuine Paraphrasing and Attribution During Student Research\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Organization, Argument, and Evidence\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Coach Student Independence with Graduated Scaffolds Instead of Rescuing\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-ch-12",
+      "title": "Supporting Writing in the Classroom guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Supporting Writing in the Classroom\" (Writing) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "parapro-ch-12",
+      "itemIds": [
+        "parapro-b3-writing-023",
+        "parapro-b3-writing-024",
+        "parapro-b3-writing-025",
+        "parapro-b3-writing-026",
+        "parapro-b3-writing-027",
+        "parapro-b3-writing-028",
+        "parapro-b3-writing-029",
+        "parapro-b3-writing-030",
+        "parapro-b3-writing-031",
+        "parapro-b3-writing-032"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Supporting Writing in the Classroom\" and the \"Grammar, Editing, Writing Process & Classroom Support\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Paraprofessional Instructional Support & Professional Role Boundaries\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Supporting Audience-Aware Writing and Documented 504 Accommodations\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Supporting Writing in the Classroom\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Stay Inside Teacher-Directed Paraprofessional Scope and Reporting Roles\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-trap-repair-sprint",
+      "title": "ParaPro misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "parapro-reading-skills-001",
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-001",
+        "parapro-writing-skills-001",
+        "parapro-reading-skills-002",
+        "parapro-mathematics-skills-003",
+        "parapro-writing-skills-002",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-008",
+        "parapro-reading-skills-003",
+        "parapro-mathematics-skills-005",
+        "parapro-writing-skills-003"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Ground Every ParaPro Reading Answer in Explicit Text and Table Evidence\", \"Master No-Calculator Fractions, Decimals, and Percent Bases for ParaPro\", \"Enforce Order of Operations, Balanced Equations, and Perimeter vs. Area\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-session-mixed-capstone",
+      "title": "ParaPro mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "parapro-reading-skills-004",
+        "parapro-mathematics-skills-004",
+        "parapro-writing-skills-004",
+        "parapro-reading-skills-015",
+        "parapro-mathematics-skills-015",
+        "parapro-writing-skills-015",
+        "parapro-reading-application-006",
+        "parapro-mathematics-application-006",
+        "parapro-writing-application-006",
+        "parapro-reading-skills-026",
+        "parapro-mathematics-skills-026",
+        "parapro-writing-skills-026",
+        "parapro-reading-skills-037",
+        "parapro-mathematics-skills-037",
+        "parapro-writing-skills-037"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied instructional-support workshops, outline a response to \"Guiding main idea, context vocabulary, and text-based inference in 5th grade\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "parapro-spaced-ch-01",
+      "topicId": "parapro-ch-01",
+      "topicLabel": "1. Main Ideas, Details, and Evidence",
+      "unitId": "reading",
+      "chapterId": "parapro-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Main Ideas, Details, and Evidence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-02",
+      "topicId": "parapro-ch-02",
+      "topicLabel": "2. Inference and Vocabulary in Context",
+      "unitId": "reading",
+      "chapterId": "parapro-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Inference and Vocabulary in Context\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-03",
+      "topicId": "parapro-ch-03",
+      "topicLabel": "3. Text Structure, Features, and Sources",
+      "unitId": "reading",
+      "chapterId": "parapro-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Text Structure, Features, and Sources\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-04",
+      "topicId": "parapro-ch-04",
+      "topicLabel": "4. Supporting Reading in the Classroom",
+      "unitId": "reading",
+      "chapterId": "parapro-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Supporting Reading in the Classroom\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-05",
+      "topicId": "parapro-ch-05",
+      "topicLabel": "5. Numbers, Fractions, Decimals, and Percents",
+      "unitId": "mathematics",
+      "chapterId": "parapro-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Numbers, Fractions, Decimals, and Percents\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-06",
+      "topicId": "parapro-ch-06",
+      "topicLabel": "6. Ratios, Proportions, Expressions, and Equations",
+      "unitId": "mathematics",
+      "chapterId": "parapro-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Ratios, Proportions, Expressions, and Equations\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-07",
+      "topicId": "parapro-ch-07",
+      "topicLabel": "7. Geometry and Measurement",
+      "unitId": "mathematics",
+      "chapterId": "parapro-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Geometry and Measurement\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-08",
+      "topicId": "parapro-ch-08",
+      "topicLabel": "8. Data, Probability, and Supporting Mathematics",
+      "unitId": "mathematics",
+      "chapterId": "parapro-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Data, Probability, and Supporting Mathematics\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-09",
+      "topicId": "parapro-ch-09",
+      "topicLabel": "9. Grammar, Usage, and Mechanics",
+      "unitId": "writing",
+      "chapterId": "parapro-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Grammar, Usage, and Mechanics\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-10",
+      "topicId": "parapro-ch-10",
+      "topicLabel": "10. Sentence Revision and Clarity",
+      "unitId": "writing",
+      "chapterId": "parapro-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Sentence Revision and Clarity\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-11",
+      "topicId": "parapro-ch-11",
+      "topicLabel": "11. Organization, Argument, and Evidence",
+      "unitId": "writing",
+      "chapterId": "parapro-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Organization, Argument, and Evidence\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-spaced-ch-12",
+      "topicId": "parapro-ch-12",
+      "topicLabel": "12. Supporting Writing in the Classroom",
+      "unitId": "writing",
+      "chapterId": "parapro-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Supporting Writing in the Classroom\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "parapro-source-01",
+      "title": "ParaPro Assessment (1755) - Official Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://www.ets.org/pdfs/parapro/1755.pdf",
+      "credibility": "ETS owns and administers the ParaPro Assessment, making this the primary source for its published blueprint and official samples. AlloFlow practice items are independently authored; they are not ETS questions and are not endorsed by ETS.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "parapro-source-02",
+      "title": "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published",
+      "credibility": "The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and it states the supporting-evidence level for each recommendation; users should retain those recommendation-specific ratings when applying the guidance.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "parapro-source-03",
+      "title": "Prealgebra 2e",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/details/books/prealgebra-2e/",
+      "credibility": "OpenStax is a nonprofit educational initiative at Rice University. Its textbooks use expert authorship, faculty review, and a documented errata process, making this a credible instructional reference rather than an assessment blueprint.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "parapro-source-04",
+      "title": "Handbook - Writing Guide with Handbook",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/books/writing-guide/pages/handbook",
+      "credibility": "OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed handbook provides transparent instructional guidance and examples, with corrections supported through OpenStax editorial and errata processes.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "parapro-source-05",
+      "title": "16.5 Writing Process: Thinking Critically About Text",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/books/writing-guide/pages/16-5-writing-process-thinking-critically-about-text",
+      "credibility": "OpenStax is a nonprofit educational initiative at Rice University. This openly licensed, faculty-reviewed section offers transparent writing-process instruction and examples, while its textbook status should be distinguished from empirical evidence or an official assessment specification.",
+      "sourceType": "evidence-reference",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "parapro-unit-review-01",
+      "unitId": "reading",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Main Ideas, Details, and Evidence",
+      "chapterId": "parapro-ch-01",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-01-section-1",
+        "parapro-ch-01-section-2",
+        "parapro-ch-01-section-3",
+        "parapro-ch-01-section-4"
+      ],
+      "itemIds": [
+        "parapro-reading-skills-001",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-007",
+        "parapro-reading-skills-010",
+        "parapro-reading-skills-013",
+        "parapro-reading-skills-016",
+        "parapro-reading-skills-019",
+        "parapro-reading-skills-022",
+        "parapro-reading-skills-025",
+        "parapro-reading-skills-028",
+        "parapro-reading-skills-031",
+        "parapro-reading-skills-034",
+        "parapro-reading-skills-037",
+        "parapro-reading-skills-040",
+        "parapro-reading-skills-043",
+        "parapro-reading-skills-046",
+        "parapro-b3-reading-001",
+        "parapro-b3-reading-002",
+        "parapro-b3-reading-007",
+        "parapro-b3-reading-010",
+        "parapro-b3-reading-013",
+        "parapro-b3-reading-017",
+        "parapro-b3-reading-019",
+        "parapro-b4-reading-001",
+        "parapro-b4-reading-002",
+        "parapro-b4-reading-007",
+        "parapro-b4-reading-010",
+        "parapro-b4-reading-011",
+        "parapro-b5-reading-001",
+        "parapro-b5-reading-002",
+        "parapro-b5-reading-007",
+        "parapro-b5-reading-010",
+        "parapro-b5-reading-011",
+        "parapro-b5-reading-013",
+        "parapro-b5-reading-017",
+        "parapro-b5-reading-018",
+        "parapro-b5-reading-022"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-reading-skills-001",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-007",
+        "parapro-reading-skills-010",
+        "parapro-reading-skills-013",
+        "parapro-reading-skills-016",
+        "parapro-reading-skills-019",
+        "parapro-reading-skills-022",
+        "parapro-reading-skills-025",
+        "parapro-reading-skills-028",
+        "parapro-reading-skills-031",
+        "parapro-reading-skills-034"
+      ],
+      "purpose": "Consolidate \"Main Ideas, Details, and Evidence\" (Reading) across 4 lessons and 37 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-02",
+      "unitId": "reading",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Inference and Vocabulary in Context",
+      "chapterId": "parapro-ch-02",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-02-section-1",
+        "parapro-ch-02-section-2",
+        "parapro-ch-02-section-3",
+        "parapro-ch-02-section-4"
+      ],
+      "itemIds": [
+        "parapro-reading-skills-002",
+        "parapro-reading-skills-005",
+        "parapro-reading-skills-008",
+        "parapro-reading-skills-011",
+        "parapro-reading-skills-014",
+        "parapro-reading-skills-017",
+        "parapro-reading-skills-020",
+        "parapro-reading-skills-023",
+        "parapro-reading-skills-026",
+        "parapro-reading-skills-029",
+        "parapro-reading-skills-032",
+        "parapro-reading-skills-035",
+        "parapro-reading-skills-038",
+        "parapro-reading-skills-041",
+        "parapro-reading-skills-044",
+        "parapro-b3-reading-003",
+        "parapro-b3-reading-004",
+        "parapro-b3-reading-008",
+        "parapro-b3-reading-009",
+        "parapro-b3-reading-014",
+        "parapro-b3-reading-015",
+        "parapro-b3-reading-020",
+        "parapro-b3-reading-021",
+        "parapro-b4-reading-003",
+        "parapro-b4-reading-004",
+        "parapro-b4-reading-008",
+        "parapro-b4-reading-009",
+        "parapro-b4-reading-015",
+        "parapro-b4-reading-016",
+        "parapro-b4-reading-017",
+        "parapro-b4-reading-018",
+        "parapro-b4-reading-020",
+        "parapro-b4-reading-021",
+        "parapro-b4-reading-022",
+        "parapro-b5-reading-003",
+        "parapro-b5-reading-004",
+        "parapro-b5-reading-008",
+        "parapro-b5-reading-009",
+        "parapro-b5-reading-015",
+        "parapro-b5-reading-016",
+        "parapro-b5-reading-020"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-reading-skills-002",
+        "parapro-reading-skills-005",
+        "parapro-reading-skills-008",
+        "parapro-reading-skills-011",
+        "parapro-reading-skills-014",
+        "parapro-reading-skills-017",
+        "parapro-reading-skills-020",
+        "parapro-reading-skills-023",
+        "parapro-reading-skills-026",
+        "parapro-reading-skills-029",
+        "parapro-reading-skills-032",
+        "parapro-reading-skills-035"
+      ],
+      "purpose": "Consolidate \"Inference and Vocabulary in Context\" (Reading) across 4 lessons and 41 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-03",
+      "unitId": "reading",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Text Structure, Features, and Sources",
+      "chapterId": "parapro-ch-03",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-03-section-1",
+        "parapro-ch-03-section-2",
+        "parapro-ch-03-section-3",
+        "parapro-ch-03-section-4"
+      ],
+      "itemIds": [
+        "parapro-reading-skills-003",
+        "parapro-reading-skills-006",
+        "parapro-reading-skills-009",
+        "parapro-reading-skills-012",
+        "parapro-reading-skills-015",
+        "parapro-reading-skills-018",
+        "parapro-reading-skills-021",
+        "parapro-reading-skills-024",
+        "parapro-reading-skills-027",
+        "parapro-reading-skills-030",
+        "parapro-reading-skills-033",
+        "parapro-reading-skills-036",
+        "parapro-reading-skills-039",
+        "parapro-reading-skills-042",
+        "parapro-reading-skills-045",
+        "parapro-b3-reading-005",
+        "parapro-b3-reading-006",
+        "parapro-b3-reading-011",
+        "parapro-b3-reading-012",
+        "parapro-b3-reading-016",
+        "parapro-b3-reading-018",
+        "parapro-b3-reading-022",
+        "parapro-b3-reading-023",
+        "parapro-b4-reading-005",
+        "parapro-b4-reading-006",
+        "parapro-b4-reading-012",
+        "parapro-b4-reading-013",
+        "parapro-b4-reading-014",
+        "parapro-b4-reading-019",
+        "parapro-b4-reading-023",
+        "parapro-b5-reading-005",
+        "parapro-b5-reading-006",
+        "parapro-b5-reading-012",
+        "parapro-b5-reading-014",
+        "parapro-b5-reading-019",
+        "parapro-b5-reading-021",
+        "parapro-b5-reading-023"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-reading-skills-003",
+        "parapro-reading-skills-006",
+        "parapro-reading-skills-009",
+        "parapro-reading-skills-012",
+        "parapro-reading-skills-015",
+        "parapro-reading-skills-018",
+        "parapro-reading-skills-021",
+        "parapro-reading-skills-024",
+        "parapro-reading-skills-027",
+        "parapro-reading-skills-030",
+        "parapro-reading-skills-033",
+        "parapro-reading-skills-036"
+      ],
+      "purpose": "Consolidate \"Text Structure, Features, and Sources\" (Reading) across 4 lessons and 37 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-04",
+      "unitId": "reading",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Supporting Reading in the Classroom",
+      "chapterId": "parapro-ch-04",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-04-section-1",
+        "parapro-ch-04-section-2",
+        "parapro-ch-04-section-3",
+        "parapro-ch-04-section-4"
+      ],
+      "itemIds": [
+        "parapro-reading-application-001",
+        "parapro-reading-application-002",
+        "parapro-reading-application-003",
+        "parapro-reading-application-004",
+        "parapro-reading-application-005",
+        "parapro-reading-application-006",
+        "parapro-reading-application-007",
+        "parapro-reading-application-008",
+        "parapro-reading-application-009",
+        "parapro-reading-application-010",
+        "parapro-reading-application-011",
+        "parapro-reading-application-012",
+        "parapro-reading-application-013",
+        "parapro-reading-application-014",
+        "parapro-reading-application-015",
+        "parapro-reading-application-016",
+        "parapro-reading-application-017",
+        "parapro-reading-application-018",
+        "parapro-reading-application-019",
+        "parapro-reading-application-020",
+        "parapro-reading-application-021",
+        "parapro-reading-application-022",
+        "parapro-b3-reading-024",
+        "parapro-b3-reading-025",
+        "parapro-b3-reading-026",
+        "parapro-b3-reading-027",
+        "parapro-b3-reading-028",
+        "parapro-b3-reading-029",
+        "parapro-b3-reading-030",
+        "parapro-b3-reading-031",
+        "parapro-b3-reading-032",
+        "parapro-b3-reading-033",
+        "parapro-b3-reading-034",
+        "parapro-b4-reading-024",
+        "parapro-b4-reading-025",
+        "parapro-b4-reading-026",
+        "parapro-b4-reading-027",
+        "parapro-b4-reading-028",
+        "parapro-b4-reading-029",
+        "parapro-b4-reading-030",
+        "parapro-b4-reading-031",
+        "parapro-b4-reading-032",
+        "parapro-b4-reading-033",
+        "parapro-b4-reading-034",
+        "parapro-b5-reading-024"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-reading-application-001",
+        "parapro-reading-application-002",
+        "parapro-reading-application-003",
+        "parapro-reading-application-004",
+        "parapro-reading-application-005",
+        "parapro-reading-application-006",
+        "parapro-reading-application-007",
+        "parapro-reading-application-008",
+        "parapro-reading-application-009",
+        "parapro-reading-application-010",
+        "parapro-reading-application-011",
+        "parapro-reading-application-012"
+      ],
+      "purpose": "Consolidate \"Supporting Reading in the Classroom\" (Reading) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-05",
+      "unitId": "mathematics",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Numbers, Fractions, Decimals, and Percents",
+      "chapterId": "parapro-ch-05",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-05-section-1",
+        "parapro-ch-05-section-2",
+        "parapro-ch-05-section-3",
+        "parapro-ch-05-section-4"
+      ],
+      "itemIds": [
+        "parapro-mathematics-skills-001",
+        "parapro-mathematics-skills-004",
+        "parapro-mathematics-skills-007",
+        "parapro-mathematics-skills-010",
+        "parapro-mathematics-skills-013",
+        "parapro-mathematics-skills-016",
+        "parapro-mathematics-skills-019",
+        "parapro-mathematics-skills-022",
+        "parapro-mathematics-skills-025",
+        "parapro-mathematics-skills-028",
+        "parapro-mathematics-skills-031",
+        "parapro-mathematics-skills-034",
+        "parapro-mathematics-skills-037",
+        "parapro-mathematics-skills-040",
+        "parapro-mathematics-skills-043",
+        "parapro-b3-mathematics-001",
+        "parapro-b3-mathematics-002",
+        "parapro-b3-mathematics-003",
+        "parapro-b3-mathematics-004",
+        "parapro-b3-mathematics-005",
+        "parapro-b3-mathematics-006",
+        "parapro-b3-mathematics-007",
+        "parapro-b3-mathematics-023",
+        "parapro-b3-mathematics-024",
+        "parapro-b4-mathematics-001",
+        "parapro-b4-mathematics-002",
+        "parapro-b4-mathematics-003",
+        "parapro-b4-mathematics-004",
+        "parapro-b4-mathematics-006",
+        "parapro-b4-mathematics-007",
+        "parapro-b4-mathematics-008",
+        "parapro-b4-mathematics-011",
+        "parapro-b4-mathematics-012",
+        "parapro-b4-mathematics-023",
+        "parapro-b4-mathematics-024",
+        "parapro-b4-mathematics-025",
+        "parapro-b4-mathematics-033",
+        "parapro-b5-mathematics-001",
+        "parapro-b5-mathematics-002",
+        "parapro-b5-mathematics-003",
+        "parapro-b5-mathematics-004",
+        "parapro-b5-mathematics-005",
+        "parapro-b5-mathematics-008",
+        "parapro-b5-mathematics-023",
+        "parapro-b5-mathematics-024"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-mathematics-skills-001",
+        "parapro-mathematics-skills-004",
+        "parapro-mathematics-skills-007",
+        "parapro-mathematics-skills-010",
+        "parapro-mathematics-skills-013",
+        "parapro-mathematics-skills-016",
+        "parapro-mathematics-skills-019",
+        "parapro-mathematics-skills-022",
+        "parapro-mathematics-skills-025",
+        "parapro-mathematics-skills-028",
+        "parapro-mathematics-skills-031",
+        "parapro-mathematics-skills-034"
+      ],
+      "purpose": "Consolidate \"Numbers, Fractions, Decimals, and Percents\" (Mathematics) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-06",
+      "unitId": "mathematics",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Ratios, Proportions, Expressions, and Equations",
+      "chapterId": "parapro-ch-06",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-06-section-1",
+        "parapro-ch-06-section-2",
+        "parapro-ch-06-section-3",
+        "parapro-ch-06-section-4"
+      ],
+      "itemIds": [
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-005",
+        "parapro-mathematics-skills-008",
+        "parapro-mathematics-skills-011",
+        "parapro-mathematics-skills-014",
+        "parapro-mathematics-skills-017",
+        "parapro-mathematics-skills-020",
+        "parapro-mathematics-skills-023",
+        "parapro-mathematics-skills-026",
+        "parapro-mathematics-skills-029",
+        "parapro-mathematics-skills-032",
+        "parapro-mathematics-skills-035",
+        "parapro-mathematics-skills-038",
+        "parapro-mathematics-skills-041",
+        "parapro-mathematics-skills-044",
+        "parapro-b3-mathematics-008",
+        "parapro-b3-mathematics-009",
+        "parapro-b3-mathematics-010",
+        "parapro-b3-mathematics-011",
+        "parapro-b3-mathematics-012",
+        "parapro-b3-mathematics-013",
+        "parapro-b3-mathematics-025",
+        "parapro-b3-mathematics-026",
+        "parapro-b4-mathematics-005",
+        "parapro-b4-mathematics-009",
+        "parapro-b4-mathematics-010",
+        "parapro-b4-mathematics-013",
+        "parapro-b4-mathematics-014",
+        "parapro-b4-mathematics-026",
+        "parapro-b5-mathematics-006",
+        "parapro-b5-mathematics-007",
+        "parapro-b5-mathematics-009",
+        "parapro-b5-mathematics-010",
+        "parapro-b5-mathematics-011",
+        "parapro-b5-mathematics-012",
+        "parapro-b5-mathematics-025"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-005",
+        "parapro-mathematics-skills-008",
+        "parapro-mathematics-skills-011",
+        "parapro-mathematics-skills-014",
+        "parapro-mathematics-skills-017",
+        "parapro-mathematics-skills-020",
+        "parapro-mathematics-skills-023",
+        "parapro-mathematics-skills-026",
+        "parapro-mathematics-skills-029",
+        "parapro-mathematics-skills-032",
+        "parapro-mathematics-skills-035"
+      ],
+      "purpose": "Consolidate \"Ratios, Proportions, Expressions, and Equations\" (Mathematics) across 4 lessons and 36 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-07",
+      "unitId": "mathematics",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Geometry and Measurement",
+      "chapterId": "parapro-ch-07",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-07-section-1",
+        "parapro-ch-07-section-2",
+        "parapro-ch-07-section-3",
+        "parapro-ch-07-section-4"
+      ],
+      "itemIds": [
+        "parapro-mathematics-skills-003",
+        "parapro-mathematics-skills-006",
+        "parapro-mathematics-skills-009",
+        "parapro-mathematics-skills-012",
+        "parapro-mathematics-skills-015",
+        "parapro-mathematics-skills-018",
+        "parapro-mathematics-skills-021",
+        "parapro-mathematics-skills-024",
+        "parapro-mathematics-skills-027",
+        "parapro-mathematics-skills-030",
+        "parapro-mathematics-skills-033",
+        "parapro-mathematics-skills-036",
+        "parapro-mathematics-skills-039",
+        "parapro-mathematics-skills-042",
+        "parapro-b3-mathematics-014",
+        "parapro-b3-mathematics-015",
+        "parapro-b3-mathematics-016",
+        "parapro-b3-mathematics-017",
+        "parapro-b3-mathematics-018",
+        "parapro-b3-mathematics-027",
+        "parapro-b3-mathematics-028",
+        "parapro-b3-mathematics-029",
+        "parapro-b4-mathematics-015",
+        "parapro-b4-mathematics-016",
+        "parapro-b4-mathematics-017",
+        "parapro-b4-mathematics-018",
+        "parapro-b4-mathematics-019",
+        "parapro-b4-mathematics-027",
+        "parapro-b4-mathematics-028",
+        "parapro-b4-mathematics-029",
+        "parapro-b5-mathematics-013",
+        "parapro-b5-mathematics-014",
+        "parapro-b5-mathematics-015",
+        "parapro-b5-mathematics-016",
+        "parapro-b5-mathematics-017",
+        "parapro-b5-mathematics-027",
+        "parapro-b5-mathematics-028",
+        "parapro-b5-mathematics-029"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-mathematics-skills-003",
+        "parapro-mathematics-skills-006",
+        "parapro-mathematics-skills-009",
+        "parapro-mathematics-skills-012",
+        "parapro-mathematics-skills-015",
+        "parapro-mathematics-skills-018",
+        "parapro-mathematics-skills-021",
+        "parapro-mathematics-skills-024",
+        "parapro-mathematics-skills-027",
+        "parapro-mathematics-skills-030",
+        "parapro-mathematics-skills-033",
+        "parapro-mathematics-skills-036"
+      ],
+      "purpose": "Consolidate \"Geometry and Measurement\" (Mathematics) across 4 lessons and 38 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-08",
+      "unitId": "mathematics",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Data, Probability, and Supporting Mathematics",
+      "chapterId": "parapro-ch-08",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-08-section-1",
+        "parapro-ch-08-section-2",
+        "parapro-ch-08-section-3",
+        "parapro-ch-08-section-4"
+      ],
+      "itemIds": [
+        "parapro-mathematics-application-001",
+        "parapro-mathematics-application-002",
+        "parapro-mathematics-application-003",
+        "parapro-mathematics-application-004",
+        "parapro-mathematics-application-005",
+        "parapro-mathematics-application-006",
+        "parapro-mathematics-application-007",
+        "parapro-mathematics-application-008",
+        "parapro-mathematics-application-009",
+        "parapro-mathematics-application-010",
+        "parapro-mathematics-application-011",
+        "parapro-mathematics-application-012",
+        "parapro-mathematics-application-013",
+        "parapro-mathematics-application-014",
+        "parapro-mathematics-application-015",
+        "parapro-mathematics-application-016",
+        "parapro-mathematics-application-017",
+        "parapro-mathematics-application-018",
+        "parapro-mathematics-application-019",
+        "parapro-mathematics-application-020",
+        "parapro-mathematics-application-021",
+        "parapro-mathematics-application-022",
+        "parapro-b3-mathematics-019",
+        "parapro-b3-mathematics-020",
+        "parapro-b3-mathematics-021",
+        "parapro-b3-mathematics-022",
+        "parapro-b3-mathematics-030",
+        "parapro-b3-mathematics-031",
+        "parapro-b3-mathematics-032",
+        "parapro-b3-mathematics-033",
+        "parapro-b4-mathematics-020",
+        "parapro-b4-mathematics-021",
+        "parapro-b4-mathematics-022",
+        "parapro-b4-mathematics-030",
+        "parapro-b4-mathematics-031",
+        "parapro-b4-mathematics-032",
+        "parapro-b5-mathematics-018",
+        "parapro-b5-mathematics-019",
+        "parapro-b5-mathematics-020",
+        "parapro-b5-mathematics-021",
+        "parapro-b5-mathematics-022",
+        "parapro-b5-mathematics-030",
+        "parapro-b5-mathematics-031",
+        "parapro-b5-mathematics-032"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-mathematics-application-001",
+        "parapro-mathematics-application-002",
+        "parapro-mathematics-application-003",
+        "parapro-mathematics-application-004",
+        "parapro-mathematics-application-005",
+        "parapro-mathematics-application-006",
+        "parapro-mathematics-application-007",
+        "parapro-mathematics-application-008",
+        "parapro-mathematics-application-009",
+        "parapro-mathematics-application-010",
+        "parapro-mathematics-application-011",
+        "parapro-mathematics-application-012"
+      ],
+      "purpose": "Consolidate \"Data, Probability, and Supporting Mathematics\" (Mathematics) across 4 lessons and 44 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-09",
+      "unitId": "writing",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Grammar, Usage, and Mechanics",
+      "chapterId": "parapro-ch-09",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-09-section-1",
+        "parapro-ch-09-section-2",
+        "parapro-ch-09-section-3",
+        "parapro-ch-09-section-4"
+      ],
+      "itemIds": [
+        "parapro-writing-skills-001",
+        "parapro-writing-skills-004",
+        "parapro-writing-skills-007",
+        "parapro-writing-skills-010",
+        "parapro-writing-skills-013",
+        "parapro-writing-skills-016",
+        "parapro-writing-skills-019",
+        "parapro-writing-skills-022",
+        "parapro-writing-skills-025",
+        "parapro-writing-skills-028",
+        "parapro-writing-skills-031",
+        "parapro-writing-skills-034",
+        "parapro-writing-skills-037",
+        "parapro-writing-skills-040",
+        "parapro-writing-skills-043",
+        "parapro-b3-writing-001",
+        "parapro-b3-writing-002",
+        "parapro-b3-writing-003",
+        "parapro-b3-writing-004",
+        "parapro-b3-writing-005",
+        "parapro-b3-writing-006",
+        "parapro-b3-writing-007",
+        "parapro-b3-writing-008",
+        "parapro-b3-writing-009",
+        "parapro-b3-writing-011",
+        "parapro-b3-writing-017",
+        "parapro-b3-writing-018",
+        "parapro-b4-writing-001",
+        "parapro-b4-writing-002",
+        "parapro-b4-writing-003",
+        "parapro-b4-writing-004",
+        "parapro-b4-writing-005",
+        "parapro-b4-writing-006",
+        "parapro-b4-writing-007",
+        "parapro-b4-writing-008",
+        "parapro-b4-writing-009",
+        "parapro-b4-writing-010",
+        "parapro-b4-writing-011",
+        "parapro-b4-writing-012",
+        "parapro-b4-writing-013",
+        "parapro-b4-writing-014",
+        "parapro-b4-writing-016",
+        "parapro-b4-writing-017",
+        "parapro-b4-writing-018",
+        "parapro-b5-writing-001"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-writing-skills-001",
+        "parapro-writing-skills-004",
+        "parapro-writing-skills-007",
+        "parapro-writing-skills-010",
+        "parapro-writing-skills-013",
+        "parapro-writing-skills-016",
+        "parapro-writing-skills-019",
+        "parapro-writing-skills-022",
+        "parapro-writing-skills-025",
+        "parapro-writing-skills-028",
+        "parapro-writing-skills-031",
+        "parapro-writing-skills-034"
+      ],
+      "purpose": "Consolidate \"Grammar, Usage, and Mechanics\" (Writing) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-10",
+      "unitId": "writing",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Sentence Revision and Clarity",
+      "chapterId": "parapro-ch-10",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-10-section-1",
+        "parapro-ch-10-section-2",
+        "parapro-ch-10-section-3",
+        "parapro-ch-10-section-4"
+      ],
+      "itemIds": [
+        "parapro-writing-skills-002",
+        "parapro-writing-skills-005",
+        "parapro-writing-skills-008",
+        "parapro-writing-skills-011",
+        "parapro-writing-skills-014",
+        "parapro-writing-skills-017",
+        "parapro-writing-skills-020",
+        "parapro-writing-skills-023",
+        "parapro-writing-skills-026",
+        "parapro-writing-skills-029",
+        "parapro-writing-skills-032",
+        "parapro-writing-skills-035",
+        "parapro-writing-skills-038",
+        "parapro-writing-skills-041",
+        "parapro-writing-skills-044",
+        "parapro-b3-writing-010",
+        "parapro-b3-writing-012",
+        "parapro-b3-writing-013",
+        "parapro-b3-writing-014",
+        "parapro-b3-writing-015",
+        "parapro-b3-writing-016",
+        "parapro-b4-writing-015",
+        "parapro-b4-writing-022",
+        "parapro-b5-writing-021",
+        "parapro-b5-writing-022"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-writing-skills-002",
+        "parapro-writing-skills-005",
+        "parapro-writing-skills-008",
+        "parapro-writing-skills-011",
+        "parapro-writing-skills-014",
+        "parapro-writing-skills-017",
+        "parapro-writing-skills-020",
+        "parapro-writing-skills-023",
+        "parapro-writing-skills-026",
+        "parapro-writing-skills-029",
+        "parapro-writing-skills-032",
+        "parapro-writing-skills-035"
+      ],
+      "purpose": "Consolidate \"Sentence Revision and Clarity\" (Writing) across 4 lessons and 25 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-11",
+      "unitId": "writing",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Organization, Argument, and Evidence",
+      "chapterId": "parapro-ch-11",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-11-section-1",
+        "parapro-ch-11-section-2",
+        "parapro-ch-11-section-3",
+        "parapro-ch-11-section-4"
+      ],
+      "itemIds": [
+        "parapro-writing-skills-003",
+        "parapro-writing-skills-006",
+        "parapro-writing-skills-009",
+        "parapro-writing-skills-012",
+        "parapro-writing-skills-015",
+        "parapro-writing-skills-018",
+        "parapro-writing-skills-021",
+        "parapro-writing-skills-024",
+        "parapro-writing-skills-027",
+        "parapro-writing-skills-030",
+        "parapro-writing-skills-033",
+        "parapro-writing-skills-036",
+        "parapro-writing-skills-039",
+        "parapro-writing-skills-042",
+        "parapro-b3-writing-019",
+        "parapro-b3-writing-020",
+        "parapro-b3-writing-021",
+        "parapro-b3-writing-022",
+        "parapro-b4-writing-019",
+        "parapro-b4-writing-020",
+        "parapro-b4-writing-021"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-writing-skills-003",
+        "parapro-writing-skills-006",
+        "parapro-writing-skills-009",
+        "parapro-writing-skills-012",
+        "parapro-writing-skills-015",
+        "parapro-writing-skills-018",
+        "parapro-writing-skills-021",
+        "parapro-writing-skills-024",
+        "parapro-writing-skills-027",
+        "parapro-writing-skills-030",
+        "parapro-writing-skills-033",
+        "parapro-writing-skills-036"
+      ],
+      "purpose": "Consolidate \"Organization, Argument, and Evidence\" (Writing) across 4 lessons and 21 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-unit-review-12",
+      "unitId": "writing",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Supporting Writing in the Classroom",
+      "chapterId": "parapro-ch-12",
+      "topicDiagnosticRouteIds": [
+        "parapro-ch-12-section-1",
+        "parapro-ch-12-section-2",
+        "parapro-ch-12-section-3",
+        "parapro-ch-12-section-4"
+      ],
+      "itemIds": [
+        "parapro-writing-application-001",
+        "parapro-writing-application-002",
+        "parapro-writing-application-003",
+        "parapro-writing-application-004",
+        "parapro-writing-application-005",
+        "parapro-writing-application-006",
+        "parapro-writing-application-007",
+        "parapro-writing-application-008",
+        "parapro-writing-application-009",
+        "parapro-writing-application-010",
+        "parapro-writing-application-011",
+        "parapro-writing-application-012",
+        "parapro-writing-application-013",
+        "parapro-writing-application-014",
+        "parapro-writing-application-015",
+        "parapro-writing-application-016",
+        "parapro-writing-application-017",
+        "parapro-writing-application-018",
+        "parapro-writing-application-019",
+        "parapro-writing-application-020",
+        "parapro-writing-application-021",
+        "parapro-writing-application-022",
+        "parapro-b3-writing-023",
+        "parapro-b3-writing-024",
+        "parapro-b3-writing-025",
+        "parapro-b3-writing-026",
+        "parapro-b3-writing-027",
+        "parapro-b3-writing-028",
+        "parapro-b3-writing-029",
+        "parapro-b3-writing-030",
+        "parapro-b3-writing-031",
+        "parapro-b3-writing-032",
+        "parapro-b3-writing-033",
+        "parapro-b4-writing-023",
+        "parapro-b4-writing-024",
+        "parapro-b4-writing-025",
+        "parapro-b4-writing-026",
+        "parapro-b4-writing-027",
+        "parapro-b4-writing-028",
+        "parapro-b4-writing-029",
+        "parapro-b4-writing-030",
+        "parapro-b4-writing-031",
+        "parapro-b4-writing-032",
+        "parapro-b4-writing-033",
+        "parapro-b5-writing-023"
+      ],
+      "mixedPracticeItemIds": [
+        "parapro-writing-application-001",
+        "parapro-writing-application-002",
+        "parapro-writing-application-003",
+        "parapro-writing-application-004",
+        "parapro-writing-application-005",
+        "parapro-writing-application-006",
+        "parapro-writing-application-007",
+        "parapro-writing-application-008",
+        "parapro-writing-application-009",
+        "parapro-writing-application-010",
+        "parapro-writing-application-011",
+        "parapro-writing-application-012"
+      ],
+      "purpose": "Consolidate \"Supporting Writing in the Classroom\" (Writing) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "parapro-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all ParaPro blueprint domains.",
+      "focus": [
+        "Reading",
+        "Mathematics",
+        "Writing"
+      ],
+      "itemIds": [
+        "parapro-reading-skills-001",
+        "parapro-reading-skills-002",
+        "parapro-reading-skills-003",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-005",
+        "parapro-reading-skills-006",
+        "parapro-reading-skills-007",
+        "parapro-reading-skills-008",
+        "parapro-reading-skills-009",
+        "parapro-reading-skills-010",
+        "parapro-reading-skills-011",
+        "parapro-reading-skills-012",
+        "parapro-reading-skills-013",
+        "parapro-reading-skills-014",
+        "parapro-reading-skills-015",
+        "parapro-reading-skills-016",
+        "parapro-reading-skills-017",
+        "parapro-reading-skills-018",
+        "parapro-reading-skills-019",
+        "parapro-reading-skills-020",
+        "parapro-reading-application-001",
+        "parapro-reading-application-002",
+        "parapro-reading-application-003",
+        "parapro-reading-application-004",
+        "parapro-reading-application-005",
+        "parapro-reading-application-006",
+        "parapro-reading-application-007",
+        "parapro-reading-application-008",
+        "parapro-reading-application-009",
+        "parapro-reading-application-010",
+        "parapro-reading-skills-021",
+        "parapro-reading-skills-022",
+        "parapro-reading-skills-023",
+        "parapro-reading-application-011",
+        "parapro-reading-skills-024",
+        "parapro-reading-skills-025",
+        "parapro-reading-skills-026",
+        "parapro-reading-skills-027",
+        "parapro-reading-skills-028",
+        "parapro-reading-skills-029"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply ParaPro frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Writing",
+        "Reading",
+        "Mathematics"
+      ],
+      "itemIds": [
+        "parapro-mathematics-skills-001",
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-003",
+        "parapro-mathematics-skills-004",
+        "parapro-mathematics-skills-005",
+        "parapro-mathematics-skills-006",
+        "parapro-mathematics-skills-007",
+        "parapro-mathematics-skills-008",
+        "parapro-mathematics-skills-009",
+        "parapro-mathematics-skills-010",
+        "parapro-mathematics-skills-011",
+        "parapro-mathematics-skills-012",
+        "parapro-mathematics-skills-013",
+        "parapro-mathematics-skills-014",
+        "parapro-mathematics-skills-015",
+        "parapro-mathematics-skills-016",
+        "parapro-mathematics-skills-017",
+        "parapro-mathematics-skills-018",
+        "parapro-mathematics-skills-019",
+        "parapro-mathematics-skills-020",
+        "parapro-mathematics-application-001",
+        "parapro-mathematics-application-002",
+        "parapro-mathematics-application-003",
+        "parapro-mathematics-application-004",
+        "parapro-mathematics-application-005",
+        "parapro-mathematics-application-006",
+        "parapro-mathematics-application-007",
+        "parapro-mathematics-application-008",
+        "parapro-mathematics-application-009",
+        "parapro-mathematics-application-010",
+        "parapro-mathematics-skills-021",
+        "parapro-mathematics-skills-022",
+        "parapro-mathematics-application-011",
+        "parapro-mathematics-skills-023",
+        "parapro-mathematics-skills-024",
+        "parapro-mathematics-skills-025",
+        "parapro-mathematics-skills-026",
+        "parapro-mathematics-skills-027",
+        "parapro-mathematics-skills-028",
+        "parapro-mathematics-skills-029"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every ParaPro domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Confusing Passage Main Idea with Supporting Details or Outside Assumptions",
+        "Adding Fraction Denominators Directly and Misapplying Percent or Decimal Place Value",
+        "Breaking Equation Balance, Order of Operations, and Area vs. Perimeter Distinctions"
+      ],
+      "itemIds": [
+        "parapro-writing-skills-001",
+        "parapro-writing-skills-002",
+        "parapro-writing-skills-003",
+        "parapro-writing-skills-004",
+        "parapro-writing-skills-005",
+        "parapro-writing-skills-006",
+        "parapro-writing-skills-007",
+        "parapro-writing-skills-008",
+        "parapro-writing-skills-009",
+        "parapro-writing-skills-010",
+        "parapro-writing-skills-011",
+        "parapro-writing-skills-012",
+        "parapro-writing-skills-013",
+        "parapro-writing-skills-014",
+        "parapro-writing-skills-015",
+        "parapro-writing-skills-016",
+        "parapro-writing-skills-017",
+        "parapro-writing-skills-018",
+        "parapro-writing-skills-019",
+        "parapro-writing-skills-020",
+        "parapro-writing-application-001",
+        "parapro-writing-application-002",
+        "parapro-writing-application-003",
+        "parapro-writing-application-004",
+        "parapro-writing-application-005",
+        "parapro-writing-application-006",
+        "parapro-writing-application-007",
+        "parapro-writing-application-008",
+        "parapro-writing-application-009",
+        "parapro-writing-application-010",
+        "parapro-writing-skills-021",
+        "parapro-writing-skills-022",
+        "parapro-writing-application-011",
+        "parapro-writing-skills-023",
+        "parapro-writing-skills-024",
+        "parapro-writing-skills-025",
+        "parapro-writing-skills-026",
+        "parapro-writing-skills-027",
+        "parapro-writing-skills-028",
+        "parapro-writing-skills-029"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "parapro-form-internal-a",
+      "title": "Internal practice form A (ParaPro)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "parapro-reading-skills-001",
+        "parapro-reading-skills-002",
+        "parapro-reading-skills-003",
+        "parapro-reading-skills-004",
+        "parapro-reading-skills-005",
+        "parapro-reading-skills-006",
+        "parapro-reading-skills-007",
+        "parapro-reading-skills-008",
+        "parapro-reading-skills-009",
+        "parapro-reading-skills-010",
+        "parapro-reading-skills-011",
+        "parapro-reading-skills-012",
+        "parapro-reading-skills-013",
+        "parapro-reading-skills-014",
+        "parapro-reading-skills-015",
+        "parapro-reading-skills-016",
+        "parapro-reading-skills-017",
+        "parapro-reading-skills-018",
+        "parapro-reading-skills-019",
+        "parapro-reading-skills-020",
+        "parapro-reading-application-001",
+        "parapro-reading-application-002",
+        "parapro-reading-application-003",
+        "parapro-reading-application-004",
+        "parapro-reading-application-005",
+        "parapro-reading-application-006",
+        "parapro-reading-application-007",
+        "parapro-reading-application-008",
+        "parapro-reading-application-009",
+        "parapro-reading-application-010",
+        "parapro-reading-skills-021",
+        "parapro-reading-skills-022",
+        "parapro-reading-skills-023",
+        "parapro-reading-application-011",
+        "parapro-reading-skills-024",
+        "parapro-reading-skills-025",
+        "parapro-reading-skills-026",
+        "parapro-reading-skills-027",
+        "parapro-reading-skills-028",
+        "parapro-reading-skills-029",
+        "parapro-reading-skills-030",
+        "parapro-reading-skills-031",
+        "parapro-reading-skills-032",
+        "parapro-reading-skills-033",
+        "parapro-reading-skills-034",
+        "parapro-reading-skills-035",
+        "parapro-reading-skills-036",
+        "parapro-reading-skills-037",
+        "parapro-reading-skills-038",
+        "parapro-reading-skills-039"
+      ],
+      "topicIds": [
+        "parapro-ch-01",
+        "parapro-ch-02",
+        "parapro-ch-03",
+        "parapro-ch-04"
+      ],
+      "unitIds": [
+        "reading"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-form-internal-b",
+      "title": "Internal practice form B (ParaPro)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "parapro-mathematics-skills-001",
+        "parapro-mathematics-skills-002",
+        "parapro-mathematics-skills-003",
+        "parapro-mathematics-skills-004",
+        "parapro-mathematics-skills-005",
+        "parapro-mathematics-skills-006",
+        "parapro-mathematics-skills-007",
+        "parapro-mathematics-skills-008",
+        "parapro-mathematics-skills-009",
+        "parapro-mathematics-skills-010",
+        "parapro-mathematics-skills-011",
+        "parapro-mathematics-skills-012",
+        "parapro-mathematics-skills-013",
+        "parapro-mathematics-skills-014",
+        "parapro-mathematics-skills-015",
+        "parapro-mathematics-skills-016",
+        "parapro-mathematics-skills-017",
+        "parapro-mathematics-skills-018",
+        "parapro-mathematics-skills-019",
+        "parapro-mathematics-skills-020",
+        "parapro-mathematics-application-001",
+        "parapro-mathematics-application-002",
+        "parapro-mathematics-application-003",
+        "parapro-mathematics-application-004",
+        "parapro-mathematics-application-005",
+        "parapro-mathematics-application-006",
+        "parapro-mathematics-application-007",
+        "parapro-mathematics-application-008",
+        "parapro-mathematics-application-009",
+        "parapro-mathematics-application-010",
+        "parapro-mathematics-skills-021",
+        "parapro-mathematics-skills-022",
+        "parapro-mathematics-application-011",
+        "parapro-mathematics-skills-023",
+        "parapro-mathematics-skills-024",
+        "parapro-mathematics-skills-025",
+        "parapro-mathematics-skills-026",
+        "parapro-mathematics-skills-027",
+        "parapro-mathematics-skills-028",
+        "parapro-mathematics-skills-029",
+        "parapro-mathematics-skills-030",
+        "parapro-mathematics-skills-031",
+        "parapro-mathematics-skills-032",
+        "parapro-mathematics-skills-033",
+        "parapro-mathematics-skills-034",
+        "parapro-mathematics-skills-035",
+        "parapro-mathematics-skills-036",
+        "parapro-mathematics-skills-037",
+        "parapro-mathematics-skills-038",
+        "parapro-mathematics-skills-039"
+      ],
+      "topicIds": [
+        "parapro-ch-05",
+        "parapro-ch-06",
+        "parapro-ch-07",
+        "parapro-ch-08"
+      ],
+      "unitIds": [
+        "mathematics"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "parapro-form-internal-c",
+      "title": "Internal practice form C (ParaPro)",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "parapro-writing-skills-001",
+        "parapro-writing-skills-002",
+        "parapro-writing-skills-003",
+        "parapro-writing-skills-004",
+        "parapro-writing-skills-005",
+        "parapro-writing-skills-006",
+        "parapro-writing-skills-007",
+        "parapro-writing-skills-008",
+        "parapro-writing-skills-009",
+        "parapro-writing-skills-010",
+        "parapro-writing-skills-011",
+        "parapro-writing-skills-012",
+        "parapro-writing-skills-013",
+        "parapro-writing-skills-014",
+        "parapro-writing-skills-015",
+        "parapro-writing-skills-016",
+        "parapro-writing-skills-017",
+        "parapro-writing-skills-018",
+        "parapro-writing-skills-019",
+        "parapro-writing-skills-020",
+        "parapro-writing-application-001",
+        "parapro-writing-application-002",
+        "parapro-writing-application-003",
+        "parapro-writing-application-004",
+        "parapro-writing-application-005",
+        "parapro-writing-application-006",
+        "parapro-writing-application-007",
+        "parapro-writing-application-008",
+        "parapro-writing-application-009",
+        "parapro-writing-application-010",
+        "parapro-writing-skills-021",
+        "parapro-writing-skills-022",
+        "parapro-writing-application-011",
+        "parapro-writing-skills-023",
+        "parapro-writing-skills-024",
+        "parapro-writing-skills-025",
+        "parapro-writing-skills-026",
+        "parapro-writing-skills-027",
+        "parapro-writing-skills-028",
+        "parapro-writing-skills-029",
+        "parapro-writing-skills-030",
+        "parapro-writing-skills-031",
+        "parapro-writing-skills-032",
+        "parapro-writing-skills-033",
+        "parapro-writing-skills-034",
+        "parapro-writing-skills-035",
+        "parapro-writing-skills-036",
+        "parapro-writing-skills-037",
+        "parapro-writing-skills-038",
+        "parapro-writing-skills-039"
+      ],
+      "topicIds": [
+        "parapro-ch-09",
+        "parapro-ch-10",
+        "parapro-ch-11",
+        "parapro-ch-12"
+      ],
+      "unitIds": [
+        "writing"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

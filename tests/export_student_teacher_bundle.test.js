@@ -58,7 +58,10 @@ describe('student and teacher HTML export bundle', () => {
     expect(doc.querySelector('[data-original-index]')).toBeNull();
     expect(doc.querySelector('.alloflow-tl-check-btn')).toBeNull();
     expect(Array.from(doc.querySelectorAll('.alloflow-tl-strip')).map((node) => node.textContent)).not.toEqual(['FIRST', 'SECOND', 'THIRD']);
-    expect(doc.getElementById('alloflow-assessment-export-safety')?.textContent).toContain('.quiz-controls');
+    // Only the self-grading check buttons are hidden now (not the whole .quiz-controls bar).
+    const safetyCss = doc.getElementById('alloflow-assessment-export-safety')?.textContent || '';
+    expect(safetyCss).toContain('.quiz-check-btn');
+    expect(safetyCss).toContain('[data-allo-self-check-btn]{display:none!important}');
     expect(doc.title).toBe('Test');
   });
 

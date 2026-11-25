@@ -7,7 +7,7 @@
  */
 (function (global) {
   'use strict';
-  if (global.UniverseFlight) return;
+  if (!global || typeof global !== 'object' || global.UniverseFlight) return;
 
   var MAX_BETA = 0.9999;
   var TAU = Math.PI * 2;
@@ -642,6 +642,7 @@
   function gamma(beta) { var b = safeBeta(beta); return 1 / Math.sqrt((1 - b) * (1 + b)); }
   function doppler(mu, beta) { var b = safeBeta(beta); return gamma(b) * (1 + b * clamp(finite(mu, 0), -1, 1)); }
   function aberrate(direction, beta) {
+    if (!direction) return [0, 0, 1];
     var x = finite(direction[0], 0), y = finite(direction[1], 0), z = finite(direction[2], 0);
     var length = Math.sqrt(x * x + y * y + z * z);
     if (!length) return [0, 0, 1];
@@ -807,9 +808,12 @@
   }
 
   function stepFlight(state, settings, dt) {
+    state = state || {};
+    settings = settings || {};
+    var pos = Array.isArray(state.position) && state.position.length >= 3 ? state.position.slice(0, 3) : [0, 0, 0];
     var next = {
-      position: state.position.slice(), yaw: state.yaw, pitch: state.pitch,
-      distanceLy: state.distanceLy, universeYears: state.universeYears, travelerYears: state.travelerYears
+      position: pos, yaw: finite(state.yaw, 0), pitch: finite(state.pitch, 0),
+      distanceLy: finite(state.distanceLy, 0), universeYears: finite(state.universeYears, 0), travelerYears: finite(state.travelerYears, 0)
     };
     if (!settings.running) return next;
     var seconds = clamp(finite(dt, 0), 0, 0.1);
@@ -2075,7 +2079,7 @@
     var pointAttributes = [], galaxyAttributes = [];
     var pointMax = 512;
     var raf = 0, lastFrame = 0, lastTelemetry = -Infinity, inView = true;
-    var resizeObserver, intersectionObserver, shaders = [];
+    var resizeObserver, intersectionObserver, reduceMedia, reduceHandler, listenersAttached = false, shaders = [];
     var targetId = null, navigation = { active: false, targetId: null };
     var orbitId = null, orbitPath = null;
     var flyby = { active:false, completed:false, id:null, elapsedSeconds:0, autoLook:false };
@@ -2257,7 +2261,7 @@
       var coincident = relative.distance === 0;
       var physicalBeta = settings.mode === 'relativity' ? settings.beta : 0;
       var physicalDirection = aberrate(direction, physicalBeta);
-      var aspect = canvas.width / Math.max(1, canvas.height);
+      var aspect = canvas && canvas.height ? canvas.width / Math.max(1, canvas.height) : 1;
       var guide = coincident ? null : targetView(direction, state.yaw, state.pitch, displayBeta(), settings.fov, aspect);
       return {
         id: item.id, name: item.name, distanceLy: relative.distance, coincident: coincident,
@@ -2328,7 +2332,7 @@
       return Math.min(cap, global.devicePixelRatio || 1);
     }
     function emitTelemetry(force) {
-      var now = global.performance.now();
+      var now = global.performance && typeof global.performance.now === 'function' ? global.performance.now() : Date.now();
       if (!force && now - lastTelemetry < 250) return;
       lastTelemetry = now;
       var lastPoint = trail[trail.length-1];
@@ -2346,10 +2350,10 @@
       return { position: REGIONS[settings.region].position.slice(), yaw: 0, pitch: 0, distanceLy: 0, universeYears: 0, travelerYears: 0 };
     }
     state = initialState();
-    function isVisible() { return !global.document.hidden && inView; }
-    function cancelFrame() { if (raf) global.cancelAnimationFrame(raf); raf = 0; lastFrame = 0; freePace = 0; }
+    function isVisible() { return !(global.document && global.document.hidden) && inView; }
+    function cancelFrame() { if (raf && typeof global.cancelAnimationFrame === 'function') global.cancelAnimationFrame(raf); raf = 0; lastFrame = 0; freePace = 0; }
     function requestDraw() {
-      if (disposed || lost || !gl || !program || !isVisible() || raf) return;
+      if (disposed || lost || !gl || !program || !isVisible() || raf || typeof global.requestAnimationFrame !== 'function') return;
       raf = global.requestAnimationFrame(frame);
     }
     function uploadRegion() {
@@ -2439,7 +2443,7 @@
       } catch (error) { galaxyFilterQueried = true; galaxyFilterExtension = null; }
     }
     function resize() {
-      if (disposed) return;
+      if (disposed || !canvas || typeof canvas.getBoundingClientRect !== 'function') return;
       tuneGalaxySampling();
       var box = canvas.getBoundingClientRect();
       var ratio = pixelRatio();
@@ -2451,7 +2455,7 @@
       if (targetId) emitTelemetry(true);
     }
     function draw() {
-      if (!gl || lost) return;
+      if (!gl || lost || !canvas) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(0.005, 0.010, 0.025, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -2460,7 +2464,7 @@
       // Attribute indices belong to the current program, but enabled arrays
       // belong to the context. Never leave the small corner array active for
       // the full point population or a galaxy surface draw.
-      gl.disableVertexAttribArray(cornerAttribute);
+      if (cornerAttribute >= 0) gl.disableVertexAttribArray(cornerAttribute);
       function camera(u) {
         gl.uniform3fv(u.position, state.position);
         gl.uniform3f(u.right, cy, 0, -sy);
@@ -2788,14 +2792,25 @@
       event.preventDefault(); lost = true; cancelFrame();
       status('error', 'The 3D graphics context was interrupted. Close and reopen the flight explorer to restore it.');
     }
+    function detachListeners() {
+      if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+      if (intersectionObserver) { intersectionObserver.disconnect(); intersectionObserver = null; }
+      if (reduceMedia && reduceHandler) {
+        if (typeof reduceMedia.removeEventListener === 'function') reduceMedia.removeEventListener('change', reduceHandler);
+        else if (typeof reduceMedia.removeListener === 'function') reduceMedia.removeListener(reduceHandler);
+      }
+      reduceMedia = null; reduceHandler = null;
+      if (listenersAttached) {
+        listenersAttached = false;
+        if (typeof global.removeEventListener === 'function') global.removeEventListener('resize', resize);
+        if (global.document && typeof global.document.removeEventListener === 'function') global.document.removeEventListener('visibilitychange', visibilityChanged);
+        if (canvas && typeof canvas.removeEventListener === 'function') canvas.removeEventListener('webglcontextlost', contextLost);
+      }
+    }
     function dispose() {
       if (disposed) return;
       disposed = true; flybyDetour=null; clearFlyby(); cancelFrame();
-      if (resizeObserver) resizeObserver.disconnect();
-      if (intersectionObserver) intersectionObserver.disconnect();
-      global.removeEventListener('resize', resize);
-      global.document.removeEventListener('visibilitychange', visibilityChanged);
-      canvas.removeEventListener('webglcontextlost', contextLost);
+      detachListeners();
       if (gl && !lost) {
         if (buffer) gl.deleteBuffer(buffer);
         if (galaxyBuffer) gl.deleteBuffer(galaxyBuffer);
@@ -2805,6 +2820,8 @@
         if (program) gl.deleteProgram(program);
         shaders.forEach(function (shader) { gl.deleteShader(shader); });
       }
+      gl = null; program = null; galaxyProgram = null; buffer = null; galaxyBuffer = null;
+      galaxyTexture = null; cloudTexture = null; shaders = [];
       galaxySurfaces = null; galaxyObserver = null; galaxyCount = 0;
       stellarRecords = []; stellarCenters = null; stellarQuadFirst = 0;
       cloudQuadCount = 0; cloudQuadByteOffset = 0;
@@ -2924,7 +2941,7 @@
       view: function (direction) {
         if (disposed) return;
         var views = { forward: [0, 0], back: [Math.PI, 0], left: [-Math.PI / 2, 0], right: [Math.PI / 2, 0], up: [0, Math.PI / 2 - 0.01], down: [0, -Math.PI / 2 + 0.01] };
-        if (!views[direction]) return;
+        if (!Object.prototype.hasOwnProperty.call(views, direction)) return;
         clearFraming(); manualFlybyLook(); manualNavigationLook();
         endInspectionGlides('Manual look ended the camera glide. Travel is paused.');
         endOrbit('Manual look ended the orbit. Travel is paused.');
@@ -2937,7 +2954,7 @@
         var sy=Math.sin(state.yaw),cy=Math.cos(state.yaw),sp=Math.sin(state.pitch),cp=Math.cos(state.pitch);
         var forward=[sy*cp,sp,cy*cp],right=[cy,0,-sy],up=[-sy*sp,cp,-cy*sp];
         var axes={forward:forward,back:forward.map(function(v){return -v;}),right:right,left:right.map(function(v){return -v;}),up:up,down:up.map(function(v){return -v;})};
-        if (!axes[direction] || !amount) return false;
+        if (!Object.prototype.hasOwnProperty.call(axes, direction) || !amount) return false;
         clearFraming();
         clearFlyby();
         var previous=state;
@@ -3088,7 +3105,7 @@
         return scenicApproachPlan(state.position,item.position,item.arrivalRadiusLy,multiplier,settings.speed,REGIONS[settings.region].boundary);
       },
       navigateTo: function (id, multiplier, path) {
-        if (disposed || lost || !gl || settings.mode !== 'explore'||(path!==undefined&&path!=='direct'&&path!=='scenic')) return false;
+        if (disposed || lost || !gl || !program || settings.mode !== 'explore'||(path!==undefined&&path!=='direct'&&path!=='scenic')) return false;
         var item = getLandmark(id);
         if (!item) return false;
         var plan=path==='scenic'&&program?scenicApproachPlan(state.position,item.position,item.arrivalRadiusLy,multiplier,settings.speed,REGIONS[settings.region].boundary):null;
@@ -3196,6 +3213,7 @@
       dispose: dispose
     };
     try {
+      if (!canvas || typeof canvas.getContext !== 'function') throw new Error('WebGL is unavailable');
       gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false, powerPreference: 'low-power' });
       if (!gl) throw new Error('WebGL is unavailable');
       var pointRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
@@ -3215,13 +3233,17 @@
       buffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       [['position', 3, 0], ['color', 3, 3], ['size', 1, 6], ['light', 1, 7], ['cloud', 1, 8]].forEach(function (attribute) {
         var location = gl.getAttribLocation(program, 'a_' + attribute[0]);
-        pointAttributes.push([location, attribute[1], attribute[2] * 4]);
-        gl.enableVertexAttribArray(location);
-        gl.vertexAttribPointer(location, attribute[1], gl.FLOAT, false, 36, attribute[2] * 4);
+        if (location >= 0) {
+          pointAttributes.push([location, attribute[1], attribute[2] * 4]);
+          gl.enableVertexAttribArray(location);
+          gl.vertexAttribPointer(location, attribute[1], gl.FLOAT, false, 36, attribute[2] * 4);
+        }
       });
       cornerAttribute = gl.getAttribLocation(program, 'a_corner');
-      gl.disableVertexAttribArray(cornerAttribute);
-      gl.vertexAttrib2f(cornerAttribute,0,0);
+      if (cornerAttribute >= 0) {
+        gl.disableVertexAttribArray(cornerAttribute);
+        gl.vertexAttrib2f(cornerAttribute,0,0);
+      }
       uniforms.stellarCenters = gl.getUniformLocation(program, 'u_stellarCenters[0]');
       ['position', 'right', 'up', 'forward', 'aspect', 'height', 'dpr', 'beta', 'gamma', 'exposure', 'lens', 'pointMax', 'cloudTexture', 'stellarCount', 'stellarQuad', 'quadMax', 'stellarRight', 'stellarUp', 'stellarToward', 'stellarStructure', 'stellarLoops', 'galacticBand', 'dust', 'cloudQuad', 'cloudQuadMax'].forEach(function (name) {
         uniforms[name] = gl.getUniformLocation(program, 'u_' + name);
@@ -3232,7 +3254,7 @@
       gl.linkProgram(galaxyProgram);
       if (!gl.getProgramParameter(galaxyProgram, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(galaxyProgram) || 'Galaxy shader link failed');
       galaxyBuffer = gl.createBuffer();
-      galaxyAttributes = [[gl.getAttribLocation(galaxyProgram, 'a_position'), 3, 0], [gl.getAttribLocation(galaxyProgram, 'a_uv'), 2, 12], [gl.getAttribLocation(galaxyProgram, 'a_bulge'), 1, 20]];
+      galaxyAttributes = [[gl.getAttribLocation(galaxyProgram, 'a_position'), 3, 0], [gl.getAttribLocation(galaxyProgram, 'a_uv'), 2, 12], [gl.getAttribLocation(galaxyProgram, 'a_bulge'), 1, 20]].filter(function (entry) { return entry[0] >= 0; });
       ['position', 'right', 'up', 'forward', 'aspect', 'beta', 'gamma', 'exposure', 'lens', 'texture'].forEach(function(name) { galaxyUniforms[name] = gl.getUniformLocation(galaxyProgram, 'u_' + name); });
       galaxyUniforms.diskLight = gl.getUniformLocation(galaxyProgram, 'u_diskLight[0]');
       galaxyTexture = gl.createTexture();
@@ -3256,19 +3278,36 @@
       gl.disable(gl.DEPTH_TEST);
       gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
       uploadRegion();
-      canvas.addEventListener('webglcontextlost', contextLost);
-      global.document.addEventListener('visibilitychange', visibilityChanged);
-      global.addEventListener('resize', resize);
+      listenersAttached = true;
+      if (typeof canvas.addEventListener === 'function') canvas.addEventListener('webglcontextlost', contextLost);
+      if (global.document && typeof global.document.addEventListener === 'function') global.document.addEventListener('visibilitychange', visibilityChanged);
+      if (typeof global.addEventListener === 'function') global.addEventListener('resize', resize);
+      if (typeof global.matchMedia === 'function') {
+        reduceMedia = global.matchMedia('(prefers-reduced-motion: reduce)');
+        if (reduceMedia) {
+          reduceHandler = function (event) {
+            if (event && event.matches && settings.running) {
+              cancelFrame();
+              pauseWithMessage('Reduced motion is enabled. Travel is paused.');
+              requestDraw();
+            }
+          };
+          if (typeof reduceMedia.addEventListener === 'function') reduceMedia.addEventListener('change', reduceHandler);
+          else if (typeof reduceMedia.addListener === 'function') reduceMedia.addListener(reduceHandler);
+        }
+      }
       if (global.ResizeObserver) { resizeObserver = new global.ResizeObserver(resize); resizeObserver.observe(canvas); }
       if (global.IntersectionObserver) {
         intersectionObserver = new global.IntersectionObserver(function (entries) {
-          inView = entries[0].isIntersecting; visibilityChanged();
+          if (!entries || !entries.length) return;
+          inView = !!entries[entries.length - 1].isIntersecting; visibilityChanged();
         });
         intersectionObserver.observe(canvas);
       }
       resize(); emitTelemetry(true);
       status('ready', '3D flight explorer ready.');
     } catch (error) {
+      detachListeners();
       if (gl) {
         if (buffer) gl.deleteBuffer(buffer);
         if (galaxyBuffer) gl.deleteBuffer(galaxyBuffer);
@@ -3278,11 +3317,12 @@
         if (program) gl.deleteProgram(program);
         shaders.forEach(function (shader) { gl.deleteShader(shader); });
       }
-      gl = null; program = null; buffer = null; shaders = [];
+      gl = null; program = null; galaxyProgram = null; buffer = null; galaxyBuffer = null;
+      galaxyTexture = null; cloudTexture = null; shaders = [];
       status('error', '3D exploration needs WebGL graphics support. Enable hardware acceleration or try another browser.');
     }
     return api;
   }
 
   global.UniverseFlight = { create: create, landmarks: landmarks, flybys: flybys, dustClouds: dustClouds, math: { gamma: gamma, aberrate: aberrate, doppler: doppler, stepFlight: stepFlight, viewSpectrum: viewSpectrum, lightClock: lightClock, chartView: chartView, approachPlan: approachPlan, scenicApproachPlan: scenicApproachPlan, targetView: targetView, targetFrame: targetFrame, orbitView: orbitView, rangeView: rangeView, orbitPlane: orbitPlane, easePace: easePace, dustOpticalDepth: dustOpticalDepth, dustTransmission: dustTransmission } };
-})(window);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

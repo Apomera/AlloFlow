@@ -362,11 +362,13 @@ describe('1. Preview & Projector UX + shared .top-menu contract', () => {
     expect(css).toMatch(/\.try-nav-select\s*\{[^}]*min-height:\s*2\.75rem/);
     expect(css).toMatch(/\.try-edit-nav\s*\+\s*\.try-edit-actions\s*\{[^}]*border-left:/);
     expect(css).toMatch(/@media\s*\(max-width:\s*37\.5rem\)[\s\S]*\.try-edit-extra\s*\{\s*display:\s*none;\s*\}/);
-    expect(css).toMatch(/\.try-present\s+\.try-tab\s*\{[^}]*min-height:\s*2rem/);
+    // 2026-11-23: the tab is a full 44 px target now (2.75rem; it was 2rem when this was written).
+    expect(css).toMatch(/\.try-present\s+\.try-tab\s*\{[^}]*min-height:\s*2\.75rem/);
     expect(css).toMatch(/\.try-present\.try-no-full\s+\.try-tab\s*\{/);
     expect(css).toMatch(/\.top-menu\s*>/);
     expect(css).toMatch(/\.top-menu\s*>\s*nav\s+a\s*\{[^}]*min-height:\s*2\.75rem/);
-    expect(css).toMatch(/@media\s+print[\s\S]*\.top-menu\s*\{[^}]*display:\s*none\s*!important/);
+    // 2026-11-23: the print rule hides the menu in one list with the skip link and the proof bar.
+    expect(css).toMatch(/@media\s+print[\s\S]*\.top-menu\s*[,{][^}]*display:\s*none\s*!important/);
   });
 });
 

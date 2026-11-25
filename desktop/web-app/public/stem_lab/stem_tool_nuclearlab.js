@@ -24,7 +24,7 @@
   var __alloT = function (k, fb) {
     var v;
     try { v = (__alloCtx_nuclearlab && typeof __alloCtx_nuclearlab.t === "function") ? __alloCtx_nuclearlab.t(k, fb) : null; } catch (e) { v = null; }
-    return (v == null) ? (fb != null ? fb : k) : v;
+    return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v;
   };
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
@@ -2302,7 +2302,10 @@
   function nkStudioDistanceIntensity(metres) { return 100 / (metres * metres); }
 
   function NuclearFirstDiscovery(props) {
-    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var ctx = props.ctx || {};
+    var React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var canSpeak = typeof ctx.callTTS === 'function';
     var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
     var predictions = [
       { id: 'half', label: nt('distance_half', 'Half as much') },
@@ -2443,11 +2446,22 @@
             : stage === 'explain' ? h('div', { className: 'ns-explain', 'data-ns-explain': 'distance' },
               h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('distance_explain_no', 'Moving the detector makes the source emit less.')),
               h('button', { type: 'button', className: 'ns-choice', onClick: function () { explain(true); } }, nt('distance_explain_yes', 'The same output spreads over a larger area.')),
-              data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('first_retry', 'The source stayed fixed. Compare 100% at 1 m with 25% at 2 m, then try again.')) : null)
-              : h('div', null,
-                h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
-                h('p', null, nt('distance_discovery', 'Doubling the distance gave 25% of the original intensity.')),
-                h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel)),
+              data.explanation === 'retry' ? (function () {
+                var diag = nkDiagnoseMisconception('distance', 'source-weaker', 'quarter');
+                return h('div', null,
+                  h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('first_retry', 'The source stayed fixed. Compare 100% at 1 m with 25% at 2 m, then try again.')),
+                  h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'distance' }, diag.whyNot),
+                  canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_distance_coaching', 'Read inverse-square coaching aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null);
+              })() : null)
+              : (function () {
+                var diag = nkDiagnoseMisconception('distance', prediction ? prediction.id : 'quarter', 'quarter');
+                return h('div', null,
+                  h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
+                  h('p', null, nt('distance_discovery', 'Doubling the distance gave 25% of the original intensity.')),
+                  h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'distance-done' }, diag.whyNot),
+                  canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_distance_debrief', 'Read distance discovery debrief aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
+                  h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel));
+              })(),
         h('p', { className: 'ns-first-status ns-note', role: 'status' }, status)),
       h('div', { className: 'ns-first-exits' },
         h('button', { type: 'button', className: 'ns-secondary', onClick: props.onExplore }, nt('first_explore', 'Explore distance freely')),
@@ -2461,7 +2475,7 @@
     return function (key, fallback, values) {
       var text;
       try { text = ctx.t && ctx.t('stem.nuclearlab.studio_' + key, fallback); } catch (_) {}
-      if (text == null || text === 'stem.nuclearlab.studio_' + key) text = fallback;
+      if (text == null || text === '' || text === 'stem.nuclearlab.studio_' + key) text = fallback;
       return String(text).replace(/\{(\w+)\}/g, function (match, name) {
         return values && Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : match;
       });
@@ -2564,7 +2578,7 @@
     .ns-case-review{display:block;margin-top:16px;color:#d0e3f5;font-size:14px}.ns-case-review>span{display:block;margin-bottom:6px}.ns-case-review select{display:block;width:100%;min-width:0;min-height:44px;padding:10px 8px;border:1px solid #719cbd;border-radius:8px;background:#10243b;color:#edf5ff;font:inherit;touch-action:manipulation}.ns-case-review select:focus-visible{outline:3px solid #f59e0b;outline-offset:4px}.ns-case-table tbody th{border-inline-start:3px solid transparent}.ns-case-table tr[data-ns-case-current=true]{background:var(--ns-bg)}.ns-case-table tr[data-ns-case-current=true] th{border-inline-start-color:var(--ns-accent)}.nk-workspace[data-ns-large=true] .ns-case-review{font-size:16px}
     @media(forced-colors:active){.ns-case-review,.ns-case-review select{color:CanvasText}.ns-case-review select{background:Canvas;border-color:CanvasText}.ns-case-table tr[data-ns-case-current=true] th{border-inline-start-color:Highlight}}
     @media(forced-colors:active){[data-ns-investigation] .ns-beam path{stroke:CanvasText}[data-ns-investigation] .ns-beam text{fill:CanvasText}[data-ns-investigation] .ns-beam rect,[data-ns-investigation] .ns-beam circle{fill:Canvas;stroke:CanvasText}[data-ns-investigation] .ns-beam rect:last-of-type{fill:Highlight}}
-    .nk-workspace[data-ns-reduced=true] *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+    .nk-workspace[data-ns-reduced=true] *,.nk-workspace[data-nk-reduce-motion="true"] *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
     @media(prefers-reduced-motion:reduce){.nk-workspace *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
     @media(forced-colors:active){.ns-choice[aria-pressed=true],.ns-mission[aria-pressed=true],.ns-nav button[aria-pressed=true]{outline:3px solid Highlight;outline-offset:-4px}.ns-atom{background:Highlight;border-color:Highlight}.ns-atom[data-decayed=true]{background:Canvas;border:1px dashed CanvasText}.ns-scene{background:Canvas;color:CanvasText}.ns-readout strong,.ns-readout span,.ns-scene-top,.ns-legend{color:CanvasText}}
 
@@ -2591,17 +2605,29 @@
     .ns-nav{padding:6px;border-radius:14px;background:var(--ns-panel);border:1px solid var(--ns-line);box-shadow:0 4px 14px rgba(8,18,34,.08)}
     .ns-controls,.ns-notebook,.ns-chooser{box-shadow:0 6px 18px rgba(8,18,34,.08)}
     .ns-scene{box-shadow:inset 0 1px 0 rgba(208,227,245,.16),0 12px 26px rgba(8,18,34,.22)}
-    .theme-contrast .nk-workspace{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important}
-    .theme-contrast .nk-studio-banner{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}
-    .theme-contrast .nk-studio-badge,.theme-contrast .nk-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}
-    .theme-contrast .nk-telemetry-pill strong,.theme-contrast .nk-quick-label{color:#ffff00!important}
-    .theme-contrast .nk-quick-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}
-    .theme-contrast .nk-workspace :is(.ns-nav,.ns-controls,.ns-notebook,.ns-chooser,.ns-scene,.ns-progress,.ns-mission,.ns-feedback){background:#000000!important;color:#ffffff!important;border-color:#ffffff!important;box-shadow:none!important}
-    .theme-contrast .nk-workspace :is(button,input,textarea,a,summary):focus-visible{outline:3px solid #ffff00!important;outline-offset:3px!important}
+    .ns-coach-panel summary{color:var(--ns-accent)}
+    .ns-coach-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+    .ns-coach-chips button{padding:7px 11px;font-size:13px}
+    .ns-coach-form{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+    .ns-coach-form input{flex:1 1 200px;min-height:44px;padding:8px 12px;border:1px solid var(--ns-line);border-radius:10px;background:var(--ns-bg);color:var(--ns-ink)}
+    .ns-coach-reply{margin-top:10px;padding:12px;border-radius:10px;border:1px solid var(--ns-line);background:var(--ns-bg)}
+    .ns-coach-reply ul{margin:8px 0 0;padding-left:18px;font-size:13px}
+    .ns-coach-whynot{margin:8px 0;padding:10px 12px;border-radius:8px;border:1px solid var(--ns-line);background:var(--ns-bg);font-size:13px;color:var(--ns-ink)}
+    .ns-read-aloud{margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+    .nk-workspace[data-theme=contrast],.theme-contrast .nk-workspace{background:#000000!important;color:#ffffff!important;border:2px solid #ffffff!important}
+    .nk-workspace[data-theme=contrast] .nk-studio-banner,.theme-contrast .nk-studio-banner{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffffff!important}
+    .nk-workspace[data-theme=contrast] .nk-studio-badge,.nk-workspace[data-theme=contrast] .nk-telemetry-pill,.theme-contrast .nk-studio-badge,.theme-contrast .nk-telemetry-pill{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}
+    .nk-workspace[data-theme=contrast] .nk-telemetry-pill strong,.nk-workspace[data-theme=contrast] .nk-quick-label,.theme-contrast .nk-telemetry-pill strong,.theme-contrast .nk-quick-label{color:#ffff00!important}
+    .nk-workspace[data-theme=contrast] .nk-quick-chip,.theme-contrast .nk-quick-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffffff!important}
+    .nk-workspace[data-theme=contrast] :is(.ns-nav,.ns-controls,.ns-notebook,.ns-chooser,.ns-scene,.ns-progress,.ns-mission,.ns-feedback,.ns-coach-reply,.ns-coach-whynot),.theme-contrast .nk-workspace :is(.ns-nav,.ns-controls,.ns-notebook,.ns-chooser,.ns-scene,.ns-progress,.ns-mission,.ns-feedback,.ns-coach-reply,.ns-coach-whynot){background:#000000!important;color:#ffffff!important;border-color:#ffffff!important;box-shadow:none!important}
+    .nk-workspace[data-theme=contrast] :is(button,input,textarea,a,summary):focus-visible,.theme-contrast .nk-workspace :is(button,input,textarea,a,summary):focus-visible{outline:3px solid #ffff00!important;outline-offset:3px!important}
   `;
 
   function NuclearStarterExperiment(props) {
-    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var ctx = props.ctx || {};
+    var React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var canSpeak = typeof ctx.callTTS === 'function';
     var distance = props.kind === 'distance';
     var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
     var settings = distance ? [1, 2, 4] : [.8, 1, 1.2];
@@ -2707,12 +2733,28 @@
           h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')), h('h5', null, nt('evidence_question', 'What does your evidence show?')),
           button(distance ? nt('distance_explain_no', 'Moving the detector makes the source emit less.') : nt('chain_explain_no', 'A steady chain has stopped reacting.'), data.explanation === 'retry', function () { explain(false); }),
           button(distance ? nt('distance_explain_yes', 'The same output spreads over a larger area.') : nt('chain_explain_yes', 'A steady chain keeps producing new reactions.'), data.explanation === 'correct', function () { explain(true); }),
-          data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('compare_again', 'Compare the numbers in your notebook. You can revise your explanation.')) : null,
-          data.explanation === 'correct' ? h('div', null, h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')), h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel)) : null) : null));
+          data.explanation === 'retry' ? (function () {
+            var diag = nkDiagnoseMisconception(distance ? 'distance' : 'chain', distance ? 'source-weaker' : 'stopped', distance ? 'quarter' : 'steady');
+            return h('div', null,
+              h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('compare_again', 'Compare the numbers in your notebook. You can revise your explanation.')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': props.kind }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_mission_coaching', 'Read physics coaching aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null);
+          })() : null,
+          data.explanation === 'correct' ? (function () {
+            var diag = nkDiagnoseMisconception(distance ? 'distance' : 'chain', prediction, distance ? 'quarter' : 'steady');
+            return h('div', null,
+              h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': props.kind + '-done' }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_mission_debrief', 'Read discovery debrief aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
+              h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel));
+          })() : null) : null));
   }
 
   function NuclearCountingExperiment(props) {
-    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var ctx = props.ctx || {};
+    var React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var canSpeak = typeof ctx.callTTS === 'function';
     var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
     var prediction = ['same', 'vary'].indexOf(data.prediction) >= 0 ? data.prediction : null;
     // Equal readings are separate measurements and must remain in the notebook.
@@ -2768,12 +2810,28 @@
           h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')), h('h5', null, nt('evidence_question', 'What does your evidence show?')),
           h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('counting_explain_no', 'Every higher count means the radiation level went up.')),
           h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'correct', onClick: function () { explain(true); } }, nt('counting_explain_yes', 'Random variation can change counts even with the same setup.')),
-          data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('counting_retry', 'The model kept the background constant. A single higher reading can come from random variation.')) : null,
-          data.explanation === 'correct' ? h('div', null, h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')), h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel)) : null) : null));
+          data.explanation === 'retry' ? (function () {
+            var diag = nkDiagnoseMisconception('counting', 'higher-means-more', 'vary');
+            return h('div', null,
+              h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('counting_retry', 'The model kept the background constant. A single higher reading can come from random variation.')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'counting' }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_counting_coaching', 'Read counting statistics coaching aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null);
+          })() : null,
+          data.explanation === 'correct' ? (function () {
+            var diag = nkDiagnoseMisconception('counting', prediction, 'vary');
+            return h('div', null,
+              h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'counting-done' }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_counting_debrief', 'Read counting discovery debrief aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
+              h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel));
+          })() : null) : null));
   }
 
   function NuclearRayExperiment(props) {
-    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var ctx = props.ctx || {};
+    var React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var canSpeak = typeof ctx.callTTS === 'function';
     var data = props.data && typeof props.data === 'object' && !Array.isArray(props.data) ? props.data : {};
     var setups = [
       { id: 'alpha-open', alpha: true, paper: false, label: nt('rays_alpha_open', 'Alpha · paper out') },
@@ -2874,12 +2932,28 @@
         eligible ? h('div', { className: 'ns-explain', 'data-ns-explain': 'rays' }, h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')), h('h5', null, nt('evidence_question', 'What does your evidence show?')),
           h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'retry', onClick: function () { explain(false); } }, nt('rays_explain_no', 'Paper switches off the radioactive source.')),
           h('button', { type: 'button', className: 'ns-choice', 'aria-pressed': data.explanation === 'correct', onClick: function () { explain(true); } }, nt('rays_explain_yes', 'Paper blocks the alpha path while the source keeps emitting.')),
-          data.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('rays_retry', 'Look at the source in all three tests. Paper changes what reaches the detector.')) : null,
-          data.explanation === 'correct' ? h('div', null, h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')), h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel)) : null) : null));
+          data.explanation === 'retry' ? (function () {
+            var diag = nkDiagnoseMisconception('rays', 'source-stops', 'alpha');
+            return h('div', null,
+              h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('rays_retry', 'Look at the source in all three tests. Paper changes what reaches the detector.')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'rays' }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_rays_coaching', 'Read radiation path coaching aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null);
+          })() : null,
+          data.explanation === 'correct' ? (function () {
+            var diag = nkDiagnoseMisconception('rays', prediction ? prediction.id : 'alpha', 'alpha');
+            return h('div', null,
+              h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')),
+              h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': 'rays-done' }, diag.whyNot),
+              canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_rays_debrief', 'Read radiation path debrief aloud'), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
+              h('button', { type: 'button', className: 'ns-primary', onClick: props.onNext }, props.nextLabel));
+          })() : null) : null));
   }
 
   function NuclearExperimentStudio(props) {
-    var React = props.ctx.React, h = React.createElement, nt = nkStudioTranslate(props.ctx);
+    var ctx = props.ctx || {};
+    var React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var canSpeak = typeof ctx.callTTS === 'function';
     var raw = props.state && typeof props.state === 'object' && !Array.isArray(props.state) ? props.state : {};
     var journey = [
       { id: 'decay', icon: '◉', title: nt('decay_title', 'The disappearing sample'), sub: nt('decay_sub', 'Explore half-life, one step at a time.') },
@@ -2983,7 +3057,9 @@
     function conclude(part, correct) {
       var eligible = part === 'decay' ? step >= 2 : fairPair;
       if (!eligible) return;
-      update(part, { explanation: correct ? 'correct' : 'retry' }, correct ? { completed: completed.indexOf(part) >= 0 ? completed : completed.concat([part]) } : null);
+      var alreadyDone = completed.indexOf(part) >= 0;
+      update(part, { explanation: correct ? 'correct' : 'retry' }, correct ? { completed: alreadyDone ? completed : completed.concat([part]) } : null);
+      if (correct && !alreadyDone && typeof props.onMissionComplete === 'function') props.onMissionComplete(part);
       say(correct ? nt('discovery_saved', 'Discovery recorded. Your evidence supports that explanation.') : nt('try_explanation', 'Look at your observations, then try another explanation.'));
     }
     function choice(label, selected, click, disabled, key) {
@@ -2991,6 +3067,11 @@
     }
     function explanation(part, correctText, otherText) {
       var value = part === 'decay' ? decay : shield;
+      var diag = value.explanation === 'retry'
+        ? nkDiagnoseMisconception(part === 'decay' ? 'decay' : 'shielding', part === 'decay' ? 'linear-32' : 'all-blocked', part === 'decay' ? 16 : 'lead')
+        : (value.explanation === 'correct'
+          ? nkDiagnoseMisconception(part === 'decay' ? 'decay' : 'shielding', part === 'decay' ? prediction : shieldPrediction, part === 'decay' ? 16 : 'lead')
+          : null);
       return h('div', { className: 'ns-explain', 'data-ns-explain': part },
         h('p', { className: 'ns-step' }, nt('explain_step', '3 / Explain')),
         h('h5', null, nt('evidence_question', 'What does your evidence show?')),
@@ -2998,6 +3079,8 @@
         choice(correctText, value.explanation === 'correct', function () { conclude(part, true); }),
         value.explanation === 'correct' ? h('p', { className: 'ns-complete' }, nt('recorded', '✓ Discovery recorded')) : null,
         value.explanation === 'retry' ? h('p', { className: 'ns-feedback', 'data-kind': 'retry' }, nt('compare_again', 'Compare the numbers in your notebook. You can revise your explanation.')) : null,
+        diag ? h('p', { className: 'ns-coach-whynot', 'data-ns-coach-whynot': part + (value.explanation === 'correct' ? '-done' : '') }, diag.whyNot) : null,
+        diag && canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_studio_coaching', 'Read {topic} coaching aloud').replace('{topic}', part), onClick: function () { speakNuclear(ctx, diag.headline + '. ' + diag.whyNot + ' ' + diag.physicalRule); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
         value.explanation === 'correct' ? h('button', { type: 'button', className: 'ns-primary', onClick: goNext }, nextLabel) : null);
     }
     var remaining = 64 * Math.pow(0.5, step);
@@ -3120,7 +3203,11 @@
       h(NuclearFirstDiscovery, { ctx: props.ctx, data: raw.distance, nextLabel: nextLabel,
         onNext: goNext, onExplore: function () { selectMission('distance'); },
         onChange: function (patch) { update('distance', patch, { mission: 'distance', firstDiscovery: 'guided' }); },
-        onExplain: function (correct) { update('distance', { explanation: correct ? 'correct' : 'retry' }, correct ? { mission: 'distance', firstDiscovery: 'guided', completed: completed.indexOf('distance') < 0 ? completed.concat(['distance']) : completed } : { mission: 'distance', firstDiscovery: 'guided' }); }
+        onExplain: function (correct) {
+          var alreadyDone = completed.indexOf('distance') >= 0;
+          update('distance', { explanation: correct ? 'correct' : 'retry' }, correct ? { mission: 'distance', firstDiscovery: 'guided', completed: alreadyDone ? completed : completed.concat(['distance']) } : { mission: 'distance', firstDiscovery: 'guided' });
+          if (correct && !alreadyDone && typeof props.onMissionComplete === 'function') props.onMissionComplete('distance');
+        }
       }));
     return h('div', { 'data-nk-studio': mission },
       h('div', { className: 'ns-hero' },
@@ -3140,7 +3227,11 @@
           return h('button', { key: item.id, className: 'ns-mission', 'data-ns-mission': item.id, type: 'button', 'aria-pressed': mission === item.id, onClick: function () { selectMission(item.id); } }, h('span', { className: 'ns-mission-icon', 'aria-hidden': 'true' }, item.icon), h('span', null, h('strong', null, item.title), h('small', null, item.sub), h('span', { className: 'ns-mission-state' }, saved ? nt('activity_recorded', 'Discovery recorded') : nkStudioHasWork(item.id, raw[item.id]) ? nt('activity_in_progress', 'In progress') : nt('activity_not_started', 'Not started'))), saved ? h('span', { className: 'ns-selected-mark', 'aria-label': nt('completed', 'Completed') }, '✓') : null);
         }))),
       h('div', { className: 'ns-heading' }, h('h4', { ref: titleRef, tabIndex: -1 }, mission === 'rays' ? nt('rays_heading', 'A signal disappears. Has the source stopped?') : mission === 'counting' ? nt('counting_heading', 'Can the same setup give different counts?') : mission === 'distance' ? nt('distance_heading', 'What changes when you move farther away?') : mission === 'chain' ? nt('chain_heading', 'Can a chain stay steady?') : mission === 'decay' ? nt('decay_heading', 'Where did the other atoms go?') : nt('shield_heading', 'Can you weaken the beam?')), h('p', null, mission === 'rays' ? nt('rays_goal', 'Compare two types of radiation. Put paper in the path and watch what changes.') : mission === 'counting' ? nt('counting_goal', 'A count is one detected event. Keep the setup unchanged and repeat.') : mission === 'distance' ? nt('distance_goal_plain', 'Keep the source the same. Compare how much radiation reaches the detector.') : mission === 'chain' ? nt('chain_goal_plain', 'A generation is one round of reactions. Watch what each round starts.') : mission === 'decay' ? nt('decay_goal', 'Start with 64 parent atoms. Predict what remains after two half-lives.') : nt('shield_goal', 'Compare water, concrete, and lead. Keep the thickness equal first.'))),
-      ['distance', 'chain', 'counting', 'rays'].indexOf(mission) >= 0 ? h(mission === 'rays' ? NuclearRayExperiment : mission === 'counting' ? NuclearCountingExperiment : NuclearStarterExperiment, { key: mission, ctx: props.ctx, kind: mission, data: raw[mission], nextLabel: nextLabel, onNext: goNext, onChange: function (patch) { update(mission, patch); }, onExplain: function (correct) { update(mission, { explanation: correct ? 'correct' : 'retry' }, correct ? { completed: completed.indexOf(mission) >= 0 ? completed : completed.concat([mission]) } : null); } }) : h('div', { className: 'ns-grid' },
+      ['distance', 'chain', 'counting', 'rays'].indexOf(mission) >= 0 ? h(mission === 'rays' ? NuclearRayExperiment : mission === 'counting' ? NuclearCountingExperiment : NuclearStarterExperiment, { key: mission, ctx: props.ctx, kind: mission, data: raw[mission], nextLabel: nextLabel, onNext: goNext, onChange: function (patch) { update(mission, patch); }, onExplain: function (correct) {
+        var alreadyDone = completed.indexOf(mission) >= 0;
+        update(mission, { explanation: correct ? 'correct' : 'retry' }, correct ? { completed: alreadyDone ? completed : completed.concat([mission]) } : null);
+        if (correct && !alreadyDone && typeof props.onMissionComplete === 'function') props.onMissionComplete(mission);
+      } }) : h('div', { className: 'ns-grid' },
         h('div', null, mission === 'decay' ? decayScene : shieldScene,
           h('div', { className: 'ns-notebook', 'data-ns-notebook': mission }, h('h5', null, nt('notebook', 'Your observations')),
             mission === 'decay' ? h('table', null, h('caption', null, nt('decay_notebook', 'Expected population after each interval')), h('thead', null, h('tr', null, h('th', { scope: 'col' }, nt('half_lives', 'Half-lives')), h('th', { scope: 'col' }, nt('atoms_left', 'Parent atoms remaining')))), h('tbody', null, Array.from({ length: step + 1 }, function (_, n) { return h('tr', { key: n }, h('th', { scope: 'row' }, n), h('td', null, 64 * Math.pow(.5, n))); })))
@@ -3158,15 +3249,17 @@
       h('details', { className: 'ns-notebook ns-case-entry' }, h('summary', null, nt('case_title', 'Signal detective')),
         h('p', { className: 'ns-note' }, nt('case_entry', 'Put distance and shielding together. Solve a signal mystery with fair comparisons.')),
         h('button', { type: 'button', className: 'ns-primary', onClick: function () { props.onView('investigate'); } }, raw.investigation && raw.investigation.solved === true ? nt('case_revisit', 'Revisit the signal mystery →') : raw.investigation && (['distance', 'shield', 'both'].indexOf(raw.investigation.prediction) >= 0) ? nt('case_resume', 'Resume the signal mystery →') : nt('case_start', 'Start the signal mystery →'))),
+      h(NuclearOfflinePhysicsCoach, { ctx: ctx, surface: 'studio', state: { mission: mission, shieldId: material.id, thick: thickness } }),
       h('div', { className: 'ns-studio-footer' }, h('span', null, nt('self_paced_footer', 'No timer. Test, revisit, and revise.')), h('button', { type: 'button', className: 'ns-secondary', onClick: function () { props.onView('reactor'); } }, nt('reactor_invite', 'Ready for more? Operate a reactor →'))));
   }
 
   function NuclearLabWorkspace(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, nt = nkStudioTranslate(ctx);
+    __alloCtx_nuclearlab = ctx;
     var rawD = ctx.toolData && ctx.toolData._nuclearLab;
     var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
     var mode = d.nkView === 'reference' || (!d.nkView && ['safe', 'me', 'safety', 'works', 'know'].indexOf(d.nkPath) >= 0) ? 'reference' : d.nkView === 'reactor' ? 'reactor' : d.nkView === 'investigate' ? 'investigate' : d.nkView === 'nucleus' ? 'nucleus' : 'studio';
-    var contentRef = React.useRef(null), pendingFocus = React.useRef(false);
+    var contentRef = React.useRef(null), pendingFocus = React.useRef(false), wsXpRef = React.useRef({});
     React.useEffect(function () { if (pendingFocus.current && contentRef.current) { contentRef.current.focus(); pendingFocus.current = false; } }, [mode]);
     function changeView(next) {
       if (next === mode) return;
@@ -3186,11 +3279,31 @@
         return Object.assign({}, prev, { _nuclearLab: Object.assign({}, current, { nkStudio: update(studio), nkView: nextView || mode }) });
       });
     }
+    function awardStudioMissionXP(missionId) {
+      if (typeof missionId !== 'string' || !missionId) return;
+      var xpKey = 'studio_' + missionId;
+      var ledger = nkSafeXpLedger(d._xpCredited);
+      if ((!d._xpCredited || !ledger[xpKey]) && !wsXpRef.current[xpKey]) {
+        wsXpRef.current[xpKey] = true;
+        if (typeof ctx.awardXP === 'function') ctx.awardXP('nuclear_studio', 10, 'Recorded a Nuclear Lab studio discovery');
+        ctx.setToolData(function (prev) {
+          var curRaw = prev && prev._nuclearLab;
+          var current = (curRaw && typeof curRaw === 'object' && !Array.isArray(curRaw)) ? curRaw : {};
+          var nextLedger = nkSafeXpLedger(current._xpCredited);
+          if (nextLedger[xpKey]) return prev;
+          nextLedger[xpKey] = true;
+          return Object.assign({}, prev, { _nuclearLab: Object.assign({}, current, { _xpCredited: nextLedger }) });
+        });
+      }
+    }
     var studioRaw = d.nkStudio && typeof d.nkStudio === 'object' && !Array.isArray(d.nkStudio) ? d.nkStudio : {};
     var completedCount = Array.isArray(studioRaw.completed) ? studioRaw.completed.filter(function (id, i, all) { return all.indexOf(id) === i; }).length : 0;
     var evMasteredCount = Array.isArray(d.evidenceMastered) ? d.evidenceMastered.filter(function (id, i, all) { return all.indexOf(id) === i; }).length : 0;
     var activeIsoId = typeof d.isoId === 'string' ? d.isoId : 'c14';
     var activeIsoObj = ISOTOPES.filter(function (x) { return x.id === activeIsoId; })[0] || ISOTOPES[6];
+    var wsContrast = !!(ctx && (ctx.isContrast === true || ctx.theme === 'contrast'));
+    var wsLight = !wsContrast && (ctx.theme === 'light' || (ctx.theme == null && ctx.isDark === false));
+    var wsReduced = !!(d.nkReduceMotion === true || (ctx && ctx.reduceMotion === true));
     var nkEmblemSvg = h('svg', { width: 48, height: 48, viewBox: '0 0 64 64', style: { flexShrink: 0 }, 'aria-hidden': 'true', focusable: 'false' },
       h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: 'rgba(15,23,42,0.72)', stroke: 'rgba(101,226,206,0.55)', strokeWidth: 1.5 }),
       h('ellipse', { cx: 32, cy: 32, rx: 22, ry: 9, fill: 'none', stroke: '#65e2ce', strokeWidth: 1.8, transform: 'rotate(-28 32 32)' }),
@@ -3204,7 +3317,7 @@
       pendingFocus.current = true;
       saveStudio(function (current) { return Object.assign({}, current, { mission: missionId, firstDiscovery: 'explore' }); }, 'studio');
     }
-    return h('div', { className: 'nk-workspace', 'data-nuclear-lab': mode === 'studio' ? 'true' : undefined, 'data-ns-large': !!d.nkLargeText, 'data-ns-reduced': !!d.nkReduceMotion, 'data-theme': ctx.theme === 'light' ? 'light' : 'dark', style: { containerType: 'inline-size' } },
+    return h('div', { className: 'nk-workspace', 'data-nuclear-lab': mode === 'studio' ? 'true' : undefined, 'data-ns-large': !!d.nkLargeText, 'data-ns-reduced': wsReduced, 'data-nk-reduce-motion': wsReduced ? 'true' : 'false', 'data-theme': wsContrast ? 'contrast' : (wsLight ? 'light' : 'dark'), style: { containerType: 'inline-size' } },
       h('style', null, NK_STUDIO_CSS),
       h('div', { className: 'nk-studio-banner' },
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: '1 1 260px' } },
@@ -3233,7 +3346,7 @@
           return h('button', { key: view.id, type: 'button', 'aria-pressed': mode === view.id || (mode === 'investigate' || mode === 'nucleus') && view.id === 'studio', onClick: function () { changeView(view.id); } }, view.label);
         })),
       h('div', { ref: contentRef, tabIndex: -1, role: 'region', 'aria-label': mode === 'nucleus' ? nt('nucleus_title', 'Nucleus builder') : mode === 'investigate' ? nt('case_title', 'Signal detective') : mode === 'studio' ? nt('studio_view', 'Experiment studio') : mode === 'reactor' ? nt('reactor_view', 'Reactor control room') : nt('reference_view', 'All topics & routes') },
-        mode === 'studio' ? h(NuclearExperimentStudio, { ctx: ctx, state: d.nkStudio, onView: changeView, onChange: function (update) {
+        mode === 'studio' ? h(NuclearExperimentStudio, { ctx: ctx, state: d.nkStudio, onView: changeView, onMissionComplete: awardStudioMissionXP, onChange: function (update) {
           saveStudio(update);
         } }) : mode === 'nucleus' ? h(NuclearNucleusBuilder, { ctx: ctx, data: d.nkStudio && d.nkStudio.nucleus, onView: changeView, onChange: function (patch) {
           saveStudio(function (current) {
@@ -3254,9 +3367,591 @@
           pendingFocus.current = true;
           saveStudio(function (current) { return Object.assign({}, current, { mission: id, firstDiscovery: 'explore' }); }, 'studio');
         } }) : h(props.Reference, { key: mode, ctx: ctx })),
-      mode === 'studio' && typeof ctx.setStemLabTool === 'function' ? h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { ctx.setStemLabTool(null); } }, nt('back_tools', '← Back to tools')) : null);
+      mode === 'studio' && !ctx.embedded && typeof ctx.setStemLabTool === 'function' ? h('button', { type: 'button', className: 'ns-secondary', style: { marginTop: 12 }, onClick: function () { ctx.setStemLabTool(null); } }, nt('back_tools', '← Back to tools')) : null);
   }
   // END NUCLEAR EXPERIMENT STUDIO
+
+  // ── Pure offline physics engine, mute-safe narration & XP dedup helpers ──
+  function isNuclearGlobalMuted() {
+    var fnMuted = false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function') {
+        fnMuted = !!window.__alloIsGlobalMuted();
+      }
+    } catch (e) { fnMuted = false; }
+    return fnMuted || (typeof window !== 'undefined' && !!window._alloGlobalMute);
+  }
+
+  function speakNuclear(ctx, text) {
+    if (isNuclearGlobalMuted()) return false;
+    var msg = typeof text === 'string' ? text.trim() : '';
+    if (!msg) return false;
+    if (!ctx || typeof ctx.callTTS !== 'function') return false;
+    try {
+      ctx.callTTS(msg, undefined, undefined, { force: true });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function nkSafeXpLedger(val) {
+    var out = {};
+    if (!val || typeof val !== 'object' || Array.isArray(val)) return out;
+    var keys = Object.keys(val);
+    for (var i = 0; i < keys.length; i++) {
+      if (val[keys[i]] === true) out[keys[i]] = true;
+    }
+    return out;
+  }
+
+  function nkEffectiveHalfLife(tpDays, tbDays) {
+    var tp = Number(tpDays), tb = Number(tbDays);
+    if (!(tp > 0) || !(tb > 0) || !isFinite(tp) || !isFinite(tb)) return null;
+    return (tp * tb) / (tp + tb);
+  }
+
+  function nkGammaTransmissionPct(shieldId, thickCm) {
+    var sh = SHIELDS.filter(function (x) { return x.id === shieldId; })[0];
+    var th = Number(thickCm);
+    if (!sh || !isFinite(th) || th < 0) return null;
+    return Math.exp(-sh.mu * th) * 100;
+  }
+
+  function nkDiagnoseMisconception(topic, guess, truth) {
+    var tNorm = typeof topic === 'string' ? topic.toLowerCase().trim() : '';
+    var gRaw = guess == null ? '' : String(guess).trim();
+    var gNorm = gRaw.toLowerCase();
+    var trRaw = truth == null ? '' : String(truth).trim();
+    var trNorm = trRaw.toLowerCase();
+    var matched = !!(gNorm && trNorm && gNorm === trNorm);
+    var leadCols = Math.round(nkCollisionsToThermal(207));
+    var hydCols = Math.round(nkCollisionsToThermal(1));
+
+    function pack(domain, headline, whyNot, physicalRule, verifyHere, source) {
+      return Object.freeze({
+        topic: domain,
+        guess: gRaw,
+        truth: trRaw,
+        matched: matched,
+        headline: headline,
+        whyNot: whyNot,
+        physicalRule: physicalRule,
+        verifyHere: verifyHere,
+        source: source
+      });
+    }
+
+    if (tNorm === 'shielding' || tNorm === 'shield' || tNorm === 'rays' || tNorm === 'neutron' || tNorm === 'alpha' || tNorm === 'beta' || tNorm === 'gamma') {
+      if (gNorm === 'source-stops' || /switch|turn off|stop emitting/.test(gNorm)) {
+        return pack('shielding', 'Shielding intercepts the path, not the decay',
+          'A sheet of paper stops alpha particles on their way to the detector, but it cannot reach inside the nucleus to switch off radioactive decay. The source keeps emitting at the same rate.',
+          'Alpha is a heavy doubly-charged He-4 nucleus stopped by paper or dead outer skin; gamma is an uncharged photon that passes through paper.',
+          'Compare Alpha · paper in against Gamma · paper in, or open section 5 (Shielding).',
+          NK_SOURCES.nist.label);
+      }
+      if (gNorm === 'all-blocked' || /any material|blocks all gamma|stops all gamma/.test(gNorm)) {
+        return pack('shielding', 'Gamma attenuates exponentially — never a sharp cutoff',
+          'No single thickness blocks 100% of 1 MeV gamma photons. Beer-Lambert attenuation (I = I0 * e^(-mu * x)) cuts the beam by a fixed fraction per centimetre, so 2 cm of lead transmits 21.4% while 2 cm of water transmits 86.8%.',
+          'Higher electron density gives a larger attenuation coefficient: lead mu = 0.771 cm^-1, concrete 0.149 cm^-1, water 0.0707 cm^-1 at 1 MeV.',
+          'Test two materials at the same 2 cm thickness in the Shielding challenge or section 5.',
+          NK_SOURCES.nist.label);
+      }
+      if (gNorm === 'lead-neutrons' || (tNorm === 'neutron' && /lead/.test(gNorm)) || (/lead/.test(gNorm) && /water|hydrogen|poly|concrete|moderator|layer/.test(trNorm))) {
+        return pack('shielding', 'Dense lead cannot slow neutrons down alone',
+          'Lead slows fast neutrons poorly by elastic bouncing because a lead nucleus (A = 207) is 207 times heavier than a neutron — taking roughly ' + leadCols + ' collisions to reach thermal energy, and inelastic removal shuts off below ~1 MeV. Hydrogen-rich water or polyethylene (A = 1) moderates a 2 MeV neutron in about ' + hydCols + ' collisions so boron or hydrogen can capture it.',
+          'Fast neutrons need low-mass hydrogenous moderation first, capture second, and heavy-metal shielding for the resulting gamma rays.',
+          'Select Neutron in section 5 (Shielding) and compare Lead against Water or Concrete.',
+          NK_SOURCES.nist.label);
+      }
+      if (gNorm === 'lead-beta' || (/lead/.test(gNorm) && /beta|plastic|alumin/.test(trNorm))) {
+        return pack('shielding', 'Shield beta with low-Z plastic or aluminium, not bare lead',
+          'Decelerating fast beta electrons abruptly in high-Z lead produces secondary bremsstrahlung X-rays. A few millimetres of low-Z plastic or aluminium stops beta particles cleanly without generating strong X-rays.',
+          'Match the shield to the radiation: paper for alpha, plastic/aluminium for beta, lead/concrete for gamma, hydrogenous material + absorber for neutrons.',
+          'Select Beta in section 5 (Shielding) to inspect its range and secondary X-ray note.',
+          NK_SOURCES.nist.label);
+      }
+      if (gNorm === 'alpha-harmless' || (/alpha/.test(gNorm) && /internal|inhale|radon|lung|tissue/.test(trNorm))) {
+        return pack('shielding', 'Low external penetration does not mean safe internally',
+          'Intact dead skin stops external alpha particles, but if an alpha emitter (like radon-222 daughters or polonium-210) is inhaled or swallowed, every bit of its high-LET energy lands inside living cells (wR = 20).',
+          'External hazard scales with penetration; internal hazard scales with ionising density (alpha wR = 20 vs gamma wR = 1).',
+          'Compare Alpha and Gamma in section 5 (Shielding) and section 8 (Gray to Sievert).',
+          NK_SOURCES.icrp103.label);
+      }
+      if (gNorm === 'water' || gNorm === 'concrete') {
+        var tx = nkGammaTransmissionPct(gNorm, 2);
+        return pack('shielding', 'Dense high-Z lead absorbs far more 1 MeV gamma per centimetre',
+          'At 2 cm, ' + gNorm + ' still lets ' + (tx != null ? tx.toFixed(1) : 'most') + '% of a 1 MeV gamma beam through, whereas 2 cm of lead cuts it to 21.4% because lead has much higher electron density (mu = 0.771 cm^-1).',
+          'For 1 MeV gamma rays, transmission follows I / I0 = e^(-mu * x) with mu_lead > mu_concrete > mu_water.',
+          'Compare Water, Concrete, and Lead at 2 cm in the Shielding bench.',
+          NK_SOURCES.nist.label);
+      }
+      if (gNorm === 'both' || gNorm === 'neither') {
+        return pack('shielding', 'Alpha and gamma behave differently at a sheet of paper',
+          (gNorm === 'both' ? 'Paper stops heavy doubly-charged alpha particles, but high-energy gamma photons pass straight through a sheet of paper.' : 'Even a thin sheet of paper stops alpha particles because their +2 charge and large mass lose energy rapidly over micrometres of solid matter.'),
+          'Penetration order in ordinary matter: alpha (paper/skin) < beta (mm of plastic/Al) < gamma (exponential attenuation in lead/concrete).',
+          'Compare Alpha · paper in and Gamma · paper in in the radiation path bench.',
+          NK_SOURCES.nrc.label);
+      }
+      return pack('shielding', 'Your shielding model matches attenuation physics',
+        'Alpha is stopped by paper/skin, beta by mm of plastic/aluminium, gamma attenuates exponentially by electron density (lead > concrete > water), and neutrons require hydrogen-rich moderation (~' + hydCols + ' collisions in H vs ~' + leadCols + ' in Pb).',
+        'I_gamma = I0 * e^(-mu * x); neutron moderation scales with average log energy loss xi(A).',
+        'Explore all four radiation types in section 5 (Shielding).',
+        NK_SOURCES.nist.label);
+    }
+
+    if (tNorm === 'inverse_square' || tNorm === 'inverse-square' || tNorm === 'distance' || tNorm === 'protect') {
+      if (gNorm === 'half' || gNorm === '50' || gNorm === '50%' || /1\/d\b|linear|half/.test(gNorm)) {
+        return pack('inverse_square', 'Why 2 m gives 25%, not 50% (1/d² vs linear 1/d)',
+          'Predicting half (50%) applies a linear 1/d rule, which ignores that radiation from a point source spreads over a 2D spherical surface of area 4*pi*d². Doubling distance quadruples that surface area (2² = 4), cutting intensity to 1/4 = 25% at 2 m and 1/16 = 6.25% at 4 m.',
+          'Point-source geometric spreading obeys the inverse-square law: I(d) = I(1 m) / d².',
+          'Compare your 1 m (100%), 2 m (25%), and 4 m (6.25%) readings in the distance notebook or section 13.',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'same' || gNorm === '100' || gNorm === '100%' || /no change|same/.test(gNorm)) {
+        return pack('inverse_square', 'Fixed source output still spreads thinner with distance',
+          'The source keeps emitting the same photons per second, so it is tempting to expect the same reading — but at 2 m those photons cross a sphere four times larger, so only 25% hit the same detector window.',
+          'Intensity through a fixed detector area drops as 1 / d² with distance from a point source.',
+          'Compare 1 m (100%) and 2 m (25%) in the distance bench or section 14 (Time, distance, shielding).',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'source-weaker' || /emit less|weaker source/.test(gNorm)) {
+        return pack('inverse_square', 'Moving the detector never changes the source',
+          'The detector is a passive sensor. Stepping back from 1 m to 2 m leaves nuclear decay in the source unchanged; the reading drops to 25% because the same emission spreads over four times the spherical area.',
+          'Inverse-square reduction is pure spherical geometry (area = 4*pi*d²), not a change in source activity.',
+          'Check the fixed-output source badge and compare 1 m (100%) with 2 m (25%).',
+          NK_SOURCES.nrc.label);
+      }
+      return pack('inverse_square', 'Inverse-square law confirmed (1/d²)',
+        'Doubling the distance from a point source spreads the same fixed output across four times the spherical surface area (4*pi*d²), cutting intensity to 25% (and 6.25% at 4 m). Note that very close to a finite detector (<6 cm), ideal 1/d² breaks down.',
+        'I(d2) / I(d1) = (d1 / d2)² for an ideal point source in open air.',
+        'Test distance alongside time and shielding in section 14 (Time, distance, shielding).',
+        NK_SOURCES.nrc.label);
+    }
+
+    if (tNorm === 'half_life' || tNorm === 'half-life' || tNorm === 'decay' || tNorm === 'biohalf' || tNorm === 'dating' || tNorm === 'c14') {
+      if (tNorm === 'biohalf' || /sum|add|average|longer|shorter clock/.test(gNorm)) {
+        return pack('half_life', 'Effective half-life is strictly shorter than EITHER clock',
+          'Physical decay (tp) and biological excretion (tb) remove a nuclide from the body simultaneously in parallel, so their removal RATES add — not their half-lives. Neither the sum, the average, nor the longer clock works, and when tp and tb are close (like Sr-90: 28.8 y vs 18 y), teff = 11.1 y falls well below even the shorter clock.',
+          '1 / t_eff = 1 / t_p + 1 / t_b  =>  t_eff = (t_p * t_b) / (t_p + t_b) < min(t_p, t_b).',
+          'Compare Cs-137, I-131, Sr-90, and Po-210 in section 9 (Physical vs biological half-life).',
+          NK_SOURCES.icrp103.label);
+      }
+      if (tNorm === 'dating' || tNorm === 'c14' || /dinosaur|rock|million|billion|non-organic|50,?000/.test(gNorm)) {
+        return pack('half_life', 'Carbon-14 dates organic remains up to ~50,000 years — not rocks or dinosaurs',
+          'Carbon-14 (half-life 5,730 years) only enters living organisms via atmospheric CO2 and drops below ~1–2% after roughly 50,000 years (~8–9 half-lives), where measurement runs into background. Non-organic rocks and 66-million-year-old dinosaur fossils cannot be dated with C-14; geologists use U-238/Pb-206 (4.468 billion years) or K-Ar instead.',
+          'Idealised radiocarbon age is logarithmic: t = 5,730 * ln(100 / %remaining) / ln 2, calibrated with tree-ring/coral curves.',
+          'Slide C-14 remaining down to 1–2% in section 2 (Carbon dating) and compare U-238 in section 1.',
+          NK_SOURCES.nudat.label);
+      }
+      if (gNorm === 'linear-32' || gNorm === '32' || gNorm === '0' || /removes 32|linear|fixed amount/.test(gNorm)) {
+        return pack('half_life', 'Half-life halves what remains — it is not linear subtraction',
+          'Subtracting a fixed 32 atoms each interval would wipe out all 64 parent atoms in two intervals. Radioactive decay is proportional to the remaining population: 64 -> 32 after 1 half-life -> 16 after 2 half-lives -> 8 after 3. Decayed parent nuclei transform into daughter nuclei rather than vanishing.',
+          'N(t) = N0 * (1/2)^(t / T_1/2): each half-life multiplies the remaining parent nuclei by 1/2.',
+          'Watch the 64-atom chamber step 64 -> 32 -> 16 -> 8 in the Decay bench or section 1.',
+          NK_SOURCES.nudat.label);
+      }
+      if (gNorm === '48') {
+        return pack('half_life', 'Two half-lives remove three quarters, leaving 16 of 64',
+          '48 would mean only one quarter decayed over two intervals. The first half-life cuts 64 to 32 (half left); the second cuts 32 to 16 (one quarter left).',
+          'After n half-lives, fraction remaining is (1/2)^n: n = 1 -> 50%, n = 2 -> 25%, n = 3 -> 12.5%.',
+          'Step through two intervals in the Decay bench and check the table: 64, 32, 16.',
+          NK_SOURCES.nudat.label);
+      }
+      return pack('half_life', 'Exponential half-life rule confirmed',
+        'Each half-life multiplies remaining parent nuclei by 1/2 (64 -> 32 -> 16). Inside the body, parallel decay and excretion give t_eff = (t_p * t_b) / (t_p + t_b), and C-14 dating reaches its practical ceiling near 50,000 years for once-living organic samples.',
+        'N(t) = N0 * (1/2)^(t / T_1/2); 1 / t_eff = 1 / t_p + 1 / t_b.',
+        'Compare isotopes in section 1, C-14 in section 2, and body clearance in section 9.',
+        NK_SOURCES.nudat.label);
+    }
+
+    if (tNorm === 'reactor' || tNorm === 'chain' || tNorm === 'operate' || tNorm === 'criticality' || tNorm === 'kinetics' || tNorm === 'scram') {
+      if (gNorm === 'stopped' || gNorm === 'stop' || /stopped reacting|no reaction/.test(gNorm)) {
+        return pack('reactor', 'Critical (k = 1) means steady continuous fission, not stopped',
+          'A steady chain reaction has not stopped — it is balanced. With multiplication factor k = 1.00, each fission triggers on average exactly one new fission, keeping power steady (20 -> 20 -> 20). Stopping requires subcritical k < 1.',
+          'k < 1 decays (subcritical), k = 1 holds steady power (critical), k > 1 grows (supercritical).',
+          'Compare factor 0.8, 1.0, and 1.2 in the chain bench or hold k = 1.000 in section 6.',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'scram-cold' || /scram|decay heat|turn off|no cooling|pumps off/.test(gNorm)) {
+        return pack('reactor', 'SCRAM stops fission, NOT decay heat',
+          'Dropping every control rod halts the fission chain reaction within seconds, but billions of radioactive fission products already inside the fuel keep decaying and generating ~6–7% of full thermal power right after shutdown (falling slowly as ~t^-0.2). Without cooling pumps, fuel cladding still overheats toward 1,200 °C — the core physics of Fukushima Daiichi.',
+          'Wigner-Way decay heat continues after SCRAM: cooling must remain active even at zero fission power.',
+          'Run the Station blackout scenario in section 20 (Operate a reactor) and watch fuel temperature after SCRAM.',
+          NK_SOURCES.unscear.label);
+      }
+      if (gNorm === 'prompt' || /prompt|delayed|instant/.test(gNorm)) {
+        return pack('reactor', 'Delayed neutrons make reactor control possible',
+          'Over 99.3% of fission neutrons appear promptly in ~0.0001 s, far too fast for mechanical rods. The tiny 0.65% delayed neutron fraction (beta = 0.0065) arrives seconds later from fission products, slowing the reactor period enough for operators to control it. Exceeding rho >= beta (prompt critical) collapses the period to milliseconds.',
+          'Controlled operation stays strictly below prompt criticality (rho < beta = 650 pcm for U-235).',
+          'Compare PWR (negative void feedback) vs RBMK (positive void feedback) in section 20.',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'grow' || /bomb|explode|nuclear weapon/.test(gNorm)) {
+        return pack('reactor', 'Steady k = 1 holds constant power; power fuel cannot detonate like a weapon',
+          'At k = 1, reactions stay constant rather than growing. Even in a severe accident, commercial LEU fuel (3–5% U-235, moderated by water) cannot assemble into a nuclear detonation (>90% U-235 weapons-grade). Steam or hydrogen explosions are thermal/chemical hazards, not nuclear yields.',
+          'Commercial reactors use 3–5% LEU below the 20% IAEA HEU threshold and far below >90% weapons-grade.',
+          'Inspect the enrichment safeguards ladder in section 4 and reactor kinetics in section 20.',
+          NK_SOURCES.nrc.label);
+      }
+      return pack('reactor', 'Reactor balance and safety physics confirmed',
+        'A critical core (k = 1) sustains constant fission power using the 0.65% delayed neutron margin (beta = 0.0065). After SCRAM, fission stops immediately, yet radioactive decay heat still demands continuous cooling.',
+        'k = 1 steady; rho < beta keeps period slow; decay heat follows ~t^-0.2 after SCRAM.',
+        'Test Steady power, Xenon pit, and Station blackout in section 20 (Operate a reactor).',
+        NK_SOURCES.nrc.label);
+    }
+
+    if (tNorm === 'counting' || tNorm === 'dose' || tNorm === 'lowdose' || tNorm === 'alara' || tNorm === 'shelter' || tNorm === 'ki') {
+      if (gNorm === 'same' || gNorm === 'higher-means-more' || /higher count|went up|exact/.test(gNorm)) {
+        return pack('dose', 'Random Poisson noise makes repeated short counts vary',
+          'Radioactive decay is fundamentally probabilistic: a true mean of N counts fluctuates with standard deviation sqrt(N). A single higher 10-second reading does not prove the radiation level increased — you need longer counts and paired background subtraction to separate signal from noise.',
+          'Counting uncertainty is sigma = sqrt(N) (and sqrt(Ng + Nb)/t for paired net rate); 4x longer time halves relative error.',
+          'Take repeated 10 s vs 10 min counts in section 13 (Measure it yourself).',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'ki-all' || /ki|iodide|anti-radiation/.test(gNorm)) {
+        return pack('dose', 'Potassium iodide (KI) protects ONLY the thyroid from iodine-131',
+          'KI is not a general anti-radiation pill. It saturates the thyroid with stable iodine so radioactive I-131 cannot accumulate there; it offers zero protection against external gamma, Cs-137, or other nuclides.',
+          'Use KI only when public health officials direct it for a radioiodine release.',
+          'Read the potassium iodide box in section 9 (Physical vs biological half-life).',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'evac-always' || /always evacuate/.test(gNorm)) {
+        return pack('dose', 'Driving through a plume can deliver more dose than sheltering',
+          'A masonry building or basement reduces outdoor dose rate by its dose reduction factor (DRF). Whenever getting clear takes longer than break-even time t_be = DRF * t_plume, sheltering gives the lower dose — alongside avoiding non-radiological evacuation harm.',
+          'Compare shelter dose (rate * DRF * plume) against evacuation dose (rate * min(t_evac, plume)).',
+          'Adjust release duration and hours-to-clear in section 16 (Shelter or evacuate).',
+          NK_SOURCES.nrc.label);
+      }
+      if (gNorm === 'low-dose-zero' || gNorm === 'low-dose-proven' || /zero risk|100 msv|lnt|proven/.test(gNorm)) {
+        return pack('dose', 'Below ~100 mSv, epidemiology hits an inverse-square sample-size wall',
+          'Excess cancer risk is directly measurable above ~100 mSv. Below that, the cohort needed to separate a tiny excess from ~25% baseline cancer mortality grows as 1 / dose². Neither "proven zero risk" nor "measured body count" is directly demonstrated; regulators use LNT cautiously for protection limits.',
+          'Required cohort size scales as 1 / dose² (10x smaller dose needs ~100x more people per group).',
+          'Slide the cohort-size detector in section 12 (How risky is a small dose?).',
+          NK_SOURCES.icrp103.label);
+      }
+      return pack('dose', 'Measurement & dose reasoning confirmed',
+        'Radioactive counts fluctuate by sqrt(N), becquerels measure source decays while sieverts measure weighted biological dose (H = D * wR), and protection combines time, distance (1/d²), and shielding.',
+        'sigma = sqrt(N); H = D * wR; E = sum(wT * H).',
+        'Verify with sections 8, 12, 13, 14, and 16.',
+        NK_SOURCES.icrp103.label);
+    }
+
+    return pack('general', 'Check the physical mechanism against the lab data',
+      'Compare your prediction against two controlled observations where only one variable changes (distance, material/thickness, half-life interval, or rod position).',
+      'Core nuclear laws in this lab: N = N0*(1/2)^n, I_gamma = I0*e^(-mu*x), I(d) = I(1)/d², 1/t_eff = 1/t_p + 1/t_b, and sigma = sqrt(N).',
+      'Re-run the comparison in the notebook and check the matching Reference section.',
+      NK_SOURCES.nudat.label);
+  }
+
+  function nkBuildOfflinePhysicsCoach(question, state) {
+    var q = typeof question === 'string' ? question.trim() : '';
+    var ql = q.toLowerCase();
+    var st = (state && typeof state === 'object' && !Array.isArray(state)) ? state : {};
+    var missionHint = typeof st.mission === 'string' ? st.mission.toLowerCase() : '';
+
+    var topic = 'overview';
+    if (/scram|decay heat|prompt|delayed|xenon|reactor|critical|rbmk|pwr|bwr|smr|enrich|bomb|meltdown|void|control rod/.test(ql)) topic = 'reactor';
+    else if (/inverse|square|1\/d|distance|farther|closer|alara|stay time|time.*distance|25%\s+at\s+2\s*m|spread/.test(ql)) topic = 'inverse_square';
+    else if (/neutron|moderat|shield|lead|paper|concrete|attenuat|beer|lambert|bremsstrahlung|x-ray/.test(ql)) topic = 'shielding';
+    else if (/half[- ]?life|carbon|c-?14|dating|fossil|dinosaur|biological|excret|radon|chain|uranium|u-?238|isotope|decay/.test(ql)) topic = 'half_life';
+    else if (/geiger|count|poisson|noise|background|becquerel|\bbq\b|cpm|cps|uncertain|currie/.test(ql)) topic = 'counting';
+    else if (/dose|sievert|msv|gray|mgy|lnt|threshold|hormesis|low[- ]?dose|shelter|evacuat|\bki\b|iodide|chernobyl|fukushima|banana|ct scan/.test(ql)) topic = 'dose';
+    else if (/binding|fusion|fission|iter|nif|nickel|iron|e\s*=\s*mc|mass defect|sun/.test(ql)) topic = 'binding';
+    else if (/alpha|beta|gamma/.test(ql)) topic = 'shielding';
+    else if (missionHint === 'rays' || missionHint === 'shield') topic = 'shielding';
+    else if (missionHint === 'distance') topic = 'inverse_square';
+    else if (missionHint === 'decay') topic = 'half_life';
+    else if (missionHint === 'chain') topic = 'reactor';
+    else if (missionHint === 'counting') topic = 'counting';
+
+    var liveNote = '';
+    if (typeof st.isoId === 'string') {
+      var isoRec = ISOTOPES.filter(function (x) { return x.id === st.isoId; })[0];
+      if (isoRec) liveNote = 'Active isotope in lab: ' + isoRec.name + ' (half-life ' + isoRec.hlText + ', ' + isoRec.decay + ').';
+    }
+    if (!liveNote && typeof st.shieldId === 'string' && typeof st.thick === 'number' && isFinite(st.thick)) {
+      var shRec = SHIELDS.filter(function (x) { return x.id === st.shieldId; })[0];
+      if (shRec) {
+        var txPct = nkGammaTransmissionPct(shRec.id, st.thick);
+        liveNote = 'Current shield setting: ' + st.thick.toFixed(1) + ' cm of ' + shRec.name + ' transmits ' + (txPct != null ? txPct.toFixed(1) : '—') + '% of 1 MeV gamma.';
+      }
+    }
+
+    var reply;
+    if (topic === 'shielding') {
+      var leadCols = Math.round(nkCollisionsToThermal(207));
+      var hydCols = Math.round(nkCollisionsToThermal(1));
+      reply = {
+        topic: 'shielding',
+        title: 'Radiation Shielding & Neutron Moderation (Offline Physics)',
+        answer: 'Different radiations interact with matter differently: heavy charged alpha particles stop in paper or dead skin (yet are intensely damaging if inhaled); fast beta electrons stop in millimetres of plastic or aluminium (avoid bare lead to limit secondary X-rays); 1 MeV gamma photons attenuate exponentially with material electron density (lead mu = 0.771 cm^-1 vs concrete 0.149 vs water 0.0707); and uncharged fast neutrons must first be moderated by light hydrogen nuclei (~' + hydCols + ' elastic collisions in water/polyethylene vs ~' + leadCols + ' in heavy lead) before capture.',
+        formula: 'I_gamma(x) = I0 * e^(-mu * x);  xi(A) = 1 + a*ln(a)/(1-a),  N_thermal = ln(2 MeV / 0.025 eV) / xi(A)',
+        keyFacts: [
+          '2 cm at 1 MeV gamma: Lead 21.4% through, Concrete 74.2%, Water 86.8% (NIST XCOM).',
+          'Fast neutron slowing to 0.025 eV: ~' + hydCols + ' collisions off H-1 vs ~' + leadCols + ' off Pb-207.',
+          'Stopping alpha with paper blocks the path — the source itself keeps decaying.'
+        ],
+        caution: 'Educational narrow-beam teaching values (no buildup factor) — not a shielding engineering design.',
+        citation: NK_SOURCES.nist.label + ' & ' + NK_SOURCES.nrc.label,
+        misconceptionHint: nkDiagnoseMisconception('neutron', 'lead-neutrons', 'water').whyNot
+      };
+    } else if (topic === 'inverse_square') {
+      reply = {
+        topic: 'inverse_square',
+        title: 'Inverse-Square Law & Time-Distance-Shielding (Offline Physics)',
+        answer: 'Radiation emitted isotropically from a point source spreads over a sphere of surface area 4*pi*d². Doubling your distance multiplies area by 4, cutting dose rate to 25% (1/4), and quadrupling distance cuts it to 6.25% (1/16). Together with reducing stay time and adding shielding, distance is free and works on every penetrating radiation.',
+        formula: 'I(d) = I(1 m) / d²;  half-rate distance = d * sqrt(2) ≈ 1.41 * d',
+        keyFacts: [
+          '1 m -> 100%, 2 m -> 25%, 4 m -> 6.25% (not linear 50% at 2 m).',
+          'For steady sources, halving time halves dose; for short-lived isotopes like Tc-99m (6.0 h), integrate physical decay.',
+          'Below ~6 cm from a GM tube, finite detector size breaks the ideal point-source 1/d² curve.'
+        ],
+        caution: 'Point-source open-air model; extended sources and scatter depart from pure 1/d².',
+        citation: NK_SOURCES.nrc.label,
+        misconceptionHint: nkDiagnoseMisconception('distance', 'half', 'quarter').whyNot
+      };
+    } else if (topic === 'half_life') {
+      var c14 = ISOTOPES.filter(function (x) { return x.id === 'c14'; })[0];
+      var sr = BIO_NUCLIDES.filter(function (x) { return x.id === 'sr90'; })[0];
+      var srEff = sr ? nkEffectiveHalfLife(sr.tp, sr.tb) : 4050;
+      reply = {
+        topic: 'half_life',
+        title: 'Half-Life, Carbon-14 Ceiling & Biological Clearance (Offline Physics)',
+        answer: 'Radioactive half-life is multiplicative: every half-life halves the remaining parent nuclei (100% -> 50% -> 25% -> 12.5%). Carbon-14 (' + (c14 ? c14.hlText : '5,730 years') + ') dates once-living organic material back to roughly 50,000 years, after which <1–2% remains; older fossils and rocks require U-238 (4.47 billion years) or K-Ar. Inside a body, physical decay and biological excretion run in parallel, so effective half-life is strictly shorter than either clock alone.',
+        formula: 'N(t) = N0 * (1/2)^(t / T_1/2);  t_C14 = 5730 * ln(100 / %) / ln 2;  t_eff = (t_p * t_b) / (t_p + t_b)',
+        keyFacts: [
+          'C-14 practical ceiling: ~50,000 years (organic samples only; laboratory dates use calibration curves).',
+          'Sr-90 example: t_p ≈ 28.8 y and t_b ≈ 18 y combine to t_eff ≈ ' + (srEff / 365.25).toFixed(1) + ' y (shorter than both).',
+          'U-238 decays in 14 steps to stable Pb-206; Rn-222 (3.82 d) is the only gas in the chain, allowing basement seepage.'
+        ],
+        caution: 'Biological half-lives vary with age, diet, and chemical form; physical half-lives are nearly invariant under ordinary conditions.',
+        citation: NK_SOURCES.nudat.label + ' & ' + NK_SOURCES.icrp103.label,
+        misconceptionHint: nkDiagnoseMisconception('c14', 'dinosaur', 'u238').whyNot
+      };
+    } else if (topic === 'reactor') {
+      reply = {
+        topic: 'reactor',
+        title: 'Reactor Kinetics, Delayed Neutrons & Decay Heat (Offline Physics)',
+        answer: 'A steady reactor runs at k = 1.000 using the 0.65% delayed neutron fraction (beta = 0.0065) to keep response times on the scale of seconds rather than prompt milliseconds. Dropping control rods (SCRAM) halts fission immediately, yet radioactive fission products still emit ~6–7% thermal decay heat right after shutdown — requiring uninterrupted cooling. Commercial PWR/BWR cores have negative void coefficients (boiling slows fission) and use 3–5% LEU, far below the >90% needed for weapons.',
+        formula: 'rho = (k - 1) / k;  delayed margin beta = 0.0065 (650 pcm);  P_decay(t) ≈ P0 * 0.0781 * t^(-0.2)',
+        keyFacts: [
+          'Prompt critical (rho >= beta): reactor period collapses toward Lambda / (rho - beta) ≈ 0.05 s.',
+          'Xenon-135 pit: dropping power lets I-135 (6.57 h) decay into neutron-absorbing Xe-135 (9.14 h) faster than flux burns it off.',
+          'Enrichment thresholds: 0.72% natural, 3–5% LEU fuel, 20% IAEA HEU safeguards line, >90% weapons-grade.'
+        ],
+        caution: 'One-group teaching kinetics model — illustrates real feedback mechanisms, not plant licensing calculations.',
+        citation: NK_SOURCES.nrc.label + ' & ' + NK_SOURCES.unscear.label,
+        misconceptionHint: nkDiagnoseMisconception('reactor', 'scram-cold', 'cooling-needed').whyNot
+      };
+    } else if (topic === 'counting') {
+      reply = {
+        topic: 'counting',
+        title: 'Counting Statistics: Poisson Noise, Bq vs cps vs mSv (Offline Physics)',
+        answer: 'A Geiger tube counts clicks, not sieverts. Because radioactive decay is random in time, N counts carry a Poisson uncertainty of sqrt(N), and paired background subtraction adds the variances: sigma_net = sqrt(N_g + N_b) / t. Short counts scatter widely and can even yield a negative net count on background alone. Precision improves only as sqrt(t) — four times the counting time halves the relative uncertainty.',
+        formula: 'sigma(N) = sqrt(N);  net = (N_g - N_b) / t ± sqrt(N_g + N_b) / t;  L_C = 2.33 * sqrt(2 * N_b)',
+        keyFacts: [
+          'Becquerel (Bq) = decays/s inside the source; cps = clicks/s in one detector geometry; mSv = weighted tissue dose.',
+          'Background count rate here is 0.42 cps (~25 cpm) on a 6.16 cm² end-window GM tube.',
+          'Cheap µSv/h displays assume one fixed photon energy (usually Cs-137 at 662 keV) and misread other energies.'
+        ],
+        caution: 'Never equate raw Geiger clicks with absorbed dose without energy-compensated calibration.',
+        citation: NK_SOURCES.nrc.label,
+        misconceptionHint: nkDiagnoseMisconception('counting', 'same', 'vary').whyNot
+      };
+    } else if (topic === 'dose') {
+      var cohort10 = nkCohortNeeded(10, 0.055);
+      reply = {
+        topic: 'dose',
+        title: 'Radiation Dose, Low-Dose Models & Emergency Action (Offline Physics)',
+        answer: 'World average natural background is ~2.4 mSv/yr (mostly indoor radon), an abdominal CT is ~10 mSv, the ICRP worker limit is 20 mSv/yr, and ~100 mSv is the lowest dose with a clearly measurable cancer excess in survivor studies. Below 100 mSv, required study size grows as 1 / dose² (detecting 10 mSv needs ~' + nkFmt(cohort10 / 1e6, 1) + ' million people per group), so regulators use LNT (5.5%/Sv) as a cautious protection rule rather than a body-count formula. In a plume emergency, sheltering beats evacuating whenever getting clear takes longer than DRF * plume duration; KI protects ONLY the thyroid against I-131.',
+        formula: 'H = D * w_R;  E = sum(w_T * H);  N_cohort ∝ 1 / dose²;  t_breakeven = DRF * t_plume',
+        keyFacts: [
+          'Radiation weighting w_R: gamma/beta = 1, protons = 2, alpha = 20 (ICRP 103).',
+          'Lifecycle deaths/TWh: Coal 24.6, Oil 18.4, Gas 2.8, Hydro 1.3, Wind 0.04, Nuclear 0.03, Solar 0.02.',
+          'Educational model only — in real emergencies or medical care, always follow official authorities and clinicians.'
+        ],
+        caution: 'Educational model — not emergency or medical instructions. Follow state/local officials and healthcare providers.',
+        citation: NK_SOURCES.icrp103.label + ', ' + NK_SOURCES.inworks.label + ' & ' + NK_SOURCES.unscear.label,
+        misconceptionHint: nkDiagnoseMisconception('dose', 'low-dose-zero', 'uncertain').whyNot
+      };
+    } else if (topic === 'binding') {
+      reply = {
+        topic: 'binding',
+        title: 'Binding Energy Curve: Why Both Fission & Fusion Release Energy (Offline Physics)',
+        answer: 'Binding energy per nucleon climbs from H-1 (0 MeV) to a summit at Ni-62 (8.795 MeV, with Fe-56 close behind at 8.790 MeV) and slopes gently down to U-235 (7.591 MeV). Moving toward that tighter-bound peak from EITHER side converts a tiny fraction of mass into energy (E = mc²): fusing D + T releases 17.6 MeV, splitting U-235 releases ~200 MeV — roughly 50 million times more per reaction than burning carbon (4.1 eV).',
+        formula: 'E = delta_m * c²  (c² = 931.494 MeV / u)',
+        keyFacts: [
+          'Summit of nuclear stability: Ni-62 at 8.795 MeV/nucleon (AME2020).',
+          'D-T fusion: 17.6 MeV (3.52 MeV/nucleon); U-235 fission: ~200 MeV (0.85 MeV/nucleon).',
+          'Fusion status: NIF reached target-energy ignition (2022) and ITER targets D-T operation in 2039 — not yet commercial grid power.'
+        ],
+        caution: 'Separate operating fission technology from proposed/experimental fusion milestones.',
+        citation: NK_SOURCES.nudat.label + ', ' + NK_SOURCES.iter.label + ' & ' + NK_SOURCES.nif.label,
+        misconceptionHint: 'Both fission of heavy nuclei and fusion of light nuclei release energy because both move products closer to the Ni-62/Fe-56 binding-energy summit.'
+      };
+    } else {
+      reply = {
+        topic: 'overview',
+        title: 'Offline Nuclear & Radiation Physics Coach',
+        answer: 'Ask any question about radiation shielding (alpha/beta/gamma vs hydrogen neutron moderation), inverse-square distance (1/d²), half-life & C-14 dating (~50,000 yr ceiling), biological vs physical half-life, Geiger counting noise (sqrt(N)), low-dose risk models (LNT below 100 mSv), or reactor kinetics & decay heat after SCRAM. Every answer is computed 100% offline from this lab\'s verified NNDC, NIST, ICRP, NRC, and UNSCEAR tables.',
+        formula: 'N = N0*(1/2)^n  |  I = I0*e^(-mu*x)  |  I ∝ 1/d²  |  1/t_eff = 1/t_p + 1/t_b  |  sigma = sqrt(N)',
+        keyFacts: [
+          'Shielding: paper stops alpha, plastic/Al stops beta, lead attenuates gamma, hydrogen moderates neutrons.',
+          'Distance: doubling distance cuts point-source intensity to 25% (1/4), not 50%.',
+          'Safety: SCRAM halts fission immediately, but decay heat still requires active cooling.'
+        ],
+        caution: '100% deterministic offline physics reference — no generative AI required.',
+        citation: NK_SOURCES.nudat.label + ', ' + NK_SOURCES.nist.label + ' & ' + NK_SOURCES.icrp103.label,
+        misconceptionHint: 'Try asking: "Why does lead fail to stop neutrons alone?" or "Why does C-14 stop around 50,000 years?"'
+      };
+    }
+
+    var fullAnswer = liveNote ? reply.answer + ' ' + liveNote : reply.answer;
+    var spokenSummary = reply.title + '. ' + fullAnswer + ' Key rule: ' + reply.misconceptionHint;
+    return Object.freeze({
+      topic: reply.topic,
+      title: reply.title,
+      answer: fullAnswer,
+      formula: reply.formula,
+      keyFacts: Object.freeze(reply.keyFacts.slice()),
+      caution: reply.caution,
+      citation: reply.citation,
+      misconceptionHint: reply.misconceptionHint,
+      spokenSummary: spokenSummary
+    });
+  }
+
+  var NuclearLabPure = Object.freeze({
+    version: '13.0',
+    offlineOnly: true,
+    xi: nkXi,
+    collisionsToThermal: nkCollisionsToThermal,
+    projectedRisk: nkProjected,
+    cohortNeeded: nkCohortNeeded,
+    distanceIntensity: nkStudioDistanceIntensity,
+    effectiveHalfLife: nkEffectiveHalfLife,
+    gammaTransmissionPct: nkGammaTransmissionPct,
+    muEnAir: nkMuEnAir,
+    gammaConst: nkGammaConst,
+    integratedDose: nkIntegratedDose,
+    timeToDose: nkTimeToDose,
+    decayHeat: rxDecayHeat,
+    scenarioProgress: rxScenarioProgress,
+    safeXpLedger: nkSafeXpLedger,
+    isGlobalMuted: isNuclearGlobalMuted,
+    diagnoseMisconception: nkDiagnoseMisconception,
+    buildOfflinePhysicsCoach: nkBuildOfflinePhysicsCoach
+  });
+  try {
+    if (typeof window !== 'undefined') window.NuclearLabPure = NuclearLabPure;
+  } catch (e) {}
+
+  function NuclearOfflinePhysicsCoach(props) {
+    var ctx = props.ctx || {};
+    var React = ctx.React;
+    var h = React.createElement;
+    var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
+    var surface = props.surface === 'studio' ? 'studio' : 'reference';
+    var isContrast = !!props.isContrast;
+    var isDark = isContrast || props.isDark !== false;
+    var canSpeak = typeof ctx.callTTS === 'function';
+    var qState = React.useState('');
+    var draft = qState[0], setDraft = qState[1];
+    var askedState = React.useState('');
+    var asked = askedState[0], setAsked = askedState[1];
+    var reply = nkBuildOfflinePhysicsCoach(asked, props.state);
+    var inputId = 'nk-coach-input-' + surface;
+    var prompts = [
+      { id: 'neutrons', label: t('stem.nuclearlab.coach_chip_neutrons', 'Neutrons vs lead'), q: 'Why does lead not stop neutrons alone?' },
+      { id: 'invsq', label: t('stem.nuclearlab.coach_chip_invsq', 'Why 25% at 2 m?'), q: 'Why is intensity 25% at 2 m instead of 50%?' },
+      { id: 'c14', label: t('stem.nuclearlab.coach_chip_c14', 'C-14 & bio half-life'), q: 'Why does carbon-14 stop at 50,000 years and what is biological half-life?' },
+      { id: 'scram', label: t('stem.nuclearlab.coach_chip_scram', 'SCRAM & decay heat'), q: 'Why do reactor pumps stay needed after SCRAM?' },
+      { id: 'dose', label: t('stem.nuclearlab.coach_chip_dose', 'Low-dose LNT & counts'), q: 'Why do short Geiger counts vary and why is low-dose risk below 100 mSv uncertain?' }
+    ];
+
+    if (surface === 'studio') {
+      return h('details', { className: 'ns-notebook ns-coach-panel', 'data-nk-offline-coach': 'studio' },
+        h('summary', null, t('stem.nuclearlab.coach_studio_summary', 'Offline physics coach (deterministic reference)')),
+        h('p', { className: 'ns-note' }, t('stem.nuclearlab.coach_intro', 'Ask a nuclear physics question or choose a topic. Answers are computed 100% offline from NNDC, NIST, ICRP, NRC, and UNSCEAR tables.')),
+        h('div', { className: 'ns-coach-chips', role: 'group', 'aria-label': t('stem.nuclearlab.aria_coach_topics', 'Quick nuclear physics questions') },
+          prompts.map(function (p) {
+            return h('button', { key: p.id, type: 'button', className: 'ns-choice', 'aria-pressed': asked === p.q ? 'true' : 'false', onClick: function () { setDraft(p.q); setAsked(p.q); } }, p.label);
+          })),
+        h('div', { className: 'ns-coach-form' },
+          h('label', { htmlFor: inputId, className: 'sr-only' }, t('stem.nuclearlab.coach_input_label', 'Ask an offline nuclear physics question')),
+          h('input', { id: inputId, type: 'text', value: draft, placeholder: t('stem.nuclearlab.coach_placeholder', 'e.g. Why does water moderate neutrons better than lead?'), 'aria-label': t('stem.nuclearlab.coach_input_label', 'Ask an offline nuclear physics question'), onChange: function (e) { setDraft(e.target.value); }, onKeyDown: function (e) { if (e.key === 'Enter') setAsked(draft); } }),
+          h('button', { type: 'button', className: 'ns-secondary', onClick: function () { setAsked(draft); } }, t('stem.nuclearlab.coach_ask_btn', 'Explain physics'))),
+        h('div', { className: 'ns-coach-reply', 'data-nk-coach-topic': reply.topic },
+          h('p', null, h('strong', null, reply.title)),
+          h('p', null, reply.answer),
+          h('p', { className: 'ns-note' }, h('strong', null, t('stem.nuclearlab.coach_formula_label', 'Model rule: ')), reply.formula),
+          h('ul', null, reply.keyFacts.map(function (fact, idx) { return h('li', { key: idx }, fact); })),
+          h('p', { className: 'ns-note', style: { marginTop: 8 } }, h('strong', null, t('stem.nuclearlab.coach_misconception_label', 'Common trap: ')), reply.misconceptionHint),
+          h('p', { className: 'ns-note', style: { marginTop: 6, marginBottom: 0 } }, t('stem.nuclearlab.coach_sources_label', 'Sources: ') + reply.citation),
+          canSpeak ? h('button', { type: 'button', className: 'ns-secondary ns-read-aloud', 'aria-label': t('stem.nuclearlab.aria_read_coach_reply', 'Read offline physics coach explanation aloud'), onClick: function () { speakNuclear(ctx, reply.spokenSummary); } }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null));
+    }
+
+    var cardBg = isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.96)');
+    var panelBg = isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.62)' : 'rgba(248,250,252,0.96)');
+    var headingCol = isContrast ? '#ffff00' : (isDark ? '#22d3ee' : '#0e7490');
+    var bodyCol = isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#1e293b');
+    var mutedCol = isContrast ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569');
+    var borderCol = isContrast ? '#fbbf24' : 'rgba(34,211,238,0.48)';
+    return h('div', {
+      'data-nk-offline-coach': 'reference',
+      className: 'nk-section-card rounded-xl border p-3 mt-4',
+      style: { borderColor: borderCol, borderLeft: '4px solid ' + (isContrast ? '#fbbf24' : '#22d3ee'), backgroundColor: cardBg }
+    },
+      h('h4', { className: 'nk-section-heading font-black mb-2 pb-2', style: { color: headingCol, fontSize: '0.875rem', lineHeight: '1.35rem', borderBottom: '1px solid ' + borderCol } },
+        t('stem.nuclearlab.coach_ref_heading', '🧭 Offline Nuclear Physics Coach')),
+      h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: mutedCol } },
+        t('stem.nuclearlab.coach_intro', 'Ask a nuclear physics question or choose a topic. Answers are computed 100% offline from NNDC, NIST, ICRP, NRC, and UNSCEAR tables.')),
+      h('div', { role: 'group', 'aria-label': t('stem.nuclearlab.aria_coach_topics', 'Quick nuclear physics questions'), className: 'flex flex-wrap gap-1.5 mb-2' },
+        prompts.map(function (p) {
+          var active = asked === p.q;
+          return h('button', {
+            key: p.id, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+            onClick: function () { setDraft(p.q); setAsked(p.q); },
+            className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold',
+            style: active
+              ? (isContrast ? { background: '#000000', color: '#ffff00', border: '2px solid #ffff00' } : (isDark ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' } : { background: '#0e7490', color: '#ffffff', border: '1px solid #0e7490' }))
+              : (isContrast ? { background: '#000000', color: '#ffffff', border: '1px solid #fbbf24' } : { background: isDark ? 'rgba(30,41,59,0.92)' : '#ffffff', color: bodyCol, border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.35)') })
+          }, p.label);
+        })),
+      h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+        h('label', { htmlFor: inputId, className: 'sr-only' }, t('stem.nuclearlab.coach_input_label', 'Ask an offline nuclear physics question')),
+        h('input', {
+          id: inputId, type: 'text', value: draft,
+          placeholder: t('stem.nuclearlab.coach_placeholder', 'e.g. Why does water moderate neutrons better than lead?'),
+          'aria-label': t('stem.nuclearlab.coach_input_label', 'Ask an offline nuclear physics question'),
+          onChange: function (e) { setDraft(e.target.value); },
+          onKeyDown: function (e) { if (e.key === 'Enter') setAsked(draft); },
+          className: 'min-h-11 flex-1 min-w-[12rem] rounded-lg px-3 py-2 text-[0.6875rem]',
+          style: { background: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.88)' : '#ffffff'), color: bodyCol, border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? 'rgba(148,163,184,0.45)' : 'rgba(100,116,139,0.5)')) }
+        }),
+        h('button', {
+          type: 'button',
+          onClick: function () { setAsked(draft); },
+          className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
+          style: isContrast ? { background: '#000000', color: '#ffff00', border: '2px solid #ffff00' } : { background: '#0e7490', color: '#ffffff', border: '1px solid #0e7490' }
+        }, t('stem.nuclearlab.coach_ask_btn', 'Explain physics'))),
+      h('div', { 'data-nk-coach-topic': reply.topic, className: 'rounded-lg border p-2.5', style: { borderColor: borderCol, background: panelBg } },
+        h('p', { className: 'text-xs font-black mb-1', style: { color: headingCol } }, reply.title),
+        h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: bodyCol } }, reply.answer),
+        h('p', { className: 'text-[0.6875rem] font-mono mt-1.5', style: { color: mutedCol } }, reply.formula),
+        h('ul', { className: 'mt-1.5 space-y-1 list-disc pl-4 text-[0.6875rem]', style: { color: bodyCol } },
+          reply.keyFacts.map(function (fact, idx) { return h('li', { key: idx }, fact); })),
+        h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: bodyCol } },
+          h('strong', null, t('stem.nuclearlab.coach_misconception_label', 'Common trap: ')), reply.misconceptionHint),
+        h('p', { className: 'text-[0.625rem] mt-1.5', style: { color: mutedCol } },
+          t('stem.nuclearlab.coach_sources_label', 'Sources: ') + reply.citation),
+        canSpeak ? h('button', {
+          type: 'button',
+          'aria-label': t('stem.nuclearlab.aria_read_coach_reply', 'Read offline physics coach explanation aloud'),
+          onClick: function () { speakNuclear(ctx, reply.spokenSummary); },
+          className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
+          style: isContrast ? { background: '#000000', color: '#ffff00', border: '2px solid #ffff00' } : { background: isDark ? 'rgba(30,41,59,0.92)' : '#ffffff', color: bodyCol, border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.45)' : 'rgba(100,116,139,0.45)') }
+        }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null));
+  }
 
   // WCAG 1.4.3 high contrast (generated by gen_hc.cjs)
   (function() {
@@ -3268,6 +3963,7 @@
   })();
   // end WCAG 1.4.3 high contrast
   window.StemLab.registerTool('nuclearLab', {
+    _engine: NuclearLabPure,
     icon: '☢️',
     label: 'Nuclear & Radiation Lab',
     desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, an evidence challenge for testing nuclear claims, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.',
@@ -3356,18 +4052,21 @@
       try { __alloCtx_nuclearlab = ctx; } catch (e) {}
       var React = ctx.React;
       var h = React.createElement;
-      var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
+      var t = (ctx.t && function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function (k, fb) { return fb != null ? fb : k; };
       var announceToSR = ctx.announceToSR;
       var setToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
       var beep = ctx.beep;
+      var canSpeak = typeof ctx.callTTS === 'function';
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
-      var isDark = ctx.theme !== 'light';
+      var isContrast = !!(ctx.isContrast === true || ctx.theme === 'contrast');
+      var isDark = isContrast || (ctx.theme === 'light' ? false : (ctx.theme === 'dark' ? true : (typeof ctx.isDark === 'boolean' ? ctx.isDark : true)));
 
       // All hooks first, unconditionally — a hook after a render-time branch is
       // the crash class that has bitten other tools in this lab on navigation.
+      var xpAwardedRef = React.useRef({});
       var decayRef = React.useRef(null);
       var doseRef = React.useRef(null);
       var countRef = React.useRef(null);
@@ -3428,8 +4127,9 @@
       // The learner may request LESS motion, never more than the operating
       // system allows. Keep the system query live so changing it while the lab
       // is open immediately resynchronises the canvas and 3D core.
+      var nkHostReducedMotion = !!(ctx && ctx.reduceMotion);
       var nkUserReducedMotion = d.nkReduceMotion === true;
-      var nkReduceMotion = nkSystemReducedMotion || nkUserReducedMotion;
+      var nkReduceMotion = nkSystemReducedMotion || nkHostReducedMotion || nkUserReducedMotion;
       React.useEffect(function () {
         if (typeof window === 'undefined' || !window.matchMedia) return;
         var query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -3445,7 +4145,12 @@
       }, []);
       function upd(patch) {
         setToolData(function (prev) {
-          var cur = Object.assign({}, (prev && prev._nuclearLab) || {}, patch);
+          var curRaw = prev && prev._nuclearLab;
+          var base = (curRaw && typeof curRaw === 'object' && !Array.isArray(curRaw)) ? curRaw : {};
+          var cur = Object.assign({}, base, patch);
+          if (patch && patch._xpCredited && typeof patch._xpCredited === 'object' && !Array.isArray(patch._xpCredited)) {
+            cur._xpCredited = Object.assign(nkSafeXpLedger(base._xpCredited), nkSafeXpLedger(patch._xpCredited));
+          }
           var next = Object.assign({}, prev);
           next._nuclearLab = cur;
           return next;
@@ -3457,11 +4162,15 @@
         if (!nkReduceMotion && typeof celebrate === 'function') celebrate();
       }
       function pushOnce(key, value) {
-        var list = d[key] || [];
-        if (list.indexOf(value) !== -1) return;
-        var patch = {};
-        patch[key] = list.concat([value]);
-        upd(patch);
+        setToolData(function (prev) {
+          var curRaw = prev && prev._nuclearLab;
+          var base = (curRaw && typeof curRaw === 'object' && !Array.isArray(curRaw)) ? curRaw : {};
+          var list = Array.isArray(base[key]) ? base[key] : [];
+          if (list.indexOf(value) !== -1) return prev;
+          var nextLab = Object.assign({}, base);
+          nextLab[key] = list.concat([value]);
+          return Object.assign({}, prev, { _nuclearLab: nextLab });
+        });
       }
 
       // ── 21. evidence challenge ──
@@ -3608,28 +4317,30 @@
       var cdDetected = !!cdLast && (cdLast.g - cdLast.b) > cdCrit;
 
       function cdTakeCount() {
-        var t = cdTime;
-        var run = { g: nkPoisson((cdTrueNet + GM_BACKGROUND) * t), b: nkPoisson(GM_BACKGROUND * t), t: t, d: cdDist, s: cdSrcId };
-        var net = (run.g - run.b) / t;
-        var sig = Math.sqrt(run.g + run.b) / t;
+        var countSec = cdTime;
+        var run = { g: nkPoisson((cdTrueNet + GM_BACKGROUND) * countSec), b: nkPoisson(GM_BACKGROUND * countSec), t: countSec, d: cdDist, s: cdSrcId };
+        var net = (run.g - run.b) / countSec;
+        var sig = Math.sqrt(run.g + run.b) / countSec;
         var ok = (run.g - run.b) > 2.33 * Math.sqrt(2 * Math.max(run.b, 1));
         var patch = { cdRuns: cdRuns.concat([run]).slice(-8), countTaken: true };
         if (ok && net > 0 && sig / net <= 0.05) {
           patch.countPrecise = true;
-          if (!d.countPrecise) {
+          if (!nkSafeXpLedger(d._xpCredited).nuclear_count && !xpAwardedRef.current.nuclear_count && !d.countPrecise) {
+            xpAwardedRef.current.nuclear_count = true;
+            patch._xpCredited = Object.assign(nkSafeXpLedger(d._xpCredited), { nuclear_count: true });
             nkCelebrate();
             if (typeof awardXP === 'function') awardXP('nuclear_count', 10, 'Measured a source to better than 5%');
           }
         }
         if (cdSrcId !== 'none') {
-          var seen = d.cdDistTried || [];
+          var seen = Array.isArray(d.cdDistTried) ? d.cdDistTried : [];
           var key = cdSrcId + '@' + Math.round(cdDist);
           if (seen.indexOf(key) === -1) patch.cdDistTried = seen.concat([key]);
         }
         upd(patch);
         if (typeof beep === 'function') beep();
         if (typeof announceToSR === 'function') {
-          announceToSR('Counted for ' + t + ' seconds. ' + run.g + ' counts with the source, ' +
+          announceToSR('Counted for ' + countSec + ' seconds. ' + run.g + ' counts with the source, ' +
             run.b + ' counts of background. Net ' + (net).toFixed(3) + ' plus or minus ' + sig.toFixed(3) + ' counts per second.');
         }
       }
@@ -3765,10 +4476,10 @@
 
       function nkIsContrast() {
         try {
-          return ctx.theme === 'contrast' || (typeof document !== 'undefined' && (
+          return !!(ctx.isContrast === true || ctx.theme === 'contrast' || (typeof document !== 'undefined' && (
             (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
             (document.body && document.body.classList && document.body.classList.contains('theme-contrast'))
-          ));
+          )));
         } catch (e) { return false; }
       }
 
@@ -4215,11 +4926,11 @@
             { label: 'Each halving', colour: 'rgba(167,139,250,0.75)', dash: true }
           ]
         });
-      }, [halves, isoId, isDark, d.nkPath]);
+      }, [halves, isoId, isDark, isContrast, d.nkPath]);
 
       React.useEffect(function () {
         nkChainMap(chainRef.current, d.chainPick);
-      }, [d.chainPick, isDark, d.nkPath]);
+      }, [d.chainPick, isDark, isContrast, d.nkPath]);
 
       // Dose against how long it takes to get clear. The shelter line is flat
       // — the plume does not care how fast you drive — and the evacuation line
@@ -4228,9 +4939,9 @@
       React.useEffect(function () {
         var maxH = 12;
         var evac = [], shel = [];
-        for (var t = 0; t <= maxH + 0.01; t += 0.25) {
-          evac.push([t, shEvacDoseAt(t)]);
-          shel.push([t, shShelterDose]);
+        for (var hr = 0; hr <= maxH + 0.01; hr += 0.25) {
+          evac.push([hr, shEvacDoseAt(hr)]);
+          shel.push([hr, shShelterDose]);
         }
         var top = Math.max(shEvacDoseAt(maxH), shShelterDose) * 1.2;
         var ann = [];
@@ -4254,7 +4965,7 @@
             { label: 'Evacuate now', colour: ink('#f87171') }
           ]
         });
-      }, [shRate, shPlume, shEvac, shPlaceId, isDark, d.nkPath]);
+      }, [shRate, shPlume, shEvac, shPlaceId, isDark, isContrast, d.nkPath]);
 
       // Dose rate against distance, bare and shielded. Two curves make the
       // point the prose cannot: distance is free and works on everything,
@@ -4286,7 +4997,7 @@
                { label: nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase(), colour: ink(ptSrc.colour) }]
             : [{ label: 'Unshielded', colour: ink(ptSrc.colour) }]
         });
-      }, [ptSrcId, ptDist, ptShieldId, ptThick, isDark, d.nkPath]);
+      }, [ptSrcId, ptDist, ptShieldId, ptThick, isDark, isContrast, d.nkPath]);
 
       // Inverse-square curve, with the last measured net rate dropped on top of
       // it. The gap between the dot and the line IS the counting noise.
@@ -4309,7 +5020,7 @@
             : [{ label: 'True rate', colour: ink('#2dd4bf') }],
           marker: cdLast ? { x: nkClamp(cdLast.d, 0, 60), y: nkClamp(cdNet, -0.18 * cdChartMax, cdChartMax), colour: ink('#fbbf24') } : null
         });
-      }, [cdSrcId, cdDist, cdRuns.length, cdChartMax, cdNet, isDark, d.nkPath]);
+      }, [cdSrcId, cdDist, cdRuns.length, cdChartMax, cdNet, isDark, isContrast, d.nkPath]);
 
       // Body burden against time, with the decay-only curve behind it. For the
       // long-lived nuclides the decay-only curve is visibly FLAT across the
@@ -4335,7 +5046,7 @@
             { label: 'Decay + excretion', colour: ink(bio.colour) }
           ]
         });
-      }, [bioId, isDark, d.nkPath]);
+      }, [bioId, isDark, isContrast, d.nkPath]);
 
 
       // ── Reactor simulator ────────────────────────────────────────────
@@ -5043,7 +5754,7 @@
         RX_VIEWER.sync({
           selected: d.rxPart || null,
           dark: isDark,
-          contrast: ctx.theme === 'contrast',
+          contrast: nkIsContrast(),
           reduced: nkReduceMotion,
           sceneProps: { rods: rxUi.rodStep, hot: rxUi.hotStep / 12 },
           sceneKey: rxUi.rodStep + ':' + rxUi.hotStep,
@@ -5061,15 +5772,16 @@
         if (/^(loading|ready|failed)$/.test(viewerStatus || '') && viewerStatus !== d.rxStatus) {
           upd({ rxStatus: viewerStatus });
         }
-      }, [d.rxPart, d.rxStatus, isDark, ctx.theme, nkReduceMotion, rxUi.rodStep, rxUi.hotStep]);
+      }, [d.rxPart, d.rxStatus, isDark, isContrast, ctx.theme, nkReduceMotion, rxUi.rodStep, rxUi.hotStep]);
 
       React.useEffect(function () {
-        if (rxUi.verdict && rxUi.verdict.ok && !d.reactorRun) {
-          upd({ reactorRun: true });
+        if (rxUi.verdict && rxUi.verdict.ok && !nkSafeXpLedger(d._xpCredited).nuclear_operate && !xpAwardedRef.current.nuclear_operate && !d.reactorRun) {
+          xpAwardedRef.current.nuclear_operate = true;
+          upd({ reactorRun: true, _xpCredited: Object.assign(nkSafeXpLedger(d._xpCredited), { nuclear_operate: true }) });
           nkCelebrate();
           if (typeof awardXP === 'function') awardXP('nuclear_operate', 15, 'Completed a reactor scenario');
         }
-      }, [rxUi.verdict, d.reactorRun]);
+      }, [rxUi.verdict, d.reactorRun, d._xpCredited]);
 
       function rxSet(patch) {
         var s = rxRef.current;
@@ -5156,7 +5868,7 @@
           ],
           legend: [{ label: 'Measured nuclides (AME2020)', colour: ink('#38bdf8') }]
         });
-      }, [isDark, d.nkPath]);
+      }, [isDark, isContrast, d.nkPath]);
 
       // ── personal dose ──
       var dsAlt = typeof d.dsAlt === 'number' ? d.dsAlt : 100;         // metres
@@ -5251,7 +5963,7 @@
       // so it is safe to wrap any colour expression with it.
       var ink = function (c) {
         var pair = typeof c === 'string' && NK_INK[c.toLowerCase()];
-        return pair ? (isDark ? pair[0] : pair[1]) : c;
+        return pair ? (isContrast ? '#ffff00' : (isDark ? pair[0] : pair[1])) : c;
       };
       var card = function (accent) {
         var children = Array.prototype.slice.call(arguments, 1);
@@ -5259,13 +5971,13 @@
         // makes React treat them as a dynamic LIST and warn that every one needs
         // a key — they are static siblings, not a list.
         return h.apply(null, ['div', { className: 'nk-section-card rounded-xl border p-3 mt-4', style: {
-          borderColor: accent + '55',
-          borderLeft: '4px solid ' + accent,
-          backgroundColor: isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.96)',
-          backgroundImage: 'linear-gradient(135deg, ' + accent + (isDark ? '18' : '12') + ' 0%, transparent 38%)',
-          boxShadow: isDark
+          borderColor: isContrast ? '#fbbf24' : accent + '55',
+          borderLeft: '4px solid ' + (isContrast ? '#fbbf24' : accent),
+          backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.96)'),
+          backgroundImage: isContrast ? 'none' : ('linear-gradient(135deg, ' + accent + (isDark ? '18' : '12') + ' 0%, transparent 38%)'),
+          boxShadow: isContrast ? 'none' : (isDark
             ? 'inset 0 1px 0 rgba(255,255,255,0.035), 0 16px 34px -26px rgba(0,0,0,0.85)'
-            : 'inset 0 1px 0 rgba(255,255,255,0.9), 0 16px 34px -26px rgba(15,23,42,0.55)'
+            : 'inset 0 1px 0 rgba(255,255,255,0.9), 0 16px 34px -26px rgba(15,23,42,0.55)')
         } }].concat(children));
       };
       // Same card, plus the anchor the topic index jumps to. scroll-margin keeps
@@ -5402,7 +6114,7 @@
           h('progress', {
             value: value,
             max: needed,
-            'aria-label': value + ' of ' + needed + ' ' + label + ' deliberately compared',
+            'aria-label': t('stem.nuclearlab.aria_compared_progress', '{value} of {needed} {label} deliberately compared').replace('{value}', String(value)).replace('{needed}', String(needed)).replace('{label}', label),
             className: 'flex-1 min-w-[7rem] h-2',
             style: { accentColor: complete ? '#059669' : accent }
           }),
@@ -5494,7 +6206,15 @@
               border: '1px solid ' + accent
             }
           }, open ? 'Hide the answer' : 'Worked it out? Check'),
-          open ? h('p', { id: answerId, className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer) : null);
+          open ? h('div', { id: answerId },
+            h('p', { className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, answer),
+            canSpeak ? h('button', {
+              type: 'button',
+              'aria-label': t('stem.nuclearlab.aria_read_ponder_answer', 'Read explanation aloud'),
+              onClick: function () { speakNuclear(ctx, question + ' ' + answer); },
+              className: 'min-h-11 mt-2 px-3 py-1.5 rounded-lg text-[0.6875rem] font-bold',
+              style: isContrast ? { background: '#000000', color: ink('#fbbf24'), border: '2px solid #ffff00' } : { background: isDark ? 'rgba(30,41,59,0.92)' : '#ffffff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.45)' : 'rgba(100,116,139,0.4)') }
+            }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null) : null);
       };
       var para = function (txt, colour) {
         return h('span', { className: 'block text-[0.6875rem] leading-relaxed mt-1', style: { color: ink(colour) || (isDark ? '#e2e8f0' : '#334155') } }, txt);
@@ -6112,7 +6832,9 @@
           return h('button', {
             key: dir, type: 'button',
             onClick: function () { nkGoTo(s); },
-            'aria-label': (dir === 'prev' ? 'Back to step ' + at + ': ' : 'On to step ' + (at + 2) + ': ') + s.label,
+            'aria-label': (dir === 'prev'
+              ? t('stem.nuclearlab.aria_back_to_step', 'Back to step {step}: {label}').replace('{step}', String(at))
+              : t('stem.nuclearlab.aria_on_to_step', 'On to step {step}: {label}').replace('{step}', String(at + 2))).replace('{label}', s.label),
             className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold',
             style: {
               background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.92)',
@@ -6123,7 +6845,7 @@
         };
         return h('nav', {
           key: 'routefoot',
-          'aria-label': nkPath.q + ', route progress, step ' + (at + 1) + ' of ' + nkPath.steps.length,
+          'aria-label': t('stem.nuclearlab.aria_route_footer_nav', '{question}, route progress, step {step} of {total}').replace('{question}', nkPath.q).replace('{step}', String(at + 1)).replace('{total}', String(nkPath.steps.length)),
           className: 'flex flex-wrap items-center gap-2 mt-3 pt-2',
           style: { borderTop: '1px dashed ' + accent + '66' }
         },
@@ -6135,8 +6857,7 @@
           }, routeProgress.count + '/' + routeProgress.total + ' opened'),
           h('progress', {
             value: routeProgress.count, max: nkPath.steps.length,
-            'aria-label': nkPath.q + ': ' + routeProgress.count + ' of ' + nkPath.steps.length
-              + ' steps opened; currently at step ' + (at + 1),
+            'aria-label': t('stem.nuclearlab.aria_route_footer_progress', '{question}: {count} of {total} steps opened; currently at step {step}').replace('{question}', nkPath.q).replace('{count}', String(routeProgress.count)).replace('{total}', String(nkPath.steps.length)).replace('{step}', String(at + 1)),
             className: 'nk-route-progress flex-1 min-w-[7rem] h-2',
             style: { accentColor: accent }
           }),
@@ -6159,7 +6880,7 @@
         return h('button', {
           type: 'button', 'aria-pressed': on ? 'true' : 'false',
           'aria-label': label + (aria ? '. ' + aria : ''), onClick: onClick, disabled: !!locked,
-          title: locked ? 'This setting follows your operating-system preference.' : undefined,
+          title: locked ? t('stem.nuclearlab.title_follows_os_preference', 'This setting follows your operating-system preference.') : undefined,
           className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold',
           style: Object.assign({}, on
             ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
@@ -6182,7 +6903,7 @@
           'data-nk-chart-table': id,
           role: 'region',
           tabIndex: 0,
-          'aria-label': caption + '. Scroll horizontally to read every column.',
+          'aria-label': t('stem.nuclearlab.aria_chart_table_scroll', '{caption}. Scroll horizontally to read every column.').replace('{caption}', caption),
           className: 'nk-chart-table mt-2 rounded-lg border overflow-x-auto',
           style: {
             borderColor: accent + '70',
@@ -6282,8 +7003,11 @@
             // but aria-expanded already carries the state and pointing at an
             // id that is not in the document is not something to rely on.
             'aria-controls': nkOpen ? 'nk-index-body' : undefined,
-            'aria-label': 'Routes & display. ' + (nkOpen ? 'Hide' : 'Show') + ' ' + NK_PATHS.length + ' question routes and the topic index, ' + NK_SECTIONS.length + ' topics'
-              + (nkPath ? ', currently following the route "' + nkPath.q + '"' : ''),
+            'aria-label': t('stem.nuclearlab.aria_routes_toggle', 'Routes & display. {action} {routes} question routes and the topic index, {topics} topics')
+              .replace('{action}', nkOpen ? t('stem.nuclearlab.action_hide', 'Hide') : t('stem.nuclearlab.action_show', 'Show'))
+              .replace('{routes}', String(NK_PATHS.length))
+              .replace('{topics}', String(NK_SECTIONS.length))
+              + (nkPath ? t('stem.nuclearlab.aria_routes_following', ', currently following the route "{route}"').replace('{route}', nkPath.q) : ''),
             onClick: function () { upd({ nkOpen: !nkOpen }); if (typeof beep === 'function') beep(); },
             className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-black',
             style: {
@@ -6320,8 +7044,8 @@
             h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
             h('input', {
               id: 'nk-topic-search', type: 'search', value: nkQueryRaw,
-              placeholder: 'Search topics…',
-              'aria-label': 'Search the ' + NK_SECTIONS.length + ' topics by name or keyword',
+              placeholder: t('stem.nuclearlab.search_topics_placeholder', 'Search topics…'),
+              'aria-label': t('stem.nuclearlab.aria_search_topics', 'Search the {count} topics by name or keyword').replace('{count}', String(NK_SECTIONS.length)),
               onChange: function (e) { upd({ nkQuery: e.target.value, nkPath: null }); },
               className: 'min-h-11 flex-1 min-w-[8rem] rounded-lg px-2 py-1 text-[0.6875rem]',
               style: {
@@ -6358,7 +7082,7 @@
                   upd({ nkReduceMotion: !nkUserReducedMotion });
                   if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkUserReducedMotion ? 'on.' : 'off.'));
                 },
-                nkSystemReducedMotion
+                nkSystemReducedMotion || nkHostReducedMotion
               ),
               nkDisplayToggle(nkShowChartData, 'Chart data', 'Display numerical data tables beneath charts', function () {
                 upd({ nkShowChartData: !nkShowChartData });
@@ -6487,9 +7211,8 @@
                 h('progress', {
                   value: nkActiveRouteProgress.count,
                   max: nkActiveRouteProgress.total,
-                  'aria-label': nkPath.q + ': ' + nkActiveRouteProgress.count + ' of '
-                    + nkActiveRouteProgress.total + ' steps opened'
-                    + (nkActiveRouteProgress.complete ? ', route complete' : ''),
+                  'aria-label': t('stem.nuclearlab.aria_route_overview_progress', '{question}: {count} of {total} steps opened').replace('{question}', nkPath.q).replace('{count}', String(nkActiveRouteProgress.count)).replace('{total}', String(nkActiveRouteProgress.total))
+                    + (nkActiveRouteProgress.complete ? t('stem.nuclearlab.aria_route_complete_suffix', ', route complete') : ''),
                   className: 'flex-1 min-w-[8rem] h-2',
                   style: { accentColor: nkActiveRouteProgress.complete ? '#059669' : '#0891b2' }
                 }),
@@ -6497,8 +7220,10 @@
                   ? h('button', {
                       type: 'button',
                       onClick: function () { nkGoTo(nkActiveRouteNext); },
-                      'aria-label': 'Continue: ' + nkActiveRouteNext.label + '. Continue ' + nkPath.q + ' at step '
-                        + (nkPath.steps.indexOf(nkActiveRouteNext.id) + 1),
+                      'aria-label': t('stem.nuclearlab.aria_continue_route', 'Continue: {next}. Continue {question} at step {step}')
+                        .replace('{next}', nkActiveRouteNext.label)
+                        .replace('{question}', nkPath.q)
+                        .replace('{step}', String(nkPath.steps.indexOf(nkActiveRouteNext.id) + 1)),
                       className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
                       style: {
                         background: '#0e7490',
@@ -6541,7 +7266,8 @@
                   return h('button', {
                     key: s.id, type: 'button',
                     onClick: function () { nkGoTo(s); },
-                    'aria-label': jumpLabel + ' Jump to this topic' + (opened ? ', already opened' : ''),
+                    'aria-label': t('stem.nuclearlab.aria_jump_to_topic', '{label} Jump to this topic').replace('{label}', jumpLabel)
+                      + (opened ? t('stem.nuclearlab.aria_already_opened_suffix', ', already opened') : ''),
                     // The scroll-spy below marks the section currently in view
                     // by writing to this element directly. It deliberately does
                     // not go through React: a state change here would re-render
@@ -6573,12 +7299,13 @@
       // is unchanged (undefined = the host's white card, as before).
       return h('div', {
         'data-nuclear-lab': 'true',
+        'data-nk-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
         'data-nk-large-text': nkLargeText ? 'true' : 'false',
         'data-nk-reduce-motion': nkReduceMotion ? 'true' : 'false',
         'data-nk-chart-data': nkShowChartData ? 'true' : 'false',
         ref: nkRootRef,
         className: 'nk-readable relative max-w-5xl mx-auto animate-in fade-in duration-200',
-        style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined, colorScheme: isDark ? 'dark' : 'light', containerType: 'inline-size', '--nk-focus': isDark ? '#fbbf24' : '#6d28d9' }
+        style: { background: isContrast ? '#000000' : (isDark ? '#0f172a' : undefined), color: isContrast ? '#ffffff' : undefined, borderRadius: isDark ? 12 : undefined, colorScheme: isDark ? 'dark' : 'light', containerType: 'inline-size', '--nk-focus': isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#6d28d9') }
       },
         h('style', null,
           '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable textarea:focus-visible,.nk-readable select:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
@@ -6628,6 +7355,9 @@
           '.nk-readable *:focus-visible,.nk-readable [data-nk-sec]:focus{outline:3px solid Highlight!important;outline-offset:3px!important}' +
           '.nk-readable progress{forced-color-adjust:auto;accent-color:Highlight!important}' +
           '}' +
+          '.nk-readable[data-nk-theme="contrast"]{background:#000000!important;color:#ffffff!important}' +
+          '.nk-readable[data-nk-theme="contrast"] *,.nk-readable[data-nk-theme="contrast"] *::before,.nk-readable[data-nk-theme="contrast"] *::after{animation:none!important;transition:none!important}' +
+          '.nk-readable[data-nk-theme="contrast"] .nk-section-card,.nk-readable[data-nk-theme="contrast"] .nk-topic-nav{background:#000000!important;color:#ffffff!important;border-color:#fbbf24!important;box-shadow:none!important}' +
           '.nk-readable[data-nk-reduce-motion="true"]{animation:none!important}' +
           '.nk-readable[data-nk-reduce-motion="true"] *,.nk-readable[data-nk-reduce-motion="true"] *::before,.nk-readable[data-nk-reduce-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
           '@media (prefers-reduced-motion:reduce){.nk-readable{animation:none!important}.nk-readable *,.nk-readable *::before,.nk-readable *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
@@ -6684,7 +7414,7 @@
 
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-3 shadow-lg', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.48)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
-            ArrowLeft ? h('button', {
+            !ctx.embedded && ArrowLeft ? h('button', {
               type: 'button',
               onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
               className: 'min-h-11 min-w-11 p-2 rounded-lg transition-colors',
@@ -6755,7 +7485,10 @@
             h('canvas', { ref: decayRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-decay-description',
-              'aria-label': 'Decay curve. After ' + nkFmt(halves, 1) + ' half-lives, ' + nkFmt(remaining * 100, 1) + ' percent of the ' + iso.name + ' remains. The curve halves at every step and never quite reaches zero.',
+              'aria-label': t('stem.nuclearlab.aria_decay_curve', 'Decay curve. After {halves} half-lives, {pct} percent of the {iso} remains. The curve halves at every step and never quite reaches zero.')
+                .replace('{halves}', nkFmt(halves, 1))
+                .replace('{pct}', nkFmt(remaining * 100, 1))
+                .replace('{iso}', iso.name),
               style: { width: '100%', height: '100%', display: 'block' } })),
           slider('nk-halves', 'Half-lives', 0, 10, 0.25, halves,
             function (e) { upd({ halves: parseFloat(e.target.value) }); }, nkFmt(halves, 2)),
@@ -6811,7 +7544,7 @@
                 onChange: function (e) { setAgeGuess(e.target.value); },
                 className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[0.6875rem]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } })),
-            h('button', { type: 'button', 'aria-label': (ageShown ? 'Recalculate' : 'Reveal') + '. Calculate the age of the sample',
+            h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.aria_calculate_sample_age', '{action}. Calculate the age of the sample').replace('{action}', ageShown ? t('stem.nuclearlab.action_recalculate', 'Recalculate') : t('stem.nuclearlab.action_reveal', 'Reveal')),
               onClick: function () {
                 setAgeShown(true);
                 var g = parseFloat(ageGuess);
@@ -6821,8 +7554,10 @@
                 // Guarded like the other two XP awards in this file. It was not:
                 // pressing Recalculate with a good guess still in the box paid
                 // out again every time, so the button was an XP tap.
-                if (close && !d.datedClose) {
+                if (close && !nkSafeXpLedger(d._xpCredited).nuclear_dating && !xpAwardedRef.current.nuclear_dating && !d.datedClose) {
+                  xpAwardedRef.current.nuclear_dating = true;
                   patch.datedClose = true;
+                  patch._xpCredited = Object.assign(nkSafeXpLedger(d._xpCredited), { nuclear_dating: true });
                   nkCelebrate();
                   if (typeof awardXP === 'function') awardXP('nuclear_dating', 10, 'Dated a sample from its carbon-14');
                 }
@@ -7363,10 +8098,12 @@
             h('canvas', { ref: bioRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-bio-description',
-              'aria-label': 'How much ' + bio.name + ' is left in the body over time. Radioactive decay alone would leave ' +
-                nkFmt(Math.pow(0.5, bioSpanDays / bio.tp) * 100, 1) + ' percent after ' + nkYears(bioSpanDays / 365.25) +
-                ', but with excretion as well only ' + nkFmt(Math.pow(0.5, bioSpanDays / bioEff) * 100, 1) +
-                ' percent remains. The effective half-life is ' + nkYears(bioEff / 365.25) + '.',
+              'aria-label': t('stem.nuclearlab.aria_bio_curve', 'How much {name} is left in the body over time. Radioactive decay alone would leave {decayPct} percent after {span}, but with excretion as well only {effPct} percent remains. The effective half-life is {effHalf}.')
+                .replace('{name}', bio.name)
+                .replace('{decayPct}', nkFmt(Math.pow(0.5, bioSpanDays / bio.tp) * 100, 1))
+                .replace('{span}', nkYears(bioSpanDays / 365.25))
+                .replace('{effPct}', nkFmt(Math.pow(0.5, bioSpanDays / bioEff) * 100, 1))
+                .replace('{effHalf}', nkYears(bioEff / 365.25)),
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-bio-description', className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Grey: decay alone. Colour: what is actually left, once the body is also getting rid of it.'),
@@ -7432,12 +8169,12 @@
               return h('div', { key: sc.id, className: 'flex items-center gap-2' },
                 h('span', { className: 'text-[0.6875rem] flex-1', style: { color: isDark ? '#e2e8f0' : '#334155' } }, sc.name),
                 h('span', { className: 'text-[0.6875rem] font-mono w-16 text-right', style: { color: isDark ? '#94a3b8' : '#475569' } }, sc.v + ' mSv'),
-                h('button', { type: 'button', 'aria-label': 'One fewer ' + sc.name,
+                h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.aria_one_fewer_scan', 'One fewer {scan}').replace('{scan}', sc.name),
                   onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = Math.max(0, n - 1); upd({ dsScans: nx, doseEstimated: true }); },
                   className: 'min-h-11 w-11 rounded-lg text-[0.6875rem] font-black',
                   style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '−'),
                 h('span', { className: 'text-[0.6875rem] font-black w-6 text-center', style: { color: ink('#22d3ee') } }, n),
-                h('button', { type: 'button', 'aria-label': 'One more ' + sc.name,
+                h('button', { type: 'button', 'aria-label': t('stem.nuclearlab.aria_one_more_scan', 'One more {scan}').replace('{scan}', sc.name),
                   onClick: function () { var nx = Object.assign({}, dsScans); nx[sc.id] = n + 1; upd({ dsScans: nx, doseEstimated: true }); },
                   className: 'min-h-11 w-11 rounded-lg text-[0.6875rem] font-black',
                   style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '+'));
@@ -7448,7 +8185,7 @@
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, nkDoseSpeech),
             h('div', { role: 'list', className: 'space-y-1' },
               dsParts.filter(function (p) { return p.v > 0; }).sort(function (x, y) { return y.v - x.v; }).map(function (p) {
-                return h('div', { key: p.name, role: 'listitem', 'aria-label': p.name + ', ' + p.v.toFixed(2) + ' millisieverts', className: 'flex items-center gap-2' },
+                return h('div', { key: p.name, role: 'listitem', 'aria-label': t('stem.nuclearlab.aria_dose_part_msv', '{name}, {value} millisieverts').replace('{name}', p.name).replace('{value}', p.v.toFixed(2)), className: 'flex items-center gap-2' },
                   h('span', { className: 'text-[0.6875rem] w-32 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, p.name),
                   h('div', { className: 'flex-1 h-2.5 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                     h('div', { style: { height: '100%', width: Math.max(1, (p.v / Math.max(dsTotal, 0.01)) * 100) + '%', background: p.colour, borderRadius: '999px' } })),
@@ -7662,7 +8399,10 @@
             h('button', {
               ref: countTakeButtonRef,
               type: 'button', onClick: cdTakeCount,
-              'aria-label': 'Take a count. Measure ' + cdSrc.name + ' for ' + cdTime + ' seconds at ' + cdDist + ' centimetres, with a matching background count',
+              'aria-label': t('stem.nuclearlab.aria_take_count', 'Take a count. Measure {source} for {seconds} seconds at {dist} centimetres, with a matching background count')
+                .replace('{source}', cdSrc.name)
+                .replace('{seconds}', String(cdTime))
+                .replace('{dist}', String(cdDist)),
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
               style: { background: '#2dd4bf', color: '#0b1020', border: '1px solid #2dd4bf' }
             }, '⏱️ Take a count'),
@@ -7673,7 +8413,7 @@
                 }
                 cdReset({});
               },
-              'aria-label': 'Clear the ' + cdRuns.length + ' counts taken so far',
+              'aria-label': t('stem.nuclearlab.aria_clear_counts', 'Clear the {count} counts taken so far').replace('{count}', String(cdRuns.length)),
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
             }, 'Clear') : null
@@ -7726,10 +8466,13 @@
             h('canvas', { ref: countRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-count-description',
-              'aria-label': 'Net count rate against distance for ' + cdSrc.name + '. The curve follows the inverse square law: at ' +
-                nkFmt(cdDist, 0) + ' centimetres the true rate is ' + cdTrueNet.toFixed(3) + ' counts per second, and doubling the distance to ' +
-                nkFmt(cdDist * 2, 0) + ' centimetres quarters it to ' + cdNetRateAt(cdDist * 2).toFixed(3) + '.' +
-                (cdLast ? ' Your last measurement sits at ' + cdNet.toFixed(3) + ', off the curve by counting noise alone.' : ''),
+              'aria-label': t('stem.nuclearlab.aria_count_curve', 'Net count rate against distance for {source}. The curve follows the inverse square law: at {dist} centimetres the true rate is {rate} counts per second, and doubling the distance to {doubleDist} centimetres quarters it to {quarterRate}.')
+                .replace('{source}', cdSrc.name)
+                .replace('{dist}', nkFmt(cdDist, 0))
+                .replace('{rate}', cdTrueNet.toFixed(3))
+                .replace('{doubleDist}', nkFmt(cdDist * 2, 0))
+                .replace('{quarterRate}', cdNetRateAt(cdDist * 2).toFixed(3))
+                + (cdLast ? t('stem.nuclearlab.aria_count_curve_last', ' Your last measurement sits at {net}, off the curve by counting noise alone.').replace('{net}', cdNet.toFixed(3)) : ''),
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-count-description', className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'The curve is the inverse square law, and it is not a property of radiation — it is a property of spheres. The same gammas spread over a surface four times larger when you step twice as far back. Doubling your distance does more than most shielding, costs nothing, and is why the first rule of a radiation area is stand further away.'),
@@ -7822,11 +8565,15 @@
             h('canvas', { ref: protectRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-protect-summary',
-              'aria-label': 'Initial dose rate against distance for ' + ptSrc.nuclide + ' at ' + ptSrc.gbq +
-                ' gigabecquerels. Unshielded it is ' + nkFmt(ptRateAt(1, 0), 3) + ' millisieverts per hour at 1 metre and ' +
-                nkFmt(ptRateAt(5, 0), 4) + ' at 5 metres. At your chosen ' + nkFmt(ptDist, 1) + ' metres behind ' +
-                nkFmt(ptThick, 1) + ' centimetres of ' + ptShield.name.toLowerCase() + ' it is ' + nkFmt(ptRate, 4) +
-                ' millisieverts per hour.',
+              'aria-label': t('stem.nuclearlab.aria_protect_curve', 'Initial dose rate against distance for {nuclide} at {gbq} gigabecquerels. Unshielded it is {rate1} millisieverts per hour at 1 metre and {rate5} at 5 metres. At your chosen {dist} metres behind {thick} centimetres of {shield} it is {rate} millisieverts per hour.')
+                .replace('{nuclide}', ptSrc.nuclide)
+                .replace('{gbq}', String(ptSrc.gbq))
+                .replace('{rate1}', nkFmt(ptRateAt(1, 0), 3))
+                .replace('{rate5}', nkFmt(ptRateAt(5, 0), 4))
+                .replace('{dist}', nkFmt(ptDist, 1))
+                .replace('{thick}', nkFmt(ptThick, 1))
+                .replace('{shield}', ptShield.name.toLowerCase())
+                .replace('{rate}', nkFmt(ptRate, 4)),
               style: { width: '100%', height: '100%', display: 'block' } })),
 
           h('div', { id: 'nk-protect-summary', className: 'grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2' },
@@ -7972,11 +8719,13 @@
             h('canvas', { ref: shelterRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-shelter-summary',
-              'aria-label': 'Dose against how long it takes to get clear. Sheltering in a ' + shPlace.name.toLowerCase() +
-                ' through a ' + nkFmt(shPlume, 0) + ' hour release gives a flat ' + nkFmt(shShelterDose, 1) +
-                ' millisieverts. Evacuating gives ' + nkFmt(shEvacDose, 1) + ' millisieverts after ' + nkFmt(shEvac, 1) +
-                ' hours in the open. The two are equal at ' + nkFmt(shBreakEven, 1) +
-                ' hours: get clear faster than that and leaving costs less dose, slower and it costs more.',
+              'aria-label': t('stem.nuclearlab.aria_shelter_curve', 'Dose against how long it takes to get clear. Sheltering in a {place} through a {plume} hour release gives a flat {shelterDose} millisieverts. Evacuating gives {evacDose} millisieverts after {evacHours} hours in the open. The two are equal at {breakEven} hours: get clear faster than that and leaving costs less dose, slower and it costs more.')
+                .replace('{place}', shPlace.name.toLowerCase())
+                .replace('{plume}', nkFmt(shPlume, 0))
+                .replace('{shelterDose}', nkFmt(shShelterDose, 1))
+                .replace('{evacDose}', nkFmt(shEvacDose, 1))
+                .replace('{evacHours}', nkFmt(shEvac, 1))
+                .replace('{breakEven}', nkFmt(shBreakEven, 1)),
               style: { width: '100%', height: '100%', display: 'block' } })),
 
           h('div', { id: 'nk-shelter-summary', className: 'grid grid-cols-2 gap-2' },
@@ -8193,7 +8942,7 @@
                   h('button', {
                     type: 'button',
                     'aria-pressed': on ? 'true' : 'false',
-                    'aria-label': r.name + ', ' + r.v + ' deaths per terawatt hour. Show what is behind this number',
+                    'aria-label': t('stem.nuclearlab.aria_deaths_twh', '{name}, {value} deaths per terawatt hour. Show what is behind this number').replace('{name}', r.name).replace('{value}', String(r.v)),
                     onClick: function () {
                       upd({ cmpSel: on ? '' : r.name });
                       if (!on) pushOnce('cmpSeen', r.name);
@@ -8219,7 +8968,7 @@
             h('p', { className: 'text-[0.6875rem] font-bold mt-3 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Lifecycle CO₂, grams per kWh'),
             h('div', { role: 'list', className: 'space-y-1' },
               CO2_KWH.map(function (r) {
-                return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' grams CO2 per kilowatt hour', className: 'flex items-center gap-2' },
+                return h('div', { key: r.name, role: 'listitem', 'aria-label': t('stem.nuclearlab.aria_co2_kwh', '{name}, {value} grams CO2 per kilowatt hour').replace('{name}', r.name).replace('{value}', String(r.v)), className: 'flex items-center gap-2' },
                   h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
                   h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
                     h('div', { style: { height: '100%', width: Math.max(1, (r.v / 820) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
@@ -8251,11 +9000,7 @@
               h('div', {
                 ref: rxAttach,
                 role: 'img',
-                'aria-label': 'Cutaway view of a pressurised water reactor core: containment shell, '
-                  + 'pressure vessel, coolant, fuel assemblies and control rods. The rods rise and fall '
-                  + 'with the control setting, and the coolant colours and fills with steam voids as the '
-                  + 'fuel heats. Everything it shows is also in the readings below, and each part has a '
-                  + 'button under "Parts of the core".',
+                'aria-label': t('stem.nuclearlab.aria_reactor_3d_core', 'Cutaway view of a pressurised water reactor core: containment shell, pressure vessel, coolant, fuel assemblies and control rods. The rods rise and fall with the control setting, and the coolant colours and fills with steam voids as the fuel heats. Everything it shows is also in the readings below, and each part has a button under "Parts of the core".'),
                 'aria-describedby': 'rx-live-readings',
                 style: { position: 'absolute', inset: 0 }
               }),
@@ -8419,7 +9164,7 @@
             h('legend', { className: 'px-1.5 text-[0.6875rem] font-black', style: { color: ink('#fbbf24') } }, '3 · Operate the reactor'),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
             h('button', { ref: rxStartButtonRef, type: 'button', 'aria-pressed': rxUi.running ? 'true' : 'false',
-              'aria-label': rxUi.running ? 'Pause. Pause the simulation' : 'Run. Start the simulation',
+              'aria-label': rxUi.running ? t('stem.nuclearlab.aria_pause_sim', 'Pause. Pause the simulation') : t('stem.nuclearlab.aria_run_sim', 'Run. Start the simulation'),
               onClick: function () { rxPatchUi({ running: !rxUi.running }); if (typeof beep === 'function') beep(); },
               className: 'min-h-11 px-4 py-2 rounded-lg text-[0.6875rem] font-black',
               style: rxUi.running ? { background: '#f59e0b', color: '#0b1020', border: '1px solid #f59e0b' } : { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
@@ -8438,7 +9183,7 @@
               className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
               style: { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.9)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') } }, '↺ Reset'),
             h('button', { type: 'button', 'aria-pressed': rxUi.pumps ? 'true' : 'false',
-              'aria-label': rxUi.pumps ? 'Pumps on. Stop the coolant pumps' : 'Pumps off. Restore the coolant pumps',
+              'aria-label': rxUi.pumps ? t('stem.nuclearlab.aria_stop_pumps', 'Pumps on. Stop the coolant pumps') : t('stem.nuclearlab.aria_restore_pumps', 'Pumps off. Restore the coolant pumps'),
               onClick: function () {
                 var pumps = !rxRef.current.pumps;
                 rxSet({ pumps: pumps });
@@ -8456,7 +9201,7 @@
             h('label', { htmlFor: 'rx-rods', className: 'text-[0.6875rem] font-bold w-28 flex-shrink-0', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Control rods'),
             h('input', { id: 'rx-rods', type: 'range', min: 0, max: 100, step: 5,
               value: rxUi.rodStep,
-              'aria-valuetext': rxUi.rodStep + ' percent inserted',
+              'aria-valuetext': t('stem.nuclearlab.aria_rods_inserted', '{pct} percent inserted').replace('{pct}', String(rxUi.rodStep)),
               onChange: function (e) {
                 var value = parseFloat(e.target.value);
                 rxSet({ rods: value, scrammed: false });
@@ -8521,7 +9266,7 @@
               nkPath ? 'Route evidence' : 'Evidence mastery'),
             h('progress', {
               value: activeEvidenceMastered.length, max: evidenceClaims.length,
-              'aria-label': activeEvidenceMastered.length + ' of ' + evidenceClaims.length + ' evidence claims mastered',
+              'aria-label': t('stem.nuclearlab.aria_evidence_mastered', '{done} of {total} evidence claims mastered').replace('{done}', String(activeEvidenceMastered.length)).replace('{total}', String(evidenceClaims.length)),
               className: 'flex-1 min-w-[8rem] h-3', style: { accentColor: '#0891b2' }
             }),
             h('span', { className: 'text-[0.6875rem] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
@@ -8537,7 +9282,8 @@
                   h('button', {
                     type: 'button',
                     'aria-current': current ? 'step' : undefined,
-                    'aria-label': 'Claim ' + (i + 1) + ' of ' + evidenceClaims.length + (mastered ? ', mastered' : ', not yet mastered'),
+                    'aria-label': t('stem.nuclearlab.aria_claim_nav', 'Claim {num} of {total}').replace('{num}', String(i + 1)).replace('{total}', String(evidenceClaims.length))
+                      + (mastered ? t('stem.nuclearlab.aria_claim_mastered', ', mastered') : t('stem.nuclearlab.aria_claim_unmastered', ', not yet mastered')),
                     onClick: function () {
                       nkEvidencePendingFocusRef.current = claim.id !== evidenceClaim.id;
                       upd({
@@ -8611,6 +9357,12 @@
                     h('p', { className: 'text-[0.6875rem] font-black', style: { color: ink(evidenceCorrect ? '#059669' : '#f59e0b') } },
                       evidenceCorrect ? '✓ Evidence match' : '↺ Take another look'),
                     h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, evidenceClaim.evidence),
+                    !evidenceCorrect ? (function () {
+                      var claimTopicMap = { 'reactor-bomb': 'reactor', 'inverse-square': 'inverse_square', 'low-dose-zero': 'dose', 'neutron-layers': 'neutron', 'short-count': 'counting' };
+                      var claimGuessMap = { 'reactor-bomb': 'grow', 'inverse-square': 'half', 'low-dose-zero': 'low-dose-zero', 'neutron-layers': 'lead-neutrons', 'short-count': 'same' };
+                      var evDiag = nkDiagnoseMisconception(claimTopicMap[evidenceClaim.id] || 'general', claimGuessMap[evidenceClaim.id] || evidenceChoice, evidenceClaim.verdict);
+                      return h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#334155' } }, evDiag.whyNot);
+                    })() : null,
                     !evidenceCorrect && !evidenceAnswerVisible
                       ? h('p', { className: 'text-[0.6875rem] mt-1 font-bold', style: { color: ink('#f59e0b') } },
                           'Use that evidence to revise your verdict, or reveal the best-supported answer when you need it.')
@@ -8624,10 +9376,17 @@
                   h('div', { className: 'mt-2 flex flex-wrap gap-2' },
                     h('button', {
                       type: 'button', onClick: function () { nkReviewTopic(evidenceClaim.section); },
-                      'aria-label': 'Review the supporting topic for claim ' + (evidenceIndex + 1),
+                      'aria-label': t('stem.nuclearlab.aria_review_claim_topic', 'Review the supporting topic for claim {num}').replace('{num}', String(evidenceIndex + 1)),
                       className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
                       style: { background: isDark ? 'rgba(148,163,184,0.12)' : '#fff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
                     }, 'Review the supporting topic'),
+                    canSpeak ? h('button', {
+                      type: 'button',
+                      'aria-label': t('stem.nuclearlab.aria_read_evidence_feedback', 'Read evidence feedback aloud'),
+                      onClick: function () { speakNuclear(ctx, evidenceClaim.claim + ' ' + evidenceClaim.evidence + (evidenceAnswerVisible ? ' ' + evidenceClaim.takeaway : '')); },
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-bold',
+                      style: isContrast ? { background: '#000000', color: ink('#fbbf24'), border: '2px solid #ffff00' } : { background: isDark ? 'rgba(30,41,59,0.92)' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
+                    }, t('stem.nuclearlab.read_aloud', '🔊 Read aloud')) : null,
                     !evidenceCorrect && evidenceMastered.indexOf(evidenceClaim.id) === -1 ? h('button', {
                       type: 'button',
                       'aria-expanded': evidenceAnswerVisible ? 'true' : 'false',
@@ -8660,7 +9419,7 @@
                   var firstMastery = correct && mastered.indexOf(evidenceClaim.id) === -1;
                   if (firstMastery) mastered = mastered.concat([evidenceClaim.id]);
                   var globalEvidenceNowComplete = firstMastery && mastered.length === EVIDENCE_CLAIMS.length;
-                  var firstCompletion = globalEvidenceNowComplete && !d.evidenceAwarded;
+                  var firstCompletion = globalEvidenceNowComplete && !d.evidenceAwarded && !nkSafeXpLedger(d._xpCredited).nuclear_evidence && !xpAwardedRef.current.nuclear_evidence;
                   var routeCompletes = correct
                     && nkPath
                     && nkEvidenceCompleteFor(nkPath, mastered)
@@ -8671,6 +9430,10 @@
                     evidenceMastered: mastered,
                     evidenceAwarded: d.evidenceAwarded || firstCompletion
                   };
+                  if (firstCompletion) {
+                    xpAwardedRef.current.nuclear_evidence = true;
+                    patch._xpCredited = Object.assign(nkSafeXpLedger(d._xpCredited), { nuclear_evidence: true });
+                  }
                   if (routeCompletes && nkPathsCompleted.indexOf(nkPath.id) === -1) {
                     patch.pathsCompleted = nkPathsCompleted.concat([nkPath.id]);
                   }
@@ -8895,6 +9658,14 @@
           )
         )
         ),
+
+        d.nkView === 'reactor' ? null : h(NuclearOfflinePhysicsCoach, {
+          ctx: ctx,
+          surface: 'reference',
+          isDark: isDark,
+          isContrast: isContrast,
+          state: { isoId: isoId, radId: radId, shieldId: shieldId, thick: thick, rods: rods, c14Frac: c14Frac, dsTotal: dsTotal }
+        }),
 
         h('footer', { role: 'none', className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },
           h('p', { className: 'text-[0.625rem] leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },

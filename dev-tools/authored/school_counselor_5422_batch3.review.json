@@ -409,7 +409,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "dbd178778b265cf4b9cd8dfb1afa6ea17b77b4326fc447f1f21cfc2ed9404f92"
+    "sha256": "57e9899513906a45ae868a74ee99bd5dc13e7cf0b61708d725f944768fb8e5ef"
   },
   "integration": {
     "packId": "praxis-school-counselor-5422",
@@ -429,7 +429,7 @@
       ]
     }
   },
-  "sourceSha256": "dbd178778b265cf4b9cd8dfb1afa6ea17b77b4326fc447f1f21cfc2ed9404f92",
+  "sourceSha256": "57e9899513906a45ae868a74ee99bd5dc13e7cf0b61708d725f944768fb8e5ef",
   "remediation": [
     {
       "at": "2026-11-21",

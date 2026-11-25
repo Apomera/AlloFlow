@@ -274,6 +274,20 @@
     return { x: cl(x / width), y: cl(y / height) };
   }
 
+  function _ensureCg3dA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('cg3d-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'cg3d-a11y-css';
+    st.textContent =
+      '[data-cg3d-root] button,[data-cg3d-root] [role="button"],[data-cg3d-root] [role="application"],[data-cg3d-root] a,[data-cg3d-root] input,[data-cg3d-root] select{touch-action:manipulation;}' +
+      '[data-cg3d-root] button:focus-visible,[data-cg3d-root] [role="button"]:focus-visible,[data-cg3d-root] [role="application"]:focus-visible,[data-cg3d-root] a:focus-visible,[data-cg3d-root] input:focus-visible,[data-cg3d-root] select:focus-visible{outline:2px solid #818cf8;outline-offset:2px;}' +
+      '@media (forced-colors: active){[data-cg3d-root] button:focus-visible,[data-cg3d-root] [role="button"]:focus-visible,[data-cg3d-root] [role="application"]:focus-visible,[data-cg3d-root] a:focus-visible,[data-cg3d-root] input:focus-visible,[data-cg3d-root] select:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+      '@media (prefers-reduced-motion: reduce){[data-cg3d-root] *,[data-cg3d-root] *::before,[data-cg3d-root] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+  }
+  _ensureCg3dA11yCss();
+
   // ── Accessible outline DOM (the source of truth across every mode) ──
   function buildOutlineDom(scene, t, visible, onSelect) {
     var wrap = document.createElement('div');
@@ -1085,7 +1099,7 @@
       if (!selectedId || !nodeById3d[selectedId]) { panel.style.display = 'none'; return; }
       var n = nodeById3d[selectedId].node;
       panel.textContent = '';
-      var close = document.createElement('button'); close.textContent = '✕'; close.setAttribute('aria-label', t('common.close') || 'Close');
+      var close = document.createElement('button'); close.type = 'button'; close.textContent = '✕'; close.setAttribute('aria-label', t('common.close') || 'Close');
       close.style.cssText = 'float:right;border:1px solid transparent;background:transparent;color:#cbd5e1;cursor:pointer;font-size:15px;line-height:1;min-width:44px;min-height:44px;border-radius:8px;';
       close.onclick = function () { selectNode(null); };
       panel.appendChild(close);
@@ -1097,7 +1111,7 @@
         var nh = document.createElement('div'); nh.style.cssText = 'font-weight:700;color:#94a3b8;margin:6px 0 2px;'; nh.textContent = (t('cg3d.connections') || 'Connections') + ' (' + neigh.length + ')'; panel.appendChild(nh);
         neigh.forEach(function (nid) {
           if (!nodeById3d[nid]) return;
-          var b = document.createElement('button'); b.textContent = '• ' + nodeById3d[nid].node.label;
+          var b = document.createElement('button'); b.type = 'button'; b.textContent = '• ' + nodeById3d[nid].node.label;
           b.style.cssText = 'display:block;width:100%;min-height:44px;text-align:left;border:none;background:transparent;color:#a5b4fc;cursor:pointer;padding:8px 4px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
           b.onclick = function () { var tn = nodeById3d[nid].node; tTarget.set(tn.sx, tn.sy, tn.sz); selectNode(nid); };
           panel.appendChild(b);
@@ -1105,7 +1119,7 @@
       }
       var chain = derivePrereqChain(scene, selectedId);
       if (chain.ids.length) {
-        var pb = document.createElement('button'); pb.textContent = '⛓ ' + (t('cg3d.show_prereqs') || 'Show prerequisites') + ' (' + chain.ids.length + ')';
+        var pb = document.createElement('button'); pb.type = 'button'; pb.textContent = '⛓ ' + (t('cg3d.show_prereqs') || 'Show prerequisites') + ' (' + chain.ids.length + ')';
         pb.style.cssText = 'margin-top:8px;width:100%;padding:6px;border:1px solid #d97706;background:#3b2a12;color:#fde68a;border-radius:7px;cursor:pointer;font-weight:700;';
         pb.onclick = function () { highlightChain([selectedId].concat(chain.ids), selectedId); };
         panel.appendChild(pb);
@@ -1122,6 +1136,7 @@
             var laneColor = PALETTE[l.index % PALETTE.length];
             var isCur = l.key === n.category;
             var chip = document.createElement('button');
+            chip.type = 'button';
             chip.textContent = l.label;
             chip.disabled = isCur;
             chip.style.cssText = 'font-size:11px;padding:3px 8px;border-radius:999px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:2px solid ' + laneColor + ';color:#e2e8f0;'
@@ -1136,7 +1151,7 @@
          [_tr(t, 'cg3d.edit_later', 'Later') + ' ▶', 'x', 0.06, _tr(t, 'cg3d.moved_later', 'Moved later')],
          ['▲ ' + _tr(t, 'cg3d.edit_up', 'Up'), 'y', -0.06, _tr(t, 'cg3d.moved_up', 'Moved up')],
          ['▼ ' + _tr(t, 'cg3d.edit_down', 'Down'), 'y', 0.06, _tr(t, 'cg3d.moved_down', 'Moved down')]].forEach(function (cfg) {
-          var mb = document.createElement('button'); mb.textContent = cfg[0];
+          var mb = document.createElement('button'); mb.type = 'button'; mb.textContent = cfg[0];
           mb.style.cssText = 'padding:5px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;border-radius:7px;cursor:pointer;font-weight:700;font-size:11px;';
           mb.onclick = function () { editNudge(selectedId, cfg[1], cfg[2], cfg[3]); };
           mvRow.appendChild(mb);
@@ -1147,7 +1162,7 @@
         panel.appendChild(editHint);
       }
       if (typeof opts.onOpenNode === 'function') {
-        var jb = document.createElement('button'); jb.textContent = '↗ ' + (t('cg3d.open') || 'Open');
+        var jb = document.createElement('button'); jb.type = 'button'; jb.textContent = '↗ ' + (t('cg3d.open') || 'Open');
         jb.style.cssText = 'margin-top:9px;width:100%;padding:6px;border:1px solid #6366f1;background:#312e81;color:#e0e7ff;border-radius:7px;cursor:pointer;font-weight:700;';
         jb.onclick = function () { try { opts.onOpenNode(selectedId); } catch (e) {} };
         panel.appendChild(jb);
@@ -1365,6 +1380,7 @@
     var legend = document.createElement('div');
     legend.style.cssText = 'position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(2,6,23,0.82);border:1px solid #1e293b;border-radius:10px;font-size:11px;color:#cbd5e1;max-width:240px;line-height:1.5;overflow:hidden;';
     var legHeader = document.createElement('button');
+    legHeader.type = 'button';
     legHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;box-sizing:border-box;border:none;background:transparent;color:#f1f5f9;font-weight:800;font-size:11px;cursor:pointer;padding:7px 11px;';
     var legTitle = document.createElement('span'); legTitle.textContent = t('cg3d.legend_title') || 'Legend';
     var legChevron = document.createElement('span'); legChevron.textContent = '▾'; legChevron.style.cssText = 'opacity:0.7;';
@@ -1409,6 +1425,7 @@
 
     // ── Reset / fit-view button ──
     var resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
     resetBtn.textContent = '⊙ ' + (t('cg3d.reset') || 'Reset view');
     resetBtn.style.cssText = 'position:absolute;top:12px;left:12px;z-index:6;background:rgba(2,6,23,0.88);border:1px solid #475569;color:#e2e8f0;border-radius:8px;min-height:44px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;';
     resetBtn.onclick = function () { tTarget.set(0, 0, 0); tTheta = Math.PI * 0.25; tPhi = Math.PI * 0.34; tRadius = finalR; selectNode(null); };
@@ -1425,6 +1442,7 @@
     outlinePanel.setAttribute('aria-label', _tr(t, 'cg3d.outline_title', 'Reading order'));
     holder.appendChild(outlinePanel);
     var outlineBtn = document.createElement('button');
+    outlineBtn.type = 'button';
     outlineBtn.textContent = _tr(t, 'cg3d.outline_title', 'Reading order');
     outlineBtn.setAttribute('aria-controls', outlinePanel.id);
     outlineBtn.setAttribute('aria-pressed', 'false');
@@ -1455,7 +1473,7 @@
       setOutlineVisible(!outlineVisible, true);
     };
     function onOutlineKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopPropagation();
@@ -1675,6 +1693,7 @@
         navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
           if (!ok || state.disposed) return;
           var vb = document.createElement('button');
+          vb.type = 'button';
           vb.textContent = '🥽 ' + _tr(t, 'cg3d.enter_vr', 'VR');
           vb.setAttribute('aria-label', _tr(t, 'cg3d.enter_vr_title', 'Enter VR — see your world room-scale (needs a headset)'));
           vb.title = _tr(t, 'cg3d.enter_vr_title', 'Enter VR — see your world room-scale (needs a headset)');
@@ -1700,7 +1719,7 @@
       try { if (live) live.textContent = describeNodeForSR(scene, id, t); } catch (e) {}
     }
     function onKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
       var k = e.key, act = null;
       // Constrained-edit keys act on the keyboard-focused node (or the mouse
       // selection, so a click-then-keyboard flow also works).
@@ -1994,6 +2013,8 @@
     opts = opts || {};
     var t = opts.t || function (k) { return k; };
     if (!container) return { destroy: function () {}, update: function () {}, fellBack: true, setConstellation: function () {} };
+    _ensureCg3dA11yCss();
+    if (typeof container.setAttribute === 'function') container.setAttribute('data-cg3d-root', 'true');
     // Editing keeps the planes still by default (an orbiting scene is a hostile
     // drag target); an explicit opts.autoRotate still wins.
     if (opts.editable && opts.autoRotate === undefined) opts.autoRotate = false;
@@ -2106,8 +2127,9 @@
     }, [props.graph]); // eslint-disable-line
     // SSR / pre-effect placeholder: the accessible outline, so there is real content
     // before (or without) JS; render() replaces it on the client.
+    _ensureCg3dA11yCss();
     var scene = buildScene(props.graph, props.options || {});
-    return h('div', { style: { position: 'relative', width: '100%', height: props.height || '100%', minHeight: 320, background: '#0b1020', borderRadius: 12, overflow: 'hidden' } },
+    return h('div', { 'data-cg3d-root': 'true', style: { position: 'relative', width: '100%', height: props.height || '100%', minHeight: 320, background: '#0b1020', borderRadius: 12, overflow: 'hidden' } },
       h('div', { ref: ref, style: { position: 'absolute', inset: 0 } },
         h('ol', { 'aria-label': t('cg3d.outline_aria') || 'Concept map reading order', style: { color: '#cbd5e1', fontSize: 13, lineHeight: 1.6, padding: '12px 20px 12px 38px', margin: 0 } },
           scene.outline.order.map(function (id) {

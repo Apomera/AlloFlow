@@ -252,12 +252,13 @@ describe('Solar System vocabulary browser', () => {
     expect(env.speak).not.toHaveBeenCalled();
     const definition = env.copy.textContent, history = env.state.vocabLookedUp;
     env.click(env.button('Read definition aloud'));
-    expect(env.speak).toHaveBeenCalledExactlyOnceWith('regolith. ' + definition);
+    // Read-aloud goes through the host voice as an explicit request (force), with the on-device voice as fallback.
+    expect(env.speak).toHaveBeenCalledExactlyOnceWith('regolith. ' + definition, undefined, undefined, { force: true });
     expect(env.state.vocabLookedUp).toBe(history); expect(env.award).not.toHaveBeenCalled();
     env.click(env.button('Clear filters')); env.click(env.term('density'));
     expect(env.speak).toHaveBeenCalledTimes(1);
     env.click(env.button('Read definition aloud'));
-    expect(env.speak).toHaveBeenLastCalledWith('density. ' + env.copy.textContent);
+    expect(env.speak).toHaveBeenLastCalledWith('density. ' + env.copy.textContent, undefined, undefined, { force: true });
   });
 
   it('focuses search once on its connected opening commit and leaves later edits focused normally', () => {

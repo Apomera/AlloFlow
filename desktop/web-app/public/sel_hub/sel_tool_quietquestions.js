@@ -22,10 +22,21 @@
 
   if (window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')) return;
 
-  // WCAG 4.1.3: live region
+  // WCAG 4.1.3: live region & scoped focus/motion/high-contrast CSS
   (function() {
-    if (typeof document === 'undefined' || !document.body) return;
-    if (document.getElementById('allo-live-quietquestions')) return;
+    if (typeof document === 'undefined') return;
+    if (document.head && !document.getElementById('allo-quietquestions-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-quietquestions-a11y-css';
+      st.textContent =
+        '.selh-quietquestions button, .selh-quietquestions a, .selh-quietquestions input, .selh-quietquestions textarea { touch-action: manipulation; }\n' +
+        '.selh-quietquestions button:focus-visible, .selh-quietquestions a:focus-visible, .selh-quietquestions input:focus-visible, .selh-quietquestions textarea:focus-visible, .selh-quietquestions [tabindex="0"]:focus-visible { outline: 3px solid #a78bfa !important; outline-offset: 2px !important; }\n' +
+        '.selh-quietquestions button:not(:disabled):hover { filter: brightness(1.06); }\n' +
+        '@media (prefers-reduced-motion: reduce) { .selh-quietquestions *, .selh-quietquestions *::before, .selh-quietquestions *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }\n' +
+        '@media (forced-colors: active) { .selh-quietquestions button, .selh-quietquestions [role="tab"], .selh-quietquestions textarea { border: 1px solid ButtonText !important; } .selh-quietquestions [role="tab"][aria-selected="true"] { background: Highlight !important; color: HighlightText !important; forced-color-adjust: none; } }';
+      document.head.appendChild(st);
+    }
+    if (!document.body || document.getElementById('allo-live-quietquestions')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-quietquestions';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -35,6 +46,10 @@
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ═══════════════════════════════════════════════════════════
   // QUERIES
@@ -188,8 +203,23 @@
         return blocked;
       }
       var VALID_VIEWS = ['this-week', 'all', 'practice', 'about'];
+      var QQ_VIEW_LABELS = { 'this-week': 'This week', all: 'All questions', practice: 'My practice', about: 'About' };
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'this-week';
-      function goto(v) { setQQ({ view: v }); }
+      function announceQQ(msg) {
+        if (!msg) return;
+        if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+        if (typeof document !== 'undefined') {
+          var lr = document.getElementById('allo-live-quietquestions');
+          if (lr) {
+            lr.textContent = '';
+            setTimeout(function() { if (lr) lr.textContent = msg; }, 25);
+          }
+        }
+      }
+      function goto(v) {
+        setQQ({ view: v });
+        announceQQ((QQ_VIEW_LABELS[v] || v) + ' section shown.');
+      }
 
       // Resolve current query
       var currentIdx = Number.isInteger(d.manualOverride) && d.manualOverride >= 0 && d.manualOverride < QUERIES.length ? d.manualOverride : currentWeekIndex();
@@ -199,7 +229,7 @@
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: _qqSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _qqBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _qqFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', background: _qqSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _qqBd('#334155'), borderRadius: 8, padding: '10px 14px', cursor: 'pointer', color: _qqFg('#cbd5e1'), fontSize: 14, fontWeight: 700 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _qqFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '🌒 Quiet Questions'),
             h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A weekly inner inquiry practice. One question, seven days.')
@@ -230,14 +260,15 @@
             return h('button', { key: t.id, id: 'qq-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'qq-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
-                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
+                if (isImeComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
                 else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
                 else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
               },
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _qqBd(active ? '#a78bfa' : '#334155'),
+              style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '10px 14px', borderRadius: 8, border: '1px solid ' + _qqBd(active ? '#a78bfa' : '#334155'),
                 background: active ? _qqSoftBg('rgba(167,139,250,0.18)', '#f5f3ff') : _qqBg('#1e293b'),
-                color: active ? _qqFg('#e9d5ff') : _qqFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                color: active ? _qqFg('#e9d5ff') : _qqFg('#cbd5e1'), cursor: 'pointer', fontSize: 12.5, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
         );
@@ -279,7 +310,7 @@
           ta.value = '';
           if (crewText) crewText.value = '';
           if (crewCheck) crewCheck.checked = false;
-          if (announceToSR) announceToSR('Response saved.');
+          announceQQ('Response saved.');
           if (addToast) addToast('Saved.', 'success');
         }
 
@@ -289,20 +320,25 @@
           for (var i = 0; i < QUERIES.length; i++) if (i !== currentIdx) pool.push(i);
           var pick = pool[Math.floor(Math.random() * pool.length)];
           setQQ({ manualOverride: pick });
+          announceQQ('Loaded a different question: question ' + (pick + 1) + ' of ' + QUERIES.length + '.');
         }
-        function resetAuto() { setQQ({ manualOverride: null }); }
+        function resetAuto() {
+          setQQ({ manualOverride: null });
+          announceQQ('Reset to this week\'s automatic question.');
+        }
 
+        var cardBorder = '1px solid ' + (_qqHC ? '#ffff00' : q.themeColor + '88');
         return h('div', null,
           // The query itself, big
-          h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: _qqSoftBg('linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), border: '1px solid ' + (_qqHC ? '#ffff00' : q.themeColor + '88'), borderLeft: '4px solid ' + _qqBd(q.themeColor), textAlign: 'center' } },
+          h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: _qqSoftBg('linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), borderTop: cardBorder, borderRight: cardBorder, borderBottom: cardBorder, borderLeft: '4px solid ' + _qqBd(q.themeColor), textAlign: 'center' } },
             h('div', { style: { fontSize: 12, color: _qqFg(q.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
             h('p', { style: { margin: 0, color: _qqFg('#e2e8f0'), fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
-            h('div', { style: { marginTop: 14, fontSize: 12, color: _qqFg('#94a3b8') } },
-              'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length,
-              d.manualOverride != null ? h('span', null, ' · ',
-                h('button', { type: 'button', onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 28, padding: '4px 6px' } }, 'reset to this week\'s automatic')
-              ) : h('span', null, ' · ',
-                h('button', { type: 'button', onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 28, padding: '4px 6px' } }, 'try a different question')
+            h('div', { style: { marginTop: 14, fontSize: 12, color: _qqFg('#94a3b8'), display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' } },
+              h('span', null, 'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length),
+              d.manualOverride != null ? h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, '·',
+                h('button', { type: 'button', onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 44, padding: '10px 8px', display: 'inline-flex', alignItems: 'center' } }, 'reset to this week\'s automatic')
+              ) : h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } }, '·',
+                h('button', { type: 'button', onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline', minHeight: 44, padding: '10px 8px', display: 'inline-flex', alignItems: 'center' } }, 'try a different question')
               )
             )
           ),
@@ -320,26 +356,28 @@
             h('textarea', { id: draftId,
               placeholder: 'What is here?',
               onBlur: function(e) { scanQuietText(e.target.value); },
-              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
+              style: { width: '100%', boxSizing: 'border-box', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
             }),
 
             // Crew share opt-in
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 6, background: _qqSoftBg('rgba(22,163,74,0.06)', '#f0fdf4'), border: '1px solid ' + _qqBd('#22c55e') } },
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12.5, color: _qqFg('#bbf7d0') } },
-                h('input', { type: 'checkbox', id: 'qq-share-crew', 'aria-label': 'I want to share a version of this with my Crew' }),
+              h('label', { style: { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, cursor: 'pointer', fontSize: 12.5, color: _qqFg('#bbf7d0') } },
+                h('input', { type: 'checkbox', id: 'qq-share-crew', 'aria-label': 'I want to share a version of this with my Crew', style: { width: 20, height: 20, flexShrink: 0 } }),
                 h('span', null, 'I want to share a shorter version of this with my Crew')
               ),
               h('label', { htmlFor: 'qq-crew-version', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Shorter version to share with your Crew (optional)'),
               h('textarea', { id: 'qq-crew-version',
                 placeholder: 'A shorter version, only what you would actually want shared. Saved separately from your private response.',
                 onBlur: function(e) { scanQuietText(e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
+                style: { width: '100%', boxSizing: 'border-box', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
               })
             ),
 
-            h('button', { type: 'button', onClick: saveResponse, 'aria-label': 'Save response',
-              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: _qqHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _qqHC ? '#000000' : '#6d28d9', color: _qqHC ? '#ffff00' : '#ffffff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
-            h('span', { style: { marginLeft: 8, fontSize: 12, color: _qqFg('#64748b') } }, 'Your responses are private to this device unless you choose to share.')
+            h('div', { style: { marginTop: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              h('button', { type: 'button', onClick: saveResponse, 'aria-label': 'Save response',
+                style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '10px 18px', borderRadius: 8, border: _qqHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _qqHC ? '#000000' : '#6d28d9', color: _qqHC ? '#ffff00' : '#ffffff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
+              h('span', { style: { fontSize: 12, color: _qqFg('#64748b') } }, 'Your responses are private to this device unless you choose to share.')
+            )
           ),
 
           // Existing responses for this query
@@ -373,18 +411,20 @@
         if (browsed) {
           // Detail view
           var responses = safeResponses(d.responses).filter(function(r) { return r.queryId === browsed.id; });
+          var browsedBorder = '1px solid ' + (_qqHC ? '#ffff00' : browsed.themeColor + '88');
           return h('div', null,
-            h('button', { type: 'button', onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
-              style: { marginBottom: 12, background: 'transparent', border: '1px solid ' + _qqBd('#334155'), color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
-            h('div', { style: { padding: 24, borderRadius: 14, background: _qqSoftBg('linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), border: '1px solid ' + (_qqHC ? '#ffff00' : browsed.themeColor + '88'), borderLeft: '4px solid ' + _qqBd(browsed.themeColor), marginBottom: 14 } },
+            h('button', { type: 'button', onClick: function() { setQQ({ browseId: null }); announceQQ('Showing all questions.'); }, 'aria-label': 'Back to all questions',
+              style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', marginBottom: 12, background: 'transparent', border: '1px solid ' + _qqBd('#334155'), color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '10px 14px', cursor: 'pointer', fontSize: 12.5, fontWeight: 700 } }, '← All questions'),
+            h('div', { style: { padding: 24, borderRadius: 14, background: _qqSoftBg('linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), borderTop: browsedBorder, borderRight: browsedBorder, borderBottom: browsedBorder, borderLeft: '4px solid ' + _qqBd(browsed.themeColor), marginBottom: 14 } },
               h('div', { style: { fontSize: 12, color: _qqFg(browsed.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
               h('p', { style: { margin: 0, color: _qqFg('#e2e8f0'), fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
             ),
             h('button', { type: 'button', onClick: function() {
               var idx = QUERIES.findIndex(function(q) { return q.id === browsed.id; });
               setQQ({ manualOverride: idx, browseId: null, view: 'this-week' });
+              announceQQ('Set as your current question.');
             }, 'aria-label': 'Make this my current question',
-              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _qqBd('#a78bfa'), background: _qqSoftBg('rgba(167,139,250,0.18)', '#f5f3ff'), color: _qqFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
+              style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', padding: '10px 16px', borderRadius: 8, border: '1px solid ' + _qqBd('#a78bfa'), background: _qqSoftBg('rgba(167,139,250,0.18)', '#f5f3ff'), color: _qqFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
             responses.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b') } },
               h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your past responses to this question'),
               responses.slice().reverse().map(function(r, ri) {
@@ -417,8 +457,8 @@
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
                 t.queries.map(function(q) {
                   var hasResponse = allResponses.some(function(r) { return r.queryId === q.id; });
-                  return h('button', { key: q.id, type: 'button', onClick: function() { setQQ({ browseId: q.id }); },
-                    style: { padding: 12, borderRadius: 8, border: '1px solid ' + (_qqHC ? '#ffff00' : t.color + '44'), background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
+                  return h('button', { key: q.id, type: 'button', onClick: function() { setQQ({ browseId: q.id }); announceQQ('Opened question from ' + t.label + '.'); },
+                    style: { minHeight: 68, padding: 12, borderRadius: 8, border: '1px solid ' + (_qqHC ? '#ffff00' : t.color + '44'), background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
                     h('div', { style: { fontSize: 12, color: _qqFg(t.color), fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
                     h('div', { style: { fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } }, q.text)
                   );
@@ -459,6 +499,7 @@
             if (origIdx >= 0) all.splice(origIdx, 1);
             return { responses: all };
           });
+          announceQQ('Response deleted.');
         }
 
         return h('div', null,
@@ -472,8 +513,8 @@
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 12, color: _qqFg(q.themeColor), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
                 h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, rDate),
-                h('button', { type: 'button', onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response',
-                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + _qqBd('#475569'), color: _qqFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
+                h('button', { type: 'button', onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response from ' + (rDate || 'entry'),
+                  style: { marginLeft: 'auto', minHeight: 44, minWidth: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid ' + _qqBd('#475569'), color: _qqFg('#94a3b8'), borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontSize: 13 } }, '✕')
               ),
               h('p', { style: { margin: '0 0 8px', color: _qqFg('#e9d5ff'), fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5 } }, '“' + q.text + '”'),
               h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, rText),
@@ -534,12 +575,12 @@
       else if (view === 'about') body = renderAbout();
       else body = renderThisWeek();
 
-      return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Quiet Questions' },
+      return h('div', { className: 'selh-quietquestions', style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Quiet Questions' },
         header(),
         navTabs(),
         (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? window.SelHub.renderCrisisResources(h, _qqBand) : null,
-        h('div', { role: 'tabpanel', id: 'qq-panel-' + view, 'aria-labelledby': 'qq-tab-' + view }, body)
+        h('div', { role: 'tabpanel', id: 'qq-panel-' + view, 'aria-labelledby': 'qq-tab-' + view, tabIndex: 0 }, body)
       );
     }
   });

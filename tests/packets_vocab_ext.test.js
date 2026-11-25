@@ -36,7 +36,10 @@ describe('Track 2: Lazy extended offline definition shards & provenance', () => 
     // Pick a real extended word from shard 'a' that is NOT in core
     const aShard = JSON.parse(read('packets_vocab_ext/a.json'));
     expect(aShard.words.length).toBeGreaterThan(50);
-    const sampleWord = aShard.words[0][0];
+    // 2026-11-23: the first extended word the core does not already answer. Since the bank was widened, shard 'a' starts
+    // with "abandoning", which has an extended entry but which the core answers as a form of "abandon" (as it should).
+    const sampleWord = aShard.words.map(([w]) => w).find((w) => !api.has(w));
+    expect(sampleWord).toBeTruthy();
     expect(api.has(sampleWord)).toBe(false);
 
     // ensureForWords fetches ONLY letter 'a' (and not b..z)

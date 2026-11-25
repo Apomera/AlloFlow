@@ -48,13 +48,17 @@
 
   // ── Walk the StructTreeRoot once, collecting per-element facts ──
   function walkStructTree(stRoot, ctx, PDFLib, pageIndex) {
+    if (!stRoot || !ctx || !PDFLib) return [];
     var PDFName = PDFLib.PDFName;
     var PDFArray = PDFLib.PDFArray;
     var PDFDict = PDFLib.PDFDict;
     var PDFRef = PDFLib.PDFRef;
     var PDFNumber = PDFLib.PDFNumber; // audit #22: real class so an integer-MCID /K leaf passes instanceof
     var nm = function (n) { return PDFName.of(n); };
-    var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
+    var resolve = function (o) {
+      if (!(o instanceof PDFRef)) return o;
+      try { return ctx.lookup(o); } catch (_) { return null; }
+    };
     var decodePdfString = function (raw) {
       var o = resolve(raw);
       if (o == null) return '';
@@ -105,7 +109,8 @@
           var items;
           if (kr instanceof PDFArray) {
             items = [];
-            for (var j = 0; j < kr.size(); j++) items.push(resolve(kr.get(j)));
+            var krLen = Math.min(kr.size(), 10000);
+            for (var j = 0; j < krLen; j++) items.push(resolve(kr.get(j)));
           } else {
             items = [kr];
           }
@@ -135,7 +140,7 @@
         if (aObj) {
           var ar = resolve(aObj);
           var aItems = [];
-          if (ar instanceof PDFArray) { for (var ai = 0; ai < ar.size(); ai++) aItems.push(resolve(ar.get(ai))); }
+          if (ar instanceof PDFArray) { var arLen = Math.min(ar.size(), 256); for (var ai = 0; ai < arLen; ai++) aItems.push(resolve(ar.get(ai))); }
           else { aItems.push(ar); }
           for (var ax = 0; ax < aItems.length; ax++) { var ad = aItems[ax]; if (ad instanceof PDFDict && ad.get(nm('Scope'))) { hasScope = true; break; } }
         }
@@ -180,7 +185,7 @@
   // Quote chars included: standard-14 '•' round-trips as '"' on some decode
   // paths (observed in the goldens).
   function isMarkerLbl(e) {
-    if (e.role !== 'Lbl') return false;
+    if (!e || typeof e !== 'object' || e.role !== 'Lbl') return false;
     var t = String(e.actualText || '').replace(/^[(/]|\)$/g, '').trim();
     return /^(["'•◦▪‣·*–-]|\d{1,3}[.)])$/.test(t);
   }
@@ -200,7 +205,7 @@
     var label = function (e) { var t = e.role === 'Figure' ? e.altText : e.actualText; return t ? ' at ' + quote(t, 50) : ''; }; // a text form's paragraph stores no text
     var h1 = safeElems.filter(function (e) { return e.role === 'H1'; });
     if (h1.length > 1) notes.push({ id: 'several-h1', count: h1.length, detail: 'The tagged PDF has ' + h1.length + ' top-level headings (' + h1.slice(0, 3).map(function (e) { return quote(e.actualText, 40); }).join(', ') + (h1.length > 3 ? ', …' : '') + '). A document usually has one: a screen reader user may take a later one for a new document.' });
-    var seq = safeElems.filter(function (e) { return READ_ROLES[e.role] && e.hasContent && e.page != null; });
+    var seq = safeElems.filter(function (e) { return READ_ROLES[e.role] && e.hasContent && typeof e.page === 'number' && Number.isFinite(e.page); });
     var back = [];
     for (var i = 1; i < seq.length; i++) if (seq[i].page < seq[i - 1].page) back.push({ from: seq[i - 1].page, to: seq[i].page, at: seq[i] });
     if (back.length) notes.push({ id: 'goes-back', count: back.length, detail: 'A screen reader goes back to an earlier page ' + back.length + (back.length === 1 ? ' time' : ' times') + ' in the tagged PDF: from page ' + back[0].from + ' to page ' + back[0].to + label(back[0].at) + (back.length > 1 ? ', and more' : '') + '. Moved footnotes can do this; check that it reads in a sensible order.' });
@@ -212,7 +217,7 @@
     if (frags.length) notes.push({ id: 'stray-fragments', count: frags.length, detail: frags.length + ' tiny ' + (frags.length === 1 ? 'piece' : 'pieces') + ' of text ' + (frags.length === 1 ? 'is' : 'are') + ' read on ' + (frags.length === 1 ? 'its' : 'their') + ' own in the tagged PDF (' + frags.slice(0, 4).map(function (e) { return quote(e.actualText, 8); }).join(', ') + (frags.length > 4 ? ', …' : '') + '): often bullets or page numbers that should be page decoration.' });
     var ph = safeElems.filter(function (e) { return e.role === 'Figure' && e.altText === PLACEHOLDER_ALT; });
     if (ph.length) {
-      var pgs = ph.map(function (e) { return e.page; }).filter(function (p, n, a) { return p != null && a.indexOf(p) === n; });
+      var pgs = ph.map(function (e) { return e.page; }).filter(function (p, n, a) { return typeof p === 'number' && Number.isFinite(p) && a.indexOf(p) === n; });
       notes.push({ id: 'placeholder-alt', count: ph.length, detail: ph.length + (ph.length === 1 ? ' picture' : ' pictures') + ' in the tagged PDF ' + (ph.length === 1 ? 'has' : 'have') + ' no description and ' + (ph.length === 1 ? 'reads' : 'read') + ' "' + PLACEHOLDER_ALT + '"' + (pgs.length ? ' (page' + (pgs.length === 1 ? ' ' : 's ') + pgs.slice(0, 6).join(', ') + (pgs.length > 6 ? ', …' : '') + ')' : '') + '.' });
     }
     return notes;
@@ -292,8 +297,15 @@
 
     var ctx = doc.context;
     var catalog = doc.catalog;
+    if (!ctx || !catalog || typeof catalog.get !== 'function') {
+      return { error: 'PDF missing catalog or context', checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
+    }
+    try {
     var nm = function (n) { return PDFName.of(n); };
-    var resolve = function (o) { return (o instanceof PDFRef) ? ctx.lookup(o) : o; };
+    var resolve = function (o) {
+      if (!(o instanceof PDFRef)) return o;
+      try { return ctx.lookup(o); } catch (_) { return null; }
+    };
     var decodeCatalogStr = function (raw) {
       var o = resolve(raw);
       if (o == null) return '';
@@ -307,7 +319,7 @@
     var stRoot = resolve(catalog.get(nm('StructTreeRoot')));
     var markInfo = resolve(catalog.get(nm('MarkInfo')));
     var markedRaw = markInfo && markInfo.get ? resolve(markInfo.get(nm('Marked'))) : null;
-    var langRaw = decodeCatalogStr(catalog.get(nm('Lang'))).trim();
+    var langRaw = decodeCatalogStr(catalog.get(nm('Lang'))).replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, 64);
     var pages = doc.getPages();
     var viewerPrefs = resolve(catalog.get(nm('ViewerPreferences')));
     var displayDocTitle = viewerPrefs && viewerPrefs.get ? resolve(viewerPrefs.get(nm('DisplayDocTitle'))) : null;
@@ -337,7 +349,7 @@
       var fd = resolve(font.get(nm('FontDescriptor')));
       if (!fd && sub === '/Type0') {
         var desc = resolve(font.get(nm('DescendantFonts')));
-        var cid = desc && desc.get ? resolve(desc.get(0)) : null;
+        var cid = (desc instanceof PDFLib.PDFArray && desc.size() > 0) ? resolve(desc.get(0)) : null;
         if (cid && cid.get) fd = resolve(cid.get(nm('FontDescriptor')));
       }
       if (fd && fd.get) return !!(fd.get(nm('FontFile')) || fd.get(nm('FontFile2')) || fd.get(nm('FontFile3')));
@@ -385,7 +397,8 @@
         if (!lAnnots || typeof lAnnots.size !== 'function' || lAnnots.size() === 0) continue;
         pagesWithAnnots++;
         if (String(resolve(pages[lp].node.get(nm('Tabs'))) || '') === '/S') pagesWithAnnotsTabsS++;
-        for (var la = 0; la < lAnnots.size(); la++) {
+        var lAnnotsLen = Math.min(lAnnots.size(), 10000);
+        for (var la = 0; la < lAnnotsLen; la++) {
           var annot = resolve(lAnnots.get(la));
           if (!annot || !annot.get) continue;
           if (String(resolve(annot.get(nm('Subtype'))) || '') !== '/Link') continue;
@@ -578,6 +591,9 @@
         overall: failCount === 0 ? 'PASS' : 'FAIL',
       },
     };
+    } catch (err) {
+      return { error: 'PDF validation error: ' + (err && err.message), checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
+    }
   }
 
   return Object.freeze({

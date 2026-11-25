@@ -68,19 +68,35 @@
     function mesh(geometry, surface, parent) {
       var object = new THREE.Mesh(geometry, surface); (parent || scene).add(object); return object;
     }
+    var contextLost = false, onContextLost = null;
     function clearOutputs() {
       canvasContexts.forEach(function (context) {
-        context.save(); context.filter = 'none'; context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0, 0, WIDTH, HEIGHT); context.restore();
+        try {
+          context.save(); context.filter = 'none'; context.setTransform(1, 0, 0, 1, 0, 0);
+          context.clearRect(0, 0, WIDTH, HEIGHT); context.restore();
+        } catch (_) {}
       });
     }
     function dispose() {
       if (disposed) return;
       disposed = true;
-      if (bird && !birdDisposed) { birdDisposed = true; bird.dispose(); }
-      resources.forEach(function (resource) { resource.dispose(); }); resources.length = 0;
+      if (renderer && renderer.domElement && onContextLost && typeof renderer.domElement.removeEventListener === 'function') {
+        try { renderer.domElement.removeEventListener('webglcontextlost', onContextLost); } catch (_) {}
+      }
+      onContextLost = null;
+      if (bird && !birdDisposed) {
+        birdDisposed = true;
+        if (typeof bird.dispose === 'function') { try { bird.dispose(); } catch (_) {} }
+      }
+      resources.forEach(function (resource) {
+        if (resource && typeof resource.dispose === 'function') { try { resource.dispose(); } catch (_) {} }
+      });
+      resources.length = 0;
+      if (scene && typeof scene.clear === 'function') { try { scene.clear(); } catch (_) {} }
       if (renderer && !rendererDisposed) {
-        rendererDisposed = true; renderer.dispose(); renderer.forceContextLoss();
+        rendererDisposed = true;
+        if (typeof renderer.dispose === 'function') { try { renderer.dispose(); } catch (_) {} }
+        if (!contextLost && typeof renderer.forceContextLoss === 'function') { try { renderer.forceContextLoss(); } catch (_) {} }
       }
       clearOutputs();
       bird = null; placement = null; scene = null; camera = null; texture = null; textureBytes = null;
@@ -157,7 +173,8 @@
           depthBounds[0] = Math.min(depthBounds[0], depth - radius); depthBounds[1] = Math.max(depthBounds[1], depth + radius);
           smallestClearance = Math.min(smallestClearance, across - radius - cropEdge);
         }
-        patch.instanceMatrix.needsUpdate = true; patch.instanceColor.needsUpdate = true;
+        patch.instanceMatrix.needsUpdate = true;
+        if (patch.instanceColor) patch.instanceColor.needsUpdate = true;
         scene.add(patch);
         catalogVegetation.assets.push({
           id: item.entry.id, version: item.entry.version, nativeUnits: item.entry.units,
@@ -556,7 +573,7 @@
     function snapshot() {
       var result = diagnostics ? JSON.parse(JSON.stringify(diagnostics)) : {};
       result.lifecycle = {
-        disposed: disposed, liveContexts: renderer && !rendererDisposed ? 1 : 0,
+        disposed: disposed, liveContexts: renderer && !rendererDisposed && !contextLost ? 1 : 0,
         rendererCreated: !!renderer || rendererDisposed, rendererDisposed: rendererDisposed,
         birdDisposed: birdDisposed, ownedResourceCount: resources.length, allocationCount: allocations,
         renderCount: drawCount, textureUpdates: textureUpdates
@@ -565,7 +582,14 @@
     }
     function update(settings) {
       if (disposed) throw new Error('The distance-detail scene is closed.');
+      if (contextLost) throw new Error('The distance-detail graphics context was lost.');
       currentSettings = model.normalize(settings);
+      if (!currentSettings || typeof currentSettings !== 'object' ||
+          !Number.isFinite(currentSettings.distance) || currentSettings.distance <= 0 ||
+          !Number.isFinite(currentSettings.cycles) || currentSettings.cycles < 0 ||
+          !Number.isFinite(currentSettings.contrast) || currentSettings.contrast < 0 || currentSettings.contrast > 100) {
+        throw new Error('The distance-detail settings are invalid.');
+      }
       var referenceSigma = model.gaussianSigmaPixels(60, WIDTH), eagleSigma = model.gaussianSigmaPixels(140, WIDTH);
       if (!Number.isFinite(referenceSigma) || referenceSigma < 0 || !Number.isFinite(eagleSigma) || eagleSigma < 0) throw new Error('The detail filter is unavailable.');
       pattern(currentSettings);
@@ -624,11 +648,15 @@
       bird.update({ flight: 0, phase: 0, walking: 0, peck: 0, lookYaw: 0 }); bird.root.updateMatrixWorld(true);
       var bounds = new THREE.Box3().setFromObject(bird.root);
       nativeBounds = { min: bounds.min.toArray(), max: bounds.max.toArray(), size: bounds.getSize(new THREE.Vector3()).toArray() };
-      bird.root.traverse(function (object) { if (object.isMesh) { nativeMeshes++; nativeVertices += object.geometry.attributes.position.count; } });
+      bird.root.traverse(function (object) { if (object.isMesh && object.geometry && object.geometry.attributes && object.geometry.attributes.position) { nativeMeshes++; nativeVertices += object.geometry.attributes.position.count; } });
       placement = new THREE.Group(); placement.position.set(.36, .35, 0); placement.rotation.y = -Math.PI / 2;
       placement.add(bird.root); scene.add(placement);
       makeEnvironment(); makePlaque();
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true }); allocations++;
+      if (renderer.domElement && typeof renderer.domElement.addEventListener === 'function') {
+        onContextLost = function (event) { contextLost = true; if (event && typeof event.preventDefault === 'function') event.preventDefault(); };
+        renderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
+      }
       renderer.setPixelRatio(1); renderer.setSize(WIDTH, HEIGHT, false);
       renderer.outputEncoding = THREE.LinearEncoding; renderer.toneMapping = THREE.NoToneMapping;
       return Object.freeze({ update: update, getDiagnostics: snapshot, dispose: dispose });

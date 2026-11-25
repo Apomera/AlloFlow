@@ -182,7 +182,9 @@ describe('view: the two racy results-panel buttons are disabled while a run is a
     // an un-guarded one closes the modal mid-run and leaves the auto-fix loop detached (the exact
     // gap the adversarial review caught at view_pdf_audit_source.jsx:8469). Lock the class: every
     // such button must carry the run-state disable guard within the same <button>.
-    const sig = "setInputText(temp.textContent || temp.innerText || '');";
+    // 2026-11-19: the teardown buttons read the text through DOMParser (no live temp element), then set it.
+    expect(viewSrc).not.toContain("setInputText(temp.textContent || temp.innerText || '');");
+    const sig = "setInputText(extracted);\n                          _closePdfAuditModal();";
     // 2026-07-26 (audit M1): the guard is now _remediationBusy, not bare pdfFixLoading. This pin
     // hard-coded the old expression as a CLASS invariant, so it actively blocked upgrading these two
     // teardown buttons — a test holding a known-weak guard in place. _remediationBusy is

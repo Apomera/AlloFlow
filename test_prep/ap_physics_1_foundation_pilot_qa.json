@@ -88,7 +88,7 @@
       "keyLongestSharePercent": 0.4,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1500,
-      "distinctDistractorRationaleCount": 1480,
+      "distinctDistractorRationaleCount": 1489,
       "repeatedDistractorRationaleSharePercent": 0.2,
       "largestSharedChoiceSet": 2,
       "advisories": [
@@ -366,8 +366,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec",
-    "learningLibrarySha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f",
+    "packSha256": "686671a6da5c5990ed90416e27cffbac83c64f5d835eaba01b6be7658ff12839",
+    "learningLibrarySha256": "5027effaace777b47000dbb88ebde29a58a9d31aa94e8e38f38e55ac7b183bfd",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
     "factualCrossCheckUrl": "https://openstax.org/details/books/college-physics-2e"
@@ -377,15 +377,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec",
-      "deploySha256": "096e1334d8722e16b44ddb9d27cae1031098defec2f535c8150b5b0d7ea57bec"
+      "sourceSha256": "686671a6da5c5990ed90416e27cffbac83c64f5d835eaba01b6be7658ff12839",
+      "deploySha256": "686671a6da5c5990ed90416e27cffbac83c64f5d835eaba01b6be7658ff12839"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f",
-      "deploySha256": "eecb050386adad41f624fa50fa447c61b26f6f95cfacc9bc9bbef51a0904c20f"
+      "sourceSha256": "5027effaace777b47000dbb88ebde29a58a9d31aa94e8e38f38e55ac7b183bfd",
+      "deploySha256": "5027effaace777b47000dbb88ebde29a58a9d31aa94e8e38f38e55ac7b183bfd"
     }
   ],
   "releaseBlockers": [

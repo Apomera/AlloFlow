@@ -251,7 +251,8 @@ describe('e-bike motor, mastery, focus and parts hotspots', () => {
     expect(src).not.toMatch(/text-\[0\.(5|6)\d*rem\]/);
   });
   it('small parts are clickable on top of big ones, and diagonal tubes have matching hotspots', () => {
-    const a = src.indexOf('        var PART_SHAPES = {'), b = src.indexOf('        // hit = a transparent click target');
+    // 2026-11-23: PART_SHAPES and partArea moved to module scope (the Repair Simulator's work stand rings the same shapes).
+    const a = src.indexOf('  var PART_SHAPES = {'), b = src.indexOf('  // Work stand focus:');
     const P = new Function(src.slice(a, b) + '\nreturn { PART_SHAPES, partArea };')();
     const area = (id, rect) => P.partArea(Object.assign({ id }, rect || { hw: 0, hh: 0 }));
     expect(area('hub')).toBeLessThan(area('rim')); expect(area('rim')).toBeLessThan(area('tire'));
@@ -280,7 +281,7 @@ describe('quiz answer positions and the parts illustration', () => {
     const view = src.slice(src.indexOf('function PartsInspector()'), src.indexOf('function HelmetFit()'));
     const ids = [...view.matchAll(/\{ id: '([a-z_0-9-]+)',\s*name:\s/g)].map((m) => m[1]);
     expect(ids).toHaveLength(20);
-    const shapes = new Function(view.slice(view.indexOf('var PART_SHAPES = {'), view.indexOf('var partArea = ')) + '\nreturn PART_SHAPES;')();
+    const shapes = new Function(src.slice(src.indexOf('  var PART_SHAPES = {'), src.indexOf('  var partArea = ')) + '\nreturn PART_SHAPES;')();
     for (const id of Object.keys(shapes)) expect(ids, id + ' is a real part').toContain(id);
     for (const id of ['brake_lever', 'shifter', 'stem', 'handlebar', 'caliper', 'hub', 'cassette', 'chain', 'chainstay', 'seatstay', 'down_tube']) expect(shapes[id], id).toBeTruthy();
     // no two rectangle hotspots in the cockpit share a center
@@ -384,7 +385,9 @@ describe('gearing picture and the bike fit rider', () => {
   it('the drivetrain turns the wheel by the gear ratio, can be paused, and starts paused for reduced motion', () => {
     const lab = src.slice(src.indexOf('function GearingLab()'), src.indexOf('function RepairSim()'));
     expect(lab).toContain('spinRef.current.crank += turn; spinRef.current.wheel += turn * L.ratio;');
-    expect(lab).toContain('var playState = useState(!_prefersReducedMotion);');
+    // 2026-11-23: read when the lab opens (it was read once at page load), and a live switch to reduced motion pauses it.
+    expect(lab).toContain('var playState = useState(function() { return !reducedMotionNow(); });');
+    expect(lab).toContain('var onChange = function() { if (mq.matches) setPlaying(false); };');
     expect(lab).toContain("'data-gear-play': playing ? 'playing' : 'paused'");
     expect(lab).toContain('useEffect(function() { spinRef.current = { crank: 0, wheel: 0 }; paintDrivetrain(); }, [bikeId, ringIdx, cogIdx]);');
     expect(lab).toContain('var tirePush = 100 * CRANK_M / (ratio * bike.wheelR);');

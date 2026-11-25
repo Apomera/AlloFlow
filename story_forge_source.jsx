@@ -5,11 +5,11 @@
 
 // ── WCAG 2.4.7 Focus Visible — inject scoped focus-ring CSS once per page ──
 (function() {
-  if (typeof document === 'undefined') return;
+  if (typeof document === 'undefined' || typeof document.getElementById !== 'function') return;
   if (document.getElementById('allo-sf-focus-css')) return;
   var st = document.createElement('style');
   st.id = 'allo-sf-focus-css';
-  st.textContent = '.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline:3px solid #fff!important;outline-offset:2px!important;box-shadow:0 0 0 5px #0f172a!important;border-radius:6px}@media (forced-colors:active){.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline-color:Highlight!important;box-shadow:none!important}}';
+  st.textContent = '.sf-modal-root :is(button,a[href],input,select,textarea,summary,[role="button"],[role="tab"]){touch-action:manipulation}.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline:3px solid #fff!important;outline-offset:2px!important;box-shadow:0 0 0 5px #0f172a!important;border-radius:6px}@media (forced-colors:active){.sf-modal-root :is(button,a[href],input,select,textarea,[tabindex]:not([tabindex="-1"])):focus-visible{outline-color:Highlight!important;box-shadow:none!important}}@media (prefers-reduced-motion:reduce){.sf-modal-root,.sf-modal-root *,.sf-modal-root *::before,.sf-modal-root *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}';
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -2805,6 +2805,7 @@ const StoryForge = React.memo(({
     setPanelResizeDrag(null);
   };
   const handlePanelResizeKeyDown = (event, pId, idx, pageLayout = comicPageLayout, pageIndex = idx) => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -2938,6 +2939,7 @@ const StoryForge = React.memo(({
     sfAnnounce(ta('a11y.storyforge_lettering_bubble_width_updated'));
   };
   const handleBubbleControlKeyDown = (event, pId, mode) => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     const moveKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
     const resizeKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
     if (mode === 'resize' ? !resizeKeys.includes(event.key) : !moveKeys.includes(event.key)) return;
@@ -4346,7 +4348,7 @@ const StoryForge = React.memo(({
           return;
         }
       }
-      if (e.key === 'Escape' && isOpen && !(e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229)) {
+      if (e.key === 'Escape' && isOpen && !(e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey)) {
         if (exportConsent) finishExportConsent(false);
         else if (importConfirmation) finishImportConfirmation(false);
         else if (showCloseConfirm) setShowCloseConfirm(false);
@@ -5163,6 +5165,7 @@ const StoryForge = React.memo(({
   const finishPanelSequenceDrag = () => setPanelSequenceDrag(null);
 
   const handlePanelSequenceKeyDown = (event, idx) => {
+    if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -9388,14 +9391,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <input
                     id="sf-new-vocab-term"
                     type="text" value={newTerm} onChange={(e) => setNewTerm(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
+                    onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') addVocabTerm(); }}
                     placeholder={t("placeholders.add_a_term")}
                     aria-label={t("a11y.vocabulary_term")}
                     className="min-w-0 flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
                   />
                   <input
                     type="text" value={newDef} onChange={(e) => setNewDef(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
+                    onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') addVocabTerm(); }}
                     placeholder={t("placeholders.definition_optional")}
                     aria-label={t("a11y.term_definition")}
                     className="min-w-0 flex-1 text-sm p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300"
@@ -11234,7 +11237,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 type="text"
                                 value={imageEditState.prompt}
                                 onChange={(e) => setImageEditState(prev => ({ ...prev, prompt: e.target.value }))}
-                                onKeyDown={(e) => { if (e.key === 'Enter' && imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }}
+                                onKeyDown={(e) => { if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' && imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }}
                                 placeholder={ta('a11y.storyforge_attr_e_g_make_sky_purple_add')}
                                 className="w-full text-xs p-1.5 border border-purple-200 rounded-lg focus:ring-1 focus:ring-purple-300"
                                 aria-label={t("a11y.describe_illustration_changes")}
@@ -11248,7 +11251,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           )}
                                                   <label className="mt-2 block rounded-lg border border-purple-100 bg-purple-50/70 px-2 py-1.5 text-xs font-bold text-purple-700">
                             <span className="flex items-center justify-between"><span>{ta('a11y.storyforge_ui_image_size')}</span><span>{clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)}px</span></span>
-                            <input type="range" min={240} max={720} step={10} value={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)} onChange={(e) => updateIllustrationDisplayWidth(p.id, e.target.value)} className="mt-1 w-full accent-purple-600" aria-label={'Image width for ' + (artifactType === 'comic' ? 'panel ' : 'scene ') + (idx + 1)} />
+                            <input type="range" min={240} max={720} step={10} value={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth)} aria-valuetext={clampStoryIllustrationWidth(illustrations[p.id]?.displayWidth) + 'px'} onChange={(e) => updateIllustrationDisplayWidth(p.id, e.target.value)} className="mt-1 w-full accent-purple-600" aria-label={'Image width for ' + (artifactType === 'comic' ? 'panel ' : 'scene ') + (idx + 1)} />
                           </label>
 </div>
                       ) : illustrations[p.id]?.error ? (
@@ -12182,6 +12185,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               <div key={p.id} className="flex items-center gap-2">
                                 <span className="text-xs text-slate-600 font-bold w-7 shrink-0">P{i + 1}</span>
                                 <input type="range" min="-5" max="5" step="1" value={v}
+                                  aria-valuetext={v > 0 ? '+' + v : String(v)}
                                   onChange={(e) => { const nv = parseInt(e.target.value, 10); setValenceByPara(prev => ({ ...prev, [p.id]: nv })); }}
                                   aria-label={ta('a11y.storyforge_aria_fortune_for_paragraph_from_5_bad_to').replace('{0}', i + 1)}
                                   className="flex-1 accent-violet-600" />

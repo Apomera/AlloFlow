@@ -308,7 +308,7 @@ const PROVIDER_PRESETS = [
     baseUrl: 'http://localhost:32173',
     modelsPath: '/v1/models',
     managedByDesktop: true,
-    availableToday: false,
+    availableToday: true,
   },
   {
     id: 'lmstudio',
@@ -388,13 +388,8 @@ const LIVE_SESSION_MODES = {
     cloudSession: true,
     recommended: false,
   },
-  'alloflow-demo-cloud': {
-    label: 'AlloFlow Demo Cloud',
-    dataLocation: 'AlloFlow demo cloud project',
-    cloudSession: true,
-    recommended: false,
-    demoOnly: true,
-  },
+  // 'alloflow-demo-cloud' removed 2026-11-23: no AlloFlow-run cloud project for
+  // class sessions. A stale saved mode falls back to the default (readConfig).
 };
 
 const DEFAULT_CONFIG = {
@@ -495,7 +490,10 @@ const DEFAULT_CONFIG = {
     channel: process.env.ALLOFLOW_UPDATE_CHANNEL || 'latest',
   },
   liveSession: {
-    mode: process.env.ALLOFLOW_LIVE_SESSION_MODE || 'schoolbox-lan',
+    // An unknown env mode (e.g. the removed demo cloud) must not become the default.
+    mode: Object.prototype.hasOwnProperty.call(LIVE_SESSION_MODES, process.env.ALLOFLOW_LIVE_SESSION_MODE || '')
+      ? process.env.ALLOFLOW_LIVE_SESSION_MODE
+      : 'schoolbox-lan',
     requireExplicitCloud: true,
     lan: {
       enabled: true,
@@ -635,8 +633,16 @@ const LOCAL_ENGINE_CONTEXT_MAX = 131072;
 // an 8GB Chromebook-class laptop both got 4096 and long sources were truncated
 // on hardware that never needed to be.
 const LOCAL_ENGINE_MODEL_PROFILES = [
+  { id: 'minicpm5-local', match: /minicpm[-_ ]?5/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 32768, safeOutputTokens: 2200, safeJsonOutputTokens: 1600 },
+  { id: 'minicpm-local', match: /minicpm/i, contextSize: 8192, maxContextSize: 16384, kvBytesPerToken: 40960, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'deepseek-local', match: /deepseek/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 65536, safeOutputTokens: 2400, safeJsonOutputTokens: 1800 },
+  { id: 'qwen3-local', match: /qwen[-_ ]?3/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 57344, safeOutputTokens: 2400, safeJsonOutputTokens: 1800 },
+  { id: 'qwen-1.5b-local', match: /qwen2?\.?5.*1\.?5b|qwen.*1\.?5b/i, contextSize: 4096, maxContextSize: 32768, kvBytesPerToken: 28672, safeOutputTokens: 1200, safeJsonOutputTokens: 900 },
   { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextSize: 4096, maxContextSize: 32768, kvBytesPerToken: 36864, safeOutputTokens: 1400, safeJsonOutputTokens: 1100 },
-  { id: 'gemma-local', match: /gemma/i, contextSize: 8192, maxContextSize: 8192, kvBytesPerToken: 51200, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'smollm-local', match: /smollm/i, contextSize: 4096, maxContextSize: 8192, kvBytesPerToken: 28672, safeOutputTokens: 1200, safeJsonOutputTokens: 900 },
+  { id: 'phi-local', match: /phi[-_ ]?4|phi[-_ ]?3/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 49152, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'gemma-local', match: /gemma/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 51200, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'granite-local', match: /granite|ministral|olmo|command[-_ ]?r/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 57344, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
   { id: 'llama-local', match: /llama|mistral|mixtral/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 65536, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
   { id: 'qwen-local', match: /qwen/i, contextSize: 8192, maxContextSize: 32768, kvBytesPerToken: 65536, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
 ];
@@ -1111,12 +1117,23 @@ function writePrivateFile(filePath, text) {
   try { fs.chmodSync(filePath, 0o600); } catch (_) {}
 }
 
+// A saved mode that is no longer offered (e.g. the removed
+// 'alloflow-demo-cloud') migrates to the fresh-install default.
+function normalizeLiveSessionModeForStorage(config) {
+  const live = config && config.liveSession;
+  if (!live || typeof live !== 'object' || Array.isArray(live)) return { config, changed: false };
+  if (typeof live.mode === 'string' && Object.prototype.hasOwnProperty.call(LIVE_SESSION_MODES, live.mode)) return { config, changed: false };
+  return { config: { ...config, liveSession: { ...live, mode: DEFAULT_CONFIG.liveSession.mode } }, changed: true };
+}
+
 function readConfig() {
   const configPath = getConfigPath();
   try {
     const text = fs.readFileSync(configPath, 'utf8');
     const merged = deepMerge(DEFAULT_CONFIG, JSON.parse(text));
-    const normalized = normalizeSecretsForStorage(merged);
+    const secretsNormalized = normalizeSecretsForStorage(merged);
+    const modeNormalized = normalizeLiveSessionModeForStorage(secretsNormalized.config);
+    const normalized = { config: modeNormalized.config, changed: secretsNormalized.changed || modeNormalized.changed };
     if (normalized.changed) {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       writePrivateFile(configPath, JSON.stringify(normalized.config, null, 2) + '\n');
@@ -3028,10 +3045,7 @@ async function getLiveSessionStatus(config = readConfig(), origin = getDefaultRu
   const warnings = [];
   const nextActions = [];
 
-  if (live.mode === 'alloflow-demo-cloud') {
-    warnings.push('Demo cloud mode is not intended for real student data.');
-    nextActions.push('Use this only for demos, or switch to Desktop LAN / Local Network for classrooms.');
-  } else if (live.mode === 'byo-firebase') {
+  if (live.mode === 'byo-firebase') {
     if (!hasByoFirebaseMetadata) {
       warnings.push('BYO Firebase is selected, but no school-owned project metadata is recorded in Desktop settings.');
       nextActions.push('Record and wire a school or district-owned Firebase project before enabling cloud classroom sessions.');
@@ -3067,7 +3081,6 @@ async function getLiveSessionStatus(config = readConfig(), origin = getDefaultRu
     label: modeInfo.label,
     dataLocation: modeInfo.dataLocation,
     recommended: Boolean(modeInfo.recommended),
-    demoOnly: Boolean(modeInfo.demoOnly),
     future: Boolean(modeInfo.future),
     cloudSessionAllowed,
     firestoreAllowed: cloudSessionAllowed,
@@ -4636,6 +4649,15 @@ function attachEngineProbeTaskSupport(probe) {
   return probe;
 }
 
+function stripEngineThinkingTags(raw) {
+  const str = String(raw == null ? '' : raw);
+  if (!str || !/<think>/i.test(str)) return str;
+  return str
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<think>[\s\S]*$/gi, '')
+    .trim();
+}
+
 async function runEngineCompletionProbe(status, model, test) {
   const startedAt = Date.now();
   try {
@@ -4649,12 +4671,13 @@ async function runEngineCompletionProbe(status, model, test) {
       max_tokens: test.maxTokens || 128,
       ...(test.json ? { response_format: { type: 'json_object' } } : {}),
     }, test.timeoutMs || 25000);
-    const content = data.choices && data.choices[0] && data.choices[0].message
+    const rawContent = data.choices && data.choices[0] && data.choices[0].message
       ? String(data.choices[0].message.content || '')
       : '';
+    const content = stripEngineThinkingTags(rawContent);
     const parsed = test.json ? parseEngineProbeJson(content) : null;
     const ok = test.expect(content, parsed);
-    return engineProbeResult(test.id, test.label, startedAt, ok, ok ? 'passed' : test.failure, content, parsed);
+    return engineProbeResult(test.id, test.label, startedAt, ok, ok ? 'passed' : test.failure, content || rawContent, parsed);
   } catch (error) {
     return engineProbeResult(test.id, test.label, startedAt, false, error.name === 'AbortError' ? 'timed out' : error.message);
   }
@@ -4687,7 +4710,7 @@ async function runLocalEngineProbe(config = readConfig()) {
       id: 'plain-text',
       label: 'Plain text response',
       prompt: 'Reply with exactly this lowercase word and nothing else: ready',
-      maxTokens: 16,
+      maxTokens: 64,
       failure: 'Expected the word "ready".',
       expect: (content) => /^ready[.!]?\s*$/i.test(String(content || '').trim()),
     },
@@ -4696,7 +4719,7 @@ async function runLocalEngineProbe(config = readConfig()) {
       label: 'Strict JSON response',
       json: true,
       prompt: 'Return ONLY valid JSON with this exact shape: {"ok":true,"steps":["read","plan","write"],"score":3}',
-      maxTokens: 120,
+      maxTokens: 256,
       failure: 'Expected parseable JSON with ok=true and 3 steps.',
       expect: (_content, parsed) => Boolean(parsed && parsed.ok === true && Array.isArray(parsed.steps) && parsed.steps.length === 3),
     },
@@ -5713,7 +5736,7 @@ async function buildReadinessReport(config = readConfig(), origin = getDefaultRu
   }));
 
   const liveState = liveSession.firestoreAllowed
-    ? (liveSession.demoOnly ? 'err' : 'warn')
+    ? 'warn'
     : (liveSession.lanBridge?.share?.active ? 'ok' : 'warn');
   sections.push(readinessItem(
     'live-session',

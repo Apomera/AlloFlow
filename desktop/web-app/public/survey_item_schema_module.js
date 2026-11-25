@@ -40,13 +40,13 @@
 (function registerSurveyItemSchema(root, factory) {
     const api = factory();
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
+    if (root && typeof root === 'object') {
         root.AlloModules = root.AlloModules || {};
         // The loader asserts AlloModules[<name>] is set after a fetch; missing
         // this is what makes a healthy module report as a failed load.
         root.AlloModules.SurveyItemSchema = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createSurveyItemSchema() {
+})(typeof window === 'object' && window ? window : (typeof globalThis === 'object' && globalThis ? globalThis : null), function createSurveyItemSchema() {
     'use strict';
 
     const VERSION = 'alloflow-survey-item/v1';
@@ -73,7 +73,7 @@
         if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : NaN;
         if (typeof value === 'string') {
             const trimmed = value.trim();
-            if (!trimmed) return NaN;
+            if (!/^[+-]?\d+$/.test(trimmed)) return NaN;
             return parseInt(trimmed, 10);
         }
         return NaN;
@@ -109,7 +109,8 @@
         if (typeof raw !== 'string') return null;
         const trimmed = raw.trim();
         if (!trimmed || trimmed.length > MAX_IMAGE_DATA_CHARS) return null;
-        return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(trimmed) ? trimmed : null;
+        if (/[\r\n]/.test(trimmed)) return null;
+        return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/i.test(trimmed) ? trimmed : null;
     }
 
     // A cell is a label or an option: text plus an optional image data URL.
@@ -147,8 +148,12 @@
         const type = TYPES.indexOf(rawType) >= 0 ? rawType : 'likert';
         const safeIndex = (Number.isInteger(index) && index >= 0) ? index : 0;
         const rawText = own(source, 'text') != null ? own(source, 'text') : own(source, 'prompt');
+        const rawId = text(own(source, 'id'), 60);
+        const safeId = (rawId && rawId !== '__proto__' && rawId !== 'constructor' && rawId !== 'prototype')
+            ? rawId
+            : ('q' + (safeIndex + 1));
         const item = {
-            id: text(own(source, 'id'), 60) || ('q' + (safeIndex + 1)),
+            id: safeId,
             text: text(rawText, 400),
             type: type,
             required: own(source, 'required') === true
@@ -201,6 +206,11 @@
         if (likert.length && likert.length < RESEARCH_MIN_ITEMS) {
             problems.push({ id: null, code: 'single-item-scale', detail: 'a single Likert item is not reliable enough to drive a decision' });
         }
+        for (const item of list) {
+            if (item.type === 'numeric' && item.min !== null && item.max !== null && item.min > item.max) {
+                problems.push({ id: item.id, code: 'inverted-numeric-bounds', detail: 'min (' + item.min + ') is greater than max (' + item.max + ')' });
+            }
+        }
         return { ok: problems.length === 0, problems: problems, itemCount: list.length, likertCount: likert.length };
     }
 
@@ -220,8 +230,12 @@
                 id: own(source, 'id'),
                 text: own(source, 'text'),
                 type: kind,
+                required: own(source, 'required') === true,
+                steps: kind === 'likert' ? own(source, 'steps') : undefined,
                 labels: kind === 'likert' ? lbls : undefined,
-                options: kind === 'choice' ? (Array.isArray(opts) && opts.length ? opts : lbls) : undefined
+                options: kind === 'choice' ? (Array.isArray(opts) && opts.length ? opts : lbls) : undefined,
+                min: kind === 'numeric' ? own(source, 'min') : undefined,
+                max: kind === 'numeric' ? own(source, 'max') : undefined
             };
         }));
     }
@@ -349,7 +363,8 @@
 
     function mailboxOptionLabel(o) {
         if (typeof o === 'string') return o;
-        return own(o, 'label');
+        const lbl = own(o, 'label');
+        return lbl != null ? lbl : own(o, 'text');
     }
 
     function fromMailboxActivity(activity) {

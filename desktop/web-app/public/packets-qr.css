@@ -302,6 +302,7 @@
 }
 
 .qr-field input[type="text"],
+.qr-pub-row input[type="text"],
 .qr-textarea {
   width: 100%;
   min-height: 2.75rem;

@@ -43,25 +43,26 @@ const HELPERS = [
   ['view_guided_mode_banner_module.js', 'guidedStudentDeviceVoice', (fn) => fn('Breathe slowly.')],
   ['audio_helpers_module.js', '_audioStudentDeviceVoice', (fn) => fn('Breathe slowly.', { language: 'Spanish' })],
   ['view_simplified_module.js', 'simplifiedStudentDeviceVoice', (fn) => fn('Breathe slowly.', 'English', 1)],
-  ['view_gemini_bridge_module.js', '_bridgeStudentDeviceVoice', (fn) => { fn('Breathe slowly.', 1, 'Spanish'); return true; }],
+  // The bridge's mute check now lives in its shared _bridgeIsGlobalMuted helper; slice that too.
+  ['view_gemini_bridge_module.js', '_bridgeStudentDeviceVoice', (fn) => { fn('Breathe slowly.', 1, 'Spanish'); return true; }, ['_bridgeIsGlobalMuted']],
   ['live_aac_module.js', '_alloAacStudentDeviceVoice', (fn) => fn('Breathe slowly.', 'es-ES')],
 ];
 
 describe('student AI off: each silent caller has a device-voice fallback', () => {
-  const build = (file, name, win) => new Function('window', 'SpeechSynthesisUtterance', 'BRIDGE_LANG_CODES', 'setTimeout',
-    `${extract(read(file), name)}\nreturn ${name};`)(win, Utterance, { Spanish: 'es-ES' }, () => 0);
-  it.each(HELPERS)('%s %s speaks for a student-off learner only', (file, name, call) => {
+  const build = (file, name, win, deps = []) => new Function('window', 'SpeechSynthesisUtterance', 'BRIDGE_LANG_CODES', 'setTimeout',
+    `${deps.map((d) => extract(read(file), d)).join('\n')}\n${extract(read(file), name)}\nreturn ${name};`)(win, Utterance, { Spanish: 'es-ES' }, () => 0);
+  it.each(HELPERS)('%s %s speaks for a student-off learner only', (file, name, call, deps) => {
     const student = fakeWindow({ __alloStudentAiDisabled: true });
-    expect(call(build(file, name, student.win))).toBe(true);
+    expect(call(build(file, name, student.win, deps))).toBe(true);
     expect(student.spoken.map((u) => u.text)).toEqual(['Breathe slowly.']);
     const teacher = fakeWindow({});
-    call(build(file, name, teacher.win));
+    call(build(file, name, teacher.win, deps));
     expect(teacher.win.speechSynthesis.speak).not.toHaveBeenCalled();
     const muted = fakeWindow({ __alloStudentAiDisabled: true, __alloIsGlobalMuted: () => true });
-    call(build(file, name, muted.win));
+    call(build(file, name, muted.win, deps));
     expect(muted.win.speechSynthesis.speak).not.toHaveBeenCalled();
     const off = fakeWindow({ __alloStudentAiDisabled: true, config: { ttsProvider: 'off' } });
-    call(build(file, name, off.win));
+    call(build(file, name, off.win, deps));
     expect(off.win.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 

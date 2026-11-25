@@ -2003,42 +2003,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     return () => observer.disconnect();
   }, []);
   const flashPivotRef = useRef(null);
+  const flashLensRef = useRef(null);
   const [aimAngle, setAimAngle] = useState(45);
   const _aimX = aimAt ? aimAt.x : null;
   const _aimY = aimAt ? aimAt.y : null;
-  useEffect(() => {
-    if (_aimX === null || _aimY === null || isDocumentHidden) {
-      setAimAngle(45);
-      try {
-        if (typeof window !== "undefined") window.__alloBotMuzzle = null;
-      } catch (e) {
-      }
-      return;
-    }
-    let timer = null;
-    let stopped = false;
-    const sample = () => {
-      if (stopped) return;
-      try {
-        const el = flashPivotRef.current || containerRef.current;
-        if (el && typeof el.getBoundingClientRect === "function") {
-          const r = el.getBoundingClientRect();
-          const mx = r.left + r.width / 2;
-          const my = r.top + r.height / 2;
-          const deg = Math.atan2(_aimY - my, _aimX - mx) * 180 / Math.PI - 90;
-          setAimAngle((prev) => Math.abs(prev - deg) > 0.75 ? deg : prev);
-          if (typeof window !== "undefined") window.__alloBotMuzzle = { x: mx, y: my, angle: deg };
-        }
-      } catch (e) {
-      }
-      timer = setTimeout(sample, 120);
-    };
-    sample();
-    return () => {
-      stopped = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [_aimX, _aimY, isDocumentHidden]);
   useEffect(() => {
     if (motionDisabled || coarsePointer || generationMotionPaused || quietPresence) {
       setEyePosition({ x: 0, y: 0 });
@@ -2306,8 +2274,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }
   }, [isFlying, propFlightInterrupted, motionDisabled, isSleeping, scheduleOwnedTimeout, cancelOwnedTimeout]);
   const getHeldItem = () => {
+    if (isSleeping) return null;
     if (holdingPointer) return "flashlight";
-    if (isFlightActive || isSleeping) return null;
+    if (isFlightActive) return null;
     switch (activeView) {
       case "math":
         return "calculator";
@@ -2373,6 +2342,58 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   }, [isMoving, motionDisabled]);
   const speechTimeoutRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  useEffect(() => {
+    if (_aimX === null || _aimY === null || isDocumentHidden || isSleeping) {
+      setAimAngle(45);
+      try {
+        if (typeof window !== "undefined") window.__alloBotMuzzle = isSleeping ? { asleep: true, active: false } : null;
+      } catch (e) {
+      }
+      return;
+    }
+    let timer = null;
+    let stopped = false;
+    const sample = () => {
+      if (stopped) return;
+      try {
+        const el = flashPivotRef.current || containerRef.current;
+        if (el && typeof el.getBoundingClientRect === "function") {
+          const r = el.getBoundingClientRect();
+          const mx = r.left + r.width / 2;
+          const my = r.top + r.height / 2;
+          const rad = Math.atan2(_aimY - my, _aimX - mx);
+          const deg = rad * 180 / Math.PI - 90;
+          const lensEl = flashLensRef.current;
+          let lensX, lensY;
+          if (lensEl && typeof lensEl.getBoundingClientRect === "function") {
+            const lr = lensEl.getBoundingClientRect();
+            if (lr && (lr.width > 0 || lr.height > 0 || lr.left !== 0 || lr.top !== 0)) {
+              lensX = lr.left + lr.width / 2;
+              lensY = lr.top + lr.height / 2;
+            }
+          }
+          if (typeof lensX !== "number" || typeof lensY !== "number") {
+            const pxScale = Math.max(0.6, Math.min(2.5, r.width && r.width > 0.2 ? r.width : 1));
+            lensX = mx + Math.cos(rad) * (9 * pxScale);
+            lensY = my + Math.sin(rad) * (9 * pxScale);
+          }
+          setAimAngle((prev) => Math.abs(prev - deg) > 0.5 ? deg : prev);
+          if (typeof window !== "undefined") window.__alloBotMuzzle = { x: lensX, y: lensY, angle: deg, active: true };
+        }
+      } catch (e) {
+      }
+      timer = setTimeout(sample, isFlightActive || isDragging ? 50 : 120);
+    };
+    sample();
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      try {
+        if (typeof window !== "undefined") window.__alloBotMuzzle = null;
+      } catch (e) {
+      }
+    };
+  }, [_aimX, _aimY, isDocumentHidden, isSleeping, isFlightActive, isDragging, position.x, position.y]);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef({ x: 0, y: 0 });
   const currentAudioRef = useRef(null);
@@ -2884,7 +2905,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           try {
             const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
             const voices = window.speechSynthesis.getVoices?.() || [];
-            const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
+            const matchingVoice = voices.find((v) => v && v.localService === true && String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage) || voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
             if (matchingVoice) utter.voice = matchingVoice;
           } catch (_) {
           }
@@ -3346,7 +3367,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         introTimerRef.current = scheduleOwnedTimeout(() => {
           introTimerRef.current = null;
           introClaimedRef.current = false;
-          const noAi = typeof window !== "undefined" && (typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text") || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true || !!window.__alloQrStudentMode || window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled() || window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled());
+          const noAi = typeof window !== "undefined" && (typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("text") || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true || window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled() || window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled());
           const welcomeKey = noAi ? "sidebar.allobot_welcome_no_ai" : "sidebar.ai_guide_welcome";
           const welcomeMsg = t(welcomeKey);
           if (welcomeMsg && welcomeMsg !== welcomeKey) {
@@ -4873,11 +4894,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       },
       className: `fixed z-[10000] group ${motionDisabled ? "allobot-motion-disabled" : ""} ${isDragging ? "cursor-grabbing" : "cursor-grab"} ${isSleeping ? "opacity-60 grayscale-[0.5]" : ""} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`,
       style: {
-        // The STEAM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
-        // overridden), which buries the bot's z-[10000] — so the bot and its speech
-        // bubble/chat were invisible during STEM tools. While the lab is open, lift
-        // the bot to 10500: above the lab, below the voice overlays (10999/11500).
-        zIndex: showStemLab ? 10500 : void 0,
+        // While spotlighting in Tour/Help Mode (and awake), sit at 11055: above the
+        // 11050 dark backdrop and SVG light cone yet below the 11060 TourOverlay dialog.
+        // While STEAM Lab is open, lift to 10500 above the lab's 10020 overlay.
+        zIndex: holdingPointer && !isSleeping ? 11055 : showStemLab ? 10500 : void 0,
         top: `${renderedTop}px`,
         right: `${renderedRight}px`,
         transform: motionDisabled ? "translateY(0px) scale(1)" : `translateY(${isHovered && !isDragging && !isSleeping ? "-2px" : "0px"}) scale(${isSquashed ? "1.1, 0.9" : "1"})`,
@@ -5771,7 +5791,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           /* @__PURE__ */ React.createElement("circle", { "data-allobot-hand": "left", "data-allobot-hand-layer": "palm", "data-allobot-hand-role": leftHandRole, cx: leftHandX, cy: leftHandY, r: "6.5", fill: `url(#${svgPaintIds.body})`, stroke: theme === "contrast" ? "#000000" : colors.jetpackStroke, strokeWidth: theme === "contrast" ? "2" : "1.5", style: { transition: motionDisabled ? "none" : "cx 180ms ease, cy 180ms ease" } }),
           /* @__PURE__ */ React.createElement("path", { "data-allobot-hand-layer": "lower-shade", d: ["M", leftHandX - 4.2, leftHandY + 2.1, "Q", leftHandX, leftHandY + 5.2, leftHandX + 4.2, leftHandY + 2.1].join(" "), stroke: colors.gradTo, strokeWidth: "1.1", strokeLinecap: "round", fill: "none", opacity: "0.58", style: { transition: motionDisabled ? "none" : "d 180ms ease" } }),
           /* @__PURE__ */ React.createElement("circle", { "data-allobot-hand-layer": "highlight", cx: leftHandX - 2, cy: leftHandY - 2, r: "1.35", fill: "#FFFFFF", opacity: theme === "contrast" ? "0.9" : "0.62", pointerEvents: "none" }),
-          activeView === "image" && !isSleeping && /* @__PURE__ */ React.createElement("g", { "data-allobot-live-grip": "palette", transform: `translate(${leftHandX}, ${leftHandY}) rotate(15)` }, /* @__PURE__ */ React.createElement(
+          activeView === "image" && !isSleeping && heldItem !== "flashlight" && /* @__PURE__ */ React.createElement("g", { "data-allobot-live-grip": "palette", transform: `translate(${leftHandX}, ${leftHandY}) rotate(15)` }, /* @__PURE__ */ React.createElement(
             "path",
             {
               d: "M -9 0 Q -5 -12 8 -12 Q 18 -10 20 2 Q 22 12 12 16 Q 0 16 -4 10 Q -12 8 -9 0 Z",
@@ -5809,7 +5829,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
               stroke: "#475569",
               strokeWidth: "0.5"
             }
-          ), /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "9", rx: "6", ry: "2", fill: "#FACC15", fillOpacity: "0.8", className: "animate-pulse motion-reduce:animate-none" })),
+          ), /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "9", rx: "6", ry: "2", fill: "#FACC15", fillOpacity: "0.8", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("circle", { ref: flashLensRef, cx: "0", cy: "9", r: "0.5", fill: "none", stroke: "none", pointerEvents: "none", "aria-hidden": "true" })),
           heldItem === "flashlight" && /* @__PURE__ */ React.createElement("g", { "data-allobot-held-item-grip-overlay": "left", pointerEvents: "none" }, /* @__PURE__ */ React.createElement("circle", { cx: leftHandX, cy: leftHandY, r: "3.25", fill: `url(#${svgPaintIds.body})`, stroke: hardwareVisual.shadow, strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: ["M", leftHandX - 2, leftHandY - 0.6, "Q", leftHandX, leftHandY + 1.4, leftHandX + 2, leftHandY - 0.6].join(" "), stroke: hardwareVisual.highlight, strokeWidth: "0.75", strokeLinecap: "round", fill: "none", opacity: "0.72" }))
         ), /* @__PURE__ */ React.createElement(
           "g",

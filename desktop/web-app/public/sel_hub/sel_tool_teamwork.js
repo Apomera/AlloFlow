@@ -1123,9 +1123,9 @@ window.SelHub = window.SelHub || {
       var _teaHC = !!_teaT.isContrast, _teaL = !_teaHC && !_teaT.isDark;
       var _tea_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#334155':'#e2e8f0'}, _tea_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#334155':'#000000','#b45309':'#000000','#3b82f6':'#000000'};
       var _tea_FGL = {'#94a3b8':'#64748b','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#f1f5f9':'#0f172a','#818cf8':'#4338ca','#a78bfa':'#6d28d9'}, _tea_FGH = {'#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#cbd5e1':'#ffff00','#f1f5f9':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#8b5cf6':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#facc15':'#ffff00','#06b6d4':'#ffff00','#a78bfa':'#ffff00','#ec4899':'#ffff00','#22d3ee':'#ffff00'};
-      var _tea_BDL = {'#334155':'#e2e8f0'}, _tea_BDH = {'#334155':'#ffff00'};
+      var _tea_FGD = {'#8b5cf6':'#a78bfa','#ef4444':'#f87171','#3b82f6':'#60a5fa','#ec4899':'#f472b6'}, _tea_BDL = {'#334155':'#e2e8f0'}, _tea_BDH = {'#334155':'#ffff00'};
       var _teaBg = function(h){ return _teaHC ? (_tea_BGH[h]||h) : (_teaL ? (_tea_BGL[h]||h) : h); };
-      var _teaFg = function(h){ return _teaHC ? (_tea_FGH[h]||h) : (_teaL ? (_tea_FGL[h]||h) : h); };
+      var _teaFg = function(h){ return _teaHC ? (_tea_FGH[h]||h) : (_teaL ? (_tea_FGL[h]||h) : (_tea_FGD[h]||h)); };
       var _teaBd = function(h){ return _teaHC ? (_tea_BDH[h]||h) : (_teaL ? (_tea_BDL[h]||h) : h); };
       return (function() {
         var React = ctx.React;
@@ -1441,7 +1441,7 @@ window.SelHub = window.SelHub || {
             retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retrospective — learn from the group process', hint: 'Look at what happened, hear different experiences, plan one supported change and check what happens next. Finishing a task or writing a plan does not show that the process worked for everyone.' },
             quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
             contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)', icon: '\uD83D\uDCDC', title: 'Agreement — a proposal the team can shape', hint: 'Clarify what people will do, what makes participation workable and how to ask for support or revision. A written draft or signature does not establish shared understanding or consent.' },
-            progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 vulnerability about growth predicts trust (Brown 2018).' }
+            progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 being open about what you are still learning helps build trust (Brown 2018).' }
           };
           var meta = TAB_META[activeTab] || TAB_META.roles;
           return h('div', {
@@ -2055,7 +2055,7 @@ window.SelHub = window.SelHub || {
                 addToast('Skills assessment complete!' + (!d.quizXpAwarded ? ' +20 XP' : ''), 'success');
                 celebrate && celebrate();
               },
-              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: quizDone ? ACCENT_BTN_BD : 'none', background: quizDone ? ACCENT_BTN_BG : _teaBg('#334155'), color: quizDone ? ACCENT_BTN_FG : _teaFg('#94a3b8'), fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
+              style: { display: 'block', width: '100%', padding: '12px 20px', borderRadius: 10, border: quizDone ? ACCENT_BTN_BD : 'none', background: quizDone ? ACCENT_BTN_BG : _teaBg('#334155'), color: quizDone ? ACCENT_BTN_FG : _teaFg('#cbd5e1'), fontWeight: 700, fontSize: 14, cursor: quizDone ? 'pointer' : 'default', marginBottom: 20 }
             }, quizDone ? '\u2705 Submit My Assessment' : 'Rate all 8 skills to continue'),
 
             // Results visualization (bar chart)

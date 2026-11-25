@@ -72,10 +72,10 @@ const outputCode = `/**
  */
 (function() {
   'use strict';
-  if (!document.getElementById("anchor-charts-module-a11y")) {
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("anchor-charts-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "anchor-charts-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { .ac-root *, .ac-root *::before, .ac-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } .ac-root textarea, .ac-root input { border: none !important; background: white !important; } }";
+    _s.textContent = ".ac-root :where(button, input, select, textarea, a, [role='button'], [role='tab']) { touch-action: manipulation; } .ac-root :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; } @media (forced-colors: active) { .ac-root :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } } @media (prefers-reduced-motion: reduce) { .ac-root *, .ac-root *::before, .ac-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } .ac-root textarea, .ac-root input { border: none !important; background: white !important; } }";
     document.head.appendChild(_s);
   }
   (function() {

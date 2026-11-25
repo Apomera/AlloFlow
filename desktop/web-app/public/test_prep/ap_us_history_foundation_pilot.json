@@ -4548,7 +4548,7 @@
         "Nativism was driven by the absence of urban growth in the industrial cities of that late-century era."
       ],
       "answerIndex": 0,
-      "rationale": "Economic demand for labor and political or cultural opposition to immigration could operate at the same time.",
+      "rationale": "During the Gilded Age, rapidly expanding factories relied on steady inflows of low-wage immigrant workers even as nativist groups campaigned for restrictions on cultural, religious, and racial grounds, allowing both forces to coexist.",
       "choiceRationales": [
         "This is the best answer because Economic demand for labor and political or cultural opposition to immigration could operate at the same time.",
         "Industrial employers actively recruited low-wage immigrant workers to staff expanding factories and railroads, placing their economic goals directly at odds with nativists demanding immigration restriction.",
@@ -5292,7 +5292,7 @@
         "The Cold War began before World War II ended because of a direct U.S.-Soviet battle between the two."
       ],
       "answerIndex": 0,
-      "rationale": "Postwar tensions, ideological rivalry, and disagreement over security and reconstruction shaped containment.",
+      "rationale": "Once World War II ended, the U.S.-Soviet alliance collapsed over Eastern European governance, economic reconstruction, and competing democratic-capitalist versus communist ideologies, directly prompting U.S. containment strategy.",
       "choiceRationales": [
         "This is the best answer because Postwar tensions, ideological rivalry, and disagreement over security and reconstruction shaped containment.",
         "Postwar containment grew out of acute rivalry between American democratic capitalism and Soviet state communism, two opposing geopolitical systems that clashed over Eastern Europe and global influence.",
@@ -7795,20 +7795,20 @@
       "cognitiveProcess": "explain-causation",
       "reasoningProcess": "causation",
       "difficulty": "intermediate",
-      "prompt": "Which claim best explains why the Louisiana Purchase had consequences beyond the immediate acquisition of territory?",
+      "prompt": "Which claim best explains why the Northwest Ordinance of 1787 had consequences beyond organizing western land surveys?",
       "choices": [
-        "It ended debates over the limits of executive power because every political group agreed the purchase was constitutional.",
-        "It stopped migration west because the new territory was closed to farmers, merchants, and settlers.",
-        "It made sectional conflict less important by permanently establishing the status of slavery in every new territory.",
-        "It fueled continental expansion while raising disputes over Indigenous sovereignty, federal power, and slavery."
+        "It ended debates over federal power because every state yielded its western claims without dispute.",
+        "It halted trans-Appalachian migration by closing the Ohio River Valley to settlers and land sales.",
+        "It resolved national sectionalism by extending plantation slavery across all northwestern territories.",
+        "It set equal statehood rules and barred regional slavery while fueling conflict over Native lands."
       ],
       "answerIndex": 3,
-      "rationale": "The purchase expanded national possibilities but also created new constitutional, diplomatic, Indigenous, and sectional questions.",
+      "rationale": "Enacted under the Articles of Confederation, the Northwest Ordinance of 1787 created an orderly territorial process for admitting equal new states, prohibited slavery north of the Ohio River, and accelerated settler encroachment that sparked warfare with Indigenous confederacies.",
       "choiceRationales": [
-        "Even President Jefferson worried that the Constitution lacked explicit authority to buy foreign land, while New England Federalists condemned the acquisition as an unconstitutional expansion of executive power.",
-        "Securing New Orleans and the Mississippi River Valley stimulated massive westward migration and commercial farming across the interior rather than closing western lands to settlers.",
-        "The purchase left slavery’s legal status in the vast trans-Mississippi territory unresolved, directly setting the stage for the explosive 1820 Missouri Crisis and later sectional battles.",
-        "This is the best answer because The purchase expanded national possibilities but also created new constitutional, diplomatic, Indigenous, and sectional questions."
+        "States such as Virginia and Maryland argued fiercely for years over western land cessions before Congress could administer the Northwest Territory, and federal authority over western governance remained sharply contested.",
+        "Rather than stopping frontier settlement, the Land Ordinance of 1785 and Northwest Ordinance of 1787 established public land surveys and civil governance that actively drew American migrants into the Ohio Valley.",
+        "Article VI of the Northwest Ordinance explicitly prohibited slavery and involuntary servitude north of the Ohio River, creating a lasting sectional boundary between free and slave territories rather than extending plantations northward.",
+        "The Northwest Ordinance of 1787 proved transformative by establishing equal admission for new states, banning slavery north of the Ohio River, and encouraging rapid settlement that triggered conflict with Northwestern Indigenous nations."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -9849,7 +9849,7 @@
         "Postwar prosperity affected every single group equally and removed all of the conflicts over race, over gender, and over working life."
       ],
       "answerIndex": 1,
-      "rationale": "Postwar history combined international power with domestic transformation and unresolved inequalities.",
+      "rationale": "Post-1945 American history was shaped simultaneously by expanded global Cold War leadership and profound domestic transformations—economic growth, suburbanization, mass media, and persistent struggles over racial and social inequality.",
       "choiceRationales": [
         "After 1945, the United States led Western Cold War alliances like NATO while experiencing the baby boom, rapid suburbanization, and sustained economic expansion at home.",
         "This is the best answer because Postwar history combined international power with domestic transformation and unresolved inequalities.",
@@ -17839,20 +17839,20 @@
       "cognitiveProcess": "analyze-continuity-change",
       "reasoningProcess": "continuity-change",
       "difficulty": "intermediate",
-      "prompt": "How did the Second Great Awakening contribute to reform movements?",
+      "prompt": "How did Revolutionary natural-rights arguments and evangelical religious currents influence early reform during the 1780s and 1790s?",
       "choices": [
-        "It discouraged all organized reform, because religious belief was confined strictly to quiet private worship at home.",
-        "It required all of the reformers to support slavery and to oppose all public education in every region of the country.",
-        "It ended all religious diversity by creating one single national church that was governed directly by the Congress.",
-        "Its focus on moral duty spurred some Americans to organize against slavery, alcohol abuse, and social inequities."
+        "They halted civic reform by confining moral questions to private church councils outside public debate.",
+        "They united northern and southern states behind permanent slavery and tax-supported established churches.",
+        "They eliminated denominational variety by authorizing Congress to create a single national Protestant church.",
+        "They spurred gradual emancipation laws, Black freedom petitions, and campaigns to end tax-supported churches."
       ],
       "answerIndex": 3,
-      "rationale": "Religious revival could inspire voluntary reform and arguments about moral improvement, although reformers differed over goals and methods.",
+      "rationale": "During the 1780s and 1790s, Revolutionary ideals of liberty combined with Quaker, Baptist, and Methodist religious convictions to inspire gradual abolition statutes in northern states, African American freedom petitions, and state laws ending tax-supported churches.",
       "choiceRationales": [
-        "Second Great Awakening revivals led by preachers like Charles Grandison Finney urged converts to demonstrate faith through public moral activism against slavery, intemperance, and social vice.",
-        "Although southern churches defended slavery, many northern revivalist reformers became ardent abolitionists and championed Horace Mann’s public common-school movement to foster moral citizenship.",
-        "Protestant revivals actually multiplied competing denominations—including Methodists, Baptists, and new restorationist sects—while the First Amendment barred Congress from establishing a national church.",
-        "This is the best answer because Religious revival could inspire voluntary reform and arguments about moral improvement, although reformers differed over goals and methods."
+        "Quakers, Black petitioners, and evangelical dissenters actively submitted public memorials to state legislatures during the 1780s and 1790s to challenge human bondage and mandatory church taxes rather than remaining silent.",
+        "While southern states preserved chattel slavery, Pennsylvania, Massachusetts, and other northern states moved toward gradual emancipation, and states like Virginia abolished tax-supported established churches.",
+        "Religious dissenters and statesmen like Thomas Jefferson secured the 1786 Virginia Statute for Religious Freedom and the First Amendment to protect denominational pluralism and bar any federal church establishment.",
+        "Natural-rights language and dissenting religious convictions directly motivated early northern gradual-emancipation laws, African American freedom petitions, and disestablishment victories during the 1780s and 1790s."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -22776,7 +22776,7 @@
         "Plantation owners abandoned hereditary slavery because Atlantic markets discouraged coerced labor."
       ],
       "answerIndex": 0,
-      "rationale": "Law, labor demand, racial ideology, and colonial wealth combined to make slavery hereditary and racialized.",
+      "rationale": "Beginning in the mid-seventeenth century, colonial slave codes—such as Virginia's 1662 partus sequitur ventrem statute—codified lifelong, inheritable servitude tied specifically to African ancestry to secure plantation labor and property.",
       "choiceRationales": [
         "This is the best answer because Law, labor demand, racial ideology, and colonial wealth combined to make slavery hereditary and racialized.",
         "Beginning with Virginia’s 1662 statute tying status to the mother’s condition, colonial slave codes deliberately transformed enslavement into a lifelong, hereditary institution.",
@@ -27240,9 +27240,9 @@
         "The end of the Cold War eliminated political conflict because every group agreed on the role of markets, rights, and federal power."
       ],
       "answerIndex": 0,
-      "rationale": "Period context connects political realignment and global change to new economic, cultural, technological, and foreign-policy debates.",
+      "rationale": "From 1980 to the present, conservative electoral realignment, accelerating economic globalization, digital innovation, post-1965 demographic shifts, and the collapse of the Soviet Union drove new national debates over federal power, social policy, and U.S. global leadership.",
       "choiceRationales": [
-        "This is the best answer because Period context connects political realignment and global change to new economic, cultural, technological, and foreign-policy debates.",
+        "Conservative politics, global market integration, digital technology, demographic change, and the end of the Cold War directly anchor the defining economic, cultural, and foreign-policy debates of Period 9.",
         "The personal computer, deindustrialization, new immigration, and the Reagan coalition all mark sharp breaks from the 1950s.",
         "From 1980 onward, global trade integration, Middle East military interventions, the digital revolution, Sun Belt migration, and conservative tax and regulatory shifts reshaped American life.",
         "Post-Cold War politics remained intensely polarized, with fierce partisan clashes over tax rates, health care reform, immigration policy, social issues, and the proper scope of federal power."
@@ -30115,20 +30115,20 @@
       "cognitiveProcess": "compare",
       "reasoningProcess": "comparison",
       "difficulty": "intermediate",
-      "prompt": "Which comparison best evaluates domestic change during Period 7?",
+      "prompt": "Which comparison of the New Deal and World War II best evaluates domestic change during Period 7?",
       "choices": [
-        "Both developments reduced federal responsibility and returned the economy to local control without changing employment or labor policy.",
-        "The New Deal and World War II ended all racial, gender, and regional inequality because national mobilization produced identical experiences.",
-        "The period changed only foreign policy because the Depression, New Deal, war production, and migration did not affect domestic life.",
-        "The New Deal and World War II expanded federal economic management and employment, yet racial and gender barriers limited full equality."
+        "The New Deal and World War II reduced federal authority and returned economic management to local control.",
+        "The New Deal and World War II ended racial, gender, and regional inequality through uniform national policies.",
+        "The New Deal and World War II altered foreign diplomacy while leaving everyday household and urban life untouched.",
+        "The New Deal and World War II expanded federal economic control and jobs while racial and gender gaps lasted."
       ],
       "answerIndex": 3,
-      "rationale": "A period comparison connects federal expansion and economic transformation to persistent inequality and uneven social change.",
+      "rationale": "Comparing the New Deal and World War II reveals major continuity in expanding federal coordination over employment, finance, and production alongside persistent racial segregation, gender pay disparities, and civil-liberties violations.",
       "choiceRationales": [
-        "From New Deal regulatory boards to the War Production Board, both eras dramatically expanded federal authority over wages, union bargaining, production quotas, and fiscal policy rather than restoring local control.",
-        "Jim Crow laws, segregated armed forces, unequal pay for women workers, and the internment of Japanese Americans demonstrate that deep social and regional disparities persisted throughout the 1930s and 1940s.",
-        "Economic collapse, federal welfare programs, wartime factory migration, and rationing profoundly reorganized everyday American households, urban demographics, and domestic politics alongside foreign affairs.",
-        "This is the best answer because A period comparison connects federal expansion and economic transformation to persistent inequality and uneven social change."
+        "From New Deal regulatory agencies and work-relief programs to the War Production Board and Office of Price Administration, both eras dramatically enlarged federal oversight over wages, labor relations, and economic output.",
+        "Jim Crow laws, segregated armed forces, unequal pay for women defense workers, and the wartime incarceration of Japanese Americans demonstrate that deep social and regional disparities persisted throughout the 1930s and 1940s.",
+        "Federal welfare programs, Social Security, mass migration to defense-industry cities, women entering factory jobs, and nationwide rationing profoundly reorganized everyday American households and domestic politics.",
+        "Both the New Deal and World War II greatly expanded federal economic intervention and employment opportunities while leaving enduring racial, gender, and civil-rights inequities unresolved."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -33564,12 +33564,12 @@
         "The early republic restricted all migration, because the new roads and the land policies made movement far more difficult for every single group."
       ],
       "answerIndex": 0,
-      "rationale": "Movement included voluntary migration and forced displacement, and its effects depended on race, status, land policy, and federal power.",
+      "rationale": "Westward movement in the late-eighteenth-century early republic combined voluntary settler migration with military displacement of Indigenous nations and the forced relocation of enslaved African Americans into expanding southern and backcountry frontiers.",
       "choiceRationales": [
-        "This is the best answer because Movement included voluntary migration and forced displacement, and its effects depended on race, status, land policy, and federal power.",
-        "While white migrants moved west seeking farmland and opportunity, federal removal treaties forcibly displaced Indigenous nations and the expanding domestic slave trade uprooted hundreds of thousands of enslaved people.",
-        "Frontier settlement was tightly bound to federal land ordinances and military campaigns, directly eroding Indigenous territory while carrying cotton slavery and commercial agriculture deep into the interior.",
-        "Federal land sales, the National Road, canals, and river steamboats substantially lowered travel barriers and accelerated westward migration across the Appalachian Mountains rather than restricting it."
+        "Westward expansion during the 1780s and 1790s broadened land access for white migrants while simultaneously driving Indigenous land dispossession and carrying enslaved labor into new frontier regions.",
+        "While white settlers moved west seeking farmland and opportunity, federal frontier wars and treaties displaced Indigenous nations and enslavers forcibly moved African Americans into trans-Appalachian territories.",
+        "Frontier settlement was tightly bound to federal land ordinances, military campaigns such as Fallen Timbers, and the Treaty of Greenville, directly eroding Indigenous territory while expanding commercial agriculture and slavery.",
+        "Measures such as the Land Ordinance of 1785, the Northwest Ordinance of 1787, overland routes like the Wilderness Road, and Pinckney’s Treaty of 1795 opening Mississippi River navigation actively accelerated trans-Appalachian migration rather than restricting it."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -38578,20 +38578,20 @@
       "cognitiveProcess": "compare",
       "reasoningProcess": "comparison",
       "difficulty": "intermediate",
-      "prompt": "Which comparison best evaluates domestic change across Period 7?",
+      "prompt": "Which comparison of Progressive reform, the New Deal, and wartime mobilization best evaluates domestic change across Period 7?",
       "choices": [
-        "All three developments reduced federal responsibility and returned economic and social policy to local governments and private charities.",
-        "The period ended racial and gender inequality because reform and mobilization produced the same opportunities for every American.",
-        "Progressive reform, the New Deal, and wartime mobilization widened federal involvement while racial, gender, and class gaps endured.",
-        "Progressive reform and the New Deal affected only foreign affairs while wartime mobilization changed military strategy but not domestic life."
+        "Progressive reform, the New Deal, and wartime mobilization shrank federal authority and returned social policy to charities.",
+        "Progressive reform, the New Deal, and wartime mobilization eliminated racial and gender inequality through equal federal benefits.",
+        "Progressive reform, the New Deal, and wartime mobilization widened federal oversight while racial, gender, and class gaps endured.",
+        "Progressive reform, the New Deal, and wartime mobilization focused on foreign strategy while leaving domestic institutions unchanged."
       ],
       "answerIndex": 2,
-      "rationale": "A period comparison connects repeated expansion of federal action to the limits and uneven effects of reform and mobilization.",
+      "rationale": "Across 1890 to 1945, Progressive regulation, New Deal social insurance, and world-war economic agencies cumulatively expanded federal administrative capacity, yet Jim Crow, unequal wages, and exclusionary policies preserved major social inequalities.",
       "choiceRationales": [
-        "Across Period 7, Progressive antitrust and food laws, New Deal social insurance, and World War II economic boards cumulatively enlarged federal administrative authority rather than decentralizing it.",
-        "Progressive indifference to Jim Crow, racially biased administration of New Deal relief, unequal wartime pay for women, and Japanese American internment prove deep inequalities endured through 1945.",
-        "This is the best answer because A period comparison connects repeated expansion of federal action to the limits and uneven effects of reform and mobilization.",
-        "All three movements deeply reshaped domestic American society—overhauling workplace regulation, banking, welfare policy, internal migration, and federal expectations at home."
+        "Across Period 7, Progressive antitrust and food-safety statutes, New Deal work relief and Social Security, and wartime production boards cumulatively enlarged federal administrative authority rather than handing social policy back to local charities.",
+        "Progressive tolerance of Jim Crow segregation, racially biased local administration of New Deal relief, unequal wartime pay for women, and Japanese American incarceration prove that deep inequalities endured through 1945.",
+        "Examining Progressive regulation, New Deal programs, and wartime mobilization together shows a steady expansion of federal domestic capacity coexisting with persistent racial, gender, and class disparities.",
+        "All three Period 7 developments deeply reshaped domestic American institutions—transforming business oversight, banking stability, collective bargaining, social welfare, internal migration, and citizen expectations of Washington."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -39981,10 +39981,10 @@
         "The end of the Cold War eliminated political conflict because every group agreed about markets, rights, immigration, and federal responsibility."
       ],
       "answerIndex": 1,
-      "rationale": "Period context connects political realignment and global change to new economic, cultural, technological, and foreign-policy debates.",
+      "rationale": "Comparing post-1980 America with earlier postwar decades highlights decisive structural shifts: the rise of the modern conservative coalition, global trade integration, computing and internet technologies, growing demographic diversity, and post-Cold War foreign policy realignments transformed American political discourse.",
       "choiceRationales": [
         "Factory closures in the Rust Belt, the personal computer and internet revolution, post-1965 immigration from Asia and Latin America, and conservative electoral realignment marked a decisive break from 1950s society.",
-        "This is the best answer because Period context connects political realignment and global change to new economic, cultural, technological, and foreign-policy debates.",
+        "Highlighting conservative realignment, globalization, new technology, demographic diversity, and the Cold War’s end accurately contrasts Period 9’s political debates with earlier mid-century conditions.",
         "Far from retreating, the United States deepened global integration after 1980 through NAFTA, the World Trade Organization, Middle East military interventions including the Gulf War, and worldwide digital communications.",
         "After the Soviet Union dissolved in 1991, fierce partisan divisions continued over free trade, health care reform, immigration policy, social issues, and the proper scope of federal spending and regulation."
       ],
@@ -40903,20 +40903,20 @@
       "cognitiveProcess": "explain-causation",
       "reasoningProcess": "causation",
       "difficulty": "advanced",
-      "prompt": "Which factor most contributed to the expansion of African slavery in the English colonies?",
+      "prompt": "Which factor most contributed to the early expansion of African slavery in Spanish and Portuguese American colonies during the sixteenth century?",
       "choices": [
-        "African slavery expanded because English colonists lacked profitable crops and had no connection to merchants, ports, or Atlantic markets.",
-        "Colonial governments adopted slavery only after African communities requested permanent plantation labor and equal participation in colonial politics.",
-        "The growth of slavery resulted from declining demand for tobacco, rice, and other exports because plantations became less important to the colonial economy.",
-        "Labor demand in plantation agriculture combined with population loss, resistance, legal racialization, and the development of Atlantic trading networks."
+        "Iberian colonies lacked profitable export commodities and had weak connections to Atlantic merchants and ports.",
+        "Colonial officials adopted enslaved labor after West African kingdoms volunteered permanent plantation workers.",
+        "European demand for Caribbean sugar and American silver fell sharply, reducing colonial reliance on forced labor.",
+        "Indigenous epidemic losses, plantation and mining labor demands, and Atlantic slave networks drove growth."
       ],
       "answerIndex": 3,
-      "rationale": "Plantation labor needs and Atlantic commerce interacted with colonial law and racial ideology to make slavery hereditary and expansive.",
+      "rationale": "During the sixteenth century (1491–1607), catastrophic Old World epidemic mortality devastated Indigenous workforces in the Caribbean, New Spain, and Brazil, prompting Spanish and Portuguese colonizers to import enslaved Africans through growing Atlantic trade networks to work sugar estates and mines.",
       "choiceRationales": [
-        "High European demand for lucrative Chesapeake tobacco and Carolina rice—shipped by English merchants through busy Atlantic ports—gave planters strong financial incentives to expand enslaved labor.",
-        "African men and women never volunteered for lifelong bondage; European slave traders and colonial planters forcibly abducted, transported, and legally subordinated captives while stripping them of political rights.",
-        "Export demand for staple crops rose rather than fell across the seventeenth and eighteenth centuries, prompting plantation owners to shift from temporary indentured servants to hereditary African enslavement.",
-        "This is the best answer because Plantation labor needs and Atlantic commerce interacted with colonial law and racial ideology to make slavery hereditary and expansive."
+        "Lucrative silver deposits at Potosí and Zacatecas alongside booming Caribbean and Brazilian sugar exports tied Iberian colonies tightly to Atlantic ports and gave colonists strong financial incentives to expand coerced labor.",
+        "West and Central African captives did not volunteer for permanent bondage; European traders and Iberian royal licensees acquired enslaved people through coercive trade and violent abduction across the Atlantic.",
+        "European appetite for sugar and bullion surged throughout the sixteenth century, driving Spanish and Portuguese authorities to rely even more heavily on coerced Indigenous drafts and enslaved African labor.",
+        "Catastrophic Indigenous population losses from epidemic disease, surging labor demands on sixteenth-century sugar plantations and mines, and Portuguese-led Atlantic slave trading drove early African enslavement in the Americas."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -40996,20 +40996,20 @@
       "cognitiveProcess": "analyze-continuity-change",
       "reasoningProcess": "continuity-change",
       "difficulty": "intermediate",
-      "prompt": "Which comparison best explains differences among European colonial societies in North America?",
+      "prompt": "Which comparison best explains differences among sixteenth-century European approaches to exploration and colonization in the Americas before 1607?",
       "choices": [
-        "Spanish, French, Dutch, and English colonies pursued different combinations of extraction, trade, settlement, religion, and relations with Indigenous peoples.",
-        "All European colonies used identical labor systems and settlement goals because imperial governments faced the same environments, markets, and Indigenous alliances.",
-        "English colonies focused mainly on trade while Spanish and French colonies avoided permanent settlement, agriculture, and religious expansion.",
-        "European colonies differed primarily in language because their economies, political institutions, religious aims, and relations with Indigenous peoples were otherwise the same."
+        "Spain built conquest empires, Portugal grew sugar colonies, and France and England focused on trade and voyages.",
+        "All sixteenth-century European crowns built identical settler empires because they faced the same climates and Indigenous polities.",
+        "Spain and Portugal avoided permanent American settlements while England built the largest continental mining empire before 1607.",
+        "European ventures differed mostly in language because their colonial economies, labor systems, and Indigenous diplomacy were alike."
       ],
       "answerIndex": 0,
-      "rationale": "Colonial societies shared imperial competition but varied in their goals, institutions, economies, and relationships with Native nations.",
+      "rationale": "Before 1607, European imperial activity varied sharply: Spain constructed vast continental viceroyalties, silver mines, and Catholic missions; Portugal developed plantation agriculture in Brazil; and France and England remained largely limited to maritime exploration, fishing, privateering, and small outposts.",
       "choiceRationales": [
-        "This is the best answer because Colonial societies shared imperial competition but varied in their goals, institutions, economies, and relationships with Native nations.",
-        "European empires pursued starkly contrasting strategies—Spanish silver mining and encomiendas, French fur-trading alliances, Dutch commercial posts, and English settler farming—shaped by distinct environments and imperial goals.",
-        "This reverses the pattern: English colonies settled and farmed, while French and Spanish colonies traded and built missions.",
-        "Comparing Spanish Catholic missions and forced labor, French fur outposts with Native intermarriage, and English self-governing tobacco or Puritan settlements reveals deep institutional, economic, and diplomatic contrasts beyond language."
+        "Before 1607, Spain established populous conquered viceroyalties and missions, Portugal expanded Brazilian sugar plantations, and France and England operated smaller exploratory, fishing, trading, and privateering ventures.",
+        "Sixteenth-century empires pursued very different projects shaped by distinct royal resources, Atlantic timing, local ecosystems, and encounters with centralized empires like the Aztecs and Incas versus smaller coastal nations.",
+        "This reverses the sixteenth-century record: Spain and Portugal established enduring cities, mines, and plantations across the Americas, whereas English attempts like Roanoke failed before permanent settlement began at Jamestown in 1607.",
+        "Iberian conquest, encomienda labor drafts, and Catholic mission systems contrasted sharply with early French St. Lawrence trading contacts and English maritime privateering in both institutions and Indigenous relations."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -41461,20 +41461,20 @@
       "cognitiveProcess": "explain-causation",
       "reasoningProcess": "causation",
       "difficulty": "advanced",
-      "prompt": "Why did the Seven Years War increase tensions between Britain and its North American colonies?",
+      "prompt": "Why did imperial mercantilist policies and colonial trade laws create intermittent friction between Britain and its North American colonies from 1607 to 1754?",
       "choices": [
-        "The war reduced British debt and ended disputes over western lands, so colonists had no reason to object to new imperial policies.",
-        "War debt, new efforts to control western settlement, and imperial taxation led many colonists to question policies that had previously been loosely enforced.",
-        "Colonists opposed Britain because Parliament removed all colonial assemblies and prohibited local trade, even though those actions did not occur after the war.",
-        "The conflict created tension only because colonists supported France and rejected all British military protection, taxation, and commercial connections."
+        "British trade rules abolished colonial shipping and barred North American merchants from Atlantic commerce.",
+        "Navigation statutes and royal oversight clashed with local merchant interests and assemblies accustomed to autonomy.",
+        "Parliament dissolved colonial legislatures throughout the seventeenth century and governed towns directly from London.",
+        "Colonists rejected British naval protection and aligned militarily with France against imperial trade networks."
       ],
       "answerIndex": 1,
-      "rationale": "The war changed the fiscal and territorial relationship between Britain and the colonies, making imperial authority more visible and contested.",
+      "rationale": "Between 1607 and 1754, British Navigation Acts and brief centralization efforts such as the Dominion of New England sought to channel colonial commerce toward imperial goals, periodically colliding with colonial merchants, smugglers, and elected assemblies accustomed to broad self-rule.",
       "choiceRationales": [
-        "Victory in 1763 nearly doubled Britain’s national debt and prompted the Proclamation of 1763 barring trans-Appalachian settlement, directly angering colonists who expected western land access and low taxes.",
-        "This is the best answer because The war changed the fiscal and territorial relationship between Britain and the colonies, making imperial authority more visible and contested.",
-        "As the statement itself acknowledges, Parliament did not abolish all colonial assemblies or ban local trade in 1763; friction arose instead over revenue acts, customs enforcement, standing armies, and western land limits.",
-        "British colonists overwhelmingly fought alongside imperial forces against France during the Seven Years’ War; tensions escalated afterward over who should pay war debts and how tightly London should govern the empire."
+        "Rather than abolishing colonial maritime trade, the Navigation Acts actually stimulated New England shipbuilding and colonial merchant fleets while restricting enumerated staples to English imperial ports.",
+        "Mercantilist restrictions under the Navigation Acts and tighter royal interventions such as the Dominion of New England periodically clashed with colonial assemblies and merchants defending local autonomy and smuggling.",
+        "Aside from brief interventions like the 1686–1689 Dominion of New England, British rule relied largely on salutary neglect, allowing elected lower assemblies to pass local laws and control provincial budgets.",
+        "British North American colonists generally relied on Royal Navy protection and fought alongside imperial troops against France in early colonial wars even while contesting specific customs rules and royal governors."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -41554,20 +41554,20 @@
       "cognitiveProcess": "analyze-continuity-change",
       "reasoningProcess": "continuity-change",
       "difficulty": "intermediate",
-      "prompt": "Which development most directly strengthened colonial resistance to British authority after 1763?",
+      "prompt": "Which development most directly strengthened enslaved Africans’ resistance and cultural survival in the British colonies between 1607 and 1754?",
       "choices": [
-        "Resistance grew because colonial leaders abandoned print, assembly, and commercial networks and relied mainly on private complaints to British officials.",
-        "Colonial opposition remained isolated within each colony because committees, boycotts, and congresses did not connect local disputes across British North America.",
-        "Committees, boycotts, pamphlets, and intercolonial meetings connected local protests to claims about representation, rights, and constitutional limits.",
-        "Colonists accepted parliamentary taxation as legitimate once Britain offered new trade privileges, so organized resistance emerged after independence."
+        "Enslaved people abandoned African languages and spiritual traditions in favor of complete assimilation to planter rules.",
+        "Colonial slave codes guaranteed legal protections that allowed enslaved communities to challenge planters in provincial courts.",
+        "Kinship networks, syncretic religious and linguistic practices, work slowdowns, escape, and rebellions sustained agency.",
+        "British planters ended hereditary bondage before 1754 so enslaved laborers could negotiate voluntary wage contracts."
       ],
       "answerIndex": 2,
-      "rationale": "Organizing across colonies transformed separate protests into a broader constitutional and political challenge to imperial authority.",
+      "rationale": "Despite tightening racial slave codes between 1607 and 1754, enslaved Africans in British North America forged enduring family ties, blended African and Christian spiritual traditions, developed Gullah and other creole expressions, and resisted through covert sabotage, flight, and uprisings such as the 1739 Stono Rebellion.",
       "choiceRationales": [
-        "Patriot organizers actively harnessed newspapers, broadsides, nonimportation boycotts, and legislative resolutions to mobilize broad public opposition rather than confining protests to private petitions.",
-        "Committees of correspondence, the Stamp Act Congress, and the Continental Congress deliberately linked protests across colonial borders, turning local tax grievances into coordinated intercolonial resistance.",
-        "This is the best answer because Organizing across colonies transformed separate protests into a broader constitutional and political challenge to imperial authority.",
-        "Organized boycotts, street protests, and intercolonial congresses erupted more than a decade before 1776 in response to the Stamp Act, Townshend duties, and Tea Act because colonists rejected parliamentary taxation outright."
+        "Rather than erasing their heritage, enslaved Africans preserved and adapted West and Central African music, naming customs, kinship structures, and religious practices to build resilient communities under bondage.",
+        "Seventeenth- and eighteenth-century colonial slave codes systematically stripped enslaved people of legal standing, prohibiting testimony against white colonists and authorizing harsh planter discipline.",
+        "Family ties, syncretic faith and language, everyday covert resistance, escape to maroon settlements or Spanish Florida, and armed revolts like the 1739 Stono Rebellion sustained enslaved agency before 1754.",
+        "Colonial assemblies strengthened hereditary racial chattel slavery throughout the seventeenth and eighteenth centuries rather than replacing enslaved labor with voluntary wage bargaining."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -42298,20 +42298,20 @@
       "cognitiveProcess": "compare",
       "reasoningProcess": "comparison",
       "difficulty": "advanced",
-      "prompt": "Which development best explains economic change in the early republic?",
+      "prompt": "Which development best explains economic change in the United States during the 1780s and 1790s?",
       "choices": [
-        "The early republic remained economically isolated because roads, canals, credit, manufacturing, and commercial agriculture declined after independence.",
-        "Economic change occurred mainly in coastal ports and had no effect on western settlement, farming, transportation, labor, or the relationship among regions.",
-        "National finance, transportation gains, commercial farming, manufacturing, and expanding markets linked local economies into a national system.",
-        "National leaders discouraged markets and transportation because republican virtue required households to produce goods strictly for local use."
+        "The early republic stayed economically stagnant as interstate trade, shipping, credit, and commercial farming declined.",
+        "Economic change touched coastal merchants alone and had no effect on frontier land sales, banking, or regional ties.",
+        "Federal credit, a national bank, commerce powers, turnpikes, and export trade knit regional markets more closely.",
+        "National leaders discouraged commercial markets because federal statutes required households to produce for local use."
       ],
       "answerIndex": 2,
-      "rationale": "Economic growth linked regions and encouraged new institutions while preserving important differences in labor and production.",
+      "rationale": "Under the 1787 Constitution and Alexander Hamilton’s financial program during the 1790s, federal debt assumption, the First Bank of the United States, interstate commerce authority, merchant shipping, and early turnpikes stabilized public credit and widened commercial markets across the new nation.",
       "choiceRationales": [
-        "Turnpikes, steamboats, the Erie Canal, state-chartered banks, early textile mills, and expanding export agriculture accelerated commercial exchange across the early republic rather than receding into isolation.",
-        "New water and road links—especially the Erie Canal and Mississippi riverboats—integrated interior farm regions with Atlantic port cities, transforming western land sales, commercial farming, and interregional trade.",
-        "This is the best answer because Economic growth linked regions and encouraged new institutions while preserving important differences in labor and production.",
-        "From Hamilton’s commercial plans to Henry Clay’s American System and state canal investments, early American leaders actively promoted banks, tariffs, and internal improvements to widen national markets."
+        "Replacing state tariff barriers under the Constitution, restoring federal credit, opening private turnpikes, launching early New England textile mills like Samuel Slater’s, and expanding Atlantic exports stimulated rapid commercial growth in the 1790s.",
+        "Federal land ordinances, expanding trans-Appalachian farm trade, state-chartered banks, and rising cotton and grain exports linked interior frontier producers closely with coastal port cities during the 1790s.",
+        "Federal debt assumption, the First Bank of the United States, constitutional regulation of interstate commerce, early turnpikes, and booming Atlantic trade integrated early-republic regional economies.",
+        "Federalists led by Alexander Hamilton actively promoted public credit, tariffs, commercial shipping, and domestic manufacturing, and no federal law ever required households to restrict production to local subsistence."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -42484,20 +42484,20 @@
       "cognitiveProcess": "compare",
       "reasoningProcess": "comparison",
       "difficulty": "intermediate",
-      "prompt": "Which development best explains the influence of religious revival in the early nineteenth century?",
+      "prompt": "Which development best explains the influence of religious disestablishment and evangelical growth in the United States during the late eighteenth century?",
       "choices": [
-        "Revival movements encouraged conversion, voluntary reform, new denominations, and expanded participation while challenging older religious authority.",
-        "Religious revival strengthened only established churches and discouraged voluntary associations, reform campaigns, and participation by ordinary believers.",
-        "The movement was limited to European politics and did not influence education, temperance, abolition, womens rights, or community organization.",
-        "Revival leaders opposed all social reform because renewed religious commitment required Americans to avoid public debate and voluntary activism."
+        "Ending tax-supported state churches and surging Baptist and Methodist congregations widened lay voice and pluralism.",
+        "State constitutions strengthened established colonial churches and barred ordinary lay believers from organizing new congregations.",
+        "Late-eighteenth-century religious debates remained confined to Europe and had no impact on American law or civic life.",
+        "Evangelical leaders opposed state bills of rights because expanded religious freedom was viewed as a threat to congregations."
       ],
       "answerIndex": 0,
-      "rationale": "Religious revival connected personal conversion to collective reform and helped build networks that shaped nineteenth-century society.",
+      "rationale": "Between 1776 and 1800, Revolutionary principles of conscience paired with surging Baptist and Methodist revivals to dismantle tax-supported Anglican establishments in most southern states, advance measures like the 1786 Virginia Statute for Religious Freedom, and broaden ordinary participation in American religious life.",
       "choiceRationales": [
-        "This is the best answer because Religious revival connected personal conversion to collective reform and helped build networks that shaped nineteenth-century society.",
-        "Second Great Awakening camp meetings bypassed established clergy, empowered women and ordinary laypeople as moral actors, and inspired a wave of voluntary benevolent and reform societies.",
-        "Centered across the American frontier and New York’s Burned-Over District, the revival directly energized domestic crusades for public schools, temperance, immediate abolition, and women’s rights.",
-        "Influential evangelists such as Charles Grandison Finney preached that true conversion demanded active moral perfectionism in society, spurring converts into abolitionist, temperance, and philanthropic organizing."
+        "Disestablishing state churches and expanding Baptist and Methodist congregations lowered clerical barriers, broadened lay involvement, and entrenched religious pluralism in the new republic.",
+        "Following independence, Virginia and other states ended tax support for Anglican churches while egalitarian Baptist and Methodist congregations grew rapidly across the backcountry and mid-Atlantic.",
+        "American statesmen and dissenters directly shaped domestic constitutional law through the 1786 Virginia Statute for Religious Freedom and the First Amendment’s Establishment and Free Exercise Clauses.",
+        "Dissenting evangelicals such as Virginia Baptists strongly championed constitutional protections for religious liberty because disestablishment freed their congregations from paying taxes to established churches."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -45003,7 +45003,7 @@
         "Industrial inequality, corruption, unsafe conditions, urban poverty, and concentrated corporate power led many Americans to demand institutional change."
       ],
       "answerIndex": 3,
-      "rationale": "Reform emerged from the social costs and political consequences of rapid industrial and urban development.",
+      "rationale": "Rapid Gilded Age industrialization generated stark wealth inequality, political machine corruption, hazardous factory labor, and overcrowded tenements, motivating Populists, labor unions, settlement workers, and muckrakers to demand reform.",
       "choiceRationales": [
         "Widening wealth disparities, deadly factory accidents, tenement squalor, and railroad bribery in legislatures—not their disappearance—drove journalists, ministers, and activists to demand institutional reform.",
         "Late-nineteenth-century critics—from Social Gospel preachers and settlement-house founders like Jane Addams to early investigative writers—focused overwhelmingly on domestic urban poverty, corporate monopolies, and workplace abuses.",
@@ -48165,12 +48165,12 @@
         "European powers rejected imperial competition because American colonies were organized mainly for local self-sufficiency rather than wealth or strategic power."
       ],
       "answerIndex": 1,
-      "rationale": "Colonial economies shared imperial ambitions but varied in how they combined commercial, religious, military, and settlement goals.",
+      "rationale": "Sixteenth-century European colonial ventures shared mercantilist ambitions for bullion, commodities, and strategic advantage, yet diverged in how crowns combined conquest, Catholic missions, plantation extraction, and maritime trade across the Americas.",
       "choiceRationales": [
-        "Colonial economies and governance diverged sharply across empires: Caribbean sugar islands depended on brutal enslaved labor, French fur-trading posts relied on Algonquian and Huron alliances, and Chesapeake tobacco plantations evolved distinct English landholding and labor regimes.",
-        "This is the best answer because Colonial economies shared imperial ambitions but varied in how they combined commercial, religious, military, and settlement goals.",
-        "Although missionary orders accompanied imperial expansion, European crowns prioritized mercantilist wealth extraction through Andean silver mines, Caribbean sugar estates, Atlantic shipping monopolies, and coerced Indigenous and African labor.",
-        "Rival empires founded American colonies specifically to capture bullion, staple exports, and naval footholds against European competitors rather than to foster isolated, locally self-sufficient settlements."
+        "Early colonial ventures diverged sharply across empires: Spanish viceroyalties combined Andean and Mexican silver mining with encomienda drafts, Portuguese Brazil built sugar plantations powered by enslaved Africans, and early French and English voyages focused on cod fisheries, privateering, and coastal trade.",
+        "European empires shared broad aims of wealth and strategic power while combining conquest, missions, plantations, and trade differently across the sixteenth-century Americas.",
+        "Although Catholic missionary orders accompanied Iberian expansion, European crowns prioritized mercantilist wealth extraction through silver mines at Potosí and Zacatecas, sugar estates, Atlantic shipping monopolies, and coerced Indigenous and African labor.",
+        "Rival European monarchies sponsored overseas expeditions specifically to capture precious metals, export commodities, and strategic footholds against competing states rather than to build isolated self-sufficient communities."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -48909,7 +48909,7 @@
         "The era avoided disagreement over liberty because mass democracy ended social hierarchy and made federal and state definitions of rights identical."
       ],
       "answerIndex": 1,
-      "rationale": "Democratic expansion for white men made the exclusion of other groups more visible and politically contested.",
+      "rationale": "Before 1848, the expansion of universal white male suffrage under Jacksonian democracy sharpened political conflicts over freedom because it coexisted with entrenched chattel slavery, Indian Removal, and legal barriers against women.",
       "choiceRationales": [
         "While Jacksonian states dropped property requirements for white male voters, enslaved African Americans, free Black residents in many states, women, and displaced Indigenous nations remained barred from equal citizenship and legal rights.",
         "This is the best answer because Democratic expansion for white men made the exclusion of other groups more visible and politically contested.",
@@ -49560,7 +49560,7 @@
         "Civil rights politics changed mainly through foreign diplomacy and had no connection to African American migration, labor, military service, or federal policy."
       ],
       "answerIndex": 0,
-      "rationale": "Wartime demands and democratic claims exposed the contradiction between American ideals and racial exclusion.",
+      "rationale": "World War II exposed the glaring contradiction between fighting fascist racism abroad and enforcing Jim Crow at home, energizing the Double V campaign, wartime Great Migration activism, and demands for federal civil rights action.",
       "choiceRationales": [
         "This is the best answer because Wartime demands and democratic claims exposed the contradiction between American ideals and racial exclusion.",
         "The wartime Double V campaign explicitly linked fighting fascism abroad to overturning Jim Crow at home, accelerating NAACP membership growth, Executive Order 8802, and postwar civil rights organizing.",
@@ -49932,7 +49932,7 @@
         "Gender politics focused mainly on military service and had no relationship to workplaces, schools, families, law, media, or social movements."
       ],
       "answerIndex": 0,
-      "rationale": "The period combined new opportunities and activism with persistent institutional and cultural inequalities.",
+      "rationale": "From the 1940s through the 1970s, rising female college enrollment and labor-force participation coexisted with occupational segregation and domestic norms, fueling second-wave feminist challenges to legal and cultural gender barriers.",
       "choiceRationales": [
         "This is the best answer because The period combined new opportunities and activism with persistent institutional and cultural inequalities.",
         "Between the 1940s and 1970s, women’s college enrollment and paid labor-force participation climbed steadily while second-wave feminists organized groups like NOW and won landmark statutes such as Title IX.",
@@ -51877,20 +51877,20 @@
       "cognitiveProcess": "compare",
       "reasoningProcess": "comparison",
       "difficulty": "intermediate",
-      "prompt": "Which comparison best explains labor systems in Spanish and English colonies?",
+      "prompt": "Which comparison best explains labor systems in sixteenth-century Spanish and Portuguese colonies in the Americas?",
       "choices": [
-        "Spanish and English colonies used identical labor systems because neither relied on Indigenous labor, African slavery, plantation production, or racial classification.",
-        "Both used coercion and racial hierarchy, yet Spanish colonies relied heavily on Indigenous labor while English plantations turned to hereditary African slavery.",
-        "English colonies depended mainly on Indigenous tribute while Spanish colonies built their economies around free wage labor and equal landholding.",
-        "The colonies differed only in language because labor, legal status, religion, land ownership, and racial hierarchy developed in the same way."
+        "Spanish and Portuguese colonies used identical free-wage labor systems and avoided coerced Indigenous or African work.",
+        "Both used coercion and racial hierarchy, yet Spain relied more on Indigenous drafts while Brazil turned to African slavery.",
+        "Portuguese Brazil relied primarily on Andean silver-mining drafts while New Spain depended solely on voluntary European farmers.",
+        "The two empires differed mainly in language because their colonial economies, crops, and labor workforces were the same."
       ],
       "answerIndex": 1,
-      "rationale": "Colonial labor systems shared coercion but differed according to imperial goals, population patterns, local economies, and legal institutions.",
+      "rationale": "During Period 1 (1491–1607), both Spain and Portugal built colonial wealth on racially stratified coerced labor, yet Spain extracted vast tribute and mining labor from dense Indigenous populations in Mexico and Peru while Portuguese sugar planters in Brazil turned rapidly toward large-scale enslaved African labor.",
       "choiceRationales": [
-        "Both empires relied heavily on racially stratified coerced labor, yet they organized it differently—with Spain emphasizing Indigenous encomienda and mita drafts alongside African slavery, while English plantations centered on enslaved Africans.",
-        "This is the best answer because Colonial labor systems shared coercion but differed according to imperial goals, population patterns, local economies, and legal institutions.",
-        "This switches the two imperial labor systems: Spanish authorities extracted tribute and forced work from large Indigenous populations, whereas English plantation colonies shifted from white indentured servants to hereditary African chattel slavery.",
-        "Spanish America created legally recognized mestizo and casta gradations under Catholic crown oversight, whereas English mainland colonies enforced sharper racial boundaries, distinct property rules, and predominantly Protestant institutions."
+        "Both Iberian empires depended heavily on racially stratified forced labor rather than voluntary wage earners, combining coerced Indigenous drafts with growing shipments of enslaved Africans across the Atlantic.",
+        "Comparing sixteenth-century Iberian colonies highlights shared reliance on coercion and racial hierarchy alongside regional differences between Spanish Indigenous labor drafts and Brazil’s rapid shift to African plantation slavery.",
+        "This reverses the two imperial economies: Spain organized silver-mining drafts like the Andean mita in Peru and New Spain, whereas Portugal developed export sugar estates in coastal Brazil using enslaved African labor.",
+        "Spanish viceroyalties anchored in highland silver mines and dense Indigenous tribute systems differed markedly from Portuguese coastal sugar plantations in crop specialization, demographic mix, and labor organization."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -51970,20 +51970,20 @@
       "cognitiveProcess": "analyze-continuity-change",
       "reasoningProcess": "continuity-change",
       "difficulty": "intermediate",
-      "prompt": "Which development best describes colonial society in the Americas after European settlement?",
+      "prompt": "Which development best describes colonial society in the Americas during the sixteenth century?",
       "choices": [
-        "Colonial society became equal because European settlement ended racial classification, coerced labor, land dispossession, and unequal political authority.",
-        "European settlement changed only political borders and did not affect families, labor, religion, landholding, migration, or Indigenous sovereignty.",
-        "New racial and social hierarchies grew around land, labor, religion, and empire while Indigenous and African peoples sustained communities and resisted rule.",
-        "Colonial society developed one uniform hierarchy because Spanish, French, Dutch, and English colonies used the same laws, labor systems, and religious policies."
+        "Colonial society became equal as European settlement ended racial hierarchy, forced labor, and territorial dispossession.",
+        "European settlement shifted imperial borders while leaving Indigenous families, labor systems, religion, and land tenure intact.",
+        "New racial and social hierarchies grew around land, labor, and empire while Indigenous and African peoples resisted and adapted.",
+        "Sixteenth-century colonial societies followed one uniform structure because every region used identical labor and mission systems."
       ],
       "answerIndex": 2,
-      "rationale": "Colonial societies created durable inequalities while people subjected to imperial rule preserved institutions and challenged domination.",
+      "rationale": "During the sixteenth century (1491–1607), European colonization imposed racialized legal hierarchies, coerced labor systems, and land dispossession across the Americas, while Indigenous and African peoples forged resilient communities, blended cultural practices, and resisted imperial domination.",
       "choiceRationales": [
-        "European colonization entrenched steep legal and social inequalities through slave codes, Spanish casta categories, dispossession of Indigenous homelands, and property-based restrictions on political power.",
-        "Colonization remade everyday social life across the Americas by altering family structures, imposing private land titles, spreading Christian missions, trafficking enslaved Africans, and eroding Indigenous territorial sovereignty.",
-        "This is the best answer because Colonial societies created durable inequalities while people subjected to imperial rule preserved institutions and challenged domination.",
-        "Social hierarchies varied considerably across empires, from Spanish casta systems and French fur-trade intermarriage in the pays d’en haut to rigid English racial slavery and Dutch commercial pluralism."
+        "Sixteenth-century colonization entrenched steep legal and economic inequalities through the Spanish casta system, encomienda labor drafts, transatlantic African enslavement, and the seizure of Indigenous lands.",
+        "European colonization transformed everyday life across the Americas by introducing Old World pathogens and livestock, reorganizing land titles, spreading Catholic missions, and disrupting Indigenous political autonomy.",
+        "Colonial societies institutionalized racial and labor hierarchies while Indigenous and African communities sustained kinship networks, syncretic traditions, and active resistance to imperial rule.",
+        "Even within Iberian America, colonial social structures varied markedly across central Mexican cities, Andean mining zones, frontier missions, and Brazilian coastal sugar plantations rather than forming one uniform system."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-us-history-course-and-exam-description.pdf",
@@ -52443,7 +52443,7 @@
         "Competing land claims, trade networks, Native alliances, resource rivalries, and European wars drew colonial societies into repeated conflict."
       ],
       "answerIndex": 3,
-      "rationale": "Imperial rivalry was driven by overlapping claims to land, markets, resources, and strategic influence.",
+      "rationale": "Repeated North American imperial wars before 1776 grew out of overlapping British, French, and Spanish territorial claims, competing fur and Atlantic trade networks, shifting Indigenous alliances, and wider European dynastic rivalries.",
       "choiceRationales": [
         "Vaguely defined frontier claims in the Ohio Valley, fierce mercantilist trade rivalries, and competing military alliances with the Iroquois and Algonquian nations sparked recurring colonial wars before 1763.",
         "While Protestant-Catholic hostility sharpened wartime rhetoric, competition over fertile interior land, fur-trading networks, naval choke points, and European dynastic power drove imperial warfare in North America.",
@@ -53187,7 +53187,7 @@
         "White male voting grew while women, enslaved people, free Black communities, Indigenous nations, and poor residents stayed excluded from equal power."
       ],
       "answerIndex": 3,
-      "rationale": "Popular politics expanded within an electorate defined by racial, gender, property, and legal exclusions.",
+      "rationale": "Although the early republic broadened political participation for many white men by easing property qualifications, constitutional compromises and state laws continued to deny equal citizenship to women, enslaved and free Black people, and Native nations.",
       "choiceRationales": [
         "As states broadened suffrage for white men after independence, they simultaneously narrowed Black voting rights in several northern states, preserved chattel slavery, upheld coverture, and excluded Indigenous peoples from citizenship.",
         "Legal statutes such as the Naturalization Act of 1790, state suffrage restrictions, slave codes, and Indian treaties tied unequal political power directly to race, sex, and legal status—not income alone.",
@@ -54489,7 +54489,7 @@
         "Emancipation ended the conflict immediately because Confederate armies surrendered as soon as the policy was announced and no constitutional change followed."
       ],
       "answerIndex": 1,
-      "rationale": "Emancipation altered military capacity, labor, citizenship, and the meaning of Union victory.",
+      "rationale": "Emancipation transformed the Civil War into a struggle for abolition: enslaved people's self-emancipation eroded Confederate labor, nearly 200,000 Black soldiers bolstered Union forces, and the Thirteenth Amendment made freedom permanent.",
       "choiceRationales": [
         "Making abolition a Union war aim undermined Confederate plantation agriculture, discouraged British intervention, brought nearly 200,000 Black soldiers and sailors into Union uniform, and paved the way for the Thirteenth Amendment.",
         "This is the best answer because Emancipation altered military capacity, labor, citizenship, and the meaning of Union victory.",
@@ -55698,7 +55698,7 @@
         "Modern culture developed without mass media, automobiles, consumer markets, migration, universities, or urban growth because those institutions declined."
       ],
       "answerIndex": 2,
-      "rationale": "The decade contained competing visions of modern life, citizenship, morality, race, and national identity.",
+      "rationale": "The 1920s displayed deep cultural tension as urban consumerism, radio, jazz, and the Harlem Renaissance expanded alongside powerful traditionalist reactions including the 1924 immigration quotas, Prohibition, fundamentalism, and a revived KKK.",
       "choiceRationales": [
         "The 1920s were defined by simultaneous cultural collision—Harlem Renaissance jazz, flappers, and urban nightlife thrived alongside the revived Ku Klux Klan, fundamentalist revivals, and Prohibition enforcement.",
         "Traditionalist politics wielded immense national power during the decade, securing the restrictive National Origins Act of 1924, defending Prohibition, and staging high-profile clashes like the Scopes Trial.",
@@ -55791,7 +55791,7 @@
         "Banking instability, international debt, trade contraction, commodity prices, and financial interdependence transmitted severe crisis across borders."
       ],
       "answerIndex": 3,
-      "rationale": "The crisis reflected both domestic weaknesses and international financial and trade connections.",
+      "rationale": "The Great Depression became a global crisis through intertwined war debts, reparations, gold-standard constraints, collapsing commodity prices, bank failures, and retaliatory tariffs like Smoot-Hawley that contracted international trade.",
       "choiceRationales": [
         "Entangled World War I reparations, Allied war loans, gold-standard monetary rigidity, retaliatory tariffs like Hawley-Smoot, and collapsing global commodity prices transmitted and deepened the Depression across borders.",
         "Rather than expanding, European bank failures such as Creditanstalt, plummeting world trade volume, and mass unemployment across industrial and raw-material nations mutually reinforced a global economic downward spiral.",
@@ -56349,7 +56349,7 @@
         "Cold War ideology concerned only military equipment and had no connection to elections, property, welfare, labor, development, or international legitimacy."
       ],
       "answerIndex": 1,
-      "rationale": "Cold War competition involved rival political and economic systems as well as military and diplomatic power.",
+      "rationale": "Cold War rivalry pitted competing global models against one another: the United States championed market capitalism and multiparty liberal democracy, whereas the Soviet Union promoted one-party communist rule and state-planned economies.",
       "choiceRationales": [
         "Cold War rivalry hinged on a stark ideological clash between U.S.-backed market capitalism and multiparty democracy versus Soviet state-directed central planning and single-party communist governance.",
         "This is the best answer because Cold War competition involved rival political and economic systems as well as military and diplomatic power.",

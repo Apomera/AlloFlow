@@ -59,9 +59,22 @@ function _alloRetiredVersionState(win, now) {
   if (generation === 'previous' && now >= Date.parse(ALLO_RETIRED_VERSION_GATE.previousGraceEnds)) return 'retired';
   return generation;
 }
+function _ensureRetiredNoticeA11yCss(doc) {
+  if (!doc || !doc.head || typeof doc.getElementById !== 'function' || typeof doc.createElement !== 'function') return;
+  if (doc.getElementById('allo-retired-notice-a11y-css')) return;
+  var st = doc.createElement('style');
+  st.id = 'allo-retired-notice-a11y-css';
+  st.textContent =
+    '#allo-retired-version-notice button,#allo-retired-version-notice a{touch-action:manipulation;}' +
+    '#allo-retired-version-notice button:focus-visible,#allo-retired-version-notice a:focus-visible{outline:2px solid #0284c7;outline-offset:2px;}' +
+    '@media (forced-colors: active){#allo-retired-version-notice button:focus-visible,#allo-retired-version-notice a:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){#allo-retired-version-notice,#allo-retired-version-notice *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  doc.head.appendChild(st);
+}
 function _alloShowRetiredVersionNotice(win, doc, state) {
   if (state !== 'retired' && state !== 'previous') return null;
   if (doc.getElementById('allo-retired-version-notice')) return null;
+  _ensureRetiredNoticeA11yCss(doc);
   var blocking = state === 'retired';
   var box = doc.createElement('div');
   box.id = 'allo-retired-version-notice';
@@ -87,8 +100,8 @@ function _alloShowRetiredVersionNotice(win, doc, state) {
   link.target = '_blank'; link.rel = 'noopener';
   link.textContent = 'Open the current AlloFlow';
   link.style.cssText = blocking
-    ? 'display:inline-block;background:#f8fafc;color:#0f172a;font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;'
-    : 'color:#422006;font-weight:700;text-decoration:underline;';
+    ? 'display:inline-flex;align-items:center;min-height:44px;background:#f8fafc;color:#0f172a;font-weight:700;padding:12px 20px;border-radius:8px;text-decoration:none;touch-action:manipulation;'
+    : 'display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:#422006;font-weight:700;text-decoration:underline;touch-action:manipulation;';
   if (blocking) text.appendChild(link); else box.appendChild(text);
   if (blocking) box.appendChild(text); else box.appendChild(link);
   if (!blocking) {
@@ -96,7 +109,7 @@ function _alloShowRetiredVersionNotice(win, doc, state) {
     close.type = 'button';
     close.textContent = 'Dismiss';
     close.setAttribute('aria-label', 'Dismiss the new version notice');
-    close.style.cssText = 'background:transparent;border:1px solid #92400e;color:#422006;border-radius:6px;padding:4px 10px;cursor:pointer;';
+    close.style.cssText = 'min-height:44px;min-width:44px;background:transparent;border:1px solid #92400e;color:#422006;border-radius:6px;padding:8px 12px;cursor:pointer;touch-action:manipulation;';
     close.addEventListener('click', function () { box.remove(); });
     box.appendChild(close);
   }

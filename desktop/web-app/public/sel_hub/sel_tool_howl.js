@@ -2703,7 +2703,7 @@ var EL_CORE_PRACTICES = [
         'Skipping crew when academics feel pressed (signals it does not matter)',
         'Adult-led monologue instead of student voice'
       ],
-      research: 'EL Education, The Power of Crew (2021); Hahn, K., Outward Bound origins.'
+      research: 'EL Education, We Are Crew: A Teamwork Approach to School Culture (2020); Hahn, K., Outward Bound origins.'
     },
     {
       id: 'character_infused_curriculum',
@@ -2767,7 +2767,7 @@ var EL_CORE_PRACTICES = [
         'Always the same demographic of experts (signals who counts)',
         'No follow-up communication (experts feel used)'
       ],
-      research: 'EL Education, Core Practices (2018); Wiggins, G., Authentic Education (1989).'
+      research: 'EL Education, Core Practices (2018); Wiggins, G., A True Test: Toward More Authentic and Equitable Assessment, Phi Delta Kappan (1989).'
     },
     {
       id: 'service_learning',
@@ -3119,7 +3119,7 @@ var EL_CORE_PRACTICES = [
         'Hierarchy preserved (admin not in staff crew)',
         'No safe space for dissent'
       ],
-      research: 'EL Education, The Power of Crew (2021); Brackett, M., Permission to Feel (2019).'
+      research: 'EL Education, We Are Crew: A Teamwork Approach to School Culture (2020); Brackett, M., Permission to Feel (2019).'
     },
     {
       id: 'two_way_feedback',
@@ -3663,7 +3663,7 @@ var CHARACTER_HABITS = [
         'Cross-cultural fieldwork when possible',
         'Adults sharing their global engagement'
       ],
-      research: 'Reimers, F., Empowering Global Citizens (2017).'
+      research: 'Reimers, F., et al., Empowering Global Citizens (2016).'
     },
     {
       id: 'cultural_humility',
@@ -3924,7 +3924,7 @@ var EL_RESEARCH = [
       title: 'EL Education impact on achievement: Mathematica study',
       source: 'external research',
       yearPublished: 2013,
-      summary: 'A three-year quasi-experimental study by Mathematica Policy Research examined EL Education schools in five districts. Students in EL schools showed significantly higher reading achievement than matched comparison students, with effects equivalent to roughly 7-10 months of additional learning.',
+      summary: 'A Mathematica Policy Research study of five EL middle schools in Washington, DC and New York City found that after three years students gained about 7 extra months of learning in reading and 10 in math compared with matched peers.',
       whatItShows: 'Sustained implementation of EL practices is associated with measurable academic gains, particularly in literacy.',
       practiceImplication: 'EL practices implemented with fidelity over multiple years can deliver substantial academic gains.',
       caveat: 'Quasi-experimental design has selection bias risks despite matching. Implementation fidelity varies across schools. Schools voluntarily adopted EL, suggesting unobserved differences.',
@@ -3946,7 +3946,7 @@ var EL_RESEARCH = [
       title: 'Project-based learning and student outcomes',
       source: 'external research',
       yearPublished: 2021,
-      summary: 'A meta-analysis of high-quality project-based learning studies found small to moderate positive effects on academic achievement and stronger effects on engagement and content retention compared to traditional instruction. Effects are stronger for sustained, well-designed projects.',
+      summary: 'A meta-analysis of project-based learning studies found a medium-to-large positive effect on academic achievement compared with traditional instruction, with wide variation across subjects and project length.',
       whatItShows: 'Project-based learning, including expedition learning, can produce academic gains alongside engagement gains when implementation is high-quality.',
       practiceImplication: 'Expeditions need design rigor, teacher support, and time. Short or poorly designed projects do not produce the same effects.',
       caveat: 'Meta-analyses show wide variation in PBL definitions and quality. Short-term gains may not match long-term retention claims across studies.',
@@ -4016,7 +4016,7 @@ var EL_RESEARCH = [
       whatItShows: 'Restorative practices can reduce discipline disparities and improve school climate when well-implemented.',
       practiceImplication: 'Restorative practices require training, time, and culture shift. Done as add-on or replacement for skill-building, they show weaker results.',
       caveat: 'Restorative practices implemented poorly (without staff training, without skill-building) can backfire. Some studies show null or mixed effects on academics.',
-      citation: 'Gregory, A. & Evans, K., The Promise of Restorative Practices to Transform Teacher-Student Relationships, AERA Open (2020).'
+      citation: 'Gregory, A. & Evans, K., The Starts and Stumbles of Restorative Justice in Education, National Education Policy Center (2020).'
     },
     {
       id: 'fieldwork_outcomes',
@@ -4166,8 +4166,8 @@ var EL_RESEARCH = [
       title: 'Trauma-informed schools and outcomes',
       source: 'external research',
       yearPublished: 2018,
-      summary: 'Emerging research on trauma-informed school approaches shows improvements in attendance, behavior referrals, and school climate. Academic effects are mixed and depend heavily on implementation depth.',
-      whatItShows: 'Trauma-informed practice has consistent effects on relational and behavioral outcomes; academic effects require deeper implementation.',
+      summary: 'Trauma-informed school approaches are widely adopted, and some schools report better attendance, fewer behavior referrals and a better climate. A 2019 Campbell systematic review found no rigorous studies that met its criteria, so these effects are not yet established.',
+      whatItShows: 'Trauma-informed practice is promising for relationships and behavior, but its effects are not yet established by rigorous studies.',
       practiceImplication: 'Surface-level "trauma trainings" do not produce the effects of integrated practice changes (routines, co-regulation, restorative response).',
       caveat: 'Trauma-informed implementation is uneven; some studies show null effects. Distinguishing trauma-informed culture from compensatory programming matters.',
       citation: 'Maynard, B., et al., Trauma-Informed Approaches in Schools: A Systematic Review, Campbell Collaboration (2019).'
@@ -5095,7 +5095,7 @@ var EXPEDITION_CONNECTIONS = [
         4: 'Exemplary: seeks out challenge. Uses feedback to push further. Models growth mindset for others.'
       },
       strands: [
-        { name: 'Persistence', def: 'Whether you stay with hard problems past the moment your brain wants to quit. The first frustration spike is usually 30 seconds in — most people fail it.' },
+        { name: 'Persistence', def: 'Whether you stay with hard problems past the moment your brain wants to quit. The first wave of frustration usually comes early, and that is the moment most people want to quit.' },
         { name: 'Strategy', def: 'Whether you have moves when stuck (re-read, ask, draw, simplify, search), or whether stuck just means stop.' },
         { name: 'Feedback use', def: 'Whether feedback changes what you do next, or just gets a "thanks" and a save-and-close. Real use looks like a revision draft, not a nod.' },
         { name: 'Mistake response', def: 'What you do in the 10 seconds AFTER a mistake. The body has a stress response; the question is whether you can stay in the work.' }
@@ -5144,7 +5144,7 @@ var EXPEDITION_CONNECTIONS = [
         { name: 'Repair', def: 'When things go sideways between you and someone — and they do — whether you can name it and try to repair. Avoiding is not neutral; it is a vote for whatever broke.' },
         { name: 'Mutual care', def: 'Whether your Crew\'s well-being is your business, even when no one is watching. Care is what differentiates a Crew from a class.' }
       ],
-      research: 'EL Education\'s Crew model draws from Outward Bound\'s expeditionary learning tradition (Kurt Hahn, 1930s). Modern research on classroom community and belonging (Walton & Cohen 2007, Yeager et al. 2019) shows small belonging interventions can substantially close achievement gaps for marginalized students.',
+      research: 'EL Education\'s Crew model draws on Outward Bound, founded by Kurt Hahn in 1941. Belonging research (Walton & Cohen 2007, 2011) found that brief belonging exercises narrowed achievement gaps in some studies, though effects vary by setting.',
       misconception: 'Crew is NOT just homeroom or advisory. The defining feature is that Crew members actually take responsibility for each other\'s success and well-being — modeled on a ship crew where everyone\'s safety depends on everyone\'s competence. "We are crew, not passengers" — Kurt Hahn.',
       goalExamples: {
         weak: [
@@ -6119,7 +6119,7 @@ var EXPEDITION_CONNECTIONS = [
         'Understands historical roots of current injustice'
       ],
       classroomCultivation: 'Curriculum that includes historical and current injustices. Service learning rooted in justice analysis. Civic engagement. Restorative practices. Adults modeling justice work.',
-      research: 'Westheimer, J., What Kind of Citizen? (2008); EL Education, Equity practices.'
+      research: 'Westheimer, J. & Kahne, J., What Kind of Citizen?, American Educational Research Journal (2004); EL Education, Equity practices.'
     },
     {
       id: 'resilient',
@@ -6215,7 +6215,7 @@ var EXPEDITION_CONNECTIONS = [
         'Connects local actions to global consequences'
       ],
       classroomCultivation: 'Curriculum that includes global perspectives. Texts in translation. Global expeditions. Virtual or in-person exchanges. Global current events integrated into routines.',
-      research: 'Reimers, F., Empowering Global Citizens (2017); EL Education, Global Learning.'
+      research: 'Reimers, F., et al., Empowering Global Citizens (2016); EL Education, Global Learning.'
     },
     {
       id: 'health_literate',
@@ -6704,7 +6704,7 @@ var EXPEDITION_CONNECTIONS = [
         'What did they not say out loud?'
       ],
       whyThisQuestion: 'Builds the habit of actively seeing peers.',
-      research: 'Being seen reduces loneliness, the strongest predictor of disengagement (Holt-Lunstad, 2015).'
+      research: 'Feeling seen and connected at school is linked with stronger engagement (Roorda et al., 2011).'
     },
     {
       id: 'ev_class_contribution',
@@ -7443,7 +7443,7 @@ var EXPEDITION_CONNECTIONS = [
       ],
       studentBenefit: 'Students experience collective problem-solving, not just feedback. They learn that being stuck is normal and that asking for help is a craft move, not a weakness.',
       howlAlignment: ['collaboration', 'craftsmanship', 'courage', 'critical-thinking'],
-      research: 'National School Reform Faculty (NSRF). See also: Lemons, R. & Helsing, D. (2009). Learning to Walk the Talk. Harvard Education Press.'
+      research: 'National School Reform Faculty (NSRF). See also: Lemons, R. & Helsing, D. (2009). Learning to Walk, Walking to Learn. Phi Delta Kappan.'
     }
   ];
   // == HOWL Evidence Library ==

@@ -1,0 +1,109 @@
+/* Maker styles for packets-maze.html. Colors and radii come from packets.css. No address, no font, no image. */
+
+.band-bar { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.6rem; }
+.band-pill { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.3rem 0.75rem; border: 1.5px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--ink); font: inherit; font-size: 0.875rem; font-weight: 700; cursor: pointer; }
+.band-pill:hover { border-color: var(--accent); background: var(--accent-soft); }
+.band-pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.band-pill:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.template-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin-top: 0.75rem; max-height: 18.5rem; overflow-y: auto; padding: 0.5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); }
+@media (min-width: 44rem) { .template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 58rem) { .template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+.template-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; width: 100%; padding: 0.7rem 0.85rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.template-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.template-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.template-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.template-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.template-tag { padding: 0.08rem 0.48rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--accent); font-size: 0.8125rem; font-weight: 700; }
+.template-form-tag { padding: 0.08rem 0.48rem; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--ink); font-size: 0.8125rem; font-weight: 700; }
+.template-name { font-weight: 700; color: var(--ink); font-size: 1rem; line-height: 1.3; }
+.template-summary { font-size: 0.875rem; color: var(--muted); line-height: 1.4; }
+
+.check-opts { padding: 0.9rem 1rem; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.check-opts h3 { margin-top: 0; }
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; align-items: end; }
+@media (min-width: 40rem) { .field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.field-row > * { min-width: 0; }
+.field-row .field { margin-top: 0; }
+.check-opts .field-row + .field,
+.check-opts .field + .field { margin-top: 0.75rem; }
+.check-opts input[type="number"] { width: 100%; min-height: 2.75rem; padding: 0.5rem 0.75rem; }
+.reset-field { display: flex; justify-content: flex-start; }
+
+.maze-preview { padding: 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); line-height: 2; font-size: 1rem; white-space: pre-wrap; max-height: 22rem; overflow-y: auto; }
+.maze-preview:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.maze-pill { display: inline-flex; align-items: center; gap: 0.25rem; min-height: 2.35rem; padding: 0.2rem 0.6rem; margin: 0.1rem 0.2rem; border: 1.5px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--ink); font: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; vertical-align: baseline; }
+.maze-pill:hover { border-color: var(--accent-dark); }
+.maze-pill:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.maze-targets { display: grid; gap: 0.65rem; margin-top: 0.65rem; max-height: 26rem; overflow-y: auto; padding-right: 0.25rem; }
+.maze-target-row { padding: 0.7rem 0.85rem; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.maze-target-row.is-active { border-color: var(--accent); background: var(--accent-soft); }
+.maze-target-head { margin: 0 0 0.45rem; font-size: 0.92rem; color: var(--muted); }
+.maze-target-head strong { color: var(--ink); }
+.maze-target-inputs { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+@media (min-width: 40rem) { .maze-target-inputs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.maze-target-inputs .field { margin: 0; }
+.maze-target-inputs label { font-size: 0.84rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .template-card, .maze-pill, .paper-maze-fold > summary::before { transition: none; }
+}
+
+.paper-maze-fold { margin-top: 1.1rem; padding: 0.75rem 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.paper-maze-fold > summary { cursor: pointer; font-weight: 700; color: var(--ink); min-height: 2.75rem; display: flex; align-items: center; gap: 0.55rem; list-style: none; }
+.paper-maze-fold > summary::-webkit-details-marker { display: none; }
+.paper-maze-fold > summary::before { content: ""; flex: none; width: 0.45rem; height: 0.45rem; margin-top: -0.1rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); transition: transform 0.14s ease; }
+.paper-maze-fold[open] > summary::before { margin-top: -0.25rem; transform: rotate(45deg); }
+.paper-maze-fold > summary:hover { color: var(--accent); }
+.paper-maze-fold > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.paper-maze-controls { margin-top: 0.5rem; display: grid; gap: 0.65rem; }
+.paper-maze-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem 1rem; }
+
+.paper-maze-sheet { margin-top: 0.9rem; padding: 1.15rem 1.25rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.paper-maze-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; padding-bottom: 0.65rem; border-bottom: 1.5px solid var(--line-strong); }
+.paper-maze-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+.paper-maze-meta { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--muted); }
+.paper-maze-fields { display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem; margin: 0.7rem 0 0; font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+.paper-maze-dir { margin: 0.7rem 0 0; padding: 0.55rem 0.75rem; border-left: 3px solid var(--accent); background: var(--note); font-size: 0.92rem; line-height: 1.45; }
+.paper-maze-warmup { margin: 0.85rem 0 0; padding: 0.65rem 0.85rem; border: 1px dashed var(--line-strong); border-radius: 8px; font-size: 0.96rem; line-height: 1.75; }
+.paper-maze-warmup-lbl { margin: 0 0 0.25rem; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.paper-maze-body { margin-top: 0.9rem; font-size: 1.02rem; line-height: 2; white-space: pre-wrap; }
+.paper-maze-blank { display: inline; font-weight: 700; padding: 0.06rem 0.28rem; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--note); white-space: nowrap; }
+.paper-maze-key { margin-top: 1.35rem; padding-top: 1rem; border-top: 2px solid var(--line-strong); }
+.paper-maze-key h4 { margin: 0 0 0.4rem; font-size: 1.05rem; color: var(--ink); }
+.paper-maze-tally { display: flex; flex-wrap: wrap; gap: 0.75rem 1.4rem; margin: 0.5rem 0 0.85rem; padding: 0.6rem 0.8rem; border: 1px solid var(--line-strong); border-radius: 8px; font-weight: 700; font-size: 0.95rem; }
+.paper-maze-key-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.35rem 0.85rem; font-size: 0.92rem; }
+.paper-maze-key-list li { padding: 0.2rem 0; border-bottom: 1px solid var(--line); }
+
+@media (forced-colors: active) {
+  .band-pill[aria-pressed="true"] { forced-color-adjust: none; border: 2px solid Highlight; background: Highlight; color: HighlightText; }
+  .template-card[aria-pressed="true"],
+  .maze-target-row.is-active,
+  .paper-maze-fold,
+  .paper-maze-sheet,
+  .paper-maze-blank { border: 2px solid CanvasText; }
+  .paper-maze-fold > summary::before { border-color: CanvasText; }
+  .maze-pill { forced-color-adjust: none; border: 2px solid Highlight; background: ButtonFace; color: ButtonText; }
+}
+
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #ffffff; color: #000000; }
+  header.top, nav, .reopen, .steps, .actions, .batch, .about, footer.foot, .no-print,
+  #step-1, #step-2, #loading, #load-problem, #making, #build-problem, #summary, #title-field, #after-save, #summary-list, #step-3-title, #step-3 > .kicker, h1, .scope { display: none !important; }
+  .sheet { border: 0; padding: 0; margin: 0; background: #ffffff; }
+  .paper-maze-sheet[data-ready="1"] { display: block !important; border: 0; padding: 0; margin: 0; background: #ffffff; color: #000000; }
+  .paper-maze-title, .paper-maze-meta, .paper-maze-fields, .paper-maze-dir, .paper-maze-warmup, .paper-maze-warmup-lbl, .paper-maze-body, .paper-maze-key, .paper-maze-key h4, .paper-maze-tally, .paper-maze-key-list { color: #000000 !important; }
+  .paper-maze-header { border-bottom-color: #000000; }
+  .paper-maze-dir { background: #ffffff; border-left: 3pt solid #000000; }
+  .paper-maze-warmup { border-color: #000000; break-inside: avoid; }
+  .paper-maze-blank { background: #ffffff; border-color: #000000; }
+  .paper-maze-body { font-size: 11pt; line-height: 1.9; }
+  .paper-maze-key { border-top: 0; margin-top: 0; padding-top: 0; break-before: page; page-break-before: always; }
+  .paper-maze-tally { border-color: #000000; }
+  .paper-maze-key-list li { border-bottom-color: #999999; }
+}

@@ -19,16 +19,42 @@
   var MAX_ATTACHMENTS_PER_ASSET = 1000;
 
   function stripControlChars(str) {
-    return String(str == null ? '' : str).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return String(str == null ? '' : str).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g, '');
   }
 
   function looksLikeActiveMarkup(bytes) {
     if (!bytes || bytes.byteLength < 4) return false;
-    var start = (bytes.byteLength >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) ? 3 : 0;
-    var limit = Math.min(bytes.byteLength, start + 64);
+    var start = 0;
+    if (bytes.byteLength >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+      start = 3;
+    } else if (bytes.byteLength >= 2 && ((bytes[0] === 0xFF && bytes[1] === 0xFE) || (bytes[0] === 0xFE && bytes[1] === 0xFF))) {
+      // UTF-16 BOM: collapse non-zero ASCII bytes in prefix to inspect for markup
+      var utf16Limit = Math.min(bytes.byteLength, 512);
+      var utf16Head = '';
+      for (var u = 2; u < utf16Limit; u++) {
+        if (bytes[u] !== 0) utf16Head += String.fromCharCode(bytes[u]);
+      }
+      if (/^\s*(?:<!--[\s\S]*?-->\s*)*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b|<iframe\b|<object\b|<embed\b|<math\b|<body\b|<style\b|<foreignobject\b)/i.test(utf16Head)) {
+        return true;
+      }
+      start = 2;
+    }
+    var limit = Math.min(bytes.byteLength, start + 512);
     var head = '';
     for (var i = start; i < limit; i++) head += String.fromCharCode(bytes[i]);
-    return /^\s*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b|<iframe\b|<object\b|<embed\b)/i.test(head);
+    return /^\s*(?:<!--[\s\S]*?-->\s*)*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b|<iframe\b|<object\b|<embed\b|<math\b|<body\b|<style\b|<foreignobject\b)/i.test(head);
+  }
+
+  function getSourceByteLength(bytes) {
+    if (!bytes) return -1;
+    if (bytes instanceof Uint8Array) return bytes.byteLength;
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(bytes)) return bytes.byteLength;
+    if (ArrayBuffer.isView(bytes)) return bytes.byteLength;
+    try {
+      var len = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'byteLength').get.call(bytes);
+      if (typeof len === 'number' && Number.isFinite(len) && len >= 0) return len;
+    } catch (_) {}
+    return -1;
   }
 
   function matchesMagicBytes(bytes, mimeType) {
@@ -49,14 +75,26 @@
 
   function cloneBytes(bytes) {
     if (!bytes) return null;
-    if (bytes instanceof Uint8Array) return new Uint8Array(bytes);
-    if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(bytes)) return new Uint8Array(bytes);
+    if (bytes instanceof Uint8Array) {
+      var copy = new Uint8Array(bytes.byteLength);
+      copy.set(bytes);
+      return copy;
+    }
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(bytes)) {
+      var bufCopy = new Uint8Array(bytes.byteLength);
+      bufCopy.set(bytes);
+      return bufCopy;
+    }
     if (ArrayBuffer.isView(bytes)) {
-      return new Uint8Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+      var view = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      var viewCopy = new Uint8Array(bytes.byteLength);
+      viewCopy.set(view);
+      return viewCopy;
     }
-    if (bytes instanceof ArrayBuffer || Object.prototype.toString.call(bytes) === '[object ArrayBuffer]') {
-      return new Uint8Array(bytes.slice(0));
-    }
+    try {
+      var sliced = ArrayBuffer.prototype.slice.call(bytes, 0);
+      return new Uint8Array(sliced);
+    } catch (_) {}
     return null;
   }
 
@@ -97,6 +135,7 @@
     var maxTotalBytes = Number.isInteger(opts.maxTotalBytes) && opts.maxTotalBytes > 0 ? opts.maxTotalBytes : DEFAULT_MAX_TOTAL_BYTES;
     var createId = typeof opts.createId === 'function' ? opts.createId : createDefaultId;
     var now = typeof opts.now === 'function' ? opts.now : function () { return new Date().toISOString(); };
+    var verifyMagicBytes = opts.verifyMagicBytes === true;
     var records = new Map();
     var totalBytes = 0;
 
@@ -109,13 +148,17 @@
 
     function importAsset(input) {
       var value = input || {};
+      var sourceLength = getSourceByteLength(value.bytes);
+      if (sourceLength <= 0) throw new Error('Asset bytes are required');
+      if (sourceLength > maxAssetBytes) throw new Error('Asset exceeds the per-asset byte limit');
+      if (records.size >= maxAssets) throw new Error('Managed asset count limit reached');
+      if (totalBytes + sourceLength > maxTotalBytes) throw new Error('Managed asset total byte limit reached');
+      if (MIME_TYPES.indexOf(value.mimeType) === -1) throw new Error('Unsupported managed asset MIME type');
       var bytes = cloneBytes(value.bytes);
       if (!bytes || !bytes.byteLength) throw new Error('Asset bytes are required');
       if (bytes.byteLength > maxAssetBytes) throw new Error('Asset exceeds the per-asset byte limit');
-      if (records.size >= maxAssets) throw new Error('Managed asset count limit reached');
       if (totalBytes + bytes.byteLength > maxTotalBytes) throw new Error('Managed asset total byte limit reached');
-      if (MIME_TYPES.indexOf(value.mimeType) === -1) throw new Error('Unsupported managed asset MIME type');
-      if (looksLikeActiveMarkup(bytes) || (opts.verifyMagicBytes === true && !matchesMagicBytes(bytes, value.mimeType))) {
+      if (looksLikeActiveMarkup(bytes) || (verifyMagicBytes && !matchesMagicBytes(bytes, value.mimeType))) {
         throw new Error('Asset bytes do not match the declared raster MIME type');
       }
       var hasForbiddenField = Object.keys(value).some(function (k) {
@@ -229,7 +272,7 @@
   });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.AgentCoreManagedAssetStore = API;
   }

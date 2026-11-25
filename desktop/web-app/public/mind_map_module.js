@@ -33,6 +33,18 @@
 (function () {
   'use strict';
   if (typeof window === 'undefined') return;
+  // WCAG 2.2 AA: Scoped accessibility CSS for Throughline / Learning Web dialogs
+  if (typeof document !== 'undefined' && document.head && typeof document.createElement === 'function' && typeof document.getElementById === 'function' && !document.getElementById('allo-mindmap-a11y-css')) {
+    var mmA11yStyle = document.createElement('style');
+    mmA11yStyle.id = 'allo-mindmap-a11y-css';
+    mmA11yStyle.textContent = [
+      '[role="dialog"][aria-label="Learning Web: Unit Path"] button, [role="dialog"][aria-label="Learning Web: Unit Path"] input, [role="dialog"][aria-label="Learning Web: Unit Path"] select, [role="dialog"][aria-label="Learning Web: Unit Path"] textarea, [role="dialog"][aria-label="Learning Web: Unit Path"] [role="button"], [role="dialog"][aria-label="Learning Web: Unit Path"] [role="group"][tabindex="0"], [data-throughline-confirm] button { touch-action: manipulation; }',
+      '[role="dialog"][aria-label="Learning Web: Unit Path"] button:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] input:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] select:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] textarea:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] [tabindex]:focus-visible, [data-throughline-confirm] button:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [role="dialog"][aria-label="Learning Web: Unit Path"] button:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] input:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] select:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] textarea:focus-visible, [role="dialog"][aria-label="Learning Web: Unit Path"] [tabindex]:focus-visible, [data-throughline-confirm] button:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [role="dialog"][aria-label="Learning Web: Unit Path"], [role="dialog"][aria-label="Learning Web: Unit Path"] *, [data-throughline-confirm], [data-throughline-confirm] * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(mmA11yStyle);
+  }
   // Blocked host fns are truthy; ask the host (old-host fallback).
   function _mmAiUsable(fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
@@ -2647,13 +2659,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       style: { background: '#eef2ff', borderBottom: '1px solid #c7d2fe', padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }
     },
       h('span', { style: { fontSize: 12, fontWeight: 800, color: '#3730a3' } }, t('throughline.edge_choose') || 'Connect these lessons as:'),
-      h('button', { autoFocus: true, onClick: function () { resolvePendingEdge('sequence'); },
+      h('button', { type: 'button', autoFocus: true, onClick: function () { resolvePendingEdge('sequence'); },
         style: { fontSize: 12, fontWeight: 800, padding: '5px 12px', borderRadius: 7, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer' } },
         '→ ' + (t('throughline.edge_sequence') || 'Teach next (sequence)')),
-      h('button', { onClick: function () { resolvePendingEdge('prerequisite'); },
+      h('button', { type: 'button', onClick: function () { resolvePendingEdge('prerequisite'); },
         style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, border: '1px solid #d97706', background: '#fff', color: '#b45309', cursor: 'pointer' } },
         '⛔ ' + (t('throughline.edge_prereq') || 'Prerequisite gate')),
-      h('button', { onClick: cancelPendingEdge,
+      h('button', { type: 'button', onClick: cancelPendingEdge,
         style: { fontSize: 12, fontWeight: 700, padding: '5px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } },
         t('common.cancel') || 'Cancel')
     );
@@ -2704,7 +2716,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     var outlinePanel = showOutline && h('div', { style: { position: 'absolute', top: 0, right: 0, bottom: 0, width: 340, background: '#fff', borderLeft: '1px solid #cbd5e1', boxShadow: '-4px 0 12px rgba(15,23,42,0.06)', display: 'flex', flexDirection: 'column', zIndex: 5 } },
       h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
         h('div', { style: { fontWeight: 800, fontSize: 13, color: '#1e293b' } }, t('throughline.outline') || 'Unit Outline'),
-        h('button', { onClick: function () { setShowOutline(false); }, style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#64748b' } }, '✕')
+        h('button', { type: 'button', onClick: function () { setShowOutline(false); }, style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#64748b' } }, '✕')
       ),
       outline.hasCycle && h('div', { style: { padding: '8px 16px', fontSize: 11, color: '#92400e', background: '#fffbeb' } },
         '⚠️ ' + (t('throughline.cycle_warn') || 'This unit has a loop, so the sequence is ambiguous here. Showing left-to-right order instead.')),
@@ -2735,10 +2747,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         })
       ),
       h('div', { style: { padding: 12, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 8 } },
-        h('button', { onClick: function () { try { window.print(); } catch (e) {} },
+        h('button', { type: 'button', onClick: function () { try { window.print(); } catch (e) {} },
           style: { flex: 1, padding: '7px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', color: '#334155' } },
           '🖨 ' + (t('throughline.print') || 'Print')),
-        h('button', { onClick: function () {
+        h('button', { type: 'button', onClick: function () {
             var txt = 'UNIT OUTLINE — ' + (unit.title || 'Untitled') + (unit.essentialQuestion ? ' (“' + unit.essentialQuestion + '”)' : '') + '\n\n' +
               outline.order.map(function (nid, i) { var n = nodeById[nid]; var it = n && resolveLesson(n.lessonId); return (i + 1) + '. ' + (it ? (it.title || typeLabel(it.type)) : 'Planned lesson') + (it ? '  [' + typeLabel(it.type) + ']' : ''); }).join('\n');
             if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -2759,7 +2771,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     },
       h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
         h('div', { style: { fontWeight: 800, fontSize: 13, color: '#1e293b' } }, t('throughline.alignment_graph') || 'Standards graph'),
-        h('button', { onClick: function () { setShowAlignmentGraph(false); }, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#64748b' } }, '×')
+        h('button', { type: 'button', onClick: function () { setShowAlignmentGraph(false); }, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#64748b' } }, '×')
       ),
       h('div', { style: { padding: '10px 16px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' } },
         h('p', { style: { margin: 0, fontSize: 11, lineHeight: 1.45, color: '#475569' } }, t('throughline.alignment_graph_intro') || 'Read-only context from the exported audit graph. Only explicitly stored relationships are shown; filters do not create alignment claims.'),
@@ -2854,7 +2866,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             });
             if (list.length === 0) return h('div', { style: { padding: 24, textAlign: 'center', color: '#94a3b8', fontSize: 13 } }, t('throughline.no_lessons') || 'No matching lessons in your history.');
             return list.map(function (it) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: it.id,
                 onClick: function () {
                   if (pickerForNode === 'BULK') { bulkAddLessons([it]); }
@@ -2882,7 +2894,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 6 } }, t('throughline.add_from_unit') || 'Add a whole unit'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 withCounts.map(function (u) {
-                  return h('button', { key: u.id,
+                  return h('button', { type: 'button', key: u.id,
                     onClick: function () { bulkAddLessons(hostHistory.filter(function (it) { return it && it.unitId === u.id; })); setPickerForNode(null); setPickerQuery(''); },
                     style: { fontSize: 12, fontWeight: 600, padding: '5px 10px', borderRadius: 999, border: '1px solid #c7d2fe', background: '#eef2ff', color: '#4338ca', cursor: 'pointer' } },
                     '📁 ' + u.name + ' (' + u.n + ')');
@@ -2890,12 +2902,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               )
             );
           })(),
-          h('button', { onClick: function () { bulkAddLessons(hostHistory.slice()); setPickerForNode(null); setPickerQuery(''); },
+          h('button', { type: 'button', onClick: function () { bulkAddLessons(hostHistory.slice()); setPickerForNode(null); setPickerQuery(''); },
             style: { width: '100%', padding: 9, borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' } },
             (t('throughline.add_all') || 'Add all') + ' ' + hostHistory.length + ' ' + (t('throughline.lessons') || 'lessons'))
         ),
         h('div', { style: { padding: 10, borderTop: '1px solid #e2e8f0', textAlign: 'right' } },
-          h('button', { onClick: function () { setPickerForNode(null); setPickerQuery(''); },
+          h('button', { type: 'button', onClick: function () { setPickerForNode(null); setPickerQuery(''); },
             style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', fontSize: 13, cursor: 'pointer', color: '#475569' } }, t('common.close') || 'Close'))
       )
     );
@@ -2928,21 +2940,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             ? h('div', { style: { fontSize: 12, color: '#1e293b' } }, typeIcon(resolveLesson(editNode.lessonId).type) + ' ' + (resolveLesson(editNode.lessonId).title || typeLabel(resolveLesson(editNode.lessonId).type)))
             : h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic' } }, t('throughline.no_lesson_attached') || 'No lesson attached yet'),
           h('div', { style: { display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' } },
-            currentLesson && h('button', { onClick: function () { attachCurrentToNode(editNode.nodeId); },
+            currentLesson && h('button', { type: 'button', onClick: function () { attachCurrentToNode(editNode.nodeId); },
               style: { fontSize: 12, fontWeight: 700, padding: '6px 10px', borderRadius: 7, border: '1px solid #6366f1', background: '#eef2ff', color: '#4338ca', cursor: 'pointer' } },
               t('throughline.attach_current') || 'Attach current lesson'),
-            hostHistory.length > 0 && h('button', { onClick: function () { setEditingNode(null); setPickerForNode(editNode.nodeId); },
+            hostHistory.length > 0 && h('button', { type: 'button', onClick: function () { setEditingNode(null); setPickerForNode(editNode.nodeId); },
               style: { fontSize: 12, fontWeight: 700, padding: '6px 10px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } },
               t('throughline.pick_from_history') || 'Pick from history'),
-            editNode.lessonId && h('button', { onClick: function () { setNodeFields(editNode.nodeId, { lessonId: null, status: 'planned' }); },
+            editNode.lessonId && h('button', { type: 'button', onClick: function () { setNodeFields(editNode.nodeId, { lessonId: null, status: 'planned' }); },
               style: { fontSize: 12, padding: '6px 10px', borderRadius: 7, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer' } },
               t('throughline.detach') || 'Detach')
           )
         ),
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 14 } },
-          h('button', { onClick: function () { deleteNode(editNode.nodeId); setEditingNode(null); },
+          h('button', { type: 'button', onClick: function () { deleteNode(editNode.nodeId); setEditingNode(null); },
             style: { padding: '7px 12px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff', color: '#b91c1c', fontSize: 13, cursor: 'pointer' } }, t('throughline.remove_node') || 'Remove node'),
-          h('button', { onClick: function () { setEditingNode(null); },
+          h('button', { type: 'button', onClick: function () { setEditingNode(null); },
             style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, t('common.done') || 'Done'))
       )
     );
@@ -2963,7 +2975,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           placeholder: t('throughline.eq_ph') || 'e.g. How does Earth recycle its water?',
           style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, boxSizing: 'border-box', resize: 'vertical' } }),
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 14 } },
-          h('button', { onClick: function () { setEditingHeader(false); },
+          h('button', { type: 'button', onClick: function () { setEditingHeader(false); },
             style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, t('common.done') || 'Done'))
       )
     );
@@ -3000,8 +3012,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           field(t('throughline.gen_notes') || 'Notes for the planner (optional)', h('textarea', { 'aria-label': t('throughline.gen_notes') || 'Notes for the planner (optional)', value: inp.notes || '', rows: 2, onChange: function (e) { setInput({ notes: e.target.value }); }, placeholder: t('throughline.gen_notes_ph') || 'e.g. my class has several emerging bilingual students', style: Object.assign({}, inStyle, { resize: 'vertical' }) }))
         );
         footer = h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
-          h('button', { onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'),
-          h('button', { onClick: proposeStructure, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, (t('throughline.gen_propose') || 'Propose structure') + ' →')
+          h('button', { type: 'button', onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'),
+          h('button', { type: 'button', onClick: proposeStructure, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, (t('throughline.gen_propose') || 'Propose structure') + ' →')
         );
       } else if (phase === 'proposing') {
         headline = '✨ ' + (t('throughline.gen_drafting') || 'Drafting a unit structure');
@@ -3012,7 +3024,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 6 } }, t('throughline.gen_one_call') || 'One AI call — your lessons are not built yet.')
         );
         footer = h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
-          h('button', { onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'));
+          h('button', { type: 'button', onClick: closeGenerate, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, t('common.cancel') || 'Cancel'));
       } else if (phase === 'review' && proposal) {
         var calls = estimateCalls(proposal);
         headline = '📋 ' + (t('throughline.gen_review_title') || 'Review the plan');
@@ -3051,9 +3063,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
                 h('span', { style: { fontWeight: 800, color: '#6366f1', fontSize: 13, minWidth: 20 } }, (i + 1) + '.'),
                 h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ' ' + (t('throughline.title_label') || 'title'), value: l.title || '', onChange: function (e) { patchLessonSpec(i, { title: e.target.value }); }, style: Object.assign({}, inStyle, { flex: 1, fontWeight: 700 }) }),
-                h('button', { onClick: function () { moveLessonSpec(i, -1); }, disabled: i === 0, title: t('throughline.move_up') || 'Move up', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === 0 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↑'),
-                h('button', { onClick: function () { moveLessonSpec(i, 1); }, disabled: i === proposal.lessons.length - 1, title: t('throughline.move_down') || 'Move down', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === proposal.lessons.length - 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↓'),
-                h('button', { onClick: function () { removeLessonSpec(i); }, disabled: proposal.lessons.length <= 1, title: t('throughline.gen_remove_lesson') || 'Remove lesson', style: { border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 6, cursor: proposal.lessons.length <= 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#b91c1c' } }, '✕')
+                h('button', { type: 'button', onClick: function () { moveLessonSpec(i, -1); }, disabled: i === 0, title: t('throughline.move_up') || 'Move up', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === 0 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↑'),
+                h('button', { type: 'button', onClick: function () { moveLessonSpec(i, 1); }, disabled: i === proposal.lessons.length - 1, title: t('throughline.move_down') || 'Move down', style: { border: '1px solid #cbd5e1', background: '#fff', borderRadius: 6, cursor: i === proposal.lessons.length - 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#475569' } }, '↓'),
+                h('button', { type: 'button', onClick: function () { removeLessonSpec(i); }, disabled: proposal.lessons.length <= 1, title: t('throughline.gen_remove_lesson') || 'Remove lesson', style: { border: '1px solid #fecaca', background: '#fef2f2', borderRadius: 6, cursor: proposal.lessons.length <= 1 ? 'not-allowed' : 'pointer', padding: '4px 7px', color: '#b91c1c' } }, '✕')
               ),
               h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ': ' + (t('throughline.gen_objective_ph') || 'Measurable objective'), value: l.objective || '', onChange: function (e) { patchLessonSpec(i, { objective: e.target.value }); }, placeholder: t('throughline.gen_objective_ph') || 'Measurable objective', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
               h('input', { 'aria-label': (t('throughline.lesson_label') || 'Lesson') + ' ' + (i + 1) + ': ' + (t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson'), value: l.focus || '', onChange: function (e) { patchLessonSpec(i, { focus: e.target.value }); }, placeholder: t('throughline.gen_focus_ph') || 'One-line focus that steers every resource in this lesson', style: Object.assign({}, inStyle, { marginBottom: 6, fontSize: 12 }) }),
@@ -3062,21 +3074,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 // will actually generate is visible and can be toggled off
                 RESOURCE_TYPE_OPTIONS.concat((l.suggestedResourceTypes || []).filter(function (rt) { return RESOURCE_TYPE_OPTIONS.indexOf(rt) < 0; })).map(function (rt) {
                   var on = (l.suggestedResourceTypes || []).indexOf(rt) >= 0;
-                  return h('button', { key: rt, onClick: function () { toggleLessonType(i, rt); }, 'aria-pressed': on, 'aria-label': typeLabel(rt) + (on ? ' — ' + (t('throughline.selected') || 'selected') : ''),
+                  return h('button', { type: 'button', key: rt, onClick: function () { toggleLessonType(i, rt); }, 'aria-pressed': on, 'aria-label': typeLabel(rt) + (on ? ' — ' + (t('throughline.selected') || 'selected') : ''),
                     title: rt, style: { fontSize: 11, padding: '3px 8px', borderRadius: 999, cursor: 'pointer', border: '1px solid ' + (on ? '#4338ca' : '#e2e8f0'), background: on ? '#4f46e5' : '#fff', color: on ? '#fff' : '#64748b', fontWeight: on ? 700 : 500 } },
                     typeIcon(rt) + ' ' + typeLabel(rt));
                 })
               )
             );
           }),
-          proposal.lessons.length < 8 && h('button', { onClick: addLessonSpec, style: { marginTop: 4, padding: '7px 12px', borderRadius: 8, border: '1px dashed #c7d2fe', background: '#f8fafc', color: '#4338ca', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '➕ ' + (t('throughline.gen_add_lesson') || 'Add a lesson')),
+          proposal.lessons.length < 8 && h('button', { type: 'button', onClick: addLessonSpec, style: { marginTop: 4, padding: '7px 12px', borderRadius: 8, border: '1px dashed #c7d2fe', background: '#f8fafc', color: '#4338ca', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '➕ ' + (t('throughline.gen_add_lesson') || 'Add a lesson')),
           h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 14, fontSize: 12, color: '#475569', cursor: 'pointer' } },
             h('input', { type: 'checkbox', checked: !!gen.autoContinue, onChange: function (e) { setGenMerge({ autoContinue: e.target.checked }); } }),
             (t('throughline.gen_auto') || 'Build all lessons without pausing for me (still paced between calls)'))
         );
         footer = h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
-          h('button', { onClick: function () { setGenMerge({ phase: 'setup' }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, '← ' + (t('common.back') || 'Back')),
-          h('button', { onClick: startGeneration, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(90deg,#7c3aed,#4f46e5)', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '✨ ' + (t('throughline.gen_build') || 'Build') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons'))
+          h('button', { type: 'button', onClick: function () { setGenMerge({ phase: 'setup' }); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', fontSize: 13, cursor: 'pointer' } }, '← ' + (t('common.back') || 'Back')),
+          h('button', { type: 'button', onClick: startGeneration, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: 'linear-gradient(90deg,#7c3aed,#4f46e5)', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '✨ ' + (t('throughline.gen_build') || 'Build') + ' ' + proposal.lessons.length + ' ' + (t('throughline.lessons') || 'lessons'))
         );
       } else if ((phase === 'generating' || phase === 'done') && proposal) {
         var lessons = proposal.lessons;
@@ -3125,21 +3137,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   (r.status === 'error' && r.error ? ' — ' + r.error : '')
                 )
               ),
-              (phase === 'done' && r.status === 'done' && r.nodeId && onOpenLesson) && h('button', { onClick: function () { var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === r.nodeId) nd = n; }); if (nd) openNodeLesson(nd); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 6, border: '1px solid #6366f1', background: '#eef2ff', color: '#4338ca', cursor: 'pointer', whiteSpace: 'nowrap' } }, (t('throughline.open_lesson') || 'Open') + ' ↗')
+              (phase === 'done' && r.status === 'done' && r.nodeId && onOpenLesson) && h('button', { type: 'button', onClick: function () { var nd = null; unit.nodes.forEach(function (n) { if (n.nodeId === r.nodeId) nd = n; }); if (nd) openNodeLesson(nd); }, style: { fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 6, border: '1px solid #6366f1', background: '#eef2ff', color: '#4338ca', cursor: 'pointer', whiteSpace: 'nowrap' } }, (t('throughline.open_lesson') || 'Open') + ' ↗')
             );
           })),
           // pacing countdown
           (phase === 'generating' && gen.pacing > 0) && h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 10px', marginTop: 6, fontSize: 12, color: '#92400e', fontWeight: 600 } },
             h('span', null, '⏸ ' + (t('throughline.gen_pacing') || 'Pausing') + ' ' + gen.pacing + 's ' + (t('throughline.gen_pacing_why') || 'to respect rate limits…')),
-            h('button', { onClick: continueNow, style: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 6, border: '1px solid #f59e0b', background: '#fff', color: '#b45309', cursor: 'pointer' } }, t('throughline.gen_continue_now') || 'Continue now')),
+            h('button', { type: 'button', onClick: continueNow, style: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 6, border: '1px solid #f59e0b', background: '#fff', color: '#b45309', cursor: 'pointer' } }, t('throughline.gen_continue_now') || 'Continue now')),
           // backpressure / review gate
           (phase === 'generating' && gen.awaiting >= 0) && h('div', { role: 'status', style: { background: gateBg, border: '1px solid ' + gateBorder, borderRadius: 8, padding: '10px', marginTop: 6 } },
             h('div', { style: { fontSize: 12, fontWeight: 700, color: gateTextColor, marginBottom: 8 } }, gateText),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('button', { onClick: function () { resolveDecision('accept'); }, style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? 'none' : '1px solid #cbd5e1', background: gateOk ? '#4f46e5' : '#fff', color: gateOk ? '#fff' : '#475569', cursor: 'pointer' } }, gateOk ? ('✓ ' + (t('throughline.gen_accept') || 'Accept & continue')) : ('→ ' + (t('throughline.gen_continue_without') || 'Continue without it'))),
-              h('button', { onClick: function () { resolveDecision('regenerate'); }, style: { fontSize: 12, fontWeight: gateOk ? 700 : 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? '1px solid #c7d2fe' : 'none', background: gateOk ? '#fff' : '#4f46e5', color: gateOk ? '#4338ca' : '#fff', cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_regen') || 'Regenerate')),
-              h('button', { onClick: function () { resolveDecision('skip'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } }, '⤼ ' + (t('throughline.gen_skip') || 'Skip')),
-              h('button', { onClick: function () { resolveDecision('stop'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer' } }, (t('throughline.gen_finish_here') || 'Finish here'))
+              h('button', { type: 'button', onClick: function () { resolveDecision('accept'); }, style: { fontSize: 12, fontWeight: 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? 'none' : '1px solid #cbd5e1', background: gateOk ? '#4f46e5' : '#fff', color: gateOk ? '#fff' : '#475569', cursor: 'pointer' } }, gateOk ? ('✓ ' + (t('throughline.gen_accept') || 'Accept & continue')) : ('→ ' + (t('throughline.gen_continue_without') || 'Continue without it'))),
+              h('button', { type: 'button', onClick: function () { resolveDecision('regenerate'); }, style: { fontSize: 12, fontWeight: gateOk ? 700 : 800, padding: '6px 12px', borderRadius: 7, border: gateOk ? '1px solid #c7d2fe' : 'none', background: gateOk ? '#fff' : '#4f46e5', color: gateOk ? '#4338ca' : '#fff', cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_regen') || 'Regenerate')),
+              h('button', { type: 'button', onClick: function () { resolveDecision('skip'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' } }, '⤼ ' + (t('throughline.gen_skip') || 'Skip')),
+              h('button', { type: 'button', onClick: function () { resolveDecision('stop'); }, style: { fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer' } }, (t('throughline.gen_finish_here') || 'Finish here'))
             )
           ),
           phase === 'generating' && h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 12, color: '#475569', cursor: 'pointer' } },
@@ -3151,11 +3163,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 
         footer = phase === 'done'
           ? h('div', { style: { display: 'flex', justifyContent: failedN ? 'space-between' : 'flex-end', gap: 8 } },
-              failedN ? h('button', { onClick: retryFailed, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_retry_failed') || 'Retry failed') + ' (' + failedN + ')') : null,
-              h('button', { onClick: closeGenerate, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, t('throughline.gen_open_unit') || 'Open the unit'))
+              failedN ? h('button', { type: 'button', onClick: retryFailed, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '↻ ' + (t('throughline.gen_retry_failed') || 'Retry failed') + ' (' + failedN + ')') : null,
+              h('button', { type: 'button', onClick: closeGenerate, style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, t('throughline.gen_open_unit') || 'Open the unit'))
           : h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
               h('div', { style: { fontSize: 11, color: '#94a3b8', alignSelf: 'center' } }, t('throughline.gen_safe_note') || 'Lessons already built stay in your unit.'),
-              h('button', { onClick: function () { stopGeneration(); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '■ ' + (t('throughline.gen_stop') || 'Stop')));
+              h('button', { type: 'button', onClick: function () { stopGeneration(); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff', color: '#b91c1c', fontWeight: 700, fontSize: 13, cursor: 'pointer' } }, '■ ' + (t('throughline.gen_stop') || 'Stop')));
       } else {
         body = null; footer = null; headline = ''; sub = '';
       }
@@ -3178,7 +3190,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             h('div', { style: { flex: 1 } },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#1e293b' } }, headline),
               sub && h('div', { style: { fontSize: 12, color: '#64748b', marginTop: 2, lineHeight: 1.45 } }, sub)),
-            h('button', { onClick: onOverlayClose, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#475569', padding: 2 } }, '✕')
+            h('button', { type: 'button', onClick: onOverlayClose, 'aria-label': t('common.close') || 'Close', style: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#475569', padding: 2 } }, '✕')
           ),
           h('div', { style: { padding: 18, overflow: 'auto', flex: 1 } }, body),
           footer && h('div', { style: { padding: '12px 18px', borderTop: '1px solid #e2e8f0', background: '#f8fafc' } }, footer)
@@ -3208,14 +3220,14 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             graph3dIsAlignment
               ? (t('throughline.alignment_graph_3d_controls') || 'Drag to orbit · scroll to zoom · choose a node for details. The same reading order remains available without WebGL.')
               : (t('throughline.view_3d_controls') || 'Drag to orbit · scroll to zoom · depth = strand. A reading-order outline stays available to screen readers.'))),
-        (!graph3dIsAlignment && _mmAiUsable(window.callGemini)) && h('button', {
+        (!graph3dIsAlignment && _mmAiUsable(window.callGemini)) && h('button', { type: 'button',
           onClick: arrange3DByMeaning, disabled: aiBusy || cg3dState !== 'ready',
           title: t('throughline.ai_arrange_title') || 'Use AI to position lessons by meaning: left→right = sequence, up = cognitive depth, depth = strand',
           style: { fontSize: 12, fontWeight: 800, minHeight: 44, padding: '8px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
             background: (aiBusy || cg3dState !== 'ready') ? '#334155' : 'linear-gradient(90deg,#7c3aed,#4f46e5)',
             color: '#fff', cursor: (aiBusy || cg3dState !== 'ready') ? 'default' : 'pointer' }
         }, aiBusy ? ('… ' + (t('throughline.ai_arranging') || 'Arranging')) : ('✨ ' + (t('throughline.ai_arrange') || 'Arrange by meaning'))),
-        h('button', { onClick: close3D, 'aria-label': t('common.close') || 'Close',
+        h('button', { type: 'button', onClick: close3D, 'aria-label': t('common.close') || 'Close',
           style: { border: 'none', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 18, padding: 4 } }, '✕')
       ),
       h('div', { style: { flex: 1, position: 'relative', minHeight: 0 } },

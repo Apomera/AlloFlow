@@ -51,11 +51,14 @@ describe('the premise: the box is shown to these roles', () => {
 
   it('all three builders accept and interpolate customAdditions', () => {
     for (const fn of ['buildParentGuidePrompt', 'buildStudyGuidePrompt']) {
-      const i = prompts.indexOf('const ' + fn + ' = ({');
+      // Builders now take (opts) and destructure inside.
+      const i = prompts.indexOf('const ' + fn + ' = (opts) => {');
       expect(i).toBeGreaterThan(-1);
       const body = prompts.slice(i, i + 3000);
       expect(body).toContain('customAdditions');
-      expect(body).toContain('const hasCustom = customAdditions && customAdditions.trim().length > 0;');
+      expect(body).toContain("const rawCustom = typeof customAdditions === 'string' ? customAdditions : '';");
+      expect(body).toContain('const hasCustom = rawCustom.trim().length > 0;');
+      expect(body).toContain('<UNTRUSTED_USER_REQUESTS>USER CUSTOM REQUESTS: "${cleanCustom}"</UNTRUSTED_USER_REQUESTS>');
     }
   });
 });
@@ -93,19 +96,21 @@ describe('the dispatcher path already passed it, and still does', () => {
 
 describe('the instruction label names who actually asked', () => {
   it('the study guide does not attribute the learner\'s own request to a teacher', () => {
-    const i = prompts.indexOf('const buildStudyGuidePrompt = ({');
+    const i = prompts.indexOf('const buildStudyGuidePrompt = (opts) => {');
+    expect(i).toBeGreaterThan(-1);
     const body = prompts.slice(i, i + 3000);
     expect(body).not.toContain('TEACHER REQUESTS');
   });
 
   it('the family guide does not attribute the caregiver\'s request to a teacher', () => {
-    const i = prompts.indexOf('const buildParentGuidePrompt = ({');
+    const i = prompts.indexOf('const buildParentGuidePrompt = (opts) => {');
+    expect(i).toBeGreaterThan(-1);
     const body = prompts.slice(i, i + 3000);
     expect(body).not.toContain('TEACHER REQUESTS');
   });
 
   it('the teacher lesson plan keeps its own wording', () => {
-    const i = prompts.indexOf('const buildLessonPlanPrompt = ({');
+    const i = prompts.indexOf('const buildLessonPlanPrompt = (opts) => {');
     expect(i).toBeGreaterThan(-1);
     const body = prompts.slice(i, i + 6000);
     // It already used the role-neutral wording; the two guide builders were

@@ -5,9 +5,11 @@
 (function () {
   'use strict';
 
+  var MAX_SNAPSHOT_BYTES = 512 * 1024;
+
   function getAdapterModule(injected) {
     if (injected) return injected;
-    return typeof window !== 'undefined' && window.AlloModules
+    return typeof window === 'object' && window && window.AlloModules
       ? window.AlloModules.AgentCoreOpenAIMediaAdapter : null;
   }
 
@@ -17,16 +19,32 @@
     return error;
   }
 
-  function isBrowserMediaAiBlocked() {
-    if (typeof window === 'undefined' || !window) return false;
-    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return true;
-    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
-    if (window.__alloQrStudentMode) {
-      if (typeof window.__alloAiUsable === 'function') {
-        try { return !window.__alloAiUsable('imageGeneration'); } catch (_) { return true; }
-      }
-      return true;
+  function cloneSnapshot(requestInput) {
+    if (!requestInput || typeof requestInput !== 'object') return requestInput;
+    var serialized;
+    try { serialized = JSON.stringify(requestInput); }
+    catch (_) { throw runtimeError('invalid-media-request', 'Media request must be acyclic JSON-serializable data.'); }
+    if (typeof serialized !== 'string' || serialized.length > MAX_SNAPSHOT_BYTES) {
+      throw runtimeError('invalid-media-request', 'Media request exceeds the maximum snapshot size limit.');
     }
+    return JSON.parse(serialized, function (key, val) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return val;
+    });
+  }
+
+  function isBrowserMediaAiBlocked() {
+    if (typeof window !== 'object' || !window) return false;
+    if (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__alloStudentAiDisabled === true ||
+      window.__alloStudentView === true ||
+      window.__alloAiSecretsLocked === true ||
+      window._alloQrBlocked === true ||
+      Boolean(window.__alloQrStudentMode)
+    ) return true;
+    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
     if (typeof window.__alloAiUsable === 'function') {
       try { return !window.__alloAiUsable('imageGeneration'); } catch (_) { return true; }
     }
@@ -52,7 +70,8 @@
           provider: base.providerId
         };
       }
-      var plan = base.prepare(requestInput);
+      var safeInput = cloneSnapshot(requestInput);
+      var plan = base.prepare(safeInput);
       var needsAltText = !!(plan && plan.request && plan.request.accessibility && plan.request.accessibility.altTextRequired);
       if (plan && plan.ready && needsAltText && !hasCreateAltText) {
         return {
@@ -67,10 +86,7 @@
     }
 
     async function execute(requestInput) {
-      var snapshot = requestInput;
-      if (requestInput && typeof requestInput === 'object') {
-        try { snapshot = JSON.parse(JSON.stringify(requestInput)); } catch (_) { snapshot = requestInput; }
-      }
+      var snapshot = cloneSnapshot(requestInput);
       var plan = prepare(snapshot);
       if (!plan || !plan.ready) throw runtimeError((plan && plan.code) || 'preflight-failed', 'Guarded OpenAI media preflight did not authorize execution.');
       var result = await base.execute(snapshot);
@@ -88,12 +104,12 @@
       };
     }
 
-    return { prepare: prepare, execute: execute, providerId: base.providerId, model: base.model };
+    return Object.freeze({ prepare: prepare, execute: execute, providerId: base.providerId, model: base.model });
   }
 
-  var API = { createGuardedOpenAIMediaAdapter: createGuardedOpenAIMediaAdapter };
+  var API = Object.freeze({ createGuardedOpenAIMediaAdapter: createGuardedOpenAIMediaAdapter });
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.AgentCoreOpenAIMediaRuntime = API;
   }

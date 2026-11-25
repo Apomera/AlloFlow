@@ -11,12 +11,26 @@
 
   var SCHEMA_VERSION = '1.0';
   var ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
-  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|passphrase|(?:^|[_-])(?:authorization|cookie)$/i;
-  var CAMEL_SECRET_FIELD_RE = /(?:^|[a-z])(?:Access|Refresh|Session|Auth|Bearer|Id|Api|Client|Private|Signing|Encryption)Key$|^(?:access|refresh|session|auth|bearer|id|api|client|private|signing|encryption)Key$|(?:^|[a-z])(?:Client|Api|App|Jwt|Webhook|Signing)Secret$|^(?:client|api|app|jwt|webhook|signing)Secret$|^privateKey$/;
-  var ABSOLUTE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/;
+  var SECRET_FIELD_RE = /(?:^|[_-])(?:api|private)?key$|token|secret|password|passwd|credential|passphrase|privatekey|bearer|(?:^|[_-])(?:authorization|authorizationheader|cookie|sessioncookie)$/i;
+  var CAMEL_SECRET_FIELD_RE = /(?:^|[a-z])(?:Access|Refresh|Session|Auth|Bearer|Id|Api|Client|Private|Signing|Encryption)Key$|^(?:access|refresh|session|auth|bearer|id|api|client|private|signing|encryption)Key$|(?:^|[a-z])(?:Client|Api|App|Jwt|Webhook|Signing)Secret$|^(?:client|api|app|jwt|webhook|signing)Secret$|^privateKey$|^authorizationHeader$|^sessionCookie$/;
+  var ABSOLUTE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/|file:\/\/)/i;
   var MAX_ITEMS = 500;
   var MAX_SCAN_NODES = 10000;
   var MAX_SCAN_ERRORS = 100;
+
+  function roundUsd(value) {
+    return Math.round(value * 1e6) / 1e6;
+  }
+
+  function isPrototypeKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  function hasStructuralScanError(errors) {
+    return errors.some(function (e) {
+      return e && (e.code === 'cyclic-payload' || e.code === 'payload-too-deep' || e.code === 'payload-too-large');
+    });
+  }
 
   function plannerError(code, path, message) {
     return { code: code, path: path, message: message };
@@ -24,7 +38,7 @@
 
   function getContracts(injected) {
     if (injected) return injected;
-    return typeof window !== 'undefined' && window.AlloModules
+    return typeof window === 'object' && window && window.AlloModules
       ? window.AlloModules.AgentCoreMediaContracts : null;
   }
 
@@ -48,11 +62,11 @@
       return;
     }
     ctx.visited.add(value);
-    var keys = Array.isArray(value) ? value.map(function (_, i) { return i; }) : Object.keys(value);
+    var keys = Object.keys(value);
     for (var i = 0; i < keys.length && errors.length < MAX_SCAN_ERRORS; i++) {
       var key = keys[i];
       var childPath = path ? path + '.' + key : String(key);
-      if (typeof key === 'string' && (key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+      if (typeof key === 'string' && isPrototypeKey(key)) {
         errors.push(plannerError('unsafe-key', childPath, 'Prototype-polluting key "' + key + '" is not allowed in media plans.'));
         continue;
       }
@@ -76,8 +90,11 @@
       return { ok: false, errors: [plannerError('not-an-object', '', 'MediaBatchPlan must be an object.')], value: null };
     }
     scanUnsafe(input, '', errors, 0);
+    if (hasStructuralScanError(errors)) {
+      return { ok: false, errors: errors, value: null };
+    }
     if (input.schemaVersion !== SCHEMA_VERSION) errors.push(plannerError('unsupported-version', 'schemaVersion', 'Expected schemaVersion "1.0".'));
-    if (typeof input.planId !== 'string' || !ID_RE.test(input.planId)) errors.push(plannerError('bad-plan-id', 'planId', 'planId is invalid.'));
+    if (typeof input.planId !== 'string' || !ID_RE.test(input.planId) || isPrototypeKey(input.planId)) errors.push(plannerError('bad-plan-id', 'planId', 'planId is invalid.'));
     if (!Array.isArray(input.requests) || !input.requests.length || input.requests.length > MAX_ITEMS) {
       errors.push(plannerError('bad-requests', 'requests', 'requests must contain 1 to ' + MAX_ITEMS + ' MediaRequests.'));
     }
@@ -168,15 +185,17 @@
     }
     var estimate;
     try {
-      estimate = estimateOperation({ role: role, selection: selection, request: request });
+      var selClone = Object.assign({}, selection);
+      var reqClone = JSON.parse(JSON.stringify(request));
+      estimate = estimateOperation({ role: role, selection: selClone, request: reqClone });
     } catch (_) {
       return { ok: false, code: 'pricing-estimate-invalid', message: 'Runtime estimator threw an error while calculating bounds.' };
     }
-    if (!estimate || !Number.isFinite(estimate.upperBoundUsd) || estimate.upperBoundUsd < 0 ||
-        !Number.isInteger(estimate.operations) || estimate.operations < 1) {
+    if (!estimate || !Number.isFinite(estimate.upperBoundUsd) || estimate.upperBoundUsd < 0 || estimate.upperBoundUsd > 1e9 ||
+        !Number.isInteger(estimate.operations) || estimate.operations < 1 || estimate.operations > 1000000) {
       return { ok: false, code: 'pricing-estimate-invalid', message: 'Runtime estimator returned an invalid cost or operation bound.' };
     }
-    return { ok: true, upperBoundUsd: estimate.upperBoundUsd, operations: estimate.operations, currency: 'USD' };
+    return { ok: true, upperBoundUsd: roundUsd(estimate.upperBoundUsd), operations: estimate.operations, currency: 'USD' };
   }
 
   function fallbackSuggestions(request, inventory) {
@@ -205,13 +224,21 @@
       throw new Error('AgentCoreMediaContracts is required');
     }
     var batchReport = validateBatch(input, contracts);
-    var inventoryReport = contracts.validateProviderInventory(inventoryInput);
+    var invScanErrors = [];
+    if (inventoryInput && typeof inventoryInput === 'object') {
+      scanUnsafe(inventoryInput, 'inventory', invScanErrors, 0);
+    }
+    var inventoryReport = hasStructuralScanError(invScanErrors)
+      ? { ok: false, errors: [], value: null }
+      : contracts.validateProviderInventory(inventoryInput);
     var errors = batchReport.ok ? [] : batchReport.errors.slice();
-    if (!inventoryReport.ok) errors = errors.concat(inventoryReport.errors.map(function (item) {
+    if (invScanErrors.length) errors = errors.concat(invScanErrors);
+    if (!inventoryReport.ok) errors = errors.concat((inventoryReport.errors || []).map(function (item) {
       return plannerError(item.code, 'inventory.' + item.path, item.message);
     }));
     if (errors.length) {
-      return { schemaVersion: SCHEMA_VERSION, planId: input && input.planId || '', status: 'invalid', ready: false, errors: errors, items: [] };
+      var safePlanId = (input && typeof input.planId === 'string') ? stripControlAndBidi(input.planId).slice(0, 128) : '';
+      return { schemaVersion: SCHEMA_VERSION, planId: safePlanId, status: 'invalid', ready: false, errors: errors, items: [] };
     }
 
     var estimateOperation = options && options.estimateOperation;
@@ -278,16 +305,16 @@
         return;
       }
 
-      var itemCost = imageEstimate.upperBoundUsd + altEstimate.upperBoundUsd;
+      var itemCost = roundUsd(imageEstimate.upperBoundUsd + altEstimate.upperBoundUsd);
       var itemOperations = imageEstimate.operations + altEstimate.operations;
-      if (itemCost > request.providerPolicy.maxCostUsd) {
+      if (itemCost > roundUsd(request.providerPolicy.maxCostUsd)) {
         issues.push(plannerError('request-cost-limit-exceeded', 'providerPolicy.maxCostUsd', 'Planned operations exceed this request cost limit.'));
       }
       if (itemOperations > request.providerPolicy.maxOperations) {
         issues.push(plannerError('request-operation-limit-exceeded', 'providerPolicy.maxOperations', 'Planned operations exceed this request operation limit.'));
       }
       if (issues.length) hasBlocked = true;
-      totalCost += itemCost;
+      totalCost = roundUsd(totalCost + itemCost);
       totalOperations += itemOperations;
       items.push({
         requestId: request.requestId,
@@ -301,7 +328,7 @@
     });
 
     var batchIssues = [];
-    if (totalCost > batchReport.value.batchPolicy.maxCostUsd) {
+    if (totalCost > roundUsd(batchReport.value.batchPolicy.maxCostUsd)) {
       batchIssues.push(plannerError('batch-cost-limit-exceeded', 'batchPolicy.maxCostUsd', 'Aggregate plan cost exceeds the batch limit.'));
       hasBlocked = true;
     }
@@ -370,12 +397,12 @@
           operation: entry && entry.sourceAsset ? 'edit' : 'generate',
           prompt: prompt.slice(0, 8000),
           purpose: 'glossary-illustration:' + term.slice(0, 150),
-          output: output,
+          output: Object.assign({}, output),
           accessibility: { altTextRequired: true },
-          providerPolicy: providerPolicy
+          providerPolicy: Object.assign({}, providerPolicy)
         };
         if (entry && entry.sourceAsset) request.sourceAsset = entry.sourceAsset;
-        if (entry && Array.isArray(entry.referenceAssets)) request.referenceAssets = entry.referenceAssets;
+        if (entry && Array.isArray(entry.referenceAssets)) request.referenceAssets = entry.referenceAssets.slice();
         return request;
       })
     };
@@ -385,7 +412,7 @@
     MAX_ITEMS: MAX_ITEMS,
     validateBatch: function (input, injectedContracts) {
       var contracts = getContracts(injectedContracts);
-      if (!contracts) throw new Error('AgentCoreMediaContracts is required');
+      if (!contracts || typeof contracts.validateMediaRequest !== 'function') throw new Error('AgentCoreMediaContracts is required');
       return validateBatch(input, contracts);
     },
     planMediaBatch: planMediaBatch,
@@ -393,7 +420,7 @@
   });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'object' && window) {
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.AgentCoreMediaPlanner = API;
   }

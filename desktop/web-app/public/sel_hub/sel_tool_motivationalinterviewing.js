@@ -580,7 +580,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('motivationalInte
           h('div', { style: { padding: 16, borderRadius: 12, background: _moiBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _moiFg('#93c5fd'), fontSize: 16 } }, 'Where MI comes from'),
             h('p', { style: { margin: 0, color: _moiFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'Motivational Interviewing was developed by clinical psychologist William R. Miller in the 1980s, originally for working with people with alcohol use disorder. Miller and his collaborator Stephen Rollnick formalized MI in a series of books (1991, 2002, 2012, 2023). MI has accumulated one of the strongest evidence bases of any conversation-based intervention: hundreds of randomized controlled trials across addiction, smoking cessation, weight management, medication adherence, chronic disease, and adolescent risk behaviors. It is now used widely in school counseling, public health, social work, and primary care.'
+              'Motivational Interviewing was developed by clinical psychologist William R. Miller in the 1980s, originally for working with people with alcohol use disorder. Miller and his collaborator Stephen Rollnick formalized MI in a series of books (1991, 2002, 2013, 2023). MI has accumulated one of the strongest evidence bases of any conversation-based intervention: hundreds of randomized controlled trials across addiction, smoking cessation, weight management, medication adherence, chronic disease, and adolescent risk behaviors. It is now used widely in school counseling, public health, social work, and primary care.'
             )
           ),
 

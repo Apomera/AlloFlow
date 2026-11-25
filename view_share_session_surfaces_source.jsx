@@ -213,16 +213,9 @@ function HomeworkQrDialogView(props) {
               </details>
             )}
             <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-600 mb-3">{qrShareModal.noQr ? deliveryText('share_collect.link_ready', 'Homework link ready') : qrShareSvg ? (t('share_collect.ready_to_scan') || 'Ready to scan') : qrShareError ? (t('share_collect.qr_unavailable_use_link') || 'QR unavailable - use the link below') : (t('share_collect.validating_qr_code') || 'Validating QR code...')} &middot; {(t('share_collect.expires_on') || 'Expires {date}.').replace('{date}', qrShareModal.expiresAt ? new Date(qrShareModal.expiresAt).toLocaleDateString() : (t('share_collect.expires_default_window') || '14 days after creation'))}</p>
-            <div className="mb-2 grid grid-cols-2 gap-2">
-              <button type="button" onClick={testHomeworkAsStudent} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500 ${qrFocusBtn}`}>
-                {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12} aria-hidden="true"/>
-              </button>
-              <button type="button" onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`)} disabled={!qrShareSvg} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50 ${qrFocusBtn}`}>
-                {t('share_collect.print_qr') || 'Print QR'} <Printer size={12} aria-hidden="true"/>
-              </button>
-            </div>
             <button
               type="button"
+              data-homework-link-action="copy"
               onClick={() => {
                 if (typeof copyToClipboard === 'function') copyToClipboard(qrShareModal.url);
                 setCopiedHomeworkLink(true);
@@ -241,6 +234,14 @@ function HomeworkQrDialogView(props) {
               </p>
             )}
             <input aria-label={t('share_collect.link_aria') || 'Selectable homework link'} readOnly value={qrShareModal.url || ''} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-600" />
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button type="button" data-homework-link-action="test" onClick={testHomeworkAsStudent} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500 ${qrFocusBtn}`}>
+                {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12} aria-hidden="true"/>
+              </button>
+              <button type="button" data-homework-link-action="print" onClick={() => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`)} disabled={!qrShareSvg} className={`flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50 ${qrFocusBtn}`}>
+                {t('share_collect.print_qr') || 'Print QR'} <Printer size={12} aria-hidden="true"/>
+              </button>
+            </div>
             {qrShareModal.type !== 'assignment-pack' && (
               <button type="button" onClick={revokeHomeworkAssignment} className={`w-full min-h-11 mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 ${qrFocusBtn}`}>
                 {t('share_collect.revoke_homework_link') || 'Revoke homework link'} <Trash2 size={12} aria-hidden="true"/>
@@ -429,13 +430,13 @@ function ClassMailboxSetupView(props) {
             {/* The connect self-test reports VERSION. Redeploying the current
                 script requires owner setup and preserves existing classroom
                 credentials at the same deployment URL. */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 32 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 33 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3" data-mailbox-update-notice={mbConfig.v}>
                 <p className="text-xs font-bold text-amber-800 mb-2">{t('mailbox.your_mailbox_script_is_v') || 'Your mailbox script is v'}{mbConfig.v}. {Number(mbConfig.v) < 28
                   ? tx('mailbox.owner_update_v28', 'Update to v28 to require owner-verified setup and prevent public first-caller enrollment. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
                   : Number(mbConfig.v) < 29
                     ? tx('mailbox.update_v29_pickup', 'Update to v29 so the Submission Inbox can collect student submissions from the mailbox, with no Drive downloads. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:')
-                    : tx('mailbox.update_v30_fixes', 'Update to v32 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:').replace(/\bv30\b/g, 'v32')}</p>
+                    : tx('mailbox.update_v30_fixes', 'Update to v33 for security and privacy fixes: stricter sign-in checks, sign-up and availability polls erased on their delete date, and a page reader that refuses private network addresses. Existing tokens, Drive files and classroom data are preserved. Keep the same deployment URL:').replace(/\bv30\b/g, 'v32')}</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button type="button" onClick={copyMailboxScriptSource} disabled={mailboxScriptState.status !== 'ready'} aria-busy={mailboxScriptState.status === 'loading'} className="font-bold underline underline-offset-2 disabled:cursor-wait disabled:text-amber-700">{mailboxScriptState.status === 'loading' ? 'Preparing the updated script…' : mailboxScriptState.status === 'error' ? 'Updated script unavailable' : 'Copy the updated script'}</button>{mailboxScriptState.status === 'error' && <> (<button type="button" onClick={retryMailboxScriptSource} className="font-bold underline underline-offset-2">{t('mailbox.retry_loading') || 'retry loading'}</button>)</>} {t('mailbox.and_paste_it_over_the_old') || 'and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).'}</li>
                   {Number(mbConfig.v) < 28 && <li>{tx('mailbox.owner_update_setup','Update appsscript.json using the manifest below, then run setupMailboxOwner in the editor as the deploying owner. Reuse the existing admin token from Script properties.')} <button type="button" onClick={() => copyToClipboard(ownerManifest)} className="font-bold underline underline-offset-2">{tx('mailbox.copy_owner_manifest', 'copy manifest')}</button></li>}
@@ -603,15 +604,15 @@ function ClassMailboxSetupView(props) {
                   <p className="mb-3 text-center text-xs font-bold text-indigo-700">{t('mailbox.validating_live_session_qr') || 'Validating live-session QR...'}</p>
                 )}
                 <p role="status" aria-live="polite" aria-atomic="true" className="mb-2 text-center text-xs text-indigo-800">{mbQrSvg ? `Ready to scan · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'AI tools off'} · Active until you end the session` : mbQrError ? 'Students can still join with the class code or link below.' : 'The class code remains available while the QR loads.'}</p>
-                <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4">
+                <div data-mailbox-link-actions className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button type="button" onClick={() => copyWithFeedback(mbLive.joinUrl, 'joinUrl', tx('mailbox.join_link_copied', 'Live session link copied to clipboard.'))} className={`flex min-h-11 items-center justify-center gap-1 rounded-lg border p-2 text-xs font-bold ${mbFocusBtn} ${copiedState.kind === 'joinUrl' ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-indigo-300 bg-white text-indigo-800 hover:border-indigo-500'}`}>
                     {copiedState.kind === 'joinUrl' ? (t('mailbox.copied_short') || 'Copied!') : (t('mailbox.copy_link') || 'Copy link')} <Copy size={12} aria-hidden="true"/>
                   </button>
                   <button type="button" onClick={() => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student')} className={`flex min-h-11 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500 ${mbFocusBtn}`}>
-                    {t('mailbox.test') || 'Test'} <ExternalLink size={12} aria-hidden="true"/>
+                    {t('share_collect.test_as_student') || 'Test as student'} <ExternalLink size={12} aria-hidden="true"/>
                   </button>
                   <button type="button" onClick={() => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, `Class Mailbox QR join · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'}`, mbLive.code)} disabled={!mbQrSvg} className={`flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50 ${mbFocusBtn}`}>
-                    {t('mailbox.print') || 'Print'} <Printer size={12} aria-hidden="true"/>
+                    {t('share_collect.print_qr') || 'Print QR'} <Printer size={12} aria-hidden="true"/>
                   </button>
                   <button type="button" onClick={() => { closeSetup(); setShowSessionModal(true); }} className={`flex min-h-11 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-xs font-bold text-cyan-900 hover:border-cyan-500 ${mbFocusBtn}`}>
                     {t('mailbox.project') || 'Project'} <Maximize size={12} aria-hidden="true"/>

@@ -3,13 +3,13 @@
 
   var workspace = factory();
   if (typeof module === 'object' && module && module.exports) module.exports = workspace;
-  if (root) {
+  if (root && typeof root === 'object') {
     root.AlloSheetWorkspace = workspace;
-    root.AlloModules = root.AlloModules || {};
+    if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
     root.AlloModules.AlloSheetWorkspace = workspace;
   }
 })(
-  typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this),
+  typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null,
   function () {
     'use strict';
 

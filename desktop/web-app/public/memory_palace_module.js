@@ -1030,7 +1030,7 @@
   function isWebGLAvailable() {
     try {
       if (typeof document === 'undefined' || typeof window === 'undefined' || !window.WebGLRenderingContext) return false;
-      var c = document.createElement('canvas');
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
       var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
       if (!gl) return false;
       try { var ext = gl.getExtension && gl.getExtension('WEBGL_lose_context'); if (ext && ext.loseContext) ext.loseContext(); } catch (_) {}
@@ -1168,7 +1168,7 @@
   }
 
   function makeLabelSprite(THREE, text, hex, fontPx, occlusionSafe, anisotropy, appearance, roomIndex) {
-    var canvas = document.createElement('canvas');
+    var canvas = document.createElement('canvas'); if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
     var ctx = canvas.getContext('2d');
     var type = _appTypography(fontPx);
     var plaque = appearance === 'plaque', plate = appearance === 'plate';
@@ -1249,7 +1249,7 @@
 
   // Placeholder card texture for an unfurnished locus: tinted panel + big number.
   function makeCardTexture(THREE, number, hex, busy) {
-    var c = document.createElement('canvas'); c.width = 512; c.height = 384;
+    var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 512; c.height = 384;
     var g = c.getContext('2d'); g.scale(2, 2);
     var backdrop = g.createLinearGradient(0, 0, 256, 192);
     backdrop.addColorStop(0, '#233a48'); backdrop.addColorStop(1, '#080f1b');
@@ -1358,7 +1358,7 @@
   // walking ORDER visible after images/stamps replace the numbered cards (the
   // ordered route is the method's active ingredient, so it must never vanish).
   function makeNumBadge(THREE, number, hex) {
-    var c = document.createElement('canvas'); c.width = 96; c.height = 96;
+    var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 96; c.height = 96;
     var g = c.getContext('2d');
     g.fillStyle = hex || '#6366f1';
     g.beginPath(); g.arc(48, 48, 44, 0, Math.PI * 2); g.fill();
@@ -1416,10 +1416,11 @@
     holder.appendChild(renderer.domElement);
     var visualStyles = document.createElement('style');
     visualStyles.textContent = '[data-memory-palace-viewport] [hidden]{display:none!important}' +
+      '[data-memory-palace-viewport] :where(button,input,select,textarea,a,[role="button"]){touch-action:manipulation}' +
       '[data-memory-palace-viewport] button:focus-visible,[data-memory-palace-viewport] canvas:focus-visible{outline:3px solid #fef08a!important;outline-offset:3px!important}' +
       '[data-memory-palace-viewport] button:hover:not(:disabled){filter:brightness(1.18)}' +
       '@media(prefers-reduced-motion:reduce){[data-memory-palace-viewport] *{transition:none!important;animation:none!important}}' +
-      '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay]{background:Canvas!important;color:CanvasText!important;border:2px solid CanvasText!important}[data-memory-palace-viewport] button{border:1px solid ButtonText!important}}';
+      '@media(forced-colors:active){[data-memory-palace-viewport] [data-palace-overlay]{background:Canvas!important;color:CanvasText!important;border:2px solid CanvasText!important}[data-memory-palace-viewport] button{border:1px solid ButtonText!important}[data-memory-palace-viewport] :where(button,canvas,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:3px!important}}';
     visualStyles.textContent +=
       '[data-memory-palace-viewport]{font-family:inherit}' +
       '[data-memory-palace-viewport] [data-palace-overlay="dock"],[data-memory-palace-viewport] [data-palace-overlay="free-nav"]{background:linear-gradient(150deg,rgba(29,40,57,.97),rgba(8,16,31,.97))!important;border-color:#64748b;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 14px 36px rgba(2,6,23,.3)!important}' +
@@ -1468,7 +1469,7 @@
     var environmentKey = theme === THEMES.pasture ? 'pasture' : theme === THEMES.space ? 'space' : 'gallery';
     var skyRadius = Math.max(12000, palace.bounds.width * 5);
     try {
-      var skyCanvas = document.createElement('canvas'); skyCanvas.width = 2048; skyCanvas.height = 1024;
+      var skyCanvas = document.createElement('canvas'); if (skyCanvas.setAttribute) skyCanvas.setAttribute('aria-hidden', 'true'); skyCanvas.width = 2048; skyCanvas.height = 1024;
       var skyCtx = skyCanvas.getContext('2d'), skyW = skyCanvas.width, skyH = skyCanvas.height;
       var envSeed = 731;
       function envRandom() { envSeed = (envSeed * 1664525 + 1013904223) >>> 0; return envSeed / 4294967296; }
@@ -1561,7 +1562,7 @@
     // Open-world ground (pasture): a big soft plane under the palace.
     try {
       if (theme.ground) {
-        var grassCanvas = document.createElement('canvas'); grassCanvas.width = grassCanvas.height = 256;
+        var grassCanvas = document.createElement('canvas'); if (grassCanvas.setAttribute) grassCanvas.setAttribute('aria-hidden', 'true'); grassCanvas.width = grassCanvas.height = 256;
         var grassCtx = grassCanvas.getContext('2d'); grassCtx.fillStyle = '#a9b984'; grassCtx.fillRect(0, 0, 256, 256);
         var grassSeed = 9123;
         for (var blade = 0; blade < 3200; blade++) {
@@ -1583,7 +1584,7 @@
     // a building sim). Two half-count layers whose opacities pulse out of phase →
     // a gentle whole-sky twinkle for the cost of two uniform writes per frame.
     // Share a soft circular point texture across stars, the orb halo and dust.
-    var softPointCanvas=document.createElement('canvas');softPointCanvas.width=softPointCanvas.height=64;
+    var softPointCanvas=document.createElement('canvas'); if (softPointCanvas.setAttribute) softPointCanvas.setAttribute('aria-hidden', 'true');softPointCanvas.width=softPointCanvas.height=64;
     var softPointCtx=softPointCanvas.getContext('2d'),softPointGradient=softPointCtx.createRadialGradient(32,32,1,32,32,31);
     softPointGradient.addColorStop(0,'rgba(255,255,255,1)');softPointGradient.addColorStop(0.24,'rgba(255,255,255,0.7)');softPointGradient.addColorStop(1,'rgba(255,255,255,0)');
     softPointCtx.fillStyle=softPointGradient;softPointCtx.fillRect(0,0,64,64);
@@ -1611,7 +1612,7 @@
 
     var group = new THREE.Group(); root.add(group);
     function makeSurfaceTexture(kind) {
-      var c = document.createElement('canvas'); c.width = 128; c.height = 128; var g = c.getContext('2d');
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 128; c.height = 128; var g = c.getContext('2d');
       g.fillStyle = kind === 'wall' ? '#ece6da' : '#e0d9cc'; g.fillRect(0, 0, 128, 128);
       if (kind === 'wall') {
         for (var py = 3; py < 128; py += 19) { g.fillStyle = py % 14 ? 'rgba(15,23,42,0.035)' : 'rgba(255,255,255,0.045)'; g.fillRect(0, py, 128, 1); }
@@ -1629,7 +1630,7 @@
     var wallMat = new THREE.MeshStandardMaterial({ color: 0xa39988, map: theme.walls ? makeSurfaceTexture('wall') : null, roughness: 0.92, metalness: 0.02 });
     var floorTexture = makeSurfaceTexture('floor');
     if (environmentKey === 'space') {
-      var deckCanvas = document.createElement('canvas'); deckCanvas.width = deckCanvas.height = 256;
+      var deckCanvas = document.createElement('canvas'); if (deckCanvas.setAttribute) deckCanvas.setAttribute('aria-hidden', 'true'); deckCanvas.width = deckCanvas.height = 256;
       var deckCtx = deckCanvas.getContext('2d'); deckCtx.fillStyle = '#8198b0'; deckCtx.fillRect(0, 0, 256, 256);
       deckCtx.strokeStyle = '#536c85'; deckCtx.lineWidth = 2; deckCtx.strokeRect(4, 4, 248, 248);
       deckCtx.strokeStyle = 'rgba(196,224,245,0.3)'; deckCtx.lineWidth = 1; deckCtx.strokeRect(9, 9, 238, 238);
@@ -1671,13 +1672,13 @@
     // Shared baked architectural details add depth without shadow maps or lights.
     var nicheMat = null, skylightMat = null, floorContactMat = null;
     if (theme.walls && palace.rooms.length > 1) {
-      var contactCanvas=document.createElement('canvas');contactCanvas.width=16;contactCanvas.height=128;
+      var contactCanvas=document.createElement('canvas'); if (contactCanvas.setAttribute) contactCanvas.setAttribute('aria-hidden', 'true');contactCanvas.width=16;contactCanvas.height=128;
       var contactCtx=contactCanvas.getContext('2d'),contactGradient=contactCtx.createLinearGradient(0,0,0,128);
       contactGradient.addColorStop(0,'rgba(9,16,25,0.4)');contactGradient.addColorStop(0.3,'rgba(9,16,25,0.13)');contactGradient.addColorStop(1,'rgba(9,16,25,0)');
       contactCtx.fillStyle=contactGradient;contactCtx.fillRect(0,0,16,128);
       var contactTexture=new THREE.CanvasTexture(contactCanvas);
       floorContactMat=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,depthWrite:false,toneMapped:false});
-      var nc = document.createElement('canvas'); nc.width = 256; nc.height = 320;
+      var nc = document.createElement('canvas'); if (nc.setAttribute) nc.setAttribute('aria-hidden', 'true'); nc.width = 256; nc.height = 320;
       var ng = nc.getContext('2d');
       ng.beginPath(); ng.moveTo(20,310); ng.lineTo(20,125);
       ng.bezierCurveTo(20,-15,236,-15,236,125); ng.lineTo(236,310); ng.closePath();
@@ -1690,7 +1691,7 @@
       var nicheTex = new THREE.CanvasTexture(nc); nicheTex.anisotropy = _textureAnisotropy;
       if(THREE.sRGBEncoding) nicheTex.encoding=THREE.sRGBEncoding;
       nicheMat = new THREE.MeshBasicMaterial({map:nicheTex,transparent:true,depthWrite:false,toneMapped:false});
-      var sc=document.createElement('canvas');sc.width=512;sc.height=128;
+      var sc=document.createElement('canvas'); if (sc.setAttribute) sc.setAttribute('aria-hidden', 'true');sc.width=512;sc.height=128;
       var sgc=sc.getContext('2d'), slg=sgc.createLinearGradient(0,0,0,128);
       slg.addColorStop(0,'#5d6772');slg.addColorStop(0.18,'#c0c8c8');slg.addColorStop(0.5,'#f3eddb');slg.addColorStop(0.82,'#c0c8c8');slg.addColorStop(1,'#5d6772');
       sgc.fillStyle=slg;sgc.fillRect(0,0,512,128);
@@ -1702,7 +1703,7 @@
     }
     // A shared paving texture ties the room approaches to their environment.
     // Room identity lives in a narrow inlay, keeping the hub compass unobscured.
-    var approachCanvas = document.createElement('canvas'); approachCanvas.width = 128; approachCanvas.height = 256;
+    var approachCanvas = document.createElement('canvas'); if (approachCanvas.setAttribute) approachCanvas.setAttribute('aria-hidden', 'true'); approachCanvas.width = 128; approachCanvas.height = 256;
     var approachCtx = approachCanvas.getContext('2d');
     approachCtx.fillStyle = theme.walls ? '#d0c5b0' : theme.ground ? '#d4cbb2' : '#486079';
     approachCtx.fillRect(0, 0, 128, 256);
@@ -1777,7 +1778,7 @@
       // open-world themes). Room-local, so it rotates with the spoke for free.
       if (ri !== 0) {
         try {
-          var cc = document.createElement('canvas'); cc.width = 512; cc.height = 128;
+          var cc = document.createElement('canvas'); if (cc.setAttribute) cc.setAttribute('aria-hidden', 'true'); cc.width = 512; cc.height = 128;
           var cg = cc.getContext('2d'); var carpetBase = new THREE.Color(room.color).multiplyScalar(theme.walls ? 0.32 : 0.62);
           cg.fillStyle=carpetBase.getStyle();cg.fillRect(0,0,512,128);
           // Fine fabric grain replaces the stretched bright stripes; arrows remain.
@@ -2161,7 +2162,7 @@
     var _orbRing = null;
     (function () {
       // Recessed vertical panels are baked into one small, seamless surface map.
-      var pedestalCanvas = document.createElement('canvas'); pedestalCanvas.width = pedestalCanvas.height = 256;
+      var pedestalCanvas = document.createElement('canvas'); if (pedestalCanvas.setAttribute) pedestalCanvas.setAttribute('aria-hidden', 'true'); pedestalCanvas.width = pedestalCanvas.height = 256;
       var pedestalCtx = pedestalCanvas.getContext('2d');
       pedestalCtx.fillStyle = '#d8d6cc'; pedestalCtx.fillRect(0, 0, 256, 256);
       for (var flute = 0; flute < 16; flute++) {
@@ -2180,7 +2181,7 @@
       plinth.position.set(0, 55, 0); plinth.userData.visualRole = 'entrance-pedestal'; group.add(plinth);
       addGroundShade(group, 0, 0, 190, 190, 2.5, false);
       // A low-glow celestial globe retains its curvature instead of blooming white.
-      var globeCanvas = document.createElement('canvas'); globeCanvas.width = 512; globeCanvas.height = 256;
+      var globeCanvas = document.createElement('canvas'); if (globeCanvas.setAttribute) globeCanvas.setAttribute('aria-hidden', 'true'); globeCanvas.width = 512; globeCanvas.height = 256;
       var globeCtx = globeCanvas.getContext('2d'), globeGradient = globeCtx.createLinearGradient(0, 0, 0, 256);
       globeGradient.addColorStop(0, '#8cc3de'); globeGradient.addColorStop(0.45, '#386989'); globeGradient.addColorStop(1, '#132e50');
       globeCtx.fillStyle = globeGradient; globeCtx.fillRect(0, 0, 512, 256);
@@ -2288,7 +2289,7 @@
     var _washMat = null;
     try {
       if (theme.walls) {
-        var wc = document.createElement('canvas'); wc.width = 128; wc.height = 128;
+        var wc = document.createElement('canvas'); if (wc.setAttribute) wc.setAttribute('aria-hidden', 'true'); wc.width = 128; wc.height = 128;
         var wg = wc.getContext('2d');
         var wgrad = wg.createRadialGradient(64,48,2,64,64,64);
         wgrad.addColorStop(0, 'rgba(255,225,180,0.65)');
@@ -2331,7 +2332,7 @@
     var lampMat = new THREE.MeshStandardMaterial({ color: 0xffedc9, emissive: 0xffd9a0, emissiveIntensity: 0.7, roughness: 0.5, metalness: 0 });
     var frameShadowMat = null;
     if (theme.walls) try {
-      var shadowCanvas = document.createElement('canvas'); shadowCanvas.width = 128; shadowCanvas.height = 96;
+      var shadowCanvas = document.createElement('canvas'); if (shadowCanvas.setAttribute) shadowCanvas.setAttribute('aria-hidden', 'true'); shadowCanvas.width = 128; shadowCanvas.height = 96;
       var shadowCtx = shadowCanvas.getContext('2d'); shadowCtx.clearRect(0, 0, 128, 96);
       shadowCtx.shadowColor = 'rgba(0,0,0,0.9)'; shadowCtx.shadowBlur = 18; shadowCtx.fillStyle = 'rgba(0,0,0,0.52)'; shadowCtx.fillRect(22, 18, 84, 60);
       var shadowTex = new THREE.CanvasTexture(shadowCanvas);
@@ -2519,7 +2520,7 @@
     });
 
     if (groundShadePositions.length) {
-      var groundShadeCanvas = document.createElement('canvas'); groundShadeCanvas.width = groundShadeCanvas.height = 128;
+      var groundShadeCanvas = document.createElement('canvas'); if (groundShadeCanvas.setAttribute) groundShadeCanvas.setAttribute('aria-hidden', 'true'); groundShadeCanvas.width = groundShadeCanvas.height = 128;
       var groundShadeCtx = groundShadeCanvas.getContext('2d');
       var groundShadeGradient = groundShadeCtx.createRadialGradient(64, 64, 0, 64, 64, 63);
       groundShadeGradient.addColorStop(0, 'rgba(9,16,23,0.62)');
@@ -3155,7 +3156,7 @@
     var _FX_COLORS = [0xf59e0b, 0x22c55e, 0x818cf8, 0xec4899, 0x22d3ee, 0xfde047];
     function _fxTexture() {
       if (_fxTex) return _fxTex;
-      var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+      var c = document.createElement('canvas'); if (c.setAttribute) c.setAttribute('aria-hidden', 'true'); c.width = 32; c.height = 32;
       var g = c.getContext('2d');
       g.fillStyle = '#ffffff'; g.beginPath(); g.arc(16, 16, 13, 0, Math.PI * 2); g.fill();
       _fxTex = new THREE.CanvasTexture(c);
@@ -4458,7 +4459,7 @@
       if (live) live.textContent = helpVisible ? _tr(t, 'memory_palace.help_opened', 'Exploration help opened.') : _tr(t, 'memory_palace.help_closed', 'Exploration help closed.');
     }
     function onHelpKeyDown(event) {
-      if (event.isComposing || event.keyCode === 229) return;
+      if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key !== 'Escape') return;
       event.preventDefault(); event.stopPropagation(); _setHelpVisible(false, true);
     }
@@ -4490,7 +4491,7 @@
     routeBtn.setAttribute('aria-pressed', 'false');
     routeBtn.setAttribute('aria-expanded', 'false');
     function onRouteKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229) return;
+      if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopPropagation();
@@ -4741,6 +4742,7 @@
         navigator.xr.isSessionSupported('immersive-vr').then(function (ok) {
           if (!ok || state.disposed) return;
           var vb = document.createElement('button');
+          vb.type = 'button';
           vb.textContent = '🥽 ' + _tr(t, 'memory_palace.enter_vr', 'VR');
           vb.setAttribute('aria-label', _tr(t, 'memory_palace.enter_vr_title', 'Enter VR — stand inside the palace (needs a headset)'));
           vb.title = _tr(t, 'memory_palace.enter_vr_title', 'Enter VR — stand inside the palace (needs a headset)');
@@ -4754,7 +4756,7 @@
     hud.setAttribute('aria-label', _tr(t, 'memory_palace.controls', 'Memory palace route controls'));
 
     function onKeyDown(e) {
-      if (e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
       _hideCtrlHint();
       var k = e.key;
       var lk = (k && k.length === 1) ? k.toLowerCase() : k;

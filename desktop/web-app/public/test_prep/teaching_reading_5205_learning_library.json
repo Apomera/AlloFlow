@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-teaching-reading-5205-learning-library",
@@ -32,7 +33,12 @@
     "glossaryTerms": 24,
     "appliedCases": 12,
     "quickReferenceCards": 5,
-    "misconceptionPlaybooks": 6
+    "misconceptionPlaybooks": 6,
+    "studySessions": 14,
+    "sourceCatalogCount": 4,
+    "unitReviewRoutes": 12,
+    "reviewLadders": 3,
+    "practiceForms": 3
   },
   "skills": [
     {
@@ -908,7 +914,7 @@
       "knowledgeChecks": [
         {
           "id": "tr5205-ch-04-check-01",
-          "prompt": "When an elementary teacher analyzes decoding evidence, what does a phoneme-analysis error reveal?",
+          "prompt": "A first grader blends spoken phonemes into words accurately but struggles to break three- and four-phoneme words apart during decoding and spelling checks. Which instructional next step best addresses this pattern?",
           "choices": [
             "Instruction in advanced figurative language such as metaphor and idiom within grade-level poetry.",
             "Longer silent-reading sessions designed to build stamina with self-selected chapter books each day.",
@@ -968,7 +974,7 @@
         },
         {
           "id": "tr5205-ch-04-check-04",
-          "prompt": "When an elementary teacher analyzes decoding evidence, how should spelling errors be analyzed?",
+          "prompt": "After administering a developmental spelling inventory, an elementary teacher sees missed words across several early-grade skills. What is the most informative way to analyze those student responses?",
           "choices": [
             "Assess reading comprehension instead of spelling, since comprehension better explains writing difficulties.",
             "Correct each misspelled word on the paper without identifying which spelling patterns caused the errors.",
@@ -988,7 +994,7 @@
         },
         {
           "id": "tr5205-ch-04-check-05",
-          "prompt": "When an elementary teacher analyzes decoding evidence, how should an oral-reading-fluency score be interpreted?",
+          "prompt": "A third grader meets the fall words-correct-per-minute benchmark on a timed passage, yet moves through the text in a monotone, ignores punctuation, and struggles to retell key events. Which interpretation is best?",
           "choices": [
             "The student is fully fluent because the words-correct-per-minute score meets the grade-level benchmark.",
             "The passage was understood because the student missed very few words during the timed oral reading.",
@@ -2728,7 +2734,7 @@
         },
         {
           "id": "tr5205-ch-12-check-04",
-          "prompt": "When using writing evidence to plan explicit instruction, what does validity mean?",
+          "prompt": "A writing screener yields consistent scores across sessions, but it samples isolated mechanics unrelated to the instructional decision being made. What validity problem exists?",
           "choices": [
             "The student should retake the same test repeatedly until the score rises to the expected benchmark level.",
             "Validity is a permanent property of the test itself and stays the same regardless of the purpose of use.",
@@ -2748,7 +2754,7 @@
         },
         {
           "id": "tr5205-ch-12-check-05",
-          "prompt": "When using writing evidence to plan explicit instruction, why do sensitivity and specificity matter in screening?",
+          "prompt": "When an elementary literacy team evaluates a universal screening tool, what do sensitivity and specificity measure?",
           "choices": [
             "Interrater reliability among scorers and the handwriting speed of students on written responses.",
             "The percentile rank and grade-equivalent score that the screener reports for each individual student.",
@@ -4417,7 +4423,7 @@
       "skillId": "decoding-encoding-morphology",
       "domainId": "phonics-decoding",
       "domain": "Phonics and Decoding",
-      "front": "When an elementary teacher analyzes decoding evidence, what does a phoneme-analysis error reveal?",
+      "front": "A first grader blends spoken phonemes into words accurately but struggles to break three- and four-phoneme words apart during decoding and spelling checks. Which instructional next step best addresses this pattern?",
       "back": "Explicit, supported phoneme segmentation linked to letters once the oral task is understood.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -4468,7 +4474,7 @@
       "skillId": "decoding-encoding-morphology",
       "domainId": "phonics-decoding",
       "domain": "Phonics and Decoding",
-      "front": "When an elementary teacher analyzes decoding evidence, how should spelling errors be analyzed?",
+      "front": "After administering a developmental spelling inventory, an elementary teacher sees missed words across several early-grade skills. What is the most informative way to analyze those student responses?",
       "back": "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -4485,7 +4491,7 @@
       "skillId": "decoding-encoding-morphology",
       "domainId": "phonics-decoding",
       "domain": "Phonics and Decoding",
-      "front": "When an elementary teacher analyzes decoding evidence, how should an oral-reading-fluency score be interpreted?",
+      "front": "A third grader meets the fall words-correct-per-minute benchmark on a timed passage, yet moves through the text in a monotone, ignores punctuation, and struggles to retell key events. Which interpretation is best?",
       "back": "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -5251,7 +5257,7 @@
       "domainId": "written-expression",
       "domain": "Written Expression",
       "front": "When using writing evidence to plan explicit instruction, what does validity mean?",
-      "back": "The evidence does not support the intended interpretation and use of the scores for this purpose.",
+      "back": "Validity is the degree to which evidence supports a specific intended interpretation and use of writing scores for a defined population and instructional purpose—not a permanent property of the test itself.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
         "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
@@ -5267,7 +5273,7 @@
       "skillId": "spelling-sentences-writing-assessment",
       "domainId": "written-expression",
       "domain": "Written Expression",
-      "front": "When using writing evidence to plan explicit instruction, why do sensitivity and specificity matter in screening?",
+      "front": "When an elementary literacy team evaluates a universal screening tool, what do sensitivity and specificity measure?",
       "back": "Correctly identifying students who have the risk and correctly excluding students who do not.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -7358,7 +7364,7 @@
         "Reading–Writing Reciprocity Rule: Encoding reinforces phonemic segmentation and phonics patterns, while analyzing mentor texts teaches sentence variety, genre structure, and audience awareness."
       ],
       "decisionRules": [
-        "When student data show invented spellings like \"TRN\" for \"train\" or \"BIK\" for \"bike\" → recognize phonetic-stage mastery of consonants and teach long-vowel VCe and vowel-team word sorts.",
+        "When student data show invented spellings like \"TRN\" for \"train\" or \"BIK\" for \"bike\" → recognize emerging phonetic consonant-and-vowel representation (e.g., consonant skeleton in TRN progressing toward full phonetic vowel mapping in BIK) and teach long-vowel VCe and vowel-team word sorts.",
         "When student data show disorganized paragraphs with weak transitions alongside spelling mistakes → conduct a revision mini-lesson on structure and clarity before moving to conventions editing.",
         "When student data show repetitive simple sentences (\"I saw a dog. It was brown. It ran fast.\") → model explicit sentence combining using adjectives, appositives, and conjunctions.",
         "When student data show a need for targeted writing conference goals across multiple traits → score drafts with an analytic rubric paired with one focused revision or editing target."
@@ -7744,6 +7750,2562 @@
         }
       ],
       "status": "internal-remediation-playbook",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "studySessionPlans": [
+    {
+      "id": "teaching-reading-5205-session-ch-01",
+      "title": "Emergent Literacy, Oral Language, and Development guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Emergent Literacy, Oral Language, and Development\" (Phonological and Phonemic Awareness and Emergent Literacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-01",
+      "itemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-002",
+        "tr5205-b1-003",
+        "tr5205-b1-004",
+        "tr5205-b1-005",
+        "tr5205-b1-006",
+        "tr5205-b1-007",
+        "tr5205-b1-008",
+        "tr5205-b2-001",
+        "tr5205-b2-002"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Emergent Literacy, Oral Language, and Development\" and the \"Phonological Continuum & Emergent Literacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Emergent Literacy & Oral Language-to-Print Developmental Bridge\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Bridging Home Language Strengths in Kindergarten Read-Alouds\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Emergent Literacy, Oral Language, and Development\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Auditory Phoneme Work from Print-Based Phonics in K–2\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-02",
+      "title": "Phonological Awareness, Phonemic Awareness, and Print Concepts guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phonological Awareness, Phonemic Awareness, and Print Concepts\" (Phonological and Phonemic Awareness and Emergent Literacy) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-02",
+      "itemIds": [
+        "tr5205-b1-016",
+        "tr5205-b2-009",
+        "tr5205-b2-010",
+        "tr5205-b2-011",
+        "tr5205-b2-012",
+        "tr5205-b2-013",
+        "tr5205-b2-014",
+        "tr5205-b2-015",
+        "tr5205-b2-016",
+        "tr5205-b1-009"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phonological Awareness, Phonemic Awareness, and Print Concepts\" and the \"Phonological Continuum & Emergent Literacy\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Phonological Awareness to Phonemic Awareness & Orthographic Mapping Progression\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Targeting Consonant-Blend Phoneme Segmentation in Kindergarten\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phonological Awareness, Phonemic Awareness, and Print Concepts\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Replace Picture Guessing with Full-Word Decoding and Orthographic Mapping\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-03",
+      "title": "Phoneme–Grapheme Correspondence and Phonics Patterns guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Phoneme–Grapheme Correspondence and Phonics Patterns\" (Phonics and Decoding) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-03",
+      "itemIds": [
+        "tr5205-b2-022",
+        "tr5205-b2-023",
+        "tr5205-b2-024",
+        "tr5205-b2-025",
+        "tr5205-b1-017",
+        "tr5205-b1-018",
+        "tr5205-b1-019",
+        "tr5205-b1-020",
+        "tr5205-b1-021",
+        "tr5205-b1-022"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Phoneme–Grapheme Correspondence and Phonics Patterns\" and the \"Six Syllable Types, Ehri Phases & Structured Phonics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Phoneme–Grapheme Mapping, Heart-Part Irregulars, & Phonics Error Analysis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Replacing Picture Guessing with Explicit Long-Vowel Phonics\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Phoneme–Grapheme Correspondence and Phonics Patterns\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Balance Accuracy, Automaticity, and Prosody in Elementary Fluency\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-04",
+      "title": "Decoding, Encoding, Syllables, and Morphology guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Decoding, Encoding, Syllables, and Morphology\" (Phonics and Decoding) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-04",
+      "itemIds": [
+        "tr5205-b2-036",
+        "tr5205-b1-026",
+        "tr5205-b1-027",
+        "tr5205-b1-028",
+        "tr5205-b1-029",
+        "tr5205-b1-030",
+        "tr5205-b1-031",
+        "tr5205-b1-032",
+        "tr5205-b1-033",
+        "tr5205-b1-034"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Decoding, Encoding, Syllables, and Morphology\" and the \"Six Syllable Types, Ehri Phases & Structured Phonics\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Explicit Systematic Phonics & Multisyllabic Word-Analysis Sequence\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Connecting Syllable Division and Morphology for Multisyllabic Words\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Decoding, Encoding, Syllables, and Morphology\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Build Deep Elementary Vocabulary with Morphology and Rich Contexts\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-05",
+      "title": "Vocabulary, Morphology, and Knowledge Building guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Vocabulary, Morphology, and Knowledge Building\" (Vocabulary and Fluency) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-05",
+      "itemIds": [
+        "tr5205-b2-041",
+        "tr5205-b2-042",
+        "tr5205-b2-043",
+        "tr5205-b2-044",
+        "tr5205-b1-037",
+        "tr5205-b1-038",
+        "tr5205-b1-039",
+        "tr5205-b1-040",
+        "tr5205-b1-041",
+        "tr5205-b1-042"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Vocabulary, Morphology, and Knowledge Building\" and the \"Vocabulary Tiers, Fluency Pillars & Accuracy Benchmarks\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Vocabulary Depth, Morphology, and Academic Language Development\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Building Academic Vocabulary Through Concept-Linked Text Sets\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Vocabulary, Morphology, and Knowledge Building\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Ground K–6 Comprehension in Text Structure and Topic Knowledge\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-06",
+      "title": "Accuracy, Automaticity, Rate, and Prosody guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Accuracy, Automaticity, Rate, and Prosody\" (Vocabulary and Fluency) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-06",
+      "itemIds": [
+        "tr5205-b2-050",
+        "tr5205-b2-051",
+        "tr5205-b2-052",
+        "tr5205-b2-053",
+        "tr5205-b2-054",
+        "tr5205-b1-045",
+        "tr5205-b1-046",
+        "tr5205-b1-047",
+        "tr5205-b1-048",
+        "tr5205-b1-049"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Accuracy, Automaticity, Rate, and Prosody\" and the \"Vocabulary Tiers, Fluency Pillars & Accuracy Benchmarks\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Reading Fluency Bridge: Accuracy, Automaticity, and Prosody to Comprehension\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Improving Rate and Prosody Without Triggering Speed Reading\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Accuracy, Automaticity, Rate, and Prosody\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Assessment Purpose and Integrate Elementary Reading-Writing Instruction\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-07",
+      "title": "Integrating Fluency, Vocabulary, and Comprehension guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Integrating Fluency, Vocabulary, and Comprehension\" (Vocabulary and Fluency) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-07",
+      "itemIds": [
+        "tr5205-b1-057",
+        "tr5205-b1-058",
+        "tr5205-b1-059",
+        "tr5205-b2-055",
+        "tr5205-b2-056",
+        "tr5205-b2-057",
+        "tr5205-b2-058",
+        "tr5205-b2-059",
+        "tr5205-b1-055",
+        "tr5205-b1-056"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Integrating Fluency, Vocabulary, and Comprehension\" and the \"Vocabulary Tiers, Fluency Pillars & Accuracy Benchmarks\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Integrating Word Recognition, Fluency, Vocabulary, & Comprehension (Simple View & Reading Rope)\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Diagnosing a Decoding Bottleneck Beneath Comprehension Delays\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Integrating Fluency, Vocabulary, and Comprehension\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Separate Auditory Phoneme Work from Print-Based Phonics in K–2\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-08",
+      "title": "Literary and Informational Text Comprehension guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Literary and Informational Text Comprehension\" (Comprehension of Literary and Informational Text) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-08",
+      "itemIds": [
+        "tr5205-b1-065",
+        "tr5205-b1-066",
+        "tr5205-b1-067",
+        "tr5205-b1-068",
+        "tr5205-b1-069",
+        "tr5205-b1-070",
+        "tr5205-b2-060",
+        "tr5205-b2-061",
+        "tr5205-b2-062",
+        "tr5205-b2-063"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Literary and Informational Text Comprehension\" and the \"Simple View, Text Structures & K–6 Comprehension\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Literary & Informational Text Comprehension Instruction & Breakdown Analysis\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Scaffolding Text-Based Inferences Across Literary and Informational Genres\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Literary and Informational Text Comprehension\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Replace Picture Guessing with Full-Word Decoding and Orthographic Mapping\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-09",
+      "title": "Knowledge, Text Structure, Research, and Digital Literacy guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Knowledge, Text Structure, Research, and Digital Literacy\" (Comprehension of Literary and Informational Text) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-09",
+      "itemIds": [
+        "tr5205-b1-071",
+        "tr5205-b1-072",
+        "tr5205-b1-073",
+        "tr5205-b1-074",
+        "tr5205-b1-075",
+        "tr5205-b1-076",
+        "tr5205-b1-077",
+        "tr5205-b2-071",
+        "tr5205-b2-072",
+        "tr5205-b2-073"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Knowledge, Text Structure, Research, and Digital Literacy\" and the \"Simple View, Text Structures & K–6 Comprehension\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Expository Text Structure, Elementary Inquiry, & Digital Source Evaluation Workflow\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Guiding Source Evaluation and Multimodal Synthesis in Fourth-Grade Research\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Knowledge, Text Structure, Research, and Digital Literacy\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Balance Accuracy, Automaticity, and Prosody in Elementary Fluency\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-10",
+      "title": "Assessment-Guided Comprehension for Diverse Readers guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Assessment-Guided Comprehension for Diverse Readers\" (Comprehension of Literary and Informational Text) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-10",
+      "itemIds": [
+        "tr5205-b1-081",
+        "tr5205-b1-082",
+        "tr5205-b2-078",
+        "tr5205-b2-079",
+        "tr5205-b2-080",
+        "tr5205-b2-081",
+        "tr5205-b2-082",
+        "tr5205-b1-078",
+        "tr5205-b1-079",
+        "tr5205-b1-080"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Assessment-Guided Comprehension for Diverse Readers\" and the \"Simple View, Text Structures & K–6 Comprehension\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Classroom Literacy Assessment & Differentiated Instruction Loop\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Honoring 504 Reading Accommodations While Targeting Fluency Growth\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Assessment-Guided Comprehension for Diverse Readers\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Build Deep Elementary Vocabulary with Morphology and Rich Contexts\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-11",
+      "title": "Writing Process, Genres, and Reading–Writing Integration guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Writing Process, Genres, and Reading–Writing Integration\" (Written Expression) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-11",
+      "itemIds": [
+        "tr5205-b1-089",
+        "tr5205-b1-090",
+        "tr5205-b2-083",
+        "tr5205-b2-084",
+        "tr5205-b2-085",
+        "tr5205-b2-086",
+        "tr5205-b2-087",
+        "tr5205-b2-088",
+        "tr5205-b2-089",
+        "tr5205-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Writing Process, Genres, and Reading–Writing Integration\" and the \"Developmental Spelling, Writing Process & K–6 Craft\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Strategic Comprehension & Reading–Writing Integration Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Reducing Transcription Overload During Third-Grade Opinion Drafting\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Writing Process, Genres, and Reading–Writing Integration\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Ground K–6 Comprehension in Text Structure and Topic Knowledge\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-ch-12",
+      "title": "Spelling, Sentence Construction, Conventions, and Assessment guided study session",
+      "sessionType": "chapter-launch",
+      "purpose": "Move through \"Spelling, Sentence Construction, Conventions, and Assessment\" (Written Expression) from high-yield orientation and visual review to applied retrieval, targeted practice, and trap repair in one bounded 40-minute block.",
+      "durationMinutes": 40,
+      "chapterId": "tr5205-ch-12",
+      "itemIds": [
+        "tr5205-b2-098",
+        "tr5205-b2-099",
+        "tr5205-b2-100",
+        "tr5205-b1-091",
+        "tr5205-b1-092",
+        "tr5205-b1-093",
+        "tr5205-b1-094",
+        "tr5205-b1-095",
+        "tr5205-b1-096",
+        "tr5205-b1-097"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "orient",
+          "label": "Orient",
+          "durationMinutes": 5,
+          "action": "Read the chapter takeaways for \"Spelling, Sentence Construction, Conventions, and Assessment\" and the \"Developmental Spelling, Writing Process & K–6 Craft\" quick-reference checklist before opening any practice questions."
+        },
+        {
+          "order": 2,
+          "id": "study-visual",
+          "label": "Core study and diagram",
+          "durationMinutes": 10,
+          "action": "Study the chapter lessons and trace \"Developmental Spelling, Sentence Construction, Conventions, & Writing Assessment Cycle\" step by step, verifying every arrow and text equivalent."
+        },
+        {
+          "order": 3,
+          "id": "applied-retrieval",
+          "label": "Applied retrieval",
+          "durationMinutes": 10,
+          "action": "Open the applied case \"Transferring Sentence Construction and Conventions into Science Writing\", draft your decision before expanding the rationale, then complete the inline knowledge checks without notes."
+        },
+        {
+          "order": 4,
+          "id": "targeted-drill",
+          "label": "Targeted question drill",
+          "durationMinutes": 10,
+          "action": "Complete the 10 linked practice items for \"Spelling, Sentence Construction, Conventions, and Assessment\" and flag any item where two options felt close."
+        },
+        {
+          "order": 5,
+          "id": "repair-reflect",
+          "label": "Trap repair and reflection",
+          "durationMinutes": 5,
+          "action": "For any missed item, run the \"Match Assessment Purpose and Integrate Elementary Reading-Writing Instruction\" misconception playbook and log one concrete check to use on the next set."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-trap-repair-sprint",
+      "title": "Praxis Teaching Reading: Elementary (5205) misconception-repair sprint",
+      "sessionType": "trap-repair-sprint",
+      "purpose": "Target high-frequency exam distractor traps in a focused 25-minute diagnostic and repair loop before attempting a longer mixed set.",
+      "durationMinutes": 25,
+      "chapterId": "",
+      "itemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-017",
+        "tr5205-b1-037",
+        "tr5205-b1-020",
+        "tr5205-b1-060",
+        "tr5205-b1-083",
+        "tr5205-b1-002",
+        "tr5205-b1-018",
+        "tr5205-b1-038",
+        "tr5205-b1-021",
+        "tr5205-b1-061",
+        "tr5205-b1-084"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "scan-playbooks",
+          "label": "Scan trap cues",
+          "durationMinutes": 5,
+          "action": "Review the recognition cues and repair questions in \"Separate Auditory Phoneme Work from Print-Based Phonics in K–2\", \"Replace Picture Guessing with Full-Word Decoding and Orthographic Mapping\", \"Balance Accuracy, Automaticity, and Prosody in Elementary Fluency\" and any recently missed playbooks."
+        },
+        {
+          "order": 2,
+          "id": "mixed-trap-drill",
+          "label": "Mixed trap drill",
+          "durationMinutes": 12,
+          "action": "Answer the 12 linked practice questions and write down your repair-question check before choosing an option."
+        },
+        {
+          "order": 3,
+          "id": "audit-misses",
+          "label": "Audit misses and lock rules",
+          "durationMinutes": 8,
+          "action": "Compare every close call against its Quick Reference caution list and save one personal pre-answer reminder to Study Notes."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-session-mixed-capstone",
+      "title": "Praxis Teaching Reading: Elementary (5205) mixed-domain synthesis session",
+      "sessionType": "mixed-synthesis",
+      "purpose": "Interleave practice across every blueprint domain and pair selected-response reasoning with an unscored applied workshop in a bounded 45-minute block.",
+      "durationMinutes": 45,
+      "chapterId": "",
+      "itemIds": [
+        "tr5205-b1-004",
+        "tr5205-b1-020",
+        "tr5205-b1-040",
+        "tr5205-b1-063",
+        "tr5205-b1-086",
+        "tr5205-b1-015",
+        "tr5205-b1-031",
+        "tr5205-b1-051",
+        "tr5205-b1-074",
+        "tr5205-b1-097",
+        "tr5205-b2-010",
+        "tr5205-b2-022",
+        "tr5205-b2-039",
+        "tr5205-b2-062",
+        "tr5205-b2-090"
+      ],
+      "steps": [
+        {
+          "order": 1,
+          "id": "quick-ref-warmup",
+          "label": "Quick-reference warmup",
+          "durationMinutes": 5,
+          "action": "Skim the Quick Reference tab across all domains and recall one key rule, cutoff, or equation per domain without peeking."
+        },
+        {
+          "order": 2,
+          "id": "interleaved-practice",
+          "label": "Interleaved domain set",
+          "durationMinutes": 20,
+          "action": "Complete the 15 balanced cross-domain practice items, pacing yourself steadily and flagging uncertain answers for confidence calibration."
+        },
+        {
+          "order": 3,
+          "id": "applied-workshop",
+          "label": "Applied workshop synthesis",
+          "durationMinutes": 15,
+          "action": "Open Applied case workshops, outline a response to \"Kindergarten phoneme segmentation\", and self-check every criterion and common pitfall."
+        },
+        {
+          "order": 4,
+          "id": "plan-next-return",
+          "label": "Schedule next return",
+          "durationMinutes": 5,
+          "action": "Check the spaced-review cadence table below and pick the weakest domain chapter to revisit in 24 to 72 hours."
+        }
+      ],
+      "status": "internal-study-session",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "spacedReviewPlans": [
+    {
+      "id": "teaching-reading-5205-spaced-ch-01",
+      "topicId": "tr5205-ch-01",
+      "topicLabel": "1. Emergent Literacy, Oral Language, and Development",
+      "unitId": "phonological-emergent",
+      "chapterId": "tr5205-ch-01",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Emergent Literacy, Oral Language, and Development\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-02",
+      "topicId": "tr5205-ch-02",
+      "topicLabel": "2. Phonological Awareness, Phonemic Awareness, and Print Concepts",
+      "unitId": "phonological-emergent",
+      "chapterId": "tr5205-ch-02",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phonological Awareness, Phonemic Awareness, and Print Concepts\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-03",
+      "topicId": "tr5205-ch-03",
+      "topicLabel": "3. Phoneme–Grapheme Correspondence and Phonics Patterns",
+      "unitId": "phonics-decoding",
+      "chapterId": "tr5205-ch-03",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Phoneme–Grapheme Correspondence and Phonics Patterns\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-04",
+      "topicId": "tr5205-ch-04",
+      "topicLabel": "4. Decoding, Encoding, Syllables, and Morphology",
+      "unitId": "phonics-decoding",
+      "chapterId": "tr5205-ch-04",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Decoding, Encoding, Syllables, and Morphology\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-05",
+      "topicId": "tr5205-ch-05",
+      "topicLabel": "5. Vocabulary, Morphology, and Knowledge Building",
+      "unitId": "vocabulary-fluency",
+      "chapterId": "tr5205-ch-05",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Vocabulary, Morphology, and Knowledge Building\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-06",
+      "topicId": "tr5205-ch-06",
+      "topicLabel": "6. Accuracy, Automaticity, Rate, and Prosody",
+      "unitId": "vocabulary-fluency",
+      "chapterId": "tr5205-ch-06",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Accuracy, Automaticity, Rate, and Prosody\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-07",
+      "topicId": "tr5205-ch-07",
+      "topicLabel": "7. Integrating Fluency, Vocabulary, and Comprehension",
+      "unitId": "vocabulary-fluency",
+      "chapterId": "tr5205-ch-07",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Integrating Fluency, Vocabulary, and Comprehension\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-08",
+      "topicId": "tr5205-ch-08",
+      "topicLabel": "8. Literary and Informational Text Comprehension",
+      "unitId": "comprehension",
+      "chapterId": "tr5205-ch-08",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Literary and Informational Text Comprehension\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-09",
+      "topicId": "tr5205-ch-09",
+      "topicLabel": "9. Knowledge, Text Structure, Research, and Digital Literacy",
+      "unitId": "comprehension",
+      "chapterId": "tr5205-ch-09",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Knowledge, Text Structure, Research, and Digital Literacy\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-10",
+      "topicId": "tr5205-ch-10",
+      "topicLabel": "10. Assessment-Guided Comprehension for Diverse Readers",
+      "unitId": "comprehension",
+      "chapterId": "tr5205-ch-10",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Assessment-Guided Comprehension for Diverse Readers\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-11",
+      "topicId": "tr5205-ch-11",
+      "topicLabel": "11. Writing Process, Genres, and Reading–Writing Integration",
+      "unitId": "written-expression",
+      "chapterId": "tr5205-ch-11",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Writing Process, Genres, and Reading–Writing Integration\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-spaced-ch-12",
+      "topicId": "tr5205-ch-12",
+      "topicLabel": "12. Spelling, Sentence Construction, Conventions, and Assessment",
+      "unitId": "written-expression",
+      "chapterId": "tr5205-ch-12",
+      "cadenceStages": [
+        {
+          "order": 1,
+          "id": "same-day-retry",
+          "label": "Same-day retry",
+          "intervalHours": 0,
+          "action": "Retry missed checks and trace the chapter diagram",
+          "completionEvidence": "Record one corrected rationale for \"Spelling, Sentence Construction, Conventions, and Assessment\"."
+        },
+        {
+          "order": 2,
+          "id": "next-day-recall",
+          "label": "Next-day recall",
+          "intervalHours": 24,
+          "action": "Recall chapter takeaways, glossary terms, and flashcards without notes",
+          "completionEvidence": "Retrieve key definitions and quick-reference rules from memory."
+        },
+        {
+          "order": 3,
+          "id": "three-day-transfer",
+          "label": "Three-day transfer",
+          "intervalHours": 72,
+          "action": "Rework the applied case and test a changed scenario",
+          "completionEvidence": "State the rule or mechanism that holds under a new context."
+        },
+        {
+          "order": 4,
+          "id": "seven-day-mixed",
+          "label": "Seven-day mixed check",
+          "intervalHours": 168,
+          "action": "Run a mixed domain set and verify misconception traps stay closed",
+          "completionEvidence": "Confirm independent accuracy across interleaved domains."
+        }
+      ],
+      "intervalHours": [
+        0,
+        24,
+        72,
+        168
+      ],
+      "status": "internal-spaced-review-plan",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "teaching-reading-5205-source-01",
+      "title": "Teaching Reading: Elementary (5205) — Official ETS Study Companion",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
+      "credibility": "ETS develops and administers Praxis assessments; this primary source is authoritative for the published exam structure, while AlloFlow practice remains independently authored.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "teaching-reading-5205-source-02",
+      "title": "Teaching Reading: Elementary (5205) — Official ETS Test Page",
+      "organization": "Educational Testing Service (ETS)",
+      "url": "https://praxis.ets.org/test/teaching-reading-elementary-5205.html",
+      "credibility": "ETS is the assessment owner, so this is the primary public source for current test logistics and official preparation links.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "teaching-reading-5205-source-03",
+      "title": "Foundational Skills to Support Reading for Understanding in Kindergarten Through 3rd Grade",
+      "organization": "What Works Clearinghouse (WWC), Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/21/Published",
+      "credibility": "The WWC is an IES evidence-review program of the U.S. Department of Education. The guide was developed through an expert panel and systematic review, and it states the supporting-evidence level for each recommendation; users should retain those recommendation-specific ratings when applying the guidance.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    },
+    {
+      "id": "teaching-reading-5205-source-04",
+      "title": "WWC | Teaching Elementary School Students to Be Effective Writers",
+      "organization": "Institute of Education Sciences (IES), U.S. Department of Education",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/17/Published",
+      "credibility": "Institute of Education Sciences (IES), U.S. Department of Education is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+      "sourceType": "federal-guidance",
+      "reviewedAt": "2026-07-18"
+    }
+  ],
+  "unitReviewRoutes": [
+    {
+      "id": "teaching-reading-5205-unit-review-01",
+      "unitId": "phonological-emergent",
+      "unitNumber": 1,
+      "unitLabel": "Chapter 1: Emergent Literacy, Oral Language, and Development",
+      "chapterId": "tr5205-ch-01",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-01-section-01",
+        "tr5205-ch-01-section-02",
+        "tr5205-ch-01-section-03",
+        "tr5205-ch-01-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-002",
+        "tr5205-b1-003",
+        "tr5205-b1-004",
+        "tr5205-b1-005",
+        "tr5205-b1-006",
+        "tr5205-b1-007",
+        "tr5205-b1-008",
+        "tr5205-b2-001",
+        "tr5205-b2-002",
+        "tr5205-b2-003",
+        "tr5205-b2-004",
+        "tr5205-b2-005",
+        "tr5205-b2-006",
+        "tr5205-b2-007",
+        "tr5205-b2-008"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-002",
+        "tr5205-b1-003",
+        "tr5205-b1-004",
+        "tr5205-b1-005",
+        "tr5205-b1-006",
+        "tr5205-b1-007",
+        "tr5205-b1-008",
+        "tr5205-b2-001",
+        "tr5205-b2-002",
+        "tr5205-b2-003",
+        "tr5205-b2-004"
+      ],
+      "purpose": "Consolidate \"Emergent Literacy, Oral Language, and Development\" (Phonological and Phonemic Awareness and Emergent Literacy) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-02",
+      "unitId": "phonological-emergent",
+      "unitNumber": 2,
+      "unitLabel": "Chapter 2: Phonological Awareness, Phonemic Awareness, and Print Concepts",
+      "chapterId": "tr5205-ch-02",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-02-section-01",
+        "tr5205-ch-02-section-02",
+        "tr5205-ch-02-section-03",
+        "tr5205-ch-02-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-009",
+        "tr5205-b1-010",
+        "tr5205-b1-011",
+        "tr5205-b1-012",
+        "tr5205-b1-013",
+        "tr5205-b1-014",
+        "tr5205-b1-015",
+        "tr5205-b1-016",
+        "tr5205-b2-009",
+        "tr5205-b2-010",
+        "tr5205-b2-011",
+        "tr5205-b2-012",
+        "tr5205-b2-013",
+        "tr5205-b2-014",
+        "tr5205-b2-015",
+        "tr5205-b2-016"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-009",
+        "tr5205-b1-010",
+        "tr5205-b1-011",
+        "tr5205-b1-012",
+        "tr5205-b1-013",
+        "tr5205-b1-014",
+        "tr5205-b1-015",
+        "tr5205-b1-016",
+        "tr5205-b2-009",
+        "tr5205-b2-010",
+        "tr5205-b2-011",
+        "tr5205-b2-012"
+      ],
+      "purpose": "Consolidate \"Phonological Awareness, Phonemic Awareness, and Print Concepts\" (Phonological and Phonemic Awareness and Emergent Literacy) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-03",
+      "unitId": "phonics-decoding",
+      "unitNumber": 3,
+      "unitLabel": "Chapter 3: Phoneme–Grapheme Correspondence and Phonics Patterns",
+      "chapterId": "tr5205-ch-03",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-03-section-01",
+        "tr5205-ch-03-section-02",
+        "tr5205-ch-03-section-03",
+        "tr5205-ch-03-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-017",
+        "tr5205-b1-018",
+        "tr5205-b1-019",
+        "tr5205-b1-020",
+        "tr5205-b1-021",
+        "tr5205-b1-022",
+        "tr5205-b1-023",
+        "tr5205-b1-024",
+        "tr5205-b1-025",
+        "tr5205-b2-017",
+        "tr5205-b2-018",
+        "tr5205-b2-019",
+        "tr5205-b2-020",
+        "tr5205-b2-021",
+        "tr5205-b2-022",
+        "tr5205-b2-023",
+        "tr5205-b2-024",
+        "tr5205-b2-025"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-017",
+        "tr5205-b1-018",
+        "tr5205-b1-019",
+        "tr5205-b1-020",
+        "tr5205-b1-021",
+        "tr5205-b1-022",
+        "tr5205-b1-023",
+        "tr5205-b1-024",
+        "tr5205-b1-025",
+        "tr5205-b2-017",
+        "tr5205-b2-018",
+        "tr5205-b2-019"
+      ],
+      "purpose": "Consolidate \"Phoneme–Grapheme Correspondence and Phonics Patterns\" (Phonics and Decoding) across 4 lessons and 18 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-04",
+      "unitId": "phonics-decoding",
+      "unitNumber": 4,
+      "unitLabel": "Chapter 4: Decoding, Encoding, Syllables, and Morphology",
+      "chapterId": "tr5205-ch-04",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-04-section-01",
+        "tr5205-ch-04-section-02",
+        "tr5205-ch-04-section-03",
+        "tr5205-ch-04-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-026",
+        "tr5205-b1-027",
+        "tr5205-b1-028",
+        "tr5205-b1-029",
+        "tr5205-b1-030",
+        "tr5205-b1-031",
+        "tr5205-b1-032",
+        "tr5205-b1-033",
+        "tr5205-b1-034",
+        "tr5205-b1-035",
+        "tr5205-b1-036",
+        "tr5205-b2-026",
+        "tr5205-b2-027",
+        "tr5205-b2-028",
+        "tr5205-b2-029",
+        "tr5205-b2-030",
+        "tr5205-b2-031",
+        "tr5205-b2-032",
+        "tr5205-b2-033",
+        "tr5205-b2-034",
+        "tr5205-b2-035",
+        "tr5205-b2-036"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-026",
+        "tr5205-b1-027",
+        "tr5205-b1-028",
+        "tr5205-b1-029",
+        "tr5205-b1-030",
+        "tr5205-b1-031",
+        "tr5205-b1-032",
+        "tr5205-b1-033",
+        "tr5205-b1-034",
+        "tr5205-b1-035",
+        "tr5205-b1-036",
+        "tr5205-b2-026"
+      ],
+      "purpose": "Consolidate \"Decoding, Encoding, Syllables, and Morphology\" (Phonics and Decoding) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-05",
+      "unitId": "vocabulary-fluency",
+      "unitNumber": 5,
+      "unitLabel": "Chapter 5: Vocabulary, Morphology, and Knowledge Building",
+      "chapterId": "tr5205-ch-05",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-05-section-01",
+        "tr5205-ch-05-section-02",
+        "tr5205-ch-05-section-03",
+        "tr5205-ch-05-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-037",
+        "tr5205-b1-038",
+        "tr5205-b1-039",
+        "tr5205-b1-040",
+        "tr5205-b1-041",
+        "tr5205-b1-042",
+        "tr5205-b1-043",
+        "tr5205-b1-044",
+        "tr5205-b2-037",
+        "tr5205-b2-038",
+        "tr5205-b2-039",
+        "tr5205-b2-040",
+        "tr5205-b2-041",
+        "tr5205-b2-042",
+        "tr5205-b2-043",
+        "tr5205-b2-044"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-037",
+        "tr5205-b1-038",
+        "tr5205-b1-039",
+        "tr5205-b1-040",
+        "tr5205-b1-041",
+        "tr5205-b1-042",
+        "tr5205-b1-043",
+        "tr5205-b1-044",
+        "tr5205-b2-037",
+        "tr5205-b2-038",
+        "tr5205-b2-039",
+        "tr5205-b2-040"
+      ],
+      "purpose": "Consolidate \"Vocabulary, Morphology, and Knowledge Building\" (Vocabulary and Fluency) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-06",
+      "unitId": "vocabulary-fluency",
+      "unitNumber": 6,
+      "unitLabel": "Chapter 6: Accuracy, Automaticity, Rate, and Prosody",
+      "chapterId": "tr5205-ch-06",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-06-section-01",
+        "tr5205-ch-06-section-02",
+        "tr5205-ch-06-section-03",
+        "tr5205-ch-06-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-045",
+        "tr5205-b1-046",
+        "tr5205-b1-047",
+        "tr5205-b1-048",
+        "tr5205-b1-049",
+        "tr5205-b1-050",
+        "tr5205-b1-051",
+        "tr5205-b1-052",
+        "tr5205-b1-053",
+        "tr5205-b1-054",
+        "tr5205-b2-045",
+        "tr5205-b2-046",
+        "tr5205-b2-047",
+        "tr5205-b2-048",
+        "tr5205-b2-049",
+        "tr5205-b2-050",
+        "tr5205-b2-051",
+        "tr5205-b2-052",
+        "tr5205-b2-053",
+        "tr5205-b2-054"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-045",
+        "tr5205-b1-046",
+        "tr5205-b1-047",
+        "tr5205-b1-048",
+        "tr5205-b1-049",
+        "tr5205-b1-050",
+        "tr5205-b1-051",
+        "tr5205-b1-052",
+        "tr5205-b1-053",
+        "tr5205-b1-054",
+        "tr5205-b2-045",
+        "tr5205-b2-046"
+      ],
+      "purpose": "Consolidate \"Accuracy, Automaticity, Rate, and Prosody\" (Vocabulary and Fluency) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-07",
+      "unitId": "vocabulary-fluency",
+      "unitNumber": 7,
+      "unitLabel": "Chapter 7: Integrating Fluency, Vocabulary, and Comprehension",
+      "chapterId": "tr5205-ch-07",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-07-section-01",
+        "tr5205-ch-07-section-02",
+        "tr5205-ch-07-section-03",
+        "tr5205-ch-07-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b2-046",
+        "tr5205-b2-047",
+        "tr5205-b2-048",
+        "tr5205-b2-049",
+        "tr5205-b2-050",
+        "tr5205-b2-051",
+        "tr5205-b2-052",
+        "tr5205-b2-053",
+        "tr5205-b2-054",
+        "tr5205-b2-055",
+        "tr5205-b2-056",
+        "tr5205-b2-057",
+        "tr5205-b2-058",
+        "tr5205-b2-059",
+        "tr5205-b1-037",
+        "tr5205-b1-038",
+        "tr5205-b1-039",
+        "tr5205-b1-040",
+        "tr5205-b1-041",
+        "tr5205-b1-042",
+        "tr5205-b1-043",
+        "tr5205-b1-044",
+        "tr5205-b1-045",
+        "tr5205-b1-046",
+        "tr5205-b1-047",
+        "tr5205-b1-048",
+        "tr5205-b1-049",
+        "tr5205-b1-050",
+        "tr5205-b1-051",
+        "tr5205-b1-052",
+        "tr5205-b1-053",
+        "tr5205-b1-054",
+        "tr5205-b1-055",
+        "tr5205-b1-056",
+        "tr5205-b1-057",
+        "tr5205-b1-058",
+        "tr5205-b1-059",
+        "tr5205-b2-037",
+        "tr5205-b2-038",
+        "tr5205-b2-039",
+        "tr5205-b2-040",
+        "tr5205-b2-041",
+        "tr5205-b2-042",
+        "tr5205-b2-043",
+        "tr5205-b2-044"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b2-046",
+        "tr5205-b2-047",
+        "tr5205-b2-048",
+        "tr5205-b2-049",
+        "tr5205-b2-050",
+        "tr5205-b2-051",
+        "tr5205-b2-052",
+        "tr5205-b2-053",
+        "tr5205-b2-054",
+        "tr5205-b2-055",
+        "tr5205-b2-056",
+        "tr5205-b2-057"
+      ],
+      "purpose": "Consolidate \"Integrating Fluency, Vocabulary, and Comprehension\" (Vocabulary and Fluency) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-08",
+      "unitId": "comprehension",
+      "unitNumber": 8,
+      "unitLabel": "Chapter 8: Literary and Informational Text Comprehension",
+      "chapterId": "tr5205-ch-08",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-08-section-01",
+        "tr5205-ch-08-section-02",
+        "tr5205-ch-08-section-03",
+        "tr5205-ch-08-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-060",
+        "tr5205-b1-061",
+        "tr5205-b1-062",
+        "tr5205-b1-063",
+        "tr5205-b1-064",
+        "tr5205-b1-065",
+        "tr5205-b1-066",
+        "tr5205-b1-067",
+        "tr5205-b1-068",
+        "tr5205-b1-069",
+        "tr5205-b1-070",
+        "tr5205-b2-060",
+        "tr5205-b2-061",
+        "tr5205-b2-062",
+        "tr5205-b2-063",
+        "tr5205-b2-064",
+        "tr5205-b2-065",
+        "tr5205-b2-066",
+        "tr5205-b2-067",
+        "tr5205-b2-068",
+        "tr5205-b2-069",
+        "tr5205-b2-070"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-060",
+        "tr5205-b1-061",
+        "tr5205-b1-062",
+        "tr5205-b1-063",
+        "tr5205-b1-064",
+        "tr5205-b1-065",
+        "tr5205-b1-066",
+        "tr5205-b1-067",
+        "tr5205-b1-068",
+        "tr5205-b1-069",
+        "tr5205-b1-070",
+        "tr5205-b2-060"
+      ],
+      "purpose": "Consolidate \"Literary and Informational Text Comprehension\" (Comprehension of Literary and Informational Text) across 4 lessons and 22 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-09",
+      "unitId": "comprehension",
+      "unitNumber": 9,
+      "unitLabel": "Chapter 9: Knowledge, Text Structure, Research, and Digital Literacy",
+      "chapterId": "tr5205-ch-09",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-09-section-01",
+        "tr5205-ch-09-section-02",
+        "tr5205-ch-09-section-03",
+        "tr5205-ch-09-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-071",
+        "tr5205-b1-072",
+        "tr5205-b1-073",
+        "tr5205-b1-074",
+        "tr5205-b1-075",
+        "tr5205-b1-076",
+        "tr5205-b1-077",
+        "tr5205-b2-071",
+        "tr5205-b2-072",
+        "tr5205-b2-073",
+        "tr5205-b2-074",
+        "tr5205-b2-075",
+        "tr5205-b2-076",
+        "tr5205-b2-077"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-071",
+        "tr5205-b1-072",
+        "tr5205-b1-073",
+        "tr5205-b1-074",
+        "tr5205-b1-075",
+        "tr5205-b1-076",
+        "tr5205-b1-077",
+        "tr5205-b2-071",
+        "tr5205-b2-072",
+        "tr5205-b2-073",
+        "tr5205-b2-074",
+        "tr5205-b2-075"
+      ],
+      "purpose": "Consolidate \"Knowledge, Text Structure, Research, and Digital Literacy\" (Comprehension of Literary and Informational Text) across 4 lessons and 14 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-10",
+      "unitId": "comprehension",
+      "unitNumber": 10,
+      "unitLabel": "Chapter 10: Assessment-Guided Comprehension for Diverse Readers",
+      "chapterId": "tr5205-ch-10",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-10-section-01",
+        "tr5205-ch-10-section-02",
+        "tr5205-ch-10-section-03",
+        "tr5205-ch-10-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b2-062",
+        "tr5205-b2-063",
+        "tr5205-b2-064",
+        "tr5205-b2-065",
+        "tr5205-b2-066",
+        "tr5205-b2-067",
+        "tr5205-b2-068",
+        "tr5205-b2-069",
+        "tr5205-b2-070",
+        "tr5205-b2-071",
+        "tr5205-b2-072",
+        "tr5205-b2-073",
+        "tr5205-b2-074",
+        "tr5205-b2-075",
+        "tr5205-b2-076",
+        "tr5205-b2-077",
+        "tr5205-b2-078",
+        "tr5205-b2-079",
+        "tr5205-b2-080",
+        "tr5205-b2-081",
+        "tr5205-b2-082",
+        "tr5205-b1-060",
+        "tr5205-b1-061",
+        "tr5205-b1-062",
+        "tr5205-b1-063",
+        "tr5205-b1-064",
+        "tr5205-b1-065",
+        "tr5205-b1-066",
+        "tr5205-b1-067",
+        "tr5205-b1-068",
+        "tr5205-b1-069",
+        "tr5205-b1-070",
+        "tr5205-b1-071",
+        "tr5205-b1-072",
+        "tr5205-b1-073",
+        "tr5205-b1-074",
+        "tr5205-b1-075",
+        "tr5205-b1-076",
+        "tr5205-b1-077",
+        "tr5205-b1-078",
+        "tr5205-b1-079",
+        "tr5205-b1-080",
+        "tr5205-b1-081",
+        "tr5205-b1-082",
+        "tr5205-b2-060"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b2-062",
+        "tr5205-b2-063",
+        "tr5205-b2-064",
+        "tr5205-b2-065",
+        "tr5205-b2-066",
+        "tr5205-b2-067",
+        "tr5205-b2-068",
+        "tr5205-b2-069",
+        "tr5205-b2-070",
+        "tr5205-b2-071",
+        "tr5205-b2-072",
+        "tr5205-b2-073"
+      ],
+      "purpose": "Consolidate \"Assessment-Guided Comprehension for Diverse Readers\" (Comprehension of Literary and Informational Text) across 4 lessons and 45 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-11",
+      "unitId": "written-expression",
+      "unitNumber": 11,
+      "unitLabel": "Chapter 11: Writing Process, Genres, and Reading–Writing Integration",
+      "chapterId": "tr5205-ch-11",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-11-section-01",
+        "tr5205-ch-11-section-02",
+        "tr5205-ch-11-section-03",
+        "tr5205-ch-11-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-083",
+        "tr5205-b1-084",
+        "tr5205-b1-085",
+        "tr5205-b1-086",
+        "tr5205-b1-087",
+        "tr5205-b1-088",
+        "tr5205-b1-089",
+        "tr5205-b1-090",
+        "tr5205-b2-083",
+        "tr5205-b2-084",
+        "tr5205-b2-085",
+        "tr5205-b2-086",
+        "tr5205-b2-087",
+        "tr5205-b2-088",
+        "tr5205-b2-089",
+        "tr5205-b2-090"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-083",
+        "tr5205-b1-084",
+        "tr5205-b1-085",
+        "tr5205-b1-086",
+        "tr5205-b1-087",
+        "tr5205-b1-088",
+        "tr5205-b1-089",
+        "tr5205-b1-090",
+        "tr5205-b2-083",
+        "tr5205-b2-084",
+        "tr5205-b2-085",
+        "tr5205-b2-086"
+      ],
+      "purpose": "Consolidate \"Writing Process, Genres, and Reading–Writing Integration\" (Written Expression) across 4 lessons and 16 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-unit-review-12",
+      "unitId": "written-expression",
+      "unitNumber": 12,
+      "unitLabel": "Chapter 12: Spelling, Sentence Construction, Conventions, and Assessment",
+      "chapterId": "tr5205-ch-12",
+      "topicDiagnosticRouteIds": [
+        "tr5205-ch-12-section-01",
+        "tr5205-ch-12-section-02",
+        "tr5205-ch-12-section-03",
+        "tr5205-ch-12-section-04"
+      ],
+      "itemIds": [
+        "tr5205-b1-091",
+        "tr5205-b1-092",
+        "tr5205-b1-093",
+        "tr5205-b1-094",
+        "tr5205-b1-095",
+        "tr5205-b1-096",
+        "tr5205-b1-097",
+        "tr5205-b1-098",
+        "tr5205-b1-099",
+        "tr5205-b1-100",
+        "tr5205-b2-091",
+        "tr5205-b2-092",
+        "tr5205-b2-093",
+        "tr5205-b2-094",
+        "tr5205-b2-095",
+        "tr5205-b2-096",
+        "tr5205-b2-097",
+        "tr5205-b2-098",
+        "tr5205-b2-099",
+        "tr5205-b2-100"
+      ],
+      "mixedPracticeItemIds": [
+        "tr5205-b1-091",
+        "tr5205-b1-092",
+        "tr5205-b1-093",
+        "tr5205-b1-094",
+        "tr5205-b1-095",
+        "tr5205-b1-096",
+        "tr5205-b1-097",
+        "tr5205-b1-098",
+        "tr5205-b1-099",
+        "tr5205-b1-100",
+        "tr5205-b2-091",
+        "tr5205-b2-092"
+      ],
+      "purpose": "Consolidate \"Spelling, Sentence Construction, Conventions, and Assessment\" (Written Expression) across 4 lessons and 20 linked internal practice items, pairing chapter review with mixed retrieval.",
+      "status": "internal-unit-review-route",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "reviewLadders": [
+    {
+      "id": "teaching-reading-5205-ladder-01-foundation",
+      "order": 1,
+      "label": "Foundation core concepts and rules",
+      "studyMode": "foundation",
+      "purpose": "Build reliable foundational recall, core definitions, and baseline decision rules across all Praxis Teaching Reading: Elementary (5205) blueprint domains.",
+      "focus": [
+        "Phonological and Phonemic Awareness and Emergent Literacy",
+        "Phonics and Decoding",
+        "Vocabulary and Fluency",
+        "Comprehension of Literary and Informational Text"
+      ],
+      "itemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-060",
+        "tr5205-b1-018",
+        "tr5205-b1-084",
+        "tr5205-b1-039",
+        "tr5205-b1-004",
+        "tr5205-b1-063",
+        "tr5205-b1-021",
+        "tr5205-b1-087",
+        "tr5205-b1-042",
+        "tr5205-b1-007",
+        "tr5205-b1-066",
+        "tr5205-b1-024",
+        "tr5205-b1-090",
+        "tr5205-b1-045",
+        "tr5205-b1-010",
+        "tr5205-b1-069",
+        "tr5205-b1-027",
+        "tr5205-b1-093",
+        "tr5205-b1-048",
+        "tr5205-b1-013",
+        "tr5205-b1-072",
+        "tr5205-b1-030",
+        "tr5205-b1-096",
+        "tr5205-b1-051",
+        "tr5205-b1-016",
+        "tr5205-b1-075",
+        "tr5205-b1-033",
+        "tr5205-b1-099",
+        "tr5205-b1-054",
+        "tr5205-b2-003",
+        "tr5205-b1-078",
+        "tr5205-b1-036",
+        "tr5205-b2-084",
+        "tr5205-b1-057",
+        "tr5205-b2-006",
+        "tr5205-b1-081",
+        "tr5205-b2-019",
+        "tr5205-b2-087",
+        "tr5205-b2-037"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-ladder-02-application",
+      "order": 2,
+      "label": "Applied case, evidence, and data reasoning",
+      "studyMode": "application",
+      "purpose": "Apply Praxis Teaching Reading: Elementary (5205) frameworks, quantitative or diagnostic criteria, and evidence triangulation across varied scenario contexts.",
+      "focus": [
+        "Vocabulary and Fluency",
+        "Comprehension of Literary and Informational Text",
+        "Written Expression",
+        "Phonological and Phonemic Awareness and Emergent Literacy"
+      ],
+      "itemIds": [
+        "tr5205-b1-017",
+        "tr5205-b1-083",
+        "tr5205-b1-038",
+        "tr5205-b1-003",
+        "tr5205-b1-062",
+        "tr5205-b1-020",
+        "tr5205-b1-086",
+        "tr5205-b1-041",
+        "tr5205-b1-006",
+        "tr5205-b1-065",
+        "tr5205-b1-023",
+        "tr5205-b1-089",
+        "tr5205-b1-044",
+        "tr5205-b1-009",
+        "tr5205-b1-068",
+        "tr5205-b1-026",
+        "tr5205-b1-092",
+        "tr5205-b1-047",
+        "tr5205-b1-012",
+        "tr5205-b1-071",
+        "tr5205-b1-029",
+        "tr5205-b1-095",
+        "tr5205-b1-050",
+        "tr5205-b1-015",
+        "tr5205-b1-074",
+        "tr5205-b1-032",
+        "tr5205-b1-098",
+        "tr5205-b1-053",
+        "tr5205-b2-002",
+        "tr5205-b1-077",
+        "tr5205-b1-035",
+        "tr5205-b2-083",
+        "tr5205-b1-056",
+        "tr5205-b2-005",
+        "tr5205-b1-080",
+        "tr5205-b2-018",
+        "tr5205-b2-086",
+        "tr5205-b1-059",
+        "tr5205-b2-008",
+        "tr5205-b2-060"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-ladder-03-cumulative-transfer",
+      "order": 3,
+      "label": "Cumulative cross-domain synthesis and trap checks",
+      "studyMode": "transfer",
+      "purpose": "Interleave every Praxis Teaching Reading: Elementary (5205) domain under mixed conditions while actively guarding against high-frequency exam distractor traps.",
+      "focus": [
+        "Conflating Phonemic Awareness with Phonics",
+        "Three-Cueing Guessing Instead of Orthographic Mapping",
+        "Equating Oral Reading Fluency with Speed Alone"
+      ],
+      "itemIds": [
+        "tr5205-b1-037",
+        "tr5205-b1-002",
+        "tr5205-b1-061",
+        "tr5205-b1-019",
+        "tr5205-b1-085",
+        "tr5205-b1-040",
+        "tr5205-b1-005",
+        "tr5205-b1-064",
+        "tr5205-b1-022",
+        "tr5205-b1-088",
+        "tr5205-b1-043",
+        "tr5205-b1-008",
+        "tr5205-b1-067",
+        "tr5205-b1-025",
+        "tr5205-b1-091",
+        "tr5205-b1-046",
+        "tr5205-b1-011",
+        "tr5205-b1-070",
+        "tr5205-b1-028",
+        "tr5205-b1-094",
+        "tr5205-b1-049",
+        "tr5205-b1-014",
+        "tr5205-b1-073",
+        "tr5205-b1-031",
+        "tr5205-b1-097",
+        "tr5205-b1-052",
+        "tr5205-b2-001",
+        "tr5205-b1-076",
+        "tr5205-b1-034",
+        "tr5205-b1-100",
+        "tr5205-b1-055",
+        "tr5205-b2-004",
+        "tr5205-b1-079",
+        "tr5205-b2-017",
+        "tr5205-b2-085",
+        "tr5205-b1-058",
+        "tr5205-b2-007",
+        "tr5205-b1-082",
+        "tr5205-b2-020",
+        "tr5205-b2-088"
+      ],
+      "status": "internal-review-ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    }
+  ],
+  "practiceForms": [
+    {
+      "id": "teaching-reading-5205-form-internal-a",
+      "title": "Internal practice form A (Praxis Teaching Reading: Elementary (5205))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "tr5205-b1-001",
+        "tr5205-b1-060",
+        "tr5205-b1-018",
+        "tr5205-b1-084",
+        "tr5205-b1-039",
+        "tr5205-b1-004",
+        "tr5205-b1-063",
+        "tr5205-b1-021",
+        "tr5205-b1-087",
+        "tr5205-b1-042",
+        "tr5205-b1-007",
+        "tr5205-b1-066",
+        "tr5205-b1-024",
+        "tr5205-b1-090",
+        "tr5205-b1-045",
+        "tr5205-b1-010",
+        "tr5205-b1-069",
+        "tr5205-b1-027",
+        "tr5205-b1-093",
+        "tr5205-b1-048",
+        "tr5205-b1-013",
+        "tr5205-b1-072",
+        "tr5205-b1-030",
+        "tr5205-b1-096",
+        "tr5205-b1-051",
+        "tr5205-b1-016",
+        "tr5205-b1-075",
+        "tr5205-b1-033",
+        "tr5205-b1-099",
+        "tr5205-b1-054",
+        "tr5205-b2-003",
+        "tr5205-b1-078",
+        "tr5205-b1-036",
+        "tr5205-b2-084",
+        "tr5205-b1-057",
+        "tr5205-b2-006",
+        "tr5205-b1-081",
+        "tr5205-b2-019",
+        "tr5205-b2-087",
+        "tr5205-b2-037",
+        "tr5205-b2-009",
+        "tr5205-b2-061",
+        "tr5205-b2-022",
+        "tr5205-b2-090",
+        "tr5205-b2-040",
+        "tr5205-b2-012",
+        "tr5205-b2-064",
+        "tr5205-b2-025",
+        "tr5205-b2-093",
+        "tr5205-b2-043"
+      ],
+      "topicIds": [
+        "tr5205-ch-01",
+        "tr5205-ch-08",
+        "tr5205-ch-03",
+        "tr5205-ch-11",
+        "tr5205-ch-05",
+        "tr5205-ch-06",
+        "tr5205-ch-02",
+        "tr5205-ch-04",
+        "tr5205-ch-12",
+        "tr5205-ch-09",
+        "tr5205-ch-10",
+        "tr5205-ch-07"
+      ],
+      "unitIds": [
+        "phonological-emergent",
+        "comprehension",
+        "phonics-decoding",
+        "written-expression",
+        "vocabulary-fluency"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-form-internal-b",
+      "title": "Internal practice form B (Praxis Teaching Reading: Elementary (5205))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "tr5205-b1-017",
+        "tr5205-b1-083",
+        "tr5205-b1-038",
+        "tr5205-b1-003",
+        "tr5205-b1-062",
+        "tr5205-b1-020",
+        "tr5205-b1-086",
+        "tr5205-b1-041",
+        "tr5205-b1-006",
+        "tr5205-b1-065",
+        "tr5205-b1-023",
+        "tr5205-b1-089",
+        "tr5205-b1-044",
+        "tr5205-b1-009",
+        "tr5205-b1-068",
+        "tr5205-b1-026",
+        "tr5205-b1-092",
+        "tr5205-b1-047",
+        "tr5205-b1-012",
+        "tr5205-b1-071",
+        "tr5205-b1-029",
+        "tr5205-b1-095",
+        "tr5205-b1-050",
+        "tr5205-b1-015",
+        "tr5205-b1-074",
+        "tr5205-b1-032",
+        "tr5205-b1-098",
+        "tr5205-b1-053",
+        "tr5205-b2-002",
+        "tr5205-b1-077",
+        "tr5205-b1-035",
+        "tr5205-b2-083",
+        "tr5205-b1-056",
+        "tr5205-b2-005",
+        "tr5205-b1-080",
+        "tr5205-b2-018",
+        "tr5205-b2-086",
+        "tr5205-b1-059",
+        "tr5205-b2-008",
+        "tr5205-b2-060",
+        "tr5205-b2-021",
+        "tr5205-b2-089",
+        "tr5205-b2-039",
+        "tr5205-b2-011",
+        "tr5205-b2-063",
+        "tr5205-b2-024",
+        "tr5205-b2-092",
+        "tr5205-b2-042",
+        "tr5205-b2-014",
+        "tr5205-b2-066"
+      ],
+      "topicIds": [
+        "tr5205-ch-03",
+        "tr5205-ch-11",
+        "tr5205-ch-05",
+        "tr5205-ch-01",
+        "tr5205-ch-08",
+        "tr5205-ch-02",
+        "tr5205-ch-04",
+        "tr5205-ch-12",
+        "tr5205-ch-06",
+        "tr5205-ch-09",
+        "tr5205-ch-07",
+        "tr5205-ch-10"
+      ],
+      "unitIds": [
+        "phonics-decoding",
+        "written-expression",
+        "vocabulary-fluency",
+        "phonological-emergent",
+        "comprehension"
+      ],
+      "status": "internal-practice-form",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "releaseEligible": false
+    },
+    {
+      "id": "teaching-reading-5205-form-internal-c",
+      "title": "Internal practice form C (Praxis Teaching Reading: Elementary (5205))",
+      "formType": "internal-selected-response-form",
+      "itemIds": [
+        "tr5205-b1-037",
+        "tr5205-b1-002",
+        "tr5205-b1-061",
+        "tr5205-b1-019",
+        "tr5205-b1-085",
+        "tr5205-b1-040",
+        "tr5205-b1-005",
+        "tr5205-b1-064",
+        "tr5205-b1-022",
+        "tr5205-b1-088",
+        "tr5205-b1-043",
+        "tr5205-b1-008",
+        "tr5205-b1-067",
+        "tr5205-b1-025",
+        "tr5205-b1-091",
+        "tr5205-b1-046",
+        "tr5205-b1-011",
+        "tr5205-b1-070",
+        "tr5205-b1-028",
+        "tr5205-b1-094",
+        "tr5205-b1-049",
+        "tr5205-b1-014",
+        "tr5205-b1-073",
+        "tr5205-b1-031",
+        "tr5205-b1-097",
+        "tr5205-b1-052",
+        "tr5205-b2-001",
+        "tr5205-b1-076",
+        "tr5205-b1-034",
+        "tr5205-b1-100",
+        "tr5205-b1-055",
+        "tr5205-b2-004",
+        "tr5205-b1-079",
+        "tr5205-b2-017",
+        "tr5205-b2-085",
+        "tr5205-b1-058",
+        "tr5205-b2-007",
+        "tr5205-b1-082",
+        "tr5205-b2-020",
+        "tr5205-b2-088",
+        "tr5205-b2-038",
+        "tr5205-b2-010",
+        "tr5205-b2-062",
+        "tr5205-b2-023",
+        "tr5205-b2-091",
+        "tr5205-b2-041",
+        "tr5205-b2-013",
+        "tr5205-b2-065",
+        "tr5205-b2-026",
+        "tr5205-b2-094"
+      ],
+      "topicIds": [
+        "tr5205-ch-05",
+        "tr5205-ch-01",
+        "tr5205-ch-08",
+        "tr5205-ch-03",
+        "tr5205-ch-11",
+        "tr5205-ch-12",
+        "tr5205-ch-06",
+        "tr5205-ch-02",
+        "tr5205-ch-04",
+        "tr5205-ch-09",
+        "tr5205-ch-07",
+        "tr5205-ch-10"
+      ],
+      "unitIds": [
+        "vocabulary-fluency",
+        "phonological-emergent",
+        "comprehension",
+        "phonics-decoding",
+        "written-expression"
+      ],
+      "status": "internal-practice-form",
       "reviewStatus": "source-reviewed-editorial-pass",
       "releaseEligible": false
     }

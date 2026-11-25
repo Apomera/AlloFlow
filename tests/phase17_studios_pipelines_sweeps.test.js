@@ -216,7 +216,10 @@ describe('Phase 17: Heavyweight Studios, Core Pipelines & Verified Sweeps', () =
 
   it('Sweeps #2-#6: SEL AA contrast, deferred revokeObjectURL, STEM fetch timeouts, export <th scope>, and handled clipboard rejections', () => {
     // Sweep #2: SEL contrast
-    expect(fs.readFileSync(path.join(ROOT, 'sel_hub/sel_tool_anxietytoolkit.js'), 'utf8')).toContain("_anxBg('#0369a1')");
+    // The parked-worries header keeps its sky-700 fill under white text via _anxBtnFill (black + yellow border in high contrast).
+    const anxSrc = fs.readFileSync(path.join(ROOT, 'sel_hub/sel_tool_anxietytoolkit.js'), 'utf8');
+    expect(anxSrc).toContain("background: _anxBtnFill('#0369a1'), border: _anxHC ? '1px solid #ffff00' : 'none', color: _anxFg('#fff')");
+    expect(anxSrc).toContain("if (_anxHC) return '#000000';");
     expect(fs.readFileSync(path.join(ROOT, 'sel_hub/sel_tool_motivationalinterviewing.js'), 'utf8')).toContain("_moiBg('#0369a1')");
     const socSrc = fs.readFileSync(path.join(ROOT, 'sel_hub/sel_tool_social.js'), 'utf8');
     expect(socSrc).toContain("'#0ea5e9':'#0369a1'");

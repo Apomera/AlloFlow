@@ -121,7 +121,9 @@ describe('the review list shows how to decide', () => {
     expect(r.reviewDecisions['equalAccess|potential|text_sensory_misuse'].option).toBe('fine');
     expect('reviewDecisions' in fn({ reviewDecisions: { a: 1 } }, null, null)).toBe(true); // undefined keeps the stored map
     const line = "reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,";
-    expect(VIEW.split(line).length - 1).toBe(2);
+    // One shared view loader serves both entry points since 2026-11-21 (_loadProjectFromFileInput).
+    expect(VIEW.split(line).length - 1).toBe(1);
+    expect(VIEW).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
     expect(readFileSync(resolve(process.cwd(), 'view_sidebar_panels_source.jsx'), 'utf8').includes(line)).toBe(true);
     expect(readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8').includes("reviewDecisions: (cur.reviewDecisions && typeof cur.reviewDecisions === 'object') ? cur.reviewDecisions : null,")).toBe(true);
   });

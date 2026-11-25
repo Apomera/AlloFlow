@@ -146,7 +146,8 @@ describe('Other Resources Polish — Wave 25 + Cloudflare STEAM Tool Links', () 
         infoModalTab: 'atlas',
         setInfoModalTab: vi.fn(),
         setShowInfoModal: vi.fn(),
-        t: (k, fb) => (typeof fb === 'string' ? fb : k),
+        // Like the host: an unknown key is undefined, so the English fallback shows.
+        t: (k, fb) => (typeof fb === 'string' ? fb : undefined),
       }));
     });
 
@@ -162,7 +163,8 @@ describe('Other Resources Polish — Wave 25 + Cloudflare STEAM Tool Links', () 
       steamHub.open = true;
       steamHub.dispatchEvent(new window.Event('toggle'));
     });
-    expect(steamHub.textContent).toContain('alloflow-cdn.pages.dev');
+    expect(steamHub.querySelector('a[href="https://alloflow-cdn.pages.dev/tools.html#directory-heading"]')).toBeTruthy();
+    expect(steamHub.textContent).not.toMatch(/Cloudflare/);
 
     // Open Earth & Space Science area and select Water Cycle
     const waterChip = steamHub.querySelector('[data-atlas-steam-tool="Water Cycle"]');
@@ -179,11 +181,11 @@ describe('Other Resources Polish — Wave 25 + Cloudflare STEAM Tool Links', () 
     expect(openLink?.getAttribute('rel')).toContain('noopener');
     expect(openLink?.getAttribute('rel')).toContain('noreferrer');
 
-    const copyBtn = selectedPanel.querySelector('button[aria-label="Copy Cloudflare link for Water Cycle"]');
+    const copyBtn = selectedPanel.querySelector('button[aria-label="Copy the link for Water Cycle"]');
     expect(copyBtn).toBeTruthy();
     await act(async () => { copyBtn.click(); });
     expect(writeText).toHaveBeenCalledWith('https://alloflow-cdn.pages.dev/water-cycle');
-    expect(areaDetails.querySelector('[role="status"]')?.textContent).toContain('Copied Cloudflare link for Water Cycle.');
+    expect(areaDetails.querySelector('[role="status"]')?.textContent).toContain('Copied the link for Water Cycle.');
 
     // Toggle all links in this area
     const allToggle = areaDetails.querySelector('[data-atlas-area-links-toggle="true"]');
@@ -262,6 +264,10 @@ describe('Other Resources Polish — Wave 25 + Cloudflare STEAM Tool Links', () 
     expect(waterCard).toBeTruthy();
     await act(async () => { waterCard.click(); });
 
+    // 2026-11-23: with a tool open, "Cloudflare link" is an item in the top bar's More menu.
+    const moreToggle = stemHost.querySelector('[data-stem-more-toggle="true"]');
+    expect(moreToggle).toBeTruthy();
+    await act(async () => { moreToggle.click(); });
     const activeToggle = stemHost.querySelector('[data-stem-direct-link-toggle="true"]');
     expect(activeToggle).toBeTruthy();
     await act(async () => { activeToggle.click(); });

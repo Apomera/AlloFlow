@@ -2,9 +2,9 @@
   'use strict';
 
   var api = factory();
-  if (root) root.AlloSheetAnalysis = api;
-  if (typeof module === 'object' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+  if (root && typeof root === 'object') root.AlloSheetAnalysis = api;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null, function () {
   'use strict';
 
   var MAX_VISUAL_GROUPS = 50;
@@ -42,8 +42,19 @@
     throw error;
   }
 
+  function safeString(value) {
+    if (value === null || value === undefined) return '';
+    try { return String(value); } catch (_) { return ''; }
+  }
+
+  function columnType(columnTypes, column) {
+    return columnTypes && typeof columnTypes === 'object' && Object.prototype.hasOwnProperty.call(columnTypes, column)
+      ? columnTypes[column]
+      : 'text';
+  }
+
   function isBlank(value) {
-    return value === null || value === undefined || String(value).trim() === '';
+    return value === null || value === undefined || safeString(value).trim() === '';
   }
 
   function strictNumber(value) {
@@ -122,15 +133,15 @@
   }
 
   function normalizeSpec(spec, columns, columnTypes) {
-    spec = spec || {};
+    spec = spec && typeof spec === 'object' ? spec : {};
     var allowed = Object.create(null);
-    (columns || []).forEach(function (column) { allowed[String(column)] = true; });
-    var filterColumn = String(spec.filterColumn || '');
-    var groupColumn = String(spec.groupColumn || '');
-    var measureColumn = String(spec.measureColumn || '__count__');
-    var calculation = String(spec.calculation || 'count');
-    var filterOperator = String(spec.filterOperator || 'contains');
-    var representation = String(spec.representation || 'bar');
+    (Array.isArray(columns) ? columns : []).forEach(function (column) { allowed[safeString(column)] = true; });
+    var filterColumn = safeString(spec.filterColumn || '');
+    var groupColumn = safeString(spec.groupColumn || '');
+    var measureColumn = safeString(spec.measureColumn || '__count__');
+    var calculation = safeString(spec.calculation || 'count');
+    var filterOperator = safeString(spec.filterOperator || 'contains');
+    var representation = safeString(spec.representation || 'bar');
     if (filterColumn && !allowed[filterColumn]) fail('Choose a valid filter column.');
     if (!groupColumn || !allowed[groupColumn]) fail('Choose a column to group by.');
     if (!FILTER_OPERATORS[filterOperator]) fail('Choose a supported filter condition.');
@@ -138,7 +149,8 @@
     if (calculation === 'count') measureColumn = '__count__';
     if (measureColumn !== '__count__') {
       if (!allowed[measureColumn]) fail('Choose a valid measure column.');
-      if (columnTypes[measureColumn] !== 'number' && columnTypes[measureColumn] !== 'duration') {
+      var measureType = columnType(columnTypes, measureColumn);
+      if (measureType !== 'number' && measureType !== 'duration') {
         fail('The selected measure must contain numeric values.');
       }
     }
@@ -146,17 +158,18 @@
       fail('Choose a numeric measure for this calculation.');
     }
     if (representation !== 'bar' && representation !== 'trend') representation = 'bar';
+    var groupType = columnType(columnTypes, groupColumn);
     if (
       representation === 'trend'
-      && columnTypes[groupColumn] !== 'date'
-      && columnTypes[groupColumn] !== 'datetime'
+      && groupType !== 'date'
+      && groupType !== 'datetime'
     ) {
       fail('A trend requires an ISO date or date-time group column.');
     }
     return {
       filterColumn: filterColumn,
       filterOperator: filterOperator,
-      filterValue: String(spec.filterValue == null ? '' : spec.filterValue),
+      filterValue: safeString(spec.filterValue == null ? '' : spec.filterValue),
       groupColumn: groupColumn,
       measureColumn: measureColumn,
       calculation: calculation,
@@ -165,8 +178,8 @@
   }
 
   function compareText(left, right) {
-    return String(left == null ? '' : left).trim().toLocaleLowerCase()
-      === String(right == null ? '' : right).trim().toLocaleLowerCase();
+    return safeString(left == null ? '' : left).trim().toLocaleLowerCase()
+      === safeString(right == null ? '' : right).trim().toLocaleLowerCase();
   }
 
   function arrayMin(values) {
@@ -186,15 +199,18 @@
   }
 
   function filterRecords(records, spec, columnTypes) {
-    if (!spec.filterColumn) return (records || []).slice();
-    var target = String(spec.filterValue == null ? '' : spec.filterValue).trim();
+    spec = spec && typeof spec === 'object' ? spec : {};
+    var sourceRecords = Array.isArray(records) ? records : [];
+    if (!spec.filterColumn) return sourceRecords.slice();
+    var target = safeString(spec.filterValue == null ? '' : spec.filterValue).trim();
     var numericTarget = null;
     if (spec.filterOperator === 'gte' || spec.filterOperator === 'lte') {
       numericTarget = strictNumber(target);
       if (numericTarget === null) fail('Enter a valid number for the numeric filter.');
+      var filterType = columnType(columnTypes, spec.filterColumn);
       if (
-        columnTypes[spec.filterColumn] !== 'number'
-        && columnTypes[spec.filterColumn] !== 'duration'
+        filterType !== 'number'
+        && filterType !== 'duration'
       ) {
         fail('Greater-than and less-than filters require a numeric column.');
       }
@@ -205,7 +221,7 @@
     ) {
       fail('Enter a filter value or choose a blank-value condition.');
     }
-    return (records || []).filter(function (record) {
+    return sourceRecords.filter(function (record) {
       var value = ownField(record, spec.filterColumn);
       if (spec.filterOperator === 'is-blank') return isBlank(value);
       if (spec.filterOperator === 'not-blank') return !isBlank(value);
@@ -219,7 +235,7 @@
         var lteValue = strictNumber(value);
         return lteValue !== null && lteValue <= numericTarget;
       }
-      return String(value == null ? '' : value).toLocaleLowerCase()
+      return safeString(value == null ? '' : value).toLocaleLowerCase()
         .indexOf(target.toLocaleLowerCase()) !== -1;
     });
   }
@@ -233,7 +249,7 @@
         blank: true
       };
     }
-    var raw = String(value).trim();
+    var raw = safeString(value).trim();
     if (type === 'date') {
       if (validIsoDate(raw)) {
         return { key: 'dated:' + raw, label: raw, trendEligible: true, blank: false };
@@ -288,14 +304,15 @@
   }
 
   function aggregateGroups(records, spec, columnTypes) {
+    spec = spec && typeof spec === 'object' ? spec : {};
     var grouped = Object.create(null);
     var groupKeys = [];
     var includedMeasureCount = 0;
     var excludedMeasureCount = 0;
-    (records || []).forEach(function (record) {
+    (Array.isArray(records) ? records : []).forEach(function (record) {
       var descriptor = groupDescriptor(
         ownField(record, spec.groupColumn),
-        columnTypes[spec.groupColumn]
+        columnType(columnTypes, spec.groupColumn)
       );
       if (!grouped[descriptor.key]) {
         grouped[descriptor.key] = {
@@ -425,8 +442,8 @@
   }
 
   function buildAnalysis(records, columns, declaredDetails, inputSpec) {
-    var copiedRecords = (records || []).slice();
-    var copiedColumns = (columns || []).map(String);
+    var copiedRecords = Array.isArray(records) ? records.slice() : [];
+    var copiedColumns = Array.isArray(columns) ? columns.map(safeString) : [];
     var columnTypes = inferColumnTypes(copiedRecords, copiedColumns, declaredDetails);
     var spec = normalizeSpec(inputSpec, copiedColumns, columnTypes);
     var filtered = filterRecords(copiedRecords, spec, columnTypes);
@@ -477,14 +494,14 @@
   }
 
   function buildColumnProfile(records, columns, declaredDetails) {
-    var copiedRecords = (records || []).slice();
-    var copiedColumns = (columns || []).map(String);
+    var copiedRecords = Array.isArray(records) ? records.slice() : [];
+    var copiedColumns = Array.isArray(columns) ? columns.map(safeString) : [];
     var columnTypes = inferColumnTypes(copiedRecords, copiedColumns, declaredDetails);
     var profiles = copiedColumns.map(function (column) {
       var values = copiedRecords.map(function (record) { return ownField(record, column); });
       var nonBlankValues = values.filter(function (value) { return !isBlank(value); });
       var distinct = Object.create(null);
-      nonBlankValues.forEach(function (value) { distinct[typeof value + ':' + String(value).trim()] = true; });
+      nonBlankValues.forEach(function (value) { distinct[typeof value + ':' + safeString(value).trim()] = true; });
       return {
         column: column,
         type: columnTypes[column],

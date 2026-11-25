@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-plt-grades-5-9-5623-learning-library",
@@ -55,8 +56,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "0b3b2e28778bf269915e8a4db1c96c963d9f1d7438848d9a931eb055d0f31ac2",
-    "learningLibrarySha256": "e713c39800aead86632c74774ada00436afe1c5758224a8b1a72689ce0fa3821",
+    "sourceItemsSha256": "78d2c0ffb86994c62355daa9379841b674a6d6251816b07d8a74c3c58f16f9a2",
+    "learningLibrarySha256": "abe278eb1548755bbab0a4c76a42abdb1d2f538a9c86bba6144eaec38f464e21",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

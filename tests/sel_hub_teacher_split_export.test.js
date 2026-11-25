@@ -126,11 +126,13 @@ describe('who sees the authoring controls', () => {
 });
 
 describe('Save / Export', () => {
-  it('"Save now" asks the host for a project save', async () => {
+  // 2026-11-23: the Start-here "Save now" note is gone; the hub has one save label, "Export now",
+  // in the "Saving and sharing" fold (same requestProjectSave action).
+  it('"Export now" asks the host for a project save', async () => {
     const onExportRequested = vi.fn(() => true);
     const h = mountHub({ isTeacherMode: false, onExportRequested });
     await flush();
-    act(() => { h.container.querySelector('[aria-label="Save or export SEL work now"]').click(); });
+    act(() => { h.container.querySelector('[data-sel-save-action]').click(); });
     expect(onExportRequested).toHaveBeenCalledTimes(1);
   });
 

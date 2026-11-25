@@ -15,9 +15,12 @@ describe('source buttons share one style', () => {
   const start = source.indexOf('const sourcePillClass');
   const region = source.slice(source.indexOf('id="tour-upload-source"'), source.indexOf('{changeOpen && <button type="button" data-source-change-cancel'));
 
-  it('defines one pill class and uses it for Upload, Open PDF project, Link, Write with AI and Books', () => {
+  // 2026-11-23 (M4): seven pills: Upload, Find online, the "Other ways to start" toggle, and behind it
+  // Write with AI, Reading catalog, Dictate and Open PDF project (Dictate joined after 11-09).
+  it('defines one pill class and uses it for Upload, Find online, Other ways to start, Write with AI, Reading catalog, Dictate and Open PDF project', () => {
     expect(start).toBeGreaterThan(0);
-    expect((region.match(/sourcePillClass/g) || []).length).toBe(5);
+    expect((region.match(/sourcePillClass/g) || []).length).toBe(7);
+    expect(region).toContain('data-source-other-ways-toggle');
     for (const old of ['bg-amber-50', 'bg-violet-50', 'bg-indigo-50 text-indigo-600']) expect(region, old).not.toContain(old);
   });
 
@@ -45,7 +48,8 @@ describe('Teach Live no longer looks like the selected tab', () => {
   const block = header.slice(header.lastIndexOf('<button', at), header.indexOf('</button>', at));
 
   it('is outlined when idle and solid green when live, with a lamp that matches', () => {
-    expect(block).toContain("'bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-600' : 'bg-white/10 text-white border-white/60 hover:bg-white/20'");
+    // Hover darkens to emerald-800 (white on emerald-600 is under 4.5:1).
+    expect(block).toContain("'bg-emerald-700 text-white border-emerald-300 hover:bg-emerald-800' : 'bg-white/10 text-white border-white/60 hover:bg-white/20'");
     expect(block).toContain("data-live-lamp={activeSessionCode ? 'on' : 'off'}");
     expect(block).not.toContain('bg-white text-indigo-950');
   });

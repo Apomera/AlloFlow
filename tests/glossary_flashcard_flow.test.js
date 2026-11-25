@@ -66,7 +66,8 @@ describe('glossary flashcard review rounds', () => {
     const read = v.container.querySelector('[data-flashcard-face="back"] button[aria-label="common.read_translated_definition: French"]');
     expect(read.textContent).toBe(definition);
     await click(read);
-    expect(handleSpeak).toHaveBeenCalledWith(definition, 'fc-back-def-French');
+    // Speech now names the deck language so the French voice reads it.
+    expect(handleSpeak).toHaveBeenCalledWith(definition, 'fc-back-def-French', 0, false, 'French');
   });
   it('summarizes rated and skipped cards, reviews only remaining cards, and restarts the full deck', async () => {
     vi.useFakeTimers(); const v = mount();

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // sel_tool_sourcesofstrength.js — Sources of Strength
 // An UPSTREAM youth suicide prevention tool based on the Sources
-// of Strength framework (Wyman, LoMurray, etc.). The premise: most
+// of Strength framework (LoMurray; evaluated by Wyman et al.). Most
 // suicide prevention is downstream (after a student is in crisis).
 // Sources of Strength shifts the work UPSTREAM — building eight
 // protective factors before crisis hits. The program has the
@@ -59,7 +59,7 @@
     return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
   }
 
-  // The 8 Sources of Strength (Wyman framework)
+  // The 8 Sources of Strength (LoMurray framework)
   var SOURCES = [
     { id: 'family',  label: 'Family support', icon: '🏠', color: '#ec4899',
       what: 'Family in the broad sense: people who claim you, who you can count on, who would show up for you. Biological, chosen, or otherwise.',
@@ -115,7 +115,7 @@
   window.SelHub.registerTool('sourcesOfStrength', {
     icon: '🌟',
     label: 'Sources of Strength',
-    desc: 'Map your 8 protective factors — Family, Friends, Mentors, Healthy Activities, Generosity, Spirituality, Medical Access, Mental Health Access. Built on the Sources of Strength framework (Wyman et al.), the strongest evidence-based upstream youth suicide prevention program. Complements Crisis Companion on the protective side.',
+    desc: 'Map your 8 protective factors \u2014 Family, Friends, Mentors, Healthy Activities, Generosity, Spirituality, Medical Access, Mental Health Access. Built on the Sources of Strength framework (LoMurray; evaluated by Wyman et al.), one of the best-evidenced upstream youth suicide prevention programs for schools. Complements Crisis Companion on the protective side.',
     color: 'amber',
     category: 'care-of-self',
     render: function(ctx) {
@@ -277,7 +277,7 @@
           h('div', { style: { padding: 18, borderRadius: 14, background: _souSoftBg('linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', '#fffbeb'), border: '1px solid ' + _souBd('#f59e0b'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _souFg('#fde68a'), marginBottom: 4 } }, 'Strength is built upstream, not at the cliff.'),
             h('p', { style: { margin: '0 0 10px', color: _souFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
-              'Sources of Strength is the strongest evidence-based youth suicide prevention model in US schools. Its insight: most suicide prevention happens DOWNSTREAM, after a student is already in crisis. Sources of Strength moves the work UPSTREAM — building eight protective factors over time, before crisis hits.'
+              'Sources of Strength is one of the best-evidenced youth suicide prevention models in US schools. Its insight: most suicide prevention happens DOWNSTREAM, after a student is already in crisis. Sources of Strength moves the work UPSTREAM \u2014 building eight protective factors over time, before crisis hits.'
             ),
             h('p', { style: { margin: 0, color: _souFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
               'The model is not a screener. It is a MAP. The 8 sources are the supports that hold you up. Most people have some strong sources and some thin ones; the work is to know which is which, and to build the thin ones over time.'
@@ -528,7 +528,7 @@
             }),
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid ' + _souBd('#cbd5e1'), fontSize: 12, color: _souFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
-              'Sources of Strength framework (Wyman et al., University of Rochester). ',
+              'Sources of Strength framework (LoMurray; evaluated by Wyman et al., University of Rochester). ',
               'For acute crisis: 988 Suicide and Crisis Lifeline · 741741 Crisis Text Line (text HOME). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -548,10 +548,10 @@
           h('div', { style: { padding: 16, borderRadius: 12, background: _souBg('#0f172a'), border: '1px solid ' + _souBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 16 } }, 'What Sources of Strength is'),
             h('p', { style: { margin: '0 0 10px', color: _souFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'Sources of Strength is an upstream youth suicide prevention model developed at the University of Rochester (Peter Wyman, Mark LoMurray, and colleagues) starting in the 1990s. The premise: rather than waiting for a student to be in crisis and then intervening, build the eight protective factors that prevent crisis in the first place. The full program uses peer leaders (students trained to spread protective-factor messaging) plus adult advisors. This tool is the self-mapping version, designed for individual students or use in advisory.'
+              'Sources of Strength is an upstream youth suicide prevention model developed by Mark LoMurray in North Dakota in 1998, with rural and tribal communities. It has been evaluated since 2006 by Peter Wyman\'s team at the University of Rochester. The premise: rather than waiting for a student to be in crisis and then intervening, build the eight protective factors that prevent crisis in the first place. The full program uses peer leaders (students trained to spread protective-factor messaging) plus adult advisors. This tool is the self-mapping version, designed for individual students or use in advisory.'
             ),
             h('p', { style: { margin: 0, color: _souFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
-              'Sources of Strength has been evaluated in randomized trials and has the strongest evidence base of any school-based youth suicide prevention program. The Wyman et al. (2010) trial in 18 New York high schools showed it changed student attitudes about seeking help, increased the likelihood that students reported referring a suicidal friend to an adult, and shifted school-wide norms.'
+              'Sources of Strength has been evaluated in randomized trials and is one of the best-evidenced school-based youth suicide prevention programs. The Wyman et al. (2010) trial in 18 high schools in Georgia, New York and North Dakota found that trained peer leaders were more likely to refer a suicidal friend to an adult, and that students school-wide became more likely to see adults as a source of help.'
             )
           ),
 
@@ -565,7 +565,7 @@
           h('div', { style: { padding: 16, borderRadius: 12, background: _souBg('#0f172a'), border: '1px solid ' + _souBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _souFg('#fcd34d'), fontSize: 16 } }, '📚 Sources and learn more'),
             sourceCard('Sources of Strength (official program)', 'sourcesofstrength.org', 'The official program. School-based training, peer leader curriculum, evidence base. Districts can contract for training.', 'https://sourcesofstrength.org/'),
-            sourceCard('Wyman, P. A. et al. (2010)', '"An Outcome Evaluation of the Sources of Strength Suicide Prevention Program Delivered by Adolescent Peer Leaders in High Schools," American Journal of Public Health, 100(9), 1653-1661', 'Landmark RCT of the full program in 18 NY high schools.', null),
+            sourceCard('Wyman, P. A. et al. (2010)', '"An Outcome Evaluation of the Sources of Strength Suicide Prevention Program Delivered by Adolescent Peer Leaders in High Schools," American Journal of Public Health, 100(9), 1653-1661', 'Landmark RCT of the full program in 18 high schools in Georgia, New York and North Dakota.', null),
             sourceCard('AFSP (American Foundation for Suicide Prevention)', 'afsp.org', 'Major US suicide prevention organization. Resources for youth, schools, families.', 'https://afsp.org/'),
             sourceCard('Suicide Prevention Resource Center', 'sprc.org', 'US federal SAMHSA-funded resource center. Lists evidence-based programs including Sources of Strength.', 'https://sprc.org/'),
             sourceCard('988 Suicide and Crisis Lifeline', '988lifeline.org', 'Free 24/7 phone, text, and chat support. Call or text 988.', 'https://988lifeline.org/'),

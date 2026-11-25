@@ -76,7 +76,8 @@ describe('Phase 18: SEL Secrets-Lock, Core Fetch, Desktop Electron/MCP & Apps Sc
     expect(mainSrc).toContain('isSameOrigin(senderUrl, getBundledAppOrigin())');
     expect(mainSrc).toContain('const isSymlinkPath = (p) =>');
     expect(mainSrc).toContain('fs.constants.O_NOFOLLOW');
-    expect(mainSrc).toContain('Promise.resolve(shell.openExternal(url)).catch(');
+    // openExternalIfSafe hands the OS the parsed, normalized href, and still catches a rejection.
+    expect(mainSrc).toContain('Promise.resolve(shell.openExternal(parsed.href)).catch(');
   });
 
   it('Desktop MCP, LAN adapter & Command Center: prototype-safe tool dispatch, claimOutputPath containment, fail-closed verifier, bounded fetches, and resetAppBridge fix', () => {
@@ -105,11 +106,17 @@ describe('Phase 18: SEL Secrets-Lock, Core Fetch, Desktop Electron/MCP & Apps Sc
 
   it('apps_script/school_rewards/Code.gs: cart_ keeps "__proto__" as own entry (never returns empty) and email schedule runs locked_', () => {
     const ctx = loadAppsScriptInVm('apps_script/school_rewards/Code.gs');
-    const cart = ctx.cart_([{ catalogId: '__proto__', quantity: 2 }, { catalogId: 'constructor', quantity: 1 }]);
+    // id_() now refuses prototype-named (and short) catalog ids outright, so such a cart fails loudly
+    // instead of ever returning empty or touching Object.prototype; real ids still merge in a null-prototype map.
+    for (const reserved of ['__proto__', 'constructor', 'toString']) {
+      expect(() => ctx.cart_([{ catalogId: reserved, quantity: 2 }])).toThrow('A valid catalog item id is required.');
+    }
+    const cart = ctx.cart_([{ catalogId: 'item_bbbb0002', quantity: 1 }, { catalogId: 'item_aaaa0001', quantity: 2 }, { catalogId: 'item_bbbb0002', quantity: 3 }]);
     expect(cart).toEqual([
-      { catalogId: '__proto__', quantity: 2 },
-      { catalogId: 'constructor', quantity: 1 },
+      { catalogId: 'item_aaaa0001', quantity: 2 },
+      { catalogId: 'item_bbbb0002', quantity: 4 },
     ]);
+    expect(Object.prototype.quantity).toBeUndefined();
     const src = fs.readFileSync(path.join(ROOT, 'apps_script/school_rewards/Code.gs'), 'utf8');
     const schedIdx = src.indexOf('function configureSchoolRewardsEmailSchedule(');
     const schedBody = src.slice(schedIdx, schedIdx + 950);

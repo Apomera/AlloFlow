@@ -88,6 +88,14 @@ const leadLibWorkshops = require('./learning_library_workshops/lead_lib_workshop
 const ecParaproWorkshops = require('./learning_library_workshops/ec_parapro_workshops_12.cjs');
 const spedCoreEbdWorkshops = require('./learning_library_workshops/sped_core_ebd_workshops_12.cjs');
 const spedEcIdWorkshops = require('./learning_library_workshops/sped_ec_id_workshops_12.cjs');
+const apLibraryAccuracyFixes = Object.assign(
+  {},
+  require('./item_quality_patches/ap_calc_stats_lib_fixes.cjs'),
+  require('./item_quality_patches/ap_chem_phys_lib_fixes.cjs'),
+  require('./item_quality_patches/ap_bio_psych_lib_fixes.cjs'),
+  require('./item_quality_patches/ap_ush_lib_fixes.cjs'),
+  require('./item_quality_patches/ap_usgov_lib_fixes.cjs')
+);
 const spedLdSpWorkshops = require('./learning_library_workshops/sped_ld_sp_workshops_12.cjs');
 const ap6QuickRef = require('./learning_library_quick_ref/ap_6_quick_ref.cjs');
 const clinical4QuickRef = require('./learning_library_quick_ref/clinical_4_quick_ref.cjs');
@@ -101,6 +109,12 @@ const literacyEsolEc4Playbooks = require('./learning_library_playbooks/literacy_
 const sped6Playbooks = require('./learning_library_playbooks/sped_6_playbooks_36.cjs');
 const coreParaproPlt4Playbooks = require('./learning_library_playbooks/core_parapro_plt_4_playbooks_24.cjs');
 const plt59712LeadLib4Playbooks = require('./learning_library_playbooks/plt_59_712_lead_lib_4_playbooks_24.cjs');
+const {
+  buildStudySessionsAndSpacedPlans,
+  buildSourceCatalog,
+  validateScopeGuards,
+} = require('./learning_library_study_sessions/build_study_sessions_and_sources.cjs');
+const { buildStudyPlanRoutes } = require('./learning_library_study_sessions/build_study_plan_routes_29.cjs');
 const libraryQuickReferences = {
   ...ap6QuickRef,
   ...clinical4QuickRef,
@@ -780,6 +794,129 @@ for (const [stem, packPb] of Object.entries(libraryMisconceptionPlaybooks || {})
   const changed = before !== after ? playbooks.length : 0;
   console.log(`${stem} playbooks: ${playbooks.length} validated, ${changed} changed, ${seenPb.size}/${playbooks.length} unique`);
   if (changed > 0) saveLib(fileName, lib);
+}
+
+// 15 & 16. Guided Study Sessions, Spaced-Review Cadence Plans, and Public Source Catalogs (30/30 non-EPPP libraries)
+const referenceCatalog = JSON.parse(fs.readFileSync(path.join(testPrepDir, 'reference_catalog.json'), 'utf8'));
+const allNonEpppStems = fs.readdirSync(testPrepDir)
+  .filter((f) => f.endsWith('_learning_library.json') && f !== 'eppp_learning_library.json')
+  .map((f) => f.replace('_learning_library.json', ''))
+  .sort();
+
+for (const stem of allNonEpppStems) {
+  const fileName = stem + '_learning_library.json';
+  const lib = JSON.parse(fs.readFileSync(path.join(testPrepDir, fileName), 'utf8'));
+  let libChanged = false;
+
+  // Step 15: Study sessions & spaced-review plans (preserve AP Physics 1's native study-plan layer untouched)
+  if (stem !== 'ap_physics_1_foundation_pilot') {
+    const built = buildStudySessionsAndSpacedPlans(stem, lib, testPrepDir);
+    validateScopeGuards(stem, built);
+    if (built.studySessionPlans.length < 7 || built.spacedReviewPlans.length !== (lib.chapters || []).length) {
+      throw new Error(`${stem} studySessions: invalid counts (${built.studySessionPlans.length}/${built.spacedReviewPlans.length})`);
+    }
+    const before = JSON.stringify({
+      s: lib.studySessionPlans,
+      sp: lib.spacedReviewPlans,
+      sc: lib.summary?.studySessions,
+    });
+    lib.studySessionPlans = built.studySessionPlans;
+    lib.spacedReviewPlans = built.spacedReviewPlans;
+    if (lib.summary && typeof lib.summary === 'object') {
+      lib.summary.studySessions = built.studySessionPlans.length;
+    }
+    const after = JSON.stringify({
+      s: lib.studySessionPlans,
+      sp: lib.spacedReviewPlans,
+      sc: lib.summary?.studySessions,
+    });
+    const changed = before !== after ? built.studySessionPlans.length : 0;
+    if (changed > 0) libChanged = true;
+    console.log(`${stem} studySessions: ${built.studySessionPlans.length} sessions, ${built.spacedReviewPlans.length} spaced plans, ${changed} changed`);
+  }
+
+  // Step 16: Public source catalog for all 22 Praxis/ParaPro libraries (preserve AP sourceCatalogs untouched)
+  if (!stem.startsWith('ap_')) {
+    const catalog = buildSourceCatalog(stem, lib, referenceCatalog);
+    validateScopeGuards(stem, catalog);
+    if (catalog.length < 3) {
+      throw new Error(`${stem} sourceCatalog: expected at least 3 verified catalog sources, got ${catalog.length}`);
+    }
+    const before = JSON.stringify({ sc: lib.sourceCatalog, count: lib.summary?.sourceCatalogCount });
+    lib.sourceCatalog = catalog;
+    if (lib.summary && typeof lib.summary === 'object') {
+      lib.summary.sourceCatalogCount = catalog.length;
+    }
+    const after = JSON.stringify({ sc: lib.sourceCatalog, count: lib.summary?.sourceCatalogCount });
+    const changed = before !== after ? catalog.length : 0;
+    if (changed > 0) libChanged = true;
+    console.log(`${stem} sourceCatalog: ${catalog.length} verified sources, ${changed} changed`);
+  }
+
+  // Step 17: Study plan routes, cumulative ladders, and non-overlapping internal practice forms (preserve AP Physics 1 native study plan)
+  if (stem !== 'ap_physics_1_foundation_pilot') {
+    const plan = buildStudyPlanRoutes(stem, lib, testPrepDir);
+    if (plan.unitReviewRoutes.length !== (lib.chapters || []).length || plan.reviewLadders.length < 3 || plan.practiceForms.length < 3) {
+      throw new Error(`${stem} studyPlan: invalid counts`);
+    }
+    const before = JSON.stringify({
+      ur: lib.unitReviewRoutes,
+      rl: lib.reviewLadders,
+      pf: lib.practiceForms,
+      uc: lib.summary?.unitReviewRoutes,
+      lc: lib.summary?.reviewLadders,
+      fc: lib.summary?.practiceForms,
+    });
+    lib.unitReviewRoutes = plan.unitReviewRoutes;
+    lib.reviewLadders = plan.reviewLadders;
+    lib.practiceForms = plan.practiceForms;
+    if (lib.summary && typeof lib.summary === 'object') {
+      lib.summary.unitReviewRoutes = plan.unitReviewRoutes.length;
+      lib.summary.reviewLadders = plan.reviewLadders.length;
+      lib.summary.practiceForms = plan.practiceForms.length;
+    }
+    const after = JSON.stringify({
+      ur: lib.unitReviewRoutes,
+      rl: lib.reviewLadders,
+      pf: lib.practiceForms,
+      uc: lib.summary?.unitReviewRoutes,
+      lc: lib.summary?.reviewLadders,
+      fc: lib.summary?.practiceForms,
+    });
+    const changed = before !== after ? plan.unitReviewRoutes.length : 0;
+    if (changed > 0) libChanged = true;
+    console.log(`${stem} studyPlan: ${plan.unitReviewRoutes.length} unit routes, ${plan.reviewLadders.length} ladders, ${plan.practiceForms.length} forms, ${changed} changed`);
+  }
+
+  // Step 18: Surgical scientific/mathematical accuracy fixes across editable AP learning libraries
+  const accRules = apLibraryAccuracyFixes[stem];
+  if (Array.isArray(accRules) && accRules.length > 0) {
+    let serialized = JSON.stringify(lib, null, 2);
+    let appliedCount = 0;
+    for (const rule of accRules) {
+      const useRaw = serialized.includes(rule.find) || serialized.includes(rule.replace);
+      const findStr = useRaw ? rule.find : JSON.stringify(rule.find).slice(1, -1);
+      const replaceStr = useRaw ? rule.replace : JSON.stringify(rule.replace).slice(1, -1);
+      const matches = serialized.split(findStr).length - 1;
+      if (matches === 1) {
+        serialized = serialized.replace(findStr, replaceStr);
+        appliedCount += 1;
+      } else if (matches > 1) {
+        throw new Error(`${stem} accuracyFix (${rule.pathHint || 'unknown'}): non-unique match count ${matches} for "${rule.find.slice(0, 60)}"`);
+      } else if (!serialized.includes(replaceStr)) {
+        throw new Error(`${stem} accuracyFix (${rule.pathHint || 'unknown'}): neither find nor replace present for "${rule.find.slice(0, 60)}"`);
+      }
+    }
+    if (appliedCount > 0) {
+      const parsed = JSON.parse(serialized);
+      for (const k of Object.keys(lib)) delete lib[k];
+      Object.assign(lib, parsed);
+      libChanged = true;
+    }
+    console.log(`${stem} accuracyFixes: ${accRules.length} rules checked, ${appliedCount} applied`);
+  }
+
+  if (libChanged) saveLib(fileName, lib);
 }
 
 if (!write) console.log('Check passed; nothing written.');

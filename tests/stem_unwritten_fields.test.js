@@ -75,17 +75,16 @@ describe('STEM quest hooks read what their tool writes', () => {
   });
 
   it('Epidemic: each model view opened is recorded once, however it was opened', () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // Since 11-21 the tool records a view when its own setters change the tab (no
+    // render-time setTimeout any more), so open the views the way a student does:
+    // with the tab buttons. Opening one twice must still count it once.
     const m = mountStem('stem_lab/stem_tool_epidemic.js', 'epidemicSim', 'epidemicSim', { tab: 'sir' });
     const h = m.hook('view_3_tabs');
-    ['seir', 'vaccination'].forEach((tab) => {
-      act(() => { vi.runOnlyPendingTimers(); });
-      m.store.toolData.epidemicSim = Object.assign({}, m.store.toolData.epidemicSim, { tab });
-      m.render();
+    ['seir', 'seir', 'vaccination'].forEach((tab) => {
+      const btn = m.container.querySelector('#stem-epidemic-tab-' + tab);
+      expect(btn, tab + ' tab button').toBeTruthy();
+      m.click(btn);
     });
-    act(() => { vi.runOnlyPendingTimers(); });
-    m.render();
-    act(() => { vi.runOnlyPendingTimers(); });
     expect(m.state().tabsViewed).toEqual({ sir: true, seir: true, vaccination: true });
     expect(h.check(m.state())).toBe(true);
     expect(h.progress(m.state())).toBe('3/3 views');

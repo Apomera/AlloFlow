@@ -115,8 +115,9 @@ describe('Maine watershed prose is translatable', () => {
     const missing = (key, fallback) => (fallback == null ? key : fallback);
     const localized = localize(missing);
     expect(localized[0].role).toBe('Cold-water indicator');
-    expect(localized[0].desc).toMatch(/^High-elevation forested streams\./);
-    expect(localized[0].deepDive.casework).toMatch(/Eastern Brook Trout Joint Venture/);
+    // Re-pinned 2026-11-24: the old English had unsourced claims (see watercycle_watershed_facts_2026_11_24.test.js).
+    expect(localized[0].desc).toMatch(/^Small, shaded forest streams high in the watershed\./);
+    expect(localized[0].deepDive.casework).toMatch(/97 percent of the intact wild brook trout lake and pond habitat/);
   });
 
   it('uses literal keys so the string extractors can see them', () => {

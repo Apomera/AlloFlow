@@ -132,7 +132,7 @@ describe('host: insert, and structural edits become the recipe', () => {
 describe('blank items', () => {
   it('offers every type the editor supports, and each blank renders and is flagged, never "unsupported"', async () => {
     const types = internals.types.map(entry => entry[0]);
-    expect(types).toEqual(['mcq', 'multi-select', 'fill-blank', 'short-answer', 'self-explanation', 'numeric-response', 'answer-evidence', 'sequence-sense', 'relation-mismatch']);
+    expect(types).toEqual(['mcq', 'multi-select', 'fill-blank', 'short-answer', 'self-explanation', 'numeric-response', 'answer-evidence', 'sequence-sense', 'relation-mismatch', 'likert', 'opinion-mcq']);
     const blanks = types.map(type => internals.blank(type));
     blanks.forEach((item, i) => expect(item).toMatchObject({ type: types[i], question: '' }));
     const audit = internals.audit({ questions: blanks });

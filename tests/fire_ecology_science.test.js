@@ -122,10 +122,12 @@ describe('Fire Ecology cross-screen number agreement', () => {
     expect(net('culturalBurn')).toBeLessThan(0);
     expect(net('prescribedBurn')).toBe(0);
 
-    const cultural = source.slice(source.indexOf("if (action === 'culturalBurn')"), source.indexOf("} else if (action === 'suppress')"));
-    expect(cultural).toContain('newSim.carbonStored = clamp(s.carbonStored + 2, 0, 200)');
+    // 2026-11-23: the rules moved into the single pure fireSimAdvance(), which the main
+    // simulator and the comparison both call (tests/fireecology_model_accuracy.test.js runs it).
+    const cultural = source.slice(source.indexOf("if (action === 'culturalBurn')"), source.indexOf("} else if (action === 'prescribe')"));
+    expect(cultural).toContain('n.carbonStored = c(s.carbonStored + 2, 0, 200)');
     const prescribed = source.slice(source.indexOf("} else if (action === 'prescribe')"), source.indexOf('// Natural recovery'));
-    expect(prescribed).toContain('newSim.carbonStored = clamp(s.carbonStored, 0, 200)');
+    expect(prescribed).toContain('n.carbonStored = c(s.carbonStored, 0, 200)');
     expect(prescribed).not.toContain('s.carbonStored - ');
   });
 

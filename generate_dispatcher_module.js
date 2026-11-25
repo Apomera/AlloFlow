@@ -2978,12 +2978,18 @@ const normalizeAnalysisResult = (raw) => {
     const tier2Vocab = [];
     const tier3Vocab = [];
     const untieredVocab = [];
+    // Part of speech per term, kept beside the plain-string lists: from each item's "pos", or a saved map.
+    const vocabularyPos = {};
+    const savedPos = source.vocabularyPos && typeof source.vocabularyPos === 'object' && !Array.isArray(source.vocabularyPos) ? source.vocabularyPos : {};
     rawVocabItems.forEach(item => {
         const text = _analysisFieldText(item, ['term', 'word', 'vocabulary', 'name', 'label', 'text']);
         const key = text.trim().toLowerCase();
         if (!key || seenVocab.has(key)) return;
         seenVocab.add(key);
         vocabulary.push(text);
+        const pos = normalizeGlossaryPos(item && typeof item === 'object' ? (item.pos ?? item.partOfSpeech) : undefined)
+            || (Object.prototype.hasOwnProperty.call(savedPos, text) ? normalizeGlossaryPos(savedPos[text]) : '');
+        if (pos && !['__proto__', 'constructor', 'prototype'].includes(text)) vocabularyPos[text] = pos;
         const rawTier = item && typeof item === 'object' ? String(item.tier ?? item.category ?? item.type ?? '').trim() : '';
         if (/academic|tier\s*2|^2$/i.test(rawTier) || (!rawTier && fromTier2Field)) tier2Vocab.push(text);
         else if (/domain|specific|tier\s*3|^3$/i.test(rawTier)) tier3Vocab.push(text);
@@ -3009,6 +3015,7 @@ const normalizeAnalysisResult = (raw) => {
     const result = { readingLevel, concepts, vocabulary, accuracy, grammar: grammar.list,
         translatedText: typeof source.translatedText === 'string' && source.translatedText.trim() ? source.translatedText : undefined };
     if (vocabulary.length) result.vocabularyTiers = { tier2: tier2Vocab, tier3: tier3Vocab };
+    if (Object.keys(vocabularyPos).length) result.vocabularyPos = vocabularyPos;
     const depthOfKnowledge = _normalizeAnalysisDok(source.depthOfKnowledge, toList);
     if (depthOfKnowledge) result.depthOfKnowledge = depthOfKnowledge;
     const learnerBarriers = _normalizeLearnerBarriers(source.learnerBarriers, toList);
@@ -3070,6 +3077,7 @@ function summarizeLocalAnalysisSections(sections, label) {
     const vocabulary = [];
     const seenMergedVocab = new Set();
     const mergedT2 = [], mergedT3 = [];
+    const mergedPos = {};
     for (const report of reports) {
         const t2Set = new Set((report.vocabularyTiers?.tier2 || []).map(w => String(w).toLowerCase()));
         const t3Set = new Set((report.vocabularyTiers?.tier3 || []).map(w => String(w).toLowerCase()));
@@ -3078,6 +3086,7 @@ function summarizeLocalAnalysisSections(sections, label) {
             if (!key || seenMergedVocab.has(key)) continue;
             seenMergedVocab.add(key);
             vocabulary.push(term);
+            if (report.vocabularyPos && Object.prototype.hasOwnProperty.call(report.vocabularyPos, term)) mergedPos[term] = report.vocabularyPos[term];
             if (t2Set.has(key)) mergedT2.push(term);
             else if (t3Set.has(key)) mergedT3.push(term);
             else if (mergedT2.length <= mergedT3.length) mergedT2.push(term);
@@ -3093,7 +3102,8 @@ function summarizeLocalAnalysisSections(sections, label) {
     }
     const languages = unique(reports.map(report => report.sourceLanguage));
     const result = {
-        concepts, vocabulary, ...(vocabulary.length ? { vocabularyTiers: { tier2: mergedT2, tier3: mergedT3 } } : {}), grammar,
+        concepts, vocabulary, ...(vocabulary.length ? { vocabularyTiers: { tier2: mergedT2, tier3: mergedT3 } } : {}),
+        ...(Object.keys(mergedPos).length ? { vocabularyPos: mergedPos } : {}), grammar,
         readingLevel: { range: shared(reports.map(report => report.readingLevel.range)), explanation: sectionNote },
         accuracy: { rating: shared(reports.map(report => report.accuracy.rating)), reason: sectionNote,
             discrepancies: unique(reports.flatMap(report => report.accuracy.discrepancies)),
@@ -3339,6 +3349,7 @@ const normalizeGlossaryTerms = (raw, sourceText) => {
         const entry = { ...rest, term: _generatedText(item.term) || _generatedText(item.word), def: _generatedText(item.def) || _generatedText(definition),
             tier: /domain|subject|tier\s*3|^3$/.test(tierRaw) ? 'Domain-Specific' : 'Academic' };
         if (!entry.translations || typeof entry.translations !== 'object' || Array.isArray(entry.translations)) delete entry.translations;
+        if (item.pos !== undefined || item.partOfSpeech !== undefined) { entry.pos = normalizeGlossaryPos(item.pos !== undefined ? item.pos : item.partOfSpeech); delete entry.partOfSpeech; }
         const context = _generatedText(item.contextSentence);
         if (context) entry.contextSentence = context; else delete entry.contextSentence;
         return entry.term && entry.def ? entry : null;
@@ -3447,7 +3458,10 @@ function normalizeWordListSeed(raw) {
     }
     // Optional: the topic the words were suggested for; it picks the sense of a word with several meanings.
     const topic = typeof raw.topic === 'string' ? raw.topic.replace(/\s+/g, ' ').trim().slice(0, 300) : '';
-    return topic ? { kind: 'word-list', terms, termLanguage, topic } : { kind: 'word-list', terms, termLanguage };
+    const seed = topic ? { kind: 'word-list', terms, termLanguage, topic } : { kind: 'word-list', terms, termLanguage };
+    // Optional: build the glossary from the built-in dictionary, with no AI call.
+    if (raw.dictionary === true) seed.dictionary = true;
+    return seed;
 }
 
 function _wordListRequiredSeed(raw) {
@@ -3490,7 +3504,7 @@ function buildWordListGlossaryPrompt(rawSeed, options = {}) {
     const customInstructions = _wordListOptionalText(options.customInstructions, 6000);
     const levelContext = _wordListOptionalText(options.levelContext, 2000);
     const translationShape = Object.fromEntries(plan.translationLanguages.map(language => [language, 'Translated term: Definition']));
-    const shape = { id: 0, term: 'Exact supplied term', def: 'Student-friendly definition', tier: 'Academic or Domain-Specific' };
+    const shape = { id: 0, term: 'Exact supplied term', def: 'Student-friendly definition', tier: 'Academic or Domain-Specific', pos: 'noun, verb, adjective or adverb (the sense defined)' };
     if (plan.translationLanguages.length) shape.translations = translationShape;
     if (options.useEmojis) shape.emoji = 'Optional separate emoji';
     if (options.includeEtymology) {
@@ -3585,6 +3599,7 @@ function parseWordListGlossary(raw, rawSeed, options = {}) {
         const entry = { term, sourceTerm: term, termLanguage: seed.termLanguage, sourceLanguage: seed.termLanguage,
             wordLanguage: seed.termLanguage, definitionLanguage: plan.baseLanguage, def: definition,
             tier: /domain|subject|tier\s*3|^3$/.test(tier) ? 'Domain-Specific' : 'Academic' };
+        if (row.pos !== undefined) entry.pos = normalizeGlossaryPos(row.pos);
         const translations = _wordListTextMap(row.translations, 3000, translationNames);
         if (translations) entry.translations = translations;
         for (const key of ['emoji', 'etymology']) {
@@ -3604,10 +3619,207 @@ function parseWordListGlossary(raw, rawSeed, options = {}) {
     return seed.terms.map((_, id) => byId.get(id));
 }
 
+// Part of speech on glossary entries and analysis vocabulary: noun, verb, adjective, adverb, or '' when unknown.
+function normalizeGlossaryPos(value) {
+    const text = typeof value === 'string' ? value.trim().toLowerCase() : '';
+    if (!text) return '';
+    if (/^(?:adv\.?|r)$|\badverb/.test(text)) return 'adverb';
+    if (/^(?:adj\.?|a)$|\badjective/.test(text)) return 'adjective';
+    if (/^(?:n\.?)$|\bnoun/.test(text)) return 'noun';
+    if (/^(?:v\.?|vt|vi)$|\bverb/.test(text)) return 'verb';
+    return '';
+}
+const _isEnglishLanguageName = value => /^(?:en(?:[-_][a-z0-9]+)*|english\b.*)$/i.test(String(value == null ? '' : value).trim());
+// A literal t('key') with an English fallback; {name} placeholders are filled in either.
+const _dispatcherText = (t, key, fallback, values = {}) => {
+    let value = '';
+    try { value = typeof t === 'function' ? t(key, values) : ''; } catch (_) { value = ''; }
+    const text = typeof value === 'string' && value && value !== key ? value : fallback;
+    return text.replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
+};
+
+// Built-in dictionary glossary (no AI). The bank (window.AlloVocabBank, Wiktionary / WordNet)
+// writes about a quarter of its meanings with a blank for the word ("A ___ person is..."):
+// the glossary shows the word, so put it back (with a matching a/an, and a capital at a sentence start).
+function _dictionaryArticleFor(word) {
+    const first = (String(word || '').trim().split(/\s+/)[0] || '').replace(/[^A-Za-z'-]/g, '');
+    if (/^(?:hour|honest|honor|honour|heir)/i.test(first)) return 'an';
+    if (/^(?:unit|unif|unio|uniq|univ|unic|unis|use\b|used\b|user|usual|usurp|utensil|util|one\b|once\b|eu[a-z])/i.test(first)) return 'a';
+    return /^[aeiou]/i.test(first) ? 'an' : 'a';
+}
+function fillDictionaryBlank(text, word) {
+    const value = String(text == null ? '' : text);
+    const term = String(word == null ? '' : word).trim();
+    if (!term || !/_{2,}/.test(value)) return value;
+    const article = _dictionaryArticleFor(term);
+    return value.replace(/(^|[^\p{L}\p{M}])(an?)(\s+)(?=_{2,})/giu, (match, before, found, space) => before + (found[0] === 'A' ? article[0].toUpperCase() + article.slice(1) : article) + space)
+        .replace(/_{2,}/g, (match, offset, whole) => (offset === 0 || /[.!?:]\s*$/.test(whole.slice(0, offset))) ? term.charAt(0).toUpperCase() + term.slice(1) : term);
+}
+// The sentence of the source where a term appears (same inflection-aware matcher the AI path checks terms with).
+function dictionarySentenceFor(term, text) {
+    const sentences = String(text == null ? '' : text).split(/(?<=[.!?])\s+|\n+/);
+    for (const raw of sentences) {
+        const sentence = raw.replace(/^[\s#>*•-]+/, '').trim();
+        if (sentence && sentence.length <= 600 && glossaryTermInText(term, sentence)) return sentence;
+    }
+    return '';
+}
+// A tier guess from the shipped word frequencies (Zipf, word_sounds_wordlist_en.js) when that list is loaded.
+function estimateDictionaryTier(term, headword) {
+    try {
+        const list = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.WordSoundsWordlist : null;
+        if (list && typeof list.get === 'function' && !/\s/.test(String(term || '').trim())) {
+            const row = list.get(term) || (headword ? list.get(headword) : null);
+            if (row && Number(row.zipf) > 0) return Number(row.zipf) < 3 ? 'Domain-Specific' : 'Academic';
+        }
+    } catch (_) {}
+    return 'Academic';
+}
+// options: bank (AlloVocabBank API), dictionary (AlloDictionary: matchPassageSense, pickSense),
+// contexts(term) -> texts to match the sense against, in order; posHints and tiers keyed by term.
+function buildDictionaryGlossaryEntries(terms, options = {}) {
+    const bank = options.bank || {};
+    const dictionary = options.dictionary || {};
+    const match = typeof dictionary.matchPassageSense === 'function' ? dictionary.matchPassageSense : null;
+    const pick = typeof dictionary.pickSense === 'function' ? dictionary.pickSense : null;
+    const entries = [];
+    let missing = 0;
+    for (const raw of Array.isArray(terms) ? terms : []) {
+        const term = String(raw == null ? '' : raw).trim();
+        if (!term) continue;
+        let phrase = false, list = [];
+        if (/\s/.test(term) && typeof bank.phraseSenses === 'function') { list = bank.phraseSenses(term) || []; phrase = list.length > 0; }
+        if (!list.length && typeof bank.senses === 'function') list = bank.senses(term) || [];
+        const headword = phrase ? term.toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ')
+            : (typeof bank.head === 'function' && bank.head(term)) || term.toLowerCase();
+        const tier = (options.tiers && options.tiers[term]) || estimateDictionaryTier(term, headword);
+        const senses = list.map((sense, index) => ({ sense, index })).filter(({ sense }) => sense && typeof sense.def === 'string' && sense.def.trim());
+        if (!senses.length) {
+            missing++;
+            entries.push({ term, def: '', tier, pos: '', dictMissing: true });
+            continue;
+        }
+        const hint = normalizeGlossaryPos(options.posHints && options.posHints[term]);
+        const hinted = hint ? senses.filter(({ sense }) => normalizeGlossaryPos(sense.pos) === hint) : [];
+        const candidates = hinted.length ? hinted : senses;
+        const asEntry = () => ({ word: headword, meanings: candidates.map(({ sense }) => ({ partOfSpeech: sense.pos || '',
+            definitions: [{ definition: fillDictionaryBlank(sense.def, term), example: sense.example || '' }] })) });
+        let chosen = candidates.length === 1 ? candidates[0] : null;
+        let decided = !!chosen;
+        const contexts = (typeof options.contexts === 'function' ? options.contexts(term) : []).filter(text => typeof text === 'string' && text.trim());
+        for (const context of chosen || !match ? [] : contexts) {
+            const found = match(asEntry(), context);
+            if (found && Number.isInteger(found.meaningIndex) && candidates[found.meaningIndex]) { chosen = candidates[found.meaningIndex]; decided = true; break; }
+        }
+        // A weaker guess when the strict match declines: it picks the sense, the teacher still checks it.
+        if (!chosen && pick && contexts.length) {
+            const guess = pick(asEntry(), contexts[0]);
+            const at = guess ? asEntry().meanings.findIndex(meaning => meaning.definitions[0].definition === guess.definition) : -1;
+            if (at >= 0) chosen = candidates[at];
+        }
+        if (!chosen) chosen = candidates[0];
+        // Checked meanings; the loader's reader carries no check marks, so there every meaning counts.
+        const checked = list.some(sense => sense && Object.prototype.hasOwnProperty.call(sense, 'checked'))
+            ? list.filter(sense => sense && sense.checked).length : list.length;
+        const entry = { term, def: fillDictionaryBlank(chosen.sense.def, term), tier, pos: normalizeGlossaryPos(chosen.sense.pos),
+            defSource: 'dictionary', dictSense: { word: headword, index: chosen.index, total: list.length, ...(phrase ? { phrase: true } : {}),
+                ...(bank.source === 'loader' ? { list: 'loader' } : {}) } };
+        if (typeof chosen.sense.example === 'string' && chosen.sense.example.trim()) entry.example = fillDictionaryBlank(chosen.sense.example.trim(), term);
+        if (!decided && checked > 1) entry.senseCheck = true;
+        entries.push(entry);
+    }
+    return { entries, missing };
+}
+const DICTIONARY_DEFAULT_CREDITS = [
+    { set: 'Simple English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://simple.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
+    { set: 'English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://en.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
+    { set: 'Open English WordNet 2025', author: 'the Open English WordNet team', license: 'CC BY 4.0', url: 'https://en-word.net', deed: 'https://creativecommons.org/licenses/by/4.0/' },
+];
+function dictionaryGlossaryCredits(bank) {
+    const listed = (Array.isArray(bank && bank.credits) ? bank.credits : []).filter(item => item && typeof item === 'object');
+    const sources = (listed.length ? listed : DICTIONARY_DEFAULT_CREDITS)
+        .map(item => ({ set: String(item.set || ''), author: String(item.author || ''), license: String(item.license || ''), url: String(item.url || ''), deed: String(item.deed || '') }));
+    return [{ kind: 'dictionary', adapted: true, label: 'AlloFlow School Vocabulary (Wiktionary / WordNet, CC BY-SA 4.0)',
+        note: 'Definitions and examples adapted from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0) and Open English WordNet (CC BY 4.0).',
+        sourceUrl: 'https://en.wiktionary.org', sources, ...(typeof (bank && bank.checking) === 'string' ? { checking: bank.checking } : {}) }];
+}
+// The core meanings through dictionary_loader.js's own shard reader, in the AlloVocabBank shape:
+// single words only, senses in lookupOfflineBank(word) order (grouped by part of speech).
+function dictionaryLoaderBank(dictionary) {
+    const senses = word => {
+        const entry = dictionary.lookupOfflineBank(word);
+        const list = [];
+        (entry && Array.isArray(entry.meanings) ? entry.meanings : []).forEach(meaning => (Array.isArray(meaning && meaning.definitions) ? meaning.definitions : []).forEach(item => {
+            if (item && typeof item.definition === 'string' && item.definition.trim()) list.push({ pos: meaning.partOfSpeech || '', def: item.definition, example: item.example || '' });
+        }));
+        return list;
+    };
+    return { source: 'loader', senses, head: word => String(word == null ? '' : word).trim().toLowerCase(), phraseSenses: () => [] };
+}
+// Loads the offline bank the way other optional plugins load; null when it cannot. packets_vocab_bank_en.js
+// (all 14,592 words and phrases) loads only if the reviewed delivery manifest lists it; otherwise
+// dictionary_loader.js (listed) reads the two core shards itself (6,534 single words).
+async function loadGlossaryDictionary(terms) {
+    const w = typeof window !== 'undefined' ? window : {};
+    const plugin = file => typeof w.__alloLoadPlugin === 'function'
+        ? Promise.race([w.__alloLoadPlugin(file), new Promise(resolve => setTimeout(() => resolve(false), 15000))]) : Promise.resolve(false);
+    if (!(w.AlloVocabBank && typeof w.AlloVocabBank.load === 'function')) await plugin('packets_vocab_bank_en.js');
+    if (!(w.AlloDictionary && typeof w.AlloDictionary.matchPassageSense === 'function')) await plugin('dictionary_loader.js');
+    const bank = w.AlloVocabBank;
+    if (bank && typeof bank.load === 'function' && typeof bank.senses === 'function') {
+        let loaded = true;
+        try { await bank.load(); } catch (_) { try { await bank.load({ base: '../' }); } catch (_e) { loaded = false; } }
+        if (loaded && !(typeof bank.ready === 'function' && !bank.ready())) {
+            if (typeof bank.ensureForWords === 'function') { try { await bank.ensureForWords(terms); } catch (_) {} }
+            return bank;
+        }
+    }
+    const dictionary = w.AlloDictionary;
+    if (!dictionary || typeof dictionary.loadOfflineBank !== 'function' || typeof dictionary.lookupOfflineBank !== 'function') return null;
+    let ready = false;
+    try { ready = await dictionary.loadOfflineBank(); } catch (_) { ready = false; }
+    if (!ready && w._isDesktopBundledApp !== true) {
+        try { ready = await dictionary.loadOfflineBank({ base: (w.__alloCdnBase || 'https://alloflow-cdn.pages.dev/') + 'packets_vocab/' }); } catch (_) { ready = false; }
+    }
+    return ready ? dictionaryLoaderBank(dictionary) : null;
+}
+// Offline pictures (symbols and curriculum diagrams, no AI) through the glossary image controls'
+// helpers when they are exposed as window.AlloModules.GlossaryOfflinePictures { ensure, prepare, attribution }.
+async function attachOfflineGlossaryPictures(entries, signal) {
+    const pictures = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.GlossaryOfflinePictures : null;
+    if (!pictures || typeof pictures.ensure !== 'function' || typeof pictures.prepare !== 'function') return 0;
+    let matcher = null;
+    try { matcher = await pictures.ensure(); } catch (_) { return 0; }
+    if (!matcher || typeof matcher.matchWord !== 'function') return 0;
+    let added = 0;
+    for (const entry of entries) {
+        if (signal && signal.aborted) break;
+        if (!entry || !entry.def || entry.image) continue;
+        let hit = null;
+        try { hit = matcher.matchWord({ word: entry.term, definition: entry.def }, { preferDiagrams: true }); } catch (_) { hit = null; }
+        if (!hit || !hit.svg || !['exact', 'lemma', 'diagram'].includes(hit.matchTier || hit.matchType)) continue;
+        try {
+            const image = await pictures.prepare(hit, signal);
+            if (typeof image !== 'string' || !image) continue;
+            Object.assign(entry, { image, imageAlt: '', imageAltHash: '', imageAltSource: '', imageDecorative: false,
+                imageSource: hit.set === 'diagram' ? 'diagram' : (hit.set || 'mulberry'),
+                imageAttribution: typeof pictures.attribution === 'function' ? pictures.attribution(hit) : null,
+                imageCreditBand: Number(pictures.creditBand) > 0 ? Number(pictures.creditBand) : 48 });
+            added++;
+        } catch (error) {
+            if (error && error.name === 'AbortError') throw error;
+        }
+    }
+    return added;
+}
+
 function normalizeGenerationSeed(type, raw) {
     if (raw && raw.kind === 'word-list') {
         if (type !== 'glossary' && type !== 'concept-sort' && type !== 'sentence-frames') throw _wordListError('Word lists currently create a Glossary, a Concept Sort or Writing Scaffolds. Choose one of those.');
-        return normalizeWordListSeed(raw);
+        const seed = normalizeWordListSeed(raw);
+        // The built-in dictionary only makes glossaries; other word-list resources keep their AI path.
+        if (seed.dictionary && type !== 'glossary') delete seed.dictionary;
+        return seed;
     }
     if (raw && raw.kind === 'blank' && BLANK_START_TYPES.includes(type)) return { kind: 'blank' };
     const text = raw && raw.kind === 'topic' && typeof raw.text === 'string'
@@ -3631,7 +3843,7 @@ Write etymology in ${plan.baseLanguage}; etymologyByLang may contain prose for $
 ${options.useEmojis ? 'Use an optional separate emoji field; never place emoji inside term.' : 'Do not add emoji.'}
 ${options.directives || ''}
 ${options.customInstructions ? 'Additional vocabulary instructions: ' + options.customInstructions : ''}
-Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as {"term":"Term in ${plan.baseLanguage}","def":"Definition in ${plan.baseLanguage}","sourceTerm":"Exact source vocabulary","sourceLanguage":"Source language","contextSentence":"Sentence copied exactly from the source","tier":"Academic or Domain-Specific","translations":{${plan.translationLanguages.map(language => JSON.stringify(language) + ':"Term: Definition"').join(',')}}${options.includeEtymology ? ',"etymology":"Optional primary-language prose","etymologyByLang":{},"roots":[]' : ''}}.
+Return ONLY ${options.local ? '{"terms": [...]}' : 'a JSON array'} with entries shaped as {"term":"Term in ${plan.baseLanguage}","def":"Definition in ${plan.baseLanguage}","sourceTerm":"Exact source vocabulary","sourceLanguage":"Source language","contextSentence":"Sentence copied exactly from the source","tier":"Academic or Domain-Specific","pos":"noun, verb, adjective or adverb (the sense defined)","translations":{${plan.translationLanguages.map(language => JSON.stringify(language) + ':"Term: Definition"').join(',')}}${options.includeEtymology ? ',"etymology":"Optional primary-language prose","etymologyByLang":{},"roots":[]' : ''}}.
 Source:\n${options.text || ''}`;
 };
 // A resource with nothing to use; the message avoids the words Full Pack treats as final, so it retries once.
@@ -3720,6 +3932,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
   }
   const _blankStart = _seed?.kind === 'blank';
   const _wordListStart = _seed?.kind === 'word-list';
+  // A glossary built from the built-in dictionary makes no AI call of any kind.
+  const _builtInDictionaryGlossary = type === 'glossary' && (_wordListStart ? _seed.dictionary === true : configOverride.builtInDictionary === true);
   if (_seed) {
       configOverride = { ...configOverride };
       ['sourceSnapshot', 'sourceArtifactId', 'inputArtifactId', 'sourceFamilyId', 'primaryArtifactId',
@@ -4009,13 +4223,34 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         setProcessingProgress({ current, total });
         emitLocalTaskProgress(current, total, label);
     };
+    const localCharBudget = (baseChars = 6000, hardCap = 36000) => {
+        let limit = Number(baseChars) || 6000;
+        if (usesLocalTextBackend) {
+            try {
+                const profile = typeof window !== 'undefined' && window.__alloActiveAIBackend && window.__alloActiveAIBackend.localModelProfile;
+                const ctx = Number(profile && profile.contextWindow);
+                if (Number.isFinite(ctx) && ctx > 4096) {
+                    const inputBudget = Number(profile.inputTokenBudget) || Math.floor(ctx * 0.55);
+                    const scaled = Math.round(limit * (ctx / 4096));
+                    const budgetCap = Math.max(limit, Math.floor(inputBudget * 2.5));
+                    limit = Math.min(hardCap, Math.max(limit, Math.min(scaled, budgetCap)));
+                }
+            } catch (_) {}
+        }
+        return limit;
+    };
     const localExcerpt = (text, maxChars = 6000) => {
         const normalized = String(text || '').replace(/\s+\n/g, '\n').trim();
-        if (normalized.length <= maxChars) return normalized;
-        return normalized.slice(0, maxChars).trim() + '\n\n[Source excerpt trimmed for local model context.]';
+        const limit = localCharBudget(maxChars, 36000);
+        if (normalized.length <= limit) return normalized;
+        return normalized.slice(0, limit).trim() + '\n\n[Source excerpt trimmed for local model context.]';
     };
     const parseJsonLenient = (raw, fallback = null) => {
-        const cleaned = cleanJson(String(raw || ''));
+        const rawStr = String(raw || '');
+        const stripped = (usesLocalTextBackend && typeof window !== 'undefined' && window.AIBackendLocal && typeof window.AIBackendLocal.stripLocalThinkingTags === 'function')
+            ? window.AIBackendLocal.stripLocalThinkingTags(rawStr)
+            : rawStr;
+        const cleaned = cleanJson(stripped);
         const attempts = [cleaned];
         const arrStart = cleaned.indexOf('[');
         const arrEnd = cleaned.lastIndexOf(']');
@@ -4844,6 +5079,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         audioRef.current.pause();
         setIsPlaying(false);
     }
+    if (!_builtInDictionaryGlossary)
     generateHelpfulHint(type, textToProcess, false);
     // Keep the selected saved resource until a usable replacement is ready.
     let memoryProgress = null;
@@ -4852,6 +5088,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       let content;
       let metaInfo = '';
       let glossaryLanguagePlan = null;
+      let dictionaryGlossaryReport = null;
       // `else` sits on its own line so the original glossary line stays byte-identical
       // (tests and tools anchor on it).
       if (_blankStart) {
@@ -4983,6 +5220,74 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const wordListOptions = { languagePlan: glossaryLanguagePlan, grade: effectiveGrade, levelContext,
             useEmojis: !!useEmojis, includeEtymology: !!includeEtymology, customInstructions: effCustomInstructions,
             directives: [standardsDirective, dokDirective, interestsDirective, differentiationContext].filter(Boolean).join('\n') };
+        if (_builtInDictionaryGlossary) {
+            // English only: the word list's language, or the glossary's base language for a passage.
+            if (!_isEnglishLanguageName(_wordListStart ? _seed.termLanguage : glossaryLanguagePlan.baseLanguage)) {
+                throw emptyGenerationError(_dispatcherText(t, 'glossary.dictionary_english_only', 'The built-in dictionary has English words only. Connect AI to make this glossary.'));
+            }
+            const dictTerms = [];
+            const dictTiers = {};
+            const dictPos = {};
+            const dictSeen = new Set();
+            const addDictTerm = (value, tier, pos) => {
+                const term = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+                const key = term.toLowerCase();
+                if (!term || term.length > 160 || dictSeen.has(key) || dictTerms.length >= 40) return false;
+                dictSeen.add(key);
+                dictTerms.push(term);
+                if (tier) dictTiers[term] = tier;
+                if (pos) dictPos[term] = pos;
+                return true;
+            };
+            if (_wordListStart) _seed.terms.forEach(term => addDictTerm(term));
+            else if (_exactAnalysisTerms.length && Array.isArray(configOverride?.exactVocabularyList) && configOverride.exactVocabularyList.length) _exactAnalysisTerms.forEach(term => addDictTerm(term));
+            else {
+                // The latest Source Analysis for this source (same "awaiting check" rule as the AI path), with its tiers.
+                const _dictHistory = typeof sourceRelatedHistory !== 'undefined' && Array.isArray(sourceRelatedHistory) ? sourceRelatedHistory : [];
+                const _dictAwaiting = typeof _analysisAwaitingCheck === 'function' ? _analysisAwaitingCheck : () => false;
+                const _dictAnalysis = _isIsolatedGlossary ? null : _dictHistory.slice().reverse().find(h => h && h.type === 'analysis' && !_dictAwaiting(h));
+                const _dictVocab = _dictAnalysis?.data?.vocabulary || _dictAnalysis?.data?.tier2Words;
+                if (Array.isArray(_dictVocab) && _dictVocab.length) {
+                    const tiers = _dictAnalysis.data.vocabularyTiers || {};
+                    const keyed = list => new Set((Array.isArray(list) ? list : []).map(w => String(w || '').replace(/\s+/g, ' ').trim().toLowerCase()));
+                    const tier2 = keyed(tiers.tier2), tier3 = keyed(tiers.tier3);
+                    const posMap = _dictAnalysis.data.vocabularyPos && typeof _dictAnalysis.data.vocabularyPos === 'object' ? _dictAnalysis.data.vocabularyPos : {};
+                    // The Tier 2 / Tier 3 counts cap each tier, in list order; untiered terms share the total.
+                    const used = { Academic: 0, 'Domain-Specific': 0, '': 0 };
+                    _dictVocab.forEach(raw => {
+                        const text = typeof raw === 'string' ? raw : raw && typeof raw === 'object' ? String(raw.term || raw.word || '') : '';
+                        const key = text.replace(/\s+/g, ' ').trim().toLowerCase();
+                        const tier = tier3.has(key) ? 'Domain-Specific' : tier2.has(key) ? 'Academic' : '';
+                        const cap = tier === 'Domain-Specific' ? t3Count : tier === 'Academic' ? t2Count : t2Count + t3Count;
+                        if (used[tier] >= cap) return;
+                        if (addDictTerm(text, tier, Object.prototype.hasOwnProperty.call(posMap, text) ? normalizeGlossaryPos(posMap[text]) : '')) used[tier]++;
+                    });
+                } else if (!_isIsolatedGlossary && typeof sourceVocabulary === 'string' && sourceVocabulary.trim()) {
+                    sourceVocabulary.split(/[,;\n]+/).forEach(term => addDictTerm(term));
+                }
+            }
+            if (!dictTerms.length) throw emptyGenerationError(_dispatcherText(t, 'glossary.dictionary_no_terms', 'Run Analyze Source first, or start from a word list.'));
+            setGenerationStatus(t('status_steps.extracting_vocab'), 'analyze');
+            const dictBank = await loadGlossaryDictionary(dictTerms);
+            throwIfGenerationAborted();
+            if (!dictBank) throw emptyGenerationError(_dispatcherText(t, 'glossary.dictionary_load_failed', 'The built-in dictionary could not be loaded, so no glossary was made. Check the connection and try again.'));
+            const dictSentences = {};
+            const built = buildDictionaryGlossaryEntries(dictTerms, {
+                bank: dictBank, dictionary: (typeof window !== 'undefined' && window.AlloDictionary) || null, tiers: dictTiers, posHints: dictPos,
+                // A word list matches its topic, if any; a passage matches the sentence the term is in, then the whole passage.
+                contexts: term => _wordListStart ? [_seed.topic || ''] : [(dictSentences[term] = dictionarySentenceFor(term, textToProcess)), textToProcess],
+            });
+            content = built.entries.map(entry => {
+                const out = dictSentences[entry.term] ? { ...entry, contextSentence: dictSentences[entry.term] } : entry;
+                return _wordListStart ? { ...out, sourceTerm: entry.term, termLanguage: _seed.termLanguage, sourceLanguage: _seed.termLanguage,
+                    wordLanguage: _seed.termLanguage, definitionLanguage: 'English' } : out;
+            });
+            setGenerationStatus(t('status_steps.generating_icons'), 'build');
+            await attachOfflineGlossaryPictures(content, generationSignal);
+            throwIfGenerationAborted();
+            dictionaryGlossaryReport = { total: content.length, missing: built.missing, defined: content.length - built.missing, credits: dictionaryGlossaryCredits(dictBank) };
+            metaInfo = `${content.length} ${_wordListStart ? 'teacher-selected terms' : 'Terms'} - English - Built-in dictionary`;
+        } else
         if (usesLocalTextBackend) {
             const localTermLimit = _wordListStart ? _seed.terms.length : Math.max(1, Math.min(totalTerms, 8));
             const localLangInstruction = langsReq.length > 0
@@ -5001,7 +5306,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${dokDirective}
               ${interestsDirective}
               Return ONLY valid JSON with this shape:
-              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
+              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
               Source excerpt:
               """
               ${localExcerpt(textToProcess, 6000)}
@@ -5014,7 +5319,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
             const parsed = parseJsonLenient(result, {});
             const parsedContent = _wordListStart ? parseWordListGlossary(parsed, _seed, wordListOptions) : normalizeGlossaryTerms(parsed, textToProcess).slice(0, localTermLimit)
-                .map(({ term, def, tier, translations, emoji, sourceTerm, sourceLanguage, contextSentence }) => ({ term, def, tier, ...(sourceTerm ? { sourceTerm, sourceLanguage } : {}), ...(contextSentence ? { contextSentence } : {}), ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
+                .map(({ term, def, tier, pos, translations, emoji, sourceTerm, sourceLanguage, contextSentence }) => ({ term, def, tier, ...(pos !== undefined ? { pos } : {}), ...(sourceTerm ? { sourceTerm, sourceLanguage } : {}), ...(contextSentence ? { contextSentence } : {}), ...(translations ? { translations } : {}), ...(useEmojis && typeof emoji === 'string' && emoji.trim() ? { emoji: emoji.trim() } : {}) }));
             if (!parsedContent.length) {
                 throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
             }
@@ -5062,7 +5367,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}, "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -5101,7 +5406,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${standardsDirective}
               ${dokDirective}
               ${interestsDirective}
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb"${useEmojis ? ', "emoji": "one emoji, or omit the field"' : ''}${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
             `;
@@ -5241,6 +5546,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
         if (_nativeLanguageDefaultsVersion) content = stampNativeGlossaryTerms(content, glossaryLanguagePlan);
         if (_wordListStart) content = content.map(item => ({ ...item, termLanguage: _seed.termLanguage, sourceLanguage: _seed.termLanguage, wordLanguage: _seed.termLanguage }));
+        if (dictionaryGlossaryReport) content = content.map(item => ({ ...item, definitionLanguage: 'English' }));
       } else if (type === 'simplified') {
         let complexityGuide = "";
         if (effectiveGrade === 'Kindergarten') {
@@ -5454,7 +5760,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       const referenceParts = splitAdaptationReferences(textToProcess);
       const textWithoutRefs = referenceParts.body.trim();
       const extractedReferences = referenceParts.references || carriedInputReferences;
-      const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
+      const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? localCharBudget(3500, 9000) : 9000);
       const isMultiChunk = chunks.length > 1;
       // Highlighting, Fill in the Blanks and cloze look for the lesson glossary's words in this text.
       const _lessonGlossary = sourceRelatedHistory.slice().reverse().find(h => h && h.type === 'glossary' && Array.isArray(h.data) && h.data.length);
@@ -6139,8 +6445,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${differentiationContext}
           Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 6500) : textToProcess}"
         `;
-        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.analyzing_structure'));
-        const result = await callGemini(prompt, true);
+        if (usesLocalTextBackend) {
+            setGenerationTaskProgress(0, 1, t('status_steps.analyzing_structure'));
+            assertLocalTaskSupported('strict-json', 'The visual organizer');
+        }
+        const result = usesLocalTextBackend
+            ? await callGemini(prompt, true, false, null, null, null, localSchemaArg('outline'))
+            : await callGemini(prompt, true);
         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.analyzing_structure'));
         const _normalizeGeneratedOrganizer = (value) => {
             const sharedNormalizer = window.AlloModules?.ViewRenderers?.normalizeVisualOrganizerData;
@@ -7117,7 +7428,7 @@ ${_itemsBlock}`;
           5. Source Language: Identify the language of the supplied source using its English language name (or "Multiple languages" for mixed text).
           6. Depth of Knowledge: the highest level of Webb's Depth of Knowledge (1 Recall, 2 Skill/Concept, 3 Strategic Thinking, 4 Extended Thinking) that lessons built on this text alone could reasonably reach, with a one-sentence reason. ${_analysisDokTarget ? `The teacher is aiming for ${_analysisDokTarget}. Give 2 or 3 short, concrete ideas for reaching it with this text (for example, what to add, compare or ask).` : 'Give 2 or 3 short, concrete ideas for taking students beyond what the text alone supports.'}
           7. Learner Barriers (optional): short notes (under 20 words each, at most 3 per category) on what could block access to THIS text: "backgroundKnowledge" (knowledge the text assumes), "figurativeLanguage" (idioms and figurative or culturally specific phrases an English learner may misread, quoted from the source), "textStructure" (organization that may confuse readers), "biasRepresentation" (one-sided framing, stereotypes or missing perspectives). Leave a category as an empty array when nothing applies; do not invent problems.
-          8. Key Vocabulary (array of 5-10 challenging Tier 2 academic or Tier 3 domain-specific vocabulary terms worth pre-teaching, quoted directly from the ORIGINAL source text in the ORIGINAL source language; tag each item with "tier": "Academic" for Tier 2 or "Domain-Specific" for Tier 3, or return an empty array only if the passage has no challenging vocabulary).
+          8. Key Vocabulary (array of 5-10 challenging Tier 2 academic or Tier 3 domain-specific vocabulary terms worth pre-teaching, quoted directly from the ORIGINAL source text in the ORIGINAL source language; tag each item with "tier": "Academic" for Tier 2 or "Domain-Specific" for Tier 3 and "pos" with its part of speech in this passage (noun, verb, adjective or adverb), or return an empty array only if the passage has no challenging vocabulary).
           Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${analysisReportLanguage}.
           Keep these two values in English whatever the prose language, because the application translates them: readingLevel.range in the form shown above (e.g. "6th-8th Grade", "K-2nd Grade"), and accuracy.rating as exactly one word: High, Moderate or Low.
           Always quote source examples, vocabulary terms, and proposed spelling/grammar corrections in the ORIGINAL source language.
@@ -7132,7 +7443,7 @@ ${_itemsBlock}`;
           {
             "readingLevel": { "range": "...", "explanation": "..." },
             "concepts": ["..."],
-            "vocabulary": [{ "term": "...", "tier": "Academic" }],
+            "vocabulary": [{ "term": "...", "tier": "Academic", "pos": "noun" }],
             "accuracy": {
                 "rating": "...",
                 "reason": "..."${checkAccuracyWithSearch ? ', \n"discrepancies": ["Error found... [1]", "Inaccuracy... [2]"], \n"verifiedFacts": ["Fact verified... [3]", "Date confirmed... [1]"]' : ''}
@@ -7212,7 +7523,7 @@ ${_itemsBlock}`;
             }
             return analysisData;
         };
-        const ranges = usesLocalTextBackend ? localAnalysisRanges(textToProcess) : [];
+        const ranges = usesLocalTextBackend ? localAnalysisRanges(textToProcess, localCharBudget(7000, 24000)) : [];
         const sectioned = ranges.length > 1;
         const sections = [];
         const sourceFingerprint = sectioned ? _auditContentFingerprint(textToProcess) : '';
@@ -7696,7 +8007,8 @@ ${_itemsBlock}`;
              `;
              setGenerationStep(t('status_steps.constructing_scaffolds'));
              setGenerationTaskProgress(0, 1, t('status_steps.constructing_scaffolds'));
-             const result = await callGemini(prompt, true);
+             assertLocalTaskSupported('strict-json', 'Sentence frames');
+             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('sentence-frames'));
              content = parseJsonLenient(result, {});
              if (!content || typeof content !== 'object' || Array.isArray(content)) content = {};
              if (!content.mode) content.mode = localMode;
@@ -8408,7 +8720,8 @@ ${modeListForAuto}
              """`}
           `;
           setGenerationTaskProgress(0, 1, t('status_steps.extracting_sequence'));
-          result = await callGemini(prompt, true);
+          assertLocalTaskSupported('strict-json', 'The timeline');
+          result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('timeline'));
           setGenerationTaskProgress(1, 1, t('status_steps.extracting_sequence'));
           } else {
           const prompt = `
@@ -8783,8 +9096,13 @@ ${modeListForAuto}
             Return ONLY a JSON array of strings. Each string is the specific prompt the user should paste into Gemini.
             Example: ["Create a single file React app that...", "Now add a state variable for...", "Finally, style the component using..."]
          `;
-         if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
-         const result = await callGemini(prompt, true);
+         if (usesLocalTextBackend) {
+             setGenerationTaskProgress(0, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
+             assertLocalTaskSupported('strict-json', 'The simulation guide');
+         }
+         const result = usesLocalTextBackend
+             ? await callGemini(prompt, true, false, null, null, null, localSchemaArg('gemini-bridge'))
+             : await callGemini(prompt, true);
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
          let bridgeParsed = null;
          try {
@@ -8857,7 +9175,8 @@ ${modeListForAuto}
             """`}
          `;
          setGenerationTaskProgress(0, 1, t('status_steps.categorizing_concepts'));
-         result = await callGemini(prompt, true);
+         assertLocalTaskSupported('strict-json', 'The concept sort');
+         result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('concept-sort'));
          setGenerationTaskProgress(1, 1, t('status_steps.categorizing_concepts'));
          } else {
          const prompt = `
@@ -9457,8 +9776,13 @@ Return ONLY JSON:
             }
           }
         `;
-        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.designing_adventure'));
-        const result = await callGemini(prompt, true);
+        if (usesLocalTextBackend) {
+            setGenerationTaskProgress(0, 1, t('status_steps.designing_adventure'));
+            assertLocalTaskSupported('strict-json', 'The interactive adventure');
+        }
+        const result = usesLocalTextBackend
+            ? await callGemini(prompt, true, false, null, null, null, localSchemaArg('adventure'))
+            : await callGemini(prompt, true);
         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.designing_adventure'));
         try {
             content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
@@ -9512,8 +9836,14 @@ Return ONLY JSON:
                     }
                 ]
               `;
-              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.identifying_figures'));
-              const result = await callGemini(prompt, false, !usesLocalTextBackend);
+              if (usesLocalTextBackend) {
+                  setGenerationTaskProgress(0, 1, t('status_steps.identifying_figures'));
+                  assertLocalTaskSupported('strict-json', 'Interview personas');
+              }
+              const personaSearchQuery = (_seed && _seed.kind === 'topic' ? _seed.text : (sourceTopic || '')).trim();
+              const result = usesLocalTextBackend
+                  ? await callGemini(prompt, true, false, null, null, null, localSchemaArg('persona'))
+                  : await callGemini(prompt, false, true, null, personaSearchQuery || null);
               if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.identifying_figures'));
               let textToParse = "";
               if (typeof result === 'object' && result !== null && result.text) {
@@ -10483,6 +10813,8 @@ Return ONLY JSON:
           ..._sourceUse,
           // Seed provenance lives under one key so student copies can strip it.
           ...(_seed ? { lessonPath: { seed: _seed } } : {}),
+          // Licence credit for meanings taken from the built-in dictionary (shown with the glossary).
+          ...(dictionaryGlossaryReport ? { credits: dictionaryGlossaryReport.credits } : {}),
           ...(type === 'analysis' ? {
               sourceSnapshot: _sourceSnapshot,
               instructionalText: _instructionalContextModule?.normalizeInstructionalText?.(configOverride.instructionalText || _selectedSource.instructionalText, {
@@ -10528,6 +10860,7 @@ Return ONLY JSON:
           if (priorVersions > 0) newItem.title = `${itemTitle} (V${priorVersions + 1})`;
       }
       if (type === 'lesson-plan' && planningGenerationInputs) newItem.config = { ...newItem.config, generationInputs: planningGenerationInputs };
+      if (dictionaryGlossaryReport) newItem.config = { ...newItem.config, builtInDictionary: true };
       newItem.unitId = _itemUnitId;
       throwIfGenerationAborted();
       // The report editor commits this result to its existing resource, and
@@ -10546,6 +10879,11 @@ Return ONLY JSON:
       } else if (_blankStart) {
           const blankMessage = t('toasts.blank_created', { title: toastTitle });
           addToast(blankMessage && blankMessage !== 'toasts.blank_created' ? blankMessage : `Blank ${toastTitle} created. Fill it in before sharing.`, 'success');
+      } else if (dictionaryGlossaryReport) {
+          const counts = { defined: dictionaryGlossaryReport.defined, total: dictionaryGlossaryReport.total, missing: dictionaryGlossaryReport.missing };
+          addToast(counts.missing
+              ? _dispatcherText(t, 'glossary.dictionary_done_missing', '{defined} of {total} words defined; {missing} need a definition.', counts)
+              : _dispatcherText(t, 'glossary.dictionary_done', 'Glossary made from the built-in dictionary: {total} words defined.', counts), counts.missing ? 'warning' : 'success');
       } else {
           addToast(`${toastTitle} generated!`, "success");
       }
@@ -10672,6 +11010,11 @@ window.AlloModules.GenDispatcher = {
   normalizeWordListSeed,
   buildWordListGlossaryPrompt,
   parseWordListGlossary,
+  normalizeGlossaryPos,
+  fillDictionaryBlank,
+  dictionarySentenceFor,
+  buildDictionaryGlossaryEntries,
+  dictionaryGlossaryCredits,
   countPriorAnalysisVersions,
   createAnalysisSourceContent,
   normalizeScaffoldContent,

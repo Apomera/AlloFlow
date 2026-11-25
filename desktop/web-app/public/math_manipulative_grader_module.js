@@ -106,7 +106,7 @@ const normalizedFormula = value => {
   return normalized == null ? null : normalized.replace(/[₀-₉]/g, digit => formulaDigits[digit]);
 };
 const preferredValue = (value, preferredKey, legacyKey) =>
-  hasOwn(value, preferredKey) ? value[preferredKey] : value[legacyKey];
+  hasOwn(value, preferredKey) ? value[preferredKey] : (hasOwn(value, legacyKey) ? value[legacyKey] : undefined);
 
 const componentMatches = (actual, expected) => {
   const expectedType = typeof expected === 'string' ? expected : isRecord(expected) ? expected.type : null;
@@ -176,7 +176,11 @@ const graders = {
       }
       return false;
     }
-    if (target.match === 'value') return ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (actual[key] || 0) * [1000, 100, 10, 1][i], 0) === ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (target[key] || 0) * [1000, 100, 10, 1][i], 0);
+    if (target.match === 'value') {
+      const actualTotal = ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (actual[key] || 0) * [1000, 100, 10, 1][i], 0);
+      const targetTotal = ['thousands', 'hundreds', 'tens', 'ones'].reduce((sum, key, i) => sum + (target[key] || 0) * [1000, 100, 10, 1][i], 0);
+      return finite(actualTotal) && finite(targetTotal) && actualTotal === targetTotal;
+    }
     return (actual.thousands ?? 0) === (target.thousands ?? 0) && finite(actual.hundreds) && finite(actual.tens) && finite(actual.ones) &&
       actual.hundreds === (target.hundreds ?? 0) &&
       actual.tens === (target.tens ?? 0) &&
@@ -468,7 +472,9 @@ const readMathViewState = (tool, snapshot, target = {}) => {
     if (tool === 'volume' && workspace.mode && workspace.mode !== 'slider') return undefined;
     return workspace[path[1]];
   }
-  if (tool === 'chemBalance' && typeof window.AlloModules?.ChemistryActivity?.readState === 'function' && hasOwn(data, tool)) return window.AlloModules.ChemistryActivity.readState(data[tool]);
+  if (tool === 'chemBalance' && typeof window.AlloModules?.ChemistryActivity?.readState === 'function' && hasOwn(data, tool)) {
+    try { return window.AlloModules.ChemistryActivity.readState(data[tool]); } catch (_) { return undefined; }
+  }
   if (hasOwn(mathViewStateKeys, tool)) return state[mathViewStateKeys[tool]];
   if (tool === 'circuit' && hasOwn(data, '_circuit')) return data._circuit;
   return hasOwn(data, tool) ? data[tool] : undefined;
@@ -493,7 +499,7 @@ const writeMathViewState = (tool, previous, value, extra = {}) => {
     volume: { mode: 'slider', allowFractional: true, challenge: null, feedback: null, showLayers: null },
     coordinate: { cgTab: 'explore', gridChallenge: null, gridFeedback: null }
   };
-  return { ...data, [path[0]]: { ...(isRecord(data[path[0]]) ? data[path[0]] : {}), ...modes[tool], ...safeSpreadObj(extra), [path[1]]: value } };
+  return { ...safeSpreadObj(data), [path[0]]: { ...safeSpreadObj(data[path[0]]), ...modes[tool], ...safeSpreadObj(extra), [path[1]]: value } };
 };
 const prepareHubActivity = (previous, target, support = false) => {
   if (!validHubActivity(target)) throw new Error('Invalid hands-on activity');
@@ -503,7 +509,7 @@ const prepareHubActivity = (previous, target, support = false) => {
   if (target.mode === 'tenFrame') fields = { tenFrameFilled: support ? target.count : 0, tenFrameDouble: target.count > 10, tfChallenge: null, tfFeedback: null };
   if (target.mode === 'counters') fields = { counters: { yellow: support ? Math.max(0,target.value) : 0, red: support ? Math.max(0,-target.value) : 0 }, counterChallenge: null, counterFeedback: null };
   if (target.mode === 'fracBars') fields = { fbSelected: support ? { [target.denominator]: Array.from({length:target.numerator},(_,i)=>i) } : {}, fbDenoms: [target.denominator], fbChallenge: null, fbFeedback: null };
-  return {...data, _manipulatives:{...hub,...fields,mode:target.mode}};
+  return { ...safeSpreadObj(data), _manipulatives: { ...safeSpreadObj(hub), ...fields, mode: target.mode } };
 };
 const activityOptions = Object.freeze([
   Object.freeze({id:'base10',label:'Base-ten blocks'}), Object.freeze({id:'base10:tenFrame',label:'Ten-frames'}),

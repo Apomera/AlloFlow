@@ -4056,6 +4056,7 @@
             var dw = Math.max(1, Math.round(w * scale));
             var dh = Math.max(1, Math.round(hh * scale));
             var canvas = document.createElement('canvas');
+            canvas.setAttribute('aria-hidden', 'true');
             canvas.width = dw;
             canvas.height = dh;
             var ctx = canvas.getContext('2d');
@@ -4614,11 +4615,12 @@
   // SECTION 5: STYLE INJECTION
   // ─────────────────────────────────────────────────────────
   (function() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function') return;
     if (document.getElementById('allohaven-styles')) return;
     var style = document.createElement('style');
     style.id = 'allohaven-styles';
     style.textContent = [
+      '.ah-root :where(button, input, select, textarea, a, [role="button"], [role="tab"]) { touch-action: manipulation; }',
       '.ah-root button:focus-visible,',
       '.ah-root [tabindex]:focus-visible,',
       '.ah-root [role="button"]:focus-visible,',
@@ -5023,7 +5025,7 @@
           style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
         },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📝 Reflection'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onClose,
             'aria-label': __alloT('allohaven.close_reflection','Close reflection'),
             style: {
@@ -5052,7 +5054,7 @@
             { id: 'great',   emoji: '✨', label: 'Great' }
           ].map(function(m) {
             var active = pickedMood === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mood-' + m.id,
               onClick: function() { setPickedMood(active ? null : m.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -5086,7 +5088,7 @@
             var text = getPromptText(pid);
             if (!text) return null;
             var active = pid === pickedPromptId;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'pp-' + pid,
               onClick: function() { setPickedPromptId(pid); },
               'aria-pressed': active ? 'true' : 'false',
@@ -5110,7 +5112,7 @@
           p.adaptivePrompt ? (function() {
             var ap = p.adaptivePrompt;
             var active = pickedPromptId === 'adaptive';
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'pp-adaptive',
               onClick: function() { setPickedPromptId('adaptive'); },
               'aria-pressed': active ? 'true' : 'false',
@@ -5166,7 +5168,7 @@
             }
           }),
           // Voice mic button
-          p.speechSupported ? h('button', {
+          p.speechSupported ? h('button', { type: 'button',
             onClick: handleVoiceClick,
             'aria-label': p.isRecording ? 'Stop voice recording' : 'Start voice recording',
             'aria-pressed': p.isRecording ? 'true' : 'false',
@@ -5195,7 +5197,7 @@
           // user isn't currently recording (the mic button takes that
           // visual slot). Uses position:absolute relative to the same
           // textarea wrapper as the mic.
-          (charCount >= 8 && !p.isRecording) ? h('button', {
+          (charCount >= 8 && !p.isRecording) ? h('button', { type: 'button',
             onClick: handlePolishClick,
             disabled: isPolishing,
             'aria-label': isPolishing ? 'Polishing text…' : 'Polish capitalization and punctuation',
@@ -5239,7 +5241,7 @@
         ),
         // Submit + cancel
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onClose,
             style: {
               background: 'transparent',
@@ -5253,7 +5255,7 @@
               fontFamily: 'inherit'
             }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: handleSubmit,
             disabled: !canSubmit,
             style: {
@@ -5505,7 +5507,7 @@
       h('div', { style: { display: 'flex', gap: '8px', justifyContent: quiz ? 'space-between' : 'flex-end', alignItems: 'center' } },
         // Quiz state UI dominates when active
         quiz ? (quiz.submitted ? [
-          h('button', {
+          h('button', { type: 'button',
             key: 'qtagain',
             onClick: function() {
               setQuiz({
@@ -5516,24 +5518,24 @@
             },
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
           }, 'Quiz again'),
-          h('button', {
+          h('button', { type: 'button',
             key: 'qdone',
             onClick: exitQuiz,
             style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, 'Done')
         ] : [
-          h('button', {
+          h('button', { type: 'button',
             key: 'qcancel',
             onClick: exitQuiz,
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             key: 'qcheck',
             onClick: submitQuiz,
             style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, 'Check answers')
         ]) : (editing ? [
-          h('button', {
+          h('button', { type: 'button',
             key: 'cancel',
             onClick: function() { setDraft(entry.text || ''); setEditing(false); },
             style: {
@@ -5548,7 +5550,7 @@
               fontFamily: 'inherit'
             }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             key: 'save',
             onClick: handleSave,
             style: {
@@ -5564,7 +5566,7 @@
             }
           }, 'Save')
         ] : [
-          hasCloze ? h('button', {
+          hasCloze ? h('button', { type: 'button',
             key: 'quiz',
             onClick: startQuiz,
             'aria-label': 'Quiz yourself on this entry · ' + clozeAnswers.length + ' blanks',
@@ -5582,7 +5584,7 @@
               marginRight: 'auto'
             }
           }, '📝 Quiz me · ' + clozeAnswers.length) : null,
-          h('button', {
+          h('button', { type: 'button',
             key: 'edit',
             onClick: function() { setEditing(true); setDraft(entry.text || ''); },
             'aria-label': __alloT('allohaven.edit_this_entry','Edit this entry'),
@@ -5598,7 +5600,7 @@
               fontFamily: 'inherit'
             }
           }, 'Edit'),
-          h('button', {
+          h('button', { type: 'button',
             key: 'delete',
             onClick: p.onDelete,
             'aria-label': __alloT('allohaven.delete_this_entry','Delete this entry'),
@@ -5991,7 +5993,7 @@
         return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
           pool.map(function(opt) {
             var active = slots[slot.id] === opt;
-            return h('button', {
+            return h('button', { type: 'button',
               key: slot.id + '-' + opt,
               onClick: function() {
                 var next = Object.assign({}, slots); next[slot.id] = opt; setSlots(next);
@@ -6017,7 +6019,7 @@
       return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
         pool.map(function(opt) {
           var active = slots[slot.id] === opt;
-          return h('button', {
+          return h('button', { type: 'button',
             key: slot.id + '-' + opt,
             onClick: function() {
               var next = Object.assign({}, slots); next[slot.id] = opt;
@@ -6058,7 +6060,7 @@
           'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
         // Upload your own (Phase 2p.19) — alternative to AI generation
         typeof p.onPlaceCustomUpload === 'function' ? h('div', { style: { display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               setIsCustomUploadFlow(true);
               setIsCustomDrawingFlow(false);
@@ -6087,7 +6089,7 @@
             )
           ),
           // Draw your own (Phase 2p.26) — canvas drawing alternative
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               setIsCustomDrawingFlow(true);
               setIsCustomUploadFlow(false);
@@ -6120,7 +6122,7 @@
               key: 'tmpl-' + t.id,
               style: { display: 'flex', flexDirection: 'column', gap: '4px' }
             },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { handlePickTemplate(t); },
                 style: {
                   background: palette.surface,
@@ -6141,7 +6143,7 @@
                 h('span', { style: { fontSize: '32px' } }, t.icon),
                 h('span', { style: { fontSize: '13px', fontWeight: 700 } }, t.label)
               ),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { handleSurpriseMe(t); },
                 disabled: p.tokens < DECORATION_COST,
                 style: {
@@ -6164,7 +6166,7 @@
     } else if (step === 'configure' && template) {
       var canGenerate = p.tokens >= DECORATION_COST;
       stepBody = h('div', null,
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { setStep('pick-template'); setTemplate(null); setError(null); },
           style: {
             background: 'transparent',
@@ -6195,7 +6197,7 @@
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
             ART_STYLES.map(function(s) {
               var active = artStyleId === s.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 's-' + s.id,
                 onClick: function() { setArtStyleId(s.id); },
                 'aria-pressed': active ? 'true' : 'false',
@@ -6228,7 +6230,7 @@
           }
         }, error) : null,
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: handleClose,
             style: {
               background: 'transparent', color: palette.textDim,
@@ -6237,7 +6239,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { doGenerate(template, slots, artStyleId, false, false); },
             disabled: !canGenerate,
             style: {
@@ -6315,7 +6317,7 @@
         h('div', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
           template.icon + ' ' + template.label + ' · ' + getArtStyle(artStyleId).label),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { doGenerate(template, slots, artStyleId, true, freeRegen); },
             disabled: !freeRegen && !canPaidRegen,
             style: {
@@ -6326,7 +6328,7 @@
               fontFamily: 'inherit', opacity: (!freeRegen && !canPaidRegen) ? 0.5 : 1
             }
           }, freeRegen ? '↻ Regenerate (free · ' + freeSec + 's left)' : '↻ Regenerate (1 🪙)'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: handleAccept,
             style: {
               background: palette.accent, color: palette.onAccent,
@@ -6343,7 +6345,7 @@
       // confirm, the canvas is exported to PNG, charged 3 tokens, and
       // routed through the same reflect step (mood / subject / words).
       stepBody = h('div', null,
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
           style: {
             background: 'transparent', color: palette.textDim, border: 'none',
@@ -6384,7 +6386,7 @@
         ),
         // Tool row: brush / eraser
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px', flexWrap: 'wrap' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setDrawTool('brush'); },
             'aria-pressed': drawTool === 'brush' ? 'true' : 'false',
             style: {
@@ -6396,7 +6398,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, '✏️ Brush'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setDrawTool('eraser'); },
             'aria-pressed': drawTool === 'eraser' ? 'true' : 'false',
             style: {
@@ -6408,7 +6410,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, '🩹 Eraser'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: undoDraw,
             disabled: drawHistoryRef.current.length < 2,
             style: {
@@ -6421,7 +6423,7 @@
               opacity: drawHistoryRef.current.length < 2 ? 0.5 : 1
             }
           }, '↶ Undo'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: clearDraw,
             style: {
               background: 'transparent', color: palette.textDim,
@@ -6437,7 +6439,7 @@
           h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Size'),
           [2, 4, 8, 14].map(function(sz) {
             var active = drawSize === sz;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'sz-' + sz,
               onClick: function() { setDrawSize(sz); },
               'aria-pressed': active ? 'true' : 'false',
@@ -6469,7 +6471,7 @@
           h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Color'),
           DRAW_PALETTE.map(function(c) {
             var active = drawColor === c && drawTool === 'brush';
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'col-' + c,
               onClick: function() { setDrawColor(c); setDrawTool('brush'); },
               'aria-pressed': active ? 'true' : 'false',
@@ -6488,7 +6490,7 @@
           })
         ),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
             style: {
               background: 'transparent', color: palette.textDim,
@@ -6497,7 +6499,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               if (!drawDirty) return;
               if (typeof p.onChargeForUpload !== 'function') return;
@@ -6525,7 +6527,7 @@
       // Custom upload step (Phase 2p.19) — file picker, preview, "use this image"
       // proceeds to the same reflect step the AI flow uses (mood + subject + reflection text).
       stepBody = h('div', null,
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { setStep('pick-template'); setUploadData(null); setUploadError(null); setIsCustomUploadFlow(false); },
           style: {
             background: 'transparent', color: palette.textDim, border: 'none',
@@ -6579,7 +6581,7 @@
               uploadData.width + ' × ' + uploadData.height + ' (resized from ' + uploadData.originalWidth + ' × ' + uploadData.originalHeight + ')')
           ),
           h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setUploadData(null); setUploadError(null); },
               style: {
                 background: 'transparent', color: palette.textDim,
@@ -6588,7 +6590,7 @@
                 cursor: 'pointer', fontFamily: 'inherit'
               }
             }, 'Pick a different image'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 if (typeof p.onChargeForUpload !== 'function') return;
                 if (!p.onChargeForUpload()) return; // insufficient tokens
@@ -6632,7 +6634,7 @@
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
           MOOD_OPTIONS.map(function(m) {
             var active = moodTag === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mood-' + m.id,
               onClick: function() { setMoodTag(active ? null : m.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -6659,7 +6661,7 @@
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
           SUBJECT_TAGS.map(function(s) {
             var active = subjectTags.indexOf(s.id) !== -1;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'subj-gen-' + s.id,
               onClick: function() { toggleSubject(s.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -6704,7 +6706,7 @@
           }
         }),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: handleSkipReflection,
             style: {
               background: 'transparent', color: palette.textDim,
@@ -6713,7 +6715,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Skip & place'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: handleSubmitReflection,
             style: {
               background: palette.accent, color: palette.onAccent,
@@ -6765,7 +6767,7 @@
         },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
             '🌿 Add a decoration · ' + (ctx.surface === 'wall' ? 'wall' : 'floor')),
-          step !== 'generating' ? h('button', {
+          step !== 'generating' ? h('button', { type: 'button',
             onClick: handleClose,
             'aria-label': 'Close',
             style: {
@@ -7079,7 +7081,7 @@
       },
         tabs.map(function(t) {
           var active = mode === t.id;
-          return h('button', {
+          return h('button', { type: 'button',
             key: 't-' + t.id,
             id: tabIdFor(t.id),
             role: 'tab',
@@ -7151,7 +7153,7 @@
           'Attach memory content to your ' + label.toLowerCase() + '. Where you place this decoration in your room becomes a spatial anchor for what you\'re learning — that\'s the method of loci, a 2,400-year-old memory technique.'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           pickerCards.map(function(card) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'pt-' + card.type,
               onClick: function() { startEditEmpty(card.type); },
               style: {
@@ -7377,7 +7379,7 @@
     function renderEditTab() {
       if (!draft) return null;
       var saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px' } },
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { setConfirmRemove(true); },
           style: {
             background: 'transparent',
@@ -7391,7 +7393,7 @@
           }
         }, '🗑 Remove memory'),
         h('div', { style: { display: 'flex', gap: '8px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               if (hasContent) {
                 setMode('view');
@@ -7413,7 +7415,7 @@
               fontFamily: 'inherit'
             }
           }, hasContent ? 'Cancel' : 'Back'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: commitDraft,
             style: {
               background: palette.accent,
@@ -7432,7 +7434,7 @@
       // Hide remove button for never-saved drafts
       if (!hasContent) {
         saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '14px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setMode('pick-type'); setDraft(null); },
             style: {
               background: 'transparent',
@@ -7446,7 +7448,7 @@
               fontFamily: 'inherit'
             }
           }, 'Back'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: commitDraft,
             style: {
               background: palette.accent,
@@ -7475,7 +7477,7 @@
         h('p', { style: { margin: 0, fontSize: '13px', color: palette.text, marginBottom: '10px' } },
           'Remove all memory content from this decoration? Tokens already earned won\'t be refunded.'),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setConfirmRemove(false); },
             style: {
               background: 'transparent', color: palette.textDim,
@@ -7484,7 +7486,7 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Keep it'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               p.onRemove();
               setConfirmRemove(false);
@@ -7590,7 +7592,7 @@
           h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
             '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
           h('div', { style: { display: 'flex', gap: '6px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setImportPanelOpen(!importPanelOpen); },
               'aria-pressed': importPanelOpen ? 'true' : 'false',
               'aria-label': importPanelOpen ? 'Close bulk import panel' : 'Bulk import from text',
@@ -7607,7 +7609,7 @@
                 fontFamily: 'inherit'
               }
             }, '📥 Import'),
-            cards.length > 1 ? h('button', {
+            cards.length > 1 ? h('button', { type: 'button',
               onClick: clearAllCards,
               'aria-label': __alloT('allohaven.remove_all_cards','Remove all cards'),
               title: __alloT('allohaven.clear_all_cards_mastery_stats_are_lost','Clear all cards (mastery stats are lost)'),
@@ -7672,15 +7674,15 @@
           importParse && importParse.pairs.length > 0 ? h('div', {
             style: { display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'flex-end' }
           },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setImportText(''); setImportPanelOpen(false); },
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Cancel'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: importAppend,
               style: { background: 'transparent', color: palette.accent, border: '1px solid ' + palette.accent, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
             }, '+ Append'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: importReplace,
               style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Replace all')
@@ -7790,7 +7792,7 @@
             );
           })
         ),
-        h('button', {
+        h('button', { type: 'button',
           onClick: addCard,
           style: {
             marginTop: '10px',
@@ -8210,7 +8212,7 @@
           })
         ),
         h('div', { style: { display: 'flex', gap: '10px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setMode('view'); setQuiz(null); },
             style: {
               flex: 1,
@@ -8225,7 +8227,7 @@
               fontFamily: 'inherit'
             }
           }, 'Cancel'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: submit,
             style: {
               flex: 1,
@@ -8340,7 +8342,7 @@
             'Card ' + progress),
           // Reverse-mode toggle — small chip; clearly labels current
           // direction. Click to flip + restart the quiz from the start.
-          h('button', {
+          h('button', { type: 'button',
             onClick: toggleReverse,
             'aria-pressed': rev ? 'true' : 'false',
             'aria-label': 'Toggle quiz direction · currently ' + (rev ? 'back to front' : 'front to back'),
@@ -8381,7 +8383,7 @@
               quiz.flipped ? secondSide : firstSide)
           )
         ),
-        !quiz.flipped ? h('button', {
+        !quiz.flipped ? h('button', { type: 'button',
           onClick: flip,
           autoFocus: true,
           style: {
@@ -8397,7 +8399,7 @@
             fontFamily: 'inherit'
           }
         }, 'Flip card') : h('div', { style: { display: 'flex', gap: '10px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { gradeAndAdvance(false); },
             style: {
               flex: 1,
@@ -8412,7 +8414,7 @@
               fontFamily: 'inherit'
             }
           }, 'Try again'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { gradeAndAdvance(true); },
             style: {
               flex: 1,
@@ -8491,7 +8493,7 @@
             'aria-label': 'Meaning of ' + letter,
             autoFocus: true,
             onKeyDown: function(e) {
-              if (e.isComposing || e.keyCode === 229) return;
+              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
             },
             style: {
@@ -8508,7 +8510,7 @@
             }
           }),
           // Voice button — only shown when Web Speech is supported
-          p.speechSupported ? h('button', {
+          p.speechSupported ? h('button', { type: 'button',
             onClick: handleVoiceForAcronym,
             'aria-pressed': p.isRecording ? 'true' : 'false',
             'aria-label': p.isRecording ? 'Stop voice recording' : 'Speak your answer',
@@ -8530,7 +8532,7 @@
           }, '🎤') : null
         ),
         h('div', { style: { display: 'flex', gap: '10px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: skip,
             style: {
               flex: 1,
@@ -8545,7 +8547,7 @@
               fontFamily: 'inherit'
             }
           }, 'Skip'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: checkAndAdvance,
             style: {
               flex: 1,
@@ -8633,7 +8635,7 @@
               'aria-label': __alloT('allohaven.your_recall_of_the_association','Your recall of the association'),
               autoFocus: true,
               onKeyDown: function(e) {
-                if (e.isComposing || e.keyCode === 229) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'Enter') { e.preventDefault(); reveal(); }
               },
               style: {
@@ -8650,7 +8652,7 @@
               }
             }),
             // Voice button (Phase 2p.20)
-            p.speechSupported ? h('button', {
+            p.speechSupported ? h('button', { type: 'button',
               onClick: function() {
                 if (!p.startVoice) return;
                 if (p.isRecording) { p.stopVoice && p.stopVoice(); return; }
@@ -8678,7 +8680,7 @@
             }, '🎤') : null
           ),
           h('div', { style: { display: 'flex', gap: '10px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setMode('view'); setQuiz(null); },
               style: {
                 flex: 1,
@@ -8693,7 +8695,7 @@
                 fontFamily: 'inherit'
               }
             }, 'Cancel'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: reveal,
               style: {
                 flex: 1,
@@ -8737,7 +8739,7 @@
           h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textAlign: 'center' } },
             'Did you remember it?'),
           h('div', { style: { display: 'flex', gap: '10px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { grade(false); },
               style: {
                 flex: 1,
@@ -8752,7 +8754,7 @@
                 fontFamily: 'inherit'
               }
             }, '✗ Not quite'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { grade(true); },
               style: {
                 flex: 1,
@@ -8799,23 +8801,23 @@
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginTop: '14px', lineHeight: '1.55' } }, msg),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '18px' } },
           inQueue ? [
-            h('button', {
+            h('button', { type: 'button',
               key: 'q-stop',
               onClick: p.onClose,
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Stop queue'),
-            h('button', {
+            h('button', { type: 'button',
               key: 'q-next',
               onClick: function() { p.onAdvanceQueue(pct); },
               style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
             }, p.queueInfo.current >= p.queueInfo.total ? '✓ Finish queue' : 'Next deck ▶')
           ] : [
-            h('button', {
+            h('button', { type: 'button',
               key: 'done',
               onClick: function() { setMode('view'); setQuiz(null); },
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Done'),
-            h('button', {
+            h('button', { type: 'button',
               key: 'again',
               onClick: startQuiz,
               style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
@@ -9020,7 +9022,7 @@
         },
           realmRows.map(function (z) {
             return h('li', { key: 'ch-r-' + z.realmId + '-' + (z.addedAt || ''), role: 'listitem', style: { listStyle: 'none' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function () {
                   if (typeof p.onOpenRealm === 'function') p.onOpenRealm(z.realmId);
                 },
@@ -9057,7 +9059,7 @@
             },
               atlasRows.map(function (e) {
                 return h('li', { key: 'ch-a-' + e.atlasId + '-' + (e.addedAt || ''), role: 'listitem', style: { listStyle: 'none' } },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function () {
                       if (typeof p.onOpenAtlas === 'function') p.onOpenAtlas(e.atlasId);
                     },
@@ -9085,7 +9087,7 @@
           );
         })(),
         // Boss encounters
-        hist.bossEncountersUsed > 0 ? h('button', {
+        hist.bossEncountersUsed > 0 ? h('button', { type: 'button',
           onClick: function () {
             if (typeof p.onOpenPastEncounters === 'function') p.onOpenPastEncounters();
           },
@@ -9192,7 +9194,7 @@
               fontWeight: status.needsWater ? 800 : 600
             }
           }, status.needsWater ? 'Needs water' : 'Watered'),
-          quizAvailable && mode !== 'quiz' ? h('button', {
+          quizAvailable && mode !== 'quiz' ? h('button', { type: 'button',
             onClick: startQuiz,
             style: {
               background: status.needsWater ? accent : 'transparent',
@@ -9232,7 +9234,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' } },
           h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } },
             '🎤 Voice note'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setVoicePanelOpen(false); },
             'aria-label': __alloT('allohaven.close_voice_note_panel','Close voice note panel'),
             style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '11px', cursor: 'pointer' }
@@ -9277,7 +9279,7 @@
                   value: captionDraft,
                   onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
                   onKeyDown: function(e) {
-                    if (e.isComposing || e.keyCode === 229) return;
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === 'Enter') { e.preventDefault(); saveCaption(); }
                     else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setCaptionDraft(null); }
                   },
@@ -9290,11 +9292,11 @@
                   h('span', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400 } },
                     captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
                   h('div', { style: { display: 'flex', gap: '6px' } },
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() { setCaptionDraft(null); },
                       style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
                     }, 'Cancel'),
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: saveCaption,
                       style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
                     }, 'Save caption')
@@ -9306,22 +9308,22 @@
             },
               h('div', { style: { fontSize: '12px', color: palette.text, fontStyle: 'italic', lineHeight: '1.45', flex: 1, minWidth: 0 } },
                 '“' + savedCaption + '”'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setCaptionDraft(savedCaption); },
                 'aria-label': __alloT('allohaven.edit_caption','Edit caption'),
                 title: __alloT('allohaven.edit_caption_2','Edit caption'),
                 style: { background: 'transparent', border: 'none', color: palette.textDim, fontSize: '12px', cursor: 'pointer', padding: '0 4px', fontFamily: 'inherit' }
               }, '✎')
-            ) : h('button', {
+            ) : h('button', { type: 'button',
               onClick: function() { setCaptionDraft(''); },
               style: { background: 'transparent', color: palette.textDim, border: '1px dashed ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '10px' }
             }, '+ Add a caption (prints in packet)')),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: startRecording,
                 style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
               }, '🎤 Replace'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: async function() {
                   if (!await askAlloHavenConfirmation('Delete this voice note?', { title: 'Delete voice note', confirmText: 'Delete voice note' })) return;
                   if (typeof p.onClearVoiceNote === 'function') p.onClearVoiceNote();
@@ -9335,7 +9337,7 @@
         !hasNote && voiceMode === 'idle' ? h('div', null,
           h('p', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5', margin: '0 0 10px 0' } },
             'Up to 30 seconds. Talk about what this decoration means to you, or quiz yourself out loud.'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startRecording,
             style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
           }, '🎤 Start recording')
@@ -9347,7 +9349,7 @@
             style: { fontSize: '32px', fontWeight: 800, color: '#dc2626', fontVariantNumeric: 'tabular-nums' }
           }, '● ' + recordSeconds + 's'),
           h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '12px' } }, 'Recording — auto-stops at 30s'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: stopRecording,
             style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 22px', fontSize: '13px' })
           }, '⏹ Stop')
@@ -9375,7 +9377,7 @@
               type: 'text',
               value: draft,
               onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
-              onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); saveRecording(); } },
+              onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); saveRecording(); } },
               placeholder: 'A few words about this voice note…',
               maxLength: VOICE_CAPTION_MAX,
               style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box', marginBottom: '4px' }
@@ -9383,11 +9385,11 @@
             h('div', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400, marginBottom: '10px' } },
               draft.length + ' / ' + VOICE_CAPTION_MAX),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: discardRecording,
                 style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
               }, '✕ Discard'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: saveRecording,
                 style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 18px', fontSize: '12px' })
               }, '✓ Save')
@@ -9450,7 +9452,7 @@
           ),
           h('div', { style: { display: 'flex', gap: '6px' } },
             // Star (Phase 2p.14) — favorite toggle, hidden on starter
-            typeof p.onToggleFavorite === 'function' && !decoration.isStarter ? h('button', {
+            typeof p.onToggleFavorite === 'function' && !decoration.isStarter ? h('button', { type: 'button',
               onClick: p.onToggleFavorite,
               'aria-pressed': decoration.isFavorite ? 'true' : 'false',
               'aria-label': decoration.isFavorite ? 'Remove from favorites' : 'Mark as favorite',
@@ -9467,7 +9469,7 @@
               }
             }, decoration.isFavorite ? '⭐' : '☆') : null,
             // Make similar (Phase 2p.14) — re-roll with same template+slots
-            typeof p.onMakeSimilar === 'function' && !decoration.isStarter ? h('button', {
+            typeof p.onMakeSimilar === 'function' && !decoration.isStarter ? h('button', { type: 'button',
               onClick: p.onMakeSimilar,
               'aria-label': __alloT('allohaven.make_a_similar_decoration_with_the_same_temp','Make a similar decoration with the same template'),
               title: __alloT('allohaven.generate_a_new_decoration_with_the_same_temp','Generate a new decoration with the same template + slots (3 tokens)'),
@@ -9484,7 +9486,7 @@
               }
             }, '🔄 Similar') : null,
             // Print this card (Phase 2p.17) — single-decoration printable
-            typeof p.onPrintCard === 'function' && !decoration.isStarter ? h('button', {
+            typeof p.onPrintCard === 'function' && !decoration.isStarter ? h('button', { type: 'button',
               onClick: p.onPrintCard,
               'aria-label': __alloT('allohaven.print_this_decoration_as_a_single_page_card','Print this decoration as a single-page card'),
               title: __alloT('allohaven.print_one_page_card_with_image_reflection_me','Print one-page card with image + reflection + memory content'),
@@ -9501,7 +9503,7 @@
               }
             }, '🖨 Print') : null,
             // Save as image (Phase 2p.33) — downloads PNG share card
-            typeof p.onExportCard === 'function' && !decoration.isStarter && decoration.imageBase64 ? h('button', {
+            typeof p.onExportCard === 'function' && !decoration.isStarter && decoration.imageBase64 ? h('button', { type: 'button',
               onClick: p.onExportCard,
               'aria-label': __alloT('allohaven.save_this_decoration_as_a_png_image','Save this decoration as a PNG image'),
               title: __alloT('allohaven.save_as_a_png_share_card_image_reflection_mo','Save as a PNG share card (image + reflection + mood)'),
@@ -9519,7 +9521,7 @@
             }, '💾 Save image') : null,
             // Export deck (Phase 2p.35) — flashcards → Anki CSV,
             // others → plain text. Only shown when linkedContent exists.
-            typeof p.onExportDeck === 'function' && decoration.linkedContent ? h('button', {
+            typeof p.onExportDeck === 'function' && decoration.linkedContent ? h('button', { type: 'button',
               onClick: p.onExportDeck,
               'aria-label': __alloT('allohaven.export_this_deck_as_a_file','Export this deck as a file'),
               title: decoration.linkedContent.type === 'flashcards'
@@ -9538,7 +9540,7 @@
               }
             }, '📤 Export deck') : null,
             // Voice note (Phase 2p.15)
-            typeof p.onSaveVoiceNote === 'function' ? h('button', {
+            typeof p.onSaveVoiceNote === 'function' ? h('button', { type: 'button',
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
               'aria-pressed': voicePanelOpen ? 'true' : 'false',
               'aria-label': decoration.voiceNote ? 'Open voice note panel' : 'Record a voice note',
@@ -9555,7 +9557,7 @@
                 fontFamily: 'inherit'
               }
             }, '🎤' + (decoration.voiceNote ? ' ▶' : '')) : null,
-            h('button', {
+            h('button', { type: 'button',
               onClick: p.onClose,
               'aria-label': __alloT('allohaven.close_memory_modal','Close memory modal'),
               style: {
@@ -9580,7 +9582,7 @@
           h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600 } }, 'Mood:'),
           MOOD_OPTIONS.map(function(m) {
             var active = decoration.mood === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mm-' + m.id,
               onClick: function() { p.onSetMood(active ? null : m.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -9609,7 +9611,7 @@
           SUBJECT_TAGS.map(function(s) {
             var current = Array.isArray(decoration.subjects) ? decoration.subjects : [];
             var active = current.indexOf(s.id) !== -1;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'ms-' + s.id,
               onClick: function() {
                 var next = active
@@ -9767,7 +9769,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
             h('h4', { style: { margin: 0, color: palette.text, fontSize: '15px', fontWeight: 700 } },
               'Pick a decoration · step ' + (typeof pickerFor === 'number' ? pickerFor + 1 : draft.steps.length + 1)),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setPickerFor(null); },
               'aria-label': __alloT('allohaven.cancel_decoration_picker','Cancel decoration picker'),
               style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }
@@ -9781,7 +9783,7 @@
             allDecs.map(function(d) {
               var inUse = !!usedIds[d.id];
               var dLabel = d.templateLabel || d.template || 'item';
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'pk-' + d.id,
                 onClick: function() { setStepDecoration(pickerFor, d.id); },
                 'aria-label': dLabel + (inUse ? ' (already in this story)' : ''),
@@ -9840,7 +9842,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             '📜 ' + (p.story && p.story.title ? 'Edit story' : 'Build a story')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_story_builder','Close story builder'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
@@ -9883,14 +9885,14 @@
             },
               // Step number + reorder buttons
               h('div', { style: { flex: '0 0 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { moveStep(idx, -1); },
                   disabled: idx === 0,
                   'aria-label': 'Move step ' + (idx + 1) + ' up',
                   style: { background: 'transparent', border: 'none', color: idx === 0 ? palette.textMute : palette.textDim, cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px', opacity: idx === 0 ? 0.4 : 1 }
                 }, '▲'),
                 h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.accent } }, idx + 1),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { moveStep(idx, 1); },
                   disabled: idx === draft.steps.length - 1,
                   'aria-label': 'Move step ' + (idx + 1) + ' down',
@@ -9898,7 +9900,7 @@
                 }, '▼')
               ),
               // Decoration thumbnail
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setPickerFor(idx); },
                 'aria-label': dec ? 'Change decoration for step ' + (idx + 1) : 'Pick decoration for step ' + (idx + 1),
                 title: dec ? 'Click to change decoration' : 'Pick a decoration',
@@ -9934,7 +9936,7 @@
                     resize: 'vertical', lineHeight: '1.45'
                   }
                 }),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { removeStep(idx); },
                   style: { marginTop: '4px', background: 'transparent', border: 'none', color: palette.textMute, fontSize: '10px', cursor: 'pointer', padding: '2px 4px', textDecoration: 'underline' }
                 }, 'Remove step')
@@ -9942,7 +9944,7 @@
             );
           })
         ),
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { setPickerFor('append'); },
           style: {
             display: 'block', width: '100%', padding: '10px',
@@ -9954,7 +9956,7 @@
         }, '+ Add step'),
         // Save / cancel
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: async function() {
               if (!await askAlloHavenConfirmation('Delete this story? This cannot be undone.', { title: 'Delete story', confirmText: 'Delete story' })) return;
               if (p.onDelete) p.onDelete();
@@ -9962,11 +9964,11 @@
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🗑 Delete story'),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: p.onCancel,
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Cancel'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: handleSave,
               disabled: !canSave,
               style: {
@@ -10038,6 +10040,7 @@
     // Esc closes (without recording)
     useEffect(function() {
       var handler = function(e) {
+        if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === 'Escape') p.onClose();
         if (e.key === 'ArrowRight' && idx < steps.length - 1) setIdx(idx + 1);
         if (e.key === 'ArrowLeft' && idx > 0) setIdx(idx - 1);
@@ -10083,7 +10086,7 @@
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '720px', width: '100%', margin: '0 auto', marginBottom: '14px' } },
         h('h3', { style: { margin: 0, fontSize: '17px', color: palette.text, fontWeight: 700 } },
           '📜 ' + (story.title || 'Untitled story')),
-        h('button', {
+        h('button', { type: 'button',
           onClick: p.onClose, 'aria-label': __alloT('allohaven.close_story_walk','Close story walk'),
           style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }
         }, '✕')
@@ -10182,7 +10185,7 @@
           }
         }, '"' + (step.narrative || '') + '"'),
         // Reveal button for cloze-bearing steps (when not yet revealed)
-        stepHasCloze && !stepClozeState.revealed ? h('button', {
+        stepHasCloze && !stepClozeState.revealed ? h('button', { type: 'button',
           onClick: revealStep,
           style: {
             background: 'transparent', color: palette.accent,
@@ -10212,7 +10215,7 @@
           maxWidth: '720px', width: '100%', margin: '0 auto', gap: '10px'
         }
       },
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { if (idx > 0) setIdx(idx - 1); },
           disabled: idx === 0,
           'aria-label': __alloT('allohaven.previous_step','Previous step'),
@@ -10240,7 +10243,7 @@
             });
           })
         ),
-        atEnd ? h('button', {
+        atEnd ? h('button', { type: 'button',
           onClick: function() { p.onFinish(); },
           'aria-label': __alloT('allohaven.finish_story_walk','Finish story walk'),
           style: {
@@ -10249,7 +10252,7 @@
             padding: '10px 22px', fontSize: '13px', fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit'
           }
-        }, '✓ Finish walk') : h('button', {
+        }, '✓ Finish walk') : h('button', { type: 'button',
           onClick: function() { setIdx(idx + 1); },
           'aria-label': __alloT('allohaven.next_step','Next step'),
           style: {
@@ -10426,7 +10429,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             '🔍 Search'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onClose,
             'aria-label': __alloT('allohaven.close_search','Close search'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
@@ -10479,7 +10482,7 @@
               results.decorations.map(function(r) {
                 var d = r.decoration;
                 var dLabel = d.templateLabel || d.template || 'item';
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'sr-d-' + d.id,
                   onClick: function() { p.onClickDecoration(d.id); },
                   'aria-label': 'Open ' + dLabel,
@@ -10513,7 +10516,7 @@
               '📜 Stories · ' + results.stories.length),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               results.stories.map(function(r) {
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'sr-s-' + r.story.id,
                   onClick: function() { p.onClickStory(r.story.id); },
                   'aria-label': 'Open story ' + (r.story.title || 'untitled'),
@@ -10541,7 +10544,7 @@
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               results.journals.map(function(r) {
                 var dateStr = r.entry.date ? new Date(r.entry.date).toLocaleDateString() : '';
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'sr-j-' + r.entry.id,
                   onClick: function() { p.onClickJournal(r.entry.id); },
                   'aria-label': 'Open journal entry from ' + dateStr,
@@ -10697,17 +10700,17 @@
           })
         ),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: skip,
             'aria-label': __alloT('allohaven.skip_the_tour','Skip the tour'),
             style: { background: 'transparent', color: palette.textMute, border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }
           }, 'Skip'),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            step > 0 ? h('button', {
+            step > 0 ? h('button', { type: 'button',
               onClick: back,
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, '◀ Back') : null,
-            h('button', {
+            h('button', { type: 'button',
               onClick: next,
               style: {
                 background: palette.accent, color: palette.onAccent,
@@ -10774,7 +10777,7 @@
           COMPANION_SPECIES.map(function(sp) {
             var active = draft.species === sp.id;
             var swatch = getCompanionPalette(sp.id, draft.colorVariant || 'warm');
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'sp-' + sp.id,
               onClick: function() { setField('species', sp.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -10816,7 +10819,7 @@
           COMPANION_VARIANTS.map(function(v) {
             var active = draft.colorVariant === v.id;
             var swatch = getCompanionPalette(draft.species, v.id);
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'cv-' + v.id,
               onClick: function() { setField('colorVariant', v.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -10888,7 +10891,7 @@
             }),
             h('div', { style: { display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' } },
               nameSuggestions.map(function(n) {
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'nm-' + n,
                   onClick: function() { setField('name', n); },
                   style: {
@@ -10922,7 +10925,7 @@
               '🎀 Accessory'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
               // None
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setField('accessory', null); },
                 'aria-pressed': !draft.accessory ? 'true' : 'false',
                 'aria-label': __alloT('allohaven.no_accessory','No accessory'),
@@ -10942,7 +10945,7 @@
               ACCESSORY_DEFS.map(function(def) {
                 var isUnlocked = unlocked.indexOf(def.id) !== -1;
                 var active = draft.accessory === def.id;
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'acc-' + def.id,
                   onClick: function() { if (isUnlocked) setField('accessory', def.id); },
                   disabled: !isUnlocked,
@@ -10998,7 +11001,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             (existing ? 'Edit companion' : 'New companion') + ' · step ' + step + ' of 3'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_companion_setup','Close companion setup'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
@@ -11022,7 +11025,7 @@
         stepBody,
         // Nav buttons
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
-          existing ? h('button', {
+          existing ? h('button', { type: 'button',
             onClick: async function() {
               if (!await askAlloHavenConfirmation('Remove your companion?', { title: 'Remove companion', confirmText: 'Remove companion' })) return;
               if (p.onDelete) p.onDelete();
@@ -11030,14 +11033,14 @@
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🗑 Remove') : h('span'),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            step > 1 ? h('button', {
+            step > 1 ? h('button', { type: 'button',
               onClick: function() { setStep(step - 1); },
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
-            }, '◀ Back') : h('button', {
+            }, '◀ Back') : h('button', { type: 'button',
               onClick: p.onCancel,
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Cancel'),
-            step < 3 ? h('button', {
+            step < 3 ? h('button', { type: 'button',
               onClick: function() { setStep(step + 1); },
               disabled: step === 1 ? !canAdvanceFrom1 : !canAdvanceFrom2,
               style: {
@@ -11049,7 +11052,7 @@
                 fontFamily: 'inherit',
                 opacity: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? 1 : 0.6
               }
-            }, 'Next ▶') : h('button', {
+            }, 'Next ▶') : h('button', { type: 'button',
               onClick: handleSave,
               disabled: !canSave,
               style: {
@@ -11165,7 +11168,7 @@
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
           h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
             '🎯 ' + (p.goal && p.goal.title ? 'Edit goal' : 'Set a goal')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: p.onCancel, 'aria-label': __alloT('allohaven.close_goal_builder','Close goal builder'),
             style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
           }, '✕')
@@ -11177,7 +11180,7 @@
         h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 600 } }, 'Quick start:'),
         h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' } },
           presets.map(function(pr, i) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'gp-' + i,
               onClick: function() { applyPreset(pr); },
               style: {
@@ -11209,7 +11212,7 @@
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' } },
           GOAL_METRICS.map(function(m) {
             var active = draft.metric === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'gm-' + m.id,
               onClick: function() { setField('metric', m.id); },
               'aria-pressed': active ? 'true' : 'false',
@@ -11294,7 +11297,7 @@
         }),
 
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
-          p.goal ? h('button', {
+          p.goal ? h('button', { type: 'button',
             onClick: async function() {
               if (!await askAlloHavenConfirmation('Delete this goal?', { title: 'Delete goal', confirmText: 'Delete goal' })) return;
               if (p.onDelete) p.onDelete();
@@ -11302,11 +11305,11 @@
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🗑 Delete') : h('span'),
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: p.onCancel,
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Cancel'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: handleSave,
               disabled: !canSave,
               style: {
@@ -11488,6 +11491,7 @@
       : (walkOptions.emptyHint || 'Your haven is waiting — earn tokens and place decorations, then walk through them here');
     titleWrap.appendChild(title); titleWrap.appendChild(hint);
     var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Close'); closeBtn.textContent = '✕';
     closeBtn.style.cssText = 'border:1px solid transparent;background:transparent;color:#cbd5e1;cursor:pointer;font-size:18px;width:44px;height:44px;border-radius:8px;';
     header.appendChild(titleWrap); header.appendChild(closeBtn);
@@ -11509,6 +11513,7 @@
       try { if (returnFocus && typeof returnFocus.focus === 'function') returnFocus.focus(); } catch (e) {}
     }
     function onKey(e) {
+      if (!e || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === 'Escape') { e.preventDefault(); destroy(); return; }
       if (e.key !== 'Tab') return;
       var focusable = overlay.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
@@ -16435,6 +16440,7 @@
         try {
           var W = 1080, H = 1080;
           var canvas = document.createElement('canvas');
+          canvas.setAttribute('aria-hidden', 'true');
           canvas.width = W; canvas.height = H;
           var ctx = canvas.getContext('2d');
 
@@ -16822,7 +16828,7 @@
           },
             unlockedRooms.map(function(r) {
               var active = r.id === room.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'rt-' + r.id,
                 id: 'ah-room-tab-' + r.id,
                 role: 'tab',
@@ -16850,7 +16856,7 @@
         // every unlocked room, placed decoration, and portfolio artifact — as
         // one 3D memory-palace scene. Read-only view; closing changes nothing.
         h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '2px', marginBottom: '8px' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { openHavenWalk3D(state); },
             'aria-label': 'Walk in 3D — ' + __alloT('allohaven.walk_your_haven_in_3d','Walk your haven in 3D'),
             title: __alloT('allohaven.see_every_room_decoration_and_portfolio_arti','See every room, decoration, and portfolio artifact as one walkable 3D palace'),
@@ -16994,14 +17000,14 @@
                (state.companion.legacySpeciesPrev ? 'Your ' + state.companion.legacySpeciesPrev + ' is currently showing as Pip. ' : '') +
                'Pick the one that feels right — Pip, Cogsworth, Vex, Mochi, or Inko.')
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() {
               saveCompanion({ mascotReselectPrompt: false });
               setStateField('activeModal', 'companion-setup');
             },
             style: Object.assign({}, primaryBtnStyle(palette), { fontSize: '12px', padding: '6px 12px' })
           }, 'Pick'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { saveCompanion({ mascotReselectPrompt: false }); },
             'aria-label': __alloT('allohaven.keep_pip','Keep Pip'),
             style: {
@@ -17084,7 +17090,7 @@
                   style: {
                     fontSize: '11px', color: palette.textMute, fontWeight: 700
                   }
-                }, '✓ Claimed +2 🪙') : h('button', {
+                }, '✓ Claimed +2 🪙') : h('button', { type: 'button',
                   onClick: claimDailyVignette,
                   'aria-label': __alloT('allohaven.claim_today_s_career_income','Claim today\'s career income'),
                   style: {
@@ -17097,7 +17103,7 @@
                     cursor: 'pointer', fontFamily: 'inherit'
                   }
                 }, 'Claim +2 🪙'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { generateDailyVignette(true); },
                   title: __alloT('allohaven.regenerate_today_s_update','Regenerate today\'s update'),
                   'aria-label': __alloT('allohaven.regenerate_today_s_update_2','Regenerate today\'s update'),
@@ -17166,7 +17172,7 @@
                 var peerSwatch = getCompanionPalette(peer.species, peer.colorVariant);
                 var rel = peer.relationship || 0;
                 var hearts = rel >= 5 ? '💞' : rel >= 3 ? '💗' : rel >= 1 ? '♡' : '·';
-                return h('button', {
+                return h('button', { type: 'button',
                   key: peer.id,
                   onClick: function() { openPeerVisit(peer.id); },
                   'aria-label': 'Visit ' + peer.name + '\'s dorm',
@@ -17236,13 +17242,13 @@
             justifyContent: 'center'
           }
         },
-          h('button', {
+          h('button', { type: 'button',
             onClick: startPomodoro,
             disabled: state.pomodoroState.active,
             style: Object.assign({}, primaryBtnStyle(palette),
               state.pomodoroState.active ? { opacity: 0.5, cursor: 'not-allowed' } : {})
           }, state.pomodoroState.active ? '🍅 Pomodoro running' : '🍅 Start Pomodoro'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: openReflectionModal,
             style: secondaryBtnStyle(palette)
           }, '📝 Write reflection'),
@@ -17257,7 +17263,7 @@
             var fed = state.companion.knowledgeFed || 0;
             var atGraduation = stage.id === 'young-adult' && !(state.companion.career && state.companion.career.careerId);
             return h('span', { style: { display: 'inline-flex', gap: '8px' } },
-              atGraduation ? h('button', {
+              atGraduation ? h('button', { type: 'button',
                 onClick: openCareerPickerModal,
                 'aria-label': 'Choose a career for ' + (state.companion.name || 'your buddy'),
                 title: __alloT('allohaven.it_s_graduation_day_pick_a_career_path','It\'s graduation day! Pick a career path.'),
@@ -17265,7 +17271,7 @@
                   animation: 'ah-token-tick 700ms ease'
                 })
               }, '🎓 Graduate ' + (state.companion.name || 'your buddy')) : null,
-              h('button', {
+              h('button', { type: 'button',
                 onClick: openFeedStoryModal,
                 'aria-label': 'Feed a story to ' + (state.companion.name || 'your buddy'),
                 title: __alloT('allohaven.tell_your_buddy_a_short_story_with_vocabular','Tell your buddy a short story with vocabulary or concepts'),
@@ -17273,7 +17279,7 @@
               }, stage.badge + ' Feed story' + (fed > 0 ? ' · ' + fed : '')),
               // Phase L5 — Life Story button. Visible once the buddy
               // has captured at least one life moment.
-              (Array.isArray(state.companion.lifeMoments) && state.companion.lifeMoments.length > 0) ? h('button', {
+              (Array.isArray(state.companion.lifeMoments) && state.companion.lifeMoments.length > 0) ? h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'life-story'); },
                 'aria-label': 'Open ' + (state.companion.name || 'your buddy') + '\'s Life Story',
                 title: __alloT('allohaven.view_the_scrapbook_of_major_life_moments','View the scrapbook of major life moments'),
@@ -17281,7 +17287,7 @@
               }, '📔 Life Story · ' + state.companion.lifeMoments.length) : null
             );
           })() : null,
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
@@ -17291,34 +17297,34 @@
             var summary = state.studentProgressSummary || {};
             var total = summary.overview && summary.overview.totalActivities ? summary.overview.totalActivities : 0;
             var selCount = summary.sel ? ((summary.sel.toolsUsed || 0) + (summary.sel.reflectionSnapshots || 0)) : 0;
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'student-progress'); },
               'aria-label': 'Open my saved progress summary' + (total > 0 ? ', ' + total + ' activities' : ''),
               title: __alloT('allohaven.my_saved_progress','My saved progress'),
               style: secondaryBtnStyle(palette)
             }, 'Progress' + (total > 0 ? ' - ' + total : selCount > 0 ? ' - SEL ' + selCount : ''));
           })() : null,
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'student-portfolio'); },
             'aria-label': 'Open my portfolio, ' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? state.studentArtifacts.length + ' saved product' + (state.studentArtifacts.length === 1 ? '' : 's') : 'no saved products yet'),
             title: __alloT('allohaven.my_saved_products','My saved products'),
             style: secondaryBtnStyle(palette)
           }, 'Portfolio' + (Array.isArray(state.studentArtifacts) && state.studentArtifacts.length > 0 ? ' - ' + state.studentArtifacts.length : '')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'breathe'); },
             'aria-label': 'Breathe — ' + __alloT('allohaven.open_breathing_pacer_for_self_care','Open breathing pacer for self-care'),
             style: secondaryBtnStyle(palette)
           }, '🫁 Breathe'),
           // Grounding (Phase 2p.31) — sibling self-care affordance.
           // 5-4-3-2-1 sensory anchoring. Same opt-in posture.
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'grounding'); },
             'aria-label': __alloT('allohaven.open_5_4_3_2_1_sensory_grounding_exercise','Open 5-4-3-2-1 sensory grounding exercise'),
             style: secondaryBtnStyle(palette)
           }, '🧷 Grounding'),
           // Arcade hub (Phase 3a) — token-time-gated launcher for plugin
           // arcade modes (Sage launcher, Concept Cards, Runway, etc.).
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'arcade'); },
             'aria-label': 'Open arcade — spend tokens on game time',
             title: __alloT('allohaven.token_time_gated_games_sage_future_tcg_etc','Token-time gated games (Sage, future TCG, etc.)'),
@@ -17328,7 +17334,7 @@
             var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
             var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
             var labelText = '📖 Memory' + (deckCount > 0 ? ' · ' + deckCount : '');
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'memory-overview'); },
               'aria-label': 'Memory palace overview' + (deckCount > 0 ? ', ' + deckCount + ' decks' : '') + (dueCount > 0 ? ', ' + dueCount + ' due' : ''),
               style: Object.assign({}, secondaryBtnStyle(palette),
@@ -17367,7 +17373,7 @@
             // Rough-average estimate: ~0.7 min per cloze deck. Floor at 1
             // so the chip never says "0 min".
             var estMin = Math.max(1, Math.ceil(dueCount * 0.7));
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'daily-reps-' + dueCount, // re-key as count changes so animation re-fires
               className: 'ah-score-pop',
               onClick: function() { startReviewQueue(); },
@@ -17389,7 +17395,7 @@
               });
               return validSteps.length >= 3 && (s.title || '').trim().length > 0;
             }).length;
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'stories'); },
               'aria-label': 'Stories' + (storyCount > 0 ? ', ' + storyCount + ' total' + (validStoryCount > 0 ? ', ' + validStoryCount + ' walkable' : '') : ''),
               style: secondaryBtnStyle(palette)
@@ -17403,7 +17409,7 @@
               var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
               return endMs >= nowMs;
             }).length;
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'goals'); },
               'aria-label': 'Goals' + (activeCount > 0 ? ', ' + activeCount + ' active' : ''),
               style: secondaryBtnStyle(palette)
@@ -17411,13 +17417,13 @@
           })(),
           (function() {
             var unlocked = Object.keys(state.achievements || {}).length;
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'achievements'); },
               'aria-label': 'Achievements' + (unlocked > 0 ? ', ' + unlocked + ' of ' + ACHIEVEMENT_CATALOG.length + ' unlocked' : ''),
               style: secondaryBtnStyle(palette)
             }, '🏆 Achievements' + (unlocked > 0 ? ' · ' + unlocked + '/' + ACHIEVEMENT_CATALOG.length : ''));
           })(),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
           }, '⚙️ Settings')
@@ -17573,12 +17579,13 @@
           },
           onClick: function() { openMemoryModal(decoration.id); },
           onKeyDown: function(e) {
-            if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown')) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+            if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown')) {
               e.preventDefault();
               moveDecorationByKeyboard(decoration, surface, index, e.key);
               return;
             }
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'Enter' || e.key === ' ')) {
               e.preventDefault();
               openMemoryModal(decoration.id);
             }
@@ -17787,7 +17794,7 @@
           // Hover-revealed ✕ delete button (top-right corner). Suppressed
           // on the starter decoration — students shouldn't accidentally
           // delete the welcome gift; v2+ could allow it via Settings.
-          !decoration.isStarter && state.roomMode !== 'live' ? h('button', {
+          !decoration.isStarter && state.roomMode !== 'live' ? h('button', { type: 'button',
             onClick: function(e) {
               e.stopPropagation();
               setStateMulti({ activeModal: 'delete-decoration', generateContext: { decorationId: decoration.id } });
@@ -17842,6 +17849,7 @@
         className: 'ah-empty-cell',
         onClick: function() { handleEmptyCellClick(surface, index); },
         onKeyDown: function(e) {
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             handleEmptyCellClick(surface, index);
@@ -17895,7 +17903,7 @@
         h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
           // Search (Phase 2p.10) — quick text search across decks,
           // stories, decorations, reflections. Compact icon-only button.
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'search'); },
             'aria-label': 'Search',
             title: __alloT('allohaven.search_across_decks_stories_and_reflections','Search across decks, stories, and reflections'),
@@ -17915,7 +17923,7 @@
           // Build mode is editing; Live mode is rest. Persists in state.
           (function() {
             var liveMode = state.roomMode === 'live';
-            return h('button', {
+            return h('button', { type: 'button',
               onClick: function() {
                 setStateField('roomMode', liveMode ? 'build' : 'live');
               },
@@ -17957,7 +17965,7 @@
             h('span', { 'aria-hidden': 'true' }, '🪙'),
             h('span', { key: 'token-' + tokens, className: 'ah-token-tick' }, tokens)
           ),
-          onCloseCb ? h('button', {
+          onCloseCb ? h('button', { type: 'button',
             onClick: onCloseCb,
             'aria-label': __alloT('allohaven.close_allohaven','Close AlloHaven'),
             style: {
@@ -18225,7 +18233,7 @@
       var companion = state.companion;
       // Empty-state: small button to open setup wizard
       if (!companion || !companion.species) {
-        return h('button', {
+        return h('button', { type: 'button',
           onClick: function() { setStateField('activeModal', 'companion-setup'); },
           'aria-label': 'Add a buddy — ' + __alloT('allohaven.add_a_study_buddy_companion','Add a study buddy companion'),
           title: __alloT('allohaven.pick_a_critter_that_lives_in_your_room','Pick a critter that lives in your room'),
@@ -18410,7 +18418,7 @@
           },
             h('div', { style: { fontStyle: 'italic', marginBottom: '8px' } }, promptText),
             h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { dismissQuizPrompt(); },
                 'aria-label': __alloT('allohaven.skip_the_quiz_offer_for_now','Skip the quiz offer for now'),
                 style: {
@@ -18420,7 +18428,7 @@
                   cursor: 'pointer', fontFamily: 'inherit'
                 }
               }, 'Later'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { acceptQuizPrompt(dueDec); },
                 'aria-label': __alloT('allohaven.start_the_quiz_now','Start the quiz now'),
                 style: {
@@ -18474,7 +18482,7 @@
           // history without digging into the phrases modal.
           var hasLedger = companion.knowledgeMap && Object.keys(companion.knowledgeMap).length > 0;
           return h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' } },
-            h('button', {
+            h('button', { type: 'button',
               className: 'ah-companion-bubble ah-companion-curiosity',
               onClick: function () { setStateField('activeModal', 'curious-companion'); },
               'aria-label': displayName + ' has a question for you. Tap to chat.',
@@ -18484,7 +18492,7 @@
               h('span', { style: { display: 'block' } }, inviteText),
               h('span', { style: { fontSize: '10px', color: palette.accent, fontWeight: 700, marginTop: '4px', display: 'block' } }, '💭 tap to chat')
             ),
-            hasLedger ? h('button', {
+            hasLedger ? h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'companion-phrases'); },
               'aria-label': 'See what ' + displayName + ' has learned',
               style: {
@@ -18517,7 +18525,7 @@
             textAlign: 'left'
           };
           if (hasTarget) {
-            return h('button', {
+            return h('button', { type: 'button',
               className: 'ah-companion-bubble',
               onClick: function () { openMemoryModal(targetId, false); },
               'aria-label': 'Open ' + bubbleText + ' (tap to review)',
@@ -18750,7 +18758,7 @@
           // Daily treat (Phase 2p.16) — once per day, students can give
           // the companion a treat. Visible only when available; hidden
           // after use until the calendar rolls over.
-          canGiveTreatToday() ? h('button', {
+          canGiveTreatToday() ? h('button', { type: 'button',
             onClick: giveCompanionTreat,
             'aria-label': 'Give ' + displayName + ' a treat (once per day)',
             title: 'Daily treat for ' + displayName,
@@ -18761,7 +18769,7 @@
               fontFamily: 'inherit'
             }
           }, '🍪') : null,
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'companion-phrases'); },
             'aria-label': 'Teach ' + displayName + ' a phrase',
             title: 'Teach ' + displayName + ' to say something',
@@ -18772,7 +18780,7 @@
               fontFamily: 'inherit'
             }
           }, '💬'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'companion-setup'); },
             'aria-label': 'Edit ' + displayName,
             title: __alloT('allohaven.change_species_color_or_name','Change species, color, or name'),
@@ -19196,7 +19204,7 @@
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.text } },
               plan.next.title)
           ),
-          plan.next && plan.next.cta ? h('button', {
+          plan.next && plan.next.cta ? h('button', { type: 'button',
             onClick: function() { runDailyAction(plan.next.action); },
             'aria-label': plan.next.cta + ': ' + plan.next.title,
             style: Object.assign({}, primaryBtnStyle(palette), {
@@ -19227,7 +19235,7 @@
           var prog = computeGoalProgress(topGoal, state);
           var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
           var daysLeft = endDate ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 0;
-          return h('button', {
+          return h('button', { type: 'button',
             onClick: function() { setStateField('activeModal', 'goals'); },
             'aria-label': 'Active goal: ' + topGoal.title + ', ' + prog.current + ' of ' + prog.target + ', ' + daysLeft + ' days left',
             title: topGoal.title + ' - ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
@@ -19314,7 +19322,7 @@
         h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
           'Today · ' + completedCount + '/' + quests.length),
         questViews,
-        canClaim ? h('button', {
+        canClaim ? h('button', { type: 'button',
           onClick: claimQuestTrifecta,
           'aria-label': __alloT('allohaven.claim_daily_trifecta_bonus_of_5_tokens','Claim daily trifecta bonus of 5 tokens'),
           style: {
@@ -19341,7 +19349,7 @@
       return h('div', {
         ref: function(node) { if (node && !node.contains(document.activeElement)) { var b = node.querySelector('button'); if (b && b.focus) { try { b.focus({ preventScroll: true }); } catch(_) { b.focus(); } } } },
         onKeyDown: function(ev) {
-          if (ev.isComposing || ev.keyCode === 229) return;
+          if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
           if (ev.key === 'Tab') {
             var btns = Array.prototype.filter.call(ev.currentTarget.querySelectorAll('button:not([disabled]),a[href],input:not([disabled])'), function(el) {
               if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
@@ -19415,7 +19423,7 @@
           h('em', null, 'method of loci, since 477 BC.')
         ),
         h('div', { style: { textAlign: 'center' } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateField('onboardingSeen', true); },
             autoFocus: true,
             style: Object.assign({}, primaryBtnStyle(palette), { padding: '10px 28px', fontSize: '14px' })
@@ -19581,17 +19589,17 @@
           },
             // Breathe + Grounding (Phase 2p.28 / 2p.31) — break-phase
             // self-care affordances. Both opt-in.
-            (phase === 'short-break' || phase === 'long-break') ? h('button', {
+            (phase === 'short-break' || phase === 'long-break') ? h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'breathe'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
               'aria-label': 'Breathe — ' + __alloT('allohaven.open_breathing_pacer','Open breathing pacer')
             }, '🫁 Breathe') : null,
-            (phase === 'short-break' || phase === 'long-break') ? h('button', {
+            (phase === 'short-break' || phase === 'long-break') ? h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'grounding'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
               'aria-label': 'Grounding — ' + __alloT('allohaven.open_grounding_exercise','Open grounding exercise')
             }, '🧷 Grounding') : null,
-            h('button', {
+            h('button', { type: 'button',
               onClick: cancelPomodoro,
               style: Object.assign({}, secondaryBtnStyle(palette), {
                 borderColor: palette.textMute,
@@ -19757,7 +19765,7 @@
                 style: { fontSize: '17px', fontWeight: 800, color: palette.text, marginTop: '2px' }
               }, 'Tell ' + name + ' something new')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { if (!feedStoryBusy) setStateField('activeModal', null); },
               'aria-label': 'Close',
               disabled: feedStoryBusy,
@@ -19857,7 +19865,7 @@
             h('span', { style: { flex: 1, fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } },
               feedStoryBusy ? name + ' is reading…' : '+1 🪙 per story'
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 if (feedStoryBusy) return;
                 if (feedStoryDraft.trim().length < 12) return;
@@ -19943,7 +19951,7 @@
                 style: { fontSize: '18px', fontWeight: 800, color: palette.text, marginTop: '2px' }
               }, name + ' is choosing a path')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setCareerPickVocation(null);
                 setStateField('activeModal', null);
@@ -19969,7 +19977,7 @@
           },
             selVocation
               ? h('div', null,
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { setCareerPickVocation(null); },
                     style: {
                       background: 'transparent', border: 'none',
@@ -19994,7 +20002,7 @@
             }
           },
             CAREER_VOCATIONS.map(function(v) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: v.id,
                 onClick: function() { setCareerPickVocation(v.id); },
                 'aria-label': 'Explore the ' + v.label + ' path',
@@ -20037,7 +20045,7 @@
             }
           },
             selVocation.careers.map(function(career) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: career.id,
                 onClick: function() { chooseCareer(selVocation.id, career.id); },
                 'aria-label': 'Choose ' + career.label + ' as ' + name + '\'s career',
@@ -20076,7 +20084,7 @@
             h('span', { style: { flex: 1, fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } },
               'You can change ' + name + '\'s career later.'
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setCareerPickVocation(null);
                 setStateField('activeModal', null);
@@ -20203,7 +20211,7 @@
                 rel >= 5 ? 'close friends 💞' : rel >= 3 ? 'getting closer 💗' : rel >= 1 ? 'acquainted ♡' : 'new connection'
               )
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: closePeerVisit,
               'aria-label': __alloT('allohaven.leave_dorm','Leave dorm'),
               style: {
@@ -20257,7 +20265,7 @@
               display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap'
             }
           },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { giftPeer(peer.id); },
               disabled: !canGift || peerGreetingBusy,
               'aria-label': __alloT('allohaven.leave_a_small_gift_3_tokens','Leave a small gift (3 tokens)'),
@@ -20273,7 +20281,7 @@
                 fontFamily: 'inherit'
               }
             }, '🎁 Leave a gift (-3 🪙)'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 // Refresh greeting (fresh Gemini call, ignores cache)
                 if (peerGreetingBusy) return;
@@ -20298,7 +20306,7 @@
               }
             }, '💬 Ask again'),
             h('span', { style: { flex: 1 } }),
-            h('button', {
+            h('button', { type: 'button',
               onClick: closePeerVisit,
               style: {
                 padding: '8px 14px',
@@ -20367,7 +20375,7 @@
                 style: { fontSize: '18px', fontWeight: 800, color: palette.text, marginTop: '2px' }
               }, name + '\'s growing-up scrapbook')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': 'Close',
               style: {
@@ -20617,13 +20625,13 @@
           h('div', {
             style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
           },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setBreatheVoiceOn(!voiceOn); },
               'aria-pressed': voiceOn ? 'true' : 'false',
               'aria-label': voiceOn ? 'Mute voice cues' : 'Unmute voice cues',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
             }, voiceOn ? '🔊 Voice' : '🔇 Voice'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_breathing_pacer','Close breathing pacer'),
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
@@ -20981,7 +20989,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '🎮 Arcade'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: close,
               'aria-label': __alloT('allohaven.close_arcade','Close arcade'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -21019,13 +21027,13 @@
                 'You\'re currently playing ' + ((window.AlloHavenArcade._registry[session.modeId] && window.AlloHavenArcade._registry[session.modeId].label) || session.modeId) + '.')
             ),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: session.timerPaused ? resumeArcadeTimer : pauseArcadeTimer,
                 style: Object.assign({}, secondaryBtnStyle(palette), {
                   minHeight: '44px', minWidth: '44px', padding: '8px 12px', fontSize: '12px'
                 })
               }, session.timerPaused ? 'Resume timer' : 'Pause timer'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { endArcadeSession('forfeit'); },
                 style: Object.assign({}, secondaryBtnStyle(palette), {
                   minHeight: '44px', minWidth: '44px', padding: '8px 12px', fontSize: '12px'
@@ -21054,7 +21062,7 @@
           // Past Encounters link (Phase 3b.history) — only shown when
           // there's something to look back at. Anchored above the modes
           // list so it doesn't compete with the active games.
-          (state.bossEncounters || []).length > 0 ? h('button', {
+          (state.bossEncounters || []).length > 0 ? h('button', { type: 'button',
             onClick: function() {
               setStateMulti({ activeModal: 'past-encounters', generateContext: null });
             },
@@ -21231,7 +21239,7 @@
                     h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text } }, mode.label || mode.id),
                     mode.blurb ? h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4', marginTop: '2px' } }, mode.blurb) : null
                   ),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { ctx.onLaunch(defaultMin); },
                     disabled: !canAfford || !!session,
                     style: Object.assign({}, primaryBtnStyle(palette), {
@@ -21325,11 +21333,11 @@
             }
           },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: backToList,
                 style: { background: 'transparent', color: palette.textDim, border: 'none', padding: '4px 0', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
               }, '← Back to list'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: close,
                 'aria-label': 'Close',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -21457,7 +21465,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
               '🐉 Past Boss Encounters'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: close,
               'aria-label': 'Close',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -21486,7 +21494,7 @@
               encounters.map(function (enc) {
                 var dateStr = enc.savedAt ? new Date(enc.savedAt).toLocaleDateString() : '?';
                 return h('li', { key: 'enc-li-' + enc.id, role: 'listitem', style: { listStyle: 'none' } },
-                h('button', {
+                h('button', { type: 'button',
                   key: 'enc-' + enc.id,
                   className: 'ah-deck-row',
                   onClick: function () { openDetail(enc.id); },
@@ -21527,7 +21535,7 @@
           encounters.length > 0 ? h('div', {
             style: { display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }
           },
-            h('button', {
+            h('button', { type: 'button',
               onClick: clearAll,
               style: {
                 background: 'transparent', color: palette.textMute,
@@ -21577,15 +21585,15 @@
         'aria-label': __alloT('allohaven.print_preview','Print preview'),
         tabIndex: -1,
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
-        onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
+        onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
       },
         h('div', { className: 'ah-preview-chrome' },
           h('span', { style: { fontSize: '12px', opacity: 0.85 } }, '🔍 Print preview'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: printNow,
             style: { background: '#15803d', color: '#fff', border: 'none', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨 Print now'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: close,
             'aria-label': __alloT('allohaven.close_preview','Close preview'),
             style: { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -21746,7 +21754,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
               '🖨 Print options'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateMulti({ activeModal: returnTo, generateContext: null }); },
               'aria-label': 'Cancel',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -21758,11 +21766,11 @@
 
           // Quick all/none controls
           h('div', { style: { display: 'flex', gap: '6px', marginBottom: '14px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setAll(true); },
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px' })
             }, '✓ All'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setAll(false); },
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px' })
             }, '○ None')
@@ -21823,11 +21831,11 @@
             h('div', { style: { fontSize: '11px', color: palette.textMute } },
               selectedCount() + ' / ' + PRINT_SECTION_DEFS.length + ' sections'),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateMulti({ activeModal: returnTo, generateContext: null }); },
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
               }, 'Cancel'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   if (selectedCount() === 0) {
                     addToast('Pick at least one section to preview.');
@@ -21843,7 +21851,7 @@
                   cursor: selectedCount() === 0 ? 'not-allowed' : 'pointer'
                 })
               }, '🔍 Preview'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: doPrint,
                 disabled: selectedCount() === 0,
                 style: Object.assign({}, primaryBtnStyle(palette), {
@@ -22042,7 +22050,7 @@
               h('div', { style: { fontSize: '13px', color: palette.text, fontStyle: 'italic', marginTop: '2px' } }, 'about ' + curiosity.label.toLowerCase()),
               knownLevel > 1 ? h('div', { style: { fontSize: '10px', color: palette.accent, marginTop: '2px', fontWeight: 700 } }, 'level ' + knownLevel + ' — going deeper') : null
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: close,
               'aria-label': 'Close',
               style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '20px', cursor: 'pointer', padding: '4px 8px' }
@@ -22156,11 +22164,11 @@
           ),
           // Actions row
           h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: passForNow,
               style: { padding: '8px 14px', background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, fontSize: '12px', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Pass for now'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: sendExplanation,
               disabled: !(curiousDraft || '').trim() || awaitingAI,
               style: {
@@ -22239,7 +22247,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
               '💬 Teach ' + c.name + ' a phrase'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: close,
               'aria-label': 'Close',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -22337,7 +22345,7 @@
                     p,
                     h('span', { 'aria-hidden': 'true', style: { color: palette.accent, marginLeft: '4px' } }, '"')
                   ),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { forgetPhrase(i); },
                     'aria-label': __alloT('allohaven.forget_this_phrase','Forget this phrase'),
                     title: 'Forget',
@@ -22377,7 +22385,7 @@
             }),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
               h('span', null, trimmed.length + '/' + COMPANION_PHRASE_LIMIT + ' characters'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: teachPhrase,
                 disabled: !validDraft,
                 style: Object.assign({}, primaryBtnStyle(palette), {
@@ -22466,7 +22474,7 @@
                 textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700
               }
             }, '🧷 Grounding · 5·4·3·2·1'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: close,
               'aria-label': __alloT('allohaven.close_grounding_exercise','Close grounding exercise'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -22568,7 +22576,7 @@
 
           // Action row
           h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', flexWrap: 'wrap' } },
-            !done ? h('button', {
+            !done ? h('button', { type: 'button',
               onClick: goBack,
               disabled: idx === 0,
               'aria-label': __alloT('allohaven.go_back_one_step','Go back one step'),
@@ -22579,14 +22587,14 @@
               })
             }, '← Back') : h('span', null),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              !done ? h('button', {
+              !done ? h('button', { type: 'button',
                 onClick: advance,
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
               }, 'Skip') : null,
-              !done ? h('button', {
+              !done ? h('button', { type: 'button',
                 onClick: advance,
                 style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
-              }, idx === GROUNDING_STEPS.length - 1 ? 'Finish' : 'Next →') : h('button', {
+              }, idx === GROUNDING_STEPS.length - 1 ? 'Finish' : 'Next →') : h('button', { type: 'button',
                 onClick: close,
                 style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
               }, 'Done')
@@ -23300,7 +23308,7 @@
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
             h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'weekly-summary'); },
                 'aria-label': __alloT('allohaven.show_last_7_days_summary','Show last 7 days summary'),
                 title: 'Quick 7-day snapshot — what you did, how you felt, what you unlocked',
@@ -23312,20 +23320,20 @@
                   return d.voiceNote && d.voiceNote.base64;
                 }).length;
                 if (vCount === 0) return null;
-                return h('button', {
+                return h('button', { type: 'button',
                   onClick: function() { setStateField('activeModal', 'voice-notes'); },
                   'aria-label': 'Open voice notes index — ' + vCount + ' note' + (vCount === 1 ? '' : 's'),
                   title: __alloT('allohaven.listen_to_every_voice_note_you_ve_recorded','Listen to every voice note you\'ve recorded'),
                   style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
                 }, '🎤 Voice notes · ' + vCount);
               })(),
-              (totalDecks > 0 || allStories.length > 0) ? h('button', {
+              (totalDecks > 0 || allStories.length > 0) ? h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'clinical-review'); },
                 'aria-label': __alloT('allohaven.review_packet_on_screen','Review packet on screen'),
                 title: __alloT('allohaven.show_all_decks_stories_and_reflections_in_a','Show all decks, stories, and reflections in a single scrollable view (for review with a parent, teacher, or clinician)'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '📋 Review packet') : null,
-              (totalDecks > 0 || allStories.length > 0) ? h('button', {
+              (totalDecks > 0 || allStories.length > 0) ? h('button', { type: 'button',
                 onClick: function() {
                   // Phase 2p.34 — go through the print options modal so
                   // the user can pick which sections to include before
@@ -23339,7 +23347,7 @@
                 title: __alloT('allohaven.pick_which_sections_to_include_then_print','Pick which sections to include, then print'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print') : null,
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', null); },
                 'aria-label': __alloT('allohaven.close_memory_overview','Close memory overview'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -23376,7 +23384,7 @@
                 h('div', { 'aria-hidden': 'true', style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'),
                 h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: '0 0 10px 0' } },
                   'No decks tagged "' + filterLabel + '" yet. Tag a deck via its memory modal, or:'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     // Clear BOTH filters simultaneously
                     var nextCtx = Object.assign({}, state.generateContext || {}, {
@@ -23446,7 +23454,7 @@
               'Filter:'),
             SUBJECT_TAGS.filter(function(s) { return !!subjectsPresent[s.id]; }).map(function(s) {
               var active = activeFilter === s.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'sf-' + s.id,
                 onClick: function() { setSubjectFilter(s.id); },
                 'aria-pressed': active ? 'true' : 'false',
@@ -23463,7 +23471,7 @@
                 }
               }, s.emoji + ' ' + s.label + ' · ' + subjectsPresent[s.id]);
             }),
-            activeFilter ? h('button', {
+            activeFilter ? h('button', { type: 'button',
               onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
               'aria-label': __alloT('allohaven.clear_subject_filter','Clear subject filter'),
               style: {
@@ -23492,7 +23500,7 @@
               'Mood:'),
             MOOD_OPTIONS.filter(function(m) { return !!moodsPresent[m.id]; }).map(function(m) {
               var active = activeMoodFilter === m.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'mf-' + m.id,
                 onClick: function() { setMoodFilter(m.id); },
                 'aria-pressed': active ? 'true' : 'false',
@@ -23509,7 +23517,7 @@
                 }
               }, m.emoji + ' ' + m.label + ' · ' + moodsPresent[m.id]);
             }),
-            activeMoodFilter ? h('button', {
+            activeMoodFilter ? h('button', { type: 'button',
               onClick: function() { setMoodFilter(activeMoodFilter); },
               'aria-label': __alloT('allohaven.clear_mood_filter','Clear mood filter'),
               style: {
@@ -23539,7 +23547,7 @@
                 }
               }, '⚡ Due for review · ' + due.length),
               // Phase 2p.9 — sequential review-all queue
-              due.length >= 2 ? h('button', {
+              due.length >= 2 ? h('button', { type: 'button',
                 onClick: function() { startReviewQueue(); },
                 'aria-label': 'Review all ' + due.length + ' due decks in sequence',
                 title: __alloT('allohaven.sequential_quiz_through_every_due_deck_stop','Sequential quiz through every due deck. Stop any time.'),
@@ -23794,18 +23802,18 @@
         ),
         // Action buttons
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: continueAtlas,
             'aria-label': 'Continue ' + (atlas.name || atlas.topic || 'atlas'),
             style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, '▶ Continue'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: printThisAtlas,
             'aria-label': 'Print ' + (atlas.name || atlas.topic || 'atlas'),
             title: __alloT('allohaven.print_just_this_atlas_single_packet_for_iep','Print just this atlas (single packet for IEP / parent meeting)'),
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: confirmDelete,
             'aria-label': 'Delete ' + (atlas.name || atlas.topic || 'atlas'),
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -23886,18 +23894,18 @@
         ),
         // Action buttons
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
-          h('button', {
+          h('button', { type: 'button',
             onClick: continueRealm,
             'aria-label': 'Continue ' + (realm.name || realm.topic || 'realm'),
             style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, '▶ Continue'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: printThisRealm,
             'aria-label': 'Print ' + (realm.name || realm.topic || 'realm'),
             title: __alloT('allohaven.print_just_this_realm_single_packet_for_iep','Print just this realm (single packet for IEP / parent meeting)'),
             style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: confirmDelete,
             'aria-label': 'Delete ' + (realm.name || realm.topic || 'realm'),
             style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -23947,7 +23955,7 @@
           'aria-hidden': 'true',
           style: { width: '48px', height: '48px', borderRadius: '6px', background: palette.bg, border: '1px dashed ' + palette.border, display: 'flex', alignItems: 'center', justifyContent: 'center', color: palette.textMute, fontSize: '20px', flexShrink: 0 }
         }, '📜'),
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() {
             setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
           },
@@ -23963,7 +23971,7 @@
             stepCount + ' step' + (stepCount === 1 ? '' : 's')),
           h('div', { style: { fontSize: '10px', color: palette.textMute } }, reviewedLabel)
         ),
-        walkable ? h('button', {
+        walkable ? h('button', { type: 'button',
           onClick: function() {
             setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: story.id } });
           },
@@ -23973,7 +23981,7 @@
             fontSize: '12px', fontWeight: 700, cursor: 'pointer',
             fontFamily: 'inherit', flexShrink: 0
           }
-        }, '↻ Walk') : h('button', {
+        }, '↻ Walk') : h('button', { type: 'button',
           onClick: function() {
             setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
           },
@@ -24099,7 +24107,7 @@
           }
         }) : null,
         // Center: content summary
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { openMemoryModal(decoration.id, false); },
           style: {
             flex: 1,
@@ -24158,7 +24166,7 @@
         ),
         // Voice-note inline play toggle (Phase R) — sits between center
         // and Review so the row's primary action stays on the right.
-        hasVoiceNote ? h('button', {
+        hasVoiceNote ? h('button', { type: 'button',
           onClick: function(e) { e.stopPropagation(); toggleVoiceRow(); },
           'aria-pressed': voiceExpanded ? 'true' : 'false',
           'aria-expanded': voiceExpanded ? 'true' : 'false',
@@ -24179,7 +24187,7 @@
           }
         }, voiceExpanded ? '🎤 ▾' : '🎤 ▶') : null,
         // Review action button (only for quizzable types)
-        quizAvailable ? h('button', {
+        quizAvailable ? h('button', { type: 'button',
           onClick: function() { openMemoryModal(decoration.id, true); },
           style: {
             background: isDue
@@ -24195,7 +24203,7 @@
             fontFamily: 'inherit',
             flexShrink: 0
           }
-        }, '↻ Review') : h('button', {
+        }, '↻ Review') : h('button', { type: 'button',
           onClick: function() { openMemoryModal(decoration.id, false); },
           style: {
             background: 'transparent',
@@ -24369,7 +24377,7 @@
               h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } }, label),
               h('div', { style: { fontSize: '10px', color: palette.textMute } }, meta)
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setStateMulti({
                   activeModal: 'memory',
@@ -24438,7 +24446,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '🎤 Voice notes · ' + voiced.length),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_voice_notes_index','Close voice notes index'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -24640,14 +24648,14 @@
               })()) : null
             ),
             h('div', { style: { display: 'flex', gap: '6px' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { runInsightsAnalysis(); },
                 'aria-label': __alloT('allohaven.refresh_insights','Refresh insights'),
                 disabled: ins.loading,
                 title: ins.loading ? 'Analyzing…' : 'Run a fresh analysis',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px', opacity: ins.loading ? 0.6 : 1 })
               }, ins.loading ? '…' : '↻ Refresh'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'journal'); },
                 'aria-label': __alloT('allohaven.back_to_journal','Back to journal'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -24706,7 +24714,7 @@
             style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }
           },
             h('span', { style: { flex: 1, minWidth: 0 } }, ins.error),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { runInsightsAnalysis(); },
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', flexShrink: 0 })
             }, '↻ Try again')
@@ -24868,7 +24876,7 @@
               // recent journal entries (mood themes, recurring topics,
               // word counts). Only renders when there's enough data to
               // be worth analyzing AND the host wired callGemini.
-              entries.length >= 3 && _havenAiUsable('text', callGemini) ? h('button', {
+              entries.length >= 3 && _havenAiUsable('text', callGemini) ? h('button', { type: 'button',
                 onClick: function() {
                   setStateMulti({ activeModal: 'insights', insightsState: { loading: false, summary: null, error: null, generatedAt: null } });
                 },
@@ -24876,7 +24884,7 @@
                 title: __alloT('allohaven.analyze_recent_entries_for_mood_themes_and_r','Analyze recent entries for mood themes and recurring topics'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px' })
               }, '📊 Insights') : null,
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', null); },
                 'aria-label': __alloT('allohaven.close_journal','Close journal'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -24992,7 +25000,7 @@
             style: { margin: '0 0 18px 0', fontSize: '13px', color: palette.textDim, lineHeight: '1.55' }
           }, 'Tokens already spent on this decoration won\'t be refunded.'),
           h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
               autoFocus: true,
               style: {
@@ -25002,7 +25010,7 @@
                 cursor: 'pointer', fontFamily: 'inherit'
               }
             }, 'Keep it'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { deleteDecoration(decorationId); },
               style: {
                 background: palette.warn || '#dc2626',
@@ -25122,13 +25130,13 @@
             h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
               // Tenure recap entry (Phase 2p.29) — lives next to Close
               // so the modal stays the celebration surface.
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'tenure-recap'); },
                 'aria-label': __alloT('allohaven.see_your_allohaven_journey_recap','See your AlloHaven journey recap'),
                 title: __alloT('allohaven.your_allohaven_journey','Your AlloHaven journey'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 12px', fontSize: '12px', borderColor: palette.accent, color: palette.accent })
               }, '🌱 Journey'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', null); },
                 'aria-label': __alloT('allohaven.close_achievements','Close achievements'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -25520,7 +25528,7 @@
               h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px', lineHeight: '1.45' } },
                 'Read-only products created in other modules. Privacy choices come from the source module.')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_portfolio','Close portfolio'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -25732,12 +25740,12 @@
                   )
                 ) : null,
                 items.length ? h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { printPortfolioArtifact(artifact); },
                     'aria-label': 'Print ' + (artifact.title || packet.title || 'portfolio item'),
                     style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
                   }, 'Print'),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { downloadPortfolioArtifact(artifact); },
                     'aria-label': 'Download text for ' + (artifact.title || packet.title || 'portfolio item'),
                     style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
@@ -25750,7 +25758,7 @@
               ? 'No portfolio products match this source filter or search.'
               : 'No portfolio products are loaded yet. Create one in SEL Hub, AlloStudio, StoryForge, Adventure Mode, PoetTree, or Story Stage, then save or load the student project file.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '16px' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
@@ -25855,7 +25863,7 @@
               h('p', { style: { margin: '4px 0 0 0', color: palette.textDim, fontSize: '12px' } },
                 summary ? 'From saved student file - ' + generated : 'No saved progress summary is loaded yet.')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_progress_summary','Close progress summary'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -25941,7 +25949,7 @@
           ) : h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.5', margin: '0 0 16px 0' } },
             'Open a student project file to see saved learning and SEL progress here.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
@@ -26067,7 +26075,7 @@
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '8px' } },
               h('span', { className: 'ah-tour-emoji', 'aria-hidden': 'true' }, '🌱'),
               h('span', null, 'Your AlloHaven journey')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'achievements'); },
               'aria-label': __alloT('allohaven.close_recap','Close recap'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -26102,7 +26110,7 @@
                 h('div', {
                   style: { fontSize: '11px', fontWeight: 700, color: palette.accent || '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em' }
                 }, '✨ Your story so far'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { runTenureNarrativeAnalysis(); },
                   'aria-label': __alloT('allohaven.regenerate_the_narrative','Regenerate the narrative'),
                   disabled: nar.loading,
@@ -26264,7 +26272,7 @@
 
           // Action row
           h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setStateField('printScope', { type: 'tenure' });
                 setTimeout(function() {
@@ -26274,7 +26282,7 @@
               },
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 16px', fontSize: '13px' })
             }, '🖨 Print recap'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', 'achievements'); },
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
@@ -26374,13 +26382,13 @@
           g.notes ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginBottom: '6px' } },
             '"' + g.notes + '"') : null,
           h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
-            status === 'active' && !prog.isDone ? h('button', {
+            status === 'active' && !prog.isDone ? h('button', { type: 'button',
               onClick: function() { markGoalCompleted(g.id); },
               'aria-label': __alloT('allohaven.mark_this_goal_complete_manually','Mark this goal complete manually'),
               title: __alloT('allohaven.mark_complete_in_case_progress_tracked_outsi','Mark complete (in case progress tracked outside the app)'),
               style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
             }, 'Mark done') : null,
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 setStateMulti({ activeModal: 'goal-builder', generateContext: { goalId: g.id } });
               },
@@ -26416,7 +26424,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '🎯 Goals · ' + goals.length),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_goals_list','Close goals list'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -26447,7 +26455,7 @@
               }
             },
               GOAL_TEMPLATES.map(function(t) {
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'gt-' + t.id,
                   role: 'listitem',
                   onClick: function() { createGoalFromTemplate(t); },
@@ -26475,7 +26483,7 @@
             )
           ),
 
-          h('button', {
+          h('button', { type: 'button',
             onClick: createGoal,
             style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
           }, '+ New goal (from scratch)'),
@@ -26677,7 +26685,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📜 Stories · ' + stories.length),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_stories_list','Close stories list'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -26686,7 +26694,7 @@
           h('p', {
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
           }, 'The story method is the most powerful classical mnemonic — chain ≥3 decorations into a narrative sequence, then walk through it. Each step is a hook for what came before.'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: createStory,
             style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
           }, '+ New story'),
@@ -26742,7 +26750,7 @@
                     + (validSteps !== stepCount ? ' · ' + validSteps + ' complete' : '')
                     + ' · ' + lastReviewedLabel)
                 ),
-                walkable ? h('button', {
+                walkable ? h('button', { type: 'button',
                   onClick: function() {
                     setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: s.id } });
                   },
@@ -26751,7 +26759,7 @@
                 }, '↻ Walk') : h('span', {
                   style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flexShrink: 0 }
                 }, 'needs ≥3 steps'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: s.id } });
                   },
@@ -26876,7 +26884,7 @@
             style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '⚙️ Settings'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_settings','Close settings'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -26892,7 +26900,7 @@
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' } },
             presets.map(function(p) {
               var active = current === p.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'preset-' + p.id,
                 onClick: function() { applyPreset(p); },
                 'aria-pressed': active ? 'true' : 'false',
@@ -26950,7 +26958,7 @@
               { id: 'wind',      label: 'Wind',       emoji: '🌬' }
             ].map(function(opt) {
               var active = (state.soundscape || 'off') === opt.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'snd-' + opt.id,
                 onClick: function() { setStateField('soundscape', opt.id); },
                 'aria-pressed': active ? 'true' : 'false',
@@ -26995,7 +27003,7 @@
             ].map(function(opt) {
               var current = (state.atmosphere && state.atmosphere.weather) || 'clear';
               var active = current === opt.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'wx-' + opt.id,
                 onClick: function() {
                   setStateField('atmosphere', { weather: opt.id });
@@ -27058,7 +27066,7 @@
                 engineDefs.map(function(eng) {
                   var active = current === eng.id;
                   var disabled = !eng.ready && eng.id !== 'auto'; // auto always selectable
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: 've-' + eng.id,
                     onClick: function() {
                       if (disabled) {
@@ -27131,7 +27139,7 @@
                     ].map(function(tier) {
                       var tactive = selectedTier === tier.id;
                       var tloaded = loadedTier === tier.id;
-                      return h('button', {
+                      return h('button', { type: 'button',
                         key: 'vt-' + tier.id,
                         onClick: function() {
                           if (isLoading) return; // don't switch mid-download
@@ -27163,7 +27171,7 @@
                   ),
                   // Load / Loading / Loaded button + status row
                   h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() {
                         if (isLoading || isLoaded) return;
                         if (typeof window.AlloFlowVoice.preloadWhisper === 'function') {
@@ -27244,6 +27252,7 @@
                 min: 1, max: 30, step: 1,
                 value: mpt,
                 'aria-label': __alloT('allohaven.minutes_per_token','Minutes per token'),
+                'aria-valuetext': mpt + ' min',
                 onChange: function(e) {
                   var n = parseInt(e.target.value, 10);
                   if (!isNaN(n)) setStateField('arcade', Object.assign({}, state.arcade, { minutesPerToken: n }));
@@ -27269,7 +27278,7 @@
             style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
           }, 'Download your data as JSON, or restore from a prior backup. Useful when switching browsers or devices.'),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: async function() {
                 try {
                   var raw = JSON.stringify(state, null, 2);
@@ -27305,7 +27314,7 @@
                 cursor: 'pointer'
               })
             }, '⬇️ Download backup'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 var input = document.createElement('input');
                 input.type = 'file';
@@ -27405,7 +27414,7 @@
           h('div', {
             style: { marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, textAlign: 'center' }
           },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateMulti({ activeModal: 'tour' }); },
               'aria-label': __alloT('allohaven.replay_the_welcome_tour','Replay the welcome tour'),
               style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
@@ -27420,7 +27429,7 @@
               h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px' } },
                 'Gentle 3-tone bell when a focus session ends')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 var next = state.pomodoroChimeEnabled === false ? true : false;
                 setStateField('pomodoroChimeEnabled', next);
@@ -27577,7 +27586,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '🗓️ Last 7 days'),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setStateField('activeModal', null); },
               'aria-label': __alloT('allohaven.close_weekly_summary','Close weekly summary'),
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -27642,7 +27651,7 @@
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' } },
                 h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } },
                   '✨ Letter from ' + compName),
-                letter ? h('button', {
+                letter ? h('button', { type: 'button',
                   onClick: function() { handleGenerate(true); },
                   disabled: loading,
                   'aria-label': __alloT('allohaven.regenerate_the_letter','Regenerate the letter'),
@@ -27653,7 +27662,7 @@
               !letter ? h('div', null,
                 h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
                   compName + ' can write you a personalized letter about your week — short, warm, in their voice.'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { handleGenerate(false); },
                   disabled: loading,
                   style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
@@ -27679,7 +27688,7 @@
             },
               h('p', { style: { fontSize: '12px', color: palette.textDim, margin: '0 0 8px 0', lineHeight: '1.5' } },
                 'Want to set a goal for next week?'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   setStateField('activeModal', null);
                   setTimeout(createGoal, 80);
@@ -27840,7 +27849,7 @@
               : avgPct >= 50
               ? 'Solid effort. The decks that wobbled will surface again later.'
               : 'A start. Real retrieval reps add up — coming back is what matters.'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
             style: Object.assign({}, primaryBtnStyle(palette), { padding: '10px 28px' })
           }, '✓ Done')
@@ -28007,7 +28016,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '8px', flexWrap: 'wrap' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📋 Review packet'),
             h('div', { style: { display: 'flex', gap: '6px' } },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   // Phase 2p.34 — open the section picker before printing.
                   setStateMulti({
@@ -28019,7 +28028,7 @@
                 title: __alloT('allohaven.pick_which_sections_to_include_then_prin_2','Pick which sections to include, then print'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print'),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStateField('activeModal', 'memory-overview'); },
                 'aria-label': __alloT('allohaven.back_to_overview','Back to overview'),
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
@@ -29773,7 +29782,7 @@
               style: { fontSize: '16px', fontWeight: 800, color: palette.text || '#fff', marginTop: '2px' }
             }, opts.title)
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: ctx.onClose,
             'aria-label': 'Close',
             style: {
@@ -29956,7 +29965,7 @@
                 'Four words your buddy has been thinking about (or starter vocab if they\'re young). Match each to its definition. No timer. +3 🪙 on a clean board.'
               ),
               h('div', { style: { marginTop: '14px' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: buildRound,
                   disabled: loading,
                   style: {
@@ -29983,7 +29992,7 @@
                   pairs.map(function(p) {
                     var isMatched = !!matched[p.id];
                     var isSelected = selectedWord === p.id;
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: p.id + '-w',
                       onClick: function() { handleWordClick(p.id); },
                       disabled: isMatched,
@@ -30009,7 +30018,7 @@
                   shuffledDefs.map(function(p) {
                     var isMatched = !!matched[p.id];
                     var isWrong = wrongFlash === p.id;
-                    return h('button', {
+                    return h('button', { type: 'button',
                       key: p.id + '-d',
                       onClick: function() { handleDefClick(p.id); },
                       disabled: isMatched,
@@ -30040,7 +30049,7 @@
               },
                 h('div', { style: { fontSize: '14px', fontWeight: 800, color: palette.text || '#fff' } },
                   '🎉 Clean board! +3 🪙'),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: buildRound,
                   style: {
                     marginTop: '8px',
@@ -30153,7 +30162,7 @@
                 style: { margin: 0, fontSize: '13px', lineHeight: '1.55', color: palette.text || '#fff' }
               }, 'Three emoji come up at random. Write one sentence that uses all three. The AI offers a kind, specific note in return. No grades. +2 🪙 for an honest try.'),
               h('div', { style: { marginTop: '14px' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: newPrompt,
                   style: {
                     padding: '10px 18px',
@@ -30209,7 +30218,7 @@
                 }
               }, '🪙 +2. ' + review.text) : null,
               h('div', { style: { marginTop: '12px', display: 'flex', gap: '8px' } },
-                review ? h('button', {
+                review ? h('button', { type: 'button',
                   onClick: newPrompt,
                   style: {
                     padding: '8px 14px',
@@ -30220,7 +30229,7 @@
                     fontSize: '12px', fontWeight: 700,
                     cursor: 'pointer', fontFamily: 'inherit'
                   }
-                }, '↻ New prompt') : h('button', {
+                }, '↻ New prompt') : h('button', { type: 'button',
                   onClick: submit,
                   disabled: busy || draft.trim().length < 10,
                   style: {
@@ -30350,7 +30359,7 @@
                 style: { margin: 0, fontSize: '13px', lineHeight: '1.55', color: palette.text || '#fff' }
               }, 'You\'ll see a short everyday scenario and four possible outcomes. Pick the one you think actually happens. We\'ll show the reason either way. +3 🪙 for the right pick, +1 for trying.'),
               h('div', { style: { marginTop: '14px' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: newScenario,
                   style: {
                     padding: '10px 18px',
@@ -30380,7 +30389,7 @@
                   var showWrong = revealed && isSelected && !opt.correct;
                   var bg = showCorrect ? '#16a34a22' : showWrong ? '#dc262622' : (isSelected ? ((palette.accent || '#fbbf24') + '22') : (palette.surface || '#22223a'));
                   var border = showCorrect ? '#16a34a' : showWrong ? '#dc2626' : isSelected ? (palette.accent || '#fbbf24') : (palette.border || '#3a3a55');
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: opt.id,
                     onClick: function() { pick(opt.id); },
                     disabled: revealed,
@@ -30417,7 +30426,7 @@
                   scenario.explain
                 ),
                 h('div', { style: { marginTop: '10px' } },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: newScenario,
                     style: {
                       padding: '6px 14px',

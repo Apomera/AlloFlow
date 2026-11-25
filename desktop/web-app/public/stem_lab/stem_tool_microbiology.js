@@ -101,7 +101,8 @@
     {
       id: 'ecoli', name: 'Escherichia coli (E. coli)', shape: 'rod (bacillus)',
       role: 'mostly-beneficial',
-      where: 'Lives in the gut of most mammals including humans. About 0.1% of human gut bacteria.',
+      // Audit 2026-11-24: "About 0.1% of human gut bacteria" cut (no primary source found).
+      where: 'Lives in the gut of most mammals, including humans. It is a common gut bacterium, but only a small share of all the bacteria there.',
       what: 'Most strains are harmless or actively helpful (vitamin K production, competitive exclusion of pathogens). A few strains (O157:H7, enterohemorrhagic) cause severe foodborne illness.',
       sciFact: 'The lab workhorse of molecular biology. We learned how DNA replicates, how genes are regulated, and how proteins are made largely by studying E. coli. The 1958 Meselson-Stahl experiment used E. coli to prove DNA replicates semi-conservatively.'
     },
@@ -115,21 +116,26 @@
     {
       id: 'cyanobacteria', name: 'Cyanobacteria (blue-green algae)', shape: 'varies',
       role: 'beneficial',
-      where: 'Oceans, freshwater, soil, ice. Some 3.5 billion years old - among the first life on Earth.',
+      // Audit 2026-11-24: "Some 3.5 billion years old" cut; the age of the first cyanobacteria is debated.
+      where: 'Oceans, freshwater, soil, ice. An ancient group: they were making oxygen more than 2 billion years ago.',
       what: 'Photosynthesizes. Produced the oxygen in our atmosphere starting about 2.4 billion years ago (the Great Oxygenation Event). Without cyanobacteria, no oxygen-breathing life.',
       sciFact: 'Chloroplasts in plant cells are descended from cyanobacteria that were engulfed by larger cells about 1.5 billion years ago (endosymbiotic theory, Lynn Margulis). The "primary endosymbiosis" event is one of the most important events in the history of life.'
     },
     {
       id: 'mtb', name: 'Mycobacterium tuberculosis', shape: 'rod',
       role: 'pathogenic',
-      where: 'Spread human-to-human via airborne droplets. Roughly 1.5 million deaths/year globally.',
-      what: 'Causes tuberculosis (TB). Has a waxy mycolic-acid cell wall that resists most antibiotics. Has co-evolved with humans for tens of thousands of years.',
+      // WHO Global TB Report 2025, TB mortality: "The combined total was 1.23 million." (2024, HIV-negative + HIV-positive)
+      // https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/tb-reports/global-tuberculosis-report-2025/tb-disease-burden/1-2-tb-mortality
+      where: 'Spreads from person to person through the air. WHO estimated about 1.23 million TB deaths worldwide in 2024.',
+      what: 'Causes tuberculosis (TB). Its waxy, mycolic-acid cell wall keeps many drugs out, so TB needs special antibiotics taken for months. It has lived alongside humans for thousands of years.',
       sciFact: 'Robert Koch identified M. tuberculosis in 1882 and won the 1905 Nobel Prize. The "Koch\'s postulates" he developed to prove a microbe causes a disease are still in use.'
     },
     {
       id: 'staph', name: 'Staphylococcus aureus', shape: 'cocci (spheres in clusters)',
       role: 'mostly-pathogenic',
-      where: 'About 30% of healthy people carry it harmlessly on skin or in the nose. Can cause infection if it gets through the skin.',
+      // CDC MRSA clinical overview: "about one in three people (33%) carry S. aureus bacteria in their nose"; "about two in every 100 people carry MRSA".
+      // https://www.cdc.gov/mrsa/hcp/clinical-overview/index.html
+      where: 'About 1 in 3 people carry it in their nose, usually without getting sick. It can cause infection if it gets through the skin.',
       what: 'Causes skin infections, food poisoning, sepsis, MRSA. The methicillin-resistant strain (MRSA) is a leading hospital-acquired infection.',
       sciFact: 'MRSA acquired the mecA resistance determinant through mobile genetic elements, while mutation, selection, clonal spread, and horizontal gene transfer all shape antimicrobial resistance.'
     },
@@ -137,8 +143,11 @@
       id: 'rhizobium', name: 'Rhizobium', shape: 'rod',
       role: 'beneficial',
       where: 'Soil; forms nodules on the roots of legume plants (beans, peas, clover).',
-      what: 'Fixes atmospheric nitrogen (N₂) into ammonia (NH₃) the plant can use. In exchange the plant gives the bacteria sugars. About half of all biological nitrogen fixation on Earth.',
-      sciFact: 'Industrial nitrogen fixation (the Haber-Bosch process, 1909) feeds about half of the world. Bacterial nitrogen fixation feeds the other half. Both are essential to modern agriculture.'
+      // Audit 2026-11-24: "About half of all biological nitrogen fixation" and "Bacterial fixation feeds the other half" cut (no source found).
+      // Erisman et al. 2008, Nature Geoscience 1:636 "How a century of ammonia synthesis changed the world": share of the world
+      // population fed by Haber-Bosch nitrogen estimated at 48% in 2008. https://doi.org/10.1038/ngeo325
+      what: 'Fixes atmospheric nitrogen (N₂) into ammonia (NH₃) the plant can use. In exchange the plant gives the bacteria sugars.',
+      sciFact: 'Industrial nitrogen fixation (the Haber-Bosch process, first shown in 1909) now makes fertilizer that grows food for about half of the world\'s people, by a 2008 estimate. Bacteria like Rhizobium do the same chemistry at normal temperature, inside root nodules.'
     }
   ];
 
@@ -149,16 +158,19 @@
     {
       id: 'yeast', name: 'Saccharomyces cerevisiae (baker\'s yeast)', kind: 'single-celled fungus (yeast)',
       role: 'beneficial',
-      where: 'On grain, fruit, every kitchen counter. Domesticated for ~10,000 years for bread, beer, wine.',
+      // Audit 2026-11-24: "~10,000 years" and "About 30% of its ~6,000 genes" cut (no source checked); 1996 genome (Goffeau et al.,
+      // Science 274:546) and the 2001/2009/2013/2016 Medicine prizes (Hartwell, Szostak, Schekman, Ohsumi) kept.
+      where: 'On grain, fruit, every kitchen counter. People have used it for bread, beer, and wine for thousands of years.',
       what: 'Eats sugars and produces CO₂ (which rises bread) and ethanol (which makes beer + wine). Reproduces by budding when food is plentiful, by sexual spores when stressed.',
-      sciFact: 'The first eukaryotic genome ever sequenced (1996). About 30% of its ~6,000 genes have direct human homologs - yeast is so similar to us that many discoveries in yeast translate to human cell biology. The 2001, 2009, 2013, and 2016 Nobel Prizes in Medicine all involved yeast research.'
+      sciFact: 'The first eukaryotic genome ever sequenced (1996). Many yeast genes have close human relatives, so discoveries in yeast often carry over to human cell biology. The 2001, 2009, 2013, and 2016 Nobel Prizes in Medicine all involved yeast research.'
     },
     {
       id: 'penicillium', name: 'Penicillium (chrysogenum / roqueforti / camemberti)', kind: 'filamentous mold (multicellular)',
       role: 'beneficial',
       where: 'In soil, on decaying fruit, on aging cheeses (Roquefort, Camembert, Brie). Different species in each context.',
-      what: 'P. chrysogenum produces penicillin, the first antibiotic. P. roqueforti makes blue cheese veins. P. camemberti makes the white rind on Camembert + Brie. All are filamentous: long strands of cells (hyphae) tangled into a mat (mycelium).',
-      sciFact: 'Fleming\'s 1928 discovery turned a kitchen mold into a global medical revolution by 1944. Penicillin and its descendants (semi-synthetic ampicillin, amoxicillin) save millions of lives every year. But Penicillium also taught us how short the lifespan of a new antibiotic can be: penicillin-resistant Staph appeared within years.'
+      // Audit 2026-11-24: "the first antibiotic" (sulfa drugs came first into wide use) and "save millions of lives every year" cut.
+      what: 'P. chrysogenum makes penicillin, one of the first antibiotics found in nature. P. roqueforti makes blue cheese veins. P. camemberti makes the white rind on Camembert + Brie. All are filamentous: long strands of cells (hyphae) tangled into a mat (mycelium).',
+      sciFact: 'Fleming\'s 1928 discovery became a mass-produced medicine by 1944. Penicillin and its relatives (ampicillin, amoxicillin) are still widely used. But Penicillium also taught us how short the lifespan of a new antibiotic can be: penicillin-resistant Staph appeared within years.'
     },
     {
       id: 'candida', name: 'Candida albicans', kind: 'yeast (and filamentous form)',
@@ -171,22 +183,29 @@
       id: 'aspergillus', name: 'Aspergillus', kind: 'filamentous mold',
       role: 'varies',
       where: 'Soil, decaying organic matter, damp buildings, grain storage. Spores in the air everywhere.',
-      what: 'A. niger is used industrially to make citric acid (in most soft drinks, candy). A. oryzae is the koji used to make soy sauce + miso + sake. A. fumigatus causes aspergillosis (a serious lung infection) in immunocompromised people. A. flavus produces aflatoxins, the most potent natural carcinogens known - contaminating peanuts + corn improperly stored.',
-      sciFact: 'Citric acid in nearly every processed food is fermented by A. niger in giant industrial vats - about 2 million tons per year globally. The same group of fungi makes both your food and (in different conditions) one of the deadliest natural toxins.'
+      // Audit 2026-11-24: "the most potent natural carcinogens known" and "about 2 million tons per year" cut (no source checked).
+      what: 'A. niger is used industrially to make citric acid (found in many soft drinks and candies). A. oryzae is the koji used to make soy sauce + miso + sake. A. fumigatus causes aspergillosis (a serious lung infection) in immunocompromised people. A. flavus makes aflatoxins, poisons that cause cancer and can contaminate badly stored peanuts + corn.',
+      sciFact: 'Much of the world\'s citric acid is made by A. niger growing in giant industrial tanks. The same group of fungi makes both your food and (in different conditions) one of the most dangerous natural toxins.'
     },
     {
       id: 'mycorrhiza', name: 'Mycorrhizal fungi (Arbuscular, Ectomycorrhizal)', kind: 'soil-dwelling filamentous fungi',
       role: 'beneficial',
-      where: 'Forming symbiotic networks with about 90% of land plant species. The "wood-wide web" of mycorrhizae extends through every healthy forest soil.',
-      what: 'Plant roots and fungal mycelium grow together. The fungus brings up water + phosphorus + other minerals; the plant gives the fungus sugars. Without mycorrhizae, most plants would die. The relationship is at least 460 million years old - possibly the reason plants colonized land.',
-      sciFact: 'Suzanne Simard\'s research (1997-) showed that mycorrhizal networks connect different trees, allowing them to share nutrients across species. "Mother trees" support their seedlings and even support neighboring trees of other species. The forest is one organism, in some sense.'
+      // Brundrett & Tedersoo 2018, New Phytologist 220:1108: "The majority of vascular plants are mycorrhizal: 72% are arbuscular
+      // mycorrhizal (AM), 2.0% are ectomycorrhizal (EcM), 1.5% are ericoid mycorrhizal and 10% are orchid mycorrhizal." https://doi.org/10.1111/nph.14976
+      // Karst et al. 2023, Nature Ecology & Evolution 7:501 "Positive citation bias and overinterpreted results lead to misinformation
+      // on common mycorrhizal networks in forests" (mother-tree claims are contested). https://doi.org/10.1038/s41559-023-01986-1
+      // Audit 2026-11-24: "about 90%", "Without mycorrhizae, most plants would die", "The forest is one organism" cut.
+      where: 'Partners with most land plants: about 85% of plant species have some kind of mycorrhizal fungus (a 2018 survey).',
+      what: 'Plant roots and fungal threads (mycelium) grow together. The fungus brings in water + phosphorus + other minerals; the plant gives the fungus sugars. Fossils show the partnership is very old, and it may have helped the first plants live on land.',
+      sciFact: 'Suzanne Simard\'s research (1997) found that carbon can move between trees through fungal networks. Bigger claims, such as "mother trees" feeding their seedlings through the network, are still debated: a 2023 review found the field evidence is weaker than popular stories suggest.'
     },
     {
       id: 'ergot', name: 'Claviceps purpurea (ergot)', kind: 'filamentous fungus',
       role: 'pathogenic (with medical descendants)',
       where: 'Infects rye + other grains. Historical scourge of medieval Europe where contaminated bread caused mass outbreaks of "Saint Anthony\'s Fire."',
-      what: 'Produces alkaloids (LSA, ergotamine) that cause hallucinations, gangrenous extremities (loss of fingers, toes), miscarriage. Periodic outbreaks killed tens of thousands.',
-      sciFact: 'Albert Hofmann was studying ergot alkaloids for medical use when he synthesized LSD-25 in 1938. Ergot derivatives are still used today: ergotamine for migraines, ergonovine to control postpartum bleeding. The molecule that brought medieval villages to mass psychosis became modern medicine.'
+      // Audit 2026-11-24: "killed tens of thousands" and "mass psychosis" cut (no source checked).
+      what: 'Produces alkaloids (such as ergotamine) that can cause hallucinations, gangrene of fingers and toes, and miscarriage. Past outbreaks from moldy rye bread were deadly.',
+      sciFact: 'Albert Hofmann was studying ergot alkaloids for medical use when he made LSD-25 in 1938. Ergot-based medicines are still used today: ergotamine for migraines, ergonovine to control bleeding after childbirth. A poison from moldy grain became a source of medicines.'
     }
   ];
 
@@ -197,7 +216,9 @@
     {
       id: 'plasmodium', name: 'Plasmodium (malaria)', kind: 'apicomplexan parasite',
       role: 'pathogenic',
-      where: 'Spread by Anopheles mosquitoes in tropical + subtropical regions. About 240 million cases / 600,000 deaths per year, mostly children under 5 in sub-Saharan Africa.',
+      // WHO World malaria report 2025: "an estimated 282 million cases and 610 000 deaths in 2024"; "The WHO African Region continues
+      // to bear the greatest burden". https://www.who.int/teams/global-malaria-programme/reports/world-malaria-report-2025
+      where: 'Spread by Anopheles mosquitoes in tropical + subtropical regions. WHO estimated 282 million cases and 610,000 deaths in 2024, most of them in Africa.',
       what: 'Causes malaria. Has a complex two-host life cycle (mosquito + human), with different life stages in liver, blood, and mosquito gut. Five species infect humans; P. falciparum is the most lethal.',
       sciFact: 'Sickle cell trait (one copy of the sickle hemoglobin gene) protects against P. falciparum, which is why it persists at high frequency in populations from malaria-endemic regions. The 2015 Nobel Prize was awarded for artemisinin (Tu Youyou) and ivermectin (Campbell + Ōmura) - antiparasitic drugs that saved millions of lives.'
     },
@@ -227,12 +248,15 @@
       role: 'beneficial (massively)',
       where: 'Oceans + freshwater worldwide. Especially abundant in cold + nutrient-rich waters like the Gulf of Maine.',
       what: 'Single-celled algae with rigid cell walls of silica (glass) - each species has a uniquely sculpted geometric shell. Photosynthesizes. Probably the most abundant photosynthesizers in the ocean.',
-      sciFact: 'Diatoms produce roughly 20% of all oxygen on Earth - more than all the rainforests combined. When they die and sink, their silica shells accumulate; over millions of years they form diatomaceous earth (used in toothpaste, swimming pool filters, abrasives). They are also why the Gulf of Maine\'s spring phytoplankton bloom supports the entire food web up to whales.'
+      // University of Washington News (Armbrust lab): diatoms are "microscopic algae that carry out one fifth of the planet's
+      // photosynthesis". https://www.washington.edu/news/?p=37167  Audit 2026-11-24: "20% of all oxygen" reworded to photosynthesis.
+      sciFact: 'Diatoms carry out about one-fifth of all the photosynthesis on Earth. When they die and sink, their silica shells accumulate; over millions of years they form diatomaceous earth (used in toothpaste, swimming pool filters, abrasives). They are also why the Gulf of Maine\'s spring phytoplankton bloom supports the entire food web up to whales.'
     },
     {
       id: 'giardia', name: 'Giardia lamblia (intestinalis)', kind: 'flagellated parasite',
       role: 'pathogenic',
-      where: 'Contaminated water (streams, lakes, poorly treated water supplies). The most common parasitic intestinal infection in the US - and the reason hikers should treat backcountry water.',
+      // Audit 2026-11-24: "The most common parasitic intestinal infection in the US" softened to "a common cause" (no source checked).
+      where: 'Contaminated water (streams, lakes, poorly treated water supplies). A common cause of diarrhea from water in the US, and one reason hikers should treat backcountry water.',
       what: 'Causes giardiasis: prolonged greasy diarrhea, gas, fatigue, weight loss. Has a tear-drop shape with a "face" - two large nuclei and a sucker-disk that attaches to the intestinal wall. Resistant cysts survive in cold water for months.',
       sciFact: 'Giardia diverged very early in eukaryotic evolution - for a long time it was suspected to be a "missing link" between prokaryotes and eukaryotes. Detailed sequencing later showed it does have mitochondrial remnants (mitosomes); just very reduced. A reminder that "simple" can be a result of long evolution toward parasitism, not necessarily an ancient state.'
     }
@@ -245,14 +269,16 @@
     {
       id: 'methano', name: 'Methanogens', kind: 'methane-producing archaea',
       where: 'Cow rumens, termite guts, deep-sea sediments, wetlands, rice paddies, your own gut (about half of humans carry them).',
-      what: 'Produce methane (CH₄) by combining CO₂ and hydrogen. Strict anaerobes - oxygen kills them. About 70% of atmospheric methane is biological in origin; methanogens make most of it.',
+      // IPCC AR6 WG1 Ch.7 Table 7.15: GWP-20 of methane 81.2 (fossil 82.5, non-fossil 79.7). https://www.ipcc.ch/report/ar6/wg1/chapter/chapter-7/
+      // Audit 2026-11-24: "About 70% of atmospheric methane is biological" cut (no source checked).
+      what: 'Produce methane (CH₄) by combining CO₂ and hydrogen. Strict anaerobes - oxygen kills them. Wetlands, rice paddies, cattle, and landfills all release methane made by these microbes.',
       sciFact: 'Methane is a greenhouse gas about 80× more potent than CO₂ over 20 years. Cattle methane is methanogens working in the rumen. Reducing meat consumption + improving rice cultivation are climate interventions because of methanogen biology.'
     },
     {
       id: 'thermophile', name: 'Thermus aquaticus (extreme heat lover)', kind: 'thermophilic bacterium (note: bacterium, but a similar story to archaea extremophiles)',
       where: 'Hot springs at Yellowstone National Park, discovered 1969 by Thomas Brock.',
       what: 'Lives at 70-80°C. Its DNA polymerase enzyme (Taq polymerase) works at those temperatures.',
-      sciFact: 'Taq polymerase is the engine of PCR (polymerase chain reaction), which lets scientists rapidly copy DNA at high temperatures. PCR underlies modern genetic testing, DNA forensics, COVID PCR tests, and most molecular biology. Yellowstone hot spring biology → trillion-dollar biotech industry.'
+      sciFact: 'Taq polymerase is the engine of PCR (polymerase chain reaction), which lets scientists rapidly copy DNA at high temperatures. PCR underlies modern genetic testing, DNA forensics, COVID PCR tests, and most molecular biology. A microbe from a Yellowstone hot spring changed biotechnology.'
     },
     {
       id: 'pyrolobus', name: 'Pyrolobus fumarii (super-hyperthermophile)', kind: 'archaean',
@@ -262,15 +288,21 @@
     },
     {
       id: 'halobacterium', name: 'Halobacterium salinarum', kind: 'salt-loving archaean (halophile)',
-      where: 'Salt flats, salt evaporation ponds, the Dead Sea (so salty it shows up pink from the carotenoid pigments). Lives at >15% salt - saltier than seawater.',
-      what: 'Uses a light-driven proton pump (bacteriorhodopsin) for energy - a primitive form of photosynthesis that uses retinal (the same molecule in your eyes) instead of chlorophyll.',
-      sciFact: 'Bacteriorhodopsin is the basis of "optogenetics" - using light to control neuron activity in research. Halobacterium proteins are being studied as bio-computers, light-driven solar cells, and astrobiology models for life on a different chemical foundation.'
+      // Audit 2026-11-24: Dead Sea "shows up pink" cut (pink color is typical of salt ponds, not the Dead Sea); optogenetics claim
+      // corrected (it mainly uses channelrhodopsins from algae; bacteriorhodopsin was the first microbial opsin studied).
+      where: 'Salt flats and salt evaporation ponds, which can turn pink from these microbes\' carotenoid pigments. Lives in water far saltier than seawater.',
+      what: 'Uses a light-driven proton pump (bacteriorhodopsin) for energy. It captures light with retinal (the same molecule in your eyes) instead of chlorophyll.',
+      sciFact: 'Bacteriorhodopsin was the first of many light-driven microbial proteins studied in the lab. Related light-sensitive proteins, mostly from algae, are now used in "optogenetics" - using light to switch neurons on and off in research.'
     },
     {
       id: 'crenarcheota', name: 'Marine Crenarchaeota', kind: 'ocean-dwelling archaea',
       where: 'Throughout the ocean, especially below the surface zone. Recently discovered to be vastly more abundant than thought.',
-      what: 'Oxidize ammonia to nitrite - a key step in the global nitrogen cycle. Were originally thought to be only in hot springs; we now know they make up about 20% of all microbial cells in the ocean.',
-      sciFact: 'For 100 years biologists ignored archaea as a curiosity of extreme places. Then in 1992 Norman Pace started using DNA sequencing on ocean water and found archaea everywhere - making up trillions of cells in any given liter of seawater. They turn out to drive global biogeochemical cycles. Three domains of life, not two.'
+      // Karner, DeLong & Karl 2001, Nature 409:507: crenarchaeal fraction rose with depth "to 39% of total DNA-containing picoplankton
+      // detected"; ~20% of ocean picoplankton per BioNumbers 106264. https://doi.org/10.1038/35054051
+      // DeLong 1992, PNAS 89:5685 "Archaea in coastal marine environments"; Fuhrman, McCallum & Davis 1992, Nature 356:148.
+      // Audit 2026-11-24: "Norman Pace" (wrong discoverers), "For 100 years" and "trillions of cells in any given liter" (wrong) cut.
+      what: 'Oxidize ammonia to nitrite - a key step in the global nitrogen cycle. Archaea were once thought to live only in extreme places; one 2001 study estimated these archaea make up about 1 in 5 of the tiny cells in the open ocean.',
+      sciFact: 'In 1992, two teams (Edward DeLong\'s and Jed Fuhrman\'s) read DNA from ordinary seawater and found archaea that no one had grown in a lab. Archaea turned out to be common in the ocean, not just in hot springs and salt flats.'
     }
   ];
 
@@ -281,8 +313,10 @@
     {
       id: 'covid', name: 'SARS-CoV-2 (COVID-19)', genome: 'single-stranded RNA',
       structure: 'Enveloped, ~120 nm. Spike protein binds the ACE2 receptor on human cells.',
-      hosts: 'Humans, with crossover from bats. Many other animals can be infected secondarily.',
-      story: 'Identified in December 2019. Caused a global pandemic that killed at least 7 million people directly (likely far more counting excess mortality). mRNA vaccines developed in less than a year - the fastest vaccine in history.'
+      // Audit 2026-11-24: "crossover from bats" stated as fact softened (origin not settled). WHO: 14.9 million excess deaths
+      // in 2020-2021 (WHO news release, 5 May 2022). https://www.who.int/news/item/05-05-2022-14.9-million-excess-deaths-were-associated-with-the-covid-19-pandemic-in-2020-and-2021
+      hosts: 'Humans. Its closest known relatives are bat coronaviruses. Many other animals can also be infected.',
+      story: 'Identified in December 2019. Caused a global pandemic: more than 7 million COVID deaths were reported, and WHO estimated 14.9 million excess deaths in 2020 and 2021 alone. mRNA vaccines were authorized in less than a year.'
     },
     {
       id: 'flu', name: 'Influenza A', genome: 'segmented single-stranded RNA',
@@ -294,7 +328,10 @@
       id: 'hiv', name: 'HIV (Human Immunodeficiency Virus)', genome: 'single-stranded RNA, retrovirus',
       structure: 'Enveloped, ~120 nm. Uses reverse transcriptase to integrate its genome into the host DNA.',
       hosts: 'Humans only. Originally crossed from chimpanzees in central Africa, probably in the early 20th century.',
-      story: 'Causes AIDS. About 40 million people living with HIV today. Modern antiretroviral therapy (ART) makes HIV a manageable chronic condition. People on consistent ART with undetectable viral load cannot transmit the virus (U=U).'
+      // CDC HIV treatment as prevention: "People with HIV who take HIV medicine as prescribed and get and keep an undetectable viral
+      // load (or stay virally suppressed) have effectively no risk of transmitting HIV to their HIV-negative sexual partners."
+      // https://www.cdc.gov/hivpartners/php/hiv-treatment/index.html  Audit 2026-11-24: "cannot transmit the virus" limited to sex, as CDC does.
+      story: 'Causes AIDS. About 40 million people live with HIV today. Modern antiretroviral therapy (ART) makes HIV a manageable chronic condition. CDC: people with HIV who take HIV medicine as prescribed and keep an undetectable viral load have effectively no risk of passing HIV to sexual partners (U=U).'
     },
     {
       id: 'phage', name: 'Bacteriophage (T4)', genome: 'double-stranded DNA',
@@ -306,7 +343,9 @@
       id: 'measles', name: 'Measles', genome: 'single-stranded RNA',
       structure: 'Enveloped, ~150 nm. Highly contagious through airborne droplets.',
       hosts: 'Humans only.',
-      story: 'One of the most contagious diseases known: R₀ ≈ 12-18 (one person infects 12-18 others without immunity). Was eliminated from the Americas by vaccination in 2000; has resurged with falling vaccination rates. Causes pneumonia, brain swelling, and immune amnesia (erases the immune system\'s memory of prior infections).'
+      // CDC/OPB (AP), 17 Nov 2026: "The U.S. has lost its measles-free status"; "Since the U.S. eliminated measles in 2000".
+      // https://www.opb.org/article/2026/11/17/measles-elimination-status-us/  Audit: "eliminated from the Americas in 2000" was wrong.
+      story: 'One of the most contagious diseases known: R₀ ≈ 12-18 (one person infects 12-18 others without immunity). The US declared measles eliminated in 2000, but outbreaks grew as vaccination rates fell, and the US lost that status in November 2026. Causes pneumonia, brain swelling, and immune amnesia (erases the immune system\'s memory of prior infections).'
     }
   ];
 
@@ -314,20 +353,30 @@
   // DATA: Microbiome regions
   // ──────────────────────────────────────────────────────────────────
   var MICROBIOME = [
-    { id: 'gut', name: 'Human gut', count: '~100 trillion microbes', species: '~1,000 species',
+    // Sender, Fuchs & Milo 2016, PLoS Biol 14:e1002533: "We estimate the total number of bacteria in the 70 kg 'reference man'
+    // to be 3.8·10^13"; Table 1: colon ~10^14 upper bound, skin ~10^11, dental plaque ~10^12, saliva ~10^11 (order of magnitude).
+    // https://doi.org/10.1371/journal.pbio.1002533  Audit 2026-11-24: old "~100 trillion", "~1 trillion" skin, "~10 billion" mouth replaced.
+    { id: 'gut', name: 'Human gut', count: 'Most of the body\'s ~38 trillion bacteria', species: 'Over 100 species per person',
       what: 'The largest microbial community in your body. Helps digest food, produces vitamins (K, B12), trains the immune system, communicates with the brain (the "gut-brain axis").',
       shaped: 'Birth method (vaginal vs C-section), breastfeeding, diet (fiber feeds the diverse community; sugar + refined carbs starve it), antibiotic use, geography, age.' },
-    { id: 'skin', name: 'Human skin', count: '~1 trillion microbes', species: '~1,000+ species',
+    { id: 'skin', name: 'Human skin', count: 'About 100 billion bacteria', species: 'Many species; each body region differs',
       what: 'Different microbes on different body regions (the oily face vs the dry forearm vs the moist armpit are different ecosystems). Helps regulate skin pH, prevents pathogen colonization.',
       shaped: 'Hygiene habits, antibiotics, climate, age, hormones.' },
-    { id: 'mouth', name: 'Human mouth', count: '~10 billion microbes', species: '~700 species',
-      what: 'Second most diverse microbiome in the body. Starts breaking down food. Some species (like Streptococcus mutans) cause cavities.',
+    { id: 'mouth', name: 'Human mouth', count: 'Up to about a trillion bacteria (mostly in plaque)', species: 'Hundreds of species',
+      what: 'One of the most diverse microbial communities in the body. Some species (like Streptococcus mutans) help cause cavities.',
       shaped: 'Diet, oral hygiene, smoking, antibiotics.' },
-    { id: 'soil', name: 'Soil', count: '~50 billion per gram', species: '~10,000+ species per gram',
-      what: 'The most diverse microbial community on Earth. Fixes nitrogen, decomposes organic matter, provides plant nutrients. Healthy soil is alive.',
-      shaped: 'Plant species, weather, organic matter, agriculture practices (tillage destroys soil microbial communities; no-till farming preserves them).' },
-    { id: 'ocean', name: 'Ocean', count: '~10 million per mL', species: '~unknown - millions+',
-      what: 'About half of all Earth\'s photosynthesis happens here. Cycles carbon, nitrogen, sulfur globally. Marine viruses kill ~20% of marine microbes daily - recycling nutrients on a planetary scale.',
+    // Whitman, Coleman & Wiebe 1998, PNAS 95:6578: soils "2 × 10^9 cells per gram of soil" (top 1 m, non-forest); "upper 200 m of the
+    // open ocean, the cellular density is about 5 × 10^5 cells/ml". https://doi.org/10.1073/pnas.95.12.6578
+    // Field et al. 1998, Science 281:237: global NPP 104.9 Pg C/yr "with similar contributions from the land and oceans".
+    // Suttle 2007, Nat Rev Microbiol 5:801 (key points): "Viruses kill approximately 20% of the oceanic microbial biomass daily".
+    // Qin et al. 2010, Nature 464:59: "each individual" carries "at least 160 such species". Torsvik et al. 1990, Appl Environ
+    // Microbiol 56:782: about 4,000 distinct bacterial genomes per gram of soil.
+    // Audit 2026-11-24: "~50 billion per gram", "~10,000+ species per gram", "~10 million per mL", "tillage destroys" replaced/softened.
+    { id: 'soil', name: 'Soil', count: 'About 2 billion per gram (many soils)', species: 'Thousands of kinds in a handful',
+      what: 'One of the most diverse microbial communities on Earth. Fixes nitrogen, decomposes organic matter, provides plant nutrients. Healthy soil is alive.',
+      shaped: 'Plant species, weather, organic matter, farming practices (plowing disturbs fungal networks and soil structure).' },
+    { id: 'ocean', name: 'Ocean', count: 'About 500,000 per mL (surface water)', species: 'Unknown - probably millions',
+      what: 'The ocean does roughly half of Earth\'s photosynthesis. Cycles carbon, nitrogen, sulfur globally. One review estimated that viruses kill about 20% of ocean microbes every day, recycling their nutrients.',
       shaped: 'Temperature, salinity, light, nutrient availability. Climate change is restructuring ocean microbiomes; we don\'t fully know the consequences yet.' }
   ];
 
@@ -337,22 +386,30 @@
   var FERMENTS = [
     { id: 'sourdough', name: 'Sourdough bread', cultures: 'Wild yeasts + Lactobacillus',
       how: 'Flour + water mixed and left for a few days. The yeasts and bacteria already on the grain wake up and multiply. The bacteria make lactic + acetic acid (the sour); the yeast makes CO₂ (the rise).',
-      story: 'Predates baker\'s yeast by ~5,000 years. Every bakery\'s starter is slightly different - some San Francisco starters have been kept alive continuously for over 150 years.' },
+      // Audit 2026-11-24: "Predates baker's yeast by ~5,000 years" and "over 150 years" cut (no source checked).
+      story: 'Sourdough is the older way to raise bread; packaged baker\'s yeast came much later. Every bakery\'s starter is slightly different, and some bakeries say they have kept the same starter alive for generations.' },
     { id: 'yogurt', name: 'Yogurt', cultures: 'Streptococcus thermophilus + Lactobacillus bulgaricus',
       how: 'Milk heated to about 110°F (43°C), the bacteria added (or a spoonful from the last batch), held warm for 4-12 hours. Bacteria turn milk sugar (lactose) into lactic acid; acid coagulates the milk proteins.',
-      story: 'Probably invented by accident when nomadic peoples carried milk in animal-stomach containers - natural bacteria from the stomach acidified the milk into a preserved food. Every yogurt culture in human history descends from accidents like that.' },
+      // Audit 2026-11-24: the animal-stomach origin story is a legend, now labelled as one.
+      story: 'No one knows exactly who made the first yogurt. A popular story says herders found that milk carried in animal-skin bags turned thick and sour; that is a legend, not a recorded event. What is certain: milk left warm picks up lactic acid bacteria and sours, and people learned to keep the good batches going.' },
     { id: 'kimchi', name: 'Kimchi', cultures: 'Leuconostoc + Lactobacillus + Weissella',
       how: 'Cabbage and vegetables salted to draw out water, then mixed with chili paste, garlic, ginger. Fermented at room temperature for a few days, then cold. Lactic acid fermentation.',
-      story: 'A Korean tradition over 1,000 years old. Fermentation peaks around day 14-21 at refrigerator temperature, then slows. Good kimchi is a thousand-year-old microbiological experiment.' },
+      // Audit 2026-11-24: "over 1,000 years old" and "peaks around day 14-21" cut (no source checked).
+      story: 'A Korean food tradition with a long history. Kimchi keeps changing in the refrigerator: it slowly gets more sour as the bacteria keep making acid. Every jar is a small microbiology experiment.' },
     { id: 'sauerkraut', name: 'Sauerkraut', cultures: 'Leuconostoc → Lactobacillus succession',
-      how: 'Cabbage shredded and salted (about 2% salt by weight). The salt draws out water and inhibits unwanted microbes. Lactobacillus takes over. Fermented 2-4 weeks.',
+      // USDA/NCHFP sauerkraut: "3 tablespoons for every 5 pounds of cabbage"; at 70-75°F "kraut will be fully fermented in about
+      // 3 to 4 weeks"; then refrigerate or can by the tested process. https://nchfp.uga.edu/how/ferment/recipes/sauerkraut/
+      how: 'Cabbage shredded and salted (the USDA-tested recipe uses 3 tablespoons of canning salt per 5 pounds of cabbage). The salt draws out water and inhibits unwanted microbes. Lactobacillus takes over. At 70-75°F it takes about 3 to 4 weeks; then it is refrigerated or canned with a tested method.',
       story: 'A succession of microbial communities - Leuconostoc dominates the first few days, then yields to more acid-tolerant Lactobacillus. The pH drops from 6 to about 3.5. Watching it ferment is watching ecology in real time.' },
     { id: 'kombucha', name: 'Kombucha', cultures: 'Acetobacter + Saccharomyces + others (SCOBY)',
       how: 'Sweet tea + a "SCOBY" (Symbiotic Culture Of Bacteria and Yeast) - a rubbery mat that floats on the surface. Yeast eats sugar → ethanol; bacteria eat ethanol → acetic acid. Held 7-14 days.',
-      story: 'Origin probably in northeast China about 2,000 years ago. The SCOBY is itself a community ecology - a biofilm where multiple species depend on each other\'s metabolic byproducts.' },
+      // Audit 2026-11-24: "northeast China about 2,000 years ago" is folklore; labelled.
+      story: 'Its origin is uncertain; popular stories place it in northeast Asia long ago, but there is little written evidence. The SCOBY is itself a community ecology - a biofilm where multiple species depend on each other\'s metabolic byproducts.' },
     { id: 'cheese', name: 'Cheese', cultures: 'Varies by cheese (Lactobacillus, Penicillium roqueforti / camemberti, others)',
       how: 'Milk acidified by bacteria, then a coagulant (rennet) added to form curd. Curd drained, salted, aged. Different bacteria + molds during aging produce different cheeses.',
-      story: 'Probably invented around 7,000 BCE in the Fertile Crescent. The blue veins in Roquefort? Penicillium roqueforti. The white rind on Camembert? Penicillium camemberti. Both are fungi, deliberately added.' }
+      // Salque et al. 2013, Nature 493:522 "Earliest evidence for cheese making in the sixth millennium BC in northern Europe"
+      // (dairy fats in pottery sieves, Kuyavia, Poland). https://doi.org/10.1038/nature11698  Audit: "7,000 BCE, Fertile Crescent" cut.
+      story: 'The oldest direct chemical evidence of cheese making is more than 7,000 years old: milk fats found in clay strainers from Poland. People may have made cheese even earlier. The blue veins in Roquefort? Penicillium roqueforti. The white rind on Camembert? Penicillium camemberti. Both are fungi, deliberately added.' }
   ];
 
   // ──────────────────────────────────────────────────────────────────
@@ -368,14 +425,16 @@
     {
       id: 'penicillin', name: 'Fleming\'s Penicillin', year: 1928, icon: '🍄',
       what: 'Alexander Fleming returned from holiday to find a Petri dish of Staphylococcus contaminated with Penicillium mold. The bacteria around the mold had died. Fleming named the active substance "penicillin."',
-      why: 'Florey + Chain at Oxford turned the discovery into a usable drug a decade later. Mass production began in 1942-44 in the US. By war\'s end, penicillin had saved hundreds of thousands of lives from bacterial infections.',
-      lesson: 'Serendipity favors the prepared mind (Pasteur). Fleming noticed something most would have washed down the drain. But also: the gap between "discovery" and "drug for patients" is enormous - Fleming gets the credit, but Florey, Chain, Heatley, and many others did the work of making it real.'
+      // Audit 2026-11-24: "saved hundreds of thousands of lives" by war's end cut (no source checked); Pasteur quote corrected.
+      why: 'Florey + Chain at Oxford turned the discovery into a usable drug about a decade later. Mass production began in 1942-44 in the US, in time to treat many wounded soldiers by the end of World War II.',
+      lesson: 'Pasteur said that chance favors only the prepared mind. Fleming noticed something most would have washed down the drain. But also: the gap between "discovery" and "drug for patients" is enormous - Fleming gets the credit, but Florey, Chain, Heatley, and many others did the work of making it real.'
     },
     {
       id: 'mrsa', name: 'MRSA - antibiotic resistance evolves', year: '1959-present', icon: '🦠',
       what: 'Methicillin introduced in 1959 to treat penicillin-resistant Staph aureus. The first methicillin-resistant strain appeared in 1960. By the 1990s, MRSA was widespread in hospitals; by the 2000s, in the community ("community-acquired MRSA").',
       why: 'Antibiotics create selection pressure: susceptible bacteria are removed more readily while resistant survivors can reproduce. Unnecessary use and misuse - including the wrong drug, dose, or duration - accelerate resistance.',
-      lesson: 'Evolution is not in the past. It is happening right now, in your bathroom, on hospital walls, in factory farms. We are losing antibiotics faster than we can develop new ones. The CDC calls antibiotic resistance one of the great public-health threats of our century.'
+      // Audit 2026-11-24: CDC wording is "one of the world's most urgent public health problems" (cdc.gov/antimicrobial-resistance).
+      lesson: 'Evolution is not only in the past. It is happening right now, in hospitals, on farms, and in our own bodies. New antibiotics are slow to develop, and resistance can appear within a few years of a new drug. CDC calls antimicrobial resistance one of the world\'s most urgent public health problems.'
     },
     {
       id: 'covid', name: 'COVID-19 + mRNA vaccines', year: '2019-present', icon: '💉',
@@ -385,9 +444,12 @@
     },
     {
       id: 'fmt', name: 'Fecal Microbiota Transplant (FMT)', year: '2013-present', icon: '🧪',
-      what: 'For recurrent Clostridium difficile infections (deadly hospital-acquired diarrhea, often after antibiotic use destroys the gut microbiome), transplanting fecal microbes from a healthy donor cures the infection in over 90% of cases - better than any antibiotic.',
-      why: 'C. difficile takes over when the normal gut community is destroyed. Restoring a healthy community is more effective than killing the C. difficile. The microbiome itself is the medicine.',
-      lesson: 'The microbiome is now treated as an organ. We are at the beginning of a wave of microbiome-based therapies. Diet matters more for gut health than supplements; fiber feeds the diverse community that protects us.'
+      // van Nood et al. 2013, NEJM 368:407: "13 (81%) had resolution of C. difficile-associated diarrhea after the first infusion";
+      // 2 of the 3 others resolved after a second donor (15 of 16); vancomycin alone 4 of 13 (31%). https://doi.org/10.1056/NEJMoa1205037
+      // Audit 2026-11-24: "over 90% of cases - better than any antibiotic" and "Diet matters more ... than supplements" replaced/cut.
+      what: 'For C. difficile infections that keep coming back (a dangerous diarrhea that often follows antibiotic use), doctors can transplant gut microbes from a healthy, screened donor. In a small 2013 trial, 13 of 16 patients got better after one transplant, compared with 4 of 13 on the antibiotic vancomycin alone.',
+      why: 'C. difficile takes over when the normal gut community is disrupted. Restoring a healthy community can work better than only trying to kill the C. difficile.',
+      lesson: 'Some doctors now think of the microbiome almost as an organ. Microbiome-based treatments are new, and each one has to be tested in careful trials.'
     }
   ];
 
@@ -422,14 +484,14 @@
     { q: 'What did a 2016 reference-adult estimate suggest about bacterial and human cell counts?', choices: ['Exactly 37 trillion of each in every person', 'About 38 trillion bacteria and 30 trillion human cells: the same order of magnitude', 'About 1 billion bacteria, nearly all of them on the skin', 'No bacteria: a healthy immune system clears every microbe it finds'], answer: 1, explain: 'Sender and colleagues estimated about 38 trillion bacterial cells and 30 trillion human cells for a 70 kg reference adult. The resulting ratio is roughly 1.3 to 1, rather than the widely repeated 10 to 1. These are estimates for a defined reference body, not exact counts for every person; body size and other factors change the totals.' },
     { q: 'What is the difference between a bacterium and a virus?', choices: ['Both are living cells with their own machinery, and the only meaningful difference between them is that viruses are much smaller', 'Bacteria are cells with their own machinery; viruses are genetic material that needs a host cell to reproduce', 'They are two names for the same organisms at different stages of an infection', 'Bacteria are dormant until they infect you; viruses are active from the start'], answer: 1, explain: 'Bacteria are living cells. They have a cell membrane, DNA, ribosomes, and can grow and reproduce on their own (given food). Viruses are not cellular - they are DNA or RNA in a protein shell. To reproduce, they must enter a host cell and hijack the cell\'s machinery.' },
     { q: 'How does a vaccine work?', choices: ['Kills the pathogen directly if you have already been infected, like an antibiotic does', 'Teaches the immune system to recognize a pathogen before you\'re infected', 'Disinfects the bloodstream the way an antiseptic disinfects a wound', 'Replaces the antibodies your body has lost as it ages'], answer: 1, explain: 'A vaccine exposes the immune system to a harmless version of part of the pathogen (an inactivated virus, a protein subunit, or - for mRNA vaccines - instructions to make a viral protein). The immune system makes memory cells that recognize the real pathogen if encountered. Vaccines prevent disease; they don\'t treat existing infection.' },
-    { q: 'In sourdough bread, what causes the sour flavor AND the rise?', choices: ['Yeast alone makes both the sour flavor and all of the rise', 'Lactic acid bacteria make the sour; yeast makes the CO₂ that rises the bread', 'The salt in the dough both sours it and makes it rise', 'A chemical leavener such as baking powder produces both the sourness and the rise'], answer: 1, explain: 'Sourdough relies on two organisms working together: lactic acid bacteria (Lactobacillus) make the sour by fermenting sugars into lactic acid, and wild yeast makes CO₂ that lifts the dough. Commercial yeast bread skips the bacteria - it rises fast but doesn\'t develop the sour flavor or the same digestibility.' },
+    { q: 'In sourdough bread, what causes the sour flavor AND the rise?', choices: ['Yeast alone makes both the sour flavor and all of the rise', 'Lactic acid bacteria make the sour; yeast makes the CO₂ that rises the bread', 'The salt in the dough both sours it and makes it rise', 'A chemical leavener such as baking powder produces both the sourness and the rise'], answer: 1, explain: 'Sourdough relies on two organisms working together: lactic acid bacteria (Lactobacillus) make the sour by fermenting sugars into lactic acid, and wild yeast makes CO₂ that lifts the dough. Commercial yeast bread skips the bacteria - it rises fast but does not develop the sour flavor.' },
     { q: 'What evidence supported John Snow\'s explanation of the 1854 London cholera outbreak?', choices: ['He examined water from every district under his microscope until he found the germ', 'He mapped where deaths occurred and investigated which water people drank', 'He infected laboratory animals with samples from each neighborhood', 'He interviewed survivors about what they had eaten during the outbreak'], answer: 1, explain: 'Locations of deaths, drinking-water inquiries, and households using other sources together supported the Broad Street pump-water explanation. Officials removed the handle on September 8, 1854. Snow noted that attacks were already declining before removal, so the subsequent decline alone does not measure the intervention\'s effect. The investigation is a landmark in epidemiology.' },
     { q: 'Why did Fleming\'s 1928 penicillin discovery take 14+ years to become a usable drug?', choices: ['Patent disputes between Fleming and the drug companies kept penicillin locked in the courts for more than a decade', 'Mass production of pure penicillin required years of work by Florey, Chain, Heatley, and a whole team', 'Fleming kept the discovery secret and did not publish his results for years', 'Medical regulators banned penicillin until after the Second World War'], answer: 1, explain: 'Fleming\'s observation in 1928 was important but he could not produce or purify penicillin in any quantity. Howard Florey, Ernst Chain, Norman Heatley, and colleagues at Oxford figured out purification and mass production starting in 1939. US wartime industrial scale-up made it widely available by 1944. Most "discoveries" become real through the work of many.' },
     { q: 'A bacterium is 2 µm long and an animal cell is 20 µm across. How do these linear dimensions compare?', choices: ['The two dimensions are the same', 'The bacterium is one-tenth as long as the animal cell is wide', 'The bacterium is ten times longer than the animal cell is wide', 'The bacterium is one-thousandth as long as the animal cell is wide'], answer: 1, explain: 'Divide 2 µm by 20 µm: the ratio is 1/10. These are illustrative sizes; cell dimensions vary, and a length ratio does not by itself give a volume ratio. Many bacteria can be resolved with a light microscope. Magnification makes the image larger; resolution determines which nearby details can be distinguished.' },
-    { q: 'What feeds your gut microbiome?', choices: ['Protein from meat and eggs', 'Refined sugar and sweets', 'Daily probiotic pills', 'Dietary fiber from plants'], answer: 3, explain: 'Most of your gut microbes ferment fiber that you cannot digest, producing short-chain fatty acids that nourish the colon lining. A diverse plant-rich diet feeds a diverse microbiome. Refined carbohydrates and sugar are absorbed in the small intestine - they don\'t reach the gut microbes. Probiotic pills are a tiny dose; food is the main intervention.' },
+    { q: 'What feeds your gut microbiome?', choices: ['Protein from meat and eggs', 'Refined sugar and sweets', 'Daily probiotic pills', 'Dietary fiber from plants'], answer: 3, explain: 'Most of your gut microbes ferment fiber that you cannot digest, producing short-chain fatty acids that nourish the colon lining. A diverse plant-rich diet feeds a diverse microbiome. Most refined sugar is absorbed in the small intestine before it reaches the colon, where most gut microbes live. Probiotic pills add microbes but do not feed the ones already there; fiber does.' },
     { q: 'How can lactic acid fermentation help preserve foods such as yogurt, sauerkraut, and kimchi?', choices: ['The salt kills every microbe that could cause spoilage', 'Lactic acid bacteria lower the pH, inhibiting many unwanted microbes', 'Fermentation sterilizes the food just as a validated canning process does', 'Fermentation makes every food safe to store indefinitely at room temperature'], answer: 1, explain: 'Lactic acid bacteria convert sugars into acids. The lower pH can inhibit many unwanted microbes, but fermentation does not sterilize food or guarantee safe storage. Follow a tested food-specific process and storage guidance, including refrigeration when required; fermented sauerkraut is refrigerated or processed using a tested canning method.' },
     { q: 'Which organelles have bacterial ancestors, according to endosymbiotic theory?', choices: ['The nucleus and endoplasmic reticulum', 'Mitochondria and chloroplasts', 'Lysosomes and the Golgi apparatus', 'Cilia and the cytoskeleton'], answer: 1, explain: 'Mitochondria and chloroplasts evolved from bacterial ancestors that became integrated into host cells in separate ancient events. Their DNA and bacterial-like ribosomes are among the evidence. Mitochondria occur in most eukaryotic cells; chloroplasts occur in photosynthetic cells of plants and many algae. These are organelles, not independent microbes living in every cell.' },
-    { q: 'Genetically, which group are fungi closest to?', choices: ['Plants', 'Bacteria', 'Animals', 'Viruses'], answer: 2, explain: 'Despite looking more plant-like (rooted, can\'t move), fungi are evolutionary cousins of animals. We share a common ancestor about 1.1 billion years ago - more recent than the split with plants. Fungi have chitin cell walls (like insect exoskeletons), not cellulose. They cannot photosynthesize. They digest externally.' },
+    { q: 'Genetically, which group are fungi closest to?', choices: ['Plants', 'Bacteria', 'Animals', 'Viruses'], answer: 2, explain: 'Despite looking more plant-like (rooted, can\'t move), fungi are evolutionary cousins of animals. Animals and fungi share a more recent common ancestor than either shares with plants. Fungi have chitin cell walls (like insect exoskeletons), not cellulose. They cannot photosynthesize. They digest externally.' },
     { q: 'How many DOMAINS of cellular life do biologists recognize today?', choices: ['One (all cellular life)', 'Two (prokaryotes and eukaryotes, as before 1977)', 'Three (Bacteria, Archaea, Eukarya)', 'Six (one for each kingdom)'], answer: 2, explain: 'Carl Woese\'s 1977 ribosomal RNA work showed Archaea are as different from bacteria as bacteria are from us. The three-domain framework (Bacteria, Archaea, Eukarya) is the foundation of modern biology. Archaea were originally classified with bacteria because they look similar under the microscope, but they are biochemically distinct.' },
     { q: 'Why do antibiotics that target the bacterial cell wall (like penicillin) NOT work against viruses?', choices: ['The antibiotic molecules are too large to fit inside a virus', 'Viruses do not have cell walls - they have no equivalent target', 'Viruses multiply too quickly for the drug to keep up', 'The dose needed against viruses is too high to be safe for people'], answer: 1, explain: 'Viruses have no cell wall, no ribosomes, no DNA replication machinery of their own - they hijack the host\'s. They have NO equivalent target for any antibiotic. This is why prescribing antibiotics "just in case" for a viral cold or flu is useless (and accelerates resistance for the bacteria that ARE in your body).' }
   ];
@@ -447,6 +509,66 @@
       q.answer = (q.answer - shift + len) % len;
     });
   })();
+
+  // Earth-history-as-one-year model (audit 2026-11-24). The old text used Sagan's universe calendar dates
+  // (Dec 14 Cambrian, Dec 26 dinosaurs, 11:58 pm humans, 13 s civilization) on a 4.6-billion-year Earth scale.
+  // Every date shown is computed here from the timeline ages. Jan 1 00:00 = Earth forms; Dec 31 24:00 = today.
+  var MICRO_EARTH_AGE_YEARS = 4.6e9;
+  var MICRO_MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  var MICRO_MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  function microCosmicCalendar(yearsAgo) {
+    var ago = Math.max(0, Math.min(MICRO_EARTH_AGE_YEARS, Number(yearsAgo) || 0));
+    var yearSeconds = 365 * 86400;
+    var secondsBeforeEnd = ago / MICRO_EARTH_AGE_YEARS * yearSeconds;
+    var t = Math.min(yearSeconds - 1, yearSeconds - secondsBeforeEnd);
+    var dayOfYear = Math.floor(t / 86400), month = 0;
+    while (dayOfYear >= MICRO_MONTH_DAYS[month]) { dayOfYear -= MICRO_MONTH_DAYS[month]; month++; }
+    var secondsIntoDay = t - Math.floor(t / 86400) * 86400;
+    return { month: month, monthName: MICRO_MONTH_NAMES[month], day: dayOfYear + 1,
+      hour: Math.floor(secondsIntoDay / 3600), minute: Math.floor((secondsIntoDay % 3600) / 60),
+      secondsBeforeEnd: secondsBeforeEnd, fractionOfHistory: ago / MICRO_EARTH_AGE_YEARS };
+  }
+  // Ages match the origins timeline on the Home tab (same card). Fossil, GOE, Cambrian, and Homo sapiens ages
+  // are the timeline's own values; 5,000 years is the approximate age of the oldest writing.
+  var MICRO_CALENDAR_EVENTS = [
+    { id: 'earth', yearsAgo: 4.6e9, label: 'Earth forms' },
+    { id: 'oceans', yearsAgo: 4.4e9, label: 'First oceans' },
+    { id: 'fossils', yearsAgo: 3.5e9, label: 'Oldest widely accepted microbial fossils' },
+    { id: 'goe', yearsAgo: 2.4e9, label: 'Oxygen builds up in the air' },
+    { id: 'eukaryotes', yearsAgo: 2.1e9, label: 'First cells with a nucleus (estimate)' },
+    { id: 'cambrian', yearsAgo: 5.4e8, label: 'Cambrian explosion: most animal body plans appear' },
+    { id: 'humans', yearsAgo: 3e5, label: 'Our species, Homo sapiens' },
+    { id: 'writing', yearsAgo: 5e3, label: 'Oldest writing (about 5,000 years ago)' }
+  ];
+  // Predict-first question: which month holds the Cambrian explosion? Options are checked against the model.
+  // Each choice names a calendar span; `event` is the timeline event that really falls there (used for feedback).
+  var MICRO_CALENDAR_CHOICES = [
+    { id: 'march', label: 'March', month: 2, event: 'fossils' },
+    { id: 'july', label: 'July', month: 6, event: 'eukaryotes' },
+    { id: 'november', label: 'November', month: 10, event: 'cambrian' },
+    { id: 'dec31', label: 'December 31', month: 11, lastDay: true, event: 'humans' }
+  ];
+  function microCalendarChoiceHolds(choice, yearsAgo) {
+    var c = microCosmicCalendar(yearsAgo);
+    return c.month === choice.month && (!choice.lastDay || c.day === 31);
+  }
+  function microCalendarAnswerId() {
+    var hit = MICRO_CALENDAR_CHOICES.filter(function(choice) { return microCalendarChoiceHolds(choice, 5.4e8); });
+    return hit.length === 1 ? hit[0].id : null;
+  }
+  function microCalendarEvent(id) { return MICRO_CALENDAR_EVENTS.filter(function(e) { return e.id === id; })[0]; }
+  // "About N times older", rounded to the nearest thousand, from the same timeline ages.
+  function microFossilToHumanRatioText() {
+    return (Math.round(microCalendarEvent('fossils').yearsAgo / microCalendarEvent('humans').yearsAgo / 1000) * 1000).toLocaleString('en-US');
+  }
+  function microCalendarDateText(c) {
+    if (c.secondsBeforeEnd < 60) return 'December 31, ' + Math.round(c.secondsBeforeEnd) + ' seconds before midnight';
+    if (c.month === 11 && c.day === 31) {
+      var h12 = c.hour % 12 === 0 ? 12 : c.hour % 12;
+      return 'December 31, ' + h12 + ':' + (c.minute < 10 ? '0' : '') + c.minute + (c.hour < 12 ? ' am' : ' pm');
+    }
+    return c.monthName + ' ' + c.day;
+  }
 
   // ──────────────────────────────────────────────────────────────────
   // INTERACTIVE WIDGETS (module scope)
@@ -871,6 +993,8 @@
   if (_mbWin) {
     _mbWin.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
     _mbWin.__MicrobiologyCore.resistance = MicroResistanceNotebook;
+    _mbWin.__MicrobiologyCore.cosmicCalendar = { calendar: microCosmicCalendar, events: MICRO_CALENDAR_EVENTS, choices: MICRO_CALENDAR_CHOICES,
+      answerId: microCalendarAnswerId, dateText: microCalendarDateText, choiceHolds: microCalendarChoiceHolds };
   }
 
   // -- Accent hues as readable TEXT, per substrate --------------------------
@@ -4375,6 +4499,9 @@
 
       var TABS = [
         { id: 'home',       icon: '🦠', label: __alloT('stem.microbiology.home', 'Home') },
+        // Audit 2026-11-24: the workspace Home replaced renderHome, leaving its overview (domains, origins timeline,
+        // Maine microbes) unreachable. It is now a topic-library tab.
+        { id: 'world',      icon: '🌍', label: __alloT('stem.microbiology.microbial_world_tab', 'Microbial World') },
         { id: 'bacteria',   icon: '🧫', label: __alloT('stem.microbiology.bacteria', 'Bacteria') },
         { id: 'viruses',    icon: '🧬', label: __alloT('stem.microbiology.viruses', 'Viruses') },
         { id: 'fungi',      icon: '🍄', label: __alloT('stem.microbiology.fungi', 'Fungi') },
@@ -4693,23 +4820,84 @@
         );
       }
 
+      // Earth history as one calendar year: predict first, then every date is computed by microCosmicCalendar.
+      function renderEarthCalendar() {
+        var choiceId = MICRO_CALENDAR_CHOICES.some(function(c) { return c.id === d.earthCalendarPrediction; }) ? d.earthCalendarPrediction : null;
+        var answerId = microCalendarAnswerId();
+        var chosen = choiceId ? MICRO_CALENDAR_CHOICES.filter(function(c) { return c.id === choiceId; })[0] : null;
+        var cambrianEvent = microCalendarEvent('cambrian');
+        var cambrian = microCosmicCalendar(cambrianEvent.yearsAgo);
+        function billions(years) { return (Math.round(years / 1e8) / 10).toLocaleString('en-US'); }
+        var feedback = null;
+        if (chosen) {
+          var chosenEvent = microCalendarEvent(chosen.event);
+          var chosenDate = microCalendarDateText(microCosmicCalendar(chosenEvent.yearsAgo));
+          if (chosen.id === answerId) {
+            feedback = __alloT('stem.microbiology.earth_calendar_right', 'Yes. 540 million years is only {pct}% of Earth\'s 4.6 billion years, so the Cambrian explosion lands on {date}, with about {weeks} weeks left in the year. For most of the year, all life was microscopic.')
+              .replace('{pct}', function() { return (Math.round(cambrian.fractionOfHistory * 1000) / 10).toString(); })
+              .replace('{date}', function() { return microCalendarDateText(cambrian); })
+              .replace('{weeks}', function() { return String(Math.round(cambrian.secondsBeforeEnd / (7 * 86400))); });
+          } else if (chosen.event === 'humans') {
+            feedback = __alloT('stem.microbiology.earth_calendar_too_late', 'Not quite. {date} is when our own species appears. Animals are much older: the Cambrian explosion lands on {cambrian}.')
+              .replace('{date}', function() { return chosenDate; }).replace('{cambrian}', function() { return microCalendarDateText(cambrian); });
+          } else {
+            feedback = __alloT('stem.microbiology.earth_calendar_too_early', 'Not quite. {date} is when this happens: {event}. Animal body plans came about {gap} billion years later, on {cambrian}.')
+              .replace('{date}', function() { return chosenDate; })
+              .replace('{event}', function() { return chosenEvent.label.toLowerCase(); })
+              .replace('{gap}', function() { return billions(chosenEvent.yearsAgo - cambrianEvent.yearsAgo); })
+              .replace('{cambrian}', function() { return microCalendarDateText(cambrian); });
+          }
+        }
+        return h('div', { 'data-earth-calendar': 'true', style: { marginTop: 12, padding: 12, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+          h('div', { id: 'micro-earth-calendar-q', style: { fontWeight: 800, marginBottom: 6 } }, __alloT('stem.microbiology.earth_calendar_title', 'Predict first: Earth\'s history in one year')),
+          h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.microbiology.earth_calendar_prompt', 'Squeeze all 4.6 billion years of Earth\'s history into one calendar year. January 1 is when Earth forms; midnight on December 31 is today. In which month do most animal body plans first appear (the Cambrian explosion, about 540 million years ago)?')),
+          h('div', { role: 'group', 'aria-labelledby': 'micro-earth-calendar-q', style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            MICRO_CALENDAR_CHOICES.map(function(c) {
+              var picked = choiceId === c.id;
+              return h('button', { key: c.id, type: 'button', 'aria-pressed': picked ? 'true' : 'false', disabled: !!choiceId && !picked,
+                'data-earth-calendar-choice': c.id,
+                onClick: function() { if (!choiceId) upd({ earthCalendarPrediction: c.id }); },
+                style: { minHeight: 44, minWidth: 96, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: choiceId ? 'default' : 'pointer',
+                  background: picked ? 'rgba(168,85,247,0.35)' : 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)',
+                  border: picked ? '2px solid #c4b5fd' : '1px solid var(--allo-stem-border, #475569)', opacity: !!choiceId && !picked ? 0.7 : 1 } }, c.label);
+            })
+          ),
+          h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8 } },
+            feedback ? h('p', { 'data-earth-calendar-feedback': chosen.id === answerId ? 'right' : 'wrong', style: { margin: 0, fontWeight: 600 } }, feedback) : null
+          ),
+          chosen ? h('div', { style: { marginTop: 8 } },
+            h('div', { style: { fontWeight: 700, marginBottom: 4 } }, __alloT('stem.microbiology.earth_calendar_table_title', 'The whole year, computed from the timeline ages:')),
+            h('ol', { 'data-earth-calendar-table': 'true', style: { margin: 0, padding: '0 0 0 20px' } },
+              MICRO_CALENDAR_EVENTS.map(function(e) {
+                return h('li', { key: e.id }, h('strong', null, microCalendarDateText(microCosmicCalendar(e.yearsAgo)) + ': '), e.label);
+              })
+            ),
+            h('button', { type: 'button', onClick: function() { upd({ earthCalendarPrediction: null }); },
+              style: { marginTop: 8, minHeight: 44, padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)' } },
+              __alloT('stem.microbiology.earth_calendar_again', 'Predict again'))
+          ) : null
+        );
+      }
+
       // HOME
       function renderHome() {
         return h('div', { style: { padding: 16 } },
           sectionCard('🦠 The microbial world is the dominant life on Earth',
             h('div', null,
               h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                __alloT('stem.microbiology.about_99_of_all_the_cells_on_earth_are', 'About 99% of all the cells on Earth are microbial. Bacteria, archaea, single-celled eukaryotes (protists), and fungi. They drive most of the planet\'s chemistry: carbon, nitrogen, sulfur, oxygen all cycle through microbial metabolism. Plants and animals exist within a microbial world, not the other way around.')
+                // Whitman et al. 1998 PNAS 95:6578: prokaryotes on Earth "are estimated to be 4–6 × 10^30 cells". Audit: unsourced "About 99%" cut.
+                __alloT('stem.microbiology.about_99_of_all_the_cells_on_earth_are_v2', 'Nearly all the cells on Earth are microbes: one study estimated 4 to 6 × 10³⁰ bacteria and archaea alone. Bacteria, archaea, single-celled eukaryotes (protists), and fungi drive much of the planet\'s chemistry: carbon, nitrogen, sulfur, and oxygen all cycle through microbial metabolism.')
               ),
               h('p', { style: { margin: 0, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                'You are about as much microbial as human, by cell count. Your gut microbiome is its own organ, doing things your own cells cannot. Your immune system is trained by microbes from birth. Most of the time, the relationship is mutual - they get a home, you get vitamins, digestion, protection. Occasionally one becomes pathogenic.'
+                // Sender, Fuchs & Milo 2016 (see MICROBIOME): ~3.8 × 10^13 bacteria vs ~3.0 × 10^13 human cells in a reference adult.
+                'By cell count, an average adult carries about as many bacteria (about 38 trillion) as human cells (about 30 trillion), by a 2016 estimate. Your gut microbes do jobs your own cells cannot, such as breaking down some kinds of fiber. Your immune system learns from microbes from birth. Most of the time the relationship helps both sides; occasionally a microbe causes disease.'
               )
             )
           ),
           sectionCard('The three domains of cellular life + viruses',
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
               [
-                { name: __alloT('stem.microbiology.bacteria_2', 'Bacteria'), desc: __alloT('stem.microbiology.single_cells_without_a_nucleus_the_mos', 'Single cells without a nucleus. The most common form of life. ~1 trillion species (most uncharacterized).'), accent: EMERALD },
+                { name: __alloT('stem.microbiology.bacteria_2', 'Bacteria'), desc: __alloT('stem.microbiology.single_cells_without_a_nucleus_the_mos_v2', 'Single cells without a nucleus. The most common form of life. One 2016 estimate suggests up to a trillion kinds of microbes; most have never been studied.'), accent: EMERALD }, // Locey & Lennon 2016 PNAS 113:5970: "upward of 1 trillion (10^12) microbial species"
                 { name: __alloT('stem.microbiology.archaea_2', 'Archaea'), desc: __alloT('stem.microbiology.single_cells_without_a_nucleus_but_as_', 'Single cells without a nucleus, but as different from bacteria as bacteria are from us. The third domain of life, only fully recognized since 1977.'), accent: '#ef4444' },
                 { name: __alloT('stem.microbiology.eukaryotes_incl_fungi_protists', 'Eukaryotes (incl. fungi + protists)'), desc: __alloT('stem.microbiology.cells_with_a_nucleus_organelles_mitoch', 'Cells WITH a nucleus + organelles (mitochondria, chloroplasts). Includes single-celled fungi (yeast), filamentous fungi (mold), protists (amoeba, Plasmodium), and all plants + animals.'), accent: '#a855f7' },
                 { name: __alloT('stem.microbiology.viruses_not_cellular', 'Viruses (not cellular)'), desc: __alloT('stem.microbiology.genetic_material_in_a_protein_shell_ca', 'Genetic material in a protein shell. Cannot reproduce without a host cell. Most biologists do not classify them as alive - but they certainly behave like life when inside cells.'), accent: '#0ea5e9' }
@@ -4723,16 +4911,20 @@
           ),
           sectionCard('Where microbes live',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
-              h('li', null, h('strong', null, __alloT('stem.microbiology.inside_you', 'Inside you. ')), __alloT('stem.microbiology.gut_mouth_skin_every_surface_that_meet', 'Gut, mouth, skin, every surface that meets the outside world. ~100 trillion cells.')),
-              h('li', null, h('strong', null, __alloT('stem.microbiology.in_soil', 'In soil. ')), __alloT('stem.microbiology.50_billion_cells_per_gram_the_most_div', '~50 billion cells per gram. The most diverse community on Earth.')),
-              h('li', null, h('strong', null, __alloT('stem.microbiology.in_the_ocean', 'In the ocean. ')), __alloT('stem.microbiology.10_million_per_ml_half_of_all_photosyn', '~10 million per mL. Half of all photosynthesis happens here.')),
-              h('li', null, h('strong', null, __alloT('stem.microbiology.in_extreme_places', 'In extreme places. ')), __alloT('stem.microbiology.deep_sea_vents_at_113_c_antarctic_ice_', 'Deep-sea vents at 113°C. Antarctic ice. Acidic lakes. The deep crust kilometers below ground. Life finds a way.')),
-              h('li', null, h('strong', null, __alloT('stem.microbiology.inside_other_organisms', 'Inside other organisms. ')), __alloT('stem.microbiology.every_plant_and_animal_carries_microbe', 'Every plant and animal carries microbes. Termites can\'t digest wood without their gut bacteria. Cows can\'t digest grass. Plants depend on root microbes for nitrogen.'))
+              // Sources for these counts are on the MICROBIOME data (Sender 2016, Whitman 1998, Field 1998). Takai et al. 2008,
+              // PNAS 105:10949: Methanopyrus kandleri strain 116 grows at 122°C under high pressure.
+              h('li', null, h('strong', null, __alloT('stem.microbiology.inside_you', 'Inside you. ')), __alloT('stem.microbiology.gut_mouth_skin_every_surface_that_meet_v2', 'Gut, mouth, skin, every surface that meets the outside world. About 38 trillion bacteria in an average adult (2016 estimate).')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.in_soil', 'In soil. ')), __alloT('stem.microbiology.50_billion_cells_per_gram_the_most_div_v2', 'Often billions of cells in one gram. One of the most diverse communities on Earth.')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.in_the_ocean', 'In the ocean. ')), __alloT('stem.microbiology.10_million_per_ml_half_of_all_photosyn_v2', 'About half a million cells in each milliliter of surface seawater. Ocean life does about half of Earth\'s photosynthesis.')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.in_extreme_places', 'In extreme places. ')), __alloT('stem.microbiology.deep_sea_vents_at_113_c_antarctic_ice__v2', 'Deep-sea vents (one archaeon grew at 122°C in the lab). Antarctic ice. Acidic lakes. Rock kilometers below ground.')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.inside_other_organisms', 'Inside other organisms. ')), __alloT('stem.microbiology.every_plant_and_animal_carries_microbe_v2', 'Plants and animals carry microbes. Termites need gut microbes to digest wood. Cows need rumen microbes to digest grass. Beans and peas get nitrogen from root bacteria.'))
             )
           ),
           sectionCard('Why understanding microbes matters',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
-              __alloT('stem.microbiology.antibiotic_resistance_is_killing_more_', 'Antibiotic resistance is killing more people every year and rising. New viruses cross from animals into humans (COVID, HIV, Ebola). The microbiome is being reshaped by industrial agriculture, antibiotics, and processed food, with health consequences we are only beginning to understand. Microbial literacy is now a public health competency, not a specialist topic.')
+              // WHO AMR fact sheet: "Bacterial AMR was estimated to be associated with more than 4.7 million deaths globally in 2021."
+              // https://www.who.int/news-room/fact-sheets/detail/antimicrobial-resistance
+              __alloT('stem.microbiology.antibiotic_resistance_is_killing_more__v2', 'WHO estimated that drug-resistant bacteria were linked to more than 4.7 million deaths worldwide in 2021. New viruses cross from animals into humans (HIV, Ebola). The microbiome is being reshaped by industrial agriculture, antibiotics, and processed food, with health consequences we are only beginning to understand. Microbial literacy is now a public health competency, not a specialist topic.')
             )
           ),
 
@@ -4746,15 +4938,17 @@
                   { age: '4.6 Gya', name: __alloT('stem.microbiology.earth_forms', 'Earth forms'), desc: __alloT('stem.microbiology.from_the_disk_around_the_young_sun_mol', 'From the disk around the young Sun. Molten surface; no atmosphere except primordial gases.'), color: microAccentText('#ef4444') },
                   { age: '4.5 Gya', name: __alloT('stem.microbiology.moon_forming_impact', 'Moon-forming impact'), desc: __alloT('stem.microbiology.a_mars_sized_body_strikes_the_proto_ea', 'A Mars-sized body strikes the proto-Earth. Debris coalesces into the Moon. Stabilizes Earth\'s rotation axis, which becomes important for climate stability later.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
                   { age: '4.4 Gya', name: __alloT('stem.microbiology.first_oceans_condense', 'First oceans condense'), desc: __alloT('stem.microbiology.surface_cools_enough_for_water_vapor_t', 'Surface cools enough for water vapor to liquefy. Continuous oceans by ~4.3 Gya. Atmosphere has no free oxygen.'), color: microAccentText('#0ea5e9') },
-                  { age: '4.0 Gya', name: __alloT('stem.microbiology.late_heavy_bombardment_ends', 'Late Heavy Bombardment ends'), desc: __alloT('stem.microbiology.a_long_episode_of_intense_asteroid_imp', 'A long episode of intense asteroid impacts ends around now. Surface conditions stabilize enough that life can persist if it formed.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                  { age: '4.0-3.5 Gya', name: __alloT('stem.microbiology.origin_of_life', 'Origin of life'), desc: __alloT('stem.microbiology.somewhere_here_we_don_t_know_exactly_w', 'Somewhere here. We don\'t know exactly where (hydrothermal vents? warm tide pools? clay surfaces?) or exactly how. The RNA world hypothesis: RNA, which can both store information AND catalyze reactions, came before DNA + protein. Self-replicating RNA molecules → enclosed in lipid vesicles → first cells.'), color: microAccentText('#a855f7') },
-                  { age: '3.5 Gya', name: __alloT('stem.microbiology.luca_last_universal_common_ancestor', 'LUCA - Last Universal Common Ancestor'), desc: __alloT('stem.microbiology.a_single_celled_organism_that_is_the_a', 'A single-celled organism that is the ancestor of every living thing on Earth. We have its inferred genome (from comparing all life): it had a membrane, DNA, ribosomes, ATP, the genetic code. All life since is descended from this one cell.'), color: microAccentText('#fbbf24') },
-                  { age: '3.5 Gya', name: __alloT('stem.microbiology.first_confirmed_microbial_fossils', 'First confirmed microbial fossils'), desc: __alloT('stem.microbiology.stromatolites_layered_structures_built', 'Stromatolites - layered structures built by mats of cyanobacteria-like microbes. Modern stromatolites still grow at Shark Bay, Australia. They are essentially unchanged in 3.5 billion years.'), color: microAccentText('#10b981') },
-                  { age: '2.5-2.4 Gya', name: __alloT('stem.microbiology.great_oxygenation_event_goe', 'Great Oxygenation Event (GOE)'), desc: __alloT('stem.microbiology.cyanobacteria_have_been_producing_o_as', 'Cyanobacteria have been producing O₂ as a byproduct of photosynthesis for several hundred million years. Once iron in the oceans is fully oxidized, free O₂ accumulates in the atmosphere. Disaster for most existing life (oxygen is toxic to anaerobes); enables more energy-dense aerobic metabolism for the survivors.'), color: microAccentText('#06b6d4') },
+                  // Audit 2026-11-24: Late Heavy Bombardment softened (debated); LUCA dated by Moody et al. 2024, Nature Ecology &
+                  // Evolution 8:1654: "Our results suggest LUCA lived around 4.2 Ga". https://doi.org/10.1038/s41559-024-02461-1
+                  { age: '~4.0 Gya', name: __alloT('stem.microbiology.late_heavy_bombardment_ends', 'Late Heavy Bombardment ends'), desc: __alloT('stem.microbiology.a_long_episode_of_intense_asteroid_imp_v2', 'Scientists once thought a burst of large asteroid impacts ended around now. Newer studies question whether there was one big burst, but impacts were far more common than today.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
+                  { age: 'Before 3.5 Gya', name: __alloT('stem.microbiology.origin_of_life', 'Origin of life'), desc: __alloT('stem.microbiology.somewhere_here_we_don_t_know_exactly_w', 'Somewhere here. We don\'t know exactly where (hydrothermal vents? warm tide pools? clay surfaces?) or exactly how. The RNA world hypothesis: RNA, which can both store information AND catalyze reactions, came before DNA + protein. Self-replicating RNA molecules → enclosed in lipid vesicles → first cells.'), color: microAccentText('#a855f7') },
+                  { age: 'Before 3.5 Gya', name: __alloT('stem.microbiology.luca_last_universal_common_ancestor', 'LUCA - Last Universal Common Ancestor'), desc: __alloT('stem.microbiology.a_single_celled_organism_that_is_the_a_v2', 'The population of early cells that every living thing today descends from. By comparing genes across all life, scientists infer it had a membrane, DNA, ribosomes, and the genetic code. Its age is uncertain; a 2024 study estimated about 4.2 billion years ago.'), color: microAccentText('#fbbf24') },
+                  { age: '~3.5 Gya', name: __alloT('stem.microbiology.first_confirmed_microbial_fossils_v2', 'Oldest widely accepted microbial fossils'), desc: __alloT('stem.microbiology.stromatolites_layered_structures_built_v2', 'Stromatolites - layered rocks built by mats of microbes. Living stromatolites still grow today at Shark Bay, Australia, built by modern microbes.'), color: microAccentText('#10b981') },
+                  { age: '2.5-2.4 Gya', name: __alloT('stem.microbiology.great_oxygenation_event_goe', 'Great Oxygenation Event (GOE)'), desc: __alloT('stem.microbiology.cyanobacteria_have_been_producing_o_as_v2', 'Cyanobacteria release O₂ as a byproduct of photosynthesis. Once iron and other chemicals in the oceans had soaked up enough oxygen, free O₂ began to build up in the air. Oxygen is toxic to many anaerobes, which retreated to oxygen-free places; it also made more energy-rich aerobic metabolism possible.'), color: microAccentText('#06b6d4') },
                   { age: '2.1 Gya', name: __alloT('stem.microbiology.first_eukaryotes', 'First eukaryotes'), desc: __alloT('stem.microbiology.a_larger_archaeal_cell_engulfs_a_free_', 'A larger archaeal cell engulfs a free-living aerobic bacterium that becomes the mitochondrion (endosymbiosis, Lynn Margulis). The combination is the first eukaryote. Much later (~1.5 Gya), a similar event with a cyanobacterium produces the first plant cell with a chloroplast.'), color: microAccentText('#7c3aed') },
                   { age: '1.5-1.0 Gya', name: __alloT('stem.microbiology.first_multicellular_life', 'First multicellular life'), desc: __alloT('stem.microbiology.multiple_lineages_evolve_multicellular', 'Multiple lineages evolve multicellularity independently - fungi, plants, animals all separately. Cells in a colony with division of labor. The transition is biologically subtle but evolutionarily enormous.'), color: microAccentText('#22c55e') },
                   { age: '540 Mya', name: __alloT('stem.microbiology.cambrian_explosion', 'Cambrian explosion'), desc: __alloT('stem.microbiology.suddenly_most_major_animal_body_plans_', 'Suddenly, most major animal body plans appear in the fossil record within ~25 million years. The explanation is contested (genuine evolutionary rapid radiation? earlier soft-bodied ancestors that didn\'t fossilize? oxygen reaching critical levels?). Either way, the era of large multicellular animals begins.'), color: microAccentText('#f59e0b') },
-                  { age: '~300 kya', name: __alloT('stem.microbiology.homo_sapiens', 'Homo sapiens'), desc: __alloT('stem.microbiology.our_species_appears_in_africa_about_30', 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.'), color: microAccentText('#a78bfa') }
+                  { age: '~300 kya', name: __alloT('stem.microbiology.homo_sapiens', 'Homo sapiens'), desc: __alloT('stem.microbiology.our_species_appears_in_africa_about_30_v2', 'Our species appears in Africa about 300,000 years ago. The oldest microbial fossils are about {ratio} times older than our species.').replace('{ratio}', function() { return microFossilToHumanRatioText(); }), color: microAccentText('#a78bfa') }
                 ].map(function(e, i) {
                   return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + e.color } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText(e.color), paddingTop: 2 } }, e.age),
@@ -4765,10 +4959,7 @@
                   );
                 })
               ),
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.microbiology.a_perspective_trick', 'A perspective trick: ')),
-                __alloT('stem.microbiology.compress_all_4_6_billion_years_of_eart', 'compress all 4.6 billion years of Earth history into one calendar year. January 1 = Earth forms. February = oceans. March-April = first life. October = first eukaryotes. November = multicellular. December 14 = Cambrian explosion. December 26 = dinosaurs. December 31, 11:58 pm = first humans. The entire history of recorded civilization fits in the last 13 seconds of that cosmic year.')
-              ),
+              renderEarthCalendar(),
               h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.the_rna_world_hypothesis', 'The RNA world hypothesis: ')),
                 __alloT('stem.microbiology.how_do_you_get_a_self_replicating_cell', 'how do you get a self-replicating cell from chemistry? The current best guess: RNA can both store information (like DNA) AND catalyze chemical reactions (like enzymes). RNA molecules that happen to catalyze their own copying are selected for; over millions of years, increasingly elaborate RNA chemistry could have evolved before DNA and proteins took over. The 1989 Nobel Prize (Cech + Altman) was for proving RNA can act as an enzyme - direct lab evidence for the RNA-world idea.')
@@ -4785,22 +4976,38 @@
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                 [
                   { name: __alloT('stem.microbiology.borrelia_burgdorferi_lyme_disease', 'Borrelia burgdorferi (Lyme disease)'), kind: 'Tick-borne bacterium', color: microAccentText('#ef4444'),
-                    desc: __alloT('stem.microbiology.the_spirochete_bacterium_carried_by_de', 'The spirochete bacterium carried by deer ticks (Ixodes scapularis). Maine has among the highest Lyme rates per capita in the US - over 1,400 confirmed cases / 100,000 in some years. The pathogen has expanded northward with warming winters; ticks no longer die back hard in Maine winters. Early-stage Lyme (with the bullseye rash) responds well to doxycycline. Late-stage Lyme is harder to treat.'),
-                    prevention: 'Long pants tucked into socks. Permethrin-treated clothing. Daily tick checks. Cool-shower-and-tumble-dryer-the-clothes-on-high after time in the woods. Removing a tick within 24-36 hours of attachment usually prevents transmission.' },
+                    // Maine CDC Lyme Disease Surveillance Report 2023: 2,942 probable cases, 210.8 per 100,000 (11% above 2022).
+                    // https://www.maine.gov/dhhs/mecdc/infectious-disease/epi/vector-borne/documents/LD-SR-2023.pdf
+                    // Audit 2026-11-24: "over 1,400 confirmed cases / 100,000" (about 7x too high) and the winter die-back claim cut.
+                    desc: __alloT('stem.microbiology.the_spirochete_bacterium_carried_by_de_v2', 'The spirochete bacterium carried by deer ticks (Ixodes scapularis). Lyme disease is common in Maine: Maine CDC counted 2,942 probable cases in 2023, about 211 for every 100,000 people. Lyme disease is treated with antibiotics; early treatment works best.'),
+                    // CDC tick prevention (https://www.cdc.gov/ticks/prevention/index.html): "Treat clothing and gear with products containing
+                    // 0.5% permethrin"; "Showering within two hours of coming indoors has been shown to reduce your risk of getting Lyme disease";
+                    // "Tumble dry clothes in a dryer on high heat for 10 minutes to kill ticks on dry clothing after you come indoors."
+                    // CDC Lyme (https://www.cdc.gov/lyme/causes/index.html): "If you remove a tick within 24 hours, you can greatly reduce your
+                    // chances of getting Lyme disease." Audit: "Cool-shower" and "24-36 hours ... usually prevents transmission" replaced.
+                    prevention: 'CDC advice: treat clothing and gear with 0.5% permethrin. Check your whole body for ticks after being outdoors. Shower within two hours of coming indoors. Tumble dry clothes on high heat for 10 minutes to kill ticks. Removing a tick within 24 hours greatly reduces your chance of getting Lyme disease.' },
                   { name: __alloT('stem.microbiology.vibrio_parahaemolyticus_v_vulnificus', 'Vibrio parahaemolyticus + V. vulnificus'), kind: 'Marine bacteria', color: microAccentText('#0ea5e9'),
-                    desc: __alloT('stem.microbiology.naturally_present_in_seawater_shellfis', 'Naturally present in seawater + shellfish, especially in warmer months. Maine\'s Vibrio cases have grown along with the warming Gulf of Maine (which is warming faster than 99% of the world ocean). Causes severe gastroenteritis or, in immunocompromised people, life-threatening sepsis. The same warming that\'s reshaping Maine\'s coast is making Vibrio more common locally.'),
-                    prevention: 'Maine raw oysters are extensively tested + cold-chained. Restaurants follow strict refrigeration protocols. Immunocompromised people should avoid raw shellfish.' },
+                    // Audit 2026-11-24: "Maine's Vibrio cases have grown", "faster than 99%", and the oyster-testing claim cut (no source).
+                    desc: __alloT('stem.microbiology.naturally_present_in_seawater_shellfis_v2', 'Naturally present in coastal seawater and shellfish, especially in warmer months. Vibrio bacteria grow better in warm water. They can cause stomach illness from raw or undercooked shellfish, and serious wound infections; people with liver disease or weak immune systems are at higher risk.'),
+                    // CDC Vibrio prevention (https://www.cdc.gov/vibrio/prevention/index.html): "Do not eat raw or undercooked oysters or
+                    // other seafood. Cook them before eating."; "If you have an open wound, stay out of saltwater or brackish water, if possible."
+                    prevention: 'CDC advice: do not eat raw or undercooked oysters or other seafood; cook them before eating. If you have an open wound, stay out of saltwater or brackish water if possible, or cover it with a waterproof bandage.' },
                   { name: __alloT('stem.microbiology.eastern_equine_encephalitis_virus_eee', 'Eastern Equine Encephalitis virus (EEE)'), kind: 'Mosquito-borne virus', color: microAccentText('#a855f7'),
-                    desc: __alloT('stem.microbiology.rare_but_among_the_deadliest_mosquito_', 'Rare but among the deadliest mosquito-borne viruses in the US: ~30% mortality in human cases, plus permanent neurological damage in survivors. Maintained in a swamp cycle (mosquitoes + songbirds) in freshwater wetlands. Bridge-vector mosquitoes occasionally transmit to humans, deer, horses. Maine has had occasional cases. Most years zero; some years a handful.'),
-                    prevention: 'Mosquito repellent (DEET, picaridin). Long sleeves at dusk + dawn in late summer. Removing standing water. Maine Public Health monitors mosquito populations + warns of high-risk periods.' },
+                    // CDC EEE (https://www.cdc.gov/eastern-equine-encephalitis/about/index.html): approximately 30% of people who develop
+                    // severe EEE die; many survivors have ongoing neurologic problems. Audit: "~30% mortality in human cases" limited to severe disease.
+                    desc: __alloT('stem.microbiology.rare_but_among_the_deadliest_mosquito__v2', 'Rare but one of the most serious mosquito-borne viruses in the US. Most infected people never get sick, but about 30% of people who develop severe EEE die, and many survivors have lasting brain or nerve problems. The virus cycles between mosquitoes and birds in freshwater swamps; some mosquitoes then bite people, horses, or deer. Maine has had occasional human cases.'),
+                    // CDC mosquito bite prevention: EPA-registered repellent (DEET, picaridin, and others), long sleeves and pants, remove standing water.
+                    prevention: 'CDC advice: use an EPA-registered insect repellent (such as DEET or picaridin), wear long sleeves and pants, and empty standing water where mosquitoes lay eggs. Maine CDC tracks mosquito testing and warns of high-risk periods.' },
                   { name: __alloT('stem.microbiology.epizootic_shell_disease_american_lobst', 'Epizootic Shell Disease (American Lobster)'), kind: 'Polymicrobial', color: microAccentText('#f59e0b'),
-                    desc: __alloT('stem.microbiology.a_complex_disease_where_multiple_bacte', 'A complex disease where multiple bacteria erode lobster shells. Prevalent in Long Island Sound and southern New England; spreading into Gulf of Maine waters with warming. Some Maine areas now seeing 5-10% of lobsters with shell disease, up from near-zero a decade ago. Affects lobsters\' ability to molt, makes them unmarketable. Climate stress = immune weakening + faster bacterial growth = more disease.'),
-                    prevention: 'Larger picture: cooling waters again. Local picture: research on resistant lobster populations + early-warning surveillance.' },
+                    // Audit 2026-11-24: "5-10% of lobsters ... up from near-zero a decade ago" cut (no source checked).
+                    desc: __alloT('stem.microbiology.a_complex_disease_where_multiple_bacte_v2', 'A disease in which several kinds of bacteria eat away at lobster shells. It hit lobsters hard in southern New England, where water is warmer, and scientists watch for it in the Gulf of Maine. Warm-water stress may weaken lobsters while bacteria grow faster. Badly marked lobsters are hard to sell.'),
+                    prevention: 'Scientists track how many lobsters show the disease each year and study why some lobsters resist it.' },
                   { name: __alloT('stem.microbiology.sphagnum_bog_microbiome', 'Sphagnum bog microbiome'), kind: 'Acid-loving + nitrogen-fixing', color: microAccentText('#10b981'),
-                    desc: __alloT('stem.microbiology.maine_s_peat_bogs_caribou_bog_big_heat', 'Maine\'s peat bogs (Caribou Bog, Big Heath, etc.) host a unique acid-tolerant community: Sphagnum moss + associated fungi + nitrogen-fixing cyanobacteria + bacterial communities that survive at pH 3-4. The bogs store enormous amounts of carbon - undisturbed peat is one of the world\'s most efficient carbon sinks per acre. Climate-relevant.'),
-                    prevention: '(not a pathogen - these are protected ecosystems. Maine has dozens of preserved peatland sites studied for climate research.)' },
+                    desc: __alloT('stem.microbiology.maine_s_peat_bogs_caribou_bog_big_heat_v2', 'Maine\'s peat bogs (Caribou Bog, Big Heath, etc.) host a unique acid-tolerant community: Sphagnum moss + associated fungi + nitrogen-fixing cyanobacteria + bacterial communities that survive in very acidic water. Because cold, wet, acidic peat slows decay, bogs build up and store large amounts of carbon over thousands of years.'),
+                    prevention: '(not a pathogen - many of these bogs are protected ecosystems that scientists study for climate research.)' },
                   { name: __alloT('stem.microbiology.saccharomyces_maine_cider_beer', 'Saccharomyces (Maine cider + beer)'), kind: 'Beneficial yeasts', color: microAccentText('#22c55e'),
-                    desc: __alloT('stem.microbiology.maine_s_apple_growing_tradition_produc', 'Maine\'s apple-growing tradition produces a robust cider industry; Maine breweries are among the highest density per capita in the US. Local yeasts adapted to Maine apples are still being domesticated by Maine fermentation labs. Each cidery + brewery cultivates particular yeast strains that survive cool Maine fermentation temperatures.'),
+                    // Audit 2026-11-24: brewery-density ranking and "still being domesticated by Maine fermentation labs" cut (no source checked).
+                    desc: __alloT('stem.microbiology.maine_s_apple_growing_tradition_produc_v2', 'Maine\'s apple orchards supply local cider makers, and Maine has many small breweries. Yeast turns the sugar in apple juice or grain into alcohol and CO₂. Brewers and cider makers choose yeast strains for flavor and for the temperatures they ferment at.'),
                     prevention: '(not a pathogen - economically important.)' }
                 ].map(function(m, i) {
                   return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + m.color } },
@@ -4815,7 +5022,10 @@
               ),
               h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.climate_and_maine_microbes', 'Climate and Maine microbes: ')),
-                __alloT('stem.microbiology.the_gulf_of_maine_is_warming_faster_th', 'The Gulf of Maine is warming faster than 99% of the world ocean. This is reshaping bacterial communities in shellfish, the geographic range of tick-borne pathogens, the timing of mosquito-borne disease seasons, and the disease ecology of the lobster fishery. Public health and ecological microbiology are converging in Maine in real time.')
+                // NOAA NCEI, "Study Finds Fast-Warming Gulf of Maine Region": the region's warming "has sharply accelerated in the last ten
+                // years". https://www.ncei.noaa.gov/news/study-finds-fast-warming-gulf-maine-region  Audit: "faster than 99%" (one dated
+                // estimate among 95-99.85% figures) replaced.
+                __alloT('stem.microbiology.the_gulf_of_maine_is_warming_faster_th_v2', 'The Gulf of Maine is one of the fastest-warming parts of the world ocean. Warming can reshape bacterial communities in shellfish, the geographic range of tick-borne pathogens, the timing of mosquito-borne disease seasons, and the disease ecology of the lobster fishery. Public health and ecological microbiology are converging in Maine in real time.')
               )
             ),
             '#10b981'
@@ -5094,7 +5304,7 @@
 
         return h('div', { style: { padding: 16 } },
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12, lineHeight: 1.6 } },
-            __alloT('stem.microbiology.bacteria_are_single_celled_organisms_w', 'Bacteria are single-celled organisms without a nucleus. There are roughly a trillion species; we have characterized only a few thousand. They come in shapes (cocci=spheres, bacilli=rods, spirilla=spirals), with cell wall types (gram-positive thick / gram-negative thin), and metabolic strategies (aerobic, anaerobic, fermenters, chemoautotrophs).')
+            __alloT('stem.microbiology.bacteria_are_single_celled_organisms_w_v2', 'Bacteria are single-celled organisms without a nucleus. Scientists have named only a small fraction of all bacterial species; one 2016 estimate suggests there may be up to a trillion kinds of microbes. They come in shapes (cocci=spheres, bacilli=rods, spirilla=spirals), with cell wall types (gram-positive thick / gram-negative thin), and metabolic strategies (aerobic, anaerobic, fermenters, chemoautotrophs).')
           ),
 
           // CRISPR - bacterial immunity that became gene editing
@@ -5132,7 +5342,7 @@
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                     h('strong', null, __alloT('stem.microbiology.why_this_is_remarkable', 'Why this is remarkable: ')),
-                    __alloT('stem.microbiology.bacteria_are_supposed_to_have_only_inn', 'Bacteria are SUPPOSED to have only "innate" immunity - fast, general, no memory. CRISPR is true ADAPTIVE immunity (specific, with memory) in a single-celled organism. It is the oldest adaptive immune system on Earth, evolving in microbes about 2.6 billion years before T cells + B cells did in vertebrates.')
+                    __alloT('stem.microbiology.bacteria_are_supposed_to_have_only_inn_v2', 'Bacteria are SUPPOSED to have only "innate" immunity - fast, general, no memory. CRISPR is true ADAPTIVE immunity (specific, with memory) in a single-celled organism. It evolved in microbes long before T cells and B cells evolved in vertebrates.')
                   )
                 ),
                 mechanism: h('div', null,
@@ -5155,10 +5365,10 @@
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 } },
                     [
-                      { name: __alloT('stem.microbiology.medicine', 'Medicine'), desc: __alloT('stem.microbiology.first_crispr_therapy_approved_dec_2023', 'First CRISPR therapy approved Dec 2023: Casgevy for sickle cell disease + beta-thalassemia. Edits bone-marrow cells to reactivate fetal hemoglobin. ~$2.2 million per patient. Many more in trials: muscular dystrophy, cancer immunotherapies (CAR-T), genetic blindness.') },
+                      { name: __alloT('stem.microbiology.medicine', 'Medicine'), desc: __alloT('stem.microbiology.first_crispr_therapy_approved_dec_2023_v2', 'First CRISPR therapy approved in late 2023 (UK in November, US in December): Casgevy for sickle cell disease + beta-thalassemia. Edits bone-marrow cells to reactivate fetal hemoglobin. ~$2.2 million per patient. Many more in trials: muscular dystrophy, cancer immunotherapies (CAR-T), genetic blindness.') },
                       { name: __alloT('stem.microbiology.agriculture', 'Agriculture'), desc: __alloT('stem.microbiology.crispr_edited_mushrooms_that_don_t_bro', 'CRISPR-edited mushrooms that don\'t brown. Disease-resistant rice. Hornless dairy cattle. Drought-tolerant maize. Considered "non-GMO" in some jurisdictions because no foreign DNA is added - just precise edits to native DNA.') },
                       { name: __alloT('stem.microbiology.diagnostics', 'Diagnostics'), desc: __alloT('stem.microbiology.sherlock_detectr_crispr_based_diagnost', 'SHERLOCK + DETECTR: CRISPR-based diagnostic tests that detect specific DNA or RNA sequences from pathogens within an hour. Used for COVID, Zika, dengue, Lassa. Pocket-sized + low-cost.') },
-                      { name: __alloT('stem.microbiology.basic_research', 'Basic research'), desc: __alloT('stem.microbiology.knocking_out_a_gene_used_to_take_a_gra', 'Knocking out a gene used to take a graduate student\'s entire PhD. With CRISPR it takes a week. Functional studies of every gene in the human genome are now feasible. Most biology labs in the world use CRISPR daily.') }
+                      { name: __alloT('stem.microbiology.basic_research', 'Basic research'), desc: __alloT('stem.microbiology.knocking_out_a_gene_used_to_take_a_gra_v2', 'Knocking out a gene once took months or years of lab work. With CRISPR it can take weeks. Scientists can now test the jobs of thousands of genes in one experiment, and CRISPR is used in labs around the world.') }
                     ].map(function(a, i) {
                       return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + EMERALD } },
                         h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 4 } }, a.name),
@@ -5324,7 +5534,7 @@
             id: 'fecaloral', name: 'Fecal-oral', color: '#a16207', icon: '🚽',
             how: 'Pathogen in stool of an infected person → contaminates water, food, surfaces, hands → ingested by another person. Often involves inadequate sanitation OR handwashing.',
             examples: 'Cholera, hepatitis A, rotavirus, norovirus (cruise-ship + nursing-home outbreaks), Salmonella, E. coli O157:H7, Giardia, Shigella, polio.',
-            prevent: 'Handwashing with soap + water (the single highest-yield public-health intervention in history). Clean drinking water. Safe sewage disposal. Cook food thoroughly. Pasteurize milk + juice.'
+            prevent: 'Handwashing with soap + water. Clean drinking water. Safe sewage disposal. Cook food thoroughly. Pasteurize milk + juice.'
           },
           {
             id: 'vector', name: 'Vector-borne', color: '#dc2626', icon: '🦟',
@@ -5353,8 +5563,8 @@
           {
             id: 'vertical', name: __alloT('stem.microbiology.vertical_mother_child', 'Vertical (mother → child)'), color: microAccentText('#a855f7'), icon: '🤰',
             how: 'Pathogen crosses the placenta, infects during delivery, or transmits in breast milk.',
-            examples: 'HIV (without treatment ~25% transmission; with antiretrovirals + C-section + formula feeding, <1%). Syphilis (TORCH infections). Cytomegalovirus, rubella, toxoplasmosis. Hepatitis B.',
-            prevent: 'Prenatal screening for all the TORCH pathogens. Antiretrovirals during pregnancy for HIV+ mothers (drops transmission to <1%). Hepatitis B vaccine + immunoglobulin to babies born to infected mothers within 12 hours of birth. Rubella vaccination before pregnancy.'
+            examples: 'HIV (15% to 45% without treatment, per WHO; less than 1% when the mother takes HIV medicine as prescribed, per NIH). Syphilis (TORCH infections). Cytomegalovirus, rubella, toxoplasmosis. Hepatitis B.',
+            prevent: 'Prenatal screening for all the TORCH pathogens. HIV medicine during pregnancy, birth, and breastfeeding for mothers with HIV (lowers transmission to less than 1%). Hepatitis B vaccine + immunoglobulin to babies born to infected mothers within 12 hours of birth. Rubella vaccination before pregnancy.'
           },
           {
             id: 'zoonotic', name: __alloT('stem.microbiology.zoonotic_animal_human', 'Zoonotic (animal → human)'), color: microAccentText('#16a34a'), icon: '🦇',
@@ -5455,12 +5665,12 @@
                   caveat: 'The β-sheet/aggregation theme connects prion disease to a much larger family of "protein misfolding" diseases (Alzheimer\'s amyloid-β, Parkinson\'s α-synuclein, Huntington\'s mutant huntingtin, ALS TDP-43 + SOD1). The mechanism of aggregation is similar; whether non-prion diseases are TRULY transmissible in the prion sense is still debated.'
                 },
                 { id: 'cjd', name: __alloT('stem.microbiology.creutzfeldt_jakob_disease', 'Creutzfeldt-Jakob disease'), emoji: '🧠',
-                  body: __alloT('stem.microbiology.cjd_is_the_most_common_human_prion_dis', 'CJD is the most common human prion disease, affecting ~1 in 1,000,000 people per year worldwide. Three categories: sporadic CJD (sCJD, ~85% of cases - no known cause, may be a spontaneous misfolding event); familial/genetic CJD (~10-15%, mutations in the PRNP gene); and acquired CJD (<1% - iatrogenic from contaminated surgical instruments or hormone preparations, or variant CJD from BSE-contaminated beef). Symptoms: rapidly progressive dementia, myoclonus (involuntary jerks), ataxia, visual disturbances. Median survival from first symptom is about 4-5 months. There is no treatment that alters disease course.'),
+                  body: __alloT('stem.microbiology.cjd_is_the_most_common_human_prion_dis_v2', 'CJD is the most common human prion disease, with about 1 to 2 deaths per million people each year (CDC). Three categories: sporadic CJD (sCJD, ~85% of cases - no known cause, may be a spontaneous misfolding event); familial/genetic CJD (about 5-15%, mutations in the PRNP gene); and acquired CJD (rare - iatrogenic from contaminated surgical instruments or hormone preparations, or variant CJD from BSE-contaminated beef). Symptoms: rapidly progressive dementia, myoclonus (involuntary jerks), ataxia, visual disturbances. Most patients die within a year after symptoms start. There is no treatment that alters disease course.'),
                   caveat: 'Prion-contaminated surgical instruments are a real concern because standard sterilization (autoclaving at 121°C) does NOT destroy prions. Specialized protocols require autoclaving at 134°C combined with 1 M NaOH soak. Single-use disposable instruments are now standard for any neurosurgery on a suspected CJD patient.'
                 },
                 { id: 'bse', name: __alloT('stem.microbiology.bse_vcjd_the_mad_cow_outbreak', 'BSE + vCJD (the mad cow outbreak)'), emoji: '🐄',
                   body: __alloT('stem.microbiology.bovine_spongiform_encephalopathy_bse_m', 'Bovine Spongiform Encephalopathy (BSE, "mad cow disease") emerged in UK cattle in the 1980s. The likely origin: rendering practices that fed protein supplements made from sheep/cattle byproducts (including nervous-system tissue) back to cattle, recycling the prion. ~200,000+ cattle developed clinical BSE; an estimated several million were exposed. The UK eventually banned the practice, slaughtered millions of cattle, and reformed the feed chain. Variant CJD in humans (vCJD) emerged in 1996, traced to consumption of BSE-contaminated beef. ~178 confirmed cases in the UK to date (deaths peaked 2000). Far less than the worst-case projections of the early 2000s, but a real and ongoing concern.'),
-                  caveat: 'vCJD has an incubation period that may exceed 50 years. Blood transfusion from infected donors has transmitted vCJD in at least 4 documented cases (UK). Several countries still impose blood-donation restrictions on people who lived in the UK during the 1980s-90s outbreak years.'
+                  caveat: 'vCJD can take many years to show symptoms after exposure. Blood transfusion from infected donors has transmitted vCJD in at least 4 documented cases (UK). Several countries still impose blood-donation restrictions on people who lived in the UK during the 1980s-90s outbreak years.'
                 },
                 { id: 'kuru', name: __alloT('stem.microbiology.kuru_the_laughing_death', 'Kuru - the laughing death'), emoji: '🌿',
                   body: __alloT('stem.microbiology.kuru_was_a_prion_disease_epidemic_in_t', 'Kuru was a prion disease epidemic in the Fore people of Papua New Guinea, peaking in the 1950s. Symptoms included tremor, ataxia, dementia, and a characteristic uncontrolled laughter near death (the name comes from a Fore word for "trembling with fear or cold"). Carleton Gajdusek + colleagues traced transmission to a traditional mortuary practice in which (primarily) women and children consumed parts of deceased relatives, including brain tissue, as an act of respect and grief. Once that practice ended (by ~1960), new cases stopped appearing in the next generation. Gajdusek shared the 1976 Nobel for the demonstration that prion disease was transmissible.'),
@@ -5566,27 +5776,27 @@
           var FUNGI_TOPICS = [
             { id: 'whyrising', name: __alloT('stem.microbiology.why_fungal_infections_are_rising', 'Why fungal infections are rising'), emoji: '📈',
               body: __alloT('stem.microbiology.invasive_fungal_infections_have_grown_', 'Invasive fungal infections have grown into one of the most concerning emerging health threats of the past 20 years. The WHO published its first-ever "fungal priority pathogens list" in 2022, naming 19 species (most people had never heard of any of them). Reasons for the rise: (1) Growing populations of immunocompromised patients - chemotherapy, organ transplants, HIV, biologic immunosuppressants, autoimmune medications, ICU stays - all create hosts where opportunistic fungi can thrive. (2) Climate change - some fungi adapted to mammalian body temperature only because warming environments selected for heat-tolerant strains (the Candida auris hypothesis). (3) Antifungal resistance - agricultural azole use selects for resistant Aspergillus + others. (4) COVID-19 collateral damage - mucormycosis, "black fungus," exploded in India during the 2021 COVID wave among diabetic patients on steroids.'),
-              caveat: 'Most fungal exposure is harmless. Healthy immune systems clear nearly all opportunistic fungal exposures. The rise is real but the absolute numbers (a few hundred thousand serious infections per year globally) are dwarfed by bacterial + viral disease. The concern is the trajectory + the high mortality (often 30-60%) when serious fungal infections DO occur.'
+              caveat: 'Most fungal exposure is harmless. Healthy immune systems clear nearly all opportunistic fungal exposures. But serious fungal infections are not rare: a 2024 estimate counted about 6.5 million invasive fungal infections a year worldwide, and they are often deadly when they DO occur.'
             },
             { id: 'cauris', name: __alloT('stem.microbiology.candida_auris_the_new_superbug', 'Candida auris - the new superbug'), emoji: '🚨',
-              body: __alloT('stem.microbiology.candida_auris_was_first_identified_in_', 'Candida auris was first identified in 2009 (Japan, ear canal of an elderly patient). It then appeared independently on four continents within a few years - suggesting parallel emergence rather than a single source spreading. C. auris is unusually resistant (often multidrug-resistant to all three major antifungal classes), persists on surfaces for weeks (unlike most Candida), causes outbreaks in healthcare facilities, and has 30-60% mortality in invasive cases. CDC declared it an "urgent threat" in 2019 + reported that US cases tripled from 2019 to 2021 (~3,000+ cases) + continued rising through 2024. Standard cleaning chemicals do not kill it reliably; hospitals need bleach-based or hydrogen-peroxide-based disinfectants applied specifically.'),
+              body: __alloT('stem.microbiology.candida_auris_was_first_identified_in__v2', 'Candida auris was first identified in 2009 (Japan, ear canal of an elderly patient). It then appeared independently on four continents within a few years - suggesting parallel emergence rather than a single source spreading. C. auris is unusually resistant (often multidrug-resistant to all three major antifungal classes), persists on surfaces for weeks (unlike most Candida), causes outbreaks in healthcare facilities, and invasive infections are often deadly. CDC named it an "urgent threat" in 2019, and US clinical cases roughly tripled from 2019 to 2021. Standard cleaning chemicals do not kill it reliably; hospitals need bleach-based or hydrogen-peroxide-based disinfectants applied specifically.'),
               caveat: 'The leading hypothesis for C. auris\'s simultaneous global emergence: climate warming. Most fungal species cannot grow at human body temperature (one of our innate defenses - mammals are too hot for most fungi). C. auris may have evolved heat tolerance recently in response to environmental warming, then jumped to colonizing humans. Arturo Casadevall + colleagues (Johns Hopkins) have made this argument most strongly; it is not yet proven but is gaining acceptance.'
             },
             { id: 'aspergillus', name: __alloT('stem.microbiology.aspergillus_agricultural_resistance', 'Aspergillus + agricultural resistance'), emoji: '🌾',
-              body: __alloT('stem.microbiology.aspergillus_fumigatus_is_a_common_soil', 'Aspergillus fumigatus is a common soil mold whose spores you inhale thousands of times per day. Healthy lungs clear them easily; immunocompromised lungs sometimes cannot, leading to invasive aspergillosis (mortality 30-50%). The first-line treatment is azole antifungals (voriconazole). Problem: agricultural azole fungicides (used on wheat, grapes, tulips, and many other crops) drive the SAME resistance mechanism. Patients in countries with heavy agricultural azole use now present with azole-resistant invasive aspergillosis before they have ever taken an azole medication. In the Netherlands, ~20% of clinical Aspergillus isolates are now azole-resistant. The original resistance evolved in tulip-bulb fields + spread globally.'),
+              body: __alloT('stem.microbiology.aspergillus_fumigatus_is_a_common_soil_v2', 'Aspergillus fumigatus is a common soil mold whose spores you inhale thousands of times per day. Healthy lungs clear them easily; immunocompromised lungs sometimes cannot, leading to invasive aspergillosis (often deadly). The first-line treatment is azole antifungals (voriconazole). Problem: agricultural azole fungicides (used on wheat, grapes, tulips, and many other crops) drive the SAME resistance mechanism. Patients in countries with heavy agricultural azole use now present with azole-resistant invasive aspergillosis before they have ever taken an azole medication. Some resistant strains are thought to have arisen in farm fields sprayed with azoles.'),
               caveat: 'This is an under-appreciated public health crisis. The WHO\'s One Health framework explicitly names agricultural antimicrobial use as a driver of human clinical resistance - true for bacteria (livestock antibiotics → human-pathogen resistance) AND for fungi (crop azoles → human-pathogen resistance). Restrictions on agricultural azoles are politically difficult; tulip cultivation in particular is a major Dutch industry. There are no current alternatives that won\'t collapse those industries.'
             },
             { id: 'mucor', name: __alloT('stem.microbiology.mucormycosis_black_fungus', 'Mucormycosis (black fungus)'), emoji: '⚫',
-              body: __alloT('stem.microbiology.mucormycosis_is_caused_by_fungi_in_the', 'Mucormycosis is caused by fungi in the order Mucorales (Rhizopus, Mucor, Lichtheimia, others). Spores are ubiquitous in soil + decaying plant matter. Infection in immunocompetent people is rare; mucormycosis is almost entirely a disease of severely immunocompromised + uncontrolled-diabetic patients. The fungi invade blood vessels, causing tissue death + the characteristic black necrotic appearance. Treatment requires emergency surgical debridement + amphotericin B; mortality is 40-80% even with treatment. India saw a massive mucormycosis outbreak in 2021 during the second COVID wave: ~50,000 cases reported (vs ~50 in a typical pre-pandemic year), driven by the combination of widespread corticosteroid use for COVID + the very high rate of uncontrolled diabetes in India + heavy environmental fungal spore loads.'),
+              body: __alloT('stem.microbiology.mucormycosis_is_caused_by_fungi_in_the_v2', 'Mucormycosis is caused by fungi in the order Mucorales (Rhizopus, Mucor, Lichtheimia, others). Spores are ubiquitous in soil + decaying plant matter. Infection in immunocompetent people is rare; mucormycosis is almost entirely a disease of severely immunocompromised + uncontrolled-diabetic patients. The fungi invade blood vessels, causing tissue death + the characteristic black necrotic appearance. Treatment requires emergency surgical debridement + amphotericin B; it is often deadly even with treatment. India saw a massive mucormycosis outbreak in 2021 during the second COVID wave: tens of thousands of cases were reported, linked to the combination of widespread corticosteroid use for COVID + the very high rate of uncontrolled diabetes in India + heavy environmental fungal spore loads.'),
               caveat: 'Mucormycosis is sometimes sensationalized as "flesh-eating fungus" in news coverage. The reality is grim but specific: it is essentially never a threat to immunocompetent people. The COVID-mucormycosis wave was a tragic intersection of multiple comorbidities. Sustained public health investment in diabetes control + judicious corticosteroid use would prevent most cases.'
             },
             { id: 'crypto', name: __alloT('stem.microbiology.cryptococcus_hiv', 'Cryptococcus + HIV'), emoji: '🦠',
-              body: __alloT('stem.microbiology.cryptococcus_neoformans_is_a_yeast_fou', 'Cryptococcus neoformans is a yeast found in pigeon droppings + decaying tree material worldwide. Inhalation is common; clinical disease is rare in healthy immune systems. In HIV/AIDS patients with low CD4 counts, however, Cryptococcus crosses the blood-brain barrier + causes cryptococcal meningitis. Untreated mortality is 100%; even with optimal treatment, mortality remains 20-40%. Cryptococcal meningitis kills an estimated 150,000-200,000 people per year globally, predominantly in sub-Saharan Africa where HIV treatment access is incomplete. WHO recommends screening all newly-diagnosed advanced HIV patients for cryptococcal antigen + treating asymptomatic carriers preemptively.'),
+              body: __alloT('stem.microbiology.cryptococcus_neoformans_is_a_yeast_fou_v2', 'Cryptococcus neoformans is a yeast found in pigeon droppings + decaying tree material worldwide. Inhalation is common; clinical disease is rare in healthy immune systems. In HIV/AIDS patients with low CD4 counts, however, Cryptococcus crosses the blood-brain barrier + causes cryptococcal meningitis. Without treatment it is almost always fatal, and many people die even with treatment. A 2022 study estimated that cryptococcal disease caused about 19% of AIDS-related deaths in 2020, mostly in sub-Saharan Africa where HIV treatment access is incomplete. WHO recommends screening all newly-diagnosed advanced HIV patients for cryptococcal antigen + treating asymptomatic carriers preemptively.'),
               caveat: 'Cryptococcal meningitis is one of the biggest AIDS-related deaths in low- + middle-income countries - far more than tuberculosis or pneumonia in some settings. Antiretroviral access is the long-term answer; cryptococcal antigen screening + preemptive fluconazole treatment is the immediate one. This is a curable, preventable disease that kills people because the systems to deliver care aren\'t reaching them.'
             },
             { id: 'valley', name: __alloT('stem.microbiology.valley_fever_coccidioidomycosis', 'Valley fever - coccidioidomycosis'), emoji: '🌵',
-              body: __alloT('stem.microbiology.coccidioides_immitis_c_posadasii_are_s', 'Coccidioides immitis + C. posadasii are soil fungi endemic to the arid southwestern US (California Central Valley, Arizona) + parts of Mexico + Latin America. Inhalation of spores from disturbed dust causes "Valley fever" - a flu-like illness that resolves on its own in most cases. About 5-10% of infected people develop chronic pulmonary disease; <1% develop life-threatening disseminated infection (meningitis, bone, skin). The fungus is expanding northward + eastward with climate change; cases now reported in Washington State + parts of the Midwest that were never endemic before. California reported ~9,000 cases in 2022, a 50% increase from a decade earlier.'),
-              caveat: 'Valley fever is genuinely under-diagnosed nationally. People who develop it after a trip to the Southwest are often misdiagnosed (it looks like influenza, then like pneumonia, then like cancer). The fungus is reportable in 26 states, but awareness varies hugely. Climate-driven range expansion is making this a national rather than regional concern. Several Valley fever vaccines are in clinical trials.'
+              body: __alloT('stem.microbiology.coccidioides_immitis_c_posadasii_are_s_v2', 'Coccidioides immitis + C. posadasii are soil fungi endemic to the arid southwestern US (California Central Valley, Arizona) + parts of Mexico + Latin America. Inhalation of spores from disturbed dust causes "Valley fever" - a flu-like illness that resolves on its own in most cases. A small share of people develop long-term lung disease, and a very small share develop dangerous infection that spreads beyond the lungs (meningitis, bone, skin). The fungus has also been found outside its classic range, such as in Washington State, and scientists expect warming to expand its range.'),
+              caveat: 'Valley fever is genuinely under-diagnosed nationally. People who develop it after a trip to the Southwest are often misdiagnosed (it looks like influenza, then like pneumonia, then like cancer). Awareness varies a lot from state to state. There is no approved Valley fever vaccine for people yet.'
             },
             { id: 'chytrid', name: __alloT('stem.microbiology.chytrid_amphibian_extinction', 'Chytrid + amphibian extinction'), emoji: '🐸',
               body: __alloT('stem.microbiology.batrachochytrium_dendrobatidis_bd_is_a', 'Batrachochytrium dendrobatidis (Bd) is a chytrid fungus that infects amphibian skin, disrupting electrolyte balance + causing death by cardiac arrest. First identified in 1998, it has driven population declines in over 500 amphibian species worldwide + has been definitively linked to the extinction of at least 90 species since 1980 - the worst single pathogen-driven extinction event in recorded history. Its origin is believed to be Korea, spread globally by the international amphibian trade. Bsal (B. salamandrivorans), a related species discovered in 2013, threatens salamanders + has so far been kept out of the Americas by trade restrictions, though it has devastated European fire salamander populations.'),
@@ -5623,7 +5833,7 @@
             ),
             h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: microAccentText('#dcfce7'), lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.microbiology.a_note_on_proportionality', 'A note on proportionality: ')),
-              __alloT('stem.microbiology.fungi_cause_an_estimated_1_5_2_million', 'Fungi cause an estimated 1.5-2 million deaths globally per year - comparable to tuberculosis. They get a fraction of the research funding, awareness, or media coverage that bacterial + viral pathogens receive. This is changing slowly. School psychologists + educators may encounter fungal infections in immunocompromised students (cancer survivors, transplant recipients, severe asthma on inhaled steroids); awareness of the basics serves those students well.')
+              __alloT('stem.microbiology.fungi_cause_an_estimated_1_5_2_million_v2', 'A 2024 estimate linked serious fungal infections to about 3.8 million deaths a year worldwide, about 2.5 million of them caused directly by the fungus. They get a fraction of the research funding, awareness, or media coverage that bacterial + viral pathogens receive. This is changing slowly. School psychologists + educators may encounter fungal infections in immunocompromised students (cancer survivors, transplant recipients, severe asthma on inhaled steroids); awareness of the basics serves those students well.')
             )
           );
         }
@@ -5680,7 +5890,7 @@
         return h('div', { style: { padding: 16 } },
           sectionCard('♨️ Archaea - the third domain of life',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
-              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.microbiology.for_most_of_the_20th_century_biology_r', 'For most of the 20th century, biology recognized two domains of cellular life: bacteria + everything else. In 1977, Carl Woese used ribosomal RNA sequencing to discover that "everything else" actually splits into TWO completely separate groups: archaea + eukaryotes. The two had been classified together because archaea look like bacteria under a microscope. They are not.')),
+              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.microbiology.for_most_of_the_20th_century_biology_r_v2', 'For most of the 20th century, biology split cellular life into two groups: prokaryotes (cells without a nucleus) and eukaryotes. In 1977, Carl Woese and George Fox used ribosomal RNA to show that the prokaryotes are really TWO separate groups: bacteria and archaea. Archaea had been lumped with bacteria because archaea look like bacteria under a microscope. They are not.')),
               h('p', { style: { margin: 0 } }, __alloT('stem.microbiology.archaea_are_as_different_from_bacteria', 'Archaea are as different from bacteria as bacteria are from us. Different membrane lipids, different cell wall chemistry, different gene transcription machinery. Archaea live in your gut and in the ocean. Many are extremophiles - surviving boiling temperatures, supersaline salt flats, or extreme acidity. The "three domains of life" framework is the foundation of modern biology, and we owe it to archaea.'))
             ),
             '#ef4444'
@@ -5729,11 +5939,11 @@
               caveat: 'Whether life on Earth originated AT vents is debated. Competing hypotheses include warm shallow tidal pools (Darwin\'s original guess), volcanic islands, mineral-templated surfaces, and even subsurface aquifers. Vents have the right chemistry; the kinetics + thermodynamics of life\'s first steps remain hard to reconstruct in lab simulations.'
             },
             { id: 'subsurface', name: __alloT('stem.microbiology.the_deep_biosphere', 'The deep biosphere'), emoji: '⛏️',
-              body: __alloT('stem.microbiology.about_1_6_10_microbial_cells_live_in_t', 'About 1.6 × 10²⁹ microbial cells live in the upper few kilometers of Earth\'s crust - roughly equal to the total cell count in the surface biosphere, possibly more. This "deep biosphere" was unsuspected until the 1990s; it has since been documented in deep mines (the Mponeng mine in South Africa at 3.6 km depth has 60°C basalt aquifers full of bacteria + archaea), oil reservoirs, the seabed sediments down to 1+ km, and even basalt cores from drilling expeditions. These organisms grow EXTREMELY slowly (some have estimated doubling times of centuries to millennia), feeding on hydrogen produced by radiolysis of water from natural uranium + thorium decay, or on serpentinization-derived hydrogen + methane. The deep biosphere may be the LARGEST single ecosystem on Earth by biomass.'),
+              body: __alloT('stem.microbiology.about_1_6_10_microbial_cells_live_in_t_v2', 'A huge number of microbes live in rock and sediment kilometers below Earth\'s surface; some estimates suggest this hidden life may rival the surface biosphere. This "deep biosphere" was unsuspected until the 1990s; it has since been documented in deep mines (such as gold mines in South Africa, kilometers down), oil reservoirs, the seabed sediments down to 1+ km, and even basalt cores from drilling expeditions. These organisms grow EXTREMELY slowly (some have estimated doubling times of centuries to millennia), feeding on hydrogen produced by radiolysis of water from natural uranium + thorium decay, or on serpentinization-derived hydrogen + methane.'),
               caveat: 'Sample contamination is a constant problem in deep biosphere science. Drilling fluids, packers, even the drill string carry surface microbes down with them. Distinguishing genuine indigenous deep-life from contamination requires multiple geochemical controls + meticulous procedures. The field has gradually built credibility but each new "deep life" claim still faces scrutiny.'
             },
             { id: 'tardigrade', name: __alloT('stem.microbiology.tardigrades_survival_extremes', 'Tardigrades + survival extremes'), emoji: '🐻',
-              body: __alloT('stem.microbiology.tardigrades_water_bears_are_tiny_inver', 'Tardigrades ("water bears") are tiny invertebrates (~0.5 mm) that can survive desiccation, freezing to -200°C, heating to 150°C, vacuum + UV (briefly), and ~1000× the radiation dose lethal to humans. Their survival mechanism involves a state called CRYPTOBIOSIS: nearly complete shutdown of metabolism, replacement of cellular water with trehalose (a sugar that stabilizes proteins), and protective Damage-Suppressing (Dsup) proteins that wrap around DNA. Tardigrades survived a 2007 ESA experiment that exposed them to open space for 10 days; most revived after rehydration. Tardigrades are NOT technically extremophiles (they live in damp moss + lake sediments, which are not extreme), but they CAN survive extreme exposures via cryobiosis.'),
+              body: __alloT('stem.microbiology.tardigrades_water_bears_are_tiny_inver_v2', 'Tardigrades ("water bears") are tiny invertebrates (~0.5 mm) that can survive desiccation, deep freezing, vacuum + UV (briefly), and radiation doses far higher than humans can survive. Their survival mechanism involves a state called CRYPTOBIOSIS: nearly complete shutdown of metabolism, replacement of cellular water with trehalose (a sugar that stabilizes proteins), and protective Damage-Suppressing (Dsup) proteins that wrap around DNA. Tardigrades survived a 2007 ESA experiment that exposed them to open space for 10 days; most revived after rehydration. Tardigrades are NOT technically extremophiles (they live in damp moss + lake sediments, which are not extreme), but they CAN survive extreme exposures via cryobiosis.'),
               caveat: 'Tardigrades are wildly over-represented in popular astrobiology narratives. They cannot GROW or REPRODUCE in extreme conditions; they can only survive them as inert cysts. A tardigrade does not represent a colonizing life form for Mars or Europa. They DO represent useful proof that complex eukaryotic life can survive transport through space, which is relevant for panspermia + planetary protection.'
             },
             { id: 'mars', name: __alloT('stem.microbiology.mars_the_search_for_past_life', 'Mars + the search for past life'), emoji: '🔴',
@@ -5843,7 +6053,7 @@
               speed: 'Hours to days', cost: 'Low',
               how: 'A clinical sample (blood, urine, sputum, wound swab, CSF) is streaked onto culture media (blood agar, MacConkey, chocolate agar, Sabouraud, etc.) + incubated at 35-37°C for 18-72 hours. Colonies that grow are then identified by colony morphology, Gram stain, biochemistry, and antimicrobial susceptibility testing (Kirby-Bauer disk diffusion or automated platforms like VITEK + Phoenix + MicroScan).',
               when: 'Still the workhorse of clinical microbiology for bacterial + fungal identification. Required for definitive antimicrobial susceptibility testing on the actual patient isolate. Slow-growing organisms (TB, fungi, anaerobes) may take weeks.',
-              limit: 'Slow. ~50% of clinical infections culture-negative - either because the organism does not grow on standard media, because the patient already had antibiotics, or because the sample was inadequate. Some pathogens (Mycobacterium tuberculosis: weeks; Tropheryma whipplei: months) effectively cannot be cultured outside research labs.'
+              limit: 'Slow. Many infections never grow in culture - either because the organism does not grow on standard media, because the patient already had antibiotics, or because the sample was inadequate. Some pathogens (Mycobacterium tuberculosis: weeks; Tropheryma whipplei: months) effectively cannot be cultured outside research labs.'
             },
             { id: 'gram', name: __alloT('stem.microbiology.gram_stain_microscopy', 'Gram stain + microscopy'), emoji: '🔍',
               speed: 'Minutes', cost: 'Very low',
@@ -5878,8 +6088,8 @@
             { id: 'poc', name: __alloT('stem.microbiology.point_of_care_testing', 'Point-of-care testing'), emoji: '🏥',
               speed: '5-30 minutes', cost: 'Medium ($5-50/test)',
               how: 'Tests done at the bedside, in the clinic, in pharmacies, or at home, without sending samples to a central lab. Examples: rapid strep test, rapid flu test, rapid HIV (OraQuick), home COVID antigen tests, finger-stick blood glucose, urine pregnancy. Technologies: lateral flow immunoassay, isothermal nucleic-acid amplification (LAMP), microfluidic cassettes (cobas Liat, GeneXpert, ID NOW), simple antigen detection.',
-              when: 'When fast actionable results matter more than maximum accuracy. Routine in emergency departments, urgent care, sexual health clinics, mass-screening contexts. The Abbott BinaxNOW + GeneXpert MTB/RIF have transformed tuberculosis diagnosis in low-resource settings (Xpert gives TB + rifampicin-resistance in 90 minutes, vs months for culture).',
-              limit: 'Lower sensitivity than central-lab tests (rapid strep ~70% vs culture ~95%; rapid COVID antigen ~50-70% vs PCR). False negatives can delay correct treatment. Quality control + operator training are often weak outside formal labs. Worth using when speed clearly outweighs the sensitivity tradeoff; not the default for serious infections.'
+              when: 'When fast actionable results matter more than maximum accuracy. Routine in emergency departments, urgent care, sexual health clinics, mass-screening contexts. Rapid antigen tests (for COVID, flu, strep) give answers in minutes. The GeneXpert MTB/RIF test has transformed tuberculosis diagnosis in low-resource settings (Xpert gives TB + rifampicin-resistance in 90 minutes, vs months for culture).',
+              limit: 'Lower sensitivity than central-lab tests (a rapid strep test can miss some true strep infections, so a negative result in a child is often checked with a culture). False negatives can delay correct treatment. Quality control + operator training are often weak outside formal labs. Worth using when speed clearly outweighs the sensitivity tradeoff; not the default for serious infections.'
             },
             { id: 'future', name: __alloT('stem.microbiology.what_is_coming', 'What is coming'), emoji: '🚀',
               speed: 'Approaching minutes', cost: 'Approaching $1-10',
@@ -5961,14 +6171,14 @@
                 { id: 'transduce', name: __alloT('stem.microbiology.transduction_phage_mediated', 'Transduction (phage-mediated)'), color: microAccentText('#a855f7'),
                   what: 'A bacteriophage virus infects a bacterium, replicates inside, packages some of the host\'s DNA by mistake into a new phage particle, then carries it to another bacterium when it next infects. The recipient gets the donor\'s DNA delivered like a postal package.',
                   how: 'Discovered by Joshua Lederberg + Norton Zinder in 1952 (Lederberg shared the 1958 Nobel for this + other work). Two types: GENERALIZED (any host DNA can be packaged) and SPECIALIZED (only DNA next to the phage integration site).',
-                  examples: 'How methicillin resistance + staphylococcal toxin genes spread among Staphylococcus aureus strains. How some virulence genes spread in cholera + diphtheria + scarlet fever. Phage-mediated gene transfer is rampant in marine bacteria - about 10²⁴ transduction events globally PER SECOND in the oceans.',
+                  examples: 'How methicillin resistance + staphylococcal toxin genes spread among Staphylococcus aureus strains. How some virulence genes spread in cholera + diphtheria + scarlet fever. Phage-mediated gene transfer is common among ocean bacteria, where phages infect huge numbers of cells every second.',
                   rate: 'Can cross significant distances (wherever phages spread, transduced DNA spreads). Some phages have very narrow host range (one species); others can infect across species.'
                 },
                 { id: 'conjugate', name: __alloT('stem.microbiology.conjugation_pilus_mediated', 'Conjugation (pilus-mediated)'), color: microAccentText('#22c55e'),
                   what: 'A donor bacterium grows a hollow tube (sex pilus, or "F pilus") that contacts a recipient bacterium. The pilus retracts, bringing the cells together. A PLASMID (a small circular DNA loop, separate from the main chromosome) is then copied from donor to recipient through the connection.',
-                  how: 'Discovered by Lederberg + Tatum in 1946 (the same Lederberg, then a 22-year-old grad student). They showed that two E. coli strains, when grown together, could exchange genetic markers. The F (fertility) plasmid encodes the pilus + makes a cell a donor.',
+                  how: 'Discovered by Lederberg + Tatum in 1946 (the same Lederberg, then a young graduate student). They showed that two E. coli strains, when grown together, could exchange genetic markers. The F (fertility) plasmid encodes the pilus + makes a cell a donor.',
                   examples: 'The dominant mechanism by which antibiotic resistance genes spread in healthcare-associated bacteria. The "R plasmids" carry resistance to multiple antibiotics + can transfer between species - so a Klebsiella that has carbapenem resistance can transfer it to an E. coli in the same patient.',
-                  rate: 'Fast + far-reaching. Conjugative plasmids can cross genus + family boundaries. NDM-1 (a carbapenem-resistance gene first identified in India 2008) has spread to ~6 continents via conjugative plasmids in ~15 years.'
+                  rate: 'Fast + far-reaching. Conjugative plasmids can cross genus + family boundaries. NDM-1 (a carbapenem-resistance gene first described in 2008 in a patient who had been treated in India) spread to many countries on plasmids within a few years.'
                 }
               ];
               var sel = MECHS.find(function(m) { return m.id === d.selectedHGT; }) || MECHS[0];
@@ -6006,7 +6216,7 @@
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.why_hgt_shapes_the_resistance_crisis', 'Why HGT shapes the resistance crisis: ')),
-                  __alloT('stem.microbiology.a_resistance_gene_only_needs_to_evolve', 'A resistance gene only needs to evolve ONCE in any bacterium anywhere on Earth. From there, conjugation can spread it across hundreds of species. By the time clinicians notice the resistance in patients, the gene may already be present in dozens of bacterial species worldwide. The NDM-1 gene first identified in 2008 is now found in ~70 countries + multiple bacterial families. This is why the "spread to other countries" is essentially guaranteed once a resistance gene exists.')
+                  __alloT('stem.microbiology.a_resistance_gene_only_needs_to_evolve_v2', 'A resistance gene only needs to evolve ONCE in any bacterium anywhere on Earth. From there, conjugation can move it into other species. By the time clinicians notice the resistance in patients, the gene may already be in several kinds of bacteria. The NDM-1 gene, first described in 2008, is now found in many countries and several bacterial families. That is why a new resistance gene anywhere is a concern everywhere.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.hgt_in_evolution', 'HGT in evolution: ')),
@@ -6071,7 +6281,7 @@
           sectionCard('What accelerates resistance',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
               h('li', null, __alloT('stem.microbiology.antibiotics_prescribed_for_viral_infec', 'Antibiotics prescribed for viral infections (antibiotics don\'t work on viruses).')),
-              h('li', null, __alloT('stem.microbiology.not_finishing_the_full_course_kills_th', 'Using the wrong antibiotic, dose, or duration - including changing a prescription without clinical guidance.')),
+              h('li', null, __alloT('stem.microbiology.not_finishing_the_full_course_kills_th_v2', 'Using the wrong antibiotic, dose, or duration - including changing a prescription without clinical guidance.')),
               h('li', null, __alloT('stem.microbiology.antibiotics_in_animal_feed_for_growth_', 'Antibiotics in animal feed for growth promotion (now banned in EU; still common elsewhere).')),
               h('li', null, __alloT('stem.microbiology.poor_sanitation_crowded_conditions_in_', 'Poor sanitation + crowded conditions in hospitals + jails + refugee camps.')),
               h('li', null, __alloT('stem.microbiology.lack_of_new_antibiotic_development_the', 'Lack of new antibiotic development. The pipeline has slowed for 40 years.'))
@@ -6079,7 +6289,7 @@
           ),
           sectionCard('What helps',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
-              h('li', null, h('strong', null, __alloT('stem.microbiology.for_you', 'For you: ')), __alloT('stem.microbiology.take_antibiotics_only_when_prescribed_', 'Use antibiotics only when prescribed and take them exactly as directed. Do not shorten, extend, share, save, or reuse them without clinical guidance.')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.for_you', 'For you: ')), __alloT('stem.microbiology.take_antibiotics_only_when_prescribed__v2', 'Use antibiotics only when prescribed and take them exactly as directed. Do not shorten, extend, share, save, or reuse them without clinical guidance.')),
               h('li', null, h('strong', null, __alloT('stem.microbiology.for_the_world', 'For the world: ')), __alloT('stem.microbiology.public_investment_in_new_antibiotic_de', 'Public investment in new antibiotic development. Restrictions on agricultural use. Phage therapy research. Better infection control in hospitals. Vaccines that prevent infection in the first place.')),
               h('li', null, h('strong', null, __alloT('stem.microbiology.big_picture', 'Big picture: ')), __alloT('stem.microbiology.stop_treating_antibiotics_as_a_renewab', 'Stop treating antibiotics as a renewable resource. Each one is a one-shot weapon; once resistance is widespread, that antibiotic is gone forever.'))
             )
@@ -6111,11 +6321,11 @@
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.where_it_stands_clinically', 'Where it stands clinically: ')),
-                __alloT('stem.microbiology.georgia_russia_have_continued_phage_th', 'Georgia + Russia have continued phage therapy clinically since the 1920s (Eliava Institute in Tbilisi treats ~5,000 patients/year). In the US + EU, phage therapy is currently "expanded access" / compassionate use only - given case-by-case for life-threatening multi-drug-resistant infections. ~100+ patients have been treated this way in the US since 2016. Several Phase II clinical trials are running in 2024-25 (Locus Biosciences, Armata Pharmaceuticals, Adaptive Phage Therapeutics, BiomX). First FDA-approved phage product is widely expected within ~5 years.')
+                __alloT('stem.microbiology.georgia_russia_have_continued_phage_th_v2', 'Georgia + Russia have continued phage therapy clinically since the 1920s (for example, the Eliava Institute in Tbilisi). In the US + EU, phage therapy is currently "expanded access" / compassionate use only - given case-by-case for life-threatening multi-drug-resistant infections. Clinical trials are under way, but no phage therapy is FDA-approved yet.')
               ),
               h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.microbiology.a_famous_case_2017_san_diego', 'A famous case (2017, San Diego): ')),
-                __alloT('stem.microbiology.tom_patterson_a_ucsd_psychiatry_profes', 'Tom Patterson, a UCSD psychiatry professor, contracted a multidrug-resistant Acinetobacter baumannii infection while traveling in Egypt. After 9 months in a coma + every available antibiotic failing, his wife (epidemiologist Steffanie Strathdee) coordinated with Navy + UCSD researchers to compile a personalized phage cocktail from sewage samples around the world. He recovered. The case (documented in their 2019 book "The Perfect Predator") was a turning point in US medical interest in phage therapy.')
+                h('strong', null, __alloT('stem.microbiology.a_famous_case_2017_san_diego_v2', 'A famous case (2016, San Diego): ')),
+                __alloT('stem.microbiology.tom_patterson_a_ucsd_psychiatry_profes_v2', 'Tom Patterson, a UCSD psychiatry professor, contracted a multidrug-resistant Acinetobacter baumannii infection while traveling in Egypt. After months of failing antibiotics, while he lay in a coma, his wife (epidemiologist Steffanie Strathdee) coordinated with Navy + UCSD researchers to compile a personalized phage cocktail from sewage samples around the world. He recovered. The case (documented in their 2019 book "The Perfect Predator") was a turning point in US medical interest in phage therapy.')
               )
             ),
             '#6ee7b7'
@@ -6169,8 +6379,8 @@
                 },
                 { id: 'pipeline', name: __alloT('stem.microbiology.why_the_pipeline_is_empty', 'Why the pipeline is empty'), emoji: '🏚️', year: 'Ongoing crisis',
                   who: 'The pharmaceutical-economics problem',
-                  chem: 'New antibiotic development is unprofitable. A new chronic-disease medicine generates $1-10B+ over its patent lifetime; a new antibiotic typically generates $20-100M. Reasons: (1) antibiotics are SHORT-COURSE (5-14 days, not lifelong), (2) doctors RESERVE new antibiotics for resistant cases, reducing volume, (3) generics dominate the market once patents expire (the older antibiotics are mostly off-patent + cheap).',
-                  use: 'In the past 20 years, 6 of the world\'s top 10 pharma companies have EXITED antibiotic research entirely (Roche, Eli Lilly, GSK, Sanofi, Novartis, Bristol-Myers Squibb). Small biotechs that develop new antibiotics often go bankrupt before or shortly after FDA approval (Achaogen + Aradigm + Tetraphase all failed despite approved products). The vacuum is genuine + dangerous.',
+                  chem: 'New antibiotic development often loses money compared with other medicines. Reasons: (1) antibiotics are SHORT-COURSE (5-14 days, not lifelong), (2) doctors RESERVE new antibiotics for resistant cases, reducing volume, (3) generics dominate the market once patents expire (the older antibiotics are mostly off-patent + cheap).',
+                  use: 'Several large drug companies have cut back or left antibiotic research. Small biotech companies that develop new antibiotics sometimes fail even after FDA approval (Achaogen went bankrupt in 2019 soon after its antibiotic was approved). The vacuum is genuine + dangerous.',
                   resist: 'Solutions being tried: PUSH funding (NIH BARDA + CARB-X grants for early R&D), PULL funding (UK NHS subscription model paying for access rather than per-dose, EU + US PASTEUR Act proposals). Phage therapy + monoclonal antibodies + anti-virulence drugs offer adjuncts but cannot replace the antibiotic class. Antibiotic stewardship (using existing drugs more carefully to slow resistance) is the most actionable short-term lever. None of this is a fix; collectively it may slow the crisis enough that new mechanisms emerge.'
                 }
               ];
@@ -6221,7 +6431,7 @@
               var SURV_TOPICS = [
                 { id: 'overview', name: __alloT('stem.microbiology.what_surveillance_is', 'What surveillance is'), emoji: '🔭',
                   body: __alloT('stem.microbiology.public_health_surveillance_is_the_ongo', 'Public health surveillance is the ongoing systematic collection, analysis, and interpretation of health data - used to plan, implement, and evaluate public health practice. It is the immune system of a community. Categories: PASSIVE surveillance (clinicians report cases to health departments - standard for ~100+ reportable diseases including TB, HIV, measles, salmonella, hepatitis), ACTIVE surveillance (health workers proactively go look for cases - used during outbreaks), SYNDROMIC surveillance (counting symptoms or hospital visits in real time, sometimes before specific diagnosis - used after 9/11 + during COVID), SENTINEL surveillance (selected clinics report intensively, used for flu via the US Influenza Sentinel Provider Network), and ENVIRONMENTAL surveillance (wastewater, air, water, food testing).'),
-                  caveat: 'Surveillance only works if (a) clinicians + labs report cases (often hard to enforce; in some US states reporting rates for certain diseases are below 50%), (b) the data gets to public health staff with time to act, (c) public health authorities have the power + capacity to respond. A surveillance system that detects an outbreak but cannot trigger a response is a tragic kind of theater.'
+                  caveat: 'Surveillance only works if (a) clinicians + labs report cases (often hard to enforce; many cases are never reported), (b) the data gets to public health staff with time to act, (c) public health authorities have the power + capacity to respond. A surveillance system that detects an outbreak but cannot trigger a response is a tragic kind of theater.'
                 },
                 { id: 'wastewater', name: __alloT('stem.microbiology.wastewater_surveillance', 'Wastewater surveillance'), emoji: '🚰',
                   body: __alloT('stem.microbiology.sewage_carries_traces_of_every_infecti', 'Sewage carries traces of every infection passing through a community\'s gut + respiratory tract. By sampling wastewater treatment plant influent + analyzing it with quantitative PCR or sequencing, public health can detect polio, hepatitis A, salmonella, norovirus, and (since 2020) SARS-CoV-2 - often days BEFORE clinical cases peak. The CDC National Wastewater Surveillance System (NWSS) now covers ~1500 sites across all 50 states + the District of Columbia. Wastewater data caught the second + third COVID waves, the 2022-2023 RSV surge, mpox in 2022, polio reintroduction in New York 2022, and is now monitoring for H5N1 (bird flu) routinely.'),
@@ -6240,12 +6450,12 @@
                   caveat: 'One Health is intellectually sound + funding-poor. Most public health infrastructure was built around human-only categories; integrating animal + environmental surveillance requires breaking institutional silos. Progress is real but slow. Pandemic risk is genuinely reducible with adequate One Health investment; the world\'s collective investment is genuinely inadequate.'
                 },
                 { id: 'mortality', name: __alloT('stem.microbiology.excess_mortality_cause_of_death_survei', 'Excess mortality + cause-of-death surveillance'), emoji: '📋',
-                  body: __alloT('stem.microbiology.excess_mortality_is_the_difference_bet', 'Excess mortality is the difference between observed deaths (during a crisis or pandemic) + the expected baseline. It is a key surveillance output, often more accurate than confirmed-case counting (which depends on testing + reporting capacity that can be overwhelmed). The COVID-19 pandemic excess-mortality estimate worldwide is ~20-30 million deaths (2020-2024), well above the ~7 million CONFIRMED COVID deaths. Many of those excess deaths were COVID; some were collateral (delayed cancer treatment, disrupted maternal care, untreated chronic disease, mental health crises). Some were UNDERCOUNTING countries with weak vital statistics. The Economist + Lancet COVID Commission both produce excess-mortality dashboards.'),
+                  body: __alloT('stem.microbiology.excess_mortality_is_the_difference_bet_v2', 'Excess mortality is the difference between observed deaths (during a crisis or pandemic) + the expected baseline. It is a key surveillance output, often more accurate than confirmed-case counting (which depends on testing + reporting capacity that can be overwhelmed). WHO estimated about 14.9 million excess deaths worldwide in 2020 and 2021 alone, far more than the COVID deaths officially reported in those years. Many of those excess deaths were COVID; some were collateral (delayed cancer treatment, disrupted maternal care, untreated chronic disease, mental health crises). Some were UNDERCOUNTING countries with weak vital statistics. The Economist + Lancet COVID Commission both produce excess-mortality dashboards.'),
                   caveat: 'Excess mortality is a clearer signal of total pandemic impact than confirmed-case counts. But it does not distinguish DIRECT vs INDIRECT effects without further analysis. And in countries without solid baseline vital statistics, the baseline itself is uncertain. The number remains the best single integrative measure of "what really happened" during a major health event.'
                 },
                 { id: 'epi', name: __alloT('stem.microbiology.epidemiologists_do_this_work', 'Epidemiologists do this work'), emoji: '🩺',
                   body: __alloT('stem.microbiology.the_professionals_who_run_surveillance', 'The professionals who run surveillance systems are epidemiologists, infection-prevention specialists, biostatisticians, lab scientists, public health nurses, and the Disease Detectives (CDC Epidemic Intelligence Service, EIS). EIS is a 2-year postdoctoral program founded in 1951; alumni have led most major US outbreak investigations of the past 70 years (the 1976 Legionnaire\'s outbreak, the 1981 HIV cluster recognition, the 1993 Sin Nombre hantavirus outbreak, the 2014 Ebola response, COVID-19). State + local health departments do the bulk of routine surveillance with thin budgets + small teams. CDC + FDA provide reference labs + multi-state outbreak coordination.'),
-                  caveat: 'Public health workforce in the US has shrunk steadily for decades. ~50,000 state + local public health workers lost between 2008 + 2019; partial regrowth post-COVID. Many counties have 1-2 public-health staff covering 100,000+ population. The workforce gap is one reason the US response to COVID was uneven; it remains a serious vulnerability for the next emergency.'
+                  caveat: 'Public health workforce in the US has shrunk steadily for decades. Tens of thousands of state and local public health jobs were lost after 2008, with partial regrowth after COVID. The workforce gap is one reason the US response to COVID was uneven; it remains a serious vulnerability for the next emergency.'
                 },
                 { id: 'trust', name: __alloT('stem.microbiology.the_trust_politics_layer', 'The trust + politics layer'), emoji: '⚖️',
                   body: __alloT('stem.microbiology.surveillance_depends_on_public_trust_p', 'Surveillance depends on public trust + political support. Both are fragile. The COVID-19 era saw historic erosion of public health trust in the US, with sustained attacks on public health agencies + workers (CDC, state health officers, Fauci, local school nurses). Vaccination rates for routine childhood diseases (measles, whooping cough) have dropped since 2020; measles outbreaks in unvaccinated communities are now annual events. Surveillance data shared publicly during COVID was sometimes weaponized by political actors against vulnerable communities. Building back trust is a long-term + uncertain project. School psychologists + counselors are sometimes the most-trusted public-health-adjacent figures in a community; that role matters.'),
@@ -6287,7 +6497,9 @@
         var selected = MICROBIOME.find(function(m) { return m.id === d.selectedMicrobiome; }) || MICROBIOME[0];
         var STAGES = [
           { id: 'preg', name: __alloT('stem.microbiology.in_utero', 'In utero'), age: '0-9 months', color: microAccentText('#a855f7'),
-            what: 'Long believed STERILE, this view is now being revised. Some bacterial DNA has been detected in placenta + amniotic fluid (still contested - may be contamination). The fetus is largely shielded from environmental microbes. The mother\'s microbiome shapes what the baby will be exposed to at birth.',
+            // Kennedy et al. 2023, Nature 613:639 "Questioning the fetal microbiome illustrates pitfalls of low-biomass microbial
+            // studies": evidence does not support a fetal microbiome; reported signals are best explained by contamination.
+            what: 'A healthy fetus is generally considered sterile. Some studies reported bacterial DNA in the placenta or amniotic fluid, but a 2023 expert review concluded those signals most likely came from contamination. The fetus is shielded from outside microbes. The mother\'s microbiome shapes what the baby will be exposed to at birth.',
             shape: 'Maternal diet during pregnancy, antibiotic use, gestational diabetes, mode of stress all influence the baby\'s eventual microbiome trajectory.'
           },
           { id: 'birth', name: __alloT('stem.microbiology.birth_first_6_months', 'Birth + first 6 months'), age: '0-6 mo', color: microAccentText('#ec4899'),
@@ -6299,7 +6511,7 @@
             shape: 'Diet variety, sugar consumption (high sugar suppresses Bifidobacterium), antibiotic courses (each one can permanently shift the trajectory), household + childcare environment.'
           },
           { id: 'child', name: __alloT('stem.microbiology.childhood_teens', 'Childhood + teens'), age: '2-18', color: microAccentText('#10b981'),
-            what: 'Microbiome composition is relatively stable but plastic. Each major dietary change (more carbs, more protein, more sugar, more fiber) shifts community composition within days. The "core" microbiome - about 30-40 species making up the majority - persists in most people.',
+            what: 'Microbiome composition is relatively stable but plastic. Each major dietary change (more carbs, more protein, more sugar, more fiber) shifts community composition within days. Each person\'s main gut species tend to stay fairly stable over time.',
             shape: 'Diet (the biggest single lever), antibiotic use, physical activity (active kids have more diverse gut microbiomes), pets + outdoor time, stress, sleep.'
           },
           { id: 'adult', name: __alloT('stem.microbiology.adulthood', 'Adulthood'), age: '18-65', color: microAccentText('#0ea5e9'),
@@ -6389,7 +6601,7 @@
               ),
               h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.what_you_can_do_at_any_life_stage', 'What you can do, at any life stage: ')),
-                __alloT('stem.microbiology.eat_30_different_plant_species_per_wee', 'Eat 30+ different plant species per week (the strongest single predictor of gut microbiome diversity in the American Gut Project + similar studies). Limit antibiotic use to clear medical necessity. Sleep enough. Maintain social contact + outdoor time. Manage chronic stress. Consume fermented foods regularly. Reduce ultra-processed foods. The microbiome is one of the most modifiable aspects of human health - most days you make food + lifestyle choices that shape it.')
+                __alloT('stem.microbiology.eat_30_different_plant_species_per_wee_v2', 'Eat many kinds of plants (in the American Gut Project, people who ate more than 30 types of plants a week had more diverse gut microbes than people who ate 10 or fewer). Limit antibiotic use to clear medical necessity. Sleep enough. Maintain social contact + outdoor time. Manage chronic stress. Consume fermented foods regularly. Reduce ultra-processed foods. The microbiome is one of the most modifiable aspects of human health - most days you make food + lifestyle choices that shape it.')
               )
             ),
             '#a855f7'
@@ -6400,15 +6612,15 @@
             (function() {
               var VIROME_TOPICS = [
                 { id: 'overview', name: __alloT('stem.microbiology.what_the_virome_is', 'What the virome is'), emoji: '🌐',
-                  body: __alloT('stem.microbiology.when_we_talk_about_the_microbiome_most', 'When we talk about "the microbiome," most coverage is about bacteria. But for every bacterial cell in or on the human body, there are roughly 10× more virus particles. The human virome is the total collection of viruses living in us: bacteriophages (viruses that infect our gut + skin + oral bacteria, vastly outnumbering everything else), eukaryotic viruses (those that infect our human cells, including persistent latent ones), and endogenous retroviruses (viral DNA permanently integrated into our genome from infections in our distant ancestors). Most virome residents are not making us sick. Many appear to be neutral or even beneficial. We are walking, eating, sleeping ecosystems.'),
+                  body: __alloT('stem.microbiology.when_we_talk_about_the_microbiome_most_v2', 'When we talk about "the microbiome," most coverage is about bacteria. But the body also carries huge numbers of viruses. The human virome is the total collection of viruses living in us: bacteriophages (viruses that infect our gut + skin + oral bacteria, the most common viruses in us), eukaryotic viruses (those that infect our human cells, including persistent latent ones), and endogenous retroviruses (viral DNA permanently integrated into our genome from infections in our distant ancestors). Most virome residents are not making us sick. Many appear to be neutral or even beneficial. We are walking, eating, sleeping ecosystems.'),
                   caveat: 'Virome science is younger + harder than bacterial-microbiome science. Viruses have no universal gene (no equivalent to bacterial 16S rRNA) you can amplify to ID them. Sequencing approaches must shotgun-sequence everything + then try to identify viral sequences against incomplete databases. Most virome sequences are STILL unidentified ("viral dark matter"); a typical gut virome metagenomic survey returns 50-90% sequences with no database match.'
                 },
                 { id: 'phages', name: __alloT('stem.microbiology.bacteriophages_in_us', 'Bacteriophages in us'), emoji: '🦠',
-                  body: __alloT('stem.microbiology.bacteriophages_phages_are_viruses_that', 'Bacteriophages ("phages") are viruses that infect bacteria. They are the most numerous biological entities on Earth - about 10³¹ phage particles globally, more than all bacteria + plants + animals combined. The human gut alone contains an estimated 10¹⁴ phage particles, dwarfing our ~10¹³ bacterial cells. Most are dsDNA phages of the Caudovirales (tailed phages); a smaller fraction are crAssphage + other newly-discovered groups. Phages are constantly killing some gut bacteria + leaving others alone, shaping bacterial community composition at the species + strain level. Some phages are "temperate" (they integrate into the bacterial genome + sometimes carry virulence or antibiotic-resistance genes around).'),
+                  body: __alloT('stem.microbiology.bacteriophages_phages_are_viruses_that_v2', 'Bacteriophages ("phages") are viruses that infect bacteria. They are the most numerous biological entities on Earth - about 10³¹ phage particles globally, more than all bacteria + plants + animals combined. The human gut alone holds an enormous number of phage particles. Most are dsDNA phages of the Caudovirales (tailed phages); a smaller fraction are crAssphage + other newly-discovered groups. Phages are constantly killing some gut bacteria + leaving others alone, shaping bacterial community composition at the species + strain level. Some phages are "temperate" (they integrate into the bacterial genome + sometimes carry virulence or antibiotic-resistance genes around).'),
                   caveat: 'Phage therapy (using specific phages to kill specific pathogenic bacteria) is being re-explored for antibiotic-resistant infections. Western medicine largely abandoned it in the 1940s when antibiotics came along; Eastern European countries (especially Georgia, the Eliava Institute in Tbilisi) continued. As antibiotic resistance worsens, Western interest has returned. A handful of dramatic case reports (e.g., the 2017 Patterson case at UC San Diego, where a phage cocktail saved a man dying of multidrug-resistant Acinetobacter) have driven new clinical trials. Real promise; not yet a mainstream therapy.'
                 },
                 { id: 'latent', name: __alloT('stem.microbiology.latent_persistent_viruses', 'Latent persistent viruses'), emoji: '😴',
-                  body: __alloT('stem.microbiology.after_acute_infection_many_viruses_do_', 'After acute infection, many viruses do not actually leave. Herpes simplex (HSV-1, HSV-2), varicella-zoster (chickenpox, which reactivates as shingles), Epstein-Barr (mononucleosis), cytomegalovirus (CMV), and human herpesviruses 6/7/8 all establish lifelong latent infections. They are usually controlled by the immune system + cause no disease, but can reactivate during immunosuppression, stress, or aging. Adult Americans typically carry at least 4-8 different lifelong viral infections without symptoms. Anelloviruses (Torque Teno Virus + relatives) are present in essentially 100% of healthy adults at varying titers; their function is unknown.'),
+                  body: __alloT('stem.microbiology.after_acute_infection_many_viruses_do__v2', 'After acute infection, many viruses do not actually leave. Herpes simplex (HSV-1, HSV-2), varicella-zoster (chickenpox, which reactivates as shingles), Epstein-Barr (mononucleosis), cytomegalovirus (CMV), and human herpesviruses 6/7/8 all establish lifelong latent infections. They are usually controlled by the immune system + cause no disease, but can reactivate during immunosuppression, stress, or aging. Most adults carry several of these lifelong viral infections without symptoms. Anelloviruses (Torque Teno Virus + relatives) are present in essentially 100% of healthy adults at varying titers; their function is unknown.'),
                   caveat: 'The line between "harmless lifelong passenger" + "subtly contributing to chronic disease" is fuzzy. EBV → multiple sclerosis (Bjornevik 2022). HHV-6A → MS + possibly some cases of chronic fatigue syndrome. CMV → modest accelerated immunosenescence + cardiovascular risk. We do not yet know how much of "normal aging" is partly driven by the lifelong work of suppressing latent viruses.'
                 },
                 { id: 'ervs', name: __alloT('stem.microbiology.endogenous_retroviruses_the_genome_s_p', 'Endogenous retroviruses (the genome\'s past)'), emoji: '🧬',
@@ -6436,7 +6648,7 @@
               var topic = VIROME_TOPICS.find(function(t) { return t.id === sel; }) || VIROME_TOPICS[0];
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, marginBottom: 12 } },
-                  'You are not just you. You are also a few hundred trillion virus particles, a few thousand viral species, the descendants of ancient retroviruses written permanently into your DNA, and a handful of latent infections kept quiet by your immune system. The virome is the OTHER half of microbiome biology - and one of the fastest-moving frontiers in medicine.'
+                  'You are not just you. You also carry trillions of virus particles, many kinds of viruses, the descendants of ancient retroviruses written permanently into your DNA, and a handful of latent infections kept quiet by your immune system. The virome is the OTHER half of microbiome biology - and one of the fastest-moving frontiers in medicine.'
                 ),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   VIROME_TOPICS.map(function(t) {
@@ -6465,7 +6677,7 @@
             (function() {
               var GBA_TOPICS = [
                 { id: 'overview', name: __alloT('stem.microbiology.what_the_gut_brain_axis_is', 'What the gut-brain axis is'), emoji: '🛤️',
-                  body: __alloT('stem.microbiology.the_gut_the_brain_are_connected_by_sev', 'The gut + the brain are connected by several physical channels, all running constantly. The vagus nerve carries about 100 million sensory neurons from the gut to the brainstem (about 80% of vagus fibers go UP from gut → brain, only 20% go DOWN from brain → gut). The enteric nervous system itself - about 500 million neurons in the gut wall, sometimes called the "second brain" - operates with substantial autonomy. Gut bacteria + their metabolites enter the bloodstream + cross or signal across the blood-brain barrier. Immune signaling from gut-resident immune cells communicates with the brain via cytokines. Hormonal signaling (e.g., bacteria-influenced bile acids, hormones from gut endocrine cells) feeds back into central regulation. This is not one pathway; it is many parallel pathways running in both directions.'),
+                  body: __alloT('stem.microbiology.the_gut_the_brain_are_connected_by_sev_v2', 'The gut + the brain are connected by several physical channels, all running constantly. The vagus nerve links the gut and the brainstem; about 80% of its fibers carry signals UP from the body to the brain, and about 20% carry signals DOWN. The enteric nervous system itself - hundreds of millions of neurons in the gut wall, sometimes called the "second brain" - operates with substantial autonomy. Gut bacteria + their metabolites enter the bloodstream + cross or signal across the blood-brain barrier. Immune signaling from gut-resident immune cells communicates with the brain via cytokines. Hormonal signaling (e.g., bacteria-influenced bile acids, hormones from gut endocrine cells) feeds back into central regulation. This is not one pathway; it is many parallel pathways running in both directions.'),
                   caveat: 'The phrase "gut-brain axis" sometimes makes it sound like a single new system. It is actually a useful umbrella for known anatomy + biochemistry, much of which we have known about for decades. What is newer is the recognition that BACTERIA in the gut actively shape this signaling - that the microbiome is a participant, not just a passenger.'
                 },
                 { id: 'vagus', name: __alloT('stem.microbiology.the_vagus_nerve_as_the_highway', 'The vagus nerve as the highway'), emoji: '🛣️',
@@ -6537,19 +6749,19 @@
           { id: 'oil', name: __alloT('stem.microbiology.oil_spill_cleanup', 'Oil spill cleanup'), color: microAccentText('#fbbf24'),
             microbe: 'Alcanivorax borkumensis, Pseudomonas putida, certain Rhodococcus species - collectively "hydrocarbon-degrading bacteria."',
             how: 'These naturally-occurring marine bacteria use hydrocarbons as their energy source. After an oil spill, populations bloom + chew through petroleum compounds, converting them to CO₂ + water + biomass. Often supplemented with nitrogen + phosphorus to stimulate growth.',
-            example: '1989 Exxon Valdez (Alaska) + 2010 Deepwater Horizon (Gulf of Mexico). Bioremediation accelerated cleanup of both. About 50% of the Deepwater Horizon oil was degraded by microbes within months - far faster than any mechanical recovery could have done. Light + medium fractions degrade fastest; heavy + aromatic compounds slower.',
+            example: '1989 Exxon Valdez (Alaska) + 2010 Deepwater Horizon (Gulf of Mexico). Oil-eating microbes helped break down oil after both spills, and fertilizer was used to speed them up on Alaska beaches. Light + medium fractions degrade fastest; heavy + aromatic compounds slower.',
             limits: 'Cold water + lack of oxygen + lack of nitrogen all slow microbial degradation. Cannot dissolve into solid asphalt-like residues. Not effective in deep sediments where oxygen is absent.'
           },
           { id: 'plastic', name: __alloT('stem.microbiology.plastic_degrading_enzymes', 'Plastic-degrading enzymes'), color: microAccentText('#0ea5e9'),
             microbe: 'Ideonella sakaiensis 201-F6 (discovered 2016 in a Japanese recycling facility) + engineered variants of its enzymes PETase + MHETase.',
             how: 'Naturally evolved to digest PET (polyethylene terephthalate - the plastic in water bottles + polyester). The enzymes hydrolyze PET\'s ester bonds into the constituent monomers (terephthalic acid + ethylene glycol) which can be re-polymerized into new PET. Effectively closed-loop recycling - without burning, without virgin petroleum.',
-            example: 'French company Carbios is operating a pilot facility that demonstrates ~90% PET-to-monomer conversion in hours. Engineered "FAST-PETase" + similar variants are 10-100× more efficient than the original. Full industrial-scale plant scheduled for 2025-26.',
+            example: 'In a 2020 study, an engineered enzyme broke down 90% of PET plastic in 10 hours, and the French company Carbios has built a demonstration plant. Engineered enzymes such as "FAST-PETase" work much faster than the natural enzyme.',
             limits: 'Only works on PET. Polyethylene (PE), polypropylene (PP), polystyrene (PS), PVC - the bulk of plastic waste - currently has no good enzymatic solution. Active research on enzymes for the other plastics.'
           },
           { id: 'mining', name: __alloT('stem.microbiology.bioleaching_biomining', 'Bioleaching (biomining)'), color: '#a16207',
             microbe: 'Acidithiobacillus ferrooxidans + thiooxidans, Leptospirillum ferrooxidans, Sulfolobus (a thermophilic archaeon).',
             how: 'These bacteria oxidize iron + sulfur in ore minerals. The process releases the metal of interest (copper, gold, uranium) into solution, which can be collected. Operates at extremely low pH (~1-2) where these acidophilic + chemolithotrophic microbes thrive.',
-            example: 'About 20% of global copper production now uses bioleaching. Chuquicamata + Escondida mines (Chile) extract billions of dollars of copper this way. Recovery is slower than conventional smelting but uses far less energy + emits less SO₂.',
+            example: 'Large copper mines in Chile and elsewhere use bioleaching for low-grade ore. Recovery is slower than conventional smelting but uses far less energy + emits less SO₂.',
             limits: 'Slow (~months for typical operation). Requires the right ore type. Best for low-grade ore where conventional methods are uneconomic.'
           },
           { id: 'fuel', name: __alloT('stem.microbiology.biofuels', 'Biofuels'), color: microAccentText('#22c55e'),
@@ -7125,7 +7337,7 @@
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.why_biofilms_make_antibiotic_resistanc', 'Why biofilms make antibiotic resistance worse: ')),
-                __alloT('stem.microbiology.a_bacterium_inside_a_biofilm_is_100_10', 'A bacterium inside a biofilm is 100-1000× more resistant to antibiotics than the same bacterium swimming free. Three reasons: (1) the matrix physically blocks antibiotic penetration; (2) cells deep inside grow slowly + many antibiotics only work on growing cells; (3) close contact enables rapid horizontal gene transfer of resistance genes. Many chronic infections (cystic fibrosis lung, prosthetic joint, endocarditis) are biofilm infections - they cannot be cured by antibiotics alone + often require surgical removal of the infected device.')
+                __alloT('stem.microbiology.a_bacterium_inside_a_biofilm_is_100_10_v2', 'A bacterium inside a biofilm can be up to about 1,000 times more resistant to antibiotics than the same bacterium swimming free. Three reasons: (1) the matrix physically blocks antibiotic penetration; (2) cells deep inside grow slowly + many antibiotics only work on growing cells; (3) close contact enables rapid horizontal gene transfer of resistance genes. Many chronic infections (cystic fibrosis lung, prosthetic joint, endocarditis) are biofilm infections - they cannot be cured by antibiotics alone + often require surgical removal of the infected device.')
               )
             ),
             '#fbbf24'
@@ -7134,7 +7346,7 @@
           sectionCard('💉 The medical reality of biofilms',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               __alloT('stem.microbiology.the_cdc_estimates_that', 'The CDC estimates that '),
-              h('strong', { style: { color: microAccentText('#fca5a5') } }, __alloT('stem.microbiology.65_80_of_all_human_bacterial_infection', '65-80% of all human bacterial infections involve biofilms')),
+              h('strong', { style: { color: microAccentText('#fca5a5') } }, __alloT('stem.microbiology.65_80_of_all_human_bacterial_infection_v2', 'Many long-lasting infections involve biofilms')),
               __alloT('stem.microbiology.common_sites_catheters_urinary_central', '. Common sites: catheters (urinary, central venous), prosthetic joints + heart valves, contact lenses, lungs of people with cystic fibrosis, periodontitis (gum disease). Successful treatment often means removing the infected device + a long antibiotic course. Research is active on enzymatic biofilm disruptors, quorum-sensing inhibitors, phage therapy, and engineered surface coatings that resist biofilm formation.')
             ),
             '#fca5a5'
@@ -7521,7 +7733,7 @@
               h('strong', null, '1885: '), __alloT('stem.microbiology.louis_pasteur_develops_rabies_vaccine', 'Louis Pasteur develops rabies vaccine.'), h('br'),
               h('strong', null, '1955: '), __alloT('stem.microbiology.salk_s_killed_virus_polio_vaccine_lice', 'Salk\'s killed-virus polio vaccine licensed.'), h('br'),
               h('strong', null, '1963: '), __alloT('stem.microbiology.measles_vaccine_licensed_cases_drop_fr', 'Measles vaccine licensed; cases drop from ~500,000/year to a handful.'), h('br'),
-              h('strong', null, '1980: '), __alloT('stem.microbiology.who_declares_smallpox_eradicated_the_o', 'WHO declares smallpox eradicated - the only human disease eliminated.'), h('br'),
+              h('strong', null, '1980: '), __alloT('stem.microbiology.who_declares_smallpox_eradicated_the_o_v2', 'WHO declares smallpox eradicated - still the only human disease ever wiped out worldwide.'), h('br'),
               h('strong', null, '2006: '), __alloT('stem.microbiology.hpv_vaccine_prevents_most_cervical_can', 'HPV vaccine (prevents most cervical cancer).'), h('br'),
               h('strong', null, '2020: '), __alloT('stem.microbiology.mrna_covid_19_vaccines_authorized_for_', 'mRNA COVID-19 vaccines authorized for emergency use.')
             )
@@ -7741,7 +7953,7 @@
             (function() {
               var HH_TOPICS = [
                 { id: 'pattern', name: __alloT('stem.microbiology.the_rising_disease_pattern', 'The rising-disease pattern'), emoji: '📈',
-                  body: __alloT('stem.microbiology.over_the_past_50_100_years_allergic_au', 'Over the past 50-100 years, ALLERGIC + AUTOIMMUNE diseases have risen dramatically in high-income countries. ASTHMA prevalence in US children: ~ 3% in 1980 → ~ 8% in 2020. PEANUT ALLERGY: ~ 0.4% in 1997 → ~ 2.5% in 2017 (US children). ATOPIC DERMATITIS (eczema): now affects ~ 15-20% of children, up from ~ 2-3% in the 1960s. CELIAC DISEASE: 4× increase since the 1950s. TYPE 1 DIABETES (autoimmune): 3-5% annual increase in many countries. INFLAMMATORY BOWEL DISEASE: ~ 2× increase since 1990. The pattern is real, well-documented, + much more pronounced in WEALTHIER + URBANIZED populations.'),
+                  body: __alloT('stem.microbiology.over_the_past_50_100_years_allergic_au_v2', 'Over the past 50-100 years, ALLERGIC + AUTOIMMUNE diseases have risen dramatically in high-income countries. Asthma, peanut allergy, eczema, celiac disease, type 1 diabetes, and inflammatory bowel disease have all become more common over recent decades. The rise is larger in wealthier, more urban populations.'),
                   caveat: 'These are correlations + the changes are happening too fast for genetic explanation. The trend is consistent across many countries with different healthcare systems + diagnostic practices, so it is not just better diagnosis. The rising pattern is the SETUP for various hypotheses about causation; the cause itself is debated.'
                 },
                 { id: 'strachan', name: __alloT('stem.microbiology.strachan_1989_the_original_hypothesis', 'Strachan 1989 + the original hypothesis'), emoji: '👶',
@@ -7750,10 +7962,10 @@
                 },
                 { id: 'oldfriends', name: __alloT('stem.microbiology.the_old_friends_hypothesis', 'The "Old Friends" hypothesis'), emoji: '🤝',
                   body: __alloT('stem.microbiology.graham_rook_ucl_2003_refined_strachan_', 'Graham Rook (UCL, 2003) refined Strachan\'s framework into the "Old Friends" hypothesis. The key insight: humans evolved alongside a set of microbes ("old friends") for hundreds of thousands of years - soil microbes, helminths (parasitic worms), enteric bacteria, environmental fungi. These microbes were ABUNDANT in our ancestral environment + helped train the developing immune system to distinguish friend from foe. In modern high-income environments, exposure to old friends has dropped dramatically - fewer soil contacts, indoor lifestyles, processed food, water disinfection, mass deworming, urbanization. The immune system that didn\'t get its training mistakes harmless pollen + dust + foods for enemies.'),
-                  caveat: 'The "Old Friends" framing is biologically sophisticated + supported by accumulating evidence. The Amish + Hutterite communities provide quasi-natural experiments - both have similar genetics + are mostly farm-based, but Amish (more direct farm-animal contact) have ~ 5× lower asthma prevalence than Hutterites (more isolated from livestock). Helminth-deworming has correlated with rising allergic disease in some populations. Specific mechanisms: gut microbiota influence regulatory T-cell development; environmental microbes influence skin barrier development.'
+                  caveat: 'The "Old Friends" framing is biologically sophisticated + supported by accumulating evidence. The Amish + Hutterite communities provide quasi-natural experiments - both have similar genetics + are mostly farm-based, but Amish (more direct farm-animal contact) had about one-quarter the asthma rate of Hutterite children in a 2016 study (5% vs 21%) (more isolated from livestock). Helminth-deworming has correlated with rising allergic disease in some populations. Specific mechanisms: gut microbiota influence regulatory T-cell development; environmental microbes influence skin barrier development.'
                 },
                 { id: 'gut', name: __alloT('stem.microbiology.gut_microbiome_early_life', 'Gut microbiome + early life'), emoji: '🦠',
-                  body: __alloT('stem.microbiology.the_first_1_000_days_of_life_conceptio', 'The first 1,000 days of life (conception through age 2) is critical for gut microbiome establishment + immune development. Several modern practices may disrupt this: (a) CESAREAN SECTIONS (now ~ 32% of US births vs ~ 5% in 1970) bypass the vaginal microbiome transfer that establishes baby\'s gut bacteria. (b) FORMULA FEEDING (vs breastfeeding) provides different nutrition + microbiota. (c) EARLY ANTIBIOTICS in infancy (1 in 3 US infants gets antibiotics by age 1) disrupt gut bacterial community for months to years. (d) PROCESSED-FOOD diets lack the fiber + plant diversity that maintain healthy gut bacteria. Each correlates with increased allergic + autoimmune disease risk in cohort studies.'),
+                  body: __alloT('stem.microbiology.the_first_1_000_days_of_life_conceptio_v2', 'The first 1,000 days of life (conception through age 2) is critical for gut microbiome establishment + immune development. Several modern practices may disrupt this: (a) CESAREAN SECTIONS (about 1 in 3 US births) bypass the vaginal microbiome transfer that establishes baby\'s gut bacteria. (b) FORMULA FEEDING (vs breastfeeding) provides different nutrition + microbiota. (c) EARLY ANTIBIOTICS in infancy can disrupt the gut bacterial community for months. (d) PROCESSED-FOOD diets lack the fiber + plant diversity that maintain healthy gut bacteria. Each correlates with increased allergic + autoimmune disease risk in cohort studies.'),
                   caveat: 'These are CORRELATIONS, not proven causes. C-sections are sometimes life-saving + the right choice. Formula feeding is sometimes the only option. Some antibiotics in infancy are absolutely necessary. The relevant question is not "avoid C-section" but "if doing C-section, can we minimize the microbial disruption?" Some hospitals now offer "vaginal seeding" (swabbing C-section babies with maternal vaginal fluid) - initial trials show microbiome benefit; long-term outcomes still being studied.'
                 },
                 { id: 'farm', name: __alloT('stem.microbiology.the_farm_effect', 'The farm effect'), emoji: '🐄',
@@ -8235,8 +8447,8 @@
               h('h3', null, __alloT('stem.microbiology.antibiotic_stewardship_checklist', 'Antibiotic stewardship checklist')),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', color: '#0f172a', lineHeight: 1.7 } },
                 h('li', null, __alloT('stem.microbiology.antibiotics_only_when_prescribed_by_a_', '□ Antibiotics only when prescribed by a clinician.')),
-                h('li', null, __alloT('stem.microbiology.antibiotics_never_for_viral_infections', '□ Antibiotics do not treat viral infections such as colds and flu. Some ear and sinus infections improve without antibiotics; ask a clinician.')),
-                h('li', null, __alloT('stem.microbiology.finish_the_full_course_exactly_as_pres', '□ Take antibiotics exactly as prescribed. Do not change the dose or duration without clinical guidance.')),
+                h('li', null, __alloT('stem.microbiology.antibiotics_never_for_viral_infections_v2', '□ Antibiotics do not treat viral infections such as colds and flu. Some ear and sinus infections improve without antibiotics; ask a clinician.')),
+                h('li', null, __alloT('stem.microbiology.finish_the_full_course_exactly_as_pres_v2', '□ Take antibiotics exactly as prescribed. Do not change the dose or duration without clinical guidance.')),
                 h('li', null, __alloT('stem.microbiology.never_share_antibiotics_or_take_leftov', '□ Never share antibiotics or take leftover doses.')),
                 h('li', null, __alloT('stem.microbiology.ask_what_specific_bacterium_is_being_t', '□ Ask what specific bacterium is being treated and whether a narrow-spectrum option is available.')),
                 h('li', null, __alloT('stem.microbiology.don_t_demand_antibiotics_trust_the_dia', '□ Don\'t demand antibiotics. Trust the diagnosis.'))
@@ -9109,6 +9321,7 @@
         case 'quiz':       body = renderQuiz(); break;
         case 'print':      body = renderPrint(); break;
         case 'growthLab': body = renderGrowthLab(); break;
+        case 'world':      body = renderHome(); break;
         default:           body = renderHome();
       }
 

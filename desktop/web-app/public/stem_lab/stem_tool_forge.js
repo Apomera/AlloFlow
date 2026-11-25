@@ -350,6 +350,7 @@
     "    return h('div', { style: { padding: 16, color: dark ? '#e5e7eb' : '#111827' } },",
     "      h('p', { style: { marginTop: 0 } }, t('stem.myTool.intro', 'Tap the button to begin.')),",
     "      h('button', {",
+    "        type: 'button',",
     "        onClick: function () { var n = count + 1; setCount(n); ctx.update('myTool', 'count', n); },",
     "        style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #4f46e5', background: '#4f46e5', color: '#fff', cursor: 'pointer' }",
     "      }, t('stem.myTool.tap', 'Tap') + ' (' + count + ')')",
@@ -980,7 +981,8 @@
       '.allo-forge-rm *{animation:none!important;transition:none!important}.allo-forge-rm .fg-card-sheen{display:none!important}',
       '.theme-contrast .allo-forge-studio *,.allo-forge-hc *{animation:none!important;transition:none!important}',
       '.theme-contrast .allo-forge-studio .fg-decor-only,.allo-forge-hc .fg-decor-only{display:none!important}',
-      '@media (forced-colors:active){.allo-forge-studio *{animation:none!important;transition:none!important}.allo-forge-studio .fg-decor-only{display:none!important}}'
+      '.allo-forge-studio :is(button,input,select,summary){touch-action:manipulation}',
+        '@media (forced-colors:active){.allo-forge-studio *{animation:none!important;transition:none!important}.allo-forge-studio .fg-decor-only{display:none!important}.allo-forge-studio :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}'
     ].join('');
 
     function renderForgeEmblem() {
@@ -1239,6 +1241,7 @@
           'aria-controls': 'forge-door-panel',
           onClick: function () { setDoor('ai'); },
           onKeyDown: function (e) {
+            if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'End') {
               e.preventDefault(); setDoor('code');
               var btnEl = document.getElementById('forge-tab-code'); if (btnEl) btnEl.focus();
@@ -1254,6 +1257,7 @@
           'aria-controls': 'forge-door-panel',
           onClick: function () { setDoor('code'); },
           onKeyDown: function (e) {
+            if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Home') {
               e.preventDefault(); setDoor('ai');
               var btnEl = document.getElementById('forge-tab-ai'); if (btnEl) btnEl.focus();

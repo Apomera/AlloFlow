@@ -13,7 +13,7 @@
               
               
               
-              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific" }]
+              Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "contextSentence": "Sentence copied from the source", "tier": "Academic" | "Domain-Specific", "pos": "noun" | "verb" | "adjective" | "adverb" }]
               
               Text: "The Moon orbits Earth about once every 27 days. Its gravity pulls on the oceans and creates tides. Long ago, people used the phases of the Moon to keep track of time and to plan planting and harvests."
             

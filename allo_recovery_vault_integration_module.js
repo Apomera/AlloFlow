@@ -33,18 +33,23 @@
   function isPlainObject(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
     var proto = Object.getPrototypeOf(value);
-    return proto === Object.prototype || proto === null;
+    if (proto === Object.prototype || proto === null) return true;
+    return Object.prototype.toString.call(value) === '[object Object]' && Object.getPrototypeOf(proto) === null;
   }
   function isSafeReadRevision(value) {
     return Number.isSafeInteger(value) && value >= 0;
   }
-  function isValidExpectedRevision(expected) {
-    if (Number.isSafeInteger(expected) && expected >= 1 && expected < Number.MAX_SAFE_INTEGER) return true;
-    if (!isPlainObject(expected)) return false;
+  function normalizeExpectedRevision(expected) {
+    if (Number.isSafeInteger(expected) && expected >= 1 && expected < Number.MAX_SAFE_INTEGER) return expected;
+    if (!isPlainObject(expected)) return null;
     var mode = hasOwn.call(expected, 'mode') ? expected.mode : undefined;
-    if (mode === 'absent') return true;
-    if (mode === 'value' && hasOwn.call(expected, 'value') && expected.value !== undefined) return true;
-    return false;
+    if (mode === 'absent') return { mode: 'absent' };
+    if (mode === 'value' && hasOwn.call(expected, 'value') && expected.value !== undefined) {
+      var clonedVal;
+      try { clonedVal = clone(expected.value); } catch (_) { return null; }
+      return { mode: 'value', value: clonedVal };
+    }
+    return null;
   }
   function normalizeScope(value, fallback, label) {
     if (value === undefined || value === null || value === '') return fallback;
@@ -62,10 +67,10 @@
 
   function createDeviceRepository(storage, options) {
     storage = requireStorage(storage);
-    options = (options && typeof options === 'object' && !Array.isArray(options)) ? options : {};
-    var namespace = normalizeScope(options.namespace, DEFAULT_NAMESPACE, 'namespace');
-    var key = normalizeScope(options.key, DEFAULT_KEY, 'key');
-    var queue = options.queue === true;
+    options = isPlainObject(options) ? options : {};
+    var namespace = normalizeScope(hasOwn.call(options, 'namespace') ? options.namespace : undefined, DEFAULT_NAMESPACE, 'namespace');
+    var key = normalizeScope(hasOwn.call(options, 'key') ? options.key : undefined, DEFAULT_KEY, 'key');
+    var queue = hasOwn.call(options, 'queue') && options.queue === true;
     return {
       async read() {
         var current = await storage.get(namespace, key);
@@ -83,7 +88,8 @@
         };
       },
       async compareAndSwap(expected, nextStore) {
-        if (!isValidExpectedRevision(expected)) {
+        var expectedToken = normalizeExpectedRevision(expected);
+        if (expectedToken === null) {
           fail('VAULT_REVISION_INVALID', 'A valid optimistic-concurrency revision token is required.');
         }
         if (!isPlainObject(nextStore)) {
@@ -96,7 +102,7 @@
         var result = await storage.compareAndSwap(
           namespace,
           key,
-          clone(expected),
+          expectedToken,
           clonedNext,
           { queue: queue }
         );
@@ -107,25 +113,25 @@
 
   function resolveVaultModule(explicit) {
     if (explicit) return explicit;
-    if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AlloDeviceVault) {
+    if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function') && window.AlloModules && window.AlloModules.AlloDeviceVault) {
       return window.AlloModules.AlloDeviceVault;
     }
     try { return require('./allo_device_vault_module.js'); } catch (_) { return null; }
   }
 
   function createController(storage, options) {
-    options = (options && typeof options === 'object' && !Array.isArray(options)) ? options : {};
-    var vault = resolveVaultModule(options.vaultModule);
+    options = isPlainObject(options) ? options : {};
+    var vault = resolveVaultModule(hasOwn.call(options, 'vaultModule') ? options.vaultModule : undefined);
     if (!vault || typeof vault.createRecoveryVaultController !== 'function') {
       fail('VAULT_MODULE_UNAVAILABLE', 'The recovery-vault security module has not loaded.');
     }
     var repository = createDeviceRepository(storage, options);
     return vault.createRecoveryVaultController({
       repository: repository,
-      crypto: options.crypto,
-      cryptoOptions: options.cryptoOptions,
-      maxCasRetries: options.maxCasRetries,
-      now: options.now
+      crypto: hasOwn.call(options, 'crypto') ? options.crypto : undefined,
+      cryptoOptions: hasOwn.call(options, 'cryptoOptions') ? options.cryptoOptions : undefined,
+      maxCasRetries: hasOwn.call(options, 'maxCasRetries') ? options.maxCasRetries : undefined,
+      now: hasOwn.call(options, 'now') ? options.now : undefined
     });
   }
 
@@ -136,9 +142,9 @@
     DEFAULT_KEY: DEFAULT_KEY
   });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+  if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.AlloRecoveryVaultIntegration = api;
   }
 })();

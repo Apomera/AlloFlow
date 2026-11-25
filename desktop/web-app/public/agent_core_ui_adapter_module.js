@@ -113,7 +113,11 @@
       var svc = service();
       var normalizedLegacy = safeAssign({}, isPlainObject(legacyConfig) ? legacyConfig : {});
       if (typeof svc.frozenSettings === 'function') {
-        normalizedLegacy.globalSettings = svc.frozenSettings(ctx, normalizedLegacy.globalSettings);
+        // A saved plan keeps its own settings (language, native defaults); the ambient UI
+        // context only fills what the plan never recorded. createDraft differs: there the
+        // request is the teacher's explicit choice, so it wins.
+        var savedGlobal = isPlainObject(normalizedLegacy.globalSettings) ? normalizedLegacy.globalSettings : {};
+        normalizedLegacy.globalSettings = svc.frozenSettings(safeAssign(safeAssign({}, ctx), savedGlobal), savedGlobal);
       }
       var draft = C.fromLegacyConfig(normalizedLegacy, ctx);
       if (typeof svc.applyTextAccessDefaults === 'function') {

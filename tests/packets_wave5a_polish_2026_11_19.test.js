@@ -182,7 +182,8 @@ describe('Wave 5A Tier 2: Touch Ergonomics, Safari Mic & Non-ASCII Spelling Bee'
     expect(ra).toContain('isTypeSupported');
     expect(ra).toContain('if (!rec.chunks.length)');
     expect(ra).toMatch(/var Offline = win\.OfflineAudioContext/);
-    expect(ra).toContain("$('f-text').addEventListener('input', function () { cancelMic();");
+    // 2026-11-23: the same handler, now written over several lines.
+    expect(ra).toMatch(/\$\('f-text'\)\.addEventListener\('input', function \(\) \{[^}]{0,400}?cancelMic\(\);/);
     const pw = read('packets-words.js');
     expect(pw).toContain("'audio/mp4'");
     expect(pw).toContain('isTypeSupported');
@@ -208,7 +209,8 @@ describe('Wave 5A Tier 3: Check Start Over, Read-Along List & Mixed Attribution,
   it('10. Check finish Start over checks s.sent || s.savedFile and Escape closes confirmation', () => {
     const loaderSrc = read('word_sounds_take_home_loader.js');
     expect(loaderSrc).toContain('if (s.sent || s.savedFile) { doAgain(); return; }');
-    expect(loaderSrc).toContain("if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); againNo.click(); }");
+    // 2026-11-23: Escape still closes it; the handler also ignores Escape with a modifier key or mid-composition (11-21).
+    expect(loaderSrc).toMatch(/\(e\.key === 'Escape' \|\| e\.key === 'Esc'\)[^{}]*\{ e\.preventDefault\(\); againNo\.click\(\); \}/);
   });
 
   it('11. Read-Along keeps numbered list markers attached and round-trips mixed teacher/computer clip attribution', () => {

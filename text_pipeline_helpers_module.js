@@ -1615,6 +1615,8 @@ const parseTaggedContent = (text) => {
     'tour-tool-wordsounds': 'ui-tool-wordsounds',
     'tour-tool-note-taking': 'note-taking',
     'tour-tool-anchor-chart': 'anchor-chart',
+    'quiz-mode-select': 'quiz',
+    'tour-upload-source': 'source-input',
     'glossary_standard_flashcards': 'glossary',
     'glossary_language_flashcards': 'glossary',
     'glossary_etymology_info': 'glossary',

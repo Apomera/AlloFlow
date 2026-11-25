@@ -974,10 +974,13 @@ hr {
     grid-template-columns: 1fr;
   }
 
-  .guide-search__controls,
-  .tool-reference-controls__grid {
+  .guide-search__controls {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .tool-reference-controls__grid {
+    grid-template-columns: 1fr;
   }
 
   .chapter-pager__next {
@@ -1070,16 +1073,18 @@ hr {
    accessible name stays in aria-label, so a screen reader loses nothing.
    Deliberately always visible — revealing it on :hover would be mouse-only. */
 .listen-btn {
-  margin-left: 0.55rem;
+  margin-left: 0.45rem;
   vertical-align: middle;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   flex: none;
   padding: 0;
-  font: 400 0.7rem/1 inherit;
+  font: 400 0.95rem/1 inherit;
   letter-spacing: normal;
   color: var(--muted);
   background: var(--surface);
@@ -1180,6 +1185,30 @@ html:root[data-allo-theme="blue"]{--page:#d9e9f6;--surface:#f0f7fd;--surface-sub
 html:root[data-allo-theme="green"]{--page:#e6f4e7;--surface:#f4fbf5;--surface-subtle:#ecf7ed;--ink:#0f3016;--muted:#38603c;--line:#c0dfc3;--brand:#155e20;--brand-strong:#0f4417;--brand-soft:#e9f6ea;--accent:#8a3a12;--success:#155e40;--shadow:0 12px 34px rgba(27,94,32,.12);}
 html:root[data-allo-theme="rose"]{--page:#fbe2ea;--surface:#fef3f7;--surface-subtle:#fbe8ef;--ink:#4f0a29;--muted:#7d3557;--line:#f0c0d2;--brand:#9d1148;--brand-strong:#7c0d38;--brand-soft:#fceaf1;--accent:#8a3a12;--success:#155e40;--shadow:0 12px 34px rgba(124,13,71,.12);}
 html:root[data-allo-theme="easyread"]{--page:#faf8ef;--surface:#fffefa;--surface-subtle:#f3f0e2;--ink:#18202f;--muted:#4c5870;--line:#e2ddc8;--brand:#124e78;--brand-strong:#0b3654;--brand-soft:#e7f1f8;--accent:#a63f17;--success:#155e40;--shadow:0 12px 34px rgba(38,50,74,.1);}
+html:root[data-allo-theme="dark"] .brand__mark,
+html:root[data-allo-theme="dark"] .button--primary,
+html:root[data-allo-theme="dark"] .button--primary:visited,
+html:root[data-allo-theme="dark"] .guide-search button {
+  background: var(--brand);
+  color: #0b1b29;
+}
+html:root[data-allo-theme="dark"] .button--primary:hover,
+html:root[data-allo-theme="dark"] .guide-search button:hover {
+  background: var(--brand-strong);
+  color: #0b1b29;
+}
+html:root[data-allo-theme="dark"] a:visited { color: #d9b7f0; }
+html:root[data-allo-theme="highContrast"] .brand__mark,
+html:root[data-allo-theme="highContrast"] .button--primary,
+html:root[data-allo-theme="highContrast"] .button--primary:visited,
+html:root[data-allo-theme="highContrast"] .button--primary:hover,
+html:root[data-allo-theme="highContrast"] .guide-search button,
+html:root[data-allo-theme="highContrast"] .guide-search button:hover {
+  background: #ffff00;
+  color: #000000;
+  border-color: #ffffff;
+}
+html:root[data-allo-theme="highContrast"] a:visited { color: #00ffff; }
 
 @media print {
   /* Reading tools are screen affordances, and a chosen theme must not reach

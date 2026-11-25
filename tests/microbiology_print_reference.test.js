@@ -63,7 +63,8 @@ describe('Microbiology printable reference', { timeout: 20000 }, () => {
     expect(phage.cells[3].textContent).toBe('Infects bacteria');
     expect(phage.textContent).not.toMatch(/pathogen|no risk to humans/);
     const ecoli = rows.find(row => row.firstElementChild.textContent.includes('Escherichia coli'));
-    expect(ecoli.cells[2].textContent).toBe('Lives in the gut of most mammals including humans. About 0.1% of human gut bacteria.');
+    // 2026-11-24 accuracy audit: the unsourced "About 0.1% of human gut bacteria" was cut; the full habitat text still prints.
+    expect(ecoli.cells[2].textContent).toBe('Lives in the gut of most mammals, including humans. It is a common gut bacterium, but only a small share of all the bacteria there.');
     const covid = rows.find(row => row.textContent.includes('SARS-CoV-2'));
     expect(covid.cells[2].textContent).toBe('Humans and other mammals, including cats, dogs, and deer');
     expect(covid.textContent).not.toContain('crossover from bats');

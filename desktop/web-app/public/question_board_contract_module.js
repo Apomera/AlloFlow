@@ -17,13 +17,14 @@
  * invariant list this file makes executable).
  */
 (function registerQuestionBoardContract(root, factory) {
-    const api = factory(root || (typeof globalThis !== 'undefined' ? globalThis : {}));
-    if (typeof module !== 'undefined' && module.exports) module.exports = api;
-    if (root) {
-        root.AlloModules = root.AlloModules || {};
+    const validRoot = (root && (typeof root === 'object' || typeof root === 'function'));
+    const api = factory(validRoot ? root : (typeof globalThis === 'object' && globalThis ? globalThis : {}));
+    if (typeof module === 'object' && module && module.exports) module.exports = api;
+    if (validRoot) {
+        if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
         root.AlloModules.QuestionBoardContract = api;
     }
-})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null), function createQuestionBoardContract() {
+})((typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : ((typeof globalThis !== 'undefined' && globalThis && typeof globalThis === 'object') ? globalThis : null), function createQuestionBoardContract() {
     'use strict';
 
     const VERSION = 1;
@@ -76,9 +77,25 @@
     }
 
     function clampInt(value, min, max, fallback) {
-        const n = parseInt(value, 10);
+        if (typeof value !== 'number' && typeof value !== 'string') return fallback;
+        const n = typeof value === 'number' ? Math.trunc(value) : parseInt(value, 10);
         if (!isFinite(n)) return fallback;
         return Math.max(min, Math.min(max, n));
+    }
+
+    function parseTimestampMs(value) {
+        if (typeof value === 'number') return (Number.isFinite(value) && value > 0) ? value : NaN;
+        if (value instanceof Date) {
+            const ms = value.getTime();
+            return (Number.isFinite(ms) && ms > 0) ? ms : NaN;
+        }
+        if (typeof value === 'string') {
+            const cleaned = sanitizeText(value, 64);
+            if (!cleaned) return NaN;
+            const ms = Date.parse(cleaned);
+            return (Number.isFinite(ms) && ms > 0) ? ms : NaN;
+        }
+        return NaN;
     }
 
     function safeJsonParse(raw, maxChars) {
@@ -109,14 +126,22 @@
         if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
         if (source.type !== 'question_board') return null;
 
-        const activityId = String(source.activityId || '');
+        const activityId = typeof source.activityId === 'string' ? source.activityId : '';
         if (!/^AC-[0-9a-f-]{36}$/i.test(activityId)) return null;
 
         const prompt = sanitizeText(source.prompt, LIMITS.PROMPT_CHARS);
         if (!prompt) return null;
 
-        const rawExpires = sanitizeText(source.expiresAt, 64);
-        const safeExpires = (rawExpires && isFinite(Date.parse(rawExpires))) ? rawExpires : '';
+        let safeExpires = '';
+        if (typeof source.expiresAt === 'string') {
+            const rawExpires = sanitizeText(source.expiresAt, 64);
+            if (rawExpires && isFinite(Date.parse(rawExpires))) safeExpires = rawExpires;
+        } else {
+            const expMs = parseTimestampMs(source.expiresAt);
+            if (isFinite(expMs)) {
+                try { safeExpires = new Date(expMs).toISOString(); } catch (_) { safeExpires = ''; }
+            }
+        }
 
         return {
             v: VERSION,
@@ -153,7 +178,7 @@
     // ── Visibility: the single reference both adapters must match ───────────
     function distinctAuthorCount(items) {
         const seen = new Set();
-        (items || []).forEach((it) => { if (it && it.uid) seen.add(it.uid); });
+        (items || []).forEach((it) => { if (it && typeof it.uid === 'string' && it.uid) seen.add(it.uid); });
         return seen.size;
     }
 
@@ -220,7 +245,7 @@
         const perStudent = clampInt(config.itemsPerStudent, 1, LIMITS.ITEMS_PER_STUDENT_MAX, 5);
         if (mine >= perStudent) return { ok: false, reason: 'item-cap', invariant: 'ITEM_CAP_PER_STUDENT' };
 
-        const authors = new Set(items.map((it) => it && it.uid).filter(Boolean));
+        const authors = new Set(items.map((it) => (it && typeof it.uid === 'string' && it.uid) ? it.uid : '').filter(Boolean));
         if (!authors.has(claimedUid) && authors.size >= LIMITS.PARTICIPANTS) {
             return { ok: false, reason: 'participant-cap', invariant: 'PARTICIPANT_CAP' };
         }
@@ -237,8 +262,7 @@
 
     function isExpired(board) {
         const at = board && board.config && board.config.expiresAt;
-        if (typeof at !== 'string' || !at.trim()) return false;
-        const t = Date.parse(at);
+        const t = parseTimestampMs(at);
         return isFinite(t) && Date.now() > t;
     }
 
@@ -247,8 +271,8 @@
         const a = normalizeActor(actor);
         const text = sanitizeText(raw && raw.text, LIMITS.ITEM_CHARS);   // TEXT_IS_SANITIZED
         if (!text || !a) return null;
-        const rawTs = Number(raw && raw.createdAt);
-        const createdAt = (Number.isFinite(rawTs) && rawTs > 0) ? rawTs : Date.now();
+        const rawTs = parseTimestampMs(raw && raw.createdAt);
+        const createdAt = Number.isFinite(rawTs) ? rawTs : Date.now();
         const rawStatus = raw && raw.status;
         const safeStatus = (rawStatus === 'held' || rawStatus === 'hidden' || rawStatus === 'rejected') ? rawStatus : 'approved';
         return {
@@ -267,8 +291,8 @@
 
     function markAnswered(item, patch) {
         const note = sanitizeText(patch && patch.note, LIMITS.ANSWER_NOTE_CHARS);
-        const rawAt = Number(patch && patch.at);
-        const at = (Number.isFinite(rawAt) && rawAt > 0) ? rawAt : Date.now();
+        const rawAt = parseTimestampMs(patch && patch.at);
+        const at = Number.isFinite(rawAt) ? rawAt : Date.now();
         const resourceId = (patch && patch.resourceId) ? sanitizeText(patch.resourceId, 128) : undefined;
         return safeAssign(safeAssign({}, item), {
             answered: {
@@ -421,6 +445,7 @@
                 if (!board || !Array.isArray(board.items)) return { ok: false, reason: 'invalid-board' };
                 const verdict = authorize(actor, 'setStatus', board, null);
                 if (!verdict.ok) return verdict;
+                if (typeof itemId !== 'string' || !itemId) return { ok: false, reason: 'no-item' };
                 const item = board.items.filter((i) => i && i.id === itemId)[0];
                 if (!item) return { ok: false, reason: 'no-item' };
                 item.status = status === 'approved' ? 'approved' : (status === 'hidden' ? 'hidden' : (status === 'rejected' ? 'rejected' : 'held'));
@@ -429,7 +454,7 @@
         };
     }
 
-    return {
+    return Object.freeze({
         VERSION,
         LIMITS,
         INVARIANTS,
@@ -444,5 +469,5 @@
         estimateBoardBytes,
         runConformanceSuite,
         createReferenceAdapter
-    };
+    });
 });

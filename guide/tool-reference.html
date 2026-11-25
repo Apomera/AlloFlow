@@ -4,8 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#124e78" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1723" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Generated searchable reference for the public AlloFlow tool catalog.">
   <title>Tool reference · AlloFlow Teacher Guide</title>
+  <link rel="icon" type="image/svg+xml" href="../allobot.svg">
+  <link rel="apple-touch-icon" href="../allobot.png">
   <link rel="canonical" href="https://apomera.github.io/AlloFlow/guide/tool-reference.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AlloFlow">
@@ -806,23 +810,62 @@
   function normalize(value) {
     return String(value || "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
   }
-  function render() {
+  function tokenMatches(haystack, word) {
+    if (haystack.indexOf(word) !== -1) return true;
+    if (word.length >= 5 && word.slice(-2) === "es" && haystack.indexOf(word.slice(0, -2)) !== -1) return true;
+    if (word.length >= 4 && word.slice(-1) === "s" && word.slice(-2) !== "ss" && haystack.indexOf(word.slice(0, -1)) !== -1) return true;
+    return false;
+  }
+  function syncUrl() {
+    if (!window.history || typeof window.history.replaceState !== "function" || typeof URLSearchParams !== "function") return;
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      var q = input.value.trim();
+      if (q) params.set("q", q); else params.delete("q");
+      if (category.value) params.set("category", category.value); else params.delete("category");
+      var qs = params.toString();
+      window.history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : "") + (window.location.hash || ""));
+    } catch (_) {}
+  }
+  function applyInitialQuery() {
+    if (typeof URLSearchParams !== "function") return;
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      var q = params.get("q");
+      if (q) input.value = String(q).slice(0, 120);
+      var cat = params.get("category");
+      if (cat && Array.prototype.some.call(category.options, function (o) { return o.value === cat; })) {
+        category.value = cat;
+      }
+    } catch (_) {}
+  }
+  function render(skipUrlSync) {
     var words = normalize(input.value).split(/\s+/).filter(Boolean);
     var selected = category.value;
     var visible = 0;
     cards.forEach(function (card) {
       var haystack = normalize(card.getAttribute("data-search"));
-      var matchesWords = words.every(function (word) { return haystack.indexOf(word) !== -1; });
+      var matchesWords = words.every(function (word) { return tokenMatches(haystack, word); });
       var matchesCategory = !selected || card.getAttribute("data-category") === selected;
       var show = matchesWords && matchesCategory;
       card.hidden = !show;
       if (show) visible += 1;
     });
     status.textContent = visible + (visible === 1 ? " tool shown." : " tools shown.") + (words.length || selected ? "" : " Use search or the category filter to narrow the catalog.");
+    if (skipUrlSync !== true) syncUrl();
   }
-  input.addEventListener("input", render);
-  category.addEventListener("change", render);
-  render();
+  input.addEventListener("input", function () { render(false); });
+  input.addEventListener("keydown", function (event) {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === "Escape" && input.value) {
+      event.preventDefault();
+      input.value = "";
+      render(false);
+    }
+  });
+  category.addEventListener("change", function () { render(false); });
+  applyInitialQuery();
+  render(true);
 }());
   </script>
 </body>

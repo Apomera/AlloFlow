@@ -863,6 +863,22 @@
       if (!audio[cid]) { audio[cid] = uri; recorded.push(line(word, 60)); }
       return cid;
     };
+    // Meanings recorded ahead of time (o.meaningClips: a meaning's shown text, spaces squeezed -> data:audio/mpeg address,
+    // from the site's meaning store, 2026-11-23). The choices of a question get them only when every choice has one.
+    var meaningClips = read && o.voices !== false && isObject(o.meaningClips) ? o.meaningClips : {};
+    var recordedMeanings = Object.create(null);
+    var meaningUri = function (text) {
+      var k = String(text == null ? '' : text).replace(/\s+/g, ' ').trim(), rawUri = k && own(meaningClips, k) && typeof meaningClips[k] === 'string' ? meaningClips[k] : '';
+      return rawUri && rawUri.length <= MAX_CLIP_CHARS && /^data:audio\/(?:mpeg|mp3);base64,[A-Za-z0-9+/]+={0,2}$/i.test(rawUri) ? { k: k, uri: rawUri } : null;
+    };
+    var meaningClipOf = function (text) {
+      var got = meaningUri(text);
+      if (!got) return null;
+      var cid = 'm' + fnv('meaning|' + got.k);
+      if (!audio[cid]) audio[cid] = got.uri;
+      recordedMeanings[got.k] = true;
+      return cid;
+    };
     // Pictures (o.pictures: the Word Sounds picture set, o.matcher: built-in concept diagrams, and per-row custom uploads;
     // o.art: word_sounds_packet_builder.js, whose svgRefusal tests each drawing as it goes into the file).
     var pics = o.pictures && typeof o.pictures.get === 'function' ? o.pictures : null, art = o.art && typeof o.art.svgRefusal === 'function' ? o.art : null;
@@ -956,7 +972,11 @@
         // Word choices look alike: see alike(). The recordings and pictures are still found by the word itself.
         var shown = id === 'word' || id === 'blank' || id === 'picword' ? alike(choices, id === 'blank' && /^_{2,}/.test(item.ask)) : choices;
         var raw = { id: itemId.slice(0, 80), word: check && id !== 'meaning' ? item.ask.slice(0, 120) : item.row.word, ask: item.ask, choices: shown, answer: shown[choices.indexOf(item.answer)], read: read, lang: 'en' };
-        if (id === 'meaning') { var heard = clipOf(item.row.word); if (heard) raw.askAudio = heard; }
+        if (id === 'meaning') {
+          var heard = clipOf(item.row.word); if (heard) raw.askAudio = heard;
+          if (choices.every(meaningUri)) raw.choiceAudio = choices.map(meaningClipOf);
+        }
+        if (id === 'word') { var meant = meaningClipOf(item.ask); if (meant) raw.askAudio = meant; }
         if (id === 'word' || id === 'blank') { var voiced = choices.map(clipOf); if (voiced.some(Boolean)) raw.choiceAudio = voiced; }
         if (id === 'picture') {
           raw.word = item.row.word;
@@ -1021,7 +1041,7 @@
     }
     var storedOrder = !check ? (seq ? 'mix' : (o.order === 'blocks' ? 'blocks' : null)) : null;
     // What the file's credits name (buildVocabPacket): the words with a recording, and the words whose picture is used, by set.
-    MEDIA.set(lesson, { recorded: recorded, pictured: Object.keys(pictured).map(function (k) { return pictured[k]; }), art: art, left: q.left, order: storedOrder, orderSeed: seq ? orderSeed : null });
+    MEDIA.set(lesson, { recorded: recorded, meanings: Object.keys(recordedMeanings).length, pictured: Object.keys(pictured).map(function (k) { return pictured[k]; }), art: art, left: q.left, order: storedOrder, orderSeed: seq ? orderSeed : null });
     return lesson;
   }
 
@@ -1211,7 +1231,8 @@
     };
     var rows = Array.isArray(o.rows) ? o.rows : [];
     var credits = creditLines(o.bank, rows);
-    var media = MEDIA.get(lesson) || { recorded: [], pictured: [], art: null };
+    var media = MEDIA.get(lesson) || { recorded: [], meanings: 0, pictured: [], art: null };
+    var meaningsHeard = media.meanings || 0;
     var notices = [];
     // Each picture set is credited, and its notice carried, only when one of its pictures is in the file (as in a Word Sounds file).
     var art = media.art;
@@ -1235,9 +1256,10 @@
       var shareAlikePics = creditedPics.filter(function (p) { return p.shareAlike; });
       if (shareAlikePics.length) notices.push({ id: 'share-alike', name: 'Pictures under a share-alike license', text: 'Some pictures in this file were chosen by the teacher and stay under their own CC BY-SA license as a separate work from the program in this file:\n' + shareAlikePics.map(function (p) { return p.word + ': ' + p.line; }).join('\n') });
     }
-    if (media.recorded.length) {
-      credits.push('Recordings of ' + media.recorded.join(', ') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
-      labels.about_never = 'It never uses the microphone or the camera. It has no cookies and runs no AI. Read aloud plays a recording made ahead of time for some words. For the rest it uses the voice that is built into this device, and only a voice that runs on the device.';
+    if (media.recorded.length) credits.push('Recordings of ' + media.recorded.join(', ') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
+    if (meaningsHeard) credits.push('Recordings of ' + meaningsHeard + (meaningsHeard === 1 ? ' meaning' : ' meanings') + ': made ahead of time with Kokoro-82M text-to-speech (voice af_heart), a machine voice. They passed automatic checks; no person has listened to each one.');
+    if (media.recorded.length || meaningsHeard) {
+      labels.about_never = 'It never uses the microphone or the camera. It has no cookies and runs no AI. Read aloud plays a recording made ahead of time for some ' + (meaningsHeard ? (media.recorded.length ? 'words and meanings' : 'meanings') : 'words') + '. For the rest it uses the voice that is built into this device, and only a voice that runs on the device.';
     }
     var sent = JSON.parse(JSON.stringify(lesson));
     if (check) delete sent.sequence;
@@ -1250,6 +1272,7 @@
     var recipe = { builder: VERSION, types: TYPES.map(function (t) { return t.id; }).filter(function (id) { return made.indexOf(id) >= 0; }), mode: check ? 'check' : 'practice', readAloud: read,
       words: rows.map(function (r) { return { word: r.word, sense: r.senseId }; }) };
     if (media.recorded.length) recipe.recordings = media.recorded.length;
+    if (meaningsHeard) recipe.meaningRecordings = meaningsHeard;
     if (o.voices === false) recipe.voices = false;
     if (o.diagrams === true || media.pictured.some(function (p) { return p.set === 'diagram'; })) recipe.diagrams = true;
     var noPicture = rows.filter(function (r) { return r.pictureOff; }).map(function (r) { return r.word; });
@@ -1270,7 +1293,10 @@
     if (!check) recipe.rows = rows.map(function (r) { return { word: r.word, sense: r.senseId, def: r.def, example: r.example, pos: r.pos || '', own: !!r.own, wrong: r.wrong.map(function (c) { return { id: c.id || '', word: c.word, def: c.def, from: c.from || '' }; }), blank: r.blank ? r.blank.wrong.slice() : [] }; });
     var speech = read ? { engine: 'speechSynthesis', when: 'only when the student presses Read aloud, Hear it or Hear all, or turns on Read the choices in the reading tools', voices: 'a voice that runs on this device (localService); none that needs the internet', sends: 'nothing' }
       : { engine: 'none', note: 'Read aloud is off in this file.' };
-    if (read && media.recorded.length) speech.recordings = { words: media.recorded.length, made: 'ahead of time, Kokoro-82M text-to-speech (voice af_heart), a machine voice', humanReviewed: false };
+    if (read && (media.recorded.length || meaningsHeard)) {
+      speech.recordings = { words: media.recorded.length, made: 'ahead of time, Kokoro-82M text-to-speech (voice af_heart), a machine voice', humanReviewed: false };
+      if (meaningsHeard) speech.recordings.meanings = meaningsHeard;
+    }
     var extra = { vocab: recipe, speech: speech };
     if (notices.length) extra.notices = notices;
     html = withManifest(html, extra);

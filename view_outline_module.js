@@ -36,7 +36,15 @@
   var Trash2 = _lazyIcon('Trash2');
   var X = _lazyIcon('X');
 
-  function _outlineAiDoor(t) {
+  function ensureOutlinePolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-outline-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-outline-a11y-css';
+  st.textContent = ['[data-outline-view="true"] button,[data-outline-view="true"] input,[data-outline-view="true"] select,[data-outline-view="true"] textarea{touch-action:manipulation;box-sizing:border-box}', '[data-outline-view="true"] button:focus-visible,[data-outline-view="true"] input:focus-visible,[data-outline-view="true"] select:focus-visible,[data-outline-view="true"] textarea:focus-visible{outline:3px solid #4f46e5;outline-offset:2px}', '.theme-contrast [data-outline-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}', '@media (forced-colors:active){[data-outline-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-outline-view="true"] button,[data-outline-view="true"] input,[data-outline-view="true"] select,[data-outline-view="true"] textarea{border:1px solid ButtonText}}', '@media (prefers-reduced-motion:reduce){[data-outline-view="true"] *,[data-outline-view="true"] *::before,[data-outline-view="true"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'].join('');
+  document.head.appendChild(st);
+}
+ensureOutlinePolishCss();
+function _outlineAiDoor(t) {
   try {
     if (typeof window !== 'undefined') {
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) {
@@ -68,6 +76,7 @@
   };
 }
 function OutlineView(props) {
+  ensureOutlinePolishCss();
   props = props || {};
   // Pure data + state reads
   var t = typeof props.t === 'function' ? props.t : function (k) {
@@ -163,6 +172,13 @@ function OutlineView(props) {
   var _speakingOutlineState = React.useState(false);
   var speakingOutline = _speakingOutlineState[0],
     setSpeakingOutline = _speakingOutlineState[1];
+  var _outlineSrState = React.useState('');
+  var outlineSrMsg = _outlineSrState[0],
+    setOutlineSrMsg = _outlineSrState[1];
+  var announceOutline = function (msg) {
+    setOutlineSrMsg(String(msg || ''));
+    if (typeof props.announceToSR === 'function') props.announceToSR(String(msg || ''));
+  };
   var speakingOutlineRef = React.useRef(false);
   var outlineMountedRef = React.useRef(true);
   var outlineSpeechListenerRef = React.useRef(null);
@@ -270,20 +286,38 @@ function OutlineView(props) {
   var controlSize = {
     minHeight: 44,
     minWidth: 44,
-    maxWidth: '100%'
+    maxWidth: '100%',
+    touchAction: 'manipulation',
+    boxSizing: 'border-box'
   };
   var canAddConcept = typeof mapAddInput === 'string' && !!mapAddInput.trim();
   function addConcept() {
-    if (canAddConcept && typeof handleAddToMapList === 'function') handleAddToMapList(mapAddInput);
+    if (canAddConcept && typeof handleAddToMapList === 'function') {
+      var trimmed = mapAddInput.trim();
+      handleAddToMapList(mapAddInput);
+      announceOutline(tl('outline.concept_added_sr', 'Added concept {name}').replace('{name}', trimmed));
+    }
   }
   function handleConceptKeyDown(event) {
-    if (event.key !== 'Enter' || event.ctrlKey || event.metaKey || event.altKey || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    if (event.ctrlKey || event.metaKey || event.altKey || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    if (event.key === 'Escape' && mapAddInput) {
+      event.preventDefault();
+      if (typeof setMapAddInput === 'function') setMapAddInput('');
+      return;
+    }
+    if (event.key !== 'Enter') return;
     event.preventDefault();
     addConcept();
   }
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6 h-full"
-  }, /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6 h-full",
+    "data-outline-view": "true"
+  }, outlineSrMsg ? /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, outlineSrMsg) : null, /*#__PURE__*/React.createElement("div", {
     className: "bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4"
   }, isTeacherMode && /*#__PURE__*/React.createElement("div", {
     "data-organizer-udl-goal": true,
@@ -300,6 +334,8 @@ function OutlineView(props) {
     size: 10,
     "aria-hidden": "true"
   }), " ", standardsInput))), /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": tl('outline.toolbar_aria', 'Graphic organizer controls'),
     className: "flex flex-wrap gap-2"
   }, isTeacherMode && (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -319,7 +355,7 @@ function OutlineView(props) {
         setIsInteractiveMap(!isInteractiveMap);
       }
     },
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-800 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`,
     title: isInteractiveMap || isInteractiveVenn || isVennPlaying ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_layout_hint', 'Arrange the concepts and connections in this organizer.')
   }, isInteractiveMap || isInteractiveVenn || isVennPlaying ? /*#__PURE__*/React.createElement(Layout, {
     size: 14,
@@ -393,7 +429,7 @@ function OutlineView(props) {
     onClick: () => {
       if (typeof handleToggleIsEditingOutline === 'function') handleToggleIsEditingOutline();
     },
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-800 border border-orange-200 hover:bg-orange-50'}`
   }, isEditingOutline ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14,
     "aria-hidden": "true"
@@ -410,12 +446,12 @@ function OutlineView(props) {
     disabled: isProcessing || outlineAiOff,
     "aria-busy": isProcessing,
     title: outlineAiTitle,
-    className: "flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+    className: "flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     "aria-hidden": "true",
     className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
-  }), " ", t('common.regenerate')))), isInteractiveMap ? !isConceptMapReady && !isChallengeActive ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('common.regenerate') || 'Regenerate'))), isInteractiveMap ? !isConceptMapReady && !isChallengeActive ? /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto bg-white p-4 sm:p-10 rounded-2xl border-2 border-indigo-100 shadow-lg text-center flex flex-col items-center justify-center min-h-[400px]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50 p-4 rounded-full mb-4"
@@ -439,7 +475,10 @@ function OutlineView(props) {
     "data-outline-remove-concept": true,
     "aria-label": tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch?.title || '')),
     onClick: () => {
-      if (typeof handleRemoveFromMapList === 'function') handleRemoveFromMapList(idx);
+      if (typeof handleRemoveFromMapList === 'function') {
+        handleRemoveFromMapList(idx);
+        announceOutline(tl('outline.concept_removed_sr', 'Removed concept {name}').replace('{name}', String(branch?.title || '')));
+      }
     },
     className: "inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('common.remove_concept')
@@ -479,7 +518,7 @@ function OutlineView(props) {
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 14,
     "aria-hidden": "true"
-  }), " ", t('concept_map.setup.add_concept_btn')))), /*#__PURE__*/React.createElement("p", {
+  }), " ", t('concept_map.setup.add_concept_btn') || 'Add Concept'))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 max-w-md mx-auto mb-6"
   }, tl('outline.curate_concepts_hint', 'Review and curate the concepts before generating the interactive diagram.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -496,7 +535,7 @@ function OutlineView(props) {
     size: 24,
     className: "text-yellow-300 fill-current",
     "aria-hidden": "true"
-  }), isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram'))) : typeof renderInteractiveMap === 'function' ? renderInteractiveMap() : null : typeof renderOutlineContent === 'function' ? renderOutlineContent() : null);
+  }), isProcessing ? t('concept_map.setup.organizing') || 'Organizing...' : t('concept_map.setup.create_diagram') || 'Create Interactive Diagram')) : typeof renderInteractiveMap === 'function' ? renderInteractiveMap() : null : typeof renderOutlineContent === 'function' ? renderOutlineContent() : null);
 }
 
   window.AlloModules = window.AlloModules || {};

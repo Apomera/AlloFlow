@@ -76,7 +76,8 @@ describe('the computer-voice page is one of the two places Packets uses an AI vo
 
   it('loads only this site\'s scripts at first, and names no other site in its code', () => {
     const doc = new JSDOM(HTML).window.document;
-    expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(['packets-page.js', 'word_sounds_wordlist_en.js', 'packets_my_words.js', 'packets_voice_engine.js', 'packets-voice.js']);
+    // 2026-11-23: packets_voice_meanings.js, meanings handed over by the vocabulary maker (tests/packets_voice_meanings_2026_11_23.test.js).
+    expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(['packets-page.js', 'word_sounds_wordlist_en.js', 'packets_my_words.js', 'packets_voice_engine.js', 'packets-voice.js', 'packets_voice_meanings.js']);
     expect(JS).not.toMatch(/https?:\/\//);
     expect(ENGINE).not.toMatch(/https?:\/\//);
     // The voice is the app's own loader and verified delivery files: no page has a copy of them. They are named once,

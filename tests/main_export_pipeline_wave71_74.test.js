@@ -180,8 +180,13 @@ describe('Wave 71: Quiz, History Panel, Oral Fluency & PDF Audit CSV security ha
 
   it('view_history_panel RTI CSV export neutralizes formulas, tolerates non-Date timestamps, strips config newlines, and prepends UTF-8 BOM', () => {
     const hSrc = readFileSync(resolve(ROOT, 'view_history_panel_module.js'), 'utf8');
-    const rtiHandlerSrc = sliceBetween(hSrc, '              onClick: (e) => {\n                e.stopPropagation();\n                const rtiCsvCell', '\n              className: `min-h-11 rounded-lg px-2');
-    const body = rtiHandlerSrc.slice('              onClick: '.length).replace(/,\s*$/, '');
+    // Indentation-insensitive: the handler moved deeper when the row was re-wrapped.
+    const rtiStart = hSrc.search(/onClick: \(e\) => \{\s*e\.stopPropagation\(\);\s*const rtiCsvCell/);
+    if (rtiStart < 0) throw new Error('Missing RTI CSV handler');
+    const rtiEnd = hSrc.indexOf('className: `min-h-11 rounded-lg px-2', rtiStart);
+    if (rtiEnd < 0) throw new Error('Missing RTI CSV handler end');
+    const rtiHandlerSrc = hSrc.slice(rtiStart, rtiEnd);
+    const body = rtiHandlerSrc.slice('onClick: '.length).replace(/,\s*$/, '');
     const { captured, MemBlob, urlApi, docStub } = makeCsvCaptureEnv();
     const clickFn = new Function(
       'itemDate', 'itemData', 'itemTitle', 'itemConfigSummary',
@@ -232,7 +237,8 @@ describe('Wave 71: Quiz, History Panel, Oral Fluency & PDF Audit CSV security ha
 
   it('view_pdf_audit remediation history CSV button neutralizes formula prefixes and prepends UTF-8 BOM', () => {
     const paSrc = readFileSync(resolve(ROOT, 'view_pdf_audit_module.js'), 'utf8');
-    const btnFn = sliceBetween(paSrc, '/* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {', '\n      }, className: "ml-auto px-2 py-0.5');
+    // Start at the run-history panel: earlier buttons share the same opening.
+    const btnFn = sliceBetween(paSrc.slice(paSrc.indexOf('"data-help-key": "pdf_audit_run_history_panel"')), '/* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {', '\n      }, className: "ml-auto px-2 py-0.5');
     const clickBody = btnFn.replace(/^[\s\S]*?onClick:\s*/, '');
     let savedBlob = null;
     let savedName = null;

@@ -305,6 +305,7 @@ function HeaderBar(props) {
   const viewModeAvailable = !isStudentLinkMode && !isIndependentMode;
   const startAppTour = (step) => {
     setShowSetupPathMenu(false);
+    if (isHelpMode && typeof handleToggleIsHelpMode === 'function') handleToggleIsHelpMode();
     setSpotlightMessage('');
     setTourStep(step);
     setRunTour(true);
@@ -527,6 +528,8 @@ function HeaderBar(props) {
   const _translateA11yFrameRef = React.useRef(0);
   const _translateObserverRef = React.useRef(null);
   const _exportDialogRef = React.useRef(null);
+  const [showMoreDocFormats, setShowMoreDocFormats] = React.useState(false);
+  React.useEffect(() => { if (!showExportMenu) setShowMoreDocFormats(false); }, [showExportMenu]);
   _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
   React.useEffect(() => {
     if (!showHelpMenu) return undefined;
@@ -598,6 +601,43 @@ function HeaderBar(props) {
     ? (t('header.personal_ai_connected') || 'Personal AI connected')
     : liveStatus && liveStatus.aiSetupAllowed ? 'Personal AI available' : 'AI tools off';
   _headerUseFocusTrap(_exportDialogRef, showExportMenu, handleSetShowExportMenuToFalse);
+  // Opened from the command palette, the trap's restore target (the palette input) is gone when
+  // Documents closes, so focus fell to <body>. Then land on a visible header control instead.
+  const _docsTriggerRef = React.useRef(null);
+  const _settingsToggleRef = React.useRef(null);
+  const _compactHelpRef = React.useRef(null);
+  const _docsWasOpenRef = React.useRef(false);
+  // Whether a Documents button opened the sheet. If not (palette, shortcut), the trap's restore
+  // target can be an unrelated header control, so focus is pulled into the sheet while it is
+  // open and sent to a Documents/Settings control when it closes.
+  const _docsOpenedByTriggerRef = React.useRef(false);
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (showExportMenu) {
+      _docsWasOpenRef.current = true;
+      const opener = document.activeElement;
+      _docsOpenedByTriggerRef.current = !!(opener && opener.closest && opener.closest('[data-help-key="header_export"], [data-output-documents-toggle]'));
+      if (_docsOpenedByTriggerRef.current) return;
+      const pullIn = () => {
+        const sheet = _exportDialogRef.current;
+        if (!sheet || !sheet.isConnected || sheet.contains(document.activeElement)) return;
+        const first = sheet.querySelector('button:not([disabled]), [href], input:not([disabled]), select:not([disabled])');
+        try { (first || sheet).focus(); } catch (_) {}
+      };
+      const timers = [setTimeout(pullIn, 0), setTimeout(pullIn, 150)];
+      return () => timers.forEach(clearTimeout);
+    }
+    if (!_docsWasOpenRef.current) return;
+    _docsWasOpenRef.current = false;
+    const active = document.activeElement;
+    const lost = !active || active === document.body || !active.isConnected;
+    if (!lost && _docsOpenedByTriggerRef.current) return;
+    // A row that opened another dialog (the Document Builder, Homework QR) keeps its focus.
+    if (!lost && active.closest && active.closest('[role="dialog"], [aria-modal="true"]')) return;
+    const usable = (el) => !!el && el.isConnected && typeof el.focus === 'function' && !el.disabled && !el.closest('[hidden], [inert], [aria-hidden="true"]');
+    const target = [_docsTriggerRef.current, _settingsToggleRef.current, _compactHelpRef.current].find(usable);
+    if (target) { try { target.focus(); } catch (_) {} }
+  }, [showExportMenu]);
   React.useEffect(() => {
     if (!_joinOpenAfterExpandRef.current || headerCollapsed) return;
     _joinOpenAfterExpandRef.current = false;
@@ -782,6 +822,154 @@ function HeaderBar(props) {
     Promise.resolve(check()).then(saved => { if (live) setKokoroSavedOnDevice(!!saved); }, () => { if (live) setKokoroSavedOnDevice(null); });
     return () => { live = false; };
   }, [showVoiceSettings, selectedVoice]);
+  // Non-English offline voices (Piper WASM): never used for English (Kokoro handles English).
+  // Static base-code set avoids falsely claiming "no offline voice" before piper_tts_loader.js loads.
+  const PIPER_NON_EN_CODES = React.useMemo(() => new Set([
+    'ar', 'ca', 'cs', 'da', 'de', 'el', 'es', 'fi', 'fr', 'hu', 'is', 'it',
+    'ka', 'kk', 'ne', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sr', 'sv', 'sw',
+    'tr', 'uk', 'vi', 'zh'
+  ]), []);
+  const activeNonEnLangCode = (leveledTextLanguage && leveledTextLanguage !== 'English' && typeof languageToTTSCode === 'function')
+    ? String(languageToTTSCode(leveledTextLanguage) || '').trim().split(/[-_]/)[0].toLowerCase()
+    : '';
+  const piperSupportsActiveLang = !!(activeNonEnLangCode && activeNonEnLangCode !== 'en' && (
+    window._piperTTS && typeof window._piperTTS.supportsLanguage === 'function'
+      ? window._piperTTS.supportsLanguage(activeNonEnLangCode)
+      : PIPER_NON_EN_CODES.has(activeNonEnLangCode)
+  ));
+  const [piperSavedByLang, setPiperSavedByLang] = React.useState({});
+  const [piperDownloadingLang, setPiperDownloadingLang] = React.useState('');
+  const [piperDownloadPct, setPiperDownloadPct] = React.useState(0);
+  const [piperTestingLang, setPiperTestingLang] = React.useState('');
+  const [piperRemovingLang, setPiperRemovingLang] = React.useState('');
+  const piperTestAudioRef = React.useRef(null);
+  const [preferOfflineNonEnglish, setPreferOfflineNonEnglish] = React.useState(() => {
+    try { return _hdrSafeJsonObject(localStorage.getItem('alloflow_ai_config')).preferOfflineNonEnglishVoice === true; }
+    catch (_) { return false; }
+  });
+  const deviceVoiceInstallTip = React.useMemo(() => {
+    const ua = String((typeof navigator !== 'undefined' && navigator.userAgent) || '');
+    if (/CrOS/i.test(ua)) return 'Chromebook tip: Install free on-device voices in Settings → Accessibility → Text-to-Speech → Voice settings.';
+    if (/iPad|iPhone|iPod|Macintosh/i.test(ua)) return 'Apple tip: Install free Enhanced on-device voices in Settings → Accessibility → Spoken Content → Voices.';
+    return 'Privacy note: On-device voices are preferred automatically so spoken text stays local when available.';
+  }, []);
+  React.useEffect(() => () => {
+    try { if (piperTestAudioRef.current) { piperTestAudioRef.current.pause(); piperTestAudioRef.current.src = ''; } } catch (_) {}
+    piperTestAudioRef.current = null;
+  }, []);
+  React.useEffect(() => {
+    if (!showVoiceSettings || !piperSupportsActiveLang || !activeNonEnLangCode) return undefined;
+    let live = true;
+    const checkStored = async () => {
+      try {
+        if (!window._piperTTS && typeof window.__loadPiperTTS === 'function') {
+          await Promise.resolve(window.__loadPiperTTS());
+        }
+        if (!live || !window._piperTTS) return;
+        if (window._piperTTS.isLanguageReady?.(activeNonEnLangCode)) {
+          setPiperSavedByLang(prev => prev[activeNonEnLangCode] ? prev : { ...prev, [activeNonEnLangCode]: true });
+          return;
+        }
+        if (typeof window._piperTTS.isLanguageStored === 'function') {
+          const saved = await window._piperTTS.isLanguageStored(activeNonEnLangCode);
+          if (live) setPiperSavedByLang(prev => ({ ...prev, [activeNonEnLangCode]: !!saved }));
+        }
+      } catch (_) {}
+    };
+    checkStored();
+    return () => { live = false; };
+  }, [showVoiceSettings, piperSupportsActiveLang, activeNonEnLangCode]);
+  const piperActiveLangReady = !!(activeNonEnLangCode && (
+    window._piperTTS?.isLanguageReady?.(activeNonEnLangCode) || piperSavedByLang[activeNonEnLangCode] === true
+  ));
+  const startPiperLangDownload = async (langCode, langLabel) => {
+    if (!langCode || langCode === 'en' || piperDownloadingLang || !kokoroCapability.ok) return;
+    setPiperDownloadingLang(langCode);
+    setPiperDownloadPct(5);
+    addToast(`Downloading offline ${langLabel || langCode} voice (~30–60 MB, one time). You can keep working.`, 'info');
+    try {
+      if (!window._piperTTS && typeof window.__loadPiperTTS === 'function') {
+        await Promise.resolve(window.__loadPiperTTS());
+      }
+      const ok = window._piperTTS && typeof window._piperTTS.preloadLanguage === 'function'
+        ? await window._piperTTS.preloadLanguage(langCode, {
+            onProgress: (p) => {
+              const pct = Math.max(5, Math.min(100, Math.round((Number(p && p.pct) || 0) * 100)));
+              setPiperDownloadPct(pct);
+            }
+          })
+        : false;
+      if (ok) {
+        setPiperSavedByLang(prev => ({ ...prev, [langCode]: true }));
+        addToast(`Offline ${langLabel || langCode} voice is ready and saved on this device.`, 'success');
+      } else {
+        addToast(`Could not download the offline ${langLabel || langCode} voice. Cloud or device voices remain available.`, 'error');
+      }
+    } catch (_) {
+      addToast(`Could not download the offline ${langLabel || langCode} voice. Cloud or device voices remain available.`, 'error');
+    } finally {
+      setPiperDownloadingLang('');
+      setPiperDownloadPct(0);
+    }
+  };
+  const removePiperLangDownload = async (langCode, langLabel) => {
+    if (!langCode || langCode === 'en' || piperRemovingLang) return;
+    setPiperRemovingLang(langCode);
+    try {
+      if (!window._piperTTS && typeof window.__loadPiperTTS === 'function') await Promise.resolve(window.__loadPiperTTS());
+      const removed = window._piperTTS && typeof window._piperTTS.removeLanguage === 'function'
+        ? await window._piperTTS.removeLanguage(langCode)
+        : false;
+      setPiperSavedByLang(prev => ({ ...prev, [langCode]: false }));
+      if (removed) addToast(`Removed cached offline ${langLabel || langCode} voice from this device.`, 'info');
+    } catch (_) {
+      addToast(`Could not remove the cached ${langLabel || langCode} voice.`, 'error');
+    } finally {
+      setPiperRemovingLang('');
+    }
+  };
+  const testPiperOfflineVoice = async (langCode, langLabel) => {
+    if (!langCode || langCode === 'en' || piperTestingLang) return;
+    setPiperTestingLang(langCode);
+    const SAMPLES = {
+      es: 'Hola, esta es la voz sin conexión de AlloFlow.',
+      fr: 'Bonjour, voici la voix hors ligne de AlloFlow.',
+      de: 'Hallo, das ist die Offline-Stimme von AlloFlow.',
+      it: 'Ciao, questa è la voce offline di AlloFlow.',
+      pt: 'Olá, esta é a voz offline do AlloFlow.',
+      ar: 'مرحباً، هذا هو الصوت غير المتصل بالإنترنت.',
+      zh: '你好，这是离线语音测试。',
+      vi: 'Xin chào, đây là giọng đọc ngoại tuyến.',
+      ru: 'Привет, это офлайн-голос AlloFlow.',
+      uk: 'Привіт, це офлайн-голос AlloFlow.',
+      pl: 'Cześć, to jest głos offline AlloFlow.',
+      tr: 'Merhaba, bu AlloFlow çevrimdışı sesidir.',
+      nl: 'Hallo, dit is de offline stem van AlloFlow.',
+      sw: 'Habari, hii ni sauti ya nje ya mtandao.',
+    };
+    try {
+      if (piperTestAudioRef.current) { try { piperTestAudioRef.current.pause(); piperTestAudioRef.current.src = ''; } catch (_) {} }
+      if (!window._piperTTS && typeof window.__loadPiperTTS === 'function') await Promise.resolve(window.__loadPiperTTS());
+      const url = window._piperTTS && typeof window._piperTTS.speak === 'function'
+        ? await window._piperTTS.speak(SAMPLES[langCode] || (`${langLabel || langCode} offline voice preview.`), langCode, voiceSpeed)
+        : null;
+      if (!url) {
+        addToast(`Could not preview the offline ${langLabel || langCode} voice.`, 'error');
+        setPiperTestingLang('');
+        return;
+      }
+      const audio = new Audio(url);
+      audio.playbackRate = Math.max(0.5, Math.min(2, Number(voiceSpeed) || 1));
+      if (typeof voiceVolume === 'number' && Number.isFinite(voiceVolume)) audio.volume = Math.max(0, Math.min(1, voiceVolume));
+      piperTestAudioRef.current = audio;
+      const done = () => { if (piperTestAudioRef.current === audio) piperTestAudioRef.current = null; setPiperTestingLang(''); };
+      audio.onended = done;
+      audio.onerror = done;
+      await audio.play();
+    } catch (_) {
+      setPiperTestingLang('');
+    }
+  };
   // Student AI off: a Kokoro voice already on this device reads locally, so
   // it stays offered; one that would need the 88 MB download is not.
   const studentOnDeviceKokoro = studentDeviceVoiceOnly && kokoroCapability.ok && (!!window._kokoroTTS?.ready || kokoroSavedOnDevice === true);
@@ -1015,27 +1203,42 @@ function HeaderBar(props) {
     setShowHelpMenu(open => !open);
   };
   const helpDot = (helpHasHistory && !isHelpMode) ? <span aria-hidden="true" data-help-dot="" className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50"></span> : null;
-  const helpMenuRow = 'flex w-full min-h-11 flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-start ' + (theme === 'contrast' ? 'text-yellow-400 hover:bg-white/10' : 'text-slate-900 hover:bg-slate-100');
+  const helpMenuRow = 'flex w-full min-h-11 flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-start transition-colors ' + (theme === 'contrast' ? 'text-yellow-400 hover:bg-yellow-400/15' : theme === 'dark' ? 'text-slate-100 hover:bg-slate-800' : 'text-slate-900 hover:bg-slate-100');
+  const helpMenuDescClass = 'text-xs font-medium leading-snug ' + (theme === 'contrast' ? 'text-yellow-200' : theme === 'dark' ? 'text-slate-300' : 'text-slate-600');
   const helpMenu = (showHelpMenu && helpMenuAvailable) ? (
-    <div ref={_helpMenuRef} data-help-menu="" data-help-ignore="true" role="group" aria-label={helpMenuTitle} style={{ right: -helpMenuShift }}
-      className={'absolute top-full mt-2 w-[17rem] max-w-[calc(100vw-1.5rem)] rounded-xl border p-1.5 shadow-xl z-[10999] ' + (theme === 'contrast' ? 'bg-black border-yellow-400' : 'bg-white border-slate-200')}>
+    <div ref={_helpMenuRef} data-help-menu="" data-help-ignore="true" data-help-menu-theme={theme || 'light'} role="group" aria-label={helpMenuTitle}
+      style={{
+        right: -helpMenuShift,
+        zIndex: 10999,
+        backgroundColor: theme === 'contrast' ? '#000000' : theme === 'dark' ? '#0f172a' : '#ffffff',
+      }}
+      className={'absolute top-full mt-2 w-[17.5rem] max-w-[calc(100vw-1.5rem)] rounded-xl border p-1.5 shadow-xl ' + (theme === 'contrast' ? 'bg-black border-2 border-yellow-400' : theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200')}>
       <button type="button" data-help-menu-explain="" onClick={() => { setShowHelpMenu(false); handleToggleIsHelpMode(); }} className={helpMenuRow}>
-        <span className="flex items-center gap-2 text-sm font-black"><CircleHelp size={16} aria-hidden="true" />{homeToolsText('help_menu.explain', 'What does this do?')}</span>
-        <span className="text-xs font-medium leading-snug">{homeToolsText('help_menu.explain_desc', 'Turn this on, then click anything to see what it does.')}</span>
+        <span className="flex w-full items-center justify-between gap-2 text-sm font-black">
+          <span className="flex items-center gap-2"><CircleHelp size={16} aria-hidden="true" />{homeToolsText('help_menu.explain', 'What does this do?')}</span>
+          <kbd aria-hidden="true" className={'px-1.5 py-0.5 rounded border text-[10px] font-mono ' + (theme === 'contrast' ? 'border-yellow-400 text-yellow-300' : theme === 'dark' ? 'border-slate-600 bg-slate-800 text-slate-300' : 'border-slate-300 bg-slate-50 text-slate-600')}>?</kbd>
+        </span>
+        <span className={helpMenuDescClass}>{homeToolsText('help_menu.explain_desc', 'Turn this on, then click anything to see what it does.')}</span>
       </button>
       <button type="button" data-help-key="header_tour_start" data-help-menu-tour="" onClick={() => { setShowHelpMenu(false); startAppTour(0); }} className={helpMenuRow}>
         <span className="flex items-center gap-2 text-sm font-black"><MapIcon size={16} aria-hidden="true" />{homeToolsText('toolbar.tour_take', 'Take the app tour')}</span>
-        <span className="text-xs font-medium leading-snug">{homeToolsText('help_menu.tour_desc', 'A guided look at each area.')}</span>
+        <span className={helpMenuDescClass}>{homeToolsText('help_menu.tour_desc', 'A guided look at each area.')}</span>
       </button>
       {tourResumeStep > 0 && (
         <button type="button" data-help-menu-tour-resume="" onClick={() => { setShowHelpMenu(false); startAppTour(tourResumeStep); }} className={helpMenuRow}>
-          <span className="text-xs font-bold">{homeToolsText('toolbar.tour_resume', 'Resume the tour where you left off')}</span>
+          <span className="text-xs font-bold">{homeToolsText('toolbar.tour_resume', 'Resume the tour where you left off')} ({homeToolsText('toolbar.guided_resume_step', 'Step {n}').replace('{n}', String(tourResumeStep + 1))})</span>
         </button>
       )}
       <button type="button" data-help-key="hints_recall" data-help-menu-tips="" onClick={() => { setShowHelpMenu(false); handleSetShowHintsModalToTrue(); }} className={helpMenuRow}>
         <span className="flex items-center gap-2 text-sm font-black"><Lightbulb size={16} aria-hidden="true" />{homeToolsText('help_menu.tips', 'Past tips and messages')}{helpHasHistory && <span aria-hidden="true" className="w-2 h-2 bg-red-500 rounded-full"></span>}</span>
-        <span className="text-xs font-medium leading-snug">{homeToolsText('help_menu.tips_desc', 'Read a tip or notice again after it has gone.')}</span>
+        <span className={helpMenuDescClass}>{homeToolsText('help_menu.tips_desc', 'Read a tip or notice again after it has gone.')}</span>
       </button>
+      {/* The way back after hiding AlloBot: its own toggle is in the expanded header only. */}
+      {headerCollapsed && isBotVisible === false && (
+        <button type="button" data-help-menu-bot="" onClick={() => { setShowHelpMenu(false); handleToggleIsBotVisible(); const toggle = document.querySelector('[data-help-menu-toggle]'); if (toggle && typeof toggle.focus === 'function') { try { toggle.focus(); } catch (_) {} } }} className={helpMenuRow}>
+          <span className="flex items-center gap-2 text-sm font-black"><Smile size={16} aria-hidden="true" />{homeToolsText('toolbar.show_bot', 'Show AI Assistant')}</span>
+        </button>
+      )}
     </div>
   ) : null;
   // One-click way back after "Save & exit"; the Start & setup dialog stays the full menu.
@@ -1152,6 +1355,115 @@ function HeaderBar(props) {
                 </button>
               </div>}
             </div>
+            {/* One Documents menu for every trigger: this header, the resource bar and the command palette. */}
+            {isTeacherMode && showExportMenu && _headerPortal(
+                                <>
+                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className={`fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}`}>
+                                    <div className="flex items-center justify-between gap-2 px-2 py-1">
+                                      <h2 id="header-documents-dialog-title" className={`text-xs font-black flex items-center gap-1.5 ${_skin.label}`}>{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
+                                      <button type="button" onClick={handleSetShowExportMenuToFalse} className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
+                                    </div>
+                                    <button type="button"
+                                        aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
+                                        onClick={() => openExportPreview('print')}
+                                        data-help-key="export_pdf"
+                                        className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === 'contrast' ? 'bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300' : 'bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white'}`}
+                                    >
+                                        <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
+                                        <span className={`text-xs font-medium ${theme === 'contrast' ? 'text-black' : 'text-indigo-100'}`}>{t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`} · {t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
+                                    </button>
+                                    {customExportCSS && <div className={`text-xs font-medium px-2 mb-1 ${theme === 'dark' ? 'text-emerald-300' : theme === 'contrast' ? 'text-yellow-400' : 'text-green-700'}`}>✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
+                                    {/* Sharing to a class is not part of learning on your own. */}
+                                    {!isIndependentMode && (<>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{t('export_menu.section_student_qr') || 'Student QR'}</div>
+                                    <button type="button"
+                                        onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-cyan-50 text-cyan-700' : _skin.ghost}`}
+                                        data-help-key="homework_qr"
+                                    >
+                                        <Share2 size={14} aria-hidden="true" /> {t('export_menu.homework_qr') || 'Homework QR'}
+                                    </button>
+                                    <div className="px-3 pb-2">
+                                      <label className={`block text-xs font-bold ${_skin.label}`} htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
+                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className={`mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}`}>
+                                        <option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>
+                                        <option value={7}>{t('export_menu.expiry_1_week') || '1 week'}</option>
+                                        <option value={14}>{t('export_menu.expiry_2_weeks') || '2 weeks'}</option>
+                                        <option value={30}>{t('export_menu.expiry_30_days') || '30 days'}</option>
+                                        <option value={90}>{t('export_menu.expiry_90_days') || '90 days (quarter)'}</option>
+                                        <option value={180}>{t('export_menu.expiry_180_days') || '180 days (semester)'}</option>
+                                        <option value={365}>{t('export_menu.expiry_365_days') || '365 days (school year)'}</option>
+                                      </select>
+                                      {/* Activity setup and shared-link history live together in the
+                                          Assignment Control Center — keep one clear launch action here. */}
+                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} title={t('export_menu.setup_activity') || 'Set up a poll, sign-up sheet or class activity'} className={`mt-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${theme === 'light' ? 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100' : _skin.surface}`}>
+                                        <History size={14} aria-hidden="true" /> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
+                                      </button>
+                                    </div>
+                                    <p className={`px-3 pb-2 text-xs leading-snug ${theme === 'light' ? 'text-slate-600' : _skin.muted}`}>{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
+                                    </>)}
+                                    {/* Independent learners have only three more rows, so they show without the fold. */}
+                                    {!isIndependentMode && <div className={`border-t mt-1 pt-1 ${_skin.divider}`}>
+                                    <button type="button" data-documents-more-formats="" aria-expanded={showMoreDocFormats} onClick={() => setShowMoreDocFormats(open => !open)} className={`flex items-center justify-between gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-slate-50 text-slate-700' : _skin.ghost}`}>
+                                        <span>{t('export_preview.additional_export_formats') || 'Additional export formats'}</span>
+                                        {showMoreDocFormats ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+                                    </button>
+                                    </div>}
+                                    {(showMoreDocFormats || isIndependentMode) && (<>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
+                                    <button type="button"
+                                        onClick={() => openExportPreview('worksheet')}
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-slate-50 text-slate-700' : _skin.ghost}`}
+                                        data-help-key="export_worksheet"
+                                    >
+                                        <FileText size={14} aria-hidden="true" /> {t('export_menu.worksheet')}
+                                    </button>
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
+                                    <button type="button"
+                                        onClick={() => openExportPreview('html')}
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-indigo-50 text-indigo-700' : _skin.ghost}`}
+                                        data-help-key="export_html"
+                                    >
+                                        <Code size={14} aria-hidden="true" /> {t('export_menu.html')}
+                                    </button>
+                                    <button type="button"
+                                        onClick={() => openExportPreview('slides')}
+                                        disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'light' ? 'hover:bg-orange-50 text-orange-700' : _skin.ghost}`}
+                                        data-help-key="export_slides"
+                                    >
+                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <MonitorPlay size={14} aria-hidden="true" />}
+                                        {t('export_menu.slides')}
+                                    </button>
+                                    {/* Section label shares the buttons' gate \u2014 an excluded mode
+                                        must not see an empty "LMS Integration" heading (independent
+                                        mode did, before parent exclusions were added). */}
+                                    {!isIndependentMode && !isParentMode && (
+                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
+                                    )}
+                                    {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
+                                        <button type="button"
+                                            onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
+                                            className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-teal-50 text-teal-700' : _skin.ghost}`}
+                                            data-help-key="export_qti"
+                                        >
+                                            <FolderDown size={14} aria-hidden="true" /> {t('export_menu.qti')}
+                                        </button>
+                                    )}
+                                    {!isIndependentMode && !isParentMode && (
+                                    <button type="button"
+                                        onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
+                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-yellow-50 text-yellow-800' : _skin.ghost}`}
+                                        data-help-key="export_ims"
+                                    >
+                                        <FolderDown size={14} aria-hidden="true" /> {t('export_menu.ims')}
+                                    </button>
+                                    )}
+                                    </>)}
+                                </div>
+                                <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowExportMenuToFalse}></div>
+                                </>
+            )}
             {headerCollapsed && (
               <div className="ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
                 <nav aria-label={t('common.content_tabs') || 'Primary navigation'} className="allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain">
@@ -1375,7 +1687,7 @@ function HeaderBar(props) {
                 {/* Help stays reachable in the compact bar; the expanded header has its own button. */}
                 {headerCollapsed && (
                   <div className="relative shrink-0">
-                    <button type="button" data-help-ignore="true" data-compact-help-toggle="" data-help-menu-toggle="" onClick={handleHelpButton} aria-pressed={(!helpMenuAvailable || isHelpMode) ? isHelpMode : undefined} aria-haspopup={(helpMenuAvailable && !isHelpMode) ? 'true' : undefined} aria-expanded={(helpMenuAvailable && !isHelpMode) ? showHelpMenu : undefined}
+                    <button type="button" ref={_compactHelpRef} data-help-ignore="true" data-compact-help-toggle="" data-help-menu-toggle="" onClick={handleHelpButton} aria-pressed={(!helpMenuAvailable || isHelpMode) ? isHelpMode : undefined} aria-haspopup={(helpMenuAvailable && !isHelpMode) ? 'true' : undefined} aria-expanded={(helpMenuAvailable && !isHelpMode) ? showHelpMenu : undefined}
                       className={`relative inline-flex h-full min-h-9 items-center justify-center rounded-xl border px-2.5 transition-colors ${isHelpMode ? 'border-yellow-300 bg-yellow-400 text-slate-900' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'}`}
                       title={helpButtonLabel} aria-label={helpButtonLabel}>
                       <CircleHelp size={16} aria-hidden="true" />
@@ -1393,7 +1705,7 @@ function HeaderBar(props) {
                 )}
                 {guidedResumeChip}
                 <button
-                  type="button"
+                  type="button" ref={_settingsToggleRef}
                   onClick={toggleHeaderCollapsed}
                   data-help-key="header_settings_toggle"
                   aria-expanded={!headerCollapsed}
@@ -1720,7 +2032,7 @@ function HeaderBar(props) {
                                 <Languages size={14} aria-hidden="true" /> <span className="hidden lg:inline">{t('header.translate_button')}</span>
                             </button>
                             <div className="relative shrink-0">
-                            <button type="button"
+                            <button type="button" ref={_docsTriggerRef}
                                 aria-label={t('header.documents_menu_aria') || 'Documents menu'}
                                 aria-haspopup="dialog"
                                 aria-expanded={showExportMenu}
@@ -1731,105 +2043,6 @@ function HeaderBar(props) {
                             >
                                 <FileText size={14} /> <span className="hidden lg:inline">{t('header.nav_documents') || 'Documents'}</span> {showExportMenu ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
-                            {showExportMenu && _headerPortal(
-                                <>
-                                <div ref={_exportDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-documents-dialog-title" className={`fixed top-4 right-4 bottom-4 w-56 max-w-[calc(100vw-2rem)] overflow-y-auto overscroll-contain rounded-xl shadow-2xl p-2 border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none flex flex-col gap-1 ${_skin.panel}`}>
-                                    <div className="flex items-center justify-between gap-2 px-2 py-1">
-                                      <h2 id="header-documents-dialog-title" className={`text-xs font-black flex items-center gap-1.5 ${_skin.label}`}>{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
-                                      <button type="button" onClick={handleSetShowExportMenuToFalse} className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
-                                    </div>
-                                    <button type="button"
-                                        aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
-                                        onClick={() => openExportPreview('print')}
-                                        data-help-key="export_pdf"
-                                        className={`w-full px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1 ${theme === 'contrast' ? 'bg-yellow-400 text-black border-2 border-yellow-400 hover:bg-yellow-300' : 'bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-800 hover:to-violet-800 text-white'}`}
-                                    >
-                                        <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
-                                        <span className={`text-xs font-medium ${theme === 'contrast' ? 'text-black' : 'text-indigo-100'}`}>{t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`} · {t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
-                                    </button>
-                                    {customExportCSS && <div className={`text-xs font-medium px-2 mb-1 ${theme === 'dark' ? 'text-emerald-300' : theme === 'contrast' ? 'text-yellow-400' : 'text-green-700'}`}>✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
-                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
-                                    <button type="button"
-                                        onClick={() => openExportPreview('worksheet')}
-                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-slate-50 text-slate-700' : _skin.ghost}`}
-                                        data-help-key="export_worksheet"
-                                    >
-                                        <FileText size={14} aria-hidden="true" /> {t('export_menu.worksheet')}
-                                    </button>
-                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83d\udcbb"} {t('export_menu.section_digital') || 'Digital Formats'}</div>
-                                    <button type="button"
-                                        onClick={() => openExportPreview('html')}
-                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-indigo-50 text-indigo-700' : _skin.ghost}`}
-                                        data-help-key="export_html"
-                                    >
-                                        <Code size={14} aria-hidden="true" /> {t('export_menu.html')}
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => openExportPreview('slides')}
-                                        disabled={!pptxLoaded} title={t('header.export_slides_tooltip') || 'Opens Document Builder in Slides mode'}
-                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'light' ? 'hover:bg-orange-50 text-orange-700' : _skin.ghost}`}
-                                        data-help-key="export_slides"
-                                    >
-                                        {!pptxLoaded ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <MonitorPlay size={14} aria-hidden="true" />}
-                                        {t('export_menu.slides')}
-                                    </button>
-                                    {/* Sharing to a class is not part of learning on your own. */}
-                                    {!isIndependentMode && (<>
-                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{t('export_menu.section_student_qr') || 'Student QR'}</div>
-                                    <button type="button"
-                                        onClick={() => { if (typeof createHomeworkAssignmentLink === 'function') createHomeworkAssignmentLink(); setShowExportMenu(false); }}
-                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-cyan-50 text-cyan-700' : _skin.ghost}`}
-                                        data-help-key="homework_qr"
-                                    >
-                                        <Share2 size={14} aria-hidden="true" /> {t('export_menu.homework_qr') || 'Homework QR'}
-                                    </button>
-                                    <div className="px-3 pb-2">
-                                      <label className={`block text-xs font-bold ${_skin.label}`} htmlFor="homework-qr-expiry">{t('export_menu.homework_link_length') || 'Homework link length'}</label>
-                                      <select id="homework-qr-expiry" value={homeworkExpiryDays || 14} onChange={event => setHomeworkExpiryDays(Number(event.target.value) || 14)} className={`mt-1 w-full rounded-md border px-2 py-1.5 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-cyan-500 ${_skin.field}`}>
-                                        <option value={1}>{t('export_menu.expiry_1_day') || '1 day'}</option>
-                                        <option value={7}>{t('export_menu.expiry_1_week') || '1 week'}</option>
-                                        <option value={14}>{t('export_menu.expiry_2_weeks') || '2 weeks'}</option>
-                                        <option value={30}>{t('export_menu.expiry_30_days') || '30 days'}</option>
-                                        <option value={90}>{t('export_menu.expiry_90_days') || '90 days (quarter)'}</option>
-                                        <option value={180}>{t('export_menu.expiry_180_days') || '180 days (semester)'}</option>
-                                        <option value={365}>{t('export_menu.expiry_365_days') || '365 days (school year)'}</option>
-                                      </select>
-                                      {/* Activity setup and shared-link history live together in the
-                                          Assignment Control Center — keep one clear launch action here. */}
-                                      <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} title={t('export_menu.setup_activity') || 'Set up a poll, sign-up sheet or class activity'} className={`mt-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${theme === 'light' ? 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100' : _skin.surface}`}>
-                                        <History size={14} aria-hidden="true" /> {t('export_menu.shared_links') || 'Polls, sign-ups & shared links'}{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
-                                      </button>
-                                    </div>
-                                    <p className={`px-3 pb-2 text-xs leading-snug ${theme === 'light' ? 'text-slate-600' : _skin.muted}`}>{studentAiPolicyForShare === 'student-byok' ? (t('export_menu.share_policy_byok') || 'Teacher-prepared resources open with optional personal AI. Students supply and test their own provider.') : (t('export_menu.share_policy_ai_off') || 'Teacher-prepared resources open for students with AI generation off.')}</p>
-                                    </>)}
-                                    {/* Section label shares the buttons' gate \u2014 an excluded mode
-                                        must not see an empty "LMS Integration" heading (independent
-                                        mode did, before parent exclusions were added). */}
-                                    {!isIndependentMode && !isParentMode && (
-                                    <div className={`text-xs font-bold uppercase tracking-widest px-2 pt-2 pb-1 border-t mt-1 ${_skin.divider} ${_skin.muted}`}>{"\ud83c\udfeb"} {t('export_menu.section_lms') || 'LMS Integration'}</div>
-                                    )}
-                                    {activeView === 'quiz' && !isIndependentMode && !isParentMode && (
-                                        <button type="button"
-                                            onClick={() => { handleExportQTI(); setShowExportMenu(false); }}
-                                            className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-teal-50 text-teal-700' : _skin.ghost}`}
-                                            data-help-key="export_qti"
-                                        >
-                                            <FolderDown size={14} aria-hidden="true" /> {t('export_menu.qti')}
-                                        </button>
-                                    )}
-                                    {!isIndependentMode && !isParentMode && (
-                                    <button type="button"
-                                        onClick={() => { handleExportIMS(); setShowExportMenu(false); }}
-                                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-colors ${theme === 'light' ? 'hover:bg-yellow-50 text-yellow-800' : _skin.ghost}`}
-                                        data-help-key="export_ims"
-                                    >
-                                        <FolderDown size={14} aria-hidden="true" /> {t('export_menu.ims')}
-                                    </button>
-                                    )}
-                                </div>
-                                <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowExportMenuToFalse}></div>
-                                </>
-                            )}
                         </div>
                             {/* W3 (2026-08-16): this button is deliberately NOT gated on
                                 !isParentMode, and that is easy to get wrong twice.
@@ -2124,27 +2337,7 @@ function HeaderBar(props) {
                   <span className="flex items-center gap-2 text-sm font-black"><Sparkles size={16} />{t('toolbar.rerun_wizard') || 'Re-run Setup Wizard'}</span>
                   <span className="block text-xs text-indigo-100 mt-1 leading-relaxed">{t('toolbar.quickstart_setup_desc') || 'Set grade, source material, standards, languages, and personalization.'}</span>
                 </button>
-                {/* The tour's own button lives in the expanded header, which is collapsed by default. */}
-                <button
-                  type="button"
-                  onClick={() => startAppTour(0)}
-                  data-help-key="header_tour_start"
-                  data-setup-tour-start=""
-                  className="w-full text-start rounded-xl border border-amber-300/30 bg-amber-500/15 hover:bg-amber-500/25 px-4 py-3 transition-colors"
-                >
-                  <span className="flex items-center gap-2 text-sm font-black"><Lightbulb size={16} aria-hidden="true" />{homeToolsText('toolbar.tour_take', 'Take the app tour')}</span>
-                  <span className="block text-xs text-amber-100 mt-1 leading-relaxed">{homeToolsText('toolbar.tour_take_desc', 'A guided look at each area of AlloFlow. Jump to any section from the tour card.')}</span>
-                </button>
-                {tourResumeStep > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => startAppTour(tourResumeStep)}
-                    data-setup-tour-resume=""
-                    className="w-full text-start rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 transition-colors"
-                  >
-                    <span className="text-xs font-bold text-slate-200">{homeToolsText('toolbar.tour_resume', 'Resume the tour where you left off')}</span>
-                  </button>
-                )}
+                {/* The app tour and its Resume row are in the Help "?" menu (both headers), not here. */}
                 {canUseTeacherGuidedMode && <>
                 <button
                   type="button"
@@ -2521,6 +2714,11 @@ function HeaderBar(props) {
                                                         </>
                                                     )}
                                                 </select>
+                                                {selectedVoice === 'browser' && (
+                                                    <p data-device-voice-tip="true" className={`mt-2 p-2 rounded-lg border text-[11px] leading-snug ${_skin.surface}`}>
+                                                        {deviceVoiceInstallTip}
+                                                    </p>
+                                                )}
                                                 {!studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
                                                   <p role="status" className={`mt-2 text-xs ${_skin.label}`}>
                                                     {speechProvider === 'browser'
@@ -2592,16 +2790,90 @@ function HeaderBar(props) {
                                                     do not exist at all, Spanish among them. Report the three states
                                                     separately instead. */}
                                                 {!studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== 'English' && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`}>
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`} data-piper-lang-status={!piperSupportsActiveLang ? 'unsupported' : piperDownloadingLang === activeNonEnLangCode ? 'downloading' : piperActiveLangReady ? 'ready' : 'available'}>
                                                         <div className={`text-xs uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
                                                         <div className={`text-xs ${_skin.noteBody} mt-0.5`}>
-                                                            {!window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage))
+                                                            {!piperSupportsActiveLang
                                                                 ? (t('header.voice_lang_no_offline') || 'Cloud voice, then the device voice. There is no offline voice for this language yet.')
-                                                                : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage))
-                                                                    ? (t('header.voice_lang_offline_ready') || 'An offline voice for this language is saved on this device.')
-                                                                    : (t('header.voice_lang_offline_on_demand') || 'Cloud voice first. An offline voice for this language downloads the first time it is needed.')}
+                                                                : piperDownloadingLang === activeNonEnLangCode
+                                                                    ? `Downloading offline ${leveledTextLanguage} voice… ${piperDownloadPct > 0 ? `${piperDownloadPct}%` : ''}`
+                                                                    : piperActiveLangReady
+                                                                        ? (t('header.voice_lang_offline_ready') || 'An offline voice for this language is saved on this device.')
+                                                                        : (t('header.voice_lang_offline_on_demand') || 'Cloud voice first. An offline voice for this language downloads the first time it is needed.')}
                                                         </div>
-                                                        <div className={`text-xs ${_skin.noteHead} mt-0.5`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
+                                                        {piperDownloadingLang === activeNonEnLangCode && (
+                                                            <div role="progressbar" aria-label={`Downloading offline ${leveledTextLanguage} voice`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={piperDownloadPct} className="mt-1.5 h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                                                                <div className="h-full bg-indigo-600 transition-all duration-200" style={{ width: `${Math.max(5, piperDownloadPct)}%` }} />
+                                                            </div>
+                                                        )}
+                                                        {piperSupportsActiveLang && !piperActiveLangReady && piperDownloadingLang !== activeNonEnLangCode && kokoroCapability.ok && (typeof window !== 'undefined' && (window._piperTTS || typeof window.__loadPiperTTS === 'function')) && (
+                                                            <button
+                                                                type="button"
+                                                                data-piper-get-voice={activeNonEnLangCode}
+                                                                onClick={() => startPiperLangDownload(activeNonEnLangCode, leveledTextLanguage)}
+                                                                className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}
+                                                            >
+                                                                Download offline {leveledTextLanguage} voice
+                                                            </button>
+                                                        )}
+                                                        {piperSupportsActiveLang && piperActiveLangReady && kokoroCapability.ok && (
+                                                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    data-piper-test-voice={activeNonEnLangCode}
+                                                                    disabled={piperTestingLang === activeNonEnLangCode || piperRemovingLang === activeNonEnLangCode}
+                                                                    onClick={() => testPiperOfflineVoice(activeNonEnLangCode, leveledTextLanguage)}
+                                                                    className={`min-h-9 rounded-lg border px-3 text-xs font-bold disabled:opacity-60 ${_skin.ghost}`}
+                                                                >
+                                                                    {piperTestingLang === activeNonEnLangCode ? 'Playing preview…' : `Test offline ${leveledTextLanguage} voice`}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    data-piper-remove-voice={activeNonEnLangCode}
+                                                                    disabled={piperRemovingLang === activeNonEnLangCode || piperTestingLang === activeNonEnLangCode}
+                                                                    onClick={() => removePiperLangDownload(activeNonEnLangCode, leveledTextLanguage)}
+                                                                    className={`min-h-9 rounded-lg border px-2.5 text-xs font-bold disabled:opacity-60 ${_skin.ghost}`}
+                                                                >
+                                                                    {piperRemovingLang === activeNonEnLangCode ? 'Removing…' : 'Remove'}
+                                                                </button>
+                                                                {window._piperTTS?.voiceMap?.[activeNonEnLangCode]?.name && (
+                                                                    <span className={`text-[11px] font-semibold opacity-80 ${_skin.noteBody}`}>
+                                                                        {window._piperTTS.voiceMap[activeNonEnLangCode].name}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        {!piperSupportsActiveLang && (
+                                                            <p data-device-voice-tip="true" className={`mt-1.5 text-[11px] leading-snug opacity-85 ${_skin.noteBody}`}>{deviceVoiceInstallTip}</p>
+                                                        )}
+                                                        {piperSupportsActiveLang && kokoroCapability.ok && (
+                                                            <label className="mt-2 flex items-start gap-2 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="header-prefer-offline-non-english"
+                                                                    data-piper-prefer-offline="true"
+                                                                    className="mt-0.5 accent-indigo-600"
+                                                                    checked={preferOfflineNonEnglish}
+                                                                    onChange={(e) => {
+                                                                        const checked = e.currentTarget.checked;
+                                                                        setPreferOfflineNonEnglish(checked);
+                                                                        try {
+                                                                            const cur = _hdrSafeJsonObject(localStorage.getItem('alloflow_ai_config'));
+                                                                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, preferOfflineNonEnglishVoice: checked }));
+                                                                        } catch (_) {
+                                                                            setPreferOfflineNonEnglish(!checked);
+                                                                            addToast(t('header.audio_setting_save_failed') || 'This audio setting could not be saved. Your previous choice is still active.', 'error');
+                                                                        }
+                                                                    }}
+                                                                    aria-label={`Use offline voice (Piper) first for ${leveledTextLanguage}`}
+                                                                />
+                                                                <span className="text-xs leading-tight">
+                                                                    <span className="font-bold block">Use offline voice (Piper) first for {leveledTextLanguage}</span>
+                                                                    <span className="opacity-80">Keeps non-English read-aloud on-device. English still uses Gemini or Kokoro.</span>
+                                                                </span>
+                                                            </label>
+                                                        )}
+                                                        <div className={`text-xs ${_skin.noteHead} mt-1`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
                                                     </div>
                                                 )}
                                                 <div className="flex gap-2 mt-3">

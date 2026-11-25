@@ -41,7 +41,7 @@ describe('Student Bingo accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('<Gamepad2 size={24} aria-hidden="true" />');
     expect(source).toContain('<X size={24} aria-hidden="true" />');
-    expect(source).toContain('motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95');
+    expect(source).toContain('motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:zoom-in-95');
     expect(source).toContain('motion-safe:animate-bounce');
     expect(source).not.toContain('backdrop-blur-[1px]');
     expect(source).toContain('absolute top-1 right-1');

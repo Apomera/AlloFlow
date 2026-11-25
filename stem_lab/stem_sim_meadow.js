@@ -2,7 +2,7 @@
 // Extracted unchanged from Bee Lab; each consumer owns returned arrays and scene resources.
 (function(root){
   'use strict';
-  if(root.StemMeadow)return;
+  if(!root || typeof root !== 'object' || root.StemMeadow)return;
   function vegetation(kind) {
     if (['shrub','grass','reed','seed'].indexOf(kind)<0) return null;
     var positions=[],colors=[],smoothVertices=0;
@@ -53,7 +53,8 @@
 
   function ambientPose(index, state, reducedMotion) {
     if (!Number.isInteger(index) || index < 0 || index >= 8) return null;
-    var clock=state && Number.isFinite(state.simulationClock)?Math.max(0,state.simulationClock):0;
+    var rawClock=state && typeof state==='object'?state.simulationClock:0;
+    var clock=typeof rawClock==='number' && Number.isFinite(rawClock)?Math.min(1e300,Math.max(0,rawClock)):0;
     var time=reducedMotion?0:clock, wander=time*.42+index*.83;
     return {point:{x:Math.sin(index*1.9)*150+Math.cos(wander)*34,
       y:16+(index%4)*9+Math.sin(wander*1.7)*5,z:-90-index*165+Math.sin(wander)*34},
@@ -76,7 +77,9 @@
       if(band>0)tri(a,b,c,palette[band]);tri(b,d,c,palette[band]);
     }
     function line(a,b,width){
-      var dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz),nx=-dz/length*width,nz=dx/length*width;
+      var dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz);
+      if(!(length>1e-9))return;
+      var nx=-dz/length*width,nz=dx/length*width;
       [.19,-.03].forEach(function(y){tri([a[0]-nx,y,a[1]-nz],[b[0]-nx,y,b[1]-nz],[b[0]+nx,y,b[1]+nz],dark);tri([a[0]-nx,y,a[1]-nz],[b[0]+nx,y,b[1]+nz],[a[0]+nx,y,a[1]+nz],dark);});
     }
     for(var vein=3;vein<outline.length-3;vein+=5){
@@ -91,4 +94,4 @@
     return {positions:positions,tones:tones};
   }
   root.StemMeadow=Object.freeze({vegetation:vegetation,butterflyWing:butterflyWing,ambientPose:ambientPose});
-})(window);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

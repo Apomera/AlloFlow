@@ -41,6 +41,12 @@
     st.id = 'allo-citylab-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"cityLab\"] button[id^=\"citylab-parcel-\"] > span:is([style*=\"background-color: rgb(255, 255, 0)\"],[style*=\"background-color: rgb(224, 242, 254)\"],[style*=\"background-color: rgb(255, 255, 255)\"],[style*=\"background-color: rgb(246, 238, 222)\"],[style*=\"background-color: rgb(0, 255, 255)\"],[style*=\"background-color: rgb(239, 225, 196)\"],[style*=\"background-color: rgb(253, 224, 71)\"],[style*=\"background-color: rgb(232, 211, 160)\"],[style*=\"background-color: rgb(220, 197, 122)\"],[style*=\"background-color: rgb(196, 185, 94)\"],[style*=\"background-color: rgb(56, 189, 248)\"],[style*=\"background-color: rgb(216, 165, 33)\"],[style*=\"background-color: rgb(251, 146, 60)\"],[style*=\"background-color: rgb(147, 173, 92)\"],[style*=\"background-color: rgb(127, 157, 132)\"],[style*=\"background-color: rgb(224, 123, 24)\"],[style*=\"background-color: rgb(49, 166, 86)\"],[style*=\"background-color: rgb(95, 159, 102)\"],[style*=\"background-color: rgb(150, 110, 40)\"],[style*=\"background-color: rgb(203, 75, 22)\"],[style*=\"background-color: rgb(13, 124, 178)\"]){color:#000!important;text-shadow:none}.theme-contrast [data-stem-tool-shell=\"cityLab\"] button[id^=\"citylab-parcel-\"] > span:is([style*=\"background-color: rgb(44, 127, 111)\"]),.theme-contrast [data-stem-tool-shell=\"cityLab\"] button[id^=\"citylab-parcel-\"]:hover > span:is([style*=\"background-color: rgb(44, 127, 111)\"]){color:#fff!important;text-shadow:none}.theme-contrast [data-stem-tool-shell=\"cityLab\"] button[id^=\"citylab-parcel-\"]:hover > span:is([style*=\"background-color: rgb(37, 99, 235)\"],[style*=\"background-color: rgb(147, 51, 234)\"],[style*=\"background-color: rgb(15, 118, 110)\"],[style*=\"background-color: rgb(91, 102, 117)\"],[style*=\"background-color: rgb(3, 105, 161)\"],[style*=\"background-color: rgb(185, 28, 28)\"],[style*=\"background-color: rgb(20, 96, 107)\"],[style*=\"background-color: rgb(12, 74, 110)\"],[style*=\"background-color: rgb(127, 29, 29)\"],[style*=\"background-color: rgb(11, 61, 77)\"],[style*=\"background-color: rgb(0, 0, 0)\"],[style*=\"background-color: rgb(15, 23, 42)\"]){color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"cityLab\"] button[id^=\"citylab-parcel-\"] > span.top-0.left-0.leading-none{z-index:1}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-citylab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-citylab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"cityLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"cityLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end tool-owned contrast rules
   // Fallback-aware translator reachable from every call site in this tool.
@@ -4214,7 +4220,7 @@
   function citySignTexture(THREE, text) {
     if (!THREE.CanvasTexture || typeof document === 'undefined') return null;
     try {
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.width = 256; cv.height = 72;
       var g = cv.getContext && cv.getContext('2d');
       if (!g) return null;
@@ -4238,7 +4244,7 @@
     if (!THREE.CanvasTexture || typeof document === 'undefined') return null;
     try {
       var wide = glyph === 'future';
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.width = wide ? 384 : 256; cv.height = 224;
       var g = cv.getContext && cv.getContext('2d');
       if (!g) return null;
@@ -4283,7 +4289,7 @@
     if (!THREE.CanvasTexture || typeof document === 'undefined') return null;
     try {
       var rows = Math.ceil(CODE_ATLAS_IDS.length / CODE_ATLAS_COLS);
-      var cv = document.createElement('canvas');
+      var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
       cv.width = CODE_ATLAS_COLS * CODE_CELL_W; cv.height = rows * CODE_CELL_H;
       var g = cv.getContext && cv.getContext('2d');
       if (!g) return null;
@@ -4891,7 +4897,7 @@
     var qSprite = null;
     if (THREE.Sprite && THREE.SpriteMaterial && THREE.CanvasTexture && typeof document !== 'undefined') {
       try {
-        var cv = document.createElement('canvas');
+        var cv = document.createElement('canvas'); if (cv.setAttribute) cv.setAttribute('aria-hidden', 'true');
         cv.width = 128; cv.height = 128;
         var g2 = cv.getContext && cv.getContext('2d');
         if (g2) {

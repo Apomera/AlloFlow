@@ -30,6 +30,17 @@
     if (typeof v !== 'string' || !v) return '';
     return v.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
   }
+  function _safeLabel(v, fallback) {
+    if (typeof v !== 'string') return fallback;
+    var clean = v.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 160);
+    return clean || fallback;
+  }
+  function _svgA11yProps(opts, fallback) {
+    if (opts && (opts.decorative === true || opts['aria-hidden'] === true || opts['aria-hidden'] === 'true')) {
+      return { 'aria-hidden': 'true', focusable: 'false' };
+    }
+    return { role: 'img', 'aria-label': _safeLabel(opts && opts.label, fallback), focusable: 'false' };
+  }
 
   function _renderPip(opts) {
     var React = window.React;
@@ -41,11 +52,10 @@
     var legColor = _safeColor(opts.legColor, '#f97316');
     var eyeColor = '#0f172a';
     var cls = 'tp-mascot tp-mascot-pip tp-mascot-' + st;
-    return h('svg', {
+    return h('svg', Object.assign({
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
-      role: 'img', 'aria-label': opts.label || 'Pip the typing chick',
       style: { display: 'block', overflow: 'visible' }
-    },
+    }, _svgA11yProps(opts, 'Pip the typing chick')),
       h('defs', null,
         // Gradient for Pip's body - 3D volume radial highlight
         h('radialGradient', { id: 'tp-grad-pip-body', cx: '35%', cy: '35%', r: '65%' },
@@ -130,11 +140,10 @@
     var goggleRim = '#854d0e';
     var lensColor = _safeColor(opts.eyeColor, '#fef3c7');      // pale lamp glow
     var cls = 'tp-mascot tp-mascot-cogsworth tp-mascot-' + st;
-    return h('svg', {
+    return h('svg', Object.assign({
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
-      role: 'img', 'aria-label': opts.label || 'Cogsworth the clockwork owl',
       style: { display: 'block', overflow: 'visible' }
-    },
+    }, _svgA11yProps(opts, 'Cogsworth the clockwork owl')),
       h('defs', null,
         // Metallic brass gradient (3D cylinder effect)
         h('linearGradient', { id: 'tp-grad-brass', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
@@ -259,11 +268,10 @@
     var bgColor = _safeColor(opts.bgColor, '#020617');         // near-black panel
     var alertColor = '#ef4444';
     var cls = 'tp-mascot tp-mascot-vex tp-mascot-' + st;
-    return h('svg', {
+    return h('svg', Object.assign({
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
-      role: 'img', 'aria-label': opts.label || 'Vex the cyberpunk grid-face',
       style: { display: 'block', overflow: 'visible' }
-    },
+    }, _svgA11yProps(opts, 'Vex the cyberpunk grid-face')),
       h('defs', null,
         // Neon grid pattern for Vex background face plate
         h('pattern', { id: 'tp-vex-grid', width: 8, height: 8, patternUnits: 'userSpaceOnUse' },
@@ -382,11 +390,10 @@
     var eyeColor = '#0f172a';
     var cheekColor = '#fbcfe8';
     var cls = 'tp-mascot tp-mascot-mochi tp-mascot-' + st;
-    return h('svg', {
+    return h('svg', Object.assign({
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
-      role: 'img', 'aria-label': opts.label || 'Mochi the kawaii kitten',
       style: { display: 'block', overflow: 'visible' }
-    },
+    }, _svgA11yProps(opts, 'Mochi the kawaii kitten')),
       h('defs', null,
         // Head creamy pink radial gradient
         h('radialGradient', { id: 'tp-grad-mochi-body', cx: '45%', cy: '40%', r: '60%' },
@@ -554,11 +561,10 @@
     // instead of a frozen fan. Phase offsets baked into CSS keyframe delays.
     var armClass = function(i) { return 'tp-inko-arm tp-inko-arm-' + i; };
 
-    return h('svg', {
+    return h('svg', Object.assign({
       width: sz, height: sz, viewBox: '0 0 100 100', className: cls,
-      role: 'img', 'aria-label': opts.label || 'Inko the color-changing cuttlefish',
       style: { display: 'block', overflow: 'visible' }
-    },
+    }, _svgA11yProps(opts, 'Inko the color-changing cuttlefish')),
       h('defs', null,
         // Linear gradient for mantle bioluminescence
         h('linearGradient', { id: 'tp-grad-inko-mantle', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
@@ -756,8 +762,10 @@
       var botDefaults = { steampunk: 'Cogsworth the clockwork owl', cyberpunk: 'Vex the cyberpunk grid-face', kawaii: 'Mochi the kawaii kitten', oceanic: 'Inko the color-changing cuttlefish' };
       var baseLabel = Object.prototype.hasOwnProperty.call(botDefaults, themeName) ? botDefaults[themeName] : 'Pip the typing chick';
       opts.label = baseLabel + ' (Bot)';
-    } else if (opts.isBot && typeof opts.label === 'string' && !/\(bot\)/i.test(opts.label)) {
-      opts.label = opts.label + ' (Bot)';
+    } else if (opts.isBot && typeof opts.label === 'string') {
+      var cleanBotLabel = _safeLabel(opts.label, '');
+      if (cleanBotLabel && !/\(bot\)/i.test(cleanBotLabel)) opts.label = cleanBotLabel + ' (Bot)';
+      else if (cleanBotLabel) opts.label = cleanBotLabel;
     }
     var mascotEl;
     if (themeName === 'steampunk')      mascotEl = _renderCogsworth(opts);
@@ -812,6 +820,7 @@
     var d = depth || 0;
     var safeSuffix = _safeIdSuffix(suffix);
     if (!safeSuffix || d > 40 || !element || typeof element !== 'object' || !element.props) return element;
+    if (!React || !React.Children || typeof React.cloneElement !== 'function') return element;
     var props = {};
     var changed = false;
     Object.keys(element.props).forEach(function (name) {
@@ -845,10 +854,10 @@
     if (styleHost && typeof styleHost.appendChild === 'function') styleHost.appendChild(style);
   })();
 
-  var THEME_TO_ID = { 'default': 'pip', 'steampunk': 'cogsworth', 'cyberpunk': 'vex', 'kawaii': 'mochi', 'oceanic': 'inko' };
+  var THEME_TO_ID = Object.assign(Object.create(null), { 'default': 'pip', 'steampunk': 'cogsworth', 'cyberpunk': 'vex', 'kawaii': 'mochi', 'oceanic': 'inko' });
   var ID_TO_THEME = Object.create(null);
   Object.keys(THEME_TO_ID).forEach(function (t) { ID_TO_THEME[THEME_TO_ID[t]] = t; });
-  var publicBios = Object.freeze(MASCOT_BIOS.map(function (b) { return Object.freeze(Object.assign({}, b, { id: THEME_TO_ID[b.theme] || b.theme })); }));
+  var publicBios = Object.freeze(MASCOT_BIOS.map(function (b) { return Object.freeze(Object.assign({}, b, { id: (Object.prototype.hasOwnProperty.call(THEME_TO_ID, b.theme) ? THEME_TO_ID[b.theme] : b.theme) })); }));
   var byId = Object.create(null);
   publicBios.forEach(function (b) { byId[b.id] = b; });
   var api = Object.freeze({

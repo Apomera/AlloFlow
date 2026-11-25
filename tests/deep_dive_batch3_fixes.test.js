@@ -129,7 +129,8 @@ describe('M12 — the PDF/UA badge never wears another document\'s verdict', () 
 
 describe('M13 — veraPDF popup transports are source-filtered and origin-pinned', () => {
   it('every popup listener requires ev.source === its own window', () => {
-    const filtered = view.match(/if \(!ev \|\| ev\.source !== win\) return;/g) || [];
+    // Each listener now also pins ev.origin to the validator origin in the same guard.
+    const filtered = view.match(/if \(!ev \|\| ev\.source !== win \|\| \(VERAPDF_ORIGIN && VERAPDF_ORIGIN !== '\*' && ev\.origin !== VERAPDF_ORIGIN\)\) return;/g) || [];
     expect(filtered.length).toBeGreaterThanOrEqual(4); // validate, remediate, warm-ready, warm-validate
   });
   it('byte-bearing postMessages pin the validator origin — no \'*\' remains on verapdf sends', () => {

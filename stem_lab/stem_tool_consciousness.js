@@ -3069,7 +3069,7 @@
         h('div', { className: 'cns-svg-stage', style: { background: svgBg, borderColor: C.border } },
           h('svg', {
             viewBox: '0 0 820 158', width: '100%', role: 'img',
-            'aria-label': __alloT('stem.consciousness.signal_pathway_diagram_aria', 'Schematic diagram of six proposed consciousness processing turning points highlighting ' + selected.name),
+            'aria-label': __alloT('stem.consciousness.signal_pathway_diagram_aria', 'Schematic diagram of six proposed consciousness processing turning points highlighting {name}').split('{name}').join(selected.name),
             style: { display: 'block', width: '100%', height: 'auto' }
           },
             !contrast && h('defs', null,
@@ -4228,7 +4228,7 @@
           ),
           h('svg', {
             viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-            'aria-label': __alloT('stem.consciousness.temporal_ignition_chart_aria', 'Time-series chart of stage activity across ' + ticks.length + ' steps showing the 50 percent ignition threshold'),
+            'aria-label': __alloT('stem.consciousness.temporal_ignition_chart_aria', 'Time-series chart of stage activity across {count} steps showing the 50 percent ignition threshold').split('{count}').join(String(ticks.length)),
             style: { display: 'block', width: '100%', height: 'auto' }
           },
             !contrast && h('defs', null,
@@ -4666,7 +4666,7 @@
             return h('div', { className: 'cns-svg-stage', style: { background: expBg, borderColor: C.border, margin: '10px 0 12px' } },
               h('svg', {
                 viewBox: '0 0 740 116', width: '100%', role: 'img',
-                'aria-label': __alloT('stem.consciousness.masking_timeline_aria', 'Visual timeline of the masking trial showing target flash, ' + settings.maskDelay + ' ms delay, backward mask, attention condition, and measurement probe'),
+                'aria-label': __alloT('stem.consciousness.masking_timeline_aria', 'Visual timeline of the masking trial showing target flash, {delay} ms delay, backward mask, attention condition, and measurement probe').split('{delay}').join(String(settings.maskDelay)),
                 style: { display: 'block', width: '100%', height: 'auto' }
               },
                 h('rect', { x: 0, y: 0, width: 740, height: 116, rx: 8, fill: expBg }),

@@ -728,9 +728,18 @@ describe('Wave 41C-42A — Live Quiz Aggregators', () => {
       generated,
       roster,
       { 's1:1': { score: 20, status: 'incorrect' } },
-      { s1: { 1: { score: 95, status: 'correct' } } }
+      // An override now only applies to the exact response it was made for.
+      { s1: { 1: { score: 95, status: 'correct', responseFingerprint: quizAgg.assessmentResponseFingerprint(generated.data.questions[1], quizState.allResponses.s1[1]) } } }
     );
     expect(withAiAndOverride.byConcept['Explain flow']).toMatchObject({ met: 2, total: 2 });
+    const staleOverride = quizAgg.aggregateSuccessCriteria(
+      quizState,
+      generated,
+      roster,
+      { 's1:1': { score: 20, status: 'incorrect' } },
+      { s1: { 1: { score: 95, status: 'correct' } } }
+    );
+    expect(staleOverride.byConcept['Explain flow']).toMatchObject({ met: 1, total: 2 });
   });
 });
 

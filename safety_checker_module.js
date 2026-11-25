@@ -20,25 +20,32 @@
  */
 (function () {
   'use strict';
-  if (window.AlloModules && window.AlloModules.SafetyChecker) {
-    console.log('[CDN] SafetyCheckerModule already loaded, skipping');
+  var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+  var _log = function (msg) {
+    try { if (typeof console === 'object' && console && typeof console.log === 'function') console.log(msg); } catch (_) {}
+  };
+  if (_win && _win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.SafetyChecker) {
+    _log('[CDN] SafetyCheckerModule already loaded, skipping');
     return;
   }
 
   var hasOwn = Object.prototype.hasOwnProperty;
   var MAX_SCAN_CHARS = 20000;
   var MAX_AI_JSON_CHARS = 16384;
-  var ALLOWED_AI_CATEGORIES = {
+  var ALLOWED_AI_CATEGORIES = Object.freeze({
     self_harm: 1,
     harm_to_others: 1,
     bullying: 1,
     inappropriate: 1,
     off_task: 1,
     concerning: 1
-  };
+  });
 
   function _stripCtrl(value) {
-    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+    if (value == null || typeof value === 'symbol') return '';
+    var str;
+    try { str = String(value); } catch (_) { return ''; }
+    return str.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, '');
   }
 
   function _safeJsonParse(raw) {
@@ -57,16 +64,17 @@
   function _safetyAiUsable(fn) {
     try {
       if (fn && fn._alloQrBlocked === true) return false;
-      if (typeof window !== 'undefined') {
-        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
-        if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
-        var qrMode = window.__alloQrStudentMode;
+      var w = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+      if (w) {
+        if (w.__alloOfflineOnly === true || w.__alloStudentAiDisabled === true || w.__alloAiSecretsLocked === true || w._alloQrBlocked === true) return false;
+        if (w.ALLOFLOW_MANAGED_AI_POLICY && w.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
+        var qrMode = w.__alloQrStudentMode;
         if (qrMode === true || (qrMode && typeof qrMode === 'object')) {
           if (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off')) return false;
-          if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+          if (typeof w.__alloAiUsable === 'function') return !!w.__alloAiUsable('text', fn);
           return false;
         }
-        if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+        if (typeof w.__alloAiUsable === 'function') return !!w.__alloAiUsable('text', fn);
       }
       return true;
     } catch (_) {
@@ -75,8 +83,9 @@
   }
 
   async function _safetyManagedGeminiAllowed(apiKey, isCanvasEnv) {
-    if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return true;
     try {
+      var w = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+      if (!w || window.ALLOFLOW_MANAGED_AI_POLICY == null) return true;
       var policy = window.ALLOFLOW_MANAGED_AI_POLICY;
       if (!policy || typeof policy !== 'object' || Array.isArray(policy) || policy.enabled === false || policy.version !== 1 || !Array.isArray(policy.connections)) return false;
       var endpoint = 'https://generativelanguage.googleapis.com/v1beta';
@@ -102,7 +111,7 @@
   }
 
   var SafetyContentChecker = {
-    patterns: {
+    patterns: Object.freeze({
         self_harm: /\b(hurt myself|harm myself|kill myself|suicide|want to die|end it all|end my life|take my (own )?life|self.?harm|cutting myself|slit my wrists|don't want to (live|be alive)|do not want to (live|be alive)|wish i (were|was) dead|no reason to live|better off dead)\b/i,
         // Match directed threats, not bare academic/clinical/game words like
         // "panic attack", "heart attack", "attack on Pearl Harbor", "atomic bomb",
@@ -114,7 +123,7 @@
         off_task_gaming: /\b(fortnite|minecraft|roblox|among us|pokemon|call of duty|valorant|apex|gta|fifa|playstation|xbox|nintendo|twitch|discord|tiktok|youtube|instagram|snapchat)\b/i,
         off_task_social: /\b(boyfriend|girlfriend|crush|dating|party|hangout|skip class|skip school|boring|hate school|hate this|so bored|don't care|whatever|this is dumb|this is stupid|waste of time)\b/i,
         gibberish: /^[^\p{L}\p{N}]*$|(.)\1{4,}|^[a-z]{1,2}$|asdf|qwer|zxcv|lol{3,}|haha{4,}|bruh{3,}/iu
-    },
+    }),
     check: function (text) {
         if (!text || typeof text !== 'string') return [];
         var flags = [];
@@ -125,15 +134,16 @@
             .replace(/[\u2018\u2019\u02bc\uFF07]/g, "'")
             .replace(/\s+/g, ' ')
             .toLowerCase();
-        for (var category in this.patterns) {
-            if (!hasOwn.call(this.patterns, category)) continue;
-            var pattern = this.patterns[category];
+        var pats = SafetyContentChecker.patterns;
+        for (var category in pats) {
+            if (!hasOwn.call(pats, category)) continue;
+            var pattern = pats[category];
             var match = lowerText.match(pattern);
             if (match) {
                 flags.push({
                     category: category,
                     match: match[0],
-                    severity: this.getSeverity(category),
+                    severity: SafetyContentChecker.getSeverity(category),
                     timestamp: new Date().toISOString()
                 });
             }
@@ -163,17 +173,26 @@
             behavioral_idle: 'low',
             behavioral_repetitive: 'low'
         };
-        var normalized = this._normalizeCategory(category);
+        var normalized = SafetyContentChecker._normalizeCategory(category);
         return (normalized && hasOwn.call(severityMap, normalized)) ? severityMap[normalized] : 'medium';
     },
     getCategoryLabel: function (category, t) {
-        var safeT = (typeof t === 'function') ? t : function (k) { return k; };
-        var labelMap = {
-            self_harm: safeT('class_analytics.flag_self_harm'),
-            harm_to_others: safeT('class_analytics.flag_harm_others'),
-            bullying: safeT('class_analytics.flag_bullying'),
-            inappropriate_language: safeT('class_analytics.flag_inappropriate'),
-            concerning_content: safeT('class_analytics.flag_concerning'),
+        var normalized = SafetyContentChecker._normalizeCategory(category);
+        var i18nKeys = {
+            self_harm: 'class_analytics.flag_self_harm',
+            harm_to_others: 'class_analytics.flag_harm_others',
+            bullying: 'class_analytics.flag_bullying',
+            inappropriate_language: 'class_analytics.flag_inappropriate',
+            concerning_content: 'class_analytics.flag_concerning'
+        };
+        if (normalized && hasOwn.call(i18nKeys, normalized)) {
+            var i18nKey = i18nKeys[normalized];
+            if (typeof t === 'function') {
+                try { return t(i18nKey); } catch (_) { return i18nKey; }
+            }
+            return i18nKey;
+        }
+        var staticLabels = {
             off_task_gaming: '🎮 Off-Task (Gaming/Media)',
             off_task_social: '💬 Off-Task (Social/Disengaged)',
             gibberish: '🔤 Gibberish Input',
@@ -181,33 +200,34 @@
             behavioral_idle: '💤 Extended Inactivity',
             behavioral_repetitive: '🔁 Repetitive Answers'
         };
-        var normalized = this._normalizeCategory(category);
-        return (normalized && hasOwn.call(labelMap, normalized)) ? labelMap[normalized] : category;
+        return (normalized && hasOwn.call(staticLabels, normalized)) ? staticLabels[normalized] : category;
     },
     aiCheck: async function (text, source, apiKey, onFlag) {
         // Read environment + model from window globals (set by monolith at file
         // parse time, ~AlloFlowANTI.txt:862-864). Falls back to false/empty if
         // monolith hasn't initialized yet (shouldn't happen — module loads after
         // the inline script — but the guard avoids hard errors during HMR).
-        var _isCanvasEnv = !!(typeof window !== 'undefined' && window._isCanvasEnv);
-        var GEMINI_MODELS = (typeof window !== 'undefined' && window.GEMINI_MODELS) || {};
-        var rawModel = String(GEMINI_MODELS.safety || 'gemini-2.5-flash-lite').replace(/^models\//, '');
+        var w = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+        var _isCanvasEnv = !!(w && w._isCanvasEnv);
+        var GEMINI_MODELS = (w && w.GEMINI_MODELS && typeof w.GEMINI_MODELS === 'object') ? w.GEMINI_MODELS : {};
+        var rawModel = (typeof GEMINI_MODELS.safety === 'string' && GEMINI_MODELS.safety ? GEMINI_MODELS.safety : 'gemini-2.5-flash-lite').replace(/^models\//, '');
         var safetyModel = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(rawModel) && rawModel !== '.' && rawModel !== '..' ? rawModel : 'gemini-2.5-flash-lite';
-        if (typeof text !== 'string' || text.length < 5 || (!apiKey && !_isCanvasEnv)) return;
+        apiKey = (typeof apiKey === 'string' && !/[\r\n\u0000-\u001f\u007f]/.test(apiKey)) ? apiKey.trim() : '';
+        if (typeof text !== 'string' || _stripCtrl(text).trim().length < 5 || (!apiKey && !_isCanvasEnv)) return;
         // Student AI-off / teacher policy: never send student text to Gemini (regex layer still runs).
-        if (!_safetyAiUsable(typeof window !== 'undefined' ? window.callGemini : undefined)) return;
+        if (!_safetyAiUsable(w ? w.callGemini : undefined)) return;
         // Respect local-only AI backend data residency when configured outside Canvas.
         try {
-            var activeProvider = typeof window !== 'undefined' && window.AlloAIBackend && typeof window.AlloAIBackend.getActiveProvider === 'function'
-                ? window.AlloAIBackend.getActiveProvider()
-                : (typeof window !== 'undefined' && window.AI_BACKEND_CONFIG && window.AI_BACKEND_CONFIG.provider);
+            var activeProvider = w && w.AlloAIBackend && typeof w.AlloAIBackend.getActiveProvider === 'function'
+                ? w.AlloAIBackend.getActiveProvider()
+                : (w && w.AI_BACKEND_CONFIG && w.AI_BACKEND_CONFIG.provider);
             var activeBackend = typeof activeProvider === 'string' ? activeProvider.toLowerCase() : (activeProvider && typeof activeProvider.backend === 'string' ? activeProvider.backend.toLowerCase() : '');
             if (!_isCanvasEnv && activeBackend && /^(ollama|local|alloflow-local|webllm|lmstudio)$/.test(activeBackend)) return;
         } catch (_) {}
         if (!(await _safetyManagedGeminiAllowed(apiKey, _isCanvasEnv))) return;
         // Re-check policy/student-mode lock after async SHA-256 digest (TOCTOU guard).
-        if (!_safetyAiUsable(typeof window !== 'undefined' ? window.callGemini : undefined)) return;
-        var regexFlags = this.check(text);
+        if (!_safetyAiUsable(w ? w.callGemini : undefined)) return;
+        var regexFlags = SafetyContentChecker.check(text);
         if (regexFlags.some(function (f) { return f.severity === 'critical'; })) return;
         try {
             var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent';
@@ -215,10 +235,11 @@
             if (apiKey) headers['x-goog-api-key'] = String(apiKey);
             var rawForAi = text;
             try {
-                var redactor = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.IdentifierRedaction;
+                var redactor = w && w.AlloModules && w.AlloModules.IdentifierRedaction;
                 if (redactor && typeof redactor.scrubIdentifiers === 'function') {
                     var scrubbed = redactor.scrubIdentifiers(rawForAi, { identifiers: [] });
-                    if (scrubbed && typeof scrubbed.text === 'string') rawForAi = scrubbed.text;
+                    if (typeof scrubbed === 'string') rawForAi = scrubbed;
+                    else if (scrubbed && typeof scrubbed.text === 'string') rawForAi = scrubbed.text;
                 }
             } catch (_) {}
             var safeStudentMsg = _stripCtrl(rawForAi).slice(0, 500).replace(/UNTRUSTED_STUDENT_MESSAGE/gi, 'UNTRUSTED_MSG');
@@ -242,7 +263,7 @@
                 if (!resp || !resp.ok) return;
                 data = await resp.json();
             } finally {
-                if (timer) clearTimeout(timer);
+                if (timer !== null) clearTimeout(timer);
             }
             var rawText = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
             if (typeof rawText !== 'string' || !rawText) return;
@@ -261,7 +282,7 @@
                 var flag = {
                     category: 'ai_' + category,
                     match: reasonText || 'AI-detected concern',
-                    severity: this.getSeverity('ai_' + category),
+                    severity: SafetyContentChecker.getSeverity('ai_' + category),
                     source: source,
                     context: _stripCtrl(text).substring(0, 100),
                     timestamp: new Date().toISOString(),
@@ -276,16 +297,20 @@
         }
     }
   };
+  Object.freeze(SafetyContentChecker);
 
-  // Mirror to window so monolith's existing shim references can be upgraded.
-  window.SafetyContentChecker = SafetyContentChecker;
-
-  // Trigger the monolith's swap-in of the shim reference.
-  if (typeof window._upgradeSafetyChecker === 'function') {
-    window._upgradeSafetyChecker();
+  if (typeof module === 'object' && module && module.exports) {
+    module.exports = SafetyContentChecker;
   }
-
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.SafetyChecker = SafetyContentChecker;
-  console.log('[CDN] SafetyChecker loaded');
+  if (_win) {
+    // Mirror to window so monolith's existing shim references can be upgraded.
+    _win.SafetyContentChecker = SafetyContentChecker;
+    if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+    _win.AlloModules.SafetyChecker = SafetyContentChecker;
+    // Trigger the monolith's swap-in of the shim reference.
+    if (typeof _win._upgradeSafetyChecker === 'function') {
+      try { _win._upgradeSafetyChecker(); } catch (_) {}
+    }
+    _log('[CDN] SafetyChecker loaded');
+  }
 })();

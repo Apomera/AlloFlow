@@ -312,4 +312,122 @@ describe('Test Prep hands-free runtime safeguards', () => {
       mocks.restoreAudio();
     }
   });
+
+  it('handles voice elimination, pre-check option-feedback guard, bare check, post-check why-not, and core explanations live', async () => {
+    const mocks = installVoiceMocks();
+    const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 28));
+    const speakAndWaitForMic = async (transcript, confidence = 0.92) => {
+      const prevRecCount = mocks.recognitionInstances.length;
+      const rec = mocks.recognitionInstances.at(-1);
+      await act(async () => {
+        rec.onresult({ results: [[{ transcript, confidence }]] });
+        await new Promise((resolveWait) => setTimeout(resolveWait, 30));
+      });
+      const spokenText = callTTS.mock.calls.at(-1)[0];
+      const latestAudio = mocks.audioInstances.at(-1);
+      await act(async () => {
+        latestAudio.onended();
+        await new Promise((resolveWait) => setTimeout(resolveWait, 150));
+      });
+      await waitFor(() => mocks.recognitionInstances.length > prevRecCount, 'next mic window after ' + transcript);
+      return spokenText;
+    };
+    try {
+      await startHandsFree(callTTS, mocks);
+
+      const elimSpeech = await speakAndWaitForMic('eliminate A');
+      expect(elimSpeech).toBe('Struck out option A.');
+      expect(host.querySelector('button[aria-label="Restore option A"]')).toBeTruthy();
+
+      const preCheckGuard = await speakAndWaitForMic('why not A');
+      expect(preCheckGuard).toBe('Check your answer before hearing option feedback.');
+
+      const coreSpeech = await speakAndWaitForMic('core explanations');
+      expect(coreSpeech).toContain('Core explanations on.');
+      expect(localStorage.getItem('alloflow_test_prep_hands_free_explanations_v1')).toBe('core');
+      expect(host.querySelector('[data-test-prep-explanations-mode="core"]')).toBeTruthy();
+
+      await speakAndWaitForMic('B');
+      const checkSpeech = await speakAndWaitForMic('check');
+      expect(checkSpeech).not.toContain('Other option feedback.');
+      expect(checkSpeech).not.toContain('Correct. Correct.');
+
+      const postCheckWhyNot = await speakAndWaitForMic('why not A');
+      expect(postCheckWhyNot).not.toBe('Check your answer before hearing option feedback.');
+      expect(postCheckWhyNot).toMatch(/option A/i);
+    } finally {
+      mocks.restoreRecognition();
+      mocks.restoreAudio();
+    }
+  }, 15_000);
+
+  it('works cleanly in pure no-AI / browser-speech hands-free mode without offering any AI options', async () => {
+    const mocks = installVoiceMocks();
+    const spokenUtterances = [];
+    const restoreSynth = replaceWindowProperty('speechSynthesis', {
+      cancel: vi.fn(),
+      speak: vi.fn((utterance) => {
+        spokenUtterances.push(utterance);
+        if (utterance.onstart) utterance.onstart();
+      }),
+    });
+    const restoreUtterance = replaceWindowProperty('SpeechSynthesisUtterance', function MockUtterance(text) {
+      this.text = text;
+      this.lang = '';
+      this.rate = 1;
+      this.onstart = null;
+      this.onend = null;
+      this.onerror = null;
+    });
+    const restoreNotice = replaceWindowProperty('AlloAiSetupNotice', () =>
+      React.createElement('div', { 'data-ai-setup-notice': 'true' }, 'Enable AI')
+    );
+    const finishUtteranceAndWaitForMic = async (prevRecCount) => {
+      const latest = spokenUtterances.at(-1);
+      expect(latest, 'browser speech utterance').toBeTruthy();
+      await act(async () => {
+        if (latest.onend) latest.onend();
+        await new Promise((resolveWait) => setTimeout(resolveWait, 150));
+      });
+      await waitFor(() => mocks.recognitionInstances.length > prevRecCount, 'browser speech mic restart');
+      return latest.text;
+    };
+    const say = async (transcript) => {
+      const prevRec = mocks.recognitionInstances.length;
+      const rec = mocks.recognitionInstances.at(-1);
+      await act(async () => {
+        rec.onresult({ results: [[{ transcript, confidence: 0.95 }]] });
+        await new Promise((resolveWait) => setTimeout(resolveWait, 30));
+      });
+      return finishUtteranceAndWaitForMic(prevRec);
+    };
+    try {
+      await mount({ callTTS: null, callGemini: null });
+      await clickButton('Open practice pack');
+      await clickButton('Hands-free mode');
+      await waitFor(() => spokenUtterances.length >= 1, 'initial browser speech narration');
+      await finishUtteranceAndWaitForMic(0);
+
+      // No AI setup notice, no clarification input, and no AI command hint in the hands-free panel.
+      expect(host.querySelector('[data-ai-setup-notice]')).toBeNull();
+      expect(host.querySelector('#test-prep-clarification')).toBeNull();
+      expect(host.textContent).not.toContain('ask followed by a neutral definition');
+
+      const helpText = await say('help');
+      expect(helpText).not.toMatch(/clarification|ask followed by/i);
+
+      const nonAiFallback = await say('what is homeostasis');
+      expect(nonAiFallback).not.toMatch(/\bAI\b|clarification/i);
+
+      await say('B');
+      const feedbackText = await say('check');
+      expect(feedbackText).not.toMatch(/clarification/i);
+    } finally {
+      restoreNotice();
+      restoreUtterance();
+      restoreSynth();
+      mocks.restoreRecognition();
+      mocks.restoreAudio();
+    }
+  }, 15_000);
 });

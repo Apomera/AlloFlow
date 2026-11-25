@@ -27,7 +27,12 @@ describe('D1: the 5 modals are each bound to useFocusTrap AND attach the ref at 
   it('translateModalRef — the trap lives in the lazy view, with the host hook and the host close', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_cold_path_screens_source.jsx'), 'utf8');
     const dialog = view.slice(view.indexOf('function TranslateModalView(props) {'));
-    expect(dialog).toContain('window.__alloHooks.useFocusTrap(translateModalRef, true, props.onTrapEscape);');
+    // The view now goes through the shared cold-path lock, which calls the same host hook
+    // (and adds the shared scroll lock).
+    expect(dialog).toContain('_useColdPathDialogLock(translateModalRef, props.onTrapEscape || handleSetIsTranslateModalOpenToFalse);');
+    const lock = view.slice(view.indexOf('function _useColdPathDialogLock(dialogRef, onEscape) {'), view.indexOf('function _coldPathAiUsable('));
+    expect(lock).toContain('window.__alloHooks.useFocusTrap');
+    expect(lock).toContain('hostHook(dialogRef, true, onEscape);');
     expect(dialog).toContain('ref={translateModalRef}');
     expect(anti).toContain('window.__alloHooks = { useFocusTrap };');
     expect(anti).toContain('onTrapEscape={() => setIsTranslateModalOpen(false)}');

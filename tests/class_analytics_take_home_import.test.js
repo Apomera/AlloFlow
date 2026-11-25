@@ -547,7 +547,9 @@ describe('files that are not take-home results', () => {
     expect(await reasonOf(JSON.stringify({kind: 'alloflow-take-home-result', schemaVersion: 2, items: 'x'}), 'bad.json')).toBe('no_items');
     expect(await reasonOf(JSON.stringify({kind: 'alloflow-take-home-result', schemaVersion: 2, items: [{}, null, 7]}), 'blank.json')).toBe('nothing_done');
     expect(await reasonOf(csvOf(makeSession()).replace(/alloflow-packet-result\/1/g, 'alloflow-packet-result/2'), 'v2.csv')).toBe('newer');
-    expect((await AC.readFile(null)).reason).toBe('too_big');
+    // 2026-11-23: no file at all is 'unreadable' (student_analytics_module.js says so on purpose); 'too_big' is for a file over the limit.
+    expect((await AC.readFile(null)).reason).toBe('unreadable');
+    expect((await AC.readFile({ name: 'huge.csv', size: 50 * 1024 * 1024, text: () => Promise.resolve('') })).reason).toBe('too_big');
     expect((await AC.readFile({name: 'x.csv', size: 10, text: () => Promise.reject(Error('gone'))})).reason).toBe('unreadable');
   });
   it('does not read a 5 MB file at all', async () => {

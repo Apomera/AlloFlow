@@ -2568,6 +2568,7 @@ function AIBackendModalBody(props) {
       models: cfg.models || inheritedModels || {},
       ttsProvider: cfg.ttsProvider || 'auto',
       imageProvider: cfg.imageProvider || 'auto',
+      ...(cfg.localModelProfile ? { localModelProfile: cfg.localModelProfile } : {}),
       isCanvasEnv: false
     });
   };
@@ -2579,12 +2580,16 @@ function AIBackendModalBody(props) {
   const applyBackendChoice = (backend, { showStatus = false } = {}) => {
     const current = readAIBackendConfig();
     const updated = updateAIBackendRoute(current, { backend, baseUrl: aiBackendDefaultUrl(backend) || '' });
-    if (backend !== current.backend) delete updated.models;
+    if (backend !== current.backend) {
+      delete updated.models;
+      delete updated.localModelProfile;
+    }
     writeAIBackendConfig(updated);
     const urlEl = document.getElementById('ai-backend-url');
     if (urlEl) urlEl.value = updated.baseUrl || '';
     populateModelSelect(document.getElementById('ai-backend-model-default'), t('ai_backend.auto_server_default') || 'Auto (server default)', [], '');
     populateModelSelect(document.getElementById('ai-backend-model-fallback'), t('ai_backend.same_as_default') || 'Same as default', [], '');
+    populateModelSelect(document.getElementById('ai-backend-model-vision'), t('ai_backend.auto_vision_model') || 'Auto (match default / moondream for Ollama)', [], '');
     if (showStatus) {
       const status = document.getElementById('ai-backend-status');
       if (status) { status.textContent = t('ai_backend.preset_applied') || 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
@@ -2597,8 +2602,8 @@ function AIBackendModalBody(props) {
     lmstudio: 'LM Studio', ollama: 'Ollama', localai: 'LocalAI', custom: t('ai_backend.guided_backend_custom_label') || 'your custom endpoint'
   };
   const GUIDED_CONNECT_APPS = [
-    { id: 'lmstudio', title: 'LM Studio', body: t('ai_backend.guided_connect_lmstudio_body') || 'Desktop app with a friendly model browser.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_lmstudio' }, link: 'https://lmstudio.ai', steps: [t('ai_backend.guided_connect_lmstudio_step1') || 'Install LM Studio from lmstudio.ai (free).', t('ai_backend.guided_connect_lmstudio_step2') || 'Use its search to download a model — "Qwen 2.5 7B Instruct" is a good start.', t('ai_backend.guided_connect_lmstudio_step3') || 'Open the Developer / Local Server tab and press Start.', t('ai_backend.guided_connect_lmstudio_step4') || 'Press Test Connection below.'] },
-    { id: 'ollama', title: 'Ollama', body: t('ai_backend.guided_connect_ollama_body') || 'Lightweight command-line runner.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_ollama' }, link: 'https://ollama.com', steps: [t('ai_backend.guided_connect_ollama_step1') || 'Install Ollama from ollama.com (free).', t('ai_backend.guided_connect_ollama_step2') || 'In a terminal, run: ollama run llama3.2', t('ai_backend.guided_connect_ollama_step3') || 'Leave it running.', t('ai_backend.guided_connect_ollama_step4') || 'Press Test Connection below.'] },
+    { id: 'lmstudio', title: 'LM Studio', body: t('ai_backend.guided_connect_lmstudio_body') || 'Desktop app with a friendly model browser.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_lmstudio' }, link: 'https://lmstudio.ai', steps: [t('ai_backend.guided_connect_lmstudio_step1') || 'Install LM Studio from lmstudio.ai (free).', t('ai_backend.guided_connect_lmstudio_step2') || 'Use its search to download a model — "Qwen 2.5 7B Instruct" is a good start.', t('ai_backend.guided_connect_lmstudio_step3') || 'Open the Developer / Local Server tab, turn on Enable CORS (for browser use), and press Start.', t('ai_backend.guided_connect_lmstudio_step4') || 'Press Test Connection below.'] },
+    { id: 'ollama', title: 'Ollama', body: t('ai_backend.guided_connect_ollama_body') || 'Lightweight command-line runner.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_ollama' }, link: 'https://ollama.com', steps: [t('ai_backend.guided_connect_ollama_step1') || 'Install Ollama from ollama.com (free).', t('ai_backend.guided_connect_ollama_step2') || 'In a terminal, run: ollama run llama3.2 (or ollama pull qwen2.5)', t('ai_backend.guided_connect_ollama_step3') || 'Leave it running. If using AlloFlow in a web browser, set OLLAMA_ORIGINS=* and restart Ollama so the browser can connect.', t('ai_backend.guided_connect_ollama_step4') || 'Press Test Connection below.'] },
     { id: 'localai', title: 'LocalAI', body: t('ai_backend.guided_connect_localai_body') || 'Self-hosted server (advanced).', keyProps: { 'data-help-key': 'ai_backend_guided_connect_localai' }, link: 'https://localai.io', steps: [t('ai_backend.guided_connect_localai_step1') || 'Follow the LocalAI install guide at localai.io.', t('ai_backend.guided_connect_localai_step2') || 'Start the server with at least one text model.', t('ai_backend.guided_connect_localai_step3') || 'Press Test Connection below.'] },
     { id: 'custom', title: t('ai_backend.guided_connect_custom_title') || 'Custom endpoint', body: t('ai_backend.guided_connect_custom_body') || 'Any OpenAI-compatible server.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_custom' }, link: '', steps: [t('ai_backend.guided_connect_custom_step1') || 'Enter your server address below.', t('ai_backend.guided_connect_custom_step2') || 'Add an API key only if your server requires one.', t('ai_backend.guided_connect_custom_step3') || 'Press Test Connection below.'] },
   ];
@@ -3242,6 +3247,7 @@ function AIBackendModalBody(props) {
                                     }
                                     const modelSelect = document.getElementById('ai-backend-model-default');
                                     const fallbackSelect = document.getElementById('ai-backend-model-fallback');
+                                    const visionSelect = document.getElementById('ai-backend-model-vision');
                                     const cfg = readAIBackendConfig();
                                     const firstModel = result.selectedModel || result.models?.[0]?.id || '';
                                     if (firstModel && cfg.models?.default !== firstModel) {
@@ -3251,6 +3257,7 @@ function AIBackendModalBody(props) {
                                     const refreshedCfg = readAIBackendConfig();
                                     writeAIBackendConfig({
                                         ...refreshedCfg,
+                                        ...(result.localModelProfile ? { localModelProfile: result.localModelProfile } : {}),
                                         validation: {
                                             ok: true,
                                             backend: refreshedCfg.backend || 'gemini',
@@ -3276,12 +3283,18 @@ function AIBackendModalBody(props) {
                                     // the next audit failed with "No AI API key is configured".
                                     try { if (!isStudentAiSetup && typeof window._upgradeGeminiAPI === 'function') window._upgradeGeminiAPI(); } catch (_) {}
                                     setGuidedReady(true);
-                                    if (status) { status.textContent = 'Connected! ' + result.modelCount + ' model(s) available' + (firstModel && cfg.models?.default !== firstModel ? '. Verified model selected.' : ''); status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
+                                    const _localMetaSuffix = result.localModelProfile
+                                        ? (' (ctx ' + Number(result.localModelProfile.contextWindow || 4096) + (result.capabilities?.vision ? ', vision' : '') + ')')
+                                        : '';
+                                    if (status) { status.textContent = 'Connected! ' + result.modelCount + ' model(s) available' + _localMetaSuffix + (firstModel && cfg.models?.default !== firstModel ? '. Verified model selected.' : ''); status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
                                     if (modelSelect && result.models?.length > 0) {
                                         populateModelSelect(modelSelect, 'Auto (server default)', result.models, refreshedCfg.models?.default || '');
                                     }
                                     if (fallbackSelect && result.models?.length > 0) {
                                         populateModelSelect(fallbackSelect, 'Same as default', result.models, refreshedCfg.models?.fallback || '');
+                                    }
+                                    if (visionSelect && result.models?.length > 0) {
+                                        populateModelSelect(visionSelect, t('ai_backend.auto_vision_model') || 'Auto (match default / moondream for Ollama)', result.models, refreshedCfg.models?.vision || '');
                                     }
                                 } else {
                                     const _safeErr = typeof window !== 'undefined' && typeof window.__alloRedactSecrets === 'function'
@@ -3319,10 +3332,12 @@ function AIBackendModalBody(props) {
                             if (w) w.value = '';
                             const md = document.getElementById('ai-backend-model-default');
                             const mf = document.getElementById('ai-backend-model-fallback');
+                            const mv = document.getElementById('ai-backend-model-vision');
                             const tt = document.getElementById('ai-backend-tts-provider');
                             const ig = document.getElementById('ai-backend-image-provider');
                             if (md) md.value = '';
                             if (mf) mf.value = '';
+                            if (mv) mv.value = '';
                             if (tt) tt.value = 'auto';
                             if (ig) ig.value = 'auto';
                             if (s) { s.textContent = isStudentAiSetup ? 'Disconnected. The session key was erased.' : '🔄 Reset to defaults — reload page to apply'; s.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
@@ -3354,7 +3369,18 @@ function AIBackendModalBody(props) {
                                     const current = readAIBackendConfig();
                                     const models = { ...(current.models || {}), default: e.target.value || undefined };
                                     if (!e.target.value) delete models.default;
-                                    writeAIBackendConfig({ ...current, models });
+                                    const next = { ...current, models };
+                                    const isLocal = ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'onnx-npu', 'custom'].includes(String(current.backend || ''));
+                                    if (isLocal) {
+                                        const helpers = typeof window !== 'undefined' ? window.AIBackendLocal : null;
+                                        if (helpers && typeof helpers.buildLocalModelProfile === 'function' && models.default) {
+                                            next.localModelProfile = helpers.buildLocalModelProfile({ backend: current.backend, models, modelId: models.default });
+                                        } else {
+                                            delete next.localModelProfile;
+                                        }
+                                        setConfigRevision((revision) => revision + 1);
+                                    }
+                                    writeAIBackendConfig(next);
                                 }}
                                 className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                             >
@@ -3378,7 +3404,95 @@ function AIBackendModalBody(props) {
                                 <option value="">{t('ai_backend.same_as_default') || 'Same as default'}</option>
                             </select>
                         </div>
+                        <div>
+                            <label htmlFor="ai-backend-model-vision" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.vision_model_label') || 'Vision Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.vision_model_hint') || '(image analysis / OCR)'}</span></label>
+                            <select
+                                aria-label={t('ai_backend.vision_model_aria') || 'Vision AI model'}
+                                id="ai-backend-model-vision"
+                                defaultValue={readAIBackendConfig().models?.vision || ''}
+                                onChange={(e) => {
+                                    const current = readAIBackendConfig();
+                                    const models = { ...(current.models || {}), vision: e.target.value || undefined };
+                                    if (!e.target.value) delete models.vision;
+                                    writeAIBackendConfig({ ...current, models }, { preserveValidation: true });
+                                }}
+                                className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+                            >
+                                <option value="">{t('ai_backend.auto_vision_model') || 'Auto (match default / moondream for Ollama)'}</option>
+                                {readAIBackendConfig().models?.vision ? <option value={readAIBackendConfig().models.vision}>{readAIBackendConfig().models.vision}</option> : null}
+                            </select>
+                        </div>
                         <p className="text-xs text-slate-700 italic"><span aria-hidden="true">💡 </span>Click "Test Connection" above to auto-populate available models from your backend.</p>
+                        {!isStudentAiSetup && ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'onnx-npu', 'custom'].includes(String(readAIBackendConfig().backend || 'gemini')) && (
+                          <div id="ai-backend-local-options" className="mt-2 rounded-xl border-2 border-indigo-100 bg-indigo-50/50 p-3 space-y-2.5">
+                              <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs font-black text-indigo-900 uppercase tracking-wider">Local Model Tools</span>
+                                  <button
+                                      type="button"
+                                      id="ai-backend-local-probe-btn"
+                                      onClick={async () => {
+                                          const probeBtn = document.getElementById('ai-backend-local-probe-btn');
+                                          const probeOut = document.getElementById('ai-backend-local-probe-result');
+                                          if (!probeBtn || probeBtn.disabled) return;
+                                          probeBtn.disabled = true;
+                                          probeBtn.textContent = '⏳ Checking...';
+                                          if (probeOut) probeOut.textContent = 'Running 3 quick local capability checks (text, JSON, nested JSON)...';
+                                          try {
+                                              const provider = createAIProviderFromSettings(readAIBackendConfig());
+                                              if (!provider || typeof provider.probeLocalCapabilities !== 'function') {
+                                                  throw new Error('Local capability check is unavailable on this build.');
+                                              }
+                                              const probe = await provider.probeLocalCapabilities();
+                                              if (probe && probe.localModelProfile) {
+                                                  const latest = readAIBackendConfig();
+                                                  writeAIBackendConfig({ ...latest, localModelProfile: probe.localModelProfile }, { preserveValidation: true });
+                                                  try { if (typeof window._upgradeGeminiAPI === 'function') window._upgradeGeminiAPI(); } catch (_) {}
+                                              }
+                                              if (probeOut) {
+                                                  const detailLines = (probe.tests || []).map((item) => (item.ok ? '✓ ' : '✗ ') + item.label + ' (' + item.latencyMs + ' ms)');
+                                                  const ctxNote = probe.localModelProfile ? (' · ctx ' + probe.localModelProfile.contextWindow) : '';
+                                                  probeOut.textContent = (probe.summary || 'Check finished.') + ctxNote + (detailLines.length ? ' — ' + detailLines.join(' | ') : '');
+                                              }
+                                          } catch (err) {
+                                              if (probeOut) probeOut.textContent = 'Check failed: ' + (err && err.message ? err.message : String(err));
+                                          } finally {
+                                              probeBtn.disabled = false;
+                                              probeBtn.textContent = 'Run local model check';
+                                          }
+                                      }}
+                                      className="min-h-9 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-60"
+                                  >
+                                      Run local model check
+                                  </button>
+                              </div>
+                              <p id="ai-backend-local-probe-result" role="status" aria-live="polite" className="text-xs text-indigo-900 leading-relaxed">
+                                  {(() => {
+                                      const lp = readAIBackendConfig().localModelProfile;
+                                      if (!lp) return 'Tests plain text, strict JSON, and nested JSON on your active local server so AlloFlow adapts automatically.';
+                                      const ts = lp.taskSupport || {};
+                                      const statusTxt = ts.total ? ('Last check: ' + ts.passed + '/' + ts.total + ' passed') : 'Not checked yet';
+                                      return statusTxt + ' · ctx ' + Number(lp.contextWindow || 4096) + (lp.vision ? ' · vision' : '');
+                                  })()}
+                              </p>
+                              <label htmlFor="ai-backend-local-schema-toggle" className="flex items-start gap-2 cursor-pointer pt-1 border-t border-indigo-100">
+                                  <input
+                                      id="ai-backend-local-schema-toggle"
+                                      type="checkbox"
+                                      className="mt-0.5 h-4 w-4 shrink-0 accent-indigo-600"
+                                      defaultChecked={(() => { try { return localStorage.getItem('alloflow_local_json_schema') === '1'; } catch (_) { return false; } })()}
+                                      onChange={(e) => {
+                                          try {
+                                              if (e.target.checked) localStorage.setItem('alloflow_local_json_schema', '1');
+                                              else localStorage.removeItem('alloflow_local_json_schema');
+                                          } catch (_) {}
+                                      }}
+                                  />
+                                  <span className="text-xs text-indigo-950 leading-relaxed">
+                                      <strong>Constrained JSON schema decoding</strong> (llama.cpp / LM Studio / Ollama). Enforces exact output keys for 11 supported local resources (glossary, FAQ, brainstorm, lesson plan, visual organizer, sentence frames, timeline, concept sort, adventure, persona, simulation guide).
+                                  </span>
+                              </label>
+                          </div>
+                        )}
                     </div>
                 </div>
 
@@ -3434,6 +3548,7 @@ function AIBackendModalBody(props) {
                     >
                         <option value="auto">🔄 Auto (match backend)</option>
                         <option value="sd-local">🏫 SD-Turbo (this computer — no account)</option>
+                        <option value="sana">🎨 SANA-Sprint (Local GPU — token required)</option>
                         <option value="imagen">🎨 Imagen 4.0 (Google Cloud)</option>
                         <option value="flux">🖼️ FLUX (Local — port 7860)</option>
                         <option value="off">🚫 Off (disable image generation)</option>
@@ -3443,7 +3558,7 @@ function AIBackendModalBody(props) {
                             <strong>Imagen:</strong> Google Cloud (requires Blaze plan). High quality, fast.
                         </p>
                         <p className="text-[11px] text-amber-800 mt-1">
-                            <strong>FLUX:</strong> Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency.
+                            <strong>SANA-Sprint / FLUX:</strong> Self-hosted local GPU image servers (managed in Desktop Command Center or at localhost:7860). No cloud dependency.
                         </p>
                     </div>
                 </div>

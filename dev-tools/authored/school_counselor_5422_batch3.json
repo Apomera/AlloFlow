@@ -3589,18 +3589,18 @@
     "cognitiveLevel": "evaluation",
     "prompt": "A team selects students for an intervention because they had the most absences during one unusually severe flu month, then plans to attribute any later improvement to the intervention. What design improvement is most important?",
     "choices": [
-      "Prioritize the 40-period sequence by displacing other planned counseling services, without reassessing the resulting tradeoffs or total staff capacity.",
-      "Combine pairs of lessons into each available period using the original activities and pacing, then treat the compressed version as equivalent delivery.",
+      "Compare only the selected group’s post-intervention attendance against that peak flu month and attribute all gains to counseling.",
+      "Keep the single flu-month cutoff but shorten the intervention window so attendance rebounds before seasonal illness shifts again.",
       "Use repeated baselines and explicit eligibility rules, then track context and suitable comparison evidence.",
-      "Select the 20 lessons staff prefer, deliver that subset, and use its outcomes as evidence for the effectiveness of the complete curriculum."
+      "Drop students whose attendance improves early in the semester and count only remaining participants when evaluating program effects."
     ],
     "answerIndex": 2,
     "rationale": "Selection from one extreme period creates regression-to-the-mean and seasonal threats. Stable eligibility rules, repeated baseline evidence, implementation data, contextual tracking, and a reasonable comparator strengthen interpretation without promising experimental certainty.",
     "choiceRationales": [
-      "Not the best answer. Protecting one program without examining opportunity costs can create other service gaps and does not produce a feasible implementation plan. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step.",
-      "Not the best answer. Mechanical compression may remove practice and reflection, overload students, and create an untested version whose dosage must be documented. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step.",
+      "Not the best answer. Comparing post-intervention attendance to a single extreme flu month mistakes natural regression to the mean and seasonal recovery for an intervention effect. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step.",
+      "Not the best answer. Shortening the program without fixing the single extreme baseline leaves the regression-to-the-mean and seasonal-confounding threat unresolved. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step.",
       "Correct. Selection from one extreme period creates regression-to-the-mean and seasonal threats. Stable eligibility rules, repeated baseline evidence, implementation data, contextual tracking, and a reasonable comparator strengthen interpretation without promising experimental certainty.",
-      "Not the best answer. Preference-based selection may omit core components, and results from an undocumented subset do not support claims about the full program. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step."
+      "Not the best answer. Dropping improving students introduces severe attrition bias and distorts evaluation evidence rather than fixing extreme-score selection bias. Recheck the scenario's purpose, evidence, student access, professional role, and safest appropriate next step."
     ],
     "skillIds": [
       "program-goals-data-psychometrics"

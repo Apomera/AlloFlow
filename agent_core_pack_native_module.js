@@ -11,7 +11,13 @@
   function isUnsafeKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
   function own(obj, key) { return obj && hasOwn.call(obj, key) ? obj[key] : undefined; }
   function record(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
-  function issue(code, path, message) { return { code: code, path: String(path == null ? '' : path).slice(0, 600), message: String(message == null ? '' : message).slice(0, 2000) }; }
+  function safeStr(v) {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+    try { return String(v); } catch (_) { return ''; }
+  }
+  function issue(code, path, message) { return { code: code, path: safeStr(path).slice(0, 600), message: safeStr(message).slice(0, 2000) }; }
   function appendIssue(items, entry) {
     if (items.length < MAX_ERRORS - 1) items.push(entry);
     else if (items.length === MAX_ERRORS - 1) items.push(issue('diagnostics-truncated', entry.path, 'The diagnostic limit was reached. Correct the reported issues and validate again; additional issues may remain.'));
@@ -30,16 +36,21 @@
       if (value === undefined || value === null || value === '') return true;
       if (typeof value !== 'string') return false;
       var stripped = value.replace(/[\u0000-\u0020\u007F-\u009F\u00AD\uFEFF]/g, '');
-      if (UNSAFE_URL_SCHEME_RE.test(stripped) || /^\/\//.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
+      if (UNSAFE_URL_SCHEME_RE.test(stripped) || /^(?:\/\/|\/\\|\\\/|\\\\)/.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
       if (/^[a-z][a-z0-9+.-]*:/i.test(stripped)) {
         if (!/^https?:/i.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
-        try {
-          var parsed = new URL(stripped);
-          if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password) {
-            fail(path, 'URL scheme or embedded credentials are not allowed.', 'unsafe-url');
+        if (typeof URL === 'function') {
+          try {
+            var parsed = new URL(stripped);
+            if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || !parsed.hostname || parsed.username || parsed.password) {
+              fail(path, 'URL scheme or embedded credentials are not allowed.', 'unsafe-url');
+              return false;
+            }
+          } catch (_) {
+            fail(path, 'URL is malformed.', 'unsafe-url');
             return false;
           }
-        } catch (_) {
+        } else if (!/^https?:\/\/[^/?#@\s]+(?:[/?#]|$)/i.test(stripped)) {
           fail(path, 'URL is malformed.', 'unsafe-url');
           return false;
         }
@@ -288,22 +299,32 @@
     var numberFields = ['score', 'sourceWords', 'auditedTextWords', 'totalWords', 'tier2Count', 'tier3Count', 'glossaryTermsCount', 'distinctTypeCount', 'totalArtifacts', 'diversityScore', 'dokTotal', 'totalAnalyses', 'totalVerifiedFacts', 'totalDiscrepancies', 'verifiedFactCount', 'discrepancyCount', 'wordCount', 'sentenceCount', 'avgSentenceLength', 'minutes'];
     var visited = new Set();
     var walkNodes = 0;
+    var budgetReported = false;
     var MAX_WALK_NODES = 10000;
+    function reportBudget(bp) {
+      if (!budgetReported) {
+        budgetReported = true;
+        c.fail(bp, 'Audit payload exceeds node traversal budget.', 'payload-too-large');
+      }
+    }
     function walk(value, path, depth) {
-      if (!value || typeof value !== 'object' || c.exhausted()) return;
+      if (!value || typeof value !== 'object' || budgetReported || c.exhausted()) return;
       if (depth > 24) { c.fail(path, 'Audit payload nesting exceeds the supported limit.', 'payload-too-deep'); return; }
-      if (++walkNodes > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
-      if (Array.isArray(value) && value.length > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
+      if (++walkNodes > MAX_WALK_NODES) { reportBudget(path); return; }
+      if (Array.isArray(value) && value.length > MAX_WALK_NODES) { reportBudget(path); return; }
       if (visited.has(value)) { c.fail(path, 'Expected acyclic JSON data.'); return; }
       visited.add(value);
       var isArr = Array.isArray(value);
       c.each(Object.keys(value), function (key) {
-        if (++walkNodes > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
-        var child = value[key], cp = isArr ? (path + '[' + key + ']') : (path + '.' + key);
+        if (budgetReported) return;
+        if (++walkNodes > MAX_WALK_NODES) { reportBudget(path); return; }
+        var cp = isArr ? (path + '[' + key + ']') : (path + '.' + key);
         if (isUnsafeKey(key)) {
           c.fail(cp, 'Prototype-polluting key is not allowed.', 'unsafe-key');
           return;
         }
+        var child;
+        try { child = value[key]; } catch (_) { return; }
         if (textLists.indexOf(key) >= 0) c.strings(child, cp, true, 0, 1000);
         else if (reportLists.indexOf(key) >= 0) c.list(child, cp, 0, 1000, function (entry, ep) { c.obj(entry, ep); }, true);
         else if (textFields.indexOf(key) >= 0) c.str(child, cp, true);
@@ -417,16 +438,19 @@
   function validateMathData(d, p, errors, warnings) {
     var errList = Array.isArray(errors) ? errors : [];
     var warnList = Array.isArray(warnings) ? warnings : [];
+    var basePath = safeStr(p);
     var c = checkContext(errList, warnList);
-    if (!c.obj(d, p)) return true;
-    c.str(d.problem !== undefined ? d.problem : d.question, p + (d.problem !== undefined ? '.problem' : '.question'));
-    if (typeof d.answer === 'number') c.num(d.answer, p + '.answer', -1e100, 1e100); else c.str(d.answer, p + '.answer');
-    c.str(d.realWorld, p + '.realWorld', true);
-    c.list(d.steps, p + '.steps', 0, 100, function (step, sp) {
+    if (!c.obj(d, basePath)) return true;
+    var hasProblem = own(d, 'problem') !== undefined;
+    c.str(hasProblem ? d.problem : own(d, 'question'), basePath + (hasProblem ? '.problem' : '.question'));
+    var answerVal = own(d, 'answer');
+    if (typeof answerVal === 'number') c.num(answerVal, basePath + '.answer', -1e100, 1e100); else c.str(answerVal, basePath + '.answer');
+    c.str(own(d, 'realWorld'), basePath + '.realWorld', true);
+    c.list(own(d, 'steps'), basePath + '.steps', 0, 100, function (step, sp) {
       if (typeof step === 'string') c.str(step, sp);
       else if (c.obj(step, sp)) c.fields(step, sp, ['explanation'], ['latex']);
     }, true);
-    validateMathGraph(d.graphData, p + '.graphData', errList);
+    validateMathGraph(own(d, 'graphData'), basePath + '.graphData', errList);
     return true;
   }
 
@@ -434,7 +458,7 @@
     if (!item || typeof item.type !== 'string' || TYPES.indexOf(item.type) < 0) return false;
     var errList = Array.isArray(errors) ? errors : [];
     var warnList = Array.isArray(warnings) ? warnings : [];
-    var c = checkContext(errList, warnList), p = String(path == null ? '' : path) + '.data', d = item.data;
+    var c = checkContext(errList, warnList), p = safeStr(path) + '.data', d = own(item, 'data');
     if (item.type === 'analysis') analysis(d, p, c);
     else if (item.type === 'brainstorm') brainstorm(d, p, c);
     else if (item.type === 'adventure') adventure(d, p, c);
@@ -477,7 +501,10 @@
     contracts[2].variantExamples = { opening: contracts[2].example, snapshot: { snapshot: { currentScene: contracts[2].example, history: [], inventory: [], systemResources: [], turnCount: 1, level: 1, xp: 0, xpToNextLevel: 100, energy: 100, isGameOver: false } } };
     return contracts;
   }
-  var api = { TYPES: TYPES, validateResource: validateResource, validateMathData: validateMathData, validateMathGraph: validateMathGraph, validateStaticSvg: validateStaticSvg, getContracts: getContracts };
-  if (typeof window !== 'undefined') { window.AlloModules = window.AlloModules || {}; window.AlloModules.AgentCorePackNative = api; }
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  var api = Object.freeze({ TYPES: TYPES, validateResource: validateResource, validateMathData: validateMathData, validateMathGraph: validateMathGraph, validateStaticSvg: validateStaticSvg, getContracts: getContracts });
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
+    window.AlloModules.AgentCorePackNative = api;
+  }
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
 })();

@@ -92,7 +92,10 @@ window.StemLab = window.StemLab || {
       '[data-applab-workbench] .applab-node-beacon{transform-box:fill-box;transform-origin:center;animation:applabBeaconBreath 2.2s ease-in-out infinite}',
       '[data-applab-workbench] .applab-meter-halo{transform-box:fill-box;transform-origin:center;animation:applabThumbPulse 2.4s ease-in-out infinite}',
       '.theme-contrast [data-applab-workbench] .applab-bus-flow,.theme-contrast [data-applab-workbench] .applab-sig-packet,.theme-contrast [data-applab-workbench] .applab-node-beacon,.theme-contrast [data-applab-workbench] .applab-meter-halo{animation:none!important}',
-      '@media (prefers-reduced-motion: reduce){[data-applab-workbench] .applab-bus-flow,[data-applab-workbench] .applab-sig-packet,[data-applab-workbench] .applab-node-beacon,[data-applab-workbench] .applab-meter-halo{animation:none!important}}'
+      '@media (prefers-reduced-motion: reduce){[data-applab-workbench] .applab-bus-flow,[data-applab-workbench] .applab-sig-packet,[data-applab-workbench] .applab-node-beacon,[data-applab-workbench] .applab-meter-halo{animation:none!important}}',
+      '[data-stem-tool-shell="appLab"] :is(button,input,select,summary){touch-action:manipulation}',
+      '[data-stem-tool-shell="appLab"] :is(button,input,select,textarea,summary,[tabindex]):focus-visible{outline:2px solid #a78bfa;outline-offset:2px}',
+      '@media (forced-colors: active){[data-stem-tool-shell="appLab"] :is(button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -20089,7 +20092,7 @@ test('no a11y violations', async () => {
               h('div', { style: { fontSize: '20px', fontWeight: 900, color: '#dc2626' } }, '🔥 ' + quizScore.streak),
               quizScore.best > 0 && h('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'Best: ' + quizScore.best)
             ),
-            h('button', { onClick: resetQuizScore, style: btn('#fef3c7', '#92400e', false), title: __alloT('stem.applab.reset_score', 'Reset score') }, __alloT('stem.applab.reset', '↻ Reset'))
+            h('button', { type: 'button', onClick: resetQuizScore, style: btn('#fef3c7', '#92400e', false), title: __alloT('stem.applab.reset_score', 'Reset score') }, __alloT('stem.applab.reset', '↻ Reset'))
           ),
 
           // Question card
@@ -20103,7 +20106,7 @@ test('no a11y violations', async () => {
                   if (thisCorrect) { bg = '#dcfce7'; border = '#16a34a'; color = '#166534'; }
                   else if (oi === quizPicked) { bg = '#fee2e2'; border = '#dc2626'; color = '#991b1b'; }
                 }
-                return h('button', { key: oi, disabled: answered,
+                return h('button', { type: 'button', key: oi, disabled: answered,
                   onClick: function() {
                     if (answered) return;
                     setQuizPicked(oi);
@@ -20139,14 +20142,14 @@ test('no a11y violations', async () => {
 
             // Nav
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px', justifyContent: 'space-between' } },
-              h('button', { onClick: function() { setQuizIdx(safeIdx - 1); setQuizPicked(null); }, disabled: safeIdx === 0,
+              h('button', { type: 'button', onClick: function() { setQuizIdx(safeIdx - 1); setQuizPicked(null); }, disabled: safeIdx === 0,
                 style: btn('#f1f5f9', '#374151', safeIdx === 0) }, __alloT('stem.applab.previous', '◀ Previous')),
               h('div', { style: { display: 'flex', gap: '8px' } },
-                h('button', { onClick: function() {
+                h('button', { type: 'button', onClick: function() {
                   var rand = Math.floor(Math.random() * ALL_Q.length);
                   setQuizIdx(rand); setQuizPicked(null);
                 }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.random', '🎲 Random')),
-                h('button', { onClick: function() { setQuizIdx(safeIdx + 1); setQuizPicked(null); }, disabled: safeIdx === ALL_Q.length - 1,
+                h('button', { type: 'button', onClick: function() { setQuizIdx(safeIdx + 1); setQuizPicked(null); }, disabled: safeIdx === ALL_Q.length - 1,
                   style: btn(PURPLE, '#fff', safeIdx === ALL_Q.length - 1) }, __alloT('stem.applab.next', 'Next ▶'))
               )
             )
@@ -20190,12 +20193,12 @@ test('no a11y violations', async () => {
           h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'center' } },
             h('span', { style: { fontSize: '12px', color: '#6b7280', fontWeight: 700 } }, 'Card ' + (safeIdx + 1) + ' of ' + GLOSS.length),
             flashShuffle
-              ? h('button', { onClick: unshuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.unshuffle', '↩ Unshuffle'))
-              : h('button', { onClick: shuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.shuffle', '🔀 Shuffle'))
+              ? h('button', { type: 'button', onClick: unshuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.unshuffle', '↩ Unshuffle'))
+              : h('button', { type: 'button', onClick: shuffle, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.shuffle', '🔀 Shuffle'))
           ),
 
           // Card
-          h('button', { onClick: function() { setFlashFlipped(!flashFlipped); },
+          h('button', { type: 'button', onClick: function() { setFlashFlipped(!flashFlipped); },
             'aria-label': flashFlipped ? 'Show term' : 'Show definition',
             style: { width: '100%', maxWidth: '500px', minHeight: '240px',
               background: flashFlipped ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'linear-gradient(135deg, #ede9fe, #ddd6fe)',
@@ -20213,13 +20216,13 @@ test('no a11y violations', async () => {
 
           // Nav
           h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', { onClick: function() { setFlashIdx(safeIdx - 1); setFlashFlipped(false); },
+            h('button', { type: 'button', onClick: function() { setFlashIdx(safeIdx - 1); setFlashFlipped(false); },
               style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.previous_2', '◀ Previous')),
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
               var rand = Math.floor(Math.random() * order.length);
               setFlashIdx(rand); setFlashFlipped(false);
             }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.random_2', '🎲 Random')),
-            h('button', { onClick: function() { setFlashIdx(safeIdx + 1); setFlashFlipped(false); },
+            h('button', { type: 'button', onClick: function() { setFlashIdx(safeIdx + 1); setFlashFlipped(false); },
               style: btn(PURPLE, '#fff', false) }, __alloT('stem.applab.next_2', 'Next ▶'))
           )
         );
@@ -20245,7 +20248,7 @@ test('no a11y violations', async () => {
         var blob = 'data:text/html;charset=utf-8,' + encodeURIComponent(combined);
         var tabBtn = function(id, label) {
           var act = pgTab === id;
-          return h('button', { onClick: function() { setPgTab(id); },
+          return h('button', { type: 'button', onClick: function() { setPgTab(id); },
             style: { padding: '6px 12px', border: 'none', background: act ? PURPLE : '#f1f5f9',
               color: act ? '#fff' : '#374151', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, label);
         };
@@ -20258,7 +20261,7 @@ test('no a11y violations', async () => {
                 tabBtn('html', '📄 HTML'),
                 tabBtn('css', '🎨 CSS'),
                 tabBtn('js', '⚡ JS'),
-                h('button', { onClick: function() { setPgRun(pgRun + 1); }, style: Object.assign({}, btn(PURPLE, '#fff', false), { marginLeft: 'auto' }) }, __alloT('stem.applab.run', '▶ Run'))
+                h('button', { type: 'button', onClick: function() { setPgRun(pgRun + 1); }, style: Object.assign({}, btn(PURPLE, '#fff', false), { marginLeft: 'auto' }) }, __alloT('stem.applab.run', '▶ Run'))
               ),
               h('textarea', {
                 value: pgTab === 'html' ? pgHtml : pgTab === 'css' ? pgCss : pgJs,
@@ -20322,7 +20325,7 @@ test('no a11y violations', async () => {
                     p.difficulty && h('span', { style: { fontSize: '10px', background: p.difficulty === 'Beginner' ? '#dcfce7' : p.difficulty === 'Advanced' ? '#fee2e2' : '#fef3c7', color: p.difficulty === 'Beginner' ? '#166534' : p.difficulty === 'Advanced' ? '#991b1b' : '#92400e', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 } }, p.difficulty)
                   ),
                   p.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0', lineHeight: 1.5 } }, p.description),
-                  _aiOn && p.prompt && h('button', { onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
+                  _aiOn && p.prompt && h('button', { type: 'button', onClick: function() { setPrompt(p.prompt); goToTab('build'); if (addToast) addToast('Loaded into Build tab', 'success'); },
                     style: btn(PURPLE, '#fff', false) }, __alloT('stem.applab.build_this', '🚀 Build This')),
                   p.skills && h('div', { style: { fontSize: '11px', color: '#6b7280', marginTop: '8px' } }, h('strong', null, 'Skills: '), Array.isArray(p.skills) ? p.skills.join(', ') : p.skills)
                 );
@@ -20340,7 +20343,7 @@ test('no a11y violations', async () => {
                   h('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e293b', margin: '0 0 6px 0' } }, s.name || s.title),
                   s.description && h('p', { style: { fontSize: '12px', color: '#374151', margin: '0 0 8px 0' } }, s.description),
                   s.code && h('pre', { style: { fontSize: '11px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '10px', borderRadius: '8px', overflowX: 'auto', maxHeight: '240px' } }, s.code),
-                  s.code && h('button', { onClick: function() { setHtml(s.code); setEditHtml(s.code); resetHistory(s.code); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
+                  s.code && h('button', { type: 'button', onClick: function() { setHtml(s.code); setEditHtml(s.code); resetHistory(s.code); goToTab('build'); if (addToast) addToast('Loaded ' + (s.name || 'template'), 'success'); },
                     style: Object.assign({}, btn(PURPLE, '#fff', false), { marginTop: '8px' }) }, __alloT('stem.applab.load_in_build', '📥 Load in Build'))
                 );
               })
@@ -20473,7 +20476,7 @@ test('no a11y violations', async () => {
       // ═══ RENDER ═══
       // Tab bar
       var appLabTabKeyDown = function(e, index) {
-        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + TABS.length - 1) % TABS.length;
@@ -20917,10 +20920,10 @@ test('no a11y violations', async () => {
 
                       // Reorder buttons
                       h('div', { style: { display: 'flex', justifyContent: 'center', gap: '2px', marginBottom: '4px' } },
-                        ci > 0 && h('button', { onClick: function() { moveAgent(cfg.id, -1); },
+                        ci > 0 && h('button', { type: 'button', onClick: function() { moveAgent(cfg.id, -1); },
                           'aria-label': 'Move ' + agent.name + ' earlier in the pipeline',
                           style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '◀'),
-                        ci < pipelineConfig.length - 1 && h('button', { onClick: function() { moveAgent(cfg.id, 1); },
+                        ci < pipelineConfig.length - 1 && h('button', { type: 'button', onClick: function() { moveAgent(cfg.id, 1); },
                           'aria-label': 'Move ' + agent.name + ' later in the pipeline',
                           style: { background: 'transparent', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', cursor: 'pointer', fontSize: '10px', padding: '0 2px' } }, '▶')
                       ),
@@ -20931,7 +20934,7 @@ test('no a11y violations', async () => {
                       h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, agent.name),
 
                       // Toggle
-                      !agent.required && h('button', {
+                      !agent.required && h('button', { type: 'button',
                         onClick: function() { toggleAgent(cfg.id); },
                         'aria-label': (isOn ? 'Disable ' : 'Enable ') + agent.name,
                         'aria-pressed': isOn,
@@ -21007,25 +21010,25 @@ test('no a11y violations', async () => {
               onBlur: function(e) { e.target.style.boxShadow = 'none'; },
               'aria-label': __alloT('stem.applab.app_description_prompt', 'App description prompt') }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: _aiOn ? '10px' : 0, flexWrap: 'wrap' } },
-              _aiOn && h('button', { onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
+              _aiOn && h('button', { type: 'button', onClick: function() { generateApp(prompt); }, disabled: isGenerating || !prompt.trim(),
                 'aria-busy': isGenerating,
                 'aria-label': isGenerating ? ('Generating app: ' + genStep) : 'Generate app',
                 style: Object.assign({}, btn(PURPLE, '#fff', isGenerating || !prompt.trim()), { padding: '10px 24px', fontSize: '14px' })
               }, isGenerating ? '⏳ ' + genStep : '🚀 Generate App'),
               // A multi-agent run is minutes long; there was no way out of it.
-              isGenerating && h('button', {
+              isGenerating && h('button', { type: 'button',
                 onClick: function() { cancelRef.current = true; step('Cancelling after the current step...', 'Cancelling after the current step'); },
                 style: btn('#fee2e2', '#991b1b', false),
                 'aria-label': __alloT('stem.applab.cancel_generation', 'Cancel generation')
               }, __alloT('stem.applab.cancel', '✕ Cancel')),
-              _aiOn && h('button', { onClick: suggestIdeas, disabled: sugLoading,
+              _aiOn && h('button', { type: 'button', onClick: suggestIdeas, disabled: sugLoading,
                 style: btn('#f1f5f9', '#374151', sugLoading) }, sugLoading ? '⏳ Thinking...' : '✨ Suggest Ideas'),
-              h('button', { onClick: function() { setShowGallery(!showGallery); },
+              h('button', { type: 'button', onClick: function() { setShowGallery(!showGallery); },
                 style: btn('#f1f5f9', '#374151', false) }, '📂 Gallery (' + gallery.length + ')'),
               // The toolbar that normally carries Import only renders once an
               // app is loaded, so from a blank slate there was no way to bring
               // an existing file in at all.
-              h('button', { onClick: function() { importInputRef.current && importInputRef.current.click(); },
+              h('button', { type: 'button', onClick: function() { importInputRef.current && importInputRef.current.click(); },
                 style: btn('#f1f5f9', '#374151', false),
                 'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') },
                 __alloT('stem.applab.import_html', '📄 Import HTML'))
@@ -21037,7 +21040,7 @@ test('no a11y violations', async () => {
             h('h3', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '8px' } }, __alloT('stem.applab.suggested_projects', '\u2728 Suggested Projects')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' } },
               suggestions.map(function(s, i) {
-                return h('button', { key: i, onClick: function() { setPrompt(s.prompt || s.description); setShowSuggestions(false); },
+                return h('button', { type: 'button', key: i, onClick: function() { setPrompt(s.prompt || s.description); setShowSuggestions(false); },
                   style: { padding: '10px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, #e5e7eb)', background: 'var(--allo-stem-deeper, #fff)', color: 'var(--allo-stem-text, #1e293b)', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                 },
                   h('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text, #1e293b)', marginBottom: '2px' } }, s.title),
@@ -21079,9 +21082,9 @@ test('no a11y violations', async () => {
                     h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #6b7280)' } }, new Date(app.created).toLocaleDateString())
                   ),
                   h('div', { style: { display: 'flex', gap: '4px' } },
-                    h('button', { onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); resetHistory(app.html); setShowGallery(false); },
+                    h('button', { type: 'button', onClick: function() { setHtml(app.html); setEditHtml(app.html); setPrompt(app.prompt || ''); resetHistory(app.html); setShowGallery(false); },
                       style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.load', 'Load')),
-                    h('button', { onClick: function() {
+                    h('button', { type: 'button', onClick: function() {
                       var updated = gallery.filter(function(g) { return g.id !== app.id; });
                       var kept = persistGallery(updated) || updated;
                       setGallery(kept);
@@ -21193,9 +21196,9 @@ test('no a11y violations', async () => {
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
               h('span', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.applab.source_code', '</> Source Code')),
               h('div', { style: { display: 'flex', gap: '4px' } },
-                h('button', { onClick: applyCodeEdit, disabled: editHtml === html,
+                h('button', { type: 'button', onClick: applyCodeEdit, disabled: editHtml === html,
                   style: btn(editHtml !== html ? '#22c55e' : '#e5e7eb', editHtml !== html ? '#fff' : '#9ca3af', editHtml === html) }, __alloT('stem.applab.apply_changes', '▶ Apply Changes')),
-                h('button', { onClick: function() { setEditHtml(html); }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.reset_2', '↩ Reset'))
+                h('button', { type: 'button', onClick: function() { setEditHtml(html); }, style: btn('#f1f5f9', '#374151', false) }, __alloT('stem.applab.reset_2', '↩ Reset'))
               )
             ),
             // Editor with a line-number gutter. The preview's error overlay
@@ -21242,11 +21245,11 @@ test('no a11y violations', async () => {
                 h('span', { style: { fontWeight: 'bold' } }, '⚠️ ' + iframeErrors.length + ' error(s) in generated app'),
                 h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
                   // Closes the loop: the errors we captured become the fix.
-                  _aiOn && h('button', { onClick: fixReportedErrors, disabled: isGenerating,
+                  _aiOn && h('button', { type: 'button', onClick: fixReportedErrors, disabled: isGenerating,
                     style: { background: isGenerating ? 'rgba(255,255,255,0.15)' : '#fff', border: 'none', color: isGenerating ? '#fff' : '#991b1b', padding: '3px 10px', borderRadius: '5px', cursor: isGenerating ? 'not-allowed' : 'pointer', fontSize: '10px', fontWeight: 700, fontFamily: 'inherit' },
                     'aria-label': __alloT('stem.applab.fix_these_errors_with_ai', 'Fix these errors with AI')
                   }, isGenerating ? '⏳' : __alloT('stem.applab.fix_these_errors', '🔧 Fix these')),
-                  h('button', { onClick: function() { setIframeErrors([]); },
+                  h('button', { type: 'button', onClick: function() { setIframeErrors([]); },
                     style: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '3px 8px', borderRadius: '5px', cursor: 'pointer', fontSize: '10px' },
                     'aria-label': __alloT('stem.applab.dismiss_errors', 'Dismiss errors') }, '✕')
                 )
@@ -21259,15 +21262,15 @@ test('no a11y violations', async () => {
             // Enhance bar (below preview)
             h('div', { style: { display: 'flex', gap: '6px', marginTop: '6px', flexShrink: 0 } },
               _aiOn && h('input', { type: 'text', value: enhancePrompt, onChange: function(ev) { setEnhancePrompt(ev.target.value); },
-                onKeyDown: function(ev) { if (ev.key === 'Enter' && !(ev.isComposing || ev.keyCode === 229) && enhancePrompt.trim() && !isGenerating) enhanceApp(); },
+                onKeyDown: function(ev) { if (ev.key === 'Enter' && !(ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) && enhancePrompt.trim() && !isGenerating) enhanceApp(); },
                 onFocus: function(e) { e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.4)'; },
                 onBlur: function(e) { e.target.style.boxShadow = 'none'; },
                 placeholder: __alloT('stem.applab.enhance_add_a_dark_mode_toggle_or_make', 'Enhance: "add a dark mode toggle" or "make the particles bigger"...'),
                 style: { flex: 1, padding: '8px 14px', border: '2px solid #d1d5db', borderRadius: '10px', fontSize: '12px', outline: '2px solid transparent', outlineOffset: '2px' }, className: 'focus:ring-2 focus:ring-violet-500 focus:ring-offset-1',
                 disabled: isGenerating, 'aria-label': __alloT('stem.applab.enhancement_prompt', 'Enhancement prompt') }),
-              _aiOn && h('button', { onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
+              _aiOn && h('button', { type: 'button', onClick: enhanceApp, disabled: !enhancePrompt.trim() || isGenerating,
                 style: btn(PURPLE, '#fff', !enhancePrompt.trim() || isGenerating) }, isGenerating ? '\u23F3' : '\u2728 Enhance'),
-              h('button', { onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); resetHistory(null); try { localStorage.removeItem(STORAGE_DRAFT); } catch(e) {} },
+              h('button', { type: 'button', onClick: function() { setHtml(''); setEditHtml(''); setPrompt(''); resetHistory(null); try { localStorage.removeItem(STORAGE_DRAFT); } catch(e) {} },
                 style: btn('#fee2e2', '#991b1b', false), title: __alloT('stem.applab.start_over', 'Start over') }, __alloT('stem.applab.new', '\uD83D\uDDD1\uFE0F New'))
             )
           )
@@ -21360,19 +21363,19 @@ test('no a11y violations', async () => {
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.specificity_1_10', 'Specificity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.specificity)),
-                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.specificity, onChange: function(e) { setKey('specificity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.specificity, 'aria-valuetext': iq.specificity + '/10', onChange: function(e) { setKey('specificity', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.constraints_stated_1_10', 'Constraints stated (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.constraints)),
-                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.constraints, onChange: function(e) { setKey('constraints', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.constraints, 'aria-valuetext': iq.constraints + '/10', onChange: function(e) { setKey('constraints', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.example_count_0_5', 'Example count (0-5)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.examples)),
-                h('input', { type: 'range', min: 0, max: 5, step: 1, value: iq.examples, onChange: function(e) { setKey('examples', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 0, max: 5, step: 1, value: iq.examples, 'aria-valuetext': iq.examples + '/5', onChange: function(e) { setKey('examples', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
               ),
               h('label', { style: { fontSize: 11 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.applab.persona_role_clarity', 'Persona / role clarity')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.persona)),
-                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.persona, onChange: function(e) { setKey('persona', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('input', { type: 'range', min: 1, max: 10, step: 1, value: iq.persona, 'aria-valuetext': iq.persona + '/10', onChange: function(e) { setKey('persona', parseInt(e.target.value, 10)); }, style: { width: '100%', minHeight: 44 } })
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },

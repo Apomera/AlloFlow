@@ -77,6 +77,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     st.id = 'allo-gisstudio-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-control-attribution{background:#000!important;color:#ff0!important;outline:1px solid #ff0}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-control-attribution a{color:#ff0!important;text-decoration:underline!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip{background:#000!important;color:#ff0!important;border-color:#ff0!important;opacity:1!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-top::before{border-top-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-bottom::before{border-bottom-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-left::before{border-left-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-tooltip-right::before{border-right-color:#ff0!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] :is(.leaflet-popup-content-wrapper,.leaflet-popup-tip){background:#000!important;color:#ff0!important;outline:1px solid #ff0}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] [style*=\"background: rgb(255, 247, 237)\"]{background:#000!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-bar a{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}.theme-contrast [data-stem-tool-shell=\"gisStudio\"] .leaflet-bar a:hover{background:#00ff00!important;color:#000!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-gisstudio-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-gisstudio-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"gisStudio\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"gisStudio\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   // end contrast theme fixes
 
@@ -6497,7 +6503,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     h('option', { value: 'custom' }, __alloT('stem.gisstudio.ui_custom_thresholds', 'Custom thresholds')))),
                 geoFeatures.length > 0 && classification !== 'custom' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 10 } },
                   h('span', { style: { fontWeight: 700 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_classes_count', 'Classes: {count}'), { count: classCount })),
-                  h('input', { type: 'range', min: 3, max: 7, value: classCount, onChange: function (event) { setClassCount(Number(event.target.value)); } })),
+                  h('input', { type: 'range', min: 3, max: 7, value: classCount, 'aria-valuetext': gisFillTemplate(__alloT('stem.gisstudio.ui_classes_count', 'Classes: {count}'), { count: classCount }), style: { minHeight: 44 }, onChange: function (event) { setClassCount(Number(event.target.value)); } })),
                 geoFeatures.length > 0 && classification === 'custom' && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 10 } },
                   h('span', { style: { fontWeight: 700 } }, __alloT('stem.gisstudio.ui_thresholds_comma_separated', 'Thresholds, comma separated')),
                   h('input', { type: 'text', value: customBreaks, onChange: function (event) { setCustomBreaks(event.target.value); }, style: control })),
@@ -8661,6 +8667,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function projectionView() {
           var scale = 1 / Math.max(0.05, Math.cos(latitude * Math.PI / 180));
           var factor = projection === 'mercator' ? scale * scale : projection === 'equirectangular' ? scale : 1;
+          var latLabel = gisFillTemplate(__alloT('stem.gisstudio.ui_latitude_value', 'Latitude: {value}'), { value: display.coordinate(latitude, 0, 'lat') });
           return h('section', { 'aria-labelledby': 'gis-projection-heading', style: Object.assign({}, panel, { maxWidth: 930, margin: '0 auto', padding: 18 }) },
             h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, __alloT('stem.gisstudio.ui_coordinates_distortion', 'COORDINATES + DISTORTION')),
             h('h2', { id: 'gis-projection-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, __alloT('stem.gisstudio.ui_projection_lab', 'Projection lab')),
@@ -8672,8 +8679,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     h('option', { value: 'mercator' }, __alloT('stem.gisstudio.ui_mercator', 'Mercator')),
                     h('option', { value: 'equirectangular' }, __alloT('stem.gisstudio.ui_equirectangular', 'Equirectangular')),
                     h('option', { value: 'equalarea' }, __alloT('stem.gisstudio.ui_equal_area', 'Equal-area')))),
-                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_latitude_value', 'Latitude: {value}'), { value: display.coordinate(latitude, 0, 'lat') }),
-                  h('input', { type: 'range', min: -80, max: 80, step: 5, value: latitude, onChange: function (event) { setLatitude(Number(event.target.value)); }, 'aria-describedby': 'gis-factor' })),
+                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, latLabel,
+                  h('input', { type: 'range', min: -80, max: 80, step: 5, value: latitude, 'aria-valuetext': latLabel, style: { minHeight: 44 }, onChange: function (event) { setLatitude(Number(event.target.value)); }, 'aria-describedby': 'gis-factor' })),
                 h('div', { id: 'gis-factor', role: 'status', style: { marginTop: 14, padding: 11, borderRadius: 9, background: '#071827', color: '#cffafe' } },
                   h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_visual_area_factor', '{factor}× visual area'), { factor: display.number(factor, 2) })),
                   projection === 'mercator' ? 'Preserves local angles; enlarges high latitudes.' : projection === 'equirectangular' ? 'Maps coordinates directly; stretches east-west distance.' : 'Preserves relative area; changes shape and angle.')),

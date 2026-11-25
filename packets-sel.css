@@ -1,0 +1,85 @@
+/* Maker styles for packets-sel.html. Colors and radii come from packets.css. No address, no font, no image. */
+
+.starter-grid { display: grid; grid-template-columns: 1fr; gap: 0.7rem; margin-top: 0.75rem; }
+@media (min-width: 44rem) { .starter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.starter-card { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; width: 100%; min-height: 44px; padding: 0.85rem 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.starter-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.starter-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.starter-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.starter-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; font-size: 0.8125rem; font-weight: 700; color: var(--muted); }
+.starter-tag { padding: 0.08rem 0.48rem; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); color: var(--accent); }
+.starter-name { font-weight: 700; color: var(--ink); font-size: 1rem; line-height: 1.3; }
+.starter-summary { font-size: 0.875rem; color: var(--muted); line-height: 1.4; }
+
+.editor-panel { margin-top: 0.75rem; }
+.editor-panel h3 { margin-top: 0; }
+.field-row { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+@media (min-width: 40rem) { .field-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.field-row .field { margin-top: 0; }
+
+.print-preview { margin-top: 0.85rem; padding: 0.85rem 1rem; border: 1.5px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface); display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0.65rem; align-items: center; }
+.print-preview-box { min-width: 0; padding: 0.6rem 0.75rem; border: 1.5px solid var(--line-strong); border-radius: 8px; }
+.print-preview-kicker { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.print-preview-val { display: block; font-weight: 700; margin-top: 0.15rem; }
+
+.paper-sel-fold { margin-top: 1.1rem; padding: 0.75rem 1rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); }
+.paper-sel-fold > summary { cursor: pointer; font-weight: 700; color: var(--ink); min-height: 2.75rem; display: flex; align-items: center; gap: 0.55rem; list-style: none; }
+.paper-sel-fold > summary::-webkit-details-marker { display: none; }
+.paper-sel-fold > summary::before { content: ""; flex: none; width: 0.45rem; height: 0.45rem; margin-top: -0.1rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); transition: transform 0.14s ease; }
+.paper-sel-fold[open] > summary::before { margin-top: -0.25rem; transform: rotate(45deg); }
+.paper-sel-fold > summary:hover { color: var(--accent); }
+.paper-sel-fold > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.paper-sel-controls { margin-top: 0.5rem; display: grid; gap: 0.5rem; }
+
+.paper-sel-sheet { margin-top: 0.9rem; padding: 1.15rem 1.25rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); color: var(--ink); }
+.paper-sel-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1rem; padding-bottom: 0.65rem; border-bottom: 1.5px solid var(--line-strong); }
+.paper-sel-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+.paper-sel-fields { margin: 0; font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+.paper-sel-cards { display: grid; gap: 1rem; margin-top: 0.95rem; }
+.paper-sel-card { padding: 0.95rem 1.05rem; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); break-inside: avoid; }
+.paper-sel-card-cut { border-style: dashed; }
+.paper-sel-cut-note { margin: 0 0 0.55rem; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.paper-sel-card-title { margin: 0 0 0.55rem; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.paper-sel-ft-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0.65rem; align-items: stretch; }
+.paper-sel-ft-box { min-width: 0; padding: 0.7rem 0.85rem; border: 2px solid var(--line-strong); border-radius: 8px; }
+.paper-sel-ft-kicker { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.paper-sel-ft-val { display: block; margin-top: 0.25rem; font-size: 1.08rem; font-weight: 700; color: var(--ink); }
+.paper-sel-ft-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.35rem; font-weight: 700; color: var(--muted); }
+.paper-sel-checklist { margin: 0.75rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.45rem; }
+.paper-sel-checklist li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.96rem; line-height: 1.45; }
+.paper-sel-box { flex: none; width: 1.05rem; height: 1.05rem; margin-top: 0.18rem; border: 1.5px solid var(--line-strong); border-radius: 3px; display: inline-block; }
+.paper-sel-line { flex: 1; min-width: 8rem; border-bottom: 1.5px solid var(--line-strong); height: 1.15rem; }
+.paper-sel-breath { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.7rem; }
+@media (min-width: 36rem) { .paper-sel-breath { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.paper-sel-breath-step { padding: 0.5rem 0.6rem; border: 1.5px solid var(--line-strong); border-radius: 8px; text-align: center; font-size: 0.88rem; font-weight: 700; }
+.paper-sel-chips { display: flex; flex-wrap: wrap; gap: 0.5rem 0.85rem; margin: 0.5rem 0 0.75rem; padding: 0; list-style: none; }
+.paper-sel-chips li { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.55rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.9rem; }
+.paper-sel-write-lines { display: grid; gap: 0.75rem; margin: 0.45rem 0 0.75rem; }
+.paper-sel-write-line { border-bottom: 1.5px solid var(--line-strong); height: 1.3rem; }
+.paper-sel-meta { margin: 0.45rem 0 0; font-size: 0.92rem; color: var(--muted); }
+.paper-sel-rounds { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 0.65rem; font-weight: 600; font-size: 0.92rem; }
+.paper-sel-round { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .starter-card, .paper-sel-fold > summary::before { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .starter-card[aria-pressed="true"] { border: 2px solid Highlight; }
+  .print-preview, .print-preview-box, .paper-sel-fold, .paper-sel-sheet, .paper-sel-card, .paper-sel-ft-box, .paper-sel-box, .paper-sel-breath-step, .paper-sel-chips li { border-color: CanvasText; }
+  .paper-sel-fold > summary::before { border-color: CanvasText; }
+}
+
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #ffffff; color: #000000; }
+  header.top, nav, .reopen, .steps, .actions, .batch, .about, footer.foot, #more-supports, .no-print,
+  #step-1, #step-2, #loading, #load-problem, #making, #build-problem, #summary, #title-field, #after-save, #summary-list, #step-3-title, #step-3 > .kicker, h1, .scope { display: none !important; }
+  .sheet { border: 0; padding: 0; margin: 0; background: #ffffff; }
+  .print-preview { border: 2px solid #000000; break-inside: avoid; }
+  .paper-sel-sheet[data-ready="1"] { display: block !important; border: 0; padding: 0; margin: 0; background: #ffffff; color: #000000; }
+  .paper-sel-title, .paper-sel-fields, .paper-sel-cut-note, .paper-sel-card-title, .paper-sel-ft-kicker, .paper-sel-ft-val, .paper-sel-ft-arrow, .paper-sel-checklist, .paper-sel-breath-step, .paper-sel-chips li, .paper-sel-meta, .paper-sel-rounds { color: #000000 !important; }
+  .paper-sel-header, .paper-sel-card, .paper-sel-ft-box, .paper-sel-box, .paper-sel-line, .paper-sel-breath-step, .paper-sel-chips li, .paper-sel-write-line { border-color: #000000; background: #ffffff; }
+}

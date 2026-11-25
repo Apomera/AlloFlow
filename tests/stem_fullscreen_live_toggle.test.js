@@ -229,7 +229,7 @@ describe('fullscreen copy calls an i18n helper its tool actually defines', () =>
     it(file + ' resolves its fullscreen label helper', () => {
       const src = readFileSync(dir + '/' + file, 'utf8');
       const definesAlloT = /var __alloT = function/.test(src);
-      const definesT = /var t = function|var t = ctx\.t|const t = ctx\.t|var t = \(?ctx\.t|var t = props\.t|const t = props\.t/.test(src);
+      const definesT = /var t = function|var t = ctx\.t|const t = ctx\.t|var t = \(?ctx\.t|var t = props\.t|const t = props\.t|var t = typeof ctx\.t === 'function' \? ctx\.t : function/.test(src);
       // Read the identifier in FRONT of each fullscreen label call rather than
       // testing with a lookbehind. An earlier version of this line carried a
       // literal backspace inside the pattern (a backslash-b that the shell turned into

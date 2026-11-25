@@ -59,7 +59,8 @@ describe('Solar System deep-space signal-delay lab', () => {
     expect(source).toContain('data-solarsystem-signal-toggle');
     expect(source).toContain('data-solarsystem-signal-lab');
     expect(source).toContain('id: "solar-signal-angle"');
-    expect(source).toContain('"aria-valuetext": geometryLabel');
+    // The slider value text is localized now; it still leads with the geometry label.
+    expect(source).toContain(`"aria-valuetext": __alloFill(__alloT('stem.solarsystem.a11y_distance_au', '{geometryLabel}; distance {value1} AU'), { geometryLabel: geometryLabel, value1: distanceAU.toFixed(3) })`);
     expect(source).toContain("stem.solarsystem.signal_delay_prediction");
     expect(source).toContain('"Signal delay prediction"');
     expect(source).toContain('Send a light-speed ping');

@@ -14,12 +14,14 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.WalkthroughCopilot
       && window.AlloModules.WalkthroughCopilot.WalkthroughCopilotPanel) {
     console.log('[CDN] WalkthroughCopilot already loaded, skipping');
     return;
   }
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-wcop')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-wcop';
@@ -137,7 +139,11 @@
     return null;
   }
   function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+    var serialized = JSON.stringify(value);
+    if (serialized === undefined) return undefined;
+    return JSON.parse(serialized, function (key, val) {
+      return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+    });
   }
   function stamp(options) {
     if (options && isNonEmptyString(options.now)) return options.now;
@@ -321,6 +327,7 @@
     var end = span.end;
     if (typeof start !== 'number' || typeof end !== 'number'
       || !isFinite(start) || !isFinite(end)
+      || Math.floor(start) !== start || Math.floor(end) !== end
       || start < 0 || end <= start || end > notes.length) {
       errors.push(error('span-range', path, 'Source span offsets fall outside the observation notes.'));
       return false;
@@ -339,7 +346,8 @@
 
   function detectForbiddenKeys(suggestion, path, errors) {
     Object.keys(suggestion).forEach(function (key) {
-      if (FORBIDDEN_SUGGESTION_KEYS.indexOf(key) !== -1) {
+      var lowerKey = String(key).toLowerCase();
+      if (FORBIDDEN_SUGGESTION_KEYS.some(function (f) { return f.toLowerCase() === lowerKey; })) {
         errors.push(error('field-forbidden', path + '.' + key,
           'A suggestion may not carry a rating, score, or employment recommendation.'));
       }
@@ -579,6 +587,9 @@
     if (!isObject(draft) || !Array.isArray(draft.suggestions)) {
       return bad([error('draft-invalid', 'draft', 'Lock your notes before adding evidence.')]);
     }
+    if (draft.suggestions.length >= MAX_SUGGESTIONS) {
+      return bad([error('suggestions-limit', 'suggestions', 'This draft already has the maximum number of evidence items.')]);
+    }
     var entry = isObject(input) ? input : {};
     var span = locateQuote(draft.sourceNotesOriginal, entry.quote);
     if (!span.ok) return span;
@@ -609,7 +620,7 @@
     if (!report.ok) return report;
 
     var next = clone(draft);
-    next.suggestions = draft.suggestions.concat(report.value.suggestions);
+    next.suggestions = next.suggestions.concat(report.value.suggestions);
     next.globalWarnings = globalWarnings(next);
     return ok(next, report.warnings);
   }
@@ -704,26 +715,33 @@
     var readiness = exportReadiness(draft);
     if (!readiness.ok) return readiness;
 
+    if (!isObject(draft.framework) || !Array.isArray(draft.framework.domains)) {
+      return bad([error('draft-invalid', 'framework', 'Draft framework domains are missing.')]);
+    }
     var map = isObject(fieldMap) ? fieldMap : {};
+    var mappedLabel = function (key, fallback) {
+      return Object.prototype.hasOwnProperty.call(map, key) && isNonEmptyString(map[key]) ? map[key] : fallback;
+    };
     var line = disclosureLine(draft.disclosure);
     var watermark = draft.mode === 'demo' ? DEMO_WATERMARK : '';
     var header = watermark ? watermark + '\n' + line : line;
 
     var byDomain = Object.create(null);
     draft.framework.domains.forEach(function (domain) {
-      byDomain[domain.id] = [];
+      if (domain && isNonEmptyString(domain.id)) byDomain[domain.id] = [];
     });
     draft.suggestions.forEach(function (suggestion) {
       if (suggestion.decision !== 'accepted' && suggestion.decision !== 'edited') return;
       if (suggestion.result === 'insufficient_evidence') return;
+      if (!Object.prototype.hasOwnProperty.call(byDomain, suggestion.domainId)) return;
       var text = suggestion.approvedText || suggestion.objectiveEvidence;
       byDomain[suggestion.domainId].push(text);
     });
 
     var fields = draft.framework.domains.map(function (domain) {
-      var body = byDomain[domain.id].join('\n\n');
+      var body = (byDomain[domain.id] || []).join('\n\n');
       return {
-        key: map[domain.id] || domain.label,
+        key: mappedLabel(domain.id, domain.label),
         domainId: domain.id,
         label: domain.label,
         empty: body === '',
@@ -733,10 +751,11 @@
       };
     });
 
+    var ctxObj = isObject(draft.context) ? draft.context : {};
     var contextFields = [];
     ['teacherDisplayName', 'date', 'period', 'subject', 'observer'].forEach(function (key) {
-      if (isNonEmptyString(draft.context[key])) {
-        contextFields.push({ key: map[key] || key, domainId: null, label: key, empty: false, text: draft.context[key] });
+      if (Object.prototype.hasOwnProperty.call(ctxObj, key) && isNonEmptyString(ctxObj[key])) {
+        contextFields.push({ key: mappedLabel(key, key), domainId: null, label: key, empty: false, text: ctxObj[key] });
       }
     });
 
@@ -956,7 +975,10 @@
 
     function call(action, payload) {
       var body = { action: action };
-      Object.keys(payload || {}).forEach(function (key) { body[key] = payload[key]; });
+      Object.keys(payload || {}).forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+        body[key] = payload[key];
+      });
       if (token) body.token = token;
       return post(execUrl, body);
     }
@@ -979,6 +1001,10 @@
         });
       },
       deliver: function (draft, fieldMap, deliveryOptions) {
+        if (!token) {
+          return Promise.resolve(bad([error('owner_token_required', 'token',
+            'Paste the owner token from Apps Script Project Settings > Script properties.')]));
+        }
         var opts = isObject(deliveryOptions) ? deliveryOptions : {};
         var recipient = validateRecipient(opts.teacherEmail, opts.allowedDomain);
         if (!recipient.ok) return Promise.resolve(recipient);
@@ -1036,13 +1062,13 @@
     });
   }
 
-  var api = {
+  var api = Object.freeze({
     CONTRACT_VERSION: CONTRACT_VERSION,
     DEFAULT_DISCLOSURE: DEFAULT_DISCLOSURE,
     DEFAULT_FORMATIVE_SENTENCE: DEFAULT_FORMATIVE_SENTENCE,
     DEMO_WATERMARK: DEMO_WATERMARK,
-    MODES: MODES.slice(),
-    DECISIONS: DECISIONS.slice(),
+    MODES: Object.freeze(MODES.slice()),
+    DECISIONS: Object.freeze(DECISIONS.slice()),
     validateFramework: validateFramework,
     normalizeDisclosure: normalizeDisclosure,
     disclosureLine: disclosureLine,
@@ -1060,7 +1086,7 @@
     addManualSuggestion: addManualSuggestion,
     describeApproval: describeApproval,
     clearDraft: clearDraft
-  };
+  });
 
   if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};
@@ -1700,14 +1726,14 @@
   'use strict';
   window.AlloModules = window.AlloModules || {};
   var previous = window.AlloModules.WalkthroughScriptSource;
-  if (previous && previous.version === 2 && previous.sha256 === "7f4114629cc8f7ac7b798fa719e4eb18f9e873396983a5995feedf14a046ebbe") {
+  if (previous && previous.version === 2 && previous.sha256 === "f58caa7553301cea302462813c9fa14b8ba0be0e19d16aaeb57850e4e09aaa81") {
     console.log('[CDN] WalkthroughScriptSource already loaded, skipping');
     return;
   }
   window.AlloModules.WalkthroughScriptSource = Object.freeze({
     service: 'alloflow-walkthrough-records',
     version: 2,
-    sha256: "7f4114629cc8f7ac7b798fa719e4eb18f9e873396983a5995feedf14a046ebbe",
+    sha256: "f58caa7553301cea302462813c9fa14b8ba0be0e19d16aaeb57850e4e09aaa81",
     filename: 'Code.gs',
     projectName: 'AlloFlow Walkthrough Records',
     newProjectUrl: 'https://script.new',
@@ -1747,7 +1773,7 @@
   ]),
     manifest: "{\n  \"timeZone\": \"America/New_York\",\n  \"dependencies\": {},\n  \"exceptionLogging\": \"STACKDRIVER\",\n  \"runtimeVersion\": \"V8\",\n  \"webapp\": {\n    \"access\": \"ANYONE_ANONYMOUS\",\n    \"executeAs\": \"USER_DEPLOYING\"\n  },\n  \"oauthScopes\": [\n    \"https://www.googleapis.com/auth/userinfo.email\",\n    \"https://www.googleapis.com/auth/drive.file\",\n    \"https://www.googleapis.com/auth/script.send_mail\"\n  ]\n}\n",
     execUrlPattern: '^https://script\\.google\\.com/macros/s/[A-Za-z0-9_-]+/exec$',
-    source: "/**\n * AlloFlow Walkthrough Records - principal-owned delivery script.\n *\n * WHAT THIS IS. A small Apps Script that a principal deploys in their OWN\n * Google account. AlloFlow sends it walkthrough feedback the principal has\n * already written and approved. The script writes that feedback to a folder in\n * the principal's own Drive and shares each file with exactly one named teacher\n * account, then sends that teacher a notification containing no feedback text.\n *\n * WHY IT IS SHAPED THIS WAY. The Class Mailbox proves the deployment pattern,\n * but its security model does not transfer: there, possession of a link stands\n * in for a student's identity, which is acceptable for anonymous class traffic\n * and unacceptable for anything about a named staff member. Here the token only\n * authorizes the principal's own tool to write to the principal's own Drive.\n * The TEACHER's identity is enforced by Google at the sharing boundary: the\n * file is Restricted and shared with one address, so opening it requires\n * signing in as that person. A forwarded link grants nothing.\n *\n * WHAT THIS IS NOT. Not an evaluation system of record, not a rating engine,\n * and not a substitute for a district-authorized portal. It stores feedback a\n * human wrote and approved, and it never scores anyone. For a district-run\n * system of record with verified identity, assignments and a tamper-evident\n * audit trail, see apps_script/educator_evaluation/.\n *\n * SCOPES. Drive access is limited to drive.file; email identity verifies owner\n * setup, and send_mail permits the approved teacher notification. Drive consent\n * reads \"see, edit, create and\n * delete only the specific Google Drive files you use with this app\" rather\n * than granting access to the principal's whole Drive. Everything below is\n * designed to stay inside that scope: the working folder id is remembered in\n * Script Properties rather than found by searching Drive, because searching\n * would require broader access.\n */\n\nvar WR_SERVICE = 'alloflow-walkthrough-records';\nvar WR_VERSION = 2;\nvar WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';\nvar WR_PROP_TOKEN = 'wr_admin_token';\nvar WR_PROP_FOLDER = 'wr_folder_id';\nvar WR_PROP_DOMAIN = 'wr_allowed_domain';\nvar WR_MAX_FIELD = 20000;\nvar WR_MAX_FIELDS = 24;\n\nfunction wrProps_() {\n  return PropertiesService.getScriptProperties();\n}\n\nfunction wrJson_(payload) {\n  return ContentService.createTextOutput(JSON.stringify(payload))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction wrError_(code, message) {\n  return { ok: false, code: code, error: message };\n}\n\nfunction wrString_(value, max) {\n  if (typeof value !== 'string') return '';\n  var trimmed = value.trim();\n  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;\n}\n\nfunction wrToken_() {\n  var bytes = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  return bytes.slice(0, 48);\n}\n\nfunction wrEmailOk_(email) {\n  var s = String(email || '');\n  return s.length <= 254 && /^[A-Za-z0-9.!#$%&'*+/=?^_{|}~-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$/.test(s);\n}\n\nfunction wrDomainOf_(email) {\n  var at = String(email || '').lastIndexOf('@');\n  return at === -1 ? '' : String(email).slice(at + 1).toLowerCase();\n}\n\nfunction wrOwnerEmail_() {\n  try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }\n}\n\nfunction wrActiveFolder_(id) {\n  if (!id) return null;\n  try {\n    var f = DriveApp.getFolderById(id);\n    if (f && (typeof f.isTrashed !== 'function' || !f.isTrashed())) return f;\n  } catch (err) {}\n  return null;\n}\n\n/**\n * The working folder is remembered by id. It is never located by searching\n * Drive, which drive.file would not permit anyway.\n */\nfunction wrFolder_() {\n  var props = wrProps_();\n  var existing = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));\n  if (existing) return existing;\n  var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;\n  var locked = false;\n  if (lock) {\n    if (!lock.tryLock(10000)) throw new Error('Walkthrough folder setup is busy. Retry shortly.');\n    locked = true;\n  }\n  try {\n    var fresh = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));\n    if (fresh) return fresh;\n    var folder = DriveApp.createFolder(WR_FOLDER_NAME);\n    folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n    if (typeof folder.setShareableByEditors === 'function') folder.setShareableByEditors(false);\n    props.setProperty(WR_PROP_FOLDER, folder.getId());\n    return folder;\n  } finally {\n    if (locked) { try { lock.releaseLock(); } catch (relErr) {} }\n  }\n}\n\nfunction wrTimingSafeEq_(a, b) {\n  var sa = String(a || '');\n  var sb = String(b || '');\n  if (typeof Utilities !== 'undefined' && Utilities && Utilities.DigestAlgorithm && Utilities.DigestAlgorithm.SHA_256 && typeof Utilities.computeDigest === 'function') {\n    var da = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sa, Utilities.Charset.UTF_8);\n    var db = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sb, Utilities.Charset.UTF_8);\n    if (da.length !== db.length) return false;\n    var diff = 0;\n    for (var i = 0; i < da.length; i++) diff |= (da[i] ^ db[i]);\n    return diff === 0;\n  }\n  var maxLen = Math.max(sa.length, sb.length);\n  var out = sa.length ^ sb.length;\n  for (var j = 0; j < maxLen; j++) {\n    out |= (sa.charCodeAt(j) || 0) ^ (sb.charCodeAt(j) || 0);\n  }\n  return out === 0;\n}\n\nfunction wrRateLimited_() {\n  try {\n    var cache = CacheService.getScriptCache();\n    var count = parseInt(cache.get('wr:auth_fail') || '0', 10) || 0;\n    return count >= 20;\n  } catch (e) {\n    return false;\n  }\n}\n\nfunction wrRecordAuthFail_() {\n  try {\n    var cache = CacheService.getScriptCache();\n    var count = (parseInt(cache.get('wr:auth_fail') || '0', 10) || 0) + 1;\n    cache.put('wr:auth_fail', String(count), 900);\n  } catch (e) {}\n}\n\nfunction wrAuthorize_(request) {\n  var stored = wrProps_().getProperty(WR_PROP_TOKEN);\n  if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');\n  if (wrRateLimited_()) return wrError_('rate_limited', 'Too many failed authorization attempts. Try again in 15 minutes.');\n  var supplied = request && typeof request.token === 'string' ? request.token.trim() : '';\n  if (!supplied || supplied.length > 256 || !wrTimingSafeEq_(supplied, stored)) {\n    wrRecordAuthFail_();\n    return wrError_('denied', 'This request did not carry the connecting device token.');\n  }\n  return null;\n}\n\nfunction doGet(e) {\n  // Deliberately no HTML UI. This script is a delivery endpoint, not a portal.\n  var mode = String((e && e.parameter && e.parameter.api) || '');\n  if (mode === 'health') {\n    return wrJson_({\n      ok: true,\n      service: WR_SERVICE,\n      version: WR_VERSION,\n      claimed: !!wrProps_().getProperty(WR_PROP_TOKEN)\n    });\n  }\n  return wrJson_(wrError_('not_found', 'This endpoint serves the AlloFlow Walkthrough Records API.'));\n}\n\nfunction doPost(e) {\n  var rawContents = (e && e.postData && e.postData.contents) || '{}';\n  if (typeof rawContents === 'string' && rawContents.length > 1024 * 1024) {\n    return wrJson_(wrError_('too_large', 'The request body exceeds the maximum allowed size.'));\n  }\n  var request;\n  try {\n    request = JSON.parse(rawContents);\n  } catch (parseErr) {\n    return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));\n  }\n  if (!request || typeof request !== 'object' || Array.isArray(request)) {\n    return wrJson_(wrError_('bad_request', 'The request body must be a JSON object.'));\n  }\n  var action = wrString_(request.action, 40);\n\n  try {\n    if (action === 'claim') return wrJson_(wrClaim_());\n    if (action === 'selftest') return wrJson_(wrSelfTest_(request));\n    if (action === 'deliver') return wrJson_(wrDeliver_(request));\n    if (action === 'revoke') return wrJson_(wrRevoke_(request));\n    return wrJson_(wrError_('unknown_action', 'Unrecognized action.'));\n  } catch (err) {\n    return wrJson_(wrError_('failed', 'Walkthrough request failed.'));\n  }\n}\n\nfunction wrClaim_() {\n  return wrError_('owner_setup_required', 'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then paste wr_admin_token from Script properties into AlloFlow.');\n}\n\nfunction wrRequireOwner_() {\n  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();\n  var effective = wrOwnerEmail_();\n  var bound = wrProps_().getProperty('wr_owner_email');\n  if (!active || !effective || active !== effective || (bound && bound !== active)) {\n    throw new Error('Owner identity could not be verified. Run setupWalkthroughOwner in the Apps Script editor as the deploying owner.');\n  }\n  return active;\n}\n\n// Run from the editor. Re-running preserves the current connecting-device token.\nfunction setupWalkthroughOwner() {\n  return wrConfigureOwner_(false);\n}\n\nfunction wrConfigureOwner_(rotate) {\n  wrRequireOwner_();\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(5000)) throw new Error('Walkthrough setup is busy. Retry.');\n  try {\n    var owner = wrRequireOwner_();\n    var props = wrProps_();\n    if (!props.getProperty(WR_PROP_TOKEN) || rotate) props.setProperty(WR_PROP_TOKEN, wrToken_());\n    props.setProperty('wr_owner_email', owner);\n    if (!props.getProperty(WR_PROP_DOMAIN)) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));\n    return 'Owner setup complete. Copy wr_admin_token from Project Settings > Script properties into the AlloFlow Owner token field. Keep it private.';\n  } finally { lock.releaseLock(); }\n}\n\nfunction wrSelfTest_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var folder = wrFolder_();\n  return {\n    ok: true,\n    service: WR_SERVICE,\n    version: WR_VERSION,\n    owner: wrOwnerEmail_(),\n    folderName: folder.getName(),\n    allowedDomain: wrProps_().getProperty(WR_PROP_DOMAIN) || '',\n    canSendMail: MailApp.getRemainingDailyQuota() > 0\n  };\n}\n\n/**\n * Writes one walkthrough to Drive and shares it with exactly one teacher.\n *\n * request: {\n *   token, teacherEmail, teacherDisplayName?, subject?, disclosure,\n *   fields: [{label, text}], notify?: boolean, restrictToDomain?: boolean\n * }\n */\nfunction wrDeliver_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');\n  }\n\n  // Always enforce WR_PROP_DOMAIN when configured in Script Properties so a\n  // caller-controlled restrictToDomain=false flag cannot bypass it.\n  var allowedDomain = (wrProps_().getProperty(WR_PROP_DOMAIN) || '').trim().toLowerCase();\n  if (allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {\n    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Ask your Apps Script administrator to update the allowed domain property.');\n  }\n\n  var disclosure = wrString_(request.disclosure, 2000);\n  if (!disclosure) {\n    return wrError_('disclosure_required', 'Feedback cannot be delivered without its disclosure line.');\n  }\n\n  var rawFields = Array.isArray(request.fields) ? request.fields : [];\n  if (!rawFields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n  if (rawFields.length > WR_MAX_FIELDS) return wrError_('too_many', 'Too many sections in one delivery.');\n\n  var fields = [];\n  for (var i = 0; i < rawFields.length; i++) {\n    var label = wrString_(rawFields[i] && rawFields[i].label, 200);\n    var text = wrString_(rawFields[i] && rawFields[i].text, WR_MAX_FIELD);\n    if (label && text) fields.push({ label: label, text: text });\n  }\n  if (!fields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n\n  var subject = wrString_(request.subject, 200) || 'Walkthrough feedback';\n  var teacherName = wrString_(request.teacherDisplayName, 200);\n  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');\n\n  var body = [];\n  body.push(subject);\n  body.push(teacherName ? 'For: ' + teacherName : '');\n  body.push('Shared: ' + stamp);\n  body.push('');\n  body.push(disclosure);\n  body.push('');\n  for (var f = 0; f < fields.length; f++) {\n    body.push(fields[f].label);\n    body.push(fields[f].text);\n    body.push('');\n  }\n\n  var deliverRateLimited = false;\n  try {\n    var dCache = CacheService.getScriptCache();\n    var dCount = parseInt(dCache.get('wr:deliver_rate') || '0', 10) || 0;\n    if (dCount >= 30) deliverRateLimited = true;\n    else dCache.put('wr:deliver_rate', String(dCount + 1), 60);\n  } catch (rateErr) {}\n  if (deliverRateLimited) {\n    return wrError_('rate_limited', 'Too many walkthrough deliveries in one minute. Wait a moment and retry.');\n  }\n\n  var folder = wrFolder_();\n  // Fail closed if the folder was broadened in Drive (inherited named users or link access).\n  try {\n    if (typeof folder.getSharingAccess === 'function' && folder.getSharingAccess() !== DriveApp.Access.PRIVATE) {\n      return wrError_('acl_failed', 'The walkthrough records folder is not private in Drive; delivery was aborted.');\n    }\n    if (typeof folder.getViewers === 'function' && folder.getViewers().length > 0) {\n      return wrError_('acl_failed', 'The walkthrough records folder has unexpected viewers in Drive; delivery was aborted.');\n    }\n    if (typeof folder.getEditors === 'function' && folder.getEditors().length > 0) {\n      return wrError_('acl_failed', 'The walkthrough records folder has unexpected editors in Drive; delivery was aborted.');\n    }\n  } catch (folderCheckErr) {\n    return wrError_('acl_failed', 'Could not verify privacy of the walkthrough records folder; delivery was aborted.');\n  }\n\n  var rawFileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;\n  var fileName = rawFileName.replace(/[\\r\\n\\u0000-\\u001f\\\\/:*?\"<>|]+/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 180) || ('Walkthrough feedback - ' + stamp);\n  var bodyText = body.join('\\n');\n  // Create empty, lock down sharing first, then write body and add the single recipient.\n  var file = folder.createFile(fileName + '.txt', '', MimeType.PLAIN_TEXT);\n\n  // Restricted by construction. Fail closed if private sharing or recipient grant fails.\n  try {\n    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n    if (typeof file.setShareableByEditors === 'function') file.setShareableByEditors(false);\n    if (typeof file.getViewers === 'function' && file.getViewers().length > 0) throw new Error('Unexpected viewers');\n    if (typeof file.getEditors === 'function' && file.getEditors().length > 0) throw new Error('Unexpected editors');\n    if (typeof file.setContent === 'function') file.setContent(bodyText);\n    file.addViewer(teacherEmail);\n  } catch (shareErr) {\n    try { file.setTrashed(true); } catch (trashErr) {}\n    return wrError_('acl_failed', 'Could not enforce private sharing on the walkthrough note; delivery was aborted.');\n  }\n\n  var notified = false;\n  if (request.notify !== false) {\n    try {\n      // The notification deliberately carries no feedback text. The content\n      // lives behind Google sign-in, not in an inbox.\n      MailApp.sendEmail({\n        to: teacherEmail,\n        subject: 'Walkthrough feedback shared with you',\n        body: [\n          'A walkthrough note has been shared with you in Google Drive.',\n          '',\n          'Open it here (you will be asked to sign in with your school account):',\n          file.getUrl(),\n          '',\n          'This message intentionally contains no feedback text.'\n        ].join('\\n')\n      });\n      notified = true;\n    } catch (mailErr) { notified = false; }\n  }\n\n  return {\n    ok: true,\n    fileId: file.getId(),\n    url: file.getUrl(),\n    sharedWith: teacherEmail,\n    notified: notified,\n    at: new Date().toISOString()\n  };\n}\n\n/**\n * Removes a teacher's access to one previously delivered file. Only files this\n * script created are reachable under drive.file.\n */\nfunction wrFileInFolder_(file, folderId) {\n  try {\n    var parents = file.getParents();\n    while (parents.hasNext()) {\n      if (String(parents.next().getId()) === String(folderId)) return true;\n    }\n  } catch (err) {}\n  return false;\n}\n\nfunction wrRevoke_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var fileId = wrString_(request.fileId, 120);\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!/^[A-Za-z0-9_-]{10,120}$/.test(fileId) || !wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_request', 'A valid file id and a teacher email are required.');\n  }\n  // Deliberately allow revoking any address (even outside wr_allowed_domain)\n  // so accidental or historical external shares can always be removed.\n  var folder = wrFolder_();\n  var file = DriveApp.getFileById(fileId);\n  if (!wrFileInFolder_(file, folder.getId())) {\n    return wrError_('denied', 'That file is outside the walkthrough records folder.');\n  }\n  file.removeViewer(teacherEmail);\n  if (typeof file.getViewers === 'function') {\n    var remaining = file.getViewers();\n    for (var vi = 0; vi < remaining.length; vi++) {\n      var vEmail = String((remaining[vi] && remaining[vi].getEmail && remaining[vi].getEmail()) || '').trim().toLowerCase();\n      if (vEmail === teacherEmail) {\n        return wrError_('revoke_unverified', 'Drive did not confirm viewer removal; remove access directly in Drive.');\n      }\n    }\n  }\n  return { ok: true, fileId: fileId, revokedFor: teacherEmail };\n}\n\n/**\n * Run from the Apps Script editor to disconnect this script from a device.\n * Deliberately not exposed over HTTP: resetting the token is an owner action.\n */\nfunction forgetConnection() {\n  return wrConfigureOwner_(true);\n}\n"
+    source: "/**\n * AlloFlow Walkthrough Records - principal-owned delivery script.\n *\n * WHAT THIS IS. A small Apps Script that a principal deploys in their OWN\n * Google account. AlloFlow sends it walkthrough feedback the principal has\n * already written and approved. The script writes that feedback to a folder in\n * the principal's own Drive and shares each file with exactly one named teacher\n * account, then sends that teacher a notification containing no feedback text.\n *\n * WHY IT IS SHAPED THIS WAY. The Class Mailbox proves the deployment pattern,\n * but its security model does not transfer: there, possession of a link stands\n * in for a student's identity, which is acceptable for anonymous class traffic\n * and unacceptable for anything about a named staff member. Here the token only\n * authorizes the principal's own tool to write to the principal's own Drive.\n * The TEACHER's identity is enforced by Google at the sharing boundary: the\n * file is Restricted and shared with one address, so opening it requires\n * signing in as that person. A forwarded link grants nothing.\n *\n * WHAT THIS IS NOT. Not an evaluation system of record, not a rating engine,\n * and not a substitute for a district-authorized portal. It stores feedback a\n * human wrote and approved, and it never scores anyone. For a district-run\n * system of record with verified identity, assignments and a tamper-evident\n * audit trail, see apps_script/educator_evaluation/.\n *\n * SCOPES. Drive access is limited to drive.file; email identity verifies owner\n * setup, and send_mail permits the approved teacher notification. Drive consent\n * reads \"see, edit, create and\n * delete only the specific Google Drive files you use with this app\" rather\n * than granting access to the principal's whole Drive. Everything below is\n * designed to stay inside that scope: the working folder id is remembered in\n * Script Properties rather than found by searching Drive, because searching\n * would require broader access.\n */\n\nvar WR_SERVICE = 'alloflow-walkthrough-records';\nvar WR_VERSION = 2;\nvar WR_FOLDER_NAME = 'AlloFlow Walkthrough Records';\nvar WR_PROP_TOKEN = 'wr_admin_token';\nvar WR_PROP_FOLDER = 'wr_folder_id';\nvar WR_PROP_DOMAIN = 'wr_allowed_domain';\nvar WR_MAX_FIELD = 20000;\nvar WR_MAX_FIELDS = 24;\n\nfunction wrProps_() {\n  return PropertiesService.getScriptProperties();\n}\n\nfunction wrJson_(payload) {\n  return ContentService.createTextOutput(JSON.stringify(payload))\n    .setMimeType(ContentService.MimeType.JSON);\n}\n\nfunction wrError_(code, message) {\n  return { ok: false, code: code, error: message };\n}\n\nfunction wrString_(value, max) {\n  if (typeof value !== 'string') return '';\n  var trimmed = value.trim();\n  return trimmed.length > max ? trimmed.slice(0, max) : trimmed;\n}\n\nfunction wrToken_() {\n  var bytes = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');\n  return bytes.slice(0, 48);\n}\n\nfunction wrEmailOk_(email) {\n  var s = String(email || '');\n  return s.length <= 254 && /^[A-Za-z0-9.!#$%&'*+/=?^_{|}~-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+$/.test(s);\n}\n\nfunction wrDomainOf_(email) {\n  var at = String(email || '').lastIndexOf('@');\n  return at === -1 ? '' : String(email).slice(at + 1).toLowerCase();\n}\n\nfunction wrOwnerEmail_() {\n  try { return String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase(); } catch (err) { return ''; }\n}\n\nfunction wrActiveFolder_(id) {\n  if (!id) return null;\n  try {\n    var f = DriveApp.getFolderById(id);\n    if (f && (typeof f.isTrashed !== 'function' || !f.isTrashed())) return f;\n  } catch (err) {}\n  return null;\n}\n\n/**\n * The working folder is remembered by id. It is never located by searching\n * Drive, which drive.file would not permit anyway.\n */\nfunction wrFolder_() {\n  var props = wrProps_();\n  var existing = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));\n  if (existing) return existing;\n  var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;\n  var locked = false;\n  if (lock) {\n    if (!lock.tryLock(10000)) throw new Error('Walkthrough folder setup is busy. Retry shortly.');\n    locked = true;\n  }\n  try {\n    var fresh = wrActiveFolder_(props.getProperty(WR_PROP_FOLDER));\n    if (fresh) return fresh;\n    var folder = DriveApp.createFolder(WR_FOLDER_NAME);\n    folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n    if (typeof folder.setShareableByEditors === 'function') folder.setShareableByEditors(false);\n    props.setProperty(WR_PROP_FOLDER, folder.getId());\n    return folder;\n  } finally {\n    if (locked) { try { lock.releaseLock(); } catch (relErr) {} }\n  }\n}\n\nfunction wrTimingSafeEq_(a, b) {\n  var sa = String(a || '');\n  var sb = String(b || '');\n  if (typeof Utilities !== 'undefined' && Utilities && Utilities.DigestAlgorithm && Utilities.DigestAlgorithm.SHA_256 && typeof Utilities.computeDigest === 'function') {\n    var da = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sa, Utilities.Charset.UTF_8);\n    var db = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, sb, Utilities.Charset.UTF_8);\n    if (da.length !== db.length) return false;\n    var diff = 0;\n    for (var i = 0; i < da.length; i++) diff |= (da[i] ^ db[i]);\n    return diff === 0;\n  }\n  var maxLen = Math.max(sa.length, sb.length);\n  var out = sa.length ^ sb.length;\n  for (var j = 0; j < maxLen; j++) {\n    out |= (sa.charCodeAt(j) || 0) ^ (sb.charCodeAt(j) || 0);\n  }\n  return out === 0;\n}\n\nfunction wrAuthFailBucketKey_() {\n  return 'wr:auth_fail:' + Math.floor(Date.now() / 900000);\n}\n\nfunction wrRateLimited_() {\n  try {\n    var cache = CacheService.getScriptCache();\n    var count = parseInt(cache.get(wrAuthFailBucketKey_()) || '0', 10) || 0;\n    return count >= 20;\n  } catch (e) {\n    return false;\n  }\n}\n\nfunction wrRecordAuthFail_() {\n  try {\n    var cache = CacheService.getScriptCache();\n    var key = wrAuthFailBucketKey_();\n    var count = parseInt(cache.get(key) || '0', 10) || 0;\n    if (count < 20) cache.put(key, String(count + 1), 900);\n  } catch (e) {}\n}\n\nfunction wrAuthorize_(request) {\n  var stored = wrProps_().getProperty(WR_PROP_TOKEN);\n  if (!stored) return wrError_('not_claimed', 'Run setupWalkthroughOwner in the Apps Script editor, then paste the owner token into AlloFlow.');\n  if (wrRateLimited_()) return wrError_('rate_limited', 'Too many failed authorization attempts. Try again in 15 minutes.');\n  var supplied = request && typeof request.token === 'string' ? request.token.trim() : '';\n  if (!supplied || supplied.length > 256 || !wrTimingSafeEq_(supplied, stored)) {\n    wrRecordAuthFail_();\n    return wrError_('denied', 'This request did not carry the connecting device token.');\n  }\n  return null;\n}\n\nfunction doGet(e) {\n  // Deliberately no HTML UI. This script is a delivery endpoint, not a portal.\n  var mode = String((e && e.parameter && e.parameter.api) || '');\n  if (mode === 'health') {\n    return wrJson_({\n      ok: true,\n      service: WR_SERVICE,\n      version: WR_VERSION,\n      claimed: !!wrProps_().getProperty(WR_PROP_TOKEN)\n    });\n  }\n  return wrJson_(wrError_('not_found', 'This endpoint serves the AlloFlow Walkthrough Records API.'));\n}\n\nfunction doPost(e) {\n  var rawContents = (e && e.postData && e.postData.contents) || '{}';\n  if (typeof rawContents === 'string' && rawContents.length > 1024 * 1024) {\n    return wrJson_(wrError_('too_large', 'The request body exceeds the maximum allowed size.'));\n  }\n  var request;\n  try {\n    request = JSON.parse(rawContents);\n  } catch (parseErr) {\n    return wrJson_(wrError_('bad_request', 'The request body was not valid JSON.'));\n  }\n  if (!request || typeof request !== 'object' || Array.isArray(request)) {\n    return wrJson_(wrError_('bad_request', 'The request body must be a JSON object.'));\n  }\n  var action = wrString_(request.action, 40);\n\n  try {\n    if (action === 'claim') return wrJson_(wrClaim_());\n    if (action === 'selftest') return wrJson_(wrSelfTest_(request));\n    if (action === 'deliver') return wrJson_(wrDeliver_(request));\n    if (action === 'revoke') return wrJson_(wrRevoke_(request));\n    return wrJson_(wrError_('unknown_action', 'Unrecognized action.'));\n  } catch (err) {\n    return wrJson_(wrError_('failed', 'Walkthrough request failed.'));\n  }\n}\n\nfunction wrClaim_() {\n  return wrError_('owner_setup_required', 'Run setupWalkthroughOwner in the Apps Script editor as the deploying owner, then paste wr_admin_token from Script properties into AlloFlow.');\n}\n\nfunction wrRequireOwner_() {\n  var active = String(Session.getActiveUser().getEmail() || '').trim().toLowerCase();\n  var effective = wrOwnerEmail_();\n  var bound = wrProps_().getProperty('wr_owner_email');\n  if (!active || !effective || active !== effective || (bound && bound !== active)) {\n    throw new Error('Owner identity could not be verified. Run setupWalkthroughOwner in the Apps Script editor as the deploying owner.');\n  }\n  return active;\n}\n\n// Run from the editor. Re-running preserves the current connecting-device token.\nfunction setupWalkthroughOwner() {\n  return wrConfigureOwner_(false);\n}\n\nfunction wrConfigureOwner_(rotate) {\n  wrRequireOwner_();\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(5000)) throw new Error('Walkthrough setup is busy. Retry.');\n  try {\n    var owner = wrRequireOwner_();\n    var props = wrProps_();\n    if (!props.getProperty(WR_PROP_TOKEN) || rotate) props.setProperty(WR_PROP_TOKEN, wrToken_());\n    props.setProperty('wr_owner_email', owner);\n    if (!props.getProperty(WR_PROP_DOMAIN)) props.setProperty(WR_PROP_DOMAIN, wrDomainOf_(owner));\n    return 'Owner setup complete. Copy wr_admin_token from Project Settings > Script properties into the AlloFlow Owner token field. Keep it private.';\n  } finally { lock.releaseLock(); }\n}\n\nfunction wrSelfTest_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var folder = wrFolder_();\n  return {\n    ok: true,\n    service: WR_SERVICE,\n    version: WR_VERSION,\n    owner: wrOwnerEmail_(),\n    folderName: folder.getName(),\n    allowedDomain: wrProps_().getProperty(WR_PROP_DOMAIN) || '',\n    canSendMail: MailApp.getRemainingDailyQuota() > 0\n  };\n}\n\n/**\n * Writes one walkthrough to Drive and shares it with exactly one teacher.\n *\n * request: {\n *   token, teacherEmail, teacherDisplayName?, subject?, disclosure,\n *   fields: [{label, text}], notify?: boolean, restrictToDomain?: boolean\n * }\n */\nfunction wrDeliver_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');\n  }\n\n  // Always enforce WR_PROP_DOMAIN when configured in Script Properties so a\n  // caller-controlled restrictToDomain=false flag cannot bypass it.\n  var allowedDomain = (wrProps_().getProperty(WR_PROP_DOMAIN) || '').trim().toLowerCase();\n  if (allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {\n    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Ask your Apps Script administrator to update the allowed domain property.');\n  }\n\n  var disclosure = wrString_(request.disclosure, 2000);\n  if (!disclosure) {\n    return wrError_('disclosure_required', 'Feedback cannot be delivered without its disclosure line.');\n  }\n\n  var rawFields = Array.isArray(request.fields) ? request.fields : [];\n  if (!rawFields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n  if (rawFields.length > WR_MAX_FIELDS) return wrError_('too_many', 'Too many sections in one delivery.');\n\n  var fields = [];\n  for (var i = 0; i < rawFields.length; i++) {\n    var label = wrString_(rawFields[i] && rawFields[i].label, 200);\n    var text = wrString_(rawFields[i] && rawFields[i].text, WR_MAX_FIELD);\n    if (label && text) fields.push({ label: label, text: text });\n  }\n  if (!fields.length) return wrError_('empty', 'There is no approved feedback to deliver.');\n\n  var subject = wrString_(request.subject, 200) || 'Walkthrough feedback';\n  var teacherName = wrString_(request.teacherDisplayName, 200);\n  var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm');\n\n  var body = [];\n  body.push(subject);\n  body.push(teacherName ? 'For: ' + teacherName : '');\n  body.push('Shared: ' + stamp);\n  body.push('');\n  body.push(disclosure);\n  body.push('');\n  for (var f = 0; f < fields.length; f++) {\n    body.push(fields[f].label);\n    body.push(fields[f].text);\n    body.push('');\n  }\n\n  var deliverRateLimited = false;\n  try {\n    var dCache = CacheService.getScriptCache();\n    var dCount = parseInt(dCache.get('wr:deliver_rate') || '0', 10) || 0;\n    if (dCount >= 30) deliverRateLimited = true;\n    else dCache.put('wr:deliver_rate', String(dCount + 1), 60);\n  } catch (rateErr) {}\n  if (deliverRateLimited) {\n    return wrError_('rate_limited', 'Too many walkthrough deliveries in one minute. Wait a moment and retry.');\n  }\n\n  var folder = wrFolder_();\n  // Fail closed if the folder was broadened in Drive (inherited named users or link access).\n  try {\n    if (typeof folder.getSharingAccess === 'function' && folder.getSharingAccess() !== DriveApp.Access.PRIVATE) {\n      return wrError_('acl_failed', 'The walkthrough records folder is not private in Drive; delivery was aborted.');\n    }\n    if (typeof folder.getViewers === 'function' && folder.getViewers().length > 0) {\n      return wrError_('acl_failed', 'The walkthrough records folder has unexpected viewers in Drive; delivery was aborted.');\n    }\n    if (typeof folder.getEditors === 'function' && folder.getEditors().length > 0) {\n      return wrError_('acl_failed', 'The walkthrough records folder has unexpected editors in Drive; delivery was aborted.');\n    }\n  } catch (folderCheckErr) {\n    return wrError_('acl_failed', 'Could not verify privacy of the walkthrough records folder; delivery was aborted.');\n  }\n\n  var rawFileName = subject + ' - ' + (teacherName || teacherEmail) + ' - ' + stamp;\n  var fileName = rawFileName.replace(/[\\r\\n\\u0000-\\u001f\\\\/:*?\"<>|]+/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, 180) || ('Walkthrough feedback - ' + stamp);\n  var bodyText = body.join('\\n');\n  // Create empty, lock down sharing first, then write body and add the single recipient.\n  var file = folder.createFile(fileName + '.txt', '', MimeType.PLAIN_TEXT);\n\n  // Restricted by construction. Fail closed if private sharing or recipient grant fails.\n  try {\n    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);\n    if (typeof file.setShareableByEditors === 'function') file.setShareableByEditors(false);\n    if (typeof file.getViewers === 'function' && file.getViewers().length > 0) throw new Error('Unexpected viewers');\n    if (typeof file.getEditors === 'function' && file.getEditors().length > 0) throw new Error('Unexpected editors');\n    if (typeof file.setContent === 'function') file.setContent(bodyText);\n    file.addViewer(teacherEmail);\n  } catch (shareErr) {\n    try { file.setTrashed(true); } catch (trashErr) {}\n    return wrError_('acl_failed', 'Could not enforce private sharing on the walkthrough note; delivery was aborted.');\n  }\n\n  var notified = false;\n  if (request.notify !== false) {\n    try {\n      // The notification deliberately carries no feedback text. The content\n      // lives behind Google sign-in, not in an inbox.\n      MailApp.sendEmail({\n        to: teacherEmail,\n        subject: 'Walkthrough feedback shared with you',\n        body: [\n          'A walkthrough note has been shared with you in Google Drive.',\n          '',\n          'Open it here (you will be asked to sign in with your school account):',\n          file.getUrl(),\n          '',\n          'This message intentionally contains no feedback text.'\n        ].join('\\n')\n      });\n      notified = true;\n    } catch (mailErr) { notified = false; }\n  }\n\n  return {\n    ok: true,\n    fileId: file.getId(),\n    url: file.getUrl(),\n    sharedWith: teacherEmail,\n    notified: notified,\n    at: new Date().toISOString()\n  };\n}\n\n/**\n * Removes a teacher's access to one previously delivered file. Only files this\n * script created are reachable under drive.file.\n */\nfunction wrFileInFolder_(file, folderId) {\n  try {\n    var parents = file.getParents();\n    while (parents.hasNext()) {\n      if (String(parents.next().getId()) === String(folderId)) return true;\n    }\n  } catch (err) {}\n  return false;\n}\n\nfunction wrRevoke_(request) {\n  var denied = wrAuthorize_(request);\n  if (denied) return denied;\n  var fileId = wrString_(request.fileId, 120);\n  var teacherEmail = wrString_(request.teacherEmail, 320).toLowerCase();\n  if (!/^[A-Za-z0-9_-]{10,120}$/.test(fileId) || !wrEmailOk_(teacherEmail)) {\n    return wrError_('bad_request', 'A valid file id and a teacher email are required.');\n  }\n  // Deliberately allow revoking any address (even outside wr_allowed_domain)\n  // so accidental or historical external shares can always be removed.\n  var folder = wrFolder_();\n  var file = DriveApp.getFileById(fileId);\n  if (!wrFileInFolder_(file, folder.getId())) {\n    return wrError_('denied', 'That file is outside the walkthrough records folder.');\n  }\n  file.removeViewer(teacherEmail);\n  if (typeof file.removeEditor === 'function') {\n    try { file.removeEditor(teacherEmail); } catch (edErr) {}\n  }\n  if (typeof file.getViewers === 'function') {\n    var remaining = file.getViewers();\n    for (var vi = 0; vi < remaining.length; vi++) {\n      var vEmail = String((remaining[vi] && remaining[vi].getEmail && remaining[vi].getEmail()) || '').trim().toLowerCase();\n      if (vEmail === teacherEmail) {\n        return wrError_('revoke_unverified', 'Drive did not confirm viewer removal; remove access directly in Drive.');\n      }\n    }\n  }\n  if (typeof file.getEditors === 'function') {\n    var remainingEditors = file.getEditors();\n    for (var ei = 0; ei < remainingEditors.length; ei++) {\n      var eEmail = String((remainingEditors[ei] && remainingEditors[ei].getEmail && remainingEditors[ei].getEmail()) || '').trim().toLowerCase();\n      if (eEmail === teacherEmail) {\n        return wrError_('revoke_unverified', 'Drive did not confirm editor removal; remove access directly in Drive.');\n      }\n    }\n  }\n  return { ok: true, fileId: fileId, revokedFor: teacherEmail };\n}\n\n/**\n * Run from the Apps Script editor to disconnect this script from a device.\n * Deliberately not exposed over HTTP: resetting the token is an owner action.\n */\nfunction forgetConnection() {\n  return wrConfigureOwner_(true);\n}\n"
   });
   console.log('[CDN] WalkthroughScriptSource loaded');
 })();
@@ -1816,6 +1842,21 @@ function wcopPost(url, body) {
     if (timer) clearTimeout(timer);
   });
 }
+function wcopSafeJsonParse(raw, maxLen) {
+  if (typeof raw !== "string") return null;
+  if (maxLen && raw.length > maxLen) return null;
+  try {
+    return JSON.parse(raw, (key, val) => key === "__proto__" || key === "constructor" || key === "prototype" ? void 0 : val);
+  } catch (_) {
+    return null;
+  }
+}
+function wcopIsBlockedKey(key) {
+  return key === "__proto__" || key === "constructor" || key === "prototype";
+}
+function wcopOwn(obj, key) {
+  return !!obj && typeof key === "string" && !wcopIsBlockedKey(key) && Object.prototype.hasOwnProperty.call(obj, key);
+}
 function wcopLoadConnection() {
   try {
     const raw = window.localStorage.getItem(WCOP_STORE_KEY);
@@ -1832,8 +1873,15 @@ function wcopLoadConnection() {
     } catch (err) {
       token = "";
     }
-    const saved = JSON.parse(raw);
-    const execUrl = saved && typeof saved.execUrl === "string" ? saved.execUrl : "";
+    const saved = wcopSafeJsonParse(raw, 65536);
+    let execUrl = saved && typeof saved.execUrl === "string" ? saved.execUrl : "";
+    if (execUrl) {
+      const coreMod = wcopCore();
+      if (coreMod && typeof coreMod.validateExecUrl === "function") {
+        const checked = coreMod.validateExecUrl(execUrl);
+        execUrl = checked && checked.ok ? checked.value : "";
+      }
+    }
     const owner = saved && typeof saved.owner === "string" ? saved.owner : "";
     const legacyToken = saved && typeof saved.token === "string" ? saved.token : "";
     if (!token && legacyToken) {
@@ -1877,13 +1925,17 @@ function wcopFixtures() {
 function wcopScenarios() {
   return window.AlloModules && window.AlloModules.WalkthroughCopilotScenarios || null;
 }
+let _wcopAnnounceTimer = 0;
 function wcopAnnounce(message) {
   try {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
     const region = document.getElementById("allo-live-wcop");
-    if (!region) return;
+    if (!region || !region.isConnected) return;
+    if (_wcopAnnounceTimer) window.clearTimeout(_wcopAnnounceTimer);
     region.textContent = "";
-    window.setTimeout(() => {
-      region.textContent = message;
+    _wcopAnnounceTimer = window.setTimeout(() => {
+      _wcopAnnounceTimer = 0;
+      if (region.isConnected) region.textContent = message;
     }, 30);
   } catch (err) {
   }
@@ -2398,10 +2450,10 @@ function WalkthroughCopilotPanel(props) {
     };
   }, []);
   const componentLabels = React.useMemo(() => {
-    const map = {};
+    const map = /* @__PURE__ */ Object.create(null);
     if (!fixtures || !fixtures.PORTLAND_FRAMEWORK) return map;
     fixtures.PORTLAND_FRAMEWORK.components.forEach((c) => {
-      map[c.id] = c.id + " " + c.label;
+      if (c && typeof c.id === "string" && !wcopIsBlockedKey(c.id)) map[c.id] = c.id + " " + c.label;
     });
     return map;
   }, [fixtures]);
@@ -2477,31 +2529,45 @@ function WalkthroughCopilotPanel(props) {
       if (!isTopTrap()) return;
       if (event.isComposing || event.keyCode === 229) return;
       if (event.key === "Escape") {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         event.preventDefault();
         event.stopPropagation();
         if (typeof closeRef.current === "function") closeRef.current();
         return;
       }
       if (event.key !== "Tab") return;
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
       const focusable = getFocusable();
       if (focusable.length === 0) {
         event.preventDefault();
-        dialog.focus();
+        try {
+          dialog.focus();
+        } catch (_) {
+        }
         return;
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (!dialog.contains(document.activeElement)) {
         event.preventDefault();
-        (event.shiftKey ? last : first).focus();
+        try {
+          (event.shiftKey ? last : first).focus();
+        } catch (_) {
+        }
         return;
       }
       if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
         event.preventDefault();
-        last.focus();
+        try {
+          last.focus();
+        } catch (_) {
+        }
       } else if (!event.shiftKey && document.activeElement === last) {
         event.preventDefault();
-        first.focus();
+        try {
+          first.focus();
+        } catch (_) {
+        }
       }
     };
     document.addEventListener("keydown", onKeyDown);
@@ -2602,18 +2668,19 @@ function WalkthroughCopilotPanel(props) {
     wcopAnnounce("Scenario selected: " + next.title + ". Notes loaded.");
   }
   function lockAndAnalyze() {
+    if (!scenario) return;
     const created = core.createDraft({
       framework: fixtures.PORTLAND_FRAMEWORK,
       sourceNotes: notes,
       collectionType: "practice"
     });
     if (!created.ok) {
-      setProblem(created.errors[0].message);
+      setProblem(created.errors?.[0]?.message || "Could not create draft.");
       return;
     }
     const analyzed = core.validateSuggestions(created.value, scenario.candidates);
     if (!analyzed.ok) {
-      setProblem(analyzed.errors[0].message);
+      setProblem(analyzed.errors?.[0]?.message || "Could not validate suggestions.");
       return;
     }
     setProblem("");
@@ -2625,7 +2692,7 @@ function WalkthroughCopilotPanel(props) {
   function decide(id, decision, text) {
     const report = core.decideSuggestion(draft, id, decision, text);
     if (!report.ok) {
-      setProblem(report.errors[0].message);
+      setProblem(report.errors?.[0]?.message || "Could not record decision.");
       return;
     }
     setProblem("");
@@ -2640,19 +2707,23 @@ function WalkthroughCopilotPanel(props) {
     wcopAnnounce("Editing. The cited excerpt does not change when you reword the feedback.");
   }
   function setDisclosureText(value) {
-    const next = JSON.parse(JSON.stringify(draft));
+    if (!draft) return;
+    const next = wcopSafeJsonParse(JSON.stringify(draft));
+    if (!next || !next.disclosure) return;
     next.disclosure.text = value;
     setDraft(next);
   }
   function toggleFormative() {
-    const next = JSON.parse(JSON.stringify(draft));
+    if (!draft) return;
+    const next = wcopSafeJsonParse(JSON.stringify(draft));
+    if (!next || !next.disclosure) return;
     next.disclosure.includeFormativeSentence = !next.disclosure.includeFormativeSentence;
     setDraft(next);
   }
   function compare() {
     const report = core.compareToReference(scenario, draft);
     if (!report.ok) {
-      setProblem(report.errors[0].message);
+      setProblem(report.errors?.[0]?.message || "Could not compare to reference.");
       return;
     }
     setProblem("");
@@ -2664,7 +2735,7 @@ function WalkthroughCopilotPanel(props) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(
           () => {
-            if (mountedRef.current && what) setCopiedMap((prev) => Object.assign({}, prev, { [what]: true }));
+            if (mountedRef.current && what && !wcopIsBlockedKey(what)) setCopiedMap((prev) => Object.assign({}, prev, { [what]: true }));
             wcopAnnounce(what + " copied.");
           },
           () => wcopAnnounce("Could not copy. Select the text and copy manually.")
@@ -2849,6 +2920,7 @@ function WalkthroughCopilotPanel(props) {
     }
     setArmClearReal(false);
     connEpochRef.current += 1;
+    deliveringRef.current = false;
     core.clearDraft(draft);
     setDraft(null);
     setScenario(null);
@@ -2884,13 +2956,13 @@ function WalkthroughCopilotPanel(props) {
       className: "flex flex-wrap gap-x-4 gap-y-1 items-center rounded border px-3 py-2 text-sm font-semibold mb-3 " + (liveMode ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-violet-300 bg-violet-50 text-violet-800")
     },
     React.createElement("span", null, liveMode ? "Real observation" : "Practice mode"),
-    React.createElement("span", { className: "opacity-60 font-normal" }, "|"),
+    React.createElement("span", { className: "opacity-60 font-normal", "aria-hidden": "true" }, "|"),
     React.createElement(
       "span",
       { className: "font-normal" },
       liveMode ? "Affirmed by " + affirmedBy + " for this session only." : "Synthetic practice only. Nothing here is a record of a real observation."
     ),
-    React.createElement("span", { className: "opacity-60 font-normal" }, "|"),
+    React.createElement("span", { className: "opacity-60 font-normal", "aria-hidden": "true" }, "|"),
     React.createElement("span", { className: "font-normal" }, "Nothing is saved. Closing discards everything.")
   );
   const nav = React.createElement(
@@ -2937,7 +3009,9 @@ function WalkthroughCopilotPanel(props) {
       checks: affirmChecks,
       name: affirmName,
       message: affirmMessage,
-      onCheck: (key, value) => setAffirmChecks((current) => Object.assign({}, current, { [key]: value })),
+      onCheck: (key, value) => {
+        if (!wcopIsBlockedKey(key)) setAffirmChecks((current) => Object.assign({}, current, { [key]: value }));
+      },
       onName: setAffirmName,
       onAffirm: affirmApproval,
       onCancel: () => {
@@ -3264,7 +3338,7 @@ function WalkthroughCopilotPanel(props) {
   } else if (stage === "copy" && draft) {
     const output = core.buildFormOutput(draft, fixtures.SAMPLE_FIELD_MAP);
     const copyFields = output.ok ? output.value.contextFields.concat(output.value.fields) : [];
-    const copiedFieldCount = copyFields.filter((f) => !!copiedMap[f.key]).length;
+    const copiedFieldCount = copyFields.filter((f) => !!(wcopOwn(copiedMap, f.key) && copiedMap[f.key])).length;
     bodyNode = output.ok ? React.createElement(
       "div",
       null,
@@ -3281,15 +3355,15 @@ function WalkthroughCopilotPanel(props) {
           type: "button",
           "data-wcop-copy-all": "true",
           onClick: () => copyText(output.value.copyAll, "All fields"),
-          className: "min-h-11 px-4 py-2 rounded text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (copiedMap["All fields"] ? "bg-emerald-700 text-white" : "bg-teal-700 text-white hover:bg-teal-800")
-        }, copiedMap["All fields"] ? "Copy everything · ✓ Copied" : "Copy everything"),
+          className: "min-h-11 px-4 py-2 rounded text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (wcopOwn(copiedMap, "All fields") && copiedMap["All fields"] ? "bg-emerald-700 text-white" : "bg-teal-700 text-white hover:bg-teal-800")
+        }, wcopOwn(copiedMap, "All fields") && copiedMap["All fields"] ? "Copy everything · ✓ Copied" : "Copy everything"),
         copiedFieldCount > 0 ? React.createElement("span", {
           "data-wcop-copied-progress": "true",
           className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 tabular-nums"
         }, copiedFieldCount + "/" + copyFields.length + " fields copied") : null
       ),
       copyFields.map((f, i) => {
-        const isCopied = !!copiedMap[f.key];
+        const isCopied = !!(wcopOwn(copiedMap, f.key) && copiedMap[f.key]);
         return React.createElement(
           "div",
           {
@@ -3341,7 +3415,8 @@ function WalkthroughCopilotPanel(props) {
           ),
           React.createElement("input", {
             id: "wcop-send-to",
-            type: "text",
+            type: "email",
+            autoComplete: "email",
             className: "w-full min-h-11 rounded border border-slate-300 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600",
             placeholder: t("walkthrough_copilot.email_placeholder", "teacher@yourschool.org"),
             value: sendTo,
@@ -3366,7 +3441,7 @@ function WalkthroughCopilotPanel(props) {
         onClick: clearAll,
         className: "mt-3 min-h-11 px-3 py-2 rounded border text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (armClearReal ? "border-rose-600 bg-rose-50 text-rose-800 font-semibold" : "border-slate-300")
       }, armClearReal ? "Confirm clear and start over" : "Clear and start over")
-    ) : React.createElement(WcopFlag, { tone: "stop" }, output.errors[0].message);
+    ) : React.createElement(WcopFlag, { tone: "stop" }, output.errors?.[0]?.message || "Could not build form output.");
   }
   const panelContent = React.createElement(
     "div",
@@ -3454,6 +3529,6 @@ function WalkthroughCopilotPanel(props) {
     WCOP_STEPS: WCOP_STEPS,
     WCOP_ADVISORY_QUESTIONS: WCOP_ADVISORY_QUESTIONS
   };
-  window.AlloModules.WalkthroughCopilot = wcopMerged;
+  window.AlloModules.WalkthroughCopilot = Object.freeze(wcopMerged);
   console.log('[CDN] WalkthroughCopilot loaded');
 })();

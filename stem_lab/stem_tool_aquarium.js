@@ -11994,7 +11994,7 @@ window.StemLab = window.StemLab || {
       return new THREE.ShapeGeometry(shape);
     }
     function texture(kind) {
-      var tile = document.createElement('canvas'); tile.width = tile.height = 256;
+      var tile = document.createElement('canvas'); if (tile.setAttribute) tile.setAttribute('aria-hidden', 'true'); tile.width = tile.height = 256;
       var ctx;
       try { ctx = tile.getContext('2d'); } catch (_) { return null; }
       if (!ctx) return null;
@@ -23257,7 +23257,7 @@ var d = (_rawAq && typeof _rawAq === 'object' && !Array.isArray(_rawAq)) ? _rawA
                   React.createElement("div", { className: "mt-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2" },
                   missionRoutes.map(function (route) {
                     var selectedRoute = mode === route.mode;
-                    return React.createElement("button", {
+                    return React.createElement("button", { type: 'button',
                       key: route.id,
                       onClick: function () { navigateAquariumMode(route.mode); },
                       className: "text-left rounded-xl border p-3 bg-gradient-to-br " + route.tone + " transition-all hover:-translate-y-0.5 hover:shadow-md " + (selectedRoute ? "ring-2 ring-cyan-400" : "")
@@ -23352,7 +23352,6 @@ var d = (_rawAq && typeof _rawAq === 'object' && !Array.isArray(_rawAq)) ? _rawA
               id: tutorialId + '-path', 'data-aquarium-learning-path': 'true',
               open: d.tutorialPanelOpen === true,
               onToggle: function (event) { if (d.tutorialPanelOpen !== event.currentTarget.open) upd('tutorialPanelOpen', event.currentTarget.open); },
-              role: "region",
               'aria-labelledby': tutorialId + '-path-title',
               className: "mb-2 rounded-2xl border border-cyan-300 bg-gradient-to-br from-cyan-50 via-white to-sky-50 p-3 shadow-sm",
               style: { animation: 'stemCardIn 0.3s ease-out' }
@@ -23683,7 +23682,7 @@ var d = (_rawAq && typeof _rawAq === 'object' && !Array.isArray(_rawAq)) ? _rawA
 
                   // XP button
 
-                  React.createElement("button", { "aria-label": __alloT('stem.aquarium.i_studied_this_2_xp', "I Studied This! (+2 XP)"),
+                  React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.i_studied_this_2_xp', "I Studied This! (+2 XP)"),
 
                     onClick: function () {
 
@@ -23748,7 +23747,7 @@ var d = (_rawAq && typeof _rawAq === 'object' && !Array.isArray(_rawAq)) ? _rawA
                   var isSalt = tank.salinity > 0;
                   var diffLabel = tank.diff <= 1 ? __alloT('stem.aquarium.beginner', 'Beginner') : tank.diff === 2 ? __alloT('stem.aquarium.intermediate', 'Intermediate') : __alloT('stem.aquarium.advanced', 'Advanced');
                   var waterTone = isSalt ? 'from-blue-600 via-cyan-500 to-teal-300' : 'from-cyan-500 via-sky-400 to-emerald-300';
-                  return React.createElement("button", { "aria-label": __alloAriaFill(__alloT('stem.aquarium.a11y_select_tank', 'Select tank: {name}'), { name: tank.name }),
+                  return React.createElement("button", { type: 'button', "aria-label": __alloAriaFill(__alloT('stem.aquarium.a11y_select_tank', 'Select tank: {name}'), { name: tank.name }),
 
                     key: tank.id,
 
@@ -24618,7 +24617,7 @@ React.createElement("div", { id: workspaceA11yId + '-aquarium-tank-clock', 'data
 
                   React.createElement("div", { className: "flex items-center gap-2 mb-2" },
 
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.back', "Back"),
+                    React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.back', "Back"),
 
                       onClick: function () { stopAquariumRuntime(false); updMulti({ selectedTank: null, simRunning: false }); },
 
@@ -24701,7 +24700,7 @@ React.createElement("div", { id: workspaceA11yId + '-aquarium-tank-clock', 'data
                       { id: 'night', label: __alloT('stem.aquarium.night', '\uD83C\uDF19 Night'), color: 'bg-slate-700 text-slate-200 border-slate-500' }
                     ].map(function(lm) {
                       var active = (d.tankLight || 'day') === lm.id;
-                      return React.createElement("button", {
+                      return React.createElement("button", { type: 'button',
                         key: lm.id,
                         onClick: function() { upd('tankLight', lm.id); sfxClick(); },
                         className: "px-2 py-1 text-[0.6875rem] font-bold rounded-lg transition-all border " + (active ? lm.color + ' shadow-sm' : 'bg-white text-slate-700 border-slate-500 hover:bg-slate-100')
@@ -25574,15 +25573,15 @@ React.createElement('section', { id: workspaceA11yId + '-panel-decide', 'data-aq
 
                     }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
 
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
+                    React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.medicate_fish', "Medicate Fish"),
 
                       onClick: function () { medicateFish(); },
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 motion-safe:animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
 
                     }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
 
-                    React.createElement("button", { "aria-label": __alloT('stem.aquarium.clean_glass', "Clean Glass"),
+                    React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.clean_glass', "Clean Glass"),
 
                       onClick: cleanGlass,
 
@@ -26232,7 +26231,7 @@ React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-g
                             )
                           ),
 
-                          React.createElement("button", { "aria-label": __alloT('stem.aquarium.remove_plant', "Remove plant"),
+                          React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.remove_plant', "Remove plant"),
 
                             onClick: function () { removePlant(idx); },
 
@@ -27137,7 +27136,7 @@ React.createElement("section", {
 
                             ),
 
-                            isGestating && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 animate-pulse" }, gestPct + "%")
+                            isGestating && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700 bg-pink-100 rounded-full px-1.5 py-0.5 motion-safe:animate-pulse" }, gestPct + "%")
 
                           ),
 
@@ -28360,7 +28359,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
 
                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.aquarium.season_2', "\uD83D\uDCC5 Season")),
 
-                  React.createElement("button", { onClick: function () { upd('isOpenSeason', !isOpenSeason); },
+                  React.createElement("button", { type: 'button', onClick: function () { upd('isOpenSeason', !isOpenSeason); },
 
                     className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-600")
 
@@ -28422,7 +28421,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
 
                 }, __alloT('stem.aquarium.advance_5_years', "Advance 5 Years")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.aquarium.reset_ocean_simulation', "Reset ocean simulation"),
+                React.createElement("button", { type: 'button', "aria-label": __alloT('stem.aquarium.reset_ocean_simulation', "Reset ocean simulation"),
 
                   onClick: resetOcean,
 
@@ -28965,7 +28964,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                     React.createElement('div', { role: 'group', 'aria-labelledby': quizA11yId + '-category', className: 'flex flex-wrap gap-1' },
                       quizCategories.map(function (c) {
                         var sel = c === quizCategory;
-                        return React.createElement('button', { key: c, 'aria-pressed': sel,
+                        return React.createElement('button', { type: 'button', key: c, 'aria-pressed': sel,
                           onClick: function () { requestQuizQuestionFocus('quiz'); updMulti({ quizCategory: c, quizCurrent: 0, quizShowExplanation: false }); },
                           className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50')
                         }, c);
@@ -28977,7 +28976,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                     React.createElement('div', { role: 'group', 'aria-labelledby': quizA11yId + '-difficulty', className: 'flex flex-wrap gap-1' },
                       ['All', 'easy', 'medium', 'hard'].map(function (dif) {
                         var sel = dif === quizDifficulty;
-                        return React.createElement('button', { key: dif, 'aria-pressed': sel,
+                        return React.createElement('button', { type: 'button', key: dif, 'aria-pressed': sel,
                           onClick: function () { requestQuizQuestionFocus('quiz'); updMulti({ quizDifficulty: dif, quizCurrent: 0, quizShowExplanation: false }); },
                           className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-orange-700 text-white border-orange-800' : 'bg-white text-orange-800 border-orange-300 hover:bg-orange-50')
                         }, dif === 'All' ? 'All' : dif.charAt(0).toUpperCase() + dif.slice(1));
@@ -29340,7 +29339,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                       { gal: 125, name: '125g' }
                     ].map(function (t) {
                       var sel = tankSize === t.gal;
-                      return React.createElement('button', { key: t.gal, 'aria-pressed': sel,
+                      return React.createElement('button', { type: 'button', key: t.gal, 'aria-pressed': sel,
                         onClick: function () { updMulti({ designerTankSize: t.gal, designerWidth: 0, designerHeight: 0 }); },
                         className: 'text-[0.6875rem] font-bold px-2.5 py-1 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300 hover:bg-pink-50')
                       }, t.name);
@@ -29409,7 +29408,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                       React.createElement('div', { className: 'flex items-center gap-1.5' },
                         ['fish', 'plants'].map(function (p) {
                           var sel = picker === p;
-                          return React.createElement('button', { key: p, 'aria-pressed': sel,
+                          return React.createElement('button', { type: 'button', key: p, 'aria-pressed': sel,
                             onClick: function () { upd('designerPicker', p); },
                             className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
                           }, p === 'fish' ? '\ud83d\udc20 Fish' : '\ud83c\udf3f Plants');
@@ -29486,7 +29485,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                         }, (c.severity === 'critical' ? '\u26d4 ' : '\u26a0 ') + c.text);
                       })
                     ),
-                    React.createElement('button', {
+                    React.createElement('button', { type: 'button',
                       onClick: function () { updMulti({ designerStock: [], designerPlants: [] }); designerFeedback[1]({ serial: ++designerFeedbackSerial.current, text: __alloT('stem.aquarium.designer_stocking_cleared', 'Stocking cleared.') }); },
                       className: 'mt-1 px-2.5 py-1 text-[0.625rem] font-bold bg-white border-2 border-red-300 text-red-700 rounded-full hover:bg-red-50'
                     }, __alloT('stem.aquarium.clear_all', '\u21bb Clear all'))
@@ -29497,7 +29496,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                     picker === 'fish' && React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                       ['all', 'beginner', 'intermediate', 'advanced'].map(function (c) {
                         var sel = c === careFilter;
-                        return React.createElement('button', { key: c, 'aria-pressed': sel,
+                        return React.createElement('button', { type: 'button', key: c, 'aria-pressed': sel,
                           onClick: function () { upd('designerCareFilter', c); },
                           className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-pink-600 text-white border-pink-600' : 'bg-white text-pink-800 border-pink-300')
                         }, c.charAt(0).toUpperCase() + c.slice(1));
@@ -29506,7 +29505,7 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                     picker === 'fish' && React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
                       ['all', 'top', 'mid', 'bottom'].map(function (z) {
                         var sel = z === zoneFilter;
-                        return React.createElement('button', { key: z, 'aria-pressed': sel,
+                        return React.createElement('button', { type: 'button', key: z, 'aria-pressed': sel,
                           onClick: function () { upd('designerZoneFilter', z); },
                           className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded-full border ' + (sel ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-800 border-rose-300')
                         }, z === 'all' ? 'All zones' : z.charAt(0).toUpperCase() + z.slice(1));
@@ -29601,8 +29600,8 @@ aiEventHistory.length > 0 && React.createElement("div", { className: "bg-gradien
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
+                  h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.ammonia, n: iq.nitrite, t: iq.tempC, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.aquarium.log', '📋 Log')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ ammonia: 0.1, nitrite: 0.05, tempC: 25, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.aquarium.reset_2', '↺ Reset'))
                 ),
                 h('label', { htmlFor: designerA11yId + '-hypothesis', className: 'block text-xs font-bold text-slate-800' }, __alloT('stem.aquarium.hypothesis_input', 'Water toxicity hypothesis')),
                 h('textarea', { id: designerA11yId + '-hypothesis', 'data-aquarium-stress-field': 'hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.aquarium.hypothesis_which_parameter_is_most_tox', 'Hypothesis: Which parameter is most toxic at what level?'),

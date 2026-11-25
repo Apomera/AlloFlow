@@ -9,7 +9,7 @@ const between = (source, start, end) => {
   if (a < 0 || b < 0) throw new Error('Missing production code: ' + start);
   return source.slice(a, b);
 };
-const clickSource = 'async () => {' + between(view.slice(view.indexOf('<button data-help-key="pdf_audit_view_make_accessible_btn"')),
+const clickSource = 'async () => {' + between(view.slice(view.indexOf('<button type="button" data-help-key="pdf_audit_view_make_accessible_btn"')),
   'onClick={async () => {', '\n                  }} className=').slice('onClick={async () => {'.length) + '\n}';
 const clean = () => ({ accessibleHtml: '<main><h1>Document</h1><p>Content</p></main>', afterScore: 100,
   axeAudit: { score: 100, totalViolations: 0 }, secondEngineAudit: { score: 100, failViolations: 0, fails: [] },

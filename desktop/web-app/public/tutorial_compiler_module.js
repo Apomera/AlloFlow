@@ -1,5 +1,6 @@
 (function () {
 'use strict';
+if (typeof window === 'undefined' || !window) return;
 if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.log('[CDN] TutorialCompilerModule already loaded, skipping'); return; }
 
 // ============================================================================
@@ -78,9 +79,12 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
       return stripCtl(fallback || '').slice(0, 2000);
     };
     var beats = [];
-    var label = tr('guided.' + stepId + '.label', step.label || stepId);
-    var action = tr('guided.' + stepId + '.action', step.action || '');
-    var success = tr('guided.' + stepId + '.success', step.success || '');
+    var labelFallback = typeof step.label === 'string' && step.label ? step.label : stepId;
+    var actionFallback = typeof step.action === 'string' ? step.action : '';
+    var successFallback = typeof step.success === 'string' ? step.success : '';
+    var label = tr('guided.' + stepId + '.label', labelFallback);
+    var action = tr('guided.' + stepId + '.action', actionFallback);
+    var success = tr('guided.' + stepId + '.success', successFallback);
     if (action) beats.push({ kind: 'action', text: (label ? label + '. ' : '') + action });
     if (success) beats.push({ kind: 'success', text: success });
     return beats;
@@ -107,7 +111,7 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
     var wpm = opts.wpm;
     var mapObj = (tourMap && typeof tourMap === 'object') ? tourMap : null;
     var steps = (Array.isArray(guidedSteps) ? guidedSteps.slice(0, MAX_STEPS) : [])
-      .filter(function (s) { return s && typeof s.id === 'string' && s.id && (!only || only.indexOf(s.id) >= 0); })
+      .filter(function (s) { return s && typeof s.id === 'string' && stripCtl(s.id).trim().length > 0 && (!only || only.indexOf(s.id) >= 0); })
       .map(function (s) {
         var beats = narrationForStep(s, tFn).map(function (b) {
           return { kind: b.kind, text: b.text, seconds: estimateNarrationSeconds(b.text, wpm) };
@@ -115,9 +119,9 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
         var seconds = beats.reduce(function (sum, b) { return sum + b.seconds; }, 0);
         var anchor = (mapObj && hasOwn.call(mapObj, s.id) && typeof mapObj[s.id] === 'string') ? stripCtl(mapObj[s.id]).slice(0, 160) : null;
         return {
-          id: stripCtl(s.id).slice(0, 120),
+          id: stripCtl(s.id).trim().slice(0, 120),
           anchorId: anchor,
-          label: stripCtl(s.label || s.id).slice(0, 240),
+          label: stripCtl(typeof s.label === 'string' && s.label ? s.label : s.id).slice(0, 240),
           beats: beats,
           seconds: seconds
         };
@@ -156,8 +160,12 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
       ? deps.now
       : function () { return (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) / 1000; };
     var readNow = function (fallback) {
-      var v = Number(nowSeconds());
-      return Number.isFinite(v) ? v : fallback;
+      try {
+        var v = Number(nowSeconds());
+        return Number.isFinite(v) ? v : fallback;
+      } catch (_) {
+        return fallback;
+      }
     };
     var startedAt = readNow(0);
     var timeline = [];
@@ -183,9 +191,10 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
             }
           }
           var beatStart = Math.max(0, readNow(startedAt) - startedAt);
-          await deps.speak(beat.text, { step: step, stepIndex: i, beat: beat, beatIndex: j });
+          var beatText = typeof beat.text === 'string' ? beat.text : stripCtl(beat.text == null ? '' : beat.text).slice(0, 2000);
+          await deps.speak(beatText, { step: step, stepIndex: i, beat: beat, beatIndex: j });
           var beatEnd = Math.max(beatStart, readNow(startedAt) - startedAt);
-          timeline.push({ stepId: step.id, kind: beat.kind, text: beat.text, startSec: beatStart, endSec: beatEnd });
+          timeline.push({ stepId: step.id, kind: beat.kind, text: beatText, startSec: beatStart, endSec: beatEnd });
         }
         if (!performed) {
           await deps.performStep(step, i);

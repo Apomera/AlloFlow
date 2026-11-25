@@ -51,6 +51,19 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+(function() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-raptorhunt-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-raptorhunt-a11y-css';
+  st.textContent = [
+    '[data-raptorhunt-root="true"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [data-stem-tool-shell="raptorHunt"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+    '[data-raptorhunt-root="true"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="raptorHunt"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; border-radius: 6px; }',
+    '@media (forced-colors: active) { [data-raptorhunt-root="true"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [data-stem-tool-shell="raptorHunt"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+    '@media (prefers-reduced-motion: reduce) { [data-raptorhunt-root="true"] *, [data-stem-tool-shell="raptorHunt"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+  ].join('\n');
+  document.head.appendChild(st);
+})();
+
 // Raptor Hunt experience layer: a scoped field-station visual system for the
 // information-dense hub and the persistent section navigation. The 3D flight
 // view keeps its own purpose-built controls below.
@@ -11216,7 +11229,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       h('div', { className: 'rh-feather-main' }, h('div', { className: 'rh-feather-specimens' }, specimen(false), compare && specimen(true), h('button', { type: 'button', 'data-feather-compare': 'true', 'aria-pressed': compare, onClick: function() { setCompare(!compare); } }, compare ? 'Hide plain reference' : 'Compare with a plain reference'), h('p', { className: 'rh-feather-motion-note' }, 'The plain reference isolates visible structures; it is not another species or a measured noise comparison.')),
         h('div', { className: 'rh-feather-detail' }, h('span', { className: 'rh-feather-kicker' }, 'Structure ' + feature.number + ' · magnified view'), h('h3', null, feature.title), h('p', null, feature.copy), closeup(),
           h('div', { className: 'rh-feather-actions' }, h('button', { type: 'button', 'data-feather-toggle': selected, 'aria-pressed': shown[selected], onClick: function() { setShown(function(previous) { var next = Object.assign({}, previous); next[selected] = !previous[selected]; return next; }); } }, (shown[selected] ? 'Hide ' : 'Show ') + feature.label.toLowerCase()), h('button', { type: 'button', 'data-feather-play': 'true', onClick: function() { setPlaying(!playing); } }, playing ? 'Pause illustration' : 'Play illustration')),
-          h('label', { className: 'rh-feather-phase', htmlFor: 'rh-feather-phase' }, 'Illustration position · ' + Math.round(phase / 10) + '%'), h('input', { id: 'rh-feather-phase', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(phase), onChange: function(event) { setPlaying(false); setPhase(Math.max(0, Math.min(1000, Number(event.target.value) || 0))); } }), h('p', { className: 'rh-feather-motion-note' }, feature.motion))),
+          h('label', { className: 'rh-feather-phase', htmlFor: 'rh-feather-phase' }, 'Illustration position · ' + Math.round(phase / 10) + '%'), h('input', { id: 'rh-feather-phase', type: 'range', min: 0, max: 1000, step: 1, value: Math.round(phase), 'aria-valuetext': Math.round(phase / 10) + '%', onChange: function(event) { setPlaying(false); setPhase(Math.max(0, Math.min(1000, Number(event.target.value) || 0))); } }), h('p', { className: 'rh-feather-motion-note' }, feature.motion))),
       h('section', { className: 'rh-feather-evidence', 'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_evidence_for', 'Evidence for {value1}'), { value1: feature.label.toLowerCase() }) }, h('span', { className: 'rh-feather-kicker' }, 'From structure to evidence'), h('h3', null, 'What has actually been tested?'), h('p', { 'data-feather-evidence': selected }, feature.evidence), h('a', { href: feature.url, target: '_blank', rel: 'noopener noreferrer' }, feature.source),
         h('div', { className: 'rh-feather-question' }, h('h3', null, feature.question), h('div', { className: 'rh-feather-actions' }, feature.options.map(function(option, index) { return h('button', { key: selected + index, type: 'button', 'data-feather-answer': index, 'aria-pressed': answer === index, onClick: function() { setAnswer(index); } }, option); })), answer !== null && h('p', { className: 'rh-feather-feedback', role: 'status' }, h('strong', null, answer === feature.correct ? 'That comparison fits. ' : 'Look at the type of evidence. '), feature.feedback)),
         h('details', null, h('summary', null, 'What this studio can and cannot show'), h('p', null, 'Feather structures vary across owl species and across a wing. These enlarged drawings combine features for inspection; they are not a scaled reconstruction of a particular feather. The moving dots are illustration cues, and the sliding surfaces show contact. Neither computes airflow, sound pressure, hearing sensitivity, or hunting success.'), h('p', null, 'Quiet flight involves multiple sound sources and conditions. A feature cannot be assigned a universal noise reduction from its appearance. The feather-rubbing result concerns sound level; it does not establish that owl sounds simply shift beyond prey hearing.'))),
@@ -11539,7 +11552,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     var arcPath = 'M ' + arcX + ' ' + (150 - arcY) + ' A ' + radius + ' ' + radius + ' 0 0 1 ' + arcX + ' ' + (150 + arcY);
     function range(name, label, value, min, max, suffix) {
       return h('label', { className: 'rh-angle-slider', htmlFor: 'rh-angle-' + name }, h('span', null, label, h('output', { htmlFor: 'rh-angle-' + name }, value + suffix)),
-        h('input', { id: 'rh-angle-' + name, type: 'range', min: min, max: max, step: 1, value: value, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
+        h('input', { id: 'rh-angle-' + name, type: 'range', min: min, max: max, step: 1, value: value, 'aria-valuetext': value + suffix, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
         h('small', null, min + suffix, h('span', null, max + suffix)));
     }
     return h('section', { className: 'rh-angle-study', 'data-raptor-angle-study': 'true', 'data-angle-radians': theta.toFixed(10), 'aria-label': __alloT("stem.raptorhunt.a11y_visual_angle_observation_studio", "Visual angle observation studio") },
@@ -11733,7 +11746,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
     }
     function slider(name, label, value, min, max, suffix) {
       return h('label', { className: 'rh-contact-slider', htmlFor: 'rh-contact-' + name }, h('span', null, label, h('output', { htmlFor: 'rh-contact-' + name }, value + suffix)),
-        h('input', { id: 'rh-contact-' + name, type: 'range', min: min, max: max, step: 1, value: value, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
+        h('input', { id: 'rh-contact-' + name, type: 'range', min: min, max: max, step: 1, value: value, 'aria-valuetext': value + suffix, onInput: function(e) { var patch = {}; patch[name] = Number(e.target.value); change(patch); } }),
         h('small', null, min + suffix, h('span', null, max + suffix)));
     }
     function xPlot(a) { return 70 + (a - 2) / 38 * 530; }
@@ -13190,7 +13203,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           h('path',{'data-profile-curve':'current',d:line(current),fill:'none',stroke:'#91ead3',strokeWidth:4}),
           current.map(function(v,i){return h('g',{key:i},h('circle',{'data-profile-tip':i,cx:x(i),cy:y(v),r:i===focus?8:5,fill:i===focus?'#fff0c4':'#91ead3',stroke:'#0b2531',strokeWidth:2}),h('text',{x:x(i),y:265,textAnchor:'middle'},'P'+(i+1)));})),
         h('p',{className:'rh-profile-note'},'P1 is the inner primary; P10 is the outer primary. These are schematic indices, not measured feather lengths.'),
-        h('label',null,'Adjust P'+(focus+1)+' · '+current[focus]+' points',h('input',{'data-profile-length':true,type:'range',min:50,max:100,step:1,value:current[focus],'aria-label':__alloT("stem.raptorhunt.a11y_selected_primary_index", 'Selected primary index'),onChange:function(e){change(focus,Number(e.target.value));}})),
+        h('label',null,'Adjust P'+(focus+1)+' · '+current[focus]+' points',h('input',{'data-profile-length':true,type:'range',min:50,max:100,step:1,value:current[focus],'aria-label':__alloT("stem.raptorhunt.a11y_selected_primary_index", 'Selected primary index'),'aria-valuetext':String(current[focus]),onChange:function(e){change(focus,Number(e.target.value));}})),
         h('div',{className:'rh-profile-actions'},button('P'+(focus+1)+' −5',function(){change(focus,current[focus]-5);},{disabled:current[focus]<55,'data-profile-step':-5}),button('P'+(focus+1)+' +5',function(){change(focus,current[focus]+5);},{disabled:current[focus]>95,'data-profile-step':5}),prior&&button('Restore this feather',function(){change(focus,prior[focus]);},{'data-profile-restore-one':true})),
         h('div',{className:'rh-profile-actions'},[-5,5].map(function(n){return button('All feathers '+signed(n),function(){shift(n);},{key:n,'data-profile-shift':n,disabled:current.some(function(v){return v+n<50||v+n>100;})});})),
         h('div',{className:'rh-profile-rank'},h('span',null,'Current order · equal indices share a rank'),h('strong',{'data-profile-rank':true},ranks(current))),
@@ -13319,7 +13332,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       h('header', { className: 'rh-skeletal-head' }, h('span', { className: 'rh-skeletal-kicker' }, 'Pellet evidence · skeletal inventory workbench'), h('h2', null, 'More bones does not always mean more prey.'), h('p', null, 'Sort complete elements from two invented, already known taxon groups. Change a side count, inspect the evidence, and ask how many individuals are required at minimum. An extra right jaw can change the element count without changing that minimum.'), h('div', { className: 'rh-skeletal-tags' }, h('span', null, 'Authored inventory'), h('span', null, 'Complete elements only'), h('span', null, 'No recovered matches'))),
       h('div', { className: 'rh-skeletal-layout' }, h('div', { className: 'rh-skeletal-main' }, totals(current, 'current'), inventory(current, 'current'), packing(current, 'current')),
         h('aside', { className: 'rh-skeletal-panel rh-skeletal-controls', 'aria-label': __alloT("stem.raptorhunt.a11y_skeletal_inventory_controls", "Skeletal inventory controls") }, h('span', { className: 'rh-skeletal-kicker' }, 'Inspect one known group'), h('h3', null, 'Count elements. Bound individuals.'), h('label', { className: 'rh-skeletal-field', htmlFor: 'rh-skeletal-group' }, 'Shared inspected taxon group', h('select', { id: 'rh-skeletal-group', value: selected, onChange: function(e) { change({ selected: Number(e.target.value) }); } }, h('option', { value: 0 }, 'Invented group A'), h('option', { value: 1 }, 'Invented group B'))),
-          keys.map(function(kind, index) { var id = 'rh-skeletal-' + kind; return h('label', { key: kind, className: 'rh-skeletal-field', htmlFor: id }, h('span', null, labels[index], h('output', { htmlFor: id }, current.groups[selected][kind] + (current.groups[selected][kind] === 1 ? ' complete element' : ' complete elements'))), h('input', { id: id, type: 'range', min: 0, max: 8, step: 1, value: current.groups[selected][kind], onInput: function(e) { var groups = copy(current.groups); groups[selected][kind] = Number(e.target.value); change({ groups: groups }); } })); }),
+          keys.map(function(kind, index) { var id = 'rh-skeletal-' + kind; return h('label', { key: kind, className: 'rh-skeletal-field', htmlFor: id }, h('span', null, labels[index], h('output', { htmlFor: id }, current.groups[selected][kind] + (current.groups[selected][kind] === 1 ? ' complete element' : ' complete elements'))), h('input', { id: id, type: 'range', min: 0, max: 8, step: 1, value: current.groups[selected][kind], 'aria-valuetext': String(current.groups[selected][kind]), onInput: function(e) { var groups = copy(current.groups); groups[selected][kind] = Number(e.target.value); change({ groups: groups }); } })); }),
           h('p', null, 'C counts complete crania without mandibles. L and R count complete mandibles of the stated side. One individual supplies at most one element in each category. There are no duplicate records or fragments to refit.'), h('div', { className: 'rh-skeletal-equations' }, h('span', null, 'NISP = C + L + R'), h('span', null, 'MNI = max(C, L, R)')), h('p', null, 'NISP is the number of identified specimens: here, recorded complete elements. MNI is the minimum number of individuals required by this inventory. Compute MNI separately for each known group, then sum. These are different kinds of count.'),
           h('div', { className: 'rh-skeletal-actions' }, h('button', { type: 'button', 'data-skeletal-reset': 'true', onClick: function() { props.onChange(normalize({ version: 1, selected: selected })); setAnswer(null); } }, 'Reset current inventory')), h('p', null, 'Reset restores both groups while keeping the inspected group and any pin.'))),
       h('section', { className: 'rh-skeletal-panel rh-skeletal-compare', 'aria-label': __alloT("stem.raptorhunt.a11y_frozen_skeletal_evidence_comparison", "Frozen skeletal evidence comparison") }, h('span', { className: 'rh-skeletal-kicker' }, 'Keep all six counts'), h('h3', null, 'Add one element. Compare the evidence.'), h('div', { className: 'rh-skeletal-actions' }, h('button', { type: 'button', 'data-skeletal-pin': 'true', onClick: function() { setPinned({ version: 1, groups: copy(current.groups) }); } }, pinned ? 'Replace pinned inventory' : 'Pin this inventory'), pinned && h('button', { type: 'button', 'data-skeletal-clear-pin': 'true', onClick: function() { setPinned(null); } }, 'Clear pin')),
@@ -13460,7 +13473,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
       // These reference panels use automatic-activation horizontal tabs.
       // Focus after the selected state and panel label have committed.
       function rhReferenceTabKeyDown(event, activate) {
-        if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         var list = event.currentTarget.closest('[data-raptor-reference-tabs]');
         var tabs = list && Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
         if (!tabs || !tabs.length) return;
@@ -13513,7 +13526,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         return function() { window.clearTimeout(resultFocusTimer); };
       }, [simUI.missionState]);
       function handleFlightResultKeyDown(event) {
-        if (event.isComposing || event.keyCode === 229) return;
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           event.stopPropagation();
@@ -15276,7 +15289,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           rosterView !== 'duel' && h('section', { className: 'rh-roster-discovery', 'aria-label': __alloT('stem.raptorhunt.roster_find', 'Find a raptor') },
             h('div', null,
               h('label', { htmlFor: 'rh-roster-search', className: 'rh-roster-search-label' }, __alloT('stem.raptorhunt.roster_search_label', 'Find your flight companion')),
-              h('input', { id: 'rh-roster-search', type: 'search', className: 'rh-roster-search', value: rosterQuery, placeholder: __alloT('stem.raptorhunt.roster_search_hint', 'Search species, habitat, or hunting style'), onChange: function(event) { setRH({ rosterQuery: event.target.value }); }, onKeyDown: function(event) { if (event.key === 'Escape') { event.preventDefault(); setRH({ rosterQuery: '' }); } } })),
+              h('input', { id: 'rh-roster-search', type: 'search', className: 'rh-roster-search', value: rosterQuery, placeholder: __alloT('stem.raptorhunt.roster_search_hint', 'Search species, habitat, or hunting style'), onChange: function(event) { setRH({ rosterQuery: event.target.value }); }, onKeyDown: function(event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Escape') { event.preventDefault(); setRH({ rosterQuery: '' }); } } })),
             h('div', { className: 'rh-roster-filters', role: 'group', 'aria-label': __alloT('stem.raptorhunt.roster_filter', 'Filter raptor groups') },
               [
                 ['all', __alloT('stem.raptorhunt.roster_all', 'All raptors')],
@@ -16147,6 +16160,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             onPointerCancel: releasePointer,
             onLostPointerCapture: function(event) { setHeld(false, 'pointer:' + event.pointerId); },
             onKeyDown: function(event) {
+              if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if ((event.key === ' ' || event.key === 'Enter') && !event.repeat) {
                 event.preventDefault();
                 setHeld(true, 'activation:' + event.key);
@@ -17237,7 +17251,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         };
         var bc = biomeColors[species.biome] || biomeColors.grassland;
         // ─── NEW v0.26: Proper sky gradient dome (zenith → horizon) ───
-        var skyCanvas = document.createElement('canvas');
+        var skyCanvas = document.createElement('canvas'); skyCanvas.setAttribute('aria-hidden', 'true');
         skyCanvas.width = 16; skyCanvas.height = 512;
         var skCtx = skyCanvas.getContext('2d');
         var skGrad = skCtx.createLinearGradient(0, 0, 0, 512);
@@ -17333,7 +17347,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
 
         // ─── Complementary sun + moon discs for the complete day cycle ───
         function makeCelestialTexture(stops) {
-          var discCanvas = document.createElement('canvas');
+          var discCanvas = document.createElement('canvas'); discCanvas.setAttribute('aria-hidden', 'true');
           discCanvas.width = 128; discCanvas.height = 128;
           var discContext = discCanvas.getContext('2d');
           var discGradient = discContext.createRadialGradient(64, 64, 8, 64, 64, 60);
@@ -17435,7 +17449,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         var cloudList = [];
         {
-          var cloudCanvas = document.createElement('canvas');
+          var cloudCanvas = document.createElement('canvas'); cloudCanvas.setAttribute('aria-hidden', 'true');
           cloudCanvas.width = 256; cloudCanvas.height = 128;
           var cc = cloudCanvas.getContext('2d');
           // Soft white puffy cloud
@@ -17726,7 +17740,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         terrainGeo.computeVertexNormals();
         // Procedural ground texture (color-noise canvas)
-        var tCv = document.createElement('canvas'); tCv.width = 512; tCv.height = 512;
+        var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 512; tCv.height = 512;
         var tCx = tCv.getContext('2d');
         var groundHex = '#' + new THREE.Color(bc.ground).getHexString();
         tCx.fillStyle = groundHex; tCx.fillRect(0, 0, 512, 512);
@@ -17999,7 +18013,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           }
           farPlainGeometry.setAttribute('color',new THREE.BufferAttribute(farPlainColors,3));farPlainGeometry.computeVertexNormals();
           // A patchwork of fields, woods, a river and a few tracks, about 18 m to a pixel. Its own seed, so scene randomness is untouched.
-          var patchCanvas=document.createElement('canvas');patchCanvas.width=patchCanvas.height=1024;var patchCtx=patchCanvas.getContext('2d');
+          var patchCanvas=document.createElement('canvas');patchCanvas.setAttribute('aria-hidden','true');patchCanvas.width=patchCanvas.height=1024;var patchCtx=patchCanvas.getContext('2d');
           var patchSeed=11;function patchRandom(){var v=Math.sin(patchSeed++*78.233)*43758.5453;return v-Math.floor(v);}
           function patchTone(r,g,b){return 'rgb('+Math.round(r*255)+','+Math.round(g*255)+','+Math.round(b*255)+')';}
           patchCtx.fillStyle=patchTone(0.9,0.92,0.86);patchCtx.fillRect(0,0,1024,1024);
@@ -18366,7 +18380,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             flatShading: false
           });
           // Fine surface ripples catch directional light between mesh updates.
-          var rippleCanvas = document.createElement('canvas'); rippleCanvas.width = rippleCanvas.height = 128;
+          var rippleCanvas = document.createElement('canvas'); rippleCanvas.setAttribute('aria-hidden', 'true'); rippleCanvas.width = rippleCanvas.height = 128;
           var rippleContext = rippleCanvas.getContext('2d');
           var ripplePixels = rippleContext.createImageData(128, 128);
           for (var rippleY = 0; rippleY < 128; rippleY++) {
@@ -18476,7 +18490,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           lake.position.y = -1.5;
           scene.add(lake);
           // Add a brighter "sheen" highlight near the sun position — gives reflection feel
-          var sheenCanvas = document.createElement('canvas'); sheenCanvas.width = sheenCanvas.height = 128;
+          var sheenCanvas = document.createElement('canvas'); sheenCanvas.setAttribute('aria-hidden', 'true'); sheenCanvas.width = sheenCanvas.height = 128;
           var sheenContext = sheenCanvas.getContext('2d');
           var sheenGradient = sheenContext.createRadialGradient(64, 64, 4, 64, 64, 64);
           sheenGradient.addColorStop(0, 'rgba(255,255,255,1)');
@@ -18541,7 +18555,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var trunkCount = treePlacements.reduce(function(total, batch) { return total + batch.length; }, 0);
         // Bake soft canopy occlusion into the terrain's ambient light once. Sampling
         // the terrain UVs keeps this contact shading attached even on steep slopes.
-        var forestShadeCanvas=document.createElement('canvas');
+        var forestShadeCanvas=document.createElement('canvas');forestShadeCanvas.setAttribute('aria-hidden','true');
         forestShadeCanvas.width=forestShadeCanvas.height=1024;
         var forestShadeContext=forestShadeCanvas.getContext('2d');
         forestShadeContext.fillStyle='#ffffff';forestShadeContext.fillRect(0,0,1024,1024);
@@ -18735,7 +18749,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           }
         }
         function canopyTexture(broadleaf) {
-          var canvas=document.createElement('canvas');canvas.width=canvas.height=512;
+          var canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');canvas.width=canvas.height=512;
           var context=canvas.getContext('2d');
           if(broadleaf) {
             for(var leaf=0;leaf<3200;leaf++) {
@@ -19081,7 +19095,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         scene.add(distantTerrainGroup);
         // ─── NEW v0.28: Distant flock silhouettes (3-5 dark V-shapes drifting across the sky) ───
-        var flockCanvas = document.createElement('canvas');
+        var flockCanvas = document.createElement('canvas'); flockCanvas.setAttribute('aria-hidden', 'true');
         flockCanvas.width = 32; flockCanvas.height = 16;
         var flCtx = flockCanvas.getContext('2d');
         flCtx.fillStyle = '#1c1917';
@@ -19251,7 +19265,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(0.6,length*0.55,0,length-2);ctx.stroke();ctx.restore();ctx.restore();
           }
         }
-        var featherCanvas = document.createElement('canvas');
+        var featherCanvas = document.createElement('canvas'); featherCanvas.setAttribute('aria-hidden', 'true');
         featherCanvas.width = 512; featherCanvas.height = 256;
         paintRaptorFeatherAtlas(featherCanvas);
         var plumageTex = new THREE.CanvasTexture(featherCanvas);
@@ -19663,7 +19677,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         var eyeSurrounds=new THREE.Mesh(createRaptorEyeSurroundGeometry(species.isOwl,species.id==='osprey'?plumageProfile.mark:plumageProfile.head,species.id==='peregrine'?0xd5a642:null),new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.86}));
         eyeSurrounds.name='raptor-eye-surrounds';headGroup.add(eyeSurrounds);
-        var irisCanvas=document.createElement('canvas');irisCanvas.width=irisCanvas.height=256;paintRaptorIris(irisCanvas);
+        var irisCanvas=document.createElement('canvas');irisCanvas.setAttribute('aria-hidden','true');irisCanvas.width=irisCanvas.height=256;paintRaptorIris(irisCanvas);
         var irisTexture=new THREE.CanvasTexture(irisCanvas);irisTexture.encoding=THREE.sRGBEncoding;irisTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
         var eyeMat = new THREE.MeshPhysicalMaterial({ color: species.id==='peregrine'?0x38291f:0xcb9229, map:irisTexture, roughness: 0.38, clearcoat: 0.85, clearcoatRoughness: 0.07 });
         var pupilMat = new THREE.MeshPhysicalMaterial({ color: 0x0b1114, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.045 });
@@ -19731,7 +19745,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.88 })
           );
           // The paired cheek surfaces follow the head instead of floating in front.
-          var discCanvas=document.createElement('canvas');discCanvas.width=discCanvas.height=256;paintRaptorFacialFeathers(discCanvas);
+          var discCanvas=document.createElement('canvas');discCanvas.setAttribute('aria-hidden','true');discCanvas.width=discCanvas.height=256;paintRaptorFacialFeathers(discCanvas);
           var discTexture=new THREE.CanvasTexture(discCanvas);discTexture.name='raptor-facial-feathers';discTexture.encoding=THREE.sRGBEncoding;discTexture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
           facialDisc.material.map=discTexture;facialDisc.material.bumpMap=discTexture;facialDisc.material.bumpScale=0.0005;
           facialDisc.name = 'field-mark-owl-facial-disc';
@@ -20552,7 +20566,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           }
         });
         scene.add(raptorGroup);
-        var shadowCanvas = document.createElement('canvas');
+        var shadowCanvas = document.createElement('canvas'); shadowCanvas.setAttribute('aria-hidden', 'true');
         shadowCanvas.width = shadowCanvas.height = 64;
         var shadowCtx = shadowCanvas.getContext('2d');
         var shadowGradient = shadowCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -21032,7 +21046,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var touchdownDustAttribute = new THREE.BufferAttribute(touchdownDustPositions, 3);
         if (touchdownDustAttribute.setUsage && THREE.DynamicDrawUsage) touchdownDustAttribute.setUsage(THREE.DynamicDrawUsage);
         touchdownDustGeometry.setAttribute('position', touchdownDustAttribute);
-        var touchdownPuffCanvas=document.createElement('canvas');touchdownPuffCanvas.width=touchdownPuffCanvas.height=64;
+        var touchdownPuffCanvas=document.createElement('canvas');touchdownPuffCanvas.setAttribute('aria-hidden','true');touchdownPuffCanvas.width=touchdownPuffCanvas.height=64;
         var touchdownPuffContext=touchdownPuffCanvas.getContext('2d');
         var touchdownPuffGradient=touchdownPuffContext.createRadialGradient(32,32,0,32,32,31);
         touchdownPuffGradient.addColorStop(0,'rgba(255,255,255,0.85)');touchdownPuffGradient.addColorStop(0.3,'rgba(255,255,255,0.55)');
@@ -24858,7 +24872,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
         function onKeyDown(event) {
           // Preserve system shortcuts and text composition; Shift remains a flight control.
-          if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+          if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing || event.keyCode === 229) return;
           var raw = String(event.key || '').toLowerCase();
           if (flightPathActive && raw === 'escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
             event.preventDefault(); leaveFlightPath(); publishControlState(); repaintPausedFlight(false);
@@ -25056,6 +25070,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var pauseView=document.createElement('button');pauseView.type='button';pauseView.setAttribute('aria-label','Change paused camera');pauseView.onclick=toggleView;pauseViews.appendChild(pauseView);
         var pauseZoom=document.createElement('button');pauseZoom.type='button';pauseZoom.setAttribute('aria-label','Toggle paused zoom');pauseZoom.onclick=toggleZoom;pauseViews.appendChild(pauseZoom);
         pauseCard.onkeydown=function(event){
+          if(!event || event.isComposing || event.keyCode===229 || event.ctrlKey || event.metaKey || event.altKey)return;
           if(event.key==='Enter' || event.key===' ')return;
           var action=controlScheme.keys[String(event.key||'').toLowerCase()];
           if(action==='pause' || action==='view' || action==='zoom'){
@@ -25258,7 +25273,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         function endLampDrag(event,cancel){if(!lampDrag||lampDrag.id!==event.pointerId)return;var saved=lampDrag;lampDrag=null;if(cancel)changeLamp(saved.yaw,saved.lift);try{studyLampDial.releasePointerCapture(event.pointerId);}catch(ignore){}}
         studyLampDial.onpointerdown=function(event){if(!lampAvailable())return;if(lampDrag){endLampDrag({pointerId:lampDrag.id},true);return;}if(event.isPrimary===false||event.button&&event.pointerType!=='touch')return;lampDrag={id:event.pointerId,yaw:studyLampYaw,lift:studyLampLift};studyLampDial.setPointerCapture(event.pointerId);studyLampDial.focus();lampPoint(event);event.preventDefault();event.stopPropagation();};
         studyLampDial.onpointermove=function(event){if(lampDrag&&lampDrag.id===event.pointerId){lampPoint(event);event.preventDefault();}};studyLampDial.onpointerup=function(event){endLampDrag(event,false);};studyLampDial.onpointercancel=studyLampDial.onlostpointercapture=function(event){endLampDrag(event,true);};
-        studyLampDial.onkeydown=function(event){if(event.key==='Escape'&&lampDrag){endLampDrag({pointerId:lampDrag.id},true);event.preventDefault();event.stopPropagation();return;}if(!lampAvailable())return;var next=event.key==='Home'?-180:event.key==='End'?180:event.key==='ArrowLeft'||event.key==='ArrowDown'?studyLampYaw-(event.shiftKey?15:1):event.key==='ArrowRight'||event.key==='ArrowUp'?studyLampYaw+(event.shiftKey?15:1):null;if(next!==null){changeLamp(next,studyLampLift);event.preventDefault();event.stopPropagation();}};
+        studyLampDial.onkeydown=function(event){if(!event||event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;if(event.key==='Escape'&&lampDrag){endLampDrag({pointerId:lampDrag.id},true);event.preventDefault();event.stopPropagation();return;}if(!lampAvailable())return;var next=event.key==='Home'?-180:event.key==='End'?180:event.key==='ArrowLeft'||event.key==='ArrowDown'?studyLampYaw-(event.shiftKey?15:1):event.key==='ArrowRight'||event.key==='ArrowUp'?studyLampYaw+(event.shiftKey?15:1):null;if(next!==null){changeLamp(next,studyLampLift);event.preventDefault();event.stopPropagation();}};
         studyLamp.ontoggle=function(){if(studyActive&&!disposed)repaintPausedFlight(false);};
         function updateStudyLamp(){var enabled=lampAvailable(),key=lampVector(),radius=Math.hypot(key[0],key[1],key[2]),x=90+59*key[1]/radius,y=95-59*key[0]/radius;studyLampDot.setAttribute('cx',String(x));studyLampDot.setAttribute('cy',String(y));studyLampRay.setAttribute('d','M90 95L'+x+' '+y);studyLampDial.setAttribute('data-vector',key.join(','));studyLampDial.setAttribute('aria-valuenow',String(studyLampYaw));studyLampDial.setAttribute('aria-valuetext',__alloFill(__alloT('stem.raptorhunt.study_angle_degrees','{angle} degrees'),{angle:studyLampYaw}));lampYaw.input.setAttribute('aria-valuetext',__alloFill(__alloT('stem.raptorhunt.study_angle_degrees','{angle} degrees'),{angle:studyLampYaw}));lampLift.input.setAttribute('aria-valuetext',__alloFill(__alloT('stem.raptorhunt.study_angle_degrees','{angle} degrees'),{angle:studyLampLift}));studyLampDial.setAttribute('aria-disabled',String(!enabled));studyLampDial.setAttribute('tabindex',enabled?'0':'-1');lampYaw.input.value=String(studyLampYaw);lampLift.input.value=String(studyLampLift);lampYaw.value.textContent=studyLampYaw+'°';lampLift.value.textContent=studyLampLift+'°';lampYaw.input.disabled=lampLift.input.disabled=studyLampReset.disabled=!enabled;studyLampUnavailable.hidden=enabled;}
         function studyLampLabel(){var label=currentStudyLight().savedLabel;if(studyLighting!=='silhouette'&&(studyLampYaw||studyLampLift))label+=' · '+__alloFill(__alloT('stem.raptorhunt.study_lamp_saved','lamp {yaw}° / {lift}°'),{yaw:studyLampYaw,lift:studyLampLift});return label;}
@@ -25581,6 +25596,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         var studyHelp = studyElement('p', 'rh-study-help', __alloT('stem.raptorhunt.study_help', 'Drag the bird view or focus it and use arrow keys to orbit. The mission clock and animals stay frozen.'), studyActions); studyHelp.id = 'rh-study-help';
         studyClose.onclick = function() { leaveStudy(); publishControlState(); repaintPausedFlight(false); pauseResume.focus(); };
         studyHeader.onkeydown = studyPanel.onkeydown = function(event) {
+          if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           if (event.key === 'Escape' && !(document.fullscreenElement || document.webkitFullscreenElement)) {
             event.preventDefault(); studyClose.onclick();
           }
@@ -25618,7 +25634,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             var cropWidth = cropHeight * 1.5;
             var cropX = Math.max(0, Math.min(W - cropWidth, (left + right - cropWidth) / 2));
             var cropY = Math.max(0, Math.min(H - cropHeight, (top + bottom - cropHeight) / 2));
-            var photo = document.createElement('canvas'); photo.width = 480; photo.height = 320;
+            var photo = document.createElement('canvas'); photo.setAttribute('aria-hidden', 'true'); photo.width = 480; photo.height = 320;
             var photoContext = photo.getContext('2d');
             photoContext.drawImage(canvasEl, cropX * canvasEl.width / W, cropY * canvasEl.height / H,
               cropWidth * canvasEl.width / W, cropHeight * canvasEl.height / H, 0, 0, photo.width, photo.height);
@@ -27705,7 +27721,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             }
             var aiming=gateLines(aimingVertices,0xffe5af,0.55),ticks=gateLines(tickVertices,0xffce79,0.7);
             var halo=new THREE.Mesh(new THREE.TorusGeometry(11,0.32,6,graphicsQuality==='low'?40:72),new THREE.MeshBasicMaterial({color:0xffc15a,transparent:true,opacity:0.12,depthWrite:false}));group.add(halo);
-            var labelCanvas=document.createElement('canvas');labelCanvas.width=labelCanvas.height=64;
+            var labelCanvas=document.createElement('canvas');labelCanvas.setAttribute('aria-hidden','true');labelCanvas.width=labelCanvas.height=64;
             var labelContext=labelCanvas.getContext('2d');labelContext.font='600 46px system-ui';labelContext.textAlign='center';labelContext.textBaseline='middle';labelContext.fillStyle='#fff4d6';labelContext.fillText(String(i+1),32,33);
             var label=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,depthWrite:false}));
             label.position.y=-8.9;label.scale.set(2.8,2.8,1);group.add(label);
@@ -27800,14 +27816,14 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           bark.color.convertSRGBToLinear();cut.color.convertSRGBToLinear();moss.color.convertSRGBToLinear();
           if(ledge){bark.map=terrainTex;bark.bumpMap=terrainTex;bark.bumpScale=0.12;}
           else {
-            var barkCanvas=document.createElement('canvas');barkCanvas.width=128;barkCanvas.height=256;
+            var barkCanvas=document.createElement('canvas');barkCanvas.setAttribute('aria-hidden','true');barkCanvas.width=128;barkCanvas.height=256;
             var barkCtx=barkCanvas.getContext('2d');barkCtx.fillStyle='#a69a86';barkCtx.fillRect(0,0,128,256);
             for(var furrow=0;furrow<42;furrow++) {
               var bx=(furrow*37)%128;barkCtx.strokeStyle=furrow%3?'#746758':'#d2c3a7';barkCtx.lineWidth=furrow%3?1:2;
               barkCtx.beginPath();barkCtx.moveTo(bx,0);for(var by=16;by<=256;by+=16)barkCtx.lineTo(bx+Math.sin(by*0.07+furrow)*1.6,by);barkCtx.stroke();
             }
             var barkMap=new THREE.CanvasTexture(barkCanvas);barkMap.encoding=THREE.sRGBEncoding;bark.map=barkMap;bark.bumpMap=barkMap;bark.bumpScale=0.035;
-            var capCanvas=document.createElement('canvas');capCanvas.width=capCanvas.height=128;var capCtx=capCanvas.getContext('2d');
+            var capCanvas=document.createElement('canvas');capCanvas.setAttribute('aria-hidden','true');capCanvas.width=capCanvas.height=128;var capCtx=capCanvas.getContext('2d');
             capCtx.fillStyle='#c7b595';capCtx.fillRect(0,0,128,128);capCtx.strokeStyle='#84725c';capCtx.lineWidth=1;
             for(var ring=7;ring<70;ring+=5){capCtx.beginPath();capCtx.ellipse(62,65,ring,ring*0.93,0,0,Math.PI*2);capCtx.stroke();}
             var capMap=new THREE.CanvasTexture(capCanvas);capMap.encoding=THREE.sRGBEncoding;cut.map=capMap;
@@ -27953,7 +27969,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         function hoverWindError(){var upwind=weather.windDir+Math.PI;return Math.atan2(Math.sin(upwind-raptor.yaw),Math.cos(upwind-raptor.yaw));}
         function turnWords(bearing){var side=bearing<0?'turnLeft':'turnRight',label=controlKeyLabel(side);return (bearing<0?'turn left':'turn right')+(label?' ('+label+')':'');}
         function buildVoleRunways(){
-          var canvas=document.createElement('canvas');canvas.width=canvas.height=512;var ctx=canvas.getContext('2d');
+          var canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');canvas.width=canvas.height=512;var ctx=canvas.getContext('2d');
           // A worn, flattened patch of grass crossed by narrow wandering paths. Its own seed, so scene randomness is untouched.
           var runwaySeed=1;function runwayRandom(){var v=Math.sin(runwaySeed++*12.9898)*43758.5453;return v-Math.floor(v);}
           ctx.fillStyle='rgba(150,128,66,0.5)';ctx.fillRect(0,0,512,512);
@@ -30005,7 +30021,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
           cameraFoliage.enabled.value=studyActive||flightPathActive||camMode==='fp'?0:1;
           if (studyActive && studyPresentation === 'studio') {
             if (!studyStudioBackground) {
-              var backdrop = document.createElement('canvas'); backdrop.width = backdrop.height = 512;
+              var backdrop = document.createElement('canvas'); backdrop.setAttribute('aria-hidden', 'true'); backdrop.width = backdrop.height = 512;
               var backdropContext = backdrop.getContext('2d');
               var wash = backdropContext.createRadialGradient(256, 185, 20, 256, 230, 370);
               wash.addColorStop(0, '#3b505b'); wash.addColorStop(0.52, '#20343e'); wash.addColorStop(1, '#0c1922');
@@ -30630,7 +30646,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   ),
                   h('input', { type: 'range', min: 100, max: 3000, step: 100, value: gr.startAltM,
                     onInput: function(e) { setGR({ startAltM: parseInt(e.target.value) }); }, className: 'w-full',
-                    'aria-label': __alloT('stem.raptorhunt.start_altitude_2', 'Start altitude') }),
+                    'aria-label': __alloT('stem.raptorhunt.start_altitude_2', 'Start altitude'), 'aria-valuetext': gr.startAltM + ' m' }),
                   h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.500_m_typical_3000_m_alpine_soar', '500 m typical · 3000 m alpine soar'))
                 ),
                 h('div', null,
@@ -30640,7 +30656,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   ),
                   h('input', { type: 'range', min: 0, max: 3.0, step: 0.1, value: gr.thermalLift,
                     onInput: function(e) { setGR({ thermalLift: parseFloat(e.target.value) }); }, className: 'w-full',
-                    'aria-label': __alloT('stem.raptorhunt.thermal_lift', 'Thermal lift') }),
+                    'aria-label': __alloT('stem.raptorhunt.thermal_lift', 'Thermal lift'), 'aria-valuetext': gr.thermalLift.toFixed(1) + ' m/s' }),
                   h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.0_still_air_1_0_weak_2_5_strong', '0 = still air · 1.0 weak · 2.5 strong'))
                 )
               ),
@@ -30899,7 +30915,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 type: 'range', min: 0.1, max: 10, step: 0.01, value: v.mass,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { mass: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.mass_in_kilograms', 'Mass in kilograms')
+                'aria-label': __alloT('stem.raptorhunt.mass_in_kilograms', 'Mass in kilograms'),
+                'aria-valuetext': v.mass.toFixed(2)
               }),
               h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.peregrine_0_95_kg_golden_4_2_kg_harpy_', 'Peregrine ≈ 0.95 kg · golden ≈ 4.2 kg · harpy ≈ 7.5 kg'))
             ),
@@ -30913,7 +30930,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 type: 'range', min: 0.05, max: 0.8, step: 0.01, value: v.cd,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { cd: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.drag_coefficient', 'Drag coefficient')
+                'aria-label': __alloT('stem.raptorhunt.drag_coefficient', 'Drag coefficient'),
+                'aria-valuetext': v.cd.toFixed(2)
               }),
               h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.teardrop_0_04_sphere_0_47_falcon_stoop', 'Teardrop ≈ 0.04 · sphere ≈ 0.47 · falcon stoop tuck ≈ 0.18 · human freefall ≈ 0.7'))
             ),
@@ -30927,7 +30945,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                 type: 'range', min: 0.001, max: 0.15, step: 0.00001, value: v.area,
                 onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { area: parseFloat(e.target.value) }) }); },
                 className: 'w-full',
-                'aria-label': __alloT('stem.raptorhunt.frontal_cross_section_area_in_square_m', 'Frontal cross-section area in square meters')
+                'aria-label': __alloT('stem.raptorhunt.frontal_cross_section_area_in_square_m', 'Frontal cross-section area in square meters'),
+                'aria-valuetext': v.area.toFixed(5) + ' m²'
               }),
               h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.tucked_frontal_area_hint', 'Tucked frontal area, not wing area. Peregrine ≈ 0.007 m² · golden eagle ≈ 0.04 m²'))
             ),
@@ -31121,7 +31140,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   ),
                   h('input', { type: 'range', min: 100, max: 2000, step: 50, value: (v.altitudeM || 600),
                     onInput: function(e) { setRH({ stoopSimVars: Object.assign({}, v, { altitudeM: parseInt(e.target.value) }) }); },
-                    className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.altitude_m', 'Altitude m') })
+                    className: 'w-full', 'aria-label': __alloT('stem.raptorhunt.altitude_m', 'Altitude m'), 'aria-valuetext': (v.altitudeM || 600).toFixed(0) + ' m' })
                 ),
                 // Legend, outside the plot.
                 h('div', { className: 'flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-200 mb-1', 'aria-hidden': 'true' },
@@ -31679,7 +31698,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     ),
                     h('input', { type: 'range', min: 0, max: 100, step: 1, value: ti[thr.id],
                       onInput: function(e) { var p = {}; p[thr.id] = parseInt(e.target.value); setTI(p); },
-                      className: 'w-full', 'aria-label': thr.label }),
+                      className: 'w-full', 'aria-label': thr.label, 'aria-valuetext': ti[thr.id] + '%' }),
                     h('div', { className: 'text-xs text-slate-500' }, 'Max: ' + thr.maxImpact)
                   );
                 })
@@ -31970,7 +31989,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                       onMouseEnter: function() { setHover(key); }, onMouseLeave: function() { setHover(null); },
                       onFocus: function() { setHover(key); }, onBlur: function() { setHover(null); },
                       onClick: function() { togglePin(key); },
-                      onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(key); } }
+                      onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePin(key); } }
                     },
                       far && h('line', { x1: p[0], y1: p[1], x2: lx + (site.label.anchor === 'end' ? 2 : -2), y2: ly - 3, stroke: '#fde68a', strokeWidth: 0.7, opacity: 0.8 }),
                       active && h('circle', { cx: p[0], cy: p[1], r: 9, fill: 'none', stroke: '#fde047', strokeWidth: 1.5 }),
@@ -33197,7 +33216,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                         onMouseEnter: function() { setHover(p.id); }, onMouseLeave: function() { setHover(null); },
                         onFocus: function() { setHover(p.id); }, onBlur: function() { setHover(null); },
                         onClick: activate,
-                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } }
+                        onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } }
                       },
                         h('line', { x1: p.x, y1: p.y, x2: p.mx, y2: p.my, stroke: on ? '#fbbf24' : '#94a3b8', strokeWidth: on ? 2 : 1.1, opacity: on ? 1 : 0.75 }),
                         h('circle', { cx: p.x, cy: p.y, r: on ? 4.5 : 3.2, fill: on ? '#fbbf24' : '#fde68a', stroke: '#1c1917', strokeWidth: 1.2 }),
@@ -33640,7 +33659,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   type: 'range', min: 0.5, max: 0.99, step: 0.01, value: pop.adultSurv,
                   onInput: function(e) { setPop({ adultSurv: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.adult_annual_survival_rate', 'Adult annual survival rate')
+                  'aria-label': __alloT('stem.raptorhunt.adult_annual_survival_rate', 'Adult annual survival rate'),
+                  'aria-valuetext': (pop.adultSurv * 100).toFixed(0) + '%'
                 }),
                 h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.bald_golden_eagle_90_94_kestrel_60', 'Bald/golden eagle ≈ 90-94% · kestrel ≈ 60%'))
               ),
@@ -33653,7 +33673,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   type: 'range', min: 0.1, max: 0.7, step: 0.01, value: pop.juvSurv,
                   onInput: function(e) { setPop({ juvSurv: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.juvenile_first_year_survival', 'Juvenile first-year survival')
+                  'aria-label': __alloT('stem.raptorhunt.juvenile_first_year_survival', 'Juvenile first-year survival'),
+                  'aria-valuetext': (pop.juvSurv * 100).toFixed(0) + '%'
                 }),
                 h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.typical_raptor_1st_yr_30_40', 'Typical raptor 1st-yr ≈ 30-40%'))
               ),
@@ -33666,7 +33687,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   type: 'range', min: 0.1, max: 3.0, step: 0.05, value: pop.fecundity,
                   onInput: function(e) { setPop({ fecundity: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.annual_fecundity', 'Annual fecundity')
+                  'aria-label': __alloT('stem.raptorhunt.annual_fecundity', 'Annual fecundity'),
+                  'aria-valuetext': pop.fecundity.toFixed(2)
                 }),
                 h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.eagle_0_8_kestrel_2_5', 'Eagle ≈ 0.8 · kestrel ≈ 2.5'))
               ),
@@ -33679,7 +33701,8 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                   type: 'range', min: 0, max: 0.3, step: 0.01, value: pop.adultMortBump,
                   onInput: function(e) { setPop({ adultMortBump: parseFloat(e.target.value) }); },
                   className: 'w-full',
-                  'aria-label': __alloT('stem.raptorhunt.additional_adult_mortality', 'Additional adult mortality')
+                  'aria-label': __alloT('stem.raptorhunt.additional_adult_mortality', 'Additional adult mortality'),
+                  'aria-valuetext': '+' + (pop.adultMortBump * 100).toFixed(0) + '%'
                 }),
                 h('div', { className: 'text-xs text-slate-500' }, __alloT('stem.raptorhunt.add_anthropogenic_adult_mortality_lead', 'Add anthropogenic adult mortality (lead, turbines, etc)'))
               )
@@ -34910,6 +34933,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
 
         function handleRovingKey(event, items, currentId, selectItem, dataAttribute) {
+          if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
           if (keys.indexOf(event.key) === -1 || !items.length) return;
           event.preventDefault();
@@ -35615,6 +35639,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
 
         function handleRovingKey(event, items, currentId, choose, hook) {
+          if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
           if (keys.indexOf(event.key) === -1 || !items.length) return;
           event.preventDefault();
@@ -35964,7 +35989,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
             h('div', { className: 'rh-climate-bench', style: { alignItems: 'start' } },
               h(RaptorSeasonalTimingStudy, { React: React, translateStudy: __alloT, prey: prey, demand: demand, onChange: patchExperiment }),
               h('div', { className: 'rh-climate-controls' },
-                [[__alloT('stem.raptorhunt.climate_prey_shift', 'Prey peak shift (days)'), prey, 'preyShift'], [__alloT('stem.raptorhunt.climate_demand_shift', 'Food-demand peak shift (days)'), demand, 'demandShift']].map(function(control) { return h('div', { key: control[2], className: 'rh-climate-slider' }, h('label', { htmlFor: 'rh-climate-' + control[2] }, control[0]), h('output', { htmlFor: 'rh-climate-' + control[2] }, control[1] > 0 ? '+' + control[1] : control[1]), h('input', { id: 'rh-climate-' + control[2], type: 'range', min: -21, max: 21, step: 1, value: control[1], onChange: function(event) { var patch = {}; patch[control[2]] = Number(event.target.value); patchExperiment(patch); } }), h('div', { className: 'rh-climate-range-labels', 'aria-hidden': 'true' }, h('span', null, __alloT('stem.raptorhunt.climate_earlier', 'Earlier')), h('span', null, __alloT('stem.raptorhunt.climate_later', 'Later')))); }),
+                [[__alloT('stem.raptorhunt.climate_prey_shift', 'Prey peak shift (days)'), prey, 'preyShift'], [__alloT('stem.raptorhunt.climate_demand_shift', 'Food-demand peak shift (days)'), demand, 'demandShift']].map(function(control) { return h('div', { key: control[2], className: 'rh-climate-slider' }, h('label', { htmlFor: 'rh-climate-' + control[2] }, control[0]), h('output', { htmlFor: 'rh-climate-' + control[2] }, control[1] > 0 ? '+' + control[1] : control[1]), h('input', { id: 'rh-climate-' + control[2], type: 'range', min: -21, max: 21, step: 1, value: control[1], 'aria-valuetext': control[1] > 0 ? '+' + control[1] : String(control[1]), onChange: function(event) { var patch = {}; patch[control[2]] = Number(event.target.value); patchExperiment(patch); } }), h('div', { className: 'rh-climate-range-labels', 'aria-hidden': 'true' }, h('span', null, __alloT('stem.raptorhunt.climate_earlier', 'Earlier')), h('span', null, __alloT('stem.raptorhunt.climate_later', 'Later')))); }),
                 h('div', { className: 'rh-climate-gap', role: 'status' }, h('span', null, __alloT('stem.raptorhunt.climate_gap', 'Peak separation')), h('strong', null, gap + ' ' + (gap === 1 ? __alloT('stem.raptorhunt.climate_day', 'day') : __alloT('stem.raptorhunt.climate_days', 'days'))), h('p', null, prey === demand ? __alloT('stem.raptorhunt.climate_same', 'The illustrative peaks coincide.') : prey < demand ? __alloT('stem.raptorhunt.climate_prey_leads', 'Prey availability peaks before food demand in this example.') : __alloT('stem.raptorhunt.climate_demand_leads', 'Food demand peaks before prey availability in this example.'))))),
             h('div', { className: 'rh-climate-evidence' }, h('h4', null, __alloT('stem.raptorhunt.climate_evidence_title', 'What evidence would test this idea?')), h('div', { className: 'rh-climate-evidence-tabs', role: 'group', 'aria-label': __alloT('stem.raptorhunt.climate_evidence_lens', 'Choose an evidence lens') }, lenses.map(function(item) { return h('button', { key: item.id, type: 'button', 'aria-pressed': lens === item.id, onClick: function() { setRH({ climateEvidence: item.id }); } }, item.label); })), h('p', { 'data-climate-evidence': lens }, lenses.filter(function(item) { return item.id === lens; })[0].text)),
             h('p', { className: 'rh-quant-source-note' }, __alloT('stem.raptorhunt.climate_caution', 'This is a hypothetical timing experiment, not a climate forecast or a model for a particular species. Curve width and height are fixed teaching choices. Peak separation alone cannot predict food shortage, reproduction, or survival.'))),
@@ -36154,6 +36179,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
         }
 
         function moveChoice(event, items, index, choose) {
+          if (!event || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var next = index;
           if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % items.length;
           else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + items.length) % items.length;
@@ -46276,7 +46302,7 @@ if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegist
                     H('label', { htmlFor: 'sh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 6 } }, s.l + ': ', H('span', { style: { color: sm.color, fontFamily: 'monospace' } }, iq[s.k])),
                     H('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                      style: { width: '100%', accentColor: sm.border }, 'aria-label': s.l }));
+                      style: { width: '100%', accentColor: sm.border }, 'aria-label': s.l, 'aria-valuetext': iq[s.k] + '%' }));
                 })
               ),
               H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },

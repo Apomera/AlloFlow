@@ -538,7 +538,8 @@ function ImageView(props) {
     className: "w-full h-auto rounded",
     loading: "lazy",
     decoding: "async"
-  }), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }), isTeacherMode && generatedContent?.data?.originalImage && /*#__PURE__*/React.createElement("div", {
+    "data-image-overlay-actions": true,
     style: {
       position: 'absolute',
       top: '8px',
@@ -550,23 +551,6 @@ function ImageView(props) {
       maxWidth: 'calc(100% - 16px)'
     }
   }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('visuals.upload_image') || 'Upload your own image',
-    title: t('visuals.upload_image') || 'Upload your own image',
-    onClick: () => singleImageFileRef?.current?.click(),
-    className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "📷"), " ", t('visuals.replace_image') || 'Replace'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
-    title: t('visuals.find_picture') || 'Find a symbol or photo',
-    "aria-expanded": findOpen,
-    onClick: toggleFind,
-    className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-sky-50 hover:border-sky-400 hover:text-sky-800 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
-  }, /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "🔎"), " ", imageText('visuals.find_short', 'Find')), generatedContent?.data?.originalImage && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('visuals.restore_ai_image') || 'Restore AI image',
     title: t('visuals.restore_ai_image') || 'Restore AI image',
@@ -848,7 +832,8 @@ function ImageView(props) {
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "mb-2"
   }, String(t('visuals.warning.desc') || '').replace(/<[^>]+>/g, '')), /*#__PURE__*/React.createElement("p", null, String(t('visuals.warning.tip') || '').replace(/<[^>]+>/g, ''))))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-3 w-full max-w-2xl",
+    "data-image-actions": true,
+    className: "flex gap-3 w-full max-w-2xl pb-20",
     style: {
       flexWrap: 'wrap'
     }
@@ -868,25 +853,25 @@ function ImageView(props) {
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef?.current?.click(),
-    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-3 sm:px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     style: {
       fontSize: '1.125rem'
     }
-  }, "📷")), !usesVisualPanelGrid && /*#__PURE__*/React.createElement("button", {
+  }, "📷"), " ", t('visuals.replace_image') || 'Replace'), !usesVisualPanelGrid && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,
     onClick: toggleFind,
-    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-4 rounded-lg hover:bg-sky-100 transition-colors motion-reduce:transition-none font-medium border border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-sky-50 text-sky-900 py-2 px-3 sm:px-4 rounded-lg hover:bg-sky-100 transition-colors motion-reduce:transition-none font-medium border border-sky-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     style: {
       fontSize: '1.125rem'
     }
-  }, "🔎")), /*#__PURE__*/React.createElement("button", {
+  }, "🔎"), " ", imageText('visuals.find_short', 'Find')), (usesVisualPanelGrid || _imgSafeImageUrl(generatedContent?.data?.imageUrl)) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.regenerate'),
     onClick: handleRestoreImage,
@@ -894,7 +879,7 @@ function ImageView(props) {
     "aria-busy": isProcessing,
     title: imageGenDoor?.title || t('common.regenerate') || 'Regenerate',
     "data-help-key": "visuals_regenerate",
-    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors motion-reduce:transition-none font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
+    className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-3 sm:px-4 rounded-lg hover:bg-amber-100 transition-colors motion-reduce:transition-none font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
     "aria-hidden": "true"

@@ -71,6 +71,8 @@ window.StemLab = window.StemLab || {
       '@keyframes gs-curve-beacon { 0% { opacity: 0.72; transform: scale(0.9); } 100% { opacity: 0.05; transform: scale(2.15); } }',
       '#allo-game-studio .gs-glow-collect { animation: gs-halo-pulse 2.2s ease-in-out infinite; }',
       '#allo-game-studio .gs-tile-cell { transition: transform 0.1s ease, filter 0.12s ease; }',
+      // The app makes every [role=button] 44 px tall on touch screens; that stretched map squares and sprite pixels into tall bars. They stay square.
+      '#allo-game-studio [data-gs-cell], #allo-game-studio [data-gs-px] { min-height: 0 !important; }',
       '#allo-game-studio .gs-tile-cell:hover { filter: brightness(1.12); z-index: 2; }',
       '#allo-game-studio .gs-tile-cell-cur { position: relative; z-index: 3; animation: gs-cursor-pulse 1.5s ease-in-out infinite; }',
       '#allo-game-studio .gs-pixel-cell-cur { position: relative; z-index: 3; outline: 2px solid #be123c; outline-offset: -2px; animation: gs-cursor-pulse 1.6s ease-in-out infinite; }',
@@ -85,7 +87,18 @@ window.StemLab = window.StemLab || {
       '.theme-contrast #allo-game-studio .gs-tile-cell-cur, .theme-contrast #allo-game-studio .gs-pixel-cell-cur { outline: 2px solid #ffff00 !important; outline-offset: -2px !important; box-shadow: none !important; }',
       '.theme-contrast #allo-game-studio .gs-fx-canvas { display: none !important; }',
       '.theme-contrast #allo-game-studio .gs-curve-beacon { opacity: 0 !important; }',
+      // High contrast: every map square and sprite pixel gets a black edge on a yellow grid, so each one stands out whatever its color.
+      '.theme-contrast #allo-game-studio .gs-paint-grid { background: #ffff00 !important; }',
+      '.theme-contrast #allo-game-studio [data-gs-cell], .theme-contrast #allo-game-studio [data-gs-px] { border: 1px solid #000000 !important; }',
+      // The app inks every span yellow there; danger counts sit on light tiles, so give them a black chip.
+      '.theme-contrast #allo-game-studio .gs-danger-num { background: #000000 !important; color: #ffff00 !important; padding: 0 3px; border-radius: 3px; }',
+      // Buttons turn black there, so the color swatch shows on its child, inset to leave room for the selected ring.
+      '.theme-contrast #allo-game-studio .gs-swatch-fill { inset: 4px !important; }',
+      '.theme-contrast #allo-game-studio .gs-chart-ink { fill: #ffff00 !important; }',
+      '.theme-contrast #allo-game-studio details > summary { border: 2px solid #ffff00 !important; border-radius: 8px; padding-left: 10px !important; padding-right: 10px !important; }',
       '.theme-contrast #allo-game-studio button:focus-visible { outline-color: #ffff00 !important; }',
+      // Light and dark (light card) themes: placeholders 4.7:1 on white. The contrast theme keeps the app's own.
+      '#allo-game-studio:not(.theme-contrast *) input::placeholder, #allo-game-studio:not(.theme-contrast *) textarea::placeholder { color: #64748b; }',
       '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel, #allo-game-studio .gs-tile-cell { transition: none !important; transform: none !important; } #allo-game-studio .gs-glow-collect, #allo-game-studio .gs-player-aura, #allo-game-studio .gs-portal-pulse, #allo-game-studio .gs-lava-shimmer, #allo-game-studio .gs-sprite-bob, #allo-game-studio .gs-loop-flow, #allo-game-studio .gs-curve-beacon, #allo-game-studio .gs-tile-cell-cur, #allo-game-studio .gs-pixel-cell-cur { animation: none !important; } #allo-game-studio .gs-curve-beacon { opacity: 0.25 !important; transform: none !important; } #allo-game-studio .gs-fx-canvas { display: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
@@ -122,8 +135,8 @@ window.StemLab = window.StemLab || {
     { id: 'grass', label: 'Grass', emoji: '\uD83D\uDFE9', color: '#22c55e' },
     { id: 'water', label: 'Water', emoji: '\uD83D\uDFE6', color: '#3b82f6' },
     { id: 'wall', label: 'Wall', emoji: '\u2B1B', color: '#374151' },
-    { id: 'lava', label: 'Lava', emoji: '\uD83D\uDFE7', color: '#ef4444' },
-    { id: 'ice', label: 'Ice', emoji: '\uD83E\uDEF5', color: '#bae6fd' },
+    { id: 'lava', label: 'Lava', emoji: '\uD83D\uDD25', color: '#ef4444' },
+    { id: 'ice', label: 'Ice', emoji: '\uD83E\uDDCA', color: '#bae6fd' },
     { id: 'sand', label: 'Sand', emoji: '\uD83D\uDFE8', color: '#fcd34d' },
     { id: 'path', label: 'Path', emoji: '\uD83D\uDFEB', color: '#a16207' },
     { id: 'door', label: 'Door', emoji: '\uD83D\uDEAA', color: '#92400e' },
@@ -138,7 +151,9 @@ window.StemLab = window.StemLab || {
     { id: 'player', label: 'Player', emoji: '\uD83E\uDDD1', color: '#8b5cf6' },
     { id: 'enemy', label: 'Enemy', emoji: '\uD83D\uDC7E', color: '#f43f5e' },
     { id: 'npc', label: 'NPC', emoji: '\uD83E\uDDD9', color: '#6366f1' },
-    { id: 'treasure', label: 'Treasure', emoji: '\uD83D\uDC8E', color: '#06b6d4' }
+    { id: 'treasure', label: 'Treasure', emoji: '\uD83D\uDCB0', color: '#0e7490' },
+    { id: 'crate', label: 'Crate', emoji: '\uD83D\uDCE6', color: '#78350f' },
+    { id: 'target', label: 'Target', emoji: '\uD83C\uDFAF', color: '#ede9fe' }
   ];
 
   var TILE_MAP = {};
@@ -168,12 +183,18 @@ window.StemLab = window.StemLab || {
         '2. UPDATE \u2014 Change the game world (move characters, check collisions, update scores)\n' +
         '3. RENDER \u2014 Draw everything to the screen\n\n' +
         'This cycle repeats many times per second to create the illusion of movement. In Game Design Studio, each arrow key press triggers all three phases: we read your key (input), check collisions and move your player (update), then redraw the grid (render).',
-      funFact: 'Most modern games run their game loop 60 times per second (60 FPS). That means the entire Input \u2192 Update \u2192 Render cycle completes in just 16 milliseconds!',
+      funFact: 'A game that runs at 60 frames per second (60 FPS) goes around its game loop 60 times every second. That leaves only about 16.7 milliseconds for each Input \u2192 Update \u2192 Render cycle!',
       realGame: 'In Super Mario Bros., the game loop reads if Mario is pressing jump (input), applies gravity and checks platform collisions (update), then draws Mario at his new position (render).',
       quiz: {
         question: 'A player presses the jump button and their character rises up on screen. What is the correct order of phases?',
-        options: ['Render \u2192 Input \u2192 Update', 'Input \u2192 Update \u2192 Render', 'Update \u2192 Render \u2192 Input', 'Input \u2192 Render \u2192 Update'],
-        correct: 1,
+        options: ['Render \u2192 Input \u2192 Update', 'Update \u2192 Render \u2192 Input', 'Input \u2192 Update \u2192 Render', 'Input \u2192 Render \u2192 Update'],
+        correct: 2,
+        why: [
+          'Render draws the screen. It cannot go first, because nothing has changed yet to draw.',
+          'Update needs to know what the player pressed, so Input has to come before it.',
+          '',
+          'If you draw before you update, the screen shows the old spot, one frame late.'
+        ],
         explanation: 'First we READ the button press (Input), then CALCULATE the new position using physics (Update), then DRAW the character higher on screen (Render).'
       }
     },
@@ -186,17 +207,25 @@ window.StemLab = window.StemLab || {
         '\u2022 PACING \u2014 Alternate between intense and calm sections\n' +
         '\u2022 BREADCRUMBS \u2014 Use coins or visual cues to guide players along the intended path\n' +
         '\u2022 RISK vs REWARD \u2014 Place valuable items near dangers to create interesting choices',
-      funFact: 'Nintendo uses a philosophy called "Kishoten-ketsu" (introduction, development, twist, conclusion) to structure every single level in Mario games.',
+      // https://www.nintendolife.com/news/2012/04/super_mario_3d_land_director_shares_level_design_inspirations
+      funFact: 'The director of Super Mario 3D Land has said its levels follow "kishotenketsu" (introduction, development, twist, conclusion), a four-part way of telling a story.',
+      // World 1-1 built to teach without instructions: https://www.gamedeveloper.com/design/how-miyamoto-built-i-super-mario-bros-i-legendary-world-1-1
       realGame: 'World 1-1 of Super Mario Bros. teaches you to jump, collect coins, hit blocks, and avoid enemies \u2014 all without a single word of instructions.',
       quiz: {
         question: 'You want to teach players a new "ice sliding" mechanic. What is the best approach?',
         options: [
-          'Put ice right next to lava so they learn the danger immediately',
-          'Show a small ice patch in a safe area first, then add hazards nearby later',
-          'Write a text tutorial explaining how ice works',
-          'Make the entire level ice so they have lots of practice'
+          'Show a small ice patch somewhere safe, then add danger later',
+          'Put the ice right next to lava so players learn the danger fast',
+          'Write a long text tutorial that explains how ice works first',
+          'Make the whole level ice so players get lots of practice at once'
         ],
-        correct: 1,
+        correct: 0,
+        why: [
+          '',
+          'Players have not learned the sliding yet, so they slide into lava and feel cheated.',
+          'Most players skip text. Good levels teach by letting you try the idea.',
+          'All ice at once is a lot to learn, with no safe place to practice.'
+        ],
         explanation: 'Introduce mechanics safely first! A small ice patch with no hazards lets players discover the sliding behavior. Then you can add challenge later once they understand it.'
       }
     },
@@ -209,17 +238,24 @@ window.StemLab = window.StemLab || {
         '\u2022 CIRCLE \u2014 Check if the distance between centers is less than the sum of radii\n' +
         '\u2022 PIXEL-PERFECT \u2014 Check actual pixel overlap (expensive but precise)\n\n' +
         'In our Game Studio, when you move your player onto a coin tile, the game detects the collision and triggers the "collect" response.',
+      // https://www.gamedeveloper.com/design/passing-through-ghosts-in-pac-man ; https://www.gamedeveloper.com/design/the-pac-man-dossier
       funFact: 'The original Pac-Man used tile-based collision, exactly like our Game Studio. Each character occupied one tile, and the game checked which tile the ghost and Pac-Man were on.',
       realGame: 'In Pac-Man, ghost collision uses the same tile-based approach we use here: if Pac-Man and a ghost are on the same grid cell, it\'s a collision!',
       quiz: {
         question: 'In a tile-based game, how do you check if the player collides with a coin?',
         options: [
           'Measure the pixel distance between them',
-          'Check if they occupy the same grid cell',
           'See if their colors overlap on screen',
-          'Wait for the player to press a "collect" button'
+          'Wait for the player to press a "collect" button',
+          'Check if they occupy the same grid cell'
         ],
-        correct: 1,
+        correct: 3,
+        why: [
+          'That works for smooth movement. On a tile grid each thing is in one cell, so comparing cells is simpler and exact.',
+          'Colors are only how things look. The game checks positions, not colors.',
+          'A button press is input, not a collision. The game should notice the touch by itself.',
+          ''
+        ],
         explanation: 'In tile-based games, collision is simple: check if two objects share the same grid cell. If the player moves to a cell containing a coin, that\'s a collision!'
       }
     },
@@ -232,12 +268,20 @@ window.StemLab = window.StemLab || {
         '\u2022 IDLE \u2014 Stand still until triggered (good for ambushes)\n' +
         '\u2022 RANDOM \u2014 Move in random directions (unpredictable, chaotic)\n\n' +
         'The best games mix patterns. In our Game Studio, enemies patrol back and forth. When you\'re close, they chase you!',
+      // Ghost targets (Pinky 4 tiles ahead, Clyde retreats inside 8 tiles): https://www.gamedeveloper.com/design/the-pac-man-dossier
       funFact: 'In Pac-Man, each ghost has a unique AI personality: Blinky chases directly, Pinky aims 4 tiles ahead of Pac-Man, Inky uses complex targeting, and Clyde runs away when close!',
-      realGame: 'Minecraft\'s Creeper uses a simple "chase when close, idle when far" pattern. This simple AI creates one of gaming\'s most iconic and terrifying enemies!',
+      // https://minecraft.wiki/w/Creeper
+      realGame: 'Minecraft\'s Creeper uses a simple "chase when close, wander when far" pattern: it wanders around until a player comes within about 16 blocks, then it chases. That simple rule is enough to make it scary!',
       quiz: {
         question: 'Which enemy AI pattern creates the most PREDICTABLE behavior for the player?',
-        options: ['Chase (follows player)', 'Patrol (walks back and forth)', 'Random (moves randomly)', 'Swarm (all enemies converge)'],
+        options: ['Chase (follows player)', 'Patrol (walks back and forth)', 'Random (moves randomly)', 'Swarm (all enemies close in at once)'],
         correct: 1,
+        why: [
+          'A chaser reacts to you, so its path changes every time you move.',
+          '',
+          'Random moves cannot be predicted at all. That is the opposite of predictable.',
+          'Many enemies closing in at once is hard to read and plan around.'
+        ],
         explanation: 'Patrol enemies are the most predictable because they follow a fixed path. Players can learn the pattern and time their moves \u2014 perfect for teaching spatial reasoning!'
       }
     },
@@ -250,17 +294,25 @@ window.StemLab = window.StemLab || {
         '\u2022 NUMERICAL \u2014 Score popups, damage numbers, combo counters\n' +
         '\u2022 HAPTIC \u2014 Controller vibration, screen pulse\n\n' +
         'Good feedback tells the player: "Your action mattered!" Even our simple Game Studio shows toast messages, XP awards, and score changes as feedback.',
-      funFact: 'Game studio Vlambeer\'s famous talk "The Art of Screenshake" demonstrates "juice" live \u2014 adding screen shake, particles, and sound to a plain shooter makes it feel 10x better without changing the gameplay rules at all!',
+      funFact: 'Game studio Vlambeer\'s famous talk "The Art of Screenshake" demonstrates "juice" live \u2014 adding screen shake, particles, and sound to a plain shooter makes it feel much better without changing the gameplay rules at all!',
+      // Talk: https://gamedeveloper.com/design/vlambeer-co-founder-shares-advice-on-building-better-action-games
+      // Coins are worth 200 points in Super Mario Bros.: https://www.mariowiki.com/Point
       realGame: 'When Mario collects a coin, you see it spin upward, hear "bling!", see a +200 score popup, and your coin counter increases. That\'s 4 layers of feedback for one tiny action!',
       quiz: {
         question: 'A player collects a coin but gets no feedback (no sound, no visual, just a silent score increase). What is the likely problem?',
         options: [
           'The game has a bug',
-          'The player won\'t notice or feel rewarded for their action',
-          'This is fine \u2014 the score changing is enough feedback',
-          'The game needs more coins to compensate'
+          'This is fine: the score change is enough',
+          'The game needs more coins to make up for it',
+          'The player may not notice the reward'
         ],
-        correct: 1,
+        correct: 3,
+        why: [
+          'Nothing is broken: the score did go up. The problem is how it feels.',
+          'A number changing in a corner is easy to miss. Players need a clear signal.',
+          'More coins with no feedback are still easy to miss.',
+          ''
+        ],
         explanation: 'Without feedback, players don\'t feel rewarded. They might not even notice they collected anything! Every player action should have clear, immediate feedback.'
       }
     },
@@ -274,17 +326,25 @@ window.StemLab = window.StemLab || {
         '4. ITERATE \u2014 Make changes based on what you observed\n' +
         '5. REPEAT \u2014 Go back to step 2!\n\n' +
         'Key questions during playtesting: Where do players die most? Is it too easy or too hard? Do players understand what to do? Is it fun?',
-      funFact: 'Nintendo playtests every Mario level with people who have never seen it. They watch silently, taking notes on every death, every hesitation, and every moment of confusion.',
-      realGame: 'The game Flappy Bird went through weeks of difficulty tuning. The gap between pipes, pipe speed, and gravity were all adjusted based on playtesting until the difficulty felt "just right."',
+      // https://iwataasks.nintendo.com/interviews/wii/nsmb/2/4 (Mario Club test-plays and debugs Nintendo games)
+      funFact: 'Nintendo works with a testing company, Mario Club, whose players test-play games and hunt for bugs while the games are still being made.',
+      // https://iwataasks.nintendo.com/interviews/wii/nsmb/2/3 (the team met to watch each other's demo play)
+      realGame: 'While making New Super Mario Bros. Wii, the developers held a meeting to watch each other play the game and talk about what they saw.',
       quiz: {
         question: 'You built a level and 5 out of 5 playtesters died at the same spot. What should you do?',
         options: [
-          'Tell them to get better at the game',
-          'Make that section easier or add a hint/safe zone',
-          'Remove that section entirely',
-          'Add a "skip level" button'
+          'Make that spot easier or add a hint',
+          'Tell the testers to get better at it',
+          'Delete that whole part of the level',
+          'Add a button that skips the level'
         ],
-        correct: 1,
+        correct: 0,
+        why: [
+          '',
+          'If every tester fails in the same place, the level is the problem, not the players.',
+          'Deleting it throws the idea away. Tuning it keeps the fun part.',
+          'A skip button hides the problem instead of fixing it.'
+        ],
         explanation: 'If everyone fails at the same spot, the level needs adjustment \u2014 not the players! Add a visual hint, make the timing more forgiving, or add a safe zone before the challenge.'
       }
     }
@@ -312,6 +372,548 @@ window.StemLab = window.StemLab || {
     return true;
   }
 
+  // ============================================================
+  // GAME ENGINE: one set of rules for Play, "Test my level", the challenges,
+  // the Danger Map and the Difficulty Tuner. Pure functions (no React, no DOM),
+  // so every number the studio shows about a level comes from here.
+  // The design map is never changed by playing: a play "world" keeps the map as
+  // a read-only base plus a small list of changes (coins taken, doors opened).
+  // ============================================================
+  var GS_E = (function() {
+    var KNOWN = { empty: 1, grass: 1, water: 1, wall: 1, lava: 1, ice: 1, sand: 1, path: 1, door: 1, key: 1, coin: 1, gem: 1, flag: 1, spikes: 1, heart: 1, portal: 1, platform: 1, player: 1, enemy: 1, npc: 1, treasure: 1, crate: 1, target: 1 };
+    // A crate blocks like a wall; in a Puzzle game the player can push it (tryMove).
+    var BLOCK = { wall: 1, platform: 1, water: 1, npc: 1, crate: 1 };
+    var SOLID = { wall: 1, platform: 1, door: 1 };
+    var HURT = { lava: 1, spikes: 1 };
+    var POINTS = { coin: 10, gem: 50, treasure: 100 };
+    var ENEMY_OK = { empty: 1, grass: 1, path: 1, sand: 1, ice: 1, coin: 1, gem: 1, treasure: 1, key: 1, heart: 1, target: 1 };
+    // Squares a pushed crate can slide into.
+    var CRATE_OK = { empty: 1, grass: 1, path: 1, sand: 1, target: 1 };
+    // What an "Every N moves" player rule can do.
+    var TIMER_ACTS = { move: 1, jump: 1, collect: 1, loseLife: 1, gravity: 1, teleport: 1 };
+    // "2", "2 moves" or an old "2s" -> 2. 0 means nothing picked yet.
+    function timerN(p) { var n = parseFloat(String(p || '')); return isFinite(n) && n > 0 ? Math.max(1, Math.min(9, Math.round(n))) : 0; }
+    function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+    var DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+    var KEY_DIR = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+    var TOUCH_ACTS = { collect: 1, stop: 1, destroy: 1, teleport: 1, bounce: 1, winGame: 1, loseLife: 1, gravity: 1, jump: 1, push: 1, move: 1 };
+    var ENEMY_MODES = { 'toward-player': 1, random: 1, left: 1, right: 1, up: 1, down: 1 };
+    var DEF = { lives: 3, chase: 3, jump: 3 };
+
+    function clampInt(v, lo, hi, d) { var n = Math.floor(Number(v)); return isFinite(n) ? Math.max(lo, Math.min(hi, n)) : d; }
+
+    // Turn the Events tab rules into what Play runs. Every rule gets a status:
+    // runs:true means the engine below acts on it; runs:false carries a reason code.
+    function compileRules(events) {
+      var out = { touch: {}, keys: {}, gravity: null, enemy: null, timers: [], period: 1, list: [] };
+      ['player', 'enemy', 'npc', 'treasure'].forEach(function(sp) {
+        var arr = events && Array.isArray(events[sp]) ? events[sp] : [];
+        arr.slice(0, 8).forEach(function(r, i) {
+          if (!r || typeof r !== 'object') return;
+          var trig = String(r.trigger || 'onKey'), tp = String(r.param || ''), act = String(r.action || 'move'), ap = String(r.actionParam || '');
+          var info = { id: sp + ':' + i, sprite: sp, index: i, trigger: trig, param: tp, action: act, actionParam: ap, runs: false, why: '' };
+          var a = { id: info.id, action: act, param: ap };
+          var touchOn = null;
+          if (sp === 'player') {
+            if (trig === 'onCollide') { if (KNOWN[tp] && tp !== 'player') touchOn = tp; else info.why = 'pick'; }
+            else if (trig === 'onTalk') touchOn = 'npc';
+            else if (trig === 'onKey') {
+              if (!tp) info.why = 'pick';
+              else if ((act === 'move' && DIRS[ap]) || act === 'jump') { out.keys[tp] = a; info.runs = true; }
+              else info.why = 'keyAct';
+            } else if (trig === 'onStart') {
+              if (act === 'gravity' && (ap === 'on' || ap === 'off')) { out.gravity = ap === 'on'; info.runs = true; }
+              else info.why = 'startAct';
+            } else if (trig === 'onTimer') {
+              // Play takes turns, so "Every" counts the player's moves.
+              var tn = timerN(tp);
+              info.every = tn;
+              if (!tn) info.why = 'pick';
+              else if (TIMER_ACTS[act] && (act !== 'move' || DIRS[ap]) && (act !== 'gravity' || ap === 'on' || ap === 'off')) { out.timers.push({ id: info.id, n: tn, action: act, param: ap }); info.runs = true; }
+              else info.why = 'timerAct';
+            } else info.why = 'pick';
+          } else if (sp === 'enemy') {
+            var en = trig === 'onTimer' ? timerN(tp) : 1;
+            if (trig === 'onTimer' && !en) info.why = 'pick';
+            else if ((trig === 'onStart' || trig === 'onTimer') && ((act === 'move' && ENEMY_MODES[ap]) || act === 'stop')) {
+              out.enemy = { id: info.id, mode: act === 'stop' ? 'stop' : ap, every: en }; info.runs = true; info.every = en;
+            } else if (trig === 'onCollide' && tp === 'wall' && act === 'bounce') { info.runs = true; info.why = 'builtIn'; }
+            else info.why = 'enemyAct';
+          } else {
+            if (trig === 'onCollide' || trig === 'onTalk') touchOn = sp;
+            else info.why = trig === 'onTimer' ? 'timerWho' : 'pick';
+          }
+          if (touchOn) {
+            if (TOUCH_ACTS[act]) { (out.touch[touchOn] = out.touch[touchOn] || []).push(a); info.runs = true; info.touch = touchOn; }
+            else info.why = act === 'aiTalk' ? 'ai' : 'touchAct';
+          }
+          out.list.push(info);
+        });
+      });
+      // Turns until every "Every N moves" rule lines up again (the level check needs it).
+      var ns = out.timers.map(function(t) { return t.n; });
+      if (out.enemy && out.enemy.every > 1) ns.push(out.enemy.every);
+      ns.forEach(function(n) { out.period = out.period * n / gcd(out.period, n); });
+      return out;
+    }
+
+    function settings(o) {
+      o = o || {};
+      var rules = compileRules(o.events);
+      return {
+        puzzle: !!o.puzzle,
+        gravity: rules.gravity !== null ? rules.gravity : !!o.gravity,
+        lives: clampInt(o.lives, 1, 9, DEF.lives),
+        chase: clampInt(o.chase, 0, 8, DEF.chase),
+        jump: DEF.jump,
+        rules: rules
+      };
+    }
+
+    function tileAt(w, x, y) {
+      var k = x + ',' + y;
+      if (Object.prototype.hasOwnProperty.call(w.chg, k)) return w.chg[k];
+      return w.base[k] || 'empty';
+    }
+    function setTile(w, x, y, id) { w.chg[x + ',' + y] = id; }
+    function clearTile(w, x, y) { w.chg[x + ',' + y] = (w.under && w.under[x + ',' + y]) || 'empty'; }
+    function inB(w, x, y) { return x >= 0 && y >= 0 && x < w.W && y < w.H; }
+    function enemyAt(w, x, y) { for (var i = 0; i < w.en.length; i++) if (w.en[i][0] === x && w.en[i][1] === y) return i; return -1; }
+    // Puzzle rule: how many target squares have a crate on them.
+    function covered(w) { var n = 0, t = w.tg || []; for (var i = 0; i < t.length; i++) if (Object.prototype.hasOwnProperty.call(w.chg, t[i]) && w.chg[t[i]] === 'crate') n++; return n; }
+    function goalOpen(w, S) { return !S.puzzle || covered(w) >= (w.tg || []).length; }
+    // In a Puzzle game, walking into a crate pushes it one square if that square is free floor.
+    function pushCrate(w, nx, ny, dx, dy) {
+      var bx = nx + dx, by = ny + dy;
+      if (!inB(w, bx, by) || enemyAt(w, bx, by) >= 0 || !CRATE_OK[tileAt(w, bx, by)]) return false;
+      var k = nx + ',' + ny, b = w.base[k], bk = bx + ',' + by;
+      setTile(w, bx, by, 'crate');
+      w.chg[k] = CRATE_OK[b] ? b : ((w.under && w.under[k]) || 'empty');
+      // Keep one spelling per layout so the level check does not search the same state twice.
+      if (w.base[bk] === 'crate') delete w.chg[bk];
+      if (w.chg[k] === (b || 'empty')) delete w.chg[k];
+      return true;
+    }
+
+    function init(tiles, W, H, o) {
+      var S = settings(o);
+      var base = {}, en = [], px = -1, py = -1, flags = 0, tg = [];
+      var ks = Object.keys(tiles || {}).map(function(k) { var p = String(k).split(','); return [Number(p[0]), Number(p[1]), k]; })
+        .filter(function(p) { return Number.isInteger(p[0]) && Number.isInteger(p[1]) && p[0] >= 0 && p[1] >= 0 && p[0] < W && p[1] < H; })
+        .sort(function(a, b) { return a[1] - b[1] || a[0] - b[0]; });
+      // Pieces (player, enemies, pickups, doors) sit on the floor around them, so a
+      // square looks and behaves like that floor once the piece is gone.
+      var under = {};
+      var FLOOR = { grass: 1, path: 1, sand: 1 };
+      ks.forEach(function(p) {
+        var id = tiles[p[2]];
+        if (!(id === 'player' || id === 'enemy' || id === 'door' || id === 'key' || id === 'heart' || id === 'crate' || POINTS[id])) return;
+        var cnt = {}, bestF = null;
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function(d) { var n = tiles[(p[0] + d[0]) + ',' + (p[1] + d[1])]; if (FLOOR[n]) { cnt[n] = (cnt[n] || 0) + 1; if (!bestF || cnt[n] > cnt[bestF]) bestF = n; } });
+        if (bestF) under[p[0] + ',' + p[1]] = bestF;
+      });
+      ks.forEach(function(p) {
+        var id = tiles[p[2]];
+        if (!KNOWN[id] || id === 'empty') return;
+        if (id === 'player' || id === 'enemy') { var uf = under[p[0] + ',' + p[1]]; if (uf) base[p[0] + ',' + p[1]] = uf; }
+        if (id === 'player') { if (px < 0) { px = p[0]; py = p[1]; } return; }
+        if (id === 'enemy') {
+          var m = S.rules.enemy && S.rules.enemy.mode;
+          en.push([p[0], p[1], (m === 'up' || m === 'down') && !S.gravity ? m : (m === 'left' || m === 'right') ? m : (p[0] % 2 === 0 ? 'right' : 'left')]);
+          return;
+        }
+        if (id === 'flag') flags++;
+        if (id === 'target') tg.push(p[0] + ',' + p[1]);
+        base[p[0] + ',' + p[1]] = id;
+      });
+      return { W: W, H: H, base: base, under: under, chg: {}, tg: tg, px: px, py: py, sx: px, sy: py, en: en, flags: flags,
+        lives: S.lives, keys: 0, score: 0, coins: 0, moves: 0, hurts: 0, won: false, dead: false, grav: S.gravity,
+        msg: null, fired: [], hurtLog: [], fx: null };
+    }
+
+    function clone(w) {
+      return { W: w.W, H: w.H, base: w.base, under: w.under, chg: Object.assign({}, w.chg), tg: w.tg || [], px: w.px, py: w.py, sx: w.sx, sy: w.sy,
+        en: w.en.map(function(e) { return e.slice(); }), flags: w.flags, lives: w.lives, keys: w.keys, score: w.score, coins: w.coins,
+        moves: w.moves, hurts: w.hurts, won: w.won, dead: w.dead, grav: w.grav, msg: null, fired: [], hurtLog: w.hurtLog.slice(-12), fx: null };
+    }
+
+    function hurt(w, what) {
+      w.lives--; w.hurts++;
+      w.score = Math.max(0, w.score - (what === 'enemy' ? 15 : 20));
+      w.hurtLog.push(what);
+      w.msg = { k: 'hurt', what: what };
+      w.fxKind = 'hazard';
+      if (w.lives <= 0) { w.lives = 0; w.dead = true; w.msg = { k: 'dead', what: what }; }
+    }
+    function win(w) {
+      if (w.won) return;
+      w.won = true;
+      var bonus = Math.max(0, 500 - w.moves * 2);
+      w.score += 100 + bonus;
+      w.msg = { k: 'win', bonus: bonus };
+      w.fxKind = 'goal';
+    }
+    // In side view you stand on walls, platforms, doors and anything else that blocks.
+    function supports(id) { return !!(SOLID[id] || BLOCK[id]); }
+    function grounded(w) {
+      if (w.py >= w.H - 1) return true;
+      return supports(tileAt(w, w.px, w.py + 1));
+    }
+    // A deterministic "random" empty square, so the level check can replay it.
+    function randomEmpty(w) {
+      var cells = [];
+      for (var y = 0; y < w.H; y++) for (var x = 0; x < w.W; x++) {
+        var t = tileAt(w, x, y);
+        if ((t === 'empty' || t === 'grass' || t === 'path' || t === 'sand') && enemyAt(w, x, y) < 0 && !(x === w.px && y === w.py)) cells.push([x, y]);
+      }
+      if (!cells.length) return null;
+      return cells[(w.moves * 7919 + w.px * 31 + w.py * 17) % cells.length];
+    }
+
+    // Rules that decide whether the player may enter a square (stop, bounce, push).
+    function preRules(w, T, nx, ny, dx, dy, S) {
+      var acts = S.rules.touch[T] || [];
+      for (var i = 0; i < acts.length; i++) {
+        var a = acts[i];
+        if (a.action === 'stop' || a.action === 'bounce') { w.fired.push(a.id); return 'block'; }
+        if (a.action === 'push') {
+          w.fired.push(a.id);
+          var bx = nx + dx, by = ny + dy;
+          if (!inB(w, bx, by) || enemyAt(w, bx, by) >= 0) return 'block';
+          var bt = tileAt(w, bx, by);
+          if (!(bt === 'empty' || bt === 'grass' || bt === 'path' || bt === 'sand')) return 'block';
+          setTile(w, bx, by, T); clearTile(w, nx, ny);
+          return 'pushed';
+        }
+      }
+      return 'ok';
+    }
+    // Rules that run after the player touches a square (or bumps into it).
+    function postRules(w, T, nx, ny, S) {
+      var acts = S.rules.touch[T] || [];
+      for (var i = 0; i < acts.length && !w.dead && !w.won; i++) {
+        var a = acts[i];
+        if (a.action === 'stop' || a.action === 'bounce' || a.action === 'push') continue;
+        w.fired.push(a.id);
+        if (a.action === 'collect') { if (a.param === '+key') w.keys++; else w.score += 1; }
+        else if (a.action === 'loseLife') hurt(w, 'rule');
+        else if (a.action === 'winGame') win(w);
+        else if (a.action === 'destroy') { if (a.param === 'self') { w.lives = 0; w.dead = true; w.msg = { k: 'dead', what: 'rule' }; } else clearTile(w, nx, ny); }
+        else if (a.action === 'teleport') {
+          var dest = a.param === 'random-empty' ? randomEmpty(w) : [w.sx, w.sy];
+          if (dest) { w.px = dest[0]; w.py = dest[1]; w.fxKind = 'portal'; }
+        }
+        else if (a.action === 'gravity') w.grav = a.param !== 'off';
+        else if (a.action === 'jump') rise(w, clampInt(a.param, 1, 5, 3), S);
+        else if (a.action === 'move' && DIRS[a.param]) {
+          var d = DIRS[a.param], qx = w.px + d[0], qy = w.py + d[1];
+          if (inB(w, qx, qy) && !BLOCK[tileAt(w, qx, qy)] && tileAt(w, qx, qy) !== 'door' && enemyAt(w, qx, qy) < 0) { w.px = qx; w.py = qy; arrive(w, S, false); }
+        }
+      }
+    }
+
+    // What the square the player just arrived on does.
+    function arrive(w, S, allowRules) {
+      var T = tileAt(w, w.px, w.py);
+      if (POINTS[T]) { w.score += POINTS[T]; if (T === 'coin') w.coins++; clearTile(w, w.px, w.py); w.msg = { k: 'points', tile: T, n: POINTS[T] }; w.fxKind = 'collect'; }
+      else if (T === 'key') { w.keys++; w.score += 5; clearTile(w, w.px, w.py); w.msg = { k: 'key', n: w.keys }; w.fxKind = 'key'; }
+      else if (T === 'heart') { w.lives++; clearTile(w, w.px, w.py); w.msg = { k: 'life' }; w.fxKind = 'collect'; }
+      else if (HURT[T]) hurt(w, T);
+      else if (T === 'flag') { if (goalOpen(w, S)) win(w); else w.msg = { k: 'flagLocked', on: covered(w), of: w.tg.length }; }
+      else if (T === 'ice' && !w.fxKind) w.fxKind = 'ice';
+      if (allowRules !== false && !w.dead) postRules(w, T, w.px, w.py, S);
+      return T;
+    }
+
+    function rise(w, n, S) {
+      for (var i = 0; i < n && !w.dead && !w.won; i++) {
+        var nx = w.px, ny = w.py - 1;
+        if (!inB(w, nx, ny)) break;
+        var T = tileAt(w, nx, ny);
+        if (BLOCK[T] || T === 'door') { if (preRules(w, T, nx, ny, 0, -1, S) === 'ok') postRules(w, T, nx, ny, S); break; }
+        var ei = enemyAt(w, nx, ny);
+        if (ei >= 0) { w.en.splice(ei, 1); hurt(w, 'enemy'); }
+        w.px = nx; w.py = ny;
+        arrive(w, S);
+        if (T === 'portal') break;
+      }
+      w.jumped = true;
+    }
+
+    function portalJump(w) {
+      var here = w.px + ',' + w.py, dest = null;
+      for (var y = 0; y < w.H && !dest; y++) for (var x = 0; x < w.W && !dest; x++) {
+        if ((x + ',' + y) !== here && tileAt(w, x, y) === 'portal') dest = [x, y];
+      }
+      if (!dest) return;
+      var land = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (var i = 0; i < land.length; i++) {
+        var lx = dest[0] + land[i][0], ly = dest[1] + land[i][1];
+        if (!inB(w, lx, ly) || enemyAt(w, lx, ly) >= 0) continue;
+        var lt = tileAt(w, lx, ly);
+        if (!BLOCK[lt] && !HURT[lt] && lt !== 'portal' && lt !== 'door') { w.px = lx; w.py = ly; w.msg = { k: 'portal' }; w.fxKind = 'portal'; return; }
+      }
+      w.px = dest[0]; w.py = dest[1]; w.msg = { k: 'portal' }; w.fxKind = 'portal';
+    }
+
+    // Try to walk one square. Returns true if the player moved.
+    function tryMove(w, dx, dy, S) {
+      var nx = w.px + dx, ny = w.py + dy;
+      if (!inB(w, nx, ny)) return false;
+      var T = tileAt(w, nx, ny);
+      if (T === 'crate' && S.puzzle) {
+        if (!pushCrate(w, nx, ny, dx, dy)) { w.msg = { k: 'crateStuck' }; return false; }
+        T = tileAt(w, nx, ny);
+        w.msg = { k: 'push', on: covered(w), of: (w.tg || []).length };
+        w.fxKind = 'push';
+      }
+      if (BLOCK[T] || (T === 'door' && w.keys <= 0)) {
+        if (T === 'door') w.msg = { k: 'locked' };
+        if (preRules(w, T, nx, ny, dx, dy, S) === 'ok') postRules(w, T, nx, ny, S);
+        return false;
+      }
+      var pre = preRules(w, T, nx, ny, dx, dy, S);
+      if (pre === 'block') { w.msg = w.msg || { k: 'blocked', tile: T }; return false; }
+      if (pre === 'pushed') T = 'empty';
+      var ei = enemyAt(w, nx, ny);
+      if (ei >= 0) { w.en.splice(ei, 1); hurt(w, 'enemy'); }
+      if (T === 'door') { w.keys--; clearTile(w, nx, ny); w.msg = { k: 'door', n: w.keys }; T = 'empty'; }
+      w.px = nx; w.py = ny;
+      if (w.dead) return true;
+      arrive(w, S);
+      if (w.dead || w.won) return true;
+      if (T === 'portal') { portalJump(w); return true; }
+      // Ice: keep sliding the same way until you leave the ice or something stops you.
+      if (T === 'ice' && (!w.grav || dy === 0)) {
+        var maxSlide = 30;
+        while (maxSlide-- > 0 && !w.dead && !w.won) {
+          var snx = w.px + dx, sny = w.py + dy;
+          if (!inB(w, snx, sny)) break;
+          var sDest = tileAt(w, snx, sny);
+          if (BLOCK[sDest] || sDest === 'door' || enemyAt(w, snx, sny) >= 0) break;
+          if (preRules(w, sDest, snx, sny, dx, dy, S) !== 'ok') break;
+          w.px = snx; w.py = sny; w.slid = true;
+          arrive(w, S);
+          if (sDest === 'portal') { portalJump(w); break; }
+          if (sDest !== 'ice') break;
+        }
+        if (!w.msg && w.slid) w.msg = { k: 'slide' };
+      }
+      return true;
+    }
+
+    function canEnemyEnter(w, x, y) {
+      if (!inB(w, x, y) || !ENEMY_OK[tileAt(w, x, y)] || enemyAt(w, x, y) >= 0) return false;
+      if (w.grav && y < w.H - 1 && !supports(tileAt(w, x, y + 1))) return false;
+      return true;
+    }
+
+    function moveEnemies(w, S) {
+      var mode = S.rules.enemy ? S.rules.enemy.mode : null;
+      if (mode === 'stop' || !w.en.length) return;
+      // "Every N moves": enemies take a step only on every Nth move (slower enemies).
+      if (S.rules.enemy && S.rules.enemy.every > 1 && w.moves % S.rules.enemy.every !== 0) return;
+      if (S.rules.enemy) w.fired.push(S.rules.enemy.id);
+      for (var i = 0; i < w.en.length && !w.dead; i++) {
+        var e = w.en[i], dir = e[2];
+        var dist = Math.abs(w.px - e[0]) + Math.abs(w.py - e[1]);
+        var range = mode === 'toward-player' ? 999 : S.chase;
+        if (dist > 0 && dist <= range) {
+          var cdx = w.px > e[0] ? 1 : w.px < e[0] ? -1 : 0, cdy = w.py > e[1] ? 1 : w.py < e[1] ? -1 : 0;
+          if (w.grav || Math.abs(w.px - e[0]) >= Math.abs(w.py - e[1])) dir = cdx > 0 ? 'right' : cdx < 0 ? 'left' : dir;
+          else dir = cdy > 0 ? 'down' : 'up';
+        } else if (mode === 'random') {
+          dir = ['up', 'right', 'down', 'left'][(w.moves * 13 + i * 7 + e[0] * 3 + e[1]) % 4];
+          if (w.grav && (dir === 'up' || dir === 'down')) dir = dir === 'up' ? 'left' : 'right';
+        }
+        var d = DIRS[dir] || DIRS.right, ex = e[0] + d[0], ey = e[1] + d[1];
+        if (ex === w.px && ey === w.py) { w.en.splice(i, 1); i--; hurt(w, 'enemy'); continue; }
+        if (canEnemyEnter(w, ex, ey)) { e[0] = ex; e[1] = ey; e[2] = dir; }
+        else e[2] = dir === 'left' ? 'right' : dir === 'right' ? 'left' : dir === 'up' ? 'down' : 'up';
+      }
+    }
+
+    // One turn: the player acts, gravity pulls (side view), then enemies move.
+    // input is a key name: ArrowUp/ArrowDown/ArrowLeft/ArrowRight or Space.
+    function step(w0, input, S) {
+      if (!w0 || w0.won || w0.dead || w0.px < 0) return w0;
+      var kr = S.rules.keys[input], dir = KEY_DIR[input] || null, jumpN = S.jump;
+      if (kr) { if (kr.action === 'move') dir = kr.param; else { dir = 'up'; jumpN = clampInt(kr.param, 1, 5, S.jump); } }
+      else if (input === 'Space') dir = w0.grav ? 'up' : null;
+      if (!dir || !DIRS[dir]) return w0;
+      var w = clone(w0);
+      if (kr) w.fired.push(kr.id);
+      w.moves++;
+      var fx = w.px, fy = w.py;
+      w.fxKind = null; w.jumped = false; w.slid = false;
+      if (w.grav && dir === 'up') { if (grounded(w)) rise(w, jumpN, S); }
+      else if (w.grav && dir === 'down') { /* in side view, Down just lets gravity work */ }
+      else tryMove(w, DIRS[dir][0], DIRS[dir][1], S);
+      // "Every N moves" player rules run after the player's own move.
+      for (var ti = 0; ti < S.rules.timers.length && !w.won && !w.dead; ti++) {
+        var tr = S.rules.timers[ti];
+        if (w.moves % tr.n !== 0) continue;
+        w.fired.push(tr.id);
+        if (tr.action === 'move') tryMove(w, DIRS[tr.param][0], DIRS[tr.param][1], S);
+        else if (tr.action === 'jump') { if (!w.grav || grounded(w)) rise(w, clampInt(tr.param, 1, 5, S.jump), S); }
+        else if (tr.action === 'collect') { if (tr.param === '+key') w.keys++; else w.score += 1; }
+        else if (tr.action === 'loseLife') hurt(w, 'rule');
+        else if (tr.action === 'gravity') w.grav = tr.param === 'on';
+        else if (tr.action === 'teleport') {
+          var td = tr.param === 'random-empty' ? randomEmpty(w) : [w.sx, w.sy];
+          if (td) { w.px = td[0]; w.py = td[1]; w.fxKind = 'portal'; }
+        }
+      }
+      if (w.grav && !w.won && !w.dead && !w.jumped && !grounded(w)) {
+        var ny = w.py + 1, T = tileAt(w, w.px, ny);
+        var ei = enemyAt(w, w.px, ny);
+        if (ei >= 0) { w.en.splice(ei, 1); hurt(w, 'enemy'); }
+        if (!w.dead) { w.py = ny; var at = arrive(w, S); if (at === 'portal') portalJump(w); }
+      }
+      if (!w.won && !w.dead) moveEnemies(w, S);
+      w.fx = { fx: fx, fy: fy, tx: w.px, ty: w.py, kind: w.fxKind || 'step' };
+      delete w.fxKind; delete w.jumped; delete w.slid;
+      return w;
+    }
+
+    // Score-only pickups never change what can happen next, so states that differ
+    // only in which coins were taken are the same for "can it be won".
+    // For "where can you get to", rules that only change score or lives on a pickup do not matter either.
+    var MOVE_ACTS = { stop: 1, bounce: 1, push: 1, teleport: 1, move: 1, jump: 1, gravity: 1, destroy: 1, winGame: 1 };
+    function stateKey(w, S, forReach) {
+      var ch = Object.keys(w.chg).filter(function(k) {
+        var b = w.base[k];
+        if (!POINTS[b]) return true;
+        var acts = S.rules.touch[b];
+        if (!acts) return false;
+        return !forReach || acts.some(function(a) { return MOVE_ACTS[a.action]; });
+      }).sort();
+      return w.px + ',' + w.py + '|' + w.lives + '|' + w.keys + '|' + (w.grav ? 1 : 0) + '|' + ch.map(function(k) { return k + '=' + w.chg[k]; }).join(';') + '|' + w.en.map(function(e) { return e.join(','); }).join(';') + (S.rules.period > 1 ? '|t' + (w.moves % S.rules.period) : '');
+    }
+
+    function heapOps() {
+      var a = [];
+      function less(x, y) { return x[0] < y[0] || (x[0] === y[0] && x[1] < y[1]); }
+      return {
+        size: function() { return a.length; },
+        push: function(item) { a.push(item); var i = a.length - 1; while (i > 0) { var p = (i - 1) >> 1; if (less(a[i], a[p])) { var t = a[i]; a[i] = a[p]; a[p] = t; i = p; } else break; } },
+        pop: function() { var top = a[0], last = a.pop(); if (a.length) { a[0] = last; var i = 0; for (;;) { var l = 2 * i + 1, r = l + 1, m = i; if (l < a.length && less(a[l], a[m])) m = l; if (r < a.length && less(a[r], a[m])) m = r; if (m === i) break; var t = a[i]; a[i] = a[m]; a[m] = t; i = m; } } return top; }
+      };
+    }
+
+    // Search the ways the level can be played with the same step() as Play:
+    // fewest lives lost first, then fewest moves. winnable is true (found a win),
+    // false (searched everything, no win) or null (too many possibilities to finish).
+    function solve(tiles, W, H, o, cap) {
+      var S = settings(o);
+      var w0 = init(tiles, W, H, o);
+      var res = { hasPlayer: w0.px >= 0, hasFlag: w0.flags > 0, winnable: false, complete: true, moves: 0, livesLost: 0, keysUsed: 0, path: [], inputs: [], reach: {}, coinsTotal: 0, coinsReach: 0, explored: 0, startLives: S.lives,
+        puzzle: S.puzzle, targets: S.puzzle ? w0.tg.length : 0, crates: 0 };
+      var flags = [], fancy = !!S.gravity || S.rules.gravity !== null || S.rules.timers.some(function(t) { return t.action !== 'collect' && t.action !== 'loseLife'; });
+      Object.keys(w0.base).forEach(function(k) {
+        var b = w0.base[k];
+        if (b === 'crate') res.crates++;
+        if (b === 'coin') res.coinsTotal++;
+        if (b === 'flag') flags.push(k.split(',').map(Number));
+        if (b === 'ice' || b === 'portal') fancy = true;
+      });
+      Object.keys(S.rules.touch).forEach(function(t) { S.rules.touch[t].forEach(function(a) { if (a.action !== 'collect' && a.action !== 'loseLife' && a.action !== 'stop' && a.action !== 'bounce' && a.action !== 'destroy') fancy = true; }); });
+      if (w0.px < 0) return res;
+      cap = cap || 40000;
+      var inputs = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'];
+      Object.keys(S.rules.keys).forEach(function(k) { if (inputs.indexOf(k) < 0) inputs.push(k); });
+      // Distance to the nearest flag guides the search. It never overestimates on
+      // plain maps; maps that can move you several squares in one turn skip it.
+      function est(w) {
+        if (fancy || !flags.length) return 0;
+        var m = 1e9; for (var f = 0; f < flags.length; f++) m = Math.min(m, Math.abs(flags[f][0] - w.px) + Math.abs(flags[f][1] - w.py));
+        return m;
+      }
+      var nodes = [{ w: w0, parent: -1, input: null }], q = heapOps(), seen = {}, best = -1;
+      q.push([est(w0), 0]);
+      seen[stateKey(w0, S)] = 1;
+      while (q.size()) {
+        if (res.explored >= cap) { res.complete = false; break; }
+        var top = q.pop(), w = nodes[top[1]].w;
+        res.explored++;
+        if (w.won) { best = top[1]; break; }
+        if (w.dead) continue;
+        for (var i = 0; i < inputs.length; i++) {
+          var n = step(w, inputs[i], S);
+          if (n === w) continue;
+          var key = stateKey(n, S);
+          if (seen[key]) continue;
+          seen[key] = 1;
+          nodes.push({ w: n, parent: top[1], input: inputs[i] });
+          q.push([n.hurts * 100000 + n.moves + est(n), nodes.length - 1]);
+        }
+      }
+      if (best >= 0) {
+        var bw = nodes[best].w, chain = [];
+        for (var c = best; c >= 0; c = nodes[c].parent) chain.push(nodes[c]);
+        chain.reverse();
+        res.winnable = true; res.complete = true;
+        res.moves = bw.moves; res.livesLost = bw.hurts;
+        res.path = chain.map(function(nd) { return [nd.w.px, nd.w.py]; });
+        res.inputs = chain.slice(1).map(function(nd) { return nd.input; });
+        Object.keys(bw.chg).forEach(function(k) { if (w0.base[k] === 'door' && bw.chg[k] !== 'door') res.keysUsed++; });
+      } else if (!res.complete) res.winnable = null;
+      // Where can the player get to at all? Same rules, enemies left out
+      // (they can hurt you but never wall you in for good).
+      var r0 = clone(w0); r0.en = []; r0.lives = 99;
+      var rq = [r0], rseen = {}, rc = 0, rh = 0;
+      rseen[stateKey(r0, S, true)] = 1;
+      res.reachComplete = true;
+      while (rh < rq.length) {
+        if (++rc > cap) { res.reachComplete = false; break; }
+        var rw = rq[rh++];
+        res.reach[rw.px + ',' + rw.py] = 1;
+        if (rw.won || rw.dead) continue;
+        for (var j = 0; j < inputs.length; j++) {
+          var rn = step(rw, inputs[j], S);
+          if (rn === rw) continue;
+          rn.lives = 99;
+          var rk = stateKey(rn, S, true);
+          if (rseen[rk]) continue;
+          rseen[rk] = 1; rq.push(rn);
+        }
+      }
+      Object.keys(w0.base).forEach(function(k) { if (w0.base[k] === 'coin' && res.reach[k]) res.coinsReach++; });
+      return res;
+    }
+
+    // Squares where an enemy (from where it starts) is close enough to chase you.
+    function chaseZone(tiles, W, H, o) {
+      var S = settings(o), z = {};
+      var mode = S.rules.enemy ? S.rules.enemy.mode : null;
+      if (mode === 'stop' || S.chase <= 0 && mode !== 'toward-player') return z;
+      var range = mode === 'toward-player' ? 999 : S.chase;
+      Object.keys(tiles || {}).forEach(function(k) {
+        if (tiles[k] !== 'enemy') return;
+        var p = k.split(',').map(Number);
+        for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+          var d = Math.abs(x - p[0]) + Math.abs(y - p[1]);
+          if (d > 0 && d <= range) z[x + ',' + y] = (z[x + ',' + y] || 0) + 1;
+        }
+      });
+      return z;
+    }
+
+    return { DEF: DEF, BLOCK: BLOCK, HURT: HURT, POINTS: POINTS, settings: settings, compileRules: compileRules, init: init, step: step, solve: solve, tileAt: tileAt, enemyAt: enemyAt, chaseZone: chaseZone, timerN: timerN, covered: covered };
+  })();
+
+  // Small cache so the challenge list and the tuner do not search the same map twice.
+  var _gsSolveCache = [];
+  function gsSolveCached(tiles, w, h, o) {
+    var sig = JSON.stringify([w, h, tiles, o || {}]);
+    for (var i = 0; i < _gsSolveCache.length; i++) if (_gsSolveCache[i][0] === sig) return _gsSolveCache[i][1];
+    var r = GS_E.solve(tiles || {}, w || 16, h || 12, o || {});
+    _gsSolveCache.unshift([sig, r]);
+    if (_gsSolveCache.length > 24) _gsSolveCache.pop();
+    return r;
+  }
+  function gsCanWin(t, w, h, o) { return gsSolveCached(t, w, h, o).winnable; }
+
   var CHALLENGES = [
     {
       id: 'first_steps', title: 'First Steps', icon: '\uD83D\uDC76', difficulty: 1, xp: 10,
@@ -320,7 +922,9 @@ window.StemLab = window.StemLab || {
       requirements: [
         { text: 'Place a player', check: function(t) { return hasTile(t, 'player'); } },
         { text: 'Place 3+ coins', check: function(t) { return countTile(t, 'coin') >= 3; } },
-        { text: 'Place a goal flag', check: function(t) { return hasTile(t, 'flag'); } }
+        { text: 'Place a goal flag', check: function(t) { return hasTile(t, 'flag'); } },
+        { engine: true, text: 'A player can reach the flag', check: function(t, w, h, o) { return gsCanWin(t, w, h, o) === true; } },
+        { engine: true, text: 'Every coin can be reached', check: function(t, w, h, o) { var r = gsSolveCached(t, w, h, o); return r.coinsTotal > 0 && r.reachComplete && r.coinsReach === r.coinsTotal; } }
       ]
     },
     {
@@ -335,7 +939,8 @@ window.StemLab = window.StemLab || {
           for (var y = 1; y < h - 1; y++) { if (t['0,'+y] === 'wall') border++; if (t[(w-1)+','+y] === 'wall') border++; }
           return countTile(t, 'wall') - border >= 10;
         }},
-        { text: 'Player and flag placed', check: function(t) { return hasTile(t, 'player') && hasTile(t, 'flag'); } }
+        { text: 'Player and flag placed', check: function(t) { return hasTile(t, 'player') && hasTile(t, 'flag'); } },
+        { engine: true, text: 'The maze can be solved', check: function(t, w, h, o) { return gsCanWin(t, w, h, o) === true; } }
       ]
     },
     {
@@ -357,7 +962,8 @@ window.StemLab = window.StemLab || {
             });
           });
           return found;
-        }}
+        }},
+        { engine: true, text: 'A safe route: you can win without losing a life', check: function(t, w, h, o) { var r = gsSolveCached(t, w, h, o); return r.winnable === true && r.livesLost === 0; } }
       ]
     },
     {
@@ -368,7 +974,14 @@ window.StemLab = window.StemLab || {
         { text: '2+ doors placed', check: function(t) { return countTile(t, 'door') >= 2; } },
         { text: '2+ keys placed', check: function(t) { return countTile(t, 'key') >= 2; } },
         { text: 'Player and flag placed', check: function(t) { return hasTile(t, 'player') && hasTile(t, 'flag'); } },
-        { text: 'At least 1 NPC', check: function(t) { return hasTile(t, 'npc'); } }
+        { text: 'At least 1 NPC', check: function(t) { return hasTile(t, 'npc'); } },
+        { engine: true, text: 'A player can win', check: function(t, w, h, o) { return gsCanWin(t, w, h, o) === true; } },
+        { engine: true, text: 'Without keys, nobody can win (the doors really block the way)', check: function(t, w, h, o) {
+          if (gsCanWin(t, w, h, o) !== true) return false;
+          var noKeys = {};
+          Object.keys(t).forEach(function(k) { if (t[k] !== 'key') noKeys[k] = t[k]; });
+          return gsCanWin(noKeys, w, h, o) === false;
+        }}
       ]
     },
     {
@@ -379,7 +992,8 @@ window.StemLab = window.StemLab || {
         { text: '5+ enemies', check: function(t) { return countTile(t, 'enemy') >= 5; } },
         { text: '2+ hearts for healing', check: function(t) { return countTile(t, 'heart') >= 2; } },
         { text: 'Player and flag placed', check: function(t) { return hasTile(t, 'player') && hasTile(t, 'flag'); } },
-        { text: 'Include walls for cover', check: function(t) { return countTile(t, 'wall') >= 8; } }
+        { text: 'Include walls for cover', check: function(t) { return countTile(t, 'wall') >= 8; } },
+        { engine: true, text: 'A player can win', check: function(t, w, h, o) { return gsCanWin(t, w, h, o) === true; } }
       ]
     },
     {
@@ -395,7 +1009,8 @@ window.StemLab = window.StemLab || {
         { text: 'Key + door puzzle', check: function(t) { return hasTile(t, 'key') && hasTile(t, 'door'); } },
         { text: '3+ enemies', check: function(t) { return countTile(t, 'enemy') >= 3; } },
         { text: 'NPC + coins + flag', check: function(t) { return hasTile(t, 'npc') && countTile(t, 'coin') >= 3 && hasTile(t, 'flag'); } },
-        { text: 'At least 30 total tiles placed', check: function(t) { return Object.keys(t).length >= 30; } }
+        { text: 'At least 30 total tiles placed', check: function(t) { return Object.keys(t).length >= 30; } },
+        { engine: true, text: 'A player can win', check: function(t, w, h, o) { return gsCanWin(t, w, h, o) === true; } }
       ]
     }
   ];
@@ -453,17 +1068,39 @@ window.StemLab = window.StemLab || {
       t['3,8'] = 'npc'; t['8,8'] = 'npc';
       return t;
     }),
-    makeStarter('Ice Cavern', 'puzzle', '\uD83E\uDEF5', 'Slide on ice to reach the exit!', function() {
+    makeStarter('Ice Cavern', 'puzzle', '\uD83E\uDDCA', 'Slide on ice to reach the exit!', function() {
       var t = {}, x, y;
       for (x = 0; x < 16; x++) { t[x+',0'] = 'wall'; t[x+',11'] = 'wall'; }
       for (y = 0; y < 12; y++) { t['0,'+y] = 'wall'; t['15,'+y] = 'wall'; }
       for (x = 1; x < 15; x++) for (y = 1; y < 11; y++) t[x+','+y] = 'ice';
-      t['4,4'] = 'wall'; t['4,5'] = 'wall'; t['8,3'] = 'wall'; t['8,7'] = 'wall';
-      t['12,5'] = 'wall'; t['12,6'] = 'wall'; t['6,8'] = 'wall';
-      t['2,2'] = 'grass'; t['7,5'] = 'grass'; t['13,9'] = 'grass';
+      // The old layout could be won in 2 slides and no coin could be reached (the
+      // level check found it). These 6 rocks make a 9-move puzzle with every coin reachable.
+      t['6,1'] = 'wall'; t['8,5'] = 'wall'; t['10,9'] = 'wall';
+      t['14,4'] = 'wall'; t['9,3'] = 'wall'; t['12,10'] = 'wall';
       t['5,2'] = 'coin'; t['10,4'] = 'coin'; t['3,8'] = 'coin';
       t['1,1'] = 'player'; t['14,10'] = 'flag';
       t['6,3'] = 'heart';
+      return t;
+    }),
+    // Puzzle rule: crates move only when pushed, and the flag opens when every target has a crate.
+    // The engine solves it in 71 moves; the second crate must be pushed from its left side.
+    makeStarter('Crate Push', 'puzzle', '📦', 'Push crates onto the targets to open the flag!', function() {
+      var rows = [
+        '################',
+        '#P...#....######',
+        '#.C..#..o.######',
+        '#....#....######',
+        '##.###....######',
+        '#...#..o..##...#',
+        '#T........##.F.#',
+        '#########.####.#',
+        '#......C..T....#',
+        '#.##########.###',
+        '#..............#',
+        '################'
+      ];
+      var key = { '#': 'wall', '.': 'grass', P: 'player', C: 'crate', T: 'target', F: 'flag', o: 'coin' }, t = {};
+      rows.forEach(function(r, y) { for (var x = 0; x < r.length; x++) t[x + ',' + y] = key[r.charAt(x)]; });
       return t;
     })
   ];
@@ -482,6 +1119,32 @@ window.StemLab = window.StemLab || {
     floodFill(tc, x - 1, y, target, fill, w, h);
     floodFill(tc, x, y + 1, target, fill, w, h);
     floodFill(tc, x, y - 1, target, fill, w, h);
+  }
+
+  // ---- Looks: a drawn sprite shown in place of a piece's emoji. Looks never reach the engine. ----
+  var LOOK_ROLES = ['player', 'enemy', 'coin', 'flag'];
+  // Only 16x16 pixel keys and plain hex colors survive (saves, imports and share codes).
+  function gsCleanPixels(src) {
+    var out = {};
+    if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+    Object.keys(src).slice(0, 512).forEach(function(k) {
+      var m = /^(\d{1,2}),(\d{1,2})$/.exec(k), v = src[k];
+      if (!m || Number(m[1]) > 15 || Number(m[2]) > 15 || typeof v !== 'string' || !/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)) return;
+      out[Number(m[1]) + ',' + Number(m[2])] = v.toLowerCase();
+    });
+    return out;
+  }
+  function gsCleanLooks(src) {
+    var out = {};
+    if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+    LOOK_ROLES.forEach(function(r) { var p = gsCleanPixels(src[r]); if (Object.keys(p).length) out[r] = p; });
+    return out;
+  }
+  // One SVG path per color (a few elements per square instead of one per pixel).
+  function gsLookPaths(px) {
+    var by = {};
+    Object.keys(px).forEach(function(k) { var p = k.split(','); (by[px[k]] = by[px[k]] || []).push('M' + p[0] + ' ' + p[1] + 'h1v1h-1z'); });
+    return Object.keys(by).sort().map(function(c) { return [c, by[c].join('')]; });
   }
 
   function dangerAt(tiles, x, y) {
@@ -841,6 +1504,11 @@ window.StemLab = window.StemLab || {
 
       var _gsAiLoadingState = React.useState(false);
       var aiLoading = _gsAiLoadingState[0], setAiLoading = _gsAiLoadingState[1];
+      // Undo / redo history for map edits (kept per visit, not saved).
+      var _gsHist = React.useRef({ past: [], future: [], dragging: false });
+      // The same for the sprite pixel grid.
+      var _gsSpHist = React.useRef({ past: [], future: [] });
+      var _gsPlayRef = React.useRef(null);
       return (function() {
         // == State ==
         var _gs = labToolData && labToolData.gameStudio || {};
@@ -853,6 +1521,9 @@ window.StemLab = window.StemLab || {
           }, { debounce: 800 });
         }
         var upd = function(patch) {
+          // Saves from the old version kept the real map in playBackupTiles while a game
+          // ran (play used to rewrite the map). Any new map write retires that copy.
+          if (patch && Object.prototype.hasOwnProperty.call(patch, 'tiles') && !Object.prototype.hasOwnProperty.call(patch, 'playBackupTiles')) patch = Object.assign({ playBackupTiles: null }, patch);
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { gameStudio: Object.assign({}, prev && prev.gameStudio || {}, patch) });
           });
@@ -862,7 +1533,7 @@ window.StemLab = window.StemLab || {
         var gridW = _gs.gridW || 16;
         var gridH = _gs.gridH || 12;
         var gameType = _gs.gameType || 'topdown';
-        var tiles = _gs.tiles || {};
+        var tiles = (_gs.playBackupTiles && typeof _gs.playBackupTiles === 'object' && !Array.isArray(_gs.playBackupTiles)) ? _gs.playBackupTiles : (_gs.tiles || {});
         var selectedTile = _gs.selectedTile || 'grass';
         var brushTool = _gs.brushTool || 'brush';
         var showDanger = _gs.showDanger || false;
@@ -874,6 +1545,25 @@ window.StemLab = window.StemLab || {
         var spriteColor = _gs.spriteColor || '#e74c3c';
         var spriteTool = _gs.spriteTool || 'draw';
         var spriteMirror = _gs.spriteMirror || false;
+        // Drawn looks for the Player, Enemy, Coin and Flag. They change the picture only, never the rules.
+        var looks = gsCleanLooks(_gs.looks);
+        var lookEl = {};
+        LOOK_ROLES.forEach(function(r) {
+          if (!looks[r]) return;
+          // Frame the drawing itself (not the empty 16x16 canvas), so a small drawing still fills its square.
+          var x0 = 16, y0 = 16, x1 = 0, y1 = 0;
+          Object.keys(looks[r]).forEach(function(k) { var p = k.split(','), px = Number(p[0]), py = Number(p[1]); x0 = Math.min(x0, px); y0 = Math.min(y0, py); x1 = Math.max(x1, px + 1); y1 = Math.max(y1, py + 1); });
+          var side = Math.max(x1 - x0, y1 - y0, 4) + 1;
+          var vb = [(x0 + x1 - side) / 2, (y0 + y1 - side) / 2, side, side].join(' ');
+          lookEl[r] = h('svg', { viewBox: vb, width: '100%', height: '100%', 'aria-hidden': 'true', focusable: 'false', 'data-gs-look': r,
+            style: { display: 'block', shapeRendering: 'crispEdges', pointerEvents: 'none', filter: 'drop-shadow(0 0 0.6px #ffffff) drop-shadow(0 0 0.6px #ffffff) drop-shadow(0 1px 1px rgba(2,6,23,0.7))' } },
+            gsLookPaths(looks[r]).map(function(pc) { return h('path', { key: pc[0], d: pc[1], fill: pc[0] }); }));
+        });
+        // The picture for a piece: its drawn look if there is one, else its emoji.
+        var pieceArt = function(id, size) {
+          if (lookEl[id]) return h('span', { 'aria-hidden': 'true', style: { display: 'flex', flexShrink: 0, width: size || '82%', height: size || '82%', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' } }, lookEl[id]);
+          return null;
+        };
 
         // Keyboard route for the two paint grids (WCAG 2.1.1): one cell is in the tab
         // order, arrow keys move it, Enter/Space applies the current tool there.
@@ -897,25 +1587,44 @@ window.StemLab = window.StemLab || {
         };
 
         // Events
-        var events = _gs.events || {};
+        // Saved rules are read defensively: a damaged save (a rule list that is not a list) used to crash the tab.
+        var events = (function(src) {
+          var o = {};
+          if (src && typeof src === 'object' && !Array.isArray(src)) Object.keys(src).forEach(function(k) {
+            if (Array.isArray(src[k])) o[k] = src[k].filter(function(r) { return r && typeof r === 'object'; });
+          });
+          return o;
+        })(_gs.events);
         var advancedCode = _gs.advancedCode || false;
+        var evSprite = ['player', 'enemy', 'npc', 'treasure'].indexOf(_gs.eventSprite) >= 0 ? _gs.eventSprite : 'player';
 
         // Play mode
-        var isPlaying = _gs.isPlaying || false;
-        var playScore = _gs.playScore || 0;
-        var playLives = _gs.playLives || 3;
-        var playKeys = _gs.playKeys || 0;
-        var playMoves = _gs.playMoves || 0;
+        // The game runs in its own world (GS_E) so playing never changes the map.
+        var rulesCfg = (_gs.rules && typeof _gs.rules === 'object') ? _gs.rules : {};
+        var engineOpts = { gravity: gameType === 'platformer', events: events, lives: rulesCfg.lives, chase: rulesCfg.chase };
+        // Puzzle's own rule (crates + targets). Added only when on, so saved level checks of other types stay valid.
+        if (gameType === 'puzzle') engineOpts.puzzle = true;
+        var engineS = GS_E.settings(engineOpts);
+        var playWorld = (_gs.playWorld && typeof _gs.playWorld === 'object' && _gs.playWorld.base && typeof _gs.playWorld.base === 'object' && _gs.playWorld.chg && Array.isArray(_gs.playWorld.en) && Array.isArray(_gs.playWorld.hurtLog) && _gs.playWorld.W === gridW && _gs.playWorld.H === gridH) ? _gs.playWorld : null;
+        // A save that says "playing" but has no usable game (older version, damaged data) starts a fresh game.
+        if (!playWorld && _gs.isPlaying) playWorld = GS_E.init(tiles, gridW, gridH, engineOpts);
+        var isPlaying = !!(_gs.isPlaying && playWorld);
+        var playScore = playWorld ? playWorld.score : 0;
+        var playLives = playWorld ? playWorld.lives : engineS.lives;
+        var playKeys = playWorld ? playWorld.keys : 0;
+        var playMoves = playWorld ? playWorld.moves : 0;
         var playMessage = _gs.playMessage || null;
-        var playWon = _gs.playWon || false;
-        var playDead = _gs.playDead || false;
-        var enemyDirs = _gs.enemyDirs || {};
-        var playCoinsCollected = _gs.playCoinsCollected || 0;
+        var playWon = !!(playWorld && playWorld.won);
+        var playDead = !!(playWorld && playWorld.dead);
+        var playCoinsCollected = playWorld ? playWorld.coins : 0;
+        var ruleFires = _gs.ruleFires || {};
+        var levelSig = function() { return JSON.stringify([gridW, gridH, gameType, tiles]); };
 
         // Learn tab
         var activeLesson = _gs.activeLesson || null;
         var learnCompleted = _gs.learnCompleted || {};
-        var learnAnswer = _gs.learnAnswer || null;
+        // Option A is index 0; "|| null" used to turn it into "nothing picked", so A could never be checked.
+        var learnAnswer = (typeof _gs.learnAnswer === 'number') ? _gs.learnAnswer : null;
         var learnShowResult = _gs.learnShowResult || false;
 
         // Challenges tab
@@ -927,259 +1636,330 @@ window.StemLab = window.StemLab || {
         var aiResult = _gs.aiResult || null;
 
         // == Tabs ==
+        // Five tabs up top (was eight). Lessons, Challenges and the Difficulty Tuner sit together
+        // under Learn; Projects (save, load, share) opens from a header button. Every view keeps
+        // its tab value and its gs-tab-<id> element.
         var TABS = [
           { id: 'map', icon: '\uD83D\uDDFA\uFE0F', label: 'Map' },
+          { id: 'play', icon: '\u25B6\uFE0F', label: __alloT('stem.gamestudio.play', 'Play') },
           { id: 'sprite', icon: '\uD83C\uDFA8', label: __alloT('stem.gamestudio.sprites', 'Sprites') },
           { id: 'events', icon: '\u26A1', label: __alloT('stem.gamestudio.events', 'Events') },
-          { id: 'play', icon: '\u25B6\uFE0F', label: __alloT('stem.gamestudio.play', 'Play') },
-          { id: 'learn', icon: '\uD83C\uDF93', label: __alloT('stem.gamestudio.learn', 'Learn') },
+          { id: 'learnHub', icon: '\uD83C\uDF93', label: __alloT('stem.gamestudio.learn_hub', 'Learn & Goals') }
+        ];
+        var GOAL_TABS = [
+          { id: 'learn', icon: '\uD83D\uDCD6', label: __alloT('stem.gamestudio.lessons_tab', 'Lessons') },
           { id: 'challenges', icon: '\uD83C\uDFC6', label: __alloT('stem.gamestudio.challenges', 'Challenges') },
-          { id: 'projects', icon: '\uD83D\uDCBE', label: __alloT('stem.gamestudio.projects', 'Projects') },
           { id: 'diffHunt', icon: '\uD83D\uDCC8', label: __alloT('stem.gamestudio.difficulty_tuner', 'Difficulty Tuner') }
         ];
+        var goalIds = GOAL_TABS.map(function(x) { return x.id; });
 
         var _bg = 'linear-gradient(135deg, #fff1f2, #ffe4e6, #fce7f3)';
 
-        // == Game Engine: Process a player move ==
-        function processMove(dir) {
-          if (playWon || playDead) return;
-          var pKey = null;
-          Object.keys(tiles).forEach(function(k) { if (tiles[k] === 'player') pKey = k; });
-          if (!pKey) return;
-
-          var pp = pKey.split(',').map(Number);
-          var dx = 0, dy = 0;
-          if (dir === 'up') dy = -1;
-          if (dir === 'down') dy = 1;
-          if (dir === 'left') dx = -1;
-          if (dir === 'right') dx = 1;
-
-          var nx = pp[0] + dx, ny = pp[1] + dy;
-          if (nx < 0 || nx >= gridW || ny < 0 || ny >= gridH) return;
-          var nk = nx + ',' + ny;
-          var dest = tiles[nk] || 'empty';
-
-          if (dest === 'wall' || dest === 'platform') return;
-
-          var newT = Object.assign({}, tiles);
-          var nScore = playScore;
-          var nLives = playLives;
-          var nKeys = playKeys;
-          var nMoves = playMoves + 1;
-          var nCoins = playCoinsCollected;
-          var msg = null;
-          var won = false;
-          var dead = false;
-
-          // Door logic
-          if (dest === 'door') {
-            if (nKeys > 0) {
-              nKeys--;
-              msg = '\uD83D\uDD13 Door unlocked! Keys: ' + nKeys;
-            } else {
-              upd({ playMessage: '\uD83D\uDD12 You need a key to open this door!' });
-              return;
-            }
+        // == Play: one player turn, run by the shared game engine (GS_E.step) ==
+        var tileName = function(id) { return (TILE_MAP[id] && TILE_MAP[id].label) || String(id); };
+        var tileIcon = function(id) { return (TILE_MAP[id] && TILE_MAP[id].emoji) || ''; };
+        var gsHash = function(str) { var hsh = 5381; for (var i = 0; i < str.length; i++) hsh = ((hsh << 5) + hsh + str.charCodeAt(i)) | 0; return 'h' + (hsh >>> 0).toString(16); };
+        // A plain-English sentence for one Events rule, built from what the engine compiled.
+        var ruleSentence = function(info) {
+          var who = info.sprite === 'player' ? __alloT('stem.gamestudio.rule_who_player', 'the player') : tileName(info.sprite);
+          var ACT = { collect: __alloT('stem.gamestudio.rule_act_collect', 'add to the score'), stop: __alloT('stem.gamestudio.rule_act_stop', 'stop the player'), destroy: __alloT('stem.gamestudio.rule_act_destroy', 'remove it'), teleport: __alloT('stem.gamestudio.rule_act_teleport', 'teleport the player'), bounce: __alloT('stem.gamestudio.rule_act_bounce', 'bounce the player back'), winGame: __alloT('stem.gamestudio.rule_act_win', 'win the game'), loseLife: __alloT('stem.gamestudio.rule_act_lose', 'take 1 life'), gravity: __alloT('stem.gamestudio.rule_act_gravity', 'switch gravity'), jump: __alloT('stem.gamestudio.rule_act_jump', 'jump'), push: __alloT('stem.gamestudio.rule_act_push', 'push it one square'), move: __alloT('stem.gamestudio.rule_act_move', 'move') };
+          var act = (ACT[info.action] || info.action) + (info.actionParam ? ' (' + info.actionParam + ')' : '');
+          if (info.runs && info.why === 'builtIn') return __alloT('stem.gamestudio.rule_builtin', 'Enemies already turn around at walls, so this rule is always on.');
+          if (info.runs && info.touch) return __alloT('stem.gamestudio.rule_runs_touch', 'Runs in Play: when the player touches {tile}, {act}.').replace('{tile}', tileName(info.touch)).replace('{act}', act);
+          if (info.runs && info.trigger === 'onKey') return __alloT('stem.gamestudio.rule_runs_key', 'Runs in Play: pressing {key} makes the player {act}.').replace('{key}', info.param).replace('{act}', act);
+          // Enemy rules first: an enemy "Game Starts" rule used to be read as a gravity rule.
+          if (info.runs && info.sprite === 'enemy' && info.every > 1) return __alloT('stem.gamestudio.rule_runs_enemy_every', 'Runs in Play: each enemy will {act} once every {n} moves, so enemies are slower than you.').replace('{act}', act).replace('{n}', info.every);
+          if (info.runs && info.sprite === 'enemy') return __alloT('stem.gamestudio.rule_runs_enemy', 'Runs in Play: every turn, each enemy will {act}.').replace('{act}', act);
+          if (info.runs && info.trigger === 'onStart') return __alloT('stem.gamestudio.rule_runs_start', 'Runs in Play: when the game starts, gravity is {p}.').replace('{p}', info.actionParam);
+          if (info.runs && info.trigger === 'onTimer') {
+            var TACT = {
+              move: __alloT('stem.gamestudio.timer_act_move', 'the player moves {p} one square'),
+              jump: __alloT('stem.gamestudio.timer_act_jump', 'the player jumps'),
+              collect: info.actionParam === '+key' ? __alloT('stem.gamestudio.timer_act_key', 'the player gets a key') : __alloT('stem.gamestudio.timer_act_collect', 'the score goes up by 1'),
+              loseLife: __alloT('stem.gamestudio.timer_act_lose', 'the player loses 1 life'),
+              gravity: __alloT('stem.gamestudio.timer_act_gravity', 'gravity turns {p}'),
+              teleport: info.actionParam === 'random-empty' ? __alloT('stem.gamestudio.timer_act_tp_random', 'the player jumps to a random empty square') : __alloT('stem.gamestudio.timer_act_tp_start', 'the player goes back to the start')
+            };
+            var what = (TACT[info.action] || act).replace('{p}', info.actionParam);
+            return info.every === 1
+              ? __alloT('stem.gamestudio.rule_runs_timer_1', 'Runs in Play: after every move, {act}.').replace('{act}', what)
+              : __alloT('stem.gamestudio.rule_runs_timer', 'Runs in Play: after every {n} moves, {act}.').replace('{n}', info.every).replace('{act}', what);
           }
-
-          // Collectibles
-          if (dest === 'coin') { nScore += 10; nCoins++; msg = '\uD83E\uDE99 +10'; }
-          if (dest === 'gem') { nScore += 50; msg = '\uD83D\uDC8E +50!'; }
-          if (dest === 'treasure') { nScore += 100; msg = '\uD83D\uDC8E +100! Treasure!'; }
-          if (dest === 'key') { nKeys++; nScore += 5; msg = '\uD83D\uDD11 Key collected! Keys: ' + nKeys; }
-          if (dest === 'heart') { nLives++; msg = '\u2764\uFE0F +1 Life!'; }
-
-          // Portal teleportation
-          if (dest === 'portal') {
-            var portals = [];
-            Object.keys(newT).forEach(function(k) { if (newT[k] === 'portal' && k !== nk) portals.push(k); });
-            if (portals.length > 0) {
-              var tp = portals[0].split(',').map(Number);
-              // Clear both portal ends
-              delete newT[pKey];
-              delete newT[nk];
-              // Find empty spot next to destination portal
-              var landDirs = [[1,0],[-1,0],[0,1],[0,-1]];
-              var landed = false;
-              for (var li = 0; li < landDirs.length; li++) {
-                var lx = tp[0] + landDirs[li][0], ly = tp[1] + landDirs[li][1];
-                if (lx < 0 || lx >= gridW || ly < 0 || ly >= gridH) continue;
-                var lk = lx + ',' + ly;
-                var ld = newT[lk] || 'empty';
-                if (WALKABLE[ld] && ld !== 'portal' && ld !== 'door') {
-                  newT[lk] = 'player';
-                  landed = true;
-                  break;
-                }
-              }
-              if (!landed) newT[portals[0]] = 'player';
-              msg = '\uD83C\uDF00 Teleported!';
-              gsEmitPlayFx(pp[0], pp[1], tp[0], tp[1], gridW, gridH, 'portal');
-              upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg });
-              return;
-            }
+          var WHY = {
+            pick: __alloT('stem.gamestudio.rule_why_pick_v2', 'Pick the missing choice (what it touches, which key, or how many moves) to switch this rule on.'),
+            timer: __alloT('stem.gamestudio.rule_why_timer', 'Play takes turns (one step per key press), so timer rules do not run.'),
+            timerAct: __alloT('stem.gamestudio.rule_why_timer_act', 'An Every rule can Move (up, down, left or right), Jump, Collect, Lose Life, switch Gravity on or off, or Teleport.'),
+            timerWho: __alloT('stem.gamestudio.rule_why_timer_who', 'Only the Player and Enemies can have an Every rule. Use Collides With for this one.'),
+            ai: __alloT('stem.gamestudio.rule_why_ai', 'AI talk does not run inside Play.'),
+            keyAct: __alloT('stem.gamestudio.rule_why_key', 'A key rule can only Move or Jump.'),
+            startAct: __alloT('stem.gamestudio.rule_why_start', 'A Game Starts rule can only switch Gravity on or off.'),
+            enemyAct: __alloT('stem.gamestudio.rule_why_enemy', 'Enemy rules that run: Game Starts or Every, then Move (a direction, toward-player, random) or Stop.'),
+            touchAct: __alloT('stem.gamestudio.rule_why_touch', 'This action does not run when something is touched.')
+          };
+          return __alloT('stem.gamestudio.rule_not_run', 'Does not run in Play yet: ') + (WHY[info.why] || '') + ' (' + who + ')';
+        };
+        // What each tile does, in the words of the engine's rules (one place, used by the
+        // palette, its hover text and the Play legend).
+        var tileRule = function(id) {
+          var R = {
+            empty: __alloT('stem.gamestudio.rule_empty', 'Open space. Erases a square.'),
+            grass: __alloT('stem.gamestudio.rule_floor', 'Floor. Walk on it.'),
+            path: __alloT('stem.gamestudio.rule_floor', 'Floor. Walk on it.'),
+            sand: __alloT('stem.gamestudio.rule_floor', 'Floor. Walk on it.'),
+            water: __alloT('stem.gamestudio.rule_water', 'Blocks you and enemies, like a wall.'),
+            wall: __alloT('stem.gamestudio.rule_wall', 'Blocks you. In side view you can stand on it.'),
+            platform: __alloT('stem.gamestudio.rule_wall', 'Blocks you. In side view you can stand on it.'),
+            lava: __alloT('stem.gamestudio.rule_lava', 'Hurts: lose 1 life each time you step in.'),
+            spikes: __alloT('stem.gamestudio.rule_lava', 'Hurts: lose 1 life each time you step in.'),
+            ice: __alloT('stem.gamestudio.rule_ice', 'Slippery: you keep sliding the same way until you leave the ice or hit something.'),
+            door: __alloT('stem.gamestudio.rule_door', 'Locked. Walk into it with a key to open it (uses the key).'),
+            key: __alloT('stem.gamestudio.rule_key', 'Pick it up to open one door. +5 points.'),
+            coin: __alloT('stem.gamestudio.rule_coin', '+10 points.'),
+            gem: __alloT('stem.gamestudio.rule_gem', '+50 points.'),
+            treasure: __alloT('stem.gamestudio.rule_treasure', '+100 points.'),
+            heart: __alloT('stem.gamestudio.rule_heart', '+1 life.'),
+            flag: __alloT('stem.gamestudio.rule_flag', 'The goal. Reach it to win.'),
+            portal: __alloT('stem.gamestudio.rule_portal', 'Step in to come out next to the other portal.'),
+            player: __alloT('stem.gamestudio.rule_player', 'Where the player starts. Use one.'),
+            enemy: __alloT('stem.gamestudio.rule_enemy', 'Walks back and forth. Chases you when you are {n} or fewer steps away. Touching one costs 1 life and knocks it out.').replace('{n}', engineS.chase),
+            npc: __alloT('stem.gamestudio.rule_npc', 'A character who blocks the way. Give it a rule in Events to make it do something.'),
+            crate: gameType === 'puzzle'
+              ? __alloT('stem.gamestudio.rule_crate_puzzle', 'Walk into it to push it one square. You can push, but never pull. It stops at walls and other crates.')
+              : __alloT('stem.gamestudio.rule_crate_other', 'Blocks you like a wall. Switch the Type to Puzzle to push crates.'),
+            target: gameType === 'puzzle'
+              ? __alloT('stem.gamestudio.rule_target_puzzle', 'Push a crate onto it. The flag stays locked until every target has a crate.')
+              : __alloT('stem.gamestudio.rule_target_other', 'Floor. In a Puzzle game, crates must cover every target before the flag opens.')
+          };
+          return R[id] || '';
+        };
+        var playMsgText = function(w) {
+          var m = w && w.msg, out = '';
+          if (m) {
+            if (m.k === 'points') out = tileIcon(m.tile) + ' ' + __alloT('stem.gamestudio.msg_points', '+{n} points').replace('{n}', m.n);
+            else if (m.k === 'key') out = '🔑 ' + __alloT('stem.gamestudio.msg_key', 'You picked up a key. Keys: {n}').replace('{n}', m.n);
+            else if (m.k === 'life') out = '❤️ ' + __alloT('stem.gamestudio.msg_life', '+1 life!');
+            else if (m.k === 'hurt') out = (m.what === 'lava' ? '🔥 ' + __alloT('stem.gamestudio.msg_lava', 'Ouch! Lava. -1 life') : m.what === 'spikes' ? '⚠️ ' + __alloT('stem.gamestudio.msg_spikes', 'Spikes! -1 life') : m.what === 'enemy' ? '👾 ' + __alloT('stem.gamestudio.msg_enemy', 'An enemy got you! -1 life') : '⚡ ' + __alloT('stem.gamestudio.msg_rule_hurt', 'A rule took a life! -1 life'));
+            else if (m.k === 'dead') out = '💀 ' + __alloT('stem.gamestudio.msg_dead', 'Game over: out of lives.');
+            else if (m.k === 'win') out = '🏆 ' + __alloT('stem.gamestudio.msg_win', 'You win! Score {score} (speed bonus +{bonus})').replace('{score}', w.score).replace('{bonus}', m.bonus);
+            else if (m.k === 'locked') out = '🔒 ' + __alloT('stem.gamestudio.msg_locked', 'Locked. You need a key.');
+            else if (m.k === 'door') out = '🔓 ' + __alloT('stem.gamestudio.msg_door', 'Door opened! Keys left: {n}').replace('{n}', m.n);
+            else if (m.k === 'portal') out = '🌀 ' + __alloT('stem.gamestudio.msg_portal', 'Whoosh! Through the portal.');
+            else if (m.k === 'slide') out = '🧊 ' + __alloT('stem.gamestudio.msg_slide', 'Wheee! Sliding on ice.');
+            else if (m.k === 'blocked') out = '✋ ' + __alloT('stem.gamestudio.msg_blocked', 'A rule stops you here.');
+            else if (m.k === 'push') out = '📦 ' + __alloT('stem.gamestudio.msg_push', 'Pushed! Targets covered: {a} of {b}.').replace('{a}', m.on).replace('{b}', m.of);
+            else if (m.k === 'crateStuck') out = '📦 ' + __alloT('stem.gamestudio.msg_crate_stuck', 'The crate will not move: something is behind it.');
+            else if (m.k === 'flagLocked') out = '🔒 ' + __alloT('stem.gamestudio.msg_flag_locked', 'The flag is locked. Cover every target with a crate first ({a} of {b}).').replace('{a}', m.on).replace('{b}', m.of);
           }
-
-          // Win condition
-          if (dest === 'flag') {
-            won = true;
-            var bonus = Math.max(0, 500 - nMoves * 2);
-            nScore += 100 + bonus;
-            msg = '\uD83C\uDFC6 You Win! Score: ' + nScore + ' (efficiency bonus: +' + bonus + ')';
-            if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'completed game');
-            if (addToast) addToast('\uD83C\uDFC6 You Win! Score: ' + nScore, 'success');
-          }
-
-          // Hazards
-          if (dest === 'lava' || dest === 'spikes') {
-            nLives--;
-            nScore = Math.max(0, nScore - 20);
-            msg = dest === 'lava' ? '\uD83D\uDD25 Ouch! Lava! -1 life' : '\u26A0\uFE0F Spikes! -1 life';
-            if (nLives <= 0) {
-              dead = true;
-              msg = '\uD83D\uDC80 Game Over! Final score: ' + nScore;
-              if (addToast) addToast('\uD83D\uDC80 Game Over!', 'error');
-            }
-          }
-
-          // Enemy collision
-          if (dest === 'enemy') {
-            nLives--;
-            nScore = Math.max(0, nScore - 15);
-            msg = '\uD83D\uDC7E Hit by enemy! -1 life';
-            if (nLives <= 0) {
-              dead = true;
-              msg = '\uD83D\uDC80 Game Over! Final score: ' + nScore;
-              if (addToast) addToast('\uD83D\uDC80 Game Over!', 'error');
-            }
-          }
-
-          // Move player
-          delete newT[pKey];
-          if (!dead) newT[nk] = 'player';
-          var fxEndX = nx, fxEndY = ny;
-          var fxKind = won ? 'goal'
-            : (dest === 'lava' || dest === 'spikes' || dest === 'enemy') ? 'hazard'
-            : (dest === 'coin' || dest === 'gem' || dest === 'treasure' || dest === 'heart') ? 'collect'
-            : dest === 'key' ? 'key'
-            : dest === 'ice' ? 'ice'
-            : 'step';
-
-          // Ice sliding: if destination is ice, keep moving in same direction
-          if (dest === 'ice' && !won && !dead) {
-            var slideX = nx, slideY = ny;
-            var maxSlide = 20;
-            while (maxSlide-- > 0) {
-              var snx = slideX + dx, sny = slideY + dy;
-              if (snx < 0 || snx >= gridW || sny < 0 || sny >= gridH) break;
-              var snk = snx + ',' + sny;
-              var sDest = newT[snk] || 'empty';
-              if (sDest === 'wall' || sDest === 'platform' || sDest === 'door' || sDest === 'enemy') break;
-              // Slide onto this tile
-              delete newT[(slideX + ',' + slideY)];
-              if (sDest === 'coin') { nScore += 10; nCoins++; fxKind = 'collect'; }
-              if (sDest === 'gem') { nScore += 50; fxKind = 'collect'; }
-              if (sDest === 'key') { nKeys++; fxKind = 'key'; }
-              if (sDest === 'heart') { nLives++; fxKind = 'collect'; }
-              if (sDest === 'flag') {
-                won = true;
-                fxKind = 'goal';
-                var sBonus = Math.max(0, 500 - nMoves * 2);
-                nScore += 100 + sBonus;
-                msg = '\uD83C\uDFC6 You Win! Score: ' + nScore + ' (efficiency bonus: +' + sBonus + ')';
-                newT[snx + ',' + sny] = 'player';
-                fxEndX = snx; fxEndY = sny;
-                if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'completed game');
-                if (addToast) addToast('\uD83C\uDFC6 You Win! Score: ' + nScore, 'success');
-                break;
-              }
-              if (sDest === 'lava' || sDest === 'spikes') {
-                nLives--;
-                fxKind = 'hazard';
-                if (nLives <= 0) { dead = true; msg = '\uD83D\uDC80 Game Over!'; break; }
-              }
-              slideX = snx; slideY = sny;
-              fxEndX = snx; fxEndY = sny;
-              newT[snx + ',' + sny] = 'player';
-              if (sDest !== 'ice') break; // stop sliding when leaving ice
-              nMoves++;
-            }
-            if (!msg) msg = '\uD83E\uDEF5 Wheee! Ice slide!';
-          }
-          gsEmitPlayFx(pp[0], pp[1], fxEndX, fxEndY, gridW, gridH, fxKind);
-
-          // Enemy patrol AI (turn-based: enemies move after player)
-          if (!won && !dead) {
-            var eKeys = [];
-            Object.keys(newT).forEach(function(k) { if (newT[k] === 'enemy') eKeys.push(k); });
-            var newDirs = Object.assign({}, enemyDirs);
-            eKeys.forEach(function(ek) {
-              var ep = ek.split(',').map(Number);
-              var eDir = newDirs[ek] || (ep[0] % 2 === 0 ? 'right' : 'left');
-              var edx = eDir === 'left' ? -1 : eDir === 'right' ? 1 : 0;
-              var edy = eDir === 'up' ? -1 : eDir === 'down' ? 1 : 0;
-
-              // Chase player if within 3 tiles (Manhattan distance)
-              var pPos = null;
-              Object.keys(newT).forEach(function(k2) { if (newT[k2] === 'player') pPos = k2; });
-              if (pPos) {
-                var pxy = pPos.split(',').map(Number);
-                var dist = Math.abs(pxy[0] - ep[0]) + Math.abs(pxy[1] - ep[1]);
-                if (dist <= 3 && dist > 0) {
-                  // Chase: move toward player
-                  var cdx = pxy[0] > ep[0] ? 1 : pxy[0] < ep[0] ? -1 : 0;
-                  var cdy = pxy[1] > ep[1] ? 1 : pxy[1] < ep[1] ? -1 : 0;
-                  if (Math.abs(pxy[0] - ep[0]) >= Math.abs(pxy[1] - ep[1])) { edx = cdx; edy = 0; }
-                  else { edx = 0; edy = cdy; }
-                }
-              }
-
-              var enx = ep[0] + edx, eny = ep[1] + edy;
-              var inBounds = enx >= 0 && enx < gridW && eny >= 0 && eny < gridH;
-              var enk = enx + ',' + eny;
-              var eDest = inBounds ? (newT[enk] || 'empty') : 'wall';
-
-              if (inBounds && eDest === 'player') {
-                // Enemy catches player
-                nLives--;
-                msg = '\uD83D\uDC7E Caught by enemy! -1 life';
-                if (nLives <= 0) { dead = true; msg = '\uD83D\uDC80 Game Over!'; }
-              } else if (inBounds && WALKABLE[eDest] && eDest !== 'door' && eDest !== 'key' && eDest !== 'coin' && eDest !== 'flag' && eDest !== 'portal' && eDest !== 'heart' && eDest !== 'gem' && eDest !== 'treasure' && eDest !== 'player') {
-                // Move enemy
-                delete newT[ek];
-                newT[enk] = 'enemy';
-                delete newDirs[ek];
-                newDirs[enk] = eDir;
-              } else {
-                // Blocked: reverse
-                var rev = eDir === 'left' ? 'right' : eDir === 'right' ? 'left' : eDir === 'up' ? 'down' : 'up';
-                delete newDirs[ek];
-                newDirs[ek] = rev;
-              }
+          if (w && w.fired && w.fired.length) {
+            var seenIds = {};
+            w.fired.forEach(function(id) {
+              if (seenIds[id]) return; seenIds[id] = 1;
+              var info = engineS.rules.list.find(function(r) { return r.id === id; });
+              if (info && info.sprite !== 'enemy') out += (out ? '  ' : '') + '⚡ ' + __alloT('stem.gamestudio.msg_rule_fired', 'Rule {n} fired').replace('{n}', (info.sprite === 'player' ? '' : tileName(info.sprite) + ' ') + (info.index + 1));
             });
-            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, everWon: !!(_gs.everWon || won), playDead: dead, enemyDirs: newDirs });
-          } else {
-            upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg, playWon: won, everWon: !!(_gs.everWon || won), playDead: dead });
           }
+          return out || null;
+        };
+        if (!isPlaying) _gsPlayRef.current = null;
+        else if (!_gsPlayRef.current || _gsPlayRef.current.base !== playWorld.base || _gsPlayRef.current.moves < playWorld.moves) _gsPlayRef.current = playWorld;
+
+        var focusPlayViewport = function() {
+          setTimeout(function() { try { var el = document.getElementById('gs-play-viewport'); if (el) el.focus(); } catch (_) {} }, 40);
+        };
+        var startGame = function(extra) {
+          _gsResetFxPools();
+          var w = GS_E.init(tiles, gridW, gridH, engineOpts);
+          if (w.px < 0) {
+            _gsPlayRef.current = null;
+            upd(Object.assign({ isPlaying: false, playWorld: null, playWon: false, playDead: false, playMessage: '🧑 ' + __alloT('stem.gamestudio.msg_no_player', 'Place a Player tile on the map first. That is where the game starts.') }, extra || {}));
+            return;
+          }
+          w.fc = {};
+          _gsPlayRef.current = w;
+          upd(Object.assign({ isPlaying: true, playWorld: w, playWon: false, playDead: false, playMessage: null }, extra || {}));
+          focusPlayViewport();
+        };
+        var stopGame = function() {
+          _gsResetFxPools();
+          _gsPlayRef.current = null;
+          upd({ isPlaying: false, playWorld: null, playMessage: null, playWon: false, playDead: false });
+        };
+        function processMove(input) {
+          var w0 = _gsPlayRef.current || playWorld;
+          if (!isPlaying || !w0 || w0.won || w0.dead) return;
+          var w = GS_E.step(w0, input, engineS);
+          if (w === w0) return;
+          w.fc = Object.assign({}, w0.fc || {});
+          w.fired.forEach(function(id) { w.fc[id] = (w.fc[id] || 0) + 1; });
+          _gsPlayRef.current = w;
+          if (w.fx) gsEmitPlayFx(w.fx.fx, w.fx.fy, w.fx.tx, w.fx.ty, gridW, gridH, w.fx.kind);
+          var patch = { playWorld: w, playMessage: playMsgText(w), ruleFires: w.fc };
+          if (w.won && !w0.won) {
+            // XP once per level layout, for at most 5 layouts: winning the same map again is practice, not new mastery.
+            var sig = gsHash(levelSig());
+            var wl = Object.assign({}, _gs.wonLevels || {});
+            if (!wl[sig] && Object.keys(wl).length < 5) {
+              wl[sig] = 1;
+              if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'won a playtest of a new level');
+            }
+            patch.wonLevels = wl; patch.everWon = true; patch.playWon = true;
+            if (addToast) addToast('🏆 ' + __alloT('stem.gamestudio.toast_win', 'You win! Score: {score}').replace('{score}', w.score), 'success');
+            try { sfxGsSuccess(); } catch (_) {}
+          } else if (w.dead && !w0.dead) {
+            patch.playDead = true;
+            if (addToast) addToast('💀 ' + __alloT('stem.gamestudio.toast_over', 'Game over!'), 'error');
+          }
+          upd(patch);
         }
 
-        // Key handler for play mode
+        // Keys for play: arrows / WASD to move, Space to jump in side view.
         function onPlayKey(e) {
-          if (!isPlaying || playWon || playDead) return;
-          var dir = null;
-          if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dir = 'up';
-          if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dir = 'down';
-          if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dir = 'left';
-          if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dir = 'right';
-          if (dir) { e.preventDefault(); processMove(dir); }
+          var k = e.key, input = null;
+          if (k === 'ArrowUp' || k === 'w' || k === 'W') input = 'ArrowUp';
+          else if (k === 'ArrowDown' || k === 's' || k === 'S') input = 'ArrowDown';
+          else if (k === 'ArrowLeft' || k === 'a' || k === 'A') input = 'ArrowLeft';
+          else if (k === 'ArrowRight' || k === 'd' || k === 'D') input = 'ArrowRight';
+          else if (k === ' ' || k === 'Spacebar') input = 'Space';
+          if (!input) return;
+          e.preventDefault();
+          if (!isPlaying) { startGame(); return; }
+          if (playWon || playDead) return;
+          processMove(input);
         }
+
+        // Map edits go through here so Undo can step back.
+        var setTiles = function(nt, opts) {
+          var hst = _gsHist.current;
+          if (!(opts && opts.noHistory)) {
+            hst.past.push(tiles);
+            if (hst.past.length > 40) hst.past.shift();
+            hst.future = [];
+          }
+          // A changed map ends any game in progress, so the next Play uses the new map.
+          var endGame = isPlaying ? { isPlaying: false, playWorld: null, playMessage: null } : {};
+          if (isPlaying) _gsPlayRef.current = null;
+          upd(Object.assign({ tiles: nt }, endGame, (opts && opts.extra) || {}));
+        };
+        var undoMap = function() {
+          var hst = _gsHist.current;
+          if (!hst.past.length) return;
+          hst.future.push(tiles);
+          upd(Object.assign({ tiles: hst.past.pop() }, isPlaying ? { isPlaying: false, playWorld: null } : {}));
+        };
+        var redoMap = function() {
+          var hst = _gsHist.current;
+          if (!hst.future.length) return;
+          hst.past.push(tiles);
+          upd(Object.assign({ tiles: hst.future.pop() }, isPlaying ? { isPlaying: false, playWorld: null } : {}));
+        };
+        // Sprite pixel edits go through here so Undo can step back. A drag adds one step.
+        var setSpritePixels = function(np, opts) {
+          var sh = _gsSpHist.current;
+          if (!(opts && opts.noHistory)) {
+            sh.past.push(spritePixels);
+            if (sh.past.length > 40) sh.past.shift();
+            sh.future = [];
+          }
+          upd(Object.assign({ spritePixels: np }, (opts && opts.extra) || {}));
+        };
+        var undoSprite = function() {
+          var sh = _gsSpHist.current;
+          if (!sh.past.length) return;
+          sh.future.push(spritePixels);
+          upd({ spritePixels: sh.past.pop() });
+        };
+        var redoSprite = function() {
+          var sh = _gsSpHist.current;
+          if (!sh.future.length) return;
+          sh.past.push(spritePixels);
+          upd({ spritePixels: sh.future.pop() });
+        };
+        // Draw or Erase one pixel (and its mirror twin). Null when nothing would change.
+        var spriteStroke = function(base, sx, sy) {
+          var np = Object.assign({}, base), changed = false;
+          (spriteMirror ? [sx + ',' + sy, (15 - sx) + ',' + sy] : [sx + ',' + sy]).forEach(function(k) {
+            if (spriteTool === 'erase') { if (np[k]) { delete np[k]; changed = true; } }
+            else if (np[k] !== spriteColor) { np[k] = spriteColor; changed = true; }
+          });
+          return changed ? np : null;
+        };
+        // Drag drawing on the sprite grid: the same pointer approach as the map. Mouse always;
+        // touch only when the Paint / Scroll toggle says Paint, so a finger can still scroll the page.
+        var spriteDragOk = spriteTool === 'draw' || spriteTool === 'erase';
+        // Read live each render, like the map's toggle.
+        var spriteCoarse = false;
+        try { spriteCoarse = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(any-pointer: coarse)').matches; } catch (_) { spriteCoarse = false; }
+        var spriteDragPaint = function(i) {
+          var sh = _gsSpHist.current;
+          if (!(i >= 0 && i < 256) || sh.lastIdx === i) return;
+          sh.lastIdx = i;
+          var np = spriteStroke(sh.live || spritePixels, i % 16, Math.floor(i / 16));
+          if (!np) return;
+          var first = !sh.painted;
+          sh.painted = true; sh.live = np;
+          setSpritePixels(np, first ? null : { noHistory: true });
+        };
+        var spriteEndDrag = function(e) {
+          var sh = _gsSpHist.current;
+          if (sh.ptr == null || (e && e.pointerId != null && sh.ptr !== e.pointerId)) return;
+          // The click that follows a drawn press must not draw (and add an Undo step) again.
+          if (sh.painted) sh.skipClickUntil = Date.now() + 450;
+          sh.ptr = null; sh.live = null; sh.painted = false; sh.lastIdx = -1;
+        };
+        var spritePxAt = function(cx, cy) {
+          var el = null;
+          try { el = document.elementFromPoint(cx, cy); } catch (_) { el = null; }
+          var cell = el && el.closest ? el.closest('[data-gs-pxi]') : null;
+          return cell ? Number(cell.getAttribute('data-gs-pxi')) : -1;
+        };
+        var spritePointer = {
+          onPointerDown: function(e) {
+            if (!spriteDragOk) return;
+            var isMouse = e.pointerType === 'mouse';
+            if (isMouse ? e.button !== 0 : !_gs.touchPaint) return;
+            var sh = _gsSpHist.current;
+            sh.ptr = e.pointerId; sh.live = null; sh.painted = false; sh.lastIdx = -1;
+            try { if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+            spriteDragPaint(spritePxAt(e.clientX, e.clientY));
+          },
+          onPointerMove: function(e) { if (_gsSpHist.current.ptr === e.pointerId) spriteDragPaint(spritePxAt(e.clientX, e.clientY)); },
+          onPointerUp: spriteEndDrag, onPointerCancel: spriteEndDrag, onLostPointerCapture: spriteEndDrag
+        };
+        // Keep only squares inside the grid that hold a real tile (imports, AI maps, old saves).
+        var cleanTiles = function(src, W, H) {
+          var out = {}, playerSeen = false;
+          if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+          Object.keys(src).slice(0, 2000).forEach(function(k) {
+            var m = /^(\d{1,2}),(\d{1,2})$/.exec(k), v = src[k];
+            if (!m || typeof v !== 'string' || !TILE_MAP[v] || v === 'empty') return;
+            var x = Number(m[1]), y = Number(m[2]);
+            if (x >= W || y >= H) return;
+            if (v === 'player') { if (playerSeen) return; playerSeen = true; }
+            out[x + ',' + y] = v;
+          });
+          return out;
+        };
+        // Rules from a file: only the four rule lists, at most 8 rules each, plain text fields.
+        var cleanEvents = function(src) {
+          var out = {};
+          if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+          ['player', 'enemy', 'npc', 'treasure'].forEach(function(sp) {
+            if (!Array.isArray(src[sp])) return;
+            out[sp] = src[sp].slice(0, 8).filter(function(r) { return r && typeof r === 'object'; }).map(function(r) {
+              var str = function(v) { return typeof v === 'string' ? v.slice(0, 40) : ''; };
+              return { trigger: str(r.trigger) || 'onKey', param: str(r.param), action: str(r.action) || 'move', actionParam: str(r.actionParam) };
+            });
+          });
+          return out;
+        };
+        var playersOnMap = countTile(tiles, 'player');
 
         // Event code generator (for display)
         function genCode(rule) {
           var lines = [];
           if (rule.trigger === 'onKey') lines.push('if (input.' + (rule.param || 'ArrowUp') + ') {');
           else if (rule.trigger === 'onCollide') lines.push('if (collision(\'' + (rule.param || 'wall') + '\')) {');
-          else if (rule.trigger === 'onTimer') lines.push('setInterval(() => {');
+          else if (rule.trigger === 'onTimer') lines.push('if (moves % ' + (GS_E.timerN(rule.param) || 'N') + ' === 0) {');
           else if (rule.trigger === 'onStart') lines.push('onGameStart(() => {');
           else if (rule.trigger === 'onTalk') lines.push('onInteract(\'talk\', () => {');
           var dirs = { up: 'y -= speed', down: 'y += speed', left: 'x -= speed', right: 'x += speed', 'toward-player': 'moveToward(player)', random: 'moveRandom()' };
@@ -1203,19 +1983,29 @@ window.StemLab = window.StemLab || {
         var challengesDoneCount = Object.keys(challengeCompleted).length;
         var tileCount = Object.keys(tiles).length;
         var activeBrushInfo = TILE_MAP[selectedTile] || TILE_MAP.grass;
+        var mainTab = goalIds.indexOf(gsTab) >= 0 ? 'learnHub' : gsTab;
+        // The Learn group opens on the view the student used last.
         var goGsTab = function(id) {
-          upd({ tab: id, playMessage: null });
+          var view = id === 'learnHub' ? (goalIds.indexOf(_gs.lastGoal) >= 0 ? _gs.lastGoal : 'learn') : id;
+          var patch = { tab: view, playMessage: null };
+          if (goalIds.indexOf(view) >= 0) patch.lastGoal = view;
+          upd(patch);
           try { var el = document.getElementById('gs-tab-' + id); if (el) el.focus(); } catch (_) {}
         };
-        var onGsTabKey = function(e) {
-          var ids = TABS.map(function(x) { return x.id; });
-          var idx = ids.indexOf(gsTab), next = null;
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = ids[(idx + 1) % ids.length];
-          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ids[(idx - 1 + ids.length) % ids.length];
-          else if (e.key === 'Home') next = ids[0];
-          else if (e.key === 'End') next = ids[ids.length - 1];
-          if (next) { e.preventDefault(); goGsTab(next); }
+        var tabKeyFor = function(ids, cur) {
+          return function(e) {
+            var idx = ids.indexOf(cur), next = null;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = ids[(idx + 1) % ids.length];
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = ids[(idx - 1 + ids.length) % ids.length];
+            else if (e.key === 'Home') next = ids[0];
+            else if (e.key === 'End') next = ids[ids.length - 1];
+            if (next) { e.preventDefault(); goGsTab(next); }
+          };
         };
+        var onGsTabKey = tabKeyFor(TABS.map(function(x) { return x.id; }), mainTab);
+        var onGoalTabKey = tabKeyFor(goalIds, gsTab);
+        // On the Projects view no top tab is selected; Map keeps the tab stop so the row stays reachable.
+        var mainStop = TABS.some(function(x) { return x.id === mainTab; }) ? mainTab : 'map';
 
         return h('div', { id: 'allo-game-studio', className: 'max-w-4xl mx-auto animate-in fade-in duration-300' },
 
@@ -1237,14 +2027,16 @@ window.StemLab = window.StemLab || {
                   h('h2', { className: 'text-lg md:text-xl font-black text-rose-950 m-0' }, __alloT('stem.gamestudio.game_design_studio', 'Game Design Studio')),
                   h('span', { className: 'text-[0.6875rem] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-rose-800 border border-rose-300' }, __alloT('stem.gamestudio.engine_badge', '2D Game Engine · Tech'))
                 ),
-                h('p', { className: 'text-xs text-rose-900 mt-0.5 mb-0' }, __alloT('stem.gamestudio.build_playable_2d_games_learn_game_des', 'Build playable 2D games \u2022 Learn game design \u2022 Earn XP'))
+                h('p', { className: 'text-xs font-bold text-rose-900 mt-0.5 mb-0' }, __alloT('stem.gamestudio.header_tagline_v2', 'Build a level, play it, change one thing.'))
               ),
-              // Live workbench metric pills
+              // Live workbench metric pills + the way to Projects (save, load, share)
               h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
-                h('div', { className: 'px-2.5 py-1 rounded-xl bg-white border border-rose-300 text-center' },
-                  h('div', { className: 'text-[0.625rem] font-bold text-rose-800 uppercase tracking-wide' }, __alloT('stem.gamestudio.tiles_placed', 'TILES PLACED')),
-                  h('div', { className: 'text-sm font-black text-rose-950 leading-tight' }, tileCount)
-                ),
+                h('button', { id: 'gs-tab-projects', type: 'button', 'aria-current': gsTab === 'projects' ? 'page' : undefined,
+                  onClick: function() { upd({ tab: 'projects', playMessage: null }); },
+                  style: { minHeight: '44px' },
+                  className: 'px-3 py-1 rounded-xl text-xs font-black border-2 cursor-pointer ' + (gsTab === 'projects' ? 'bg-rose-700 text-white border-rose-800' : 'bg-white text-rose-900 border-rose-600 hover:bg-rose-50')
+                }, '\ud83d\udcbe ' + __alloT('stem.gamestudio.projects_btn', 'Save & share')),
+                // (The tiles-placed count lives in Save & share > Project Stats, so the header fits one row on a phone.)
                 h('div', { className: 'px-2.5 py-1 rounded-xl bg-white border border-indigo-300 text-center' },
                   h('div', { className: 'text-[0.625rem] font-bold text-indigo-800 uppercase tracking-wide' }, __alloT('stem.gamestudio.lessons_pill', 'LESSONS')),
                   h('div', { className: 'text-sm font-black text-indigo-950 leading-tight' }, lessonsDoneCount + '/' + LESSONS.length)
@@ -1260,16 +2052,37 @@ window.StemLab = window.StemLab || {
           // ---- TAB BAR (WAI-ARIA tablist with roving tabindex & arrow keys) ----
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.gamestudio.sections_label', 'Game Design Studio workspaces'), className: 'flex flex-wrap gap-1 mb-4 p-1.5 bg-rose-50 rounded-xl border border-rose-300' },
             TABS.map(function(tab) {
+              var isActive = mainTab === tab.id;
+              return h('button', { key: tab.id, id: 'gs-tab-' + tab.id, type: 'button',
+                role: 'tab', 'aria-selected': isActive ? 'true' : 'false', 'aria-controls': 'gs-tabpanel', tabIndex: mainStop === tab.id ? 0 : -1,
+                onClick: function() { goGsTab(tab.id); },
+                onKeyDown: onGsTabKey,
+                style: { flex: '1 1 auto', minHeight: '44px' },
+                className: 'py-2 px-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' +
+                  (isActive ? 'bg-white text-rose-900 shadow-sm border border-rose-700 ring-1 ring-rose-700' : 'text-rose-800 hover:text-rose-950 hover:bg-rose-100 border border-rose-500')
+              }, tab.icon + ' ' + tab.label);
+            })
+          ),
+
+          // Second row, only inside Learn & Goals
+          mainTab === 'learnHub' && h('div', { role: 'tablist', 'aria-label': __alloT('stem.gamestudio.goals_tabs_label', 'Learn and goals'), className: 'flex flex-wrap gap-1 -mt-2 mb-4 p-1 bg-indigo-50 rounded-xl border border-indigo-300' },
+            GOAL_TABS.map(function(tab) {
               var isActive = gsTab === tab.id;
               return h('button', { key: tab.id, id: 'gs-tab-' + tab.id, type: 'button',
                 role: 'tab', 'aria-selected': isActive ? 'true' : 'false', 'aria-controls': 'gs-tabpanel', tabIndex: isActive ? 0 : -1,
                 onClick: function() { goGsTab(tab.id); },
-                onKeyDown: onGsTabKey,
-                style: { flex: '1 1 auto' },
-                className: 'py-2 px-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ' +
-                  (isActive ? 'bg-white text-rose-900 shadow-sm border border-rose-600' : 'text-rose-800 hover:text-rose-950 hover:bg-rose-100 border border-transparent')
+                onKeyDown: onGoalTabKey,
+                style: { flex: '1 1 auto', minHeight: '44px' },
+                className: 'py-1.5 px-2.5 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer ' +
+                  (isActive ? 'bg-white text-indigo-950 shadow-sm border border-indigo-700 ring-1 ring-indigo-700' : 'text-indigo-900 hover:bg-indigo-100 border border-indigo-500')
               }, tab.icon + ' ' + tab.label);
             })
+          ),
+
+          gsTab === 'projects' && h('div', { className: 'gs-panel flex flex-wrap items-center justify-between gap-2 -mt-2 mb-3 p-2.5 rounded-xl bg-white border border-rose-300' },
+            h('h3', { className: 'text-sm font-black text-rose-900 m-0' }, '💾 ' + __alloT('stem.gamestudio.projects_title', 'Save, load and share your game')),
+            h('button', { type: 'button', onClick: function() { goGsTab('map'); }, style: { minHeight: '44px' },
+              className: 'px-3 py-1.5 rounded-xl text-xs font-bold text-rose-900 bg-white border border-rose-600 hover:bg-rose-50' }, '← ' + __alloT('stem.gamestudio.back_to_map', 'Back to the map'))
           ),
 
           h('div', { role: 'tabpanel', id: 'gs-tabpanel', 'aria-labelledby': 'gs-tab-' + gsTab },
@@ -1277,107 +2090,217 @@ window.StemLab = window.StemLab || {
           // ============================================================
           // MAP EDITOR TAB
           // ============================================================
-          gsTab === 'map' && h('div', { className: 'space-y-4' },
+          gsTab === 'map' && (function() {
+            var check = _gs.levelCheck && _gs.levelCheck.sig === gsHash(levelSig() + JSON.stringify(engineOpts)) ? _gs.levelCheck : null;
+            var staleCheck = !!(_gs.levelCheck && !check);
+            var routeSet = {};
+            if (check && check.winnable && _gs.showRoute && Array.isArray(check.path)) check.path.forEach(function(p) { routeSet[p[0] + ',' + p[1]] = 1; });
+            var zone = showDanger ? GS_E.chaseZone(tiles, gridW, gridH, engineOpts) : {};
+            var runCheck = function() {
+              var r = GS_E.solve(tiles, gridW, gridH, engineOpts);
+              var lc = { sig: gsHash(levelSig() + JSON.stringify(engineOpts)), hasPlayer: r.hasPlayer, hasFlag: r.hasFlag, winnable: r.winnable, moves: r.moves, livesLost: r.livesLost, keysUsed: r.keysUsed, coinsReach: r.coinsReach, coinsTotal: r.coinsTotal, reachComplete: r.reachComplete, startLives: r.startLives, path: r.path.slice(0, 400), targets: r.targets, crates: r.crates };
+              upd({ levelCheck: lc });
+            };
+            var checkText = function(c) {
+              if (!c.hasPlayer) return __alloT('stem.gamestudio.check_no_player', 'No player yet. Put a Player tile where the game should start.');
+              if (c.winnable === null) return __alloT('stem.gamestudio.check_too_big', 'This level has too many possibilities for the quick check. Play it to test it.');
+              if (!c.winnable && c.hasFlag && c.targets > c.crates) return __alloT('stem.gamestudio.check_few_crates', 'Nobody can win this level: there are {t} targets but only {c} crates, so the flag never opens.').replace('{t}', c.targets).replace('{c}', c.crates);
+              if (!c.winnable) return (c.hasFlag ? __alloT('stem.gamestudio.check_no_win', 'Nobody can win this level. The engine tried every way, and none reaches the flag.') : __alloT('stem.gamestudio.check_no_flag', 'Nobody can win this level: there is no Flag (goal) yet.'));
+              var s = __alloT('stem.gamestudio.check_win', 'Yes, it can be won! The best route takes {moves} moves and loses {lost} of {lives} lives.').replace('{moves}', c.moves).replace('{lost}', c.livesLost).replace('{lives}', c.startLives);
+              if (c.targets) s += ' ' + __alloT('stem.gamestudio.check_targets', 'It pushes a crate onto all {n} targets first.').replace('{n}', c.targets);
+              if (c.keysUsed) s += ' ' + __alloT('stem.gamestudio.check_keys', 'It opens {n} door(s) on the way.').replace('{n}', c.keysUsed);
+              return s;
+            };
+            var coinText = function(c) {
+              if (!c.hasPlayer || !c.coinsTotal) return null;
+              return '🪙 ' + __alloT('stem.gamestudio.check_coins', 'Coins a player can reach: {a} of {b}.').replace('{a}', c.coinsReach).replace('{b}', c.coinsTotal) + (c.reachComplete ? '' : ' ' + __alloT('stem.gamestudio.check_coins_partial', '(at least)'));
+            };
+            var tool44 = { minHeight: '44px', minWidth: '44px' };
+            // ---- Drag painting (mouse, and touch when the Paint/Scroll toggle says Paint) ----
+            // Read live each render, so a tablet with a keyboard dock or a touch laptop gets the toggle too.
+            var coarse = false;
+            try { coarse = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(any-pointer: coarse)').matches; } catch (_) { coarse = false; }
+            var touchPaint = !!_gs.touchPaint;
+            var dragOk = brushTool === 'brush' || brushTool === 'eraser';
+            var cellIndexAt = function(cx, cy) {
+              var el = null;
+              try { el = document.elementFromPoint(cx, cy); } catch (_) { el = null; }
+              var cell = el && el.closest ? el.closest('[data-gs-cell]') : null;
+              return cell ? Number(cell.getAttribute('data-gs-cell')) : -1;
+            };
+            // One drag builds on its own latest map (events can arrive before React re-renders),
+            // and only its first square adds an Undo step, so Undo takes back the whole drag.
+            var dragPaint = function(i) {
+              var hst = _gsHist.current;
+              if (!(i >= 0 && i < gridW * gridH) || hst.lastIdx === i) return;
+              hst.lastIdx = i;
+              var k = (i % gridW) + ',' + Math.floor(i / gridW);
+              var nt = Object.assign({}, hst.live || tiles);
+              if (brushTool === 'eraser') { if (!nt[k]) return; delete nt[k]; }
+              else {
+                if (nt[k] === selectedTile || (selectedTile === 'empty' && !nt[k])) return;
+                if (selectedTile === 'player') Object.keys(nt).forEach(function(pk) { if (nt[pk] === 'player') delete nt[pk]; });
+                if (selectedTile === 'empty') delete nt[k]; else nt[k] = selectedTile;
+              }
+              var first = !hst.painted;
+              hst.painted = true; hst.live = nt;
+              setTiles(nt, first ? null : { noHistory: true });
+            };
+            var endDrag = function(e) {
+              var hst = _gsHist.current;
+              if (hst.ptr == null || (e && e.pointerId != null && hst.ptr !== e.pointerId)) return;
+              // The click that follows a painted press must not paint (and add an Undo step) again.
+              if (hst.painted) hst.skipClickUntil = Date.now() + 450;
+              hst.ptr = null; hst.live = null; hst.painted = false; hst.lastIdx = -1;
+            };
+            var gridPointer = {
+              onPointerDown: function(e) {
+                if (!dragOk) return;
+                var isMouse = e.pointerType === 'mouse';
+                if (isMouse ? e.button !== 0 : !touchPaint) return;
+                var hst = _gsHist.current;
+                hst.ptr = e.pointerId; hst.live = null; hst.painted = false; hst.lastIdx = -1;
+                try { if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+                dragPaint(cellIndexAt(e.clientX, e.clientY));
+              },
+              onPointerMove: function(e) { if (_gsHist.current.ptr === e.pointerId) dragPaint(cellIndexAt(e.clientX, e.clientY)); },
+              onPointerUp: endDrag, onPointerCancel: endDrag, onLostPointerCapture: endDrag
+            };
+            return h('div', { className: 'space-y-3' },
 
-            // Quick-start starter level chips (one click to jump into a playable world)
-            h('div', { className: 'gs-panel p-2.5 rounded-xl border border-rose-200 bg-rose-50/70 flex flex-wrap items-center gap-2' },
-              h('span', { className: 'text-xs font-extrabold text-rose-900' }, '⚡ ' + __alloT('stem.gamestudio.quick_load', 'Quick-Load Level:')),
-              STARTERS.map(function(st) {
-                return h('button', { key: st.name, type: 'button',
-                  onClick: function() { upd({ projectName: st.name, gameType: st.type, gridW: 16, gridH: 12, tiles: Object.assign({}, st.tiles) }); if (addToast) addToast('🎮 Loaded "' + st.name + '"!', 'success'); },
-                  className: 'px-2.5 py-1 rounded-full text-xs font-bold bg-white text-rose-900 border border-rose-300 hover:border-rose-600 hover:bg-rose-100 transition-colors cursor-pointer'
-                }, st.icon + ' ' + st.name);
-              }),
-              tileCount > 0 && h('button', { type: 'button',
-                onClick: function() { upd({ tiles: {} }); },
-                className: 'ml-auto px-2.5 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 cursor-pointer'
-              }, '🧹 ' + __alloT('stem.gamestudio.clear_map', 'Clear Map'))
-            ),
-
-            // Grid + game type controls
-            h('div', { className: 'gs-panel p-3 rounded-xl border border-rose-200 bg-white flex flex-wrap gap-3 items-center' },
-              h('div', { className: 'flex items-center gap-1.5' },
-                h('label', { className: 'text-xs font-bold text-rose-800' }, 'Grid:'),
-                h('select', {
-                  value: gridW + 'x' + gridH,
-                  onChange: function(e) {
-                    var p = e.target.value.split('x');
-                    upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
-                  },
-                  'aria-label': __alloT('stem.gamestudio.grid_size', 'Grid size'),
-                  className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white text-slate-900 font-bold'
-                },
-                  ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
+            // ---- Start here: pick a level, play it, change one thing, play again ----
+            h('div', { className: 'gs-panel p-3 rounded-xl border border-rose-200 bg-white space-y-2.5' },
+              h('p', { className: 'text-xs font-bold text-rose-900 m-0' }, __alloT('stem.gamestudio.start_steps', '1. Pick a level  →  2. Play it  →  3. Change one thing  →  4. Play again')),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', { className: 'text-xs font-extrabold text-rose-900' }, __alloT('stem.gamestudio.quick_load', 'Quick-Load Level:')),
+                STARTERS.map(function(st) {
+                  return h('button', { key: st.name, type: 'button',
+                    onClick: function() { setTiles(Object.assign({}, st.tiles), { extra: { projectName: st.name, gameType: st.type, gridW: 16, gridH: 12 } }); if (addToast) addToast('🎮 Loaded "' + st.name + '"!', 'success'); },
+                    style: { minHeight: '44px' },
+                    className: 'px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-900 border border-rose-500 hover:border-rose-600 hover:bg-rose-100 transition-colors cursor-pointer'
+                  }, st.icon + ' ' + st.name);
+                })
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('button', { type: 'button', onClick: function() { startGame({ tab: 'play' }); },
+                  style: { minHeight: '44px' },
+                  className: 'px-4 py-2 rounded-xl text-sm font-black text-white bg-green-700 hover:bg-green-800 shadow-md cursor-pointer'
+                }, '▶️ ' + __alloT('stem.gamestudio.play_this_level', 'Play this level')),
+                h('button', { type: 'button', onClick: runCheck,
+                  style: { minHeight: '44px' },
+                  className: 'px-3 py-2 rounded-xl text-xs font-bold text-indigo-900 bg-indigo-50 border border-indigo-500 hover:bg-indigo-100 cursor-pointer'
+                }, '🧪 ' + __alloT('stem.gamestudio.test_level', 'Can it be won? Test it')),
+                h('div', { className: 'flex gap-1 ml-auto' },
+                  h('button', { type: 'button', onClick: undoMap, disabled: !_gsHist.current.past.length, 'aria-label': __alloT('stem.gamestudio.undo', 'Undo map change'), title: __alloT('stem.gamestudio.undo', 'Undo map change'), style: tool44,
+                    className: 'rounded-lg text-base border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-40 cursor-pointer' }, '↶'),
+                  h('button', { type: 'button', onClick: redoMap, disabled: !_gsHist.current.future.length, 'aria-label': __alloT('stem.gamestudio.redo', 'Redo map change'), title: __alloT('stem.gamestudio.redo', 'Redo map change'), style: tool44,
+                    className: 'rounded-lg text-base border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-40 cursor-pointer' }, '↷'),
+                  tileCount > 0 && h('button', { type: 'button',
+                    onClick: function() { setTiles({}); },
+                    style: { minHeight: '44px' },
+                    className: 'px-2.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-500 hover:bg-slate-100 cursor-pointer'
+                  }, '🧹 ' + __alloT('stem.gamestudio.clear_map', 'Clear Map'))
                 )
               ),
-              h('div', { className: 'flex items-center gap-1.5' },
-                h('label', { className: 'text-xs font-bold text-rose-800' }, 'Type:'),
+              playMessage && !isPlaying && h('div', { role: 'status', className: 'text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1.5' }, playMessage),
+              (playersOnMap > 1) && h('div', { className: 'text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1.5' },
+                __alloT('stem.gamestudio.warn_players', 'There are {n} Player tiles. Only the top-left one plays; the others are ignored.').replace('{n}', playersOnMap))
+            ),
+
+            // ---- Game type (changes the rules) + one disclosure for the rest ----
+            h('div', { className: 'gs-panel p-3 rounded-xl border border-rose-200 bg-white flex flex-wrap gap-3 items-center' },
+              h('label', { className: 'flex items-center gap-1.5 text-xs font-bold text-rose-800' },
+                __alloT('stem.gamestudio.type_label', 'Type:'),
                 h('select', {
                   value: gameType,
                   onChange: function(e) { upd({ gameType: e.target.value }); },
                   'aria-label': __alloT('stem.gamestudio.game_type', 'Game type'),
+                  style: { minHeight: '40px' },
                   className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white text-slate-900 font-bold'
                 },
-                  h('option', { value: 'topdown' }, __alloT('stem.gamestudio.top_down', '\uD83D\uDD3D Top-Down')),
-                  h('option', { value: 'platformer' }, __alloT('stem.gamestudio.platformer', '\uD83C\uDFC3 Platformer')),
-                  h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '\uD83E\uDDE9 Puzzle'))
+                  h('option', { value: 'topdown' }, __alloT('stem.gamestudio.top_down', '🔽 Top-Down')),
+                  h('option', { value: 'platformer' }, __alloT('stem.gamestudio.platformer', '🏃 Platformer')),
+                  h('option', { value: 'puzzle' }, __alloT('stem.gamestudio.puzzle', '🧩 Puzzle'))
                 )
               ),
-              // Danger overlay toggle
-              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-800 cursor-pointer px-2.5 py-1 rounded-lg bg-orange-50 border border-orange-300' },
+              h('span', { className: 'text-[0.75rem] text-slate-700' }, gameType === 'platformer'
+                ? __alloT('stem.gamestudio.type_rule_side', 'Side view: gravity pulls you down 1 square each move. Up (or Space) jumps 3 squares when you stand on something.')
+                : gameType === 'puzzle'
+                  ? __alloT('stem.gamestudio.type_rule_puzzle', 'Puzzle: walk into a crate to push it one square (no pulling). The flag stays locked until a crate sits on every target.')
+                  : __alloT('stem.gamestudio.type_rule_top', 'Top-down: no gravity. Move one square at a time in any direction.')),
+              h('label', { className: 'flex items-center gap-1.5 ml-auto text-xs font-bold text-orange-900 cursor-pointer px-2.5 rounded-lg bg-orange-50 border border-orange-300', style: { minHeight: '44px' } },
                 h('input', { type: 'checkbox', checked: showDanger, onChange: function() { upd({ showDanger: !showDanger }); } }),
-                __alloT('stem.gamestudio.danger_map', '\u26A0\uFE0F Danger Map')
+                __alloT('stem.gamestudio.danger_map', '⚠️ Danger Map')
               ),
-              // AI Map Gen
-              callGemini && h('button', { onClick: function() {
-                  if (aiPrompt && String(aiPrompt).trim()) {
-                    var _gsChecker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
-                    var _gsFlags = null;
-                    try { _gsFlags = (_gsChecker && _gsChecker.check) ? _gsChecker.check(String(aiPrompt)) : null; } catch (_) { _gsFlags = null; }
-                    var _gsCrit = Array.isArray(_gsFlags) && _gsFlags.find(function(f) { return f && f.severity === 'critical' && !(f.category === 'harm_to_others' && /^(attack|shoot)$/i.test(String(f.match || '').trim())); });
-                    if (_gsCrit) {
-                      if (typeof ctx.onSafetyFlag === 'function') {
-                        try { ctx.onSafetyFlag(Object.assign({}, _gsCrit, { source: 'stem_gameStudio_map_prompt', context: String(aiPrompt).slice(0, 100), aiGenerated: false })); } catch (_) {}
+              h('details', { className: 'w-full' },
+                h('summary', { className: 'text-xs font-bold text-rose-800 cursor-pointer py-1' }, '⚙️ ' + __alloT('stem.gamestudio.more_map_settings', 'More map settings (grid size, AI map)')),
+                h('div', { className: 'flex flex-wrap gap-3 items-center pt-2' },
+                  h('label', { className: 'flex items-center gap-1.5 text-xs font-bold text-rose-800' },
+                    __alloT('stem.gamestudio.grid_label', 'Grid:'),
+                    h('select', {
+                      value: gridW + 'x' + gridH,
+                      onChange: function(e) {
+                        var p = e.target.value.split('x'), nw = parseInt(p[0], 10), nh = parseInt(p[1], 10);
+                        // Keep everything that still fits instead of wiping the map.
+                        setTiles(cleanTiles(tiles, nw, nh), { extra: { gridW: nw, gridH: nh, tileCur: 0 } });
+                      },
+                      'aria-label': __alloT('stem.gamestudio.grid_size', 'Grid size'),
+                      className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white text-slate-900 font-bold'
+                    },
+                      ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
+                    )
+                  ),
+                  // AI Map Gen
+                  callGemini && h('button', { onClick: function() {
+                      if (aiPrompt && String(aiPrompt).trim()) {
+                        var _gsChecker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+                        var _gsFlags = null;
+                        try { _gsFlags = (_gsChecker && _gsChecker.check) ? _gsChecker.check(String(aiPrompt)) : null; } catch (_) { _gsFlags = null; }
+                        var _gsCrit = Array.isArray(_gsFlags) && _gsFlags.find(function(f) { return f && f.severity === 'critical' && !(f.category === 'harm_to_others' && /^(attack|shoot)$/i.test(String(f.match || '').trim())); });
+                        if (_gsCrit) {
+                          if (typeof ctx.onSafetyFlag === 'function') {
+                            try { ctx.onSafetyFlag(Object.assign({}, _gsCrit, { source: 'stem_gameStudio_map_prompt', context: String(aiPrompt).slice(0, 100), aiGenerated: false })); } catch (_) {}
+                          }
+                          upd({ aiLoading: false, aiResult: 'Paused for safety — please talk to a trusted adult, call or text 988, or text HOME to 741741. You are not alone.' });
+                          return;
+                        }
                       }
-                      upd({ aiLoading: false, aiResult: 'Paused for safety — please talk to a trusted adult, call or text 988, or text HOME to 741741. You are not alone.' });
-                      return;
-                    }
-                  }
-                  upd({ aiLoading: true });
-                  var prompt = 'Generate a ' + gridW + 'x' + gridH + ' tile map for a ' + gameType + ' game as JSON. ' +
-                    'Use ONLY these tile IDs: empty, grass, water, wall, lava, ice, sand, path, door, key, coin, gem, flag, spikes, heart, portal, platform, player, enemy, npc, treasure. ' +
-                    'Return ONLY a JSON object like {"tiles":{"0,0":"grass","1,0":"wall",...}} where keys are "x,y". ' +
-                    'Include exactly 1 player, 1 flag (goal), 3-5 enemies, 5-10 coins, 1-2 keys and doors, and appropriate terrain. ' +
-                    (aiPrompt ? 'Theme: ' + aiPrompt + '. ' : '') + 'No markdown, no explanation, ONLY the JSON.';
-                  callGemini(prompt).then(function(res) {
-                    try {
-                      var clean = res.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
-                      var parsed = JSON.parse(clean);
-                      if (parsed.tiles) upd({ tiles: parsed.tiles, aiLoading: false, aiResult: '\u2705 Map generated!' });
-                      else upd({ aiLoading: false, aiResult: '\u26A0\uFE0F Invalid format' });
-                    } catch(e) { upd({ aiLoading: false, aiResult: '\u274C Parse error' }); }
-                  }).catch(function() { upd({ aiLoading: false, aiResult: '\u274C AI error' }); });
-                },
-                disabled: aiLoading,
-                'aria-busy': aiLoading,
-                'aria-label': aiLoading ? __alloT('stem.gamestudio.a11y_generating_game_asset', 'Generating game asset') : __alloT('stem.gamestudio.a11y_ai_generate_game_asset', 'AI generate game asset'),
-                className: 'px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
-                  (aiLoading ? 'bg-gray-500' : 'bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 shadow-sm')
-              }, aiLoading ? '\u23F3 Generating...' : '\u2728 AI Generate')
+                      upd({ aiLoading: true });
+                      var prompt = 'Generate a ' + gridW + 'x' + gridH + ' tile map for a ' + gameType + ' game as JSON. ' +
+                        'Use ONLY these tile IDs: empty, grass, water, wall, lava, ice, sand, path, door, key, coin, gem, flag, spikes, heart, portal, platform, player, enemy, npc, treasure, crate, target. ' +
+                        'Return ONLY a JSON object like {"tiles":{"0,0":"grass","1,0":"wall",...}} where keys are "x,y". ' +
+                        'Include exactly 1 player, 1 flag (goal), 3-5 enemies, 5-10 coins, 1-2 keys and doors, and appropriate terrain. ' +
+                        (aiPrompt ? 'Theme: ' + aiPrompt + '. ' : '') + 'No markdown, no explanation, ONLY the JSON.';
+                      callGemini(prompt).then(function(res) {
+                        try {
+                          var clean = res.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+                          var parsed = JSON.parse(clean, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
+                          if (parsed && parsed.tiles) { setTiles(cleanTiles(parsed.tiles, gridW, gridH), { extra: { aiLoading: false, aiResult: '✅ Map generated! Test it: can it be won?' } }); }
+                          else upd({ aiLoading: false, aiResult: '⚠️ Invalid format' });
+                        } catch(e) { upd({ aiLoading: false, aiResult: '❌ Parse error' }); }
+                      }).catch(function() { upd({ aiLoading: false, aiResult: '❌ AI error' }); });
+                    },
+                    disabled: aiLoading,
+                    'aria-busy': aiLoading,
+                    'aria-label': aiLoading ? __alloT('stem.gamestudio.a11y_generating_game_asset', 'Generating game asset') : __alloT('stem.gamestudio.a11y_ai_generate_game_asset', 'AI generate game asset'),
+                    className: 'px-3 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' +
+                      (aiLoading ? 'bg-gray-500' : 'bg-gradient-to-r from-purple-700 to-pink-700 hover:from-purple-800 hover:to-pink-800 shadow-sm')
+                  }, aiLoading ? '⏳ Generating...' : '✨ AI Generate')
+                ),
+                callGemini && h('div', { className: 'flex gap-2 pt-2' },
+                  h('input', {
+                    type: 'text', value: aiPrompt,
+                    onChange: function(e) { upd({ aiPrompt: e.target.value }); },
+                    placeholder: __alloT('stem.gamestudio.theme_forest_maze_ice_castle_dungeon', 'Theme: forest maze, ice castle, dungeon...'),
+                    'aria-label': __alloT('stem.gamestudio.ai_map_generation_theme', 'AI map generation theme'),
+                    className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2.5 py-2 bg-white text-slate-900'
+                  }),
+                  aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '✅' ? 'text-green-700' : 'text-red-700') }, aiResult)
+                )
+              )
             ),
 
-            callGemini && h('div', { className: 'flex gap-2' },
-              h('input', {
-                type: 'text', value: aiPrompt,
-                onChange: function(e) { upd({ aiPrompt: e.target.value }); },
-                placeholder: __alloT('stem.gamestudio.theme_forest_maze_ice_castle_dungeon', 'Theme: forest maze, ice castle, dungeon...'),
-                'aria-label': __alloT('stem.gamestudio.ai_map_generation_theme', 'AI map generation theme'),
-                className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2.5 py-2 bg-white text-slate-900'
-              }),
-              aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-700' : 'text-red-700') }, aiResult)
-            ),
-
-            // Tile palette + brush tools
+            // ---- Tile palette + brush tools; the chosen tile's rule is always written out ----
             h('div', { className: 'gs-panel p-3.5 rounded-xl border border-rose-200 bg-white' },
               h('div', { className: 'flex flex-wrap items-center gap-2 mb-2.5' },
                 h('span', { className: 'text-xs font-extrabold text-rose-900 uppercase tracking-wide' }, __alloT('stem.gamestudio.tiles', 'Tiles')),
@@ -1386,11 +2309,12 @@ window.StemLab = window.StemLab || {
                   (activeBrushInfo.emoji ? activeBrushInfo.emoji + ' ' : '') + activeBrushInfo.label + ' · ' + brushTool
                 ),
                 h('div', { className: 'flex gap-1 ml-auto' },
-                  [{ id: 'brush', icon: '\u270F\uFE0F', label: __alloT('stem.gamestudio.map_tool_brush', 'Map tool: Brush') }, { id: 'fill', icon: '\uD83E\uDEA3', label: __alloT('stem.gamestudio.map_tool_fill', 'Map tool: Fill') }, { id: 'eraser', icon: '\uD83E\uDDF9', label: __alloT('stem.gamestudio.map_tool_eraser', 'Map tool: Eraser') }, { id: 'eyedropper', icon: '\uD83D\uDCA7', label: __alloT('stem.gamestudio.map_tool_eyedropper', 'Map tool: Pick a tile from the map') }].map(function(bt) {
+                  [{ id: 'brush', icon: '✏️', label: __alloT('stem.gamestudio.map_tool_brush', 'Map tool: Brush') }, { id: 'fill', icon: '🪣', label: __alloT('stem.gamestudio.map_tool_fill', 'Map tool: Fill') }, { id: 'eraser', icon: '🧹', label: __alloT('stem.gamestudio.map_tool_eraser', 'Map tool: Eraser') }, { id: 'eyedropper', icon: '💧', label: __alloT('stem.gamestudio.map_tool_eyedropper', 'Map tool: Pick a tile from the map') }].map(function(bt) {
                     return h('button', { key: bt.id,
                       'aria-pressed': brushTool === bt.id,
                       onClick: function() { upd({ brushTool: bt.id }); },
-                      className: 'px-2.5 py-1.5 rounded-lg text-sm border transition-all cursor-pointer ' + (brushTool === bt.id ? 'bg-rose-100 border-rose-600 shadow-inner' : 'border-slate-200 hover:bg-rose-50'),
+                      style: tool44,
+                      className: 'px-2.5 py-1.5 rounded-lg text-sm border transition-all cursor-pointer ' + (brushTool === bt.id ? 'bg-rose-100 border-rose-600 shadow-inner' : 'border-slate-500 hover:bg-rose-50'),
                       'aria-label': bt.label,
                       title: bt.label
                     }, bt.icon);
@@ -1403,20 +2327,26 @@ window.StemLab = window.StemLab || {
                     'aria-label': t.label,
                     'aria-pressed': selectedTile === t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
-                    className: 'w-9 h-9 rounded-lg border-2 flex items-center justify-center text-sm transition-all cursor-pointer ' +
-                      (selectedTile === t.id ? 'border-rose-700 ring-2 ring-rose-300 shadow-sm scale-105' : 'border-slate-300 hover:border-rose-600'),
-                    style: { background: t.color },
-                    title: t.label
-                  }, t.emoji || '');
+                    className: 'relative rounded-lg border-2 flex items-center justify-center text-base transition-all cursor-pointer ' +
+                      (selectedTile === t.id ? 'border-rose-700 ring-2 ring-rose-300 shadow-sm scale-105' : 'border-slate-500 hover:border-rose-600'),
+                    style: { background: t.color, width: '44px', height: '44px' },
+                    title: t.label + ': ' + tileRule(t.id)
+                  },
+                    // The tile color also sits on a child, so it survives the high-contrast theme's black buttons.
+                    h('span', { 'aria-hidden': 'true', className: 'gs-swatch-fill', style: { position: 'absolute', inset: 0, borderRadius: '4px', backgroundColor: t.color } }),
+                    h('span', { style: { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, pieceArt(t.id, '30px') || t.emoji || ''));
                 })
-              )
+              ),
+              h('p', { className: 'mt-2 mb-0 text-xs text-slate-800 leading-snug', 'aria-live': 'polite' },
+                h('strong', null, (activeBrushInfo.emoji ? activeBrushInfo.emoji + ' ' : '') + activeBrushInfo.label + ': '),
+                tileRule(activeBrushInfo.id))
             ),
 
-            // Tile grid viewport frame — atmospheric layered studio stage backdrop
+            // ---- Tile grid viewport frame ----
             h('div', {
               className: 'gs-panel rounded-2xl border-2 border-rose-300 bg-slate-900 p-3 overflow-auto',
               style: {
-                maxHeight: '440px',
+                maxHeight: '560px',
                 background: gameType === 'platformer'
                   ? 'linear-gradient(180deg, #0b1936 0%, #172554 54%, #0f172a 100%)'
                   : gameType === 'puzzle'
@@ -1425,92 +2355,132 @@ window.StemLab = window.StemLab || {
                 boxShadow: 'inset 0 0 32px rgba(2,6,23,0.72), 0 12px 28px -12px rgba(15,23,42,0.55)'
               }
             },
-              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[0.6875rem] font-bold text-slate-300 mb-2' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-[0.75rem] font-bold text-slate-200 mb-2' },
                 h('span', null, '🗺️ ' + projectName + ' (' + gridW + '×' + gridH + ')'),
-                showDanger && h('span', { className: 'text-amber-300' }, '⚠️ Danger heat shows nearby lava, spikes & enemies')
+                showDanger && engineS.chase === 0 && !engineS.rules.enemy ? h('span', { className: 'text-amber-200' }, __alloT('stem.gamestudio.danger_no_chase', 'Enemy chase range is 0: enemies only patrol. Yellow rings mark squares that hurt.')) : showDanger && h('span', { className: 'text-amber-200' }, '⚠️ ' + __alloT('stem.gamestudio.danger_legend', 'Red = an enemy can chase you there (enemies chase when you are {n} or fewer steps away). Number = how many enemies. Yellow ring = it hurts.').replace('{n}', engineS.chase))
               ),
-              h('div', {
-                role: 'group',
+              // Touch screens: choose what a finger drag on the map does. Taps always paint.
+              coarse && h('div', { className: 'flex flex-wrap items-center gap-2 mb-2' },
+                h('div', { role: 'group', 'aria-label': __alloT('stem.gamestudio.touch_mode_label', 'What a finger drag on the map does'), className: 'inline-flex rounded-xl overflow-hidden border-2 border-rose-300' },
+                  [{ on: false, icon: '✋', label: __alloT('stem.gamestudio.touch_scroll', 'Scroll') }, { on: true, icon: '🖌️', label: __alloT('stem.gamestudio.touch_paint', 'Paint') }].map(function(m) {
+                    var act = touchPaint === m.on;
+                    return h('button', { key: m.label, type: 'button', 'aria-pressed': act ? 'true' : 'false', onClick: function() { upd({ touchPaint: m.on }); },
+                      style: { minHeight: '44px', minWidth: '88px' },
+                      className: 'px-3 text-xs font-black ' + (act ? 'bg-rose-200 text-rose-950' : 'bg-slate-800 text-slate-100') }, m.icon + ' ' + m.label);
+                  })
+                ),
+                h('span', { className: 'text-[0.75rem] font-bold text-slate-200' }, touchPaint
+                  ? (dragOk ? __alloT('stem.gamestudio.touch_paint_hint', 'Drag a finger to paint. Undo takes back a whole drag.') : __alloT('stem.gamestudio.touch_paint_tool', 'Drag paints with the Brush or Eraser. Tap to use this tool.'))
+                  : __alloT('stem.gamestudio.touch_scroll_hint', 'Drag to scroll the page. Tap a square to paint it.'))
+              ),
+              h('div', Object.assign({
+                role: 'group', className: 'gs-paint-grid',
                 'aria-label': __alloT('stem.gamestudio.tile_grid_label', 'Level map. Arrow keys move between tiles; Enter or Space uses the current tool.'),
                 style: {
+                  touchAction: (coarse && touchPaint && dragOk) ? 'none' : undefined,
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
                   gap: '1px', background: 'rgba(51,65,85,0.68)', border: '2px solid rgba(148,163,184,0.42)', borderRadius: '10px', overflow: 'hidden',
-                  maxWidth: Math.min(gridW * 30, 720) + 'px', margin: '0 auto',
+                  // Cells stay at least 24 px (WCAG 2.5.8) — on a phone the map scrolls sideways inside its frame.
+                  maxWidth: Math.max(Math.min(gridW * 30, 720), gridW * 25) + 'px', minWidth: (gridW * 25) + 'px', margin: '0 auto',
                   boxShadow: '0 10px 26px rgba(2,6,23,0.55)'
                 }
-              },
+              }, gridPointer),
                 Array.from({ length: gridW * gridH }, function(_, i) {
                   var x = i % gridW, y = Math.floor(i / gridW);
                   var k = x + ',' + y;
-                  var tId = tiles[k] || 'empty';
+                  var tId = TILE_MAP[tiles[k]] ? tiles[k] : 'empty';
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
-                  var danger = showDanger ? dangerAt(tiles, x, y) : 0;
-                  var dangerOverlay = danger > 0 ? 'rgba(239,68,68,' + Math.min(0.65, danger * 0.16) + ')' : null;
+                  var danger = (showDanger && !GS_E.BLOCK[tId]) ? (zone[k] || 0) : 0;
+                  var hurtsHere = showDanger && (tId === 'lava' || tId === 'spikes' || tId === 'enemy');
+                  var onRoute = !!routeSet[k];
                   var isSolidTile = tId === 'wall' || tId === 'platform' || tId === 'door' || tId === 'ice' || tId === 'grass' || tId === 'sand';
                   var isBeaconTile = tId === 'player' || tId === 'flag' || tId === 'portal' || tId === 'coin' || tId === 'gem' || tId === 'key' || tId === 'heart' || tId === 'lava' || tId === 'enemy';
-                  var emptyShade = (x + y) % 2 === 0 ? 'rgba(15,23,42,0.82)' : 'rgba(22,33,54,0.84)';
-                  var tileBg = dangerOverlay || (tId === 'empty' ? emptyShade : tInfo.color);
-                  var tileShadow = tId === 'player' ? 'inset 0 0 12px rgba(167,139,250,0.65), 0 0 8px rgba(139,92,246,0.5)'
+                  // Opaque (the same look as the old see-through shades), so the high-contrast yellow grid does not tint them.
+                  var emptyShade = (x + y) % 2 === 0 ? '#141c2f' : '#192439';
+                  var tileBg = tId === 'empty' ? emptyShade : tInfo.color;
+                  var dangerImg = danger > 0 ? 'linear-gradient(rgba(239,68,68,' + Math.min(0.62, 0.2 + danger * 0.14) + '), rgba(239,68,68,' + Math.min(0.62, 0.2 + danger * 0.14) + '))' : undefined;
+                  var tileShadow = hurtsHere ? 'inset 0 0 0 2px #fde047'
+                    : tId === 'player' ? 'inset 0 0 12px rgba(167,139,250,0.65), 0 0 8px rgba(139,92,246,0.5)'
                     : tId === 'flag' ? 'inset 0 0 12px rgba(52,211,153,0.65)'
                     : tId === 'portal' ? 'inset 0 0 12px rgba(192,132,252,0.7)'
                     : tId === 'lava' ? 'inset 0 0 10px rgba(251,146,60,0.8)'
+                    : tId === 'crate' ? 'inset 0 0 0 2px #fbbf24, inset 0 3px 0 rgba(255,255,255,0.25)'
                     : isSolidTile ? 'inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(2,6,23,0.42)'
                     : undefined;
-                  var paintTile = function() {
-                    if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); }
-                    else if (brushTool === 'eraser') { var nt = Object.assign({}, tiles); delete nt[k]; upd({ tiles: nt }); }
-                    else if (brushTool === 'fill') {
-                      var nt2 = Object.assign({}, tiles);
-                      var target = nt2[k] || 'empty';
-                      if (target !== selectedTile) { floodFill(nt2, x, y, target, selectedTile, gridW, gridH); upd({ tiles: nt2 }); }
+                  var paintTile = function(opts) {
+                    if (brushTool === 'eyedropper') { upd({ selectedTile: tId, brushTool: 'brush' }); return; }
+                    var nt = Object.assign({}, tiles);
+                    if (brushTool === 'eraser') { if (!nt[k]) return; delete nt[k]; }
+                    else if (brushTool === 'fill' && selectedTile !== 'player') {
+                      var target = nt[k] || 'empty';
+                      if (target === selectedTile) return;
+                      floodFill(nt, x, y, target, selectedTile, gridW, gridH);
+                    } else {
+                      if (nt[k] === selectedTile) return;
+                      // One player: placing the Player moves it here.
+                      if (selectedTile === 'player') Object.keys(nt).forEach(function(pk) { if (nt[pk] === 'player') delete nt[pk]; });
+                      if (selectedTile === 'empty') delete nt[k]; else nt[k] = selectedTile;
                     }
-                    else { var nt3 = Object.assign({}, tiles); nt3[k] = selectedTile; upd({ tiles: nt3 }); }
+                    setTiles(nt, opts);
                   };
+                  var cellLabel = __alloT('stem.gamestudio.tile_cell', 'Column {x}, row {y}: {tile}').replace('{x}', x + 1).replace('{y}', y + 1).replace('{tile}', tInfo.label)
+                    + (onRoute ? ', ' + __alloT('stem.gamestudio.cell_on_route', 'on the best route') : '')
+                    + (danger > 0 ? ', ' + __alloT('stem.gamestudio.cell_chase', '{n} enemy can chase you here').replace('{n}', danger) : '');
                   return h('div', {
                     key: k, role: 'button', tabIndex: i === tileCur ? 0 : -1,
                     className: 'gs-tile-cell' + (i === tileCur ? ' gs-tile-cell-cur' : ''),
-                    'aria-label': __alloT('stem.gamestudio.tile_cell', 'Column {x}, row {y}: {tile}').replace('{x}', x + 1).replace('{y}', y + 1).replace('{tile}', tInfo.label),
+                    'aria-label': cellLabel,
                     onKeyDown: function(e) { gsGridKey(e, i, gridW, gridH, 'tileCur', paintTile); },
                     onFocus: function() { if (i !== tileCur) upd({ tileCur: i }); },
-                    onClick: paintTile,
-                    onMouseEnter: function(e) {
-                      if (e.buttons === 1 && (brushTool === 'brush' || brushTool === 'eraser')) {
-                        var nt = Object.assign({}, tiles);
-                        if (brushTool === 'eraser') delete nt[k]; else nt[k] = selectedTile;
-                        upd({ tiles: nt });
-                      }
-                    },
+                    'data-gs-cell': i,
+                    // Mouse and touch presses paint in the grid's pointer handlers; a click from the
+                    // keyboard, a screen reader or a touch tap in Scroll mode paints here.
+                    onClick: function() { if (Date.now() < (_gsHist.current.skipClickUntil || 0)) return; paintTile(); },
                     style: {
-                      width: '100%', aspectRatio: '1',
-                      background: tileBg,
+                      width: '100%', aspectRatio: '1', position: 'relative',
+                      backgroundColor: tileBg,
+                      backgroundImage: dangerImg,
                       boxShadow: tileShadow,
                       cursor: 'crosshair', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: Math.min(22, Math.floor(560 / gridW)) + 'px',
                       userSelect: 'none', minWidth: '12px', minHeight: '12px'
                     }
-                  }, (showDanger && danger > 0 && tId === 'empty')
-                    ? h('span', { style: { fontSize: '11px', fontWeight: 900, color: '#ffffff' } }, danger)
-                    : (tInfo.emoji ? h('span', { style: { filter: isBeaconTile ? 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' : 'drop-shadow(0 1px 1px rgba(2,6,23,0.45))' } }, tInfo.emoji) : ''));
+                  }, (danger > 0 && (tId === 'empty' || tId === 'grass' || tId === 'path' || tId === 'sand' || tId === 'ice'))
+                    ? h('span', { 'aria-hidden': 'true', className: 'gs-danger-num', style: { fontSize: '12px', fontWeight: 900, color: '#ffffff', textShadow: '0 1px 2px #000' } }, danger)
+                    : (pieceArt(tId) || (tInfo.emoji ? h('span', { 'aria-hidden': 'true', style: { filter: isBeaconTile ? 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' : 'drop-shadow(0 1px 1px rgba(2,6,23,0.45))' } }, tInfo.emoji) : '')),
+                    onRoute && h('span', { 'aria-hidden': 'true', style: { position: 'absolute', width: '34%', height: '34%', borderRadius: '50%', background: '#fde047', border: '2px solid #713f12', boxShadow: '0 0 4px rgba(0,0,0,0.6)', opacity: 0.92, pointerEvents: 'none' } }));
                 })
               )
+            ),
+
+            // ---- Level check result (from the game engine) ----
+            (check || staleCheck) && h('div', { role: 'status', className: 'gs-panel p-3 rounded-xl border-2 ' + (check && check.winnable ? 'border-emerald-400 bg-emerald-50' : 'border-indigo-300 bg-indigo-50') + ' space-y-1.5' },
+              staleCheck && h('p', { className: 'text-xs font-bold text-indigo-950 m-0' }, '🔄 ' + __alloT('stem.gamestudio.check_stale', 'You changed the level (or its rules). Test it again to see what changed.')),
+              check && h('p', { className: 'text-sm font-bold m-0 ' + (check.winnable ? 'text-emerald-950' : 'text-indigo-950') }, (check.winnable ? '✅ ' : '🧪 ') + checkText(check)),
+              check && coinText(check) && h('p', { className: 'text-xs text-slate-800 m-0' }, coinText(check)),
+              check && check.winnable && h('label', { className: 'inline-flex items-center gap-2 text-xs font-bold text-emerald-950 cursor-pointer', style: { minHeight: '44px' } },
+                h('input', { type: 'checkbox', checked: !!_gs.showRoute, onChange: function() { upd({ showRoute: !_gs.showRoute }); } }),
+                __alloT('stem.gamestudio.show_route', 'Show the best route on the map (gold dots)')),
+              check && h('p', { className: 'text-[0.75rem] text-slate-700 m-0' }, __alloT('stem.gamestudio.check_how', 'How it knows: the game engine plays every possible move, using the same rules as Play, and keeps the route that loses the fewest lives, then takes the fewest moves.'))
             ),
 
             // Stats bar (pill chips)
             h('div', { className: 'flex flex-wrap gap-2 text-xs text-rose-900 font-bold' },
               [
-                '\uD83D\uDD0D ' + gridW + '\u00D7' + gridH + ' = ' + (gridW * gridH),
-                '\uD83E\uDDD1 Players: ' + countTile(tiles, 'player'),
-                '\uD83D\uDC7E Enemies: ' + countTile(tiles, 'enemy'),
-                '\uD83E\uDE99 Coins: ' + countTile(tiles, 'coin'),
-                '\uD83D\uDD11 Keys: ' + countTile(tiles, 'key'),
-                '\uD83D\uDEAA Doors: ' + countTile(tiles, 'door'),
-                '\uD83D\uDEA9 Flags: ' + countTile(tiles, 'flag')
+                '🔍 ' + gridW + '×' + gridH + ' = ' + (gridW * gridH),
+                '🧑 Players: ' + countTile(tiles, 'player'),
+                '👾 Enemies: ' + countTile(tiles, 'enemy'),
+                '🪙 Coins: ' + countTile(tiles, 'coin'),
+                '🔑 Keys: ' + countTile(tiles, 'key'),
+                '🚪 Doors: ' + countTile(tiles, 'door'),
+                '🚩 Flags: ' + countTile(tiles, 'flag')
               ].map(function(stat, si) {
                 return h('span', { key: si, className: 'px-2.5 py-1 rounded-full bg-rose-50 border border-rose-200' }, stat);
               })
             )
-          ),
+          );
+          })(),
 
 
           // ============================================================
@@ -1525,13 +2495,13 @@ window.StemLab = window.StemLab || {
                 SPRITE_PRESETS.map(function(sp) {
                   return h('button', { key: sp.id,
                     'aria-pressed': activeSprite === sp.id,
-                    onClick: function() { upd({ activeSprite: sp.id, spritePixels: Object.assign({}, sp.pixels), spriteColor: sp.color }); },
+                    onClick: function() { setSpritePixels(Object.assign({}, sp.pixels), { extra: { activeSprite: sp.id, spriteColor: sp.color } }); },
                     className: 'px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all ' +
-                      (activeSprite === sp.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-gray-200 hover:border-rose-600')
+                      (activeSprite === sp.id ? 'border-rose-600 bg-rose-50 shadow-md' : 'border-slate-500 hover:border-rose-600')
                   }, '\uD83C\uDFA8 ' + sp.name);
                 }),
                 h('button', { 'aria-label': __alloT('stem.gamestudio.aria_new_sprite', 'New sprite'),
-                  onClick: function() { upd({ activeSprite: 'custom_' + Date.now(), spritePixels: {}, spriteColor: '#e74c3c' }); },
+                  onClick: function() { setSpritePixels({}, { extra: { activeSprite: 'custom_' + Date.now(), spriteColor: '#e74c3c' } }); },
                   className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all'
                 }, __alloT('stem.gamestudio.new', '\u2795 New'))
               )
@@ -1541,44 +2511,56 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-4 flex-wrap items-start' },
               // 16x16 pixel canvas + Live Multi-Scale SVG Preview
               h('div', { className: 'gs-panel p-3.5 rounded-xl border border-rose-200 bg-white space-y-3', style: { maxWidth: '100%' } },
-                h('div', {
-                  role: 'group',
+                // Touch screens: choose what a finger drag on the pixels does (shared with the map). Taps always draw.
+                spriteCoarse && h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('div', { role: 'group', 'aria-label': __alloT('stem.gamestudio.touch_mode_sprite_label', 'What a finger drag on the pixels does'), className: 'inline-flex rounded-xl overflow-hidden border-2 border-rose-700' },
+                    [{ on: false, icon: '✋', label: __alloT('stem.gamestudio.touch_scroll', 'Scroll') }, { on: true, icon: '🖌️', label: __alloT('stem.gamestudio.touch_paint', 'Paint') }].map(function(m) {
+                      var act = !!_gs.touchPaint === m.on;
+                      return h('button', { key: m.label, type: 'button', 'aria-pressed': act ? 'true' : 'false', onClick: function() { upd({ touchPaint: m.on }); },
+                        style: { minHeight: '44px', minWidth: '88px' },
+                        className: 'px-3 text-xs font-black ' + (act ? 'bg-rose-700 text-white' : 'bg-white text-rose-950') }, m.icon + ' ' + m.label);
+                    })
+                  ),
+                  h('span', { className: 'text-[0.75rem] font-bold text-slate-800', style: { maxWidth: '320px' } }, _gs.touchPaint
+                    ? (spriteDragOk ? __alloT('stem.gamestudio.touch_sprite_paint_hint', 'Drag a finger to draw. Undo takes back a whole drag.') : __alloT('stem.gamestudio.touch_sprite_paint_tool', 'Drag draws with Draw or Erase. Tap to fill.'))
+                    : __alloT('stem.gamestudio.touch_sprite_scroll_hint', 'Drag to scroll the page. Tap a pixel to draw it.'))
+                ),
+                h('div', Object.assign({
+                  role: 'group', className: 'gs-paint-grid',
                   'aria-label': __alloT('stem.gamestudio.sprite_grid_label', 'Sprite pixels, 16 by 16. Arrow keys move between pixels; Enter or Space uses the current tool.'),
                   style: {
+                    touchAction: (spriteCoarse && _gs.touchPaint && spriteDragOk) ? 'none' : undefined,
                     display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)',
                     gap: '1px', background: '#cbd5e1', width: 'min(320px, 100%)', aspectRatio: '1',
                     border: '2px solid #64748b', borderRadius: '10px', overflow: 'hidden'
                   }
-                },
+                }, spritePointer),
                   Array.from({ length: 256 }, function(_, i) {
                     var sx = i % 16, sy = Math.floor(i / 16);
                     var sk = sx + ',' + sy;
                     var px = spritePixels[sk] || null;
-                    var mkSk = (15 - sx) + ',' + sy;
                     var paintPixel = function() {
-                      var np = Object.assign({}, spritePixels);
-                      if (spriteTool === 'erase') { delete np[sk]; if (spriteMirror) delete np[mkSk]; }
-                      else if (spriteTool === 'fill') { for (var fi = 0; fi < 256; fi++) np[(fi % 16) + ',' + Math.floor(fi / 16)] = spriteColor; }
-                      else { np[sk] = spriteColor; if (spriteMirror) np[mkSk] = spriteColor; }
-                      upd({ spritePixels: np });
+                      if (spriteTool === 'fill') {
+                        var nf = {};
+                        for (var fi = 0; fi < 256; fi++) nf[(fi % 16) + ',' + Math.floor(fi / 16)] = spriteColor;
+                        setSpritePixels(nf);
+                        return;
+                      }
+                      var np = spriteStroke(spritePixels, sx, sy);
+                      if (np) setSpritePixels(np);
                     };
                     return h('div', {
-                      key: sk, role: 'button', tabIndex: i === spriteCur ? 0 : -1,
+                      key: sk, role: 'button', tabIndex: i === spriteCur ? 0 : -1, 'data-gs-px': 1, 'data-gs-pxi': i,
                       className: i === spriteCur ? 'gs-pixel-cell-cur' : undefined,
                       'aria-label': __alloT('stem.gamestudio.pixel_cell', 'Pixel column {x}, row {y}: {color}').replace('{x}', sx + 1).replace('{y}', sy + 1).replace('{color}', px || __alloT('stem.gamestudio.pixel_empty', 'empty')),
                       onKeyDown: function(e) { gsGridKey(e, i, 16, 16, 'spriteCur', paintPixel); },
                       onFocus: function() { if (i !== spriteCur) upd({ spriteCur: i }); },
-                      onClick: paintPixel,
-                      onMouseEnter: function(e) {
-                        if (e.buttons === 1) {
-                          var np = Object.assign({}, spritePixels);
-                          if (spriteTool === 'erase') { delete np[sk]; if (spriteMirror) delete np[mkSk]; }
-                          else { np[sk] = spriteColor; if (spriteMirror) np[mkSk] = spriteColor; }
-                          upd({ spritePixels: np });
-                        }
-                      },
+                      // Mouse and touch presses draw in the grid's pointer handlers; a click from the
+                      // keyboard, a screen reader or a touch tap in Scroll mode draws here.
+                      onClick: function() { if (Date.now() < (_gsSpHist.current.skipClickUntil || 0)) return; paintPixel(); },
                       style: {
-                        background: px || (((sx + sy) % 2 === 0) ? '#f1f5f9' : '#e2e8f0'),
+                        // backgroundColor, not background: high contrast blacks out an inline "background: white", which hid white pixels.
+                        backgroundColor: px || (((sx + sy) % 2 === 0) ? '#f1f5f9' : '#e2e8f0'),
                         boxShadow: px ? 'inset 0 1px 0 rgba(255,255,255,0.34), inset 0 -1px 0 rgba(15,23,42,0.22)' : undefined,
                         borderRight: spriteMirror && sx === 7 ? '1px solid rgba(225,29,72,0.55)' : undefined,
                         cursor: 'crosshair'
@@ -1626,16 +2608,19 @@ window.StemLab = window.StemLab || {
                 // Color picker
                 h('div', { className: 'p-3 rounded-xl border border-rose-200 bg-white' },
                   h('div', { className: 'text-xs font-bold text-rose-700 mb-2' }, __alloT('stem.gamestudio.color', 'Color')),
-                  h('input', { 'aria-label': __alloT('stem.gamestudio.color', 'Color'), type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer' }),
+                  h('input', { 'aria-label': __alloT('stem.gamestudio.color', 'Color'), type: 'color', value: spriteColor, onChange: function(e) { upd({ spriteColor: e.target.value }); }, className: 'w-full h-8 rounded cursor-pointer border border-slate-500' }),
                   h('div', { className: 'flex gap-1 mt-2 flex-wrap' },
                     ['#e74c3c','#f39c12','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c','#ecf0f1','#34495e','#000000','#ffffff','#e67e22'].map(function(c) {
                       return h('button', { 'aria-label': __alloT('stem.gamestudio.aria_sprite_color', 'Sprite color: {name}').split('{name}').join(({ '#e74c3c': __alloT('stem.gamestudio.swatch_red', 'Red'), '#f39c12': __alloT('stem.gamestudio.swatch_orange', 'Orange'), '#f1c40f': __alloT('stem.gamestudio.swatch_yellow', 'Yellow'), '#2ecc71': __alloT('stem.gamestudio.swatch_green', 'Green'), '#3498db': __alloT('stem.gamestudio.swatch_blue', 'Blue'), '#9b59b6': __alloT('stem.gamestudio.swatch_purple', 'Purple'), '#1abc9c': __alloT('stem.gamestudio.swatch_teal', 'Teal'), '#ecf0f1': __alloT('stem.gamestudio.swatch_light_gray', 'Light gray'), '#34495e': __alloT('stem.gamestudio.swatch_dark_slate', 'Dark slate'), '#000000': __alloT('stem.gamestudio.swatch_black', 'Black'), '#ffffff': __alloT('stem.gamestudio.swatch_white', 'White'), '#e67e22': __alloT('stem.gamestudio.swatch_dark_orange', 'Dark orange') })[c] || c),
                         key: c,
                         'aria-pressed': spriteColor === c,
                         onClick: function() { upd({ spriteColor: c }); },
-                        className: 'w-6 h-6 rounded border-2 transition-all ' + (spriteColor === c ? 'border-rose-500 scale-110' : 'border-gray-300'),
+                        className: 'w-7 h-7 rounded border-2 transition-all relative ' + (spriteColor === c ? 'border-rose-700 ring-2 ring-rose-300 scale-110' : 'border-slate-500'),
                         style: { background: c }
-                      });
+                      },
+                        // The color also sits on a child: the high-contrast theme paints every button black
+                        // (and any inline "background: white"), so this uses backgroundColor.
+                        h('span', { 'aria-hidden': 'true', className: 'gs-swatch-fill', style: { position: 'absolute', inset: 0, borderRadius: '2px', backgroundColor: c } }));
                     })
                   )
                 ),
@@ -1648,13 +2633,20 @@ window.StemLab = window.StemLab || {
                         key: t.id,
                         'aria-pressed': spriteTool === t.id,
                         onClick: function() { upd({ spriteTool: t.id }); },
-                        className: 'flex-1 py-1.5 rounded text-sm transition-all ' + (spriteTool === t.id ? 'bg-rose-200 shadow-inner font-bold' : 'hover:bg-rose-50')
+                        style: { minHeight: 44 },
+                        className: 'flex-1 py-1.5 rounded text-sm transition-all border ' + (spriteTool === t.id ? 'bg-rose-200 border-rose-600 shadow-inner font-bold' : 'border-slate-500 hover:bg-rose-50')
                       }, t.icon);
                     })
                   ),
                   h('label', { className: 'flex items-center gap-2 mt-2 text-xs text-rose-600 cursor-pointer' },
                     h('input', { type: 'checkbox', checked: spriteMirror, onChange: function() { upd({ spriteMirror: !spriteMirror }); } }),
                     __alloT('stem.gamestudio.mirror_3', 'Mirror \u2194\uFE0F')
+                  ),
+                  h('div', { className: 'flex gap-1 mt-2' },
+                    h('button', { type: 'button', onClick: undoSprite, disabled: !_gsSpHist.current.past.length, 'aria-label': __alloT('stem.gamestudio.undo_sprite', 'Undo sprite change'), title: __alloT('stem.gamestudio.undo_sprite', 'Undo sprite change'), style: { minHeight: '44px', minWidth: '44px' },
+                      className: 'rounded-lg text-base border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-40 cursor-pointer' }, '\u21B6'),
+                    h('button', { type: 'button', onClick: redoSprite, disabled: !_gsSpHist.current.future.length, 'aria-label': __alloT('stem.gamestudio.redo_sprite', 'Redo sprite change'), title: __alloT('stem.gamestudio.redo_sprite', 'Redo sprite change'), style: { minHeight: '44px', minWidth: '44px' },
+                      className: 'rounded-lg text-base border border-slate-500 bg-white text-slate-800 hover:bg-slate-100 disabled:opacity-40 cursor-pointer' }, '\u21B7')
                   )
                 ),
                 // AI sprite gen
@@ -1679,7 +2671,7 @@ window.StemLab = window.StemLab || {
                               }
                             }
                             setAiLoading(false);
-                            upd({ spritePixels: np, aiResult: '\u2705 Sprite generated!' });
+                            setSpritePixels(np, { extra: { aiResult: '\u2705 Sprite generated!' } });
                           };
                           img.onerror = function() { setAiLoading(false); upd({ aiResult: '\u274C Image load error' }); };
                           img.src = imgUrl;
@@ -1692,11 +2684,56 @@ window.StemLab = window.StemLab || {
                 ),
                 // Clear
                 h('button', { 'aria-label': __alloT('stem.gamestudio.clear_canvas', 'Clear Canvas'),
-                  onClick: function() { upd({ spritePixels: {} }); },
+                  onClick: function() { if (Object.keys(spritePixels).length) setSpritePixels({}); },
                   className: 'w-full py-1.5 text-xs font-bold text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-50 transition-all'
                 }, __alloT('stem.gamestudio.clear_canvas_2', '\uD83D\uDDD1\uFE0F Clear Canvas'))
               )
             ),
+
+            // ---- Use the drawing as the look of a game piece (Map, Play and the level test) ----
+            (function() {
+              var hasDrawing = Object.keys(gsCleanPixels(spritePixels)).length > 0;
+              var roleName = { player: __alloT('stem.gamestudio.look_player', 'Player'), enemy: __alloT('stem.gamestudio.look_enemy', 'Enemy'), coin: __alloT('stem.gamestudio.look_coin', 'Coin'), flag: __alloT('stem.gamestudio.look_flag', 'Goal flag') };
+              var setLook = function(r, px) {
+                var nl = Object.assign({}, looks);
+                if (px) nl[r] = px; else delete nl[r];
+                upd({ looks: nl });
+                var msg = px ? __alloT('stem.gamestudio.look_set', 'Your drawing is now the {who} look. The rules did not change.').replace('{who}', roleName[r])
+                  : __alloT('stem.gamestudio.look_reset', 'The {who} has its default look again.').replace('{who}', roleName[r]);
+                if (addToast) addToast((px ? '\uD83C\uDFA8 ' : '\u21BA ') + msg, 'success');
+                if (typeof announceToSR === 'function') { try { announceToSR(msg); } catch (_) {} }
+              };
+              return h('div', { className: 'gs-panel p-3.5 rounded-xl border-2 border-rose-300 bg-white space-y-2.5' },
+                h('h3', { className: 'text-sm font-black text-rose-900 m-0' }, '\uD83C\uDFAE ' + __alloT('stem.gamestudio.looks_title', 'Use your drawing in the game')),
+                h('p', { className: 'text-xs text-slate-800 m-0' }, __alloT('stem.gamestudio.looks_intro', 'Pick a piece. Your drawing becomes how it looks on the map and in Play. Only the picture changes: an Enemy with your drawing still chases you, and a Coin is still worth {n} points.').replace('{n}', GS_E.POINTS.coin)),
+                !hasDrawing && h('p', { className: 'text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1.5 m-0' }, __alloT('stem.gamestudio.looks_draw_first', 'Draw something on the pixel grid first (or pick a preset).')),
+                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                  LOOK_ROLES.map(function(r) {
+                    var custom = !!looks[r];
+                    return h('div', { key: r, className: 'p-2 rounded-xl border border-slate-300 bg-slate-50 flex flex-col items-center gap-1.5' },
+                      h('div', { 'aria-hidden': 'true', className: 'rounded-lg flex items-center justify-center', style: { width: '48px', height: '48px', background: (TILE_MAP[r] || {}).color || '#334155', fontSize: '26px' } },
+                        pieceArt(r, '40px') || (TILE_MAP[r] || {}).emoji || ''),
+                      h('div', { className: 'text-xs font-black text-slate-900' }, roleName[r]),
+                      h('div', { className: 'text-[0.75rem] text-slate-700' }, custom ? __alloT('stem.gamestudio.look_custom', 'Your drawing') : __alloT('stem.gamestudio.look_default', 'Default look')),
+                      h('button', { type: 'button', disabled: !hasDrawing,
+                        'aria-label': __alloT('stem.gamestudio.look_use_aria', 'Use my drawing as the {who} look').replace('{who}', roleName[r]),
+                        onClick: function() { var px = gsCleanPixels(spritePixels); if (Object.keys(px).length) setLook(r, px); },
+                        style: { minHeight: '44px' },
+                        className: 'w-full px-2 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-700 hover:bg-rose-800 disabled:bg-slate-400 disabled:cursor-not-allowed'
+                      }, __alloT('stem.gamestudio.look_use', 'Use my drawing')),
+                      custom && h('button', { type: 'button',
+                        'aria-label': __alloT('stem.gamestudio.look_reset_aria', 'Back to the default {who} look').replace('{who}', roleName[r]),
+                        onClick: function() { setLook(r, null); },
+                        style: { minHeight: '44px' },
+                        className: 'w-full px-2 py-1.5 rounded-lg text-xs font-bold text-rose-900 bg-white border border-rose-600 hover:bg-rose-50'
+                      }, '\u21BA ' + __alloT('stem.gamestudio.look_reset_btn', 'Default look'))
+                    );
+                  })
+                ),
+                Object.keys(looks).length > 0 && h('button', { type: 'button', onClick: function() { goGsTab('map'); }, style: { minHeight: '44px' },
+                  className: 'px-3 py-2 rounded-xl text-xs font-bold text-rose-900 bg-rose-50 border border-rose-600 hover:bg-rose-100' }, '\uD83D\uDDFA\uFE0F ' + __alloT('stem.gamestudio.look_see_map', 'See it on the map'))
+              );
+            })(),
             aiResult && h('div', { className: 'text-xs font-bold ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
           ),
 
@@ -1706,7 +2743,7 @@ window.StemLab = window.StemLab || {
           // ============================================================
           gsTab === 'events' && h('div', { className: 'space-y-4' },
 
-            h('div', { className: 'flex items-center justify-between' },
+            h('div', { className: 'flex items-center justify-between p-2.5 rounded-xl bg-white border border-rose-200' },
               h('h3', { className: 'text-sm font-black text-rose-800' }, __alloT('stem.gamestudio.event_rules', '\u26A1 Event Rules')),
               h('label', { className: 'flex items-center gap-2 text-xs font-bold text-rose-600 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: advancedCode, onChange: function() { upd({ advancedCode: !advancedCode }); } }),
@@ -1717,8 +2754,7 @@ window.StemLab = window.StemLab || {
             // Info box
             h('div', { className: 'p-3 rounded-xl border border-blue-200 bg-blue-50 text-xs text-blue-700' },
               h('strong', null, __alloT('stem.gamestudio.how_events_work', 'How Events Work: ')),
-              'Create "When X happens \u2192 Do Y" rules for each sprite. These rules define your game\'s behavior! ' +
-              'Enemies patrol automatically in Play mode. Add rules to customize interactions.'
+              __alloT('stem.gamestudio.how_events_work_body_v2', 'Make "When X happens \u2192 Do Y" rules. Each rule says if Play runs it. Try one: Player, Collides With coin \u2192 Lose Life. Then play and watch what happens.')
             ),
 
             // Sprite selector
@@ -1728,24 +2764,27 @@ window.StemLab = window.StemLab || {
                 var sprEvents = events[sid] || [];
                 var icons = { player: '\uD83E\uDDD1', enemy: '\uD83D\uDC7E', npc: '\uD83E\uDDD9', treasure: '\uD83D\uDC8E' };
                 return h('button', { key: sid,
-                  'aria-pressed': activeSprite === sid,
-                  onClick: function() { upd({ activeSprite: sid }); },
+                  'aria-pressed': evSprite === sid,
+                  onClick: function() { upd({ eventSprite: sid }); },
                   className: 'px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ' +
-                    (activeSprite === sid ? 'border-rose-400 bg-rose-100 shadow-md' : 'border-gray-200 hover:border-rose-600')
+                    (evSprite === sid ? 'border-rose-600 bg-rose-100 text-rose-950 shadow-md' : 'border-slate-500 bg-white text-slate-900 hover:border-rose-600')
                 }, (icons[sid] || '') + ' ' + sid.charAt(0).toUpperCase() + sid.slice(1) + ' (' + sprEvents.length + ')');
               })
             ),
 
             // Event rules
-            activeSprite && (function() {
-              var sprEvents = events[activeSprite] || [];
+            (function() {
+              var sprEvents = events[evSprite] || [];
               var TRIGGERS = [
                 { id: 'onKey', label: __alloT('stem.gamestudio.key_pressed', 'Key Pressed'), params: ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'] },
                 { id: 'onCollide', label: __alloT('stem.gamestudio.collides_with', 'Collides With'), params: ['wall','coin','enemy','lava','door','key','npc','spikes','flag','portal','ice'] },
-                { id: 'onTimer', label: __alloT('stem.gamestudio.every', 'Every'), params: ['0.5s','1s','2s','5s'] },
+                // Play takes turns, so "Every" counts moves, not seconds.
+                { id: 'onTimer', label: __alloT('stem.gamestudio.every', 'Every'), params: ['1','2','3','4','5'] },
                 { id: 'onStart', label: __alloT('stem.gamestudio.game_starts', 'Game Starts'), params: [] },
                 { id: 'onTalk', label: __alloT('stem.gamestudio.player_talks', 'Player Talks'), params: [] }
               ];
+              // Only the triggers Play can run for each sprite are offered (a saved rule keeps its own, with a note why).
+              var TRIG_OK = { player: ['onKey', 'onCollide', 'onTimer', 'onStart', 'onTalk'], enemy: ['onStart', 'onTimer', 'onCollide'], npc: ['onCollide', 'onTalk'], treasure: ['onCollide', 'onTalk'] };
               var ACTIONS = [
                 { id: 'move', label: __alloT('stem.gamestudio.move', 'Move'), params: ['up','down','left','right','toward-player','random'] },
                 { id: 'collect', label: __alloT('stem.gamestudio.collect', 'Collect'), params: ['+1 score','+key'] },
@@ -1770,25 +2809,28 @@ window.StemLab = window.StemLab || {
                         value: rule.trigger || 'onKey',
                         onChange: function(e) {
                           var ne = Object.assign({}, events);
-                          var arr = (ne[activeSprite] || []).slice();
-                          arr[ri] = Object.assign({}, arr[ri], { trigger: e.target.value, param: '' });
-                          ne[activeSprite] = arr; upd({ events: ne });
+                          var arr = (ne[evSprite] || []).slice();
+                          arr[ri] = Object.assign({}, arr[ri], { trigger: e.target.value, param: e.target.value === 'onTimer' ? '2' : '' });
+                          ne[evSprite] = arr; upd({ events: ne });
                         },
                         className: 'text-xs border border-rose-600 rounded px-1.5 py-1 bg-rose-50 font-bold'
-                      }, TRIGGERS.map(function(t) { return h('option', { key: t.id, value: t.id }, t.label); })),
+                      }, TRIGGERS.filter(function(t) { return TRIG_OK[evSprite].indexOf(t.id) >= 0 || t.id === (rule.trigger || 'onKey'); }).map(function(t) { return h('option', { key: t.id, value: t.id }, t.label); })),
                       // Trigger param
                       (function() {
                         var trig = TRIGGERS.find(function(t) { return t.id === rule.trigger; });
                         if (!trig || !trig.params || trig.params.length === 0) return null;
-                        return h('select', { 'aria-label': __alloT('stem.gamestudio.trigger_param_label', 'Trigger parameter'),
-                          value: rule.param || '',
+                        var isTimer = trig.id === 'onTimer';
+                        return h('select', { 'aria-label': isTimer ? __alloT('stem.gamestudio.timer_param_label', 'How many moves') : __alloT('stem.gamestudio.trigger_param_label', 'Trigger parameter'),
+                          value: isTimer ? (GS_E.timerN(rule.param) ? String(GS_E.timerN(rule.param)) : '') : (rule.param || ''),
                           onChange: function(e) {
-                            var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
+                            var ne = Object.assign({}, events); var arr = (ne[evSprite] || []).slice();
                             arr[ri] = Object.assign({}, arr[ri], { param: e.target.value });
-                            ne[activeSprite] = arr; upd({ events: ne });
+                            ne[evSprite] = arr; upd({ events: ne });
                           },
                           className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
-                        }, h('option', { value: '' }, '\u2014'), trig.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
+                        }, h('option', { value: '' }, '\u2014'), trig.params.map(function(p) {
+                          return h('option', { key: p, value: p }, isTimer ? (p === '1' ? __alloT('stem.gamestudio.every_1_move', '1 move') : __alloT('stem.gamestudio.every_n_moves', '{n} moves').replace('{n}', p)) : p);
+                        }));
                       })(),
                       h('span', { className: 'text-xs font-bold text-slate-600' }, '\u2192'),
                       h('select', {
@@ -1800,9 +2842,9 @@ window.StemLab = window.StemLab || {
                         'aria-label': __alloT('stem.gamestudio.a11y_action', 'Action'),
                         value: rule.action || 'move',
                         onChange: function(e) {
-                          var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
+                          var ne = Object.assign({}, events); var arr = (ne[evSprite] || []).slice();
                           arr[ri] = Object.assign({}, arr[ri], { action: e.target.value, actionParam: '' });
-                          ne[activeSprite] = arr; upd({ events: ne });
+                          ne[evSprite] = arr; upd({ events: ne });
                         },
                         className: 'text-xs border border-rose-600 rounded px-1.5 py-1 bg-rose-50 font-bold'
                       }, ACTIONS.map(function(a) { return h('option', { key: a.id, value: a.id }, a.label); })),
@@ -1813,32 +2855,42 @@ window.StemLab = window.StemLab || {
                         return h('select', { 'aria-label': __alloT('stem.gamestudio.action_param_label', 'Action parameter'),
                           value: rule.actionParam || '',
                           onChange: function(e) {
-                            var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
+                            var ne = Object.assign({}, events); var arr = (ne[evSprite] || []).slice();
                             arr[ri] = Object.assign({}, arr[ri], { actionParam: e.target.value });
-                            ne[activeSprite] = arr; upd({ events: ne });
+                            ne[evSprite] = arr; upd({ events: ne });
                           },
                           className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), act.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
                       h('button', { 'aria-label': __alloT('stem.gamestudio.aria_remove_rule', 'Remove rule {n}').split('{n}').join(String(ri + 1)),
                         onClick: function() {
-                          var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
-                          arr.splice(ri, 1); ne[activeSprite] = arr; upd({ events: ne });
+                          var ne = Object.assign({}, events); var arr = (ne[evSprite] || []).slice();
+                          arr.splice(ri, 1); ne[evSprite] = arr; upd({ events: ne });
                         },
                         className: 'ml-auto text-rose-700 hover:text-red-700 transition-colors text-sm font-bold'
                       }, '\u2715')
                     ),
+                    (function() {
+                      var info = engineS.rules.list.find(function(r) { return r.sprite === evSprite && r.index === ri; });
+                      if (!info) return null;
+                      var fired = ruleFires[info.id] || 0;
+                      return h('p', { className: 'mt-2 mb-0 text-[0.75rem] font-semibold ' + (info.runs ? 'text-emerald-900' : 'text-amber-900') },
+                        (info.runs ? '✅ ' : '⏸️ ') + ruleSentence(info) + (info.runs && fired ? ' ⚡ ' + __alloT('stem.gamestudio.rule_fired_count', 'Times it fired in your last game: {n}.').replace('{n}', fired) : ''));
+                    })(),
                     advancedCode && h('pre', { className: 'mt-2 p-2 rounded-lg bg-slate-900 text-green-400 text-[0.6875rem] font-mono overflow-x-auto' }, genCode(rule))
                   );
                 }),
                 sprEvents.length < 8 && h('button', { 'aria-label': __alloT('stem.gamestudio.aria_add_rule', 'Add Rule ({n} of 8 used)').split('{n}').join(String(sprEvents.length)),
                   onClick: function() {
-                    var ne = Object.assign({}, events); var arr = (ne[activeSprite] || []).slice();
-                    arr.push({ trigger: 'onKey', param: 'ArrowUp', action: 'move', actionParam: 'up' });
-                    ne[activeSprite] = arr; upd({ events: ne });
+                    var ne = Object.assign({}, events); var arr = (ne[evSprite] || []).slice();
+                    // A new rule starts as one that visibly changes the game, so a first try shows cause and effect.
+                    arr.push(({ player: { trigger: 'onCollide', param: 'coin', action: 'loseLife', actionParam: '' }, enemy: { trigger: 'onStart', param: '', action: 'move', actionParam: 'toward-player' }, npc: { trigger: 'onTalk', param: '', action: 'collect', actionParam: '+key' }, treasure: { trigger: 'onCollide', param: '', action: 'winGame', actionParam: '' } })[evSprite]);
+                    ne[evSprite] = arr; upd({ events: ne });
                   },
                   className: 'w-full py-2 rounded-xl border-2 border-dashed border-rose-600 text-xs font-bold text-rose-700 hover:bg-rose-50 transition-all'
-                }, '\u2795 Add Rule (' + sprEvents.length + '/8)')
+                }, '\u2795 Add Rule (' + sprEvents.length + '/8)'),
+                h('button', { type: 'button', onClick: function() { startGame({ tab: 'play' }); }, style: { minHeight: '44px' },
+                  className: 'w-full py-2 rounded-xl text-xs font-black text-white bg-green-700 hover:bg-green-800' }, '\u25b6\ufe0f ' + __alloT('stem.gamestudio.try_rules', 'Try these rules: play the level'))
               );
             })()
           ),
@@ -1847,40 +2899,92 @@ window.StemLab = window.StemLab || {
           // ============================================================
           // PLAY TAB (ENHANCED)
           // ============================================================
-          gsTab === 'play' && h('div', { className: 'space-y-4' },
+          gsTab === 'play' && (function() {
+            var W = playWorld;
+            var ended = playWon || playDead;
+            var preview = W ? null : GS_E.init(tiles, gridW, gridH, engineOpts);
+            var view = W || preview;
+            var best = ended ? gsSolveCached(tiles, gridW, gridH, engineOpts) : null;
+            var hurtNow = !!(W && W.msg && (W.msg.k === 'hurt' || W.msg.k === 'dead'));
+            var dirName = { up: __alloT('stem.gamestudio.dir_up', 'up'), right: __alloT('stem.gamestudio.dir_right', 'right'), down: __alloT('stem.gamestudio.dir_down', 'down'), left: __alloT('stem.gamestudio.dir_left', 'left') };
+            var around = function() {
+              if (!W || W.px < 0) return '';
+              var parts = [];
+              [['up', 0, -1], ['right', 1, 0], ['down', 0, 1], ['left', -1, 0]].forEach(function(d) {
+                var ax = W.px + d[1], ay = W.py + d[2];
+                if (ax < 0 || ay < 0 || ax >= gridW || ay >= gridH) { parts.push(dirName[d[0]] + ': ' + __alloT('stem.gamestudio.edge', 'edge')); return; }
+                parts.push(dirName[d[0]] + ': ' + (GS_E.enemyAt(W, ax, ay) >= 0 ? tileName('enemy') : tileName(GS_E.tileAt(W, ax, ay))));
+              });
+              return __alloT('stem.gamestudio.sr_position', 'You are at column {x}, row {y}. Lives {l}, keys {k}. Around you: ').replace('{x}', W.px + 1).replace('{y}', W.py + 1).replace('{l}', W.lives).replace('{k}', W.keys) + parts.join(', ') + '.';
+            };
+            var hurtSummary = function() {
+              var c = {};
+              (W && W.hurtLog || []).forEach(function(w) { c[w] = (c[w] || 0) + 1; });
+              return Object.keys(c).map(function(k) { return (k === 'rule' ? __alloT('stem.gamestudio.hurt_rule', 'a rule') : tileName(k)) + ' ×' + c[k]; }).join(', ');
+            };
+            var dpadBtn = function(label, input, glyph) {
+              return h('button', { type: 'button', 'aria-label': label, onClick: function() { processMove(input); },
+                style: { minWidth: '56px', minHeight: '56px' },
+                className: 'rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xl font-bold text-center active:scale-95 transition-all select-none' }, glyph);
+            };
+            var sideView = view ? view.grav : gameType === 'platformer';
+            return h('div', { className: 'space-y-3' },
 
             // Arcade Console HUD Bezel
             h('div', { className: 'gs-bezel gs-panel flex items-center gap-2.5 p-3 rounded-2xl border-2 border-slate-700 bg-slate-900 text-white flex-wrap' },
               h('span', { className: 'inline-flex items-center gap-1.5 text-xs font-black px-2.5 py-1 rounded-full ' + (playWon ? 'bg-emerald-700 text-white' : playDead ? 'bg-rose-700 text-white' : isPlaying ? 'bg-emerald-800 text-emerald-100' : 'bg-slate-700 text-slate-200') },
                 playWon ? '🏆 VICTORY' : playDead ? '💀 GAME OVER' : isPlaying ? '● LIVE' : '⏸ READY'
               ),
-              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-300' }, '\uD83E\uDE99 ' + playScore),
-              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-rose-300' },
-                '\u2764\uFE0F ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '\u2665'; }).join('')
+              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-300' }, '⭐ ' + playScore),
+              h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-rose-300', 'aria-label': __alloT('stem.gamestudio.lives_aria', '{n} lives').replace('{n}', playLives) },
+                '❤️ ' + Array.from({ length: Math.max(0, Math.min(playLives, 10)) }, function() { return '♥'; }).join('')
               ),
-              playKeys > 0 && h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-yellow-300' }, '\uD83D\uDD11 \u00D7' + playKeys),
-              h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-200' }, '\uD83D\uDC63 Moves: ' + playMoves),
-              playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-200' }, '\uD83E\uDE99 ' + playCoinsCollected + ' collected'),
+              playKeys > 0 && h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-yellow-300' }, '🔑 ×' + playKeys),
+              engineS.puzzle && view && view.tg && view.tg.length > 0 && (function() {
+                var on = GS_E.covered(view), of = view.tg.length;
+                return h('span', { className: 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-800 border ' + (on >= of ? 'border-emerald-400 text-emerald-200' : 'border-slate-600 text-violet-200') },
+                  '🎯 ' + __alloT('stem.gamestudio.hud_targets', 'Targets {a}/{b}').replace('{a}', on).replace('{b}', of) + (on >= of ? ' · ' + __alloT('stem.gamestudio.hud_flag_open', 'flag open') : ''));
+              })(),
+              h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-200' }, '👣 Moves: ' + playMoves),
+              playCoinsCollected > 0 && h('span', { className: 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 border border-slate-600 text-amber-200' }, '🪙 ' + playCoinsCollected + ' collected'),
               h('span', { className: 'text-xs font-bold text-slate-200 ml-auto' },
-                gameType === 'topdown' ? '\uD83D\uDD3D Top-Down' : gameType === 'platformer' ? '\uD83C\uDFC3 Platformer' : '\uD83E\uDDE9 Puzzle'
+                gameType === 'topdown' ? '🔽 Top-Down' : gameType === 'platformer' ? '🏃 Platformer' : '🧩 Puzzle'
               )
             ),
 
-            // Game message
-            playMessage && h('div', {
-              className: 'p-2 rounded-lg text-xs font-bold text-center ' +
-                (playWon ? 'bg-green-100 text-green-700 border border-green-300' :
-                 playDead ? 'bg-red-100 text-red-700 border border-red-300' :
-                 'bg-blue-50 text-blue-700 border border-blue-200')
-            }, playMessage),
+            // Result card: what happened, and how it compares with the engine's best route
+            ended && h('div', { role: 'status', className: 'gs-panel p-3.5 rounded-xl border-2 space-y-2 ' + (playWon ? 'border-emerald-500 bg-emerald-50' : 'border-rose-400 bg-rose-50') },
+              h('p', { className: 'text-sm font-black m-0 ' + (playWon ? 'text-emerald-950' : 'text-rose-950') }, playWon
+                ? '🏆 ' + __alloT('stem.gamestudio.result_win', 'You won in {moves} moves! Score {score}.').replace('{moves}', playMoves).replace('{score}', playScore)
+                : '💀 ' + __alloT('stem.gamestudio.result_lose', 'Out of lives after {moves} moves.').replace('{moves}', playMoves)),
+              playDead && hurtSummary() && h('p', { className: 'text-xs text-rose-950 m-0' }, __alloT('stem.gamestudio.result_hurt', 'What hurt you: ') + hurtSummary()),
+              best && best.winnable === true && h('p', { className: 'text-xs text-slate-800 m-0' },
+                __alloT('stem.gamestudio.result_best', 'The game engine\'s best route: {m} moves, losing {l} lives.').replace('{m}', best.moves).replace('{l}', best.livesLost) + ' ' +
+                (playWon && playMoves <= best.moves ? __alloT('stem.gamestudio.result_matched', 'You matched it!') : __alloT('stem.gamestudio.result_try', 'Can you match it?'))),
+              best && best.winnable === false && h('p', { className: 'text-xs text-slate-800 m-0' }, __alloT('stem.gamestudio.result_unwinnable', 'The game engine says nobody can win this level as it is. Change one thing on the map.')),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { type: 'button', 'aria-label': __alloT('stem.gamestudio.play_again', 'Play Again'), onClick: function() { startGame(); },
+                  style: { minHeight: '44px' }, className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 shadow-md' }, __alloT('stem.gamestudio.play_again_2', '🔄 Play Again')),
+                h('button', { type: 'button', onClick: function() { stopGame(); upd({ tab: 'map' }); },
+                  style: { minHeight: '44px' }, className: 'px-4 py-2 rounded-xl text-xs font-bold text-rose-900 bg-white border-2 border-rose-600 hover:bg-rose-50' }, '✏️ ' + __alloT('stem.gamestudio.change_one_thing', 'Change one thing on the map'))
+              )
+            ),
 
-            // Live playtest arcade viewport with atmospheric stage backdrop & luminous halos
+            // Game message (live)
+            !ended && h('div', { role: 'status', 'aria-live': 'polite',
+              className: 'p-2 rounded-lg text-xs font-bold text-center min-h-[2.25rem] ' + (hurtNow ? 'bg-red-100 text-red-900 border border-red-300' : 'bg-blue-50 text-blue-900 border border-blue-200') },
+              playMessage || (isPlaying ? (sideView ? __alloT('stem.gamestudio.hint_side', 'Arrows or WASD to move. Up or Space jumps.') : (engineS.puzzle && view && view.tg && view.tg.length) ? __alloT('stem.gamestudio.hint_puzzle', 'Arrows or WASD to move. Push a crate onto every target, then reach the flag.') : __alloT('stem.gamestudio.hint_top', 'Arrows or WASD to move. Reach the flag!')) : __alloT('stem.gamestudio.hint_ready', 'Press Start, or click the game and press an arrow key.'))),
+            h('div', { className: 'sr-only', 'aria-live': 'polite', style: { position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, isPlaying ? around() : ''),
+
+            // Live playtest arcade viewport: sized so the whole level always fits
             h('div', {
+              id: 'gs-play-viewport',
               role: 'application',
               'aria-label': __alloT('stem.gamestudio.play_viewport_aria', 'Game playtest viewport. Use arrow keys or WASD to move.'),
-              className: 'rounded-xl border-2 ' + (playWon ? 'border-emerald-400' : playDead ? 'border-rose-500' : isPlaying ? 'border-green-400' : 'border-rose-300') + ' bg-slate-900 p-2 overflow-auto outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1',
+              className: 'rounded-xl border-4 bg-slate-900 p-2 outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-1',
               style: {
-                maxHeight: '450px',
+                position: 'relative',
+                borderColor: playWon ? '#34d399' : (playDead || hurtNow) ? '#f43f5e' : isPlaying ? '#4ade80' : '#fda4af',
                 background: gameType === 'platformer'
                   ? 'linear-gradient(180deg, #0b1936 0%, #1e3a5f 58%, #0f172a 100%)'
                   : gameType === 'puzzle'
@@ -1898,121 +3002,107 @@ window.StemLab = window.StemLab || {
                   position: 'relative',
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
-                  gap: '1px', background: 'rgba(30,41,59,0.55)', borderRadius: '8px', overflow: 'hidden'
+                  gap: '1px', background: 'rgba(30,41,59,0.55)', borderRadius: '8px', overflow: 'hidden',
+                  width: 'min(100%, ' + Math.round(gridW * 440 / gridH) + 'px)', margin: '0 auto'
                 }
               },
                 Array.from({ length: gridW * gridH }, function(_, i) {
                   var x = i % gridW, y = Math.floor(i / gridW);
                   var k = x + ',' + y;
-                  var tId = tiles[k] || 'empty';
+                  var terrain = view ? GS_E.tileAt(view, x, y) : (tiles[k] || 'empty');
+                  var isP = !!(view && view.px === x && view.py === y);
+                  var isE = !!(view && GS_E.enemyAt(view, x, y) >= 0);
+                  var tId = isP ? 'player' : isE ? 'enemy' : terrain;
                   var tInfo = TILE_MAP[tId] || TILE_MAP.empty;
-                  var isSolid = tId === 'wall' || tId === 'platform' || tId === 'door' || tId === 'ice' || tId === 'grass' || tId === 'sand';
-                  var isCollect = tId === 'coin' || tId === 'gem' || tId === 'key' || tId === 'heart' || tId === 'flag' || tId === 'portal';
-                  var playCellBg = tId === 'empty'
-                    ? ((x + y) % 2 === 0 ? 'rgba(15,23,42,0.72)' : 'rgba(19,30,50,0.76)')
-                    : tId === 'player'
-                      ? 'radial-gradient(circle at 50% 45%, rgba(167,139,250,0.45), ' + tInfo.color + ' 72%)'
-                      : tId === 'flag'
-                        ? 'radial-gradient(circle at 50% 45%, rgba(52,211,153,0.48), ' + tInfo.color + ' 72%)'
-                        : tId === 'portal'
-                          ? 'radial-gradient(circle at 50% 45%, rgba(216,180,254,0.58), ' + tInfo.color + ' 72%)'
-                          : tId === 'lava'
-                            ? 'radial-gradient(circle at 50% 50%, #fb923c, #dc2626 78%)'
-                            : tInfo.color;
-                  var playShadow = tId === 'player' ? '0 0 12px rgba(139,92,246,0.88), inset 0 1px 0 rgba(255,255,255,0.4)'
+                  var tTerr = TILE_MAP[terrain] || TILE_MAP.empty;
+                  var isSolid = terrain === 'wall' || terrain === 'platform' || terrain === 'door' || terrain === 'ice' || terrain === 'grass' || terrain === 'sand';
+                  var isCollect = tId === 'coin' || tId === 'gem' || tId === 'key' || tId === 'heart' || tId === 'flag' || tId === 'portal' || tId === 'treasure';
+                  var baseBg = terrain === 'empty' ? ((x + y) % 2 === 0 ? 'rgba(15,23,42,0.72)' : 'rgba(19,30,50,0.76)') : terrain === 'lava' ? 'radial-gradient(circle at 50% 50%, #fb923c, #dc2626 78%)' : tTerr.color;
+                  var playCellBg = isP ? 'radial-gradient(circle at 50% 45%, rgba(167,139,250,0.55), rgba(139,92,246,0.25) 70%), ' + (terrain === 'empty' ? '#1e1b4b' : tTerr.color)
+                    : tId === 'flag' ? 'radial-gradient(circle at 50% 45%, rgba(52,211,153,0.48), ' + tInfo.color + ' 72%)'
+                    : tId === 'portal' ? 'radial-gradient(circle at 50% 45%, rgba(216,180,254,0.58), ' + tInfo.color + ' 72%)'
+                    : baseBg;
+                  // Puzzle: a crate sitting on a target gets a green ring and a check mark.
+                  var onTarget = tId === 'crate' && !!(view && view.base && view.base[k] === 'target');
+                  var playShadow = isP ? ((hurtNow ? '0 0 0 3px #f43f5e, ' : '') + '0 0 12px rgba(139,92,246,0.88), inset 0 1px 0 rgba(255,255,255,0.4)')
+                    : onTarget ? 'inset 0 0 0 3px #4ade80, 0 0 10px rgba(74,222,128,0.8)'
+                    : tId === 'crate' ? 'inset 0 0 0 2px #fbbf24, inset 0 3px 0 rgba(255,255,255,0.25)'
+                    : isE ? '0 0 9px rgba(244,63,94,0.68), inset 0 0 0 2px rgba(244,63,94,0.75)'
                     : tId === 'flag' ? '0 0 10px rgba(52,211,153,0.7), inset 0 1px 0 rgba(255,255,255,0.35)'
                     : tId === 'portal' ? '0 0 10px rgba(192,132,252,0.75)'
-                    : tId === 'enemy' ? '0 0 9px rgba(244,63,94,0.68)'
-                    : tId === 'lava' ? 'inset 0 0 8px rgba(254,215,170,0.65)'
+                    : terrain === 'lava' ? 'inset 0 0 8px rgba(254,215,170,0.65)'
                     : isSolid ? 'inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(2,6,23,0.45)'
                     : undefined;
-                  var spriteClass = tId === 'player' ? 'gs-player-aura'
-                    : tId === 'portal' ? 'gs-portal-pulse'
-                    : isCollect ? 'gs-glow-collect'
-                    : undefined;
+                  var spriteClass = isP ? 'gs-player-aura' : tId === 'portal' ? 'gs-portal-pulse' : isCollect ? 'gs-glow-collect' : undefined;
+                  var art = lookEl[tId] || null;
                   return h('div', {
                     key: k,
-                    className: tId === 'lava' ? 'gs-lava-shimmer' : undefined,
+                    className: terrain === 'lava' && !isP ? 'gs-lava-shimmer' : undefined,
                     style: {
+                      position: 'relative',
                       aspectRatio: '1',
                       background: playCellBg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: Math.min(20, Math.floor(500 / gridW)) + 'px',
+                      fontSize: Math.min(22, Math.floor(520 / gridW)) + 'px',
                       minWidth: '10px', minHeight: '10px', transition: 'background 0.15s',
                       boxShadow: playShadow
                     }
-                  }, tInfo.emoji ? h('span', {
+                  }, art ? h('span', { 'aria-hidden': 'true', className: spriteClass, style: { display: 'flex', width: '84%', height: '84%', alignItems: 'center', justifyContent: 'center' } }, art)
+                    : tInfo.emoji ? h('span', {
+                    'aria-hidden': 'true',
                     className: spriteClass,
-                    style: { filter: tId === 'player' ? 'drop-shadow(0 2px 3px rgba(2,6,23,0.85)) drop-shadow(0 0 5px rgba(196,181,253,0.85))' : 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' }
-                  }, tInfo.emoji) : '');
+                    style: { filter: isP ? 'drop-shadow(0 2px 3px rgba(2,6,23,0.85)) drop-shadow(0 0 5px rgba(196,181,253,0.85))' : 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' }
+                  }, tInfo.emoji) : '',
+                    onTarget && h('span', { 'aria-hidden': 'true', style: { position: 'absolute', right: '1px', bottom: '0px', fontSize: '12px', fontWeight: 900, lineHeight: 1, color: '#052e16', background: '#4ade80', borderRadius: '4px', padding: '0 2px' } }, '✓'));
                 }),
                 h(GsPlayFxOverlay, { React: React, gridW: gridW, gridH: gridH, fxSeq: _gsFxSeq, isPlaying: isPlaying })
-              )
+              ),
+              // Not started yet: one big button on top of the level preview
+              !isPlaying && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2,6,23,0.45)', borderRadius: '10px' } },
+                h('button', { type: 'button', onClick: function() { startGame(); },
+                  style: { minHeight: '56px' },
+                  className: 'px-6 py-3 rounded-2xl text-base font-black text-white bg-green-700 hover:bg-green-800 shadow-xl border-2 border-green-300' }, '▶️ ' + __alloT('stem.gamestudio.start_game', 'Start Game')))
             ),
 
-            // D-pad controls (touch-friendly)
-            isPlaying && !playWon && !playDead && h('div', { className: 'flex justify-center' },
-              h('div', { className: 'grid grid-cols-3 gap-1', style: { width: '140px' } },
+            // D-pad controls (touch-friendly, 56 px buttons)
+            isPlaying && !ended && h('div', { className: 'flex justify-center' },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 56px)', gap: '6px' } },
                 h('div', null),
-                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_up', 'Move up'), onClick: function() { processMove('up'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B2'),
+                dpadBtn(sideView ? __alloT('stem.gamestudio.aria_jump', 'Jump') : __alloT('stem.gamestudio.aria_move_up', 'Move up'), 'ArrowUp', sideView ? '⬆' : '▲'),
                 h('div', null),
-                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_left', 'Move left'), onClick: function() { processMove('left'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25C0'),
-                h('div', { className: 'p-3 rounded-lg bg-slate-800 text-center text-xs text-slate-300 font-bold' }, '\u2022'),
-                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_right', 'Move right'), onClick: function() { processMove('right'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25B6'),
+                dpadBtn(__alloT('stem.gamestudio.aria_move_left', 'Move left'), 'ArrowLeft', '◀'),
+                h('div', { 'aria-hidden': 'true', className: 'rounded-xl bg-slate-800' }),
+                dpadBtn(__alloT('stem.gamestudio.aria_move_right', 'Move right'), 'ArrowRight', '▶'),
                 h('div', null),
-                h('button', { 'aria-label': __alloT('stem.gamestudio.aria_move_down', 'Move down'), onClick: function() { processMove('down'); }, className: 'p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-lg font-bold text-center active:scale-95 transition-all' }, '\u25BC'),
+                dpadBtn(sideView ? __alloT('stem.gamestudio.aria_wait_fall', 'Wait (let gravity pull you down)') : __alloT('stem.gamestudio.aria_move_down', 'Move down'), 'ArrowDown', '▼'),
                 h('div', null)
               )
             ),
 
             // Controls
-            h('div', { className: 'flex gap-2 justify-center flex-wrap' },
-              h('button', { onClick: function() {
-                  _gsResetFxPools();
-                  if (isPlaying) {
-                    var restored = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : tiles;
-                    upd({ isPlaying: false, tiles: restored, playBackupTiles: null, playMessage: null, playWon: false, playDead: false });
-                  } else {
-                    var startTiles = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : Object.assign({}, tiles);
-                    upd({ isPlaying: true, tiles: startTiles, playBackupTiles: Object.assign({}, startTiles), playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
-                  }
-                },
-                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md ' +
-                  (isPlaying ? 'bg-red-700 hover:bg-red-800' : 'bg-green-700 hover:bg-green-800')
-              }, isPlaying ? '\u23F9 Stop' : '\u25B6\uFE0F Start Game'),
-              (playWon || playDead) && h('button', { 'aria-label': __alloT('stem.gamestudio.play_again', 'Play Again'),
-                onClick: function() {
-                  _gsResetFxPools();
-                  var resetTiles = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : Object.assign({}, tiles);
-                  upd({ isPlaying: true, tiles: resetTiles, playBackupTiles: Object.assign({}, resetTiles), playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
-                },
-                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 shadow-md transition-all'
-              }, __alloT('stem.gamestudio.play_again_2', '\uD83D\uDD04 Play Again')),
-              h('div', { className: 'text-[0.6875rem] text-slate-600 self-center ml-2' }, __alloT('stem.gamestudio.arrow_keys_wasd_to_move_click_game_are', 'Arrow keys / WASD to move \u2022 Click game area first'))
+            h('div', { className: 'flex gap-2 justify-center flex-wrap items-center' },
+              isPlaying && h('button', { type: 'button', onClick: stopGame, style: { minHeight: '44px' },
+                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md bg-red-700 hover:bg-red-800'
+              }, '⏹ Stop'),
+              // Puzzles can get stuck (a crate in a corner): start over without leaving Play.
+              isPlaying && !ended && h('button', { type: 'button', onClick: function() { startGame(); }, style: { minHeight: '44px' },
+                className: 'px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md bg-blue-700 hover:bg-blue-800'
+              }, '🔄 ' + __alloT('stem.gamestudio.restart', 'Restart')),
+              h('button', { type: 'button', onClick: function() { stopGame(); upd({ tab: 'map' }); }, style: { minHeight: '44px' },
+                className: 'px-4 py-2 rounded-xl text-xs font-bold text-rose-900 bg-white border border-rose-600 hover:bg-rose-50' }, '✏️ ' + __alloT('stem.gamestudio.edit_map', 'Edit the map'))
             ),
 
-            // Mechanics guide
-            h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-slate-50' },
-              h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.gamestudio.game_mechanics', '\uD83C\uDFAE Game Mechanics')),
-              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-[0.6875rem] text-slate-600' },
-                [
-                  ['\uD83E\uDE99 Coin', '+10 points'],
-                  ['\uD83D\uDC8E Gem', '+50 points'],
-                  ['\uD83D\uDD11 Key', 'Opens doors'],
-                  ['\uD83D\uDEAA Door', 'Needs key'],
-                  ['\u2764\uFE0F Heart', '+1 life'],
-                  ['\uD83C\uDF00 Portal', 'Teleports you'],
-                  ['\uD83E\uDEF5 Ice', 'Slide until wall'],
-                  ['\uD83D\uDC7E Enemy', 'Patrols & chases!'],
-                  ['\uD83D\uDD25 Lava', '-1 life'],
-                  ['\u26A0\uFE0F Spikes', '-1 life'],
-                  ['\uD83D\uDEA9 Flag', 'Win!'],
-                  ['\uD83E\uDDD1 You', 'The hero!']
-                ].map(function(m, i) {
-                  return h('div', { key: i, className: 'flex gap-1 items-center' },
-                    h('span', { className: 'font-bold' }, m[0]),
-                    h('span', null, m[1])
-                  );
+            // The rules of THIS level, written out (only tiles that are on the map)
+            h('div', { className: 'p-3 rounded-xl border border-slate-400 bg-white' },
+              h('div', { className: 'text-xs font-bold text-slate-800 mb-2' }, __alloT('stem.gamestudio.game_mechanics_v2', '🎮 The rules of this level')),
+              h('ul', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[0.75rem] text-slate-800 m-0 p-0 list-none' },
+                TILE_PALETTE.filter(function(tp) { return tp.id !== 'empty' && countTile(tiles, tp.id) > 0; }).map(function(tp) {
+                  return h('li', { key: tp.id, className: 'flex gap-1.5 items-start' },
+                    pieceArt(tp.id, '18px') || h('span', { 'aria-hidden': 'true' }, tp.emoji),
+                    h('span', null, h('strong', null, tp.label + ': '), tileRule(tp.id)));
+                }),
+                engineS.rules.list.filter(function(r) { return r.runs && r.why !== 'builtIn'; }).map(function(r) {
+                  return h('li', { key: 'r' + r.id, className: 'flex gap-1.5 items-start sm:col-span-2' }, h('span', { 'aria-hidden': 'true' }, '⚡'), h('span', null, ruleSentence(r)));
                 })
               )
             ),
@@ -2024,18 +3114,19 @@ window.StemLab = window.StemLab || {
                   upd({ aiResult: null });
                   var st = JSON.stringify({ gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, events: events });
                   callGemini('You are a game design advisor for students. Analyze this game and give 3-5 short, constructive suggestions. Consider: win conditions, balance, variety, enemy placement, fun factor. Game: ' + st)
-                    .then(function(res) { setAiLoading(false); upd({ aiResult: '\uD83E\uDDE0 ' + res }); })
-                    .catch(function() { setAiLoading(false); upd({ aiResult: '\u274C AI error' }); });
+                    .then(function(res) { setAiLoading(false); upd({ aiResult: '🧠 ' + res }); })
+                    .catch(function() { setAiLoading(false); upd({ aiResult: '❌ AI error' }); });
                 },
                 disabled: aiLoading,
                 className: 'w-full px-3 py-2 text-xs font-bold text-white rounded-lg transition-all ' +
                   (aiLoading ? 'bg-slate-600' : 'bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800')
-              }, aiLoading ? '\u23F3 Analyzing...' : '\uD83E\uDDE0 AI Review My Game'),
-              aiResult && aiResult.indexOf('\uD83E\uDDE0') === 0 && h('div', {
+              }, aiLoading ? '⏳ Analyzing...' : '🧠 AI Review My Game'),
+              aiResult && aiResult.indexOf('🧠') === 0 && h('div', {
                 className: 'mt-2 p-3 rounded-lg bg-white border border-purple-200 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed'
               }, aiResult)
             )
-          ),
+          );
+          })(),
 
 
           // ============================================================
@@ -2125,11 +3216,11 @@ window.StemLab = window.StemLab || {
                       var isCorrect = oi === lesson.quiz.correct;
                       var showResult = learnShowResult;
                       var btnClass = 'w-full p-3 rounded-lg text-left text-xs font-bold transition-all border-2 ';
-                      if (showResult && isSelected && isCorrect) btnClass += 'border-green-500 bg-green-100 text-green-800';
-                      else if (showResult && isSelected && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-700';
-                      else if (showResult && isCorrect) btnClass += 'border-green-400 bg-green-50 text-green-700';
-                      else if (isSelected) btnClass += 'border-indigo-400 bg-indigo-100 text-indigo-800';
-                      else btnClass += 'border-gray-200 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-700';
+                      // A wrong pick is marked, but the right option is never lit up: the student tries again.
+                      if (showResult && isSelected && isCorrect) btnClass += 'border-green-700 bg-green-100 text-green-800';
+                      else if (showResult && isSelected && !isCorrect) btnClass += 'border-red-600 bg-red-50 text-red-700';
+                      else if (isSelected) btnClass += 'border-indigo-600 bg-indigo-100 text-indigo-800';
+                      else btnClass += 'border-slate-500 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-700';
                       return h('button', { key: oi,
                         'aria-pressed': isSelected,
                         onClick: function() {
@@ -2145,29 +3236,37 @@ window.StemLab = window.StemLab || {
                   !learnShowResult && learnAnswer !== null && h('button', { 'aria-label': __alloT('stem.gamestudio.check_answer', 'Check Answer'),
                     onClick: function() {
                       var correct = learnAnswer === lesson.quiz.correct;
+                      var missed = Object.assign({}, _gs.learnMissed || {});
+                      if (!correct) { missed[lesson.id] = true; upd({ learnShowResult: true, learnMissed: missed }); return; }
                       upd({ learnShowResult: true });
-                      if (correct && !isComplete) {
+                      if (!isComplete) {
                         var lc = Object.assign({}, learnCompleted);
                         lc[lesson.id] = true;
                         upd({ learnCompleted: lc, learnShowResult: true });
-                        if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 15, 'lesson: ' + lesson.title);
-                        if (addToast) addToast('\uD83C\uDF93 Lesson complete! +15 XP', 'success');
+                        // XP only for a first-try answer; after a miss, trying the other options is not mastery.
+                        if (!missed[lesson.id]) {
+                          if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 15, 'lesson: ' + lesson.title);
+                          if (addToast) addToast('\uD83C\uDF93 Lesson complete! +15 XP', 'success');
+                        } else if (addToast) addToast('\uD83C\uDF93 ' + __alloT('stem.gamestudio.lesson_done_noxp', 'Lesson complete! (XP is for a first-try answer.)'), 'success');
                       }
                     },
                     className: 'mt-3 w-full py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all'
                   }, __alloT('stem.gamestudio.check_answer_2', 'Check Answer')),
 
-                  learnShowResult && h('div', { 
+                  learnShowResult && h('div', { role: 'status',
                     className: 'mt-3 p-3 rounded-lg text-xs ' +
-                      (learnAnswer === lesson.quiz.correct ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-red-50 text-red-700 border border-red-300')
+                      (learnAnswer === lesson.quiz.correct ? 'bg-green-100 text-green-900 border border-green-300' : 'bg-red-50 text-red-900 border border-red-300')
                   },
                     h('div', { className: 'font-bold mb-1' }, learnAnswer === lesson.quiz.correct ? '\u2705 Correct!' : '\u274C Not quite!'),
-                    h('p', null, lesson.quiz.explanation)
+                    h('p', { className: 'm-0' }, learnAnswer === lesson.quiz.correct ? lesson.quiz.explanation : ((lesson.quiz.why && lesson.quiz.why[learnAnswer]) || '')),
+                    learnAnswer !== lesson.quiz.correct && h('button', { type: 'button', onClick: function() { upd({ learnAnswer: null, learnShowResult: false }); },
+                      style: { minHeight: '44px' },
+                      className: 'mt-2 px-4 py-2 rounded-lg text-xs font-bold text-white bg-indigo-700 hover:bg-indigo-800' }, '\uD83D\uDD01 ' + __alloT('stem.gamestudio.try_again', 'Try again'))
                   )
                 ),
 
                 // Next lesson
-                learnShowResult && (function() {
+                learnShowResult && learnAnswer === lesson.quiz.correct && (function() {
                   var idx = LESSONS.findIndex(function(l) { return l.id === activeLesson; });
                   if (idx < LESSONS.length - 1) {
                     return h('button', { 'aria-label': __alloT('stem.gamestudio.aria_next_lesson', 'Next Lesson: {title}').split('{title}').join(LESSONS[idx + 1].title),
@@ -2187,7 +3286,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: lesson.id,
                   onClick: function() { upd({ activeLesson: lesson.id, learnAnswer: null, learnShowResult: false }); },
                   className: 'p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ' +
-                    (isComplete ? 'border-green-600 bg-green-50' : 'border-indigo-200 bg-white hover:border-indigo-400')
+                    (isComplete ? 'border-green-600 bg-green-50' : 'border-indigo-500 bg-white hover:border-indigo-700')
                 },
                   h('div', { className: 'flex items-start gap-3' },
                     h('span', { style: { fontSize: '24px' } }, lesson.icon),
@@ -2217,7 +3316,8 @@ window.StemLab = window.StemLab || {
                 h('span', { style: { fontSize: '28px' }, 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
                 h('div', { className: 'flex-1' },
                   h('h3', { className: 'text-sm font-black text-amber-950' }, __alloT('stem.gamestudio.design_challenges', 'Design Challenges')),
-                  h('p', { className: 'text-xs text-amber-900' }, __alloT('stem.gamestudio.apply_your_game_design_skills_build_le', 'Apply your game design skills! Build levels that meet specific objectives.'))
+                  h('p', { className: 'text-xs text-amber-900' }, __alloT('stem.gamestudio.apply_your_game_design_skills_build_le', 'Apply your game design skills! Build levels that meet specific objectives.')),
+                  h('p', { className: 'text-xs text-amber-900 mt-1 mb-0' }, __alloT('stem.gamestudio.challenge_engine_note', 'Some goals are checked by the game engine: it plays your level every possible way, so placing the tiles is not enough. The level has to really work.'))
                 ),
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-lg font-black text-amber-900' }, Object.keys(challengeCompleted).length + '/' + CHALLENGES.length),
@@ -2236,7 +3336,7 @@ window.StemLab = window.StemLab || {
             CHALLENGES.map(function(ch) {
               var isComplete = challengeCompleted[ch.id];
               var results = ch.requirements.map(function(req) {
-                return { text: req.text, passed: req.check(tiles, gridW, gridH) };
+                return { text: req.text, engine: !!req.engine, passed: !!req.check(tiles, gridW, gridH, engineOpts) };
               });
               var allPassed = results.every(function(r) { return r.passed; });
               return h('div', {
@@ -2268,7 +3368,7 @@ window.StemLab = window.StemLab || {
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[0.6875rem] font-bold ' +
                         (r.passed ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-700')
                       }, r.passed ? '\u2713' : (ri + 1)),
-                      h('span', { className: r.passed ? 'line-through' : '' }, r.text)
+                      h('span', { className: r.passed ? 'line-through' : '' }, r.text + (r.engine ? ' (' + __alloT('stem.gamestudio.engine_checked', 'the game engine plays it to check') + ')' : ''))
                     );
                   })
                 ),
@@ -2323,14 +3423,15 @@ window.StemLab = window.StemLab || {
             // Export / Import / Share
             h('div', { className: 'grid grid-cols-3 gap-3' },
               h('button', { onClick: function() {
-                  var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events, spritePixels: spritePixels };
+                  var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events, spritePixels: spritePixels, looks: looks };
                   var blob = new Blob([JSON.stringify(gd, null, 2)], { type: 'application/json' });
                   var url = URL.createObjectURL(blob);
                   var a = document.createElement('a');
                   a.href = url; a.download = (projectName || 'game').replace(/[^a-zA-Z0-9]/g, '_') + '.allogame';
                   a.click(); setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
                   if (addToast) addToast('\uD83D\uDCE4 Game exported!', 'success');
-                  if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 5, 'export game');
+                  // Once only: exporting again is not new learning.
+                  if (!_gs.exportedOnce) { if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 5, 'export game'); upd({ exportedOnce: true }); }
                 },
                 className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
@@ -2354,10 +3455,11 @@ window.StemLab = window.StemLab || {
                         upd({
                           projectName: typeof data.name === 'string' && data.name.trim() ? data.name.trim().slice(0, 80) : 'Imported Game',
                           gridW: safeW, gridH: safeH,
-                          gameType: safeType,
-                          tiles: (data.tiles && typeof data.tiles === 'object' && !Array.isArray(data.tiles)) ? data.tiles : {},
+                          gameType: safeType, isPlaying: false, playWorld: null,
+                          tiles: cleanTiles(data.tiles, safeW, safeH),
                           sprites: (data.sprites && typeof data.sprites === 'object' && !Array.isArray(data.sprites)) ? data.sprites : {},
-                          events: (data.events && typeof data.events === 'object' && !Array.isArray(data.events)) ? data.events : {},
+                          events: cleanEvents(data.events),
+                          looks: gsCleanLooks(data.looks),
                           spritePixels: (data.spritePixels && typeof data.spritePixels === 'object' && !Array.isArray(data.spritePixels)) ? data.spritePixels : {}
                         });
                         if (addToast) addToast('\uD83D\uDCE5 Game imported!', 'success');
@@ -2373,7 +3475,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'text-xs font-bold text-rose-700' }, __alloT('stem.gamestudio.import', 'Import'))
               ),
               h('button', { onClick: function() {
-                  var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events };
+                  var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events, looks: looks };
                   var code = btoa(unescape(encodeURIComponent(JSON.stringify(gd))));
                   Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(code)).then(function() {
                     if (addToast) addToast('\uD83D\uDCCB Share code copied!', 'success');
@@ -2412,10 +3514,11 @@ window.StemLab = window.StemLab || {
                       upd({
                         projectName: typeof data.name === 'string' && data.name.trim() ? data.name.trim().slice(0, 80) : 'Shared Game',
                         gridW: safeW, gridH: safeH,
-                        gameType: safeType,
-                        tiles: (data.tiles && typeof data.tiles === 'object' && !Array.isArray(data.tiles)) ? data.tiles : {},
+                        gameType: safeType, isPlaying: false, playWorld: null,
+                        tiles: cleanTiles(data.tiles, safeW, safeH),
                         sprites: (data.sprites && typeof data.sprites === 'object' && !Array.isArray(data.sprites)) ? data.sprites : {},
-                        events: (data.events && typeof data.events === 'object' && !Array.isArray(data.events)) ? data.events : {}
+                        events: cleanEvents(data.events),
+                        looks: gsCleanLooks(data.looks)
                       });
                       el.value = '';
                       if (addToast) addToast('\uD83D\uDCE5 Game loaded!', 'success');
@@ -2433,7 +3536,8 @@ window.StemLab = window.StemLab || {
                 STARTERS.map(function(starter) {
                   return h('button', { key: starter.name,
                     onClick: function() {
-                      upd({ projectName: starter.name, gameType: starter.type, gridW: 16, gridH: 12, tiles: starter.tiles, tab: 'map' });
+                      _gsPlayRef.current = null;
+                      setTiles(Object.assign({}, starter.tiles), { extra: { projectName: starter.name, gameType: starter.type, gridW: 16, gridH: 12, tab: 'map', isPlaying: false, playWorld: null } });
                       if (addToast) addToast('\uD83C\uDFAE Loaded "' + starter.name + '"!', 'success');
                     },
                     className: 'p-3 rounded-xl border-2 border-rose-600 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-left transition-all hover:shadow-md'
@@ -2497,8 +3601,73 @@ window.StemLab = window.StemLab || {
             }
             var pathStr = 'M ' + curvePoints.map(function(pt) { return pt[0].toFixed(1) + ',' + pt[1].toFixed(1); }).join(' L ');
             var areaStr = pathStr + ' L 340,130 L 36,130 Z';
+            // ---- Measured on the student's own level by the game engine ----
+            var meas = gsSolveCached(tiles, gridW, gridH, engineOpts);
+            var mZone = GS_E.chaseZone(tiles, gridW, gridH, engineOpts);
+            var routeChase = 0, routeClose = 0;
+            (meas.path || []).forEach(function(p) {
+              var pk = p[0] + ',' + p[1];
+              if (mZone[pk]) routeChase++;
+              if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(function(d) { var nt = tiles[(p[0] + d[0]) + ',' + (p[1] + d[1])]; return nt === 'lava' || nt === 'spikes'; })) routeClose++;
+            });
+            var mLog = Array.isArray(_gs.measureLog) ? _gs.measureLog : [];
+            var setRule = function(k, v) { var nr = Object.assign({}, rulesCfg); nr[k] = v; upd({ rules: nr }); };
+            var winTxt = meas.winnable === true ? __alloT('stem.gamestudio.m_yes', 'Yes') : meas.winnable === false ? __alloT('stem.gamestudio.m_no', 'No') : __alloT('stem.gamestudio.m_unknown', 'Too big to check');
+            var stat = function(label, value, note) {
+              return h('div', { className: 'p-2.5 rounded-xl border border-slate-300 bg-slate-50' },
+                h('div', { className: 'text-[0.75rem] font-bold text-slate-700' }, label),
+                h('div', { className: 'text-lg font-black text-slate-900 leading-tight' }, value),
+                note && h('div', { className: 'text-[0.75rem] text-slate-700' }, note));
+            };
+            var measurePanel = h('div', { className: 'gs-panel p-4 rounded-2xl bg-white border-2 border-indigo-300 space-y-3' },
+              h('h3', { className: 'text-sm font-black text-indigo-950 m-0' }, '📏 ' + __alloT('stem.gamestudio.measure_title', 'Measure your level (the game engine plays it)')),
+              h('p', { className: 'text-[0.75rem] text-slate-800 m-0' }, __alloT('stem.gamestudio.measure_intro', 'Change ONE rule or ONE thing on the map. Predict what will change. Then read the new numbers, and play it to feel the difference.')),
+              !meas.hasPlayer ? h('p', { className: 'text-xs font-bold text-amber-900 m-0' }, __alloT('stem.gamestudio.check_no_player', 'No player yet. Put a Player tile where the game should start.')) :
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 gap-2', role: 'status' },
+                stat(__alloT('stem.gamestudio.m_can_win', 'Can it be won?'), winTxt),
+                stat(__alloT('stem.gamestudio.m_moves', 'Fewest moves to win'), meas.winnable ? meas.moves : '—'),
+                stat(__alloT('stem.gamestudio.m_lives', 'Lives lost on the safest route'), meas.winnable ? meas.livesLost + ' / ' + meas.startLives : '—'),
+                stat(__alloT('stem.gamestudio.m_coins', 'Coins a player can reach'), meas.coinsReach + ' / ' + meas.coinsTotal),
+                stat(__alloT('stem.gamestudio.m_chase', 'Route squares an enemy can chase'), meas.winnable ? routeChase : '—', __alloT('stem.gamestudio.m_chase_note', 'Counted from where enemies start.')),
+                stat(__alloT('stem.gamestudio.m_close', 'Route squares next to lava or spikes'), meas.winnable ? routeClose : '—')
+              ),
+              h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+                h('div', null,
+                  h('label', { htmlFor: 'gs-rule-lives', className: 'block text-[0.75rem] font-bold text-slate-800' }, __alloT('stem.gamestudio.rule_lives', 'Starting lives: ') , h('span', { className: 'font-mono text-indigo-800' }, engineS.lives)),
+                  h('input', { id: 'gs-rule-lives', type: 'range', min: 1, max: 5, step: 1, value: engineS.lives, className: 'w-full', style: { minHeight: '32px' },
+                    'aria-valuetext': engineS.lives + ' ' + __alloT('stem.gamestudio.lives_word', 'lives'),
+                    onChange: function(e) { setRule('lives', parseInt(e.target.value, 10)); } })),
+                h('div', null,
+                  h('label', { htmlFor: 'gs-rule-chase', className: 'block text-[0.75rem] font-bold text-slate-800' }, __alloT('stem.gamestudio.rule_chase', 'Enemy chase range (steps): '), h('span', { className: 'font-mono text-indigo-800' }, engineS.chase)),
+                  h('input', { id: 'gs-rule-chase', type: 'range', min: 0, max: 6, step: 1, value: engineS.chase, className: 'w-full', style: { minHeight: '32px' },
+                    'aria-valuetext': engineS.chase + ' ' + __alloT('stem.gamestudio.steps_word', 'steps'),
+                    onChange: function(e) { setRule('chase', parseInt(e.target.value, 10)); } }))
+              ),
+              h('p', { className: 'text-[0.75rem] text-slate-700 m-0' }, __alloT('stem.gamestudio.rules_used_everywhere', 'These rules are used everywhere: in Play, in the level test and in the challenges.')),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                meas.hasPlayer && h('button', { type: 'button', style: { minHeight: '44px' },
+                  onClick: function() { upd({ measureLog: mLog.concat([{ n: projectName, l: engineS.lives, c: engineS.chase, w: winTxt, m: meas.winnable ? meas.moves : '—', lost: meas.winnable ? meas.livesLost : '—', co: meas.coinsReach + '/' + meas.coinsTotal, ch: meas.winnable ? routeChase : '—' }]).slice(-8) }); },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold text-indigo-950 bg-indigo-50 border border-indigo-500 hover:bg-indigo-100' }, '📋 ' + __alloT('stem.gamestudio.save_measure', 'Save this measurement')),
+                h('button', { type: 'button', style: { minHeight: '44px' }, onClick: function() { startGame({ tab: 'play' }); },
+                  className: 'px-3 py-2 rounded-lg text-xs font-black text-white bg-green-700 hover:bg-green-800' }, '▶️ ' + __alloT('stem.gamestudio.play_it', 'Play it')),
+                mLog.length > 0 && h('button', { type: 'button', style: { minHeight: '44px' }, onClick: function() { upd({ measureLog: [] }); },
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold text-slate-700 bg-white border border-slate-500' }, '↺ ' + __alloT('stem.gamestudio.clear_log', 'Clear log'))
+              ),
+              mLog.length > 0 && h('div', { className: 'overflow-x-auto' },
+                h('table', { className: 'text-[0.75rem] w-full border-collapse text-slate-800' },
+                  h('thead', null, h('tr', { className: 'bg-slate-100' },
+                    [__alloT('stem.gamestudio.col_level', 'level'), __alloT('stem.gamestudio.col_lives', 'lives'), __alloT('stem.gamestudio.col_chase', 'chase'), __alloT('stem.gamestudio.col_win', 'can win'), __alloT('stem.gamestudio.col_moves', 'moves'), __alloT('stem.gamestudio.col_lost', 'lives lost'), __alloT('stem.gamestudio.col_coins', 'coins'), __alloT('stem.gamestudio.col_chased', 'chased squares')].map(function(c, i) { return h('th', { scope: 'col', key: 'mh' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+                  h('tbody', null, mLog.map(function(o, idx) {
+                    return h('tr', { key: 'ml' + idx }, [o.n, o.l, o.c, o.w, o.m, o.lost, o.co, o.ch].map(function(v, j) { return h('td', { key: j, className: 'px-1 border border-slate-200 font-mono' }, String(v)); }));
+                  }))
+                )
+              )
+            );
             return h('div', { className: 'space-y-3' },
-              h('div', { className: 'gs-panel p-4 rounded-2xl bg-white border-2 border-rose-200 space-y-3' },
+              measurePanel,
+              h('details', { className: 'gs-panel rounded-2xl bg-white border-2 border-rose-200' },
+                h('summary', { className: 'p-3 text-xs font-bold text-rose-900 cursor-pointer', style: { minHeight: '44px' } }, '💭 ' + __alloT('stem.gamestudio.formula_summary', 'Thought experiment: a made-up difficulty formula (it does not look at your map)')),
+              h('div', { className: 'p-4 pt-0 space-y-3' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                   h('h3', { className: 'text-sm font-black text-rose-900 m-0' }, __alloT('stem.gamestudio.difficulty_curve_tuner_discovery', '📈 Difficulty curve tuner — discovery')),
                   // Quick preset profiles
@@ -2509,7 +3678,7 @@ window.StemLab = window.StemLab || {
                       { id: 'gauntlet', label: '🔥 Boss Gauntlet', v: { enemies: 16, patrolSpeed: 85, hazards: 80, coins: 20, health: 50 } }
                     ].map(function(pr) {
                       return h('button', { key: pr.id, type: 'button', onClick: function() { setIQ(pr.v); },
-                        className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold bg-rose-50 text-rose-900 border border-rose-300 hover:bg-rose-100 cursor-pointer'
+                        className: 'px-2.5 py-1 rounded-full text-[0.6875rem] font-bold bg-rose-50 text-rose-900 border border-rose-500 hover:bg-rose-100 cursor-pointer'
                       }, pr.label);
                     })
                   )
@@ -2518,7 +3687,7 @@ window.StemLab = window.StemLab || {
                 // Discrete state marker
                 h('div', { className: 'gs-panel p-3.5 rounded-xl text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-lg font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-xs text-slate-800 font-semibold mt-1' }, '~' + sm.deaths + ' deaths typical · completion time ' + sm.time),
+                  h('div', { className: 'text-xs text-slate-800 font-semibold mt-1' }, __alloT('stem.gamestudio.formula_only_note', 'This tier comes from the made-up formula below. It does not play your level, so it cannot tell you deaths or time.')),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1 font-mono' }, 'Composite difficulty score = ' + diffScore.toFixed(2))
                 ),
                 // SVG difficulty curve visualization (wide viewBox with clean right-side labels inside bounds)
@@ -2546,11 +3715,11 @@ window.StemLab = window.StemLab || {
                       return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3.5, fill: '#ffffff', stroke: sm.color, strokeWidth: 2 });
                     }),
                     // Labels (strictly within 0..400 x 0..156 bounds)
-                    h('text', { x: 188, y: 149, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.gamestudio.game_progress_0_100', 'Game progress 0% → 100%')),
-                    h('text', { x: 14, y: 76, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 14 76)' }, __alloT('stem.gamestudio.difficulty', 'Difficulty')),
-                    h('text', { x: 346, y: 39, fontSize: 9, fontWeight: 700, fill: '#991b1b' }, __alloT('stem.gamestudio.expert_2', 'Expert')),
-                    h('text', { x: 346, y: 88, fontSize: 9, fontWeight: 700, fill: '#92400e' }, __alloT('stem.gamestudio.medium_2', 'Medium')),
-                    h('text', { x: 346, y: 126, fontSize: 9, fontWeight: 700, fill: '#065f46' }, __alloT('stem.gamestudio.easy_2', 'Easy'))
+                    h('text', { className: 'gs-chart-ink', x: 188, y: 149, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155' }, __alloT('stem.gamestudio.game_progress_0_100', 'Game progress 0% → 100%')),
+                    h('text', { className: 'gs-chart-ink', x: 14, y: 76, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#334155', transform: 'rotate(-90 14 76)' }, __alloT('stem.gamestudio.difficulty', 'Difficulty')),
+                    h('text', { className: 'gs-chart-ink', x: 346, y: 39, fontSize: 9, fontWeight: 700, fill: '#991b1b' }, __alloT('stem.gamestudio.expert_2', 'Expert')),
+                    h('text', { className: 'gs-chart-ink', x: 346, y: 88, fontSize: 9, fontWeight: 700, fill: '#92400e' }, __alloT('stem.gamestudio.medium_2', 'Medium')),
+                    h('text', { className: 'gs-chart-ink', x: 346, y: 126, fontSize: 9, fontWeight: 700, fill: '#065f46' }, __alloT('stem.gamestudio.easy_2', 'Easy'))
                   ),
                   h('div', { className: 'text-[0.6875rem] text-slate-700 text-center italic mt-1' },
                     __alloT('stem.gamestudio.curve_shows_difficulty_ramping_over_ga', 'Curve shows difficulty ramping over game progress. Compare different parameter combinations.'))
@@ -2571,8 +3740,8 @@ window.StemLab = window.StemLab || {
                 ),
                 // Log + reset
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ e: iq.enemies, p: iq.patrolSpeed, h: iq.hazards, c: iq.coins, hp: iq.health, d: diffScore.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.gamestudio.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.gamestudio.reset', '↺ Reset')),
+                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ e: iq.enemies, p: iq.patrolSpeed, h: iq.hazards, c: iq.coins, hp: iq.health, d: diffScore.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-500' }, __alloT('stem.gamestudio.log', '📋 Log')),
+                  h('button', { onClick: function() { setIQ({ enemies: 5, patrolSpeed: 50, hazards: 30, coins: 50, health: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.gamestudio.reset', '↺ Reset')),
                   (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                 ),
                 // Log table
@@ -2594,9 +3763,9 @@ window.StemLab = window.StemLab || {
                 ),
                 // Hypothesis textarea
                 h('textarea', { 'aria-label': __alloT('stem.gamestudio.hypothesis_input', 'Difficulty curve hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.gamestudio.hypothesis_free_text_no_right_answer_w', 'Hypothesis (free text — no right answer): Which slider has the biggest effect on difficulty? Does the curve change shape, or just height?'),
-                  className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
+                  className: 'w-full text-[0.75rem] border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
                 // Opt-in stuck prompts
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.gamestudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
+                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-600' }, __alloT('stem.gamestudio.stuck_show_open_prompts_no_answers', '🤔 Stuck — show open prompts (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed' },
                   h('div', { className: 'font-bold text-amber-900 mb-1' }, __alloT('stem.gamestudio.open_prompts_investigate_by_manipulati', 'Open prompts — investigate by manipulating:')),
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -2612,13 +3781,13 @@ window.StemLab = window.StemLab || {
                     h('label', { htmlFor: 'dt-und', className: 'text-[0.75rem] font-bold text-emerald-900 cursor-pointer' },
                       __alloT('stem.gamestudio.i_think_i_understand_difficulty_tuning', 'I think I understand difficulty tuning now — let me explain it in my own words'))),
                   iq.understood && h('textarea', { 'aria-label': __alloT('stem.gamestudio.explanation_input', 'Difficulty curve explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.gamestudio.explain_in_your_own_words_how_do_the_5', 'Explain in your own words: how do the 5 parameters jointly determine difficulty? What player-experience metric does each map to?'),
-                    className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
+                    className: 'w-full text-[0.75rem] border border-emerald-600 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[0.625rem] italic text-emerald-700' },
                     __alloT('stem.gamestudio.saved_notice_nobody_checked_your_answe', '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.'))
                 ),
                 h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[0.625rem] italic text-slate-600' },
                   __alloT('stem.gamestudio.design_note_discrete_5_tier_difficulty', 'Design note: discrete 5-tier difficulty marker; SVG curve shows shape not score; no "right" tuning revealed — by design.'))
-              )
+              ))
             );
           })()
           ), // end tabpanel

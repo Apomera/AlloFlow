@@ -120,6 +120,7 @@ const builderScope = (overrides) => ({
   beginAlternativeExport: () => true, finishAlternativeExport: () => {},
   qtiAssessments: [{ key: 'q', item: { type: 'quiz' } }], selectedQtiKey: 'q', h5pActivities: [], selectedH5PKey: '',
   handleExportQTI: vi.fn(async () => undefined), handleExportH5P: vi.fn(async () => true), handleExportIMS: vi.fn(async () => true),
+  builderResourceIds: [], // closure dep added for the QTI/H5P handlers
   getCleanBuilderDocument: () => {
     const doc = new DOMParser().parseFromString('<!DOCTYPE html><html><body><main><p>Student page</p><div class="page-break"></div><div class="teacher-view"><p>ANSWER KEY TEXT</p></div><div data-allo-teacher-only="lesson-plan"><p>PLAN TEXT</p></div></main></body></html>', 'text/html');
     const clone = doc.documentElement.cloneNode(true);

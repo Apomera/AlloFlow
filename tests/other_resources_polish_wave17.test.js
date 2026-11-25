@@ -136,28 +136,13 @@ describe('Wave 17 polish — SpotlightTourView, InfoModal, CanvasRecoveryDialogV
   });
 
   it('InfoModal filters Feature Guide by category pills with reset, renders Open Source summary counts, and passes axe', async () => {
-    const featuresList = {
-      categories: { creation: 'Create', activities: 'Activities', platform: 'Platform' },
-      items: [
-        { title: 'Leveled Reader', icon: 'BookOpen', desc: 'Adapt reading passages', category: 'creation', color: 'indigo' },
-        { title: 'SEL Hub', icon: 'Heart', desc: 'Social-emotional activities', category: 'activities', color: 'rose' },
-        { title: 'STEM Lab', icon: 'Layers', desc: 'Interactive STEM labs', category: 'platform', color: 'teal' },
-      ],
-    };
-    const t = (key) => {
-      if (key === 'about.features_list') return featuresList;
-      return {
-        'about.title': 'About AlloFlow',
-        'about.tab_about': 'About',
-        'about.tab_atlas': 'Atlas',
-        'about.tab_features': 'Feature Guide',
-        'about.tab_privacy': 'Privacy',
-        'about.tab_opensource': 'Open Source',
-        'common.close': 'Close',
-        'tips.pro_tip_label': 'Tip:',
-        'profiles.title': 'Profiles',
-      }[key] || key;
-    };
+    // Host-like t(): known shell keys resolve, anything else is undefined so the
+    // modal's English fallbacks render (the Feature Guide data lives in the module).
+    const t = (key) => ({
+      'common.close': 'Close',
+      'tips.pro_tip_label': 'Tip:',
+      'profiles.title': 'Profiles',
+    })[key];
     const noop = () => {};
     const baseProps = {
       handleSetInfoModalTabToAbout: noop,
@@ -176,16 +161,22 @@ describe('Wave 17 polish — SpotlightTourView, InfoModal, CanvasRecoveryDialogV
     const dialog = host.querySelector('[role="dialog"]');
     expect(dialog).toBeTruthy();
 
-    const catGroup = dialog.querySelector('[role="group"][aria-label="Filter guided workflows by category"]');
+    const catGroup = dialog.querySelector('[role="group"][aria-label="Filter the guides by category"]');
     expect(catGroup).toBeTruthy();
+    const countIn = (button) => Number((button.textContent.match(/\((\d+)\)/) || [])[1]);
+    const allBtn = catGroup.querySelector('[data-feature-category="all"]');
+    const total = countIn(allBtn);
+    expect(total).toBeGreaterThan(40);
+    expect(dialog.querySelectorAll('[data-feature-guide-key]')).toHaveLength(total);
     const activitiesBtn = catGroup.querySelector('[data-feature-category="activities"]');
-    expect(activitiesBtn.textContent).toContain('Activities (1)');
+    expect(activitiesBtn.textContent).toContain('Learn & Play (');
     expect(activitiesBtn.className).toContain('min-h-11');
+    const inActivities = countIn(activitiesBtn);
 
     act(() => { activitiesBtn.click(); });
     expect(activitiesBtn.getAttribute('aria-pressed')).toBe('true');
-    expect(dialog.querySelectorAll('[data-feature-guide-key]')).toHaveLength(1);
-    expect(dialog.querySelector('[role="status"]').textContent).toContain('Showing 1 of 3 guides in Activities');
+    expect(dialog.querySelectorAll('[data-feature-guide-key]')).toHaveLength(inActivities);
+    expect(dialog.querySelector('[role="status"]').textContent).toContain('Showing ' + inActivities + ' of ' + total + ' guides in Learn & Play');
 
     const searchInput = dialog.querySelector('#feature-guide-search');
     setFieldValue(searchInput, 'unmatched-query-xyz');
@@ -193,8 +184,13 @@ describe('Wave 17 polish — SpotlightTourView, InfoModal, CanvasRecoveryDialogV
     const resetBtn = Array.from(dialog.querySelectorAll('button')).find((b) => b.textContent.trim() === 'Reset filters');
     expect(resetBtn).toBeTruthy();
     act(() => { resetBtn.click(); });
-    expect(dialog.querySelectorAll('[data-feature-guide-key]')).toHaveLength(3);
+    expect(dialog.querySelectorAll('[data-feature-guide-key]')).toHaveLength(total);
     expect(searchInput.value).toBe('');
+
+    // Old names still find the renamed tools.
+    setFieldValue(searchInput, 'Exit Ticket');
+    expect(dialog.querySelector('[data-feature-guide-key="assess"]')).toBeTruthy();
+    setFieldValue(searchInput, '');
 
     await runAxe(dialog);
 
@@ -202,7 +198,7 @@ describe('Wave 17 polish — SpotlightTourView, InfoModal, CanvasRecoveryDialogV
     const ossDialog = ossHost.querySelector('[role="dialog"]');
     const ossSummary = ossDialog.querySelector('[aria-label="Open-source attribution summary"]');
     expect(ossSummary).toBeTruthy();
-    expect(ossSummary.textContent).toMatch(/\d+ integrated learning tools/);
+    expect(ossSummary.textContent).toMatch(/\d+ featured projects/);
     expect(ossSummary.textContent).toMatch(/\d+ credited libraries/);
     expect(ossSummary.textContent).toMatch(/\d+ reading catalog sources/);
     await runAxe(ossDialog);

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings, closeCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');" });
 test.beforeAll(async () => { await harness.start(); });
@@ -23,6 +24,7 @@ test('station view frames the canopy and grounded platform through themes and ed
   const framed = async () => (await state()).projected.every((point: any) => Math.abs(point.x) <= 1 && Math.abs(point.y) <= 1 && point.z >= -1 && point.z <= 1);
   await expect.poll(framed).toBe(true);
   expect((await state()).canopyPanels).toBe(2);
+  await openCoasterSettings(page);
   for(const theme of ['daylight', 'dusk', 'neon', 'blueprint']){
     await page.locator('#clab-visualTheme').selectOption(theme);
     await page.screenshot({ path: testInfo.outputPath('station-' + theme + '.png') });
@@ -44,6 +46,7 @@ test('station view frames the canopy and grounded platform through themes and ed
   await expect.poll(framed).toBe(true);
   await page.locator('#clab-btnFx').click();
   await page.locator('#clab-btnSceneFocus').click();
+  await closeCoasterSettings(page); // the phone drawer drops over the build panel
   await page.setViewportSize({ width: 390, height: 844 });
   await button.click(); await expect.poll(framed).toBe(true);
   await expect(page.locator('#clab-btnSceneFocus')).toBeInViewport();

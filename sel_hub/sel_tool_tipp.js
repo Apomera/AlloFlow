@@ -72,7 +72,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       duration: 30,                  // seconds for a single round
       headline: __alloT('sel.tipp.skills.temperature.headline', 'Cold water on your face'),
       steps: [
-        __alloT('sel.tipp.skills.temperature.steps.0', 'Fill a bowl with cold water (with ice if you have it).'),
+        __alloT('sel.tipp.skills.temperature.steps.0', 'Fill a bowl with cold tap water (no ice needed).'),
         __alloT('sel.tipp.skills.temperature.steps.1', 'Hold your breath.'),
         __alloT('sel.tipp.skills.temperature.steps.2', 'Lean over and submerge your face from above the eyebrows to below the cheekbones, for 15-30 seconds. (If you cannot submerge, hold a cold pack or wet washcloth over your eyes and upper cheeks instead.)'),
         __alloT('sel.tipp.skills.temperature.steps.3', 'Come up and breathe normally.'),
@@ -113,7 +113,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
         __alloT('sel.tipp.skills.paced.steps.3', 'Keep this rhythm for 1 to 2 minutes.'),
         __alloT('sel.tipp.skills.paced.steps.4', 'No need to push or strain; the LENGTHENED EXHALE is the active ingredient.')
       ],
-      why: __alloT('sel.tipp.skills.paced.why', 'A longer exhale than inhale shifts the autonomic nervous system toward parasympathetic dominance ("rest and digest"). Studies of paced breathing find measurable drops in heart rate variability stress markers within 90 seconds. The point is not relaxation; it is biology.'),
+      why: __alloT('sel.tipp.skills.paced.why', 'A longer exhale than inhale shifts the autonomic nervous system toward parasympathetic dominance ("rest and digest"). Studies of slow, paced breathing find that it raises heart rate variability and can lower heart rate within a few minutes. The point is not relaxation; it is biology.'),
       caution: __alloT('sel.tipp.skills.paced.caution', 'If breathing slowly makes you feel MORE anxious (which happens for some people with panic disorder or trauma), try a different TIPP skill. Do not force it.')
     },
     {

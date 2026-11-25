@@ -464,7 +464,7 @@
     }
 
     function handleTabKeyDown(event, index) {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
       var nextIndex = index;
       if (event.key === 'ArrowRight') nextIndex = (index + 1) % VIEWS.length;
       else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + VIEWS.length) % VIEWS.length;
@@ -540,7 +540,7 @@
     }
 
     function handleTreeKeyDown(event, node) {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing)) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
       var visible = visibleTreeNames(collapsed);
       var index = visible.indexOf(node.name);
       var hasKids = !!(node.kids && node.kids.length);
@@ -1524,6 +1524,7 @@
       '.organism-id-lab{min-height:100%;padding:18px;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}',
       '.organism-id-lab *{box-sizing:border-box}',
       '.organism-id-lab button{font:inherit;cursor:pointer}',
+      '.organism-id-lab :is(button,a,input,select,textarea,summary){touch-action:manipulation}',
       '.organism-id-lab :is(button,a,input,select,textarea,summary):focus-visible,.organism-id-lab [data-oid-focus]:focus{outline:3px solid var(--oid-focus);outline-offset:3px}',
       '@media(forced-colors:active){.organism-id-lab :is(button,a,input,select,textarea,summary):focus-visible,.organism-id-lab [data-oid-focus]:focus{outline-color:Highlight}}',
       '.organism-id-lab .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',

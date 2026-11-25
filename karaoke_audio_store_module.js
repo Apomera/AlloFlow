@@ -1,6 +1,30 @@
 (function () {
 'use strict';
-if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.log('[CDN] KaraokeAudioStoreModule already loaded, skipping'); return; }
+var _win = (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) ? window : null;
+if (_win && _win.AlloModules && typeof _win.AlloModules === 'object' && _win.AlloModules.KaraokeAudioStoreModule) {
+  if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+    console.log('[CDN] KaraokeAudioStoreModule already loaded, skipping');
+  }
+  return;
+}
+
+var hasOwn = Object.prototype.hasOwnProperty;
+function _safeStr(value) {
+  if (value == null || typeof value === 'symbol') return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+  if (typeof value === 'boolean') return String(value);
+  try { return String(value); } catch (_) { return ''; }
+}
+function _safeNum(value) {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string' && value.trim() !== '') return Number(value);
+  return NaN;
+}
+function _safeLimit(raw, fallback) {
+  var n = _safeNum(raw);
+  return (Number.isFinite(n) && n > 0) ? Math.max(1024, Math.floor(n)) : fallback;
+}
 
 // ============================================================================
 // karaoke_audio_store_module.js (2026-07-06) — durable, teacher-vettable
@@ -30,7 +54,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // converge on one key and prepped audio serves every surface. Collisions
   // (two sentences normalizing identically) just share a clip — harmless.
   function keyFor(sentence) {
-    return String(sentence == null ? '' : sentence).toLowerCase()
+    return _safeStr(sentence).toLowerCase()
       // Markdown decoration is display-only (2026-07-16): the SPOKEN spelling
       // has it stripped (phase_k sanitizeTtsText / view cleanSentenceForAudio)
       // while list/lookup spellings can still carry it raw ("## Title",
@@ -78,10 +102,10 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // fixed at the callTTS layer instead (kokoro speak() returns the COMPLETE
   // clip regardless of length), so no cap belongs here.
   function splitSentences(text) {
-    var raw = String(text || '').replace(/<\/?[a-zA-Z][^<>]*>/g, '');
+    var raw = _safeStr(text).replace(/<\/?[a-zA-Z][^<>]*>/g, '');
     if (!raw.trim()) return [];
     try {
-      var PH = window.AlloModules && window.AlloModules.PureHelpers;
+      var PH = _win && _win.AlloModules && _win.AlloModules.PureHelpers;
       if (PH && typeof PH.splitTextToSentences === 'function') {
         // Newlines pass through UNCOLLAPSED (2026-07-16): the canonical
         // splitter treats heading lines and blank lines as hard unit
@@ -121,8 +145,11 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // long paragraphs while rejecting accidental full-recording payloads.
   var DEFAULT_MAX_BYTES = 12 * 1024 * 1024;
   var DEFAULT_MAX_CLIP_BYTES = 2 * 1024 * 1024;
+  var MAX_BASE64_INPUT_CHARS = 24 * 1024 * 1024;
   function cleanBase64(b64) {
-    return String(b64 || '').replace(/^data:[^,]*,/i, '').replace(/\s+/g, '');
+    var s = _safeStr(b64);
+    if (s.length > MAX_BASE64_INPUT_CHARS) return '';
+    return s.replace(/^data:[^,]*,/i, '').replace(/\s+/g, '');
   }
   function base64ByteLength(b64) {
     var clean = cleanBase64(b64);
@@ -135,31 +162,34 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   // audio. Validate both MIME and container structure before creating a URL.
   // This prevents HTML/JSON/error bodies returned with HTTP 200 from becoming
   // durable "downloaded" clips that can never play.
+  var AUDIO_MIME_ALIASES = Object.assign(Object.create(null), {
+    'audio/mp3': 'audio/mpeg',
+    'audio/x-mp3': 'audio/mpeg',
+    'audio/x-mpeg': 'audio/mpeg',
+    'audio/mpeg3': 'audio/mpeg',
+    'audio/wave': 'audio/wav',
+    'audio/x-wav': 'audio/wav',
+    'audio/vnd.wave': 'audio/wav',
+    'audio/x-m4a': 'audio/mp4',
+    'audio/m4a': 'audio/mp4',
+    'audio/x-aac': 'audio/aac',
+    'audio/aacp': 'audio/aac',
+    'audio/mp4a-latm': 'audio/aac',
+    'audio/opus': 'audio/ogg',
+    'audio/x-ogg': 'audio/ogg',
+    'application/ogg': 'audio/ogg',
+    'audio/x-flac': 'audio/flac'
+  });
   function canonicalAudioMime(mime) {
-    var value = String(mime || '').split(';')[0].trim().toLowerCase();
-    var aliases = {
-      'audio/mp3': 'audio/mpeg',
-      'audio/x-mp3': 'audio/mpeg',
-      'audio/x-mpeg': 'audio/mpeg',
-      'audio/mpeg3': 'audio/mpeg',
-      'audio/wave': 'audio/wav',
-      'audio/x-wav': 'audio/wav',
-      'audio/vnd.wave': 'audio/wav',
-      'audio/x-m4a': 'audio/mp4',
-      'audio/m4a': 'audio/mp4',
-      'audio/x-aac': 'audio/aac',
-      'audio/aacp': 'audio/aac',
-      'audio/mp4a-latm': 'audio/aac',
-      'audio/opus': 'audio/ogg',
-      'audio/x-ogg': 'audio/ogg',
-      'application/ogg': 'audio/ogg',
-      'audio/x-flac': 'audio/flac'
-    };
-    return aliases[value] || value;
+    var value = _safeStr(mime).split(';')[0].trim().toLowerCase();
+    return AUDIO_MIME_ALIASES[value] || value;
   }
 
   function parseAudioPayload(value, mime) {
-    var raw = String(value == null ? '' : value).trim();
+    var raw = _safeStr(value).trim();
+    if (raw.length > MAX_BASE64_INPUT_CHARS) {
+      return { ok: false, code: 'clip-too-large', reason: 'Audio payload exceeds safety limit.' };
+    }
     var dataMime = '';
     if (/^data:/i.test(raw)) {
       var comma = raw.indexOf(',');
@@ -358,10 +388,10 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
 
   function normalizeQuarantine(detail) {
     var value = detail && typeof detail === 'object' ? detail : { reason: detail };
-    var code = String(value.code || 'playback-failed').trim().slice(0, 120) || 'playback-failed';
-    var reason = String(value.reason || value.message || 'The stored audio failed validation or playback.')
-      .trim().slice(0, 500);
-    var at = String(value.at || new Date().toISOString()).slice(0, 160);
+    var code = _safeStr(value.code || 'playback-failed').trim().slice(0, 120) || 'playback-failed';
+    var reason = _safeStr(value.reason || value.message || 'The stored audio failed validation or playback.')
+      .trim().slice(0, 500) || 'The stored audio failed validation or playback.';
+    var at = _safeStr(value.at || new Date().toISOString()).slice(0, 160);
     return { code: code, reason: reason, at: at };
   }
 
@@ -369,11 +399,14 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     if (!meta || typeof meta !== 'object') return null;
     var out = {};
     ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'createdAt'].forEach(function (key) {
-      if (meta[key] != null && String(meta[key]).trim()) out[key] = String(meta[key]).trim().slice(0, 160);
+      if (meta[key] != null) {
+        var val = _safeStr(meta[key]).trim();
+        if (val) out[key] = val.slice(0, 160);
+      }
     });
-    var speed = Number(meta.synthesisRate != null ? meta.synthesisRate : meta.speed);
+    var speed = _safeNum(meta.synthesisRate != null ? meta.synthesisRate : meta.speed);
     if (isFinite(speed) && speed > 0 && speed <= 4) out.speed = speed;
-    var voiceResolverVersion = Number(meta.voiceResolverVersion);
+    var voiceResolverVersion = _safeNum(meta.voiceResolverVersion);
     if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
     if (!out.createdAt) out.createdAt = new Date().toISOString();
     return out;
@@ -387,16 +420,16 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
 
   function normalizeIdentity(value) {
     if (!isIdentityTarget(value)) return null;
-    var identityVersion = Number(value.identityVersion == null ? 4 : value.identityVersion);
+    var identityVersion = _safeNum(value.identityVersion == null ? 4 : value.identityVersion);
     if (identityVersion !== 4) return null;
-    var adapterId = String(value.adapterId || '').trim().slice(0, 160);
-    var scopeId = String(value.scopeId == null ? 'main' : value.scopeId).trim().slice(0, 240);
-    var segmentId = String(value.segmentId || '').trim().slice(0, 240);
-    var spokenText = String(value.spokenText == null ? '' : value.spokenText).trim();
+    var adapterId = _safeStr(value.adapterId).trim().slice(0, 160);
+    var scopeId = _safeStr(value.scopeId == null ? 'main' : value.scopeId).trim().slice(0, 240);
+    var segmentId = _safeStr(value.segmentId).trim().slice(0, 240);
+    var spokenText = _safeStr(value.spokenText).trim();
     if (!adapterId || !scopeId || !segmentId || !spokenText) return null;
-    var adapterVersion = Number(value.adapterVersion == null ? 1 : value.adapterVersion);
+    var adapterVersion = _safeNum(value.adapterVersion == null ? 1 : value.adapterVersion);
     if (!isFinite(adapterVersion) || adapterVersion <= 0) adapterVersion = 1;
-    var spokenFingerprint = String(value.spokenFingerprint == null ? '' : value.spokenFingerprint).trim().slice(0, 240);
+    var spokenFingerprint = _safeStr(value.spokenFingerprint).trim().slice(0, 240);
     if (!spokenFingerprint) spokenFingerprint = keyFor(spokenText);
     return {
       identityVersion: 4,
@@ -421,11 +454,14 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     if (!profile || typeof profile !== 'object') return null;
     var out = {};
     ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'directionFingerprint'].forEach(function (key) {
-      if (profile[key] != null && String(profile[key]).trim()) out[key] = String(profile[key]).trim().slice(0, 240);
+      if (profile[key] != null) {
+        var val = _safeStr(profile[key]).trim();
+        if (val) out[key] = val.slice(0, 240);
+      }
     });
-    var synthesisRate = Number(profile.synthesisRate != null ? profile.synthesisRate : profile.speed);
+    var synthesisRate = _safeNum(profile.synthesisRate != null ? profile.synthesisRate : profile.speed);
     if (isFinite(synthesisRate) && synthesisRate > 0 && synthesisRate <= 4) out.synthesisRate = synthesisRate;
-    var voiceResolverVersion = Number(profile.voiceResolverVersion);
+    var voiceResolverVersion = _safeNum(profile.voiceResolverVersion);
     if (isFinite(voiceResolverVersion) && voiceResolverVersion > 0) out.voiceResolverVersion = voiceResolverVersion;
     return Object.keys(out).length ? out : null;
   }
@@ -443,7 +479,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   }
 
   function isHuman(entry) {
-    return !!entry && String(entry.source || 'ai').indexOf('human') === 0;
+    return !!entry && _safeStr(entry.source || 'ai').indexOf('human') === 0;
   }
 
   function missingProfileFields(entry, requested) {
@@ -478,9 +514,9 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     // V2 remains the default for legacy callers; version-aware callers may
     // explicitly request a newer resolver contract.
     var requestedResolverVersion = wanted.voiceResolverVersion == null
-      ? 2 : Number(wanted.voiceResolverVersion);
-    if (!stored || Number(stored.voiceResolverVersion) !== requestedResolverVersion) return false;
-    if (wanted.voice && (!stored.voice || String(stored.voice).toLowerCase() !== String(wanted.voice).toLowerCase())) return false;
+      ? 2 : _safeNum(wanted.voiceResolverVersion);
+    if (!stored || _safeNum(stored.voiceResolverVersion) !== requestedResolverVersion) return false;
+    if (wanted.voice && (!stored.voice || _safeStr(stored.voice).toLowerCase() !== _safeStr(wanted.voice).toLowerCase())) return false;
     // Earlier readers could save a fallback under the requested Kokoro voice.
     // Retain those takes for review, but never replay a known different engine.
     if (/^[ab][fm]_/i.test(wanted.voice || '') && stored.engine && !/kokoro/i.test(stored.engine)) return false;
@@ -488,7 +524,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     for (var i = 0; i < provenanceKeys.length; i++) {
       var provenanceKey = provenanceKeys[i];
       if (wanted[provenanceKey] && (!stored[provenanceKey] ||
-          String(stored[provenanceKey]).toLowerCase() !== String(wanted[provenanceKey]).toLowerCase())) return false;
+          _safeStr(stored[provenanceKey]).toLowerCase() !== _safeStr(wanted[provenanceKey]).toLowerCase())) return false;
     }
     // The selected route/model and the engine that actually answered differ
     // during fallback. Track both without treating a valid fallback as stale.
@@ -501,11 +537,11 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     if (!stored.requestedModel && wanted.requestedModel && stored.provider === 'gemini' &&
         stored.model && wanted.requestedModel !== stored.model) return false;
     if (wanted.synthesisRate != null && stored.synthesisRate != null &&
-        Math.abs(Number(stored.synthesisRate) - Number(wanted.synthesisRate)) > 0.001) return false;
+        Math.abs(_safeNum(stored.synthesisRate) - _safeNum(wanted.synthesisRate)) > 0.001) return false;
     if (wanted.language && stored.language &&
-        String(stored.language).toLowerCase() !== String(wanted.language).toLowerCase()) return false;
+        _safeStr(stored.language).toLowerCase() !== _safeStr(wanted.language).toLowerCase()) return false;
     if (wanted.directionFingerprint &&
-        (!stored.directionFingerprint || String(stored.directionFingerprint) !== String(wanted.directionFingerprint))) return false;
+        (!stored.directionFingerprint || _safeStr(stored.directionFingerprint) !== _safeStr(wanted.directionFingerprint))) return false;
     return true;
   }
 
@@ -731,8 +767,8 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
 
     var _hydrateLimits = function (options) {
       return {
-        maxBytes: Math.max(1024, Number(options && options.maxBytes) || DEFAULT_MAX_BYTES),
-        maxClipBytes: Math.max(1024, Number(options && options.maxClipBytes) || DEFAULT_MAX_CLIP_BYTES)
+        maxBytes: _safeLimit(options && options.maxBytes, DEFAULT_MAX_BYTES),
+        maxClipBytes: _safeLimit(options && options.maxClipBytes, DEFAULT_MAX_CLIP_BYTES)
       };
     };
 
@@ -754,36 +790,46 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       var keys = Object.keys(obj.sentences).sort();
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
+        var createdUrl = null;
         try {
           var normalizedKey = keyFor(key);
           if (!normalizedKey) continue;
           var existing = legacy.get(normalizedKey);
-          var incomingSource = sources[key] || 'ai';
+          var rawSource = hasOwn.call(sources, key) ? sources[key] : 'ai';
+          var incomingSource = _safeStr(rawSource) || 'ai';
           if (existing && isHuman(existing) &&
-              String(incomingSource).indexOf('human') !== 0) continue;
+              incomingSource.indexOf('human') !== 0) continue;
           var rawAudio = obj.sentences[key];
           var clean = cleanBase64(rawAudio);
           if (!clean || !_fitsHydrateBudget(clean, existing, limits)) continue;
-          var mime = mimes[key] || fallbackMime;
+          var mime = (hasOwn.call(mimes, key) && mimes[key]) ? mimes[key] : fallbackMime;
           // Limits are checked before decoding or creating a Blob URL.
           var validated = validateAudioPayload(rawAudio, mime);
           if (!validated.ok) continue;
-          var quarantine = quarantines[key] ? normalizeQuarantine(quarantines[key]) : null;
-          var url = quarantine
-            ? null
-            : URL.createObjectURL(new Blob([validated.bytes], { type: validated.mime }));
+          var rawQuarantine = hasOwn.call(quarantines, key) ? quarantines[key] : null;
+          var quarantine = rawQuarantine ? normalizeQuarantine(rawQuarantine) : null;
+          var rawMeta = hasOwn.call(metadata, key) ? metadata[key] : null;
+          var normalizedMeta = normalizeMetadata(rawMeta);
+          var synthProfile = metadataToProfile(rawMeta);
+          if (!quarantine) {
+            createdUrl = URL.createObjectURL(new Blob([validated.bytes], { type: validated.mime }));
+            if (!createdUrl) continue;
+          }
           _revoke(existing);
           legacy.set(normalizedKey, {
             b64: validated.clean,
             mime: validated.mime,
-            url: url,
+            url: createdUrl,
             source: incomingSource,
-            metadata: normalizeMetadata(metadata[key]),
-            synthesisProfile: metadataToProfile(metadata[key]),
+            metadata: normalizedMeta,
+            synthesisProfile: synthProfile,
             quarantine: quarantine
           });
+          createdUrl = null;
           n++;
-        } catch (_) {}
+        } catch (_) {
+          if (createdUrl) { try { URL.revokeObjectURL(createdUrl); } catch (__) {} }
+        }
       }
       return n;
     };
@@ -855,7 +901,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           var activeIdentityKey = portableKeyForIdentity(identity);
           var activeIdentityText = keyFor(identity.spokenText);
           activeIdentityKeys.add(activeIdentityKey);
-          if (!identities.has(activeIdentityKey)) activeLegacyTexts.add(activeIdentityText);
+          if (target.allowLegacyText !== false && !identities.has(activeIdentityKey)) activeLegacyTexts.add(activeIdentityText);
           report.activeTargets++;
           return;
         }
@@ -912,7 +958,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       if (report.changed) _changed('reconcile');
       return report;
     };
-    return {
+    return Object.freeze({
       getRevision: function () { return revision; },
       subscribe: function (listener) {
         if (typeof listener !== 'function') return function () {};
@@ -946,14 +992,14 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         var previous = lane.get(key);
         var previousBytes = previous ? base64ByteLength(previous.b64) : 0;
         var legacyReplacement = identity ? _legacyForIdentity(target, identity) : null;
-        var incomingSource = source || 'ai';
-        var incomingIsHuman = String(incomingSource).indexOf('human') === 0;
+        var incomingSource = _safeStr(source) || 'ai';
+        var incomingIsHuman = incomingSource.indexOf('human') === 0;
         var allowReplaceHuman = !!(options && options.allowReplaceHuman === true);
         var reclaimLegacyBytes = legacyReplacement &&
           (!isHuman(legacyReplacement) || allowReplaceHuman)
           ? base64ByteLength(legacyReplacement.b64) : 0;
-        var maxBytes = Math.max(1024, Number(options && options.maxBytes) || DEFAULT_MAX_BYTES);
-        var maxClipBytes = Math.max(1024, Number(options && options.maxClipBytes) || DEFAULT_MAX_CLIP_BYTES);
+        var maxBytes = _safeLimit(options && options.maxBytes, DEFAULT_MAX_BYTES);
+        var maxClipBytes = _safeLimit(options && options.maxClipBytes, DEFAULT_MAX_CLIP_BYTES);
         var currentBytes = _estimateBytes();
         var identityHumanProtected = !identity && _identityEntriesForText(target).some(isHuman);
         if (!incomingIsHuman && !allowReplaceHuman &&
@@ -989,6 +1035,17 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           };
           return null;
         }
+        var normalizedMetadata = null;
+        var synthProfile = null;
+        try {
+          normalizedMetadata = normalizeMetadata(metadata);
+          synthProfile = identity
+            ? normalizeSynthesisProfile(metadata)
+            : metadataToProfile(normalizedMetadata);
+        } catch (_) {
+          normalizedMetadata = null;
+          synthProfile = null;
+        }
         var url = null;
         try {
           url = URL.createObjectURL(new Blob([validated.bytes], { type: validated.mime }));
@@ -1001,16 +1058,13 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
           return null;
         }
         _revoke(previous);
-        var normalizedMetadata = normalizeMetadata(metadata);
         var entry = {
           b64: validated.clean,
           mime: validated.mime,
           url: url,
           source: incomingSource,
           metadata: normalizedMetadata,
-          synthesisProfile: identity
-            ? normalizeSynthesisProfile(metadata)
-            : metadataToProfile(normalizedMetadata)
+          synthesisProfile: synthProfile
         };
         if (identity) {
           entry.identity = Object.assign({}, identity);
@@ -1157,7 +1211,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       hydrate: function (obj, options) {
         if (!obj || typeof obj !== 'object') return 0;
         var limits = _hydrateLimits(options);
-        if (Number(obj.version) !== 4) {
+        if (_safeNum(obj.version) !== 4) {
           var hydrated = _hydrateLegacy(obj, limits);
           if (hydrated) _changed('hydrate');
           return hydrated;
@@ -1170,14 +1224,15 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         for (var i = 0; i < list.length; i++) {
           var raw = list[i];
           if (!raw || typeof raw !== 'object') continue;
+          var createdUrl = null;
           try {
             var identity = normalizeIdentity(raw.identity);
             var identityKey = portableKeyForIdentity(identity);
             if (!identity || !identityKey) continue;
             var existing = identities.get(identityKey);
-            var incomingSource = raw.source || 'ai';
+            var incomingSource = _safeStr(raw.source) || 'ai';
             if (existing && isHuman(existing) &&
-                String(incomingSource).indexOf('human') !== 0) continue;
+                incomingSource.indexOf('human') !== 0) continue;
             var rawAudio = raw.audio != null ? raw.audio : raw.b64;
             var clean = cleanBase64(rawAudio);
             if (!clean || !_fitsHydrateBudget(clean, existing, limits)) continue;
@@ -1186,25 +1241,30 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
             var validated = validateAudioPayload(rawAudio, mime);
             if (!validated.ok) continue;
             var quarantine = raw.quarantine ? normalizeQuarantine(raw.quarantine) : null;
-            var url = quarantine
-              ? null
-              : URL.createObjectURL(new Blob([validated.bytes], { type: validated.mime }));
-            _revoke(existing);
             var profile = normalizeSynthesisProfile(raw.synthesisProfile || raw.metadata);
-            var createdAt = raw.createdAt ? String(raw.createdAt).slice(0, 160) : null;
+            var createdAt = raw.createdAt ? _safeStr(raw.createdAt).slice(0, 160) : null;
+            var normalizedMeta = profileToMetadata(profile, createdAt);
+            if (!quarantine) {
+              createdUrl = URL.createObjectURL(new Blob([validated.bytes], { type: validated.mime }));
+              if (!createdUrl) continue;
+            }
+            _revoke(existing);
             identities.set(identityKey, {
               identity: identity,
               b64: validated.clean,
               mime: validated.mime,
-              url: url,
+              url: createdUrl,
               source: incomingSource,
               synthesisProfile: profile,
-              metadata: profileToMetadata(profile, createdAt),
+              metadata: normalizedMeta,
               createdAt: createdAt,
               quarantine: quarantine
             });
+            createdUrl = null;
             n++;
-          } catch (_) {}
+          } catch (_) {
+            if (createdUrl) { try { URL.revokeObjectURL(createdUrl); } catch (__) {} }
+          }
         }
         n += _hydrateLegacy(obj.legacy, limits);
         if (obj.sentences) n += _hydrateLegacy(obj, limits);
@@ -1212,11 +1272,10 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         return n;
       },
       estimateBytes: function () { return _estimateBytes(); }
-    };
+    });
   }
 
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.KaraokeAudioStore = {
+  var KaraokeAudioStoreAPI = {
     keyFor: keyFor,
     splitSentences: splitSentences,
     b64ToUrl: b64ToUrl,
@@ -1236,6 +1295,15 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
     current: null,
     studentCurrent: null
   };
-  window.AlloModules.KaraokeAudioStoreModule = true;
-  console.log('[KaraokeAudioStore] registered (per-sentence vettable read-aloud: persist + hydrate + regenerate-one)');
+  if (typeof module === 'object' && module && module.exports) module.exports = KaraokeAudioStoreAPI;
+  if (_win) {
+    try {
+      if (!_win.AlloModules || typeof _win.AlloModules !== 'object') _win.AlloModules = {};
+      _win.AlloModules.KaraokeAudioStore = KaraokeAudioStoreAPI;
+      _win.AlloModules.KaraokeAudioStoreModule = true;
+      if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+        console.log('[KaraokeAudioStore] registered (per-sentence vettable read-aloud: persist + hydrate + regenerate-one)');
+      }
+    } catch (_) {}
+  }
 })();

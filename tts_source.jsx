@@ -965,11 +965,36 @@ let piperLoadPromise = null;
     // in AIProvider. Keep reader and bot Auto routing consistent with it.
     const _usesLocalTtsBackend = (config) => ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'openai', 'claude', 'custom'].includes(config?.backend);
 
+    // Verified non-English languages shipped in piper_tts_loader.js PATH_MAP.
+    const _PIPER_SUPPORTED_NON_EN = new Set([
+        'ar', 'ca', 'cs', 'da', 'de', 'el', 'es', 'fi', 'fr', 'hu', 'is', 'it',
+        'ka', 'kk', 'ne', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sr', 'sv', 'sw',
+        'tr', 'uk', 'vi', 'zh'
+    ]);
+    const _piperSupportsNonEn = (langCode) => {
+        const base = String(langCode || '').trim().split(/[-_]/)[0].toLowerCase();
+        if (!base || base === 'en') return false;
+        if (window._piperTTS && typeof window._piperTTS.supportsLanguage === 'function') {
+            return !!window._piperTTS.supportsLanguage(base);
+        }
+        return _PIPER_SUPPORTED_NON_EN.has(base);
+    };
+    // Opt-in preference: use local Piper WASM first for non-English languages
+    // so users who want offline/zero-cloud multilingual speech don't send text
+    // to Gemini first. English stays strictly Gemini/Kokoro (PIPER_HANDLES_ENGLISH = false).
+    const _preferOfflineNonEnglishPiper = (langCode) => {
+        try {
+            if (!(getAiUserConfig() && getAiUserConfig().preferOfflineNonEnglishVoice === true)) return false;
+            return langCode ? _piperSupportsNonEn(langCode) : true;
+        } catch (_) { return false; }
+    };
+
     // Student AI off: read with an on-device engine only when it is already
     // here. English uses Kokoro when the learner picked a Kokoro voice and the
     // model is loaded or saved on this device (waking a saved model is not a
     // download). Other languages use Piper only when that language's model is
-    // already loaded. Anything else returns null: the device voice reads.
+    // already loaded or saved on this device in OPFS (never starts a download).
+    // Anything else returns null: the device voice reads.
     const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming, word, allowWordShard = word) => {
         const voice = String(voiceName || '').trim();
         const provider = String((getAiUserConfig() || {}).ttsProvider || 'auto');
@@ -1003,8 +1028,14 @@ let piperLoadPromise = null;
                 if (url) note('student-on-device-kokoro');
                 return url || null;
             }
-            const piper = window._piperTTS;
-            if (!piper || typeof piper.isLanguageReady !== 'function' || !piper.isLanguageReady(lang)) return null;
+            let piper = window._piperTTS;
+            if (!piper && typeof window.__loadPiperTTS === 'function') {
+                piper = await ensurePiperTts();
+            }
+            if (!piper || typeof piper.isLanguageReady !== 'function') return null;
+            const piperReady = piper.isLanguageReady(lang)
+                || (typeof piper.isLanguageStored === 'function' && await piper.isLanguageStored(lang));
+            if (!piperReady) return null;
             const url = await piper.speak(localText, lang, speed, { signal });
             if (url) note('student-on-device-piper');
             return url || null;
@@ -1180,12 +1211,16 @@ let piperLoadPromise = null;
             if (_isKokoroVoice) {
                 console.log('[Canvas TTS] Kokoro voice selected (' + voiceName + ') — skipping Gemini, using Kokoro directly');
             }
-            if (!_isKokoroVoice) voiceName = _resolveGeminiVoice(voiceName);
+            const _canvasPreferPiper = !_isEnglish && _preferOfflineNonEnglishPiper(languageToTTSCode(_language));
+            if (_canvasPreferPiper) {
+                console.log('[Canvas TTS] Offline non-English preference active (' + _language + ') — skipping Gemini, using Piper directly');
+            }
+            if (!_isKokoroVoice && !_canvasPreferPiper) voiceName = _resolveGeminiVoice(voiceName);
             // Match the non-Canvas cache key exactly, including language. The
             // previous Canvas branch wrote a shorter key and never read it, so
             // a warmed sentence was synthesized again when playback asked.
             const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1', _geminiModel]);
-            if (!_isKokoroVoice && !_forceRefresh && state.urlCache.has(canvasCacheKey)) {
+            if (!_isKokoroVoice && !_canvasPreferPiper && !_forceRefresh && state.urlCache.has(canvasCacheKey)) {
                 debugLog('callTTS Canvas cache HIT; characters:', String(text || '').length);
                 _ttsTrace('calltts:cache-hit', { chars: String(text || '').length, voice: voiceName });
                 return _emitResolvedProfile(
@@ -1193,7 +1228,7 @@ let piperLoadPromise = null;
                     _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true })
                 );
             }
-            if (_isKokoroVoice) {
+            if (_isKokoroVoice || _canvasPreferPiper) {
                 // Intentional fall-through to Kokoro/Piper block below.
             } else if (window.__ttsGeminiAuthFailed && Date.now() < (state.authRetryAt || 0)) {
                 // The Canvas-injected key was 401-rejected this session. Every
@@ -1639,7 +1674,7 @@ let piperLoadPromise = null;
             if (_kokoroLock && !_kokoroLock.engine && _isEnglish && _kokoroDeferredToGemini) _kokoroLock.engine = 'fallback';
         }
 
-        if (!_isEnglish && (_localTtsChosen || _kokoroKeyless)) {
+        if (!_isEnglish && (_localTtsChosen || _kokoroKeyless || _preferOfflineNonEnglishPiper(languageToTTSCode(_language)))) {
             try {
                 const piper = window._piperTTS || await ensurePiperTts();
                 const piperLanguage = languageToTTSCode(_language);
@@ -1872,9 +1907,13 @@ let piperLoadPromise = null;
         if (String(voiceName).toLowerCase() === 'browser') return null;
         // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
         if (_isCanvasEnv && _directTtsProvider !== 'local') {
-            const selectedKokoroVoice = KOKORO_VOICE_PREFIX.test(voiceName) && languageToTTSCode(_directLanguage) === 'en';
+            const _directLangCode = languageToTTSCode(_directLanguage);
+            const selectedKokoroVoice = KOKORO_VOICE_PREFIX.test(voiceName) && _directLangCode === 'en';
+            const _directPreferPiper = _directLangCode !== 'en' && _preferOfflineNonEnglishPiper(_directLangCode);
             if (selectedKokoroVoice) {
                 _ttsTrace('callttsdirect:kokoro-selected', { voice: voiceName });
+            } else if (_directPreferPiper) {
+                _ttsTrace('callttsdirect:piper-selected', { lang: _directLangCode });
             } else if (window.__ttsGeminiAuthFailed && Date.now() < (state.authRetryAt || 0)) {
                 _ttsTrace('callttsdirect:canvas-skip-authfailed', { probeInMs: Math.max(0, state.authRetryAt - Date.now()) });
             } else if (Date.now() < (state.timeoutRetryAt || 0)) {

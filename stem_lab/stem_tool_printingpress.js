@@ -143,6 +143,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
     var st = document.createElement('style');
     st.id = 'printingpress-print-css';
     st.textContent = [
+      '.printingpress-root :is(button,input,select,textarea,summary,[role="button"]) { touch-action: manipulation; box-sizing: border-box; }',
+      '.printingpress-root :is(button,input,select,textarea,summary,[role="button"]):focus-visible { outline: 3px solid #f5d77e; outline-offset: 2px; }',
+      '[data-pp-contrast] :is(button,input,select,textarea,summary,[role="button"]):focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px !important; }',
+      '@media(forced-colors:active) { .printingpress-root :is(button,input,select,textarea,summary,[role="button"]):focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } .printingpress-root :is(button,input,select,textarea,summary,[role="button"],[role="progressbar"]) { border-color: ButtonText !important; } }',
       '.pp-broadside { font-family: system-ui,sans-serif; }',
       '.pp-broadside :is(button,input,select,summary) { min-height: 44px; }',
       '.pp-broadside :is(button,input,textarea,select,summary):focus-visible { outline: 3px solid #f5d77e; outline-offset: 3px; }',
@@ -372,13 +376,18 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
   // equivalents count. No canvas (SSR, jsdom) = assume present.
   var PP_FACE_EQUIV = { 'Times New Roman': ['Times'], 'Arial': ['Helvetica'], 'Helvetica': ['Helvetica Neue', 'Arial'], 'Courier New': ['Courier'], 'Comic Sans MS': ['Comic Sans'], 'Palatino': ['Palatino Linotype', 'Book Antiqua'], 'Brush Script MT': ['Brush Script Std'],
     'UnifrakturMaguntia': ['Old English Text MT'], 'Big Caslon': ['Caslon Pro', 'Adobe Caslon Pro', 'Hoefler Text'], 'Bodoni 72': ['Didot', 'Bodoni MT'], 'Cambria': ['Georgia'] };
+  function _ppIgnoreKey(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey));
+  }
   var ppFaceCache = {};
   function ppFacePresent(family) {
     if (Object.prototype.hasOwnProperty.call(ppFaceCache, family)) return ppFaceCache[family];
     var present = true;
     try {
       var ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
-      var g = !/jsdom/i.test(ua) && typeof document !== 'undefined' && document.createElement('canvas').getContext('2d');
+      var _probeCv = (!/jsdom/i.test(ua) && typeof document !== 'undefined') ? document.createElement('canvas') : null;
+      if (_probeCv) _probeCv.setAttribute('aria-hidden', 'true');
+      var g = _probeCv && _probeCv.getContext('2d');
       if (g) {
         var sample = 'mmmmmmmmmmlli WQ@#fi 0123456789';
         present = ['monospace', 'serif', 'sans-serif'].some(function(base) {
@@ -610,8 +619,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('h2', { id: 'printingpress-confirm-title', style: { margin: '0 0 10px', color: T.accentHi, fontSize: 20 } }, confirmState.title),
             h('p', { id: 'printingpress-confirm-message', style: { margin: '0 0 18px', color: T.muted, lineHeight: 1.55 } }, confirmState.message),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
-              h('button', { ref: _confirmCancelRef, onClick: function() { closeConfirmation(false); }, style: btn({ minWidth: 100, textAlign: 'center' }) }, confirmState.cancelLabel),
-              h('button', { onClick: function() { closeConfirmation(true); }, style: btn({ minWidth: 100, textAlign: 'center', background: T.danger, borderColor: T.danger, color: '#fff' }) }, confirmState.confirmLabel)
+              h('button', { type: 'button', ref: _confirmCancelRef, onClick: function() { closeConfirmation(false); }, style: btn({ minWidth: 100, textAlign: 'center' }) }, confirmState.cancelLabel),
+              h('button', { type: 'button', onClick: function() { closeConfirmation(true); }, style: btn({ minWidth: 100, textAlign: 'center', background: T.danger, borderColor: T.danger, color: '#fff' }) }, confirmState.confirmLabel)
             )
           )
         );
@@ -697,7 +706,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         // the tool so every view feels printed, not screen-rendered.
         return h('div', { className: 'printingpress-back-bar', style: { marginBottom: 14 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
-            h('button', {
+            h('button', { type: 'button',
               className: 'printingpress-no-print',
               'aria-label': __alloT('stem.printingpress.back_to_printingpress_menu', 'Back to PrintingPress menu'),
               onClick: function() { upd('view', 'menu'); announce(__alloT('stem.printingpress.sr_back_to_menu', 'Back to menu')); },
@@ -706,7 +715,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('span', { 'aria-hidden': 'true', style: { color: T.accent, opacity: 0.7, display: 'inline-flex', alignItems: 'center' } }, fleuron(11)),
             h('h1', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1, fontFamily: 'Georgia, serif', letterSpacing: '0.01em' } }, title),
             h('span', { 'aria-hidden': 'true', style: { color: T.accent, opacity: 0.7, display: 'inline-flex', alignItems: 'center' } }, fleuron(11)),
-            h('button', {
+            h('button', { type: 'button',
               className: 'printingpress-no-print',
               'aria-label': __alloT('stem.printingpress.print_this_module_as_a_classroom_hando', 'Print this module as a classroom handout'),
               onClick: printModulePage,
@@ -884,7 +893,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('p', { ref: promptRef, tabIndex: -1, style: { margin: '0 0 12px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, scenario.prompt),
           !revealed && h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             scenario.choices.map(function(c, ci) {
-              return h('button', { key: ci,
+              return h('button', { type: 'button', key: ci,
                 onClick: function() { focusRef.current = 'result'; setLocalState({ choice: ci }); announce(ci === scenario.correct ? __alloT('stem.printingpress.sr_correct', 'Correct.') : __alloT('stem.printingpress.sr_see_explanation', 'Not quite. See the explanation.')); },
                 style: btn({ padding: '8px 12px', fontSize: 12 }) }, c);
             })
@@ -899,7 +908,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('strong', null, __alloT('stem.printingpress.right_answer', 'Right answer: ')),
               scenario.choices[scenario.correct]),
             h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.55 } }, scenario.explain),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { focusRef.current = 'prompt'; setLocalState(null); },
               style: btn({ padding: '6px 10px', fontSize: 12, marginTop: 6 }) }, __alloT('stem.printingpress.try_again', 'Try again'))
           )
@@ -949,7 +958,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('p', { style: { margin: 0, color: T.text, fontSize: 13 } },
               __alloT('stem.printingpress.quiz_score_label', 'Score: '), h('strong', null, correct + ' / ' + questions.length + ' (' + pct + '%)')),
             h('p', { style: { margin: '6px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } }, __alloT('stem.printingpress.quiz_first_try_note', 'Your score counts first tries. Retries are for practice.')),
-            h('button', { onClick: function() { quizFocusRef.current = 'stem'; setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.retry', 'Retry'))
+            h('button', { type: 'button', onClick: function() { quizFocusRef.current = 'stem'; setQIdx(0); setResults({}); }, style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.retry', 'Retry'))
           );
         }
         var q = questions[qIdx];
@@ -970,7 +979,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 if (isCorrect) { style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' }); marker = __alloT('stem.printingpress.option_marker_correct', '✓ Correct answer: '); }
                 else if (picked) { style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' }); marker = __alloT('stem.printingpress.option_marker_your_pick', '✗ Your answer: '); }
               }
-              return h('button', { key: oi, disabled: answered,
+              return h('button', { type: 'button', key: oi, disabled: answered,
                 onClick: function() {
                   var newResults = Object.assign({}, results);
                   if (newResults[qIdx] === undefined) newResults[qIdx] = (oi === q.ans);
@@ -986,7 +995,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               pick === q.ans ? (firstTryWrong ? __alloT('stem.printingpress.quiz_correct_on_retry', '✓ Correct on retry. Your first try still counts toward the score.') : __alloT('stem.printingpress.scenario_correct', '✓ Correct.')) : __alloT('stem.printingpress.quiz_not_quite', '✗ Not quite.')),
             h('strong', { style: { color: T.text } }, __alloT('stem.printingpress.quiz_why', 'Why: ')), q.explain),
           answered && h('div', { style: { marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            pick !== q.ans && h('button', {
+            pick !== q.ans && h('button', { type: 'button',
               onClick: function() {
                 var nr = Object.assign({}, results);
                 delete nr[qIdx + '_pick'];
@@ -995,7 +1004,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.printingpress.try_again_2', '↺ Try again')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { quizFocusRef.current = qIdx + 1 < questions.length ? 'stem' : 'score'; setQIdx(qIdx + 1); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) },
               qIdx + 1 < questions.length ? __alloT('stem.printingpress.quiz_next', 'Next →') : __alloT('stem.printingpress.quiz_see_score', 'See score'))
@@ -1277,7 +1286,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 8 } },
             links.map(function(link, i) {
               var label = MODULE_LABELS[link.id] || link.id;
-              return h('button', { key: i,
+              return h('button', { type: 'button', key: i,
                 onClick: function() { upd('view', link.id); markVisited(link.id); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: label })); },
                 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_open', 'Open {value1}'), { value1: label }),
                 style: btn({
@@ -1325,7 +1334,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         if (n >= PP_LAB_VIEWS.length) awardBadge('labs_all', __alloT('stem.printingpress.badge_labs_all', 'Every Lab Tried'));
       }
       function ppLabCard(title, intro, body) {
-        return h('div', { className: 'printingpress-lab', onClickCapture: ppMarkLabTried, onChangeCapture: ppMarkLabTried, style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
+        return h('div', { className: 'printingpress-lab', onClickCapture: ppMarkLabTried, onChangeCapture: ppMarkLabTried, onKeyDown: function(e) { if (!_ppIgnoreKey(e) && (e.key === 'Enter' || e.key === ' ')) ppMarkLabTried(); }, style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 12, padding: 16, marginBottom: 14 } },
           h('h2', { style: { margin: '0 0 6px', fontSize: 16, color: T.accentHi, fontFamily: 'Georgia, serif' } }, title),
           h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted, lineHeight: 1.55 } }, intro),
           body);
@@ -4204,7 +4213,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('span', null, __alloT('stem.printingpress.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand'))
           ),
           h('div', { style: { marginTop: 12, display: 'flex', flexDirection: 'column', gap: 12 } },
-            h('button', {
+            h('button', { type: 'button',
               className: 'printingpress-no-print',
               'aria-label': __alloT('stem.printingpress.print_this_module_page', 'Print this module page'),
               onClick: printModulePage,
@@ -4607,7 +4616,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                           stripe === '#7fb069' ? '127,176,105' :
                           stripe === '#b87333' ? '184,115,51' : '201,161,74';
           var tintBg = 'radial-gradient(ellipse at 100% 0%, rgba(' + stripeRgb + ',0.10) 0%, transparent 50%), ' + (emphasized ? T.cardAlt : T.card);
-          return h('div', { key: tile.id, role: 'listitem' }, h('button', { className: 'printingpress-tile',
+          return h('div', { key: tile.id, role: 'listitem' }, h('button', { type: 'button', className: 'printingpress-tile',
             'aria-label': tile.label + (visited ? ' (visited)' : '') + (emphasized ? ' — start here' : '') + (PP_LAB_VIEW_SET[tile.id] ? ', ' + __alloT('stem.printingpress.lab_index_has', 'has a hands-on lab') : '') + (labsTried[tile.id] ? ', ' + __alloT('stem.printingpress.lab_index_has_done', 'lab tried') : ''),
             onClick: function() {
               upd('view', tile.id);
@@ -4648,7 +4657,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' } },
               h('input', { id: 'pp-menu-search', type: 'search', value: menuQ, autoComplete: 'off', 'aria-describedby': 'pp-menu-search-status',
                 onChange: function(e) { setMenuQ(e.target.value); },
-                onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape' && menuQ) { e.preventDefault(); setMenuQ(''); } },
+                onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229) return; if (e.key === 'Escape' && menuQ) { e.preventDefault(); setMenuQ(''); } },
                 style: { flex: '1 1 220px', minWidth: 0, minHeight: 44, padding: '8px 12px', borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.dim, fontSize: 14 } }),
               menuQ && h('button', { type: 'button', onClick: function() { setMenuQ(''); var box = document.getElementById('pp-menu-search'); if (box) box.focus(); }, style: btn({ minHeight: 44, padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.menu_find_clear', 'Clear search'))),
             h('p', { id: 'pp-menu-search-status', role: 'status', style: { margin: '4px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
@@ -4788,7 +4797,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   h('span', { style: { color: T.dim } }, __alloT('stem.printingpress.try_next', 'Try next: ')),
                   h('strong', { style: { color: T.accentHi } }, nextTile.icon + ' ' + nextTile.label)
                 ),
-                h('button', {
+                h('button', { type: 'button',
                   className: 'printingpress-no-print',
                   onClick: function () {
                     upd('view', nextTile.id);
@@ -4938,7 +4947,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 { id: 'broadside', title: __alloT('stem.printingpress.3_publish_a_broadside', '3 · Publish a broadside'), body: __alloT('stem.printingpress.design_for_a_reader_choose_a_clear_tit', 'Design for a reader. Choose a clear title and readable type, then print your message.'), tone: T.ok },
                 { id: 'printGlossary', title: __alloT('stem.printingpress.review_vocabulary', 'Review vocabulary'), body: __alloT('stem.printingpress.connect_workshop_words_to_the_parts_an', 'Connect workshop words to the parts and actions you have used.'), tone: T.dim }
               ].map(function(route) {
-                return h('button', { key: route.id,
+                return h('button', { type: 'button', key: route.id,
                   onClick: function() { upd('view', route.id); markVisited(route.id); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: route.title })); },
                   style: Object.assign(btn({}), { textAlign: 'left', alignItems: 'stretch', minHeight: 112, padding: 12, background: T.cardAlt, borderColor: route.tone, borderTop: '4px solid ' + route.tone, cursor: 'pointer' }) },
                   h('div', { style: { fontSize: 14, color: route.tone, fontWeight: 800, fontFamily: 'Georgia, serif', marginBottom: 5 } }, route.title),
@@ -4986,7 +4995,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 10 } },
                 visibleTiles.map(function(tile) { return renderTile(tile, !!sec.emphasized); })
               ),
-              collapseSection && h('button', {
+              collapseSection && h('button', { type: 'button',
                 className: 'printingpress-no-print',
                 onClick: function() { upd('showAllPressModules', !moduleDrawerOpen); announce(moduleDrawerOpen ? __alloT('stem.printingpress.sr_showing_fewer_modules', 'Showing fewer modules') : __alloT('stem.printingpress.sr_showing_full_module_catalog', 'Showing full module catalog')); },
                 style: Object.assign(btn({}), { marginTop: 10, width: '100%', justifyContent: 'center', background: moduleDrawerOpen ? T.card : T.cardAlt, borderColor: T.accent, color: T.accentHi, fontWeight: 800, fontSize: 12, padding: '9px 12px' })
@@ -5395,7 +5404,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               placeholder: __alloT('stem.printingpress.up_to_14_characters', 'Up to 14 characters'),
               style: { flex: 1, minWidth: 160, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14, fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '0.05em' }
             }),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { setPhrase('FIAT LUX'); announce(__alloT('stem.printingpress.sr_phrase_reset_to_fiat_lux', 'Phrase reset to FIAT LUX.')); },
               disabled: phraseLocked,
               style: btn({ padding: '8px 10px', fontSize: 13, cursor: phraseLocked ? 'not-allowed' : 'pointer', borderStyle: phraseLocked ? 'dashed' : 'solid' })
@@ -5407,7 +5416,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               pressState === 'revealed' ? __alloT('stem.printingpress.next_phrase_action', 'Choose your next phrase above, then select Print another to set up the next cycle.') : phraseLocked ? __alloT('stem.printingpress.locked_phrase_action', 'Use the gold action button to continue printing.') : __alloT('stem.printingpress.ready_phrase_action', 'Try your name or a short phrase. Inspect the type below and predict how it will look on paper.'))
           ),
 
-              h('button', {
+              h('button', { type: 'button',
                   onClick: nextAction,
                   disabled: actionDisabled,
                   'aria-label': actionLabel + (tourActive ? ' (cancels guided tour)' : ''),
@@ -6022,7 +6031,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               // talks. A manual click on the action button cancels the tour
               // and hands control back to the user.
               h('div', { className: 'printingpress-no-print', style: { marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                !tourActive && h('button', {
+                !tourActive && h('button', { type: 'button',
                   onClick: function() {
                     if (pressState !== 'clean') { setPressState('clean'); }
                     tourStartCountRef.current = count;
@@ -6032,12 +6041,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   'aria-label': __alloT('stem.printingpress.start_a_hands_free_guided_tour_through', 'Start a hands-free guided tour through the full press cycle'),
                   style: btn({ padding: '12px 16px', fontSize: 13, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontWeight: 700 })
                 }, __alloT('stem.printingpress.guided_tour', '▶ Guided Tour')),
-                tourActive && h('button', {
+                tourActive && h('button', { type: 'button',
                   onClick: function() { setTourActive(false); announce(__alloT('stem.printingpress.sr_guided_tour_stopped', 'Guided tour stopped.')); },
                   style: btn({ padding: '12px 16px', fontSize: 13, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
                 }, __alloT('stem.printingpress.stop_tour', '⏸ Stop tour')),
                 // Parts-labels toggle: on/off, persists across state changes
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { setShowLabels(!showLabels); announce(showLabels ? __alloT('stem.printingpress.sr_part_labels_hidden', 'Part labels hidden.') : __alloT('stem.printingpress.sr_part_labels_shown', 'Part labels shown.')); },
                   'aria-pressed': showLabels,
                   style: btn({ padding: '12px 16px', fontSize: 13,
@@ -6046,7 +6055,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     border: '1px solid ' + T.accent,
                     fontWeight: showLabels ? 700 : 600 })
                 }, __alloT('stem.printingpress.show_parts', '🔖 Show parts')),
-                count > 0 && !tourActive && h('button', {
+                count > 0 && !tourActive && h('button', { type: 'button',
                   'aria-haspopup': 'dialog',
                   onClick: function() { requestConfirmation({
                     title: __alloT('stem.printingpress.new_run_title', 'Start a new print run?'),
@@ -6065,12 +6074,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               pressState === 'clean' && h('fieldset', { className: 'pp-prediction printingpress-no-print' },
                 h('legend', { style: { padding: '0 5px', fontSize: 14, fontWeight: 750, color: T.text } }, __alloT('stem.printingpress.predict_before_printing', 'Predict before printing')),
                 h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 13, lineHeight: 1.5 } }, __alloT('stem.printingpress.prediction_question', 'How will your phrase look on the paper? Choose an idea, or explore first.')),
-                Object.keys(predictionLabels).map(function(key) { return h('button', { key: key, 'aria-pressed': run.prediction === key, onClick: function() { updateRun({ prediction: key }); }, style: btn({ padding: '8px 10px', fontSize: 13, color: run.prediction === key ? T.accentHi : T.text, borderColor: run.prediction === key ? T.accentHi : T.border, background: run.prediction === key ? '#3b2b16' : T.cardAlt }) }, predictionLabels[key]); })
+                Object.keys(predictionLabels).map(function(key) { return h('button', { type: 'button', key: key, 'aria-pressed': run.prediction === key, onClick: function() { updateRun({ prediction: key }); }, style: btn({ padding: '8px 10px', fontSize: 13, color: run.prediction === key ? T.accentHi : T.text, borderColor: run.prediction === key ? T.accentHi : T.border, background: run.prediction === key ? '#3b2b16' : T.cardAlt }) }, predictionLabels[key]); })
               ),
               pressState === 'revealed' && latestProof && h('div', { id: 'pp-proof-feedback', role: 'status', style: { marginTop: 16, padding: 14, background: '#203028', border: '1px solid #7fb069', borderRadius: 10, lineHeight: 1.6, fontSize: 14 } },
                 h('strong', { style: { color: '#bce4ba' } }, latestProof.prediction === 'readable' ? __alloT('stem.printingpress.prediction_supported', 'Your proof supports your prediction.') : latestProof.prediction === 'mirrored' ? __alloT('stem.printingpress.prediction_revise', 'Use this evidence to revise your prediction.') : __alloT('stem.printingpress.prediction_observe', 'You have evidence to explain.')),
                 h('p', { style: { margin: '6px 0 10px', color: T.text } }, __alloT('stem.printingpress.reversal_explanation', 'The proof reads normally. Face-to-face contact reverses the mirrored type as ink transfers to paper. Turning the screw lowers the platen to press the surfaces together.')),
-                h('button', { onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn({ width: '100%', background: T.cardAlt }) }, __alloT('stem.printingpress.explain_in_notebook', 'Explain in my notebook'))
+                h('button', { type: 'button', onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn({ width: '100%', background: T.cardAlt }) }, __alloT('stem.printingpress.explain_in_notebook', 'Explain in my notebook'))
               ),
               h('div', { id: 'pp-impression-count', style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 12, fontSize: 13, color: T.muted } }, __alloT('stem.printingpress.impressions_label', 'Impressions: '), h('strong', { style: { color: T.text } }, count))
             )
@@ -6088,15 +6097,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   proof.prediction && h('div', { className: 'pp-proof-prediction', style: { fontSize: 12, lineHeight: 1.5, color: T.muted, marginBottom: 8 } },
                     h('strong', null, __alloT('stem.printingpress.prediction_record', 'Prediction') + ': '), predictionLabels[proof.prediction]),
                   proof.timestamp && h('time', { dateTime: proof.timestamp, style: { display: 'block', fontSize: 11, color: T.muted, marginBottom: 8 } }, new Date(proof.timestamp).toLocaleString()),
-                  h('button', { id: 'pp-review-button-' + proof.number, className: 'printingpress-no-print', 'aria-pressed': reviewNumber === proof.number, onClick: function() { openProofReview(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.review_proof_label', 'Review proof {number}'), { number: proof.number }), style: btn({ width: '100%', marginBottom: 6, color: T.accentHi, borderColor: reviewNumber === proof.number ? T.accentHi : T.border }) }, reviewNumber === proof.number ? __alloT('stem.printingpress.reviewing_proof', 'Reviewing this proof') : __alloT('stem.printingpress.review_proof', 'Look closely')),
-                  h('button', { className: 'printingpress-no-print', onClick: function() { useProofAsTitle(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.use_proof_label', 'Use proof {number} as broadside title'), { number: proof.number }), style: btn({ padding: '8px 10px', fontSize: 12, width: '100%' }) }, __alloT('stem.printingpress.use_as_broadside_title', 'Use as broadside title'))
+                  h('button', { type: 'button', id: 'pp-review-button-' + proof.number, className: 'printingpress-no-print', 'aria-pressed': reviewNumber === proof.number, onClick: function() { openProofReview(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.review_proof_label', 'Review proof {number}'), { number: proof.number }), style: btn({ width: '100%', marginBottom: 6, color: T.accentHi, borderColor: reviewNumber === proof.number ? T.accentHi : T.border }) }, reviewNumber === proof.number ? __alloT('stem.printingpress.reviewing_proof', 'Reviewing this proof') : __alloT('stem.printingpress.review_proof', 'Look closely')),
+                  h('button', { type: 'button', className: 'printingpress-no-print', onClick: function() { useProofAsTitle(proof); }, 'aria-label': __alloFill(__alloT('stem.printingpress.use_proof_label', 'Use proof {number} as broadside title'), { number: proof.number }), style: btn({ padding: '8px 10px', fontSize: 12, width: '100%' }) }, __alloT('stem.printingpress.use_as_broadside_title', 'Use as broadside title'))
                 );
               })
             ),
             reviewProof && h('section', { id: 'pp-proof-review', className: 'pp-proof-review', tabIndex: -1, 'aria-labelledby': 'pp-proof-review-title' },
               h('div', { style: { display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12, marginBottom: 14 } },
                 h('h3', { id: 'pp-proof-review-title', style: { color: T.accentHi, font: '700 22px/1.3 Georgia,serif', margin: 0 } }, __alloFill(__alloT('stem.printingpress.review_title', 'Look closely at proof #{number}'), { number: reviewProof.number })),
-                h('button', { className: 'printingpress-no-print', onClick: function() { var trigger = document.getElementById('pp-review-button-' + reviewNumber); setReviewNumber(null); if (trigger) trigger.focus(); }, style: btn({ padding: '6px 10px', fontSize: 12 }) }, __alloT('stem.printingpress.close_review', 'Close review'))
+                h('button', { type: 'button', className: 'printingpress-no-print', onClick: function() { var trigger = document.getElementById('pp-review-button-' + reviewNumber); setReviewNumber(null); if (trigger) trigger.focus(); }, style: btn({ padding: '6px 10px', fontSize: 12 }) }, __alloT('stem.printingpress.close_review', 'Close review'))
               ),
               h('div', { className: 'pp-review-layout' },
                 h('div', { style: { minWidth: 0 } },
@@ -6109,7 +6118,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { minWidth: 0 } },
                   h('div', { id: 'pp-letter-picker-label', style: { fontSize: 13, fontWeight: 700, color: T.text } }, __alloT('stem.printingpress.choose_evidence_letter', 'Choose a letter to inspect')),
                   h('div', { className: 'pp-letter-picker printingpress-no-print', role: 'group', 'aria-labelledby': 'pp-letter-picker-label' }, reviewLetters.map(function(letter, index) {
-                    return letter.trim() ? h('button', { key: index, 'aria-pressed': letterIndex === index, 'aria-label': __alloFill(__alloT('stem.printingpress.inspect_letter', 'Inspect {letter}, position {position}'), { letter: letter, position: index + 1 }), onClick: function() { setLetterIndex(index); }, style: btn({ background: letterIndex === index ? T.parchment : T.cardAlt, color: letterIndex === index ? T.ink : T.text, borderColor: letterIndex === index ? T.accentHi : T.border }) }, letter) : null;
+                    return letter.trim() ? h('button', { type: 'button', key: index, 'aria-pressed': letterIndex === index, 'aria-label': __alloFill(__alloT('stem.printingpress.inspect_letter', 'Inspect {letter}, position {position}'), { letter: letter, position: index + 1 }), onClick: function() { setLetterIndex(index); }, style: btn({ background: letterIndex === index ? T.parchment : T.cardAlt, color: letterIndex === index ? T.ink : T.text, borderColor: letterIndex === index ? T.accentHi : T.border }) }, letter) : null;
                   })),
                   h('div', { className: 'pp-letter-pair', role: 'group', 'aria-label': __alloFill(__alloT('stem.printingpress.letter_comparison', 'Letter {letter}: mirrored on type, readable on paper'), { letter: reviewLetter }), 'aria-live': 'polite', 'aria-atomic': true },
                     h('div', { style: { background: '#17130f', color: '#e0ceb0', border: '1px solid ' + T.border } }, h('small', null, __alloT('stem.printingpress.type_surface_label', 'TYPE SURFACE')), h('span', { 'aria-hidden': true, style: { transform: 'scaleX(-1)' } }, reviewLetter)),
@@ -6120,7 +6129,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               ),
               h('div', { style: { borderTop: '1px solid ' + T.border, marginTop: 16, paddingTop: 14 } },
                 h('p', { style: { color: T.text, fontSize: 14, lineHeight: 1.6, margin: '0 0 10px' } }, __alloT('stem.printingpress.review_explain_prompt', 'Build your explanation: name the proof and a letter, describe what you notice, then connect it to contact between inked type and paper. How did the screw and platen make that contact?')),
-                h('button', { className: 'printingpress-no-print', style: btn({ width: '100%' }), onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } } }, __alloFill(__alloT('stem.printingpress.explain_selected_proof', 'Explain proof #{number} below'), { number: reviewProof.number }))
+                h('button', { type: 'button', className: 'printingpress-no-print', style: btn({ width: '100%' }), onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } } }, __alloFill(__alloT('stem.printingpress.explain_selected_proof', 'Explain proof #{number} below'), { number: reviewProof.number }))
               )
             ),
             h('label', { htmlFor: 'pp-run-notes', style: { display: 'block', fontWeight: 700, fontSize: 13, color: T.text, marginTop: 12 } }, __alloT('stem.printingpress.run_notes', 'My observations')),
@@ -6134,7 +6143,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               )
             ),
             h('textarea', { id: 'pp-run-notes', value: run.notes, rows: 3, maxLength: 4000, 'aria-describedby': 'pp-run-notes-help', onChange: function(e) { updateRun({ notes: e.target.value }); }, style: { width: '100%', boxSizing: 'border-box', padding: 10, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt, color: T.text, resize: 'vertical', fontSize: 14 } }),
-            h('button', { className: 'printingpress-no-print', onClick: downloadNotebook, disabled: !count && !run.notes.trim(), style: btn({ marginTop: 10 }) }, __alloT('stem.printingpress.download_run_notebook', 'Download notebook')),
+            h('button', { type: 'button', className: 'printingpress-no-print', onClick: downloadNotebook, disabled: !count && !run.notes.trim(), style: btn({ marginTop: 10 }) }, __alloT('stem.printingpress.download_run_notebook', 'Download notebook')),
             h('p', { role: 'status', style: { fontSize: 12, color: T.muted, marginBottom: 0 } }, notebookMessage)
           ),
 
@@ -6182,8 +6191,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             ),
             h('div', { style: { borderLeft: '3px solid ' + T.accentHi, paddingLeft: 12, color: T.text, fontSize: 14, lineHeight: 1.6 } }, __alloT('stem.printingpress.screw_inquiry', 'Try doubling the bar from 20 to 40 cm. Then reset and double the pitch from 10 to 20 mm. Which change increases force? Which moves the platen farther per turn?')),
             h('div', { className: 'pp-screw-actions printingpress-no-print' },
-              h('button', { onClick: function() { setBaseline({ barCm: barCm, pitchMm: pitchMm }); setEvidenceMessage(''); }, style: btn({ borderColor: T.accentHi, color: T.accentHi }) }, baseline ? __alloT('stem.printingpress.screw_replace_baseline', 'Use current settings as A') : __alloT('stem.printingpress.screw_pin_baseline', 'Keep these settings as A')),
-              h('button', { onClick: function() { setBarCm(20); setPitchMm(10); setBaseline(null); setEvidenceMessage(''); }, style: btn() }, __alloT('stem.printingpress.screw_reset', 'Reset experiment'))
+              h('button', { type: 'button', onClick: function() { setBaseline({ barCm: barCm, pitchMm: pitchMm }); setEvidenceMessage(''); }, style: btn({ borderColor: T.accentHi, color: T.accentHi }) }, baseline ? __alloT('stem.printingpress.screw_replace_baseline', 'Use current settings as A') : __alloT('stem.printingpress.screw_pin_baseline', 'Keep these settings as A')),
+              h('button', { type: 'button', onClick: function() { setBarCm(20); setPitchMm(10); setBaseline(null); setEvidenceMessage(''); }, style: btn() }, __alloT('stem.printingpress.screw_reset', 'Reset experiment'))
             ),
             !baseline && h('p', { style: { fontSize: 12, lineHeight: 1.5, color: T.muted } }, __alloT('stem.printingpress.screw_compare_help', 'Keep a starting setup, then change one slider to compare it with setup B. Add the measurements to your notebook when you are ready.')),
             baseline && h('section', { id: 'pp-screw-comparison', className: 'pp-screw-comparison', 'aria-labelledby': 'pp-screw-comparison-title' },
@@ -6210,8 +6219,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               ),
               h('p', { style: { color: T.text, fontSize: 14, lineHeight: 1.6 } }, __alloT('stem.printingpress.screw_comparison_prompt', 'Explain the tradeoff: what changed, what did you keep constant, and what distance was exchanged for force? Use measurements from A and B.')),
               h('div', { className: 'pp-screw-actions printingpress-no-print' },
-                h('button', { disabled: !changedSettings, onClick: saveComparison, style: btn({ opacity: changedSettings ? 1 : 0.5 }) }, __alloT('stem.printingpress.screw_add_evidence', 'Add comparison to notebook')),
-                h('button', { onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn() }, __alloT('stem.printingpress.screw_write_explanation', 'Write my explanation'))
+                h('button', { type: 'button', disabled: !changedSettings, onClick: saveComparison, style: btn({ opacity: changedSettings ? 1 : 0.5 }) }, __alloT('stem.printingpress.screw_add_evidence', 'Add comparison to notebook')),
+                h('button', { type: 'button', onClick: function() { var notes = document.getElementById('pp-run-notes'); if (notes) { notes.focus(); notes.scrollIntoView({ block: 'center' }); } }, style: btn() }, __alloT('stem.printingpress.screw_write_explanation', 'Write my explanation'))
               ),
               h('p', { role: 'status', style: { color: T.muted, fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, evidenceMessage || __alloT('stem.printingpress.screw_unsaved_comparison', 'This comparison is temporary until you add it to your notebook.'))
             ),
@@ -6647,7 +6656,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   placeholder: __alloT('stem.printingpress.type_the_readable_word', 'Type the readable word…'),
                   style: { flex: 1, minWidth: 180, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16, fontFamily: 'Georgia, serif', letterSpacing: '0.05em', textTransform: 'uppercase' }
                 }),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     var correct = decodeAnswer.trim().toUpperCase() === word;
                     setDecodeFeedback({ correct: correct, attempted: decodeAnswer.trim().toUpperCase() });
@@ -6656,7 +6665,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   disabled: !decodeAnswer.trim(),
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13, opacity: decodeAnswer.trim() ? 1 : 0.5 })
                 }, __alloT('stem.printingpress.check', 'Check')),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     // ↻ New word always returns to the static cycle, even
                     // after an AI round, so students can flip back to the
@@ -6668,7 +6677,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     announce(__alloT('stem.printingpress.sr_next_word_loaded', 'Next word loaded.'));
                   },
                   style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.new_word', '↻ New word')),
-                callGemini && h('button', {
+                callGemini && h('button', { type: 'button',
                   onClick: generateNewMirrorWord,
                   disabled: decodeGenState.loading,
                   'aria-label': __alloT('stem.printingpress.generate_a_new_ai_word', 'Generate a new AI word'),
@@ -6799,7 +6808,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   } else if (isGuessed) {
                     bg = 'rgba(201, 161, 74, 0.25)';
                   }
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: i,
                     onClick: function() {
                       if (proofRevealed) return;
@@ -6844,7 +6853,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 style: { padding: 8, borderRadius: 4, fontSize: 11, marginBottom: 10, background: '#3d2810', border: '1px dashed ' + T.warn, color: '#fed7aa' }
               }, '\u26A0 ' + proofGenState.error),
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     setProofAiRound(null);
                     setProofIdx((proofIdx + 1) % PROOF_LINES.length);
@@ -6854,7 +6863,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   },
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.new_proof', '\u21BB New proof')),
-                callGemini && h('button', {
+                callGemini && h('button', { type: 'button',
                   onClick: generateNewProof,
                   disabled: proofGenState.loading,
                   style: btn({
@@ -6865,7 +6874,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     color: T.warn
                   })
                 }, proofGenState.loading ? __alloT('stem.printingpress.generating_3', '\u{1F916} Generating\u2026') : __alloT('stem.printingpress.generate_new_ai', '\u{1F916} Generate new (AI)')),
-                proofRevealed && h('button', {
+                proofRevealed && h('button', { type: 'button',
                   onClick: function() { setProofGuess(null); setProofRevealed(false); },
                   style: btn({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.try_this_one_again', 'Try this one again'))
@@ -6933,7 +6942,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' } },
             CHALLENGES.map(function(ch, i) {
               var doneHere = !!challengesDone[ch.id];
-              return h('button', {
+              return h('button', { type: 'button',
                 key: i,
                 onClick: function() { setChallengeIdx(i); announce(__alloFill(__alloT('stem.printingpress.sr_loaded', 'Loaded {value1}'), { value1: ch.label })); },
                 'aria-label': ch.label + (doneHere ? ' (composed)' : ''),
@@ -7025,7 +7034,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             } },
             st.slots.map(function(letter, i) {
               var isLigature = letter === '';
-              return h('button', { key: i,
+              return h('button', { type: 'button', key: i,
                 onClick: function() { letter ? clearSlot(i) : placeInSlot(i); },
                 'aria-label': letter
                   ? __alloFill(__alloT('stem.printingpress.slot_filled', 'Slot {n}: {letter}. Activate to remove it.'), { n: i + 1, letter: spokenChar(letter) })
@@ -7133,7 +7142,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               // Mirror-reverse the letter for display (scaleX(-1)).
               // Ligature sorts get a wider block AND a red accent border so
               // students can distinguish them from individual sorts in the case.
-              return h('button', { key: i,
+              return h('button', { type: 'button', key: i,
                 onClick: function() { setSt({ slots: st.slots, picked: picked ? null : i }); announce(picked ? __alloT('stem.printingpress.sr_sort_released', 'Sort released.') : __alloFill(__alloT('stem.printingpress.sr_picked_up_sort', 'Picked up {letter}. Choose a slot in the composing stick.'), { letter: spokenChar(letter) })); },
                 'aria-pressed': picked,
                 'aria-label': isLigature ? __alloT('stem.printingpress.sort_label_ligature', 'fi ligature (one sort with both letters)') : __alloFill(__alloT('stem.printingpress.sort_label', '{letter} (mirror-reversed sort)'), { letter: spokenChar(letter) }),
@@ -7250,15 +7259,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             ),
             // Action buttons
             h('div', { className: 'printingpress-no-print', style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
-              pressState === 'idle' && h('button', {
+              pressState === 'idle' && h('button', { type: 'button',
                 onClick: function() { setPressState('pressing'); announce(__alloT('stem.printingpress.sr_pressing_the_type_onto_paper', 'Pressing the type onto paper.')); },
                 style: btnPrimary({ padding: '10px 20px', fontSize: 14 })
               }, __alloT('stem.printingpress.press', '🪢 Press!')),
-              pressState === 'printed' && h('button', {
+              pressState === 'printed' && h('button', { type: 'button',
                 onClick: function() { setPressState('idle'); announce(__alloT('stem.printingpress.sr_press_reset', 'Press reset.')); },
                 style: btn({ padding: '10px 16px', fontSize: 13 })
               }, __alloT('stem.printingpress.press_again', '↺ Press again')),
-              pressState === 'printed' && h('button', {
+              pressState === 'printed' && h('button', { type: 'button',
                 onClick: function() {
                   setSt({ slots: Array.apply(null, { length: CHALLENGE.slotCount }).map(function() { return ''; }), picked: null });
                   setPressState('idle');
@@ -7329,7 +7338,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { fontSize: 10, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginRight: 6 } }, __alloT('stem.printingpress.pages', 'Pages')),
                 palette.length > 0 ? palette.map(function(n) {
                   var isPicked = (impSelected === n);
-                  return h('button', { key: n,
+                  return h('button', { type: 'button', key: n,
                     onClick: function() { setImpSelected(isPicked ? null : n); },
                     'aria-pressed': isPicked ? 'true' : 'false',
                     style: {
@@ -7357,7 +7366,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     [0, 1].map(function(slotIdx) {
                       var val = slotDisplay(slotIdx);
                       var revealCorrect = revealed && impStage !== 'wrong';
-                      return h('button', { key: slotIdx,
+                      return h('button', { type: 'button', key: slotIdx,
                         onClick: function() { placeIn(slotIdx); },
                         'aria-label': slotLabels[slotIdx] + (val ? __alloFill(__alloT('stem.printingpress.slot_suffix_page', ', page {value1}'), { value1: val }) : __alloT('stem.printingpress.slot_suffix_empty', ', empty')),
                         disabled: revealed,
@@ -7384,7 +7393,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: -4, bottom: -4, left: '50%', width: 0, borderLeft: '1px dashed ' + T.wood, opacity: 0.5 } }),
                     [2, 3].map(function(slotIdx) {
                       var val = slotDisplay(slotIdx);
-                      return h('button', { key: slotIdx,
+                      return h('button', { type: 'button', key: slotIdx,
                         onClick: function() { placeIn(slotIdx); },
                         'aria-label': slotLabels[slotIdx] + (val ? __alloFill(__alloT('stem.printingpress.slot_suffix_page', ', page {value1}'), { value1: val }) : __alloT('stem.printingpress.slot_suffix_empty', ', empty')),
                         disabled: revealed,
@@ -7406,12 +7415,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               ),
               // Check / reveal controls
               !revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: checkAnswer,
                   disabled: !allPlaced,
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13, opacity: allPlaced ? 1 : 0.5 })
                 }, __alloT('stem.printingpress.check_the_fold', '\u{1F4D6} Check the fold')),
-                h('button', { onClick: reset, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.clear', '\u21BB Clear'))
+                h('button', { type: 'button', onClick: reset, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.clear', '\u21BB Clear'))
               ),
               // Reveal panel
               revealed && h('div', { ref: ppFocusRef('imp-result'), tabIndex: -1, 'aria-live': 'polite',
@@ -7439,15 +7448,15 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               ),
               // After-reveal controls
               revealed && h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                impStage === 'right' && h('button', { ref: ppFocusRef('imp-fold'),
+                impStage === 'right' && h('button', { type: 'button', ref: ppFocusRef('imp-fold'),
                   onClick: function() { ppFocusNext('imp-open'); setImpStage('right-open'); announce(__alloT('stem.printingpress.sr_folded_showing_the_inner_side', 'Folded. Showing the inner side.')); },
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13 })
                 }, __alloT('stem.printingpress.fold_it', '\u{1F4D6} Fold it')),
-                impStage === 'right-open' && h('button', { ref: ppFocusRef('imp-open'),
+                impStage === 'right-open' && h('button', { type: 'button', ref: ppFocusRef('imp-open'),
                   onClick: function() { ppFocusNext('imp-fold'); setImpStage('right'); },
                   style: btn({ padding: '10px 16px', fontSize: 13 })
                 }, __alloT('stem.printingpress.open_it_back_up', '\u21A9 Open it back up')),
-                h('button', { onClick: function() { ppFocusNext('imp-heading'); reset(); }, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.try_again_3', '\u21BB Try again'))
+                h('button', { type: 'button', onClick: function() { ppFocusNext('imp-heading'); reset(); }, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.try_again_3', '\u21BB Try again'))
               ),
               h('p', { style: { margin: '12px 0 0', fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
                 __alloT('stem.printingpress.bigger_formats_quarto_8_pages_per_shee', 'Bigger formats (quarto, 8 pages per sheet; octavo, 16 pages) follow the same kind of logic but get progressively harder. In a real 1450 shop, the imposer was a senior craftsman; getting it wrong meant printing the run upside-down or out of order. The schematics for octavo imposition look like geometry puzzles \u2014 and they are.'))
@@ -7709,7 +7718,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               castingFocus === 2 ? __alloT('stem.printingpress.step_3_a_hand_mold_clamps_the_matrix_a', 'Step 3: A hand mold clamps the matrix at the bottom, molten lead-tin-antimony alloy is poured in, the cast cools in seconds. Skilled casters made ~4,000 sorts per day.') :
               ''
             ),
-            !castingTour && h('button', {
+            !castingTour && h('button', { type: 'button',
               onClick: function() {
                 setCastingTour(true);
                 setCastingFocus(0);
@@ -7717,7 +7726,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               },
               style: btn({ padding: '8px 14px', fontSize: 12, background: T.accentHi, color: T.ink, border: '1px solid ' + T.accentHi, fontWeight: 700 })
             }, __alloT('stem.printingpress.walk_through_the_steps', '▶ Walk through the steps')),
-            castingTour && h('button', {
+            castingTour && h('button', { type: 'button',
               onClick: function() { setCastingTour(false); setCastingFocus(null); announce(__alloT('stem.printingpress.sr_casting_tour_stopped', 'Casting tour stopped.')); },
               style: btn({ padding: '8px 14px', fontSize: 12, background: T.dangerBgStrong, color: T.parchment, border: '1px solid ' + T.dangerText })
             }, __alloT('stem.printingpress.stop', '⏸ Stop'))
@@ -8033,7 +8042,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               else if (config === 'top') nickRect = h('rect', { x: 12, y: 30, width: 30, height: 4, fill: '#3a2a1a' });
               else if (config === 'side') nickRect = h('rect', { x: 42, y: 60, width: 4, height: 30, fill: '#3a2a1a' });
               // 'none' = no rect
-              return h('button', { key: slotIdx,
+              return h('button', { type: 'button', key: slotIdx,
                 onClick: function() {
                   if (revealed) return;
                   ppFocusNext('nick-feedback');
@@ -8088,11 +8097,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   ? __alloT('stem.printingpress.yes_the_nick_faces_you_and_sits_where', '✓ Yes. The nick faces you and sits where this font puts it, near the foot. Every sort in the line should look the same.')
                   : __alloT('stem.printingpress.the_correct_sort_is_the_one_outlined_i', '✗ The correct sort is the one outlined in green: nick facing you, near the foot. A nick high on the body means a sort from another font; a nick on the side means the sort is turned sideways; no nick showing means it is turned around and would print upside down.')),
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                nickPicked !== null && !done && h('button', {
+                nickPicked !== null && !done && h('button', { type: 'button',
                   onClick: function() { ppFocusNext('nick-round'); setNickRound(nickRound + 1); setNickPicked(null); },
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.next_sort', 'Next sort →')),
-                done && h('button', {
+                done && h('button', { type: 'button',
                   onClick: function() { ppFocusNext('nick-round'); setNickRound(0); setNickPicked(null); setNickScore(0); },
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.play_again', '↻ Play again'))
@@ -8116,6 +8125,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('input', {
               id: 'pp-sort-guess', type: 'range', min: 100, max: 300000, step: 100,
               value: sortGuess,
+              'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_sorts', '{value1} sorts'), { value1: sortGuess.toLocaleString() }),
               onChange: function(e) { setSortGuess(parseInt(e.target.value, 10)); if (sortRevealed) setSortRevealed(false); },
               className: 'printingpress-no-print',
               style: { width: '100%', accentColor: T.accent, marginBottom: 10 }
@@ -8125,7 +8135,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('span', null, '300,000')
             ),
             !sortRevealed && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center' } },
-              h('button', { onClick: function() { setSortRevealed(true); announce(__alloT('stem.printingpress.sr_reveal_about_100_000_sorts', 'Reveal: about 100,000 sorts.')); },
+              h('button', { type: 'button', onClick: function() { setSortRevealed(true); announce(__alloT('stem.printingpress.sr_reveal_about_100_000_sorts', 'Reveal: about 100,000 sorts.')); },
                 style: btnPrimary({ padding: '10px 20px', fontSize: 14 }) }, __alloT('stem.printingpress.reveal_the_answer', '🔍 Reveal the answer'))
             ),
             sortRevealed && (function() {
@@ -8179,7 +8189,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', marginTop: 6, lineHeight: 1.5 } },
                   __alloT('stem.printingpress.always_sums_to_100_adjusting_one_slide', 'Always sums to 100%. Adjusting one slider rebalances the others.')),
                 // Reset button
-                h('button', { className: 'printingpress-no-print',
+                h('button', { type: 'button', className: 'printingpress-no-print',
                   onClick: function() { setLeadPct(54); setTinPct(18); announce(__alloT('stem.printingpress.sr_alloy_reset_to_classic_foundry_type_', 'Alloy reset to classic foundry type.')); },
                   style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.printingpress.reset_to_foundry_type_54_lead_18_tin_2', '↺ Reset to foundry type (54 lead / 18 tin / 28 antimony)'))
               ),
@@ -8348,6 +8358,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('input', {
               id: 'pp-copies', type: 'range', min: 1, max: 1000, step: 1,
               value: copies,
+              'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_copies', '{value1} copies'), { value1: copies.toLocaleString() }),
               onChange: function(e) { setCopies(parseInt(e.target.value, 10)); },
               className: 'printingpress-no-print',
               style: { width: '100%', accentColor: T.accent }
@@ -8524,6 +8535,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('input', {
                   id: 'pp-reach-copies', type: 'range', min: 50, max: 5000, step: 50,
                   value: reachCopies,
+                  'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_copies_printed', '{value1} copies printed'), { value1: reachCopies.toLocaleString() }),
                   onChange: function(e) { setReachCopies(parseInt(e.target.value, 10)); },
                   className: 'printingpress-no-print',
                   style: { width: '100%', accentColor: T.accent }
@@ -8539,6 +8551,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('input', {
                   id: 'pp-readers', type: 'range', min: 1, max: 30, step: 1,
                   value: readersPerCopy,
+                  'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_readers_per_copy', '{value1} readers per copy'), { value1: readersPerCopy }),
                   onChange: function(e) { setReadersPerCopy(parseInt(e.target.value, 10)); },
                   className: 'printingpress-no-print',
                   style: { width: '100%', accentColor: T.accent }
@@ -8554,6 +8567,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('input', {
                   id: 'pp-rounds', type: 'range', min: 1, max: 6, step: 1,
                   value: passingRounds,
+                  'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_passing_rounds', '{value1} passing rounds'), { value1: passingRounds }),
                   onChange: function(e) { setPassingRounds(parseInt(e.target.value, 10)); },
                   className: 'printingpress-no-print',
                   style: { width: '100%', accentColor: T.accent }
@@ -8890,7 +8904,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 var size = isLocal ? 28 : 24;
                 var ringColor = isSelected ? T.danger : (isLocal ? T.ok : T.accent);
                 var fillColor = isSelected ? T.danger : (isLocal ? '#bbf7d0' : T.accentHi);
-                return h('button', { key: i,
+                return h('button', { type: 'button', key: i,
                   className: 'printingpress-no-print',
                   onClick: function() { setSelectedEvent(isSelected ? null : i); announce(ev.year + ' ' + ev.title); },
                   'aria-label': __alloFill(__alloT('stem.printingpress.aria_value1_value2_value3_click_for_details', '{value1} · {value2}{value3} · click for details'), { value1: ev.year, value2: ev.title, value3: (isLocal ? __alloT('stem.printingpress.aria_maine_local_event', ' · Maine-local event') : '') }),
@@ -8946,7 +8960,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('span', { style: { fontSize: 22, fontWeight: 800, color: '#7c2d12' } }, ev.year),
                     h('span', { style: { fontSize: 16, fontWeight: 700, color: T.ink, marginLeft: 10 } }, ev.title)
                   ),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { setSelectedEvent(null); },
                     'aria-label': __alloT('stem.printingpress.close_detail', 'Close detail'),
                     style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#7c2d12', padding: '0 6px', fontWeight: 700 }
@@ -9061,17 +9075,17 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 })
               ),
               h('div', { className: 'printingpress-no-print', style: { marginTop: 10, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
-                !spreadPlaying && spreadMonth < 12 && h('button', {
+                !spreadPlaying && spreadMonth < 12 && h('button', { type: 'button',
                   onClick: function() { setSpreadPlaying(true); announce(__alloT('stem.printingpress.sr_reformation_spread_animation_playing', 'Reformation spread animation playing')); },
                   style: btnPrimary({ padding: '8px 16px', fontSize: 13 }) },
                   spreadMonth === 0 ? __alloT('stem.printingpress.play_oct_1517_onward', '▶ Play (Oct 1517 onward)') : __alloT('stem.printingpress.resume_2', '▶ Resume')),
-                spreadPlaying && h('button', {
+                spreadPlaying && h('button', { type: 'button',
                   onClick: function() { setSpreadPlaying(false); },
                   style: btn({ padding: '8px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.pause', '⏸ Pause')),
-                spreadMonth >= 12 && h('button', {
+                spreadMonth >= 12 && h('button', { type: 'button',
                   onClick: function() { setSpreadMonth(0); setSpreadPlaying(false); },
                   style: btn({ padding: '8px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.replay', '↺ Replay')),
-                spreadMonth > 0 && !spreadPlaying && h('button', {
+                spreadMonth > 0 && !spreadPlaying && h('button', { type: 'button',
                   onClick: function() { setSpreadMonth(0); setSpreadPlaying(false); },
                   style: btn({ padding: '8px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.reset', '↺ Reset'))
               )
@@ -9103,7 +9117,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               // Selector
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' } },
                 THESES.map(function(t, ti) {
-                  return h('button', { key: ti,
+                  return h('button', { type: 'button', key: ti,
                     onClick: function() { setThesisIdx(ti); setPsReveal(false); },
                     style: ti === thesisIdx ? btnPrimary({ padding: '6px 12px', fontSize: 12 }) : btn({ padding: '6px 12px', fontSize: 12 })
                   }, __alloFill(__alloT('stem.printingpress.thesis_value1', 'Thesis {value1}'), { value1: t.num }));
@@ -9125,7 +9139,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.6, marginBottom: 10, padding: 10, background: T.cardAlt, borderRadius: 6 } },
                 h('strong', { style: { color: T.accentHi } }, '❓ '), th.prompt
               ),
-              !psReveal && h('button', { className: 'printingpress-no-print',
+              !psReveal && h('button', { type: 'button', className: 'printingpress-no-print',
                 onClick: function() { setPsReveal(true); announce(__alloT('stem.printingpress.sr_analysis_revealed', 'Analysis revealed')); },
                 style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.reveal_the_analysis', '🔍 Reveal the analysis')),
               psReveal && h('div', { 'aria-live': 'polite', style: {
@@ -10244,7 +10258,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 // Era buttons
                 detPicked === null && detFaceMissing && h('div', { role: 'note', className: 'printingpress-no-print', style: { background: T.cardAlt, border: '1px dashed ' + T.warn, borderRadius: 8, padding: 12, marginBottom: 10, fontSize: 12, color: T.text, lineHeight: 1.6 } },
                   h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.printingpress.det_face_missing', 'This device does not have the period typeface for this sample, so it is drawn in a stand-in font and cannot be dated fairly. Skip it: skipped samples do not count.')),
-                  h('button', { onClick: function() { ppFocusNext('det-feedback'); setDetPicked('skip'); if (!isAiRound) setDetSkipped(detSkipped + 1); announce(__alloT('stem.printingpress.sr_round_skipped', 'Round skipped. It does not count.')); },
+                  h('button', { type: 'button', onClick: function() { ppFocusNext('det-feedback'); setDetPicked('skip'); if (!isAiRound) setDetSkipped(detSkipped + 1); announce(__alloT('stem.printingpress.sr_round_skipped', 'Round skipped. It does not count.')); },
                     style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.det_skip_sample', 'Skip this sample'))),
                 !(detPicked === null && detFaceMissing) && h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 10 } },
                   ERAS.map(function(era) {
@@ -10256,7 +10270,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       if (isCorrect) { bg = 'rgba(127,176,105,0.18)'; brd = T.ok; }
                       else if (isPicked) { bg = 'rgba(199,69,54,0.16)'; brd = T.danger; }
                     }
-                    return h('button', { key: era,
+                    return h('button', { type: 'button', key: era,
                       onClick: function() { pick(era); },
                       disabled: detPicked !== null,
                       style: btn({ padding: '8px 18px', fontSize: 13, fontFamily: 'Georgia, serif',
@@ -10279,9 +10293,9 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   );
                 })(),
                 detPicked !== null && h('div', { className: 'printingpress-no-print', style: { textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
-                  h('button', { onClick: nextRound, style: btnPrimary({ padding: '8px 16px', fontSize: 12 }) },
+                  h('button', { type: 'button', onClick: nextRound, style: btnPrimary({ padding: '8px 16px', fontSize: 12 }) },
                     isAiRound ? __alloT('stem.printingpress.back_to_curated_cycle', 'Back to curated cycle →') : (detRound < ROUNDS.length - 1 ? __alloT('stem.printingpress.next_sample', 'Next sample →') : __alloT('stem.printingpress.see_score_2', 'See score →'))),
-                  callGemini && h('button', {
+                  callGemini && h('button', { type: 'button',
                     onClick: generateNewRound,
                     disabled: detGenState.loading,
                     'aria-label': __alloT('stem.printingpress.generate_a_new_ai_typeface_round', 'Generate a new AI typeface round'),
@@ -10303,10 +10317,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   detScore >= 0.6 * detScored ? __alloT('stem.printingpress.solid_eye_for_period_style_another_bro', 'Solid eye for period style. Another browse through the typeface gallery and you could get full marks.') :
                   __alloT('stem.printingpress.the_patterns_become_obvious_with_a_few', 'The patterns become obvious with a few more passes. Try the typeface gallery again, then come back.')),
                 h('div', { className: 'printingpress-no-print', style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: reset,
                     style: btnPrimary({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.play_again_2', '↻ Play again')),
-                  callGemini && h('button', {
+                  callGemini && h('button', { type: 'button',
                     onClick: generateNewRound,
                     disabled: detGenState.loading,
                     'aria-label': __alloT('stem.printingpress.generate_a_new_ai_typeface_round_2', 'Generate a new AI typeface round'),
@@ -10827,7 +10841,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     if (isCorrect) { bg = 'rgba(127,176,105,0.18)'; brd = T.ok; }
                     else if (isPicked) { bg = 'rgba(199,69,54,0.16)'; brd = T.danger; }
                   }
-                  return h('button', { key: i,
+                  return h('button', { type: 'button', key: i,
                     onClick: function() { pickAnswer(name); },
                     disabled: pplRevealed,
                     style: {
@@ -10862,11 +10876,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               }, '\u26a0 ' + pplGenState.error),
               // Controls
               h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
-                pplRevealed && !done && h('button', {
+                pplRevealed && !done && h('button', { type: 'button',
                   onClick: nextRound,
                   style: btnPrimary({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.next_quote', 'Next quote \u2192')),
-                callGemini && h('button', {
+                callGemini && h('button', { type: 'button',
                   onClick: generateNewQuote,
                   disabled: pplGenState.loading,
                   'aria-label': __alloT('stem.printingpress.generate_a_new_ai_quote', 'Generate a new AI quote'),
@@ -10885,7 +10899,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     pplScore >= 3 ? __alloT('stem.printingpress.solid_you_can_hear_the_period_voices', 'Solid \u2014 you can hear the period voices.') :
                     __alloT('stem.printingpress.worth_a_re_read_of_the_portrait_galler', 'Worth a re-read of the portrait gallery above, then another go.'))
                 ),
-                done && h('button', {
+                done && h('button', { type: 'button',
                   onClick: resetGame,
                   style: btn({ padding: '8px 14px', fontSize: 12 })
                 }, __alloT('stem.printingpress.reset_game', '\u21BB Reset game'))
@@ -11071,7 +11085,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                     q.opts.map(function(opt, oi) {
                       var isPicked = (matchAnswers[qi] === oi);
-                      return h('button', { key: oi,
+                      return h('button', { type: 'button', key: oi,
                         onClick: function() { pick(qi, oi); },
                         'aria-pressed': isPicked ? 'true' : 'false',
                         style: btn({
@@ -11095,7 +11109,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.65 } }, winner.modern),
                 tied && h('p', { style: { margin: '0 0 10px', fontSize: 11, color: T.dim, fontStyle: 'italic' } },
                   __alloT('stem.printingpress.you_tied_between_multiple_archetypes_s', '(You tied between multiple archetypes; shown is one of them. You contain multitudes.)')),
-                h('button', { className: 'printingpress-no-print',
+                h('button', { type: 'button', className: 'printingpress-no-print',
                   onClick: reset,
                   style: btn({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.take_it_again', '↻ Take it again'))
               )
@@ -11395,10 +11409,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             } },
             sectionHeader('📝', __alloT('stem.printingpress.composer_2', 'Composer')),
             h('p', { role: 'status', style: { fontSize: 12, color: T.muted, margin: '0 0 12px' } }, draftSaved ? __alloT('stem.printingpress.draft_saved', 'Draft saved on this browser. Return here to continue editing.') : __alloT('stem.printingpress.draft_session', 'Draft available in this session. Download a copy to keep your work.')),
-            previousDraft && h('button', { onClick: function() { upd('broadsideDraft', previousDraft); setPreviousDraft(null); }, style: btn({ marginBottom: 12 }) }, __alloT('stem.printingpress.undo_template', 'Undo template change')),
+            previousDraft && h('button', { type: 'button', onClick: function() { upd('broadsideDraft', previousDraft); setPreviousDraft(null); }, style: btn({ marginBottom: 12 }) }, __alloT('stem.printingpress.undo_template', 'Undo template change')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
               TEMPLATES.map(function(tpl, i) {
-                return h('button', { key: i,
+                return h('button', { type: 'button', key: i,
                   onClick: function() { loadTemplate(i); },
                   'aria-pressed': i === templateIdx,
                   'aria-haspopup': content !== TEMPLATES[templateIdx].sample ? 'dialog' : undefined,
@@ -11441,7 +11455,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { flex: 1, minWidth: 180 } },
                 h('label', { htmlFor: 'pp-size', style: { display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 } },
                   __alloT('stem.printingpress.title_size', 'Title size: '), h('strong', null, titleSize + 'px')),
-                h('input', { id: 'pp-size', type: 'range', min: 24, max: 80, value: titleSize,
+                h('input', { id: 'pp-size', type: 'range', min: 24, max: 80, value: titleSize, 'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_pixels', '{value1} pixels'), { value1: titleSize }),
                   onChange: function(e) { setTitleSize(parseInt(e.target.value, 10)); },
                   style: { width: '100%', accentColor: T.accent }
                 })
@@ -11476,8 +11490,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               draft.audience && h('span', { style: { display: 'block' } }, __alloT('stem.printingpress.reader_for', 'Reader: ') + draft.audience),
               draft.purpose && h('span', { style: { display: 'block' } }, __alloT('stem.printingpress.reader_intent', 'Purpose: ') + draft.purpose)),
             h('div', { role: 'group', 'aria-label': __alloT('stem.printingpress.reader_view', 'Broadside proof view'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } },
-              h('button', { 'aria-pressed': proofView === 'design', 'aria-controls': 'pp-design-proof', onClick: function() { setProofView('design'); }, style: proofView === 'design' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_design', 'Design proof')),
-              h('button', { 'aria-pressed': proofView === 'text', 'aria-controls': 'pp-reader-proof', onClick: function() { setProofView('text'); }, style: proofView === 'text' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_text', 'Text-only proof'))
+              h('button', { type: 'button', 'aria-pressed': proofView === 'design', 'aria-controls': 'pp-design-proof', onClick: function() { setProofView('design'); }, style: proofView === 'design' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_design', 'Design proof')),
+              h('button', { type: 'button', 'aria-pressed': proofView === 'text', 'aria-controls': 'pp-reader-proof', onClick: function() { setProofView('text'); }, style: proofView === 'text' ? btnPrimary() : btn() }, __alloT('stem.printingpress.reader_text', 'Text-only proof'))
             ),
             h('fieldset', { style: { border: '1px solid ' + T.border, borderRadius: 8, margin: 0, padding: '8px 12px' } },
               h('legend', { style: { color: T.text, fontSize: 13, padding: '0 5px' } }, __alloT('stem.printingpress.reader_checklist', 'My review of this draft')),
@@ -11491,12 +11505,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('h3', { id: 'pp-reader-text-title', style: { font: '700 14px/1.5 system-ui,sans-serif', margin: '0 0 16px', borderBottom: '1px solid #9c8a6e', paddingBottom: 10 } }, __alloT('stem.printingpress.reader_plain_label', 'Text-only proof · same words, no decoration')),
             h('div', { style: { fontWeight: 750, fontSize: 24, lineHeight: 1.4, marginBottom: 12, whiteSpace: 'pre-wrap' } }, titleLine || __alloT('stem.printingpress.reader_no_title', 'Your title is empty. Add it on the first line.')),
             h('div', { id: 'pp-reader-body', style: { whiteSpace: 'pre-wrap' } }, bodyLines.join('\n')),
-            h('button', { onClick: function() { var editor = document.getElementById('pp-content'); if (editor) { editor.focus(); editor.scrollIntoView({ block: 'center' }); } }, style: btn({ marginTop: 18, background: '#2a1f15', color: '#f5ecd9' }) }, __alloT('stem.printingpress.reader_edit', 'Return to my text'))
+            h('button', { type: 'button', onClick: function() { var editor = document.getElementById('pp-content'); if (editor) { editor.focus(); editor.scrollIntoView({ block: 'center' }); } }, style: btn({ marginTop: 18, background: '#2a1f15', color: '#f5ecd9' }) }, __alloT('stem.printingpress.reader_edit', 'Return to my text'))
           ),
           h('div', { className: 'printingpress-no-print', style: { marginBottom: 16 } },
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-              h('button', { disabled: !content.trim(), onClick: function() { exportBroadside(true); }, style: btnPrimary() }, __alloT('stem.printingpress.print_broadside', 'Print broadside / Save PDF')),
-              h('button', { disabled: !content.trim(), onClick: function() { exportBroadside(false); }, style: btn() }, __alloT('stem.printingpress.download_broadside', 'Download broadside'))
+              h('button', { type: 'button', disabled: !content.trim(), onClick: function() { exportBroadside(true); }, style: btnPrimary() }, __alloT('stem.printingpress.print_broadside', 'Print broadside / Save PDF')),
+              h('button', { type: 'button', disabled: !content.trim(), onClick: function() { exportBroadside(false); }, style: btn() }, __alloT('stem.printingpress.download_broadside', 'Download broadside'))
             ),
             h('p', { role: 'status', style: { fontSize: 12, color: T.muted, marginTop: 8 } }, outputMessage || __alloT('stem.printingpress.broadside_output_hint', 'These buttons export just your broadside. Download keeps a standalone HTML copy.'))
           ),
@@ -11868,7 +11882,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                       SYMBOLS.map(function(s, i) {
                         var isPicked = (markSymbol === i);
-                        return h('button', { key: s.key,
+                        return h('button', { type: 'button', key: s.key,
                           onClick: function() { setMarkSymbol(i); },
                           'aria-pressed': isPicked ? 'true' : 'false',
                           style: btn({
@@ -11888,7 +11902,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { className: 'printingpress-no-print', style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                       MOTTOES.map(function(m, i) {
                         var isPicked = (markMotto === i);
-                        return h('button', { key: i,
+                        return h('button', { type: 'button', key: i,
                           onClick: function() { setMarkMotto(i); },
                           'aria-pressed': isPicked ? 'true' : 'false',
                           style: btn({
@@ -11907,7 +11921,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 6 } },
                       FINISHES.map(function(f) {
                         var isPicked = (markFinish === f.key);
-                        return h('button', { key: f.key,
+                        return h('button', { type: 'button', key: f.key,
                           onClick: function() { setMarkFinish(f.key); },
                           'aria-pressed': isPicked ? 'true' : 'false',
                           style: btn({
@@ -12310,7 +12324,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 12, marginBottom: 14 } },
               ['apprentice', 'compositor', 'pressman', 'master'].map(function(roleId) {
                 var r = ROLES[roleId];
-                return h('button', { key: roleId,
+                return h('button', { type: 'button', key: roleId,
                   onClick: function() { pickRole(roleId); },
                   'aria-label': __alloFill(__alloT('stem.printingpress.a11y_choose_role', 'Choose role: {value1}'), { value1: r.label }),
                   style: btn({
@@ -12659,7 +12673,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accentHi, fontFamily: 'Georgia, serif' } }, roleObj.label),
                 h('div', { style: { fontSize: 11, color: T.dim, marginTop: 2 } }, __alloFill(__alloT('stem.printingpress.decision_value1_of_value2_value3', 'Decision {value1} of {value2} · {value3}'), { value1: (step + 1), value2: allDecisions.length, value3: currentDecision.time }))
               ),
-              h('button', { className: 'printingpress-no-print',
+              h('button', { type: 'button', className: 'printingpress-no-print',
                 onClick: function(e) {
                   requestConfirmation({
                     title: __alloT('stem.printingpress.restart_confirmation_title', 'Restart this role-play?'),
@@ -12683,7 +12697,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             // Choices OR feedback
             !feedback && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               currentDecision.choices.map(function(c, ci) {
-                return h('button', { key: c.id,
+                return h('button', { type: 'button', key: c.id,
                   onClick: function() { pickChoice(c); },
                   style: btn({
                     padding: 14, fontSize: 13, lineHeight: 1.5,
@@ -12700,7 +12714,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             feedback && h('div', { style: { background: T.cardAlt, border: '1px solid ' + T.ok, borderRadius: 10, padding: 16, marginTop: 12 } },
               h('div', { style: { fontSize: 11, fontWeight: 700, color: T.ok, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, __alloT('stem.printingpress.consequence', 'Consequence')),
               h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.text, lineHeight: 1.65 } }, feedback.outcome),
-              h('button', { className: 'printingpress-no-print',
+              h('button', { type: 'button', className: 'printingpress-no-print',
                 onClick: nextStep,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 14 }) },
                 step + 1 < allDecisions.length ? __alloT('stem.printingpress.next_decision', 'Next decision →') : __alloT('stem.printingpress.see_your_day', 'See your day →'))
@@ -12801,8 +12815,8 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               );
             })(),
             h('div', { className: 'printingpress-no-print', style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-              h('button', { onClick: restart, style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.try_a_different_role', '🔄 Try a different role')),
-              h('button', { onClick: function() { upd('view', 'menu'); }, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.back_to_menu', '← Back to menu'))
+              h('button', { type: 'button', onClick: restart, style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.try_a_different_role', '🔄 Try a different role')),
+              h('button', { type: 'button', onClick: function() { upd('view', 'menu'); }, style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.back_to_menu', '← Back to menu'))
             )
           ),
 
@@ -12954,7 +12968,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   // so the student gets the print dialog immediately.
                   // Document content is plain HTML (not React) so it
                   // doesn't need to load the AlloFlow runtime to print.
-                  earned && h('button', {
+                  earned && h('button', { type: 'button',
                     onClick: function() {
                       try {
                         var cert = window.open('', '_blank', 'width=800,height=600');
@@ -13005,14 +13019,14 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                       background: '#7c2d12', color: T.parchment,
                       border: '1px solid #5c2f0e', fontWeight: 700 })
                   }, __alloT('stem.printingpress.print_certificate', '🪶 Print Certificate')),
-                  h('button', { onClick: function() {
+                  h('button', { type: 'button', onClick: function() {
                     cqFocusRef.current = 'stem';
                     upd('bigQuizState', { idx: 0, score: 0, answered: false, lastChoice: null, picks: {}, attempt: (st.attempt || 0) + 1 });
                   }, style: btn({ padding: '8px 14px', fontSize: 13,
                     background: earned ? T.parchment : T.card,
                     color: earned ? T.ink : T.text,
                     border: '1px solid ' + (earned ? '#7c2d12' : T.border) }) }, __alloT('stem.printingpress.retake_quiz', 'Retake quiz')),
-                  h('button', { onClick: function() { upd('view', 'menu'); }, style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.printingpress.back_to_menu_2', '← Back to menu'))
+                  h('button', { type: 'button', onClick: function() { upd('view', 'menu'); }, style: btnPrimary({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.printingpress.back_to_menu_2', '← Back to menu'))
                 )
               )
             ),
@@ -13026,7 +13040,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                     h('div', { style: { flex: 1, minWidth: 0 } },
                       h('div', { style: { fontSize: 11, fontWeight: 700, color: T.warn, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.printingpress.module', 'Module')),
                       h('div', { style: { fontSize: 15, fontWeight: 700, color: T.text, fontFamily: 'Georgia, serif' } }, modLabel)),
-                    h('button', {
+                    h('button', { type: 'button',
                       className: 'printingpress-no-print',
                       onClick: function() { upd('view', modId); markVisited(modId); announce(__alloFill(__alloT('stem.printingpress.sr_opening', 'Opening {value1}'), { value1: modLabel })); },
                       style: btnPrimary({ padding: '8px 14px', fontSize: 12, whiteSpace: 'nowrap' })
@@ -13069,7 +13083,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   if (isCorrect) { style = Object.assign({}, style, { background: '#1f3d28', borderColor: T.ok, color: '#bbf7d0' }); marker = __alloT('stem.printingpress.option_marker_correct', '✓ Correct answer: '); }
                   else if (picked) { style = Object.assign({}, style, { background: '#3d1f1f', borderColor: T.danger, color: '#fecaca' }); marker = __alloT('stem.printingpress.option_marker_your_pick', '✗ Your answer: '); }
                 }
-                return h('button', { key: oi, 'data-pp-quiz-option': 'true', disabled: st.answered,
+                return h('button', { type: 'button', key: oi, 'data-pp-quiz-option': 'true', disabled: st.answered,
                   onClick: function() {
                     // Only the first try is scored and kept for the review list; a
                     // retry is practice. (Previously a retry erased the miss.)
@@ -13090,14 +13104,14 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 st.lastChoice === q.ans ? (picks[st.idx] !== q.ans ? __alloT('stem.printingpress.quiz_correct_on_retry', '✓ Correct on retry. Your first try still counts toward the score.') : __alloT('stem.printingpress.scenario_correct', '✓ Correct.')) : __alloT('stem.printingpress.quiz_not_quite', '✗ Not quite.')),
               h('strong', { style: { color: T.text } }, __alloT('stem.printingpress.quiz_why', 'Why: ')), q.explain),
             st.answered && h('div', { style: { marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              st.lastChoice !== q.ans && h('button', {
+              st.lastChoice !== q.ans && h('button', { type: 'button',
                 onClick: function() {
                   cqFocusRef.current = 'stem';
                   upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null }));
                   announce(__alloT('stem.printingpress.sr_question_reset_try_again', 'Question reset. Try again.'));
                 },
                 style: btn({ padding: '10px 16px', fontSize: 14 }) }, __alloT('stem.printingpress.try_again_4', '↺ Try again')),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   cqFocusRef.current = st.idx + 1 < CQ.length ? 'stem' : 'result';
                   upd('bigQuizState', Object.assign({}, st, { idx: st.idx + 1, answered: false, lastChoice: null }));
@@ -13231,7 +13245,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { fontSize: 11, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, fontWeight: 700 } }, __alloT('stem.printingpress.or_click_a_starter_question', 'Or click a starter question:')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               STARTER_PROMPTS.map(function(sp, spi) {
-                return h('button', { key: spi,
+                return h('button', { type: 'button', key: spi,
                   onClick: function() { setQ(sp); announce(__alloT('stem.printingpress.sr_question_loaded_click_ask_to_submit', 'Question loaded. Click Ask to submit.')); },
                   style: btn({ padding: '6px 10px', fontSize: 12, background: T.cardAlt, borderColor: T.border, color: T.muted }) },
                   '💭 ' + sp);
@@ -13244,16 +13258,16 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             placeholder: __alloT('stem.printingpress.e_g_how_did_aldus_manutius_decide_what', 'e.g. "How did Aldus Manutius decide what books to print first?" or "What was a 1450 type-caster\'s daily routine?"'),
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } }),
           h('div', { className: 'printingpress-no-print', style: { marginTop: 10, display: 'flex', gap: 8 } },
-            h('button', { onClick: ask, disabled: loading || !q.trim(),
+            h('button', { type: 'button', onClick: ask, disabled: loading || !q.trim(),
               style: btnPrimary({ padding: '10px 18px', fontSize: 14, opacity: (loading || !q.trim()) ? 0.5 : 1 }) },
               loading ? __alloT('stem.printingpress.thinking_2', 'Thinking…') : __alloT('stem.printingpress.ask', 'Ask')),
-            h('button', { onClick: function() { setQ(''); setAns(null); }, style: btn({ padding: '10px 14px', fontSize: 14 }) }, __alloT('stem.printingpress.clear_2', 'Clear'))
+            h('button', { type: 'button', onClick: function() { setQ(''); setAns(null); }, style: btn({ padding: '10px 14px', fontSize: 14 }) }, __alloT('stem.printingpress.clear_2', 'Clear'))
           ),
           ans && h('div', { style: { marginTop: 16, padding: 14, background: T.card, border: '1px solid ' + (ans.error ? T.warn : T.accent), borderRadius: 10, fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, ans.text),
           askHistory.length > 0 && h('div', { className: 'printingpress-no-print', style: { marginTop: 18 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, gap: 8, flexWrap: 'wrap' } },
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloFill(__alloT('stem.printingpress.recent_answers_value1', '🕒 Recent answers ({value1})'), { value1: askHistory.length })),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function(e) {
                   requestConfirmation({
                     title: __alloT('stem.printingpress.clear_history_confirmation_title', 'Clear saved AI answers?'),
@@ -13954,13 +13968,13 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('span', { style: { fontSize: 12, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 8 } }, __alloT('stem.printingpress.pick_a_region', 'Pick a region:')),
               regions.map(function(r) {
                 var sel = (gpRegion === r.id);
-                return h('button', { 'aria-pressed': sel, key: r.id,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: r.id,
                   onClick: function() { setGpRegion(r.id); announce(r.label + ': ' + r.flagYear + ', ' + r.flagWork); },
                   style: btn({ padding: '7px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   r.emoji + ' ' + r.label
                 );
               }),
-              h('button', { 'aria-expanded': gpTimeline, onClick: function() { setGpTimeline(!gpTimeline); announce(gpTimeline ? __alloT('stem.printingpress.sr_timeline_closed', 'Timeline closed') : __alloT('stem.printingpress.sr_timeline_opened', 'Timeline opened')); },
+              h('button', { type: 'button', 'aria-expanded': gpTimeline, onClick: function() { setGpTimeline(!gpTimeline); announce(gpTimeline ? __alloT('stem.printingpress.sr_timeline_closed', 'Timeline closed') : __alloT('stem.printingpress.sr_timeline_opened', 'Timeline opened')); },
                 style: btn({ padding: '7px 12px', fontSize: 12, marginLeft: 'auto', background: gpTimeline ? T.accent : T.cardAlt, color: gpTimeline ? T.ink : T.text, borderColor: gpTimeline ? T.accent : T.border }) },
                 gpTimeline ? __alloT('stem.printingpress.close_timeline', '× Close timeline') : __alloT('stem.printingpress.global_timeline', '📅 Global timeline'))
             )
@@ -14209,7 +14223,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               processStages.map(function(s, i) {
                 var sel = (i === pmStage);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setPmStage(i); announce(__alloFill(__alloT('stem.printingpress.sr_stage', 'Stage {value1}: {value2}'), { value1: (i+1), value2: s.name })); },
                   style: btn({ padding: '8px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   (i + 1) + '. ' + s.emoji + ' ' + s.name);
@@ -14228,12 +14242,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             ),
             // Stage navigation
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap' } },
-              h('button', {
+              h('button', { type: 'button',
                 disabled: pmStage <= 0,
                 onClick: function() { setPmStage(Math.max(0, pmStage - 1)); },
                 style: btn({ padding: '10px 18px', fontSize: 13, opacity: pmStage <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous_stage', '← Previous stage')),
               h('div', { style: { fontSize: 11, color: T.dim, alignSelf: 'center' } }, (pmStage + 1) + ' / ' + processStages.length),
-              h('button', {
+              h('button', { type: 'button',
                 disabled: pmStage >= processStages.length - 1,
                 onClick: function() { setPmStage(Math.min(processStages.length - 1, pmStage + 1)); },
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13, opacity: pmStage >= processStages.length - 1 ? 0.4 : 1 }) },
@@ -14262,7 +14276,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 Object.keys(ragGrades).map(function(k) {
                   var g = ragGrades[k];
                   var sel = (k === pmRagQuality);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setPmRagQuality(k); announce(g.name); },
                     style: btn({ padding: '7px 11px', fontSize: 12,
                       background: sel ? T.accent : T.card, color: sel ? T.ink : T.text,
@@ -14278,7 +14292,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 Object.keys(sheetSizes).map(function(k) {
                   var s = sheetSizes[k];
                   var sel = (k === pmSheetSize);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setPmSheetSize(k); announce(s.name); },
                     style: btn({ padding: '7px 11px', fontSize: 12,
                       background: sel ? T.accent : T.card, color: sel ? T.ink : T.text,
@@ -14389,7 +14403,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (pmSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPmSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -14548,7 +14562,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 Object.keys(folds).map(function(k) {
                   var f = folds[k];
                   var sel = (k === bbFold);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setBbFold(k); announce(f.name); },
                     style: btn({ padding: '8px 12px', fontSize: 12,
                       background: sel ? T.accent : T.card,
@@ -14667,7 +14681,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 Object.keys(bindings).map(function(k) {
                   var b = bindings[k];
                   var sel = (k === bbBinding);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setBbBinding(k); announce(b.name); },
                     style: btn({ padding: '8px 12px', fontSize: 12,
                       background: sel ? T.accent : T.card,
@@ -14753,7 +14767,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 Object.keys(folds).map(function(k) {
                   var sel = (k === bbFold);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setBbFold(k); },
                     style: btn({ padding: '6px 10px', fontSize: 11,
                       background: sel ? T.accent : T.card,
@@ -14768,7 +14782,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                 Object.keys(bindings).map(function(k) {
                   var sel = (k === bbBinding);
-                  return h('button', { 'aria-pressed': sel, key: k,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: k,
                     onClick: function() { setBbBinding(k); },
                     style: btn({ padding: '6px 10px', fontSize: 11,
                       background: sel ? T.accent : T.card,
@@ -14808,7 +14822,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (bbSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setBbSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -15130,17 +15144,17 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             sectionHeader('⚖️', __alloFill(__alloT('stem.printingpress.scenario_value1_of_value2', 'Scenario {value1} of {value2}'), { value1: (cScenario + 1), value2: printerScenarios.length })),
             // Scenario navigation
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-              h('button', {
+              h('button', { type: 'button',
                 disabled: cScenario <= 0,
                 onClick: function() { setCScenario(Math.max(0, cScenario - 1)); setCScChoice(null); },
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous', '← Previous')),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 printerScenarios.map(function(_, i) {
-                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_scenario', 'Go to scenario {value1}'), { value1: (i + 1) }), 'aria-current': (i === cScenario) ? 'true' : undefined, onClick: function() { setCScenario(i); setCScChoice(null); }, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCScenario(i); setCScChoice(null); } },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_scenario', 'Go to scenario {value1}'), { value1: (i + 1) }), 'aria-current': (i === cScenario) ? 'true' : undefined, onClick: function() { setCScenario(i); setCScChoice(null); }, onKeyDown: function(e) { if (_ppIgnoreKey(e)) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCScenario(i); setCScChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 28, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === cScenario) ? T.accent : T.cardAlt, color: (i === cScenario) ? T.ink : T.text, fontWeight: 700 } }, i + 1);
                 })
               ),
-              h('button', {
+              h('button', { type: 'button',
                 disabled: cScenario >= printerScenarios.length - 1,
                 onClick: function() { setCScenario(Math.min(printerScenarios.length - 1, cScenario + 1)); setCScChoice(null); },
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: cScenario >= printerScenarios.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.next', 'Next →'))
@@ -15154,7 +15168,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             // Choices
             !cScChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               curScenario.choices.map(function(c, i) {
-                return h('button', { key: c.id,
+                return h('button', { type: 'button', key: c.id,
                   onClick: function() { setCScChoice(c.id); announce(__alloFill(__alloT('stem.printingpress.sr_selected', 'Selected: {value1}'), { value1: c.label })); },
                   style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
@@ -15170,7 +15184,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { background: 'rgba(127,176,105,0.08)', border: '1px solid ' + T.ok, borderRadius: 10, padding: 12, marginBottom: 14 } },
                 h('div', { style: { fontSize: 11, color: T.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, __alloT('stem.printingpress.what_actually_happened_in_history', '📖 What actually happened in history')),
                 h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.65 } }, curScenario.historical)),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setCScChoice(null); },
                 style: btn({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.try_a_different_choice', '↺ Try a different choice'))
             )
@@ -15186,7 +15200,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             cGuessChoice == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               h('div', { style: { fontSize: 13, color: T.muted, fontWeight: 700, marginBottom: 4 } }, __alloT('stem.printingpress.when_where_was_this_banned', 'When/where was this banned?')),
               curGuess.options.map(function(opt, i) {
-                return h('button', { key: i,
+                return h('button', { type: 'button', key: i,
                   onClick: function() {
                     ppFocusNext('banned-feedback');
                     setCGuessChoice(i);
@@ -15209,12 +15223,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   curGuess.options[curGuess.correct].era),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, curGuess.explain)),
               h('div', { style: { display: 'flex', gap: 8 } },
-                cGuess < bannedGuesses.length - 1 && h('button', {
+                cGuess < bannedGuesses.length - 1 && h('button', { type: 'button',
                   onClick: function() { ppFocusNext('banned-round'); setCGuess(cGuess + 1); setCGuessChoice(null); },
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.next_book', 'Next book →')),
                 cGuess >= bannedGuesses.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
                   __alloFill(__alloT('stem.printingpress.game_final_score', '🎯 Complete! Final score: {score}/{total}'), { score: cGuessScore, total: bannedGuesses.length })),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { ppFocusNext('banned-round'); setCGuess(0); setCGuessChoice(null); setCGuessScore(0); },
                   style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.start_over', '↺ Start over'))
               )
@@ -15263,7 +15277,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (cSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -15502,7 +15516,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               firstPapers.map(function(p, i) {
                 var sel = (i === fnPaper);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setFnPaper(i); announce(p.short); },
                   style: btn({ padding: '8px 12px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   p.year + ' · ' + p.short);
@@ -15535,16 +15549,16 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             dropCapPara(__alloT('stem.printingpress.editorial_judgment_is_the_heart_of_jou', 'Editorial judgment is the heart of journalism. The editor decides what runs, how prominently, with what headline. These decisions shape what readers know — and how. Here are 5 historical scenarios from across the news era. You make the call. See what history did.')),
             // Editor scenario picker
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-              h('button', { disabled: fnEditor <= 0,
+              h('button', { type: 'button', disabled: fnEditor <= 0,
                 onClick: function() { setFnEditor(Math.max(0, fnEditor - 1)); setFnEditorChoice(null); },
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous_era', '← Previous era')),
               h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } },
                 editorScenarios.map(function(_, i) {
-                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_era', 'Go to era {value1}'), { value1: (i + 1) }), 'aria-current': (i === fnEditor) ? 'true' : undefined, onClick: function() { setFnEditor(i); setFnEditorChoice(null); }, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFnEditor(i); setFnEditorChoice(null); } },
+                  return h('span', { key: i, role: 'button', tabIndex: 0, 'aria-label': __alloFill(__alloT('stem.printingpress.a11y_go_to_era', 'Go to era {value1}'), { value1: (i + 1) }), 'aria-current': (i === fnEditor) ? 'true' : undefined, onClick: function() { setFnEditor(i); setFnEditorChoice(null); }, onKeyDown: function(e) { if (_ppIgnoreKey(e)) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFnEditor(i); setFnEditorChoice(null); } },
                     style: { cursor: 'pointer', display: 'inline-block', width: 36, height: 22, lineHeight: '22px', textAlign: 'center', borderRadius: 4, margin: '0 2px', background: (i === fnEditor) ? T.accent : T.cardAlt, color: (i === fnEditor) ? T.ink : T.text, fontWeight: 700, fontSize: 11 } }, editorScenarios[i].year);
                 })
               ),
-              h('button', { disabled: fnEditor >= editorScenarios.length - 1,
+              h('button', { type: 'button', disabled: fnEditor >= editorScenarios.length - 1,
                 onClick: function() { setFnEditor(Math.min(editorScenarios.length - 1, fnEditor + 1)); setFnEditorChoice(null); },
                 style: btn({ padding: '6px 12px', fontSize: 12, opacity: fnEditor >= editorScenarios.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.next_era', 'Next era →'))
             ),
@@ -15557,7 +15571,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             // Choices
             !fnEditorChoice && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               es.choices.map(function(c, i) {
-                return h('button', { key: c.id,
+                return h('button', { type: 'button', key: c.id,
                   onClick: function() { setFnEditorChoice(c.id); announce(__alloFill(__alloT('stem.printingpress.sr_choice', 'Choice: {value1}'), { value1: c.label })); },
                   style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'left' }) },
                   h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
@@ -15575,7 +15589,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 10, padding: 14, marginBottom: 14 } },
                 h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.printingpress.what_history_actually_did', '📜 What history actually did')),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, es.explain)),
-              h('button', { onClick: function() { setFnEditorChoice(null); },
+              h('button', { type: 'button', onClick: function() { setFnEditorChoice(null); },
                 style: btn({ padding: '8px 14px', fontSize: 12 }) }, __alloT('stem.printingpress.try_a_different_choice_2', '↺ Try a different choice'))
             )
           );
@@ -15643,7 +15657,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (fnSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setFnSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -16017,7 +16031,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   h('div', { style: { fontSize: 11, color: T.accentHi, marginBottom: 10 } },
                     __alloT('stem.printingpress.starting_skills', 'Starting skills: '),
                     [['comp', __alloT('stem.printingpress.composition_2', 'Composition')], ['press', __alloT('stem.printingpress.aj_stat_press', 'Press')], ['biz', __alloT('stem.printingpress.business', 'Business')]].map(function(s) { return s[1] + ' ' + m.startStats[s[0]]; }).join(', ')),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { startJourney(m.id); },
                     style: btnPrimary({ padding: '10px 16px', fontSize: 13, marginTop: 'auto' }) }, __alloFill(__alloT('stem.printingpress.apprentice_to_value1', 'Apprentice to {value1} →'), { value1: m.name.split(' ')[0] })));
               })
@@ -16072,7 +16086,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.65, fontFamily: 'Georgia, serif' } }, currentDec.prompt),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 currentDec.choices.map(function(c, ci) {
-                  return h('button', { key: c.id,
+                  return h('button', { type: 'button', key: c.id,
                     onClick: function() { applyChoice(ajYear, currentDec.id, c.id); },
                     style: btn({ padding: '10px 14px', fontSize: 13, textAlign: 'left' }) },
                     h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + ci) + '. '),
@@ -16085,7 +16099,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { fontSize: 11, color: T.ok, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, __alloT('stem.printingpress.outcome', 'Outcome')),
                 h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.65 } }, ajPending.outcome)),
               h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { setAjPending(null); },
                   style: btn({ padding: '8px 14px', fontSize: 13 }) },
                   ((function() {
@@ -16098,10 +16112,10 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             yearComplete && !ajPending && h('div', { style: { background: T.card, border: '2px solid ' + T.accent, borderRadius: 12, padding: 18, marginBottom: 14, textAlign: 'center' } },
               h('div', { style: { fontSize: 14, color: T.accentHi, fontFamily: 'Georgia, serif', marginBottom: 4 } }, __alloFill(__alloT('stem.printingpress.year_value1_complete', 'Year {value1} complete'), { value1: ajYear })),
               h('p', { style: { margin: '0 0 12px', fontSize: 13, color: T.muted } }, __alloT('stem.printingpress.decisions_made_year_ends_time_advances', 'Decisions made. Year ends. Time advances.')),
-              ajYear < 7 ? h('button', {
+              ajYear < 7 ? h('button', { type: 'button',
                 onClick: advanceYear,
                 style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, __alloFill(__alloT('stem.printingpress.begin_year_value1', 'Begin Year {value1} →'), { value1: (ajYear + 1) }))
-              : h('button', {
+              : h('button', { type: 'button',
                 onClick: function() { setAjYear(8); },
                 style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, __alloT('stem.printingpress.see_your_career_outcome', 'See your career outcome →'))
             )
@@ -16127,7 +16141,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 h('div', { style: { fontSize: 12, color: T.dim, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 } }, (Object.keys(ajChoices).some(function(k) { return ajChoices[k] === 'leave'; }) ? __alloT('stem.printingpress.your_first_master', 'Your first master') : __alloT('stem.printingpress.your_master_throughout', 'Your master throughout'))),
                 h('div', { style: { fontSize: 14, color: T.text, fontFamily: 'Georgia, serif' } }, masterObj2.emoji + ' ' + masterObj2.name + ' (' + masterObj2.city + ')' + (Object.keys(ajChoices).some(function(k) { return ajChoices[k] === 'leave'; }) ? ' · ' + __alloT('stem.printingpress.you_left_for_a_rival', 'you left for a rival shop in Year 3') : ''))),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: resetJourney,
                   style: btnPrimary({ padding: '12px 24px', fontSize: 14 }) }, __alloT('stem.printingpress.start_a_new_journey_with_a_different_m', '↺ Start a new journey with a different master')))
             ) : h('div', { style: { padding: 20, textAlign: 'center', color: T.muted } }, __alloT('stem.printingpress.you_did_not_complete_the_final_decisio', 'You did not complete the final decision in Year 7. Use the back button to return + finish.'))
@@ -16146,7 +16160,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               __alloT('stem.printingpress.a_typical_printer_s_apprenticeship_las', 'A typical printer\'s apprenticeship lasted 7 years (varied by city + guild). Apprentices started 12-16, lived with the master, received no wages but bed + board + training. Master could whip, fine, or extend contracts for disobedience. Marriage forbidden until journeyman status. After 7 years apprentices presented their journeyman piece + were tested by the guild. Successful apprentices became journeymen — wage-earning craftsmen who could travel + work — and eventually masters with their own shops.'))
           ),
           ajStarted && ajYear > 0 && ajYear <= 7 && h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-            h('button', { onClick: resetJourney,
+            h('button', { type: 'button', onClick: resetJourney,
               style: btn({ padding: '6px 12px', fontSize: 11 }) }, __alloT('stem.printingpress.start_over_will_lose_progress', '↺ Start over (will lose progress)'))
           ),
           sourcesBlock([
@@ -16553,7 +16567,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   { id: 'wedge', label: __alloT('stem.printingpress.wedge_angled', 'Wedge (angled)') }
                 ].map(function(s) {
                   var sel = (s.id === tfSerif);
-                  return h('button', { 'aria-pressed': sel, key: s.id,
+                  return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                     onClick: function() { setTfSerif(s.id); announce(s.label); },
                     style: btn({ padding: '7px 11px', fontSize: 11,
                       background: sel ? T.accent : T.card,
@@ -16573,7 +16587,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   { name: __alloT('stem.printingpress.futura_like_1927', 'Futura-like (1927)'), xh: 50, w: 50, c: 10, s: 'none', width: 50 },
                   { name: __alloT('stem.printingpress.helvetica_like_1957', 'Helvetica-like (1957)'), xh: 60, w: 60, c: 35, s: 'none', width: 50 }
                 ].map(function(p) {
-                  return h('button', { key: p.name,
+                  return h('button', { type: 'button', key: p.name,
                     onClick: function() {
                       setTfXHeight(p.xh); setTfWeight(p.w); setTfContrast(p.c);
                       setTfSerif(p.s); setTfWidth(p.width);
@@ -16590,7 +16604,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               typefaces.map(function(t, i) {
                 var sel = (i === tfTour);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setTfTour(i); announce(t.name.split(' ')[0]); },
                   style: btn({ padding: '6px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   t.name.split(' (')[0]);
@@ -16622,7 +16636,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             ),
             tfGameChoice == null && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
               gameQ.options.map(function(opt, i) {
-                return h('button', { key: i,
+                return h('button', { type: 'button', key: i,
                   onClick: function() {
                     ppFocusNext('typeface-feedback');
                     setTfGameChoice(i);
@@ -16645,12 +16659,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                   gameQ.options[gameQ.correct]),
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, gameQ.explain)),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                tfGame < gameTypefaces.length - 1 && h('button', {
+                tfGame < gameTypefaces.length - 1 && h('button', { type: 'button',
                   onClick: function() { ppFocusNext('typeface-round'); setTfGame(tfGame + 1); setTfGameChoice(null); },
                   style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.next_2', 'Next →')),
                 tfGame >= gameTypefaces.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
                   __alloFill(__alloT('stem.printingpress.game_final_score', '🎯 Complete! Final score: {score}/{total}'), { score: tfGameScore, total: gameTypefaces.length })),
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { ppFocusNext('typeface-round'); setTfGame(0); setTfGameChoice(null); setTfGameScore(0); },
                   style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.start_over_2', '↺ Start over'))
               )
@@ -16684,7 +16698,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (tfSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setTfSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -16846,7 +16860,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               mainePapers.map(function(p, i) {
                 var sel = (i === mpPaper);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setMpPaper(i); announce(p.name); },
                   style: btn({ padding: '7px 11px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   p.founded + ' · ' + p.city.split(' (')[0]);
@@ -16927,7 +16941,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (mpSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setMpSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17065,7 +17079,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (muSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setMuSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17191,7 +17205,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (maSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setMaSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17336,7 +17350,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (cbSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCbSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17472,7 +17486,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (spSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setSpSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17604,7 +17618,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (ltSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setLtSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -17740,7 +17754,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             presses.map(function(pp, i) {
               var sel = (i === pvIdx);
-              return h('button', { 'aria-pressed': sel, key: i,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                 onClick: function() { setPvIdx(i); announce(pp.name); },
                 style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 pp.year + ' · ' + pp.name.split(' ')[0]);
@@ -17774,11 +17788,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           ),
           // Timeline navigation
           h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-            h('button', { disabled: pvIdx <= 0,
+            h('button', { type: 'button', disabled: pvIdx <= 0,
               onClick: function() { setPvIdx(Math.max(0, pvIdx - 1)); },
               style: btn({ padding: '8px 14px', fontSize: 13, opacity: pvIdx <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.older_press', '← Older press')),
             h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (pvIdx + 1) + ' / ' + presses.length),
-            h('button', { disabled: pvIdx >= presses.length - 1,
+            h('button', { type: 'button', disabled: pvIdx >= presses.length - 1,
               onClick: function() { setPvIdx(Math.min(presses.length - 1, pvIdx + 1)); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: pvIdx >= presses.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.newer_press', 'Newer press →'))
           ),
@@ -17917,7 +17931,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (rfSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setRfSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18052,7 +18066,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (cpSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCpSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18144,7 +18158,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             books.map(function(bb, i) {
               var sel = (i === bcIdx);
-              return h('button', { 'aria-pressed': sel, key: i,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                 onClick: function() { setBcIdx(i); announce(bb.title); },
                 style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 bb.emoji + ' ' + bb.title.split(' (')[0]);
@@ -18158,11 +18172,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.7, fontFamily: 'Georgia, serif', textAlign: 'left' } }, b.blurb)
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-            h('button', { disabled: bcIdx <= 0,
+            h('button', { type: 'button', disabled: bcIdx <= 0,
               onClick: function() { setBcIdx(Math.max(0, bcIdx - 1)); },
               style: btn({ padding: '8px 14px', fontSize: 13, opacity: bcIdx <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous_2', '← Previous')),
             h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (bcIdx + 1) + ' / ' + books.length),
-            h('button', { disabled: bcIdx >= books.length - 1,
+            h('button', { type: 'button', disabled: bcIdx >= books.length - 1,
               onClick: function() { setBcIdx(Math.min(books.length - 1, bcIdx + 1)); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: bcIdx >= books.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.next_3', 'Next →'))
           ),
@@ -18300,7 +18314,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (prSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPrSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18452,7 +18466,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (boSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setBoSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18587,7 +18601,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (imSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setImSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18727,7 +18741,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (trSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setTrSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -18865,7 +18879,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (ppSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPpSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19005,7 +19019,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (coSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCoSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19145,7 +19159,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (fpSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setFpSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19288,7 +19302,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             shops.map(function(sh, i) {
               var sel = (i === fsIdx);
-              return h('button', { 'aria-pressed': sel, key: i,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                 onClick: function() { setFsIdx(i); announce(sh.name); },
                 style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 sh.founded + ' · ' + sh.name.split(' ')[0]);
@@ -19312,11 +19326,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
               h('span', { style: { color: T.muted, fontSize: 13 } }, s.visit))
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-            h('button', { disabled: fsIdx <= 0,
+            h('button', { type: 'button', disabled: fsIdx <= 0,
               onClick: function() { setFsIdx(Math.max(0, fsIdx - 1)); },
               style: btn({ padding: '8px 14px', fontSize: 13, opacity: fsIdx <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.earlier_shop', '← Earlier shop')),
             h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (fsIdx + 1) + ' / ' + shops.length),
-            h('button', { disabled: fsIdx >= shops.length - 1,
+            h('button', { type: 'button', disabled: fsIdx >= shops.length - 1,
               onClick: function() { setFsIdx(Math.min(shops.length - 1, fsIdx + 1)); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: fsIdx >= shops.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.later_shop', 'Later shop →'))
           ),
@@ -19461,7 +19475,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(sx) {
               var sel = (prSect === sx.id);
-              return h('button', { 'aria-pressed': sel, key: sx.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: sx.id,
                 onClick: function() { setPrSect(sx.id); announce(sx.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 sx.icon + ' ' + sx.label);
@@ -19595,7 +19609,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (peSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPeSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19721,7 +19735,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (pmSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPmSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19871,7 +19885,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (lhSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setLhSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -19985,7 +19999,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               magazines.map(function(mm, i) {
                 var sel = (i === mgIdx);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setMgIdx(i); announce(mm.name); },
                   style: btn({ padding: '7px 11px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   mm.icon + ' ' + mm.name);
@@ -20028,7 +20042,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (mgSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setMgSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20159,7 +20173,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (encSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setEncSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20280,7 +20294,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (diSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setDiSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20416,7 +20430,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (ckSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCkSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20533,7 +20547,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (shSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setShSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20649,7 +20663,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (psSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPsSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20756,7 +20770,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
               strips.map(function(sx, i) {
                 var sel = (i === csStripIdx);
-                return h('button', { 'aria-pressed': sel, key: i,
+                return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                   onClick: function() { setCsStripIdx(i); announce(sx.name); },
                   style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                   sx.emoji + ' ' + sx.name.split(' (')[0]);
@@ -20797,7 +20811,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (csSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setCsSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -20913,7 +20927,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (pwSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPwSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -21013,7 +21027,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (fbSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setFbSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -21086,7 +21100,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             authors.map(function(a, i) {
               var sel = (i === maIdx);
-              return h('button', { 'aria-pressed': sel, key: i,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: i,
                 onClick: function() { setMaIdx(i); announce(a.name); },
                 style: btn({ padding: '7px 10px', fontSize: 11, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 a.emoji + ' ' + a.name.split(' (')[0]);
@@ -21099,11 +21113,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
             h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.7 } }, au.blurb)
           ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-            h('button', { disabled: maIdx <= 0,
+            h('button', { type: 'button', disabled: maIdx <= 0,
               onClick: function() { setMaIdx(Math.max(0, maIdx - 1)); },
               style: btn({ padding: '8px 14px', fontSize: 13, opacity: maIdx <= 0 ? 0.4 : 1 }) }, __alloT('stem.printingpress.previous_3', '← Previous')),
             h('div', { style: { fontSize: 12, color: T.muted, alignSelf: 'center' } }, (maIdx + 1) + ' / ' + authors.length),
-            h('button', { disabled: maIdx >= authors.length - 1,
+            h('button', { type: 'button', disabled: maIdx >= authors.length - 1,
               onClick: function() { setMaIdx(Math.min(authors.length - 1, maIdx + 1)); },
               style: btnPrimary({ padding: '8px 14px', fontSize: 13, opacity: maIdx >= authors.length - 1 ? 0.4 : 1 }) }, __alloT('stem.printingpress.next_4', 'Next →'))
           ),
@@ -21202,7 +21216,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (ptSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPtSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -21316,7 +21330,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (phSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPhSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -21422,11 +21436,11 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           ),
           fiPicked == null && faceMissing && h('div', { role: 'note', style: { background: T.cardAlt, border: '1px dashed ' + T.warn, borderRadius: 10, padding: 14, marginBottom: 14, fontSize: 13, color: T.text, lineHeight: 1.6 } },
             h('p', { style: { margin: '0 0 10px' } }, __alloT('stem.printingpress.fontid_face_missing', 'This device does not have the typeface this round uses, so the sample above is drawn in a stand-in font and cannot be judged fairly. Skip it: skipped rounds do not count toward your score.')),
-            h('button', { onClick: function() { ppFocusNext('fontid-feedback'); setFiPicked(-1); setFiSkipped(fiSkipped + 1); announce(__alloT('stem.printingpress.sr_round_skipped', 'Round skipped. It does not count.')); },
+            h('button', { type: 'button', onClick: function() { ppFocusNext('fontid-feedback'); setFiPicked(-1); setFiSkipped(fiSkipped + 1); announce(__alloT('stem.printingpress.sr_round_skipped', 'Round skipped. It does not count.')); },
               style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.fontid_skip_round', 'Skip this round'))),
           fiPicked == null && !faceMissing && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
             r.options.map(function(opt, i) {
-              return h('button', { key: i,
+              return h('button', { type: 'button', key: i,
                 onClick: function() { ppFocusNext('fontid-feedback'); setFiPicked(i); if (i === r.correct) { setFiScore(fiScore + 1); announce(__alloT('stem.printingpress.sr_correct', 'Correct.')); } else announce(__alloT('stem.printingpress.sr_not_quite', 'Not quite.')); },
                 style: btn({ padding: '12px 14px', fontSize: 14, textAlign: 'left' }) },
                 h('strong', { style: { color: T.accentHi } }, String.fromCharCode(65 + i) + '. '),
@@ -21444,12 +21458,12 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 r.options[r.correct]),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, r.explain)),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              fiRound < rounds.length - 1 && h('button', {
+              fiRound < rounds.length - 1 && h('button', { type: 'button',
                 onClick: function() { ppFocusNext('fontid-round'); setFiRound(fiRound + 1); setFiPicked(null); },
                 style: btnPrimary({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.next_round', 'Next round →')),
               fiRound >= rounds.length - 1 && h('div', { style: { fontSize: 14, fontWeight: 700, color: T.accent } },
                 __alloFill(__alloT('stem.printingpress.game_final_score', '🎯 Complete! Final score: {score}/{total}'), { score: fiScore, total: scored })),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { ppFocusNext('fontid-round'); setFiRound(0); setFiPicked(null); setFiScore(0); setFiSkipped(0); },
                 style: btn({ padding: '10px 16px', fontSize: 13 }) }, __alloT('stem.printingpress.start_over_3', '↺ Start over'))
             )
@@ -21553,7 +21567,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
             sections.map(function(s) {
               var sel = (ppoSect === s.id);
-              return h('button', { 'aria-pressed': sel, key: s.id,
+              return h('button', { type: 'button', 'aria-pressed': sel, key: s.id,
                 onClick: function() { setPpoSect(s.id); announce(s.label); },
                 style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) },
                 s.icon + ' ' + s.label);
@@ -21647,7 +21661,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_sports_2', '⚾ Print + Sports')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printSports', [
             { q: __alloT('stem.printingpress.high_grade_honus_wagner_t206_baseball', 'High-grade Honus Wagner T206 baseball card sold for?'), opts: ['$10K (2022)', '$100K (2022)', '$1M (2022)', '$7M+ (2022)'], ans: 3, explain: __alloT('stem.printingpress.sold_7_25m_in_2022', 'Sold $7.25M in 2022.') }
@@ -21698,7 +21712,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_architecture_2', '🏛 Print + Architecture')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printArch', [
             { q: __alloT('stem.printingpress.why_are_architectural_drawings_called', 'Why are architectural drawings called "blueprints"?'), opts: [__alloT('stem.printingpress.the_drawings_were_routinely_inked_in_b', 'The drawings were routinely inked in blue, the one pigment that survived copying'), __alloT('stem.printingpress.herschel_s_1842_cyanotype_process_whit', 'Herschel\'s 1842 cyanotype process — white lines on blue background'), __alloT('stem.printingpress.architects_simply_preferred_blue_paper', 'Architects simply preferred blue paper, and the habit hardened into a trade convention'), __alloT('stem.printingpress.a_trademark_of_the_first_firm_to_sell', 'A trademark of the first firm to sell reproduction equipment to architects')], ans: 1, explain: __alloT('stem.printingpress.john_herschel_s_1842_cyanotype_process', 'John Herschel\'s 1842 cyanotype process produced white lines on blue. Adopted for architectural reproduction late 19th c. Process largely obsolete but name persists.') }
@@ -21758,7 +21772,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_law_2', '⚖ Print + Law')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (plSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (plSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printLaw', [
             { q: __alloT('stem.printingpress.what_is_the_standard_us_legal_dictiona', 'What is the standard US legal dictionary?'), opts: [__alloT('stem.printingpress.webster_s_legal_dictionary_1898', 'Webster\'s Legal Dictionary (1898+)'), __alloT('stem.printingpress.black_s_law_dictionary_1891', "Black's Law Dictionary (1891+)"), __alloT('stem.printingpress.oxford_legal_dictionary_1980', 'Oxford Legal Dictionary (1980+)'), __alloT('stem.printingpress.there_is_no_single_standard', 'There is no single standard')], ans: 1, explain: __alloT('stem.printingpress.black_s_law_dictionary_1891_now_12th_e', "Black's Law Dictionary (1891+), now 12th edition. Premier US legal dictionary.") }
@@ -21822,7 +21836,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.romance_novels_2', '💖 Romance Novels')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (rSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setRSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (rSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setRSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreRomance', [
             { q: __alloT('stem.printingpress.approximately_what_fraction_of_us_fict', 'Approximately what fraction of US fiction sales is romance?'), opts: ['~5-10%', '~15-20%', '~25-30%', '~50-55%'], ans: 2, explain: __alloT('stem.printingpress.romance_is_25_30_of_all_us_fiction_sal', 'Romance is ~25-30% of all US fiction sales — largest fiction category by units.') }
@@ -21890,7 +21904,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.sci_fi_fantasy_2', '🚀 Sci-Fi + Fantasy')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (sfSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setSfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (sfSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setSfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreSciFi', [
             { q: __alloT('stem.printingpress.first_author_to_win_hugo_best_novel_3_2', 'First author to win Hugo Best Novel 3 years in a row?'), opts: [__alloT('stem.printingpress.isaac_asimov_1963_65_foundation', 'Isaac Asimov (1963-65 Foundation)'), __alloT('stem.printingpress.n_k_jemisin_2016_18_broken_earth', 'N.K. Jemisin (2016-18 Broken Earth)'), __alloT('stem.printingpress.robert_heinlein_1960_62_stranger', 'Robert Heinlein (1960-62 Stranger)'), __alloT('stem.printingpress.ursula_k_le_guin_1970_72_earthsea', 'Ursula K. Le Guin (1970-72 Earthsea)')], ans: 1, explain: __alloT('stem.printingpress.n_k_jemisin_won_the_hugo_award_for_bes', 'N.K. Jemisin won the Hugo Award for Best Novel in 2016, 2017, + 2018 for the Broken Earth trilogy. First author ever to achieve this.') }
@@ -21948,7 +21962,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.mystery_crime_fiction_2', '🔍 Mystery + Crime Fiction')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (mySect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setMySect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (mySect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setMySect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreMystery', [
             { q: __alloT('stem.printingpress.best_selling_fiction_author_of_all_tim', 'Best-selling fiction author of all time?'), opts: [__alloT('stem.printingpress.danielle_steel_800_million_copies', 'Danielle Steel (~800 million copies)'), __alloT('stem.printingpress.agatha_christie_2_billion_copies', 'Agatha Christie (~2 billion copies)'), __alloT('stem.printingpress.stephen_king_400_million_copies', 'Stephen King (~400 million copies)'), __alloT('stem.printingpress.j_k_rowling_600_million_copies', 'J.K. Rowling (~600 million copies)')], ans: 1, explain: __alloT('stem.printingpress.agatha_christie_has_sold_approximately', 'Agatha Christie has sold approximately 2 billion copies. And Then There Were None (1939) is best-selling mystery novel ever.') }
@@ -22011,7 +22025,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.manga_deep_dive_2', '🎌 Manga Deep Dive')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (mdSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setMdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (mdSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setMdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('mangaDeep', [
             { q: __alloT('stem.printingpress.best_selling_comic_series_in_any_count', 'Best-selling comic series in any country/genre?'), opts: [__alloT('stem.printingpress.dragon_ball_260m', 'Dragon Ball (~260M)'), __alloT('stem.printingpress.one_piece_525m', 'One Piece (~525M)'), __alloT('stem.printingpress.naruto_250m', 'Naruto (~250M)'), __alloT('stem.printingpress.akira_35m', 'Akira (~35M)')], ans: 1, explain: __alloT('stem.printingpress.one_piece_by_eiichiro_oda_has_sold_525', 'One Piece by Eiichiro Oda has sold ~525M copies since 1997.') }
@@ -22065,7 +22079,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.photography_books_2', '📸 Photography Books')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('photoBooks', [
             { q: __alloT('stem.printingpress.most_important_post_wwii_photo_book', 'Most important post-WWII photo book?'), opts: [__alloT('stem.printingpress.the_family_of_man_steichen_1955', 'The Family of Man (Steichen, 1955)'), __alloT('stem.printingpress.the_americans_frank_1958', 'The Americans (Frank, 1958)'), __alloT('stem.printingpress.diane_arbus_a_monograph_1972', 'Diane Arbus: A Monograph (1972)'), __alloT('stem.printingpress.the_decisive_moment_cartier_bresson_19', 'The Decisive Moment (Cartier-Bresson, 1952)')], ans: 1, explain: __alloT('stem.printingpress.robert_frank_s_the_americans_1958_is_w', 'Robert Frank\'s The Americans (1958) is widely cited as the most important post-WWII photo book.') }
@@ -22124,7 +22138,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.zines_fanzines_2', '✂ Zines + Fanzines')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (fzSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setFzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (fzSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setFzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('fanzines', [
             { q: __alloT('stem.printingpress.when_did_first_sci_fi_fanzines_appear', 'When did first sci-fi fanzines appear?'), opts: [__alloT('stem.printingpress.1900s_the_scientist', '1900s (The Scientist)'), __alloT('stem.printingpress.1930_the_comet', '1930 (The Comet)'), __alloT('stem.printingpress.1950s_science_fantasy', '1950s (Science Fantasy)'), __alloT('stem.printingpress.1970s_locus', '1970s (Locus)')], ans: 1, explain: __alloT('stem.printingpress.the_comet_1930_is_often_cited_as_the_f', 'The Comet (1930) is often cited as the first sci-fi fanzine. Chicago.') }
@@ -22177,7 +22191,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.famous_forgeries_fakes_2', '🎭 Famous Forgeries + Fakes')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (foSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setFoSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (foSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setFoSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('forgeries', [
             { q: __alloT('stem.printingpress.how_was_the_vinland_map_finally_proven', 'How was the Vinland Map finally proven fake (2021)?'),
@@ -22236,7 +22250,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.manuscripts_calligraphy_2', '🪶 Manuscripts + Calligraphy')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (msSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setMsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (msSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setMsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('manuscripts', [
             { q: __alloT('stem.printingpress.where_is_the_book_of_kells_held_today', 'Where is the Book of Kells held today?'),
@@ -22291,7 +22305,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.bookplates_marginalia_2', '🏷 Bookplates + Marginalia')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (bpSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setBpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (bpSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setBpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('bookplates', [
             { q: __alloT('stem.printingpress.what_does_ex_libris_mean', 'What does "ex libris" mean?'),
@@ -22352,7 +22366,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_used_book_trade_2', '🏚 The Used Book Trade')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (ubSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setUbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (ubSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setUbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('usedBooks', [
             { q: __alloT('stem.printingpress.what_is_the_world_s_largest_independen', 'What is the world\'s largest independent bookstore by inventory?'),
@@ -22407,7 +22421,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_library_card_catalog_2', '🗂 The Library Card Catalog')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (ccSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setCcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (ccSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setCcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('cardCatalog', [
             { q: __alloT('stem.printingpress.who_created_the_dewey_decimal_classifi', 'Who created the Dewey Decimal Classification (1876)?'),
@@ -22461,7 +22475,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.diaries_journals_2', '✒ Diaries + Journals')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (dtSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setDtSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (dtSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setDtSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('diaryTradition', [
             { q: __alloT('stem.printingpress.how_was_samuel_pepys_s_diary_1660_1669', 'How was Samuel Pepys\'s diary (1660-1669) originally written?'),
@@ -22517,7 +22531,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.tarot_oracle_decks_2', '🔮 Tarot + Oracle Decks')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (toSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setToSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (toSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setToSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('tarotOracle', [
             { q: __alloT('stem.printingpress.who_illustrated_the_rider_waite_smith', 'Who illustrated the Rider-Waite-Smith tarot deck (1909)?'),
@@ -22574,7 +22588,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.pulp_fiction_era_2', '🕵 Pulp Fiction Era')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pfSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pfSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pulpFiction', [
             { q: __alloT('stem.printingpress.which_pulp_magazine_was_premier_for_ha', 'Which pulp magazine was premier for hardboiled detective fiction?'),
@@ -22636,7 +22650,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.pamphlets_tracts_2', '📃 Pamphlets + Tracts')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pamphlets', [
             { q: __alloT('stem.printingpress.approximately_how_many_copies_did_thom_2', 'Approximately how many copies did Thomas Paine\'s Common Sense sell?'),
@@ -22693,7 +22707,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.greeting_cards_ephemera_2', '💌 Greeting Cards + Ephemera')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (gcSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setGcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (gcSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setGcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('greetingCards', [
             { q: __alloT('stem.printingpress.who_commissioned_sold_the_first_commer', 'Who commissioned + sold the first commercial Christmas card?'),
@@ -22751,7 +22765,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_memoir_tradition_2', '📖 The Memoir Tradition')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (meSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setMeSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (meSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setMeSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('theMemoir', [
             { q: __alloT('stem.printingpress.which_work_is_often_cited_as_the_first', 'Which work is often cited as the first major Western autobiography?'),
@@ -22807,7 +22821,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_sound_2', '🎧 Print + Sound')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (psSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (psSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPsSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printSound', [
             { q: __alloT('stem.printingpress.about_how_large_is_the_us_audiobook_in', 'About how large is the US audiobook industry?'),
@@ -22861,7 +22875,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_printed_sermon_2', '✟ The Printed Sermon')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (spSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('sermonsPrinted', [
             { q: __alloT('stem.printingpress.how_many_sermons_did_charles_spurgeon', 'How many sermons did Charles Spurgeon publish?'),
@@ -22916,7 +22930,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.spelling_word_puzzles_2', '🔤 Spelling + Word Puzzles')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (swSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setSwSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (swSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setSwSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('spellingPuzzles', [
             { q: __alloT('stem.printingpress.who_created_the_first_modern_crossword', 'Who created the first modern crossword (Dec 21, 1913)?'),
@@ -22981,7 +22995,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_cinema_2', '🎬 Print + Cinema')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printCinema', [
             { q: __alloT('stem.printingpress.who_ghostwrote_the_star_wars_1976_nove', 'Who ghostwrote the Star Wars (1976) novelization?'),
@@ -23038,7 +23052,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_astronomy_2', '🔭 Print + Astronomy')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printAstronomy', [
             { q: __alloT('stem.printingpress.whose_star_catalog_was_standard_for_1', 'Whose star catalog was standard for 1,400 years?'),
@@ -23094,7 +23108,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.beauty_fashion_magazines_2', '👗 Beauty + Fashion Magazines')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (fmSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setFmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (fmSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setFmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('fashionMags', [
             { q: __alloT('stem.printingpress.when_did_anna_wintour_begin_editing_us', 'When did Anna Wintour begin editing US Vogue?'),
@@ -23152,7 +23166,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.travel_literature_2', '🌍 Travel Literature')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (tlSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setTlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (tlSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setTlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('travelLit', [
             { q: __alloT('stem.printingpress.who_is_the_most_traveled_person_of_the', 'Who is the most-traveled person of the medieval era?'),
@@ -23208,7 +23222,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_mathematics_2', '📐 Print + Mathematics')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printMath', [
             { q: __alloT('stem.printingpress.which_book_is_often_called_the_second', 'Which book is often called the second most-printed in Western history (after the Bible)?'),
@@ -23265,7 +23279,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_advertising_history_2', '📣 Print Advertising History')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (paSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printAdvert', [
             { q: __alloT('stem.printingpress.who_printed_the_first_english_language', 'Who printed the first English-language advertisement (1477)?'),
@@ -23324,7 +23338,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.webcomics_deep_dive_2', '🖥 Webcomics Deep Dive')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (wcSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setWcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (wcSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setWcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('webcomics', [
             { q: __alloT('stem.printingpress.who_created_xkcd_webcomic_2005', 'Who created xkcd webcomic (2005+)?'),
@@ -23381,7 +23395,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_picture_book_craft_2', '🎨 The Picture Book Craft')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pictureBookDeep', [
             { q: __alloT('stem.printingpress.why_are_most_picture_books_32_pages', 'Why are most picture books 32 pages?'),
@@ -23429,7 +23443,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.poetry_magazines_2', '🎭 Poetry Magazines')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pmSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('poetryMags', [
             { q: __alloT('stem.printingpress.which_magazine_first_published_t_s_eli', 'Which magazine first published T.S. Eliot\'s "The Love Song of J. Alfred Prufrock" (1915)?'),
@@ -23486,7 +23500,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.pulp_cover_art_2', '🎨 Pulp Cover Art')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pcSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPcSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pulpCovers', [
             { q: __alloT('stem.printingpress.who_painted_iconic_1960s_70s_conan_pap', 'Who painted iconic 1960s-70s Conan paperback covers + influenced subsequent fantasy art?'),
@@ -23538,7 +23552,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_radio_2', '📻 Print + Radio')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (prSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPrSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (prSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPrSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printRadio', [
             { q: __alloT('stem.printingpress.what_was_peak_circulation_of_tv_guide', 'What was peak circulation of TV Guide (1970s)?'),
@@ -23595,7 +23609,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_gardening_2', '🌱 Print + Gardening')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pgSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPgSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pgSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPgSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printGarden', [
             { q: __alloT('stem.printingpress.which_major_us_organic_seed_company_is', 'Which major US organic seed company is based in Maine?'),
@@ -23651,7 +23665,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.forensic_document_examination_2', '🔬 Forensic Document Examination')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (fdSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setFdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (fdSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setFdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('forensicDocs', [
             { q: __alloT('stem.printingpress.how_did_yale_conservators_prove_the_vi', 'How did Yale conservators prove the Vinland Map a forgery in 2021?'),
@@ -23704,7 +23718,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_library_bindery_2', '🔧 The Library Bindery')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (lbSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setLbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (lbSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setLbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('libraryBindery', [
             { q: __alloT('stem.printingpress.what_organization_sets_us_library_bind', 'What organization sets US library binding standards (1932-)?'),
@@ -23759,7 +23773,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.the_fine_press_tradition_2', '⚜ The Fine Press Tradition')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (fpSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setFpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (fpSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setFpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('finePress', [
             { q: __alloT('stem.printingpress.who_founded_the_kelmscott_press_1891_t', 'Who founded the Kelmscott Press (1891) + the modern fine-press tradition?'),
@@ -23822,7 +23836,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.cookbook_subcultures_2', '🥘 Cookbook Subcultures')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (cmSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setCmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (cmSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setCmSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('cookbooksMore', [
             { q: __alloT('stem.printingpress.approximately_how_many_copies_has_moos', 'Approximately how many copies has Moosewood Cookbook (Mollie Katzen, 1977) sold?'),
@@ -23877,7 +23891,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
         }
         return h('div', null, backBar(__alloT('stem.printingpress.print_natural_history_2', '🦅 Print + Natural History')),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
-            sections.map(function(s) { var sel = (pzSect === s.id); return h('button', { 'aria-pressed': sel, key: s.id, onClick: function() { setPzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
+            sections.map(function(s) { var sel = (pzSect === s.id); return h('button', { type: 'button', 'aria-pressed': sel, key: s.id, onClick: function() { setPzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printZoology', [
             { q: __alloT('stem.printingpress.who_invented_the_modern_field_guide_19', 'Who invented the modern field guide (1934)?'),
@@ -24229,35 +24243,35 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.printingpress.type_size_pt', 'Type size (pt)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.typeSize)),
-              h('input', { type: 'range', min: 6, max: 24, step: 1, value: iq.typeSize, onChange: function(e) { setKey('typeSize', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 6, max: 24, step: 1, value: iq.typeSize, 'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_points', '{value1} points'), { value1: iq.typeSize }), onChange: function(e) { setKey('typeSize', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.printingpress.line_length_chars', 'Line length (chars)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.lineLength)),
-              h('input', { type: 'range', min: 20, max: 120, step: 1, value: iq.lineLength, onChange: function(e) { setKey('lineLength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 20, max: 120, step: 1, value: iq.lineLength, 'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_chars_per_line', '{value1} characters per line'), { value1: iq.lineLength }), onChange: function(e) { setKey('lineLength', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.printingpress.leading_multiplier', 'Leading (multiplier)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.leading.toFixed(2))),
-              h('input', { type: 'range', min: 0.8, max: 2.5, step: 0.05, value: iq.leading, onChange: function(e) { setKey('leading', parseFloat(e.target.value)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 0.8, max: 2.5, step: 0.05, value: iq.leading, 'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_leading', '{value1} line spacing multiplier'), { value1: iq.leading.toFixed(2) }), onChange: function(e) { setKey('leading', parseFloat(e.target.value)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.printingpress.paper_contrast', 'Paper contrast')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.paperContrast)),
-              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.paperContrast, onChange: function(e) { setKey('paperContrast', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', min: 0, max: 100, step: 5, value: iq.paperContrast, 'aria-valuetext': __alloFill(__alloT('stem.printingpress.vt_paper_contrast', '{value1} percent paper contrast'), { value1: iq.paperContrast }), onChange: function(e) { setKey('paperContrast', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, sz: iq.typeSize, ln: iq.lineLength, ld: iq.leading.toFixed(2), c: iq.paperContrast, sc: totalScore.toFixed(0), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.printingpress.log_this_layout', '📋 Log this layout')),
-            h('button', { onClick: function() { setIQ({ typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, __alloT('stem.printingpress.reset_2', 'Reset')),
-            h('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, __alloT('stem.printingpress.menu_2', '← Menu'))
+            h('button', { type: 'button', onClick: function() { setIQ({ typeSize: 12, lineLength: 65, leading: 1.4, paperContrast: 80 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, __alloT('stem.printingpress.reset_2', 'Reset')),
+            h('button', { type: 'button', onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: '#d4c4a0', cursor: 'pointer' } }, __alloT('stem.printingpress.menu_2', '← Menu'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#13100c', border: '1px solid #5c4630', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, __alloFill(__alloT('stem.printingpress.value1_value2_sz_value3_ln_value4_ld_v', '{value1}  {value2} · sz{value3} ln{value4} ld{value5} c{value6} → {value7}'), { value1: e.t, value2: e.state, value3: e.sz, value4: e.ln, value5: e.ld, value6: e.c, value7: e.sc })); })
           ),
           h('label', { htmlFor: 'pp-inquiry-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.printingpress.your_hypothesis_which_slider_drops_leg', 'Your hypothesis (which slider drops legibility fastest? Why?)')),
           h('textarea', { id: 'pp-inquiry-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.printingpress.e_g_line_length_matters_most_because_s', 'e.g., line length matters most because saccades break down past ~80 chars...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#13100c', color: '#f5ecd9', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.printingpress.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #5c4630', background: '#13100c', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.printingpress.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#13100c', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.printingpress.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -24319,7 +24333,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
           root.focus();
         }, 60);
       }
-      return h('div', { ref: _appRef, tabIndex: -1, className: 'printingpress-root', onClickCapture: ppFocusWatch, onKeyUpCapture: ppFocusWatch, 'data-pp-contrast': (ctx.isContrast || ctx.theme === 'contrast') ? 'true' : undefined, style: {
+      return h('div', { ref: _appRef, tabIndex: -1, className: 'printingpress-root', onClickCapture: ppFocusWatch, onKeyDown: ppFocusWatch, onKeyUpCapture: ppFocusWatch, 'data-pp-contrast': (ctx.isContrast || ctx.theme === 'contrast') ? 'true' : undefined, style: {
           background: bgLayers,
           backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
           backgroundAttachment: 'fixed, fixed, scroll, scroll',

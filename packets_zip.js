@@ -22,13 +22,28 @@
     return t;
   })();
   function crc32(bytes) {
+    var b = toBytes(bytes);
     var c = -1;
-    for (var i = 0; i < bytes.length; i++) c = (c >>> 8) ^ TABLE[(c ^ bytes[i]) & 0xFF];
+    for (var i = 0; i < b.length; i++) c = (c >>> 8) ^ TABLE[(c ^ b[i]) & 0xFF];
     return (c ^ -1) >>> 0;
   }
   function utf8(text) {
-    if (typeof TextEncoder === 'function') return new TextEncoder().encode(String(text));
-    var plain = unescape(encodeURIComponent(String(text))), out = new Uint8Array(plain.length);
+    var str = String(text);
+    if (typeof TextEncoder === 'function') return new TextEncoder().encode(str);
+    var safe = '';
+    for (var si = 0; si < str.length; si++) {
+      var code = str.charCodeAt(si);
+      if (code >= 0xD800 && code <= 0xDBFF) {
+        var next = si + 1 < str.length ? str.charCodeAt(si + 1) : 0;
+        if (next >= 0xDC00 && next <= 0xDFFF) { safe += str.charAt(si) + str.charAt(si + 1); si++; }
+        else safe += '\uFFFD';
+      } else if (code >= 0xDC00 && code <= 0xDFFF) {
+        safe += '\uFFFD';
+      } else {
+        safe += str.charAt(si);
+      }
+    }
+    var plain = unescape(encodeURIComponent(safe)), out = new Uint8Array(plain.length);
     for (var i = 0; i < plain.length; i++) out[i] = plain.charCodeAt(i);
     return out;
   }
@@ -39,8 +54,10 @@
   var WIN_RESERVED = /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
   function toBytes(data) {
     if (data instanceof Uint8Array) return data;
-    if (ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-    return new Uint8Array(data || 0);
+    if (typeof ArrayBuffer === 'function' && ArrayBuffer.isView(data)) return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+    if (typeof ArrayBuffer === 'function' && data instanceof ArrayBuffer) return new Uint8Array(data);
+    if (Array.isArray(data)) return new Uint8Array(data);
+    return new Uint8Array(0);
   }
 
   function uniqueName(raw, seen) {
@@ -55,7 +72,7 @@
     }).filter(Boolean);
     var basePath = parts.join('/') || 'file';
     var key = basePath.toLowerCase();
-    if (!seen[key]) { seen[key] = true; return basePath; }
+    if (!seen[key]) return { name: basePath, key: key };
     var slash = basePath.lastIndexOf('/');
     var dir = slash >= 0 ? basePath.slice(0, slash + 1) : '';
     var file = slash >= 0 ? basePath.slice(slash + 1) : basePath;
@@ -65,8 +82,7 @@
     var n = 2;
     while (seen[(dir + stem + '-' + n + ext).toLowerCase()]) n++;
     var next = dir + stem + '-' + n + ext;
-    seen[next.toLowerCase()] = true;
-    return next;
+    return { name: next, key: next.toLowerCase() };
   }
 
   function create() {
@@ -76,16 +92,20 @@
       count: 0,
       add: function (name, data) {
         if (done) throw new Error('The zip file is already finished.');
-        var nameBytes = utf8(uniqueName(name || ('file' + central.length), seen));
+        var cand = uniqueName(name || ('file' + central.length), seen);
+        var nameBytes = utf8(cand.name);
         if (nameBytes.length > 0xFFFF) throw new Error('File name is too long for a zip file.');
         var body = typeof data === 'string' ? utf8(data) : toBytes(data);
-        if (central.length >= 65535 || offset + 30 + nameBytes.length + body.length > 0xFFFFFFFF || centralBytes + 46 + nameBytes.length > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
+        var nextOffset = offset + 30 + nameBytes.length + body.length;
+        var nextCentral = centralBytes + 46 + nameBytes.length;
+        if (central.length >= 65535 || nextOffset > 0xFFFFFFFF || nextCentral > 0xFFFFFFFF || nextOffset + nextCentral + 22 > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
+        seen[cand.key] = true;
         var crc = crc32(body);
         var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(UTF8_NAMES), u16(0), u16(0), u16(DOS_DATE), u32(crc), u32(body.length), u32(body.length), u16(nameBytes.length), u16(0)));
         parts.push(head, nameBytes, body);
         central.push({ name: nameBytes, crc: crc, size: body.length, offset: offset });
-        offset += head.length + nameBytes.length + body.length;
-        centralBytes += 46 + nameBytes.length;
+        offset = nextOffset;
+        centralBytes = nextCentral;
         zip.bytes = offset;
         zip.count = central.length;
         return crc;
@@ -117,26 +137,36 @@
     var minEocd = Math.max(0, b.length - 65557);
     for (var p = b.length - 22; p >= minEocd; p--) if (r32(p) === 0x06054b50 && p + 22 + r16(p + 20) === b.length) { end = p; break; }
     if (end < 0) return [];
-    var n = r16(end + 10), at = r32(end + 16), out = [];
+    if (r16(end + 4) !== 0 || r16(end + 6) !== 0) return [];
+    var n = r16(end + 10), cdSize = r32(end + 12), cdStart = r32(end + 16), at = cdStart, out = [];
+    if (r16(end + 8) !== n || cdStart > end || cdStart + cdSize > end) return [];
     var totalBytes = 0, maxTotalBytes = b.length * 2;
-    var decode = typeof TextDecoder === 'function' ? function (x) { return new TextDecoder('utf-8').decode(x); } : function (x) { return String.fromCharCode.apply(null, x); };
+    var td = typeof TextDecoder === 'function' ? new TextDecoder('utf-8') : null;
+    var decode = td ? function (x) { return td.decode(x); } : function (x) {
+      var s = '';
+      for (var ci = 0; ci < x.length; ci++) s += String.fromCharCode(x[ci]);
+      try { return decodeURIComponent(escape(s)); } catch (_) { return s; }
+    };
     var isSafeEntryName = function (name) {
-      if (!name || name.indexOf('\x00') >= 0 || name.indexOf('\\') >= 0 || name.charAt(0) === '/') return false;
+      if (!name || /[\x00-\x1f\x7f\\:]/.test(name) || name.charAt(0) === '/' || name.charAt(name.length - 1) === '/') return false;
       var parts = name.split('/');
-      for (var k = 0; k < parts.length; k++) if (parts[k] === '..') return false;
+      for (var k = 0; k < parts.length; k++) if (!parts[k] || parts[k] === '.' || parts[k] === '..') return false;
       return true;
     };
     for (var i = 0; i < n; i++) {
-      if (at + 46 > end || r32(at) !== 0x02014b50) break;
+      if (at + 46 > cdStart + cdSize || r32(at) !== 0x02014b50) break;
       var method = r16(at + 10);
       if (method !== 0) break;
       var size = r32(at + 20), uncompSize = r32(at + 24), nameLength = r16(at + 28), extra = r16(at + 30), note = r16(at + 32), local = r32(at + 42), crc = r32(at + 16);
       if (uncompSize !== size) break;
       var nextAt = at + 46 + nameLength + extra + note;
-      if (nextAt > end || local + 30 > end || r32(local) !== 0x04034b50) break;
+      if (nextAt > cdStart + cdSize || local + 30 > cdStart || r32(local) !== 0x04034b50) break;
+      if (r16(local + 8) !== 0) break;
+      var localFlags = r16(local + 6);
+      if ((localFlags & 0x0008) === 0 && (r32(local + 18) !== size || r32(local + 22) !== size)) break;
       var name = decode(b.subarray(at + 46, at + 46 + nameLength));
       var from = local + 30 + r16(local + 26) + r16(local + 28);
-      if (from > end || from + size > end || totalBytes + size > maxTotalBytes) break;
+      if (from > cdStart || from + size > cdStart || totalBytes + size > maxTotalBytes) break;
       totalBytes += size;
       var data = b.subarray(from, from + size);
       if (isSafeEntryName(name)) out.push({ name: name, bytes: data, crcOk: crc32(data) === crc });
@@ -146,6 +176,8 @@
   }
 
   var api = { create: create, crc32: crc32, readZip: readZip };
-  root.AlloPacketZip = api;
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (root && (typeof root === 'object' || typeof root === 'function')) root.AlloPacketZip = api;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})((typeof window === 'object' && window !== null) ? window
+  : ((typeof globalThis === 'object' && globalThis !== null) ? globalThis
+    : ((typeof self === 'object' && self !== null) ? self : null)));

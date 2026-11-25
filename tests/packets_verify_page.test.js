@@ -917,7 +917,8 @@ describe('the pages as files', () => {
       expect([...doc.querySelectorAll('link[rel="icon"]')].map((node) => node.getAttribute('href'))).toEqual(['packets-mark.svg']);
       expect(doc.querySelector('a.skip').getAttribute('href')).toBe('#main');
       expect(doc.querySelector('header') && doc.querySelector('main#main') && doc.querySelector('footer')).toBeTruthy();
-      expect([...doc.querySelectorAll('footer a')].map((node) => node.textContent)).toEqual(['More from AlloFlow']);
+      // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+      expect([...doc.querySelectorAll('footer a')].map((node) => node.textContent)).toEqual(['Send feedback', 'More from AlloFlow']);
       expect(doc.querySelector('.brand').getAttribute('href')).toBe('packets.html');
     }
     // One name for the page everywhere (2026-11-12): "Look inside a file", never "Check a file" (a check is a kind of packet).
@@ -1114,9 +1115,11 @@ describe('the guide for school IT', () => {
     // for by need: the server can see which of those were asked for, never a word. The results page can connect to nothing.
     // 2026-11-13 (teacher-journey pass): the vocabulary maker gets its word list (the same files for everyone) and the recordings of
     // its words from the same word store, by need (packets_vocab_media.js), so the row names both makers.
+    // 2026-11-23: also notes pre-recorded meaning bucket shards (packets_meaning_audio/) when deployed with --meaning-audio.
     expect(fact["What this site's server can see"]).toBe('When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker pages, the sound files and the vocabulary word list, '
       + 'with what every web request carries, such as the IP address and the time. Most sound files are the same whatever is chosen, and so is the word list. '
       + 'Some words have their sounds in small files of about 40 words each, and the Word Sounds and vocabulary makers ask only for the ones they need: the server can see which of those files were asked for, not which words. '
+      + 'On a site deployed with pre-recorded meanings (packets_meaning_audio/), the vocabulary maker likewise asks only for the small bucket files it needs: the server can see which bucket files were asked for, not which meanings. '
       + 'Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the student does in it.');
     expect(require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX).toBe(40);
     expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain('The maker page puts the file together in the browser. The words and the choices are not uploaded.');
@@ -1147,6 +1150,11 @@ describe('the guide for school IT', () => {
       // 2026-11-16 (updated 2026-11-22): disclose alloflow-cdn.pages.dev alongside huggingface.co, plus opt-in local Read-Along Device Voice and Student Voice Practice.
       + "Two more pages, Make recordings with a computer voice (packets-voice.html) and Make a read-along (packets-read-along.html), are the only pages of this site that use AI: after the teacher presses Get the voice, the page downloads the voice runtime from AlloFlow's CDN (alloflow-cdn.pages.dev) and a voice (Kokoro, about 88 MB) from Hugging Face (huggingface.co) and runs it on the device. "
       + 'They send no words: those hosts see only that the browser asked for the runtime and the voice. '
+      // 2026-11-23: Send feedback (packets-feedback.html), the one more page that can reach an address, and what it sends.
+      + "And one page, Send feedback (packets-feedback.html), sends a teacher's short feedback message to AlloFlow's feedback inbox (alloflow-catalog-submit.aaron-pomeranz.workers.dev), only when the teacher checks the box saying they have read it and presses Send. "
+      + 'It sends the page chosen, the kind of feedback, the message after the page has replaced anything that looks like a name, an email address, a phone or ID number, a date, an address, a link with details in it or a diagnosis, and two words about the device (such as "Chrome" and "computer"). '
+      + 'There is no name or email box, nothing can be attached, and the page reads nothing other Packets pages keep. '
+      + 'The inbox refuses a message that still looks personal, stores no IP address, browser details or location, and deletes each message after 30 days. '
       + 'A read-along file that a teacher saves holds recordings and plays them: it runs no voice and reaches no site. '
       + 'If a teacher turns on optional Device Voice in a read-along file, it reads aloud only with a voice that runs on the device. '
       + "If a teacher turns on optional Student Voice Practice in a read-along file, the student's microphone stays in browser memory only for local playback and is never saved or sent. "
@@ -1155,11 +1163,14 @@ describe('the guide for school IT', () => {
       + 'A check for the youngest students (Quantity Discrimination or Missing Number) holds a recording of its directions, made ahead of time with the same computer voice and stored on this site with the page; it plays only when the student presses Hear the directions, and the results say how often that was. '
       + 'Every other page of this site reaches only this site. '
       // 2026-11-13 (teacher-journey pass): the device voice of a vocabulary file is only ever one that runs on the device.
-      + 'A vocabulary file reads aloud only with a voice that runs on the device: it does not use a voice that sends the text to a speech service.');
+      // 2026-11-23: it also plays the recordings stored in it (words, and meanings where this site has them).
+      + 'A vocabulary file plays the recordings stored in it (words, and meanings where this site has them, made ahead of time with the same computer voice) and otherwise reads aloud only with a voice that runs on the device: it does not use a voice that sends the text to a speech service.');
     expect(read('word_sounds_take_home_loader.js')).toContain('localService === true');
     const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
     // 2026-11-12: Open a practice file allows the class mailbox for the file it runs (and says so in the mailbox row); the page sends nothing.
-    for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html' && name !== 'packets-voice.html' && name !== 'packets-read-along.html')) expect(reaches(page), page).toEqual([]);
+    for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html' && name !== 'packets-voice.html' && name !== 'packets-read-along.html' && name !== 'packets-feedback.html')) expect(reaches(page), page).toEqual([]);
+    // 2026-11-23: Send feedback reaches AlloFlow's feedback inbox, and nothing else.
+    expect(reaches('packets-feedback.html')).toEqual(['https://alloflow-catalog-submit.aaron-pomeranz.workers.dev']);
     // 2026-11-16 (updated 2026-11-19): the computer-voice page reaches AlloFlow's CDN (for the SHA-384-verified runtime when hosted on GitHub Pages, where _config.yml excludes runtime_assets) and Hugging Face (for the voice), and nothing else.
     expect(reaches('packets-voice.html')).toEqual(['https://alloflow-cdn.pages.dev', 'https://huggingface.co', 'https://*.huggingface.co', 'https://*.hf.co']);
     // 2026-11-16 (updated 2026-11-19): Make a read-along uses the same voice, so it reaches the same places and nothing else.

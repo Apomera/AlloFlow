@@ -38,6 +38,16 @@ Each email contains only the new-report count and the fixed private inbox link. 
 
 Opening the link still requires the separate inbox token. On the configured Windows computer, Codex can retrieve a specified report when asked, using the saved local credential privately and matching its receipt. A digest email does not automatically start an agent review or repair. Keep recipient addresses and credentials out of shared logs, screenshots, and chat; share only the receipt and report details needed for the requested work.
 
+## Packets feedback
+
+`packets-feedback.html` is the one Packets page that connects anywhere, and only to `POST /packetsFeedback` on this Worker. The page scrubs the message and shows exactly what will be sent. The Worker is the second line: unlike `/submitBug`, it **refuses** anything that still looks personal and stores nothing in that case.
+
+- **Accepted body** (JSON, at most 4 KB): exactly `v` (1), `page` (a fixed list of Packets page names or `other`), `kind` (`broken`, `confusing`, `idea`, `worked`), `message` (1 to 600 characters after trimming), `browser` (`chrome`, `edge`, `safari`, `firefox`, `other`) and `device` (`phone`, `tablet`, `computer`, `unknown`). Any other key, value or type returns 400. A larger body returns 413.
+- **Refused with 422** `{ ok: false, error: "personal_info", kinds: [...] }`: anything the bug scanner flags (email, US phone, SSN, social-media link, street address, titled name such as "Ms. Rivera", diagnostic acronyms such as IEP or ADHD), plus links with `?` or `#`, runs of 7 or more digits, numeric dates (3/14/2016, 2016-03-14), "student ID" / "ID number" / "case number" followed by a value, and @handles. The page's placeholders (`[name]`, `[email]` and so on) never trigger a refusal.
+- **Stored**: one `pfb:<ms>:<8 hex>` key in `BUG_REPORTS`, expiring after 30 days, holding `schema_version`, `kind: "packets_feedback"`, `submitted_at`, `expires_at`, `page`, `feedback_kind`, `message`, `browser` and `device`. KV metadata holds only `submitted_at`, `page` and `feedback_kind`. No user agent, IP, country, origin or other header is stored.
+- **Protection**: the same shared intake as `/submitBug`: `SUBMIT_RATE` must be bound (otherwise 503), 3 per minute and 20 per day per client (the rate-store keys use a SHA-256 of the IP and expire within 2 days), identical bodies within 24 hours return 409, and `TURNSTILE_SECRET`, if ever set, would refuse this page because it cannot load the challenge widget.
+- **Reading it**: open `/packets-feedback-inbox` (same access token as the bug inbox), or call `GET /packetsFeedback?limit=50` with `Authorization: Bearer <BUG_REPORTS_ADMIN_TOKEN>`. It returns up to 200 records, newest first. Packets feedback never appears in `/bugs` or `/bug-inbox`, and it is not in the daily digest.
+
 ## Verification and scope
 
 Focused tests cover submission receipts, timeouts, duplicate clicks, private inbox access, safe text rendering, expired sessions, pagination, review history, draft preservation, and eventual consistency. Test reports must be clearly labeled synthetic and contain no private learner information.

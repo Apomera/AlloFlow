@@ -16,7 +16,8 @@ describe('Info modal feature-guide navigation', () => {
     expect(source).toContain('featureReturnFocusRef.current = trigger');
     expect(source).toContain("const featureReturnFocusKeyRef = React.useRef('')");
     expect(source).toContain("panelRef.current?.querySelectorAll('[data-feature-guide-key]')");
-    expect(source).toContain('data-feature-guide-key={feature.title}');
+    expect(source).toContain('data-feature-guide-key={feature.id}');
+    expect(source).toContain("featureReturnFocusKeyRef.current = String(feature?.id || '')");
     expect(source).toContain('featureBackRef.current?.focus()');
     expect(source).toContain("if (trigger?.isConnected && typeof trigger.focus === 'function') trigger.focus()");
     expect(source).toContain('ref={featureBackRef}');
@@ -42,18 +43,18 @@ describe('Info modal feature-guide navigation', () => {
   });
 
   it('offers an accessible searchable catalog and complete-Atlas handoff', () => {
-    expect(source).toContain('role="search" aria-label="Search the Feature Guide"');
+    expect(source).toContain("role=\"search\" aria-label={t('about.fg_search_aria') || 'Search the Feature Guide'}");
     expect(source).toContain('id="feature-guide-search"');
     expect(source).toContain('value={featureQuery}');
     expect(source).toContain("if (event.key === 'Escape' && featureQuery)");
     expect(source).toContain('event.stopPropagation()');
     expect(source).toContain('role="status" aria-live="polite"');
-    expect(source).toContain('Open complete Atlas');
-    expect(source).toContain('featureCatalogItems.length} curated workflow guides');
+    expect(source).toContain("t('about.fg_open_atlas') || 'Open the Atlas'");
+    expect(source).toContain("'Guides to {count} major tools: what each one needs, does, and makes. The Atlas lists every tool.', { count: featureCatalogItems.length }");
   });
 
   it('can launch a selected feature through the shared command palette', () => {
-    expect(source).toContain("openCommandPaletteFromInfo(selectedFeature.title, 'feature-guide')");
+    expect(source).toContain("openCommandPaletteFromInfo(selectedFeature.find, 'feature-guide')");
     expect(source).toContain('Find this in AlloFlow');
     expect(source).toContain("window.CustomEvent('alloflow:open-command-palette'");
     expect(source).toContain('detail: { query: safeQuery, source }');
@@ -63,7 +64,7 @@ describe('Info modal feature-guide navigation', () => {
     const componentStart = source.indexOf('function InfoModal({');
     const focusEffectStart = source.indexOf('React.useEffect(() => {', componentStart);
     const focusEffectEnd = source.indexOf('}, [selectedFeature]);', focusEffectStart);
-    const catalogDerivation = source.indexOf("  const featuresList = t('about.features_list'", componentStart);
+    const catalogDerivation = source.indexOf('  const featureCatalogItems = FEATURE_GUIDE', componentStart);
     const rootRender = source.indexOf('  return (\n    <div role="presentation"', componentStart);
 
     expect(focusEffectStart).toBeGreaterThan(componentStart);

@@ -75,6 +75,8 @@ describe('content engine applies a text revision through the host handler', () =
     const setRevisionData = vi.fn(value => { state.revisionData = typeof value === 'function' ? value(state.revisionData) : value; });
     const state = {
       generatedContent: { type: 'simplified', data: 'The cat sat on the mat. It was warm.' },
+      // Only teachers may revise passage text (handleReviseSelection now checks the role).
+      isTeacherMode: true,
       revisionData: null,
       selectionMenu: { text: 'It was warm.', occurrence: 0 },
       leveledTextLanguage: 'English',

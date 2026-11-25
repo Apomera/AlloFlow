@@ -830,7 +830,7 @@
         "The participant’s grade level"
       ],
       "answerIndex": 1,
-      "rationale": "A quantitative variable records a measured or counted numerical amount with meaningful units.",
+      "rationale": "A quantitative variable records numerical measurements or counts for which arithmetic operations like averaging make sense; total SMS count is a discrete numerical count, whereas messaging app, phone ownership, and grade level are categorical.",
       "choiceRationales": [
         "A favorite app is a category label, so the variable is categorical, not a counted or measured amount.",
         "Best answer. A quantitative variable records a measured or counted numerical amount with meaningful units.",
@@ -934,7 +934,7 @@
         "2.86"
       ],
       "answerIndex": 2,
-      "rationale": "Relative frequency is the category count divided by the total count: 84/240 = 0.35.",
+      "rationale": "Relative frequency expresses a category count as a proportion of the total sample size, so dividing the 84 students who chose the later lunch period by all 240 surveyed students gives 84/240 = 0.35 (35%).",
       "choiceRationales": [
         "0.28 would be 84 out of 300; the survey had 240 students, so the relative frequency is 84/240 = 0.35.",
         "0.65 is the complement 1 − 0.35, which gives the proportion of surveyed students who did not pick the later lunch period rather than the 84 out of 240 who actually chose it.",
@@ -1350,7 +1350,7 @@
         "12"
       ],
       "answerIndex": 2,
-      "rationale": "The z-score is (64 − 52)/6 = 2, so the observation is two standard deviations above the mean.",
+      "rationale": "A z-score standardizes an observation by measuring how many standard deviations it falls from the mean: z = (x - mean)/SD = (64 - 52)/6 = 12/6 = 2, placing 64 exactly two standard deviations above the mean.",
       "choiceRationales": [
         "A negative z-score would mean the observation is below the mean; 64 is above 52, so the sign is positive.",
         "0.5 is the standard deviation divided by the distance (6/12); the z-score divides the distance by the standard deviation, 12/6 = 2.",
@@ -1766,7 +1766,7 @@
         "A systematic sample"
       ],
       "answerIndex": 2,
-      "rationale": "Strata are groups formed before sampling, and a random sample is taken from every stratum.",
+      "rationale": "Dividing the population into non-overlapping grade-level strata and drawing a simple random sample within every grade defines a stratified random sample, guaranteeing representation from each grade level.",
       "choiceRationales": [
         "Cluster sampling selects whole groups and surveys everyone inside them; here every grade contributes a random sample, which is stratification.",
         "Voluntary response lets people opt in on their own; this design uses random selection within each grade.",
@@ -2078,7 +2078,7 @@
         "Random assignment"
       ],
       "answerIndex": 1,
-      "rationale": "Some members of the target population have little or no chance to be included, which is undercoverage.",
+      "rationale": "Administering a survey exclusively in English systematically excludes non-English-speaking residents from the sampling process, creating undercoverage bias because a sizable segment of the target population cannot be selected.",
       "choiceRationales": [
         "A Type I error is a hypothesis-testing mistake of rejecting a true null hypothesis, whereas excluding non-English speakers from a survey creates a sampling-frame coverage flaw.",
         "Best answer. Some members of the target population have little or no chance to be included, which is undercoverage.",
@@ -2286,7 +2286,7 @@
         "Blocks"
       ],
       "answerIndex": 3,
-      "rationale": "Blocking groups similar experimental units before random assignment to reduce variation from a known source.",
+      "rationale": "Grouping experimental units by a known confounding variable such as prior GPA before randomly assigning treatments within each homogeneous group forms blocks, reducing unexplained variation in the response.",
       "choiceRationales": [
         "A parameter is a numerical summary of a population; the GPA groups are sets of students, not numbers.",
         "Clusters are groups selected whole in a sampling design; here the groups exist to control variation before random assignment.",
@@ -2390,7 +2390,7 @@
         "A matched-pairs sample without treatment"
       ],
       "answerIndex": 0,
-      "rationale": "Keeping both participants and outcome assessors unaware can reduce placebo effects and measurement bias.",
+      "rationale": "When neither the participants nor the staff evaluating outcomes know who receives the active treatment versus the placebo, the experiment is double-blind, limiting both placebo expectations and assessor bias.",
       "choiceRationales": [
         "Best answer. Keeping both participants and outcome assessors unaware can reduce placebo effects and measurement bias.",
         "A census is collecting data from an entire population; blinding is about who knows the treatment assignment.",
@@ -2702,7 +2702,7 @@
         "54"
       ],
       "answerIndex": 3,
-      "rationale": "Multiplying every observation by a constant multiplies the mean by that same constant: 3(18) = 54.",
+      "rationale": "Linear rescaling affects measures of center proportionally: multiplying every observation in a data set by a constant k multiplies the mean by k as well, so multiplying all values by 3 yields a new mean of 3(18) = 54.",
       "choiceRationales": [
         "6 results from dividing 18 by 3 instead of multiplying; scaling every observation in a data set by a constant factor multiplies the mean by that same factor to give 54.",
         "Leaving the mean unchanged at 18 would apply only if every value were multiplied by 1 or shifted by 0, whereas tripling every observation also triples the mean to 54.",
@@ -2806,7 +2806,7 @@
         "The sample mean of all the device categories"
       ],
       "answerIndex": 0,
-      "rationale": "Conditional proportions within each grade put the grade groups on a common basis for comparison.",
+      "rationale": "Because grade levels may have different total student counts, computing conditional proportions of device ownership within each grade puts every grade on a 0-to-1 scale so their distributions can be compared fairly.",
       "choiceRationales": [
         "Best answer. Conditional proportions within each grade put the grade groups on a common basis for comparison.",
         "The grand total collapses the entire table into one overall participant count, hiding how device ownership rates vary from one grade level to another.",
@@ -2906,15 +2906,15 @@
       "choices": [
         "0.18",
         "0.30",
-        "0.42",
+        "0.43",
         "3.33"
       ],
       "answerIndex": 1,
-      "rationale": "The conditional proportion is the count in the late-and-bike cell divided by the bike column total: 18/60 = 0.30.",
+      "rationale": "A conditional proportion restricts the denominator to the conditioned subgroup: dividing the 18 late bikers by all 60 biking commuters gives 18/60 = 0.30.",
       "choiceRationales": [
         "0.18 divides the 18 late bikers by 100 as though the count were already a percentage, whereas the conditional proportion must divide by the 60 biking commuters to get 0.30.",
-        "Best answer. The conditional proportion is the count in the late-and-bike cell divided by the bike column total: 18/60 = 0.30.",
-        "0.42 is the late count over the number of bikers who were not late (18/42); the conditional proportion uses the full group of 60.",
+        "Best answer. A conditional proportion restricts the denominator to the conditioned subgroup: dividing the 18 late bikers by all 60 biking commuters gives 18/60 = 0.30.",
+        "0.43 divides the 18 late bikers by the 42 on-time bikers (18/42 ≈ 0.43), computing late-to-on-time odds instead of the conditional proportion out of all 60 bikers.",
         "3.33 inverts the ratio by dividing 60 bikers by 18 late arrivals; a valid conditional proportion puts the subset count in the numerator and can never exceed 1."
       ],
       "references": [
@@ -3222,7 +3222,7 @@
         "P(A or B) = 0"
       ],
       "answerIndex": 0,
-      "rationale": "Mutually exclusive events cannot occur together, so their intersection has probability zero.",
+      "rationale": "Mutually exclusive (disjoint) events share no common outcomes and cannot happen on the same trial, which forces the probability of their joint occurrence, P(A and B), to equal exactly 0.",
       "choiceRationales": [
         "Best answer. Mutually exclusive events cannot occur together, so their intersection has probability zero.",
         "Being mutually exclusive means two events share no common outcomes so their intersection has probability zero, whereas their individual probabilities can differ completely.",
@@ -3846,7 +3846,7 @@
         "The probability of winning on any one play is exactly 2.40."
       ],
       "answerIndex": 2,
-      "rationale": "Expected value is a long-run average, not a guarantee for an individual play or the most likely outcome.",
+      "rationale": "The expected value of a discrete random variable is its long-run average over many independent plays, not a guaranteed payout on any single play, the modal outcome, or a probability.",
       "choiceRationales": [
         "Expected value describes a long-run mean across many repeated plays rather than a guaranteed constant payout on every individual turn, which can vary widely.",
         "An expected payout is a probability-weighted mean that need not match the modal outcome or even appear among the possible payouts on a single play of the game.",
@@ -3950,7 +3950,7 @@
         "Count of defective items in 12 independent inspections with equal defect probability"
       ],
       "answerIndex": 3,
-      "rationale": "A binomial count has a fixed number of independent trials, two outcomes, and a constant success probability.",
+      "rationale": "A binomial random variable counts successes across a fixed number of independent binary trials with a constant success probability, matching the count of defective items in 12 independent, equal-probability inspections.",
       "choiceRationales": [
         "Counting trials until the first success has no fixed number of trials; that is a geometric setting, not binomial.",
         "Measuring total rainfall produces a continuous quantitative amount rather than a discrete count of binary successes across a fixed number of independent trials with constant probability.",
@@ -4155,15 +4155,15 @@
         "C(5,2)(0.2)^2(0.8)^5",
         "C(5,2)(0.2)^2(0.8)^3",
         "C(5,2)(0.2)^3(0.8)^2",
-        "C(5,3)(0.2)^2(0.8)^3"
+        "(0.2)^2(0.8)^3"
       ],
       "answerIndex": 1,
-      "rationale": "The binomial probability function chooses the two success positions and multiplies by the probability of two successes and three failures.",
+      "rationale": "For X ~ Binomial(n, p), P(X = k) = C(n, k) p^k (1 - p)^(n - k). With n = 5, p = 0.2, and k = 2, choosing 2 success positions among 5 trials yields C(5,2)(0.2)^2(0.8)^3.",
       "choiceRationales": [
         "This uses five failures, but two successes in five trials leave only three, so the exponent on 0.8 must be 3.",
-        "Best answer. The binomial probability function chooses the two success positions and multiplies by the probability of two successes and three failures.",
+        "Best answer. For X ~ Binomial(n, p), P(X = k) = C(n, k) p^k (1 - p)^(n - k). With n = 5, p = 0.2, and k = 2, choosing 2 success positions among 5 trials yields C(5,2)(0.2)^2(0.8)^3.",
         "This swaps the exponents and gives the probability of three successes and two failures rather than two successes.",
-        "The count of arrangements must match the two successes being counted, so C(5,2) is required rather than C(5,3)."
+        "Omitting the binomial coefficient C(5,2) = 10 gives the probability of one fixed ordering of two successes and three failures (0.02048) instead of all 10 arrangements."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4262,7 +4262,7 @@
         "sqrt(60), or about 7.75"
       ],
       "answerIndex": 2,
-      "rationale": "The binomial standard deviation is sqrt(np(1-p)) = sqrt(100(0.6)(0.4)) = sqrt(24).",
+      "rationale": "For a binomial random variable X ~ Binomial(n, p), the variance is np(1 - p) and the standard deviation is sqrt(np(1 - p)); substituting n = 100 and p = 0.60 gives sqrt(100 * 0.60 * 0.40) = sqrt(24), or about 4.90.",
       "choiceRationales": [
         "24 computes the binomial variance np(1 − p) = 100(0.60)(0.40) without taking the square root; the standard deviation of X is sqrt(24), which is approximately 4.90.",
         "40 is the expected number of failures, n(1 − p), not the variance, so its square root is not the standard deviation.",
@@ -4470,7 +4470,7 @@
         "The maximum"
       ],
       "answerIndex": 0,
-      "rationale": "A normal distribution is symmetric, so its mean, median, and 50th percentile coincide.",
+      "rationale": "Every normal density curve is symmetric and unimodal around its center, splitting the total area exactly in half so the mean, median, and 50th percentile all occupy the exact same value.",
       "choiceRationales": [
         "Best answer. A normal distribution is symmetric, so its mean, median, and 50th percentile coincide.",
         "The first quartile marks the 25th percentile with only one-quarter of the distribution below it, whereas the 50th percentile lies at the symmetric center of a normal curve.",
@@ -4574,7 +4574,7 @@
         "0.95"
       ],
       "answerIndex": 1,
-      "rationale": "About 68% of a normal distribution lies within one standard deviation of its mean.",
+      "rationale": "By the Empirical (68-95-99.7) Rule for a normal distribution, approximately 68% of the area under the standard normal curve falls within one standard deviation of the mean, so P(-1 < Z < 1) is about 0.68.",
       "choiceRationales": [
         "0.16 approximates the area in a single tail beyond one standard deviation from the mean, whereas the empirical rule places roughly 0.68 of the area between −1 and 1.",
         "Best answer. About 68% of a normal distribution lies within one standard deviation of its mean.",
@@ -4782,7 +4782,7 @@
         "It lies two standard deviations above the distribution mean."
       ],
       "answerIndex": 3,
-      "rationale": "The standardized distance is (56 − 50)/3 = 2; a sample statistic does not prove the population parameter.",
+      "rationale": "Standardizing the observed sample mean against the sampling distribution gives z = (56 - 50)/3 = 2, meaning 56 lies two standard deviations above the center; a single sample statistic never proves the population mean.",
       "choiceRationales": [
         "A single sample mean is an estimate that varies from sample to sample; it cannot prove the parameter’s value.",
         "Six is the raw distance from 50; dividing by the standard deviation of 3 gives two standard deviations.",
@@ -5406,7 +5406,7 @@
         "It loses its connection to the population."
       ],
       "answerIndex": 1,
-      "rationale": "The standard error decreases as n increases, so the margin of error and interval width generally decrease.",
+      "rationale": "Because sample size n appears in the denominator of the standard error as sqrt(n), increasing n reduces the standard error and margin of error, making the confidence interval narrower when confidence level stays fixed.",
       "choiceRationales": [
         "A larger sample reduces the standard error, and a smaller standard error shrinks the margin of error.",
         "Best answer. The standard error decreases as n increases, so the margin of error and interval width generally decrease.",
@@ -5926,7 +5926,7 @@
         "Removing the alternative hypothesis"
       ],
       "answerIndex": 2,
-      "rationale": "Larger samples reduce standard error and make real departures from the null easier to detect.",
+      "rationale": "Power is the probability of correctly rejecting a false null hypothesis; increasing the sample size shrinks the standard error, separating the null and alternative sampling distributions so real effects are easier to detect.",
       "choiceRationales": [
         "Reducing the number of observations inflates the standard error of the test statistic, making genuine departures from the null harder to detect and decreasing statistical power.",
         "A convenience sample introduces bias and does not increase the test’s ability to detect a true effect.",
@@ -6238,7 +6238,7 @@
         "The two sample proportions in the study must be exactly equal to one another here."
       ],
       "answerIndex": 1,
-      "rationale": "Because the interval contains 0, a zero difference remains plausible; this does not prove equality.",
+      "rationale": "Because 0 falls inside the confidence interval (-0.04, 0.12) for p1 - p2, a zero difference remains a plausible value for the population parameter, so the data lack convincing evidence that p1 and p2 differ.",
       "choiceRationales": [
         "Because the interval (−0.04, 0.12) spans negative values as well as zero, p1 could plausibly be smaller than or equal to p2, ruling out any definite claim that p1 is larger.",
         "Best answer. Because the interval contains 0, a zero difference remains plausible; this does not prove equality.",
@@ -6342,7 +6342,7 @@
         "The difference p1 − p2 without estimation"
       ],
       "answerIndex": 2,
-      "rationale": "Under the null equality model, the pooled proportion combines successes and sample sizes from both groups.",
+      "rationale": "A two-proportion z-test assumes the null hypothesis H0: p1 = p2 holds, so both samples estimate one shared population proportion, estimated by the pooled sample proportion p-hat_c = (x1 + x2)/(n1 + n2) in the standard error.",
       "choiceRationales": [
         "Using one group’s proportion ignores the other group; under the null the two are estimates of the same value and should be combined.",
         "In a hypothesis test the true population proportions are unknown parameters rather than given constants, so the standard error under H_0: p1 = p2 must use a pooled sample estimate.",
@@ -6446,7 +6446,7 @@
         "Evidence favors a difference in population proportions in the alternative direction."
       ],
       "answerIndex": 3,
-      "rationale": "Since p < alpha, reject the null and describe evidence for the alternative in the population context.",
+      "rationale": "Because p = 0.01 is smaller than alpha = 0.05, we reject the null hypothesis and conclude there is convincing statistical evidence of a difference in the population proportions in the direction of the alternative.",
       "choiceRationales": [
         "A significant result provides evidence against the null for the populations sampled; it proves nothing universally.",
         "A small p-value is evidence against the null, which is the hypothesis of no difference, so this reverses the logic.",
@@ -6550,7 +6550,7 @@
         "A chi-square test for a single variance"
       ],
       "answerIndex": 0,
-      "rationale": "Comparing the distribution of one categorical variable across multiple populations is a test for homogeneity.",
+      "rationale": "A chi-square test for homogeneity compares the categorical distribution of a single variable—here preferred study location—across multiple separate populations or treatment groups, such as three different schools.",
       "choiceRationales": [
         "Best answer. Comparing the distribution of one categorical variable across multiple populations is a test for homogeneity.",
         "A one-proportion z-test compares a single binary proportion against a hypothesized constant, whereas comparing a multicategory distribution across three separate schools requires a chi-square homogeneity test.",
@@ -6758,7 +6758,7 @@
         "130"
       ],
       "answerIndex": 2,
-      "rationale": "The expected count is (row total)(column total)/(grand total) = 80(50)/200 = 20.",
+      "rationale": "Under the chi-square null model for a two-way table, each cell expected count equals (row total * column total) / (grand total), giving (80 * 50) / 200 = 4000 / 200 = 20.",
       "choiceRationales": [
         "30 is the row total minus the column total (80 − 50), which has no meaning as an expected count; the expected count is 80 × 50 / 200 = 20.",
         "80 is the entire row total rather than one cell’s expected count; multiplying the row total by the column total and dividing by the grand total gives (80 × 50)/200 = 20.",
@@ -7798,7 +7798,7 @@
         "H_a: mu > 500"
       ],
       "answerIndex": 0,
-      "rationale": "The alternative describes the population mean in the direction of the research claim.",
+      "rationale": "Hypotheses always refer to unknown population parameters rather than sample statistics, so testing whether the mean fill volume is below 500 mL requires the left-tailed alternative H_a: mu < 500.",
       "choiceRationales": [
         "Best answer. The alternative describes the population mean in the direction of the research claim.",
         "Hypotheses are always written in terms of the unknown population mean mu rather than the sample statistic x-bar, which is observed directly from the collected data.",
@@ -7902,7 +7902,7 @@
         "The probability that the alternative hypothesis is actually true in the population."
       ],
       "answerIndex": 1,
-      "rationale": "The p-value is computed under the null model and follows the direction of the alternative.",
+      "rationale": "A p-value is a conditional probability calculated assuming the null hypothesis (mu = 0) is true: for H_a: mu > 0, p = 0.02 is the probability of obtaining a test statistic t >= 2.4 by random chance alone.",
       "choiceRationales": [
         "A p-value is not a probability about the parameter’s value; 0.02 is the chance of such a large t under the null.",
         "Best answer. The p-value is computed under the null model and follows the direction of the alternative.",
@@ -8006,7 +8006,7 @@
         "The p-value must be recalculated so that it becomes 0.99."
       ],
       "answerIndex": 2,
-      "rationale": "The p-value exceeds alpha, so the result is not statistically significant at the stated level.",
+      "rationale": "Because the p-value of 0.02 exceeds the chosen significance level alpha = 0.01, the data do not provide statistically significant evidence against H0, so we fail to reject (never prove or accept) the null hypothesis.",
       "choiceRationales": [
         "Rejecting H_0 at alpha = 0.01 requires a p-value of 0.01 or smaller; because 0.02 exceeds 0.01, the evidence is not strong enough to reject at the 1% level.",
         "Failing to reject H_0 at alpha = 0.01 means the data do not meet that strict threshold for evidence against the null, not that the null hypothesis has been proven true.",
@@ -8110,7 +8110,7 @@
         "−4"
       ],
       "answerIndex": 3,
-      "rationale": "The mean of the difference is the difference of the population means: 10 − 14 = −4.",
+      "rationale": "The sampling distribution of the difference between two independent sample means is centered at the difference of their population means: mu_(x-bar1 - x-bar2) = mu1 - mu2 = 10 - 14 = -4.",
       "choiceRationales": [
         "4 reverses the subtraction order (14 − 10); because the difference is defined as x-bar1 − x-bar2, its sampling distribution centers at mu1 − mu2 = 10 − 14 = −4.",
         "10 is only the first population mean mu1 by itself, ignoring the second population mean of 14 that must be subtracted to find the center of x-bar1 − x-bar2.",
@@ -8838,7 +8838,7 @@
         "It changes from a mean interval to a proportion interval."
       ],
       "answerIndex": 2,
-      "rationale": "Greater confidence requires a larger critical value, which increases the margin of error and width.",
+      "rationale": "Raising the confidence level from 90% to 99% requires capturing more central area under the reference distribution, which increases the critical multiplier (z* or t*) and therefore widens the confidence interval.",
       "choiceRationales": [
         "Raising confidence from 90% to 99% requires a larger critical value so the method captures the parameter more often, which increases the margin of error and widens the interval.",
         "Changing the confidence level alters only the critical multiplier in the margin of error; the point estimate at the center of the interval stays fixed at the observed sample statistic.",
@@ -9254,7 +9254,7 @@
         "That the response variable causes the explanatory variable here"
       ],
       "answerIndex": 2,
-      "rationale": "Correlation measures the direction and strength of a linear association and does not establish causation.",
+      "rationale": "The correlation coefficient r = -0.82 is close to -1, indicating a strong negative linear association between two quantitative variables—higher values of one tend to pair with lower values of the other—without implying causation.",
       "choiceRationales": [
         "Although |r| = 0.82 indicates a strong straight-line relationship, the negative sign shows that larger values of one variable tend to pair with smaller values of the other.",
         "Correlation is a unitless measure of linear strength and direction between standardized variables, not a percentage of observations whose raw values happen to be negative.",
@@ -9566,7 +9566,7 @@
         "When x is equal to zero, the predicted response must be exactly 4."
       ],
       "answerIndex": 1,
-      "rationale": "The slope describes the change in predicted response for a one-unit increase in the explanatory variable.",
+      "rationale": "In the linear regression equation y-hat = 12 + 4x, the slope b = 4 indicates that for each one-unit increase in the explanatory variable x, the predicted response y-hat increases by 4 units on average.",
       "choiceRationales": [
         "In y-hat = 12 + 4x, the coefficient 4 is a predicted rate of change per unit of x, not a constant observed y-value, because real data points scatter around the line.",
         "Best answer. The slope describes the change in predicted response for a one-unit increase in the explanatory variable.",
@@ -9878,9 +9878,9 @@
         "The fitted model has no residuals of any kind at all."
       ],
       "answerIndex": 0,
-      "rationale": "Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
+      "rationale": "When a linear model fits bivariate data well, residuals scatter randomly above and below zero with no systematic shape. A curved residual pattern shows that predicted values consistently overshoot in some intervals and undershoot in others, signaling that a linear model may not capture the relationship well.",
       "choiceRationales": [
-        "Best answer. Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
+        "A systematic curve in the residual plot reveals structured departures from zero across x, showing that a linear equation misses curvature in the relationship and may not fit well.",
         "A correlation of 1 would put every point on the line with zero residuals; a curved residual pattern shows the line misses the shape.",
         "Residual plots are made for quantitative explanatory variables; a curved pattern is about model form, not variable type.",
         "Any least-squares regression line produces a residual y − y-hat for every observation, and a systematic curve in those residuals warns that the true relationship is nonlinear."
@@ -10294,7 +10294,7 @@
         "It makes every one of the residuals positive in value."
       ],
       "answerIndex": 0,
-      "rationale": "Squaring residuals prevents cancellation and produces the line with the smallest total squared error.",
+      "rationale": "The least-squares regression line is uniquely defined as the line that minimizes the sum of squared vertical residuals, sum(y - y-hat)^2, preventing positive and negative errors from canceling out.",
       "choiceRationales": [
         "Best answer. Squaring residuals prevents cancellation and produces the line with the smallest total squared error.",
         "Unsquared residuals cancel; many lines make their sum zero, so that criterion does not pick a unique line.",
@@ -10398,7 +10398,7 @@
         "Random assignment"
       ],
       "answerIndex": 1,
-      "rationale": "Using a model beyond the observed explanatory-variable range is extrapolation and can be unreliable.",
+      "rationale": "Using a fitted regression equation to predict a response at an explanatory x-value far outside the observed data domain is extrapolation, which is unreliable because the linear trend may not continue beyond the data.",
       "choiceRationales": [
         "Interpolation estimates responses for x-values located inside the span of the observed data, whereas predicting far beyond the observed domain is risky because linearity may fail there.",
         "Best answer. Using a model beyond the observed explanatory-variable range is extrapolation and can be unreliable.",
@@ -10606,7 +10606,7 @@
         "A confounding factor like warm weather may drive both."
       ],
       "answerIndex": 3,
-      "rationale": "A lurking variable can create or explain an association without either measured variable causing the other.",
+      "rationale": "An observational association between ice cream sales and sunburns can be driven by a confounding variable like hot sunny weather that increases both outcomes simultaneously, so correlation alone cannot prove causation.",
       "choiceRationales": [
         "Correlation applies to quantitative variables like sales counts; the issue is a lurking variable, not the data type.",
         "A strong positive correlation directly indicates that ice cream sales and sunburns tend to rise together, yet association alone cannot rule out lurking variables driving both.",
@@ -10710,7 +10710,7 @@
         "It becomes 60.5."
       ],
       "answerIndex": 0,
-      "rationale": "A one-minute increase is 1/60 of an hour, so the slope per minute is one-sixtieth of the slope per hour.",
+      "rationale": "Slope equals predicted change in y per one-unit change in x; because one minute is 1/60 of an hour, the predicted change in y per minute is 1/60 of the hourly slope, giving 0.5/60 response units per minute.",
       "choiceRationales": [
         "Best answer. A one-minute increase is 1/60 of an hour, so the slope per minute is one-sixtieth of the slope per hour.",
         "30 multiplies by 60; a one-minute change is 1/60 of an hour, so the slope per minute is smaller, 0.5/60.",
@@ -11022,7 +11022,7 @@
         "Form, direction, strength, outliers, and influential points"
       ],
       "answerIndex": 3,
-      "rationale": "Model selection depends on the observed relationship and unusual points, not on one isolated summary.",
+      "rationale": "Before fitting a linear model, inspecting the scatterplot for form (linearity), direction, strength, and unusual features such as outliers or high-leverage influential points ensures that linear regression is appropriate.",
       "choiceRationales": [
         "Inspecting only the maximum response reveals nothing about whether the scatterplot follows a straight-line pattern, how strong or steep it is, or whether unusual points distort the fit.",
         "Pie charts display proportions for a single categorical variable and cannot represent paired quantitative measurements, so checking for a pie chart is irrelevant to linear regression.",
@@ -11542,7 +11542,7 @@
         "A two-way table of two categorical variables"
       ],
       "answerIndex": 0,
-      "rationale": "Daily step count is quantitative, so a histogram can show its distribution across numerical intervals.",
+      "rationale": "Daily step count is a quantitative variable measured on a numerical scale, so grouping counts into contiguous numeric bins in a histogram properly displays the shape, center, spread, and potential outliers.",
       "choiceRationales": [
         "Best answer. Daily step count is quantitative, so a histogram can show its distribution across numerical intervals.",
         "Assigning a separate bar to every student displays individual values by label rather than grouping numerical step counts into intervals to reveal shape, center, and spread.",
@@ -11646,7 +11646,7 @@
         "The median must be zero."
       ],
       "answerIndex": 1,
-      "rationale": "A left-skewed distribution is pulled toward smaller values, so the mean is often below the median.",
+      "rationale": "In a left-skewed distribution, the extended tail of lower values pulls the non-resistant arithmetic mean downward relative to the resistant median, making the mean typically less than the median.",
       "choiceRationales": [
         "The mean and median match closely in symmetric distributions, whereas a long left tail pulls the nonresistant mean downward below the median.",
         "Best answer. A left-skewed distribution is pulled toward smaller values, so the mean is often below the median.",
@@ -11854,7 +11854,7 @@
         "A value below Q1 - 1.5(IQR) or above Q3 + 1.5(IQR)"
       ],
       "answerIndex": 3,
-      "rationale": "The 1.5-IQR rule compares observations with fences formed from the quartiles and the IQR.",
+      "rationale": "The 1.5-IQR rule flags any observation falling below the lower fence Q1 - 1.5(IQR) or above the upper fence Q3 + 1.5(IQR) as a potential outlier using the quartiles and interquartile range (Q3 - Q1).",
       "choiceRationales": [
         "The mean sits near the center of the data distribution and does not flag unusual extremes, whereas the 1.5-IQR criterion checks whether points fall beyond quartile-based fences.",
         "Half of all observations in a distribution lie above the median, so being above the center is completely normal rather than evidence of an outlier under the 1.5-IQR rule.",
@@ -11958,7 +11958,7 @@
         "Distribution A has no variability of any kind."
       ],
       "answerIndex": 0,
-      "rationale": "Standard deviation describes typical distance from the mean; equal means do not determine shape or median.",
+      "rationale": "Standard deviation quantifies the typical distance of observations from the mean, so a smaller standard deviation in Distribution A shows tighter clustering around the center without determining skewness or median.",
       "choiceRationales": [
         "Best answer. Standard deviation describes typical distance from the mean; equal means do not determine shape or median.",
         "Standard deviation quantifies typical distance from the mean and does not determine the median, so two distributions with equal means can have different medians in either direction.",
@@ -12062,7 +12062,7 @@
         "A matched-pairs experiment with no response variable"
       ],
       "answerIndex": 1,
-      "rationale": "The researcher records existing behavior without imposing treatments, so the design is observational.",
+      "rationale": "Because the researcher merely observes existing study habits and exam scores without randomly imposing treatments on students, the design is an observational study rather than a controlled experiment.",
       "choiceRationales": [
         "A randomized experiment requires actively imposing treatments on subjects via random assignment, whereas this researcher only recorded existing homework habits and exam scores without intervening.",
         "Best answer. The researcher records existing behavior without imposing treatments, so the design is observational.",
@@ -12374,7 +12374,7 @@
         "The result serves strictly as a description of an unassigned observational survey sample."
       ],
       "answerIndex": 0,
-      "rationale": "Random assignment supports causal comparison, while generalization requires an appropriate sampling design.",
+      "rationale": "Random assignment balances confounding variables across treatment groups on average, supporting a causal inference for the volunteer sample, whereas generalizing broadly to all students would require random sampling.",
       "choiceRationales": [
         "Best answer. Random assignment supports causal comparison, while generalization requires an appropriate sampling design.",
         "Because participants were volunteers rather than a random sample from a global population, the findings cannot be generalized to all students everywhere even though treatments were randomized.",
@@ -12478,7 +12478,7 @@
         "The mean value of all of the categorical labels that are used."
       ],
       "answerIndex": 1,
-      "rationale": "Conditional percentages use a common within-group denominator and reveal differences in the distributions.",
+      "rationale": "Comparing conditional breakfast percentages calculated within athletes and within nonathletes controls for unequal subgroup sizes, directly showing whether breakfast preferences differ across the two groups.",
       "choiceRationales": [
         "A single overall total combines athletes and nonathletes together into one count and hides whether breakfast preferences differ between the two groups.",
         "Best answer. Conditional percentages use a common within-group denominator and reveal differences in the distributions.",
@@ -12582,7 +12582,7 @@
         "66.7% of all observations regardless of group size"
       ],
       "answerIndex": 2,
-      "rationale": "The conditional percentage is 24/40 = 0.60, or 60%, using the group total as the denominator.",
+      "rationale": "A conditional percentage restricts the denominator to the specified subgroup total, so 24 students choosing option A out of 40 students in that group yields 24/40 = 0.60, or 60%.",
       "choiceRationales": [
         "Treating the raw count of 24 students directly as 24% ignores the group size of 40; dividing 24 by 40 gives the conditional proportion 0.60, or 60%.",
         "Using 40% confuses the subgroup total of 40 students with a percentage; 40 is the denominator of the conditional fraction 24/40 = 60%.",
@@ -12790,7 +12790,7 @@
         "1.55"
       ],
       "answerIndex": 0,
-      "rationale": "For mutually exclusive events, the intersection is zero, so the union probability is 0.35 + 0.20 = 0.55.",
+      "rationale": "For disjoint (mutually exclusive) events, P(A and B) = 0, so the general addition rule simplifies to P(A or B) = P(A) + P(B) = 0.35 + 0.20 = 0.55.",
       "choiceRationales": [
         "Best answer. For mutually exclusive events, the intersection is zero, so the union probability is 0.35 + 0.20 = 0.55.",
         "0.07 multiplies the probabilities, which would apply to independent events occurring together; disjoint events are added.",
@@ -13102,7 +13102,7 @@
         "Events A and B are independent (for P(B) > 0)."
       ],
       "answerIndex": 3,
-      "rationale": "Independence is supported when conditioning on B does not change the probability of A.",
+      "rationale": "Two events A and B with positive probability are independent whenever knowing B occurred does not alter the likelihood of A, which is satisfied directly here because P(A | B) = 0.42 = P(A).",
       "choiceRationales": [
         "If A and B could never occur together, conditioning on B would force P(A | B) to equal 0 rather than matching P(A) = 0.42.",
         "The conditional probability P(A | B) is calculated by dividing by P(B), so it is only defined when P(B) > 0 and cannot imply P(B) = 0.",
@@ -13310,7 +13310,7 @@
         "The random variable has a standard deviation of exactly 12."
       ],
       "answerIndex": 1,
-      "rationale": "Expected value describes a long-run center and does not guarantee an individual result or identify the mode.",
+      "rationale": "Expected value is the theoretical long-run average of a random variable over infinitely many independent repetitions; individual trials can still deviate widely from 12, and 12 need not be the mode or standard deviation.",
       "choiceRationales": [
         "Expected value describes the long-run average across many repetitions rather than a constant single outcome; individual trials typically vary above and below 12.",
         "Best answer. Expected value describes a long-run center and does not guarantee an individual result or identify the mode.",
@@ -13414,7 +13414,7 @@
         "Independent trials with a constant success probability"
       ],
       "answerIndex": 2,
-      "rationale": "A binomial model requires a constant success probability, so a changing probability violates the condition.",
+      "rationale": "The four binomial (BINS) conditions require binary outcomes, independent trials, a fixed number of trials n, and a constant success probability p, so a probability that changes across trials violates the model.",
       "choiceRationales": [
         "Having a predetermined, fixed number of trials n is one of the essential BINS conditions required for a binomial setting, not a condition that can be omitted.",
         "Classifying every trial into exactly two categories—success or failure—is the binary requirement of a binomial model, so it is definitely required.",
@@ -13622,7 +13622,7 @@
         "It becomes exactly zero here."
       ],
       "answerIndex": 0,
-      "rationale": "The standard error is sigma/sqrt(n), so quadrupling n halves the standard error.",
+      "rationale": "The standard deviation of x-bar is sigma/sqrt(n): at n = 25 it is 18/sqrt(25) = 3.6, and at n = 100 it is 18/sqrt(100) = 1.8, illustrating that quadrupling the sample size cuts the standard error in half.",
       "choiceRationales": [
         "Best answer. The standard error is sigma/sqrt(n), so quadrupling n halves the standard error.",
         "Increasing sample size reduces sampling variability rather than increasing it; since sigma/sqrt(n) divides by sqrt(n), quadrupling n from 25 to 100 cuts 3.6 in half.",
@@ -13934,7 +13934,7 @@
         "Raising sample size at the same confidence level"
       ],
       "answerIndex": 3,
-      "rationale": "A larger sample reduces standard error and therefore generally reduces the margin of error.",
+      "rationale": "In a one-proportion confidence interval, margin of error is z* * sqrt(p-hat(1 - p-hat)/n); holding confidence level fixed while increasing n decreases the standard error and narrows the margin of error.",
       "choiceRationales": [
         "Raising the confidence level increases the critical value z*, which widens the confidence interval and makes the margin of error larger rather than smaller.",
         "Switching to voluntary response introduces severe selection bias that invalidates inference formulas rather than narrowing the margin of error.",
@@ -14038,7 +14038,7 @@
         "0.38"
       ],
       "answerIndex": 0,
-      "rationale": "The interval gives plausible values for p under the stated procedure; 0.50 is outside the interval.",
+      "rationale": "A 90% confidence interval lists the range of population proportion values consistent with the sample at the 90% level; because 0.50 lies well outside (0.31, 0.39), it is not a plausible value for p.",
       "choiceRationales": [
         "Best answer. The interval gives plausible values for p under the stated procedure; 0.50 is outside the interval.",
         "Because 0.32 falls inside the 90% confidence interval (0.31, 0.39), the sample data remain consistent with p = 0.32, making it a plausible value rather than an implausible one.",
@@ -14350,7 +14350,7 @@
         "Fail to reject H0 because the p-value is greater than alpha."
       ],
       "answerIndex": 3,
-      "rationale": "The decision compares the p-value with the stated alpha; 0.012 is not less than 0.01.",
+      "rationale": "A significance test decision compares the p-value directly against the pre-specified alpha; since p = 0.012 > alpha = 0.01, we fail to reject H0 at the 1% level even though p is below 0.05.",
       "choiceRationales": [
         "Every p-value is nonnegative by definition, so rejecting H0 requires comparing the p-value against alpha; here p = 0.012 exceeds alpha = 0.01.",
         "When p > alpha, we fail to reject H0 because the evidence is insufficient, which never proves that the null hypothesis p = 0.40 is actually true.",
@@ -14454,7 +14454,7 @@
         "Uses a sample proportion instead of a parameter."
       ],
       "answerIndex": 0,
-      "rationale": "A Type II error is a false negative: the test does not detect a real departure from the null.",
+      "rationale": "A Type II error (probability beta) happens when the null hypothesis is actually false in the population, yet the sample test fails to reject H0—missing a genuine effect or difference.",
       "choiceRationales": [
         "Best answer. A Type II error is a false negative: the test does not detect a real departure from the null.",
         "Rejecting a true null hypothesis is a Type I error (a false positive), whereas a Type II error happens when the test misses a real effect and fails to reject a false null.",
@@ -14558,7 +14558,7 @@
         "0 for every pair of populations"
       ],
       "answerIndex": 1,
-      "rationale": "The expected difference between sample proportions equals the difference between the population proportions.",
+      "rationale": "Because each sample proportion p-hat is an unbiased estimator of its population proportion p, the sampling distribution of p-hat1 - p-hat2 is centered at the true difference in population proportions, p1 - p2.",
       "choiceRationales": [
         "Adding the two population proportions gives the center for a sum of sample proportions, whereas the sampling distribution of the difference p-hat1 − p-hat2 is centered at p1 − p2.",
         "Best answer. The expected difference between sample proportions equals the difference between the population proportions.",
@@ -14662,7 +14662,7 @@
         "The correlation between two sets of measurements."
       ],
       "answerIndex": 2,
-      "rationale": "The two-proportion interval targets p1 - p2, the difference in population proportions.",
+      "rationale": "A two-proportion z-interval constructed from independent random samples uses the statistic p-hat1 - p-hat2 to estimate the unknown population parameter p1 - p2, the difference between the two population proportions.",
       "choiceRationales": [
         "Raw sample counts are observed statistics rather than population parameters, and a two-proportion interval estimates a difference in proportions rather than a sum.",
         "Proportions describe categorical success rates across groups rather than quantitative averages, so this interval does not estimate a single population mean.",
@@ -15078,7 +15078,7 @@
         "The sample was selected without any randomness."
       ],
       "answerIndex": 2,
-      "rationale": "The chi-square independence null states that the categorical variables have no association in the population.",
+      "rationale": "In a chi-square test for independence on a single population cross-classified by two categorical variables, the null hypothesis states that the two variables are independent (not associated) in that population.",
       "choiceRationales": [
         "Chi-square tests concern association, and the null is the absence of association, not a causal claim.",
         "Independence does not imply uniform cell counts across the table; instead, expected counts reflect row and column marginal totals under the assumption of no association.",
@@ -15286,7 +15286,7 @@
         "The population variance divided by n."
       ],
       "answerIndex": 0,
-      "rationale": "The sample mean is centered at the population mean when samples are random and the mean exists.",
+      "rationale": "For simple random samples drawn from a population with mean mu, the sample mean x-bar is an unbiased estimator of mu, meaning the expected value (center) of its sampling distribution equals the population mean.",
       "choiceRationales": [
         "Best answer. The sample mean is centered at the population mean when samples are random and the mean exists.",
         "Sample standard deviation tracks spread inside one sample rather than locating the center of a sampling distribution.",
@@ -15598,7 +15598,7 @@
         "Ha: mu > 10"
       ],
       "answerIndex": 3,
-      "rationale": "The alternative states the directional claim about the population mean parameter.",
+      "rationale": "Statistical hypotheses are always stated in terms of population parameters; testing whether true mean battery life exceeds 10 hours sets up the right-tailed alternative hypothesis Ha: mu > 10.",
       "choiceRationales": [
         "The equality mu = 10 specifies the null hypothesis H0, while the alternative hypothesis Ha must express the directional claim that mean battery life is greater than 10 hours.",
         "Hypotheses describe the population mean mu; x-bar is a sample statistic that varies from sample to sample.",
@@ -15806,7 +15806,7 @@
         "The pooled sample standard deviation"
       ],
       "answerIndex": 1,
-      "rationale": "The expected difference between sample means equals the difference between the population means.",
+      "rationale": "By linearity of expectation for unbiased sample means from independent samples, E(x-bar1 - x-bar2) = E(x-bar1) - E(x-bar2) = mu1 - mu2, centering the sampling distribution at the true mean difference.",
       "choiceRationales": [
         "Summing the population means gives the center of x-bar1 + x-bar2, whereas subtracting two independent sample means centers the sampling distribution at mu1 − mu2.",
         "Best answer. The expected difference between sample means equals the difference between the population means.",
@@ -16014,7 +16014,7 @@
         "Zero remains plausible, so no clear population mean difference appears."
       ],
       "answerIndex": 3,
-      "rationale": "Because zero lies in the interval, a zero population difference remains plausible; equality is not proven.",
+      "rationale": "Because 0 falls inside the confidence interval (-1.4, 2.1) for mu1 - mu2, equal population means remain plausible, so we do not have convincing evidence of a difference (though exact equality is not proven).",
       "choiceRationales": [
         "Because (−1.4, 2.1) extends into negative values as well as positive ones, mu1 could plausibly be smaller than, equal to, or larger than mu2.",
         "Zero being plausible is not the same as zero being proven; other differences in the interval are plausible too.",
@@ -16118,7 +16118,7 @@
         "Ha: x-bar_new - x-bar_old < 0 for every sample"
       ],
       "answerIndex": 0,
-      "rationale": "A reduction corresponds to a negative difference in the stated order and uses population means.",
+      "rationale": "Defining the parameter as mu_new - mu_old means a shorter completion time under the new process makes mu_new smaller than mu_old, corresponding to the population alternative Ha: mu_new - mu_old < 0.",
       "choiceRationales": [
         "Best answer. A reduction corresponds to a negative difference in the stated order and uses population means.",
         "Writing an equals sign gives the null hypothesis of no change in mean completion time, whereas the alternative must reflect the claimed reduction.",
@@ -16326,11 +16326,11 @@
         "The correlation must be exactly equal to zero."
       ],
       "answerIndex": 2,
-      "rationale": "An upward linear pattern indicates positive association, but design and other features determine what conclusions are justified.",
+      "rationale": "Because scores generally rise along a roughly straight line as hours studied increase, the scatterplot supports a positive linear association between the two quantitative variables. Stronger claims such as causation cannot be concluded from the plot alone without considering study design.",
       "choiceRationales": [
         "A linear trend in a scatterplot documents association between study hours and scores, whereas establishing causation requires randomly assigning study hours in a controlled experiment.",
         "Plotting exam score on the vertical axis of a scatterplot requires numerical values, so the response variable is quantitative rather than categorical.",
-        "Best answer. An upward linear pattern indicates positive association, but design and other features determine what conclusions are justified.",
+        "The upward, roughly straight-line pattern across hours studied and score directly supports a positive linear association without making unwarranted causal claims.",
         "A correlation near zero corresponds to no linear trend, whereas an upward straight-line pattern indicates a positive correlation r > 0."
       ],
       "references": [
@@ -16846,12 +16846,12 @@
         "A positive linear association exists."
       ],
       "answerIndex": 3,
-      "rationale": "An upward linear pattern indicates positive association, but design and other features determine what conclusions are justified.",
+      "rationale": "An upward, approximately linear trend across study hours and exam scores indicates that higher values of one quantitative variable tend to pair with higher values of the other in a straight-line form. Describing this pattern as a positive linear association accurately summarizes direction and form without overclaiming causation.",
       "choiceRationales": [
         "Exam score is a numerical measurement that can be placed along a quantitative axis in a scatterplot, not a categorical label.",
         "Observing an upward trend in a scatterplot shows that higher study hours tend to accompany higher scores, but association alone cannot prove cause and effect.",
         "A clear upward straight-line pattern reflects a positive linear relationship with r > 0 rather than a correlation of zero.",
-        "Best answer. An upward linear pattern indicates positive association, but design and other features determine what conclusions are justified."
+        "Describing an upward, roughly straight-line scatterplot trend as a positive linear association captures both the positive direction and linear form while avoiding unsupported causal conclusions."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -17054,7 +17054,7 @@
         "The minimum must increase above the added value."
       ],
       "answerIndex": 1,
-      "rationale": "A large high outlier pulls the mean upward and increases overall spread; resistant summaries may change less.",
+      "rationale": "Both the mean and standard deviation use every observation numerically and are non-resistant to outliers, so appending a single extreme high value pulls the mean upward and inflates the standard deviation.",
       "choiceRationales": [
         "Appending one very large observation at the upper end shifts the middle position slightly upward or leaves the median unchanged; it can never pull the median downward.",
         "Best answer. A large high outlier pulls the mean upward and increases overall spread; resistant summaries may change less.",
@@ -17158,7 +17158,7 @@
         "It becomes zero."
       ],
       "answerIndex": 2,
-      "rationale": "Multiplying all measurements by a positive constant multiplies the standard deviation by that constant.",
+      "rationale": "Converting from hours to minutes multiplies every data value by 60; multiplying all observations by a positive constant scales measures of spread by that same factor, multiplying the standard deviation by 60.",
       "choiceRationales": [
         "Converting hours to minutes multiplies every value by 60, so the standard deviation is multiplied, not divided.",
         "Unlike unitless quantities such as z-scores and correlation, standard deviation carries the data’s measurement units, so multiplying every value by 60 also multiplies the standard deviation by 60.",
@@ -17262,7 +17262,7 @@
         "Shape, spread, and outliers in context"
       ],
       "answerIndex": 3,
-      "rationale": "A complete comparison addresses center, spread, shape, and outliers using a common context.",
+      "rationale": "Comparing two quantitative distributions on the AP Statistics exam requires explicitly contrasting center, shape, spread, and any unusual features like outliers or gaps in the context of the problem.",
       "choiceRationales": [
         "Reporting just the higher mean mentions only one group’s center and leaves out comparative shape, variability, and unusual observations needed for a complete distribution comparison.",
         "Identifying who gathered the measurements is study metadata rather than a statistical characteristic of the distributions being compared.",
@@ -17470,7 +17470,7 @@
         "A simple random sample of all possible households with no stages."
       ],
       "answerIndex": 1,
-      "rationale": "The design uses random selection in more than one stage, first blocks and then homes within blocks.",
+      "rationale": "Selecting city blocks randomly at the first stage and then randomly sampling homes within each chosen block uses nested random sampling steps, defining a multistage sample rather than a single-stage SRS.",
       "choiceRationales": [
         "A census would survey every household in the entire city, whereas this plan randomly selects only four blocks and then samples a subset of homes within those blocks.",
         "Best answer. The design uses random selection in more than one stage, first blocks and then homes within blocks.",
@@ -17678,7 +17678,7 @@
         "Each person’s difference between the two conditions"
       ],
       "answerIndex": 3,
-      "rationale": "Matched-pairs analysis reduces each pair to a within-pair difference before inference.",
+      "rationale": "In a matched-pairs design where each subject experiences both treatments in randomized order, the two measurements are dependent, so analysis computes one within-subject difference per pair and performs one-sample inference on those differences.",
       "choiceRationales": [
         "Treatment labels only identify which condition was applied and carry no measurement value; a matched-pairs analysis must compare each participant's two quantitative responses by subtracting one from the other.",
         "Keeping just the higher score discards the paired comparison that controls for person-to-person variability, whereas matched-pairs inference requires calculating how each participant's two outcomes differ.",
@@ -17886,7 +17886,7 @@
         "Report the first repetition only."
       ],
       "answerIndex": 1,
-      "rationale": "More independent repetitions reduce simulation variability without changing the modeled event.",
+      "rationale": "By the Law of Large Numbers, increasing the number of independent simulation repetitions reduces random Monte Carlo sampling error, yielding a more precise estimate of the underlying probability.",
       "choiceRationales": [
         "Using fewer simulation trials increases sampling variability around the true probability rather than reducing it; by the Law of Large Numbers, greater precision requires many more independent trials.",
         "Best answer. More independent repetitions reduce simulation variability without changing the modeled event.",
@@ -18510,7 +18510,7 @@
         "(0.70)^20"
       ],
       "answerIndex": 3,
-      "rationale": "Zero successes means all 20 trials are failures, each with probability 0.70, under the binomial conditions.",
+      "rationale": "In Binomial(20, 0.30), getting X = 0 successes requires all 20 independent trials to end in failure, each with probability 1 - 0.30 = 0.70, so P(X = 0) = (0.70)^20.",
       "choiceRationales": [
         "20(0.30) = 6 computes the binomial mean np, not a probability; getting zero successes in 20 independent trials requires multiplying the failure probability 1 - 0.30 = 0.70 across all 20 trials.",
         "(0.30)^20 calculates the probability that all 20 independent trials succeed rather than fail; for X = 0, every trial must be a failure with probability 0.70, yielding (0.70)^20.",
@@ -18614,7 +18614,7 @@
         "0.975"
       ],
       "answerIndex": 0,
-      "rationale": "A value of 70 is two standard deviations above the mean, leaving about 2.5% in the upper tail.",
+      "rationale": "For a normal distribution with mean 50 and SD 10, the value 70 has z = (70 - 50)/10 = 2; about 95% lies within 2 SDs of the mean, leaving 5% across both tails and roughly 2.5% (0.025) above 70.",
       "choiceRationales": [
         "Best answer. A value of 70 is two standard deviations above the mean, leaving about 2.5% in the upper tail.",
         "0.16 is the approximate upper-tail area beyond one standard deviation (60), whereas 70 lies two standard deviations above the mean of 50, leaving about 2.5% in the upper tail.",
@@ -18822,11 +18822,11 @@
         "The response variable must necessarily be categorical."
       ],
       "answerIndex": 2,
-      "rationale": "Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
+      "rationale": "A clear curve in the residual plot reveals structured, non-random departures from a straight-line fit across values of the explanatory variable. Because a linear equation fails to account for that systematic curvature, a straight line may not fit the relationship and a nonlinear model or transformation is warranted.",
       "choiceRationales": [
         "A correlation of 1 means a perfect line with zero residuals; a curved residual pattern shows the line misses the shape.",
         "A distinct curved pattern proves the residuals deviate systematically from zero across x; if every residual were zero, all points would lie flat on the horizontal zero line with a perfect linear fit.",
-        "Best answer. Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
+        "Structured curvature in a residual plot indicates that the fitted straight line systematically overpredicts and underpredicts different ranges of the data, suggesting a nonlinear relationship.",
         "Residual plots exist only when both variables in a regression are quantitative; curvature in the residuals signals a nonlinear relationship between quantitative variables rather than a categorical response."
       ],
       "references": [
@@ -19238,7 +19238,7 @@
         "The sample was not a random one."
       ],
       "answerIndex": 2,
-      "rationale": "Rejecting at the larger alpha but not the smaller one places the p-value between those cutoffs.",
+      "rationale": "A test rejects H0 whenever p < alpha and fails to reject when p >= alpha; rejecting at alpha = 0.10 but failing to reject at alpha = 0.05 bounds the p-value strictly between 0.05 and 0.10.",
       "choiceRationales": [
         "A p-value of exactly 0.05 would typically lead to rejection at 0.05, and the result was not rejected there.",
         "Not only did the test reject H0 at alpha = 0.10, but failing to reject at alpha = 0.05 only reflects insufficient evidence at that stricter threshold and never proves H0 true.",
@@ -19342,7 +19342,7 @@
         "Increase the sample size."
       ],
       "answerIndex": 3,
-      "rationale": "A larger sample generally increases power and reduces the chance of failing to detect a real effect.",
+      "rationale": "The probability of a Type II error is beta = 1 - Power; increasing the sample size lowers standard error and boosts statistical power, thereby decreasing the risk of failing to reject a false null hypothesis.",
       "choiceRationales": [
         "Shrinking the sample size increases standard error and lowers statistical power, making a true effect harder to detect and raising rather than reducing the probability of a Type II error.",
         "Introducing sampling bias distorts point estimates and invalidates inference instead of sharpening precision; lowering Type II error probability requires greater power, such as collecting a larger random sample.",
@@ -19446,7 +19446,7 @@
         "Replacing random samples with volunteers."
       ],
       "answerIndex": 0,
-      "rationale": "Larger samples reduce the standard error, while higher confidence generally widens the interval.",
+      "rationale": "In a two-proportion confidence interval, larger sample sizes n1 and n2 shrink sqrt(p-hat1(1-p-hat1)/n1 + p-hat2(1-p-hat2)/n2), reducing the standard error and producing a narrower interval at a fixed confidence level.",
       "choiceRationales": [
         "Best answer. Larger samples reduce the standard error, while higher confidence generally widens the interval.",
         "Raising the confidence level increases the critical value z*, which expands the margin of error and widens the two-proportion confidence interval rather than making it narrower.",
@@ -19550,7 +19550,7 @@
         "The sample size must have been exactly one single observation only here."
       ],
       "answerIndex": 1,
-      "rationale": "The chi-square statistic aggregates squared observed-minus-expected discrepancies scaled by expected counts.",
+      "rationale": "Because chi-square sums (Observed - Expected)^2 / Expected across all cells, a value much larger than the degrees of freedom signals substantial discrepancies between the observed counts and the null expected counts.",
       "choiceRationales": [
         "When every observed count matches its expected count, each (O - E)^2 / E term is zero and the chi-square statistic equals 0, the exact opposite of a large value.",
         "Best answer. The chi-square statistic aggregates squared observed-minus-expected discrepancies scaled by expected counts.",
@@ -19966,7 +19966,7 @@
         "H0: s = 0"
       ],
       "answerIndex": 1,
-      "rationale": "The null generally represents no mean change and uses the population mean difference.",
+      "rationale": "In a paired t-test of blood pressure changes, the null hypothesis states no population effect using the parameter for the true mean difference: H0: mu_difference = 0.",
       "choiceRationales": [
         "The null concerns the population mean difference, not a sample mean, and states equality rather than an inequality.",
         "Best answer. The null generally represents no mean change and uses the population mean difference.",
@@ -20070,7 +20070,7 @@
         "The test has no sampling variability."
       ],
       "answerIndex": 2,
-      "rationale": "Because p exceeds alpha, the evidence is insufficient to reject the null at the stated level.",
+      "rationale": "Since the p-value of 0.08 is greater than alpha = 0.05, the sample result is not statistically significant at the 5% level, meaning we fail to reject H0 rather than proving the null true or the alternative false.",
       "choiceRationales": [
         "With p = 0.08 exceeding alpha = 0.05, we simply fail to reject H0 for lack of convincing evidence; failing to reject never proves that the population mean matches the null value.",
         "A p-value of 0.08 means the sample data are not rare enough at the 5% significance level to reject H0, which leaves the alternative unconfirmed rather than disproved.",
@@ -20174,7 +20174,7 @@
         "It decreases."
       ],
       "answerIndex": 3,
-      "rationale": "Larger independent samples reduce the variability of each sample mean and therefore of their difference.",
+      "rationale": "The standard error of x-bar1 - x-bar2 is sqrt(s1^2/n1 + s2^2/n2); increasing n1 and n2 in the denominators shrinks both variance terms, causing the overall standard error of the difference to decrease.",
       "choiceRationales": [
         "In sqrt(s1^2/n1 + s2^2/n2), both sample sizes sit in the denominators, so enlarging n1 and n2 while variability stays fixed makes the standard error shrink toward zero rather than grow.",
         "Standard error measures the typical sampling spread of x-bar1 - x-bar2, which depends on variances and sample sizes and does not converge to the values of the population means.",
@@ -20382,7 +20382,7 @@
         "Ha: x-bar_new - x-bar_old > 0 for every sample"
       ],
       "answerIndex": 1,
-      "rationale": "An increase corresponds to a positive population mean difference in the stated order.",
+      "rationale": "When the difference is defined as mu_new - mu_old, expecting the new method to raise the true mean score implies mu_new > mu_old, written in terms of population parameters as Ha: mu_new - mu_old > 0.",
       "choiceRationales": [
         "A statement of equality belongs in the null hypothesis H0 to represent no difference between methods, whereas the alternative hypothesis Ha must express the directional claim being tested.",
         "Best answer. An increase corresponds to a positive population mean difference in the stated order.",
@@ -20694,7 +20694,7 @@
         "The explanatory variable is categorical."
       ],
       "answerIndex": 0,
-      "rationale": "The sign gives direction; the magnitude 0.80 indicates a strong linear association in the negative direction.",
+      "rationale": "The sign of the correlation coefficient r indicates the direction of the linear relationship—here negative, meaning larger x values correspond to smaller y values—while |r| = 0.80 reflects strong linear strength.",
       "choiceRationales": [
         "Best answer. The sign gives direction; the magnitude 0.80 indicates a strong linear association in the negative direction.",
         "The minus sign communicates only downward direction, not weakness; linear strength depends on the absolute value |r|, and |-0.80| = 0.80 reflects a fairly strong linear relationship.",
@@ -20798,11 +20798,11 @@
         "y-hat = 4x - 10"
       ],
       "answerIndex": 1,
-      "rationale": "The intercept is the constant term and the slope multiplies the explanatory variable.",
+      "rationale": "Standard linear regression form is y-hat = a + bx, where a is the y-intercept (predicted response when x = 0) and b is the slope multiplying x; substituting a = 10 and b = 4 gives y-hat = 10 + 4x.",
       "choiceRationales": [
         "This swaps the coefficients, putting the slope as the constant term and the intercept as the multiplier of x.",
         "Best answer. The intercept is the constant term and the slope multiplies the explanatory variable.",
-        "This equation reverses the intercept and slope by attaching 10 to x and also flips the slope's sign to negative, whereas a line with intercept 10 and slope 4 is written y-hat = 10 + 4x.",
+        "This equation swaps the slope and intercept by attaching 10 to x as a positive slope and also turns the constant y-intercept negative (-4), rather than writing y-hat = 10 + 4x.",
         "Although the slope multiplying x is correctly 4, subtracting 10 gives an intercept of -10 instead of +10, shifting every predicted response down by 20 units."
       ],
       "references": [
@@ -21006,7 +21006,7 @@
         "The observed response lies above the predicted value."
       ],
       "answerIndex": 3,
-      "rationale": "A positive residual is observed minus predicted and therefore places the observation above the fitted line.",
+      "rationale": "A residual is defined as actual minus predicted (y - y-hat), so a positive residual means y > y-hat, indicating that the observed data point lies vertically above the fitted regression line.",
       "choiceRationales": [
         "A residual equals observed y minus predicted y-hat and measures vertical distance from the regression line, which says nothing about whether x lies below or above x-bar.",
         "Both positively and negatively correlated data sets have points above and below the least-squares line, so a single positive residual gives no information about the sign of r.",
@@ -21422,7 +21422,7 @@
         "It extrapolates far beyond the measured data span."
       ],
       "answerIndex": 3,
-      "rationale": "A model may not preserve its pattern outside the observed range, so extrapolation is risky.",
+      "rationale": "Evaluating the regression line at x = 250 when the observed data span only 10 to 80 is extreme extrapolation, which is hazardous because there is no evidence the linear pattern continues outside the measured domain.",
       "choiceRationales": [
         "A residual is defined as observed y minus predicted y-hat, so no residual even exists at x = 250 without an observed measurement there, and extrapolation errors are often large.",
         "Plugging an extreme x-value like 250 into a regression equation still produces a numerical prediction and never converts the quantitative response variable into a categorical one.",
@@ -21526,7 +21526,7 @@
         "Did the principal personally choose this lunch schedule all alone?"
       ],
       "answerIndex": 0,
-      "rationale": "The question anticipates variability across students and asks about a population proportion.",
+      "rationale": "A statistical question anticipates variability across individuals and requires collecting data from a group to summarize; asking what proportion of students are satisfied captures variation across the student body.",
       "choiceRationales": [
         "Best answer. The question anticipates variability across students and asks about a population proportion.",
         "Asking about a single named student produces one deterministic response with no variability across individuals, whereas a statistical question anticipates variation across the student body.",
@@ -21942,7 +21942,7 @@
         "Convert both variables to categories."
       ],
       "answerIndex": 0,
-      "rationale": "A change of units changes numerical centers, so summaries must be expressed on a common scale.",
+      "rationale": "Wait times recorded in minutes and seconds sit on incompatible numeric scales (differing by a factor of 60), so converting both data sets to the same unit is essential before comparing their centers.",
       "choiceRationales": [
         "Best answer. A change of units changes numerical centers, so summaries must be expressed on a common scale.",
         "A center of 3 minutes and a center of 120 seconds describe different things numerically unless converted to one unit.",
@@ -22254,7 +22254,7 @@
         "Undercoverage"
       ],
       "answerIndex": 3,
-      "rationale": "Members omitted from the sampling frame have little or no chance to be selected.",
+      "rationale": "When a sampling frame omits evening-only students from the population list, those students have zero probability of selection, creating undercoverage bias if their responses differ from daytime students.",
       "choiceRationales": [
         "Type I error is a hypothesis-testing mistake—rejecting a true null—whereas excluding evening-only students from the sampling frame is a sampling design flaw that prevents them from being selected.",
         "A placebo effect occurs when experimental subjects respond to an inactive treatment, which has nothing to do with an incomplete sampling frame leaving out part of the population.",
@@ -22358,7 +22358,7 @@
         "The categories must really be quantitative measurements here."
       ],
       "answerIndex": 0,
-      "rationale": "Similar conditional distributions suggest little association, although sampling variation remains possible.",
+      "rationale": "Nearly identical conditional percentages of late arrivals across bus riders and walkers indicate little or no association between transportation mode and tardiness, though minor differences can reflect sampling variability.",
       "choiceRationales": [
         "Best answer. Similar conditional distributions suggest little association, although sampling variation remains possible.",
         "Nearly identical conditional percentages of late arrivals across bus riders and walkers show almost no association, which is the opposite of strong or perfect dependence.",
@@ -22462,7 +22462,7 @@
         "It makes the estimated probability rise above a value of 1."
       ],
       "answerIndex": 1,
-      "rationale": "More repetitions reduce random simulation error but do not guarantee an individual result.",
+      "rationale": "According to the Law of Large Numbers, conducting many more independent simulation trials causes the empirical relative frequency to stabilize closer to the true theoretical probability without guaranteeing any single trial.",
       "choiceRationales": [
         "Independent simulation trials have no memory of past results; increasing the number of repetitions stabilizes the long-run proportion without predicting or forcing any single upcoming trial.",
         "Best answer. More repetitions reduce random simulation error but do not guarantee an individual result.",
@@ -22982,7 +22982,7 @@
         "1 - (0.25)^12"
       ],
       "answerIndex": 2,
-      "rationale": "At least one success is the complement of zero successes, whose probability is (0.75)^12.",
+      "rationale": "Using the complement rule, the event of at least one success (X >= 1) is the complement of zero successes (X = 0); for Binomial(12, 0.25), P(X = 0) = (0.75)^12, so P(X >= 1) = 1 - (0.75)^12.",
       "choiceRationales": [
         "(0.25)^12 computes the probability that all 12 independent trials succeed (X = 12), whereas at least one success includes X = 1 through 12 and is found via the complement 1 - (0.75)^12.",
         "12(0.25) = 3 gives the expected number of successes np for this binomial random variable, not a probability, since probabilities cannot exceed 1 and P(X >= 1) equals 1 - P(X = 0).",
@@ -23190,7 +23190,7 @@
         "Both of the estimators have zero sampling variability in all repeated samples."
       ],
       "answerIndex": 0,
-      "rationale": "Unbiasedness concerns center, while standard deviation compares sampling variability.",
+      "rationale": "Unbiasedness means an estimator sampling distribution is centered at the true population parameter, while a smaller standard deviation means Estimator A exhibits less sampling variability and tighter clustering around that target.",
       "choiceRationales": [
         "Best answer. Unbiasedness concerns center, while standard deviation compares sampling variability.",
         "Having a smaller standard deviation means Estimator A clusters more tightly around the true parameter than Estimator B, not that sampling error vanishes in every individual sample.",
@@ -23398,7 +23398,7 @@
         "Ha: p-hat > 0.55 for every sample"
       ],
       "answerIndex": 2,
-      "rationale": "The alternative states the population proportion claim and uses the parameter p.",
+      "rationale": "Significance-test hypotheses always make claims about population parameters rather than sample statistics, so testing whether over 55% of all customers prefer option A uses the right-tailed alternative Ha: p > 0.55.",
       "choiceRationales": [
         "An equality statement belongs in the null hypothesis H0, whereas the alternative hypothesis Ha must express the directional research claim that more than 55% of customers prefer option A.",
         "The inequality < 0.55 tests whether fewer than 55% prefer option A, reversing the stated claim of \"more than 55%,\" which requires a right-tailed alternative p > 0.55.",
@@ -23502,7 +23502,7 @@
         "Results at least this extreme are fairly common under the null."
       ],
       "answerIndex": 3,
-      "rationale": "The p-value describes extremeness under the null model, not the probability that a hypothesis is true.",
+      "rationale": "A p-value of 0.20 means that if the null hypothesis were true, observing a statistic at least as extreme as the sample result would happen 20% of the time by chance—it is not the probability that H0 is true.",
       "choiceRationales": [
         "A p-value of 0.20 is computed assuming H0 is true and describes how often data at least this extreme occur by chance, not the probability that the null hypothesis itself is true.",
         "Obtaining p = 0.20 shows only that the sample does not give strong evidence against H0; failing to reject never proves the alternative hypothesis is impossible.",
@@ -23918,7 +23918,7 @@
         "4"
       ],
       "answerIndex": 3,
-      "rationale": "For a one-way goodness-of-fit test with 5 categories and no estimated parameters, df = 5 - 1 = 4.",
+      "rationale": "For a chi-square goodness-of-fit test examining one categorical variable with k categories and no parameters estimated from the sample, degrees of freedom equal k - 1, giving df = 5 - 1 = 4.",
       "choiceRationales": [
         "5 is the total number of categories, but because the category counts must sum to the fixed sample size, a chi-square goodness-of-fit test has df = categories - 1 = 4.",
         "6 adds 1 to the 5 categories instead of subtracting 1; once 4 category counts are known for a fixed total, the 5th is determined, so df = 5 - 1 = 4.",
@@ -24022,7 +24022,7 @@
         "Uniform with mean 70 and standard deviation 16."
       ],
       "answerIndex": 0,
-      "rationale": "The sample mean is centered at 70 and has standard error 16/square root of 64 = 2.",
+      "rationale": "Because n = 64 >= 30, the Central Limit Theorem makes the sampling distribution of x-bar approximately normal with mean mu = 70 and standard deviation sigma/sqrt(n) = 16/sqrt(64) = 16/8 = 2.",
       "choiceRationales": [
         "Best answer. The sample mean is centered at 70 and has standard error 16/square root of 64 = 2.",
         "64 is the sample size, not the mean, and 16 is the population standard deviation rather than the standard error.",
@@ -24334,7 +24334,7 @@
         "Reject the null hypothesis."
       ],
       "answerIndex": 3,
-      "rationale": "Because p is less than alpha, the result is statistically significant at the 1% level.",
+      "rationale": "Comparing the p-value directly with the significance level shows p = 0.003 < alpha = 0.01, providing statistically significant evidence at the 1% level to reject the null hypothesis.",
       "choiceRationales": [
         "Every p-value is a probability between 0 and 1 and is therefore nonnegative; the rejection decision compares p to alpha, and since 0.003 <= 0.01, we reject H0.",
         "A tiny p-value of 0.003 provides strong evidence against the null hypothesis rather than in favor of it, and hypothesis tests never prove a null hypothesis true anyway.",
@@ -24438,7 +24438,7 @@
         "The correlation coefficient between the two conditions."
       ],
       "answerIndex": 0,
-      "rationale": "Pairing creates one quantitative difference per unit, and the mean difference targets its population mean.",
+      "rationale": "Computing the mean of the paired differences x-bar_diff summarizes the sample change per individual and serves as the point estimator for mu_diff, the population mean within-pair difference.",
       "choiceRationales": [
         "Best answer. Pairing creates one quantitative difference per unit, and the mean difference targets its population mean.",
         "Paired designs subtract one condition from the other for each participant, so the mean of those differences estimates the mean difference between conditions rather than their sum.",
@@ -24542,7 +24542,7 @@
         "The individual data values all lie between 2.5 and 6.5."
       ],
       "answerIndex": 1,
-      "rationale": "The interval is entirely positive, so zero is not a plausible difference under the stated procedure.",
+      "rationale": "Every plausible value in the confidence interval (2.5, 6.5) for mu1 - mu2 is strictly positive and excludes 0, providing convincing evidence that the first population mean exceeds the second population mean.",
       "choiceRationales": [
         "Because every plausible value in (2.5, 6.5) for mu1 - mu2 is positive, mu1 exceeds mu2 across the entire interval, directly contradicting the claim that the second mean is larger.",
         "Best answer. The interval is entirely positive, so zero is not a plausible difference under the stated procedure.",
@@ -24750,7 +24750,7 @@
         "Significant evidence of a mean difference in the alternative direction."
       ],
       "answerIndex": 3,
-      "rationale": "A p-value below alpha supports a conclusion against the null, stated with the direction and design limits.",
+      "rationale": "Because p = 0.04 < alpha = 0.05, we reject H0 and report statistically significant evidence of a population mean difference in the direction of Ha, without misinterpreting p as P(H0) or claiming causation without random assignment.",
       "choiceRationales": [
         "A p-value of 0.04 assumes H0 is true and measures how unusual the observed difference in means is by chance, not the probability that the null hypothesis itself is true.",
         "Future random samples will naturally produce different sample mean differences due to sampling variability; rejecting H0 supports a difference in population means, not identical future samples.",
@@ -25478,7 +25478,7 @@
         "It removes the need to inspect the scatterplot."
       ],
       "answerIndex": 2,
-      "rationale": "The squared residual criterion measures total error without cancellation and defines the least-squares fit.",
+      "rationale": "Unsquared residuals sum to zero for infinitely many lines through (x-bar, y-bar); squaring each residual eliminates sign cancellation and penalizes large misses, uniquely determining the least-squares regression line.",
       "choiceRationales": [
         "The purpose is to prevent cancellation in the sum, not merely to change signs; positive and negative residuals still exist after fitting.",
         "No line passes through every point of scattered data; least squares minimizes the total squared error.",
@@ -25582,7 +25582,7 @@
         "Treat this slight extrapolation cautiously."
       ],
       "answerIndex": 3,
-      "rationale": "Any prediction outside the observed range is extrapolation, even if the distance beyond the range is small.",
+      "rationale": "Even slightly outside the observed x-range, predicting y constitutes extrapolation and must be treated cautiously because the data provide no direct evidence that the linear relationship persists beyond the sampled interval.",
       "choiceRationales": [
         "Even slight extrapolation relies on the unproven assumption that the linear pattern continues unchanged past the observed x-values, so accuracy is never guaranteed outside the data range.",
         "Predicting slightly past the observed x-range simply evaluates the fitted linear equation at that x-value and does not force the predicted response to equal zero.",

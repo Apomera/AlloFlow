@@ -79,6 +79,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     .rk-explorer .rk-progress-track>div { height:5px; box-shadow:none!important; background:#92400e; }
     .rk-explorer .rk-progress-body { padding:0 14px 14px; border-top:1px solid #e2e8f0; }
     .rk-explorer .rk-progress-body button { min-height:36px; }
+    .theme-dark .rk-explorer .rk-progress { background:#1e293b; border-color:#64748b!important; }
+    .theme-dark .rk-explorer .rk-progress .rk-disclosure-summary { color:#e2e8f0; }
+    .theme-dark .rk-explorer .rk-progress-track { background:#475569; }
+    .theme-dark .rk-explorer .rk-progress-track>div { background:#f59e0b; }
+    .theme-dark .rk-explorer .rk-progress-body { border-top-color:#475569; }
     .rk-explorer .rk-mode-hero { position:relative; display:flex; align-items:center; gap:14px; margin:0 0 18px; padding:18px; border:1px solid #e2e8f0; border-left:4px solid var(--rk-accent); border-radius:14px; background:linear-gradient(110deg,var(--rk-soft),#fff 85%); }
     .rk-explorer .rk-hero-symbol { display:grid; place-items:center; width:46px; height:46px; flex:none; color:var(--rk-accent); background:#fff; border:1px solid #cbd5e1; border-radius:13px; }
     .rk-explorer .rk-hero-copy { min-width:0; flex:1; }
@@ -233,8 +238,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     .rk-explorer .rk-study-fields label { display:block; font-size:14px; font-weight:700; margin-bottom:6px; }
     .rk-explorer .rk-study-fields textarea { box-sizing:border-box; width:100%; min-height:110px; resize:vertical; padding:10px; border:1px solid #64748b; border-radius:9px; background:#fff; color:#0f172a; font-size:14px; line-height:1.6; }
     .rk-explorer .rk-study-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
-    .rk-explorer .rk-skip-link { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
-    .rk-explorer .rk-skip-link:focus { position:relative; display:inline-flex; align-items:center; width:auto; height:auto; min-height:44px; overflow:visible; clip-path:none; padding:8px 12px; margin:4px 0 12px; background:#fff; color:#1e40af; text-decoration:underline; font-weight:700; }
+    .rk-explorer .rk-skip-link { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); pointer-events:none; }
+    .rk-explorer .rk-skip-link:focus { pointer-events:auto; position:relative; display:inline-flex; align-items:center; width:auto; height:auto; min-height:44px; overflow:visible; clip-path:none; padding:8px 12px; margin:4px 0 12px; background:#fff; color:#1e40af; text-decoration:underline; font-weight:700; }
     @media (max-width:600px) {
       .rk-explorer .rk-brand { font-size:17px; gap:7px; }
       .rk-explorer .rk-brand-mark { display:none; }

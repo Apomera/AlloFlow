@@ -9,11 +9,15 @@
 (function () {
   'use strict';
 
+  var win = typeof window === 'object' && window !== null ? window : null;
+  var doc = typeof document === 'object' && document !== null ? document : (win && typeof win.document === 'object' ? win.document : null);
+  if (!win || !doc || typeof doc.getElementById !== 'function') return;
+
   var API = 'https://api.dictionaryapi.dev/api/v2/entries/en/';
   var EDITS_KEY = 'alloflow-packets-vocab-edits/1';
   var SOURCE = 'Wiktionary, through the Free Dictionary API (dictionaryapi.dev)';
   var MAX_MEANINGS = 8;
-  var doc = document;
+  var MAX_QUEUE = 200;
   var $ = function (id) { return doc.getElementById(id); };
   var el = function (tag, className, text) { var n = doc.createElement(tag); if (className) n.className = className; if (text != null) n.textContent = text; return n; };
   var setText = function (id, text) { var n = $(id); if (n) n.textContent = text; };
@@ -33,6 +37,7 @@
   function keyOf(word) { return wordOf(word).toLowerCase().replace(/’/g, "'"); }
   function hasWord(sentence, word) {
     var esc = keyOf(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!esc) return false;
     try { return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(sentence); } catch (_) { return false; }
   }
 
@@ -101,15 +106,22 @@
   }
   function draw(result, word) {
     var host = $('meanings');
+    if (!host) return;
     host.textContent = '';
-    $('found-legend').textContent = 'Meanings of ' + word;
+    var legend = $('found-legend');
+    if (legend) legend.textContent = 'Meanings of ' + word;
     result.list.forEach(function (m, i) {
       var label = el('label', 'radio'), radio = el('input');
       radio.type = 'radio';
       radio.name = 'meaning';
       radio.value = String(i);
       radio.checked = i === 0;
-      radio.addEventListener('change', function () { Array.prototype.forEach.call(host.querySelectorAll('.radio'), function (l) { l.classList.toggle('is-on', l.querySelector('input').checked); }); });
+      radio.addEventListener('change', function () {
+        Array.prototype.forEach.call(host.querySelectorAll('.radio'), function (l) {
+          var inp = l.querySelector('input');
+          l.classList.toggle('is-on', !!(inp && inp.checked));
+        });
+      });
       var words = el('span', '', (m.pos ? m.pos + ': ' : '') + m.def);
       if (m.example) words.appendChild(el('span', 'radio-sub', 'Example: ' + m.example));
       label.appendChild(radio);
@@ -119,40 +131,49 @@
     });
     setText('credit', 'Meanings from ' + SOURCE + (result.license ? ', license ' + result.license : '') + '.');
     setText('use-line', '');
-    $('found').hidden = false;
-    $('found-title').focus();
+    var foundEl = $('found');
+    if (foundEl) foundEl.hidden = false;
+    var titleEl = $('found-title');
+    if (titleEl && typeof titleEl.focus === 'function') titleEl.focus();
   }
   var LOOKUP_MS = 10000;
   var activeStop = null;
+  var activeTimer = null;
   var lookRun = 0;
   function abortActive() {
+    if (activeTimer !== null) { win.clearTimeout(activeTimer); activeTimer = null; }
     if (activeStop) { try { activeStop.abort(); } catch (_) {} activeStop = null; }
   }
   function look() {
-    var word = wordOf($('word').value);
+    var wordEl = $('word');
+    var onlineEl = $('online-on');
+    if (!wordEl || !onlineEl) return;
+    var word = wordOf(wordEl.value);
     setText('use-line', '');
-    allowed = !!$('online-on').checked;
+    allowed = !!onlineEl.checked;
     syncConsent();
     if (!allowed) { setText('look-line', 'Turn on Allow this page to look up words online first. Nothing has been sent.'); return; }
     if (!word) { setText('look-line', 'Type a word: letters, and at most 40 characters.'); return; }
-    if (typeof window.fetch !== 'function') { setText('look-line', 'This browser cannot look words up.'); return; }
-    if (window._isDesktopBundledApp === true || window.__ALLOFLOW_DESKTOP_OFFLINE__ === true) { setText('look-line', 'Online word lookup is disabled in offline Desktop mode.'); return; }
-    if (window.navigator && window.navigator.onLine === false) { setText('look-line', 'This device is offline. Connect to the internet, then try again.'); return; }
+    if (typeof win.fetch !== 'function') { setText('look-line', 'This browser cannot look words up.'); return; }
+    if (win._isDesktopBundledApp === true || win.__ALLOFLOW_DESKTOP_OFFLINE__ === true) { setText('look-line', 'Online word lookup is disabled in offline Desktop mode.'); return; }
+    if (win.navigator && win.navigator.onLine === false) { setText('look-line', 'This device is offline. Connect to the internet, then try again.'); return; }
     abortActive();
     var run = ++lookRun;
     asked = word;
     found = null;
-    $('found').hidden = true;
+    if ($('found')) $('found').hidden = true;
     setBusy(true);
     setText('look-line', 'Looking up ' + word + '.');
-    var control = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+    var control = typeof win.AbortController === 'function' ? new win.AbortController() : null;
     activeStop = control;
     var timedOut = false;
-    var timer = window.setTimeout(function () { timedOut = true; if (control) { try { control.abort(); } catch (_) {} } }, LOOKUP_MS);
+    var timer = win.setTimeout(function () { timedOut = true; if (control) { try { control.abort(); } catch (_) {} } }, LOOKUP_MS);
+    activeTimer = timer;
     var opts = { credentials: 'omit', referrerPolicy: 'no-referrer' };
     if (control) opts.signal = control.signal;
     var finish = function () {
-      window.clearTimeout(timer);
+      win.clearTimeout(timer);
+      if (activeTimer === timer) activeTimer = null;
       if (activeStop === control) activeStop = null;
       if (run === lookRun) setBusy(false);
     };
@@ -208,9 +229,11 @@
     if (!found) return;
     var picked = doc.querySelector('input[name="meaning"]:checked');
     var m = found.result.list[Number(picked ? picked.value : 0)] || found.result.list[0];
+    if (!m) return;
     var key = keyOf(found.word), edits;
+    if (!key) return;
     try {
-      edits = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null', function (k, v) {
+      edits = JSON.parse(win.localStorage.getItem(EDITS_KEY) || 'null', function (k, v) {
         return k === '__proto__' ? undefined : v;
       });
     } catch (_) { edits = null; }
@@ -229,31 +252,33 @@
     delete w.wrong; delete w.wrongFor;
     w.at = Date.now();
     edits.words[key] = w;
-    try { window.localStorage.setItem(EDITS_KEY, JSON.stringify(edits)); } catch (_) { $('not-keeping').hidden = false; setText('use-line', 'This browser could not keep it.'); return; }
+    try { win.localStorage.setItem(EDITS_KEY, JSON.stringify(edits)); } catch (_) { if ($('not-keeping')) $('not-keeping').hidden = false; setText('use-line', 'This browser could not keep it.'); return; }
     if (savedWords.indexOf(key) < 0) savedWords.push(key);
     queue = queue.filter(function (item) { return keyOf(item) !== key; });
     var nextWord = queue.length ? queue.shift() : '';
     var savedNote = savedWords.length > 1 ? ' (' + savedWords.length + ' saved this visit)' : '';
     var savedWord = found.word;
     found = null;
-    $('found').hidden = true;
+    if ($('found')) $('found').hidden = true;
     var doneText = nextWord
       ? 'Saved for ' + savedWord + savedNote + '. Next word ready above: ' + nextWord + '. Press Look it up, or go back to the vocabulary maker.'
       : 'Saved for ' + savedWord + savedNote + '. Type another word above to look it up on this tab, or go back to the vocabulary maker.';
-    $('word').value = nextWord || '';
+    if ($('word')) $('word').value = nextWord || '';
     drawQueue();
     setText('use-line', doneText);
     setText('look-line', doneText);
-    try { $('word').focus(); } catch (_) {}
+    try { if ($('word')) $('word').focus(); } catch (_) {}
   }
   function start() {
-    var hash = String(window.location.hash || '');
+    var wordEl = $('word'), lookEl = $('look'), onlineEl = $('online-on'), useEl = $('use');
+    if (!wordEl || !lookEl || !onlineEl || !useEl) return;
+    var hash = String((win.location && win.location.hash) || '');
     var hashed = /(?:^#|&)word=([^&]*)/.exec(hash);
     var firstKey = '';
     if (hashed) {
       try {
         var first = wordOf(decodeURIComponent(hashed[1]));
-        $('word').value = first;
+        wordEl.value = first;
         firstKey = keyOf(first);
       } catch (_) {}
     }
@@ -263,6 +288,7 @@
         var seen = Object.create(null);
         if (firstKey) seen[firstKey] = true;
         decodeURIComponent(more[1]).split(',').forEach(function (part) {
+          if (queue.length >= MAX_QUEUE) return;
           var w = wordOf(part), k = keyOf(w);
           if (w && k && !seen[k]) { seen[k] = true; queue.push(w); }
         });
@@ -270,21 +296,28 @@
     }
     drawQueue();
     syncConsent();
-    try { window.localStorage.getItem(EDITS_KEY); } catch (_) { $('not-keeping').hidden = false; }
-    $('look').addEventListener('click', look);
+    try { win.localStorage.getItem(EDITS_KEY); } catch (_) { if ($('not-keeping')) $('not-keeping').hidden = false; }
+    lookEl.addEventListener('click', look);
     if ($('skip-word')) $('skip-word').addEventListener('click', skipWord);
-    $('word').addEventListener('input', function () {
+    wordEl.addEventListener('input', function () {
       if (activeStop) { abortActive(); lookRun++; setBusy(false); }
       if (found || ($('found') && !$('found').hidden)) clearStaleFound();
     });
-    $('word').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); look(); } });
-    $('online-on').addEventListener('change', function () {
+    wordEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.repeat && !e.isComposing && e.keyCode !== 229) {
+        e.preventDefault();
+        if (lookEl.disabled) return;
+        look();
+      }
+    });
+    onlineEl.addEventListener('change', function () {
       allowed = !!this.checked;
       syncConsent();
       if (!allowed) { abortActive(); lookRun++; setBusy(false); }
       setText('look-line', allowed ? 'On for this visit. Press Look it up to send the word.' : 'Off. Nothing is sent.');
     });
-    $('use').addEventListener('click', use);
+    useEl.addEventListener('click', use);
+    if (typeof win.addEventListener === 'function') win.addEventListener('pagehide', abortActive);
   }
   start();
 })();

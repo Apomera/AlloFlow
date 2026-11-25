@@ -15,6 +15,9 @@ import { BUG_RECEIPT_PATTERN, handleBugReview, readBugReview } from './bug_revie
  *   POST /v2/submitTranslation private translation intake
  *   POST /v2/submitItemCorrection private practice-item correction intake
  *   POST /submitBug          accept a bug report (-> PRIVATE BUG_REPORTS KV)
+ *   POST /packetsFeedback    Packets teacher feedback; refuses PII (-> BUG_REPORTS, pfb: keys)
+ *   GET  /packetsFeedback    token-gated Packets feedback reader
+ *   GET  /packets-feedback-inbox  reader page for it (data requires a bearer token)
  *   POST /submitPd          accept a PD module (-> PRIVATE PD_SUBMISSIONS KV)
  *   POST /submitPlugin      accept a Tool Forge plugin (-> PRIVATE PLUGIN_SUBMISSIONS KV)
  *   GET  /bugs              token-gated bug-report reader
@@ -283,24 +286,26 @@ async function turnstileRefusal(request, env, payload) {
 
 const COMMUNITY_RETENTION_SECONDS = 30 * 24 * 60 * 60;
 
-async function preparePublicIntake(request, env) {
+async function preparePublicIntake(request, env, maxBytes = MAX_BODY_BYTES, options = {}) {
   if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') {
     return jsonResponse({ ok: false, error: 'Submission protection is unavailable. Your draft has not been submitted.' }, 503);
   }
   const contentType = request.headers.get('Content-Type') || '';
   if (!/^\s*application\/json(?:\s*;\s*charset\s*=\s*(?:utf-?8|"utf-?8"))?\s*$/i.test(contentType)) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const body = await readBugBody(request);
+  const body = await readBugBody(request, maxBytes);
   if (body.status) return jsonResponse({ ok: false, error: body.error }, body.status);
   let payload;
   try {
     payload = JSON.parse(body.text, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
   } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
-  return protectPublicPayload(request, env, payload);
+  return protectPublicPayload(request, env, payload, options);
 }
 
-async function protectPublicPayload(request, env, payload) {
-  const turnstile = await turnstileRefusal(request, env, payload);
-  if (turnstile) return jsonResponse({ ok: false, error: turnstile.error }, turnstile.status);
+async function protectPublicPayload(request, env, payload, options = {}) {
+  if (!options.skipTurnstile) {
+    const turnstile = await turnstileRefusal(request, env, payload);
+    if (turnstile) return jsonResponse({ ok: false, error: turnstile.error }, turnstile.status);
+  }
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) delete payload.turnstile_token;
   const rawBody = JSON.stringify(payload);
   const abuse = await submitAbuseRefusal(request, env, rawBody);
@@ -852,12 +857,12 @@ const BUG_REPORT_RETENTION_SECONDS = 30 * 24 * 60 * 60;
 
 // Count network bytes before decoding/parsing. Content-Length is only an early
 // refusal: absent, understated, and chunked bodies still use the actual cap.
-async function readBugBody(request) {
+async function readBugBody(request, maxBytes = MAX_BODY_BYTES) {
   const declared = request.headers.get('Content-Length');
-  if (declared != null && (!/^\d+$/.test(declared.trim()) || Number(declared) > MAX_BODY_BYTES)) {
+  if (declared != null && (!/^\d+$/.test(declared.trim()) || Number(declared) > maxBytes)) {
     try { await request.body?.cancel(); } catch (_) { /* never echo stream details */ }
     return /^\d+$/.test(declared.trim())
-      ? { status: 413, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }
+      ? { status: 413, error: `Body exceeds ${maxBytes} bytes.` }
       : { status: 400, error: 'Invalid Content-Length.' };
   }
   if (!request.body) return { text: '' };
@@ -871,9 +876,9 @@ async function readBugBody(request) {
       const { value, done } = await reader.read();
       if (done) break;
       total += value.byteLength;
-      if (total > MAX_BODY_BYTES) {
+      if (total > maxBytes) {
         try { await reader.cancel(); } catch (_) { /* size refusal takes precedence */ }
-        return { status: 413, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` };
+        return { status: 413, error: `Body exceeds ${maxBytes} bytes.` };
       }
       parts.push(decoder.decode(value, { stream: true }));
     }
@@ -1104,6 +1109,212 @@ async function listNewestKvKeys(kv, prefix, limit) {
   }
   if (!scanComplete) throw new Error('Storage scan bound exceeded');
   return selected.reverse();
+}
+
+// ── /packetsFeedback: short teacher feedback from the static Packets pages ──
+// The page scrubs in the browser; this route is the second line. Unlike
+// /submitBug it REFUSES (422) anything that still looks personal, and it
+// stores only the six contract fields: no user agent, IP, country or headers.
+const PACKETS_FEEDBACK_MAX_BYTES = 4096;
+const PACKETS_FEEDBACK_MAX_MESSAGE = 600;
+const PACKETS_FEEDBACK_KEY_PATTERN = /^pfb:\d{13}:[a-f0-9]{8}$/;
+const PACKETS_FEEDBACK_FIELDS = ['v', 'page', 'kind', 'message', 'browser', 'device'];
+const PACKETS_FEEDBACK_ENUMS = {
+  page: new Set(['packets', 'packets-make', 'packets-vocab', 'packets-math-practice', 'packets-check', 'packets-symbol-runner',
+    'packets-read-along', 'packets-voice', 'packets-choice', 'packets-maze', 'packets-manipulatives', 'packets-stem-lab',
+    'packets-life-skills', 'packets-aac', 'packets-sel', 'packets-playlist', 'packets-packs', 'packets-compile',
+    'packets-pictures', 'packets-present-export', 'packets-qr', 'packets-open', 'packets-try',
+    'packets-results', 'packets-verify', 'packets-vocab-lookup', 'packets-about', 'packets-it', 'packets-feedback', 'other']),
+  kind: new Set(['broken', 'confusing', 'idea', 'worked']),
+  browser: new Set(['chrome', 'edge', 'safari', 'firefox', 'other']),
+  device: new Set(['phone', 'tablet', 'computer', 'unknown']),
+};
+// Shared patterns, except street address gets an end-of-word guard here: the
+// shared one matches "3 students st(ruggled)", which would refuse plain wording.
+const PACKETS_FEEDBACK_PII_PATTERNS = PII_PATTERNS.map(p => (p.type !== 'street address' ? p : {
+  type: p.type,
+  re: /\d{1,5}\s+[A-Z][A-Za-z]+\s+(?:Street|St\.?|Avenue|Ave\.?|Road|Rd\.?|Boulevard|Blvd\.?|Drive|Dr\.?|Lane|Ln\.?|Way|Court|Ct\.?)(?![A-Za-z])/gi,
+})).concat([
+  { type: 'link with query or fragment', re: /(?:\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+(?:\.[a-z0-9-]+)+\/)[^\s?#]*[?#][^\s?#.,;:!)\]'"]/gi },
+  { type: 'long number', re: /\d{7,}/g },
+  { type: 'date', re: /\b(?:\d{1,2}([/.-])\d{1,2}\1(?:\d{4}|\d{2})|\d{4}([/.-])\d{1,2}\2\d{1,2})\b/g },
+  { type: 'ID number', re: /\b(?:student\s*id|id\s*(?:number|no\.?|#)|case\s*(?:number|no\.?|#))\s*(?:is|was|=|:|#)?\s*#?[A-Za-z0-9-]*\d/gi },
+  { type: '@handle', re: /(?<![A-Za-z0-9._%+-])@[A-Za-z0-9_][A-Za-z0-9_.]*/g },
+]);
+
+function validatePacketsFeedback(p) {
+  if (!p || typeof p !== 'object' || Array.isArray(p)) return 'Body must be a JSON object.';
+  const keys = Object.keys(p);
+  if (keys.some(key => !PACKETS_FEEDBACK_FIELDS.includes(key))) return 'Unknown field.';
+  if (keys.length !== PACKETS_FEEDBACK_FIELDS.length) return 'Missing field.';
+  if (p.v !== 1) return 'Unsupported version.';
+  for (const [field, allowed] of Object.entries(PACKETS_FEEDBACK_ENUMS)) {
+    if (typeof p[field] !== 'string' || !allowed.has(p[field])) return `Invalid ${field}.`;
+  }
+  if (typeof p.message !== 'string') return 'Invalid message.';
+  const message = p.message.trim();
+  if (!message || message.length > PACKETS_FEEDBACK_MAX_MESSAGE) return `Message must be 1 to ${PACKETS_FEEDBACK_MAX_MESSAGE} characters.`;
+  return null;
+}
+
+function packetsFeedbackPiiKinds(text) {
+  return PACKETS_FEEDBACK_PII_PATTERNS.filter(p => { p.re.lastIndex = 0; return p.re.test(text); }).map(p => p.type);
+}
+
+async function handlePacketsFeedbackSubmit(request, env, intake) {
+  if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Feedback storage is unavailable. Please try again later.' }, 503);
+  const p = intake.payload;
+  const err = validatePacketsFeedback(p);
+  if (err) return bugResponse({ ok: false, error: err }, 400);
+  const message = p.message.trim();
+  const kinds = packetsFeedbackPiiKinds(message);
+  if (kinds.length) return bugResponse({ ok: false, error: 'personal_info', kinds }, 422);
+  const now = Date.now();
+  const submittedAt = new Date(now).toISOString();
+  const record = {
+    schema_version: '1.0',
+    kind: 'packets_feedback',
+    submitted_at: submittedAt,
+    expires_at: new Date(now + BUG_REPORT_RETENTION_SECONDS * 1000).toISOString(),
+    page: p.page,
+    feedback_kind: p.kind,
+    message,
+    browser: p.browser,
+    device: p.device,
+  };
+  const id = `pfb:${now}:${crypto.randomUUID().slice(0, 8)}`;
+  try {
+    await env.BUG_REPORTS.put(id, JSON.stringify(record), {
+      expirationTtl: BUG_REPORT_RETENTION_SECONDS,
+      metadata: { submitted_at: submittedAt, page: record.page, feedback_kind: record.feedback_kind },
+    });
+  } catch (_) {
+    return bugResponse({ ok: false, error: 'Could not store feedback. Please try again.' }, 502);
+  }
+  return bugResponse({ ok: true, id }, 201);
+}
+
+// Packets feedback reader page: same token, CSP and textContent-only rendering as
+// /bug-inbox, kept separate so pfb: records never mix into the bug list.
+function renderPacketsFeedbackInbox(nonce) {
+  const n = String(nonce).replace(/[^a-f0-9]/gi, '');
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive"><meta name="referrer" content="no-referrer">
+<title>Packets feedback · AlloFlow</title>
+<style nonce="${n}">
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #17243b; background: #f1f5f9; }
+* { box-sizing: border-box; } body { margin: 0; } [hidden] { display: none !important; }
+main { max-width: 900px; margin: auto; padding: 24px 16px; } p { line-height: 1.55; } .muted { color: #475569; }
+.card { background: #fff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 20px; margin-top: 16px; }
+label { display: block; font-weight: 650; margin-bottom: 7px; }
+input, button { font: inherit; min-height: 44px; border: 1px solid #64748b; border-radius: 7px; padding: 9px 14px; }
+input { width: 100%; } button { background: #fff; color: #17243b; cursor: pointer; margin-top: 12px; }
+:focus-visible { outline: 3px solid #a34400; outline-offset: 3px; }
+#list { list-style: none; padding: 0; display: grid; gap: 10px; }
+#list li { background: #fff; border: 1px solid #cbd5e1; border-radius: 9px; padding: 12px; overflow-wrap: anywhere; }
+.meta { color: #475569; font-size: .85rem; } .msg { white-space: pre-wrap; margin: 6px 0; }
+#status[data-error="true"] { color: #a21b25; }
+</style></head><body><main>
+<h1>Packets feedback</h1>
+<p class="muted">Short notes from the Packets feedback page, newest first. Kept 30 days. Bug reports are in <a href="/bug-inbox">the bug inbox</a>.</p>
+<p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+<form id="login" class="card" autocomplete="off">
+<label for="token">Inbox access token</label>
+<input id="token" type="password" required autocomplete="off" autocapitalize="none" spellcheck="false">
+<button type="submit">Open Packets feedback</button>
+</form>
+<section id="inbox" hidden><button id="refresh" type="button">Refresh</button> <button id="signout" type="button">Sign out</button>
+<ul id="list" aria-label="Packets feedback, newest first"></ul></section>
+</main>
+<script nonce="${n}">
+(() => {
+  'use strict';
+  const byId = id => document.getElementById(id);
+  let token = '';
+  function status(text, error) { byId('status').textContent = text; byId('status').dataset.error = String(Boolean(error)); }
+  function signOut(text) { token = ''; byId('list').replaceChildren(); byId('inbox').hidden = true; byId('login').hidden = false; status(text || 'Signed out.'); }
+  async function load() {
+    if (!token) return;
+    status('Loading…');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await fetch('/packetsFeedback?limit=50', { headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }, cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal });
+      if (response.status === 401 || response.status === 403) { signOut('Access denied. Enter a valid inbox token.'); return; }
+      const payload = await response.json();
+      if (!response.ok || !payload || payload.ok !== true || !Array.isArray(payload.feedback)) throw new Error('failed');
+      const list = byId('list');
+      list.replaceChildren();
+      payload.feedback.forEach(item => {
+        if (!item || typeof item.id !== 'string') return;
+        const text = field => (typeof item[field] === 'string' && item[field]) || 'unknown';
+        const row = document.createElement('li');
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const when = new Date(item.submitted_at);
+        meta.textContent = [text('feedback_kind'), text('page'), text('browser'), text('device'), Number.isFinite(when.getTime()) ? when.toLocaleString() : 'unknown time'].join(' · ');
+        const msg = document.createElement('p');
+        msg.className = 'msg';
+        msg.textContent = typeof item.message === 'string' ? item.message : '';
+        const receipt = document.createElement('div');
+        receipt.className = 'meta';
+        receipt.textContent = 'Receipt: ' + item.id;
+        row.append(meta, msg, receipt);
+        list.append(row);
+      });
+      byId('login').hidden = true;
+      byId('inbox').hidden = false;
+      status(payload.feedback.length ? payload.feedback.length + ' loaded.' : 'No Packets feedback yet.');
+    } catch (_) {
+      status('Could not load Packets feedback. Try again.', true);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  byId('login').addEventListener('submit', event => { event.preventDefault(); token = byId('token').value.trim(); byId('token').value = ''; void load(); });
+  byId('refresh').addEventListener('click', () => { void load(); });
+  byId('signout').addEventListener('click', () => signOut());
+  window.addEventListener('pagehide', () => signOut(''));
+})();
+</script></body></html>`;
+}
+
+function handlePacketsFeedbackInbox() {
+  const nonce = crypto.randomUUID().replace(/-/g, '');
+  return new Response(renderPacketsFeedbackInbox(nonce), {
+    headers: {
+      ...BUG_RESPONSE_HEADERS,
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Frame-Options': 'DENY',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Resource-Policy': 'same-origin',
+      'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`,
+    },
+  });
+}
+
+async function handlePacketsFeedbackList(request, env, url) {
+  const refusal = await authorizeBugAdmin(request, env);
+  if (refusal) return refusal;
+  try {
+    const keys = await listNewestKvKeys(env.BUG_REPORTS, 'pfb:', parseAdminListLimit(url));
+    const feedback = [];
+    for (const key of keys) {
+      if (!PACKETS_FEEDBACK_KEY_PATTERN.test(key)) continue;
+      const raw = await env.BUG_REPORTS.get(key);
+      if (raw == null) continue; // expired between list and read
+      const r = JSON.parse(raw);
+      if (!r || typeof r !== 'object' || Array.isArray(r)) throw new Error('Unavailable feedback');
+      const row = { id: key };
+      for (const field of ['submitted_at', 'expires_at', 'page', 'feedback_kind', 'message', 'browser', 'device']) row[field] = typeof r[field] === 'string' ? r[field] : '';
+      feedback.push(row);
+    }
+    return adminBugResponse({ ok: true, count: feedback.length, feedback });
+  } catch (_) {
+    return adminBugResponse({ ok: false, error: 'Could not load Packets feedback. Please try again.' }, 502);
+  }
 }
 
 async function handlePdList(request, env, url) {
@@ -2539,16 +2750,31 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    const ADMIN_ROUTES = new Set(['/bugs', '/bug-inbox', '/bug-review', '/pdSubmissions', '/pluginSubmissions', '/issuePd']);
+    const ADMIN_ROUTES = new Set(['/bugs', '/bug-inbox', '/bug-review', '/packets-feedback-inbox', '/pdSubmissions', '/pluginSubmissions', '/issuePd']);
     if (request.method === 'OPTIONS') {
       if (ADMIN_ROUTES.has(url.pathname)) {
         return new Response(null, { status: 204, headers: { ...BUG_RESPONSE_HEADERS, 'Cross-Origin-Resource-Policy': 'same-origin' } });
+      }
+      if (url.pathname === '/packetsFeedback') {
+        // The public page only POSTs JSON; the token-gated GET reader stays same-origin.
+        return new Response(null, { status: 204, headers: { ...corsHeaders, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', ...BUG_RESPONSE_HEADERS } });
       }
       return new Response(null, { status: 204, headers: { ...corsHeaders, ...(url.pathname === '/submitBug' ? BUG_RESPONSE_HEADERS : {}) } });
     }
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
       return jsonResponse({ ok: true });
+    }
+
+    if (url.pathname === '/packetsFeedback') {
+      if (request.method === 'GET') return handlePacketsFeedbackList(request, env, url);
+      if (request.method !== 'POST') return jsonResponse({ ok: false, error: 'Use POST for submissions.' }, 405);
+      // Same intake as /submitBug (SUBMIT_RATE per-IP windows, dedupe), 4 KB cap; packets-feedback.html loads no third-party Turnstile script.
+      const intake = await preparePublicIntake(request, env, PACKETS_FEEDBACK_MAX_BYTES, { skipTurnstile: true });
+      if (intake instanceof Response) return intake;
+      const response = await handlePacketsFeedbackSubmit(request, env, intake);
+      if (response.ok) await recordSubmitHash(env, intake.hash);
+      return response;
     }
 
     const intakePath = url.pathname.replace(/^\/v2\//, '/');
@@ -2579,6 +2805,10 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/bug-inbox') {
       return handleBugInbox();
+    }
+
+    if (request.method === 'GET' && url.pathname === '/packets-feedback-inbox') {
+      return handlePacketsFeedbackInbox();
     }
 
     if (url.pathname === '/bug-review') {

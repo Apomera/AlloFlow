@@ -11,12 +11,15 @@
  */
 (function () {
   'use strict';
+  if (typeof window !== 'object' || !window) return;
   // WCAG 2.2.1 triage: the deadline below is a five-second script-load fallback, not a user-facing task limit; pause controls are not applicable.
   if (window.AlloMathInput && typeof window.AlloMathInput.promptEquation === 'function') return;
 
   var MATHLIVE_VERSION = '0.110.0';
   var MATHLIVE_SRI = 'sha384-5IN6K0kiaz8MufrTGBvPCP3oDeMjmwe+DDTvuyQLNv6gc634FpKbQfllonjHJPmy';
   var SETTINGS_KEY = 'alloflow_math_input_v1';
+  var _modalSeq = 0;
+  var _closeActiveModal = null;
 
   function loaderBaseUrl() {
     try {
@@ -121,8 +124,13 @@
   }
 
   function loadAt(sources, index, resolve, reject) {
-    if (customElementReady()) { resolve({ source: 'preloaded', fonts: _fontsSource }); return; }
+    if (customElementReady()) {
+      if (!_fontsSource) configureRuntime(LOCAL_ASSET_BASE + 'fonts/');
+      resolve({ source: 'preloaded', fonts: _fontsSource });
+      return;
+    }
     if (index >= sources.length) { reject(new Error('all MathLive sources failed')); return; }
+    if (typeof document !== 'object' || !document || !document.head) { reject(new Error('DOM unavailable for MathLive')); return; }
     var candidate = sources[index];
     var script = document.createElement('script');
     script.integrity = MATHLIVE_SRI;
@@ -133,9 +141,11 @@
     script.src = candidate.script;
     script.async = true;
     var settled = false;
+    var cleanupScript = function () { script.onload = null; script.onerror = null; };
     var timer = setTimeout(function () {
       if (settled) return;
       settled = true;
+      cleanupScript();
       try { script.remove(); } catch (_) {}
       loadAt(sources, index + 1, resolve, reject);
     }, 15000);
@@ -143,6 +153,7 @@
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      cleanupScript();
       configureRuntime(candidate.fonts);
       var deadline = Date.now() + 5000;
       (function poll() {
@@ -163,10 +174,20 @@
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      cleanupScript();
       try { script.remove(); } catch (_) {}
       loadAt(sources, index + 1, resolve, reject);
     };
-    document.head.appendChild(script);
+    try {
+      document.head.appendChild(script);
+    } catch (_) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        cleanupScript();
+        loadAt(sources, index + 1, resolve, reject);
+      }
+    }
   }
 
   function ensureMathLive(opts) {
@@ -194,9 +215,20 @@
     catch (_) { return ''; }
   }
 
+  function safeString(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    try { return String(v); } catch (_) { return ''; }
+  }
+
   function engineTextFrom(value) {
-    var result = value && typeof value === 'object' ? value : {};
-    var text = String(result.asciiMath || result.plainText || result.latex || value || '').trim();
+    var raw = '';
+    if (value && typeof value === 'object') {
+      raw = value.asciiMath || value.plainText || value.latex || '';
+    } else if (value != null) {
+      raw = value;
+    }
+    var text = safeString(raw).trim();
     return text
       .replace(/[\u2212\u2013\u2014]/g, '-')
       .replace(/[\u00d7\u22c5]/g, '*')
@@ -208,7 +240,7 @@
 
   function maybeUseSre(formats, opts, loadSpeech) {
     var options = opts && typeof opts === 'object' ? opts : {};
-    if (options.useSre === false) return Promise.resolve(formats);
+    if (options.useSre === false || !(formats && (formats.mathml || formats.latex))) return Promise.resolve(formats);
     var prepare = Promise.resolve();
     if (loadSpeech && (!window.AlloMathSpeech || typeof window.AlloMathSpeech.toSpeech !== 'function') && window.__alloLoadPlugin) {
       prepare = Promise.resolve().then(function () { return window.__alloLoadPlugin('sre_loader.js'); }).catch(function () { return null; });
@@ -260,8 +292,8 @@
     field.setAttribute('aria-label', (opts && opts.ariaLabel) || 'Equation editor');
     try { field.mathVirtualKeyboardPolicy = settings.virtualKeyboardMode; } catch (_) {}
     try { field.smartFence = true; } catch (_) {}
-    if (opts && opts.initialLatex) {
-      try { field.value = String(opts.initialLatex); } catch (_) {}
+    if (opts && opts.initialLatex != null && opts.initialLatex !== '') {
+      try { field.value = safeString(opts.initialLatex); } catch (_) {}
     }
   }
 
@@ -277,17 +309,23 @@
   }
 
   function buildModal(opts, resolve) {
+    if (typeof document !== 'object' || !document || !document.body) { resolve(null); return; }
+    if (typeof _closeActiveModal === 'function') { try { _closeActiveModal(); } catch (_) {} }
     var options = opts || {};
     var settings = effectiveSettings(options);
     var settled = false;
+    var focusTimer = null;
     var previousFocus = document.activeElement;
-    var uid = 'allo-math-input-' + Date.now().toString(36);
+    var uid = 'allo-math-input-' + Date.now().toString(36) + '-' + (++_modalSeq);
     var done = function (value) {
       if (settled) return;
       settled = true;
+      if (_closeActiveModal === dismiss) _closeActiveModal = null;
       cleanup();
       resolve(value);
     };
+    var dismiss = function () { done(null); };
+    _closeActiveModal = dismiss;
 
     var backdrop = document.createElement('div');
     backdrop.setAttribute('role', 'presentation');
@@ -346,33 +384,39 @@
     document.body.appendChild(backdrop);
 
     function commit() {
+      if (settled || insert.disabled) return;
       insert.disabled = true;
       Promise.resolve().then(function () {
         return collectFormats(field, options, false);
       }).then(function (formats) {
+        if (settled) return;
         insert.disabled = false;
         if (!formats || !formats.latex) { status.textContent = 'Enter an equation first.'; return; }
         done(formats);
       }).catch(function () {
+        if (settled) return;
         insert.disabled = false;
         status.textContent = 'Could not read this equation right now.';
       });
     }
 
     function hearEquation() {
+      if (settled || hear.disabled) return;
       hear.disabled = true;
       status.textContent = 'Preparing spoken math...';
       collectFormats(field, options, true).then(function (formats) {
+        if (settled) return;
         hear.disabled = false;
-        if (!formats.latex) { status.textContent = 'Enter an equation first.'; return; }
+        if (!formats || !formats.latex) { status.textContent = 'Enter an equation first.'; return; }
         if (!formats.spoken) { status.textContent = 'This equation could not be converted to speech.'; return; }
         if (typeof options.onSpeak === 'function') {
           return Promise.resolve(options.onSpeak(formats)).then(function () {
-            status.textContent = 'Reading equation.';
-          }).catch(function () { status.textContent = 'The selected voice could not read this equation.'; });
+            if (!settled) status.textContent = 'Reading equation.';
+          }).catch(function () { if (!settled) status.textContent = 'The selected voice could not read this equation.'; });
         }
         status.textContent = speakWithBrowser(formats.spoken) ? 'Reading equation.' : formats.spoken;
       }).catch(function () {
+        if (settled) return;
         hear.disabled = false;
         status.textContent = 'Spoken math is unavailable right now.';
       });
@@ -382,13 +426,26 @@
       if (event.key === 'Escape') { event.preventDefault(); done(null); return; }
       if (event.key !== 'Tab') return;
       var focusables = [field, cancel, hear, insert].filter(function (item) { return !item.disabled; });
-      var current = focusables.indexOf(document.activeElement);
-      if (event.shiftKey && current <= 0) { event.preventDefault(); focusables[focusables.length - 1].focus(); }
-      else if (!event.shiftKey && current === focusables.length - 1) { event.preventDefault(); focusables[0].focus(); }
+      if (!focusables.length) return;
+      var active = document.activeElement;
+      var current = focusables.indexOf(active);
+      if (event.shiftKey) {
+        if (current === 0 || (current === -1 && (!panel.contains(active) || active === panel))) {
+          event.preventDefault();
+          focusables[focusables.length - 1].focus();
+        }
+      } else {
+        if (current === focusables.length - 1 || current === -1) {
+          event.preventDefault();
+          focusables[0].focus();
+        }
+      }
     }
 
     function cleanup() {
+      if (focusTimer) { clearTimeout(focusTimer); focusTimer = null; }
       document.removeEventListener('keydown', onKey, true);
+      try { if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
       try { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); } catch (_) {}
       try { if (window.mathVirtualKeyboard) window.mathVirtualKeyboard.hide(); } catch (_) {}
       try { if (previousFocus && previousFocus.focus) previousFocus.focus(); } catch (_) {}
@@ -402,7 +459,7 @@
       if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); commit(); }
     });
     document.addEventListener('keydown', onKey, true);
-    setTimeout(function () { try { field.focus(); } catch (_) {} }, 30);
+    focusTimer = setTimeout(function () { focusTimer = null; if (!settled) { try { field.focus(); } catch (_) {} } }, 30);
   }
 
   window.AlloMathInput = {
@@ -413,7 +470,10 @@
     fromLatex: function (latex, opts) {
       var options = opts || {};
       return ensureMathLive(options).then(function () {
+        if (typeof document !== 'object' || !document || !document.body) return null;
         var field = document.createElement('math-field');
+        field.setAttribute('aria-hidden', 'true');
+        field.tabIndex = -1;
         field.style.cssText = 'position:fixed;left:-10000px;top:-10000px;';
         applyFieldOptions(field, { initialLatex: latex, ariaLabel: 'Equation conversion field' }, effectiveSettings(options));
         document.body.appendChild(field);
@@ -460,5 +520,7 @@
     }
   };
 
-  console.log('[AlloMathInput] offline-first MathLive ' + MATHLIVE_VERSION + ' ready (shared input adapter; existing graders unchanged)');
+  if (typeof console === 'object' && console && typeof console.log === 'function') {
+    console.log('[AlloMathInput] offline-first MathLive ' + MATHLIVE_VERSION + ' ready (shared input adapter; existing graders unchanged)');
+  }
 })();

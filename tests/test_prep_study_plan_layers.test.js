@@ -100,7 +100,9 @@ describe('Test Prep study-plan layers', () => {
     expect(layers.playbooks).toHaveLength(40);
     expect(layers.hasStudyPlan).toBe(true);
     expect(layers.hasPlaybooks).toBe(true);
-    expect(layers.hasSessions).toBe(false);
+    expect(layers.hasSessions).toBe(true);
+    expect(layers.sessions.length).toBeGreaterThanOrEqual(8);
+    expect(layers.spacedPlans.length).toBeGreaterThanOrEqual(8);
 
     const route = layers.topicRoutes[0];
     expect(route.sets.map((set) => set.label)).toEqual(['Foundation concept check', 'Depth and boundary check', 'Transfer check']);

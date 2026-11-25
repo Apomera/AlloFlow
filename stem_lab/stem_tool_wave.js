@@ -43,6 +43,7 @@ window.StemLab = window.StemLab || {
         ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-sky-50.text-sky-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-sky-50 .text-sky-800{color:#e0f2fe!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50{background-color:#1c1b3a!important;border-color:#3730a3!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50.text-indigo-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-indigo-50 .text-indigo-800{color:#e0e7ff!important}" +
+        ".theme-dark [data-stem-tool-shell=\"wave\"] [data-wave-investigate-intro]{color:#e0e7ff!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50{background-color:#2e1432!important;border-color:#86198f!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50.text-fuchsia-800,.theme-dark [data-stem-tool-shell=\"wave\"] .bg-fuchsia-50 .text-fuchsia-800{color:#fae8ff!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.bg-emerald-50,.bg-teal-50){background-color:#0d281f!important;border-color:#065f46!important}" +
@@ -7276,7 +7277,7 @@ window.StemLab = window.StemLab || {
                     onClick: logWaveTrial,
                     className: "px-3 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
                   }, '\uD83D\uDCDD ' + __alloT('stem.wave.btn_log_trial', 'Log Trial') + ' (' + d.experimentLog.length + ')'),
-                  React.createElement("span", { className: "rounded-full border px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide", style: isContrast ? { borderColor: '#ffff00', background: '#000000', color: '#ffff00' } : { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: isDark ? waveViewMeta.accent : 'rgb(' + [16, 8, 0].map(function (sh) { return Math.round((parseInt(waveViewMeta.accent.slice(1), 16) >> sh & 255) * 0.5); }).join(',') + ')' } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
+                  React.createElement("span", { className: "rounded-full border px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-wide", style: isContrast ? { borderColor: '#ffff00', background: '#000000', color: '#ffff00' } : { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: 'rgb(' + [16, 8, 0].map(function (sh) { var c = parseInt(waveViewMeta.accent.slice(1), 16) >> sh & 255; return Math.round(isDark ? c + (255 - c) * 0.5 : c * 0.5); }).join(',') + ')' } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
                 )
               ),
               React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" }, [
@@ -9590,7 +9591,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 flex items-center gap-3 flex-wrap", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🔬'),
-              React.createElement("p", { className: "text-xs text-indigo-800 font-semibold flex-1 min-w-[220px] m-0" + onHostInk }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
+              React.createElement("p", { "data-wave-investigate-intro": "true", className: "text-xs text-indigo-800 font-semibold flex-1 min-w-[220px] m-0" + onHostInk }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
               React.createElement("button", {
                 type: 'button',
                 'data-wave-investigate': 'discoverWave',

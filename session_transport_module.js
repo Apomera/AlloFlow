@@ -15,6 +15,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.SessionTransport) {
     console.log('[SessionTransport] Already loaded, skipping');
     return;
@@ -76,6 +77,7 @@
     var out = {};
     data = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
     GUIDE_CONTENT_FIELDS.concat(['successCriteria', 'extensions', 'activities']).forEach(function (key) {
+      if (!Object.prototype.hasOwnProperty.call(data, key)) return;
       if (mode !== 'study' && mode !== 'family' && ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].indexOf(key) !== -1 && (typeof data[key] === 'string' || typeof data[key] === 'number')) return;
       if (data[key] != null) { var next = projectStudentGuideValue(data[key]); if (next != null) out[key] = next; }
     });
@@ -92,13 +94,14 @@
     var source = item.config;
     var config = { generationInputs: { version: source.generationInputs.version, mode: source.generationInputs.mode } };
     ['grade', 'gradeLevel', 'language', 'sourceTopic', 'topic', 'translationTarget'].forEach(function (key) {
-      if (typeof source[key] === 'string' || typeof source[key] === 'number') config[key] = source[key];
+      if (typeof source[key] === 'string' || (typeof source[key] === 'number' && Number.isFinite(source[key]))) config[key] = source[key];
     });
     var projected = { id: item.id, type: 'lesson-plan', data: out, config: config, studentProjection: true };
     ['title', 'meta', 'timestamp', 'sourceTopic', 'gradeLevel'].forEach(function (key) {
-      if (item[key] != null && typeof item[key] !== 'object') projected[key] = item[key];
+      var v = item[key];
+      if (typeof v === 'string' || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v))) projected[key] = v;
     });
-    if (item.timestamp instanceof Date) projected.timestamp = item.timestamp;
+    if (item.timestamp instanceof Date && Number.isFinite(item.timestamp.getTime())) projected.timestamp = item.timestamp;
     return projected;
   }
 
@@ -140,7 +143,7 @@
   }
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
     var blocked = Array.isArray(teacherOnlyTypes) ? teacherOnlyTypes : [];
-    var reading = window.AlloModules && window.AlloModules.InstructionalContext;
+    var reading = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.InstructionalContext;
     var source = (Array.isArray(history) ? history : []).filter(function (item) { return !isSubmissionCopy(item); });
     var resources = reading && typeof reading.ensureReadingSourcePairs === 'function'
       ? reading.ensureReadingSourcePairs(source) : source;
@@ -184,7 +187,9 @@
       },
       publishResources: function (history) {
         var candidates = studentSafeResources(history, teacherOnlyTypes, ops.projectStudentActivityResource);
-        return Promise.resolve(ops.uploadAssets(candidates)).then(function (uploaded) {
+        var uploadPromise;
+        try { uploadPromise = Promise.resolve(ops.uploadAssets(candidates)); } catch (err) { return Promise.reject(err); }
+        return uploadPromise.then(function (uploaded) {
           var rawPrepared = ops.prepareResources(uploaded || candidates);
           var prepared = (rawPrepared && typeof rawPrepared === 'object')
             ? rawPrepared
@@ -212,11 +217,15 @@
         });
       },
       publishPolicy: function () {
-        var policy = typeof ops.policy === 'function' ? ops.policy() : null;
-        if (!policy) return Promise.resolve(null);
-        return Promise.resolve(ops.write({ aiPolicy: policy })).then(function () {
-          return { kind: 'firebase', published: true };
-        });
+        try {
+          var policy = typeof ops.policy === 'function' ? ops.policy() : null;
+          if (!policy) return Promise.resolve(null);
+          return Promise.resolve(ops.write({ aiPolicy: policy })).then(function () {
+            return { kind: 'firebase', published: true };
+          });
+        } catch (err) {
+          return Promise.reject(err);
+        }
       },
     });
   }
@@ -291,7 +300,7 @@
         if (packFp === hostedFp || (!list.length && !removedIds.length && hostedFp == null)) {
           return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false };
         }
-        return Promise.resolve(ops.hostPack(list)).then(function (packIdentity) {
+        return Promise.resolve().then(function () { return ops.hostPack(list); }).then(function (packIdentity) {
           assertCurrent();
           if (!packIdentity) {
             if (typeof ops.trace === 'function') ops.trace('mailbox:pack-host-empty', { candidates: list.length });
@@ -345,7 +354,12 @@
       },
       publishResources: function (history) {
         var candidates = studentSafeResources(history, teacherOnlyTypes, ops.projectStudentActivityResource);
-        var cycle = shellMode ? ops.runPackCycle(candidates) : runMailboxPackCycle(candidates, ops);
+        var cycle;
+        try {
+          cycle = shellMode ? ops.runPackCycle(candidates) : runMailboxPackCycle(candidates, ops);
+        } catch (err) {
+          return Promise.reject(err);
+        }
         return Promise.resolve(cycle).then(function (result) {
           return Object.assign({ kind: 'mailbox', candidates: candidates.length }, result || {});
         });
@@ -364,7 +378,9 @@
   // only the content channel differs — so one write op serves everyone.
   function followResource(item, ops) {
     if (!item || !item.id || !ops || typeof ops.write !== 'function') return Promise.resolve(false);
-    return Promise.resolve(ops.write(item)).then(function () {
+    var writePromise;
+    try { writePromise = Promise.resolve(ops.write(item)); } catch (err) { return Promise.reject(err); }
+    return writePromise.then(function () {
       if (typeof ops.trace === 'function') {
         ops.trace('sync:follow', { id: String(item.id).slice(0, 40), type: item.type || null });
       }

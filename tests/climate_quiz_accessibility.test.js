@@ -114,11 +114,12 @@ describe.each(paths)('Climate quiz accessibility: %s', path => {
     expect(view.award).toHaveBeenCalledTimes(2);
   });
 
+  // Round 6 (2026-11-23): the joke distractor 'Pure oxygen gas' became the misconception 'Oxygen'.
   it('identifies both the chosen and correct options in text after a wrong answer', async () => {
     const view = mountTool(path);
-    await activate(view.answer('Pure oxygen gas'));
+    await activate(view.answer('Oxygen'));
     expectFeedback(view, 'Carbon dioxide');
-    expect(view.answer('Pure oxygen gas').textContent).toMatch(/your answer/i);
+    expect(view.answer('Oxygen').textContent).toMatch(/your answer/i);
     expect(view.answer('Carbon dioxide').textContent).toMatch(/correct answer/i);
     expect(view.state().quizTotal).toBe(1);
     expect(view.state().quizCorrect || 0).toBe(0);
@@ -133,7 +134,7 @@ describe.each(paths)('Climate quiz accessibility: %s', path => {
       expect(button.disabled).toBe(false);
       expect(button.getAttribute('aria-disabled')).toBe('true');
     }
-    await activate(view.answer('Pure oxygen gas'));
+    await activate(view.answer('Oxygen'));
     await activate(view.answer('Carbon dioxide'));
     expect(view.state()).toMatchObject({ quizAnswer: 0, quizCorrect: 1, quizTotal: 1 });
     expect(view.award).toHaveBeenCalledTimes(1);

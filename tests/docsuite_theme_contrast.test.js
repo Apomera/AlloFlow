@@ -313,7 +313,9 @@ describe('dark mode: state variants are remapped too', () => {
     expect(variants.unsupported.length).toBeLessThan(40);
     for (const t of variants.unsupported) {
       expect(t, `${t} is an unhandled variant that is NOT one of the known-skipped families`)
-        .toMatch(/^(sm|md|lg|xl|2xl|print|placeholder|selection|marker|prose-[a-z]+):/);
+        // backdrop: (added 2026-11-23) is the ::backdrop pseudo-element of a native <dialog>
+        // (glossary image controls: backdrop:bg-slate-900/60), a dim layer with no text.
+        .toMatch(/^(sm|md|lg|xl|2xl|print|placeholder|selection|marker|backdrop|prose-[a-z]+):/);
     }
   });
 });

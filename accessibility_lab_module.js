@@ -33,6 +33,18 @@
 
   var React = window.React;
   var ReactDOM = window.ReactDOM;
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-a11ylab-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-a11ylab-a11y-css';
+    st.textContent = [
+      '[data-alloflow-a11y-lab="root"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [aria-labelledby="a11y-allosheet-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '[data-alloflow-a11y-lab="root"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="a11y-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; }',
+      '@media (forced-colors: active) { [data-alloflow-a11y-lab="root"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="a11y-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { [data-alloflow-a11y-lab="root"] *, [aria-labelledby="a11y-allosheet-title"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   if (!React) {
     console.error('[CDN] AccessibilityLab requires window.React');
     return;
@@ -735,7 +747,7 @@
     useEffect(function () {
       if (!artifact) return;
       function onKey(ev) {
-        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.key === 'Escape') { ev.stopPropagation(); if (typeof props.onClose === 'function') props.onClose(); }
       }
       document.addEventListener('keydown', onKey);
@@ -1083,6 +1095,7 @@
     return e('div', { className: 'flex flex-col gap-4' },
       e('div', { className: 'flex items-center justify-between' },
         e('button', {
+          type: 'button',
           onClick: function () { setSelectedItem(null); },
           className: 'text-sm text-indigo-700 hover:underline flex items-center gap-1',
         }, tr('a11y_lab.preview.back', '← Back to lesson list')),
@@ -1348,6 +1361,7 @@
         ),
         e('div', { className: 'flex flex-col justify-end' },
           e('button', {
+            type: 'button',
             onClick: handleReadAloud,
             className: 'w-full px-2 py-1 text-xs font-semibold border border-emerald-600 text-emerald-700 rounded hover:bg-emerald-50',
           }, tr('a11y_lab.preview.read_aloud', '🔊 Read aloud'))
@@ -1368,10 +1382,12 @@
       // Apply / Reset buttons (only when host passed the setters)
       hasStaticPreview && canApplyToApp && e('div', { className: 'flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200' },
         e('button', {
+          type: 'button',
           onClick: handleApplyToApp,
           className: 'px-3 py-1.5 text-xs font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
         }, tr('a11y_lab.preview.apply_button', 'Apply these settings to the app')),
         e('button', {
+          type: 'button',
           onClick: handleResetFromApp,
           className: 'px-3 py-1.5 text-xs font-semibold border border-slate-300 text-slate-700 rounded hover:bg-slate-50',
         }, tr('a11y_lab.preview.reset_button', 'Reset to app defaults')),
@@ -1673,10 +1689,12 @@
       // Action buttons
       e('div', { className: 'flex gap-2 flex-wrap' },
         e('button', {
+          type: 'button',
           onClick: handleScan,
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
         }, scanResult ? tr('a11y_lab.keyboard.rescan', 'Re-scan') : tr('a11y_lab.keyboard.run_scan', '🔍 Run keyboard scan')),
         scanResult && e('button', {
+          type: 'button',
           onClick: function () { setShowOverlay(!showOverlay); },
           className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
         }, showOverlay ? tr('a11y_lab.keyboard.hide_overlay', '🔢 Hide tab-order overlay') : tr('a11y_lab.keyboard.show_overlay', '🔢 Show tab-order overlay'))
@@ -1725,6 +1743,7 @@
             scanResult.orderedFocusable.map(function (el, i) {
               return e('li', { key: i, className: 'text-slate-700' },
                 e('button', {
+                  type: 'button',
                   onClick: function () { handleFocusElement(el); },
                   className: 'text-left hover:text-indigo-700 hover:underline',
                 }, '<' + el.tagName.toLowerCase() + '> ', e('span', { className: 'text-slate-500' }, getElementLabel(el)))
@@ -1743,6 +1762,7 @@
             scanResult.suspicious.slice(0, 30).map(function (el, i) {
               return e('li', { key: i, className: 'text-amber-900' },
                 e('button', {
+                  type: 'button',
                   onClick: function () { handleFocusElement(el); },
                   className: 'text-left hover:underline',
                 }, '<' + el.tagName.toLowerCase() + '> ', getElementLabel(el).slice(0, 80))
@@ -1767,6 +1787,7 @@
             scanResult.noLabel.slice(0, 30).map(function (el, i) {
               return e('li', { key: i, className: 'text-rose-900' },
                 e('button', {
+                  type: 'button',
                   onClick: function () { handleFocusElement(el); },
                   className: 'text-left hover:underline',
                 }, '<' + el.tagName.toLowerCase() + '>')
@@ -2106,6 +2127,7 @@
       // Action button + status
       e('div', { className: 'flex gap-2 flex-wrap items-center' },
         e('button', {
+          type: 'button',
           onClick: handleRunAudit,
           disabled: status === 'loading' || status === 'running',
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50',
@@ -2199,6 +2221,7 @@
                     ),
                     e('div', { className: 'flex gap-1' },
                       vNodes.length > 0 && e('button', {
+                        type: 'button',
                         onClick: function () { handleFocusFirstNode(v); },
                         className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
                       }, tr('a11y_lab.audit.show_me', 'Show me')),
@@ -2256,6 +2279,7 @@
                   ),
                   e('div', { className: 'flex gap-1' },
                     vNodes.length > 0 && e('button', {
+                      type: 'button',
                       onClick: function () { handleFocusFirstNode(v); },
                       className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
                     }, tr('a11y_lab.audit.show_me', 'Show me')),
@@ -2654,10 +2678,12 @@
       // Action buttons
       e('div', { className: 'flex gap-2 flex-wrap items-center' },
         e('button', {
+          type: 'button',
           onClick: buildQueue,
           className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
         }, queue ? tr('a11y_lab.screenreader.rescan', 'Re-scan page') : tr('a11y_lab.screenreader.semantic_build', '🔊 Build semantic outline')),
         queue && queue.length > 0 && e('button', {
+          type: 'button',
           onClick: playingIndex !== null ? stopAll : playAll,
           className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 ' +
             (playingIndex !== null ? 'bg-emerald-700 text-white' : 'text-emerald-700 hover:bg-emerald-50') +
@@ -2672,6 +2698,7 @@
             },
             className: 'w-24',
             'aria-label': tr('a11y_lab.screenreader.speed_aria', 'Playback speed'),
+            'aria-valuetext': rate.toFixed(1) + 'x',
           }), e('span', { className: 'font-mono w-10' }, rate.toFixed(1) + 'x'))
       ),
 
@@ -2694,6 +2721,7 @@
               className: 'flex items-start gap-2 p-2 border-b border-slate-100 ' + (isPlaying ? 'bg-amber-50' : 'hover:bg-slate-50'),
             },
               e('button', {
+                type: 'button',
                 onClick: function () { playOne(i); },
                 disabled: !ttsAvailable,
                 className: 'shrink-0 w-7 h-7 rounded-full ' + (isPlaying ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300') + ' flex items-center justify-center text-xs font-bold disabled:opacity-50',
@@ -2933,6 +2961,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
         SIMULATORS.map(function (sim) {
           var isActive = active === sim.key;
           return e('button', {
+            type: 'button',
             key: sim.key,
             onClick: function () { handleSelect(sim.key); },
             className: 'flex items-start gap-3 p-3 rounded-lg border text-left transition-all ' +
@@ -2969,12 +2998,14 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
           },
           className: 'w-full',
           'aria-label': tr('a11y_lab.simulators.blur_amount_aria', 'Blur amount in pixels'),
+          'aria-valuetext': blurPx + 'px',
         })
       ),
 
       // Stop button when any simulator active
       active !== 'none' && active !== 'motor-info' && e('div', { className: 'flex justify-center' },
         e('button', {
+          type: 'button',
           onClick: function () { setActive('none'); },
           className: 'px-4 py-2 text-sm font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
         }, tr('a11y_lab.simulators.stop', 'Stop simulator'))
@@ -3263,7 +3294,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     useEffect(function () {
       if (!props.isOpen) return;
       function onKey(ev) {
-        if (ev.isComposing || ev.keyCode === 229) return;
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.key === 'Escape') {
           if (document.querySelector('[aria-labelledby="a11y-allosheet-title"]')) return;
           ev.stopPropagation();
@@ -3280,6 +3311,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
       var active = tab === tab_.key;
       var disabled = !tab_.ready;
       return e('button', {
+        type: 'button',
         key: tab_.key,
         ref: function (el) { tabRefs.current[tab_.key] = el; },
         role: 'tab',
@@ -3300,6 +3332,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     }
 
     function handleTablistKeyDown(ev) {
+      if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       var readyTabs = TABS.filter(function (t) { return t.ready; });
       if (readyTabs.length === 0) return;
       var idx = readyTabs.findIndex(function (t) { return t.key === tab; });
@@ -3320,6 +3353,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
     }
 
     function handleDialogKeyDown(ev) {
+      if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
       if (ev.key !== 'Tab' || !dialogRef.current) return;
       var nodes = Array.prototype.slice.call(dialogRef.current.querySelectorAll(FOCUSABLE_SELECTOR))
         .filter(function (el) {
@@ -3380,6 +3414,7 @@ body.alloflow-sim-reading-stress > ' + SIM_EXCLUDE + ' li {\
             )
           ),
           e('button', {
+            type: 'button',
             ref: closeBtnRef,
             className: 'min-w-11 min-h-11 shrink-0 px-3 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900',
             onClick: props.onClose,

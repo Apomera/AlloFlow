@@ -284,9 +284,9 @@
       "prompt": "In the classic dopamine-pathway teaching model, which antipsychotic adverse-effect pairing is most accurate?",
       "choices": [
         "Mesolimbic pathway; tardive dyskinesia",
-        "Mesocortical pathway; avolition",
+        "Mesocortical pathway; galactorrhea",
         "Nigrostriatal pathway; akathisia",
-        "Tuberoinfundibular pathway; galactorrhea"
+        "Tuberoinfundibular pathway; acute dystonia"
       ],
       "answerIndex": 2,
       "rationale": "The keyed pairing is nigrostriatal dopamine D2 blockade with akathisia, an extrapyramidal movement adverse effect characterized by subjective inner restlessness and observable motor activity. The pathway model is a teaching simplification rather than patient-specific mechanistic proof. Clinically, akathisia can resemble or coexist with agitation and anxiety, so timing, medication exposure, movement findings, distress, and other causes require assessment. The other pathway pairings confuse movement, prolactin, therapeutic, and cognitive associations.",
@@ -453,7 +453,7 @@
         "The four conditions serve as a structured clinical checklist for diagnosing whether an individual holds prejudice"
       ],
       "answerIndex": 1,
-      "rationale": "The keyed answer identifies Allport's optimal contact conditions: equal status within the situation, common goals, intergroup cooperation, and support from authorities, law, or custom. Meta-analytic evidence finds that intergroup contact typically relates to reduced prejudice and that these conditions tend to strengthen the effect. They are facilitative conditions, not a guarantee for every person or setting. Power, threat, institutional climate, contact quality, group status, voluntariness, and opportunities for meaningful interaction can change the outcome.",
+      "rationale": "The keyed answer accurately interprets Allport's four optimal contact conditions (equal status, common goals, intergroup cooperation, and support from authorities, law, or custom) as facilitative rather than universal guarantees. Meta-analytic evidence finds that intergroup contact typically relates to reduced prejudice and that these conditions tend to strengthen the effect. They are facilitative conditions, not a guarantee for every person or setting. Power, threat, institutional climate, contact quality, group status, voluntariness, and opportunities for meaningful interaction can change the outcome.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://pubmed.ncbi.nlm.nih.gov/16737372/",
@@ -494,7 +494,7 @@
         "Full assimilation into the dominant receiving culture is developmentally necessary for long-term occupational and family adaptation"
       ],
       "answerIndex": 2,
-      "rationale": "The best answer describes Berry's integration pattern: maintaining meaningful participation in a heritage culture while also engaging with the larger receiving society. The framework uses two dimensions and supports four conceptual patterns, but it is not a personality test, diagnosis, fixed identity, or universal ranking of outcomes. A person's pattern can vary across language, family, work, community, and time. Opportunity, discrimination, power, social support, migration history, intersectional identity, and the receiving context shape what options are actually available.",
+      "rationale": "The keyed answer accurately characterizes Berry's four acculturation patterns (integration, assimilation, separation, and marginalization) as descriptive positions across two dimensions rather than fixed traits. The framework uses two dimensions and supports four conceptual patterns, but it is not a personality test, diagnosis, fixed identity, or universal ranking of outcomes. A person's pattern can vary across language, family, work, community, and time. Opportunity, discrimination, power, social support, migration history, intersectional identity, and the receiving context shape what options are actually available.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x",

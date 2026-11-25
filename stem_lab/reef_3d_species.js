@@ -19,8 +19,9 @@
   'use strict';
   var TAU = Math.PI * 2, PI = Math.PI;
 
+  function hasOwn(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-  function smooth(a, b, x) { var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
+  function smooth(a, b, x) { if (a === b) return x < a ? 0 : 1; var t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); }
   function lerp(a, b, t) { return a + (b - a) * t; }
   function fract(x) { return x - Math.floor(x); }
   function num(v, f) { if (v === null || v === undefined || v === '') return f; v = Number(v); return isFinite(v) ? v : f; }
@@ -370,7 +371,7 @@
     if (cfg.batch) U.reefRig = { value: cfg.batch };
     if (derivatives) m.extensions = { derivatives: true };
     m.onBeforeCompile = function (shader) {
-      for (var k in U) shader.uniforms[k] = U[k];
+      for (var k in U) if (hasOwn(U, k)) shader.uniforms[k] = U[k];
       patchSource(shader, derivatives);
     };
     m.customProgramCacheKey = function () { return 'reef3d-species-v8|' + (derivatives ? 'd' : 'n'); };
@@ -607,7 +608,7 @@
   // (the very values Math.cos and Math.sin give), as animated arms rebuild every frame.
   var RING_TRIG = {};
   function ringTrig(sides) {
-    var t = RING_TRIG[sides];
+    var t = hasOwn(RING_TRIG, sides) ? RING_TRIG[sides] : null;
     if (!t) { t = RING_TRIG[sides] = new Float64Array(sides * 2); for (var s = 0; s < sides; s++) { var ang = s / sides * TAU; t[s * 2] = Math.cos(ang); t[s * 2 + 1] = Math.sin(ang); } }
     return t;
   }
@@ -700,7 +701,7 @@
     // Spiny front, a notch, then a taller soft rear.
     spiny: function (u) { var n = 1 - 0.45 * Math.exp(-Math.pow((u - 0.45) / 0.08, 2)); return Math.pow(Math.sin(PI * u), 0.4) * n * (u < 0.45 ? 0.85 : 1); }
   };
-  function finShape(s) { return typeof s === 'function' ? s : FIN_SHAPES[s || 'arch']; }
+  function finShape(s) { if (typeof s === 'function') return s; var k = s || 'arch'; return hasOwn(FIN_SHAPES, k) ? FIN_SHAPES[k] : FIN_SHAPES.arch; }
   function tailEdge(s, vv) {
     var a = Math.abs(vv), L = s.len, S = s.span;
     if (s.type === 'lunate') return [-L * (0.55 + 0.45 * Math.pow(a, 1.6)), vv * S];
@@ -1115,7 +1116,7 @@
       if (def.anim) def.anim(actx, t, ph);
       batchPose(batches[0]); batchPose(batches[1]);
     }
-    function dispose() { if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root); kit.dispose(); }
+    function dispose() { if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root); kit.dispose(); batches.length = 0; pecs.length = 0; }
     return { root: root, update: update, dispose: dispose, radius: radiusOf(T, root), animated: true };
   }
 
@@ -1279,7 +1280,8 @@
     function update(dt, t, motion) { if (disposed || rm) return; place(num(t, 0), true, motion); }
     function dispose() {
       if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root);
-      meshes.forEach(function (m) { if (typeof m.dispose === 'function') m.dispose(); }); kit.dispose();
+      meshes.forEach(function (m) { if (typeof m.dispose === 'function') { try { m.dispose(); } catch (ignore) {} } }); kit.dispose();
+      slots.length = 0; pectorals.length = 0;
     }
     var members = slots.map(function (s) { return { x: s.x, y: s.y, z: s.z }; });
     return { root: root, update: update, dispose: dispose, radius: reach, count: n, meshes: meshes, animated: true,
@@ -2889,7 +2891,7 @@
         pose.rotation.z = 0.010 * Math.sin(ph - 0.8); pose.rotation.x = turn * 0.025;
       }
     }
-    function dispose() { if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root); kit.dispose(); }
+    function dispose() { if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root); kit.dispose(); live.length = 0; baseTop = baseBot = W = detail = null; }
     return { root: root, update: update, dispose: dispose, radius: radiusOf(T, root), animated: true };
   }
 
@@ -3020,8 +3022,8 @@
     function update(dt, t, motion) { if (disposed || o.reducedMotion) return; t = num(t, 0); for (var i = 0; i < anims.length; i++) anims[i](t, dt, motion); }
     function dispose() {
       if (disposed) return; disposed = true; if (root.parent) root.parent.remove(root);
-      root.traverse(function (m) { if (m.isInstancedMesh && typeof m.dispose === 'function') m.dispose(); });
-      kit.dispose();
+      root.traverse(function (m) { if (m.isInstancedMesh && typeof m.dispose === 'function') { try { m.dispose(); } catch (ignore) {} } });
+      kit.dispose(); anims.length = 0;
     }
     var h = { root: root, update: update, dispose: dispose, radius: radiusOf(T, root), animated: anims.length > 0 };
     Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
@@ -4036,7 +4038,7 @@
     c.anim(function (t) { lastT = t; place(t, true); });
     pGeo.boundingSphere = new T.Sphere(new T.Vector3(0, H * 0.5, 0), R + 0.06);
     // retract(true) pulls every crown into its tube (as when a diver's shadow passes).
-    return { count: nWorms, retract: function (on) { forced = !!on; place(lastT, !c.rm && lastT > 0); } };
+    return { count: nWorms, retract: function (on) { if (c.kit.done) return; forced = !!on; place(lastT, !c.rm && lastT > 0); } };
   }
 
   // Day octopus: rig, mottled skin and pattern change adapted from Cephalopod Lab.
@@ -7947,7 +7949,7 @@
       mesh.visible=!forced;geometry.attributes.position.needsUpdate=true;geometry.computeVertexNormals();
     }
     c.anim(function(t,dt,motion){lastT=t;pose(t,motion);});
-    return {retract:function(on){forced=!!on;pose(c.rm?0:lastT,null);}};
+    return {retract:function(on){if(c.kit.done)return;forced=!!on;pose(c.rm?0:lastT,null);}};
   }
 
 
@@ -8703,25 +8705,25 @@
   // algae partners, and heat bleaching is not documented for the barrel sponge.
   var BLEACHES = { magnificent_anemone: true, giant_clam: true, christmas_tree_worm: true };
   // Tubastraea coccinea has no algal symbionts (Smithsonian / USGS).
-  function healthStates(id) { return id === 'orange_cup_coral' ? ['healthy', 'dead'] : INFO[id].group === 'coral' ? ['healthy', 'bleached', 'dead'] : BLEACHES[id] ? ['healthy', 'bleached'] : ['healthy']; }
+  function healthStates(id) { return id === 'orange_cup_coral' ? ['healthy', 'dead'] : INFO[id].group === 'coral' ? ['healthy', 'bleached', 'dead'] : hasOwn(BLEACHES, id) ? ['healthy', 'bleached'] : ['healthy']; }
   function options(THREE, id, opts) {
     if (!THREE || typeof THREE.BufferGeometry !== 'function' || typeof THREE.Mesh !== 'function') throw new Error('Reef3DSpecies needs the THREE namespace (three.js r128) passed in.');
-    if (!Object.prototype.hasOwnProperty.call(INFO, id)) throw new RangeError('Unknown reef species: ' + id);
-    opts = opts || {};
+    if (typeof id !== 'string' || !hasOwn(INFO, id)) throw new RangeError('Unknown reef species: ' + String(id));
+    opts = opts && typeof opts === 'object' ? opts : {};
     var info = INFO[id], growthDefault = info.group === 'structure' ? 0.3 : 1;
     return { seed: seedValue(opts.seed), high: opts.quality === 'high', reducedMotion: !!opts.reducedMotion, derivatives: opts.derivatives !== false,
       growth: clamp(num(opts.growth, growthDefault), 0, 1), health: healthStates(id).indexOf(opts.health) > 0 ? opts.health : 'healthy' };
   }
   function create(THREE, id, opts) {
     var o = options(THREE, id, opts), info = INFO[id];
-    if (FISH[id]) return makeFish(THREE, id, info, FISH[id], o);
-    if (RAYS[id]) return makeRay(THREE, id, info, RAYS[id], o);
-    if (TURTLES[id]) return makeTurtle(THREE, id, info, TURTLES[id], o);
+    if (hasOwn(FISH, id)) return makeFish(THREE, id, info, FISH[id], o);
+    if (hasOwn(RAYS, id)) return makeRay(THREE, id, info, RAYS[id], o);
+    if (hasOwn(TURTLES, id)) return makeTurtle(THREE, id, info, TURTLES[id], o);
     return makeModel(THREE, id, info, o, BUILDERS[id]);
   }
   function createSchool(THREE, id, count, opts) {
     var o = options(THREE, id, opts);
-    if (!FISH[id] || FISH[id].offset) throw new RangeError('No school model for ' + id + '; schools are lofted reef fish.');
+    if (!hasOwn(FISH, id) || FISH[id].offset) throw new RangeError('No school model for ' + id + '; schools are lofted reef fish.');
     return makeSchool(THREE, id, INFO[id], FISH[id], count, o);
   }
   // Guide portrait views where the default reads badly: camera position (dir)
@@ -8784,11 +8786,13 @@
     reef_star: V(1.2, 2.0, 2.6, 0.1), coral_tree_nursery: V(0.8, 0.85, 1.6, 0.5)
   };
   function info(id) {
-    var d = INFO[id];
+    var d = typeof id === 'string' && hasOwn(INFO, id) ? INFO[id] : null;
     if (!d) return null;
     var out = { id: id, group: d.group, habit: d.habit, lengthM: d.lengthM, depthM: d.depthM.slice(), schoolSize: d.schoolSize ? d.schoolSize.slice() : null, origin: d.origin, healthStates: healthStates(id) };
-    if (PORTRAIT[id]) out.portrait = { dir: PORTRAIT[id].dir.slice(), lookY: PORTRAIT[id].lookY };
+    if (hasOwn(PORTRAIT, id)) out.portrait = { dir: PORTRAIT[id].dir.slice(), lookY: PORTRAIT[id].lookY };
     return out;
   }
-  global.Reef3DSpecies = { version: '1.0.0', ids: IDS.slice(), info: info, create: create, createSchool: createSchool };
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (global && (typeof global === 'object' || typeof global === 'function')) {
+    global.Reef3DSpecies = { version: '1.0.0', ids: IDS.slice(), info: info, create: create, createSchool: createSchool };
+  }
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

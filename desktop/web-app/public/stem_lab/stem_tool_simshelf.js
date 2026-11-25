@@ -48,6 +48,12 @@
       '@media (forced-colors: active) { [data-simshelf-workbench] .ss-deco-glow, [data-simshelf-workbench] .ss-sheen-sweep { display: none !important; } [data-simshelf-workbench] .ss-pendulum-swing, [data-simshelf-workbench] .ss-orbit-drift, [data-simshelf-workbench] .ss-wave-flow, [data-simshelf-workbench] .ss-hub-beacon, [data-simshelf-workbench] .ss-dot-pulse { animation: none !important; transform: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
+    if (!document.getElementById('allo-simshelf-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-simshelf-a11y-css';
+      ast.textContent = '[data-simshelf-workbench] :is(button,a,input,select,summary){touch-action:manipulation}[data-simshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid #6366f1;outline-offset:2px}@media (forced-colors:active){[data-simshelf-workbench] :is(button,a,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   var SIM_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/sim_shelf/sim_shelf.html?v=1';

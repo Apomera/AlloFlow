@@ -3,13 +3,13 @@
 
   var api = factory();
   if (typeof module === 'object' && module && module.exports) module.exports = api;
-  if (root) {
+  if (root && typeof root === 'object') {
     root.AlloSheetCasebookUI = api;
-    root.AlloModules = root.AlloModules || {};
+    if (!root.AlloModules || typeof root.AlloModules !== 'object') root.AlloModules = {};
     root.AlloModules.AlloSheetCasebookUI = api;
   }
 })(
-  typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this),
+  typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : null,
   function () {
     'use strict';
 
@@ -27,7 +27,7 @@
       var contextDirty = false;
       var bound = false;
 
-      function byId(id) { return document.getElementById(id); }
+      function byId(id) { return typeof document === 'object' && document ? document.getElementById(id) : null; }
       function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
       function text(node, value) {
         if (node) node.textContent = String(value == null ? '' : value);
@@ -896,9 +896,10 @@
         var minimum = Number(history.numericRange.min);
         var maximum = Number(history.numericRange.max);
         var sameValue = minimum === maximum;
+        var valueSpan = maximum - minimum;
         var coordinates = history.points.map(function (point, index) {
-          var xRatio = sameTime ? index / (history.points.length - 1) : (times[index] - firstTime) / (latestTime - firstTime);
-          var yRatio = sameValue ? 0.5 : (maximum - values[index]) / (maximum - minimum);
+          var xRatio = sameTime ? index / Math.max(1, history.points.length - 1) : (times[index] - firstTime) / (latestTime - firstTime);
+          var yRatio = sameValue ? 0.5 : (Number.isFinite(valueSpan) ? (maximum - values[index]) / valueSpan : (maximum / 2 - values[index] / 2) / (maximum / 2 - minimum / 2));
           return {
             x: left + xRatio * plotWidth,
             y: top + yRatio * plotHeight
@@ -1089,7 +1090,7 @@
       }
 
       function voiceApi() {
-        return window.AlloFlowVoice && typeof window.AlloFlowVoice.createDictationController === 'function'
+        return typeof window === 'object' && window && window.AlloFlowVoice && typeof window.AlloFlowVoice.createDictationController === 'function'
           ? window.AlloFlowVoice
           : null;
       }
@@ -1099,13 +1100,18 @@
         if (!voice) return { available: false, reason: 'The shared voice service is unavailable.' };
         var preference = {};
         var capabilities = {};
-        var rawBridge = typeof window.callGeminiAudio === 'function' ? window.callGeminiAudio : null;
+        var winObj = typeof window === 'object' && window ? window : null;
+        var rawBridge = winObj && typeof winObj.callGeminiAudio === 'function' ? winObj.callGeminiAudio : null;
+        var aiUsableResult = true;
+        if (winObj && typeof winObj.__alloAiUsable === 'function') {
+          try { aiUsableResult = !!winObj.__alloAiUsable('audio', rawBridge); } catch (_) { aiUsableResult = false; }
+        }
         var bridgeAllowed = !!rawBridge
           && !rawBridge._alloQrBlocked
-          && (typeof window === 'undefined' || (
-            window.__alloStudentAiDisabled !== true
-            && window.__alloAiSecretsLocked !== true
-            && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('audio', rawBridge))
+          && (!winObj || (
+            winObj.__alloStudentAiDisabled !== true
+            && winObj.__alloAiSecretsLocked !== true
+            && aiUsableResult
           ));
         var bridge = bridgeAllowed ? rawBridge : null;
         try { preference = voice.loadPreference() || {}; } catch (_) {}
@@ -1261,7 +1267,7 @@
             applyVoiceStatus({ state: 'error', message: 'Dictation could not start. Type the observation instead.' });
             return;
           }
-          if (controller.start() === false && voiceStatus.state !== 'error') {
+          if (typeof controller.start !== 'function' || (controller.start() === false && voiceStatus.state !== 'error')) {
             if (recognition === controller) recognition = null;
             applyVoiceStatus({ state: 'error', message: 'Dictation could not start. Type the observation instead.' });
             return;

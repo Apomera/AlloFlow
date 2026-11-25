@@ -5741,6 +5741,8 @@ return assets;
   function safeHtmlImg(source) {
     const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
     const s = String(raw || '').trim();
+    // Same https rule as core.safePicture: cards show these, so printables keep them.
+    if (/^https:\/\/[^\s"'<>\\]+$/i.test(s) && s.length <= 2048) return s;
     if (!s || !/^data:image\//i.test(s)) return '';
     const core = getCore();
     if (s.length > ((core.LIMITS && core.LIMITS.pictureChars) || (6 * 1024 * 1024))) return '';

@@ -67,7 +67,7 @@ const pageScript = `
   function Host({ cfg }) {
     const [expandedTools, setExpandedTools] = useState(cfg.expandedTools);
     const [activeSidebarTab, setActiveSidebarTab] = useState('create');
-    const isTeacherMode = cfg.teacher, isHelpMode = false, hasSelectedRole = true, showUDLGuide = false, isGateOpen = false, showWizard = false, guidedMode = false, showHelpOnboarding = false, setShowHelpOnboarding = () => {}, safeGetItem = () => 'true', safeSetItem = () => {};
+    const isTeacherMode = cfg.teacher, isBotVisible = true, isHelpMode = false, setIsHelpMode = () => {}, setIsToolCatalogExpanded = () => {}, theme = 'light', hasSelectedRole = true, showUDLGuide = false, isGateOpen = false, showWizard = false, guidedMode = false, showHelpOnboarding = false, setShowHelpOnboarding = () => {}, safeGetItem = () => 'true', safeSetItem = () => {}, safeRemoveItem = () => {};
     const alloBotRef = useRef({ moveTo() {} });
     const spotlightOpenTimeRef = useRef(0);
     const _alloHostHandlers = () => ({ highlightElement() {} });

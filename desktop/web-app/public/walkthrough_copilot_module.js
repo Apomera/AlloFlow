@@ -103,7 +103,11 @@
     return null;
   }
   function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+    var serialized = JSON.stringify(value);
+    if (serialized === undefined) return undefined;
+    return JSON.parse(serialized, function (key, val) {
+      return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : val;
+    });
   }
   function stamp(options) {
     if (options && isNonEmptyString(options.now)) return options.now;
@@ -935,7 +939,10 @@
 
     function call(action, payload) {
       var body = { action: action };
-      Object.keys(payload || {}).forEach(function (key) { body[key] = payload[key]; });
+      Object.keys(payload || {}).forEach(function (key) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+        body[key] = payload[key];
+      });
       if (token) body.token = token;
       return post(execUrl, body);
     }
@@ -1019,13 +1026,13 @@
     });
   }
 
-  var api = {
+  var api = Object.freeze({
     CONTRACT_VERSION: CONTRACT_VERSION,
     DEFAULT_DISCLOSURE: DEFAULT_DISCLOSURE,
     DEFAULT_FORMATIVE_SENTENCE: DEFAULT_FORMATIVE_SENTENCE,
     DEMO_WATERMARK: DEMO_WATERMARK,
-    MODES: MODES.slice(),
-    DECISIONS: DECISIONS.slice(),
+    MODES: Object.freeze(MODES.slice()),
+    DECISIONS: Object.freeze(DECISIONS.slice()),
     validateFramework: validateFramework,
     normalizeDisclosure: normalizeDisclosure,
     disclosureLine: disclosureLine,
@@ -1043,7 +1050,7 @@
     addManualSuggestion: addManualSuggestion,
     describeApproval: describeApproval,
     clearDraft: clearDraft
-  };
+  });
 
   if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};

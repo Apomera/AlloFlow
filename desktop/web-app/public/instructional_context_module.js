@@ -102,8 +102,19 @@
   function _normalizeGrade(value) {
     var candidate = value;
     if (isObject(candidate)) {
-      candidate = candidate.label || candidate.gradeLabel || candidate.gradeLevel || candidate.grade || candidate.id || candidate.numericGrade;
+      var explicitText = candidate.label || candidate.gradeLabel || candidate.gradeLevel || candidate.grade || candidate.id;
+      if (explicitText !== undefined && explicitText !== null && explicitText !== '') {
+        candidate = explicitText;
+      } else if (candidate.numericGrade === 0) {
+        return { id: 'k', label: 'Kindergarten', numericGrade: 0, recognized: true };
+      } else if (candidate.numericGrade === -1) {
+        return { id: 'pre-k', label: 'Pre-K', numericGrade: -1, recognized: true };
+      } else {
+        candidate = candidate.numericGrade;
+      }
     }
+    if (candidate === 0) return { id: 'k', label: 'Kindergarten', numericGrade: 0, recognized: true };
+    if (candidate === -1) return { id: 'pre-k', label: 'Pre-K', numericGrade: -1, recognized: true };
     var raw = cleanText(candidate, 80);
     var lower = raw.toLowerCase().replace(/[._]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!lower) return null;
@@ -894,10 +905,11 @@
       && getInstructionalText(item).form === 'adapted';
   }
   function adaptedPassageLength(text) {
+    if (typeof text !== 'string') return 0;
     var end = text.length;
     var marker = (text.indexOf('---') !== -1 && /ENGLISH TRANSLATION/i.test(text)) ? ADAPTED_TRANSLATION_MARKER.exec(text) : null;
     if (marker) end = Math.min(end, marker.index);
-    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    var helpers = typeof window === 'object' && window && window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (helpers && typeof helpers.splitReferencesFromBody === 'function') {
       try {
         var split = helpers.splitReferencesFromBody(text.slice(0, end));
@@ -1047,6 +1059,7 @@
     return edges;
   }
   function isWordEdge(text, index) {
+    if (typeof text !== 'string' || typeof index !== 'number' || !Number.isFinite(index)) return true;
     if (index <= 0 || index >= text.length) return true;
     // "heron" ends before a possessive ('s), whichever way the platform splits words.
     if (/^['’]s(?![\p{L}\p{M}\p{N}])/u.test(text.slice(index, index + 3))) return true;
@@ -1061,10 +1074,10 @@
   // anyCase, capitals do not matter (compared match by match, so one unusual
   // letter elsewhere in the passage cannot switch it off).
   function nearestWholeWordMatch(text, quote, near, taken, anyCase) {
-    if (typeof quote !== 'string' || !quote || quote.length > 500 || quote.length > text.length) return null;
-    var pattern, match, best = null;
+    if (typeof text !== 'string' || typeof quote !== 'string' || !quote || quote.length > 500 || quote.length > text.length) return null;
+    var pattern, match, best = null, attempts = 0;
     try { pattern = new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), anyCase ? 'giu' : 'gu'); } catch (_) { return null; }
-    while ((match = pattern.exec(text))) {
+    while ((match = pattern.exec(text)) && ++attempts <= 5000) {
       var at = match.index, end = at + match[0].length;
       pattern.lastIndex = at + 1;
       if (!match[0].length || !isWordEdge(text, at) || !isWordEdge(text, end)) continue;
@@ -1220,6 +1233,7 @@
    */
   function extractMeasurableSourceBody(value) {
     var artifact = safeString(value)
+      .slice(0, 262144)
       .replace(/\r\n?/g, '\n')
       .replace(/^\uFEFF/, '')
       .replace(/[ \t]+$/gm, '')
@@ -1248,7 +1262,7 @@
   }
 
   function _finiteNumber(value) {
-    if (value === null || value === undefined || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return null;
+    if (value === null || value === undefined || typeof value === 'boolean' || typeof value === 'symbol' || typeof value === 'object' || (typeof value === 'string' && !value.trim())) return null;
     var numeric = Number(value);
     return Number.isFinite(numeric) ? numeric : null;
   }
@@ -1424,7 +1438,10 @@
   function getInstructionalText(item, options) {
     var source = isObject(item) ? item : {};
     var config = isObject(source.config) ? source.config : {};
-    var candidate = source.instructionalText || source.textProfile || config.instructionalText || config.textProfile;
+    var candidate = isObject(source.instructionalText) ? source.instructionalText
+      : (isObject(source.textProfile) ? source.textProfile
+        : (isObject(config.instructionalText) ? config.instructionalText
+          : (isObject(config.textProfile) ? config.textProfile : null)));
     if (candidate) return normalizeInstructionalText(candidate, options);
     return inferInstructionalText(source, options);
   }
@@ -1645,16 +1662,16 @@
     };
   }
 
-  var API = {
+  var API = Object.freeze({
     VERSION: VERSION,
     TEXT_SCHEMA_VERSION: TEXT_SCHEMA_VERSION,
     CONTEXT_SCHEMA_VERSION: CONTEXT_SCHEMA_VERSION,
     SOURCE_BODY_EXTRACTION_VERSION: SOURCE_BODY_EXTRACTION_VERSION,
     SOURCE_COMPLEXITY_MEASUREMENT_VERSION: SOURCE_COMPLEXITY_MEASUREMENT_VERSION,
-    ROLES: ROLES.slice(),
-    FORMS: FORMS.slice(),
-    ADAPTED_TEXT_POLICIES: ADAPTED_TEXT_POLICIES.slice(),
-    PRIMARY_TEXT_ACCESS: PRIMARY_TEXT_ACCESS.slice(),
+    ROLES: Object.freeze(ROLES.slice()),
+    FORMS: Object.freeze(FORMS.slice()),
+    ADAPTED_TEXT_POLICIES: Object.freeze(ADAPTED_TEXT_POLICIES.slice()),
+    PRIMARY_TEXT_ACCESS: Object.freeze(PRIMARY_TEXT_ACCESS.slice()),
     normalizeGrade: normalizeGrade,
     normalizeGradeLabel: normalizeGradeLabel,
     getComplexityTarget: getComplexityTarget,
@@ -1719,11 +1736,11 @@
     deriveTextAccessPlan: deriveTextAccessPlan,
     normalizeInstructionalContext: normalizeInstructionalContext,
     resolveArtifactContext: resolveArtifactContext
-  };
+  });
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  if (typeof window !== 'undefined') {
-    window.AlloModules = window.AlloModules || {};
+  if (typeof module === 'object' && module && module.exports) module.exports = API;
+  if (typeof window === 'object' && window) {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
     window.AlloModules.InstructionalContext = API;
   }
 })();

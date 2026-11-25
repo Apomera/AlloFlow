@@ -82,7 +82,9 @@ describe('visual organizer live activity contract', () => {
     expect(host).toContain('const _setOnlyInteractiveOrganizer = (type = null) => {');
     expect(host).toContain('_setOnlyInteractiveOrganizer(remote.type);');
     expect(host).toContain('_setOnlyInteractiveOrganizer(null);');
-    expect(renderer).toContain('const LiveOrganizerStatus = ({ type }) => {');
+    // The status chip is a plain render helper now (not a component), still with its Stop control.
+    expect(renderer).toContain('const renderLiveOrganizerStatus = (type) => {');
+    expect(renderer).toContain("<button type=\"button\" onClick={() => _broadcastInteractiveOrganizer(null)}");
     expect(renderer).toContain('Stop for students');
     expect(host).toContain('Teacher preview closed. The activity is still live for students');
   });
@@ -93,7 +95,8 @@ describe('visual organizer live activity contract', () => {
     expect(liveDock).toContain('Live organizer activity');
     expect(liveDock).toContain('Student activity launch summary');
     expect(liveDock).toContain('handleRestoreView(organizerResource, { suppressLiveFollow: true });');
-    expect(liveDock).toContain("onClick={() => broadcastInteractiveOrganizer(null)}");
+    // Stop now asks for a second press before it ends the activity for everyone.
+    expect(liveDock).toContain("if (!confirmStopOrganizer) { setConfirmStopOrganizer(true); return; }\n                                setConfirmStopOrganizer(false);\n                                broadcastInteractiveOrganizer(null);");
     for (const status of ['complete', 'attempted', 'ready', 'working', 'loading', 'failed', 'pending']) {
       expect(liveDock).toContain(`{ key: '${status}'`);
     }

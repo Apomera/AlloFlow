@@ -54,6 +54,16 @@ enrichmentParts.forEach((enrichmentPart) => {
   });
 });
 
+const domainFixes = require('../item_quality_patches/ap_ush_domain_fixes.cjs').ap_us_history_foundation_pilot || {};
+Object.entries(domainFixes).forEach(([itemId, patch]) => {
+  const entry = AP_US_HISTORY_DISTRACTOR_FEEDBACK[itemId];
+  if (!entry || !Array.isArray(patch.choices) || !Array.isArray(patch.choiceRationales)) return;
+  patch.choices.forEach((choiceText, idx) => {
+    const note = patch.choiceRationales[idx];
+    if (note) entry[choiceText] = note;
+  });
+});
+
 function distractorFeedbackFor(itemId, choiceText) {
   const entry = AP_US_HISTORY_DISTRACTOR_FEEDBACK[itemId];
   if (!entry) return null;

@@ -345,16 +345,20 @@ describe('exact-HTML verification binding', () => {
     expect(source).toContain('const _freshBinding = await _viewCreateVerificationHtmlBinding(newHtml, _docPipeline);');
     expect(source).toContain('const _boundWebResult = await _viewBindFreshVerificationResult({');
     expect((source.match(/reader\.onload = async \(ev\) => \{/g) || []).length).toBeGreaterThanOrEqual(2);
-    expect((source.match(/const sanitizedImport = _viewSanitizeProjectImport\(parsedProject, _docPipeline\);/g) || []).length).toBe(2);
-    expect((source.match(/await _viewRehydrateVerificationHtmlBinding\(sanitizedImport\.project, _docPipeline\)/g) || []).length).toBe(2);
+    // One shared project loader serves both entry points since 2026-11-21 (_loadProjectFromFileInput).
+    expect((source.match(/const sanitizedImport = _viewSanitizeProjectImport\(parsedProject, _docPipeline\);/g) || []).length).toBe(1);
+    expect((source.match(/await _viewRehydrateVerificationHtmlBinding\(sanitizedImport\.project, _docPipeline\)/g) || []).length).toBe(1);
+    expect(source).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })}');
+    expect(source).toContain('onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })}');
     expect(source).not.toMatch(/if \(file\.size > _VIEW_MAX_PROJECT_FILE_BYTES\)[\s\S]{0,180}const file = e\.target\.files/);
-    expect((source.match(/const _projectLoadToken = \+\+_projectLoadSelectionRef\.current;/g) || []).length).toBe(2);
-    expect((source.match(/let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch/g) || []).length).toBe(2);
-    expect((source.match(/const _projectLoadIsCurrent = \(\) =>/g) || []).length).toBe(2);
-    expect((source.match(/if \(!_projectLoadIsCurrent\(\)\) return;/g) || []).length).toBeGreaterThanOrEqual(6);
-    expect((source.match(/if \(typeof startNewPdfAudit === 'function'\) _projectDocumentEpoch = startNewPdfAudit\(\);/g) || []).length).toBe(2);
-    expect((source.match(/setPendingPdfBase64\(project\.pdfBase64 \|\| null\)/g) || []).length).toBe(2);
-    expect((source.match(/catch\(err\) \{ if \(_projectLoadIsCurrent\(\)\) addToast/g) || []).length).toBe(2);
+    // Counts are per loader; the shared loader holds each guard once (it held 2x before 2026-11-21).
+    expect((source.match(/const _projectLoadToken = \+\+_projectLoadSelectionRef\.current;/g) || []).length).toBe(1);
+    expect((source.match(/let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch/g) || []).length).toBe(1);
+    expect((source.match(/const _projectLoadIsCurrent = \(\) =>/g) || []).length).toBe(1);
+    expect((source.match(/if \(!_projectLoadIsCurrent\(\)\) return;/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((source.match(/if \(typeof startNewPdfAudit === 'function'\) _projectDocumentEpoch = startNewPdfAudit\(\);/g) || []).length).toBe(1);
+    expect((source.match(/setPendingPdfBase64\(project\.pdfBase64 \|\| null\)/g) || []).length).toBe(1);
+    expect(source).toContain("} catch (err) {\n        if (_projectLoadIsCurrent()) addToast(_failToastPrefix + err.message, 'error');");
     expect(source).toMatch(/setPdfAuditResult\(\{[\s\S]{0,260}?summary: 'Loaded from saved project'/);
     expect(source).toContain('verificationHtmlBinding: _jsonVerification.verificationHtmlBinding');
     expect(source).toContain('verificationResult: pdfFixResult');
@@ -398,7 +402,8 @@ describe('bounded website source fetching', () => {
     expect(source).toContain('controller.abort()');
     expect(source).toContain('signal: controller.signal');
     expect(source).toContain('directError.allowProxyFallback !== true');
-    expect(source).toContain('const finalSourceUrl = (!usedProxyFallback && fetched.response && fetched.response.url)');
+    // The redirected final URL is used only when it is itself a public remote URL.
+    expect(source).toContain('const finalSourceUrl = (!usedProxyFallback && fetched.response && fetched.response.url && _viewIsPublicRemoteUrl(fetched.response.url)) ? fetched.response.url : parsedUrl.href;');
     expect(source).toContain('const baseHref = new URL(finalSourceUrl).href');
     expect(source).not.toContain("new URL('.', parsedUrl.href)");
     expect(source).not.toContain("_withTimeout(resp.text(), 20000, 'website response body')");

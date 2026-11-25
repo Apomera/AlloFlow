@@ -1428,6 +1428,15 @@ describe('practice files are as they were', () => {
   // Renewed 2026-11-22 (Wave 9 Read-Along Multi-Page & takeHomeTools), deliberately, by the recipe above: Motion: Usual / Less
   // toggle + dark custom-color companion tokens in takeHomeTools, read-only ctx.pages/ctx.goto/ctx.sessionCache/ctx.bookmark +
   // (Page N of M) resume copy for read_along in takeHomeShell, and RA_CSS split keeping non-Read-Along packets lean.
+  // Renewed 2026-11-23, deliberately, by the recipe above. The fixture had been behind since the 11-22 release (137 lines out,
+  // 147 in): packetCsv and the hash are now put in the file without their comments and indentation (the same code), the
+  // reading tools gained a ruler with four colors and two heights and "Extra wide" spacing, and a lesson may name its
+  // starting tools. Then today's player fixes (15 lines out, 64 in), read in full: the start screen empties what the last
+  // reader kept in memory and releases voice recordings (a shared device); a read-along page is "read" or "played", its time
+  // adds up across visits and "resumed" means an earlier opening; its check answers are kept (ctx.checkNote) and written into
+  // the results; the start screen says so when the device has no voice; three more label lines. This file has no read-along
+  // page, so it behaves as before. The lesson is unchanged. The two lists are empty.
+  // The split is C:/tmp/packets_review_1123/fix/pin_split.json.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

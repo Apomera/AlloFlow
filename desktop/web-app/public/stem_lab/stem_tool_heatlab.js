@@ -2945,6 +2945,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     st.id = 'allo-heatlab-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"heatLab\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-heatlab-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-heatlab-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"heatLab\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"heatLab\"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   window.StemLab.registerTool('heatLab', {
     icon: '🌡️',
@@ -5174,7 +5180,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   borderWidth: on ? 2 : 1
                 }
               },
-                h('input', { type: 'radio', name: 'ht-fr-guess', value: o[0], checked: on,
+                h('input', { type: 'radio', name: 'ht-fr-guess', value: o[0], checked: on, 'aria-label': o[1],
                   onChange: function () { frSet({ pick: o[0], stage: 'predict' }); },
                   className: 'h-4 w-4 flex-shrink-0 accent-orange-600' }),
                 h('span', null, o[1]));
@@ -5325,7 +5331,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 }
               },
                 h('input', {
-                  type: 'radio', name: 'ht-poe-' + id, value: o.id, checked: on,
+                  type: 'radio', name: 'ht-poe-' + id, value: o.id, checked: on, 'aria-label': o.text,
                   onChange: function () { poePatch(id, { pick: o.id }); },
                   className: 'mt-0.5 h-4 w-4 flex-shrink-0 accent-violet-600'
                 }),
@@ -6506,7 +6512,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               return h('button', {
                 key: id, type: 'button', 'aria-expanded': on ? 'true' : 'false', 'aria-controls': regionId, 'data-ht-term': id,
                 onClick: function () { setVocabOpen(on ? '' : where + ':' + id); },
-                onKeyDown: function (e) { if (e.key === 'Escape' && on) { e.preventDefault(); setVocabOpen(''); } },
+                onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return; if (e.key === 'Escape' && on) { e.preventDefault(); setVocabOpen(''); } },
                 className: 'min-h-11 px-2 py-1 rounded-lg text-[0.6875rem] font-bold underline decoration-dotted underline-offset-2',
                 style: neutralBtnStyle(on)
               }, HT_VOCAB[id][0]);
@@ -7086,6 +7092,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         'data-ht-topicbar': 'true',
         className: 'rounded-xl border px-2.5 py-1.5 mt-1',
         onKeyDown: function (e) {
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           if (e.key === 'Escape' && htMenu) { e.preventDefault(); htCloseMenu(true); }
         },
         style: {
@@ -7434,7 +7441,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
             h('div', { className: 'flex items-center gap-3 min-w-0' },
-              ArrowLeft ? h('button', {
+              ArrowLeft ? h('button', { type: 'button',
                 onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); },
                 className: 'shrink-0 p-2 rounded-lg transition-colors',
                 style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: isContrast ? '#000000' : 'rgba(255,255,255,0.10)', border: '1px solid ' + (isContrast ? '#fbbf24' : 'rgba(226,232,240,0.22)') },
@@ -7528,6 +7535,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               'aria-describedby': mode === 'conduction' ? 'heat-race-status' : undefined,
               'aria-label': htFmt(t('stem.heatlab.heat_transfer_visualisation_currently', 'Heat transfer visualisation, currently showing {0}. {1}{2}'), [activeMode.label, activeMode.why, (mode === 'conduction' ? htFmt(t('stem.heatlab.the_bar_is_heated_to_degrees', ' The bar is {0}, heated to {1} degrees Celsius at the left end. Use arrow keys to change the hot end temperature.{2}'), [material.name, hotEnd, (probes.length ? ' ' + t('stem.heatlab.canvas_probe_aria', 'Thermometers: {list}. Drag them along the bar, or move them with the position sliders below.').replace('{list}', probeSummary) : '')]) : '')]),
               onKeyDown: function (e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                 if (mode !== 'conduction') return;
                 var step = 0;
                 if (e.key === 'ArrowUp' || e.key === 'ArrowRight') step = 10;

@@ -135,8 +135,8 @@ function DbqTimer(props) {
     type: "button",
     onClick: () => props.onDeadlineChange(null),
     className: "min-h-11 px-3 inline-flex items-center justify-center rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-    "aria-label": props.t('a11y.dismiss_timer') || props.t('ui_common.dismiss')
-  }, props.t('ui_common.dismiss'))));
+    "aria-label": props.t('a11y.dismiss_timer') || props.t('ui_common.dismiss') || 'Dismiss'
+  }, props.t('ui_common.dismiss') || 'Dismiss')));
 }
 function dbqEscapePrintText(value) {
   return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
@@ -725,8 +725,10 @@ function DbqView(props) {
   };
   const setTab = tab => setDbq('_dbqTab', tab);
   const onTabKeyDown = (event, tab) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     const index = tabKeys.indexOf(tab);
-    const rtl = event.currentTarget.ownerDocument.defaultView.getComputedStyle(event.currentTarget.parentElement).direction === 'rtl';
+    const view = event.currentTarget?.ownerDocument?.defaultView;
+    const rtl = !!(view && event.currentTarget?.parentElement && view.getComputedStyle(event.currentTarget.parentElement).direction === 'rtl');
     let next;
     if (event.key === 'ArrowRight') next = (index + (rtl ? -1 : 1) + tabKeys.length) % tabKeys.length;else if (event.key === 'ArrowLeft') next = (index + (rtl ? 1 : -1) + tabKeys.length) % tabKeys.length;else if (event.key === 'Home') next = 0;else if (event.key === 'End') next = tabKeys.length - 1;else return;
     event.preventDefault();
@@ -816,7 +818,7 @@ function DbqView(props) {
       primary: '#dc2626',
       secondary: '#2563eb',
       data: '#059669',
-      visual: '#d97706',
+      visual: '#b45309',
       testimony: '#7c3aed',
       reconstructed: '#0891b2',
       linked: '#4f46e5'
@@ -838,8 +840,9 @@ function DbqView(props) {
   // overflow-y-auto means a work pane that hits its own minimum scrolls the
   // whole resource instead of being clipped by the shell.
   return /*#__PURE__*/React.createElement("div", {
+    "data-dbq-view": "true",
     className: "space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden"
-  }, isTeacherMode && docsMissing > 0 && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("style", null, '[data-dbq-view="true"] button,[data-dbq-view="true"] input,[data-dbq-view="true"] textarea,[data-dbq-view="true"] summary,[data-dbq-view="true"] a{touch-action:manipulation;box-sizing:border-box}[data-dbq-view="true"] :focus-visible{outline:3px solid #4338ca;outline-offset:2px}.theme-contrast [data-dbq-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}@media(forced-colors:active){[data-dbq-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-dbq-view="true"] button,[data-dbq-view="true"] input,[data-dbq-view="true"] textarea,[data-dbq-view="true"] [role="progressbar"]{border:1px solid ButtonText!important}}@media(prefers-reduced-motion:reduce){[data-dbq-view="true"] *{animation:none!important;transition:none!important}}'), isTeacherMode && docsMissing > 0 && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     "data-dbq-missing-docs": true,
     className: "text-sm rounded-lg border-2 border-amber-500 bg-amber-50 text-amber-950 p-3 mb-3"
@@ -866,7 +869,9 @@ function DbqView(props) {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words"
-  }, "📜 ", dbqData.title || dbqT(t, 'dbq.default_title', 'Document-Based Question')), dbqData.historicalContext && !headerCollapsed && /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "📜"), " ", dbqData.title || dbqT(t, 'dbq.default_title', 'Document-Based Question')), dbqData.historicalContext && !headerCollapsed && /*#__PURE__*/React.createElement("p", {
     tabIndex: 0,
     role: "region",
     "aria-label": t("ui_common.historical_context") || 'Historical Context',
@@ -880,13 +885,14 @@ function DbqView(props) {
     className: "text-2xl font-black text-amber-800"
   }, progress.answered, "/", progress.total), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-amber-800 uppercase"
-  }, t("ui_common.completed")), /*#__PURE__*/React.createElement("div", {
+  }, t("ui_common.completed") || 'Completed'), /*#__PURE__*/React.createElement("div", {
     className: "w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden",
     role: "progressbar",
     "aria-label": t("ui_common.completed") || "Completed",
     "aria-valuemin": 0,
     "aria-valuemax": progress.total || 1,
-    "aria-valuenow": progress.answered
+    "aria-valuenow": progress.answered,
+    "aria-valuetext": `${progress.answered} of ${progress.total} items completed`
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-full bg-amber-500 rounded-full transition-all duration-500 motion-reduce:transition-none",
     style: {
@@ -1051,7 +1057,7 @@ function DbqView(props) {
         banner.id = 'pb';
         banner.innerHTML = '<div style="background:#92400e;color:white;padding:10px 16px;font-family:system-ui;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:9999"><span style="font-weight:bold;font-size:13px">📜 ' + dbqEscapePrintText(L('dbq.packet_banner', 'DBQ Packet — {n} Documents', {
           n: docs.length
-        })) + '</span><button type="button" onclick="document.getElementById(\'pb\').remove();window.print()" style="margin-left:auto;background:white;color:#92400e;border:none;padding:6px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px">🖨 ' + dbqEscapePrintText(L('dbq.print_packet', 'Print Packet')) + '</button><button type="button" onclick="document.getElementById(\'pb\').remove()" aria-label="' + dbqEscapePrintText(L('dbq.close', 'Close')) + '" style="background:transparent;color:white;border:1px solid rgba(255,255,255,0.3);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">✕</button></div>';
+        })) + '</span><button type="button" onclick="document.getElementById(\'pb\').remove();window.print()" style="margin-left:auto;min-height:44px;min-width:44px;background:white;color:#92400e;border:none;padding:8px 14px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:12px">🖨 ' + dbqEscapePrintText(L('dbq.print_packet', 'Print Packet')) + '</button><button type="button" onclick="document.getElementById(\'pb\').remove()" aria-label="' + dbqEscapePrintText(L('dbq.close', 'Close')) + '" style="min-height:44px;min-width:44px;background:transparent;color:white;border:1px solid rgba(255,255,255,0.45);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:12px">✕</button></div>';
         w.document.body.insertBefore(banner, w.document.body.firstChild);
         const ps = w.document.createElement('style');
         ps.textContent = '@media print{#pb{display:none!important}}';
@@ -1061,7 +1067,9 @@ function DbqView(props) {
       }
     },
     className: "min-h-11 px-3 py-1.5 bg-amber-100 text-amber-900 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all motion-reduce:transition-none flex items-center gap-1.5 border border-amber-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
-  }, "🖨️ ", L('dbq.print_dbq_packet', 'Print DBQ Packet')), /*#__PURE__*/React.createElement(DbqTimer, {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🖨️"), " ", L('dbq.print_dbq_packet', 'Print DBQ Packet')), /*#__PURE__*/React.createElement(DbqTimer, {
     resourceId: resId,
     deadline: r._dbqTimerEnd,
     onDeadlineChange: value => setDbq('_dbqTimerEnd', value),
@@ -1074,7 +1082,7 @@ function DbqView(props) {
   }, headerCollapsed ? `▾ ${t("ui_common.show_briefing") || 'Show briefing'}` : `▴ ${t("ui_common.hide_briefing") || 'Hide briefing'}`))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto",
     role: "tablist",
-    "aria-label": t("a11y.dbq_sections")
+    "aria-label": t("a11y.dbq_sections") || 'DBQ sections'
   }, [['documents', '📄 ' + L('dbq.tab_docs', 'Docs ({n})', {
     n: docs.length
   })], ['corroboration', '🔗 ' + L('dbq.step_corroborate', 'Corroborate')], ['essay', '✏️ ' + L('dbq.step_essay', 'Essay')], ['rubric', '📊 ' + L('dbq.rubric', 'Rubric')]].map(([id, label]) => /*#__PURE__*/React.createElement("button", {
@@ -1185,13 +1193,14 @@ function DbqView(props) {
       className: "flex items-center gap-2 mb-1"
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-bold text-slate-600"
-    }, t("ui_common.progress_label")), /*#__PURE__*/React.createElement("div", {
+    }, t("ui_common.progress_label") || 'Progress'), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 h-2 bg-slate-200 rounded-full overflow-hidden",
       role: "progressbar",
       "aria-label": t("ui_common.progress_label") || 'DBQ progress',
       "aria-valuemin": 0,
       "aria-valuemax": 100,
-      "aria-valuenow": pct
+      "aria-valuenow": pct,
+      "aria-valuetext": `${pct}% complete (${completed} of ${steps.length} steps)`
     }, /*#__PURE__*/React.createElement("div", {
       className: "h-full rounded-full transition-all duration-500 motion-reduce:transition-none",
       style: {
@@ -1209,6 +1218,7 @@ function DbqView(props) {
       key: i,
       className: "flex items-center gap-1"
     }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true",
       style: {
         color: s.done ? '#15803d' : s.partial ? '#b45309' : '#64748b',
         fontWeight: 700
@@ -1715,7 +1725,7 @@ ${isE ? 'Use simple, encouraging language. Praise their attempt to think critica
     disabled: !callGemini || !!teacherAiDoor?.disabled || feedbackPending(`_reliabilityAI_${activeDoc.id}`),
     title: teacherAiDoor?.title || undefined,
     className: "mt-2 min-h-11 text-xs font-bold disabled:opacity-50 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl transition-all motion-reduce:transition-none flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-    "aria-label": t("a11y.compare_with_ai")
+    "aria-label": t("a11y.compare_with_ai") || L('dbq.compare_with_ai', 'Compare My Assessment with AI Analysis')
   }, "🔍 ", L('dbq.compare_with_ai', 'Compare My Assessment with AI Analysis')), feedbackNotice(`_reliabilityAI_${activeDoc.id}`), feedbackFor(`_reliabilityAI_${activeDoc.id}`) === 'loading' && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
@@ -1854,7 +1864,7 @@ Rules:
       disabled: !callGemini || !!teacherAiDoor?.disabled || feedbackLoading,
       title: teacherAiDoor?.title || undefined,
       className: "min-h-11 bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all motion-reduce:transition-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-      "aria-label": t("a11y.get_ai_feedback_doc")
+      "aria-label": t("a11y.get_ai_feedback_doc") || L('dbq.check_my_analysis', 'Check My Analysis')
     }, feedbackLoading ? '⏳ ' + L('dbq.analyzing', 'Analyzing...') : '✨ ' + L('dbq.check_my_analysis', 'Check My Analysis')), feedbackNotice(`_docFeedback_${activeDoc.id}`), docFeedback && typeof docFeedback === 'object' && !docFeedback.error && /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
@@ -1896,16 +1906,18 @@ Rules:
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-green-600 mt-0.5"
+      "aria-hidden": "true",
+      className: "text-green-700 mt-0.5"
     }, "✓"), s)))), docFeedback.nudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      className: "text-xs font-bold text-amber-700 mb-1"
+      className: "text-xs font-bold text-amber-800 mb-1"
     }, "🤔 ", L('dbq.think_deeper', 'Think Deeper')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, docFeedback.nudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-amber-600 mt-0.5"
+      "aria-hidden": "true",
+      className: "text-amber-800 mt-0.5"
     }, "→"), s)))), docFeedback.modelResponse && /*#__PURE__*/React.createElement("div", {
       className: "bg-indigo-50 rounded-lg p-3 border border-indigo-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -1990,7 +2002,7 @@ Rules:
     rows: 3,
     placeholder: t("placeholders.perspective_response"),
     className: "w-full text-sm border border-purple-300 rounded-lg p-2.5 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600",
-    "aria-label": t("a11y.perspective_comparison")
+    "aria-label": t("a11y.perspective_comparison") || L('dbq.perspective_question', 'Which perspective do you find more convincing? Why?')
   }))), /*#__PURE__*/React.createElement("div", {
     className: "bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4"
   }, /*#__PURE__*/React.createElement("h3", {
@@ -2181,16 +2193,18 @@ Score according to ${dbqEscapeUntrusted(gradeLevel, DBQ_LIMITS.promptGrade)} exp
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-green-600 mt-0.5"
+      "aria-hidden": "true",
+      className: "text-green-700 mt-0.5"
     }, "✓"), s)))), corrobFb.corrobNudges?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      className: "text-xs font-bold text-amber-700 mb-1"
+      className: "text-xs font-bold text-amber-800 mb-1"
     }, "🤔 ", L('dbq.think_deeper', 'Think Deeper')), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-amber-800 space-y-1"
     }, corrobFb.corrobNudges.map((s, i) => /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "flex items-start gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-amber-600 mt-0.5"
+      "aria-hidden": "true",
+      className: "text-amber-800 mt-0.5"
     }, "→"), s)))), corrobFb.perspectiveFeedback && corrobFb.perspectiveFeedback !== 'null' && /*#__PURE__*/React.createElement("div", {
       className: "bg-white/60 rounded-lg p-3"
     }, /*#__PURE__*/React.createElement("div", {
@@ -2425,16 +2439,18 @@ Score according to ${dbqEscapeUntrusted(gradeLevel, DBQ_LIMITS.promptGrade)} exp
     key: i,
     className: "flex items-start gap-1.5"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-green-600 mt-0.5"
+    "aria-hidden": "true",
+    className: "text-green-700 mt-0.5"
   }, "✓"), s)))), aiFeedback.improvements?.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "text-xs font-bold text-amber-700 mb-1"
+    className: "text-xs font-bold text-amber-800 mb-1"
   }, "📈 ", L('dbq.areas_to_improve', 'Areas to Improve')), /*#__PURE__*/React.createElement("ul", {
     className: "text-sm text-amber-800 space-y-1"
   }, aiFeedback.improvements.map((s, i) => /*#__PURE__*/React.createElement("li", {
     key: i,
     className: "flex items-start gap-1.5"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-600 mt-0.5"
+    "aria-hidden": "true",
+    className: "text-amber-800 mt-0.5"
   }, "→"), s)))), aiFeedback.thesisFeedback && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/60 rounded-lg p-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2489,7 +2505,7 @@ Score according to ${dbqEscapeUntrusted(gradeLevel, DBQ_LIMITS.promptGrade)} exp
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-base font-black text-orange-800 mb-1"
   }, "📊 ", L('dbq.rubric_heading', 'DBQ Rubric')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-orange-600 mb-4"
+    className: "text-xs text-orange-800 mb-4"
   }, L('dbq.rubric_intro', 'Review scoring criteria, then self-assess your work below.')), rubric.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "overflow-x-auto"
   }, /*#__PURE__*/React.createElement("table", {
@@ -2497,7 +2513,7 @@ Score according to ${dbqEscapeUntrusted(gradeLevel, DBQ_LIMITS.promptGrade)} exp
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-orange-100/50 text-left font-bold text-orange-800",
     scope: "col"
-  }, t("ui_common.criteria")), /*#__PURE__*/React.createElement("th", {
+  }, t("ui_common.criteria") || 'Criteria'), /*#__PURE__*/React.createElement("th", {
     className: "border border-orange-200 p-3 bg-red-50 text-center font-bold text-red-700 w-1/5",
     scope: "col"
   }, "1 — ", levelNames[0]), /*#__PURE__*/React.createElement("th", {
@@ -2536,7 +2552,7 @@ Score according to ${dbqEscapeUntrusted(gradeLevel, DBQ_LIMITS.promptGrade)} exp
     className: "bg-white rounded-xl border border-orange-200 p-4"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase mb-2"
-  }, t("headings.your_self_assessment")), /*#__PURE__*/React.createElement("div", {
+  }, t("headings.your_self_assessment") || 'Your Self-Assessment'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 flex-wrap"
   }, rubricScores.map(([criteria, score]) => /*#__PURE__*/React.createElement("div", {
     key: criteria,

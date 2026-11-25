@@ -10,19 +10,25 @@
 
 (function() {
   'use strict';
-  if (typeof window === 'undefined') return;
+  if (typeof window !== 'object' || !window) return;
 
-  window.SelHub = window.SelHub || {
-    _registry: {}, _order: [],
-    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-    isRegistered: function(id) { return !!this._registry[id]; },
-    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  window.SelHub = (window.SelHub && typeof window.SelHub === 'object') ? window.SelHub : {
+    _registry: Object.create(null), _order: [],
+    registerTool: function(id, config) {
+      if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype' || !config || typeof config !== 'object') return;
+      config.id = id; config.ready = config.ready !== false; this._registry[id] = config;
+      if (this._order.indexOf(id) === -1) this._order.push(id);
+    },
+    isRegistered: function(id) { return typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id) && !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = (typeof id === 'string' && Object.prototype.hasOwnProperty.call(this._registry, id)) ? this._registry[id] : null; if (!tool || typeof tool.render !== 'function') return null; return tool.render(ctx); }
   };
 
   if (window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit')) return;
 
+  var _cbLocalCrisisRe = /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|suicid(?:e|al)|hurt\s+myself|self[\s-]?harm|cut(?:ting)?\s+myself|overdose|no\s+reason\s+to\s+live)\b/i;
+
   (function() {
-    if (typeof document === 'undefined' || !document.body) return;
+    if (typeof document !== 'object' || !document || !document.body || typeof document.getElementById !== 'function') return;
     if (document.getElementById('allo-live-costbenefit')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-costbenefit';
@@ -119,33 +125,48 @@
       }
       function scanCbText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || typeof window === 'undefined' || !window.SelHub) return false;
+        if (!trimmed) return false;
         var blocked = false;
-        if (typeof window.SelHub.safeRehearseCheck === 'function') {
-          var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'costBenefit', onSafetyFlag: onSafetyFlag });
-          if (chk && chk.action === 'block') blocked = true;
-        }
-        if (!blocked && typeof window.SelHub.scanForCrisis === 'function') {
-          var scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && scan.triggered) {
+        var sh = (typeof window === 'object' && window && window.SelHub) ? window.SelHub : null;
+        try {
+          if (sh && typeof sh.safeRehearseCheck === 'function') {
+            var chk = sh.safeRehearseCheck(trimmed, { toolId: 'costBenefit', onSafetyFlag: onSafetyFlag });
+            if (chk && chk.action === 'block') blocked = true;
+          }
+          if (!blocked && sh && typeof sh.scanForCrisis === 'function') {
+            var scan = sh.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.hasCrisis)) {
+              blocked = true;
+              if (typeof onSafetyFlag === 'function') {
+                try { onSafetyFlag({ toolId: 'costBenefit', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
+              }
+            }
+          }
+          if (!blocked && !(sh && (typeof sh.safeRehearseCheck === 'function' || typeof sh.scanForCrisis === 'function')) && _cbLocalCrisisRe.test(trimmed)) {
             blocked = true;
             if (typeof onSafetyFlag === 'function') {
               try { onSafetyFlag({ toolId: 'costBenefit', tier: 3, snippet: trimmed.slice(0, 120) }); } catch (_) {}
             }
           }
-        }
-        if (blocked) {
-          setCB({ _crisisTier: 3 });
-          if (typeof window.SelHub.showCrisisModal === 'function') {
-            window.SelHub.showCrisisModal({ toolName: 'Cost-Benefit Grid', contentSnippet: trimmed });
+          if (blocked) {
+            setCB({ _crisisTier: 3 });
+            if (sh && typeof sh.showCrisisModal === 'function') {
+              sh.showCrisisModal({ toolName: 'Cost-Benefit Grid', contentSnippet: trimmed });
+            }
+            if (typeof announceToSR === 'function') { try { announceToSR('Support resources are shown on this screen. Call or text 988 or text HOME to 741741.'); } catch (_) {} }
           }
-        }
+        } catch (_) {}
         return blocked;
       }
       var VALID_VIEWS = ['grid', 'edit', 'reflect', 'print', 'about'];
+      var VALID_CELL_IDS = { stPros: 1, stCons: 1, ltPros: 1, ltCons: 1 };
+      function cellItems(cellsObj, id) {
+        if (!cellsObj || !Object.prototype.hasOwnProperty.call(VALID_CELL_IDS, id)) return [];
+        return Object.prototype.hasOwnProperty.call(cellsObj, id) ? safeList(cellsObj[id]) : [];
+      }
       var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'grid';
-      function goto(v) { setCB({ view: v }); }
-      function printNow() { try { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); } catch (e) {} }
+      function goto(v) { setCB({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'grid' }); }
+      function printNow() { try { if (typeof window === 'object' && window && typeof window.print === 'function') window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
@@ -168,10 +189,12 @@
         ];
         function selectTab(nextId) {
           goto(nextId);
-          if (typeof document !== 'undefined') {
+          if (typeof document === 'object' && document && typeof document.getElementById === 'function') {
             setTimeout(function() {
-              var el = document.getElementById('cb-tab-' + nextId);
-              if (el && typeof el.focus === 'function') el.focus();
+              try {
+                var el = document.getElementById('cb-tab-' + nextId);
+                if (el && typeof el.focus === 'function') el.focus();
+              } catch (_) {}
             }, 0);
           }
         }
@@ -182,7 +205,7 @@
             return h('button', { key: t.id, id: 'cb-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
               role: 'tab', 'aria-selected': active, 'aria-controls': 'cb-panel-' + t.id, tabIndex: active ? 0 : -1,
               onKeyDown: function(e) {
-                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)) return;
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229) || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
                 else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
@@ -200,7 +223,7 @@
         return h('div', { className: 'no-print',
           style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _cobSoftBg('rgba(15,23,42,0.5)', '#f1f5f9'), border: '1px solid ' + _cobBd('#334155'), fontSize: 12, color: _cobFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
-          'This is a structured deliberation tool, not a magic answer machine. If a decision feels too heavy to make alone, that is information; bring it to a counselor or trusted adult. Crisis Text Line: text HOME to 741741.'
+          'This is a structured deliberation tool, not a magic answer machine. If a decision feels too heavy to make alone, that is information; bring it to a counselor or trusted adult. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'
         );
       }
 
@@ -278,21 +301,23 @@
           return found ? found.label : cellId;
         }
         function addItem(cellId, value) {
+          if (!Object.prototype.hasOwnProperty.call(VALID_CELL_IDS, cellId)) return;
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var text = value.trim();
           setCB(function(prior) {
             var priorCells = safeObj(prior.cells);
             var nx = Object.assign({}, priorCells);
-            nx[cellId] = safeList(priorCells[cellId]).slice();
+            nx[cellId] = cellItems(priorCells, cellId).slice();
             nx[cellId].push(text);
             return { cells: nx };
           });
           if (typeof announceToSR === 'function') announceToSR('Added to ' + cellLabelFor(cellId) + '.');
         }
         function removeItem(cellId, idx) {
+          if (!Object.prototype.hasOwnProperty.call(VALID_CELL_IDS, cellId)) return;
           setCB(function(prior) {
             var priorCells = safeObj(prior.cells);
-            var list = safeList(priorCells[cellId]).slice();
+            var list = cellItems(priorCells, cellId).slice();
             if (idx < 0 || idx >= list.length) return null;
             list.splice(idx, 1);
             var nx = Object.assign({}, priorCells);
@@ -320,10 +345,10 @@
               var items = safeList(cells[cell.id]);
               var inputId = 'cb-input-' + cell.id;
               function submit() {
-                if (typeof document === 'undefined') return;
+                if (typeof document !== 'object' || !document || typeof document.getElementById !== 'function') return;
                 var el = document.getElementById(inputId);
                 if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-                scanCbText(el.value);
+                if (scanCbText(el.value)) { el.value = ''; return; }
                 addItem(cell.id, el.value);
                 el.value = '';
               }
@@ -448,6 +473,7 @@
               '@media print { body * { visibility: hidden !important; } ' +
               '#cb-print-region, #cb-print-region * { visibility: visible !important; } ' +
               '#cb-print-region { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff !important; color: #0f172a !important; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#cb-print-region * { background: transparent !important; color: #0f172a !important; border-color: #cbd5e1 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
@@ -513,7 +539,7 @@
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (typeof window !== 'undefined' && window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('costBenefit', h, ctx) : null),
+          (typeof window === 'object' && window && window.SelHubStandards && typeof window.SelHubStandards.render === 'function' ? window.SelHubStandards.render('costBenefit', h, ctx) : null),
           h('div', { style: { padding: 16, borderRadius: 12, background: _cobBg('#0f172a'), border: '1px solid ' + _cobBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _cobFg('#c4b5fd'), fontSize: 16 } }, 'What the grid is'),
             h('p', { style: { margin: '0 0 10px', color: _cobFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -583,8 +609,12 @@
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Cost-Benefit Grid' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
-          ? window.SelHub.renderCrisisResources(h, _cobBand) : null,
+        d._crisisTier >= 3
+          ? ((typeof window === 'object' && window && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+              ? window.SelHub.renderCrisisResources(h, _cobBand)
+              : h('div', { role: 'alert', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _cobHC ? '#000000' : 'rgba(239,68,68,0.12)', border: '1px solid ' + (_cobHC ? '#ffff00' : '#ef4444'), color: _cobFg('#fde68a'), fontSize: 13, lineHeight: 1.6 } },
+                  'You do not have to carry this alone. Call or text 988 (Suicide and Crisis Lifeline), text HOME to 741741 (Crisis Text Line), or call 911 in immediate danger.'))
+          : null,
         h('div', { role: 'tabpanel', id: 'cb-panel-' + view, 'aria-labelledby': 'cb-tab-' + view }, body)
       );
     }

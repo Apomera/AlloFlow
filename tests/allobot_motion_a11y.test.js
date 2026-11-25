@@ -86,7 +86,8 @@ describe('AlloBot reduced-motion accessibility', () => {
     expect(source).toContain('fillOpacity={bodyPose.glowOpacity}');
     expect(source).toContain('rx={bodyPose.shadowRx}');
     expect(source).toContain('rx={bodyPose.contactRx}');
-    expect(source).toContain("className={`relative ${canBodyBreathe ? \"animate-bot-breathe\" : \"\"}");
+    // Breathing also pauses while the touch controls are showing.
+    expect(source).toContain("className={`relative ${canBodyBreathe && !touchControlsVisible ? \"animate-bot-breathe\" : \"\"}");
     expect(source).not.toContain('!motionDisabled && !isFlightActive ? "animate-bot-breathe"');
     expect(source).toContain('(isListening || isTalking) ? "animate-allobot-lamp-glow"');
   });

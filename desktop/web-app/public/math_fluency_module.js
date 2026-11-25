@@ -1354,6 +1354,9 @@
     var _ps = useState(null), probeStudent = _ps[0], setProbeStudent = _ps[1];
     // "Save as a file for home": the line shown under that button.
     var _hf = useState(''), homeFileNote = _hf[0], setHomeFileNote = _hf[1];
+    // Setup screen: session type, form, timer, count and goal sit behind one
+    // "Customize" toggle (the Fluency Maze pattern). Not persisted; starts closed.
+    var _cz = useState(false), showProbeCustomize = _cz[0], setShowProbeCustomize = _cz[1];
 
     // ── Handoff from a producer that configures this panel ───────────────────
     // Two producers park a config in window.__alloFluencyPendingConfig and then
@@ -2917,6 +2920,25 @@
     // A fixed form sets its own operation, facts, timer and count, so those pickers
     // (and the session goal) are hidden for it instead of showing stale practice values.
     var practiceOnlyField = probeMode === 'benchmark' ? { 'data-mf-practice-only': 'true', hidden: true, style: { display: 'none' } } : { 'data-mf-practice-only': 'true' };
+    // The setup screen shows Operation, Practice Set and Start. Session type, form,
+    // timer, count and goal are one click away behind "Customize", whose line
+    // names their current values while it is closed (the Fluency Maze pattern).
+    // It opens by itself while one of them needs a choice before Start can work:
+    // a handed-off count that is not supported, or a fixed form that is missing.
+    var probeCustomizeOpen = showProbeCustomize || !setupCountReady || !setupBenchmarkReady;
+    // One list for the goal picker's options and for the closed line, so they cannot drift.
+    var probeGoalNames = { 'accuracy-80': '80% accuracy', 'accuracy-90': '90% accuracy', 'accuracy-100': '100% accuracy', 'personal-best': 'Beat comparable personal best', 'instructional-reference': 'Reach instructional reference', 'none': 'No goal' };
+    var probeCustomizeSummary = probeMode === 'benchmark'
+      ? [setupBenchmarkReady ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: probeForm }) : tt('math_fluency.fixed_form_unavailable_short', 'Fixed form unavailable')]
+      : (timeLimit === 0
+          ? [tt('math_fluency.untimed_accuracy_focus', 'Untimed (Accuracy Focus)')]
+          : [tt('math_fluency.timed_practice', 'Timed practice'), timeLimit + ' ' + tt('math_fluency.seconds', 'seconds')]
+        ).concat([
+          setupCountReady
+            ? problemCount + ' ' + (problemCount === 1 ? tt('math_fluency.fact', 'fact') : tt('math_fluency.facts', 'facts'))
+            : tt('math_fluency.choose_problem_count', 'Choose number of problems'),
+          probeGoalNames[sessionGoal] || probeGoalNames.none
+        ]);
     // "Save as a file for home": the practice set as it is set up now, as one
     // check file. The problems are made once, here, by the generator Start
     // uses, and fixed in the file, so every learner who gets it gets the same
@@ -3106,28 +3128,9 @@
         h('span', { 'aria-hidden': 'true', style: { width: '22px', height: '22px', display: 'grid', placeItems: 'center', borderRadius: '999px', background: '#ffedd5', border: '1px solid #fdba74', fontSize: '10px', fontWeight: 900 } }, '1'),
         h('strong', { style: { fontSize: '12px' } }, tt('math_fluency.choose_your_session', 'Choose your session'))
       ),
-      h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '12px', padding: '12px', borderRadius: '13px', border: '1px solid #fed7aa', background: 'rgba(255,255,255,0.9)', boxShadow: '0 8px 20px rgba(146,64,14,0.06)' } },
-        h('div', { style: { gridColumn: '1 / -1' } },
-          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.session_type', 'Session type')),
-          h('select', {
-            value: probeMode, onChange: function (e) { setProbeMode(e.target.value); },
-            'aria-label': tt('math_fluency.session_type', 'Session type'),
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
-          },
-            h('option', { value: 'practice' }, tt('math_fluency.practice_mode', 'Practice - Custom Settings')),
-            h('option', { value: 'benchmark' }, tt('math_fluency.fixed_form_mode', 'Fixed Comparable Form'))
-          )
-        ),
-        h('div', { 'data-mf-fixed-only': 'true', hidden: probeMode !== 'benchmark', style: probeMode !== 'benchmark' ? { display: 'none' } : { gridColumn: '1 / -1' } },
-          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.form', 'Form')),
-          h('select', {
-            value: probeForm, onChange: function (e) { setProbeForm(e.target.value); }, disabled: probeMode !== 'benchmark',
-            'aria-label': tt('math_fluency.fixed_probe_form', 'Fixed probe form'),
-            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', opacity: probeMode === 'benchmark' ? 1 : 0.55 }
-          },
-            h('option', { value: 'A' }, 'Form A'), h('option', { value: 'B' }, 'Form B'), h('option', { value: 'C' }, 'Form C')
-          )
-        ),
+      // First view: Operation and Practice Set. A fixed form has neither, so the
+      // whole card is hidden for it (no empty box) and "Customize" names the form.
+      h('div', { className: 'mf-config-grid', 'data-mf-setup-main': 'true', hidden: probeMode === 'benchmark', style: { display: probeMode === 'benchmark' ? 'none' : 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '12px', padding: '12px', borderRadius: '13px', border: '1px solid #fed7aa', background: 'rgba(255,255,255,0.9)', boxShadow: '0 8px 20px rgba(146,64,14,0.06)' } },
         // Operation
         h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.operation', 'Operation')),
@@ -3155,6 +3158,45 @@
               return h('option', { key: option.value, value: option.value }, tr(option.label));
             })
           )
+        )
+      ),
+
+      // "Customize": the other session choices, one click away. Built like the
+      // Fluency Maze toggle: its line says what is set, open or closed. The panel
+      // stays in the DOM (hidden) so the values and their handlers never unmount.
+      h('button', {
+        type: 'button', 'data-mf-customize-toggle': 'true',
+        onClick: function () { setShowProbeCustomize(!probeCustomizeOpen); },
+        'aria-expanded': probeCustomizeOpen,
+        // Held open while a choice inside is needed: say it cannot be closed yet.
+        'aria-disabled': (!setupCountReady || !setupBenchmarkReady) ? 'true' : undefined,
+        'aria-controls': 'mf-probe-customize',
+        style: { width: '100%', minHeight: '44px', padding: '8px 12px', marginBottom: '12px', borderRadius: '11px', border: '1px solid ' + (highContrast ? '#000' : '#fdba74'), background: highContrast ? '#fff' : '#fff7ed', color: highContrast ? '#000' : '#9a3412', fontSize: '12px', fontWeight: 800, lineHeight: 1.4, textAlign: 'left', cursor: (!setupCountReady || !setupBenchmarkReady) ? 'default' : 'pointer' }
+      }, (probeCustomizeOpen ? '▲ ' : '▼ ') + tt('guided.customize_short', 'Customize') + '  ·  ' + probeCustomizeSummary.join(' · ')),
+      h('div', { id: 'mf-probe-customize', 'data-mf-customize-panel': 'true', hidden: !probeCustomizeOpen },
+      h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '12px', padding: '12px', borderRadius: '13px', border: '1px solid #fed7aa', background: 'rgba(255,255,255,0.9)', boxShadow: '0 8px 20px rgba(146,64,14,0.06)' } },
+        h('div', { style: { gridColumn: '1 / -1' } },
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.session_type', 'Session type')),
+          h('select', {
+            // setShowProbeCustomize(true), here and on the two selects below that can clear
+            // a forced-open state: the panel must not close under the focused control.
+            value: probeMode, onChange: function (e) { setProbeMode(e.target.value); setShowProbeCustomize(true); },
+            'aria-label': tt('math_fluency.session_type', 'Session type'),
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
+          },
+            h('option', { value: 'practice' }, tt('math_fluency.practice_mode', 'Practice - Custom Settings')),
+            h('option', { value: 'benchmark' }, tt('math_fluency.fixed_form_mode', 'Fixed Comparable Form'))
+          )
+        ),
+        h('div', { 'data-mf-fixed-only': 'true', hidden: probeMode !== 'benchmark', style: probeMode !== 'benchmark' ? { display: 'none' } : { gridColumn: '1 / -1' } },
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.form', 'Form')),
+          h('select', {
+            value: probeForm, onChange: function (e) { setProbeForm(e.target.value); setShowProbeCustomize(true); }, disabled: probeMode !== 'benchmark',
+            'aria-label': tt('math_fluency.fixed_probe_form', 'Fixed probe form'),
+            style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db', opacity: probeMode === 'benchmark' ? 1 : 0.55 }
+          },
+            h('option', { value: 'A' }, 'Form A'), h('option', { value: 'B' }, 'Form B'), h('option', { value: 'C' }, 'Form C')
+          )
         ),
         // Timer
         h('div', practiceOnlyField,
@@ -3174,7 +3216,7 @@
         h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.of_problems', '# of Problems')),
           h('select', {
-            value: handoffCountIssue && probeMode !== 'benchmark' ? '' : problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value, 10)); setHandoffCountIssue(false); }, disabled: probeMode === 'benchmark',
+            value: handoffCountIssue && probeMode !== 'benchmark' ? '' : problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value, 10)); setHandoffCountIssue(false); setShowProbeCustomize(true); }, disabled: probeMode === 'benchmark',
             'aria-invalid': !setupCountReady || undefined, 'aria-describedby': !setupCountReady ? 'mf-handoff-count-issue' : undefined,
             'aria-label': tt('math_fluency.number_of_problems', 'Number of problems'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
@@ -3189,6 +3231,34 @@
             h('option', { value: 150 }, '150 (Extra long)')
           )
         )
+      ),
+      // Session goal (practice only): part of "Customize".
+      (function () {
+        var speedDisabled = timeLimit === 0;
+        var goalReference = getBenchmark(gradeLevel, operation);
+        var goalDescription = sessionGoal === 'accuracy-80' ? 'Aim for at least 80% correct.'
+          : sessionGoal === 'accuracy-90' ? 'Aim for at least 90% correct.'
+          : sessionGoal === 'accuracy-100' ? 'Aim for every attempted fact correct.'
+          : sessionGoal === 'personal-best' ? 'Beat the best score from matching comparable settings.'
+          : sessionGoal === 'instructional-reference' ? 'Use the descriptive grade-and-season reference as a target.'
+          : 'Practice without a session goal.';
+        if (probeMode === 'benchmark') return null;
+        return h('div', { className: 'mf-session-goal-picker', style: { display: 'grid', gridTemplateColumns: 'minmax(110px, 0.45fr) minmax(0, 1fr)', gap: '9px', alignItems: 'center', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '9px 10px', marginBottom: '12px' } },
+          h('label', { style: { display: 'grid', gap: '3px', color: '#0f766e', fontSize: '10px', fontWeight: 850 } },
+            tt('math_fluency.session_goal', 'Session Goal'),
+            h('select', { value: sessionGoal, onChange: function (e) { setSessionGoal(e.target.value); }, 'aria-label': tt('math_fluency.session_goal', 'Session goal'), style: { width: '100%', minWidth: 0, border: '1px solid #5eead4', borderRadius: '7px', background: '#fff', padding: '6px', color: '#134e4a', fontSize: '11px' } },
+              h('option', { value: 'accuracy-80' }, probeGoalNames['accuracy-80']),
+              h('option', { value: 'accuracy-90' }, probeGoalNames['accuracy-90']),
+              h('option', { value: 'accuracy-100' }, probeGoalNames['accuracy-100']),
+              h('option', { value: 'personal-best', disabled: speedDisabled }, probeGoalNames['personal-best']),
+              h('option', { value: 'instructional-reference', disabled: speedDisabled || !goalReference.available }, probeGoalNames['instructional-reference']),
+              h('option', { value: 'none' }, probeGoalNames.none)
+            )
+          ),
+          h('div', { role: 'note', style: { color: '#475569', fontSize: '10px', lineHeight: 1.35 } }, goalDescription,
+            speedDisabled ? h('span', { style: { display: 'block', marginTop: '3px', color: '#7c3aed', fontWeight: 750 } }, 'Accuracy Focus supports accuracy goals only.') : null)
+        );
+      })()
       ),
 
       !setupCountReady && h('p', { id: 'mf-handoff-count-issue', role: 'alert', style: { color: '#991b1b', background: '#fef2f2', padding: '10px', border: '1px solid #fca5a5', borderRadius: '8px' } },
@@ -3212,33 +3282,6 @@
           text = tr(describePracticeSet(gradeLevel, operation, difficulty)) + ' ' + tt('math_fluency.no_reference_summary', 'Practice score only. No instructional reference is available for this grade or operation.');
         }
         return h('div', { role: 'note', style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', border: '1px solid #fef3c7', fontSize: '12px', color: '#475569' } }, text);
-      })(),
-
-      (function () {
-        var speedDisabled = timeLimit === 0;
-        var goalReference = getBenchmark(gradeLevel, operation);
-        var goalDescription = sessionGoal === 'accuracy-80' ? 'Aim for at least 80% correct.'
-          : sessionGoal === 'accuracy-90' ? 'Aim for at least 90% correct.'
-          : sessionGoal === 'accuracy-100' ? 'Aim for every attempted fact correct.'
-          : sessionGoal === 'personal-best' ? 'Beat the best score from matching comparable settings.'
-          : sessionGoal === 'instructional-reference' ? 'Use the descriptive grade-and-season reference as a target.'
-          : 'Practice without a session goal.';
-        if (probeMode === 'benchmark') return null;
-        return h('div', { className: 'mf-session-goal-picker', style: { display: 'grid', gridTemplateColumns: 'minmax(110px, 0.45fr) minmax(0, 1fr)', gap: '9px', alignItems: 'center', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '9px 10px', marginBottom: '12px' } },
-          h('label', { style: { display: 'grid', gap: '3px', color: '#0f766e', fontSize: '10px', fontWeight: 850 } },
-            tt('math_fluency.session_goal', 'Session Goal'),
-            h('select', { value: sessionGoal, onChange: function (e) { setSessionGoal(e.target.value); }, 'aria-label': tt('math_fluency.session_goal', 'Session goal'), style: { width: '100%', minWidth: 0, border: '1px solid #5eead4', borderRadius: '7px', background: '#fff', padding: '6px', color: '#134e4a', fontSize: '11px' } },
-              h('option', { value: 'accuracy-80' }, '80% accuracy'),
-              h('option', { value: 'accuracy-90' }, '90% accuracy'),
-              h('option', { value: 'accuracy-100' }, '100% accuracy'),
-              h('option', { value: 'personal-best', disabled: speedDisabled }, 'Beat comparable personal best'),
-              h('option', { value: 'instructional-reference', disabled: speedDisabled || !goalReference.available }, 'Reach instructional reference'),
-              h('option', { value: 'none' }, 'No goal')
-            )
-          ),
-          h('div', { role: 'note', style: { color: '#475569', fontSize: '10px', lineHeight: 1.35 } }, goalDescription,
-            speedDisabled ? h('span', { style: { display: 'block', marginTop: '3px', color: '#7c3aed', fontWeight: 750 } }, 'Accuracy Focus supports accuracy goals only.') : null)
-        );
       })(),
 
       renderSessionReadiness(),

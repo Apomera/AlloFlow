@@ -78,6 +78,6 @@ describe('axe-list actions — _axeTarget selector resolution + wiring', () => {
   it('_axeActions is wired into all four severity rows (critical/serious/moderate/minor)', () => {
     expect((src.match(/\{_axeActions\(v\)\}/g) || []).length).toBe(4);
     // Find button is guarded so rows without a selector (minor) just show the Workbench action
-    expect(src).toContain('{_axeTarget(v) && <button onClick={() => _jumpToAxe(v)}');
+    expect(src).toContain('{_axeTarget(v) && <button type="button" onClick={() => _jumpToAxe(v)}');
   });
 });

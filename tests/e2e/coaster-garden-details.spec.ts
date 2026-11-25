@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings } from './helpers/coaster_settings';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_coasterlab.js',toolId:'coasterLab',width:1440,height:960,
  probes: "document.head.insertAdjacentHTML('beforeend','<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');"});
 test.beforeAll(async()=>{await harness.start();});test.afterAll(async()=>{await harness.stop();});
@@ -19,6 +20,7 @@ test('garden flowers and readable wayfinding adapt to themes and FX Lite',async(
  expect(model.signs.every((s:any)=>s.frontSide)).toBe(true);
  expect(Math.abs(model.signs[0].rotation-model.signs[1].rotation)).toBeCloseTo(Math.PI,7);
  await page.locator('#clab-btnStationView').click();await page.locator('#clab-stationViews [data-station-shot="forecourt"]').click();
+ await openCoasterSettings(page);
  for(const theme of ['daylight','neon','blueprint']){
   await page.locator('#clab-visualTheme').selectOption(theme);
   expect((await state()).plantingVisible).toBe(theme!=='blueprint');expect((await state()).signVisible).toBe(true);

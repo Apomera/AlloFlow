@@ -12026,7 +12026,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
     // (max-w-full + wrapping labels: the longest choices, "7 sharps: C♯ major / A♯ minor", are wider than a phone at the host's 16 px)
     var selCls = 'px-2 py-1 rounded-lg text-xs font-semibold border max-w-full min-w-0 ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
     var lab = 'inline-flex flex-wrap items-center gap-1.5 text-xs font-bold max-w-full ' + (dark ? 'text-slate-200' : 'text-slate-700');
-    var linkBtn = 'text-xs font-bold underline underline-offset-2 disabled:opacity-50 ' + (dark ? 'text-rose-300' : 'text-rose-800');
+    var linkBtn = 'text-xs font-bold underline underline-offset-2 ' + (p.isContrast ? 'disabled:opacity-70 ' : 'disabled:opacity-50 ') + (dark ? 'text-rose-300' : 'text-rose-800');
     var editBtn = 'px-2 py-1 rounded-lg text-xs font-bold border disabled:opacity-40 ' + (dark ? 'bg-slate-800 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800');
     var alertCls = 'text-sm font-bold m-0 ' + (dark ? 'text-rose-300' : 'text-rose-700');
     var ready = load === 'ready' && meta;

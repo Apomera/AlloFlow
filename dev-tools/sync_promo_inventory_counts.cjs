@@ -72,6 +72,7 @@ const RULES = [
     [/\d+(?= registered STEM tool IDs)/g, 'stemTools'],
     [/\d+(?= registered STEM IDs)/g, 'stemTools'],
     [/\d+(?= registered STEM tools\b)/g, 'stemTools'],
+    [/\d+(?= STEM tools with shareable links)/g, 'stemTools'],
     [/\d+(?= registered IDs)/g, 'stemTools'],
     [/\d+(?= STEM tool registrations)/g, 'stemTools'],
     [/\d+(?= STEM IDs)/g, 'stemTools'],
@@ -89,7 +90,7 @@ const RULES = [
     [/(?<=data-target="\d{1,4}">)\d+(?=<\/div>\s*<div class="stat-label">SEL Tools)/g, 'selTools']
 ];
 
-const TARGETS = ['index.html', 'features.html', 'for-districts.html', 'students.html', 'about.html', 'README.md'];
+const TARGETS = ['index.html', 'tour.html', 'tools.html', 'features.html', 'for-districts.html', 'students.html', 'about.html', 'README.md'];
 
 // ── apply ─────────────────────────────────────────────────────────────────────
 let drift = 0;

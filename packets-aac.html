@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Make offline AAC communication board packets</title>
+<meta name="description" content="Make offline Fitzgerald-key AAC communication board packets with Core and Fringe tabs, sentence strip, local device speech, switch scanning, and printable paper backups. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-aac.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packet_aac_builder.js" defer></script>
+<script src="packets_station_bilingual.js" defer></script>
+<script src="packets_qr_crypto.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets-aac.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <details class="top-menu">
+      <summary>Switch maker</summary>
+      <nav aria-label="Other Packets tools">
+        <span class="top-menu-label" aria-hidden="true">Core Practice &amp; Checks</span>
+        <a href="packets-make.html">Word Sounds</a>
+        <a href="packets-vocab.html">Vocabulary</a>
+        <a href="packets-math-practice.html">Math Fact Practice</a>
+        <a href="packets-check.html">Math Check</a>
+        <a href="packets-read-along.html">Read-Along</a>
+        <a href="packets-symbol-runner.html">Symbol Runner</a>
+        <span class="top-menu-label" aria-hidden="true">Choice, Reading &amp; STEM</span>
+        <a href="packets-choice.html">Choice, Sort &amp; Write</a>
+        <a href="packets-maze.html">CBM-Maze Reading</a>
+        <a href="packets-manipulatives.html">Visual Math Manipulatives</a>
+        <a href="packets-stem-lab.html">STEM Labs</a>
+        <span class="top-menu-label" aria-hidden="true">Access, Life Skills &amp; SEL</span>
+        <a href="packets-life-skills.html">Life Skills &amp; Transition</a>
+        <a href="packets-aac.html" aria-current="page">AAC Boards</a>
+        <a href="packets-sel.html">Focus &amp; UDL Toolkits</a>
+        <span class="top-menu-label" aria-hidden="true">Playlists, Library &amp; Results</span>
+        <a href="packets-playlist.html">Unit Playlists</a>
+        <a href="packets-packs.html">Starter Pack Library</a>
+        <a href="packets-compile.html">Compile Activity</a>
+        <a href="packets-present-export.html">Present &amp; print</a>
+        <a href="packets-results.html">Add up results</a>
+      </nav>
+    </details>
+    <a class="top-link" href="packets-results.html">Add up results</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>Nothing is generated when you make a board or when a learner uses it. Every button, spoken phrase, Fitzgerald-key color, and row-column scan order comes directly from your choices.</li>
+      <li>The file is assembled in this browser tab. Words, uploaded pictures, and uploaded voice clips stay on this device and are not sent anywhere. The page scripts ask the network for nothing, and the browser enforces the rule below.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>This page loads <span id="file-count">fourteen</span> files, all from this site: the page itself, three stylesheets, nine scripts, and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page source. It loads no fonts, no trackers, and nothing from another site. Try it opens this site's preview page in a new tab.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>On this device the page keeps your last text board draft so you can return to it. Student code names are never kept. The button that removes your choices is under About this page, at the bottom.</li>
+      <li>Open a file I made reads an AAC board file you saved before, on this device only. Nothing in it is run.</li>
+    </ul>
+    <p id="can-title">An AAC board file can:</p>
+    <ul aria-labelledby="can-title">
+      <li>Open immediately as a Fitzgerald-key Core and Fringe communication board with an interactive sentence strip, Speak sentence, Backspace, and Clear controls.</li>
+      <li>Play optional embedded teacher audio clips or speak aloud using only a voice built into the device, with adjustable rate, mute toggle, and a visible note if no local voice is available.</li>
+      <li>Support touch, pointer, 2D arrow-key navigation, single-switch auto-scan, two-switch row-column step-scan, home-language family directions, paper backup printing, and optional non-scored carryover logging.</li>
+    </ul>
+    <p id="cannot-title">An AAC board file cannot:</p>
+    <ul aria-labelledby="cannot-title">
+      <li>Run AI or send spoken text to a cloud voice service. Only voices installed on the device or clips embedded in the file are used.</li>
+      <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>Record audio, open the camera, or send anything to anyone without a person explicitly saving and sharing an optional carryover log.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" tabindex="-1" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Make offline AAC communication board packets</h1>
+    <p class="scope">Create Fitzgerald-key communication boards for classroom and home carryover with Core and Fringe tabs, sentence strip, local device speech, switch scanning, and paper backups.</p>
+
+    <div id="reopen" class="reopen" hidden>
+      <p class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
+        <span class="hint" id="reopen-hint">Start from an AAC board file you saved before, or drop one here.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
+      </p>
+      <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="An AAC board file you made before">
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="reopen-line" class="reopen-line"></p>
+        <ul id="reopen-list"></ul>
+        <p class="row reopen-actions"><a class="btn btn-small" id="reopen-page" href="packets.html" hidden>Open that page</a><button type="button" class="btn btn-text btn-small" id="reopen-close">Close</button></p>
+      </div>
+    </div>
+
+    <nav aria-label="Steps">
+      <ol class="steps">
+        <li><button type="button" class="step-tab" data-go="1" aria-current="step"><span class="step-n" aria-hidden="true">1</span><span class="step-label"><span class="sr-only">Step 1: </span>Choose starter &amp; grid</span></button></li>
+        <li><button type="button" class="step-tab" data-go="2"><span class="step-n" aria-hidden="true">2</span><span class="step-label"><span class="sr-only">Step 2: </span>Edit buttons &amp; supports</span></button></li>
+        <li><button type="button" class="step-tab" data-go="3"><span class="step-n" aria-hidden="true">3</span><span class="step-label"><span class="sr-only">Step 3: </span>Make &amp; print board</span></button></li>
+      </ol>
+    </nav>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to put the file together. Nothing is sent anywhere.</p></noscript>
+
+    <div id="loading" class="sheet">
+      <p class="count-line" role="status">Getting the parts of the page, about 1.3 MB.</p>
+      <p class="hint">If this line is still here after a minute, load the page again.</p>
+    </div>
+
+    <div id="load-problem" class="sheet" hidden>
+      <p class="count-line">The page could not load all of its parts.</p>
+      <p class="sheet-intro" id="load-problem-text">Check the connection, then load the page again. Nothing has been lost.</p>
+      <p class="actions"><a class="btn btn-primary" href="packets-aac.html">Load the page again</a></p>
+    </div>
+
+    <p id="live-status" class="sr-only" role="status" aria-live="polite"></p>
+
+    <!-- STEP 1 -->
+    <section id="step-1" class="sheet" aria-labelledby="step-1-title" hidden>
+      <p class="kicker">Step 1 of 3</p>
+      <h2 id="step-1-title" tabindex="-1">Choose a starter communication board and layout</h2>
+
+      <div class="block">
+        <h3>Start from a curated AAC board</h3>
+        <p class="hint">Each board uses Fitzgerald-key word roles (pronouns, verbs, nouns, describing words, social words, and questions) and can be edited button by button in Step 2.</p>
+        <div id="starter-list" class="template-grid"></div>
+      </div>
+
+      <fieldset class="block">
+        <legend>Grid size and access defaults</legend>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-grid-layout">Grid layout</label>
+            <select id="f-grid-layout">
+              <option value="2x2">2 x 2 (Large targets, 2 columns)</option>
+              <option value="3x3">3 x 3 (9-grid, 3 columns)</option>
+              <option value="4x4">4 x 4 (Core 16, 4 columns)</option>
+              <option value="5x4">5 x 4 (20-grid, 5 columns)</option>
+              <option value="6x5">6 x 5 (30-grid, 6 columns)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-board-lang">Primary board voice language</label>
+            <select id="f-board-lang">
+              <option value="en">English (en)</option>
+              <option value="es">Spanish (es)</option>
+              <option value="fr">French (fr)</option>
+              <option value="pt">Portuguese (pt)</option>
+              <option value="ar">Arabic (ar)</option>
+              <option value="vi">Vietnamese (vi)</option>
+              <option value="zh">Chinese (zh)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-default-rate">Default speech speed</label>
+            <select id="f-default-rate">
+              <option value="0.7">0.7x (Slower)</option>
+              <option value="0.85">0.85x (Gentle)</option>
+              <option value="1">1.0x (Normal)</option>
+              <option value="1.15">1.15x (Faster)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-scan-mode">Default switch scan mode</label>
+            <select id="f-scan-mode">
+              <option value="auto">Auto-scan (1 switch, row then column)</option>
+              <option value="two_switch">Step-scan (2 switches: Next and Select)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-scan-ms">Auto-scan highlight pace</label>
+            <select id="f-scan-ms">
+              <option value="1000">1.0 second</option>
+              <option value="1500">1.5 seconds</option>
+              <option value="2000">2.0 seconds</option>
+              <option value="3000">3.0 seconds</option>
+            </select>
+          </div>
+          <div class="field aac-check-align">
+            <label class="radio"><input type="checkbox" id="f-speak-tap" checked> <span>Speak each word immediately when tapped</span></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary push" id="next-1">Next: edit buttons &amp; supports</button>
+        <p id="step-1-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
+      <p class="kicker">Step 2 of 3</p>
+      <h2 id="step-2-title" tabindex="-1">Customize folders, word buttons, media, and family supports</h2>
+
+      <div class="block">
+        <h3>Core and Fringe folders</h3>
+        <div class="row folder-bar" role="group" aria-label="Board folders" id="folder-bar"></div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-folder-name">Active folder name</label>
+            <input type="text" id="f-folder-name" maxlength="40" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="f-folder-kind">Folder type (for carryover counts)</label>
+            <select id="f-folder-kind">
+              <option value="core">Core vocabulary</option>
+              <option value="fringe">Fringe / topic vocabulary</option>
+            </select>
+          </div>
+        </div>
+        <div class="row folder-actions">
+          <button type="button" class="btn btn-small" id="add-folder">Add folder</button>
+          <button type="button" class="btn btn-small" id="remove-folder">Remove active folder</button>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="tile-header-row">
+          <h3>Buttons in this folder</h3>
+          <button type="button" class="btn btn-small" id="add-tile">Add button</button>
+        </div>
+        <p class="hint">Select any button below to change its label, spoken phrase, Fitzgerald category, symbol, picture, or voice clip.</p>
+        <div id="tile-list" class="maker-tile-grid" role="group" aria-label="Buttons in active folder"></div>
+
+        <div id="tile-editor" class="mode-opts" hidden>
+          <h4 id="tile-editor-heading">Edit selected button</h4>
+          <div class="field-row">
+            <div class="field">
+              <label for="t-label">Button label</label>
+              <input type="text" id="t-label" maxlength="40" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="t-speak">Spoken phrase</label>
+              <input type="text" id="t-speak" maxlength="120" autocomplete="off">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="t-cat">Fitzgerald-key role</label>
+              <select id="t-cat">
+                <option value="pronoun">Pronoun / People (Yellow)</option>
+                <option value="verb">Verb / Action (Green)</option>
+                <option value="noun">Noun / Thing (Orange)</option>
+                <option value="descriptor">Describing / Feeling (Blue)</option>
+                <option value="social">Social / Polite (Pink)</option>
+                <option value="question">Question / Place / Other (Purple)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="t-symbol">Symbol character (optional)</label>
+              <input type="text" id="t-symbol" maxlength="12" autocomplete="off">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="t-lang">Button speech language (optional override)</label>
+              <input type="text" id="t-lang" maxlength="12" autocomplete="off" placeholder="Leave blank for board language">
+            </div>
+            <div class="field">
+              <span class="field-heading" id="t-img-lbl">Optional picture upload (PNG, JPEG, WebP, GIF, up to 400 KB)</span>
+              <div class="file-pick-row">
+                <button type="button" class="btn btn-small" id="t-img-pick" aria-describedby="t-img-lbl t-img-status">Choose picture</button>
+                <button type="button" class="btn btn-text btn-small" id="t-img-clear" hidden>Remove picture</button>
+              </div>
+              <input type="file" id="t-img-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden aria-label="Optional picture upload (PNG, JPEG, WebP, GIF, up to 400 KB)">
+              <p id="t-img-status" class="hint"></p>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <span class="field-heading" id="t-audio-lbl">Optional voice clip upload (MP3, WAV, M4A, OGG, up to 1 MB)</span>
+              <div class="file-pick-row">
+                <button type="button" class="btn btn-small" id="t-audio-pick" aria-describedby="t-audio-lbl t-audio-status">Choose voice clip</button>
+                <button type="button" class="btn btn-text btn-small" id="t-audio-clear" hidden>Remove voice clip</button>
+              </div>
+              <input type="file" id="t-audio-file" accept="audio/*" hidden aria-label="Optional voice clip upload (MP3, WAV, M4A, OGG, up to 1 MB)">
+              <p id="t-audio-status" class="hint"></p>
+            </div>
+            <div class="field tile-move-actions">
+              <button type="button" class="btn btn-small" id="t-move-up">Move earlier</button>
+              <button type="button" class="btn btn-small" id="t-move-down">Move later</button>
+              <button type="button" class="btn btn-small" id="t-delete">Delete button</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details class="more" id="bulk-fold">
+        <summary>
+          <span class="more-name">Quick text editor for active folder</span>
+          <span class="more-now" id="bulk-count"></span>
+        </summary>
+        <div class="more-body">
+          <div class="field">
+            <label for="f-bulk-tiles">One button per line: <code>Label | role | Spoken phrase | Optional symbol | Optional lang</code></label>
+            <textarea id="f-bulk-tiles" rows="8" spellcheck="true"></textarea>
+          </div>
+          <p class="row"><button type="button" class="btn btn-small" id="apply-bulk">Apply lines to active folder</button></p>
+        </div>
+      </details>
+
+      <details class="more" id="more-supports">
+        <summary>
+          <span class="more-name">Home-language family directions, Station Mode &amp; Sealed QR</span>
+          <span class="more-now" id="supports-now">English only</span>
+        </summary>
+        <div class="more-body">
+          <fieldset class="pill-group">
+            <legend>Home-language family directions toggle</legend>
+            <span class="hint">Families can view start and carryover directions in their home language alongside English on any phone or tablet using Open a practice file or check.</span>
+            <div class="pill-list" id="bilingual-langs"></div>
+          </fieldset>
+          <div class="field">
+            <label for="f-glossary">Optional bilingual family glossary (one per line: <code>English word | es:Spanish | ar:Arabic</code>)</label>
+            <textarea id="f-glossary" rows="3" spellcheck="false"></textarea>
+          </div>
+          <div class="field">
+            <label class="radio"><input type="checkbox" id="f-station-mode"> <span>Enable Station Mode (shared-device reset between learners)</span></label>
+          </div>
+          <div class="field">
+            <label for="f-qr-key">Optional Sealed QR public key (<code>AFPK1...</code>)</label>
+            <span class="hint" id="qr-key-hint">Paste your public key from <a href="packets-qr.html">Sealed QR setup</a> to allow optional encrypted carryover log QR codes offline.</span>
+            <input type="text" id="f-qr-key" maxlength="120" autocomplete="off" spellcheck="false" aria-describedby="qr-key-hint">
+          </div>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button type="button" class="btn" id="back-2">Back</button>
+        <button type="button" class="btn btn-primary push" id="next-2">Next: make &amp; print board</button>
+        <p id="step-2-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section id="step-3" class="sheet" aria-labelledby="step-3-title" hidden>
+      <p class="kicker">Step 3 of 3</p>
+      <h2 id="step-3-title" tabindex="-1">Make the offline board file</h2>
+
+      <div id="making" class="making" hidden>
+        <p id="making-line" class="making-line"></p>
+      </div>
+      <p id="making-said" class="sr-only" role="status"></p>
+
+      <div id="build-problem" class="note note-problem" hidden>
+        <p id="build-problem-text"></p>
+        <p>
+          <button type="button" class="btn btn-small" id="retry">Try again</button>
+          <button type="button" class="btn btn-small" id="fix-choices">Change the choices</button>
+        </p>
+      </div>
+
+      <div id="summary" class="summary" hidden>
+        <h3>The communication board file is ready</h3>
+        <p id="summary-facts" class="summary-facts"></p>
+      </div>
+
+      <div class="field block no-print" id="title-field">
+        <label for="f-title">Board title</label>
+        <span class="hint" id="title-hint">Shown at the top of the communication board and on the printed paper backup.</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <div class="actions actions-file">
+        <button type="button" class="btn" id="back-3">Back</button>
+        <button type="button" class="btn" id="print-board" hidden>Print paper backup</button>
+        <button type="button" class="btn" id="download-docx" hidden>Download Word (.docx)</button>
+        <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+      </div>
+
+      <div id="after-save" class="next no-print" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Share the single .html file with families, paraprofessionals, or classroom devices by drive, email, or USB. From Google Drive or Classroom, download the file first because previews do not run it.</li>
+          <li>On a phone or tablet that will not open downloaded .html files directly, families can open it offline through <a href="packets-open.html">Open a practice file or check</a>.</li>
+          <li>Optional carryover logs can be reviewed on <a href="packets-results.html">Add up results</a>, or inspect the file on <a href="packets-verify.html">Look inside a file</a>.</li>
+        </ol>
+      </div>
+
+      <div class="summary summary-list no-print" id="summary-list">
+        <h3>What is in the file</h3>
+        <dl id="summary-rows"></dl>
+      </div>
+
+      <section id="print-board-sheet" class="print-board-sheet" aria-labelledby="print-board-title" hidden>
+        <h3 id="print-board-title">Low-tech paper backup board</h3>
+        <p class="hint no-print">Use Print paper backup above to print Fitzgerald-key grids for laminating, tabletop pointing, or partner-assisted scanning.</p>
+        <div id="print-board-preview"></div>
+      </section>
+
+      <details class="batch" id="batch">
+        <summary>Put learner initials or code names in the file</summary>
+        <div class="batch-body">
+          <p class="hint">Type 1 code name to put it into the file above, or 2 to 40 (one per line) to save one board file per learner in a .zip.</p>
+          <div class="field">
+            <label for="f-batch-names">Code names or initials, one on each line</label>
+            <span class="hint" id="batch-names-hint">Use code names or initials only, never full names. At most 40 at a time.</span>
+            <textarea id="f-batch-names" rows="5" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+          </div>
+          <p id="batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="batch-make" hidden>Save .zip</button>
+          </p>
+          <p id="batch-problem" class="actions-note" role="alert"></p>
+        </div>
+      </details>
+    </section>
+
+    <details class="about" id="about-page">
+      <summary>About this page</summary>
+      <div class="about-body">
+        <h2 id="keeps-title">What this page keeps</h2>
+        <p>Your last text board layout, folders, and button labels are kept in this browser so you can return to them. Learner code names are never kept. Nothing is sent anywhere.</p>
+        <p class="row">
+          <button type="button" class="btn btn-small" id="forget">Forget my choices</button>
+          <span id="forget-said" role="status"></span>
+        </p>
+        <h2 id="sources-title">How these offline AAC boards work</h2>
+        <ul>
+          <li>Fitzgerald-key semantic categories color-code Pronouns (Yellow), Verbs (Green), Nouns (Orange), Describing/Feelings (Blue), Social (Pink), and Questions/Other (Purple) with high-contrast text and forced-colors borders.</li>
+          <li>Speech output plays optional embedded clips or uses only local on-device voices (never cloud speech engines) and shows a clear visual note whenever speech is muted or no local voice is installed.</li>
+          <li>Built-in 2D arrow-key navigation plus single-switch auto-scan and two-switch row-column step-scan run deterministically with no network dependency.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="packets-feedback.html#from-packets-aac">Send feedback</a> <a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

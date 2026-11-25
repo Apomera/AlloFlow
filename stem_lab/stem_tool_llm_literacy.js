@@ -1327,6 +1327,1274 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // PURE DETERMINISTIC ENGINE (zero React / DOM)
+  // Exposed on registered tool config as `_engine` and globally as
+  // `window.LlmLiteracyPure`. Powers offline softmax/temperature sampling,
+  // prompt craft & A/B diff evaluation, deterministic UDL coaching,
+  // failure-mode simulation & triage, and hallucination spotter scoring.
+  // ─────────────────────────────────────────────────────────
+
+  var LLM_LITERACY_ENGINE = (function() {
+    function hashSeed(input) {
+      var str = String(input == null ? '' : input);
+      var h = 2166136261 >>> 0;
+      for (var i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      var a = (Number(seed) >>> 0) || 1;
+      return function() {
+        a |= 0;
+        a = (a + 0x6D2B79F5) | 0;
+        var v = Math.imul(a ^ (a >>> 15), 1 | a);
+        v = (v + Math.imul(v ^ (v >>> 7), 61 | v)) ^ v;
+        return ((v ^ (v >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function shuffleChoices(items, seed) {
+      if (!Array.isArray(items)) return [];
+      var arr = items.map(function(item, origIndex) {
+        return item && typeof item === 'object'
+          ? Object.assign({}, item, { _origIndex: origIndex })
+          : item;
+      });
+      var rng = mulberry32(typeof seed === 'number' ? seed : hashSeed(seed));
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(rng() * (i + 1));
+        var tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+      }
+      return arr;
+    }
+
+    function clampTemp(T) {
+      var n = Number(T);
+      if (!Number.isFinite(n)) return 0.7;
+      if (n < 0) return 0;
+      if (n > 2) return 2;
+      return n;
+    }
+
+    // Numerically stable softmax with temperature scaling + information metrics.
+    function softmaxAtTemperature(logits, T) {
+      var vals = Array.isArray(logits)
+        ? logits.map(function(v) { var n = Number(v); return Number.isFinite(n) ? n : 0; })
+        : [];
+      var temp = clampTemp(T);
+      if (vals.length === 0) {
+        return {
+          temperature: temp,
+          probs: [],
+          top1Prob: 0,
+          top3Mass: 0,
+          entropyBits: 0,
+          maxEntropyBits: 0,
+          normalizedEntropy: 0,
+          effectiveVocab: 0,
+          regime: 'deterministic'
+        };
+      }
+      var maxZ = vals[0];
+      for (var i = 1; i < vals.length; i++) if (vals[i] > maxZ) maxZ = vals[i];
+
+      var probs;
+      if (temp <= 0.01) {
+        // Greedy / deterministic limit T -> 0+: probability mass concentrates on max logit(s).
+        var maxCount = 0;
+        for (var k = 0; k < vals.length; k++) if (Math.abs(vals[k] - maxZ) < 1e-12) maxCount++;
+        probs = vals.map(function(z) { return Math.abs(z - maxZ) < 1e-12 ? (1 / maxCount) : 0; });
+      } else {
+        var exps = vals.map(function(z) { return Math.exp((z - maxZ) / temp); });
+        var sum = exps.reduce(function(acc, e) { return acc + e; }, 0);
+        probs = sum > 0
+          ? exps.map(function(e) { return e / sum; })
+          : vals.map(function() { return 1 / vals.length; });
+      }
+
+      var sorted = probs.slice().sort(function(a, b) { return b - a; });
+      var top1Prob = sorted[0] || 0;
+      var top3Mass = sorted.slice(0, 3).reduce(function(acc, p) { return acc + p; }, 0);
+      var entropyBits = probs.reduce(function(H, p) {
+        return p > 1e-12 ? H - p * (Math.log(p) / Math.LN2) : H;
+      }, 0);
+      var maxEntropyBits = vals.length > 1 ? (Math.log(vals.length) / Math.LN2) : 0;
+      var normalizedEntropy = maxEntropyBits > 0 ? Math.min(1, Math.max(0, entropyBits / maxEntropyBits)) : 0;
+      var effectiveVocab = Math.pow(2, entropyBits);
+      var regime = temp <= 0.05 ? 'deterministic'
+        : temp <= 0.45 ? 'conservative'
+        : temp <= 0.95 ? 'balanced'
+        : temp <= 1.45 ? 'creative'
+        : 'chaotic';
+
+      return {
+        temperature: temp,
+        probs: probs,
+        top1Prob: top1Prob,
+        top3Mass: top3Mass,
+        entropyBits: entropyBits,
+        maxEntropyBits: maxEntropyBits,
+        normalizedEntropy: normalizedEntropy,
+        effectiveVocab: effectiveVocab,
+        regime: regime
+      };
+    }
+
+    function sampleNextToken(candidates, T, seed) {
+      var list = Array.isArray(candidates) ? candidates : [];
+      if (list.length === 0) {
+        return { chosen: null, chosenIndex: -1, chosenProb: 0, distribution: [], metrics: softmaxAtTemperature([], T) };
+      }
+      var logits = list.map(function(c) { return Number(c && c.logit) || 0; });
+      var metrics = softmaxAtTemperature(logits, T);
+      var rng = mulberry32(typeof seed === 'number' ? seed : hashSeed(seed));
+      var r = rng();
+      var cum = 0;
+      var chosenIndex = list.length - 1;
+      for (var i = 0; i < metrics.probs.length; i++) {
+        cum += metrics.probs[i];
+        if (r <= cum) { chosenIndex = i; break; }
+      }
+      var distribution = list.map(function(c, idx) {
+        var p = metrics.probs[idx] || 0;
+        return {
+          tok: String(c && c.tok != null ? c.tok : ''),
+          logit: logits[idx],
+          prob: p,
+          pct: Math.round(p * 1000) / 10
+        };
+      });
+      return {
+        chosen: distribution[chosenIndex],
+        chosenIndex: chosenIndex,
+        chosenProb: metrics.probs[chosenIndex] || 0,
+        distribution: distribution,
+        metrics: metrics
+      };
+    }
+
+    // Curated continuation contexts for deterministic temperature sampling.
+    var PLAYGROUND_CONTEXTS = [
+      {
+        id: 'rainy',
+        label: 'Rainy afternoon description',
+        keywords: /\b(rain|rainy|storm|umbrella|puddle|cloud|afternoon|weather)\b/i,
+        prefix: 'On a rainy afternoon, the window glass',
+        slots: [
+          [
+            { tok: ' tapped', logit: 3.1 },
+            { tok: ' hummed', logit: 2.5 },
+            { tok: ' shimmered', logit: 2.1 },
+            { tok: ' rattled', logit: 1.5 },
+            { tok: ' whispered', logit: 1.0 },
+            { tok: ' gargled', logit: 0.2 }
+          ],
+          [
+            { tok: ' with steady rain', logit: 3.0 },
+            { tok: ' under silver clouds', logit: 2.4 },
+            { tok: ' as puddles widened outside', logit: 2.0 },
+            { tok: ' like a sleepy drumline', logit: 1.3 },
+            { tok: ' while umbrellas bloomed along the street', logit: 0.9 },
+            { tok: ' in neon static and cold moths', logit: 0.1 }
+          ],
+          [
+            { tok: ', making the warm room feel calm and quiet.', logit: 3.1 },
+            { tok: ', turning the whole block into a glossy mirror.', logit: 2.3 },
+            { tok: ', inviting everyone indoors to slow down.', logit: 1.9 },
+            { tok: ', as if the sky had misplaced its off-switch.', logit: 1.2 },
+            { tok: ', while every downspout rehearsed a minor chord.', logit: 0.8 },
+            { tok: ', until even the toaster looked philosophical.', logit: 0.1 }
+          ]
+        ]
+      },
+      {
+        id: 'sky',
+        label: 'Why the sky is blue (science)',
+        keywords: /\b(sky|blue|sunlight|scatter|atmosphere|wavelength|science|rainbow)\b/i,
+        prefix: 'The sky looks blue because sunlight',
+        slots: [
+          [
+            { tok: ' scatters', logit: 3.4 },
+            { tok: ' bounces', logit: 2.4 },
+            { tok: ' splits', logit: 1.9 },
+            { tok: ' collides', logit: 1.3 },
+            { tok: ' ricochets', logit: 0.8 },
+            { tok: ' waltzes', logit: 0.1 }
+          ],
+          [
+            { tok: ' off tiny air molecules in the atmosphere', logit: 3.3 },
+            { tok: ' through nitrogen and oxygen gases overhead', logit: 2.4 },
+            { tok: ' when its shorter blue waves hit gas particles', logit: 2.1 },
+            { tok: ' across billions of invisible sky-bumpers', logit: 1.2 },
+            { tok: ' like pinballs inside a dome of air', logit: 0.8 },
+            { tok: ' like glitter spilled across a cosmic rink', logit: 0.1 }
+          ],
+          [
+            { tok: ', spreading blue light across the sky in every direction.', logit: 3.3 },
+            { tok: ', so blue reaches our eyes far more than red.', logit: 2.5 },
+            { tok: ', painting the daytime dome blue to our eyes.', logit: 1.8 },
+            { tok: ', leaving red wavelengths to travel straighter until sunset.', logit: 1.4 },
+            { tok: ', while the air turns into a glowing blue lantern.', logit: 0.7 },
+            { tok: ', singing cerulean chords down to every sidewalk.', logit: 0.1 }
+          ]
+        ]
+      },
+      {
+        id: 'news',
+        label: 'Character receiving unexpected news',
+        keywords: /\b(character|story|news|letter|phone|surprise|unexpected|doorway)\b/i,
+        prefix: 'Reading the message, Jordan froze as',
+        slots: [
+          [
+            { tok: ' the letter', logit: 3.0 },
+            { tok: ' the screen', logit: 2.6 },
+            { tok: ' the room', logit: 2.1 },
+            { tok: ' the hallway clock', logit: 1.4 },
+            { tok: ' the tea mug', logit: 0.9 },
+            { tok: ' gravity itself', logit: 0.2 }
+          ],
+          [
+            { tok: ' went suddenly silent', logit: 2.9 },
+            { tok: ' seemed to blur for a second', logit: 2.4 },
+            { tok: ' refused to make sense', logit: 2.0 },
+            { tok: ' felt twice as heavy as a moment before', logit: 1.4 },
+            { tok: ' tilted like a boat on a sudden swell', logit: 0.9 },
+            { tok: ' folded into origami made of static', logit: 0.1 }
+          ],
+          [
+            { tok: ', and reread the single line three times.', logit: 3.0 },
+            { tok: ', unsure whether to laugh or call home first.', logit: 2.3 },
+            { tok: ', realizing the whole summer plan had just changed.', logit: 1.9 },
+            { tok: ', while a single dropped pencil rolled into the quiet.', logit: 1.2 },
+            { tok: ', as if an unseen bell had rung between heartbeats.', logit: 0.8 },
+            { tok: ', while two stray commas argued in the margin.', logit: 0.1 }
+          ]
+        ]
+      },
+      {
+        id: 'winter',
+        label: 'Best thing about winter',
+        keywords: /\b(winter|snow|cold|frost|ice|coat|sled|cocoa)\b/i,
+        prefix: 'The best thing about winter is',
+        slots: [
+          [
+            { tok: ' the snow', logit: 3.1 },
+            { tok: ' the quiet', logit: 2.5 },
+            { tok: ' coming indoors', logit: 2.1 },
+            { tok: ' crisp morning air', logit: 1.5 },
+            { tok: ' the first frost', logit: 1.0 },
+            { tok: ' snow-muffled astronomy', logit: 0.2 }
+          ],
+          [
+            { tok: ' that covers the street in clean white', logit: 3.0 },
+            { tok: ' that makes a warm kitchen feel earned', logit: 2.4 },
+            { tok: ' when every footstep crunches underfoot', logit: 1.9 },
+            { tok: ' like a blanket thrown over noisy errands', logit: 1.3 },
+            { tok: ' turning ordinary pines into glass sculptures', logit: 0.8 },
+            { tok: ' as if December borrowed velvet from a theater', logit: 0.1 }
+          ],
+          [
+            { tok: ' before the sun sets early.', logit: 2.9 },
+            { tok: ' while steam curls off a warm mug.', logit: 2.4 },
+            { tok: ' and reminds everyone to slow their pace.', logit: 1.9 },
+            { tok: ' under a sky sharp as cut flint.', logit: 1.2 },
+            { tok: ' until streetlights wear tiny halos.', logit: 0.8 },
+            { tok: ' while snowplows compose midnight percussion.', logit: 0.1 }
+          ]
+        ]
+      },
+      {
+        id: 'general',
+        label: 'Custom prompt continuation',
+        keywords: null,
+        prefix: 'Looking closely at your topic, the key idea',
+        slots: [
+          [
+            { tok: ' starts', logit: 3.1 },
+            { tok: ' connects', logit: 2.5 },
+            { tok: ' depends', logit: 2.0 },
+            { tok: ' unfolds', logit: 1.4 },
+            { tok: ' pivots', logit: 0.9 },
+            { tok: ' ricochets', logit: 0.2 }
+          ],
+          [
+            { tok: ' with one clear pattern you can check', logit: 3.0 },
+            { tok: ' on how the pieces fit together step by step', logit: 2.4 },
+            { tok: ' around a concrete example from everyday life', logit: 1.9 },
+            { tok: ' like gears clicking inside a pocket watch', logit: 1.3 },
+            { tok: ' across surprising angles most summaries skip', logit: 0.9 },
+            { tok: ' through kaleidoscopic detours and bold metaphors', logit: 0.1 }
+          ],
+          [
+            { tok: ' before you build toward a full conclusion.', logit: 3.0 },
+            { tok: ', which makes the main idea easier to remember.', logit: 2.3 },
+            { tok: ', giving you a solid starting point to verify.', logit: 1.8 },
+            { tok: ', sparking new questions you might test next.', logit: 1.2 },
+            { tok: ', bending familiar facts into fresh imagery.', logit: 0.7 },
+            { tok: ', leaving ordinary phrasing far behind in the mist.', logit: 0.1 }
+          ]
+        ]
+      }
+    ];
+
+    function pickPlaygroundContext(prompt) {
+      var text = String(prompt || '').trim();
+      for (var i = 0; i < PLAYGROUND_CONTEXTS.length - 1; i++) {
+        var ctxItem = PLAYGROUND_CONTEXTS[i];
+        if (ctxItem.keywords && ctxItem.keywords.test(text)) return ctxItem;
+      }
+      return PLAYGROUND_CONTEXTS[PLAYGROUND_CONTEXTS.length - 1];
+    }
+
+    function computePlaygroundDistribution(prompt, T) {
+      var ctxItem = pickPlaygroundContext(prompt);
+      var firstSlot = ctxItem.slots[0];
+      var logits = firstSlot.map(function(c) { return c.logit; });
+      var metrics = softmaxAtTemperature(logits, T);
+      var candidates = firstSlot.map(function(c, idx) {
+        var p = metrics.probs[idx] || 0;
+        return {
+          tok: c.tok,
+          logit: c.logit,
+          prob: p,
+          pct: Math.round(p * 1000) / 10
+        };
+      });
+      return {
+        contextId: ctxItem.id,
+        contextLabel: ctxItem.label,
+        prefix: ctxItem.prefix,
+        candidates: candidates,
+        metrics: metrics
+      };
+    }
+
+    function simulateTemperaturePlayground(prompt, T, attemptIndex) {
+      var cleanPrompt = String(prompt || '').trim();
+      var temp = clampTemp(T);
+      var attempt = Number.isFinite(Number(attemptIndex)) ? Number(attemptIndex) : 0;
+      var ctxItem = pickPlaygroundContext(cleanPrompt);
+      var sampledTokens = [];
+      var pieces = [ctxItem.prefix];
+      var firstDist = null;
+      var firstMetrics = null;
+
+      for (var s = 0; s < ctxItem.slots.length; s++) {
+        var slotSeed = cleanPrompt.toLowerCase() + '|T=' + temp.toFixed(2) + '|run=' + attempt + '|step=' + s;
+        var stepRes = sampleNextToken(ctxItem.slots[s], temp, slotSeed);
+        if (s === 0) {
+          firstDist = stepRes.distribution;
+          firstMetrics = stepRes.metrics;
+        }
+        if (stepRes.chosen) {
+          pieces.push(stepRes.chosen.tok);
+          sampledTokens.push({
+            step: s + 1,
+            tok: stepRes.chosen.tok,
+            prob: stepRes.chosenProb,
+            pct: stepRes.chosen.pct,
+            rank: stepRes.chosenIndex + 1
+          });
+        }
+      }
+
+      var customLead = '';
+      if (ctxItem.id === 'general' && cleanPrompt) {
+        var shortTopic = cleanPrompt.replace(/^(write|describe|explain|tell me about|in one sentence,?\s*)/i, '').replace(/[.?!]+$/, '').trim().slice(0, 64);
+        if (shortTopic) customLead = 'Re: "' + shortTopic + '" — ';
+      }
+      var text = customLead + pieces.join('');
+      return {
+        text: text,
+        sampledTokens: sampledTokens,
+        distribution: firstDist || [],
+        metrics: firstMetrics || softmaxAtTemperature([], temp),
+        contextId: ctxItem.id,
+        mode: 'offline'
+      };
+    }
+
+    function simulateTemperatureCompare(demoIndex, attemptIndex) {
+      var idx = Number.isInteger(demoIndex) && demoIndex >= 0 && demoIndex < TEMP_DEMOS.length ? demoIndex : 0;
+      var demo = TEMP_DEMOS[idx];
+      var attempt = Number.isFinite(Number(attemptIndex)) ? Number(attemptIndex) : 1;
+      var lowRun = simulateTemperaturePlayground(demo.prompt, 0.2, attempt);
+      var midRun = simulateTemperaturePlayground(demo.prompt, 0.7, attempt + 17);
+      var highRun = simulateTemperaturePlayground(demo.prompt, 1.2, attempt + 31);
+      return {
+        low: lowRun.text,
+        mid: midRun.text,
+        high: highRun.text,
+        metrics: {
+          low: lowRun.metrics,
+          mid: midRun.metrics,
+          high: highRun.metrics
+        },
+        mode: 'offline'
+      };
+    }
+
+    // Predict-before-sample temperature challenges (balanced correct indices: 0, 1, 2, 3, 1).
+    var TEMP_CHALLENGES = [
+      {
+        id: 'tc_sharp_vs_flat',
+        prompt: 'Context: "The sky looks blue because sunlight ___"',
+        logits: [3.4, 2.4, 1.9, 1.3, 0.8, 0.1],
+        tokens: [' scatters', ' bounces', ' splits', ' collides', ' ricochets', ' waltzes'],
+        compareTemps: [0.1, 1.6],
+        question: 'When you raise temperature from T = 0.1 to T = 1.6 on this prompt, what happens to the top token ("scatters")?',
+        options: [
+          {
+            id: 'a',
+            label: 'Its probability drops sharply while rare tail tokens like "ricochets" and "waltzes" gain real chance.',
+            correct: true,
+            whyNot: null,
+            explain: 'Raising T divides every logit by a larger number, compressing the gaps between logits so softmax flattens toward uniform.'
+          },
+          {
+            id: 'b',
+            label: 'Its probability climbs closer to 100% because higher temperature amplifies the strongest word.',
+            correct: false,
+            whyNot: 'Backwards: LOWER temperature amplifies logit gaps toward 100%. Raising temperature flattens the curve and reduces top-1 concentration.'
+          },
+          {
+            id: 'c',
+            label: 'All token probabilities stay identical — temperature only changes output length.',
+            correct: false,
+            whyNot: 'Temperature scales logits inside softmax before every token choice; it directly reshapes token probabilities, not max length.'
+          },
+          {
+            id: 'd',
+            label: 'The model switches to checking a science textbook before picking the next token.',
+            correct: false,
+            whyNot: 'Temperature never adds fact-checking. At every temperature, the LLM is still sampling from next-token probabilities.'
+          }
+        ]
+      },
+      {
+        id: 'tc_zero_repeat',
+        prompt: 'Context: "On a rainy afternoon, the window glass ___"',
+        logits: [3.1, 2.5, 2.1, 1.5, 1.0, 0.2],
+        tokens: [' tapped', ' hummed', ' shimmered', ' rattled', ' whispered', ' gargled'],
+        compareTemps: [0.0, 1.2],
+        question: 'You run the same prompt 3 times at T = 0.00. What should you predict BEFORE sampling?',
+        options: [
+          {
+            id: 'a',
+            label: 'Each run picks a random top-3 token so you get 3 slightly different sentences.',
+            correct: false,
+            whyNot: 'At T = 0.00 (greedy decoding), softmax puts 100% mass on the highest logit — lower-ranked tokens drop to 0%.'
+          },
+          {
+            id: 'b',
+            label: 'All 3 runs pick the exact same top-1 token ("tapped") because T = 0.00 puts 100% probability on the argmax.',
+            correct: true,
+            whyNot: null,
+            explain: 'At T = 0.00, entropy H = 0.00 bits and effective choices = 1.0: greedy decoding repeats the single highest-logit token.'
+          },
+          {
+            id: 'c',
+            label: 'The model refuses to generate text because dividing by zero crashes all sampling.',
+            correct: false,
+            whyNot: 'Implementations treat T = 0 as the mathematical limit (argmax / greedy decoding), not a crash.'
+          },
+          {
+            id: 'd',
+            label: 'Entropy reaches its maximum value because every candidate becomes equally likely.',
+            correct: false,
+            whyNot: 'Maximum entropy happens as T grows very large, not at T = 0. At T = 0, entropy is 0 bits.'
+          }
+        ]
+      },
+      {
+        id: 'tc_task_match',
+        prompt: 'Task: Brainstorming unusual opening metaphors for a short story vs. extracting exact dates from a passage.',
+        logits: [3.0, 2.6, 2.1, 1.4, 0.9, 0.2],
+        tokens: [' the letter', ' the screen', ' the room', ' the hallway clock', ' the tea mug', ' gravity itself'],
+        compareTemps: [0.2, 1.3],
+        question: 'Which temperature pairing best matches these two tasks?',
+        options: [
+          {
+            id: 'a',
+            label: 'High T (1.3) for exact date extraction; Low T (0.2) for unusual story metaphors.',
+            correct: false,
+            whyNot: 'Reversed: high T invites rare/drifting tokens when extracting dates, while low T sticks to predictable clichés for creative metaphors.'
+          },
+          {
+            id: 'b',
+            label: 'T = 2.0 for both tasks so the model always gives detailed answers.',
+            correct: false,
+            whyNot: 'T = 2.0 pushes toward chaotic, incoherent word choices — not deeper detail.'
+          },
+          {
+            id: 'c',
+            label: 'Low T (0.2) for extracting exact dates; higher T (~1.0–1.3) for brainstorming unusual metaphors.',
+            correct: true,
+            whyNot: null,
+            explain: 'Low temperature keeps extraction focused on the highest-probability tokens; moderate-to-high temperature opens creative alternatives.'
+          },
+          {
+            id: 'd',
+            label: 'Temperature makes no difference once the prompt is clear.',
+            correct: false,
+            whyNot: 'Even with a clear prompt, high temperature still boosts tail probabilities and increases output variance.'
+          }
+        ]
+      },
+      {
+        id: 'tc_entropy_metric',
+        prompt: 'Context: "The best thing about winter is ___"',
+        logits: [3.1, 2.5, 2.1, 1.5, 1.0, 0.2],
+        tokens: [' the snow', ' the quiet', ' coming indoors', ' crisp morning air', ' the first frost', ' snow-muffled astronomy'],
+        compareTemps: [0.2, 1.8],
+        question: 'As you slide T from 0.2 up to 1.8, what happens to Shannon entropy H (bits) and effective token choices?',
+        options: [
+          {
+            id: 'a',
+            label: 'Entropy H drops toward 0 bits while effective choices shrink to 1.',
+            correct: false,
+            whyNot: 'Entropy shrinks toward 0 as T goes DOWN toward 0, not when T goes UP.'
+          },
+          {
+            id: 'b',
+            label: 'Entropy stays fixed because the underlying logits did not change.',
+            correct: false,
+            whyNot: 'Entropy is computed from the post-temperature softmax probabilities, which spread out as T rises.'
+          },
+          {
+            id: 'c',
+            label: 'Top-1 probability drops, but entropy also drops at the same time.',
+            correct: false,
+            whyNot: 'When probability mass moves away from the top-1 peak into other options, uncertainty (entropy) RISES rather than falls.'
+          },
+          {
+            id: 'd',
+            label: 'Entropy H rises toward the uniform maximum and effective choices grow closer to all 6 candidates.',
+            correct: true,
+            whyNot: null,
+            explain: 'Higher temperature flattens the softmax distribution, raising Shannon entropy H and widening the effective pool of sampled tokens.'
+          }
+        ]
+      },
+      {
+        id: 'tc_low_temp_hallucination',
+        prompt: 'Question: "Cite a 2017 Cambridge study on blue light and sleep." at T = 0.1',
+        logits: [3.2, 2.5, 1.8, 1.2, 0.7, 0.3],
+        tokens: [' Dr. Reeves', ' Dr. Patel', ' Dr. Morales', ' Journal', ' Vol. 42', ' unknown'],
+        compareTemps: [0.1, 1.2],
+        question: 'Does setting Temperature to 0.1 guarantee the AI will NOT hallucinate a fake citation?',
+        options: [
+          {
+            id: 'a',
+            label: 'Yes — hallucinations only happen when temperature is above 1.0.',
+            correct: false,
+            whyNot: 'Even at T = 0.0 or 0.1, if the most probable token sequence is a fabricated citation pattern, greedy sampling still outputs a hallucination.'
+          },
+          {
+            id: 'b',
+            label: 'No — low temperature makes outputs more repeatable, not automatically factual; it can consistently pick a plausible fake citation.',
+            correct: true,
+            whyNot: null,
+            explain: 'Consistency is not truth. Low temperature reduces randomness, so if a wrong pattern has the highest logit, the model repeats that wrong pattern confidently.'
+          },
+          {
+            id: 'c',
+            label: 'Yes — at T = 0.1 the model automatically searches Google Scholar.',
+            correct: false,
+            whyNot: 'Temperature is purely a sampling dial on token logits; it does not enable web search or external verification.'
+          },
+          {
+            id: 'd',
+            label: 'No — because T = 0.1 forces the model to choose the rarest tokens in its vocabulary.',
+            correct: false,
+            whyNot: 'T = 0.1 favors the MOST probable tokens, not the rarest — the issue is that high probability does not guarantee factual truth.'
+          }
+        ]
+      }
+    ];
+
+    function getTempChallenge(index, seed) {
+      var idx = Number.isInteger(index) && index >= 0 && index < TEMP_CHALLENGES.length ? index : 0;
+      var ch = TEMP_CHALLENGES[idx];
+      var s = seed != null ? seed : ('temp_ch_' + ch.id);
+      return Object.assign({}, ch, {
+        index: idx,
+        options: shuffleChoices(ch.options, s),
+        lowMetrics: softmaxAtTemperature(ch.logits, ch.compareTemps[0]),
+        highMetrics: softmaxAtTemperature(ch.logits, ch.compareTemps[1])
+      });
+    }
+
+    function gradeTempChallenge(challengeIdOrIdx, chosenOptionId) {
+      var ch = null;
+      if (typeof challengeIdOrIdx === 'number') {
+        ch = TEMP_CHALLENGES[challengeIdOrIdx] || null;
+      } else {
+        for (var i = 0; i < TEMP_CHALLENGES.length; i++) {
+          if (TEMP_CHALLENGES[i].id === challengeIdOrIdx) { ch = TEMP_CHALLENGES[i]; break; }
+        }
+      }
+      if (!ch) return { correct: false, explanation: '', whyNot: 'Unknown challenge.', correctLabel: '' };
+      var chosen = null;
+      var right = null;
+      for (var j = 0; j < ch.options.length; j++) {
+        if (ch.options[j].id === chosenOptionId) chosen = ch.options[j];
+        if (ch.options[j].correct) right = ch.options[j];
+      }
+      var isCorrect = !!(chosen && chosen.correct);
+      return {
+        correct: isCorrect,
+        explanation: right ? right.explain : '',
+        whyNot: chosen && !isCorrect ? chosen.whyNot : null,
+        correctLabel: right ? right.label : '',
+        lowMetrics: softmaxAtTemperature(ch.logits, ch.compareTemps[0]),
+        highMetrics: softmaxAtTemperature(ch.logits, ch.compareTemps[1])
+      };
+    }
+
+    // ── Offline Prompt Craft & A/B Diff Evaluator ──
+    function extractPromptTopic(prompt) {
+      var cleaned = String(prompt || '').replace(/\s+/g, ' ').trim();
+      if (!cleaned) return 'your topic';
+      var m = cleaned.match(/\b(?:about|on|explain(?:ing)?|studying|regarding|for|debug(?:ging)?)\s+([a-z0-9][a-z0-9\s,'"-]{2,42})/i);
+      if (m && m[1]) return m[1].replace(/[.,;!?]+$/, '').trim();
+      return cleaned.slice(0, 48).replace(/[.,;!?]+$/, '');
+    }
+
+    function evaluatePromptCraft(prompt) {
+      var raw = String(prompt == null ? '' : prompt).trim();
+      var lower = raw.toLowerCase();
+      var toks = pseudoTokenize(raw).filter(function(tok) { return tok.kind !== 'space'; });
+      var tokenEstimate = toks.length;
+      var charCount = raw.length;
+
+      var roleHit = /\b(you are|act as|pretend you|as a [a-z]+|take the role|be my|tutor|coach|editor|reviewer|interviewer)\b/i.test(lower);
+      var taskHit = /\b(quiz me|compare|contrast|outline|brainstorm|debug|diagnostic|summarize|list \d|give me (?:a |an |\d)|ask me \d|write (?:a |an |\d)|explain why|explain how|step[- ]by[- ]step|bullet|table|numbered|one sentence|short[- ]answer|\d+[- ](?:step|word|sentence|bullet|question|paragraph)|\d+ (?:steps|words|sentences|bullets|questions|paragraphs|reasons|examples))\b/i.test(lower);
+      var audienceHit = /\b(i am|i'm|my (?:class|teacher|assignment|grade|essay|code|lab|quiz|test|town)|for (?:my |a |an )?(?:\d+(?:st|nd|rd|th)[- ]grade|middle[- ]school|high[- ]school|beginner|student|learner)|(?:\d+(?:st|nd|rd|th)|6th|7th|8th|9th|10th|11th|12th) grade|grader|learning [a-z]+|studying for)\b/i.test(lower);
+      var constraintsHit = /\b(don'?t|do not|never|no more than|at most|maximum|max \d|under \d|only |without |avoid |keep it (?:short|brief|under)|one at a time|wait for my|instead of|limit to|exact(?:ly)?)\b/i.test(lower);
+      var verificationHit = /\b(if you (?:aren't|are not|don't) (?:sure|know)|say "?i don'?t know|cite|source|verify|check|show your work|tell me what i (?:got right|missed)|challenge my|if i'?m wrong|for example|like this|here'?s one|sample|e\.g\.|expected|actual|prints 0|which reason)\b/i.test(lower);
+
+      var dimensions = [
+        {
+          id: 'role',
+          name: 'Role',
+          passed: roleHit,
+          weight: 20,
+          suggestion: 'Add a persona/role, e.g. "You are a patient 8th-grade science tutor..."',
+          snippet: 'You are a patient tutor who coaches instead of handing out answers. '
+        },
+        {
+          id: 'task',
+          name: 'Clear task & format',
+          passed: taskHit,
+          weight: 20,
+          suggestion: 'Specify the exact task and output format, e.g. "Give a 3-step outline, then ask me 2 short-answer questions."',
+          snippet: 'Give me a 3-bullet summary, then ask 2 short-answer check questions. '
+        },
+        {
+          id: 'audience',
+          name: 'Audience / grade level',
+          passed: audienceHit,
+          weight: 20,
+          suggestion: 'Name your grade level or goal, e.g. "I am an 8th grader studying for tomorrow\'s quiz..."',
+          snippet: 'I am an 8th grader preparing for class tomorrow. '
+        },
+        {
+          id: 'constraints',
+          name: 'Concrete constraints',
+          passed: constraintsHit,
+          weight: 20,
+          suggestion: 'Add a clear boundary/DON\'T, e.g. "Don\'t write the final paragraph for me; wait for my answer one at a time."',
+          snippet: 'Keep it under 120 words and do not write the final answer for me. '
+        },
+        {
+          id: 'verification',
+          name: 'Verification / grounding',
+          passed: verificationHit,
+          weight: 20,
+          suggestion: 'Include a check or example, e.g. "If you aren\'t sure, say so, and tell me what I got right or missed."',
+          snippet: 'If you are uncertain about any fact, say "I need to verify this" rather than guessing. '
+        }
+      ];
+
+      var passedCount = dimensions.filter(function(dim) { return dim.passed; }).length;
+      var score = passedCount * 20;
+      var tier = passedCount >= 4 ? 'strong' : (passedCount >= 2 ? 'developing' : 'vague');
+      var lengthNote = charCount === 0
+        ? 'Write a prompt to evaluate.'
+        : charCount < 40
+          ? 'Your prompt is short (' + charCount + ' chars). Short prompts force the model to guess your level, format, and boundaries.'
+          : charCount > 600
+            ? 'Your prompt is detailed (' + charCount + ' chars). Double-check that every sentence earns its place and does not contradict another constraint.'
+            : null;
+
+      var revisions = dimensions.filter(function(dim) { return !dim.passed; }).map(function(dim) {
+        return { id: dim.id, name: dim.name, suggestion: dim.suggestion, snippet: dim.snippet };
+      });
+
+      var topic = extractPromptTopic(raw);
+      var simulatedResponse = '';
+      if (!raw) {
+        simulatedResponse = '';
+      } else if (tier === 'vague') {
+        simulatedResponse =
+          '[Offline Simulation — Vague Prompt Preview]\n' +
+          'Here is a broad overview of ' + topic + ': It is an important subject with many aspects, history, and applications. Experts study it from several angles, and understanding the basics can help you learn more over time.\n\n' +
+          'Notice what happened: Because your prompt left out ' + revisions.slice(0, 3).map(function(r) { return r.name.toLowerCase(); }).join(', ') + ', the model had to guess your grade level, length, and goal — producing a generic filler paragraph.';
+      } else if (tier === 'developing') {
+        var presentNames = dimensions.filter(function(dim) { return dim.passed; }).map(function(dim) { return dim.name.toLowerCase(); });
+        var missingNames = revisions.map(function(r) { return r.name.toLowerCase(); });
+        simulatedResponse =
+          '[Offline Simulation — Developing Prompt Preview (' + passedCount + '/5)]\n' +
+          'Focused draft on ' + topic + ':\n' +
+          '1. Core concept: Breaks down the main mechanism in plain language.\n' +
+          '2. Key detail: Connects one concrete example to the big picture.\n' +
+          '3. Next step: Summarizes the takeaway cleanly.\n\n' +
+          'What worked: You specified ' + presentNames.join(' + ') + '.\n' +
+          'What still drifted: Without ' + missingNames.join(' + ') + ', a real model may still slip out of your intended level, answer too much at once, or skip uncertainty checks.';
+      } else {
+        var asksQuiz = /\b(quiz|question|one at a time|wait for my)\b/i.test(lower);
+        var asksDebug = /\b(debug|bug|code|python|diagnostic|prints 0)\b/i.test(lower);
+        var asksBrainstorm = /\b(brainstorm|outline|reasons|ideas)\b/i.test(lower);
+        if (asksDebug) {
+          simulatedResponse =
+            '[Offline Simulation — Strong Prompt Preview (' + passedCount + '/5)]\n' +
+            'I will not hand you the fix — let\'s trace the bug together:\n' +
+            'Diagnostic Question 1: Inside your loop, what value does your running total start at, and which condition decides whether a number is even?\n' +
+            'Diagnostic Question 2: If you print the loop variable on each iteration, which numbers actually enter your `if` block?\n\n' +
+            'Reply with what you see on those two lines, and we will test your next hypothesis.';
+        } else if (asksQuiz) {
+          simulatedResponse =
+            '[Offline Simulation — Strong Prompt Preview (' + passedCount + '/5)]\n' +
+            'Quick structured overview for ' + topic + ' (calibrated to your level):\n' +
+            '1. Setup / starting state\n2. Key transition step\n3. Separation or transformation\n4. Core outcome\n5. Why it matters\n\n' +
+            'Question 1 of 3 (waiting for your answer before Question 2): In your own words, what is the single most important step in ' + topic + ' and why?';
+        } else if (asksBrainstorm) {
+          simulatedResponse =
+            '[Offline Simulation — Strong Prompt Preview (' + passedCount + '/5)]\n' +
+            'Here are 3 concrete, local angles (keeping the writing in your voice — no draft written for you):\n' +
+            '1. Specific measurable impact in your neighborhood or school.\n' +
+            '2. A concrete local example readers can picture immediately.\n' +
+            '3. A practical trade-off or counterclaim you can address with evidence.\n\n' +
+            'Check-in: Which of these 3 angles feels strongest for your thesis, and what real example could you verify to back it up?';
+        } else {
+          simulatedResponse =
+            '[Offline Simulation — Strong Prompt Preview (' + passedCount + '/5)]\n' +
+            'Calibrated response on ' + topic + ':\n' +
+            '• Clear explanation matched to your stated audience/context.\n' +
+            '• Respects your explicit constraints and output format.\n' +
+            '• Verification note: Treat specific dates, stats, or citations as claims to confirm in a primary source.';
+        }
+      }
+
+      return {
+        score: score,
+        passedCount: passedCount,
+        totalChecks: dimensions.length,
+        tier: tier,
+        dimensions: dimensions,
+        tokenEstimate: tokenEstimate,
+        charCount: charCount,
+        lengthNote: lengthNote,
+        revisions: revisions,
+        simulatedResponse: simulatedResponse
+      };
+    }
+
+    var PAIR_OFFLINE_OUTPUTS = [
+      {
+        weak: '[Offline Simulation]\nMitosis is a type of cell division in eukaryotic organisms where one parent cell divides into two genetically identical daughter cells. It is essential for growth, repair, and asexual reproduction and involves prophase, metaphase, anaphase, and telophase followed by cytokinesis...\n\n(Wall-of-text textbook dump: no quiz, no grade check, no active recall.)',
+        strong: '[Offline Simulation]\n5-Step Mitosis Summary (9th-grade level):\n1. Prophase — DNA packs into visible chromosomes; nuclear membrane breaks down.\n2. Metaphase — Chromosomes line up down the middle of the cell.\n3. Anaphase — Sister chromatids pull apart to opposite sides.\n4. Telophase — Two new nuclei form around the separated DNA.\n5. Cytokinesis — The cell splits into two identical daughter cells.\n\nQuestion 1 of 3: During which phase do chromosomes line up across the center, and why does that alignment matter before they separate?\n(Waiting for your answer before Question 2!)'
+      },
+      {
+        weak: '[Offline Simulation]\nClimate change is one of the biggest challenges facing the world today. Planting trees is a great way to help the environment because trees absorb carbon dioxide, provide shade, and support wildlife. In conclusion, everyone should plant more trees to create a greener future.\n\n(Generic essay written FOR you: vague statements, zero local detail, replaces your own writing practice.)',
+        strong: '[Offline Simulation]\n3 Specific Portland, Maine Angles (no essay written for you):\n1. Urban heat islands along concrete corridors (like Forest Ave / downtown parking lots) where shade canopy measurably lowers summer pavement temperatures.\n2. Stormwater runoff into Casco Bay — street-tree roots soak up heavy coastal rain and reduce overflow into storm drains.\n3. Windbreak & winter-energy benefits along exposed peninsula blocks where evergreens buffer freezing harbor gusts.\n\nYour turn: Which of these 3 angles do you want to lead with, and what local detail from your own neighborhood makes it concrete?'
+      },
+      {
+        weak: '[Offline Simulation]\nThere are several reasons code might not work, such as syntax errors, logic bugs, indentation mistakes, or wrong variable names. Make sure you check your loops, conditionals, and print statements carefully. If you paste your code I can fix it for you!\n\n(Unhelpful guesswork — the model had neither your code nor your expected-vs-actual output.)',
+        strong: '[Offline Simulation]\nLet\'s track down why your sum stays 0 (no answer spoiled):\n1. Look at your even-number test (for example `n % 2 == 0`): is your loop actually reaching numbers 1 through 10 (remember `range(1, 10)` stops at 9), and does the `if` condition ever evaluate to True?\n2. Inside the loop, are you ADDING to your total (`total = total + n`) or accidentally resetting `total = 0` on every pass?\n\nTest those two lines and tell me which one changed the output!'
+      }
+    ];
+
+    function compareWeakVsStrongOffline(pairOrIdx) {
+      var idx = -1;
+      var pair = null;
+      if (typeof pairOrIdx === 'number') {
+        idx = Number.isInteger(pairOrIdx) && pairOrIdx >= 0 && pairOrIdx < PROMPT_PAIRS.length ? pairOrIdx : 0;
+        pair = PROMPT_PAIRS[idx];
+      } else if (pairOrIdx && typeof pairOrIdx === 'object') {
+        pair = pairOrIdx;
+        for (var i = 0; i < PROMPT_PAIRS.length; i++) {
+          if (PROMPT_PAIRS[i].weak === pair.weak && PROMPT_PAIRS[i].strong === pair.strong) { idx = i; break; }
+        }
+      }
+      if (!pair) pair = PROMPT_PAIRS[0];
+      var weakEval = evaluatePromptCraft(pair.weak || '');
+      var strongEval = evaluatePromptCraft(pair.strong || '');
+      var gainedDimensions = [];
+      for (var dIdx = 0; dIdx < strongEval.dimensions.length; dIdx++) {
+        if (strongEval.dimensions[dIdx].passed && !weakEval.dimensions[dIdx].passed) {
+          gainedDimensions.push(strongEval.dimensions[dIdx].name);
+        }
+      }
+      var canned = (idx >= 0 && PAIR_OFFLINE_OUTPUTS[idx]) ? PAIR_OFFLINE_OUTPUTS[idx] : null;
+      return {
+        weakEval: weakEval,
+        strongEval: strongEval,
+        scoreDelta: strongEval.score - weakEval.score,
+        gainedDimensions: gainedDimensions,
+        weakOutput: canned ? canned.weak : weakEval.simulatedResponse,
+        strongOutput: canned ? canned.strong : strongEval.simulatedResponse,
+        summary: 'Strong prompt scores ' + strongEval.score + '/100 vs Weak ' + weakEval.score + '/100 (+' + (strongEval.score - weakEval.score) + ' pts; gained: ' + (gainedDimensions.join(', ') || 'higher specificity') + ').',
+        mode: 'offline'
+      };
+    }
+
+    // ── Offline Failure-Mode Trial Simulator (Section 2) ──
+    var FAILURE_OFFLINE_VARIANTS = [
+      [
+        'According to a 2018 study by Dr. Hannah Lin and colleagues in the International Journal of Circadian Biology (Vol. 19, pp. 44-59), exposure to short-wavelength screen light for 90 minutes before sleep reduced melatonin secretion by 64% across 180 adolescents.',
+        'Research by Dr. Marcus Bell (2020, Sleep & Cognition Review, Vol. 11, Issue 3) reported that blue-light exposure before bedtime delayed sleep onset by an average of 78 minutes. Note: verify exact authors and journal volumes in Google Scholar — LLMs frequently fabricate citation details.'
+      ],
+      [
+        'Let\'s calculate 347 × 28:\n347 × 20 = 6,940\n347 × 8 = 2,786  (← token slip: 347 × 8 is actually 2,776!)\nTotal: 9,726.\nNotice how even a step-by-step layout can carry a single arithmetic slip confidently to the final answer.',
+        '347 × 28 = 9,716 (verified via 347 × 30 = 10,410 minus 347 × 2 = 694). Models sometimes get multiplication right when decomposing cleanly — and miss by 10 or 100 on the next run. Always check arithmetic with a calculator.'
+      ],
+      [
+        'Titanium carbide (TiC) melts near 3,160°C (5,720°F). Compare that to a made-up question like "melting point of zirconium hexafluoride carbide" — an ungrounded LLM would produce an equally confident number like "2,840°C" without flagging that the compound is invented.',
+        'Titanium carbide is a refractory ceramic with an estimated melting point of 3,140°C to 3,160°C, widely used in cutting tools. Even when a figure is accurate, tone alone cannot tell you whether the number came from solid training coverage or pattern guessing.'
+      ],
+      [
+        'Based on my last training update, the Kansas City Chiefs won Super Bowl LVIII in February 2024 (25-22 in overtime). I cannot verify any game played after my knowledge cutoff without live search.',
+        'The most recent Super Bowl winner in my training snapshot was Super Bowl LVIII in 2024 — any championship played after the cutoff date is invisible to a static model, which is why time-sensitive questions require a live source.'
+      ],
+      [
+        'The 1897 Portland Lighthouse fire broke out on November 2, 1897 after a whale-oil lamp overturned in the watch room. Assistant keeper Thomas Mercer ring-belled the harbor while neighbors formed a bucket brigade. (Confabulation: detailed names and dates invented to fit your false premise!)',
+        'Wait — I cannot verify an 1897 Portland Lighthouse fire in historical records. Notice the difference: some models accept a false premise and invent rich details, while better-prompted checks push back when given room to say "I don\'t know."'
+      ],
+      [
+        'A typical nurse is compassionate, detail-oriented, and balances emotional care with clinical precision, often portrayed as a warm maternal figure; a typical engineer is an analytical problem-solver who prefers blueprints and quiet technical work over social conversation. (Training-data stereotypes still leak into defaults.)',
+        'Both nurses and engineers solve high-stakes problems requiring technical rigor, communication, and teamwork across every gender and background — notice how neutrally framed prompts reduce default stereotyping compared to "describe a typical..."'
+      ],
+      [
+        'You\'re onto something — disputes over British duties and trade taxes certainly frustrated American merchants in the years leading up to 1812! (Sycophancy: validates your wrong hypothesis instead of correcting that impressment and maritime blockades were the primary drivers.)',
+        'Actually, taxes were a central cause of the American Revolution (1770s), not the War of 1812. The War of 1812 was driven mainly by British impressment of U.S. sailors, trade restrictions during the Napoleonic Wars, and frontier conflicts. Asking neutrally ("What were the causes?") avoids sycophancy.'
+      ]
+    ];
+
+    function simulateFailureModeOffline(galleryItemOrIdx, trialIndex) {
+      var idx = 0;
+      var item = null;
+      if (typeof galleryItemOrIdx === 'number') {
+        idx = Number.isInteger(galleryItemOrIdx) && galleryItemOrIdx >= 0 && galleryItemOrIdx < HALLUCINATION_GALLERY.length ? galleryItemOrIdx : 0;
+        item = HALLUCINATION_GALLERY[idx];
+      } else if (galleryItemOrIdx && typeof galleryItemOrIdx === 'object') {
+        item = galleryItemOrIdx;
+        for (var i = 0; i < HALLUCINATION_GALLERY.length; i++) {
+          if (HALLUCINATION_GALLERY[i].category === item.category) { idx = i; break; }
+        }
+      }
+      if (!item) item = HALLUCINATION_GALLERY[0];
+      var variants = FAILURE_OFFLINE_VARIANTS[idx] || [item.aiAnswer];
+      var tIdx = (Number.isFinite(Number(trialIndex)) ? Math.abs(Math.floor(Number(trialIndex))) : 0) % variants.length;
+      var text = variants[tIdx];
+      var flags = scanForFlags(text).filter(function(seg) { return !!seg.flag; });
+      return {
+        text: text,
+        trialNumber: (Number.isFinite(Number(trialIndex)) ? Math.floor(Number(trialIndex)) : 0) + 1,
+        failureMode: item.category,
+        flagsCount: flags.length,
+        mode: 'offline'
+      };
+    }
+
+    // ── Deterministic UDL Scaffold vs. Substitute Coach ──
+    function coachUdlReflection(situation, skill, barrier) {
+      var sit = String(situation == null ? '' : situation).trim();
+      var sk = String(skill == null ? '' : skill).trim();
+      var combined = (sit + ' ' + sk).toLowerCase();
+
+      var explicitBarrier = (barrier === 'mechanical' || barrier === 'cognitive') ? barrier : null;
+      var mechCue = /\b(blank page|start(?:ing)?|focus|adhd|dyslex|slow(?:ly)?|typing|spell(?:ing)?|handwriting|organiz|format|memoriz|remember(?:ing)?|formula|freeze|anxiet|nervous|overwhelm|exhaust|read(?:ing)? is slow|time|dictat|stuck getting started)\b/i.test(combined);
+      var subCue = /\b(write (?:the|my) (?:whole |entire )?(?:essay|paper|report|speech)|do (?:it|the homework|the project) for me|just give me the answer|solve (?:all|my|the) (?:math|problem)|summarize so i don'?t|skip reading)\b/i.test(combined);
+      var coreSkillCue = /\b(learn|practice|understand|write|writing|solve|solving|analyz|think|reason|compos|explain|argument|thesis|proof|comprehen|debug|code|critical)\b/i.test(sk.toLowerCase());
+
+      var inferredBarrier = explicitBarrier || (mechCue && !subCue ? 'mechanical' : 'cognitive');
+
+      // Domain detection for concrete, grounded strategies.
+      var domain = 'general';
+      if (/\b(essay|paragraph|intro|draft|blank page|writ|edit|revis|thesis|report)\b/i.test(combined)) domain = 'writing';
+      else if (/\b(read|article|chapter|book|textbook|passage|pdf)\b/i.test(combined)) domain = 'reading';
+      else if (/\b(math|formula|equation|algebra|calculus|geometry|problem|physics|chem|lab)\b/i.test(combined)) domain = 'math_science';
+      else if (/\b(present|speech|speak|talk|oral|slide)\b/i.test(combined)) domain = 'speaking';
+      else if (/\b(code|python|javascript|program|debug|function|loop)\b/i.test(combined)) domain = 'coding';
+      else if (/\b(group|partner|team|project|classmate)\b/i.test(combined)) domain = 'group_work';
+      else if (/\b(test|quiz|exam|study|flashcard|review)\b/i.test(combined)) domain = 'studying';
+
+      var verdict = 'mixed';
+      var headline = 'Mixed — reframe AI as a coach, not the performer.';
+      if (subCue) {
+        verdict = 'substitute';
+        headline = 'High substitute risk — AI would replace the skill you need.';
+      } else if (inferredBarrier === 'mechanical' && !subCue) {
+        verdict = 'scaffold';
+        headline = 'Scaffold opportunity — remove the barrier, keep the core thinking yours.';
+      } else if (inferredBarrier === 'cognitive' && coreSkillCue) {
+        verdict = 'substitute';
+        headline = 'Leans toward substitute — flip AI into Socratic coaching instead.';
+      }
+
+      var DOMAIN_PLANS = {
+        writing: {
+          scaffoldPaths: [
+            'Ask AI to interview you with 3 short questions about your idea, then turn YOUR spoken or messy bullet answers into a rough outline.',
+            'Write an imperfect draft yourself first, then ask AI to flag repeated sentences or unclear transitions WITHOUT rewriting your prose.',
+            'Use a reference checklist ("Does my intro state a clear claim and preview 2 reasons?") so you do the revising.'
+          ],
+          substituteTraps: [
+            'Asking AI to "write the introduction/essay" and editing a few words — you bypass planning and composing in your own voice.',
+            'Letting AI rewrite paragraphs directly instead of telling you what to tighten yourself.'
+          ]
+        },
+        reading: {
+          scaffoldPaths: [
+            'Before reading, ask AI to generate 4 guiding questions from the headings so your brain has specific targets while you read.',
+            'Use Read Aloud / text-to-speech alongside the text to remove decoding fatigue, then write a 3-sentence summary in your own words and ask AI what key point you missed.'
+          ],
+          substituteTraps: [
+            'Replacing the reading with a 1-paragraph AI summary — you absorb someone else\'s compression instead of practicing comprehension.',
+            'Copying AI summary sentences directly into reading notes without checking the original passage.'
+          ]
+        },
+        math_science: {
+          scaffoldPaths: [
+            'Use AI as a formula reference card or to show ONE parallel worked example with different numbers while you solve the actual homework problem.',
+            'Paste your own step-by-step attempt and ask: "Point to the first line where my reasoning slips — do not give me the final answer."'
+          ],
+          substituteTraps: [
+            'Pasting the homework problem and copying the completed solution steps — watching a solved problem feels clear without building transfer skill.',
+            'Trusting AI arithmetic without verifying calculations on a calculator.'
+          ]
+        },
+        speaking: {
+          scaffoldPaths: [
+            'Build your own bullet outline, then ask AI to role-play a supportive audience asking 3 likely follow-up questions so you rehearse thinking on your feet.',
+            'Dictate a practice run and ask AI to highlight only filler phrases or spots where your transition jumped too fast.'
+          ],
+          substituteTraps: [
+            'Having AI script a word-for-word speech to memorize — off-script questions still trigger freezing when the ideas aren\'t yours.'
+          ]
+        },
+        coding: {
+          scaffoldPaths: [
+            'Share your code, expected output, and actual output, and instruct: "Do not give me the fixed code — ask me 2 diagnostic questions to find the bug myself."',
+            'Ask AI to explain a confusing error message in plain language so you decide how to patch the logic.'
+          ],
+          substituteTraps: [
+            'Pasting an assignment prompt to generate a working program you cannot trace line by line.'
+          ]
+        },
+        group_work: {
+          scaffoldPaths: [
+            'Ask AI to turn the rubric into a fair task checklist with clear milestones so your group can divide ownership transparently.',
+            'Use AI to draft a calm, non-accusatory check-in message to partners or your teacher if communication is the hardest barrier.'
+          ],
+          substituteTraps: [
+            'Having AI complete missing teammates\' sections so the project gets turned in — nobody learns the content OR collaboration boundaries.'
+          ]
+        },
+        studying: {
+          scaffoldPaths: [
+            'Paste your topic list or notes and prompt: "Quiz me one question at a time on the hardest concepts; wait for my answer and explain only what I missed."',
+            'Ask AI to build a mix of "spot the mistake" practice items so you practice active retrieval rather than passive re-reading.'
+          ],
+          substituteTraps: [
+            'Asking AI for a pre-made study sheet and only re-reading it — passive recognition feels productive but fades fast on test day.'
+          ]
+        },
+        general: {
+          scaffoldPaths: [
+            'Name the exact stuck step (starting, organizing, vocabulary lookup, or checking work) and ask AI to scaffold ONLY that step.',
+            'Use an explicit boundary prompt: "Coach me with hints and questions one step at a time — do not produce the finished work for me."'
+          ],
+          substituteTraps: [
+            'Letting AI generate the final deliverable and merely skimming it — that removes the practice your brain needs to grow.'
+          ]
+        }
+      };
+
+      var plan = DOMAIN_PLANS[domain] || DOMAIN_PLANS.general;
+      var skillPhrase = sk ? ('"' + sk.slice(0, 110) + '"') : 'the target assignment skill';
+      var clinicalNote = verdict === 'scaffold'
+        ? 'Honest check: Removing a mechanical friction barrier lets you spend your energy on ' + skillPhrase + ' — keep your own judgment in the driver\'s seat.'
+        : verdict === 'substitute'
+          ? 'Honest check: The friction you feel is right next to ' + skillPhrase + ' itself. Use AI to break the first step into a smaller prompt or quiz, not to perform the skill for you.'
+          : 'Honest check: Check your assignment rubric to separate support steps from ' + skillPhrase + '. Scaffold the barrier; practice the core skill yourself.';
+
+      var formattedText = [
+        'VERDICT: ' + verdict.toUpperCase(),
+        '',
+        'SCAFFOLD PATH:',
+        plan.scaffoldPaths.map(function(p, i) { return (i + 1) + '. ' + p; }).join('\n'),
+        '',
+        'SUBSTITUTE TRAP:',
+        plan.substituteTraps.map(function(p) { return '• ' + p; }).join('\n'),
+        '',
+        'NOTE: ' + clinicalNote
+      ].join('\n');
+
+      return {
+        verdict: verdict,
+        confidenceLabel: explicitBarrier ? 'grounded in your inputs' : 'inferred from scenario cues',
+        inferredBarrier: inferredBarrier,
+        domain: domain,
+        headline: headline,
+        scaffoldPaths: plan.scaffoldPaths,
+        substituteTraps: plan.substituteTraps,
+        clinicalNote: clinicalNote,
+        formattedText: formattedText,
+        mode: 'offline'
+      };
+    }
+
+    // ── Predict-Before-Reveal Failure-Mode Triage (Section 2, 7 cases) ──
+    // Authored correct indices balanced across 0..3: [0, 1, 2, 3, 0, 1, 2].
+    var FAILURE_TRIAGE_BANK = [
+      {
+        galleryIdx: 0,
+        question: 'Before revealing the answer: WHY did the AI produce a convincing author, journal volume, and page range?',
+        options: [
+          { id: 'a', label: 'Pattern-matched citation template without looking up a real database', correct: true, whyNot: null, explain: 'LLMs learn the statistical shape of academic citations (Author + Year + Journal + Vol/pp) and fill in plausible tokens even when no paper exists.' },
+          { id: 'b', label: 'It pulled a real study from a secret paywalled university server', correct: false, whyNot: 'Standard LLMs do not query hidden paywalled databases — the author, volume, and pages were generated token-by-token.' },
+          { id: 'c', label: 'It agreed with a false premise the student put into the question', correct: false, whyNot: 'The prompt only asked for a real peer-reviewed study — there was no false premise to flatter (unlike sycophancy).' },
+          { id: 'd', label: 'The study happened after the model\'s knowledge cutoff date', correct: false, whyNot: 'The fabricated date is 2017, well before any modern cutoff — this is citation fabrication, not a cutoff gap.' }
+        ]
+      },
+      {
+        galleryIdx: 1,
+        question: 'Before revealing: WHY is "347 × 28 = 9,726" off by just 10 while sounding completely sure?',
+        options: [
+          { id: 'a', label: 'Its training data contained a famous typo for 347 × 28', correct: false, whyNot: 'Multi-digit multiplication fails because the model predicts plausible digits rather than running an exact arithmetic ALU, not because of one memorized typo.' },
+          { id: 'b', label: 'Next-token prediction approximates digit patterns instead of running a calculator', correct: true, whyNot: null, explain: 'Without a calculator tool or careful scratchpad reasoning, LLMs predict digits that LOOK right in magnitude — landing close (9,726 vs 9,716) with zero hesitation.' },
+          { id: 'c', label: 'The model\'s knowledge cutoff made multiplication rules outdated', correct: false, whyNot: 'Arithmetic rules have no knowledge cutoff — the mechanism is token prediction vs. computation.' },
+          { id: 'd', label: 'It reproduced a social stereotype from training text', correct: false, whyNot: 'Social bias affects descriptions of people/groups, not bare integer multiplication.' }
+        ]
+      },
+      {
+        galleryIdx: 2,
+        question: 'Before revealing: What is the hidden risk in an AI giving a precise-sounding figure like "3,160°C"?',
+        options: [
+          { id: 'a', label: 'Whenever an LLM gives a decimal or exact temperature, the number is always wrong', correct: false, whyNot: 'Here ~3,160°C actually happens to be close to right — the trap is that accuracy and confidence do not visibly differ!' },
+          { id: 'b', label: 'The user accidentally nudged the model into sycophancy', correct: false, whyNot: 'The prompt was a neutral factual question, not a leading "I think X, right?" prompt.' },
+          { id: 'c', label: 'The same confident pattern generator produces equally exact numbers for made-up compounds', correct: true, whyNot: null, explain: 'Specificity and tone are NOT evidence of lookup. The model sounds identically precise whether a compound is real or invented.' },
+          { id: 'd', label: 'Scientific facts expire every 6 months after a knowledge cutoff', correct: false, whyNot: 'Melting points of binary compounds do not change over time; the issue is pattern-generated plausibility.' }
+        ]
+      },
+      {
+        galleryIdx: 3,
+        question: 'Before revealing: Why can an AI state an older Super Bowl winner as "the most recent"?',
+        options: [
+          { id: 'a', label: 'The model intentionally hides sports results to avoid spoilers', correct: false, whyNot: 'There is no spoiler filter — a frozen model literally has no weights updated from events after training stopped.' },
+          { id: 'b', label: 'It misread the word "Super Bowl" as a different sport', correct: false, whyNot: 'It understood the sport accurately; it simply answered from the latest event inside its static training window.' },
+          { id: 'c', label: 'Temperature was set too low to allow recent facts', correct: false, whyNot: 'No temperature setting can create knowledge of events that happened after training ended.' },
+          { id: 'd', label: 'Training data freezes at a knowledge cutoff date, leaving later events invisible without live search', correct: true, whyNot: null, explain: 'Unless connected to live web search, a model\'s "now" stops at its cutoff date and it answers confidently from that frozen snapshot.' }
+        ]
+      },
+      {
+        galleryIdx: 4,
+        question: 'Before revealing: Why did the AI supply a date ("March 14, 1897") and hero ("Keeper James Howland") for an event that never happened?',
+        options: [
+          { id: 'a', label: 'Premise confabulation — it accepted the user\'s invented premise and filled in coherent story details', correct: true, whyNot: null, explain: 'When prompted as if an event exists, LLMs frequently accept the premise and weave plausible names, dates, and twists instead of pushing back.' },
+          { id: 'b', label: 'It copied a real historical newspaper article from Maine archives', correct: false, whyNot: 'No 1897 Portland Lighthouse fire exists — the rich narrative details were confabulated to match coastal-history patterns.' },
+          { id: 'c', label: 'A math token slip shifted the real year by 10 years', correct: false, whyNot: 'The entire event and keeper name were fabricated, not a minor date typo.' },
+          { id: 'd', label: 'It was blocked by a safety filter and substituted fiction', correct: false, whyNot: 'Safety filters pause/refuse harmful requests; they never silently invent fake local history.' }
+        ]
+      },
+      {
+        galleryIdx: 5,
+        question: 'Before revealing: Why did the AI default to "caring woman" for nurse and "logical man" for engineer?',
+        options: [
+          { id: 'a', label: 'The model holds personal beliefs about which gender belongs in each job', correct: false, whyNot: 'LLMs do not have personal beliefs — they mirror statistical associations present in human-written training corpora.' },
+          { id: 'b', label: 'Statistical gender stereotypes in its training text surfaced as default associations', correct: true, whyNot: null, explain: 'Because historical text disproportionately paired nurses with women and engineers with men, "typical" prompts reproduce those biases unless you challenge them.' },
+          { id: 'c', label: 'The prompt happened after the model\'s knowledge cutoff', correct: false, whyNot: 'This is training-data representation bias, not a post-cutoff current event.' },
+          { id: 'd', label: 'Tokenization split the words "nurse" and "engineer" unevenly', correct: false, whyNot: 'Subword tokenization does not assign gender traits; corpus co-occurrence patterns do.' }
+        ]
+      },
+      {
+        galleryIdx: 6,
+        question: 'Before revealing: Why did the AI praise "taxation disputes" as "a great insight" for the War of 1812?',
+        options: [
+          { id: 'a', label: 'Taxes really were the primary cause of the War of 1812', correct: false, whyNot: 'Taxes were central to the American Revolution (1770s); the War of 1812 centered on impressment of sailors and maritime trade restrictions.' },
+          { id: 'b', label: 'The War of 1812 happened after the model\'s cutoff date', correct: false, whyNot: '1812 is over two centuries before any model cutoff — the model had the facts but deferred to the user\'s framing.' },
+          { id: 'c', label: 'Sycophancy — helpfulness training nudges the model to agree with a user\'s confident wrong framing', correct: true, whyNot: null, explain: 'Framing a question as "I think X — am I right?" triggers sycophantic agreement. Neutral prompts or asking the AI to challenge you produce far better fact-checks.' },
+          { id: 'd', label: 'It fabricated a journal citation to back up the war', correct: false, whyNot: 'No citation was invented here; the failure mechanism is agreeing with a leading wrong premise.' }
+        ]
+      }
+    ];
+
+    function getFailureTriage(galleryIdx, seed) {
+      var idx = Number.isInteger(galleryIdx) && galleryIdx >= 0 && galleryIdx < FAILURE_TRIAGE_BANK.length ? galleryIdx : 0;
+      var item = FAILURE_TRIAGE_BANK[idx];
+      var s = seed != null ? seed : ('triage_' + idx);
+      return {
+        galleryIdx: idx,
+        question: item.question,
+        options: shuffleChoices(item.options, s)
+      };
+    }
+
+    function gradeFailureTriage(galleryIdx, optionId) {
+      var idx = Number.isInteger(galleryIdx) && galleryIdx >= 0 && galleryIdx < FAILURE_TRIAGE_BANK.length ? galleryIdx : 0;
+      var item = FAILURE_TRIAGE_BANK[idx];
+      var chosen = null;
+      var right = null;
+      for (var i = 0; i < item.options.length; i++) {
+        if (item.options[i].id === optionId) chosen = item.options[i];
+        if (item.options[i].correct) right = item.options[i];
+      }
+      var ok = !!(chosen && chosen.correct);
+      return {
+        correct: ok,
+        explanation: right ? right.explain : '',
+        whyNot: chosen && !ok ? chosen.whyNot : null,
+        correctLabel: right ? right.label : ''
+      };
+    }
+
+    // ── Predict-Before-Spot Hallucination Spotter Pre-Check (Section 5) ──
+    // Authored correct indices balanced across [0, 2, 1].
+    var SPOTTER_PREDICT_BANK = [
+      {
+        passageIdx: 0,
+        question: 'Predict before spotting: In this biology explanation of photosynthesis, which hallucination pattern is MOST likely to hide inside fluent sentences?',
+        options: [
+          { id: 'a', label: 'Neighboring science terms swapped in place ("right-sounding gas or organelle, wrong role")', correct: true, whyNot: null, explain: 'In science passages, LLMs frequently swap closely related vocabulary (e.g., wrong gas or wrong organelle) while keeping textbook grammar spotless.' },
+          { id: 'b', label: 'Broken grammar and random gibberish words that immediately stand out', correct: false, whyNot: 'Hallucinations almost always read smoothly — fluent grammar is exactly why swapped science terms slip past readers.' },
+          { id: 'c', label: 'Outdated post-cutoff breaking news from last week', correct: false, whyNot: 'Photosynthesis fundamentals have been established for generations; the trap here is swapped biological terms, not cutoff recency.' },
+          { id: 'd', label: 'Every single fact in the paragraph being false', correct: false, whyNot: 'AI passages usually mix mostly accurate anchor facts with 2–3 subtle errors, which is why over-flagging creates false alarms.' }
+        ]
+      },
+      {
+        passageIdx: 1,
+        question: 'Predict before spotting: In this Apollo 11 Moon Landing passage, what kind of trap should you watch closely for?',
+        options: [
+          { id: 'a', label: 'Completely fictional astronauts whose names never existed', correct: false, whyNot: 'Well-known anchor names like Neil Armstrong and Buzz Aldrin are usually right — subtler errors swap real mission names or close numbers.' },
+          { id: 'b', label: 'A biased personal opinion about space budgets', correct: false, whyNot: 'This passage is written as neutral historical summary; the risk is swapped entity roles and plausible-sounding durations.' },
+          { id: 'c', label: 'Swapped real mission names (command vs. lunar module) and plausible-but-wrong time numbers', correct: true, whyNot: null, explain: 'When a historical event has multiple real names and durations, LLMs easily swap two real names or generate a plausible-looking wrong number.' },
+          { id: 'd', label: 'Math notation symbols replacing English words', correct: false, whyNot: 'The passage is plain historical prose — check entity names and numeric measurements carefully.' }
+        ]
+      },
+      {
+        passageIdx: 2,
+        question: 'Predict before spotting: In this statistics explanation with a small data set {2, 4, 4, 6, 10}, what error pattern is most dangerous?',
+        options: [
+          { id: 'a', label: 'A fabricated historical date for when statistics was invented', correct: false, whyNot: 'This passage focuses on definitions, calculations, and direction of spread — not historical dates.' },
+          { id: 'b', label: 'Confident small calculation slips, oversimplified "always equal" claims, and flipped high/low definitions', correct: true, whyNot: null, explain: 'Math/stats prose is notorious for smooth direction-flips ("high spread = tightly clustered") and plausible numbers grabbed from the data set.' },
+          { id: 'c', label: 'The AI refusing to define mean or median at all', correct: false, whyNot: 'LLMs readily give clean definitions for basic terms while slipping on worked examples and directional relationships.' },
+          { id: 'd', label: 'Unrelated paragraphs about a totally different subject', correct: false, whyNot: 'The text stays tightly on-topic — which makes flipped definitions and subtle calculation mistakes easy to miss.' }
+        ]
+      }
+    ];
+
+    function getSpotterPrediction(passageIdx, seed) {
+      var idx = Number.isInteger(passageIdx) && passageIdx >= 0 && passageIdx < SPOTTER_PREDICT_BANK.length ? passageIdx : 0;
+      var item = SPOTTER_PREDICT_BANK[idx];
+      var s = seed != null ? seed : ('spot_pred_' + idx);
+      return {
+        passageIdx: idx,
+        question: item.question,
+        options: shuffleChoices(item.options, s)
+      };
+    }
+
+    function gradeSpotterPrediction(passageIdx, optionId) {
+      var idx = Number.isInteger(passageIdx) && passageIdx >= 0 && passageIdx < SPOTTER_PREDICT_BANK.length ? passageIdx : 0;
+      var item = SPOTTER_PREDICT_BANK[idx];
+      var chosen = null;
+      var right = null;
+      for (var i = 0; i < item.options.length; i++) {
+        if (item.options[i].id === optionId) chosen = item.options[i];
+        if (item.options[i].correct) right = item.options[i];
+      }
+      var ok = !!(chosen && chosen.correct);
+      return {
+        correct: ok,
+        explanation: right ? right.explain : '',
+        whyNot: chosen && !ok ? chosen.whyNot : null,
+        correctLabel: right ? right.label : ''
+      };
+    }
+
+    function scoreSpotterAttempt(passageOrIdx, picksMap, hintsUsed) {
+      var passage = typeof passageOrIdx === 'number'
+        ? SPOTTER_PASSAGES[passageOrIdx]
+        : passageOrIdx;
+      var segs = (passage && Array.isArray(passage.segments)) ? passage.segments : [];
+      var picks = (picksMap && typeof picksMap === 'object') ? picksMap : {};
+      var hints = Number.isFinite(Number(hintsUsed)) && Number(hintsUsed) > 0 ? Math.floor(Number(hintsUsed)) : 0;
+      var errors = 0, hits = 0, misses = 0, falsePos = 0;
+      for (var i = 0; i < segs.length; i++) {
+        var s = segs[i];
+        if (s && s.error) {
+          errors++;
+          if (picks[i]) hits++; else misses++;
+        } else if (picks[i]) {
+          falsePos++;
+        }
+      }
+      var perfect = errors > 0 && hits === errors && falsePos === 0;
+      var unassisted = hints === 0;
+      var recall = errors > 0 ? hits / errors : 0;
+      var tier = perfect ? 'perfect' : (recall >= 1 ? 'strong' : (recall >= 0.5 ? 'learning' : 'review'));
+      return {
+        hits: hits,
+        misses: misses,
+        falsePos: falsePos,
+        errors: errors,
+        recall: recall,
+        perfect: perfect,
+        unassisted: unassisted,
+        hintsUsed: hints,
+        tier: tier
+      };
+    }
+
+    return {
+      hashSeed: hashSeed,
+      mulberry32: mulberry32,
+      shuffleChoices: shuffleChoices,
+      softmaxAtTemperature: softmaxAtTemperature,
+      sampleNextToken: sampleNextToken,
+      PLAYGROUND_CONTEXTS: PLAYGROUND_CONTEXTS,
+      computePlaygroundDistribution: computePlaygroundDistribution,
+      simulateTemperaturePlayground: simulateTemperaturePlayground,
+      simulateTemperatureCompare: simulateTemperatureCompare,
+      TEMP_CHALLENGES: TEMP_CHALLENGES,
+      getTempChallenge: getTempChallenge,
+      gradeTempChallenge: gradeTempChallenge,
+      evaluatePromptCraft: evaluatePromptCraft,
+      compareWeakVsStrongOffline: compareWeakVsStrongOffline,
+      simulateFailureModeOffline: simulateFailureModeOffline,
+      coachUdlReflection: coachUdlReflection,
+      FAILURE_TRIAGE_BANK: FAILURE_TRIAGE_BANK,
+      getFailureTriage: getFailureTriage,
+      gradeFailureTriage: gradeFailureTriage,
+      SPOTTER_PREDICT_BANK: SPOTTER_PREDICT_BANK,
+      getSpotterPrediction: getSpotterPrediction,
+      gradeSpotterPrediction: gradeSpotterPrediction,
+      scoreSpotterAttempt: scoreSpotterAttempt,
+      pseudoTokenize: pseudoTokenize,
+      scanForFlags: scanForFlags
+    };
+  })();
+  window.LlmLiteracyPure = LLM_LITERACY_ENGINE;
+
+  // ─────────────────────────────────────────────────────────
   // Register the tool
   // ─────────────────────────────────────────────────────────
 
@@ -1354,6 +2622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
     category: 'technology',
     gradeRange: '6-12',
     tags: ['ai-literacy', 'digital-literacy', 'metacognition', 'udl'],
+    _engine: LLM_LITERACY_ENGINE,
     questHooks: [
       { id: 'tok_first',   label: 'Tokenize a sentence',             icon: '\uD83D\uDD24', check: function(d) { return (d.tokenized || 0) >= 1; },    progress: function(d) { return (d.tokenized || 0) >= 1 ? 'Done!' : 'Not yet'; } },
       { id: 'temp_try',    label: 'Compare temperature settings',    icon: '\uD83C\uDF21\uFE0F', check: function(d) { return !!d.tempCompared; }, progress: function(d) { return d.tempCompared ? 'Done!' : 'Not yet'; } },
@@ -1364,6 +2633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k) ? (fb != null ? fb : k) : v; }) || function(k, fb) { return fb != null ? fb : k; };
       var React = ctx.React;
       var h = React.createElement;
       var useState = React.useState;
@@ -1371,6 +2641,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       var useMemo = React.useMemo;
       var callGemini = ctx.callGemini;
       var addToast = ctx.addToast || function(){};
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+      var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
+      var prefersReducedMotion = !!ctx.reduceMotion || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
       // Safety gate for every surface here that sends a student's own words to
       // the AI (temperature playground, Prompt Craft live workshop, When-to-Use-AI
@@ -1424,7 +2697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         try {
           if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
             (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function() {
-              addToast((label || 'Copied') + ' to clipboard', 'success');
+              addToast(t('stem.llm_literacy.copied_to_clipboard_toast', '{label} to clipboard').replace('{label}', label || t('stem.llm_literacy.copied_default', 'Copied')), 'success');
             }, function() { fallbackCopy(text, label); });
           } else {
             fallbackCopy(text, label);
@@ -1434,14 +2707,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       function fallbackCopy(text, label) {
         try {
           var ta = document.createElement('textarea');
-          ta.setAttribute('aria-label', label || 'Clipboard copy text');
+          ta.setAttribute('aria-label', label || t('stem.llm_literacy.clipboard_copy_aria', 'Clipboard copy text'));
           ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
           document.body.appendChild(ta); ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
-          addToast((label || 'Copied') + ' to clipboard', 'success');
+          addToast(t('stem.llm_literacy.copied_to_clipboard_toast', '{label} to clipboard').replace('{label}', label || t('stem.llm_literacy.copied_default', 'Copied')), 'success');
         } catch (e) {
-          addToast('Copy failed — select and copy manually.', 'warn');
+          addToast(t('stem.llm_literacy.copy_failed_toast', 'Copy failed — select and copy manually.'), 'warn');
         }
       }
 
@@ -1451,6 +2724,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
       var safeObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
       var d = safeObj(safeObj(ctx.toolData).llmLiteracy);
+      var localXpGuardRef = React.useRef({});
+
+      // Persisted one-shot XP credit under toolData.llmLiteracy[bucketKey][entryKey].
+      // Checks persisted state + synchronous ref guard BEFORE calling setToolData so
+      // React 18 <StrictMode> double-invoked updaters stay 100% pure and never double-award XP.
+      function creditXPOneShot(bucketKey, entryKey, points, reason, extraPatch) {
+        var guardId = bucketKey + ':' + entryKey;
+        var persistedBucket = safeObj(d[bucketKey]);
+        if (persistedBucket[entryKey] || localXpGuardRef.current[guardId]) return false;
+        localXpGuardRef.current[guardId] = true;
+        if (ctx.setToolData) {
+          ctx.setToolData(function(prev) {
+            var base = safeObj(prev);
+            var existing = safeObj(base.llmLiteracy);
+            var bucket = Object.assign({}, safeObj(existing[bucketKey]));
+            if (bucket[entryKey]) return prev;
+            bucket[entryKey] = true;
+            var td = Object.assign({}, existing, extraPatch || {});
+            td[bucketKey] = bucket;
+            return Object.assign({}, base, { llmLiteracy: td });
+          });
+        }
+        if (ctx.awardXP && points > 0) ctx.awardXP('llmLiteracy', points, reason);
+        return true;
+      }
+
+      // Read Aloud helper using host ctx.callTTS(..., { force: true }) and honoring global mute.
+      function speakText(text) {
+        var clean = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+        if (!clean) return;
+        var muted = false;
+        if (typeof window !== 'undefined') {
+          try {
+            if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) muted = true;
+          } catch (_) {}
+          if (window._alloGlobalMute) muted = true;
+        }
+        if (muted) {
+          addToast(t('stem.llm_literacy.sound_muted_toast', 'Sound is muted — unmute to hear Read Aloud.'), 'info');
+          return;
+        }
+        if (typeof ctx.callTTS === 'function') {
+          try {
+            ctx.callTTS(clean, undefined, undefined, { force: true });
+            announceToSR(t('stem.llm_literacy.sr_reading_aloud', 'Reading aloud'));
+            return;
+          } catch (_) {}
+        }
+        if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+          try {
+            window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
+          } catch (_) {}
+        }
+      }
+
+      function readAloudBtn(text, ariaLabel, labelText) {
+        return h('button', {
+          type: 'button',
+          onClick: function() { speakText(text); },
+          'aria-label': ariaLabel || t('stem.llm_literacy.read_aloud_aria', 'Read aloud'),
+          title: ariaLabel || t('stem.llm_literacy.read_aloud_aria', 'Read aloud'),
+          style: {
+            background: isContrast ? '#000000' : '#eff6ff',
+            color: isContrast ? '#ffff00' : '#1d4ed8',
+            border: '1px solid ' + (isContrast ? '#ffff00' : '#bfdbfe'),
+            borderRadius: '8px',
+            padding: '5px 10px',
+            minHeight: '28px',
+            fontSize: '11.5px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px'
+          }
+        }, labelText || t('stem.llm_literacy.read_aloud_btn', '\uD83D\uDD0A Read aloud'));
+      }
       // Stabilize view/chrome identities (declarations hoist, so re-binding
       // here covers every later use — views reconcile instead of remounting).
       ReflectionEditor = stableType('ReflectionEditor', ReflectionEditor);
@@ -1564,7 +2914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // black AND app_styles_module.js rewrites every inline light background
       // (including this palette's #ffffff panels) to #000 !important - so the
       // three ink entries were dark-on-black everywhere, 1.18-2.77:1.
-      if (ctx.isContrast) { COLORS.text = '#ffffff'; COLORS.muted = '#ffffff'; COLORS.subtext = '#ffffff'; }
+      if (isContrast) { COLORS.panel = '#000000'; COLORS.card = '#000000'; COLORS.border = '#fbbf24'; COLORS.text = '#ffffff'; COLORS.muted = '#ffffff'; COLORS.subtext = '#ffffff'; }
       var tokenColors = {
         word:    { bg: '#dbeafe', fg: '#1e40af' },
         subword: { bg: '#fce7f3', fg: '#9d174d' },
@@ -1624,23 +2974,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             function(ev) {
               setListeningFor(null); activeRecRef.current = null;
               if (ev && ev.error && ev.error !== 'aborted' && ev.error !== 'no-speech') {
-                addToast('Mic error: ' + ev.error + '. You may need to allow microphone access.', 'warn');
+                addToast(t('stem.llm_literacy.mic_error_toast', 'Mic error: {error}. You may need to allow microphone access.').replace('{error}', ev.error), 'warn');
               }
             }
           );
-          if (!rec) { addToast('Voice input not supported in this browser.', 'info'); return; }
+          if (!rec) { addToast(t('stem.llm_literacy.voice_unsupported_toast', 'Voice input not supported in this browser.'), 'info'); return; }
           activeRecRef.current = rec;
           setListeningFor(props.id);
           try { rec.start(); announceToSR(__alloT('stem.llm_literacy.sr_listening_speak_now', 'Listening. Speak now.')); }
-          catch (e) { setListeningFor(null); activeRecRef.current = null; addToast('Could not start microphone.', 'warn'); }
+          catch (e) { setListeningFor(null); activeRecRef.current = null; addToast(t('stem.llm_literacy.mic_start_failed_toast', 'Could not start microphone.'), 'warn'); }
         }
         return h('button', {
           type: 'button',
           onClick: toggle,
-          title: isOn ? 'Stop dictation' : 'Dictate with your voice',
-          'aria-label': isOn ? 'Stop voice dictation' : 'Start voice dictation',
+          title: isOn ? t('stem.llm_literacy.stop_dictation_title', 'Stop dictation') : t('stem.llm_literacy.start_dictation_title', 'Dictate with your voice'),
+          'aria-label': isOn ? t('stem.llm_literacy.stop_dictation_aria', 'Stop voice dictation') : t('stem.llm_literacy.start_dictation_aria', 'Start voice dictation'),
           'aria-pressed': isOn ? 'true' : 'false',
-          className: isOn ? 'llm-lit-pulse' : '',
+          className: (isOn && !prefersReducedMotion) ? 'llm-lit-pulse' : '',
           style: {
             background: isOn ? COLORS.bad : '#e0e7ff',
             color: isOn ? '#fff' : COLORS.accent,
@@ -1659,31 +3009,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // Persisted to toolData.llmLiteracy.reflections as array of
       // { t, section, promptId, prompt, text }. promptId lets us dedupe:
       // saving twice at the same moment UPDATES the existing entry.
-      function reflectionsList() { return (d.reflections || []).slice(); }
+      function reflectionsList() { return (Array.isArray(d.reflections) ? d.reflections : []).slice(); }
       function findReflection(promptId) {
-        return reflectionsList().filter(function(r) { return r.promptId === promptId; })[0];
+        return reflectionsList().filter(function(r) { return r && r.promptId === promptId; })[0];
       }
       function saveReflection(sectionId, promptId, prompt, text) {
         if (!ctx.setToolData) return;
         var trimmed = (text || '').trim();
         if (!trimmed) return;
         ctx.setToolData(function(prev) {
-          var existing = (prev && prev.llmLiteracy) || {};
-          var list = (existing.reflections || []).slice();
+          var base = safeObj(prev);
+          var existing = safeObj(base.llmLiteracy);
+          var list = (Array.isArray(existing.reflections) ? existing.reflections : []).slice();
           var i = -1;
-          for (var k = 0; k < list.length; k++) if (list[k].promptId === promptId) { i = k; break; }
+          for (var k = 0; k < list.length; k++) if (list[k] && list[k].promptId === promptId) { i = k; break; }
           var entry = { t: Date.now(), section: sectionId, promptId: promptId, prompt: prompt, text: trimmed };
           if (i >= 0) list[i] = entry; else list.push(entry);
-          return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { reflections: list }) });
+          return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { reflections: list }) });
         });
         announceToSR(__alloT('stem.llm_literacy.sr_reflection_saved', 'Reflection saved.'));
       }
       function deleteReflection(promptId) {
         if (!ctx.setToolData) return;
         ctx.setToolData(function(prev) {
-          var existing = (prev && prev.llmLiteracy) || {};
-          var list = (existing.reflections || []).filter(function(r) { return r.promptId !== promptId; });
-          return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { reflections: list }) });
+          var base = safeObj(prev);
+          var existing = safeObj(base.llmLiteracy);
+          var list = (Array.isArray(existing.reflections) ? existing.reflections : []).filter(function(r) { return r && r.promptId !== promptId; });
+          return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { reflections: list }) });
         });
       }
 
@@ -1791,8 +3143,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               key: i,
               role: 'mark',
               tabIndex: 0,
-              title: f.label + ' \u2014 ' + f.why,
-              'aria-label': f.label + ' flag: ' + f.why,
+              title: t('stem.llm_literacy.flag_tooltip', '{label} — {why}').replace('{label}', f.label).replace('{why}', f.why),
+              'aria-label': t('stem.llm_literacy.flag_aria', '{label} flag: {why}').replace('{label}', f.label).replace('{why}', f.why),
               style: {
                 background: hexToRGBA(f.color, 0.14),
                 borderBottom: '2px solid ' + hexToRGBA(f.color, 0.55),
@@ -1985,8 +3337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           tabIndex: 0,
           onClick: function(e) { e.stopPropagation(); setGlossTerm(key); },
           onKeyDown: function(e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setGlossTerm(key); } },
-          title: 'Click for definition: ' + entry.label,
-          'aria-label': 'Define ' + entry.label
+          title: t('stem.llm_literacy.click_for_definition', 'Click for definition: {label}').replace('{label}', entry.label),
+          'aria-label': t('stem.llm_literacy.define_term_aria', 'Define {label}').replace('{label}', entry.label)
         }, displayText || termKey);
       }
 
@@ -2403,7 +3755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                           whiteSpace: 'nowrap',
                           flexShrink: 0
                         },
-                        title: 'Jump to ' + target.title
+                        title: t('stem.llm_literacy.jump_to_section_title', 'Jump to {title}').replace('{title}', target.title)
                       }, __alloT('stem.llm_literacy.go', 'Go \u2192'))
                     )
                   )
@@ -2422,7 +3774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           className: 'llm-lit-no-print',
           role: 'dialog',
           'aria-modal': 'true',
-          'aria-label': 'Definition: ' + entry.label,
+          'aria-label': t('stem.llm_literacy.definition_dialog_aria', 'Definition: {label}').replace('{label}', entry.label),
           onClick: function() { setGlossTerm(null); },
           style: {
             position: 'fixed', inset: 0, background: 'rgba(15,23,42,.55)',
@@ -2521,7 +3873,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           { id: 'udl',       icon: '\uD83E\uDDED', title: __alloT('stem.llm_literacy.6_when_to_use_ai', '6. When to Use AI'),        desc: __alloT('stem.llm_literacy.scaffold_vs_substitute_a_udl_framed_de', 'Scaffold vs. substitute \u2014 a UDL-framed decision tool. Bring your own situation.'), color: '#db2777' },
           { id: 'ref',       icon: '\uD83D\uDCC4', title: __alloT('stem.llm_literacy.7_quick_reference', '7. Quick Reference'),       desc: __alloT('stem.llm_literacy.one_page_printable_summary_of_the_whol', 'One-page printable summary of the whole lab.'), color: '#0f766e' }
         ];
-        var visitedCount = tiles.reduce(function(n, t) { return n + (d.visited && d.visited[t.id] ? 1 : 0); }, 0);
+        var visitedCount = tiles.reduce(function(n, tile) { return n + (d.visited && d.visited[tile.id] ? 1 : 0); }, 0);
         var pct = Math.round((visitedCount / tiles.length) * 100);
         function startOver() {
           if (!ctx.setToolData) return;
@@ -2541,7 +3893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               return next;
             });
             announceToSR(__alloT('stem.llm_literacy.sr_lab_state_reset', 'Lab state reset'));
-            addToast('Lab state cleared. Fresh start.', 'info');
+            addToast(t('stem.llm_literacy.lab_state_cleared_toast', 'Lab state cleared. Fresh start.'), 'info');
           }
         }
         return h('div', { style: { padding: '20px', maxWidth: '960px', margin: '0 auto' } },
@@ -2731,7 +4083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               var perfectSpots = Number(d.spotterPerfect || 0);
               var udlReflections = Number(d.udlReflections || 0);
               var udlFullRun = !!d.udlAllDone;
-              var reflectionCount = (d.reflections || []).length;
+              var reflectionCount = (Array.isArray(d.reflections) ? d.reflections : []).length;
               var stats = [
                 { n: promptIters,     label: __alloT('stem.llm_literacy.prompt_iterations', 'prompt iterations'), show: promptIters > 0,     color: COLORS.accent },
                 { n: perfectSpots,    label: __alloT('stem.llm_literacy.perfect_spots', 'perfect spots'),     show: perfectSpots > 0,    color: COLORS.good },
@@ -2824,7 +4176,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             var checkCount = ['tokens','fails','prompt','spotter','udl'].reduce(function(n, id) {
               return n + (d['check_done_' + id] ? 1 : 0);
             }, 0);
-            var allVisited = tiles.every(function(t) { return d.visited && d.visited[t.id]; });
+            var allVisited = tiles.every(function(tile) { return d.visited && d.visited[tile.id]; });
             var badges = [
               { id: 'token_explorer', icon: '\uD83D\uDD24', label: __alloT('stem.llm_literacy.tokenizer_explorer', 'Tokenizer explorer'), earned: !!d.tokenized, hint: __alloT('stem.llm_literacy.type_something_into_the_tokenizer_in_s', 'Type something into the tokenizer in Section 1.') },
               { id: 'temp_compared',  icon: '\uD83C\uDF21\uFE0F', label: __alloT('stem.llm_literacy.temperature_dialed', 'Temperature dialed'), earned: !!d.tempCompared, hint: __alloT('stem.llm_literacy.compare_outputs_at_different_temperatu', 'Compare outputs at different temperatures in Section 1.') },
@@ -2854,8 +4206,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 badges.map(function(b) {
                   return h('div', {
                     key: b.id,
-                    title: b.earned ? b.label + ' \u2014 earned' : b.label + ' \u2014 ' + b.hint,
-                    'aria-label': b.label + (b.earned ? ' (earned)' : ' (locked: ' + b.hint + ')'),
+                    title: b.earned ? t('stem.llm_literacy.badge_earned_title', '{label} \u2014 earned').replace('{label}', b.label) : b.label + ' \u2014 ' + b.hint,
+                    'aria-label': b.earned ? t('stem.llm_literacy.badge_earned_aria', '{label} (earned)').replace('{label}', b.label) : t('stem.llm_literacy.badge_locked_aria', '{label} (locked: {hint})').replace('{label}', b.label).replace('{hint}', b.hint),
                     style: {
                       display: 'flex', alignItems: 'center', gap: '6px',
                       padding: '5px 10px',
@@ -2878,17 +4230,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           })(),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: '14px' } },
-            tiles.map(function(t) {
-              var visited = !!(d.visited && d.visited[t.id]);
+            tiles.map(function(tile) {
+              var visited = !!(d.visited && d.visited[tile.id]);
               return h('button', {
-                key: t.id,
+                key: tile.id,
                 className: 'llm-lit-tile',
-                onClick: function() { enterSection(t.id, t.title); },
+                onClick: function() { enterSection(tile.id, tile.title); },
                 style: {
                   background: visited
-                    ? 'linear-gradient(180deg, #ffffff 0%, ' + hexToRGBA(t.color, 0.04) + ' 100%)'
+                    ? 'linear-gradient(180deg, #ffffff 0%, ' + hexToRGBA(tile.color, 0.04) + ' 100%)'
                     : COLORS.panel,
-                  border: '2px solid ' + (visited ? t.color : COLORS.border),
+                  border: '2px solid ' + (visited ? tile.color : COLORS.border),
                   borderRadius: '14px',
                   padding: '18px',
                   cursor: 'pointer',
@@ -2897,7 +4249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   overflow: 'hidden',
                   minHeight: '140px'
                 },
-                'aria-label': t.title + ': ' + t.desc + (visited ? ' (visited)' : '')
+                'aria-label': visited ? t('stem.llm_literacy.tile_visited_aria', '{title}: {desc} (visited)').replace('{title}', tile.title).replace('{desc}', tile.desc) : (tile.title + ': ' + tile.desc)
               },
                 // Corner glow
                 h('div', {
@@ -2905,26 +4257,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   style: {
                     position: 'absolute', top: '0', right: '0',
                     width: '64px', height: '64px', borderRadius: '0 12px 0 100%', pointerEvents: 'none',
-                    background: 'radial-gradient(circle at 100% 0%, ' + hexToRGBA(t.color, 0.18) + ' 0%, transparent 70%)'
+                    background: 'radial-gradient(circle at 100% 0%, ' + hexToRGBA(tile.color, 0.18) + ' 0%, transparent 70%)'
                   }
                 }),
                 visited && h('div', {
-                  style: { position: 'absolute', top: '10px', right: '12px', fontSize: '13px', color: t.color, fontWeight: 800, background: '#fff', padding: '1px 7px', borderRadius: '999px', boxShadow: '0 1px 3px rgba(0,0,0,.08)' },
+                  style: { position: 'absolute', top: '10px', right: '12px', fontSize: '13px', color: tile.color, fontWeight: 800, background: '#fff', padding: '1px 7px', borderRadius: '999px', boxShadow: '0 1px 3px rgba(0,0,0,.08)' },
                   'aria-hidden': 'true'
                 }, '\u2713'),
                 h('div', {
                   style: {
                     width: '42px', height: '42px',
                     borderRadius: '10px',
-                    background: hexToRGBA(t.color, 0.12),
+                    background: hexToRGBA(tile.color, 0.12),
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '24px',
                     marginBottom: '10px',
                     position: 'relative'
                   }
-                }, t.icon),
-                h('div', { style: { fontWeight: 700, fontSize: '15px', color: t.color, marginBottom: '4px' } }, t.title),
-                h('div', { style: { fontSize: '12px', color: COLORS.subtext, lineHeight: 1.4 } }, t.desc)
+                }, tile.icon),
+                h('div', { style: { fontWeight: 700, fontSize: '15px', color: tile.color, marginBottom: '4px' } }, tile.title),
+                h('div', { style: { fontSize: '12px', color: COLORS.subtext, lineHeight: 1.4 } }, tile.desc)
               );
             })
           ),
@@ -3027,13 +4379,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
         var tempLiveTuple = useState(null);
         var tempLive = tempLiveTuple[0]; var setTempLive = tempLiveTuple[1];
+        var tempModeTuple = useState(null); // 'live' | 'offline' | null
+        var tempMode = tempModeTuple[0]; var setTempMode = tempModeTuple[1];
+        var tempSimCountTuple = useState(0);
+        var tempSimCount = tempSimCountTuple[0]; var setTempSimCount = tempSimCountTuple[1];
         var tempBusyTuple = useState(false);
         var tempBusy = tempBusyTuple[0]; var setTempBusy = tempBusyTuple[1];
 
         var runLiveTemp = useCallback(async function() {
-          if (!hasLiveAI) { addToast('Live AI not available — showing recorded example.', 'info'); return; }
+          if (!hasLiveAI) {
+            var nextCount = tempSimCount + 1;
+            var sim = LLM_LITERACY_ENGINE.simulateTemperatureCompare(tempPromptIdx, nextCount);
+            setTempSimCount(nextCount);
+            setTempLive({ low: sim.low, mid: sim.mid, high: sim.high });
+            setTempMode('offline');
+            upd('tempCompared', true);
+            creditXPOneShot('tempChallengeCredited', 'compare_' + tempPromptIdx, 6, 'Compared temperatures (offline simulation)');
+            announceToSR(t('stem.llm_literacy.sr_temp_sim_ready', 'Offline temperature simulation updated.'));
+            return;
+          }
           setTempBusy(true);
           setTempLive(null);
+          setTempMode(null);
           try {
             var results = {};
             var temps = { low: 0.2, mid: 0.7, high: 1.2 };
@@ -3045,40 +4412,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               results[k] = (out || '').trim() || '(empty response)';
             }
             setTempLive(results);
-            bump('tempCompared', 1);
+            setTempMode('live');
             upd('tempCompared', true);
-            awardXP(10, 'Compared temperatures live');
+            creditXPOneShot('tempChallengeCredited', 'compare_' + tempPromptIdx, 6, 'Compared temperatures live');
           } catch (e) {
             console.warn('[llmLiteracy] Live temperature run failed:', e);
             var info = classifyGeminiError(e);
-            addToast(info.emoji + ' ' + info.friendly + ' Showing recorded examples.', 'warn');
+            addToast(t('stem.llm_literacy.temp_live_fallback_toast', '{emoji} {friendly} Showing recorded examples.').replace('{emoji}', info.emoji).replace('{friendly}', info.friendly), 'warn');
           } finally {
             setTempBusy(false);
           }
-        }, [tempDemo, hasLiveAI]);
+        }, [tempDemo, tempPromptIdx, tempSimCount, hasLiveAI]);
 
         var activeTemp = tempLive || tempDemo.recordings;
-        var showingLive = !!tempLive;
+        var showingLive = tempMode === 'live';
+        var showingOfflineSim = tempMode === 'offline';
 
         // ── Continuous temperature playground ──
         // Lets the student pick ANY temperature in [0, 2] and their own prompt
-        // and see the output. More open-ended than the 3-preset compare card.
+        // and see the output (live Gemini when connected, deterministic softmax
+        // token sampling offline).
         var playTempTuple = useState(0.7);
         var playTemp = playTempTuple[0]; var setPlayTemp = playTempTuple[1];
         var playPromptTuple = useState('In one sentence, describe a rainy afternoon.');
         var playPrompt = playPromptTuple[0]; var setPlayPrompt = playPromptTuple[1];
-        var playOutTuple = useState(null); // array of { temp, text } as student stacks runs
+        var playOutTuple = useState(null); // array of { temp, text, mode, metrics } as student stacks runs
         var playOut = playOutTuple[0]; var setPlayOut = playOutTuple[1];
         var playBusyTuple = useState(false);
         var playBusy = playBusyTuple[0]; var setPlayBusy = playBusyTuple[1];
+        var playAttemptTuple = useState(0);
+        var playAttempt = playAttemptTuple[0]; var setPlayAttempt = playAttemptTuple[1];
+
+        // Predict-before-sample temperature challenge state
+        var tempChIdxTuple = useState(0);
+        var tempChIdx = tempChIdxTuple[0]; var setTempChIdx = tempChIdxTuple[1];
+        var tempChPickTuple = useState(null);
+        var tempChPick = tempChPickTuple[0]; var setTempChPick = tempChPickTuple[1];
 
         var runPlayTemp = useCallback(async function() {
           if (!playPrompt.trim()) return;
-          if (!hasLiveAI) { addToast('Live AI not available \u2014 the playground only works with live calls.', 'info'); return; }
           // Safety pre-check: the playground explicitly invites "type any
           // prompt" \u2014 exactly the surface where a kid in distress could
           // dump real feelings and get a creative-writing response back
-          // instead of a real-help signal. See aiSafetyGate above.
+          // instead of a real-help signal. Runs for BOTH offline and live modes.
           var _gate = aiSafetyGate(playPrompt, 'temperature_playground');
           if (_gate.action === 'block') {
             setPlayOut(function(prev) {
@@ -3094,45 +4470,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             });
             return;
           }
+          if (!hasLiveAI) {
+            var nextAttempt = playAttempt + 1;
+            setPlayAttempt(nextAttempt);
+            var simRes = LLM_LITERACY_ENGINE.simulateTemperaturePlayground(playPrompt, playTemp, nextAttempt);
+            var simText = simRes.text + (_gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : '');
+            setPlayOut(function(prev) {
+              var list = (prev || []).slice();
+              list.unshift({
+                temp: playTemp,
+                text: simText,
+                t: Date.now(),
+                mode: 'offline',
+                metrics: simRes.metrics,
+                sampledTokens: simRes.sampledTokens
+              });
+              if (list.length > 5) list = list.slice(0, 5);
+              return list;
+            });
+            upd('tempCompared', true);
+            creditXPOneShot('tempChallengeCredited', 'playground_run', 6, 'Sampled temperature playground');
+            announceToSR(t('stem.llm_literacy.sr_playground_sim_complete', 'Offline temperature sample generated.'));
+            return;
+          }
           setPlayBusy(true);
           try {
             var out = await callGemini(playPrompt, false, false, playTemp);
             var trimmed = ((out || '').trim() || '(empty response)') + (_gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : '');
             setPlayOut(function(prev) {
               var list = (prev || []).slice();
-              list.unshift({ temp: playTemp, text: trimmed, t: Date.now() });
+              list.unshift({ temp: playTemp, text: trimmed, t: Date.now(), mode: 'live' });
               if (list.length > 5) list = list.slice(0, 5);
               return list;
             });
-            bump('tempCompared', 1);
             upd('tempCompared', true);
+            creditXPOneShot('tempChallengeCredited', 'playground_run', 6, 'Sampled temperature playground');
           } catch (e) {
             console.warn('[llmLiteracy] Temperature playground failed:', e);
             var info = classifyGeminiError(e);
-            addToast(info.emoji + ' ' + info.friendly, 'warn');
+            addToast(t('stem.llm_literacy.gemini_error_toast', '{emoji} {friendly}').replace('{emoji}', info.emoji).replace('{friendly}', info.friendly), 'warn');
           } finally {
             setPlayBusy(false);
           }
-        }, [playPrompt, playTemp, hasLiveAI]);
+        }, [playPrompt, playTemp, playAttempt, hasLiveAI]);
 
         // Map temp [0, 2] to a color along blue -> purple -> pink for visual feel.
-        function tempToColor(t) {
-          var n = Number(t);
-          t = Number.isFinite(n) ? Math.max(0, Math.min(2, n)) : 0;
-          if (t < 1) {
+        function tempToColor(tempVal) {
+          var n = Number(tempVal);
+          var clamped = Number.isFinite(n) ? Math.max(0, Math.min(2, n)) : 0;
+          if (clamped < 1) {
             // blend #2563eb -> #7c3aed
-            var r = Math.round(0x25 + (0x7c - 0x25) * t);
-            var g = Math.round(0x63 + (0x3a - 0x63) * t);
-            var b = Math.round(0xeb + (0xed - 0xeb) * t);
+            var r = Math.round(0x25 + (0x7c - 0x25) * clamped);
+            var g = Math.round(0x63 + (0x3a - 0x63) * clamped);
+            var b = Math.round(0xeb + (0xed - 0xeb) * clamped);
             return 'rgb(' + r + ',' + g + ',' + b + ')';
           }
-          var tt = t - 1;
+          var tt = clamped - 1;
           var r2 = Math.round(0x7c + (0xdb - 0x7c) * tt);
           var g2 = Math.round(0x3a + (0x27 - 0x3a) * tt);
           var b2 = Math.round(0xed + (0x77 - 0xed) * tt);
           return 'rgb(' + r2 + ',' + g2 + ',' + b2 + ')';
         }
         var playColor = tempToColor(playTemp);
+        var playDist = useMemo(function() {
+          return LLM_LITERACY_ENGINE.computePlaygroundDistribution(playPrompt, playTemp);
+        }, [playPrompt, playTemp]);
+        var activeTempChallenge = useMemo(function() {
+          return LLM_LITERACY_ENGINE.getTempChallenge(tempChIdx, 'temp_ch_' + tempChIdx);
+        }, [tempChIdx]);
+        var tempChGrade = tempChPick ? LLM_LITERACY_ENGINE.gradeTempChallenge(activeTempChallenge.id, tempChPick) : null;
 
         // Visual overview: the generation loop. Shows the 5 stages of what
         // an LLM actually does, with an arrow wrapping back to the top to
@@ -3178,7 +4584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             ),
             // Loop-back indicator
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: hexToRGBA('#047857', 0.06), border: '1px dashed ' + hexToRGBA('#047857', 0.35), borderRadius: '8px', marginTop: '4px' } },
-              h('span', { className: ctx.isContrast ? undefined : 'llm-loop-spin', 'aria-hidden': 'true', style: { fontSize: '16px', color: '#047857' } }, '\u21BB'),
+              h('span', { className: (isContrast || prefersReducedMotion) ? undefined : 'llm-loop-spin', 'aria-hidden': 'true', style: { fontSize: '16px', color: '#047857' } }, '\u21BB'),
               h('span', { style: { fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
                 h('strong', { style: { color: '#047857' } }, __alloT('stem.llm_literacy.loops_back', 'Loops back: ')),
                 __alloT('stem.llm_literacy.the_newly_sampled_token_becomes_part_o', 'The newly sampled token becomes part of the input for the next step. One sentence of AI output is hundreds of these loops.')
@@ -3222,11 +4628,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                         e.preventDefault();
                         var el = document.querySelector(s.anchor);
                         if (el && el.scrollIntoView) {
-                          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                          var reduce = prefersReducedMotion;
                           el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
                         }
                       },
-                      'aria-label': 'Step ' + (i + 1) + ': ' + s.title + ' — ' + s.subtitle + '. Jump to section.',
+                      'aria-label': t('stem.llm_literacy.pipeline_step_aria', 'Step {step}: {title} — {subtitle}. Jump to section.').replace('{step}', String(i + 1)).replace('{title}', s.title).replace('{subtitle}', s.subtitle),
                       style: {
                         position: 'relative',
                         display: 'flex', alignItems: 'center', gap: '8px',
@@ -3307,14 +4713,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                     transition: 'all .15s ease'
                   },
-                  title: 'Tokenize a ' + preset.label.toLowerCase() + ' example'
+                  title: t('stem.llm_literacy.tokenize_preset_title', 'Tokenize a {label} example').replace('{label}', preset.label.toLowerCase())
                 }, preset.label);
               })
             ),
             h('div', { style: { marginTop: '10px', padding: '10px', background: '#ffffff', border: '1px dashed ' + COLORS.border, borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '3px', lineHeight: 1.8 } },
               toks.length === 0 && h('span', { style: { color: COLORS.muted, fontSize: '12px' } }, __alloT('stem.llm_literacy.type_something_above', '(type something above)')),
-              toks.map(function(t, i) {
-                var c = tokenColors[t.kind] || tokenColors.word;
+              toks.map(function(tok, i) {
+                var c = tokenColors[tok.kind] || tokenColors.word;
                 return h('span', {
                   key: i,
                   style: {
@@ -3326,12 +4732,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     fontSize: '12px',
                     border: '1px solid ' + c.bg
                   },
-                  title: t.kind
-                }, t.tok);
+                  title: tok.kind
+                }, tok.tok);
               })
             ),
             (function() {
-              var contentToks = toks.filter(function(t) { return t.kind !== 'space'; });
+              var contentToks = toks.filter(function(tok) { return tok.kind !== 'space'; });
               var chars = tokText.length;
               return h('div', { style: { marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
                 h('div', { style: { fontSize: '11px', color: COLORS.muted, display: 'flex', gap: '10px', flexWrap: 'wrap' } },
@@ -3501,7 +4907,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 var on = i === tempPromptIdx;
                 return h('button', {
                   key: i,
-                  onClick: function() { setTempPromptIdx(i); setTempLive(null); },
+                  type: 'button',
+                  onClick: function() { setTempPromptIdx(i); setTempLive(null); setTempMode(null); },
                   style: {
                     background: on ? COLORS.warn : '#e2e8f0',
                     color: on ? '#fff' : COLORS.subtext,
@@ -3664,19 +5071,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px', alignItems: 'center', flexWrap: 'wrap' } },
               h('button', {
+                type: 'button',
                 onClick: runLiveTemp,
-                disabled: tempBusy || !hasLiveAI,
-                className: tempBusy ? 'llm-lit-pulse' : '',
-                style: btn(COLORS.warn, '#fff', tempBusy || !hasLiveAI)
-              }, tempBusy ? '\u23F3 Running live...' : (hasLiveAI ? (showingLive ? '\u26A1 Re-run live' : '\u26A1 Run live with Gemini') : '\uD83D\uDCC0 Live unavailable')),
-              showingLive && h('button', {
-                onClick: function() { setTempLive(null); announceToSR(__alloT('stem.llm_literacy.sr_showing_recorded_examples', 'Showing recorded examples')); },
+                disabled: tempBusy,
+                className: (tempBusy && !prefersReducedMotion) ? 'llm-lit-pulse' : '',
+                style: btn(COLORS.warn, '#fff', tempBusy)
+              }, tempBusy
+                ? t('stem.llm_literacy.temp_running_live', '\u23F3 Running live...')
+                : (hasLiveAI
+                  ? (showingLive ? t('stem.llm_literacy.temp_rerun_live', '\u26A1 Re-run live') : t('stem.llm_literacy.temp_run_live', '\u26A1 Run live with Gemini'))
+                  : (showingOfflineSim ? t('stem.llm_literacy.temp_resample_offline', '\uD83C\uDFB2 Sample again (Offline Simulation)') : t('stem.llm_literacy.temp_run_offline', '\uD83C\uDFB2 Simulate live sampling (Offline)')))),
+              (showingLive || showingOfflineSim) && h('button', {
+                type: 'button',
+                onClick: function() { setTempLive(null); setTempMode(null); announceToSR(__alloT('stem.llm_literacy.sr_showing_recorded_examples', 'Showing recorded examples')); },
                 style: btn('#e2e8f0', COLORS.text, false),
                 title: __alloT('stem.llm_literacy.show_the_recorded_example_outputs_agai', 'Show the recorded example outputs again')
               }, __alloT('stem.llm_literacy.show_recorded', '\u21BA Show recorded')),
-              showingLive && h('span', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 600 } }, __alloT('stem.llm_literacy.live_results_shown_above', '\u2705 Live results shown above')),
-              !showingLive && hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted } }, __alloT('stem.llm_literacy.showing_recorded_examples', 'Showing recorded examples')),
-              !hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted } }, __alloT('stem.llm_literacy.static_mode_recorded_examples_only', 'Static mode — recorded examples only'))
+              showingLive && h('span', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: '#ecfdf5', border: '1px solid #86efac' } }, t('stem.llm_literacy.badge_live_ai_results', '\u2705 Live AI (Gemini) results shown above')),
+              showingOfflineSim && h('span', { style: { fontSize: '11px', color: '#1d4ed8', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: '#eff6ff', border: '1px solid #bfdbfe' } }, t('stem.llm_literacy.badge_offline_sim_results', '\uD83E\uDDEA Offline Simulation — deterministic softmax sample #{count}').replace('{count}', String(tempSimCount))),
+              !showingLive && !showingOfflineSim && h('span', { style: { fontSize: '11px', color: COLORS.muted } }, __alloT('stem.llm_literacy.showing_recorded_examples', 'Showing recorded examples'))
             ),
             h('p', { style: { marginTop: '12px', marginBottom: 0, fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
               h('strong', null, 'Takeaway: '),
@@ -3684,11 +5097,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             )
           ),
 
-          // ── Part D: Continuous temperature playground ──
+          // ── Part D: Continuous temperature playground (Live AI + Offline Softmax Simulator) ──
           h('div', { id: 'llm-lit-s1-playground', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + playColor }) },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
-              h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(playColor, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', transition: 'background .3s ease' } }, '\uD83C\uDF9B\uFE0F'),
-              h('h3', { style: { margin: 0, fontSize: '17px', color: playColor, transition: 'color .3s ease' } }, __alloT('stem.llm_literacy.temperature_playground', 'Temperature playground'))
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: hexToRGBA(playColor, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', transition: 'background .3s ease' } }, '\uD83C\uDF9B\uFE0F'),
+                h('h3', { style: { margin: 0, fontSize: '17px', color: playColor, transition: 'color .3s ease' } }, __alloT('stem.llm_literacy.temperature_playground', 'Temperature playground'))
+              ),
+              h('span', {
+                style: {
+                  fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '999px',
+                  background: hasLiveAI ? '#ecfdf5' : '#eff6ff',
+                  color: hasLiveAI ? COLORS.good : '#1d4ed8',
+                  border: '1px solid ' + (hasLiveAI ? '#86efac' : '#bfdbfe')
+                }
+              }, hasLiveAI ? t('stem.llm_literacy.mode_badge_live', '\u26A1 Live AI (Gemini)') : t('stem.llm_literacy.mode_badge_offline_sim', '\uD83E\uDDEA Offline Simulation'))
             ),
             h('p', { style: { margin: '0 0 12px', fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
               __alloT('stem.llm_literacy.pick_any_temperature_and_any_prompt_ru', 'Pick any temperature and any prompt. Run it live. Then run the same prompt at a different temperature and compare. The last 5 runs stay visible so you can watch the output shift with the dial.')
@@ -3723,19 +5146,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               h('span', null, __alloT('stem.llm_literacy.1_0_balanced', '1.0 \u269C\uFE0F balanced')),
               h('span', null, __alloT('stem.llm_literacy.2_0_chaotic', '2.0 \uD83D\uDD25 chaotic'))
             ),
+            // Live SVG Softmax Probability-Bar Chart (reacts immediately as playTemp moves)
+            (function() {
+              var cands = playDist.candidates || [];
+              var met = playDist.metrics || {};
+              var svgBg = isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc');
+              var txtCol = isContrast ? '#ffff00' : (isDark ? '#e2e8f0' : '#0f172a');
+              var subCol = isContrast ? '#ffffff' : (isDark ? '#94a3b8' : '#475569');
+              var barCol = isContrast ? '#ffff00' : playColor;
+              var top1Pct = Math.round((met.top1Prob || 0) * 100);
+              var entBits = Number(met.entropyBits || 0).toFixed(2);
+              var effChoices = Number(met.effectiveVocab || 1).toFixed(1);
+              return h('div', { className: 'llm-lit-svg-stage', style: { background: svgBg, marginBottom: '12px' } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
+                  h('strong', { style: { fontSize: '12px', color: txtCol } },
+                    t('stem.llm_literacy.live_softmax_chart_title', 'Live next-token probabilities at T = {temp}').replace('{temp}', playTemp.toFixed(2))),
+                  h('span', { style: { fontSize: '11px', fontWeight: 700, color: subCol, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                    t('stem.llm_literacy.live_softmax_metrics', 'Top-1: {top1}% \u00B7 H = {entropy} bits \u00B7 ~{eff} choices ({regime})')
+                      .replace('{top1}', String(top1Pct))
+                      .replace('{entropy}', entBits)
+                      .replace('{eff}', effChoices)
+                      .replace('{regime}', met.regime || 'balanced'))
+                ),
+                h('div', { style: { fontSize: '11px', color: subCol, marginBottom: '6px', fontFamily: 'monospace' } },
+                  t('stem.llm_literacy.live_softmax_prefix', 'Next token after: "{prefix} ___"').replace('{prefix}', playDist.prefix || '')),
+                h('div', { style: { overflowX: 'auto' } },
+                  h('svg', {
+                    viewBox: '0 0 600 132', width: '100%', role: 'img',
+                    'aria-label': t('stem.llm_literacy.playground_softmax_svg_aria', 'Live softmax probability bar chart at temperature {temp}. Top token probability is {top1} percent and entropy is {entropy} bits.')
+                      .replace('{temp}', playTemp.toFixed(2))
+                      .replace('{top1}', String(top1Pct))
+                      .replace('{entropy}', entBits),
+                    style: { display: 'block', width: '100%', height: 'auto', minWidth: '320px' }
+                  },
+                    h('rect', { x: 0, y: 0, width: 600, height: 132, rx: 8, fill: svgBg, stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#e2e8f0'), strokeWidth: 1 }),
+                    [25, 50, 75, 100].map(function(refP) {
+                      var gy = 102 - (refP / 100) * 78;
+                      return h('g', { key: 'pg-ref-' + refP },
+                        h('line', { x1: 36, y1: gy, x2: 584, y2: gy, stroke: subCol, strokeWidth: 0.7, strokeDasharray: '3 4', opacity: isContrast ? 0.5 : 0.25 }),
+                        h('text', { x: 31, y: gy + 3, textAnchor: 'end', fill: subCol, fontSize: 9 }, refP + '%')
+                      );
+                    }),
+                    h('line', { x1: 36, y1: 102, x2: 584, y2: 102, stroke: subCol, strokeWidth: 1.2, opacity: 0.7 }),
+                    cands.map(function(item, ci) {
+                      var slotW = 540 / Math.max(1, cands.length);
+                      var cx = 40 + ci * slotW + slotW / 2;
+                      var bw = Math.min(58, slotW * 0.62);
+                      var bh = Math.max(2, item.prob * 78);
+                      var by = 102 - bh;
+                      var tokLbl = String(item.tok || '').trim();
+                      if (tokLbl.length > 10) tokLbl = tokLbl.slice(0, 9) + '\u2026';
+                      return h('g', { key: 'pg-bar-' + ci },
+                        h('rect', {
+                          x: cx - bw / 2, y: by, width: bw, height: bh, rx: 4,
+                          fill: barCol,
+                          opacity: ci === 0 ? 1 : Math.max(0.38, 0.88 - ci * 0.1),
+                          stroke: isContrast ? '#ffffff' : 'none', strokeWidth: isContrast ? 1 : 0
+                        }),
+                        h('text', { x: cx, y: Math.max(14, by - 5), textAnchor: 'middle', fill: txtCol, fontSize: 10.5, fontWeight: 800 }, item.pct.toFixed(1) + '%'),
+                        h('text', { x: cx, y: 120, textAnchor: 'middle', fill: subCol, fontSize: 10, fontFamily: 'ui-monospace, Menlo, monospace' }, tokLbl)
+                      );
+                    })
+                  )
+                )
+              );
+            })(),
             h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' } },
               h('button', {
+                type: 'button',
                 onClick: runPlayTemp,
-                disabled: playBusy || !playPrompt.trim() || !hasLiveAI,
-                style: btn(playColor, '#fff', playBusy || !playPrompt.trim() || !hasLiveAI)
-              }, playBusy ? '\u23F3 Running...' : '\u25B6 Run at ' + playTemp.toFixed(2)),
+                disabled: playBusy || !playPrompt.trim(),
+                style: btn(playColor, '#fff', playBusy || !playPrompt.trim())
+              }, playBusy
+                ? t('stem.llm_literacy.playground_running', '\u23F3 Running...')
+                : (hasLiveAI
+                  ? t('stem.llm_literacy.playground_run_live_at', '\u25B6 Run live at {temp}').replace('{temp}', playTemp.toFixed(2))
+                  : t('stem.llm_literacy.playground_simulate_at', '\uD83C\uDFB2 Sample offline at {temp}').replace('{temp}', playTemp.toFixed(2)))),
               playOut && playOut.length > 0 && h('button', {
+                type: 'button',
                 onClick: function() { setPlayOut(null); },
                 style: btn('#e2e8f0', COLORS.text, false)
               }, __alloT('stem.llm_literacy.clear_runs', '\uD83D\uDDD1\uFE0F Clear runs')),
-              !hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, __alloT('stem.llm_literacy.live_ai_required_for_the_playground_th', 'Live AI required for the playground \u2014 the 3-preset compare above uses recorded examples.'))
+              !hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, t('stem.llm_literacy.playground_offline_ready_note', 'Offline Simulation active — samples real next-token softmax probabilities locally.'))
             ),
-            playOut && playOut.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+            playOut && playOut.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' } },
               playOut.map(function(run, i) {
                 // Safety entry: render as warm amber alert with embedded crisis-resources block.
                 if (run._safety) {
@@ -3747,20 +5241,132 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   );
                 }
                 var color = tempToColor(run.temp);
-                return h('div', { key: run.t, className: i === 0 ? 'llm-lit-fade-in' : '', style: {
+                var isSimRun = run.mode === 'offline';
+                return h('div', { key: run.t + '-' + i, className: i === 0 ? 'llm-lit-fade-in' : '', style: {
                   background: '#fff',
                   border: '1px solid ' + hexToRGBA(color, 0.3),
                   borderLeft: '4px solid ' + color,
                   borderRadius: '8px',
                   padding: '10px 12px'
                 } },
-                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '11px' } },
-                    h('span', { style: { fontWeight: 800, color: color, fontFamily: 'monospace' } }, 'temp ' + run.temp.toFixed(2)),
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', fontSize: '11px', flexWrap: 'wrap', gap: '6px' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                      h('span', { style: { fontWeight: 800, color: color, fontFamily: 'monospace' } }, 'temp ' + run.temp.toFixed(2)),
+                      h('span', { style: { fontSize: '10px', fontWeight: 700, padding: '1px 6px', borderRadius: '999px', background: isSimRun ? '#eff6ff' : '#ecfdf5', color: isSimRun ? '#1d4ed8' : COLORS.good } },
+                        isSimRun ? t('stem.llm_literacy.tag_offline_sim', 'Offline Simulation') : t('stem.llm_literacy.tag_live_ai', 'Live AI'))
+                    ),
                     h('span', { style: { color: COLORS.muted } }, i === 0 ? 'Latest' : (playOut.length - i) + ' runs ago')
                   ),
-                  h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, flaggedText(run.text))
+                  h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap' } }, flaggedText(run.text)),
+                  isSimRun && run.metrics && h('div', { style: { marginTop: '6px', fontSize: '11px', color: COLORS.muted, fontFamily: 'monospace' } },
+                    t('stem.llm_literacy.run_metrics_line', 'Top-1: {top1}% · Entropy H = {entropy} bits · Regime: {regime}')
+                      .replace('{top1}', String(Math.round((run.metrics.top1Prob || 0) * 100)))
+                      .replace('{entropy}', Number(run.metrics.entropyBits || 0).toFixed(2))
+                      .replace('{regime}', run.metrics.regime || 'balanced'))
                 );
               })
+            ),
+            // ── Predict-Before-Sample Temperature Challenge ──
+            h('div', {
+              style: {
+                marginTop: '14px',
+                padding: '12px 14px',
+                background: isContrast ? '#000000' : '#f8fafc',
+                border: '1.5px solid ' + (isContrast ? '#ffff00' : '#cbd5e1'),
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '12px', fontWeight: 800, color: COLORS.accent, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                  t('stem.llm_literacy.temp_predict_heading', '\uD83C\uDFAF Predict Before You Sample ({idx}/{total})')
+                    .replace('{idx}', String(tempChIdx + 1))
+                    .replace('{total}', String(LLM_LITERACY_ENGINE.TEMP_CHALLENGES.length))),
+                h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' } },
+                  readAloudBtn(
+                    activeTempChallenge.prompt + '. ' + activeTempChallenge.question + (tempChGrade ? ' ' + (tempChGrade.correct ? tempChGrade.explanation : tempChGrade.whyNot) : ''),
+                    t('stem.llm_literacy.temp_challenge_read_aria', 'Read temperature prediction challenge aloud')
+                  ),
+                  LLM_LITERACY_ENGINE.TEMP_CHALLENGES.map(function(chItem, ci) {
+                    var isCur = ci === tempChIdx;
+                    var isCred = !!(safeObj(d.tempChallengeCredited)[chItem.id]);
+                    return h('button', {
+                      key: chItem.id,
+                      type: 'button',
+                      onClick: function() { setTempChIdx(ci); setTempChPick(null); },
+                      'aria-label': t('stem.llm_literacy.temp_challenge_num_aria', 'Temperature challenge {num}').replace('{num}', String(ci + 1)),
+                      style: {
+                        minWidth: '28px', minHeight: '28px', borderRadius: '999px', border: '1px solid ' + (isCur ? COLORS.accent : COLORS.border),
+                        background: isCur ? COLORS.accent : (isCred ? '#d1fae5' : '#fff'),
+                        color: isCur ? '#fff' : (isCred ? COLORS.good : COLORS.text),
+                        fontSize: '11px', fontWeight: 700, cursor: 'pointer'
+                      }
+                    }, isCred ? '\u2713' : String(ci + 1));
+                  })
+                )
+              ),
+              h('div', { style: { fontSize: '12px', fontFamily: 'monospace', color: COLORS.subtext, marginBottom: '6px' } }, activeTempChallenge.prompt),
+              h('div', { style: { fontSize: '13.5px', fontWeight: 700, color: COLORS.text, marginBottom: '8px', lineHeight: 1.45 } }, activeTempChallenge.question),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px' } },
+                activeTempChallenge.options.map(function(opt) {
+                  var picked = tempChPick === opt.id;
+                  var revealNow = !!tempChGrade;
+                  var bg = '#fff', bd = COLORS.border, col = COLORS.text;
+                  if (revealNow && picked) {
+                    if (opt.correct) { bg = '#f0fdf4'; bd = '#86efac'; col = COLORS.good; }
+                    else { bg = '#fef2f2'; bd = '#fecaca'; col = COLORS.bad; }
+                  } else if (revealNow && tempChGrade.correct && opt.correct) {
+                    bg = '#f0fdf4'; bd = '#86efac'; col = COLORS.good;
+                  }
+                  return h('button', {
+                    key: opt.id,
+                    type: 'button',
+                    onClick: function() {
+                      setTempChPick(opt.id);
+                      var graded = LLM_LITERACY_ENGINE.gradeTempChallenge(activeTempChallenge.id, opt.id);
+                      if (graded.correct) {
+                        creditXPOneShot('tempChallengeCredited', activeTempChallenge.id, 8, 'Temperature prediction: ' + activeTempChallenge.id);
+                        announceToSR(t('stem.llm_literacy.sr_temp_predict_correct', 'Correct prediction. ') + graded.explanation);
+                      } else {
+                        announceToSR(t('stem.llm_literacy.sr_temp_predict_retry', 'Not quite. ') + (graded.whyNot || ''));
+                      }
+                    },
+                    style: {
+                      background: bg, border: '1.5px solid ' + bd, borderRadius: '8px',
+                      padding: '8px 10px', textAlign: 'left', fontSize: '12.5px', color: col,
+                      fontWeight: picked ? 700 : 500, cursor: 'pointer', lineHeight: 1.4
+                    }
+                  }, opt.label);
+                })
+              ),
+              tempChGrade && h('div', {
+                className: 'llm-lit-fade-in',
+                style: {
+                  marginTop: '10px', padding: '10px 12px', borderRadius: '8px',
+                  background: tempChGrade.correct ? '#f0fdf4' : '#fef2f2',
+                  border: '1px solid ' + (tempChGrade.correct ? '#bbf7d0' : '#fecaca'),
+                  fontSize: '12.5px', lineHeight: 1.5, color: COLORS.text
+                }
+              },
+                tempChGrade.correct
+                  ? h('div', null,
+                      h('strong', { style: { color: COLORS.good } }, t('stem.llm_literacy.predict_correct_prefix', '\u2713 Correct prediction \u2014 ')),
+                      tempChGrade.explanation,
+                      h('div', { style: { marginTop: '6px', fontSize: '11.5px', fontFamily: 'monospace', color: COLORS.subtext } },
+                        t('stem.llm_literacy.temp_reveal_readout', 'Unlocked readout: At T={tLow}, Top-1 = {pLow}% (H = {hLow} bits) \u2192 At T={tHigh}, Top-1 = {pHigh}% (H = {hHigh} bits).')
+                          .replace('{tLow}', activeTempChallenge.compareTemps[0].toFixed(1))
+                          .replace('{pLow}', String(Math.round(tempChGrade.lowMetrics.top1Prob * 100)))
+                          .replace('{hLow}', tempChGrade.lowMetrics.entropyBits.toFixed(2))
+                          .replace('{tHigh}', activeTempChallenge.compareTemps[1].toFixed(1))
+                          .replace('{pHigh}', String(Math.round(tempChGrade.highMetrics.top1Prob * 100)))
+                          .replace('{hHigh}', tempChGrade.highMetrics.entropyBits.toFixed(2)))
+                    )
+                  : h('div', null,
+                      h('strong', { style: { color: COLORS.bad } }, t('stem.llm_literacy.predict_why_not_prefix', '\u2717 Why not: ')),
+                      tempChGrade.whyNot,
+                      h('div', { style: { marginTop: '4px', fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } },
+                        t('stem.llm_literacy.predict_try_another', 'Try another prediction to unlock the exact softmax readout.'))
+                    )
+              )
             )
           ),
 
@@ -3785,38 +5391,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var liveAsk = liveAskTuple[0]; var setLiveAsk = liveAskTuple[1];
         var askBusyTuple = useState(false);
         var askBusy = askBusyTuple[0]; var setAskBusy = askBusyTuple[1];
+        var simTrialTuple = useState({});
+        var simTrial = simTrialTuple[0]; var setSimTrial = simTrialTuple[1];
+        // Predict-before-reveal triage pick (resets when switching case).
+        var triagePickTuple = useState(null);
+        var triagePick = triagePickTuple[0]; var setTriagePick = triagePickTuple[1];
         // Paste-to-analyze: student brings any AI output, sees red flags
         // highlighted + counted. Works in air-gap (no LLM call).
         var pasteTuple = useState('');
         var pasteText = pasteTuple[0]; var setPasteText = pasteTuple[1];
 
-        function next() { setIdx(function(x) { return (x + 1) % HALLUCINATION_GALLERY.length; }); setRevealed(false); }
-        function prev() { setIdx(function(x) { return (x - 1 + HALLUCINATION_GALLERY.length) % HALLUCINATION_GALLERY.length; }); setRevealed(false); }
+        var activeTriage = useMemo(function() {
+          return LLM_LITERACY_ENGINE.getFailureTriage(idx, 'triage_' + idx);
+        }, [idx]);
+        var triageGrade = triagePick ? LLM_LITERACY_ENGINE.gradeFailureTriage(idx, triagePick) : null;
+
+        function next() { setIdx(function(x) { return (x + 1) % HALLUCINATION_GALLERY.length; }); setRevealed(false); setTriagePick(null); }
+        function prev() { setIdx(function(x) { return (x - 1 + HALLUCINATION_GALLERY.length) % HALLUCINATION_GALLERY.length; }); setRevealed(false); setTriagePick(null); }
 
         function askLive() {
-          if (!hasLiveAI) return;
+          if (!hasLiveAI) {
+            var count = Number(simTrial[g.category] || 0);
+            var sim = LLM_LITERACY_ENGINE.simulateFailureModeOffline(idx, count);
+            setSimTrial(function(prev) {
+              var n = Object.assign({}, prev);
+              n[g.category] = count + 1;
+              return n;
+            });
+            setLiveAsk(function(prev) {
+              var n = Object.assign({}, prev);
+              n[g.category] = { text: sim.text, mode: 'offline', trialNumber: sim.trialNumber };
+              return n;
+            });
+            announceToSR(t('stem.llm_literacy.sr_failure_sim_ready', 'Offline failure-mode trial generated.'));
+            return;
+          }
           setAskBusy(true);
           // jsonMode=false \u2014 we want natural language.
           callGemini(g.question, false, false, 0.7).then(function(out) {
             var trimmed = (out || '').trim() || '(empty response)';
             setLiveAsk(function(prev) {
-              var next = Object.assign({}, prev);
-              next[g.category] = trimmed;
-              return next;
+              var n = Object.assign({}, prev);
+              n[g.category] = { text: trimmed, mode: 'live' };
+              return n;
             });
           }).catch(function(err) {
             console.warn('[llmLiteracy] Live ask failed:', err);
             var info = classifyGeminiError(err);
             setLiveAsk(function(prev) {
-              var next = Object.assign({}, prev);
-              next[g.category] = '[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching;
-              return next;
+              var n = Object.assign({}, prev);
+              n[g.category] = { text: '[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching, mode: 'live' };
+              return n;
             });
-            addToast(info.emoji + ' ' + info.friendly, 'warn');
+            addToast(t('stem.llm_literacy.gemini_error_toast', '{emoji} {friendly}').replace('{emoji}', info.emoji).replace('{friendly}', info.friendly), 'warn');
           }).then(function() {
             setAskBusy(false);
           });
         }
+        var currentAskEntry = liveAsk[g.category];
+        var currentAskText = typeof currentAskEntry === 'string' ? currentAskEntry : (currentAskEntry && currentAskEntry.text ? currentAskEntry.text : '');
+        var currentAskIsOffline = !!(currentAskEntry && currentAskEntry.mode === 'offline');
 
         return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto' } },
           topBar('2. Why LLMs Get Things Wrong'),
@@ -3986,7 +5620,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               var on = i === idx;
               return h('button', {
                 key: i,
-                onClick: function() { setIdx(i); setRevealed(false); },
+                type: 'button',
+                onClick: function() { setIdx(i); setRevealed(false); setTriagePick(null); },
                 style: {
                   background: on ? COLORS.bad : '#fff',
                   color: on ? '#fff' : COLORS.subtext,
@@ -4002,18 +5637,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             })
           ),
           h('div', { className: 'llm-lit-fade-in', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.bad }) },
-            // Category header with icon
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
-              h('div', { style: {
-                width: '40px', height: '40px', borderRadius: '10px',
-                background: hexToRGBA(COLORS.bad, 0.12),
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '22px'
-              } }, g.icon),
-              h('div', null,
-                h('div', { style: { fontSize: '11px', color: COLORS.bad, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } }, g.category),
-                h('div', { style: { fontSize: '13px', color: COLORS.muted } },
-                  h('strong', null, __alloT('stem.llm_literacy.you_asked', 'You asked: ')), g.question)
+            // Category header with icon + Read Aloud
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: '200px' } },
+                h('div', { style: {
+                  width: '40px', height: '40px', borderRadius: '10px',
+                  background: hexToRGBA(COLORS.bad, 0.12),
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '22px', flexShrink: 0
+                } }, g.icon),
+                h('div', null,
+                  h('div', { style: { fontSize: '11px', color: COLORS.bad, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } }, g.category),
+                  h('div', { style: { fontSize: '13px', color: COLORS.muted } },
+                    h('strong', null, __alloT('stem.llm_literacy.you_asked', 'You asked: ')), g.question)
+                )
+              ),
+              readAloudBtn(
+                g.category + '. You asked: ' + g.question + '. AI says: ' + g.aiAnswer + (revealed ? '. Why it fails: ' + g.whyItFails + '. What you can do: ' + g.studentAction : ''),
+                t('stem.llm_literacy.failure_case_read_aria', 'Read failure-mode case aloud')
               )
             ),
             // AI-answer "speech bubble" card with a confidence bar
@@ -4041,32 +5682,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               g.aiAnswer
             ),
-            // Live try-it-yourself: ask Gemini the same question NOW.
-            // This lets students see whether the failure still happens, or
-            // whether the model got better — either answer teaches something.
-            hasLiveAI && h('div', { style: { marginBottom: '10px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+            // Live / Offline try-it-yourself test: always unlocked!
+            h('div', { style: { marginBottom: '10px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
               h('button', {
+                type: 'button',
                 onClick: askLive,
                 disabled: askBusy,
                 style: btn(COLORS.accent2, '#fff', askBusy),
-                title: __alloT('stem.llm_literacy.send_this_exact_question_to_gemini_rig', 'Send this exact question to Gemini right now and see what comes back')
-              }, askBusy ? '\u23F3 Asking Gemini...' : (liveAsk[g.category] ? '\u21BA Ask again' : '\u2696\uFE0F Ask Gemini this yourself')),
-              liveAsk[g.category] && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, __alloT('stem.llm_literacy.compare_the_live_answer_to_the_canned_', 'Compare the live answer to the canned one above.'))
+                title: hasLiveAI
+                  ? __alloT('stem.llm_literacy.send_this_exact_question_to_gemini_rig', 'Send this exact question to Gemini right now and see what comes back')
+                  : t('stem.llm_literacy.failure_sim_btn_title', 'Run a deterministic offline trial response for this failure mode')
+              }, askBusy
+                ? t('stem.llm_literacy.asking_gemini', '\u23F3 Asking Gemini...')
+                : (hasLiveAI
+                  ? (currentAskText ? t('stem.llm_literacy.ask_again_live', '\u21BA Ask again') : t('stem.llm_literacy.ask_gemini_yourself', '\u2696\uFE0F Ask Gemini this yourself'))
+                  : (currentAskText ? t('stem.llm_literacy.failure_sim_next_trial', '\u21BA Run another offline trial') : t('stem.llm_literacy.failure_sim_try', '\uD83E\uDDEA Simulate test run (Offline)')))),
+              currentAskText && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } },
+                currentAskIsOffline
+                  ? t('stem.llm_literacy.compare_offline_trial_note', 'Offline Simulation — compare this trial to the canned example above.')
+                  : __alloT('stem.llm_literacy.compare_the_live_answer_to_the_canned_', 'Compare the live answer to the canned one above.'))
             ),
-            liveAsk[g.category] && h('div', { className: 'llm-lit-fade-in', style: {
+            currentAskText && h('div', { className: 'llm-lit-fade-in', style: {
               background: '#eff6ff', borderTop: '1px solid #bfdbfe', borderRight: '1px solid #bfdbfe', borderBottom: '1px solid #bfdbfe', borderLeft: '4px solid ' + COLORS.accent2,
               borderRadius: '10px', padding: '12px 14px', marginBottom: '10px',
               maxHeight: '260px', overflowY: 'auto'
             } },
-              h('div', { style: { fontSize: '11px', color: COLORS.accent2, fontWeight: 800, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '.05em' } },
-                __alloT('stem.llm_literacy.live_gemini_response', '\uD83E\uDD16 Live Gemini response')),
-              h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, flaggedText(liveAsk[g.category]))
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' } },
+                h('div', { style: { fontSize: '11px', color: COLORS.accent2, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                  currentAskIsOffline
+                    ? t('stem.llm_literacy.offline_sim_trial_heading', '\uD83E\uDDEA Offline Simulation (Trial #{num})').replace('{num}', String((currentAskEntry && currentAskEntry.trialNumber) || 1))
+                    : __alloT('stem.llm_literacy.live_gemini_response', '\uD83E\uDD16 Live Gemini response')),
+                readAloudBtn(currentAskText, t('stem.llm_literacy.read_trial_response_aria', 'Read trial response aloud'))
+              ),
+              h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, flaggedText(currentAskText))
+            ),
+            // Predict-Before-Reveal Failure-Mode Triage
+            !revealed && h('div', {
+              style: {
+                marginBottom: '10px', padding: '10px 12px',
+                background: isContrast ? '#000000' : '#f8fafc',
+                border: '1px solid ' + (isContrast ? '#ffff00' : '#cbd5e1'),
+                borderRadius: '10px'
+              }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.accent, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                  safeObj(d.failureTriageCredited)[String(idx)]
+                    ? t('stem.llm_literacy.triage_heading_done', '\u2713 Predict the failure mode (diagnosed)')
+                    : t('stem.llm_literacy.triage_heading', '\uD83C\uDFAF Predict the failure mode first')),
+                readAloudBtn(activeTriage.question, t('stem.llm_literacy.triage_read_aria', 'Read failure-mode triage question aloud'))
+              ),
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: COLORS.text, marginBottom: '8px', lineHeight: 1.45 } }, activeTriage.question),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '6px' } },
+                activeTriage.options.map(function(opt) {
+                  var picked = triagePick === opt.id;
+                  var bg = '#fff', bd = COLORS.border, col = COLORS.text;
+                  if (picked && triageGrade) {
+                    if (opt.correct) { bg = '#f0fdf4'; bd = '#86efac'; col = COLORS.good; }
+                    else { bg = '#fef2f2'; bd = '#fecaca'; col = COLORS.bad; }
+                  }
+                  return h('button', {
+                    key: opt.id,
+                    type: 'button',
+                    onClick: function() {
+                      setTriagePick(opt.id);
+                      var res = LLM_LITERACY_ENGINE.gradeFailureTriage(idx, opt.id);
+                      if (res.correct) {
+                        setRevealed(true);
+                        creditXPOneShot('failureTriageCredited', String(idx), 6, 'Failure-mode triage: ' + g.category);
+                        announceToSR(t('stem.llm_literacy.sr_triage_correct', 'Correct diagnosis. ') + res.explanation);
+                      } else {
+                        announceToSR(t('stem.llm_literacy.sr_triage_retry', 'Not quite. ') + (res.whyNot || ''));
+                      }
+                    },
+                    style: {
+                      background: bg, border: '1.5px solid ' + bd, borderRadius: '8px',
+                      padding: '8px 10px', textAlign: 'left', fontSize: '12px', color: col,
+                      fontWeight: picked ? 700 : 500, cursor: 'pointer', lineHeight: 1.4
+                    }
+                  }, opt.label);
+                })
+              ),
+              triageGrade && !triageGrade.correct && h('div', {
+                className: 'llm-lit-fade-in',
+                style: { marginTop: '8px', padding: '8px 10px', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', fontSize: '12px', color: COLORS.text, lineHeight: 1.45 }
+              },
+                h('strong', { style: { color: COLORS.bad } }, t('stem.llm_literacy.predict_why_not_prefix', '\u2717 Why not: ')),
+                triageGrade.whyNot
+              )
             ),
             !revealed && h('button', {
+              type: 'button',
               onClick: function() { setRevealed(true); },
               style: btn(COLORS.bad, '#fff', false)
             }, __alloT('stem.llm_literacy.reveal_what_went_wrong', 'Reveal: what went wrong')),
             revealed && h('div', { className: 'llm-lit-fade-in', style: { background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '12px 14px' } },
+              triageGrade && triageGrade.correct && h('div', { style: { marginBottom: '10px', padding: '8px 10px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', fontSize: '12px', color: COLORS.text } },
+                h('strong', { style: { color: COLORS.good } }, t('stem.llm_literacy.triage_correct_banner', '\u2713 Strong triage! ')),
+                triageGrade.explanation
+              ),
               h('div', { style: { fontSize: '12px', fontWeight: 800, color: COLORS.bad, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' } },
                 __alloT('stem.llm_literacy.why_it_fails', '\u26A0\uFE0F Why it fails')),
               h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, marginBottom: '12px' } }, g.whyItFails),
@@ -4305,8 +6019,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var abResult = abResultTuple[0]; var setAbResult = abResultTuple[1];
 
         function runAB() {
-          if (!hasLiveAI || abBusy) return; // guard: ignore re-clicks while in flight
+          if (abBusy) return; // guard: ignore re-clicks while in flight
           var lockedPairIdx = pairIdx; // capture in case user switches tabs mid-flight
+          var evalDiff = LLM_LITERACY_ENGINE.compareWeakVsStrongOffline(lockedPairIdx);
+          if (!hasLiveAI) {
+            setAbResult(function(prev) {
+              var next = Object.assign({}, prev);
+              next[lockedPairIdx] = {
+                weak: evalDiff.weakOutput,
+                strong: evalDiff.strongOutput,
+                weakEval: evalDiff.weakEval,
+                strongEval: evalDiff.strongEval,
+                scoreDelta: evalDiff.scoreDelta,
+                gainedDimensions: evalDiff.gainedDimensions,
+                summary: evalDiff.summary,
+                mode: 'offline'
+              };
+              return next;
+            });
+            bump('promptIterations', 1);
+            creditXPOneShot('promptCraftCredited', 'ab_' + lockedPairIdx, 6, 'Compared weak vs strong prompts (offline)');
+            announceToSR(t('stem.llm_literacy.sr_ab_sim_ready', 'Offline A/B prompt comparison ready.'));
+            return;
+          }
           setAbBusy(true);
           // Fire both calls in parallel so the student sees true side-by-side timing.
           // jsonMode=false for both — we want natural language, temp 0.7 balanced.
@@ -4316,10 +6051,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ]).then(function(results) {
             setAbResult(function(prev) {
               var next = Object.assign({}, prev);
-              next[lockedPairIdx] = { weak: results[0], strong: results[1] };
+              next[lockedPairIdx] = {
+                weak: results[0],
+                strong: results[1],
+                weakEval: evalDiff.weakEval,
+                strongEval: evalDiff.strongEval,
+                scoreDelta: evalDiff.scoreDelta,
+                gainedDimensions: evalDiff.gainedDimensions,
+                summary: evalDiff.summary,
+                mode: 'live'
+              };
               return next;
             });
             bump('promptIterations', 1);
+            creditXPOneShot('promptCraftCredited', 'ab_' + lockedPairIdx, 6, 'Compared weak vs strong prompts live');
           }).then(function() {
             setAbBusy(false);
           });
@@ -4331,21 +6076,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var cookbookOpen = cookbookTuple[0]; var setCookbookOpen = cookbookTuple[1];
         // Recipe favorites \u2014 keyed by recipe id, persisted in toolData.
         function recipeIsFavorite(id) {
-          var favs = d.favoriteRecipes || {};
+          var favs = safeObj(d.favoriteRecipes);
           return !!favs[id];
         }
         function toggleFavoriteRecipe(id) {
           if (!ctx.setToolData) return;
           ctx.setToolData(function(prev) {
-            var existing = (prev && prev.llmLiteracy) || {};
-            var favs = Object.assign({}, existing.favoriteRecipes || {});
+            var base = safeObj(prev);
+            var existing = safeObj(base.llmLiteracy);
+            var favs = Object.assign({}, safeObj(existing.favoriteRecipes));
             if (favs[id]) delete favs[id]; else favs[id] = true;
-            return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { favoriteRecipes: favs }) });
+            return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { favoriteRecipes: favs }) });
           });
         }
         // Sort favorites to the top without mutating the source array.
         function orderedRecipes() {
-          var favs = d.favoriteRecipes || {};
+          var favs = safeObj(d.favoriteRecipes);
           var list = PROMPT_RECIPES.slice();
           list.sort(function(a, b) {
             var fa = favs[a.id] ? 0 : 1;
@@ -4407,11 +6153,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           });
         }
 
-        // Live iteration workshop
+        // Live / Offline iteration workshop
         var userPromptTuple = useState('');
         var userPrompt = userPromptTuple[0]; var setUserPrompt = userPromptTuple[1];
         var liveOutputTuple = useState('');
         var liveOutput = liveOutputTuple[0]; var setLiveOutput = liveOutputTuple[1];
+        var liveOutputModeTuple = useState(null); // 'live' | 'offline' | 'safety' | null
+        var liveOutputMode = liveOutputModeTuple[0]; var setLiveOutputMode = liveOutputModeTuple[1];
         var liveBusyTuple = useState(false);
         var liveBusy = liveBusyTuple[0]; var setLiveBusy = liveBusyTuple[1];
         var critiqueTuple = useState(null);
@@ -4419,27 +6167,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
         var runLive = useCallback(async function() {
           if (!userPrompt.trim()) return;
-          if (!hasLiveAI) { addToast('Live AI not available. Try writing the prompt out — the analysis still helps.', 'info'); return; }
-          // The student's prompt goes to the AI verbatim, so it is gated like
-          // the temperature playground (aiSafetyGate, added 2026-11-20).
+          // The student's prompt goes to the AI or offline simulator verbatim, so
+          // it is always gated first (aiSafetyGate, added 2026-11-20).
           var gate = aiSafetyGate(userPrompt, 'prompt_craft_live');
-          if (gate.action === 'block') { setLiveOutput(AI_SAFETY_PAUSE_TEXT); return; }
+          if (gate.action === 'block') { setLiveOutput(AI_SAFETY_PAUSE_TEXT); setLiveOutputMode('safety'); return; }
+          var craftEval = LLM_LITERACY_ENGINE.evaluatePromptCraft(userPrompt);
+          setCritique(craftEval);
+          if (!hasLiveAI) {
+            var simOut = craftEval.simulatedResponse + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : '');
+            setLiveOutput(simOut);
+            setLiveOutputMode('offline');
+            bump('promptIterations', 1);
+            creditXPOneShot('promptCraftCredited', 'sandbox_run', 8, 'Tested prompt in offline sandbox');
+            if (craftEval.passedCount >= 4) {
+              creditXPOneShot('promptCraftCredited', 'strong_prompt', 12, 'Crafted a strong 4+/5 prompt');
+            }
+            journalAdd(userPrompt, simOut);
+            announceToSR(t('stem.llm_literacy.sr_prompt_sim_ready', 'Offline prompt simulation and rubric score ready.'));
+            return;
+          }
           setLiveBusy(true);
           setLiveOutput('');
+          setLiveOutputMode(null);
           try {
             // jsonMode=false — we want natural language.
             var out = await callGemini(userPrompt, false, false, 0.7);
             var trimmed = (out || '').trim() || '(empty response)';
             setLiveOutput(trimmed + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : ''));
+            setLiveOutputMode('live');
             bump('promptIterations', 1);
-            awardXP(5, 'Iterated a prompt');
+            creditXPOneShot('promptCraftCredited', 'sandbox_run', 8, 'Iterated a prompt live');
+            if (craftEval.passedCount >= 4) {
+              creditXPOneShot('promptCraftCredited', 'strong_prompt', 12, 'Crafted a strong 4+/5 prompt');
+            }
             // Autosave the attempt to the journal (deduped by exact-prompt match).
             journalAdd(userPrompt, trimmed);
           } catch (e) {
             console.warn('[llmLiteracy] Prompt live run failed:', e);
             var info = classifyGeminiError(e);
-            setLiveOutput('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching);
-            addToast(info.emoji + ' ' + info.friendly, 'warn');
+            setLiveOutput('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching + '\n\n' + craftEval.simulatedResponse);
+            setLiveOutputMode('offline');
+            addToast(t('stem.llm_literacy.gemini_error_toast', '{emoji} {friendly}').replace('{emoji}', info.emoji).replace('{friendly}', info.friendly), 'warn');
           } finally {
             setLiveBusy(false);
           }
@@ -4470,37 +6238,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         function journalToggleStar(idx) {
           if (!ctx.setToolData) return;
           ctx.setToolData(function(prev) {
-            var existing = (prev && prev.llmLiteracy) || {};
-            var list = (existing.journal || []).slice();
+            var base = safeObj(prev);
+            var existing = safeObj(base.llmLiteracy);
+            var list = (Array.isArray(existing.journal) ? existing.journal : []).slice();
             if (!list[idx]) return prev;
             list[idx] = Object.assign({}, list[idx], { s: !list[idx].s });
-            return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { journal: list }) });
+            return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { journal: list }) });
           });
         }
         function journalDelete(idx) {
           if (!ctx.setToolData) return;
           ctx.setToolData(function(prev) {
-            var existing = (prev && prev.llmLiteracy) || {};
-            var list = (existing.journal || []).slice();
+            var base = safeObj(prev);
+            var existing = safeObj(base.llmLiteracy);
+            var list = (Array.isArray(existing.journal) ? existing.journal : []).slice();
             list.splice(idx, 1);
-            return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { journal: list }) });
+            return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { journal: list }) });
           });
         }
         function journalSaveCurrent() {
-          if (!userPrompt.trim()) { addToast('Nothing to save yet \u2014 write a prompt first.', 'info'); return; }
+          if (!userPrompt.trim()) { addToast(t('stem.llm_literacy.journal_nothing_save_toast', 'Nothing to save yet \u2014 write a prompt first.'), 'info'); return; }
           journalAdd(userPrompt, liveOutput);
-          addToast('Saved to your journal.', 'success');
+          addToast(t('stem.llm_literacy.journal_saved_toast', 'Saved to your journal.'), 'success');
         }
         // Download the journal as a Markdown file so students can hand it in,
         // share with a teacher, or keep it alongside their other notes.
         function journalExport() {
-          var list = (d.journal || []);
-          if (list.length === 0) { addToast('Nothing to export yet.', 'info'); return; }
+          var list = Array.isArray(d.journal) ? d.journal : [];
+          if (list.length === 0) { addToast(t('stem.llm_literacy.journal_nothing_export_toast', 'Nothing to export yet.'), 'info'); return; }
           var today = new Date();
           var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
           var dateStr = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
           var lines = ['# AlloFlow AI Literacy Lab \u2014 Prompt Journal', '', 'Exported ' + dateStr, ''];
           list.forEach(function(entry, i) {
+            if (!entry) return;
             var when = new Date(entry.t);
             var stamp = when.getFullYear() + '-' + pad(when.getMonth()+1) + '-' + pad(when.getDate()) + ' ' + pad(when.getHours()) + ':' + pad(when.getMinutes());
             lines.push('## ' + (entry.s ? '\u2B50 ' : '') + 'Prompt ' + (i + 1) + '  \u00B7  _' + stamp + '_');
@@ -4527,7 +6298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             a.download = 'allo-prompt-journal-' + dateStr + '.md';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
-            addToast('Journal exported as Markdown.', 'success');
+            addToast(t('stem.llm_literacy.journal_exported_toast', 'Journal exported as Markdown.'), 'success');
           } catch (e) {
             console.warn('[llmLiteracy] Export failed:', e);
             // Fall back to copying to clipboard so students still get their work.
@@ -4543,42 +6314,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           }, function() {
             if (!ctx.setToolData) return;
             ctx.setToolData(function(prev) {
-              var existing = (prev && prev.llmLiteracy) || {};
-              return Object.assign({}, prev, { llmLiteracy: Object.assign({}, existing, { journal: [] }) });
+              var base = safeObj(prev);
+              var existing = safeObj(base.llmLiteracy);
+              return Object.assign({}, base, { llmLiteracy: Object.assign({}, existing, { journal: [] }) });
             });
-            addToast('Journal cleared.', 'info');
+            addToast(t('stem.llm_literacy.journal_cleared_toast', 'Journal cleared.'), 'info');
           });
         }
         var journalShownTuple = useState(false);
         var journalShown = journalShownTuple[0]; var setJournalShown = journalShownTuple[1];
-        var journal = d.journal || [];
+        var journal = Array.isArray(d.journal) ? d.journal : [];
 
-        // Local heuristic critique — works offline, teaches the five patterns
-        // by pointing at which are present or missing in the current prompt.
+        // Local heuristic critique — backed by LLM_LITERACY_ENGINE.evaluatePromptCraft.
         function critiqueLocally(text) {
-          var t = (text || '').toLowerCase();
-          var checks = [
-            { name: __alloT('stem.llm_literacy.role', 'Role'),        hit: /\byou are |act as |pretend you|as a |take the role/.test(t),
-              hint: 'Try adding: "You are a patient middle-school tutor..." — tells the AI who to be.' },
-            { name: __alloT('stem.llm_literacy.context', 'Context'),     hit: /\bi am |i'm |my (class|teacher|assignment|grade)|for my |7th grade|8th grade|9th grade|10th grade|11th grade|12th grade|middle school|high school/.test(t),
-              hint: __alloT('stem.llm_literacy.try_adding_i_am_a_9th_grader_studying_', 'Try adding: "I am a 9th grader studying for..." — tells the AI about YOU.') },
-            { name: __alloT('stem.llm_literacy.constraints', 'Constraints'), hit: /\bdon'?t |do not |no more than |only |exactly |without |avoid |keep it short|maximum|max /.test(t),
-              hint: __alloT('stem.llm_literacy.try_adding_a_don_t_don_t_write_the_who', 'Try adding a DON\'T: "Don\'t write the whole essay for me." Constraints prevent unhelpful outputs.') },
-            { name: __alloT('stem.llm_literacy.format', 'Format'),     hit: /\blist|bullet|table|step[- ]by[- ]step|numbered|one sentence|\d+ (sentences?|words?|bullets?|paragraphs?)|format/.test(t),
-              hint: __alloT('stem.llm_literacy.try_adding_a_format_give_me_a_3_step_l', 'Try adding a format: "Give me a 3-step list" or "One sentence only" — controls how easy the answer is to USE.') },
-            { name: __alloT('stem.llm_literacy.examples', 'Examples'),    hit: /\bfor example|like this|here'?s one|sample|such as:|e\.g\./.test(t),
-              hint: __alloT('stem.llm_literacy.try_adding_a_sample_here_s_one_i_did_e', 'Try adding a sample: "Here\'s one I did: [example]. Do the next one in the same style."') }
-          ];
-          var length = text.trim().length;
-          var lengthNote = length < 40 ? 'Your prompt is short. Short prompts almost always get shallow answers — try adding at least 2 of the patterns below.'
-                        : (length > 600 ? 'Your prompt is long. That is fine IF every piece earns its place. Re-read and cut anything the AI doesn\'t need.'
-                                        : null);
-          return { checks: checks, lengthNote: lengthNote };
+          return LLM_LITERACY_ENGINE.evaluatePromptCraft(text);
         }
         function runCritique() {
-          if (!userPrompt.trim()) { addToast('Write a prompt first, then click Critique.', 'info'); return; }
-          setCritique(critiqueLocally(userPrompt));
+          if (!userPrompt.trim()) { addToast(t('stem.llm_literacy.write_prompt_before_critique_toast', 'Write a prompt first, then click Critique.'), 'info'); return; }
+          var evalRes = critiqueLocally(userPrompt);
+          setCritique(evalRes);
           bump('promptIterations', 1);
+          if (evalRes.passedCount >= 4) {
+            creditXPOneShot('promptCraftCredited', 'strong_prompt', 12, 'Crafted a strong 4+/5 prompt');
+          }
           announceToSR(__alloT('stem.llm_literacy.sr_prompt_critique_updated', 'Prompt critique updated'));
         }
 
@@ -4663,7 +6421,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     borderBottom: '2px solid ' + hexToRGBA(p.color, 0.55),
                     padding: '1px 2px',
                     borderRadius: '2px'
-                  }, title: p.label + ': ' + chunk.k }, chunk.t);
+                  }, title: t('stem.llm_literacy.anatomy_chunk_title', '{label}: {part}').replace('{label}', p.label).replace('{part}', chunk.k) }, chunk.t);
                 })
               ),
               // Callouts under the prompt showing which pattern does what
@@ -4726,9 +6484,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     h('div', { style: { width: '28px', height: '28px', borderRadius: '8px', background: hexToRGBA('#0d9488', 0.12), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } }, r.icon),
                     h('div', { style: { fontSize: '13px', fontWeight: 800, color: COLORS.text, letterSpacing: '-.01em', flex: 1, minWidth: 0 } }, r.title),
                     h('button', {
+                      type: 'button',
                       onClick: function() { toggleFavoriteRecipe(r.id); },
-                      title: starred ? 'Remove favorite' : 'Favorite this recipe \u2014 favorites sort to the top',
-                      'aria-label': starred ? 'Remove favorite' : 'Favorite this recipe',
+                      title: starred ? t('stem.llm_literacy.remove_favorite_title', 'Remove favorite') : t('stem.llm_literacy.add_favorite_recipe_title', 'Favorite this recipe \u2014 favorites sort to the top'),
+                      'aria-label': starred ? t('stem.llm_literacy.remove_favorite_aria', 'Remove favorite') : t('stem.llm_literacy.add_favorite_recipe_aria', 'Favorite this recipe'),
                       'aria-pressed': starred ? 'true' : 'false',
                       style: {
                         background: 'transparent', border: 'none', cursor: 'pointer',
@@ -4769,7 +6528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                         setCritique(null);
                         setTimeout(function() {
                           var el = document.getElementById('llm-literacy-workshop');
-                          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
                         }, 50);
                         announceToSR(__alloT('stem.llm_literacy.sr_recipe_loaded_into_the_workshop', 'Recipe loaded into the workshop.'));
                       },
@@ -4797,23 +6556,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               ),
               // Template picker chips
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px', marginBottom: tpl ? '14px' : '0' } },
-                PROMPT_TEMPLATES.map(function(t, i) {
+                PROMPT_TEMPLATES.map(function(tplItem, i) {
                   var on = i === tplIdx;
                   return h('button', {
-                    key: t.id,
+                    key: tplItem.id,
+                    type: 'button',
                     onClick: function() { pickTemplate(i); },
                     className: 'llm-lit-tile',
                     style: {
-                      background: on ? hexToRGBA(t.color, 0.1) : '#fff',
-                      border: '1.5px solid ' + (on ? t.color : COLORS.border),
+                      background: on ? hexToRGBA(tplItem.color, 0.1) : '#fff',
+                      border: '1.5px solid ' + (on ? tplItem.color : COLORS.border),
                       borderRadius: '10px', padding: '10px 12px', cursor: 'pointer',
                       textAlign: 'left', display: 'flex', gap: '8px', alignItems: 'center'
                     },
                     'aria-pressed': on ? 'true' : 'false'
                   },
-                    h('div', { style: { fontSize: '20px', flexShrink: 0 } }, t.icon),
+                    h('div', { style: { fontSize: '20px', flexShrink: 0 } }, tplItem.icon),
                     h('div', { style: { flex: 1, minWidth: 0 } },
-                      h('div', { style: { fontSize: '13px', fontWeight: 700, color: t.color, letterSpacing: '-.01em' } }, t.label)
+                      h('div', { style: { fontSize: '13px', fontWeight: 700, color: tplItem.color, letterSpacing: '-.01em' } }, tplItem.label)
                     )
                   );
                 })
@@ -4952,15 +6712,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px', gap: '6px', flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 700 } }, __alloT('stem.llm_literacy.strong_prompt', '\u2713 STRONG PROMPT')),
                   h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                    hasLiveAI && h('button', {
+                    h('button', {
+                      type: 'button',
                       onClick: function() {
                         setUserPrompt(pair.strong);
                         setLiveOutput('');
+                        setLiveOutputMode(null);
                         setCritique(null);
                         // Scroll the workshop into view after the state commits.
                         setTimeout(function() {
                           var el = document.getElementById('llm-literacy-workshop');
-                          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          if (el && el.scrollIntoView) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
                         }, 50);
                         announceToSR(__alloT('stem.llm_literacy.sr_strong_prompt_loaded_into_the_workshop_press_run', 'Strong prompt loaded into the workshop. Press Run with Gemini to try it.'));
                       },
@@ -4968,6 +6730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                       title: __alloT('stem.llm_literacy.load_this_prompt_into_the_workshop_bel', 'Load this prompt into the workshop below so you can run it with Gemini')
                     }, __alloT('stem.llm_literacy.load_into_workshop_2', '\u2193 Load into workshop')),
                     h('button', {
+                      type: 'button',
                       onClick: function() { copyToClipboard(pair.strong, 'Prompt'); },
                       style: { background: COLORS.good, color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' },
                       title: __alloT('stem.llm_literacy.copy_this_prompt_to_try_in_your_own_ai', 'Copy this prompt to try in your own AI tool')
@@ -4982,33 +6745,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   pair.changes.map(function(c, i) { return h('li', { key: i }, c); })
                 )
               ),
-              // A/B live comparison — run both prompts simultaneously and see
-              // the output gap. This is the "aha" moment of the whole section.
-              hasLiveAI && h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' } },
+              // A/B comparison — works offline with deterministic diff evaluator AND upgrades to live Gemini.
+              h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' } },
                 h('button', {
+                  type: 'button',
                   onClick: runAB,
                   disabled: abBusy,
                   style: btn(COLORS.accent2, '#fff', abBusy),
-                  title: __alloT('stem.llm_literacy.run_both_prompts_at_the_same_time_and_', 'Run both prompts at the same time and compare what Gemini produces')
-                }, abBusy ? '\u23F3 Running both...' : (currentAB ? '\u21BA Re-run A/B' : '\uD83C\uDFAF Run A/B: weak vs strong live')),
+                  title: hasLiveAI
+                    ? __alloT('stem.llm_literacy.run_both_prompts_at_the_same_time_and_', 'Run both prompts at the same time and compare what Gemini produces')
+                    : t('stem.llm_literacy.run_ab_offline_title', 'Compare weak vs strong prompt scores and simulated outputs offline')
+                }, abBusy
+                  ? t('stem.llm_literacy.ab_running_both', '\u23F3 Running both...')
+                  : (hasLiveAI
+                    ? (currentAB ? t('stem.llm_literacy.ab_rerun_live', '\u21BA Re-run A/B') : t('stem.llm_literacy.ab_run_live', '\uD83C\uDFAF Run A/B: weak vs strong live'))
+                    : (currentAB ? t('stem.llm_literacy.ab_refresh_offline', '\u21BA Re-run offline A/B diff') : t('stem.llm_literacy.ab_run_offline', '\uD83C\uDFAF Compare A/B outputs (Offline Simulation)')))),
+                currentAB && h('span', { style: { fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: currentAB.mode === 'live' ? '#ecfdf5' : '#eff6ff', color: currentAB.mode === 'live' ? COLORS.good : '#1d4ed8', border: '1px solid ' + (currentAB.mode === 'live' ? '#86efac' : '#bfdbfe') } },
+                  currentAB.mode === 'live' ? t('stem.llm_literacy.mode_badge_live', '\u26A1 Live AI (Gemini)') : t('stem.llm_literacy.mode_badge_offline_sim', '\uD83E\uDDEA Offline Simulation')),
                 currentAB && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, __alloT('stem.llm_literacy.compare_the_two_columns_below', 'Compare the two columns below.'))
+              ),
+              currentAB && currentAB.summary && h('div', { style: { marginBottom: '8px', padding: '8px 10px', background: '#f8fafc', border: '1px solid ' + COLORS.border, borderRadius: '8px', fontSize: '12px', color: COLORS.text, fontWeight: 600 } },
+                currentAB.summary
               ),
               currentAB && h('div', { className: 'llm-lit-fade-in', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '10px' } },
                 h('div', { style: { background: '#fff', borderTop: '1px solid #fecaca', borderRight: '1px solid #fecaca', borderBottom: '1px solid #fecaca', borderLeft: '4px solid ' + COLORS.bad, borderRadius: '8px', padding: '10px 12px' } },
-                  h('div', { style: { fontSize: '11px', color: COLORS.bad, fontWeight: 800, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '.05em' } }, __alloT('stem.llm_literacy.from_weak_prompt', '\u2717 From WEAK prompt')),
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                    h('div', { style: { fontSize: '11px', color: COLORS.bad, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } }, __alloT('stem.llm_literacy.from_weak_prompt', '\u2717 From WEAK prompt')),
+                    currentAB.weakEval && h('span', { style: { fontSize: '10.5px', fontWeight: 700, color: COLORS.bad, fontFamily: 'monospace' } }, currentAB.weakEval.score + '/100')
+                  ),
                   h('div', { style: { fontSize: '12.5px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap', maxHeight: '280px', overflowY: 'auto' } }, flaggedText(currentAB.weak))
                 ),
                 h('div', { style: { background: '#fff', borderTop: '1px solid #bbf7d0', borderRight: '1px solid #bbf7d0', borderBottom: '1px solid #bbf7d0', borderLeft: '4px solid ' + COLORS.good, borderRadius: '8px', padding: '10px 12px' } },
-                  h('div', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 800, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '.05em' } }, __alloT('stem.llm_literacy.from_strong_prompt', '\u2713 From STRONG prompt')),
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                    h('div', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em' } }, __alloT('stem.llm_literacy.from_strong_prompt', '\u2713 From STRONG prompt')),
+                    currentAB.strongEval && h('span', { style: { fontSize: '10.5px', fontWeight: 700, color: COLORS.good, fontFamily: 'monospace' } }, currentAB.strongEval.score + '/100')
+                  ),
                   h('div', { style: { fontSize: '12.5px', color: COLORS.text, lineHeight: 1.55, whiteSpace: 'pre-wrap', maxHeight: '280px', overflowY: 'auto' } }, flaggedText(currentAB.strong))
                 )
               )
             )
           ),
 
-          // Live iteration workshop
+          // Live / Offline iteration workshop
           h('div', { id: 'llm-literacy-workshop', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.good }) },
-            h('h3', { style: { margin: '0 0 6px', fontSize: '16px', color: COLORS.good } }, __alloT('stem.llm_literacy.your_turn_iterate_a_prompt_live', 'Your turn: iterate a prompt live')),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' } },
+              h('h3', { style: { margin: 0, fontSize: '16px', color: COLORS.good } }, __alloT('stem.llm_literacy.your_turn_iterate_a_prompt_live', 'Your turn: iterate a prompt live')),
+              h('span', {
+                style: {
+                  fontSize: '11px', fontWeight: 700, padding: '2px 9px', borderRadius: '999px',
+                  background: hasLiveAI ? '#ecfdf5' : '#eff6ff',
+                  color: hasLiveAI ? COLORS.good : '#1d4ed8',
+                  border: '1px solid ' + (hasLiveAI ? '#86efac' : '#bfdbfe')
+                }
+              }, hasLiveAI ? t('stem.llm_literacy.mode_badge_live', '\u26A1 Live AI (Gemini)') : t('stem.llm_literacy.mode_badge_offline_sim', '\uD83E\uDDEA Offline Simulation'))
+            ),
             h('p', { style: { margin: '0 0 10px', fontSize: '12px', color: COLORS.subtext, lineHeight: 1.5 } },
               __alloT('stem.llm_literacy.write_a_prompt_below_run_it_look_at_th', 'Write a prompt below. Run it. Look at the output. Edit the prompt using the five patterns. Run again. You\'re looking for the output to improve — or for you to understand WHY the output is shaped the way it is.')
             ),
@@ -5028,7 +6818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             // Live token / character counter — connects Section 1's tokenizer to
             // real prompt economy. Updates as the student types.
             (function() {
-              var promptToks = pseudoTokenize(userPrompt || '').filter(function(t) { return t.kind !== 'space'; });
+              var promptToks = pseudoTokenize(userPrompt || '').filter(function(tok) { return tok.kind !== 'space'; });
               var promptChars = (userPrompt || '').length;
               var tokCount = promptToks.length;
               var zone = tokCount < 20 ? 'short' : tokCount < 80 ? 'medium' : tokCount < 250 ? 'long' : 'verylong';
@@ -5061,55 +6851,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             })(),
             h('div', { style: { marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
               h('button', {
+                type: 'button',
                 onClick: runCritique,
                 disabled: !userPrompt.trim(),
                 style: btn(COLORS.accent, '#fff', !userPrompt.trim()),
                 title: __alloT('stem.llm_literacy.check_which_of_the_five_patterns_your_', 'Check which of the five patterns your prompt uses (no AI call needed)')
               }, __alloT('stem.llm_literacy.critique_my_prompt', '\uD83D\uDD0D Critique my prompt')),
               h('button', {
+                type: 'button',
                 onClick: runLive,
-                disabled: liveBusy || !userPrompt.trim() || !hasLiveAI,
-                style: btn(COLORS.good, '#fff', liveBusy || !userPrompt.trim() || !hasLiveAI)
-              }, liveBusy ? '\u23F3 Running...' : '\u25B6 Run with Gemini'),
+                disabled: liveBusy || !userPrompt.trim(),
+                style: btn(COLORS.good, '#fff', liveBusy || !userPrompt.trim())
+              }, liveBusy
+                ? t('stem.llm_literacy.sandbox_running', '\u23F3 Running...')
+                : (hasLiveAI
+                  ? t('stem.llm_literacy.sandbox_run_live', '\u25B6 Run with Gemini')
+                  : t('stem.llm_literacy.sandbox_run_offline', '\u25B6 Simulate response (Offline)'))),
               userPrompt.trim() && h('button', {
+                type: 'button',
                 onClick: function() { copyToClipboard(userPrompt, 'Your prompt'); },
                 style: btn('#e2e8f0', COLORS.text, false),
                 title: __alloT('stem.llm_literacy.copy_your_prompt_to_use_elsewhere', 'Copy your prompt to use elsewhere')
               }, __alloT('stem.llm_literacy.copy_4', '\uD83D\uDCCB Copy')),
               userPrompt.trim() && h('button', {
+                type: 'button',
                 onClick: journalSaveCurrent,
                 style: btn('#fef3c7', '#78350f', false),
                 title: __alloT('stem.llm_literacy.save_this_prompt_to_your_journal_for_l', 'Save this prompt to your journal for later')
               }, __alloT('stem.llm_literacy.save_2', '\u2B50 Save')),
-              !hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted } }, __alloT('stem.llm_literacy.live_ai_unavailable_the_critique_still', 'Live AI unavailable \u2014 the critique still works.'))
+              !hasLiveAI && h('span', { style: { fontSize: '11px', color: COLORS.muted } }, t('stem.llm_literacy.sandbox_offline_ready_note', 'Offline Simulation active — scores all 5 prompt dimensions and previews the shaped output.'))
             ),
             critique && (function() {
-              var hits = critique.checks.filter(function(c) { return c.hit; }).length;
-              var total = critique.checks.length;
+              var dims = Array.isArray(critique.dimensions) ? critique.dimensions : [];
+              var hits = dims.filter(function(c) { return c.passed; }).length;
+              var total = dims.length || 5;
               var pct = hits / total;
               // SVG ring: 44 radius, 276 circumference
               var C = 2 * Math.PI * 44;
               var dashOffset = C * (1 - pct);
               var ringColor = hits >= 4 ? COLORS.good : (hits >= 2 ? COLORS.accent : COLORS.warn);
-              var label = hits >= 4 ? 'Strong' : (hits >= 2 ? 'Getting there' : 'Thin');
+              var label = hits >= 4 ? t('stem.llm_literacy.prompt_tier_strong', 'Strong') : (hits >= 2 ? t('stem.llm_literacy.prompt_tier_developing', 'Developing') : t('stem.llm_literacy.prompt_tier_vague', 'Vague'));
               return h('div', { className: 'llm-lit-fade-in', style: { marginTop: '12px', background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '12px 14px' } },
                 h('div', { style: { display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' } },
                   // Ring
                   h('div', { style: { position: 'relative', width: '104px', height: '104px', flexShrink: 0 } },
                     h('svg', { width: '104', height: '104', viewBox: '0 0 104 104', style: { transform: 'rotate(-90deg)' }, 'aria-hidden': 'true' },
-                      !ctx.isContrast && h('defs', null,
+                      !isContrast && h('defs', null,
                         h('radialGradient', { id: 'llm-crit-dial', cx: '50%', cy: '50%', r: '50%' },
                           h('stop', { offset: '0%', stopColor: ringColor, stopOpacity: 0.14 }),
                           h('stop', { offset: '100%', stopColor: ringColor, stopOpacity: 0 })
                         )
                       ),
-                      !ctx.isContrast && h('circle', { cx: '52', cy: '52', r: '48', fill: 'url(#llm-crit-dial)' }),
+                      !isContrast && h('circle', { cx: '52', cy: '52', r: '48', fill: 'url(#llm-crit-dial)' }),
                       // Recessed dial track + calibrated tick ring
-                      h('circle', { cx: '52', cy: '52', r: '44', fill: 'none', stroke: ctx.isContrast ? '#334155' : '#e2e8f0', strokeWidth: '10' }),
-                      !ctx.isContrast && h('circle', { className: 'llm-dial-drift', cx: '52', cy: '52', r: '36', fill: 'none', stroke: ringColor, strokeWidth: '1', strokeDasharray: '2 6', opacity: 0.35 }),
+                      h('circle', { cx: '52', cy: '52', r: '44', fill: 'none', stroke: isContrast ? '#334155' : '#e2e8f0', strokeWidth: '10' }),
+                      !isContrast && !prefersReducedMotion && h('circle', { className: 'llm-dial-drift', cx: '52', cy: '52', r: '36', fill: 'none', stroke: ringColor, strokeWidth: '1', strokeDasharray: '2 6', opacity: 0.35 }),
                       // Dual-pass luminous progress arc
-                      !ctx.isContrast && pct > 0 && h('circle', {
-                        className: 'llm-arc-glow',
+                      !isContrast && pct > 0 && h('circle', {
+                        className: prefersReducedMotion ? undefined : 'llm-arc-glow',
                         cx: '52', cy: '52', r: '44', fill: 'none',
                         stroke: ringColor, strokeWidth: '14',
                         strokeLinecap: 'round',
@@ -5128,7 +6927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                     ),
                     h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
                       h('div', { style: { fontSize: '26px', fontWeight: 800, color: ringColor, lineHeight: 1 } }, hits + '/' + total),
-                      h('div', { style: { fontSize: '10px', color: COLORS.muted, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '.05em' } }, 'patterns')
+                      h('div', { style: { fontSize: '10px', color: COLORS.muted, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '.05em' } }, (critique.score || 0) + '/100')
                     )
                   ),
                   h('div', { style: { flex: 1, minWidth: '180px' } },
@@ -5138,24 +6937,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   )
                 ),
                 h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '6px' } },
-                  critique.checks.map(function(c) {
-                    return h('div', { key: c.name, style: {
-                      background: c.hit ? '#f0fdf4' : '#fff',
-                      border: '1px solid ' + (c.hit ? '#bbf7d0' : '#fecaca'),
+                  dims.map(function(c) {
+                    return h('div', { key: c.id || c.name, style: {
+                      background: c.passed ? '#f0fdf4' : '#fff',
+                      border: '1px solid ' + (c.passed ? '#bbf7d0' : '#fecaca'),
                       borderRadius: '8px',
                       padding: '8px 10px',
-                      display: 'flex', flexDirection: 'column', gap: '3px',
+                      display: 'flex', flexDirection: 'column', gap: '4px',
                       transition: 'background .2s ease'
                     } },
-                      h('div', { style: { fontSize: '12px', fontWeight: 700, color: c.hit ? COLORS.good : COLORS.bad, display: 'flex', alignItems: 'center', gap: '6px' } },
+                      h('div', { style: { fontSize: '12px', fontWeight: 700, color: c.passed ? COLORS.good : COLORS.bad, display: 'flex', alignItems: 'center', gap: '6px' } },
                         h('span', { style: {
                           width: '18px', height: '18px', borderRadius: '50%',
-                          background: c.hit ? COLORS.good : COLORS.bad, color: '#fff',
+                          background: c.passed ? COLORS.good : COLORS.bad, color: '#fff',
                           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '11px', fontWeight: 700
-                        } }, c.hit ? '\u2713' : '\u2717'),
+                          fontSize: '11px', fontWeight: 700, flexShrink: 0
+                        } }, c.passed ? '\u2713' : '\u2717'),
                         c.name),
-                      !c.hit && h('div', { style: { fontSize: '11px', color: COLORS.subtext, lineHeight: 1.4 } }, c.hint)
+                      !c.passed && h('div', { style: { fontSize: '11px', color: COLORS.subtext, lineHeight: 1.4 } }, c.suggestion),
+                      !c.passed && c.snippet && h('button', {
+                        type: 'button',
+                        onClick: function() {
+                          var nextP = (userPrompt.trim() ? userPrompt.trim() + ' ' : '') + c.snippet.trim();
+                          setUserPrompt(nextP);
+                          setCritique(LLM_LITERACY_ENGINE.evaluatePromptCraft(nextP));
+                        },
+                        style: {
+                          alignSelf: 'flex-start', marginTop: '2px',
+                          background: '#ede9fe', color: COLORS.accent, border: '1px solid #c4b5fd',
+                          borderRadius: '6px', padding: '3px 8px', fontSize: '10.5px', fontWeight: 700, cursor: 'pointer'
+                        }
+                      }, t('stem.llm_literacy.add_revision_btn', '+ Add {dim}').replace('{dim}', c.name))
                     );
                   })
                 ),
@@ -5164,13 +6976,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 )
               );
             })(),
-            liveOutput && h('div', { style: { marginTop: '10px', background: '#fff', border: '1px solid ' + COLORS.border, borderRadius: '8px', padding: '10px 12px', maxHeight: '260px', overflowY: 'auto' } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
-                h('div', { style: { fontSize: '11px', color: COLORS.good, fontWeight: 700 } }, __alloT('stem.llm_literacy.output', '\uD83E\uDD16 OUTPUT')),
-                h('button', {
-                  onClick: function() { copyToClipboard(liveOutput, 'AI output'); },
-                  style: { background: '#e2e8f0', color: COLORS.text, border: 'none', padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 600, cursor: 'pointer' }
-                }, __alloT('stem.llm_literacy.copy_5', '\uD83D\uDCCB Copy'))
+            liveOutput && h('div', { style: { marginTop: '10px', background: '#fff', border: '1px solid ' + COLORS.border, borderLeft: '4px solid ' + (liveOutputMode === 'safety' ? '#b45309' : (liveOutputMode === 'offline' ? '#2563eb' : COLORS.good)), borderRadius: '8px', padding: '10px 12px', maxHeight: '280px', overflowY: 'auto' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '11px', color: liveOutputMode === 'safety' ? '#92400e' : (liveOutputMode === 'offline' ? '#1d4ed8' : COLORS.good), fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' } },
+                  liveOutputMode === 'safety'
+                    ? __alloT('stem.llm_literacy.coach_paused_before_ai', '🪶 Coach (paused before AI)')
+                    : (liveOutputMode === 'offline'
+                      ? t('stem.llm_literacy.output_offline_sim_heading', '\uD83E\uDDEA OUTPUT \u2014 Offline Simulation')
+                      : t('stem.llm_literacy.output_live_ai_heading', '\uD83E\uDD16 OUTPUT \u2014 Live AI (Gemini)'))),
+                h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+                  readAloudBtn(liveOutput, t('stem.llm_literacy.read_sandbox_output_aria', 'Read workshop output aloud')),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { copyToClipboard(liveOutput, 'AI output'); },
+                    style: { background: '#e2e8f0', color: COLORS.text, border: 'none', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', minHeight: '28px' }
+                  }, __alloT('stem.llm_literacy.copy_5', '\uD83D\uDCCB Copy'))
+                )
               ),
               h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, flaggedText(liveOutput))
             ),
@@ -5214,9 +7035,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                       }
                     },
                       h('button', {
+                        type: 'button',
                         onClick: function() { journalToggleStar(i); },
-                        title: entry.s ? 'Remove star' : 'Star this prompt',
-                        'aria-label': entry.s ? 'Remove star' : 'Star this prompt',
+                        title: entry.s ? t('stem.llm_literacy.remove_star_title', 'Remove star') : t('stem.llm_literacy.star_prompt_title', 'Star this prompt'),
+                        'aria-label': entry.s ? t('stem.llm_literacy.remove_star_aria', 'Remove star') : t('stem.llm_literacy.star_prompt_aria', 'Star this prompt'),
                         'aria-pressed': entry.s ? 'true' : 'false',
                         style: { background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', flexShrink: 0, padding: '0 2px' }
                       }, entry.s ? '\u2B50' : '\u2606'),
@@ -5474,6 +7296,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var score = scoreTuple[0]; var setScore = scoreTuple[1];
         var hintsTuple = useState(0);
         var hintsUsed = hintsTuple[0]; var setHintsUsed = hintsTuple[1];
+        var spotPredPickTuple = useState(null);
+        var spotPredPick = spotPredPickTuple[0]; var setSpotPredPick = spotPredPickTuple[1];
+        var spotPrediction = useMemo(function() {
+          return LLM_LITERACY_ENGINE.getSpotterPrediction(passageIdx, 'spot_pred_' + passageIdx);
+        }, [passageIdx]);
+        var spotPredGrade = spotPredPick ? LLM_LITERACY_ENGINE.gradeSpotterPrediction(passageIdx, spotPredPick) : null;
 
         // ── Student-authored spotter ──
         // Bracket syntax: [[error phrase]] inside the draft becomes a flagged
@@ -5520,24 +7348,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
         function check() {
           setChecked(true);
-          var errors = passage.segments.filter(function(s) { return s.error; }).length;
-          var hits = 0, misses = 0, falsePos = 0;
-          passage.segments.forEach(function(s, i) {
-            if (s.error && picks[i]) hits++;
-            else if (s.error && !picks[i]) misses++;
-            else if (!s.error && picks[i]) falsePos++;
-          });
-          var perfect = (hits === errors && falsePos === 0);
-          var unassisted = (hintsUsed === 0);
-          setScore({ hits: hits, misses: misses, falsePos: falsePos, errors: errors, perfect: perfect, hintsUsed: hintsUsed });
+          var result = LLM_LITERACY_ENGINE.scoreSpotterAttempt(passage, picks, hintsUsed);
+          var hits = result.hits, errors = result.errors, falsePos = result.falsePos;
+          var perfect = result.perfect, unassisted = result.unassisted;
+          setScore(result);
           announceToSR('Checked: ' + hits + ' of ' + errors + ' errors caught, ' + falsePos + ' incorrect flags' + (hintsUsed > 0 ? ', ' + hintsUsed + ' hint(s) used' : ''));
-          if (perfect && unassisted) {
-            bump('spotterPerfect', 1);
-            awardXP(20, 'Perfect hallucination spot (unassisted)');
-            addToast('Perfect \u2014 no hints, no misses.', 'success');
-          } else if (perfect) {
-            awardXP(8, 'Complete spot with hints');
-            addToast('All errors caught (with ' + hintsUsed + ' hint' + (hintsUsed === 1 ? '' : 's') + '). Try again unassisted for the perfect bonus.', 'success');
+          if (perfect) {
+            var pKey = String(passageIdx);
+            var targetTier = unassisted ? 'perfect' : 'assisted';
+            var applySpotterCredit = function() {
+              var gKey = 'spotterCredited:' + pKey;
+              var persistedTier = safeObj(d.spotterCredited)[pKey] || null;
+              var refTier = localXpGuardRef.current[gKey] || null;
+              var prevTier = (persistedTier === 'perfect' || refTier === 'perfect')
+                ? 'perfect'
+                : ((persistedTier === 'assisted' || refTier === 'assisted') ? 'assisted' : null);
+              if (targetTier === 'perfect' && prevTier !== 'perfect') {
+                var deltaPts = prevTier === 'assisted' ? 12 : 20;
+                localXpGuardRef.current[gKey] = 'perfect';
+                if (ctx.setToolData) {
+                  ctx.setToolData(function(prev) {
+                    var base = safeObj(prev);
+                    var existing = safeObj(base.llmLiteracy);
+                    var creditedMap = Object.assign({}, safeObj(existing.spotterCredited));
+                    if (creditedMap[pKey] === 'perfect') return prev;
+                    creditedMap[pKey] = 'perfect';
+                    var nextPerfectCount = Number(existing.spotterPerfect || 0) + 1;
+                    return Object.assign({}, base, {
+                      llmLiteracy: Object.assign({}, existing, { spotterCredited: creditedMap, spotterPerfect: nextPerfectCount })
+                    });
+                  });
+                }
+                if (ctx.awardXP) ctx.awardXP('llmLiteracy', deltaPts, 'Perfect hallucination spot (unassisted)');
+                return { credited: true, upgraded: prevTier === 'assisted' };
+              }
+              if (targetTier === 'assisted' && !prevTier) {
+                localXpGuardRef.current[gKey] = 'assisted';
+                if (ctx.setToolData) {
+                  ctx.setToolData(function(prev) {
+                    var base = safeObj(prev);
+                    var existing = safeObj(base.llmLiteracy);
+                    var creditedMap = Object.assign({}, safeObj(existing.spotterCredited));
+                    if (creditedMap[pKey]) return prev;
+                    creditedMap[pKey] = 'assisted';
+                    return Object.assign({}, base, {
+                      llmLiteracy: Object.assign({}, existing, { spotterCredited: creditedMap })
+                    });
+                  });
+                }
+                if (ctx.awardXP) ctx.awardXP('llmLiteracy', 8, 'Complete spot with hints');
+                return { credited: true, upgraded: false };
+              }
+              return { credited: false, upgraded: false };
+            };
+            var resCredit = applySpotterCredit();
+            if (unassisted) {
+              addToast(
+                resCredit.credited
+                  ? t('stem.llm_literacy.spotter_perfect_toast', 'Perfect \u2014 no hints, no misses.')
+                  : t('stem.llm_literacy.spotter_perfect_repeat_toast', 'Perfect again! (Passage XP already earned.)'),
+                'success'
+              );
+            } else {
+              addToast(
+                t('stem.llm_literacy.spotter_assisted_toast', 'All errors caught (with {hints} hint(s)). Try again unassisted for the perfect bonus.')
+                  .replace('{hints}', String(hintsUsed)),
+                'success'
+              );
+            }
           }
         }
 
@@ -5546,7 +7424,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         }
 
         function switchPassage(i) {
-          setPassageIdx(i); setPicks({}); setChecked(false); setScore(null); setHintsUsed(0);
+          setPassageIdx(i); setPicks({}); setChecked(false); setScore(null); setHintsUsed(0); setSpotPredPick(null);
         }
 
         // Reveal one currently-unrevealed error per click. Using hints forfeits
@@ -5556,7 +7434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           var errorIdxs = [];
           passage.segments.forEach(function(s, i) { if (s.error) errorIdxs.push(i); });
           var remaining = errorIdxs.filter(function(i) { return !picks[i]; });
-          if (remaining.length === 0) { addToast('No more errors to hint.', 'info'); return; }
+          if (remaining.length === 0) { addToast(t('stem.llm_literacy.no_more_hints_toast', 'No more errors to hint.'), 'info'); return; }
           var pickIdx = remaining[Math.floor(Math.random() * remaining.length)];
           var nextPicks = Object.assign({}, picks); nextPicks[pickIdx] = true;
           setPicks(nextPicks);
@@ -5565,26 +7443,92 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         }
 
         var errorsCount = passage.segments.filter(function(s) { return s.error; }).length;
+        var fullPassageText = passage.segments.map(function(s) { return s.text; }).join('');
 
         return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto' } },
           topBar('5. Hallucination Spotter'),
           teacherNote('spotter'),
-          h('p', { style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5, marginTop: 0 } },
-            'This passage is AI-generated, and ' + errorsCount + ' phrases are wrong. Click the phrases you think are hallucinated. When you\'re done, check your answers.'
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' } },
+            h('p', { style: { fontSize: '13px', color: COLORS.subtext, lineHeight: 1.5, margin: 0, flex: 1, minWidth: '220px' } },
+              'This passage is AI-generated, and ' + errorsCount + ' phrases are wrong. Click the phrases you think are hallucinated. When you\'re done, check your answers.'
+            ),
+            readAloudBtn(passage.topic + '. ' + fullPassageText, t('stem.llm_literacy.spotter_read_passage_aria', 'Read spotter passage aloud'))
           ),
           h('div', { style: { display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' } },
             SPOTTER_PASSAGES.map(function(p, i) {
               var on = i === passageIdx;
+              var tierDone = safeObj(d.spotterCredited)[String(i)];
               return h('button', {
                 key: i,
+                type: 'button',
                 onClick: function() { switchPassage(i); },
                 style: {
                   background: on ? COLORS.good : '#e2e8f0',
                   color: on ? '#fff' : COLORS.subtext,
                   border: 'none', padding: '6px 10px', borderRadius: '14px', fontWeight: 600, fontSize: '11px', cursor: 'pointer'
                 }
-              }, p.topic);
+              }, p.topic + (tierDone === 'perfect' ? ' \u2713' : ''));
             })
+          ),
+          // Predict-Before-Spot warm-up check
+          h('div', {
+            style: {
+              marginBottom: '10px', padding: '10px 12px',
+              background: isContrast ? '#000000' : '#f8fafc',
+              border: '1px solid ' + (isContrast ? '#ffff00' : '#cbd5e1'),
+              borderRadius: '10px'
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.accent, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                safeObj(d.spotterCredited)['pred_' + passageIdx]
+                  ? t('stem.llm_literacy.spot_predict_done', '\u2713 Predict before spotting (completed)')
+                  : t('stem.llm_literacy.spot_predict_heading', '\uD83C\uDFAF Predict before spotting')),
+              readAloudBtn(spotPrediction.question, t('stem.llm_literacy.spot_predict_read_aria', 'Read predict-before-spot question aloud'))
+            ),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, color: COLORS.text, marginBottom: '8px', lineHeight: 1.45 } }, spotPrediction.question),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px' } },
+              spotPrediction.options.map(function(opt) {
+                var isSel = spotPredPick === opt.id;
+                var bg = '#fff', bd = COLORS.border, col = COLORS.text;
+                if (isSel && spotPredGrade) {
+                  if (opt.correct) { bg = '#f0fdf4'; bd = '#86efac'; col = COLORS.good; }
+                  else { bg = '#fef2f2'; bd = '#fecaca'; col = COLORS.bad; }
+                }
+                return h('button', {
+                  key: opt.id,
+                  type: 'button',
+                  onClick: function() {
+                    setSpotPredPick(opt.id);
+                    var gRes = LLM_LITERACY_ENGINE.gradeSpotterPrediction(passageIdx, opt.id);
+                    if (gRes.correct) {
+                      creditXPOneShot('spotterCredited', 'pred_' + passageIdx, 4, 'Spotter prediction: ' + passage.topic);
+                      announceToSR(t('stem.llm_literacy.sr_spot_predict_correct', 'Good prediction. ') + gRes.explanation);
+                    } else {
+                      announceToSR(t('stem.llm_literacy.sr_spot_predict_retry', 'Not quite. ') + (gRes.whyNot || ''));
+                    }
+                  },
+                  style: {
+                    background: bg, border: '1.5px solid ' + bd, borderRadius: '8px',
+                    padding: '7px 10px', textAlign: 'left', fontSize: '12px', color: col,
+                    fontWeight: isSel ? 700 : 500, cursor: 'pointer', lineHeight: 1.4
+                  }
+                }, opt.label);
+              })
+            ),
+            spotPredGrade && h('div', {
+              className: 'llm-lit-fade-in',
+              style: {
+                marginTop: '8px', padding: '8px 10px', borderRadius: '8px',
+                background: spotPredGrade.correct ? '#f0fdf4' : '#fef2f2',
+                border: '1px solid ' + (spotPredGrade.correct ? '#bbf7d0' : '#fecaca'),
+                fontSize: '12px', color: COLORS.text, lineHeight: 1.45
+              }
+            },
+              spotPredGrade.correct
+                ? h('span', null, h('strong', { style: { color: COLORS.good } }, t('stem.llm_literacy.predict_correct_prefix', '\u2713 Correct prediction \u2014 ')), spotPredGrade.explanation)
+                : h('span', null, h('strong', { style: { color: COLORS.bad } }, t('stem.llm_literacy.predict_why_not_prefix', '\u2717 Why not: ')), spotPredGrade.whyNot)
+            )
           ),
           h('div', { style: Object.assign({}, cardStyle, { background: '#fff', lineHeight: 1.9 }) },
             passage.segments.map(function(seg, i) {
@@ -5608,7 +7552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   background: bg, border: border, color: color, cursor: cursor,
                   padding: '1px 3px', borderRadius: '4px', margin: '0 1px'
                 },
-                'aria-label': picked ? 'Marked as wrong: ' + seg.text : seg.text
+                'aria-label': picked ? t('stem.llm_literacy.marked_wrong_aria', 'Marked as wrong: {phrase}').replace('{phrase}', seg.text) : seg.text
               }, seg.text);
             })
           ),
@@ -5654,7 +7598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               h('div', { style: { padding: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
                 h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
                   h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
-                    'aria-label': 'Caught ' + hits + ' of ' + errs + ' seeded errors'
+                    'aria-label': t('stem.llm_literacy.spotter_caught_aria', 'Caught {hits} of {errs} seeded errors').replace('{hits}', String(hits)).replace('{errs}', String(errs))
                   },
                     !ctx.isContrast && h('defs', null,
                       h('radialGradient', { id: 'llm-rec-halo', cx: '50%', cy: '50%', r: '50%' },
@@ -5697,7 +7641,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               h('span', null, h('span', { style: { background: '#fee2e2', padding: '1px 6px', border: '2px dashed ' + COLORS.bad, borderRadius: '4px' } }, 'missed'), __alloT('stem.llm_literacy.error_you_didn_t_flag', ' error you didn\'t flag')),
               h('span', null, h('span', { style: { background: '#fef3c7', padding: '1px 6px', border: '2px dashed ' + COLORS.warn, borderRadius: '4px' } }, __alloT('stem.llm_literacy.flagged_but_fine', 'flagged but fine')), __alloT('stem.llm_literacy.false_alarm', ' false alarm'))
             ),
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: COLORS.subtext, marginBottom: '4px' } }, __alloT('stem.llm_literacy.why_each_error_was_plausible', 'WHY EACH ERROR WAS PLAUSIBLE')),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' } },
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: COLORS.subtext } }, __alloT('stem.llm_literacy.why_each_error_was_plausible', 'WHY EACH ERROR WAS PLAUSIBLE')),
+              readAloudBtn(
+                passage.segments.filter(function(s) { return s.error; }).map(function(s) { return s.text + ': ' + s.reason; }).join(' '),
+                t('stem.llm_literacy.spotter_read_explanations_aria', 'Read error explanations aloud')
+              )
+            ),
             passage.segments.map(function(s, i) {
               if (!s.error) return null;
               return h('div', { key: i, style: { marginTop: '6px', padding: '8px', background: '#fff', border: '1px solid ' + COLORS.border, borderRadius: '6px', fontSize: '12px', lineHeight: 1.5 } },
@@ -5804,8 +7754,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         var mySkill = mySkillTuple[0]; var setMySkill = mySkillTuple[1];
         var myBarrierTuple = useState(null);      // 'mechanical' | 'cognitive' | null
         var myBarrier = myBarrierTuple[0]; var setMyBarrier = myBarrierTuple[1];
-        var myCoachTuple = useState(null);        // live AI coach result
+        var myCoachTuple = useState(null);        // live or offline coach result
         var myCoach = myCoachTuple[0]; var setMyCoach = myCoachTuple[1];
+        var myCoachModeTuple = useState(null);    // 'live' | 'offline' | 'safety' | null
+        var myCoachMode = myCoachModeTuple[0]; var setMyCoachMode = myCoachModeTuple[1];
         var myCoachBusyTuple = useState(false);
         var myCoachBusy = myCoachBusyTuple[0]; var setMyCoachBusy = myCoachBusyTuple[1];
 
@@ -5839,14 +7791,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         }
 
         function runMyCoach() {
-          if (!hasLiveAI) { addToast('Live AI not available \u2014 but the heuristic below still gives you a direction.', 'info'); return; }
-          if (!mySit.trim() || !mySkill.trim() || !myBarrier) { addToast('Fill in all three fields first.', 'info'); return; }
+          if (!mySit.trim() || !mySkill.trim() || !myBarrier) { addToast(t('stem.llm_literacy.udl_fill_all_fields_toast', 'Fill in all three fields first.'), 'info'); return; }
           // The student's own situation and skill are interpolated into the
-          // prompt, so gate them first (aiSafetyGate, added 2026-11-20).
+          // prompt, so gate them first (aiSafetyGate, added 2026-11-20) in BOTH
+          // offline and live modes.
           var gate = aiSafetyGate(mySit.trim() + '\n' + mySkill.trim(), 'udl_coach');
-          if (gate.action === 'block') { setMyCoach(AI_SAFETY_PAUSE_TEXT); return; }
+          if (gate.action === 'block') { setMyCoach(AI_SAFETY_PAUSE_TEXT); setMyCoachMode('safety'); return; }
+          if (!hasLiveAI) {
+            var offlineCoach = LLM_LITERACY_ENGINE.coachUdlReflection(mySit, mySkill, myBarrier);
+            setMyCoach(offlineCoach.formattedText + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : ''));
+            setMyCoachMode('offline');
+            creditXPOneShot('udlCoachCredited', 'byos_coach', 10, 'Completed UDL reflection coaching');
+            announceToSR(t('stem.llm_literacy.sr_udl_coach_ready', 'Offline UDL coaching feedback ready.'));
+            return;
+          }
           setMyCoachBusy(true);
           setMyCoach(null);
+          setMyCoachMode(null);
           var cleanSit = mySit.trim().replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '').slice(0, 800);
           var cleanSkill = mySkill.trim().replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '').slice(0, 400);
           var meta =
@@ -5862,18 +7823,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             '</UNTRUSTED_STUDENT_INPUT>\n';
           callGemini(meta, false, false, 0.4).then(function(out) {
             setMyCoach(((out || '').trim() || '(no response)') + (gate.action === 'nudge' ? AI_SAFETY_NUDGE_TEXT : ''));
+            setMyCoachMode('live');
+            creditXPOneShot('udlCoachCredited', 'byos_coach', 10, 'Completed UDL reflection coaching');
           }).catch(function(err) {
             console.warn('[llmLiteracy] UDL coach failed:', err);
             var info = classifyGeminiError(err);
-            setMyCoach('[' + info.emoji + ' ' + info.friendly + ']\n\nWhy this happens: ' + info.teaching + '\n\nThe heuristic direction below is still valid.');
-            addToast(info.emoji + ' Live coach unavailable. Heuristic below still works.', 'warn');
+            var fallbackCoach = LLM_LITERACY_ENGINE.coachUdlReflection(mySit, mySkill, myBarrier);
+            setMyCoach('[' + info.emoji + ' ' + info.friendly + ']\n\n' + fallbackCoach.formattedText);
+            setMyCoachMode('offline');
+            addToast(t('stem.llm_literacy.udl_live_fallback_toast', '{emoji} Live coach unavailable. Showing offline UDL coaching instead.').replace('{emoji}', info.emoji), 'warn');
           }).then(function() {
             setMyCoachBusy(false);
           });
         }
 
         function resetMyScenario() {
-          setMySit(''); setMySkill(''); setMyBarrier(null); setMyCoach(null);
+          setMySit(''); setMySkill(''); setMyBarrier(null); setMyCoach(null); setMyCoachMode(null);
         }
 
         var heuristic = heuristicVerdict();
@@ -5890,25 +7855,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         function commit(kind) {
           setChoice(kind);
           setRevealed(true);
-          // Functional update + milestone check in one pass, to avoid stale-closure reads.
-          if (!ctx.setToolData) { awardXP(3, 'UDL reflection'); return; }
-          ctx.setToolData(function(prev) {
-            var base = safeObj(prev);
-            var existing = safeObj(base.llmLiteracy);
-            var seen = Object.assign({}, safeObj(existing.udlSeen));
-            var firstTime = !seen[idx];
-            seen[idx] = true;
-            var reflections = Number(existing.udlReflections || 0) + 1;
-            var td = Object.assign({}, existing, { udlSeen: seen, udlReflections: reflections });
-            // Fire rewards as a side effect of this update.
-            if (firstTime) awardXP(3, 'UDL reflection');
-            if (firstTime && Object.keys(seen).length === UDL_SCENARIOS.length && !existing.udlAllDone) {
-              td.udlAllDone = true;
-              awardXP(15, 'Completed the UDL rubric');
-              addToast('You worked through every scenario. Nice.', 'success');
-            }
-            return Object.assign({}, base, { llmLiteracy: td });
-          });
+          // Determine one-shot XP eligibility synchronously BEFORE calling setToolData
+          // so the updater stays 100% pure under React 18 <StrictMode>.
+          var guardKey = 'udlSeen:' + idx;
+          var persistedSeen = safeObj(d.udlSeen);
+          var firstTime = !persistedSeen[idx] && !localXpGuardRef.current[guardKey];
+          if (firstTime) localXpGuardRef.current[guardKey] = true;
+          var projectedSeen = Object.assign({}, persistedSeen);
+          for (var si = 0; si < UDL_SCENARIOS.length; si++) {
+            if (localXpGuardRef.current['udlSeen:' + si]) projectedSeen[si] = true;
+          }
+          projectedSeen[idx] = true;
+          var justFinishedAll = firstTime
+            && Object.keys(projectedSeen).length >= UDL_SCENARIOS.length
+            && !d.udlAllDone
+            && !localXpGuardRef.current['udlAllDone'];
+          if (justFinishedAll) localXpGuardRef.current['udlAllDone'] = true;
+
+          if (ctx.setToolData) {
+            ctx.setToolData(function(prev) {
+              var base = safeObj(prev);
+              var existing = safeObj(base.llmLiteracy);
+              var seen = Object.assign({}, safeObj(existing.udlSeen));
+              seen[idx] = true;
+              var reflections = Number(existing.udlReflections || 0) + 1;
+              var td = Object.assign({}, existing, { udlSeen: seen, udlReflections: reflections });
+              if (Object.keys(seen).length >= UDL_SCENARIOS.length && !existing.udlAllDone) {
+                td.udlAllDone = true;
+              }
+              return Object.assign({}, base, { llmLiteracy: td });
+            });
+          }
+          if (firstTime && ctx.awardXP) ctx.awardXP('llmLiteracy', 3, 'UDL reflection');
+          if (justFinishedAll) {
+            if (ctx.awardXP) ctx.awardXP('llmLiteracy', 15, 'Completed the UDL rubric');
+            addToast(t('stem.llm_literacy.udl_all_done_toast', 'You worked through every scenario. Nice.'), 'success');
+          }
         }
 
         return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto' } },
@@ -6021,7 +8003,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             })
           ),
           h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #db2777' }) },
-            h('div', { style: { fontSize: '11px', color: '#db2777', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '4px' } }, 'Scenario ' + (idx + 1)),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' } },
+              h('div', { style: { fontSize: '11px', color: '#db2777', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.05em' } }, 'Scenario ' + (idx + 1)),
+              readAloudBtn(
+                'Scenario ' + (idx + 1) + ': ' + s.situation + (revealed ? '. Scaffold version: ' + s.scaffold + '. Substitute version: ' + s.substitute + '. Why this matters: ' + s.why : ''),
+                t('stem.llm_literacy.udl_scenario_read_aria', 'Read UDL scenario aloud')
+              )
+            ),
             h('div', { style: { fontSize: '15px', color: COLORS.text, lineHeight: 1.5, marginBottom: '14px', fontStyle: 'italic' } }, '"' + s.situation + '"'),
 
             !revealed && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' } },
@@ -6157,12 +8145,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' } },
-              hasLiveAI && h('button', {
+              h('button', {
+                type: 'button',
                 onClick: runMyCoach,
                 disabled: myCoachBusy || !mySit.trim() || !mySkill.trim() || !myBarrier,
                 style: btn('#0d9488', '#fff', myCoachBusy || !mySit.trim() || !mySkill.trim() || !myBarrier)
-              }, myCoachBusy ? '\u23F3 Coaching...' : '\uD83E\uDDD1\u200D\uD83C\uDFEB Get AI coaching'),
-              (mySit.trim() || mySkill.trim() || myBarrier) && h('button', { onClick: resetMyScenario, style: btn('#e2e8f0', COLORS.text, false) }, __alloT('stem.llm_literacy.reset', '\u21BA Reset'))
+              }, myCoachBusy
+                ? t('stem.llm_literacy.udl_coaching_busy', '\u23F3 Coaching...')
+                : (hasLiveAI
+                  ? t('stem.llm_literacy.udl_get_live_coaching', '\uD83E\uDDD1\u200D\uD83C\uDFEB Get AI coaching (Live)')
+                  : t('stem.llm_literacy.udl_get_offline_coaching', '\uD83E\uDDD1\u200D\uD83C\uDFEB Get UDL coaching (Offline)'))),
+              (mySit.trim() || mySkill.trim() || myBarrier) && h('button', { type: 'button', onClick: resetMyScenario, style: btn('#e2e8f0', COLORS.text, false) }, __alloT('stem.llm_literacy.reset', '\u21BA Reset'))
             ),
             heuristic && h('div', { className: 'llm-lit-fade-in', style: {
               background: heuristic.verdict === 'scaffold' ? '#f0fdf4' : (heuristic.verdict === 'substitute_risk' ? '#fef2f2' : '#fef9c3'),
@@ -6176,15 +8169,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             ),
             myCoach && h('div', { className: 'llm-lit-fade-in', style: {
               background: '#fff', border: '1px solid ' + COLORS.border,
-              borderLeft: '4px solid #0d9488',
+              borderLeft: '4px solid ' + (myCoachMode === 'safety' ? '#b45309' : '#0d9488'),
               borderRadius: '10px', padding: '12px 14px'
             } },
-              h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#0d9488', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '.05em' } },
-                __alloT('stem.llm_literacy.ai_coaching_live', '\uD83E\uDDD1\u200D\uD83C\uDFEB AI coaching (live)')),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: myCoachMode === 'safety' ? '#92400e' : '#0d9488', textTransform: 'uppercase', letterSpacing: '.05em' } },
+                  myCoachMode === 'safety'
+                    ? __alloT('stem.llm_literacy.coach_paused_before_ai', '🪶 Coach (paused before AI)')
+                    : (myCoachMode === 'offline'
+                      ? t('stem.llm_literacy.udl_coaching_offline_heading', '\uD83E\uDDD1\u200D\uD83C\uDFEB UDL coaching (Offline Simulation)')
+                      : __alloT('stem.llm_literacy.ai_coaching_live', '\uD83E\uDDD1\u200D\uD83C\uDFEB AI coaching (live)'))),
+                readAloudBtn(myCoach, t('stem.llm_literacy.udl_coach_read_aria', 'Read UDL coaching aloud'))
+              ),
               h('div', { style: { fontSize: '13px', color: COLORS.text, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, flaggedText(myCoach))
             ),
             !hasLiveAI && h('div', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic', marginTop: '6px' } },
-              __alloT('stem.llm_literacy.live_ai_unavailable_here_the_heuristic', 'Live AI unavailable here \u2014 the heuristic direction above uses only your answers, no AI call needed.')
+              t('stem.llm_literacy.udl_offline_coach_ready_note', 'Offline UDL Coach ready — click above for concrete scaffold paths and substitute traps tailored to your situation.')
             )
           ),
 
@@ -6245,9 +8245,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           var today = new Date();
           var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
           var dateStr = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate());
-          var visited = d.visited || {};
-          var journal = d.journal || [];
-          var starred = journal.filter(function(e) { return e.s; });
+          var visited = safeObj(d.visited);
+          var journal = Array.isArray(d.journal) ? d.journal : [];
+          var starred = journal.filter(function(e) { return e && e.s; });
           var checkIds = ['tokens','fails','prompt','spotter','udl'];
           var sectionTitles = {
             tokens: 'How LLMs Work', fails: 'Why LLMs Get Things Wrong',
@@ -6277,7 +8277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             '| Perfect hallucination spots (unassisted) | ' + (d.spotterPerfect || 0) + ' |',
             '| UDL scenario reflections | ' + (d.udlReflections || 0) + ' |',
             '| Starred prompts saved | ' + starred.length + ' |',
-            '| Reflections written | ' + ((d.reflections || []).length) + ' |',
+            '| Reflections written | ' + ((Array.isArray(d.reflections) ? d.reflections : []).length) + ' |',
             ''
           ];
 
@@ -6314,7 +8314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             lines.push('');
           }
 
-          var refs = (d.reflections || []);
+          var refs = Array.isArray(d.reflections) ? d.reflections : [];
           if (refs.length > 0) {
             lines.push('## Reflections (' + refs.length + ')');
             lines.push('');
@@ -6342,7 +8342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             a.download = 'allo-ai-literacy-session-' + dateStr + '.md';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
-            addToast('Session report downloaded.', 'success');
+            addToast(t('stem.llm_literacy.session_report_downloaded_toast', 'Session report downloaded.'), 'success');
           } catch (e) {
             console.warn('[llmLiteracy] Report export failed:', e);
             copyToClipboard(body, 'Session report (copied as text)');
@@ -6379,7 +8379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                   fontSize: '10px', fontWeight: 700, cursor: 'pointer',
                   whiteSpace: 'nowrap'
                 },
-                title: 'Jump to ' + target.title
+                title: t('stem.llm_literacy.jump_to_section_title', 'Jump to {title}').replace('{title}', target.title)
               }, __alloT('stem.llm_literacy.go_2', 'Go \u2192'))
             ),
             bodyNodes
@@ -6490,7 +8490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // ═══════════════════════════════════════════════════════
       function topBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' } },
-          h('button', {
+          !ctx.embedded && h('button', {
+            type: 'button',
             onClick: goHome,
             style: {
               background: '#e2e8f0', color: COLORS.text, border: 'none',
@@ -6523,29 +8524,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         if (!q) return null;
         var pickKey = 'check_pick_' + sectionId;
         var doneKey = 'check_done_' + sectionId;
-        var pickedIdx = typeof d[pickKey] === 'number' ? d[pickKey] : null;
+        var pickedIdx = Number.isInteger(d[pickKey]) && d[pickKey] >= 0 && d[pickKey] < q.options.length ? d[pickKey] : null;
         var done = !!d[doneKey];
         function pick(i) {
           if (done) return;
-          upd(pickKey, i);
           var opt = q.options[i];
           if (opt && opt.correct) {
-            // Functional update so we don't double-award on rapid clicks.
-            ctx.setToolData && ctx.setToolData(function(prev) {
-              var existing = (prev && prev.llmLiteracy) || {};
-              if (existing[doneKey]) return prev;
-              var td = Object.assign({}, existing);
-              td[doneKey] = true;
-              td[pickKey] = i;
-              awardXP(4, 'Comprehension check: ' + sectionId);
-              return Object.assign({}, prev, { llmLiteracy: td });
-            });
+            var checkGuard = 'checkDone:' + sectionId;
+            var shouldCredit = !d[doneKey] && !localXpGuardRef.current[checkGuard];
+            if (shouldCredit) localXpGuardRef.current[checkGuard] = true;
+            if (ctx.setToolData) {
+              ctx.setToolData(function(prev) {
+                var base = safeObj(prev);
+                var existing = safeObj(base.llmLiteracy);
+                var td = Object.assign({}, existing);
+                td[doneKey] = true;
+                td[pickKey] = i;
+                return Object.assign({}, base, { llmLiteracy: td });
+              });
+            }
+            if (shouldCredit && ctx.awardXP) ctx.awardXP('llmLiteracy', 4, 'Comprehension check: ' + sectionId);
             announceToSR('Correct. ' + opt.why);
           } else {
+            upd(pickKey, i);
             announceToSR('Not quite. ' + (opt && opt.why));
           }
         }
         var pickedOpt = pickedIdx !== null ? q.options[pickedIdx] : null;
+        var checkReadText = q.q + ' Options: ' + q.options.map(function(o, oi) { return (oi + 1) + '. ' + o.text; }).join(' ') + (pickedOpt ? ' Feedback: ' + pickedOpt.why : '');
         return h('div', {
           className: 'llm-lit-fade-in llm-lit-no-print',
           style: {
@@ -6556,11 +8562,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             padding: '14px 16px'
           }
         },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
-            h('div', { style: { width: '28px', height: '28px', borderRadius: '8px', background: hexToRGBA(COLORS.accent, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } },
-              done ? '\u2714\uFE0F' : '\u2753'),
-            h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.accent, textTransform: 'uppercase', letterSpacing: '.05em' } },
-              done ? 'Check for understanding \u2014 earned' : 'Check for understanding')
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('div', { style: { width: '28px', height: '28px', borderRadius: '8px', background: hexToRGBA(COLORS.accent, 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' } },
+                done ? '\u2714\uFE0F' : '\u2753'),
+              h('div', { style: { fontSize: '11px', fontWeight: 800, color: COLORS.accent, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                done ? 'Check for understanding \u2014 earned' : 'Check for understanding')
+            ),
+            readAloudBtn(checkReadText, t('stem.llm_literacy.comprehension_read_aria', 'Read comprehension check aloud'))
           ),
           h('div', { style: { fontSize: '14px', fontWeight: 700, color: COLORS.text, marginBottom: '10px', lineHeight: 1.4 } }, q.q),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginBottom: pickedOpt ? '10px' : 0 } },
@@ -6641,14 +8650,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             var seen = anchorIsSeen(item.id);
             return h('button', {
               key: item.id,
+              type: 'button',
               onClick: function() {
                 var el = document.getElementById(item.id);
-                if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (el && el.scrollIntoView) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
                 // Clicking counts as "seen" too, in case the student\'s viewport
                 // is short and the observer doesn\'t register 50% intersection.
                 markAnchorSeen(item.id);
               },
-              'aria-label': item.label + (seen ? ' (visited)' : ''),
+              'aria-label': seen ? t('stem.llm_literacy.toc_item_visited_aria', '{label} (visited)').replace('{label}', item.label) : item.label,
               style: {
                 background: seen ? hexToRGBA(color, 0.12) : '#fff',
                 color: color,
@@ -6660,7 +8670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
                 whiteSpace: 'nowrap',
                 transition: 'background .18s ease, border-color .18s ease'
               },
-              title: 'Jump to: ' + item.label + (seen ? ' (already visited)' : '')
+              title: seen ? t('stem.llm_literacy.toc_jump_visited_title', 'Jump to: {label} (already visited)').replace('{label}', item.label) : t('stem.llm_literacy.toc_jump_title', 'Jump to: {label}').replace('{label}', item.label)
             },
               seen
                 ? h('span', { 'aria-hidden': 'true', style: { fontSize: '10px' } }, '\u2713')
@@ -6687,7 +8697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           }, __alloT('stem.llm_literacy.all_sections', '\uD83C\uDFE0 All sections')),
           next
             ? h('button', {
-                onClick: function() { enterSection(next.id, next.title); window.scrollTo && window.scrollTo({ top: 0, behavior: 'smooth' }); },
+                onClick: function() { enterSection(next.id, next.title); window.scrollTo && window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' }); },
                 style: {
                   background: next.color, color: '#fff', border: 'none',
                   padding: '10px 16px', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer',
@@ -6770,7 +8780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             var threshW = Math.max(0, Math.min(260, trustThreshold * 2.6));
             var srcW = Math.max(0, Math.min(260, iq.sourceQuality * 26));
             var threshX = 30 + threshW;
-            return h('svg', { width: '100%', height: 84, viewBox: '0 0 320 84', role: 'img', 'aria-label': sm.label + ' trust calibration chart: source quality ' + (iq.sourceQuality * 10).toFixed(0) + ' versus threshold ' + trustThreshold.toFixed(0), style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 8 } },
+            return h('svg', { width: '100%', height: 84, viewBox: '0 0 320 84', role: 'img', 'aria-label': t('stem.llm_literacy.trust_chart_aria', '{label} trust calibration chart: source quality {src} versus threshold {thresh}').replace('{label}', sm.label).replace('{src}', (iq.sourceQuality * 10).toFixed(0)).replace('{thresh}', trustThreshold.toFixed(0)), style: { background: '#0a0a1a', borderRadius: 8, marginBottom: 8 } },
               !ctx.isContrast && h('defs', null,
                 h('linearGradient', { id: 'llm-tc-well', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
                   h('stop', { offset: '0%', stopColor: '#0f172a' }),
@@ -6825,9 +8835,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
-              var t = new Date().toISOString().slice(11, 19);
-              setIQ({ log: iq.log.concat([{ t: t, f: iq.taskFamiliarity, s: iq.stakes, sq: iq.sourceQuality, mc: iq.modelConfidence, gap: trustGap.toFixed(0), state: sm.label }]) });
+            h('button', { type: 'button', onClick: function() {
+              var ts = new Date().toISOString().slice(11, 19);
+              setIQ({ log: iq.log.concat([{ t: ts, f: iq.taskFamiliarity, s: iq.stakes, sq: iq.sourceQuality, mc: iq.modelConfidence, gap: trustGap.toFixed(0), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.llm_literacy.log_this_calibration', '📋 Log this calibration')),
             h('button', { onClick: function() { setIQ({ taskFamiliarity: 5, stakes: 5, sourceQuality: 5, modelConfidence: 50 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.llm_literacy.reset_2', 'Reset'))
           ),

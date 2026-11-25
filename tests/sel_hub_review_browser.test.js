@@ -66,9 +66,21 @@ async function mount(width = 1280, theme = '', fixture = null) {
   });
   await page.getByRole('button', { name: 'Got it, start using the SEL Hub' }).click();
   await page.locator('[data-sel-tool-card-id]').first().waitFor();
+  // 2026-11-23: a teacher's saved stations sit in the closed "Teacher tools" fold; the
+  // station flows below start by opening it (one click for a real teacher).
+  if (fixture && Array.isArray(fixture.stations) && fixture.stations.length && await page.locator('details[data-sel-teacher-tools]').count()) {
+    await page.locator('details[data-sel-teacher-tools]').evaluate((el) => { el.open = true; });
+  }
+}
+
+// 2026-11-23: Help me choose, skill areas and pathways sit in the "More ways to explore" fold;
+// Teacher launch and Custom SEL Stations in the teacher-only "Teacher tools" fold.
+async function openFold(selector) {
+  await page.locator(selector).first().evaluate((el) => { el.open = true; });
 }
 
 async function startPathway(name) {
+  await openFold('details[data-sel-more-ways]');
   await page.getByText('SEL Pathways', { exact: false }).filter({ hasText: 'Curated Learning Sequences' }).click();
   await page.getByRole('button', { name: new RegExp('^' + name + ':') }).click();
   await page.getByRole('region', { name: 'Pathway practice guide' }).waitFor();
@@ -857,6 +869,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   it('creates classroom routines with self-checked reflection rather than text quotas', async () => {
     await mount();
     for (const name of ['Morning advisory check-in', 'Post-conflict repair routine', 'Digital wellbeing mini-lesson']) {
+      await openFold('details[data-sel-teacher-tools]');
       await page.locator('details[aria-label="Teacher launch routines"] > summary').click();
       await page.getByRole('button', { name: 'Load teacher launch plan: ' + name, exact: true }).click();
       await page.getByRole('button', { name: 'Save this station', exact: true }).click();
@@ -875,6 +888,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
   it('builds each custom preset around practice and reflection without XP or length quotas', async () => {
     await mount();
     for (const name of ['Daily Check-In', 'Reflection Deep Dive', 'Repair Pack']) {
+      await openFold('details[data-sel-teacher-tools]');
       await page.locator('details[aria-label="Teacher launch routines"] > summary').click();
       await page.getByRole('button', { name: 'Load teacher launch plan: Morning advisory check-in', exact: true }).click();
       await page.getByRole('button', { name: 'Clear all quests', exact: true }).click();
@@ -1003,6 +1017,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it('recovers an interrupted draft and undoes removals without overwriting later edits', async () => {
     await mount();
+    await openFold('details[data-sel-teacher-tools]');
     await page.locator('details[aria-label="Teacher launch routines"] > summary').click();
     await page.getByRole('button', { name: 'Load teacher launch plan: Morning advisory check-in', exact: true }).click();
     let builder = page.getByRole('region', { name: 'Station Builder', exact: true });
@@ -1051,12 +1066,13 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
     expect(await saving.getByRole('alert').innerText()).toContain('could not be saved');
     await saving.locator('summary').click();
-    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    // 2026-11-23: one label for the one save action ("Request project save" -> "Export now").
+    await saving.getByRole('button', { name: 'Export now', exact: true }).click();
     expect(await saving.getByRole('status').innerText()).toContain('request failed');
     await page.evaluate(() => { window.reviewBlockedWrites = []; window.reviewExportFails = false; });
     await saving.getByRole('button', { name: 'Retry local saving', exact: true }).click();
     expect(await saving.getByRole('alert').count()).toBe(0);
-    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    await saving.getByRole('button', { name: 'Export now', exact: true }).click();
     expect(await saving.getByRole('status').innerText()).toContain('a saved file has not been confirmed');
     expect(await page.evaluate(() => window.reviewExportRequests)).toBe(1);
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_sel_stations')))).toEqual([station]);
@@ -1065,6 +1081,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it('matches stated goals, time and response choices and explains empty matches', async () => {
     await mount();
+    await openFold('details[data-sel-more-ways]');
     const chooser = page.locator('details[aria-label="Help me choose an activity"]');
     await chooser.locator('summary').click();
     await chooser.getByRole('combobox', { name: 'What would help?' }).selectOption('conversation');
@@ -1140,11 +1157,14 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it('uses honest feedback from existing save controls and only confirms on a host acknowledgement', async () => {
     await mount(1280, '', { exportFails: true });
-    await page.getByRole('button', { name: 'Save or export SEL work now', exact: true }).click();
+    // 2026-11-23: the Start-here storage note and its "Save now" are gone; the Saving fold's
+    // "Export now" is the same action.
     const saving = page.getByRole('region', { name: 'SEL saving and sharing', exact: true });
+    await saving.locator('summary').click();
+    await saving.getByRole('button', { name: 'Export now', exact: true }).click();
     expect(await saving.getByRole('status').innerText()).toContain('request failed');
     await page.evaluate(() => { window.reviewExportFails = false; window.reviewExportRejects = true; });
-    await saving.getByRole('button', { name: 'Request project save', exact: true }).click();
+    await saving.getByRole('button', { name: 'Export now', exact: true }).click();
     await page.waitForFunction(() => document.querySelector('[aria-label="SEL saving and sharing"] [role="status"]').textContent.includes('request failed'));
     await page.evaluate(() => { window.reviewExportRejects = false; });
     await page.locator('[data-sel-tool-card-id="journal"]').click();
@@ -1824,6 +1844,7 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
 
   it.each(['', 'theme-dark', 'theme-contrast'])('keeps discovery and saving feedback usable at 320px in %s', async theme => {
     await mount(320, theme);
+    await openFold('details[data-sel-more-ways]');
     const chooser = page.locator('details[aria-label="Help me choose an activity"]');
     await chooser.locator('summary').click();
     const layout = await chooser.evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth, controls: [...el.querySelectorAll('button,select')].map(c => c.getBoundingClientRect().height) }));

@@ -395,6 +395,7 @@ function indexEntryFromBook(book, file) {
     sourceId: book.sourceId || (book.source && book.source.id) || 'storyweaver',
     contentType: book.contentType || 'story',
     ...((book.workKey || (book.source && book.source.workKey)) ? { workKey: book.workKey || book.source.workKey } : {}),
+    ...(book.indexTier ? { indexTier: book.indexTier } : {}),
     subjects: book.subjects || [],
     license: book.license,
     licenseUrl: book.licenseUrl,
@@ -488,7 +489,10 @@ async function fetchAll(onlySlug) {
   // actually needs them; the default Stories/Science/Study shelves and the
   // language stats stay complete without it.
   const generatedAt = new Date().toISOString();
+  // indexTier 'lazy': Gutenberg cards promoted to full text stay in the lazy
+  // file, so they appear where the cards did and the core index does not grow.
   const isLazyCard = (book) => book.contentType === LAZY_CARD_TYPE ||
+    book.indexTier === 'lazy' ||
     EXTENDED_LAZY_SOURCE_IDS.has(book.sourceId);
   const coreBooks = indexBooks.filter((book) => !isLazyCard(book));
   const cardBooks = indexBooks.filter(isLazyCard);

@@ -3444,19 +3444,22 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   };
   const _isOriginalReading = item => item?.type === 'simplified'
       && ['original', 'same-text-supported'].includes(item.instructionalText?.form || item.config?.instructionalText?.form);
+  // The engine's own translator, English fallback when a key is missing (was a bare
+  // __alloT, undeclared here: a ReferenceError wherever the host had not set it).
+  const _ceTx = (key, fallback) => { try { const v = typeof t === 'function' ? t(key) : ''; return typeof v === 'string' && v && v !== key ? v : fallback; } catch (_) { return fallback; } };
   const handleReviseSelection = async (action, customInstruction = '') => {
       if (!selectionMenu || !selectionMenu.text) return;
       const aiAvailability = lookupAiAvailability();
       if (aiAvailability !== 'ready') {
-          if (addToast) addToast(aiAvailability === 'disabled' ? __alloT('content_engine.ai_disabled_student', 'AI tools are disabled in this student view.') : __alloT('content_engine.ai_unavailable', 'AI provider is not available right now.'), 'info');
+          if (addToast) addToast(aiAvailability === 'disabled' ? _ceTx('content_engine.ai_disabled_student', 'AI tools are disabled in this student view.') : _ceTx('content_engine.ai_unavailable', 'AI provider is not available right now.'), 'info');
           return;
       }
       if (['simplify', 'custom', 'custom-input'].includes(action) && !_s().isTeacherMode) {
-          if (addToast) addToast(__alloT('content_engine.only_teachers_revise', 'Only teachers can revise the passage text.'), 'info');
+          if (addToast) addToast(_ceTx('content_engine.only_teachers_revise', 'Only teachers can revise the passage text.'), 'info');
           return;
       }
       if (['simplify', 'custom', 'custom-input'].includes(action) && _isOriginalReading(_s().generatedContent)) {
-          addToast(__alloT('content_engine.create_adapted_copy', 'Create an adapted copy to change the wording of an original.'), 'info');
+          addToast(_ceTx('content_engine.create_adapted_copy', 'Create an adapted copy to change the wording of an original.'), 'info');
           return;
       }
       const originalText = selectionMenu.text;

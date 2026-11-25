@@ -1,3 +1,17 @@
+function _ensureSharedActivityA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('allo-shared-activity-a11y-css')) return;
+    const style = document.createElement('style');
+    style.id = 'allo-shared-activity-a11y-css';
+    style.textContent =
+        '[data-shared-activity] button,[data-shared-activity] [role="button"],[data-shared-activity] summary,[data-shared-activity] a,[data-shared-activity] input,[data-shared-activity] select,[data-shared-activity] textarea{touch-action:manipulation;}' +
+        '[data-shared-activity] button:focus-visible,[data-shared-activity] [role="button"]:focus-visible,[data-shared-activity] summary:focus-visible,[data-shared-activity] a:focus-visible,[data-shared-activity] input:focus-visible,[data-shared-activity] select:focus-visible,[data-shared-activity] textarea:focus-visible{outline:2px solid #0284c7;outline-offset:2px;}' +
+        '@media (forced-colors: active){[data-shared-activity] button:focus-visible,[data-shared-activity] [role="button"]:focus-visible,[data-shared-activity] summary:focus-visible,[data-shared-activity] a:focus-visible,[data-shared-activity] input:focus-visible,[data-shared-activity] select:focus-visible,[data-shared-activity] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+        '@media (prefers-reduced-motion: reduce){[data-shared-activity] *,[data-shared-activity] *::before,[data-shared-activity] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(style);
+}
+_ensureSharedActivityA11yCss();
+
 const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     activity,
     mailbox,
@@ -187,8 +201,10 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     const actor = transport.actor();
     const Surface = isTeacher ? Views.QuestionBoardTeacher : Views.QuestionBoardStudent;
 
+    React.useEffect(() => { _ensureSharedActivityA11yCss(); }, []);
+
     return (
-        <div className="space-y-2" aria-busy={busy}>
+        <div data-shared-activity="true" className="space-y-2" aria-busy={busy}>
             {busy && <p role="status" className="text-sm font-bold text-indigo-800">Saving…</p>}
             <fieldset disabled={busy} className="min-w-0 space-y-2"><legend className="sr-only">Question board controls</legend>
             {error && <p role="alert" className="rounded border border-rose-300 bg-rose-50 p-2 text-xs text-rose-900">{error}</p>}
@@ -198,7 +214,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
                         <label htmlFor={`qb-name-${activityId}`} className="text-xs font-bold text-slate-700">Your name</label>
                         {(displayName || actor?.uid) && (
                             armStartFresh ? (
-                                <span className="inline-flex items-center gap-1" onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmStartFresh(false); } }}>
+                                <span className="inline-flex items-center gap-1" onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmStartFresh(false); } }}>
                                     <button type="button" onClick={handleQuestionBoardStartFresh} className="min-h-11 rounded border border-rose-300 bg-rose-50 px-2.5 text-xs font-bold text-rose-900 hover:bg-rose-100">
                                         Confirm start fresh
                                     </button>
@@ -1366,6 +1382,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }, [credVersion, getCredStorage, isQuestionBoard, isTeacher, storageKey]);
     const activeCredentialSlot = credentialRoster.find(item => item.active) || null;
 
+    React.useEffect(() => { _ensureSharedActivityA11yCss(); }, []);
+
     // Deliberately placed AFTER every hook in this component. An early return
     // higher up would change hook order when the activity type changes and
     // crash the panel - the render-crash class this repo has been bitten by.
@@ -1376,7 +1394,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }
 
     return (
-      <section aria-busy={busy} className="min-w-0 break-words rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left" aria-label={`Shared ${activityMeta.title.toLowerCase()}`}>
+      <section data-shared-activity="true" aria-busy={busy} className="min-w-0 break-words rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left" aria-label={`Shared ${activityMeta.title.toLowerCase()}`}>
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-700 text-xs font-black text-white" aria-hidden="true">{activityMeta.shortLabel}</div>
           <div className="min-w-0 flex-1">
@@ -1418,7 +1436,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
                 </button>
               ))}
               {armStartFresh ? (
-                <span className="inline-flex items-center gap-1" onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmStartFresh(false); } }}>
+                <span className="inline-flex items-center gap-1" onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmStartFresh(false); } }}>
                   <button type="button" disabled={busy} onClick={() => { setArmStartFresh(false); handleSwitchRespondent(summary?.identityMode || identityModeHint || 'anonymous', ''); }} className="min-h-11 rounded border border-rose-300 bg-rose-50 px-3 py-1 font-bold text-rose-900 hover:bg-rose-100 disabled:opacity-50">
                     Confirm start fresh
                   </button>

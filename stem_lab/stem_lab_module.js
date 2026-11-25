@@ -4884,9 +4884,19 @@
           '.stem-direct-link-btn:focus-visible, .stem-direct-link-action:focus-visible { outline: 3px solid #4f46e5 !important; outline-offset: 2px !important; }',
           '.theme-dark .stem-direct-link-btn:focus-visible, .theme-dark .stem-direct-link-action:focus-visible, .theme-contrast .stem-direct-link-btn:focus-visible, .theme-contrast .stem-direct-link-action:focus-visible { outline: 3px solid #fbbf24 !important; outline-offset: 2px !important; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4, .stem-tool-card .stem-tool-card-title { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p, .stem-tool-card .stem-tool-card-desc { font-size: 16px !important; line-height: 1.55; } }',
+          '.stem-lab-more-menu { position: absolute; top: calc(100% - 4px); right: 12px; z-index: 130; width: min(320px, calc(100vw - 24px)); max-height: min(70vh, 520px); overflow-y: auto; box-sizing: border-box; padding: 6px; border-radius: 14px; border: 1px solid; box-shadow: 0 18px 40px rgba(15,23,42,0.28); display: flex; flex-direction: column; gap: 2px; text-align: left; }',
+          '.stem-lab-more-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; box-sizing: border-box; padding: 6px 12px; border: none; border-radius: 10px; background: transparent; color: inherit; font-size: 13px; font-weight: 800; text-align: left; cursor: pointer; }',
+          '.stem-lab-more-item:hover, .stem-lab-more-item:focus { background: rgba(99,102,241,0.14); }',
+          '.stem-lab-more-item:focus-visible { outline: 3px solid #4f46e5; outline-offset: -3px; }',
+          '.theme-dark .stem-lab-more-item:focus-visible, .theme-contrast .stem-lab-more-item:focus-visible { outline-color: #fbbf24; }',
+          '.stem-lab-more-icon { flex: 0 0 22px; text-align: center; font-style: normal; }',
+          '.stem-lab-more-label { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }',
+          '.stem-lab-more-hint { font-size: 11px; font-weight: 600; margin-top: 2px; }',
+          '.stem-lab-more-state { flex: 0 0 auto; font-family: inherit; font-size: 11px; font-weight: 900; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }',
+          '.stem-lab-more-sep { height: 1px; margin: 4px 6px; background: rgba(148,163,184,0.4); }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 0 !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: wrap; max-width: 100%; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4, .stem-tool-card .stem-tool-card-title { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p, .stem-tool-card .stem-tool-card-desc { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
-          '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
+          '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; column-gap: 8px; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
         document.head.appendChild(s);
         return function () { var el = document.getElementById('stem-xp-keyframes'); if (el) el.remove(); };
@@ -5244,11 +5254,21 @@
 
 
       var [_stemToolSearch, _setStemToolSearch] = React.useState('');
-      var [_stemToolInterest, _setStemToolInterest] = React.useState('');
+      // One field does both jobs: the catalog search text is also what "Suggest tools"
+      // (the AI picker) asks about. There used to be a second box for the picker.
       var [_stemToolSuggesting, _setStemToolSuggesting] = React.useState(false);
       var [_stemToolSuggestions, _setStemToolSuggestions] = React.useState([]);
       var [_stemToolSuggestError, _setStemToolSuggestError] = React.useState('');
       var _stemToolSuggestRequestRef = React.useRef(0);
+      // Suggestions belong to the words they were asked for: when the text changes
+      // (typing, Clear, a category chip, opening a tool) drop them, and drop any
+      // answer still on its way, so the page never shows picks for other words.
+      React.useEffect(function () {
+        _stemToolSuggestRequestRef.current += 1;
+        _setStemToolSuggesting(false);
+        _setStemToolSuggestions(function (prev) { return prev.length ? [] : prev; });
+        _setStemToolSuggestError('');
+      }, [_stemToolSearch]);
       var [_recentStemToolIds, _setRecentStemToolIds] = React.useState(function () {
         try {
           var saved = _stemSafeJsonParse(localStorage.getItem('alloflow_stem_recent_tools') || '[]', []);
@@ -5457,6 +5477,60 @@
       _showKeyHelpRef.current = _showKeyHelp;
       _showXpPanelRef.current = _showXpPanel;
       _showStationBuilderRef.current = _showStationBuilder;
+      // Top bar "More" menu (2026-11-23): Theme, narration, Controls, keyboard help, Cloudflare
+      // link and the teacher items live here; the bar keeps XP, title, Listen and Close.
+      var [_stemMoreOpen, _setStemMoreOpen] = React.useState(false);
+      var _stemMoreOpenRef = React.useRef(false);
+      var _stemMoreBtnRef = React.useRef(null);
+      var _stemMoreMenuRef = React.useRef(null);
+      var _stemMoreFocusRef = React.useRef('first');
+      var _stemToolSectionRef = React.useRef({});
+      _stemMoreOpenRef.current = _stemMoreOpen;
+      function _closeStemMore(returnFocus) {
+        _stemMoreOpenRef.current = false;
+        _setStemMoreOpen(false);
+        if (returnFocus && _stemMoreBtnRef.current) { try { _stemMoreBtnRef.current.focus(); } catch (_) {} }
+      }
+      function _stemMoreItems() {
+        var m = _stemMoreMenuRef.current;
+        return m ? Array.prototype.slice.call(m.querySelectorAll('[role^="menuitem"]')) : [];
+      }
+      // Each item closes the menu, returns focus to More, then runs its old handler.
+      function _stemMoreRun(fn) {
+        return function (e) { _closeStemMore(true); return fn(e); };
+      }
+      function _onStemMoreKeyDown(e) {
+        var items = _stemMoreItems();
+        if (!items.length) return;
+        var i = items.indexOf(document.activeElement);
+        var next = null;
+        if (e.key === 'ArrowDown') next = items[(i + 1) % items.length];
+        else if (e.key === 'ArrowUp') next = items[(i - 1 + items.length) % items.length];
+        else if (e.key === 'Home') next = items[0];
+        else if (e.key === 'End') next = items[items.length - 1];
+        else if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); _closeStemMore(true); return; }
+        if (!next) return;
+        e.preventDefault();
+        e.stopPropagation(); // 3D tools orbit on document arrow keys
+        try { next.focus(); } catch (_) {}
+      }
+      React.useEffect(function () {
+        if (!_stemMoreOpen) return;
+        var items = _stemMoreItems();
+        var target = _stemMoreFocusRef.current === 'last' ? items[items.length - 1] : items[0];
+        if (target) { try { target.focus(); } catch (_) {} }
+        function onOutside(e) {
+          var m = _stemMoreMenuRef.current, b = _stemMoreBtnRef.current;
+          if ((m && m.contains(e.target)) || (b && b.contains(e.target))) return;
+          _closeStemMore(false);
+        }
+        document.addEventListener('mousedown', onOutside, true);
+        document.addEventListener('touchstart', onOutside, true);
+        return function () {
+          document.removeEventListener('mousedown', onOutside, true);
+          document.removeEventListener('touchstart', onOutside, true);
+        };
+      }, [_stemMoreOpen]);
       // "Dirty" is any field the teacher actually filled in. The time estimate
       // defaults to '20' and is not on its own evidence of work.
       _stationBuilderDirtyRef.current = !!(
@@ -5982,6 +6056,11 @@
           // once per [stemLabTool, stemLabTab, _showKeyHelp] change — reading
           // the overlay state directly would close over a stale value.
           if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            if (_stemMoreOpenRef.current) {
+              e.preventDefault();
+              _closeStemMore(true);
+              return;
+            }
             if (_showControlsRef.current) {
               e.preventDefault();
               _setShowControls(false);
@@ -7474,7 +7553,17 @@
         var fallback = _activeToolFallbackMeta[id] || {};
         var label = (reg && reg.label) || fallback.label || _formatStemToolId(id);
         var icon = (reg && reg.icon) || fallback.icon || '\uD83E\uDDEA';
-        return { label: label, icon: icon };
+        return { label: label, icon: icon, category: _stemToolCategoryLabel(id, reg) };
+      }
+      // The open tool's bar names its catalog section (cached when the catalog renders),
+      // else its registered chip category, else '' (the bar then says "Explore tool").
+      function _stemToolCategoryLabel(id, reg) {
+        var sec = _stemToolSectionRef.current && _stemToolSectionRef.current[id];
+        if (sec) return String(sec).replace(/^[^\p{L}\p{N}]+/u, '').trim();
+        var cat = reg && typeof reg.category === 'string' ? reg.category.trim() : '';
+        var chips = { science: t('stem.tools_menu.science') || 'Science', math: t('stem.tools_menu.math') || 'Math', engineering: t('stem.tools_menu.engineering') || 'Engineering', creative: t('stem.tools_menu.creative') || 'Creative', applied: t('stem.tools_menu.applied') || 'Applied', strategy: t('stem.tools_menu.games') || 'Games' };
+        if (chips[cat]) return chips[cat];
+        return /^[A-Z]/.test(cat) ? cat : '';
       }
       var _activeStemToolMeta = stemLabTool ? _getActiveStemToolMeta(stemLabTool) : null;
 
@@ -7508,7 +7597,7 @@
         }
       }, /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-topbar flex items-center justify-between px-6 py-3 text-white", role: "banner",
-        style: { background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
+        style: { position: 'relative', background: isContrast ? '#000' : 'linear-gradient(to right, #2563eb, #4f46e5, #7c3aed)', borderBottom: isContrast ? '3px solid #fbbf24' : 'none' }
       }, /*#__PURE__*/React.createElement("div", {
         className: "stem-lab-brand-block flex items-center gap-3"
       }, React.createElement("button", {
@@ -7559,36 +7648,7 @@
           className: "text-xs text-white"
         }, t('stem.solver.manipulatives') || "Interactive tools & labs"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
-        }, _stemTeacherView && /*#__PURE__*/React.createElement("button", {
-          // Math Studio pointer, relocated from the retired tab row. Compact:
-          // icon-only on phones (the label span is hidden by the 640px block).
-          onClick: () => { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); },
-          className: "stem-lab-mathstudio-btn p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold",
-          "aria-label": t('math_create.pointer_aria') || 'Create moved: open Math Studio',
-          title: t('math_create.pointer') || 'Create moved: Math Studio'
-        }, "\uD83E\uDDEE", /*#__PURE__*/React.createElement("span", { className: "hidden lg:inline" }, t('math_create.title') || 'Math Studio')), /*#__PURE__*/React.createElement("button", {
-          onClick: () => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); },
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          // Announce the CURRENT theme so a screen-reader user knows what the next press leaves.
-          "aria-label": (isContrast ? 'Theme: high contrast' : isDark ? 'Theme: dark' : 'Theme: light') + '. Switch theme',
-          title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
-        }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
-        /*#__PURE__*/React.createElement("button", {
-          // _narrationOn also counts a tool voice that speaks while unset (Road Ready), so one press off silences it.
-          onClick: () => {
-            var next = !_narrationOn;
-            try { localStorage.setItem('alloflow_canvas_narrate', next ? 'on' : 'off'); } catch(e) {}
-            _setNarrationPref(next ? 'on' : 'off');
-            if (!next) _stemStopTTS();
-            if (typeof addToast === 'function') addToast(next ? '🔊 Canvas narration ON — tools will speak descriptions' : '🔇 Canvas narration OFF', 'info');
-          },
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          "aria-pressed": _narrationOn,
-          "aria-label": _narrationOn ? "TTS — toggle canvas narration" : "Mute — toggle canvas narration",
-          title: !_narrationOn ? 'Canvas narration OFF — click to enable spoken descriptions'
-            : _narrationPref === 'on' ? 'Canvas narration ON — click to disable'
-            : _stemTxt(t('stem.narration.tool_voice_title'), 'stem.narration.tool_voice_title', 'This tool reads aloud by default — click to turn narration off')
-        }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _narrationOn ? 'TTS' : 'Mute')),
+        },
         // Listen toggle: per-device preference. Filled when on, outlined when off.
         React.createElement("button", {
           type: "button",
@@ -7607,6 +7667,106 @@
             _listenOn ? { background: isContrast ? '#fbbf24' : '#ffffff', color: isContrast ? '#000000' : '#3730a3', boxShadow: 'inset 0 0 0 2px currentColor' } : { color: '#ffffff' })
           // The check mark carries "on" where a theme forces button colours (and on phones, where labels hide).
         }, _listenOn ? '\uD83D\uDDE3\uFE0F\u2713' : '\uD83D\uDDE3\uFE0F', React.createElement("span", { className: "text-xs font-bold" }, _listenLabel)),
+        // One "More" menu button; on phones the 640px rule hides its word and keeps the icon.
+        React.createElement("button", {
+          type: "button",
+          ref: _stemMoreBtnRef,
+          "data-stem-more-toggle": "true",
+          className: "stem-lab-more-btn p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          "aria-haspopup": "menu",
+          "aria-expanded": _stemMoreOpen ? "true" : "false",
+          "aria-controls": _stemMoreOpen ? "stem-lab-more-menu" : undefined,
+          "aria-label": "More options",
+          title: "More options",
+          style: _stemMoreOpen ? { background: 'rgba(255,255,255,0.2)' } : undefined,
+          onClick: function () { _stemMoreFocusRef.current = 'first'; _setStemMoreOpen(function (v) { return !v; }); },
+          onKeyDown: function (e) {
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+            e.preventDefault(); e.stopPropagation();
+            _stemMoreFocusRef.current = e.key === 'ArrowUp' ? 'last' : 'first';
+            if (!_stemMoreOpen) { _setStemMoreOpen(true); return; }
+            var its = _stemMoreItems(), tg = e.key === 'ArrowUp' ? its[its.length - 1] : its[0];
+            if (tg) tg.focus();
+          }
+        }, React.createElement("i", { "aria-hidden": "true", style: { fontStyle: 'normal' } }, '\u22EF'), React.createElement("span", { className: "text-xs font-bold" }, "More")),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: () => setShowStemLab(false),
+          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
+          "aria-label": "Close STEAM Lab"
+        }, /*#__PURE__*/React.createElement(X, {
+          size: 20
+        }))),
+        // The More menu: each item keeps its old handler, name and hooks.
+        _stemMoreOpen && React.createElement("div", {
+          id: "stem-lab-more-menu", ref: _stemMoreMenuRef, role: "menu", "aria-label": "More options",
+          "data-stem-more-menu": "true", className: "stem-lab-more-menu", onKeyDown: _onStemMoreKeyDown,
+          style: { backgroundColor: _pal.bg, color: _pal.text, borderColor: isContrast ? '#fbbf24' : _pal.border }
+        },
+        React.createElement("button", {
+          type: "button", role: "menuitem", tabIndex: -1, className: "stem-lab-more-item", "data-stem-more-item": "theme",
+          onClick: _stemMoreRun(function () { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }),
+          // Announce the CURRENT theme so a screen-reader user knows what the next press leaves.
+          "aria-label": (isContrast ? 'Theme: high contrast' : isDark ? 'Theme: dark' : 'Theme: light') + '. Switch theme',
+          title: isContrast ? 'High Contrast' : isDark ? 'Dark Mode' : 'Light Mode'
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, isContrast ? '\uD83D\uDC41' : isDark ? '\uD83C\uDF19' : '\u2600\uFE0F'),
+          React.createElement("span", { className: "stem-lab-more-label" }, "Theme"),
+          React.createElement("span", { className: "stem-lab-more-state", "aria-hidden": "true" }, isContrast ? 'Hi-Con' : isDark ? 'Dark' : 'Light')),
+        React.createElement("button", {
+          type: "button", role: "menuitemcheckbox", tabIndex: -1, className: "stem-lab-more-item", "data-stem-more-item": "narration",
+          "aria-checked": _narrationOn ? "true" : "false",
+          // _narrationOn also counts a tool voice that speaks while unset (Road Ready), so one press off silences it.
+          onClick: _stemMoreRun(function () {
+            var next = !_narrationOn;
+            try { localStorage.setItem('alloflow_canvas_narrate', next ? 'on' : 'off'); } catch(e) {}
+            _setNarrationPref(next ? 'on' : 'off');
+            if (!next) _stemStopTTS();
+            if (typeof addToast === 'function') addToast(next ? '\uD83D\uDD0A Canvas narration ON \u2014 tools will speak descriptions' : '\uD83D\uDD07 Canvas narration OFF', 'info');
+          }),
+          "aria-label": _narrationOn ? "TTS \u2014 toggle canvas narration" : "Mute \u2014 toggle canvas narration",
+          title: !_narrationOn ? 'Canvas narration OFF \u2014 click to enable spoken descriptions'
+            : _narrationPref === 'on' ? 'Canvas narration ON \u2014 click to disable'
+            : _stemTxt(t('stem.narration.tool_voice_title'), 'stem.narration.tool_voice_title', 'This tool reads aloud by default \u2014 click to turn narration off')
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, _narrationOn ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
+          React.createElement("span", { className: "stem-lab-more-label" }, "Canvas narration"),
+          React.createElement("span", { className: "stem-lab-more-state", "aria-hidden": "true" }, _narrationOn ? 'On' : 'Off')),
+        React.createElement("button", {
+          type: "button", role: "menuitem", tabIndex: -1, className: "stem-lab-more-item", "data-stem-more-item": "controls",
+          onClick: _stemMoreRun(function () { _setShowControls(function (v) { return !v; }); }),
+          "aria-label": "Controls settings",
+          title: "Controls settings"
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true", style: { fontStyle: 'normal' } }, '\u2699\uFE0F'), React.createElement("span", { className: "stem-lab-more-label" }, "Controls")),
+        React.createElement("button", {
+          type: "button", role: "menuitem", tabIndex: -1, className: "stem-lab-more-item", "data-stem-more-item": "keys",
+          "aria-label": "Keyboard shortcuts",
+          "aria-describedby": stemLabTool ? "stem-lab-more-keyhint" : undefined,
+          // Same toggle as the ? key.
+          onClick: _stemMoreRun(function () {
+            var nextHelpState = !_showKeyHelp;
+            _setShowKeyHelp(nextHelpState);
+            announceToSR(nextHelpState ? 'Keyboard help shown' : 'Keyboard help hidden');
+          })
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, '\u2328\uFE0F'),
+          React.createElement("span", { className: "stem-lab-more-label" }, "Keyboard shortcuts",
+            stemLabTool ? React.createElement("span", { id: "stem-lab-more-keyhint", className: "stem-lab-more-hint", style: { color: _pal.textMuted } }, "Esc or Alt+B returns to all tools") : null),
+          React.createElement("kbd", { className: "stem-lab-more-state", "aria-hidden": "true" }, "?")),
+        stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && _getStemCloudflareUrl(stemLabTool) ? React.createElement("button", {
+          type: "button", role: "menuitemcheckbox", tabIndex: -1,
+          className: "stem-lab-more-item stem-direct-link-btn",
+          "data-stem-direct-link-toggle": "true", "data-stem-more-item": "cloudflare",
+          "aria-checked": _showActiveDirectLink ? "true" : "false",
+          "aria-controls": "stem-active-direct-link-panel",
+          "aria-label": (_showActiveDirectLink ? "Hide" : "Show") + " shareable Cloudflare link for " + _activeStemToolMeta.label,
+          onClick: _stemMoreRun(function () {
+            var nextOpen = !_showActiveDirectLink;
+            _setShowActiveDirectLink(nextOpen);
+            if (typeof announceToSR === 'function') {
+              announceToSR(nextOpen ? ('Showing Cloudflare link for ' + _activeStemToolMeta.label) : 'Hid Cloudflare link');
+            }
+          })
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, '\uD83D\uDD17'),
+          React.createElement("span", { className: "stem-lab-more-label" }, "Cloudflare link"),
+          _showActiveDirectLink ? React.createElement("span", { className: "stem-lab-more-state", "aria-hidden": "true" }, '\u2713') : null) : null,
+        _stemTeacherView && React.createElement("div", { role: "separator", className: "stem-lab-more-sep" }),
         // ✨ AI-extras pill (W7): when no AI backend is reachable, the hints
         // toggle below would be a dead control, so it is replaced by one quiet
         // indicator. Neutral wording on purpose — the sims are fully functional
@@ -7614,13 +7774,16 @@
         // it as breakage. Click opens AI Backend Settings (incl. the Canvas
         // path) via the host callback.
         _stemTeacherView && !callGemini && /*#__PURE__*/React.createElement("button", {
-          onClick: function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} },
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
+          type: "button", role: "menuitem", tabIndex: -1, "data-stem-more-item": "ai-setup",
+          onClick: _stemMoreRun(function () { try { if (typeof onOpenAiSetup === 'function') onOpenAiSetup(); } catch (e) {} }),
+          className: "stem-lab-more-item",
           "aria-label": 'AI extras: off — no AI backend is set up. Click to see the ways to turn AI on.',
           title: 'AI extras (hints, coaching) are off because no AI backend is set up. The lab itself works fully without them. Click to set one up, or use AlloFlow inside Gemini Canvas for free AI.'
-        }, '✨', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, 'AI extras: off')),
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, '✨'), /*#__PURE__*/React.createElement("span", { className: "stem-lab-more-label" }, 'AI extras: off')),
         isTeacherMode && !!callGemini && /*#__PURE__*/React.createElement("button", {
-          onClick: async () => {
+          type: "button", role: "menuitemcheckbox", tabIndex: -1, "data-stem-more-item": "ai-hints",
+          "aria-checked": _aiHintsOn ? "true" : "false",
+          onClick: _stemMoreRun(async () => {
             if (!_aiHintsOn) {
               // This previously read `... ? window.confirm(...) : true`, which
               // FAILED OPEN: with no confirm available `ok` was true and AI
@@ -7653,26 +7816,22 @@
               _setAiHintsOn(false);
               if (typeof addToast === 'function') addToast('\uD83D\uDCA1 AI hints OFF', 'info');
             }
-          },
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          "aria-pressed": _aiHintsOn,
+          }),
+          className: "stem-lab-more-item",
           "aria-label": _aiHintsOn ? 'AI hints are ON for students \u2014 click to turn off' : 'AI hints are OFF \u2014 click to enable (teacher control)',
           title: _aiHintsOn ? 'AI hints ON: a stuck student can request an AI hint (their answer is sent to the AI). Practice only \u2014 turn OFF for graded work.' : 'AI hints OFF. Click to enable AI hints for stuck students (sends their answer to the AI; keep off during graded work).'
-        }, '\uD83D\uDCA1', /*#__PURE__*/React.createElement("span", { className: "text-xs font-bold" }, _aiHintsOn ? 'Hints' : 'Hints Off')),
-        /*#__PURE__*/React.createElement("button", {
-          onClick: () => _setShowControls(v => !v),
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
-          "aria-label": "Controls settings",
-          title: "Controls settings"
-          // Gear in an <i>, not a span: the 640px rule hides every button span, so phones show the gear alone.
-        }, React.createElement("i", { "aria-hidden": "true", style: { fontStyle: 'normal' } }, '\u2699\uFE0F'), React.createElement("span", { className: "text-xs font-bold" }, "Controls")),
-        /*#__PURE__*/React.createElement("button", {
-          onClick: () => setShowStemLab(false),
-          className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors",
-          "aria-label": "Close STEAM Lab"
-        }, /*#__PURE__*/React.createElement(X, {
-          size: 20
-        })))),
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, '\uD83D\uDCA1'),
+          React.createElement("span", { className: "stem-lab-more-label" }, 'AI hints'),
+          React.createElement("span", { className: "stem-lab-more-state", "aria-hidden": "true" }, _aiHintsOn ? 'On' : 'Off')),
+        _stemTeacherView && /*#__PURE__*/React.createElement("button", {
+          type: "button", role: "menuitem", tabIndex: -1, "data-stem-more-item": "math-studio",
+          // Math Studio pointer, relocated from the retired tab row.
+          onClick: _stemMoreRun(function () { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); }),
+          className: "stem-lab-mathstudio-btn stem-lab-more-item",
+          "aria-label": t('math_create.pointer_aria') || 'Create moved: open Math Studio',
+          title: t('math_create.pointer') || 'Create moved: Math Studio'
+        }, React.createElement("i", { className: "stem-lab-more-icon", "aria-hidden": "true" }, "\uD83E\uDDEE"), /*#__PURE__*/React.createElement("span", { className: "stem-lab-more-label" }, t('math_create.title') || 'Math Studio'))
+        )),
         // The tab row is gone. With Create moved home to the math tool
         // (docs/math_create_migration_plan.md), the tablist carried exactly one
         // tab plus the pointer \u2014 72px of pure overhead on a phone, and a
@@ -7888,44 +8047,7 @@
             style: { color: _pal.text }
           }, _activeStemToolMeta.label), /*#__PURE__*/React.createElement("p", {
             style: { color: _pal.textMuted }
-          }, "Explore tool"))), /*#__PURE__*/React.createElement("div", {
-            className: "stem-active-tool-actions"
-          }, _getStemCloudflareUrl(stemLabTool) ? /*#__PURE__*/React.createElement("button", {
-            type: "button",
-            className: "stem-direct-link-btn",
-            "data-stem-direct-link-toggle": "true",
-            "aria-expanded": _showActiveDirectLink ? "true" : "false",
-            "aria-controls": "stem-active-direct-link-panel",
-            "aria-label": (_showActiveDirectLink ? "Hide" : "Show") + " shareable Cloudflare link for " + _activeStemToolMeta.label,
-            onClick: function () {
-              var nextOpen = !_showActiveDirectLink;
-              _setShowActiveDirectLink(nextOpen);
-              if (typeof announceToSR === 'function') {
-                announceToSR(nextOpen ? ('Showing Cloudflare link for ' + _activeStemToolMeta.label) : 'Hid Cloudflare link');
-              }
-            },
-            style: {
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              minHeight: 44,
-              padding: '0 12px',
-              borderRadius: 10,
-              border: '1px solid ' + (isContrast ? '#fbbf24' : (isDark ? 'rgba(56,189,248,0.45)' : 'rgba(2,132,199,0.35)')),
-              backgroundColor: _showActiveDirectLink
-                ? (isContrast ? '#fbbf24' : '#0369a1')
-                : (isContrast ? '#111' : (isDark ? 'rgba(14,165,233,0.16)' : '#f0f9ff')),
-              color: _showActiveDirectLink
-                ? (isContrast ? '#000' : '#ffffff')
-                : (isContrast ? '#fbbf24' : (isDark ? '#bae6fd' : '#075985')),
-              fontSize: 12,
-              fontWeight: 800,
-              cursor: 'pointer'
-            }
-          }, /*#__PURE__*/React.createElement("span", { "aria-hidden": "true" }, "\uD83D\uDD17"), /*#__PURE__*/React.createElement("span", null, "Cloudflare link")) : null, /*#__PURE__*/React.createElement("span", {
-            className: "stem-active-tool-hint",
-            style: { color: _pal.textMuted }
-          }, "Esc or Alt+B returns to all tools"))),
+          }, _activeStemToolMeta.category || "Explore tool")))),
         stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && _showActiveDirectLink && _getStemCloudflareUrl(stemLabTool) && (function () {
           var _directUrl = _getStemCloudflareUrl(stemLabTool);
           var _isCopied = _copiedDirectLinkId === stemLabTool;
@@ -9302,6 +9424,12 @@
                 return false;
               });
             }
+            // Remember each tile's section so the open tool's bar can name it.
+            (function () {
+              var _sec = '', _secMap = {};
+              _allStemTools.forEach(function (tl) { if (!tl) return; if (tl.category) _sec = tl.label || ''; else if (tl.id) _secMap[tl.id] = _sec; });
+              _stemToolSectionRef.current = _secMap;
+            })();
             // Category filter (from chip buttons)
             var _categoryFilterOptions = [
               { id: '', label: t('stem.tools_menu.all') || 'All', icon: '\u2B50' },
@@ -9362,7 +9490,8 @@
             var _availableStemTools = _allStemTools.filter(function (tool) { return tool && !tool.category && tool.id; });
             var _recentStemTools = (_recentStemToolIds || []).map(_findStemToolById).filter(Boolean);
             function _requestStemToolSuggestions() {
-              var interest = String(_stemToolInterest || '').trim();
+              // The words in the search field (2026-11-23: the picker's own box is gone).
+              var interest = String(_stemToolSearch || '').trim();
               if (!interest) {
                 _setStemToolSuggestError('Add a topic, question, or project idea first.');
                 _setStemToolSuggestions([]);
@@ -9420,7 +9549,11 @@
                 if (_stemToolSuggestRequestRef.current !== reqId) return;
                 _setStemToolSuggesting(false);
                 _setStemToolSuggestions(local);
-                _setStemToolSuggestError(local.length ? '' : (message || 'No close matches yet. Try a more specific topic.'));
+                // The note ("...; showing closest catalog matches.") goes with the matches. With
+                // none, keep the reason and say there are none, instead of promising matches.
+                var note = String(message || '');
+                if (!local.length) note = (note.replace(/; showing closest catalog matches\.$/, '.') + ' No close matches yet. Try a more specific topic.').trim();
+                _setStemToolSuggestError(note);
                 if (typeof announceToSR === 'function') announceToSR(local.length ? 'Suggested ' + local.length + ' STEM tools.' : 'No STEM tool suggestions found.');
               };
               if (!_stemAiText) {
@@ -9669,26 +9802,97 @@
               })
             )
           ),
-          // Search input
+          // Search input, with the AI picker's "Suggest tools" button attached to it.
+          // One field: typing filters the grid; the button asks the picker about the
+          // same words. (There used to be a second box, "What do you want to learn
+          // about?", under the Recent row.) The picker is not offered inside a station,
+          // as before. With AI off it still answers, from the catalog, and says so.
           /*#__PURE__*/React.createElement("div", { className: "stem-tool-searchbar mb-4 relative" },
-            /*#__PURE__*/React.createElement("input", {
-              type: "text",
-              value: _stemToolSearch,
-              onChange: function (e) {
-                _setStemToolSearch(e.target.value);
-                if (d._categoryFilter) upd('_categoryFilter', '');
-              },
-              placeholder: "Search " + _totalToolCount + " tools...",
-              className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all",
-              'aria-label': 'Search STEAM Lab tools'
-            }),
-            /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
-              _stemToolSearch && /*#__PURE__*/React.createElement("button", {
-                onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
-                className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 text-xs font-bold transition-colors",
-                'aria-label': 'Clear search'
-              }, "\u2715")
-            ),
+            React.createElement("div", { className: "stem-tool-matchmaker-form", "data-stem-search-row": "true" },
+              React.createElement("div", { className: "relative min-w-0" },
+                /*#__PURE__*/React.createElement("input", {
+                  type: "text",
+                  value: _stemToolSearch,
+                  onChange: function (e) {
+                    _setStemToolSearch(e.target.value);
+                    if (d._categoryFilter) upd('_categoryFilter', '');
+                  },
+                  placeholder: "Search " + _totalToolCount + " tools...",
+                  className: "w-full px-4 py-2.5 pl-10 text-sm border border-slate-500 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all",
+                  'aria-label': 'Search STEAM Lab tools'
+                }),
+                /*#__PURE__*/React.createElement("span", { className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" }, "\uD83D\uDD0D"),
+                _stemToolSearch && /*#__PURE__*/React.createElement("button", {
+                  onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
+                  className: "absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 text-xs font-bold transition-colors",
+                  'aria-label': 'Clear search'
+                }, "\u2715")
+              ),
+              !_activeStation && React.createElement("button", {
+                type: "button",
+                className: "stem-tool-matchmaker-button",
+                "data-stem-suggest-tools": "true",
+                disabled: _stemToolSuggesting,
+                onClick: _requestStemToolSuggestions,
+                style: {
+                  backgroundColor: isContrast ? '#fbbf24' : '#4f46e5',
+                  color: isContrast ? '#000' : '#ffffff',
+                  cursor: _stemToolSuggesting ? 'wait' : 'pointer',
+                  opacity: _stemToolSuggesting ? 0.78 : 1
+                },
+                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools \u2014 with AI"
+              }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
+            )
+          ),
+
+          // What the picker says: thinking, a message, or its picks. Directly under
+          // the field it was asked from. Nothing is drawn until it has been asked.
+          !_activeStation && (_stemToolSuggesting || _stemToolSuggestError || _stemToolSuggestions.length > 0) && React.createElement("div", {
+            id: "stem-tool-suggest-panel",
+            className: "stem-tool-matchmaker",
+            role: "region",
+            "aria-label": "AI STEM tool picker",
+            style: {
+              backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.76)' : '#ffffff'),
+              color: _pal.text,
+              borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.30)'
+            }
+          },
+            (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {
+              className: "stem-tool-matchmaker-status",
+              role: "status",
+              "aria-live": "polite",
+              style: { marginTop: 0, color: _stemToolSuggestError ? (isContrast ? '#fbbf24' : (isDark ? '#fcd34d' : '#b45309')) : _pal.textMuted }
+            }, _stemToolSuggesting ? "Finding tool matches..." : _stemToolSuggestError),
+            _stemToolSuggestions.length > 0 && React.createElement("div", {
+              className: "stem-tool-ai-suggestions",
+              role: "group",
+              "aria-label": "Suggested STEM tools",
+              style: (_stemToolSuggesting || _stemToolSuggestError) ? undefined : { marginTop: 0 }
+            },
+              _stemToolSuggestions.map(function (suggestion) {
+                return React.createElement("button", {
+                  key: "ai-suggest-" + suggestion.id,
+                  type: "button",
+                  className: "stem-tool-ai-suggestion",
+                  onClick: function () { _openStemTool(suggestion.id, suggestion.label); },
+                  style: {
+                    backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.92)' : '#f8fafc'),
+                    color: _pal.text,
+                    borderColor: _pal.border
+                  },
+                  "aria-label": "Open suggested STEM tool " + suggestion.label + ". " + suggestion.reason
+                },
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-title" },
+                    React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, suggestion.icon),
+                    React.createElement("span", null, suggestion.label)
+                  ),
+                  React.createElement("span", { className: "stem-tool-ai-suggestion-reason", style: { color: _pal.textMuted } }, suggestion.reason),
+                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-xs font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
+                );
+              })
+            )
+          ),
 
           // ── Category filter chips ──
           React.createElement("div", {
@@ -9744,89 +9948,6 @@
                 "aria-label": "Open recent STEM tool " + tool.label
               }, React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, tool.icon), React.createElement("span", null, tool.label));
             })
-          ),
-
-          !_activeStation && !_searchLower && !_catFilter && React.createElement("div", {
-            className: "stem-tool-matchmaker",
-            role: "region",
-            "aria-label": "AI STEM tool picker",
-            style: {
-              backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(15,23,42,0.76)' : '#ffffff'),
-              color: _pal.text,
-              borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.30)'
-            }
-          },
-            React.createElement("form", {
-              className: "stem-tool-matchmaker-form",
-              onSubmit: function (e) {
-                e.preventDefault();
-                _requestStemToolSuggestions();
-              }
-            },
-              React.createElement("label", { className: "sr-only", htmlFor: "stem-tool-interest" }, "Topic or project interest"),
-              React.createElement("input", {
-                id: "stem-tool-interest",
-                type: "text",
-                value: _stemToolInterest,
-                onChange: function (e) {
-                  _setStemToolInterest(e.target.value);
-                  if (_stemToolSuggestError) _setStemToolSuggestError('');
-                },
-                placeholder: "What do you want to learn about?",
-                className: "stem-tool-matchmaker-input",
-                style: {
-                  backgroundColor: isContrast ? '#000' : (isDark ? '#0f172a' : '#ffffff'),
-                  color: _pal.text,
-                  borderColor: _pal.border
-                },
-                "aria-label": "What do you want to learn about?"
-              }),
-              React.createElement("button", {
-                type: "submit",
-                className: "stem-tool-matchmaker-button",
-                disabled: _stemToolSuggesting,
-                style: {
-                  backgroundColor: isContrast ? '#fbbf24' : '#4f46e5',
-                  color: isContrast ? '#000' : '#ffffff',
-                  cursor: _stemToolSuggesting ? 'wait' : 'pointer',
-                  opacity: _stemToolSuggesting ? 0.78 : 1
-                },
-                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools — with AI"
-              }, React.createElement("span", { "aria-hidden": "true" }, "AI"), React.createElement("span", null, _stemToolSuggesting ? "Thinking..." : "Suggest tools"))
-            ),
-            (_stemToolSuggesting || _stemToolSuggestError) && React.createElement("p", {
-              className: "stem-tool-matchmaker-status",
-              role: "status",
-              "aria-live": "polite",
-              style: { color: _stemToolSuggestError ? (isContrast ? '#fbbf24' : '#b45309') : _pal.textMuted }
-            }, _stemToolSuggesting ? "Finding tool matches..." : _stemToolSuggestError),
-            _stemToolSuggestions.length > 0 && React.createElement("div", {
-              className: "stem-tool-ai-suggestions",
-              role: "group",
-              "aria-label": "Suggested STEM tools"
-            },
-              _stemToolSuggestions.map(function (suggestion) {
-                return React.createElement("button", {
-                  key: "ai-suggest-" + suggestion.id,
-                  type: "button",
-                  className: "stem-tool-ai-suggestion",
-                  onClick: function () { _openStemTool(suggestion.id, suggestion.label); },
-                  style: {
-                    backgroundColor: isContrast ? '#000' : (isDark ? 'rgba(30,41,59,0.92)' : '#f8fafc'),
-                    color: _pal.text,
-                    borderColor: _pal.border
-                  },
-                  "aria-label": "Open suggested STEM tool " + suggestion.label + ". " + suggestion.reason
-                },
-                  React.createElement("span", { className: "stem-tool-ai-suggestion-title" },
-                    React.createElement("span", { className: "stem-catalog-chip-icon", "aria-hidden": "true" }, suggestion.icon),
-                    React.createElement("span", null, suggestion.label)
-                  ),
-                  React.createElement("span", { className: "stem-tool-ai-suggestion-reason", style: { color: _pal.textMuted } }, suggestion.reason),
-                  suggestion.starter && React.createElement("span", { className: "block mt-1 text-xs font-black", style: { color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#4338ca') } }, "Try: " + suggestion.starter)
-                );
-              })
-            )
           ),
 
           !_activeStation && React.createElement("div", { className: "stem-tool-filter-row flex flex-wrap gap-1.5 mb-3", role: 'group', 'aria-label': 'Filter tools by category' },
@@ -10590,7 +10711,9 @@
               };
               if (!_reduceMotion) {
                 _cardStyle.animation = 'stemCardIn 0.35s ease-out both';
-                _cardStyle.animationDelay = (_ci * 40) + 'ms';
+                // Capped: uncapped, tile 148 started fading in 5.9 s after the grid drew.
+                // The first 12 tiles stagger; the rest follow together, so the grid settles in about 0.8 s.
+                _cardStyle.animationDelay = (Math.min(_ci, 12) * 40) + 'ms';
               }
               return /*#__PURE__*/React.createElement("button", {
                 key: tool.id,
@@ -10622,7 +10745,23 @@
             /*#__PURE__*/React.createElement("button", { type: "button",
                 onClick: function () { _setStemToolSearch(''); upd('_categoryFilter', ''); },
                 className: "mt-2 min-h-11 px-3 py-2 rounded-lg text-xs text-indigo-700 hover:text-indigo-900 font-bold transition-colors"
-              }, "Clear filters")
+              }, "Clear filters"),
+            // No tile matched the words: offer the picker for the same words. Its answer
+            // shows under the search field (#stem-tool-suggest-panel).
+            _stemToolSearch && !_activeStation && React.createElement("button", {
+                type: "button",
+                "data-stem-suggest-tools-empty": "true",
+                disabled: _stemToolSuggesting,
+                onClick: _requestStemToolSuggestions,
+                className: "mt-2 ml-2 min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-colors",
+                // The colours of the "Clear filters" pill beside the tool count, in each theme.
+                style: {
+                  backgroundColor: isContrast ? '#111' : (isDark ? 'rgba(99,102,241,0.18)' : '#eef2ff'),
+                  color: isContrast ? '#fbbf24' : (isDark ? '#c7d2fe' : '#3730a3'),
+                  borderColor: isContrast ? '#fbbf24' : 'rgba(99,102,241,0.35)'
+                },
+                "aria-label": _stemToolSuggesting ? "Thinking..." : "Suggest tools — with AI"
+              }, _stemToolSuggesting ? "Thinking..." : "Suggest tools")
               ));
           })(),
         /* base10: removed -- see stem_tool_manipulatives.js */

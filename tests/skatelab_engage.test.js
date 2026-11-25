@@ -75,6 +75,14 @@ async function mount(initial, ctxOverrides = {}) {
 const click = (element) => act(async () => { element.click(); });
 const launchButton = () => container.querySelector('[data-skatelab-launch="true"]');
 const launch = () => click(launchButton());
+// Round 2 (2026-11-23): a new learner's first question is about the run they are about to watch
+// (hp_run). A test about another question moves to it the way a student does: "Ask me a different question".
+const toPrompt = async (promptId) => {
+  for (let i = 0; i < 8 && !container.querySelector('[id^="sk-predict-' + promptId + '-"]'); i++) {
+    const ask = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Ask me a different question');
+    await act(async () => { ask.click(); });
+  }
+};
 const chooseFirstAnswer = () => click(container.querySelector('[data-skatelab-predict] input[type="radio"]'));
 const xpIds = (spy) => spy.mock.calls.map((call) => call[0]);
 const drawnTexts = () => contexts.flatMap((ctx) => ctx.fillText.mock.calls.map(([text]) => String(text)));
@@ -229,6 +237,7 @@ describe('1: the ride stays in view', () => {
 describe('4: the what-if ghost appears on the canvas after the reveal only', () => {
   it('Moon prompt: no ghost before the run; after it, a ghost note and canvas tag from the model', async () => {
     await mount(seed());
+    await toPrompt('hp_moon');
     expect(container.querySelector('#sk-predict-question').textContent).toMatch(/Moon/);
     expect(container.querySelector('.sk-ghost-note')).toBeNull();
     expect(drawnTexts()).not.toContain('what-if: Moon');

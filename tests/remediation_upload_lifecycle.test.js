@@ -436,7 +436,7 @@ describe('audit-only readiness and manual audit behavior', () => {
   });
 
   it('gates Run Audit only on audit readiness and performs no remediation or delayed autosave', () => {
-    const marker = view.indexOf('<button data-help-key="pdf_audit_view_start_btn"');
+    const marker = view.indexOf('<button type="button" data-help-key="pdf_audit_view_start_btn"');
     expect(marker).toBeGreaterThan(-1);
     const buttonStart = view.lastIndexOf('<button', marker);
     const buttonEnd = view.indexOf('</button>', marker);

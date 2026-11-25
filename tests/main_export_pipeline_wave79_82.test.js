@@ -77,7 +77,8 @@ describe('Wave 79: transient popup opener isolation', () => {
 
   it('host crash-log fallback window is isolated in all three host shells', () => {
     for (const shell of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx']) {
-      expect(read(shell)).toContain("var w = window.open('', '_blank'); if (w) { try { w.opener = null; } catch (_) {} }");
+      // Now a multi-line fallback: a blocked popup throws, and the opener is cut before writing.
+      expect(read(shell)).toMatch(/var w = window\.open\('', '_blank'\);\s*if \(!w \|\| !w\.document\) throw new Error\('popup-blocked'\);\s*try \{ w\.opener = null; \} catch \(_\) \{\}\s*w\.document\.write\(/);
     }
   });
 

@@ -148,7 +148,9 @@ describe('inbound: a completed standardized probe reaches probe history', () => 
 
 describe('the Math DCPM trend is scoped to the student it is shown under', () => {
   it('reads that student probe history, not a device-global array', () => {
-    expect(ac).toContain('const mathDcpmData = ((probeHistory && probeHistory[selectedStudent.name]) || [])');
+    // Own-property, array-only read of THIS student's history (prototype-safe).
+    expect(ac).toContain('const mathDcpmData = _saOwnArr(probeHistory, selectedStudent.name)');
+    expect(ac).toContain("Object.prototype.hasOwnProperty.call(obj, key) && Array.isArray(obj[key])) ? obj[key] : [];");
     expect(ac).toContain('renderSparkline(mathDcpmData, "#f59e0b")');
     expect(ac).toContain('mathDcpmData.length >= 2 &&');
   });

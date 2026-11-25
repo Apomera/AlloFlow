@@ -87,7 +87,8 @@ describe('Bug Sweep Wave 8 (2026-11-20) — 57 Fixes Regression Suite', () => {
 
       // #2 Scanning mode ignores modifier keys and non-gridcell buttons
       expect(src).toContain('event.ctrlKey || event.metaKey || event.altKey');
-      expect(src).toContain('button:not([role="gridcell"])');
+      // Cells are now buttons (data-aac-cell) inside role="gridcell" wrappers.
+      expect(src).toContain('button:not([data-aac-cell="true"])');
     });
 
     it('#5, #6, #7, #18: school_rewards_module.js exposes worksheet on join path (before opening_help), deduplicates tokens, separates download vs tracking, preserves verified invalidation on URL edit, and guards unmount/timers', () => {
@@ -441,7 +442,9 @@ describe('Bug Sweep Wave 8 (2026-11-20) — 57 Fixes Regression Suite', () => {
     it('#50, #54: stem_tool_graphcalc.js defers render-time badge awards and prevents horizontal asymptote chords on inverse reflections', () => {
       const src = readSrc('stem_lab/stem_tool_graphcalc.js');
       expect(src).toContain('checkBadges(null, true);');
-      expect(src).toContain('Math.abs(px - prevX) > W');
+      // The chord guard now lives in the shared strokeRun() used for the reflection.
+      expect(src).toContain('(prevX !== null && Math.abs(xp - prevX) > W2)) { c.moveTo(xp, yp);');
+      expect(src).toContain('strokeRun(S.reflPtsCache);');
     });
 
     it('#52: stem_tool_probability.js tracks _piSlowRunning on start, stop, and completion', () => {

@@ -20,6 +20,18 @@
   }
 
   var VERSION = 'learning-web-explorer/v1';
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-learning-web-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-learning-web-a11y-css';
+    st.textContent = [
+      '.learning-web-explorer :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+      '.learning-web-explorer :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }',
+      '@media (forced-colors: active) { .learning-web-explorer :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .learning-web-explorer * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   var GRAPH_VERSION = 'acg/v1';
   var REGISTRY_VERSION = 'learning-web-registry/v1';
   var LIMITS = {
@@ -878,8 +890,8 @@
       }
       function onKeyDown(event) {
         if (modalStack[modalStack.length - 1] !== token) return;
-        if (event.isComposing || event.keyCode === 229) return;
-        if (event.key === 'Escape') {
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
+        if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           event.preventDefault();
           event.stopPropagation();
           if (event.stopImmediatePropagation) event.stopImmediatePropagation();

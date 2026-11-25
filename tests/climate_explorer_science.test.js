@@ -14,7 +14,9 @@ beforeEach(() => {
 describe('Climate Explorer observation labels', () => {
   it('distinguishes the latest NOAA monthly mean from the historical annual series', () => {
     const html = renderClimate({ tab: 'keeling' });
-    expect(html).toContain('June 2026: 431.44 ppm CO');
+    // 2026-11-23: the undated June 2026 monthly PEAK (now revised to 431.43) gave way to the
+    // NOAA 2025 annual mean, the fair 'now' figure for a yearly chart.
+    expect(html).toContain('NOAA Mauna Loa yearly average, 2025: 427.35 ppm CO');
     expect(html).toContain('2024 annual mean');
     expect(html).toContain('Atmospheric visualization responding to the current activity values');
     expect(html).not.toContain('CO₂ today: ~424 ppm');

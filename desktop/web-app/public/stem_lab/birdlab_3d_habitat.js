@@ -7,7 +7,9 @@
   'use strict';
 
   function create(THREE, scene, options) {
-    options = options || {};
+    if (!THREE || typeof THREE.Group !== 'function') throw new TypeError('BirdLab3DHabitat.create requires THREE');
+    if (!scene || typeof scene.add !== 'function') throw new TypeError('BirdLab3DHabitat.create requires scene');
+    options = options && typeof options === 'object' ? options : {};
     var detailed = options.quality !== 'low';
     var root = new THREE.Group();
     root.name = 'birdlab-woodland-habitat';
@@ -30,11 +32,33 @@
     var dummy = new THREE.Object3D(), up = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     function random() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
-    function keep(value) { resources.push(value); return value; }
+    function keep(value) { if (value && resources.indexOf(value) === -1) resources.push(value); return value; }
     function linear(hex) { return new THREE.Color(hex).convertSRGBToLinear(); }
     function material(parameters) { return keep(new THREE.MeshStandardMaterial(parameters)); }
     function geometry(value) { return keep(value); }
-    function canvas(size) { var value = document.createElement('canvas'); value.width = value.height = size; return value; }
+    function canvas(size) {
+      if (typeof document !== 'undefined' && document && typeof document.createElement === 'function') {
+        var value = document.createElement('canvas');
+        value.width = value.height = size;
+        if (typeof value.getContext === 'function' && value.getContext('2d')) return value;
+      }
+      var noop = function () {}, grad = function () { return { addColorStop: noop }; };
+      var imgData = function (w, h) {
+        var iw = Math.max(1, (w | 0) || size || 1), ih = Math.max(1, (h | 0) || size || 1);
+        return { width: iw, height: ih, data: new Uint8ClampedArray(iw * ih * 4) };
+      };
+      var stubCtx = {
+        fillStyle: '#000', strokeStyle: '#000', lineWidth: 1, lineCap: 'butt', lineJoin: 'miter',
+        globalAlpha: 1, globalCompositeOperation: 'source-over',
+        fillRect: noop, strokeRect: noop, clearRect: noop, beginPath: noop, closePath: noop,
+        moveTo: noop, lineTo: noop, quadraticCurveTo: noop, bezierCurveTo: noop, arc: noop,
+        ellipse: noop, fill: noop, stroke: noop, save: noop, restore: noop, translate: noop,
+        rotate: noop, scale: noop, setLineDash: noop, clip: noop, rect: noop, drawImage: noop,
+        putImageData: noop, createImageData: imgData, getImageData: function (x, y, w, h) { return imgData(w, h); },
+        createLinearGradient: grad, createRadialGradient: grad
+      };
+      return { width: size, height: size, getContext: function () { return stubCtx; } };
+    }
     function texture(value, repeat) {
       var result = keep(new THREE.CanvasTexture(value));
       result.encoding = THREE.sRGBEncoding;
@@ -56,6 +80,7 @@
         (x>-.10 && x<2.60 && z>.95 && z<2.90);
     }
     function groundHeight(x, z) {
+      if (!Number.isFinite(x) || !Number.isFinite(z)) return 0;
       // A quiet, level observation clearing opens into gently folded woodland.
       var shelter = smooth((Math.hypot(x, z) - 3.5) / 14);
       return shelter * (Math.sin(x * 0.055) * Math.cos(z * 0.068) * 2.9 +
@@ -787,9 +812,14 @@
     // wide boughs intrude into the bird and camera at the far end of a bank.
     var courseSamples = [];
     if (global.BirdLab3D && typeof global.BirdLab3D.sampleFlight === 'function') {
-      for (var courseTime = 0; courseTime < (global.BirdLab3D.courseDuration || 44); courseTime += 0.125) {
-        var flightPosition = global.BirdLab3D.sampleFlight(courseTime).position;
-        courseSamples.push([flightPosition[0], flightPosition[2]]);
+      var rawCourseDur = global.BirdLab3D.courseDuration;
+      var courseDur = typeof rawCourseDur === 'number' && Number.isFinite(rawCourseDur) && rawCourseDur > 0 ? Math.min(rawCourseDur, 600) : 44;
+      for (var courseTime = 0; courseTime < courseDur; courseTime += 0.125) {
+        var flightSample = global.BirdLab3D.sampleFlight(courseTime);
+        var flightPosition = flightSample && flightSample.position;
+        if (flightPosition && Number.isFinite(flightPosition[0]) && Number.isFinite(flightPosition[2])) {
+          courseSamples.push([flightPosition[0], flightPosition[2]]);
+        }
       }
     } else {
       // Standalone landscape previews have no engine. This conservative route
@@ -1077,7 +1107,8 @@
               var tangentX = side * span * (1.08 - fraction * 0.16);
               var tangentY = endY - cy - 30 + 2 * shootBend * (1 - 2 * fraction);
               var tangentLength = Math.hypot(tangentX, tangentY);
-              tangentX /= tangentLength; tangentY /= tangentLength;
+              if (tangentLength > 1e-8) { tangentX /= tangentLength; tangentY /= tangentLength; }
+              else { tangentX = side || 1; tangentY = 0; }
               var needleSide = leaf % 2 ? 1 : -1;
               var needleFan = 0.58 + needleSpread * 0.72;
               var needleReach = (10 + needleLength * 20) * (0.81 + fraction * 0.19);
@@ -1777,12 +1808,13 @@
       return shape;
     }
     function groundSurfaceAt(x, z) {
+      if (!Number.isFinite(x) || !Number.isFinite(z)) return { height: 0, normal: new THREE.Vector3(0, 1, 0) };
       // Match the rendered terrain triangles, not just the smooth sampler, so
       // tiny leaves do not hover above or disappear inside a sloped triangle.
       var divisions = detailed ? 128 : 80, step = 150 / divisions;
       var cellX = Math.max(0, Math.min(divisions - 1, Math.floor((x + 75) / step)));
       var cellZ = Math.max(0, Math.min(divisions - 1, Math.floor((z + 75) / step)));
-      var u = (x + 75) / step - cellX, v = (z + 75) / step - cellZ, row = divisions + 1;
+      var u = Math.max(0, Math.min(1, (x + 75) / step - cellX)), v = Math.max(0, Math.min(1, (z + 75) / step - cellZ)), row = divisions + 1;
       var baseIndex = cellZ * row + cellX;
       var ha = groundPos.getY(baseIndex), hb = groundPos.getY(baseIndex + row);
       var hc = groundPos.getY(baseIndex + row + 1), hd = groundPos.getY(baseIndex + 1);
@@ -2022,9 +2054,10 @@
       moteGeo.setAttribute('blMoteSeed', new THREE.BufferAttribute(moteSeeds, 1));
       var moteMat;
       if (typeof THREE.ShaderMaterial === 'function') {
+        var dpr = typeof global !== 'undefined' && global && typeof global.devicePixelRatio === 'number' && Number.isFinite(global.devicePixelRatio) && global.devicePixelRatio > 0 ? global.devicePixelRatio : 1;
         moteShaderUniforms = {
           uTime: { value: options.reducedMotion ? 4.2 : 0.0 },
-          uPixelRatio: { value: Math.min((typeof global !== 'undefined' && global.devicePixelRatio) || 1, detailed ? 1.65 : 1.25) },
+          uPixelRatio: { value: Math.min(dpr, detailed ? 1.65 : 1.25) },
           uSunColor: { value: new THREE.Color('#ffefc4') },
           uOpacity: { value: 0.76 },
           uGolden: { value: 0.0 }
@@ -2083,12 +2116,13 @@
     function update(time, wind) {
       if (disposed) return;
       clock.value = Number.isFinite(time) ? time : 0;
-      var period = global.BirdLab3D && global.BirdLab3D.courseDuration || 44;
+      var rawPeriod = global && global.BirdLab3D && global.BirdLab3D.courseDuration;
+      var period = typeof rawPeriod === 'number' && Number.isFinite(rawPeriod) && rawPeriod > 0 ? rawPeriod : 44;
       cyclePhase.value = ((clock.value % period) + period) % period / period * Math.PI * 2;
       var frozenTime = typeof options !== 'undefined' && options && options.reducedMotion;
       if (typeof pondUniforms !== 'undefined' && pondUniforms) pondUniforms.uTime.value = frozenTime ? 2.8 : clock.value;
       if (typeof moteShaderUniforms !== 'undefined' && moteShaderUniforms) moteShaderUniforms.uTime.value = frozenTime ? 4.2 : clock.value;
-      if (typeof wind === 'number') {
+      if (typeof wind === 'number' && Number.isFinite(wind)) {
         var strength = Math.max(0, Math.min(2, wind)); breeze.value.set(strength * 0.22, 0, strength * 0.085);
       } else if (wind && Number.isFinite(wind.x) && Number.isFinite(wind.z)) {
         breeze.value.set(wind.x, 0, wind.z).clampLength(0, 1.2);
@@ -2098,10 +2132,19 @@
       if (disposed) return;
       disposed = true;
       if (root.parent) root.parent.remove(root);
-      root.traverse(function (object) { if (object.isInstancedMesh && object.dispose) object.dispose(); });
-      resources.forEach(function (resource) { if (resource && resource.dispose) resource.dispose(); });
+      root.traverse(function (object) { if (object.isInstancedMesh && object.dispose) { try { object.dispose(); } catch (ignore) {} } });
+      resources.forEach(function (resource) { if (resource && resource.dispose) { try { resource.dispose(); } catch (ignore) {} } });
       resources.length = 0;
       root.clear();
+      if (typeof pondMesh !== 'undefined') pondMesh = null;
+      if (typeof pondUniforms !== 'undefined') pondUniforms = null;
+      if (typeof motePoints !== 'undefined') motePoints = null;
+      if (typeof moteShaderUniforms !== 'undefined') moteShaderUniforms = null;
+      if (typeof mist !== 'undefined') mist = null;
+      if (typeof rain !== 'undefined') rain = null;
+      if (typeof snowfall !== 'undefined') snowfall = null;
+      if (typeof wildflowers !== 'undefined') wildflowers = null;
+      if (typeof food !== 'undefined') food = null;
     }
     function isBlocked(x,z,radius) {
       radius=Number.isFinite(radius)?Math.max(0,radius):.28;
@@ -2141,7 +2184,7 @@
       var litter = foodSite([[-2.6, 2.6], [-3, 1.7], [-1.9, 3.3]], .64);
       var lawn = foodSite([[2.4, 2.9], [3.1, 2], [1.5, 3.4]], .74);
       var acorn = acornSite();
-      food = { props: null, guided: null, levels: {}, sources: [
+      food = { props: null, guided: null, levels: Object.create(null), sources: [
         { id: 'feeder', kind: 'seed', label: 'Sunflower and millet seed', place: 'the feeder', eat: 'Eating seed spilled under the feeder', x: seed[0], z: seed[1], radius: .55, regrow: .03 },
         { id: 'winterberry', kind: 'berry', label: 'Winterberries', place: 'the winterberry shrub', eat: 'Eating winterberries', x: berry[0], z: berry[1], radius: .5, regrow: .012 },
         { id: 'leaf-litter', kind: 'insect', label: 'Insects in leaf litter', place: 'the leaf litter', eat: 'Scratching leaf litter for insects', x: litter[0], z: litter[1], radius: .6, regrow: .02 },
@@ -2160,9 +2203,9 @@
       var worm = new THREE.CatmullRomCurve3([new THREE.Vector3(0, -.006, 0), new THREE.Vector3(.006, .007, .004), new THREE.Vector3(.018, .009, .01), new THREE.Vector3(.028, .002, .014)]);
       var wormGeo = geometry(new THREE.TubeGeometry(worm, 12, .0028, 6, false));
       // Reuse the woodland's own leaves and grass so the props match the floor.
-      var herbGeo = geometry(smallLeafGeometry(true)); herbGeo.scale(.1, .1, .1);
-      var leafGeo = geometry(smallLeafGeometry(false)); leafGeo.scale(.07, .07, .07);
-      var grassGeo = geometry(grassGeometry(false)); grassGeo.scale(.08, .08, .08);
+      var herbGeo = smallLeafGeometry(true); herbGeo.scale(.1, .1, .1);
+      var leafGeo = smallLeafGeometry(false); leafGeo.scale(.07, .07, .07);
+      var grassGeo = grassGeometry(false); grassGeo.scale(.08, .08, .08);
       function fadeCanvas(radial) {
         var c = canvas(64), g = c.getContext('2d'), grad = radial ? g.createRadialGradient(32, 32, 0, 32, 32, 32) : g.createLinearGradient(0, 0, 0, 64);
         grad.addColorStop(0, '#fff'); grad.addColorStop(radial ? .55 : .72, '#fff'); grad.addColorStop(1, '#000');
@@ -2278,6 +2321,7 @@
       food.props = group;
     }
     function setFoodVisible(value) {
+      if (disposed) return;
       getFoodSources();
       if (value && !food.props) buildFoodProps();
       if (food.props) food.props.visible = !!value;
@@ -2285,20 +2329,25 @@
     }
     // amount 0..1 per source: fewer seeds, fruit, insects or acorns remain.
     function setFoodLevels(levels) {
-      if (!food || !food.props || !levels) return;
+      if (disposed || !food || !food.props || !Array.isArray(levels)) return;
       levels.forEach(function (level) {
-        (food.levels[level.id] || []).forEach(function (mesh) { mesh.count = Math.round(mesh.userData.full * Math.max(0, Math.min(1, level.amount))); });
+        if (!level || typeof level.id !== 'string' || !Object.prototype.hasOwnProperty.call(food.levels, level.id)) return;
+        var amount = typeof level.amount === 'number' && Number.isFinite(level.amount) ? Math.max(0, Math.min(1, level.amount)) : 0;
+        (food.levels[level.id] || []).forEach(function (mesh) { mesh.count = Math.round(mesh.userData.full * amount); });
       });
     }
     // Guided mode: a little of each bird's main food where it already feeds.
     function setGuidedFood(spots, visible) {
+      if (disposed) return;
       if (!food) getFoodSources();
-      if (spots && !food.guided) {
+      if (Array.isArray(spots) && !food.guided) {
         var parts = foodParts(), group = new THREE.Group(); group.name = 'guided-food-props'; root.add(group);
         var looks = { seed: [parts.seedGeo, parts.tinted, 12, function (i) { return linear(i % 2 ? 0xd8cba6 : 0x2e2b28); }],
           berry: [parts.berryGeo, parts.berryMat, 6], acorn: [parts.nutGeo, parts.nutMat, 4], insect: [parts.bugGeo, parts.bugMat, 4], worm: [parts.wormGeo, parts.wormMat, 2] };
         spots.forEach(function (spot, index) {
-          var look = looks[spot.kind]; if (!look) return;
+          if (!spot || typeof spot.kind !== 'string' || !Object.prototype.hasOwnProperty.call(looks, spot.kind)) return;
+          if (!Number.isFinite(spot.x) || !Number.isFinite(spot.z)) return;
+          var look = looks[spot.kind];
           foodScatter(group, 'guided-' + spot.kind + '-' + spot.id, look[0], look[1], look[2], spot.x, spot.z, .07, look[0] === parts.nutGeo ? .008 : .004, look[3] || null, 811 + index * 17);
         });
         food.guided = group;
@@ -2310,6 +2359,7 @@
     // still under reduced motion.
     var mist = null;
     function setMist(value) {
+      if (disposed) return;
       if (value && !mist) {
         var sheet = canvas(128), g = sheet.getContext('2d');
         for (var puff = 0; puff < 20; puff++) {
@@ -2328,7 +2378,7 @@
         // r128 uploads neither viewMatrix nor cameraPosition for sprites, so
         // the drift is applied in each sheet's local space and the camera
         // height arrives through a per-draw uniform.
-        var eye = { value: 0 }, setEye = function (renderer, scene, camera) { eye.value = camera.matrixWorld.elements[13]; };
+        var eye = { value: 0 }, setEye = function (renderer, scene, camera) { if (camera && camera.matrixWorld && camera.matrixWorld.elements && Number.isFinite(camera.matrixWorld.elements[13])) eye.value = camera.matrixWorld.elements[13]; };
         var head = 'uniform float blMistClock;\nuniform float blMistSeed;\nuniform float blMistMotion;\nuniform float blMistEye;\nvarying float blMistNear;\n';
         mist = new THREE.Group(); mist.name = 'dawn-ground-mist'; mist.userData.motion = motion; root.add(mist);
         for (var i = 0, count = detailed ? 16 : 9; i < count; i++) {
@@ -2365,6 +2415,7 @@
     // under reduced motion the streaks hold still and the rings stay hidden.
     var rain = null;
     function setRain(value) {
+      if (disposed) return;
       if (value && !rain) {
         var count = detailed ? 2400 : 1000, streaks = new Float32Array(count * 6), info = new Float32Array(count * 4);
         for (var i = 0; i < count; i++) {
@@ -2497,6 +2548,7 @@
       mat.needsUpdate = true;
     }
     function syncSnowfall() {
+      if (disposed) return;
       var falling = season === 'winter' && wetWeather;
       if (falling && !snowfall) {
         // Flakes drift down slowly and sway; the same clock as the rain.
@@ -2597,28 +2649,32 @@
       syncSnowfall();
     }
     function setLightState(state) {
-      if (disposed || !state) return;
+      if (disposed || !state || typeof state !== 'object') return;
       if (typeof state.highContrast === 'boolean') {
         highContrastMode = state.highContrast;
         if (pondMesh) pondMesh.visible = !highContrastMode;
         if (motePoints) motePoints.visible = !highContrastMode && season !== 'winter';
       }
+      var hasVec = function (v) { return v && Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z); };
+      var hasCol = function (c) { return c && Number.isFinite(c.r) && Number.isFinite(c.g) && Number.isFinite(c.b); };
       if (pondUniforms) {
-        if (state.sunDir) pondUniforms.uSunDir.value.copy(state.sunDir);
-        if (state.sunColor) pondUniforms.uSunColor.value.copy(state.sunColor);
-        if (state.skyColor) pondUniforms.uSkyColor.value.copy(state.skyColor);
-        if (state.fogColor) pondUniforms.uFogColor.value.copy(state.fogColor);
-        if (typeof state.fogDensity === 'number') pondUniforms.uFogDensity.value = state.fogDensity;
-        if (typeof state.golden === 'number') pondUniforms.uGolden.value = state.golden;
+        if (hasVec(state.sunDir)) pondUniforms.uSunDir.value.copy(state.sunDir);
+        if (hasCol(state.sunColor)) pondUniforms.uSunColor.value.copy(state.sunColor);
+        if (hasCol(state.skyColor)) pondUniforms.uSkyColor.value.copy(state.skyColor);
+        if (hasCol(state.fogColor)) pondUniforms.uFogColor.value.copy(state.fogColor);
+        if (typeof state.fogDensity === 'number' && Number.isFinite(state.fogDensity) && state.fogDensity >= 0) pondUniforms.uFogDensity.value = state.fogDensity;
+        if (typeof state.golden === 'number' && Number.isFinite(state.golden)) pondUniforms.uGolden.value = Math.max(0, Math.min(1, state.golden));
       }
       if (moteShaderUniforms) {
-        if (state.sunColor) moteShaderUniforms.uSunColor.value.copy(state.sunColor);
-        if (typeof state.golden === 'number') moteShaderUniforms.uGolden.value = state.golden;
+        if (hasCol(state.sunColor)) moteShaderUniforms.uSunColor.value.copy(state.sunColor);
+        if (typeof state.golden === 'number' && Number.isFinite(state.golden)) moteShaderUniforms.uGolden.value = Math.max(0, Math.min(1, state.golden));
       }
     }
     return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight, setSeason: setSeason,
       groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose, setLightState: setLightState,
       getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood, setMist: setMist, setRain: setRain };
   }
-  global.BirdLab3DHabitat = { create: create };
-})(typeof window !== 'undefined' ? window : globalThis);
+  if (global && (typeof global === 'object' || typeof global === 'function')) {
+    global.BirdLab3DHabitat = { create: create };
+  }
+})(typeof window === 'object' && window !== null ? window : typeof globalThis === 'object' && globalThis !== null ? globalThis : typeof self === 'object' && self !== null ? self : {});

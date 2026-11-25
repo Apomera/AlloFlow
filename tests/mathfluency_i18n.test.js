@@ -659,3 +659,98 @@ it('rejects an answer submitted after the fixed-form deadline', async () => {
   expect(completed).toHaveLength(1);
   expect(completed[0].data).toMatchObject({ finishReason: 'time', totalAttempted: 0, totalCorrect: 0 });
 });
+
+// 2026-11-23: the setup screen showed seven selects before Start. Operation, Practice Set
+// and Start stay on the first view; session type, form, timer, count and goal are behind
+// one "Customize" toggle built like the Fluency Maze's, whose line names their values.
+// The panel stays in the DOM (hidden), so every control keeps its handler and its value.
+describe('Math Fluency setup: Customize holds the rarely changed session choices', () => {
+  const toggle = () => host.querySelector('button[data-mf-customize-toggle="true"]');
+  const panel = () => host.querySelector('#mf-probe-customize');
+  const sel = (label) => host.querySelector('select[aria-label="' + label + '"]');
+  const HIDDEN = ['Session type', 'Fixed probe form', 'Time limit', 'Number of problems', 'Session goal'];
+
+  afterEach(() => { delete window.__alloFluencyPendingConfig; });
+
+  it('starts closed with Operation, Practice Set and Start on show, and names the hidden values', async () => {
+    await mount();
+    expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    expect(toggle().getAttribute('aria-controls')).toBe('mf-probe-customize');
+    expect(panel().hidden).toBe(true);
+    for (const label of HIDDEN) expect(panel().contains(sel(label)), label).toBe(true);
+    const main = host.querySelector('[data-mf-setup-main="true"]');
+    expect(main.hidden).toBe(false);
+    for (const label of ['Math operation', 'Practice Set']) {
+      expect(main.contains(sel(label)), label).toBe(true);
+      expect(sel(label).closest('[hidden]'), label).toBeNull();
+    }
+    const start = host.querySelector('button[aria-label="Start practice"]');
+    expect(start.closest('[hidden]')).toBeNull();
+    expect(panel().contains(start)).toBe(false);
+    // Operation, the toggle and Start come in that order.
+    expect(sel('Math operation').compareDocumentPosition(toggle()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(toggle().compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(toggle().textContent).toBe('▼ Customize  ·  Timed practice · 120 seconds · 120 facts · 90% accuracy');
+    // Only two selects are on show before Start now.
+    const shown = [...host.querySelectorAll('.mf-fluency-setup select')].filter((node) => !node.closest('[hidden]')
+      && (node.compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING));
+    expect(shown.map((node) => node.getAttribute('aria-label'))).toEqual(['Math operation', 'Practice Set']);
+  });
+
+  it('opens and closes on click, and the line follows a hidden value that is changed', async () => {
+    await mount();
+    await click(toggle());
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    expect(panel().hidden).toBe(false);
+    expect(toggle().textContent.startsWith('▲ Customize')).toBe(true);
+    await change(sel('Time limit'), '0');
+    await change(sel('Number of problems'), '40');
+    await change(sel('Session goal'), 'none');
+    await click(toggle());
+    expect(panel().hidden).toBe(true);
+    expect(toggle().textContent).toBe('▼ Customize  ·  Untimed (Accuracy Focus) · 40 facts · No goal');
+    // The hidden values are the ones the session starts with.
+    expect(host.querySelector('#mf-session-preview').textContent).toContain('40 facts');
+    expect(host.querySelector('button[aria-label="Start practice"]').textContent).toContain('Start Accuracy Focus');
+  });
+
+  it('names a fixed form on the closed line, hides the empty practice card, and opens by itself when the form is missing', async () => {
+    window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 42, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
+    await mount();
+    await click(toggle());
+    await change(sel('Session type'), 'benchmark');
+    await click(toggle());
+    expect(panel().hidden).toBe(true);
+    expect(toggle().textContent).toBe('▼ Customize  ·  Fixed Form A');
+    expect(host.querySelector('[data-mf-setup-main="true"]').hidden).toBe(true);
+    expect(host.querySelector('[data-mf-setup-main="true"]').style.display).toBe('none');
+    // Form B has no bank: Start is blocked, so the panel that holds the fix shows itself.
+    await change(sel('Fixed probe form'), 'B');
+    expect(host.querySelector('button[aria-label="Start fixed form"]').disabled).toBe(true);
+    expect(panel().hidden).toBe(false);
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    expect(toggle().textContent).toContain('Fixed form unavailable');
+    expect(sel('Session type').closest('[hidden]')).toBeNull();
+    // It stays open after the fix, so the control in use never disappears under the pointer.
+    await change(sel('Fixed probe form'), 'A');
+    expect(panel().hidden).toBe(false);
+  });
+
+  it('opens by itself for a handed-off count that needs a choice, and shows a handed-off count on the closed line', async () => {
+    window.__alloFluencyPendingConfig = { operation: 'add', at: Date.now(), problemCount: 500 };
+    await mount();
+    expect(host.querySelector('#mf-handoff-count-issue')).toBeTruthy();
+    expect(panel().hidden).toBe(false);
+    expect(sel('Number of problems').closest('[hidden]')).toBeNull();
+    await change(sel('Number of problems'), '60');
+    expect(host.querySelector('#mf-handoff-count-issue')).toBeNull();
+    expect(panel().hidden).toBe(false);
+    act(() => root.unmount()); root = null; host.remove(); host = null;
+
+    window.__alloFluencyPendingConfig = { operation: 'add', at: Date.now(), problemCount: 35 };
+    await mount();
+    expect(panel().hidden).toBe(true);
+    expect(toggle().textContent).toContain('35 facts');
+    expect(sel('Number of problems').value).toBe('35');
+  });
+});

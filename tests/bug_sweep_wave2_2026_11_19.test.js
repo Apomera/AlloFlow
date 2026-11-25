@@ -194,7 +194,7 @@ describe('Bug sweep wave 2 (Wave B): Games, Adventure, and Persona Chat fixes', 
     expect(gamesSrc).toContain('if (onScoreUpdate) onScoreUpdate(nextScore, "Syntax Scramble");');
     expect(gamesSrc).toContain('if (onScoreUpdate) onScoreUpdate(newScore, "Pipeline Builder");');
     expect(gamesSrc).toContain('setLockedIds(new Set());');
-    expect(gamesSrc).toContain('{allowAddItems && onGenerateItem && !isChecked && (');
+    expect(gamesSrc).toContain('{allowAddItems && !studentAiOff && onGenerateItem && !isChecked && (');
     expect(gamesSrc).toContain('const checkOrder = () => {\n    if (!items.length) return;');
     expect(gamesSrc).toContain('const firstClue = newClues.across[0] || newClues.down[0] || null;');
     expect(gamesSrc).toContain("window.addEventListener('touchcancel', handleUp);");

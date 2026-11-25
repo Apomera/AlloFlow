@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "version": "1.0.0",
   "schemaVersion": 1,
   "libraryId": "praxis-special-education-early-childhood-5692-learning-library",
@@ -27,8 +28,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "88d1351581ff40914b29e72560c301c3673ef4641c13aa1a189e8bbba1d91211",
-    "learningLibrarySha256": "8f2c3ea9f75fc273a49bad26fd110bdaeb2395b752099550536ce1e0f13f5505",
+    "sourceItemsSha256": "0e3a97396f8eb8dd0654c9b6533af439ad62721f3b4e1cbbab3b89e072718582",
+    "learningLibrarySha256": "30b11c6bc9bb336fa111c5413b70fc060a5159b3555f20b09be3656e4987b026",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

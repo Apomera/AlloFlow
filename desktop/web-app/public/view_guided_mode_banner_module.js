@@ -5,6 +5,7 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.GuidedModeBanner) {
     console.log('[CDN] GuidedModeBanner already loaded, skipping');
     return;
@@ -708,10 +709,22 @@ RECOMMENDED STEM LAB TOOLS
     "example": "FINAL CHECK\n\u2713 Source and learning goal match.\n\u2713 Student directions name the task and success criteria.\n\u2713 Answer keys are teacher-only.\n\u2713 Accessibility preflight has been reviewed.\n\u2713 Student link opens and the first task is obvious.\n\u2713 A backup format is available for students who cannot use the primary route."
   }
 };
+function _gbSafeJsonReviver(k, v) {
+  return k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v;
+}
+function _gbIsGlobalMuted() {
+  if (typeof window === "undefined") return false;
+  try {
+    if (typeof window.__alloIsGlobalMuted === "function") return !!window.__alloIsGlobalMuted();
+    return !!window.__alloGlobalMute || !!window._alloGlobalMute;
+  } catch (_) {
+    return false;
+  }
+}
 function guidedStudentDeviceVoice(text, onEnd) {
   if (typeof window === "undefined" || window.__alloStudentAiDisabled !== true) return false;
   try {
-    if (typeof window.__alloIsGlobalMuted === "function" ? window.__alloIsGlobalMuted() : window._alloGlobalMute) return false;
+    if (typeof window.__alloIsGlobalMuted === "function" ? window.__alloIsGlobalMuted() : window.__alloGlobalMute || window._alloGlobalMute) return false;
   } catch (_) {
   }
   try {
@@ -937,7 +950,7 @@ function GuidedModeBanner({
   const currentPhaseDescription = currentPhase ? translatedPhaseDescription && translatedPhaseDescription !== phaseDescriptionKey ? translatedPhaseDescription : currentPhase.description : "";
   const _savedUiState = React.useRef((() => {
     try {
-      return JSON.parse(localStorage.getItem("allo_guided_ui_state") || "{}");
+      return JSON.parse(localStorage.getItem("allo_guided_ui_state") || "{}", _gbSafeJsonReviver);
     } catch (_) {
       return {};
     }
@@ -963,11 +976,15 @@ function GuidedModeBanner({
   const [showErrorDetails, setShowErrorDetails] = React.useState(false);
   const readAiTextReady = () => {
     try {
-      if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable("text"));
+      if (typeof window === "undefined") return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || window.hideStudentAiFeatures === true) return false;
+      if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === "function" && window.StudentPolicy.isAiDisabled()) return false;
+      if (window.AlloModules && window.AlloModules.StudentPolicy && typeof window.AlloModules.StudentPolicy.isAiDisabled === "function" && window.AlloModules.StudentPolicy.isAiDisabled()) return false;
+      if (typeof window.__alloAiUsable === "function") return Boolean(window.__alloAiUsable("text"));
       const resolve = window.__alloResolveAiCapability;
       return typeof resolve === "function" ? !!resolve().text : true;
     } catch (_) {
-      return true;
+      return false;
     }
   };
   const [aiTextReady, setAiTextReady] = React.useState(readAiTextReady);
@@ -984,7 +1001,7 @@ function GuidedModeBanner({
   const [showFeedbackHistory, setShowFeedbackHistory] = React.useState(false);
   const [feedbackEntries, setFeedbackEntries] = React.useState(() => {
     try {
-      const value = JSON.parse(localStorage.getItem("allo_guided_feedback") || "[]");
+      const value = JSON.parse(localStorage.getItem("allo_guided_feedback") || "[]", _gbSafeJsonReviver);
       return Array.isArray(value) ? value : [];
     } catch (_) {
       return [];
@@ -992,14 +1009,14 @@ function GuidedModeBanner({
   });
   const [lastCompletion, setLastCompletion] = React.useState(() => {
     try {
-      return normalizeCompletionSummary(JSON.parse(localStorage.getItem("allo_guided_last_completion") || "null"));
+      return normalizeCompletionSummary(JSON.parse(localStorage.getItem("allo_guided_last_completion") || "null", _gbSafeJsonReviver));
     } catch (_) {
       return null;
     }
   });
   const [durationStats, setDurationStats] = React.useState(() => {
     try {
-      const value = JSON.parse(localStorage.getItem("allo_guided_duration_stats") || "{}");
+      const value = JSON.parse(localStorage.getItem("allo_guided_duration_stats") || "{}", _gbSafeJsonReviver);
       return value && typeof value === "object" ? value : {};
     } catch (_) {
       return {};
@@ -1007,7 +1024,7 @@ function GuidedModeBanner({
   });
   const _savedDeliveryPreferences = React.useRef((() => {
     try {
-      const value = JSON.parse(localStorage.getItem("allo_guided_delivery_preferences") || "{}");
+      const value = JSON.parse(localStorage.getItem("allo_guided_delivery_preferences") || "{}", _gbSafeJsonReviver);
       return value && typeof value === "object" ? value : {};
     } catch (_) {
       return {};
@@ -1015,7 +1032,7 @@ function GuidedModeBanner({
   })()).current;
   const [classroomContext, setClassroomContext] = React.useState(() => {
     try {
-      return normalizeClassroomContext(JSON.parse(localStorage.getItem("allo_guided_classroom_context") || "{}"));
+      return normalizeClassroomContext(JSON.parse(localStorage.getItem("allo_guided_classroom_context") || "{}", _gbSafeJsonReviver));
     } catch (_) {
       return normalizeClassroomContext({});
     }
@@ -1650,11 +1667,20 @@ function GuidedModeBanner({
   React.useEffect(() => {
     _stopTts();
   }, [guidedStep, showGuidedTip, _stopTts]);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return void 0;
+    const onMute = () => {
+      if (_gbIsGlobalMuted()) _stopTts();
+    };
+    window.addEventListener("alloflow-mute-changed", onMute);
+    return () => window.removeEventListener("alloflow-mute-changed", onMute);
+  }, [_stopTts]);
   const playAbout = async (rawText) => {
     if (ttsState !== "idle") {
       _stopTts();
       return;
     }
+    if (_gbIsGlobalMuted()) return;
     if (typeof window === "undefined" || typeof window.callTTS !== "function") return;
     const plain = String(rawText || "").replace(/[#*`_>]/g, "").replace(/\s+/g, " ").trim();
     if (!plain) return;
@@ -1662,17 +1688,18 @@ function GuidedModeBanner({
     setTtsState("loading");
     let url = null;
     try {
-      url = await window.callTTS(plain, window.__alloSelectedVoice || "Puck", window.__alloPlaybackRate || 1, { maxRetries: 2 });
+      url = await Promise.resolve(window.callTTS(plain, window.__alloSelectedVoice || "Puck", window.__alloPlaybackRate || 1, { maxRetries: 2 }));
     } catch (_) {
       url = null;
     }
-    if (myGen !== _ttsGenRef.current) {
+    if (myGen !== _ttsGenRef.current || _gbIsGlobalMuted()) {
       if (url) {
         try {
           URL.revokeObjectURL(url);
         } catch (_) {
         }
       }
+      setTtsState("idle");
       return;
     }
     if (!url) {
@@ -2347,7 +2374,7 @@ ${contextLines.join("\n")}` : goal;
     if (!file) return;
     try {
       if (file.size > 512e3) throw new Error(t("guided.ai_plan_import_too_large") || "That plan file is too large.");
-      const parsed = JSON.parse(await file.text());
+      const parsed = JSON.parse(await file.text(), _gbSafeJsonReviver);
       const rawPlans = Array.isArray(parsed) ? parsed : parsed?.format === "alloflow-guided-plans" && Number(parsed?.version) === 1 ? parsed.plans : null;
       if (!Array.isArray(rawPlans)) throw new Error(t("guided.ai_plan_import_invalid") || "This is not a supported AlloFlow Guided-plan file.");
       const supportedIds = new Set((allSteps || []).map((item) => item?.id).filter((id) => id && !["source-input", "directions", "package-deliver", "_final"].includes(id)));
@@ -2659,11 +2686,21 @@ ${contextLines.join("\n")}` : goal;
   const upNextLabel = isLast ? t("guided.journey_teach") || "Teach and share" : isPhaseBoundary ? t("guided.journey_checkpoint") || "Review phase checkpoint" : nextStep ? localizeStep(nextStep, "label") : "";
   const stepWhyNow = activeStepReason || detailEntry?.headline || currentPhaseDescription;
   React.useEffect(() => {
-    if (phaseCheckpointReady && !_phaseCheckpointWasReadyRef.current) requestAnimationFrame(() => _phaseCheckpointRef.current?.focus());
+    let rafId = 0;
+    if (phaseCheckpointReady && !_phaseCheckpointWasReadyRef.current) rafId = requestAnimationFrame(() => {
+      if (_phaseCheckpointRef.current?.isConnected !== false) _phaseCheckpointRef.current?.focus();
+    });
     _phaseCheckpointWasReadyRef.current = phaseCheckpointReady;
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [phaseCheckpointReady, step.id]);
   React.useEffect(() => {
-    if (phaseTransitionNotice) requestAnimationFrame(() => _phaseNoticeRef.current?.focus());
+    if (!phaseTransitionNotice) return void 0;
+    const rafId = requestAnimationFrame(() => {
+      if (_phaseNoticeRef.current?.isConnected !== false) _phaseNoticeRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [phaseTransitionNotice]);
   const saveFeedback = () => {
     if (!feedbackStepId) return;

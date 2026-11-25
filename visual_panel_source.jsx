@@ -131,6 +131,7 @@ async function encodeFramesToGif(framesBase64, width, height, fps = 3) {
       const img = new Image();
       img.onload = () => {
         const c = document.createElement('canvas');
+        if (c.setAttribute) c.setAttribute('aria-hidden', 'true');
         c.width = safeWidth; c.height = safeHeight;
         c.getContext('2d').drawImage(img, 0, 0, safeWidth, safeHeight);
         resolve(c);
@@ -1873,7 +1874,7 @@ Return ONLY valid JSON:
                 setShowComparison(false);
                 return;
             }
-            if (event.key !== 'Tab') return;
+            if (event.key !== 'Tab' || _vpIsImeComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
             const focusable = getFocusable();
             if (!focusable.length) {
                 event.preventDefault();
@@ -2245,7 +2246,7 @@ Return ONLY valid JSON:
                                                 defaultValue={labelText}
                                                 onMouseDown={(e) => e.stopPropagation()}
                                                 onBlur={(e) => handleLabelChange(panelIdx, labelIdx, e.target.value)}
-                                                onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter') handleLabelChange(panelIdx, labelIdx, e.target.value); }}
+                                                onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') handleLabelChange(panelIdx, labelIdx, e.target.value); }}
                                                 aria-label={`Edit label ${labelIdx + 1} on panel ${panelIdx + 1}`}
                                             />
                                         ) : (
@@ -2305,7 +2306,7 @@ Return ONLY valid JSON:
                                             defaultValue={uLabel.text}
                                             onMouseDown={(e) => e.stopPropagation()}
                                             onBlur={(e) => { handleUserLabelTextChange(panelIdx, uLabel.id, e.target.value); setEditingLabel(null); }}
-                                            onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter') e.target.blur(); }}
+                                            onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') e.target.blur(); }}
                                             aria-label={`Edit user label on panel ${panelIdx + 1}`}
                                             style={{ cursor: 'text', border: 'none', background: 'transparent', fontWeight: 700, fontSize: '13px', color: '#1e1b4b', width: Math.max(50, uLabel.text.length * 9) + 'px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif" }}
                                         />
@@ -2463,7 +2464,7 @@ Return ONLY valid JSON:
                                         autoFocus
                                         defaultValue={captionOverrides[panelIdx] || panel.caption || ''}
                                         onBlur={(e) => { pushVisualSnapshot(); setCaptionOverrides(prev => ({...prev, [panelIdx]: e.target.value})); setEditingCaptionIdx(null); }}
-                                        onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.blur(); }}}
+                                        onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); e.target.blur(); }}}
                                         aria-label={`Edit caption for panel ${panelIdx + 1}`}
                                         style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #c7d2fe', fontSize: '12px', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", resize: 'vertical', minHeight: '40px', textAlign: 'center', color: '#334155', lineHeight: 1.4 }}
                                     />
@@ -2503,7 +2504,7 @@ Return ONLY valid JSON:
                                     value={refineInput}
                                     onChange={(e) => setRefineInput(e.target.value)}
                                     placeholder={`Describe changes for Panel ${panelIdx + 1}...`}
-                                    onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter') handleRefineSubmit(panelIdx); }}
+                                    onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') handleRefineSubmit(panelIdx); }}
                                     autoFocus
                                     aria-label={`Describe changes for Panel ${panelIdx + 1}`}
                                     style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}
@@ -2532,7 +2533,7 @@ Return ONLY valid JSON:
                                         value={animateInput}
                                         onChange={(e) => setAnimateInput(e.target.value)}
                                         placeholder={t('common.animate_input_placeholder') || 'What should animate? e.g. "cell divides" or "water cycles"'}
-                                        onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter') handleAnimateSubmit(panelIdx); }}
+                                        onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') handleAnimateSubmit(panelIdx); }}
                                         autoFocus
                                         aria-label={(() => { const _v = t('common.animate_input_aria'); return (_v && !/\$\{/.test(_v)) ? _v : `Motion description for Panel ${panelIdx + 1}`; })()}
                                         style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}
@@ -2659,6 +2660,7 @@ Return ONLY valid JSON:
                                             value={panel.fps || 3}
                                             onChange={(e) => onSetPanelFps(panelIdx, parseInt(e.target.value, 10))}
                                             aria-label={(() => { const _v = t('common.speed_aria'); return (_v && !/\$\{/.test(_v)) ? _v : `Animation speed in frames per second, currently ${panel.fps || 3}`; })()}
+                                            aria-valuetext={`${panel.fps || 3} fps`}
                                             style={{ flex: 1, accentColor: '#7c3aed' }}
                                         />
                                         <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: 36, textAlign: 'right' }}>{panel.fps || 3} fps</span>
@@ -2678,7 +2680,7 @@ Return ONLY valid JSON:
                                             placeholder={regenFrame.frameIdx === 0
                                                 ? (t('common.regen_anchor_placeholder') || 'What should change in the anchor? e.g. "make it nighttime"')
                                                 : (() => { const _v = t('common.regen_frame_placeholder'); return (_v && !/\$\{/.test(_v)) ? _v : `What should change in frame ${regenFrame.frameIdx + 1}? (blank = re-roll with default motion)`; })()}
-                                            onKeyDown={(e) => { if (_vpIsImeComposing(e)) return; if (e.key === 'Enter') handleRegenFrameSubmit(); }}
+                                            onKeyDown={(e) => { if (_vpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') handleRegenFrameSubmit(); }}
                                             autoFocus
                                             aria-label={(() => { const _v = t('common.regen_frame_aria'); return (_v && !/\$\{/.test(_v)) ? _v : `Describe motion for frame ${regenFrame.frameIdx + 1}`; })()}
                                             style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid #c7d2fe', fontSize: 12, fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", }}

@@ -37,14 +37,30 @@ window.SelHub = window.SelHub || {
     return (typeof v === 'string' && v && v !== key) ? v : (fallback != null ? fallback : key);
   };
 
-  // ── Live region (WCAG 4.1.3) ──
+  // ── Live region & scoped a11y styles (WCAG 2.2 AA) ──
   (function() {
-    if (document.getElementById('allo-live-goals')) return;
-    var lr = document.createElement('div');
-    lr.id = 'allo-live-goals'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
-    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(lr);
+    if (typeof document === 'undefined') return;
+    if (document.body && !document.getElementById('allo-live-goals')) {
+      var lr = document.createElement('div');
+      lr.id = 'allo-live-goals'; lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status'); lr.className = 'sr-only';
+      lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(lr);
+    }
+    if (document.head && !document.getElementById('allo-goals-a11y-css')) {
+      var st = document.createElement('style');
+      st.id = 'allo-goals-a11y-css';
+      st.textContent =
+        '.selh-goals button,.selh-goals [role="tab"],.selh-goals [role="button"],.selh-goals input,.selh-goals select,.selh-goals textarea,.selh-goals summary{touch-action:manipulation;}' +
+        '.selh-goals button:focus-visible,.selh-goals [role="tab"]:focus-visible,.selh-goals [role="button"]:focus-visible,.selh-goals [role="tabpanel"]:focus-visible,.selh-goals input:focus-visible,.selh-goals select:focus-visible,.selh-goals textarea:focus-visible,.selh-goals summary:focus-visible{outline:2px solid #6366f1;outline-offset:2px;}' +
+        '@media (prefers-reduced-motion:reduce){.selh-goals,.selh-goals *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}' +
+        '@media (forced-colors:active){.selh-goals button,.selh-goals [role="tab"],.selh-goals [role="button"]{border:1px solid ButtonText !important;}.selh-goals [aria-selected="true"],.selh-goals [aria-pressed="true"]{outline:2px solid Highlight !important;outline-offset:2px;}}';
+      document.head.appendChild(st);
+    }
   })();
+
+  function isImeComposing(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
+  }
 
   // ── Sound Effects ──
   var _audioCtx = null;
@@ -1183,12 +1199,13 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _goaT = (ctx && ctx.theme) || {};
       var _goaHC = !!_goaT.isContrast, _goaL = !_goaHC && !_goaT.isDark;
-      var _goa_BGL = {'#0f172a':'#f8fafc'}, _goa_BGH = {'#0f172a':'#000000','#15803d':'#000000','#6366f1':'#000000'};
-      var _goa_FGL = {'#e2e8f0':'#1e293b','#c7d2fe':'#312e81','#fbbf24':'#854d0e','#a5b4fc':'#3730a3','#c4b5fd':'#5b21b6','#cbd5e1':'#334155','#34d399':'#047857','#f87171':'#b91c1c','#94a3b8':'#64748b','#818cf8':'#4338ca','#6ee7b7':'#065f46'}, _goa_FGH = {'#e2e8f0':'#ffff00','#c7d2fe':'#ffff00','#fbbf24':'#ffff00','#a5b4fc':'#ffff00','#c4b5fd':'#ffff00','#cbd5e1':'#ffff00','#34d399':'#ffff00','#f87171':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#6ee7b7':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00'};
+      var _goa_BGL = {'#0f172a':'#f8fafc','#6366f1':'#4338ca','#7c3aed':'#6d28d9'}, _goa_BGH = {'#0f172a':'#000000','#15803d':'#000000','#6366f1':'#000000','#7c3aed':'#000000'};
+      var _goa_FGL = {'#e2e8f0':'#1e293b','#c7d2fe':'#312e81','#fbbf24':'#854d0e','#fde68a':'#92400e','#a5b4fc':'#3730a3','#c4b5fd':'#5b21b6','#ddd6fe':'#5b21b6','#cbd5e1':'#334155','#34d399':'#047857','#86efac':'#166534','#a7f3d0':'#065f46','#f87171':'#b91c1c','#ef4444':'#b91c1c','#94a3b8':'#475569','#818cf8':'#4338ca','#6366f1':'#4338ca','#6ee7b7':'#065f46','#22c55e':'#15803d','#f59e0b':'#b45309','#a855f7':'#7e22ce','#ec4899':'#be185d','#06b6d4':'#0e7490','#fff':'#ffffff'}, _goa_FGH = {'#e2e8f0':'#ffff00','#c7d2fe':'#ffff00','#fbbf24':'#ffff00','#fde68a':'#ffff00','#a5b4fc':'#ffff00','#c4b5fd':'#ffff00','#ddd6fe':'#ffff00','#cbd5e1':'#ffff00','#34d399':'#ffff00','#86efac':'#ffff00','#a7f3d0':'#ffff00','#f87171':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#818cf8':'#ffff00','#6366f1':'#ffff00','#a855f7':'#ffff00','#6ee7b7':'#ffff00','#ef4444':'#ffff00','#22c55e':'#ffff00','#f59e0b':'#ffff00','#ec4899':'#ffff00','#06b6d4':'#ffff00'};
       var _goa_BGD = {'#6366f1':'#4f46e5'}, _goa_BDL = {}, _goa_BDH = {};
       var _goaBg = function(h){ return _goaHC ? (_goa_BGH[h]||h) : (_goaL ? (_goa_BGL[h]||h) : (_goa_BGD[h]||h)); };
       var _goaFg = function(h){ return _goaHC ? (_goa_FGH[h]||h) : (_goaL ? (_goa_FGL[h]||h) : h); };
       var _goaBd = function(h){ return _goaHC ? (_goa_BDH[h]||h) : (_goaL ? (_goa_BDL[h]||h) : h); };
+      var _goaSoftBg = function(darkVal, lightVal){ return _goaHC ? '#000000' : (_goaL ? (lightVal || '#ffffff') : darkVal); };
       // accent text on the dark shell needs the 300/400 weight (1.4.3)
       var _goaInk = function(c){ return _goaHC || _goaL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
@@ -1992,7 +2009,7 @@ window.SelHub = window.SelHub || {
               var newSmart = Object.assign({}, goal.smart || {});
               newSmart[key] = e.target.value;
               updateGoal(goal.id, { smart: newSmart });
-            }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 76, padding: 10, borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.5 } })
+            }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 76, padding: 10, borderRadius: 6, border: '1px solid rgba(99,102,241,0.25)', background: _goaSoftBg('rgba(15,23,42,0.4)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.5 } })
           );
         };
 
@@ -2044,34 +2061,44 @@ window.SelHub = window.SelHub || {
           { id: 'checkin', label: '\uD83D\uDCDD Check-In' },
           { id: 'progress', label: '\uD83D\uDCCA Progress' }
         ].filter(function (gt) { return _goAiOn || gt.id !== 'coach'; });
+        var announceGOA = function(msg) {
+          if (!msg) return;
+          if (typeof announceToSR === 'function') announceToSR(msg);
+          try {
+            var lr = typeof document !== 'undefined' && document.getElementById('allo-live-goals');
+            if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 10); }
+          } catch (_) {}
+        };
+        var _goaHdrInk = _goaHC ? '#ffff00' : '#ffffff';
         // ═══════════════════════════════════════════════════════════
         // ── UI ──
         // ═══════════════════════════════════════════════════════════
-        return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', background: _goaBg('#0f172a'), color: _goaFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
+        return h('div', { className: 'selh-goals', style: { display: 'flex', flexDirection: 'column', height: '100%', background: _goaBg('#0f172a'), color: _goaFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, typeof d._srMsg === 'string' ? d._srMsg : ''),
           // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
           (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid rgba(99,102,241,0.3)' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
-              h('button', { 'aria-label': 'Back', onClick: function() { ctx.setSelHubTool && ctx.setSelHubTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 8, padding: '6px 12px', color: _goaFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
-              h('div', { style: { fontWeight: 'bold', fontSize: 16, color: _goaFg('#c7d2fe') } }, '\uD83D\uDCCB Goal Setter'),
-              streak > 0 ? h('span', { style: { background: 'rgba(245,158,11,0.2)', color: _goaFg('#fde68a'), padding: '2px 10px', borderRadius: 12, fontSize: 10, fontWeight: 'bold', border: '1px solid rgba(245,158,11,0.3)' } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: _goaHC ? '#000000' : 'linear-gradient(135deg, #312e81, #4338ca)', borderBottom: '1px solid ' + (_goaHC ? '#ffff00' : 'rgba(99,102,241,0.3)') } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              h('button', { type: 'button', 'aria-label': 'Back', onClick: function() { ctx.setSelHubTool && ctx.setSelHubTool(null); }, style: { minHeight: 44, background: _goaHC ? '#000000' : 'rgba(255,255,255,0.14)', border: _goaHC ? '1px solid #ffff00' : 'none', borderRadius: 8, padding: '8px 14px', color: _goaHdrInk, cursor: 'pointer', fontSize: 12, fontWeight: 'bold' } }, '\u2190 Back'),
+              h('div', { style: { fontWeight: 'bold', fontSize: 16, color: _goaHdrInk } }, '\uD83D\uDCCB Goal Setter'),
+              streak > 0 ? h('span', { style: { background: _goaHC ? '#000000' : 'rgba(15,23,42,0.45)', color: _goaHC ? '#ffff00' : '#fef08a', padding: '2px 10px', borderRadius: 12, fontSize: 11, fontWeight: 'bold', border: '1px solid ' + (_goaHC ? '#ffff00' : 'rgba(254,240,138,0.4)') } }, '\uD83D\uDD25 ' + streak + '-day streak') : null
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-              h('span', { style: { background: 'rgba(99,102,241,0.2)', color: _goaFg('#c7d2fe'), padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold' } }, '\uD83C\uDFAF ' + activeGoals.length + ' active'),
-              h('button', { 'aria-label': 'Toggle badges', onClick: function() { upd({ showBadges: !showBadges }); }, style: { background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 8, padding: '3px 8px', color: _goaFg('#ddd6fe'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount)
+              h('span', { style: { background: _goaHC ? '#000000' : 'rgba(15,23,42,0.35)', color: _goaHdrInk, padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 'bold', border: _goaHC ? '1px solid #ffff00' : 'none' } }, '\uD83C\uDFAF ' + activeGoals.length + ' active'),
+              h('button', { type: 'button', 'aria-label': 'Toggle badges', 'aria-expanded': showBadges, onClick: function() { upd({ showBadges: !showBadges }); }, style: { minHeight: 44, minWidth: 44, background: _goaHC ? '#000000' : 'rgba(255,255,255,0.14)', border: '1px solid ' + (_goaHC ? '#ffff00' : 'rgba(255,255,255,0.32)'), borderRadius: 8, padding: '6px 12px', color: _goaHdrInk, fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFC5 ' + badgeCount)
             )
           ),
 
           // Tabs
           (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('goals', h, ctx) : null),
-          h('div', { role: 'tablist', 'aria-label': 'Goal Setter sections', style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.8)', overflowX: 'auto' } },
+          h('div', { role: 'tablist', 'aria-label': 'Goal Setter sections', style: { display: 'flex', borderBottom: '1px solid ' + (_goaHC ? '#ffff00' : (_goaL ? '#cbd5e1' : 'rgba(99,102,241,0.15)')), background: _goaSoftBg('rgba(15,23,42,0.8)', '#ffffff'), overflowX: 'auto' } },
             goalTabs.map(function(tb) {
               var active = tab === tb.id;
               var tabIndex = goalTabs.indexOf(tb);
               return h('button', {
+                type: 'button',
                 id: 'goal-tab-' + tb.id,
                 'aria-label': tb.label,
                 'aria-controls': 'goal-panel-' + tb.id,
@@ -2079,8 +2106,9 @@ window.SelHub = window.SelHub || {
                 key: tb.id,
                 role: 'tab',
                 tabIndex: active ? 0 : -1,
-                onClick: function() { sfxClick(); upd({ tab: tb.id }); },
+                onClick: function() { sfxClick(); upd({ tab: tb.id }); announceGOA(tb.label + ' tab selected'); },
                 onKeyDown: function(event) {
+                  if (isImeComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
                   var nextIndex = tabIndex;
                   if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % goalTabs.length;
                   else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + goalTabs.length) % goalTabs.length;
@@ -2089,12 +2117,13 @@ window.SelHub = window.SelHub || {
                   else return;
                   event.preventDefault();
                   upd({ tab: goalTabs[nextIndex].id });
+                  announceGOA(goalTabs[nextIndex].label + ' tab selected');
                   setTimeout(function() {
                     var nextTab = document.getElementById('goal-tab-' + goalTabs[nextIndex].id);
                     if (nextTab) nextTab.focus();
                   }, 0);
                 },
-                style: { flex: 1, padding: '10px 4px', fontSize: 10, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? 'rgba(99,102,241,0.1)' : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid #6366f1' : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 }
+                style: { flex: 1, minHeight: 44, padding: '10px 8px', fontSize: 11, fontWeight: 'bold', color: active ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), background: active ? (_goaHC ? '#000000' : (_goaL ? '#eef2ff' : 'rgba(99,102,241,0.1)')) : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? ('2px solid ' + (_goaHC ? '#ffff00' : '#4f46e5')) : '2px solid transparent', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: 0 }
               }, tb.label);
             })
           ),
@@ -2110,16 +2139,33 @@ window.SelHub = window.SelHub || {
               checkin:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In - a weekly goal review', hint: 'Look back at the last seven days, notice barriers and supports, and choose what might come next. Writing and ratings are optional.' },
               progress: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Progress - your recorded activity', hint: 'These records show checked steps and saved activity. They do not measure learning or wellbeing, and they may leave out progress made away from the tool.' }
             };
-            var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
+            var _selHdrInk = function(c) {
+              if (_goaHC) return '#ffff00';
+              if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c;
+              var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); });
+              var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); };
+              var base = _goaL ? [248, 250, 252] : [15, 23, 42];
+              var target = _goaL ? 15 : 255;
+              var lb = L(p.map(function(v, i) { return v * 0.25 + base[i] * 0.75; }));
+              for (var m = 0; m <= 1; m += 0.04) {
+                var q = p.map(function(v) { return Math.round(v + (target - v) * m); });
+                var lq = L(q);
+                var cr = (Math.max(lq, lb) + 0.05) / (Math.min(lq, lb) + 0.05);
+                if (cr >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c;
+              }
+              return _goaL ? '#0f172a' : '#ffffff';
+            };
             var meta = TAB_META[tab] || TAB_META.goals;
             return h('div', {
               style: {
                 margin: '8px 12px 0',
                 padding: '12px 14px',
                 borderRadius: 12,
-                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
-                border: '1px solid ' + meta.accent + '55',
-                borderLeft: '4px solid ' + meta.accent,
+                background: _goaHC ? '#000000' : ('linear-gradient(135deg, ' + meta.soft + ' 0%, ' + (_goaL ? 'rgba(248,250,252,0)' : 'rgba(15,23,42,0)') + ' 100%), ' + _goaBg('#0f172a')),
+                borderTop: '1px solid ' + (_goaHC ? '#ffff00' : (meta.accent + '55')),
+                borderRight: '1px solid ' + (_goaHC ? '#ffff00' : (meta.accent + '55')),
+                borderBottom: '1px solid ' + (_goaHC ? '#ffff00' : (meta.accent + '55')),
+                borderLeft: '4px solid ' + (_goaHC ? '#ffff00' : meta.accent),
                 display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
               }
             },
@@ -2182,24 +2228,24 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: _goaFg('#34d399'), fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
                   )
                 ),
-                h('button', { 'aria-label': 'Focus on goal: ' + (goalOfTheWeek.text || 'unnamed goal'), onClick: function() { if ((goalOfTheWeek.text || '').trim()) openGoalDetails(goalOfTheWeek.id); else openGoalForEditing(goalOfTheWeek.id); }, style: { minHeight: 44, padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: _goaFg('#34d399'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
+                h('button', { type: 'button', 'aria-label': 'Focus on goal: ' + (goalOfTheWeek.text || 'unnamed goal'), onClick: function() { if ((goalOfTheWeek.text || '').trim()) openGoalDetails(goalOfTheWeek.id); else openGoalForEditing(goalOfTheWeek.id); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: _goaFg('#34d399'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
               ) : null,
               // Accountability check
               (function() {
                 var today = goalLocalDate(new Date());
                 if (accountabilityLog[today] !== undefined) return null;
                 if (goals.length === 0) return null;
-                return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', gap: 10 } },
+                return h('div', { style: { padding: '10px 14px', marginBottom: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: 12, color: _goaFg('#a5b4fc'), flex: 1 } }, band === 'elementary' ? 'Did you work on your goal today?' : 'Accountability check: did you work toward a goal today?'),
-                  h('button', { onClick: function() { logAccountability(true); }, style: { padding: '5px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: _goaFg('#34d399'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Yes'),
-                  h('button', { 'aria-label': 'Not yet', onClick: function() { logAccountability(false); }, style: { padding: '5px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: _goaFg('#f87171'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\u274C Not yet')
+                  h('button', { type: 'button', onClick: function() { logAccountability(true); }, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.3)', color: _goaFg('#34d399'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2705 Yes'),
+                  h('button', { type: 'button', 'aria-label': 'Not yet', onClick: function() { logAccountability(false); }, style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: _goaFg('#f87171'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u274C Not yet')
                 );
               })(),
               accountabilityStreak > 0 ? h('div', { style: { fontSize: 10, color: _goaFg('#94a3b8'), marginBottom: 8, textAlign: 'center' } }, '\uD83D\uDCAA Accountability streak: ' + accountabilityStreak + ' day' + (accountabilityStreak !== 1 ? 's' : '')) : null,
               // Add goal button + templates toggle
               h('div', { style: { display: 'flex', gap: 8, marginBottom: 16 } },
-                h('button', { 'aria-label': '+ New Goal', onClick: function() { addGoal('', 'personal'); }, style: { flex: 1, padding: '10px 16px', borderRadius: 10, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' } }, '+ New Goal'),
-                h('button', { 'aria-label': 'Templates', onClick: function() { upd({ showTemplates: !showTemplates }); }, style: { padding: '10px 16px', borderRadius: 10, background: showTemplates ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: showTemplates ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.2)', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDCA1 Templates')
+                h('button', { type: 'button', 'aria-label': '+ New Goal', onClick: function() { addGoal('', 'personal'); }, style: { flex: 1, minHeight: 44, padding: '10px 16px', borderRadius: 10, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 13, cursor: 'pointer' } }, '+ New Goal'),
+                h('button', { type: 'button', 'aria-label': 'Templates', 'aria-expanded': showTemplates, onClick: function() { upd({ showTemplates: !showTemplates }); }, style: { minHeight: 44, padding: '10px 16px', borderRadius: 10, background: showTemplates ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: showTemplates ? _goaFg('#a5b4fc') : _goaFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.2)', fontWeight: 'bold', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDCA1 Templates')
               ),
               // Templates
               showTemplates ? h('div', { style: { marginBottom: 16, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)' } },
@@ -2207,7 +2253,7 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   templates.map(function(tmpl, ti) {
                     var cat = GOAL_CATEGORIES.find(function(c) { return c.id === tmpl.cat; }) || GOAL_CATEGORIES[0];
-                    return h('button', { 'aria-label': 'Add goal template: ' + tmpl.text, key: ti, onClick: function() { addGoal(tmpl.text, tmpl.cat); upd({ showTemplates: false }); }, title: tmpl.hint, style: { padding: '6px 12px', borderRadius: 8, background: cat.color + '15', border: '1px solid ' + cat.color + '33', color: cat.color, fontSize: 11, cursor: 'pointer', textAlign: 'left' } },
+                    return h('button', { type: 'button', 'aria-label': 'Add goal template: ' + tmpl.text, key: ti, onClick: function() { addGoal(tmpl.text, tmpl.cat); upd({ showTemplates: false }); }, title: tmpl.hint, style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, background: cat.color + '15', border: '1px solid ' + cat.color + '33', color: _goaFg(cat.color), fontSize: 12, cursor: 'pointer', textAlign: 'left' } },
                       cat.emoji + ' ' + tmpl.text
                     );
                   })
@@ -2241,24 +2287,24 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, cat.emoji),
                     isEditing ?
-                      h('input', { id: 'goal-name-input-' + goalDomId, type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: '1 1 180px', minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 13 } }) :
-                      h('button', { 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onClick: function() { openGoalForEditing(goal.id); }, style: { flex: '1 1 180px', minHeight: 44, padding: '4px 0', border: 'none', background: 'transparent', textAlign: 'left', fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' } }, goal.text || 'Name this goal...'),
+                      h('input', { id: 'goal-name-input-' + goalDomId, type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: '1 1 180px', minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: _goaSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 13, boxSizing: 'border-box' } }) :
+                      h('button', { type: 'button', 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onClick: function() { openGoalForEditing(goal.id); }, style: { flex: '1 1 180px', minHeight: 44, padding: '4px 0', border: 'none', background: 'transparent', textAlign: 'left', fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' } }, goal.text || 'Name this goal...'),
                     // Difficulty indicator (flames)
                     h('span', { role: 'note', 'aria-label': 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
-                    h('select', { value: goal.category, 'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal'), onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } },
+                    h('select', { value: goal.category, 'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal'), onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: _goaSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: _goaFg('#94a3b8'), fontSize: 11, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
-                    h('button', { 'aria-label': 'Share goal: ' + goalLabel, onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\uD83D\uDCE4'),
-                    h('button', { 'aria-label': 'Delete goal: ' + goalLabel, onClick: function() { deleteGoal(goal.id); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2715')
+                    h('button', { type: 'button', 'aria-label': 'Share goal: ' + goalLabel, onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\uD83D\uDCE4'),
+                    h('button', { type: 'button', 'aria-label': 'Delete goal: ' + goalLabel, onClick: function() { deleteGoal(goal.id); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2715')
                   ),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     h('div', { role: 'progressbar', 'aria-label': 'Progress for ' + goalLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': goalProgressValue, 'aria-valuetext': goalProgressText, style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                       h('div', { style: { width: goalProgressValue + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
                     ),
-                    h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goalProgressValue + '%')
+                    h('span', { style: { fontSize: 11, fontWeight: 'bold', color: _goaFg(cat.color), minWidth: 32, textAlign: 'right' } }, goalProgressValue + '%')
                   ),
                   h('p', { style: { margin: '0 0 8px', color: _goaFg('#cbd5e1'), fontSize: 11, lineHeight: 1.5, fontWeight: 600 } }, nextActionText),
-                  h('button', { id: disclosureId, 'aria-label': (isExpanded ? 'Collapse goal details: ' : 'Expand goal details: ') + goalLabel, 'aria-expanded': isExpanded, 'aria-controls': detailsId, onClick: function() { toggleGoalDetails(goal.id); }, style: { width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: isExpanded ? 10 : 0, borderRadius: 8, border: '1px solid ' + cat.color + '44', background: isExpanded ? cat.color + '18' : 'rgba(255,255,255,0.03)', color: isExpanded ? cat.color : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                  h('button', { type: 'button', id: disclosureId, 'aria-label': (isExpanded ? 'Collapse goal details: ' : 'Expand goal details: ') + goalLabel, 'aria-expanded': isExpanded, 'aria-controls': detailsId, onClick: function() { toggleGoalDetails(goal.id); }, style: { width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: isExpanded ? 10 : 0, borderRadius: 8, border: '1px solid ' + cat.color + '44', background: isExpanded ? cat.color + '18' : 'rgba(255,255,255,0.03)', color: isExpanded ? _goaFg(cat.color) : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                     h('span', null, isExpanded ? 'Hide goal details' : 'Show goal details'),
                     h('span', { 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
                   ),
@@ -2269,7 +2315,7 @@ window.SelHub = window.SelHub || {
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
-                      return h('button', { 'aria-label': 'Set difficulty: ' + info.label, key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
+                      return h('button', { type: 'button', 'aria-label': 'Set difficulty: ' + info.label, 'aria-pressed': active, key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { minHeight: 44, padding: '8px 12px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
                     })
                   ),
                   // Progress bar with milestone markers
@@ -2302,8 +2348,8 @@ window.SelHub = window.SelHub || {
                   }),
                   // Add step input
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
-                    h('input', { id: stepInputId, type: 'text', 'aria-label': 'Add a step to goal: ' + goalLabel, placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11 } }),
-                    h('button', { 'aria-label': 'Add step to goal: ' + goalLabel, onClick: function() { var inp = document.getElementById(stepInputId); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { minWidth: 44, minHeight: 44, padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 15, fontWeight: 'bold', cursor: 'pointer' } }, '+')
+                    h('input', { id: stepInputId, type: 'text', 'aria-label': 'Add a step to goal: ' + goalLabel, placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.25)', background: _goaSoftBg('rgba(15,23,42,0.4)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 12, boxSizing: 'border-box' } }),
+                    h('button', { type: 'button', 'aria-label': 'Add step to goal: ' + goalLabel, onClick: function() { var inp = document.getElementById(stepInputId); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { minWidth: 44, minHeight: 44, padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 15, fontWeight: 'bold', cursor: 'pointer' } }, '+')
                   )
                 )
                 );
@@ -2316,7 +2362,7 @@ window.SelHub = window.SelHub || {
                 var daysTaken = getTimeToDays(celebGoal.createdAt, celebGoal.completedAt || Date.now());
                 var stepsCount = getCompletedStepCount(celebGoal);
                 var diffInfo = DIFFICULTY_LABELS[(celebGoal.difficulty || 1) - 1] || DIFFICULTY_LABELS[0];
-                return h('section', { id: 'goal-completion-review-' + getGoalDomId(celebGoal.id), tabIndex: -1, 'aria-label': 'Completion note for ' + (celebGoal.text || 'unnamed goal'), style: { padding: 16, marginBottom: 16, borderRadius: 16, background: _goaHC ? '#000000' : '#0f172a', border: '2px solid ' + (_goaHC ? '#ffff00' : '#64748b'), textAlign: 'center', position: 'relative', overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6 } },
+                return h('section', { id: 'goal-completion-review-' + getGoalDomId(celebGoal.id), tabIndex: -1, 'aria-label': 'Completion note for ' + (celebGoal.text || 'unnamed goal'), style: { padding: 16, marginBottom: 16, borderRadius: 16, background: _goaBg('#0f172a'), border: '2px solid ' + (_goaHC ? '#ffff00' : '#64748b'), textAlign: 'center', position: 'relative', overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6 } },
                   // Confetti burst at top
                   h('div', { style: { fontSize: 28, marginBottom: 8, letterSpacing: 4 } }, '\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86\uD83C\uDF89\uD83C\uDF8A\u2728\uD83C\uDF86'),
                   h('div', { style: { fontSize: 18, fontWeight: 'bold', color: _goaFg('#34d399'), marginBottom: 4 } }, '\uD83C\uDFC6 Goal Completed!'),
@@ -2359,7 +2405,7 @@ window.SelHub = window.SelHub || {
                   var isReflecting = reflectingGoalId === goal.id;
                   var hasReflections = goal.reflections && goal.reflections.length > 0;
                   var goalDiffLvl = goal.difficulty || 1;
-                  return h('section', { key: goal.id, id: 'goal-completed-' + getGoalDomId(goal.id), tabIndex: -1, 'aria-label': 'Completed goal: ' + (goal.text || 'unnamed goal'), style: { padding: 12, marginBottom: 8, borderRadius: 10, background: _goaHC ? '#000000' : '#0f172a', border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6, scrollMarginTop: 100 } },
+                  return h('section', { key: goal.id, id: 'goal-completed-' + getGoalDomId(goal.id), tabIndex: -1, 'aria-label': 'Completed goal: ' + (goal.text || 'unnamed goal'), style: { padding: 12, marginBottom: 8, borderRadius: 10, background: _goaBg('#0f172a'), border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), overflowWrap: 'anywhere', fontSize: 14, lineHeight: 1.6, scrollMarginTop: 100 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                       h('span', null, cat.emoji),
                       h('span', { style: { flex: '1 1 180px', fontSize: 16, color: _goaFg('#6ee7b7'), textDecoration: 'line-through' } }, goal.text),
@@ -2504,7 +2550,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { padding: '12px 16px', marginBottom: 16, borderRadius: 10, background: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.08))', border: '1px solid rgba(99,102,241,0.2)', textAlign: 'center' } },
                 h('div', { style: { fontSize: 10, color: _goaFg('#818cf8'), fontWeight: 'bold', marginBottom: 4 } }, '\u2728 Motivational Quote'),
                 h('div', { style: { fontSize: 13, color: _goaFg('#c7d2fe'), fontStyle: 'italic', lineHeight: 1.6 } }, d.currentQuote || getDailyQuote()),
-                h('button', { 'aria-label': 'New quote', onClick: function() { upd({ currentQuote: getRandomQuote() }); }, style: { marginTop: 6, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 16, padding: '3px 12px', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD04 New quote')
+                h('button', { type: 'button', 'aria-label': 'New quote', onClick: function() { upd({ currentQuote: getRandomQuote() }); }, style: { marginTop: 8, minHeight: 44, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 16, padding: '8px 16px', color: _goaFg('#a5b4fc'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 New quote')
               ),
               // Vision sections
               [
@@ -2514,10 +2560,10 @@ window.SelHub = window.SelHub || {
               ].map(function(section) {
                 return h('div', { key: section.key, style: { marginBottom: 14, padding: 14, borderRadius: 12, background: section.color + '08', border: '1px solid ' + section.color + '22' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
-                    h('span', { style: { fontSize: 16 } }, section.emoji),
+                    h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, section.emoji),
                     h('span', { style: { fontSize: 13, fontWeight: 'bold', color: _goaInk(section.color) } }, section.label)
                   ),
-                  h('textarea', { value: visionBoard[section.key] || '', 'aria-label': section.label + ' vision', onChange: function(e) { updateVision(section.key, e.target.value); }, placeholder: section.hint, style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid ' + section.color + '22', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
+                  h('textarea', { value: visionBoard[section.key] || '', 'aria-label': section.label + ' vision', onChange: function(e) { updateVision(section.key, e.target.value); }, placeholder: section.hint, style: { width: '100%', minHeight: 60, padding: 10, borderRadius: 8, border: '1px solid ' + section.color + '44', background: _goaSoftBg('rgba(15,23,42,0.4)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.6 } })
                 );
               }),
               // Vision board preview
@@ -2548,23 +2594,23 @@ window.SelHub = window.SelHub || {
               goals.length === 0 && !showSmartExamples ?
                 h('div', { style: { textAlign: 'center', padding: 30 } },
                   h('p', { style: { color: _goaFg('#94a3b8') } }, 'Create a goal first, then come here to make it SMART!'),
-                  h('button', { 'aria-label': '+ Create Goal', onClick: function() { upd({ tab: 'goals' }); addGoal('', 'personal'); }, style: { marginTop: 8, padding: '8px 20px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '+ Create Goal')
+                  h('button', { type: 'button', 'aria-label': '+ Create Goal', onClick: function() { upd({ tab: 'goals' }); addGoal('', 'personal'); }, style: { marginTop: 8, minHeight: 44, padding: '10px 20px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '+ Create Goal')
                 ) :
                 h('div', null,
                   // Goal selector
-                  h('select', { value: editingGoal || '', 'aria-label': 'Select a goal for SMART planning', onChange: function(e) { upd({ editingGoal: e.target.value, smartStep: 0 }); }, style: { width: '100%', padding: '10px 12px', minHeight: 44, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12, marginBottom: 12 } },
+                  h('select', { value: editingGoal || '', 'aria-label': 'Select a goal for SMART planning', onChange: function(e) { upd({ editingGoal: e.target.value, smartStep: 0 }); }, style: { width: '100%', padding: '10px 12px', minHeight: 44, borderRadius: 8, border: '1px solid rgba(99,102,241,0.25)', background: _goaSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 12, marginBottom: 12, boxSizing: 'border-box' } },
                     h('option', { value: '' }, '-- Select a goal --'),
                     goals.map(function(g) { return h('option', { key: g.id, value: g.id }, g.text || '(unnamed goal)'); })
                   ),
                   editGoal ? h('div', null,
                     h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 12 } }, '\uD83E\uDDE0 SMART Breakdown: ' + (editGoal.text || '(unnamed)')),
-                    h('div', { role: 'group', 'aria-label': 'SMART builder view', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: 4, marginBottom: 14, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(99,102,241,0.15)' } },
-                      h('button', { 'aria-pressed': smartBuildMode === 'guided', onClick: function() {
+                    h('div', { role: 'group', 'aria-label': 'SMART builder view', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: 4, marginBottom: 14, borderRadius: 10, background: _goaSoftBg('rgba(15,23,42,0.45)', '#f1f5f9'), border: '1px solid rgba(99,102,241,0.2)' } },
+                      h('button', { type: 'button', 'aria-pressed': smartBuildMode === 'guided', onClick: function() {
                         var nextStep = firstIncompleteSmartStep(editGoal);
                         upd({ smartBuildMode: 'guided', smartStep: nextStep });
                         focusSmartField(editGoal.id, ['S', 'M', 'A', 'R', 'T'][nextStep]);
                       }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: smartBuildMode === 'guided' ? '1px solid rgba(168,85,247,0.55)' : '1px solid transparent', background: smartBuildMode === 'guided' ? 'rgba(168,85,247,0.18)' : 'transparent', color: smartBuildMode === 'guided' ? _goaFg('#ddd6fe') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'Guided steps'),
-                      h('button', { 'aria-pressed': smartBuildMode === 'all', onClick: function() { upd({ smartBuildMode: 'all' }); }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: smartBuildMode === 'all' ? '1px solid rgba(168,85,247,0.55)' : '1px solid transparent', background: smartBuildMode === 'all' ? 'rgba(168,85,247,0.18)' : 'transparent', color: smartBuildMode === 'all' ? _goaFg('#ddd6fe') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'All fields')
+                      h('button', { type: 'button', 'aria-pressed': smartBuildMode === 'all', onClick: function() { upd({ smartBuildMode: 'all' }); }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: smartBuildMode === 'all' ? '1px solid rgba(168,85,247,0.55)' : '1px solid transparent', background: smartBuildMode === 'all' ? 'rgba(168,85,247,0.18)' : 'transparent', color: smartBuildMode === 'all' ? _goaFg('#ddd6fe') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'All fields')
                     ),
                     smartBuildMode === 'guided' ? (function() {
                       var smartKeys = ['S', 'M', 'A', 'R', 'T'];
@@ -2630,17 +2676,17 @@ window.SelHub = window.SelHub || {
                 aiResponse ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: _goaFg('#c7d2fe') } },
                   h('div', { style: { fontSize: 10, color: _goaFg('#818cf8'), fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Goal Coach'),
                   aiResponse,
-                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: _goaFg('#818cf8'), fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                  callTTS ? h('button', { type: 'button', 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 8, minHeight: 44, padding: '8px 12px', borderRadius: 8, background: 'none', border: '1px solid rgba(99,102,241,0.25)', color: _goaFg('#818cf8'), fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
                 ) : null
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('input', { type: 'text', value: aiInput, 'aria-label': 'Ask the goal coach', onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12 } }),
-                h('button', { 'aria-label': 'Send message to Goal Coach', onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
+                h('input', { type: 'text', value: aiInput, 'aria-label': 'Ask the goal coach', onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (isImeComposing(e)) return; if (e.key === 'Escape' && aiInput) { e.preventDefault(); upd({ aiInput: '' }); return; } if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.25)', background: _goaSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: _goaFg('#e2e8f0'), fontSize: 12, boxSizing: 'border-box' } }),
+                h('button', { type: 'button', 'aria-label': 'Send message to Goal Coach', onClick: askAI, disabled: aiLoading, style: { minWidth: 44, minHeight: 44, padding: '10px 16px', borderRadius: 8, background: _goaBg('#6366f1'), color: _goaFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 14, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
                 (band === 'elementary' ? ['How do I start?', 'I\'m stuck on my goal', 'Make my goal easier', 'Give me a fun challenge'] :
                  ['Break my goal into smaller steps', 'I keep procrastinating', 'Is my goal realistic?', 'How do I stay motivated?', 'Help me reframe my goal as SMART']).map(function(q) {
-                  return h('button', { 'aria-label': q, key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), fontSize: 10, cursor: 'pointer' } }, q);
+                  return h('button', { type: 'button', 'aria-label': q, key: q, onClick: function() { upd({ aiInput: q }); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: _goaFg('#a5b4fc'), fontSize: 11, cursor: 'pointer' } }, q);
                 })
               )
             ) : null,
@@ -2672,16 +2718,16 @@ window.SelHub = window.SelHub || {
                 return h('div', { key: field.key, style: { marginBottom: 16 } },
                   h('label', { htmlFor: 'goal-weekly-' + field.key, style: { display: 'block', fontWeight: 700 } }, field.label),
                   h('p', { id: 'goal-weekly-' + field.key + '-help', style: { margin: '4px 0 8px' } }, field.hint),
-                  h('textarea', { id: 'goal-weekly-' + field.key, 'aria-describedby': 'goal-weekly-' + field.key + '-help', value: weeklyDraft[field.key] || '', onChange: function(event) { updateWeeklyDraft(field.key, event.target.value); }, rows: 3, style: { width: '100%', boxSizing: 'border-box', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical' } })
+                  h('textarea', { id: 'goal-weekly-' + field.key, 'aria-describedby': 'goal-weekly-' + field.key + '-help', value: weeklyDraft[field.key] || '', onChange: function(event) { updateWeeklyDraft(field.key, event.target.value); }, rows: 3, style: { width: '100%', boxSizing: 'border-box', minHeight: 80, padding: 12, borderRadius: 10, border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b'), background: _goaSoftBg('#0f172a', '#ffffff'), color: _goaFg('#e2e8f0'), font: 'inherit', fontSize: 16, resize: 'vertical' } })
                 );
               }),
               h('label', { htmlFor: 'goal-weekly-rating', style: { display: 'block', fontWeight: 700 } }, 'How did the week feel to you? (optional)'),
-              h('select', { id: 'goal-weekly-rating', value: goalReviewRating(weeklyDraft.rating) || '', onChange: function(event) { updateWeeklyDraft('rating', event.target.value ? Number(event.target.value) : null); }, style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 8, font: 'inherit', fontSize: 16, background: _goaHC ? '#000000' : '#0f172a', color: _goaFg('#e2e8f0'), border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b') } },
+              h('select', { id: 'goal-weekly-rating', value: goalReviewRating(weeklyDraft.rating) || '', onChange: function(event) { updateWeeklyDraft('rating', event.target.value ? Number(event.target.value) : null); }, style: { width: '100%', minHeight: 44, padding: 10, borderRadius: 8, font: 'inherit', fontSize: 16, background: _goaSoftBg('#0f172a', '#ffffff'), color: _goaFg('#e2e8f0'), border: '1px solid ' + (_goaHC ? '#ffff00' : '#64748b') } },
                 h('option', { value: '' }, 'Not recorded'),
                 ['Very difficult', 'Difficult', 'Mixed or in between', 'Mostly positive', 'Very positive'].map(function(label, index) { return h('option', { key: index, value: index + 1 }, (index + 1) + ' - ' + label); })
               ),
               h('p', null, 'Your rating describes your experience. There is no preferred answer, and a missing rating is not zero.'),
-              h('button', { 'aria-label': 'Save weekly review', onClick: saveWeeklyCheckin, style: { width: '100%', minHeight: 44, padding: 12, borderRadius: 10, border: 'none', background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'Save weekly review'),
+              h('button', { type: 'button', 'aria-label': 'Save weekly review', onClick: saveWeeklyCheckin, style: { width: '100%', minHeight: 44, padding: 12, borderRadius: 10, border: 'none', background: _goaHC ? '#ffff00' : '#4338ca', color: _goaHC ? '#000000' : '#ffffff', font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, 'Save weekly review'),
               h('p', null, 'Saving adds a review to this activity. Use the Hub save/export controls to keep a project copy. Sharing is your choice.'),
               weeklyCheckins.length > 0 && h('details', { 'aria-label': __alloT('sel.goals.saved_weekly_reviews_aria', 'Saved weekly goal reviews') },
                 h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Saved reviews (' + weeklyCheckins.length + ')'),
@@ -2826,6 +2872,7 @@ window.SelHub = window.SelHub || {
           // \u2500\u2500 Print my action plan (take-home artifact) \u2500\u2500
           (goals && goals.length > 0) ? h('div', { style: { padding: '10px 16px', textAlign: 'center', borderTop: '1px solid rgba(99,102,241,0.15)' } },
             h('button', {
+              type: 'button',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
                 var sections = goals.map(function(g) {
@@ -2850,7 +2897,7 @@ window.SelHub = window.SelHub || {
                   sections: sections
                 });
               },
-              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', color: _goaFg('#c7d2fe'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              style: { minHeight: 44, padding: '10px 18px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', color: _goaFg('#c7d2fe'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
             }, '\ud83d\udda8 Print my action plan')
           ) : null
         );

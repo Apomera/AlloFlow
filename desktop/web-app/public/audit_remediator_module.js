@@ -24,17 +24,29 @@
 (function () {
   'use strict';
 
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !window || (typeof window !== 'object' && typeof window !== 'function')) return;
 
-  if (window.AlloModules && window.AlloModules.AuditRemediator) {
-    console.log('[CDN] AuditRemediator already loaded, skipping');
+  if (window.AlloModules && typeof window.AlloModules === 'object' && window.AlloModules.AuditRemediator) {
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] AuditRemediator already loaded, skipping');
+    }
     return;
   }
 
   var React = window.React;
-  if (!React) {
-    console.error('[CDN] AuditRemediator requires window.React');
+  if (!React || typeof React.createElement !== 'function') {
+    if (typeof console !== 'undefined' && console && typeof console.error === 'function') {
+      console.error('[CDN] AuditRemediator requires window.React');
+    }
     return;
+  }
+
+  function _arSafeStr(v, fb) {
+    if (v == null || typeof v === 'symbol') return fb || '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return Number.isFinite(v) ? String(v) : (fb || '');
+    if (typeof v === 'boolean') return String(v);
+    try { return String(v); } catch (_) { return fb || ''; }
   }
 
   function _arSafeJsonParse(raw) {
@@ -44,8 +56,8 @@
   }
 
   function _arScrubError(err) {
-    var msg = (err && typeof err.message === 'string') ? err.message : String(err || 'Unknown error');
-    return msg
+    var msg = (err && typeof err.message === 'string') ? err.message : _arSafeStr(err, 'Unknown error');
+    return (msg || 'Unknown error')
       .replace(/AIza[0-9A-Za-z_-]{20,}/g, '[REDACTED_KEY]')
       .replace(/Bearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]')
       .replace(/[\u0000-\u001f\u007f]/g, ' ')
@@ -53,7 +65,7 @@
   }
 
   function _arSafeHint(str, maxLen) {
-    return String(str == null ? '' : str).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, maxLen || 2000);
+    return _arSafeStr(str).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, maxLen || 2000);
   }
 
   function _arClaimText(claim) {
@@ -65,7 +77,18 @@
   function _arSafeUrl(u) {
     if (typeof u !== 'string') return null;
     var trimmed = u.replace(/[\u0000-\u001f\u007f]/g, '').trim();
-    if (!/^https?:\/\/[^\s]+$/i.test(trimmed)) return null;
+    if (!trimmed || /[\s"'<>\\]/.test(trimmed) || !/^https?:\/\//i.test(trimmed)) return null;
+    var afterScheme = trimmed.replace(/^https?:\/\//i, '');
+    var hostPart = afterScheme.split(/[/?#]/)[0];
+    if (!hostPart || hostPart.indexOf('@') >= 0) return null;
+    if (typeof URL === 'function') {
+      try {
+        var parsed = new URL(trimmed);
+        if ((parsed.protocol !== 'https:' && parsed.protocol !== 'http:') || !parsed.hostname || parsed.username || parsed.password) return null;
+      } catch (_) {
+        return null;
+      }
+    }
     return trimmed.slice(0, 500);
   }
   var e = React.createElement;
@@ -96,7 +119,7 @@
   ];
 
   function _stableHash(str) {
-    var s = String(str || '');
+    var s = _arSafeStr(str);
     var h = 5381;
     for (var i = 0; i < s.length; i++) {
       h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
@@ -105,12 +128,13 @@
   }
 
   function actionId(prefix, key, index) {
-    var normKey = Array.isArray(key) ? key.join('|') : String(key || '');
+    var normKey = Array.isArray(key) ? key.map(function (k) { return _arSafeStr(k); }).join('|') : _arSafeStr(key);
     var suffix = _stableHash(normKey.toLowerCase().replace(/\s+/g, ' ').trim());
-    return prefix + '_' + suffix + (typeof index === 'number' && index > 0 ? '_' + index : '');
+    return _arSafeStr(prefix) + '_' + suffix + (typeof index === 'number' && Number.isFinite(index) && index > 0 ? '_' + index : '');
   }
 
   function parseEngagementGap(gap) {
+    if (typeof gap !== 'string' || !gap) return null;
     for (var i = 0; i < ENGAGEMENT_KEYWORD_MAP.length; i++) {
       if (ENGAGEMENT_KEYWORD_MAP[i].re.test(gap)) return ENGAGEMENT_KEYWORD_MAP[i].type;
     }
@@ -173,7 +197,7 @@
     // ---- Engagement ----
     var eng = comprehensive.engagement;
     if (eng && eng.llmReview) {
-      var formatGaps = Array.isArray(eng.llmReview.formatGaps) ? eng.llmReview.formatGaps : [];
+      var formatGaps = Array.isArray(eng.llmReview.formatGaps) ? eng.llmReview.formatGaps.slice(0, 40) : [];
       formatGaps.forEach(function (gap) {
         if (typeof gap !== 'string') return;
         var safeGap = _arSafeHint(gap, 1000);
@@ -225,7 +249,7 @@
     // ---- Accessibility ----
     var ax = comprehensive.accessibility;
     if (ax && ax.llmReview) {
-      var fixes = Array.isArray(ax.llmReview.fixes) ? ax.llmReview.fixes : [];
+      var fixes = Array.isArray(ax.llmReview.fixes) ? ax.llmReview.fixes.slice(0, 40) : [];
       fixes.forEach(function (fix) {
         if (typeof fix !== 'string') return;
         var safeFix = _arSafeHint(fix, 1000);
@@ -286,7 +310,7 @@
         configHints: {},
         source: clDetail,
       });
-      var adjustments = cl.llmReview && Array.isArray(cl.llmReview.specificAdjustments) ? cl.llmReview.specificAdjustments : [];
+      var adjustments = cl.llmReview && Array.isArray(cl.llmReview.specificAdjustments) ? cl.llmReview.specificAdjustments.slice(0, 40) : [];
       adjustments.forEach(function (adj) {
         if (typeof adj !== 'string' || !adj.trim()) return;
         var safeAdj = _arSafeHint(adj, 1000);
@@ -309,12 +333,13 @@
         var p = udl[pillar];
         if (!p || typeof p.recommendation !== 'string' || !p.recommendation.trim() || p.status === 'Aligned') return;
         var rec = _arSafeHint(p.recommendation, 1000);
+        var pillarLabel = 'UDL · ' + (pillar === 'actionExpression' ? 'Action & Expression' : pillar.charAt(0).toUpperCase() + pillar.slice(1));
         var artifactType = parseEngagementGap(rec); // reuse the same keyword map
         if (artifactType) {
           var existing = findExistingItem(history, artifactType);
           actions.push({
             id: nextStableId('udl', pillar + ':' + artifactType + ':' + p.recommendation),
-            dimension: 'UDL · ' + (pillar === 'actionExpression' ? 'Action & Expression' : pillar.charAt(0).toUpperCase() + pillar.slice(1)),
+            dimension: pillarLabel,
             icon: '🌐',
             label: (existing ? 'Regenerate ' : 'Generate ') + artifactType + ' (UDL pillar)',
             detail: rec,
@@ -326,7 +351,7 @@
         } else {
           actions.push({
             id: nextStableId('udl', pillar + ':manual:' + p.recommendation),
-            dimension: 'UDL · ' + pillar,
+            dimension: pillarLabel,
             icon: '🌐',
             label: 'Manual review',
             detail: rec,
@@ -345,13 +370,19 @@
 
   function _arAiUsable(kind, fn) {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
-    if (typeof window !== 'undefined') {
-      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloAiUsable === false) return false;
-      var pol = window.ALLOFLOW_MANAGED_AI_POLICY;
-      if (pol && typeof pol === 'object' && (pol.enabled === false || pol.allowAi === false || pol.aiDisabled === true || pol.studentAiDisabled === true || pol.disabled === true || pol.locked === true)) return false;
-      if (typeof window.__alloAiUsable === 'function') {
-        try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+    try {
+      if (typeof window !== 'undefined' && window && (typeof window === 'object' || typeof window === 'function')) {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloOfflineOnly === true || window.__alloAiUsable === false) return false;
+        var qr = window.__alloQrStudentMode;
+        if (qr && typeof qr === 'object' && qr.active === true && qr.allowAi !== true) return false;
+        var pol = window.ALLOFLOW_MANAGED_AI_POLICY;
+        if (pol && typeof pol === 'object' && (pol.enabled === false || pol.allowAi === false || pol.allowAI === false || pol.aiDisabled === true || pol.studentAiDisabled === true || pol.disabled === true || pol.locked === true)) return false;
+        if (typeof window.__alloAiUsable === 'function') {
+          try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+        }
       }
+    } catch (_) {
+      return false;
     }
     return true;
   }
@@ -398,9 +429,10 @@
         + 'Use Google Search for every claim. Do not skip any. If unable to verify, mark "unclear" with brief explanation. Return verdicts in claim-number order.';
       try {
         var raw = await callGemini(prompt, true, true);
-        var rawText = (raw && typeof raw === 'object' && typeof raw.text === 'string') ? raw.text : String(raw || '');
+        var rawText = (raw && typeof raw === 'object' && typeof raw.text === 'string') ? raw.text : _arSafeStr(raw);
         if (rawText.length > MAX_RAW_JSON_CHARS) throw new Error('Fact-check response exceeded maximum size.');
         var cleaned = typeof cleanJson === 'function' ? cleanJson(rawText) : rawText;
+        if (typeof cleaned !== 'string' || cleaned.length > MAX_RAW_JSON_CHARS) throw new Error('Fact-check response exceeded maximum size.');
         var parsed = _arSafeJsonParse(cleaned);
         if (parsed && typeof parsed === 'object' && Array.isArray(parsed.verdicts)) {
           parsed.verdicts.slice(0, chunk.length).forEach(function (v, idx) {
@@ -423,7 +455,9 @@
         }
       } catch (err) {
         failedChunks += 1;
-        console.warn('[Remediator] verifyClaimsBatch chunk failed:', err);
+        if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
+          console.warn('[Remediator] verifyClaimsBatch chunk failed:', _arScrubError(err));
+        }
       }
       offset += chunk.length;
     }
@@ -496,71 +530,77 @@
             resolveUpdater();
           }
         };
-        setHistory(function (prev) {
-          updaterRan = true;
-          if (!Array.isArray(prev)) { finish(); return prev; }
-          // Identify genuinely NEW items of action.target (works for both append & prepend).
-          var newCandidates = [];
-          for (var i = 0; i < prev.length; i++) {
-            var item = prev[i];
-            if (!item || item.type !== action.target) continue;
-            var isNew = item.id != null ? !priorIds.has(item.id) : !priorTargetItems.has(item);
-            if (isNew) newCandidates.push({ idx: i, item: item });
-          }
-          if (newCandidates.length === 0) {
-            foundNewItem = false;
-            latestHistory = prev;
-            finish();
-            return prev;
-          }
-          foundNewItem = true;
-          if (!existingId) {
-            latestHistory = prev;
-            finish();
-            return prev;
-          }
+        try {
+          setHistory(function (prev) {
+            updaterRan = true;
+            if (!Array.isArray(prev)) { finish(); return prev; }
+            // Identify genuinely NEW items of action.target (works for both append & prepend).
+            var newCandidates = [];
+            for (var i = 0; i < prev.length; i++) {
+              var item = prev[i];
+              if (!item || item.type !== action.target) continue;
+              var isNew = item.id != null ? !priorIds.has(item.id) : !priorTargetItems.has(item);
+              if (isNew) newCandidates.push({ idx: i, item: item });
+            }
+            if (newCandidates.length === 0) {
+              foundNewItem = false;
+              latestHistory = prev;
+              finish();
+              return prev;
+            }
+            foundNewItem = true;
+            if (!existingId) {
+              latestHistory = prev;
+              finish();
+              return prev;
+            }
 
-          // Pick the newest candidate (highest timestamp if present, else last in list).
-          var picked = newCandidates[newCandidates.length - 1];
-          for (var ci = 0; ci < newCandidates.length; ci++) {
-            var candTs = Number(newCandidates[ci].item.timestamp) || 0;
-            var pickedTs = Number(picked.item.timestamp) || 0;
-            if (candTs > pickedTs) picked = newCandidates[ci];
-          }
-          var newestIdx = picked.idx;
-          var newest = picked.item;
+            // Pick the newest candidate (highest finite timestamp if present, else last in list).
+            var picked = newCandidates[newCandidates.length - 1];
+            for (var ci = 0; ci < newCandidates.length; ci++) {
+              var rawCandTs = newCandidates[ci].item.timestamp;
+              var rawPickedTs = picked.item.timestamp;
+              var candTs = (typeof rawCandTs === 'number' && Number.isFinite(rawCandTs)) ? rawCandTs : 0;
+              var pickedTs = (typeof rawPickedTs === 'number' && Number.isFinite(rawPickedTs)) ? rawPickedTs : 0;
+              if (candTs > pickedTs) picked = newCandidates[ci];
+            }
+            var newestIdx = picked.idx;
+            var newest = picked.item;
 
-          // Find the existing slot
-          var existingIdx = prev.findIndex(function (h) { return h && h.id === existingId; });
-          if (existingIdx === -1 || existingIdx === newestIdx) {
-            latestHistory = prev;
+            // Find the existing slot
+            var existingIdx = prev.findIndex(function (h) { return h && h.id === existingId; });
+            if (existingIdx === -1 || existingIdx === newestIdx) {
+              latestHistory = prev;
+              finish();
+              return prev;
+            }
+            // Build merged: keep existing.id, copy new.data + new.meta, snapshot old data.
+            var existingItem = prev[existingIdx];
+            var merged = Object.assign({}, existingItem, {
+              data: newest.data,
+              meta: newest.meta || existingItem.meta,
+              title: newest.title || existingItem.title,
+              previousVersions: (Array.isArray(existingItem.previousVersions) ? existingItem.previousVersions.slice() : []).concat([{
+                data: existingItem.data,
+                meta: existingItem.meta,
+                title: existingItem.title,
+                timestamp: existingItem.timestamp || Date.now(),
+                replacedAt: Date.now(),
+                remediationSource: action.dimension + ': ' + (action.label || ''),
+              }]),
+              lastRemediatedAt: Date.now(),
+            });
+            // Replace old, drop newly inserted duplicate regardless of whether it was appended or prepended.
+            var next = prev.slice();
+            next[existingIdx] = merged;
+            next.splice(newestIdx, 1);
+            latestHistory = next;
             finish();
-            return prev;
-          }
-          // Build merged: keep existing.id, copy new.data + new.meta, snapshot old data.
-          var existingItem = prev[existingIdx];
-          var merged = Object.assign({}, existingItem, {
-            data: newest.data,
-            meta: newest.meta || existingItem.meta,
-            title: newest.title || existingItem.title,
-            previousVersions: (Array.isArray(existingItem.previousVersions) ? existingItem.previousVersions.slice() : []).concat([{
-              data: existingItem.data,
-              meta: existingItem.meta,
-              title: existingItem.title,
-              timestamp: existingItem.timestamp || Date.now(),
-              replacedAt: Date.now(),
-              remediationSource: action.dimension + ': ' + (action.label || ''),
-            }]),
-            lastRemediatedAt: Date.now(),
+            return next;
           });
-          // Replace old, drop newly inserted duplicate regardless of whether it was appended or prepended.
-          var next = prev.slice();
-          next[existingIdx] = merged;
-          next.splice(newestIdx, 1);
-          latestHistory = next;
+        } catch (_) {
           finish();
-          return next;
-        });
+        }
         if (!settled) fallbackTimer = setTimeout(finish, 0);
       });
     }
@@ -671,7 +711,10 @@
       var dialog = dialogRef.current;
       var hasDoc = typeof document !== 'undefined';
       var prevFocus = hasDoc ? document.activeElement : null;
-      var scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState = window.__alloScrollLockState || { count: 0, prev: '' }) : null;
+      var rawLock = typeof window !== 'undefined' ? window.__alloScrollLockState : null;
+      var scrollLock = typeof window !== 'undefined'
+        ? (rawLock && typeof rawLock === 'object' && typeof rawLock.count === 'number' && Number.isFinite(rawLock.count) ? rawLock : (window.__alloScrollLockState = { count: 0, prev: '' }))
+        : null;
       if (scrollLock && hasDoc && document.body) {
         if (scrollLock.count === 0) {
           scrollLock.prev = document.body.style.overflow;
@@ -679,15 +722,17 @@
         }
         scrollLock.count += 1;
       }
-      var trapToken = Symbol ? Symbol('AuditRemediatorTrap') : {};
-      var trapStack = (typeof window !== 'undefined') ? (window.__alloFocusTrapStack = window.__alloFocusTrapStack || []) : null;
+      var trapToken = typeof Symbol === 'function' ? Symbol('AuditRemediatorTrap') : {};
+      var trapStack = (typeof window !== 'undefined')
+        ? (Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : (window.__alloFocusTrapStack = []))
+        : null;
       if (trapStack) trapStack.push(trapToken);
       var isTopTrap = function () { return !trapStack || trapStack.length === 0 || trapStack[trapStack.length - 1] === trapToken; };
       var hiddenSiblings = [];
       var rootHost = hasDoc ? (document.getElementById('root') || document.body) : null;
       if (rootHost && dialog) {
         Array.prototype.slice.call(rootHost.children || []).forEach(function (child) {
-          if (!child || child === dialog || child.contains(dialog)) return;
+          if (!child || child === dialog || (typeof child.contains === 'function' && child.contains(dialog))) return;
           var role = child.getAttribute && child.getAttribute('role');
           if (role === 'status' || role === 'alert' || role === 'log' || (child.hasAttribute && child.hasAttribute('aria-live'))) return;
           hiddenSiblings.push({ node: child, hadInert: child.hasAttribute('inert'), prevAriaHidden: child.getAttribute('aria-hidden') });
@@ -698,7 +743,7 @@
       var getFocusables = function () {
         if (!dialog) return [];
         return Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(function (el) {
-          return el && !el.hidden && !el.closest('[hidden], [inert], [aria-hidden="true"]');
+          return el && !el.hidden && !(typeof el.closest === 'function' && el.closest('[hidden], [inert], [aria-hidden="true"]'));
         });
       };
       var focusTimer = setTimeout(function () {
@@ -792,7 +837,7 @@
             if (isStale()) return;
             setVerdicts(v);
           } catch (err) {
-            console.warn('[Remediator] Fact-check failed:', err);
+            if (typeof console !== 'undefined' && console && typeof console.warn === 'function') console.warn('[Remediator] Fact-check failed:', _arScrubError(err));
             if (!isStale() && props.addToast) props.addToast('Fact-check failed; continuing with other fixes.', 'warning');
           }
         }
@@ -816,13 +861,18 @@
             if (isStale()) return;
             if (!result.ok && props.addToast) props.addToast('Skipped: ' + action.label + ' (' + (result.reason || 'unknown') + ')', 'warning');
           } catch (err) {
-            console.warn('[Remediator] Action failed:', action, err);
+            if (typeof console !== 'undefined' && console && typeof console.warn === 'function') console.warn('[Remediator] Action failed:', action && action.id, _arScrubError(err));
             if (!isStale() && props.addToast) props.addToast('Failed: ' + action.label, 'error');
           }
         }
 
         // 3. Re-audit
         if (isStale()) return;
+        if (!_arAiUsable('text', props.handleGenerate)) {
+          setErrorMsg('AI remediation is unavailable right now.');
+          setPhase('error');
+          return;
+        }
         step++;
         setPhase('reAuditing');
         setProgress({ current: step, total: totalSteps, label: 'Re-running audit to verify fixes...' });
@@ -835,7 +885,7 @@
             return;
           }
         } catch (err) {
-          console.warn('[Remediator] Re-audit failed:', err);
+          if (typeof console !== 'undefined' && console && typeof console.warn === 'function') console.warn('[Remediator] Re-audit failed:', _arScrubError(err));
           if (!isStale()) {
             setErrorMsg('Re-audit failed: ' + _arScrubError(err));
             setPhase('error');
@@ -1058,19 +1108,23 @@
     );
   }
 
-  AuditRemediator._internals = {
+  AuditRemediator._internals = Object.freeze({
     actionId: actionId,
     parseEngagementGap: parseEngagementGap,
     parseRecommendations: parseRecommendations,
     applyArtifactAction: applyArtifactAction,
     verifyClaimsBatch: verifyClaimsBatch,
     _arAiUsable: _arAiUsable,
-  };
+  });
 
   // ------------------------------------------------------------------
   // Register
   // ------------------------------------------------------------------
-  window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AuditRemediator = AuditRemediator;
-  console.log('[CDN] AuditRemediator loaded');
+  try {
+    if (!window.AlloModules || typeof window.AlloModules !== 'object') window.AlloModules = {};
+    window.AlloModules.AuditRemediator = AuditRemediator;
+    if (typeof console !== 'undefined' && console && typeof console.log === 'function') {
+      console.log('[CDN] AuditRemediator loaded');
+    }
+  } catch (_) {}
 })();

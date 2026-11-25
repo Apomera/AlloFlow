@@ -533,7 +533,8 @@ describe('the adaptation helper', () => {
     const prompt = d.generateBilingualText.mock.calls[0][0];
     expect(prompt).toContain('Break long sentences into shorter ones');
     expect(prompt).toContain('explain it briefly in plain words');
-    expect(prompt).toContain('Keep these essential terms exactly as written; do not replace or simplify them: wading birds.');
+    // The teacher's terms are fenced as untrusted data since 2026-11-23.
+    expect(prompt).toContain('Keep these essential terms exactly as written; do not replace or simplify them: <UNTRUSTED_ESSENTIAL_TERMS>\nwading birds\n</UNTRUSTED_ESSENTIAL_TERMS>.');
     expect(prompt).toContain('Keep the overall difficulty the same');
     expect(result).toMatchObject({ status: 'preview', resourceId: 'r1', baseData: TEXT, data: 'Herons are wading birds. They catch fish.' });
     expect(d.setGeneratedContent).not.toHaveBeenCalled();

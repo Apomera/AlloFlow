@@ -43,17 +43,13 @@ describe('Info modal executable render smoke', () => {
       const InfoModal = host.AlloModules?.InfoModal?.InfoModal;
       expect(typeof InfoModal).toBe('function');
 
-      const featuresList = {
-        categories: { creation: 'Create', activities: 'Activities', assessment: 'Assess', platform: 'Platform' },
-        items: [
-          { title: 'STEM Lab', icon: 'Layers', desc: 'Old count text', category: 'platform', color: 'teal' },
-          { title: 'SEL Hub', icon: 'Heart', desc: 'Old count text', category: 'activities', color: 'rose' },
-        ],
-      };
-      const t = (key) => key === 'about.features_list' ? featuresList : key;
+      // Host-like t(): unknown keys are undefined, so English fallbacks show. A
+      // pack that translates only ONE string must change only that string (the old
+      // list-wide replacement left stale packs with an outdated, title-keyed list).
+      const partialPack = { 'about.fg.glossary.title': 'Glosario' };
+      const t = (key) => partialPack[key];
       const noop = () => {};
-
-      const tree = InfoModal({
+      const render = (isTeacherMode) => JSON.stringify(InfoModal({
         handleSetInfoModalTabToAbout: noop,
         handleSetInfoModalTabToAtlas: noop,
         handleSetInfoModalTabToFeatures: noop,
@@ -65,15 +61,23 @@ describe('Info modal executable render smoke', () => {
         setShowInfoModal: noop,
         setShowWizard: noop,
         t,
-      });
+        isTeacherMode,
+      }));
 
-      const rendered = JSON.stringify(tree);
-      expect(rendered).toContain('Feature Guide');
-      expect(rendered).toContain('Search guided workflows');
-      // Count-agnostic (2026-07-20): exact counts staled every time a session
-      // registered a tool; the invariant is that LIVE derived counts render.
-      expect(rendered).toMatch(/\d+ current STEM catalog entries/);
-      expect(rendered).toMatch(/\d+ current SEL catalog entries/);
+      const teacher = render(true);
+      expect(teacher).toContain('Feature Guide');
+      expect(teacher).toContain('Search the guides');
+      for (const label of ['Plan & Create', 'Learn & Play', 'Assess & Support', 'Access & Manage']) expect(teacher).toContain(label);
+      expect(teacher).toContain('Glosario');
+      expect(teacher).not.toContain('"Glossary"');
+      expect(teacher).toContain('Text Adaptation');
+      expect(teacher).toContain('Report Writer');
+
+      // Staff tools are not listed in the learner view.
+      const learner = render(false);
+      expect(learner).not.toContain('Report Writer');
+      expect(learner).not.toContain('BehaviorLens');
+      expect(learner).toContain('Reading Library');
     } finally {
       if (previousReact === undefined) delete host.React;
       else host.React = previousReact;

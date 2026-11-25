@@ -335,14 +335,15 @@ describe('Charts of the student’s own work describe their data', () => {
   };
 
   it('names the footprint split, largest share first', () => {
+    // The breakdown now appears after the predict-first step, so the state carries a prediction.
     const html = renderTool('climateExplorer', {
-      climateExplorer: { tab: 'carbon', ccTransport: 2, ccFood: 0, ccEnergy: 0, ccWaste: 0 }
+      climateExplorer: { tab: 'carbon', ccTransport: 2, ccFood: 0, ccEnergy: 0, ccWaste: 0, ccPrediction: { pick: 'transport', sig: '2,0,0,0' } }
     }, {});
     const label = labelFor(html, 'footprint breakdown');
     expect(label).toBeTruthy();
     expect(label).toContain('Total');
     expect(label).toContain('Transport');
-    // Car-alone (1200) is the biggest slice in this state, so it leads.
+    // Car-alone (720) is bigger than the waste slice (230), so it comes first.
     expect(label.indexOf('Transport')).toBeLessThan(label.indexOf('Waste'));
   });
 
@@ -590,7 +591,8 @@ describe('Every persisted SELECTOR resolves to something a student could have ch
   it('an unknown scale does not silently multiply the footprint by 330 million', () => {
     // scaleLabel is a 3-way ternary: school / city / ELSE country. Anything
     // unknown meant "USA (330M)" with no scale button selected.
-    const text = (v) => render({ tab: 'carbon', ccScale: v }).replace(/<[^>]+>/g, ' ');
+    // All four answered (lowest options), so the scale panel is on screen.
+    const text = (v) => render({ tab: 'carbon', ccScale: v, ccTransport: 0, ccFood: 0, ccEnergy: 0, ccWaste: 0 }).replace(/<[^>]+>/g, ' ');
     expect(text('country'), 'country still reaches the USA scale').toContain('USA (330M)');
     for (const bad of ['nonsense', 'SCHOOL', 'usa', '']) {
       expect(text(bad), `unknown scale ${JSON.stringify(bad)}`).not.toContain('USA (330M)');

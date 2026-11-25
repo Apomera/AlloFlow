@@ -259,7 +259,8 @@ describe('the page says what it is, and shares the voice instead of copying it',
     expect(read('packets_audio_kit.js')).toContain("'lame.min.js'");
     const doc = new JSDOM(HTML).window.document;
     expect([...doc.querySelectorAll('script')].map((s) => s.getAttribute('src'))).toEqual(['packets-page.js', 'word_sounds_take_home_loader.js', 'packet_read_along_builder.js', 'syllable_table_en.js', 'packets_voice_engine.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-read-along.js']);
-    expect(doc.querySelector('details.proof').textContent).toContain('This page loads sixteen files from this site');
+    // 2026-11-23: no count (it said sixteen and listed 17, and the reading supports load more): the files are named.
+    expect(doc.querySelector('details.proof').textContent).toContain('This page loads its files from this site: the page itself, five stylesheets');
     expect(doc.querySelector('header .top-link').textContent).toBe('All Packets pages');
   });
 
@@ -272,9 +273,10 @@ describe('the page says what it is, and shares the voice instead of copying it',
     expect(body).toContain('This page does not write, shorten or change the passage.');
     expect(body).toContain('Nothing is downloaded until you press Get the voice.');
     expect(body).toContain('It does not receive your passage.');
-    expect(body).toContain('Run AI. It makes no speech: it only plays the recordings that were made here.');
+    // 2026-11-23: with the local device voice ticked in step 4 the file can ask the device to read, and the line says so.
+    expect(body).toContain('Run AI. It plays the recordings that were made here. It makes no speech of its own, unless you turn on the local device voice in step 4');
     expect(body).toContain('They are not stored and not uploaded.');
-    expect(body).toContain('Show longer words in syllables when the student presses Syllables. The breaks come from a word list on this site, looked up here when you make the file. No AI is used for them.');
+    expect(body).toContain('Show longer words in syllables when the student presses Syllables. The breaks come from a word list on this site, looked up here when you make the file. Nothing is generated for them.');
     expect(body).toContain('Offer the Reading tools every Packets file has: text size, colors, spacing, letters, a reading focus line and a magnifier.');
     // "Runs without AI" is said of the FILE only, never of this page.
     expect(HTML.includes('This page runs without AI')).toBe(false);
@@ -283,10 +285,15 @@ describe('the page says what it is, and shares the voice instead of copying it',
     expect(doc.querySelector('.scope').textContent).toContain('Listening practice: nothing is scored.');
     // The front door points to it, in the note that sets the two voice pages apart, and still says its own page runs without AI.
     const door = new JSDOM(read('packets.html')).window.document;
-    const note = [...door.querySelectorAll('.door-notes p')].find((p) => p.querySelector('a[href="packets-read-along.html"]'));
+    // 2026-11-23 (owner, front-door review): the note and the link are in the closed fold "More things to make", in the block
+    // set apart for the two voice pages; the read-along is linked once now (it was linked in the note and again in a card).
+    const links = [...door.querySelectorAll('a[href="packets-read-along.html"]')];
+    expect(links.map((a) => a.textContent)).toEqual(['Make a read-along']);
+    const note = links[0].closest('details#more .door-voice');
+    expect(note.querySelector('h3').textContent).toBe('With optional computer voice (AI, runs on this device)');
     expect(note.textContent).toContain('Two optional pages use a computer voice that runs on your device');
     expect(note.textContent).toContain('They are the only pages that work differently, and each says how at its top.');
-    expect(note.textContent).toContain('reads it aloud with each sentence highlighted');
+    expect(links[0].closest('li').textContent).toContain('reads it aloud with each sentence highlighted');
     expect(read('packets.html')).toContain('This page runs without AI.');
     // American wording on a teacher's page: "highlighted", as the other pages' spelling rule asks.
     expect(/\bmarked\b|\bmarking\b|practis|colour|licence/i.test(HTML)).toBe(false);
@@ -339,7 +346,7 @@ describe('syllables: the words in parts, never changed', () => {
     expect(made.lesson.blocks[0].items[0].lines[3]).toEqual({ text: 'It hid in the tall grass.', audio: 's4', syl: 'It hid in the tall gr·ass.' });
     const built = RA.buildReadAlongPacket({ made, loader });
     expect(built.manifest.readAlong.sentencesWithSyllables).toBe(1);
-    expect(JSON.stringify(built.manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (a test list). No AI.');
+    expect(JSON.stringify(built.manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (a test list). Runs without AI.');
     // Without a lookup the file has none, and says nothing about them.
     const plain = RA.buildReadAlongPacket({ made: RA.lessonFromReadAlong({ loader, sentences, clips: clipsFor(sentences) }), loader });
     expect(plain.manifest.readAlong.sentencesWithSyllables).toBe(0);
@@ -539,7 +546,8 @@ describe('the read-along page, run with a stand-in voice', () => {
       down.w.fetch = async () => ({ ok: false, json: async () => ({}) });
       down.$('get-voice').click();
       await down.until(() => down.$('voice-problem').textContent !== '', 'the problem line');
-      expect(down.$('voice-problem').textContent).toBe('The list of voice files did not arrive. Nothing was changed. You can try again.');
+      // 2026-11-23: the line also says what the teacher can do instead (tests/packets_read_along_fixes_2026_11_23.test.js).
+      expect(down.$('voice-problem').textContent).toMatch(/^The list of voice files did not arrive\. A school or office network may block the download \(it comes from huggingface\.co\)\. Nothing was changed, and your passage is still here\. You can try again, or try on another network\./);
       expect(down.$('get-voice').disabled).toBe(false);
       expect(down.$('make-all').disabled).toBe(true);
     } finally { down.dom.window.close(); }
@@ -643,12 +651,14 @@ describe('the reading tools in a read-along file', () => {
       const html = page.w.AlloPacketReadAlongPage.state.built.html;
       const manifest = JSON.parse(/<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html)[1]);
       expect(manifest.readAlong.sentencesWithSyllables).toBe(1);
-      expect(JSON.stringify(manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (Moby Hyphenator II, Grady Ward, public domain by grant of the author (2001); checked against CMUdict, Carnegie Mellon University). No AI.');
+      expect(JSON.stringify(manifest.attributions)).toContain('Syllable breaks: worked out when this file was made, from a word list (Moby Hyphenator II, Grady Ward, public domain by grant of the author (2001); checked against CMUdict, Carnegie Mellon University). Runs without AI.');
       // The table itself (~1.2 MB) does not go into the file: only the breaks of this passage do.
       // Re-pinned 2026-11-19 (Immersive Reader parity Waves 4-8) from 200000: offline Focus Mode, Crawl, Chunk pace/moods, POS, Word meanings, Tap Sounds/Speak (~207 KB).
       // Re-pinned 2026-11-22 (Show my teacher) from 225000: collapsed deskside conferencing fold on practice end screen (~229.3 KB).
       // Re-pinned 2026-11-22 (Wave 9 multi-page continuity) from 235000: multi-page Crawl/Focus/Chunk/Play continuity, Intl.Segmenter, Jump/Bookmark, full-passage print, Reduced Motion (~252 KB).
-      expect(html.length).toBeLessThan(260000);
+      expect(html.length).// Re-pinned 2026-11-23 from 260000 (264,266 B): kept check answers, read or played, time that adds up, device voice that arrives late
+    // or is missing for the language, and 24 always-visible words made into labels.
+    toBeLessThan(268000);
     } finally { page.dom.window.close(); }
   }, 120000);
 });

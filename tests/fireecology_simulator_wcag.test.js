@@ -64,8 +64,11 @@ describe('Fire Ecology simulator WCAG controls', () => {
 
     expect(source).toContain("seed: 'fire-ecology-classroom-v1'");
     expect(source).toContain('function fireSimHash(value)');
-    expect(source).toContain("fireSimRoll(s, 'suppression-wildfire')");
-    expect(source).toContain("fireSimRoll(simB, 'comparison-wildfire')");
+    // 2026-11-23: both forests step through fireSimAdvance(), which takes the roll purpose,
+    // so each path keeps its own reproducible seeded roll.
+    expect(source).toContain("fireSimRoll(s, rollPurpose || 'suppression-wildfire')");
+    expect(source).toContain("fireSimAdvance(s, action, 'suppression-wildfire')");
+    expect(source).toContain("fireSimAdvance(simB, 'suppress', 'comparison-wildfire')");
     expect(source).toContain("'data-simulation-seed': s.seed || SIM_DEFAULTS.seed");
     expect(source).toContain('Repeat the same choices to reproduce the same classroom event path.');
   });

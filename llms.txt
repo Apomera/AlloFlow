@@ -1,0 +1,49 @@
+# AlloFlow
+
+> AlloFlow is a free, open-source (AGPL-3.0) AI classroom assistant and instructional differentiation engine built by a school psychologist for Universal Design for Learning (UDL), accessibility, AAC communication, STEM/SEL activities, and local-first K–12 schools. Independent project; not affiliated with Google.
+
+## Official Project Identity & Facts
+- Canonical name: AlloFlow (Version 1.19)
+- License: GNU AGPL v3.0 — $0 software license fee
+- Creator: Aaron Pomeranz, PsyD (School Psychologist & Developer)
+- Canonical repository: https://github.com/Apomera/AlloFlow
+- Official website: https://apomera.github.io/AlloFlow/
+- Browser app (static): https://alloflow.dev/app/
+- Direct shareable STEM links: https://alloflow-cdn.pages.dev/
+- Privacy boundary: Core local classroom workflows and Quick Practice & Checks run without student accounts or required PII. Local-first Desktop, browser-storage, and self-hosted paths keep work on the user's device or school-controlled infrastructure; cloud AI and relay paths depend on the deployment and provider selected by the district.
+
+## Core Pages
+- [Home](https://apomera.github.io/AlloFlow/): Overview of AlloFlow workflows, UDL pillars, live tutorials, and design principles.
+- [Official Project Facts (About)](https://apomera.github.io/AlloFlow/about.html): Maintained canonical record of identity, release, license, privacy boundaries, and official links.
+- [Design Principles](https://apomera.github.io/AlloFlow/principles.html): Five commitments governing teacher authorship, privacy, open source, accessibility, and honest limits.
+- [Find a Tool](https://apomera.github.io/AlloFlow/tools.html): Searchable catalog and directory of 152 STEM tools plus classroom, literacy, SEL, and accessibility workflows, showing AI and source requirements before launch.
+- [Features](https://apomera.github.io/AlloFlow/features.html): Searchable index of 400+ documented capabilities grouped by UDL guideline, including 152 STEM tools and 72 CASEL-aligned SEL tools.
+- [Visual Tour](https://apomera.github.io/AlloFlow/tour.html): 26-slide illustrated walkthrough with shareable chapter and slide deep links.
+- [Ways to Use](https://apomera.github.io/AlloFlow/ways-to-use.html): Side-by-side comparison of Gemini Canvas, the static browser app, AlloFlow Desktop, portable Agent Skills, local MCP connector, and optional School Box server.
+- [Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html): Stable launcher for the current Gemini Canvas release and browser app.
+- [Lesson Library (AlloPacks)](https://apomera.github.io/AlloFlow/library.html): Filterable catalog of teacher-reviewable base and illustrated lesson packs.
+- [For Students](https://apomera.github.io/AlloFlow/students.html): Student-facing entry guide to differentiated resources, Adventure Mode, Immersive Reader, and offline practice files.
+
+## District Evaluation, Privacy & Cost Planning
+- [For Districts](https://apomera.github.io/AlloFlow/for-districts.html): Procurement brief, FERPA-aligned deployment comparison, IT allowlist domains (`#allowlist`), and 2026–27 pilot details.
+- [Cost Scenario Planner](https://apomera.github.io/AlloFlow/calculator.html): Interactive, quote-verified EdTech subscription scenario modeler with copy and print summary.
+- [Quick Practice & Checks (AlloFlow Packets)](https://apomera.github.io/AlloFlow/packets.html): Zero-AI, offline-capable student practice and check creator with starter packs.
+- [Packets Guide for School IT](https://apomera.github.io/AlloFlow/packets-it.html): Technical security, CSP, and network boundaries for AlloFlow Packets.
+
+## Accessibility & Document Remediation
+- [Document Remediation Pipeline](https://apomera.github.io/AlloFlow/remediation.html): Evidence-backed PDF/DOCX accessibility remediation workflow, portable Agent Skill downloads with SHA-256 checksums, and local MCP connector.
+- [Accessibility Remediation White Paper](https://apomera.github.io/AlloFlow/whitepaper.html): Architecture, ADA Title II context, evidence boundaries, privacy model, case studies, and limitations.
+- [Accessibility & AAC Lab](https://apomera.github.io/AlloFlow/accessibility_demo.html): Working AAC communication board demonstrating WAI-ARIA grid navigation, 1- and 2-switch scanning, High Contrast mode, and live screen-reader announcements.
+
+## Maintained Manuals & Teacher Guides
+- [Manuals & Guides Directory](https://apomera.github.io/AlloFlow/manuals.html): Audience-filtered hub for educators, families, multilingual learner teams, specialists, leaders, and IT.
+- [AlloFlow Teacher Guide](https://apomera.github.io/AlloFlow/guide/index.html): 27-chapter searchable web guide covering workspace setup, live sessions, UDL, multilingual supports, privacy, and school rollout.
+- [Teacher Guide (Offline & Print Edition)](https://apomera.github.io/AlloFlow/guide/offline.html): Complete self-contained 27-chapter printable edition.
+- [Educator Growth & Evaluation Manual](https://apomera.github.io/AlloFlow/educator-evaluation-manual.html): Guide to private on-device, principal-managed Drive, and district portal evaluation workflows.
+- [School Rewards & Store Manual](https://apomera.github.io/AlloFlow/school-rewards-manual.html): Guide to running a school-owned recognition points ledger and trimester store.
+- [Dynamic Assessment Studio Clinician Guide](https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html): Non-normed pretest–mediation–posttest workflow and responsible-use boundaries.
+- [STEM Lab Teacher Manuals](https://apomera.github.io/AlloFlow/manuals.html#stem-manuals-heading): Hand-written classroom manuals for [Water Cycle](https://apomera.github.io/AlloFlow/manual-water-cycle.html), [Coaster Lab](https://apomera.github.io/AlloFlow/manual-coaster-lab.html), [EvoLab](https://apomera.github.io/AlloFlow/manual-evo-lab.html), [Kitchen Lab](https://apomera.github.io/AlloFlow/manual-kitchen-lab.html), and [Solar System](https://apomera.github.io/AlloFlow/manual-solar-system.html).
+
+## Project Updates & Feedback
+- [Release History & Changelog](https://apomera.github.io/AlloFlow/changelog.html): Published version history and release notes.
+- [Feedback & Support](https://apomera.github.io/AlloFlow/feedback.html): Public feedback and issue reporting channels.

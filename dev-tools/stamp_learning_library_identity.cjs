@@ -42,7 +42,11 @@ for (const entry of manifest.entries || []) {
   const pack = packPath && fs.existsSync(packPath)
     ? JSON.parse(fs.readFileSync(packPath, 'utf8'))
     : entry;
-  const identity = { packId: pack.id, version: pack.version, visibility: pack.visibility };
+  const identity = {
+    packId: pack.id || entry.id,
+    version: pack.version || entry.version,
+    visibility: pack.visibility || entry.visibility || 'public',
+  };
   if (!identity.packId) continue;
 
   for (const url of [entry.learningLibraryUrl, entry.learningLibraryQaUrl]) {

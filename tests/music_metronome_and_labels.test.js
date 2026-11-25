@@ -103,7 +103,8 @@ describe('Music Synthesizer — held notes are released', () => {
     // assertion fails on a correct change.
     const required = ['stopSequencer()', 'stopMetronome()', 'stopArpeggiator()', 'stopAllNotes()'];
 
-    const unmountAt = source.indexOf('React.useEffect(function () { return function () { stopSequencer()');
+    // The unmount teardown now shares the effect that also handles global mute.
+    const unmountAt = source.indexOf("window.removeEventListener('alloflow-mute-changed', onMuteChanged);");
     expect(unmountAt, 'unmount teardown effect').toBeGreaterThan(-1);
     const unmount = source.slice(unmountAt, source.indexOf('}, []);', unmountAt));
     for (const call of required) expect(unmount, 'unmount should call ' + call).toContain(call);

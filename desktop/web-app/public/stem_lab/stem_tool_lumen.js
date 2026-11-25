@@ -2391,6 +2391,12 @@
           '.theme-contrast #lumen-chart-main text,.theme-contrast #lumen-chart-present text{fill:#ffff00!important;}'
         ].join('\n');
         document.head.appendChild(st);
+        if (!document.getElementById('allo-lumen-a11y-css')) {
+          var ast = document.createElement('style');
+          ast.id = 'allo-lumen-a11y-css';
+          ast.textContent = '[data-stem-tool-shell="lumen"] :is(button,a,input,select,textarea,summary),.allo-lumen-home :is(button,a,input,select,textarea,summary),#lumen-present-overlay :is(button,a,input,select,textarea,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell="lumen"] :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible,.allo-lumen-home :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible,#lumen-present-overlay :is(button,a,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+          document.head.appendChild(ast);
+        }
       })();
     }
 
@@ -4143,7 +4149,7 @@
             kids.push(h('div', {
               key: 'present', id: 'lumen-present-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.lumen.lumen_present_mode', 'Lumen present mode'),
               onKeyDown: function (ev) {
-                if (ev.key === 'Escape' && !(ev.isComposing || ev.keyCode === 229)) { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEAM Lab modal does not also close
+                if (ev.key === 'Escape' && !(ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229)) { ev.stopPropagation(); closePresent(); return; } // Esc closes; stopPropagation so the host STEAM Lab modal does not also close
                 if (ev.key === 'Tab' && !(ev.ctrlKey || ev.metaKey || ev.altKey)) {
                   try {
                     var first = document.getElementById('lumen-present-first');

@@ -6325,6 +6325,7 @@
             return;
           }
           var canvas = document.createElement('canvas');
+          if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
           canvas.width = geometry.outputWidth;
           canvas.height = geometry.outputHeight;
           var context = canvas.getContext('2d');
@@ -6390,6 +6391,7 @@
     if (!image || !doc) return [];
     var size = 48;
     var canvas = doc.createElement('canvas');
+    if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
     canvas.width = size;
     canvas.height = size;
     var context = canvas.getContext && canvas.getContext('2d');
@@ -6476,6 +6478,7 @@
     var opts = options && typeof options === 'object' ? options : {};
     var layout = referenceBoardLayout(rows.length, opts);
     var canvas = doc.createElement('canvas');
+    if (canvas.setAttribute) canvas.setAttribute('aria-hidden', 'true');
     canvas.width = layout.width;
     canvas.height = layout.height;
     var painter = canvas.getContext && canvas.getContext('2d');
@@ -7382,6 +7385,12 @@
     st.id = 'allo-sourcebook-hc-extra-css';
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h){background-color:#00ff00!important;background-image:none!important;color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *{color:#000!important;-webkit-text-fill-color:#000!important}.theme-contrast [data-stem-tool-shell=\"sourcebook\"] button:hover:not(#hc-h):not(#hc-h):not(#hc-h):not(#hc-h) *:not(:empty):not(svg,svg *,canvas,img,video){background-color:#00ff00!important;background-image:none!important}";
     document.head.appendChild(st);
+    if (!document.getElementById('allo-sourcebook-a11y-css')) {
+      var a11ySt = document.createElement('style');
+      a11ySt.id = 'allo-sourcebook-a11y-css';
+      a11ySt.textContent = "[data-stem-tool-shell=\"sourcebook\"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell=\"sourcebook\"] :is(button,input,select,summary,a,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}";
+      document.head.appendChild(a11ySt);
+    }
   })();
   window.StemLab.registerTool('sourcebook', {
     icon: '▧',
@@ -10563,17 +10572,17 @@
                   className: 'min-h-[36px] w-full rounded-xl border border-[#b6c4be] bg-white px-3 text-[0.6875rem] font-black text-[#53685f] hover:bg-[#f2f6f3]'
                 }, __alloT('stem.sourcebook.recentre_crop', 'Re-centre crop and reset zoom')),
                 h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_zoom_percent', 'Zoom {value}%', { value: activePrep.zoom }),
-                  h('input', { type: 'range', min: 100, max: 220, step: 5, value: activePrep.zoom, onChange: function (event) { updatePrep(item.id, { zoom: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.image_zoom', 'Image zoom') })
+                  h('input', { type: 'range', min: 100, max: 220, step: 5, value: activePrep.zoom, onChange: function (event) { updatePrep(item.id, { zoom: Number(event.target.value) }); }, className: 'block min-h-[44px] w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.image_zoom', 'Image zoom'), 'aria-valuetext': __alloT('stem.sourcebook.label_zoom_percent', 'Zoom {value}%').replace('{value}', String(activePrep.zoom)) })
                 ),
                 h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_horizontal_percent', 'Horizontal {value}%', { value: activePrep.x }),
-                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.x, onChange: function (event) { updatePrep(item.id, { x: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.horizontal_crop_focus', 'Horizontal crop focus') })
+                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.x, onChange: function (event) { updatePrep(item.id, { x: Number(event.target.value) }); }, className: 'block min-h-[44px] w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.horizontal_crop_focus', 'Horizontal crop focus'), 'aria-valuetext': __alloT('stem.sourcebook.label_horizontal_percent', 'Horizontal {value}%').replace('{value}', String(activePrep.x)) })
                 ),
                 h('label', { className: 'text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.label_vertical_percent', 'Vertical {value}%', { value: activePrep.y }),
-                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.y, onChange: function (event) { updatePrep(item.id, { y: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.vertical_crop_focus', 'Vertical crop focus') })
+                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: activePrep.y, onChange: function (event) { updatePrep(item.id, { y: Number(event.target.value) }); }, className: 'block min-h-[44px] w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.vertical_crop_focus', 'Vertical crop focus'), 'aria-valuetext': __alloT('stem.sourcebook.label_vertical_percent', 'Vertical {value}%').replace('{value}', String(activePrep.y)) })
                 )
               ),
               activePrep.mode === 'tile' && h('label', { className: 'block text-[0.6875rem] font-bold text-[#445950]' }, __alloTf('stem.sourcebook.tile_size_px', 'Tile size {size} px', { size: activePrep.tile }),
-                h('input', { type: 'range', min: 60, max: 360, step: 10, value: activePrep.tile, onChange: function (event) { updatePrep(item.id, { tile: Number(event.target.value) }); }, className: 'block w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.repeated_tile_size', 'Repeated tile size') })
+                h('input', { type: 'range', min: 60, max: 360, step: 10, value: activePrep.tile, onChange: function (event) { updatePrep(item.id, { tile: Number(event.target.value) }); }, className: 'block min-h-[44px] w-full accent-[#276b57]', 'aria-label': __alloT('stem.sourcebook.repeated_tile_size', 'Repeated tile size'), 'aria-valuetext': __alloT('stem.sourcebook.tile_size_px', 'Tile size {size} px').replace('{size}', String(activePrep.tile)) })
               ),
               h('p', { className: 'rounded-xl bg-[#eef3f0] px-3 py-2 text-[0.625rem] font-bold text-[#53675f]', role: 'status' }, activePrep.mode === 'fit'
                 ? __alloT('stem.sourcebook.fit_keeps_original_dimensions', 'Full image keeps the original image dimensions.')
@@ -11878,10 +11887,10 @@
               ),
               h('div', { className: 'grid grid-cols-3 gap-2', 'aria-hidden': 'true' }, [0, 1, 2].map(function (index) {
                 return h('div', { key: index, className: 'overflow-hidden rounded-xl border border-sky-100 bg-white' },
-                  h('div', { className: 'h-20 animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
+                  h('div', { className: 'h-20 motion-safe:animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
                   h('div', { className: 'space-y-1.5 p-2' },
-                    h('div', { className: 'h-2.5 w-4/5 animate-pulse rounded bg-slate-200 motion-reduce:animate-none' }),
-                    h('div', { className: 'h-2 w-1/2 animate-pulse rounded bg-slate-100 motion-reduce:animate-none' })
+                    h('div', { className: 'h-2.5 w-4/5 motion-safe:animate-pulse rounded bg-slate-200 motion-reduce:animate-none' }),
+                    h('div', { className: 'h-2 w-1/2 motion-safe:animate-pulse rounded bg-slate-100 motion-reduce:animate-none' })
                   )
                 );
               }))
@@ -12028,7 +12037,7 @@
               className: 'sb-board grid items-start ' + (boardView === 'gallery' ? 'sm:grid-cols-2 xl:grid-cols-3 gap-3' : 'md:grid-cols-2 gap-4')
             }, visible.map(resultCard).concat(!showingCollection && searchActive && liveResults.length > 0 ? [
               h('div', { key: 'sourcebook-streaming-placeholder', className: 'sb-no-print overflow-hidden rounded-2xl border border-dashed border-sky-300 bg-sky-50/70', role: 'status' },
-                h('div', { className: 'h-[180px] animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
+                h('div', { className: 'h-[180px] motion-safe:animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
                 h('p', { className: 'p-3 text-[0.6875rem] font-black text-sky-950' }, __alloT('stem.sourcebook.checking_the_remaining_public_collecti', 'Checking the remaining public collections…'))
               )
             ] : [])) : h('div', { className: 'rounded-3xl border-2 border-dashed border-[#b7c7c0] bg-[#f5f7f4] p-10 text-center' },

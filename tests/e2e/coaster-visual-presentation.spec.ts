@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { openCoasterSettings } from './helpers/coaster_settings';
 const harness = new GlHarness({
   toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
   probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%}.clab-root{width:100%;height:100vh!important}</style>');"
@@ -15,6 +16,7 @@ test('coaster scene presentation across lighting themes', async ({ page }, testI
   await page.setViewportSize({ width: 1440, height: 960 });
   await harness.mount(page, {}, "document.querySelector('[aria-label=\"Coaster Lab 3-D designer\"]')._lab");
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openCoasterSettings(page);
   for(const theme of ['dusk', 'daylight', 'neon', 'blueprint']){
     await page.locator('#clab-visualTheme').selectOption(theme);
     await expect(page.locator('.clab-root')).toHaveAttribute('data-visual-theme', theme);

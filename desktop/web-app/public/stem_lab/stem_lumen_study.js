@@ -287,8 +287,22 @@
   }
 
 
+  function _ensureLumenStudyA11yCss() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+    if (document.getElementById('allo-lumen-study-a11y-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-lumen-study-a11y-css';
+    st.textContent =
+      '[data-lumen-study] button,[data-lumen-study] [role="button"],[data-lumen-study] summary,[data-lumen-study] a,[data-lumen-study] input,[data-lumen-study] select,[data-lumen-study] textarea{touch-action:manipulation;}' +
+      '[data-lumen-study] button:focus-visible,[data-lumen-study] [role="button"]:focus-visible,[data-lumen-study] summary:focus-visible,[data-lumen-study] a:focus-visible,[data-lumen-study] input:focus-visible,[data-lumen-study] select:focus-visible,[data-lumen-study] textarea:focus-visible{outline:2px solid #0f766e;outline-offset:2px;}' +
+      '@media (forced-colors: active){[data-lumen-study] button:focus-visible,[data-lumen-study] [role="button"]:focus-visible,[data-lumen-study] summary:focus-visible,[data-lumen-study] a:focus-visible,[data-lumen-study] input:focus-visible,[data-lumen-study] select:focus-visible,[data-lumen-study] textarea:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+      '@media (prefers-reduced-motion: reduce){[data-lumen-study] *,[data-lumen-study] *::before,[data-lumen-study] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+    document.head.appendChild(st);
+  }
+
   function ReadingWorkspace(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, E = evidenceApi(), project = props.project;
+    React.useEffect(function () { _ensureLumenStudyA11yCss(); }, []);
     var nodes = project.evidenceNodes.filter(function (n) { return !n.stale && project.sources.some(function (s) { return s.id === n.sourceId && s.active !== false; }); });
     var _node = React.useState(''), nodeId = _node[0], setNodeId = _node[1];
     var _mode = React.useState('reflection'), mode = _mode[0], setMode = _mode[1];
@@ -349,7 +363,7 @@
       h('div', { className: 'flex gap-2 flex-wrap mt-2' },
         !saved.stale && saved.type !== 'grounded-note' && saved.citations && saved.citations[0] && nodes.some(function (n) { return n.id === saved.citations[0].evidenceId; }) ? button('Continue this entry', function () { setNodeId(saved.citations[0].evidenceId); setMode(saved.type === 'bookmark' ? 'reflection' : saved.type); if (saved.type === 'vocabulary') { setDrafts(function (all) { var next = Object.assign({}, all); next[saved.citations[0].evidenceId + '|vocabulary'] = saved; return next; }); } props.setActiveNote(''); }) : null,
         button('Close note', function () { props.setActiveNote(''); }))) : null;
-    return h('section', { ref: panelRef, tabIndex: -1, 'aria-label': 'Reading workspace', className: 'mb-4 p-4 rounded-2xl border border-teal-300 bg-teal-50 text-slate-900 outline-none focus:ring-2 focus:ring-teal-700' },
+    return h('section', { 'data-lumen-study': 'true', ref: panelRef, tabIndex: -1, 'aria-label': 'Reading workspace', className: 'mb-4 p-4 rounded-2xl border border-teal-300 bg-teal-50 text-slate-900 outline-none focus:ring-2 focus:ring-teal-700' },
       h('h3', { className: 'font-extrabold text-lg m-0' }, 'Read & reflect'),
       h('p', { className: 'text-sm mt-1' }, 'Read a short passage, capture your thinking, or practise reading it again. Every activity is optional. No AI or recording is needed.'),
       h('p', { className: 'text-xs' }, 'Personal notes on this device · ' + (ctx.studentNickname || 'This profile')), savedPanel,
@@ -895,7 +909,8 @@
         })));
     }
 
-    return h('div', { className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' },
+    _ensureLumenStudyA11yCss();
+    return h('div', { 'data-lumen-study': 'true', className: 'p-4 rounded-xl bg-amber-50 border border-amber-200 text-slate-800' },
       h('div', { className: 'flex items-center gap-2 flex-wrap pb-3 border-b border-amber-200' },
         h('button', { type: 'button', onClick: function () { ctx.update('lumen', 'mode', 'home'); }, className: 'px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50' }, '← Lumen home'),
         h('div', { className: 'min-w-0' },

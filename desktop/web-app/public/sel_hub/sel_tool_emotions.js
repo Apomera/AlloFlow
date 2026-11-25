@@ -501,14 +501,14 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       { area: 'Whole Body', icon: '\u2728', desc: { elementary: 'Feeling light like a balloon!', middle: 'Light, energized, open posture \u2014 you take up more space', high: 'Reduced muscular tension, expansive posture, increased parasympathetic tone' } }
     ],
     sad: [
-      { area: 'Eyes', icon: '\uD83D\uDCA7', desc: { elementary: 'Stingy eyes, want to cry', middle: 'Tears forming, eyes feel heavy and tired', high: 'Lacrimal activation, periorbital heaviness \u2014 tears contain stress hormones' } },
+      { area: 'Eyes', icon: '\uD83D\uDCA7', desc: { elementary: 'Stingy eyes, want to cry', middle: 'Tears forming, eyes feel heavy and tired', high: 'Lacrimal activation, periorbital heaviness' } },
       { area: 'Throat', icon: '\uD83E\uDEE8', desc: { elementary: 'Lump in your throat', middle: 'Throat feels tight, hard to swallow or speak', high: 'Globus sensation \u2014 vagus nerve response to emotional distress' } },
       { area: 'Chest', icon: '\uD83D\uDDA4', desc: { elementary: 'Heavy feeling like a rock on your chest', middle: 'Tightness or weight pressing on your chest', high: 'Thoracic constriction \u2014 the literal "heavy heart" phenomenon' } }
     ],
     angry: [
       { area: 'Head', icon: '\uD83D\uDD25', desc: { elementary: 'Face feels HOT and red!', middle: 'Blood rushes to your face, head feels like it\'s burning', high: 'Sympathetic flush \u2014 vasodilation in facial capillaries from adrenaline surge' } },
       { area: 'Hands', icon: '\u270A', desc: { elementary: 'Hands want to squeeze tight!', middle: 'Fists clench automatically, muscles tense up', high: 'Isometric muscle contraction \u2014 fight-response motor preparation' } },
-      { area: 'Stomach', icon: '\uD83D\uDCA2', desc: { elementary: 'Tummy gets tight and hard', middle: 'Stomach knots up, jaw clenches, body braces', high: 'Cortisol spike redirects blood from digestion to skeletal muscles' } }
+      { area: 'Stomach', icon: '\uD83D\uDCA2', desc: { elementary: 'Tummy gets tight and hard', middle: 'Stomach knots up, jaw clenches, body braces', high: 'Adrenaline shifts blood from digestion to the big muscles' } }
     ],
     scared: [
       { area: 'Heart', icon: '\uD83D\uDC93', desc: { elementary: 'Heart goes BOOM BOOM BOOM really fast!', middle: 'Heart pounds hard, breathing gets fast and shallow', high: 'Tachycardia \u2014 amygdala triggers adrenaline release for fight-or-flight' } },
@@ -518,7 +518,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
     surprised: [
       { area: 'Eyes', icon: '\uD83D\uDC40', desc: { elementary: 'Eyes go WIDE open!', middle: 'Eyes widen, eyebrows shoot up automatically', high: 'Orbicularis oculi release \u2014 increased visual aperture for rapid threat assessment' } },
       { area: 'Chest', icon: '\uD83D\uDCA8', desc: { elementary: 'Quick gasp! Suck in air!', middle: 'Sharp intake of breath, chest expands suddenly', high: 'Diaphragmatic spasm \u2014 the autonomic gasp reflex for rapid oxygenation' } },
-      { area: 'Whole Body', icon: '\u26A1', desc: { elementary: 'Body freezes for a second!', middle: 'Momentary freeze, then hyper-alert \u2014 everything sharpens', high: 'Orienting response \u2014 0.5s freeze while amygdala evaluates novelty vs. threat' } }
+      { area: 'Whole Body', icon: '\u26A1', desc: { elementary: 'Body freezes for a second!', middle: 'Momentary freeze, then hyper-alert \u2014 everything sharpens', high: 'Orienting response: a brief pause while the brain checks whether something new is a threat' } }
     ],
     disgusted: [
       { area: 'Nose', icon: '\uD83D\uDC43', desc: { elementary: 'Nose scrunches up! Eww!', middle: 'Nose wrinkles, upper lip curls involuntarily', high: 'Levator labii superioris contraction \u2014 evolved to reduce nasal intake of contaminants' } },
@@ -580,18 +580,18 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   // ── Body Language Challenges (harder Face Reader difficulty) ──
   // ══════════════════════════════════════════════════════════════
   var BODY_LANGUAGE_CHALLENGES = [
-    { _k: 'sel.emotions.bodylang_happy', emotion: 'happy', desc: 'Their eyes crinkle at the corners, shoulders are relaxed and open, leaning slightly forward.', options: ['happy', 'surprised', 'scared', 'angry'] },
-    { _k: 'sel.emotions.bodylang_sad', emotion: 'sad', desc: 'Shoulders slumped, looking down at the floor, speaking very quietly, moving slowly.', options: ['angry', 'sad', 'disgusted', 'scared'] },
-    { _k: 'sel.emotions.bodylang_angry', emotion: 'angry', desc: 'Jaw clenched tight, standing very rigid, arms crossed, speaking through gritted teeth.', options: ['scared', 'sad', 'angry', 'disgusted'] },
-    { _k: 'sel.emotions.bodylang_scared', emotion: 'scared', desc: 'Eyes darting around the room, body pressed against the wall, hands trembling slightly.', options: ['angry', 'surprised', 'sad', 'scared'] },
-    { _k: 'sel.emotions.bodylang_surprised', emotion: 'surprised', desc: 'Mouth hanging open, eyebrows raised high, stepped backward suddenly, hand on chest.', options: ['surprised', 'scared', 'happy', 'angry'] },
-    { _k: 'sel.emotions.bodylang_disgusted', emotion: 'disgusted', desc: 'Nose wrinkled, upper lip curled, leaning away, turning their head to the side.', options: ['sad', 'disgusted', 'angry', 'surprised'] },
-    { _k: 'sel.emotions.bodylang_nervous', emotion: 'nervous', desc: 'Fidgeting with their hands, bouncing their leg, checking the clock repeatedly, biting their lip.', options: ['happy', 'nervous', 'angry', 'sad'] },
-    { _k: 'sel.emotions.bodylang_embarrassed', emotion: 'embarrassed', desc: 'Face turning red, avoiding eye contact, covering their face with their hand, nervous laugh.', options: ['angry', 'scared', 'embarrassed', 'sad'] },
-    { _k: 'sel.emotions.bodylang_proud', emotion: 'proud', desc: 'Standing tall, chin slightly raised, broad smile, making eye contact with everyone.', options: ['proud', 'surprised', 'angry', 'happy'] },
-    { _k: 'sel.emotions.bodylang_frustrated', emotion: 'frustrated', desc: 'Sighing repeatedly, running hands through hair, pushing things around on the desk, muttering.', options: ['sad', 'scared', 'frustrated', 'disgusted'] },
-    { _k: 'sel.emotions.bodylang_lonely', emotion: 'lonely', desc: 'Sitting apart from the group, watching others interact, hugging themselves, quiet and still.', options: ['angry', 'lonely', 'disgusted', 'surprised'] },
-    { _k: 'sel.emotions.bodylang_excited', emotion: 'excited', desc: 'Bouncing on their toes, talking fast, gesturing wildly, can\'t sit still, voice getting louder.', options: ['scared', 'angry', 'surprised', 'excited'] }
+    { _k: 'sel.emotions.bodylang_happy', emotion: 'happy', desc: 'Their eyes crinkle at the corners, shoulders are relaxed and open, leaning slightly forward.', why: 'Crinkled eyes are the big clue: a smile that reaches the eyes usually means real happiness. Relaxed, open shoulders back it up.', options: ['happy', 'surprised', 'scared', 'angry'] },
+    { _k: 'sel.emotions.bodylang_sad', emotion: 'sad', desc: 'Shoulders slumped, looking down at the floor, speaking very quietly, moving slowly.', why: 'Slumped shoulders, a quiet voice and slow movement often go with sadness. They can also mean tired or unwell, so a gentle "How are you doing?" helps.', options: ['angry', 'sad', 'disgusted', 'scared'] },
+    { _k: 'sel.emotions.bodylang_angry', emotion: 'angry', desc: 'Jaw clenched tight, standing very rigid, arms crossed, speaking through gritted teeth.', why: 'A clenched jaw, a rigid body and gritted teeth show someone holding in anger. Crossed arms alone would not tell you. It is the whole cluster of clues.', options: ['scared', 'sad', 'angry', 'disgusted'] },
+    { _k: 'sel.emotions.bodylang_scared', emotion: 'scared', desc: 'Eyes darting around the room, body pressed against the wall, hands trembling slightly.', why: 'Darting eyes and trembling hands are the body getting ready for danger. Pressing against a wall is a way to feel safer.', options: ['angry', 'surprised', 'sad', 'scared'] },
+    { _k: 'sel.emotions.bodylang_surprised', emotion: 'surprised', desc: 'Mouth hanging open, eyebrows raised high, stepped backward suddenly, hand on chest.', why: 'Raised eyebrows and an open mouth are the classic surprise face. Surprise is quick: within seconds it turns into another feeling, good or bad.', options: ['surprised', 'scared', 'happy', 'angry'] },
+    { _k: 'sel.emotions.bodylang_disgusted', emotion: 'disgusted', desc: 'Nose wrinkled, upper lip curled, leaning away, turning their head to the side.', why: 'A wrinkled nose and curled lip, plus leaning away, say "I do not want this near me." That is disgust.', options: ['sad', 'disgusted', 'angry', 'surprised'] },
+    { _k: 'sel.emotions.bodylang_nervous', emotion: 'nervous', desc: 'Fidgeting with their hands, bouncing their leg, checking the clock repeatedly, biting their lip.', why: 'Fidgeting, leg bouncing and clock-checking often go with nerves. Some people fidget to help themselves focus, so look for more than one clue.', options: ['happy', 'nervous', 'angry', 'sad'] },
+    { _k: 'sel.emotions.bodylang_embarrassed', emotion: 'embarrassed', desc: 'Face turning red, avoiding eye contact, covering their face with their hand, nervous laugh.', why: 'A red face, looking away and a nervous laugh usually mean embarrassment. Kindness helps most here: do not point it out.', options: ['angry', 'scared', 'embarrassed', 'sad'] },
+    { _k: 'sel.emotions.bodylang_proud', emotion: 'proud', desc: 'Standing tall, chin slightly raised, broad smile, making eye contact with everyone.', why: 'Standing tall with chin up and a broad smile shows pride. Happy looks similar. The tall posture is the extra clue.', options: ['proud', 'surprised', 'angry', 'happy'] },
+    { _k: 'sel.emotions.bodylang_frustrated', emotion: 'frustrated', desc: 'Sighing repeatedly, running hands through hair, pushing things around on the desk, muttering.', why: 'Sighing, muttering and shoving things around show someone stuck on a problem. Frustration comes from a blocked goal, so help or a short break can ease it.', options: ['sad', 'scared', 'frustrated', 'disgusted'] },
+    { _k: 'sel.emotions.bodylang_lonely', emotion: 'lonely', desc: 'Sitting apart from the group, watching others interact, hugging themselves, quiet and still.', why: 'Sitting apart while watching the group is the key clue: they would like to join in. Someone who wants to be alone is usually not watching the others.', options: ['angry', 'lonely', 'disgusted', 'surprised'] },
+    { _k: 'sel.emotions.bodylang_excited', emotion: 'excited', desc: 'Bouncing on their toes, talking fast, gesturing wildly, can\'t sit still, voice getting louder.', why: 'Bouncing, fast talk and a rising voice show high, happy energy. Fear also brings high energy. The difference is that an excited person moves toward things, not away.', options: ['scared', 'angry', 'surprised', 'excited'] }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -4715,7 +4715,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Hum or sigh out loud to vibrate the jaw open',
         'Make a horse-lip flutter (brrr sound)'
       ],
-      research: 'Levine somatic experiencing (jaw as gateway); bruxism literature; Porges (jaw and vagal tone share ventral vagal innervation).'
+      research: 'Levine somatic experiencing (jaw as gateway); bruxism literature; Porges (proposes jaw and face muscles work with vagal regulation; debated).'
     },
     {
       id: 'mouth',
@@ -4784,7 +4784,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'When you want to cry but you are trying not to, your throat gets a big lump. That lump is real — it is your throat closing a little.',
         middle: 'The throat is the bridge between heart and head, and it holds a lot. The lump comes from your vocal cords trying to stay open while you swallow tears. It is okay to let the words or tears out — your throat will relax.',
-        high: 'The globus sensation (lump in throat) is associated with upper esophageal sphincter tension during emotional suppression. The throat also houses the ventral vagal complex involved in social engagement and prosody. Voice tremor is a high-stakes somatic signal.'
+        high: 'The globus sensation (lump in throat) is associated with upper esophageal sphincter tension during emotional suppression. The throat muscles also shape the voice, which carries a lot of social and emotional signal. Voice tremor is a high-stakes somatic signal.'
       },
       interventions: [
         'Hum a low note for ten seconds — it vibrates the throat open',
@@ -4859,7 +4859,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'When you hear an amazing song or see something beautiful, your skin can get little bumps. Same thing happens when you are scared. Your body is paying close attention.',
         middle: 'Goosebumps are an old reflex from when humans had more body hair — the hair would puff up to make us look bigger or to trap warm air. Now they show up when we are deeply moved or alarmed.',
-        high: 'Piloerection is mediated by sympathetic activation of arrector pili muscles. Aesthetic chills (frisson) involve dopamine release and are associated with peak emotional experiences (Sachs et al. 2016). Facial flushing reflects parasympathetic vasodilation.'
+        high: 'Piloerection is mediated by sympathetic activation of arrector pili muscles. Aesthetic chills (frisson) involve dopamine release and are associated with peak emotional experiences (Sachs et al. 2016). Facial flushing is driven by the sympathetic nervous system widening blood vessels in the face.'
       },
       interventions: [
         'Notice the goosebumps without making them go away',
@@ -4868,7 +4868,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Wrap in a soft blanket for skin input',
         'Name what your skin is doing: "I am getting chills"'
       ],
-      research: 'Sachs et al. 2016 (frisson neuroscience); Nummenmaa skin activation in awe.'
+      research: 'Sachs et al. 2016 (frisson neuroscience).'
     },
     {
       id: 'ears',
@@ -4894,7 +4894,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'Your ears can turn red when you feel embarrassed. Sometimes sounds get too loud when you have big feelings. It is okay to cover your ears.',
         middle: 'Ears are wired to the safety system. When the world feels unsafe, your inner ear muscles tense up and sounds can become harsh or muffled. Hot ears are a blood-flow response to embarrassment.',
-        high: 'The stapedius muscle modulates auditory input under vagal control (Porges). Acoustic hypersensitivity is common in trauma, autism, and ADHD. Auricular vasodilation in embarrassment is a stereotyped social signal.'
+        high: 'The stapedius muscle (controlled by the facial nerve) damps loud sounds. Porges\'s polyvagal theory proposes it works as part of a "social engagement system"; that idea is debated. Acoustic hypersensitivity is common in trauma, autism, and ADHD. Auricular vasodilation in embarrassment is a stereotyped social signal.'
       },
       interventions: [
         'Cover your ears with your hands for a slow count of ten',
@@ -5013,7 +5013,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'When you are scared, your breath gets small and fast. When you feel safe, your breath gets slow and deep. Sighing is your body letting go.',
         middle: 'Breathing is the one autonomic system you can run on purpose. That is why slow breathing is the fastest way to calm the body — you are sending an "all clear" message through the vagus nerve.',
-        high: 'Respiratory sinus arrhythmia is the basis of HRV. Sighs reset alveolar pressure and discharge held tension (Vlemincx et al. 2010). Hyperventilation triggers panic via CO2-induced cerebral vasoconstriction. Slow exhale dominance is the most reliable parasympathetic lever.'
+        high: 'Respiratory sinus arrhythmia is the basis of HRV. Sighs reset alveolar pressure and discharge held tension (Vlemincx et al. 2010). Over-breathing lowers CO2, which narrows blood vessels in the brain and causes dizziness and tingling that can feed panic. A slow, long exhale is a dependable way to help the body settle.'
       },
       interventions: [
         'Sigh out loud, three times',
@@ -5229,7 +5229,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'When you are sad or discouraged, your upper back can curve forward like you are folding in. Standing tall on purpose can help your mood.',
         middle: 'The upper back is where the body collapses when defeated. Postural changes feed back to emotion — slumping makes sadness feel deeper, and rolling the shoulders back can lift mood within seconds.',
-        high: 'Postural feedback research (Riskind) suggests posture can nudge mood. The claim that power poses change cortisol did not replicate (Ranehill et al., 2015), and Dana Carney, first author of the original study, disavowed it in 2016. Upright posture during recall biases positive memory retrieval (Wilkes 2017). Chronic thoracic kyphosis is associated with depression.'
+        high: 'Postural feedback research (Riskind) suggests posture can nudge mood. The claim that power poses change cortisol did not replicate (Ranehill et al., 2015), and Dana Carney, first author of the original study, disavowed it in 2016. Sitting upright rather than slumped shifted which memories people recalled (Michalak et al., 2014) and improved mood in people with depressive symptoms (Wilkes et al., 2017). Chronic thoracic kyphosis is associated with depression.'
       },
       interventions: [
         'Roll the shoulders back and lift the chest',
@@ -5238,7 +5238,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Cat-cow on hands and knees',
         'Stand against a wall and press shoulder blades back'
       ],
-      research: 'Wilkes 2017 (posture and memory); Riskind embodied cognition.'
+      research: 'Michalak 2014 (posture and memory); Wilkes 2017 (posture and mood); Riskind embodied cognition.'
     },
     {
       id: 'mid_back',
@@ -5293,8 +5293,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       explanation: {
         elementary: 'Your lower back can hurt when you feel like nobody is helping you carry your stuff. It is asking for a break.',
-        middle: 'The lower back is the body\'s base of support. Feeling unsupported (in life, not just in posture) often shows up here. The psoas muscle, which connects the spine to the legs, also stores fear responses.',
-        high: 'Psoas hypertonicity is implicated in stored threat response (Koch 2012). Lumbar pain is strongly correlated with psychosocial stressors independent of structural pathology (Hartvigsen 2018). Low back is a common site of trauma-related somatic distress.'
+        middle: 'The lower back is the body\'s base of support. Feeling unsupported (in life, not just in posture) often shows up here.',
+        high: 'Lumbar pain is strongly correlated with psychosocial stressors independent of structural pathology (Hartvigsen 2018). Low back is a common site of trauma-related somatic distress.'
       },
       interventions: [
         'Lie on back, knees to chest, gentle rock side to side',
@@ -5303,7 +5303,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Warm pack across the low back',
         'Notice who and what does support you (named, out loud)'
       ],
-      research: 'Hartvigsen 2018 (low back pain etiology); Koch 2012 (psoas).'
+      research: 'Hartvigsen 2018 (low back pain etiology).'
     },
     {
       id: 'spine',
@@ -5365,9 +5365,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'protectiveness'
       ],
       explanation: {
-        elementary: 'Your arms want to do things when you have big feelings. Hit a pillow when you are mad. Hug someone when you are sad. Wave when you are happy.',
+        elementary: 'Your arms want to do things when you have big feelings. Squeeze a pillow or push a wall when you are mad. Hug someone when you are sad. Wave when you are happy.',
         middle: 'Arms are how we reach toward what we want and push away what we don\'t. Anger sends a surge into them. Love makes them want to wrap around someone. Stuck feelings get stuck in the arms too.',
-        high: 'Arm musculature is a primary motor outlet for fight-flight activation. Bilateral movement (cross-crawl, drumming) engages both hemispheres and supports emotional regulation. Reaching gestures activate approach-motivation circuits.'
+        high: 'Arm musculature is a primary motor outlet for fight-flight activation. Rhythmic movement (walking, drumming) can help the body settle. Reaching gestures activate approach-motivation circuits.'
       },
       interventions: [
         'Push against a wall with both arms',
@@ -5376,7 +5376,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Self-hug, hands on opposite arms',
         'Shake arms out like wet noodles'
       ],
-      research: 'TRE (tension and trauma releasing exercises); bilateral stimulation research (EMDR).'
+      research: 'Berceli TRE (tension and trauma releasing exercises); rhythm and movement in regulation.'
     },
     {
       id: 'hands',
@@ -5406,7 +5406,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'Your hands say a lot. Tight fists mean angry. Cold and wet means scared. Fidgety means you have a lot of energy that needs to come out.',
         middle: 'Hands are wired with more nerve endings than almost any other body part. They show feelings fast — and they can also discharge feelings fast. Squeezing something is a real reset.',
-        high: 'Galvanic skin response on the palms is one of the most sensitive autonomic measures. Hand-based grounding (5-finger breath, holding ice) bypasses cognitive override. Fidget tools are evidence-based for ADHD and anxiety regulation.'
+        high: 'Galvanic skin response on the palms is one of the most sensitive autonomic measures. Hand-based grounding (5-finger breath, holding something cold) gives attention a strong, simple sensation to rest on. Some students find fidget tools help them stay settled; studies are mixed, so notice what works for you.'
       },
       interventions: [
         'Squeeze a stress ball or your own fists ten times',
@@ -5477,7 +5477,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'Your legs are the running-away part of you. When you are scared, they want to move. When you are tired or sad, they feel like jelly.',
         middle: 'The legs are the flight in fight-or-flight. Weak legs are a body memory of wanting to run when you couldn\'t. Standing and feeling your feet on the ground is one of the fastest ways to come back to the present.',
-        high: 'Quadriceps and gastrocnemius are primary flight-response musculature. Tremor in the legs after stress is the body discharging mobilized but unused energy (Levine TRE). Grounding through standing leverages proprioceptive feedback for parasympathetic shift.'
+        high: 'Quadriceps and gastrocnemius are primary flight-response musculature. Some body-based therapies (Berceli\'s TRE, Levine\'s Somatic Experiencing) describe shaking legs after stress as the body letting go of fight-or-flight activation. Grounding through standing leverages proprioceptive feedback for parasympathetic shift.'
       },
       interventions: [
         'Stand up and feel both feet press into the floor',
@@ -5486,7 +5486,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Wall sit for thirty seconds (engages big leg muscles)',
         'Lie down and let the legs shake or vibrate'
       ],
-      research: 'Levine TRE (tension/trauma release exercises); grounding research (Chevalier).'
+      research: 'Berceli TRE (tension and trauma releasing exercises); Levine somatic experiencing.'
     },
     {
       id: 'knees',
@@ -5547,7 +5547,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'Notice your feet on the floor right now. That is one of the fastest ways to feel calmer.',
         middle: 'Feet are the body\'s contact with the earth. Feeling them is a quick grounding move that interrupts spiraling thoughts. Cold feet often track with anxiety because blood is being pulled to the core.',
-        high: 'Foot-floor proprioception activates parasympathetic grounding circuits. Cold extremities reflect peripheral vasoconstriction under sympathetic dominance. Walking barefoot on natural surfaces has measurable autonomic effects (Chevalier 2012).'
+        high: 'Feeling your feet on the floor or the ground gives the brain steady body feedback that many people find calming. Cold extremities reflect peripheral vasoconstriction under sympathetic dominance.'
       },
       interventions: [
         'Press all ten toes into the floor',
@@ -5556,7 +5556,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Warm socks or a foot soak',
         'Walk slowly and notice the rolling of each step'
       ],
-      research: 'Chevalier 2012 (grounding); proprioceptive regulation in OT practice.'
+      research: 'Proprioceptive regulation in OT practice.'
     },
     {
       id: 'whole_body_energy',
@@ -5583,7 +5583,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       explanation: {
         elementary: 'Sometimes your whole body feels lit up. That can be the best kind of happy or it can be too much — both are real.',
         middle: 'Whole-body activation is your sympathetic nervous system firing. The same energy that powers excitement can flip into panic if it gets too big. Movement is the safest way to use it up.',
-        high: 'Generalized sympathetic activation produces diffuse interoceptive arousal. The label we put on it ("excited" vs "anxious") shapes the emotional experience (Schachter-Singer; Lerner). Discharge through movement is more effective than suppression.'
+        high: 'Generalized sympathetic activation produces diffuse interoceptive arousal. The label we put on it ("excited" vs "anxious") shapes the emotional experience (Schachter & Singer; Brooks 2014). Movement helps more than trying to suppress it.'
       },
       interventions: [
         'Jump in place ten times to burn the surge',
@@ -5656,8 +5656,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       explanation: {
         elementary: 'When you feel light and warm all over, that is one of the best feelings. Notice it on purpose so you remember what it feels like.',
-        middle: 'Whole-body ease is the parasympathetic ventral vagal state — safe, social, connected. Practicing noticing it builds the capacity to return to it.',
-        high: 'Ventral vagal activation supports social engagement and is associated with HRV coherence. "Glimmers" (Dana) are micro-moments of safety; deliberately savoring them builds neurological capacity for regulation.'
+        middle: 'Whole-body ease is a calm, connected state: safe, social, settled. (Polyvagal theory calls it "ventral vagal"; that model is debated, but noticing the state is useful.) Practicing noticing it builds the capacity to return to it.',
+        high: 'A calm, connected state supports social engagement (polyvagal theory calls it "ventral vagal"; the model is contested). "Glimmers" (Dana) are micro-moments of safety; deliberately savoring them may build the capacity for regulation.'
       },
       interventions: [
         'Pause and name it: "this is the good feeling"',
@@ -5684,7 +5684,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Joy feels warm and bright in your chest. It might make you want to smile, jump, or hug someone.',
         middle: 'Joy lights up your chest and face, lifts your shoulders, and often spreads out into your arms and legs as energy. It can bring tears too, especially the deepest kind.',
-        high: 'Joy activates broad upper-body warmth (Nummenmaa), engages zygomatic and orbicularis oculi muscles in the Duchenne smile, and correlates with parasympathetic-ventral vagal tone. Approach motivation extends activation into the limbs.'
+        high: 'Joy activates broad upper-body warmth (Nummenmaa), engages zygomatic and orbicularis oculi muscles in the Duchenne smile, and goes with a calm, connected body state. Approach motivation extends activation into the limbs.'
       },
       bodyFirstSigns: [
         'small smile at the corners of your mouth before you notice',
@@ -5709,7 +5709,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Trust feels like your body can relax around someone. Your shoulders drop and you breathe easier.',
         middle: 'When you trust, your guarding muscles let go — jaw softens, shoulders drop, breath deepens. The chest opens because there is no need to brace.',
-        high: 'Trust correlates with ventral vagal activation and social engagement. Oxytocin release reduces amygdala reactivity. Postural opening is a reliable physiological correlate.'
+        high: 'Trust goes with feeling safe and open. Early claims that oxytocin directly creates trust (Kosfeld 2005) have not replicated. Postural opening is a common outward sign.'
       },
       bodyFirstSigns: [
         'shoulders drop',
@@ -5719,7 +5719,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'chest feels open'
       ],
       somaticGroundingTip: 'Notice and name the softening: "my shoulders just dropped." Building the noticing builds the capacity.',
-      research: 'Porges polyvagal; oxytocin and social trust (Kosfeld 2005).'
+      research: 'Polyvagal theory (Porges; contested); oxytocin and trust (Kosfeld 2005; did not replicate, Nave et al. 2015).'
     },
     {
       id: 'fear',
@@ -5783,8 +5783,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       description: {
         elementary: 'Sadness feels like a heavy weight in your chest and a lump in your throat. Your eyes might leak. That is your body taking care of you.',
-        middle: 'Sadness pulls everything inward and down. The chest aches, the throat closes around held words, the shoulders round forward. Crying releases stress hormones — it is a feature, not a flaw.',
-        high: 'Sadness produces selective deactivation of limbs and concentrated chest/face activation (Nummenmaa). Emotional tears contain higher concentrations of stress hormones than reflex tears (Frey). Crying activates parasympathetic recovery (Gracanin).'
+        middle: 'Sadness pulls everything inward and down. The chest aches, the throat closes around held words, the shoulders round forward. Crying often brings relief, especially with someone supportive. It is a feature, not a flaw.',
+        high: 'Sadness produces selective deactivation of limbs and concentrated chest/face activation (Nummenmaa). Crying often brings relief, especially when someone supportive is there (Gracanin et al., 2014). The idea that tears flush out stress hormones has not been confirmed.'
       },
       bodyFirstSigns: [
         'heaviness in the chest before you know why',
@@ -5859,7 +5859,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Anticipation feels like buzzy energy in your stomach and chest. It is waiting for something exciting (or scary) to happen.',
         middle: 'Anticipation has the same body signature as anxiety — it depends on what you think about what is coming. The butterflies are the same; the meaning is yours.',
-        high: 'Anticipatory states involve dopaminergic activity and sympathetic arousal. The cognitive appraisal determines whether it is felt as excitement or anxiety (Schachter-Singer; Lerner).'
+        high: 'Anticipatory states involve dopaminergic activity and sympathetic arousal. The cognitive appraisal determines whether it is felt as excitement or anxiety (Schachter & Singer; Brooks 2014).'
       },
       bodyFirstSigns: [
         'butterflies before you think about why',
@@ -5869,7 +5869,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'cannot quite sit still'
       ],
       somaticGroundingTip: 'Move on purpose — pace, stretch, jump. Then ask: is this excitement, anxiety, or both?',
-      research: 'Schultz dopamine and reward anticipation; Lerner excitement reframe.'
+      research: 'Schultz dopamine and reward anticipation; Brooks (2014) excitement reframe.'
     },
     {
       id: 'love',
@@ -5884,7 +5884,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Love feels warm in your chest. It can also make your eyes wet and your throat full. All of that is love.',
         middle: 'Love floods the chest with warmth and often spreads to the arms (wanting to reach out). It can come with a chest ache that is not pain — it is the chest stretching to hold all of it.',
-        high: 'Love and affection activate widespread chest and head warmth (Nummenmaa). Oxytocin and vasopressin mediate attachment. The "ache" of deep love reflects sustained cardiac and intercostal activation.'
+        high: 'Love and affection activate widespread chest and head warmth (Nummenmaa). Oxytocin and vasopressin are involved in attachment, though their exact role in humans is still being worked out. The "ache" of deep love reflects sustained cardiac and intercostal activation.'
       },
       bodyFirstSigns: [
         'chest warms',
@@ -6059,7 +6059,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Awe is what you feel when something is so big or beautiful that you go quiet inside. Goosebumps and chills are awe in your body.',
         middle: 'Awe makes the body still and the eyes wide. Chills run up the spine. Time feels different. Awe is one of the most healing emotions to practice.',
-        high: 'Awe involves vagal activation, piloerection, and reduced self-referential default-mode activity (Keltner). Awe-walks lower inflammation markers and improve well-being. The "small self" effect promotes prosocial behavior.'
+        high: 'Awe involves vagal activation, piloerection, and reduced self-referential default-mode activity (Keltner). People who feel more awe tend to have lower inflammation markers (Stellar et al., 2015), and weekly "awe walks" raised positive emotions in older adults (Sturm et al., 2020). The "small self" effect promotes prosocial behavior.'
       },
       bodyFirstSigns: [
         'breath catches',
@@ -6134,7 +6134,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Despair feels like everything is too heavy and nothing will get better. If you feel this for more than a little while, tell someone safe.',
         middle: 'Despair is when the body has been carrying too much for too long. It feels like collapse, like there is no way out. It is a sign to reach for support, not to figure it out alone.',
-        high: 'Despair is often mapped, in polyvagal terms, to a dorsal vagal shutdown state, and it is associated with suicide risk. Hopelessness is the single strongest predictor of suicide (Beck). Body-level intervention requires co-regulation, not advice.'
+        high: 'Despair is often mapped, in polyvagal terms, to a dorsal vagal shutdown state, and it is associated with suicide risk. Hopelessness is an important warning sign for suicide risk (Beck). Body-level intervention requires co-regulation, not advice.'
       },
       bodyFirstSigns: [
         'sinking that does not lift',
@@ -6184,7 +6184,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Embarrassment makes your face and ears hot. You want to disappear, but it passes quickly.',
         middle: 'Embarrassment is the body broadcasting "I noticed too." The blush is involuntary — you cannot fake it or stop it. It is a sign of self-awareness, not weakness.',
-        high: 'Blushing is parasympathetic-mediated vasodilation, uniquely human, and serves an apology function (Crozier). Distinct from shame in being transient and socially repairable.'
+        high: 'Blushing is driven by the sympathetic nervous system widening blood vessels in the face. It appears to be uniquely human and serves an apology function (Crozier). Distinct from shame in being transient and socially repairable.'
       },
       bodyFirstSigns: [
         'sudden face heat',
@@ -6244,7 +6244,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'hard to stop smiling'
       ],
       somaticGroundingTip: 'Move with it — jump, dance, pace. Then channel into the thing you are excited about.',
-      research: 'Brooks 2014 reframing arousal; Lerner excitement research.'
+      research: 'Brooks 2014 reframing arousal as excitement.'
     },
     {
       id: 'disappointment',
@@ -6534,7 +6534,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Restlessness is when your body cannot sit still. Your legs jiggle, your hands fidget. You need to move.',
         middle: 'Restlessness is unspent energy. The body needs movement to process. Forcing stillness usually makes it worse.',
-        high: 'Akathisia-like restlessness can reflect anxiety, ADHD, or medication effects. Movement-based regulation (walking, fidget tools) is evidence-based. Suppressing motor outlet increases cognitive load.'
+        high: 'Akathisia-like restlessness can reflect anxiety, ADHD, or medication effects. Movement helps many people regulate (walking has good support; studies of fidget tools are mixed). Suppressing motor outlet increases cognitive load.'
       },
       bodyFirstSigns: [
         'leg bouncing',
@@ -6734,7 +6734,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Numbness is when you feel nothing. That is also a feeling. It usually means too much happened and your body needed a break.',
         middle: 'Numbness is the body\'s circuit breaker. It is not the same as not caring — it is the system overloaded. Forcing feeling makes it worse; gentle warming is better.',
-        high: 'Emotional numbing is part of dorsal vagal shutdown and is common in PTSD, depression, and after acute trauma. Slow gentle re-entry (warmth, movement, safe contact) supports return to feeling.'
+        high: 'Emotional numbing is a shutdown response (polyvagal theory calls it "dorsal vagal"; the model is contested) and is common in PTSD, depression, and after acute trauma. Slow gentle re-entry (warmth, movement, safe contact) supports return to feeling.'
       },
       bodyFirstSigns: [
         'flat affect',
@@ -6909,7 +6909,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Your face feels hot. Could be embarrassment, anger, or just a big feeling. The heat is real.',
         middle: 'Hot face is its own valid signal. The flush is involuntary and tells you something is intense. You do not need to name which emotion before responding.',
-        high: 'Facial flushing is parasympathetic vasodilation and can signal embarrassment, anger, suppressed expression, or hot flashes. Cooling the face addresses the somatic experience directly.'
+        high: 'Facial flushing is driven by the sympathetic nervous system widening blood vessels in the face, and can signal embarrassment, anger, suppressed expression, or hot flashes. Cooling the face addresses the somatic experience directly.'
       },
       bodyFirstSigns: [
         'sudden face heat',
@@ -7034,7 +7034,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       description: {
         elementary: 'Peace is quiet and soft. Your shoulders are down, your breath is easy, nothing hurts inside.',
         middle: 'Peace is the body in homeostasis. Easy breath, low muscle tone, soft eyes. Not absence of feeling — presence of safety.',
-        high: 'Peace correlates with ventral vagal dominance and minimal allostatic load. Practiced regularly (meditation, time in nature, safe relationships) it raises baseline regulation.'
+        high: 'Peace goes with a calm, settled body state and a low stress load. Practiced regularly (meditation, time in nature, safe relationships) it raises baseline regulation.'
       },
       bodyFirstSigns: [
         'shoulders down without trying',
@@ -7183,7 +7183,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       definition: {
         elementary: 'A complicated little smile that comes when someone who was mean to you trips. Most cultures have a word for this because it is human.',
         middle: 'The small, slightly guilty pleasure of seeing someone else fail or suffer a minor misfortune, especially when you felt they deserved it. It is honest to name it, even if we try not to lean into it.',
-        high: 'A morally complicated emotion of taking pleasure in another\'s misfortune. Research shows it appears in toddlers and is universal, but the German word made it nameable. Often softened when the target is rival or out-group.'
+        high: 'A morally complicated emotion of taking pleasure in another\'s misfortune. It has been observed in children as young as two (Shamay-Tsoory et al. (2014)); the German word made it nameable. Often stronger when the target is a rival, someone envied, or an out-group member.'
       },
       whenYouFeelIt: 'When the classmate who bragged about never studying gets a worse grade than you.',
       englishApproximation: 'Gloating, but schadenfreude is quieter and often unspoken, sometimes even unwanted.',
@@ -7503,7 +7503,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       definition: {
         elementary: 'The strange thought that pops up at the edge of a high place, like what if I jumped. Most people get this and it does not mean anything is wrong.',
         middle: 'The fleeting, intrusive urge to jump from high places, swerve into traffic, or do something dangerous. Researchers call it the high place phenomenon and find it is very common, especially in people who do not actually want to die.',
-        high: 'A French term for the well-documented high place phenomenon: brief intrusive impulses toward self-destructive action that arise in safe contexts. Hames et al. (2012) found these are more common in people with strong life affirmation, not less.'
+        high: 'A French term for the well-documented high place phenomenon: brief intrusive impulses toward self-destructive action that arise in safe contexts. Hames et al. (2012) found the urge is common even in people who have never had suicidal thoughts, and suggested it is a misread safety signal ("step back!") rather than a wish to die.'
       },
       whenYouFeelIt: 'Standing on a tall balcony when a thought flashes through, what if I climbed over, and you step back, surprised at yourself.',
       englishApproximation: 'Intrusive thought or call of the void. French gave it the most poetic name.',
@@ -8077,10 +8077,10 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Watching their pet do something cute'
       ],
       oftenMistakenFor: ['Polite social smile', 'Embarrassed smile', 'Relief smile'],
-      authenticVsMasked: 'Duchenne (AU6+AU12) is the gold-standard authentic smile. AU12-only smiles (polite/social) lack the eye crinkle and cheek-driven lower-lid bag. If you see only mouth movement and no eye action, the smile is socially performed, not necessarily fake but not deeply felt.',
+      authenticVsMasked: 'Duchenne smiles (AU6+AU12) usually go with real enjoyment, though people can also produce them on purpose. AU12-only smiles (polite/social) lack the eye crinkle and cheek-driven lower-lid bag. If you see only mouth movement and no eye action, the smile is socially performed, not necessarily fake but not deeply felt.',
       practiceQuestion: 'Do the eyes change shape too, or is only the mouth moving?',
-      empathyTip: 'When you see a Duchenne smile, the moment is real. Match the warmth back; do not interrupt the feeling with a redirect.',
-      research: 'Ekman, Davidson, & Friesen 1990; Duchenne de Boulogne 1862 (original observation that eye-muscle smiles cannot be voluntarily produced by most people).'
+      empathyTip: 'A Duchenne smile usually goes with real enjoyment, so treat it as a good clue, not proof. Match the warmth back; do not interrupt the feeling with a redirect.',
+      research: 'Ekman, Davidson, & Friesen 1990; Duchenne de Boulogne 1862 (original observation that eye-muscle smiles are hard to produce at will; later studies found many people can, Gunnery et al. 2013).'
     },
 
     {
@@ -8369,7 +8369,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Being startled but trying to play it cool'
       ],
       oftenMistakenFor: ['Surprise', 'Tic', 'Blink', 'Nothing at all (often missed)'],
-      authenticVsMasked: 'Microexpressions are by definition leakage — they are involuntary signals that the person did not choose to show. The under-200ms duration is the diagnostic.',
+      authenticVsMasked: 'Microexpressions are very brief flashes (under about 200 ms) that may hint at a feeling the person did not mean to show. They are rare and easy to misread, so treat one as a clue to check gently, never as proof.',
       practiceQuestion: 'Did I just see something flash across their face that was gone before I could name it?',
       empathyTip: 'Do not point out that you saw it. Note it internally, then gently ask "how are you feeling about this?" or offer an out.',
       research: 'Ekman & Friesen 1969 (Nonverbal Leakage and Clues to Deception); Porter & ten Brinke 2008.'
@@ -8693,7 +8693,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'A leader hearing surprising news in front of their team'
       ],
       oftenMistakenFor: ['Blink', 'Brief facial tic', 'Nothing at all (often missed)'],
-      authenticVsMasked: 'By definition this is masked. The under-200ms duration plus the deliberate face-recovery is the diagnostic. If you see this, the person was genuinely surprised even if their words say otherwise.',
+      authenticVsMasked: 'By definition this is masked. The very brief flash (under about 200 ms) plus the deliberate face-recovery is the clue. It may hint at surprise the person did not mean to show; check gently, it is never proof.',
       practiceQuestion: 'Did I see a flash of surprise that vanished before they spoke?',
       empathyTip: 'Do not call it out. The masking is intentional and serves them; respect the social context. You now know the information was new to them, which can guide your follow-up questions.',
       research: 'Ekman & O\'Sullivan 1991; Porter & ten Brinke 2008.'
@@ -9185,7 +9185,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'A teacher hearing a student\'s inappropriate joke'
       ],
       oftenMistakenFor: ['Sneeze stifle', 'Brief sniff', 'Tic'],
-      authenticVsMasked: 'By definition masked. The under-300ms duration plus the visible swallowing or polite recovery is the diagnostic. If you see this, the person was genuinely disgusted regardless of their words.',
+      authenticVsMasked: 'By definition masked. The very brief flash (under about 200 ms) plus the visible swallowing or polite recovery is the clue. It may hint at a feeling the person did not mean to show; check gently, it is never proof.',
       practiceQuestion: 'Did I see a brief nose crinkle that they swallowed back?',
       empathyTip: 'Do not call it out. Respect the social context. If you offered the food/topic, gracefully shift away without making them justify the reaction.',
       research: 'Ekman & O\'Sullivan 1991; Porter & ten Brinke 2008.'
@@ -9224,7 +9224,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       authenticVsMasked: 'The UNILATERAL activation is the diagnostic. Disgust is bilateral; contempt is one-sided. This is one of the cleanest microexpressions to identify because it is so anatomically distinctive.',
       practiceQuestion: 'Is only ONE side of the mouth pulled (not both sides like a smile or disgust)?',
       empathyTip: 'In intimate relationships, persistent contempt is a major warning sign (Gottman research). In any context, address it: "I am sensing some dismissiveness here — can we talk about what is going on?"',
-      research: 'Ekman & Friesen 1986 (Contempt expression added to FACS); Matsumoto & Ekman 2008 universal contempt; Gottman 1994 on contempt in marriage as the #1 predictor of divorce.'
+      research: 'Ekman & Friesen 1986 (Contempt expression added to FACS); Matsumoto & Ekman 2008 universal contempt; Gottman 1994, whose research names contempt as one of the strongest warning signs in a marriage.'
     },
 
     {
@@ -9870,7 +9870,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       helpfulNext: ['notice the difference between trust-based yes and fear-based yes', 'name your own preference, even quietly', 'ask one clarifying question instead of agreeing', 'check in with a trusted person', 'plan one small assertion for next time'],
       unhelpfulNext: ['shame yourself for going along (it is a wired survival response)', 'overcorrect with a big confrontation', 'pretend you are fine when you are not'],
       similar: ['compliance', 'deference', 'fawn-response', 'appeasement'],
-      research: 'Plutchik (1980) lists submission as the trust+fear primary dyad. Polyvagal theory (Porges) describes fawn/appease as a survival branch alongside fight, flight, and freeze.'
+      research: 'Plutchik (1980) lists submission as the trust+fear primary dyad. Therapist Pete Walker added "fawn" (appeasing to stay safe) to the familiar fight, flight and freeze responses; it is a clinical idea rather than established physiology.'
     },
     {
       _k: 'sel.emotions.cmp_awe',
@@ -9898,7 +9898,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       helpfulNext: ['let it last instead of rushing back to your phone', 'name it (\"I am in awe\")', 'share it with someone', 'write or draw what you felt', 'seek it on purpose, it is medicine'],
       unhelpfulNext: ['document it so hard you stop experiencing it', 'dismiss it as cheesy', 'try to explain it down to nothing'],
       similar: ['wonder', 'reverence', 'sublime', 'amazement'],
-      research: 'Keltner & Haidt (2003) defined awe as perceived vastness + need for accommodation. Stellar et al. (2015) found awe reduces inflammatory markers. Plutchik places it as fear+surprise.'
+      research: 'Keltner & Haidt (2003) defined awe as perceived vastness + need for accommodation. Stellar et al. (2015) found people who feel more awe tend to have lower inflammatory markers (a correlation). Plutchik places it as fear+surprise.'
     },
     {
       _k: 'sel.emotions.cmp_disapproval',
@@ -9969,7 +9969,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       definition: {
         elementary: 'Contempt is when you look down on someone, like they are below you. It feels different from being mad, it feels colder.',
         middle: 'Contempt mixes disgust with anger. It tells the other person \"you are not worth my respect.\" It is one of the most damaging emotions in a relationship.',
-        high: 'Contempt is the disgust+anger dyad expressed from a position of perceived superiority. Gottman\'s research identifies it as the single strongest predictor of relationship dissolution.'
+        high: 'Contempt is the disgust+anger dyad expressed from a position of perceived superiority. Gottman\'s research names it as one of the strongest warning signs that a relationship will end.'
       },
       feelsLike: 'A cold look. An eye-roll from the soul. The other person becomes small in your mind.',
       bodyFeels: ['one-sided lip curl', 'rolled eyes', 'lifted chin', 'crossed arms', 'tight jaw'],
@@ -9982,7 +9982,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       helpfulNext: ['ask what underlying need is unmet (often respect or fairness)', 'name the specific behavior, not the person', 'consider whether the relationship is still repairable', 'address it directly or remove yourself', 'check whether contempt has become a habit'],
       unhelpfulNext: ['let it leak out as sarcasm', 'rally others to share your contempt (it calcifies)', 'mistake it for moral clarity'],
       similar: ['scorn', 'disdain', 'derision', 'disrespect'],
-      research: 'Plutchik (1980) places contempt as disgust+anger. Gottman (1999) identifies contempt as the #1 predictor of divorce among the \"Four Horsemen.\" Haidt (1999) treats contempt as a moral other-condemning emotion.'
+      research: 'Plutchik (1980) places contempt as disgust+anger. Gottman (1999) names contempt as one of the strongest warning signs for divorce among the "Four Horsemen." Haidt (1999) treats contempt as a moral other-condemning emotion.'
     },
     {
       _k: 'sel.emotions.cmp_aggressiveness',
@@ -10010,7 +10010,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       helpfulNext: ['burn the energy physically (run, lift, walk fast)', 'redirect into a clear action', 'speak it before acting on it', 'ask whether assertion will solve this better', 'notice the underlying threat or block'],
       unhelpfulNext: ['suppress it (it leaks sideways)', 'let it explode without aim', 'romanticize it as strength when it is just unprocessed anger'],
       similar: ['hostility', 'aggression', 'combativeness', 'belligerence'],
-      research: 'Plutchik (1980) lists aggressiveness as anger+anticipation. Bushman & Anderson (2001) distinguish reactive vs. proactive aggression. Assertiveness is the prosocial channel of the same fuel.'
+      research: 'Plutchik (1980) lists aggressiveness as anger+anticipation. Dodge & Coie (1987) distinguish reactive vs. proactive aggression. Assertiveness is the prosocial channel of the same fuel.'
     },
     {
       _k: 'sel.emotions.cmp_optimism',
@@ -10069,7 +10069,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Sit or kneel so you are at or below their eye level — towering is threatening to a panicked body',
         'Name what is happening out loud: "I think this is a panic attack. You are safe. It will pass."',
         'Offer a slow breathing rhythm, ideally extended exhale: "Breathe in 4, out 6, with me."',
-        'Give them something cold to hold — ice cube, cold water bottle — this engages the dive reflex',
+        'Offer something cold: a cool cloth or cold pack on the cheeks and around the eyes can slow the heart (the dive reflex); a cold bottle to hold is a strong grounding sensation',
         'Stay present until the wave passes (usually 5 to 20 minutes), then offer water and a quiet seat'
       ],
       scripts: [
@@ -10081,7 +10081,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         {
           situation: 'They say "I think I\'m dying"',
           say: 'Your body feels like it\'s dying. I know. But it\'s a panic attack, and I\'ve got you. Nothing bad is going to happen. I\'m not leaving.',
-          whyItWorks: 'Validates the bodily sensation as real WITHOUT confirming the catastrophic interpretation. Promises presence, which the ventral vagal system reads as safety.'
+          whyItWorks: 'Validates the bodily sensation as real WITHOUT confirming the catastrophic interpretation. Promises presence, which the body reads as safety.'
         },
         {
           situation: 'They want to leave / run',
@@ -10096,7 +10096,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenToGetMoreHelp: 'If symptoms last over 30 minutes, if there is chest pain that does not match prior panic, or if it is their first attack — call a trusted adult or, if alone and worried, urgent care. If panic attacks happen weekly, encourage them to talk to a counselor.',
       selfCareAfter: 'Coregulating a panic attack is exhausting because your nervous system mirrored theirs. Get water, eat something with protein, take 10 minutes alone before going back to whatever you were doing.',
-      research: 'Porges polyvagal theory: a regulated ventral vagal state in one person can downshift another person\'s sympathetic activation through facial expression, voice prosody, and breathing rhythm. Shanker self-reg: the goal is reducing stress load, not "managing" behavior.'
+      research: 'Porges polyvagal theory (a contested model) proposes that a calm, regulated state in one person can downshift another person\'s sympathetic activation through facial expression, voice prosody, and breathing rhythm. Shanker self-reg: the goal is reducing stress load, not "managing" behavior.'
     },
     {
       id: 'sibling_meltdown_young',
@@ -10200,7 +10200,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenToGetMoreHelp: 'If rage episodes include threats of harm to self or others, broken things weekly, or you start feeling unsafe — tell a parent or trusted adult. This is not snitching, it is getting them real support.',
       selfCareAfter: 'Their cruel words were not the truth about you. Write down one specific kind thing they have done for you in the past week to recalibrate. Talk to a friend or counselor if it keeps happening.',
-      research: 'Adolescent prefrontal cortex is still developing; emotional regulation lags impulse generation by years. Polyvagal: a sibling who stays in ventral vagal (calm, connected) gives the activated teen a safe person to return to.'
+      research: 'Adolescent prefrontal cortex is still developing; emotional regulation lags impulse generation by years. A sibling who stays calm and connected gives the activated teen a safe person to return to.'
     },
     {
       id: 'friend_breakup_crying',
@@ -10362,7 +10362,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenToGetMoreHelp: 'If the bullying includes physical violence, threats of violence, sexual content, repeated patterns, or your friend talks about self-harm or not wanting to live — go to a trusted adult even if they ask you not to. Their safety outweighs the friendship rule.',
       selfCareAfter: 'Witnessing your friend get hurt activates your own protective stress response. Do something physical (walk, exercise, shake it out). Talk to your own trusted adult if it sits heavy.',
-      research: 'Hinduja & Patchin cyberbullying research: peer support is one of the strongest protective factors against bullying-related depression. Olweus: bystander turned ally reduces bullying duration and severity.'
+      research: 'Hinduja & Patchin cyberbullying research: peer support is one of the strongest protective factors against bullying-related depression. When a peer steps in, bullying often stops within seconds (Hawkins, Pepler & Craig, 2001).'
     },
     {
       id: 'friend_suicidal_thoughts',
@@ -10448,7 +10448,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Thank them for trusting you',
         'Ask what is going on underneath: "What is the urge trying to help with?"',
         'Do not require them to stop right now — instead ask what they have tried instead',
-        'Suggest alternatives only if they want: ice on skin, hard exercise, drawing on skin with red marker, snapping a rubber band',
+        'Suggest alternatives only if they want: holding ice wrapped in a cloth for up to a minute, hard exercise, drawing on skin with a red marker',
         'Encourage telling a trusted adult or therapist — frame it as getting more tools, not getting in trouble',
         'Ask directly about suicidal thoughts: "Are you also thinking about ending your life?" — different from self-harm and needs to be assessed separately',
         'Stay in their life — isolation feeds the cycle'
@@ -10677,7 +10677,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         {
           situation: 'They text "I have so much to do and I can\'t move"',
           say: 'Want me to FaceTime so you\'re not alone while you start? You don\'t have to talk to me, just leave the camera on.',
-          whyItWorks: 'Body doubling is a research-supported ADHD strategy. Removes isolation, adds external accountability without demand.'
+          whyItWorks: 'Body doubling (working alongside someone) is a strategy many people with ADHD say helps; formal research is still thin. Removes isolation, adds external accountability without demand.'
         },
         {
           situation: 'They call themselves lazy',
@@ -11223,7 +11223,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenToGetMoreHelp: 'If dissociation lasts over 30 minutes, happens repeatedly, or there are signs of substance use, head injury, or known trauma history — get an adult. Frequent dissociation is often trauma-related and needs professional support.',
       selfCareAfter: 'Witnessing dissociation can be unnerving. Talk to a trusted adult about what you saw and how to respond next time.',
-      research: 'Polyvagal theory: dissociation is dorsal vagal shutdown — the body\'s freeze/collapse response. Gentle, low-stimulation, present coregulation supports return to ventral vagal social engagement. Levine somatic experiencing.'
+      research: 'Dissociation is a freeze or shutdown response (polyvagal theory calls it "dorsal vagal shutdown"; the model is contested). Gentle, low-stimulation, present coregulation supports the return to feeling connected. Levine somatic experiencing.'
     },
     {
       id: 'friend_angry_at_you_repair',
@@ -11567,7 +11567,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whatToDoSteps: [
         'Check for alcohol poisoning signs: unconscious + cannot wake, slow breathing, blueish skin, vomiting while unconscious, hypothermia. CALL 911',
-        'Most states have Good Samaritan laws — calling 911 protects you from underage drinking charges',
+        'Many states have medical amnesty laws that can protect someone who calls 911 for an alcohol emergency from underage-drinking charges, usually if you stay and cooperate. The rules differ by state. Call anyway.',
         'Put them in recovery position (on side) so they do not choke on vomit',
         'Stay with them. Keep talking, stroking back, monitoring breathing',
         'If they are being pressured by someone, intervene — interrupt with "Hey, my friend needs you" to extract them',
@@ -11596,9 +11596,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           whyItWorks: 'Names the seriousness without lecturing while they\'re hungover. Opens a real conversation for later.'
         }
       ],
-      whenToGetMoreHelp: 'CALL 911 for any signs of alcohol poisoning: unconsciousness, cannot wake, slow or irregular breathing, blueish/cold skin, vomiting while unconscious, seizures. Good Samaritan laws in most states protect both caller and victim from underage drinking charges. Do not gamble with their life.',
+      whenToGetMoreHelp: 'CALL 911 for any signs of alcohol poisoning: unconsciousness, cannot wake, slow or irregular breathing, blueish/cold skin, vomiting while unconscious, seizures. Many states have medical amnesty laws that can protect the caller and the person in trouble from underage-drinking charges; the rules differ by state. Do not gamble with their life.',
       selfCareAfter: 'This is scary. Talk to a trusted adult about what happened — your school counselor, parent, or another trusted person. You may have saved a life.',
-      research: 'Alcohol poisoning kills ~2,200 Americans annually. Most deaths are preventable with early 911 calls. Recovery position (side) prevents aspiration. Good Samaritan laws exist in 40+ states for this reason.'
+      research: 'Alcohol poisoning kills ~2,200 Americans annually. Most deaths are preventable with early 911 calls. Recovery position (side) prevents aspiration. Many states have medical amnesty laws for this reason.'
     },
     {
       id: 'online_friend_crisis',
@@ -11622,7 +11622,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       whatToDoSteps: [
         'Stay engaged — keep messaging, do not let them feel ignored',
         'Ask directly: "Are you safe right now?" "Are you thinking of hurting yourself?"',
-        'Give them crisis resources: 988 Suicide & Crisis Lifeline (call or text 988 in US), Crisis Text Line (text HOME to 741741), The Trevor Project (1-866-488-7386) for LGBTQ+ youth, IM Alone (international)',
+        'Give them crisis resources: 988 Suicide & Crisis Lifeline (call or text 988 in US), Crisis Text Line (text HOME to 741741), The Trevor Project (1-866-488-7386) for LGBTQ+ youth; outside the US, findahelpline.com lists crisis lines by country',
         'If you know their location/country, find local resources',
         'If you have any way to identify them (Discord username, real name, school, city), reach out to a trusted adult about how to involve authorities for a welfare check',
         'If you can find any contact for someone in their life (their parents, friends), reach out — even cold messaging another mutual friend is okay in a crisis',
@@ -11650,7 +11650,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
           whyItWorks: 'Loves them out loud, refuses to comply with a promise that risks their life, asks for the least scary version of help.'
         }
       ],
-      whenToGetMoreHelp: 'ALWAYS get an adult involved — even with limited information. Tell a parent, a school counselor, or call 988 yourself for guidance on what to do. Even with just a Discord username and a country, authorities can sometimes do a welfare check. The platforms (Discord, Instagram, etc.) also have crisis reporting tools — use them. If you have real location info, call 911 in the person\'s country for welfare check.',
+      whenToGetMoreHelp: 'ALWAYS get an adult involved \u2014 even with limited information. Tell a parent, a school counselor, or call 988 yourself for guidance on what to do. Even with just a Discord username and a country, authorities can sometimes do a welfare check. The platforms (Discord, Instagram, etc.) also have crisis reporting tools \u2014 use them. If you have real location info, contact the emergency services for the person\'s country and ask for a welfare check.',
       selfCareAfter: 'This is one of the heaviest things to carry — a crisis with someone you cannot see or reach. You did your best with limited information. PLEASE talk to a trusted adult or counselor after. Carrying this alone is too much. Outcome is not your responsibility — showing up was.',
       research: 'Crisis Text Line and 988 see significant online-originated outreach. Safe messaging guidelines apply. Joiner: even brief witnessed connection reduces acute risk. Platform reporting + adult involvement + direct engagement is the protocol.'
     }
@@ -12767,11 +12767,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       id: 'hope_007',
       forFeeling: 'hopeless',
       forContext: 'general',
-      phrase: 'Sometimes the body needs to feel hopeless before it can heal. We\'re not skipping this step.',
+      phrase: 'You don\'t have to feel hopeful right now. I\'m staying with you while it\'s this heavy, and I\'ll help you get support.',
       whyItWorks: 'Frames despair as a stage that has its own integrity, not a failure to be skipped.',
       alternatives: ['Despair is part of the process sometimes.', 'You don\'t have to fast-forward.', 'This stage has meaning too.'],
       avoidSaying: 'Don\'t say "you should be over this already" — adds shame to suffering.',
-      example: 'Friend in long depression. You: "Sometimes the body needs to feel hopeless before it can heal. We\'re not skipping this step."'
+      example: 'Friend in long depression. You: "You don\'t have to feel hopeful right now. I\'m staying with you while it\'s this heavy, and I\'ll help you get support."'
     },
     {
       _k: 'sel.emotions.val_hope_008',
@@ -12934,7 +12934,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Sunlight Walk', steps: ['Step outside or to a bright window', 'Walk slowly for 5 minutes', 'Notice three things you see, hear, smell'], duration: '5 min', whyForThisEmotion: 'Light exposure and gentle movement nudge mood-regulating neurochemistry without pushing too hard.' },
         { name: 'Warm Drink Ritual', steps: ['Make a warm drink slowly', 'Hold the cup in both hands', 'Take small sips, notice warmth in throat'], duration: '8 min', whyForThisEmotion: 'Warmth on the chest and hands signals safety to the nervous system; ritual creates micro-structure.' },
         { name: 'Soft Stretch', steps: ['Roll shoulders back five times', 'Open arms wide like a hug for the sky', 'Sigh out loud on each exhale'], duration: '3 min', whyForThisEmotion: 'Sad posture (collapsed chest) feeds the feeling; opening posture interrupts the loop gently.' },
-        { name: 'Pet or Plant Touch', steps: ['Find a pet, plant, or soft fabric', 'Touch slowly for 60 seconds', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Tactile contact with living things or soft texture releases oxytocin and reduces cortisol.' },
+        { name: 'Pet or Plant Touch', steps: ['Find a pet, plant, or soft fabric', 'Touch slowly for 60 seconds', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Gentle touch with a pet or a soft texture is calming for many people.' },
         { name: 'Music with a Pulse', steps: ['Pick a song with a clear, steady beat (not too fast)', 'Tap your foot or sway', 'Let your breath match the rhythm'], duration: '4 min', whyForThisEmotion: 'Rhythm entrains the nervous system; sway adds vestibular input that lifts mild low mood.' }
       ],
       thoughtFirstStrategies: [
@@ -12965,7 +12965,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       intensity: 'medium',
       shortDesc: 'Noticeable heaviness; harder to start things; eyes may water; you want to be alone or held.',
       bodyFirstStrategies: [
-        { name: 'Cry on Purpose', steps: ['Find a private spot', 'Let yourself cry for up to 10 minutes', 'Drink water after'], duration: '10 min', whyForThisEmotion: 'Emotional tears contain stress hormones; crying releases them and resets autonomic balance.' },
+        { name: 'Cry on Purpose', steps: ['Find a private spot', 'Let yourself cry for up to 10 minutes', 'Drink water after'], duration: '10 min', whyForThisEmotion: 'Crying often brings relief, especially with someone supportive nearby.' },
         { name: 'Cold Water Face Splash', steps: ['Splash cold water on your face 3 times', 'Or hold a cold pack to eyes for 30 seconds', 'Breathe slowly'], duration: '2 min', whyForThisEmotion: 'Triggers the mammalian dive reflex, slowing heart rate and shifting nervous system state.' },
         { name: 'Weighted Hug', steps: ['Wrap arms tightly around yourself', 'Or use a weighted blanket', 'Rock gently side to side for 2 minutes'], duration: '3 min', whyForThisEmotion: 'Deep pressure mimics being held; vestibular rocking soothes limbic activation.' },
         { name: '20-Minute Walk', steps: ['Walk briskly for 20 minutes outdoors if possible', 'No phone or podcast for first 10 minutes', 'Let thoughts move'], duration: '20 min', whyForThisEmotion: 'Bilateral movement plus outdoor exposure has antidepressant-magnitude effects in single doses.' },
@@ -12983,7 +12983,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Tell One Person', steps: ['Pick one safe person', 'Say, \'I am feeling sad and just wanted you to know\'', 'No advice needed'], whyForThisEmotion: 'Naming the feeling to another person reduces shame and isolation.' },
         { name: 'Ask for Company', steps: ['Ask someone to sit with you, watch a movie, or take a walk', 'Specify: \'No need to talk about it\'', 'Receive their presence'], whyForThisEmotion: 'Presence regulates the nervous system more than advice does.' },
         { name: 'Voice Memo a Friend', steps: ['Record a 2-minute voice memo to a friend', 'Speak as if they are listening', 'Send or do not'], whyForThisEmotion: 'Voice connection beats text for emotional regulation; sending is optional.' },
-        { name: 'Hug, 20 Seconds', steps: ['Ask for a 20-second hug from a safe person', 'Breathe through it', 'Notice the shift'], whyForThisEmotion: 'A hug held past 20 seconds triggers measurable oxytocin release.' }
+        { name: 'Long, Warm Hug', steps: ['Ask a safe person for a long hug', 'Breathe through it', 'Notice the shift'], whyForThisEmotion: 'A long, warm hug from someone you trust can lower stress and help you feel safe.' }
       ],
       longTermStrategies: [
         'Begin daily 10-minute walks for 2 weeks',
@@ -12994,7 +12994,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'If medium sadness lasts more than 2-3 weeks, or you stop enjoying things you used to like, see a counselor or doctor for a depression screen.',
       crisisEscalation: 'Escalate to 988 (call or text) if you start thinking about hurting yourself or feel you cannot keep going.',
-      research: 'Self-compassion (Neff, 2003); behavioral activation (Dimidjian et al., 2006); oxytocin and touch (Light et al., 2005).'
+      research: 'Self-compassion (Neff, 2003); behavioral activation (Dimidjian et al., 2006); warm touch and stress (Light et al., 2005).'
     },
     {
       _k: 'sel.emotions.strat_sadness_high',
@@ -13004,7 +13004,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Heavy, sometimes overwhelming; trouble functioning; possible numbness alternating with crying.',
       bodyFirstStrategies: [
         { name: 'Ice Cube Hold', steps: ['Hold an ice cube in your hand for 30-60 seconds', 'Notice the cold', 'Switch hands'], duration: '2 min', whyForThisEmotion: 'Strong sensory input pulls attention out of rumination loops when sadness is overwhelming.' },
-        { name: 'Bilateral Tapping', steps: ['Cross arms over chest', 'Tap alternating shoulders slowly for 2 minutes', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Bilateral stimulation (EMDR-derived) lowers amygdala activation during high distress.' },
+        { name: 'Bilateral Tapping', steps: ['Cross arms over chest', 'Tap alternating shoulders slowly for 2 minutes', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Slow alternating taps (the "butterfly hug") give the body a steady rhythm to focus on, which many people find calming.' },
         { name: 'TIPP: Cold + Movement', steps: ['Splash cold water on face', 'Then 60 seconds of jumping jacks or stair-climbing', 'Then slow breathing'], duration: '5 min', whyForThisEmotion: 'DBT TIPP skill rapidly down-shifts autonomic arousal during emotional crisis.' },
         { name: 'Lie on the Floor', steps: ['Lie flat on the floor on your back', 'Feel the ground holding you', 'Stay 5 minutes minimum'], duration: '5 min', whyForThisEmotion: 'The floor cannot drop you; full ground contact recruits proprioception and slows breath.' },
         { name: 'Eat and Hydrate', steps: ['Drink a full glass of water', 'Eat something with protein within the hour', 'Set a timer if needed'], duration: '5 min', whyForThisEmotion: 'High sadness suppresses appetite and thirst; dehydration and low blood sugar worsen mood within hours.' },
@@ -13032,7 +13032,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'High sadness lasting more than 2 weeks is clinical territory. See a doctor or therapist this week.',
       crisisEscalation: 'If you have thoughts of suicide or self-harm: call or text 988, text HOME to 741741 (Crisis Text Line), or go to an ER. You deserve immediate support.',
-      research: 'DBT TIPP skills (Linehan, 1993); radical acceptance (Linehan); wave metaphor (Hayes, ACT); EMDR bilateral stimulation (Shapiro, 1989).'
+      research: 'DBT TIP skills (Linehan, 2015); radical acceptance (Linehan); wave metaphor (Hayes, ACT); rhythmic self-soothing (the butterfly hug comes from EMDR practice; evidence for bilateral stimulation itself is mixed).'
     },
     {
       _k: 'sel.emotions.strat_anger_low',
@@ -13076,11 +13076,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Hot, focused; you want to say something sharp; chest tight, hands may shake; clear sense of \'wrong.\'',
       bodyFirstStrategies: [
         { name: 'Push the Wall', steps: ['Stand with palms on a wall', 'Push hard for 10 seconds', 'Rest 10 seconds', 'Repeat 5 times'], duration: '3 min', whyForThisEmotion: 'Isometric resistance discharges anger energy safely without targets.' },
-        { name: 'Sprint or Stairs', steps: ['Sprint in place 30 seconds OR climb stairs fast for 2 min', 'Rest', 'Breathe long exhales'], duration: '5 min', whyForThisEmotion: 'High-intensity bursts metabolize stress hormones already in your bloodstream.' },
-        { name: 'Cold Plunge Face', steps: ['Fill a bowl with cold water', 'Hold face in it for 15-30 seconds', 'Breathe out, come up'], duration: '2 min', whyForThisEmotion: 'Diving reflex slows heart rate within seconds; resets nervous system from fight mode.' },
+        { name: 'Sprint or Stairs', steps: ['Sprint in place 30 seconds OR climb stairs fast for 2 min', 'Rest', 'Breathe long exhales'], duration: '5 min', whyForThisEmotion: 'A short burst of hard movement gives the energy somewhere to go. Follow it with slow breathing, because calming the body is what lowers anger.' },
+        { name: 'Cold Plunge Face', steps: ['Fill a bowl with cold water', 'Hold face in it for 15-30 seconds', 'Breathe out, come up'], duration: '2 min', whyForThisEmotion: 'Diving reflex slows heart rate within seconds. Use cool water, not icy. Use a cool cloth instead if you have a heart condition, take heart medicine, or have an eating disorder, unless a doctor has said it is OK.' },
         { name: 'Long Exhale Breathing', steps: ['Inhale 4 seconds', 'Exhale 8 seconds', 'Repeat 10 times'], duration: '3 min', whyForThisEmotion: 'Long exhales engage the vagus nerve, the body brake for fight activation.' },
-        { name: 'Crunch and Shake', steps: ['Crumple a piece of paper as hard as possible', 'Throw it across the room', 'Shake out hands'], duration: '1 min', whyForThisEmotion: 'Symbolic destruction discharges aggression without harm; better than punching pillows (which rehearses).' },
-        { name: 'Cold Shower 60 sec', steps: ['Turn shower to cold for last 60 seconds', 'Breathe through it', 'Step out grounded'], duration: '1 min', whyForThisEmotion: 'Cold exposure rapidly drops core arousal and clears the head.' }
+        { name: 'Crunch and Shake', steps: ['Crumple a piece of paper as hard as possible', 'Throw it across the room', 'Shake out hands'], duration: '1 min', whyForThisEmotion: 'A quick, harmless way to use up the first surge of energy. Follow it with slow breathing; hitting things tends to rehearse anger.' },
+        { name: 'Cold Shower 60 sec', steps: ['Turn shower to cold for last 60 seconds', 'Breathe through it', 'Step out grounded'], duration: '1 min', whyForThisEmotion: 'A burst of cold is a strong sensory reset that interrupts the anger loop. Skip it if you have a heart condition.' }
       ],
       thoughtFirstStrategies: [
         { name: 'Delay 24 Hours', steps: ['Commit to not sending, saying, or posting anything for 24 hours', 'Write a draft if needed', 'Sit with it'], whyForThisEmotion: 'Anger-fueled messages are usually regretted; the 24-hour rule preserves relationships.' },
@@ -13114,9 +13114,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Loud, body-shaking, words flooding; urges to slam, throw, or yell; vision narrows.',
       bodyFirstStrategies: [
         { name: 'Leave the Room', steps: ['Physically leave the room or location', 'Walk outside if possible', 'Do not return until heart rate slows'], duration: '15 min minimum', whyForThisEmotion: 'Distance prevents action you will regret; environment change resets context.' },
-        { name: 'Cold Water Full Face', steps: ['Fill sink with cold water', 'Submerge face for 20-30 seconds', 'Come up, breathe long exhale'], duration: '2 min', whyForThisEmotion: 'Mammalian dive reflex drops heart rate within seconds; one of the fastest down-shifts known.' },
-        { name: 'Sprint Hard', steps: ['Sprint or run as fast as possible for 60 seconds', 'Then walk', 'Then breathe'], duration: '5 min', whyForThisEmotion: 'Burns adrenaline already in bloodstream; you cannot stay in fight mode after metabolizing the hormones.' },
-        { name: 'Scream Into Pillow or Car', steps: ['Find a private space (pillow, car, empty field)', 'Scream from the chest 3 times', 'Pause and breathe'], duration: '2 min', whyForThisEmotion: 'Voicing rage at full volume in safe space discharges without harming. Avoid screaming AT a person or thing you would regret.' },
+        { name: 'Cold Water Full Face', steps: ['Fill sink with cold water', 'Submerge face for 20-30 seconds', 'Come up, breathe long exhale'], duration: '2 min', whyForThisEmotion: 'The dive reflex slows heart rate within seconds. Use cool water, not icy. Use a cool cloth instead if you have a heart condition, take heart medicine, or have an eating disorder, unless a doctor has said it is OK.' },
+        { name: 'Sprint Hard', steps: ['Sprint or run as fast as possible for 60 seconds', 'Then walk', 'Then breathe'], duration: '5 min', whyForThisEmotion: 'A short burst of hard movement gives the energy somewhere to go. Follow it with slow breathing, because calming the body is what lowers anger.' },
+        { name: 'Wall Push and Long Exhale', steps: ['Find a private space with a solid wall', 'Push hard against the wall for 10 seconds, 3 times', 'Finish with five slow, long exhales'], duration: '2 min', whyForThisEmotion: 'Hard muscle effort gives the energy somewhere to go without rehearsing aggression. The slow exhales are what bring the body down; venting by screaming or hitting does not lower anger (Bushman, 2002).' },
         { name: 'Ice Pack to Eyes', steps: ['Hold an ice pack or cold cloth over closed eyes for 30 seconds', 'Breathe', 'Repeat'], duration: '2 min', whyForThisEmotion: 'Vagal stimulation through trigeminal nerve; calms within seconds.' },
         { name: 'Push-ups to Failure', steps: ['Drop and do push-ups until you cannot do another', 'Rest', 'Repeat once'], duration: '3 min', whyForThisEmotion: 'Maximum exertion exhausts the fight system; impossible to stay tense after.' }
       ],
@@ -13132,7 +13132,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Walk With Someone', steps: ['Ask someone to walk with you, no talking required', 'Set pace fast', 'Walk it out'], whyForThisEmotion: 'Side-by-side walking discharges energy plus co-regulation, without face-to-face confrontation.' }
       ],
       longTermStrategies: [
-        'See a therapist specifically about anger; DBT and EMDR have evidence',
+        'See a therapist about anger; CBT-based anger treatment and DBT skills have the best evidence',
         'Identify and treat any underlying trauma, depression, or anxiety',
         'Build daily nervous system practice (cardio, breath, sleep)',
         'Remove or reduce access to means of harm during peak anger periods',
@@ -13140,7 +13140,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'High anger episodes more than once a week, or that frighten you or others, are a therapy-level concern this month.',
       crisisEscalation: 'If you are about to hurt someone or yourself: call 911 if imminent. Otherwise call 988 or text HOME to 741741 immediately. Leave the area if safe.',
-      research: 'DBT STOP and TIPP (Linehan, 1993); cold water vagal response (Datta & Tipton, 2006); primary vs secondary emotions (Greenberg, 2002).'
+      research: 'DBT STOP and TIP skills (Linehan, 2015); cold water vagal response (Datta & Tipton, 2006); primary vs secondary emotions (Greenberg, 2002).'
     },
     {
       _k: 'sel.emotions.strat_anger_crisis_rage',
@@ -13203,7 +13203,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'If low fear is constant and limiting choices, talk to a counselor about generalized anxiety.',
       crisisEscalation: 'Not crisis-level on its own.',
-      research: 'Orienting response (Porges, 2011); affect labeling (Lieberman et al., 2007); cognitive appraisal (Lazarus, 1991).'
+      research: 'Orienting response (Sokolov, 1963); affect labeling (Lieberman et al., 2007); cognitive appraisal (Lazarus, 1991).'
     },
     {
       _k: 'sel.emotions.strat_fear_medium',
@@ -13238,7 +13238,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'If medium fear shows up most days and shrinks your life, see a therapist about anxiety treatment.',
       crisisEscalation: 'Escalate to 988 if fear becomes panic plus thoughts of harm.',
-      research: 'CBT (Beck, 1976); ACT defusion (Hayes); exposure therapy (Foa & Kozak, 1986); cope-ahead (Linehan, 1993).'
+      research: 'CBT (Beck, 1976); ACT defusion (Hayes); exposure therapy (Foa & Kozak, 1986); cope-ahead (Linehan, 2015).'
     },
     {
       _k: 'sel.emotions.strat_fear_high',
@@ -13247,16 +13247,16 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       intensity: 'high',
       shortDesc: 'Body shaking, vision narrowed, mind racing; possibly frozen or about to flee; clear urge to escape.',
       bodyFirstStrategies: [
-        { name: 'Physiological Sigh', steps: ['Double inhale through nose (big, then top off)', 'Long slow exhale through mouth', 'Repeat 5 times'], duration: '2 min', whyForThisEmotion: 'Fastest known voluntary calming breath (Huberman lab, Balban et al. 2023).' },
+        { name: 'Physiological Sigh', steps: ['Double inhale through nose (big, then top off)', 'Long slow exhale through mouth', 'Repeat 5 times'], duration: '2 min', whyForThisEmotion: 'In one study, five minutes a day of this "cyclic sighing" improved mood more than mindfulness meditation (Balban et al., 2023).' },
         { name: 'Bear Hug Self', steps: ['Cross arms tightly across chest', 'Squeeze hard for 30 seconds', 'Release, repeat 3 times'], duration: '2 min', whyForThisEmotion: 'Deep pressure self-hold signals safe containment to a flooded nervous system.' },
-        { name: 'Cold Pack on Chest', steps: ['Place a cold pack or ice in towel on chest', 'Breathe long exhales', 'Stay 2 minutes'], duration: '2 min', whyForThisEmotion: 'Cold on the chest activates the vagus nerve and slows heart rate.' },
+        { name: 'Cold Pack on Chest', steps: ['Place a cold pack or ice in towel on chest', 'Breathe long exhales', 'Stay 2 minutes'], duration: '2 min', whyForThisEmotion: 'A cool pack on the chest is a strong, steady sensation that many people find settling. The heart-slowing dive reflex comes from cold on the face.' },
         { name: 'Wall Sit', steps: ['Back to wall, slide down to chair position', 'Hold for 60 seconds', 'Stand and breathe'], duration: '2 min', whyForThisEmotion: 'Engages large muscles, burns adrenaline, focuses attention on body sensation.' },
-        { name: 'Tap Both Shoulders', steps: ['Cross arms, tap shoulders alternating', 'Slow, steady, for 2 minutes', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Bilateral stimulation lowers amygdala activity (EMDR-derived).' },
-        { name: 'Splash Cold Water', steps: ['Splash cold water on face 3 times', 'Press cool palm to forehead', 'Long exhale'], duration: '1 min', whyForThisEmotion: 'Mammalian dive reflex; one of the fastest fear down-shifts.' }
+        { name: 'Tap Both Shoulders', steps: ['Cross arms, tap shoulders alternating', 'Slow, steady, for 2 minutes', 'Breathe normally'], duration: '2 min', whyForThisEmotion: 'Slow alternating taps (the "butterfly hug") give the body a steady rhythm to focus on, which many people find calming.' },
+        { name: 'Splash Cold Water', steps: ['Splash cold water on face 3 times', 'Press cool palm to forehead', 'Long exhale'], duration: '1 min', whyForThisEmotion: 'Cold on the face can trigger the dive reflex, which slows the heart.' }
       ],
       thoughtFirstStrategies: [
         { name: 'I Am Safe Right Now', steps: ['Say out loud, \'I am safe in this moment.\'', 'Look around to confirm', 'Repeat'], whyForThisEmotion: 'Verbal grounding paired with visual scan re-anchors the threat system.' },
-        { name: 'Fear Is a Wave', steps: ['Notice fear has a peak and will fall', 'Picture it as a wave', 'Wait for descent'], whyForThisEmotion: 'Fear peaks within 90 seconds if not fed by thoughts (Jill Bolte Taylor).' },
+        { name: 'Fear Is a Wave', steps: ['Notice fear has a peak and will fall', 'Picture it as a wave', 'Wait for descent'], whyForThisEmotion: 'A wave of fear rises, peaks and falls on its own if you do not feed it with scary thoughts. How long that takes varies.' },
         { name: 'One Concrete Action', steps: ['Pick one tiny next step you can do', 'Do only that', 'Then pick the next'], whyForThisEmotion: 'High fear collapses planning; one micro-step at a time restores agency.' },
         { name: 'Externalize Onto Paper', steps: ['Write the fear in one sentence', 'Place paper across room', 'Look at it from a distance'], whyForThisEmotion: 'Physical distance from words mirrors mental distance from thoughts.' }
       ],
@@ -13274,7 +13274,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'High fear that interferes with daily life is treatable; see a clinician within 1-2 weeks.',
       crisisEscalation: 'If fear includes thoughts of harming self or feeling unable to keep going: call/text 988 or text HOME to 741741.',
-      research: 'Physiological sigh (Balban et al., 2023); 90-second emotion wave (Bolte Taylor, 2008); polyvagal theory (Porges, 2011).'
+      research: 'Physiological sigh (Balban et al., 2023); emotions as waves (Bolte Taylor, 2008, a memoir, not a measurement); polyvagal theory (Porges, 2011; contested).'
     },
     {
       _k: 'sel.emotions.strat_anxiety_general',
@@ -13284,8 +13284,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Chronic low hum of worry, restlessness, future-focused dread; mind jumps between fears.',
       bodyFirstStrategies: [
         { name: 'Body Scan Walk', steps: ['Walk for 10 minutes', 'Scan body head to toe', 'Notice without changing'], duration: '10 min', whyForThisEmotion: 'Anxiety lives in the body; tracking sensations reduces avoidance.' },
-        { name: 'Yoga Child\'s Pose', steps: ['Kneel and fold forward, arms extended or by sides', 'Stay 2-3 minutes', 'Breathe into back'], duration: '3 min', whyForThisEmotion: 'Forehead contact with floor stimulates vagus; folded posture safe-signals.' },
-        { name: '20-Min Cardio', steps: ['Run, bike, swim, or fast walk for 20 minutes', 'Sweat is fine', 'Cool down slow'], duration: '25 min', whyForThisEmotion: 'Cardio is as effective as some SSRIs for anxiety (Blumenthal, 2007).' },
+        { name: 'Yoga Child\'s Pose', steps: ['Kneel and fold forward, arms extended or by sides', 'Stay 2-3 minutes', 'Breathe into back'], duration: '3 min', whyForThisEmotion: 'Resting the forehead down and folding in feels safe and quiet for many people.' },
+        { name: '20-Min Cardio', steps: ['Run, bike, swim, or fast walk for 20 minutes', 'Sweat is fine', 'Cool down slow'], duration: '25 min', whyForThisEmotion: 'Regular aerobic exercise lowers anxiety for many people (Stubbs et al., 2017). It works alongside therapy or medication, not instead of them.' },
         { name: 'Slow Exhale Breathing', steps: ['Inhale 4, exhale 8', 'For 5 minutes', 'Sit upright'], duration: '5 min', whyForThisEmotion: 'Vagal activation through extended exhale is the most reliable in-moment fix.' },
         { name: 'Progressive Muscle Relaxation', steps: ['Tense feet 5 sec, release', 'Move up: calves, thighs, belly, arms, face', 'Notice difference'], duration: '10 min', whyForThisEmotion: 'PMR (Jacobson) trains body to recognize tension and release it.' }
       ],
@@ -13309,7 +13309,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'Generalized anxiety is highly treatable; if it limits daily life for more than 6 months, see a clinician.',
       crisisEscalation: 'Escalate to 988 if anxiety becomes panic plus thoughts of harm.',
-      research: 'CBT for GAD (Borkovec, 2002); cardio for anxiety (Blumenthal, 2007); ACT defusion (Hayes); PMR (Jacobson, 1938).'
+      research: 'CBT for GAD (Borkovec, 2002); exercise for anxiety (Stubbs et al., 2017); ACT defusion (Hayes); PMR (Jacobson, 1938).'
     },
     {
       _k: 'sel.emotions.strat_anxiety_performance',
@@ -13339,11 +13339,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'Do small public performances regularly to desensitize',
         'Track wins after performance, not just mistakes',
         'For severe stage fright: see a therapist about performance anxiety specifically',
-        'Talk to a doctor about beta blockers if severe (used by musicians and surgeons)'
+        'Talk to a doctor or counselor if performance anxiety is severe'
       ],
       whenItPersists: 'If performance anxiety stops you from doing things you want to do, it is treatable in 6-12 sessions.',
       crisisEscalation: 'Not crisis-level unless paired with panic and harm thoughts.',
-      research: 'Excitement reappraisal (Brooks, 2014); over-rehearsal (Ericsson, 1993); beta blockers and performance (Tindall et al., 2017).'
+      research: 'Excitement reappraisal (Brooks, 2014); over-rehearsal (Ericsson, 1993).'
     },
     {
       _k: 'sel.emotions.strat_anxiety_social',
@@ -13408,7 +13408,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'If anticipatory anxiety is bigger than the events themselves regularly, talk to a therapist.',
       crisisEscalation: 'Not crisis-level alone.',
-      research: 'Cope-ahead (Linehan, 1993); affective forecasting errors (Gilbert, 2006); behavioral activation (Jacobson).'
+      research: 'Cope-ahead (Linehan, 2015); affective forecasting errors (Gilbert, 2006); behavioral activation (Jacobson).'
     },
     {
       _k: 'sel.emotions.strat_anxiety_panic_attack',
@@ -13417,11 +13417,11 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       intensity: 'crisis',
       shortDesc: 'Sudden surge: heart pounding, chest tight, hands tingling, dizzy, terror of dying or losing control. Peaks in ~10 min.',
       bodyFirstStrategies: [
-        { name: 'Cold Water Dive Response', steps: ['Fill a bowl with cold water', 'Submerge face for 15-30 seconds while holding breath', 'Slow exhale up'], duration: '2 min', whyForThisEmotion: 'Mammalian dive reflex slows heart rate within seconds; fastest reliable panic interrupt.' },
+        { name: 'Cold Water Dive Response', steps: ['Fill a bowl with cold water', 'Submerge face for 15-30 seconds while holding breath', 'Slow exhale up'], duration: '2 min', whyForThisEmotion: 'The dive reflex slows heart rate within seconds. Use cool water, not icy. Use a cool cloth instead if you have a heart condition, take heart medicine, or have an eating disorder, unless a doctor has said it is OK.' },
         { name: 'Physiological Sigh', steps: ['Double inhale through nose', 'Long slow exhale through mouth', 'Repeat 5-10 times'], duration: '2 min', whyForThisEmotion: 'Most effective single voluntary breath for autonomic down-shift.' },
         { name: 'Box Breathing', steps: ['Inhale 4, hold 4, exhale 4, hold 4', 'Repeat until shift', 'Used by Navy SEALs'], duration: '3 min', whyForThisEmotion: 'Symmetric breath restores CO2 balance disrupted by hyperventilation.' },
         { name: 'Ground With 5 Senses', steps: ['5 see, 4 touch, 3 hear, 2 smell, 1 taste', 'Out loud if possible', 'Slowly'], duration: '3 min', whyForThisEmotion: 'Multi-sensory grounding pulls attention from internal terror to external safety.' },
-        { name: 'Ice Pack to Eyes or Chest', steps: ['Hold ice or cold pack to eyes or chest for 30 seconds', 'Breathe long exhale', 'Repeat'], duration: '2 min', whyForThisEmotion: 'Cold stimulates vagus nerve and trigeminal; fast parasympathetic activation.' }
+        { name: 'Ice Pack to Eyes or Chest', steps: ['Hold ice or cold pack to eyes or chest for 30 seconds', 'Breathe long exhale', 'Repeat'], duration: '2 min', whyForThisEmotion: 'Cold around the eyes and cheeks can trigger the dive reflex, which slows the heart. Use a cool cloth instead if you have a heart condition or an eating disorder.' }
       ],
       thoughtFirstStrategies: [
         { name: 'This Is Panic, Not Danger', steps: ['Say, \'This is a panic attack. I am not dying. It will peak and pass.\'', 'Repeat', 'Trust the science'], whyForThisEmotion: 'Knowing what is happening reduces the fear-of-fear cycle that prolongs panic.' },
@@ -13452,7 +13452,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Crushing sense of being bad, defective, or unlovable; urge to hide; face hot; want to disappear.',
       bodyFirstStrategies: [
         { name: 'Face the Cool Floor', steps: ['Lie face down on a cool floor for 5 minutes', 'Let it cool the heat', 'Breathe slow'], duration: '5 min', whyForThisEmotion: 'Cooling counters shame heat in face and chest; floor contact grounds.' },
-        { name: 'Cold Shower or Splash', steps: ['Cold water on face or full shower', 'Interrupt the freeze', 'Breathe slow'], duration: '2 min', whyForThisEmotion: 'Shame often triggers freeze; cold breaks the dorsal vagal shutdown.' },
+        { name: 'Cold Shower or Splash', steps: ['Cold water on face or full shower', 'Interrupt the freeze', 'Breathe slow'], duration: '2 min', whyForThisEmotion: 'Shame often triggers a freeze; a cold sensation can help you feel present again.' },
         { name: 'Walk Outside in Public', steps: ['Walk somewhere people are', 'Notice you can be seen and still survive', 'Eyes up'], duration: '15 min', whyForThisEmotion: 'Shame says \'hide\'; gentle exposure to being seen disproves the threat.' },
         { name: 'Self-Hug', steps: ['Wrap arms around self', 'Squeeze for 30 seconds', 'Whisper, \'I am here\''], duration: '2 min', whyForThisEmotion: 'Self-touch counters disconnection and signals safety.' },
         { name: 'Slow Eye Contact in Mirror', steps: ['Look at yourself in a mirror', 'Soft eyes, no judgment', 'Stay 30 seconds'], duration: '2 min', whyForThisEmotion: 'Witnessing self with kindness rewires shame-mirror loops.' }
@@ -13460,17 +13460,17 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       thoughtFirstStrategies: [
         { name: 'Name It as Shame', steps: ['Say, \'This is shame. Not truth, not identity.\'', 'Shame loses power when named', 'Repeat'], whyForThisEmotion: 'Brene Brown: shame cannot survive being spoken with empathy.' },
         { name: 'Guilt vs. Shame Check', steps: ['Ask: \'Did I do something bad? (guilt) Or am I telling myself I AM bad? (shame)\'', 'Guilt can be made amends; shame is a thinking error', 'Separate'], whyForThisEmotion: 'Guilt is repairable; shame is global self-condemnation. Sorting matters.' },
-        { name: 'Self-Compassion Phrase', steps: ['Hand on heart', 'Say, \'This is shame. Many feel this. May I be kind to myself.\'', 'Repeat'], whyForThisEmotion: 'Self-compassion (Neff) is the most evidence-based antidote to shame.' },
+        { name: 'Self-Compassion Phrase', steps: ['Hand on heart', 'Say, \'This is shame. Many feel this. May I be kind to myself.\'', 'Repeat'], whyForThisEmotion: 'Self-compassion (Neff) is a well-studied antidote to shame.' },
         { name: 'Common Humanity', steps: ['Recall: many people have felt this exact shame', 'You are not uniquely broken', 'You are human'], whyForThisEmotion: 'Shame says \'only me\'; reality is \'all of us\'.' },
         { name: 'Younger Self View', steps: ['Picture yourself at 7 years old', 'Would you call them defective?', 'Speak to current you that way'], whyForThisEmotion: 'Distance via age-perspective unlocks compassion shame blocks.' }
       ],
       connectionStrategies: [
         { name: 'Tell One Safe Person', steps: ['Tell ONE person you trust deeply', 'Say, \'I am feeling shame about X\'', 'Receive their humanity'], whyForThisEmotion: 'Brene Brown: shame dies in the light of empathetic witness.' },
         { name: 'Send a Brave Text', steps: ['Text a close friend: \'I need to be reminded I am good\'', 'Let them respond', 'Receive'], whyForThisEmotion: 'Asking for what you need disrupts the hiding pattern shame demands.' },
-        { name: 'Hug 20 Seconds', steps: ['Ask for a real hug', 'Hold 20 seconds', 'Let your body soften'], whyForThisEmotion: 'Oxytocin release; physical witness of being held counters worthlessness.' }
+        { name: 'Hug 20 Seconds', steps: ['Ask for a real hug', 'Hold 20 seconds', 'Let your body soften'], whyForThisEmotion: 'Being held by someone safe is calming and counters the feeling of worthlessness.' }
       ],
       longTermStrategies: [
-        'Therapy for shame patterns; IFS, AEDP, and self-compassion-based approaches have strong evidence',
+        'Therapy for shame patterns: compassion-focused and self-compassion approaches have growing evidence; IFS and AEDP are widely used but less tested',
         'Daily self-compassion practice (Kristin Neff has free recordings)',
         'Identify the origin of the shame (early experiences, voice of a critic)',
         'Build a small circle of \'shame-free\' relationships',
@@ -13541,7 +13541,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       whenItPersists: 'If jealousy is damaging relationships, see a therapist about attachment patterns.',
       crisisEscalation: 'If jealousy turns to thoughts of harming partner or self: 988 or 911. Leave the situation if safe.',
-      research: 'Attachment theory (Bowlby, Hazan & Shaver); jealousy and self-esteem (DeSteno, 2010); IFS (Schwartz).'
+      research: 'Attachment theory (Bowlby, Hazan & Shaver); jealousy and self-esteem (DeSteno, Valdesolo & Bartlett, 2006); IFS (Schwartz).'
     },
     {
       _k: 'sel.emotions.strat_envy',
@@ -13580,7 +13580,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       intensity: 'medium',
       shortDesc: 'Acute sense of being apart, missing specific people, or feeling unseen in a moment.',
       bodyFirstStrategies: [
-        { name: 'Self-Hug Plus Warmth', steps: ['Wrap a warm blanket around shoulders', 'Self-hug for 1 minute', 'Breathe slow'], duration: '3 min', whyForThisEmotion: 'Warmth + pressure mimics being held; releases oxytocin.' },
+        { name: 'Self-Hug Plus Warmth', steps: ['Wrap a warm blanket around shoulders', 'Self-hug for 1 minute', 'Breathe slow'], duration: '3 min', whyForThisEmotion: 'Warmth and steady pressure feel like being held, which many people find soothing.' },
         { name: 'Sit Near People', steps: ['Go to a cafe, library, or park', 'Sit near others, no interaction needed', 'Read or work'], duration: '30 min', whyForThisEmotion: '\'Public solitude\' relieves loneliness even without conversation.' },
         { name: 'Touch a Living Thing', steps: ['Pet an animal, water plants, hug a tree', 'Slow', 'Notice contact'], duration: '5 min', whyForThisEmotion: 'Biophilia + touch reduces loneliness signals.' }
       ],
@@ -13614,7 +13614,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       bodyFirstStrategies: [
         { name: 'Daily Outside Time', steps: ['30 min outside daily', 'Walk where others are', 'Eye contact and small \'hi\'s'], duration: '30 min daily', whyForThisEmotion: 'Daily micro-connections shift baseline; chronic loneliness is partly a habit pattern.' },
         { name: 'Service Body Doubling', steps: ['Volunteer somewhere with others (kitchen, garden, shelter)', 'Body in same space as others doing shared work', 'Weekly'], duration: '2 hours weekly', whyForThisEmotion: 'Shared task + presence builds connection without performance pressure.' },
-        { name: 'Pet or Animal Care', steps: ['Adopt, foster, or care for an animal', 'Daily touch and routine', 'Mutual bond'], duration: 'ongoing', whyForThisEmotion: 'Companion animals reduce chronic loneliness; oxytocin and routine.' }
+        { name: 'Pet or Animal Care', steps: ['Adopt, foster, or care for an animal', 'Daily touch and routine', 'Mutual bond'], duration: 'ongoing', whyForThisEmotion: 'Companion animals reduce chronic loneliness through touch, routine and being needed.' }
       ],
       thoughtFirstStrategies: [
         { name: 'Test the Thought \'No One Cares\'', steps: ['Write the names of 5 people who would notice if you disappeared', 'Even acquaintances count', 'Reality-check'], whyForThisEmotion: 'Chronic loneliness creates false belief that no one cares; evidence helps.' },
@@ -13646,7 +13646,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       bodyFirstStrategies: [
         { name: 'Stop and Lie Down', steps: ['Lie on the floor for 5 minutes', 'Eyes closed', 'No phone'], duration: '5 min', whyForThisEmotion: 'Horizontal plus stillness interrupts the spinning.' },
         { name: 'Slow Walk Outside', steps: ['Walk slowly outside for 10 minutes', 'No goal', 'Notice trees, sky'], duration: '10 min', whyForThisEmotion: 'Nature plus slow movement quiets cortical load.' },
-        { name: 'Cold Pack on Eyes', steps: ['Cold pack on eyes for 60 seconds', 'Breathe', 'Repeat'], duration: '3 min', whyForThisEmotion: 'Cold stimulates vagus; closing eyes reduces input load.' },
+        { name: 'Cold Pack on Eyes', steps: ['Cold pack on eyes for 60 seconds', 'Breathe', 'Repeat'], duration: '3 min', whyForThisEmotion: 'Cold around the eyes can slow the heart (the dive reflex); closing the eyes reduces input load.' },
         { name: 'Box Breath 10 Cycles', steps: ['4-4-4-4', '10 cycles', 'Slow'], duration: '4 min', whyForThisEmotion: 'Restores autonomic balance without requiring decisions.' }
       ],
       thoughtFirstStrategies: [
@@ -13658,7 +13658,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       ],
       connectionStrategies: [
         { name: 'Ask for Help', steps: ['Pick one task', 'Ask one person to help', 'Specific ask'], whyForThisEmotion: 'Asking is the muscle overwhelm makes hardest to use.' },
-        { name: 'Co-Working / Body Doubling', steps: ['Work alongside someone in person or on video', 'Each does own work', 'Presence regulates'], whyForThisEmotion: 'Body doubling is evidence-based for ADHD; works for overwhelm broadly.' },
+        { name: 'Co-Working / Body Doubling', steps: ['Work alongside someone in person or on video', 'Each does own work', 'Presence regulates'], whyForThisEmotion: 'Many people with ADHD say body doubling helps, and it can ease overwhelm more broadly; formal research is still thin.' },
         { name: 'Verbal Brain Dump to Friend', steps: ['Call a friend, dump for 5 minutes', 'They listen, do not advise', 'Then plan'], whyForThisEmotion: 'Speaking out loud externalizes faster than writing for some.' }
       ],
       longTermStrategies: [
@@ -13710,8 +13710,8 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       bodyFirstStrategies: [
         { name: 'Move Body Daily', steps: ['Walk, run, dance, or yoga daily for 20 min', 'Even when you don\'t want to', 'Build a streak'], duration: '20 min daily', whyForThisEmotion: 'Movement is one of the only reliable heartbreak interventions; antidepressant magnitude.' },
         { name: 'Cry on Schedule', steps: ['Set aside 20 minutes for crying', 'Let it happen', 'End with water and walk'], duration: '30 min', whyForThisEmotion: 'Scheduled processing prevents random ambushes.' },
-        { name: 'Sleep 8 Hours', steps: ['Protect sleep', 'Phone out of room', 'Wind-down routine'], duration: '8 hours nightly', whyForThisEmotion: 'Sleep deprivation triples heartbreak pain; prioritize sleep above all.' },
-        { name: 'Hug Three Times Daily', steps: ['20-second hug from anyone safe, three times a day', 'Oxytocin', 'Heart restoration'], duration: '5 min daily', whyForThisEmotion: 'Touch literally lowers cortisol and physical pain perception.' }
+        { name: 'Sleep 8 Hours', steps: ['Protect sleep', 'Phone out of room', 'Wind-down routine'], duration: '8 hours nightly', whyForThisEmotion: 'Poor sleep makes emotional pain hit harder; protect sleep.' },
+        { name: 'Hug Three Times Daily', steps: ['A long hug from anyone safe, three times a day', 'Let yourself be held', 'Heart restoration'], duration: '5 min daily', whyForThisEmotion: 'Warm touch from safe people is linked with lower stress and can ease the ache of heartbreak.' }
       ],
       thoughtFirstStrategies: [
         { name: 'Allow Without Excusing', steps: ['Allow grief and anger to coexist', 'Even for someone who hurt you', 'Mixed is normal'], whyForThisEmotion: 'Forcing one feeling out distorts; allowing both lets healing proceed.' },
@@ -13755,7 +13755,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       connectionStrategies: [
         { name: 'Accept All Help', steps: ['Say yes to food, errands, company', 'People want to help', 'Receive'], whyForThisEmotion: 'Help-receiving is hard but essential; refusing isolates.' },
         { name: 'Stay With People', steps: ['Do not isolate', 'Sit with people even in silence', 'Presence matters'], whyForThisEmotion: 'Co-regulation is critical in acute grief.' },
-        { name: 'Grief Support Group', steps: ['Find a peer grief group (often free through hospice or community)', 'Hear others in same place', 'Universality heals'], whyForThisEmotion: 'Peer support is the most evidence-based grief intervention.' }
+        { name: 'Grief Support Group', steps: ['Find a peer grief group (often free through hospice or community)', 'Hear others in same place', 'Universality heals'], whyForThisEmotion: 'Grief support groups help many people feel less alone.' }
       ],
       longTermStrategies: [
         'Expect grief to last longer than you think (Worden tasks: accept reality, process pain, adjust, find ongoing connection)',
@@ -13891,12 +13891,12 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       id: 'rejection_rsd',
       emotion: 'rejection',
       intensity: 'high',
-      shortDesc: 'Painful response to perceived rejection (slight, criticism, not chosen); intensified for those with RSD (rejection sensitive dysphoria, common in ADHD).',
+      shortDesc: 'Painful response to perceived rejection (slight, criticism, not chosen); often more intense for people with ADHD, who sometimes call it RSD (rejection sensitive dysphoria; not an official diagnosis).',
       bodyFirstStrategies: [
         { name: 'Cold + Cardio TIPP', steps: ['Cold splash on face', 'Then 60 sec sprint or jumping jacks', 'Then long exhale breathing'], duration: '5 min', whyForThisEmotion: 'DBT TIPP rapidly down-shifts the surge before it spirals into shame.' },
         { name: 'Weighted Pressure', steps: ['Weighted blanket or heavy hug', 'Stay 5 minutes', 'Breathe slow'], duration: '5 min', whyForThisEmotion: 'Deep pressure soothes the autonomic surge of perceived rejection.' },
         { name: 'Move Don\'t Ruminate', steps: ['Walk fast for 15 minutes', 'No phone, no ruminating', 'Discharge'], duration: '15 min', whyForThisEmotion: 'Movement metabolizes the surge before it locks into shame story.' },
-        { name: 'Bilateral Tap', steps: ['Cross arms, tap shoulders alternating for 2 min', 'Breathe normal', 'Notice shift'], duration: '2 min', whyForThisEmotion: 'Bilateral stimulation lowers amygdala spike of rejection signal.' }
+        { name: 'Bilateral Tap', steps: ['Cross arms, tap shoulders alternating for 2 min', 'Breathe normal', 'Notice shift'], duration: '2 min', whyForThisEmotion: 'Slow alternating taps give the body a steady rhythm to focus on while the sting of rejection eases.' }
       ],
       thoughtFirstStrategies: [
         { name: 'RSD Naming', steps: ['Say, \'This is RSD. The pain is real, the meaning may not be.\'', 'Knowing it is RSD reduces the surge', 'Repeat'], whyForThisEmotion: 'Knowing the pattern (Dodson on RSD) helps separate signal from story.' },
@@ -13911,14 +13911,14 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Receive Care You Already Have', steps: ['Reread old loving texts, look at photos with friends', 'Evidence of being chosen', 'Anchor'], whyForThisEmotion: 'RSD lies that you are unloved; evidence counters.' }
       ],
       longTermStrategies: [
-        'For RSD: see a psychiatrist about ADHD treatment; meds (alpha-agonists, stimulants) help RSD',
-        'Therapy specifically for RSD; DBT and ACT have evidence',
+        'If rejection pain is taking over, talk to a doctor or therapist about ADHD and emotion regulation support',
+        'DBT and ACT skills help with intense emotions in general',
         'Build a written \'evidence of love\' file to read in surges',
         'Identify and reduce environments that frequently trigger RSD',
         'Read Dr. William Dodson\'s RSD work; reduces shame about pattern'
       ],
       whenItPersists: 'RSD is treatable and not your fault; see an ADHD-informed psychiatrist or therapist.',
-      crisisEscalation: 'If RSD creates suicidal thoughts (common in untreated RSD): 988. The surge will pass.',
+      crisisEscalation: 'If rejection pain brings suicidal thoughts: call or text 988. The surge will pass.',
       research: 'RSD (Dodson, ADDitude); ADHD and emotional regulation (Shaw et al., 2014); DBT for emotional intensity (Linehan).'
     },
     {
@@ -13933,7 +13933,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Laugh on Purpose', steps: ['Fake laugh becomes real', 'Out loud', 'Releases the surge'], duration: '1 min', whyForThisEmotion: 'Vocal laughter discharges embarrassment and signals to brain \'we\'re okay\'.' }
       ],
       thoughtFirstStrategies: [
-        { name: 'Spotlight Effect', steps: ['Remind: people noticed far less than you think', 'They are worried about themselves', 'You are mostly invisible'], whyForThisEmotion: 'Spotlight effect (Gilovich) shows we overestimate observers ~50%.' },
+        { name: 'Spotlight Effect', steps: ['Remind: people noticed far less than you think', 'They are worried about themselves', 'You are mostly invisible'], whyForThisEmotion: 'Spotlight effect (Gilovich): in the original study people guessed about twice as many observers noticed them as really did.' },
         { name: 'Will I Remember This in a Year?', steps: ['Almost certainly not', 'Neither will they', 'Let it shrink'], whyForThisEmotion: 'Future-self perspective shrinks embarrassment dramatically.' },
         { name: 'Own It With Humor', steps: ['Tell the story as a funny moment', 'Practice with one friend', 'Own becomes power'], whyForThisEmotion: 'Self-deprecating humor reframes embarrassment as connection.' }
       ],
@@ -14021,7 +14021,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       intensity: 'high',
       shortDesc: 'Disconnected from feelings or body; foggy, robotic, watching self from outside; protective shutdown.',
       bodyFirstStrategies: [
-        { name: 'Strong Sensory Input', steps: ['Cold water, sour candy, strong smell, loud music', 'Strong enough to feel', 'Bring body back'], duration: '2 min', whyForThisEmotion: 'Sensory grounding pulls dorsal vagal shutdown back to engagement.' },
+        { name: 'Strong Sensory Input', steps: ['Cold water, sour candy, strong smell, loud music', 'Strong enough to feel', 'Bring body back'], duration: '2 min', whyForThisEmotion: 'Sensory grounding helps bring you back from shutdown to feeling present.' },
         { name: 'Bilateral Tap', steps: ['Cross arms, slow shoulder tap', '2 minutes', 'Breathe normal'], duration: '2 min', whyForThisEmotion: 'Bilateral stimulation gently re-integrates without flooding.' },
         { name: 'Feet on Floor + Name', steps: ['Feet flat, push down', 'Name where you are out loud', 'Reorient'], duration: '2 min', whyForThisEmotion: 'Orienting response brings nervous system back from shutdown.' },
         { name: 'Move Gently', steps: ['Walk slowly, swing arms', 'Get blood moving without overwhelming', 'Re-embody'], duration: '10 min', whyForThisEmotion: 'Movement re-establishes mind-body connection.' },
@@ -14195,7 +14195,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       shortDesc: 'Recognition of received good; warmth toward source; can be for people, life, small moments.',
       bodyFirstStrategies: [
         { name: 'Hand on Heart', steps: ['Hand on heart, breathe', 'Feel the warmth', 'Stay 1 minute'], duration: '1 min', whyForThisEmotion: 'Self-touch consolidates positive feeling in body.' },
-        { name: 'Smile Soft', steps: ['Let face soften into smile', 'Breath deepens naturally', 'Receive'], duration: '1 min', whyForThisEmotion: 'Facial feedback amplifies emotion (Strack, 1988).' }
+        { name: 'Smile Soft', steps: ['Let face soften into smile', 'Breath deepens naturally', 'Receive'], duration: '1 min', whyForThisEmotion: 'Smiling on purpose may nudge mood slightly (Coles et al., 2022); the effect is small.' }
       ],
       thoughtFirstStrategies: [
         { name: 'Three Good Things', steps: ['Name 3 things from today you are grateful for', 'Be specific', 'Pause on each'], whyForThisEmotion: 'Seligman\'s evidence-based practice; small daily ritual measurable benefit.' },
@@ -14263,7 +14263,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { prompt: 'Knowing the sensation, intensity, and context — what feeling might it be? Try a word, even if uncertain.', invitesAnswer: true, options: ['Sadness', 'Anger', 'Fear', 'Anxiety', 'Shame', 'Loneliness', 'Overwhelm', 'Numbness', 'Something else', 'Still not sure'] },
         { prompt: 'If you cannot find a word, that is okay. Honoring the sensation is enough.', invitesAnswer: false, options: [] }
       ],
-      closingInsight: 'Naming a feeling, even tentatively, reduces amygdala activation by up to 50 percent (Lieberman et al., 2007 fMRI study).',
+      closingInsight: 'Naming a feeling, even tentatively, was linked to lower amygdala activity in an fMRI study (Lieberman et al., 2007).',
       followUp: 'Once named, choose one body-first or thought-first strategy from your toolkit that fits this feeling.',
       research: 'Siegel, D. (2010) Mindsight; Lieberman et al. (2007) Putting feelings into words: affect labeling disrupts amygdala activity.'
     },
@@ -14299,9 +14299,9 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { prompt: 'Is the feeling about right now, or about something earlier showing up now?', invitesAnswer: true, options: ['Right now', 'Something earlier', 'Both'] },
         { prompt: 'Right now you do not have to do anything except let the wave pass. Can you stay here 3 more minutes?', invitesAnswer: false, options: [] }
       ],
-      closingInsight: 'Big emotions peak within ~90 seconds if not fed by thoughts (Bolte Taylor). Naming slows the loop.',
+      closingInsight: 'Big emotions rise and fall like a wave if not fed by thoughts; naming slows the loop. (The "90 seconds" figure is a popular rule of thumb, not a measurement.)',
       followUp: 'Pick a high-intensity strategy from your toolkit: cold water, bilateral tap, call someone. If thoughts of harm: 988.',
-      research: 'Siegel (2010); Bolte Taylor (2008); DBT TIPP (Linehan, 1993).'
+      research: 'Siegel (2010); Bolte Taylor (2008, a memoir); DBT TIP skills (Linehan, 2015).'
     },
     {
       _k: 'sel.emotions.ni_mixed_feeling_first',
@@ -14316,7 +14316,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { prompt: 'It is okay for both to be true at once. Can you let both stand for now?', invitesAnswer: false, options: [] },
         { prompt: 'What might each feeling be telling you?', invitesAnswer: true, options: [] }
       ],
-      closingInsight: 'Mixed emotions are a sign of cognitive maturity, not confusion (Larsen et al., 2001). Both can be honored.',
+      closingInsight: 'Mixed emotions are normal, not confusion (Larsen et al., 2001). Both can be honored.',
       followUp: 'Pick the strategy that fits the louder feeling first; the quieter one will surface later.',
       research: 'Siegel (2010); Larsen, McGraw & Cacioppo (2001) on mixed emotions; ACT acceptance (Hayes).'
     },
@@ -15868,7 +15868,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Big brother (Diego)', role: 'older brother, in trouble for fighting', emotionalState: 'ashamed and shut down', interiorThoughts: 'I do not want to talk. I do not want to look at her. I let her down.' }
       ],
       story: {
-        middle: 'Cris\'s older brother Diego had been in a fight at the high school. He had broken another kid\'s nose. He was suspended for ten days. The local paper put it in the police log. By lunchtime Monday, Cris\'s whole grade knew. Two kids she did not really know said, "Yo, was that your brother?" One of them said it like she should be proud. Cris was not proud. Cris was a churning mix of embarrassed and protective and angry. She loved her brother. She also wanted to disappear. A teacher named Mr. Owens called her into the hallway. She thought she was in trouble. Mr. Owens said, "I just want to check on you. I read the paper. That has nothing to do with you, but I imagine you are feeling something about it." Cris\'s eyes filled. She said, "Everybody is asking about him." Mr. Owens said, "That makes sense and it is also unfair. You can tell people \\u0027that is family business\\u0027 and walk away. Or you can tell them whatever you want to tell them. You do not owe people answers." Cris said, "Thank you." That night, Cris sat outside Diego\'s door. She knocked. He grunted. She went in. He did not look up. She said, "I am mad at you." He looked up. She said, "Not because of school. Because everybody is talking about us." He said, "I know. I am sorry." They were quiet for a long time. He said, "Are you okay?" She said, "No." He said, "Me either."'
+        middle: 'Cris\'s older brother Diego had been in a fight at the high school. He had broken another kid\'s nose. He was suspended for ten days. The local paper put it in the police log. By lunchtime Monday, Cris\'s whole grade knew. Two kids she did not really know said, "Yo, was that your brother?" One of them said it like she should be proud. Cris was not proud. Cris was a churning mix of embarrassed and protective and angry. She loved her brother. She also wanted to disappear. A teacher named Mr. Owens called her into the hallway. She thought she was in trouble. Mr. Owens said, "I just want to check on you. I read the paper. That has nothing to do with you, but I imagine you are feeling something about it." Cris\'s eyes filled. She said, "Everybody is asking about him." Mr. Owens said, "That makes sense and it is also unfair. You can tell people \u0027that is family business\u0027 and walk away. Or you can tell them whatever you want to tell them. You do not owe people answers." Cris said, "Thank you." That night, Cris sat outside Diego\'s door. She knocked. He grunted. She went in. He did not look up. She said, "I am mad at you." He looked up. She said, "Not because of school. Because everybody is talking about us." He said, "I know. I am sorry." They were quiet for a long time. He said, "Are you okay?" She said, "No." He said, "Me either."'
       },
       emotionalArc: [
         { momentInStory: 'Whole grade knows', character: 'Cris', emotion: 'exposed', bodyShows: 'shoulders pulled in, fast walking' },
@@ -15984,7 +15984,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Tess', role: 'friend developing disordered eating', emotionalState: 'controlled and quietly suffering', interiorThoughts: 'I just have to be in control of one thing. People keep noticing. I do not want them to notice.' }
       ],
       story: {
-        middle: 'Bree had known Tess since fourth grade. In seventh grade, Tess started bringing salad. In eighth grade, Tess started skipping lunch entirely. Tess would say "I had a big breakfast" or "I am not hungry." Tess wore baggy hoodies all the time, even in May. She talked about her body in a tone that made Bree uneasy. One Wednesday, Tess almost fainted on the way to gym. The nurse called Tess\'s mom. Tess was furious at school. After school, Tess sat with Bree at the bus stop and said, "Why did the nurse have to make it a THING. I just did not sleep well." Bree took a deep breath. Bree said, "Tess. I am really worried about you." Tess\'s face hardened. "Do not." Bree said, "I am going to anyway because I love you. You used to eat with me every day. You stopped. I do not know what is going on but it does not feel like nothing." Tess started to cry quietly. She said, "I cannot talk about it." Bree said, "Okay. You do not have to talk to me. But please talk to somebody. Like, an actual somebody. A counselor. Your mom. Anybody. Promise?" Tess did not answer for a long time. Then she said, "I will think about it." Bree said, "If you do not, I am going to tell your mom. I know that is going to make you mad. I would rather have you mad and alive than not." Tess cried harder. The bus came. They sat together. Bree texted that night. Tess answered. The next week Tess told the school counselor. It was the first step of a very long road. (Resource: NEDA Helpline 1-800-931-2237.)'
+        middle: 'Bree had known Tess since fourth grade. In seventh grade, Tess started bringing salad. In eighth grade, Tess started skipping lunch entirely. Tess would say "I had a big breakfast" or "I am not hungry." Tess wore baggy hoodies all the time, even in May. She talked about her body in a tone that made Bree uneasy. One Wednesday, Tess almost fainted on the way to gym. The nurse called Tess\'s mom. Tess was furious at school. After school, Tess sat with Bree at the bus stop and said, "Why did the nurse have to make it a THING. I just did not sleep well." Bree took a deep breath. Bree said, "Tess. I am really worried about you." Tess\'s face hardened. "Do not." Bree said, "I am going to anyway because I love you. You used to eat with me every day. You stopped. I do not know what is going on but it does not feel like nothing." Tess started to cry quietly. She said, "I cannot talk about it." Bree said, "Okay. You do not have to talk to me. But please talk to somebody. Like, an actual somebody. A counselor. Your mom. Anybody. Promise?" Tess did not answer for a long time. Then she said, "I will think about it." Bree said, "If you do not, I am going to tell your mom. I know that is going to make you mad. I would rather have you mad and alive than not." Tess cried harder. The bus came. They sat together. Bree texted that night. Tess answered. The next week Tess told the school counselor. It was the first step of a very long road. (Resource: National Alliance for Eating Disorders Helpline 1-866-662-1235, or ANAD Helpline 1-888-375-7767.)'
       },
       emotionalArc: [
         { momentInStory: 'Lunches shrink', character: 'Bree', emotion: 'concerned and watching', bodyShows: 'noticing, not naming yet' },
@@ -15998,7 +15998,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { q: 'Why was Bree scared to say something?', focus: 'identify', expectedAnswer: 'She was afraid of being wrong, of being intrusive, of making Tess mad, of losing the friendship.' },
         { q: 'Bree said "I would rather have you mad and alive than not." What does that mean for friendship?', focus: 'perspective', expectedAnswer: 'Sometimes the loving move is not the comfortable one. Choosing a friend\'s safety over their approval is real love.' },
         { q: 'Why is it not enough for Bree to be the only person Tess talks to?', focus: 'empathy', expectedAnswer: 'Eating disorders need professional help. A friend can support but cannot be the treatment plan. Telling a trusted adult is necessary.' },
-        { q: 'What is the NEDA Helpline for, and why is it good to know it exists?', focus: 'reflection', expectedAnswer: '1-800-931-2237. It is for people with disordered eating or people who love them. Knowing it exists means you can act.' },
+        { q: 'What is an eating disorders helpline for, and why is it good to know one exists?', focus: 'reflection', expectedAnswer: 'The National Alliance for Eating Disorders Helpline is 1-866-662-1235 (weekdays). It is for people with disordered eating or people who love them. In a crisis, call or text 988. Knowing it exists means you can act.' },
         { q: 'If you noticed a friend showing these signs, what would your first step be?', focus: 'reflection', expectedAnswer: 'Personal answers. Affirm: speak to a trusted adult, do not try to fix alone.' }
       ],
       discussionStarters: [
@@ -16008,7 +16008,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         'How do diet culture messages affect how we feel in our bodies?'
       ],
       themesExplored: ['disordered eating', 'caring friend intervention', 'loving boundaries', 'professional help vs friend help', 'body image'],
-      contentWarnings: ['disordered eating', 'fainting', 'body image distress', 'resource: NEDA 1-800-931-2237'],
+      contentWarnings: ['disordered eating', 'fainting', 'body image distress', 'resource: Alliance for Eating Disorders 1-866-662-1235'],
       pairsWithVocab: ['concerned', 'terrified', 'defensive', 'loving', 'brave'],
       pairsWithScenarios: ['friend_eating_disorder']
     },
@@ -16251,7 +16251,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Jules', role: 'student whose family is in financial stress', emotionalState: 'private and tired', interiorThoughts: 'I do not want anyone\'s pity. I also really want to go on this trip.' }
       ],
       story: {
-        middle: 'The trip to the science museum had a fee. Most kids had paid the day the slip came home. A week after the deadline, Jules still had not paid. Jules said in the hallway, "I am not going anyway. Museums are boring." Maddox knew Jules. Jules loved museums. Maddox knew Jules\'s mom had lost her job in October. Maddox did not say anything in the hallway. After school Maddox walked Jules home. Halfway there Maddox said, "Hey, would it be weird if I asked you something kind of personal." Jules said, "Probably." Maddox said, "Did you not sign up for the trip because of the money?" Jules walked silently for half a block. Then Jules said, "Yeah." Maddox said, "Okay. I think there is a quiet thing where the school covers it. Mrs. Aroyo handles it. You go to her, you say the word \\u0027fee waiver,\\u0027 and that is it." Jules said, "How do you know?" Maddox said, "We used it last year." Jules looked at Maddox. Maddox said, "I do not think anybody knows. We do not really talk about it. But it is fine. People help each other. I would rather you go on the trip." Jules went to Mrs. Aroyo the next morning. Mrs. Aroyo did not make it a thing. The week after, on the bus to the museum, Jules sat next to Maddox. They did not talk about money. They never had to again. But the friendship felt different. Closer.'
+        middle: 'The trip to the science museum had a fee. Most kids had paid the day the slip came home. A week after the deadline, Jules still had not paid. Jules said in the hallway, "I am not going anyway. Museums are boring." Maddox knew Jules. Jules loved museums. Maddox knew Jules\'s mom had lost her job in October. Maddox did not say anything in the hallway. After school Maddox walked Jules home. Halfway there Maddox said, "Hey, would it be weird if I asked you something kind of personal." Jules said, "Probably." Maddox said, "Did you not sign up for the trip because of the money?" Jules walked silently for half a block. Then Jules said, "Yeah." Maddox said, "Okay. I think there is a quiet thing where the school covers it. Mrs. Aroyo handles it. You go to her, you say the word \u0027fee waiver,\u0027 and that is it." Jules said, "How do you know?" Maddox said, "We used it last year." Jules looked at Maddox. Maddox said, "I do not think anybody knows. We do not really talk about it. But it is fine. People help each other. I would rather you go on the trip." Jules went to Mrs. Aroyo the next morning. Mrs. Aroyo did not make it a thing. The week after, on the bus to the museum, Jules sat next to Maddox. They did not talk about money. They never had to again. But the friendship felt different. Closer.'
       },
       emotionalArc: [
         { momentInStory: 'Jules denies wanting to go', character: 'Jules', emotion: 'covering', bodyShows: 'forced casual voice, looking away' },
@@ -16266,7 +16266,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { q: 'Why did Maddox\'s "we used it last year" change everything?', focus: 'perspective', expectedAnswer: 'It said: I am not above you. We are in this. Sharing your own experience can be more powerful than sharing information.' },
         { q: 'Why did Mrs. Aroyo "not make it a thing"?', focus: 'empathy', expectedAnswer: 'Dignity. The kid does not need a ceremony around being helped. A quiet yes is sometimes the kindest yes.' },
         { q: 'Why did the friendship feel "closer" after?', focus: 'reflection', expectedAnswer: 'Real seeing happened. Both of them showed something true. That is what depth is.' },
-        { q: 'Why do schools have fee waivers? Why are they sometimes hard to ask for?', focus: 'reflection', expectedAnswer: 'They exist because cost should not block kids from learning. They are hard because shame is real. Naming the program by name (\\u0027fee waiver\\u0027) helps.' }
+        { q: 'Why do schools have fee waivers? Why are they sometimes hard to ask for?', focus: 'reflection', expectedAnswer: 'They exist because cost should not block kids from learning. They are hard because shame is real. Naming the program by name (\u0027fee waiver\u0027) helps.' }
       ],
       discussionStarters: [
         'Why is money one of the hardest things to talk about?',
@@ -16457,7 +16457,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { momentInStory: 'Next time, moving', character: 'Iris', emotion: 'small competence', bodyShows: 'standing up, walking, sitting next to target' }
       ],
       questions: [
-        { q: 'Why is freezing not a moral failure?', focus: 'identify', expectedAnswer: 'Freeze is one of four nervous system responses (fight, flight, freeze, fawn). It is automatic. The brain went into protection. Judgment about it should be about the body, not the soul.' },
+        { q: 'Why is freezing not a moral failure?', focus: 'identify', expectedAnswer: 'Freeze is one of the body\'s automatic threat responses (fight, flight, freeze; some therapists add "fawn"). It is automatic. The brain went into protection. Judgment about it should be about the body, not the soul.' },
         { q: 'Why is "do not engage the harasser, just be a wall next to the target" often safer than confrontation?', focus: 'perspective', expectedAnswer: 'It disrupts the dynamic without escalating. The target is no longer alone. The harasser loses the audience. Safety for both.' },
         { q: 'Why did practicing help?', focus: 'empathy', expectedAnswer: 'In a moment of stress, the body falls back on what it has done before. Practice gives the nervous system a path.' },
         { q: 'Have you ever frozen in a moment you wanted to act? What did you do with that after?', focus: 'reflection', expectedAnswer: 'Personal answers. Affirm: freeze is human. Preparation helps.' },
@@ -16560,7 +16560,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
         { name: 'Older sister (Hana)', role: 'in a controlling relationship', emotionalState: 'defending', interiorThoughts: 'He is just protective. He is going through a lot. Maren does not understand.' }
       ],
       story: {
-        high: 'Hana had been dating Tyler for eight months. At first he had been charming. Maren\'s family had liked him. Over the last three months, things had shifted. Hana had stopped wearing the clothes she used to wear. Hana checked her phone constantly because Tyler got upset if she did not reply. Hana had quit the soccer team because Tyler said it took her away from him. Hana had a small bruise on her arm that she explained as bumping into a door. Maren did not know what to do. Maren talked to her own friend whose mom was a social worker. The friend\'s mom said, "Do not try to break them up. That can backfire. Stay close. Do not criticize him. Make sure your sister knows you love her unconditionally. Share information about resources without pressure." That last part felt impossible to Maren until the friend\'s mom said, "Just text her the National Domestic Violence Hotline number sometime when she is having a hard moment. Say \\u0027in case you ever need it. No judgment.\\u0027 That is it." Maren did it three weeks later, after she heard Hana crying in her room after a fight with Tyler. Maren texted, "Hey. I love you. Whatever is going on, I am here. Also, this exists if you ever want it: 1-800-799-7233. Free, confidential, 24/7. No pressure, just sending." Hana did not answer. Two months later, Hana broke up with Tyler. She did it from a friend\'s house with her phone off. The breakup was hard. Tyler did the things controlling exes do. Maren stayed close. Hana told her later, "I saved that text. I almost called twice before I actually did." Years later they would talk about that text. Maren would say "I almost did not send it." Hana would say "I needed it."'
+        high: 'Hana had been dating Tyler for eight months. At first he had been charming. Maren\'s family had liked him. Over the last three months, things had shifted. Hana had stopped wearing the clothes she used to wear. Hana checked her phone constantly because Tyler got upset if she did not reply. Hana had quit the soccer team because Tyler said it took her away from him. Hana had a small bruise on her arm that she explained as bumping into a door. Maren did not know what to do. Maren talked to her own friend whose mom was a social worker. The friend\'s mom said, "Do not try to break them up. That can backfire. Stay close. Do not criticize him. Make sure your sister knows you love her unconditionally. Share information about resources without pressure." That last part felt impossible to Maren until the friend\'s mom said, "Just text her the National Domestic Violence Hotline number sometime when she is having a hard moment. Say \u0027in case you ever need it. No judgment.\u0027 That is it." Maren did it three weeks later, after she heard Hana crying in her room after a fight with Tyler. Maren texted, "Hey. I love you. Whatever is going on, I am here. Also, this exists if you ever want it: 1-800-799-7233. Free, confidential, 24/7. No pressure, just sending." Hana did not answer. Two months later, Hana broke up with Tyler. She did it from a friend\'s house with her phone off. The breakup was hard. Tyler did the things controlling exes do. Maren stayed close. Hana told her later, "I saved that text. I almost called twice before I actually did." Years later they would talk about that text. Maren would say "I almost did not send it." Hana would say "I needed it."'
       },
       emotionalArc: [
         { momentInStory: 'Slow noticing', character: 'Maren', emotion: 'worried', bodyShows: 'watching, not knowing yet' },
@@ -17456,7 +17456,7 @@ if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
       valence: 'negative',
       arousal: 'high',
       intensity: 4,
-      definition: { elementary: 'A \'I can\'t do that even if I want to\' tight feeling when someone tells you to do something.', middle: 'A nervous-system response to demands that can make even wanted tasks feel impossible. Common in some autistic profiles (PDA).', high: 'A nervous-system based aversion to direct demands, present in PDA (Pathological/Persistent Demand Avoidance) profiles of autism, where the demand itself, not the task, drives avoidance.' },
+      definition: { elementary: 'A \'I can\'t do that even if I want to\' tight feeling when someone tells you to do something.', middle: 'A nervous-system response to demands that can make even wanted tasks feel impossible. Sometimes called PDA, a proposed and debated autism profile.', high: 'A nervous-system based aversion to direct demands, described in PDA (Pathological/Persistent Demand Avoidance), a proposed and debated autism profile, where the demand itself, not the task, drives avoidance.' },
       bodyFeels: ['tight chest', 'tense throat', 'frozen body', 'racing thoughts'],
       examples: { elementary: ['I had demand avoidance discomfort when my mom said \'clean your room now\', even though I wanted to.', 'I had demand avoidance discomfort when the teacher said \'do this\' and I froze.'], middle: ['I had demand avoidance discomfort that made the homework I cared about feel impossible.', 'I had demand avoidance discomfort when the request felt like an order.'], high: ['Demand avoidance discomfort is not defiance; it is a nervous-system response that benefits from collaborative framing.', 'Demand avoidance discomfort responded better when the task was offered as a choice or a \'I wonder if\' instead of an instruction.'] },
       similar: ['PDA-response', 'authority-aversion'],
@@ -17973,7 +17973,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
       ],
       closingQuestion: 'Did writing through the anger lower the urge to act now?',
       variations: ['Unsent letter version', 'Voice memo version (vent out loud, do not send)', 'Worksheet with checkboxes'],
-      research: 'DBT emotion regulation (Linehan, 1993); anger as secondary emotion (Greenberg, 2002); NVC (Rosenberg).'
+      research: 'DBT emotion regulation (Linehan, 1993; skills manual 2015); anger as secondary emotion (Greenberg, 2002); NVC (Rosenberg).'
     },
     {
       id: 'jealousy_processing',
@@ -18671,9 +18671,9 @@ var EMOTION_JOURNAL_TEMPLATES = [
       // ══════════════════════════════════════════════════════════
       var heroBand = (function() {
         var TAB_META = {
-          wheel:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDF08', title: __alloT('sel.emotions.tab_wheel_title', 'Emotion Wheel \u2014 28 feelings, more precision'),     hint: __alloT('sel.emotions.tab_wheel_hint', 'Plutchik\u2019s 1980 wheel of 8 primaries; Robert Feldman\u2019s nuance map adds intermediates. Naming a feeling specifically (\u201Cresentful\u201D vs \u201Cmad\u201D) reduces amygdala reactivity \u2014 Lieberman 2007 fMRI \u201Caffect labeling.\u201D') },
-          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: __alloT('sel.emotions.tab_checkin_title', 'Check-In \u2014 daily 1-minute pulse'),                  hint: __alloT('sel.emotions.tab_checkin_hint', 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. RULER + Yale CSEI evidence base.') },
-          faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: __alloT('sel.emotions.tab_faces_title', 'Face Reader \u2014 Ekman\u2019s 7 universal emotions'),  hint: __alloT('sel.emotions.tab_faces_hint', 'Anger, fear, disgust, surprise, sadness, happiness, contempt. Paul Ekman 1971 cross-cultural studies showed these are read the same in remote tribes as in Manhattan. Micro-expressions last 1/15\u20131/25 of a second.') },
+          wheel:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDF08', title: __alloT('sel.emotions.tab_wheel_title', 'Emotion Wheel \u2014 28 feelings, more precision'),     hint: __alloT('sel.emotions.tab_wheel_hint', 'Plutchik\u2019s 1980 wheel of 8 primaries; later feelings wheels add intermediates. Naming a feeling specifically (\u201Cresentful\u201D vs \u201Cmad\u201D) was linked to lower amygdala activity in an fMRI study of \u201Caffect labeling\u201D (Lieberman 2007).') },
+          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: __alloT('sel.emotions.tab_checkin_title', 'Check-In \u2014 daily 1-minute pulse'),                  hint: __alloT('sel.emotions.tab_checkin_hint', 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. Draws on RULER, from the Yale Center for Emotional Intelligence.') },
+          faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: __alloT('sel.emotions.tab_faces_title', 'Face Reader \u2014 Ekman\u2019s 7 basic emotions'),  hint: __alloT('sel.emotions.tab_faces_hint', 'Anger, fear, disgust, surprise, sadness, happiness, and (added later) contempt. In a 1971 experiment by Ekman and Friesen, people in an isolated community in Papua New Guinea matched faces to six of these much as Americans did; later research found more cultural variation, so \u201Cuniversal\u201D is debated. Micro-expressions are brief flashes, roughly 1/25 to 1/5 of a second.') },
           scenarios: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAD', title: __alloT('sel.emotions.tab_scenarios_title', 'Scenarios \u2014 \u201CWhat would YOU feel?\u201D'),     hint: __alloT('sel.emotions.tab_scenarios_hint', 'Theory-of-mind practice. Predict + reason + check. The same triggering event lands very different on different people, depending on history + interpretation \u2014 a core CBT insight (Beck 1960s).') },
           detective:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83D\uDD0E', title: __alloT('sel.emotions.tab_detective_title', 'Emotion Detective \u2014 read the whole signal'), hint: __alloT('sel.emotions.tab_detective_hint', 'Practice family, intensity, blend, body cue, and next-step strategy. There is no single universal answer; the skill is noticing and checking.') },
           journal:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',   icon: '\uD83D\uDCD3', title: __alloT('sel.emotions.tab_journal_title', 'Journal \u2014 expressive writing as research'),         hint: __alloT('sel.emotions.tab_journal_hint', 'Pennebaker\u2019s 1986 expressive-writing studies: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism appears to be turning chaos into narrative.') },
@@ -18684,9 +18684,9 @@ var EMOTION_JOURNAL_TEMPLATES = [
           micro:          { accent: '#f43f5e', soft: 'rgba(244,63,94,0.14)',   icon: '\uD83D\uDD0D', title: __alloT('sel.emotions.tab_micro_title', 'Microexpression Spotter \u2014 read the face'),          hint: __alloT('sel.emotions.tab_micro_hint', 'Read the face description and guess the emotion. Microexpressions reveal feelings \u2014 not lies. Be gentle: facial expressions do not always match internal experience for autistic, alexithymic, or trauma-affected people.') },
           empathy_mirror: { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.14)',  icon: '\uD83E\uDEDE', title: __alloT('sel.emotions.tab_empathy_mirror_title', 'Empathy Mirror \u2014 predict the character arc'),       hint: __alloT('sel.emotions.tab_empathy_mirror_hint', 'Read a multi-character story, predict what the character is feeling, then reveal the full emotional arc. Theory-of-mind practice (Premack & Woodruff, 1978) builds the neural machinery used in real empathic moments.') },
           nameit:         { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\u2728',         title: __alloT('sel.emotions.tab_nameit_title', 'Name It to Tame It \u2014 guided naming practice'),      hint: __alloT('sel.emotions.tab_nameit_hint', 'Naming an emotion shrinks it. Lieberman et al. 2007 fMRI: affect labeling reduces amygdala activation. Multi-step guided prompts for when you cannot quite find the word.') },
-          bodymap:        { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: __alloT('sel.emotions.tab_bodymap_title', 'Body Map \u2014 where emotions live in the body'),       hint: __alloT('sel.emotions.tab_bodymap_hint', 'Nummenmaa et al. (2014) PNAS mapped where 14 emotions are felt in the body across cultures. Pick an emotion to see the heat map; click any region for what tends to show up there and how to ground via the body.') },
+          bodymap:        { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',   icon: '\uD83E\uDEC0', title: __alloT('sel.emotions.tab_bodymap_title', 'Body Map \u2014 where emotions live in the body'),       hint: __alloT('sel.emotions.tab_bodymap_hint', 'Nummenmaa et al. (2014) PNAS mapped where 13 emotions are felt in the body, in European and East Asian samples. Pick an emotion to see the heat map; click any region for what tends to show up there and how to ground via the body.') },
           weather:        { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',   icon: '\uD83C\uDF26\uFE0F', title: __alloT('sel.emotions.tab_weather_title', 'Emotion Weather \u2014 they come, intensify, and pass'),  hint: __alloT('sel.emotions.tab_weather_hint', 'Sun, rain, thunderstorm, fog, snow. Emotions move through us like weather: none of them is permanent, and trying to stop weather does not work. The metaphor helps you let feelings move without fighting them.') },
-          iceberg:        { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDDCA', title: __alloT('sel.emotions.tab_iceberg_title', 'Emotion Iceberg \u2014 what is under the visible feeling'), hint: __alloT('sel.emotions.tab_iceberg_hint', 'Anger often covers hurt. People-pleasing often covers fear of rejection. The visible 10% above the waterline is usually protecting a much larger 90% below. Click hidden emotions to reveal what they might be saying.') },
+          iceberg:        { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDDCA', title: __alloT('sel.emotions.tab_iceberg_title', 'Emotion Iceberg \u2014 what is under the visible feeling'), hint: __alloT('sel.emotions.tab_iceberg_hint', 'Anger often covers hurt. People-pleasing often covers fear of rejection. What shows above the waterline is usually protecting much more underneath. Click hidden emotions to reveal what they might be saying.') },
           volcano:        { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',   icon: '\uD83C\uDF0B', title: __alloT('sel.emotions.tab_volcano_title', 'Anger Volcano \u2014 stage-by-stage map'),                hint: __alloT('sel.emotions.tab_volcano_hint', 'Anger builds in stages \u2014 annoyance, frustration, anger, about-to-erupt, erupted. Spotting which stage you are in BEFORE the eruption is the regulation skill. Slide to see body cues, thought cues, and what to do at each stage.') },
           vocab:          { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCDA', title: __alloT('sel.emotions.tab_vocab_title', 'Vocabulary Explorer \u2014 200+ emotion words'),         hint: __alloT('sel.emotions.tab_vocab_hint', 'Filter by family, valence, and arousal. Includes body sensations, common triggers, opposites, similar words, and coping hints. Includes neurodivergent-validated entries (meltdown, shutdown, RSD, alexithymia placeholder) and somatic-first labels.') },
           atlas:          { accent: '#84cc16', soft: 'rgba(132,204,22,0.14)',  icon: '\uD83C\uDF0D', title: __alloT('sel.emotions.tab_atlas_title', 'Cultural Atlas \u2014 untranslatable emotion words'),    hint: __alloT('sel.emotions.tab_atlas_hint', '49 emotion words from world cultures with no English equivalent. Saudade (Portuguese), Hygge (Danish), Yugen (Japanese), Mudita (Sanskrit), Hozho (Din\u00E9). Inspired by Tim Lomas positive lexicography.') },
@@ -18695,7 +18695,7 @@ var EMOTION_JOURNAL_TEMPLATES = [
           validation:     { accent: '#5eead4', soft: 'rgba(94,234,212,0.14)',  icon: '\uD83D\uDCAC', title: __alloT('sel.emotions.tab_validation_title', 'Validation Phrases \u2014 what to say (and not)'),       hint: __alloT('sel.emotions.tab_validation_hint', '112 scripted validation phrases for 14 emotional states. Validation = I see you, you make sense, you are not alone. Each entry includes what NOT to say (no toxic positivity).') },
           coreg:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDD1D', title: __alloT('sel.emotions.tab_coreg_title', 'Help a Friend \u2014 coregulation guides'),               hint: __alloT('sel.emotions.tab_coreg_hint', '30 scenarios for helping someone whose nervous system is overwhelmed \u2014 friend panic attack, sibling meltdown, friend grief, online friend in crisis. Includes what NOT to do (commonly backfires) and specific scripts.') },
           arc:            { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',   icon: '\uD83D\uDCC8', title: __alloT('sel.emotions.tab_arc_title', 'Mood Arc \u2014 your last 14 check-ins as a chart'),     hint: __alloT('sel.emotions.tab_arc_hint', 'Line chart of recent check-ins, dot color = emotion family, height = intensity. Patterns to look for: days of week, before vs after sleep, around tests or social events. Bring this to a counselor or trusted adult.') },
-          color:          { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83C\uDFA8', title: __alloT('sel.emotions.tab_color_title', 'Color & Mood Tuner \u2014 pick a color for your feeling'), hint: __alloT('sel.emotions.tab_color_hint', 'Adams & Osgood (1973) and Palmer & Schloss (2010) found color-emotion associations are remarkably consistent across cultures. Drag hue, saturation, and lightness to see how the emotional read shifts. Your color for YOUR feeling is more accurate than any wheel.') }
+          color:          { accent: '#f472b6', soft: 'rgba(244,114,182,0.14)', icon: '\uD83C\uDFA8', title: __alloT('sel.emotions.tab_color_title', 'Color & Mood Tuner \u2014 pick a color for your feeling'), hint: __alloT('sel.emotions.tab_color_hint', 'Adams & Osgood (1973) and Jonauskaite et al. (2020) found many color-emotion associations are shared across cultures, with real local differences. Drag hue, saturation, and lightness to see how the emotional read shifts. Your color for YOUR feeling is more accurate than any wheel.') }
         };
         var meta = TAB_META[activeTab] || TAB_META.wheel;
         return h('div', {
@@ -19554,6 +19554,10 @@ var EMOTION_JOURNAL_TEMPLATES = [
                     bodyLangRevealed !== 'correct' && h('p', { style: { fontSize: 13, color: P.textMuted } },
                       __alloT('sel.emotions.bodylang_answer_was', 'The answer was: %s')
                         .replace('%s', _emoWord(blChallenge.emotion))
+                    ),
+                    // Teach on every answer: which clues point to the feeling, and what else they could mean.
+                    blChallenge.why && h('p', { role: 'status', style: { fontSize: 13, color: P.text, marginTop: 8, lineHeight: 1.55, textAlign: 'left' } },
+                      __alloT(blChallenge._k + '_why', blChallenge.why)
                     )
                   ),
                   h('button', { type: 'button', 'aria-label': 'Next Clue',
@@ -19574,11 +19578,11 @@ var EMOTION_JOURNAL_TEMPLATES = [
         var scenModeToggle = h('div', { style: { display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 16 } },
           h('button', { type: 'button', 'aria-label': 'What Would I Feel?',
             onClick: function() { upd('scenarioMode', 'self'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: scenarioMode === 'self' ? '#3b82f6' : P.card, color: scenarioMode === 'self' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '8px 0 0 8px', border: ('1px solid ' + P.border), background: scenarioMode === 'self' ? '#1d4ed8' : P.card, color: scenarioMode === 'self' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83C\uDFAD What Would I Feel?'),
           h('button', { type: 'button', 'aria-label': 'What Do They Feel?',
             onClick: function() { upd('scenarioMode', 'empathy'); if (soundEnabled) sfxClick(); },
-            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: ('1px solid ' + P.border), background: scenarioMode === 'empathy' ? '#ec4899' : P.card, color: scenarioMode === 'empathy' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
+            style: { padding: '6px 18px', borderRadius: '0 8px 8px 0', border: ('1px solid ' + P.border), background: scenarioMode === 'empathy' ? '#be185d' : P.card, color: scenarioMode === 'empathy' ? '#fff' : P.textMuted, fontWeight: 600, fontSize: 12, cursor: 'pointer' }
           }, '\uD83E\uDD1D What Do They Feel?')
         );
 
@@ -21055,7 +21059,7 @@ if (activeTab === 'iceberg') {
     h('div', { style: { padding: 12, borderRadius: 10, background: P.card, marginBottom: 12 } },
       h('p', { style: { margin: 0, color: P.text2, fontSize: 13, lineHeight: 1.55 } },
         h('strong', { style: { color: ST('#fbbf24') } }, 'Emotion Iceberg: '),
-        'What we show on the outside is often only 10% of what we\'re feeling. The rest sits below the waterline — protected by the visible emotion. Click an iceberg-top emotion to see what often lives beneath it. Then click each hidden emotion to reveal what it might be saying.'
+        'What we show on the outside is often only a small part of what we\'re feeling. The rest sits below the waterline \u2014 protected by the visible emotion. Click an iceberg-top emotion to see what often lives beneath it. Then click each hidden emotion to reveal what it might be saying.'
       )
     ),
     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
@@ -21118,7 +21122,7 @@ if (activeTab === 'volcano') {
     { range: [0, 1], color: '#22c55e', label: __alloT('sel.emotions.volcano_calm_label', 'Calm'),           bodyCue: __alloT('sel.emotions.volcano_calm_bodyCue', 'Easy breathing, soft jaw'),                     thoughtCue: __alloT('sel.emotions.volcano_calm_thoughtCue', 'I\'m okay. Things are fine.'),                          actionCue: __alloT('sel.emotions.volcano_calm_actionCue', 'Normal activities. No action needed.') },
     { range: [2, 3], color: '#86efac', label: __alloT('sel.emotions.volcano_a_little_bothered_label', 'A little bothered'), bodyCue: __alloT('sel.emotions.volcano_a_little_bothered_bodyCue', 'Slight tension in jaw or shoulders'),         thoughtCue: __alloT('sel.emotions.volcano_a_little_bothered_thoughtCue', 'Hmm, that wasn\'t great. Moving on.'),                  actionCue: __alloT('sel.emotions.volcano_a_little_bothered_actionCue', 'Take a breath. Maybe name it: "I felt annoyed there."') },
     { range: [4, 5], color: '#fde047', label: __alloT('sel.emotions.volcano_frustrated_label', 'Frustrated'),     bodyCue: __alloT('sel.emotions.volcano_frustrated_bodyCue', 'Tight chest, faster heart, jaw clenched'),     thoughtCue: __alloT('sel.emotions.volcano_frustrated_thoughtCue', 'This is unfair. Why is this happening?'),               actionCue: __alloT('sel.emotions.volcano_frustrated_actionCue', 'PAUSE. Walk away for 5 minutes. Box breathe.') },
-    { range: [6, 7], color: '#fb923c', label: __alloT('sel.emotions.volcano_angry_label', 'Angry'),           bodyCue: __alloT('sel.emotions.volcano_angry_bodyCue', 'Heat in face, fists clenched, shaky'),          thoughtCue: __alloT('sel.emotions.volcano_angry_thoughtCue', 'I want to yell / hit / break something.'),              actionCue: __alloT('sel.emotions.volcano_angry_actionCue', 'CRITICAL pause. Remove yourself. Cold water. Physical discharge that\'s safe (run, punch pillow, scream into pillow).') },
+    { range: [6, 7], color: '#fb923c', label: __alloT('sel.emotions.volcano_angry_label', 'Angry'),           bodyCue: __alloT('sel.emotions.volcano_angry_bodyCue', 'Heat in face, fists clenched, shaky'),          thoughtCue: __alloT('sel.emotions.volcano_angry_thoughtCue', 'I want to yell / hit / break something.'),              actionCue: __alloT('sel.emotions.volcano_angry_actionCue', 'CRITICAL pause. Remove yourself. Cold water. Move safely (walk fast, push a wall), then breathe out slowly.') },
     { range: [8, 9], color: '#ef4444', label: __alloT('sel.emotions.volcano_about_to_erupt_label', 'About to erupt'),  bodyCue: __alloT('sel.emotions.volcano_about_to_erupt_bodyCue', 'Vision tunneling, breath shallow, body shaking'),thoughtCue: __alloT('sel.emotions.volcano_about_to_erupt_thoughtCue', 'I\'m going to say or do something I\'ll regret.'),     actionCue: __alloT('sel.emotions.volcano_about_to_erupt_actionCue', 'EVACUATE the situation. Find a safe space. Call a person you trust. The eruption protects you from regret.') },
     { range: [10, 10], color: '#7f1d1d', label: __alloT('sel.emotions.volcano_erupted_label', 'Erupted'),       bodyCue: __alloT('sel.emotions.volcano_erupted_bodyCue', 'Body in full fight response'),                  thoughtCue: __alloT('sel.emotions.volcano_erupted_thoughtCue', 'No longer choosing — reacting from primal brain.'),     actionCue: __alloT('sel.emotions.volcano_erupted_actionCue', 'AFTER: rest. Hydrate. Apologize ONLY when calm. Reflect: what was the early warning sign I missed?') }
   ];
@@ -21174,7 +21178,7 @@ if (activeTab === 'volcano') {
         onChange: function(e) { upd({ vcLevel: parseInt(e.target.value, 10) }); },
         style: { width: '100%' }
       }),
-      h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#64748b', marginTop: 4 } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: P.textMuted, marginTop: 4 } },
         h('span', null, 'Calm'),
         h('span', null, 'Erupted')
       )
@@ -22122,7 +22126,7 @@ if (activeTab === 'color') {
   // Emotion-color associations (Palmer/Schloss + cross-cultural studies)
   // Each entry: hue range, name, why
   var COLOR_EMOTIONS = [
-    { hMin:   0, hMax:  15, names: ['anger','passion','urgency'], reason: __alloT('sel.emotions.color_red_activates_the_sympathetic_nerv_reason', 'Red activates the sympathetic nervous system; saturated red signals threat and arousal in nearly every studied culture.') },
+    { hMin:   0, hMax:  15, names: ['anger','passion','urgency'], reason: __alloT('sel.emotions.color_red_activates_the_sympathetic_nerv_reason', 'Red is often linked with strong feelings such as anger and love, though its meaning changes across cultures (in China it also means luck and celebration).') },
     { hMin:  15, hMax:  35, names: ['warmth','excitement','optimism'], reason: __alloT('sel.emotions.color_orange_combines_red_s_activation_w_reason', 'Orange combines red\'s activation with yellow\'s glow — culturally associated with energy and play.') },
     { hMin:  35, hMax:  60, names: ['happiness','cheer','optimism','anxiety (at high saturation)'], reason: __alloT('sel.emotions.color_yellow_correlates_with_happiness_i_reason', 'Yellow correlates with happiness in most cultures, but very high-saturation yellow can read as anxious or unstable (caution signs use it for a reason).') },
     { hMin:  60, hMax: 120, names: ['calm','nature','renewal','envy (in specific contexts)'], reason: __alloT('sel.emotions.color_green_correlates_with_restoration__reason', 'Green correlates with restoration, growth, balance — and (idiomatically in English) jealousy/envy.') },

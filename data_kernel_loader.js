@@ -10,7 +10,7 @@
  */
 (function () {
   'use strict';
-  if (typeof window === 'undefined' || window.AlloDataKernel) return;
+  if (typeof window !== 'object' || !window || window.AlloDataKernel) return;
 
   var VERSION = '1.2.0';
   var TABLE_NAME = 'data';
@@ -20,9 +20,17 @@
   var runtimePromise = null;
   var runtimeInfo = { state: 'idle', backend: 'pending', version: VERSION, error: null };
 
-  function own(obj, key) { return Object.prototype.hasOwnProperty.call(obj, key); }
+  function safeStr(value) {
+    if (value == null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'symbol') return '';
+    try { return String(value); } catch (_) { return ''; }
+  }
+  function isDateObject(value) {
+    return Object.prototype.toString.call(value) === '[object Date]';
+  }
   function stripCtl(value) {
-    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return safeStr(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
   }
 
   function resolveAssetBase() {
@@ -62,7 +70,7 @@
       var out = {};
       keys.forEach(function (key, index) {
         var value = Object.prototype.hasOwnProperty.call(row, key) ? row[key] : null;
-        if (value instanceof Date) value = value.toISOString();
+        if (isDateObject(value)) value = isFinite(value.getTime()) ? value.toISOString() : null;
         if (typeof value === 'bigint') value = Number(value);
         out[columns[index]] = value == null ? null : value;
       });
@@ -81,7 +89,7 @@
 
   function csvCell(value) {
     if (value == null) return '';
-    var text = String(value);
+    var text = safeStr(value);
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   }
 
@@ -212,13 +220,15 @@
         });
       } finally { wasmAsset.revoke(); }
     }).catch(function (error) {
-      if (worker) worker.terminate();
-      if (workerAsset) workerAsset.revoke();
-      if (wasmAsset) wasmAsset.revoke();
-      if (typeof window.__alloDisposeVerifiedRuntime === 'function') window.__alloDisposeVerifiedRuntime('duckdb');
+      if (worker) { try { worker.terminate(); } catch (_) {} }
+      if (workerAsset) { try { workerAsset.revoke(); } catch (_) {} }
+      if (wasmAsset) { try { wasmAsset.revoke(); } catch (_) {} }
+      if (typeof window.__alloDisposeVerifiedRuntime === 'function') {
+        try { window.__alloDisposeVerifiedRuntime('duckdb'); } catch (_) {}
+      }
       runtimeInfo.state = 'fallback';
       runtimeInfo.backend = 'fallback';
-      runtimeInfo.error = String(error && error.message || error || 'DuckDB-Wasm unavailable');
+      runtimeInfo.error = safeStr(error && error.message || error || 'DuckDB-Wasm unavailable');
       if (runtimePromise === pending) runtimePromise = null;
       return null;
     });
@@ -229,19 +239,23 @@
   var workspaceSeq = 0;
 
   function safeQuery(sql) {
-    var text = stripCtl(sql == null ? '' : sql).trim().replace(/;+\s*$/, '');
+    var text = String(sql == null ? '' : sql).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().replace(/;+\s*$/, '');
     if (!text) throw new Error('Enter a query first.');
     if (text.length > 5000) throw new Error('Query is limited to 5,000 characters.');
+    // Reject DuckDB escape-string syntax (e'...') which creates a quote-parsing differential
+    if (/(?:^|[^A-Za-z0-9_])e'/i.test(text)) {
+      throw new Error('This workspace only permits queries against the local data table.');
+    }
     var stripped = text.replace(/'(?:''|[^'])*'/g, "''");
     if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped) || /\$[A-Za-z0-9_]*\$/.test(stripped)) {
       throw new Error('Multiple SQL statements or SQL comments are not allowed.');
     }
-    if (!/^(select|with|describe|summarize|show)\b/i.test(text)) throw new Error('Only read-only SELECT/WITH/DESCRIBE/SUMMARIZE/SHOW queries are allowed.');
-    // Block direct file-path table-function shorthand (e.g. FROM 'file.csv', FROM ['file.csv'], FROM data, 'file.csv')
-    if (/(?:\b(?:from|join)\s*(?:[\[(]\s*)?|,\s*)''/i.test(stripped)) {
+    if (!/^(select|with|describe|summarize|show)\b/i.test(stripped)) throw new Error('Only read-only SELECT/WITH/DESCRIBE/SUMMARIZE/SHOW queries are allowed.');
+    // Block direct file-path table-function shorthand (e.g. FROM 'file.csv', FROM (('file.csv')), FROM ['file.csv'], FROM data, LATERAL ('file.csv'))
+    if (/(?:\b(?:from|join|lateral)\s*(?:[\[(]+\s*)*|,\s*(?:lateral\s*)?(?:[\[(]+\s*)*)''/i.test(stripped)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
-    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?|s3|gs|hf|file|ftp|read_[a-z0-9_]*|[a-z0-9_]*_scan|parquet_[a-z0-9_]*|sniff_csv|st_read|sqlite_attach|from_substrait|from_substrait_json|duckdb_[a-z0-9_]*|which_secret|current_setting|getenv|load_aws_credentials|query_table|glob)\b)/i.test(text)) {
+    if (/(\b(alter|attach|[a-z0-9_]*_attach|call|checkpoint|copy|create|deallocate|delete|detach|drop|execute|export|generate_series|glob|import|information_schema|install|insert|load|load_aws_credentials|merge|parquet_[a-z0-9_]*|pg_catalog|pg_tables|pivot|pragma|pragma_[a-z0-9_]*|prepare|query|query_table|range|read_[a-z0-9_]*|repeat_row|replace|reset|set|sniff_csv|sqlite_attach|sqlite_master|sqlite_temp_master|st_read|truncate|unpivot|update|use|vacuum|from_substrait|from_substrait_json|duckdb_[a-z0-9_]*|which_secret|current_setting|getenv|[a-z0-9_]*_scan)\b)/i.test(stripped)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
     if (/\b(http[s]?|s3|gs|hf|file|ftp):\/\//i.test(text)) {
@@ -253,7 +267,7 @@
   function safeResultValue(value, depth, seen) {
     var d = depth || 0;
     if (typeof value === 'bigint') return value <= BigInt(Number.MAX_SAFE_INTEGER) && value >= BigInt(Number.MIN_SAFE_INTEGER) ? Number(value) : String(value);
-    if (value instanceof Date) return value.toISOString();
+    if (isDateObject(value)) return isFinite(value.getTime()) ? value.toISOString() : null;
     if (d > MAX_RESULT_DEPTH) return null;
     if (value && typeof value === 'object') {
       var visited = seen || new Set();
@@ -322,13 +336,18 @@
             });
           },
           close: function () {
-            return Promise.resolve(connection && connection.close()).finally(function () {
+            var dropTable = connection && typeof connection.query === 'function'
+              ? Promise.resolve(connection.query('DROP TABLE IF EXISTS "' + TABLE_NAME + '"')).catch(function () {})
+              : Promise.resolve();
+            return dropTable.then(function () {
+              return connection && connection.close();
+            }).finally(function () {
               return runtime.db.dropFile(fileName);
             });
           }
         };
       }).catch(function (error) {
-        if (connection) { try { connection.close(); } catch (_) {} }
+        if (connection) { try { Promise.resolve(connection.close()).catch(function () {}); } catch (_) {} }
         Promise.resolve(runtime.db.dropFile(fileName)).catch(function () {});
         throw error;
       });
@@ -351,12 +370,18 @@
 
   var QUERY_HISTORY_KEY = 'alloflow_data_kernel_query_history_v1';
   var QUERY_HISTORY_LIMIT = 50;
+  function cleanCount(val) {
+    if (typeof val === 'number') return isFinite(val) && val >= 0 ? Math.floor(val) : null;
+    if (typeof val === 'string' && val.trim() !== '') {
+      var parsed = Number(val);
+      return isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : null;
+    }
+    return null;
+  }
   function cleanHistoryEntry(entry) {
     entry = entry && typeof entry === 'object' ? entry : {};
-    var timestamp = Number(entry.timestamp);
+    var timestamp = typeof entry.timestamp === 'number' ? entry.timestamp : Number(entry.timestamp);
     if (!isFinite(timestamp) || timestamp <= 0) timestamp = Date.now();
-    var sourceRowCount = Number(entry.sourceRowCount);
-    var rowCount = Number(entry.rowCount);
     return {
       id: stripCtl(entry.id || ('query_' + timestamp + '_' + Math.random().toString(36).slice(2, 8))).slice(0, 120),
       timestamp: timestamp,
@@ -364,8 +389,8 @@
       recipe: entry.recipe ? stripCtl(entry.recipe).slice(0, 160) : null,
       sql: stripCtl(entry.sql || '').trim().slice(0, 5000),
       backend: stripCtl(entry.backend || 'local').slice(0, 40),
-      rowCount: isFinite(rowCount) ? rowCount : null,
-      sourceRowCount: isFinite(sourceRowCount) ? sourceRowCount : null,
+      rowCount: cleanCount(entry.rowCount),
+      sourceRowCount: cleanCount(entry.sourceRowCount),
       columns: Array.isArray(entry.columns) ? entry.columns.slice(0, 50).map(function (column) { return stripCtl(column).slice(0, 120); }) : []
     };
   }

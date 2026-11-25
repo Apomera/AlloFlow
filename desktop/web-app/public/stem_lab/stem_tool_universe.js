@@ -78,6 +78,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       mst.textContent = '@keyframes uniHrBeadPulse{0%,100%{opacity:.42;transform:scale(1)}50%{opacity:.95;transform:scale(1.45)}}[data-universe-tool] .uni-hr-comet-bead{transform-box:fill-box;transform-origin:center;animation:uniHrBeadPulse 2.6s ease-in-out infinite}@media (prefers-reduced-motion:reduce){[data-universe-tool] .uni-hr-comet-bead{animation:none!important;opacity:.75}}';
       document.head.appendChild(mst);
     }
+    if (!document.getElementById('allo-universe-a11y-css')) {
+      var ast = document.createElement('style');
+      ast.id = 'allo-universe-a11y-css';
+      ast.textContent = '[data-stem-tool-shell="universe"] :is(button,input,select,summary){touch-action:manipulation}@media (forced-colors:active){[data-stem-tool-shell="universe"] :is(button,input,select,summary,[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(ast);
+    }
   })();
 
   function universeHighContrast() {
@@ -564,6 +570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     props.React.useEffect(function(){if(body.current)body.current.scrollTop=0;},[props.section]);
     function button(text,action,extra){return h('button',Object.assign({type:'button',onClick:action},extra||{}),text);}
     function tabKey(event,index) {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
       var next=event.key==='ArrowRight'?(index+1)%sections.length:event.key==='ArrowLeft'?(index+sections.length-1)%sections.length:event.key==='Home'?0:event.key==='End'?sections.length-1:null;
       if(next===null)return;
       event.preventDefault();var tab=document.getElementById('uf-inview-tab-'+sections[next][0]);if(tab)tab.focus({preventScroll:true});
@@ -1956,6 +1963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
     var streakIntensity=paceNow>0?Math.max(0,Math.min(1,(Math.log(paceNow/limits[0])/Math.log(limits[1]/limits[0])-0.12)/0.88)):0;
     var streaksActive=ready&&running&&mode==='explore'&&['orbit','glide','flyby'].indexOf(motionNow.kind)===-1&&streakIntensity>0.02;
     var journeyActions={onContinue:toggleFlybyPlayback,onDetour:beginFlybyDetour,onDismiss:dismissJourney,onFaceCenter:faceJourneyCenter,onReset:resetJourney,onInspect:inspectJourney,onOrbit:orbitJourney,onSave:function(){openJourneySection('compose','uf-inview-view-name');},onExplore:function(){openJourneySection('explore');}};
+    var waveLabel = wavelength + ' nm';
     return h('section',{id:'universe-flight',className:'uni-flight','aria-labelledby':'universe-flight-title'},
       h('style',null,UNIVERSE_FLIGHT_CSS),
       h('div',{className:'uf-intro'},
@@ -2196,7 +2204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               h('div',{className:'uf-scale-ends'},h('span',null,label('zoom_in','Zoom in')),h('span',null,label('wide_angle','Wide angle'))),
               h('p',{className:'uf-note'},label('lens_help','Pinch the 3D view or hold Shift while scrolling to zoom. With the view focused, +/− zoom and 0 resets to 65°. A narrower field of view gives finer drag and arrow-key control. Zoom changes the lens while keeping your position.')),
               h('label',{htmlFor:'uf-exposure'},label('exposure','Display exposure')+' · '+number(exposure)+'×'),
-              h('input',{id:'uf-exposure',type:'range',min:0.3,max:2,step:0.05,value:exposure,onChange:function(e){setExposure(Number(e.target.value));}}),
+              h('input',{id:'uf-exposure',type:'range',min:0.3,max:2,step:0.05,value:exposure,'aria-valuetext':number(exposure)+'×',onChange:function(e){setExposure(Number(e.target.value));}}),
               flightRegion==='neighborhood'&&h(UniverseFlightDustControls,{React:React,label:label,prefix:'uf',ready:ready,dust:dust,onDust:chooseDust}),
               h('label',{htmlFor:'uf-quality'},label('quality','Rendering quality')),
               h('select',{id:'uf-quality',value:quality,onChange:function(e){setQuality(e.target.value);}},h('option',{value:'auto'},label('quality_auto','Balanced')),h('option',{value:'low'},label('quality_low','Lower resolution')),h('option',{value:'high'},label('quality_high','Sharper view'))),
@@ -2209,8 +2217,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           spectrum&&h('div',{id:'uf-spectrometer',className:'uf-spectrometer'},
             h('div',null,h('h4',null,label('spectrum_title','Light at the center of your view')),
               h('p',null,label('spectrum_help','Imagine a stationary source at the center of your view emitting a narrow spectral line. Turn the view to see how that line would shift.')),
-              h('label',{htmlFor:'uf-emission'},label('emission','Emitted wavelength')+' · '+wavelength+' nm'),
-              h('input',{id:'uf-emission',type:'range',min:380,max:780,step:1,value:wavelength,onChange:function(e){setWavelength(Number(e.target.value));}}),
+              h('label',{htmlFor:'uf-emission'},label('emission','Emitted wavelength')+' · '+waveLabel),
+              h('input',{id:'uf-emission',type:'range',min:380,max:780,step:1,value:wavelength,'aria-valuetext':waveLabel,onChange:function(e){setWavelength(Number(e.target.value));}}),
               h('div',{className:'uf-spectrum-band','aria-hidden':'true'},spectrum.observedNm>=380&&spectrum.observedNm<=780&&h('i',{style:{left:((spectrum.observedNm-380)/400*100)+'%'}})),
               h('div',{className:'uf-scale-ends'},h('span',null,'380 nm · violet'),h('span',null,'780 nm · red'))),
             h('div',null,h('dl',{className:'uf-target-readouts'},
@@ -2960,6 +2968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
         (startRef.current || dialog).focus();
       };
       var onKeyDown = function(event) {
+        if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           dismissHandlerRef.current();
@@ -3067,7 +3076,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   var universeGalaxyTextures = [];
   function universeGalaxyTexture(variant) {
     if (universeGalaxyTextures[variant]) return universeGalaxyTextures[variant];
-    var canvas = document.createElement('canvas'); canvas.width = canvas.height = 160;
+    var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); canvas.width = canvas.height = 160;
     var brush = canvas.getContext('2d'), pixels = brush.createImageData(160, 160);
     for (var y = 0; y < 160; y++) for (var x = 0; x < 160; x++) {
       var px = (x - 79.5) / 72, py = (y - 79.5) / 72;
@@ -3088,6 +3097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   function universeCloudTexture(kind) {
     if (universeCloudTextures[kind]) return universeCloudTextures[kind];
     var canvas = document.createElement('canvas'), field = kind < 2;
+    canvas.setAttribute('aria-hidden', 'true');
     canvas.width = field ? 256 : 192; canvas.height = field ? 128 : 192;
     var brush = canvas.getContext('2d'), pixels = brush.createImageData(canvas.width, canvas.height), seed = 1031 + kind * 137;
     function hash(x, y) {
@@ -3142,7 +3152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   var universeDustDisk = null;
   function universeDustDiskTexture() {
     if (universeDustDisk) return universeDustDisk;
-    var canvas = document.createElement('canvas'); canvas.width = canvas.height = 256;
+    var canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'true'); canvas.width = canvas.height = 256;
     var brush = canvas.getContext('2d'), pixels = brush.createImageData(256, 256);
     for (var y = 0; y < 256; y++) for (var x = 0; x < 256; x++) {
       var u = (x - 127.5) / 123, v = (y - 127.5) / 123, r = Math.hypot(u, v), angle = Math.atan2(v, u);
@@ -9296,7 +9306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               React.createElement("div", { className: "uni-brand-row relative flex flex-wrap items-center gap-3" },
 
-                React.createElement("button", { onClick: function () { if (window._universeCleanupAll) window._universeCleanupAll(); setStemLabTool(null); }, className: "uni-back-button transition-colors p-1.5 rounded-lg", style: { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(226,232,240,0.16)' }, 'aria-label': __alloT('stem.universe.a11y_back_to_tools', 'Back to tools') }, universeIcon("back",20)),
+                React.createElement("button", { type: "button", onClick: function () { if (window._universeCleanupAll) window._universeCleanupAll(); setStemLabTool(null); }, className: "uni-back-button transition-colors p-1.5 rounded-lg", style: { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(226,232,240,0.16)' }, 'aria-label': __alloT('stem.universe.a11y_back_to_tools', 'Back to tools') }, universeIcon("back",20)),
 
                 h("div",{className:"uni-brand-mark","aria-hidden":"true"},
                   h("svg",{width:32,height:32,viewBox:"0 0 44 44","aria-hidden":"true"},
@@ -9450,7 +9460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   React.createElement("span", { className: "text-[0.6875rem] text-violet-500 font-bold" }, "Speed"),
 
-                  React.createElement("input", { type: "range", "data-universe-speed": "true", min: 0.5, max: 5, step: 0.5, value: speed, 'aria-label': __alloT('stem.universe.a11y_simulation_speed', 'Simulation speed'), onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-20 h-6 accent-violet-400" }),
+                  React.createElement("input", { type: "range", "data-universe-speed": "true", min: 0.5, max: 5, step: 0.5, value: speed, 'aria-label': __alloT('stem.universe.a11y_simulation_speed', 'Simulation speed'), 'aria-valuetext': speed + 'x', onChange: function (e) { upd("speed", parseFloat(e.target.value)); }, className: "w-20 h-6 accent-violet-400" }),
 
                   React.createElement("span", { className: "text-[0.6875rem] text-violet-600 font-bold w-6" }, speed + "x")
 
@@ -9498,6 +9508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 'aria-label': __alloFill(__alloT('stem.universe.a11y_universe_time_lapse_visualization_showing_cosmic_history', 'Universe time-lapse visualization showing cosmic history from the Big Bang through the present day, with a future fate preview at the end of the timeline. Currently at {value1}, epoch: {name}. Use arrow keys to scrub cosmic time, Page Up and Page Down for larger steps, Home for the Big Bang, End for the future preview. Click or tap anything in the picture to learn what it is, or press Enter for a list.'), { value1: formatCosmicTimeSentence(cosmicTime), name: epoch.name }),
                 onClick: sceneClick, onPointerMove: sceneHover, onPointerLeave: sceneLeave,
                 onKeyDown: function (e) {
+                  if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSceneList(); return; }
                   // The hero canvas was a focus stop that did nothing; arrows now scrub time.
                   var step = 0, jump = null;
@@ -9618,7 +9629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                   var isCurrent = cosmicTime >= ep.t && (EPOCHS.indexOf(ep) === EPOCHS.length - 1 || cosmicTime < EPOCHS[EPOCHS.indexOf(ep) + 1].t);
 
-                  return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_jump_to_epoch', 'Jump to {name} epoch'), { name: ep.name }),
+                  return React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_jump_to_epoch', 'Jump to {name} epoch'), { name: ep.name }),
 
                     key: ep.name,
 
@@ -10276,7 +10287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('star-lifecycle'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') }, "\u2B50 Star Lifecycle \u2014 Birth to Death"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_star_lifecycle_section', 'Toggle star lifecycle section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_star_lifecycle_section', 'Toggle star lifecycle section'),
                   onClick: function() { upd('showStarLife', !d.showStarLife);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-amber-500 hover:text-amber-700"
                 }, d.showStarLife ? 'Hide' : 'Explore \u2192')
@@ -10319,7 +10330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('hr-diagram'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83D\uDCCA Hertzsprung-Russell Diagram"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_hertzsprung_russell_diagram', 'Toggle Hertzsprung-Russell diagram'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_hertzsprung_russell_diagram', 'Toggle Hertzsprung-Russell diagram'),
                   onClick: function() { upd('showHR', !d.showHR);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-blue-500 hover:text-blue-700"
                 }, d.showHR ? 'Hide' : 'View \u2192')
@@ -10361,7 +10372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('distance-ladder'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, "\uD83D\uDCCF Cosmic Distance Ladder"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_distance_ladder_section', 'Toggle cosmic distance ladder section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_distance_ladder_section', 'Toggle cosmic distance ladder section'),
                   onClick: function() { upd('showDistance', !d.showDistance);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-emerald-500 hover:text-emerald-700"
                 }, d.showDistance ? 'Hide' : 'Explore \u2192')
@@ -10397,7 +10408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('dark-universe'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "\uD83D\uDD73 Dark Energy & Dark Matter"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_dark_energy_and_dark_matter_section', 'Toggle dark energy and dark matter section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_dark_energy_and_dark_matter_section', 'Toggle dark energy and dark matter section'),
                   onClick: function() { upd('showDark', !d.showDark);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-purple-500 hover:text-purple-700"
                 }, d.showDark ? 'Hide' : 'Learn \u2192')
@@ -10444,7 +10455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('what-if'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, "\uD83E\uDD14 What If? \u2014 Cosmic Thought Experiments"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_thought_experiments_section', 'Toggle cosmic thought experiments section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_thought_experiments_section', 'Toggle cosmic thought experiments section'),
                   onClick: function() { upd('showWhatIf', !d.showWhatIf);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-yellow-500 hover:text-yellow-700"
                 }, d.showWhatIf ? 'Hide' : 'Think \u2192')
@@ -10481,10 +10492,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   value: d.aiQuestion || '',
                   'aria-label': __alloT('stem.universe.a11y_ask_the_ai_cosmos_tutor_a_question', 'Ask the AI cosmos tutor a question'),
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') askCosmosTutor(d.aiQuestion); },
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter') askCosmosTutor(d.aiQuestion); },
                   className: "flex-1 px-3 py-1.5 border border-violet-600 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none " + (isDark ? "bg-slate-800 text-white placeholder-slate-300" : "bg-white text-slate-900")
                 }),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_ask_cosmos_tutor', 'Ask Cosmos Tutor'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_ask_cosmos_tutor', 'Ask Cosmos Tutor'),
                   onClick: function() { askCosmosTutor(d.aiQuestion); },
                   disabled: d.aiLoading,
                   className: "px-3 py-1.5 rounded-lg text-xs font-bold text-white " + (d.aiLoading ? 'bg-gray-400' : 'transition-colors bg-violet-600 hover:bg-violet-700')
@@ -10497,12 +10508,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   'What is the CMB?',
                   'Will the universe end?'
                 ].map(function(q, qi) {
-                  return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_ask_cosmos_tutor_2', 'Ask cosmos tutor: {q}'), { q: q }), key: qi, onClick: function() { askCosmosTutor(q); }, className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors" }, q);
+                  return React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_ask_cosmos_tutor_2', 'Ask cosmos tutor: {q}'), { q: q }), key: qi, onClick: function() { askCosmosTutor(q); }, className: "text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors" }, q);
                 })
               ),
               _uniAiAnswer && React.createElement("div", { className: "bg-white rounded-lg p-2 text-xs text-slate-700 border border-violet-100 relative" },
                 React.createElement("div", null, _uniAiAnswer),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_read_ai_cosmos_tutor_answer_aloud', 'Read AI cosmos tutor answer aloud'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_read_ai_cosmos_tutor_answer_aloud', 'Read AI cosmos tutor answer aloud'),
                   onClick: function() { speakText(_uniAiAnswer); },
                   className: "transition-colors absolute top-1 right-1 text-violet-400 hover:text-violet-600",
                   title: t('stem.universe.read_aloud','Read aloud')
@@ -10515,7 +10526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('elements'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-orange-300' : 'text-orange-700') }, "\u2697 Origin of the Elements"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_element_origins_section', 'Toggle element origins section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_element_origins_section', 'Toggle element origins section'),
                   onClick: function() { upd('showElements', !d.showElements); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-orange-500 hover:text-orange-700"
                 }, d.showElements ? 'Hide' : 'Explore \u2192')
@@ -10550,7 +10561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('structures'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') }, "\uD83C\uDF0C Cosmic Structure Hierarchy"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_structures_section', 'Toggle cosmic structures section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_structures_section', 'Toggle cosmic structures section'),
                   onClick: function() { upd('showStructures', !d.showStructures); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-sky-500 hover:text-sky-700"
                 }, d.showStructures ? 'Hide' : 'View \u2192')
@@ -10586,7 +10597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('telescopes'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, "\uD83D\uDD2D Telescopes & Observatories"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_telescopes_and_observatories_section', 'Toggle telescopes and observatories section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_telescopes_and_observatories_section', 'Toggle telescopes and observatories section'),
                   onClick: function() { upd('showTelescopes', !d.showTelescopes); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-teal-500 hover:text-teal-700"
                 }, d.showTelescopes ? 'Hide' : 'View \u2192')
@@ -10621,7 +10632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('quiz'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, "\uD83E\uDDE0 Cosmic Quiz"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_quiz_section', 'Toggle cosmic quiz section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_quiz_section', 'Toggle cosmic quiz section'),
                   onClick: function() { upd('showQuiz', !d.showQuiz); if (!d.quizIdx && d.quizIdx !== 0) updMulti({ quizIdx: 0, quizScore: 0, quizAnswered: false }); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-pink-500 hover:text-pink-700"
                 }, d.showQuiz ? 'Hide' : 'Quiz Me! \u2192')
@@ -10643,7 +10654,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       Object.keys(d.quizResponses||{}).map(function(key){var index=Number(key),result=d.quizResponses[key];return h('div',{key:key,className:'uni-quiz-concept'},h('strong',null,result?'Correct on this attempt':'Review this idea'),h('p',null,COSMIC_QUIZ[index].q),h('p',null,COSMIC_QUIZ[index].why),h('button',{type:'button',onClick:function(){reviewQuizConcept(index);}},'Review related evidence or topic'));}),
                       Object.keys(d.quizResponses||{}).some(function(key){return !d.quizResponses[key];}) && h('button',{type:'button',onClick:function(){var missed=Object.keys(d.quizResponses).filter(function(key){return !d.quizResponses[key];}).map(Number);updMulti({quizReviewTarget:null,quizReviewQuestion:null,quizReviewDeck:missed,quizIdx:0,quizScore:0,quizAnswered:false,quizSelected:null,quizResponses:{}});}},'Retry missed questions')
                     ),
-                    React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_try_the_cosmic_quiz_again_with_a_new_set_of_que', 'Try the cosmic quiz again with a new set of questions'),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_try_the_cosmic_quiz_again_with_a_new_set_of_que', 'Try the cosmic quiz again with a new set of questions'),
                       onClick: function() { updMulti({ quizIdx: 0, quizScore: 0, quizAnswered: false, quizSelected: null, quizSeed: seed + 1, quizResponses: {}, quizReviewDeck: null, quizReviewTarget: null, quizReviewQuestion: null }); },
                       className: "transition-colors mt-2 px-3 py-2 min-h-11 text-[0.6875rem] font-bold text-white bg-pink-700 rounded-lg hover:bg-pink-600"
                     }, "\uD83D\uDD04 New questions")
@@ -10680,7 +10691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-100 hover:border-pink-400' : 'bg-white border-pink-300 text-slate-700 hover:border-pink-500');
                       }
                       return React.createElement("button", {
-                        key: pos,
+                        key: pos, type: "button",
                         "aria-label": __alloFill(__alloT('stem.universe.a11y_answer', 'Answer: {opt}{value1}'), { opt: opt, value1: answered ? (isCorrect ? __alloT('stem.universe.a11y_correct_answer', '. Correct answer.') : wasSelected ? __alloT('stem.universe.a11y_your_answer_incorrect', '. Your answer, incorrect.') : '') : '' }),
                         disabled: answered,
                         onClick: function() {
@@ -10704,7 +10715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     React.createElement("p", { className: "text-[0.6875rem] font-black mb-1", style: { color: gotIt ? (isDark ? '#4ade80' : '#15803d') : (isDark ? '#f9a8d4' : '#be185d') } }, gotIt ? "\u2705 Correct" : "\u274C The answer is: " + cq.options[cq.correct]),
                     React.createElement("p", { className: "text-[0.6875rem] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-700') }, cq.why),
                     cq.source && h('p',null,h('a',{href:cq.source,target:'_blank',rel:'noopener noreferrer'},'Read the NASA source ↗')),
-                    React.createElement("button", {
+                    React.createElement("button", { type: "button",
                       "aria-label": qi + 1 >= deck.length ? __alloT('stem.universe.a11y_see_your_quiz_results', 'See your quiz results') : __alloT('stem.universe.a11y_go_to_the_next_question', 'Go to the next question'),
                       onClick: function() {
                         var finalScore = qScore;
@@ -10729,7 +10740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('numbers'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83D\uDD22 Numbers of the Universe"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_numbers_of_the_universe_section', 'Toggle numbers of the universe section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_numbers_of_the_universe_section', 'Toggle numbers of the universe section'),
                   onClick: function() { upd('showNumbers', !d.showNumbers); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showNumbers ? 'Hide' : 'View \u2192')
@@ -10764,7 +10775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('calendar'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83D\uDCC5 Cosmic Calendar (Carl Sagan)"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_calendar_section', 'Toggle cosmic calendar section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_calendar_section', 'Toggle cosmic calendar section'),
                   onClick: function() { upd('showCalendar', !d.showCalendar); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showCalendar ? 'Hide' : 'View \u2192')
@@ -10800,7 +10811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('galaxy-types'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-violet-300' : 'text-violet-700') }, "\uD83C\uDF0C Types of Galaxies"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_galaxy_types_section', 'Toggle galaxy types section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_galaxy_types_section', 'Toggle galaxy types section'),
                   onClick: function() { upd('showGalaxyTypes', !d.showGalaxyTypes); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-violet-500 hover:text-violet-700"
                 }, d.showGalaxyTypes ? 'Hide' : 'View \u2192')
@@ -10837,7 +10848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('black-holes'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold text-orange-400" }, "\uD83D\uDD73 Black Hole Anatomy"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_black_hole_anatomy_section', 'Toggle black hole anatomy section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_black_hole_anatomy_section', 'Toggle black hole anatomy section'),
                   onClick: function() { upd('showBlackHole', !d.showBlackHole); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-orange-400 hover:text-orange-300"
                 }, d.showBlackHole ? 'Hide' : 'Explore \u2192')
@@ -10873,7 +10884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('drake'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-green-300' : 'text-green-700') }, "\uD83D\uDC7D Drake Equation \u2014 Are We Alone?"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_drake_equation_section', 'Toggle Drake equation section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_drake_equation_section', 'Toggle Drake equation section'),
                   onClick: function() { upd('showDrake', !d.showDrake); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-green-500 hover:text-green-700"
                 }, d.showDrake ? 'Hide' : 'Calculate \u2192')
@@ -11061,7 +11072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('supernovae'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, "\uD83D\uDCA5 Types of Supernovae"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_supernovae_types_section', 'Toggle supernovae types section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_supernovae_types_section', 'Toggle supernovae types section'),
                   onClick: function() { upd('showSupernovae', !d.showSupernovae); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-red-500 hover:text-red-700"
                 }, d.showSupernovae ? 'Hide' : 'Learn \u2192')
@@ -11097,7 +11108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('astronomers'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, "\uD83D\uDD2D Famous Astronomers"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_famous_astronomers_timeline', 'Toggle famous astronomers timeline'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_famous_astronomers_timeline', 'Toggle famous astronomers timeline'),
                   onClick: function() { upd('showAstronomers', !d.showAstronomers); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-cyan-500 hover:text-cyan-700"
                 }, d.showAstronomers ? 'Hide' : 'View \u2192')
@@ -11130,7 +11141,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('observable'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-fuchsia-300' : 'text-fuchsia-700') }, "\uD83C\uDF20 The Observable Universe"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_observable_universe_section', 'Toggle observable universe section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_observable_universe_section', 'Toggle observable universe section'),
                   onClick: function() { upd('showObservable', !d.showObservable); },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-fuchsia-500 hover:text-fuchsia-700"
                 }, d.showObservable ? 'Hide' : 'Learn \u2192')
@@ -11190,7 +11201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('exoplanets'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, "\uD83C\uDF0D Exoplanet Types"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_exoplanet_types_section', 'Toggle exoplanet types section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_exoplanet_types_section', 'Toggle exoplanet types section'),
                   onClick: function() { upd('showExoplanets', !d.showExoplanets);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-emerald-500 hover:text-emerald-700"
                 }, d.showExoplanets ? 'Hide' : 'Explore \u2192')
@@ -11226,7 +11237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         )
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, ep2.desc),
-                      React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_description', 'Listen to {name} description'), { name: ep2.name }),
+                      React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_description', 'Listen to {name} description'), { name: ep2.name }),
                         onClick: function(e) { uniTouch('exoplanets'); e.stopPropagation(); speakText(ep2.name + '. ' + ep2.desc); },
                         className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-700 hover:text-emerald-800')
                       }, "\uD83D\uDD0A Listen")
@@ -11241,7 +11252,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('missions'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83D\uDE80 Space Missions Timeline"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_space_missions_timeline_section', 'Toggle space missions timeline section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_space_missions_timeline_section', 'Toggle space missions timeline section'),
                   onClick: function() { upd('showMissions', !d.showMissions);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-blue-500 hover:text-blue-700"
                 }, d.showMissions ? 'Hide' : 'Explore \u2192')
@@ -11277,7 +11288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('fermi'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') }, "\uD83E\uDD14 The Fermi Paradox \u2014 Where Is Everybody?"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_fermi_paradox_section', 'Toggle Fermi paradox section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_fermi_paradox_section', 'Toggle Fermi paradox section'),
                   onClick: function() { upd('showFermi', !d.showFermi);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-amber-500 hover:text-amber-700"
                 }, d.showFermi ? 'Hide' : 'Think \u2192')
@@ -11290,7 +11301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('lensing'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold text-indigo-400" }, "\uD83D\uDD2E Gravitational Lensing"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_gravitational_lensing_section', 'Toggle gravitational lensing section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_gravitational_lensing_section', 'Toggle gravitational lensing section'),
                   onClick: function() { upd('showLensing', !d.showLensing);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-400 hover:text-indigo-300"
                 }, d.showLensing ? 'Hide' : 'Explore \u2192')
@@ -11328,7 +11339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('mysteries'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') }, "\u2753 Unsolved Cosmic Mysteries"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_unsolved_cosmic_mysteries_section', 'Toggle unsolved cosmic mysteries section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_unsolved_cosmic_mysteries_section', 'Toggle unsolved cosmic mysteries section'),
                   onClick: function() { upd('showMysteries', !d.showMysteries);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-rose-500 hover:text-rose-700"
                 }, d.showMysteries ? 'Hide' : 'Explore \u2192')
@@ -11341,7 +11352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('multiverse'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "\uD83C\uDF10 Multiverse Theories"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_multiverse_theories_section', 'Toggle multiverse theories section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_multiverse_theories_section', 'Toggle multiverse theories section'),
                   onClick: function() { upd('showMultiverse', !d.showMultiverse);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-purple-500 hover:text-purple-700"
                 }, d.showMultiverse ? 'Hide' : 'Explore \u2192')
@@ -11354,7 +11365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('redshift'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold text-red-400" }, "\uD83D\uDD34 Redshift & Blueshift \u2014 Motion vs Expanding Space"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_redshift_and_blueshift_section', 'Toggle redshift and blueshift section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_redshift_and_blueshift_section', 'Toggle redshift and blueshift section'),
                   onClick: function() { upd('showRedshift', !d.showRedshift);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-red-400 hover:text-red-300"
                 }, d.showRedshift ? 'Hide' : 'Explore \u2192')
@@ -11566,6 +11577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   var distMpc = (d.hubbleDistMpc != null) ? d.hubbleDistMpc : 100;
                   var velKms = H0 * distMpc;
                   var distMly = (distMpc * 3.262).toFixed(0);
+                  var hubbleLabel = distMpc + ' Mpc (' + distMly + ' Mly)';
                   // Mini Hubble diagram dimensions
                   var hW = 220, hH = 60, hPad = 18;
                   var maxD = 400, maxV = H0 * maxD;
@@ -11581,10 +11593,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         type: 'range', min: 1, max: maxD, step: 1, value: distMpc,
                         onChange: function(e) { uniTouch('redshift'); upd('hubbleDistMpc', parseInt(e.target.value, 10)); },
                         'aria-label': __alloT('stem.universe.a11y_hubble_s_law_distance', 'Hubble\'s Law distance'),
+                        'aria-valuetext': hubbleLabel,
                         style: { flex: 1, accentColor: '#fbbf24' }
                       }),
                       React.createElement("span", { className: "text-[0.625rem] font-mono text-amber-300", style: { minWidth: 110 } },
-                        distMpc + ' Mpc (' + distMly + ' Mly)')
+                        hubbleLabel)
                     ),
                     React.createElement("div", { className: "text-[0.6875rem] font-mono text-slate-200 mb-1.5 text-center" },
                       "v = 70 \u00D7 ", React.createElement("span", { className: "text-amber-300 font-bold" }, distMpc),
@@ -11630,7 +11643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     );
                   })
                 ),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_listen_to_explanation', 'Listen to explanation'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_listen_to_explanation', 'Listen to explanation'),
                   onClick: function() { speakText('Redshift means light is shifted to longer wavelengths. Nearby redshift can come from ordinary motion away from us, while blueshift can come from motion toward us. For distant galaxies, cosmological redshift is usually the bigger idea: expanding space stretches the light while it travels. Hubble found that farther galaxies tend to have larger redshifts, which is evidence that the universe is expanding.'); },
                   className: "transition-colors mt-1 text-[0.6875rem] text-red-400 hover:text-red-300"
                 }, "\uD83D\uDD0A Listen to explanation")
@@ -11642,7 +11655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('nurseries'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, "\uD83C\uDF1F Stellar Nurseries \u2014 Where Stars Are Born"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_stellar_nurseries_section', 'Toggle stellar nurseries section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_stellar_nurseries_section', 'Toggle stellar nurseries section'),
                   onClick: function() { upd('showNurseries', !d.showNurseries);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-pink-500 hover:text-pink-700"
                 }, d.showNurseries ? 'Hide' : 'Explore \u2192')
@@ -11665,7 +11678,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       ),
                       React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, sn.desc),
                       React.createElement("div", { className: "text-[0.6875rem] font-medium " + (isDark ? 'text-pink-300' : 'text-pink-700') }, "\u2B50 Features: " + sn.features),
-                      React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_stellar_nursery', 'Listen to {name} stellar nursery'), { name: sn.name }),
+                      React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_stellar_nursery', 'Listen to {name} stellar nursery'), { name: sn.name }),
                         onClick: function(e) { uniTouch('nurseries'); e.stopPropagation(); speakText(sn.name + '. ' + sn.desc); },
                         className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-pink-300 hover:text-pink-200' : 'text-pink-700 hover:text-pink-800')
                       }, "\uD83D\uDD0A Listen")
@@ -11680,7 +11693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('nebulae'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, "\uD83C\uDF00 Planetary Nebulae \u2014 Beautiful Stellar Deaths"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_planetary_nebulae_gallery_section', 'Toggle planetary nebulae gallery section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_planetary_nebulae_gallery_section', 'Toggle planetary nebulae gallery section'),
                   onClick: function() { upd('showPNebulae', !d.showPNebulae);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-cyan-500 hover:text-cyan-700"
                 }, d.showPNebulae ? 'Hide' : 'Gallery \u2192')
@@ -11717,7 +11730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('catastrophes'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-orange-300' : 'text-orange-700') }, "\u2604 Cosmic Catastrophes"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_catastrophes_section', 'Toggle cosmic catastrophes section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_catastrophes_section', 'Toggle cosmic catastrophes section'),
                   onClick: function() { upd('showCatastrophes', !d.showCatastrophes);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-orange-500 hover:text-orange-700"
                 }, d.showCatastrophes ? 'Hide' : 'Explore \u2192')
@@ -11739,7 +11752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("span", { className: (isDark ? 'text-amber-300' : 'text-amber-700') + " font-bold" }, "\u26A0 Danger: " + cc.danger),
                         React.createElement("span", { className: isDark ? 'text-slate-200' : 'text-slate-600' }, "\u2022 Frequency: " + cc.freq)
                       ),
-                      React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_catastrophe', 'Listen to {name} catastrophe'), { name: cc.name }),
+                      React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_catastrophe', 'Listen to {name} catastrophe'), { name: cc.name }),
                         onClick: function(e) { uniTouch('catastrophes'); e.stopPropagation(); speakText(cc.name + '. ' + cc.desc); },
                         className: "transition-colors mt-1 text-[0.6875rem] " + (isDark ? 'text-orange-300 hover:text-orange-200' : 'text-orange-700 hover:text-orange-800')
                       }, "\uD83D\uDD0A Listen")
@@ -11754,7 +11767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('spectrum'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold text-indigo-400" }, "\uD83C\uDF08 The Electromagnetic Spectrum in Astronomy"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_electromagnetic_spectrum_section', 'Toggle electromagnetic spectrum section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_electromagnetic_spectrum_section', 'Toggle electromagnetic spectrum section'),
                   onClick: function() { upd('showSpectrum', !d.showSpectrum);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-400 hover:text-indigo-300"
                 }, d.showSpectrum ? 'Hide' : 'Explore \u2192')
@@ -11800,7 +11813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('powers-of-ten'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-violet-300' : 'text-violet-700') }, "\uD83D\uDD0D Scale of the Universe \u2014 Powers of 10"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_scale_of_the_universe_section', 'Toggle scale of the universe section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_scale_of_the_universe_section', 'Toggle scale of the universe section'),
                   onClick: function() { upd('showScale', !d.showScale);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-violet-500 hover:text-violet-700"
                 }, d.showScale ? 'Hide' : 'Zoom \u2192')
@@ -11856,6 +11869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       role: 'img',
                       'aria-label': __alloFill(__alloT('stem.universe.a11y_continuous_powers_of_ten_zoom_field_of_view_is_ten_to_the', 'Continuous powers of ten zoom. Field of view is {value1}, ten to the power {value2} metres. Filling the frame: {n}, {s}. Use arrow keys to zoom, Home for the smallest scale, End for the largest.'), { value1: formatFieldOfView(zoomPow), value2: zoomPow.toFixed(1), n: zFocus.n, s: zFocus.s }),
                       onKeyDown: function (e) {
+                        if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
                         var step = 0;
                         if (e.key === 'ArrowRight' || e.key === 'ArrowUp') step = 0.25;
                         else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') step = -0.25;
@@ -11906,7 +11920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                       React.createElement("div", { className: "min-h-11 flex items-center gap-1.5 rounded-lg px-2 py-1 border", style: { borderColor: isDark ? 'rgba(148,163,184,0.28)' : 'rgba(139,92,246,0.3)' } },
                         React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, "Speed"),
-                        React.createElement("input", { type: "range", min: 0.5, max: 4, step: 0.5, value: zoomSpeed, 'aria-label': __alloT('stem.universe.a11y_automatic_zoom_speed', 'Automatic zoom speed'), onChange: function (e) { var v = parseFloat(e.target.value); upd('zoomSpeed', v); var cv = document.querySelector('[data-universe-zoom]'); if (cv) cv.dataset.speed = String(v); }, className: "w-20 h-6 accent-violet-400" }),
+                        React.createElement("input", { type: "range", min: 0.5, max: 4, step: 0.5, value: zoomSpeed, 'aria-label': __alloT('stem.universe.a11y_automatic_zoom_speed', 'Automatic zoom speed'), 'aria-valuetext': zoomSpeed + 'x', onChange: function (e) { var v = parseFloat(e.target.value); upd('zoomSpeed', v); var cv = document.querySelector('[data-universe-zoom]'); if (cv) cv.dataset.speed = String(v); }, className: "w-20 h-6 accent-violet-400" }),
                         React.createElement("span", { className: "text-[0.6875rem] font-bold w-7", style: { color: isDark ? '#c4b5fd' : '#6d28d9' } }, zoomSpeed + "x")
                       ),
 
@@ -11958,7 +11972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                           role: "button", tabIndex: 0,
                           'aria-label': __alloFill(__alloT('stem.universe.a11y_zoom_to_2', 'Zoom to {name}, {size}'), { name: cs2.name, size: cs2.size }),
                           'aria-pressed': isActive ? 'true' : 'false',
-                          onKeyDown: function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },
+                          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },
                           key: csi,
                           onClick: function () { upd('scaleIdx', csi); pushPow(cs2.power + 0.55, cs2.name); playBeep(); },
                           className: "relative pl-8 py-1 cursor-pointer rounded-r transition-colors " + (isActive ? (isDark ? 'bg-slate-700' : 'bg-violet-100') : (isDark ? 'hover:bg-slate-700/60' : 'hover:bg-violet-50'))
@@ -11983,7 +11997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('spectral'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83C\uDF08 Spectral Classification \u2014 OBAFGKM"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_spectral_classification_section', 'Toggle spectral classification section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_spectral_classification_section', 'Toggle spectral classification section'),
                   onClick: function() { upd('showSpectral', !d.showSpectral);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-indigo-500 hover:text-indigo-700"
                 }, d.showSpectral ? 'Hide' : 'Classify \u2192')
@@ -11995,7 +12009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 // Color bar
                 React.createElement("div", { className: "uni-spectral-bar flex rounded-lg overflow-hidden mb-2 h-2" },
                   SPECTRAL_CLASSES.map(function(sc, sci) {
-                    return React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": (Number.isInteger(d.spectralIdx) && d.spectralIdx >= 0 && d.spectralIdx < SPECTRAL_CLASSES.length ? d.spectralIdx : 4) === sci, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
+                    return React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": (Number.isInteger(d.spectralIdx) && d.spectralIdx >= 0 && d.spectralIdx < SPECTRAL_CLASSES.length ? d.spectralIdx : 4) === sci, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: sci, className: "flex-1 cursor-pointer hover:h-3 transition-all", style: { background: sc.color }, title: sc.class + ' (' + sc.colorName + ')',
                       onClick: function() { uniTouch('spectral'); updMulti({ spectralIdx: sci, starTemp: SPECTRAL_CLASS_TEMPS[sci] }); playBeep(); }
                     });
                   })
@@ -12031,7 +12045,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     ),
                     React.createElement("div", { className: "text-[0.6875rem] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, sc.desc),
                     sc.class === 'G' && React.createElement("div", { className: "mt-1 text-[0.6875rem] font-bold " + (isDark ? "text-amber-300" : "text-amber-800") }, "\u2600\uFE0F Our Sun is a G2V star!"),
-                    React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_class_star_description', 'Listen to class {spectralClass} star description'), { spectralClass: sc.class }),
+                    React.createElement("button", { type: "button", "aria-label": __alloFill(__alloT('stem.universe.a11y_listen_to_class_star_description', 'Listen to class {spectralClass} star description'), { spectralClass: sc.class }),
                       onClick: function() { speakText('Class ' + sc.class + ' stars. ' + sc.colorName + '. Temperature: ' + sc.temp + '. ' + sc.desc); },
                       className: "mt-1 text-[0.6875rem] " + (isDark ? 'text-indigo-400' : 'text-indigo-500') + "transition-colors  hover:text-indigo-600"
                     }, "\uD83D\uDD0A Listen")
@@ -12042,7 +12056,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   SPECTRAL_CLASSES.map(function(sc, sci) {
                     var isActive = (d.spectralIdx !== undefined ? d.spectralIdx : 4) === sci;
                     var inkPair = universeReadableInk(sc.color);
-                    return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_select_spectral_class', 'Select spectral class {spectralClass}'), { spectralClass: sc.class }), key: sci, "aria-pressed": isActive,
+                    return React.createElement("button", { "aria-label": __alloFill(__alloT('stem.universe.a11y_select_spectral_class', 'Select spectral class {spectralClass}'), { spectralClass: sc.class }), type: "button", key: sci, "aria-pressed": isActive,
                       onClick: function() { uniTouch('spectral'); updMulti({ spectralIdx: sci, starTemp: SPECTRAL_CLASS_TEMPS[sci] }); playBeep(); },
                       className: "w-8 h-8 rounded-full text-xs font-black transition-all " + (isActive ? 'ring-2 ring-offset-2 ring-white scale-110' : ''),
                       style: { background: inkPair.bg, color: inkPair.ink }
@@ -12057,7 +12071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('gravity'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-green-300' : 'text-green-700') }, "\u2696 Gravity Calculator \u2014 What Would You Weigh?"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_gravity_calculator_section', 'Toggle gravity calculator section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_gravity_calculator_section', 'Toggle gravity calculator section'),
                   onClick: function() { upd('showGravity', !d.showGravity);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-green-500 hover:text-green-700"
                 }, d.showGravity ? 'Hide' : 'Calculate \u2192')
@@ -12099,7 +12113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('images'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-sky-300' : 'text-sky-700') }, "\uD83D\uDCF7 Famous Space Images That Changed Everything"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_famous_space_images_section', 'Toggle famous space images section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_famous_space_images_section', 'Toggle famous space images section'),
                   onClick: function() { upd('showImages', !d.showImages);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-sky-500 hover:text-sky-700"
                 }, d.showImages ? 'Hide' : 'View \u2192')
@@ -12137,7 +12151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('speeds'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-amber-300' : 'text-amber-700') }, "\uD83C\uDFC1 Cosmic Speed Comparison"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_speed_comparison_section', 'Toggle cosmic speed comparison section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmic_speed_comparison_section', 'Toggle cosmic speed comparison section'),
                   onClick: function() { upd('showSpeeds', !d.showSpeeds);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-amber-500 hover:text-amber-700"
                 }, d.showSpeeds ? 'Hide' : 'Race \u2192')
@@ -12172,7 +12186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('citizen-science'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, "\uD83E\uDDD1\u200D\uD83D\uDD2C Citizen Science \u2014 You Can Do Real Astronomy!"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_citizen_science_section', 'Toggle citizen science section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_citizen_science_section', 'Toggle citizen science section'),
                   onClick: function() { upd('showCitizenSci', !d.showCitizenSci);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-teal-500 hover:text-teal-700"
                 }, d.showCitizenSci ? 'Hide' : 'Join \u2192')
@@ -12209,7 +12223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               renderQuizReturn('glossary'),
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "uni-title text-xs font-bold " + (isDark ? 'text-stone-300' : 'text-stone-700') }, "\uD83D\uDCD6 Cosmology Glossary"),
-                React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_toggle_cosmology_glossary_section', 'Toggle cosmology glossary section'),
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_toggle_cosmology_glossary_section', 'Toggle cosmology glossary section'),
                   onClick: function() { upd('showGlossary', !d.showGlossary);  },
                   className: "uni-toggle transition-colors text-[0.6875rem] text-stone-500 hover:text-stone-700"
                 }, d.showGlossary ? 'Hide' : 'Browse \u2192')
@@ -12219,7 +12233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("div", { className: "space-y-1 max-h-72 overflow-y-auto" },
                   COSMO_GLOSSARY.map(function(gl, gli) {
                     var isActive = d.glossaryIdx === gli;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
                       onClick: function() { uniTouch('glossary'); upd('glossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-2 border transition-all " + (isActive
                         ? (isDark ? 'bg-slate-700 border-stone-500' : 'bg-white border-stone-300 shadow-sm')
@@ -12406,7 +12420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             // Snapshot button
             React.createElement("div", { className: "flex mt-3" },
 
-              React.createElement("button", { "aria-label": __alloT('stem.universe.a11y_save_snapshot_of_current_universe_state', 'Save snapshot of current universe state'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe', 'Universe: ') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
+              React.createElement("button", { type: "button", "aria-label": __alloT('stem.universe.a11y_save_snapshot_of_current_universe_state', 'Save snapshot of current universe state'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'uni-' + Date.now(), tool: 'universe', label: t('stem.universe.universe', 'Universe: ') + epoch.name, data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full hover:from-violet-600 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
 
             )
 

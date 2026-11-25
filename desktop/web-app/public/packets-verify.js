@@ -8,6 +8,10 @@
 (function () {
   'use strict';
 
+  var win = typeof window === 'object' && window !== null ? window : null;
+  var doc = typeof document === 'object' && document !== null ? document : (win && typeof win.document === 'object' ? win.document : null);
+  if (!win || !doc || typeof doc.getElementById !== 'function') return;
+
   var MAX_FILES = 10;
   var PARTS = [
     { key: 'about', title: 'What this file says about itself' },
@@ -20,9 +24,8 @@
   var NOT_CHECKED = 'This file was not checked.';
   var KINDS = { practice: 'Practice file', check: 'Check', older: 'Older practice file' };
 
-  var core = window.AlloPacketVerify;
-  var samples = window.AlloPacketSamples || {};
-  var doc = document;
+  var core = win.AlloPacketVerify;
+  var samples = win.AlloPacketSamples || {};
   var $ = function (id) { return doc.getElementById(id); };
   var el = function (tag, className, text) {
     var node = doc.createElement(tag);
@@ -55,6 +58,9 @@
       var fileReader = new FileReader();
       fileReader.onload = function () { done(new Uint8Array(fileReader.result)); };
       fileReader.onerror = function () { fail(new Error('unreadable')); };
+      if (typeof fileReader.addEventListener === 'function') {
+        fileReader.addEventListener('abort', function () { fail(new Error('unreadable')); });
+      }
       fileReader.readAsArrayBuffer(file);
     });
   }
@@ -80,34 +86,54 @@
     if (busy) { say('Still reading the last file.'); return; }
     busy = true;
     var files = all.slice(0, MAX_FILES);
-    say('Reading ' + count(files.length, 'file') + '.');
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i], report;
-      if (Number(file.size) > core.MAX_BYTES) report = core.refusal('too_big', file.size);
-      else {
-        try { report = core.verifyPacket(await readBytes(file)); }
-        catch (_) { report = core.refusal('unreadable', file.size); }
+    var readCount = 0;
+    try {
+      say('Reading ' + count(files.length, 'file') + '.');
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i], report;
+        if (!file) continue;
+        var size = Number(file.size);
+        if (!isFinite(size) || size < 0) report = core.refusal('unreadable', 0);
+        else if (size > core.MAX_BYTES) report = core.refusal('too_big', size);
+        else {
+          try {
+            var rawBytes = await readBytes(file);
+            report = rawBytes.byteLength > core.MAX_BYTES ? core.refusal('too_big', rawBytes.byteLength) : core.verifyPacket(rawBytes);
+          } catch (_) { report = core.refusal('unreadable', size); }
+        }
+        keep(file.name, report);
+        readCount++;
       }
-      keep(file.name, report);
+      finish(readCount, all.length - files.length);
+    } finally {
+      busy = false;
     }
-    finish(files.length, all.length - files.length);
   }
   function takeSample(key) {
     if (busy) return;
-    var entry = Object.prototype.hasOwnProperty.call(samples, key) ? samples[key] : null;
-    var sample = typeof entry === 'function' ? entry() : entry;
-    if (!sample || typeof sample.text !== 'string') { say('The sample file did not load. Load the page again.'); return; }
     busy = true;
-    keep(sample.name, core.verifyPacket(sample.text));
-    checked[checked.length - 1].sample = true;
-    finish(1, 0);
+    try {
+      var entry = Object.prototype.hasOwnProperty.call(samples, key) ? samples[key] : null;
+      var sample = typeof entry === 'function' ? entry() : entry;
+      if (!sample || typeof sample.text !== 'string') { say('The sample file did not load. Load the page again.'); return; }
+      keep(sample.name, core.verifyPacket(sample.text));
+      checked[checked.length - 1].sample = true;
+      finish(1, 0);
+    } catch (_) {
+      say('The sample file did not load. Load the page again.');
+    } finally {
+      busy = false;
+    }
   }
   function clearPage() {
+    if (busy) { say('Still reading the last file.'); return; }
     checked = [];
-    $('files').value = '';
+    var filesEl = $('files');
+    if (filesEl) filesEl.value = '';
     draw();
     say('The page is clear.');
-    $('choose').focus();
+    var chooseEl = $('choose');
+    if (chooseEl) chooseEl.focus();
   }
 
   // ---------------------------------------------------------------------------
@@ -236,11 +262,12 @@
     }
     add(top, el('p', 'kicker', (item.sample ? 'Sample file: ' : 'File: ') + item.name), line, sub);
     var facts = el('dl', 'facts-row');
-    if (r.headline) fact(facts, 'Kind', r.kind === 'older' ? KINDS.older : (Object.prototype.hasOwnProperty.call(KINDS, r.identity.mode) ? KINDS[r.identity.mode] : KINDS.practice));
+    var mode = r.identity && r.identity.mode;
+    if (r.headline) fact(facts, 'Kind', r.kind === 'older' ? KINDS.older : (mode && Object.prototype.hasOwnProperty.call(KINDS, mode) ? KINDS[mode] : KINDS.practice));
     fact(facts, 'Size', r.sizeText);
     if (r.headline) { fact(facts, 'Recorded sounds', String(r.counts.sounds)); fact(facts, 'Pictures', String(r.counts.pictures)); }
     add(top, facts);
-    if (r.fingerprint.sha256) add(top, add(el('p', 'fingerprint'), el('span', '', 'File fingerprint (SHA-256): '), el('code', '', r.fingerprint.sha256)));
+    if (r.fingerprint && r.fingerprint.sha256) add(top, add(el('p', 'fingerprint'), el('span', '', 'File fingerprint (SHA-256): '), el('code', '', r.fingerprint.sha256)));
     add(card, top);
     card.setAttribute('aria-labelledby', line.id);
     if (!r.headline) return card;
@@ -269,6 +296,8 @@
 
   function draw() {
     var list = $('report-list');
+    if (!list) return;
+    reopened = [];
     while (list.firstChild) list.removeChild(list.firstChild);
     checked.forEach(function (item, index) { add(list, drawReport(item, index)); });
     show('reports', checked.length > 0);
@@ -295,7 +324,11 @@
       area.select();
     };
     try {
-      window.navigator.clipboard.writeText(text).then(function () { box.hidden = true; status.hidden = false; status.textContent = 'Copied. The report is on the clipboard as plain text.'; }, manual);
+      var clip = win.navigator && win.navigator.clipboard;
+      if (!clip || typeof clip.writeText !== 'function') { manual(); return; }
+      var writing = clip.writeText(text);
+      if (!writing || typeof writing.then !== 'function') { manual(); return; }
+      writing.then(function () { box.hidden = true; status.hidden = false; status.textContent = 'Copied. The report is on the clipboard as plain text.'; }, manual);
     } catch (_) { manual(); }
   }
   // On paper every part is open. What was closed on the screen is closed again when the browser says printing is over
@@ -307,7 +340,7 @@
   function closeAgain() { reopened.forEach(function (box) { box.open = false; }); reopened = []; }
   function printPage() {
     openAll();
-    if (typeof window.print === 'function') window.print();
+    if (typeof win.print === 'function') win.print();
   }
 
   // ---------------------------------------------------------------------------
@@ -318,27 +351,33 @@
     return !!types && Array.prototype.indexOf.call(types, 'Files') >= 0;
   }
   function start() {
-    if (!$('drop')) return;
+    var dropEl = $('drop');
+    if (!dropEl) return;
     if (!core) {
       setText('drop-title', 'The page could not load all of its parts');
       setText('drop-sub', 'Check the connection, then load the page again.');
-      $('choose').hidden = true;
+      show('choose', false);
       show('samples', false);
       return;
     }
-    $('choose').addEventListener('click', function () { $('files').click(); });
-    $('files').addEventListener('change', function () {
-      var chosen = Array.prototype.slice.call($('files').files || []);
-      $('files').value = '';
-      takeFiles(chosen);
-    });
+    var chooseEl = $('choose');
+    var filesEl = $('files');
+    var clearEl = $('clear');
+    if (chooseEl && filesEl) chooseEl.addEventListener('click', function () { filesEl.click(); });
+    if (filesEl) {
+      filesEl.addEventListener('change', function () {
+        var chosen = Array.prototype.slice.call(filesEl.files || []);
+        filesEl.value = '';
+        takeFiles(chosen);
+      });
+    }
     Array.prototype.forEach.call(doc.querySelectorAll('[data-sample]'), function (node) {
       node.addEventListener('click', function () { takeSample(node.getAttribute('data-sample')); });
     });
-    $('clear').addEventListener('click', clearPage);
+    if (clearEl) clearEl.addEventListener('click', clearPage);
     // A file dropped anywhere on the page is read here; without this the browser would leave the page to open it.
     var depth = 0;
-    var over = function (on) { show('drop-over', on && checked.length > 0); $('drop').classList.toggle('is-over', on); };
+    var over = function (on) { show('drop-over', on && checked.length > 0); dropEl.classList.toggle('is-over', on); };
     doc.addEventListener('dragenter', function (event) { if (!hasFiles(event)) return; event.preventDefault(); depth++; over(true); });
     doc.addEventListener('dragover', function (event) { if (!hasFiles(event)) return; event.preventDefault(); if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'; });
     doc.addEventListener('dragleave', function (event) { if (!hasFiles(event)) return; depth = Math.max(0, depth - 1); if (!depth) over(false); });
@@ -349,8 +388,9 @@
       over(false);
       takeFiles(event.dataTransfer.files);
     });
-    window.addEventListener('beforeprint', openAll);
-    window.addEventListener('afterprint', closeAgain);
+    win.addEventListener('blur', function () { if (depth) { depth = 0; over(false); } });
+    win.addEventListener('beforeprint', openAll);
+    win.addEventListener('afterprint', closeAgain);
   }
 
   start();

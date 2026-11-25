@@ -2857,7 +2857,15 @@ expect(html).toContain("var recordingMicWarning = '';");
     const end = m.indexOf(endMark);
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
-    const src = m.slice(start, end + endMark.length);
+    // The receiver now consults the module's AI-policy gate (and its safe JSON
+    // parser); take the real helpers from the same module rather than stubbing them.
+    const helper = (name) => {
+      const at = m.indexOf('  function ' + name + '(');
+      expect(at, name).toBeGreaterThan(-1);
+      return m.slice(at, m.indexOf('\n  function ', at + 1));
+    };
+    const src = ['_vsSafeJsonParse', '_vsAiPolicyBlocked', '_vsAiUsable'].map(helper).join('\n') + '\n'
+      + m.slice(start, end + endMark.length);
 
     const listeners = [];
     const fakeWindow = { addEventListener: (t, fn) => { if (t === 'message') listeners.push(fn); } };
@@ -3249,11 +3257,12 @@ describe('demo steering junctures', () => {
   }, 15000);
 
   it('returns a primitives-only state summary for the audit, functions dropped', async () => {
-    const ctxRef = { current: { contentLoaded: true, count: 3, view: 'quiz', secretFn: () => {}, longText: 'x'.repeat(200) } };
+    // Strings are kept only for allowlisted keys (activeView yes, an arbitrary `view` no).
+    const ctxRef = { current: { contentLoaded: true, count: 3, activeView: 'quiz', view: 'quiz', secretFn: () => {}, longText: 'x'.repeat(200) } };
     const runner = makeRunner(async () => ({ ok: true }), ctxRef);
     const r = await runner([{ commandId: 'step_a', pauseAfter: 0.5 }], { shouldStop: () => false, onStep: () => {} }, junctureOpts);
     expect(r.ok).toBe(true);
-    expect(r.stateSummary).toEqual({ contentLoaded: true, count: 3, view: 'quiz' });
+    expect(r.stateSummary).toEqual({ contentLoaded: true, count: 3, activeView: 'quiz' });
   }, 15000);
 
   it('the wait is bounded and the host bridge source, its build and the public mirror carry the juncture', () => {

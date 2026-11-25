@@ -55,7 +55,9 @@ afterEach(async () => {
 });
 
 describe.each(paths)('Climate Carbon controls: %s', path => {
-  it('names its activity and choice groups, and recovers one selected option without taking initial focus', async () => {
+  // 2026-11-23: an unanswered or corrupt saved answer is now NOT ANSWERED, not silently option 0
+  // (walk / plants / solar / compost), which showed a 900 kg total the student never chose.
+  it('names its activity and choice groups, and treats corrupt saved answers as unanswered without taking initial focus', async () => {
     const outside=document.createElement('button'); document.body.appendChild(outside); outside.focus(); disposers.push(()=>outside.remove());
     const view=mountTool(path,{ccTransport:99,ccFood:'invalid',ccEnergy:-1,ccWaste:Infinity,ccScale:'unknown'}); await settle();
     expect(document.activeElement).toBe(outside);
@@ -64,38 +66,38 @@ describe.each(paths)('Climate Carbon controls: %s', path => {
     for(const category of ['transport','food','energy','waste']) {
       const group=view.one('#ce-carbon-choice-group-'+category);
       expect(group.getAttribute('role')).toBe('group'); expect(namedBy(view,group)).toBeTruthy();
-      const selected=group.querySelectorAll('button[aria-pressed="true"]'); expect(selected).toHaveLength(1);
-      expect(selected[0].id).toBe('ce-carbon-choice-'+category+'-0');
+      expect(group.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(0);
+      expect(view.one('#ce-carbon-choice-note-'+category).textContent).toBe('Not answered yet.');
     }
-    expect(view.one('#ce-carbon-scale-school').getAttribute('aria-pressed')).toBe('true');
-    expect(view.one('#ce-carbon-total').textContent).toBe('Estimated total: 900 kg CO₂ per year.');
+    expect(view.one('#ce-carbon-scale-school')).toBeNull(); // the scale panel waits for a complete estimate
+    expect(view.one('#ce-carbon-total')).toBeNull(); expect(view.one('#ce-carbon-progress').textContent).toContain('0 of 4 questions answered');
     expect(view.announce).not.toHaveBeenCalled();
   });
 
   it('keeps a choice name and focus stable and announces the new calculated total through one persistent status', async () => {
-    const view=mountTool(path,{badges:{firstCalc:1}}), button=view.one('#ce-carbon-choice-transport-2'), name=namedBy(view,button), status=view.one('#ce-carbon-status');
+    const view=mountTool(path,{badges:{firstCalc:1},ccFood:1,ccEnergy:1,ccWaste:1,ccPrediction:{pick:'energy',sig:'-1,1,1,1'}}), button=view.one('#ce-carbon-choice-transport-2'), name=namedBy(view,button), status=view.one('#ce-carbon-status');
     expect(name).toBe('Car (alone)');
     expect(status.getAttribute('role')).toBe('status'); expect(status.getAttribute('aria-live')).toBe('polite'); expect(status.getAttribute('aria-atomic')).toBe('true');
-    expect(view.one('#'+button.getAttribute('aria-describedby')).textContent).toBe('1200 kg/yr');
+    expect(view.one('#'+button.getAttribute('aria-describedby')).textContent).toBe('720 kg/yr');
     await activate(button);
     expect(document.activeElement).toBe(button); expect(namedBy(view,button)).toBe(name);
     expect(button.getAttribute('aria-pressed')).toBe('true'); expect(button.textContent).toContain('Selected');
     expect(view.one('#ce-carbon-choice-transport-0').getAttribute('aria-pressed')).toBe('false');
     expect(view.one('#ce-carbon-status')).toBe(status);
-    expect(status.textContent).toBe('How do you get to school?: Car (alone). Estimated total: 2,100 kg CO₂ per year.');
-    expect(view.one('#ce-carbon-total').textContent).toBe('Estimated total: 2,100 kg CO₂ per year.');
+    expect(status.textContent).toBe('How do you get to school?: Car (alone). Estimated total: 4,470 kg CO₂e per year.'); // 720+2060+1320+370 (2026-11-23 worked-out values); CO₂e because food and trash count other gases
+    expect(view.one('#ce-carbon-total').textContent).toBe('Estimated total: 4,470 kg CO₂e per year.');
     expect(view.announce).not.toHaveBeenCalled();
   });
 
   it('exposes a named scale group, stable selected states and the correct unit for unchanged scale arithmetic', async () => {
-    const view=mountTool(path,{ccTransport:2,ccFood:1,ccEnergy:1,ccWaste:1,scalesViewed:{bogus:true,city:'true'}});
+    const view=mountTool(path,{ccTransport:2,ccFood:1,ccEnergy:1,ccWaste:1,ccPrediction:{pick:'energy',sig:'2,1,1,1'},scalesViewed:{bogus:true,city:'true'}});
     const city=view.one('#ce-carbon-scale-city'), name=namedBy(view,city);
     expect(city.parentElement.getAttribute('role')).toBe('group'); expect(namedBy(view,city.parentElement)).toContain('What if everyone');
-    expect(view.one('#ce-carbon-scale-result').textContent).toContain('2.5 thousand metric tons CO₂/yr'); // 4,900 kg × 500 / 1e6
+    expect(view.one('#ce-carbon-scale-result').textContent).toContain((4470*500/1e6).toFixed(1)+' thousand metric tons CO₂e/yr'); // 4,470 kg × 500 / 1e6
     await activate(city);
     expect(document.activeElement).toBe(city); expect(namedBy(view,city)).toBe(name);
     expect(city.getAttribute('aria-pressed')).toBe('true'); expect(view.one('#ce-carbon-scale-school').getAttribute('aria-pressed')).toBe('false');
-    expect(view.one('#ce-carbon-scale-result').textContent).toContain('490.0 thousand metric tons CO₂/yr'); // 4,900 kg × 100,000 / 1e6
+    expect(view.one('#ce-carbon-scale-result').textContent).toContain('447.0 thousand metric tons CO₂e/yr'); // 4,470 kg × 100,000 / 1e6
     expect(view.one('#ce-carbon-scale-result').textContent).not.toContain('million tons');
     expect(view.one('#ce-carbon-status').textContent).toContain('Scale selected:'); expect(view.one('#ce-carbon-status').textContent).toContain('City');
     expect(view.state().scalesViewed).toEqual({city:true}); expect(view.state().badges?.dataDiver).toBeUndefined();
@@ -103,8 +105,9 @@ describe.each(paths)('Climate Carbon controls: %s', path => {
   });
 
   it.each([[600,600],['800',800],[0,500],[-2,500],[Infinity,500],['invalid',500],[2.5,500],[[],500]])('uses a finite, positive student count for saved school size %j', (ccSchoolSize,expected) => {
-    const view=mountTool(path,{ccSchoolSize});
-    expect(view.one('#ce-carbon-scale-result').textContent).toContain((900*expected/1000000).toFixed(1)+' thousand metric tons CO₂/yr');
+    // All lowest answers: 0 + 1390 + 0 + 230 = 1620 kg, and no prediction is needed.
+    const view=mountTool(path,{ccSchoolSize,ccTransport:0,ccFood:0,ccEnergy:0,ccWaste:0});
+    expect(view.one('#ce-carbon-scale-result').textContent).toContain((1620*expected/1000000).toFixed(1)+' thousand metric tons CO₂e/yr');
     expect(view.one('#ce-carbon-scale-result').textContent).toContain('If all '+expected+' students made these choices');
     expect(view.one('#ce-carbon-scale-result').textContent).not.toMatch(/NaN|Infinity/);
   });
@@ -137,8 +140,8 @@ describe.each(paths)('Climate Carbon controls: %s', path => {
     await setFrequency(slider,4);
     expect(document.activeElement).toBe(slider); expect(slider.value).toBe('4'); expect(slider.getAttribute('aria-valuetext')).toBe('4 trips/week');
     expect(view.state().granularFreq.car_solo).toBe(4);
-    expect(view.one('#ce-carbon-habit-impact-car_solo').textContent).toContain('1,269 kg/yr'); // 6.1 × 4 × 52, rounded
-    expect(view.one('#ce-carbon-detailed-total').textContent).toContain('1.27 t CO₂e/yr');
+    expect(view.one('#ce-carbon-habit-impact-car_solo').textContent).toContain('1,290 kg/yr'); // EPA 0.400 kg/mile × 25 km = 6.2 kg; × 4 × 52, rounded
+    expect(view.one('#ce-carbon-detailed-total').textContent).toContain('1.29 t CO₂e/yr');
     expect(view.one('#ce-carbon-pledge-toggle-car_solo')).toBeTruthy();
   });
 

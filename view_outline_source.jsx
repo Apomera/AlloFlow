@@ -1,4 +1,19 @@
 
+function ensureOutlinePolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-outline-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-outline-a11y-css';
+  st.textContent = [
+    '[data-outline-view="true"] button,[data-outline-view="true"] input,[data-outline-view="true"] select,[data-outline-view="true"] textarea{touch-action:manipulation;box-sizing:border-box}',
+    '[data-outline-view="true"] button:focus-visible,[data-outline-view="true"] input:focus-visible,[data-outline-view="true"] select:focus-visible,[data-outline-view="true"] textarea:focus-visible{outline:3px solid #4f46e5;outline-offset:2px}',
+    '.theme-contrast [data-outline-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}',
+    '@media (forced-colors:active){[data-outline-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-outline-view="true"] button,[data-outline-view="true"] input,[data-outline-view="true"] select,[data-outline-view="true"] textarea{border:1px solid ButtonText}}',
+    '@media (prefers-reduced-motion:reduce){[data-outline-view="true"] *,[data-outline-view="true"] *::before,[data-outline-view="true"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'
+  ].join('');
+  document.head.appendChild(st);
+}
+ensureOutlinePolishCss();
+
 function _outlineAiDoor(t) {
   try {
     if (typeof window !== 'undefined') {
@@ -21,6 +36,7 @@ function _outlineAiDoor(t) {
 }
 
 function OutlineView(props) {
+  ensureOutlinePolishCss();
   props = props || {};
   // Pure data + state reads
   var t = typeof props.t === 'function' ? props.t : function (k) { return k; };
@@ -108,6 +124,12 @@ function OutlineView(props) {
   var conceptCompositionRef = React.useRef(null);
   var _speakingOutlineState = React.useState(false);
   var speakingOutline = _speakingOutlineState[0], setSpeakingOutline = _speakingOutlineState[1];
+  var _outlineSrState = React.useState('');
+  var outlineSrMsg = _outlineSrState[0], setOutlineSrMsg = _outlineSrState[1];
+  var announceOutline = function (msg) {
+    setOutlineSrMsg(String(msg || ''));
+    if (typeof props.announceToSR === 'function') props.announceToSR(String(msg || ''));
+  };
   var speakingOutlineRef = React.useRef(false);
   var outlineMountedRef = React.useRef(true);
   var outlineSpeechListenerRef = React.useRef(null);
@@ -197,18 +219,29 @@ function OutlineView(props) {
       window.speechSynthesis.speak(u);
     }
   };
-  var controlSize = { minHeight: 44, minWidth: 44, maxWidth: '100%' };
+  var controlSize = { minHeight: 44, minWidth: 44, maxWidth: '100%', touchAction: 'manipulation', boxSizing: 'border-box' };
   var canAddConcept = typeof mapAddInput === 'string' && !!mapAddInput.trim();
   function addConcept() {
-    if (canAddConcept && typeof handleAddToMapList === 'function') handleAddToMapList(mapAddInput);
+    if (canAddConcept && typeof handleAddToMapList === 'function') {
+      var trimmed = mapAddInput.trim();
+      handleAddToMapList(mapAddInput);
+      announceOutline(tl('outline.concept_added_sr', 'Added concept {name}').replace('{name}', trimmed));
+    }
   }
   function handleConceptKeyDown(event) {
-    if (event.key !== 'Enter' || event.ctrlKey || event.metaKey || event.altKey || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    if (event.ctrlKey || event.metaKey || event.altKey || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    if (event.key === 'Escape' && mapAddInput) {
+      event.preventDefault();
+      if (typeof setMapAddInput === 'function') setMapAddInput('');
+      return;
+    }
+    if (event.key !== 'Enter') return;
     event.preventDefault();
     addConcept();
   }
   return (
-                  <div className="space-y-6 h-full">
+                  <div className="space-y-6 h-full" data-outline-view="true">
+                      {outlineSrMsg ? <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{outlineSrMsg}</div> : null}
                       <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 mb-6 flex flex-col sm:flex-row flex-wrap justify-between items-start gap-4">
                         {/* The UDL rationale is the teacher's; a student's first read is the organizer. */}
                         {isTeacherMode && <div data-organizer-udl-goal className="text-sm text-orange-800">
@@ -219,7 +252,7 @@ function OutlineView(props) {
                                 {standardsInput && <span className="inline-flex bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold items-center gap-1"><CheckCircle size={10} aria-hidden="true"/> {standardsInput}</span>}
                             </div>
                         </div>}
-                        <div className="flex flex-wrap gap-2">
+                        <div role="group" aria-label={tl('outline.toolbar_aria', 'Graphic organizer controls')} className="flex flex-wrap gap-2">
                             {isTeacherMode && (
 (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && <button
                                     type="button" style={controlSize} data-outline-layout-toggle
@@ -237,7 +270,7 @@ function OutlineView(props) {
                                             setIsInteractiveMap(!isInteractiveMap);
                                         }
                                     }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-800 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`}
                                     title={isInteractiveMap || isInteractiveVenn || isVennPlaying ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_layout_hint', 'Arrange the concepts and connections in this organizer.')}
                                 >
                                     {(isInteractiveMap || isInteractiveVenn || isVennPlaying) ? <Layout size={14} aria-hidden="true"/> : <Share2 size={14} aria-hidden="true"/>}
@@ -313,7 +346,7 @@ function OutlineView(props) {
                                     aria-pressed={!!isEditingOutline}
                                     title={isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text_hint', 'Change the wording in this organizer.')}
                                     onClick={() => { if (typeof handleToggleIsEditingOutline === 'function') handleToggleIsEditingOutline(); }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-800 border border-orange-200 hover:bg-orange-50'}`}
                                 >
                                     {isEditingOutline ? <CheckCircle2 size={14} aria-hidden="true"/> : <Pencil size={14} aria-hidden="true"/>}
                                     {isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text', 'Edit Text')}
@@ -326,9 +359,9 @@ function OutlineView(props) {
                                 onClick={() => { if (!outlineAiOff && typeof handleGenerate === 'function') handleGenerate('outline'); }}
                                 disabled={isProcessing || outlineAiOff} aria-busy={isProcessing}
                                 title={outlineAiTitle}
-                                className="flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+                                className="flex items-center gap-2 bg-orange-100 text-orange-800 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
                             >
-                                <RefreshCw size={14} aria-hidden="true" className={isProcessing ? "animate-spin motion-reduce:animate-none" : ""} /> {t('common.regenerate')}
+                                <RefreshCw size={14} aria-hidden="true" className={isProcessing ? "animate-spin motion-reduce:animate-none" : ""} /> {t('common.regenerate') || 'Regenerate'}
                             </button>
                             )}
                         </div>
@@ -347,7 +380,7 @@ function OutlineView(props) {
                                             <button
                                                 type="button" style={controlSize} data-outline-remove-concept
                                                 aria-label={tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch?.title || ''))}
-                                                onClick={() => { if (typeof handleRemoveFromMapList === 'function') handleRemoveFromMapList(idx); }}
+                                                onClick={() => { if (typeof handleRemoveFromMapList === 'function') { handleRemoveFromMapList(idx); announceOutline(tl('outline.concept_removed_sr', 'Removed concept {name}').replace('{name}', String(branch?.title || ''))); } }}
                                                 className="inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 title={t('common.remove_concept')}
                                             >
@@ -372,7 +405,7 @@ function OutlineView(props) {
                                             onClick={addConcept}
                                             className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                         >
-                                            <Plus size={14} aria-hidden="true" /> {t('concept_map.setup.add_concept_btn')}
+                                            <Plus size={14} aria-hidden="true" /> {t('concept_map.setup.add_concept_btn') || 'Add Concept'}
                                         </button>
                                     </div>
                                 </div>
@@ -384,7 +417,7 @@ function OutlineView(props) {
                                     className="w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                 >
                                     {isProcessing ? <RefreshCw size={24} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={24} className="text-yellow-300 fill-current" aria-hidden="true"/>}
-                                    {isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram')}
+                                    {isProcessing ? (t('concept_map.setup.organizing') || 'Organizing...') : (t('concept_map.setup.create_diagram') || 'Create Interactive Diagram')}
                                 </button>
                             </div>
                         ) : (

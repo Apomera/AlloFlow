@@ -256,7 +256,11 @@ describe('WCAG 2.2 AA Nov 15, 2026 audit remediations (Batch 4 STEM tools)', () 
       (el.textContent || '').includes('Validate + preview') && el.children.length === 0
     );
     expect(hint).toBeTruthy();
-    const wrapperBg = hint.parentElement && hint.parentElement.style && hint.parentElement.style.background;
+    // The hint now sits in a centring column inside the preview panel; read the
+    // nearest ancestor that actually paints a background (the panel itself).
+    let painted = hint.parentElement;
+    while (painted && !(painted.style && painted.style.background)) painted = painted.parentElement;
+    const wrapperBg = painted && painted.style.background;
     expect(wrapperBg).not.toBe('#fff');
     expect(wrapperBg).toMatch(/#0f172a|rgb\(15,\s*23,\s*42\)/i);
   });
@@ -423,7 +427,7 @@ describe('WCAG 2.2 AA Nov 15, 2026 audit remediations (Wave 2: held-file closure
   it('gives the Beehive Plan/Start command a black/#00ff00 high-contrast treatment and keeps its N shortcut scoped with an off switch (2.1.4)', () => {
     const src = readFileSync('stem_lab/stem_tool_beehive.js', 'utf8');
     expect(src).toContain('.theme-contrast [data-stem-tool-shell=\\"beehive\\"] .bee-command .bee-command-go{background:#000000!important;background-image:none!important;color:#00ff00!important;-webkit-text-fill-color:#00ff00!important;border-color:#00ff00!important}');
-    expect(src).toContain("if (e.repeat || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey) return;");
+    expect(src).toContain("if (e.isComposing || e.keyCode === 229 || e.repeat || e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey) return;");
     expect(src).toContain("target.closest('[data-beehive-root=\"true\"]')");
     expect(src).toContain("oneKeyShortcuts: d.oneKeyShortcuts !== false");
     expect(src).toContain("if (!ks.oneKeyShortcuts && key !== '?') return;");
@@ -477,13 +481,19 @@ describe('WCAG 2.2 AA Nov 15, 2026 audit remediations (Wave 2: held-file closure
   });
 
   it('keeps resource Previous/Next visible text separated by a space (2.5.3) and tags the toast region without adding comments to the host', () => {
+    // The nav buttons now show only the arrow + the neighbour's title; the
+    // accessible name ("Previous resource: {title}") still contains that
+    // visible title, which is what 2.5.3 Label in Name requires.
+    const PREV_BTN = "aria-label={previous ? text('resource_nav.previous_named', 'Previous resource: {title}', { title: title(previous) }) : text('resource_nav.previous', 'Previous resource')}><span aria-hidden=\"true\">‹ </span>{previous ? <span aria-hidden=\"true\">{title(previous)}</span> : text('resource_nav.previous', 'Previous resource')}</button>";
+    const NEXT_BTN = "aria-label={next ? text('resource_nav.next_named', 'Next resource: {title}', { title: title(next) }) : text('resource_nav.next', 'Next resource')}>{next ? <span aria-hidden=\"true\">{title(next)}</span> : text('resource_nav.next', 'Next resource')}<span aria-hidden=\"true\"> ›</span></button>";
     const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
-    expect(anti).toContain("</span>{previous && ' '}{previous && <span className=\"block truncate text-xs font-normal\" aria-hidden=\"true\">{title(previous)}</span>}</button>");
-    expect(anti).toContain("</span>{next && ' '}{next && <span className=\"block truncate text-xs font-normal\" aria-hidden=\"true\">{title(next)}</span>}</button>");
+    expect(anti).toContain(PREV_BTN);
+    expect(anti).toContain(NEXT_BTN);
     expect(anti).toMatch(/<div\s+data-toast-region\s+className="fixed inset-x-4 z-\[170\]/);
     const app = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
     expect(app).toMatch(/<div\s+data-toast-region\s+className="fixed inset-x-4 z-\[170\]/);
-    expect(app).toContain("{previous && ' '}{previous && <span");
+    expect(app).toContain(PREV_BTN);
+    expect(app).toContain(NEXT_BTN);
   });
 
   it('never swallows forward Tab in the Document Builder editable preview when the first inner target cannot take focus (2.1.2 / 2.4.3)', () => {
@@ -533,7 +543,8 @@ describe('WCAG 2.2 AA Nov 15, 2026 audit remediations (Wave 3: Sweep 1 hub & mod
     expect(sf).toContain('text-indigo-700');
     expect(sf).not.toContain('max-w-[58vw] truncate');
 
-    expect(readFileSync('view_misc_modals_module.js', 'utf8')).toMatch(/role:\s*["']log["'],\s*tabIndex:\s*0/);
+    // The transcript log is still keyboard-scrollable; aria-live attributes now sit between role and tabIndex.
+    expect(readFileSync('view_misc_modals_module.js', 'utf8')).toMatch(/role:\s*["']log["'],(?:\s*["'][a-z-]+["']:\s*["'][a-z]+["'],){0,4}\s*tabIndex:\s*0/);
     expect(readFileSync('view_export_preview_module.js', 'utf8')).toContain('min-w-6 min-h-6 h-7');
     expect(readFileSync('timeline_studio_module.js', 'utf8')).toContain('min-w-11 min-h-11 p-2 shrink-0 rounded-lg text-slate-600');
     expect(readFileSync('accessibility_lab_module.js', 'utf8')).toContain('fixed inset-0 z-[300]');

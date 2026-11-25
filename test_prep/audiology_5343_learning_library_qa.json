@@ -1,4 +1,5 @@
 {
+  "visibility": "public",
   "packId": "praxis-audiology-5343",
   "version": "1.0.0",
   "schemaVersion": 1,
@@ -150,8 +151,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "981df64233d29c2bc7db76f803e94ae790e70478ddcdcad5b79737bccc389053",
-    "learningLibrarySha256": "f3b2e8b4f4358e90c7045105ec67cb8a770272c500ba25956e6418f2d7deb6a1",
+    "sourceItemsSha256": "45d67aaac148282dd01dc4d160ee1f8af99e5bc56c80fd7caea67f334194c584",
+    "learningLibrarySha256": "c9a7ffc2c1b2971d7af9a8059babda5a51e66aabc4a095bed2f0d7daca3143b8",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

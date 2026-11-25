@@ -13,10 +13,10 @@
  */
 (function() {
   'use strict';
-  if (typeof document !== 'undefined' && document.head && !document.getElementById("concept-pictionary-module-a11y")) {
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("concept-pictionary-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "concept-pictionary-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; }";
+    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @keyframes pic-drawer-pulse-kf { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.55; } } .pic-drawer-pulse { animation: pic-drawer-pulse-kf 0.9s ease-in-out infinite; } [data-pictionary-surface] button, [data-pictionary-surface] input, [data-pictionary-surface] select, [data-pictionary-surface] textarea, [data-pictionary-surface] [role=\"radio\"], [data-pictionary-surface] [role=\"button\"] { touch-action: manipulation; } [data-pictionary-surface] button:focus-visible, [data-pictionary-surface] input:focus-visible, [data-pictionary-surface] select:focus-visible, [data-pictionary-surface] textarea:focus-visible, [data-pictionary-surface] [tabindex]:focus-visible { outline: 2px solid #7c3aed; outline-offset: 2px; } @media (forced-colors: active) { [data-pictionary-surface] button:focus-visible, [data-pictionary-surface] input:focus-visible, [data-pictionary-surface] select:focus-visible, [data-pictionary-surface] textarea:focus-visible, [data-pictionary-surface] [tabindex]:focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }";
     document.head.appendChild(_s);
   }
   (function() {
@@ -304,7 +304,7 @@ const _usePictionaryDialogFocus = (dialogRef, isActive, onClose) => {
     } catch (_) {
     }
     const onKeyDown = (event) => {
-      if (event.defaultPrevented || _cpIsImeComposing(event)) return;
+      if (event.defaultPrevented || _cpIsImeComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
       const topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
       if (event.key === "Escape") {
@@ -2769,7 +2769,7 @@ Return ONLY a JSON object: { "concepts": ["concept 1", "concept 2", ...] }`;
     connected: !!connectedGuests[uid]
   }));
   const sketchParticipants = rosterEntries.filter((entry) => drawerUids.includes(entry.uid));
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": _cpTr(props.t, "pictionary.host_dialog_title", "Concept Pictionary host dashboard") }, /* @__PURE__ */ React.createElement("button", { type: "button", tabIndex: -1, className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm", onPointerDown: () => {
+  return /* @__PURE__ */ React.createElement("div", { "data-pictionary-surface": "", className: "fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": _cpTr(props.t, "pictionary.host_dialog_title", "Concept Pictionary host dashboard") }, /* @__PURE__ */ React.createElement("button", { type: "button", tabIndex: -1, className: "absolute inset-0 bg-slate-900/60 backdrop-blur-sm", onPointerDown: () => {
     dragStartedInsideRef.current = false;
   }, onMouseDown: () => {
     dragStartedInsideRef.current = false;
@@ -2997,7 +2997,7 @@ const SketchVotePanel = React.memo((props) => {
     const hasValidSelection = selectableIndices.some((i) => candidates[i].candidateId === selection);
     const tabIndex = candidate.own ? -1 : selected || !hasValidSelection && idx === firstSelectableIdx ? 0 : -1;
     const onRadioKeyDown = (event) => {
-      if (_cpIsImeComposing(event)) return;
+      if (_cpIsImeComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
       if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
       if (!selectableIndices.length) return;
       event.preventDefault();
@@ -3292,6 +3292,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
+      "data-pictionary-surface": "",
       className: "fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto",
       role: "dialog",
       "aria-modal": "true",
@@ -3385,7 +3386,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
           onChange: (e) => setGuessText(e.target.value),
           disabled: !!activeRound.isPaused || connState !== "connected",
           onKeyDown: (e) => {
-            if (_cpIsImeComposing(e)) return;
+            if (_cpIsImeComposing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
             if (e.key === "Enter") handleSubmitGuess();
             else if (e.key === "Escape" && guessText) {
               e.preventDefault();

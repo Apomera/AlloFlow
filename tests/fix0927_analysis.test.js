@@ -230,7 +230,8 @@ describe('AI refine source writes only to its own, unchanged resource', () => {
 describe('source analysis vocabulary extraction and display', () => {
   it('requests tiered vocabulary in the analysis prompt and normalizes/deduplicates vocabulary and vocabularyTiers', () => {
     const normalize = Dispatcher && Dispatcher.normalizeAnalysisResult;
-    expect(DISPATCH_SOURCE).toMatch(/"vocabulary":\s*\[\{\s*"term":\s*"\.\.\.",\s*"tier":\s*"Academic"\s*\}\]/);
+    // 2026-11-23: each item also carries its part of speech in the passage ("pos"), stored as data.vocabularyPos.
+    expect(DISPATCH_SOURCE).toMatch(/"vocabulary":\s*\[\{\s*"term":\s*"\.\.\.",\s*"tier":\s*"Academic",\s*"pos":\s*"noun"\s*\}\]/);
     const res = normalize({
       readingLevel: '6th-8th Grade',
       concepts: ['Photosynthesis'],

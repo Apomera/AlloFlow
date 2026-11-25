@@ -8,12 +8,12 @@
 // carried.
 //
 // Built on:
-//   - Worden's Tasks of Mourning (1991, 2018 4th ed.) — the four
+//   - Worden's Tasks of Mourning (1982, 2018 5th ed.) — the four
 //     tasks framework, widely taught in grief counseling
 //   - Stroebe & Schut Dual Process Model (1999) — oscillation
 //     between loss-orientation and restoration-orientation
 //   - Boss's framework of Ambiguous Loss (1999, 2006)
-//   - Worden's adaptation for children and adolescents (2018)
+//   - Worden's adaptation for children and adolescents (1996)
 //
 // Safety: includes prominent guidance about when grief needs a
 // clinician, and explicitly screens for thoughts of joining the
@@ -754,7 +754,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             ) : null,
 
             h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _griFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
-              'Worden\'s Tasks of Mourning (2018, 4th ed.). Dual Process Model: Stroebe and Schut (1999). ',
+              'Worden\'s Tasks of Mourning (2018, 5th ed.). Dual Process Model: Stroebe and Schut (1999). ',
               'Created with AlloFlow SEL Hub.'
             )
           ),
@@ -781,7 +781,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
               h('li', null, 'Heavy substance use as the main coping.'),
               h('li', null, 'Persistent guilt that you somehow caused the loss.'),
               h('li', null, 'Disturbing intrusive memories that won\'t stop (signs of trauma layered on grief).'),
-              h('li', null, 'Continued severe impairment more than 12 months later (what is now called Prolonged Grief Disorder).')
+              h('li', null, 'Continued severe impairment more than 6 months later for children and teens (12 months for adults). This is now called Prolonged Grief Disorder.')
             ),
             h('p', { style: { margin: '8px 0 0', color: _griFg('#fecaca'), fontSize: 13.5, lineHeight: 1.7 } },
               'For any of these, please get clinical support. Call 988 (Suicide and Crisis Lifeline) or text HOME to 741741 for immediate crisis. For ongoing support, a school psych, counselor, or grief-trained therapist is the right next step.'
@@ -801,7 +801,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
           h('div', { style: { padding: 16, borderRadius: 12, background: _griBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _griFg('#fda4af'), fontSize: 16 } }, 'Where the framework comes from'),
             h('p', { style: { margin: '0 0 10px', color: _griFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
-              'The Four Tasks of Mourning are from J. William Worden\'s "Grief Counseling and Grief Therapy" (1991, now in its 5th edition 2018). Worden\'s framework replaced the "five stages of grief" (Kübler-Ross) as the dominant clinical model because the tasks language better describes what people actually do in grief: they DO the work, in any order, sometimes multiple times. The stages model is widely misunderstood and has limited clinical utility for grief itself (Kübler-Ross developed it for dying patients, not bereaved survivors).'
+              'The Four Tasks of Mourning are from J. William Worden\'s "Grief Counseling and Grief Therapy" (first published 1982, now in its 5th edition, 2018). Worden\'s framework replaced the "five stages of grief" (K\u00FCbler-Ross) as the dominant clinical model because the tasks language better describes what people actually do in grief: they DO the work, in any order, sometimes multiple times. The stages model is widely misunderstood and has limited clinical utility for grief itself (K\u00FCbler-Ross developed it for dying patients, not bereaved survivors).'
             ),
             h('p', { style: { margin: 0, color: _griFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The Dual Process Model is from Margaret Stroebe and Henk Schut (1999) — the empirical finding that grievers oscillate between loss-orientation and restoration-orientation, and that BOTH are necessary. The framework of ambiguous loss is Pauline Boss\'s (1999) — naming loss without closure as a distinct kind of loss with its own dynamics.'
@@ -815,7 +815,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('griefLoss'))) {
             sourceCard('Boss, P. (1999)', 'Ambiguous Loss: Learning to Live with Unresolved Grief, Harvard University Press', 'The foundational framework for losses without closure.', null),
             sourceCard('Dougy Center for Grieving Children', 'dougy.org', 'National Center for Grieving Children & Families. Free resources for adolescent and child grief.', 'https://www.dougy.org/'),
             sourceCard('National Alliance for Children\'s Grief', 'childrengrieve.org', 'Resource directory and educational materials for grief support for youth.', 'https://childrengrieve.org/'),
-            sourceCard('Worden, J. W. (2018)', 'Children and Grief: When a Parent Dies, Guilford Press', 'Worden\'s adaptation of the tasks for children and adolescents.', null),
+            sourceCard('Worden, J. W. (1996)', 'Children and Grief: When a Parent Dies, Guilford Press', 'Worden\'s adaptation of the tasks for children and adolescents.', null),
             sourceCard('American Psychological Association', 'Prolonged Grief Disorder', 'APA position on persistent grief that may warrant clinical attention.', 'https://www.apa.org/topics/grief')
           ),
 

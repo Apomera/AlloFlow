@@ -226,7 +226,8 @@ describe('Phase 12 Wave 3 — Hubs, STEM/SEL, security, AI-gating & contrast', (
     expect(read('sel_hub/sel_tool_coping.js')).toContain("if (!resp || typeof resp !== 'string') throw new Error('empty');");
 
     const eco = read('stem_lab/stem_tool_ecosystem.js');
-    expect(eco).toContain("var callTTS = typeof ctx.callTTS === 'function' ? ctx.callTTS : null;");
+    // Still null unless the host passes a function; also null when the QR student shell blocks host voice.
+    expect(eco).toContain("var callTTS = (_ecoWin._alloQrBlocked !== true && typeof ctx.callTTS === 'function') ? ctx.callTTS : null;");
     expect(eco).toContain('URL.revokeObjectURL(_u)');
 
     expect(read('stem_lab/stem_tool_bakingscience.js')).toContain('window.__alloBakingAudioCtx');

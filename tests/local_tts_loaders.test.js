@@ -601,6 +601,81 @@ describe('Piper local loader resilience', () => {
     expect(api.ownsUrl(cached)).toBe(false);
     expect(revokeObjectURL).toHaveBeenCalledWith(cached);
   });
+
+  it('detects already-stored OPFS Piper models via isLanguageStored without triggering downloads', async () => {
+    const lib = makeLib({
+      stored: vi.fn(async () => ['es_MX-ald-medium']),
+      PATH_MAP: { 'es_MX-ald-medium': 'es/es_MX/ald/medium/es_MX-ald-medium.onnx', 'fr_FR-siwis-medium': 'fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx' },
+    });
+    const api = loadPiper(lib);
+    expect(api.isLanguageReady('es')).toBe(false);
+    await expect(api.isLanguageStored('es')).resolves.toBe(true);
+    expect(api.isLanguageReady('es')).toBe(true);
+    expect(lib.download).not.toHaveBeenCalled();
+    await expect(api.isLanguageStored('fr')).resolves.toBe(false);
+    expect(lib.download).not.toHaveBeenCalled();
+    lib.remove = vi.fn(async () => {});
+    await expect(api.removeLanguage('es')).resolves.toBe(true);
+    expect(lib.remove).toHaveBeenCalledWith('es_MX-ald-medium');
+    expect(api.isLanguageReady('es')).toBe(false);
+  });
+
+  it('routes non-English to Piper first only when preferOfflineNonEnglishVoice is enabled, leaving English on Kokoro/Gemini', async () => {
+    const lib = makeLib({
+      stored: vi.fn(async () => ['es_MX-ald-medium']),
+      PATH_MAP: { 'es_MX-ald-medium': 'es/es_MX/ald/medium/es_MX-ald-medium.onnx' },
+    });
+    const piperApi = loadPiper(lib);
+    await piperApi.isLanguageStored('es');
+    const speakSpy = vi.spyOn(piperApi, 'speak');
+    const state = { queue: Promise.resolve(), botQueue: Promise.resolve(), urlCache: new Map(), rateLimitedUntil: 0 };
+    const { callTTS } = createTTS({
+      state,
+      apiKey: 'test-key',
+      GEMINI_MODELS: { tts: 'test-tts-model' },
+      AVAILABLE_VOICES: ['Kore', 'af_heart'],
+      _isCanvasEnv: true,
+      languageToTTSCode: (lang) => (String(lang).toLowerCase().startsWith('span') ? 'es' : 'en'),
+      isGlobalMuted: () => false,
+      warnLog: () => {},
+      debugLog: () => {},
+      getLeveledTextLanguage: () => 'Spanish',
+      getCurrentUiLanguage: () => 'English',
+      getAiUserConfig: () => ({ preferOfflineNonEnglishVoice: true }),
+      getAi: () => null,
+      setShowKokoroOfferModal: () => {},
+    });
+    const esUrl = await callTTS('Hola clase.', 'Kore', 1, { language: 'Spanish' });
+    expect(esUrl).toBeTruthy();
+    expect(speakSpy).toHaveBeenCalledWith('Hola clase.', 'es', 1, expect.any(Object));
+    // Verify English stays off Piper (PIPER_HANDLES_ENGLISH = false)
+    speakSpy.mockClear();
+    const ttsSrc = readFileSync(resolve(process.cwd(), 'tts_source.jsx'), 'utf8');
+    expect(ttsSrc).toContain('const PIPER_HANDLES_ENGLISH = false;');
+    // Verify Header Voice Settings exposes non-English Piper download, preview, preference, and OS local-voice tip
+    const headerSrc = readFileSync(resolve(process.cwd(), 'view_header_source.jsx'), 'utf8');
+    expect(headerSrc).toContain('data-piper-get-voice=');
+    expect(headerSrc).toContain('data-piper-test-voice=');
+    expect(headerSrc).toContain('data-piper-remove-voice=');
+    expect(headerSrc).toContain('data-piper-prefer-offline="true"');
+    expect(headerSrc).toContain('data-device-voice-tip="true"');
+    expect(headerSrc).toContain('PIPER_NON_EN_CODES');
+    // Verify main-app, Voice Loop, Student AI-Off, Tour, and Help browser speech fallbacks prefer localService === true first
+    const hostSrc = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+    const phaseKSrc = readFileSync(resolve(process.cwd(), 'phase_k_helpers_source.jsx'), 'utf8');
+    const botSrc = readFileSync(resolve(process.cwd(), 'allobot_source.jsx'), 'utf8');
+    const tourSrc = readFileSync(resolve(process.cwd(), 'view_misc_panels_source.jsx'), 'utf8');
+    const spotSrc = readFileSync(resolve(process.cwd(), 'view_spotlight_tour_source.jsx'), 'utf8');
+    const cmdSrc = readFileSync(resolve(process.cwd(), 'allo_commands_source.jsx'), 'utf8');
+    const audioHelpSrc = readFileSync(resolve(process.cwd(), 'audio_helpers_source.jsx'), 'utf8');
+    expect(hostSrc).toContain('v && v.localService === true');
+    expect(phaseKSrc).toContain('voice && voice.localService === true');
+    expect(botSrc).toContain('v && v.localService === true');
+    expect(tourSrc).toContain('v && v.localService === true');
+    expect(spotSrc).toContain('v && v.localService === true');
+    expect(cmdSrc).toContain('voice && voice.localService === true');
+    expect(audioHelpSrc).toContain('v && v.localService === true');
+  });
 });
 
 describe('Kokoro init stall watchdog (2026-09-14)', () => {

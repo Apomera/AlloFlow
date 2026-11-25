@@ -42,10 +42,22 @@ describe('Help in the compact header bar', () => {
     expect(src).toContain("(hintHistory || []).length > 0 || (toastHistoryCount || 0) > 0");
   });
 
-  it('Start & setup stays in both headers and still lists the tour', () => {
+  // 2026-11-23: the tour (and Resume) was offered in both the Help menu and Start & setup.
+  // It is offered once now, in the Help menu, which the compact and expanded headers both open.
+  it('Start & setup stays in both headers; the tour is offered once, in the Help menu', () => {
     const src = header();
     expect(count(src, 'onClick={() => setShowSetupPathMenu(true)}')).toBe(2);
-    expect(src).toContain('data-setup-tour-start=""');
+    expect(src).not.toContain('data-setup-tour-start');
+    expect(src).not.toContain('data-setup-tour-resume');
+    expect(count(src, 'startAppTour(0)'), 'one way to start the tour').toBe(1);
+    expect(count(src, 'startAppTour(tourResumeStep)'), 'one way to resume it').toBe(1);
+    expect(count(src, 'data-help-key="header_tour_start"')).toBe(1);
+    const menu = src.slice(src.indexOf('const helpMenu = ('), src.indexOf('  ) : null;', src.indexOf('const helpMenu = (')));
+    expect(menu).toContain('data-help-key="header_tour_start" data-help-menu-tour="" onClick={() => { setShowHelpMenu(false); startAppTour(0); }}');
+    expect(menu).toContain('data-help-menu-tour-resume="" onClick={() => { setShowHelpMenu(false); startAppTour(tourResumeStep); }}');
+    const setup = src.slice(src.indexOf('id="header-setup-options-title"'));
+    for (const row of ['header_return_to_start', 'header_quickstart_setup', 'header_guided_mode_start']) expect(setup, row).toContain('data-help-key="' + row + '"');
+    expect(setup).toContain('onClick={restartGuidedModeFromHeader}');
   });
 
   it('the menu closes on Escape and on a click outside it', () => {

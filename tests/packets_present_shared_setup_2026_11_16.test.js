@@ -164,7 +164,8 @@ describe('the presenter lets the teacher edit a meaning and a sentence', () => {
     const scripts = [...doc.querySelectorAll('script[src]')].map((s) => s.getAttribute('src'));
     expect(scripts).not.toContain('packets_handoff.js');
     expect(SCRIPT).not.toContain('AlloPacketsHandoff');
-    expect(doc.querySelector('footer.foot a').getAttribute('href')).toBe('./');
+    // 2026-11-23: every Packets page's footer also links "Send feedback" (packets-feedback.html), before "More from AlloFlow".
+    expect([...doc.querySelectorAll('footer.foot a')].map((a) => a.getAttribute('href'))).toEqual(['packets-feedback.html#from-packets-present-export', './']);
     expect(doc.querySelector('details.proof [data-show-rule]')).toBeTruthy();
     expect(doc.querySelector('details.proof').textContent).toContain('twenty-one files from this site');
 

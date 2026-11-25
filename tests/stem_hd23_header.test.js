@@ -90,7 +90,9 @@ describe('phone header action bar', () => {
   };
   // 390 px phone: topbar padding 96 px left (430 px rule) + 12 px right.
   const ROW = 390 - 96 - 12;
-  for (const [view, extra, count] of [['teacher', { isTeacherMode: true }, 7], ['student', {}, 5]]) {
+  // 2026-11-23: the bar keeps Listen, More and Close (Theme, narration, Controls, keyboard
+  // help, AI and Math Studio moved into the More menu), so both views have 3 buttons.
+  for (const [view, extra, count] of [['teacher', { isTeacherMode: true }, 3], ['student', {}, 3]]) {
     it(view + ' view: ' + count + ' buttons fit one 390 px row; no fixed cap narrower than they need', async () => {
       await render(extra);
       const bar = host.querySelector('.stem-lab-actionbar');

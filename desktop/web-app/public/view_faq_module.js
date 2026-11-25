@@ -55,6 +55,19 @@ function FaqView(props) {
   var crisisNotice_state = React.useState('');
   var crisisNotice = crisisNotice_state[0];
   var setCrisisNotice = crisisNotice_state[1];
+  var faqActionNotice_state = React.useState('');
+  var faqActionNotice = faqActionNotice_state[0];
+  var setFaqActionNotice = faqActionNotice_state[1];
+  var announceFaq = function (msg) {
+    var clean = String(msg || '').trim();
+    if (!clean) return;
+    setFaqActionNotice(clean);
+    if (typeof props.announceToSR === 'function') {
+      try {
+        props.announceToSR(clean);
+      } catch (_) {}
+    }
+  };
   React.useEffect(function () {
     faqMountedRef.current = true;
     return function () {
@@ -155,6 +168,7 @@ function FaqView(props) {
       Promise.resolve(navigator.clipboard.writeText(full)).then(function () {
         if (!faqMountedRef.current) return;
         setCopiedFaqIdx(idx);
+        announceFaq(label('faq.copied_sr', 'Copied question and answer to clipboard.'));
         if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
         copyTimerRef.current = setTimeout(function () {
           copyTimerRef.current = null;
@@ -183,9 +197,11 @@ function FaqView(props) {
       return i;
     });
     setExpandedSet(new Set(all));
+    announceFaq(label('faq.all_expanded_sr', 'All answers shown.'));
   };
   var collapseAll = function () {
     setExpandedSet(new Set());
+    announceFaq(label('faq.all_collapsed_sr', 'All answers hidden.'));
   };
   // State reads
   var t = typeof props.t === 'function' ? props.t : function (k) {
@@ -595,6 +611,7 @@ function FaqView(props) {
       answer: ''
     };
     replaceFaqList(faqItems.concat([blank]), null);
+    announceFaq(label('faq.added_sr', 'Added new question.'));
   };
   var handleRemoveFaqItem = function (idx) {
     if (!canMutateFaqList || idx < 0 || idx >= faqItems.length) return;
@@ -607,6 +624,7 @@ function FaqView(props) {
       index: idx,
       after: JSON.stringify(nextList)
     });
+    announceFaq(label('faq.removed_sr', 'Removed question.'));
   };
   var handleMoveFaqItem = function (idx, delta) {
     if (!canMutateFaqList) return;
@@ -617,6 +635,7 @@ function FaqView(props) {
     nextList[idx] = nextList[target];
     nextList[target] = moved;
     replaceFaqList(nextList, null);
+    announceFaq(label('faq.moved_sr', 'Moved question {from} to position {to}.').replace('{from}', String(idx + 1)).replace('{to}', String(target + 1)));
   };
   var handleUndoRemoveFaq = function () {
     if (!canMutateFaqList || !lastRemovedFaq || lastRemovedFaq.after !== faqSignature) return;
@@ -624,6 +643,7 @@ function FaqView(props) {
     var insertAt = Math.min(Math.max(0, lastRemovedFaq.index), nextList.length);
     nextList.splice(insertAt, 0, lastRemovedFaq.item);
     replaceFaqList(nextList, null);
+    announceFaq(label('faq.restored_sr', 'Restored removed question.'));
   };
   // PASS 1: precompute sentence index ranges over rawFaqItems (matching
   // handleSpeak's unfiltered 'faq-active' queue) and project them onto
@@ -701,7 +721,12 @@ function FaqView(props) {
   return /*#__PURE__*/React.createElement("div", {
     "data-faq-view": true,
     className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("style", null, "[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-view] [data-faq-audio-group] { line-height: 1.5; }"), crisisNotice && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("style", null, "[data-faq-view] p, [data-faq-view] button, [data-faq-view] textarea, [data-faq-view] [data-faq-audio-group] { line-height: 1.5; } [data-faq-view] button, [data-faq-view] input, [data-faq-view] textarea { touch-action: manipulation; box-sizing: border-box; } [data-faq-view] :focus-visible { outline: 3px solid #0891b2; outline-offset: 2px; } .theme-contrast [data-faq-view] :focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px; } @media (forced-colors: active) { [data-faq-view] :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; } [data-faq-view] button, [data-faq-view] input, [data-faq-view] textarea { border-color: ButtonText !important; } } @media (prefers-reduced-motion: reduce) { [data-faq-view] * { animation: none !important; transition: none !important; } }"), /*#__PURE__*/React.createElement("span", {
+    className: "sr-only",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, faqActionNotice), crisisNotice && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     "data-faq-crisis-notice": true,
     className: "rounded-lg border-2 border-rose-500 bg-rose-50 p-3 text-sm font-semibold text-rose-900"
@@ -733,11 +758,11 @@ function FaqView(props) {
   }, label('faq.audio_reading', 'Reading FAQ...')))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1"
+    className: "min-h-11 flex items-center gap-2 bg-slate-100 rounded-full px-3 py-1"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-xs uppercase font-bold text-slate-600"
+    className: "text-xs uppercase font-bold text-slate-700"
   }, label('common.speed', 'Speed')), /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.speed'),
+    "aria-label": t('common.speed') || 'Speed',
     type: "range",
     min: "0.5",
     max: "2",
@@ -747,10 +772,10 @@ function FaqView(props) {
     onChange: e => {
       if (typeof setVoiceSpeed === 'function') setVoiceSpeed(parseFloat(e.target.value));
     },
-    className: "w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+    className: "w-16 min-h-11 bg-transparent rounded-lg cursor-pointer accent-cyan-600"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('common.stop'),
+    "aria-label": t('common.stop') || 'Stop',
     onClick: e => {
       e.stopPropagation();
       if (audioRef && audioRef.current && typeof audioRef.current.pause === 'function') audioRef.current.pause();
@@ -761,7 +786,7 @@ function FaqView(props) {
       if (typeof setPlayingContentId === 'function') setPlayingContentId(null);
     },
     className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors",
-    title: t('common.stop')
+    title: t('common.stop') || 'Stop'
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-xs uppercase px-1"
   }, label('common.stop', 'Stop'))))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
@@ -823,7 +848,7 @@ function FaqView(props) {
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14,
     "aria-hidden": "true"
-  }), isEditingFaq ? t('common.done_editing') : t('faq.edit')))),
+  }), isEditingFaq ? t('common.done_editing') || 'Done Editing' : t('faq.edit') || 'Edit FAQ'))),
   // Show all / Hide all + Self-Check & Search controls (only when not editing — teacher needs everything visible to edit)
   !isEditingFaq && faqItems.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "space-y-2 mb-2"
@@ -870,9 +895,16 @@ function FaqView(props) {
     onChange: function (e) {
       setSearchQuery(e.target.value);
     },
+    onKeyDown: function (e) {
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229 || e.nativeEvent && e.nativeEvent.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Escape' && searchQuery) {
+        e.preventDefault();
+        setSearchQuery('');
+      }
+    },
     placeholder: label('faq.search_placeholder', 'Search questions...'),
     "aria-label": label('faq.search_aria', 'Search FAQ questions and answers'),
-    className: "w-full min-h-11 rounded-full border border-slate-300 bg-white pl-3.5 pr-11 py-1.5 text-xs text-slate-800 placeholder:text-slate-500 focus:border-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
+    className: "w-full min-h-11 rounded-full border border-slate-300 bg-white pl-3.5 pr-11 py-1.5 text-xs text-slate-800 placeholder:text-slate-600 focus:border-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600"
   }), searchQuery && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-faq-search-clear": true,
@@ -973,7 +1005,7 @@ function FaqView(props) {
         onChange: e => {
           if (typeof handleFaqChange === 'function') handleFaqChange(idx, 'question', e.target.value);
         },
-        className: "w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        className: "w-full min-h-11 font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.question),
         placeholder: t('faq.question_placeholder')
       }), renderFaqEditAudioTools(idx, 'question'), (faq.question_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", _extends({}, _faqTranslationAttributes(generatedContent), {
@@ -982,7 +1014,7 @@ function FaqView(props) {
         onChange: e => {
           if (typeof handleFaqChange === 'function') handleFaqChange(idx, 'question_en', e.target.value);
         },
-        className: "w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        className: "w-full min-h-11 text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.question_en || ''),
         placeholder: t('common.placeholder_question_trans')
       })), /*#__PURE__*/React.createElement("div", {
@@ -993,7 +1025,7 @@ function FaqView(props) {
         onChange: e => {
           if (typeof handleFaqChange === 'function') handleFaqChange(idx, 'answer', e.target.value);
         },
-        className: "w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all",
+        className: "w-full min-h-11 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 rounded px-2 py-1 outline-none resize-none transition-all",
         rows: getRows(faq.answer),
         placeholder: t('faq.answer_placeholder')
       }), renderFaqEditAudioTools(idx, 'answer'), /*#__PURE__*/React.createElement("input", {
@@ -1004,7 +1036,7 @@ function FaqView(props) {
         onChange: e => {
           if (typeof handleFaqChange === 'function') handleFaqChange(idx, 'evidence', e.target.value);
         },
-        className: "w-full min-h-11 text-xs text-slate-700 bg-white border border-slate-300 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-200 rounded px-2 py-1 outline-none",
+        className: "w-full min-h-11 text-xs text-slate-700 bg-white border border-slate-300 focus:border-cyan-600 focus:ring-2 focus:ring-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 rounded px-2 py-1 outline-none",
         placeholder: label('faq.evidence_placeholder', 'Optional source quote or evidence reference...')
       }), (faq.answer_en !== undefined || leveledTextLanguage !== 'English') && /*#__PURE__*/React.createElement("textarea", _extends({}, _faqTranslationAttributes(generatedContent), {
         "aria-label": t('faq.edit_answer_translation') || 'Edit FAQ answer translation',
@@ -1012,7 +1044,7 @@ function FaqView(props) {
         onChange: e => {
           if (typeof handleFaqChange === 'function') handleFaqChange(idx, 'answer_en', e.target.value);
         },
-        className: "w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200",
+        className: "w-full min-h-11 text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-700 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200",
         rows: getRows(faq.answer_en || ''),
         placeholder: t('common.placeholder_answer_trans')
       })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -1063,7 +1095,7 @@ function FaqView(props) {
           scanFaqRecall(e.target.value);
         },
         placeholder: label('faq.try_placeholder', 'Jot a quick thought before clicking Show answer...'),
-        className: "w-full rounded-md border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+        className: "w-full min-h-11 rounded-md border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
       })), isExpanded && faq.question_en && /*#__PURE__*/React.createElement("p", _extends({}, _faqTranslationAttributes(generatedContent), {
         className: "text-sm text-slate-600 italic mb-2"
       }), "(", faq.question_en, ")"), /*#__PURE__*/React.createElement("div", {
@@ -1164,7 +1196,7 @@ function FaqView(props) {
         "aria-expanded": isExpanded,
         "aria-controls": `faq-answer-${idx}`,
         "aria-label": (isExpanded ? label('faq.collapse_answer_named', 'Hide answer: {question}') : label('faq.expand_answer_named', 'Show answer: {question}')).replace('{question}', () => faqQuestionName(faq) || label('faq.audio_item', 'FAQ') + ' ' + (idx + 1)),
-        className: "shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        className: "shrink-0 mt-2 min-w-11 min-h-11 inline-flex items-center justify-center rounded text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-600"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-xs font-semibold"
       }, isExpanded ? label('faq.hide_answer_action', 'Hide answer') : label('faq.show_answer_action', 'Show answer')), /*#__PURE__*/React.createElement(ChevronDown, {

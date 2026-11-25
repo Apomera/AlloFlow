@@ -7,7 +7,7 @@ const vm = require('vm');
 const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
-const sharedPages = ['index.html', 'about.html', 'features.html', 'for-districts.html', 'library.html', 'students.html', 'calculator.html', 'accessibility_demo.html'];
+const sharedPages = ['index.html', 'about.html', 'principles.html', 'tour.html', 'features.html', 'for-districts.html', 'library.html', 'students.html', 'calculator.html', 'accessibility_demo.html'];
 const pages = sharedPages.concat(['launch.html', 'changelog.html']);
 const errors = [];
 const warnings = [];
@@ -139,23 +139,27 @@ for (const file of pages) {
         /Cost to educators/i,
         /same license as Linux/i,
         /No vendor lock-in/i,
-        /Prevents hallucinations/i,
+        /Prevents? hallucinations/i,
         /piggybacks entirely/i,
         /the safest AI-assisted clinical report tool/i,
         /ensures every claim is traceable/i
     ];
-    if (file === 'index.html') {
-        // Include text split across lines, inline tags, and SVG labels in the tour.
-        const copy = document.body.textContent.replace(/\s+/g, ' ');
+    if (file === 'tour.html') {
         const slides = document.querySelectorAll('#slides-viewport .slide');
         const dots = document.querySelectorAll('.slide-dots .dot');
         const counter = document.querySelector('#slide-counter');
         if (dots.length !== slides.length) fail(file, 'static tour controls do not match the slide count');
         if (!counter || counter.textContent.trim() !== 'Slide 1 of ' + slides.length) fail(file, 'static tour counter is stale');
-        const languageManifest = JSON.parse(fs.readFileSync(path.join(root, 'lang', 'manifest.json'), 'utf8'));
-        const languageFiles = fs.readdirSync(path.join(root, 'lang')).filter(name => name.endsWith('.js')).length;
-        if (languageManifest.count !== languageFiles || languageManifest.available.length !== languageFiles) fail(file, 'language file inventory and manifest disagree');
-        if (!new RegExp('\\b' + languageFiles + '\\s+language-pack files', 'i').test(copy)) fail(file, 'homepage language-file count is stale');
+    }
+    if (file === 'index.html' || file === 'tour.html') {
+        // Include text split across lines, inline tags, and SVG labels in the tour.
+        const copy = document.body.textContent.replace(/\s+/g, ' ');
+        if (file === 'index.html') {
+            const languageManifest = JSON.parse(fs.readFileSync(path.join(root, 'lang', 'manifest.json'), 'utf8'));
+            const languageFiles = fs.readdirSync(path.join(root, 'lang')).filter(name => name.endsWith('.js')).length;
+            if (languageManifest.count !== languageFiles || languageManifest.available.length !== languageFiles) fail(file, 'language file inventory and manifest disagree');
+            if (!new RegExp('\\b' + languageFiles + '\\s+language-pack files', 'i').test(copy)) fail(file, 'homepage language-file count is stale');
+        }
 
         const unsupported = [
             /without security risk/i,
@@ -221,8 +225,18 @@ for (const file of pages) {
     }
 
     banned.forEach(function (pattern) {
-        if (pattern.test(html)) fail(file, 'stale or absolute promotional claim: ' + pattern);
+        if (pattern.test(html) || pattern.test(visibleCopy)) fail(file, 'stale or absolute promotional claim: ' + pattern);
     });
+}
+
+try {
+    childProcess.execFileSync(process.execPath, ['dev-tools/build_promo_lucide_subset.cjs', '--check'], {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe']
+    });
+} catch (error) {
+    fail('vendor/lucide-promo-subset.min.js', 'promo Lucide icon subset is stale or incomplete (' + (error.stderr || error.message).trim() + ')');
 }
 
 const css = fs.readFileSync(path.join(root, 'shared.css'), 'utf8');

@@ -123,10 +123,17 @@ describe('design challenge validators', () => {
   });
 
   it('key_master and enemy_gauntlet count their pieces', () => {
+    // 2026-11-23: key_master is now also checked by the game engine (the doors must
+    // really block the flag), so loose doors in open floor no longer pass. The map
+    // below is a real key-and-door puzzle; the old loose-door map must fail.
+    const puzzle = borderedMap({ '1,1': 'player', '14,10': 'flag', '3,3': 'key', '8,8': 'key', '2,9': 'npc' });
+    for (let y = 1; y < H - 1; y++) { puzzle['5,' + y] = 'wall'; puzzle['10,' + y] = 'wall'; }
+    puzzle['5,5'] = 'door'; puzzle['10,5'] = 'door';
+    expect(passes(byId.key_master, puzzle)).toBe(true);
     expect(passes(byId.key_master, {
       '1,1': 'player', '9,9': 'flag', '2,2': 'door', '3,3': 'door',
       '4,4': 'key', '5,5': 'key', '6,6': 'npc'
-    })).toBe(true);
+    })).toBe(false);
     const gauntlet = { '1,1': 'player', '9,9': 'flag', '2,2': 'heart', '3,3': 'heart' };
     for (let i = 0; i < 5; i++) gauntlet[(4 + i) + ',4'] = 'enemy';
     for (let i = 0; i < 8; i++) gauntlet[(2 + i) + ',7'] = 'wall';

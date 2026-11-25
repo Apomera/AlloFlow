@@ -45,6 +45,17 @@ enrichmentParts.forEach((enrichment) => {
   });
 });
 
+const mathFixes = require('../item_quality_patches/ap_calc_stats_math_fixes.cjs').ap_statistics_foundation_pilot || {};
+Object.entries(mathFixes).forEach(([fullId, patch]) => {
+  const entry = AP_STATISTICS_DISTRACTOR_FEEDBACK[fullId];
+  if (!entry || !Array.isArray(patch.choices) || !Array.isArray(patch.choiceRationales)) return;
+  patch.choices.forEach((choiceText, idx) => {
+    const note = patch.choiceRationales[idx];
+    if (!note || /^Best answer\./i.test(note)) return;
+    entry[choiceText] = note;
+  });
+});
+
 function distractorFeedbackFor(itemId, choiceText) {
   const entry = AP_STATISTICS_DISTRACTOR_FEEDBACK[itemId];
   if (!entry) return null;

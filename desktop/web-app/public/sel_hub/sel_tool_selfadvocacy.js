@@ -115,7 +115,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         id: 'fiveO4',
         name: 'Section 504 Plan',
         plain: 'If you have a disability that affects a major life activity like learning, concentrating, reading, or walking, but you don\'t need specialized instruction, you might get a 504 Plan with accommodations.',
-        why: 'Section 504 is a civil rights law that predates IDEA. It is broader than IDEA: more conditions qualify, but it provides accommodations only, not specialized instruction.',
+        why: 'Section 504 is a civil rights law that predates IDEA. It is broader than IDEA: more conditions qualify. A 504 plan usually provides accommodations and sometimes related services, but not the individualized goals and specialized instruction of an IEP.',
         covers: 'Accommodations like extended time on tests, preferential seating, frequent breaks, access to water or snacks, use of assistive technology, modified assignments.',
         doesntCover: 'No specialized instruction. No IEP goals tracked with progress monitoring. Fewer formal procedural protections than IDEA, though you still have rights.',
         example: 'A student with diabetes who needs snack breaks and blood-sugar checks might have a 504 plan, not an IEP. A student with ADHD who can succeed with accommodations but doesn\'t need pull-out instruction might also have a 504.'
@@ -124,7 +124,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         id: 'safe',
         name: 'Your right to a safe learning environment',
         plain: 'You have the right to attend school without being bullied, harassed, or discriminated against because of who you are.',
-        why: 'Students can\'t learn when they don\'t feel safe. Multiple federal laws — Title VI (race, color, national origin), Title IX (sex, including gender identity and sexual orientation in many interpretations), Section 504 (disability), ADA (disability) — protect students from discrimination and require schools to respond to harassment.',
+        why: 'Students can\'t learn when they don\'t feel safe. Multiple federal laws \u2014 Title VI (race, color, national origin), Title IX (sex; whether it also covers gender identity and sexual orientation is disputed and varies by state), Section 504 (disability), ADA (disability) \u2014 protect students from discrimination and require schools to respond to harassment.',
         covers: 'Protection from discrimination based on race, color, national origin, sex, gender identity, sexual orientation, disability, and often religion. Schools must investigate complaints and take action.',
         doesntCover: 'These protections require the school to be notified. If you don\'t tell a trusted adult, the school often doesn\'t know to respond.',
         example: 'If you are being harassed because of a disability (imitating your speech, mocking your accommodations, calling you slurs), the school has a legal obligation to address it, not to tell you to ignore it.'
@@ -144,7 +144,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         id: 'ada',
         name: 'ADA Title II (schools) and Title III (private entities)',
         plain: 'The Americans with Disabilities Act gives you the right to reasonable accommodations in most public and private places, including colleges and workplaces.',
-        why: 'IDEA ends when you graduate or turn 21 (whichever is first). ADA does not end. It follows you into college, work, and public life.',
+        why: 'IDEA services end when you graduate with a regular diploma or reach your state\'s age limit (21 or 22 in most states), whichever comes first. ADA does not end. It follows you into college, work, and public life.',
         covers: 'Reasonable accommodations in college (if you register with disability services), in hiring and employment (for qualifying employers), in places of public accommodation (stores, restaurants, theaters, most businesses with 15+ employees).',
         doesntCover: 'You must self-identify and request accommodations in college and work. Nobody automatically gives you accommodations the way K-12 schools did. And the accommodations must be "reasonable" — the employer or college can argue certain accommodations create undue hardship.',
         example: 'You get into college. If you want extended time on exams, you register with the disability services office, submit documentation, and they send accommodation letters to your professors. Without this step, no accommodations happen.'
@@ -163,7 +163,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         name: 'Age of Majority — rights transfer at 18',
         plain: 'When you turn 18 (in most states), educational rights that were your parents\' now become yours.',
         why: 'At the legal age of adulthood, you are the decision-maker for your own life, including your education. This can feel sudden. Planning matters.',
-        covers: 'You sign your own IEP. You access your own records. You decide whether to continue services. You can invite your parents to meetings, or not. You decide who gets information about you.',
+        covers: 'In most states, IDEA rights transfer to you at 18: you give consent and take part as the decision-maker. You can invite your parents to meetings, or not. The school still sends notices to your parents and can share records with them if they claim you as a dependent.',
         doesntCover: 'If you have a significant cognitive disability that affects your ability to make educational decisions, options like supported decision-making agreements or guardianship may apply. These are legal processes, not automatic.',
         example: 'The school must send you (not just your parents) the Prior Written Notice at 18. Your parents can still be involved if you want, but you\'re the official decision-maker.'
       },
@@ -206,7 +206,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
   var NO_PLAN_YET = [
     { step: 'Talk to a trusted adult at school', body: 'A teacher who knows you well, the school counselor, a school psychologist, the school nurse, or a specific administrator. Say: "I\'ve been struggling with [specific area] and I think I might need some extra support. How do I find out if I qualify?"' },
-    { step: 'Ask your parent or guardian to request an evaluation in writing', body: 'This is the formal step. Your parent writes a letter or email to the special education director (or whoever your district designates) saying: "We request a special education evaluation for [student name] to determine if they qualify for services under IDEA." The date of this request starts legal timelines.' },
+    { step: 'Ask your parent or guardian to request an evaluation in writing', body: 'This is the formal step. Your parent writes a letter or email to the special education director (or whoever your district designates) saying: "We request a special education evaluation for [student name] to determine if they qualify for services under IDEA." Put the request in writing and date it. The federal 60-day evaluation clock starts when your parent signs consent, and some states start a clock at the request.' },
     { step: 'The school has about 60 days to evaluate', body: 'The exact number varies by state. During this time, they should gather data, observe you, test you in relevant areas, and talk with your family. You can participate and ask questions.' },
     { step: 'An eligibility meeting is held', body: 'You, your parents, teachers, and school staff meet to review the evaluation results. The team decides whether you meet eligibility criteria for an IEP.' },
     { step: 'If you qualify, an IEP is developed', body: 'Within 30 days of eligibility determination, the team meets again to write your IEP. This is the plan document with goals, services, and accommodations.' },
@@ -267,7 +267,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
   // ═══════════════════════════════════════════════════════════════
   // MODULE 4: DISCLOSURE DECISIONS
   // ═══════════════════════════════════════════════════════════════
-  var DISCLOSURE_CORE_IDEA = 'Disclosure is different from asking for an accommodation. You never have to share your specific diagnosis with anyone. You get to decide what to share, with whom, and when. The key question is always: what does this person need to know to help me, and what do they NOT need to know? Your story, your narrative, your choice.';
+  var DISCLOSURE_CORE_IDEA = 'Disclosure is different from asking for an accommodation. You choose who hears about your diagnosis in everyday life. The exception is a formal accommodation request, where a college disability office or an employer\'s HR may ask for documentation. The key question is always: what does this person need to know to help me, and what do they NOT need to know? Your story, your narrative, your choice.';
 
   var DISCLOSURE_AUDIENCES = [
     {
@@ -375,8 +375,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       name: 'Request an IEP / 504 team meeting',
       who: 'All team members including parent, special educator, general educator, administrator',
       when: 'When the issue affects your plan itself, not just one teacher. A team meeting can formally change your plan.',
-      how: 'Parent writes to the case manager: "We request a team meeting to discuss [specific issues] with [student\'s] IEP." The school must schedule one, usually within 10 days.',
-      timeline: 'Meeting within 10 days. Outcome documented in a new IEP or amendment.',
+      how: 'Parent writes to the case manager: "We request a team meeting to discuss [specific issues] with [student\'s] IEP." The school must respond to the request. How quickly it must meet depends on your state\'s rules, so ask for the timeline in writing.',
+      timeline: 'Meeting on your state\'s timeline. Outcome documented in a new IEP or amendment.',
       nextIfStuck: 'If the meeting doesn\'t resolve things, use the procedural safeguards.'
     },
     {
@@ -441,7 +441,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
     { age: '14-15', event: 'Transition discussions begin', prep: 'Start thinking about your interests, what you\'re good at, and what you might want to do after high school. You don\'t need an answer; you need to start exploring.', rights: 'Your IEP should begin including transition-related goals around this age.' },
     { age: '16', event: 'Formal transition planning required', prep: 'Your IEP must now include measurable postsecondary goals and transition services. This is required by federal law.', rights: 'Transition services cover education/training, employment, and independent living. Agency representatives (VR, DD services) can be invited with your consent.' },
     { age: '17', event: 'Prepare for rights transfer', prep: 'One year before age of majority: the school must tell you that rights transfer at 18. Start thinking about what that means for you and how you want to handle it.', rights: 'You have the right to know about the rights transfer in advance.' },
-    { age: '18', event: 'Age of majority — rights transfer', prep: 'You sign your own IEP now. You decide who comes to meetings. You access your own records. If this is overwhelming, supported decision-making agreements are an alternative to guardianship.', rights: 'All IDEA rights that were your parents\' now become yours.' },
+    { age: '18', event: 'Age of majority — rights transfer', prep: 'In most states you are now the decision-maker for your IEP. You can invite who you want to meetings and see your own records. If this is overwhelming, supported decision-making agreements are an alternative to guardianship.', rights: 'In most states, the IDEA rights that were your parents\' now become yours.' },
     { age: 'Before graduation', event: 'Get a Summary of Performance (SOP)', prep: 'Request your Summary of Performance document. It describes your academic achievement and functional performance plus recommendations for meeting postsecondary goals. You\'ll use this for college disability services and workplace accommodations.', rights: 'SOP is required by IDEA for students exiting with a regular diploma or aging out.' },
     { age: 'Graduation', event: 'IEP ends', prep: 'Special education services end with a regular diploma or at age 21-22 (varies by state). Know what\'s next: college? VR? Work? Have a plan.', rights: 'No more IEP. But ADA and 504 follow you into college and work.' }
   ];
@@ -458,7 +458,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
   var WORKPLACE_RIGHTS = [
     { topic: 'Pre-offer (applying and interviewing)', body: 'Employers CANNOT ask if you have a disability, ask about medical history, or require you to disclose. You don\'t need to mention anything. Focus on your qualifications.' },
     { topic: 'Post-offer, pre-hire', body: 'Some employers do medical exams or ask medical questions AFTER a conditional job offer. This is legal if they do it for all employees in that role. If they revoke the offer based on the medical info, they must show it\'s job-related and necessary.' },
-    { topic: 'Requesting accommodations', body: 'You can request accommodations at any point — during the application, post-offer, or while employed. The "interactive process" is required: you and the employer work together to figure out what will work. You don\'t have to name your diagnosis; you describe the functional need.' },
+    { topic: 'Requesting accommodations', body: 'You can request accommodations at any point \u2014 during the application, post-offer, or while employed. The "interactive process" is required: you and the employer work together to figure out what will work. You can usually start by describing the functional need; the employer may ask for medical documentation if the disability is not obvious.' },
     { topic: '"Reasonable" accommodations', body: 'The law requires reasonable accommodations that don\'t cause "undue hardship." Examples: flexible schedule, assistive technology, modified workstation, light duty temporarily, telework, job restructuring. Usually inexpensive.' },
     { topic: 'Disclosure strategy', body: 'General principle: disclose on a need-to-know basis. Your direct supervisor and HR may need to know enough to implement accommodations. Coworkers generally don\'t. You control the narrative.' },
     { topic: 'Retaliation protection', body: 'It is illegal to fire, demote, or punish you for requesting accommodations or filing a complaint. If it happens, document everything and contact the EEOC.' },
@@ -898,7 +898,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       q: 'If you have a disability that affects your learning, which federal law gives you the right to specialized instruction through an IEP?',
       options: ['ADA', 'IDEA', 'FERPA', 'Section 504'],
       correct: 1,
-      why: 'IDEA (Individuals with Disabilities Education Act) is the federal law that provides specialized instruction + related services through an IEP. Section 504 provides accommodations only; ADA covers broader civil rights but not specialized instruction.'
+      why: 'IDEA (Individuals with Disabilities Education Act) is the federal law that provides specialized instruction + related services through an IEP. Section 504 provides accommodations and sometimes related services; ADA covers broader civil rights but not specialized instruction.'
     },
     {
       q: 'A 504 plan is different from an IEP in which way?',
@@ -1318,7 +1318,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
   // Tailored to the student audience. Filter as you type.
 
   var GLOSSARY = [
-    { term: '504 Plan', def: 'A plan with accommodations under Section 504. Broader eligibility than an IEP, but doesn\'t include specialized instruction. Examples: extended time, breaks, preferential seating.' },
+    { term: '504 Plan', def: 'A plan with accommodations under Section 504. Broader eligibility than an IEP, and can include related services, but not the specialized instruction of an IEP. Examples: extended time, breaks, preferential seating.' },
     { term: 'Accommodation', def: 'A change in HOW you learn or are tested that levels the playing field without changing what\'s being measured. Different from a modification, which changes what you\'re expected to do.' },
     { term: 'Adaptive functioning', def: 'How well you do age-expected daily tasks: communication, self-care, socializing, getting around. Measured by tools like Vineland-3 or ABAS-3, mostly relevant for Intellectual Disability eligibility.' },
     { term: 'ADA', def: 'Americans with Disabilities Act. Federal civil rights law that protects you from disability discrimination in employment, public services, and most businesses. Follows you into adulthood (unlike IDEA, which ends).' },
@@ -2209,7 +2209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
           { id: 'rights', icon: '\u2696\uFE0F', title: 'Know Your Rights', body: 'The laws that protect you: IDEA, Section 504, FAPE, LRE, FERPA. Plain-language explanations of what they mean for how school works for you.', color: 'from-blue-700 to-cyan-700' },
           { id: 'iep', icon: '\uD83D\uDCC4', title: 'Your IEP or 504', body: 'Learn to read your own plan document. What each section means, whose goals are really in there, how to prepare for your meeting, what to do if you don\'t have a plan but think you need one.', color: 'from-purple-700 to-pink-700' },
           { id: 'request', icon: '\uD83D\uDD28', title: 'Request Accommodations', body: 'When and how to ask for what you need. Scripts for common situations. How to document requests so your asks don\'t disappear.', color: 'from-emerald-700 to-teal-700' },
-          { id: 'disclose', icon: '\uD83D\uDD11', title: 'Disclosure Decisions', body: 'You never have to share your diagnosis with anyone. Decide what to share, with whom, and when. Audience-specific scripts at different disclosure depths.', color: 'from-amber-700 to-orange-700' },
+          { id: 'disclose', icon: '\uD83D\uDD11', title: 'Disclosure Decisions', body: 'In everyday life you choose who hears about your diagnosis; formal accommodation requests may need documentation. Decide what to share, with whom, and when. Audience-specific scripts at different disclosure depths.', color: 'from-amber-700 to-orange-700' },
           { id: 'escalate', icon: '\uD83D\uDEA8', title: 'When Things Go Wrong', body: 'What to do when accommodations are denied, delayed, or not implemented. Escalation levels from a direct conversation through OCR complaints. Know what each level costs and what it gets you.', color: 'from-rose-700 to-red-700' },
           { id: 'transition', icon: '\uD83C\uDF9F\uFE0F', title: 'Transition to Adulthood', body: 'Age of majority, college disability services, workplace ADA rights. Planning for the moment when rights transfer and you\'re driving.', color: 'from-sky-700 to-blue-800' },
           { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice Scenarios', body: _saAiOn ? 'Realistic scenarios to practice self-advocacy. Pick a situation, write your response, and get AI coaching feedback.' : 'Realistic scenarios to practice self-advocacy. Pick a situation, write your response, and play the scripted conversation.', color: 'from-fuchsia-700 to-rose-700' },
@@ -2990,7 +2990,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
       function renderTransition() {
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           h('h2', { className: 'text-2xl font-black text-indigo-200' }, '\uD83C\uDF9F\uFE0F Transition to Adulthood'),
-          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'At 18 you become your own legal agent for education decisions. At graduation, IEP services end. At college or work, nobody reaches out; you self-identify. This shift is bigger than most 17-year-olds realize. Starting now is not too early.'),
+          h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'At 18, in most states, you become your own legal agent for education decisions. When you graduate with a regular diploma, IEP services end. At college or work, nobody reaches out; you self-identify. This shift is bigger than most 17-year-olds realize. Starting now is not too early.'),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30' },
             h('h3', { className: 'text-sm font-black text-sky-300 mb-3' }, 'Transition milestones'),

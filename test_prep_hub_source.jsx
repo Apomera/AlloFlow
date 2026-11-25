@@ -21,6 +21,42 @@ const TEST_PREP_FETCH_TIMEOUT_MS = 12000;
 const TEST_PREP_HANDS_FREE_ACTION_CONFIDENCE_MIN = 0.6;
 const TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY = 'alloflow_test_prep_hands_free_prompt_mode_v1';
 const TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY = 'alloflow_test_prep_hands_free_explanations_v1';
+const TEST_PREP_HANDS_FREE_RATE_KEY = 'alloflow_test_prep_hands_free_rate_v1';
+const TEST_PREP_LARGE_TEXT_KEY = 'alloflow_test_prep_large_text_v1';
+const TEST_PREP_WORKSHOP_DRAFTS_KEY = 'alloflow_test_prep_workshop_drafts_v1';
+
+function normalizeTestPrepWorkshopDrafts(value) {
+  const safe = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const clean = {};
+  Object.keys(safe).slice(0, 200).forEach((key) => {
+    const safeKey = String(key || '').trim().slice(0, 160);
+    if (safeKey && typeof safe[key] === 'string' && safe[key].length) {
+      clean[safeKey] = safe[key].slice(0, 20000);
+    }
+  });
+  return clean;
+}
+
+function readTestPrepWorkshopDrafts() {
+  try {
+    const raw = window.localStorage.getItem(TEST_PREP_WORKSHOP_DRAFTS_KEY);
+    return normalizeTestPrepWorkshopDrafts(raw ? JSON.parse(raw) : null);
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeTestPrepWorkshopDrafts(map) {
+  const clean = normalizeTestPrepWorkshopDrafts(map);
+  try { window.localStorage.setItem(TEST_PREP_WORKSHOP_DRAFTS_KEY, JSON.stringify(clean)); } catch (_) {}
+  return clean;
+}
+
+function normalizeTestPrepSpeechRate(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 1;
+  return Math.max(0.75, Math.min(1.25, Math.round(num * 100) / 100));
+}
 const TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS = 15000;
 // V7: the microphone is CLOSED for the whole synthesis wait, so this budget is
 // dead air the user is talking into. A flat 15s is right for narrating a whole
@@ -2415,6 +2451,7 @@ function testPrepStudyPlanLayers(learningLibrary) {
     id: testPrepSlug(plan.id, ''),
     title: testPrepStudyPlanText(plan.topicLabel || plan.title, 200) || 'Spaced review',
     unitId: testPrepSlug(plan.unitId, ''),
+    chapterId: testPrepSlug(plan.chapterId, ''),
     diagnosticRouteId: testPrepSlug(plan.diagnosticRouteId, ''),
     stages: (Array.isArray(plan.cadenceStages) ? plan.cadenceStages : []).map((stage, index) => ({
       label: humanize(stage && (stage.label || stage.id)) || 'Stage ' + (index + 1),
@@ -2511,6 +2548,243 @@ function testPrepNormalizeWorkshop(workshop) {
   };
 }
 
+const TEST_PREP_STUDY_CHECKLISTS_KEY = 'alloflow_test_prep_study_checklists_v1';
+
+function normalizeTestPrepStudyChecklists(value) {
+  const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const output = {};
+  Object.keys(input).slice(0, 60).forEach((rawPackId) => {
+    const packId = testPrepSlug(rawPackId, '');
+    const rawMap = input[rawPackId];
+    if (!packId || !rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) return;
+    const cleanMap = {};
+    Object.keys(rawMap).slice(0, 2000).forEach((rawKey) => {
+      const key = String(rawKey || '').trim().slice(0, 160);
+      if (key && rawMap[rawKey] === true) cleanMap[key] = true;
+    });
+    if (Object.keys(cleanMap).length) output[packId] = cleanMap;
+  });
+  return output;
+}
+
+function readTestPrepStudyChecklists() {
+  try {
+    if (typeof localStorage === 'undefined' || !localStorage || typeof localStorage.getItem !== 'function') return {};
+    return normalizeTestPrepStudyChecklists(testPrepSafeJsonParse(localStorage.getItem(TEST_PREP_STUDY_CHECKLISTS_KEY) || '{}'));
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeTestPrepStudyChecklists(value) {
+  const normalized = normalizeTestPrepStudyChecklists(value);
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage && typeof localStorage.setItem === 'function') {
+      localStorage.setItem(TEST_PREP_STUDY_CHECKLISTS_KEY, JSON.stringify(normalized));
+    }
+  } catch (_) {}
+  return normalized;
+}
+
+function testPrepToggleStudyCheck(store, packId, itemKey) {
+  const safePackId = testPrepSlug(packId, '');
+  const safeKey = String(itemKey || '').trim().slice(0, 160);
+  if (!safePackId || !safeKey) return normalizeTestPrepStudyChecklists(store);
+  const normalized = normalizeTestPrepStudyChecklists(store);
+  const packMap = Object.assign({}, normalized[safePackId] || {});
+  if (packMap[safeKey]) delete packMap[safeKey];
+  else packMap[safeKey] = true;
+  if (Object.keys(packMap).length) normalized[safePackId] = packMap;
+  else delete normalized[safePackId];
+  return normalized;
+}
+
+function testPrepResetStudyChecks(store, packId, keyPrefix) {
+  const safePackId = testPrepSlug(packId, '');
+  const prefix = String(keyPrefix || '').trim();
+  if (!safePackId || !prefix) return normalizeTestPrepStudyChecklists(store);
+  const normalized = normalizeTestPrepStudyChecklists(store);
+  if (prefix === '*') {
+    delete normalized[safePackId];
+    return normalized;
+  }
+  const packMap = Object.assign({}, normalized[safePackId] || {});
+  Object.keys(packMap).forEach((key) => {
+    if (key.indexOf(prefix) === 0) delete packMap[key];
+  });
+  if (Object.keys(packMap).length) normalized[safePackId] = packMap;
+  else delete normalized[safePackId];
+  return normalized;
+}
+
+function testPrepCountStudyChecks(packChecks, keys) {
+  const safeMap = packChecks && typeof packChecks === 'object' ? packChecks : {};
+  const list = Array.isArray(keys) ? keys : [];
+  const total = list.length;
+  const checked = list.filter((key) => safeMap[key] === true).length;
+  return { checked, total, percent: total ? Math.round((checked / total) * 100) : 0 };
+}
+
+function testPrepFindStudyLinksForItem(learningLibrary, item, precomputedLayers) {
+  if (!learningLibrary || !item || typeof item !== 'object') {
+    return { playbooks: [], quickRefs: [], hasLinks: false };
+  }
+  const layers = precomputedLayers || testPrepStudyPlanLayers(learningLibrary);
+  const itemId = String(item.id || '').trim();
+  const domainSlug = testPrepSlug(item.domainId || item.unitId || '', '');
+  const itemChapters = new Set(Array.isArray(item.chapterIds) ? item.chapterIds.map((id) => String(id || '')) : []);
+
+  const playbooks = [];
+  const seenPlaybooks = new Set();
+  (layers.playbooks || []).forEach((playbook) => {
+    if (!playbook || !playbook.id || seenPlaybooks.has(playbook.id)) return;
+    if (itemId && Array.isArray(playbook.itemIds) && playbook.itemIds.includes(itemId)) {
+      seenPlaybooks.add(playbook.id);
+      playbooks.push(playbook);
+    }
+  });
+
+  const allQuickRefs = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+  const quickRefs = [];
+  const seenRefs = new Set();
+  if (domainSlug) {
+    allQuickRefs.forEach((card) => {
+      if (!card || !card.id || seenRefs.has(card.id)) return;
+      const cardSlug = testPrepSlug(card.domainId || card.unitId || '', '');
+      if (cardSlug && cardSlug === domainSlug) {
+        seenRefs.add(card.id);
+        quickRefs.push(card);
+      }
+    });
+  }
+  if (!quickRefs.length && itemChapters.size && Array.isArray(layers.unitRoutes)) {
+    const matchedUnitIds = new Set(
+      layers.unitRoutes.filter((route) => route.chapterId && itemChapters.has(route.chapterId)).map((route) => route.unitId).filter(Boolean)
+    );
+    allQuickRefs.forEach((card) => {
+      if (!card || !card.id || seenRefs.has(card.id)) return;
+      const cardSlug = testPrepSlug(card.domainId || card.unitId || '', '');
+      if (cardSlug && matchedUnitIds.has(cardSlug)) {
+        seenRefs.add(card.id);
+        quickRefs.push(card);
+      }
+    });
+  }
+
+  return {
+    playbooks: playbooks.slice(0, 2),
+    quickRefs: quickRefs.slice(0, 2),
+    hasLinks: playbooks.length > 0 || quickRefs.length > 0,
+  };
+}
+
+function testPrepFindStudyLinksForItems(learningLibrary, items, precomputedLayers) {
+  const list = Array.isArray(items) ? items.filter((entry) => entry && typeof entry === 'object') : [];
+  if (!learningLibrary || !list.length) return { playbooks: [], quickRefs: [], hasLinks: false };
+  const layers = precomputedLayers || testPrepStudyPlanLayers(learningLibrary);
+  const playbookScores = new Map();
+  const playbookById = new Map();
+  const refScores = new Map();
+  const refById = new Map();
+  list.forEach((item) => {
+    const links = testPrepFindStudyLinksForItem(learningLibrary, item, layers);
+    links.playbooks.forEach((pb) => {
+      playbookById.set(pb.id, pb);
+      playbookScores.set(pb.id, (playbookScores.get(pb.id) || 0) + 1);
+    });
+    links.quickRefs.forEach((ref) => {
+      refById.set(ref.id, ref);
+      refScores.set(ref.id, (refScores.get(ref.id) || 0) + 1);
+    });
+  });
+  const playbooks = Array.from(playbookScores.entries())
+    .sort((left, right) => right[1] - left[1] || String(playbookById.get(left[0]).title || '').localeCompare(String(playbookById.get(right[0]).title || '')))
+    .slice(0, 3)
+    .map(([id, count]) => Object.assign({}, playbookById.get(id), { matchedCount: count }));
+  const quickRefs = Array.from(refScores.entries())
+    .sort((left, right) => right[1] - left[1] || String(refById.get(left[0]).title || '').localeCompare(String(refById.get(right[0]).title || '')))
+    .slice(0, 3)
+    .map(([id, count]) => Object.assign({}, refById.get(id), { matchedCount: count }));
+  return { playbooks, quickRefs, hasLinks: playbooks.length > 0 || quickRefs.length > 0 };
+}
+
+function testPrepBuildProgressTriage(learningLibrary, progressAnalytics, packAttempts, packItems, precomputedLayers) {
+  const analytics = progressAnalytics && typeof progressAnalytics === 'object' ? progressAnalytics : {};
+  const domainRows = Array.isArray(analytics.domainRows) ? analytics.domainRows : [];
+  const attempts = Array.isArray(packAttempts) ? packAttempts : [];
+  const items = Array.isArray(packItems) ? packItems : [];
+  const layers = learningLibrary ? (precomputedLayers || testPrepStudyPlanLayers(learningLibrary)) : null;
+  const quickRefsAll = learningLibrary && Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+
+  const latestByItem = new Map();
+  attempts
+    .slice()
+    .sort((left, right) => (Number(left && left.completedAt) || 0) - (Number(right && right.completedAt) || 0))
+    .forEach((attempt) => {
+      const completedAt = Number(attempt && attempt.completedAt) || 0;
+      const results = attempt && attempt.itemResults && typeof attempt.itemResults === 'object' ? attempt.itemResults : {};
+      Object.keys(results).forEach((itemId) => {
+        if (results[itemId] && typeof results[itemId].correct === 'boolean') {
+          latestByItem.set(itemId, { correct: results[itemId].correct, completedAt });
+        }
+      });
+    });
+
+  const itemById = new Map(items.map((item) => [item && item.id, item]));
+  const unresolvedMissedEntries = [];
+  latestByItem.forEach((entry, itemId) => {
+    if (entry && entry.correct === false && itemById.has(itemId)) {
+      unresolvedMissedEntries.push({ item: itemById.get(itemId), completedAt: entry.completedAt });
+    }
+  });
+  unresolvedMissedEntries.sort((left, right) => (right.completedAt - left.completedAt) || String(left.item.id || '').localeCompare(String(right.item.id || '')));
+  const unresolvedMissedItems = unresolvedMissedEntries.map((entry) => entry.item);
+  const missedItemIds = unresolvedMissedItems.map((item) => item.id);
+
+  const weakDomains = domainRows
+    .filter((row) => row && row.total > 0 && row.correct < row.total)
+    .slice()
+    .sort((left, right) => (left.percent - right.percent) || ((right.total - right.correct) - (left.total - left.correct)) || String(left.id || '').localeCompare(String(right.id || '')))
+    .slice(0, 3)
+    .map((row) => {
+      const slug = testPrepSlug(row.id, '');
+      const quickRef = quickRefsAll.find((card) => card && testPrepSlug(card.domainId || card.unitId || '', '') === slug) || null;
+      const spacedPlan = layers && Array.isArray(layers.spacedPlans)
+        ? layers.spacedPlans.find((plan) => plan && testPrepSlug(plan.unitId || '', '') === slug) || null
+        : null;
+      const unitRoute = layers && Array.isArray(layers.unitRoutes)
+        ? layers.unitRoutes.find((route) => route && testPrepSlug(route.unitId || '', '') === slug) || null
+        : null;
+      const domainMissedIds = unresolvedMissedItems
+        .filter((item) => item && testPrepSlug(item.domainId || '', '') === slug)
+        .map((item) => item.id);
+      return {
+        id: row.id,
+        correct: row.correct,
+        total: row.total,
+        missed: row.total - row.correct,
+        percent: row.percent,
+        missedItemIds: domainMissedIds,
+        quickRef,
+        spacedPlan,
+        unitRoute,
+      };
+    });
+
+  const missedLinks = learningLibrary
+    ? testPrepFindStudyLinksForItems(learningLibrary, unresolvedMissedItems, layers)
+    : { playbooks: [], quickRefs: [], hasLinks: false };
+
+  return {
+    weakDomains,
+    unresolvedMissedCount: unresolvedMissedItems.length,
+    missedItemIds,
+    playbooks: missedLinks.playbooks,
+    quickRefs: missedLinks.quickRefs,
+    hasTriage: weakDomains.length > 0 || missedLinks.playbooks.length > 0 || unresolvedMissedItems.length > 0,
+  };
+}
+
 function testPrepSearchPack(pack, learningLibrary, query, options) {
   const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
   const normalizedQuery = String(query || '').trim().toLowerCase().slice(0, 120);
@@ -2570,12 +2844,14 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).map(testPrepNormalizeWorkshop).filter((workshop) => workshop.id).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus));
   (Array.isArray(library.foundationalDocumentRoutes) ? library.foundationalDocumentRoutes : []).forEach((route) => add('foundational-document', route.id, route.title, route.studyMove || route.accessNote, 'Foundational document', [route.title, route.documentId, route.topicIds, route.studyMove, route.accessNote].join(' '), route.reviewStatus || 'source-reviewed-editorial-pass'));
   const studyPlan = testPrepStudyPlanLayers(library);
+  (Array.isArray(library.quickReference) ? library.quickReference : []).filter((card) => card && card.id).forEach((card) => add('quick-reference', card.id, card.title || 'Quick reference', card.purpose || (Array.isArray(card.formulas) ? card.formulas[0] : ''), card.domainLabel || card.domainId || 'Quick reference', [card.title, card.domainLabel, card.purpose, (card.checklist || []).join(' '), (card.formulas || []).join(' '), (card.decisionRules || []).join(' '), (card.cautions || []).join(' ')].join(' '), 'source-reviewed-editorial-pass'));
   studyPlan.topicRoutes.forEach((route) => add('topic-route', route.id, route.title, route.nextStep || route.sets.map((set) => set.label).join(' · '), route.unitLabel || 'Topic route', [route.title, route.topicId, route.nextStep, route.masterySignals.join(' ')].join(' '), route.reviewStatus || 'internal-editorial-draft'));
+  studyPlan.unitRoutes.forEach((route) => add('unit-route', route.id, route.title, route.purpose || (route.itemIds.length + ' linked questions'), 'Study plan route', [route.title, route.purpose].join(' '), 'source-reviewed-editorial-pass'));
   studyPlan.playbooks.forEach((playbook) => add('playbook', playbook.id, playbook.title, playbook.recognitionCue || playbook.description, playbook.familyLabel || 'Remediation playbook', [playbook.title, playbook.familyLabel, playbook.recognitionCue, playbook.repairQuestion, playbook.description].join(' '), 'internal-editorial-draft'));
   studyPlan.sessions.forEach((session) => add('study-session', session.id, session.title, session.purpose, session.sessionType || 'Study session', [session.title, session.purpose, session.steps.map((step) => step.action).join(' ')].join(' '), 'internal-editorial-draft'));
   studyPlan.sources.forEach((source) => add('source', source.id, source.title, source.credibility, source.organization || 'Source', [source.title, source.organization, source.credibility, source.sourceType].join(' '), 'source-reviewed-editorial-pass'));
   normalizeTestPrepAnnotations(input.annotations).records.filter((record) => record.packId === normalizedPack.id).forEach((record) => add(record.kind, record.id, record.targetLabel || (record.kind === 'highlight' ? 'Highlight' : 'Note'), record.text, record.targetType, [record.targetLabel, record.text, record.targetType].join(' '), 'learner-created'));
-  const typeOrder = { question: 0, chapter: 1, 'foundational-document': 2, diagram: 3, glossary: 4, flashcard: 5, 'memory-aid': 6, 'constructed-response': 7, 'topic-route': 8, playbook: 9, 'study-session': 10, source: 11, note: 12, highlight: 13 };
+  const typeOrder = { question: 0, chapter: 1, 'foundational-document': 2, diagram: 3, glossary: 4, 'quick-reference': 5, flashcard: 6, 'memory-aid': 7, 'constructed-response': 8, 'topic-route': 9, 'unit-route': 10, playbook: 11, 'study-session': 12, source: 13, note: 14, highlight: 15 };
   results.sort((left, right) => (typeOrder[left.type] - typeOrder[right.type]) || left.title.localeCompare(right.title));
   const counts = {};
   results.forEach((result) => { counts[result.type] = (counts[result.type] || 0) + 1; });
@@ -2736,14 +3012,24 @@ function testPrepBuildFlashcardQueue(cards, schedule, options) {
   const domain = String(input.domain || 'all');
   const filtered = source.filter((card) => (domain === 'all' || card.domain === domain) && (!query || [card.front, card.back, card.domain].join(' ').toLowerCase().includes(query)));
   const due = filtered.filter((card) => !normalized[card.id] || normalized[card.id].dueAt <= now);
-  const visible = input.dueOnly ? due : filtered;
+  const needsReview = filtered.filter((card) => {
+    const entry = normalized[card.id];
+    return Boolean(entry && (entry.rating === 'again' || entry.rating === 'learning'));
+  });
+  let visible = input.dueOnly ? due : filtered;
+  if (input.needsReviewOnly) {
+    visible = visible.filter((card) => {
+      const entry = normalized[card.id];
+      return Boolean(entry && (entry.rating === 'again' || entry.rating === 'learning'));
+    });
+  }
   const originalIndex = new Map(source.map((card, index) => [card.id, index]));
   const sorted = visible.slice().sort((left, right) => {
     const leftDue = normalized[left.id] ? normalized[left.id].dueAt : 0;
     const rightDue = normalized[right.id] ? normalized[right.id].dueAt : 0;
     return leftDue - rightDue || (originalIndex.get(left.id) || 0) - (originalIndex.get(right.id) || 0);
   });
-  return { items: sorted, total: filtered.length, dueCount: due.length, scheduledCount: filtered.length - due.length, now, schedule: normalized };
+  return { items: sorted, total: filtered.length, dueCount: due.length, needsReviewCount: needsReview.length, scheduledCount: filtered.length - due.length, now, schedule: normalized };
 }
 function testPrepExportProgress(progress, reviewItems, now, extras) {
   const optional = extras && typeof extras === 'object' && !Array.isArray(extras) ? extras : {};
@@ -2757,6 +3043,8 @@ function testPrepExportProgress(progress, reviewItems, now, extras) {
     studyPlans: normalizeTestPrepStudyPlans(optional.studyPlans),
     flashcardStores: normalizeTestPrepFlashcardStores(optional.flashcardStores),
     chapterProgress: normalizeTestPrepNativeChapterProgressStore(optional.chapterProgress),
+    studyChecklists: normalizeTestPrepStudyChecklists(optional.studyChecklists),
+    workshopDrafts: normalizeTestPrepWorkshopDrafts(optional.workshopDrafts),
   };
 }
 
@@ -2782,6 +3070,8 @@ function testPrepImportProgress(value) {
     studyPlans: normalizeTestPrepStudyPlans(input.studyPlans),
     flashcardStores: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'flashcardStores') ? normalizeTestPrepFlashcardStores(input.flashcardStores) : null,
     chapterProgress: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'chapterProgress') ? normalizeTestPrepNativeChapterProgressStore(input.chapterProgress) : null,
+    studyChecklists: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'studyChecklists') ? normalizeTestPrepStudyChecklists(input.studyChecklists) : null,
+    workshopDrafts: input.schemaVersion >= 4 && Object.prototype.hasOwnProperty.call(input, 'workshopDrafts') ? normalizeTestPrepWorkshopDrafts(input.workshopDrafts) : null,
   };
 }
 
@@ -2902,9 +3192,10 @@ function testPrepSpeechExcerpt(value, maxCharacters) {
 //   'none'  - verdict and supported answer only, then how to hear the rest.
 // Only the OTHER options stay bounded in 'full', and only at a much higher cap,
 // because that tail is genuinely optional and the count is announced honestly.
-function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail) {
+function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail, options) {
   if (!item || selectedChoice == null) return '';
-  const mode = detail === 'brief' || detail === 'none' ? detail : 'full';
+  const mode = detail === 'brief' || detail === 'none' || detail === 'core' ? detail : 'full';
+  const aiAvailable = !(options && options.aiAvailable === false);
   const selectedIndex = Number(selectedChoice);
   const supportedIndex = Number(item.answerIndex);
   const correct = selectedIndex === supportedIndex;
@@ -2916,48 +3207,87 @@ function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail) {
   if (mode === 'none') {
     return (verdict + 'Say explain to hear why, or next question to move on.').replace(/\s+([.?!])/g, '$1');
   }
+  const normalizeDedup = (value) => String(value || '')
+    .replace(/^(?:(?:that(?:'s| is)|this is)\s+)?(?:the\s+)?(?:correct|best)(?:\s+answer)?(?:\s+because)?[.!:\s,-]*/i, '')
+    .replace(/^(?:yes|right)[.!:\s,-]+/i, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
   const brief = mode === 'brief';
-  const parts = [verdict + String(item.rationale || '').trim()];
+  const coreOnly = mode === 'core';
   const choices = Array.isArray(item.choices) ? item.choices : [];
   const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === choices.length
     ? item.choiceRationales : [];
-  if (choiceRationales.length && selectedIndex >= 0 && selectedIndex < choiceRationales.length) {
-    const selectedRaw = String(choiceRationales[selectedIndex] || '').replace(/\s+/g, ' ').trim();
-    const selectedFeedback = brief ? testPrepSpeechExcerpt(selectedRaw, 320) : selectedRaw;
-    if (selectedFeedback) parts.push('Feedback for your selected option ' + selectedLabel + '. ' + selectedFeedback);
-    // The note COUNT bound is deliberately unchanged. Released items carry
-    // exactly four choices (the QA reviewer fails anything else), so at most two
-    // "other" notes ever exist and this cap cannot fire in production - raising
-    // it would only alter synthetic fixtures while pretending to fix something.
-    // What actually cut explanations short was the per-note character excerpt,
-    // which is what 'full' removes. The character budget rises with it so a
-    // now-complete note is not immediately dropped by the old 900-char ceiling.
-    const noteLimit = 4;
-    const characterLimit = brief ? 900 : 4000;
-    const otherNotes = [];
-    let noteCharacters = 0;
-    let omittedNotes = 0;
-    const spokenBodies = new Set([selectedRaw]);
-    choiceRationales.forEach((rationale, index) => {
-      if (index === supportedIndex || index === selectedIndex) return;
-      const body = brief
-        ? testPrepSpeechExcerpt(rationale, 240)
-        : String(rationale || '').replace(/\s+/g, ' ').trim();
-      // A pack that repeats one sentence for every distractor is read once.
-      if (spokenBodies.has(body)) return;
-      spokenBodies.add(body);
-      const note = 'Option ' + String.fromCharCode(65 + index) + '. ' + body;
-      if (otherNotes.length >= noteLimit || noteCharacters + note.length > characterLimit) {
-        omittedNotes += 1;
-        return;
-      }
-      otherNotes.push(note);
-      noteCharacters += note.length;
-    });
-    if (otherNotes.length) parts.push('Other option feedback. ' + otherNotes.join(' '));
-    if (omittedNotes) parts.push(omittedNotes + ' additional option note' + (omittedNotes === 1 ? ' remains' : 's remain') + ' available on screen.');
+  const hasSelectedNote = choiceRationales.length > 0 && selectedIndex >= 0 && selectedIndex < choiceRationales.length;
+  const selectedRaw = hasSelectedNote ? String(choiceRationales[selectedIndex] || '').replace(/\s+/g, ' ').trim() : '';
+  const supportedRaw = choiceRationales.length > 0 && supportedIndex >= 0 && supportedIndex < choiceRationales.length
+    ? String(choiceRationales[supportedIndex] || '').replace(/\s+/g, ' ').trim() : '';
+  let mainRationale = String(item.rationale || '').replace(/\s+/g, ' ').trim();
+  if (!mainRationale) mainRationale = correct ? selectedRaw : supportedRaw;
+  if (correct && /^correct[.!:\s]+/i.test(mainRationale)) {
+    mainRationale = mainRationale.replace(/^correct[.!:\s]+/i, '').trim();
   }
-  if (promptMode !== 'quick') parts.push('Say mark sure, mark unsure, or mark guessed. You can also say next question, repeat explanation, or ask a clarification question.');
+  const parts = [verdict + mainRationale];
+  if (hasSelectedNote) {
+    const mainNorm = normalizeDedup(mainRationale);
+    const selectedNorm = normalizeDedup(selectedRaw);
+    const duplicatesMain = !selectedNorm || (mainNorm && (
+      selectedNorm === mainNorm ||
+      selectedNorm.includes(mainNorm) ||
+      mainNorm.includes(selectedNorm)
+    ));
+    // When the learner answered correctly, `verdict + mainRationale` already
+    // delivers the supported explanation (matching the on-screen UI, which only
+    // lists the other options below it). Repeating `choiceRationales[answerIndex]`
+    // would read the same rationale twice on ~90% of items.
+    const selectedFeedback = brief ? testPrepSpeechExcerpt(selectedRaw, 320) : selectedRaw;
+    if (!correct && selectedFeedback && !duplicatesMain) {
+      parts.push('Feedback for your selected option ' + selectedLabel + '. ' + selectedFeedback);
+    }
+    if (!coreOnly) {
+      // The note COUNT bound is deliberately unchanged. Released items carry
+      // exactly four choices (the QA reviewer fails anything else), so at most two
+      // "other" notes ever exist and this cap cannot fire in production - raising
+      // it would only alter synthetic fixtures while pretending to fix something.
+      // What actually cut explanations short was the per-note character excerpt,
+      // which is what 'full' removes. The character budget rises with it so a
+      // now-complete note is not immediately dropped by the old 900-char ceiling.
+      const noteLimit = 4;
+      const characterLimit = brief ? 900 : 4000;
+      const otherNotes = [];
+      let noteCharacters = 0;
+      let omittedNotes = 0;
+      const spokenBodies = new Set();
+      if (mainNorm) spokenBodies.add(mainNorm);
+      if (selectedNorm) spokenBodies.add(selectedNorm);
+      if (selectedRaw) spokenBodies.add(selectedRaw);
+      choiceRationales.forEach((rationale, index) => {
+        if (index === supportedIndex || index === selectedIndex) return;
+        const rawBody = String(rationale || '').replace(/\s+/g, ' ').trim();
+        const body = brief ? testPrepSpeechExcerpt(rawBody, 240) : rawBody;
+        const bodyNorm = normalizeDedup(rawBody);
+        // A pack that repeats one sentence for every distractor (or echoes the
+        // main rationale) is read once.
+        if (!body || spokenBodies.has(body) || (bodyNorm && spokenBodies.has(bodyNorm))) return;
+        spokenBodies.add(body);
+        if (bodyNorm) spokenBodies.add(bodyNorm);
+        const note = 'Option ' + String.fromCharCode(65 + index) + '. ' + body;
+        if (otherNotes.length >= noteLimit || noteCharacters + note.length > characterLimit) {
+          omittedNotes += 1;
+          return;
+        }
+        otherNotes.push(note);
+        noteCharacters += note.length;
+      });
+      if (otherNotes.length) parts.push('Other option feedback. ' + otherNotes.join(' '));
+      if (omittedNotes) parts.push(omittedNotes + ' additional option note' + (omittedNotes === 1 ? ' remains' : 's remain') + ' available on screen.');
+    }
+  }
+  if (promptMode !== 'quick') {
+    parts.push(aiAvailable
+      ? 'Say mark sure, mark unsure, or mark guessed. You can also say next question, repeat explanation, or ask a clarification question.'
+      : 'Say mark sure, mark unsure, or mark guessed. You can also say next question or repeat explanation.');
+  }
   return parts.filter(Boolean).join(' ').replace(/\s+([.?!])/g, '$1');
 }
 
@@ -2971,11 +3301,65 @@ function testPrepChoicesSpeechText(item, requestedChoiceIndex) {
   return 'Answer choices. ' + choices.map((choice, index) => String.fromCharCode(65 + index) + ', ' + choice).join('. ') + '.';
 }
 
-function testPrepHandsFreeHelpText(practiceMode, checked) {
-  const commands = ['A or 1 to choose an answer', 'check answer', 'next question', 'repeat question', 'read choices', 'read option B', 'status', 'save for review', 'slower', 'faster'];
-  if (practiceMode !== 'simulation') commands.push('explain', 'skip explanations', 'listen to explanations');
+function testPrepOptionFeedbackSpeechText(item, requestedChoiceIndex) {
+  if (!item) return '';
+  const choices = Array.isArray(item.choices) ? item.choices : [];
+  const requested = Number(requestedChoiceIndex);
+  if (!Number.isInteger(requested) || requested < 0 || requested >= choices.length) {
+    return 'That answer option is not available for this question.';
+  }
+  const label = String.fromCharCode(65 + requested);
+  const supportedIndex = Number(item.answerIndex);
+  const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === choices.length
+    ? item.choiceRationales : [];
+  const rawNote = String(choiceRationales[requested] || '').replace(/\s+/g, ' ').trim();
+  const rawMain = String(item.rationale || '').replace(/\s+/g, ' ').trim();
+  if (requested === supportedIndex) {
+    const body = (rawMain || rawNote).replace(/^(?:correct|best answer)[.!:\s]+/i, '').trim();
+    return ('Option ' + label + ' is the supported answer. ' + (body || 'Review the question rationale on screen.')).replace(/\s+([.?!])/g, '$1');
+  }
+  if (rawNote) {
+    return ('Option ' + label + '. ' + rawNote).replace(/\s+([.?!])/g, '$1');
+  }
+  return 'No separate option feedback is available for option ' + label + '.';
+}
+
+function testPrepOtherOptionsSpeechText(item, selectedChoice) {
+  if (!item) return '';
+  const choices = Array.isArray(item.choices) ? item.choices : [];
+  const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === choices.length
+    ? item.choiceRationales : [];
+  if (!choiceRationales.length) return 'No additional option feedback is available for this question.';
+  const supportedIndex = Number(item.answerIndex);
+  const selectedIndex = selectedChoice == null ? -1 : Number(selectedChoice);
+  const normalize = (value) => String(value || '')
+    .replace(/^(?:(?:that(?:'s| is)|this is)\s+)?(?:the\s+)?(?:correct|best)(?:\s+answer)?(?:\s+because)?[.!:\s,-]*/i, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  const seen = new Set();
+  const mainNorm = normalize(item.rationale);
+  if (mainNorm) seen.add(mainNorm);
+  const notes = [];
+  choiceRationales.forEach((rationale, index) => {
+    if (index === supportedIndex || index === selectedIndex) return;
+    const body = String(rationale || '').replace(/\s+/g, ' ').trim();
+    const norm = normalize(body);
+    if (!body || seen.has(body) || (norm && seen.has(norm))) return;
+    seen.add(body);
+    if (norm) seen.add(norm);
+    notes.push('Option ' + String.fromCharCode(65 + index) + '. ' + body);
+  });
+  if (!notes.length) return 'No additional option feedback is available for this question.';
+  return ('Other option feedback. ' + notes.join(' ')).replace(/\s+([.?!])/g, '$1');
+}
+
+function testPrepHandsFreeHelpText(practiceMode, checked, options) {
+  const aiAvailable = !(options && options.aiAvailable === false);
+  const commands = ['A or 1 to choose an answer', 'check or check answer', 'next or next question', 'repeat question', 'read choices', 'read option B', 'eliminate B', 'status', 'save for review', 'slower', 'faster'];
+  if (practiceMode !== 'simulation') commands.push('explain', 'why not B', 'other options', 'read reference', 'skip explanations', 'listen to explanations');
   if (practiceMode === 'simulation') commands.push('add ten minutes');
-  else commands.push('ask followed by a clarification question');
+  else if (aiAvailable) commands.push('ask followed by a clarification question');
   if (checked && practiceMode !== 'simulation') commands.push('mark sure, mark unsure, or mark guessed');
   commands.push('stop hands free');
   return 'You can say ' + commands.slice(0, -1).join(', ') + ', or ' + commands[commands.length - 1] + '.';
@@ -2985,10 +3369,265 @@ function testPrepCompletionSpeechText(value) {
   const result = value && typeof value === 'object' ? value : {};
   const correct = Math.max(0, Math.floor(testPrepFinite(result.correct, 0)));
   const total = Math.max(correct, Math.floor(testPrepFinite(result.total, correct)));
+  const retryCue = correct < total ? ' You can also say read missed or retry missed to review the questions you missed.' : '';
   return 'Practice is complete. You answered ' + correct + ' of ' + total + ' correctly. ' +
     'This is a learning result, not an official score or readiness estimate. ' +
     'Say another set to choose a new practice set, open progress to review your progress, ' +
-    'status to repeat this summary, exit Test Prep to close, or stop hands free to return to app voice commands.';
+    'status to repeat this summary, exit Test Prep to close, or stop hands free to return to app voice commands.' + retryCue;
+}
+
+function testPrepMissedSummarySpeechText(missedItems, answers) {
+  const list = Array.isArray(missedItems) ? missedItems.filter(Boolean) : [];
+  if (!list.length) return 'You answered every question in this set correctly.';
+  const responseMap = answers && typeof answers === 'object' ? answers : {};
+  const limit = 5;
+  const shown = list.slice(0, limit);
+  const parts = ['You missed ' + list.length + ' question' + (list.length === 1 ? '' : 's') + '.'];
+  shown.forEach((item, idx) => {
+    const prompt = String(item.prompt || '').replace(/\s+/g, ' ').trim();
+    const choices = Array.isArray(item.choices) ? item.choices : [];
+    const supported = String(choices[item.answerIndex] || '').replace(/\s+/g, ' ').trim();
+    const chosenIdx = Number(responseMap[item.id]);
+    const chosen = Number.isInteger(chosenIdx) && chosenIdx >= 0 && chosenIdx < choices.length
+      ? String(choices[chosenIdx] || '').replace(/\s+/g, ' ').trim()
+      : '';
+    const rationale = testPrepSpeechExcerpt(item.rationale || '', 220);
+    const seg = [
+      'Missed question ' + (idx + 1) + '. ' + prompt,
+      chosen ? 'You answered ' + chosen + '.' : 'You left this unanswered.',
+      supported ? 'The supported answer is ' + supported + '.' : '',
+      rationale,
+    ].filter(Boolean).join(' ');
+    parts.push(seg);
+  });
+  if (list.length > limit) {
+    const extra = list.length - limit;
+    parts.push(extra + ' additional missed question' + (extra === 1 ? ' is' : 's are') + ' listed on screen.');
+  }
+  parts.push('Say retry missed to practice them again.');
+  return parts.join(' ').replace(/\s+([.?!])/g, '$1');
+}
+
+function testPrepBuildMissedStudySheetMarkdown(packTitle, setLabel, missedItems, answers) {
+  const list = Array.isArray(missedItems) ? missedItems.filter(Boolean) : [];
+  const responseMap = answers && typeof answers === 'object' ? answers : {};
+  const lines = [
+    '# ' + (packTitle || 'Test Prep') + ' — Missed Questions Study Sheet',
+    '',
+    '**Set:** ' + (setLabel || 'Practice set'),
+    '**Missed items:** ' + list.length,
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Independent practice review sheet exported locally from AlloFlow. Not an official exam score, form, or readiness estimate._',
+    '',
+  ];
+  list.forEach((item, idx) => {
+    const choices = Array.isArray(item.choices) ? item.choices : [];
+    const chosenIdx = Number(responseMap[item.id]);
+    const chosenLetter = Number.isInteger(chosenIdx) && chosenIdx >= 0 && chosenIdx < choices.length
+      ? String.fromCharCode(65 + chosenIdx) + '. ' + choices[chosenIdx]
+      : 'Unanswered';
+    const supportedLetter = Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex < choices.length
+      ? String.fromCharCode(65 + item.answerIndex) + '. ' + choices[item.answerIndex]
+      : '';
+    lines.push('## ' + (idx + 1) + '. ' + String(item.prompt || '').trim());
+    lines.push('');
+    lines.push('- **Your answer:** ' + chosenLetter);
+    if (supportedLetter) lines.push('- **Supported answer:** ' + supportedLetter);
+    if (item.rationale) lines.push('- **Why it fits:** ' + String(item.rationale).trim());
+    if (Array.isArray(item.choiceRationales) && item.choiceRationales.length === choices.length && Number.isInteger(chosenIdx) && chosenIdx >= 0 && chosenIdx !== item.answerIndex && item.choiceRationales[chosenIdx]) {
+      lines.push('- **Why your choice did not fit:** ' + String(item.choiceRationales[chosenIdx]).trim());
+    }
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function testPrepBuildQuickReferenceMarkdown(packTitle, references) {
+  const list = Array.isArray(references) ? references.filter(Boolean) : [];
+  const lines = [
+    '# ' + (packTitle || 'Test Prep') + ' — Quick Reference Study Sheet',
+    '',
+    '**Cards included:** ' + list.length,
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Original internal study aid exported locally from AlloFlow. Not an official exam reference sheet._',
+    '',
+  ];
+  list.forEach((ref, idx) => {
+    const checkLabel = ref.checklistLabel || 'Before calculating';
+    const relLabel = ref.formulasLabel || 'Relationships';
+    lines.push('## ' + (idx + 1) + '. ' + String(ref.title || 'Quick reference').trim());
+    if (ref.domainLabel || ref.domainId || ref.unitId) {
+      lines.push('_Area: ' + String(ref.domainLabel || ref.domainId || ref.unitId).trim() + '_');
+    }
+    lines.push('');
+    if (ref.purpose) { lines.push(String(ref.purpose).trim()); lines.push(''); }
+    if (Array.isArray(ref.checklist) && ref.checklist.length) {
+      lines.push('### ' + checkLabel);
+      ref.checklist.forEach((entry) => lines.push('- [ ] ' + String(entry || '').trim()));
+      lines.push('');
+    }
+    if (Array.isArray(ref.formulas) && ref.formulas.length) {
+      lines.push('### ' + relLabel);
+      ref.formulas.forEach((entry) => lines.push('- ' + String(entry || '').trim()));
+      lines.push('');
+    }
+    if (Array.isArray(ref.decisionRules) && ref.decisionRules.length) {
+      lines.push('### Choose or interpret');
+      ref.decisionRules.forEach((entry) => lines.push('- ' + String(entry || '').trim()));
+      lines.push('');
+    }
+    if (Array.isArray(ref.cautions) && ref.cautions.length) {
+      lines.push('### Watch for');
+      ref.cautions.forEach((entry) => lines.push('- ' + String(entry || '').trim()));
+      lines.push('');
+    }
+  });
+  return lines.join('\n');
+}
+
+function testPrepBuildChapterStudySheetMarkdown(packTitle, chapter) {
+  const ch = chapter && typeof chapter === 'object' ? chapter : {};
+  const lines = [
+    '# ' + (packTitle || 'Test Prep') + ' — ' + String(ch.title || 'Chapter Study Sheet').trim(),
+    '',
+    ch.domain || ch.unitId ? '**Area:** ' + String(ch.domain || ch.unitId).trim() : '',
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Independent study sheet exported locally from AlloFlow._',
+    '',
+  ].filter((line) => line !== undefined);
+  if (ch.summary || ch.introduction) {
+    lines.push(String(ch.summary || ch.introduction).trim());
+    lines.push('');
+  }
+  if (Array.isArray(ch.objectives) && ch.objectives.length) {
+    lines.push('## Learning Objectives');
+    ch.objectives.forEach((obj) => lines.push('- ' + String(obj || '').trim()));
+    lines.push('');
+  }
+  if (Array.isArray(ch.chapterTakeaways) && ch.chapterTakeaways.length) {
+    lines.push('## Chapter Takeaways');
+    ch.chapterTakeaways.forEach((t) => lines.push('- ' + String(t || '').trim()));
+    lines.push('');
+  }
+  if (Array.isArray(ch.sections) && ch.sections.length) {
+    lines.push('## Lessons');
+    lines.push('');
+    ch.sections.forEach((sec, idx) => {
+      const heading = String(sec.heading || sec.title || ('Lesson ' + (idx + 1))).trim();
+      lines.push('### ' + (idx + 1) + '. ' + heading);
+      if (Array.isArray(sec.keyTerms) && sec.keyTerms.length) {
+        lines.push('**Key terms:** ' + sec.keyTerms.join(', '));
+      }
+      if (sec.workedExample && sec.workedExample.prompt) {
+        lines.push('');
+        lines.push('**Worked example:** ' + String(sec.workedExample.prompt).trim());
+        if (Array.isArray(sec.workedExample.steps)) {
+          sec.workedExample.steps.forEach((step, sIdx) => lines.push((sIdx + 1) + '. ' + String(step || '').trim()));
+        }
+      }
+      if (Array.isArray(sec.misconceptionGuidance) && sec.misconceptionGuidance.length) {
+        lines.push('');
+        lines.push('**Common misconceptions & repairs:**');
+        sec.misconceptionGuidance.forEach((m) => {
+          if (m && (m.misconception || m.repair)) {
+            lines.push('- ' + [m.misconception ? 'Watch out: ' + m.misconception : '', m.repair ? 'Repair: ' + m.repair : ''].filter(Boolean).join(' — '));
+          }
+        });
+      }
+      lines.push('');
+    });
+  }
+  return lines.join('\n');
+}
+
+function testPrepBuildGlossaryMarkdown(title, items) {
+  const list = Array.isArray(items) ? items.filter(Boolean) : [];
+  const lines = [
+    '# ' + (title || 'Study Glossary'),
+    '',
+    '**Terms included:** ' + list.length,
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Source-parity reviewed study glossary exported locally from AlloFlow._',
+    '',
+  ];
+  list.forEach((rec) => {
+    lines.push('## ' + String(rec.term || '').trim());
+    if (rec.definition) lines.push(String(rec.definition).trim());
+    if (Array.isArray(rec.aliases) && rec.aliases.length) {
+      lines.push('_Also listed as: ' + rec.aliases.join(', ') + '_');
+    }
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function testPrepBuildFlashcardsMarkdown(packTitle, cards) {
+  const list = Array.isArray(cards) ? cards.filter(Boolean) : [];
+  const lines = [
+    '# ' + (packTitle || 'Test Prep') + ' — Flashcard Study Deck',
+    '',
+    '**Cards included:** ' + list.length,
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Source-reviewed study flashcards exported locally from AlloFlow._',
+    '',
+  ];
+  list.forEach((card, idx) => {
+    lines.push('## ' + (idx + 1) + '. ' + String(card.front || '').trim());
+    if (card.domain) lines.push('_Domain: ' + String(card.domain).trim() + '_');
+    lines.push('');
+    lines.push('**Answer:** ' + String(card.back || '').trim());
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function testPrepBuildPlaybooksMarkdown(packTitle, playbooks) {
+  const list = Array.isArray(playbooks) ? playbooks.filter(Boolean) : [];
+  const lines = [
+    '# ' + (packTitle || 'Test Prep') + ' — Misconception Playbooks',
+    '',
+    '**Playbooks included:** ' + list.length,
+    '**Exported:** ' + new Date().toISOString().slice(0, 10),
+    '',
+    '_Original internal remediation aids exported locally from AlloFlow._',
+    '',
+  ];
+  list.forEach((pb, idx) => {
+    lines.push('## ' + (idx + 1) + '. ' + String(pb.title || 'Misconception playbook').trim());
+    if (pb.familyLabel) lines.push('_Pattern: ' + String(pb.familyLabel).trim() + '_');
+    lines.push('');
+    if (pb.description) { lines.push(String(pb.description).trim()); lines.push(''); }
+    if (pb.recognitionCue) lines.push('- **How to recognize it:** ' + String(pb.recognitionCue).trim());
+    if (pb.repairQuestion) lines.push('- **Repair question:** ' + String(pb.repairQuestion).trim());
+    if (Array.isArray(pb.steps) && pb.steps.length) {
+      lines.push('');
+      lines.push('### Repair stages');
+      pb.steps.forEach((step, sIdx) => {
+        lines.push('- [ ] **' + (sIdx + 1) + '. ' + String(step.label || '').trim() + ':** ' + String(step.instruction || '').trim() + (step.requiredOutput ? ' _(Write down: ' + String(step.requiredOutput).trim() + ')_' : ''));
+      });
+    }
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function testPrepCompletionCopyText(packTitle, setLabel, result, missedCount) {
+  const r = result && typeof result === 'object' ? result : {};
+  const correct = Math.max(0, Math.floor(testPrepFinite(r.correct, 0)));
+  const total = Math.max(correct, Math.floor(testPrepFinite(r.total, correct)));
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  const parts = [
+    (packTitle || 'Test Prep') + ' — ' + (setLabel || 'Practice set'),
+    'Score: ' + correct + '/' + total + ' (' + percent + '%)',
+    missedCount > 0 ? 'Missed: ' + missedCount + ' question' + (missedCount === 1 ? '' : 's') : 'All questions answered correctly.',
+    'Learning practice result only (not an official score or readiness estimate).',
+  ];
+  return parts.join('\n');
 }
 
 function testPrepNormalizeVoiceSetName(value) {
@@ -3193,8 +3832,8 @@ function testPrepHandsFreeConfidenceDecision(command, reportedConfidence) {
 
 function testPrepParseHandsFreeCommand(value, options) {
   const original = String(value || '').trim();
-  const text = original.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (!text) return { type: 'unknown', transcript: original };
+  const rawText = original.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!rawText) return { type: 'unknown', transcript: original };
   const setup = testPrepParseSetupVoiceCommand(original, options);
   if (setup) {
     const types = {
@@ -3206,49 +3845,90 @@ function testPrepParseHandsFreeCommand(value, options) {
     };
     return { type: types[setup.commandId], selector: setup.params && setup.params.selector, transcript: original };
   }
-  if (/^(?:stop|disable|turn off)(?: hands free| voice mode)?$/.test(text) || /^(?:stop hands free|stop voice mode|exit hands free|exit voice mode)$/.test(text)) return { type: 'stop', transcript: original };
-  if (/^(?:another set|choose another (?:set|practice set)|open another (?:set|practice set)|start another (?:set|practice set)|practice again)$/.test(text)) return { type: 'another-set', transcript: original };
+  const text = rawText
+    .replace(/^(?:(?:okay|ok|alright|all right|well|um|uh|please)\s+)+/, '')
+    .replace(/(?:\s+please)+$/, '')
+    .trim();
+  if (!text) return { type: 'unknown', transcript: original };
+  if (/^(?:stop|disable|turn off|end|quit)(?: hands free| voice mode)?$/.test(text) || /^(?:stop hands free|stop voice mode|exit hands free|exit voice mode)$/.test(text)) return { type: 'stop', transcript: original };
+  if (/^(?:retry|review|practice|drill)(?: the)? missed(?: questions?| items?)?$/.test(text)) return { type: 'retry-missed', transcript: original };
+  if (/^(?:save|bookmark|flag)(?: all| the)? missed(?: questions?| items?)?(?: for review)?$/.test(text)) return { type: 'save-missed', transcript: original };
+  if (/^(?:read|hear|list|summarize)(?: the)? missed(?: questions?| items?)?$|^what did i miss$/.test(text)) return { type: 'read-missed', transcript: original };
+  if (/^(?:another set|choose another (?:set|practice set)|open another (?:set|practice set)|start another (?:set|practice set)|new (?:set|practice set)|practice again)$/.test(text)) return { type: 'another-set', transcript: original };
   if (/^(?:view|open|show|go to)(?: my)? (?:practice )?progress$/.test(text)) return { type: 'open-progress', transcript: original };
   if (/^(?:exit|close)(?: test prep| this (?:screen|workspace))?$/.test(text)) return { type: 'exit', transcript: original };
-  if (/^(?:yes|yeah|yep|correct|confirm|that is right|that's right)$/.test(text)) return { type: 'confirm-yes', transcript: original };
-  if (/^(?:no|nope|cancel|try again|that is wrong|that's wrong)$/.test(text)) return { type: 'confirm-no', transcript: original };
-  if (/^(?:speak |go )?(?:slower|slow down)$/.test(text)) return { type: 'slower', transcript: original };
-  if (/^(?:speak |go )?(?:faster|speed up)$/.test(text)) return { type: 'faster', transcript: original };
-  const repeatedChoice = text.match(/^(?:(?:can|could|would) you )?(?:repeat|read)(?: the)? (?:answer )?(?:choice|option)\s+(a|b|c|d|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|one|two|three|four|five|six|seven|eight|1|2|3|4|5|6|7|8)$/);
-  const choiceMap = { a: 0, first: 0, one: 0, '1': 0, b: 1, second: 1, two: 1, '2': 1, c: 2, third: 2, three: 2, '3': 2, d: 3, fourth: 3, four: 3, '4': 3, e: 4, fifth: 4, five: 4, '5': 4, f: 5, sixth: 5, six: 5, '6': 5, g: 6, seventh: 6, seven: 6, '7': 6, h: 7, eighth: 7, eight: 7, '8': 7 };
+  if (/^(?:yes|yeah|yep|yup|correct|confirm|affirmative|that is right|that's right)$/.test(text)) return { type: 'confirm-yes', transcript: original };
+  if (/^(?:no|nope|nah|cancel|try again|that is wrong|that's wrong|never ?mind)$/.test(text)) return { type: 'confirm-no', transcript: original };
+  if (/^(?:(?:speak|read|talk|go) )?(?:slower|slow down)|^too fast$/.test(text)) return { type: 'slower', transcript: original };
+  if (/^(?:(?:speak|read|talk|go) )?(?:faster|speed up)|^too slow$/.test(text)) return { type: 'faster', transcript: original };
+  if (/^(?:(?:normal|default|regular|standard)(?: speech)? (?:speed|rate|pace)|reset(?: speech)? (?:speed|rate|pace)|normal speed)$/.test(text)) return { type: 'reset-rate', transcript: original };
+  const choiceToken = '(a|b|c|d|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|one|two|three|four|five|six|seven|eight|1|2|3|4|5|6|7|8)';
+  const choiceTokenSpoken = '(a|ay|b|bee|c|sea|see|d|dee|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|one|two|three|four|five|six|seven|eight|1|2|3|4|5|6|7|8)';
+  const choiceMap = { a: 0, ay: 0, first: 0, one: 0, '1': 0, b: 1, bee: 1, second: 1, two: 1, '2': 1, c: 2, sea: 2, see: 2, third: 2, three: 2, '3': 2, d: 3, dee: 3, fourth: 3, four: 3, '4': 3, e: 4, fifth: 4, five: 4, '5': 4, f: 5, sixth: 5, six: 5, '6': 5, g: 6, seventh: 6, seven: 6, '7': 6, h: 7, eighth: 7, eight: 7, '8': 7 };
+  const repeatedChoice = text.match(new RegExp('^(?:(?:can|could|would) you )?(?:repeat|read|reread|say)(?: me)?(?: the)? (?:answer )?(?:choice|option|letter|number)\\s+' + choiceTokenSpoken + '$'));
   if (repeatedChoice) return { type: 'repeat-choice', choiceIndex: choiceMap[repeatedChoice[1]], transcript: original };
-  if (/^(?:(?:can|could|would) you )?(?:repeat|read)(?: the)? (?:choices|options|answer choices|answer options)$/.test(text)) return { type: 'repeat-choices', transcript: original };
-  if (/^(?:(?:can|could|would) you )?(?:repeat|read)(?: the)? (?:explanation|feedback|reasoning)$/.test(text)) return { type: 'repeat-feedback', transcript: original };
-  if (/^(?:(?:can|could|would) you )?(?:repeat|repeat question|read question|read it again|say that again)$/.test(text)) return { type: 'repeat-question', transcript: original };
-  const directChoice = text.match(/^(?:option\s+)?(a|b|c|d|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|one|two|three|four|five|six|seven|eight|1|2|3|4|5|6|7|8)$/);
+  const eliminateChoice = text.match(new RegExp('^(?:eliminate|strike out|strike|cross out|rule out|exclude)\\s+(?:(?:option|choice|letter|number)\\s+)?' + choiceTokenSpoken + '$'));
+  if (eliminateChoice) return { type: 'eliminate-choice', choiceIndex: choiceMap[eliminateChoice[1]], transcript: original };
+  const restoreChoice = text.match(new RegExp('^(?:restore|unstrike|uneliminate|bring back)\\s+(?:(?:option|choice|letter|number)\\s+)?' + choiceTokenSpoken + '$'));
+  if (restoreChoice) return { type: 'restore-choice', choiceIndex: choiceMap[restoreChoice[1]], transcript: original };
+  const explainChoice = text.match(new RegExp("^(?:why not|why (?:is|was)\\s+(?:(?:option|choice|letter|number)\\s+)?" + choiceTokenSpoken + "\\s+(?:wrong|incorrect|not right)|why (?:isn't|is not|wasn't|was not)\\s+(?:(?:option|choice|letter|number)\\s+)?" + choiceTokenSpoken + "\\s+(?:right|correct)|(?:read )?feedback (?:for|on)\\s+(?:(?:option|choice|letter|number)\\s+)?" + choiceTokenSpoken + ")$"));
+  if (explainChoice) {
+    const token = explainChoice[1] || explainChoice[2] || explainChoice[3];
+    if (token && Object.prototype.hasOwnProperty.call(choiceMap, token)) {
+      return { type: 'explain-choice', choiceIndex: choiceMap[token], transcript: original };
+    }
+  }
+  const whyNotDirect = text.match(new RegExp('^why not\\s+(?:(?:option|choice|letter|number)\\s+)?' + choiceTokenSpoken + '$'));
+  if (whyNotDirect) return { type: 'explain-choice', choiceIndex: choiceMap[whyNotDirect[1]], transcript: original };
+  if (/^(?:read|open|show)(?: the)?(?: quick)? reference(?: aid| card| sheet)?$|^(?:quick )?reference(?: aid)?$/.test(text)) {
+    return { type: 'read-reference', transcript: original };
+  }
+  if (/^(?:hide|close|dismiss)(?: the)?(?: quick)? reference(?: aid| card| sheet)?$/.test(text)) {
+    return { type: 'hide-reference', transcript: original };
+  }
+  if (/^(?:(?:read|explain|hear|repeat)(?: the)? )?(?:other options|other option feedback|distractor feedback|why not the other(?:s| options))$/.test(text)) {
+    return { type: 'other-options', transcript: original };
+  }
+  if (/^(?:(?:brief|short|quick)(?: explanation| feedback| rationale| summary)?|main rationale|summary|summarize)$/.test(text)) {
+    return { type: 'brief-feedback', transcript: original };
+  }
+  if (/^(?:(?:(?:can|could|would) you )?(?:repeat|read|reread|list|say)(?: me)?(?: the)? )?(?:choices|options|answer choices|answer options|all choices|all options)$/.test(text)) return { type: 'repeat-choices', transcript: original };
+  if (/^(?:(?:can|could|would) you )?(?:repeat|read|reread|replay|say)(?: me)?(?: the)? (?:explanation|feedback|reasoning|rationale)(?: again)?$/.test(text)) return { type: 'repeat-feedback', transcript: original };
+  if (/^(?:(?:can|could|would) you )?(?:repeat|repeat (?:the )?(?:question|stem|prompt)|read (?:the )?(?:question|stem|prompt|it|that)(?: again)?|reread(?: (?:the )?question)?|read it again|say (?:that|it) again|again|one more time|what(?:'s| is) the question)$/.test(text)) return { type: 'repeat-question', transcript: original };
+  const directChoice = text.match(new RegExp('^' + choiceToken + '$'));
   if (directChoice) return { type: 'choose', choiceIndex: choiceMap[directChoice[1]], transcript: original };
-  const choiceMatch = text.match(/^(?:please )?(?:choose|select|answer|pick|go with|change(?: my)? answer to|switch(?: my)? answer to)\s+(?:option\s+)?(a|b|c|d|e|f|g|h|first|second|third|fourth|fifth|sixth|seventh|eighth|one|two|three|four|five|six|seven|eight|1|2|3|4|5|6|7|8)(?: please)?$/);
+  const labeledChoice = text.match(new RegExp('^(?:option|choice|letter|number|answer)\\s+' + choiceTokenSpoken + '$'));
+  if (labeledChoice) return { type: 'choose', choiceIndex: choiceMap[labeledChoice[1]], transcript: original };
+  const choiceMatch = text.match(new RegExp("^(?:(?:i(?:'d| would)? (?:like to |want to )?)?(?:choose|select|pick|try|take|mark)|(?:my )?answer(?: is)?|go with|let(?:'s| us) (?:go with|try|pick)|i think(?: it(?:'s| is))?|it(?:'s| is)|change(?: my)? answer to|switch(?: my)? answer to|switch to)\\s+(?:(?:option|choice|letter|number)\\s+)?" + choiceTokenSpoken + '$'));
   if (choiceMatch) return { type: 'choose', choiceIndex: choiceMap[choiceMatch[1]], transcript: original };
-  if (/^(?:check|check answer|submit|submit answer)$/.test(text)) return { type: 'submit', transcript: original };
-  if (/^(?:next|next question|continue|save answer and continue|finish practice)$/.test(text)) return { type: 'next', transcript: original };
-  if (/^(?:save|flag|bookmark)(?: this)?(?: question)?(?: for review)?$/.test(text)) return { type: 'save-review', transcript: original };
-  if (/^(?:remove|unflag|unbookmark)(?: this)?(?: question)?(?: from review)?$/.test(text)) return { type: 'remove-review', transcript: original };
-  if (/^(?:mark |set confidence to )?(?:sure|confident|i knew it|i am sure|i'm sure)$/.test(text)) return { type: 'confidence', confidence: 'sure', transcript: original };
-  if (/^(?:mark |set confidence to )?(?:unsure|not sure|i was unsure|i am unsure|i'm unsure)$/.test(text)) return { type: 'confidence', confidence: 'unsure', transcript: original };
-  if (/^(?:mark |set confidence to )?(?:guess|guessed|guessing|i guessed|i was guessing)$/.test(text)) return { type: 'confidence', confidence: 'guess', transcript: original };
+  if (/^(?:check|check (?:my |the )?answer|check (?:it|that|this)|submit|submit (?:my |the )?answer|submit (?:it|that)|confirm (?:my |the )?answer|grade|grade (?:my |the )?answer|grade (?:it|that)|verify|verify (?:my |the )?answer|verify (?:it|that)|lock (?:it )?in|final answer|am i right|is that right|did i get (?:it|that) right)$/.test(text)) return { type: 'submit', transcript: original };
+  if (/^(?:next|next (?:question|one|item|problem)|continue|move on|go (?:on|next|forward)|keep going|proceed|advance|save answer and continue|finish|finish practice|done|all done)$/.test(text)) return { type: 'next', transcript: original };
+  if (/^(?:save|flag|bookmark|star)(?: this| it)?(?: question)?(?: for review)?$/.test(text)) return { type: 'save-review', transcript: original };
+  if (/^(?:remove|unflag|unbookmark|unsave|unstar)(?: this| it)?(?: question)?(?: from review)?$|^(?:clear|remove)(?: the)? flag$/.test(text)) return { type: 'remove-review', transcript: original };
+  if (/^(?:mark(?: it)? |set confidence to )?(?:sure|very sure|confident|certain|knew it|know it|i knew it|i know it|i am sure|i'm sure|i was sure)$/.test(text)) return { type: 'confidence', confidence: 'sure', transcript: original };
+  if (/^(?:mark(?: it)? |set confidence to )?(?:unsure|not sure|uncertain|not certain|maybe|iffy|kinda sure|kind of sure|sort of sure|i was unsure|i am unsure|i'm unsure)$/.test(text)) return { type: 'confidence', confidence: 'unsure', transcript: original };
+  if (/^(?:mark(?: it)? |set confidence to )?(?:guess|guessed|guessing|i guessed|i was guessing|took a guess|i took a guess|wild guess|total guess)$/.test(text)) return { type: 'confidence', confidence: 'guess', transcript: original };
   if (/^(?:add|give me)(?: another)? (?:ten|10) minutes?$/.test(text)) return { type: 'add-time', transcript: original };
   if (/^(?:status|progress|where am i|what question(?: am i on)?|what did i select|what is selected|selected answer|time remaining|how much time(?: is left)?|what is my status)$/.test(text)) return { type: 'status', transcript: original };
-  if (/^(?:help|commands|what can i say)$/.test(text)) return { type: 'help', transcript: original };
+  if (/^(?:help|commands|what can i say|list commands)$/.test(text)) return { type: 'help', transcript: original };
   // These MUST stay above the clarify catch-all below, which matches a bare
   // "explain" and "why" and would otherwise send them to the AI clarification
   // round-trip instead of replaying the item's own written explanation. A
-  // learner saying "explain" wants this question's rationale, not a new answer
-  // generated about it.
-  if (/^(?:explain|explain (?:that|this|it|the answer)|tell me why|why(?: is)? that|what(?:'s| is) the (?:explanation|reasoning))$/.test(text)) {
+  // learner saying "explain" or "why" wants this question's rationale, not a
+  // new answer generated about it.
+  if (/^(?:explain|explain (?:that|this|it|why|the answer)|explanation|rationale|reasoning|tell me why|why|why(?: is)? (?:that|it)(?: right| correct| wrong)?|what(?:'s| is) the (?:explanation|reasoning|rationale)|hear(?: the)? explanation)$/.test(text)) {
     return { type: 'explain', transcript: original };
   }
-  if (/^(?:listen(?: to explanations)?|(?:turn on|enable|start)(?: the)? explanations|explanations on|read(?: me)? (?:the )?explanations|always explain)$/.test(text)) {
+  if (/^(?:listen(?: to explanations)?|(?:turn on|enable|start)(?: the)? explanations|explanations on|(?:full|complete) explanations|read(?: me)? (?:the )?explanations|always explain|auto explain)$/.test(text)) {
     return { type: 'explanations', explanations: 'on', transcript: original };
+  }
+  if (/^(?:(?:core|brief|short|concise) explanations|explanations (?:core|brief|short)|(?:skip|mute|hide) (?:the )?(?:other options|distractor(?:s| feedback)))$/.test(text)) {
+    return { type: 'explanations', explanations: 'core', transcript: original };
   }
   if (/^(?:(?:skip|stop|mute|turn off|disable)(?: the)? explanations|explanations off|no explanations|don'?t explain|do not explain|(?:skip|stop) explaining)$/.test(text)) {
     return { type: 'explanations', explanations: 'off', transcript: original };
   }
-  if (/^(?:ask|clarify|follow up|explain|define|tell me|what does|what is|who is|can you|could you|why|how)\b/.test(text)) return { type: 'clarify', query: original.replace(/^(?:ask|clarify|follow up)\s+/i, '').trim() || original, transcript: original };
+  if (/^(?:ask|clarify|follow up|explain|define|tell me|what does|what is|who is|can you|could you|why|how)\b/.test(rawText)) return { type: 'clarify', query: original.replace(/^(?:ask|clarify|follow up)\s+/i, '').trim() || original, transcript: original };
   return { type: 'unknown', transcript: original };
 }
 
@@ -3279,6 +3959,8 @@ function testPrepParsePracticeVoiceCommand(value, options) {
     // "explain photosynthesis" still reaches clarify - the explain pattern is
     // anchored to the whole utterance.
     explain: 'practice_repeat_feedback',
+    'brief-feedback': 'practice_repeat_feedback',
+    'other-options': 'practice_repeat_feedback',
     status: 'practice_status',
     help: 'practice_help',
   };
@@ -3290,6 +3972,7 @@ function testPrepParsePracticeVoiceCommand(value, options) {
   }
   const guardedTypes = new Set([
     'choose', 'submit', 'next', 'save-review', 'remove-review', 'confidence',
+    'eliminate-choice', 'restore-choice', 'retry-missed', 'save-missed',
     'add-time', 'clarify', 'another-set', 'open-progress', 'exit',
   ]);
   if (guardedTypes.has(command.type)) {
@@ -4082,9 +4765,329 @@ function testPrepNativeGlossarySpeechText(record) {
   return ('Glossary term. ' + String(record.term || '') + '. Definition. ' + String(record.definition || '') + aliases).trim();
 }
 
-function TestPrepNativeGlossaryLibrary({ glossary, chapters, libraryTitle, query, chapterId, domainId, visibleCount, onQueryChange, onChapterChange, onDomainChange, onShowMore, onReadAloud, readAloudActive }) {
+function testPrepFlashcardSpeechText(card, revealed) {
+  if (!card) return '';
+  const front = String(card.front || '').replace(/\s+/g, ' ').trim();
+  const back = String(card.back || '').replace(/\s+/g, ' ').trim();
+  if (revealed) {
+    return ('Flashcard answer. ' + (back || front)).trim();
+  }
+  return ('Flashcard prompt. ' + front).trim();
+}
+
+function testPrepFlashcardHandsFreeHelpText() {
+  return 'In hands-free flashcards, say flip or reveal to hear the answer, study again, still learning, or know it to rate, next card, previous card, repeat, shuffle, default order, status, slower, faster, or stop hands free.';
+}
+
+function testPrepParseFlashcardVoiceCommand(value) {
+  const original = String(value || '').trim();
+  const rawText = original.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!rawText) return { type: 'unknown', transcript: original };
+  const text = rawText
+    .replace(/^(?:(?:okay|ok|alright|all right|well|um|uh|please)\s+)+/, '')
+    .replace(/(?:\s+please)+$/, '')
+    .trim();
+  if (!text) return { type: 'unknown', transcript: original };
+  if (/^(?:stop|disable|turn off|end|quit|exit)(?: hands free| voice mode| flashcards)?$|^done$|^all done$/.test(text)) return { type: 'stop', transcript: original };
+  if (/^(?:(?:speak|read|talk|go) )?(?:slower|slow down)|^too fast$/.test(text)) return { type: 'slower', transcript: original };
+  if (/^(?:(?:speak|read|talk|go) )?(?:faster|speed up)|^too slow$/.test(text)) return { type: 'faster', transcript: original };
+  if (/^(?:(?:normal|default|regular|standard)(?: speech)? (?:speed|rate|pace)|reset(?: speech)? (?:speed|rate|pace)|normal speed)$/.test(text)) return { type: 'reset-rate', transcript: original };
+  if (/^(?:help|commands|what can i say|list commands)$/.test(text)) return { type: 'help', transcript: original };
+  if (/^(?:status|where am i|what card|which card|how many(?: cards)?(?: left)?|progress)$/.test(text)) return { type: 'status', transcript: original };
+  if (/^(?:shuffle|shuffle(?: the)? (?:cards|deck)|mix(?: up)?(?: the)? cards|random(?:ize)?(?: order)?)$/.test(text)) return { type: 'shuffle', transcript: original };
+  if (/^(?:default order|normal order|unshuffle|reset order|original order)$/.test(text)) return { type: 'unshuffle', transcript: original };
+  if (/^(?:flip|flip(?: the)? card|reveal|reveal(?: the)? answer|show(?: the)? answer|read(?: the)? answer|answer|turn over|back|check)$/.test(text)) return { type: 'reveal', transcript: original };
+  if (/^(?:study again|again|missed|missed it|i missed it|didn't know|did not know|hard|mark again|1|one)$/.test(text)) return { type: 'rate', rating: 'again', transcript: original };
+  if (/^(?:still learning|learning|almost|sort of|medium|unsure|mark learning|2|two)$/.test(text)) return { type: 'rate', rating: 'learning', transcript: original };
+  if (/^(?:know|know it|i know it|knew it|i knew it|got it|easy|mastered|mark know|3|three)$/.test(text)) return { type: 'rate', rating: 'know', transcript: original };
+  if (/^(?:next|next card|skip|skip card|continue|move on|go on)$/.test(text)) return { type: 'next', transcript: original };
+  if (/^(?:previous|previous card|go back|back card|last card)$/.test(text)) return { type: 'prev', transcript: original };
+  if (/^(?:repeat|repeat card|read card|read again|read it again|say that again|prompt)$/.test(text)) return { type: 'repeat', transcript: original };
+  return { type: 'unknown', transcript: original };
+}
+
+function testPrepMemoryAidSpeechText(aid) {
+  if (!aid) return '';
+  const title = String(aid.title || '').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  const body = String(aid.content || aid.text || '').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  return [title ? 'Memory aid. ' + title : '', body].filter(Boolean).join('. ').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepQuickReferenceSpeechText(reference) {
+  if (!reference) return '';
+  const cleanList = (list) => (Array.isArray(list) ? list : []).map((entry) => String(entry || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const checkLabel = String(reference.checklistLabel || 'Before calculating').trim();
+  const relLabel = String(reference.formulasLabel || 'Relationships').trim();
+  const checklist = cleanList(reference.checklist);
+  const formulas = cleanList(reference.formulas);
+  const rules = cleanList(reference.decisionRules);
+  const cautions = cleanList(reference.cautions);
+  const parts = [
+    String(reference.title || '').replace(/\s+/g, ' ').trim(),
+    String(reference.purpose || '').replace(/\s+/g, ' ').trim(),
+    checklist.length ? checkLabel + ': ' + checklist.join('. ') : '',
+    formulas.length ? relLabel + ': ' + formulas.join('. ') : '',
+    rules.length ? 'Decision rules: ' + rules.join('. ') : '',
+    cautions.length ? 'Cautions: ' + cautions.join('. ') : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepItemReferenceSpeechText(learningLibrary, item) {
+  if (!learningLibrary || typeof learningLibrary !== 'object') return '';
+  const quickRefs = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+  const releasedAids = (Array.isArray(learningLibrary.memoryAids) ? learningLibrary.memoryAids : [])
+    .filter((aid) => aid && aid.reviewStatus === 'source-reviewed-editorial-pass');
+  const useQuickRefs = quickRefs.length > 0;
+  const itemDomain = testPrepSlug(item && item.domainId ? item.domainId : '', '');
+  const matched = useQuickRefs
+    ? quickRefs.filter((ref) => ref && testPrepSlug(ref.domainId || ref.unitId || '', '') === itemDomain)
+    : releasedAids.filter((aid) => aid && testPrepSlug(aid.domainId || aid.domain || '', '') === itemDomain);
+  const chosen = matched[0] || (useQuickRefs ? quickRefs[0] : releasedAids[0]) || null;
+  if (!chosen) return '';
+  const spoken = useQuickRefs
+    ? testPrepQuickReferenceSpeechText(chosen)
+    : testPrepMemoryAidSpeechText(chosen);
+  if (!spoken) return '';
+  return (useQuickRefs ? 'Reference aid. ' : '') + testPrepSpeechExcerpt(spoken, 650);
+}
+
+function testPrepPlaybookSpeechText(playbook) {
+  if (!playbook) return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const steps = (Array.isArray(playbook.steps) ? playbook.steps : [])
+    .map((step, idx) => {
+      const label = clean(step && step.label);
+      const instruction = clean(step && step.instruction);
+      return label || instruction ? ('Step ' + (idx + 1) + '. ' + [label, instruction].filter(Boolean).join('. ')) : '';
+    })
+    .filter(Boolean);
+  const parts = [
+    clean(playbook.title) ? 'Misconception playbook. ' + clean(playbook.title) : '',
+    clean(playbook.description),
+    clean(playbook.recognitionCue) ? 'How to recognize it: ' + clean(playbook.recognitionCue) : '',
+    clean(playbook.repairQuestion) ? 'Repair question: ' + clean(playbook.repairQuestion) : '',
+    steps.length ? steps.join(' ') : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepWorkshopSpeechText(workshop) {
+  if (!workshop) return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const taskParts = (Array.isArray(workshop.taskParts) ? workshop.taskParts : [])
+    .map((part, idx) => clean(part) ? ('Part ' + (idx + 1) + '. ' + clean(part)) : '')
+    .filter(Boolean);
+  const parts = [
+    clean(workshop.title) ? 'Written-response workshop. ' + clean(workshop.title) : '',
+    clean(workshop.prompt),
+    clean(workshop.stimulus) ? 'Stimulus: ' + clean(workshop.stimulus) : '',
+    taskParts.length ? 'Task parts: ' + taskParts.join(' ') : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepAnnotationSpeechText(record) {
+  if (!record || typeof record !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const kind = record.kind === 'highlight' ? 'Highlight' : 'Study note';
+  const label = clean(record.targetLabel);
+  const body = clean(record.text);
+  const parts = [label ? kind + ' for ' + label : kind, body].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepChapterCheckSpeechText(check, revealed, selectedIndex) {
+  if (!check || typeof check !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const choices = Array.isArray(check.choices) ? check.choices : [];
+  if (revealed) {
+    const isCorrect = Number(selectedIndex) === Number(check.answerIndex);
+    const supportedLetter = Number.isInteger(check.answerIndex) && check.answerIndex >= 0 && check.answerIndex < choices.length
+      ? String.fromCharCode(65 + check.answerIndex) + ', ' + clean(choices[check.answerIndex])
+      : '';
+    const rawRat = clean(check.rationale);
+    const strippedRat = isCorrect ? rawRat.replace(/^correct\.?\s+/i, '').trim() : rawRat;
+    const parts = [
+      isCorrect ? 'Correct.' : 'Review the reasoning.',
+      !isCorrect && supportedLetter ? 'The supported answer is ' + supportedLetter + '.' : '',
+      strippedRat,
+    ].filter(Boolean);
+    return parts.join(' ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+  }
+  const choiceLines = choices.map((c, idx) => String.fromCharCode(65 + idx) + ', ' + clean(c)).join('. ');
+  const parts = [
+    'Knowledge check. ' + clean(check.prompt),
+    choiceLines ? 'Answer choices. ' + choiceLines : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepStudySessionSpeechText(session) {
+  if (!session || typeof session !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const steps = (Array.isArray(session.steps) ? session.steps : [])
+    .map((step, idx) => {
+      const label = clean(step && step.label);
+      const mins = step && step.durationMinutes ? ' (' + step.durationMinutes + ' minutes)' : '';
+      const action = clean(step && step.action);
+      return label || action ? ('Step ' + (idx + 1) + '. ' + label + mins + (action ? '. ' + action : '')) : '';
+    })
+    .filter(Boolean);
+  const parts = [
+    clean(session.title) ? 'Study session. ' + clean(session.title) : 'Study session',
+    session.durationMinutes ? 'About ' + session.durationMinutes + ' minutes' : '',
+    clean(session.purpose),
+    steps.length ? steps.join(' ') : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepStudyRouteSpeechText(route) {
+  if (!route || typeof route !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const steps = (Array.isArray(route.stepOrder) ? route.stepOrder : [])
+    .map((s, idx) => clean(s) ? ('Step ' + (idx + 1) + '. ' + clean(s)) : '')
+    .filter(Boolean);
+  const count = Array.isArray(route.itemIds) ? route.itemIds.length : 0;
+  const parts = [
+    clean(route.title) ? 'Study route. ' + clean(route.title) : 'Study route',
+    clean(route.learnerPurpose),
+    count ? (count + ' linked questions' + (route.estimatedMinutes ? ', about ' + route.estimatedMinutes + ' minutes' : '')) : '',
+    steps.length ? steps.join(' ') : '',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepFoundationalRouteSpeechText(route) {
+  if (!route || typeof route !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  const count = Number(route.itemCount || 0);
+  const parts = [
+    clean(route.title) ? 'Foundational document route. ' + clean(route.title) : 'Foundational document route',
+    clean(route.studyMove),
+    count ? (count + ' linked questions') : '',
+    clean(route.accessNote),
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepProgressSummarySpeechText(packTitle, progressAnalytics, domainById, studyPlanStatus) {
+  const analytics = progressAnalytics || {};
+  const title = String(packTitle || 'this exam pack').replace(/\s+/g, ' ').trim();
+  const attempts = Number(analytics.attemptCount || 0);
+  if (!attempts) {
+    return 'Practice progress for ' + title + '. No practice history recorded yet. Complete a practice set to see domain accuracy and study patterns.';
+  }
+  const parts = [
+    'Practice progress for ' + title,
+    attempts + ' completed ' + (attempts === 1 ? 'set' : 'sets') + ', average practice accuracy ' + Number(analytics.averagePercent || 0) + ' percent, ' + Number(analytics.uniqueItemsAttempted || 0) + ' unique questions attempted',
+  ];
+  const weakRows = (Array.isArray(analytics.domainRows) ? analytics.domainRows : [])
+    .slice()
+    .sort((a, b) => a.percent - b.percent)
+    .slice(0, 2);
+  if (weakRows.length) {
+    const labels = weakRows.map((row) => {
+      const label = domainById && domainById[row.id] ? domainById[row.id].label : String(row.id || '').replace(/-/g, ' ');
+      return label + ' at ' + row.percent + ' percent';
+    });
+    parts.push('Lowest-accuracy areas so far: ' + labels.join(', and '));
+  }
+  if (studyPlanStatus) {
+    parts.push('Weekly activity: ' + Number(studyPlanStatus.questionsCompleted || 0) + ' questions completed, ' + Number(studyPlanStatus.activityStreakDays || 0) + '-day activity streak');
+  }
+  parts.push('These results describe practice activity only, not an official score.');
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepCheckpointSpeechText(checkpoint) {
+  if (!checkpoint || typeof checkpoint !== 'object') return '';
+  const label = checkpoint.practiceLabel && !/^Batch \d+$/i.test(checkpoint.practiceLabel)
+    ? checkpoint.practiceLabel
+    : ('Batch ' + checkpoint.batchNumber + ' of ' + checkpoint.batchCount);
+  const parts = [
+    label + ' checkpoint',
+    checkpoint.correct + ' of ' + checkpoint.total + ' correct, ' + checkpoint.percent + ' percent',
+    checkpoint.confidentMissQuestionNumbers && checkpoint.confidentMissQuestionNumbers.length
+      ? checkpoint.confidentMissQuestionNumbers.length + ' confident ' + (checkpoint.confidentMissQuestionNumbers.length === 1 ? 'miss' : 'misses')
+      : '',
+    Array.isArray(checkpoint.feedback) && checkpoint.feedback.length ? checkpoint.feedback[0] : '',
+    'This is practice feedback, not an official score.',
+  ].filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepNativeSectionSpeechText(section, index) {
+  if (!section || typeof section !== 'object') return '';
+  const clean = (v) => String(v || '').replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+  const heading = clean(section.heading || section.title || ('Lesson ' + ((Number(index) || 0) + 1)));
+  const blockTexts = Array.isArray(section.contentBlocks) && section.contentBlocks.length
+    ? section.contentBlocks.map((b) => clean(b && b.text)).filter(Boolean)
+    : Array.isArray(section.blocks) && section.blocks.length
+      ? section.blocks.map((b) => clean(b && b.text)).filter(Boolean)
+      : [clean(section.content || section.preview)];
+  const worked = section.workedExample && typeof section.workedExample === 'object' && section.workedExample.prompt
+    ? ['Worked example. ' + clean(section.workedExample.prompt)].concat(
+        (Array.isArray(section.workedExample.steps) ? section.workedExample.steps : []).map((st, i) => 'Step ' + (i + 1) + '. ' + clean(st))
+      )
+    : [];
+  const parts = ['Lesson ' + ((Number(index) || 0) + 1) + '. ' + heading].concat(blockTexts, worked).filter(Boolean);
+  return parts.join('. ').replace(/\.{2,}/g, '.').replace(/\s+([.?!])/g, '$1').trim();
+}
+
+function testPrepShuffleListDeterministic(list, seed) {
+  const arr = Array.isArray(list) ? list.slice() : [];
+  if (!seed || arr.length <= 1) return arr;
+  let state = (Number(seed) >>> 0) || 1;
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
+function testPrepFormatAnnotationsMarkdown(packTitle, records) {
+  const title = String(packTitle || 'Test Prep').trim();
+  const list = Array.isArray(records) ? records : [];
+  const lines = [
+    '# ' + title + ' — Study Notes & Highlights',
+    '',
+    'Exported ' + new Date().toISOString() + ' (' + list.length + ' ' + (list.length === 1 ? 'entry' : 'entries') + ')',
+    '',
+  ];
+  list.forEach((record, idx) => {
+    const kind = record && record.kind === 'highlight' ? ('Highlight (' + (record.color || 'yellow') + ')') : 'Note';
+    const label = String((record && record.targetLabel) || 'General pack note').trim();
+    const body = String((record && record.text) || '').trim();
+    const updated = record && record.updatedAt ? new Date(record.updatedAt).toISOString() : '';
+    lines.push('## ' + (idx + 1) + '. [' + kind + '] ' + label);
+    if (updated) lines.push('_Updated: ' + updated + '_');
+    lines.push('');
+    lines.push(body);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+function TestPrepNativeGlossaryLibrary({ glossary, chapters, libraryTitle, query, chapterId, domainId, visibleCount, onQueryChange, onChapterChange, onDomainChange, onShowMore, onReadAloud, readAloudActive, onAddNote }) {
+  const [letterFilter, setLetterFilter] = React.useState('all');
   const view = testPrepBuildNativeGlossaryView(glossary, chapters, { query, chapterId, domainId });
-  const shown = view.items.slice(0, Math.max(1, Number(visibleCount) || 100));
+  const availableLetters = Array.from(new Set(view.items.map((rec) => {
+    const ch = String((rec && rec.term) || '').trim().charAt(0).toUpperCase();
+    return /^[A-Z]$/.test(ch) ? ch : '#';
+  }))).sort();
+  const activeLetter = letterFilter !== 'all' && availableLetters.includes(letterFilter) ? letterFilter : 'all';
+  const letterFilteredItems = activeLetter === 'all'
+    ? view.items
+    : view.items.filter((rec) => {
+        const ch = String((rec && rec.term) || '').trim().charAt(0).toUpperCase();
+        return (/^[A-Z]$/.test(ch) ? ch : '#') === activeLetter;
+      });
+  const shown = letterFilteredItems.slice(0, Math.max(1, Number(visibleCount) || 100));
   const resolvedTitle = String(libraryTitle || '').trim();
   const isEpppGlossary = !resolvedTitle || /\beppp\b/i.test(resolvedTitle);
   const headingText = isEpppGlossary
@@ -4098,13 +5101,35 @@ function TestPrepNativeGlossaryLibrary({ glossary, chapters, libraryTitle, query
       <p className="mt-2 text-xs font-black text-amber-900">Source-parity reviewed · independent qualified-expert review pending · not production validated</p>
     </header>
     <div role="search" aria-label="Filter glossary terms" className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 lg:grid-cols-[1fr_260px_260px]">
-      <label className="text-sm font-bold text-slate-800">Search terms, definitions, and aliases<input type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
-      <label className="text-sm font-bold text-slate-800">Chapter occurrence<select value={chapterId} onChange={(event) => onChapterChange(event.target.value)} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All linked chapters</option>{view.chapterOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
-      <label className="text-sm font-bold text-slate-800">Domain occurrence<select value={domainId} onChange={(event) => onDomainChange(event.target.value)} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All linked domains</option>{view.domainOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+      <label className="text-sm font-bold text-slate-800">Search terms, definitions, and aliases<input type="search" value={query} onChange={(event) => { setLetterFilter('all'); onQueryChange(event.target.value); }} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
+      <label className="text-sm font-bold text-slate-800">Chapter occurrence<select value={chapterId} onChange={(event) => { setLetterFilter('all'); onChapterChange(event.target.value); }} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All linked chapters</option>{view.chapterOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+      <label className="text-sm font-bold text-slate-800">Domain occurrence<select value={domainId} onChange={(event) => { setLetterFilter('all'); onDomainChange(event.target.value); }} aria-controls="native-glossary-results" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All linked domains</option>{view.domainOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
     </div>
+    {availableLetters.length > 2 && <div className="flex flex-wrap gap-1" role="group" aria-label="Filter glossary terms by starting letter">
+      <button type="button" data-test-prep-glossary-letter="all" aria-pressed={activeLetter === 'all'} onClick={() => setLetterFilter('all')} className={'min-h-9 rounded-lg border px-2.5 py-1 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (activeLetter === 'all' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')}>All</button>
+      {availableLetters.map((letter) => (
+        <button key={letter} type="button" data-test-prep-glossary-letter={letter} aria-pressed={activeLetter === letter} onClick={() => setLetterFilter(letter)} className={'min-h-9 min-w-9 rounded-lg border px-2 py-1 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (activeLetter === letter ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')}>{letter}</button>
+      ))}
+    </div>}
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <p className="text-sm font-bold text-slate-700" role="status" aria-live="polite">Showing {shown.length.toLocaleString()} of {view.matching.toLocaleString()} matching terms · {view.total.toLocaleString()} total</p>
-      {(query || chapterId !== 'all' || domainId !== 'all') && <button type="button" onClick={() => { onQueryChange(''); onChapterChange('all'); onDomainChange('all'); }} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Clear glossary filters</button>}
+      <p className="text-sm font-bold text-slate-700" role="status" aria-live="polite">Showing {shown.length.toLocaleString()} of {letterFilteredItems.length.toLocaleString()} matching terms · {view.total.toLocaleString()} total</p>
+      <div className="flex flex-wrap items-center gap-2">
+        {letterFilteredItems.length > 0 && <button type="button" data-test-prep-glossary-export="true" onClick={() => {
+          const md = testPrepBuildGlossaryMarkdown(headingText, letterFilteredItems);
+          try {
+            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = testPrepSlug(headingText || 'glossary', 'glossary') + '.md';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          } catch (_) {}
+        }} className="rounded-lg border border-cyan-500 bg-white px-3 py-2 text-xs font-black text-cyan-950 hover:bg-cyan-50 focus:ring-2 focus:ring-cyan-600">Export glossary (.md)</button>}
+        {(query || chapterId !== 'all' || domainId !== 'all' || activeLetter !== 'all') && <button type="button" onClick={() => { setLetterFilter('all'); onQueryChange(''); onChapterChange('all'); onDomainChange('all'); }} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Clear glossary filters</button>}
+      </div>
     </div>
     <h5 id="native-glossary-results-title" tabIndex={-1} className="sr-only">Glossary results</h5>
     <ol id="native-glossary-results" aria-labelledby="native-glossary-results-title" className="grid gap-3 md:grid-cols-2">
@@ -4117,12 +5142,15 @@ function TestPrepNativeGlossaryLibrary({ glossary, chapters, libraryTitle, query
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-800">{record.definition}</p>
           {record.aliases.length > 0 && <p className="mt-3 text-sm text-slate-700"><strong>Also listed as:</strong> {record.aliases.join(', ')}</p>}
           <p className="mt-3 text-xs font-bold text-slate-600">{occurrenceCount.toLocaleString()} linked text occurrence{occurrenceCount === 1 ? '' : 's'} · {new Set(occurrences.map((entry) => entry.chapterId).filter(Boolean)).size} chapter{new Set(occurrences.map((entry) => entry.chapterId).filter(Boolean)).size === 1 ? '' : 's'}</p>
-          {typeof onReadAloud === 'function' && <button type="button" aria-pressed={readAloudActive === true} onClick={() => onReadAloud(record)} className="mt-3 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? 'Stop glossary read-aloud' : 'Read term aloud'}</button>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {typeof onReadAloud === 'function' && <button type="button" aria-pressed={readAloudActive === true} onClick={() => onReadAloud(record)} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? 'Stop glossary read-aloud' : 'Read term aloud'}</button>}
+            {typeof onAddNote === 'function' && <button type="button" data-test-prep-glossary-note={record.id} onClick={() => onAddNote(record)} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Add note</button>}
+          </div>
         </article></li>;
       })}
     </ol>
-    {!view.matching && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No glossary terms match those occurrence filters and search words.</p>}
-    {shown.length < view.matching && <button type="button" onClick={onShowMore} aria-controls="native-glossary-results" className="rounded-lg border border-indigo-500 bg-white px-4 py-2 font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Show 100 more terms</button>}
+    {!letterFilteredItems.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No glossary terms match those occurrence filters and search words.</p>}
+    {shown.length < letterFilteredItems.length && <button type="button" onClick={onShowMore} aria-controls="native-glossary-results" className="rounded-lg border border-indigo-500 bg-white px-4 py-2 font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Show 100 more terms</button>}
   </section>;
 }
 
@@ -4188,7 +5216,14 @@ function TestPrepHub(props) {
   const [annotationColor, setAnnotationColor] = React.useState('yellow');
   const [annotationEditingId, setAnnotationEditingId] = React.useState('');
   const [annotationTarget, setAnnotationTarget] = React.useState({ targetType: 'general', targetId: '', targetLabel: 'General pack note' });
-  const [largeText, setLargeText] = React.useState(false);
+  const [annotationSearch, setAnnotationSearch] = React.useState('');
+  const [annotationKindFilter, setAnnotationKindFilter] = React.useState('all');
+  const [catalogSearch, setCatalogSearch] = React.useState('');
+  const [catalogCategory, setCatalogCategory] = React.useState('all');
+  const [largeText, setLargeText] = React.useState(() => {
+    try { return window.localStorage.getItem(TEST_PREP_LARGE_TEXT_KEY) === 'true'; }
+    catch (_) { return false; }
+  });
   const [learningLibraryState, setLearningLibraryState] = React.useState({ identity: '', status: 'idle', payload: null });
   const [learningLibraryRetry, setLearningLibraryRetry] = React.useState(0);
   const [librarySearch, setLibrarySearch] = React.useState('');
@@ -4200,6 +5235,13 @@ function TestPrepHub(props) {
   const [flashcardRevealed, setFlashcardRevealed] = React.useState(false);
   const [flashcardStore, setFlashcardStore] = React.useState({ schemaVersion: 2, scopes: [] });
   const [flashcardDueOnly, setFlashcardDueOnly] = React.useState(false);
+  const [flashcardNeedsReviewOnly, setFlashcardNeedsReviewOnly] = React.useState(false);
+  const [flashcardShuffleSeed, setFlashcardShuffleSeed] = React.useState(0);
+  const [chapterChecksNeedsReviewOnly, setChapterChecksNeedsReviewOnly] = React.useState(false);
+  const [confirmResetPackChecks, setConfirmResetPackChecks] = React.useState(false);
+  const [confirmClearSavedReview, setConfirmClearSavedReview] = React.useState(false);
+  const [practiceShortcutsOpen, setPracticeShortcutsOpen] = React.useState(false);
+  const [librarySearchType, setLibrarySearchType] = React.useState('all');
   const [customQuizDomainIds, setCustomQuizDomainIds] = React.useState([]);
   const [customQuizLength, setCustomQuizLength] = React.useState(20);
   const [customQuizVariant, setCustomQuizVariant] = React.useState(1);
@@ -4210,13 +5252,22 @@ function TestPrepHub(props) {
   const [glossaryVisibleCount, setGlossaryVisibleCount] = React.useState(100);
   const [readAloudStatus, setReadAloudStatus] = React.useState('idle');
   const [handsFreeEnabled, setHandsFreeEnabled] = React.useState(false);
+  const [handsFreeSurface, setHandsFreeSurface] = React.useState('practice');
+  const [flashcardVoiceStep, setFlashcardVoiceStep] = React.useState(0);
   const [handsFreeStatus, setHandsFreeStatus] = React.useState('idle');
   const [handsFreeTranscript, setHandsFreeTranscript] = React.useState('');
   const [handsFreeError, setHandsFreeError] = React.useState('');
   const [handsFreeEngine, setHandsFreeEngine] = React.useState({
     engine: '', engineLabel: 'Configured voice input', privacy: 'Recognition follows the Voice Input setting.'
   });
-  const [handsFreeRate, setHandsFreeRate] = React.useState(1);
+  const [handsFreeRate, setHandsFreeRate] = React.useState(() => {
+    try {
+      const saved = window.localStorage.getItem(TEST_PREP_HANDS_FREE_RATE_KEY);
+      return saved != null && saved !== '' ? normalizeTestPrepSpeechRate(saved) : 1;
+    } catch (_) {
+      return 1;
+    }
+  });
   const [handsFreePromptMode, setHandsFreePromptMode] = React.useState(() => {
     try { return window.localStorage.getItem(TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY) === 'quick' ? 'quick' : 'guided'; }
     catch (_) { return 'guided'; }
@@ -4245,11 +5296,12 @@ function TestPrepHub(props) {
   const handsFreeRecognitionErrorStreakRef = React.useRef(0);
   const handsFreeRestartTimerRef = React.useRef(null);
   const handsFreeEnabledRef = React.useRef(false);
+  const handsFreeSurfaceRef = React.useRef('practice');
   const handsFreeVoiceLeaseRef = React.useRef(null);
   const handsFreeResumeGlobalVoiceRef = React.useRef(false);
   const handsFreeCommandHandlerRef = React.useRef(null);
   const testPrepPracticeVoiceRef = React.useRef(null);
-  const handsFreeRateRef = React.useRef(1);
+  const handsFreeRateRef = React.useRef(handsFreeRate);
   const handsFreePromptModeRef = React.useRef(handsFreePromptMode);
   // Whether checking an answer automatically reads the explanation aloud.
   // State drives the visible toggle; the ref is what the command handler reads,
@@ -4258,8 +5310,11 @@ function TestPrepHub(props) {
   // prompt-mode preference, and defaults ON so nobody loses explanations by
   // upgrading - only an explicit opt-out turns them off.
   const [handsFreeExplanations, setHandsFreeExplanations] = React.useState(() => {
-    try { return window.localStorage.getItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY) !== 'off'; }
-    catch (_) { return true; }
+    try {
+      const saved = window.localStorage.getItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY);
+      if (saved === 'off' || saved === 'core') return saved;
+      return 'full';
+    } catch (_) { return 'full'; }
   });
   const handsFreeExplanationsRef = React.useRef(handsFreeExplanations);
   const handsFreePendingChoiceRef = React.useRef(null);
@@ -4281,8 +5336,9 @@ function TestPrepHub(props) {
   const [scratchpadNotes, setScratchpadNotes] = React.useState({});
   const [practiceRefOpen, setPracticeRefOpen] = React.useState(false);
   const [practiceRefShowAll, setPracticeRefShowAll] = React.useState(false);
-  const [workshopDrafts, setWorkshopDrafts] = React.useState({});
+  const [workshopDrafts, setWorkshopDrafts] = React.useState(readTestPrepWorkshopDrafts);
   const [workshopChecks, setWorkshopChecks] = React.useState({});
+  const [studyChecklists, setStudyChecklists] = React.useState(() => readTestPrepStudyChecklists());
   const [workshopTimerState, setWorkshopTimerState] = React.useState({ workshopId: '', remainingSeconds: 0, running: false });
   catalogIsOpenRef.current = isOpen;
 
@@ -4334,6 +5390,7 @@ function TestPrepHub(props) {
       // It was gated on card.learningLibraryUrl from the start but never
       // populated here, so that button was dead for every pack.
       learningLibraryUrl: testPrepNormalizeRepoAssetUrl(entry.learningLibraryUrl || (pack && pack.learningLibraryUrl) || ''),
+      portfolioCategory: entry.portfolioCategory || (pack && pack.portfolioCategory) || '',
       unreleased: entry.visibility === 'internal',
     };
   }).concat(
@@ -4353,6 +5410,7 @@ function TestPrepHub(props) {
       pack,
       manifestEntry: null,
       learningLibraryUrl: testPrepNormalizeRepoAssetUrl(pack.learningLibraryUrl || ''),
+      portfolioCategory: pack.portfolioCategory || '',
       unreleased: false,
     })),
   );
@@ -4396,6 +5454,7 @@ function TestPrepHub(props) {
   const retainedAnnotationCount = selectedPack ? testPrepRetainedAnnotationCount(annotations, selectedPack.id, selectedLearnerDataIdentity) : 0;
   const globalSearch = selectedPack && learningLibrary ? testPrepSearchPack(selectedPack, learningLibrary, librarySearch, { limit: 60, annotations: { records: packAnnotations } }) : { query: '', total: 0, counts: {}, results: [] };
   const studyPlanLayers = React.useMemo(() => testPrepStudyPlanLayers(learningLibrary), [learningLibrary]);
+  const packStudyChecks = (selectedPack && studyChecklists[testPrepSlug(selectedPack.id, '')]) || {};
   const flashcardRatings = selectedPack ? testPrepFlashcardScheduleForPack(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : {};
   const retainedFlashcardCount = selectedPack ? testPrepRetainedFlashcardCount(flashcardStore, selectedPack.id, selectedLearnerDataIdentity) : 0;
   const nativeChapterProgress = selectedPack ? testPrepNativeChapterProgressForPack(nativeChapterProgressStore, selectedPack.id, selectedLearnerDataIdentity) : {};
@@ -4405,6 +5464,8 @@ function TestPrepHub(props) {
   const availableSkills = testPrepPackSkillCatalog(selectedPack, learningLibrary);
   const skillById = Object.fromEntries(availableSkills.map((skill) => [skill.id, skill]));
   const domainById = Object.fromEntries((selectedPack ? selectedPack.domains : []).map((domain) => [domain.id, domain]));
+  const domainAccuracyById = Object.fromEntries((progressAnalytics && Array.isArray(progressAnalytics.domainRows) ? progressAnalytics.domainRows : []).map((row) => [row.id, row]));
+  const skillAccuracyById = Object.fromEntries((progressAnalytics && Array.isArray(progressAnalytics.skillRows) ? progressAnalytics.skillRows : []).map((row) => [row.id, row]));
 
   handsFreeEnabledRef.current = handsFreeEnabled;
   handsFreeRateRef.current = handsFreeRate;
@@ -4658,6 +5719,10 @@ function TestPrepHub(props) {
   React.useEffect(() => {
     setFlashcardStore(selectedPack ? readTestPrepFlashcardStore(selectedPack.id) : { schemaVersion: 2, scopes: [] });
     setFlashcardDueOnly(false);
+    setFlashcardNeedsReviewOnly(false);
+    setChapterChecksNeedsReviewOnly(false);
+    setConfirmResetPackChecks(false);
+    setLibrarySearchType('all');
     setCustomQuizDomainIds([]);
     setTargetDomainId('');
     setTargetDifficultyFilter('all');
@@ -4692,7 +5757,24 @@ function TestPrepHub(props) {
       if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
       const topTrap = stack[stack.length - 1];
       if (topTrap && (topTrap.root || topTrap) !== dialogRef.current) return;
-      if (event.key === 'Escape') { event.preventDefault(); if (typeof onCloseRef.current === 'function') onCloseRef.current(); return; }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        const ps = practiceShortcutStateRef.current;
+        if (ps && ps.active && ps.practiceRefOpen && typeof ps.setPracticeRefOpen === 'function') {
+          ps.setPracticeRefOpen(false);
+          return;
+        }
+        if (ps && ps.active && ps.scratchpadOpen && typeof ps.setScratchpadOpen === 'function') {
+          ps.setScratchpadOpen(false);
+          return;
+        }
+        if (ps && ps.active && ps.practiceShortcutsOpen && typeof ps.setPracticeShortcutsOpen === 'function') {
+          ps.setPracticeShortcutsOpen(false);
+          return;
+        }
+        if (typeof onCloseRef.current === 'function') onCloseRef.current();
+        return;
+      }
       if (event.key !== 'Tab' || !dialogRef.current) return;
       const focusable = Array.from(dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter(isVisibleFocusable);
       if (!focusable.length) return;
@@ -4711,6 +5793,165 @@ function TestPrepHub(props) {
       if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
       if (wasTop && (!prior || typeof prior.isConnected !== 'boolean' || prior.isConnected)) { if (prior && typeof prior.focus === 'function') prior.focus(); }
     };
+  }, [isOpen]);
+
+  const practiceShortcutStateRef = React.useRef({});
+  const flashcardShortcutStateRef = React.useRef({ active: false });
+  flashcardShortcutStateRef.current = { active: false };
+  React.useEffect(() => {
+    if (!isOpen) return undefined;
+    const onPracticeKeyDown = (event) => {
+      if (event.defaultPrevented || event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      const target = event.target;
+      const tag = target && target.tagName ? String(target.tagName).toUpperCase() : '';
+      if (tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+
+      const fs = flashcardShortcutStateRef.current;
+      if (fs && fs.active) {
+        if (tag === 'INPUT') return;
+        const key = String(event.key || '');
+        if (key === ' ' && !fs.revealed && tag !== 'BUTTON' && tag !== 'A' && tag !== 'SUMMARY') {
+          event.preventDefault();
+          fs.reveal();
+          return;
+        }
+        if (fs.revealed && (key === '1' || key === '2' || key === '3')) {
+          event.preventDefault();
+          fs.rate(key === '1' ? 'again' : key === '2' ? 'learning' : 'know');
+          return;
+        }
+        if (key === 'ArrowLeft') {
+          event.preventDefault();
+          fs.prev();
+          return;
+        }
+        if (key === 'ArrowRight') {
+          event.preventDefault();
+          fs.next();
+          return;
+        }
+        if (key.toLowerCase() === 'r' && typeof fs.read === 'function') {
+          event.preventDefault();
+          fs.read();
+          return;
+        }
+        if (key.toLowerCase() === 's' && typeof fs.toggleShuffle === 'function') {
+          event.preventDefault();
+          fs.toggleShuffle();
+          return;
+        }
+        if (key.toLowerCase() === 'n' && typeof fs.openNote === 'function') {
+          event.preventDefault();
+          fs.openNote();
+          return;
+        }
+        if ((key === '[' || key === ']') && typeof fs.adjustRate === 'function') {
+          event.preventDefault();
+          fs.adjustRate(key === ']' ? 0.1 : -0.1);
+          return;
+        }
+        return;
+      }
+
+      const s = practiceShortcutStateRef.current;
+      if (!s.active || !s.currentItem) return;
+      if (tag === 'INPUT') {
+        const inputType = String(target.type || '').toLowerCase();
+        if (inputType !== 'radio' && inputType !== 'checkbox') return;
+      }
+      const key = String(event.key || '');
+      if (key === '?') {
+        event.preventDefault();
+        s.setPracticeShortcutsOpen((value) => !value);
+        return;
+      }
+      const lower = key.toLowerCase();
+      if (!s.checked) {
+        const shiftDigitIdx = event.shiftKey
+          ? ({ '!': 0, '@': 1, '#': 2, '$': 3, '1': 0, '2': 1, '3': 2, '4': 3, Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3 }[key] ??
+             { Digit1: 0, Digit2: 1, Digit3: 2, Digit4: 3 }[String(event.code || '')] ??
+             (['a', 'b', 'c', 'd'].includes(lower) ? lower.charCodeAt(0) - 97 : -1))
+          : -1;
+        if (event.shiftKey && shiftDigitIdx >= 0 && shiftDigitIdx < (s.currentItem.choices || []).length) {
+          event.preventDefault();
+          s.toggleEliminatedChoice(s.currentItem.id, shiftDigitIdx);
+          return;
+        }
+        const choiceIdx = !event.shiftKey && ['1', '2', '3', '4'].includes(key)
+          ? Number(key) - 1
+          : !event.shiftKey && ['a', 'b', 'c', 'd'].includes(lower)
+            ? lower.charCodeAt(0) - 97
+            : -1;
+        if (choiceIdx >= 0 && choiceIdx < (s.currentItem.choices || []).length) {
+          event.preventDefault();
+          s.clearEliminatedChoice(s.currentItem.id, choiceIdx);
+          s.setSelectedChoice(choiceIdx);
+          return;
+        }
+      } else if (s.practiceMode !== 'simulation' && !event.shiftKey && ['1', '2', '3'].includes(key)) {
+        event.preventDefault();
+        s.setItemConfidence(key === '1' ? 'sure' : key === '2' ? 'unsure' : 'guess');
+        return;
+      }
+      if (!event.shiftKey && lower === 'r' && typeof s.readQuestion === 'function') {
+        event.preventDefault();
+        s.readQuestion();
+        return;
+      }
+      if (!event.shiftKey && lower === 'e' && s.checked && s.practiceMode !== 'simulation' && typeof s.readExplanation === 'function') {
+        event.preventDefault();
+        s.readExplanation();
+        return;
+      }
+      if (!event.shiftKey && lower === 'f' && s.currentItem.examItemStatus !== 'not-approved-as-independent-exam-item') {
+        event.preventDefault();
+        s.toggleSavedForReview(s.currentItem.id);
+        return;
+      }
+      if (!event.shiftKey && lower === 's' && typeof s.setScratchpadOpen === 'function') {
+        event.preventDefault();
+        s.setScratchpadOpen((value) => {
+          const next = !value;
+          if (next) {
+            setTimeout(() => {
+              const area = document.getElementById('test-prep-scratchpad-input');
+              if (area && typeof area.focus === 'function') area.focus();
+            }, 0);
+          }
+          return next;
+        });
+        return;
+      }
+      if (!event.shiftKey && lower === 'q' && s.practiceMode !== 'simulation' && s.hasReferenceAid && typeof s.setPracticeRefOpen === 'function') {
+        event.preventDefault();
+        s.setPracticeRefOpen((value) => !value);
+        return;
+      }
+      if (!event.shiftKey && lower === 'n' && typeof s.openQuestionNote === 'function') {
+        event.preventDefault();
+        s.openQuestionNote();
+        return;
+      }
+      if (!event.shiftKey && (key === '[' || key === ']') && typeof s.adjustHandsFreeRate === 'function') {
+        event.preventDefault();
+        s.adjustHandsFreeRate(key === ']' ? 0.1 : -0.1);
+        return;
+      }
+      if (key === 'Enter') {
+        if (tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') return;
+        if (s.practiceMode === 'simulation') {
+          if (s.selectedChoice != null) { event.preventDefault(); s.advanceSimulation(); }
+        } else if (!s.checked) {
+          if (s.selectedChoice != null) { event.preventDefault(); s.checkAnswer(); }
+        } else {
+          event.preventDefault();
+          s.advance();
+        }
+      }
+    };
+    document.addEventListener('keydown', onPracticeKeyDown);
+    return () => document.removeEventListener('keydown', onPracticeKeyDown);
   }, [isOpen]);
 
   React.useEffect(() => {
@@ -4754,8 +5995,13 @@ function TestPrepHub(props) {
   }, [selectedLearningLibraryIdentity]);
 
   React.useEffect(() => {
-    const needsLibraryInPractice = tab === 'practice' && practiceRefOpen && practiceMode !== 'simulation';
-    if (!isOpen || (tab !== 'library' && !needsLibraryInPractice) || !selectedPack) return undefined;
+    const needsLibraryInPractice = tab === 'practice' && (
+      (practiceRefOpen && practiceMode !== 'simulation') ||
+      (checked && practiceMode !== 'simulation') ||
+      Boolean(result)
+    );
+    const needsLibraryInProgress = tab === 'progress' && progressAnalytics.attemptCount > 0;
+    if (!isOpen || (tab !== 'library' && !needsLibraryInPractice && !needsLibraryInProgress) || !selectedPack) return undefined;
     const libraryUrl = selectedPack.learningLibraryUrl;
     const libraryEntry = selectedLearningLibraryEntry;
     const expectedDigest = libraryEntry && libraryEntry.learningLibrarySha256 || '';
@@ -4807,6 +6053,9 @@ function TestPrepHub(props) {
     tab,
     practiceRefOpen,
     practiceMode,
+    checked,
+    Boolean(result),
+    progressAnalytics.attemptCount > 0,
     selectedLearningLibraryIdentity,
     packManifestStatus,
     learningLibraryRetry,
@@ -4899,6 +6148,7 @@ function TestPrepHub(props) {
   }, []);
 
   React.useEffect(() => {
+    if (handsFreeSurface === 'flashcards') return undefined;
     cancelTestPrepClarification(false);
     setClarificationDraft('');
     setClarificationResponse('');
@@ -4927,7 +6177,39 @@ function TestPrepHub(props) {
       if (!result && !checkpoint) prewarmUpcomingQuestionAudio();
     }, 0);
     return () => clearTimeout(timer);
-  }, [handsFreeEnabled, currentItem && currentItem.id]);
+  }, [handsFreeEnabled, handsFreeSurface, currentItem && currentItem.id]);
+
+  React.useEffect(() => {
+    if (!handsFreeEnabled || handsFreeSurface !== 'flashcards') return undefined;
+    if (tab !== 'library' || libraryMode !== 'flashcards' || libraryChapterId) {
+      disableHandsFree();
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      const state = flashcardShortcutStateRef.current;
+      const activeCard = state && state.card;
+      if (!activeCard) {
+        speakTestPrepText('No matching flashcards remain in this queue.');
+        disableHandsFree();
+        return;
+      }
+      speakTestPrepText(testPrepFlashcardSpeechText(activeCard, flashcardRevealed));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [
+    handsFreeEnabled,
+    handsFreeSurface,
+    tab,
+    libraryMode,
+    libraryChapterId,
+    flashcardIndex,
+    flashcardRevealed,
+    flashcardVoiceStep,
+    librarySearch,
+    libraryDomain,
+    flashcardDueOnly,
+    flashcardNeedsReviewOnly,
+  ]);
 
   handsFreeCommandHandlerRef.current = handleHandsFreeCommand;
 
@@ -5048,7 +6330,21 @@ function TestPrepHub(props) {
     return true;
   }
 
+  function toggleStudyCheck(itemKey) {
+    if (!selectedPack || !selectedPack.id) return;
+    setStudyChecklists((current) => writeTestPrepStudyChecklists(testPrepToggleStudyCheck(current, selectedPack.id, itemKey)));
+  }
+
+  function resetStudyChecks(keyPrefix) {
+    if (!selectedPack || !selectedPack.id) return;
+    setStudyChecklists((current) => writeTestPrepStudyChecklists(testPrepResetStudyChecks(current, selectedPack.id, keyPrefix)));
+  }
+
   function toggleWorkshopCheck(workshopId, key) {
+    if (selectedPack && selectedPack.id) {
+      toggleStudyCheck('ws:' + workshopId + ':' + key);
+      return;
+    }
     setWorkshopChecks((current) => {
       const existing = current[workshopId] && typeof current[workshopId] === 'object' ? current[workshopId] : {};
       return { ...current, [workshopId]: { ...existing, [key]: !existing[key] } };
@@ -5238,6 +6534,62 @@ function TestPrepHub(props) {
     announce(removing ? 'Question removed from saved review.' : 'Question saved for later review.', 'info');
   }
 
+  function saveItemsForReview(itemsToSave) {
+    if (!selectedPack || !Array.isArray(itemsToSave) || !itemsToSave.length) return { addedCount: 0, eligibleCount: 0 };
+    const eligibleIds = itemsToSave
+      .map((item) => testPrepSlug(item && item.id, ''))
+      .filter((safeId) => {
+        const lookupItem = itemLookup.get(safeId);
+        return Boolean(lookupItem && lookupItem.examItemStatus !== 'not-approved-as-independent-exam-item');
+      });
+    if (!eligibleIds.length) {
+      announce('Guided activities stay in their guided-review bank and are excluded from saved-question diagnostic review.', 'info');
+      return { addedCount: 0, eligibleCount: 0 };
+    }
+    const existing = testPrepReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity);
+    const existingSet = new Set(existing);
+    const toAdd = eligibleIds.filter((id) => !existingSet.has(id));
+    if (!toAdd.length) {
+      announce('All missed questions from this set are already saved for review.', 'info');
+      return { addedCount: 0, eligibleCount: eligibleIds.length };
+    }
+    const nextPackItems = existing.concat(toAdd);
+    setReviewItems(writeTestPrepReviewItems(testPrepSetReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity, nextPackItems)));
+    announce('Saved ' + toAdd.length + ' missed ' + (toAdd.length === 1 ? 'question' : 'questions') + ' for later review.', 'info');
+    return { addedCount: toAdd.length, eligibleCount: eligibleIds.length };
+  }
+
+  function clearSavedReviewQueue() {
+    if (!selectedPack) return;
+    setReviewItems(writeTestPrepReviewItems(testPrepSetReviewItemsForPack(reviewItems, selectedPack.id, selectedPackContentIdentity, [])));
+    setConfirmClearSavedReview(false);
+    announce('Cleared saved review questions for this pack.', 'info');
+  }
+
+  function exportPackAnnotationsMarkdown(records) {
+    if (!selectedPack) return;
+    const list = Array.isArray(records) && records.length ? records : packAnnotations;
+    if (!list.length) {
+      announce('Add at least one note or highlight before exporting.', 'info');
+      return;
+    }
+    const md = testPrepFormatAnnotationsMarkdown(selectedPack.shortTitle || selectedPack.title, list);
+    try {
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = testPrepSlug(selectedPack.id, 'test-prep') + '-notes.md';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      announce('Exported ' + list.length + ' ' + (list.length === 1 ? 'annotation' : 'annotations') + ' as Markdown.', 'info');
+    } catch (_) {
+      announce('Could not download the notes file in this browser.', 'warning');
+    }
+  }
+
   function startSavedQuestionReview() {
     const items = savedReviewItemIds.map((itemId) => itemLookup.get(itemId)).filter(Boolean);
     if (!items.length) { announce('Save a question before starting a review set.', 'info'); return; }
@@ -5367,10 +6719,11 @@ function TestPrepHub(props) {
       setMemoryAidOpen(searchResult.id);
       return;
     }
-    if (searchResult.type === 'topic-route' || searchResult.type === 'playbook' || searchResult.type === 'study-session' || searchResult.type === 'source') {
-      setLibraryMode(searchResult.type === 'topic-route' ? 'study-plan' : searchResult.type === 'playbook' ? 'playbooks' : searchResult.type === 'study-session' ? 'study-sessions' : 'sources');
+    if (searchResult.type === 'topic-route' || searchResult.type === 'unit-route' || searchResult.type === 'quick-reference' || searchResult.type === 'playbook' || searchResult.type === 'study-session' || searchResult.type === 'source') {
+      setLibraryMode((searchResult.type === 'topic-route' || searchResult.type === 'unit-route') ? 'study-plan' : searchResult.type === 'quick-reference' ? 'quick-reference' : searchResult.type === 'playbook' ? 'playbooks' : searchResult.type === 'study-session' ? 'study-sessions' : 'sources');
       setLibraryChapterId('');
       setLibrarySearch(searchResult.title);
+      setLibrarySearchType('all');
       return;
     }
     if (searchResult.type === 'note' || searchResult.type === 'highlight') {
@@ -5446,7 +6799,7 @@ function TestPrepHub(props) {
   function exportPracticeProgress() {
     let url = '';
     try {
-      const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans, flashcardStores: readAllTestPrepFlashcardStores(packs.map((pack) => pack.id)), chapterProgress: nativeChapterProgressStore });
+      const payload = testPrepExportProgress(progress, reviewItems, Date.now(), { annotations, studyPlans, flashcardStores: readAllTestPrepFlashcardStores(packs.map((pack) => pack.id)), chapterProgress: nativeChapterProgressStore, studyChecklists, workshopDrafts });
       if (typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') throw new Error('File export is unavailable in this browser.');
       url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
       const anchor = document.createElement('a');
@@ -5482,7 +6835,9 @@ function TestPrepHub(props) {
           setFlashcardStore(selectedPack ? readTestPrepFlashcardStore(selectedPack.id) : { schemaVersion: 2, scopes: [] });
         }
         if (imported.chapterProgress) setNativeChapterProgressStore(writeTestPrepNativeChapterProgressStore(imported.chapterProgress));
-        announce('Test-prep progress, notes, plans, flashcards, and chapter completion restored.', 'success');
+        if (imported.studyChecklists) setStudyChecklists(writeTestPrepStudyChecklists(imported.studyChecklists));
+        if (imported.workshopDrafts) setWorkshopDrafts(writeTestPrepWorkshopDrafts(imported.workshopDrafts));
+        announce('Test-prep progress, notes, plans, flashcards, checklists, chapter completion, and workshop drafts restored.', 'success');
       } catch (error) { announce(error && error.message ? error.message : 'Progress import failed.', 'warning'); }
       if (inputEl) inputEl.value = '';
     };
@@ -5500,6 +6855,21 @@ function TestPrepHub(props) {
       items: targetedDomainPlan.items,
       targetDomainId: targetedDomainPlan.domainId,
       targetDifficulties: targetedDomainPlan.difficulties,
+    });
+  }
+
+  function startDomainPracticeById(domainId) {
+    if (!selectedPack || !domainId) return;
+    const plan = testPrepBuildTargetedSet(selectedPack, { domainId, difficulties: [], limit: 20 });
+    if (!plan || !plan.items.length) { announce('No questions are available for that domain yet.', 'info'); return; }
+    setTargetDomainId(plan.domainId);
+    setTargetDifficultyFilter('all');
+    startPracticeSet({
+      mode: 'targeted',
+      label: 'Domain focus: ' + plan.domainLabel + ' · all difficulty levels',
+      items: plan.items,
+      targetDomainId: plan.domainId,
+      targetDifficulties: plan.difficulties,
     });
   }
 
@@ -5640,6 +7010,27 @@ function TestPrepHub(props) {
     setTab('library');
   }
 
+  function openStudyPlaybook(playbook) {
+    setLibraryMode('playbooks');
+    setLibraryChapterId('');
+    setLibrarySearch(playbook && playbook.title ? playbook.title : '');
+    setTab('library');
+  }
+
+  function openQuickReferenceCard(card) {
+    setLibraryMode('quick-reference');
+    setLibraryChapterId('');
+    setLibrarySearch(card && card.title ? card.title : '');
+    setTab('library');
+  }
+
+  function openSpacedReviewForDomain(queryText) {
+    setLibraryMode('study-sessions');
+    setLibraryChapterId('');
+    setLibrarySearch(String(queryText || ''));
+    setTab('library');
+  }
+
   function extendSimulationTime() {
     if (practiceMode !== 'simulation' || result) return;
     setTimeRemainingSeconds((seconds) => seconds + 600);
@@ -5702,6 +7093,18 @@ function TestPrepHub(props) {
   function acceptHandsFreeTranscript(transcriptValue, recognitionConfidence) {
     const transcript = String(transcriptValue || '').trim();
     if (!transcript) { ensureHandsFreeListening(); return; }
+    if (handsFreeSurfaceRef.current === 'flashcards') {
+      const flashcardCmd = testPrepParseFlashcardVoiceCommand(transcript);
+      handsFreeRecognitionErrorStreakRef.current = 0;
+      setHandsFreeTranscript(transcript);
+      setHandsFreeStatus('processing');
+      stopHandsFreeRecognition(true);
+      Promise.resolve(handleFlashcardHandsFreeCommand(transcript, flashcardCmd)).catch(() => {
+        setHandsFreeError('That voice command could not be completed.');
+        speakTestPrepText('That command could not be completed. Say help to hear the available commands.');
+      }).then(ensureHandsFreeListening, ensureHandsFreeListening);
+      return;
+    }
     const command = testPrepParseHandsFreeCommand(transcript, {
       allowBareChoice: voiceSetChoicePromptUntilRef.current > Date.now() && (!currentItem || Boolean(result)),
       packs: voicePracticeSets,
@@ -5861,12 +7264,19 @@ function TestPrepHub(props) {
     announce(next === 'quick' ? 'Quick hands-free prompts are on.' : 'Guided hands-free prompts are on.', 'info');
   }
 
-  function setHandsFreeExplanationsPreference(on) {
-    const next = !!on;
+  function setHandsFreeExplanationsPreference(mode) {
+    const next = mode === 'off' || mode === false ? 'off' : mode === 'core' ? 'core' : 'full';
     handsFreeExplanationsRef.current = next;
     setHandsFreeExplanations(next);
-    try { window.localStorage.setItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY, next ? 'on' : 'off'); } catch (_) {}
-    announce(next ? 'Answer explanations will be read aloud.' : 'Answer explanations are off. Say explain to hear one.', 'info');
+    try { window.localStorage.setItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY, next === 'full' ? 'on' : next); } catch (_) {}
+    announce(
+      next === 'full'
+        ? 'Full answer explanations will be read aloud.'
+        : next === 'core'
+          ? 'Core explanations are on. Only the verdict and main rationale will be read aloud.'
+          : 'Answer explanations are off. Say explain to hear one.',
+      'info'
+    );
   }
 
   function clearHandsFreeAudioCache() {
@@ -6092,6 +7502,22 @@ function TestPrepHub(props) {
     });
   }
 
+  function markAllNativeChapterSections(chapter) {
+    const sections = chapter && Array.isArray(chapter.sections) ? chapter.sections : [];
+    if (!sections.length) return;
+    setNativeChapterProgressStore((previousStore) => {
+      const nextProgress = testPrepNativeChapterProgressForPack(previousStore, selectedPackContextId, selectedLearnerDataIdentity);
+      sections.forEach((sec) => {
+        const sectionId = String(sec && (sec.runtimeSectionId || sec.id) || '');
+        if (sectionId && !testPrepUnsafeKey(sectionId) && /^[a-zA-Z0-9_-]{1,140}$/.test(sectionId)) {
+          nextProgress[sectionId] = true;
+        }
+      });
+      return writeTestPrepNativeChapterProgressStore(testPrepSetNativeChapterProgressForPack(previousStore, selectedPackContextId, selectedLearnerDataIdentity, nextProgress));
+    });
+    announce('Marked all sections in this chapter complete.', 'success');
+  }
+
   async function readQuestion() {
     if (!currentItem) return;
     if (readAloudStatus === 'loading' || readAloudStatus === 'speaking') {
@@ -6102,6 +7528,18 @@ function TestPrepHub(props) {
     }
     const text = testPrepQuestionSpeechText(currentItem, questionIndex, activePack ? activePack.items.length : 1, handsFreePromptModeRef.current);
     await speakTestPrepText(text, { cacheKey: testPrepAudioCacheKey(text) });
+  }
+
+  function adjustHandsFreeRate(deltaOrReset) {
+    const nextRate = deltaOrReset === 'reset'
+      ? 1
+      : normalizeTestPrepSpeechRate(handsFreeRateRef.current + Number(deltaOrReset || 0));
+    handsFreeRateRef.current = nextRate;
+    setHandsFreeRate(nextRate);
+    try { window.localStorage.setItem(TEST_PREP_HANDS_FREE_RATE_KEY, String(nextRate)); } catch (_) {}
+    clearHandsFreeAudioCache();
+    announce('Speech rate ' + Math.round(nextRate * 100) + ' percent.', 'info');
+    return nextRate;
   }
 
   function disableHandsFree(updateState = true, resumeGlobalVoice = true) {
@@ -6117,9 +7555,11 @@ function TestPrepHub(props) {
     stopHandsFreeRecognition(true);
     stopReadAloud(updateState);
     clearHandsFreeAudioCache();
+    handsFreeSurfaceRef.current = 'practice';
     updateHandsFreePendingChoice(null, updateState);
     if (updateState) {
       setHandsFreeEnabled(false);
+      setHandsFreeSurface('practice');
       setHandsFreeStatus('idle');
       setHandsFreeTranscript('');
     }
@@ -6366,12 +7806,134 @@ function TestPrepHub(props) {
     }
     handsFreeRecognitionErrorStreakRef.current = 0;
     updateHandsFreePendingChoice(null);
+    handsFreeSurfaceRef.current = 'practice';
+    setHandsFreeSurface('practice');
     handsFreeEnabledRef.current = true;
     setHandsFreeEnabled(true);
     setHandsFreeStatus('starting');
     setHandsFreeError('');
     setHandsFreeTranscript('');
     announce('Hands-free Test Prep started. Audio pauses the microphone while speaking.', 'success');
+  }
+
+  function toggleFlashcardHandsFree() {
+    if (handsFreeEnabledRef.current && handsFreeSurfaceRef.current === 'flashcards') {
+      disableHandsFree();
+      announce('Hands-free flashcards stopped.', 'info');
+      return;
+    }
+    if (handsFreeEnabledRef.current) disableHandsFree(true, false);
+    const state = flashcardShortcutStateRef.current;
+    if (!state || !state.card) {
+      announce('No flashcards are available in the current filter.', 'info');
+      return;
+    }
+    if (!handsFreeRecognitionAvailable) {
+      setHandsFreeStatus('unavailable');
+      setHandsFreeError('No configured voice-input engine is available. Read card remains available.');
+      announce('Voice commands are unavailable with the current Voice Input setting. Read card still works.', 'warning');
+      return;
+    }
+    let wasGlobalVoiceActive = false;
+    try {
+      const loop = typeof window !== 'undefined' && window.__alloVoiceLoop;
+      wasGlobalVoiceActive = !!(loop && loop.isActive && loop.isActive());
+      if (wasGlobalVoiceActive && loop.stop) loop.stop();
+    } catch (_) {}
+    handsFreeResumeGlobalVoiceRef.current = wasGlobalVoiceActive;
+    const sharedVoice = typeof window !== 'undefined' && window.AlloFlowVoice;
+    if (sharedVoice && typeof sharedVoice.acquireVoiceSession === 'function') {
+      try {
+        handsFreeVoiceLeaseRef.current = sharedVoice.acquireVoiceSession('test-prep', {
+          mode: 'hands-free',
+          label: 'Hands-free Test Prep Flashcards',
+          state: 'starting',
+          privacy: 'Recognition follows the global Voice Input setting.',
+          onStop: () => {
+            handsFreeVoiceLeaseRef.current = null;
+            disableHandsFree(true, false);
+          },
+        });
+      } catch (_) {
+        handsFreeResumeGlobalVoiceRef.current = false;
+        setHandsFreeStatus('unavailable');
+        setHandsFreeError('Another voice activity is using the microphone. Stop it and try again.');
+        if (wasGlobalVoiceActive) {
+          try { if (window.__alloVoiceLoop && window.__alloVoiceLoop.start) window.__alloVoiceLoop.start(); } catch (_) {}
+        }
+        return;
+      }
+    }
+    handsFreeRecognitionErrorStreakRef.current = 0;
+    handsFreeSurfaceRef.current = 'flashcards';
+    setHandsFreeSurface('flashcards');
+    handsFreeEnabledRef.current = true;
+    setHandsFreeEnabled(true);
+    setHandsFreeStatus('starting');
+    setHandsFreeError('');
+    setHandsFreeTranscript('');
+    announce('Hands-free flashcards started. Audio pauses the microphone while speaking.', 'success');
+  }
+
+  async function handleFlashcardHandsFreeCommand(transcript, command) {
+    const cmd = command && typeof command === 'object' ? command : testPrepParseFlashcardVoiceCommand(transcript);
+    const fs = flashcardShortcutStateRef.current;
+    setHandsFreeError('');
+    if (cmd.type === 'stop') { disableHandsFree(); announce('Hands-free flashcards stopped.', 'info'); return; }
+    if (cmd.type === 'slower' || cmd.type === 'faster' || cmd.type === 'reset-rate') {
+      const nextRate = adjustHandsFreeRate(cmd.type === 'reset-rate' ? 'reset' : (cmd.type === 'faster' ? 0.1 : -0.1));
+      await speakTestPrepText(cmd.type === 'reset-rate' ? 'Speech rate reset to normal, 100 percent.' : 'Speech rate set to ' + Math.round(nextRate * 100) + ' percent.');
+      return;
+    }
+    if (cmd.type === 'help') { await speakTestPrepText(testPrepFlashcardHandsFreeHelpText()); return; }
+    if (!fs || !fs.card) {
+      await speakTestPrepText('No matching flashcards are open. Stopping hands-free flashcards.');
+      disableHandsFree();
+      return;
+    }
+    if (cmd.type === 'status') {
+      await speakTestPrepText('Card ' + fs.cardPosition + ' of ' + fs.cardTotal + (fs.shuffled ? ', shuffled order' : '') + '. ' + fs.knownCount + ' marked know, ' + fs.dueCount + ' due now.');
+      return;
+    }
+    if (cmd.type === 'shuffle') {
+      if (fs.cardTotal <= 1 || typeof fs.setShuffled !== 'function') {
+        await speakTestPrepText('Only one matching card is open.');
+        return;
+      }
+      fs.setShuffled(true);
+      setFlashcardVoiceStep((value) => value + 1);
+      return;
+    }
+    if (cmd.type === 'unshuffle') {
+      if (!fs.shuffled || typeof fs.setShuffled !== 'function') {
+        await speakTestPrepText('Flashcards are already in default order.');
+        return;
+      }
+      fs.setShuffled(false);
+      setFlashcardVoiceStep((value) => value + 1);
+      return;
+    }
+    if (cmd.type === 'repeat') { await speakTestPrepText(testPrepFlashcardSpeechText(fs.card, fs.revealed)); return; }
+    if (cmd.type === 'reveal') {
+      if (fs.revealed) {
+        await speakTestPrepText(testPrepFlashcardSpeechText(fs.card, true));
+        return;
+      }
+      fs.reveal();
+      return;
+    }
+    if (cmd.type === 'rate') {
+      if (!fs.revealed) {
+        await speakTestPrepText('Say flip to hear the answer first, or next card to skip.');
+        return;
+      }
+      fs.rate(cmd.rating);
+      setFlashcardVoiceStep((value) => value + 1);
+      return;
+    }
+    if (cmd.type === 'next') { fs.next(); setFlashcardVoiceStep((value) => value + 1); return; }
+    if (cmd.type === 'prev') { fs.prev(); setFlashcardVoiceStep((value) => value + 1); return; }
+    await speakTestPrepText('I did not recognize that command. Say flip, study again, still learning, know it, next card, repeat, or help.');
   }
 
   function cancelTestPrepClarification(updateState = true) {
@@ -6521,7 +8083,7 @@ function TestPrepHub(props) {
       setHandsFreeError('');
       await speakTestPrepText(handsFreePromptModeRef.current === 'quick'
         ? 'Selected ' + confirmedLabel + '.'
-        : 'Confirmed. Selected ' + confirmedLabel + ', ' + currentItem.choices[pendingChoice.choiceIndex] + '. Say check answer, or choose a different option.');
+        : 'Confirmed. Selected ' + confirmedLabel + ', ' + currentItem.choices[pendingChoice.choiceIndex] + '. Say check, or choose a different option.');
       return;
     }
     if (pendingChoice && command.type === 'confirm-no') {
@@ -6555,15 +8117,78 @@ function TestPrepHub(props) {
       return;
     }
     if (checkpoint) {
+      const batchSlice = activePack && Array.isArray(activePack.items)
+        ? activePack.items.slice(Math.max(0, (checkpoint.firstQuestion || 1) - 1), Math.max(0, checkpoint.lastQuestion || 0))
+        : [];
+      const batchMissed = batchSlice.filter((item) => Number(answers[item.id]) !== item.answerIndex);
       if (command.type === 'stop') { disableHandsFree(); return; }
       if (command.type === 'next') { continueAfterCheckpoint(); return; }
-      if (command.type === 'status') { await speakTestPrepText('A diagnostic checkpoint is open. Review the batch summary, then say next question to continue.'); return; }
-      if (command.type === 'help') { await speakTestPrepText('At this checkpoint, say status, next question, or stop hands free.'); return; }
-      await speakTestPrepText('A diagnostic checkpoint is open. Say next question to continue, or stop hands free.');
+      if (command.type === 'read-missed') {
+        await speakTestPrepText(testPrepMissedSummarySpeechText(batchMissed, answers));
+        return;
+      }
+      if (command.type === 'save-missed') {
+        if (!batchMissed.length) {
+          await speakTestPrepText('You answered every question in this batch correctly. Say next question to continue.');
+          return;
+        }
+        const savedInfo = saveItemsForReview(batchMissed);
+        await speakTestPrepText(
+          savedInfo.addedCount > 0
+            ? ('Saved ' + savedInfo.addedCount + ' missed ' + (savedInfo.addedCount === 1 ? 'question' : 'questions') + ' for later review.')
+            : savedInfo.eligibleCount > 0
+              ? 'All missed questions from this batch are already saved for review.'
+              : 'Guided activities stay in their guided-review bank rather than saved diagnostic review.'
+        );
+        return;
+      }
+      if (command.type === 'retry-missed') {
+        if (!batchMissed.length) {
+          await speakTestPrepText('You answered every question in this batch correctly. Say next question to continue.');
+          return;
+        }
+        startPracticeSet({ pack: selectedPack, mode: 'standard', label: 'Batch ' + checkpoint.batchNumber + ' · missed retry', items: batchMissed });
+        announce('Retrying ' + batchMissed.length + ' missed question' + (batchMissed.length === 1 ? '' : 's') + ' from this batch.', 'info');
+        return;
+      }
+      if (command.type === 'status') { await speakTestPrepText('A diagnostic checkpoint is open. Review the batch summary, then say next question to continue.' + (batchMissed.length ? ' You can also say read missed, save missed, or retry missed.' : '')); return; }
+      if (command.type === 'help') { await speakTestPrepText(batchMissed.length ? 'At this checkpoint, say status, read missed, save missed, retry missed, next question, or stop hands free.' : 'At this checkpoint, say status, next question, or stop hands free.'); return; }
+      await speakTestPrepText(batchMissed.length ? 'A diagnostic checkpoint is open. Say read missed, save missed, retry missed, next question to continue, or stop hands free.' : 'A diagnostic checkpoint is open. Say next question to continue, or stop hands free.');
       return;
     }
     if (result) {
       if (command.type === 'stop') { disableHandsFree(); return; }
+      if (command.type === 'read-missed') {
+        const missed = (activePack && Array.isArray(activePack.items) ? activePack.items : []).filter((item) => Number(answers[item.id]) !== item.answerIndex);
+        await speakTestPrepText(testPrepMissedSummarySpeechText(missed, answers));
+        return;
+      }
+      if (command.type === 'save-missed') {
+        const missed = (activePack && Array.isArray(activePack.items) ? activePack.items : []).filter((item) => Number(answers[item.id]) !== item.answerIndex);
+        if (!missed.length) {
+          await speakTestPrepText('You answered every question in this set correctly. Say another set, open progress, or stop hands free.');
+          return;
+        }
+        const savedInfo = saveItemsForReview(missed);
+        await speakTestPrepText(
+          savedInfo.addedCount > 0
+            ? ('Saved ' + savedInfo.addedCount + ' missed ' + (savedInfo.addedCount === 1 ? 'question' : 'questions') + ' for later review.')
+            : savedInfo.eligibleCount > 0
+              ? 'All missed questions from this set are already saved for review.'
+              : 'Guided activities stay in their guided-review bank rather than saved diagnostic review.'
+        );
+        return;
+      }
+      if (command.type === 'retry-missed') {
+        const missed = (activePack && Array.isArray(activePack.items) ? activePack.items : []).filter((item) => Number(answers[item.id]) !== item.answerIndex);
+        if (!missed.length) {
+          await speakTestPrepText('You answered every question in this set correctly. Say another set, open progress, or stop hands free.');
+          return;
+        }
+        startPracticeSet({ pack: selectedPack, mode: 'standard', label: 'Missed-item retry', items: missed });
+        announce('Retrying ' + missed.length + ' missed question' + (missed.length === 1 ? '' : 's') + '.', 'info');
+        return;
+      }
       if (command.type === 'another-set') { chooseAnotherPracticeSet(); announce('Choose another Test Prep practice set.', 'info'); return; }
       if (command.type === 'open-progress') { disableHandsFree(); setTab('progress'); announce('Opened Test Prep progress.', 'info'); return; }
       if (command.type === 'exit') { disableHandsFree(); onClose(); return; }
@@ -6572,17 +8197,16 @@ function TestPrepHub(props) {
         return;
       }
       if (command.type === 'help') { await speakTestPrepText(testPrepCompletionSpeechText(result)); return; }
-      await speakTestPrepText('Practice is complete. Say another set, open progress, status, exit Test Prep, or stop hands free.');
+      await speakTestPrepText(result.correct < result.total
+        ? 'Practice is complete. Say retry missed, another set, open progress, status, exit Test Prep, or stop hands free.'
+        : 'Practice is complete. Say another set, open progress, status, exit Test Prep, or stop hands free.');
       return;
     }
     setHandsFreeError('');
     if (command.type === 'stop') { disableHandsFree(); announce('Hands-free Test Prep stopped.', 'info'); return; }
-    if (command.type === 'slower' || command.type === 'faster') {
-      const nextRate = Math.max(0.75, Math.min(1.25, handsFreeRateRef.current + (command.type === 'faster' ? 0.1 : -0.1)));
-      handsFreeRateRef.current = nextRate;
-      setHandsFreeRate(nextRate);
-      clearHandsFreeAudioCache();
-      await speakTestPrepText('Speech rate set to ' + Math.round(nextRate * 100) + ' percent.');
+    if (command.type === 'slower' || command.type === 'faster' || command.type === 'reset-rate') {
+      const nextRate = adjustHandsFreeRate(command.type === 'reset-rate' ? 'reset' : (command.type === 'faster' ? 0.1 : -0.1));
+      await speakTestPrepText(command.type === 'reset-rate' ? 'Speech rate reset to normal, 100 percent.' : 'Speech rate set to ' + Math.round(nextRate * 100) + ' percent.');
       return;
     }
     if (command.type === 'repeat-question') { await readQuestion(); return; }
@@ -6593,16 +8217,94 @@ function TestPrepHub(props) {
       // speaks the full explanation, even when auto-reading is switched off,
       // because asking for it IS the opt-in.
       await speakTestPrepText(checked
-        ? testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current, 'full')
+        ? testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current, 'full', { aiAvailable: testPrepTextAiOk })
         : 'Check your answer before asking to repeat the explanation.');
       return;
     }
+    if (command.type === 'brief-feedback') {
+      await speakTestPrepText(checked
+        ? testPrepFeedbackSpeechText(currentItem, selectedChoice, handsFreePromptModeRef.current, 'core', { aiAvailable: testPrepTextAiOk })
+        : 'Check your answer before asking for the explanation.');
+      return;
+    }
+    if (command.type === 'explain-choice') {
+      if (!checked) {
+        await speakTestPrepText('Check your answer before hearing option feedback.');
+        return;
+      }
+      await speakTestPrepText(testPrepOptionFeedbackSpeechText(currentItem, command.choiceIndex));
+      return;
+    }
+    if (command.type === 'read-reference') {
+      if (practiceMode === 'simulation') {
+        await speakTestPrepText('Reference aids are locked during timed simulation.');
+        return;
+      }
+      if (!selectedPack || !selectedPack.learningLibraryUrl) {
+        await speakTestPrepText('No reference aid is included for this pack.');
+        return;
+      }
+      setPracticeRefOpen(true);
+      if (!learningLibrary) {
+        await speakTestPrepText('Opening reference aid. It is still loading on screen.');
+        return;
+      }
+      const refSpeech = testPrepItemReferenceSpeechText(learningLibrary, currentItem);
+      await speakTestPrepText(refSpeech || 'No quick-reference cards or source-reviewed memory aids are included for this pack.');
+      return;
+    }
+    if (command.type === 'hide-reference') {
+      setPracticeRefOpen(false);
+      await speakTestPrepText('Reference aid hidden.');
+      return;
+    }
+    if (command.type === 'other-options') {
+      if (!checked) {
+        await speakTestPrepText('Check your answer before hearing feedback on the other options.');
+        return;
+      }
+      await speakTestPrepText(testPrepOtherOptionsSpeechText(currentItem, selectedChoice));
+      return;
+    }
+    if (command.type === 'eliminate-choice' || command.type === 'restore-choice') {
+      if (checked) {
+        await speakTestPrepText('This answer has already been checked. Say next question or repeat explanation.');
+        return;
+      }
+      if (!currentItem || command.choiceIndex >= currentItem.choices.length) {
+        await speakTestPrepText('That answer option is not available for this question.');
+        return;
+      }
+      const targetLabel = String.fromCharCode(65 + command.choiceIndex);
+      const currentList = Array.isArray(eliminatedChoices[currentItem.id]) ? eliminatedChoices[currentItem.id] : [];
+      const alreadyEliminated = currentList.includes(command.choiceIndex);
+      if (command.type === 'eliminate-choice') {
+        if (alreadyEliminated) {
+          await speakTestPrepText('Option ' + targetLabel + ' is already struck out.');
+          return;
+        }
+        toggleEliminatedChoice(currentItem.id, command.choiceIndex);
+        await speakTestPrepText('Struck out option ' + targetLabel + '.');
+        return;
+      }
+      if (!alreadyEliminated) {
+        await speakTestPrepText('Option ' + targetLabel + ' is not struck out.');
+        return;
+      }
+      clearEliminatedChoice(currentItem.id, command.choiceIndex);
+      await speakTestPrepText('Restored option ' + targetLabel + '.');
+      return;
+    }
     if (command.type === 'explanations') {
-      const wantExplanations = command.explanations !== 'off';
-      setHandsFreeExplanationsPreference(wantExplanations);
-      await speakTestPrepText(wantExplanations
-        ? 'Explanations on. I will read the full explanation after each answer you check.'
-        : 'Explanations off. After you check an answer I will say whether it was right and give the supported answer. Say explain any time to hear the full reasoning.');
+      const nextMode = command.explanations === 'off' ? 'off' : command.explanations === 'core' ? 'core' : 'full';
+      setHandsFreeExplanationsPreference(nextMode);
+      await speakTestPrepText(
+        nextMode === 'full'
+          ? 'Explanations on. I will read the full explanation after each answer you check.'
+          : nextMode === 'core'
+            ? 'Core explanations on. After you check an answer I will read the verdict and main rationale without the other options. Say other options or why not B any time.'
+            : 'Explanations off. After you check an answer I will say whether it was right and give the supported answer. Say explain any time to hear the full reasoning.'
+      );
       return;
     }
     if (command.type === 'status') {
@@ -6656,7 +8358,7 @@ function TestPrepHub(props) {
       setSelectedChoice(command.choiceIndex);
       await speakTestPrepText(handsFreePromptModeRef.current === 'quick'
         ? 'Selected ' + choiceLabel + '.'
-        : 'Selected ' + choiceLabel + ', ' + currentItem.choices[command.choiceIndex] + '. Say check answer, or choose a different option.');
+        : 'Selected ' + choiceLabel + ', ' + currentItem.choices[command.choiceIndex] + '. Say check, or choose a different option.');
       return;
     }
     if (command.type === 'submit') {
@@ -6668,7 +8370,8 @@ function TestPrepHub(props) {
         currentItem,
         selectedChoice,
         handsFreePromptModeRef.current,
-        handsFreeExplanationsRef.current ? 'full' : 'none',
+        handsFreeExplanationsRef.current === 'off' ? 'none' : handsFreeExplanationsRef.current,
+        { aiAvailable: testPrepTextAiOk },
       ));
       return;
     }
@@ -6682,8 +8385,17 @@ function TestPrepHub(props) {
       advance();
       return;
     }
-    if (command.type === 'clarify') { await askTestPrepClarification(command.query); return; }
-    if (command.type === 'help') { await speakTestPrepText(testPrepHandsFreeHelpText(practiceMode, checked)); return; }
+    if (command.type === 'clarify') {
+      if (!testPrepTextAiOk) {
+        await speakTestPrepText(checked
+          ? 'Say explain, why not B, other options, or next question. Say help to hear the available commands.'
+          : 'I did not recognize that command. Say a letter or number to choose an answer, repeat question, or help.');
+        return;
+      }
+      await askTestPrepClarification(command.query);
+      return;
+    }
+    if (command.type === 'help') { await speakTestPrepText(testPrepHandsFreeHelpText(practiceMode, checked, { aiAvailable: testPrepTextAiOk })); return; }
     await speakTestPrepText('I did not recognize that command. Say help to hear the available commands.');
   }
   function checkAnswer() {
@@ -6691,6 +8403,45 @@ function TestPrepHub(props) {
     setAnswers((previous) => Object.assign({}, previous, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) }));
     setChecked(true);
   }
+
+  function readExplanation() {
+    if (!currentItem || !checked || practiceMode === 'simulation') return;
+    if (readAloudActive) { stopReadAloud(); return; }
+    speakTestPrepText(testPrepFeedbackSpeechText(
+      currentItem,
+      selectedChoice,
+      'quick',
+      handsFreeExplanations === 'core' ? 'core' : 'full',
+      { aiAvailable: testPrepTextAiOk },
+    ));
+  }
+
+  practiceShortcutStateRef.current = {
+    active: Boolean(isOpen && tab === 'practice' && practiceStarted && !result && !checkpoint && currentItem),
+    currentItem,
+    checked,
+    selectedChoice,
+    practiceMode,
+    toggleEliminatedChoice,
+    clearEliminatedChoice,
+    setSelectedChoice,
+    setItemConfidence,
+    readQuestion,
+    readExplanation,
+    checkAnswer,
+    advance,
+    advanceSimulation,
+    toggleSavedForReview,
+    hasReferenceAid: Boolean(selectedPack && selectedPack.learningLibraryUrl),
+    scratchpadOpen,
+    practiceRefOpen,
+    practiceShortcutsOpen,
+    setScratchpadOpen,
+    setPracticeRefOpen,
+    setPracticeShortcutsOpen,
+    openQuestionNote: currentItem ? () => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt }) : null,
+    adjustHandsFreeRate,
+  };
 
   function advanceSimulation() {
     if (!currentItem || selectedChoice == null || !activePack) return;
@@ -6791,7 +8542,13 @@ function TestPrepHub(props) {
               </div>
             </div>
           </div>
-          <button type="button" aria-pressed={largeText} onClick={() => setLargeText((value) => !value)} className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-800 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white">
+          <div className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-indigo-800/90 px-1.5 py-0.5" role="group" aria-label="Read-aloud speed">
+            <span className="px-1 text-xs font-bold text-indigo-100" aria-hidden="true">{'\uD83D\uDD0A'}</span>
+            <button type="button" data-test-prep-global-rate-slower="true" aria-label="Slower read-aloud speed" disabled={handsFreeRate <= 0.75} onClick={() => adjustHandsFreeRate(-0.1)} className="min-h-11 min-w-9 rounded border border-indigo-300/60 bg-indigo-900 px-2 py-1 text-xs font-black text-white hover:bg-indigo-700 disabled:opacity-40 focus:ring-2 focus:ring-white">{'\u2212'}</button>
+            <button type="button" data-test-prep-global-rate-reset="true" aria-label={'Read-aloud speed ' + Math.round(handsFreeRate * 100) + ' percent; click to reset to 100 percent'} onClick={() => adjustHandsFreeRate('reset')} className="min-h-11 rounded border border-indigo-300/60 bg-indigo-900 px-2 py-1 text-xs font-black text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white">{Math.round(handsFreeRate * 100)}%</button>
+            <button type="button" data-test-prep-global-rate-faster="true" aria-label="Faster read-aloud speed" disabled={handsFreeRate >= 1.25} onClick={() => adjustHandsFreeRate(0.1)} className="min-h-11 min-w-9 rounded border border-indigo-300/60 bg-indigo-900 px-2 py-1 text-xs font-black text-white hover:bg-indigo-700 disabled:opacity-40 focus:ring-2 focus:ring-white">+</button>
+          </div>
+          <button type="button" aria-pressed={largeText} onClick={() => setLargeText((value) => { const next = !value; try { window.localStorage.setItem(TEST_PREP_LARGE_TEXT_KEY, next ? 'true' : 'false'); } catch (_) {} announce(next ? 'Larger text enabled.' : 'Standard text enabled.', 'info'); return next; })} className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-800 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white">
             {largeText ? 'Standard text' : 'Larger text'}
           </button>
           <button type="button" onClick={onClose} aria-label="Close Test Prep Hub" className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-indigo-800 px-3 py-2 text-lg font-black text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white">{'\u2715'}</button>
@@ -6832,10 +8589,84 @@ function TestPrepHub(props) {
                   </button>
                 </div>
               )}
-              <div className="grid gap-4 md:grid-cols-2">
-                {catalogCards.map((card) => {
+              {(() => {
+                const trimmedCatalogQuery = catalogSearch.trim().toLowerCase();
+                const availableCategories = [
+                  ['all', 'All packs'],
+                  ['professional-school-personnel', 'Professional & school'],
+                  ['workforce-vocational', 'Workforce'],
+                  ['k12-college-readiness', 'K\u201312 & AP'],
+                ].filter(([id]) => id === 'all' || catalogCards.some((c) => c.portfolioCategory === id));
+                const filteredCatalogCards = catalogCards.filter((card) => {
+                  if (catalogCategory !== 'all' && card.portfolioCategory !== catalogCategory) return false;
+                  if (!trimmedCatalogQuery) return true;
+                  return [card.title, card.shortTitle, card.description, card.blueprintLabel, card.id]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(trimmedCatalogQuery);
+                });
+                const catalogFiltered = Boolean(trimmedCatalogQuery || catalogCategory !== 'all');
+                return (
+                  <>
+                    {catalogCards.length > 3 && (
+                      <div className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm" role="search" aria-label="Filter exam packs">
+                        <div className="flex flex-wrap items-end gap-3">
+                          <label className="min-w-[14rem] flex-1 text-sm font-bold text-slate-800">
+                            Find an exam pack
+                            <input
+                              type="search"
+                              data-test-prep-catalog-search="true"
+                              value={catalogSearch}
+                              onChange={(event) => setCatalogSearch(event.target.value)}
+                              placeholder="Search by exam name, code, or subject (e.g., EPPP, 5343, AP Biology)…"
+                              className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 text-sm font-normal focus:ring-2 focus:ring-indigo-600"
+                            />
+                          </label>
+                          {availableCategories.length > 2 && (
+                            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter packs by category">
+                              {availableCategories.map(([catId, catLabel]) => (
+                                <button
+                                  key={catId}
+                                  type="button"
+                                  data-test-prep-catalog-category={catId}
+                                  aria-pressed={catalogCategory === catId}
+                                  onClick={() => setCatalogCategory(catId)}
+                                  className={'min-h-11 rounded-lg border px-3 py-2 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (catalogCategory === catId ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-slate-50 text-slate-800 hover:bg-slate-100')}
+                                >
+                                  {catLabel}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {catalogFiltered && (
+                            <button
+                              type="button"
+                              data-test-prep-catalog-clear="true"
+                              onClick={() => { setCatalogSearch(''); setCatalogCategory('all'); }}
+                              className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600"
+                            >
+                              Clear filter
+                            </button>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs font-bold text-slate-600" role="status">
+                          Showing {filteredCatalogCards.length} of {catalogCards.length} exam pack{catalogCards.length === 1 ? '' : 's'}
+                        </p>
+                      </div>
+                    )}
+                    {filteredCatalogCards.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-400 bg-white p-8 text-center">
+                        <p className="font-black text-slate-900">No exam packs match your filter</p>
+                        <p className="mt-1 text-sm text-slate-700">Try a shorter search term or switch back to All packs.</p>
+                        <button type="button" onClick={() => { setCatalogSearch(''); setCatalogCategory('all'); }} className="mt-4 min-h-11 rounded-lg border border-indigo-500 bg-indigo-50 px-4 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Show all packs</button>
+                      </div>
+                    ) : (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {filteredCatalogCards.map((card) => {
                   const loadState = catalogPackLoadState[card.id] || { status: 'idle', message: '' };
                   const loading = loadState.status === 'loading';
+                  const cardAttempts = (progress && Array.isArray(progress.attempts) ? progress.attempts : []).filter((a) => a && a.packId === card.id);
+                  const cardAvg = cardAttempts.length ? Math.round(cardAttempts.reduce((sum, a) => sum + Number(a.percent || 0), 0) / cardAttempts.length) : null;
                   const actionLabel = loading
                     ? 'Loading pack...'
                     : card.unreleased
@@ -6849,6 +8680,7 @@ function TestPrepHub(props) {
                         <div>
                           <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Schema v{card.schemaVersion} {'\u00B7'} pack v{card.version}</p>
                           <h4 className="mt-1 text-lg font-black text-slate-900">{card.title}</h4>
+                          {cardAttempts.length > 0 && <p data-test-prep-pack-progress-badge={card.id} className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-black text-emerald-900">{'\u2713'} {cardAttempts.length} {cardAttempts.length === 1 ? 'set' : 'sets'} {'\u00B7'} {cardAvg}% avg</p>}
                         </div>
                         <TestPrepStatusBadge status={card.status} />
                       </div>
@@ -6890,7 +8722,11 @@ function TestPrepHub(props) {
                     </article>
                   );
                 })}
-              </div>
+                    </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <section aria-labelledby="research-lanes-title">
                 <h3 id="research-lanes-title" className="text-xl font-black text-slate-900">Vocational research lanes</h3>
@@ -6917,7 +8753,10 @@ function TestPrepHub(props) {
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Selected pack</p>
                   <h3 className="text-xl font-black text-slate-900">{selectedPack.title}</h3>
                 </div>
-                <button type="button" onClick={() => setTab('explore')} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Change pack</button>
+                <div className="flex flex-wrap gap-2">
+                  {selectedPack.learningLibraryUrl && <button type="button" data-test-prep-practice-open-library="true" onClick={() => setTab('library')} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Open learning library</button>}
+                  <button type="button" onClick={() => setTab('explore')} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Change pack</button>
+                </div>
               </div>
 
               {selectedPack.contentReview && (
@@ -6969,8 +8808,11 @@ function TestPrepHub(props) {
 
                   {savedSession && savedSession.packId === selectedPack.id && (savedSessionRevisionStatus === 'current' ? (
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
-                      <div><p className="font-black text-emerald-950">Resume saved practice</p><p className="text-sm text-emerald-900">{savedSession.label || 'Saved set'} ? question {Math.min(savedSession.questionIndex + 1, savedSession.itemIds.length)} of {savedSession.itemIds.length}</p></div>
-                      <button type="button" onClick={resumeSavedPractice} className="rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Resume</button>
+                      <div><p className="font-black text-emerald-950">Resume saved practice</p><p className="text-sm text-emerald-900">{savedSession.label || 'Saved set'} {'·'} question {Math.min(savedSession.questionIndex + 1, savedSession.itemIds.length)} of {savedSession.itemIds.length}</p></div>
+                      <div className="flex flex-wrap gap-2">
+                        <button type="button" onClick={resumeSavedPractice} className="min-h-11 rounded-lg bg-emerald-700 px-4 py-2 font-black text-white hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Resume</button>
+                        <button type="button" data-test-prep-discard-saved-session="true" onClick={discardSavedPractice} className="min-h-11 rounded-lg border border-emerald-600 bg-white px-3 py-2 text-sm font-bold text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-600">Discard</button>
+                      </div>
                     </div>
                   ) : (
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400 bg-amber-50 p-4" role="status">
@@ -7010,24 +8852,53 @@ function TestPrepHub(props) {
                       <h5 className="mt-1 text-lg font-black text-slate-900">{smartReviewPlan && smartReviewPlan.attemptCount ? 'Review what needs another retrieval' : 'Start with a balanced review set'}</h5>
                       <p className="mt-2 text-sm leading-relaxed text-fuchsia-950">{smartReviewPlan && smartReviewPlan.attemptCount ? 'Builds a 20-question set from confident misses, prior misses, low-confidence correct responses, weaker domains, and unseen items.' : 'Until practice history exists, the engine rotates across this pack’s domains. It never estimates ability or predicts passing.'}</p>
                       {smartReviewPlan && smartReviewPlan.priorityDomains.length > 0 && <p className="mt-3 text-xs font-bold text-fuchsia-900">Current priority: {smartReviewPlan.priorityDomains.map((domain) => domain.label + ' (' + domain.percent + '%)').join(' · ')}</p>}
-                      <button type="button" disabled={!smartReviewPlan || !smartReviewPlan.items.length} onClick={startSmartReview} className="mt-4 rounded-lg bg-fuchsia-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-2">Start {smartReviewPlan && smartReviewPlan.attemptCount ? 'smart review' : 'balanced review'}</button>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="button" disabled={!smartReviewPlan || !smartReviewPlan.items.length} onClick={startSmartReview} className="min-h-11 rounded-lg bg-fuchsia-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-fuchsia-600 focus:ring-offset-2">Start {smartReviewPlan && smartReviewPlan.attemptCount ? 'smart review' : 'balanced review'}</button>
+                        {smartReviewPlan && smartReviewPlan.items.length > 10 && <button type="button" data-test-prep-quick-warmup="true" onClick={() => startPracticeSet({ mode: 'smart-review', label: 'Quick 10-question warm-up', items: smartReviewPlan.items.slice(0, 10) })} className="min-h-11 rounded-lg border border-fuchsia-700 bg-white px-3 py-2 text-sm font-black text-fuchsia-950 hover:bg-fuchsia-100 focus:ring-2 focus:ring-fuchsia-600">Quick 10-Q warm-up</button>}
+                      </div>
                     </article>                    <article className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-emerald-800">Saved-question review</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">{savedReviewItemIds.length} question{savedReviewItemIds.length === 1 ? '' : 's'} saved</h5>
                       <p className="mt-2 text-sm leading-relaxed text-emerald-950">Build a focused set from questions you marked while practicing this pack. Saved questions remain on this browser until you remove them.</p>
-                      <button type="button" disabled={!savedReviewItemIds.length} onClick={startSavedQuestionReview} className="mt-4 rounded-lg bg-emerald-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Review {savedReviewItemIds.length} saved question{savedReviewItemIds.length === 1 ? '' : 's'}</button>
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <button type="button" disabled={!savedReviewItemIds.length} onClick={startSavedQuestionReview} className="min-h-11 rounded-lg bg-emerald-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Review {savedReviewItemIds.length} saved question{savedReviewItemIds.length === 1 ? '' : 's'}</button>
+                        {savedReviewItemIds.length > 0 && (!confirmClearSavedReview ? (
+                          <button type="button" data-test-prep-clear-saved-queue="true" onClick={() => setConfirmClearSavedReview(true)} className="min-h-11 rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-700">Clear saved</button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-xs font-black text-rose-950" role="group" aria-label="Confirm clearing saved questions">
+                            <span>Clear all {savedReviewItemIds.length}?</span>
+                            <button type="button" data-test-prep-confirm-clear-saved="true" onClick={clearSavedReviewQueue} className="rounded bg-rose-700 px-2 py-1 text-white hover:bg-rose-800 focus:ring-2 focus:ring-rose-600">Confirm</button>
+                            <button type="button" data-test-prep-cancel-clear-saved="true" onClick={() => setConfirmClearSavedReview(false)} className="rounded border border-slate-400 bg-white px-2 py-1 text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Cancel</button>
+                          </span>
+                        ))}
+                      </div>
+                      {savedReviewItemIds.length > 0 && (
+                        <details data-test-prep-saved-queue-drawer="true" className="mt-3 rounded-lg border border-emerald-200 bg-white p-3">
+                          <summary className="cursor-pointer text-xs font-black text-emerald-950 focus:ring-2 focus:ring-emerald-700">Manage saved questions ({savedReviewItemIds.length})</summary>
+                          <ul className="mt-2 max-h-48 space-y-2 overflow-y-auto">
+                            {savedReviewItemIds.map((savedId) => {
+                              const savedItem = itemLookup.get(savedId);
+                              if (!savedItem) return null;
+                              return <li key={savedId} className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs">
+                                <span className="line-clamp-2 font-semibold text-slate-800">{savedItem.prompt}</span>
+                                <button type="button" data-test-prep-remove-saved-item={savedId} onClick={() => toggleSavedForReview(savedId)} className="shrink-0 rounded border border-rose-400 bg-white px-2 py-1 font-black text-rose-900 hover:bg-rose-50 focus:ring-2 focus:ring-rose-600">Remove</button>
+                              </li>;
+                            })}
+                          </ul>
+                        </details>
+                      )}
                     </article>
                     <article className="rounded-xl border border-violet-300 bg-violet-50 p-4">
                       <p className="text-xs font-black uppercase tracking-wide text-violet-800">Targeted practice</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">Practice one domain or tagged skill</h5>
                       <p className="mt-2 text-sm leading-relaxed text-violet-950">Domain focus works for every available practice pack, including packs without a separate skill catalog. Difficulty labels describe editorial item tiers, not an ability estimate.</p>
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <label className="text-sm font-bold text-slate-800">Domain<select aria-label="Domain focus domain" value={targetDomainId} onChange={(event) => setTargetDomainId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a domain</option>{selectedPack.domains.map((domain) => <option key={domain.id} value={domain.id}>{domain.label}</option>)}</select></label>
+                        <label className="text-sm font-bold text-slate-800">Domain<select aria-label="Domain focus domain" value={targetDomainId} onChange={(event) => setTargetDomainId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a domain</option>{selectedPack.domains.map((domain) => { const stat = domainAccuracyById[domain.id]; return <option key={domain.id} value={domain.id}>{domain.label}{stat ? ' — ' + stat.percent + '% (' + stat.correct + '/' + stat.total + ')' : ''}</option>; })}</select></label>
                         <label className="text-sm font-bold text-slate-800">Difficulty<select aria-label="Domain focus difficulty" value={targetDifficultyFilter} onChange={(event) => setTargetDifficultyFilter(['higher-challenge', 'advanced'].includes(event.target.value) ? event.target.value : 'all')} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="all">All available levels</option><option value="higher-challenge">Intermediate and advanced</option><option value="advanced">Advanced only</option></select></label>
                       </div>
                       <p className="mt-3 text-xs font-bold text-violet-950" role="status">{!targetDomainId ? 'Choose a domain to build a focused set.' : targetedDomainPlan && targetedDomainPlan.items.length ? targetedDomainPlan.items.length + ' of ' + targetedDomainPlan.eligibleCount + ' matching questions ready.' : 'No questions match this domain and difficulty selection.'}</p>
                       <button type="button" disabled={!targetedDomainPlan || !targetedDomainPlan.items.length} onClick={startDomainTargetedPractice} className="mt-3 rounded-lg bg-violet-800 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start Domain focus</button>
-                      {availableSkills.length > 0 && <div className="mt-4 border-t border-violet-300 pt-4"><p className="text-xs font-black uppercase tracking-wide text-violet-800">Tagged skill focus</p><label className="mt-2 block text-sm font-bold text-slate-800">Skill<select aria-label="Target practice skill" value={targetSkillId} onChange={(event) => setTargetSkillId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a skill</option>{availableSkills.map((skill) => <option key={skill.id} value={skill.id}>{skill.domain}: {skill.label}</option>)}</select></label><button type="button" disabled={!targetSkillId} onClick={() => startTargetedPractice(targetSkillId)} className="mt-3 rounded-lg border border-violet-700 bg-white px-4 py-2 font-black text-violet-950 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start targeted set</button></div>}
+                      {availableSkills.length > 0 && <div className="mt-4 border-t border-violet-300 pt-4"><p className="text-xs font-black uppercase tracking-wide text-violet-800">Tagged skill focus</p><label className="mt-2 block text-sm font-bold text-slate-800">Skill<select aria-label="Target practice skill" value={targetSkillId} onChange={(event) => setTargetSkillId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-violet-600"><option value="">Choose a skill</option>{availableSkills.map((skill) => { const stat = skillAccuracyById[skill.id]; return <option key={skill.id} value={skill.id}>{skill.domain}: {skill.label}{stat ? ' — ' + stat.percent + '% (' + stat.correct + '/' + stat.total + ')' : ''}</option>; })}</select></label><button type="button" disabled={!targetSkillId} onClick={() => startTargetedPractice(targetSkillId)} className="mt-3 rounded-lg border border-violet-700 bg-white px-4 py-2 font-black text-violet-950 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">Start targeted set</button></div>}
                     </article>
                     <article className="rounded-xl border border-cyan-300 bg-cyan-50 p-4 md:col-span-2 lg:col-span-3">
                       <p className="text-xs font-black uppercase tracking-wide text-cyan-900">Custom quiz builder</p>
@@ -7041,7 +8912,14 @@ function TestPrepHub(props) {
                         <button type="button" onClick={() => setCustomQuizDomainIds([])} className="mt-2 text-xs font-black text-cyan-900 underline focus:ring-2 focus:ring-cyan-700">Select all domains</button>
                       </fieldset>
                       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <label className="text-sm font-bold text-slate-800">Number of questions<input aria-label="Custom quiz question count" type="number" min="1" max="100" value={customQuizLength} onChange={(event) => setCustomQuizLength(Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1))))} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-cyan-700" /></label>
+                        <div>
+                          <label className="text-sm font-bold text-slate-800">Number of questions<input aria-label="Custom quiz question count" type="number" min="1" max="100" value={customQuizLength} onChange={(event) => setCustomQuizLength(Math.max(1, Math.min(100, Math.floor(Number(event.target.value) || 1))))} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-cyan-700" /></label>
+                          <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Quick question count presets">
+                            {[10, 20, 50, 100].map((preset) => (
+                              <button key={preset} type="button" data-test-prep-custom-quiz-preset={preset} aria-pressed={customQuizLength === preset} onClick={() => setCustomQuizLength(preset)} className={'min-h-9 rounded-lg border px-2.5 py-1 text-xs font-black focus:ring-2 focus:ring-cyan-700 ' + (customQuizLength === preset ? 'border-cyan-800 bg-cyan-800 text-white' : 'border-cyan-300 bg-white text-cyan-950 hover:bg-cyan-100')}>{preset} Qs</button>
+                            ))}
+                          </div>
+                        </div>
                         <label className="text-sm font-bold text-slate-800">Variation<select aria-label="Custom quiz variation" value={customQuizVariant} onChange={(event) => setCustomQuizVariant(Math.max(1, Math.min(5, Number(event.target.value) || 1)))} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-cyan-700">{[1, 2, 3, 4, 5].map((variant) => <option key={variant} value={variant}>Variation {variant}</option>)}</select></label>
                       </div>
                       <p className="mt-3 text-xs font-bold text-cyan-950" role="status">Ready: {customQuizPlan ? customQuizPlan.items.length : 0} questions across {customQuizPlan ? customQuizPlan.domainIds.length : 0} selected domains.</p>
@@ -7099,49 +8977,176 @@ function TestPrepHub(props) {
                         {checkpoint.focusSkillIds.map((skillId) => {
                           const skill = skillById[skillId];
                           const row = checkpoint.skillRows.find((entry) => entry.id === skillId);
-                          return <article key={skillId} className="rounded-lg border border-indigo-200 bg-white p-3"><p className="font-black text-slate-900">{skill ? skill.label : skillId.replace(/-/g, ' ')}</p>{row && <p className="mt-1 text-xs font-bold text-slate-600">{row.correct}/{row.total} correct ? {row.percent}% in this batch</p>}<div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => openSkillReview(skillId)} className="rounded-lg border border-indigo-500 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-600">Review chapter</button><button type="button" onClick={() => startTargetedPractice(skillId)} className="rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600">Practice this skill</button></div></article>;
+                          return <article key={skillId} className="rounded-lg border border-indigo-200 bg-white p-3"><p className="font-black text-slate-900">{skill ? skill.label : skillId.replace(/-/g, ' ')}</p>{row && <p className="mt-1 text-xs font-bold text-slate-600">{row.correct}/{row.total} correct {'\u00B7'} {row.percent}% in this batch</p>}<div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => openSkillReview(skillId)} className="rounded-lg border border-indigo-500 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-600">Review chapter</button><button type="button" onClick={() => startTargetedPractice(skillId)} className="rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600">Practice this skill</button></div></article>;
                         })}
                       </div>
                     </section>
                   )}
-                  <div className="mt-6 flex flex-wrap justify-end gap-3">
-                    {selectedPack.learningLibraryUrl && <button type="button" onClick={() => setTab('library')} className="rounded-xl border border-slate-400 bg-white px-5 py-3 font-black text-slate-900 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Review learning library</button>}
-                    <button type="button" onClick={continueAfterCheckpoint} className="rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{checkpoint.isFinalBatch ? 'View overall summary' : 'Continue to batch ' + (checkpoint.batchNumber + 1)}</button>
-                  </div>
+                  {(() => {
+                    const batchSlice = activePack && Array.isArray(activePack.items)
+                      ? activePack.items.slice(Math.max(0, (checkpoint.firstQuestion || 1) - 1), Math.max(0, checkpoint.lastQuestion || 0))
+                      : [];
+                    const batchMissed = batchSlice.filter((item) => Number(answers[item.id]) !== item.answerIndex);
+                    const saveableBatchMissed = batchMissed.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item');
+                    const unsavedBatchMissed = saveableBatchMissed.filter((item) => !savedReviewItemIds.includes(testPrepSlug(item.id, '')));
+                    return <>
+                      {batchMissed.length > 0 && (
+                        <details data-test-prep-checkpoint-missed-review="true" className="mt-5 rounded-xl border border-rose-300 bg-rose-50/70 p-4 text-left">
+                          <summary className="cursor-pointer text-sm font-black text-rose-950 focus:ring-2 focus:ring-rose-700">Review {batchMissed.length} missed question{batchMissed.length === 1 ? '' : 's'} in this batch</summary>
+                          <ol className="mt-3 space-y-3">
+                            {batchMissed.map((item, idx) => {
+                              const chosenIdx = Number(answers[item.id]);
+                              const chosenText = Number.isInteger(chosenIdx) && chosenIdx >= 0 && chosenIdx < item.choices.length
+                                ? item.choices[chosenIdx]
+                                : 'Unanswered';
+                              const supportedText = item.choices[item.answerIndex] || '';
+                              return <li key={item.id} className="rounded-lg border border-rose-200 bg-white p-3 text-sm text-slate-800">
+                                <p className="font-black text-slate-900">{idx + 1}. {item.prompt}</p>
+                                <p className="mt-1 text-xs font-bold text-rose-800">Your answer: {chosenText}</p>
+                                <p className="mt-0.5 text-xs font-bold text-emerald-900">Supported answer: {supportedText}</p>
+                                {item.rationale && <p className="mt-1.5 leading-relaxed text-slate-700">{item.rationale}</p>}
+                              </li>;
+                            })}
+                          </ol>
+                        </details>
+                      )}
+                      <div className="mt-6 flex flex-wrap justify-end gap-3">
+                        <button type="button" data-test-prep-checkpoint-read="true" aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepCheckpointSpeechText(checkpoint))} className="min-h-11 rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? '⏹ Stop audio' : '🔊 Read checkpoint'}</button>
+                        {saveableBatchMissed.length > 0 && <button type="button" data-test-prep-save-checkpoint-missed="true" disabled={!unsavedBatchMissed.length} onClick={() => saveItemsForReview(saveableBatchMissed)} className="min-h-11 rounded-xl border border-emerald-600 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-950 hover:bg-emerald-100 disabled:opacity-60 focus:ring-2 focus:ring-emerald-700">{unsavedBatchMissed.length ? ('Save ' + unsavedBatchMissed.length + ' missed for review') : '✓ Missed saved for review'}</button>}
+                        {batchMissed.length > 0 && <button type="button" data-test-prep-export-checkpoint-missed="true" onClick={() => {
+                          const md = testPrepBuildMissedStudySheetMarkdown(selectedPack.shortTitle || selectedPack.title, 'Batch ' + checkpoint.batchNumber, batchMissed, answers);
+                          try {
+                            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = testPrepSlug(selectedPack.id + '-batch-' + checkpoint.batchNumber + '-missed', 'missed-study-sheet') + '.md';
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                            announce('Exported missed questions study sheet as Markdown.', 'info');
+                          } catch (_) { announce('Could not download the study sheet in this browser.', 'warning'); }
+                        }} className="min-h-11 rounded-xl border border-indigo-400 bg-white px-4 py-3 text-sm font-black text-indigo-950 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export missed (.md)</button>}
+                        {batchMissed.length > 0 && <button type="button" data-test-prep-retry-checkpoint-missed="true" onClick={() => startPracticeSet({ pack: selectedPack, mode: 'standard', label: 'Batch ' + checkpoint.batchNumber + ' · missed retry', items: batchMissed })} className="rounded-xl bg-rose-800 px-5 py-3 font-black text-white hover:bg-rose-900 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Retry {batchMissed.length} missed from this batch</button>}
+                        {selectedPack.learningLibraryUrl && <button type="button" onClick={() => setTab('library')} className="rounded-xl border border-slate-400 bg-white px-5 py-3 font-black text-slate-900 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Review learning library</button>}
+                        <button type="button" onClick={continueAfterCheckpoint} className="rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{checkpoint.isFinalBatch ? 'View overall summary' : 'Continue to batch ' + (checkpoint.batchNumber + 1)}</button>
+                      </div>
+                    </>;
+                  })()}
                 </section>
               )}
 
-              {!!selectedPack.items.length && result && (
-                <section className="rounded-2xl border border-emerald-300 bg-white p-6 text-center shadow-sm" aria-live="polite">
+              {!!selectedPack.items.length && result && (() => {
+                const setItems = activePack && Array.isArray(activePack.items) ? activePack.items : [];
+                const missedItems = setItems.filter((item) => Number(answers[item.id]) !== item.answerIndex);
+                const saveableMissed = missedItems.filter((item) => item.examItemStatus !== 'not-approved-as-independent-exam-item');
+                const unsavedMissed = saveableMissed.filter((item) => !savedReviewItemIds.includes(testPrepSlug(item.id, '')));
+                const targetItems = missedItems.length ? missedItems : setItems;
+                const links = learningLibrary ? testPrepFindStudyLinksForItems(learningLibrary, targetItems, studyPlanLayers) : null;
+                return <section className="rounded-2xl border border-emerald-300 bg-white p-6 text-center shadow-sm" aria-live="polite">
                   <p className="text-sm font-black uppercase tracking-wider text-emerald-800">{practiceLabel || 'Practice complete'}</p>
                   <p className="mt-2 text-5xl font-black text-slate-900">{result.correct}/{result.total}</p>
                   <p className="mt-2 text-lg font-bold text-slate-800">{result.percent}% correct in this practice set</p>
                   {result.timedOut && <p className="mx-auto mt-3 max-w-xl rounded-lg bg-sky-50 p-3 text-sm font-bold text-sky-950">The timer ended before the set was submitted. Unanswered questions are included as incorrect in this practice summary.</p>}
                   {!!result.assistedItemCount && <p className="mx-auto mt-3 max-w-xl rounded-lg border border-violet-300 bg-violet-50 p-3 text-sm font-bold text-violet-950">AI clarification was used on {result.assistedItemCount} item{result.assistedItemCount === 1 ? '' : 's'}. Narration and voice navigation do not mark an item assisted.</p>}
                   <p className="mx-auto mt-3 max-w-xl rounded-lg bg-amber-50 p-3 text-sm text-amber-950">This is a learning result, not an official score, scaled score, pass prediction, certification, license, or evidence of professional competence.</p>
+                  {missedItems.length > 0 && (
+                    <details data-test-prep-result-missed-review="true" className="mx-auto mt-4 max-w-2xl rounded-xl border border-rose-300 bg-rose-50/70 p-4 text-left">
+                      <summary className="cursor-pointer text-sm font-black text-rose-950 focus:ring-2 focus:ring-rose-700">Review {missedItems.length} missed question{missedItems.length === 1 ? '' : 's'} from this set</summary>
+                      <ol className="mt-3 space-y-3">
+                        {missedItems.map((item, idx) => {
+                          const chosenIdx = Number(answers[item.id]);
+                          const chosenText = Number.isInteger(chosenIdx) && chosenIdx >= 0 && chosenIdx < item.choices.length
+                            ? item.choices[chosenIdx]
+                            : 'Unanswered';
+                          const supportedText = item.choices[item.answerIndex] || '';
+                          return <li key={item.id} className="rounded-lg border border-rose-200 bg-white p-3 text-sm text-slate-800">
+                            <p className="font-black text-slate-900">{idx + 1}. {item.prompt}</p>
+                            <p className="mt-1 text-xs font-bold text-rose-800">Your answer: {chosenText}</p>
+                            <p className="mt-0.5 text-xs font-bold text-emerald-900">Supported answer: {supportedText}</p>
+                            {item.rationale && <p className="mt-1.5 leading-relaxed text-slate-700">{item.rationale}</p>}
+                          </li>;
+                        })}
+                      </ol>
+                    </details>
+                  )}
+                  {links && links.hasLinks && (
+                    <div data-test-prep-result-study-links="true" className="mx-auto mt-4 max-w-2xl rounded-xl border border-indigo-200 bg-indigo-50/70 p-4 text-left">
+                      <p className="text-xs font-black uppercase tracking-wide text-indigo-800">{missedItems.length ? 'Targeted repair for ' + missedItems.length + ' missed question' + (missedItems.length === 1 ? '' : 's') : 'Related study aids for this set'}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {links.playbooks.map((playbook) => <button key={playbook.id} type="button" data-test-prep-result-playbook-link={playbook.id} onClick={() => openStudyPlaybook(playbook)} className="rounded-lg border border-rose-400 bg-rose-50 px-3 py-2 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700">Open playbook: {playbook.title}</button>)}
+                        {links.quickRefs.map((card) => <button key={card.id} type="button" data-test-prep-result-quickref-link={card.id} onClick={() => openQuickReferenceCard(card)} className="rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-700">Open Quick Reference: {card.title}</button>)}
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
+                    <button type="button" data-test-prep-result-read="true" aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepCompletionSpeechText(result))} className="min-h-11 rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? '⏹ Stop audio' : '🔊 Read summary'}</button>
+                    <button type="button" data-test-prep-result-copy="true" onClick={() => {
+                      const text = testPrepCompletionCopyText(selectedPack.shortTitle || selectedPack.title, practiceLabel || 'Practice set', result, missedItems.length);
+                      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                        Promise.resolve(navigator.clipboard.writeText(text)).then(() => announce('Practice summary copied to clipboard.', 'success')).catch(() => announce('Could not copy summary in this browser.', 'warning'));
+                      } else {
+                        announce('Clipboard copy is unavailable in this browser.', 'info');
+                      }
+                    }} className="min-h-11 rounded-xl border border-indigo-400 bg-white px-4 py-3 font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Copy summary</button>
+                    {saveableMissed.length > 0 && <button type="button" data-test-prep-save-session-missed="true" disabled={!unsavedMissed.length} onClick={() => saveItemsForReview(saveableMissed)} className="min-h-11 rounded-xl border border-emerald-600 bg-emerald-50 px-4 py-3 font-black text-emerald-950 hover:bg-emerald-100 disabled:opacity-60 focus:ring-2 focus:ring-emerald-700">{unsavedMissed.length ? ('Save ' + unsavedMissed.length + ' missed for review') : '✓ Missed saved for review'}</button>}
+                    {missedItems.length > 0 && <button type="button" data-test-prep-export-session-missed="true" onClick={() => {
+                      const md = testPrepBuildMissedStudySheetMarkdown(selectedPack.shortTitle || selectedPack.title, practiceLabel || 'Practice set', missedItems, answers);
+                      try {
+                        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = testPrepSlug((selectedPack.id || 'pack') + '-missed-study-sheet', 'missed-study-sheet') + '.md';
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                        announce('Exported missed questions study sheet as Markdown.', 'info');
+                      } catch (_) { announce('Could not download the study sheet in this browser.', 'warning'); }
+                    }} className="min-h-11 rounded-xl border border-indigo-400 bg-white px-4 py-3 font-black text-indigo-950 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export missed (.md)</button>}
+                    {missedItems.length > 0 && <button type="button" data-test-prep-retry-session-missed="true" onClick={() => startPracticeSet({ pack: selectedPack, mode: 'standard', label: 'Missed-item retry', items: missedItems })} className="rounded-xl bg-rose-800 px-5 py-3 font-black text-white hover:bg-rose-900 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Retry {missedItems.length} missed question{missedItems.length === 1 ? '' : 's'}</button>}
                     <button type="button" onClick={selectedPack.simulationItemCount ? chooseAnotherPracticeSet : () => openPack(selectedPack, 'practice')} className="rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{selectedPack.simulationItemCount ? 'Choose another practice set' : 'Practice again'}</button>
                     <button type="button" onClick={() => setTab('progress')} className="rounded-xl border border-slate-400 bg-white px-5 py-3 font-black text-slate-900 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">View progress</button>
                   </div>
-                </section>
-              )}
+                </section>;
+              })()}
 
               {!!selectedPack.items.length && !result && currentItem && (
                 <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{currentSection && currentSection.kind === 'independent-diagnostic' ? 'Independent-practice bank item ' : selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="min-h-11 rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
+                    <div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{practiceLabel || 'Practice set'}</p><div className="flex flex-wrap items-center gap-2"><p className="font-black text-indigo-900">{practiceMode === 'guided-review' ? 'Guided-review activity ' : 'Question '}{questionIndex + 1} of {activePack.items.length}</p>{practiceMode !== 'simulation' && (() => { const setAns = activePack.items.filter((it) => Object.prototype.hasOwnProperty.call(answers, it.id)); if (!setAns.length) return null; const setCorr = setAns.filter((it) => Number(answers[it.id]) === it.answerIndex).length; return <span data-test-prep-session-tally="true" className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-black text-indigo-900">{setCorr}/{setAns.length} correct ({Math.round(setCorr / setAns.length * 100)}%)</span>; })()}</div>{practiceMode === 'diagnostic' && <p className="mt-1 text-sm font-bold text-sky-800">{currentSection && currentSection.kind === 'independent-diagnostic' ? 'Independent-practice bank item ' : selectedPack.guidedReviewBatchCount ? 'Source-question bank item ' : 'Question bank item '}{sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}</p>}{practiceMode === 'guided-review' && <p className="mt-1 text-sm font-bold text-violet-800">Guided activity {sourceStartIndex + questionIndex + 1} of {selectedPack.items.length}; this score is excluded from diagnostic analytics.</p>}{currentBatch && currentBatch.batchCount > 1 && <p className="mt-1 text-sm font-bold text-slate-700">Batch {currentBatch.batchNumber} of {currentBatch.batchCount} · Question {currentBatch.position} of {currentBatch.itemCount}</p>}{practiceMode === 'simulation' && <div className="mt-2 flex flex-wrap items-center gap-2"><p className="text-lg font-black text-amber-900" role="timer">Time remaining {formatPracticeTime(timeRemainingSeconds)}</p><button type="button" onClick={extendSimulationTime} className="min-h-11 rounded-lg border border-amber-600 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Add 10 minutes</button>{timeRemainingSeconds <= 60 && <p className="w-full text-sm font-bold text-rose-800" role="status" aria-live="polite">One minute or less remains. Use Add 10 minutes now if you need more time.</p>}</div>}</div>
                     <button type="button" aria-pressed={readAloudActive} onClick={readQuestion} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudStatus === 'loading' ? 'Preparing audio' : readAloudStatus === 'speaking' ? 'Stop reading' : 'Read question'}</button>
                     <button type="button" aria-pressed={handsFreeEnabled} aria-describedby="test-prep-hands-free-privacy" onClick={toggleHandsFree} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeEnabled ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-500 bg-cyan-50 text-cyan-950')}>{handsFreeEnabled ? '\uD83C\uDFA4 Stop hands-free' : '\uD83C\uDFA4 Hands-free mode'}</button>
                     <button type="button" aria-pressed={handsFreePromptMode === 'quick'} aria-describedby="test-prep-hands-free-quick-help" onClick={() => setHandsFreePromptModePreference(handsFreePromptMode === 'quick' ? 'guided' : 'quick')} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreePromptMode === 'quick' ? 'border-amber-600 bg-amber-50 text-amber-950' : 'border-slate-400 bg-white text-slate-800')}>{handsFreePromptMode === 'quick' ? '⚡ Quick prompts on' : '⚡ Quick prompts'}</button>
-                    <button type="button" aria-pressed={handsFreeExplanations} aria-describedby="test-prep-hands-free-explanations-help" onClick={() => setHandsFreeExplanationsPreference(!handsFreeExplanations)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeExplanations ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-slate-400 bg-white text-slate-800')}>{handsFreeExplanations ? '🔊 Explanations on' : '🔇 Explanations off'}</button>
-                    <p id="test-prep-hands-free-explanations-help" className="sr-only">When on, checking an answer reads the full explanation aloud. When off, you hear the result and the supported answer, and can say explain to hear the reasoning.</p>
+                    <button type="button" data-test-prep-explanations-mode={handsFreeExplanations} aria-pressed={handsFreeExplanations !== 'off'} aria-describedby="test-prep-hands-free-explanations-help" onClick={() => setHandsFreeExplanationsPreference(handsFreeExplanations === 'full' ? 'core' : handsFreeExplanations === 'core' ? 'off' : 'full')} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeExplanations === 'full' ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : handsFreeExplanations === 'core' ? 'border-indigo-600 bg-indigo-50 text-indigo-950' : 'border-slate-400 bg-white text-slate-800')}>{handsFreeExplanations === 'full' ? '🔊 Explanations: full' : handsFreeExplanations === 'core' ? '🔉 Explanations: core' : '🔇 Explanations: off'}</button>
+                    <p id="test-prep-hands-free-explanations-help" className="sr-only">Cycles between full explanations (verdict, main rationale, and other options), core explanations (verdict and main rationale without other options), and off (verdict and supported answer only; say explain any time).</p>
                     {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
                     <button type="button" aria-expanded={scratchpadOpen} aria-controls="test-prep-practice-scratchpad" onClick={() => setScratchpadOpen((value) => !value)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (scratchpadOpen ? 'border-slate-800 bg-slate-800 text-white' : 'border-slate-400 bg-slate-50 text-slate-900')}>{scratchpadOpen ? 'Hide scratchpad' : 'Scratchpad'}{String(scratchpadNotes[currentItem.id] || '').trim() ? ' (draft)' : ''}</button>
                     {practiceMode !== 'simulation' && Boolean(selectedPack.learningLibraryUrl) && <button type="button" aria-expanded={practiceRefOpen} aria-controls="test-prep-practice-reference-drawer" onClick={() => setPracticeRefOpen((value) => !value)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-amber-700 ' + (practiceRefOpen ? 'border-amber-700 bg-amber-700 text-white' : 'border-amber-500 bg-amber-50 text-amber-950')}>{practiceRefOpen ? 'Hide reference aid' : 'Reference aid'}</button>}
                     <button type="button" onClick={() => { try { window.AlloModules && window.AlloModules.ItemCorrection && window.AlloModules.ItemCorrection.openFor({ packId: selectedPack.id, packTitle: selectedPack.title, itemId: currentItem.id, prompt: currentItem.prompt, domain: currentItem.domainId, reviewTier: currentItem.examItemStatus === 'not-approved-as-independent-exam-item' ? 'guided-review' : 'source-reviewed', currentAnswer: currentItem.choices[currentItem.answerIndex] }); } catch (_) {} }} className="min-h-11 rounded-lg border border-teal-400 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 focus:ring-2 focus:ring-teal-600">Suggest a correction</button>
+                    <button type="button" data-test-prep-shortcuts-toggle="true" aria-expanded={practiceShortcutsOpen} aria-controls="test-prep-practice-shortcuts" onClick={() => setPracticeShortcutsOpen((value) => !value)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (practiceShortcutsOpen ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800 hover:bg-slate-50')}>Shortcuts (?)</button>
                     <button type="button" onClick={chooseAnotherPracticeSet} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Practice options</button>
                   </div>
+                  {practiceShortcutsOpen && (
+                    <div id="test-prep-practice-shortcuts" data-test-prep-shortcut-bar="true" className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 px-4 py-2.5 text-xs font-bold text-indigo-950" role="region" aria-label="Practice keyboard shortcuts">
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">1</kbd>–<kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">4</kbd> or <kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">A</kbd>–<kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">D</kbd> select choice</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">Shift+A</kbd>–<kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">D</kbd> strike out</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">Enter</kbd> check / next</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">1</kbd>–<kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">3</kbd> confidence after check</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">R</kbd> read aloud</span>
+                      {practiceMode !== 'simulation' && <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">E</kbd> read explanation</span>}
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">F</kbd> save for review</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">N</kbd> add note</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">S</kbd> scratchpad</span>
+                      {practiceMode !== 'simulation' && Boolean(selectedPack.learningLibraryUrl) && <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">Q</kbd> reference aid</span>}
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">[</kbd>/<kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">]</kbd> speech speed</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">Esc</kbd> close drawer</span>
+                      <span><kbd className="rounded border border-indigo-300 bg-white px-1.5 py-0.5 font-mono">?</kbd> toggle shortcuts</span>
+                    </div>
+                  )}
                   {scratchpadOpen && (
                     <section id="test-prep-practice-scratchpad" className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label="Question scratchpad">
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -7180,9 +9185,12 @@ function TestPrepHub(props) {
                           <p className="text-xs font-black uppercase tracking-wide text-amber-900">{useQuickRefs ? 'Quick reference study aid' : 'Memory-aid reference'} · locked in timed simulation</p>
                           <p className="text-xs text-amber-950">Unofficial study aid for practice recall; not an official exam reference sheet.</p>
                         </div>
-                        {matchedRefs.length > 0 && (useQuickRefs ? quickRefs.length : releasedAids.length) > matchedRefs.length && (
-                          <button type="button" onClick={() => setPracticeRefShowAll((value) => !value)} className="min-h-11 rounded-lg border border-amber-500 bg-white px-3 py-1.5 text-xs font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{practiceRefShowAll ? 'Show current topic only' : 'Show more units'}</button>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" data-test-prep-practice-ref-read="true" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(testPrepItemReferenceSpeechText(learningLibrary, currentItem)); }} className="min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-700">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read reference'}</button>
+                          {matchedRefs.length > 0 && (useQuickRefs ? quickRefs.length : releasedAids.length) > matchedRefs.length && (
+                            <button type="button" onClick={() => setPracticeRefShowAll((value) => !value)} className="min-h-11 rounded-lg border border-amber-500 bg-white px-3 py-1.5 text-xs font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{practiceRefShowAll ? 'Show current topic only' : 'Show more units'}</button>
+                          )}
+                        </div>
                       </div>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
                         {displayedRefs.map((entry) => useQuickRefs ? (
@@ -7205,14 +9213,13 @@ function TestPrepHub(props) {
                   {!currentHandsFreeCompatibility.allowed && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950" role="status" aria-live="polite">{currentHandsFreeCompatibility.message}</p>}
                   <p role="status" aria-live="polite" className={readAloudStatus === 'unavailable' ? 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950' : 'sr-only'}>{readAloudMessage}</p>
                   {(handsFreeEnabled || handsFreeError) && <section className="mt-4 rounded-xl border border-cyan-300 bg-cyan-50 p-4" aria-labelledby="test-prep-hands-free-title">
-                    <div className="flex flex-wrap items-center justify-between gap-2"><div><h4 id="test-prep-hands-free-title" className="font-black text-cyan-950">Hands-free Test Prep</h4><p className="mt-1 text-sm text-cyan-950">The microphone pauses during narration. Audio for the next three questions is prepared quietly when configured text-to-speech is available.</p></div><span className="rounded-full border border-cyan-500 bg-white px-3 py-1 text-xs font-black uppercase text-cyan-950" role="status" aria-live="polite">{handsFreeEnabled ? handsFreeStatus : handsFreeStatus === 'unavailable' ? 'unavailable' : 'off'} - {Math.round(handsFreeRate * 100)}% speed - {handsFreePromptMode} prompts</span></div>
+                    <div className="flex flex-wrap items-center justify-between gap-2"><div><h4 id="test-prep-hands-free-title" className="font-black text-cyan-950">Hands-free Test Prep</h4><p className="mt-1 text-sm text-cyan-950">The microphone pauses during narration. Audio for the next three questions is prepared quietly when configured text-to-speech is available.</p></div><div className="flex flex-wrap items-center gap-1.5"><span className="rounded-full border border-cyan-500 bg-white px-3 py-1 text-xs font-black uppercase text-cyan-950" role="status" aria-live="polite">{handsFreeEnabled ? handsFreeStatus : handsFreeStatus === 'unavailable' ? 'unavailable' : 'off'} - {Math.round(handsFreeRate * 100)}% speed - {handsFreePromptMode} prompts</span>{handsFreeEnabled && <div className="inline-flex items-center gap-1" role="group" aria-label="Narration speed"><button type="button" data-test-prep-hands-free-rate-slower="true" aria-label="Decrease speech speed" disabled={handsFreeRate <= 0.75} onClick={() => adjustHandsFreeRate(-0.1)} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">−</button><button type="button" data-test-prep-hands-free-rate-reset="true" aria-label="Reset speech speed to 100 percent" disabled={Math.round(handsFreeRate * 100) === 100} onClick={() => adjustHandsFreeRate('reset')} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">100%</button><button type="button" data-test-prep-hands-free-rate-faster="true" aria-label="Increase speech speed" disabled={handsFreeRate >= 1.25} onClick={() => adjustHandsFreeRate(0.1)} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">+</button></div>}</div></div>
                     {handsFreeEnabled && <p className="mt-2 text-xs font-bold text-cyan-950"><span>{handsFreeEngine.engineLabel}.</span>{' '}{handsFreeEngine.privacy}</p>}
-                    {handsFreeEnabled && <p className="mt-3 text-sm font-semibold text-cyan-950">{handsFreePromptMode === 'quick' ? 'Quick prompts are on. Say help any time to hear every command.' : 'Say: B or 2 to choose an answer; check answer; next question; read choices; read option B; status; save for review; mark sure, unsure, or guessed after checking; slower; faster; ask followed by a neutral definition; or stop hands free.'}</p>}
+                    {handsFreeEnabled && <p className="mt-3 text-sm font-semibold text-cyan-950">{handsFreePromptMode === 'quick' ? 'Quick prompts are on. Say help any time to hear every command.' : 'Say: B or 2 to choose an answer; check or check answer; next or next question; explain; read choices; read option B; read reference; status; save for review; sure, unsure, or guessed after checking; slower, faster, or normal speed;' + (testPrepTextAiOk ? ' ask followed by a neutral definition;' : '') + ' or stop hands free.'}</p>}
                     {!!handsFreeTranscript && <p className="mt-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm text-slate-800"><strong>Heard:</strong> {handsFreeTranscript}</p>}
                     {!!handsFreePendingChoice && <p className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-2 text-sm font-black text-amber-950" role="status" aria-live="assertive">Waiting for confirmation: option {String.fromCharCode(65 + handsFreePendingChoice.choiceIndex)}. Say yes to accept it, or no to try again.</p>}
                     {!!handsFreeError && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-sm font-bold text-amber-950" role="alert">{handsFreeError}</p>}
                     {handsFreeEnabled && testPrepTextAiOk && <div className="mt-3 border-t border-cyan-200 pt-3"><label htmlFor="test-prep-clarification" className="text-sm font-black text-slate-900">Ask for clarification</label><p className="mt-1 text-xs text-slate-700">Before checking, AI may only define or pronounce a specific neutral term and receives no item stem or choices. Up to three pre-answer turns and five total turns are allowed per question. After checking, it may discuss the sourced rationale. Only a delivered safe response marks the item assisted; narration alone does not.</p><p className="mt-1 text-xs font-bold text-violet-900">{clarificationHistory.length} of {checked ? 5 : 3} clarification turns used for this question</p><div className="mt-2 flex flex-col gap-2 sm:flex-row"><input id="test-prep-clarification" value={clarificationDraft} onChange={(event) => setClarificationDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !(event.nativeEvent && event.nativeEvent.isComposing) && event.keyCode !== 229 && clarificationStatus !== 'loading' && clarificationDraft.trim() && practiceMode !== 'simulation') { event.preventDefault(); askTestPrepClarification(); } }} disabled={practiceMode === 'simulation' || clarificationStatus === 'loading'} placeholder={practiceMode === 'simulation' ? 'Locked during timed simulation' : 'Example: What does this term mean?'} className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-cyan-700 disabled:bg-slate-100" /><button type="button" onClick={() => clarificationStatus === 'loading' ? cancelTestPrepClarification(true) : askTestPrepClarification()} disabled={clarificationStatus !== 'loading' && (!clarificationDraft.trim() || practiceMode === 'simulation')} className="min-h-11 rounded-lg bg-violet-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-600">{clarificationStatus === 'loading' ? 'Cancel AI' : 'Ask AI'}</button></div>{practiceMode === 'simulation' && <p className="mt-2 text-xs font-bold text-amber-900">Content coaching is locked during timed simulation; narration, answer selection, and navigation remain available.</p>}{!!clarificationResponse && <div className="mt-3 rounded-lg border border-violet-300 bg-white p-3 text-sm leading-relaxed text-slate-900" role="status" aria-live="polite"><p className="font-black text-violet-950">{currentItem && assistedItemIds.includes(currentItem.id) ? 'AI clarification - assisted item' : clarificationStatus === 'error' ? 'Clarification unavailable' : 'Clarification notice'}</p><p className="mt-1">{clarificationResponse}</p></div>}</div>}
-                    {handsFreeEnabled && !testPrepTextAiOk && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <div className="mt-3 border-t border-cyan-200 pt-3"><window.AlloAiSetupNotice kind="text" /></div>}
                   </section>}
                   {currentItem.competencyTag && <p className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm leading-relaxed text-indigo-950"><strong>Unofficial integrated 2027 blueprint practice · {currentItem.competencyTag}</strong>{currentItem.competencyLabel ? ' - ' + currentItem.competencyLabel : ''}</p>}
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className="h-full bg-indigo-700" style={{ width: Math.round((questionIndex + 1) / Math.max(1, activePack.items.length) * 100) + '%' }} /></div>
@@ -7238,11 +9245,19 @@ function TestPrepHub(props) {
                         );
                       })}
                     </div>
+                    {!checked && Array.isArray(eliminatedChoices[currentItem.id]) && eliminatedChoices[currentItem.id].length > 0 && (
+                      <div className="mt-3 flex justify-end">
+                        <button type="button" data-test-prep-clear-strikeouts="true" onClick={() => setEliminatedChoices((current) => ({ ...current, [currentItem.id]: [] }))} className="min-h-11 rounded-lg border border-slate-400 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Clear strike-outs ({eliminatedChoices[currentItem.id].length})</button>
+                      </div>
+                    )}
                   </fieldset>
 
                   {checked && practiceMode !== 'simulation' && (
                     <div className={'mt-5 rounded-xl border p-4 ' + (selectedChoice === currentItem.answerIndex ? 'border-emerald-400 bg-emerald-50' : 'border-amber-400 bg-amber-50')} role="status" aria-live="polite">
-                      <p className="font-black text-slate-900">{selectedChoice === currentItem.answerIndex ? 'Correct' : 'Not yet - review the reasoning'}</p>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-black text-slate-900">{selectedChoice === currentItem.answerIndex ? 'Correct' : 'Not yet - review the reasoning'}</p>
+                        <button type="button" data-test-prep-read-explanation="true" aria-pressed={readAloudActive} onClick={readExplanation} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-black text-indigo-950 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read explanation'}</button>
+                      </div>
                       {selectedChoice !== currentItem.answerIndex && <div className="mt-3 grid gap-2 rounded-lg border border-amber-300 bg-white/80 p-3 text-sm text-slate-900 sm:grid-cols-2"><p><strong>Your answer:</strong><br />{String.fromCharCode(65 + selectedChoice)}. {currentItem.choices[selectedChoice]}</p><p><strong>Supported answer:</strong><br />{String.fromCharCode(65 + currentItem.answerIndex)}. {currentItem.choices[currentItem.answerIndex]}</p></div>}
                       <p className="mt-2 text-sm leading-relaxed text-slate-800">{currentItem.rationale}</p>
                       {(currentItem.learningObjectiveLabel || currentItem.learningObjectiveId || (Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0)) && (
@@ -7254,6 +9269,18 @@ function TestPrepHub(props) {
                           {selectedPack.learningLibraryUrl && Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0 && <button type="button" onClick={() => openItemLearningTarget(currentItem)} className="mt-3 rounded-lg border border-indigo-500 bg-white px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Review linked chapter</button>}
                         </div>
                       )}
+                      {learningLibrary && (() => {
+                        const itemLinks = testPrepFindStudyLinksForItem(learningLibrary, currentItem, studyPlanLayers);
+                        if (!itemLinks.hasLinks) return null;
+                        const missed = selectedChoice !== currentItem.answerIndex;
+                        return <div data-test-prep-item-study-links="true" className={'mt-3 rounded-lg border p-3 text-sm ' + (missed ? 'border-rose-300 bg-rose-50/80 text-rose-950' : 'border-amber-300 bg-white/80 text-slate-900')}>
+                          <p className="text-xs font-black uppercase tracking-wide">{missed ? 'Repair this miss with targeted study aids' : 'Related study aids for this topic'}</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {itemLinks.playbooks.map((playbook) => <button key={playbook.id} type="button" data-test-prep-item-playbook-link={playbook.id} onClick={() => openStudyPlaybook(playbook)} className="rounded-lg border border-rose-500 bg-white px-3 py-1.5 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700">Open misconception playbook: {playbook.title}</button>)}
+                            {itemLinks.quickRefs.map((card) => <button key={card.id} type="button" data-test-prep-item-quickref-link={card.id} onClick={() => openQuickReferenceCard(card)} className="rounded-lg border border-amber-500 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-700">Open Quick Reference: {card.title}</button>)}
+                          </div>
+                        </div>;
+                      })()}
                       {currentItem.choiceRationales.length === currentItem.choices.length && (
                         <div className="mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800">
                           <p className="font-black text-slate-900">Why the other options do not fit</p>
@@ -7310,6 +9337,28 @@ function TestPrepHub(props) {
                   <h3 className="text-xl font-black text-slate-900">{(learningLibrary && learningLibrary.title) || selectedPack.shortTitle + ' learning library'}</h3>
                   <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-700">{learningLibrary ? learningLibrary.description : selectedPack.learningLibraryUrl ? 'Loading chapters, study cards, and memory aids for this pack.' : 'This pack ships practice questions only. Packs with a learning library open to chapters, flashcards, and memory aids here.'}</p>
                   {learningLibrary && <p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedChapters || 0} source reviewed · {(learningLibrary.summary.chapters || 0) - (learningLibrary.summary.sourceReviewedChapters || 0)} review required · independent expert validation pending</p>}
+                  {learningLibrary && (() => {
+                    const allSections = (learningLibrary.chapters || []).reduce((list, ch) => list.concat(ch.sections || []), []);
+                    const completedSections = allSections.filter((sec) => nativeChapterProgress[String(sec.runtimeSectionId || sec.id || '')] === true).length;
+                    const releasedCards = (learningLibrary.flashcards || []).filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant');
+                    const knownCards = releasedCards.filter((card) => flashcardRatings[card.id] && flashcardRatings[card.id].rating === 'know').length;
+                    const checkedSteps = Object.keys(packStudyChecks).filter((key) => packStudyChecks[key] === true).length;
+                    return <div data-test-prep-library-progress-bar="true" className="mt-2 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700" aria-label="Local study progress summary">
+                      <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-indigo-950">{completedSections}/{allSections.length} sections read</span>
+                      {releasedCards.length > 0 && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-950">{knownCards}/{releasedCards.length} flashcards known</span>}
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-950">{checkedSteps} study check{checkedSteps === 1 ? '' : 's'} done</span>
+                      {checkedSteps > 0 && (!confirmResetPackChecks ? (
+                        <button type="button" data-test-prep-reset-pack-checks="true" onClick={() => setConfirmResetPackChecks(true)} className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-xs font-black text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Reset pack checks</button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50 px-2.5 py-0.5 text-rose-950" role="group" aria-label="Confirm resetting pack study checks">
+                          <span>Clear {checkedSteps} check{checkedSteps === 1 ? '' : 's'}?</span>
+                          <button type="button" data-test-prep-confirm-reset-pack-checks="true" onClick={() => { resetStudyChecks('*'); setConfirmResetPackChecks(false); }} className="rounded-full bg-rose-700 px-2 py-0.5 text-xs font-black text-white hover:bg-rose-800 focus:ring-2 focus:ring-rose-600">Confirm reset</button>
+                          <button type="button" data-test-prep-cancel-reset-pack-checks="true" onClick={() => setConfirmResetPackChecks(false)} className="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs font-black text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Cancel</button>
+                        </span>
+                      ))}
+                      <span className="text-slate-600">Saved locally · not a readiness score</span>
+                    </div>;
+                  })()}
                 </div>
                 {libraryChapterId && <div className="flex flex-wrap gap-2"><button type="button" onClick={() => beginAnnotation({ targetType: 'chapter', targetId: libraryChapterId, targetLabel: 'Chapter: ' + (((learningLibrary && learningLibrary.chapters || []).find((chapter) => chapter.id === libraryChapterId) || {}).title || libraryChapterId) })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add chapter note</button><button type="button" onClick={() => setLibraryChapterId('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Back to chapter catalog</button></div>}
               </div>
@@ -7326,27 +9375,39 @@ function TestPrepHub(props) {
               {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
               {learningLibraryStatus === 'unavailable' && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert"><p>The learning catalog could not be loaded from AlloFlow's content network. Practice questions remain available from the Practice tab.</p><button type="button" onClick={() => setLearningLibraryRetry((value) => value + 1)} className="rounded-lg border border-rose-400 bg-white px-3 py-2 font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Retry learning library</button></div>}
 
-              {learningLibrary && !libraryChapterId && libraryMode === 'search' && (
-                <section className="space-y-4" aria-labelledby="library-global-search-title">
+              {learningLibrary && !libraryChapterId && libraryMode === 'search' && (() => {
+                const labelForType = (type) => type === 'memory-aid' ? 'Memory aid' : type === 'constructed-response' ? 'Written-response workshop' : type === 'foundational-document' ? 'Foundational document' : type === 'quick-reference' ? 'Quick reference' : type === 'topic-route' ? 'Topic route' : type === 'unit-route' ? 'Study route' : type === 'playbook' ? 'Misconception playbook' : type === 'study-session' ? 'Study session' : type.charAt(0).toUpperCase() + type.slice(1);
+                const presentTypeCounts = {};
+                globalSearch.results.forEach((entry) => { presentTypeCounts[entry.type] = (presentTypeCounts[entry.type] || 0) + 1; });
+                const presentTypes = Object.keys(presentTypeCounts);
+                const activeType = librarySearchType !== 'all' && presentTypeCounts[librarySearchType] ? librarySearchType : 'all';
+                const visibleResults = activeType === 'all' ? globalSearch.results : globalSearch.results.filter((entry) => entry.type === activeType);
+                return <section className="space-y-4" aria-labelledby="library-global-search-title">
                   <div className="rounded-2xl border border-indigo-300 bg-indigo-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-indigo-800">One pack-wide index</p>
                     <h4 id="library-global-search-title" className="mt-1 text-xl font-black text-slate-900">Search questions and learning resources</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-indigo-950">Searches practice questions, source-reviewed learning resources, diagrams, and the clearly labeled expert-pending glossary for this pack. Diagram and glossary results retain their visible review boundaries.</p>
-                    <label className="mt-4 block text-sm font-black text-slate-900">Search this pack's available content<input aria-label="Search this pack's available content" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-3 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try assessment, phonology, ethics, evidence…" /></label>
+                    <p className="mt-2 text-sm leading-relaxed text-indigo-950">Searches practice questions, source-reviewed learning resources, Quick Reference sheets, study routes, diagrams, and the clearly labeled expert-pending glossary for this pack. Diagram and glossary results retain their visible review boundaries.</p>
+                    <label className="mt-4 block text-sm font-black text-slate-900">Search this pack's available content<input aria-label="Search this pack's available content" value={librarySearch} onChange={(event) => { setLibrarySearch(event.target.value); setLibrarySearchType('all'); }} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-3 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try assessment, phonology, ethics, evidence…" /></label>
                   </div>
-                  {globalSearch.query ? <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {globalSearch.results.length}.</p> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all available content in this pack.</p>}
+                  {globalSearch.query ? <div className="space-y-2">
+                    <p className="text-sm font-bold text-slate-700" role="status">Found {globalSearch.total} result{globalSearch.total === 1 ? '' : 's'}; showing {visibleResults.length}{activeType !== 'all' ? ' (' + labelForType(activeType) + ')' : ''}.</p>
+                    {presentTypes.length > 1 && <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter search results by resource type">
+                      <button type="button" data-test-prep-search-type-filter="all" aria-pressed={activeType === 'all'} onClick={() => setLibrarySearchType('all')} className={'rounded-full border px-3 py-1 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (activeType === 'all' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}>All ({globalSearch.results.length})</button>
+                      {presentTypes.map((type) => <button key={type} type="button" data-test-prep-search-type-filter={type} aria-pressed={activeType === type} onClick={() => setLibrarySearchType(type)} className={'rounded-full border px-3 py-1 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (activeType === type ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}>{labelForType(type)} ({presentTypeCounts[type]})</button>)}
+                    </div>}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-700">Enter a word or phrase to search all available content in this pack.</p>}
                   <div className="grid gap-3 md:grid-cols-2">
-                    {globalSearch.results.map((searchResult) => {
-                      const typeLabel = searchResult.type === 'memory-aid' ? 'Memory aid' : searchResult.type === 'constructed-response' ? 'Written-response workshop' : searchResult.type === 'foundational-document' ? 'Foundational document' : searchResult.type === 'topic-route' ? 'Topic route' : searchResult.type === 'playbook' ? 'Misconception playbook' : searchResult.type === 'study-session' ? 'Study session' : searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1);
-                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'foundational-document' ? 'Open document route' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : searchResult.type === 'topic-route' ? 'Open topic route' : searchResult.type === 'playbook' ? 'Open playbook' : searchResult.type === 'study-session' ? 'Open session plan' : searchResult.type === 'source' ? 'Open sources' : 'Open workshops';
-                      return <article key={searchResult.type + '-' + searchResult.id} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
+                    {visibleResults.map((searchResult) => {
+                      const typeLabel = labelForType(searchResult.type);
+                      const actionLabel = searchResult.type === 'question' ? 'Practice this question' : searchResult.type === 'chapter' ? 'Open chapter' : searchResult.type === 'foundational-document' ? 'Open document route' : searchResult.type === 'diagram' ? 'Open diagram' : searchResult.type === 'glossary' ? 'Open glossary term' : searchResult.type === 'quick-reference' ? 'Open quick reference' : searchResult.type === 'flashcard' ? 'Study card' : searchResult.type === 'memory-aid' ? 'Open memory aid' : (searchResult.type === 'note' || searchResult.type === 'highlight') ? 'Open annotation' : (searchResult.type === 'topic-route' || searchResult.type === 'unit-route') ? 'Open study route' : searchResult.type === 'playbook' ? 'Open playbook' : searchResult.type === 'study-session' ? 'Open session plan' : searchResult.type === 'source' ? 'Open sources' : 'Open workshops';
+                      return <article key={searchResult.type + '-' + searchResult.id} data-test-prep-search-result-type={searchResult.type} className="flex flex-col rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{typeLabel}</span>{searchResult.domain && <span className="text-xs font-bold text-slate-600">{searchResult.domain}</span>}</div><h5 className="mt-2 font-black text-slate-900">{searchResult.title}</h5>{searchResult.snippet && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{searchResult.snippet}</p>}<button type="button" data-test-prep-search-open={searchResult.type + ':' + searchResult.id} onClick={() => openLibrarySearchResult(searchResult)} className="mt-4 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">{actionLabel}</button></article>;
                     })}
                   </div>
-                  {globalSearch.query && !globalSearch.results.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No available questions or learning resources match that search.</p>}
-                </section>
-              )}
+                  {globalSearch.query && !visibleResults.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No available questions or learning resources match that search.</p>}
+                </section>;
+              })()}
               {learningLibrary && !libraryChapterId && libraryMode === 'chapters' && (() => {
-                const domains = Array.from(new Set(learningLibrary.chapters.map((chapter) => chapter.domain))).sort();
+                const domains = Array.from(new Set(learningLibrary.chapters.map((chapter) => chapter.domain).filter(Boolean))).sort();
                 const query = librarySearch.trim().toLowerCase();
                 const visible = learningLibrary.chapters.filter((chapter) => (libraryDomain === 'all' || chapter.domain === libraryDomain) && (!query || (chapter.title + ' ' + chapter.domain + ' ' + (chapter.sections || []).map((section) => section.heading).join(' ')).toLowerCase().includes(query)));
                 return <>
@@ -7358,13 +9419,19 @@ function TestPrepHub(props) {
                     <label className="text-sm font-bold text-slate-800">Search chapters and section headings<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try evidence, fractions, revision…" /></label>
                     <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{domains.map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
-                  <p className="text-sm font-bold text-slate-700" role="status">Showing {visible.length} of {learningLibrary.chapters.length} chapters</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><p role="status">Showing {visible.length} of {learningLibrary.chapters.length} chapters</p>{(librarySearch || libraryDomain !== 'all') && <button type="button" data-test-prep-clear-chapters-filter="true" onClick={() => { setLibrarySearch(''); setLibraryDomain('all'); }} className="rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Clear filter</button>}</div>
                   <div className="grid gap-4 md:grid-cols-2">
-                    {visible.map((chapter) => <article key={chapter.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-                      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">Chapter {learningLibrary.chapters.indexOf(chapter) + 1} · {chapter.domain}</p><h4 className="mt-1 text-lg font-black text-slate-900">{chapter.title}</h4></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span></div>
-                      <p className="mt-3 flex-1 text-sm text-slate-700">{chapter.sectionCount} sections · {chapter.knowledgeCheckCount} knowledge checks · {chapter.referenceCount} references</p>
-                      <button type="button" onClick={() => setLibraryChapterId(chapter.id)} className="mt-4 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Open chapter workspace</button>
-                    </article>)}
+                    {visible.map((chapter) => {
+                      const chSections = Array.isArray(chapter.sections) ? chapter.sections : [];
+                      const chDone = chSections.filter((sec) => nativeChapterProgress[String(sec.runtimeSectionId || sec.id || '')] === true).length;
+                      const chAllDone = chSections.length > 0 && chDone === chSections.length;
+                      return <article key={chapter.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">Chapter {learningLibrary.chapters.indexOf(chapter) + 1} · {chapter.domain}</p><h4 className="mt-1 text-lg font-black text-slate-900">{chapter.title}</h4></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{chapter.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span></div>
+                        <p className="mt-3 flex-1 text-sm text-slate-700">{chapter.sectionCount} sections · {chapter.knowledgeCheckCount} knowledge checks · {chapter.referenceCount} references</p>
+                        {chDone > 0 && <div data-test-prep-chapter-card-progress={chapter.id} className="mt-3"><div className="flex items-center justify-between text-xs font-black"><span className={chAllDone ? 'text-emerald-900' : 'text-indigo-900'}>{chAllDone ? '✓ Chapter complete' : chDone + ' of ' + chSections.length + ' sections read'}</span><span className="text-slate-600">{Math.round(chDone / chSections.length * 100)}%</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200" aria-hidden="true"><div className={'h-full rounded-full ' + (chAllDone ? 'bg-emerald-600' : 'bg-indigo-600')} style={{ width: Math.round(chDone / chSections.length * 100) + '%' }} /></div></div>}
+                        <button type="button" onClick={() => setLibraryChapterId(chapter.id)} className="mt-4 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Open chapter workspace</button>
+                      </article>;
+                    })}
                   </div>
                   {!visible.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No chapters match those filters.</p>}
                 </>;
@@ -7391,7 +9458,10 @@ function TestPrepHub(props) {
                       <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{route.learnerPurpose}</p>
                       <p className="mt-3 text-xs font-bold text-violet-900">{Array.isArray(route.itemIds) ? route.itemIds.length : 0} linked questions{route.estimatedMinutes ? ' · about ' + route.estimatedMinutes + ' minutes' : ''}</p>
                       {Array.isArray(route.stepOrder) && route.stepOrder.length > 0 && <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-slate-700">{route.stepOrder.map((step) => <li key={step}>{step}</li>)}</ol>}
-                      <button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute(route)} className="mt-4 rounded-xl bg-violet-800 px-4 py-3 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start route</button>
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute(route)} className="min-h-11 rounded-xl bg-violet-800 px-4 py-2.5 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start route</button>
+                        <button type="button" data-test-prep-study-route-read={route.id} aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepStudyRouteSpeechText(route))} className="min-h-11 rounded-xl border border-violet-700 bg-white px-3 py-2 text-xs font-black text-violet-950 hover:bg-violet-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">{readAloudActive ? '⏹ Stop audio' : '🔊 Read route'}</button>
+                      </div>
                     </article>)}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">This library does not currently include any guided study routes.</p>}
                 </section>;
@@ -7456,7 +9526,7 @@ function TestPrepHub(props) {
                         {routeWorkshopRecords.length > 0 && <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"><p className="text-xs font-black uppercase tracking-wide text-sky-800">Linked response workshop{routeWorkshopRecords.length === 1 ? '' : 's'}</p><div className="mt-2 flex flex-wrap gap-2">{routeWorkshopRecords.map((workshop) => <button key={workshop.id} data-test-prep-foundational-route-workshop-id={workshop.id} type="button" onClick={() => { setLibraryMode('constructed-response'); setLibrarySearch(workshop.title || ''); setLibraryChapterId(''); }} className="rounded-lg border border-sky-500 bg-white px-3 py-2 text-left text-xs font-black text-sky-950 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600">Open linked workshop: {workshop.title}</button>)}</div></div>}
                         <div data-test-prep-foundational-route-progress={routeProgress.status} className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="font-black uppercase tracking-wide text-emerald-900">Route progress</span><strong className="text-emerald-950">{routeProgressLabel}</strong></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100" role="progressbar" aria-label={route.title + ' route progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={routeProgress.attemptedPercent}><div className="h-full rounded-full bg-emerald-700" style={{ width: routeProgress.attemptedPercent + '%' }} /></div><p className="mt-2 text-xs font-bold text-emerald-950">{routeProgress.attemptedItemCount} of {routeProgress.totalItemCount} linked questions practiced{routeProgressScore}</p></div>
                         <p className="mt-4 flex-1 rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-700">{route.accessNote}</p>
-                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); const safeHref = testPrepSafeHttpsUrl(reference); return <li key={reference}>{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a> : <span className="font-bold text-slate-700">{source.title}</span>}</li>; })}</ul></div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3"><div className="flex flex-wrap gap-2"><button type="button" disabled={!Array.isArray(route.itemIds) || !route.itemIds.length} onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title })} className="min-h-11 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start document route</button><button type="button" data-test-prep-foundational-route-read={route.id} aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepFoundationalRouteSpeechText(route))} className="min-h-11 rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">{readAloudActive ? '⏹ Stop audio' : '🔊 Read route'}</button>{routeSlices.map((slice) => <button key={slice.id} type="button" onClick={() => startStudyRoute({ ...route, title: 'Foundational document: ' + route.title + ' · ' + slice.label + ' set', itemIds: slice.itemIds })} className="min-h-11 rounded-xl border border-emerald-700 bg-white px-3 py-2 text-xs font-black text-emerald-900 hover:bg-emerald-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start {slice.label.toLowerCase()} set <span className="font-bold">({slice.itemIds.length})</span></button>)}</div><ul className="flex flex-wrap gap-3 text-xs">{(route.references || []).map((reference) => { const source = testPrepDescribeReference(reference); const safeHref = testPrepSafeHttpsUrl(reference); return <li key={reference}>{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a> : <span className="font-bold text-slate-700">{source.title}</span>}</li>; })}</ul></div>
                       </article>;
                     })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No foundational-document routes match that search.</p>}
@@ -7471,7 +9541,12 @@ function TestPrepHub(props) {
                 const ladders = studyPlanLayers.ladders.filter((ladder) => matches([ladder.title, ladder.purpose, ladder.focus.join(' ')].join(' ')));
                 const forms = studyPlanLayers.forms.filter((form) => matches([form.title, form.formType].join(' ')));
                 const playbookById = new Map(studyPlanLayers.playbooks.map((playbook) => [playbook.id, playbook]));
-                const routedQuestionCount = new Set(studyPlanLayers.topicRoutes.reduce((all, route) => all.concat(route.itemIds), [])).size;
+                const routedQuestionCount = new Set(
+                  studyPlanLayers.topicRoutes.reduce((all, route) => all.concat(route.itemIds), [])
+                    .concat(studyPlanLayers.unitRoutes.reduce((all, route) => all.concat(route.itemIds), []))
+                    .concat(studyPlanLayers.ladders.reduce((all, ladder) => all.concat(ladder.itemIds), []))
+                    .concat(studyPlanLayers.forms.reduce((all, form) => all.concat(form.itemIds), []))
+                ).size;
                 return <section className="space-y-4" aria-labelledby="library-study-plan-title">
                   <div className="rounded-2xl border border-sky-300 bg-sky-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-sky-800">Original internal study plan</p>
@@ -7483,7 +9558,10 @@ function TestPrepHub(props) {
                       <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{studyPlanLayers.unitRoutes.length.toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Unit reviews</p></div>
                       <div className="rounded-xl border border-sky-200 bg-white p-3"><p className="text-2xl font-black text-slate-900">{(studyPlanLayers.ladders.length + studyPlanLayers.forms.length).toLocaleString()}</p><p className="text-xs font-bold text-slate-600">Ladders and forms</p></div>
                     </div>
-                    <label className="mt-4 block text-sm font-black text-slate-900">Filter routes by topic, unit, or next step<input aria-label="Filter study-plan routes" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-sky-600" placeholder="Try 2.3, momentum, limits…" /></label>
+                    <div className="mt-4 flex flex-wrap items-end gap-2">
+                      <label className="min-w-0 flex-1 text-sm font-black text-slate-900">Filter routes by topic, unit, or next step<input aria-label="Filter study-plan routes" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-sky-600" placeholder="Try 2.3, momentum, limits…" /></label>
+                      {librarySearch && <button type="button" data-test-prep-clear-study-plan-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-sky-500 bg-white px-3 py-2 text-xs font-black text-sky-950 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600">Clear filter</button>}
+                    </div>
                   </div>
                   {topicRoutes.length > 0 && <div className="space-y-3">
                     <p className="text-sm font-bold text-slate-700" role="status">Showing {topicRoutes.length} of {studyPlanLayers.topicRoutes.length} topic routes</p>
@@ -7524,29 +9602,47 @@ function TestPrepHub(props) {
                     </div>
                   </div>}
                   {(unitRoutes.length > 0 || ladders.length > 0 || forms.length > 0) && <div className="grid gap-4 md:grid-cols-2">
-                    {unitRoutes.map((route) => <article key={route.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-wide text-slate-700">Unit review</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5>
-                      <p className="mt-2 flex-1 text-sm text-slate-700">{route.purpose || (route.topicRouteIds.length + ' topic routes · ' + route.itemIds.length + ' linked questions')}</p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {route.mixedPracticeItemIds.length > 0 && <button type="button" onClick={() => startStudyPlanSet(route.title + ' · mixed practice', route.mixedPracticeItemIds)} className="rounded-xl bg-slate-800 px-4 py-3 text-sm font-black text-white hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2">Mixed practice ({route.mixedPracticeItemIds.length})</button>}
-                        <button type="button" disabled={!route.itemIds.length} onClick={() => startStudyPlanSet(route.title, route.itemIds)} className="rounded-xl border border-slate-500 bg-white px-4 py-3 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-slate-700">Practice all unit questions ({route.itemIds.length})</button>
-                        {route.chapterId && <button type="button" onClick={() => openLibrarySection(route.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
-                      </div>
-                    </article>)}
-                    {ladders.map((ladder) => <article key={ladder.id} className="flex flex-col rounded-2xl border border-violet-300 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-wide text-violet-800">Cumulative ladder {ladder.order || ''}</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">{ladder.title}</h5>
-                      <p className="mt-2 flex-1 text-sm text-slate-700">{ladder.purpose}</p>
-                      {ladder.focus.length > 0 && <p className="mt-2 text-xs font-bold text-violet-900">Focus: {ladder.focus.join(' · ')}</p>}
-                      <button type="button" disabled={!ladder.itemIds.length} onClick={() => startStudyPlanSet(ladder.title, ladder.itemIds)} className="mt-4 rounded-xl bg-violet-800 px-4 py-3 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Climb this ladder ({ladder.itemIds.length} questions)</button>
-                    </article>)}
-                    {forms.map((form) => <article key={form.id} className="flex flex-col rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-wide text-amber-800">{form.formType || 'Internal practice form'}</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">{form.title}</h5>
-                      <p className="mt-2 flex-1 text-sm text-slate-700">{form.itemIds.length} questions across {form.topicCount} topics and {form.unitCount} units. An internal mixed form, not an official exam form and not timed to official specifications.</p>
-                      <button type="button" disabled={!form.itemIds.length} onClick={() => startStudyPlanSet(form.title, form.itemIds)} className="mt-4 rounded-xl bg-amber-700 px-4 py-3 text-sm font-black text-white hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Start form</button>
-                    </article>)}
+                    {unitRoutes.map((route) => {
+                      const routeProgress = testPrepFoundationalDocumentRouteProgress(packAttempts, route);
+                      return <article key={route.id} data-test-prep-unit-route={route.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-black uppercase tracking-wide text-slate-700">{/^Domain\b/i.test(route.title) ? 'Domain review' : 'Unit review'}</p>
+                          {routeProgress.attemptedItemCount > 0 && <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-black text-sky-900">{routeProgress.attemptedItemCount}/{routeProgress.totalItemCount} practiced</span>}
+                        </div>
+                        <h5 className="mt-1 text-lg font-black text-slate-900">{route.title}</h5>
+                        <p className="mt-2 flex-1 text-sm text-slate-700">{route.purpose || (route.topicRouteIds.length + ' topic routes · ' + route.itemIds.length + ' linked questions')}</p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {route.mixedPracticeItemIds.length > 0 && <button type="button" onClick={() => startStudyPlanSet(route.title + ' · mixed practice', route.mixedPracticeItemIds)} className="rounded-xl bg-slate-800 px-4 py-3 text-sm font-black text-white hover:bg-slate-900 focus:ring-2 focus:ring-slate-700 focus:ring-offset-2">Mixed practice ({route.mixedPracticeItemIds.length})</button>}
+                          <button type="button" disabled={!route.itemIds.length} onClick={() => startStudyPlanSet(route.title, route.itemIds)} className="rounded-xl border border-slate-500 bg-white px-4 py-3 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-slate-700">Practice all ({route.itemIds.length})</button>
+                          {route.chapterId && <button type="button" onClick={() => openLibrarySection(route.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
+                        </div>
+                      </article>;
+                    })}
+                    {ladders.map((ladder) => {
+                      const ladderProgress = testPrepFoundationalDocumentRouteProgress(packAttempts, ladder);
+                      return <article key={ladder.id} data-test-prep-ladder={ladder.id} className="flex flex-col rounded-2xl border border-violet-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-black uppercase tracking-wide text-violet-800">Cumulative ladder {ladder.order || ''}</p>
+                          {ladderProgress.attemptedItemCount > 0 && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-black text-violet-900">{ladderProgress.attemptedItemCount}/{ladderProgress.totalItemCount} practiced</span>}
+                        </div>
+                        <h5 className="mt-1 text-lg font-black text-slate-900">{ladder.title}</h5>
+                        <p className="mt-2 flex-1 text-sm text-slate-700">{ladder.purpose}</p>
+                        {ladder.focus.length > 0 && <p className="mt-2 text-xs font-bold text-violet-900">Focus: {ladder.focus.join(' · ')}</p>}
+                        <button type="button" disabled={!ladder.itemIds.length} onClick={() => startStudyPlanSet(ladder.title, ladder.itemIds)} className="mt-4 rounded-xl bg-violet-800 px-4 py-3 text-sm font-black text-white hover:bg-violet-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Climb this ladder ({ladder.itemIds.length} questions)</button>
+                      </article>;
+                    })}
+                    {forms.map((form) => {
+                      const formProgress = testPrepFoundationalDocumentRouteProgress(packAttempts, form);
+                      return <article key={form.id} data-test-prep-practice-form={form.id} className="flex flex-col rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-black uppercase tracking-wide text-amber-800">{form.formType || 'Internal practice form'}</p>
+                          {formProgress.attemptedItemCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black text-amber-900">{formProgress.attemptedItemCount}/{formProgress.totalItemCount} practiced</span>}
+                        </div>
+                        <h5 className="mt-1 text-lg font-black text-slate-900">{form.title}</h5>
+                        <p className="mt-2 flex-1 text-sm text-slate-700">{form.itemIds.length} questions across {form.topicCount} topics and {form.unitCount} domains or units. An internal mixed form, not an official exam form and not timed to official specifications.</p>
+                        <button type="button" disabled={!form.itemIds.length} onClick={() => startStudyPlanSet(form.title, form.itemIds)} className="mt-4 rounded-xl bg-amber-700 px-4 py-3 text-sm font-black text-white hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2">Start form</button>
+                      </article>;
+                    })}
                   </div>}
                   {!topicRoutes.length && !unitRoutes.length && !ladders.length && !forms.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No study-plan routes match that filter.</p>}
                 </section>;
@@ -7559,22 +9655,59 @@ function TestPrepHub(props) {
                   <div className="rounded-2xl border border-rose-300 bg-rose-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-rose-800">Original internal remediation aid</p>
                     <h4 id="library-playbooks-title" className="mt-1 text-xl font-black text-slate-900">Misconception playbooks</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-rose-950">Each playbook names an error pattern, gives the repair question, and walks a recognize-repair-practice-retry loop. Use one after a missed set. The loops are self-checks; they do not score written work.</p>
-                    <label className="mt-4 block text-sm font-black text-slate-900">Filter playbooks<input aria-label="Filter misconception playbooks" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-rose-600" placeholder="Try sign, units, representation…" /></label>
+                    <p className="mt-2 text-sm leading-relaxed text-rose-950">Each playbook names an error pattern, gives the repair question, and walks a recognize-repair-practice-retry loop. Check off each stage as you go; progress saves locally and does not score written work.</p>
+                    <div className="mt-4 flex flex-wrap items-end gap-2">
+                      <label className="min-w-0 flex-1 text-sm font-black text-slate-900">Filter playbooks<input aria-label="Filter misconception playbooks" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-rose-600" placeholder="Try sign, units, representation…" /></label>
+                      {librarySearch && <button type="button" data-test-prep-clear-playbooks-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-rose-500 bg-white px-3 py-2 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-600">Clear filter</button>}
+                      {playbooks.length > 0 && <button type="button" data-test-prep-playbooks-export="true" onClick={() => {
+                        const md = testPrepBuildPlaybooksMarkdown(selectedPack.shortTitle || selectedPack.title, playbooks);
+                        try {
+                          const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = testPrepSlug((selectedPack.id || 'pack') + '-playbooks', 'playbooks') + '.md';
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                          announce('Exported misconception playbooks as Markdown.', 'info');
+                        } catch (_) { announce('Could not download the playbooks in this browser.', 'warning'); }
+                      }} className="min-h-11 rounded-lg border border-rose-500 bg-white px-3 py-2 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-600">Export playbooks (.md)</button>}
+                    </div>
                   </div>
                   {playbooks.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
-                    {playbooks.map((playbook) => <article key={playbook.id} className="flex flex-col rounded-2xl border border-rose-300 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-wide text-rose-800">{playbook.familyLabel || 'Remediation playbook'}</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">{playbook.title}</h5>
-                      {playbook.description && <p className="mt-2 text-sm leading-relaxed text-slate-700">{playbook.description}</p>}
-                      {playbook.recognitionCue && <p className="mt-2 text-sm text-slate-800"><strong>How to recognize it:</strong> {playbook.recognitionCue}</p>}
-                      {playbook.repairQuestion && <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-950">Repair question: {playbook.repairQuestion}</p>}
-                      {playbook.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 pl-5 text-sm text-slate-700" style={{ listStyleType: 'decimal' }}>{playbook.steps.map((step, index) => <li key={index}><span className="font-black text-slate-900">{step.label}.</span> {step.instruction}{step.requiredOutput && <span className="block text-xs text-slate-600">Write down: {step.requiredOutput}</span>}</li>)}</ol>}
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <button type="button" disabled={!playbook.itemIds.length} onClick={() => startStudyPlanSet(playbook.title, playbook.itemIds)} className="rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Practice this pattern ({playbook.itemIds.length})</button>
-                        {playbook.occurrenceCount > 0 && <span className="text-xs font-bold text-slate-600">Distractor pattern appears {playbook.occurrenceCount.toLocaleString()} times in this bank</span>}
-                      </div>
-                    </article>)}
+                    {playbooks.map((playbook) => {
+                      const stepKeys = playbook.steps.map((_, index) => 'pb:' + playbook.id + ':' + index);
+                      const stepStatus = testPrepCountStudyChecks(packStudyChecks, stepKeys);
+                      return <article key={playbook.id} data-test-prep-playbook={playbook.id} className="flex flex-col rounded-2xl border border-rose-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-black uppercase tracking-wide text-rose-800">{playbook.familyLabel || 'Remediation playbook'}</p>
+                          {stepStatus.total > 0 && <span className={'rounded-full px-2 py-0.5 text-xs font-black ' + (stepStatus.checked === stepStatus.total ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900')}>{stepStatus.checked}/{stepStatus.total} stages done</span>}
+                        </div>
+                        <h5 className="mt-1 text-lg font-black text-slate-900">{playbook.title}</h5>
+                        {playbook.description && <p className="mt-2 text-sm leading-relaxed text-slate-700">{playbook.description}</p>}
+                        {playbook.recognitionCue && <p className="mt-2 text-sm text-slate-800"><strong>How to recognize it:</strong> {playbook.recognitionCue}</p>}
+                        {playbook.repairQuestion && <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-bold text-rose-950">Repair question: {playbook.repairQuestion}</p>}
+                        {playbook.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 text-sm text-slate-700">{playbook.steps.map((step, index) => {
+                          const key = 'pb:' + playbook.id + ':' + index;
+                          const done = packStudyChecks[key] === true;
+                          return <li key={index} className={'rounded-lg border p-2.5 ' + (done ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-slate-50')}>
+                            <label className="flex cursor-pointer items-start gap-2.5">
+                              <input type="checkbox" data-test-prep-playbook-step={playbook.id + ':' + index} checked={done} onChange={() => toggleStudyCheck(key)} className="mt-1 h-4 w-4 rounded border-slate-400 text-rose-700 focus:ring-rose-600" />
+                              <span className={done ? 'line-through decoration-emerald-700/70' : ''}><span className="font-black text-slate-900">{index + 1}. {step.label}.</span> {step.instruction}{step.requiredOutput && <span className="block text-xs text-slate-600">Write down: {step.requiredOutput}</span>}</span>
+                            </label>
+                          </li>;
+                        })}</ol>}
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <button type="button" disabled={!playbook.itemIds.length} onClick={() => startStudyPlanSet(playbook.title, playbook.itemIds)} className="rounded-xl bg-rose-800 px-4 py-3 text-sm font-black text-white hover:bg-rose-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Practice this pattern ({playbook.itemIds.length})</button>
+                          <button type="button" data-test-prep-playbook-read={playbook.id} aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(testPrepPlaybookSpeechText(playbook)); }} className="rounded-xl border border-rose-400 bg-rose-50 px-3 py-2.5 text-sm font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read playbook'}</button>
+                          <button type="button" data-test-prep-playbook-note={playbook.id} onClick={() => beginAnnotation({ targetType: 'playbook', targetId: playbook.id, targetLabel: 'Playbook: ' + playbook.title })} className="rounded-xl border border-amber-400 bg-amber-50 px-3 py-2.5 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Add note</button>
+                          {stepStatus.checked > 0 && <button type="button" onClick={() => resetStudyChecks('pb:' + playbook.id + ':')} className="rounded-xl border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-rose-700">Reset stages</button>}
+                          {playbook.occurrenceCount > 0 && <span className="text-xs font-bold text-slate-600">Distractor pattern appears {playbook.occurrenceCount.toLocaleString()} times in this bank</span>}
+                        </div>
+                      </article>;
+                    })}
                   </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No playbooks match that filter.</p>}
                 </section>;
               })()}
@@ -7588,30 +9721,76 @@ function TestPrepHub(props) {
                   <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-emerald-800">Original internal planning aid</p>
                     <h4 id="library-study-sessions-title" className="mt-1 text-xl font-black text-slate-900">Study sessions and spaced review</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-emerald-950">Session plans are bounded study blocks with suggested minutes per step. Spaced-review plans suggest when to return to a topic. Both are flexible suggestions you can pause, reorder, or skip; they are not deadlines and do not predict readiness.</p>
-                    <label className="mt-4 block text-sm font-black text-slate-900">Filter sessions and topics<input aria-label="Filter study sessions" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-emerald-600" placeholder="Try unit launch, ladder, 3.2…" /></label>
+                    <p className="mt-2 text-sm leading-relaxed text-emerald-950">Session plans are bounded study blocks with suggested minutes per step. Check off completed steps and spaced-review intervals locally as you study; these are flexible suggestions and never predict readiness.</p>
+                    <div className="mt-4 flex flex-wrap items-end gap-2">
+                      <label className="min-w-0 flex-1 text-sm font-black text-slate-900">Filter sessions and topics<input aria-label="Filter study sessions" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-emerald-600" placeholder="Try unit launch, ladder, 3.2…" /></label>
+                      {librarySearch && <button type="button" data-test-prep-clear-sessions-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-emerald-500 bg-white px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-600">Clear filter</button>}
+                    </div>
                   </div>
                   {sessions.length > 0 && <div className="grid gap-4 md:grid-cols-2">
-                    {sessions.map((session) => <article key={session.id} className="flex flex-col rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm">
-                      <p className="text-xs font-black uppercase tracking-wide text-emerald-800">{session.sessionType || 'Study session'}{session.durationMinutes ? ' · about ' + session.durationMinutes + ' minutes' : ''}</p>
-                      <h5 className="mt-1 text-lg font-black text-slate-900">{session.title}</h5>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-700">{session.purpose}</p>
-                      {session.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 pl-5 text-sm text-slate-700" style={{ listStyleType: 'decimal' }}>{session.steps.map((step, index) => <li key={index}><span className="font-black text-slate-900">{step.label}</span>{step.durationMinutes ? <span className="text-xs font-bold text-slate-600"> · {step.durationMinutes} min</span> : null}<span className="block">{step.action}</span></li>)}</ol>}
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button type="button" disabled={!session.itemIds.length} onClick={() => startStudyPlanSet(session.title, session.itemIds)} className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-black text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start session practice ({session.itemIds.length})</button>
-                        {session.chapterId && <button type="button" onClick={() => openLibrarySection(session.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
-                      </div>
-                    </article>)}
+                    {sessions.map((session) => {
+                      const stepKeys = session.steps.map((_, index) => 'sess:' + session.id + ':' + index);
+                      const stepStatus = testPrepCountStudyChecks(packStudyChecks, stepKeys);
+                      return <article key={session.id} data-test-prep-study-session={session.id} className="flex flex-col rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-xs font-black uppercase tracking-wide text-emerald-800">{session.sessionType || 'Study session'}{session.durationMinutes ? ' · about ' + session.durationMinutes + ' minutes' : ''}</p>
+                          {stepStatus.total > 0 && <span className={'rounded-full px-2 py-0.5 text-xs font-black ' + (stepStatus.checked === stepStatus.total ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-100 text-slate-800')}>{stepStatus.checked}/{stepStatus.total} steps done</span>}
+                        </div>
+                        <h5 className="mt-1 text-lg font-black text-slate-900">{session.title}</h5>
+                        <p className="mt-2 text-sm leading-relaxed text-slate-700">{session.purpose}</p>
+                        {session.steps.length > 0 && <ol className="mt-3 flex-1 space-y-2 text-sm text-slate-700">{session.steps.map((step, index) => {
+                          const key = 'sess:' + session.id + ':' + index;
+                          const done = packStudyChecks[key] === true;
+                          return <li key={index} className={'rounded-lg border p-2.5 ' + (done ? 'border-emerald-300 bg-emerald-50/70' : 'border-slate-200 bg-slate-50')}>
+                            <label className="flex cursor-pointer items-start gap-2.5">
+                              <input type="checkbox" data-test-prep-session-step={session.id + ':' + index} checked={done} onChange={() => toggleStudyCheck(key)} className="mt-1 h-4 w-4 rounded border-slate-400 text-emerald-700 focus:ring-emerald-600" />
+                              <span className={done ? 'line-through decoration-emerald-700/70' : ''}><span className="font-black text-slate-900">{index + 1}. {step.label}</span>{step.durationMinutes ? <span className="text-xs font-bold text-slate-600"> · {step.durationMinutes} min</span> : null}<span className="block">{step.action}</span></span>
+                            </label>
+                          </li>;
+                        })}</ol>}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button type="button" disabled={!session.itemIds.length} onClick={() => startStudyPlanSet(session.title, session.itemIds)} className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-black text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">Start session practice ({session.itemIds.length})</button>
+                          <button type="button" data-test-prep-study-session-read={session.id} aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepStudySessionSpeechText(session))} className="min-h-11 rounded-xl border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-700">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read session'}</button>
+                          {session.chapterId && <button type="button" onClick={() => openLibrarySection(session.chapterId, '')} className="rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button>}
+                          {stepStatus.checked > 0 && <button type="button" onClick={() => resetStudyChecks('sess:' + session.id + ':')} className="rounded-xl border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-700">Reset steps</button>}
+                        </div>
+                      </article>;
+                    })}
                   </div>}
                   {spacedPlans.length > 0 && <details className="rounded-2xl border border-emerald-300 bg-white p-5 shadow-sm" open={Boolean(query)}>
                     <summary className="cursor-pointer text-lg font-black text-slate-900 focus:ring-2 focus:ring-emerald-700">Spaced-review cadence by topic ({spacedPlans.length})</summary>
                     <div className="mt-4 overflow-x-auto">
                       <table className="w-full text-left text-sm">
-                        <thead><tr className="border-b border-slate-300 text-xs font-black uppercase tracking-wide text-slate-700"><th scope="col" className="py-2 pr-3">Topic</th>{(spacedPlans[0].stages || []).map((stage, index) => <th key={index} scope="col" className="py-2 pr-3">{stage.label}<span className="block text-[11px] font-bold normal-case text-slate-600">{intervalLabel(stage.intervalHours)}</span></th>)}<th scope="col" className="py-2">Route</th></tr></thead>
+                        <thead><tr className="border-b border-slate-300 text-xs font-black uppercase tracking-wide text-slate-700"><th scope="col" className="py-2 pr-3">Topic</th>{(spacedPlans[0].stages || []).map((stage, index) => <th key={index} scope="col" className="py-2 pr-3">{stage.label}<span className="block text-[11px] font-bold normal-case text-slate-600">{intervalLabel(stage.intervalHours)}</span></th>)}<th scope="col" className="py-2">Actions</th></tr></thead>
                         <tbody>{spacedPlans.map((plan) => {
                           const route = studyPlanLayers.topicRoutes.find((entry) => entry.id === plan.diagnosticRouteId);
+                          const unitRoute = studyPlanLayers.unitRoutes.find((entry) => (plan.chapterId && entry.chapterId === plan.chapterId) || (plan.unitId && entry.unitId === plan.unitId));
                           const lastPracticed = route ? testPrepFoundationalDocumentRouteProgress(packAttempts, route).latestCompletedAt : 0;
-                          return <tr key={plan.id} className="border-b border-slate-200 align-top"><th scope="row" className="py-2 pr-3 font-black text-slate-900">{plan.title}{route && <span className="block text-[11px] font-bold text-slate-600">{testPrepStudyPlanAgoLabel(lastPracticed, Date.now())}</span>}</th>{plan.stages.map((stage, index) => <td key={index} className="py-2 pr-3 text-slate-700">{stage.action}</td>)}<td className="py-2">{plan.diagnosticRouteId && <button type="button" onClick={() => { setLibraryMode('study-plan'); setLibrarySearch(route ? route.title : plan.title); }} className="rounded-lg border border-sky-500 bg-sky-50 px-2 py-1 text-xs font-black text-sky-950 focus:ring-2 focus:ring-sky-700">Open route</button>}</td></tr>;
+                          const stageKeys = plan.stages.map((_, index) => 'spaced:' + plan.id + ':' + index);
+                          const stageStatus = testPrepCountStudyChecks(packStudyChecks, stageKeys);
+                          return <tr key={plan.id} data-test-prep-spaced-plan={plan.id} className="border-b border-slate-200 align-top">
+                            <th scope="row" className="py-2 pr-3 font-black text-slate-900">
+                              {plan.title}
+                              <span className="mt-1 block text-[11px] font-bold text-emerald-800">{stageStatus.checked}/{stageStatus.total} intervals done</span>
+                              {route && <span className="block text-[11px] font-bold text-slate-600">{testPrepStudyPlanAgoLabel(lastPracticed, Date.now())}</span>}
+                            </th>
+                            {plan.stages.map((stage, index) => {
+                              const key = 'spaced:' + plan.id + ':' + index;
+                              const done = packStudyChecks[key] === true;
+                              return <td key={index} className="py-2 pr-3 text-slate-700">
+                                <label className="flex cursor-pointer items-start gap-2">
+                                  <input type="checkbox" data-test-prep-spaced-stage={plan.id + ':' + index} checked={done} onChange={() => toggleStudyCheck(key)} className="mt-0.5 h-4 w-4 rounded border-slate-400 text-emerald-700 focus:ring-emerald-600" />
+                                  <span className={done ? 'line-through decoration-emerald-700/70 text-slate-500' : ''}>{stage.action}</span>
+                                </label>
+                              </td>;
+                            })}
+                            <td className="py-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {plan.diagnosticRouteId ? <button type="button" onClick={() => { setLibraryMode('study-plan'); setLibrarySearch(route ? route.title : plan.title); }} className="rounded-lg border border-sky-500 bg-sky-50 px-2 py-1 text-xs font-black text-sky-950 focus:ring-2 focus:ring-sky-700">Open route</button> : (plan.chapterId ? <button type="button" onClick={() => openLibrarySection(plan.chapterId, '')} className="rounded-lg border border-indigo-400 bg-indigo-50 px-2 py-1 text-xs font-black text-indigo-950 focus:ring-2 focus:ring-indigo-700">Open chapter</button> : null)}
+                                {unitRoute && unitRoute.mixedPracticeItemIds.length > 0 && <button type="button" onClick={() => startStudyPlanSet(plan.title + ' · spaced review', unitRoute.mixedPracticeItemIds)} className="rounded-lg border border-emerald-500 bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-950 focus:ring-2 focus:ring-emerald-700">Practice ({unitRoute.mixedPracticeItemIds.length})</button>}
+                              </div>
+                            </td>
+                          </tr>;
                         })}</tbody>
                       </table>
                     </div>
@@ -7621,46 +9800,98 @@ function TestPrepHub(props) {
               })()}
 
               {learningLibrary && !libraryChapterId && libraryMode === 'sources' && (() => {
-                const sources = studyPlanLayers.sources;
+                const query = librarySearch.trim().toLowerCase();
+                const allSources = studyPlanLayers.sources;
+                const sources = allSources.filter((source) => !query || [source.title, source.organization, source.credibility, source.sourceType].join(' ').toLowerCase().includes(query));
                 return <section className="space-y-4" aria-labelledby="library-sources-title">
                   <div className="rounded-2xl border border-slate-300 bg-slate-100 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-slate-700">Provenance</p>
                     <h4 id="library-sources-title" className="mt-1 text-xl font-black text-slate-900">Public sources this pack was checked against</h4>
                     <p className="mt-2 text-sm leading-relaxed text-slate-800">These are the public frameworks and references used to verify blueprint coverage and lesson content. All practice items and lessons are original; no official questions or copyrighted text are reproduced. Listing a source is not an endorsement by its publisher.</p>
+                    {(allSources.length > 5 || librarySearch) && <div className="mt-4 flex flex-wrap items-end gap-2">
+                      <label className="min-w-0 flex-1 text-sm font-black text-slate-900">Filter public sources<input aria-label="Filter public sources" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" placeholder="Try APA, ASPPB, IDEA, guidelines…" /></label>
+                      {librarySearch && <button type="button" data-test-prep-clear-sources-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-black text-slate-900 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Clear filter</button>}
+                    </div>}
                   </div>
-                  <ul className="grid gap-4 md:grid-cols-2">
+                  <p className="text-sm font-bold text-slate-700" role="status">Showing {sources.length} of {allSources.length} verified public sources</p>
+                  {sources.length > 0 ? <ul className="grid gap-4 md:grid-cols-2">
                     {sources.map((source) => <li key={source.id} className="flex flex-col rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
                       <p className="text-xs font-black uppercase tracking-wide text-slate-700">{source.sourceType || 'Source'}{source.organization ? ' · ' + source.organization : ''}</p>
                       <h5 className="mt-1 text-lg font-black text-slate-900">{source.title}</h5>
                       {source.credibility && <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-700">{source.credibility}</p>}
                       <p className="mt-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-600">{source.reviewedAt && <span>Reviewed {source.reviewedAt}</span>}{(() => { const safeHref = testPrepSafeHttpsUrl(source.url); return safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Open source (new tab)</a> : null; })()}</p>
                     </li>)}
-                  </ul>
+                  </ul> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No public sources match that filter.</p>}
                 </section>;
               })()}
 
               {learningLibrary && !libraryChapterId && libraryMode === 'quick-reference' && (() => {
-                const references = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+                const query = librarySearch.trim().toLowerCase();
+                const allReferences = Array.isArray(learningLibrary.quickReference) ? learningLibrary.quickReference : [];
+                const references = allReferences.filter((reference) => !query || [reference.title, reference.domainLabel, reference.domainId, reference.purpose, (reference.checklist || []).join(' '), (reference.formulas || []).join(' '), (reference.decisionRules || []).join(' '), (reference.cautions || []).join(' ')].join(' ').toLowerCase().includes(query));
                 return <section className="space-y-4" aria-labelledby="library-quick-reference-title">
                   <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wide text-amber-800">Original internal study aid</p>
                     <h4 id="library-quick-reference-title" className="mt-1 text-xl font-black text-slate-900">{(selectedPack.shortTitle || selectedPack.title || 'Pack') + ' quick reference'}</h4>
-                    <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these unit cards to retrieve method choices, relationships, and interpretation boundaries before practicing. This is not the official exam reference sheet and is not a substitute for current course materials.</p>
+                    <p className="mt-2 text-sm leading-relaxed text-amber-950">Use these domain and unit cards to retrieve method choices, benchmarks, and interpretation boundaries before practicing. This is not the official exam reference sheet and is not a substitute for current course or licensing materials.</p>
+                    {(allReferences.length > 3 || librarySearch) && <div className="mt-4 flex flex-wrap items-end gap-2">
+                      <label className="min-w-0 flex-1 text-sm font-black text-slate-900">Filter quick reference cards<input aria-label="Filter quick reference cards" value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-amber-600" placeholder="Try formula, ethics, cutoff, domain…" /></label>
+                      {librarySearch && <button type="button" data-test-prep-clear-quickref-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Clear filter</button>}
+                    </div>}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700">
+                    {allReferences.length > 0 ? <p role="status">Showing {references.length} of {allReferences.length} quick reference cards</p> : <span />}
+                    {references.length > 0 && <button type="button" data-test-prep-quickref-export="true" onClick={() => {
+                      const md = testPrepBuildQuickReferenceMarkdown(selectedPack.shortTitle || selectedPack.title, references);
+                      try {
+                        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = testPrepSlug((selectedPack.id || 'pack') + '-quick-reference', 'quick-reference') + '.md';
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                        announce('Exported quick reference study sheet as Markdown.', 'info');
+                      } catch (_) { announce('Could not download the quick reference sheet in this browser.', 'warning'); }
+                    }} className="min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-50 focus:ring-2 focus:ring-amber-700">Export sheet (.md)</button>}
                   </div>
                   {references.length > 0 ? <div className="grid gap-4 lg:grid-cols-2">
                     {references.map((reference) => {
                       const checkLabel = reference.checklistLabel || 'Before calculating';
                       const relLabel = reference.formulasLabel || 'Relationships';
-                      return <article key={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
-                        <div><p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainLabel || reference.domainId || reference.unitId || selectedPack.shortTitle || 'Quick reference'}</p><h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5><p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p><button type="button" aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText([reference.title, reference.purpose, checkLabel + ': ' + (reference.checklist || []).join('. '), relLabel + ': ' + (reference.formulas || []).join('. '), 'Decision rules: ' + (reference.decisionRules || []).join('. '), 'Cautions: ' + (reference.cautions || []).join('. ')].join('. ')); }} className="mt-3 rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button></div>
+                      const checklistItems = Array.isArray(reference.checklist) ? reference.checklist : [];
+                      const checkKeys = checklistItems.map((_, index) => 'qr:' + reference.id + ':' + index);
+                      const checkStatus = testPrepCountStudyChecks(packStudyChecks, checkKeys);
+                      const domainSlug = testPrepSlug(reference.domainId || reference.unitId, '');
+                      const matchedUnitRoute = domainSlug ? studyPlanLayers.unitRoutes.find((route) => route.unitId === domainSlug) : null;
+                      return <article key={reference.id} data-test-prep-quick-ref={reference.id} className="space-y-4 rounded-2xl border border-amber-300 bg-white p-5 shadow-sm">
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-black uppercase tracking-wide text-amber-800">{reference.domainLabel || reference.domainId || reference.unitId || selectedPack.shortTitle || 'Quick reference'}</p>
+                            {checkStatus.total > 0 && <span className={'rounded-full px-2 py-0.5 text-xs font-black ' + (checkStatus.checked === checkStatus.total ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900')}>{checkStatus.checked}/{checkStatus.total} checked</span>}
+                          </div>
+                          <h5 className="mt-1 text-lg font-black text-slate-900">{reference.title}</h5>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-700">{reference.purpose}</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button type="button" data-test-prep-quickref-read={reference.id} aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(testPrepQuickReferenceSpeechText(reference)); }} className="rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-700">{readAloudActive ? 'Stop reading' : 'Read reference aloud'}</button>
+                            {matchedUnitRoute && matchedUnitRoute.mixedPracticeItemIds.length > 0 && <button type="button" onClick={() => startStudyPlanSet(reference.title + ' · practice', matchedUnitRoute.mixedPracticeItemIds)} className="rounded-lg bg-amber-700 px-3 py-2 text-sm font-black text-white hover:bg-amber-800 focus:ring-2 focus:ring-amber-700">Practice this area ({matchedUnitRoute.mixedPracticeItemIds.length})</button>}
+                            {checkStatus.checked > 0 && <button type="button" onClick={() => resetStudyChecks('qr:' + reference.id + ':')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-700">Reset checklist</button>}
+                          </div>
+                        </div>
                         <div className="grid gap-4 sm:grid-cols-2">
-                          <section><h6 className="font-black text-slate-900">{checkLabel}</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.checklist || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
+                          <section><h6 className="font-black text-slate-900">{checkLabel}</h6><ul className="mt-2 space-y-2 text-sm text-slate-700">{checklistItems.map((entry, index) => {
+                            const key = 'qr:' + reference.id + ':' + index;
+                            const done = packStudyChecks[key] === true;
+                            return <li key={index}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" data-test-prep-quickref-check={reference.id + ':' + index} checked={done} onChange={() => toggleStudyCheck(key)} className="mt-1 h-4 w-4 rounded border-slate-400 text-amber-700 focus:ring-amber-600" /><span className={done ? 'line-through decoration-amber-700/70 text-slate-500' : ''}>{entry}</span></label></li>;
+                          })}</ul></section>
                           <section><h6 className="font-black text-slate-900">{relLabel}</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.formulas || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></section>
                         </div>
                         <details className="rounded-xl border border-slate-200 bg-slate-50 p-3"><summary className="cursor-pointer font-black text-slate-900 focus:ring-2 focus:ring-amber-700">Decision rules and cautions</summary><div className="mt-3 grid gap-4 sm:grid-cols-2"><div><h6 className="font-black text-emerald-900">Choose or interpret</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.decisionRules || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div><div><h6 className="font-black text-rose-900">Watch for</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">{(reference.cautions || []).map((entry) => <li key={entry}>{entry}</li>)}</ul></div></div></details>
                       </article>;
                     })}
-                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">This library does not currently include a quick-reference layer.</p>}
+                  </div> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">{allReferences.length ? 'No quick reference cards match that filter.' : 'This library does not currently include a quick-reference layer.'}</p>}
                 </section>;
               })()}
 
@@ -7681,12 +9912,13 @@ function TestPrepHub(props) {
                   if (readAloudActive) stopReadAloud();
                   else speakTestPrepText(testPrepNativeGlossarySpeechText(record));
                 }}
+                onAddNote={(record) => beginAnnotation({ targetType: 'glossary', targetId: record.id, targetLabel: 'Glossary: ' + record.term })}
               />}
 
               {learningLibrary && libraryMode === 'flashcards' && (() => {
                 const releasedFlashcards = learningLibrary.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant');
-                const queue = testPrepBuildFlashcardQueue(releasedFlashcards, flashcardRatings, { query: librarySearch, domain: libraryDomain, dueOnly: flashcardDueOnly, now: Date.now() });
-                const cards = queue.items;
+                const queue = testPrepBuildFlashcardQueue(releasedFlashcards, flashcardRatings, { query: librarySearch, domain: libraryDomain, dueOnly: flashcardDueOnly, needsReviewOnly: flashcardNeedsReviewOnly, now: Date.now() });
+                const cards = flashcardShuffleSeed ? testPrepShuffleListDeterministic(queue.items, flashcardShuffleSeed) : queue.items;
                 const safeIndex = cards.length ? Math.min(flashcardIndex, cards.length - 1) : 0;
                 const card = cards[safeIndex];
                 const known = releasedFlashcards.filter((item) => flashcardRatings[item.id] && flashcardRatings[item.id].rating === 'know').length;
@@ -7699,25 +9931,89 @@ function TestPrepHub(props) {
                   setFlashcardRevealed(false);
                   if (cards.length) setFlashcardIndex(Math.min(safeIndex, Math.max(0, cards.length - 2)));
                 };
+                const readCurrentCard = () => {
+                  if (!card) return;
+                  if (readAloudActive) stopReadAloud();
+                  else speakTestPrepText(testPrepFlashcardSpeechText(card, flashcardRevealed));
+                };
+                const goFlashcard = (nextIdx) => {
+                  if (readAloudActive) stopReadAloud();
+                  setFlashcardIndex(nextIdx);
+                  setFlashcardRevealed(false);
+                };
+                flashcardShortcutStateRef.current = {
+                  active: Boolean(isOpen && tab === 'library' && !libraryChapterId && cards.length > 0 && card),
+                  card,
+                  cardPosition: safeIndex + 1,
+                  cardTotal: cards.length,
+                  knownCount: known,
+                  dueCount: queue.dueCount,
+                  shuffled: Boolean(flashcardShuffleSeed),
+                  revealed: flashcardRevealed,
+                  reveal: () => setFlashcardRevealed(true),
+                  rate,
+                  read: readCurrentCard,
+                  prev: () => goFlashcard((safeIndex - 1 + cards.length) % cards.length),
+                  next: () => goFlashcard((safeIndex + 1) % cards.length),
+                  toggleShuffle: cards.length > 1 ? () => { setFlashcardShuffleSeed((prev) => prev ? 0 : ((Date.now() & 0x7fffffff) || 1)); setFlashcardIndex(0); setFlashcardRevealed(false); } : null,
+                  setShuffled: cards.length > 1 ? (enabled) => { setFlashcardShuffleSeed(enabled ? ((Date.now() & 0x7fffffff) || 1) : 0); setFlashcardIndex(0); setFlashcardRevealed(false); } : null,
+                  openNote: card ? () => beginAnnotation({ targetType: 'flashcard', targetId: card.id, targetLabel: 'Flashcard: ' + String(card.front || '').slice(0, 80) }) : null,
+                  adjustRate: adjustHandsFreeRate,
+                };
+                const flashcardHandsFreeActive = handsFreeEnabled && handsFreeSurface === 'flashcards';
                 return <section className="space-y-4" aria-labelledby="flashcard-study-title">
                   {retainedFlashcardCount > 0 && <p className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="status"><strong>{retainedFlashcardCount} flashcard schedule entr{retainedFlashcardCount === 1 ? 'y' : 'ies'} retained from earlier or unidentified learning-content revisions.</strong> They remain in backups but do not affect this revision's due queue.</p>}
                   <div><h4 id="flashcard-study-title" className="text-lg font-black text-slate-900">Flashcard study</h4><p className="text-sm text-slate-700">Reveal each answer, then schedule the next retrieval. “Study again” returns in 10 minutes; “Still learning” returns in 1 day; “Know it” advances through 1, 3, 7, 14, 30, 60, and 120-day intervals. This transparent schedule is not a readiness score.</p><p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedFlashcards || 0} source reviewed</p></div>
                   <div className="grid gap-3 rounded-xl border border-slate-300 bg-white p-4 sm:grid-cols-[1fr_260px]">
                     <label className="text-sm font-bold text-slate-800">Search cards<input value={librarySearch} onChange={(event) => { setLibrarySearch(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} type="search" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
-                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => { setLibraryDomain(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedFlashcards.map((item) => item.domain))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
+                    <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => { setLibraryDomain(event.target.value); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="mt-1 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedFlashcards.map((item) => item.domain).filter(Boolean))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm font-bold text-slate-800"><span>{queue.dueCount} due now · {queue.scheduledCount} scheduled later · {known} marked Know</span><label className="flex items-center gap-2"><input type="checkbox" checked={flashcardDueOnly} onChange={(event) => { setFlashcardDueOnly(event.target.checked); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" />Show due cards only</label></div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><span>{cards.length ? safeIndex + 1 : 0} of {cards.length} matching cards</span><span>{flashcardDueOnly ? 'Due queue' : 'All matching cards'}</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-sm font-bold text-slate-800"><span>{queue.dueCount} due now · {queue.needsReviewCount} needs review · {queue.scheduledCount} scheduled later · {known} marked Know</span><div className="flex flex-wrap items-center gap-4"><label className="flex items-center gap-2"><input type="checkbox" checked={flashcardDueOnly} onChange={(event) => { setFlashcardDueOnly(event.target.checked); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" />Show due cards only</label><label className="flex items-center gap-2"><input type="checkbox" data-test-prep-flashcard-needs-review="true" checked={flashcardNeedsReviewOnly} onChange={(event) => { setFlashcardNeedsReviewOnly(event.target.checked); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="h-4 w-4 rounded border-slate-400 text-rose-700 focus:ring-rose-600" />Needs review only ({queue.needsReviewCount})</label></div></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><span>{cards.length ? safeIndex + 1 : 0} of {cards.length} matching cards{flashcardShuffleSeed ? ' · shuffled' : ''}</span><div className="flex flex-wrap items-center gap-2"><span>{flashcardNeedsReviewOnly ? 'Needs review queue' : flashcardDueOnly ? 'Due queue' : 'All matching cards'}</span>{(librarySearch || libraryDomain !== 'all' || flashcardDueOnly || flashcardNeedsReviewOnly) && <button type="button" data-test-prep-clear-flashcards-filter="true" onClick={() => { setLibrarySearch(''); setLibraryDomain('all'); setFlashcardDueOnly(false); setFlashcardNeedsReviewOnly(false); setFlashcardIndex(0); setFlashcardRevealed(false); }} className="min-h-9 rounded-lg border border-indigo-400 bg-white px-2.5 py-1 text-xs font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Clear filters</button>}{cards.length > 1 && <button type="button" data-test-prep-flashcard-shuffle="true" aria-pressed={Boolean(flashcardShuffleSeed)} onClick={() => { setFlashcardShuffleSeed((prev) => prev ? 0 : ((Date.now() & 0x7fffffff) || 1)); setFlashcardIndex(0); setFlashcardRevealed(false); }} className={'min-h-9 rounded-lg border px-2.5 py-1 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (flashcardShuffleSeed ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-400 bg-white text-indigo-900 hover:bg-indigo-50')}>{flashcardShuffleSeed ? '↩ Default order' : '🔀 Shuffle order'}</button>}{cards.length > 0 && <button type="button" data-test-prep-flashcards-export="true" onClick={() => {
+                    const md = testPrepBuildFlashcardsMarkdown(selectedPack.shortTitle || selectedPack.title, cards);
+                    try {
+                      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = testPrepSlug((selectedPack.id || 'pack') + '-flashcards', 'flashcards') + '.md';
+                      document.body.appendChild(link);
+                      link.click();
+                      link.remove();
+                      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                      announce('Exported flashcard deck as Markdown.', 'info');
+                    } catch (_) { announce('Could not download the flashcard deck in this browser.', 'warning'); }
+                  }} className="min-h-9 rounded-lg border border-indigo-400 bg-white px-2.5 py-1 text-xs font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export deck (.md)</button>}</div></div>
+                  {flashcardHandsFreeActive && <section data-test-prep-flashcard-hands-free-panel="true" className="rounded-xl border border-cyan-300 bg-cyan-50 p-4" aria-label="Hands-free flashcards status">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-black text-cyan-950">Hands-free flashcards</p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="rounded-full border border-cyan-500 bg-white px-3 py-1 text-xs font-black uppercase text-cyan-950" role="status" aria-live="polite">{handsFreeStatus} - {Math.round(handsFreeRate * 100)}% speed</span>
+                        <div className="inline-flex items-center gap-1" role="group" aria-label="Flashcard narration speed">
+                          <button type="button" data-test-prep-flashcard-rate-slower="true" aria-label="Decrease speech speed" disabled={handsFreeRate <= 0.75} onClick={() => adjustHandsFreeRate(-0.1)} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">−</button>
+                          <button type="button" data-test-prep-flashcard-rate-reset="true" aria-label="Reset speech speed to 100 percent" disabled={Math.round(handsFreeRate * 100) === 100} onClick={() => adjustHandsFreeRate('reset')} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">100%</button>
+                          <button type="button" data-test-prep-flashcard-rate-faster="true" aria-label="Increase speech speed" disabled={handsFreeRate >= 1.25} onClick={() => adjustHandsFreeRate(0.1)} className="min-h-9 rounded-lg border border-cyan-500 bg-white px-2.5 py-1 text-xs font-black text-cyan-950 hover:bg-cyan-100 disabled:opacity-40 focus:ring-2 focus:ring-cyan-700">+</button>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-cyan-950">Say: flip or reveal; study again, still learning, or know it after revealing; next card; previous card; repeat; shuffle or default order; status; slower, faster, or normal speed; or stop hands free.</p>
+                    {!!handsFreeTranscript && <p className="mt-2 rounded-lg border border-cyan-200 bg-white p-2 text-sm text-slate-800"><strong>Heard:</strong> {handsFreeTranscript}</p>}
+                    {!!handsFreeError && <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-sm font-bold text-amber-950" role="alert">{handsFreeError}</p>}
+                  </section>}
                   {card ? <article className="rounded-2xl border border-indigo-300 bg-white p-6 text-center shadow-sm" aria-live="polite">
                     <div className="flex flex-wrap items-center justify-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">{card.domain}</span><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (card.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{card.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : 'Review required'}</span>{cardSchedule && <span className="rounded-full border border-sky-300 bg-sky-50 px-2 py-1 text-xs font-black text-sky-900">{cardSchedule.dueAt <= queue.now ? 'Due now' : 'Next review ' + new Date(cardSchedule.dueAt).toLocaleDateString()}</span>}</div>
                     <p className="mx-auto mt-6 max-w-3xl text-xl font-black leading-relaxed text-slate-900">{card.front}</p>
                     {flashcardRevealed ? <div className="mx-auto mt-6 max-w-3xl rounded-xl bg-emerald-50 p-5 text-left text-base leading-relaxed text-emerald-950"><strong>Answer:</strong> {card.back}</div> : <button type="button" onClick={() => setFlashcardRevealed(true)} className="mt-6 min-h-11 rounded-xl bg-indigo-700 px-6 py-3 font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Reveal answer</button>}
                     <div className="mt-6 flex flex-wrap justify-center gap-3">
-                      <button type="button" onClick={() => { setFlashcardIndex((safeIndex - 1 + cards.length) % cards.length); setFlashcardRevealed(false); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Previous</button>
-                      {flashcardRevealed && <><button type="button" onClick={() => rate('again')} className="min-h-11 rounded-lg border border-rose-400 bg-rose-50 px-4 py-2 font-black text-rose-950 focus:ring-2 focus:ring-rose-600">Study again · 10 min</button><button type="button" onClick={() => rate('learning')} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 font-black text-amber-950 focus:ring-2 focus:ring-amber-600">Still learning · 1 day</button><button type="button" onClick={() => rate('know')} className="min-h-11 rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-emerald-600">Know it</button></>}
-                      <button type="button" onClick={() => { setFlashcardIndex((safeIndex + 1) % cards.length); setFlashcardRevealed(false); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Next</button>
+                      <button type="button" onClick={() => goFlashcard((safeIndex - 1 + cards.length) % cards.length)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Previous</button>
+                      <button type="button" data-test-prep-flashcard-read="true" aria-pressed={readAloudActive} onClick={readCurrentCard} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-4 py-2 font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : flashcardRevealed ? 'Read answer' : 'Read card'}</button>
+                      <button type="button" data-test-prep-flashcard-hands-free="true" aria-pressed={flashcardHandsFreeActive} onClick={toggleFlashcardHandsFree} className={'min-h-11 rounded-lg border px-4 py-2 font-black focus:ring-2 focus:ring-cyan-700 ' + (flashcardHandsFreeActive ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-500 bg-cyan-50 text-cyan-950')}>{flashcardHandsFreeActive ? '\uD83C\uDFA4 Stop hands-free' : '\uD83C\uDFA4 Hands-free flashcards'}</button>
+                      <button type="button" data-test-prep-flashcard-note="true" onClick={() => beginAnnotation({ targetType: 'flashcard', targetId: card.id, targetLabel: 'Flashcard: ' + String(card.front || '').slice(0, 80) })} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 font-bold text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Add note</button>
+                      {flashcardRevealed && <><button type="button" onClick={() => { if (readAloudActive) stopReadAloud(); rate('again'); }} className="min-h-11 rounded-lg border border-rose-400 bg-rose-50 px-4 py-2 font-black text-rose-950 focus:ring-2 focus:ring-rose-600">Study again · 10 min</button><button type="button" onClick={() => { if (readAloudActive) stopReadAloud(); rate('learning'); }} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-4 py-2 font-black text-amber-950 focus:ring-2 focus:ring-amber-600">Still learning · 1 day</button><button type="button" onClick={() => { if (readAloudActive) stopReadAloud(); rate('know'); }} className="min-h-11 rounded-lg bg-emerald-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-emerald-600">Know it</button></>}
+                      <button type="button" onClick={() => goFlashcard((safeIndex + 1) % cards.length)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Next</button>
                     </div>
-                  </article> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">{flashcardDueOnly ? 'No flashcards are due for these filters.' : 'No flashcards match those filters.'}</p>}
+                    <p data-test-prep-flashcard-shortcuts-hint="true" className="mt-4 text-xs font-semibold text-slate-600">Keyboard: <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">Space</kbd> reveal · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">R</kbd> read aloud · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">1</kbd>/<kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">2</kbd>/<kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">3</kbd> rate · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">←</kbd>/<kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">→</kbd> prev/next · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">S</kbd> shuffle · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">N</kbd> note · <kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">[</kbd>/<kbd className="rounded border border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono">]</kbd> speed</p>
+                  </article> : <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">{flashcardNeedsReviewOnly ? 'No flashcards are marked Study again or Still learning for these filters.' : flashcardDueOnly ? 'No flashcards are due for these filters.' : 'No flashcards match those filters.'}</p>}
                 </section>;
               })()}
 
@@ -7731,8 +10027,8 @@ function TestPrepHub(props) {
                     <label className="text-sm font-bold text-slate-800">Search titles, content, and tags<input value={librarySearch} onChange={(event) => setLibrarySearch(event.target.value)} type="search" className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600" /></label>
                     <label className="text-sm font-bold text-slate-800">Domain<select value={libraryDomain} onChange={(event) => setLibraryDomain(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600"><option value="all">All domains</option>{Array.from(new Set(releasedMemoryAids.map((item) => item.domain || item.domainId || '').filter(Boolean))).sort().map((domain) => <option key={domain} value={domain}>{domain}</option>)}</select></label>
                   </div>
-                  <p className="text-sm font-bold text-slate-700" role="status">Showing {aids.length} of {releasedMemoryAids.length} source-reviewed memory aids</p>
-                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; const aidText = aid.content || aid.text || ''; const aidTags = Array.isArray(aid.tags) ? aid.tags : []; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain || aid.domainId || 'Study aid'}{aid.type ? ' · ' + aid.type : ''}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="mt-3 min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aidText}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => { const safeHref = testPrepSafeHttpsUrl(source && source.url); return <li key={source.url || source.title} className="text-xs leading-relaxed text-slate-700">{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a> : <span className="font-black text-slate-900">{source.title}</span>}{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>; })}</ul></div>}{aidTags.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{aidTags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div>}</>}</article>; })}</div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><p role="status">Showing {aids.length} of {releasedMemoryAids.length} source-reviewed memory aids</p>{(librarySearch || libraryDomain !== 'all') && <button type="button" data-test-prep-clear-memory-aids-filter="true" onClick={() => { setLibrarySearch(''); setLibraryDomain('all'); }} className="rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Clear filter</button>}</div>
+                  <div className="grid gap-3 md:grid-cols-2">{aids.map((aid) => { const open = memoryAidOpen === aid.id; const aidText = aid.content || aid.text || ''; const aidTags = Array.isArray(aid.tags) ? aid.tags : []; return <article key={aid.id} className="rounded-xl border border-slate-300 bg-white p-4 shadow-sm"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-700">{aid.domain || aid.domainId || 'Study aid'}{aid.type ? ' · ' + aid.type : ''}</p><h5 className="mt-1 font-black text-slate-900">{aid.title}</h5></div><span className={'rounded-full border px-2 py-1 text-xs font-black ' + (aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'border-sky-300 bg-sky-50 text-sky-900' : 'border-amber-300 bg-amber-50 text-amber-900')}>{aid.reviewStatus === 'source-reviewed-editorial-pass' ? 'Source reviewed' : aid.reviewStatus === 'editorial-reviewed-source-pending' ? 'Editorial pass · source pending' : 'Review required'}</span></div><div className="mt-3 flex flex-wrap gap-2"><button type="button" aria-expanded={open} onClick={() => setMemoryAidOpen(open ? '' : aid.id)} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{open ? 'Hide aid' : 'Show aid'}</button><button type="button" data-test-prep-memory-aid-read={aid.id} aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(testPrepMemoryAidSpeechText(aid)); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read aid'}</button><button type="button" data-test-prep-memory-aid-note={aid.id} onClick={() => beginAnnotation({ targetType: 'memory-aid', targetId: aid.id, targetLabel: 'Memory aid: ' + aid.title })} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Add note</button></div>{open && <><p className="mt-4 whitespace-pre-line rounded-lg bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">{aidText}</p>{Array.isArray(aid.sourceDetails) && aid.sourceDetails.length > 0 && <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3"><h6 className="text-xs font-black uppercase tracking-wide text-slate-800">Sources</h6><ul className="mt-2 space-y-3">{aid.sourceDetails.map((source) => { const safeHref = testPrepSafeHttpsUrl(source && source.url); return <li key={source.url || source.title} className="text-xs leading-relaxed text-slate-700">{safeHref ? <a href={safeHref} target="_blank" rel="noopener noreferrer" className="font-black text-indigo-800 underline">{source.title}</a> : <span className="font-black text-slate-900">{source.title}</span>}{source.organization && <span className="font-bold"> - {source.organization}</span>}<p className="mt-1">Why this source is reputable: {source.whyReputable}</p></li>; })}</ul></div>}{aidTags.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{aidTags.slice(0, 10).map((tag) => <span key={tag} className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700">{tag}</span>)}</div>}</>}</article>; })}</div>
                   {!aids.length && <p className="rounded-xl border border-slate-300 bg-white p-6 text-center text-sm text-slate-700">No memory aids match those filters.</p>}
                 </section>;
               })()}
@@ -7747,11 +10043,11 @@ function TestPrepHub(props) {
                     <h4 id="written-response-workshops-title" className="mt-1 text-xl font-black text-slate-900">{learningLibrary.workshopLabel || 'Written-response workshops'}</h4>
                     <p className="mt-2 max-w-4xl text-sm leading-relaxed text-sky-950">{learningLibrary.workshopPracticeNote || 'Plan a complete response, then compare your reasoning with transparent self-check criteria and a sample outline. AlloFlow does not score written responses, and these independent workshops are not official ETS prompts, rubrics, scores, or predictions.'}</p>
                   </header>
-                  <p className="text-sm font-bold text-slate-700" role="status">Showing {visibleWorkshops.length} of {workshops.length} written-response workshops{query ? ' matching this route' : ''}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-slate-700"><p role="status">Showing {visibleWorkshops.length} of {workshops.length} written-response workshops{query ? ' matching this route' : ''}</p>{query && <button type="button" data-test-prep-clear-workshops-filter="true" onClick={() => setLibrarySearch('')} className="rounded-lg border border-sky-500 bg-white px-3 py-1.5 text-xs font-black text-sky-950 hover:bg-sky-50 focus:ring-2 focus:ring-sky-600">Clear filter</button>}</div>
                   <div className="space-y-5">
                     {visibleWorkshops.map((workshop, workshopIndex) => <article key={workshop.id} className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm sm:p-7">
                       <header className="border-b border-slate-200 pb-4">
-                        <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">Workshop {workshopIndex + 1}</span><span className="rounded-full bg-sky-100 px-2 py-1 text-xs font-black text-sky-900">{workshop.taskType}</span><span className="rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-900">Source reviewed</span></div>
+                        <div className="flex flex-wrap items-center justify-between gap-2"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-900">Workshop {workshopIndex + 1}</span><span className="rounded-full bg-sky-100 px-2 py-1 text-xs font-black text-sky-900">{workshop.taskType}</span><span className="rounded-full border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-900">Source reviewed</span></div><button type="button" data-test-prep-workshop-read={workshop.id} aria-pressed={readAloudActive} onClick={() => { if (readAloudActive) stopReadAloud(); else speakTestPrepText(testPrepWorkshopSpeechText(workshop)); }} className="min-h-11 rounded-lg border border-sky-400 bg-sky-50 px-3 py-1.5 text-xs font-black text-sky-950 hover:bg-sky-100 focus:ring-2 focus:ring-sky-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read prompt'}</button></div>
                         <h5 className="mt-3 text-xl font-black text-slate-900">{workshop.title}</h5>
                         <p className="mt-2 text-sm font-bold leading-relaxed text-slate-800">{workshop.prompt}</p>
                       </header>
@@ -7777,8 +10073,9 @@ function TestPrepHub(props) {
                         const timerSeconds = activeTimer ? workshopTimerState.remainingSeconds : Math.max(1, Number(workshop.estimatedMinutes) || 15) * 60;
                         const timerRunning = activeTimer && workshopTimerState.running;
                         const checkMap = workshopChecks[workshop.id] || {};
+                        const isChecked = (key) => (selectedPack && selectedPack.id) ? packStudyChecks['ws:' + workshop.id + ':' + key] === true : Boolean(checkMap[key]);
                         const totalCheckItems = workshop.successCriteria.length + workshop.selfCheck.length;
-                        const checkedCount = workshop.successCriteria.filter((_, idx) => Boolean(checkMap['c-' + idx])).length + workshop.selfCheck.filter((_, idx) => Boolean(checkMap['s-' + idx])).length;
+                        const checkedCount = workshop.successCriteria.filter((_, idx) => isChecked('c-' + idx)).length + workshop.selfCheck.filter((_, idx) => isChecked('s-' + idx)).length;
                         return <>
                           <section className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label={'Drafting workspace for ' + workshop.title}>
                             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -7791,16 +10088,32 @@ function TestPrepHub(props) {
                                 <button type="button" onClick={() => toggleWorkshopTimer(workshop)} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-950 focus:ring-2 focus:ring-indigo-600">{timerRunning ? 'Pause pacing timer' : 'Start pacing timer'}</button>
                                 <button type="button" onClick={() => resetWorkshopTimer(workshop)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-600">Reset timer</button>
                                 <button type="button" disabled={!draftText.trim()} onClick={() => saveInlineAnnotation({ targetType: 'constructed-response', targetId: workshop.id, targetLabel: 'Workshop: ' + workshop.title, text: draftText + (totalCheckItems > 0 ? '\n\n[Self-check: ' + checkedCount + '/' + totalCheckItems + ' criteria marked — unscored]' : '') })} className="min-h-11 rounded-lg border border-amber-500 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 disabled:opacity-50 focus:ring-2 focus:ring-amber-600">Save draft to study notes</button>
+                                <button type="button" data-test-prep-workshop-export-draft={workshop.id} disabled={!draftText.trim()} onClick={() => {
+                                  const md = ['# ' + workshop.title, '', '**Prompt:** ' + workshop.prompt, '', '## Practice Draft (Unscored)', '', draftText, '', totalCheckItems > 0 ? '_Self-check criteria marked: ' + checkedCount + '/' + totalCheckItems + '_' : ''].filter((x) => x !== undefined).join('\n');
+                                  try {
+                                    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                                    const url = URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = testPrepSlug(workshop.id, 'workshop') + '-draft.md';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    link.remove();
+                                    setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                                    announce('Exported workshop draft as Markdown.', 'info');
+                                  } catch (_) { announce('Could not download the draft in this browser.', 'warning'); }
+                                }} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-1.5 text-xs font-black text-indigo-950 disabled:opacity-50 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export draft (.md)</button>
+                                <button type="button" data-test-prep-workshop-clear-draft={workshop.id} disabled={!draftText.trim()} onClick={() => { setWorkshopDrafts((current) => { const next = Object.assign({}, current); delete next[workshop.id]; return writeTestPrepWorkshopDrafts(next); }); announce('Workshop draft cleared.', 'info'); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 disabled:opacity-50 hover:bg-slate-100 focus:ring-2 focus:ring-indigo-600">Clear draft</button>
                               </div>
                             </div>
-                            <textarea id={'workshop-draft-' + workshop.id} rows={5} value={draftText} onChange={(event) => { const nextVal = event.target.value; setWorkshopDrafts((current) => ({ ...current, [workshop.id]: nextVal })); }} placeholder="Draft your response or structured outline here, then open the self-check criteria below to compare..." className="mt-3 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm leading-relaxed text-slate-900 focus:ring-2 focus:ring-indigo-600" />
+                            <textarea id={'workshop-draft-' + workshop.id} rows={5} value={draftText} onChange={(event) => { const nextVal = event.target.value.slice(0, 20000); setWorkshopDrafts((current) => writeTestPrepWorkshopDrafts({ ...current, [workshop.id]: nextVal })); }} placeholder="Draft your response or structured outline here, then open the self-check criteria below to compare..." className="mt-3 w-full rounded-lg border border-slate-400 bg-white p-3 text-sm leading-relaxed text-slate-900 focus:ring-2 focus:ring-indigo-600" />
                           </section>
                           {(workshop.successCriteria.length > 0 || workshop.commonPitfalls.length > 0 || workshop.sampleOutline.length > 0 || workshop.selfCheck.length > 0) && <details className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
                             <summary className="cursor-pointer font-black text-amber-950 focus:ring-2 focus:ring-amber-700">Open self-check criteria{workshop.sampleOutline.length > 0 ? ' and sample outline' : ''}{totalCheckItems > 0 ? ' (' + checkedCount + '/' + totalCheckItems + ' checked)' : ''}</summary>
                             <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                              {workshop.successCriteria.length > 0 && <section><h6 className="font-black text-emerald-950">Success criteria (self-check)</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion, criterionIndex) => <li key={criterionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={Boolean(checkMap['c-' + criterionIndex])} onChange={() => toggleWorkshopCheck(workshop.id, 'c-' + criterionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-emerald-700 focus:ring-emerald-600" /><span>{criterion}</span></label></li>)}</ul></section>}
+                              {workshop.successCriteria.length > 0 && <section><h6 className="font-black text-emerald-950">Success criteria (self-check)</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion, criterionIndex) => <li key={criterionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={isChecked('c-' + criterionIndex)} onChange={() => toggleWorkshopCheck(workshop.id, 'c-' + criterionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-emerald-700 focus:ring-emerald-600" /><span>{criterion}</span></label></li>)}</ul></section>}
                               {workshop.commonPitfalls.length > 0 && <section><h6 className="font-black text-rose-950">Common pitfalls</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.commonPitfalls.map((pitfall, pitfallIndex) => <li key={pitfallIndex}>{pitfall}</li>)}</ul></section>}
-                              {workshop.selfCheck.length > 0 && <section><h6 className="font-black text-slate-900">Self-check questions</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.selfCheck.map((question, questionIndex) => <li key={questionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={Boolean(checkMap['s-' + questionIndex])} onChange={() => toggleWorkshopCheck(workshop.id, 's-' + questionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" /><span>{question}</span></label></li>)}</ul></section>}
+                              {workshop.selfCheck.length > 0 && <section><h6 className="font-black text-slate-900">Self-check questions</h6><ul className="mt-2 space-y-2 text-sm leading-relaxed text-slate-800">{workshop.selfCheck.map((question, questionIndex) => <li key={questionIndex}><label className="flex cursor-pointer items-start gap-2"><input type="checkbox" checked={isChecked('s-' + questionIndex)} onChange={() => toggleWorkshopCheck(workshop.id, 's-' + questionIndex)} className="mt-1 h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-600" /><span>{question}</span></label></li>)}</ul></section>}
                             </div>
                             {workshop.sampleOutline.length > 0 && <section className="mt-4 rounded-lg bg-white p-4"><h6 className="font-black text-slate-900">Sample outline</h6><ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.sampleOutline.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ol></section>}
                           </details>}
@@ -7839,7 +10152,12 @@ function TestPrepHub(props) {
                   <header className="border-b border-slate-200 pb-5">
                     <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wider text-indigo-700">{chapter.domain || chapter.unitId || 'Study unit'} {'\u00B7'} Complete native study chapter</p><h4 id="native-chapter-title" tabIndex={-1} className="mt-1 text-2xl font-black text-slate-900">{chapter.title}</h4></div><span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-900">Native content complete</span></div>
                     {(chapter.summary || chapter.introduction) && <p className="mt-3 max-w-4xl leading-relaxed text-slate-700">{chapter.summary || chapter.introduction}</p>}
-                    <p className="mt-3 text-sm font-bold text-slate-700" role="status" aria-live="polite">{completedCount} of {(chapter.sections || []).length} sections complete</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <p className="text-sm font-bold text-slate-700" role="status" aria-live="polite">{completedCount} of {(chapter.sections || []).length} sections complete</p>
+                      {(chapter.sections || []).length > 0 && completedCount < chapter.sections.length && (
+                        <button type="button" data-test-prep-chapter-mark-all="true" onClick={() => markAllNativeChapterSections(chapter)} className="min-h-9 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-600">Mark all sections complete</button>
+                      )}
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-3">
                       <button type="button" aria-pressed={readAloudActive} onClick={() => {
                         if (readAloudActive) { stopReadAloud(); announce('Chapter read-aloud stopped.', 'info'); }
@@ -7847,6 +10165,21 @@ function TestPrepHub(props) {
                       }} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-4 py-2 font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? 'Stop chapter read-aloud' : 'Read chapter aloud'}</button>
                       {targetedCount > 0 && <button type="button" onClick={() => startTargetedPractice(chapter.skillId)} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-black text-white focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Practice this skill ({Math.min(20, targetedCount)} questions)</button>}
                       <button type="button" onClick={() => { setLibraryMode('flashcards'); setLibraryChapterId(''); setLibraryDomain(chapter.domain || 'all'); setFlashcardIndex(0); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-black text-slate-900 focus:ring-2 focus:ring-indigo-600">Study flashcards</button>
+                      <button type="button" data-test-prep-chapter-export="true" onClick={() => {
+                        const md = testPrepBuildChapterStudySheetMarkdown(selectedPack.shortTitle || selectedPack.title, chapter);
+                        try {
+                          const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = testPrepSlug((selectedPack.id || 'pack') + '-' + (chapter.id || 'chapter'), 'chapter-study-sheet') + '.md';
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                          announce('Exported chapter study sheet as Markdown.', 'info');
+                        } catch (_) { announce('Could not download the chapter study sheet in this browser.', 'warning'); }
+                      }} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export study sheet (.md)</button>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button type="button" disabled={chapterIndex <= 0} onClick={() => setLibraryChapterId(learningLibrary.chapters[chapterIndex - 1].id)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Previous chapter</button>
@@ -7863,10 +10196,11 @@ function TestPrepHub(props) {
                     <ol className="mt-2 grid gap-2 sm:grid-cols-2">{(chapter.sections || []).map((section, index) => {
                       const targetId = 'native-' + testPrepSlug(section.id, 'section-' + (index + 1));
                       const sectionHeading = section.heading || section.title || ('Lesson ' + (index + 1));
+                      const tocDone = nativeChapterProgress[String(section.runtimeSectionId || section.id || '')] === true;
                       return <li key={section.id}><button type="button" onClick={() => {
                         const target = document.getElementById(targetId);
                         if (target) { target.scrollIntoView({ block: 'start' }); target.focus({ preventScroll: true }); }
-                      }} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-600">{index + 1}. {sectionHeading}</button></li>;
+                      }} className={'w-full rounded-lg border px-3 py-2 text-left text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (tocDone ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-slate-300 bg-white text-indigo-900')}>{index + 1}. {sectionHeading}{tocDone ? ' \u2713' : ''}</button></li>;
                     })}</ol>
                   </nav>
 
@@ -7919,23 +10253,63 @@ function TestPrepHub(props) {
                         {(section.keyTerms || []).length > 0 && <div role="group" className="mt-3 flex flex-wrap gap-2" aria-label={'Key terms for ' + sectionHeading}>{section.keyTerms.map((term) => <span key={term} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-900">{term}</span>)}</div>}
                         {sectionRoute && <div role="group" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-violet-300 bg-violet-50 p-4" aria-label={'Practice route for ' + sectionHeading}><div><p className="text-xs font-black uppercase tracking-wide text-violet-800">Section practice route</p><p className="mt-1 text-sm font-bold text-violet-950">{sectionRoute.foundationItemCount || 0} foundation &middot; {sectionRoute.depthItemCount || 0} depth &middot; {sectionRoute.transferItemCount || 0} transfer questions</p><p className="mt-1 text-xs text-violet-900">Use the same target, method, conditions, and conclusion move in three levels of context.</p></div><button type="button" onClick={() => startStudyRoute({ title: sectionHeading + ' - section practice', itemIds: sectionRoute.itemIds })} className="min-h-11 rounded-lg bg-violet-800 px-4 py-2 text-sm font-black text-white hover:bg-violet-900 focus:ring-2 focus:ring-violet-700 focus:ring-offset-2">Start section practice</button></div>}
                         {topicDrills.length > 0 && <details className="mt-3 rounded-xl border border-violet-200 bg-white p-3"><summary className="min-h-11 cursor-pointer py-2 font-black text-violet-950 focus:ring-2 focus:ring-violet-700">Open topic drills ({topicDrills.length})</summary><div className="mt-3 grid gap-2">{topicDrills.map((drill) => <div key={drill.topicId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3"><div><p className="text-sm font-black text-slate-900">{drill.topicId} - {drill.label}</p><p className="text-xs text-slate-600">{drill.itemIds.length} linked questions</p></div><button type="button" onClick={() => startStudyRoute({ title: drill.topicId + ' - topic drill', itemIds: drill.itemIds })} className="min-h-11 rounded-lg border border-violet-700 bg-white px-3 py-2 text-xs font-black text-violet-950 hover:bg-violet-50 focus:ring-2 focus:ring-violet-700">Practice topic</button></div>)}</div></details>}
-                        <div className="mt-4 flex justify-end"><button type="button" aria-pressed={complete} onClick={() => toggleNativeChapterSection(section)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (complete ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-indigo-400 bg-white text-indigo-900')}>{complete ? 'Section complete \u2713' : 'Mark section complete'}</button></div>
+                        <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+                          <button type="button" data-test-prep-chapter-section-read={section.id} aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepNativeSectionSpeechText(section, index))} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-xs font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read section'}</button>
+                          <button type="button" data-test-prep-chapter-section-note={section.id} onClick={() => beginAnnotation({ targetType: 'chapter-section', targetId: section.id, targetLabel: chapter.title + ' · ' + sectionHeading })} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Add note</button>
+                          <button type="button" aria-pressed={complete} onClick={() => toggleNativeChapterSection(section)} className={'min-h-11 rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (complete ? 'border-emerald-600 bg-emerald-700 text-white' : 'border-indigo-400 bg-white text-indigo-900')}>{complete ? 'Section complete \u2713' : 'Mark section complete'}</button>
+                        </div>
                       </section>;
                     })}
                   </section>
 
                   <section className="space-y-4" aria-labelledby="chapter-checks-title">
-                    <div><h5 id="chapter-checks-title" className="text-lg font-black text-slate-900">Knowledge checks</h5><p className="mt-1 text-sm text-slate-700">Answer each question, check the response, and use the rationale to correct or strengthen your reasoning.</p></div>
-                    {(chapter.knowledgeChecks || []).map((check, checkIndex) => {
-                      const hasInlineChoices = Array.isArray(check.choices) && check.choices.length > 0;
-                      if (!hasInlineChoices && Array.isArray(check.itemIds) && check.itemIds.length > 0) {
-                        return <div key={check.id || checkIndex} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-800">Retrieval check {checkIndex + 1}</p><p className="mt-1 text-sm font-black text-slate-900">{check.title || 'Unscored retrieval check'}</p><p className="mt-1 text-xs text-slate-700">{check.itemIds.length} linked practice question{check.itemIds.length === 1 ? '' : 's'} (unscored)</p></div><button type="button" onClick={() => startStudyRoute({ title: (check.title || chapter.title + ' - retrieval check') + ' (' + (checkIndex + 1) + ')', itemIds: check.itemIds })} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Start retrieval check</button></div>;
-                      }
-                      if (!hasInlineChoices) return null;
-                      const selected = chapterCheckAnswers[check.id];
-                      const revealed = chapterCheckRevealed[check.id] === true;
-                      return <fieldset key={check.id} disabled={revealed} className="rounded-xl border border-slate-300 p-4"><legend className="px-1 font-black text-slate-900">Check {checkIndex + 1}: {check.prompt}</legend><div className="mt-3 space-y-2">{check.choices.map((choice, choiceIndex) => { const inputId = check.id + '-choice-' + choiceIndex; const correct = revealed && choiceIndex === check.answerIndex; const missed = revealed && choiceIndex === selected && choiceIndex !== check.answerIndex; return <label key={inputId} htmlFor={inputId} className={'flex min-h-11 items-start gap-2 rounded-lg border p-3 text-sm focus-within:ring-2 focus-within:ring-indigo-600 ' + (correct ? 'border-emerald-500 bg-emerald-50 text-emerald-950' : missed ? 'border-rose-500 bg-rose-50 text-rose-950' : selected === choiceIndex ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-300 bg-white text-slate-900')}><input id={inputId} type="radio" name={check.id} checked={selected === choiceIndex} onChange={() => setChapterCheckAnswers((previous) => Object.assign({}, previous, { [check.id]: choiceIndex }))} className="mt-0.5 h-4 w-4 accent-indigo-700" /><span><strong>{String.fromCharCode(65 + choiceIndex)}.</strong> {choice}</span></label>; })}</div>{!revealed ? <button type="button" disabled={selected == null} onClick={() => setChapterCheckRevealed((previous) => Object.assign({}, previous, { [check.id]: true }))} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Check answer</button> : <div className={'mt-3 rounded-lg border p-3 text-sm ' + (selected === check.answerIndex ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950')} role="status"><p className="font-black">{selected === check.answerIndex ? 'Correct' : 'Review the reasoning'}</p><p className="mt-1 leading-relaxed">{check.rationale}</p></div>}</fieldset>;
-                    })}
+                    {(() => {
+                      const allChecks = chapter.knowledgeChecks || [];
+                      const inlineChecks = allChecks.filter((check) => Array.isArray(check.choices) && check.choices.length > 0);
+                      const needsReviewInline = inlineChecks.filter((check) => !(chapterCheckRevealed[check.id] === true && chapterCheckAnswers[check.id] === check.answerIndex));
+                      const missedInline = inlineChecks.filter((check) => chapterCheckRevealed[check.id] === true && chapterCheckAnswers[check.id] !== check.answerIndex);
+                      const visibleChecks = chapterChecksNeedsReviewOnly
+                        ? allChecks.filter((check) => {
+                            const hasInline = Array.isArray(check.choices) && check.choices.length > 0;
+                            if (!hasInline) return true;
+                            return !(chapterCheckRevealed[check.id] === true && chapterCheckAnswers[check.id] === check.answerIndex);
+                          })
+                        : allChecks;
+                      return <>
+                        <div className="flex flex-wrap items-end justify-between gap-2">
+                          <div><h5 id="chapter-checks-title" className="text-lg font-black text-slate-900">Knowledge checks</h5><p className="mt-1 text-sm text-slate-700">Answer each question, check the response, and use the rationale to correct or strengthen your reasoning.</p></div>
+                          {inlineChecks.length > 0 && <div className="flex flex-wrap items-center gap-2">
+                            <button type="button" data-test-prep-chapter-checks-filter="true" aria-pressed={chapterChecksNeedsReviewOnly} onClick={() => setChapterChecksNeedsReviewOnly((value) => !value)} className={'rounded-lg border px-3 py-1.5 text-xs font-black focus:ring-2 focus:ring-indigo-600 ' + (chapterChecksNeedsReviewOnly ? 'border-rose-600 bg-rose-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}>
+                              {chapterChecksNeedsReviewOnly ? 'Showing needs review (' + needsReviewInline.length + '/' + inlineChecks.length + ')' : 'Needs review (' + needsReviewInline.length + '/' + inlineChecks.length + ')'}
+                            </button>
+                            {missedInline.length > 0 && <button type="button" data-test-prep-retry-missed-checks="true" onClick={() => {
+                              const missedSet = new Set(missedInline.map((check) => check.id));
+                              setChapterCheckRevealed((previous) => {
+                                const next = Object.assign({}, previous);
+                                missedSet.forEach((id) => { delete next[id]; });
+                                return next;
+                              });
+                              setChapterCheckAnswers((previous) => {
+                                const next = Object.assign({}, previous);
+                                missedSet.forEach((id) => { delete next[id]; });
+                                return next;
+                              });
+                            }} className="rounded-lg border border-amber-500 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-600">Retry missed ({missedInline.length})</button>}
+                          </div>}
+                        </div>
+                        {visibleChecks.length === 0 && inlineChecks.length > 0 && <p className="rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm font-bold text-emerald-950" role="status">All {inlineChecks.length} inline knowledge check{inlineChecks.length === 1 ? '' : 's'} in this chapter are answered correctly.</p>}
+                        {visibleChecks.map((check, checkIndex) => {
+                          const hasInlineChoices = Array.isArray(check.choices) && check.choices.length > 0;
+                          if (!hasInlineChoices && Array.isArray(check.itemIds) && check.itemIds.length > 0) {
+                            return <div key={check.id || checkIndex} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4"><div><p className="text-xs font-black uppercase tracking-wide text-indigo-800">Retrieval check {checkIndex + 1}</p><p className="mt-1 text-sm font-black text-slate-900">{check.title || 'Unscored retrieval check'}</p><p className="mt-1 text-xs text-slate-700">{check.itemIds.length} linked practice question{check.itemIds.length === 1 ? '' : 's'} (unscored)</p></div><button type="button" onClick={() => startStudyRoute({ title: (check.title || chapter.title + ' - retrieval check') + ' (' + (checkIndex + 1) + ')', itemIds: check.itemIds })} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Start retrieval check</button></div>;
+                          }
+                          if (!hasInlineChoices) return null;
+                          const selected = chapterCheckAnswers[check.id];
+                          const revealed = chapterCheckRevealed[check.id] === true;
+                          return <div key={check.id} data-test-prep-chapter-check={check.id} className="rounded-xl border border-slate-300 p-4"><div className="mb-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-black uppercase tracking-wide text-indigo-800">Check {checkIndex + 1}</span><button type="button" data-test-prep-chapter-check-read={check.id} aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepChapterCheckSpeechText(check, revealed, selected))} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-1.5 text-xs font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : revealed ? 'Read explanation' : 'Read check'}</button></div><fieldset disabled={revealed}><legend className="font-black text-slate-900">{check.prompt}</legend><div className="mt-3 space-y-2">{check.choices.map((choice, choiceIndex) => { const inputId = check.id + '-choice-' + choiceIndex; const correct = revealed && choiceIndex === check.answerIndex; const missed = revealed && choiceIndex === selected && choiceIndex !== check.answerIndex; return <label key={inputId} htmlFor={inputId} className={'flex min-h-11 items-start gap-2 rounded-lg border p-3 text-sm focus-within:ring-2 focus-within:ring-indigo-600 ' + (correct ? 'border-emerald-500 bg-emerald-50 text-emerald-950' : missed ? 'border-rose-500 bg-rose-50 text-rose-950' : selected === choiceIndex ? 'border-indigo-500 bg-indigo-50 text-indigo-950' : 'border-slate-300 bg-white text-slate-900')}><input id={inputId} type="radio" name={check.id} checked={selected === choiceIndex} onChange={() => setChapterCheckAnswers((previous) => Object.assign({}, previous, { [check.id]: choiceIndex }))} className="mt-0.5 h-4 w-4 accent-indigo-700" /><span><strong>{String.fromCharCode(65 + choiceIndex)}.</strong> {choice}</span></label>; })}</div>{!revealed ? <button type="button" disabled={selected == null} onClick={() => setChapterCheckRevealed((previous) => Object.assign({}, previous, { [check.id]: true }))} className="mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-indigo-600">Check answer</button> : <div className={'mt-3 rounded-lg border p-3 text-sm ' + (selected === check.answerIndex ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : 'border-amber-300 bg-amber-50 text-amber-950')} role="status"><p className="font-black">{selected === check.answerIndex ? 'Correct' : 'Review the reasoning'}</p><p className="mt-1 leading-relaxed">{check.rationale}</p></div>}</fieldset></div>;
+                        })}
+                      </>;
+                    })()}
                   </section>
 
                   {chapter.reflectiveCoda && <aside className="rounded-xl border border-cyan-300 bg-cyan-50 p-4" aria-labelledby="chapter-reflective-coda-title">
@@ -7960,6 +10334,16 @@ function TestPrepHub(props) {
                           : <span className="text-slate-800">{text}</span>}</li>;
                     })}</ol>
                   </section>
+
+                  <nav className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5" aria-label="Chapter navigation">
+                    <button type="button" data-test-prep-chapter-footer-prev="true" disabled={chapterIndex <= 0} onClick={() => { stopReadAloud(); setLibraryChapterId(learningLibrary.chapters[chapterIndex - 1].id); setTimeout(() => { const el = document.getElementById('native-chapter-title'); if (el && typeof el.focus === 'function') el.focus(); }, 0); }} className="min-h-11 rounded-xl border border-slate-400 bg-white px-4 py-2 text-sm font-black text-slate-900 hover:bg-slate-100 disabled:opacity-40 focus:ring-2 focus:ring-indigo-600">
+                      {'\u2190'} {chapterIndex > 0 ? ('Previous: ' + learningLibrary.chapters[chapterIndex - 1].title) : 'Previous chapter'}
+                    </button>
+                    <button type="button" onClick={() => { stopReadAloud(); setLibraryChapterId(''); }} className="min-h-11 rounded-xl border border-indigo-400 bg-indigo-50 px-4 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">All chapters</button>
+                    <button type="button" data-test-prep-chapter-footer-next="true" disabled={chapterIndex >= learningLibrary.chapters.length - 1} onClick={() => { stopReadAloud(); setLibraryChapterId(learningLibrary.chapters[chapterIndex + 1].id); setTimeout(() => { const el = document.getElementById('native-chapter-title'); if (el && typeof el.focus === 'function') el.focus(); }, 0); }} className="min-h-11 rounded-xl bg-indigo-700 px-4 py-2 text-sm font-black text-white hover:bg-indigo-800 disabled:opacity-40 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
+                      {chapterIndex < learningLibrary.chapters.length - 1 ? ('Next: ' + learningLibrary.chapters[chapterIndex + 1].title) : 'Next chapter'} {'\u2192'}
+                    </button>
+                  </nav>
                 </article>;
               })()}
 
@@ -7976,13 +10360,34 @@ function TestPrepHub(props) {
                   <label className="text-sm font-bold text-slate-800">Record type<select value={annotationKind} onChange={(event) => setAnnotationKind(event.target.value === 'highlight' ? 'highlight' : 'note')} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-amber-600"><option value="note">Note</option><option value="highlight">Highlight or key quotation</option></select></label>
                   <label className="text-sm font-bold text-slate-800">Highlight color<select value={annotationColor} onChange={(event) => setAnnotationColor(event.target.value)} disabled={annotationKind !== 'highlight'} className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal disabled:bg-slate-100 focus:ring-2 focus:ring-amber-600"><option value="yellow">Yellow</option><option value="blue">Blue</option><option value="green">Green</option><option value="pink">Pink</option></select></label>
                 </div>
-                <label className="mt-4 block text-sm font-bold text-slate-800">{annotationKind === 'highlight' ? 'Key passage and why it matters' : 'Study note'}<textarea aria-label="Study annotation text" value={annotationDraft} onChange={(event) => setAnnotationDraft(event.target.value.slice(0, 4000))} rows="5" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-amber-600" placeholder="Write the idea in your own words, record a question, or paste a short key passage with context." /></label>
-                <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" disabled={!annotationDraft.trim()} onClick={saveAnnotationDraft} className="min-h-11 rounded-lg bg-amber-700 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2">{annotationEditingId ? 'Update annotation' : 'Save annotation'}</button>{annotationEditingId && <button type="button" onClick={() => { setAnnotationDraft(''); setAnnotationEditingId(''); setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' }); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-amber-600">Cancel editing</button>}<span className="text-xs font-bold text-slate-600">{annotationDraft.length.toLocaleString()} / 4,000 characters</span></div>
+                <label className="mt-4 block text-sm font-bold text-slate-800">{annotationKind === 'highlight' ? 'Key passage and why it matters' : 'Study note'}<textarea aria-label="Study annotation text" value={annotationDraft} onChange={(event) => setAnnotationDraft(event.target.value.slice(0, 4000))} onKeyDown={(event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && annotationDraft.trim()) { event.preventDefault(); saveAnnotationDraft(); } }} rows="5" className="mt-1 w-full rounded-lg border border-slate-400 px-3 py-2 font-normal focus:ring-2 focus:ring-amber-600" placeholder="Write the idea in your own words, record a question, or paste a short key passage with context. (Ctrl+Enter to save)" /></label>
+                <div className="mt-4 flex flex-wrap items-center gap-3"><button type="button" disabled={!annotationDraft.trim()} onClick={saveAnnotationDraft} className="min-h-11 rounded-lg bg-amber-700 px-4 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2">{annotationEditingId ? 'Update annotation' : 'Save annotation'}</button>{annotationEditingId && <button type="button" onClick={() => { setAnnotationDraft(''); setAnnotationEditingId(''); setAnnotationTarget({ targetType: 'general', targetId: '', targetLabel: 'General pack note' }); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-amber-600">Cancel editing</button>}<span className="text-xs font-bold text-slate-600">{annotationDraft.length.toLocaleString()} / 4,000 characters · Ctrl+Enter to save</span></div>
               </section>
-              <section aria-labelledby="saved-annotations-title"><div className="flex flex-wrap items-end justify-between gap-2"><div><h4 id="saved-annotations-title" className="text-lg font-black text-slate-900">Saved for {selectedPack.shortTitle}</h4><p className="text-sm text-slate-700">{packAnnotations.length} annotation{packAnnotations.length === 1 ? '' : 's'} · searchable from Learning library → Search all</p></div><button type="button" onClick={() => beginAnnotation()} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-600">New general note</button></div>
-                <div className="mt-3 grid gap-3 md:grid-cols-2">{packAnnotations.slice().sort((left, right) => right.updatedAt - left.updatedAt).map((record) => { const colorClass = record.kind !== 'highlight' ? 'border-slate-300 bg-white' : record.color === 'blue' ? 'border-sky-300 bg-sky-50' : record.color === 'green' ? 'border-emerald-300 bg-emerald-50' : record.color === 'pink' ? 'border-pink-300 bg-pink-50' : 'border-amber-300 bg-amber-50'; return <article key={record.id} className={'rounded-xl border p-4 shadow-sm ' + colorClass}><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/80 px-2 py-1 text-xs font-black text-slate-800">{record.kind === 'highlight' ? 'Highlight' : 'Note'}</span><span className="text-xs font-bold text-slate-600">{record.targetType.replace(/-/g, ' ')}</span></div><h5 className="mt-2 font-black text-slate-900">{record.targetLabel}</h5><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{record.text}</p><p className="mt-3 text-xs text-slate-600">Updated {record.updatedAt ? new Date(record.updatedAt).toLocaleString() : 'date unavailable'}</p><div className="mt-3 flex gap-2"><button type="button" onClick={() => editAnnotation(record)} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-600">Edit</button><button type="button" onClick={() => removeAnnotation(record.id)} className="min-h-11 rounded-lg border border-rose-400 bg-white px-3 py-2 text-sm font-bold text-rose-900 focus:ring-2 focus:ring-rose-600">Delete</button></div></article>; })}</div>
-                {!packAnnotations.length && <p className="mt-3 rounded-xl border border-dashed border-slate-400 bg-white p-6 text-center text-sm text-slate-700">No annotations for this pack yet. Add a general note here, or attach one directly from a practice question or chapter.</p>}
-              </section>
+              {(() => {
+                const q = annotationSearch.trim().toLowerCase();
+                const filteredAnnotations = packAnnotations
+                  .filter((record) => annotationKindFilter === 'all' || (record.kind === 'highlight' ? 'highlight' : 'note') === annotationKindFilter)
+                  .filter((record) => !q || String(record.targetLabel || '').toLowerCase().includes(q) || String(record.text || '').toLowerCase().includes(q))
+                  .slice()
+                  .sort((left, right) => right.updatedAt - left.updatedAt);
+                const hasFilter = Boolean(q || annotationKindFilter !== 'all');
+                return <section aria-labelledby="saved-annotations-title"><div className="flex flex-wrap items-end justify-between gap-2"><div><h4 id="saved-annotations-title" className="text-lg font-black text-slate-900">Saved for {selectedPack.shortTitle}</h4><p className="text-sm text-slate-700">{filteredAnnotations.length}{hasFilter ? ' of ' + packAnnotations.length : ''} annotation{packAnnotations.length === 1 ? '' : 's'} · searchable from Learning library → Search all</p></div><div className="flex flex-wrap gap-2">{packAnnotations.length > 0 && <button type="button" data-test-prep-notes-export="true" onClick={() => exportPackAnnotationsMarkdown(filteredAnnotations.length ? filteredAnnotations : packAnnotations)} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Export notes (.md)</button>}<button type="button" onClick={() => beginAnnotation()} className="min-h-11 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-black text-amber-950 focus:ring-2 focus:ring-amber-600">New general note</button></div></div>
+                  {packAnnotations.length > 0 && (
+                    <div className="mt-3 flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <label className="min-w-48 flex-1 text-xs font-bold text-slate-800">Filter notes & highlights<input type="search" data-test-prep-notes-search="true" value={annotationSearch} onChange={(event) => setAnnotationSearch(event.target.value)} placeholder="Search by topic or note text..." className="mt-1 min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-normal focus:ring-2 focus:ring-amber-600" /></label>
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter annotations by type">
+                        {[['all', 'All'], ['note', 'Notes'], ['highlight', 'Highlights']].map(([id, label]) => (
+                          <button key={id} type="button" data-test-prep-notes-kind-filter={id} aria-pressed={annotationKindFilter === id} onClick={() => setAnnotationKindFilter(id)} className={'min-h-11 rounded-lg border px-3 py-2 text-xs font-black focus:ring-2 focus:ring-amber-600 ' + (annotationKindFilter === id ? 'border-amber-700 bg-amber-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')}>{label}</button>
+                        ))}
+                        {hasFilter && <button type="button" data-test-prep-notes-clear-filter="true" onClick={() => { setAnnotationSearch(''); setAnnotationKindFilter('all'); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-amber-600">Clear filter</button>}
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">{filteredAnnotations.map((record) => { const colorClass = record.kind !== 'highlight' ? 'border-slate-300 bg-white' : record.color === 'blue' ? 'border-sky-300 bg-sky-50' : record.color === 'green' ? 'border-emerald-300 bg-emerald-50' : record.color === 'pink' ? 'border-pink-300 bg-pink-50' : 'border-amber-300 bg-amber-50'; return <article key={record.id} data-test-prep-annotation-card={record.id} className={'rounded-xl border p-4 shadow-sm ' + colorClass}><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-white/80 px-2 py-1 text-xs font-black text-slate-800">{record.kind === 'highlight' ? 'Highlight' : 'Note'}</span><span className="text-xs font-bold text-slate-600">{record.targetType.replace(/-/g, ' ')}</span></div><h5 className="mt-2 font-black text-slate-900">{record.targetLabel}</h5><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{record.text}</p><p className="mt-3 text-xs text-slate-600">Updated {record.updatedAt ? new Date(record.updatedAt).toLocaleString() : 'date unavailable'}</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" data-test-prep-annotation-read={record.id} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepAnnotationSpeechText(record))} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudActive ? 'Stop reading' : 'Read'}</button><button type="button" onClick={() => editAnnotation(record)} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-600">Edit</button><button type="button" onClick={() => removeAnnotation(record.id)} className="min-h-11 rounded-lg border border-rose-400 bg-white px-3 py-2 text-sm font-bold text-rose-900 focus:ring-2 focus:ring-rose-600">Delete</button></div></article>; })}</div>
+                  {!packAnnotations.length && <p className="mt-3 rounded-xl border border-dashed border-slate-400 bg-white p-6 text-center text-sm text-slate-700">No annotations for this pack yet. Add a general note here, or attach one directly from a practice question or chapter.</p>}
+                  {packAnnotations.length > 0 && !filteredAnnotations.length && <p className="mt-3 rounded-xl border border-dashed border-slate-400 bg-white p-6 text-center text-sm text-slate-700" role="status">No notes or highlights match the current filter.</p>}
+                </section>;
+              })()}
             </div>
           )}
           {tab === 'progress' && (
@@ -7991,6 +10396,15 @@ function TestPrepHub(props) {
                 <div><h3 className="text-xl font-black text-slate-900">Practice progress</h3><p className="mt-1 text-sm text-slate-700">Stored only in this browser. Results describe practice activity, not credential readiness, an official score, or a pass prediction.</p></div>
                 <div className="flex flex-wrap items-end gap-2">
                   <label className="text-sm font-bold text-slate-800">Test pack<select value={selectedPackContextId} onChange={(event) => setSelectedPackId(event.target.value)} className="mt-1 block min-h-11 rounded-lg border border-slate-400 bg-white px-3 py-2 font-normal focus:ring-2 focus:ring-indigo-600">{packs.map((pack) => <option key={pack.id} value={pack.id}>{pack.shortTitle}</option>)}</select></label>
+                  <button type="button" data-test-prep-progress-read="true" aria-pressed={readAloudActive} onClick={() => readAloudActive ? stopReadAloud() : speakTestPrepText(testPrepProgressSummarySpeechText(selectedPack ? (selectedPack.shortTitle || selectedPack.title) : '', progressAnalytics, domainById, studyPlanStatus))} className="min-h-11 rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{readAloudActive ? '⏹ Stop audio' : '🔊 Read summary'}</button>
+                  <button type="button" data-test-prep-progress-copy="true" onClick={() => {
+                    const text = testPrepProgressSummarySpeechText(selectedPack ? (selectedPack.shortTitle || selectedPack.title) : '', progressAnalytics, domainById, studyPlanStatus);
+                    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                      Promise.resolve(navigator.clipboard.writeText(text)).then(() => announce('Progress summary copied to clipboard.', 'success')).catch(() => announce('Could not copy progress summary in this browser.', 'warning'));
+                    } else {
+                      announce('Clipboard copy is unavailable in this browser.', 'info');
+                    }
+                  }} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600">Copy summary</button>
                   <button type="button" onClick={exportPracticeProgress} className="min-h-11 rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus:ring-2 focus:ring-indigo-600">Export progress</button>
                   <label htmlFor="test-prep-progress-import" className="inline-flex min-h-11 cursor-pointer items-center rounded-lg border border-indigo-400 bg-white px-3 py-2 text-sm font-black text-indigo-900 focus-within:ring-2 focus-within:ring-indigo-600">Import progress<input id="test-prep-progress-import" type="file" accept="application/json,.json" onChange={importPracticeProgressFile} className="sr-only" /></label>
                 </div>
@@ -8014,9 +10428,85 @@ function TestPrepHub(props) {
               </div>
               {totalAttempts > 0 && (
                 <>
+                  {(() => {
+                    const triage = testPrepBuildProgressTriage(
+                      learningLibrary,
+                      progressAnalytics,
+                      packAttempts,
+                      selectedPack ? selectedPack.items : [],
+                      studyPlanLayers
+                    );
+                    if (!triage.hasTriage) return null;
+                    return <section data-test-prep-progress-triage="true" className="rounded-2xl border border-rose-300 bg-rose-50/60 p-5 shadow-sm" aria-labelledby="progress-triage-title">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-wide text-rose-800">Missed-pattern triage</p>
+                          <h4 id="progress-triage-title" className="mt-1 text-lg font-black text-slate-900">Weakest domains & recommended misconception playbooks</h4>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-700">Derived from your local practice misses only ({triage.unresolvedMissedCount} unresolved missed question{triage.unresolvedMissedCount === 1 ? '' : 's'}); use these shortcuts to focus your next study block.</p>
+                        </div>
+                        {triage.missedItemIds.length > 0 && <div className="flex flex-wrap items-center gap-2">
+                          <button type="button" data-test-prep-triage-export-missed="true" onClick={() => {
+                            const missedObjs = triage.missedItemIds.map((id) => itemLookup.get(id)).filter(Boolean);
+                            const md = testPrepBuildMissedStudySheetMarkdown(selectedPack ? (selectedPack.shortTitle || selectedPack.title) : 'Test Prep', 'Unresolved missed items across pack', missedObjs, {});
+                            try {
+                              const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+                              const url = URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = testPrepSlug((selectedPack ? selectedPack.id : 'pack') + '-unresolved-missed', 'unresolved-missed') + '.md';
+                              document.body.appendChild(link);
+                              link.click();
+                              link.remove();
+                              setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+                              announce('Exported unresolved missed questions study sheet as Markdown.', 'info');
+                            } catch (_) { announce('Could not download the study sheet in this browser.', 'warning'); }
+                          }} className="shrink-0 rounded-xl border border-rose-500 bg-white px-3.5 py-2 text-xs font-black text-rose-950 shadow-sm hover:bg-rose-50 focus:ring-2 focus:ring-rose-700">Export missed (.md)</button>
+                          <button type="button" data-test-prep-drill-missed="all" onClick={() => startStudyPlanSet('Missed-item review drill', triage.missedItemIds.slice(0, 25))} className="shrink-0 rounded-xl bg-rose-800 px-3.5 py-2 text-xs font-black text-white shadow-sm hover:bg-rose-900 focus:ring-2 focus:ring-rose-700">Drill missed items ({Math.min(25, triage.missedItemIds.length)})</button>
+                        </div>}
+                      </div>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        {triage.weakDomains.length > 0 && <div className="rounded-xl border border-slate-200 bg-white p-4">
+                          <h5 className="text-xs font-black uppercase tracking-wide text-slate-700">Lowest-accuracy domains</h5>
+                          <ul className="mt-2 space-y-2.5">
+                            {triage.weakDomains.map((row) => {
+                              const label = domainById[row.id] ? domainById[row.id].label : row.id.replace(/-/g, ' ');
+                              return <li key={row.id} data-test-prep-triage-domain={row.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <div className="flex items-center justify-between gap-2 text-sm">
+                                  <span className="font-black text-slate-900">{label}</span>
+                                  <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-black text-rose-900">{row.correct}/{row.total} ({row.percent}%)</span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                  {row.missedItemIds && row.missedItemIds.length > 0 && <button type="button" data-test-prep-drill-domain-missed={row.id} onClick={() => startStudyPlanSet(label + ' · missed-item drill', row.missedItemIds.slice(0, 20))} className="rounded-lg bg-rose-800 px-2.5 py-1.5 text-xs font-black text-white hover:bg-rose-900 focus:ring-2 focus:ring-rose-700">Drill missed ({Math.min(20, row.missedItemIds.length)})</button>}
+                                  {row.unitRoute && row.unitRoute.mixedPracticeItemIds.length > 0 && <button type="button" data-test-prep-triage-practice-domain={row.id} onClick={() => startStudyPlanSet(label + ' · repair set', row.unitRoute.mixedPracticeItemIds)} className="rounded-lg bg-indigo-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600">Practice domain ({row.unitRoute.mixedPracticeItemIds.length})</button>}
+                                  {row.quickRef && <button type="button" data-test-prep-triage-quickref={row.quickRef.id} onClick={() => openQuickReferenceCard(row.quickRef)} className="rounded-lg border border-amber-500 bg-amber-50 px-2.5 py-1.5 text-xs font-black text-amber-950 hover:bg-amber-100 focus:ring-2 focus:ring-amber-700">Quick Reference</button>}
+                                  {row.spacedPlan && <button type="button" data-test-prep-triage-spaced={row.id} onClick={() => openSpacedReviewForDomain(row.spacedPlan.title)} className="rounded-lg border border-emerald-500 bg-emerald-50 px-2.5 py-1.5 text-xs font-black text-emerald-950 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-700">Spaced review</button>}
+                                </div>
+                              </li>;
+                            })}
+                          </ul>
+                        </div>}
+                        {triage.playbooks.length > 0 && <div className="rounded-xl border border-rose-200 bg-white p-4">
+                          <h5 className="text-xs font-black uppercase tracking-wide text-rose-800">Recommended misconception playbooks</h5>
+                          <ul className="mt-2 space-y-2.5">
+                            {triage.playbooks.map((playbook) => <li key={playbook.id} data-test-prep-triage-playbook={playbook.id} className="rounded-lg border border-rose-200 bg-rose-50/50 p-3">
+                              <div className="flex items-start justify-between gap-2 text-sm">
+                                <span className="font-black text-slate-900">{playbook.title}</span>
+                                <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-black text-rose-900">{playbook.matchedCount} miss{playbook.matchedCount === 1 ? '' : 'es'}</span>
+                              </div>
+                              {playbook.familyLabel && <p className="mt-1 text-xs text-slate-700">{playbook.familyLabel}</p>}
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                <button type="button" data-test-prep-triage-open-playbook={playbook.id} onClick={() => openStudyPlaybook(playbook)} className="rounded-lg border border-rose-500 bg-white px-2.5 py-1.5 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700">Open playbook</button>
+                                {playbook.itemIds.length > 0 && <button type="button" data-test-prep-triage-practice-playbook={playbook.id} onClick={() => startStudyPlanSet(playbook.title, playbook.itemIds)} className="rounded-lg bg-rose-800 px-2.5 py-1.5 text-xs font-black text-white hover:bg-rose-900 focus:ring-2 focus:ring-rose-700">Practice pattern ({playbook.itemIds.length})</button>}
+                              </div>
+                            </li>)}
+                          </ul>
+                        </div>}
+                      </div>
+                    </section>;
+                  })()}
                   <div className="grid gap-5 lg:grid-cols-2">
-                    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white"><h4 className="border-b border-slate-200 px-5 py-3 font-black text-slate-900">Accuracy by domain</h4><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-slate-700"><tr><th className="px-4 py-2" scope="col">Domain</th><th className="px-4 py-2" scope="col">Correct</th><th className="px-4 py-2" scope="col">Accuracy</th></tr></thead><tbody className="divide-y divide-slate-200">{progressAnalytics.domainRows.map((row) => <tr key={row.id}><th className="px-4 py-2 font-semibold text-slate-900" scope="row">{domainById[row.id] ? domainById[row.id].label : row.id.replace(/-/g, ' ')}</th><td className="px-4 py-2">{row.correct}/{row.total}</td><td className="px-4 py-2 font-black">{row.percent}%</td></tr>)}</tbody></table></div></section>
-                    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white"><h4 className="border-b border-slate-200 px-5 py-3 font-black text-slate-900">Accuracy by skill</h4><div className="max-h-80 overflow-auto"><table className="w-full text-left text-sm"><thead className="sticky top-0 bg-slate-50 text-slate-700"><tr><th className="px-4 py-2" scope="col">Skill</th><th className="px-4 py-2" scope="col">Correct</th><th className="px-4 py-2" scope="col">Accuracy</th></tr></thead><tbody className="divide-y divide-slate-200">{progressAnalytics.skillRows.map((row) => <tr key={row.id}><th className="px-4 py-2 font-semibold text-slate-900" scope="row">{skillById[row.id] ? skillById[row.id].label : row.id.replace(/-/g, ' ')}</th><td className="px-4 py-2">{row.correct}/{row.total}</td><td className="px-4 py-2 font-black">{row.percent}%</td></tr>)}</tbody></table></div></section>
+                    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white"><h4 className="border-b border-slate-200 px-5 py-3 font-black text-slate-900">Accuracy by domain</h4><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-slate-700"><tr><th className="px-4 py-2" scope="col">Domain</th><th className="px-4 py-2" scope="col">Correct</th><th className="px-4 py-2" scope="col">Accuracy</th><th className="px-4 py-2 text-right" scope="col">Practice</th></tr></thead><tbody className="divide-y divide-slate-200">{progressAnalytics.domainRows.map((row) => <tr key={row.id}><th className="px-4 py-2 font-semibold text-slate-900" scope="row">{domainById[row.id] ? domainById[row.id].label : row.id.replace(/-/g, ' ')}</th><td className="px-4 py-2">{row.correct}/{row.total}</td><td className="px-4 py-2 font-black">{row.percent}%</td><td className="px-4 py-2 text-right"><button type="button" data-test-prep-progress-practice-domain={row.id} onClick={() => startDomainPracticeById(row.id)} className="rounded-lg border border-indigo-400 bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Practice</button></td></tr>)}</tbody></table></div></section>
+                    <section className="overflow-hidden rounded-2xl border border-slate-300 bg-white"><h4 className="border-b border-slate-200 px-5 py-3 font-black text-slate-900">Accuracy by skill</h4><div className="max-h-80 overflow-auto"><table className="w-full text-left text-sm"><thead className="sticky top-0 bg-slate-50 text-slate-700"><tr><th className="px-4 py-2" scope="col">Skill</th><th className="px-4 py-2" scope="col">Correct</th><th className="px-4 py-2" scope="col">Accuracy</th><th className="px-4 py-2 text-right" scope="col">Practice</th></tr></thead><tbody className="divide-y divide-slate-200">{progressAnalytics.skillRows.map((row) => <tr key={row.id}><th className="px-4 py-2 font-semibold text-slate-900" scope="row">{skillById[row.id] ? skillById[row.id].label : row.id.replace(/-/g, ' ')}</th><td className="px-4 py-2">{row.correct}/{row.total}</td><td className="px-4 py-2 font-black">{row.percent}%</td><td className="px-4 py-2 text-right"><button type="button" data-test-prep-progress-practice-skill={row.id} onClick={() => startTargetedPractice(row.id)} className="rounded-lg border border-indigo-400 bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Practice</button></td></tr>)}</tbody></table></div></section>
                   </div>
                   <section className="rounded-2xl border border-slate-300 bg-white p-5" aria-labelledby="confidence-progress-title"><h4 id="confidence-progress-title" className="font-black text-slate-900">Confidence calibration</h4><p className="mt-1 text-sm text-slate-700">Compare certainty with accuracy. Confident misses are useful signals to revisit reasoning; low-confidence correct answers are good retrieval-practice targets.</p><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[['sure', 'Knew it'], ['unsure', 'Unsure'], ['guess', 'Guessed'], ['unrated', 'Unrated']].map(([id, label]) => { const row = progressAnalytics.confidenceSummary[id]; return <div key={id} className="rounded-xl bg-slate-50 p-3"><p className="text-xl font-black text-indigo-900">{row.correct}/{row.total}</p><p className="text-sm font-bold text-slate-700">{label} · {row.percent}% correct</p></div>; })}</div><p className="mt-3 text-xs font-bold text-slate-600">{progressAnalytics.repeatedItems} unique question{progressAnalytics.repeatedItems === 1 ? '' : 's'} attempted more than once · {Object.keys(progressAnalytics.modeCounts).map((mode) => mode + ': ' + progressAnalytics.modeCounts[mode]).join(' · ')}</p></section>
                 </>
@@ -8033,7 +10523,13 @@ function TestPrepHub(props) {
                   <ul className="divide-y divide-slate-200">
                     {packAttempts.slice().reverse().slice(0, 10).map((attempt) => {
                       const pack = packs.find((candidate) => candidate.id === attempt.packId);
-                      return <li key={attempt.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold text-slate-900">{attempt.label || (pack ? pack.shortTitle : attempt.packId)}{attempt.timedOut ? ' · time ended' : ''}</p><p className="text-xs text-slate-600">{attempt.mode.replace(/-/g, ' ')} · {attempt.completedAt ? new Date(attempt.completedAt).toLocaleString() : 'Date unavailable'}</p></div><p className="font-black text-indigo-900">{attempt.correct}/{attempt.total} {'\u00B7'} {attempt.percent}%</p></li>;
+                      const attemptMissedItems = attempt.itemResults && typeof attempt.itemResults === 'object' && !Array.isArray(attempt.itemResults)
+                        ? Object.entries(attempt.itemResults)
+                            .filter(([, res]) => res && res.correct === false)
+                            .map(([itemId]) => itemLookup.get(itemId))
+                            .filter(Boolean)
+                        : [];
+                      return <li key={attempt.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold text-slate-900">{attempt.label || (pack ? pack.shortTitle : attempt.packId)}{attempt.timedOut ? ' · time ended' : ''}</p><p className="text-xs text-slate-600">{attempt.mode.replace(/-/g, ' ')} · {attempt.completedAt ? new Date(attempt.completedAt).toLocaleString() : 'Date unavailable'}</p></div><div className="flex flex-wrap items-center gap-3"><p className="font-black text-indigo-900">{attempt.correct}/{attempt.total} {'\u00B7'} {attempt.percent}%</p>{attemptMissedItems.length > 0 && <button type="button" data-test-prep-recent-retry-missed={attempt.id} onClick={() => startPracticeSet({ pack: selectedPack, mode: 'standard', label: (attempt.label || 'Past set') + ' · missed retry', items: attemptMissedItems })} className="min-h-11 rounded-lg border border-rose-400 bg-rose-50 px-3 py-1.5 text-xs font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-600">Retry missed ({attemptMissedItems.length})</button>}</div></li>;
                     })}
                   </ul>
                 </div>

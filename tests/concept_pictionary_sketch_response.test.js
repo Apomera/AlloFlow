@@ -135,7 +135,9 @@ describe('Sketch Response uses the existing Pictionary peer protocol', () => {
       color: '#2b6cb0',
       points: [[10, 10], [20, 20]],
     });
-    expect(host.strokeHistory).toHaveLength(1);
+    // Sketch Response buffers per student (isolated cap), never in the shared Pictionary history.
+    expect(host.sketchStrokeHistoryByUid.get('u1')).toHaveLength(1);
+    expect(host.strokeHistory).toEqual([]);
     expect(receivedByU2.some((message) => message.type === 'stroke')).toBe(false);
 
     host._onIncomingSketchStatus('u1', 'Blue Fox', { status: 'submitted', timestamp: 10 });
@@ -166,7 +168,7 @@ describe('Sketch Response uses the existing Pictionary peer protocol', () => {
     host._onIncomingStroke('u1', 'Fox', { strokeId: 'a', color: '#1a202c', points: [[1, 1]] });
     host.resolveRound({ reason: 'manual' });
     expect(host.activeRound).toBeNull();
-    expect(host.strokeHistory).toHaveLength(1);
+    expect(host.sketchStrokeHistoryByUid.get('u1')).toHaveLength(1);
     expect(host.lastResolvedSketch).toEqual({
       prompt: 'Model',
       criterion: 'Which sketch most clearly and accurately communicates the idea?',

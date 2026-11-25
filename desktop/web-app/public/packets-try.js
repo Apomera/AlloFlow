@@ -3,17 +3,21 @@
 // Teacher tools connect to the open maker tab over BroadcastChannel on this origin.
 (function () {
   'use strict';
+  if (typeof window !== 'object' || window === null || typeof document !== 'object' || document === null || !window.location) return;
   var doc = document;
   var CHANNEL = 'alloflow-packets-preview';
   var STORE_KIND = 'alloflow-packet-store';
   var NAV_KIND = 'alloflow-packet-nav';
   var fail = function () {
-    doc.getElementById('try-wait').hidden = true;
-    doc.getElementById('try-problem').hidden = false;
+    var waitEl = doc.getElementById('try-wait');
+    var probEl = doc.getElementById('try-problem');
+    if (waitEl) waitEl.hidden = true;
+    if (probEl) probEl.hidden = false;
   };
+  var origin = String(window.location.origin || '');
   var address = String(window.location.hash || '').slice(1);
-  var mine = 'blob:' + window.location.origin + '/';
-  if (address.indexOf(mine) !== 0 || typeof window.fetch !== 'function') { fail(); return; }
+  var mine = 'blob:' + origin + '/';
+  if (!origin || origin === 'null' || address.indexOf(mine) !== 0 || typeof window.fetch !== 'function') { fail(); return; }
 
   var barHost = doc.getElementById('try-edit');
   var frame = null;
@@ -47,12 +51,18 @@
   var pendingNavFocus = '';
   var navAnnounced = false;
   var busyBar = false;
+  var closed = false;
 
   function withSnapshot(html, items, token) {
-    var clean = String(html || '').replace(/<script\b[^>]*id="packet-store-snapshot"[^>]*>[\s\S]*?<\/script>/i, '');
+    var clean = String(html || '').replace(/<script\b[^>]*id="packet-store-snapshot"[^>]*>[\s\S]*?<\/script>/gi, '');
     var payload = { kind: STORE_KIND, items: items || {} };
     if (typeof token === 'string' && token.length >= 16) payload.nav = token;
-    var json = JSON.stringify(payload).replace(/</g, '\\u003c');
+    var json = JSON.stringify(payload)
+      .replace(/</g, '\\u003c')
+      .replace(/>/g, '\\u003e')
+      .replace(/&/g, '\\u0026')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029');
     var block = '<script type="application/json" id="packet-store-snapshot">' + json + '</script>';
     // In the head, BEFORE the file's own script: the player reads the block once, while it starts. Put before
     // </body> (as it was until 2026-11-16) it came after the script, the player found nothing, said "This browser
@@ -63,7 +73,7 @@
   }
 
   function revokeBlob() {
-    if (blobUrl && typeof URL.revokeObjectURL === 'function') {
+    if (blobUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
       try { URL.revokeObjectURL(blobUrl); } catch (_) {}
       blobUrl = '';
     }
@@ -78,12 +88,13 @@
   }
 
   function postChannel(msg) {
-    if (!channel) return;
+    if (!channel || closed) return;
     try { channel.postMessage(msg); } catch (_) {}
   }
 
   function showHtml(html) {
-    if (!frame) return;
+    if (!frame || closed) return;
+    if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof Blob !== 'function') { fail(); return; }
     stopSpeech();
     revokeBlob();
     navToken = makeNavToken();
@@ -99,6 +110,9 @@
     try { frame.contentWindow.postMessage(msg, '*'); } catch (_) {}
   }
   window.addEventListener('pagehide', function () {
+    closed = true;
+    clearFetchTimer();
+    if (fetchCtrl) { try { fetchCtrl.abort(); } catch (_) {} }
     stopSpeech();
     revokeBlob();
     if (channel && typeof channel.close === 'function') {
@@ -124,7 +138,7 @@
     }
     lastBar = bar;
     barHost.textContent = '';
-    if (!bar || bar.hidden) { barHost.hidden = true; return; }
+    if (!bar || bar.hidden) { busyBar = false; barHost.hidden = true; return; }
     busyBar = !!bar.busy;
     barHost.classList.toggle('try-more-open', moreOpen);
     var hide = doc.createElement('button');
@@ -286,12 +300,14 @@
     } else if (!busyBar && (pendingNavFocus || activeNav)) {
       var wantNav = pendingNavFocus || activeNav;
       pendingNavFocus = '';
-      var navTarget = barHost.querySelector('[data-preview-nav="' + wantNav + '"]');
-      if (navTarget && !navTarget.disabled) {
-        navTarget.focus();
-      } else if (wantNav === 'next' || wantNav === 'prev') {
-        var fallbackNav = barHost.querySelector('[data-preview-nav="' + (wantNav === 'next' ? 'prev' : 'next') + '"]');
-        if (fallbackNav && !fallbackNav.disabled) fallbackNav.focus();
+      if (wantNav === 'prev' || wantNav === 'next' || wantNav === 'goto') {
+        var navTarget = barHost.querySelector('[data-preview-nav="' + wantNav + '"]');
+        if (navTarget && !navTarget.disabled) {
+          navTarget.focus();
+        } else if (wantNav === 'next' || wantNav === 'prev') {
+          var fallbackNav = barHost.querySelector('[data-preview-nav="' + (wantNav === 'next' ? 'prev' : 'next') + '"]');
+          if (fallbackNav && !fallbackNav.disabled) fallbackNav.focus();
+        }
       }
     } else if (!busyBar && activeControl) {
       var ctrlTarget = barHost.querySelector(activeControl === 'more' ? '[data-preview-more]' : '[data-preview-hide]');
@@ -352,6 +368,7 @@
       } else {
         wentFull = false;
         doc.body.classList.add('try-no-full');
+        tab.setAttribute('aria-label', 'Top bar (press Escape to exit)');
         if (frame) frame.focus();
       }
     } else {
@@ -365,7 +382,7 @@
     presentBtn.addEventListener('click', function () { setPresent(!presenting); });
     tab.addEventListener('click', function () { setOpen(!doc.body.classList.contains('try-open')); });
     var onEscape = function (event) {
-      if (!presenting || event.key !== 'Escape') return;
+      if (!presenting || !event || event.isComposing || event.keyCode === 229 || event.key !== 'Escape') return;
       setPresent(false);
       presentBtn.focus();
     };
@@ -391,11 +408,12 @@
         if (msg.snapshot && typeof msg.snapshot === 'object' && !Array.isArray(msg.snapshot)) {
           var nextSnap = Object.create(null);
           var snapKeys = Object.keys(msg.snapshot);
-          for (var si = 0; si < snapKeys.length && si < MAX_SNAP_KEYS; si++) {
+          var kept = 0;
+          for (var si = 0; si < snapKeys.length && kept < MAX_SNAP_KEYS; si++) {
             var sk = snapKeys[si];
             if (!isSafeSnapKey(sk)) continue;
             var sv = msg.snapshot[sk];
-            if (typeof sv === 'string' && sv.length <= MAX_SNAP_VALUE) nextSnap[sk] = sv;
+            if (typeof sv === 'string' && sv.length <= MAX_SNAP_VALUE) { nextSnap[sk] = sv; kept++; }
           }
           snapItems = nextSnap;
         }
@@ -426,22 +444,29 @@
   var fetchTimer = fetchCtrl ? setTimeout(function () { try { fetchCtrl.abort(); } catch (_) {} }, 15000) : null;
   var clearFetchTimer = function () { if (fetchTimer !== null) { clearTimeout(fetchTimer); fetchTimer = null; } };
   window.fetch(address, fetchCtrl ? { signal: fetchCtrl.signal } : undefined).then(function (reply) {
-    clearFetchTimer();
-    if (!reply.ok) throw new Error('gone');
+    if (closed) throw new Error('closed');
+    if (!reply || !reply.ok) throw new Error('gone');
+    var cl = Number(reply.headers && typeof reply.headers.get === 'function' ? reply.headers.get('content-length') : NaN);
+    if (isFinite(cl) && cl > MAX_HTML_CHARS) throw new Error('too big');
     return reply.text();
   }).then(function (html) {
+    clearFetchTimer();
+    if (closed) return;
     if (typeof html !== 'string' || html.length > MAX_HTML_CHARS || !/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a file from a maker');
+    var mainEl = doc.getElementById('try-main');
+    if (!mainEl) throw new Error('missing host');
     frame = doc.createElement('iframe');
     frame.className = 'try-frame';
     frame.title = 'The file a student gets';
     frame.setAttribute('sandbox', 'allow-scripts allow-downloads');
     showHtml(html);
-    doc.getElementById('try-wait').hidden = true;
-    doc.getElementById('try-main').appendChild(frame);
+    var waitEl = doc.getElementById('try-wait');
+    if (waitEl) waitEl.hidden = true;
+    mainEl.appendChild(frame);
     if (presentBtn) presentBtn.hidden = false;
     wireChannel();
   }).catch(function () {
     clearFetchTimer();
-    fail();
+    if (!closed) fail();
   });
 })();

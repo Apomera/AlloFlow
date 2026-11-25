@@ -651,7 +651,7 @@ var ZONE_BODY_SENSATIONS = [
       description: {
         elementary: 'Your chest feels warm and cozy, like when you get a hug.',
         middle: 'You feel warmth in your chest, often when you feel loved or connected.',
-        high: 'Chest warmth often accompanies oxytocin release and parasympathetic social engagement.'
+        high: 'Chest warmth often accompanies feeling safe and connected.'
       },
       forWho: 'connected, grateful, in-flow',
       whatItMeans: 'Chest warmth is a felt sense of belonging and safety. Savor it.',
@@ -1290,7 +1290,7 @@ var ZONE_BODY_SENSATIONS = [
         high: 'Postural tremor during stress reflects adrenergic activation of muscle spindles.'
       },
       forWho: 'frightened, cold, post-shock',
-      whatItMeans: 'Shaking arms are releasing stress hormones. It is uncomfortable but functional.',
+      whatItMeans: 'Shaking arms are a normal effect of adrenaline. It is uncomfortable but it fades as your body settles.',
       whatToDo: 'Sit down, breathe slowly, and let the shake complete. Warm up if cold.',
       cautions: 'Tremor that persists or worsens needs medical review.',
       research: 'Levine trauma discharge; AHA stress response.'
@@ -1940,7 +1940,7 @@ var ZONE_BODY_SENSATIONS = [
       description: {
         elementary: 'Your body feels stuck and you cannot move.',
         middle: 'You feel frozen, like your body will not respond, often during fear or overwhelm.',
-        high: 'Tonic immobility reflects dorsal vagal shutdown when fight-flight is blocked.'
+        high: 'Tonic immobility is a freeze response that can happen when fight or flight is not possible.'
       },
       forWho: 'traumatized, overwhelmed, terrified',
       whatItMeans: 'Freeze is a deep protective state. It is not failure, it is survival.',
@@ -1961,7 +1961,7 @@ var ZONE_BODY_SENSATIONS = [
         high: 'Whole-body tremor often discharges stored adrenergic energy.'
       },
       forWho: 'post-shock, cold, terrified',
-      whatItMeans: 'Shaking is the body releasing stress hormones. Let it complete.',
+      whatItMeans: 'Shaking is a normal effect of adrenaline. It fades on its own as your body settles.',
       whatToDo: 'Sit in a safe place, wrap in blanket, breathe slowly.',
       cautions: 'Shaking with confusion, seizure, or persistent unconsciousness needs emergency care.',
       research: 'Levine trauma discharge; AHA shock guidance.'
@@ -2778,7 +2778,7 @@ var ZONE_BODY_SENSATIONS = [
       description: {
         elementary: 'You feel warm and cozy all over.',
         middle: 'You feel wrapped in pleasant warmth, like a blanket inside out.',
-        high: 'Whole-body warmth often signals parasympathetic and oxytocin engagement.'
+        high: 'Whole-body warmth often goes with feeling safe and connected.'
       },
       forWho: 'regulated, post-co-regulation, post-warm-shower',
       whatItMeans: 'Body warmth is a soothing signal.',
@@ -3616,7 +3616,7 @@ var ZONE_BODY_SENSATIONS = [
       whatItMeans: 'Capacity is exceeded.',
       whatToDo: 'Exit to safe quiet space immediately, reduce demands, and rest.',
       cautions: 'Meltdowns are not behavior choices; trauma-informed support helps.',
-      research: 'ASAN autism overload; Welch (1988) holding therapy critiques.'
+      research: 'ASAN on autistic overload; forced holding is not recommended.'
     },
     {
       id: 'whole_post_meltdown',
@@ -4837,16 +4837,16 @@ var ZONE_COREGULATION = [
         'Sit nearby in parallel, doing your own thing',
         'Share a small object like a snack, gum, or a meme',
         'Match their lower energy instead of forcing yours up',
-        'Stay for a finite, named amount of time (\\u201cI can hang for 10 minutes\\u201d)',
+        'Stay for a finite, named amount of time (\u201cI can hang for 10 minutes\u201d)',
         'Follow up the next day with a small check-in text',
         'Loop in a trusted adult if quiet stretches past 2 weeks'
       ],
       whatNotToDo: [
         'Pepper them with questions',
         'Force eye contact',
-        'Drag them to a loud social event to \\u201ccheer them up\\u201d',
+        'Drag them to a loud social event to \u201ccheer them up\u201d',
         'Gossip to others about why they are quiet',
-        'Ghost them because they are \\u201cno fun right now\\u201d'
+        'Ghost them because they are \u201cno fun right now\u201d'
       ],
       whenToEscalate: 'If they mention hopelessness, not wanting to be here, or a plan to hurt themselves, contact a trusted adult and the 988 Suicide & Crisis Lifeline (call or text 988).',
       yourAfterCare: 'Sitting with someone in low energy is real work. Move your body, talk to your own person, and do not carry their weight home.',
@@ -4895,7 +4895,7 @@ var ZONE_COREGULATION = [
         'Make them your therapist',
         'Try to replace the missing parent',
         'Tease them for crying',
-        'Promise things you cannot control (\\u201cthey will get back together\\u201d)'
+        'Promise things you cannot control (\u201cthey will get back together\u201d)'
       ],
       whenToEscalate: 'If they talk about not wanting to live, are giving things away, or are using substances to cope, tell a trusted adult immediately and call/text 988.',
       yourAfterCare: 'You are going through the same divorce. Find your own outlet, an adult, a counselor, a coach. You cannot pour from an empty cup.',
@@ -4909,8 +4909,8 @@ var ZONE_COREGULATION = [
       forWho: 'friend',
       observableCues: [
         'Crying spells they cannot explain',
-        'Saying \\u201cit is just a dog\\u201d while clearly devastated',
-        'Avoiding the house or the pet\\u2019s room',
+        'Saying \u201cit is just a dog\u201d while clearly devastated',
+        'Avoiding the house or the pet\u2019s room',
         'Carrying a collar or toy in their backpack',
         'Going silent when animals are mentioned'
       ],
@@ -4919,7 +4919,7 @@ var ZONE_COREGULATION = [
       whatToSay: [
         'I am so sorry. Losing a pet is losing family.',
         'Tell me about them, what were they like?',
-        'There is no \\u201ctoo sad\\u201d for this. Take as long as you need.',
+        'There is no \u201ctoo sad\u201d for this. Take as long as you need.',
         'I remember when they did that thing with the sock, that was so them.',
         'You loved them so well. They knew it.'
       ],
@@ -4939,15 +4939,15 @@ var ZONE_COREGULATION = [
         'Share your own pet-grief story if you have one, briefly'
       ],
       whatNotToDo: [
-        'Push them to get a new pet \\u201cto move on\\u201d',
+        'Push them to get a new pet \u201cto move on\u201d',
         'Tell them what stage of grief they are in',
-        'Compare losses (\\u201cmy grandma died and I am fine\\u201d)',
+        'Compare losses (\u201cmy grandma died and I am fine\u201d)',
         'Avoid them because grief is awkward',
         'Make jokes about the pet too soon'
       ],
       whenToEscalate: 'If grief is paired with not eating, not sleeping, or talk of joining the pet, get an adult and call/text 988.',
       yourAfterCare: 'Grief is contagious in a good way, it reminds you of your own losses. Let yourself feel it briefly, then do something grounding.',
-      research: 'Doka on disenfranchised grief; Shanker on co-regulating low-energy states; Worden\\u2019s tasks of mourning include accepting the reality of the loss.'
+      research: 'Doka on disenfranchised grief; Shanker on co-regulating low-energy states; Worden\u2019s tasks of mourning include accepting the reality of the loss.'
     },
     {
       id: 'blue_friend_family_grief',
@@ -4961,7 +4961,7 @@ var ZONE_COREGULATION = [
         'Cannot focus on schoolwork',
         'Wears something that belonged to the person',
         'Drops out of activities they used to love',
-        'Says they are \\u201cfine\\u201d in a flat voice'
+        'Says they are \u201cfine\u201d in a flat voice'
       ],
       yourFirstStep: 'Show up consistently. Grief is a marathon, not a sprint. Your job is not to fix it, your job is to keep being there past week two when everyone else has moved on.',
       yourBodyStance: 'Quiet body, open posture, no fidgeting. Let your face be a soft witness, not a problem-solver. Breathe slowly so they can borrow it.',
@@ -4982,7 +4982,7 @@ var ZONE_COREGULATION = [
       whatToDo: [
         'Sit with them at lunch even if no words happen',
         'Bring small food (grief makes people forget to eat)',
-        'Remember the person\\u2019s name and say it',
+        'Remember the person\u2019s name and say it',
         'Mark the 1-month and 1-year in your phone',
         'Be the friend who still asks in month 3',
         'Tell a school counselor if they are not coping with basics'
@@ -4990,13 +4990,13 @@ var ZONE_COREGULATION = [
       whatNotToDo: [
         'Avoid them because you do not know what to say',
         'Compare to your own losses',
-        'Push them to \\u201cmove on\\u201d',
+        'Push them to \u201cmove on\u201d',
         'Talk about the person in past-tense correction games',
         'Disappear after the funeral week'
       ],
       whenToEscalate: 'If they talk about wanting to be with the person who died, are giving away belongings, or stop eating/sleeping for days, tell a trusted adult and call/text 988.',
       yourAfterCare: 'Witnessing grief is heavy. Move your body, hug a person or pet, talk to your own trusted adult.',
-      research: 'Worden\\u2019s 4 tasks of mourning; Shanker on co-regulation through presence; Porges polyvagal on the safety cue of slow prosodic voice.'
+      research: 'Worden\u2019s 4 tasks of mourning; Shanker on co-regulation through presence; Porges polyvagal on the safety cue of slow prosodic voice.'
     },
     {
       id: 'blue_seasonal_depression',
@@ -5009,7 +5009,7 @@ var ZONE_COREGULATION = [
         'Sleeping 10+ hours and still tired',
         'Craving carbs and sweets',
         'Skipping outdoor things they used to love',
-        'Talks about \\u201chating winter\\u201d more intensely than typical'
+        'Talks about \u201chating winter\u201d more intensely than typical'
       ],
       yourFirstStep: 'Name the pattern gently. Seasonal Affective Disorder is real and treatable. They are not weak, their brain is responding to less light.',
       yourBodyStance: 'Bring some warmth, literal and figurative. Warmer voice, slower pace, do not bring high-anxiety energy.',
@@ -5040,7 +5040,7 @@ var ZONE_COREGULATION = [
         'Force them to big crowded events',
         'Diagnose them out loud',
         'Make every interaction about their depression',
-        'Compare to your own \\u201cwinter blues\\u201d if yours is mild'
+        'Compare to your own \u201cwinter blues\u201d if yours is mild'
       ],
       whenToEscalate: 'If they talk about not being here in spring, are using substances heavily, or stop functioning, tell a trusted adult and call/text 988.',
       yourAfterCare: 'Low-energy seasons are contagious. Get your own light, your own movement, your own people.',
@@ -5093,7 +5093,7 @@ var ZONE_COREGULATION = [
       ],
       whenToEscalate: 'If shutdown lasts more than 2 hours, includes not breathing well, or follows a head injury, get medical help. Otherwise, follow their established support plan.',
       yourAfterCare: 'Witnessing shutdown can be scary. Talk to someone after. Learn more about autistic experience from autistic adults (ASAN, autistic creators).',
-      research: 'Autistic Self Advocacy Network on shutdown vs meltdown; Porges polyvagal on dorsal vagal shutdown; Welch on \\u201cintensive interaction\\u201d (low input, high presence).'
+      research: 'Autistic Self Advocacy Network on shutdown vs meltdown; shutdown described as "dorsal vagal" in polyvagal theory (Porges), a contested model; Nind and Hewett on Intensive Interaction (low demand, following the person\'s lead).'
     },
     {
       id: 'blue_friend_breakup',
@@ -5107,9 +5107,9 @@ var ZONE_COREGULATION = [
         'Listening to one sad song on loop',
         'Not eating or eating constantly',
         'Stalking the ex on social media',
-        'Saying \\u201cI am fine\\u201d while clearly not'
+        'Saying \u201cI am fine\u201d while clearly not'
       ],
-      yourFirstStep: 'Validate that this hurts in a real, physical way. Heartbreak literally activates pain centers in the brain.',
+      yourFirstStep: 'Validate that this hurts in a real, physical way. Heartbreak draws on some of the same brain regions as physical pain.',
       yourBodyStance: 'Sit close but not pressuring. Open palms. Soft voice. Match their energy down, not up.',
       whatToSay: [
         'This sucks. I am sorry. You loved them.',
@@ -5138,7 +5138,7 @@ var ZONE_COREGULATION = [
         'Push them to rebound',
         'Compare to your worse breakup',
         'Disappear because heartbreak is heavy',
-        'Tell them what they \\u201cshould\\u201d feel'
+        'Tell them what they \u201cshould\u201d feel'
       ],
       whenToEscalate: 'If they talk about ending their life over it, threaten the ex, or stop functioning for over 2 weeks, get an adult and call/text 988.',
       yourAfterCare: 'Holding heartbreak takes a toll. Step away, do something fun for yourself, do not become their only support.',
@@ -5155,7 +5155,7 @@ var ZONE_COREGULATION = [
         'Missing school, then catching up, then missing again',
         'Cancels plans last minute',
         'Goes quiet about how they actually feel',
-        'Frustrated by being \\u201cbehind\\u201d',
+        'Frustrated by being \u201cbehind\u201d',
         'May resent healthy peers without meaning to'
       ],
       yourFirstStep: 'Show up in a way that does not require them to perform okay. Chronic illness fatigue is bone-deep, not lazy.',
@@ -5205,7 +5205,7 @@ var ZONE_COREGULATION = [
         'Sure everyone is talking about them',
         'Quiet voice, eyes down',
         'Withdraws from social media',
-        'May say \\u201cI am fine\\u201d with a tight voice'
+        'May say \u201cI am fine\u201d with a tight voice'
       ],
       yourFirstStep: 'Become their pocket-sized regulator. Stay close. Project calm. Do not minimize, do not over-pity.',
       yourBodyStance: 'Casual, side-by-side, not face-to-face. Light voice, low volume. Stay grounded.',
@@ -5348,7 +5348,7 @@ var ZONE_COREGULATION = [
       forWho: 'friend',
       observableCues: [
         'Laughs at jokes a half-beat late',
-        'Says \\u201cI am fine\\u201d a lot more than they used to',
+        'Says \u201cI am fine\u201d a lot more than they used to',
         'Stops posting on social media',
         'Hobbies are slipping',
         'Skipping small things, then bigger ones',
@@ -5372,7 +5372,7 @@ var ZONE_COREGULATION = [
       ],
       whatToDo: [
         'Keep inviting them, even if they decline',
-        'Send low-effort \\u201cthinking of you\\u201d texts',
+        'Send low-effort \u201cthinking of you\u201d texts',
         'Do an activity together that involves a small win',
         'Suggest the counselor as a normal thing, like the dentist',
         'Notice if the pattern lasts past 2 weeks',
@@ -5399,9 +5399,9 @@ var ZONE_COREGULATION = [
         'Quiet at lunch (best friend chair empty)',
         'Phone obsessively for texts from them',
         'Stops engaging with current friends',
-        'Sad about places that used to be \\u201ctheir\\u201d places',
+        'Sad about places that used to be \u201ctheir\u201d places',
         'Hesitant to make new connections',
-        'Says \\u201cit is not the same\\u201d a lot'
+        'Says \u201cit is not the same\u201d a lot'
       ],
       yourFirstStep: 'Acknowledge the grief without competing for the open spot. You are not trying to replace anyone. You are just here.',
       yourBodyStance: 'Sit with them, even silently. Open posture. Voice gentle but normal.',
@@ -5430,9 +5430,9 @@ var ZONE_COREGULATION = [
       whatNotToDo: [
         'Compete with the absent friend',
         'Get jealous of their texts',
-        'Make a big move to be \\u201cnew best friend\\u201d',
+        'Make a big move to be \u201cnew best friend\u201d',
         'Roll your eyes at their grief',
-        'Push them to \\u201creplace\\u201d the friend'
+        'Push them to \u201creplace\u201d the friend'
       ],
       whenToEscalate: 'If the grief turns into refusal to attend school, talk of self-harm, or 2+ weeks of no functioning, tell a trusted adult and call/text 988.',
       yourAfterCare: 'Building friendship with someone grieving someone else is slow. Pace yourself, do not take rejection personally.',
@@ -5446,13 +5446,13 @@ var ZONE_COREGULATION = [
       forWho: 'friend',
       observableCues: [
         'Avoiding people who got picked',
-        'Self-critical, \\u201cof course I did not get it\\u201d',
+        'Self-critical, \u201cof course I did not get it\u201d',
         'Withdrawing from the activity entirely',
         'Cynical about the institution',
         'Trying to act fine while clearly hurt',
         'Energy gone flat'
       ],
-      yourFirstStep: 'Validate the loss. Rejection literally activates the same brain pain pathways as physical injury. They are not being dramatic.',
+      yourFirstStep: 'Validate the loss. Rejection draws on some of the same brain regions as physical pain. They are not being dramatic.',
       yourBodyStance: 'Sit beside them. Match low energy. Slow, steady voice. Open posture.',
       whatToSay: [
         'That hurts. You wanted it. I am sorry.',
@@ -5513,7 +5513,7 @@ var ZONE_COREGULATION = [
       whatNotToSay: [
         'Just ignore them.',
         'Why do you let them do that?',
-        'Maybe if you acted different\\u2026',
+        'Maybe if you acted different\u2026',
         'You need to stand up for yourself.',
         'Stop being a victim.'
       ],
@@ -5526,7 +5526,7 @@ var ZONE_COREGULATION = [
         'Loop in counselor / admin even if they resist'
       ],
       whatNotToDo: [
-        'Wait for them to \\u201cbe ready\\u201d if they are in danger',
+        'Wait for them to \u201cbe ready\u201d if they are in danger',
         'Approach the bullies on your own with violence',
         'Tell them to toughen up',
         'Out them to social media about it',
@@ -6465,7 +6465,7 @@ var ZONE_COREGULATION = [
       ],
       whenToEscalate: 'If self-injury becomes severe (head-banging hard enough to bruise) or lasts over 30+ min escalating, follow their support plan. Call adult who knows them. 911 only if medical emergency.',
       yourAfterCare: 'Meltdowns are intense to witness. Take quiet time after. Learn more from autistic adults (ASAN, autistic creators). You did not cause it.',
-      research: 'Autistic Self Advocacy Network on meltdown vs tantrum; Porges polyvagal on overload-driven crisis; Welch on intensive interaction.'
+      research: 'Autistic Self Advocacy Network on meltdown vs tantrum; Nind and Hewett on Intensive Interaction (low demand, following the person\'s lead).'
     },
     {
       id: 'red_dissociating_freezing',
@@ -6677,7 +6677,7 @@ var ZONE_COREGULATION = [
         'Asking about methods',
         'Hopelessness, no future'
       ],
-      yourFirstStep: 'ASK DIRECTLY. "Are you thinking about ending your life?" Direct asking does NOT cause suicide. Avoiding the word DOES make it worse. Then stay with them.',
+      yourFirstStep: 'ASK DIRECTLY. "Are you thinking about ending your life?" Direct asking does NOT cause suicide. Asking can bring relief. Then stay with them.',
       yourBodyStance: 'Sit close, calm body, steady voice. Eye contact when welcomed. Do not flinch. Show you can hold this.',
       whatToSay: [
         'Are you thinking about ending your life? Tell me the truth.',
@@ -6708,7 +6708,7 @@ var ZONE_COREGULATION = [
         'Lecture',
         'Wait to see if it gets better'
       ],
-      whenToEscalate: 'IF they have a plan, means, and intent, call 988 NOW and / or 911. Do not leave them alone. For imminent danger, 911 or transport to ER. National Suicide Prevention Lifeline: 988 (call or text), 24/7.',
+      whenToEscalate: 'IF they have a plan, means, and intent, call 988 NOW and / or 911. Do not leave them alone. For imminent danger, 911 or transport to ER. 988 Suicide & Crisis Lifeline: call or text 988, 24/7.',
       yourAfterCare: 'Holding this is HEAVY. Talk to a trusted adult tonight. Call 988 yourself if you need (they help helpers too). You did the right thing.',
       research: 'Ask Suicide-Screening Questions (asQ, NIMH); Stanley-Brown safety plan; 988 Suicide & Crisis Lifeline; direct-ask research (Dazzi et al. 2014).'
     },
@@ -6759,7 +6759,7 @@ var ZONE_COREGULATION = [
       ],
       whenToEscalate: 'If wounds are deep, infected, or unsafe, ER. If self-harm escalates or includes suicidal intent, call 988. Crisis Text Line: text HOME to 741741. Always loop in a trusted adult.',
       yourAfterCare: 'This is heavy. Talk to your own adult. You do not have to carry it alone. Self-harm is not your responsibility to fix, only to witness and connect to help.',
-      research: 'Cornell SOS (Signs of Suicide); Whitlock on self-harm; SAFE Alternatives program; alternatives as harm reduction; 988 + Crisis Text Line.'
+      research: 'Cornell Research Program on Self-Injury and Recovery (Whitlock); SOS Signs of Suicide (MindWise); alternatives as harm reduction; 988 + Crisis Text Line.'
     },
     {
       id: 'red_friend_overdosing',
@@ -7746,11 +7746,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     {
       id: 'black_american_students',
       community: 'Black American students',
-      context: 'Black children in U.S. K-12 settings who carry the weight of historical trauma, persistent racial stereotyping, and disproportionate school discipline. The Zones framework can either be a tool for self-knowledge or a weapon used to police authentic emotional expression. Research consistently shows Black students are suspended at 3-4x the rate of white peers for identical behaviors (Skiba et al., 2014), and Black girls face adultification bias starting as early as age 5 (Epstein, Blake & Gonzalez, 2017).',
+      context: 'Black children in U.S. K-12 settings who carry the weight of historical trauma, persistent racial stereotyping, and disproportionate school discipline. The Zones framework can either be a tool for self-knowledge or a weapon used to police authentic emotional expression. Research consistently shows Black students are suspended at about 3 times the rate of white peers, a gap that differences in behavior do not explain (Skiba et al., 2014), and Black girls face adultification bias starting as early as age 5 (Epstein, Blake & Gonzalez, 2017).',
       zoneInsights: [
         { zone: 'blue', insight: 'Sadness and exhaustion are often hidden because vulnerability has historically been unsafe in mixed-race spaces. A Black student in Blue may present as flat, withdrawn, or quietly compliant rather than openly sad. Joy DeGruy\'s Post Traumatic Slave Syndrome work names the inherited adaptation of suppressing visible grief; the survival strategy of "vacant esteem" passes through generations. Black boys in particular often face the message that crying is weakness, while Black girls may face the "Strong Black Woman" schema that suppresses Blue expression in service of being unshakable.' },
         { zone: 'green', insight: 'Code-switching means Green at school can be performative calm that costs significant energy. The student may be deeply tired from maintaining a regulated affect that doesn\'t match their internal state. True Green at home may look louder, more expressive, more embodied, and more communal. Research on code-switching demonstrates measurable cognitive load (Hewlin, 2003; McCluney et al., 2019). When teachers misread Black students\' authentic Green expression as "off-task" or "disruptive," they pathologize cultural norms.' },
-        { zone: 'yellow', insight: 'Yellow (frustration, silliness, worry) is often misread by white teachers as Red. The "angry Black girl" and "aggressive Black boy" stereotypes mean normal-range Yellow gets labeled as dangerous. Adultification bias means Black girls as young as 5 are seen as less innocent, less in need of nurturing, and more responsible for their own behavior. Studies show teachers spend less wait-time and offer less scaffolding to Black students showing Yellow than to white peers with identical affect (Gilliam et al., 2016).' },
+        { zone: 'yellow', insight: 'Yellow (frustration, silliness, worry) is often misread by white teachers as Red. The "angry Black girl" and "aggressive Black boy" stereotypes mean normal-range Yellow gets labeled as dangerous. Adultification bias means Black girls as young as 5 are seen as less innocent, less in need of nurturing, and more responsible for their own behavior. In a Yale eye-tracking experiment by Gilliam et al. (2016), preschool teachers watched Black children, especially Black boys, more closely when told to expect challenging behavior.' },
         { zone: 'red', insight: 'Red Zone expression in Black students is statistically punished more severely than identical behavior in white peers. Many Black students learn to suppress Red entirely at school, which can lead to explosive expression elsewhere or chronic somatic complaints. Red is not the problem; the unequal response to Red is. Black students are more likely to be physically restrained, secluded, referred to law enforcement, and arrested for school-based incidents than peers (US Dept of Education Civil Rights Data Collection).' }
       ],
       adaptations: [
@@ -7819,7 +7819,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         { zone: 'blue', insight: 'Blue often presents as somatization: headaches, stomachaches, fatigue, sleep issues rather than verbal expression of sadness. Mental health stigma in many Asian communities means physical complaints are the safer language. Concepts like "hwabyung" (Korean culture-bound syndrome of suppressed anger producing physical symptoms) name what Western frameworks call somatic depression.' },
         { zone: 'green', insight: 'Green may be over-performed due to model minority pressure. A student crushing it academically may appear Green while privately in Yellow or Blue. "I\'m fine" is often a face-saving phrase. The model minority myth creates a particular trap: visible suffering risks shaming the family and confirming "they\'re not really succeeding," so suffering goes underground.' },
         { zone: 'yellow', insight: 'Anxiety is frequently high but invisible. Test anxiety, perfectionism, and family-honor pressure create chronic Yellow that gets normalized as "just how I am." Anti-Asian hate post-COVID has added chronic vigilance for many students.' },
-        { zone: 'red', insight: 'Red is often deeply suppressed because anger toward elders or authority violates filial piety values. Suppressed Red may emerge as self-harm, eating disorders, or somatic illness rather than outward expression. Asian American girls and young women have among the highest suicide attempt rates of any demographic; the silence is dangerous.' }
+        { zone: 'red', insight: 'Red is often deeply suppressed because anger toward elders or authority violates filial piety values. Suppressed Red may emerge as self-harm, eating disorders, or somatic illness rather than outward expression. Suicide is a leading cause of death for Asian American young people aged 15 to 24, and they are among the least likely to get mental health care; the silence is dangerous.' }
       ],
       adaptations: [
         'Ask about body symptoms, not just feelings. "Does your stomach hurt? Is your head heavy?" often opens the door faster than "are you sad?"',
@@ -8018,7 +8018,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     {
       id: 'adhd_students',
       community: 'ADHD students',
-      context: 'Students with attention-deficit/hyperactivity disorder, including inattentive, hyperactive, and combined presentations. Emotional dysregulation is a core feature, not a side effect (Shaw et al.). Rejection Sensitive Dysphoria (RSD) is common. Dopamine-seeking behavior shapes zone shifts in ways that can look like behavior problems but are neurochemistry.',
+      context: 'Students with attention-deficit/hyperactivity disorder, including inattentive, hyperactive, and combined presentations. Emotional dysregulation is very common in ADHD (Shaw et al., 2014). Many also describe intense pain after rejection, sometimes called rejection sensitive dysphoria (RSD); it is not a formal diagnosis. Dopamine-seeking behavior shapes zone shifts in ways that can look like behavior problems but are rooted in how the ADHD brain works.',
       zoneInsights: [
         { zone: 'blue', insight: 'Blue can hit hard and fast after stimulant medication wears off (rebound), after dopamine peaks fade, or after rejection. Inattentive-type students often experience chronic low-grade Blue masked as daydreaming. The "ADHD tax" of executive function failures (missed deadlines, lost items, social slips) accumulates as shame-Blue.' },
         { zone: 'green', insight: 'Green is often a moving target. ADHD brains thrive in flow states with high interest, but neutral Green can feel boring/uncomfortable. "Boredom intolerance" is a real ADHD experience, not character flaw.' },
@@ -8681,7 +8681,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     {
       id: 'eating_disorder_students',
       community: 'Students with eating disorders',
-      context: 'Students with anorexia, bulimia, binge eating disorder, ARFID, OSFED, and disordered eating patterns. Body awareness work in zones can be triggering; food-related coping strategies must be approached carefully. Eating disorders have the highest mortality rate of any mental illness; early intervention matters.',
+      context: 'Students with anorexia, bulimia, binge eating disorder, ARFID, OSFED, and disordered eating patterns. Body awareness work in zones can be triggering; food-related coping strategies must be approached carefully. Eating disorders, especially anorexia nervosa, have among the highest death rates of any mental illness; early intervention matters.',
       zoneInsights: [
         { zone: 'blue', insight: 'Blue often co-occurs with restrictive eating; malnourishment causes depression. Recovery requires food, not just feeling-work.' },
         { zone: 'green', insight: 'Green may be elusive for students whose internal monitoring is consumed by food/body thoughts. "Body neutrality" may be more accessible than "body love" or "body awareness."' },
@@ -8689,7 +8689,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         { zone: 'red', insight: 'Red may emerge around food fears, body comments, weighing, or feeling out of control. Eating disorder voice is loud and cruel.' }
       ],
       adaptations: [
-        'NEDA Helpline 1-800-931-2237; text NEDA to 741741 for crisis text line.',
+        'National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays); in a crisis, text HOME to 741741 or call or text 988.',
         'Don\'t do body scans or extensive interoceptive zones-work without coordination with the ED treatment team.',
         'Avoid food/body-based metaphors in zones materials.',
         'Don\'t comment on weight, body, or food choices, ever.',
@@ -8704,7 +8704,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Don\'t treat ED as a phase or a choice; it has the highest mortality of any mental illness.'
       ],
       helpfulResources: [
-        'NEDA (National Eating Disorders Association) - 1-800-931-2237, nationaleatingdisorders.org',
+        'National Alliance for Eating Disorders - 1-866-662-1235 (weekdays), allianceforeatingdisorders.com; ANAD Helpline 1-888-375-7767',
         'ANAD (National Association of Anorexia Nervosa and Associated Disorders)',
         'Project HEAL (theprojectheal.org)',
         'F.E.A.S.T. for families'
@@ -9072,7 +9072,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     {
       id: '478',
       name: '4-7-8 Breathing',
-      desc: 'A natural tranquilizer for the nervous system.',
+      desc: 'A slow breath with a long exhale that many people find calming.',
       steps: [
         { label: 'Breathe In', duration: 4, color: '#3b82f6' },
         { label: 'Hold', duration: 7, color: '#8b5cf6' },
@@ -9160,7 +9160,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['poor sleep', 'warm room', 'monotonous task', 'low blood sugar'],
       whatItNeeds: 'movement, cool water, bright light, or a 2 minute walk to re-alert the body.',
       zoneShiftTo: 'green alert focus.',
-      research: 'Polyvagal theory — low ventral vagal tone presents as drowsy Blue.'
+      research: 'Low arousal presents as drowsy Blue (described as low ventral vagal tone in polyvagal theory, a contested model).'
     },
     {
       id: 'blue_low_all',
@@ -9464,7 +9464,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['untreated depression', 'major loss', 'chronic stress', 'biology + environment'],
       whatItNeeds: 'a trusted adult, a real evaluation, and connection — text or call 988 if any thoughts of not wanting to be here.',
       zoneShiftTo: 'yellow stirring of energy with treatment and support.',
-      research: 'Polyvagal — sustained dorsal vagal shutdown. Crisis: 988 Suicide & Crisis Lifeline (call or text), Crisis Text Line text HOME to 741741.'
+      research: 'Sustained shutdown (called dorsal vagal shutdown in polyvagal theory, a contested model). Crisis: 988 Suicide & Crisis Lifeline (call or text), Crisis Text Line text HOME to 741741.'
     },
     {
       id: 'blue_hopeless_high',
@@ -9592,7 +9592,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['sensory overload', 'social demand pile-up', 'unexpected change', 'masking too long'],
       whatItNeeds: 'a quiet low-stimulation space, no questions, no demands, and time. This is a nervous system response.',
       zoneShiftTo: 'blue moderate as system reboots, then green when ready.',
-      research: 'Polyvagal + autism research (Walker, Milton) — shutdown is parasympathetic protection, not behavior.'
+      research: 'Autism research (Walker, Milton): shutdown is an involuntary protective response, not behavior.'
     },
     {
       id: 'blue_executive_paralysis_all',
@@ -11128,7 +11128,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['ambiguous text', 'unanswered question', 'someone seemed off', 'past rejection pattern'],
       whatItNeeds: 'reality check with a trusted person — RSD makes small things feel like 10x. You are not the only one.',
       zoneShiftTo: 'green steady after reality check.',
-      research: 'ADHD research (Dodson) — Rejection Sensitive Dysphoria is real Yellow/Red.'
+      research: 'Many people with ADHD describe intense pain after rejection, sometimes called rejection sensitive dysphoria (Dodson). It is not a formal diagnosis, but the Yellow/Red it brings is real.'
     },
     {
       id: 'yellow_masking_strain_all',
@@ -11464,7 +11464,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['sensory overload peak', 'too many demands stacked', 'masking too long', 'transition shock', 'communication breakdown'],
       whatItNeeds: 'NOT punishment. Quiet dark space, weighted blanket, soft known person, no demands, no questions. Pure regulation support.',
       zoneShiftTo: 'blue depleted recovery for hours, then yellow alert, then green over a day.',
-      research: 'Autism research (Walker, Mottron, Milton) — meltdowns are involuntary nervous system events, NOT bad behavior. Polyvagal collapse.'
+      research: 'Autism research (Walker, Mottron, Milton): meltdowns are involuntary nervous system events, NOT bad behavior.'
     },
     {
       id: 'red_blackout_anger_high',
@@ -11688,7 +11688,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['trauma activation', 'extreme cold + adrenaline', 'post-panic discharge', 'severe fear'],
       whatItNeeds: 'warm blanket, slow breath, water, trusted person — let the shake happen, it is healing discharge.',
       zoneShiftTo: 'yellow tender after, then green with care.',
-      research: 'Polyvagal Red discharge. Levine somatic experiencing — shaking is completion of stress response.'
+      research: 'Shaking after high stress is a normal adrenaline effect. Somatic Experiencing (Levine) describes it as completing the stress response; that idea is not established physiology.'
     },
     {
       id: 'red_hot_face_all',
@@ -11718,7 +11718,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       thoughtCues: ['I am suffocating', 'I cannot get air', 'something is wrong with me'],
       behaviorCues: ['hand to throat', 'pleading expression', 'panicking', 'searching for fresh air'],
       triggers: ['panic attack', 'hyperventilation', 'extreme anxiety', 'sensory overload'],
-      whatItNeeds: 'exhale longer than inhale (8 count exhale), breathe into cupped hands or paper bag if hyperventilating, name "this is panic."',
+      whatItNeeds: 'exhale longer than inhale (8 count exhale), breathe slowly through your nose or pursed lips, name "this is panic." If you have asthma or chest pain, or it does not ease, get the nurse.',
       zoneShiftTo: 'yellow tender after breath returns, then green.',
       research: 'Anxiety + panic research — Red panic. Frequent episodes deserve treatment.'
     },
@@ -11736,7 +11736,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['sensory overload', 'demand pile-up', 'masking exhaustion', 'sudden unexpected change', 'communication breakdown'],
       whatItNeeds: 'low-stimulation safe space, NO questions, soft known person, weighted comfort, time. Validation that this is a nervous system event.',
       zoneShiftTo: 'blue shutdown recovery for hours, then yellow alert, then green over a day with care.',
-      research: 'Autism research (Walker, Mottron, Milton, ASAN). MELTDOWN IS NOT BAD BEHAVIOR. It is involuntary polyvagal collapse. Punishment causes harm.'
+      research: 'Autism research (Walker, Mottron, Milton, ASAN). MELTDOWN IS NOT BAD BEHAVIOR. It is an involuntary overload response. Punishment causes harm.'
     },
     {
       id: 'red_sensory_overload_all',
@@ -11784,7 +11784,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       triggers: ['accumulated unprocessed emotion', 'rejection-sensitive trigger', 'big stressor', 'low dopamine state'],
       whatItNeeds: 'ride the wave with a witness — ADHD emotion peaks fast and falls fast. Co-regulation helps. Validation, not management.',
       zoneShiftTo: 'yellow tender after wave, then green over hours.',
-      research: 'ADHD research (Barkley, Dodson) — emotional dysregulation is core symptom. Validate as neurological.'
+      research: 'ADHD research (Barkley; Shaw et al., 2014): emotional dysregulation is very common in ADHD. Validate as neurological.'
     },
     {
       id: 'red_suicidal_ideation_high',
@@ -11814,7 +11814,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       thoughtCues: ['I need the pain to come out', 'this is the only way', 'I deserve this'],
       behaviorCues: ['gathering means', 'hiding from people', 'wearing concealing clothes', 'asking about first aid'],
       triggers: ['unbearable emotion', 'trauma activation', 'feeling unable to cope', 'past pattern'],
-      whatItNeeds: 'TELL A TRUSTED ADULT. Use ice on wrists, snap rubber band, intense exercise as a bridge. Call or text 988. Text HOME to 741741. You deserve real coping tools and care.',
+      whatItNeeds: 'TELL A TRUSTED ADULT. Hold ice, draw on your skin with a red marker, or do intense exercise as a bridge. Call or text 988. Text HOME to 741741. You deserve real coping tools and care.',
       zoneShiftTo: 'yellow tender with support, then green with treatment.',
       research: 'Self-injury research — common, treatable, NOT attention-seeking. 988 / 741741 / school counselor. DBT skills help.'
     },
@@ -12340,7 +12340,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'moderate',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_cold_water_face', 'blue_jumping_jacks_10'],
-      research: 'Cold exposure raises norepinephrine 2 to 3x for hours (Sramek et al., 2000).'
+      research: 'Cold-water immersion raises norepinephrine (Sramek et al., 2000; measured during a one-hour immersion, not a short shower).'
     },
     {
       id: 'blue_text_friend',
@@ -12350,7 +12350,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['blue'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Brief social contact activates the ventral vagal social-engagement system and lifts mood.',
+      whatItDoes: 'Brief friendly contact with another person lifts mood and energy.',
       steps: {
         elementary: ['Pick a safe friend or family member', 'Send a quick hello message', 'Share one thing about your day', 'Notice connection'],
         middle: ['Choose someone you trust', 'Send a short message or quick call', 'Share a real moment', 'Notice the shift'],
@@ -12364,7 +12364,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'quiet',
       zoneShift: 'Blue to Green',
       pairsWith: ['green_connect_friend', 'blue_pet_cuddle'],
-      research: 'Polyvagal theory: social engagement activates the ventral vagal complex (Porges, 2011).'
+      research: 'Brief positive social contact lifts mood (Sandstrom & Dunn, 2014); polyvagal theory (Porges, 2011) offers one contested explanation.'
     },
     {
       id: 'blue_pet_cuddle',
@@ -12508,7 +12508,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_coffee_smell', 'yellow_lavender_scent'],
-      research: 'Peppermint and citrus increase alertness and EEG arousal (Moss et al., 2008).'
+      research: 'Peppermint aroma increased self-rated alertness (Moss et al., 2008).'
     },
     {
       id: 'blue_face_splash_brisk',
@@ -12690,7 +12690,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       steps: {
         elementary: ['Use hands or a soft brush', 'Briskly rub arms and legs', 'Continue 30 seconds', 'Notice energy'],
         middle: ['Briskly rub limbs with hands', 'Cover arms and legs for 30 seconds', 'Notice tactile alerting', 'Return to task'],
-        high: ['Vigorous self-brushing of limbs', 'Use OT brush if available', 'Continue 30 seconds', 'Notice steadier arousal']
+        high: ['Rub arms and legs briskly with your hands', 'Use firm, even pressure', 'Continue 30 seconds', 'Notice steadier arousal']
       },
       durationSec: 45,
       whenToUse: 'Sleepy moments before work.',
@@ -12700,7 +12700,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_tense_release', 'yellow_self_hug'],
-      research: 'Therapeutic brushing for sensory regulation (Wilbarger and Wilbarger, 2002).'
+      research: 'Brisk touch is an alerting sensory input used in OT sensory diets. The Wilbarger brushing protocol itself should only be done with an OT and has limited research support (Weeks et al., 2012).'
     },
     {
       id: 'blue_posture_adjust',
@@ -12748,7 +12748,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_text_friend', 'green_connect_friend'],
-      research: 'Eye contact engages ventral vagal pathways (Porges, 2011); honor autistic preferences.'
+      research: 'Friendly eye contact can feel connecting for many people; honor autistic preferences.'
     },
     {
       id: 'blue_push_ups_3',
@@ -13238,7 +13238,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['blue'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Coffee aroma alone (without caffeine) increases alertness in EEG studies.',
+      whatItDoes: 'The smell of coffee can make people feel more alert, partly because they expect it to.',
       steps: {
         elementary: ['Find coffee beans or grounds', 'Take 3 deep sniffs', 'Notice the wake-up', 'Continue work'],
         middle: ['Sniff coffee beans deliberately', '3 deep inhales', 'Notice alerting effect', 'Return to task'],
@@ -13252,7 +13252,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Blue to Green',
       pairsWith: ['blue_strong_scent', 'blue_familiar_smell'],
-      research: 'Coffee aroma alone affects alertness (Seo et al., 2008).'
+      research: 'A coffee-like scent raised alertness and test performance partly through expectation (Madzharov et al., 2018).'
     },
     {
       id: 'blue_max_color',
@@ -13324,7 +13324,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_physiological_sigh', 'yellow_paced_breath_64'],
-      research: 'Used in Navy SEAL training; reduces cortisol and slows HR (Roozbeh et al., 2018).'
+      research: 'Taught in Navy SEAL training; slow paced breathing lowers arousal (Zaccaro et al., 2018 review).'
     },
     {
       id: 'yellow_physiological_sigh',
@@ -13334,7 +13334,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Double inhale followed by long exhale reinflates alveoli and discharges CO2, fastest known calming breath.',
+      whatItDoes: 'Double inhale followed by a long exhale. In one trial, five minutes a day improved mood more than mindfulness meditation.',
       steps: {
         elementary: ['Big breath in', 'Small extra sip in', 'Long breath out', 'Repeat 3 times'],
         middle: ['Double inhale through nose', 'Long slow exhale through mouth', 'Repeat 3 to 5 times', 'Notice rapid calming'],
@@ -13342,13 +13342,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       },
       durationSec: 30,
       whenToUse: 'When acutely elevated and need fast calming.',
-      cantUseWhen: 'No real contraindications.',
+      cantUseWhen: 'Stop if you feel dizzy.',
       visibility: 'invisible',
       movement: 'still',
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_box_breathing', 'yellow_3_breaths_belly'],
-      research: 'Double inhale + long exhale rapidly reduces stress (Balban et al., 2023, Cell Reports Medicine).'
+      research: 'Daily cyclic sighing improved mood and lowered breathing rate (Balban et al., 2023, Cell Reports Medicine).'
     },
     {
       id: 'yellow_54321_grounding',
@@ -13564,7 +13564,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_iced_drink_sip', 'green_stay_hydrated'],
-      research: 'Mindful drinking engages vagal tone via swallow reflex (Porges, 2011).'
+      research: 'Slow, attentive sipping gives the mind one simple thing to follow.'
     },
     {
       id: 'yellow_hallway_walk',
@@ -13622,7 +13622,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Crossed-arm alternating taps provide bilateral stimulation that calms via EMDR principles.',
+      whatItDoes: 'Slow alternating taps give a steady rhythm and gentle pressure that many people find calming.',
       steps: {
         elementary: ['Cross arms over chest', 'Tap shoulders alternately', 'Continue for 60 seconds', 'Notice calm'],
         middle: ['Butterfly hug position', 'Alternate shoulder taps slowly', 'Continue 1 to 2 minutes', 'Notice steadier'],
@@ -13630,13 +13630,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       },
       durationSec: 90,
       whenToUse: 'Anxiety, after distressing memory.',
-      cantUseWhen: 'Used in EMDR but standalone is also fine.',
+      cantUseWhen: 'This is a self-soothing tool, not trauma therapy. Do not use it to work through a distressing memory on your own.',
       visibility: 'subtle',
       movement: 'small',
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_self_hug', 'yellow_tap_fingertips'],
-      research: 'Bilateral stimulation reduces emotional intensity (Shapiro, 2001).'
+      research: 'The butterfly hug comes from EMDR practice (Artigas & Jarero). On its own it works as rhythmic self-soothing; evidence for bilateral stimulation itself is mixed.'
     },
     {
       id: 'yellow_stretch_sides',
@@ -13694,7 +13694,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Distant gaze relaxes ciliary muscles and activates parasympathetic visual systems.',
+      whatItDoes: 'Looking far away relaxes the eye muscles used for close focus and gives the eyes a rest.',
       steps: {
         elementary: ['Find a window', 'Look at the farthest point', 'Hold gaze for 30 sec', 'Return to task'],
         middle: ['Look out a window', 'Find the farthest point', 'Sustain soft gaze 30 sec', 'Return to task'],
@@ -13708,7 +13708,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_eye_rest_20', 'green_walk_nature'],
-      research: 'Far gaze relaxes ciliary muscle and reduces sympathetic tone (Sheppard and Wolffsohn, 2018).'
+      research: 'Regular far-gaze breaks reduce digital eye strain (Sheppard and Wolffsohn, 2018).'
     },
     {
       id: 'yellow_hum_quietly',
@@ -13924,7 +13924,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['blue_crunchy_snack', 'red_jaw_work'],
-      research: 'Chewing gum reduces cortisol and improves focus (Smith, 2010).'
+      research: 'Chewing gum is linked with higher alertness (Smith, 2010).'
     },
     {
       id: 'yellow_mint_suck',
@@ -13948,7 +13948,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['blue_sour_candy', 'yellow_chew_gum'],
-      research: 'Mint flavor increases alertness while focus supports regulation (Moss et al., 2008).'
+      research: 'Peppermint aroma increased self-rated alertness (Moss et al., 2008); a strong flavor also gives attention something to hold.'
     },
     {
       id: 'yellow_switch_easier_task',
@@ -14030,7 +14030,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Self-touch activates oxytocin pathways and parasympathetic safety cues.',
+      whatItDoes: 'Gentle self-touch provides calming pressure and warmth.',
       steps: {
         elementary: ['Place hand on heart', 'Take one slow breath', 'Notice the warmth', 'Continue work'],
         middle: ['Hand on heart', 'One full slow breath', 'Notice safety cue', 'Resume task'],
@@ -14044,7 +14044,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_3_breaths_belly', 'yellow_self_hug'],
-      research: 'Self-touch releases oxytocin and lowers cortisol (Eckstein et al., 2020).'
+      research: 'Self-soothing touch lowered cortisol after stress (Dreisoerner et al., 2021).'
     },
     {
       id: 'yellow_tense_release_whole',
@@ -14246,7 +14246,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Deliberate yawning triggers parasympathetic activation and brain cooling.',
+      whatItDoes: 'A deliberate yawn stretches the jaw and deepens the breath; it may also help cool the brain (a hypothesis, not settled).',
       steps: {
         elementary: ['Open mouth wide', 'Force a yawn', 'Let it complete', 'Notice settling'],
         middle: ['Deliberate yawn', 'Repeat 2 to 3 times', 'Notice parasympathetic activation', 'Resume task'],
@@ -14366,7 +14366,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['yellow'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Self-hug provides bilateral pressure and activates oxytocin pathways.',
+      whatItDoes: 'A self-hug provides calming pressure and warmth.',
       steps: {
         elementary: ['Cross arms over chest', 'Squeeze shoulders firmly', 'Hold 20 seconds', 'Release and notice'],
         middle: ['Self-hug squeeze', '20 to 30 seconds', 'Notice oxytocin response', 'Return to task'],
@@ -14380,7 +14380,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_butterfly_hug', 'yellow_hand_heart'],
-      research: 'Self-touch releases oxytocin (Eckstein et al., 2020).'
+      research: 'Self-soothing touch lowered cortisol after stress (Dreisoerner et al., 2021).'
     },
     {
       id: 'yellow_rocking_chair',
@@ -14884,7 +14884,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_eye_rest_20', 'yellow_look_out_window'],
-      research: 'Slow eye movements engage parasympathetic state (Porges, 2011).'
+      research: 'Slow, deliberate eye movements can feel settling for some people; evidence is limited.'
     },
     {
       id: 'yellow_imagine_warm_light',
@@ -15052,7 +15052,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Yellow to Green',
       pairsWith: ['yellow_roll_shoulders', 'yellow_hand_massage'],
-      research: 'Cervical mobility supports vagal function (Porges, 2011).'
+      research: 'Gentle neck movement releases muscle tension.'
     },
     {
       id: 'yellow_5_to_1_countdown',
@@ -15088,13 +15088,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forBand: 'all',
       whatItDoes: 'Sudden cold to face triggers mammalian dive reflex, dropping HR within seconds.',
       steps: {
-        elementary: ['Fill bowl with very cold water', 'Hold breath, dip face for 15 to 30 sec', 'Come up and breathe slowly', 'Repeat if needed'],
+        elementary: ['Fill a bowl with cold tap water (no ice), or use a cold pack on your cheeks', 'Hold breath, dip face for 15 to 30 sec', 'Come up and breathe slowly', 'Repeat if needed'],
         middle: ['Fill bowl with cold water and ice', 'Hold breath, submerge face 30 sec', 'Come up and breathe slowly', 'Repeat 2 to 3 times'],
         high: ['Cold water bowl with ice', 'Face submersion 30 to 60 sec', 'Slow breathing after', 'Repeat as needed']
       },
       durationSec: 90,
       whenToUse: 'Crisis-grade arousal; emotion mind overwhelm.',
-      cantUseWhen: 'Avoid if heart condition without medical clearance.',
+      cantUseWhen: 'Check with a doctor first if you have a heart condition or an eating disorder, or take heart medicine. Use cold tap water, not ice water.',
       visibility: 'moderate',
       movement: 'small',
       noiseLevel: 'silent',
@@ -15110,7 +15110,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['red'],
       forIntensity: 'crisis',
       forBand: 'all',
-      whatItDoes: 'Intense exercise discharges adrenaline and resets the stress response.',
+      whatItDoes: 'Intense exercise gives the energy of a big emotion somewhere to go, and the body settles afterward.',
       steps: {
         elementary: ['Do 30 to 60 sec of intense exercise', 'Jumping jacks, sprints, or burpees', 'Stop and breathe', 'Repeat if still elevated'],
         middle: ['Intense exercise 30 to 60 sec', 'Maximum effort', 'Stop and slow breathe', 'Repeat as needed'],
@@ -15422,11 +15422,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['red'],
       forIntensity: 'crisis',
       forBand: 'all',
-      whatItDoes: 'Full cold immersion provides strongest acute parasympathetic activation.',
+      whatItDoes: 'A short cool shower is a strong sensory reset that can interrupt a crisis spiral. Cold briefly raises heart rate and alertness, so breathe slowly and keep it short.',
       steps: {
-        elementary: ['Get in shower', 'Turn fully cold', 'Stay 1 to 3 minutes', 'Breathe steadily'],
-        middle: ['Cold shower 1 to 3 minutes', 'Controlled breathing throughout', 'Notice deep parasympathetic activation', 'Towel off and notice settling'],
-        high: ['Sustained cold shower 2 to 5 minutes', 'Controlled breath', 'Notice deep settling', 'Use for acute crisis or daily practice']
+        elementary: ['Get in shower', 'Turn the water to cool, not ice cold', 'Stay about 30 seconds, with a grown-up\'s OK', 'Breathe steadily'],
+        middle: ['Cool shower for 30 to 60 seconds', 'Controlled breathing throughout', 'Notice the strong sensory shift', 'Towel off and notice settling'],
+        high: ['Cool to cold shower for 1 to 2 minutes', 'Controlled breath', 'Notice deep settling', 'Skip this if you have a heart condition']
       },
       durationSec: 180,
       whenToUse: 'Acute crisis at home; or daily resilience practice.',
@@ -15436,7 +15436,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'moderate',
       zoneShift: 'Red to Yellow',
       pairsWith: ['blue_cold_shower', 'red_tipp_temperature'],
-      research: 'Cold exposure activates strong parasympathetic response (Sramek et al., 2000).'
+      research: 'Whole-body cold activates the sympathetic system (Sramek et al., 2000); the calming comes from the strong sensory shift and the slow breathing afterward.'
     },
     {
       id: 'red_voiced_exhale',
@@ -15988,7 +15988,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Red to Yellow',
       pairsWith: ['red_splash_inner_wrists', 'red_cold_splash_strong'],
-      research: 'Cold exposure activates parasympathetic via cutaneous afferents (Sramek et al., 2000).'
+      research: 'Cold water on the hands is a strong sensory anchor that pulls attention to the present.'
     },
     {
       id: 'red_splash_inner_wrists',
@@ -16142,7 +16142,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['red'],
       forIntensity: 'crisis',
       forBand: 'all',
-      whatItDoes: 'Loud sustained humming maximally engages vagus nerve via vocal vibration.',
+      whatItDoes: 'Sustained humming lengthens the exhale, and many people find the vibration calming.',
       steps: {
         elementary: ['Big breath in', 'Hum loudly until breath runs out', 'Repeat 5 to 8 times', 'Notice settling'],
         middle: ['Loud long humming', '8 to 10 cycles', 'Notice vagal activation', 'Notice settling'],
@@ -16156,7 +16156,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'loud',
       zoneShift: 'Red to Yellow',
       pairsWith: ['blue_loud_hum', 'red_voo_toning'],
-      research: 'Humming stimulates vagus nerve maximally (Lundberg, 2003; Porges, 2017).'
+      research: 'Humming lengthens the exhale and raises nasal nitric oxide (Weitzberg & Lundberg, 2002); many people find the vibration calming.'
     },
     {
       id: 'red_cold_forearms',
@@ -16180,7 +16180,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Red to Yellow',
       pairsWith: ['red_splash_inner_wrists', 'red_wash_hands_cold'],
-      research: 'Forearm cooling reduces sympathetic activation (Eijsvogels et al., 2014).'
+      research: 'Cool water on the forearms is a strong, steady sensation that many people find settling.'
     },
     {
       id: 'red_push_chest_floor',
@@ -16660,7 +16660,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Green maintenance',
       pairsWith: ['green_limit_doomscroll', 'green_phone_in_other_room'],
-      research: 'Phone use breaks reduce anxiety (Twenge and Campbell, 2018).'
+      research: 'Limiting social media to about 30 minutes a day lowered loneliness and depression in one study of university students (Hunt et al., 2018).'
     },
     {
       id: 'green_read_pleasure',
@@ -16766,7 +16766,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['green'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Caring for other beings supports oxytocin and reduces stress.',
+      whatItDoes: 'Caring for other beings builds connection and reduces stress.',
       steps: {
         elementary: ['Spend time with pets or plants daily', 'Care for them', 'Notice the connection', 'Continue daily'],
         middle: ['Daily time with pets or plants 15 to 30 min', 'Active care and presence', 'Notice oxytocin lift', 'Track over weeks'],
@@ -16780,7 +16780,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Green maintenance',
       pairsWith: ['blue_pet_cuddle', 'green_walk_nature'],
-      research: 'Animal and plant care releases oxytocin (Beetz et al., 2012).'
+      research: 'Contact with animals is linked to lower stress (Beetz et al., 2012).'
     },
     {
       id: 'green_loving_kindness',
@@ -16852,7 +16852,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Green maintenance',
       pairsWith: ['green_phone_in_other_room', 'green_morning_gratitude'],
-      research: 'Morning phone use increases stress (Twenge and Campbell, 2018).'
+      research: 'Many people find a phone-free first half hour makes mornings calmer; research on screens and mood is mixed (Orben & Przybylski, 2019).'
     },
     {
       id: 'green_soak_sun',
@@ -16886,10 +16886,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forZone: ['green'],
       forIntensity: 'any',
       forBand: 'all',
-      whatItDoes: 'Daily hugs release oxytocin and support regulation.',
+      whatItDoes: 'Regular warm hugs with safe people support regulation.',
       steps: {
         elementary: ['Hug a loved one daily', '20 seconds or longer', 'Notice the warmth', 'Continue daily'],
-        middle: ['Daily 20-second hugs', 'Family, friend, partner, or pet', 'Notice oxytocin lift', 'Track over weeks'],
+        middle: ['Daily 20-second hugs', 'Family, friend, partner, or pet', 'Notice the warmth and calm', 'Track over weeks'],
         high: ['Sustained daily hugging practice', 'Multiple long hugs daily', 'Notice cumulative effects on mood', 'Track over weeks']
       },
       durationSec: 30,
@@ -16900,7 +16900,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Green maintenance',
       pairsWith: ['blue_pet_cuddle', 'green_connect_friend'],
-      research: '20-second hugs release oxytocin (Light et al., 2005).'
+      research: 'Frequent warm hugs are linked with lower blood pressure and heart rate (Light et al., 2005).'
     },
     {
       id: 'green_express_creativity',
@@ -17020,7 +17020,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       noiseLevel: 'silent',
       zoneShift: 'Green maintenance',
       pairsWith: ['green_wake_without_phone', 'green_consistent_sleep'],
-      research: 'Phone in bedroom reduces sleep quality (Twenge and Campbell, 2018).'
+      research: 'Devices in the bedroom at night are linked to shorter, poorer sleep (Carter et al., 2016, JAMA Pediatrics).'
     },
     {
       id: 'green_daily_breath',
@@ -17108,7 +17108,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       whyItTriggers: 'A pop quiz removes the chance to prepare and activates fear of failure with no exit. The brain reads this as a sudden performance threat and floods the body with stress chemicals before logic can catch up.',
       forWho: 'Hits hardest for perfectionists, students with test anxiety, ADHD students who rely on advance notice to focus, and any student whose grade is fragile.',
       earlyWarningSigns: [
-        'Stomach drops the moment the teacher says \\u0022clear your desks\\u0022',
+        'Stomach drops the moment the teacher says \u0022clear your desks\u0022',
         'Hands get cold or sweaty',
         'Mind goes blank even on material you know',
         'Heart races and breathing gets shallow',
@@ -17131,12 +17131,12 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       recoveryStrategies: [
         'Do not catastrophize the result before you know it',
         'Talk to a friend or trusted adult about how it felt',
-        'Review what you missed without self-attack \\u2014 it is information, not a verdict',
+        'Review what you missed without self-attack \u2014 it is information, not a verdict',
         'Move your body (walk, stretch) to discharge leftover stress',
         'Plan one small study habit change for next time'
       ],
       whenToSeekHelp: 'If test anxiety is so intense it is causing panic attacks, avoidance of school, or grades dropping despite knowing the material, talk to your school counselor.',
-      research: 'Test anxiety research (Putwain & Daly, 2014) shows up to 40% of students experience clinically significant test anxiety; pop quizzes activate it sharply because the cognitive appraisal of \\u0022threat with no control\\u0022 is maximal.'
+      research: 'Test anxiety research (Putwain & Daly, 2014) found about 16% of secondary students are highly test anxious; pop quizzes activate it sharply because the cognitive appraisal of "threat with no control" is maximal.'
     },
     {
       id: 'school_test_unprepared',
@@ -17149,7 +17149,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       earlyWarningSigns: [
         'Wave of dread the night before that you push away',
         'Stomach pain or nausea walking to class',
-        'Self-talk like \\u0022I am so stupid\\u0022 spiraling',
+        'Self-talk like \u0022I am so stupid\u0022 spiraling',
         'Wanting to fake illness to avoid it',
         'Feeling frozen when the paper hits your desk'
       ],
@@ -17158,24 +17158,24 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Use a study buddy or accountability text for upcoming tests',
         'Break study into 20-minute chunks instead of one big session that never happens',
         'If you struggle to start, ask a parent, counselor, or coach for body-doubling',
-        'Tell your teacher honestly the day before \\u2014 sometimes there are options'
+        'Tell your teacher honestly the day before \u2014 sometimes there are options'
       ],
       inTheMomentStrategies: [
         'Take 3 slow breaths before reading question 1',
         'Answer everything you can from common sense or partial memory',
-        'Do not leave answers blank \\u2014 even a guess sometimes earns partial credit',
+        'Do not leave answers blank \u2014 even a guess sometimes earns partial credit',
         'Use process of elimination on multiple choice',
         'Remind yourself: this score is feedback, not identity'
       ],
       recoveryStrategies: [
         'Ask the teacher about retake or test-correction policy',
-        'Do not numb out for the rest of the day \\u2014 do one small productive thing',
+        'Do not numb out for the rest of the day \u2014 do one small productive thing',
         'Talk to someone who will be honest but not shaming',
-        'Plan the next test\\u0027s study schedule TODAY while the sting is fresh',
-        'Forgive yourself \\u2014 self-attack does not improve future grades'
+        'Plan the next test\u0027s study schedule TODAY while the sting is fresh',
+        'Forgive yourself \u2014 self-attack does not improve future grades'
       ],
       whenToSeekHelp: 'If you regularly cannot prepare despite wanting to, that may be ADHD, depression, or executive function struggle; ask a school psychologist for an evaluation.',
-      research: 'Steel\\u0027s (2007) meta-analysis on procrastination shows 80-95% of students procrastinate; it is rarely laziness and usually emotional avoidance of difficult feelings.'
+      research: 'Steel\u0027s (2007) meta-analysis on procrastination shows 80-95% of students procrastinate; it is rarely laziness and usually emotional avoidance of difficult feelings.'
     },
     {
       id: 'school_forgot_homework',
@@ -17186,10 +17186,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       whyItTriggers: 'Forgetting triggers shame plus fear of teacher reaction plus consequences (grade, points, lecture). For students with ADHD, this happens often enough to become a chronic stressor that erodes self-image.',
       forWho: 'Especially hard on ADHD students, students with executive function struggles, students whose parents react harshly, and high-achievers who are not used to slipping.',
       earlyWarningSigns: [
-        'Stomach drop when teacher says \\u0022pass it forward\\u0022',
+        'Stomach drop when teacher says \u0022pass it forward\u0022',
         'Frantic backpack search',
         'Face flushing as you realize',
-        'Shame thoughts: \\u0022Why am I like this?\\u0022',
+        'Shame thoughts: \u0022Why am I like this?\u0022',
         'Hoping you can avoid being noticed'
       ],
       preventionStrategies: [
@@ -17197,24 +17197,24 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Use a checklist taped inside your locker or backpack',
         'Photograph your homework completed so even if paper is lost you have proof',
         'Keep emergency supplies (pencil, paper) in your bag permanently',
-        'Use the teacher\\u0027s online portal to confirm what is due'
+        'Use the teacher\u0027s online portal to confirm what is due'
       ],
       inTheMomentStrategies: [
-        'Tell the teacher honestly and briefly \\u2014 no elaborate excuse needed',
+        'Tell the teacher honestly and briefly \u2014 no elaborate excuse needed',
         'Ask for the late policy, not for sympathy',
         'Write down a plan to turn it in tomorrow',
-        'Breathe \\u2014 most teachers respect honesty more than panic',
+        'Breathe \u2014 most teachers respect honesty more than panic',
         'Do not let the shame spread into the rest of the day'
       ],
       recoveryStrategies: [
-        'Turn it in the very next class, not \\u0022later in the week\\u0022',
+        'Turn it in the very next class, not \u0022later in the week\u0022',
         'Tell a parent calmly so they hear it from you first',
-        'Look at why it slipped \\u2014 is it a system problem to fix?',
+        'Look at why it slipped \u2014 is it a system problem to fix?',
         'Forgive yourself; one missed assignment does not define you',
         'If this happens often, ask for accommodations (planner check-in, second set of books)'
       ],
-      whenToSeekHelp: 'If forgetting is constant despite real effort, ask about an evaluation \\u2014 chronic forgetting is a hallmark of ADHD and treatable.',
-      research: 'Barkley (2015) identifies working memory and prospective memory deficits as core ADHD features; \\u0022just remember it\\u0022 advice fails because the brain literally cannot hold the future task without external scaffolds.'
+      whenToSeekHelp: 'If forgetting is constant despite real effort, ask about an evaluation \u2014 chronic forgetting is a hallmark of ADHD and treatable.',
+      research: 'Barkley (2015) identifies working memory and prospective memory deficits as core ADHD features; \u0022just remember it\u0022 advice fails because the brain literally cannot hold the future task without external scaffolds.'
     },
     {
       id: 'school_public_speaking',
@@ -17232,8 +17232,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Wanting to fake illness to avoid it'
       ],
       preventionStrategies: [
-        'Practice out loud at home \\u2014 silent rehearsal lies to your brain',
-        'Record yourself once and watch \\u2014 you are usually less awkward than you fear',
+        'Practice out loud at home \u2014 silent rehearsal lies to your brain',
+        'Record yourself once and watch \u2014 you are usually less awkward than you fear',
         'Practice in front of one safe person first',
         'Have notes in large print as backup',
         'Ask if you can present to teacher 1-on-1 or via video if anxiety is severe'
@@ -17241,18 +17241,18 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inTheMomentStrategies: [
         'Take 3 slow breaths before starting',
         'Look at the back wall, between heads, or at one kind face',
-        'Slow down \\u2014 panic speeds you up, calm slows you down',
+        'Slow down \u2014 panic speeds you up, calm slows you down',
         'If you stumble, pause and restart the sentence; do not apologize',
         'Remind yourself: classmates are mostly thinking about their own turn'
       ],
       recoveryStrategies: [
-        'Acknowledge you did the hard thing \\u2014 doing it counts',
+        'Acknowledge you did the hard thing \u2014 doing it counts',
         'Do not replay every flaw on loop',
         'Ask one trusted person for honest gentle feedback',
         'Notice what went better than last time',
         'Reward yourself for facing the fear'
       ],
-      whenToSeekHelp: 'If public speaking causes panic attacks, school avoidance, or you cannot do it even with practice, social anxiety is treatable \\u2014 ask for therapy referral.',
+      whenToSeekHelp: 'If public speaking causes panic attacks, school avoidance, or you cannot do it even with practice, social anxiety is treatable \u2014 ask for therapy referral.',
       research: 'Stein & Kean (2000) found social anxiety disorder affects 7-13% of adolescents and presentations are the #1 trigger; cognitive-behavioral therapy with exposure is the gold-standard treatment.'
     },
     {
@@ -17275,20 +17275,20 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Request to volunteer when you feel ready instead',
         'Preview the chapter at home so familiar passages are easier',
         'For dyslexia, ask for assistive tech (text-to-speech) for class novels',
-        'Develop a code word with the teacher meaning \\u0022pass today\\u0022'
+        'Develop a code word with the teacher meaning \u0022pass today\u0022'
       ],
       inTheMomentStrategies: [
         'Take one breath before starting',
         'Read slower than you think you need to',
-        'If you misread, pause and reread the word \\u2014 do not panic',
+        'If you misread, pause and reread the word \u2014 do not panic',
         'Use your finger to track your place',
         'Remember: most classmates are not really listening, they are waiting for their turn'
       ],
       recoveryStrategies: [
-        'Do not replay it endlessly \\u2014 nobody is judging as harshly as you fear',
+        'Do not replay it endlessly \u2014 nobody is judging as harshly as you fear',
         'Talk to teacher about a quieter system if it was awful',
         'Notice that you survived; the fear was bigger than the moment',
-        'If you have dyslexia, this is not a character flaw \\u2014 it is a wiring difference',
+        'If you have dyslexia, this is not a character flaw \u2014 it is a wiring difference',
         'Practice reading aloud at home with a pet or stuffed animal so it becomes more familiar'
       ],
       whenToSeekHelp: 'If reading struggle is consistent, ask for a dyslexia screening; early identification opens up real accommodations.',
@@ -17313,25 +17313,25 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Sit somewhere you can engage but are not the first cold-call target',
         'Ask teacher privately for advance warning before being called',
         'Take light notes during class to stay anchored',
-        'If you space out, develop a phrase: \\u0022Can you repeat the question?\\u0022',
+        'If you space out, develop a phrase: \u0022Can you repeat the question?\u0022',
         'Have a friend agree to quietly help if you go blank'
       ],
       inTheMomentStrategies: [
-        'It is okay to say \\u0022I am not sure\\u0022 or \\u0022Can I have a minute?\\u0022',
-        'Buy time: \\u0022That is interesting, let me think\\u0022',
+        'It is okay to say \u0022I am not sure\u0022 or \u0022Can I have a minute?\u0022',
+        'Buy time: \u0022That is interesting, let me think\u0022',
         'Repeat the question back to give yourself processing time',
-        'Take one breath \\u2014 the silence feels longer to you than to others',
+        'Take one breath \u2014 the silence feels longer to you than to others',
         'Offer a partial answer or a related thought'
       ],
       recoveryStrategies: [
         'Do not let this moment define your whole day',
         'Re-engage with the next topic rather than dwell',
         'Talk to the teacher after if you want a heads-up policy',
-        'Notice that the class moved on \\u2014 so can you',
-        'Be kind to yourself \\u2014 this happens to everyone'
+        'Notice that the class moved on \u2014 so can you',
+        'Be kind to yourself \u2014 this happens to everyone'
       ],
       whenToSeekHelp: 'If you regularly freeze and feel humiliated, it may be social anxiety; school counselors can help.',
-      research: 'Eysenck\\u0027s attentional control theory (2007) explains how anxiety reduces working memory capacity, making cold-call recall harder for anxious students even when they know the material.'
+      research: 'Eysenck\u0027s attentional control theory (2007) explains how anxiety reduces working memory capacity, making cold-call recall harder for anxious students even when they know the material.'
     },
     {
       id: 'school_picked_last',
@@ -17339,14 +17339,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'school',
       forBand: 'elementary',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Being picked last is a public rejection that activates social pain pathways in the brain (same regions as physical pain). It tells your brain you are low-status, which kids feel deeply.',
+      whyItTriggers: 'Being picked last is a public rejection that activates social pain pathways in the brain (some of the same regions as physical pain). It tells your brain you are low-status, which kids feel deeply.',
       forWho: 'Hits hardest for students with poor motor skills, autistic students, socially anxious students, and any student who has been bullied before.',
       earlyWarningSigns: [
         'Stomach sinks each time names are called',
         'Eyes burning, holding back tears',
         'Shoulders slumping',
         'Wanting to leave the gym',
-        'Internal voice: \\u0022Nobody wants me\\u0022'
+        'Internal voice: \u0022Nobody wants me\u0022'
       ],
       preventionStrategies: [
         'Ask PE teacher to use random sorting (numbering, color cards) instead of captain-pick',
@@ -17363,14 +17363,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Remind yourself: this is one moment, not a verdict'
       ],
       recoveryStrategies: [
-        'Tell a parent or counselor what happened \\u2014 do not keep it in',
+        'Tell a parent or counselor what happened \u2014 do not keep it in',
         'Do an activity where you feel competent that afternoon',
         'Journal one strength you have that has nothing to do with sports',
         'Plan to advocate for a fairer sorting system',
         'Remember: many successful adults were picked last as kids'
       ],
       whenToSeekHelp: 'If this is happening repeatedly and damaging self-esteem, parents should advocate to the PE teacher; chronic peer rejection is a known risk factor for depression.',
-      research: 'Eisenberger\\u0027s fMRI research (2003) showed social rejection activates the same brain regions as physical pain; this is why \\u0022just get over it\\u0022 fails.'
+      research: 'Eisenberger\'s fMRI research (2003) showed social rejection activates some of the same brain regions as physical pain; this is why "just get over it" fails.'
     },
     {
       id: 'school_group_work_strangers',
@@ -17388,7 +17388,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Wanting to ask to work alone'
       ],
       preventionStrategies: [
-        'Have a personal opener ready (\\u0022Hi, I am X, what should we start with?\\u0022)',
+        'Have a personal opener ready (\u0022Hi, I am X, what should we start with?\u0022)',
         'Ask the teacher for a clear role you can take (notetaker, researcher)',
         'Bring a backup if you are allowed to choose one partner',
         'Practice small talk with family beforehand',
@@ -17417,7 +17417,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'school',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'This combines unfairness, resentment, fear of being graded down for others\\u0027 failures, and exhaustion. High-achieving students often get trapped here because they would rather do everything than risk a bad grade.',
+      whyItTriggers: 'This combines unfairness, resentment, fear of being graded down for others\u0027 failures, and exhaustion. High-achieving students often get trapped here because they would rather do everything than risk a bad grade.',
       forWho: 'Conscientious students, anxious students, high-achievers, and students whose self-worth is tied to grades.',
       earlyWarningSigns: [
         'Resentment building',
@@ -17429,16 +17429,16 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'On day one, divide tasks IN WRITING with deadlines',
         'Use a shared document where contributions are visible to teacher',
-        'Set checkpoints (\\u0022by Tuesday, send me your draft\\u0022)',
-        'Tell teacher early if a partner is not contributing \\u2014 do not wait until due date',
-        'Practice saying \\u0022I am not able to do that part, that was your section\\u0022'
+        'Set checkpoints (\u0022by Tuesday, send me your draft\u0022)',
+        'Tell teacher early if a partner is not contributing \u2014 do not wait until due date',
+        'Practice saying \u0022I am not able to do that part, that was your section\u0022'
       ],
       inTheMomentStrategies: [
-        'Pause before rescuing \\u2014 sometimes letting them fail is fair',
+        'Pause before rescuing \u2014 sometimes letting them fail is fair',
         'Send one clear, factual message asking for their part',
         'Document who did what so you have proof',
         'Talk to teacher BEFORE the deadline, not after',
-        'Do not stay up past your bedtime fixing it \\u2014 your sleep is more important'
+        'Do not stay up past your bedtime fixing it \u2014 your sleep is more important'
       ],
       recoveryStrategies: [
         'Use evaluation forms to give honest feedback to teacher',
@@ -17461,23 +17461,23 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       earlyWarningSigns: [
         'Resentment and anger when favored student is praised',
         'Disengaging from class participation',
-        'Cynicism about effort (\\u0022why try?\\u0022)',
+        'Cynicism about effort (\u0022why try?\u0022)',
         'Body tension in that class',
         'Bad-mouthing the teacher to friends'
       ],
       preventionStrategies: [
         'Document specific instances (what was said, when) without exaggeration',
         'Find one trusted adult to share with',
-        'Focus on what you control \\u2014 your work, your participation',
+        'Focus on what you control \u2014 your work, your participation',
         'Build relationships with other teachers as a buffer',
         'Do not let the favoritism shrink your participation'
       ],
       inTheMomentStrategies: [
         'Breathe through the resentment instead of reacting',
-        'Stay engaged \\u2014 do not punish yourself by withdrawing',
-        'Use \\u0022I\\u0022 statements if you address it (\\u0022I feel overlooked when...\\u0022)',
+        'Stay engaged \u2014 do not punish yourself by withdrawing',
+        'Use \u0022I\u0022 statements if you address it (\u0022I feel overlooked when...\u0022)',
         'Vent to a trusted person AFTER class, not during',
-        'Remind yourself: the teacher\\u0027s bias is about them, not you'
+        'Remind yourself: the teacher\u0027s bias is about them, not you'
       ],
       recoveryStrategies: [
         'Talk to a parent or counselor about a plan',
@@ -17538,14 +17538,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forWho: 'Autistic students, students with ADHD who rely on external structure, anxious students, and students with PTSD who feel safer with predictability.',
       earlyWarningSigns: [
         'Stomach drop when announcement comes',
-        'Rigid thinking: \\u0022but it was supposed to be...\\u0022',
+        'Rigid thinking: \u0022but it was supposed to be...\u0022',
         'Irritability at peers who seem fine with it',
         'Difficulty transitioning to the new plan',
         'Asking many clarifying questions'
       ],
       preventionStrategies: [
-        'Have teachers add \\u0022expect the unexpected\\u0022 to the social-emotional curriculum',
-        'Use a visual schedule that includes a \\u0022changes can happen\\u0022 card',
+        'Have teachers add \u0022expect the unexpected\u0022 to the social-emotional curriculum',
+        'Use a visual schedule that includes a \u0022changes can happen\u0022 card',
         'Build flexibility through gradual practice with small surprises',
         'Have a comfort item in your backpack at all times',
         'Know one calming routine you can do anywhere'
@@ -17554,7 +17554,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Take 3 deep breaths',
         'Ask one clear question to understand the new plan',
         'Write down the new schedule so it feels concrete',
-        'Use a quiet self-talk: \\u0022I can handle this\\u0022',
+        'Use a quiet self-talk: \u0022I can handle this\u0022',
         'Find one friend or adult who can co-regulate with you'
       ],
       recoveryStrategies: [
@@ -17604,7 +17604,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Plan for the next drill with what you learned'
       ],
       whenToSeekHelp: 'If drills cause flashbacks, panic attacks, or persistent fear, talk to a counselor; trauma-informed accommodations are possible.',
-      research: 'Schildkraut (2020) research on lockdown drills found 75%+ of students experience anxiety from them; trauma-informed protocols reduce harm.'
+      research: 'Research on lockdown drills is mixed: calm, announced drills raised preparedness without raising anxiety (Schildkraut & Nickerson, 2020), while an analysis of social media found stress and anxiety markers rose about 40% after drills (ElSherief et al., 2021); trauma-informed protocols reduce harm.'
     },
     {
       id: 'school_last_minute_assignment',
@@ -17616,9 +17616,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forWho: 'Students who are already overloaded, ADHD students who struggle to reprioritize quickly, perfectionists who cannot accept doing it poorly.',
       earlyWarningSigns: [
         'Wave of overwhelm',
-        'Mental list spiraling: \\u0022but I also have...\\u0022',
+        'Mental list spiraling: \u0022but I also have...\u0022',
         'Anger at the teacher',
-        'Catastrophizing: \\u0022I will fail everything\\u0022',
+        'Catastrophizing: \u0022I will fail everything\u0022',
         'Body tension or tears'
       ],
       preventionStrategies: [
@@ -17633,7 +17633,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Ask clarifying questions to fully understand scope',
         'Reprioritize on paper, do not just panic-spiral',
         'Decide what can move or wait',
-        'Ask for an extension if needed \\u2014 respectfully and early'
+        'Ask for an extension if needed \u2014 respectfully and early'
       ],
       recoveryStrategies: [
         'Do the assignment in chunks, not all at once',
@@ -17664,14 +17664,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Check assignments online while sick if you can manage briefly',
         'Email teachers the day before returning to ask what to prioritize',
         'Pack everything the night before so morning is easier',
-        'Plan a low-key first day back \\u2014 do not over-schedule',
+        'Plan a low-key first day back \u2014 do not over-schedule',
         'Have a comfort routine for the evening after'
       ],
       inTheMomentStrategies: [
         'Be honest with teachers about your energy level',
         'Ask for extensions rather than panic',
         'Take rest breaks during the day if possible',
-        'Eat enough \\u2014 your body is still recovering',
+        'Eat enough \u2014 your body is still recovering',
         'Do not push through if you feel worse'
       ],
       recoveryStrategies: [
@@ -17701,7 +17701,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       preventionStrategies: [
         'Shift sleep schedule 2-3 days before school resumes',
-        'Pack and prep the night before \\u2014 do not start cold',
+        'Pack and prep the night before \u2014 do not start cold',
         'Reconnect with one friend by text the day before',
         'Look at your schedule and prepare yourself for first-day flow',
         'Plan one small thing to look forward to after school'
@@ -17709,7 +17709,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inTheMomentStrategies: [
         'Take 3 grounding breaths walking in',
         'Greet one familiar face for grounding',
-        'Take the morning slow \\u2014 you do not have to be 100% on day one',
+        'Take the morning slow \u2014 you do not have to be 100% on day one',
         'Be kind to yourself when re-entry feels hard',
         'Drink water and eat a real breakfast'
       ],
@@ -17720,7 +17720,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Reflect on what helped you get through the first day',
         'Notice when you settle back into rhythm'
       ],
-      whenToSeekHelp: 'If post-vacation dread is so intense you cannot attend school, this is school refusal and is treatable \\u2014 talk to a therapist.',
+      whenToSeekHelp: 'If post-vacation dread is so intense you cannot attend school, this is school refusal and is treatable \u2014 talk to a therapist.',
       research: 'Kearney (2008) on school refusal shows transitions back to school after break are peak risk windows; early intervention prevents chronic absence.'
     },
     {
@@ -17729,7 +17729,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'school',
       forBand: 'all',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Everything is unknown \\u2014 hallways, routines, peers, teachers, expectations. Your brain has to work overtime on every micro-decision and it is exhausting.',
+      whyItTriggers: 'Everything is unknown \u2014 hallways, routines, peers, teachers, expectations. Your brain has to work overtime on every micro-decision and it is exhausting.',
       forWho: 'Especially hard for autistic students, anxious students, students with attachment difficulties, and students who have moved often.',
       earlyWarningSigns: [
         'Hard time sleeping the night before',
@@ -17747,9 +17747,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Take 3 grounding breaths before walking in',
-        'Smile at one person \\u2014 most people are nervous too',
+        'Smile at one person \u2014 most people are nervous too',
         'Ask for help if you are lost (people understand on day one)',
-        'Eat lunch with one person if possible \\u2014 even silently',
+        'Eat lunch with one person if possible \u2014 even silently',
         'Step out for a calming moment if needed'
       ],
       recoveryStrategies: [
@@ -17760,7 +17760,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Plan day two with what you learned'
       ],
       whenToSeekHelp: 'If first weeks remain overwhelming, school counselors can help with peer connection groups and adjustment support.',
-      research: 'Rumberger (2003) found students who change schools mid-year are at 3x higher risk for drop-out; targeted welcome plans buffer this.'
+      research: 'Rumberger & Larson (1998) found students who changed high schools were about twice as likely not to graduate; targeted welcome plans buffer this.'
     },
     {
       id: 'school_bell_transitions',
@@ -17768,7 +17768,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'school',
       forBand: 'middle',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Hallways are loud, crowded, fast, and unpredictable. You have to switch mental gears, manage your stuff, navigate social dynamics, and arrive on time \\u2014 all in 4 minutes.',
+      whyItTriggers: 'Hallways are loud, crowded, fast, and unpredictable. You have to switch mental gears, manage your stuff, navigate social dynamics, and arrive on time \u2014 all in 4 minutes.',
       forWho: 'Autistic students, students with sensory differences, anxious students, students with slow motor planning, students who are bullied in hallways.',
       earlyWarningSigns: [
         'Body tension as bell approaches',
@@ -17835,9 +17835,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Eat something more after school if you barely ate',
         'Talk to a counselor about a lunch alternative',
         'Drink water to recover',
-        'Plan tomorrow\\u0027s lunch with what you learned'
+        'Plan tomorrow\u0027s lunch with what you learned'
       ],
-      whenToSeekHelp: 'If cafeteria is so overwhelming you skip eating, ask for a quieter lunch location \\u2014 this is a reasonable accommodation.',
+      whenToSeekHelp: 'If cafeteria is so overwhelming you skip eating, ask for a quieter lunch location \u2014 this is a reasonable accommodation.',
       research: 'Bagby (2012) on autism and lunchrooms found cafeterias are the #1 reported school stressor; alternative lunch options significantly improved outcomes.'
     },
     {
@@ -17865,8 +17865,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inTheMomentStrategies: [
         'Take 3 breaths before going out',
         'Look for one person you can approach',
-        'Join a game by asking \\u0022can I play?\\u0022',
-        'It is okay to read or draw alone \\u2014 you do not always have to play',
+        'Join a game by asking \u0022can I play?\u0022',
+        'It is okay to read or draw alone \u2014 you do not always have to play',
         'Stay near a kind adult if needed'
       ],
       recoveryStrategies: [
@@ -17904,7 +17904,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inTheMomentStrategies: [
         'Take 3 breaths and try once more slowly',
         'Ask a teacher or hall monitor for help',
-        'Do not panic about being late \\u2014 just go and explain',
+        'Do not panic about being late \u2014 just go and explain',
         'Use your phone or planner to find the combination',
         'Skip the locker if you can survive without what is inside'
       ],
@@ -17931,7 +17931,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Face flushing',
         'Wanting to skip the class entirely',
         'Heart racing as you open the door',
-        'Self-talk: \\u0022Everyone is looking\\u0022'
+        'Self-talk: \u0022Everyone is looking\u0022'
       ],
       preventionStrategies: [
         'Have a morning routine that gets you ready early',
@@ -17945,17 +17945,17 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Walk in quietly to your seat',
         'Apologize briefly if expected; do not over-explain',
         'Settle in and ask a classmate quietly what page you are on',
-        'Let the moment pass \\u2014 the class will refocus'
+        'Let the moment pass \u2014 the class will refocus'
       ],
       recoveryStrategies: [
         'Do not punish yourself with shame all day',
         'Plan one change for tomorrow',
         'Talk to parent if home logistics are the issue',
         'Move on and engage with the class',
-        'Forgive yourself \\u2014 everyone is late sometimes'
+        'Forgive yourself \u2014 everyone is late sometimes'
       ],
       whenToSeekHelp: 'If you are chronically late and cannot fix it, talk to a counselor about home logistics, sleep issues, or executive function support.',
-      research: 'Mac Iver (2010) found chronic tardiness predicts dropout more strongly than absence; root-cause approaches (sleep, transport, EF) work better than punishment.'
+      research: 'Attendance problems are one of the strongest early-warning signs for dropout (Balfanz, Herzog & Mac Iver, 2007); root-cause approaches (sleep, transport, EF) work better than punishment.'
     },
     {
       id: 'school_forgot_lunch',
@@ -17980,21 +17980,21 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Use a visual checklist by the door'
       ],
       inTheMomentStrategies: [
-        'Ask a friend if they have extra to share \\u2014 most will',
-        'Get a school lunch \\u2014 schools are required to feed you',
+        'Ask a friend if they have extra to share \u2014 most will',
+        'Get a school lunch \u2014 schools are required to feed you',
         'Tell the nurse or counselor if you have no options',
         'Drink water to take the edge off',
-        'Do not skip eating to avoid asking \\u2014 you need food'
+        'Do not skip eating to avoid asking \u2014 you need food'
       ],
       recoveryStrategies: [
         'Eat well after school',
         'Restock emergency snacks in locker',
-        'Plan tomorrow\\u0027s lunch with what you learned',
+        'Plan tomorrow\u0027s lunch with what you learned',
         'Do not be too hard on yourself',
         'Talk to family about a better packing system'
       ],
-      whenToSeekHelp: 'If food at home is unreliable, talk to a school counselor \\u2014 free meal programs and food pantries can help, and this is not a shame issue.',
-      research: 'Tester (2016) on adolescent food insecurity found 1 in 6 students experience it; access to school meals significantly improves academic performance.'
+      whenToSeekHelp: 'If food at home is unreliable, talk to a school counselor \u2014 free meal programs and food pantries can help, and this is not a shame issue.',
+      research: 'About 1 in 5 U.S. children live in food-insecure households (USDA, 2023); access to school meals improves attendance and learning.'
     },
     {
       id: 'school_in_trouble_did_it',
@@ -18014,26 +18014,26 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Develop honest communication with adults so consequences are predictable',
         'Talk to parents about how harsh reactions affect you',
-        'Build self-image not entirely on \\u0022being good\\u0022',
+        'Build self-image not entirely on \u0022being good\u0022',
         'Practice the skill of admitting mistakes early in low-stakes moments',
-        'Know what your adults\\u0027 patterns are so you can prepare'
+        'Know what your adults\u0027 patterns are so you can prepare'
       ],
       inTheMomentStrategies: [
         'Take a breath; do not let shame turn into a lie',
         'Take responsibility honestly and briefly',
         'Apologize without excessive groveling',
         'Ask what the consequence is so you know',
-        'Do not catastrophize \\u2014 most mistakes are recoverable'
+        'Do not catastrophize \u2014 most mistakes are recoverable'
       ],
       recoveryStrategies: [
         'Tell your parents yourself, do not let the school call cold',
         'Reflect on what led to the choice',
         'Make amends if appropriate (apology, repair)',
-        'Forgive yourself \\u2014 you are not your worst moment',
+        'Forgive yourself \u2014 you are not your worst moment',
         'Plan how to handle the situation differently next time'
       ],
       whenToSeekHelp: 'If you cannot stop self-attacking or fear parent reaction includes harm, talk to a counselor immediately.',
-      research: 'Brown (2012) on shame vs. guilt: guilt (\\u0022I did a bad thing\\u0022) motivates repair; shame (\\u0022I am bad\\u0022) leads to defensiveness and worse behavior over time.'
+      research: 'Brown (2012) on shame vs. guilt: guilt (\u0022I did a bad thing\u0022) motivates repair; shame (\u0022I am bad\u0022) leads to defensiveness and worse behavior over time.'
     },
     {
       id: 'school_in_trouble_didnt_do_it',
@@ -18054,13 +18054,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build relationships with teachers and admins so you have credibility',
         'Have a trusted adult who advocates for you',
         'Document patterns if you are repeatedly accused',
-        'Know your school\\u0027s grievance process',
+        'Know your school\u0027s grievance process',
         'Have a parent ally who will go to bat'
       ],
       inTheMomentStrategies: [
-        'Stay calm even though you are furious \\u2014 escalating hurts your case',
+        'Stay calm even though you are furious \u2014 escalating hurts your case',
         'State the facts clearly without exaggeration',
-        'Ask for the evidence \\u0022what specifically am I accused of\\u0022',
+        'Ask for the evidence \u0022what specifically am I accused of\u0022',
         'Request a witness or trusted adult present',
         'Do not sign anything you do not agree with'
       ],
@@ -18072,7 +18072,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Do not internalize the injustice as your fault'
       ],
       whenToSeekHelp: 'If you are repeatedly falsely accused, especially if it reflects bias, escalate to parents, administrators, and if needed civil rights complaints.',
-      research: 'GAO 2018 report found Black students are suspended at 3x the rate of white students for the same behaviors; bias in discipline is well-documented.'
+      research: 'A 2018 GAO report found Black students were about 15.5% of public school students but about 39% of students suspended; bias in discipline is well-documented.'
     },
     {
       id: 'school_bad_grade',
@@ -18098,7 +18098,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Take a breath before opening the paper',
-        'Do not catastrophize \\u2014 one grade is not your whole grade',
+        'Do not catastrophize \u2014 one grade is not your whole grade',
         'Ask the teacher about retakes or extra credit',
         'Look at what went wrong as data',
         'Do not compare with peers'
@@ -18107,7 +18107,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Tell your parents calmly with a plan',
         'Make a study change based on what you learned',
         'Talk to a friend or trusted adult',
-        'Forgive yourself \\u2014 you are not your grade',
+        'Forgive yourself \u2014 you are not your grade',
         'Get support if grades are consistently dropping'
       ],
       whenToSeekHelp: 'If grades are dropping consistently or grade reactions cause panic, talk to a counselor about anxiety, learning differences, or family pressure.',
@@ -18119,7 +18119,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'school',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'When effort does not match outcome, it shakes your belief that you can succeed. This is especially painful because you cannot blame lack of effort \\u2014 you have to face that maybe you do not know how to study, or the test was unfair, or you have a learning difference.',
+      whyItTriggers: 'When effort does not match outcome, it shakes your belief that you can succeed. This is especially painful because you cannot blame lack of effort \u2014 you have to face that maybe you do not know how to study, or the test was unfair, or you have a learning difference.',
       forWho: 'High-effort students, perfectionists, students with undiagnosed learning differences, students with test anxiety.',
       earlyWarningSigns: [
         'Tears or anger',
@@ -18132,25 +18132,25 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Develop varied study strategies (do not rely on rereading alone)',
         'Practice retrieval (flashcards, practice tests) which research shows works best',
         'Get teacher feedback on your study methods',
-        'Sleep well before the test \\u2014 cramming through the night hurts more than helps',
+        'Sleep well before the test \u2014 cramming through the night hurts more than helps',
         'Build a support system for hard subjects'
       ],
       inTheMomentStrategies: [
-        'Take a breath \\u2014 the feeling is real but the catastrophe is not',
+        'Take a breath \u2014 the feeling is real but the catastrophe is not',
         'Ask the teacher to go over what you missed',
         'Do not compare with peers',
         'Reach out to a friend or trusted adult',
         'Remind yourself: effort matters even when outcomes vary'
       ],
       recoveryStrategies: [
-        'Examine your study method \\u2014 is there a better way?',
+        'Examine your study method \u2014 is there a better way?',
         'Ask the teacher for office hours or study tips',
         'Consider whether you need tutoring or testing for learning differences',
-        'Do not abandon the subject \\u2014 try a new approach',
-        'Forgive yourself \\u2014 you tried, and trying matters'
+        'Do not abandon the subject \u2014 try a new approach',
+        'Forgive yourself \u2014 you tried, and trying matters'
       ],
-      whenToSeekHelp: 'If effort consistently fails to produce results despite real study, ask for a learning difference evaluation \\u2014 this is treatable and not a moral failing.',
-      research: 'Karpicke (2008) on retrieval practice shows active testing beats rereading by 50% for retention; many students study \\u0022wrong\\u0022 and effort fails.'
+      whenToSeekHelp: 'If effort consistently fails to produce results despite real study, ask for a learning difference evaluation \u2014 this is treatable and not a moral failing.',
+      research: 'Karpicke (2008) on retrieval practice shows active testing beats rereading by 50% for retention; many students study \u0022wrong\u0022 and effort fails.'
     },
     {
       id: 'school_class_too_loud',
@@ -18228,7 +18228,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Plan ahead for the next big deadline week'
       ],
       whenToSeekHelp: 'If overload is constant and shutting you down, talk to a counselor about workload, ADHD evaluation, or course adjustment.',
-      research: 'Hirsh (2013) on cognitive load found that 5+ concurrent demands push most students into shutdown; chunking and offloading to paper preserves function.'
+      research: 'Working memory holds only a few things at once (Cowan, 2001); chunking and offloading to paper preserves function.'
     },
     {
       id: 'school_changing_class',
@@ -18242,7 +18242,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Stomach knot the first day',
         'Hesitation entering the room',
         'Loneliness even surrounded by peers',
-        'Comparison: \\u0022Everyone else has friends here\\u0022',
+        'Comparison: \u0022Everyone else has friends here\u0022',
         'Wanting to switch back'
       ],
       preventionStrategies: [
@@ -18257,14 +18257,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Greet one person',
         'Ask the teacher what you missed and need to know',
         'Sit somewhere central, not in a corner',
-        'Be patient with yourself \\u2014 this takes weeks, not days'
+        'Be patient with yourself \u2014 this takes weeks, not days'
       ],
       recoveryStrategies: [
         'Decompress at home each day the first week',
         'Talk to a parent or trusted adult about the transition',
-        'Celebrate small wins (you knew one person\\u0027s name)',
+        'Celebrate small wins (you knew one person\u0027s name)',
         'Sleep well',
-        'Give yourself grace \\u2014 mid-year transitions are harder'
+        'Give yourself grace \u2014 mid-year transitions are harder'
       ],
       whenToSeekHelp: 'If the transition is causing depression or refusal to attend, talk to a counselor for support.',
       research: 'Eccles (1993) stage-environment fit research shows mid-year transitions disrupt belonging and motivation more than start-of-year transitions.'
@@ -18275,13 +18275,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Exclusion activates ancient survival circuitry \\u2014 in evolutionary terms, being cast out of the group meant death. Your brain treats social exclusion as urgent even when objectively it is small.',
+      whyItTriggers: 'Exclusion activates ancient survival circuitry \u2014 in evolutionary terms, being cast out of the group meant death. Your brain treats social exclusion as urgent even when objectively it is small.',
       forWho: 'All adolescents; especially intense for socially anxious students, autistic students who already feel different, and students with rejection-sensitive temperaments.',
       earlyWarningSigns: [
         'Stomach drop seeing the photo or message you were not in',
         'Tears or burning eyes',
         'Wanting to ghost everyone',
-        'Spiraling \\u0022nobody likes me\\u0022 thoughts',
+        'Spiraling \u0022nobody likes me\u0022 thoughts',
         'Heart racing or hollow chest feeling'
       ],
       preventionStrategies: [
@@ -18292,7 +18292,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Develop solo activities you enjoy'
       ],
       inTheMomentStrategies: [
-        'Take a breath and name the feeling out loud (\\u0022this is exclusion pain\\u0022)',
+        'Take a breath and name the feeling out loud (\u0022this is exclusion pain\u0022)',
         'Do not text everyone in anger',
         'Step away from social media for an hour',
         'Reach out to ONE safe person, not the people who excluded you',
@@ -18303,10 +18303,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Reflect on whether to address it directly with the group',
         'Make a plan for the next gathering',
         'Invest energy in friendships that include you',
-        'Do not isolate \\u2014 reach out somewhere'
+        'Do not isolate \u2014 reach out somewhere'
       ],
       whenToSeekHelp: 'If exclusion is chronic, severely damaging self-esteem, or driving thoughts of self-harm, talk to a counselor or call 988.',
-      research: 'Eisenberger (2003) brain imaging showed social rejection activates the same brain regions as physical pain; this is biology, not weakness.'
+      research: 'Eisenberger (2003) brain imaging showed social rejection activates some of the same brain regions as physical pain; the hurt is real, not weakness.'
     },
     {
       id: 'peer_best_friend_other',
@@ -18357,21 +18357,21 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forWho: 'All students; intense for students with social anxiety, perfectionists, students who care deeply about reputation.',
       earlyWarningSigns: [
         'Anger surge',
-        'Paranoid scanning: \\u0022who else knows?\\u0022',
+        'Paranoid scanning: \u0022who else knows?\u0022',
         'Urge to confront everyone',
         'Tears of betrayal',
         'Sleeplessness replaying it'
       ],
       preventionStrategies: [
-        'Live in a way you can defend \\u2014 but accept gossip happens anyway',
+        'Live in a way you can defend \u2014 but accept gossip happens anyway',
         'Have core friends who tell you when they hear things',
         'Limit who you share private things with',
         'Build a strong sense of self separate from peer opinion',
-        'Avoid spreading gossip yourself \\u2014 it sets a tone'
+        'Avoid spreading gossip yourself \u2014 it sets a tone'
       ],
       inTheMomentStrategies: [
         'Do not react publicly in anger',
-        'Get the facts before assuming \\u2014 rumors distort',
+        'Get the facts before assuming \u2014 rumors distort',
         'Talk to someone calm before deciding to confront',
         'Take a break from the group if needed',
         'Remind yourself: their gossip is about them'
@@ -18396,7 +18396,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forWho: 'Students with rejection sensitivity, anxious attachment, ADHD (which often comes with RSD), depressed students.',
       earlyWarningSigns: [
         'Disproportionate sadness',
-        'Spiraling: \\u0022they did not really want to hang out\\u0022',
+        'Spiraling: \u0022they did not really want to hang out\u0022',
         'Tears',
         'Urge to make passive-aggressive reply',
         'Loneliness wave'
@@ -18422,8 +18422,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Do not let one cancellation ruin your whole day',
         'Process the feeling with a journal or trusted person'
       ],
-      whenToSeekHelp: 'If you have rejection sensitivity strong enough to derail you regularly, RSD treatment (often part of ADHD care) helps.',
-      research: 'Dodson (2016) on Rejection Sensitive Dysphoria found it affects most ADHD adults; small rejections feel catastrophic and treatable with awareness + medication.'
+      whenToSeekHelp: 'If rejection sensitivity regularly derails you, tell your ADHD provider or a therapist; it can be worked on.',
+      research: 'Many people with ADHD describe intense pain after rejection, sometimes called rejection sensitive dysphoria (Dodson). It is not a formal diagnosis, but emotional dysregulation in ADHD is well documented (Shaw et al., 2014) and responds to ADHD treatment and therapy.'
     },
     {
       id: 'peer_crush_ignoring',
@@ -18522,8 +18522,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build emotional resilience for rejection in low-stakes ways first',
         'Recognize rejection is part of taking social risks',
         'Have a support system to lean on after',
-        'Build self-worth not contingent on others\\u0027 yes',
-        'Practice rejection scripts: \\u0022No problem\\u0022'
+        'Build self-worth not contingent on others\u0027 yes',
+        'Practice rejection scripts: \u0022No problem\u0022'
       ],
       inTheMomentStrategies: [
         'Stay composed; you can fall apart privately later',
@@ -18533,7 +18533,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Do not bargain or argue'
       ],
       recoveryStrategies: [
-        'Let yourself feel it \\u2014 cry, vent to a friend',
+        'Let yourself feel it \u2014 cry, vent to a friend',
         'Do not punish yourself for trying',
         'Reflect: was this a fit anyway?',
         'Take a break from putting yourself out there',
@@ -18548,7 +18548,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Teasing can range from playful to cruel; either way it makes you the target of group attention and can erode self-image. Even \\u0022just kidding\\u0022 teasing about appearance or differences cuts deep.',
+      whyItTriggers: 'Teasing can range from playful to cruel; either way it makes you the target of group attention and can erode self-image. Even \u0022just kidding\u0022 teasing about appearance or differences cuts deep.',
       forWho: 'Students who are different in any visible way, sensitive students, students with shame-prone temperaments.',
       earlyWarningSigns: [
         'Face flushing',
@@ -18560,14 +18560,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Build a group of friends who do not tease about painful subjects',
         'Develop comebacks that deflect without escalating',
-        'Address it directly: \\u0022That actually hurts, please stop\\u0022',
+        'Address it directly: \u0022That actually hurts, please stop\u0022',
         'Limit time with chronic teasers',
         'Build self-image not based on peer approval'
       ],
       inTheMomentStrategies: [
         'Take a breath; do not give them the reaction they want',
         'Walk away if it is too intense',
-        'Use a direct response: \\u0022That is not funny\\u0022',
+        'Use a direct response: \u0022That is not funny\u0022',
         'Tell an adult if it crosses into bullying',
         'Do not retaliate publicly'
       ],
@@ -18587,7 +18587,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Mockery is teasing\\u0027s nastier cousin \\u2014 it includes imitation, mimicry, or making fun of how you talk, look, or move. It is dehumanizing and triggers shame plus rage.',
+      whyItTriggers: 'Mockery is teasing\u0027s nastier cousin \u2014 it includes imitation, mimicry, or making fun of how you talk, look, or move. It is dehumanizing and triggers shame plus rage.',
       forWho: 'Autistic students whose stims or speech patterns get mocked, students with disabilities, students with accents, anyone visibly different.',
       earlyWarningSigns: [
         'Hot face',
@@ -18605,13 +18605,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Walk away if safe',
-        'Use a direct response: \\u0022Stop\\u0022',
+        'Use a direct response: \u0022Stop\u0022',
         'Find an ally to stand with',
         'Tell an adult immediately if it is bullying',
         'Do not retaliate physically'
       ],
       recoveryStrategies: [
-        'Tell a trusted adult \\u2014 do not carry it alone',
+        'Tell a trusted adult \u2014 do not carry it alone',
         'Process the feeling with a counselor if needed',
         'Find community with people who accept you',
         'Document if it continues',
@@ -18626,28 +18626,28 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Microaggressions are small remarks that signal you are seen as \\u0022other\\u0022 or lesser. They accumulate over time \\u2014 each one feels small but the lifetime weight is huge.',
+      whyItTriggers: 'Microaggressions are small remarks that signal you are seen as \u0022other\u0022 or lesser. They accumulate over time \u2014 each one feels small but the lifetime weight is huge.',
       forWho: 'Students of color, LGBTQ+ students, religious minorities, disabled students, students with intersecting marginalized identities.',
       earlyWarningSigns: [
-        'Sting of recognition: \\u0022here we go again\\u0022',
+        'Sting of recognition: \u0022here we go again\u0022',
         'Anger or exhaustion',
-        'Self-doubt: \\u0022did they mean it that way?\\u0022',
+        'Self-doubt: \u0022did they mean it that way?\u0022',
         'Wanting to leave the space',
         'Body tension'
       ],
       preventionStrategies: [
         'Build community with people who share your identity',
         'Identify allies who notice and intervene',
-        'Pick your battles \\u2014 you do not have to address every one',
+        'Pick your battles \u2014 you do not have to address every one',
         'Document patterns if institutional',
         'Build self-worth grounded in your identity'
       ],
       inTheMomentStrategies: [
         'Decide if you want to address it (you do not always have to)',
-        'Use a direct calm response if you choose: \\u0022That is a stereotype\\u0022',
+        'Use a direct calm response if you choose: \u0022That is a stereotype\u0022',
         'Step away to regulate before deciding',
         'Tell an ally what happened',
-        'Do not gaslight yourself \\u2014 your read is probably right'
+        'Do not gaslight yourself \u2014 your read is probably right'
       ],
       recoveryStrategies: [
         'Talk to someone who gets it',
@@ -18665,7 +18665,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Being targeted for who you are (race, sexuality, gender, religion, disability) is more harmful than general bullying because it attacks core identity. It is also a civil rights violation.',
+      whyItTriggers: 'Being targeted for who you are (race, sexuality, gender, religion, disability) is more harmful than general bullying because it attacks core identity. It can also be a civil rights issue: under federal law, schools must respond to serious harassment based on race, national origin, sex or disability, and many states add more protections.',
       forWho: 'LGBTQ+ students, students of color, religious minorities, disabled students, immigrants, transgender students especially.',
       earlyWarningSigns: [
         'Dread coming to school',
@@ -18686,7 +18686,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Find an adult ally',
         'Document what was said',
         'Do not respond physically',
-        'Use a direct calm response if safe: \\u0022That is hateful, stop\\u0022'
+        'Use a direct calm response if safe: \u0022That is hateful, stop\u0022'
       ],
       recoveryStrategies: [
         'Report formally to school administration',
@@ -18743,7 +18743,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'A direct hateful message is invasive \\u2014 it enters your private space. Anonymous senders cannot be confronted, which fuels paranoia about who it could be.',
+      whyItTriggers: 'A direct hateful message is invasive \u2014 it enters your private space. Anonymous senders cannot be confronted, which fuels paranoia about who it could be.',
       forWho: 'Anyone with public visibility; especially LGBTQ+ youth, activists, students who have spoken publicly about anything controversial.',
       earlyWarningSigns: [
         'Stomach drop',
@@ -18757,7 +18757,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Limit DM access to friends only',
         'Have someone else manage your DMs during vulnerable times',
         'Build offline community for grounding',
-        'Know your platform\\u0027s reporting tools'
+        'Know your platform\u0027s reporting tools'
       ],
       inTheMomentStrategies: [
         'Do not respond',
@@ -18782,7 +18782,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Group chat exclusion is modern social exile \\u2014 you find out you were not in the conversation everyone else was having. The digital evidence makes it concrete in a way old-school exclusion was not.',
+      whyItTriggers: 'Group chat exclusion is modern social exile \u2014 you find out you were not in the conversation everyone else was having. The digital evidence makes it concrete in a way old-school exclusion was not.',
       forWho: 'All adolescents; especially intense for socially anxious students and those with rejection sensitivity.',
       earlyWarningSigns: [
         'Stomach drop seeing screenshots',
@@ -18813,7 +18813,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Process with a trusted person'
       ],
       whenToSeekHelp: 'If chronic exclusion is causing depression or suicidal thoughts, talk to a counselor or call 988.',
-      research: 'Underwood (2003) on relational aggression: digital exclusion is the dominant 2020s form, with measurable mental health impact on excluded teens.'
+      research: 'Underwood\'s research on social aggression shows exclusion harms mental health; group-chat exclusion is a current form of it.'
     },
     {
       id: 'peer_friend_secret_from_you',
@@ -18825,14 +18825,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forWho: 'All adolescents; especially intense for students with abandonment fears or perfectionist friend standards.',
       earlyWarningSigns: [
         'Hurt and confusion',
-        'Spiraling: \\u0022what else have they not told me?\\u0022',
+        'Spiraling: \u0022what else have they not told me?\u0022',
         'Urge to confront',
         'Pulling back from the friendship',
         'Loss of trust'
       ],
       preventionStrategies: [
         'Accept that friends have parts of themselves you do not see',
-        'Build self-worth beyond being someone\\u0027s confidante',
+        'Build self-worth beyond being someone\u0027s confidante',
         'Communicate openly about what you expect from friendship',
         'Recognize secrets are not always betrayal',
         'Have multiple friends for different purposes'
@@ -18872,8 +18872,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Be careful what you share and with whom',
         'Build trust in small ways before deep ones',
-        'Have multiple support people \\u2014 do not rely on one',
-        'Notice friends\\u0027 gossip patterns before trusting them with secrets',
+        'Have multiple support people \u2014 do not rely on one',
+        'Notice friends\u0027 gossip patterns before trusting them with secrets',
         'Use a therapist or journal for the deepest things'
       ],
       inTheMomentStrategies: [
@@ -18906,7 +18906,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Loss of appetite or overeating',
         'Insomnia or sleeping too much',
         'Obsessive thinking',
-        'Physical chest pain (real \\u0022heartbreak\\u0022)'
+        'Physical chest pain (real \u0022heartbreak\u0022)'
       ],
       preventionStrategies: [
         'Build identity not entirely fused with relationship',
@@ -18919,7 +18919,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Let yourself cry',
         'Reach out to one trusted friend',
         'Do not text the ex in the first 24 hours',
-        'Move your body \\u2014 walk, run, dance',
+        'Move your body \u2014 walk, run, dance',
         'Eat and sleep even when you do not feel like it'
       ],
       recoveryStrategies: [
@@ -18955,7 +18955,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Develop solo enjoyment'
       ],
       inTheMomentStrategies: [
-        'Let yourself grieve \\u2014 friend loss is real loss',
+        'Let yourself grieve \u2014 friend loss is real loss',
         'Talk to other friends or family',
         'Do not stalk their social media',
         'Move your body',
@@ -18984,18 +18984,18 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Quiet to avoid wrong move',
         'Exhaustion after social events',
         'Overthinking conversations after',
-        'Comparison: \\u0022they seem so close already\\u0022'
+        'Comparison: \u0022they seem so close already\u0022'
       ],
       preventionStrategies: [
         'Build one-on-one relationships before group dynamics',
-        'Identify the group culture first \\u2014 humor, topics, norms',
+        'Identify the group culture first \u2014 humor, topics, norms',
         'Have a few stories or topics ready',
-        'Pace yourself \\u2014 do not try to be central immediately',
+        'Pace yourself \u2014 do not try to be central immediately',
         'Maintain old friendships during transition'
       ],
       inTheMomentStrategies: [
         'Take grounding breaths',
-        'Ask questions \\u2014 people love talking about themselves',
+        'Ask questions \u2014 people love talking about themselves',
         'Find one person to anchor with',
         'It is okay to be quiet while you learn',
         'Step out for breaks if overwhelmed'
@@ -19008,7 +19008,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Give yourself months, not days, to feel embedded'
       ],
       whenToSeekHelp: 'If social anxiety is preventing you from connecting at all, treatment is highly effective.',
-      research: 'Brown (2008) on adolescent peer crowds: integration into new groups typically takes 3-6 months; expecting instant belonging causes distress.'
+      research: 'Feeling part of a new group usually takes months, not days; expecting instant belonging causes distress.'
     },
     {
       id: 'peer_party_strangers',
@@ -19030,11 +19030,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Have a plan for arrival (who you will text first)',
         'Set a time you will leave',
         'Have transportation home that does not depend on others',
-        'Eat and hydrate before \\u2014 do not show up depleted'
+        'Eat and hydrate before \u2014 do not show up depleted'
       ],
       inTheMomentStrategies: [
         'Take grounding breaths outside',
-        'Find one person to talk to \\u2014 anyone',
+        'Find one person to talk to \u2014 anyone',
         'Bring an activity (food, drink, music) so you have something to do',
         'Step outside for breaks',
         'Leave when you have had enough'
@@ -19085,7 +19085,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Process with parents what helped',
         'Rest and recover the next day'
       ],
-      whenToSeekHelp: 'If separation anxiety is preventing many normal activities, talk to a counselor \\u2014 it is treatable.',
+      whenToSeekHelp: 'If separation anxiety is preventing many normal activities, talk to a counselor \u2014 it is treatable.',
       research: 'Eisen & Engler (2006) on childhood anxiety: separation anxiety is one of the most common childhood anxiety disorders and responds well to CBT.'
     },
     {
@@ -19094,7 +19094,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'high',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Taking a romantic social risk means putting yourself in position for direct rejection. The vulnerability is real, even if everyone says \\u0022just ask, it will be fine.\\u0022',
+      whyItTriggers: 'Taking a romantic social risk means putting yourself in position for direct rejection. The vulnerability is real, even if everyone says \u0022just ask, it will be fine.\u0022',
       forWho: 'All adolescents; especially intense first times and for students with social anxiety.',
       earlyWarningSigns: [
         'Heart racing for hours before',
@@ -19106,13 +19106,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Build smaller social risks first to develop tolerance',
         'Know what you want to say',
-        'Plan a low-pressure ask (\\u0022want to study together?\\u0022)',
+        'Plan a low-pressure ask (\u0022want to study together?\u0022)',
         'Recognize that no is not catastrophic',
         'Have a friend ready to support after either answer'
       ],
       inTheMomentStrategies: [
         'Take 3 grounding breaths',
-        'Just say it \\u2014 do not over-elaborate',
+        'Just say it \u2014 do not over-elaborate',
         'Make eye contact and stay calm',
         'Accept their answer gracefully either way',
         'Walk away with dignity'
@@ -19145,13 +19145,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Practice saying no kindly in lower-stakes situations',
         'Recognize their feelings are not your responsibility to manage',
-        'Have a few honest phrases ready: \\u0022I do not feel that way but I value you\\u0022',
+        'Have a few honest phrases ready: \u0022I do not feel that way but I value you\u0022',
         'Build self-respect about your own choice',
         'Talk with friends about scripts'
       ],
       inTheMomentStrategies: [
         'Take a breath',
-        'Be honest but kind: \\u0022I am flattered but I do not feel the same\\u0022',
+        'Be honest but kind: \u0022I am flattered but I do not feel the same\u0022',
         'Do not give false hope',
         'Do not over-explain',
         'Allow them their reaction'
@@ -19163,8 +19163,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Do not date someone just to avoid saying no',
         'Trust your own knowing'
       ],
-      whenToSeekHelp: 'If you cannot say no in romantic or sexual situations, this is a safety concern \\u2014 talk to a trusted adult or counselor.',
-      research: 'Petronio (2002) on social refusals: direct kind no\\u0027s are healthier for both parties than vague avoidance.'
+      whenToSeekHelp: 'If you cannot say no in romantic or sexual situations, this is a safety concern \u2014 talk to a trusted adult or counselor.',
+      research: 'Petronio (2002) on social refusals: direct kind no\u0027s are healthier for both parties than vague avoidance.'
     },
     {
       id: 'peer_first_romantic',
@@ -19198,7 +19198,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       recoveryStrategies: [
         'Process with a trusted friend',
         'Reflect on what felt good and what did not',
-        'Do not compare with peers\\u0027 experiences',
+        'Do not compare with peers\u0027 experiences',
         'Talk to a trusted adult if confused or upset',
         'Allow time for feelings to settle'
       ],
@@ -19211,7 +19211,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'peer',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Discovered lies trigger anger plus questions about everything else \\u2014 if they lied about this, what else? The trust foundation cracks.',
+      whyItTriggers: 'Discovered lies trigger anger plus questions about everything else \u2014 if they lied about this, what else? The trust foundation cracks.',
       forWho: 'All adolescents; especially intense for those with abandonment fears or trust issues.',
       earlyWarningSigns: [
         'Rage surge',
@@ -19221,7 +19221,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Tears of betrayal'
       ],
       preventionStrategies: [
-        'Recognize all friends will lie sometimes \\u2014 not all lies are equal',
+        'Recognize all friends will lie sometimes \u2014 not all lies are equal',
         'Build trust gradually',
         'Communicate openly about what you need',
         'Do not put any one friend on a pedestal',
@@ -19250,7 +19250,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Children\\u0027s nervous systems are co-regulated by parents; when parents are dysregulated, kids\\u0027 nervous systems destabilize. Conflict at home erodes the safe base needed for everything else.',
+      whyItTriggers: 'Children\u0027s nervous systems are co-regulated by parents; when parents are dysregulated, kids\u0027 nervous systems destabilize. Conflict at home erodes the safe base needed for everything else.',
       forWho: 'All children; especially intense for kids from high-conflict homes, kids with anxiety, kids with PTSD from family violence.',
       earlyWarningSigns: [
         'Body tension hearing raised voices',
@@ -19263,7 +19263,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Have a safe room or headphones for when conflict starts',
         'Identify a trusted adult outside the home',
         'Build self-soothing tools that work in your bedroom',
-        'Know it is not your job to fix parents\\u0027 conflict',
+        'Know it is not your job to fix parents\u0027 conflict',
         'Have an exit plan if it ever becomes violent'
       ],
       inTheMomentStrategies: [
@@ -19289,7 +19289,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Parents\\u0027 voices become internal voices. Harsh criticism from parents shapes self-talk for life and triggers shame in the moment.',
+      whyItTriggers: 'Parents\u0027 voices become internal voices. Harsh criticism from parents shapes self-talk for life and triggers shame in the moment.',
       forWho: 'All children; intense for sensitive temperaments, perfectionists, kids in shame-based families.',
       earlyWarningSigns: [
         'Stomach drop hearing critical tone',
@@ -19307,7 +19307,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Take a breath; do not absorb every word',
-        'Use a calm response: \\u0022I hear you\\u0022',
+        'Use a calm response: \u0022I hear you\u0022',
         'Do not argue point by point in the moment',
         'Step away if you need to regulate',
         'Remind yourself: their criticism reflects them too'
@@ -19349,7 +19349,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Do not match their energy',
         'Take 3 breaths',
         'Get a parent if it is physical or unsafe',
-        'Use \\u0022I\\u0022 statements'
+        'Use \u0022I\u0022 statements'
       ],
       recoveryStrategies: [
         'Decompress in your space',
@@ -19395,14 +19395,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build life and identity outside the family',
         'Therapy for family role dynamics',
         'Build chosen family of supportive adults',
-        'Recognize parents may not change \\u2014 grieve and build resilience'
+        'Recognize parents may not change \u2014 grieve and build resilience'
       ],
       whenToSeekHelp: 'If parental favoritism is severe and damaging, talk to a counselor; family therapy can sometimes help.',
       research: 'Suitor (2008) on parental differential treatment: perceived favoritism predicts adolescent depression even when objective measures show none.'
     },
     {
       id: 'family_divorce',
-      trigger: 'Parents\\u0027 divorce or separation',
+      trigger: 'Parents\u0027 divorce or separation',
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
@@ -19423,9 +19423,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build identity beyond family structure'
       ],
       inTheMomentStrategies: [
-        'Allow yourself to feel \\u2014 grief is real',
+        'Allow yourself to feel \u2014 grief is real',
         'Do not get pulled into parental conflict',
-        'Tell parents what you need (\\u0022please do not bad-mouth each other\\u0022)',
+        'Tell parents what you need (\u0022please do not bad-mouth each other\u0022)',
         'Lean on trusted adults',
         'Take care of basics (sleep, eat)'
       ],
@@ -19462,14 +19462,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Communicate openly about boundaries'
       ],
       inTheMomentStrategies: [
-        'Take time to adjust \\u2014 do not force closeness',
+        'Take time to adjust \u2014 do not force closeness',
         'Communicate honestly with parent about how it is going',
         'Maintain your own routines and friendships',
         'Use respectful communication with stepparent',
         'Have a trusted adult to process with'
       ],
       recoveryStrategies: [
-        'Allow time \\u2014 blended family adjustment takes years',
+        'Allow time \u2014 blended family adjustment takes years',
         'Therapy for the family',
         'Build separate relationship with stepparent over time',
         'Do not pretend feelings you do not have',
@@ -19501,7 +19501,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Have trusted adults outside the home for attention'
       ],
       inTheMomentStrategies: [
-        'Name the feeling: \\u0022I miss having mom to myself\\u0022',
+        'Name the feeling: \u0022I miss having mom to myself\u0022',
         'Ask for 1-on-1 time',
         'Do not act out destructively',
         'Connect with grandparents or aunts/uncles',
@@ -19542,7 +19542,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inTheMomentStrategies: [
         'Let yourself cry',
         'Talk to family or friends who understand',
-        'Do not let anyone minimize: \\u0022it was just a pet\\u0022',
+        'Do not let anyone minimize: \u0022it was just a pet\u0022',
         'Memorial activities (photo, planting, art)',
         'Be patient with yourself'
       ],
@@ -19563,7 +19563,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       forBand: 'all',
       typicallyShiftsTo: 'blue',
       whyItTriggers: 'Worry about a loved one combines with disrupted routines, parentification (taking on adult roles), and fear of loss. Long illnesses are particularly draining.',
-      forWho: 'All family members; intense for kids who become caregivers or who lose a parent\\u0027s attention to the sick relative.',
+      forWho: 'All family members; intense for kids who become caregivers or who lose a parent\u0027s attention to the sick relative.',
       earlyWarningSigns: [
         'Worry',
         'Sleep disruption',
@@ -19579,7 +19579,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Have trusted adult to vent to'
       ],
       inTheMomentStrategies: [
-        'Allow yourself to feel \\u2014 worry is real',
+        'Allow yourself to feel \u2014 worry is real',
         'Do not over-function as adult',
         'Take care of basics',
         'Talk to a trusted adult',
@@ -19588,7 +19588,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       recoveryStrategies: [
         'Allow time for grief and worry to ebb',
         'Therapy for chronic stress',
-        'Maintain identity beyond \\u0022sibling/child of sick person\\u0022',
+        'Maintain identity beyond \u0022sibling/child of sick person\u0022',
         'Build community',
         'Take care of yourself'
       ],
@@ -19601,7 +19601,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Death of a loved one is the most universal trauma. Kids\\u0027 grief is real and often under-supported; they may not process for months or years.',
+      whyItTriggers: 'Death of a loved one is the most universal trauma. Kids\u0027 grief is real and often under-supported; they may not process for months or years.',
       forWho: 'All bereaved; intense for kids who lost a parent, sibling, or close relative.',
       earlyWarningSigns: [
         'Numbness',
@@ -19629,7 +19629,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Therapy, grief groups',
         'Honor anniversaries',
         'Build life that includes the absence',
-        'Do not rush \\u0022moving on\\u0022'
+        'Do not rush \u0022moving on\u0022'
       ],
       whenToSeekHelp: 'If grief is severe or includes suicidal thoughts, call 988 or a counselor; child grief programs exist nationally (Dougy Center has resource directory).',
       research: 'Worden (1996) on childhood bereavement: kids grieve in cycles, often re-grieving at developmental milestones; ongoing support matters.'
@@ -19682,7 +19682,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       whyItTriggers: 'Long parental absence triggers worry about safety, grief at absence, and household role shifts. Military families face this with added safety fear.',
       forWho: 'Military families, families with traveling work, families with incarcerated parents.',
       earlyWarningSigns: [
-        'Anxiety about parent\\u0027s safety',
+        'Anxiety about parent\u0027s safety',
         'Sleep disruption',
         'Withdrawal',
         'Acting out',
@@ -19718,7 +19718,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Money stress affects every part of family life \\u2014 food, housing, parental mood, and your own sense of stability. Kids often absorb parental anxiety even when shielded from details.',
+      whyItTriggers: 'Money stress affects every part of family life \u2014 food, housing, parental mood, and your own sense of stability. Kids often absorb parental anxiety even when shielded from details.',
       forWho: 'Kids in low-income or recently-impacted households; kids who hear money conversations frequently.',
       earlyWarningSigns: [
         'Worry about basic needs (food, shelter)',
@@ -19757,10 +19757,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'A parent\\u0027s mental health crisis turns the world upside down. Kids often become caregivers, lose stability, and absorb the parent\\u0027s distress.',
+      whyItTriggers: 'A parent\u0027s mental health crisis turns the world upside down. Kids often become caregivers, lose stability, and absorb the parent\u0027s distress.',
       forWho: 'Kids of parents with serious mental illness, depression, anxiety, bipolar, addiction.',
       earlyWarningSigns: [
-        'Hypervigilance about parent\\u0027s mood',
+        'Hypervigilance about parent\u0027s mood',
         'Taking on adult responsibilities',
         'Anxiety',
         'School performance drops',
@@ -19771,7 +19771,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build support network',
         'Therapy for yourself',
         'Connect with NAMI family support if applicable',
-        'Recognize parent\\u0027s illness is not your fault'
+        'Recognize parent\u0027s illness is not your fault'
       ],
       inTheMomentStrategies: [
         'Get to safety if needed',
@@ -19788,7 +19788,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Allow yourself to grieve the parent you needed'
       ],
       whenToSeekHelp: 'If parent is suicidal or in psychiatric crisis, call 988 or 911. For ongoing impact on you, talk to a counselor. NAMI Family Helpline 1-800-950-6264.',
-      research: 'Beardslee (2003) on children of depressed parents: structured family intervention reduces transmission of depression by 40%.'
+      research: 'Beardslee (2003) on children of depressed parents: family-based prevention programs help children understand the illness and lower their own risk.'
     },
     {
       id: 'family_parent_substance',
@@ -19796,10 +19796,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'family',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'A parent\\u0027s substance use creates unpredictability, fear, shame, and often role reversal where kids parent the parent. The impact is profound and often invisible to outsiders.',
+      whyItTriggers: 'A parent\u0027s substance use creates unpredictability, fear, shame, and often role reversal where kids parent the parent. The impact is profound and often invisible to outsiders.',
       forWho: 'Children of parents with alcohol, drug, or other addictions.',
       earlyWarningSigns: [
-        'Hypervigilance about parent\\u0027s state',
+        'Hypervigilance about parent\u0027s state',
         'Shame and secrecy at school',
         'Taking on caregiving',
         'Anxiety and depression',
@@ -19810,7 +19810,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build trusted adults outside the home',
         'Therapy for yourself',
         'Recognize the 3 Cs: you did not Cause, cannot Cure, cannot Control',
-        'Build life independent of parent\\u0027s addiction'
+        'Build life independent of parent\u0027s addiction'
       ],
       inTheMomentStrategies: [
         'Get to safety if needed',
@@ -19826,7 +19826,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Allow yourself to grieve the parent you needed',
         'Build identity beyond family chaos'
       ],
-      whenToSeekHelp: 'For your own support, Alateen (1-888-425-2666). For parent\\u0027s addiction, SAMHSA helpline 1-800-662-4357. If parent is endangering you, call a trusted adult or 911.',
+      whenToSeekHelp: 'For your own support, Alateen (1-888-425-2666). For parent\u0027s addiction, SAMHSA helpline 1-800-662-4357. If parent is endangering you, call a trusted adult or 911.',
       research: 'Children of Alcoholics research (Sher, 1991) shows COAs are at elevated risk for anxiety, depression, and addiction themselves; Alateen reduces risk.'
     },
     {
@@ -19853,7 +19853,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Use grounding when conversations escalate',
-        'Decline to engage on certain topics: \\u0022I am not discussing this\\u0022',
+        'Decline to engage on certain topics: \u0022I am not discussing this\u0022',
         'Step outside or to bathroom',
         'Have a code word with a sibling or partner',
         'Leave if needed'
@@ -19930,7 +19930,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Plan for adulthood independence'
       ],
       inTheMomentStrategies: [
-        'Use \\u0022I\\u0022 statements: \\u0022I feel restricted when...\\u0022',
+        'Use \u0022I\u0022 statements: \u0022I feel restricted when...\u0022',
         'Pick battles carefully',
         'Do not escalate to shouting',
         'Step away if it gets heated',
@@ -19964,7 +19964,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       preventionStrategies: [
         'Negotiate one space (even a corner, closet, bedroom area) for solitude',
         'Use headphones to create mental space',
-        'Build privacy with friends\\u0027 homes or public spaces',
+        'Build privacy with friends\u0027 homes or public spaces',
         'Communicate need for privacy clearly',
         'Build internal solitude practices'
       ],
@@ -20069,7 +20069,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'sensory',
       forBand: 'all',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Fluorescents flicker at 60Hz (or 120Hz for ballasts), which the conscious mind misses but the nervous system registers as ongoing noise. They also emit at frequencies that bother some brains specifically. This is documented, not in your head.',
+      whyItTriggers: 'Older fluorescent tubes flicker 120 times a second (twice the 60 Hz mains). Most people cannot see it, but it is linked to more headaches and eye strain for some people. Newer high-frequency fixtures flicker far less. This is documented, not in your head.',
       forWho: 'Autistic people, people with migraines, people with epilepsy, people with anxiety, neurodivergent people generally.',
       earlyWarningSigns: [
         'Headache developing',
@@ -20100,7 +20100,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Plan for less fluorescent exposure'
       ],
       whenToSeekHelp: 'If light sensitivity is causing migraines, see a neurologist. For chronic accommodations, schools and workplaces can adjust.',
-      research: 'Wilkins (1989) on fluorescent lighting found higher rates of headache and stress under fluorescents; LED upgrades reduce this significantly.'
+      research: 'Wilkins et al. (1989) found headaches and eye strain roughly halved when offices switched from conventional to high-frequency fluorescent lighting.'
     },
     {
       id: 'sensory_strong_smells',
@@ -20175,10 +20175,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Identify all triggering items and adjust wardrobe',
         'Wash new clothes thoroughly',
         'Build a sensory-safe wardrobe',
-        'Validate kid\\u0027s experience'
+        'Validate kid\u0027s experience'
       ],
       whenToSeekHelp: 'If sensory issues are severe enough to prevent dressing, occupational therapy can help.',
-      research: 'Dunn (2007) Sensory Profile shows tactile defensiveness affects 5-16% of children; environmental modification works.'
+      research: 'Sensory over-responsivity affects roughly 5-16% of children (Ahn et al., 2004; Ben-Sasson et al., 2009); environmental modification helps.'
     },
     {
       id: 'sensory_tight_clothing',
@@ -20381,7 +20381,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'sensory',
       forBand: 'all',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Each notification triggers a small dopamine + cortisol spike. Many in succession keeps the nervous system in low-grade alert mode, making focus and rest harder.',
+      whyItTriggers: 'Each notification pulls attention toward the phone, even if you do not pick it up. Many in a row keep you on low-grade alert, making focus and rest harder.',
       forWho: 'Everyone with smartphones, especially ADHD people who are notification-sensitive.',
       earlyWarningSigns: [
         'Compulsive checking',
@@ -20412,7 +20412,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Talk to a therapist about phone use if dysregulating'
       ],
       whenToSeekHelp: 'If phone use feels compulsive and is damaging sleep, school, or relationships, talk to a counselor about digital regulation.',
-      research: 'Mark (2008) on attention switching: each notification costs 23 minutes of refocus time; chronic notification exposure measurably reduces cognitive performance.'
+      research: 'Gloria Mark\'s office studies found people took about 23 minutes on average to get back to a task after a real interruption; even a notification you do not answer hurts attention (Stothart et al., 2015).'
     },
     {
       id: 'sensory_multiple_conversations',
@@ -20526,7 +20526,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Use sensory regulation tools (weighted blanket, deep pressure)',
         'Talk to a trusted person if upset',
         'Therapy for trauma if relevant',
-        'Validate your reaction \\u2014 it is real'
+        'Validate your reaction \u2014 it is real'
       ],
       whenToSeekHelp: 'If touch triggers panic or flashbacks consistently, trauma-focused therapy helps. RAINN 1-800-656-HOPE for survivors.',
       research: 'Van der Kolk (2014) on touch and trauma: unexpected touch is a major PTSD trigger; somatic awareness improves regulation.'
@@ -20557,7 +20557,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Remove the texture',
         'Wash hands or rinse mouth if needed',
         'Use grounding to recover',
-        'Communicate clearly: \\u0022I cannot touch that\\u0022',
+        'Communicate clearly: \u0022I cannot touch that\u0022',
         'Step away from the activity'
       ],
       recoveryStrategies: [
@@ -20576,7 +20576,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'sensory',
       forBand: 'all',
       typicallyShiftsTo: 'yellow',
-      whyItTriggers: 'Some people hear frequencies others miss (mosquito-tone hearing). The constant whine drains regulation and most adults will tell them \\u0022nothing is there.\\u0022 It is there \\u2014 you just hear it.',
+      whyItTriggers: 'Some people hear frequencies others miss (mosquito-tone hearing). The constant whine drains regulation and most adults will tell them \u0022nothing is there.\u0022 It is there \u2014 you just hear it.',
       forWho: 'Younger people (high frequency hearing fades with age), sensory-sensitive people, autistic people.',
       earlyWarningSigns: [
         'Difficulty focusing',
@@ -20654,7 +20654,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'biological',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Low blood sugar reduces prefrontal cortex function and increases amygdala reactivity. \\u0022Hangry\\u0022 is real biology; you have less impulse control when undernourished.',
+      whyItTriggers: 'Being very hungry makes people more irritable and reactive. "Hangry" is real; eat before hard conversations.',
       forWho: 'Everyone; especially intense for people with hypoglycemia, diabetes, or eating disorders.',
       earlyWarningSigns: [
         'Irritability',
@@ -20679,13 +20679,13 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       recoveryStrategies: [
         'Eat a real meal',
-        'Plan tomorrow\\u0027s meals',
+        'Plan tomorrow\u0027s meals',
         'Identify why you skipped',
         'Address eating patterns if chronic',
         'Build consistent meal schedule'
       ],
-      whenToSeekHelp: 'If you cannot eat regularly due to disordered eating, NEDA helpline 1-800-931-2237.',
-      research: 'Bushman (2014) on hunger and aggression: glucose depletion correlates with reduced self-control measurably.'
+      whenToSeekHelp: 'If you cannot eat regularly due to disordered eating, call the National Alliance for Eating Disorders Helpline 1-866-662-1235 (weekdays).',
+      research: 'Hunger increases irritability and negative reactions (MacCormack & Lindquist, 2018; Bushman et al., 2014).'
     },
     {
       id: 'bio_dehydration',
@@ -20799,7 +20799,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Process big feelings with trusted adult',
         'Build healthy habits',
         'Therapy if needed',
-        'Allow time \\u2014 puberty passes'
+        'Allow time \u2014 puberty passes'
       ],
       whenToSeekHelp: 'If mood swings include depression, self-harm, or are severe, see a doctor; pediatric mental health support exists.',
       research: 'Adolescent neuroscience (Steinberg, 2014): pubertal hormones interact with brain development creating heightened emotionality that is normal but real.'
@@ -20996,7 +20996,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Address underlying reasons for use',
         'Avoid triggers'
       ],
-      whenToSeekHelp: 'For substance withdrawal, see a doctor \\u2014 some withdrawals (alcohol, benzo) can be medically dangerous. SAMHSA 1-800-662-4357.',
+      whenToSeekHelp: 'For substance withdrawal, see a doctor \u2014 some withdrawals (alcohol, benzo) can be medically dangerous. SAMHSA 1-800-662-4357.',
       research: 'Koob (2014) on addiction neuroscience: withdrawal is a real neurobiological state that requires acknowledgment and often medical support.'
     },
     {
@@ -21074,7 +21074,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build reminders',
         'Address barriers to adherence'
       ],
-      whenToSeekHelp: 'If chronic non-adherence is causing health impact, talk to prescriber about why \\u2014 system, side effects, beliefs may all matter.',
+      whenToSeekHelp: 'If chronic non-adherence is causing health impact, talk to prescriber about why \u2014 system, side effects, beliefs may all matter.',
       research: 'Adherence research (Osterberg, 2005): 50% of patients do not take medication as prescribed; reasons are usually practical and addressable.'
     },
     {
@@ -21132,7 +21132,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Pain'
       ],
       preventionStrategies: [
-        'Maintain iron and magnesium intake',
+        'Ask a doctor about checking your iron level',
         'Stretch regularly',
         'Hydrate',
         'Limit caffeine and alcohol',
@@ -21153,7 +21153,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Track patterns'
       ],
       whenToSeekHelp: 'If RLS or cramps are chronic, see a doctor; treatment exists.',
-      research: 'Allen (2014) on RLS in youth: often misdiagnosed; iron supplementation is first-line treatment.'
+      research: 'Allen (2014) on RLS in youth: often missed; doctors check iron (ferritin) levels first and treat low iron under supervision.'
     },
     {
       id: 'bio_headache',
@@ -21239,7 +21239,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'biological',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Allergic inflammation affects mood, energy, and cognition. \\u0022Brain fog\\u0022 from allergies is real and reduces regulation capacity.',
+      whyItTriggers: 'Allergic inflammation affects mood, energy, and cognition. \u0022Brain fog\u0022 from allergies is real and reduces regulation capacity.',
       forWho: 'Anyone with seasonal or food allergies.',
       earlyWarningSigns: [
         'Sneezing, congestion',
@@ -21434,7 +21434,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'tech',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Losing hours of work to a crash is a specific grief \\u2014 the effort is gone, and you have to redo or abandon. The helplessness and lost time compound.',
+      whyItTriggers: 'Losing hours of work to a crash is a specific grief \u2014 the effort is gone, and you have to redo or abandon. The helplessness and lost time compound.',
       forWho: 'Anyone working digitally; especially intense during deadlines.',
       earlyWarningSigns: [
         'Disbelief',
@@ -21490,8 +21490,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build comfort being briefly offline'
       ],
       inTheMomentStrategies: [
-        'Find a place to charge (cafe, library, friend\\u0027s)',
-        'Use someone else\\u0027s phone for emergency',
+        'Find a place to charge (cafe, library, friend\u0027s)',
+        'Use someone else\u0027s phone for emergency',
         'Take a few hours offline',
         'Notice the discomfort without acting',
         'Use the time differently'
@@ -21629,7 +21629,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'tech',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'Curated highlight reels make others\\u0027 lives look perfect; comparing your inside to their outside triggers inadequacy. Body comparison especially affects teen mental health.',
+      whyItTriggers: 'Curated highlight reels make others\u0027 lives look perfect; comparing your inside to their outside triggers inadequacy. Body comparison especially affects teen mental health.',
       forWho: 'All social media users; especially intense for adolescent girls, eating disorder sufferers, perfectionists.',
       earlyWarningSigns: [
         'Inadequacy feelings',
@@ -21657,9 +21657,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Curate inputs intentionally',
         'Build self-worth offline',
         'Therapy for body image or self-esteem',
-        'Do not compare your insides to others\\u0027 outsides'
+        'Do not compare your insides to others\u0027 outsides'
       ],
-      whenToSeekHelp: 'If comparison spirals are causing depression, eating disorder behaviors, or self-harm, talk to a counselor; NEDA 1-800-931-2237 for eating concerns.',
+      whenToSeekHelp: 'If comparison spirals are causing depression, eating disorder behaviors, or self-harm, talk to a counselor; National Alliance for Eating Disorders Helpline 1-866-662-1235 for eating concerns.',
       research: 'Fardouly (2015) on social media and body image: even brief exposure to idealized images measurably reduces body satisfaction in young women.'
     },
     {
@@ -21668,7 +21668,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'tech',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Competitive gaming demands real-time responsiveness. Lag means losing through no fault of your own \\u2014 helpless plus the stakes of losing rank, friends\\u0027 respect, or money.',
+      whyItTriggers: 'Competitive gaming demands real-time responsiveness. Lag means losing through no fault of your own \u2014 helpless plus the stakes of losing rank, friends\u0027 respect, or money.',
       forWho: 'Competitive gamers, esports players, anyone with rank or social stakes in online games.',
       earlyWarningSigns: [
         'Rage building',
@@ -21746,7 +21746,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'tech',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'A moment of embarrassment becoming public spectacle is one of the modern world\\u0027s most painful experiences. The pile-on can feel like community-wide condemnation.',
+      whyItTriggers: 'A moment of embarrassment becoming public spectacle is one of the modern world\u0027s most painful experiences. The pile-on can feel like community-wide condemnation.',
       forWho: 'Anyone with public visibility or whose mistake was filmed; especially intense for adolescents.',
       earlyWarningSigns: [
         'Shame spiraling',
@@ -21785,7 +21785,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'When something was traumatic, your brain encoded sensory details alongside the threat. Years later, a smell or song can fire the same alarm. This is your nervous system protecting you \\u2014 it is doing what it learned to do.',
+      whyItTriggers: 'When something was traumatic, your brain encoded sensory details alongside the threat. Years later, a smell or song can fire the same alarm. This is your nervous system protecting you \u2014 it is doing what it learned to do.',
       forWho: 'Anyone with trauma history; often unrecognized in survivors of childhood adversity.',
       earlyWarningSigns: [
         'Sudden dread or fear without obvious cause',
@@ -21803,8 +21803,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'Use 5-4-3-2-1 grounding (5 see, 4 hear, 3 touch, 2 smell, 1 taste)',
-        'Remind yourself: \\u0022I am safe now, that was then\\u0022',
-        'Feel feet on the ground, name today\\u0027s date',
+        'Remind yourself: \u0022I am safe now, that was then\u0022',
+        'Feel feet on the ground, name today\u0027s date',
         'Reach out to a safe person',
         'Cold water on face if dissociating'
       ],
@@ -21816,7 +21816,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Be very gentle with yourself for the rest of the day'
       ],
       whenToSeekHelp: 'If trauma triggers are frequent or disabling, trauma-focused therapy (EMDR, TF-CBT) is highly effective. RAINN 1-800-656-HOPE for sexual trauma; SAMHSA 1-800-662-4357 for general. 988 for crisis.',
-      research: 'Van der Kolk (2014) \\u0022The Body Keeps the Score\\u0022: trauma is stored somatically; sensory triggers are the nervous system\\u0027s alarm, not weakness. Evidence-based trauma therapy works.'
+      research: 'Van der Kolk (2014) "The Body Keeps the Score": trauma shows up in the body as well as in thoughts; sensory triggers are the nervous system\'s alarm, not weakness. Evidence-based trauma therapy works.'
     },
     {
       id: 'trauma_anniversary_loss',
@@ -21824,7 +21824,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'blue',
-      whyItTriggers: 'The body and brain remember loss anniversaries even when the conscious mind does not. The week before can bring inexplicable sadness, fatigue, or irritability.',
+      whyItTriggers: 'Reminders of a loss (the season, the weather, the date) can stir feelings before you connect them to the anniversary. The week before can bring inexplicable sadness, fatigue, or irritability.',
       forWho: 'Anyone who has lost someone; pets, friends, family members, identity, capacity.',
       earlyWarningSigns: [
         'Unexplained sadness as the date approaches',
@@ -21863,7 +21863,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'The body keeps time even when the mind tries not to. As trauma anniversaries approach, the nervous system can flare even without conscious memory.',
+      whyItTriggers: 'As a trauma anniversary approaches, reminders (the season, the weather, dates) can stir the nervous system before you connect it to the date.',
       forWho: 'Trauma survivors of any kind.',
       earlyWarningSigns: [
         'Increased anxiety as date approaches',
@@ -21894,7 +21894,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build post-traumatic growth where possible'
       ],
       whenToSeekHelp: 'If anniversary reactions are severe, trauma-focused therapy helps. RAINN 1-800-656-HOPE; 988 for crisis.',
-      research: 'Trauma anniversary reactions are documented in PTSD research; body memory persists even with conscious resolution.'
+      research: 'Anniversary reactions are documented in PTSD research; reminders can trigger distress even after a lot of healing.'
     },
     {
       id: 'trauma_reminder_of_abuser',
@@ -21923,7 +21923,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Remind yourself: this person is not them',
         'Step away if needed to regulate',
         'Limit interaction if it does not feel safe',
-        'Trust your discomfort \\u2014 it is information'
+        'Trust your discomfort \u2014 it is information'
       ],
       recoveryStrategies: [
         'Process with therapist',
@@ -21941,7 +21941,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Place memory is powerful; returning to where trauma happened can re-activate the original nervous system response. Avoidance is often the brain\\u0027s solution.',
+      whyItTriggers: 'Place memory is powerful; returning to where trauma happened can re-activate the original nervous system response. Avoidance is often the brain\u0027s solution.',
       forWho: 'Trauma survivors; especially intense if the place is unavoidable (school, home, workplace).',
       earlyWarningSigns: [
         'Dread approaching the place',
@@ -22037,7 +22037,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       inTheMomentStrategies: [
         'It is okay to say stop, immediately',
-        'Use grounding (\\u0022I am here, I am safe\\u0022)',
+        'Use grounding (\u0022I am here, I am safe\u0022)',
         'Move to a safe space',
         'Communicate to trusted people',
         'Self-soothe'
@@ -22093,7 +22093,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     },
     {
       id: 'trauma_medical_procedures',
-      trigger: 'Medical procedures or doctor\\u0027s office',
+      trigger: 'Medical procedures or doctor\u0027s office',
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'red',
@@ -22114,7 +22114,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Schedule appointments thoughtfully'
       ],
       inTheMomentStrategies: [
-        'Communicate to provider: \\u0022I have trauma history, please explain everything\\u0022',
+        'Communicate to provider: \u0022I have trauma history, please explain everything\u0022',
         'It is okay to ask for pause or stop',
         'Use grounding tools',
         'Bring a support person',
@@ -22175,7 +22175,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'trauma',
       forBand: 'all',
       typicallyShiftsTo: 'red',
-      whyItTriggers: 'Some family members are tied to past harm. Their presence \\u2014 even brief \\u2014 can re-activate childhood patterns. The pressure to act normal makes it harder.',
+      whyItTriggers: 'Some family members are tied to past harm. Their presence \u2014 even brief \u2014 can re-activate childhood patterns. The pressure to act normal makes it harder.',
       forWho: 'Survivors of family abuse, neglect, or chronic difficulty.',
       earlyWarningSigns: [
         'Dread before visit',
@@ -22351,7 +22351,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Leave if you can',
         'Use grounding',
         'Reach out to safe person',
-        'Trust your discomfort \\u2014 it is data',
+        'Trust your discomfort \u2014 it is data',
         'Self-soothe'
       ],
       recoveryStrategies: [
@@ -22362,7 +22362,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Self-compassion'
       ],
       whenToSeekHelp: 'Trauma-focused therapy is highly effective. RAINN 1-800-656-HOPE, SAMHSA 1-800-662-4357, 988 in crisis.',
-      research: 'Pattern recognition in PTSD: trauma survivors\\u0027 nervous systems detect similar circumstances quickly; this is protective even when sometimes overactive.'
+      research: 'Pattern recognition in PTSD: trauma survivors\u0027 nervous systems detect similar circumstances quickly; this is protective even when sometimes overactive.'
     },
     {
       id: 'env_gloomy_weather',
@@ -22540,7 +22540,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Practice with real test conditions',
         'Maintain sleep and exercise',
         'Limit comparison with peers',
-        'Build perspective \\u2014 these tests are one part of admissions'
+        'Build perspective \u2014 these tests are one part of admissions'
       ],
       inTheMomentStrategies: [
         'Use anxiety management techniques',
@@ -22557,7 +22557,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Build perspective'
       ],
       whenToSeekHelp: 'If test anxiety is severe and you have accommodations, use them. Anxiety treatment is highly effective. For accommodations, request through school.',
-      research: 'Putwain & Daly (2014) on test anxiety: affects 40% of students; CBT and accommodations both effective.'
+      research: 'Putwain & Daly (2014) on test anxiety: about 1 in 6 students are highly test anxious; CBT and accommodations both effective.'
     },
     {
       id: 'env_election_anxiety',
@@ -22713,7 +22713,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Self-care'
       ],
       whenToSeekHelp: 'If transit anxiety prevents you from getting to school or work, treatment helps.',
-      research: 'Transit anxiety research: affects up to 15% of urban commuters; CBT and exposure are effective.'
+      research: 'Anxiety on crowded transit is common; CBT and gradual exposure are effective.'
     },
     {
       id: 'env_extreme_heat',
@@ -22926,7 +22926,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'End with: "Notice your zone, you don\'t have to change it, just notice"'
       ],
       forZone: 'yellow',
-      whyItWorks: 'Box breathing is used by Navy SEALs and emergency responders for the same reason it works for kids, it overrides the sympathetic stress response within 60-90 seconds.',
+      whyItWorks: 'Box breathing is taught to Navy SEALs and emergency responders for the same reason it works for kids: slow, even breathing lowers arousal within a few minutes.',
       variations: [
         '4-7-8 breathing for older students (more intense)',
         'Belly-on-stuffed-animal for K-2 (watch the animal rise)',
@@ -23234,7 +23234,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Return to work without elaborate transition'
       ],
       forZone: 'blue',
-      whyItWorks: 'Adolescent prefrontal cortex needs breaks every 25-50 minutes. Subtle movement preserves dignity while resetting attention.',
+      whyItWorks: 'Attention fades over a long class; short movement breaks help reset it. Subtle movement preserves dignity while resetting attention.',
       variations: [
         'Standing desks for those who want them',
         'Walk-and-talk for paired work',
@@ -24251,7 +24251,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'No academic make-up required for missed minutes'
       ],
       forZone: 'red',
-      whyItWorks: 'Movement burns off cortisol and shifts physiology. Walking specifically engages bilateral brain integration.',
+      whyItWorks: 'Movement lowers muscle tension and stress arousal and lifts mood. A short walk also gives a change of scene.',
       variations: [
         'Outdoor walk for sensory-overwhelmed students',
         'Errand run (deliver something to office) as cover for walk',
@@ -24279,7 +24279,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Update as student grows'
       ],
       forZone: 'all',
-      whyItWorks: 'Personalized social stories (Gray) are research-validated for autistic students. Self-referential = memorable.',
+      whyItWorks: 'Personalized social narratives (Gray\'s Social Stories) are listed as an evidence-based practice for autistic students (NCAEP, 2020), though results are mixed (Test et al., 2011). Self-referential = memorable.',
       variations: [
         'Video social story (student watches themselves)',
         'Digital book version',
@@ -24287,7 +24287,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       ],
       classroomLogistics: 'About 30 min to create. OT or school psych may help.',
       cautions: 'Don\'t share without parent consent. Personal stories are private.',
-      research: 'Gray (2010) Social Stories; Test et al. (2011) social story meta-analysis.'
+      research: 'Gray (2010) Social Stories; Test et al. (2011) review; Steinbrenner et al. (2020) NCAEP report.'
     },
     {
       id: 'noise_level_meter',
@@ -24702,7 +24702,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       category: 'morning',
       forChildAge: 'elementary',
       whatItIs: 'Child realizes at the wrong moment that they\'ve lost a backpack, forgotten homework, missed an assignment, or can\'t find something important.',
-      whyItHappens: 'Executive function is still developing through age 25. Forgetting is developmental, not character. Some kids (ADHD especially) will struggle with this for years.',
+      whyItHappens: 'Executive function keeps developing into the mid-20s. Forgetting is developmental, not character. Some kids (ADHD especially) will struggle with this for years.',
       whatToDoInMoment: [
         'Take a breath before reacting',
         'Validate: "That\'s frustrating, I get it"',
@@ -25085,9 +25085,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         { situation: 'Sibling success triggers jealousy', say: '"It\'s OK to feel mixed feelings when your sister does well. You can feel happy AND jealous. Both are real."' },
         { situation: 'Repeated rivalry', say: '"This keeps coming up. Let\'s have a family meeting and talk about how to make this better."' }
       ],
-      selfCareForParent: 'Parents inadvertently favor children sometimes. Honest self-reflection helps. Therapy can support working through your own birth-order dynamics.',
+      selfCareForParent: 'Parents inadvertently favor children sometimes. Honest self-reflection helps. Therapy can support working through your own sibling history.',
       whenToSeekHelp: 'If rivalry is causing depression in either child, family therapy can help. If one child consistently feels marginalized, individual therapy supports their identity.',
-      research: 'Faber & Mazlish (1987); Sulloway (1996) Born to Rebel on birth order.'
+      research: 'Faber & Mazlish (1987) Siblings Without Rivalry; Dunn on sibling relationships.'
     },
     {
       id: 'tantrums_younger',
@@ -25301,7 +25301,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Don\'t minimize ("it\'s just a phase")',
         'Don\'t offer empty optimism ("everything will be fine")',
         'Express love and commitment: "I\'m here. I love you. We\'ll get through this."',
-        'Ask directly about suicidal thoughts (research shows this REDUCES not increases risk)',
+        'Ask directly about suicidal thoughts (asking does not plant the idea and may bring relief; Dazzi et al. (2014))',
         'Connect with professional help'
       ],
       whatNotToDoInMoment: [
@@ -26015,7 +26015,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         'Thank them: "Thank you for telling me. That took courage."',
         'Don\'t panic visibly',
         'Take it 100% seriously every time',
-        'Ask directly: "Are you thinking about killing yourself?" (research shows this REDUCES not increases risk)',
+        'Ask directly: "Are you thinking about killing yourself?" (asking does not plant the idea and may bring relief; Dazzi et al. (2014))',
         'Ask about plan: "Do you have a plan? Means?"',
         'Remove access to means immediately (firearms locked or removed, meds locked, sharps locked)',
         'Call 988 Suicide & Crisis Lifeline together OR go to ER',
@@ -26250,8 +26250,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         { situation: 'Resistance to help', say: '"I love you. I\'m worried about your health. This isn\'t optional. We\'re finding you support."' },
         { situation: 'During treatment', say: '"Recovery is hard. I see you working at it. I\'m proud of you. We\'re in this together."' }
       ],
-      selfCareForParent: 'Eating disorders are devastating for families. NEDA family support. Therapy for parents. This is a long road.',
-      whenToSeekHelp: 'IMMEDIATELY. Eating disorders are medical emergencies. Specialized ED treatment programs. NEDA Helpline: 1-800-931-2237. If suicidal ideation: 988.',
+      selfCareForParent: 'Eating disorders are devastating for families. Family support groups (F.E.A.S.T., National Alliance for Eating Disorders). Therapy for parents. This is a long road.',
+      whenToSeekHelp: 'IMMEDIATELY. Eating disorders are medical emergencies. Specialized ED treatment programs. National Alliance for Eating Disorders Helpline: 1-866-662-1235 (weekdays). If suicidal ideation: 988.',
       research: 'Lock & Le Grange Family-Based Treatment; Academy for Eating Disorders guidelines.'
     },
     {
@@ -27343,7 +27343,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       reminders: ['Photos don\'t show the full story', 'I have value beyond this group', 'Real friendships are reciprocal'],
       whenToEscalate: 'If exclusion is constant and you have no friends to turn to, talk to counselor about support groups or new connections.',
       customization: 'For neurodivergent kids who struggle socially, work on small, deep connections rather than chasing big groups.',
-      research: 'Social exclusion activates same brain regions as physical pain (Eisenberger 2003). It is real.'
+      research: 'Social exclusion activates some of the same brain regions as physical pain (Eisenberger 2003). It is real.'
     },
     {
       id: 'bullying_in_moment',
@@ -27372,7 +27372,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       selfTalk: 'I am not what they say. I am safe right now. I will tell someone.',
       reminders: ['Bullying says everything about them, nothing about me', 'Telling is not snitching, it is self-protection', 'I deserve to feel safe at school'],
       whenToEscalate: 'If school doesn\'t respond, escalate to district. If physical violence: call police. If suicidal: 988.',
-      customization: 'For LGBTQ+ or disabled students, identity-based bullying is a civil rights issue; involve advocacy organizations.',
+      customization: 'For LGBTQ+ or disabled students, identity-based bullying can be a civil rights issue; involve advocacy organizations.',
       research: 'Bullying is associated with long-term mental health impact; early adult intervention is protective (Olweus, Hymel).'
     },
     {
@@ -27671,7 +27671,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       peopleToCall: ['Chosen family / out friends', 'Trevor Project: 1-866-488-7386', 'School counselor if affirming', 'PFLAG for parents'],
       selfTalk: 'I know who I am. Their reaction is theirs to manage, not mine.',
       reminders: ['I am valid', 'I deserve to live truthfully', 'There is a whole community who has my back'],
-      whenToEscalate: 'If coming out leads to threats of harm or being kicked out: Trevor Project 1-866-488-7386, True Colors (homeless LGBTQ+ youth) 1-212-461-4401.',
+      whenToEscalate: 'If coming out leads to threats of harm or being kicked out: Trevor Project 1-866-488-7386, National Runaway Safeline 1-800-786-2929 (24/7, helps find safe shelter).',
       customization: 'For trans students: trans lifeline 1-877-565-8860. For families: PFLAG resources.',
       research: 'Family acceptance is a major protective factor; rejection significantly increases mental health risk (Ryan et al.).'
     },
@@ -27721,17 +27721,17 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       inMomentPlan: {
         first_30sec: ['You are not what they say', 'Get to physical safety', 'Call a chosen-family member'],
         next_2min: ['Trevor Project: 1-866-488-7386 or text START to 678-678', 'Do not argue or beg; protect your energy', 'If unsafe: leave to friend\'s, relative\'s, or shelter'],
-        if_still_activated: ['Crisis Text Line: HOME to 741741', '988 if despair is heavy', 'True Colors (LGBTQ+ youth shelter): 1-212-461-4401']
+        if_still_activated: ['Crisis Text Line: HOME to 741741', '988 if despair is heavy', 'National Runaway Safeline (safe shelter help, 24/7): 1-800-786-2929']
       },
       afterPlan: {
         immediate: ['Be with people who love you', 'Basic needs first: food, sleep, safety'],
         same_day: ['Connect with LGBTQ+ community/center', 'Tell trusted adult at school'],
         longer_term: ['Chosen family is real family', 'Their bigotry is theirs to carry, not yours', 'Therapy with LGBTQ+-affirming therapist (find at Inclusive Therapists)']
       },
-      peopleToCall: ['Trevor Project: 1-866-488-7386', 'Chosen family', 'School counselor', 'True Colors: 1-212-461-4401', '988 in crisis'],
+      peopleToCall: ['Trevor Project: 1-866-488-7386', 'Chosen family', 'School counselor', 'National Runaway Safeline: 1-800-786-2929', '988 in crisis'],
       selfTalk: 'I am whole and worthy. Their inability to see me is their loss, not my truth.',
       reminders: ['I am loved by a chosen family', 'Their reaction may change; that\'s on them', 'I deserve to be myself'],
-      whenToEscalate: 'If kicked out, threatened, or in danger: True Colors 1-212-461-4401, Trevor Project, local LGBTQ+ center. If suicidal: 988.',
+      whenToEscalate: 'If kicked out, threatened, or in danger: National Runaway Safeline 1-800-786-2929, Trevor Project, local LGBTQ+ center. If suicidal: 988.',
       customization: 'For trans youth in unsupportive homes: Trans Lifeline 1-877-565-8860.',
       research: 'Family rejection multiplies suicide risk for LGBTQ+ youth (Ryan 2009); chosen family is protective.'
     },
@@ -28273,7 +28273,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       peopleToCall: ['Chosen community/family', 'School counselor', 'Therapist'],
       selfTalk: 'My beliefs and identity are mine. I can love my family without erasing myself.',
       reminders: ['I am whole even if they don\'t affirm', 'Chosen family is real', 'I will get to design my own adult life'],
-      whenToEscalate: 'If conflict includes threats of being kicked out (LGBTQ+ especially): Trevor Project, True Colors.',
+      whenToEscalate: 'If conflict includes threats of being kicked out (LGBTQ+ especially): Trevor Project 1-866-488-7386, National Runaway Safeline 1-800-786-2929.',
       customization: 'For high-control religion exits, recovering-from-religion resources exist.',
       research: 'Family of origin conflict over values is common; finding chosen community is protective.'
     },
@@ -28752,16 +28752,16 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         same_day: ['Unfollow triggering accounts', 'Spend time with body-positive people'],
         longer_term: ['Therapy if distress is severe', 'Body neutrality > body positivity for many']
       },
-      peopleToCall: ['Trusted friend', 'Therapist', 'NEDA if disordered eating'],
+      peopleToCall: ['Trusted friend', 'Therapist', 'Eating disorders helpline 1-866-662-1235'],
       selfTalk: 'My body deserves kindness. It carries me through life.',
       reminders: ['Bodies change; my worth does not', 'Mirrors lie about who I am', 'I am more than this'],
-      whenToEscalate: 'If body image distress includes restricting food, purging, or excessive exercise: NEDA 1-800-931-2237.',
+      whenToEscalate: 'If body image distress includes restricting food, purging, or excessive exercise: National Alliance for Eating Disorders Helpline 1-866-662-1235.',
       customization: 'For trans/non-binary: gender-affirming care matters.',
       research: 'Body dissatisfaction is normalized in girls; intervention is appropriate.'
     },
     {
       id: 'disordered_eating_thoughts',
-      scenario: 'Disordered eating thoughts (Red, NEDA 1-800-931-2237)',
+      scenario: 'Disordered eating thoughts (Red, eating disorders helpline 1-866-662-1235)',
       forBand: 'high',
       fromZone: 'red',
       toZone: 'yellow',
@@ -28774,7 +28774,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       },
       inMomentPlan: {
         first_30sec: ['Name it: "This is the eating disorder, not me"', 'Reach out to safe person', 'Tell someone'],
-        next_2min: ['NEDA: 1-800-931-2237 or text NEDA to 741741', 'Distract with non-food activity', 'Don\'t isolate'],
+        next_2min: ['Eating disorders helpline: 1-866-662-1235 (weekdays), or text HOME to 741741 any time', 'Distract with non-food activity', 'Don\'t isolate'],
         if_still_activated: ['Get to therapist or doctor', 'Crisis Text Line: HOME to 741741', 'Tell parent']
       },
       afterPlan: {
@@ -28782,7 +28782,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         same_day: ['Tell trusted adult; you need help'],
         longer_term: ['Specialized ED treatment: dietitian + therapist + doctor', 'Recovery is possible']
       },
-      peopleToCall: ['NEDA: 1-800-931-2237', 'Parent', 'Doctor', 'Therapist', '988 if despair'],
+      peopleToCall: ['Eating disorders helpline: 1-866-662-1235', 'Parent', 'Doctor', 'Therapist', '988 if despair'],
       selfTalk: 'The eating disorder is not me. I deserve nourishment and recovery.',
       reminders: ['ED lies', 'My body deserves food', 'Recovery is possible'],
       whenToEscalate: 'If restricting severely, purging, or having medical complications: ER + immediate professional help.',
@@ -28834,7 +28834,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       },
       inMomentPlan: {
         first_30sec: ['STOP. Tell someone NOW.', 'Move away from tools', 'Text HOME to 741741 or call 988'],
-        next_2min: ['Alternatives: ice cube on skin, intense exercise, red marker, snap rubber band', 'Call safe person', 'Get out of room if alone'],
+        next_2min: ['Alternatives: hold an ice cube, intense exercise, draw on skin with a red marker', 'Call safe person', 'Get out of room if alone'],
         if_still_activated: ['Get to ER if can\'t resist', 'Stay with safe person', 'Crisis line stays on with you']
       },
       afterPlan: {
@@ -30420,7 +30420,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       explanation: {
         elementary: 'A really good talk with someone you love leaves you feeling green — warm and calm.',
         middle: 'Deep connection produces a regulated, warm green-zone afterglow. It is one of the most regulated states humans have.',
-        high: 'Co-regulation through meaningful conversation produces a sustained green state via vagal/oxytocin pathways. Why we crave good talks.'
+        high: 'Co-regulation through meaningful conversation produces a sustained green state. Why we crave good talks.'
       },
       alternativeReads: [
         { zone: 'yellow', why: 'If the conversation was about scary stuff, the surface can be green-glow while the underneath is still processing.' }
@@ -31901,7 +31901,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       explanation: {
         elementary: 'After a fight, our bodies stay yellow for a while even if the fight is over.',
         middle: 'Affect spillover from conflict is yellow that lingers. The body takes longer to come down than the situation suggests.',
-        high: 'Post-conflict yellow can last 30-90 minutes. The amygdala stays primed; bystanders catch the spillover.'
+        high: 'Post-conflict yellow can linger well after the argument ends; bystanders catch the spillover.'
       },
       alternativeReads: [
         { zone: 'red', why: 'If the irritation triggers a new bigger conflict, it has tipped into red.' },
@@ -32238,7 +32238,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       alternativeReads: [
         { zone: 'red', why: 'If she faints, is asthmatic, or has chest pain, get medical/nurse help — not just psychological.' }
       ],
-      whatTheyMightNeed: 'Co-regulating breath, ideally with extended exhale. Sometimes a paper bag (no, actually — disputed; just slow breath is safer). Adult support. Possible postponement of exam.',
+      whatTheyMightNeed: 'Co-regulating breath, ideally with extended exhale. Adult support. Possible postponement of exam.',
       empathyHint: 'Stay calm. "Breathe with me. In for 4, out for 8." Slow your breath first. Maintain eye contact softly.',
       whatNotToDo: 'Do not say "calm down." Do not give a paper bag (myth — can worsen). Do not force her into the exam.',
       pairsWithStrategies: ['co_regulating_breath_long_exhale', 'extended_time_or_postpone', 'nurse_check'],
@@ -32299,7 +32299,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       explanation: {
         elementary: 'When a friend gets quiet and very still after something scary, that is the red zone freeze.',
         middle: 'Shutdown/freeze is a dorsal-vagal red response. Body has gone offline as protection.',
-        high: 'Shutdown is parasympathetic-dorsal red — when fight/flight is not available, the system goes offline. Trauma-informed grounding helps; force does not.'
+        high: 'Shutdown is a freeze response \u2014 when fight/flight is not available, the system goes offline. Trauma-informed grounding helps; force does not.'
       },
       alternativeReads: [
         { zone: 'blue', why: 'Surface looks blue (still, quiet) but is functionally red (system overwhelm freeze, not low energy).' }
@@ -32308,7 +32308,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       empathyHint: 'Soft voice. Use her name. Name the room. "You are at school, you are safe, today is [day]." Get adult help.',
       whatNotToDo: 'Do not shake. Do not yell. Do not crowd. Do not interrogate about the trigger. Do not "snap her out of it."',
       pairsWithStrategies: ['trauma_informed_adult', 'orient_to_room', 'sensory_grounding'],
-      research: 'Dorsal-vagal shutdown is a documented trauma response (Porges, polyvagal theory; van der Kolk).'
+      research: 'Shutdown or freeze is a documented trauma response (van der Kolk; described as "dorsal vagal" in polyvagal theory, a contested model).'
     },
     {
       id: 'red_acute_grief_wave',
@@ -32572,7 +32572,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       empathyHint: '"This is too much for one person. I am getting you to the counselor. You are not failing — you need support."',
       whatNotToDo: 'Do not say "just push through." Do not minimize. Do not let her handle it alone.',
       pairsWithStrategies: ['counselor_referral', 'accommodation_request', 'parent_loop_in'],
-      research: 'Acute stress reaction is a recognized clinical state (DSM-5); accommodations for severe stress are within reasonable supports (Section 504).'
+      research: 'Stress severe enough to stop eating, sleeping and studying needs adult and clinical attention; schools can offer short-term supports, and a 504 plan may apply when an underlying condition such as an anxiety disorder is identified.'
     },
     {
       id: 'red_strong_dissociation',
@@ -32737,7 +32737,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       empathyHint: 'A teacher who knows: "Looks like you are running on empty today. Take it easy. Counselor is here if you want."',
       whatNotToDo: 'Do not demand peak academic performance. Do not press for home details in front of peers. Do not assume she is being lazy.',
       pairsWithStrategies: ['reduced_demand_day', 'counselor_pass', 'trauma_informed_response'],
-      research: 'Domestic conflict is an ACE (Felitti); sympathetic activation can persist 24+ hours (van der Kolk); school accommodations during acute family stress improve outcomes.'
+      research: 'Domestic conflict is an ACE (Felitti); the stress response can carry over into the next school day; school accommodations during acute family stress improve outcomes.'
     },
     {
       id: 'red_overdose_risk',
@@ -32934,7 +32934,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       explanation: {
         elementary: 'Not looking at someone\'s eyes does not always mean blue zone — sometimes it means the person is autistic, or it is normal in their culture.',
         middle: 'Default read in distressed context is blue (withdrawal). But for autistic peers, lack of eye contact is often regulating, not avoidant. For some cultures, sustained eye contact is disrespectful.',
-        high: 'Eye contact is a multi-meaning behavior. Autistic individuals often find eye contact overwhelming. East Asian, Indigenous, and many other cultures consider sustained eye contact disrespectful. Do not read it as universally negative.'
+        high: 'Eye contact is a multi-meaning behavior. Autistic individuals often find eye contact overwhelming. In some East Asian, Indigenous and other communities, sustained eye contact with elders or teachers can be read as disrespectful; this varies by family and person. Do not read it as universally negative.'
       },
       alternativeReads: [
         { zone: 'red', why: 'Could be shame-avoidance after a transgression — yellow-red.' },
@@ -32945,7 +32945,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       empathyHint: 'For autistic peer: do not force eye contact. For unknown reason: look for other engagement markers before assuming.',
       whatNotToDo: 'Do not demand "look at me when I am talking." Do not assume it means dishonesty or disrespect. Do not assume it means blue.',
       pairsWithStrategies: ['respect_communication_styles', 'multi_marker_read', 'do_not_demand_eye_contact'],
-      research: 'Autistic-led research consistently advocates moving beyond eye contact as engagement proxy (Bottema-Beutel; Crompton); cultural variation in eye contact is well-documented (Hofstede).'
+      research: 'Autistic-led research consistently advocates moving beyond eye contact as engagement proxy (Bottema-Beutel; Crompton); cultural variation in eye contact is well-documented.'
     },
     {
       id: 'ambig_loud_laughing_kid',
@@ -32989,7 +32989,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       story: {
         elementary: 'Your classmate is saying no to everything today. Hard to tell why.',
         middle: 'Your classmate is refusing all participation. Could be depression-blue, red overwhelm, or pathological demand avoidance.',
-        high: 'Your classmate is refusing all demands today. Possible blue depression, red overwhelm, or PDA (pathological demand avoidance, often co-occurring with autism).'
+        high: 'Your classmate is refusing all demands today. Possible blue depression, red overwhelm, or PDA (pathological demand avoidance, a proposed autism profile that is not a formal diagnosis).'
       },
       observableCues: [
         'Active refusal',
@@ -33007,7 +33007,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       },
       alternativeReads: [
         { zone: 'red', why: 'Red overwhelm refusal often comes with body activation and feels different — needs reduced demands and recovery, not pep talk.' },
-        { zone: 'red', why: 'PDA (autistic profile) responds badly to direct demands — needs collaborative, choice-based approach.' }
+        { zone: 'red', why: 'PDA (a proposed autism profile, not a formal diagnosis) responds badly to direct demands \u2014 needs collaborative, choice-based approach.' }
       ],
       whatTheyMightNeed: 'A curiosity-based approach: "What is happening?" before "you need to do this."',
       empathyHint: 'Quiet: "Looks like today is rough. What do you need?" — opens the door without demanding compliance.',
@@ -33314,7 +33314,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var _zoHC = !!_zoT.isContrast, _zoL = !_zoHC && !_zoT.isDark;
       var _zo_BGL = {'#334155':'#e2e8f0','#1e293b':'#ffffff','#0f172a':'#f8fafc','#7f1d1d':'#fee2e2','#451a03':'#fff7ed'}, _zo_BGH = {'#334155':'#000000','#1e293b':'#000000','#7c3aed':'#000000','#0f172a':'#000000','#fff':'#000000','#5eead4':'#000000','#042f2e':'#000000','#7f1d1d':'#000000','#451a03':'#000000','#1e1b4b':'#000000','#7c2d12':'#000000'};
       var _zo_FGL = {'#94a3b8':'#64748b','#cbd5e1':'#334155','#a78bfa':'#6d28d9','#f1f5f9':'#0f172a','#e2e8f0':'#1e293b','#fde047':'#a16207','#fbbf24':'#854d0e','#5eead4':'#0f766e','#fde68a':'#92400e','#a7f3d0':'#047857','#fecaca':'#b91c1c','#c7d2fe':'#312e81','#c4b5fd':'#5b21b6','#fbcfe8':'#9d174d','#a5b4fc':'#3730a3','#e0e7ff':'#3730a3','#86efac':'#166534','#7dd3fc':'#075985'}, _zo_FGH = {'#3b82f6':'#ffff00','#ef4444':'#ffff00','#eab308':'#ffff00','#22c55e':'#ffff00','#94a3b8':'#ffff00','#cbd5e1':'#ffff00','#a78bfa':'#ffff00','#f1f5f9':'#ffff00','#7c3aed':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#8b5cf6':'#ffff00','#334155':'#ffff00','#fde047':'#ffff00','#fbbf24':'#ffff00','#5eead4':'#ffff00','#0f172a':'#ffff00','#fde68a':'#ffff00','#64748b':'#ffff00','#a7f3d0':'#ffff00','#fecaca':'#ffff00','#fed7aa':'#ffff00','#c7d2fe':'#ffff00','#c4b5fd':'#ffff00','#fbcfe8':'#ffff00','#a5b4fc':'#ffff00','#e0e7ff':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00'};
-      var _zo_FGD = {'#94a3b8':'#cbd5e1','#3b82f6':'#60a5fa','#ef4444':'#f87171'}, _zo_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _zo_BDH = {'#7c3aed':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#38bdf8':'#ffff00'};
+      var _zo_FGD = {'#94a3b8':'#cbd5e1','#3b82f6':'#60a5fa','#ef4444':'#f87171','#8b5cf6':'#a78bfa'}, _zo_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _zo_BDH = {'#7c3aed':'#ffff00','#334155':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#5eead4':'#ffff00','#a78bfa':'#ffff00','#fbbf24':'#ffff00','#ef4444':'#ffff00','#f59e0b':'#ffff00','#38bdf8':'#ffff00'};
       var _zoBg = function(h){ return _zoHC ? (_zo_BGH[h]||h) : (_zoL ? (_zo_BGL[h]||h) : h); };
       var _zoFg = function(h){ return _zoHC ? (_zo_FGH[h]||h) : (_zoL ? (_zo_FGL[h]||h) : (_zo_FGD[h]||h)); };
       var _zoBd = function(h){ return _zoHC ? (_zo_BDH[h]||h) : (_zoL ? (_zo_BDL[h]||h) : h); };

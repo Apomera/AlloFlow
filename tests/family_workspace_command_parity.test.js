@@ -122,10 +122,16 @@ describe('the reachability premise this widening rests on', () => {
 
   it('the host defines only a handful of school-only guards, none on these doors', () => {
     const anti = readFileSync('AlloFlowANTI.txt', 'utf8');
-    // Teaching script + the teacher history tab + student-mode derivation. If a
-    // future change adds a school-only guard to one of the widened doors, this
-    // count moves and the pin above should be revisited.
+    // Quick-roster permission + teaching script + the two Guided-mode
+    // continue guards + student-mode derivation. If a future change adds a
+    // school-only guard to one of the widened doors, this count moves and the
+    // pin above should be revisited.
     const schoolOnly = anti.match(/isTeacherMode\s*&&\s*!isParentMode\s*&&\s*!isIndependentMode/g) || [];
-    expect(schoolOnly.length).toBe(3);
+    expect(schoolOnly.length).toBe(5);
+    const lines = anti.split('\n').filter((line) => /isTeacherMode\s*&&\s*!isParentMode\s*&&\s*!isIndependentMode/.test(line));
+    expect(lines).toHaveLength(5);
+    for (const line of lines) {
+      expect(line).toMatch(/quickRosterPermissionRef\.current = |const teachingScriptTeacher = |canContinueGuided=|data\.continueIn === 'guided'|isStudentMode=\{!isTeacherMode/);
+    }
   });
 });

@@ -148,7 +148,7 @@
     return urls;
   }
   async function readPublicGuidance(url, options) {
-    options = options || {};
+    options = options && typeof options === 'object' ? options : {};
     checkCanceled(options.signal);
     var guide = guideIdFromUrl(url);
     if (guide === null) throw problem('Teaching research reads only the official WWC practice guides in its catalog.');
@@ -240,6 +240,8 @@
   }
   function gradeText(n) { return n === -1 ? 'Pre-K' : n === 0 ? 'K' : n === 13 ? 'postsecondary' : String(n); }
   function extractSource(payload, entry, context) {
+    if (!entry || typeof entry !== 'object') throw problem('A catalog guide entry is required.');
+    context = context && typeof context === 'object' ? context : {};
     var object = payload && typeof payload === 'object' ? payload : {};
     if (/snippet|search[- ]?result|summary|model|generated/i.test(String(object.kind || object.sourceType || object.retrievalType || '')) || object.isSummary === true || object.fromSearch === true) throw problem('Search snippets and generated summaries cannot supply teaching evidence.');
     ['url', 'finalUrl', 'sourceUrl'].forEach(function (key) { if (object[key] != null && guideIdFromUrl(object[key]) !== entry.guide) throw problem('The source reader returned a URL outside the selected guidance.'); });
@@ -256,13 +258,15 @@
     var grades = pageGrades(pageText);
     var range = grades.length ? [grades[0], grades[grades.length - 1]] : entry.grades;
     var gradeNumber = context.gradeNumber;
+    var gradeLabel = context.gradeLabel || 'unspecified';
     var gradeFit;
-    if (gradeNumber === null || gradeNumber === undefined) gradeFit = 'The lesson grade or age group "' + context.gradeLabel + '" could not be matched to the guide\'s stated grade range; judge fit yourself.';
-    else if (gradeNumber < range[0] || gradeNumber > range[1]) throw problem('The guide\'s stated grades (' + gradeText(range[0]) + ' to ' + gradeText(range[1]) + ') do not include ' + context.gradeLabel + '.');
-    else gradeFit = context.gradeLabel + ' is within the stated range; educators must judge fit to the specific learners and objective.';
+    if (typeof gradeNumber !== 'number' || !Number.isFinite(gradeNumber)) gradeFit = 'The lesson grade or age group "' + gradeLabel + '" could not be matched to the guide\'s stated grade range; judge fit yourself.';
+    else if (gradeNumber < range[0] || gradeNumber > range[1]) throw problem('The guide\'s stated grades (' + gradeText(range[0]) + ' to ' + gradeText(range[1]) + ') do not include ' + gradeLabel + '.');
+    else gradeFit = gradeLabel + ' is within the stated range; educators must judge fit to the specific learners and objective.';
+    var subjectLabel = hasOwn.call(SUBJECT_LABEL, context.subject) ? SUBJECT_LABEL[context.subject] : '';
     var kindText = entry.kind === 'general-practice'
-      ? 'General instructional-practice guidance, not content-specific research for ' + (context.topic || SUBJECT_LABEL[context.subject] || 'this topic') + '.'
-      : 'Content-specific guidance for ' + (SUBJECT_LABEL[context.subject] || 'this subject') + '; it addresses the practices named in its recommendations, not every objective in this lesson.';
+      ? 'General instructional-practice guidance, not content-specific research for ' + (context.topic || subjectLabel || 'this topic') + '.'
+      : 'Content-specific guidance for ' + (subjectLabel || 'this subject') + '; it addresses the practices named in its recommendations, not every objective in this lesson.';
     return { id: entry.id, url: guideUrl(entry), title: entry.title, author: PANEL, publishedAt: entry.publishedAt, retrievedAt: new Date().toISOString(),
       evidenceKind: entry.kind,
       scope: 'WWC practice guide for grades ' + gradeText(range[0]) + ' to ' + gradeText(range[1]) + '. ' + entry.note + ' ' + kindText + ' ' + gradeFit + ' This source does not validate an AI-written script or alignment to a particular standard.',
@@ -270,7 +274,7 @@
       recommendations: recommendations.map(function (item) { return { id: item.id, text: item.text, locator: item.locator, evidenceLevel: item.evidenceLevel, supportingText: item.supportingText }; }) };
   }
   function normalizeGradeNumber(value) {
-    var raw = String(value == null ? '' : value).trim().toLowerCase().replace(/[._]/g, ' ').replace(/\s+/g, ' ');
+    var raw = String(value == null ? '' : value).slice(0, 120).trim().toLowerCase().replace(/[._]/g, ' ').replace(/\s+/g, ' ');
     if (!raw) return null;
     if (/^(pre\s*-?\s*k|prek|pre kindergarten|pre-kindergarten|preschool|pre-school)$/.test(raw)) return -1;
     if (/^(k|kg|grade k|kindergarten)$/.test(raw)) return 0;
@@ -346,7 +350,11 @@
       if (boosted[entry.guide]) score += 2;
       ranked.push({ entry: entry, score: score, hits: hits });
     });
-    ranked.sort(function (a, b) { return b.score - a.score || (a.entry.kind === 'content-specific' ? -1 : 1) || b.entry.guide - a.entry.guide; });
+    ranked.sort(function (a, b) {
+      return b.score - a.score
+        || (a.entry.kind === b.entry.kind ? 0 : (a.entry.kind === 'content-specific' ? -1 : 1))
+        || (a.entry.kind === 'general-practice' ? a.entry.guide - b.entry.guide : b.entry.guide - a.entry.guide);
+    });
     var chosen = [], hasContent = false;
     ranked.forEach(function (item) {
       if (chosen.length >= MAX_SOURCES) return;
@@ -357,7 +365,8 @@
     return { lesson: lesson, candidates: chosen, hasContentSpecific: hasContent };
   }
   async function collect(context, adapters) {
-    context = context || {}; adapters = adapters || {};
+    context = context && typeof context === 'object' ? context : {};
+    adapters = adapters && typeof adapters === 'object' ? adapters : {};
     checkCanceled(context.signal);
     var lesson = lessonContext(context);
     if (typeof adapters.read !== 'function') return { status: 'unavailable', sources: [], warnings: ['The source-text reader is unavailable. Research support requires reading the actual public guidance.'] };

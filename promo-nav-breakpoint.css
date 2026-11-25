@@ -1,4 +1,5 @@
-/* Keep the compact six-link desktop navigation visible just above the shared 1024px mobile breakpoint. */
+/* Keep desktop navigation visible above the shared 1024px mobile breakpoint
+   and compact enough to stay on a single row at 1025px–1220px (Chromebooks/tablets). */
 @media (min-width: 1025px) {
     body:not(.promo-page) .nav-links {
         display: flex;
@@ -6,5 +7,36 @@
 
     body:not(.promo-page) .mobile-menu-btn {
         display: none;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1220px) {
+    .navbar-inner {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .nav-logo {
+        font-size: 1.1rem;
+        gap: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .nav-links,
+    .promo-page .nav-links {
+        gap: 11px;
+        font-size: 0.8rem;
+    }
+
+    .nav-links a {
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .nav-links .cta-btn {
+        padding: 8px 13px;
+        font-size: 0.76rem;
+        gap: 5px;
     }
 }

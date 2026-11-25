@@ -81,8 +81,10 @@ describe('Echo Navigator — spoken feedback is translatable', () => {
 
   it('translates the material quiz explanation', () => {
     const source = read();
-    expect(source).toContain('stem.echotrainer.mat_correct');
-    expect(source).toContain('stem.echotrainer.mat_wrong');
+    // 2026-11-23: the quiz asks hard or soft; each explanation is a keyed template filled with the table's numbers
+    for (const key of ['mat_right_soft', 'mat_right_hard_num', 'mat_right_hard', 'mat_wrong_was_soft', 'mat_wrong_was_hard_num', 'mat_wrong_was_hard']) {
+      expect(source, key).toContain("tFmt('stem.echotrainer." + key + "'");
+    }
     expect(source).not.toMatch(/'Correct! ' \+ opt \+ ' has a '/);
   });
 
@@ -102,34 +104,14 @@ describe('Echo Navigator — spoken feedback is translatable', () => {
 });
 
 describe('Echo Navigator — material quiz fairness', () => {
-  it('shuffles the options and keys correctness on text, not position', () => {
+  // 2026-11-23: real hard surfaces (concrete, rock, metal, glass, wood) all send back 90% or more of
+  // the sound, so "which of four hard materials was it" had no hearable answer. The quiz now asks
+  // hard or soft (the rooms gained curtains), with the two choices in a random order.
+  it('randomizes the order of the two choices and keys correctness on the surface group, not position', () => {
     const source = read();
-    const at = source.indexOf("var allMats = ['concrete'");
-    expect(at).toBeGreaterThan(-1);
-    const block = source.slice(at, at + 700);
-    // Fisher-Yates over the option list, so the correct answer is not always first.
-    expect(block).toMatch(/for \(var si = options\.length - 1; si > 0; si--\)/);
-    // Correctness compares the material name; an index comparison would break the
-    // moment the shuffle changed.
-    expect(source).toMatch(/var correct = opt === matQuiz\.correctMat;/);
-  });
-
-  it('always builds four distinct options and cannot loop forever', () => {
-    const source = read().replace(/\r\n/g, '\n');
-    const at = source.indexOf("var allMats = ['concrete'");
-    const block = source.slice(at, source.indexOf('upd(\'matQuiz\'', at));
-    const fn = new Function('hitMat', 'Math', `
-      ${block}
-      return options;
-    `);
-    // Deterministic Math stub so the assertion does not depend on chance.
-    let seed = 7;
-    const rng = { random: () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }, floor: Math.floor, sqrt: Math.sqrt, abs: Math.abs };
-    for (const hit of ['concrete', 'rock', 'wood', 'metal', 'glass', 'car', 'flesh']) {
-      const options = fn(hit, rng);
-      expect(options.length, hit).toBe(4);
-      expect(new Set(options).size, hit + ' options must be distinct').toBe(4);
-      expect(options, hit + ' must include the answer').toContain(hit);
-    }
+    expect(source).toContain('var options = EchoModel.materialChoices(Math.random());');
+    expect(source).toContain("materialChoices: function (rand) { return rand < 0.5 ? ['hard', 'soft'] : ['soft', 'hard']; },");
+    expect(source).toContain('var correct = byGroup ? opt === EchoModel.soundGroup(matQuiz.correctMat) : opt === matQuiz.correctMat;');
+    expect(source).not.toContain("var allMats = ['concrete'");
   });
 });

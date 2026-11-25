@@ -7,9 +7,15 @@
   'use strict';
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function noise(a, b) { var n = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return n - Math.floor(n); }
-  function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+  function canvas(w, h) {
+    if (typeof document === 'undefined' || typeof document.createElement !== 'function') {
+      throw new Error('AvianFeatherArt requires a DOM document.');
+    }
+    var c = document.createElement('canvas'); c.width = w; c.height = h; return c;
+  }
   function optionNumber(options, name, fallback) {
-    var value = options[name] === undefined ? fallback : options[name];
+    var safeOpts = (options && typeof options === 'object') ? options : {};
+    var value = Object.prototype.hasOwnProperty.call(safeOpts, name) && safeOpts[name] !== undefined ? safeOpts[name] : fallback;
     if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError('AvianFeatherArt ' + name + ' must be finite.');
     return value;
   }
@@ -171,9 +177,11 @@
     var curveStrength = optionNumber(options, 'curveStrength', 0.07);
     var roughnessBase = optionNumber(options, 'roughnessBase', 230);
     var roughnessRange = optionNumber(options, 'roughnessRange', 22);
-    var pixels = source.getContext('2d').getImageData(0, 0, width, height).data;
+    var srcCtx = source.getContext('2d');
     var normalCanvas = canvas(width, height), roughCanvas = canvas(width, height);
     var nc = normalCanvas.getContext('2d'), rc = roughCanvas.getContext('2d');
+    if (!srcCtx || !nc || !rc) return { normal: normalCanvas, roughness: roughCanvas };
+    var pixels = srcCtx.getImageData(0, 0, width, height).data;
     var normals = nc.createImageData(width, height), rough = rc.createImageData(width, height);
     function relief(x, y) { return pixels[(clamp(y, 0, height - 1) * width + clamp(x, 0, width - 1)) * 4] / 255; }
     for (var py = 0; py < height; py++) for (var px = 0; px < width; px++) {

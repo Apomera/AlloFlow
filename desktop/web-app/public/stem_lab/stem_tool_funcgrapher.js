@@ -59,16 +59,21 @@ window.StemLab = window.StemLab || {
       '.fg-trace-halo{transform-box:fill-box;transform-origin:center;animation:fgTraceHalo 2.6s ease-in-out infinite;pointer-events:none}',
       '.theme-contrast .fg-beacon-pulse,.theme-contrast .fg-curve-bloom,.theme-contrast .fg-area-shimmer,.theme-contrast .fg-asymptote-flow,.theme-contrast .fg-trace-reticle,.theme-contrast .fg-trace-halo{animation:none !important}',
       '.theme-contrast .fg-beacon-pulse,.theme-contrast .fg-trace-halo{display:none !important}',
+      '.fg-reduce-motion .fg-beacon-pulse,.fg-reduce-motion .fg-curve-bloom,.fg-reduce-motion .fg-area-shimmer,.fg-reduce-motion .fg-asymptote-flow,.fg-reduce-motion .fg-trace-reticle,.fg-reduce-motion .fg-trace-halo{animation:none !important}',
       '@media (prefers-reduced-motion: reduce){.fg-beacon-pulse,.fg-curve-bloom,.fg-area-shimmer,.fg-asymptote-flow,.fg-trace-reticle,.fg-trace-halo{animation:none !important}.fg-beacon-pulse{opacity:.24}}'
     ].join('');
     document.head.appendChild(st);
   })();
 
 
-  // ── Audio (auto-injected) ──
+  // ── Audio (auto-injected, SD-27 global-mute aware) ──
+  function isFgGlobalMuted() {
+    try { if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {}
+    return !!(typeof window !== 'undefined' && window._alloGlobalMute);
+  }
   var _funcgrAC = null;
-  function getFuncgrAC() { if (!_funcgrAC) { try { _funcgrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_funcgrAC && _funcgrAC.state === "suspended") { try { _funcgrAC.resume(); } catch(e) {} } return _funcgrAC; }
-  function funcgrTone(f,d,tp,v) { var ac = getFuncgrAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function getFuncgrAC() { if (isFgGlobalMuted()) return null; if (!_funcgrAC) { try { _funcgrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_funcgrAC && _funcgrAC.state === "suspended") { try { _funcgrAC.resume(); } catch(e) {} } return _funcgrAC; }
+  function funcgrTone(f,d,tp,v) { if (isFgGlobalMuted()) return; var ac = getFuncgrAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxFuncgrClick() { funcgrTone(600, 0.03, "sine", 0.04); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
@@ -1359,6 +1364,893 @@ window.StemLab = window.StemLab || {
   }
   window.__alloTransformLab = { normalize: fgTfNormalize, effects: fgTfEffects, parent: fgTfParent, equation: fgTfEquation, sameGraph: fgTfSameGraph, targets: FG_TF_TARGETS, targetList: fgTfTargetList };
 
+  // ── Pure Deterministic Engine (zero React/DOM, exposed as _engine & window.FuncGrapherPure) ──
+  var FUNCGRAPHER_ENGINE = (function() {
+    var FAMILIES = ['linear', 'quadratic', 'cubic', 'trig', 'exponential', 'absolute', 'sqrt', 'log', 'rational'];
+    var READING_LEVELS = ['plain', 'grade5', 'hs'];
+    var FAMILY_LABELS = {
+      linear: 'Linear (y = ax + b)',
+      quadratic: 'Quadratic (y = ax\u00B2 + bx + c)',
+      cubic: 'Cubic (y = ax\u00B3 + bx + c)',
+      trig: 'Trigonometric (y = a\u00B7sin(bx + c))',
+      exponential: 'Exponential (y = a\u00B7e\u1D47\u02E3 + c)',
+      absolute: 'Absolute Value (y = a|x + b| + c)',
+      sqrt: 'Square Root (y = a\u221A(x + b) + c)',
+      log: 'Logarithm (y = a\u00B7ln(x + b) + c)',
+      rational: 'Rational (y = a/(x + b) + c)'
+    };
+    var MATCH_ITEM_META = {
+      lin_grow: { fam: 'linear', eq: 'y = 3x + 2', a: 3, b: 2, c: 0, rate: 3, y0: 2 },
+      lin_slow: { fam: 'linear', eq: 'y = 2x + 3', a: 2, b: 3, c: 0, rate: 2, y0: 3 },
+      lin_add2: { fam: 'linear', eq: 'y = 2x + 2', a: 2, b: 2, c: 0, rate: 2, y0: 2 },
+      lin_down: { fam: 'linear', eq: 'y = \u22122x + 8', a: -2, b: 8, c: 0, rate: -2, y0: 8 },
+      exp_double: { fam: 'exponential', eq: 'y = 2 \u00B7 2^x', a: 2, b: Math.LN2, c: 0, ratio: 2, y0: 2 },
+      exp_half: { fam: 'exponential', eq: 'y = 16 \u00B7 (1/2)^x', a: 16, b: -Math.LN2, c: 0, ratio: 0.5, y0: 16 },
+      quad_area: { fam: 'quadratic', eq: 'y = x\u00B2', a: 1, b: 0, c: 0, y0: 0 },
+      abs_door: { fam: 'absolute', eq: 'y = |x \u2212 2|', a: 1, b: -2, c: 0, vertexX: 2, y0: 2 },
+      sqrt_side: { fam: 'sqrt', eq: 'y = \u221Ax', a: 1, b: 0, c: 0, y0: 0 },
+      rat_share: { fam: 'rational', eq: 'y = 12/x', a: 12, b: 0, c: 0, y0: null }
+    };
+
+    function fin(v) { return typeof v === 'number' && isFinite(v); }
+    function numOr(v, fb) { return fin(v) ? v : fb; }
+    function cleanNum(v) {
+      if (!fin(v)) return 0;
+      var r = Math.round(v * 100) / 100;
+      return r === 0 ? 0 : r;
+    }
+    function fmtNum(v) {
+      if (!fin(v)) return 'undefined';
+      var r = cleanNum(v);
+      return r < 0 ? '\u2212' + String(-r) : String(r);
+    }
+    function normType(type) {
+      return FAMILIES.indexOf(type) >= 0 ? type : 'linear';
+    }
+    function normLevel(level) {
+      if (level === 'plain' || level === 'hs' || level === 'grade5') return level;
+      var s = String(level || '').toLowerCase();
+      if (s === 'k-2' || s === 'simple' || s === 'easy') return 'plain';
+      if (s === '9-12' || s === 'high_school' || s === 'highschool' || s === 'advanced') return 'hs';
+      return 'grade5';
+    }
+
+    function evaluate(type, a, b, c, x) {
+      var tp = normType(type), A = numOr(a, 1), B = numOr(b, 0), C = numOr(c, 0);
+      if (!fin(x)) return NaN;
+      if (tp === 'linear') return A * x + B;
+      if (tp === 'quadratic') return A * x * x + B * x + C;
+      if (tp === 'trig') return A * Math.sin(B * x + C);
+      if (tp === 'cubic') return A * x * x * x + B * x + C;
+      if (tp === 'exponential') return A * Math.exp(B * x) + C;
+      if (tp === 'absolute') return A * Math.abs(x + B) + C;
+      if (tp === 'sqrt') return A * Math.sqrt(x + B) + C;
+      if (tp === 'log') return A * Math.log(x + B) + C;
+      if (tp === 'rational') return A / (x + B) + C;
+      return A * x + B;
+    }
+
+    function derivative(type, a, b, c, x) {
+      var tp = normType(type), A = numOr(a, 1), B = numOr(b, 0), C = numOr(c, 0);
+      if (!fin(evaluate(tp, A, B, C, x))) return NaN;
+      if (tp === 'quadratic') return 2 * A * x + B;
+      if (tp === 'cubic') return 3 * A * x * x + B;
+      if (tp === 'trig') return A * B * Math.cos(B * x + C);
+      if (tp === 'exponential') return A * B * Math.exp(B * x);
+      if (tp === 'absolute') return (x + B === 0) ? (A === 0 ? 0 : NaN) : A * Math.sign(x + B);
+      if (tp === 'sqrt') return (x + B > 0) ? A / (2 * Math.sqrt(x + B)) : NaN;
+      if (tp === 'log') return A / (x + B);
+      if (tp === 'rational') return -A / ((x + B) * (x + B));
+      return A;
+    }
+
+    function fmtCoeff(val, varPart, isFirst) {
+      if (val === 0) return '';
+      var s = '';
+      if (isFirst) {
+        if (val === -1 && varPart) s = '-';
+        else if (val === 1 && varPart) s = '';
+        else s = '' + val;
+      } else {
+        if (val < 0) s = (val === -1 && varPart) ? ' - ' : ' - ' + Math.abs(val);
+        else s = (val === 1 && varPart) ? ' + ' : ' + ' + val;
+      }
+      return s + varPart;
+    }
+    function fmtConst(val, isFirst) {
+      if (val === 0) return '';
+      if (isFirst) return '' + val;
+      return val < 0 ? ' - ' + Math.abs(val) : ' + ' + val;
+    }
+
+    function formatEquation(type, a, b, c) {
+      var tp = normType(type), A = numOr(a, 1), B = numOr(b, 0), C = numOr(c, 0);
+      var eq = 'f(x) = ';
+      if (tp === 'linear') return eq + ((fmtCoeff(A, 'x', true) + fmtConst(B, A === 0)) || '0');
+      if (tp === 'quadratic') return eq + ((fmtCoeff(A, 'x\u00B2', true) + fmtCoeff(B, 'x', A === 0) + fmtConst(C, A === 0 && B === 0)) || '0');
+      if (tp === 'cubic') return eq + ((fmtCoeff(A, 'x\u00B3', true) + fmtCoeff(B, 'x', A === 0) + fmtConst(C, A === 0 && B === 0)) || '0');
+      if (tp === 'trig') {
+        var amp = A === 1 ? '' : A === -1 ? '-' : '' + A;
+        var freq = B === 1 ? 'x' : B === -1 ? '-x' : B + 'x';
+        var phase = C === 0 ? '' : C > 0 ? ' + ' + C : ' - ' + Math.abs(C);
+        return eq + amp + 'sin(' + freq + phase + ')';
+      }
+      var amp2 = A === 1 ? '' : A === -1 ? '-' : '' + A;
+      var inner = B === 0 ? 'x' : B > 0 ? 'x + ' + B : 'x - ' + Math.abs(B);
+      if (tp === 'exponential') return eq + amp2 + 'e^(' + (B === 1 ? 'x' : B === -1 ? '-x' : B + 'x') + ')' + fmtConst(C, false);
+      if (tp === 'absolute') return eq + amp2 + '|' + inner + '|' + fmtConst(C, false);
+      if (tp === 'sqrt') return eq + amp2 + '\u221A(' + inner + ')' + fmtConst(C, false);
+      if (tp === 'log') return eq + amp2 + 'ln(' + inner + ')' + fmtConst(C, false);
+      return eq + (A === -1 ? '-1' : '' + A) + '/(' + inner + ')' + fmtConst(C, false);
+    }
+
+    function analyzeFunction(type, a, b, c) {
+      var tp = normType(type), A = numOr(a, 1), B = numOr(b, 0), C = numOr(c, 0);
+      var eq = formatEquation(tp, A, B, C);
+      var y0Raw = evaluate(tp, A, B, C, 0);
+      var yInt = { x: 0, y: fin(y0Raw) ? cleanNum(y0Raw) : null, defined: fin(y0Raw) };
+      var out = {
+        type: tp, a: A, b: B, c: C, equation: eq,
+        isDegenerate: false,
+        shape: 'line',
+        direction: 'increasing',
+        yIntercept: yInt,
+        xIntercepts: [],
+        xInterceptNote: '',
+        vertex: null,
+        domain: '(-\u221E, \u221E)',
+        range: '(-\u221E, \u221E)',
+        asymptotes: { vertical: null, horizontal: null },
+        endBehavior: { left: '', right: '' },
+        period: null,
+        phaseShift: null,
+        amplitude: null,
+        parameterRoles: { a: '', b: '', c: '' },
+        realWorldModel: ''
+      };
+
+      if (tp === 'linear') {
+        out.isDegenerate = (A === 0);
+        out.shape = A === 0 ? 'constant' : 'line';
+        out.direction = A > 0 ? 'increasing' : A < 0 ? 'decreasing' : 'constant';
+        if (A !== 0) out.xIntercepts = [cleanNum(-B / A)];
+        else out.xInterceptNote = B === 0 ? 'every x (lies on the x-axis)' : 'none (parallel to the x-axis)';
+        out.range = A === 0 ? '{' + fmtNum(B) + '}' : '(-\u221E, \u221E)';
+        out.endBehavior = A > 0
+          ? { left: 'y \u2192 \u2212\u221E', right: 'y \u2192 +\u221E' }
+          : A < 0 ? { left: 'y \u2192 +\u221E', right: 'y \u2192 \u2212\u221E' }
+          : { left: 'y stays at ' + fmtNum(B), right: 'y stays at ' + fmtNum(B) };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' is the slope (rise per 1 unit right); making a larger makes the line steeper and negating a flips uphill to downhill.',
+          b: 'b = ' + fmtNum(B) + ' is the y-intercept where the line crosses x = 0; changing b slides the line vertically without changing its tilt.',
+          c: 'c is not used in linear mode (y = ax + b).'
+        };
+        out.realWorldModel = A > 0
+          ? 'Saving $' + fmtNum(A) + ' each week starting from $' + fmtNum(B) + ' (constant rate of growth).'
+          : A < 0 ? 'A tank or candle starting at ' + fmtNum(B) + ' units and dropping by ' + fmtNum(Math.abs(A)) + ' each hour.'
+          : 'A flat subscription fee of ' + fmtNum(B) + ' that stays the same regardless of x.';
+        return out;
+      }
+
+      if (tp === 'quadratic') {
+        if (A === 0) {
+          var lin = analyzeFunction('linear', B, C, 0);
+          lin.type = 'quadratic'; lin.a = A; lin.b = B; lin.c = C; lin.equation = eq; lin.isDegenerate = true;
+          lin.parameterRoles.a = 'a = 0 collapses the x\u00B2 term into a straight line; move a away from 0 to restore a parabola.';
+          return lin;
+        }
+        var vx = cleanNum(-B / (2 * A)), vy = cleanNum(evaluate('quadratic', A, B, C, vx));
+        out.shape = 'parabola';
+        out.direction = A > 0 ? 'opens-up' : 'opens-down';
+        out.vertex = { x: vx, y: vy, kind: A > 0 ? 'min' : 'max' };
+        out.range = A > 0 ? '[' + fmtNum(vy) + ', \u221E)' : '(-\u221E, ' + fmtNum(vy) + ']';
+        var disc = B * B - 4 * A * C;
+        if (disc > 1e-10) {
+          var sq = Math.sqrt(disc);
+          var r1 = cleanNum((-B - sq) / (2 * A)), r2 = cleanNum((-B + sq) / (2 * A));
+          out.xIntercepts = r1 <= r2 ? [r1, r2] : [r2, r1];
+        } else if (Math.abs(disc) <= 1e-10) {
+          out.xIntercepts = [vx];
+        } else {
+          out.xInterceptNote = 'none (discriminant b\u00B2 \u2212 4ac < 0, so the vertex does not reach the x-axis)';
+        }
+        out.endBehavior = A > 0
+          ? { left: 'y \u2192 +\u221E', right: 'y \u2192 +\u221E' }
+          : { left: 'y \u2192 \u2212\u221E', right: 'y \u2192 \u2212\u221E' };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' sets opening direction (' + (A > 0 ? 'upward U' : 'downward arch') + ') and width (larger |a| makes the parabola narrower).',
+          b: 'b = ' + fmtNum(B) + ' tilts the slope at x = 0 and shifts the vertex sideways to x = \u2212b/(2a) = ' + fmtNum(vx) + '.',
+          c: 'c = ' + fmtNum(C) + ' is the y-intercept (0, ' + fmtNum(C) + '); changing c shifts the whole parabola up or down.'
+        };
+        out.realWorldModel = A < 0
+          ? 'The arc of a thrown basketball or fountain jet rising to a peak at (' + fmtNum(vx) + ', ' + fmtNum(vy) + ') before falling back down.'
+          : 'A suspension bridge cable or satellite dish curving upward symmetrically from its lowest point (' + fmtNum(vx) + ', ' + fmtNum(vy) + ').';
+        return out;
+      }
+
+      if (tp === 'cubic') {
+        if (A === 0) {
+          var linC = analyzeFunction('linear', B, C, 0);
+          linC.type = 'cubic'; linC.a = A; linC.b = B; linC.c = C; linC.equation = eq; linC.isDegenerate = true;
+          linC.parameterRoles.a = 'a = 0 removes the x\u00B3 term, turning the curve into a straight line.';
+          return linC;
+        }
+        out.shape = 's-curve';
+        out.direction = A > 0 ? 'increasing' : 'decreasing';
+        out.vertex = { x: 0, y: cleanNum(C), kind: 'inflection' };
+        out.xInterceptNote = 'at least one real root (opposite-direction ends must cross the x-axis)';
+        out.endBehavior = A > 0
+          ? { left: 'y \u2192 \u2212\u221E', right: 'y \u2192 +\u221E' }
+          : { left: 'y \u2192 +\u221E', right: 'y \u2192 \u2212\u221E' };
+        var hasTurns = (B / A) < 0;
+        var turnX = hasTurns ? cleanNum(Math.sqrt(-B / (3 * A))) : null;
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' controls end behavior (' + (A > 0 ? 'low-left to high-right' : 'high-left to low-right') + ') and steepness.',
+          b: 'b = ' + fmtNum(B) + (hasTurns ? ' opposes the sign of a, creating a local peak and valley at x = \u00B1' + fmtNum(turnX) + '.' : ' has the same sign as a (or 0), so the curve climbs/falls monotonically with an inflection bend at (0, ' + fmtNum(C) + ').'),
+          c: 'c = ' + fmtNum(C) + ' sets the y-intercept and slides the S-curve vertically.'
+        };
+        out.realWorldModel = 'Volume scaling with side length (V = s\u00B3) or a rollercoaster track with one smooth rise, dip, and climb.';
+        return out;
+      }
+
+      if (tp === 'trig') {
+        if (A === 0 || B === 0) {
+          out.isDegenerate = true;
+          out.shape = 'constant';
+          out.direction = 'constant';
+          var flatY = cleanNum(A * Math.sin(C));
+          out.range = '{' + fmtNum(flatY) + '}';
+          out.endBehavior = { left: 'constant y = ' + fmtNum(flatY), right: 'constant y = ' + fmtNum(flatY) };
+          out.parameterRoles = {
+            a: 'a = ' + fmtNum(A) + ' is the amplitude; when a = 0 the wave flattens to y = 0.',
+            b: 'b = ' + fmtNum(B) + ' is the angular frequency; when b = 0 the input never changes so y stays constant.',
+            c: 'c = ' + fmtNum(C) + ' sets the constant phase angle sin(c) when b = 0.'
+          };
+          out.realWorldModel = 'A still water surface or silenced string with zero oscillation.';
+          return out;
+        }
+        var amp = Math.abs(A), per = cleanNum((2 * Math.PI) / Math.abs(B)), pShift = cleanNum(-C / B);
+        out.shape = 'wave';
+        out.direction = 'oscillating';
+        out.amplitude = cleanNum(amp);
+        out.period = per;
+        out.phaseShift = pShift;
+        out.range = '[' + fmtNum(-amp) + ', ' + fmtNum(amp) + ']';
+        out.xInterceptNote = 'repeats every half-period (' + fmtNum(per / 2) + ' units)';
+        out.endBehavior = { left: 'oscillates between ' + fmtNum(-amp) + ' and ' + fmtNum(amp), right: 'oscillates between ' + fmtNum(-amp) + ' and ' + fmtNum(amp) };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' sets amplitude |a| = ' + fmtNum(amp) + ' (wave height from midline)' + (A < 0 ? ' and flips the wave upside down.' : '.'),
+          b: 'b = ' + fmtNum(B) + ' sets frequency, giving period 2\u03C0/|b| \u2248 ' + fmtNum(per) + ' (larger |b| squeezes more cycles horizontally).',
+          c: 'c = ' + fmtNum(C) + ' shifts the wave horizontally by \u2212c/b = ' + fmtNum(pShift) + ' (' + (pShift > 0 ? 'right ' + fmtNum(pShift) : pShift < 0 ? 'left ' + fmtNum(Math.abs(pShift)) : 'no horizontal shift') + ') \u2014 it is a phase shift, NOT a vertical shift.'
+        };
+        out.realWorldModel = 'Ocean tides, a Ferris wheel rider\u2019s height, or a pure musical tone oscillating smoothly between ' + fmtNum(-amp) + ' and ' + fmtNum(amp) + '.';
+        return out;
+      }
+
+      if (tp === 'exponential') {
+        if (A === 0 || B === 0) {
+          out.isDegenerate = true;
+          out.shape = 'constant';
+          out.direction = 'constant';
+          var flatE = cleanNum(A + C);
+          out.range = '{' + fmtNum(flatE) + '}';
+          out.endBehavior = { left: 'constant y = ' + fmtNum(flatE), right: 'constant y = ' + fmtNum(flatE) };
+          out.parameterRoles = {
+            a: 'a = ' + fmtNum(A) + ' scales the exponential curve; a = 0 collapses it to the horizontal line y = ' + fmtNum(C) + '.',
+            b: 'b = ' + fmtNum(B) + ' sets growth/decay rate; b = 0 makes e^(0) = 1 everywhere.',
+            c: 'c = ' + fmtNum(C) + ' shifts the curve vertically.'
+          };
+          out.realWorldModel = 'A population or balance with zero percent growth rate staying flat at ' + fmtNum(flatE) + '.';
+          return out;
+        }
+        var growing = (A * B) > 0;
+        out.shape = B > 0 ? 'exponential-growth' : 'exponential-decay';
+        out.direction = growing ? 'increasing' : 'decreasing';
+        out.asymptotes.horizontal = cleanNum(C);
+        out.range = A > 0 ? '(' + fmtNum(C) + ', \u221E)' : '(-\u221E, ' + fmtNum(C) + ')';
+        if ((-C / A) > 0) out.xIntercepts = [cleanNum(Math.log(-C / A) / B)];
+        else out.xInterceptNote = 'none (the curve stays strictly on one side of y = ' + fmtNum(C) + ')';
+        out.endBehavior = B > 0
+          ? { left: 'approaches horizontal asymptote y = ' + fmtNum(C), right: A > 0 ? 'explodes toward +\u221E' : 'drops toward \u2212\u221E' }
+          : { left: A > 0 ? 'explodes toward +\u221E' : 'drops toward \u2212\u221E', right: 'approaches horizontal asymptote y = ' + fmtNum(C) };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' sets distance from the asymptote at x = 0 (y-intercept is a + c = ' + fmtNum(A + C) + ') and flips the curve across y = c if negative.',
+          b: 'b = ' + fmtNum(B) + ' is the continuous ' + (B > 0 ? 'growth' : 'decay') + ' rate; each +1 step in x multiplies distance from y = c by e^b \u2248 ' + fmtNum(Math.exp(B)) + '.',
+          c: 'c = ' + fmtNum(C) + ' sets the horizontal asymptote y = ' + fmtNum(C) + ' that the flat tail approaches without ever crossing.'
+        };
+        out.realWorldModel = B > 0
+          ? 'Compound interest or bacteria multiplying by a constant factor (\u00D7' + fmtNum(Math.exp(B)) + ' per unit of x) every step.'
+          : 'A hot mug of cocoa cooling toward room temperature y = ' + fmtNum(C) + ' or radioactive half-life decay.';
+        return out;
+      }
+
+      if (tp === 'absolute') {
+        if (A === 0) {
+          out.isDegenerate = true; out.shape = 'constant'; out.direction = 'constant';
+          out.range = '{' + fmtNum(C) + '}';
+          out.endBehavior = { left: 'y = ' + fmtNum(C), right: 'y = ' + fmtNum(C) };
+          out.parameterRoles = { a: 'a = 0 flattens the V into y = ' + fmtNum(C) + '.', b: 'b shifts the corner horizontally when a \u2260 0.', c: 'c = ' + fmtNum(C) + ' shifts vertically.' };
+          out.realWorldModel = 'Constant output ' + fmtNum(C) + '.';
+          return out;
+        }
+        var ax = cleanNum(-B), ay = cleanNum(C);
+        out.shape = 'v-corner';
+        out.direction = A > 0 ? 'opens-up' : 'opens-down';
+        out.vertex = { x: ax, y: ay, kind: A > 0 ? 'min' : 'max' };
+        out.range = A > 0 ? '[' + fmtNum(ay) + ', \u221E)' : '(-\u221E, ' + fmtNum(ay) + ']';
+        var rhs = -C / A;
+        if (rhs > 0) out.xIntercepts = [cleanNum(-B - rhs), cleanNum(-B + rhs)];
+        else if (rhs === 0) out.xIntercepts = [ax];
+        else out.xInterceptNote = 'none (the V corner stays away from the x-axis)';
+        out.endBehavior = A > 0 ? { left: 'y \u2192 +\u221E', right: 'y \u2192 +\u221E' } : { left: 'y \u2192 \u2212\u221E', right: 'y \u2192 \u2212\u221E' };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' sets the slope of the two straight arms (\u00B1' + fmtNum(Math.abs(A)) + ') and whether the V opens ' + (A > 0 ? 'up.' : 'down.'),
+          b: 'b = ' + fmtNum(B) + ' moves the sharp corner to x = \u2212b = ' + fmtNum(ax) + ' (notice the sign flips inside |x + b|!).',
+          c: 'c = ' + fmtNum(C) + ' moves the V corner up or down to y = ' + fmtNum(ay) + '.'
+        };
+        out.realWorldModel = 'Walking distance from a landmark at position x = ' + fmtNum(ax) + ' (distance increases linearly on both sides, with a sharp V corner at the landmark).';
+        return out;
+      }
+
+      if (tp === 'sqrt') {
+        var sx0 = cleanNum(-B);
+        out.shape = A === 0 ? 'constant' : 'half-parabola';
+        out.isDegenerate = (A === 0);
+        out.direction = A > 0 ? 'increasing' : A < 0 ? 'decreasing' : 'constant';
+        out.domain = '[' + fmtNum(sx0) + ', \u221E)';
+        out.range = A === 0 ? '{' + fmtNum(C) + '}' : A > 0 ? '[' + fmtNum(C) + ', \u221E)' : '(-\u221E, ' + fmtNum(C) + ']';
+        out.vertex = { x: sx0, y: cleanNum(C), kind: 'endpoint' };
+        if (A !== 0 && (-C / A) >= 0) out.xIntercepts = [cleanNum((-C / A) * (-C / A) - B)];
+        else out.xInterceptNote = 'none (starts at y = ' + fmtNum(C) + ' and moves away from the x-axis)';
+        out.endBehavior = { left: 'undefined left of x = ' + fmtNum(sx0) + ' (excluded domain: x + b < 0)', right: A > 0 ? 'grows slowly toward +\u221E' : A < 0 ? 'drops slowly toward \u2212\u221E' : 'constant y = ' + fmtNum(C) };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' stretches the curve vertically' + (A < 0 ? ' and flips it downward.' : '.'),
+          b: 'b = ' + fmtNum(B) + ' sets the domain starting edge x \u2265 \u2212b = ' + fmtNum(sx0) + ' because square roots require x + b \u2265 0.',
+          c: 'c = ' + fmtNum(C) + ' moves the starting endpoint vertically to (' + fmtNum(sx0) + ', ' + fmtNum(C) + ').'
+        };
+        out.realWorldModel = 'The time for a dropped ball to fall x meters or a pendulum\u2019s swing period versus its length (starts at x = ' + fmtNum(sx0) + ' and rises with diminishing slope).';
+        return out;
+      }
+
+      if (tp === 'log') {
+        var lx0 = cleanNum(-B);
+        out.shape = A === 0 ? 'constant' : 'logarithm';
+        out.isDegenerate = (A === 0);
+        out.direction = A > 0 ? 'increasing' : A < 0 ? 'decreasing' : 'constant';
+        out.domain = '(' + fmtNum(lx0) + ', \u221E)';
+        out.range = A === 0 ? '{' + fmtNum(C) + '}' : '(-\u221E, \u221E)';
+        out.asymptotes.vertical = lx0;
+        if (A !== 0) out.xIntercepts = [cleanNum(Math.exp(-C / A) - B)];
+        out.endBehavior = {
+          left: 'undefined for x \u2264 ' + fmtNum(lx0) + '; approaches vertical asymptote x = ' + fmtNum(lx0) + ' (y \u2192 ' + (A > 0 ? '\u2212\u221E' : '+\u221E') + ')',
+          right: A > 0 ? 'rises slowly forever toward +\u221E (no ceiling!)' : A < 0 ? 'falls slowly forever toward \u2212\u221E' : 'constant y = ' + fmtNum(C)
+        };
+        out.parameterRoles = {
+          a: 'a = ' + fmtNum(A) + ' scales the vertical climb' + (A < 0 ? ' and reflects it downward.' : '.'),
+          b: 'b = ' + fmtNum(B) + ' places the vertical asymptote wall at x = \u2212b = ' + fmtNum(lx0) + ' (ln requires x + b > 0).',
+          c: 'c = ' + fmtNum(C) + ' shifts the whole curve vertically by ' + fmtNum(C) + ' units.'
+        };
+        out.realWorldModel = 'Sound loudness in decibels, earthquake Richter magnitude, or pH acidity \u2014 where multiplying intensity by 10 adds a fixed step in y.';
+        return out;
+      }
+
+      // rational: a/(x + b) + c
+      var pole = cleanNum(-B);
+      out.shape = A === 0 ? 'constant' : 'hyperbola';
+      out.isDegenerate = (A === 0);
+      out.direction = A === 0 ? 'constant' : 'hyperbolic';
+      out.domain = 'x \u2260 ' + fmtNum(pole);
+      out.range = A === 0 ? '{' + fmtNum(C) + '}' : 'y \u2260 ' + fmtNum(C);
+      out.asymptotes.vertical = pole;
+      out.asymptotes.horizontal = cleanNum(C);
+      if (A !== 0 && C !== 0) out.xIntercepts = [cleanNum(-A / C - B)];
+      else out.xInterceptNote = C === 0 ? 'none (horizontal asymptote sits on the x-axis y = 0)' : 'none';
+      out.endBehavior = {
+        left: 'levels off toward horizontal asymptote y = ' + fmtNum(C) + '; splits at vertical asymptote x = ' + fmtNum(pole),
+        right: 'levels off toward horizontal asymptote y = ' + fmtNum(C) + ' as x \u2192 +\u221E'
+      };
+      out.parameterRoles = {
+        a: 'a = ' + fmtNum(A) + ' bends the two branches farther from the asymptote cross (' + fmtNum(pole) + ', ' + fmtNum(C) + ') and swaps their quadrants if negative.',
+        b: 'b = ' + fmtNum(B) + ' places the vertical asymptote at x = \u2212b = ' + fmtNum(pole) + ' where the denominator x + b becomes 0 (excluded from domain!).',
+        c: 'c = ' + fmtNum(C) + ' sets the horizontal asymptote y = ' + fmtNum(C) + ' that both far ends approach.'
+      };
+      out.realWorldModel = 'Splitting a fixed cost or trip distance among x people or speed (twice the speed cuts travel time in half, with a vertical wall at x = ' + fmtNum(pole) + ').';
+      return out;
+    }
+
+    function buildOfflineFuncCoach(type, a, b, c, eqStr, level, quiz) {
+      var lvl = normLevel(level);
+      var tp = normType(type), A = numOr(a, 1), B = numOr(b, 0), C = numOr(c, 0);
+      var openSpoilingQuiz = !!(quiz && typeof quiz === 'object' && !quiz.answered && (quiz.mode === 'name' || quiz.mode === 'root' || quiz.mode === 'yint'));
+      if (openSpoilingQuiz) {
+        var guideShape = quiz.mode === 'name'
+          ? 'Look at the overall silhouette first: is it straight, a U-turn, a sharp V, an S-bend, a repeating wave, or split by an invisible wall?'
+          : quiz.mode === 'root'
+            ? 'Look along the horizontal x-axis (where y = 0) to spot every crossing or touch point.'
+            : 'Look along the vertical y-axis (where x = 0) to read the curve\u2019s starting height f(0).';
+        var guideSteps = 'Use the trace slider or keyboard explorer to check exact coordinates without guessing. Full algebraic details unlock as soon as you submit your answer.';
+        var safeSections = [
+          { id: 'shape', title: 'How to Read This Graph', body: guideShape },
+          { id: 'strategy', title: 'Investigation Strategy', body: guideSteps }
+        ];
+        return {
+          level: lvl, type: tp, equation: 'f(x) = ?', spoilsHidden: true,
+          shape: guideShape, keyFeatures: guideSteps, parameters: '', realWorld: '',
+          sections: safeSections,
+          summary: guideShape + ' ' + guideSteps,
+          analysis: null
+        };
+      }
+
+      var info = analyzeFunction(tp, A, B, C);
+      var eq = (typeof eqStr === 'string' && eqStr.trim()) ? eqStr.trim() : info.equation;
+      var rootList = info.xIntercepts.length
+        ? info.xIntercepts.map(function(r) { return 'x = ' + fmtNum(r); }).join(', ')
+        : (info.xInterceptNote || 'none in simple closed form');
+      var yIntText = info.yIntercept.defined ? '(0, ' + fmtNum(info.yIntercept.y) + ')' : 'none (undefined at x = 0)';
+      var asymParts = [];
+      if (info.asymptotes.vertical !== null) asymParts.push('vertical wall at x = ' + fmtNum(info.asymptotes.vertical));
+      if (info.asymptotes.horizontal !== null) asymParts.push('horizontal boundary at y = ' + fmtNum(info.asymptotes.horizontal));
+      var asymHS = [];
+      if (info.asymptotes.vertical !== null) asymHS.push('vertical asymptote x = ' + fmtNum(info.asymptotes.vertical));
+      if (info.asymptotes.horizontal !== null) asymHS.push('horizontal asymptote y = ' + fmtNum(info.asymptotes.horizontal));
+
+      var shapeText, featuresText, paramText, realText;
+      if (lvl === 'plain') {
+        var plainShapes = {
+          line: A > 0 ? 'This graph is a straight uphill line that climbs at the same steady pace.' : 'This graph is a straight downhill line that drops at the same steady pace.',
+          constant: 'This graph is a flat horizontal line that stays at the exact same height everywhere.',
+          parabola: A > 0 ? 'This graph makes a smooth U-shape that opens upward like a bowl.' : 'This graph makes an upside-down U-shape like a hill or arch.',
+          's-curve': 'This graph makes a smooth S-bend whose left and right ends go in opposite directions.',
+          wave: 'This graph is a smooth wave that rises and falls over and over forever.',
+          'exponential-growth': 'This graph stays almost flat on one side, then shoots up faster and faster on the other.',
+          'exponential-decay': 'This graph starts high and drops quickly before flattening out near a steady line.',
+          'v-corner': A > 0 ? 'This graph forms a sharp V-shape pointing down with two straight sides.' : 'This graph forms an upside-down V-shape pointing up with two straight sides.',
+          'half-parabola': 'This graph starts at one edge dot and curves gently in only one direction.',
+          logarithm: 'This graph rises fast near an invisible wall, then climbs more and more slowly forever.',
+          hyperbola: 'This graph splits into two separate curved pieces separated by an invisible vertical wall.'
+        };
+        shapeText = (plainShapes[info.shape] || 'This graph follows the rule ' + eq + '.');
+        var hasRestrictedDomain = info.domain !== '(-\u221E, \u221E)' && info.domain !== '(\u2212\u221E, \u221E)';
+        featuresText = (info.yIntercept.defined
+          ? 'It crosses the up-and-down line at ' + yIntText + '. '
+          : 'It does not cross the up-and-down y-axis because x = 0 is outside its domain. ')
+          + (info.xIntercepts.length ? 'It touches the flat x-axis at ' + rootList + '. ' : '')
+          + (info.vertex ? 'Its key ' + (info.vertex.kind === 'endpoint' ? 'starting dot' : info.vertex.kind === 'inflection' ? 'center bend' : 'turning point') + ' is at (' + fmtNum(info.vertex.x) + ', ' + fmtNum(info.vertex.y) + '). ' : '')
+          + (asymParts.length
+            ? 'Watch for the invisible ' + asymParts.join(' and ') + '.'
+            : hasRestrictedDomain
+              ? 'It only exists for x in ' + info.domain + ' (undefined outside that range).'
+              : 'It keeps going smoothly across the whole grid.');
+        paramText = 'Changing a (' + fmtNum(A) + ') changes how tall, steep, or flipped the picture is. Changing b (' + fmtNum(B) + ') shifts or stretches it sideways' + (tp === 'linear' ? ' (actually moves the line up/down here)' : '') + '. ' + (tp === 'linear' ? '' : 'Changing c (' + fmtNum(C) + ') ' + (tp === 'trig' ? 'slides the wave sideways by \u2212c/b = ' + fmtNum(info.phaseShift || 0) + '.' : 'slides the whole graph up or down.'));
+        realText = 'Real-life picture: ' + info.realWorldModel;
+      } else if (lvl === 'hs') {
+        shapeText = eq + ' is a ' + tp + ' function (' + info.shape.replace(/-/g, ' ') + ') with domain ' + info.domain + ' and range ' + info.range + '.';
+        featuresText = 'y-intercept: ' + yIntText + '; x-intercept(s): ' + rootList + '. '
+          + (info.vertex ? (info.vertex.kind === 'min' ? 'Minimum vertex' : info.vertex.kind === 'max' ? 'Maximum vertex' : info.vertex.kind === 'endpoint' ? 'Domain endpoint' : 'Inflection point') + ' at (' + fmtNum(info.vertex.x) + ', ' + fmtNum(info.vertex.y) + '). ' : '')
+          + (asymHS.length ? 'Asymptotes: ' + asymHS.join(', ') + '. ' : '')
+          + (info.period ? 'Amplitude |a| = ' + fmtNum(info.amplitude) + ', period 2\u03C0/|b| \u2248 ' + fmtNum(info.period) + ', phase shift \u2212c/b = ' + fmtNum(info.phaseShift) + '. ' : '')
+          + 'End behavior: left ' + info.endBehavior.left + '; right ' + info.endBehavior.right + '.';
+        paramText = 'Sensitivity \u2014 ' + info.parameterRoles.a + ' ' + info.parameterRoles.b + (tp === 'linear' ? '' : ' ' + info.parameterRoles.c);
+        realText = 'Applied model: ' + info.realWorldModel;
+      } else {
+        // grade5 (default balanced mathematical explanation)
+        shapeText = 'For ' + eq + ', the graph shows a ' + (info.shape === 'line' ? (A > 0 ? 'rising straight line' : 'falling straight line') : info.shape.replace(/-/g, ' ')) + ' (' + tp + ' family).';
+        featuresText = 'It crosses the y-axis at ' + yIntText
+          + (info.xIntercepts.length ? ' and meets the x-axis at ' + rootList : '')
+          + '. ' + (info.vertex ? 'Its main ' + (info.vertex.kind === 'endpoint' ? 'starting point' : info.vertex.kind === 'inflection' ? 'middle bend' : 'turning point (vertex)') + ' is at (' + fmtNum(info.vertex.x) + ', ' + fmtNum(info.vertex.y) + '). ' : '')
+          + (asymParts.length ? 'Asymptote boundary: ' + asymParts.join(' and ') + '. ' : '')
+          + 'Domain: ' + info.domain + '; Range: ' + info.range + '.';
+        paramText = info.parameterRoles.a + ' ' + info.parameterRoles.b + (tp === 'linear' ? '' : ' ' + info.parameterRoles.c);
+        realText = 'Real-world connection: ' + info.realWorldModel;
+      }
+
+      var sections = [
+        { id: 'shape', title: lvl === 'plain' ? 'What It Looks Like' : 'Graph Shape', body: shapeText },
+        { id: 'features', title: lvl === 'plain' ? 'Key Spots on the Grid' : 'Intercepts, Domain & Behavior', body: featuresText },
+        { id: 'params', title: lvl === 'plain' ? 'How a, b, and c Move It' : 'Parameter Sensitivity (a, b, c)', body: paramText },
+        { id: 'model', title: lvl === 'plain' ? 'Real-Life Example' : 'Real-World Model', body: realText }
+      ];
+      return {
+        level: lvl, type: tp, equation: eq, spoilsHidden: false,
+        shape: shapeText, keyFeatures: featuresText, parameters: paramText, realWorld: realText,
+        sections: sections,
+        summary: shapeText + ' ' + featuresText + ' ' + realText,
+        analysis: info
+      };
+    }
+
+    function getFeaturePredictionOptions(fgQuiz) {
+      if (!fgQuiz || typeof fgQuiz !== 'object' || typeof fgQuiz.mode !== 'string') return null;
+      if (fgQuiz.mode === 'name') {
+        return {
+          prompt: 'Before choosing the family name, which structural clue stands out most on the graph?',
+          options: [
+            { id: 'constant_slope', label: 'Constant straight slope' },
+            { id: 'turn_or_corner', label: 'Turning point or sharp corner' },
+            { id: 'periodic_wave', label: 'Repeating wave cycle' },
+            { id: 'asymptote_or_edge', label: 'Asymptote wall or domain edge' }
+          ]
+        };
+      }
+      if (fgQuiz.mode === 'root') {
+        return {
+          prompt: 'Before picking a number, where does the curve meet the x-axis?',
+          options: [
+            { id: 'left_of_zero', label: 'Left of 0 (negative x)' },
+            { id: 'at_zero', label: 'Right at x = 0' },
+            { id: 'right_of_zero', label: 'Right of 0 (positive x)' },
+            { id: 'both_sides', label: 'On both sides of 0' }
+          ]
+        };
+      }
+      if (fgQuiz.mode === 'yint') {
+        return {
+          prompt: 'Before picking a number, where does the curve cross the y-axis?',
+          options: [
+            { id: 'above_axis', label: 'Above 0 (positive y)' },
+            { id: 'at_origin', label: 'At the origin (y = 0)' },
+            { id: 'below_axis', label: 'Below 0 (negative y)' }
+          ]
+        };
+      }
+      if (fgQuiz.mode === 'match') {
+        return {
+          prompt: 'Before matching, how does y change each time x goes up by 1?',
+          options: [
+            { id: 'constant_add', label: 'Adds a constant step (linear)' },
+            { id: 'constant_mult', label: 'Multiplies by a constant ratio (exponential)' },
+            { id: 'non_constant', label: 'Curved, cornered, or inverse pattern' }
+          ]
+        };
+      }
+      if (fgQuiz.mode === 'myth') {
+        return {
+          prompt: 'Before choosing True or False, what kind of check will settle this claim?',
+          options: [
+            { id: 'graph_shape', label: 'Visual shape or symmetry' },
+            { id: 'test_number', label: 'Test a specific x-value (like x = 0 or 1)' },
+            { id: 'extreme_edge', label: 'Check large x, asymptotes, or domain edge' }
+          ]
+        };
+      }
+      return null;
+    }
+
+    function evaluateFeaturePrediction(fgQuiz, prediction, params) {
+      if (!fgQuiz || typeof fgQuiz !== 'object' || typeof prediction !== 'string' || !prediction) return null;
+      var cfg = getFeaturePredictionOptions(fgQuiz);
+      if (!cfg) return null;
+      var optMap = {};
+      cfg.options.forEach(function(o) { optMap[o.id] = o.label; });
+      if (!optMap[prediction]) return null;
+
+      var actual = null;
+      if (fgQuiz.mode === 'name') {
+        var tp = normType(fgQuiz.type || (params && params.type));
+        actual = tp === 'linear' ? 'constant_slope'
+          : (tp === 'quadratic' || tp === 'cubic' || tp === 'absolute') ? 'turn_or_corner'
+          : tp === 'trig' ? 'periodic_wave'
+          : 'asymptote_or_edge';
+      } else if (fgQuiz.mode === 'root') {
+        var rs = Array.isArray(fgQuiz.answers) && fgQuiz.answers.length ? fgQuiz.answers : [fgQuiz.answer];
+        var validR = rs.filter(fin);
+        var hasNeg = validR.some(function(r) { return r < -1e-9; });
+        var hasPos = validR.some(function(r) { return r > 1e-9; });
+        var hasZero = validR.some(function(r) { return Math.abs(r) <= 1e-9; });
+        if (hasNeg && hasPos) actual = 'both_sides';
+        else if (hasZero && !hasNeg && !hasPos) actual = 'at_zero';
+        else if (hasNeg && !hasPos) actual = 'left_of_zero';
+        else if (hasPos && !hasNeg) actual = 'right_of_zero';
+        else actual = 'both_sides';
+      } else if (fgQuiz.mode === 'yint') {
+        var yv = fin(fgQuiz.answer) ? fgQuiz.answer : (params ? evaluate(params.type, params.a, params.b, params.c, 0) : 0);
+        actual = yv > 1e-9 ? 'above_axis' : yv < -1e-9 ? 'below_axis' : 'at_origin';
+      } else if (fgQuiz.mode === 'match') {
+        var meta = MATCH_ITEM_META[fgQuiz.answer || fgQuiz.item];
+        var fam = meta ? meta.fam : '';
+        actual = fam === 'linear' ? 'constant_add' : fam === 'exponential' ? 'constant_mult' : 'non_constant';
+      } else if (fgQuiz.mode === 'myth') {
+        var txt = String(fgQuiz.s || '').toLowerCase();
+        if (/asymptote|eventually|flattens|beats|1\/x|ln\(|√x/.test(txt)) actual = 'extreme_edge';
+        else if (/y-axis|x = 0|f′\(x\)|slope|goes down|2x/.test(txt)) actual = 'test_number';
+        else actual = 'graph_shape';
+      }
+      var matched = prediction === actual;
+      return {
+        mode: fgQuiz.mode,
+        predicted: prediction,
+        predictedLabel: optMap[prediction],
+        actual: actual,
+        actualLabel: optMap[actual] || '',
+        matched: matched,
+        summary: matched
+          ? 'Feature prediction matched: ' + optMap[prediction] + '.'
+          : 'You predicted "' + optMap[prediction] + '", while this graph shows "' + (optMap[actual] || '') + '".'
+      };
+    }
+
+    function resolveFamilyId(val) {
+      if (FAMILIES.indexOf(val) >= 0) return val;
+      var s = String(val || '');
+      for (var i = 0; i < FAMILIES.length; i++) {
+        if (FAMILY_LABELS[FAMILIES[i]] === s) return FAMILIES[i];
+      }
+      var low = s.toLowerCase();
+      if (low.indexOf('linear') === 0) return 'linear';
+      if (low.indexOf('quadratic') === 0) return 'quadratic';
+      if (low.indexOf('cubic') === 0) return 'cubic';
+      if (low.indexOf('trig') === 0) return 'trig';
+      if (low.indexOf('exponential') === 0) return 'exponential';
+      if (low.indexOf('absolute') === 0) return 'absolute';
+      if (low.indexOf('square root') === 0 || low === 'sqrt') return 'sqrt';
+      if (low.indexOf('log') === 0) return 'log';
+      if (low.indexOf('rational') === 0) return 'rational';
+      return null;
+    }
+
+    function diagnoseFuncDistractor(fgQuiz, chosen) {
+      if (!fgQuiz || typeof fgQuiz !== 'object' || typeof fgQuiz.mode !== 'string') return null;
+
+      // Transform sign-of-vertex diagnostic (also callable directly on transform lab predictions)
+      if (fgQuiz.mode === 'transform') {
+        if (fgQuiz.key === 'h' && ((fgQuiz.to > fgQuiz.from && chosen === 'left') || (fgQuiz.to < fgQuiz.from && chosen === 'right'))) {
+          return {
+            code: 'sign_of_vertex',
+            title: 'Watch the sign inside (x \u2212 h)',
+            whyNot: 'In y = a\u00B7f(b(x \u2212 h)) + k, subtracting a positive h shifts the vertex RIGHT to x = +h, because x \u2212 h = 0 when x = h (not \u2212h).',
+            checkStep: 'Plug x = ' + fmtNum(fgQuiz.to) + ' into (x \u2212 ' + fmtNum(fgQuiz.to) + ') to verify it resets the parent input to 0.'
+          };
+        }
+        return null;
+      }
+
+      // Check if chosen is actually correct -> no misconception diagnosis needed
+      var isCorrect = Array.isArray(fgQuiz.answers) ? fgQuiz.answers.indexOf(chosen) >= 0 : chosen === fgQuiz.answer;
+      if (isCorrect) return null;
+
+      if (fgQuiz.mode === 'root') {
+        var cNum = Number(chosen);
+        var roots = Array.isArray(fgQuiz.answers) && fgQuiz.answers.length ? fgQuiz.answers : [fgQuiz.answer];
+        var A = numOr(fgQuiz.a, 1), B = numOr(fgQuiz.b, 0), C = numOr(fgQuiz.c, 0);
+        // Sign-of-vertex / opposite-sign root trap: picked -r instead of +r (or +b/a instead of -b/a)
+        var flippedRoot = roots.find(function(r) { return fin(r) && r !== 0 && Math.abs(cNum + r) < 0.06; });
+        if (flippedRoot !== undefined) {
+          return {
+            code: 'sign_of_vertex',
+            title: 'Sign flip when setting the factor to zero',
+            whyNot: 'You picked x = ' + fmtNum(cNum) + ', which has the opposite sign of the root x = ' + fmtNum(flippedRoot) + '. Just like (x \u2212 h)\u00B2 shifts its vertex to +h, setting (x ' + (flippedRoot > 0 ? '\u2212 ' + fmtNum(flippedRoot) : '+ ' + fmtNum(Math.abs(flippedRoot))) + ') = 0 flips the sign when solving for x.',
+            checkStep: 'Substitute x = ' + fmtNum(cNum) + ' and x = ' + fmtNum(flippedRoot) + ' into f(x): only x = ' + fmtNum(flippedRoot) + ' makes f(x) = 0.'
+          };
+        }
+        // Slope vs y-intercept swap on linear roots
+        if (fgQuiz.type === 'linear') {
+          if (Math.abs(cNum - B) < 0.06) {
+            return {
+              code: 'slope_yint_swap',
+              title: 'Y-intercept vs. root (x-intercept) swap',
+              whyNot: fmtNum(cNum) + ' is b, the y-intercept where x = 0 \u2014 not the root where y = 0. To find a root of ax + b = 0, solve x = \u2212b/a.',
+              checkStep: 'At x = 0, f(0) = ' + fmtNum(B) + '; to make f(x) = 0, move b to the other side and divide by slope a = ' + fmtNum(A) + '.'
+            };
+          }
+          if (Math.abs(cNum - A) < 0.06) {
+            return {
+              code: 'slope_yint_swap',
+              title: 'Slope vs. x-intercept confusion',
+              whyNot: fmtNum(cNum) + ' is the slope a (steepness per step), not where the line crosses the x-axis. Setting ax + b = 0 gives x = \u2212b/a = ' + fmtNum(fgQuiz.answer) + '.',
+              checkStep: 'Check f(' + fmtNum(cNum) + ') = ' + fmtNum(evaluate('linear', A, B, C, cNum)) + ' \u2260 0.'
+            };
+          }
+        }
+        // Quadratic vertex x-coordinate or y-intercept mistaken for root
+        if (fgQuiz.type === 'quadratic' && A !== 0) {
+          var vxQ = -B / (2 * A);
+          if (Math.abs(cNum - vxQ) < 0.06) {
+            return {
+              code: 'sign_of_vertex',
+              title: 'Vertex x-value vs. x-intercept',
+              whyNot: 'x = ' + fmtNum(cNum) + ' is the parabola\u2019s vertex line of symmetry (\u2212b/2a), where f(' + fmtNum(cNum) + ') = ' + fmtNum(evaluate('quadratic', A, B, C, cNum)) + ' \u2260 0. The roots sit symmetrically on either side of the vertex.',
+              checkStep: 'Look where the curve actually touches y = 0: x = ' + roots.map(fmtNum).join(' or x = ') + '.'
+            };
+          }
+          if (Math.abs(cNum - C) < 0.06) {
+            return {
+              code: 'slope_yint_swap',
+              title: 'Constant term (y-intercept) vs. root',
+              whyNot: fmtNum(cNum) + ' is c = f(0), the y-intercept, not a root where f(x) = 0.',
+              checkStep: 'Factor or trace along y = 0 to find where the parabola crosses the x-axis.'
+            };
+          }
+        }
+        var fVal = evaluate(fgQuiz.type || 'linear', A, B, C, cNum);
+        return {
+          code: 'numeric_mismatch',
+          title: 'Output is not zero at your pick',
+          whyNot: 'At x = ' + fmtNum(cNum) + ', the graph is at height f(' + fmtNum(cNum) + ') = ' + fmtNum(fVal) + ', which is ' + (fVal > 0 ? 'above' : 'below') + ' the x-axis rather than on y = 0.',
+          checkStep: 'Follow the curve until y = 0: x = ' + roots.map(fmtNum).join(' or x = ') + '.'
+        };
+      }
+
+      if (fgQuiz.mode === 'yint') {
+        var yPick = Number(chosen), yA = numOr(fgQuiz.a, 1), yB = numOr(fgQuiz.b, 0), yC = numOr(fgQuiz.c, 0);
+        if (fgQuiz.type === 'linear' && Math.abs(yPick - yA) < 0.06) {
+          return {
+            code: 'slope_yint_swap',
+            title: 'Slope vs. y-intercept swap',
+            whyNot: 'In y = ax + b, a = ' + fmtNum(yA) + ' is the slope (rate of change), while b = ' + fmtNum(yB) + ' is the y-intercept at x = 0. Plugging x = 0 multiplies the slope by 0, leaving only b.',
+            checkStep: 'Compute f(0) = ' + fmtNum(yA) + '\u00B7(0) + ' + fmtNum(yB) + ' = ' + fmtNum(fgQuiz.answer) + '.'
+          };
+        }
+        if ((fgQuiz.type === 'quadratic' || fgQuiz.type === 'cubic') && (Math.abs(yPick - yA) < 0.06 || Math.abs(yPick - yB) < 0.06)) {
+          return {
+            code: 'slope_yint_swap',
+            title: 'Coefficient of x vs. constant term',
+            whyNot: fmtNum(yPick) + ' multiplies a power of x, so it becomes 0 when x = 0. Only the standalone constant term c = ' + fmtNum(yC) + ' survives at x = 0.',
+            checkStep: 'Set x = 0 in every term with x: f(0) = ' + fmtNum(fgQuiz.answer) + '.'
+          };
+        }
+        if (fin(fgQuiz.answer) && fgQuiz.answer !== 0 && Math.abs(yPick + fgQuiz.answer) < 0.06) {
+          return {
+            code: 'sign_of_vertex',
+            title: 'Sign error on the y-intercept',
+            whyNot: 'You picked ' + fmtNum(yPick) + ', the opposite sign of f(0) = ' + fmtNum(fgQuiz.answer) + '. Keep the plus or minus sign in front of the constant term.',
+            checkStep: 'Check whether the curve crosses the vertical y-axis above 0 (positive) or below 0 (negative).'
+          };
+        }
+        return {
+          code: 'numeric_mismatch',
+          title: 'Read the height right on the y-axis (x = 0)',
+          whyNot: 'The curve does not cross the vertical y-axis at y = ' + fmtNum(yPick) + '. At x = 0, its height is f(0) = ' + fmtNum(fgQuiz.answer) + '.',
+          checkStep: 'Find the vertical line x = 0 and read the y-coordinate where the curve crosses it.'
+        };
+      }
+
+      if (fgQuiz.mode === 'name') {
+        var targetFam = normType(fgQuiz.type);
+        var pickedFam = resolveFamilyId(chosen);
+        // Linear vs Exponential growth trap
+        if ((targetFam === 'exponential' && (pickedFam === 'linear' || pickedFam === 'quadratic')) ||
+            (pickedFam === 'exponential' && (targetFam === 'linear' || targetFam === 'quadratic'))) {
+          return {
+            code: 'linear_vs_exponential',
+            title: 'Linear / polynomial vs. exponential growth',
+            whyNot: 'Linear curves keep a constant additive step (\u0394y), and quadratics form a symmetric U-turn, whereas exponential curves stay nearly flat against a horizontal asymptote on one side and multiply by a constant factor on the other.',
+            checkStep: 'Compare equal x-steps: constant \u0394y means linear, constant ratio means exponential.'
+          };
+        }
+        // Excluded domain / asymptote traps (sqrt / log / rational)
+        if (targetFam === 'sqrt' || targetFam === 'log' || targetFam === 'rational' ||
+            pickedFam === 'sqrt' || pickedFam === 'log' || pickedFam === 'rational') {
+          var domainDetail = targetFam === 'sqrt'
+            ? 'Square root (a\u221A(x + b) + c) has an excluded domain x < \u2212b and stops cleanly at a finite starting endpoint without a vertical asymptote.'
+            : targetFam === 'log'
+              ? 'Logarithm (a\u00B7ln(x + b) + c) excludes x \u2264 \u2212b and dives along a vertical asymptote at x = \u2212b while rising slowly forever to the right.'
+              : targetFam === 'rational'
+                ? 'Rational (a/(x + b) + c) excludes only x = \u2212b (division by zero), splitting into two branches around a vertical asymptote x = \u2212b and a horizontal asymptote y = c.'
+                : 'Unlike sqrt, log, or rational curves, a ' + targetFam + ' function is defined across every real x with no excluded domain wall or split branch.';
+          return {
+            code: 'excluded_domain_trap',
+            title: 'Excluded domain & asymptote check (sqrt / log / rational)',
+            whyNot: domainDetail,
+            checkStep: 'Check whether the curve stops at a point (sqrt), hugs a one-sided vertical wall (log), splits into two branches (rational), or spans all x.'
+          };
+        }
+        // Absolute V-corner vs smooth quadratic U-turn
+        if ((targetFam === 'absolute' && pickedFam === 'quadratic') || (targetFam === 'quadratic' && pickedFam === 'absolute')) {
+          return {
+            code: 'corner_vs_smooth',
+            title: 'Sharp V-corner vs. smooth parabolic U-turn',
+            whyNot: 'Absolute value |x + b| joins two straight constant-slope rays at a sharp corner, whereas quadratic ax\u00B2 + bx + c curves smoothly through slope 0 at its vertex.',
+            checkStep: 'Zoom in near the turning point: straight sides meeting sharply = absolute value; curving bowl = quadratic.'
+          };
+        }
+        // Cubic opposite ends vs quadratic/linear
+        if (targetFam === 'cubic' || pickedFam === 'cubic') {
+          return {
+            code: 'odd_vs_even_ends',
+            title: 'Opposite ends (cubic) vs. matching ends or straight line',
+            whyNot: 'A cubic curves with an S-bend whose left and right ends go in opposite directions, unlike a parabola (both ends same way) or a straight line (no bend).',
+            checkStep: 'Compare the far-left and far-right arrows and check whether the slope changes along the curve.'
+          };
+        }
+        // Periodic wave vs non-periodic
+        if (targetFam === 'trig' || pickedFam === 'trig') {
+          return {
+            code: 'periodic_vs_poly',
+            title: 'Repeating bounded wave vs. unbounded curve',
+            whyNot: 'A sine wave repeats the exact same peaks and valleys forever between \u2212|a| and +|a|, unlike algebraic curves that eventually climb or fall past every bound.',
+            checkStep: 'Look for repeating identical cycles staying inside a fixed horizontal band.'
+          };
+        }
+        return {
+          code: 'family_mismatch',
+          title: 'Compare key shape clues',
+          whyNot: 'Your pick (' + (pickedFam || chosen) + ') has a different slope and end-behavior pattern than this ' + targetFam + ' graph.',
+          checkStep: 'Check slope steadiness, turning points, and whether the curve has any boundary or asymptote.'
+        };
+      }
+
+      if (fgQuiz.mode === 'match') {
+        var tM = MATCH_ITEM_META[fgQuiz.answer], cM = MATCH_ITEM_META[chosen];
+        if (tM && cM) {
+          if (tM.fam === 'linear' && cM.fam === 'linear' && tM.rate === cM.y0 && tM.y0 === cM.rate) {
+            return {
+              code: 'slope_yint_swap',
+              title: 'Slope vs. y-intercept swap',
+              whyNot: 'You swapped the starting value (y-intercept at x = 0) and the rate per step (slope): ' + tM.eq + ' starts at ' + fmtNum(tM.y0) + ' and adds ' + fmtNum(tM.rate) + ' each step, whereas ' + cM.eq + ' starts at ' + fmtNum(cM.y0) + ' and adds ' + fmtNum(cM.rate) + '.',
+              checkStep: 'Check x = 0 first for the starting value, then subtract f(1) \u2212 f(0) for the rate per step.'
+            };
+          }
+          if ((tM.fam === 'exponential' && cM.fam === 'linear') || (tM.fam === 'linear' && cM.fam === 'exponential')) {
+            return {
+              code: 'linear_vs_exponential',
+              title: 'Additive (linear) vs. multiplicative (exponential) change',
+              whyNot: 'Linear models add the same amount each step (constant \u0394y), while exponential models multiply by the same factor each step (doubling or halving). Compare ' + tM.eq + ' with ' + cM.eq + '.',
+              checkStep: 'Compute both y(1)\u2212y(0) and y(2)\u2212y(1): if they differ, check the ratio y(1)/y(0) instead.'
+            };
+          }
+          if (tM.fam === 'sqrt' || tM.fam === 'rational' || cM.fam === 'sqrt' || cM.fam === 'rational') {
+            return {
+              code: 'excluded_domain_trap',
+              title: 'Excluded domain / inverse-proportion check',
+              whyNot: 'Square-root models (\u221Ax) require x \u2265 0 and grow slowly from (0, 0), while rational models (12/x) are undefined at x = 0 and keep x\u00B7y constant.',
+              checkStep: 'Test x = 0 and x = 1: rational 12/x cannot even be evaluated at x = 0.'
+            };
+          }
+          if ((tM.fam === 'absolute' && cM.fam === 'quadratic') || (tM.fam === 'quadratic' && cM.fam === 'absolute')) {
+            return {
+              code: 'sign_of_vertex',
+              title: 'Shifted V-corner (|x \u2212 2|) vs. centered parabola (x\u00B2)',
+              whyNot: '|x \u2212 2| reaches 0 at x = +2 (shifted right 2 units, with straight V sides), while x\u00B2 touches 0 at x = 0 with a curved U-shape.',
+              checkStep: 'Plug in x = 2: |2 \u2212 2| = 0, whereas 2\u00B2 = 4.'
+            };
+          }
+        }
+        return {
+          code: 'representation_mismatch',
+          title: 'Cross-check two points across representations',
+          whyNot: 'Your chosen representation does not produce the same (x, y) pairs as the given item.',
+          checkStep: 'Test x = 0 and x = 1 in both the given item and your chosen option.'
+        };
+      }
+
+      if (fgQuiz.mode === 'myth') {
+        var stmt = String(fgQuiz.s || '').toLowerCase();
+        var code = /asymptote|1\/x|ln\(|√x/.test(stmt) ? 'excluded_domain_trap'
+          : /exponential|polynomial/.test(stmt) ? 'linear_vs_exponential'
+          : /slope|y-axis|y-intercept/.test(stmt) ? 'slope_yint_swap'
+          : /wider|sin\(2x\)|shift|parabola/.test(stmt) ? 'sign_of_vertex'
+          : 'myth_fallacy';
+        return {
+          code: code,
+          title: 'Why this myth trips people up',
+          whyNot: fgQuiz.why || 'Test a concrete function on the graph above to verify whether the statement holds in every case.',
+          checkStep: 'Try dialing the example from the explanation on the sliders to see the counterexample live.'
+        };
+      }
+
+      return null;
+    }
+
+    return Object.freeze({
+      FAMILIES: FAMILIES,
+      FAMILY_LABELS: FAMILY_LABELS,
+      READING_LEVELS: READING_LEVELS,
+      evaluate: evaluate,
+      derivative: derivative,
+      formatEquation: formatEquation,
+      analyzeFunction: analyzeFunction,
+      buildOfflineFuncCoach: buildOfflineFuncCoach,
+      getFeaturePredictionOptions: getFeaturePredictionOptions,
+      evaluateFeaturePrediction: evaluateFeaturePrediction,
+      diagnoseFuncDistractor: diagnoseFuncDistractor,
+      transformLab: window.__alloTransformLab,
+      secant: window.__alloSecantInvestigation,
+      truncatedIntegral: fgTruncatedIntegral
+    });
+  })();
+  if (typeof window !== 'undefined') window.FuncGrapherPure = FUNCGRAPHER_ENGINE;
+
 
   // ═══ 📈 Function Grapher ═══
   // WCAG 1.4.3 high contrast: flatten the gradient Snapshot button under HC green ink.
@@ -1394,17 +2286,18 @@ window.StemLab = window.StemLab || {
     desc: 'Graph and explore mathematical functions interactively',
     color: 'indigo',
     category: 'math',
+    _engine: FUNCGRAPHER_ENGINE,
     questHooks: [
-      { id: 'try_5_families', label: 'Explore 5 function families', icon: '📈', check: function(d) { return Object.keys(d.familiesTried || {}).length >= 5; }, progress: function(d) { return Object.keys(d.familiesTried || {}).length + '/5 families'; } },
-      { id: 'challenge_5', label: 'Answer 5 challenges correctly', icon: '🎯', check: function(d) { return (d.fgScore || 0) >= 5; }, progress: function(d) { return (d.fgScore || 0) + '/5 correct'; } },
-      { id: 'myth_3', label: 'Bust 3 function myths (True or False)', icon: '🧠', check: function(d) { return (d.fgMythsDone || 0) >= 3; }, progress: function(d) { return (d.fgMythsDone || 0) + '/3 myths'; } },
-      { id: 'use_overlays', label: 'Reveal the derivative and area overlays', icon: '📉', check: function(d) { var o = d.overlaysUsed || {}; return !!(o.deriv && o.area); }, progress: function(d) { var o = d.overlaysUsed || {}; return ((o.deriv ? 1 : 0) + (o.area ? 1 : 0)) + '/2 overlays'; } }
+      { id: 'try_5_families', label: 'Explore 5 function families', icon: '📈', check: function(d) { var ft = d && d.familiesTried && typeof d.familiesTried === 'object' && !Array.isArray(d.familiesTried) ? d.familiesTried : {}; return Object.keys(ft).length >= 5; }, progress: function(d) { var ft = d && d.familiesTried && typeof d.familiesTried === 'object' && !Array.isArray(d.familiesTried) ? d.familiesTried : {}; return Object.keys(ft).length + '/5 families'; } },
+      { id: 'challenge_5', label: 'Answer 5 challenges correctly', icon: '🎯', check: function(d) { return (d && typeof d.fgScore === 'number' && isFinite(d.fgScore) ? d.fgScore : 0) >= 5; }, progress: function(d) { return (d && typeof d.fgScore === 'number' && isFinite(d.fgScore) ? d.fgScore : 0) + '/5 correct'; } },
+      { id: 'myth_3', label: 'Bust 3 function myths (True or False)', icon: '🧠', check: function(d) { return (d && typeof d.fgMythsDone === 'number' && isFinite(d.fgMythsDone) ? d.fgMythsDone : 0) >= 3; }, progress: function(d) { return (d && typeof d.fgMythsDone === 'number' && isFinite(d.fgMythsDone) ? d.fgMythsDone : 0) + '/3 myths'; } },
+      { id: 'use_overlays', label: 'Reveal the derivative and area overlays', icon: '📉', check: function(d) { var o = d && d.overlaysUsed && typeof d.overlaysUsed === 'object' ? d.overlaysUsed : {}; return !!(o.deriv && o.area); }, progress: function(d) { var o = d && d.overlaysUsed && typeof d.overlaysUsed === 'object' ? d.overlaysUsed : {}; return ((o.deriv ? 1 : 0) + (o.area ? 1 : 0)) + '/2 overlays'; } }
     ],
     render: function(ctx) {
       // The view row, the preset heading and the legend sit on the HOST
       // surface - white in light and dark, pure BLACK in the contrast theme,
       // where each measured 2.77:1.
-      var isContrast = !!ctx.isContrast;
+      var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
       var onHostInk = isContrast ? " text-white" : "";
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
@@ -1418,8 +2311,8 @@ window.StemLab = window.StemLab || {
       var toolSnapshots = ctx.toolSnapshots;
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
-      var t = ctx.t;
-      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      var t = (ctx.t && function(k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }) || function(k, fb) { return fb != null ? fb : k; };
+      var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -1430,7 +2323,21 @@ window.StemLab = window.StemLab || {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      var rawCallGemini = ctx.callGemini;
+      var fgHostAiUsable = true;
+      try {
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable !== 'undefined') {
+          fgHostAiUsable = typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable() : !!window.__alloAiUsable;
+        }
+      } catch (e) { fgHostAiUsable = false; }
+      var fgAiAllowed = (typeof rawCallGemini === 'function')
+        && ctx.aiAvailable !== false
+        && ctx.aiHintsEnabled !== false
+        && !rawCallGemini._alloQrBlocked
+        && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled)
+        && !(typeof window !== 'undefined' && window.__alloAiSecretsLocked)
+        && fgHostAiUsable;
+      var callGemini = fgAiAllowed ? rawCallGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -1440,6 +2347,17 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
+      var reduceMotion = !!(ctx && ctx.reduceMotion);
+      var isEmbedded = !!(ctx && ctx.embedded);
+      function fgReadAloud(text) {
+        var msg = String(text || '').trim();
+        if (!msg || isFgGlobalMuted() || typeof callTTS !== 'function') return false;
+        try {
+          var res = callTTS(msg, undefined, undefined, { force: true });
+          if (res && typeof res.catch === 'function') res.catch(function() {});
+          return true;
+        } catch (e) { return false; }
+      }
 
       // ── Tool body (funcGrapher) ──
       return (function() {
@@ -1470,8 +2388,8 @@ window.StemLab = window.StemLab || {
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, funcGrapher: { ...DEFAULT_FG, ...(prev && prev.funcGrapher), [key]: val } }));
 
           // ── Theme + grade band (shared pattern with waterCycle) ──
-          var isContrast = !!ctx.isContrast;
-          var isDark = !!ctx.isDark || isContrast;
+          var isContrast = !!(ctx.isContrast || ctx.theme === 'contrast');
+          var isDark = !isContrast && !!(ctx.isDark || ctx.theme === 'dark');
           var GRADE_BANDS = ['K-2', '3-5', '6-8', '9-12'];
           function getGradeBand() {
             var ov = d.fgGradeOverride;
@@ -1487,8 +2405,13 @@ window.StemLab = window.StemLab || {
 
           // Type setter that also feeds the try_5_families quest hook
           function setFnType(tid) {
-            upd('type', tid);
-            upd('familiesTried', Object.assign({}, d.familiesTried, { [tid]: true }));
+            setLabToolData(function(prev) {
+              var cur = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
+              var prevTried = cur.familiesTried && typeof cur.familiesTried === 'object' && !Array.isArray(cur.familiesTried) ? cur.familiesTried : {};
+              var nextTried = Object.assign({}, prevTried);
+              nextTried[tid] = true;
+              return Object.assign({}, prev, { funcGrapher: Object.assign({}, cur, { type: tid, familiesTried: nextTried }) });
+            });
           }
 
           const W = 440, H = 320, pad = 45;
@@ -1863,7 +2786,7 @@ window.StemLab = window.StemLab || {
           }
 
           // ── Stage B: styles for the shared core panels, the stage, rate of change, features ──
-          var fgInk = isContrast ? '#ffffff' : ctx.isDark ? '#e2e8f0' : '#0f172a', fgSurface = isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#ffffff', fgEdge = isContrast ? '#facc15' : '#64748b';
+          var fgInk = isContrast ? '#ffffff' : isDark ? '#e2e8f0' : '#0f172a', fgSurface = isContrast ? '#000000' : isDark ? '#0f172a' : '#ffffff', fgEdge = isContrast ? '#facc15' : '#64748b';
           var fgBtn = { minHeight: 44, padding: '6px 12px', borderRadius: 8, border: '1px solid ' + fgEdge, background: fgSurface, color: fgInk, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'normal', overflowWrap: 'anywhere', maxWidth: '100%' };
           var fgCoreStyles = {
             wrap: { marginTop: 12, padding: 12, borderRadius: 12, border: '1px solid ' + fgEdge, background: fgSurface, color: fgInk, overflowWrap: 'anywhere' },
@@ -1873,7 +2796,7 @@ window.StemLab = window.StemLab || {
           };
           // Function Zoo canvas colours per theme (light, dark, contrast); each label meets 4.5:1 on its background.
           var fgZooPal = isContrast ? { theme: 'contrast', bg: '#000000', axis: '#ffffff', bead: '#ffffff', glow: false, curves: ['#ffff00', '#00ffff', '#ffffff', '#ff80ff', '#80ff80', '#ffb366'] }
-            : ctx.isDark ? { theme: 'dark', bg: '#020210', axis: '#64748b', bead: '#ffffff', glow: true, curves: ['#7dd3fc', '#fbbf24', '#10b981', '#f87171', '#a78bfa', '#f472b6'] }
+            : isDark ? { theme: 'dark', bg: '#020210', axis: '#64748b', bead: '#ffffff', glow: true, curves: ['#7dd3fc', '#fbbf24', '#10b981', '#f87171', '#a78bfa', '#f472b6'] }
             : { theme: 'light', bg: '#ffffff', axis: '#64748b', bead: '#0f172a', glow: false, curves: ['#1d4ed8', '#b45309', '#047857', '#b91c1c', '#6d28d9', '#be185d'] };
           // Merge a patch into one object-valued key of this tool's state.
           function fgSet(key, patch) {
@@ -2052,6 +2975,52 @@ window.StemLab = window.StemLab || {
               open ? h('div', { id: 'fg-features' }, fgQuizLeaks ? h('p', { style: Object.assign({ margin: '8px 0 0' }, fgCoreStyles.text) }, __alloT('stem.funcgrapher.panel_hidden_quiz', 'Hidden while a challenge question is open: it would give the answer away.'))
                 : GA.featuresPanel(React, { id: 'fg-features-panel', t: __alloT, info: fgKfInfo, key: JSON.stringify([d.type, d.a, d.b, d.c]), state: fgKf, onSet: function(p) { fgSet('kf', p); }, announce: announceToSR, styles: fgCoreStyles })) : null);
           }
+          // ── Offline Reading-Level Function Coach (deterministic, zero-network, spoiler-safe) ──
+          function fgRenderOfflineCoach(scopeId) {
+            if (fgQuizLeaks && scopeId !== 'learn') return null;
+            var coachLvl = (d.aiLevel === 'plain' || d.aiLevel === 'hs' || d.aiLevel === 'grade5') ? d.aiLevel : 'grade5';
+            var openQuizObj = (d.fgQuiz && typeof d.fgQuiz === 'object' && !Array.isArray(d.fgQuiz) && typeof d.fgQuiz.mode === 'string') ? d.fgQuiz : null;
+            var coach = FUNCGRAPHER_ENGINE.buildOfflineFuncCoach(d.type, d.a, d.b, d.c, eqStr, coachLvl, openQuizObj);
+            var coachLevels = [
+              { id: 'plain', label: __alloT('stem.funcgrapher.plain', 'Plain') },
+              { id: 'grade5', label: __alloT('stem.funcgrapher.grade_5', 'Grade 5') },
+              { id: 'hs', label: __alloT('stem.funcgrapher.high_school', 'High School') }
+            ];
+            var activeBg = isContrast ? '#ffff00' : isDark ? '#4338ca' : '#4f46e5';
+            var activeInk = isContrast ? '#000000' : '#ffffff';
+            var pillBtn = { minHeight: 32, padding: '4px 10px', borderRadius: 6, border: '1px solid ' + fgEdge, background: fgSurface, color: fgInk, fontSize: 12, fontWeight: 700, cursor: 'pointer' };
+            return h('section', { 'data-funcgrapher-coach': scopeId, 'aria-labelledby': 'fg-coach-title-' + scopeId, style: Object.assign({}, fgCoreStyles.wrap, { marginTop: 12 }) },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 8 } },
+                h('h4', { id: 'fg-coach-title-' + scopeId, style: { margin: 0, fontSize: 14, fontWeight: 800, color: fgInk } }, t('stem.funcgrapher.coach_title', 'Function Coach (Offline)')),
+                !coach.spoilsHidden && h('span', { style: { fontFamily: 'monospace', fontSize: 12, fontWeight: 700, padding: '2px 8px', borderRadius: 999, border: '1px solid ' + fgEdge } }, coach.equation),
+                h('div', { role: 'group', 'aria-label': t('stem.funcgrapher.coach_level_group_aria', 'Function Coach reading level'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginLeft: 'auto' } },
+                  coachLevels.map(function(lvl) {
+                    var on = coach.level === lvl.id;
+                    return h('button', {
+                      key: lvl.id, type: 'button', 'aria-pressed': on,
+                      'aria-label': fgFill(on ? t('stem.funcgrapher.coach_level_selected_aria', 'Coach reading level: {label} (selected)') : t('stem.funcgrapher.coach_level_aria', 'Coach reading level: {label}'), { label: lvl.label }),
+                      onClick: function() { upd('aiLevel', lvl.id); },
+                      style: Object.assign({}, pillBtn, on ? { background: activeBg, color: activeInk, borderColor: activeBg } : null)
+                    }, lvl.label);
+                  })
+                ),
+                typeof callTTS === 'function' && h('button', {
+                  type: 'button', 'data-funcgrapher-coach-read': scopeId,
+                  'aria-label': t('stem.funcgrapher.coach_read_aloud_aria', 'Read Function Coach explanation aloud'),
+                  onClick: function() { fgReadAloud(coach.summary); },
+                  style: pillBtn
+                }, t('stem.funcgrapher.read_aloud', '\uD83D\uDD0A Read Aloud'))
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 8 } },
+                coach.sections.map(function(sec) {
+                  return h('div', { key: sec.id, 'data-coach-section': sec.id, style: Object.assign({}, fgCoreStyles.card, { padding: 8, borderRadius: 8 }) },
+                    h('p', { style: { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: fgInk } }, sec.title),
+                    h('p', { style: { margin: 0, fontSize: 12, lineHeight: 1.5, color: fgInk } }, sec.body)
+                  );
+                })
+              )
+            );
+          }
           // ── Mode bar: Explore / Practice / Investigate (+ Teacher), a tablist like Fraction Lab's ──
           function fgModeBar() {
             var LABELS = { explore: __alloT('stem.funcgrapher.stage_explore', 'Explore'), practice: __alloT('stem.funcgrapher.stage_practice', 'Practice'), investigate: __alloT('stem.funcgrapher.stage_investigate', 'Investigate'), teacher: __alloT('stem.funcgrapher.stage_teacher', 'Teacher') };
@@ -2069,7 +3038,7 @@ window.StemLab = window.StemLab || {
               if (tabs[next]) tabs[next].focus();
               go(FG_STAGES[next]);
             }
-            var activeBg = isContrast ? '#ffff00' : ctx.isDark ? '#312e81' : '#e0e7ff', activeInk = isContrast ? '#000000' : fgInk;
+            var activeBg = isContrast ? '#ffff00' : isDark ? '#312e81' : '#e0e7ff', activeInk = isContrast ? '#000000' : fgInk;
             return h('div', { 'data-funcgrapher-modebar': true, style: { marginTop: 16, padding: 8, borderRadius: 12, border: '1px solid ' + fgEdge, background: fgSurface, color: fgInk } },
               h('div', { role: 'tablist', 'aria-label': __alloT('stem.funcgrapher.stage_label', 'Function Grapher sections'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: 6 } },
                 FG_STAGES.map(function(id, i) {
@@ -2114,10 +3083,10 @@ window.StemLab = window.StemLab || {
               h('p', { style: line }, __alloT('stem.funcgrapher.teacher_intro', 'Only you see this tab. Assignments appear first for students in Practice.')),
               h('h4', { style: { margin: '12px 0 0', fontSize: 15 } }, __alloT('stem.funcgrapher.teacher_targets', 'Transformation Lab targets')),
               h('p', { style: line }, fgFill(__alloT('stem.funcgrapher.teacher_targets_now', 'The Transformation Lab now shows {eq}. Set it up in Explore, then assign it here.'), { eq: now })),
-              h('button', { type: 'button', 'data-teacher-assign-target': true, disabled: assigned.some(function(t) { return t.key === now; }) || assigned.length >= 12, onClick: function() { upd('tfTargets', assigned.map(function(t) { return { parent: t.parent, a: t.a, b: t.b, h: t.h, k: t.k }; }).concat([{ parent: tf.parent, a: tf.a, b: tf.b, h: tf.h, k: tf.k }])); note(fgFill(__alloT('stem.funcgrapher.teacher_target_added', 'Assigned {eq}.'), { eq: now })); }, style: Object.assign({ marginTop: 6 }, fgBtn) }, __alloT('stem.funcgrapher.teacher_assign_target', 'Assign this graph as a target')),
-              assigned.length ? h('ul', { style: Object.assign({ margin: '6px 0 0', paddingLeft: 20 }, fgCoreStyles.text) }, assigned.map(function(t) {
-                return h('li', { key: t.key, 'data-teacher-target': t.key, style: { marginTop: 4 } }, h('span', { style: { fontFamily: 'monospace' } }, t.key + ' '),
-                  h('button', { type: 'button', onClick: function() { upd('tfTargets', assigned.filter(function(o) { return o.key !== t.key; }).map(function(o) { return { parent: o.parent, a: o.a, b: o.b, h: o.h, k: o.k }; })); }, style: fgBtn, 'aria-label': fgFill(__alloT('stem.funcgrapher.teacher_remove_target', 'Remove target {eq}'), { eq: t.key }) }, __alloT('stem.funcgrapher.teacher_remove', 'Remove')));
+              h('button', { type: 'button', 'data-teacher-assign-target': true, disabled: assigned.some(function(tg) { return tg.key === now; }) || assigned.length >= 12, onClick: function() { upd('tfTargets', assigned.map(function(tg) { return { parent: tg.parent, a: tg.a, b: tg.b, h: tg.h, k: tg.k }; }).concat([{ parent: tf.parent, a: tf.a, b: tf.b, h: tf.h, k: tf.k }])); note(fgFill(__alloT('stem.funcgrapher.teacher_target_added', 'Assigned {eq}.'), { eq: now })); }, style: Object.assign({ marginTop: 6 }, fgBtn) }, __alloT('stem.funcgrapher.teacher_assign_target', 'Assign this graph as a target')),
+              assigned.length ? h('ul', { style: Object.assign({ margin: '6px 0 0', paddingLeft: 20 }, fgCoreStyles.text) }, assigned.map(function(tg) {
+                return h('li', { key: tg.key, 'data-teacher-target': tg.key, style: { marginTop: 4 } }, h('span', { style: { fontFamily: 'monospace' } }, tg.key + ' '),
+                  h('button', { type: 'button', onClick: function() { upd('tfTargets', assigned.filter(function(o) { return o.key !== tg.key; }).map(function(o) { return { parent: o.parent, a: o.a, b: o.b, h: o.h, k: o.k }; })); }, style: fgBtn, 'aria-label': fgFill(__alloT('stem.funcgrapher.teacher_remove_target', 'Remove target {eq}'), { eq: tg.key }) }, __alloT('stem.funcgrapher.teacher_remove', 'Remove')));
               })) : h('p', { style: line }, __alloT('stem.funcgrapher.teacher_no_targets', 'No targets assigned: students get the built-in set.')),
               h('fieldset', { 'data-teacher-match': true, style: Object.assign({ marginTop: 12, padding: 8, borderRadius: 8, minWidth: 0 }, fgCoreStyles.card) },
                 h('legend', { style: { fontWeight: 700, padding: '0 4px' } }, __alloT('stem.funcgrapher.teacher_match', 'Match 4 Ways items to assign')),
@@ -2156,7 +3125,7 @@ window.StemLab = window.StemLab || {
           // (targetMode) it also shows a target to match, with hints. ──
           function fgRenderTfLab(targetMode) {
           var tf = fgTfNormalize(d.tf), pending = tf.pending;
-          var ink = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#e2e8f0' : '#0f172a', surface = ctx.isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#ffffff', border = ctx.isContrast ? '#facc15' : '#64748b';
+          var ink = isContrast ? '#ffffff' : isDark ? '#e2e8f0' : '#0f172a', surface = isContrast ? '#000000' : isDark ? '#0f172a' : '#ffffff', border = isContrast ? '#facc15' : '#64748b';
           var curve = fgCurve.color, ghost = fgPal ? fgPal.muted : '#475569', grid = fgGridInk, axis = fgAxisInk;
           var btn = { minHeight: 44, padding: '6px 12px', borderRadius: 8, border: '1px solid ' + border, background: surface, color: ink, fontSize: 13, cursor: 'pointer', whiteSpace: 'normal', overflowWrap: 'anywhere', maxWidth: '100%' };
           var PARENTS = [
@@ -2208,11 +3177,11 @@ window.StemLab = window.StemLab || {
           // Practice: a dotted target graph to match, teacher-assigned targets first.
           var tgtList = [];
           if (targetMode) {
-            fgTfTargetList(d.tfTargets).forEach(function(t) { tgtList.push(Object.assign({ assigned: true }, t)); });
-            FG_TF_TARGETS.forEach(function(t) { var k = fgTfEquation(t); if (!tgtList.some(function(o) { return o.key === k; })) tgtList.push(Object.assign({ key: k }, t)); });
+            fgTfTargetList(d.tfTargets).forEach(function(tg) { tgtList.push(Object.assign({ assigned: true }, tg)); });
+            FG_TF_TARGETS.forEach(function(tg) { var k = fgTfEquation(tg); if (!tgtList.some(function(o) { return o.key === k; })) tgtList.push(Object.assign({ key: k }, tg)); });
           }
           var tgtState = d.tfTarget && typeof d.tfTarget === 'object' && !Array.isArray(d.tfTarget) ? d.tfTarget : {};
-          var tgt = targetMode ? (tgtList.filter(function(t) { return t.key === tgtState.key; })[0] || tgtList[0]) : null;
+          var tgt = targetMode ? (tgtList.filter(function(tg) { return tg.key === tgtState.key; })[0] || tgtList[0]) : null;
           var tfDone = Array.isArray(d.tfDone) ? d.tfDone : [];
           var tgtHint = tgt && tgtState.hintKey === tgt.key && isFinite(tgtState.hint) ? tgtState.hint : 0;
           var tgtMatched = tgt ? fgTfSameGraph(tf, tgt) : false, tgtDone = tgt ? tfDone.indexOf(tgt.key) >= 0 : false;
@@ -2269,10 +3238,10 @@ window.StemLab = window.StemLab || {
               h('p', { style: { fontSize: 14, fontWeight: 700, margin: 0 } }, __alloT('stem.funcgrapher.tf_target_title', 'Match the target')),
               h('p', { style: { fontSize: 14, margin: '4px 0 6px' } }, __alloT('stem.funcgrapher.tf_target_intro', 'Choose a parent and set a, b, h and k so your solid graph lands on the dotted target.')),
               h('div', { role: 'group', 'aria-label': __alloT('stem.funcgrapher.tf_target_pick', 'Choose a target'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                tgtList.map(function(t, i) {
-                  var on = t.key === tgt.key, done = tfDone.indexOf(t.key) >= 0;
-                  return h('button', { key: t.key, type: 'button', 'data-tf-target-choice': i, 'aria-pressed': on, onClick: function() { upd('tfTarget', { key: t.key }); }, style: Object.assign({}, btn, { fontWeight: on ? 800 : 500, borderWidth: on ? 3 : 1 }) },
-                    fgFill(t.assigned ? __alloT('stem.funcgrapher.tf_target_assigned', 'Target {n} (from your teacher)') : __alloT('stem.funcgrapher.tf_target_n', 'Target {n}'), { n: i + 1 }) + (done ? ' ✓' : ''));
+                tgtList.map(function(tg, i) {
+                  var on = tg.key === tgt.key, done = tfDone.indexOf(tg.key) >= 0;
+                  return h('button', { key: tg.key, type: 'button', 'data-tf-target-choice': i, 'aria-pressed': on, onClick: function() { upd('tfTarget', { key: tg.key }); }, style: Object.assign({}, btn, { fontWeight: on ? 800 : 500, borderWidth: on ? 3 : 1 }) },
+                    fgFill(tg.assigned ? __alloT('stem.funcgrapher.tf_target_assigned', 'Target {n} (from your teacher)') : __alloT('stem.funcgrapher.tf_target_n', 'Target {n}'), { n: i + 1 }) + (done ? ' ✓' : ''));
                 })),
               h('p', { 'data-tf-target-status': tgtMatched ? 'matched' : 'open', role: 'status', style: { fontSize: 14, fontWeight: 700, margin: '8px 0 0' } },
                 tgtMatched ? __alloT('stem.funcgrapher.tf_target_hit', 'Matched: your graph lands on the target.') : __alloT('stem.funcgrapher.tf_target_open', 'Not matched yet: the dotted target and your solid graph differ.')),
@@ -2323,6 +3292,7 @@ window.StemLab = window.StemLab || {
                 h('button', { type: 'button', 'data-tf-choice': 'skip', onClick: function() { commit(pending.key, pending.to, ''); }, style: btn }, __alloT('stem.funcgrapher.tf_skip', 'Apply without predicting')),
                 h('button', { type: 'button', 'data-tf-choice': 'cancel', onClick: function() { setTf({ pending: null }); }, style: btn }, __alloT('stem.funcgrapher.tf_cancel', 'Cancel this change')))) : null,
             tf.last ? h('p', { 'data-tf-result': true, style: { fontSize: 14, fontWeight: 600, margin: '10px 0 0' } }, resultText(tf.last)) : null,
+            tf.last && typeof callTTS === 'function' ? h('button', { type: 'button', 'data-tf-read': true, 'aria-label': t('stem.funcgrapher.tf_read_aloud_aria', 'Read transformation explanation aloud'), onClick: function() { fgReadAloud(resultText(tf.last)); }, style: Object.assign({}, btn, { marginTop: 6, minHeight: 34, padding: '4px 10px', fontSize: 12 }) }, t('stem.funcgrapher.read_aloud', '\uD83D\uDD0A Read Aloud')) : null,
             tf.b === 0 ? h('p', { style: { fontSize: 13, margin: '8px 0 0' } }, __alloT('stem.funcgrapher.tf_b_zero', 'With b = 0 every input becomes 0, so the graph is a flat line, or nothing at all when f(0) is undefined.')) : null,
             h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.funcgrapher.tf_table_caption', 'Parent points and where they move'), style: { overflowX: 'auto', marginTop: 10 } },
               h('table', { 'data-tf-table': true, style: { width: '100%', borderCollapse: 'collapse', fontSize: 14 } },
@@ -2358,7 +3328,7 @@ window.StemLab = window.StemLab || {
             else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
           }
           return React.createElement("div", {
-              className: "max-w-5xl mx-auto animate-in fade-in duration-200",
+              className: "max-w-5xl mx-auto animate-in fade-in duration-200" + (reduceMotion ? " fg-reduce-motion" : ""),
               role: "region",
               "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 9 pick a function type, D derivative, A area, T table, L learn."),
               tabIndex: 0,
@@ -2370,7 +3340,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
                   React.createElement("div", { className: "min-w-0" },
                     React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
-                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      !isEmbedded && React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                       React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[0.625rem] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, __alloT('stem.funcgrapher.subject_badge', 'Mathematics · Graph Exploration Console')),
                       !hideFamilyAnswer && React.createElement("span", { className: "rounded-full bg-white/10 px-2.5 py-1 text-xs font-mono font-bold text-cyan-100 ring-1 ring-white/20" }, eqStr)
                     ),
@@ -2423,15 +3393,15 @@ window.StemLab = window.StemLab || {
 
             // Function type buttons + Curated Starter Presets
 
-            React.createElement("div", { className: "mb-3 rounded-xl border p-2.5 shadow-sm " + (isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white") },
-              React.createElement("p", { className: "mb-2 px-1 text-[0.625rem] font-black uppercase tracking-[0.16em] " + (isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.choose_family', "Choose a function family")),
+            React.createElement("div", { className: "mb-3 rounded-xl border p-2.5 shadow-sm " + (isContrast ? "border-yellow-400 bg-black text-white" : isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white") },
+              React.createElement("p", { className: "mb-2 px-1 text-[0.625rem] font-black uppercase tracking-[0.16em] " + (isContrast ? "text-yellow-300" : isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.choose_family', "Choose a function family")),
               React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": __alloT('stem.funcgrapher.a11y_function_families', 'Function families') },
                 TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
-                  className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id && !hideFamilyAnswer ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50'))
+                  className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id && !hideFamilyAnswer ? 'bg-indigo-600 text-white shadow-md' : (isContrast ? 'bg-black text-white border border-yellow-400 hover:bg-neutral-900' : isDark ? 'bg-slate-800 text-slate-200 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50'))
                 }, tp.emoji + " " + tp.label); })
               ),
-              !fgQuizLeaks && React.createElement("div", { className: "mt-2.5 pt-2 border-t flex items-center gap-1.5 flex-wrap " + (isDark ? "border-slate-700" : "border-slate-200"), role: "group", "aria-label": __alloT('stem.funcgrapher.starter_presets_aria', 'Curated function presets') },
-                React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider mr-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.presets_label', 'Presets:')),
+              !fgQuizLeaks && React.createElement("div", { className: "mt-2.5 pt-2 border-t flex items-center gap-1.5 flex-wrap " + (isContrast ? "border-yellow-400" : isDark ? "border-slate-700" : "border-slate-200"), role: "group", "aria-label": __alloT('stem.funcgrapher.starter_presets_aria', 'Curated function presets') },
+                React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider mr-1 " + (isContrast ? "text-yellow-300" : isDark ? "text-slate-300" : "text-slate-600") }, __alloT('stem.funcgrapher.presets_label', 'Presets:')),
                 [
                   { label: '2x − 1', type: 'linear', a: 2, b: -1, c: 0 },
                   { label: 'x² − 4', type: 'quadratic', a: 1, b: 0, c: -4 },
@@ -2443,7 +3413,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(pr) {
                   return React.createElement("button", {
                     key: pr.label, type: "button",
-                    className: "allo-fg-preset-chip px-2.5 py-1 rounded-full text-xs font-mono font-bold border " + (isDark ? "border-indigo-500/40 bg-indigo-950/60 text-indigo-200 hover:bg-indigo-900/70" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"),
+                    className: "allo-fg-preset-chip px-2.5 py-1 rounded-full text-xs font-mono font-bold border " + (isContrast ? "border-yellow-400 bg-black text-yellow-300 hover:bg-neutral-900" : isDark ? "border-indigo-500/40 bg-indigo-950/60 text-indigo-200 hover:bg-indigo-900/70" : "border-indigo-200 bg-indigo-50 text-indigo-800 hover:bg-indigo-100"),
                     onClick: function() {
                       setLabToolData(function(prev) {
                         var fg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
@@ -2462,7 +3432,7 @@ window.StemLab = window.StemLab || {
             // SVG Graph
 
             // The accessible name carries the key features (with an open question's answer withheld).
-            React.createElement("svg", { role: "img", "data-funcgrapher-graph": true, ref: fgMeasure, "aria-label": __alloT('stem.funcgrapher.a11y_function_graph_showing_the_configured_curve', 'Function graph showing the configured curve') + (fgDesc ? '. ' + fgDesc.short : '') + (rocPts && rocPts.rate !== null ? ' ' + fgRocLabel : ''), viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px", touchAction: rocOn ? "none" : undefined },
+            React.createElement("svg", { role: "img", "data-funcgrapher-graph": true, ref: fgMeasure, "aria-label": __alloT('stem.funcgrapher.a11y_function_graph_showing_the_configured_curve', 'Function graph showing the configured curve') + (fgDesc ? '. ' + fgDesc.short : '') + (rocPts && rocPts.rate !== null ? ' ' + fgRocLabel : ''), viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isContrast ? "bg-black border-yellow-400" : isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px", touchAction: rocOn ? "none" : undefined },
               onPointerDown: function(e) { fgRocPointer(e, 'down'); }, onPointerMove: function(e) { fgRocPointer(e, 'move'); }, onPointerUp: function(e) { fgRocPointer(e, 'up'); }, onPointerCancel: function(e) { fgRocPointer(e, 'up'); } },
 
               // Studio coordinate well defs (gradients, clipPath, luminous area fill)
@@ -2608,7 +3578,7 @@ window.StemLab = window.StemLab || {
 
               d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("g", null,
                 !isContrast && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isDark ? "rgba(251,113,133,0.28)" : "rgba(225,29,72,0.18)", strokeWidth: 5 }),
-                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.4, strokeDasharray: "6 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
+                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.4, strokeDasharray: "6 4", "aria-label": fgFill(t('stem.funcgrapher.vertical_asymptote_aria', 'vertical asymptote at x = {x}'), { x: -d.b }) }),
                 !isContrast && React.createElement("path", { "aria-hidden": "true", d: "M" + (toSX(-d.b) - 4) + " " + (pad + 1) + "H" + (toSX(-d.b) + 4) + "M" + (toSX(-d.b) - 4) + " " + (H - pad - 1) + "H" + (toSX(-d.b) + 4), stroke: isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.6, strokeLinecap: "round" })
               ),
               d.type === 'rational' && d.c > yR.yMin && d.c < yR.yMax && React.createElement("g", { "aria-hidden": "true" },
@@ -2683,7 +3653,7 @@ window.StemLab = window.StemLab || {
                     x: txPx > W - pad - 135 ? txPx - 12 : txPx + 12,
                     y: tyPx < pad + 34 ? tyPx + 24 : tyPx - 20,
                     textAnchor: txPx > W - pad - 135 ? 'end' : 'start',
-                    fill: isDark ? '#f472b6' : '#be185d',
+                    fill: isContrast ? '#ffff00' : isDark ? '#f472b6' : '#be185d',
                     style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
                   }, '(' + traceX.toFixed(1) + ', ' + traceY.toFixed(2) + ') m=' + traceSlope.toFixed(2))
                 );
@@ -2706,7 +3676,7 @@ window.StemLab = window.StemLab || {
                     x: shiftLeft ? rxPx - 12 : rxPx,
                     y: ryPx - 12,
                     textAnchor: shiftLeft ? "end" : "middle",
-                    fill: isDark ? "#fca5a5" : "#dc2626",
+                    fill: (isContrast || isDark) ? "#fca5a5" : "#dc2626",
                     style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
                   }, r.toFixed(2))
                 );
@@ -2727,7 +3697,7 @@ window.StemLab = window.StemLab || {
                   !hideYIntAnswer && React.createElement("text", {
                     x: yxPx + 12,
                     y: nearOrigin ? yyPx + 18 : yyPx + 4,
-                    fill: isDark ? "#4ade80" : "#15803d",
+                    fill: (isContrast || isDark) ? "#4ade80" : "#15803d",
                     style: { fontSize: fgFs(12), fontWeight: 'bold', paintOrder: 'stroke', stroke: isContrast ? 'none' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 3.5, strokeLinejoin: 'round' }
                   }, "(0, " + yIntercept.toFixed(1) + ")")
                 );
@@ -2736,7 +3706,7 @@ window.StemLab = window.StemLab || {
               // Critical points (local max / min) — pulsing violet/cyan extremum tracking beacons (non-spoiler)
               critPts.map(function (cp, i) {
                 var isMax = cp.kind === 'max';
-                var color = isMax ? (isDark ? '#c084fc' : '#a855f7') : (isDark ? '#22d3ee' : '#0891b2');
+                var color = isMax ? ((isContrast || isDark) ? '#c084fc' : '#a855f7') : ((isContrast || isDark) ? '#22d3ee' : '#0891b2');
                 var cxPx = toSX(cp.x), cyPx = toSY(cp.y);
                 return React.createElement("g", { key: 'cp' + i },
                   !isContrast && !fgQuizLeaks && !(hideYIntAnswer && cp.x === 0) && React.createElement("circle", { className: "fg-beacon-pulse", cx: cxPx, cy: cyPx, r: 9.5, fill: "none", stroke: color, strokeWidth: 1.5 }),
@@ -2744,7 +3714,7 @@ window.StemLab = window.StemLab || {
                   !isContrast && React.createElement("circle", { cx: cxPx, cy: cyPx, r: 9, fill: color, opacity: 0.18 }),
                   React.createElement("circle", {
                     cx: cxPx, cy: cyPx, r: 5,
-                    fill: isDark ? '#0f172a' : '#ffffff', stroke: color, strokeWidth: 2,
+                    fill: isContrast ? '#000000' : isDark ? '#0f172a' : '#ffffff', stroke: color, strokeWidth: 2,
                     style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px ' + color + ')' }
                   }),
                   React.createElement("circle", { cx: cxPx, cy: cyPx, r: 2, fill: color }),
@@ -2815,16 +3785,16 @@ window.StemLab = window.StemLab || {
 
               // Equation label
 
-              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: isDark ? "#a5b4fc" : "#3730a3", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, hideFamilyAnswer ? __alloT('stem.funcgrapher.challenge_equation_hidden', 'f(x) = ?') : eqStr),
+              React.createElement("text", { x: d.compare ? W / 3 : W / 2, y: H - 5, textAnchor: "middle", fill: isContrast ? "#ffff00" : isDark ? "#a5b4fc" : "#3730a3", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, hideFamilyAnswer ? __alloT('stem.funcgrapher.challenge_equation_hidden', 'f(x) = ?') : eqStr),
 
               // Comparison equation label
-              d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: isDark ? "#fb923c" : "#c2410c", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, eqStr2)
+              d.compare && eqStr2 && React.createElement("text", { x: W * 2 / 3, y: H - 5, textAnchor: "middle", fill: isContrast ? "#fbbf24" : isDark ? "#fb923c" : "#c2410c", style: { fontSize: fgFs(12), fontWeight: 'bold' } }, eqStr2)
 
             ),
 
             // ── Describe and Hear + keyboard explorer (shared core), and the calculator link ──
             fgDesc && (function() {
-              var ink = ctx.isContrast ? '#ffffff' : ctx.isDark ? '#e2e8f0' : '#0f172a', surface = ctx.isContrast ? '#000000' : ctx.isDark ? '#0f172a' : '#ffffff', border = ctx.isContrast ? '#facc15' : '#64748b';
+              var ink = isContrast ? '#ffffff' : isDark ? '#e2e8f0' : '#0f172a', surface = isContrast ? '#000000' : isDark ? '#0f172a' : '#ffffff', border = isContrast ? '#facc15' : '#64748b';
               var btn = { minHeight: 44, padding: '6px 12px', borderRadius: 8, border: '1px solid ' + border, background: surface, color: ink, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'normal', overflowWrap: 'anywhere', maxWidth: '100%' };
               return h('div', { 'data-funcgrapher-access': true, style: { marginTop: 8, padding: 10, borderRadius: 12, border: '1px solid ' + border, background: surface, color: ink } },
                 GA.panel(React, {
@@ -2981,7 +3951,8 @@ window.StemLab = window.StemLab || {
                   React.createElement("span", { className: "font-bold text-purple-600" }, __alloT('stem.funcgrapher.trig_functions', "\u223C Trig Functions: ")),
                   __alloT('stem.funcgrapher.trig_guide_phase_shift_cb', "Amplitude |a| sets the height and b sets how many cycles fit in each 2\u03C0, so the period is 2\u03C0/|b|. The c inside sin(bx + c) shifts the wave sideways by \u2212c/b: with b positive, a positive c moves it left and a negative c moves it right.")
                 )
-              )
+              ),
+              fgRenderOfflineCoach('learn')
             ),
 
             // Sliders (f(x)). In Find the Root and Y-Intercept their values give the answer away
@@ -2995,7 +3966,7 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("label", { className: "text-xs font-bold text-indigo-600" }, s.label + " = " + d[s.k]),
 
-                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-indigo-600", "aria-label": "Parameter " + s.label })
+                  React.createElement("input", { type: "range", min: s.min, max: s.max, step: s.step, value: d[s.k], onChange: e => upd(s.k, parseFloat(e.target.value)), className: "w-full accent-indigo-600", "aria-label": fgFill(t('stem.funcgrapher.parameter_aria', 'Parameter {name}'), { name: s.label }) })
 
                 )
 
@@ -3022,7 +3993,7 @@ window.StemLab = window.StemLab || {
               [{ k: 'compareA', label: 'a\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareB', label: 'b\u2082', min: -5, max: 5, step: 0.1 }, { k: 'compareC', label: 'c\u2082', min: -5, max: 5, step: 0.1 }].map(function(s) {
                 return React.createElement("div", { key: s.k, className: "text-center bg-orange-50 rounded-lg p-2 border border-orange-200" },
                   React.createElement("label", { className: "text-xs font-bold text-orange-700" }, s.label + ' = ' + (d[s.k] || 0)),
-                  React.createElement("input", { type: 'range', min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, className: 'w-full accent-orange-500', 'aria-label': 'Compare parameter ' + s.label })
+                  React.createElement("input", { type: 'range', min: s.min, max: s.max, step: s.step, value: d[s.k] || 0, onChange: function(e) { upd(s.k, parseFloat(e.target.value)); }, className: 'w-full accent-orange-500', 'aria-label': fgFill(t('stem.funcgrapher.compare_parameter_aria', 'Compare parameter {name}'), { name: s.label }) })
                 );
               })
             ),
@@ -3035,7 +4006,7 @@ window.StemLab = window.StemLab || {
               var rawStep=d.secantStep==null?'1':String(d.secantStep),step=Number(rawStep);
               var key=JSON.stringify([d.type,d.a,d.b,d.c,traceX,rawStep,d.secantPrediction||'']);
               var current=d.secantResult&&d.secantResultKey===key,study=current?d.secantResult:null;
-              var ink=ctx.isContrast?'#ffffff':ctx.isDark?'#e2e8f0':'#0f172a',surface=ctx.isContrast?'#000000':ctx.isDark?'#0f172a':'#ffffff',border=ctx.isContrast?'#facc15':'#64748b';
+              var ink=isContrast?'#ffffff':isDark?'#e2e8f0':'#0f172a',surface=isContrast?'#000000':isDark?'#0f172a':'#ffffff',border=isContrast?'#facc15':'#64748b';
               var field={padding:10,minHeight:44,border:'1px solid '+border,borderRadius:6,background:surface,color:ink,maxWidth:'100%',boxSizing:'border-box'};
               function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},DEFAULT_FG,prev&&prev.funcGrapher,patch)});});}
               function number(value){return typeof value==='number'&&Number.isFinite(value)?Number(value.toPrecision(9)).toString():'Unavailable';}
@@ -3045,7 +4016,7 @@ window.StemLab = window.StemLab || {
                 h('p',{'data-secant-base':true},'Base point x₀ = '+traceX+'; f(x₀) = '+number(traceY)+'.'),
                 h('p',null,'Left: [f(x₀) − f(x₀ − h)] / h. Right: [f(x₀ + h) − f(x₀)] / h. The centered estimate uses the two outer samples; by itself it can hide a corner.'),
                 h('label',{style:{display:'block'}},'Starting secant step h',h('input',{type:'number',step:'any',value:rawStep,style:Object.assign({},field,{display:'block',width:'100%'}),onChange:function(e){set({secantStep:e.target.value,secantNotice:''});}})),
-                h('label',{style:{display:'block',marginTop:10}},'Predict the left and right slopes',h('select',{value:d.secantPrediction||'',style:Object.assign({},field,{display:'block',width:'100%'}),onChange:function(e){set({secantPrediction:e.target.value,secantNotice:''});}},
+                h('label',{style:{display:'block',marginTop:10}},'Predict the left and right slopes',h('select',{value:typeof d.secantPrediction==='string'?d.secantPrediction:'',style:Object.assign({},field,{display:'block',width:'100%'}),onChange:function(e){set({secantPrediction:e.target.value,secantNotice:''});}},
                   h('option',{value:''},'Choose a prediction'),h('option',{value:'same'},'They approach the same finite slope'),h('option',{value:'different'},'They approach different slopes'),h('option',{value:'unavailable'},'A finite two-sided slope is unavailable'),h('option',{value:'unsure'},'I need more evidence'))),
                 h('button',{type:'button',style:Object.assign({},field,{marginTop:10}),onClick:function(){
                   if(current){set({secantNotice:'These inputs are already calculated. Change the step, trace point, function, or prediction to investigate another case.'});return;}
@@ -3080,7 +4051,7 @@ window.StemLab = window.StemLab || {
               var epsilon=d.improperEpsilon==null?'.1':String(d.improperEpsilon);
               var rows=(Array.isArray(d.improperRows)?d.improperRows:[]).filter(function(r){return r&&fgTruncatedIntegral(r.power,r.epsilon).ok;}).slice(-18);
               var sample=fgTruncatedIntegral(power,epsilon);
-              var ink=ctx.isContrast?'#ffffff':ctx.isDark?'#e2e8f0':'#0f172a',surface=ctx.isContrast?'#000000':ctx.isDark?'#0f172a':'#ffffff',border=ctx.isContrast?'#facc15':'#64748b';
+              var ink=isContrast?'#ffffff':isDark?'#e2e8f0':'#0f172a',surface=isContrast?'#000000':isDark?'#0f172a':'#ffffff',border=isContrast?'#facc15':'#64748b';
               var field={padding:10,border:'1px solid '+border,borderRadius:6,background:surface,color:ink,maxWidth:'100%',boxSizing:'border-box'};
               function set(patch){setLabToolData(function(prev){return Object.assign({},prev,{funcGrapher:Object.assign({},DEFAULT_FG,prev&&prev.funcGrapher,patch)});});}
               return h('details',{'data-improper-investigation':true,style:{marginTop:16,padding:14,border:'1px solid '+border,borderRadius:12,color:ink,background:surface}},
@@ -3091,7 +4062,7 @@ window.StemLab = window.StemLab || {
                     h('option',{value:.5},'1/√x'),h('option',{value:1},'1/x'),h('option',{value:2},'1/x²'))),
                   h('label',null,'Cutoff ε',h('input',{'aria-label':__alloT('stem.funcgrapher.positive_endpoint_cutoff','Positive endpoint cutoff'),type:'number',step:'any',min:.000001,max:.999999,value:epsilon,style:field,onChange:function(e){set({improperEpsilon:e.target.value,improperNotice:''});}}))),
                 h('label',{style:{display:'block',marginTop:12}},'Predict what happens as ε approaches zero',
-                  h('select',{value:d.improperPrediction||'',style:Object.assign({},field,{display:'block'}),onChange:function(e){upd('improperPrediction',e.target.value);}},
+                  h('select',{value:typeof d.improperPrediction==='string'?d.improperPrediction:'',style:Object.assign({},field,{display:'block'}),onChange:function(e){upd('improperPrediction',e.target.value);}},
                     h('option',{value:''},'Choose a prediction'),h('option',{value:'finite'},'Area approaches a finite value'),h('option',{value:'unbounded'},'Area grows without bound'),h('option',{value:'unsure'},'I need more evidence'))),
                 h('button',{type:'button',style:Object.assign({},field,{marginTop:10,minHeight:44}),onClick:function(){
                   if(!sample.ok){set({improperNotice:'Enter a positive cutoff less than 1.'});return;}
@@ -3112,11 +4083,22 @@ window.StemLab = window.StemLab || {
                 h('p',{style:{fontSize:12}},'Trials use antiderivative formulas and rounded display values. The last 18 trials and your explanation are retained in this AlloFlow project.'))
             })(),
 
-            // ── AI Explain Button ──
+            fgStage === 'investigate' && !fgQuizLeaks && h('details', { 'data-funcgrapher-coach-drawer': 'investigate', style: Object.assign({}, fgCoreStyles.wrap, { marginTop: 12 }) },
+              h('summary', { style: { fontSize: 15, fontWeight: 700, cursor: 'pointer', color: fgInk } }, t('stem.funcgrapher.investigate_coach_summary', 'Function Coach (Works Offline)')),
+              fgRenderOfflineCoach('investigate')
+            ),
+
+            // ── AI Explain Button (auto-falls back to deterministic Offline Function Coach when AI is gated or errors) ──
             // Its prompt sends roots, intercept and equation: not while a question is open.
-            fgStage === 'explore' && callGemini && !fgQuizLeaks && React.createElement("div", { className: "mt-2" },
-              React.createElement("button", { onClick: function() {
+            fgStage === 'explore' && typeof rawCallGemini === 'function' && !fgQuizLeaks && React.createElement("div", { className: "mt-2" },
+              React.createElement("button", { type: "button", onClick: function() {
                 if (d.aiExplainLoading) return;
+                var offlineSummary = FUNCGRAPHER_ENGINE.buildOfflineFuncCoach(d.type, d.a, d.b, d.c, eqStr, d.aiLevel || 'grade5', null).summary;
+                if (typeof callGemini !== 'function') {
+                  setLabToolData(function(prev) { return Object.assign({}, prev, { funcGrapher: Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher, { aiExplainLoading: false, aiExplain: offlineSummary }) }); });
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.funcgrapher.sr_explanation_ready', 'Explanation ready.'));
+                  return;
+                }
                 upd('aiExplainLoading', true);
                 upd('aiExplain', '');
                 var prompt = 'You are a math tutor. Explain the behavior of this function to a ' + (gradeLevel || '5th Grade') + ' student in 3-4 short, friendly sentences. ' +
@@ -3127,16 +4109,24 @@ window.StemLab = window.StemLab || {
                   'Visible range: x=[' + xR.xMin + ',' + xR.xMax + '], y=[' + yR.yMin + ',' + yR.yMax + ']. ' +
                   'Describe the shape, key features, and what happens as x increases. Use simple language.';
                 callGemini(prompt, true, false, 0.7).then(function(resp) {
-                  upd('aiExplain', typeof resp === 'string' ? resp : 'Could not generate explanation.');
+                  var txt = (typeof resp === 'string' && resp.trim()) ? resp.trim() : offlineSummary;
+                  upd('aiExplain', txt);
                   upd('aiExplainLoading', false);
                 }).catch(function() {
-                  upd('aiExplain', 'Explanation unavailable right now.');
+                  upd('aiExplain', offlineSummary);
                   upd('aiExplainLoading', false);
                 });
-              }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? '\u23F3 Thinking...' : '\u2728 Explain This Graph'),
+              }, disabled: d.aiExplainLoading, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.aiExplainLoading ? 'bg-purple-700 text-white cursor-wait' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-600 shadow-md') }, d.aiExplainLoading ? t('stem.funcgrapher.thinking', '\u23F3 Thinking...') : t('stem.funcgrapher.explain_this_graph', '\u2728 Explain This Graph')),
               d.aiExplain && React.createElement("div", { className: "mt-2 p-3 bg-purple-50 rounded-xl border border-purple-200 text-xs text-purple-900 leading-relaxed" },
                 React.createElement("div", { className: "flex items-center gap-1.5 mb-1" },
-                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-600 uppercase tracking-wider" }, __alloT('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation"))
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold text-purple-600 uppercase tracking-wider" }, typeof callGemini === 'function' ? __alloT('stem.funcgrapher.ai_explanation', "\uD83E\uDDE0 AI Explanation") : t('stem.funcgrapher.offline_coach_badge', "\uD83E\uDDE0 Offline Function Coach")),
+                  typeof callTTS === 'function' && React.createElement("button", {
+                    type: "button",
+                    "data-funcgrapher-explain-read": "true",
+                    "aria-label": t('stem.funcgrapher.explain_read_aloud_aria', 'Read graph explanation aloud'),
+                    onClick: function() { fgReadAloud(d.aiExplain); },
+                    className: "ml-auto px-2 py-0.5 rounded border border-purple-400 bg-white text-[0.6875rem] font-bold text-purple-800 hover:bg-purple-100"
+                  }, t('stem.funcgrapher.read_aloud', '\uD83D\uDD0A Read Aloud'))
                 ),
                 d.aiExplain
               )
@@ -3174,7 +4164,7 @@ window.StemLab = window.StemLab || {
 
                       setFnType(p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
 
-                      addToast('\uD83D\uDCC8 ' + p.tip, 'success');
+                      if (typeof addToast === 'function') addToast(fgFill(t('stem.funcgrapher.toast_preset_loaded', '\uD83D\uDCC8 {tip}'), { tip: p.tip }), 'success');
 
                     }, className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all"
 
@@ -3209,7 +4199,7 @@ window.StemLab = window.StemLab || {
               var FG_LABELS = { linear: 'Linear (y = ax + b)', quadratic: 'Quadratic (y = ax² + bx + c)', trig: 'Trigonometric (y = a·sin(bx + c))', cubic: 'Cubic (y = ax³ + bx + c)', exponential: 'Exponential (y = a·eᵇˣ + c)', absolute: 'Absolute Value (y = a|x + b| + c)', sqrt: 'Square Root (y = a√(x + b) + c)', log: 'Logarithm (y = a·ln(x + b) + c)', rational: 'Rational (y = a/(x + b) + c)' };
               // The same translator as the render's, declared here so the challenge banks below stay
               // self-contained (the engine tests run this section on its own, with no ctx).
-              function __alloT(k, fb) { var v; try { v = (typeof ctx !== 'undefined' && ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; }
+              function __alloT(k, fb) { var v; try { v = (typeof ctx !== 'undefined' && ctx && typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null || v === k || v === '') ? (fb != null ? fb : k) : v; }
 
               var FG_TRAITS = {
                 linear: __alloT('stem.funcgrapher.trait_linear', 'a perfectly straight line — the slope never changes'),
@@ -3631,15 +4621,56 @@ window.StemLab = window.StemLab || {
                 var answerShown = typeof fgQuiz.hint === 'number' && fgQuiz.hint >= 4;
                 if (answerShown) fb += ' ' + __alloT('stem.funcgrapher.hint_answer_shown', 'The answer was shown in the hints, so this one earns no XP.');
 
-                upd('fgQuiz', Object.assign({}, fgQuiz, { answered: true, chosen: opt, correct: correct, fb: fb, noXp: answerShown }));
+                // Per-distractor misconception diagnosis + pre-answer feature prediction check (post-commit only)
+                var whyNot = !correct ? FUNCGRAPHER_ENGINE.diagnoseFuncDistractor(fgQuiz, opt) : null;
+                var predEval = (typeof fgQuiz.featurePred === 'string' && fgQuiz.featurePred)
+                  ? FUNCGRAPHER_ENGINE.evaluateFeaturePrediction(fgQuiz, fgQuiz.featurePred, { type: d.type, a: d.a, b: d.b, c: d.c })
+                  : null;
 
-                upd('fgScore', fgScore + (correct && !answerShown ? 1 : 0));
+                // Deduped challenge & streak XP keys (computed purely outside setLabToolData updater)
+                var quizXpKey = fgQuiz.mode === 'myth'
+                  ? ('myth:' + gradeBand + ':' + fgQuiz.mythIdx)
+                  : fgQuiz.mode === 'match'
+                    ? ('match:' + fgQuiz.item + ':' + fgQuiz.from + ':' + fgQuiz.to)
+                    : fgQuiz.mode === 'name'
+                      ? ('name:' + fgQuiz.type + ':' + d.a + ':' + d.b + ':' + d.c)
+                      : (fgQuiz.mode + ':' + fgQuiz.type + ':' + fgQuiz.a + ':' + fgQuiz.b + ':' + fgQuiz.c);
+                var prevXpIds = Array.isArray(d._fgQuizXpIds) ? d._fgQuizXpIds : [];
+                var prevMilestones = Array.isArray(d._fgStreakMilestones) ? d._fgStreakMilestones : [];
+                var curScore = typeof d.fgScore === 'number' && Number.isFinite(d.fgScore) ? d.fgScore : 0;
+                var curStreak = typeof d.fgStreak === 'number' && Number.isFinite(d.fgStreak) ? d.fgStreak : 0;
+                var nextStreak = correct ? (answerShown ? curStreak : curStreak + 1) : 0;
+                var canEarnQuizXp = !!(correct && !answerShown && prevXpIds.indexOf(quizXpKey) < 0);
+                var streakMilestone = (correct && !answerShown && nextStreak >= 5 && nextStreak % 5 === 0) ? String(nextStreak) : '';
+                var canEarnStreakXp = !!(streakMilestone && prevMilestones.indexOf(streakMilestone) < 0);
 
-                upd('fgStreak', correct ? (answerShown ? fgStreak : fgStreak + 1) : 0);
+                var answeredQuiz = Object.assign({}, fgQuiz, {
+                  answered: true, chosen: opt, correct: correct, fb: fb, noXp: answerShown,
+                  xpEarned: canEarnQuizXp, whyNot: whyNot, predEval: predEval
+                });
 
-                if (fgQuiz.mode === 'myth') upd('fgMythsDone', (d.fgMythsDone || 0) + 1);
+                // Single pure batched updater (React 18 StrictMode safe — zero side effects inside updater)
+                setLabToolData(function(prev) {
+                  var baseFg = Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher);
+                  var baseScore = typeof baseFg.fgScore === 'number' && Number.isFinite(baseFg.fgScore) ? baseFg.fgScore : 0;
+                  var baseStreak = typeof baseFg.fgStreak === 'number' && Number.isFinite(baseFg.fgStreak) ? baseFg.fgStreak : 0;
+                  var baseMyths = typeof baseFg.fgMythsDone === 'number' && Number.isFinite(baseFg.fgMythsDone) ? baseFg.fgMythsDone : 0;
+                  var ids = Array.isArray(baseFg._fgQuizXpIds) ? baseFg._fgQuizXpIds.slice() : [];
+                  if (canEarnQuizXp && ids.indexOf(quizXpKey) < 0) ids.push(quizXpKey);
+                  var milestones = Array.isArray(baseFg._fgStreakMilestones) ? baseFg._fgStreakMilestones.slice() : [];
+                  if (canEarnStreakXp && milestones.indexOf(streakMilestone) < 0) milestones.push(streakMilestone);
+                  var patch = {
+                    fgQuiz: answeredQuiz,
+                    fgScore: baseScore + (correct && !answerShown ? 1 : 0),
+                    fgStreak: correct ? (answerShown ? baseStreak : baseStreak + 1) : 0,
+                    _fgQuizXpIds: ids.slice(-120),
+                    _fgStreakMilestones: milestones.slice(-40)
+                  };
+                  if (fgQuiz.mode === 'myth') patch.fgMythsDone = baseMyths + 1;
+                  return Object.assign({}, prev, { funcGrapher: Object.assign({}, baseFg, patch) });
+                });
 
-                if (typeof announceToSR === 'function') announceToSR((correct ? 'Correct. ' : 'Not quite. ') + fb);
+                if (typeof announceToSR === 'function') announceToSR((correct ? 'Correct. ' : 'Not quite. ') + fb + (whyNot ? ' ' + whyNot.whyNot : ''));
 
                 var scheduleAutoNext = function() {
                   if (fgQuiz.mode === 'myth' || fgQuiz.mode === 'match') return;
@@ -3655,32 +4686,37 @@ window.StemLab = window.StemLab || {
 
                 if (correct && answerShown) {
 
-                  addToast('\u2705 ' + __alloT('stem.funcgrapher.correct_no_xp', 'Correct (no XP: the answer was shown)'), 'success');
+                  if (typeof addToast === 'function') addToast('\u2705 ' + __alloT('stem.funcgrapher.correct_no_xp', 'Correct (no XP: the answer was shown)'), 'success');
 
                   scheduleAutoNext();
 
                 } else if (correct) {
 
-                  addToast('\u2705 Correct! +5 XP', 'success');
+                  if (canEarnQuizXp) {
+                    if (typeof addToast === 'function') addToast(t('stem.funcgrapher.toast_correct_xp', '\u2705 Correct! +5 XP'), 'success');
+                    if (typeof awardStemXP === 'function') awardStemXP('funcGrapher', 5, 'Function Grapher challenge');
+                  } else {
+                    if (typeof addToast === 'function') addToast(t('stem.funcgrapher.toast_correct_already_credited', '\u2705 Correct! (XP already earned for this question)'), 'success');
+                  }
 
-                  if (typeof awardStemXP === 'function') awardStemXP('funcGrapher', 5, 'Function Grapher challenge');
-
-                  // Streak bonus at 5
-                  if (fgStreak + 1 >= 5 && (fgStreak + 1) % 5 === 0) {
-                    addToast('\uD83D\uDD25 ' + (fgStreak + 1) + '-streak! +10 bonus XP', 'success');
+                  // Streak bonus at multiples of 5 (deduped per milestone)
+                  if (canEarnStreakXp) {
+                    if (typeof addToast === 'function') addToast(fgFill(t('stem.funcgrapher.toast_streak_bonus_xp', '\uD83D\uDD25 {n}-streak! +10 bonus XP'), { n: nextStreak }), 'success');
                     if (typeof awardStemXP === 'function') awardStemXP('funcGrapher', 10, 'Function Grapher streak bonus');
                   }
 
-                  // Auto-advance \u2014 except in myth and match modes, where the "why" deserves a read
+                  // Auto-advance — except in myth and match modes, where the "why" deserves a read
                   scheduleAutoNext();
 
                 } else {
 
-                  addToast('\u274C Not quite \u2014 see why below', 'error');
+                  if (typeof addToast === 'function') addToast(t('stem.funcgrapher.toast_not_quite', '\u274C Not quite \u2014 see why below'), 'error');
 
                 }
 
               }
+
+              var fgPredCfg = (fgQuiz && !fgQuiz.answered) ? FUNCGRAPHER_ENGINE.getFeaturePredictionOptions(fgQuiz) : null;
 
               return React.createElement("div", { className: "border-t border-slate-200 pt-3 mt-3 mb-2" },
 
@@ -3728,6 +4764,25 @@ window.StemLab = window.StemLab || {
 
                 }, fgQuiz ? '🔄 New Challenge' : '🚀 Start Challenge'),
 
+                // Optional Predict-Before-Check step (zero pre-commit reveal; kept outside [data-funcgrapher-match])
+                fgPredCfg && React.createElement("div", { "data-funcgrapher-predict-box": "true", style: Object.assign({}, fgCoreStyles.card, { borderRadius: 10, padding: 10, marginBottom: 10 }) },
+                  React.createElement("p", { style: { margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: fgInk } }, t('stem.funcgrapher.predict_before_check_label', 'Predict a feature first (optional): ') + fgPredCfg.prompt),
+                  React.createElement("div", { role: "group", "aria-label": t('stem.funcgrapher.predict_feature_group_aria', 'Optional feature prediction'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    fgPredCfg.options.map(function(pOpt) {
+                      var picked = fgQuiz.featurePred === pOpt.id;
+                      return React.createElement("button", {
+                        key: pOpt.id, type: "button",
+                        "data-funcgrapher-predict-opt": pOpt.id,
+                        "aria-pressed": picked,
+                        "aria-label": fgFill(t('stem.funcgrapher.predict_choice_aria', 'Predict feature: {label}'), { label: pOpt.label }),
+                        onClick: function() { upd('fgQuiz', Object.assign({}, fgQuiz, { featurePred: picked ? '' : pOpt.id })); },
+                        style: Object.assign({}, fgBtn, { minHeight: 34, padding: '4px 10px', fontSize: 12, borderWidth: picked ? 3 : 1, background: picked ? (isContrast ? '#ffff00' : isDark ? '#312e81' : '#e0e7ff') : fgSurface, color: picked && isContrast ? '#000000' : fgInk })
+                      }, pOpt.label);
+                    })
+                  ),
+                  fgQuiz.featurePred && React.createElement("p", { "data-funcgrapher-predict-locked": fgQuiz.featurePred, style: { margin: '6px 0 0', fontSize: 11, color: fgInk } }, t('stem.funcgrapher.predict_locked_note', 'Prediction saved — choose your answer below to check both.'))
+                ),
+
 
 
                 // Quiz card
@@ -3742,7 +4797,7 @@ window.StemLab = window.StemLab || {
                       React.createElement("p", { className: "text-xs font-bold text-violet-800 mb-1" }, fgFill(__alloT('stem.funcgrapher.match_given', 'This {from}:'), { from: MATCH_REP_NAMES[fgQuiz.from] })),
                       matchRep(item, fgQuiz.from, 'fg-match-given')),
                     React.createElement("div", { className: "grid gap-2", style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))' } },
-                      fgQuiz.opts.map(function (opt, oi) {
+                      (Array.isArray(fgQuiz.opts) ? fgQuiz.opts : []).map(function (opt, oi) {
                         var oItem = matchItem(opt), repId = 'fg-match-opt-' + oi;
                         if (!oItem) return null;
                         return React.createElement("div", { key: String(opt), "data-match-option": oi, className: "rounded-lg border-2 border-slate-300 bg-white p-2 flex flex-col gap-2" },
@@ -3758,13 +4813,13 @@ window.StemLab = window.StemLab || {
 
                   React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
-                    fgQuiz.opts.map(function (opt) {
+                    (Array.isArray(fgQuiz.opts) ? fgQuiz.opts : []).map(function (opt) {
 
                       var optLabel = fgQuiz.mode === 'myth' ? (opt ? '\u2705 True' : '\u274C False')
                         : challengeMode === 'name' ? opt
                           : (challengeMode === 'yint' ? 'y = ' + opt : 'x = ' + opt);
 
-                      return React.createElement("button", { "aria-label": "Select answer: " + (fgQuiz.mode === 'myth' ? (opt ? 'True' : 'False') : String(opt)),
+                      return React.createElement("button", { "aria-label": fgFill(t('stem.funcgrapher.select_answer_aria', 'Select answer: {val}'), { val: fgQuiz.mode === 'myth' ? (opt ? t('stem.funcgrapher.answer_true', 'True') : t('stem.funcgrapher.answer_false', 'False')) : String(opt) }),
 
                         key: String(opt), onClick: function () { answerQuiz(opt); }, className: "px-2 py-1.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
 
@@ -3779,15 +4834,43 @@ window.StemLab = window.StemLab || {
 
                 ),
 
-                // Result card \u2014 headline + corrective explanation (the pedagogy payload)
+                // Result card — headline + corrective explanation + feature prediction check + per-distractor whyNot
 
                 fgQuiz && fgQuiz.answered && React.createElement("div", { className: "p-3 rounded-xl " + (fgQuiz.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'), role: "status" },
 
-                  React.createElement("p", { className: "text-sm font-bold mb-1 " + (fgQuiz.correct ? 'text-emerald-700' : 'text-red-700') },
-                    fgQuiz.correct ? (fgQuiz.noXp ? '\u2705 ' + __alloT('stem.funcgrapher.correct_no_xp', 'Correct (no XP: the answer was shown)') : '\u2705 Correct! +5 XP') : '\u274C Not quite'
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1" },
+                    React.createElement("p", { className: "text-sm font-bold " + (fgQuiz.correct ? 'text-emerald-700' : 'text-red-700') },
+                      fgQuiz.correct ? (fgQuiz.noXp ? '\u2705 ' + __alloT('stem.funcgrapher.correct_no_xp', 'Correct (no XP: the answer was shown)') : (fgQuiz.xpEarned === false ? t('stem.funcgrapher.result_correct_credited', '\u2705 Correct!') : t('stem.funcgrapher.toast_correct_xp', '\u2705 Correct! +5 XP'))) : t('stem.funcgrapher.result_not_quite', '\u274C Not quite')
+                    ),
+                    typeof callTTS === 'function' && React.createElement("button", {
+                      type: "button",
+                      "data-funcgrapher-feedback-read": "true",
+                      "aria-label": t('stem.funcgrapher.feedback_read_aloud_aria', 'Read challenge feedback aloud'),
+                      onClick: function() {
+                        var parts = [fgQuiz.fb || ''];
+                        if (fgQuiz.predEval && fgQuiz.predEval.summary) parts.push(fgQuiz.predEval.summary);
+                        if (fgQuiz.whyNot && fgQuiz.whyNot.whyNot) parts.push(fgQuiz.whyNot.whyNot);
+                        fgReadAloud(parts.join(' '));
+                      },
+                      className: "ml-auto px-2 py-0.5 rounded border border-slate-400 bg-white text-[0.6875rem] font-bold text-slate-800 hover:bg-slate-100"
+                    }, t('stem.funcgrapher.read_aloud', '\uD83D\uDD0A Read Aloud'))
                   ),
 
-                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.correct ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb)
+                  fgQuiz.fb && React.createElement("p", { className: "text-xs leading-relaxed " + (fgQuiz.correct ? 'text-emerald-800' : 'text-red-800') }, fgQuiz.fb),
+
+                  fgQuiz.predEval && typeof fgQuiz.predEval === 'object' && fgQuiz.predEval.summary && React.createElement("p", {
+                    "data-funcgrapher-pred-eval": fgQuiz.predEval.matched ? "match" : "miss",
+                    className: "mt-2 rounded-lg border border-indigo-200 bg-white p-2 text-xs font-semibold text-indigo-900"
+                  }, fgQuiz.predEval.summary),
+
+                  !fgQuiz.correct && fgQuiz.whyNot && typeof fgQuiz.whyNot === 'object' && fgQuiz.whyNot.whyNot && React.createElement("div", {
+                    "data-funcgrapher-whynot": fgQuiz.whyNot.code || "diag",
+                    className: "mt-2 rounded-lg border border-amber-300 bg-white p-2.5 text-xs text-slate-800"
+                  },
+                    React.createElement("p", { className: "font-bold text-amber-900 mb-0.5" }, t('stem.funcgrapher.whynot_heading', 'Why not that choice? ') + (fgQuiz.whyNot.title || '')),
+                    React.createElement("p", { className: "leading-relaxed" }, fgQuiz.whyNot.whyNot),
+                    fgQuiz.whyNot.checkStep && React.createElement("p", { className: "mt-1 font-semibold text-indigo-800" }, t('stem.funcgrapher.whynot_check_prefix', 'Quick check: ') + fgQuiz.whyNot.checkStep)
+                  )
 
                 )
 
@@ -3795,12 +4878,14 @@ window.StemLab = window.StemLab || {
 
             })(),
 
-            fgStage === 'explore' && React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.funcgrapher.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+            fgStage === 'practice' && fgRenderOfflineCoach('practice'),
 
-            // ── AI Function Tutor (reading-level aware) ──
+            fgStage === 'explore' && React.createElement("button", { "aria-label": __alloT('stem.funcgrapher.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'fg-' + Date.now(), tool: 'funcGrapher', label: d.type + ': a=' + d.a + ' b=' + d.b, data: { ...d }, timestamp: Date.now() }]); if (typeof addToast === 'function') addToast(t('stem.funcgrapher.toast_snapshot_saved', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.funcgrapher.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+
+            // ── AI Function Tutor (reading-level aware, with automatic Offline Function Coach fallback) ──
             fgStage === 'explore' && (function () {
               if (fgQuizLeaks) return null; // the explanation names the family and its features
-              if (typeof callGemini !== 'function') return null; // hidden when ctx hands no usable AI
+              if (typeof rawCallGemini !== 'function') return null; // hidden on default explore mount when ctx hands no AI
               var aiLevel = d.aiLevel || 'grade5';
               // Own state key: sharing d.aiExplain with the "Explain This Graph" button
               // above made each panel display the other's output.
@@ -3812,8 +4897,15 @@ window.StemLab = window.StemLab || {
                 { id: 'grade5', label: __alloT('stem.funcgrapher.grade_5', 'Grade 5'), hint: __alloT('stem.funcgrapher.for_a_5th_grade_student', 'for a 5th grade student') },
                 { id: 'hs', label: __alloT('stem.funcgrapher.high_school', 'High School'), hint: __alloT('stem.funcgrapher.for_a_high_school_algebra_or_pre_calc_', 'for a high school algebra or pre-calc student, including vocabulary like slope, intercept, vertex, period, amplitude') }
               ];
+              function applyOfflineTutor(levelId) {
+                var offlineText = FUNCGRAPHER_ENGINE.buildOfflineFuncCoach(d.type, d.a, d.b, d.c, eqStr, levelId, null).summary;
+                setLabToolData(function(prev) {
+                  return Object.assign({}, prev, { funcGrapher: Object.assign({}, DEFAULT_FG, prev && prev.funcGrapher, { aiLoading: false, aiError: '', aiTutorText: offlineText }) });
+                });
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.funcgrapher.sr_explanation_ready', 'Explanation ready.'));
+              }
               function explain() {
-                if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+                if (typeof callGemini !== 'function') { applyOfflineTutor(aiLevel); return; }
                 upd('aiLoading', true); upd('aiError', ''); upd('aiTutorText', '');
                 var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
                 // eqStr is the graphed equation for every family (sqrt, log and rational
@@ -3823,13 +4915,15 @@ window.StemLab = window.StemLab || {
                   + 'In 3 short sentences: (1) What the graph looks like. (2) Which coefficient changes the graph in what way. (3) One real-world situation this function models. '
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
-                  upd('aiTutorText', String(resp || '').trim()); upd('aiLoading', false);
+                  var cleaned = String(resp || '').trim();
+                  if (!cleaned) cleaned = FUNCGRAPHER_ENGINE.buildOfflineFuncCoach(d.type, d.a, d.b, d.c, eqStr, aiLevel, null).summary;
+                  upd('aiTutorText', cleaned); upd('aiLoading', false);
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.funcgrapher.sr_explanation_ready', 'Explanation ready.'));
                 }).catch(function () {
-                  upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
+                  applyOfflineTutor(aiLevel);
                 });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region" },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, __alloT('stem.funcgrapher.explain_at_my_level', "\u2728 Explain at my level")),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.funcgrapher.reading_level', "Reading level") },
@@ -3837,19 +4931,28 @@ window.StemLab = window.StemLab || {
                       var active = aiLevel === L.id;
                       return React.createElement("button", {
                         key: L.id,
+                        type: "button",
                         onClick: function () { upd('aiLevel', L.id); },
-                        "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
+                        "aria-label": fgFill(active ? t('stem.funcgrapher.reading_level_selected_aria', 'Reading level: {label} (selected)') : t('stem.funcgrapher.reading_level_aria', 'Reading level: {label}'), { label: L.label }),
                         "aria-pressed": active,
                         className: "px-2 py-0.5 rounded text-[0.625rem] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),
                   React.createElement("button", {
+                    type: "button",
                     onClick: explain,
                     disabled: aiLoading,
-                    "aria-label": "Generate AI explanation at " + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + " level",
+                    "aria-label": fgFill(t('stem.funcgrapher.generate_ai_explanation_aria', 'Generate AI explanation at {level} level'), { level: (LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || __alloT('stem.funcgrapher.grade_5', 'Grade 5') }),
                     className: "px-3 py-1 rounded-lg text-[0.6875rem] font-bold bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
-                  }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
+                  }, aiLoading ? t('stem.funcgrapher.thinking', '\u23F3 Thinking...') : (aiText ? t('stem.funcgrapher.re_explain', '\uD83D\uDD04 Re-explain') : t('stem.funcgrapher.explain_btn', '\uD83E\uDDE0 Explain'))),
+                  aiText && typeof callTTS === 'function' && React.createElement("button", {
+                    type: "button",
+                    "data-funcgrapher-tutor-read": "true",
+                    "aria-label": t('stem.funcgrapher.tutor_read_aloud_aria', 'Read level explanation aloud'),
+                    onClick: function() { fgReadAloud(aiText); },
+                    className: "px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-white text-purple-800 border border-purple-500 hover:bg-purple-100"
+                  }, t('stem.funcgrapher.read_aloud', '\uD83D\uDD0A Read Aloud'))
                 ),
                 aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),
                 aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
@@ -3884,15 +4987,20 @@ window.StemLab = window.StemLab || {
                     if (!cvEl) return;
                     // Literal canvas colours per app theme (canvas cannot read CSS var()); a theme change redraws.
                     cvEl._fzPal = fgZooPal;
+                    var fzReduceNow = !!(ctx && ctx.reduceMotion);
+                    if (!fzReduceNow) { try { fzReduceNow = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {} }
+                    cvEl._fzReduce = fzReduceNow;
                     if (cvEl._fzAnim) {
-                      if (cvEl._fzTheme !== fgZooPal.theme && typeof cvEl._fzDraw === 'function') {
+                      if ((cvEl._fzTheme !== fgZooPal.theme || cvEl._fzLastReduce !== fzReduceNow) && typeof cvEl._fzDraw === 'function') {
                         cvEl._fzTheme = fgZooPal.theme;
+                        cvEl._fzLastReduce = fzReduceNow;
                         cvEl._fzDraw();
                         if (typeof cvEl._fzSyncLoop === 'function') cvEl._fzSyncLoop();
                       }
                       return;
                     }
                     cvEl._fzTheme = fgZooPal.theme;
+                    cvEl._fzLastReduce = fzReduceNow;
                     var c2 = cvEl.getContext('2d');
                     if (!c2) return;
                     var W = cvEl.offsetWidth || 600;
@@ -3900,8 +5008,7 @@ window.StemLab = window.StemLab || {
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-                    var fzReduce = false;
-                    try { fzReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+                    var fzReduce = fzReduceNow;
                     var fzFuncs = [
                       { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
                       { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
@@ -4004,7 +5111,8 @@ window.StemLab = window.StemLab || {
                       var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                       var ZP = cvEl._fzPal || fgZooPal;
                       var isContrastZoo = ZP.theme === 'contrast';
-                      var t = (fzReduce || isContrastZoo) ? 1.8 : (now - start) / 1000;
+                      var reduceNow = !!(cvEl._fzReduce || fzReduce);
+                      var fzTime = (reduceNow || isContrastZoo) ? 1.8 : (now - start) / 1000;
                       c2.fillStyle = ZP.bg;
                       c2.fillRect(0, 0, W, H);
                       if (!isContrastZoo && typeof c2.createLinearGradient === 'function') {
@@ -4048,7 +5156,7 @@ window.StemLab = window.StemLab || {
                         // Curve — translucent area shimmer + silky phosphor glow + specular filament + comet bead
                         c2.save();
                         var ink = ZP.curves[fi] || fn.color;
-                        var breath = (fzReduce || isContrastZoo) ? 0 : Math.sin(t * 1.9 + fi * 1.05);
+                        var breath = (reduceNow || isContrastZoo) ? 0 : Math.sin(fzTime * 1.9 + fi * 1.05);
                         if (!isContrastZoo) {
                           c2.save();
                           c2.globalAlpha = (ZP.glow ? 0.11 : 0.065) + breath * 0.025;
@@ -4076,7 +5184,7 @@ window.StemLab = window.StemLab || {
                         }
                         // Origin/intercept micro-beacon pulse
                         if (!isContrastZoo) {
-                          var pPhase = (t * 0.55 + fi * 0.17) % 1;
+                          var pPhase = (fzTime * 0.55 + fi * 0.17) % 1;
                           var origY = oy - fn.f(0) * 7.5;
                           if (origY > cy0 + 10 && origY < cy0 + cellH - 22) {
                             c2.save();
@@ -4087,10 +5195,10 @@ window.StemLab = window.StemLab || {
                           }
                         }
                         // Silky comet tail + glowing light bead along curve (zero-GC scratch tail)
-                        var uHead = (t * 0.22 + fi * 0.13) % 1;
+                        var uHead = (fzTime * 0.22 + fi * 0.13) % 1;
                         var beadX = -xSpan + uHead * (xSpan * 2);
                         var beadY = oy - fn.f(beadX / 12) * 7.5;
-                        if (!isContrastZoo && !fzReduce) {
+                        if (!isContrastZoo && !reduceNow) {
                           var tailCount = 0;
                           for (var ti = 0; ti < FZ_TAIL; ti++) {
                             var uT = uHead - ti * 0.016;
@@ -4147,13 +5255,13 @@ window.StemLab = window.StemLab || {
                         return;
                       }
                       var ZP = cvEl._fzPal || fgZooPal;
-                      if (fzReduce || ZP.theme === 'contrast' || (typeof document !== 'undefined' && document.hidden)) return;
+                      if (cvEl._fzReduce || fzReduce || ZP.theme === 'contrast' || (typeof document !== 'undefined' && document.hidden)) return;
                       drawFz();
                       if (typeof requestAnimationFrame === 'function') cvEl._fzRafId = requestAnimationFrame(fzTick);
                     }
                     function fzSyncLoop() {
                       var ZP = cvEl._fzPal || fgZooPal;
-                      var want = !fzReduce && ZP.theme !== 'contrast' && cvEl.isConnected && !(typeof document !== 'undefined' && document.hidden) && typeof requestAnimationFrame === 'function';
+                      var want = !cvEl._fzReduce && !fzReduce && ZP.theme !== 'contrast' && cvEl.isConnected && !(typeof document !== 'undefined' && document.hidden) && typeof requestAnimationFrame === 'function';
                       if (want && !cvEl._fzRafId) cvEl._fzRafId = requestAnimationFrame(fzTick);
                       else if (!want && cvEl._fzRafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(cvEl._fzRafId); cvEl._fzRafId = 0; }
                     }
@@ -4226,7 +5334,7 @@ window.StemLab = window.StemLab || {
               ];
               var focus = focusOptions.find(function(option) { return option.id === iq.focus; }) || focusOptions[0];
               var panel = 'var(--allo-stem-panel,#fff)', ink = 'var(--allo-stem-text,#0f172a)', softInk = 'var(--allo-stem-text-soft,#475569)';
-              var curveInk = ctx.isContrast ? '#ffff00' : isDark ? '#a5b4fc' : '#4338ca';
+              var curveInk = isContrast ? '#ffff00' : isDark ? '#a5b4fc' : '#4338ca';
               var fieldStyle = { width: '100%', minWidth: 0, background: panel, color: ink, border: '1px solid ' + softInk, borderRadius: 6, padding: 8, fontSize: 13 };
               var buttonStyle = { minHeight: 44, padding: '6px 12px', borderRadius: 7, border: '1px solid ' + softInk, background: panel, color: ink, fontSize: 13, cursor: 'pointer' };
               var xLeft = -2 * Math.PI, xRight = 2 * Math.PI;

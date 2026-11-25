@@ -10,21 +10,39 @@ var require_tmp_research_hub_entry = __commonJS({
   "_tmp_research_hub_entry.jsx"(exports, module) {
     (function(root, factory) {
       var api = factory();
-      if (typeof module === "object" && module.exports) module.exports = api;
-      if (root) root.AlloFlowResearchEvidenceGraph = api;
-    })(typeof globalThis !== "undefined" ? globalThis : exports, function() {
+      if (typeof module === "object" && module && module.exports) module.exports = api;
+      if (root && (typeof root === "object" || typeof root === "function")) {
+        try {
+          root.AlloFlowResearchEvidenceGraph = api;
+        } catch (_) {
+        }
+      }
+    })(typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : null, function() {
       "use strict";
       var VERSION = "1.1.0";
       var SCHEMA_VERSION = 2;
-      var RELATION_TYPES = ["supports", "complicates", "contradicts", "contextualizes", "derivedFrom", "requiresWarrant", "frames"];
-      var ARGUMENT_RELATIONS = ["supports", "complicates", "contradicts", "contextualizes"];
-      var EVIDENCE_TYPES = ["source", "evidence", "tool_artifact", "annotation", "test_result", "model"];
-      var CLAIM_TYPES = ["claim", "humanities_position", "design_claim"];
+      var MAX_COLLECTION_ITEMS = 3e3;
+      var MAX_PORTABLE_NODES = 2e4;
+      var RELATION_TYPES = Object.freeze(["supports", "complicates", "contradicts", "contextualizes", "derivedFrom", "requiresWarrant", "frames"]);
+      var ARGUMENT_RELATIONS = Object.freeze(["supports", "complicates", "contradicts", "contextualizes"]);
+      var EVIDENCE_TYPES = Object.freeze(["source", "evidence", "tool_artifact", "annotation", "test_result", "model"]);
+      var CLAIM_TYPES = Object.freeze(["claim", "humanities_position", "design_claim"]);
+      function safeStr(value) {
+        if (value == null || typeof value === "symbol") return "";
+        if (typeof value === "string") return value;
+        if (typeof value === "number") return Number.isFinite(value) ? String(value) : "";
+        if (typeof value === "boolean") return String(value);
+        try {
+          return String(value);
+        } catch (_) {
+          return "";
+        }
+      }
       function list(value) {
-        return Array.isArray(value) ? value : [];
+        return Array.isArray(value) ? value.slice(0, MAX_COLLECTION_ITEMS) : [];
       }
       function clip(value, limit) {
-        return String(value == null ? "" : value).replace(/\s+/g, " ").trim().slice(0, limit || 1200);
+        return safeStr(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, limit || 1200);
       }
       function safeUrl(value, limit) {
         var s = clip(value, limit || 500);
@@ -43,7 +61,7 @@ var require_tmp_research_hub_entry = __commonJS({
         return clip(value, limit || 1600).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email omitted]").replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[identifier omitted]").replace(/(^|[^\w])(?:\+?1[-.\s]?)?(?:\(\d{3}\)[-.\s]?|\d{3}[-.\s])\d{3}[-.\s]\d{4}\b/g, "$1[phone omitted]").replace(/\b[ACGTUN]{40,}\b/gi, "[nucleic-acid sequence omitted]").replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, "[protein sequence omitted]");
       }
       function hash(value) {
-        var input = String(value == null ? "" : value);
+        var input = safeStr(value);
         var out = 2166136261;
         for (var i = 0; i < input.length; i++) {
           out ^= input.charCodeAt(i);
@@ -51,9 +69,30 @@ var require_tmp_research_hub_entry = __commonJS({
         }
         return (out >>> 0).toString(16).padStart(8, "0");
       }
+      function safeJsonStringify(value) {
+        try {
+          return JSON.stringify(value);
+        } catch (_) {
+          var seen = typeof Set === "function" ? /* @__PURE__ */ new Set() : null;
+          try {
+            return JSON.stringify(value, function(_key, val) {
+              if (typeof val === "bigint") return String(val);
+              if (val && typeof val === "object") {
+                if (seen) {
+                  if (seen.has(val)) return "[circular]";
+                  seen.add(val);
+                }
+              }
+              return val;
+            });
+          } catch (__) {
+            return "";
+          }
+        }
+      }
       function identifier(prefix, raw, fallback) {
         var existing = clip(raw && raw.id, 160);
-        return prefix + ":" + (existing || hash(fallback || JSON.stringify(raw || {})));
+        return prefix + ":" + (existing || hash(fallback || safeJsonStringify(raw || {})));
       }
       function exportTimestamp(journal) {
         return timestamp(journal && (journal.updatedAt || journal.createdAt)) || "1970-01-01T00:00:00.000Z";
@@ -62,7 +101,9 @@ var require_tmp_research_hub_entry = __commonJS({
         return { collection, id: clip(raw && raw.id, 160) || clip(fallbackId, 160) };
       }
       function timestamp(value) {
-        if (!value) return "";
+        if (value == null) return "";
+        if (typeof value === "number" && !Number.isFinite(value)) return "";
+        if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) return "";
         var date = new Date(value);
         return Number.isNaN(date.getTime()) ? "" : date.toISOString();
       }
@@ -92,14 +133,15 @@ var require_tmp_research_hub_entry = __commonJS({
         return redact(raw && (raw.title || raw.label || raw.name || raw.text || raw.citation || raw.summary || raw.observationText), 180) || fallback;
       }
       function buildEvidenceGraph(journal) {
-        var j = journal || {};
+        var j = journal && typeof journal === "object" && !Array.isArray(journal) ? journal : {};
         var nodes = [];
         var edges = [];
         var byId = /* @__PURE__ */ Object.create(null);
+        var edgeById = /* @__PURE__ */ Object.create(null);
         var aliases = /* @__PURE__ */ Object.create(null);
         var integrityIssues = [];
         function addNode(node, rawAliases) {
-          if (!node || !node.id) return null;
+          if (!node || typeof node.id !== "string" || !node.id) return null;
           if (byId[node.id]) {
             integrityIssues.push({ severity: "action", code: "duplicate_graph_id", nodeId: node.id, message: "More than one portfolio record resolves to " + node.id + ". Assign unique record IDs before relying on this graph." });
             integrityIssues.push({ severity: "action", code: "ambiguous_graph_reference", reference: node.id, message: "The duplicated record ID " + node.id + " is ambiguous and cannot safely identify one record." });
@@ -110,7 +152,8 @@ var require_tmp_research_hub_entry = __commonJS({
           nodes.push(node);
           byId[node.id] = node;
           [node.id].concat(rawAliases || []).filter(Boolean).forEach(function(alias) {
-            var key = String(alias);
+            var key = safeStr(alias);
+            if (!key) return;
             if (aliases[key] && aliases[key] !== node.id) {
               integrityIssues.push({ severity: "action", code: "ambiguous_graph_reference", reference: key, message: 'The reference "' + redact(key, 120) + '" matches more than one graph node.' });
               aliases[key] = null;
@@ -120,7 +163,7 @@ var require_tmp_research_hub_entry = __commonJS({
         }
         function resolve(value) {
           if (value && typeof value === "object") value = value.id || value.claimId || value.text;
-          var key = String(value == null ? "" : value);
+          var key = safeStr(value);
           if (!key) return null;
           if (aliases[key]) return aliases[key];
           if (Object.prototype.hasOwnProperty.call(aliases, key) && aliases[key] === null) return null;
@@ -139,13 +182,13 @@ var require_tmp_research_hub_entry = __commonJS({
           var fromId = resolve(from) || from;
           var toId = resolve(to) || to;
           var info = details || {};
-          if (!byId[fromId] || !byId[toId]) {
+          if (typeof fromId !== "string" || typeof toId !== "string" || !byId[fromId] || !byId[toId]) {
             integrityIssues.push({
               severity: "action",
               code: "dangling_graph_reference",
-              reference: redact(!byId[fromId] ? from : to, 180),
+              reference: redact(typeof fromId !== "string" || !byId[fromId] ? from : to, 180),
               declaredBy: clip(info.declaredBy, 160),
-              message: "A relationship from " + (info.declaredBy || "the portfolio") + " points to a missing or ambiguous record."
+              message: "A relationship from " + (clip(info.declaredBy, 160) || "the portfolio") + " points to a missing or ambiguous record."
             });
             return null;
           }
@@ -165,9 +208,10 @@ var require_tmp_research_hub_entry = __commonJS({
             rebuttal: redact(info.rebuttal, 700),
             declaredBy: clip(info.declaredBy, 160)
           };
-          if (!edges.some(function(existing) {
-            return existing.id === edge.id;
-          })) edges.push(edge);
+          if (!edgeById[edge.id]) {
+            edgeById[edge.id] = edge;
+            edges.push(edge);
+          }
           return edge;
         }
         var question = null;
@@ -368,22 +412,31 @@ var require_tmp_research_hub_entry = __commonJS({
         });
         var visitState = /* @__PURE__ */ Object.create(null);
         var cycleNodes = /* @__PURE__ */ Object.create(null);
-        function visitDerived(nodeId, trail) {
-          if (visitState[nodeId] === 1) {
-            trail.slice(Math.max(0, trail.indexOf(nodeId))).forEach(function(id) {
-              cycleNodes[id] = true;
-            });
-            return;
+        Object.keys(derivedAdjacency).forEach(function(startId) {
+          if (visitState[startId]) return;
+          var trail = [];
+          var stack = [{ id: startId, idx: 0 }];
+          visitState[startId] = 1;
+          trail.push(startId);
+          while (stack.length) {
+            var top = stack[stack.length - 1];
+            var nextList = derivedAdjacency[top.id] || [];
+            if (top.idx < nextList.length) {
+              var nextId = nextList[top.idx++];
+              if (visitState[nextId] === 1) {
+                var pos = trail.indexOf(nextId);
+                for (var ti = Math.max(0, pos); ti < trail.length; ti++) cycleNodes[trail[ti]] = true;
+              } else if (!visitState[nextId]) {
+                visitState[nextId] = 1;
+                trail.push(nextId);
+                stack.push({ id: nextId, idx: 0 });
+              }
+            } else {
+              visitState[top.id] = 2;
+              trail.pop();
+              stack.pop();
+            }
           }
-          if (visitState[nodeId] === 2) return;
-          visitState[nodeId] = 1;
-          (derivedAdjacency[nodeId] || []).forEach(function(nextId) {
-            visitDerived(nextId, trail.concat(nodeId));
-          });
-          visitState[nodeId] = 2;
-        }
-        Object.keys(derivedAdjacency).forEach(function(nodeId) {
-          visitDerived(nodeId, []);
         });
         if (Object.keys(cycleNodes).length) integrityIssues.push({ severity: "action", code: "cyclic_graph_provenance", nodeIds: Object.keys(cycleNodes), message: "Derived-from relationships contain a cycle, so provenance order is not trustworthy." });
         var incomingByClaim = /* @__PURE__ */ Object.create(null);
@@ -436,7 +489,7 @@ var require_tmp_research_hub_entry = __commonJS({
         nodes.forEach(function(node) {
           counts[node.type] = (counts[node.type] || 0) + 1;
         });
-        var snapshotId = "snapshot:" + hash(JSON.stringify({ nodes: nodes.map(function(node) {
+        var snapshotId = "snapshot:" + hash(safeJsonStringify({ nodes: nodes.map(function(node) {
           return [node.id, node.type, node.label, node.description, node.createdAt, node.provenance, node.record];
         }), edges }));
         return {
@@ -456,9 +509,9 @@ var require_tmp_research_hub_entry = __commonJS({
         };
       }
       function toW3CWebAnnotations(journal, graph) {
-        var evidenceGraph = graph || buildEvidenceGraph(journal);
+        var evidenceGraph = graph && typeof graph === "object" && Array.isArray(graph.nodes) ? graph : buildEvidenceGraph(journal);
         var annotations = evidenceGraph.nodes.filter(function(node) {
-          return node.type === "annotation";
+          return node && node.type === "annotation";
         });
         return {
           "@context": "http://www.w3.org/ns/anno.jsonld",
@@ -488,11 +541,24 @@ var require_tmp_research_hub_entry = __commonJS({
       }
       function normalizeCslDate(value) {
         if (!value) return void 0;
-        if (value["date-parts"]) return value;
-        if (/^\d{4}$/.test(String(value).trim())) return { "date-parts": [[Number(value)]] };
-        var date = new Date(value);
-        if (!Number.isNaN(date.getTime())) return { "date-parts": [[date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()]] };
-        var year = String(value).match(/\b(1[5-9]\d{2}|20\d{2}|21\d{2})\b/);
+        if (typeof value === "object" && Array.isArray(value["date-parts"])) {
+          var parts = value["date-parts"].slice(0, 2).map(function(tuple) {
+            if (!Array.isArray(tuple)) return null;
+            var nums = tuple.slice(0, 3).filter(function(n) {
+              return typeof n === "number" && Number.isInteger(n) && n >= -9999 && n <= 9999;
+            });
+            return nums.length ? nums : null;
+          }).filter(Boolean);
+          return parts.length ? { "date-parts": parts } : void 0;
+        }
+        var str = safeStr(value).trim();
+        if (!str) return void 0;
+        if (/^\d{4}$/.test(str)) return { "date-parts": [[Number(str)]] };
+        if (typeof value === "string" || typeof value === "number" || value instanceof Date) {
+          var date = new Date(value);
+          if (!Number.isNaN(date.getTime())) return { "date-parts": [[date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()]] };
+        }
+        var year = str.match(/\b(1[5-9]\d{2}|20\d{2}|21\d{2})\b/);
         return year ? { "date-parts": [[Number(year[1])]] } : void 0;
       }
       function normalizeCslNames(value) {
@@ -564,7 +630,7 @@ var require_tmp_research_hub_entry = __commonJS({
         return rows;
       }
       function toRoCrate(journal, graph) {
-        var evidenceGraph = graph || buildEvidenceGraph(journal);
+        var evidenceGraph = graph && typeof graph === "object" && Array.isArray(graph.nodes) && Array.isArray(graph.edges) ? graph : buildEvidenceGraph(journal);
         var exportedAt = evidenceGraph.generatedAt;
         var metadataId = "ro-crate-metadata.json";
         var rootId = "./";
@@ -630,55 +696,68 @@ var require_tmp_research_hub_entry = __commonJS({
         return { "@context": "https://w3id.org/ro/crate/1.3/context", "@graph": entities };
       }
       function sanitizePortableJournal(journal) {
+        var active = typeof Set === "function" ? /* @__PURE__ */ new Set() : null;
+        var nodeCount = 0;
         function walk(value, key, depth) {
           if (depth > 18) return "[depth limit reached]";
-          if (value == null || typeof value === "number" || typeof value === "boolean") return value;
+          if (value == null || typeof value === "boolean") return value;
+          if (typeof value === "number") return Number.isFinite(value) ? value : void 0;
           if (typeof value === "string") {
-            var trimmedVal = value.trim();
-            if (/Ref$/.test(key || "") && trimmedVal.indexOf("media:") === 0) return void 0;
-            if (/^(audioBase64|sketchDataUrl|rawFile|fileBytes)$/i.test(key || "") || /^data:(audio|image|video)\//i.test(trimmedVal)) return void 0;
+            var cleanedVal = value.replace(/[\u0000-\u001F\u007F]+/g, "").trim();
+            if (/Ref$/.test(key || "") && cleanedVal.indexOf("media:") === 0) return void 0;
+            if (/^(audioBase64|sketchDataUrl|rawFile|fileBytes)$/i.test(key || "") || /^data:(audio|image|video)\//i.test(cleanedVal)) return void 0;
             return redact(value, 12e3);
           }
-          if (Array.isArray(value)) return value.slice(0, 3e3).map(function(item) {
-            return walk(item, "", depth + 1);
-          }).filter(function(item) {
-            return item !== void 0;
-          });
           if (typeof value !== "object") return void 0;
-          var out = {};
-          Object.keys(value).slice(0, 500).forEach(function(childKey) {
-            if (childKey === "loadWarning" || childKey === "originalSchemaVersion" || childKey === "__proto__" || childKey === "constructor" || childKey === "prototype") return;
-            var child = walk(value[childKey], childKey, depth + 1);
-            if (child !== void 0) out[childKey] = child;
-          });
-          return out;
+          if (++nodeCount > MAX_PORTABLE_NODES) return "[size limit reached]";
+          if (active && active.has(value)) return "[circular reference]";
+          if (active) active.add(value);
+          try {
+            if (Array.isArray(value)) {
+              return value.slice(0, MAX_COLLECTION_ITEMS).map(function(item) {
+                return walk(item, "", depth + 1);
+              }).filter(function(item) {
+                return item !== void 0;
+              });
+            }
+            var out = {};
+            Object.keys(value).slice(0, 500).forEach(function(childKey) {
+              if (childKey === "loadWarning" || childKey === "originalSchemaVersion" || childKey === "__proto__" || childKey === "constructor" || childKey === "prototype") return;
+              var child = walk(value[childKey], childKey, depth + 1);
+              if (child !== void 0) out[childKey] = child;
+            });
+            return out;
+          } finally {
+            if (active) active.delete(value);
+          }
         }
-        return walk(journal || {}, "", 0) || {};
+        var rootObj = journal && typeof journal === "object" && !Array.isArray(journal) ? journal : {};
+        return walk(rootObj, "", 0) || {};
       }
       function validateEvidenceGraph(graph) {
         var errors = [];
-        if (!graph || typeof graph !== "object") return { ok: false, errors: ["graph must be an object"] };
+        if (!graph || typeof graph !== "object" || Array.isArray(graph)) return { ok: false, errors: ["graph must be an object"] };
         if (graph.schemaVersion !== SCHEMA_VERSION) errors.push("unsupported evidence graph schemaVersion");
         if (!Array.isArray(graph.nodes)) errors.push("nodes must be an array");
         if (!Array.isArray(graph.edges)) errors.push("edges must be an array");
         var ids = /* @__PURE__ */ Object.create(null);
         list(graph.nodes).forEach(function(node, index) {
-          if (!node || !clip(node.id, 200) || !clip(node.type, 80)) errors.push("node " + index + " requires id and type");
+          if (!node || typeof node !== "object" || !clip(node.id, 200) || !clip(node.type, 80)) errors.push("node " + index + " requires id and type");
           else if (ids[node.id]) errors.push("duplicate node id: " + node.id);
           else ids[node.id] = true;
         });
         var edgeIds = /* @__PURE__ */ Object.create(null);
         list(graph.edges).forEach(function(edge, index) {
-          if (!edge || !clip(edge.id, 200) || RELATION_TYPES.indexOf(edge.type) === -1) errors.push("edge " + index + " has an invalid id or relationship type");
+          if (!edge || typeof edge !== "object" || !clip(edge.id, 200) || RELATION_TYPES.indexOf(edge.type) === -1) errors.push("edge " + index + " has an invalid id or relationship type");
           else if (edgeIds[edge.id]) errors.push("duplicate edge id: " + edge.id);
           else edgeIds[edge.id] = true;
-          if (edge && (!ids[edge.from] || !ids[edge.to])) errors.push("edge " + (edge.id || index) + " references a missing node");
+          if (edge && (typeof edge.from !== "string" || typeof edge.to !== "string" || !ids[edge.from] || !ids[edge.to])) errors.push("edge " + (edge.id || index) + " references a missing node");
         });
         return { ok: errors.length === 0, errors };
       }
       function validateInteroperabilityBundle(bundle) {
         var errors = [];
-        if (!bundle || typeof bundle !== "object") return { ok: false, errors: ["bundle must be an object"] };
+        if (!bundle || typeof bundle !== "object" || Array.isArray(bundle)) return { ok: false, errors: ["bundle must be an object"] };
         if (bundle.format !== "alloflow-inquiry-interoperability-bundle") errors.push("unsupported bundle format");
         if (bundle.schemaVersion !== SCHEMA_VERSION) errors.push("unsupported bundle schemaVersion");
         var graphResult = validateEvidenceGraph(bundle.evidenceGraph);
@@ -706,7 +785,7 @@ var require_tmp_research_hub_entry = __commonJS({
       }
       function buildInteroperabilityBundle(journal, options) {
         var graph = buildEvidenceGraph(journal);
-        var opts = options || {};
+        var opts = options && typeof options === "object" ? options : {};
         var bundle = {
           format: "alloflow-inquiry-interoperability-bundle",
           schemaVersion: SCHEMA_VERSION,
@@ -721,10 +800,10 @@ var require_tmp_research_hub_entry = __commonJS({
         bundle.validation = validateInteroperabilityBundle(bundle);
         return bundle;
       }
-      return {
+      return Object.freeze({
         version: VERSION,
         schemaVersion: SCHEMA_VERSION,
-        relationTypes: RELATION_TYPES.slice(),
+        relationTypes: RELATION_TYPES,
         buildEvidenceGraph,
         toW3CWebAnnotations,
         toCslJson,
@@ -734,7 +813,7 @@ var require_tmp_research_hub_entry = __commonJS({
         validateInteroperabilityBundle,
         importPortableBundle,
         buildInteroperabilityBundle
-      };
+      });
     });
     (function() {
       "use strict";
@@ -752,6 +831,18 @@ var require_tmp_research_hub_entry = __commonJS({
       var useRef = React.useRef;
       var useCallback = React.useCallback;
       var useMemo = React.useMemo;
+      (function() {
+        if (typeof document === "undefined" || !document.head || document.getElementById("allo-research-hub-a11y-css")) return;
+        var st = document.createElement("style");
+        st.id = "allo-research-hub-a11y-css";
+        st.textContent = [
+          '[data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a), [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input[type="range"],select,summary,a) { touch-action: manipulation; }',
+          '[data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 3px solid #4f46e5; outline-offset: 2px; }',
+          '@media (forced-colors: active) { [data-help-key="research_hub"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-hub-dialog-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible, [aria-labelledby="research-allosheet-title"] :is(button,[role="tab"],[role="button"],input,select,textarea,summary,a):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }',
+          '@media (prefers-reduced-motion: reduce) { [data-help-key="research_hub"] *, [aria-labelledby="research-hub-dialog-title"] *, [aria-labelledby="research-allosheet-title"] * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }'
+        ].join("\n");
+        document.head.appendChild(st);
+      })();
       function getEvidenceGraphApi() {
         return typeof window !== "undefined" ? window.AlloFlowResearchEvidenceGraph || null : null;
       }
@@ -2498,9 +2589,9 @@ var require_tmp_research_hub_entry = __commonJS({
             return isSafeRegistryKey(id) && this._lanes[id] || null;
           },
           getLanes: function() {
-            var self = this;
+            var self2 = this;
             return this._order.map(function(id) {
-              return self._lanes[id];
+              return self2._lanes[id];
             }).filter(Boolean);
           },
           // V2: educator-view registry — a plugin (research_hub_educator_module.js)

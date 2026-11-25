@@ -46,7 +46,7 @@ describe('plain-language summary popup — XSS + language hardening (R2 #1/#2)',
     expect(viewAudit).not.toMatch(/lang\.substring\(0\s*,\s*2\)/);
     expect(viewAudit).toMatch(/languageToTTSCode\(lang\)/);
     // Absent beats wrong: no lang attribute when the code can't be resolved.
-    expect(viewAudit).toMatch(/const _langAttr = _langCode \? ` lang="\$\{_langCode\}"` : ''/);
+    expect(viewAudit).toMatch(/const _langAttr = _langCode \? ` lang="\$\{_escSum\(_langCode\)\}"` : ''/);
   });
 
   it('derives RTL from the resolved code the way the export spec does (not a 6-name list)', () => {

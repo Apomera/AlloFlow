@@ -2,15 +2,29 @@
 
 // Extracted from AlloFlowANTI.txt (full-pack-run).
 function FullPackRunView(props) {
-  const { AlertTriangle, ArrowDown, ArrowRight, ArrowUp, ChevronDown, Clock, Copy, Cpu, Download, Eye, EyeOff, GUIDED_DELIVERY_GROUPS, ImageIcon, Plus, RefreshCw, Sparkles, StopCircle, Trash2, _alloDiagnosticReason, _alloGenerationHelpersDeps, aiCapability, createGuidedHomeworkShare, currentUiLanguage, differentiationCustomGrades, differentiationRange, differentiationTypes, dokLevel, fullPackAddType, fullPackRun, fullPackTargetGroup, getDefaultTitle, gradeLevel, guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleCopyFullPackDiagnostics, handleDismissFullPackRun, handleDownloadFullPackDiagnostics, handleEditFullPackPlanResourceDirective, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handlePlanFullPack, handleRemoveFullPackPlanResource, handleReadOriginal, handleRetryFailedFullPack, handleSetFullPackPlanAdaptedTextPolicy, handleStopFullPack, hasSourceOrAnalysis, history, imageAspectRatio, imageGenerationStyle, inputText, isAutoConfigEnabled, isIndependentMode, isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares, resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount, setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat, translationMode, universalImageStyle, useEmojis } = props;
+  const { AlertTriangle, ArrowDown, ArrowRight, ArrowUp, ChevronDown, Clock, Copy, Cpu, Download, Eye, EyeOff, GUIDED_DELIVERY_GROUPS, ImageIcon, Plus, RefreshCw, Sparkles, StopCircle, Trash2, _alloDiagnosticReason, _alloGenerationHelpersDeps, aiCapability: _rawAiCapability, createGuidedHomeworkShare, currentUiLanguage, differentiationCustomGrades, differentiationRange, differentiationTypes, dokLevel, fullPackAddType, fullPackRun, fullPackTargetGroup, getDefaultTitle, gradeLevel, guidedActiveSteps, guidedMode, guidedStep, handleAddFullPackPlanResource, handleApproveFullPack, handleChangeFullPackPlanResourceType, handleCopyFullPackDiagnostics, handleDismissFullPackRun, handleDownloadFullPackDiagnostics, handleEditFullPackPlanResourceDirective, handleMoveFullPackPlanResource, handleOpenGenerationErrorLog, handlePlanFullPack, handleRemoveFullPackPlanResource, handleReadOriginal, handleRetryFailedFullPack, handleSetFullPackPlanAdaptedTextPolicy, handleStopFullPack, hasSourceOrAnalysis, history, imageAspectRatio, imageGenerationStyle, inputText, isAutoConfigEnabled, isIndependentMode, isParentMode, isProcessing, isTeacherMode, leveledTextLanguage, openExportPreview, openStudentQrPreview, qrShareModal, recentQrShares, resourceCount, rosterKey, selectToolFromCatalog, selectedLanguages, setFullPackAddType, setFullPackTargetGroup, setIsAutoConfigEnabled, setResourceCount, setShowAIBackendModal, setShowCompletedFullPackRows, setShowSessionStartOptions, showCompletedFullPackRows, studentInterests, t, targetStandards, textFormat, translationMode, universalImageStyle, useEmojis } = props;
+  const aiCapability = (_rawAiCapability && typeof _rawAiCapability === 'object') ? _rawAiCapability : {};
+  const _own = (obj, key) => (obj && key != null && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined);
+  const _finPos = (value) => { const n = Number(value); return Number.isFinite(n) && n > 0 ? n : 0; };
+  const _safeStringify = (value) => { try { return JSON.stringify(value); } catch (_) { return ''; } };
+  const studentAiBlocked = typeof window !== 'undefined' && (
+    window.__alloStudentAiDisabled === true ||
+    window.__alloQrStudentMode === true ||
+    window.__alloAiSecretsLocked === true ||
+    window._alloQrBlocked === true ||
+    window.hideStudentAiFeatures === true ||
+    window.AlloModules?.StudentPolicy?.hideStudentAiFeatures?.() === true ||
+    window.AlloModules?.StudentPolicy?.isAiDisabled?.() === true
+  );
   const isRunActive = ['running', 'retrying', 'planning'].includes(fullPackRun?.status);
   const activeActionLabel = fullPackRun?.status === 'planning'
     ? (t('fullpack.status_planning') || 'Planning')
     : fullPackRun?.status === 'retrying'
       ? (t('fullpack.status_retrying') || 'Retrying')
       : (t('fullpack.status_running') || 'Generating');
+  const _packSizeLabels = { Auto: t('fullpack.option_auto'), '5': t('fullpack.option_short'), '8': t('fullpack.option_standard'), '12': t('fullpack.option_deep'), All: t('fullpack.option_all') };
   const packSizeLabel = isAutoConfigEnabled
-    ? ({ Auto: t('fullpack.option_auto'), '5': t('fullpack.option_short'), '8': t('fullpack.option_standard'), '12': t('fullpack.option_deep'), All: t('fullpack.option_all') }[resourceCount] || resourceCount)
+    ? (_own(_packSizeLabels, resourceCount) || resourceCount)
     : (t('fullpack.current_settings') || 'Current settings');
   // Guided Mode has its own delivery chooser beside the pack generator.
   // Outside Guided Mode, expose the same routes once there is work to deliver.
@@ -24,11 +38,11 @@ function FullPackRunView(props) {
   const testLatestStudentLink = () => {
     // The host helper also records the Guided "learner view tested" evidence.
     if (typeof props.previewGuidedStudentAssignment === 'function') return props.previewGuidedStudentAssignment();
-    if (latestStudentShare?.url) return openStudentQrPreview(latestStudentShare.url, 'homework link as a student');
+    if (latestStudentShare?.url && typeof openStudentQrPreview === 'function') return openStudentQrPreview(latestStudentShare.url, 'homework link as a student');
     return false;
   };
   return (
-<PackContainer style={{display: (!guidedMode || guidedActiveSteps[guidedStep]?.id === 'package-deliver' || (guidedActiveSteps[guidedStep]?.id === '_final' && isRunActive)) ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
+<PackContainer style={{display: (!guidedMode || guidedActiveSteps?.[guidedStep]?.id === 'package-deliver' || (guidedActiveSteps?.[guidedStep]?.id === '_final' && isRunActive)) ? undefined : 'none'}} id="tour-tool-fullpack" data-help-key="tool_fullpack" className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 p-1 rounded-3xl shadow-sm">
                 {foldGenerator && <summary className="min-h-11 cursor-pointer rounded-xl px-3 py-2 text-sm font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white">{t('fullpack.additional_resources') || 'Create more resources'}</summary>}
                 {showDeliveryRoutes && (
                   <div role="region" aria-labelledby="guided-delivery-panel-title" data-testid="full-pack-delivery-routes" className="m-1 mb-2 rounded-2xl bg-white p-3 text-slate-800">
@@ -36,7 +50,7 @@ function FullPackRunView(props) {
                     <p className="mt-1 text-xs leading-relaxed text-slate-600">{t('fullpack.delivery_help') || 'Start with how students will use this: print or file, a student link/QR, or a live session.'}</p>
                     {isRunActive && <p role="status" data-testid="full-pack-delivery-locked" className="mt-2 text-xs font-semibold text-slate-700">{t('fullpack.delivery_wait_run') || 'Delivery opens when the Full Pack run finishes.'}</p>}
                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <button type="button" disabled={isRunActive} onClick={() => openExportPreview('print')} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
+                      <button type="button" disabled={isRunActive} onClick={() => typeof openExportPreview === 'function' && openExportPreview('print')} className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_document_builder') || 'Open Document Builder'}</button>
                       {typeof openExportPreview === 'function' && (
                         <>
                           <button type="button" data-testid="full-pack-export-html" disabled={isRunActive} onClick={() => openExportPreview('html')} className="min-h-11 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{t('fullpack.delivery_interactive_html') || 'Export Interactive HTML'}</button>
@@ -64,9 +78,9 @@ function FullPackRunView(props) {
                         </summary>
                         <div role="list" aria-label={t('a11y.export_families') || 'Available export and delivery families'} className="mt-1.5 grid gap-2 pb-1">
                           {deliveryGroups.map(group => (
-                            <div role="listitem" key={group.id} className="rounded-xl border border-indigo-100 bg-white/90 p-2">
-                              <div className="text-xs font-black text-indigo-900">{group.label}</div>
-                              <div className="mt-0.5 text-xs leading-relaxed text-slate-600">{group.options.join(' · ')}</div>
+                            <div role="listitem" key={group?.id || group?.label} className="rounded-xl border border-indigo-100 bg-white/90 p-2">
+                              <div className="text-xs font-black text-indigo-900">{group?.label}</div>
+                              <div className="mt-0.5 text-xs leading-relaxed text-slate-600">{Array.isArray(group?.options) ? group.options.join(' · ') : ''}</div>
                             </div>
                           ))}
                         </div>
@@ -77,7 +91,7 @@ function FullPackRunView(props) {
                 )}
                 <details data-testid="full-pack-options" className="group/options mb-1 rounded-2xl text-white">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white [&::-webkit-details-marker]:hidden">
-                    <span className="min-w-0 break-words"><span className="font-bold">{t('fullpack.pack_options') || 'Pack options'}</span><span className="ms-2">{packSizeLabel}</span>{isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && fullPackTargetGroup !== 'none' && <span className="mt-0.5 block">{fullPackTargetGroup === 'all' ? (t('fullpack.group_all') || 'All Groups') : rosterKey.groups[fullPackTargetGroup]?.name}</span>}</span>
+                    <span className="min-w-0 break-words"><span className="font-bold">{t('fullpack.pack_options') || 'Pack options'}</span><span className="ms-2">{packSizeLabel}</span>{isTeacherMode && !isParentMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && fullPackTargetGroup !== 'none' && <span className="mt-0.5 block">{fullPackTargetGroup === 'all' ? (t('fullpack.group_all') || 'All Groups') : _own(rosterKey.groups, fullPackTargetGroup)?.name}</span>}</span>
                     <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/options:rotate-180" />
                   </summary>
                   <div className="rounded-xl bg-white p-3 text-slate-800">
@@ -131,7 +145,7 @@ function FullPackRunView(props) {
                 </details>
                 {/* X6 (2026-08-17): keyless-shell doorway — same disable-with-doorway
                     contract as the sidebar generate buttons (AiSetupNotice). */}
-                {!aiCapability.text && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled) && (
+                {!aiCapability.text && !studentAiBlocked && (
                   <button type="button" data-help-key="sidebar_ai_setup_notice"
                     onClick={() => { try { setShowAIBackendModal(true); } catch (_) {} }}
                     className="min-h-11 w-full flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700">
@@ -145,7 +159,7 @@ function FullPackRunView(props) {
                     data-help-key="fullpack_generate"
                     data-testid="full-pack-primary-action"
                     onClick={() => { selectToolFromCatalog('package-deliver'); return fullPackRun?.status === 'ready' ? handleApproveFullPack() : handlePlanFullPack(); }}
-                    disabled={!hasSourceOrAnalysis || isProcessing || isRunActive || !aiCapability.text} aria-busy={isProcessing || isRunActive}
+                    disabled={!hasSourceOrAnalysis || isProcessing || isRunActive || !aiCapability.text || studentAiBlocked} aria-busy={isProcessing || isRunActive}
                     className={`group min-h-11 w-full p-3 bg-white rounded-2xl text-start flex justify-between items-center disabled:opacity-80 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${fullPackRun?.status === 'ready' ? 'ring-2 ring-indigo-300/80 shadow-md shadow-indigo-200/70' : ''}`}
                 >
                     <div>
@@ -192,7 +206,7 @@ function FullPackRunView(props) {
                         interrupted: 'border-amber-200 bg-amber-50 text-amber-900',
                         stopped: 'border-slate-300 bg-slate-100 text-slate-700',
                     };
-                    const _generationHelpersModule = window.AlloModules && window.AlloModules.GenerationHelpers;
+                    const _generationHelpersModule = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.GenerationHelpers : null;
                     const fullPackEditableTypes = (() => {
                         const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'venn', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'alignment-report', 'math', 'gemini-bridge'];
                         const supplied = _generationHelpersModule && typeof _generationHelpersModule.getFullPackEditableResourceTypes === 'function'
@@ -227,21 +241,22 @@ function FullPackRunView(props) {
                     const planSummaries = sections.map(section => section && section.preflight).filter(Boolean);
                     const planSelected = planSummaries.reduce((sum, plan) => sum + (plan.selected?.length || 0), 0);
                     const planSkipped = planSummaries.reduce((sum, plan) => sum + (plan.skipped?.length || 0), 0);
-                    const planGenerations = planSummaries.reduce((sum, plan) => sum + (plan.estimatedResourceGenerations || 0), 0);
-                    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations || 0), 0);
-                    const planReused = planSummaries.reduce((sum, plan) => sum + Math.max(0, Number(plan.generationMatrix?.summary?.actions?.reuse) || 0), 0);
-                    const planImageCalls = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.imageCalls || 0), 0);
-                    const planMinutes = planSummaries.reduce((sum, plan) => sum + (plan.capacity?.estimatedMinutes || 0), 0);
+                    const planGenerations = planSummaries.reduce((sum, plan) => sum + _finPos(plan.estimatedResourceGenerations), 0);
+                    const planProviderCalls = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.aiCalls || plan.estimatedProviderCalls || plan.estimatedResourceGenerations), 0);
+                    const planReused = planSummaries.reduce((sum, plan) => sum + _finPos(plan.generationMatrix?.summary?.actions?.reuse), 0);
+                    const planImageCalls = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.imageCalls), 0);
+                    const planMinutes = planSummaries.reduce((sum, plan) => sum + _finPos(plan.capacity?.estimatedMinutes), 0);
                     const capacityWarnings = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warnings || [])));
                     const capacityWarningCodes = Array.from(new Set(planSummaries.flatMap(plan => plan.capacity?.warningCodes || [])));
                     const capacityProfiles = planSummaries.map(plan => plan.capacity).filter(Boolean);
                     const providerSummary = Array.from(new Set(capacityProfiles.map(capacity => [capacity.provider, capacity.model].filter(Boolean).join(' · ')).filter(Boolean))).join(', ');
                     const usesObservedEstimate = capacityProfiles.some(capacity => capacity.estimateBasis === 'observed-device-history');
-                    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => ({
+                    const _warningCodeMap = {
                         'local-serial': t('fullpack.warning_local_serial') || 'Local models run this pack sequentially; keep the app open and consider a smaller pack for faster completion.',
                         'large-pack': t('fullpack.warning_large_pack') || 'Large pack: provider rate limits are more likely. Consider fewer resources or groups.',
                         'image-quota': t('fullpack.warning_image_quota') || 'Image generation may extend the run and consume additional provider quota.',
-                    }[code])).filter(Boolean) : capacityWarnings;
+                    };
+                    const localizedCapacityWarnings = capacityWarningCodes.length ? capacityWarningCodes.map(code => _own(_warningCodeMap, code)).filter(Boolean) : capacityWarnings;
                     const allRows = sections.flatMap(buildRows);
                     const settled = allRows.filter(row => row && !['queued', 'running', 'retrying'].includes(row.status)).length;
                     const total = allRows.length;
@@ -251,13 +266,13 @@ function FullPackRunView(props) {
                     const inProgressRows = allRows.filter(row => row && ['queued', 'running', 'retrying'].includes(row.status)).length;
                     const attentionRows = allRows.filter(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)).length;
                     const progress = total ? Math.round((settled / total) * 100) : 0;
-                    const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
-                    const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
+                    const elapsedSeconds = Math.max(0, Math.round(_finPos(fullPackRun.elapsedMs) / 1000));
+                    const currentRosterSignature = _safeStringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
                         const profile = group?.profile || {};
                         return { id, name: group?.name || id, gradeLevel: profile.gradeLevel || '', leveledTextLanguage: profile.leveledTextLanguage || '', translationMode: profile.translationMode || '', currentUiLanguage: profile.currentUiLanguage || '', studentInterests: Array.isArray(profile.studentInterests) ? profile.studentInterests : String(profile.studentInterests || ''), dokLevel: profile.dokLevel || '', selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : [], targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : [], useEmojis: profile.useEmojis, textFormat: profile.textFormat || '', differentiationRange: profile.differentiationRange || 'None', differentiationTypes: Array.isArray(profile.differentiationTypes) ? profile.differentiationTypes : [], differentiationCustomGrades: Array.isArray(profile.differentiationCustomGrades) ? profile.differentiationCustomGrades : [], imageGenerationStyle: profile.imageGenerationStyle || profile.universalImageStyle || '', imageAspectRatio: profile.imageAspectRatio || '' };
                     }));
                     const reviewedGenerationConfig = fullPackRun?.settingsSnapshot?.fullPackGenerationConfig || null;
-                    const currentGenerationConfig = _generationHelpersModule && typeof _generationHelpersModule.getFullPackGenerationConfigSnapshot === 'function'
+                    const currentGenerationConfig = _generationHelpersModule && typeof _generationHelpersModule.getFullPackGenerationConfigSnapshot === 'function' && typeof _alloGenerationHelpersDeps === 'function'
                         ? _generationHelpersModule.getFullPackGenerationConfigSnapshot(_alloGenerationHelpersDeps())
                         : null;
                     const comparableGenerationConfig = Boolean(reviewedGenerationConfig?.fingerprint && currentGenerationConfig?.fingerprint);
@@ -266,7 +281,7 @@ function FullPackRunView(props) {
                     const originalPlanSettings = Object.assign({}, fullPackRun.settingsSnapshot || {}, {
                         fullPackGenerationConfigFingerprint: comparableGenerationConfig ? reviewedGenerationConfig.fingerprint : null,
                     });
-                    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => JSON.stringify(originalPlanSettings[key] ?? null) !== JSON.stringify(currentPlanSettings[key] ?? null)) : [];
+                    const planChanges = fullPackRun.status === 'ready' ? Object.keys(changeLabels).filter(key => _safeStringify(originalPlanSettings[key] ?? null) !== _safeStringify(currentPlanSettings[key] ?? null)) : [];
                     const formatPlanValue = (value, key) => {
                         if (key === 'fullPackGenerationConfigFingerprint') return t('fullpack.configuration_snapshot') || 'Reviewed configuration snapshot';
                         if (value === undefined || value === null || value === '') return t('fullpack.not_set') || 'Not set';
@@ -294,8 +309,8 @@ function FullPackRunView(props) {
                                         </div>
                                     )}
                                 </div>
-                                <span className={`shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`}>
-                                    {statusLabels[fullPackRun.status] || fullPackRun.status}
+                                <span className={`shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${_own(statusStyles, fullPackRun.status) || statusStyles.queued}`}>
+                                    {_own(statusLabels, fullPackRun.status) || fullPackRun.status}
                                 </span>
                             </div>
                             {fullPackRun.persistenceWarning && (
@@ -376,7 +391,7 @@ function FullPackRunView(props) {
                                     const sectionPrimaryTextAccess = sectionInstructionalContext.primaryTextAccess === 'required'
                                         ? 'required' : 'available';
                                     const sectionHasPrimary = rows.some(row => row && (row.type === 'analysis' || row.instructionalText?.role === 'primary'))
-                                        || history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary'))
+                                        || (Array.isArray(history) && history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary')))
                                         || Boolean(String(inputText || '').trim())
                                         // A reviewed source fingerprint/length means this plan is anchored
                                         // to source text even when Analyze Source is not itself a plan row.
@@ -416,7 +431,8 @@ function FullPackRunView(props) {
                                                     const rowReuseVariantCount = rowGenerationVariants.filter(variant => variant && variant.action === 'reuse').length;
                                                     const rowVariantGrades = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.grade).filter(Boolean)));
                                                     const rowVariantLanguages = Array.from(new Set(rowGenerationVariants.map(variant => variant && variant.language).filter(Boolean)));
-                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${statusStyles[row.status] || statusStyles.queued}`}>{statusLabels[row.status] || row.status || (t('fullpack.status_queued') || 'Queued')}{row.elapsedMs ? ` · ${Math.max(1, Math.round(row.elapsedMs / 1000))}s` : ''}</span>;
+                                                    const rowElapsedMs = _finPos(row.elapsedMs);
+                                                    const rowStatus = <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-bold ${_own(statusStyles, row.status) || statusStyles.queued}`}>{_own(statusLabels, row.status) || row.status || (t('fullpack.status_queued') || 'Queued')}{rowElapsedMs > 0 ? ` · ${Math.max(1, Math.round(rowElapsedMs / 1000))}s` : ''}</span>;
                                                     if (fullPackRun.status === 'ready') {
                                                         const snapshot = section.settingsSnapshot || originalPlanSettings;
                                                         const differentiation = section.preflight?.differentiation;
@@ -443,9 +459,14 @@ function FullPackRunView(props) {
                                                                             aria-label={(t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle}
                                                                         >
                                                                             {rowTypeOptions.map(type => {
-                                                                                const disabled = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
+                                                                                const disabledStandards = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
+                                                                                const disabledProhibited = type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited' && type !== row.type;
+                                                                                const disabled = disabledStandards || disabledProhibited;
                                                                                 const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
-                                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
+                                                                                const disabledReason = disabledProhibited
+                                                                                    ? (t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard')
+                                                                                    : (t('fullpack.requires_standards') || 'requires standards');
+                                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${disabledReason})` : ''}</option>;
                                                                             })}
                                                                         </select>
                                                                     </label>
@@ -491,7 +512,7 @@ function FullPackRunView(props) {
                                                                                     const all = output === 'All Selected Languages';
                                                                                     const base = native ? (all ? app : output) : 'English';
                                                                                     const mode = matrixSettings.translationMode || snapshot.translationMode || 'auto';
-                                                                                    const helpers = window.AlloModules?.TextPipelineHelpers;
+                                                                                    const helpers = typeof window !== 'undefined' ? window.AlloModules?.TextPipelineHelpers : null;
                                                                                     const choices = helpers?.translationTargetChoices?.(base, app, snapshot.selectedLanguages || []);
                                                                                     const policy = helpers?.resolveTranslationPolicy?.(mode, base, app, choices);
                                                                                     const companion = policy ? (policy.enabled ? policy.target : '') : (mode === 'off' ? '' : mode === 'auto' ? app : mode);
@@ -648,10 +669,14 @@ function FullPackRunView(props) {
                                                             className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                         >
                                                             {fullPackEditableTypes.map(type => {
-                                                                const disabled = (type === 'alignment-report' && !sectionHasStandards)
-                                                                    || (type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited');
+                                                                const disabledStandards = type === 'alignment-report' && !sectionHasStandards;
+                                                                const disabledProhibited = type === 'simplified' && sectionAdaptedTextPolicy === 'prohibited';
+                                                                const disabled = disabledStandards || disabledProhibited;
                                                                 const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
-                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
+                                                                const disabledReason = disabledProhibited
+                                                                    ? (t('fullpack.policy_adapted_prohibited') || 'Adaptation prohibited by sourced standard')
+                                                                    : (t('fullpack.requires_standards') || 'requires standards');
+                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${disabledReason})` : ''}</option>;
                                                             })}
                                                         </select>
                                                     </label>
@@ -660,7 +685,7 @@ function FullPackRunView(props) {
                                                         data-testid="full-pack-add-resource"
                                                         data-group-id={sectionGroupId || ''}
                                                         onClick={() => handleAddFullPackPlanResource({ type: fullPackAddType, directive: '' }, sectionGroupId)}
-                                                        disabled={!fullPackAddType || (fullPackAddType === 'alignment-report' && !sectionHasStandards)}
+                                                        disabled={!fullPackAddType || (fullPackAddType === 'alignment-report' && !sectionHasStandards) || (fullPackAddType === 'simplified' && sectionAdaptedTextPolicy === 'prohibited')}
                                                         className="inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                                     >
                                                         <Plus size={12} aria-hidden="true" />
@@ -689,8 +714,8 @@ function FullPackRunView(props) {
                             </details>
                             <div data-testid="full-pack-sticky-actions" className="sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-4px_12px_rgba(15,23,42,0.06)] backdrop-blur motion-reduce:backdrop-blur-none">
                                 {completedRows > 0 && <button type="button" data-testid="full-pack-toggle-completed" aria-pressed={!showCompletedFullPackRows} onClick={() => setShowCompletedFullPackRows(value => !value)} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">{showCompletedFullPackRows ? <EyeOff size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}{showCompletedFullPackRows ? (t('fullpack.hide_completed') || 'Hide completed') : (t('fullpack.show_completed') || 'Show completed')}</button>}
-                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" disabled={!aiCapability.text} onClick={handlePlanFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
-                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" disabled={!aiCapability.text} onClick={handleRetryFailedFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
+                                {fullPackRun.status === 'ready' && <button type="button" data-testid="full-pack-refresh-plan" disabled={!aiCapability.text || studentAiBlocked} onClick={handlePlanFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.refresh_plan') || 'Refresh plan'}</button>}
+                                {retryable && !['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" data-testid="full-pack-retry" disabled={!aiCapability.text || studentAiBlocked} onClick={handleRetryFailedFullPack} className="inline-flex min-h-11 items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"><RefreshCw size={12} aria-hidden="true" />{t('fullpack.retry_failures') || 'Retry failures'}</button>}
                                 {hasFailureDiagnostics && <button type="button" data-testid="full-pack-open-error-log" onClick={handleOpenGenerationErrorLog} className="inline-flex min-h-11 items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"><AlertTriangle size={12} aria-hidden="true" />{t('fullpack.open_error_log') || 'Open error log'}</button>}
                                 {!['running', 'retrying', 'planning'].includes(fullPackRun.status) && <button type="button" onClick={handleDismissFullPackRun} className="min-h-11 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{t('fullpack.dismiss') || 'Dismiss'}</button>}
                             </div>

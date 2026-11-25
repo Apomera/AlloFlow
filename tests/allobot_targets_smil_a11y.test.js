@@ -56,7 +56,8 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     const ambient = source.slice(ambientStart, ambientEnd);
     const ambientNames = [...ambient.matchAll(/setIdleAnimation\('([^']+)'\)/g)].map(match => match[1]);
     expect(ambientNames).toEqual(['look-around']);
-    expect(ambient).toContain('if (!motionDisabled)');
+    // The timer reads the live value through the per-render env ref.
+    expect(ambient).toContain('if (!inactivityEnvRef.current.motionDisabled)');
     expect(ambient).toContain('setIdleAnimation(null)');
   });
 

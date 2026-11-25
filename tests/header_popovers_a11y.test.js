@@ -31,7 +31,8 @@ describe('Header popover semantics and dismissal', () => {
 
   it('uses dialog semantics and viewport-bounded scrolling for mixed Documents controls', () => {
     const start = source.indexOf('aria-labelledby="header-documents-dialog-title"');
-    const end = source.indexOf('{showExportMenu && <div aria-hidden="true"', start);
+    const end = source.indexOf('<div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowExportMenuToFalse}>', start);
+    expect(end).toBeGreaterThan(start);
     const documents = source.slice(start, end);
     expect(documents).toContain('fixed top-4 right-4 bottom-4');
     expect(documents).toContain('overflow-y-auto overscroll-contain');
@@ -39,7 +40,8 @@ describe('Header popover semantics and dismissal', () => {
     expect(documents).not.toContain('role="menuitem"');
     expect(source).not.toContain('aria-haspopup="menu"');
     expect(source).not.toContain('role="menu"');
-    expect(source).toContain('{showExportMenu && _headerPortal(');
+    // 2026-11-23: rendered outside the expanded-only surface so the compact header and the resource bar open it too.
+    expect(source).toContain('{isTeacherMode && showExportMenu && _headerPortal(');
   });
 
   it('keeps click-catcher backdrops out of keyboard and accessibility APIs', () => {
@@ -77,7 +79,7 @@ describe('Header popover semantics and dismissal', () => {
     // on top of the panel's `top-28`, eating every tap aimed at the controls.
     expect(source).toContain('{showTextSettings && _headerPortal(');
     expect(source).toContain('{showVoiceSettings && _headerPortal(');
-    expect(source).toContain('{showExportMenu && _headerPortal(');
+    expect(source).toContain('{isTeacherMode && showExportMenu && _headerPortal(');
     expect(source).toContain('window.ReactDOM.createPortal(node, document.body)');
     // The trap is real and still present, so the portal is load-bearing: if
     // either of these z-index values changes, revisit the escape above.

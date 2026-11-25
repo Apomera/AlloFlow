@@ -439,22 +439,28 @@ window.StemLab = window.StemLab || {
       '.frac-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:16px 18px;background:linear-gradient(135deg,#2a0a18 0%,#6d1033 54%,#1e1b4b 100%);border:1px solid rgba(251,113,133,.42);box-shadow:0 16px 34px rgba(42,10,24,.24);color:#fff1f2}',
       '.frac-hero-deck h3{color:#ffffff!important;margin:0}',
       '.frac-hero-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:rgba(251,113,133,.18);border:1px solid rgba(253,164,175,.45);color:#fecdd3}',
-      '.frac-hero-back{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(253,164,175,.32);color:#ffffff;cursor:pointer}',
+      '.frac-hero-back{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid rgba(253,164,175,.32);color:#ffffff;cursor:pointer}',
       '.frac-hero-back:hover{background:rgba(255,255,255,.2)}',
       '.frac-telemetry-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(15,23,42,.56);border:1px solid rgba(253,164,175,.32);color:#ffe4e6;white-space:nowrap}',
       '.frac-telemetry-pill strong{color:#fde68a;font-weight:900}',
       '.frac-mini-gauge{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:13px;background:rgba(15,23,42,.52);border:1px solid rgba(253,164,175,.3)}',
       '.frac-preset-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(253,164,175,.22)}',
-      '.frac-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.11);border:1px solid rgba(253,164,175,.38);color:#fff1f2;cursor:pointer;min-height:34px;transition:background-color .15s,border-color .15s}',
+      '.frac-preset-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.11);border:1px solid rgba(253,164,175,.38);color:#fff1f2;cursor:pointer;min-height:44px;transition:background-color .15s,border-color .15s}',
       '.frac-preset-chip:hover{background:rgba(251,113,133,.28);border-color:#fda4af;color:#ffffff}',
+      '[data-fractions-root] :is(button,input,select,textarea,summary){touch-action:manipulation;box-sizing:border-box}',
+      '[data-fractions-root] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid #2563eb;outline-offset:2px}',
       '.theme-contrast .frac-hero-deck{background:#000000!important;border:2px solid #00ff00!important;box-shadow:none!important;color:#ffff00!important}',
       '.theme-contrast .frac-hero-deck h3,.theme-contrast .frac-hero-deck p{color:#ffff00!important}',
       '.theme-contrast .frac-hero-badge,.theme-contrast .frac-telemetry-pill,.theme-contrast .frac-mini-gauge{background:#000000!important;border:1px solid #ffff00!important;color:#ffff00!important}',
       '.theme-contrast .frac-hero-back,.theme-contrast .frac-preset-chip{background:#000000!important;border:2px solid #00ff00!important;color:#ffff00!important}',
-      '.theme-contrast [data-fractions-root] button:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}'
+      '.theme-contrast [data-fractions-root] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}',
+      '@media(forced-colors:active){[data-fractions-root] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px!important}[data-fractions-root] :is(button,input,select,textarea,summary,[role="progressbar"]){border-color:ButtonText!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
+  function _fracIgnoreKey(e) {
+    return !!(e && (e.isComposing || (e.nativeEvent && (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey));
+  }
 
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1988,7 +1994,8 @@ window.StemLab = window.StemLab || {
     }, [presetNumerator, presetDenominator]);
     // Fraction Race clock. Runs from an end time, so a race reopened after its time has passed is simply over.
     var raceGame = _f.frGame || null;
-    var raceEndsAt = (raceGame && !raceGame.gameOver && raceGame.endsAt) || null;
+    var racePaused = !!(raceGame && raceGame.timerPaused);
+    var raceEndsAt = (raceGame && !raceGame.gameOver && !racePaused && raceGame.endsAt) || null;
     React.useEffect(function() {
       if (!raceEndsAt || typeof ctx.setToolData !== 'function') return undefined;
       var said10 = false;
@@ -2000,7 +2007,7 @@ window.StemLab = window.StemLab || {
         }
         ctx.setToolData(function(prev) {
           var cur = prev && prev._fractions && prev._fractions.frGame;
-          if (!cur || cur.endsAt !== raceEndsAt || cur.gameOver) return prev;
+          if (!cur || cur.endsAt !== raceEndsAt || cur.gameOver || cur.timerPaused) return prev;
           return Object.assign({}, prev, { _fractions: Object.assign({}, prev._fractions, { frGame: Object.assign({}, cur, { timeLeft: left, gameOver: left <= 0 }) }) });
         });
         if (left <= 0 && ctx.announceToSR) ctx.announceToSR(__alloT('stem.fractions.race_time_up', 'Time!'));
@@ -2008,7 +2015,7 @@ window.StemLab = window.StemLab || {
       tick();
       var id = setInterval(tick, 1000);
       return function() { clearInterval(id); };
-    }, [raceEndsAt]);
+    }, [raceEndsAt, racePaused]);
     var efCleanupRef = React.useRef(null);
     React.useEffect(function() {
       return function() {
@@ -3601,7 +3608,7 @@ window.StemLab = window.StemLab || {
       // WCAG 2.1.4: single-key shortcuts act only while focus is inside this tool.
       var frRoot = document.querySelector('[data-fractions-root]');
       if (!frRoot || !e.target || !frRoot.contains(e.target)) return;
-      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (e.defaultPrevented || _fracIgnoreKey(e) || e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       var key = e.key;
       if (key === '1') { upd({ navMode: 'learn', tab: 'practice' }); trackTab('practice'); }
       else if (key === '2') { upd({ navMode: 'practice', tab: 'compare' }); trackTab('compare'); }
@@ -3703,6 +3710,7 @@ window.StemLab = window.StemLab || {
                   id: denId,
                   type: 'range', min: '2', max: '20', value: pd,
                   'aria-describedby': denId + '-hint',
+                  'aria-valuetext': pd + ' equal parts',
                   onChange: function(e) { var v = parseInt(e.target.value, 10); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pn, v) } }); }
                 }),
                 h('output', { htmlFor: denId, className: 'fraction-lab-value-chip' }, pd)
@@ -3716,6 +3724,7 @@ window.StemLab = window.StemLab || {
                   id: numId,
                   type: 'range', min: '0', max: String(Math.max(pd, pn)), value: pn,
                   'aria-describedby': numId + '-hint',
+                  'aria-valuetext': pn + ' of ' + pd + ' parts filled',
                   onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pd, numerator: parseInt(e.target.value, 10) } }); }
                 }),
                 h('output', { htmlFor: numId, className: 'fraction-lab-value-chip' }, pn)
@@ -3787,7 +3796,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5' },
           h('span', { className: 'text-[0.6875rem] font-bold text-slate-600 self-center' + onHostInk }, 'Presets:'),
           [[1,2,1,3],[2,5,3,8],[3,4,5,6],[1,4,2,8],[7,10,3,5],[5,12,1,3]].map(function(pr) {
-            return h('button', { key: pr.join('-'),
+            return h('button', { type: 'button', key: pr.join('-'),
               onClick: function() { sfxClick(); upd({ num1: pr[0], den1: pr[1], num2: pr[2], den2: pr[3], quiz: null }); },
               className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all'
             }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
@@ -3830,7 +3839,7 @@ window.StemLab = window.StemLab || {
         // View mode toggle
         h('div', { className: 'flex justify-end gap-1' },
           ['bar', 'pie'].map(function(m) {
-            return h('button', { 'aria-label': m === 'bar' ? __alloT('stem.fractions.compare_bar_view', 'Bar models') : __alloT('stem.fractions.compare_pie_view', 'Pie models'), 'aria-pressed': mode === m,
+            return h('button', { type: 'button', 'aria-label': m === 'bar' ? __alloT('stem.fractions.compare_bar_view', 'Bar models') : __alloT('stem.fractions.compare_pie_view', 'Pie models'), 'aria-pressed': mode === m,
               key: m,
               onClick: function() { sfxClick(); upd({ mode: m }); },
               className: 'px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all ' + (mode === m ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50')
@@ -3881,7 +3890,7 @@ window.StemLab = window.StemLab || {
         // Which is Larger? Quiz
         h('div', { className: 'border-t border-slate-200 pt-3' },
           h('div', { className: 'flex items-center gap-2 mb-2' },
-            h('button', { 'aria-label': __alloT('stem.fractions.which_fraction_is_larger', 'Which fraction is larger?'),
+            h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.which_fraction_is_larger', 'Which fraction is larger?'),
               onClick: makeQuiz,
               className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (quiz ? 'bg-orange-100 text-orange-800' : 'bg-orange-700 text-white') + ' hover:opacity-90 transition-all'
             }, quiz ? '\uD83D\uDD04 Next Round' : '\u26A1 Which is Larger?'),
@@ -3891,7 +3900,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-orange-800 mb-2' }, __alloT('stem.fractions.which_fraction_is_larger_2', 'Which fraction is larger?')),
             h('div', { className: 'flex gap-2 justify-center flex-wrap' },
               quiz.opts.map(function(opt) {
-                return h('button', { key: opt,
+                return h('button', { type: 'button', key: opt,
                   onClick: function() {
                     if (compareSubmissionPending || quiz.answered) return;
                     compareSubmissionPending = true;
@@ -4210,7 +4219,7 @@ window.StemLab = window.StemLab || {
         // Operation buttons
         h('div', { className: 'flex gap-2 justify-center' },
           [['add', '+', 'Add'], ['sub', '\u2212', 'Subtract'], ['mul', '\u00D7', 'Multiply'], ['div', '\u00F7', 'Divide']].map(function(op) {
-            return h('button', { key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
+            return h('button', { type: 'button', key: op[0], 'aria-pressed': opMode === op[0], 'aria-label': op[2],
               onClick: function() { sfxClick(); upd({opInputDraft:null,opMagnitudeChoice:null,opMagnitudeChecked:null,opGrouping:null, opMode: op[0], signPrediction: null, signFeedback: null, signChallengeIndex: -1 }); },
               className: 'w-12 h-12 rounded-lg text-xl font-black transition-all ' +
                 (opMode === op[0] ? 'bg-orange-700 text-white shadow-md scale-110' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-1'
@@ -4378,12 +4387,12 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'space-y-4' },
         // Direction toggle
         h('div', { className: 'flex gap-2 justify-center' },
-          h('button', { 'aria-label': __alloT('stem.fractions.fraction_to_decimal', 'Fraction to Decimal'),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.fraction_to_decimal', 'Fraction to Decimal'),
             'aria-pressed': convDirection === 'fracToDec',
             onClick: function() { sfxClick(); upd({ convDirection: 'fracToDec' }); },
             className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'fracToDec' ? 'bg-teal-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-teal-50')
           }, __alloT('stem.fractions.fraction_to_decimal_2', '\uD83C\uDF55 \u2192 Fraction to Decimal')),
-          h('button', { 'aria-label': __alloT('stem.fractions.0_5_decimal_to_fraction', '0.5 Decimal to Fraction'),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.0_5_decimal_to_fraction', '0.5 Decimal to Fraction'),
             'aria-pressed': convDirection === 'decToFrac',
             onClick: function() { sfxClick(); upd({ convDirection: 'decToFrac' }); },
             className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (convDirection === 'decToFrac' ? 'bg-teal-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-teal-50')
@@ -4445,7 +4454,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Track conversions for badge
-          h('button', { 'aria-label': __alloT('stem.fractions.log_this_conversion', 'Log This Conversion'),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.log_this_conversion', 'Log This Conversion'),
             onClick: function() {
               sfxComplete();
               // Count each fraction once: logging 3/4 five times earned "Convert 5 fractions".
@@ -4497,7 +4506,7 @@ window.StemLab = window.StemLab || {
 
         // Benchmark fractions
         h('div', { className: 'border-t border-slate-200 pt-3' },
-          h('button', { 'aria-label': __alloT('stem.fractions.fraction_2', 'Fraction'),
+          h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.fraction_2', 'Fraction'),
             onClick: function() { sfxClick(); upd({ showBenchmarks: !showBenchmarks }); },
             className: 'text-xs font-bold text-teal-700 hover:text-teal-900 transition-colors'
           }, (showBenchmarks ? '\u25BC' : '\u25B6') + ' Benchmark Fractions Reference'),
@@ -4671,7 +4680,7 @@ window.StemLab = window.StemLab || {
               { n: 2, d: 3, l: '2/3' }, { n: 3, d: 4, l: '3/4' }, { n: 1, d: 5, l: '1/5' },
               { n: 1, d: 6, l: '1/6' }, { n: 5, d: 6, l: '5/6' }
             ].map(function(f) {
-              return h('button', { key: f.l,
+              return h('button', { type: 'button', key: f.l,
                 onClick: function() { sfxClick(); upd({ wallHighlight: { n: f.n, d: f.d }, wallCompareA: null, wallCompareB: null }); },
                 disabled: !!wallCompareB,
                 'data-fraction-wall-preset': 'true',
@@ -4685,7 +4694,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         // Reset
-        h('button', { 'aria-label': __alloT('stem.fractions.clear_highlights', 'Clear Highlights'),
+        h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.clear_highlights', 'Clear Highlights'),
           onClick: function() { upd({ wallHighlight: null, wallCompareA: null, wallCompareB: null }); },
           className: 'text-xs font-bold text-slate-600 hover:text-slate-600 transition-colors' + onHostInk
         }, __alloT('stem.fractions.clear_highlights_2', '\uD83D\uDD04 Clear Highlights'))
@@ -4698,7 +4707,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'bg-gradient-to-br from-sky-50 to-blue-50 rounded-xl border-2 border-sky-200 p-4 space-y-3' },
         h('div', { className: 'flex items-center justify-between' },
           h('h4', { className: 'text-sm font-bold text-sky-800' }, __alloT('stem.fractions.ai_fraction_tutor', '\uD83E\uDD16 AI Fraction Tutor')),
-          h('button', { onClick: function() { upd({ showAITutor: false }); },
+          h('button', { type: 'button', onClick: function() { upd({ showAITutor: false }); },
             className: 'transition-colors text-sky-400 hover:text-sky-600 text-lg font-bold'
           }, '\u00D7')
         ),
@@ -4706,11 +4715,11 @@ window.StemLab = window.StemLab || {
           h('input', { 'aria-label': __alloT('stem.fractions.ai_question_label', 'Ask a question about fractions'),
             type: 'text', value: aiQuestion,
             onChange: function(e) { upd({ aiQuestion: e.target.value }); },
-            onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
+            onKeyDown: function(e) { if (_fracIgnoreKey(e)) return; if (e.key === 'Escape' && aiQuestion) { e.preventDefault(); upd({ aiQuestion: '' }); announceToSR('Cleared tutor question.'); return; } if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
             placeholder: __alloT('stem.fractions.ask_me_about_fractions', 'Ask me about fractions...'),
             className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
           }),
-          h('button', { onClick: askAITutor,
+          h('button', { type: 'button', onClick: askAITutor,
             disabled: aiLoading || !aiQuestion.trim(),
             className: 'px-4 py-2 bg-sky-700 text-white font-bold rounded-lg text-sm hover:bg-sky-800 disabled:opacity-50 transition-all'
           }, aiLoading ? '\u23F3' : 'Ask')
@@ -4718,7 +4727,7 @@ window.StemLab = window.StemLab || {
         // Quick questions
         h('div', { className: 'flex flex-wrap gap-1.5' },
           ['How do I add fractions?', 'What are equivalent fractions?', 'How do I simplify?', 'What is a mixed number?'].map(function(q) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: q,
               onClick: function() { upd({ aiQuestion: q }); },
               className: 'px-2 py-1 text-[0.6875rem] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
@@ -4767,7 +4776,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 sm:grid-cols-7 gap-1', role: 'radiogroup', 'aria-label': __alloT('stem.fractions.visual_model', 'Visual model') },
             MODELS.map(function(m) {
               var active = currentModel === m.id;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'mp-' + m.id,
                 role: 'radio', 'aria-checked': active,
                 onClick: function() { sfxClick(); upd({ model: m.id }); announceToSR(m.label + ' model selected'); },
@@ -4786,6 +4795,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator', 'Numerator')),
             h('input', { 'aria-label': __alloT('stem.fractions.numerator', 'Numerator'),
+              'aria-valuetext': pieces.numerator + ' of ' + pieces.denominator + ' pieces',
               type: 'range', min: '0', max: String(Math.max(pieces.denominator, pieces.numerator)), value: pieces.numerator,
               onChange: function(e) { sfxClick(); upd({ pieces: { denominator: pieces.denominator, numerator: parseInt(e.target.value) } }); },
               className: 'w-full accent-rose-600'
@@ -4795,6 +4805,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'bg-rose-50 rounded-lg p-3 border border-rose-100' },
             h('label', { className: 'block text-xs text-rose-700 mb-1 font-bold' }, __alloT('stem.fractions.denominator', 'Denominator')),
             h('input', { 'aria-label': __alloT('stem.fractions.denominator', 'Denominator'),
+              'aria-valuetext': pieces.denominator + ' total pieces',
               type: 'range', min: '2', max: '20', value: pieces.denominator,
               onChange: function(e) { var v = parseInt(e.target.value); sfxClick(); upd({ pieces: { denominator: v, numerator: Math.min(pieces.numerator, v) } }); },
               className: 'w-full accent-rose-600'
@@ -4904,13 +4915,16 @@ window.StemLab = window.StemLab || {
         ),
         // Stage selector
         h('div', { className: 'flex flex-wrap gap-2', role: 'tablist', 'aria-label': __alloT('stem.fractions.cra_stage', 'CRA stage') },
-          stages.map(function(s) {
+          stages.map(function(s, sIdx) {
             var active = craStage === s.id;
             return h('button', {
               key: 'cra-' + s.id,
+              type: 'button',
               role: 'tab', 'aria-selected': active,
+              tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) { moveNavigationTab(e, sIdx, stages.length); },
               onClick: function() { sfxClick(); upd({ craStage: s.id }); announceToSR(s.headline); },
-              className: 'flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all border ' +
+              className: 'min-h-[44px] flex-1 px-3 py-2 rounded-xl text-xs font-bold transition-all border ' +
                 (active ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50')
             }, s.icon + ' ' + s.label);
           })
@@ -4924,7 +4938,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
             h('label', { className: 'block text-xs text-slate-700 mb-1 font-bold' }, __alloT('stem.fractions.numerator_2', 'Numerator')),
-            h('input', { 'aria-label': __alloT('stem.fractions.numerator_2', 'Numerator'), type: 'range', min: '1', max: String(craD), value: craN,
+            h('input', { 'aria-label': __alloT('stem.fractions.numerator_2', 'Numerator'), 'aria-valuetext': craN + ' of ' + craD + ' parts', type: 'range', min: '1', max: String(craD), value: craN,
               onChange: function(e) { upd({ craN: parseInt(e.target.value) }); },
               className: 'w-full accent-slate-600'
             }),
@@ -4932,7 +4946,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'bg-slate-50 rounded-lg p-3 border border-slate-200' },
             h('label', { className: 'block text-xs text-slate-700 mb-1 font-bold' }, __alloT('stem.fractions.denominator_2', 'Denominator')),
-            h('input', { 'aria-label': __alloT('stem.fractions.denominator_2', 'Denominator'), type: 'range', min: '2', max: '12', value: craD,
+            h('input', { 'aria-label': __alloT('stem.fractions.denominator_2', 'Denominator'), 'aria-valuetext': craD + ' equal parts', type: 'range', min: '2', max: '12', value: craD,
               onChange: function(e) { var v = parseInt(e.target.value); upd({ craD: v, craN: Math.min(craN, v) }); },
               className: 'w-full accent-slate-600'
             }),
@@ -4941,13 +4955,13 @@ window.StemLab = window.StemLab || {
         ),
         // Next/prev stage
         h('div', { className: 'flex gap-2' },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { upd({ craStage: Math.max(1, craStage - 1) }); },
             disabled: craStage <= 1,
             className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
               (craStage > 1 ? 'bg-slate-200 text-slate-800 hover:bg-slate-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
           }, __alloT('stem.fractions.previous_stage', '← Previous stage')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { upd({ craStage: Math.min(3, craStage + 1) }); },
             disabled: craStage >= 3,
             className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
@@ -5031,12 +5045,12 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: wpAnswer,
               onChange: function(e) { upd({ wpAnswer: e.target.value }); },
-              onKeyDown: function(e) { if (e.key === 'Enter' && wpAnswer.trim()) checkWordProblem(problem, wpAnswer); },
+              onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter' && wpAnswer.trim()) checkWordProblem(problem, wpAnswer); },
               placeholder: problem.answer.mixed ? 'e.g., 3/4 or 1 1/2' : 'Your answer (e.g., 3/4)...',
               'aria-label': __alloT('stem.fractions.word_problem_answer', 'Word problem answer'),
               className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
             }),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { checkWordProblem(problem, wpAnswer); },
               className: 'transition-colors px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'
             }, __alloT('stem.fractions.check', 'Check'))
@@ -5052,7 +5066,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 items-center justify-between' },
             h('div', { className: 'flex gap-1' },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   if (wpHintLevel < (problem.hints || []).length) {
                     upd({ wpHintLevel: wpHintLevel + 1 });
@@ -5063,18 +5077,18 @@ window.StemLab = window.StemLab || {
                 className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' +
                   (wpHintLevel < (problem.hints || []).length ? 'transition-colors bg-amber-200 text-amber-900 hover:bg-amber-300' : 'bg-slate-100 text-slate-600')
               }, '💡 ' + (wpHintLevel === 0 ? 'Show hint' : 'Next hint (' + wpHintLevel + '/' + (problem.hints || []).length + ')')),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { upd({ wpFeedback: { correct: false, msg: '📚 Worked solution: ' + problem.worked, hintRevealed: true } }); sfxClick(); },
                 className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-200 text-slate-700 hover:bg-slate-300'
               }, __alloT('stem.fractions.show_solution', '📚 Show solution'))
             ),
             h('div', { className: 'flex gap-1' },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { upd({ wpIdx: (wpIdx - 1 + filtered.length) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); },
                 'aria-label': __alloT('stem.fractions.previous_problem', 'Previous problem'),
                 className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200'
               }, __alloT('stem.fractions.prev', '← Prev')),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { upd({ wpIdx: (wpIdx + 1) % filtered.length, wpAnswer: '', wpFeedback: null, wpHintLevel: 0 }); sfxNewChallenge(); },
                 'aria-label': __alloT('stem.fractions.next_problem', 'Next problem'),
                 className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-amber-700 text-white hover:bg-amber-800'
@@ -5128,7 +5142,7 @@ window.StemLab = window.StemLab || {
             ['all', '1', '2', '3', '4', '5', '6', '7', '8'].map(function(g) {
               var label = g === 'all' ? 'All' : 'Grade ' + g;
               var active = stdGrade === g;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'g-' + g,
                 'aria-pressed': active,
                 onClick: function() { upd({ stdGrade: g }); },
@@ -5179,7 +5193,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1' },
             ['all', 'high', 'medium', 'low'].map(function(s) {
               var active = miscSeverity === s;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'ms-' + s,
                 'aria-pressed': active,
                 onClick: function() { upd({ miscSeverity: s }); },
@@ -5194,7 +5208,7 @@ window.StemLab = window.StemLab || {
             var sc = SEVERITY_COLORS[m.severity] || 'slate';
             var expanded = miscExpanded === m.id;
             return h('div', { key: 'misc-' + m.id, className: 'bg-white rounded-lg border border-' + sc + '-200 overflow-hidden' },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { upd({ miscExpanded: expanded ? null : m.id }); sfxClick(); },
                 'aria-expanded': expanded,
                 className: 'transition-colors w-full text-left p-3 hover:bg-' + sc + '-50 transition-colors'
@@ -5300,7 +5314,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.customers_will_order_fractional_pizzas', 'Customers will order fractional pizzas. Slice the pizza into the right number of pieces and serve the right amount. '),
             __alloT('stem.fractions.earn_tips_serve_10_customers_to_win', 'Earn tips. Serve 10 customers to win!')
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startPizzaShop,
             className: 'px-6 py-3 bg-gradient-to-r from-red-600 to-orange-700 text-white font-bold rounded-xl text-base hover:from-red-600 hover:to-orange-700 shadow-md'
           }, __alloT('stem.fractions.start_serving', '🍕 Start serving'))
@@ -5315,7 +5329,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'font-bold text-red-800' }, '$' + ps.money),
           h('span', { className: 'text-red-600 text-sm' }, '·'),
           h('span', { className: 'text-sm text-red-800' }, 'Served: ', h('b', null, ps.served + ' / 10')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startPizzaShop,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-red-200 text-red-900 hover:bg-red-300'
           }, __alloT('stem.fractions.restart', '↺ Restart'))
@@ -5338,11 +5352,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-red-50 rounded-lg p-2 border border-red-200' },
               h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, __alloT('stem.fractions.pizza_size_total_slices', 'Pizza size (total slices):')),
               h('div', { className: 'flex items-center gap-2 mt-1' },
-                h('button', { onClick: function() {
+                h('button', { type: 'button', onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { totalSlices: Math.max(2, ps.totalSlices - 1), slices: 0 }) });
                 }, className: 'w-8 h-8 rounded-full bg-red-600 text-white font-bold' }, '−'),
                 h('span', { className: 'flex-1 text-center text-lg font-bold' }, ps.totalSlices),
-                h('button', { onClick: function() {
+                h('button', { type: 'button', onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { totalSlices: Math.min(20, ps.totalSlices + 1) }) });
                 }, className: 'w-8 h-8 rounded-full bg-red-600 text-white font-bold' }, '+')
               )
@@ -5350,17 +5364,17 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'bg-red-50 rounded-lg p-2 border border-red-200' },
               h('p', { className: 'text-[0.6875rem] font-bold text-red-700' }, __alloT('stem.fractions.slices_to_serve', 'Slices to serve:')),
               h('div', { className: 'flex items-center gap-2 mt-1' },
-                h('button', { onClick: function() {
+                h('button', { type: 'button', onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { slices: Math.max(0, ps.slices - 1) }) });
                 }, className: 'w-8 h-8 rounded-full bg-red-600 text-white font-bold' }, '−'),
                 h('span', { className: 'flex-1 text-center text-lg font-bold' }, ps.slices),
-                h('button', { onClick: function() {
+                h('button', { type: 'button', onClick: function() {
                   upd({ psGame: Object.assign({}, ps, { slices: Math.min(ps.totalSlices, ps.slices + 1) }) });
                 }, className: 'w-8 h-8 rounded-full bg-red-600 text-white font-bold' }, '+')
               )
             )
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: serveCustomer,
             className: 'w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-700 text-white font-bold rounded-xl text-base hover:from-red-700 hover:to-orange-700 shadow-md'
           }, '🍕 Serve ' + ps.slices + '/' + ps.totalSlices + ' to customer')
@@ -5379,11 +5393,32 @@ window.StemLab = window.StemLab || {
         return { n: n, d: d, model: pick(['pie', 'bar', 'length']) };
       };
       var startFractionRace = function(noClock) {
-        upd({ frGame: { round: newRound(), score: 0, timeLeft: 30, gameOver: false, mistakes: 0, answer: '', note: '', noClock: !!noClock, endsAt: noClock ? null : Date.now() + 30000 }});
+        upd({ frGame: { round: newRound(), score: 0, timeLeft: 30, gameOver: false, mistakes: 0, answer: '', note: '', noClock: !!noClock, timerPaused: false, endsAt: noClock ? null : Date.now() + 30000 }});
         sfxNewChallenge();
         announceToSR(noClock
           ? __alloT('stem.fractions.sr_race_no_clock', 'Fraction Race without a clock. Type the fraction you see.')
           : __alloT('stem.fractions.sr_fraction_race_type_the_fraction_you_see_you_have', 'Fraction Race! Type the fraction you see. You have 30 seconds.'));
+      };
+      var toggleRaceTimerPause = function() {
+        if (fr.noClock || fr.gameOver) return;
+        if (fr.timerPaused) {
+          var remaining = Math.max(1, fr.timeLeft != null ? fr.timeLeft : 30);
+          upd({ frGame: Object.assign({}, fr, { timerPaused: false, endsAt: Date.now() + remaining * 1000 }) });
+          announceToSR(__alloT('stem.fractions.race_timer_resumed', 'Timer resumed.'));
+        } else {
+          var frozen = fr.endsAt ? Math.max(1, Math.ceil((fr.endsAt - Date.now()) / 1000)) : Math.max(1, fr.timeLeft != null ? fr.timeLeft : 30);
+          upd({ frGame: Object.assign({}, fr, { timerPaused: true, timeLeft: frozen, endsAt: null }) });
+          announceToSR(__alloT('stem.fractions.race_timer_paused', 'Timer paused. ') + frozen + 's');
+        }
+      };
+      var extendRaceTimer = function() {
+        if (fr.noClock || fr.gameOver) return;
+        var baseLeft = fr.timerPaused
+          ? Math.max(1, fr.timeLeft != null ? fr.timeLeft : 30)
+          : (fr.endsAt ? Math.max(1, Math.ceil((fr.endsAt - Date.now()) / 1000)) : Math.max(1, fr.timeLeft != null ? fr.timeLeft : 30));
+        var nextLeft = baseLeft + 15;
+        upd({ frGame: Object.assign({}, fr, { timeLeft: nextLeft, endsAt: fr.timerPaused ? null : Date.now() + nextLeft * 1000 }) });
+        announceToSR(__alloT('stem.fractions.race_timer_extended', 'Added 15 seconds. ') + nextLeft + 's');
       };
       var submitRace = function(ans) {
         var match = String(ans || '').trim().match(/^(\d+)\/(\d+)$/);
@@ -5416,11 +5451,11 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.see_a_visual_fraction_type_it_as_fast_', 'See a visual fraction. Type it as fast as you can. Score as many as possible in 30 seconds!')
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { startFractionRace(false); },
               className: 'px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-bold rounded-xl text-base hover:from-blue-600 hover:to-cyan-700 shadow-md'
             }, __alloT('stem.fractions.start_race', '🏁 Start race')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { startFractionRace(true); },
               className: 'transition-colors px-6 py-3 bg-white text-blue-800 font-bold rounded-xl text-base border-2 border-blue-600 hover:bg-blue-50'
             }, __alloT('stem.fractions.race_no_clock', 'Practice without a clock'))
@@ -5441,11 +5476,11 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm text-blue-800' }, __alloT('stem.fractions.race_mistakes_label', 'Mistakes: ') + fr.mistakes)
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { startFractionRace(false); },
               className: 'transition-colors px-6 py-3 bg-blue-700 text-white font-bold rounded-xl text-base hover:bg-blue-800'
             }, __alloT('stem.fractions.race_again', 'Race again')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { startFractionRace(true); },
               className: 'transition-colors px-6 py-3 bg-white text-blue-800 font-bold rounded-xl text-base border-2 border-blue-600 hover:bg-blue-50'
             }, __alloT('stem.fractions.race_no_clock', 'Practice without a clock'))
@@ -5455,15 +5490,29 @@ window.StemLab = window.StemLab || {
 
       // Render current round
       return h('div', { className: 'space-y-3' },
-        h('div', { className: 'flex items-center gap-3 bg-blue-50 rounded-xl p-3 border border-blue-200' },
-          h('span', { className: 'text-2xl' }, '🏁'),
+        h('div', { className: 'flex flex-wrap items-center gap-2 sm:gap-3 bg-blue-50 rounded-xl p-3 border border-blue-200' },
+          h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🏁'),
           h('span', { className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_score_label', 'Score: ') + fr.score),
-          h('span', { className: 'text-blue-600' }, '·'),
+          h('span', { className: 'text-blue-600', 'aria-hidden': 'true' }, '·'),
           h('span', { className: 'text-sm text-blue-800' }, __alloT('stem.fractions.race_mistakes_label', 'Mistakes: ') + fr.mistakes),
-          !fr.noClock && fr.endsAt && h('span', { role: 'timer', className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_time_left', 'Time left: ') + (fr.timeLeft != null ? fr.timeLeft : 30)),
+          !fr.noClock && (fr.endsAt || fr.timerPaused) && h('span', { role: 'timer', className: 'font-bold text-blue-800' }, __alloT('stem.fractions.race_time_left', 'Time left: ') + (fr.timeLeft != null ? fr.timeLeft : 30) + (fr.timerPaused ? ' (' + __alloT('stem.fractions.paused', 'Paused') + ')' : '')),
+          !fr.noClock && (fr.endsAt || fr.timerPaused) && h('button', {
+            type: 'button',
+            onClick: toggleRaceTimerPause,
+            'aria-pressed': !!fr.timerPaused,
+            'aria-label': fr.timerPaused ? __alloT('stem.fractions.resume_timer', 'Resume timer') : __alloT('stem.fractions.pause_timer', 'Pause timer'),
+            className: 'min-h-[44px] transition-colors px-3 py-1 rounded text-xs font-bold bg-white text-blue-800 border border-blue-600 hover:bg-blue-100'
+          }, fr.timerPaused ? '▶ ' + __alloT('stem.fractions.resume', 'Resume') : '⏸ ' + __alloT('stem.fractions.pause', 'Pause')),
+          !fr.noClock && (fr.endsAt || fr.timerPaused) && h('button', {
+            type: 'button',
+            onClick: extendRaceTimer,
+            'aria-label': __alloT('stem.fractions.extend_timer_15s', 'Add 15 seconds to timer'),
+            className: 'min-h-[44px] transition-colors px-3 py-1 rounded text-xs font-bold bg-white text-blue-800 border border-blue-600 hover:bg-blue-100'
+          }, '+15s'),
           h('button', {
+            type: 'button',
             onClick: function() { startFractionRace(!!fr.noClock); },
-            className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-blue-200 text-blue-800 hover:bg-blue-300'
+            className: 'min-h-[44px] transition-colors ml-auto px-3 py-1 rounded text-xs font-bold bg-blue-200 text-blue-900 hover:bg-blue-300'
           }, __alloT('stem.fractions.restart_2', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-blue-200 p-6 space-y-3' },
@@ -5478,14 +5527,14 @@ window.StemLab = window.StemLab || {
           h('input', {
             type: 'text', value: fr.answer || '',
             onChange: function(e) { upd({ frGame: Object.assign({}, fr, { answer: e.target.value, note: '' }) }); },
-            onKeyDown: function(e) { if (e.key === 'Enter') submitRace(fr.answer); },
+            onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter') submitRace(fr.answer); },
             placeholder: __alloT('stem.fractions.e_g_3_4', 'e.g., 3/4'),
             'aria-label': __alloT('stem.fractions.race_answer', 'Race answer'),
             autoFocus: true,
             className: 'w-full px-4 py-3 border-2 border-blue-600 rounded-xl text-center text-2xl font-mono font-bold'
           }),
           fr.note ? h('p', { className: 'text-center text-sm font-bold text-blue-800' }, fr.note) : null,
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { submitRace(fr.answer); },
             className: 'transition-colors w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700'
           }, __alloT('stem.fractions.submit', 'Submit'))
@@ -5561,7 +5610,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-purple-700 max-w-md mx-auto' },
             __alloT('stem.fractions.find_pairs_of_equivalent_fractions_6_p', 'Find pairs of equivalent fractions. 6 pairs total. Try to do it in as few moves as possible.')
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startEMGame,
             className: 'px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-base hover:from-purple-600 hover:to-pink-600 shadow-md'
           }, __alloT('stem.fractions.start_matching', '🃏 Start matching'))
@@ -5574,7 +5623,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'font-bold text-purple-800' }, 'Moves: ' + em.moves),
           h('span', { className: 'text-purple-600' }, '·'),
           h('span', { className: 'text-sm text-purple-800' }, 'Matched: ' + (em.matched.length / 2) + ' / 6 pairs'),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startEMGame,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-purple-200 text-purple-800 hover:bg-purple-300'
           }, __alloT('stem.fractions.restart_3', '↺ Restart'))
@@ -5584,7 +5633,7 @@ window.StemLab = window.StemLab || {
             var isFlipped = em.flipped.indexOf(i) >= 0;
             var isMatched = em.matched.indexOf(i) >= 0;
             var show = isFlipped || isMatched;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'card-' + i,
               onClick: function() { flipCard(i); sfxClick(); },
               disabled: isMatched || (em.flipped.length >= 2 && !isFlipped),
@@ -5652,7 +5701,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.each_round_shows_a_target_fraction_and', 'Each round shows a target fraction and 4 fish. Catch the one that matches. '),
             __alloT('stem.fractions.you_have_3_lives_wrong_catches_lose_a_', 'You have 3 lives. Wrong catches lose a life.')
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startFishGame,
             className: 'px-6 py-3 bg-gradient-to-r from-cyan-700 to-teal-700 text-white font-bold rounded-xl text-base hover:from-cyan-700 hover:to-teal-700 shadow-md'
           }, __alloT('stem.fractions.cast_a_line', '🎣 Cast a line'))
@@ -5664,7 +5713,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'text-5xl' }, '🦈'),
           h('h4', { className: 'text-xl font-black text-cyan-800' }, __alloT('stem.fractions.game_over', 'Game over!')),
           h('p', { className: 'text-base text-cyan-700' }, __alloT('stem.fractions.final_score', 'Final score: '), h('b', null, ff.score + ' fish caught')),
-          h('button', { onClick: startFishGame,
+          h('button', { type: 'button', onClick: startFishGame,
             className: 'transition-colors px-6 py-3 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800' }, __alloT('stem.fractions.cast_again', '🎣 Cast again'))
         );
       }
@@ -5675,7 +5724,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'font-bold text-cyan-800' }, 'Catches: ' + ff.score),
           h('span', { className: 'text-cyan-600' }, '·'),
           h('span', { className: 'text-sm text-cyan-800' }, 'Lives: ' + '❤️'.repeat(ff.lives)),
-          h('button', {
+          h('button', { type: 'button',
             onClick: startFishGame,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300'
           }, __alloT('stem.fractions.restart_4', '↺ Restart'))
@@ -5686,7 +5735,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
           ff.round.fish.map(function(f, i) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'fish-' + i,
               onClick: function() { catchFish(i); },
               className: 'aspect-square rounded-2xl bg-gradient-to-br from-cyan-100 to-teal-100 border-2 border-cyan-300 hover:from-cyan-200 hover:to-teal-200 hover:border-cyan-500 hover:shadow-lg transition-all p-3 flex flex-col items-center justify-center gap-1'
@@ -5751,7 +5800,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'font-bold text-amber-800' }, 'Wins: ' + bw.score),
           h('span', { className: 'text-amber-700 text-sm' }, '·'),
           h('span', { className: 'text-sm text-amber-800' }, __alloT('stem.fractions.current_sum', 'Current sum: '), h('span', { className: 'font-mono font-bold' }, total.toFixed(3))),
-          h('button', { onClick: resetBuild,
+          h('button', { type: 'button', onClick: resetBuild,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-amber-300 text-amber-900 hover:bg-amber-400' }, __alloT('stem.fractions.clear', '↺ Clear'))
         ),
         // Current build visualization
@@ -5789,7 +5838,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] font-bold text-amber-700 mb-2' }, __alloT('stem.fractions.pick_a_piece_to_add', 'Pick a piece to add:')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             FRAGMENT_OPTIONS.map(function(f) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'fp-' + f.d,
                 onClick: function() { addFragment(f); },
                 disabled: bw.gameOver,
@@ -5799,7 +5848,7 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
-        bw.gameOver && h('button', { onClick: startBuild,
+        bw.gameOver && h('button', { type: 'button', onClick: startBuild,
           className: 'transition-colors w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800' }, __alloT('stem.fractions.build_again', '🧱 Build again'))
       );
     };
@@ -5853,7 +5902,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-green-700 max-w-md mx-auto' },
             __alloT('stem.fractions.see_a_sequence_of_fractions_what_comes', 'See a sequence of fractions. What comes next?')
           ),
-          h('button', { onClick: startPattern,
+          h('button', { type: 'button', onClick: startPattern,
             className: 'transition-colors px-6 py-3 bg-green-700 text-white font-bold rounded-xl hover:bg-green-800' }, __alloT('stem.fractions.start', '🔢 Start'))
         );
       }
@@ -5861,7 +5910,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-green-50 rounded-xl p-3 border border-green-200' },
           h('span', { className: 'text-2xl' }, '🔢'),
           h('span', { className: 'font-bold text-green-800' }, 'Score: ' + pb.score),
-          h('button', { onClick: startPattern,
+          h('button', { type: 'button', onClick: startPattern,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-green-200 text-green-800 hover:bg-green-300' }, __alloT('stem.fractions.restart_5', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-green-200 p-4 space-y-3' },
@@ -5880,11 +5929,11 @@ window.StemLab = window.StemLab || {
             h('input', { 'aria-label': __alloT('stem.fractions.pattern_guess_label', 'Next fraction in the pattern'),
               type: 'text', value: pb.answer || '',
               onChange: function(e) { upd({ pbgGame: Object.assign({}, pb, { answer: e.target.value }) }); },
-              onKeyDown: function(e) { if (e.key === 'Enter') guessNext(pb.answer || ''); },
+              onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter') guessNext(pb.answer || ''); },
               placeholder: __alloT('stem.fractions.e_g_3_4_2', 'e.g., 3/4'), autoFocus: true,
               className: 'flex-1 px-3 py-2 border border-green-400 rounded-lg text-base font-mono'
             }),
-            h('button', { onClick: function() { guessNext(pb.answer || ''); },
+            h('button', { type: 'button', onClick: function() { guessNext(pb.answer || ''); },
               className: 'transition-colors px-4 py-2 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800' }, __alloT('stem.fractions.guess', 'Guess'))
           )
         )
@@ -5976,7 +6025,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-yellow-700 max-w-md mx-auto' },
             __alloT('stem.fractions.5_5_bingo_card_with_fractions_call_a_f', '5×5 bingo card with fractions. Call a fraction, then mark any cell with an equivalent fraction. Get 5 in a row to win!')
           ),
-          h('button', { onClick: startBingo,
+          h('button', { type: 'button', onClick: startBingo,
             className: 'transition-colors px-6 py-3 bg-yellow-700 text-white font-bold rounded-xl hover:bg-yellow-800' }, __alloT('stem.fractions.new_card', '🎱 New card'))
         );
       }
@@ -5986,7 +6035,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'font-bold text-yellow-800' }, 'Bingos: ' + (bg.bingoCount || 0)),
           h('span', { className: 'text-sm text-yellow-700' }, '·'),
           h('span', { className: 'text-sm text-yellow-800' }, 'Called: ' + bg.called.length),
-          h('button', { onClick: startBingo,
+          h('button', { type: 'button', onClick: startBingo,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-yellow-200 text-yellow-800 hover:bg-yellow-300' }, __alloT('stem.fractions.new_card_2', '↺ New card'))
         ),
         bg.current && h('div', { className: 'bg-white rounded-xl border-2 border-yellow-200 p-3 text-center' },
@@ -5999,12 +6048,12 @@ window.StemLab = window.StemLab || {
             bg.card.map(function(cell, i) {
               var marked = bg.marked.indexOf(i) >= 0;
               if (cell.free) {
-                return h('button', {
+                return h('button', { type: 'button',
                   key: 'bc-' + i,
                   className: 'aspect-square rounded text-lg font-bold bg-yellow-700 text-white border-2 border-yellow-800'
                 }, '★');
               }
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'bc-' + i,
                 onClick: function() { markCell(i); },
                 'aria-pressed': marked,
@@ -6014,7 +6063,7 @@ window.StemLab = window.StemLab || {
             })
           )
         ),
-        h('button', { onClick: callNumber,
+        h('button', { type: 'button', onClick: callNumber,
           className: 'transition-colors w-full px-4 py-2 bg-yellow-700 text-white font-bold rounded-xl hover:bg-yellow-800' }, __alloT('stem.fractions.call_a_number', '🎲 Call a number'))
       );
     };
@@ -6061,7 +6110,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.two_fractions_face_off_pick_which_is_l', 'Two fractions face off. Pick which is larger to pull the rope. 5 correct pulls = win the tug!')
           ),
           h('p', { className: 'text-[0.6875rem] text-orange-600' }, 'Wins so far: ' + (tw.score || 0)),
-          h('button', { onClick: startTug,
+          h('button', { type: 'button', onClick: startTug,
             className: 'transition-colors px-6 py-3 bg-orange-700 text-white font-bold rounded-xl hover:bg-orange-800' }, __alloT('stem.fractions.start_tugging', '🪢 Start tugging'))
         );
       }
@@ -6071,7 +6120,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-orange-50 rounded-xl p-3 border border-orange-200' },
           h('span', { className: 'text-2xl' }, '🪢'),
           h('span', { className: 'font-bold text-orange-800' }, 'Wins: ' + tw.score),
-          h('button', { onClick: startTug,
+          h('button', { type: 'button', onClick: startTug,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-orange-200 text-orange-900 hover:bg-orange-300' }, __alloT('stem.fractions.restart_6', '↺ Restart'))
         ),
         // Tug bar visualization
@@ -6090,14 +6139,14 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-center text-[0.6875rem] text-orange-700 italic' }, '5 correct pulls to win | Position: ' + pos)
         ),
         h('div', { className: 'grid grid-cols-2 gap-3' },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { answer('a'); },
             className: 'p-4 bg-rose-100 border-2 border-rose-300 rounded-xl hover:bg-rose-200 hover:border-rose-500 transition-all'
           },
             h('div', { className: 'text-3xl font-bold text-rose-800 font-mono text-center' }, a.n + '/' + a.d),
             h('p', { className: 'text-[0.625rem] text-rose-600 text-center mt-1' }, '(= ' + (a.n / a.d).toFixed(3) + ')')
           ),
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { answer('b'); },
             className: 'p-4 bg-emerald-100 border-2 border-emerald-300 rounded-xl hover:bg-emerald-200 hover:border-emerald-500 transition-all'
           },
@@ -6150,7 +6199,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-pink-700 max-w-md mx-auto' },
             __alloT('stem.fractions.a_fraction_is_hiding_use_the_clues_to_', 'A fraction is hiding. Use the clues to guess what it is. Fewer hints = more points.')
           ),
-          h('button', { onClick: startHide,
+          h('button', { type: 'button', onClick: startHide,
             className: 'transition-colors px-6 py-3 bg-pink-600 text-white font-bold rounded-xl hover:bg-pink-700' }, __alloT('stem.fractions.start_hunt', '🔍 Start hunt'))
         );
       }
@@ -6164,7 +6213,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-pink-50 rounded-xl p-3 border border-pink-200' },
           h('span', { className: 'text-2xl' }, '🔍'),
           h('span', { className: 'font-bold text-pink-800' }, 'Hints used: ' + hs.hintsShown + ' / 3'),
-          h('button', { onClick: startHide,
+          h('button', { type: 'button', onClick: startHide,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-pink-200 text-pink-900 hover:bg-pink-300' }, __alloT('stem.fractions.new_hunt', '↺ New hunt'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-4 space-y-2' },
@@ -6176,7 +6225,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          !hs.gameOver && h('button', {
+          !hs.gameOver && h('button', { type: 'button',
             onClick: revealHint, disabled: hs.hintsShown >= 3,
             className: 'px-3 py-1 rounded text-[0.6875rem] font-bold ' +
               (hs.hintsShown < 3 ? 'transition-colors bg-pink-200 text-pink-900 hover:bg-pink-300' : 'bg-slate-100 text-slate-600 cursor-not-allowed')
@@ -6185,11 +6234,11 @@ window.StemLab = window.StemLab || {
             h('input', { 'aria-label': __alloT('stem.fractions.hidden_guess_label', 'Guess the hidden fraction'),
               type: 'text', value: hs.guess || '',
               onChange: function(e) { upd({ hsGame: Object.assign({}, hs, { guess: e.target.value }) }); },
-              onKeyDown: function(e) { if (e.key === 'Enter') guessHs(hs.guess || ''); },
+              onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter') guessHs(hs.guess || ''); },
               placeholder: __alloT('stem.fractions.guess_e_g_3_4', 'Guess (e.g., 3/4)'),
               className: 'flex-1 px-3 py-2 border border-pink-300 rounded-lg text-sm font-mono'
             }),
-            h('button', { onClick: function() { guessHs(hs.guess || ''); },
+            h('button', { type: 'button', onClick: function() { guessHs(hs.guess || ''); },
               className: 'transition-colors px-3 py-2 rounded-lg text-sm font-bold bg-pink-600 text-white hover:bg-pink-700' }, __alloT('stem.fractions.guess_2', 'Guess'))
           ),
           hs.gameOver && hs.won && h('div', { className: 'bg-emerald-50 rounded-lg p-3 border-2 border-emerald-300' },
@@ -6382,14 +6431,14 @@ window.StemLab = window.StemLab || {
 
       // ── helper: a comfort/accessibility row (shared by menu + in-game) ──
       var toggleChip = function(key, label) {
-        return h('button', { key: 'tg-' + key, onClick: function() { toggle(key); }, 'aria-pressed': !!g[key],
+        return h('button', { type: 'button', key: 'tg-' + key, onClick: function() { toggle(key); }, 'aria-pressed': !!g[key],
           className: 'px-2 py-1 rounded text-[0.6875rem] font-bold transition-all ' +
             (g[key] ? 'bg-emerald-700 text-white' : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50') },
           (g[key] ? '☑ ' : '☐ ') + label);
       };
       var tempoSlider = h('label', { className: 'flex items-center gap-2 text-[0.6875rem] font-bold text-slate-600' },
         __alloT('stem.fractions.belt_speed', 'Belt speed'),
-        h('input', { type: 'range', min: 0.25, max: 2, step: 0.25, value: g.tempo, 'aria-label': __alloT('stem.fractions.belt_speed_2', 'Belt speed'),
+        h('input', { type: 'range', min: 0.25, max: 2, step: 0.25, value: g.tempo, 'aria-label': __alloT('stem.fractions.belt_speed_2', 'Belt speed'), 'aria-valuetext': g.tempo + 'x speed',
           onChange: function(e) { setTempo(e.target.value); }, className: 'w-28' }),
         h('span', { className: 'font-mono' }, g.tempo + 'x'));
 
@@ -6402,15 +6451,15 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm text-green-700 max-w-md mx-auto' },
               __alloT('stem.fractions.house_rule_every_guest_at_a_table_gets', 'House rule: every guest at a table gets an EXACTLY equal plate. Divide each dish into the table\'s number of equal shares, then read off the fraction each guest gets.')),
             h('div', { className: 'flex flex-wrap gap-2 justify-center pt-1' },
-              h('button', { onClick: function() { startGame(false, true); },
+              h('button', { type: 'button', onClick: function() { startGame(false, true); },
                 className: 'transition-colors px-5 py-3 rounded-xl text-base font-bold bg-green-700 text-white hover:bg-green-800 shadow-md' }, __alloT('stem.fractions.cook_zen_no_timer', '▶ Cook (Zen - no timer)')),
-              h('button', { onClick: function() { startGame(true, true); },
+              h('button', { type: 'button', onClick: function() { startGame(true, true); },
                 className: 'transition-colors px-4 py-3 rounded-xl text-sm font-bold bg-white text-green-700 border-2 border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.timed_service', '⏱ Timed Service'))
             ),
             h('div', { className: 'flex items-center gap-2 justify-center text-[0.6875rem] text-green-700 pt-1' },
               __alloT('stem.fractions.level', 'Level'),
               [1, 2, 3, 4, 5].map(function(L) {
-                return h('button', { key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3, freeEntry: L >= 5 }); },
+                return h('button', { type: 'button', key: 'lv' + L, onClick: function() { save({ level: L, nameShare: L >= 3, freeEntry: L >= 5 }); },
                   'aria-pressed': g.level === L,
                   className: 'w-7 h-7 rounded font-bold ' + (g.level === L ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, L);
               })
@@ -6420,7 +6469,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'text-[0.6875rem] font-bold text-green-700' }, 'Answer:'),
                 [['show', 'Show'], ['pick', 'Pick'], ['type', 'Type']].map(function(m) {
                   var cur = g.freeEntry ? 'type' : g.nameShare ? 'pick' : 'show';
-                  return h('button', { key: 'am-' + m[0], 'aria-pressed': cur === m[0],
+                  return h('button', { type: 'button', key: 'am-' + m[0], 'aria-pressed': cur === m[0],
                     onClick: function() { save({ nameShare: m[0] !== 'show', freeEntry: m[0] === 'type' }); },
                     className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' + (cur === m[0] ? 'bg-green-700 text-white' : 'bg-white text-green-700 border border-green-300') }, m[1]);
                 })
@@ -6436,10 +6485,10 @@ window.StemLab = window.StemLab || {
               toggleChip('focusMode', 'Focus mode'), toggleChip('hideScore', 'Hide score')),
             h('div', { className: 'flex flex-wrap gap-1.5 items-center' },
               h('span', { className: 'text-[0.6875rem] font-bold text-slate-500' }, 'Presets:'),
-              h('button', { onClick: function() { preset('quiet'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.quiet_kid', 'Quiet Kid')),
-              h('button', { onClick: function() { preset('motor'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.motor', 'Motor')),
-              h('button', { onClick: function() { preset('visual'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.visual_3', 'Visual')),
-              h('button', { onClick: function() { preset('audio'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.audio_only', 'Audio only'))
+              h('button', { type: 'button', onClick: function() { preset('quiet'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.quiet_kid', 'Quiet Kid')),
+              h('button', { type: 'button', onClick: function() { preset('motor'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.motor', 'Motor')),
+              h('button', { type: 'button', onClick: function() { preset('visual'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.visual_3', 'Visual')),
+              h('button', { type: 'button', onClick: function() { preset('audio'); }, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.audio_only', 'Audio only'))
             ),
             h('p', { className: 'text-[0.625rem] text-slate-400 italic' }, __alloT('stem.fractions.zen_mode_has_no_timer_and_no_game_over', 'Zen mode has no timer and no game-over. A missed plate in Timed mode just loops back around.'))
           )
@@ -6485,11 +6534,11 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-[0.625rem] text-slate-400 italic' }, __alloT('stem.fractions.a_record_of_what_was_practiced_not_a_m', 'A record of what was practiced, not a measure of ability.'))
             ) : null),
             h('div', { className: 'flex flex-wrap gap-2 justify-center pt-2' },
-              h('button', { onClick: function() { save({ level: Math.min(5, (g.level || 1) + 1) }); startGame(g.timed); },
+              h('button', { type: 'button', onClick: function() { save({ level: Math.min(5, (g.level || 1) + 1) }); startGame(g.timed); },
                 className: 'transition-colors px-4 py-2 rounded-xl text-sm font-bold bg-green-700 text-white hover:bg-green-800' }, 'Next service (Level ' + Math.min(5, (g.level || 1) + 1) + ')'),
-              h('button', { onClick: function() { startGame(g.timed); },
+              h('button', { type: 'button', onClick: function() { startGame(g.timed); },
                 className: 'transition-colors px-4 py-2 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.same_level_again', 'Same level again')),
-              h('button', { onClick: toMenu,
+              h('button', { type: 'button', onClick: toMenu,
                 className: 'transition-colors px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.change_mode', 'Change mode'))
             )
           )
@@ -6554,7 +6603,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 justify-center flex-wrap' },
             prChoices.map(function(c) {
               var sel = g.chosen === c;
-              return h('button', { key: 'prc-' + c, onClick: function() { chooseShare(c); }, 'aria-pressed': sel,
+              return h('button', { type: 'button', key: 'prc-' + c, onClick: function() { chooseShare(c); }, 'aria-pressed': sel,
                 className: 'px-3 py-2 rounded-lg font-mono font-bold text-base ' + (sel ? 'bg-green-700 text-white ring-2 ring-green-800' : 'transition-colors bg-white text-green-700 border-2 border-green-300 hover:bg-green-50') }, c);
             })
           ),
@@ -6651,6 +6700,7 @@ window.StemLab = window.StemLab || {
       ) : null;
 
       var onKey = function(e) {
+        if (_fracIgnoreKey(e)) return;
         if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) { if (e.key === 'Enter') serve(); return; }
         var k = e.key;
         if (k === 'ArrowUp' || k === '+' || k === '=') { e.preventDefault(); adjust(1); }
@@ -6671,10 +6721,10 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-green-300' }, '·'),
           h('span', { className: 'text-[0.6875rem] text-green-700' }, 'Level ' + g.level + ' · ' + (g.timed ? 'Timed' : 'Zen')),
           h('div', { className: 'ml-auto flex gap-1' },
-            g.timed && h('button', { onClick: function() { toggle('holdFrozen'); }, 'aria-pressed': !!g.holdFrozen,
+            g.timed && h('button', { type: 'button', onClick: function() { toggle('holdFrozen'); }, 'aria-pressed': !!g.holdFrozen,
               className: 'px-2 py-1 rounded text-[0.6875rem] font-bold ' + (g.holdFrozen ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-300') }, g.holdFrozen ? '▶ Resume' : '⏸ Hold'),
-            g.timed && h('button', { onClick: toZen, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.to_zen', 'To Zen')),
-            h('button', { onClick: toMenu, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.menu', '↺ Menu'))
+            g.timed && h('button', { type: 'button', onClick: toZen, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.to_zen', 'To Zen')),
+            h('button', { type: 'button', onClick: toMenu, className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, __alloT('stem.fractions.menu', '↺ Menu'))
           )
         ),
         belt,
@@ -6689,16 +6739,16 @@ window.StemLab = window.StemLab || {
           // cuts stepper
           h('div', { className: 'flex items-center justify-center gap-2' },
             h('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, __alloT('stem.fractions.equal_shares', 'Equal shares:')),
-            h('button', { onClick: function() { adjust(-1); }, 'aria-label': __alloT('stem.fractions.fewer_shares', 'Fewer shares'),
+            h('button', { type: 'button', onClick: function() { adjust(-1); }, 'aria-label': __alloT('stem.fractions.fewer_shares', 'Fewer shares'),
               className: 'transition-colors w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '−'),
             h('span', { className: 'w-10 text-center text-2xl font-black text-green-700', 'aria-live': 'polite' }, g.input),
-            h('button', { onClick: function() { adjust(1); }, 'aria-label': __alloT('stem.fractions.more_shares', 'More shares'),
+            h('button', { type: 'button', onClick: function() { adjust(1); }, 'aria-label': __alloT('stem.fractions.more_shares', 'More shares'),
               className: 'transition-colors w-9 h-9 rounded-lg text-xl font-black bg-slate-100 text-slate-700 hover:bg-slate-200' }, '+')
           ),
           shareUI,
           h('div', { className: 'flex justify-center gap-2 items-center' },
-            h('button', { onClick: showMe, className: 'transition-colors px-3 py-2.5 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.show_me', 'Show me')),
-            h('button', { onClick: serve, disabled: a.kind === 'tray' && !divides,
+            h('button', { type: 'button', onClick: showMe, className: 'transition-colors px-3 py-2.5 rounded-xl text-sm font-bold bg-white text-green-700 border border-green-300 hover:bg-green-50' }, __alloT('stem.fractions.show_me', 'Show me')),
+            h('button', { type: 'button', onClick: serve, disabled: a.kind === 'tray' && !divides,
               className: 'px-8 py-2.5 rounded-xl text-base font-black bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-700 hover:to-emerald-700 shadow-md disabled:opacity-40' }, __alloT('stem.fractions.serve', 'SERVE 🍽️'))
           ),
           g.lastCoach && h('div', { className: 'text-[0.75rem] text-center rounded-lg p-2 ' + (g.lastResult === 'wrong' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-green-50 text-green-800') }, '💬 ' + g.lastCoach)
@@ -6714,47 +6764,47 @@ window.StemLab = window.StemLab || {
     var renderGamesTab = function() {
       var activeGame = _f.activeGame || null;
       if (activeGame === 'connect4') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games', '← Back to games')),
         renderConnectFractionGame()
       );
       if (activeGame === 'build') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_2', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_2', '← Back to games')),
         renderBuildWholeGame()
       );
       if (activeGame === 'pattern') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_3', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_3', '← Back to games')),
         renderPatternBuilderGame()
       );
       if (activeGame === 'bingo') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_4', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_4', '← Back to games')),
         renderFractionBingoGame()
       );
       if (activeGame === 'tug') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_5', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_5', '← Back to games')),
         renderTugOfWarGame()
       );
       if (activeGame === 'hide') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_6', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_6', '← Back to games')),
         renderHideSeekGame()
       );
       if (activeGame === 'pizza') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_7', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_7', '← Back to games')),
         renderPizzaShopGame()
       );
       if (activeGame === 'race') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_8', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_8', '← Back to games')),
         renderFractionRaceGame()
       );
       if (activeGame === 'match') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_9', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_9', '← Back to games')),
         renderEquivalentMatchGame()
       );
       if (activeGame === 'fish') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_10', '← Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_10', '← Back to games')),
         renderFractionFishGame()
       );
       if (activeGame === 'platerush') return h('div', null,
-        h('button', { onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_11', '\u2190 Back to games')),
+        h('button', { type: 'button', onClick: function() { upd({ activeGame: null }); }, className: 'transition-colors mb-2 px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.back_to_games_11', '\u2190 Back to games')),
         renderPlateRushGame()
       );
       var gameList = [
@@ -6779,7 +6829,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
           gameList.map(function(g) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'g-' + g.id,
               onClick: function() { upd({ activeGame: g.id }); sfxClick(); },
               className: 'text-left p-4 rounded-xl border-2 border-' + g.color + '-200 bg-gradient-to-br from-' + g.color + '-50 to-' + g.color + 'transition-colors -100 hover:border-' + g.color + '-400 hover:shadow-md transition-all'
@@ -6971,11 +7021,11 @@ window.StemLab = window.StemLab || {
           __alloT('stem.fractions.include_answer_key_on_a_separate_page', 'Include answer key on a separate page')
         ),
         h('div', { className: 'flex gap-2' },
-          h('button', {
+          h('button', { type: 'button',
             onClick: generateWorksheet,
             className: 'transition-colors flex-1 px-4 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800'
           }, '🔀 Generate ' + ws.count + ' problems'),
-          generated && h('button', {
+          generated && h('button', { type: 'button',
             onClick: printWorksheet,
             className: 'transition-colors flex-1 px-4 py-2 bg-emerald-800 text-white font-bold rounded-xl hover:bg-emerald-900'
           }, __alloT('stem.fractions.print_worksheet', '🖨 Print worksheet'))
@@ -7118,11 +7168,11 @@ window.StemLab = window.StemLab || {
           })
         ),
         h('div', { className: 'flex gap-2' },
-          h('button', {
+          h('button', { type: 'button',
             onClick: copyReport,
             className: 'transition-colors flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-teal-100 text-teal-800 hover:bg-teal-200 border border-teal-300'
           }, __alloT('stem.fractions.copy_to_clipboard', '📋 Copy to clipboard')),
-          h('button', {
+          h('button', { type: 'button',
             onClick: downloadReport,
             className: 'transition-colors flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-teal-700 text-white hover:bg-teal-800'
           }, __alloT('stem.fractions.download_txt', '💾 Download .txt'))
@@ -7294,7 +7344,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           ['all', '3', '4', '5', '6', '7'].map(function(g) {
             var active = iepGrade === g;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'ig-' + g,
               'aria-pressed': active,
               onClick: function() { upd({ iepGrade: g }); },
@@ -7324,7 +7374,7 @@ window.StemLab = window.StemLab || {
                   )
                 )
               ),
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
                     Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(value) : Promise.reject(new Error('Clipboard unavailable')); })(g.goal)).then(function() { if (addToast) addToast('📋 Goal copied', 'success'); }, function() { if (addToast) addToast('Copy failed', 'error'); });
@@ -7344,7 +7394,7 @@ window.StemLab = window.StemLab || {
       var lp = LESSON_PLANS.find(function(l) { return l.id === lpId; });
       if (lp) {
         return h('div', { className: 'space-y-3' },
-          h('button', {
+          h('button', { type: 'button',
             onClick: function() { upd({ lpId: null }); },
             className: 'transition-colors px-3 py-1 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300'
           }, __alloT('stem.fractions.all_lesson_plans', '← All lesson plans')),
@@ -7379,7 +7429,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
           LESSON_PLANS.map(function(lp2) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'lp-' + lp2.id,
               onClick: function() { upd({ lpId: lp2.id }); },
               className: 'text-left p-4 rounded-xl border-2 border-indigo-200 bg-white hover:border-indigo-400 hover:shadow-md transition-all'
@@ -7597,7 +7647,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-cyan-700 max-w-md mx-auto' },
             __alloT('stem.fractions.2_player_game_place_discs_that_show_ra', '2-player game. Place discs that show random fractions in the 7×6 grid. Have fun naming the fractions.')
           ),
-          h('button', { onClick: startCf,
+          h('button', { type: 'button', onClick: startCf,
             className: 'transition-colors px-6 py-3 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800' }, __alloT('stem.fractions.start_game', '⚪ Start game'))
         );
       }
@@ -7605,13 +7655,13 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-cyan-50 rounded-xl p-3 border border-cyan-200' },
           h('span', { className: 'text-2xl' }, '⚪'),
           h('span', { className: 'font-bold text-cyan-800' }, 'Player ' + cf.currentPlayer + '\'s turn'),
-          h('button', { onClick: startCf,
+          h('button', { type: 'button', onClick: startCf,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-cyan-200 text-cyan-800 hover:bg-cyan-300' }, __alloT('stem.fractions.restart_7', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-3' },
           h('div', { className: 'grid gap-1', style: { gridTemplateColumns: 'repeat(7, 1fr)' } },
             Array.from({ length: COLS }, function(_, c) {
-              return h('button', { key: 'cf-col-' + c, onClick: function() { placeDisc(c); },
+              return h('button', { type: 'button', key: 'cf-col-' + c, onClick: function() { placeDisc(c); },
                 className: 'transition-colors px-2 py-1 bg-cyan-700 text-white text-xs font-bold rounded hover:bg-cyan-800' }, '↓');
             })
           ),
@@ -7727,7 +7777,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           DAILY_ROUTINES.map(function(r) {
             var active = routId === r.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'dr-' + r.id,
               'aria-pressed': active,
               onClick: function() { upd({ routId: r.id }); },
@@ -7742,7 +7792,7 @@ window.StemLab = window.StemLab || {
             return h('div', { key: 'rs-' + i, className: 'border-l-4 border-emerald-300 pl-3 py-2 bg-emerald-50 rounded-r' },
               h('p', { className: 'text-xs font-bold text-emerald-800' }, s.time + ' · ' + s.activity),
               h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, s.description),
-              h('button', { onClick: function() { goToTool(s.tab); }, 'data-fraction-tool-link': s.tab,
+              h('button', { type: 'button', onClick: function() { goToTool(s.tab); }, 'data-fraction-tool-link': s.tab,
                 className: 'mt-1 text-[0.625rem] font-bold text-emerald-700 hover:underline' }, goToToolLabel(s.tab))
             );
           })
@@ -7827,7 +7877,7 @@ window.StemLab = window.StemLab || {
             className: 'w-full px-3 py-2 rounded border border-amber-300 text-sm' },
             ETICKET_TOPICS.map(function(t) { return h('option', { key: 'et-' + t.id, value: t.id }, t.label); })
           ),
-          h('button', { onClick: generateExitTicket,
+          h('button', { type: 'button', onClick: generateExitTicket,
             className: 'transition-colors w-full px-4 py-2 bg-amber-700 text-white font-bold rounded-xl hover:bg-amber-800' }, __alloT('stem.fractions.generate_and_print_exit_ticket', '🖨 Generate and print exit ticket'))
         )
       );
@@ -7903,7 +7953,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1' },
           Object.keys(ASSESSMENT_CHECKLISTS).map(function(g) {
             var active = checkGrade === g;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'cg-' + g,
               'aria-pressed': active,
               onClick: function() { upd({ checkGrade: g }); },
@@ -8342,7 +8392,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           DIFFERENTIATION_PROFILES.map(function(p) {
             var active = profId === p.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'df-' + p.id,
               'aria-pressed': active,
               onClick: function() { upd({ profId: p.id }); },
@@ -8542,7 +8592,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           DATA_SAMPLES.map(function(d) {
             var active = dataId === d.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'da-' + d.id,
               'aria-pressed': active,
               onClick: function() { upd({ dataId: d.id }); },
@@ -8639,13 +8689,13 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ mcfStep: Math.max(0, mcfStep - 1) }); },
               disabled: mcfStep <= 0,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
                 (mcfStep > 0 ? 'transition-colors bg-rose-100 text-rose-800 hover:bg-rose-200' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.previous_strategy', '← Previous strategy')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ mcfStep: Math.min(mc.remediation.length - 1, mcfStep + 1) }); },
               disabled: mcfStep >= mc.remediation.length - 1,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
@@ -8708,7 +8758,7 @@ window.StemLab = window.StemLab || {
         ),
         h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
           printItems.map(function(p) {
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'pl-' + p.id,
               onClick: function() { goToTool(p.goTo); }, 'data-fraction-tool-link': p.goTo,
               className: 'text-left p-4 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-400 hover:shadow-md transition-all'
@@ -8728,7 +8778,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] text-stone-700 mb-3' },
             __alloT('stem.fractions.a_page_of_fraction_strips_from_1_whole', 'A page of fraction strips from 1 whole to 1/12. Cut out and use for any concrete-representational activity.')
           ),
-          h('button', { onClick: printFractionStripsTemplate,
+          h('button', { type: 'button', onClick: printFractionStripsTemplate,
             className: 'transition-colors w-full px-4 py-2 bg-stone-700 text-white font-bold rounded-xl hover:bg-stone-800' },
             __alloT('stem.fractions.print_fraction_strips_template', '🖨 Print fraction strips template')
           )
@@ -8826,7 +8876,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1' },
           ['circles', 'bars', 'strips'].map(function(m) {
             var active = manipType === m;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mtt-' + m,
               onClick: function() { upd({ manipType: m }); announceToSR(m + ' view'); },
               'aria-pressed': active,
@@ -8840,7 +8890,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] font-bold text-orange-700 mb-2' }, __alloT('stem.fractions.add_a_piece', 'Add a piece:')),
           h('div', { className: 'grid grid-cols-4 gap-2' },
             [2, 3, 4, 5, 6, 8, 10, 12].map(function(d) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'mp-' + d,
                 onClick: function() { addPiece(d); },
                 'aria-label': 'Add 1/' + d + ' piece',
@@ -8852,7 +8902,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'bg-white rounded-xl border-2 border-orange-200 p-3' },
           h('div', { className: 'flex items-center justify-between mb-2' },
             h('p', { className: 'text-[0.6875rem] font-bold text-orange-700' }, 'Workspace (' + manipPieces.length + ' pieces, total = ' + totalVal.toFixed(3) + '):'),
-            h('button', { onClick: clearPieces, 'aria-label': __alloT('stem.fractions.clear_workspace', 'Clear workspace'),
+            h('button', { type: 'button', onClick: clearPieces, 'aria-label': __alloT('stem.fractions.clear_workspace', 'Clear workspace'),
               disabled: manipPieces.length === 0,
               className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:opacity-40' },
               __alloT('stem.fractions.clear_2', '↺ Clear')
@@ -8868,13 +8918,13 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'flex gap-1 flex-wrap' },
                       pieces.map(function(p) {
                         if (manipType === 'circles') {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 50 } },
+                          return h('button', { type: 'button', key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 50 } },
                             drawPie(p.n, p.d, 40, palMain));
                         } else if (manipType === 'bars') {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove_2', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 100 } },
+                          return h('button', { type: 'button', key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove_2', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 100 } },
                             drawBar(p.n, p.d, palMain));
                         } else {
-                          return h('button', { key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove_3', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 80 } },
+                          return h('button', { type: 'button', key: 'piece-' + p.id, onClick: function() { removePiece(p.id); }, title: __alloT('stem.fractions.remove_3', 'Remove'), 'aria-label': 'Remove ' + p.n + '/' + p.d + ' piece', style: { width: 80 } },
                             drawLengthModel(p.n, p.d, { width: 80, height: 24 }));
                         }
                       })
@@ -9033,7 +9083,7 @@ window.StemLab = window.StemLab || {
           BRAIN_TEASERS.map(function(b) {
             var active = btId === b.id;
             var diffColor = b.difficulty === 'easy' ? 'green' : b.difficulty === 'medium' ? 'amber' : 'rose';
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'bt-' + b.id,
               'aria-pressed': active,
               onClick: function() { upd({ btId: b.id, btShowSolution: false, btHintLevel: 0 }); },
@@ -9057,9 +9107,9 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-800 mt-1' }, bt.solution)
           ),
           h('div', { className: 'flex gap-2' },
-            !btHintLevel && h('button', { onClick: function() { upd({ btHintLevel: 1 }); sfxClick(); },
+            !btHintLevel && h('button', { type: 'button', onClick: function() { upd({ btHintLevel: 1 }); sfxClick(); },
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-yellow-200 text-yellow-900 hover:bg-yellow-300' }, __alloT('stem.fractions.show_hint', '💡 Show hint')),
-            !btShowSolution && h('button', { onClick: function() { upd({ btShowSolution: true }); sfxClick(); },
+            !btShowSolution && h('button', { type: 'button', onClick: function() { upd({ btShowSolution: true }); sfxClick(); },
               className: 'transition-colors ml-auto px-3 py-1.5 rounded text-xs font-bold bg-yellow-700 text-white hover:bg-yellow-800' }, __alloT('stem.fractions.show_solution_2', '🎓 Show solution'))
           )
         )
@@ -9173,7 +9223,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           Object.keys(tables).map(function(t) {
             var active = tableType === t;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'tt-' + t,
               'aria-pressed': active,
               onClick: function() { upd({ tableType: t }); },
@@ -9315,7 +9365,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           MATH_TALKS.map(function(m) {
             var active = mtId === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mt-' + m.id,
               'aria-pressed': active,
               onClick: function() { upd({ mtId: m.id }); },
@@ -9395,7 +9445,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-sky-700 max-w-md mx-auto' },
             __alloT('stem.fractions.see_a_definition_pick_the_term_master_', 'See a definition; pick the term. Master fraction vocabulary.')
           ),
-          h('button', { onClick: startVq,
+          h('button', { type: 'button', onClick: startVq,
             className: 'transition-colors px-6 py-3 bg-sky-700 text-white font-bold rounded-xl hover:bg-sky-800' }, __alloT('stem.fractions.start_quiz', '📖 Start quiz'))
         );
       }
@@ -9403,7 +9453,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-sky-50 rounded-xl p-3 border border-sky-200' },
           h('span', { className: 'text-2xl' }, '📖'),
           h('span', { className: 'font-bold text-sky-800' }, 'Score: ' + vqScore.correct + '/' + vqScore.total),
-          h('button', { onClick: startVq,
+          h('button', { type: 'button', onClick: startVq,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-sky-200 text-sky-800 hover:bg-sky-300' }, __alloT('stem.fractions.restart_8', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-sky-200 p-4 space-y-3' },
@@ -9411,7 +9461,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-base text-slate-800 italic bg-sky-50 rounded p-3 border border-sky-200' }, '"' + vqRound.def + '"'),
           h('div', { className: 'grid grid-cols-2 gap-2' },
             vqRound.choices.map(function(c, i) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'vc-' + i,
                 onClick: function() { answerVq(c); },
                 className: 'transition-colors px-3 py-2 rounded-lg text-sm font-bold bg-sky-100 text-sky-800 hover:bg-sky-300 border-2 border-sky-300'
@@ -9476,7 +9526,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        h('button', { onClick: printCard,
+        h('button', { type: 'button', onClick: printCard,
           className: 'transition-colors w-full px-4 py-2 bg-cyan-700 text-white font-bold rounded-xl hover:bg-cyan-800' }, __alloT('stem.fractions.print_this_card', '🖨 Print this card'))
       );
     };
@@ -9603,7 +9653,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           HANDS_ON_ACTIVITIES.map(function(a) {
             var active = actId === a.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'a-' + a.id,
               'aria-pressed': active,
               onClick: function() { upd({ actId: a.id }); },
@@ -9700,7 +9750,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           [1, 2, 3, 4, 5, 6, 7, 8].map(function(g) {
             var active = ssGrade === g;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'ssg-' + g,
               'aria-pressed': active,
               onClick: function() { upd({ ssGrade: g }); },
@@ -9859,7 +9909,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex gap-1 flex-wrap' },
           BAKERY_STORY.map(function(c) {
             var active = storyCh === c.chapter;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'sch-' + c.chapter,
               'aria-pressed': active,
               onClick: function() { upd({ storyCh: c.chapter, storyAnswer: '', storyFeedback: null }); },
@@ -9876,17 +9926,17 @@ window.StemLab = window.StemLab || {
             h('input', {
               type: 'text', value: storyAnswer,
               onChange: function(e) { upd({ storyAnswer: e.target.value }); },
-              onKeyDown: function(e) { if (e.key === 'Enter') checkStory(); },
+              onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter') checkStory(); },
               placeholder: __alloT('stem.fractions.your_answer_e_g_3_4_or_1_1_2_or_8', 'Your answer (e.g., 3/4 or 1 1/2 or 8)'),
               'aria-label': __alloT('stem.fractions.story_answer', 'Story answer'),
               className: 'flex-1 px-3 py-2 border border-orange-400 rounded-lg text-sm font-mono'
             }),
-            h('button', { onClick: checkStory,
+            h('button', { type: 'button', onClick: checkStory,
               className: 'transition-colors px-4 py-2 bg-orange-700 text-white font-bold rounded-lg hover:bg-orange-800' }, __alloT('stem.fractions.submit_2', 'Submit'))
           ),
           storyFeedback && h('p', { className: 'text-sm font-bold ' + (storyFeedback.correct ? 'text-green-700' : 'text-red-700') }, storyFeedback.msg),
           storyFeedback && storyFeedback.correct && h('div', { className: 'flex gap-2 mt-3' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ storyCh: Math.min(BAKERY_STORY.length, storyCh + 1), storyAnswer: '', storyFeedback: null }); },
               disabled: storyCh >= BAKERY_STORY.length,
               className: 'flex-1 px-3 py-2 rounded text-sm font-bold ' +
@@ -10011,7 +10061,7 @@ window.StemLab = window.StemLab || {
             className: 'px-2 py-1 rounded border border-blue-300 text-xs' },
             [3, 4, 5, 6].map(function(g) { return h('option', { key: 'eg-' + g, value: g }, 'Grade ' + g); })
           ),
-          h('button', { onClick: function() { generateExam(examGrade); },
+          h('button', { type: 'button', onClick: function() { generateExam(examGrade); },
             className: 'transition-colors ml-auto px-4 py-1.5 rounded text-xs font-bold bg-blue-600 text-white hover:bg-blue-700' },
             examQs ? '🔀 New test' : '📝 Generate test'
           )
@@ -10027,7 +10077,7 @@ window.StemLab = window.StemLab || {
                   var picked = answered === c;
                   var correct = examFinished && c === q.answer;
                   var wrong = examFinished && picked && c !== q.answer;
-                  return h('button', {
+                  return h('button', { type: 'button',
                     key: 'ec-' + i + '-' + ci,
                     'aria-pressed': picked,
                     onClick: function() {
@@ -10046,7 +10096,7 @@ window.StemLab = window.StemLab || {
               )
             );
           }),
-          !examFinished && h('button', { onClick: submitExam,
+          !examFinished && h('button', { type: 'button', onClick: submitExam,
             className: 'transition-colors w-full px-4 py-2 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800' }, __alloT('stem.fractions.submit_test', '✓ Submit test')),
           examFinished && h('div', { className: 'bg-emerald-50 rounded-lg p-3 border-2 border-emerald-300 text-center' },
             h('p', { className: 'text-base font-black text-emerald-800' },
@@ -10082,10 +10132,10 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-emerald-700' }, 'Today: ', h('b', null, today)),
           h('p', { className: 'text-3xl font-black text-emerald-800' }, dpDays.length === 1 ? __alloT('stem.fractions.daily_log_days_one', '1 day logged') : __alloOneWord(__alloT('stem.fractions.daily_log_days_other', '{n} days logged').replace('{n}', dpDays.length))),
           h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.daily_log_caption', 'Your own log, not a score')),
-          !dpTodayDone && h('button', { onClick: markComplete,
+          !dpTodayDone && h('button', { type: 'button', onClick: markComplete,
             className: 'transition-colors px-6 py-2 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.daily_log_button', 'I practiced today: add it to my log')),
           !dpTodayDone && h('p', { className: 'text-[0.6875rem] text-emerald-700' }, __alloT('stem.fractions.daily_log_not_yet', 'Not yet? Answer some questions in Practice & quizzes, then come back and add today.')),
-          !dpTodayDone && h('button', { onClick: function() { goToTool('drill'); }, 'data-fraction-tool-link': 'drill',
+          !dpTodayDone && h('button', { type: 'button', onClick: function() { goToTool('drill'); }, 'data-fraction-tool-link': 'drill',
             className: 'text-xs font-bold text-emerald-700 hover:underline' }, goToToolLabel('drill')),
           dpTodayDone && h('p', { className: 'text-base font-bold text-emerald-900' }, __alloT('stem.fractions.daily_log_done', '✓ Added today. See you next time.'))
         ),
@@ -10161,7 +10211,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           FRACTION_MAGIC.map(function(m) {
             var active = trick === m.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'mt-' + m.id,
               'aria-pressed': active,
               onClick: function() { upd({ magicTrick: m.id }); },
@@ -10263,7 +10313,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           REAL_WORLD_TOOLS.map(function(t2) {
             var active = rwt === t2.id;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'rwt-' + t2.id,
               'aria-pressed': active,
               onClick: function() { upd({ rwt: t2.id }); },
@@ -10402,9 +10452,9 @@ window.StemLab = window.StemLab || {
           )
         ),
         h('div', { className: 'flex gap-2' },
-          h('button', { onClick: generateProbe,
+          h('button', { type: 'button', onClick: generateProbe,
             className: 'transition-colors flex-1 px-4 py-2 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800' }, '🔀 Generate ' + probeCount + '-item probe'),
-          generatedProbe && h('button', { onClick: printProbe,
+          generatedProbe && h('button', { type: 'button', onClick: printProbe,
             className: 'transition-colors flex-1 px-4 py-2 bg-teal-800 text-white font-bold rounded-xl hover:bg-teal-900' }, __alloT('stem.fractions.print_probe', '🖨 Print probe'))
         ),
         generatedProbe && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-3 space-y-2' },
@@ -10653,13 +10703,13 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-sm font-bold text-emerald-800' }, __alloT('stem.fractions.answer', '✅ Answer: '), h('span', { className: 'font-mono' }, we.answer))
           ),
           h('div', { className: 'flex gap-2' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ weStepIdx: Math.max(0, weStepIdx - 1) }); },
               disabled: weStepIdx <= 0,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
                 (weStepIdx > 0 ? 'transition-colors bg-violet-100 text-violet-800 hover:bg-violet-200' : 'bg-slate-100 text-slate-600')
             }, __alloT('stem.fractions.previous_step', '← Previous step')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ weStepIdx: Math.min(we.steps.length - 1, weStepIdx + 1) }); },
               disabled: weStepIdx >= we.steps.length - 1,
               className: 'flex-1 px-3 py-1.5 rounded text-xs font-bold ' +
@@ -10855,7 +10905,7 @@ window.StemLab = window.StemLab || {
             )
           )
         ),
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() {
             if (typeof window !== 'undefined' && window.print) window.print();
           },
@@ -11013,7 +11063,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-sm text-emerald-700 max-w-md mx-auto' },
             __alloT('stem.fractions.quickly_estimate_which_benchmark_a_fra', 'Quickly estimate which benchmark a fraction is closest to. This is the fastest way to develop fraction number sense.')
           ),
-          h('button', { onClick: startEst,
+          h('button', { type: 'button', onClick: startEst,
             className: 'transition-colors px-6 py-3 bg-emerald-700 text-white font-bold rounded-xl hover:bg-emerald-800' }, __alloT('stem.fractions.start_training', '🎯 Start training'))
         );
       }
@@ -11022,7 +11072,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex items-center gap-3 bg-emerald-50 rounded-xl p-3 border border-emerald-200' },
           h('span', { className: 'text-2xl' }, '🎯'),
           h('span', { className: 'font-bold text-emerald-800' }, 'Score: ' + estScore.correct + '/' + estScore.total),
-          h('button', { onClick: startEst,
+          h('button', { type: 'button', onClick: startEst,
             className: 'transition-colors ml-auto px-3 py-1 rounded text-[0.6875rem] font-bold bg-emerald-200 text-emerald-800 hover:bg-emerald-300' }, __alloT('stem.fractions.restart_9', '↺ Restart'))
         ),
         h('div', { className: 'bg-white rounded-xl border-2 border-emerald-200 p-4 space-y-3' },
@@ -11031,7 +11081,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex justify-center' }, drawPie(er.n, er.d, 130, '#16a34a')),
           h('div', { className: 'grid grid-cols-3 gap-2' },
             er.choices.map(function(c, i) {
-              return h('button', {
+              return h('button', { type: 'button',
                 key: 'ec-' + i,
                 onClick: function() { checkEst(c); },
                 className: 'transition-colors px-3 py-3 rounded-lg text-base font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-300 border-2 border-emerald-300 font-mono'
@@ -11062,14 +11112,14 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'grid grid-cols-2 gap-3' },
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200' },
             h('label', { className: 'block text-xs font-bold text-pink-700 mb-1' }, __alloT('stem.fractions.favorable_outcomes', 'Favorable outcomes')),
-            h('input', { 'aria-label': __alloT('stem.fractions.favorable_outcomes', 'Favorable outcomes'), type: 'range', min: 0, max: pTotal, value: pFav,
+            h('input', { 'aria-label': __alloT('stem.fractions.favorable_outcomes', 'Favorable outcomes'), 'aria-valuetext': pFav + ' of ' + pTotal + ' favorable outcomes', type: 'range', min: 0, max: pTotal, value: pFav,
               onChange: function(e) { upd({ probFav: parseInt(e.target.value) }); },
               className: 'w-full accent-pink-600' }),
             h('div', { className: 'text-center text-lg font-bold text-pink-800' }, pFav)
           ),
           h('div', { className: 'bg-pink-50 rounded-lg p-3 border border-pink-200' },
             h('label', { className: 'block text-xs font-bold text-pink-700 mb-1' }, __alloT('stem.fractions.total_outcomes', 'Total outcomes')),
-            h('input', { 'aria-label': __alloT('stem.fractions.total_outcomes', 'Total outcomes'), type: 'range', min: 2, max: 20, value: pTotal,
+            h('input', { 'aria-label': __alloT('stem.fractions.total_outcomes', 'Total outcomes'), 'aria-valuetext': pTotal + ' total outcomes', type: 'range', min: 2, max: 20, value: pTotal,
               onChange: function(e) { var v = parseInt(e.target.value); upd({ probTotal: v, probFav: Math.min(pFav, v) }); },
               className: 'w-full accent-pink-600' }),
             h('div', { className: 'text-center text-lg font-bold text-pink-800' }, pTotal)
@@ -11132,7 +11182,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           Object.keys(FRACTION_TERMS_MULTILINGUAL).filter(function(l) { return l !== 'english'; }).map(function(lang) {
             var active = mlLang === lang;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'ml-' + lang,
               'aria-pressed': active,
               onClick: function() { upd({ mlLang: lang }); },
@@ -11191,7 +11241,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1' },
           Object.keys(PRACTICE_BANK).map(function(skill) {
             var active = pbSkill === skill;
-            return h('button', {
+            return h('button', { type: 'button',
               key: 'pb-' + skill,
               'aria-pressed': active,
               onClick: function() { upd({ pbSkill: skill, pbIdx: 0, pbShown: false }); },
@@ -11240,11 +11290,11 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2 mt-3' },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ pbIdx: (pbIdx - 1 + items.length) % items.length, pbShown: false }); },
               className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-100 text-rose-800 hover:bg-rose-200'
             }, __alloT('stem.fractions.previous', '← Previous')),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd({ pbIdx: (pbIdx + 1) % items.length, pbShown: false }); },
               className: 'transition-colors flex-1 px-3 py-1.5 rounded text-xs font-bold bg-rose-700 text-white hover:bg-rose-800'
             }, __alloT('stem.fractions.next_2', 'Next →'))
@@ -11427,7 +11477,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex items-center gap-2' },
             h('span', { className: 'text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.grid_size', 'Grid size:')),
-            h('input', { 'aria-label': __alloT('stem.fractions.grid_size', 'Grid size:'), type: 'range', min: 4, max: 16, value: artSize,
+            h('input', { 'aria-label': __alloT('stem.fractions.grid_size', 'Grid size:'), 'aria-valuetext': artSize + ' by ' + artSize + ' grid', type: 'range', min: 4, max: 16, value: artSize,
               onChange: function(e) { upd({ artSize: parseInt(e.target.value) }); },
               className: 'flex-1 accent-fuchsia-600' }),
             h('span', { className: 'text-sm font-bold text-fuchsia-800' }, artSize)
@@ -11441,14 +11491,14 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-2 gap-2' },
             h('div', null,
               h('label', { className: 'block text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.lit_slices', 'Lit slices')),
-              h('input', { 'aria-label': __alloT('stem.fractions.lit_slices', 'Lit slices'), type: 'range', min: 0, max: wheelD, value: wheelN,
+              h('input', { 'aria-label': __alloT('stem.fractions.lit_slices', 'Lit slices'), 'aria-valuetext': wheelN + ' of ' + wheelD + ' slices lit', type: 'range', min: 0, max: wheelD, value: wheelN,
                 onChange: function(e) { upd({ wheelN: parseInt(e.target.value) }); },
                 className: 'w-full accent-fuchsia-600' }),
               h('div', { className: 'text-center text-sm font-bold text-fuchsia-800' }, wheelN)
             ),
             h('div', null,
               h('label', { className: 'block text-xs font-bold text-fuchsia-700' }, __alloT('stem.fractions.total_slices', 'Total slices')),
-              h('input', { 'aria-label': __alloT('stem.fractions.total_slices', 'Total slices'), type: 'range', min: 2, max: 24, value: wheelD,
+              h('input', { 'aria-label': __alloT('stem.fractions.total_slices', 'Total slices'), 'aria-valuetext': wheelD + ' total slices', type: 'range', min: 2, max: 24, value: wheelD,
                 onChange: function(e) { var v = parseInt(e.target.value); upd({ wheelD: v, wheelN: Math.min(wheelN, v) }); },
                 className: 'w-full accent-fuchsia-600' }),
               h('div', { className: 'text-center text-sm font-bold text-fuchsia-800' }, wheelD)
@@ -11706,12 +11756,12 @@ window.StemLab = window.StemLab || {
               h('input', {
                 type: 'text', value: msAnswer,
                 onChange: function(e) { upd({ msAnswer: e.target.value }); },
-                onKeyDown: function(e) { if (e.key === 'Enter') checkMS(); },
+                onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter') checkMS(); },
                 placeholder: __alloT('stem.fractions.your_answer_e_g_3_4_or_1_1_2_or_8_2', 'Your answer (e.g., 3/4 or 1 1/2 or 8)'),
                 'aria-label': __alloT('stem.fractions.multi_step_answer', 'Multi-step answer'),
                 className: 'flex-1 px-3 py-2 border border-violet-400 rounded-lg text-sm font-mono'
               }),
-              h('button', { onClick: checkMS,
+              h('button', { type: 'button', onClick: checkMS,
                 className: 'transition-colors px-4 py-2 bg-violet-600 text-white font-bold rounded-lg hover:bg-violet-700' }, __alloT('stem.fractions.check_2', 'Check'))
             ) : null,
             msFeedback && h('p', { className: 'text-sm font-bold ' + (msFeedback.correct ? 'text-green-700' : 'text-red-700') }, msFeedback.msg),
@@ -11727,9 +11777,9 @@ window.StemLab = window.StemLab || {
             })
           ),
           h('div', { className: 'flex gap-2 mt-3' },
-            h('button', { onClick: prevProblem,
+            h('button', { type: 'button', onClick: prevProblem,
               className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300' }, __alloT('stem.fractions.previous_2', '← Previous')),
-            h('button', { onClick: nextProblem,
+            h('button', { type: 'button', onClick: nextProblem,
               className: 'transition-colors ml-auto px-3 py-1.5 rounded text-xs font-bold bg-violet-600 text-white hover:bg-violet-700' }, __alloT('stem.fractions.next_problem_2', 'Next problem →'))
           )
         )
@@ -11769,7 +11819,7 @@ window.StemLab = window.StemLab || {
       return h('div', { className: 'fraction-lab-subsections flex gap-1 bg-' + accentColor + '-50 rounded-lg p-1 border border-' + accentColor + '-200 flex-wrap mb-3', role: 'group', 'aria-label': __alloT('stem.fractions.a11y_choose_a_subsection', 'Choose a subsection') },
         items.map(function(s) {
           var active = currentId === s.id;
-          return h('button', {
+          return h('button', { type: 'button',
             key: 'sub-' + s.id,
             'aria-pressed': active,
             onClick: function() { sfxClick(); onSelect(s.id); },
@@ -12107,7 +12157,7 @@ window.StemLab = window.StemLab || {
             h('input', { type: 'number', min: 1, max: MAX_DEN, value: s.d, 'aria-label': 'Strip ' + (i + 1) + ' denominator',
               onChange: function(e) { setStrip(s.id, { d: clampD(e.target.value) }); },
               className: 'w-12 px-1 py-0.5 rounded border border-slate-300 text-center text-sm font-bold' }),
-            h('button', { onClick: function() { removeStrip(s.id); }, 'aria-label': 'Remove ' + s.n + ' over ' + s.d + ' strip', title: __alloT('stem.fractions.remove_4', 'Remove'),
+            h('button', { type: 'button', onClick: function() { removeStrip(s.id); }, 'aria-label': 'Remove ' + s.n + ' over ' + s.d + ' strip', title: __alloT('stem.fractions.remove_4', 'Remove'),
               className: 'transition-colors ml-0.5 px-1.5 py-0.5 rounded text-rose-700 hover:bg-rose-100 text-sm font-bold' }, '×')
           ),
           h('div', { style: { position: 'relative', flex: '0 0 auto', width: BAR_W } },
@@ -12123,7 +12173,7 @@ window.StemLab = window.StemLab || {
       });
 
       var toggleBtn = function(on, fn, label) {
-        return h('button', { onClick: fn, 'aria-pressed': on,
+        return h('button', { type: 'button', onClick: fn, 'aria-pressed': on,
           className: 'px-3 py-1.5 rounded text-xs font-bold transition-all ' + (on ? 'bg-indigo-700 text-white' : 'bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50') }, label);
       };
 
@@ -12134,11 +12184,11 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.a_fraction_is_a_number_with_a_size_eac', 'A fraction is a number with a size. Each strip is one whole wide, so how far the color reaches is the value. Turn on the common-denominator grid to see equivalent fractions line up on the same line.'))
         ),
         h('div', { className: 'flex flex-wrap gap-2 items-center' },
-          h('button', { onClick: addStrip, disabled: strips.length >= MAX_STRIPS,
+          h('button', { type: 'button', onClick: addStrip, disabled: strips.length >= MAX_STRIPS,
             className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40' }, __alloT('stem.fractions.add_strip', '+ Add strip')),
-          h('button', { onClick: seedExample,
+          h('button', { type: 'button', onClick: seedExample,
             className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50' }, __alloT('stem.fractions.example_2', 'Example')),
-          h('button', { onClick: clearStrips, disabled: strips.length === 0,
+          h('button', { type: 'button', onClick: clearStrips, disabled: strips.length === 0,
             className: 'transition-colors px-3 py-1.5 rounded text-xs font-bold bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 disabled:opacity-40' }, __alloT('stem.fractions.clear_3', 'Clear')),
           toggleBtn(stripGrid, toggleGrid, (stripGrid ? '▣' : '□') + ' Common-denominator grid'),
           toggleBtn(stripLabels, toggleLabels, (stripLabels ? '▣' : '□') + ' Labels'),
@@ -12156,7 +12206,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] text-violet-700 font-mono' }, strips.map(function(s) { return (s.n * (lcd / Math.max(1, s.d))) + '/' + lcd; }).join(',  '))
         ),
         h('div', { className: 'text-center pt-1' },
-          h('button', { onClick: function() { sfxClick(); if (typeof setStemLabTool === 'function') setStemLabTool('numberline'); },
+          h('button', { type: 'button', onClick: function() { sfxClick(); if (typeof setStemLabTool === 'function') setStemLabTool('numberline'); },
             className: 'transition-colors text-xs text-indigo-600 underline hover:text-indigo-800' }, __alloT('stem.fractions.plot_these_on_a_number_line', 'Plot these on a number line →'))
         )
       );
@@ -12334,6 +12384,7 @@ window.StemLab = window.StemLab || {
       '--fraction-nav-focus': isContrast ? '#ffff00' : ctx.isDark ? '#7dd3fc' : '#2563eb'
     };
     function moveNavigationTab(e, index, length) {
+      if (_fracIgnoreKey(e)) return;
       var next = -1;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % length;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index + length - 1) % length;
@@ -12573,16 +12624,16 @@ window.StemLab = window.StemLab || {
                 h('label', { htmlFor: 'sm-' + s.k, className: 'block text-[0.6875rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-rose-700' }, iq[s.k])),
                 h('input', { id: 'sm-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
                   onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                  className: 'w-full', 'aria-label': s.l }));
+                  className: 'w-full', 'aria-label': s.l, 'aria-valuetext': s.l + ' ' + iq[s.k] }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-            h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
+            h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ n: iq.num, d: iq.den, c: iq.count, t: total.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.fractions.log', '📋 Log')),
+            h('button', { type: 'button', onClick: function() { setIQ({ num: 1, den: 4, count: 3, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[0.6875rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.fractions.reset', '↺ Reset'))
           ),
           h('textarea', { 'aria-label': __alloT('stem.fractions.hypothesis_input', 'Fraction equivalence hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.fractions.hypothesis_when_do_n_copies_of_a_fract', 'Hypothesis: When do N copies of a fraction equal exactly 1?'),
             className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300 mb-3' }, __alloT('stem.fractions.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700 leading-relaxed mb-3' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, __alloT('stem.fractions.what_relationship_between_count_and_de', 'What relationship between count and denominator gives exactly 1?')),
@@ -12608,7 +12659,7 @@ window.StemLab = window.StemLab || {
             h('h4', { className: 'text-sm font-bold text-rose-800' }, __alloT('stem.fractions.fraction_challenge', '\uD83C\uDFAF Fraction Challenge')),
             h('div', { className: 'flex gap-0.5 ml-2' },
               ['easy', 'medium', 'hard'].map(function(d) {
-                return h('button', { key: d,
+                return h('button', { type: 'button', key: d,
                   'aria-pressed': difficulty === d,
                   onClick: function() { sfxClick(); upd({ difficulty: d }); },
                   className: 'text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full transition-all ' +
@@ -12623,7 +12674,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-[0.6875rem] text-slate-600' }, Object.keys(challengeTypesUsed).length + '/7 types')
         ),
         !challenge
-          ? h('button', { 'aria-label': __alloT('stem.fractions.generate_challenge', 'Generate Challenge'),
+          ? h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.generate_challenge', 'Generate Challenge'),
               onClick: generateChallenge,
               className: 'w-full py-2.5 bg-gradient-to-r from-rose-700 to-pink-700 text-white font-bold rounded-xl text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md'
             }, __alloT('stem.fractions.generate_challenge_2', '\uD83C\uDFB2 Generate Challenge'))
@@ -12637,19 +12688,19 @@ window.StemLab = window.StemLab || {
                 h('input', { 'aria-label': __alloT('stem.fractions.challenge_answer_label', 'Your answer'),
                   type: 'number', value: answer,
                   onChange: function(e) { upd({ answer: e.target.value }); },
-                  onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
+                  onKeyDown: function(e) { if (!_fracIgnoreKey(e) && e.key === 'Enter' && answer) checkChallenge(); },
                   disabled: !!challenge.answered,
                   placeholder: __alloT('stem.fractions.your_answer', 'Your answer...'),
                   className: 'flex-1 px-3 py-2 border border-rose-600 rounded-lg text-sm font-mono'
                 }),
-                h('button', { 'aria-label': __alloT('stem.fractions.check_3', 'Check'),
+                h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.check_3', 'Check'),
                   onClick: checkChallenge,
                   disabled: !answer || !!challenge.answered,
                   className: 'transition-colors px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-sm hover:bg-rose-700 disabled:opacity-50'
                 }, __alloT('stem.fractions.check_4', 'Check'))
               ),
               feedback && h('p', { className: 'text-sm font-bold ' + (feedback.correct ? 'text-green-600' : 'text-red-600') }, feedback.msg),
-              feedback && h('button', { 'aria-label': __alloT('stem.fractions.next_challenge', 'Next Challenge'),
+              feedback && h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.next_challenge', 'Next Challenge'),
                 onClick: generateChallenge,
                 className: 'text-xs text-rose-600 font-bold hover:underline'
               }, __alloT('stem.fractions.next_challenge_2', '\u27A1\uFE0F Next Challenge'))
@@ -12670,11 +12721,11 @@ window.StemLab = window.StemLab || {
 
       // AI Tutor toggle + panel
       h('div', { className: 'flex gap-2' },
-        _aiOn && !showAITutor && h('button', { 'aria-label': __alloT('stem.fractions.ai_tutor_2', 'AI Tutor'),
+        _aiOn && !showAITutor && h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.ai_tutor_2', 'AI Tutor'),
           onClick: function() { sfxClick(); upd({ showAITutor: true }); },
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
         }, __alloT('stem.fractions.ai_tutor_3', '\uD83E\uDD16 AI Tutor')),
-        h('button', { 'aria-label': __alloT('stem.fractions.benchmarks_4', 'Benchmarks'),
+        h('button', { type: 'button', 'aria-label': __alloT('stem.fractions.benchmarks_4', 'Benchmarks'),
           onClick: function() { sfxClick(); upd({ showBenchmarks: !showBenchmarks }); },
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all'
         }, __alloT('stem.fractions.benchmarks_5', '\uD83D\uDCCB Benchmarks'))

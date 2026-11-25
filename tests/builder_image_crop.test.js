@@ -127,7 +127,8 @@ describe('anti-drift: builder crop shipped with its privacy + chrome-sweep invar
   it('keyboard support: arrows nudge / Shift+arrows resize, Escape closes without tripping the doc-level handler', () => {
     expect(anti).toMatch(/ArrowLeft: \[-4, 0\], ArrowRight: \[4, 0\], ArrowUp: \[0, -4\], ArrowDown: \[0, 4\]/);
     const kb = anti.slice(anti.indexOf('const _openBuilderCropModal'), anti.indexOf('const _dismissCropBtn'));
-    expect(kb).toMatch(/e\.key === 'Escape'.*e\.stopPropagation\(\); _close\(\)/);
+    // Now spans a line and skips IME composition first.
+    expect(kb).toMatch(/e\.key === 'Escape'\) \{\s*if \(e\.isComposing \|\| e\.keyCode === 229\) return; e\.preventDefault\(\); e\.stopPropagation\(\); _close\(\)/);
   });
   it('the floating button self-expires and dismisses on scroll (never parked in a serializable DOM)', () => {
     expect(anti).toMatch(/setTimeout\(\(\) => \{ try \{ if \(btn\.parentNode\) btn\.remove\(\); \} catch \(_\) \{\} \}, 10000\);/);

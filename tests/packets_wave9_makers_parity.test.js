@@ -492,7 +492,9 @@ describe('Wave 9 P0-4: IT & Privacy disclosure sync across packets-it.html, pack
     expect(body).toContain('Standard practice files and checks never use the microphone.');
     expect(body).toContain('Device Voice');
     expect(body).toContain('Start camera');
-    expect(body).toContain('Collect by sealed QR keeps nothing in browser storage after the tab closes.');
+    // 2026-11-23: the sentence now names its one exception (the hand-over to Add up results passes through this site's storage).
+    expect(body).toContain('Collect by sealed QR keeps nothing in browser storage after the tab closes, with one exception');
+    expect(body).toContain('are removed when Add up results reads them');
     expect(body).toContain('AlloFlow Curriculum Diagrams (AGPL-3.0)');
     expect(body).toContain('exact text size');
     expect(body).toContain('custom colors');
@@ -519,7 +521,10 @@ describe('Wave 9 P0-4: IT & Privacy disclosure sync across packets-it.html, pack
     expect(frontCheck).toContain('Device Voice');
     expect(frontCheck).toContain('Standard practice files and checks never use the microphone');
     expect(frontCheck).toContain('Student Voice Practice');
-    expect(frontCheck).toContain('browser memory only, never saved or sent');
+    // 2026-11-23: "never saved" was not true beside a Save my recording button. The page says what is.
+    expect(frontCheck).toContain('A recording stays in the browser\'s memory and is never sent.');
+    expect(frontCheck).toContain('only if the student presses Save my recording');
+    expect(frontCheck).not.toContain('never saved or sent');
 
     for (const file of ['packets-it.html', 'packets-about.html', 'packets.html']) {
       const raw = read(file);

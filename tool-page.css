@@ -250,3 +250,121 @@
         padding-top: 84px;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #0d1424;
+        color: #d3ddf0;
+    }
+    .navbar {
+        background: rgba(13, 20, 36, 0.94);
+        border-bottom-color: #28354e;
+    }
+    .nav-logo,
+    .nav-links a {
+        color: #e8eefc;
+    }
+    .nav-links a:hover {
+        color: #a5b4fc;
+    }
+    .skip-link {
+        background: #141d30;
+        color: #a5b4fc;
+    }
+    .tool-page {
+        color: #d3ddf0;
+    }
+    .tool-page-crumbs,
+    .tool-page-note,
+    .tool-page-footer {
+        color: #9aa9c4;
+    }
+    .tool-page-crumbs li + li::before {
+        color: #64748b;
+    }
+    .tool-page-eyebrow,
+    .tool-page-crumbs a,
+    main.tool-page p a:not(.btn-primary):not(.btn-secondary),
+    main.tool-page li a:not(.btn-primary):not(.btn-secondary),
+    .tool-page-block a:not(.tool-page-open):not(.tool-page-manual),
+    .tool-page-footer a {
+        color: #a5b4fc;
+    }
+    .tool-page-hero h1,
+    .tool-page-block h2,
+    .tool-page-copy-status {
+        color: #e8eefc;
+    }
+    .tool-page-lede {
+        color: #d3ddf0;
+    }
+    .tool-page-block {
+        border-top-color: #28354e;
+    }
+    .tool-page .tool-page-open,
+    .tool-page .tool-page-open:visited {
+        background: #a5b4fc;
+        color: #0d1424;
+    }
+    .tool-page .tool-page-open:hover {
+        background: #c7d2fe;
+        color: #0d1424;
+    }
+    .tool-page-block a.tool-page-manual,
+    .tool-page-block a.tool-page-manual:visited,
+    .tool-page .tool-page-manual,
+    .tool-page-copy-btn {
+        background: #18233d;
+        color: #c7d2fe;
+        border-color: #33456e;
+    }
+    .tool-page-block a.tool-page-manual:hover,
+    .tool-page .tool-page-manual:hover,
+    .tool-page-copy-btn:hover {
+        background: #1e2d4f;
+        color: #e0e7ff;
+        border-color: #818cf8;
+    }
+    .tool-page-url code {
+        background: #172033;
+        border-color: #28354e;
+        color: #e8eefc;
+    }
+    .tool-page a:focus-visible,
+    .tool-page button:focus-visible,
+    .tool-page-footer a:focus-visible,
+    .skip-link:focus-visible {
+        outline-color: #a5b4fc;
+    }
+}
+
+@media print {
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    .navbar,
+    .skip-link,
+    .tool-page-url-actions,
+    .tool-page-footer {
+        display: none !important;
+    }
+    .tool-page {
+        max-width: none;
+        padding: 0;
+        color: #000;
+    }
+    .tool-page-hero h1,
+    .tool-page-block h2,
+    .tool-page-lede,
+    .tool-page-note,
+    .tool-page-crumbs,
+    .tool-page-eyebrow {
+        color: #000 !important;
+    }
+    .tool-page-url code {
+        background: #f5f5f5 !important;
+        color: #000 !important;
+        border: 1px solid #999 !important;
+    }
+}

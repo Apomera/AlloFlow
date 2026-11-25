@@ -5,8 +5,12 @@
  */
 (function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
 
   function create(THREE) {
+    if (!THREE || !THREE.Group) {
+      throw new Error('BirdLab 3D requires THREE before creating a bird.');
+    }
     var featherArt = global.AvianFeatherArt;
     if (!featherArt || typeof featherArt.createFlightFeatherCanvas !== 'function' || typeof featherArt.createVaneDetailCanvases !== 'function' ||
         typeof featherArt.applyVaneGrain !== 'function' || typeof featherArt.vaneGrainCacheKey !== 'function') {
@@ -30,12 +34,21 @@
       var m = new THREE.MeshStandardMaterial(options);
       m.color.convertSRGBToLinear(); materials.push(m); return m;
     }
-    function texture(canvas, name, linear) {
-      var t = new THREE.CanvasTexture(canvas); t.name = name;
+    function texture(canvasEl, name, linear) {
+      var t = canvasEl
+        ? new THREE.CanvasTexture(canvasEl)
+        : (typeof THREE.DataTexture === 'function'
+          ? new THREE.DataTexture(new Uint8Array([220, 220, 214, 255]), 1, 1, THREE.RGBAFormat)
+          : new THREE.CanvasTexture(canvasEl));
+      if (!canvasEl && t) t.needsUpdate = true;
+      t.name = name;
       t.encoding = linear ? THREE.LinearEncoding : THREE.sRGBEncoding;
       t.anisotropy = 4; textures.push(t); return t;
     }
-    function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+    function canvas(w, h) {
+      if (typeof document === 'undefined' || !document || typeof document.createElement !== 'function') return null;
+      var c = document.createElement('canvas'); c.width = w; c.height = h; return c;
+    }
     function addMesh(parent, g, m, name) {
       var mesh = new THREE.Mesh(g, m); mesh.name = name;
       mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
@@ -69,62 +82,66 @@
 
     // Neutral relief, rather than painted black outlines, separates individual
     // contour feathers. Pigment is supplied by the continuous body surface.
-    var contourCanvas = canvas(512, 512), c = contourCanvas.getContext('2d');
-    c.fillStyle = '#dededb'; c.fillRect(0, 0, 512, 512);
-    for (var row = -2; row < 18; row++) for (var column = -1; column < 18; column++) {
-      var x = column * 32 + (row % 2) * 16 + (noise(row + 9, column) - 0.5) * 5, y = row * 32;
-      var length = 41 + noise(row, column) * 9, half = 15 + noise(column, row + 2) * 2;
-      c.save(); c.translate(x, y); c.rotate((noise(row + 3, column) - 0.5) * 0.12);
-      var gradient = c.createLinearGradient(-half, 0, half, 0);
-      gradient.addColorStop(0, '#d5d3cd'); gradient.addColorStop(0.46, '#e6e4dd'); gradient.addColorStop(1, '#dcdad3');
-      c.fillStyle = gradient; c.beginPath(); c.moveTo(-half, -5);
-      c.bezierCurveTo(-half * 1.04, length * 0.4, -half * 0.5, length * 0.9, 0, length);
-      c.bezierCurveTo(half * 0.55, length * 0.90, half, length * 0.35, half, -5); c.closePath(); c.fill(); c.clip();
-      for (var barb = 3; barb < length; barb += 1.5 + noise(row + barb, column) * 0.7) {
-        var reach = half * (1 - Math.pow(barb / length, 3));
-        c.strokeStyle = 'rgba(50,45,35,.075)'; c.lineWidth = 0.45;
-        [-1, 1].forEach(function (side) {
-          c.beginPath(); c.moveTo(0, barb + 2); c.quadraticCurveTo(side * reach * 0.6, barb - 1, side * reach, barb - 7); c.stroke();
-        });
+    var contourCanvas = canvas(512, 512), c = contourCanvas && typeof contourCanvas.getContext === 'function' ? contourCanvas.getContext('2d') : null;
+    if (c) {
+      c.fillStyle = '#dededb'; c.fillRect(0, 0, 512, 512);
+      for (var row = -2; row < 18; row++) for (var column = -1; column < 18; column++) {
+        var x = column * 32 + (row % 2) * 16 + (noise(row + 9, column) - 0.5) * 5, y = row * 32;
+        var length = 41 + noise(row, column) * 9, half = 15 + noise(column, row + 2) * 2;
+        c.save(); c.translate(x, y); c.rotate((noise(row + 3, column) - 0.5) * 0.12);
+        var gradient = c.createLinearGradient(-half, 0, half, 0);
+        gradient.addColorStop(0, '#d5d3cd'); gradient.addColorStop(0.46, '#e6e4dd'); gradient.addColorStop(1, '#dcdad3');
+        c.fillStyle = gradient; c.beginPath(); c.moveTo(-half, -5);
+        c.bezierCurveTo(-half * 1.04, length * 0.4, -half * 0.5, length * 0.9, 0, length);
+        c.bezierCurveTo(half * 0.55, length * 0.90, half, length * 0.35, half, -5); c.closePath(); c.fill(); c.clip();
+        for (var barb = 3; barb < length; barb += 1.5 + noise(row + barb, column) * 0.7) {
+          var reach = half * (1 - Math.pow(barb / length, 3));
+          c.strokeStyle = 'rgba(50,45,35,.075)'; c.lineWidth = 0.45;
+          [-1, 1].forEach(function (side) {
+            c.beginPath(); c.moveTo(0, barb + 2); c.quadraticCurveTo(side * reach * 0.6, barb - 1, side * reach, barb - 7); c.stroke();
+          });
+        }
+        c.strokeStyle = 'rgba(255,255,245,.16)'; c.lineWidth = 0.55;
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(0, length - 3); c.stroke(); c.restore();
       }
-      c.strokeStyle = 'rgba(255,255,245,.16)'; c.lineWidth = 0.55;
-      c.beginPath(); c.moveTo(0, 0); c.lineTo(0, length - 3); c.stroke(); c.restore();
     }
     var contour = texture(contourCanvas, 'hawk-contour-feather-relief');
     contour.wrapS = contour.wrapT = THREE.RepeatWrapping; contour.repeat.set(1.1, 1.15);
     // Short, directional facial feathers replace scaled-down body scallops.
     // Their irregular shafts and fine paired barbs stay soft at a distance.
-    var headCanvas = canvas(512, 512), facePaint = headCanvas.getContext('2d');
-    facePaint.fillStyle = '#dfdcd4'; facePaint.fillRect(0, 0, 512, 512);
-    // Medium feather groups survive mipmapping at the observation distance;
-    // the fine shafts below add texture when the camera moves closer.
-    for (var mediumRow = -2; mediumRow < 20; mediumRow++) for (var mediumLane = -2; mediumLane < 25; mediumLane++) {
-      var mx = mediumLane * 23 + (mediumRow % 2) * 11.5 + (noise(mediumRow + 5, mediumLane) - 0.5) * 7;
-      var my = mediumRow * 29, ml = 34 + noise(mediumLane, mediumRow + 11) * 13, mw = 7 + noise(mediumRow, mediumLane + 9) * 3;
-      facePaint.save(); facePaint.translate(mx, my); facePaint.rotate((noise(mediumRow, mediumLane + 19) - 0.5) * 0.42);
-      var mediumShade = facePaint.createLinearGradient(-mw, 0, mw, ml);
-      mediumShade.addColorStop(0, 'rgba(95,75,51,.03)'); mediumShade.addColorStop(0.65, 'rgba(95,75,51,.13)'); mediumShade.addColorStop(1, 'rgba(252,240,215,.24)');
-      facePaint.fillStyle = mediumShade; facePaint.beginPath(); facePaint.moveTo(-mw, 0);
-      facePaint.quadraticCurveTo(-mw * 0.65, ml * 0.62, 0, ml); facePaint.quadraticCurveTo(mw * 0.62, ml * 0.56, mw, 0); facePaint.closePath(); facePaint.fill();
-      facePaint.restore();
-    }
-    for (var faceRow = -2; faceRow < 35; faceRow++) for (var faceLane = -2; faceLane < 45; faceLane++) {
-      var fx = faceLane * 12 + (faceRow % 2) * 6 + (noise(faceRow, faceLane + 11) - 0.5) * 4;
-      var fy = faceRow * 16 + (noise(faceLane, faceRow + 31) - 0.5) * 5;
-      var fl = 17 + noise(faceRow + 7, faceLane) * 11, fw = 3.4 + noise(faceLane, faceRow + 2) * 2.3;
-      facePaint.save(); facePaint.translate(fx, fy); facePaint.rotate((noise(faceRow + 23, faceLane) - 0.5) * 0.40);
-      var faceShade = facePaint.createLinearGradient(0, 0, 0, fl);
-      faceShade.addColorStop(0, 'rgba(88,75,58,0)'); faceShade.addColorStop(0.58, 'rgba(88,75,58,.035)'); faceShade.addColorStop(1, 'rgba(88,75,58,.10)');
-      facePaint.strokeStyle = faceShade; facePaint.lineWidth = 0.6;
-      facePaint.beginPath(); facePaint.moveTo(0, 0); facePaint.quadraticCurveTo(fw * 0.12, fl * 0.6, 0, fl); facePaint.stroke();
-      for (var faceBarb = 3; faceBarb < fl; faceBarb += 2.1 + noise(faceBarb, faceLane) * 0.7) {
-        var spread = fw * Math.sin(faceBarb / fl * Math.PI) * (0.76 + noise(faceBarb, faceRow) * 0.24);
-        [-1, 1].forEach(function (side) {
-          facePaint.strokeStyle = side < 0 ? 'rgba(90,77,58,.052)' : 'rgba(255,252,240,.12)'; facePaint.lineWidth = 0.5;
-          facePaint.beginPath(); facePaint.moveTo(0, faceBarb + 2); facePaint.quadraticCurveTo(side * spread * 0.55, faceBarb, side * spread, faceBarb - 4); facePaint.stroke();
-        });
+    var headCanvas = canvas(512, 512), facePaint = headCanvas && typeof headCanvas.getContext === 'function' ? headCanvas.getContext('2d') : null;
+    if (facePaint) {
+      facePaint.fillStyle = '#dfdcd4'; facePaint.fillRect(0, 0, 512, 512);
+      // Medium feather groups survive mipmapping at the observation distance;
+      // the fine shafts below add texture when the camera moves closer.
+      for (var mediumRow = -2; mediumRow < 20; mediumRow++) for (var mediumLane = -2; mediumLane < 25; mediumLane++) {
+        var mx = mediumLane * 23 + (mediumRow % 2) * 11.5 + (noise(mediumRow + 5, mediumLane) - 0.5) * 7;
+        var my = mediumRow * 29, ml = 34 + noise(mediumLane, mediumRow + 11) * 13, mw = 7 + noise(mediumRow, mediumLane + 9) * 3;
+        facePaint.save(); facePaint.translate(mx, my); facePaint.rotate((noise(mediumRow, mediumLane + 19) - 0.5) * 0.42);
+        var mediumShade = facePaint.createLinearGradient(-mw, 0, mw, ml);
+        mediumShade.addColorStop(0, 'rgba(95,75,51,.03)'); mediumShade.addColorStop(0.65, 'rgba(95,75,51,.13)'); mediumShade.addColorStop(1, 'rgba(252,240,215,.24)');
+        facePaint.fillStyle = mediumShade; facePaint.beginPath(); facePaint.moveTo(-mw, 0);
+        facePaint.quadraticCurveTo(-mw * 0.65, ml * 0.62, 0, ml); facePaint.quadraticCurveTo(mw * 0.62, ml * 0.56, mw, 0); facePaint.closePath(); facePaint.fill();
+        facePaint.restore();
       }
-      facePaint.restore();
+      for (var faceRow = -2; faceRow < 35; faceRow++) for (var faceLane = -2; faceLane < 45; faceLane++) {
+        var fx = faceLane * 12 + (faceRow % 2) * 6 + (noise(faceRow, faceLane + 11) - 0.5) * 4;
+        var fy = faceRow * 16 + (noise(faceLane, faceRow + 31) - 0.5) * 5;
+        var fl = 17 + noise(faceRow + 7, faceLane) * 11, fw = 3.4 + noise(faceLane, faceRow + 2) * 2.3;
+        facePaint.save(); facePaint.translate(fx, fy); facePaint.rotate((noise(faceRow + 23, faceLane) - 0.5) * 0.40);
+        var faceShade = facePaint.createLinearGradient(0, 0, 0, fl);
+        faceShade.addColorStop(0, 'rgba(88,75,58,0)'); faceShade.addColorStop(0.58, 'rgba(88,75,58,.035)'); faceShade.addColorStop(1, 'rgba(88,75,58,.10)');
+        facePaint.strokeStyle = faceShade; facePaint.lineWidth = 0.6;
+        facePaint.beginPath(); facePaint.moveTo(0, 0); facePaint.quadraticCurveTo(fw * 0.12, fl * 0.6, 0, fl); facePaint.stroke();
+        for (var faceBarb = 3; faceBarb < fl; faceBarb += 2.1 + noise(faceBarb, faceLane) * 0.7) {
+          var spread = fw * Math.sin(faceBarb / fl * Math.PI) * (0.76 + noise(faceBarb, faceRow) * 0.24);
+          [-1, 1].forEach(function (side) {
+            facePaint.strokeStyle = side < 0 ? 'rgba(90,77,58,.052)' : 'rgba(255,252,240,.12)'; facePaint.lineWidth = 0.5;
+            facePaint.beginPath(); facePaint.moveTo(0, faceBarb + 2); facePaint.quadraticCurveTo(side * spread * 0.55, faceBarb, side * spread, faceBarb - 4); facePaint.stroke();
+          });
+        }
+        facePaint.restore();
+      }
     }
     var headRelief = texture(headCanvas, 'hawk-fine-facial-feathers');
     headRelief.wrapS = headRelief.wrapT = THREE.RepeatWrapping; headRelief.repeat.set(1.25, 1.15);
@@ -435,12 +452,14 @@
       brow.position.set(side * 0.053, 0.024, -0.042); brow.scale.set(0.010, 0.0048, 0.021);
       brow.rotation.y = side * 0.40; brow.rotation.z = side * -0.18;
     });
-    var keratinCanvas = canvas(128, 256), kc = keratinCanvas.getContext('2d');
-    kc.fillStyle = '#dddcd6'; kc.fillRect(0, 0, 128, 256);
-    for (var ridge = 0; ridge < 180; ridge++) {
-      var rx = noise(ridge, 41) * 128, ry = noise(ridge, 19) * 256;
-      kc.strokeStyle = ridge % 3 ? 'rgba(70,65,55,.065)' : 'rgba(255,255,245,.12)'; kc.lineWidth = 0.45;
-      kc.beginPath(); kc.moveTo(rx, ry); kc.quadraticCurveTo(rx + 1.5, ry + 8, rx + 0.5, ry + 14 + noise(ridge, 4) * 22); kc.stroke();
+    var keratinCanvas = canvas(128, 256), kc = keratinCanvas && typeof keratinCanvas.getContext === 'function' ? keratinCanvas.getContext('2d') : null;
+    if (kc) {
+      kc.fillStyle = '#dddcd6'; kc.fillRect(0, 0, 128, 256);
+      for (var ridge = 0; ridge < 180; ridge++) {
+        var rx = noise(ridge, 41) * 128, ry = noise(ridge, 19) * 256;
+        kc.strokeStyle = ridge % 3 ? 'rgba(70,65,55,.065)' : 'rgba(255,255,245,.12)'; kc.lineWidth = 0.45;
+        kc.beginPath(); kc.moveTo(rx, ry); kc.quadraticCurveTo(rx + 1.5, ry + 8, rx + 0.5, ry + 14 + noise(ridge, 4) * 22); kc.stroke();
+      }
     }
     var keratin = texture(keratinCanvas, 'hawk-fine-keratin-growth');
     var billMat = material({ color: 0x40423d, map: keratin, bumpMap: keratin, bumpScale: 0.000055, roughness: 0.37 });
@@ -740,7 +759,7 @@
           var dx = center.x - previous.x, dz = center.z - previous.z, dy = center.y - previous.y;
           var bendDY = bent.y - previousBent.y, horizontal = Math.hypot(dx, dz);
           var reach = Math.sqrt(Math.max(0, dx * dx + dy * dy + dz * dz - bendDY * bendDY));
-          bent.x = previousBent.x + dx * reach / horizontal; bent.z = previousBent.z + dz * reach / horizontal;
+          if (horizontal > 1e-9) { bent.x = previousBent.x + dx * reach / horizontal; bent.z = previousBent.z + dz * reach / horizontal; }
         }
         centers.push(center); loaded.push(bent);
       }
@@ -793,8 +812,10 @@
         // Normalized quaternion blending follows the modest wrist rotation
         // with a smooth bend and exact rigid endpoints, without
         // per-vertex trigonometry or temporary object allocations.
-        var qx = q.x * weight, qy = q.y * weight, qz = q.z * weight, qw = 1 + (q.w - 1) * weight;
-        var scale = 1 / Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+        var qSign = q.w < 0 ? -1 : 1;
+        var qx = q.x * qSign * weight, qy = q.y * qSign * weight, qz = q.z * qSign * weight, qw = 1 + (q.w * qSign - 1) * weight;
+        var norm = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw);
+        var scale = norm > 1e-9 ? 1 / norm : 1;
         qx *= scale; qy *= scale; qz *= scale; qw *= scale;
         var tx = 2 * (qy * z - qz * y), ty = 2 * (qz * x - qx * z), tz = 2 * (qx * y - qy * x);
         p[offset] = x + qw * tx + qy * tz - qz * ty + px;
@@ -1048,7 +1069,7 @@
       elapsed = Number.isFinite(pose.elapsedTime) ? Math.max(0, pose.elapsedTime) : elapsed + dt;
       // Pose values are already continuous in the flight controller. Never
       // integrate the flap phase here: pausing stops every anatomical motion.
-      var phase = Number(pose.flapPhase) || 0, amplitude = clamp(Number(pose.flapAmplitude) || 0, 0, 1);
+      var rawPhase = Number(pose.flapPhase), phase = Number.isFinite(rawPhase) ? rawPhase : 0, amplitude = clamp(Number(pose.flapAmplitude) || 0, 0, 1);
       var fold = clamp(Number(pose.fold) || 0, 0, 1), open = 1 - fold;
       foldedPigment.value = smooth(0.2, 0.82, fold);
       var footExtension = clamp(Number(pose.feet) || 0, 0, 1);
@@ -1246,14 +1267,16 @@
     function dispose() {
       if (disposed) return; disposed = true;
       geometries.forEach(function (g) { g.dispose(); }); materials.forEach(function (m) { m.dispose(); }); textures.forEach(function (t) { t.dispose(); });
+      geometries.length = 0; materials.length = 0; textures.length = 0;
       if (root.parent) root.parent.remove(root);
     }
     root.userData.featherCount = featherCount;
     root.userData.joints = ['shoulders', 'wrists', 'alulae', 'sixteen-primary-quills', 'tail-fan', 'head', 'hocks', 'eight-toes'];
+    var statsCounts = { geometries: geometries.length, materials: materials.length, textures: textures.length };
     update({ fold: 1, feet: 1, tailFan: 0.15 }, 0);
     return { root: root, update: update, dispose: dispose, footOffsetY: -0.185,
       joints: { wings: wings, head: head, tail: tail, feet: feet },
-      getStats: function () { return { feathers: featherCount, geometries: geometries.length, materials: materials.length, textures: textures.length, wingspanMetres: 1.24, fold: state.fold }; } };
+      getStats: function () { return { feathers: featherCount, geometries: statsCounts.geometries, materials: statsCounts.materials, textures: statsCounts.textures, wingspanMetres: 1.24, fold: state.fold }; } };
   }
   global.BirdLab3DBird = { create: create, version: '1.7.0' };
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

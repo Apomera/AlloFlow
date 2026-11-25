@@ -945,8 +945,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "ad304fdb7503d1fcb7edf2d7c4339d1a41fcc3b43107036338d714ccaadf3220",
-    "learningLibrarySha256": "686a6b6ffdffcf8e7d7c3f1f2d9313162060091cd32d094e81a713647a5250c2",
+    "sourceItemsSha256": "e2d5082652631af6369e97ca1af0537910d6081948c3cefaa99157b44b0c4850",
+    "learningLibrarySha256": "c4dee499a4f032dc8d1ab6637b03ebc2f8acdb1a7dc269499e965e4e8741ff43",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   },
   "expansion": {

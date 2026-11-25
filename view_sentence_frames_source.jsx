@@ -1,3 +1,18 @@
+function ensureSentenceFramesPolishCss() {
+  if (typeof document === 'undefined' || !document.head || document.getElementById('allo-sentence-frames-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-sentence-frames-a11y-css';
+  st.textContent = [
+    '[data-sentence-frames-view="true"] button,[data-sentence-frames-view="true"] input,[data-sentence-frames-view="true"] textarea{touch-action:manipulation;box-sizing:border-box}',
+    '[data-sentence-frames-view="true"] button:focus-visible,[data-sentence-frames-view="true"] input:focus-visible,[data-sentence-frames-view="true"] textarea:focus-visible,[data-sentence-frames-view="true"] [role="region"]:focus-visible{outline:3px solid #be123c;outline-offset:2px}',
+    '.theme-contrast [data-sentence-frames-view="true"] :focus-visible{outline:3px solid #ffff00!important;outline-offset:2px}',
+    '@media (forced-colors:active){[data-sentence-frames-view="true"] :focus-visible{outline:3px solid Highlight!important;outline-offset:2px}[data-sentence-frames-view="true"] button,[data-sentence-frames-view="true"] input,[data-sentence-frames-view="true"] textarea{border:1px solid ButtonText}}',
+    '@media (prefers-reduced-motion:reduce){[data-sentence-frames-view="true"] *,[data-sentence-frames-view="true"] *::before,[data-sentence-frames-view="true"] *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}'
+  ].join('');
+  document.head.appendChild(st);
+}
+ensureSentenceFramesPolishCss();
+
 // Preserve split-index keys used by existing student projects and voice inputs.
 // Numeric citations ([1], [2, 3]) and Markdown links ([text](url)) are not blanks.
 const SCAFFOLD_BLANK_PATTERN = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\())/;
@@ -30,6 +45,7 @@ function _scaffoldTranslationAttributes(artifact) {
 }
 
 function SentenceFramesView(props) {
+  ensureSentenceFramesPolishCss();
   // State reads
   var t = typeof props.t === 'function' ? props.t : () => '';
   const label = (key, fallback) => {
@@ -136,6 +152,12 @@ function SentenceFramesView(props) {
   };
   const [draftCopied, setDraftCopied] = React.useState(false);
   const draftCopiedTimerRef = React.useRef(null);
+  const [scaffoldSrMsg, setScaffoldSrMsg] = React.useState('');
+  const announceScaffold = msg => {
+    const clean = String(msg || '');
+    setScaffoldSrMsg(clean);
+    if (typeof props.announceToSR === 'function') props.announceToSR(clean);
+  };
   const [activeTierFilter, setActiveTierFilter] = React.useState('all');
   const [speakingDraft, setSpeakingDraft] = React.useState(false);
   const draftSpeechListenerRef = React.useRef(null);
@@ -234,6 +256,7 @@ function SentenceFramesView(props) {
     const inserted = (needsLeadingSpace ? ' ' : '') + word + (needsTrailingSpace ? ' ' : '');
     const nextVal = before + inserted + after;
     handleStudentInput(resId, targetKey, nextVal);
+    announceScaffold(label('scaffolds.inserted_word_sr', 'Inserted word: {word}').replace('{word}', word));
     if (el) {
       const caretPos = before.length + (needsLeadingSpace ? 1 : 0) + word.length;
       const restoreFocus = () => {
@@ -274,6 +297,7 @@ function SentenceFramesView(props) {
     const markCopied = () => {
       if (!scaffoldMountedRef.current) return;
       setDraftCopied(true);
+      announceScaffold(label('scaffolds.draft_copied_sr', 'Draft copied to clipboard.'));
       if (draftCopiedTimerRef.current) clearTimeout(draftCopiedTimerRef.current);
       draftCopiedTimerRef.current = setTimeout(() => { draftCopiedTimerRef.current = null; if (scaffoldMountedRef.current) setDraftCopied(false); }, 2000);
     };
@@ -395,7 +419,8 @@ function SentenceFramesView(props) {
   };
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   return (
-                  <div className="space-y-6">
+                  <div className="space-y-6" data-sentence-frames-view="true">
+                      {scaffoldSrMsg ? <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{scaffoldSrMsg}</div> : null}
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
                         {isTeacherMode && <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>}
                         {!isTeacherMode && !isSessionOpen && draftStats.total > 0 && (
@@ -428,7 +453,7 @@ function SentenceFramesView(props) {
                                     title={t('scaffolds.clear_all')}
                                     aria-label={`${t('common.reset') || 'Reset'} — ${t('scaffolds.clear_all') || 'Clear all answers'}`}
                                 >
-                                    <RefreshCw size={12} aria-hidden="true" /> {t('common.reset')}
+                                    <RefreshCw size={12} aria-hidden="true" /> {t('common.reset') || 'Reset'}
                                 </button>
                                 <button
                                     type="button"
@@ -486,7 +511,7 @@ function SentenceFramesView(props) {
                                 className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-300 hover:bg-rose-50'}`}
                             >
                                 {isEditingScaffolds ? <CheckCircle2 size={14} aria-hidden="true" /> : <Pencil size={14} aria-hidden="true" />}
-                                {isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')}
+                                {isEditingScaffolds ? (t('common.done_editing') || 'Done Editing') : (t('scaffolds.edit') || 'Edit Scaffolds')}
                             </button>
                             )}
                         </div>
@@ -546,7 +571,7 @@ function SentenceFramesView(props) {
                                 type="button"
                                 data-tier-filter="all"
                                 aria-pressed={effectiveTierFilter === 'all'}
-                                onClick={() => setActiveTierFilter('all')}
+                                onClick={() => { setActiveTierFilter('all'); announceScaffold(label('scaffolds.tier_filter_all_sr', 'Showing all writing supports')); }}
                                 className={`min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
                             >{label('common.all', 'All')} ({draftStats.total})</button>
                             {presentTiers.map((tierKey) => (
@@ -555,7 +580,7 @@ function SentenceFramesView(props) {
                                     type="button"
                                     data-tier-filter={tierKey}
                                     aria-pressed={effectiveTierFilter === tierKey}
-                                    onClick={() => setActiveTierFilter(tierKey)}
+                                    onClick={() => { setActiveTierFilter(tierKey); announceScaffold(label('scaffolds.tier_filter_one_sr', 'Showing {tier} writing supports').replace('{tier}', label(TIER_LABELS[tierKey][0], TIER_LABELS[tierKey][1]))); }}
                                     className={`min-h-11 px-3 py-1 rounded-full text-xs font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 ${effectiveTierFilter === tierKey ? 'bg-rose-700 text-white border-rose-700' : TIER_CLASSES[tierKey] + ' hover:opacity-90'}`}
                                 >{label(TIER_LABELS[tierKey][0], TIER_LABELS[tierKey][1])} ({tierCounts[tierKey]})</button>
                             ))}
@@ -600,7 +625,7 @@ function SentenceFramesView(props) {
                                                         aria-label={t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`}
                                                         value={item.text}
                                                         onChange={(e) => { if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text', e.target.value); }}
-                                                        className="w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none font-serif"
+                                                        className="w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none font-serif"
                                                         rows={safeGetRows(item.text)}
                                                     />
                                                     {(item.text_en !== undefined || Boolean(leveledTextLanguage && leveledTextLanguage !== 'English')) && (
@@ -609,7 +634,7 @@ function SentenceFramesView(props) {
                                                             aria-label={t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`}
                                                             value={item.text_en || ''}
                                                             onChange={(e) => { if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text_en', e.target.value, true); }}
-                                                            className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
+                                                            className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none"
                                                             rows={safeGetRows(item.text_en || '')}
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
@@ -660,7 +685,7 @@ function SentenceFramesView(props) {
                                     aria-label={t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text'}
                                     value={generatedContent?.data?.text ?? ''}
                                     onChange={(e) => { if (typeof handleScaffoldTextChange === 'function') handleScaffoldTextChange('text', e.target.value); }}
-                                    className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
+                                    className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 resize-none transition-all motion-reduce:transition-none"
                                     rows={safeGetRows(generatedContent?.data?.text)}
                                 />
                             ) : (
@@ -729,18 +754,18 @@ function SentenceFramesView(props) {
                                                 onClick={handleToggleRubricZoom}
                                                 aria-pressed={!!rubricZoom}
                                                 className={`min-h-11 text-xs flex items-center gap-1 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${rubricZoom ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-white text-slate-700 hover:text-indigo-700 border-slate-400'}`}
-                                                title={t('scaffolds.rubric_toggle_tooltip')}
+                                                title={t('scaffolds.rubric_toggle_tooltip') || 'Toggle compact view'}
                                             >
                                                 {rubricZoom ? <Maximize size={12} aria-hidden="true"/> : <Minimize size={12} aria-hidden="true"/>}
-                                                {rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')}
+                                                {rubricZoom ? (t('scaffolds.rubric_normal') || 'Normal size') : (t('scaffolds.rubric_fit') || 'Fit to screen')}
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => { if (typeof copyToClipboard === 'function') copyToClipboard(generatedContent?.data?.rubric); }}
+                                                onClick={() => { if (typeof copyToClipboard === 'function') { copyToClipboard(generatedContent?.data?.rubric); announceScaffold(label('scaffolds.rubric_copied_sr', 'Rubric copied to clipboard.')); } }}
                                                 className="min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-                                                title={t('scaffolds.rubric_copy_tooltip')}
+                                                title={t('scaffolds.rubric_copy_tooltip') || 'Copy text'}
                                             >
-                                                <Copy size={12} aria-hidden="true"/> {t('scaffolds.rubric_copy')}
+                                                <Copy size={12} aria-hidden="true"/> {t('scaffolds.rubric_copy') || 'Copy'}
                                             </button>
                                         </>
                                     )}
@@ -772,7 +797,7 @@ function SentenceFramesView(props) {
                         {isTeacherMode && generatedContent?.data?.rubric && (
                             <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm">
                                 <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                                    <CheckCircle2 size={18} aria-hidden="true" className="text-indigo-600"/> {t('scaffolds.auto_grader')}
+                                    <CheckCircle2 size={18} aria-hidden="true" className="text-indigo-600"/> {t('scaffolds.auto_grader') || 'AI Auto-Grader'}
                                 </h4>
                                 {!gradingResult ? (
                                     <div className="space-y-3">
@@ -792,7 +817,7 @@ function SentenceFramesView(props) {
                                             className="min-h-11 w-full bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
                                         >
                                             {isGrading ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={16} aria-hidden="true" className="text-amber-200 fill-current"/>}
-                                            {isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn')}
+                                            {isGrading ? (t('dashboard.grading.grade_work_loading') || 'Grading...') : (t('dashboard.grading.grade_work_btn') || 'Grade Student Work')}
                                         </button>
                                     </div>
                                 ) : (
@@ -829,7 +854,7 @@ function SentenceFramesView(props) {
                                             onClick={handleSetGradingResultToNull}
                                             className="min-h-11 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline w-full text-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                         >
-                                            {t('dashboard.grading.grade_another')}
+                                            {t('dashboard.grading.grade_another') || 'Grade Another Draft'}
                                         </button>
                                     </div>
                                 )}

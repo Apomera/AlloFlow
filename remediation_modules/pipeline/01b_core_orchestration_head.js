@@ -407,7 +407,7 @@ var createDocPipeline = function(deps) {
       var localHelpers = w && w.AIBackendLocal;
       var isLocal = localHelpers && typeof localHelpers.isLocalTextBackend === 'function'
         ? localHelpers.isLocalTextBackend
-        : function (backend) { return ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom'].indexOf(String(backend || '')) !== -1; };
+        : function (backend) { return ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'onnx-npu', 'custom'].indexOf(String(backend || '')) !== -1; };
       var backend = (_rawCallGemini && _rawCallGemini._alloflowBackend) || (w && w.__alloActiveAIBackend && w.__alloActiveAIBackend.backend) || '';
       if (backend) return !!isLocal(backend);
       var storage = w && w.localStorage;
@@ -457,12 +457,13 @@ var createDocPipeline = function(deps) {
       if (helpers && typeof helpers.buildLocalModelProfile === 'function') {
         return helpers.buildLocalModelProfile({
           backend: active.backend || cfg.backend,
-          model: active.model || (cfg.models && cfg.models.default),
+          modelId: active.model || (cfg.models && cfg.models.default),
+          models: cfg.models,
           localModel: cfg.localModel,
-          localModelProfile: cfg.localModelProfile || cfg.capability
+          localModelProfile: active.localModelProfile || cfg.localModelProfile || cfg.capability
         });
       }
-      var capability = active.capability || cfg.localModelProfile || cfg.capability || {};
+      var capability = active.localModelProfile || active.capability || cfg.localModelProfile || cfg.capability || {};
       var localEngine = cfg.localEngine || {};
       var ctx = Number(
         capability.contextWindow ||

@@ -46,7 +46,9 @@
     _st.id = 'accesslens-css';
     _st.textContent = [
       '.accesslens-tab, .accesslens-btn, .accesslens-chip { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }',
+      '.accesslens-tab, .accesslens-btn, .accesslens-chip, [data-stem-tool-shell="accessLens"] :is(button,input,select,summary) { touch-action: manipulation; }',
       '.accesslens-tab:focus-visible, .accesslens-btn:focus-visible, .accesslens-chip:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 2px; }',
+      '@media (forced-colors: active) { .accesslens-tab:focus-visible, .accesslens-btn:focus-visible, .accesslens-chip:focus-visible, [data-stem-tool-shell="accessLens"] :is(button,input,select,summary,[tabindex]):focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; } }',
       '.accesslens-btn:not([disabled]):not([aria-disabled="true"]):hover, .accesslens-chip:hover { transform: translateY(-1px); }',
       '@keyframes accesslens-pulse { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }',
       '@keyframes accesslens-scan { 0% { transform: translateY(-18px); opacity: 0.35; } 50% { transform: translateY(18px); opacity: 0.92; } 100% { transform: translateY(-18px); opacity: 0.35; } }',
@@ -1365,7 +1367,7 @@
     }
     // Focus target for a result that just arrived.
     function resultHeading(text) {
-      return h('h3', { key: 'rh', ref: resultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: '14px', fontWeight: 800, color: C.text, outline: 'none' } }, text);
+      return h('h3', { key: 'rh', ref: resultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: '14px', fontWeight: 800, color: C.text } }, text);
     }
 
     // Shared by the photo preview and the Describe panel.
@@ -1793,6 +1795,7 @@
       : mode === 'translate' ? renderTranslate()
       : renderInquire();
     var accessLensTabKeyDown = function (e, index) {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
       var nextIndex = -1;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % MODES.length;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + MODES.length - 1) % MODES.length;

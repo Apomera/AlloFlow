@@ -41,9 +41,11 @@ describe('Wave 10 Pass 1: Core Engine, Commands, Generation, Shared Activity', (
   it('#2, #3, #9, #10, #18 allo_commands fixes: posture, whisper fallback, canvas barge-in, Kokoro timers, safe tx()', () => {
     const src = read('allo_commands_source.jsx');
     // #2 Independent Learner gets learner posture, not educator
-    expect(src).toContain("const posture = getCommandAudience(c) === 'teacher' ? 'educator' : 'learner';");
+    // (and, since 2026-11-23, only an explicit isTeacherMode can reach educator: a
+    // missing context reads as 'teacher' to getCommandAudience)
+    expect(src).toContain("const posture = (c && c.isTeacherMode === true && getCommandAudience(c) === 'teacher') ? 'educator' : 'learner';");
     // #3 startWhisperEngine rejection falls back to beginWebSpeech
-    expect(src).toMatch(/startWhisperEngine\(whisperProfile\)\.then\([\s\S]*?\}\)\.catch\(function \(e\) \{[\s\S]*?beginWebSpeech\(c, false\)/);
+    expect(src).toMatch(/startWhisperEngine\(whisperProfile, mySession\)\.then\([\s\S]*?\}\)\.catch\(function \(e\) \{[\s\S]*?beginWebSpeech\(c, false\)/);
     // #9 barge-in reuses whisperState.stream and skips getUserMedia on desktop Canvas
     expect(src).toContain('whisperState && whisperState.stream ? whisperState.stream : null');
     expect(src).toContain('window._isCanvasEnv === true');
@@ -72,7 +74,8 @@ describe('Wave 10 Pass 1: Core Engine, Commands, Generation, Shared Activity', (
     expect(src).toContain('if (_planSourceRun && _planSourceRun.planPayload && _planSourceRun.planPayload.lessonDNA)');
     expect(src).toContain('_planSourceRun && _planSourceRun.planPayload && _planSourceRun.planPayload.batchConfig');
     expect(src).toContain('const singleGroupDeps = Object.assign({}, deps, groupFrozenGenerationDeps');
-    expect(src).toContain('Mode: ${effectiveMode}');
+    // The mode is now sanitized before it is interpolated into the prompt.
+    expect(src).toContain('Mode: ${_ghCleanToken(effectiveMode, 60)}');
     expect(src).toContain('meta: `${mathSubject} - ${effectiveMode}`');
   });
 

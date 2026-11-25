@@ -1,7 +1,8 @@
-(function () {
+(function (global) {
   'use strict';
+  if (!global || typeof global !== 'object') return;
 
-  var Lab = window.StemLab = window.StemLab || {};
+  var Lab = global.StemLab = global.StemLab || {};
   var EYE_Y = 1.65, REFERENCE_Z = 9, INTERACTION_RANGE = 7, PANEL_RANGE = 10, CONTINUITY_RANGE = 12, CHANGE_RANGE = 14, ROTATION_RANGE = 14, RELIEF_RANGE = 14, SHAPE_RANGE = 14, MOTION_RANGE = 14, FRAME_RANGE = 14, WEAVE_RANGE = 16, LANDING_RANGE = 16, APERTURE_RANGE = 18, LENGTH_RANGE = 18, SILHOUETTE_RANGE = 20, ANAMORPHOSIS_RANGE = 20, INSPECTION_RANGE = 20;
   var COLORS = { teal: 0x208e87, coral: 0xe87967, gold: 0xe9b342, ink: 0x324d50,
     floor: 0xe8ece9, wall: 0xf6f8f5, metal: 0xadbdb6 };
@@ -103,7 +104,7 @@
     if (!Lab.PerceptionWalk || ['shadowGeometry', 'shadowProfile', 'shadowOutline', 'changeObjects', 'changeTarget', 'rotationObjects', 'rotationMatch', 'reliefObjects', 'reliefSurface', 'reliefLight', 'reliefShade', 'shapeObjects', 'shapePoint', 'shapeTarget', 'motionObjects', 'motionTargets', 'frameObjects', 'frameDefaults', 'weaveObjects', 'weaveOrder', 'landingObjects', 'landingLight', 'apertureObjects', 'lengthObjects', 'silhouetteObjects', 'silhouetteReference', 'silhouetteTarget', 'anamorphosisObjects', 'anamorphosisTargets'].some(function (key) { return typeof Lab.PerceptionWalk[key] !== 'function'; })) return null;
     var sceneState = null, attachedHost = null, attachment = 0;
     var layout = [], layoutSignature = '', layoutNotify = null, statusNotify = null;
-    var walkTextures = null;
+    var walkTextures = null, walkTexturesRenderer = null;
 
     function prefersReducedMotion() {
       try {
@@ -125,12 +126,13 @@
     }
 
     function disposeWalkTextures() {
-      if (!walkTextures) return;
+      if (!walkTextures) { walkTexturesRenderer = null; return; }
       Object.keys(walkTextures).forEach(function (k) {
         var t = walkTextures[k];
         if (t && typeof t.dispose === 'function') { try { t.dispose(); } catch (e) {} }
       });
       walkTextures = null;
+      walkTexturesRenderer = null;
     }
 
     function makeWalkTexture(THREE, width, height, draw, rx, ry, isColor) {
@@ -149,8 +151,9 @@
       } catch (e) { return null; }
     }
 
-    function ensureWalkTextures(THREE) {
-      if (walkTextures) return walkTextures;
+    function ensureWalkTextures(THREE, renderer) {
+      if (walkTextures && walkTexturesRenderer === renderer) return walkTextures;
+      if (walkTextures) disposeWalkTextures();
       function h2(x, y) { var n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
       var floorMap = makeWalkTexture(THREE, 256, 256, function (ctx, w, h) {
         ctx.fillStyle = '#eaede9'; ctx.fillRect(0, 0, w, h);
@@ -207,6 +210,7 @@
         ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
       }, 1, 1, false);
       walkTextures = { floorMap: floorMap, floorBump: floorBump, wallMap: wallMap, beamMap: beamMap, dustMap: dustMap };
+      walkTexturesRenderer = renderer || null;
       return walkTextures;
     }
 
@@ -234,8 +238,9 @@
     }
 
     function build(THREE, S, data) {
-      var materials = {}, flatMaterials = {}, solids = [], parallaxLabels = [], parallaxMeshes = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [], silhouetteLabels = [], referenceLabels = [], anamorphosisLabels = [];
-      var tex = ensureWalkTextures(THREE);
+      data = data || {};
+      var materials = Object.create(null), flatMaterials = Object.create(null), solids = [], parallaxLabels = [], parallaxMeshes = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [], silhouetteLabels = [], referenceLabels = [], anamorphosisLabels = [];
+      var tex = ensureWalkTextures(THREE, S && S.renderer ? S.renderer : null);
       var dustPoints = null;
       var walkTimeUniforms = [], walkDecorMeshes = [], walkRimUniforms = [];
       var STATIC_BEAUTY_TIME = 2.4;
@@ -356,8 +361,9 @@
       }
 
       function label(text, x, y, z, width, height) {
+        if (typeof document === 'undefined' || !document || typeof document.createElement !== 'function' || !(height > 0)) return null;
         var canvas = document.createElement('canvas');
-        canvas.width = Math.round(128 * width / height);
+        canvas.width = Math.max(1, Math.round(128 * width / height));
         canvas.height = 128;
         var context = canvas.getContext('2d');
         if (!context) return;
@@ -592,6 +598,8 @@
             cones.visible = !hcInitial;
             walkDecorMeshes.push(cones);
             S.model.add(cones);
+          } else if (coneGeo && typeof coneGeo.dispose === 'function') {
+            coneGeo.dispose();
           }
         }
         // Subtle sunlit promenade dust motes floating in the museum air (GPU ShaderMaterial; excluded from solids; frozen in static/reduced-motion).
@@ -669,6 +677,8 @@
             dustPoints.visible = !hcInitial;
             walkDecorMeshes.push(dustPoints);
             S.model.add(dustPoints);
+          } else if (dustGeo && typeof dustGeo.dispose === 'function') {
+            dustGeo.dispose();
           }
         }
         // Shallow wall reliefs keep the exhibits legible while turning around.
@@ -2021,6 +2031,7 @@
     }
 
     function camera(THREE, S, data) {
+      data = data || {};
       updateReliefLighting(S, data);
       updateShapeOrientations(S, data);
       updateMotion(S, data);
@@ -2033,15 +2044,16 @@
       updateAnamorphosis(S, data);
       var player = data.player || {}, direction = cameraDirection(player);
       var x = clamp(number(player.x, -12), -20, 224), z = clamp(number(player.z, 9), -8, 14);
+      var aspect = S.camera.aspect > 0 && isFinite(S.camera.aspect) ? S.camera.aspect : 1;
       S.camera.position.set(x, EYE_Y, z);
       S.camera.lookAt(new THREE.Vector3(x + direction.x, EYE_Y + direction.y, z + direction.z));
-      S.camera.fov = data.activity === 'anamorphosis' && data.anamorphosisSet === 2 ? Math.max(48, 2 * Math.atan(Math.tan(28 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
-        : data.activity === 'silhouette' || data.activity === 'anamorphosis' ? Math.max(56, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
-        : data.activity === 'aperture' || data.activity === 'length' ? Math.max(52, 2 * Math.atan(Math.tan(34 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
-        : data.activity === 'landing' ? Math.max(52, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
-        : data.activity === 'weave' ? Math.max(76, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
+      S.camera.fov = data.activity === 'anamorphosis' && data.anamorphosisSet === 2 ? Math.max(48, 2 * Math.atan(Math.tan(28 * Math.PI / 180) / aspect) * 180 / Math.PI)
+        : data.activity === 'silhouette' || data.activity === 'anamorphosis' ? Math.max(56, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / aspect) * 180 / Math.PI)
+        : data.activity === 'aperture' || data.activity === 'length' ? Math.max(52, 2 * Math.atan(Math.tan(34 * Math.PI / 180) / aspect) * 180 / Math.PI)
+        : data.activity === 'landing' ? Math.max(52, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / aspect) * 180 / Math.PI)
+        : data.activity === 'weave' ? Math.max(76, 2 * Math.atan(Math.tan(36 * Math.PI / 180) / aspect) * 180 / Math.PI)
         : ['parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame'].indexOf(data.activity) >= 0
-        ? Math.max(62, 2 * Math.atan(Math.tan((data.activity === 'shadow' || data.activity === 'change' ? 30 : data.activity === 'rotation' || data.activity === 'relief' || data.activity === 'shape' || data.activity === 'motion' || data.activity === 'frame' ? 32 : 40) * Math.PI / 180) / S.camera.aspect) * 180 / Math.PI)
+        ? Math.max(62, 2 * Math.atan(Math.tan((data.activity === 'shadow' || data.activity === 'change' ? 30 : data.activity === 'rotation' || data.activity === 'relief' || data.activity === 'shape' || data.activity === 'motion' || data.activity === 'frame' ? 32 : 40) * Math.PI / 180) / aspect) * 180 / Math.PI)
         : 62;
       S.camera.near = 0.04;
       S.camera.far = 260;
@@ -2538,6 +2550,7 @@
 
     function statusChanged(next) {
       if (next !== 'ready') publishLayout([]);
+      if (next === 'failed' || next === 'lost') disposeWalkTextures();
       if (statusNotify) { try { statusNotify(next); } catch (e) {} }
     }
 
@@ -2587,7 +2600,8 @@
       // targets would allow collecting objects through the occlusion wall.
       var hits = ray.intersectObjects(S.walk.solids, false);
       if (!hits.length) return null;
-      var id = hits[0].object.userData.perceptionInteraction;
+      var id = hits[0].object && hits[0].object.userData ? hits[0].object.userData.perceptionInteraction : null;
+      if (!id) return null;
       if (/^relief-(A|B|light)$/.test(id) && (!S.data || S.data.activity !== 'relief')) return null;
       if (/^shape-[AB]$/.test(id) && (!S.data || S.data.activity !== 'shape')) return null;
       if (/^motion-([A-F]|dial)$/.test(id) && (!S.data || S.data.activity !== 'motion')) return null;
@@ -2691,6 +2705,7 @@
     };
     viewer.attach = function (host) {
       if (host && host === attachedHost) return;
+      if (attachedHost && host !== attachedHost) disposeWalkTextures();
       var generation = ++attachment;
       sceneState = null;
       attachedHost = host || null;
@@ -2717,4 +2732,4 @@
   Lab.PerceptionWalkScene = { createViewer: createViewer, ringParts: ringParts,
     scaleObjects: scaleObjects, tokenObjects: tokenObjects, parallaxObjects: parallaxObjects,
     contourObjects: contourObjects, contextObjects: contextObjects, continuationObjects: continuationObjects, cameraDirection: cameraDirection };
-}());
+}(typeof window !== 'undefined' && window && typeof window === 'object' ? window : (typeof globalThis !== 'undefined' ? globalThis : null)));

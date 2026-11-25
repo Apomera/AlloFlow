@@ -214,6 +214,8 @@
         setText('voice-said', 'The voice is ready. It stays in this browser, so next time it starts faster.');
         setText('make-said', '');
         draw();
+        // packets_voice_meanings.js (meanings from the vocabulary maker) waits for this.
+        try { doc.dispatchEvent(new win.CustomEvent('packets-voice-ready')); } catch (_) {}
         var next = $('make-all');
         if (next && !next.disabled) next.focus();
       })
@@ -255,7 +257,7 @@
   // again: the teacher pressed one word's own button, so a computer-voice recording may be made again.
   // A teacher's own recording is never replaced, whatever was pressed.
   function makeSome(words, again) {
-    if (state.making || !state.ready || !myWords) return;
+    if (state.making || !state.ready || !myWords || doc.body.getAttribute('data-making-meanings') === '1') return;
     var list = words.filter(function (word) { var clip = clipOf(word); return !clip || (again && clip.source === 'computer-voice'); });
     if (!list.length) return;
     var run = ++state.makeRun;

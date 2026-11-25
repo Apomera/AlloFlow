@@ -76,7 +76,9 @@ describe('Wave 11 bug sweep (2026-11-20) — Pass 1: Core Views & Handlers', () 
   it('view_history_panel_source.jsx guards st.tools, localStorage writes, window.__alloflowSelStations sync, and re-render tick', () => {
     const src = read('view_history_panel_source.jsx');
     expect(src).toContain('const [, setStationListTick] = React.useState(0);');
-    expect(src).toContain("{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}");
+    // st.tools is normalized to an array once, then counted.
+    expect(src).toContain('const toolList = Array.isArray(st.tools) ? st.tools : [];');
+    expect(src).toContain("{toolList.length} tool{toolList.length !== 1 ? 's' : ''}");
     expect(src).toContain("try { localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated)); } catch (_) {}");
     expect(src).toContain("try { localStorage.setItem('alloflow_sel_stations', JSON.stringify(updated)); } catch (_) {}");
     expect(src).toContain('window.__alloflowSelStations = updated;');
@@ -112,7 +114,7 @@ describe('Wave 11 bug sweep (2026-11-20) — Pass 2: Word Sounds, Modals & Stude
     const src = read('view_misc_modals_source.jsx');
     expect(src).toContain('if (!showUDLGuide || isCollapsed) setChatMenuOpen(false);');
     expect(src).toContain('disabled={isChatProcessing || aiOff}');
-    expect(src).toContain('!isFindingStandards && aiStandardQuery.trim() && !aiOff');
+    expect(src).toContain('!isFindingStandards && safeAiStandardQuery.trim() && !aiOff');
     const preserveCalls = src.match(/preserveValidation:\s*true/g) || [];
     expect(preserveCalls.length).toBeGreaterThanOrEqual(4);
     expect(src).toMatch(/clearAIBackendConfig[\s\S]{0,600}setKeyLockTick[\s\S]{0,120}alloflow:ai-config-changed/);
@@ -123,7 +125,7 @@ describe('Wave 11 bug sweep (2026-11-20) — Pass 2: Word Sounds, Modals & Stude
     const src = read('ui_modals_source.jsx');
     expect(src).toContain('if (now >= blockedUntil) clearInterval(timer);');
     expect(src).toContain('const pendingTimerRef = useRef(null);');
-    expect(src).toMatch(/restoreButton\(\);\s*if \(onGateRequired\) onGateRequired\(role\);/);
+    expect(src).toMatch(/restoreButton\(\);\s*if \(typeof onGateRequired === 'function'\) onGateRequired\(role\);/);
   });
 
   it('view_gemini_bridge_source.jsx fixes handleAudio languageOverride args, playback teardown, send modal reset/mic cleanup, and per-term save check', () => {

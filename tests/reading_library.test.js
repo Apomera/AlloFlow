@@ -430,10 +430,15 @@ describe('mirrored data contract (reading_library/)', () => {
     expect(cardIndex.schema).toBe('allo-reading-library-index-cards@1');
     expect(index.books.some((b) => b.contentType === 'public-domain-catalog-card')).toBe(false);
     expect(index.books.some((b) => extendedLazySources.has(b.sourceId))).toBe(false);
+    expect(index.books.some((b) => b.indexTier === 'lazy')).toBe(false);
+    // Gutenberg cards promoted to full text keep their lazy placement
+    // (indexTier 'lazy'); every other lazy entry is still a card.
+    const promoted = (b) => b.indexTier === 'lazy' && b.sourceId === 'gutenberg' &&
+      b.contentType === 'public-domain-full-text';
     expect(cardIndex.books.every((b) =>
-      b.contentType === 'public-domain-catalog-card' || extendedLazySources.has(b.sourceId)
+      b.contentType === 'public-domain-catalog-card' || extendedLazySources.has(b.sourceId) || promoted(b)
     )).toBe(true);
-    expect(cardIndex.books.every((b) => /card/.test(String(b.contentType || '')))).toBe(true);
+    expect(cardIndex.books.every((b) => /card/.test(String(b.contentType || '')) || promoted(b))).toBe(true);
     expect(index.cardsCount).toBe(cardIndex.books.length);
     // Same timestamp — the mirror writes both in one pass; a mismatch means a
     // stale card file shipped against a fresh core.

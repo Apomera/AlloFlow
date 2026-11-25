@@ -10,7 +10,7 @@
   'use strict';
   if (typeof window === 'undefined') return;
   // WCAG 2.1 AA: Accessibility CSS
-  if (typeof document !== 'undefined' && document.head && !document.getElementById("teacher-module-a11y")) { var _s = document.createElement("style"); _s.id = "teacher-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
+  if (typeof document !== 'undefined' && document.head && typeof document.getElementById === 'function' && !document.getElementById("teacher-module-a11y")) { var _s = document.createElement("style"); _s.id = "teacher-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } :where([role=\"dialog\"], [role=\"alertdialog\"], [role=\"tablist\"], [data-help-key*=\"dashboard\"], [data-help-key*=\"roster\"], [data-help-key*=\"escape_room\"]) :where(button, input, select, textarea, a, [role=\"tab\"], [role=\"button\"]) { touch-action: manipulation; } :where([role=\"dialog\"], [role=\"alertdialog\"], [role=\"tablist\"], [data-help-key*=\"dashboard\"], [data-help-key*=\"roster\"], [data-help-key*=\"escape_room\"]) :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; } @media (forced-colors: active) { :where([role=\"dialog\"], [role=\"alertdialog\"], [role=\"tablist\"], [data-help-key*=\"dashboard\"], [data-help-key*=\"roster\"], [data-help-key*=\"escape_room\"]) :where(button, input, select, textarea, a, [tabindex]):focus-visible { outline: 2px solid Highlight !important; outline-offset: 2px !important; } }"; document.head.appendChild(_s); }
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-teacher')) return;
@@ -2160,7 +2160,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           onChange: (event) => setLabelDraft(event.target.value),
           onBlur: () => commitPrivateLabel(codename),
           onKeyDown: (event) => {
-            if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+            if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
             if (event.key === "Enter") {
               event.preventDefault();
               commitPrivateLabel(codename);
@@ -2610,6 +2610,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       value: value || 1,
       onChange: (e) => handleUpdateGroupProfile(gId, field, parseFloat(e.target.value)),
       "aria-label": label,
+      "aria-valuetext": `${(value || 1).toFixed(2)}x`,
       className: "flex-1 accent-indigo-500"
     }
   ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-mono w-10 text-right" }, (value || 1).toFixed(2), "x")) : type === "toggle" ? /* @__PURE__ */ React.createElement(
@@ -2777,7 +2778,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       placeholder: t("roster.new_group_placeholder") || "New group name...",
       "aria-label": t("roster.new_group_placeholder") || "New group name",
       onKeyDown: (e) => {
-        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === "Enter") handleAddGroup();
       },
       className: "min-w-0 w-full flex-1 px-3 py-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
@@ -2899,6 +2900,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       "aria-labelledby": "offline-submission-dialog-title",
       "aria-describedby": "offline-submission-dialog-description",
       onKeyDown: (event) => {
+        if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === "Escape") {
           event.preventDefault();
           closeSubmissionDialog();
@@ -3646,6 +3648,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       "aria-modal": "true",
       "aria-labelledby": "escape-room-puzzle-question",
       onKeyDown: (event) => {
+        if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === "Escape") {
           event.preventDefault();
           closePuzzleDialog();
@@ -3903,6 +3906,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       "aria-labelledby": "escape-room-paused-title",
       "aria-describedby": "escape-room-paused-description",
       onKeyDown: (event) => {
+        if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === "Tab") {
           event.preventDefault();
           pauseDialogRef.current?.focus();
@@ -4137,6 +4141,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
       "aria-labelledby": "escape-room-end-game-title",
       "aria-describedby": "escape-room-end-game-description",
       onKeyDown: (event) => {
+        if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === "Escape") {
           event.preventDefault();
           closeEndGameDialog();
@@ -6597,6 +6602,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const dashboardTabIds = ["students", "insights", "behavior", "stems"];
   const dashboardTabRefs = useRef({});
   const handleDashboardTabKeyDown = (event, tabId) => {
+    if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
     const currentIndex = dashboardTabIds.indexOf(tabId);
     let nextIndex = currentIndex;
     if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (currentIndex + 1) % dashboardTabIds.length;
@@ -7592,7 +7598,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         className: "absolute inset-0 opacity-0 cursor-pointer w-full h-full"
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none", onClick: handleClearAll, role: "button", tabIndex: "0", "aria-label": t("dashboard.stats.clear_dashboard"), onKeyDown: (e) => {
-      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       return (e.key === "Enter" || e.key === " ") && (e.preventDefault(), handleClearAll(e));
     } }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-100 p-3 rounded-full text-red-800" }, /* @__PURE__ */ React.createElement(Trash2, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-red-700" }, t("dashboard.stats.clear_dashboard")), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, t("dashboard.stats.clear_desc"))))), (() => {
       const filteredStudents = getCurrentFilteredStudents();
@@ -7978,6 +7984,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         "aria-labelledby": "teacher-clear-confirm-title",
         "aria-describedby": "teacher-clear-confirm-description",
         onKeyDown: (event) => {
+          if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           if (event.key === "Escape") {
             event.preventDefault();
             closeClearConfirm();

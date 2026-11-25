@@ -256,7 +256,17 @@
             }).slice(0, 4);
             results.replaceChildren();
             if (!matches.length) {
-                results.appendChild(createElement('p', 'home-tool-empty', 'No matching tools found. Try different keywords or browse the full tool finder.'));
+                var trimmed = query.trim();
+                var emptyP = createElement('p', 'home-tool-empty');
+                if (trimmed) {
+                    emptyP.appendChild(document.createTextNode('No featured tools matched \u201c' + trimmed + '\u201d. '));
+                    var link = createElement('a', 'home-tool-empty-link', 'Search \u201c' + trimmed + '\u201d across all 152 STEM labs & full catalog \u2192');
+                    link.href = 'tools.html?q=' + encodeURIComponent(trimmed);
+                    emptyP.appendChild(link);
+                } else {
+                    emptyP.textContent = 'No matching tools found. Try different keywords or browse the full tool finder.';
+                }
+                results.appendChild(emptyP);
                 return;
             }
             matches.forEach(function (tool) { results.appendChild(createCompactResult(tool)); });

@@ -96,7 +96,9 @@ describe('Round 5 Wave 20 — System Modals & Language Selector', () => {
     const src = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
     expect(src).toContain('Array.isArray(rawAdjectives)');
     expect(src).toContain('Array.isArray(rawAnimals)');
-    expect(src).toContain('key={currentQuestion.imageUrl}');
+    // The image URL is vetted first, and the vetted value keys the <img>.
+    expect(src).toContain('const safeQuestionImage = _uimSafeImageUrl(currentQuestion?.imageUrl);');
+    expect(src).toContain('key={safeQuestionImage}');
     expect(src).toContain('onLoad={(event) => { event.currentTarget.hidden = false; }}');
     expect(src).toContain('<span role="status" aria-live="polite">{noticeText}</span>');
     expect(src).toContain('micRecognitionRef.current.abort()');
@@ -200,6 +202,7 @@ describe('Round 5 Wave 20 — System Modals & Language Selector', () => {
     const src = readFileSync(resolve(process.cwd(), 'view_canvas_recovery_dialog_source.jsx'), 'utf8');
     expect(src).toContain("canvasRecoveryVaultForm?.mode !== 'confirm-recovery-code'");
     expect(src).toContain('role="alert" className="mt-3 rounded-lg border border-amber-200');
-    expect(src).toContain('className="shrink-0 min-h-11 rounded-md border border-indigo-300');
+    // className became a template literal (adds the shared focus ring).
+    expect(src).toContain('className={`shrink-0 min-h-11 rounded-md border border-indigo-300');
   });
 });

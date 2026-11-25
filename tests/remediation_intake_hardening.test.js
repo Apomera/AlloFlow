@@ -436,7 +436,11 @@ describe('auto-remediation failure ownership', () => {
 
     await expect(runAutoFixLoop(1, deps)).resolves.toBeUndefined();
 
-    expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('provider failed'), 'error');
+    // Since 2026-11-21 the toast no longer echoes the raw provider error (it can carry provider details);
+    // the error goes to the diagnostic log instead.
+    expect(deps.addToast).toHaveBeenCalledWith('toasts.auto_continue_failed', 'error');
+    expect(deps.addToast).not.toHaveBeenCalledWith(expect.stringContaining('provider failed'), expect.anything());
+    expect(deps.warnLog).toHaveBeenCalledWith('[AutoContinue] Loop failed:', expect.anything());
     expect(deps.setPdfFixLoading).toHaveBeenLastCalledWith(false);
     expect(deps.setPdfAutoContinueRunning).toHaveBeenLastCalledWith(false);
     expect(deps.saveProjectToFile).toHaveBeenCalledWith(true);

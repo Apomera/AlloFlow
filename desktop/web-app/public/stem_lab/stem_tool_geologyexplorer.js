@@ -42,7 +42,9 @@
       '.theme-contrast [data-stem-tool-shell="geologyExplorer"] [data-geology-command="true"] { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
       '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-emblem-box, .theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-telemetry-pill, .theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-cycle-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
-      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }'
+      '.theme-contrast [data-stem-tool-shell="geologyExplorer"] .geo-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }',
+      '[data-stem-tool-shell="geologyExplorer"] :is(button,input,select,summary) { touch-action: manipulation; }',
+      '@media (forced-colors: active) { [data-stem-tool-shell="geologyExplorer"] :is(button,input,select,summary,[tabindex]):focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -3677,7 +3679,7 @@
       return s == null || s === '' ? geoEnglishT(k, fb, vars) : s;
     } : geoEnglishT;
     var geoTE = function (en) { return typeof en === 'string' && en ? geoT(geoTextKey(en), en) : en; };   // an English label from a table, by its text key
-    var cnv = document.createElement('canvas');
+    var cnv = document.createElement('canvas'); if (cnv.setAttribute) cnv.setAttribute('aria-hidden', 'true');
     // The labelled viewport container owns the WebGL alternative and keyboard mode.
     cnv.setAttribute('aria-hidden', 'true');
     cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
@@ -3731,7 +3733,7 @@
       };
     }
     function makeGeologySurfaceTexture3d(sceneId3d) {
-      var textureCanvas3d = document.createElement('canvas');
+      var textureCanvas3d = document.createElement('canvas'); if (textureCanvas3d.setAttribute) textureCanvas3d.setAttribute('aria-hidden', 'true');
       textureCanvas3d.width = 256; textureCanvas3d.height = 256;
       var textureContext3d = textureCanvas3d.getContext('2d');
       var random3d = geologyRandomFactory3d(geologyTextureSeed3d(sceneId3d + '-surface'));
@@ -3816,7 +3818,7 @@
       return surfaceTexture3d;
     }
     function makeGeologyRoughnessTexture3d(sceneId3d) {
-      var roughCanvas3d = document.createElement('canvas');
+      var roughCanvas3d = document.createElement('canvas'); if (roughCanvas3d.setAttribute) roughCanvas3d.setAttribute('aria-hidden', 'true');
       roughCanvas3d.width = 128; roughCanvas3d.height = 128;
       var roughCtx3d = roughCanvas3d.getContext('2d');
       var roughRand3d = geologyRandomFactory3d(geologyTextureSeed3d(sceneId3d + '-roughness'));
@@ -3847,7 +3849,7 @@
       return roughTex3d;
     }
     function makeGeologyParticleTexture3d(kind3d) {
-      var particleCanvas3d = document.createElement('canvas');
+      var particleCanvas3d = document.createElement('canvas'); if (particleCanvas3d.setAttribute) particleCanvas3d.setAttribute('aria-hidden', 'true');
       particleCanvas3d.width = 64; particleCanvas3d.height = 64;
       var particleContext3d = particleCanvas3d.getContext('2d');
       var particleGradient3d = particleContext3d.createRadialGradient(32, 32, 1, 32, 32, 31);
@@ -3891,7 +3893,7 @@
       deepEarth:  { top: '#090e20', horizon: '#1d1834', mid: '#0a0b18', bottom: '#04040a', fog: 0x0c0e1c }
     };
     var geologySkyPalette3d = geologySkyPalettes3d[SCENE.id] || geologySkyPalettes3d.crust;
-    var bgCanvas = document.createElement('canvas');
+    var bgCanvas = document.createElement('canvas'); if (bgCanvas.setAttribute) bgCanvas.setAttribute('aria-hidden', 'true');
     // Internal texture buffer: it conveys no content beyond the described viewport.
     bgCanvas.setAttribute('aria-hidden', 'true'); bgCanvas.width = 4; bgCanvas.height = 256;
     var bgCtx = bgCanvas.getContext('2d');
@@ -3993,7 +3995,7 @@
     // floating in space (a dark shadow does not read on this dark background). Not in first person
     // (real ground there) and not under the round Deep Earth, which does float in space. Strongest
     // just past the block's edges, where it shows.
-    var shadowCanvas3d = document.createElement('canvas'); shadowCanvas3d.width = shadowCanvas3d.height = 128;
+    var shadowCanvas3d = document.createElement('canvas'); if (shadowCanvas3d.setAttribute) shadowCanvas3d.setAttribute('aria-hidden', 'true'); shadowCanvas3d.width = shadowCanvas3d.height = 128;
     var shadowCtx3d = shadowCanvas3d.getContext('2d');
     if (shadowCtx3d) { var shadowGrad3d = shadowCtx3d.createRadialGradient(64, 64, 6, 64, 64, 64); shadowGrad3d.addColorStop(0, 'rgba(150,190,255,0.34)'); shadowGrad3d.addColorStop(0.55, 'rgba(135,175,245,0.26)'); shadowGrad3d.addColorStop(0.8, 'rgba(110,150,225,0.09)'); shadowGrad3d.addColorStop(1, 'rgba(90,130,210,0)'); shadowCtx3d.fillStyle = shadowGrad3d; shadowCtx3d.fillRect(0, 0, 128, 128); }
     var shadowTex3d = new THREE.CanvasTexture(shadowCanvas3d);
@@ -5505,7 +5507,7 @@
     undoPreviewBox.visible = false; undoPreviewBox.renderOrder = 3; scene.add(undoPreviewBox);
     var treeMeshes = [], lastHover = 0;
     function makeGeologyWaterTexture3d() {
-      var waterCanvas3d = document.createElement('canvas');
+      var waterCanvas3d = document.createElement('canvas'); if (waterCanvas3d.setAttribute) waterCanvas3d.setAttribute('aria-hidden', 'true');
       waterCanvas3d.width = 256; waterCanvas3d.height = 256;
       var waterContext3d = waterCanvas3d.getContext('2d');
       waterContext3d.fillStyle = '#dbeafe';
@@ -5533,7 +5535,7 @@
       return waterTexture3d;
     }
     function makeGeologyOceanMaskTexture3d() {
-      var maskCanvas3d = document.createElement('canvas');
+      var maskCanvas3d = document.createElement('canvas'); if (maskCanvas3d.setAttribute) maskCanvas3d.setAttribute('aria-hidden', 'true');
       maskCanvas3d.width = 256; maskCanvas3d.height = 16;
       var maskContext3d = maskCanvas3d.getContext('2d');
       var maskImage3d = maskContext3d.createImageData(256, 16);
@@ -5559,7 +5561,7 @@
       return oceanMaskTexture3d;
     }
     function makeGeologyCausticTexture3d() {
-      var causticCanvas3d = document.createElement('canvas');
+      var causticCanvas3d = document.createElement('canvas'); if (causticCanvas3d.setAttribute) causticCanvas3d.setAttribute('aria-hidden', 'true');
       causticCanvas3d.width = 256; causticCanvas3d.height = 256;
       var causticContext3d = causticCanvas3d.getContext('2d');
       var causticRandom3d = geologyRandomFactory3d(geologyTextureSeed3d(SCENE.id + '-caustics'));
@@ -10876,7 +10878,7 @@ function updateCoreRig3d(dt3d) {
             h('span', null, DT.daughter + ' ' + Math.round(dPct * (DT.share || 1)) + '% ◻️')),
           h('label', { className: 'block mt-2 text-xs ' + muted },
             t('stem.geology.parent_left', 'Parent isotope still left (drag to let it decay):'),
-            h('input', { type: 'range', min: minParent, max: 100, value: pPct, 'aria-label': t('stem.geology.a11y.percent_of_parent_isotope_remaining', 'Percent of parent isotope remaining'), className: 'w-full', onChange: function (e) { var v = +e.target.value; setDatingParent(v); if (v < 100) upd('datedRock', 1); var hlv = Math.log(100 / v) / Math.log(2); announce(tf('stem.geology.sr.percent_parent_left_about_half_lives_age_milli', '{v} percent parent left — about {hlv} half-lives, age {to_locale_string} million years.', { v: Math.round(v), hlv: (Math.round(hlv * 100) / 100), to_locale_string: Math.round(DT.hl * hlv).toLocaleString() })); } })),
+            h('input', { type: 'range', min: minParent, max: 100, value: pPct, 'aria-label': t('stem.geology.a11y.percent_of_parent_isotope_remaining', 'Percent of parent isotope remaining'), 'aria-valuetext': Math.round(pPct) + '% · ≈ ' + ageMa.toLocaleString() + ' ' + t('stem.geology.ma', 'million years'), className: 'w-full min-h-11', onChange: function (e) { var v = +e.target.value; setDatingParent(v); if (v < 100) upd('datedRock', 1); var hlv = Math.log(100 / v) / Math.log(2); announce(tf('stem.geology.sr.percent_parent_left_about_half_lives_age_milli', '{v} percent parent left — about {hlv} half-lives, age {to_locale_string} million years.', { v: Math.round(v), hlv: (Math.round(hlv * 100) / 100), to_locale_string: Math.round(DT.hl * hlv).toLocaleString() })); } })),
           h('div', { className: 'text-[12px] font-bold ' + ink }, '≈ ' + ageMa.toLocaleString() + ' ' + t('stem.geology.ma', 'million years') + '  ·  ' + (Math.round(halfLives * 100) / 100) + ' ' + t('stem.geology.halflives', 'half-lives')),
           h('div', { className: 'mt-1.5 text-xs leading-snug ' + muted }, DT.note + ' ' + t('stem.geology.dating_method', 'Measure the real parent:daughter ratio → that fixes how many half-lives passed → × the half-life gives the age.'))
         );
@@ -12834,7 +12836,7 @@ function updateCoreRig3d(dt3d) {
                 h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
                   h('h4', {
                     key: 'label', tabIndex: -1, 'data-geology-core-debrief-heading': 'true',
-                    className: 'scroll-mt-24 text-xs font-black uppercase tracking-[.14em] text-violet-100 focus:outline-none'
+                    className: 'scroll-mt-24 text-xs font-black uppercase tracking-[.14em] text-violet-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300'
                   }, t('stem.geology.ui.core_debrief', 'Core debrief')),
                   h('span', { key: 'stage', className: 'rounded-full border border-white/15 bg-slate-950/45 px-2 py-0.5 text-xs font-black text-cyan-100' }, stageLabel)
                 ]),

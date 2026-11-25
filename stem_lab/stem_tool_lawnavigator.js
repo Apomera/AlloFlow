@@ -846,7 +846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             h('rect', { x: 398, y: 16, width: 8, height: 92, rx: 3, fill: isContrast ? pal.svgAccent2 : 'url(#ln-st-bar)' }),
             !isContrast ? h('line', { x1: 410, y1: 18, x2: 616, y2: 18, stroke: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.9)', strokeWidth: 1.2, strokeLinecap: 'round' }) : null,
             h('text', { x: 416, y: 38, fontSize: 12, fontWeight: 800, fill: pal.svgAccent2 }, __alloT('stem.lawNav.svg_state_title', 'STATE REGULATIONS')),
-            h('text', { x: 416, y: 58, fontSize: 11, fontWeight: 600, fill: pal.text }, __alloT('stem.lawNav.svg_state_l1', 'Ingested: ' + stateIngested.length + ' of ' + stateList.length)),
+            h('text', { x: 416, y: 58, fontSize: 11, fontWeight: 600, fill: pal.text }, __alloT('stem.lawNav.svg_state_l1', 'Ingested: {done} of {total}').split('{done}').join(String(stateIngested.length)).split('{total}').join(String(stateList.length))),
             h('text', { x: 416, y: 76, fontSize: 11, fontWeight: 600, fill: pal.text }, __alloT('stem.lawNav.svg_state_l2', 'State additions flagged')),
             h('text', { x: 416, y: 96, fontSize: 10.5, fontWeight: 700, fill: pal.muted }, stateSecTotal + ' ' + __alloT('stem.lawNav.svg_state_stat', 'indexed sections'))
           )

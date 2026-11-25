@@ -1607,10 +1607,24 @@
   // Step 2: the voice (packets_voice_engine.js), and the encoder that makes a recording smaller
   // ---------------------------------------------------------------------------
   function progress(info) {
+    // A late progress report after the download has failed or finished does not bring the bar back.
+    if (!state.getting) return;
     var pct = info && typeof info.pct === 'number' ? Math.max(0, Math.min(1, info.pct)) : 0;
     show('voice-making', true);
     $('voice-bar').value = Math.round(pct * 100);
     setText('voice-line', (info && info.stage ? String(info.stage).slice(0, 120) : 'Getting the voice') + (pct ? ': ' + Math.round(pct * 100) + ' percent' : ''));
+  }
+  // The voice engine's own messages are plain sentences ("The list of voice files did not arrive."). Anything else is the
+  // browser's wording ("Failed to fetch" when the download host is blocked) and is not shown.
+  function voiceProblemText(error) {
+    var why = said(error);
+    var plain = /^The [^<>]{8,120}\.$/.test(why);
+    var download = !plain || /did not arrive|timed out|did not start/.test(why);
+    return (plain ? why : 'The computer voice could not be downloaded here.')
+      + (download ? ' A school or office network may block the download (it comes from huggingface.co).' : '')
+      + ' Nothing was changed, and your passage is still here. You can try again' + (download ? ', or try on another network' : '') + '.'
+      + ' You can also make the file without the computer voice: record your own voice in step 3, or save it with no recordings.'
+      + ' A file with no recordings still shows the passage with the Reading tools, and if you tick "Tap a word to hear it (local device voice)" in step 4 it can read with a voice already on the student\'s device.';
   }
   function getVoice() {
     if (state.getting || state.ready) return;
@@ -1635,7 +1649,10 @@
         state.getting = false;
         show('voice-making', false);
         setText('voice-said', '');
-        setText('voice-problem', (said(error) || 'The voice could not be downloaded.') + ' Nothing was changed. You can try again.');
+        // 2026-11-23: plain words, not the browser's own ("Failed to fetch"). What still works is said too.
+        $('voice-bar').value = 0;
+        setText('voice-line', '');
+        setText('voice-problem', voiceProblemText(error));
         draw();
       });
   }
@@ -1709,7 +1726,8 @@
     if ($('print-dict') && $('print-dict').checked && !$('print-dict-wrap').hidden) printOn.push('meanings on paper');
     if ($('print-supports') && $('print-supports').checked && $('print-supports-wrap') && !$('print-supports-wrap').hidden) printOn.push('custom notes on paper');
     var summary = on.concat(printOn);
-    setText('more-supports-now', summary.length ? summary.join(' \u00b7 ') : 'Default (Syllables + Reading tools)');
+    // 2026-11-23: the simple toolbar is ticked on a new page, so nothing ticked is no longer "the default".
+    setText('more-supports-now', summary.length ? summary.join(' \u00b7 ') : 'Syllables + Reading tools \u00b7 every button shown');
   }
 
   // ---------------------------------------------------------------------------
@@ -1927,7 +1945,9 @@
     var paper = $('paper');
     if (paper) paper.textContent = '';
     show('print', false);
+    show('preview-worksheet', false);
     show('download-worksheet', false);
+    show('worksheet-audio', false);
     show('print-syl-wrap', false);
     show('print-bold-wrap', false);
     show('print-dict-wrap', false);
@@ -2088,7 +2108,9 @@
     paper.appendChild(sheet);
     doc.body.classList.add('paper-on');
     show('print', true);
+    show('preview-worksheet', true);
     show('download-worksheet', true);
+    show('worksheet-audio', !!(state.sentences.length && Object.keys(state.clips || {}).length > 0));
     show('download-bundle', !!(state.built && win.AlloPacketZip && typeof win.AlloPacketZip.create === 'function'));
     show('print-syl-wrap', !!(state.made && state.made.syllables));
     show('print-bold-wrap', true);
@@ -2464,6 +2486,66 @@
     download(url, titleStem() + '-read-along-worksheet.html');
     win.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 10000);
   }
+  var printCardsWait = null;
+  function ensurePrintCards() {
+    if (win.AlloPacketPrintCards && (typeof win.AlloPacketPrintCards.openReadAlongWorksheet === 'function' || typeof win.AlloPacketPrintCards.openReadAlongAudio === 'function')) {
+      return Promise.resolve(win.AlloPacketPrintCards);
+    }
+    if (printCardsWait) return printCardsWait;
+    printCardsWait = new Promise(function (resolve) {
+      try {
+        if (doc.head && !doc.querySelector('link[href="packets-print-cards.css"]')) {
+          var lk = doc.createElement('link');
+          lk.rel = 'stylesheet';
+          lk.href = 'packets-print-cards.css';
+          doc.head.appendChild(lk);
+        }
+        var sc = doc.createElement('script');
+        sc.src = 'packets-print-cards.js';
+        sc.onload = function () { resolve(win.AlloPacketPrintCards || null); };
+        sc.onerror = function () { printCardsWait = null; resolve(null); };
+        (doc.head || doc.body).appendChild(sc);
+      } catch (_) {
+        printCardsWait = null;
+        resolve(null);
+      }
+    });
+    return printCardsWait;
+  }
+  function currentReadAlongPreviewPayload() {
+    var opts = currentWorksheetOpts(true);
+    var mappedSentences = (state.sentences || []).map(function (row) {
+      return Object.assign({}, row, { key: keyOf(row) });
+    });
+    var mappedSupports = (opts.customSupports || []).map(function (sup) {
+      var clip = supportClipOf(sup);
+      return clip && clip.uri ? Object.assign({}, sup, { audioUri: clip.uri }) : Object.assign({}, sup);
+    });
+    return Object.assign({}, opts, {
+      sentences: mappedSentences,
+      customSupports: mappedSupports,
+      clips: state.clips || {},
+      syllableLookup: table ? syllablesOf : null,
+    });
+  }
+  function openReadAlongWorksheetPreview() {
+    if (!state.sentences.length) return;
+    setText('file-problem', '');
+    var payload = currentReadAlongPreviewPayload();
+    ensurePrintCards().then(function (cards) {
+      if (cards && typeof cards.openReadAlongWorksheet === 'function') cards.openReadAlongWorksheet(payload);
+      else setText('file-problem', 'The worksheet preview could not load. Load the page again.');
+    });
+  }
+  function openReadAlongAudioPlayer() {
+    if (!state.sentences.length) return;
+    setText('file-problem', '');
+    var payload = currentReadAlongPreviewPayload();
+    ensurePrintCards().then(function (cards) {
+      if (cards && typeof cards.openReadAlongAudio === 'function') cards.openReadAlongAudio(payload);
+      else setText('file-problem', 'The worksheet audio player could not load. Load the page again.');
+    });
+  }
 
   function downloadClassroomBundle() {
     if (!state.built || !state.built.html) return;
@@ -2632,7 +2714,9 @@
     stopPreview();
     show('try', false);
     show('save', false);
+    show('preview-worksheet', false);
     show('download-worksheet', false);
+    show('worksheet-audio', false);
     show('download-bundle', false);
     show('after-save', false);
     show('live-preview', false);
@@ -2885,6 +2969,8 @@
     if (!engine || !builder || !loader || !loader.CHECK_ADAPTERS || !loader.CHECK_ADAPTERS[builder.ACTIVITY]) { show('no-parts', true); return; }
     var timer = 0;
     $('f-text').addEventListener('input', function () {
+      // 2026-11-23: a typed passage is work that can be lost: the leave warning is armed (Save a file clears it).
+      if (String($('f-text').value || '').trim()) state.unsaved = true;
       cancelMic();
       if (state.making) { cancelMake(); setText('make-said', 'Stopped because the passage changed.'); }
       win.clearTimeout(timer);
@@ -2895,7 +2981,10 @@
         else refreshSoon();
       }, 250);
     });
-    $('f-title').addEventListener('input', refreshSoon);
+    $('f-title').addEventListener('input', function () {
+      if (String($('f-title').value || '').trim() || String($('f-text').value || '').trim()) state.unsaved = true;
+      refreshSoon();
+    });
     if ($('f-page-mode')) $('f-page-mode').addEventListener('change', function () { state.unsaved = true; readPassage(); draw(); refreshFile(); });
     if ($('f-lang')) $('f-lang').addEventListener('change', function () { state.unsaved = true; syncLangUi(); syncSupportCards(); draw(); refreshFile(); });
     if ($('f-pos')) $('f-pos').addEventListener('change', function () {
@@ -3042,7 +3131,9 @@
     $('stop').addEventListener('click', function () { if (state.stop) state.stop.abort(); });
     $('save').addEventListener('click', saveFile);
     if ($('print')) $('print').addEventListener('click', function () { drawPaper(); if (typeof win.print === 'function') win.print(); });
+    if ($('preview-worksheet')) $('preview-worksheet').addEventListener('click', openReadAlongWorksheetPreview);
     if ($('download-worksheet')) $('download-worksheet').addEventListener('click', downloadWorksheet);
+    if ($('worksheet-audio')) $('worksheet-audio').addEventListener('click', openReadAlongAudioPlayer);
     if ($('download-bundle')) $('download-bundle').addEventListener('click', downloadClassroomBundle);
     if ($('print-syl')) $('print-syl').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
     if ($('print-bold')) $('print-bold').addEventListener('change', function () { syncSupportCards(); drawPaper(); });
@@ -3259,7 +3350,7 @@
     }, function () { reopenNote('This browser could not hand the file over. Choose it with Open a file I made.'); return false; });
   }
 
-  win.AlloReadAlongWorksheet = { buildReadAlongWorksheetHtml: buildReadAlongWorksheetHtml };
-  win.AlloPacketReadAlongPage = { state: state, reopen: reopen, importDraft: importDraft, takeHanded: takeHanded };
+  win.AlloReadAlongWorksheet = { buildReadAlongWorksheetHtml: buildReadAlongWorksheetHtml, currentReadAlongPreviewPayload: currentReadAlongPreviewPayload };
+  win.AlloPacketReadAlongPage = { state: state, reopen: reopen, importDraft: importDraft, takeHanded: takeHanded, currentReadAlongPreviewPayload: currentReadAlongPreviewPayload };
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();

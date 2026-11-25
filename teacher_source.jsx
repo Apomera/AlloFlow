@@ -1978,7 +1978,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         <input type="text" value={labelDraft} maxLength={ALLO_TEACHER_PRIVATE_LABEL_MAX} autoFocus
           onChange={event => setLabelDraft(event.target.value)}
           onBlur={() => commitPrivateLabel(codename)}
-          onKeyDown={event => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Enter') { event.preventDefault(); commitPrivateLabel(codename); } else if (event.key === 'Escape') { event.preventDefault(); setEditingLabelFor(null); setLabelDraft(''); } }}
+          onKeyDown={event => { if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter') { event.preventDefault(); commitPrivateLabel(codename); } else if (event.key === 'Escape') { event.preventDefault(); setEditingLabelFor(null); setLabelDraft(''); } }}
           aria-label={'Private label for ' + codename + ' (this device only)'}
           className={`min-h-9 w-28 rounded-lg border px-2 text-xs focus:outline-none focus:ring-2 ${tone === 'amber' ? 'border-amber-300 focus:ring-amber-300 text-amber-900' : 'border-indigo-300 focus:ring-indigo-300 text-indigo-900'}`} />
       );
@@ -2403,6 +2403,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <input type="range" min="0.5" max="1.5" step="0.05" value={value || 1}
             onChange={e => handleUpdateGroupProfile(gId, field, parseFloat(e.target.value))}
             aria-label={label}
+            aria-valuetext={`${(value || 1).toFixed(2)}x`}
             className="flex-1 accent-indigo-500" />
           <span className="text-slate-600 font-mono w-10 text-right">{(value || 1).toFixed(2)}x</span>
         </div>
@@ -2768,7 +2769,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <input type="text" value={newGroupName} maxLength={80} onChange={e => { setNewGroupName(e.target.value); setGroupNameError(''); }}
               placeholder={t('roster.new_group_placeholder') || 'New group name...'}
               aria-label={t('roster.new_group_placeholder') || 'New group name'}
-              onKeyDown={e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') handleAddGroup(); }}
+              onKeyDown={e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') handleAddGroup(); }}
               className="min-w-0 w-full flex-1 px-3 py-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
             <div className="flex flex-wrap gap-1">
               {COLORS.slice(0, 4).map(c => (
@@ -3054,6 +3055,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <div className="absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4">
             <div ref={submissionDialogRef} role="alertdialog" aria-modal="true" aria-labelledby="offline-submission-dialog-title" aria-describedby="offline-submission-dialog-description"
               onKeyDown={event => {
+                if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                 if (event.key === 'Escape') { event.preventDefault(); closeSubmissionDialog(); return; }
                 if (event.key !== 'Tab') return;
                 const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -3933,6 +3935,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
             aria-modal="true"
             aria-labelledby="escape-room-puzzle-question"
             onKeyDown={event => {
+              if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if (event.key === 'Escape') { event.preventDefault(); closePuzzleDialog(); return; }
               if (event.key !== 'Tab') return;
               const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -4249,6 +4252,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
           aria-labelledby="escape-room-paused-title"
           aria-describedby="escape-room-paused-description"
           onKeyDown={(event) => {
+            if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
             if (event.key === 'Tab') {
               event.preventDefault();
               pauseDialogRef.current?.focus();
@@ -4532,6 +4536,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
             aria-labelledby="escape-room-end-game-title"
             aria-describedby="escape-room-end-game-description"
             onKeyDown={event => {
+              if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if (event.key === 'Escape') { event.preventDefault(); closeEndGameDialog(); return; }
               if (event.key !== 'Tab') return;
               const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -8065,6 +8070,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const dashboardTabIds = ['students', 'insights', 'behavior', 'stems'];
   const dashboardTabRefs = useRef({});
   const handleDashboardTabKeyDown = (event, tabId) => {
+      if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       const currentIndex = dashboardTabIds.indexOf(tabId);
       let nextIndex = currentIndex;
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % dashboardTabIds.length;
@@ -9203,7 +9209,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                     onChange={handleBatchUpload} data-help-key="dashboard_add_file_btn_input" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                  />
                              </div>
-                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; return (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e)); }}>
+                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; return (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e)); }}>
                                  <div className="bg-red-100 p-3 rounded-full text-red-800"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
@@ -9684,6 +9690,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                   aria-labelledby="teacher-clear-confirm-title"
                   aria-describedby="teacher-clear-confirm-description"
                   onKeyDown={event => {
+                      if (!event || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                       if (event.key === 'Escape') { event.preventDefault(); closeClearConfirm(); return; }
                       if (event.key !== 'Tab') return;
                       const focusable = Array.from(event.currentTarget.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));

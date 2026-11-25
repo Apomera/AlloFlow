@@ -4026,7 +4026,7 @@ if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.Ste
                 return h('g', { key: oid },
                   h('circle', { cx: cx, cy: 54, r: wonW ? 12 : 9, fill: isContrast ? '#000000' : (lockedW ? '#1e293b' : destObj.color), stroke: isContrast ? (lockedW ? '#ffffff' : '#ffff00') : (wonW ? '#4ade80' : lockedW ? '#475569' : '#f8fafc'), strokeWidth: wonW ? 2.5 : 1.5, strokeDasharray: lockedW ? '2 2' : undefined }),
                   wonW && h('text', { x: cx, y: 58, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrast ? '#ffff00' : '#052e16' }, '\u2713'),
-                  h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffffff' : (lockedW ? '#64748b' : '#cbd5e1') }, destObj.gravity + 'g'),
+                  h('text', { x: cx, y: 24, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? '#ffffff' : (lockedW ? '#64748b' : '#cbd5e1') }, destObj.gravity + ' m/s²'),
                   h('text', { x: cx, y: 88, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: isContrast ? (lockedW ? '#ffffff' : '#ffff00') : (lockedW ? '#64748b' : '#f8fafc') }, shortN)
                 );
               })

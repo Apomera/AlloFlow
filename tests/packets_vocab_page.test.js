@@ -19,7 +19,8 @@ const BANK_FILE = 'packets_vocab_bank_en.js';
 const FIXTURE = 'tests/fixtures/packets_vocab_bank_fixture.js';
 // 2026-11-12, deliberately: img-src also allows data:, for the pictures of the picture questions shown in step 3
 // (drawn from data: addresses; tests/packets_vocab_pictures.test.js).
-const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'";
+// 2026-11-25 (Wave 40): media-src data: allows the live Worksheet audio player to play local data: recordings offline.
+const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'";
 // packets_handoff.js (2026-11-12): a file handed over by Change this file on Open a practice file (tests/packets_open_page.test.js).
 // 2026-11-12, deliberately: the picture list, the Word Sounds builder (for its picture credits and its drawing check) and
 // the loader of recordings and pictures (packets_vocab_media.js). Without fetch (jsdom) the page makes files without them.
@@ -99,7 +100,11 @@ describe('the page as a file', () => {
   it('is linked from the front door, and the front door names its builder', () => {
     const front = parse('packets.html');
     // 2026-11-18 (owner): the front door opens the maker set to practice or to a check.
-    expect([...front.querySelectorAll('a[href^="packets-vocab.html"]')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Make vocabulary practice', 'packets-vocab.html#practice-mode'], ['Make a vocabulary check', 'packets-vocab.html#check-mode']]);
+    // 2026-11-23 (owner, front-door review): one Vocabulary box with two plain links as buttons. Each shows one word and
+    // keeps the name its card had as its own name (aria-label).
+    expect([...front.querySelectorAll('a[href^="packets-vocab.html"]')].map((a) => [a.textContent, a.getAttribute('aria-label'), a.getAttribute('href')]))
+      .toEqual([['Practice', 'Make vocabulary practice', 'packets-vocab.html#practice-mode'], ['Check', 'Make a vocabulary check', 'packets-vocab.html#check-mode']]);
+    expect(front.querySelector('a[href^="packets-vocab.html"]').closest('.door-subject').querySelector('h3').textContent).toBe('Vocabulary');
     expect(front.querySelector('.verify').textContent).toContain('packet_vocab_builder.js');
   });
 });

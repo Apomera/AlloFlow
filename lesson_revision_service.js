@@ -2,8 +2,8 @@
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  if (root) { root.AlloModules = root.AlloModules || {}; root.AlloModules.LessonRevision = api; }
-})(typeof window !== 'undefined' ? window : null, function () {
+  if (root && typeof root === 'object') { root.AlloModules = root.AlloModules || {}; root.AlloModules.LessonRevision = api; }
+})(typeof window === 'object' && window ? window : null, function () {
   'use strict';
   var sequence = 0;
   var proposals = new WeakSet(), undos = new WeakSet();
@@ -12,9 +12,9 @@
   function fail(error) { return { ok: false, error: error }; }
   function _lrAiUsable(kind, fn) {
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
       if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
-      if (typeof window !== 'undefined') {
+      if (typeof window === 'object' && window && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
+      if (typeof window === 'object' && window) {
         if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
         var qr = window.__alloQrStudentMode;
         if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
@@ -25,7 +25,7 @@
     }
   }
   function _lrSanitizeUntrusted(value) {
-    return String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
+    return String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '');
   }
   function _lrFenceUntrusted(tag, value) {
     return '<UNTRUSTED_' + tag + '>\n' + _lrSanitizeUntrusted(value) + '\n</UNTRUSTED_' + tag + '>';
@@ -34,18 +34,58 @@
     var escaped = String(jsonText || '').replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
     return '<UNTRUSTED_' + tag + '>\n' + escaped + '\n</UNTRUSTED_' + tag + '>';
   }
-  function clone(value) { return JSON.parse(JSON.stringify(value)); }
-  function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  function safeParseJson(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function clone(value) {
+    if (value === undefined) return undefined;
+    try { return safeParseJson(JSON.stringify(value)); } catch (_) { return null; }
+  }
+  function same(a, b) {
+    if (a === b) return true;
+    try { return JSON.stringify(a) === JSON.stringify(b); } catch (_) { return false; }
+  }
   function idOf(resource) { return resource && (typeof resource.id === 'string' || typeof resource.id === 'number') ? String(resource.id) : ''; }
+  function isUnsafeKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
   function pointer(path) { return path.split('/').slice(1).map(function (key) { return key.replace(/~1/g, '/').replace(/~0/g, '~'); }); }
-  function read(resource, path) { return pointer(path).reduce(function (value, key) { return value == null ? undefined : value[key]; }, resource); }
+  function read(resource, path) {
+    return pointer(path).reduce(function (value, key) {
+      if (value == null || typeof value !== 'object' || isUnsafeKey(key)) return undefined;
+      return Object.prototype.hasOwnProperty.call(value, key) ? value[key] : undefined;
+    }, resource);
+  }
   function write(resource, path, value) {
-    var keys = pointer(path), key = keys.pop(), parent = keys.reduce(function (node, part) { return node[part]; }, resource);
-    if (key === '-') parent.push(clone(value)); else parent[key] = clone(value);
+    var keys = pointer(path), key = keys.pop();
+    if (isUnsafeKey(key)) return;
+    var parent = keys.reduce(function (node, part) {
+      if (!node || typeof node !== 'object' || isUnsafeKey(part)) return null;
+      return Object.prototype.hasOwnProperty.call(node, part) ? node[part] : null;
+    }, resource);
+    if (!parent || typeof parent !== 'object') return;
+    if (key === '-') { if (Array.isArray(parent)) parent.push(clone(value)); }
+    else parent[key] = clone(value);
   }
   function titleOf(resource) { return typeof resource.title === 'string' && resource.title.trim() ? resource.title.slice(0, 160) : String(resource.type || 'Resource'); }
-  function text(value) { return typeof value === 'string' && value.length <= LIMITS.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(value); }
-  function safeText(value) { return text(value) && !/<\s*\/?\s*[a-z!][^>]*>/i.test(value); }
+  function hasLoneSurrogate(s) {
+    for (var i = 0; i < s.length; i++) {
+      var code = s.charCodeAt(i);
+      if (code >= 0xd800 && code <= 0xdbff) {
+        var next = i + 1 < s.length ? s.charCodeAt(i + 1) : 0;
+        if (next < 0xdc00 || next > 0xdfff) return true;
+        i++;
+      } else if (code >= 0xdc00 && code <= 0xdfff) return true;
+    }
+    return false;
+  }
+  function text(value) { return typeof value === 'string' && value.length <= LIMITS.text && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) && !hasLoneSurrogate(value); }
+  function safeText(value) {
+    return text(value)
+      && !/<\s*\/?\s*[a-z!][^>]*>/i.test(value)
+      && !/<\s*\/?\s*(?:script|iframe|svg|object|embed|style|img|link|meta|form|input|math|base)\b/i.test(value)
+      && !/<\?/.test(value);
+  }
   function newItemId(prefix, reserved) {
     var value;
     do { value = prefix + Date.now().toString(36) + '-' + (++sequence).toString(36) + '-' + Math.random().toString(36).slice(2, 10); } while (reserved.has(value));
@@ -187,7 +227,9 @@
   }
   function nativeChangesValid(before, after, changes) {
     var originalErrors = validationErrors(before), errors = validationErrors(after);
-    if (originalErrors.concat(errors).some(function (entry) { return entry.code === 'diagnostics-truncated' || entry.code === 'native-contract-missing'; }) && before.type !== 'scaffolds') return false;
+    var combined = originalErrors.concat(errors);
+    if (combined.some(function (entry) { return entry.code === 'diagnostics-truncated'; })) return false;
+    if (combined.some(function (entry) { return entry.code === 'native-contract-missing'; }) && before.type !== 'scaffolds') return false;
     var previous = new Set(originalErrors.map(function (entry) { return entry.code + '\n' + entry.path + '\n' + entry.message; }));
     var edited = changes.map(function (entry) { return 'resource' + pointer(entry.path).filter(function (key) { return key !== '-'; }).map(function (key) { return /^\d+$/.test(key) ? '[' + key + ']' : '.' + key; }).join(''); });
     return errors.every(function (entry) { return previous.has(entry.code + '\n' + entry.path + '\n' + entry.message)
@@ -292,8 +334,8 @@
       if (raw && typeof raw === 'object' && typeof raw.text === 'string') raw = raw.text;
       if (typeof raw !== 'string' || raw.length > LIMITS.reply) return fail('The revision response was empty or too large. Try a narrower request.');
       raw = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-      var parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.changes) || !Array.isArray(parsed.unfulfilled)) return fail('The revision response did not contain a valid review plan. Try again.');
+      var parsed = safeParseJson(raw);
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.changes) || !Array.isArray(parsed.unfulfilled)) return fail('The revision response did not contain a valid review plan. Try again.');
       if (parsed.unfulfilled.length) return fail('Some requested changes need another editor: ' + parsed.unfulfilled.map(function (v) { return String(v).slice(0, 300); }).slice(0, 4).join(' '));
       if (parsed.changes.length > LIMITS.changes) return fail('The request needs too many changes. Try a more specific request.');
       var refinement = prior ? mergeRefinement(parsed, prior) : null;
@@ -371,7 +413,7 @@
       if (answer && typeof answer === 'object' && typeof answer.text === 'string') answer = answer.text;
       if (!safeText(answer) || !answer.trim()) return fail('I could not answer that question. Your proposal is unchanged.');
       return { ok: true, answer: answer.trim() };
-    } catch (_) { return fail('I could not answer that question. Your proposal is unchanged.'); }
+    } catch (error) { return fail(error && error.name === 'AbortError' ? 'Proposal discussion cancelled.' : 'I could not answer that question. Your proposal is unchanged.'); }
   }
   function review(proposal) {
     if (!proposal || !proposals.has(proposal)) return null;

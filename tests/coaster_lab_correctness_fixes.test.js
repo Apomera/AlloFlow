@@ -165,6 +165,11 @@ function loadGrader(file) {
     "function spawnFireworks(){ calls.push(['fireworks']); }",
     "function missionEvent(k){ calls.push(['mission', k]); }",
     "function bridgeReport(e){ calls.push(['bridge', e.event]); }",
+    // 2026-11-23 r2: the inspection counts calculation tries (a copy synced
+    // before that pass has no such block)
+    src.includes('/* @clab-calc-checks-start')
+      ? sliceBetween(src, '/* @clab-calc-checks-start', '/* @clab-calc-checks-end */', { file, label: 'calc checks' })
+      : '',
     sliceBetween(src, 'function gradeCertRun(tele){', '\n/* ---------------- simulation', { file, label: 'gradeCertRun' }),
   ].join('\n');
   return new Function('analysis', 'preds', 'design', 'track', 'certResultEl', 'localStorage',
@@ -287,6 +292,8 @@ describe('coaster lab — no "?" where a glyph was lost', () => {
   function lostGlyphs(src) {
     const hits = [];
     const scan = (text) => {
+      // a GLSL shader line is code, not text: its ternaries are real
+      if (/\bgl_\w+|\b(vec[234]|uniform|varying|attribute)\b/.test(text)) return;
       const re = /(\w|\)|%) \? (\w|\$|\(|<)|[a-z]\?(s|t|ll|re|ve)\b/g;
       let m;
       while ((m = re.exec(text))) hits.push(text.slice(Math.max(0, m.index - 30), m.index + 30));

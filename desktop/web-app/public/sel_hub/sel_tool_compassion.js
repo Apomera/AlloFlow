@@ -77,8 +77,8 @@ window.SelHub = window.SelHub || {
     ],
     high: [
       { id: 'kindness', icon: '\uD83D\uDC9C', title: 'Self-Kindness', color: '#a78bfa',
-        explain: 'Kristin Neff\u2019s research shows that self-compassion, not self-esteem, is the strongest predictor of emotional resilience. Self-esteem is contingent \u2014 it rises with success and crashes with failure. Self-compassion is unconditional: "I am worthy of kindness regardless of my performance." This isn\u2019t weakness. Research links self-compassion with the soothing/care system and self-criticism with the threat system.',
-        opposite: 'Self-judgment activates the amygdala\u2019s threat response. You\u2019re literally attacking yourself. Your brain can\u2019t distinguish between external and internal criticism \u2014 it responds to both with fight-or-flight.',
+        explain: 'Kristin Neff\u2019s research finds that self-compassion is linked to steadier emotional resilience than self-esteem. Self-esteem is contingent \u2014 it rises with success and crashes with failure. Self-compassion is unconditional: "I am worthy of kindness regardless of my performance." This isn\u2019t weakness. Research links self-compassion with the soothing/care system and self-criticism with the threat system.',
+        opposite: 'Harsh self-criticism can set off the body\'s stress response, much as criticism from someone else does.',
         practice: 'Neff\u2019s Self-Compassion Break: (1) "This is a moment of suffering" (mindfulness). (2) "Suffering is a part of life" (common humanity). (3) "May I be kind to myself" (self-kindness). Hand on heart. Breathe.' },
       { id: 'humanity', icon: '\uD83C\uDF0D', title: 'Common Humanity', color: '#60a5fa',
         explain: 'The illusion of separateness \u2014 that your pain is uniquely yours \u2014 is one of the deepest sources of suffering. Common humanity doesn\u2019t mean "other people have it worse" (that\u2019s toxic comparison). It means "the experience of inadequacy and pain is itself a connecting experience." Your struggle links you to every human who has ever struggled, which is every human.',
@@ -109,8 +109,8 @@ window.SelHub = window.SelHub || {
       { critic: 'I should be over this by now.', friend: 'Healing has its own timeline. I\u2019m allowed to still be processing this.', note: 'There\u2019s no deadline for pain. "Should" is the inner critic\u2019s favorite word.' },
     ],
     high: [
-      { critic: 'I\u2019m falling behind in life.', friend: 'There is no universal timeline. My path is mine and I\u2019m exactly where my journey has taken me.', note: 'Instagram didn\u2019t exist when Einstein was 22, working as a patent clerk. "Behind" is a constructed comparison.' },
-      { critic: 'I\u2019m not talented enough to pursue what I love.', friend: 'Passion + effort is more sustainable than talent alone. I can develop what I care about.', note: 'Angela Duckworth\u2019s research: grit predicts success better than talent. Caring deeply IS the qualification.' },
+      { critic: 'I\u2019m falling behind in life.', friend: 'There is no universal timeline. My path is mine and I\u2019m exactly where my journey has taken me.', note: 'Instagram didn\u2019t exist when Einstein was 23, working as a patent clerk. "Behind" is a constructed comparison.' },
+      { critic: 'I\u2019m not talented enough to pursue what I love.', friend: 'Passion + effort is more sustainable than talent alone. I can develop what I care about.', note: 'Effort and practice over time matter a great deal. Talent alone does not decide who gets good at something. Caring deeply IS the qualification.' },
       { critic: 'I should be able to handle this on my own.', friend: 'Asking for support is wisdom, not weakness. The strongest people I know have therapists.', note: 'Individualism is a cultural myth. No significant human achievement has been solo.' },
       { critic: 'My anxiety makes me weak.', friend: 'My anxiety shows that my brain is trying to protect me. I can thank it and then choose how to respond.', note: 'Anxiety is the nervous system doing its job too enthusiastically. It\u2019s not a character flaw.' },
       { critic: 'I\u2019ve wasted so much time.', friend: 'Every experience taught me something, even if the lesson was "not this." There\u2019s no such thing as a wasted path.', note: 'Rumi: "The wound is the place where the Light enters you." The detours aren\u2019t waste. They\u2019re depth.' },
@@ -341,10 +341,10 @@ window.SelHub = window.SelHub || {
       // ── Topic-accent hero band per tab ──
       var heroBand = (function() {
         var TAB_META = {
-          pillars:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDC9C', title: 'Three Pillars \u2014 Neff\u2019s self-compassion model',     hint: 'Self-kindness, common humanity, mindfulness. Kristen Neff (2003) showed self-compassion predicts well-being BETTER than self-esteem \u2014 and without the comparison-to-others trap. Three pillars are the entire framework.' },
+          pillars:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDC9C', title: 'Three Pillars \u2014 Neff\u2019s self-compassion model',     hint: 'Self-kindness, common humanity, mindfulness. Kristin Neff defined the three components (2003). Neff & Vonk (2009) found self-compassion linked to steadier self-worth than self-esteem \u2014 and without the comparison-to-others trap. Three pillars are the entire framework.' },
           critic:   { accent: _coC('#dc2626'), soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDDE3', title: 'Inner Friend \u2014 swap critic for ally',              hint: 'You\u2019d never talk to a friend the way you talk to yourself. The exercise: write what your inner critic says, then rewrite it as a trusted friend would. Bandura: changing self-talk changes self-efficacy.' },
-          practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDD8', title: 'Practice \u2014 short reps, real change',               hint: 'Loving-kindness meditation (metta): \u201Cmay I be safe, may I be well, may I be at peace.\u201D Then expand to friend, neutral person, difficult person, all beings. 5 min/day for 8 weeks shows brain changes (Hutcherson 2008).' },
-          letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\u2709',         title: 'Kind Letter \u2014 write what you needed to hear',     hint: 'Compose a letter to yourself from the perspective of someone who loves you unconditionally. Pennebaker\u2019s expressive-writing protocol shows lasting health benefits 6 months out. The letter often surprises the writer.' },
+          practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDD8', title: 'Practice \u2014 short reps, real change',               hint: 'Loving-kindness meditation (metta): \u201Cmay I be safe, may I be well, may I be at peace.\u201D Then expand to friend, neutral person, difficult person, all beings. In one lab study, a single 7-minute practice increased feelings of connection toward strangers (Hutcherson, Seppala & Gross, 2008).' },
+          letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\u2709',         title: 'Kind Letter \u2014 write what you needed to hear',     hint: 'Compose a letter to yourself from the perspective of someone who loves you unconditionally. Pennebaker\u2019s expressive-writing protocol has shown small health and mood benefits in many studies. The letter often surprises the writer.' },
           coach:    { accent: _coC('#16a34a'), soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDD16', title: 'Compassion Coach \u2014 AI as gentle mirror',           hint: 'Type what you\u2019re struggling with; the coach reflects back with self-compassion language, not advice or fixing. Practice ground for re-parenting your own difficult moments. Most users keep going because the tone feels different.' },
           print:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDDA8', title: 'Print \u2014 carry your self-compassion script',       hint: 'A one-page reference with Neff\u2019s three pillars, the self-compassion break, and your most recent kind letter.' }
         };
@@ -836,7 +836,7 @@ window.SelHub = window.SelHub || {
             ),
 
             h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid ' + _coC('#0f172a'), fontSize: 10.5, color: _coC('#475569'), lineHeight: 1.5 } },
-              'Sources: Neff, K. (2003), Self-Compassion: The proven power of being kind to yourself · Gilbert, P. (2009), The Compassionate Mind · self-compassion.org. Printed from AlloFlow SEL Hub.'
+              'Sources: Neff, K. (2011), Self-Compassion: The Proven Power of Being Kind to Yourself \u00B7 Gilbert, P. (2009), The Compassionate Mind \u00B7 self-compassion.org. Printed from AlloFlow SEL Hub.'
             )
           )
         );

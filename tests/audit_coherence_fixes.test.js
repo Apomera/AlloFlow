@@ -91,7 +91,9 @@ describe('cross-document OCR guard (review F1/F5)', () => {
     expect(fp(new Uint8Array(0))).toBe('pdf:0:0');
   });
   it('C10: the write site stamps the key and every legacy read is gated on the match', () => {
-    expect(dp).toMatch(/window\.__lastGroundTruthDocKey = _alloDocFingerprint\(_base64\);/);
+    // The fingerprint is computed once per run and stamped from that value.
+    expect(dp).toMatch(/const _runDocKey = _alloDocFingerprint\(_base64\);/);
+    expect(dp).toMatch(/window\.__lastGroundTruthDocKey = _runDocKey;/);
     expect(dp).toMatch(/const _thisDocKey = _alloDocFingerprint\(originalPdfBytes\);/);
     expect(dp).toMatch(/\(_gtGlobalsMatch && window\.__lastGroundTruthMethod\)/);
     expect(dp).toMatch(/\(_gtGlobalsMatch \? window\.__lastGroundTruthPageMap : null\)/);
@@ -315,7 +317,9 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
   });
   it('C31: typeset font fetch retries via the fastly jsDelivr mirror before dropping non-Latin text', () => {
     expect(dpNow).toMatch(/replace\('cdn\.jsdelivr\.net', 'fastly\.jsdelivr\.net'\)/);
-    expect(dpNow).toMatch(/const _fetchFont = async \(u\) => \{\s*\n\s*try \{ return await _fetchFontOnce\(u\); \}/);
+    // Now walks an ordered candidate list (first-party, then jsDelivr, then the fastly mirror).
+    expect(dpNow).toMatch(/const _fetchFont = async \(urls\) => \{[\s\S]{0,160}for \(const u of list\) \{\s*\n\s*try \{ return await _fetchFontOnce\(u\); \}/);
+    expect(dpNow).toMatch(/const _regBytes = await _fetchFont\(_regCandidates\);/);
   });
   it('C32: quota-stopped batch PRESERVES its persisted resume state and does not toast "complete" (deep dive 2026-07-01)', () => {
     // The quota circuit-breaker promises "remaining files stay queued; resume after the quota

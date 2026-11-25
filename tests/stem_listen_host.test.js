@@ -82,12 +82,14 @@ beforeEach(() => {
 afterEach(async () => { if (root) await act(async () => root.unmount()); host?.remove(); root = host = null; localStorage.clear(); });
 
 describe('the Listen toggle in the STEAM Lab header', () => {
-  it('sits beside the narration, theme and Controls buttons with a clear name, aria-pressed and a 44 px target', async () => {
+  it('sits in the bar beside the More menu (narration, theme and Controls are inside it) with a clear name, aria-pressed and a 44 px target', async () => {
     await render({});
     const b = listenBtn();
     expect(b, 'no Listen button in the header').not.toBeNull();
     expect(b.closest('.stem-lab-actionbar')).not.toBeNull();
-    expect(b.previousElementSibling.getAttribute('aria-label')).toBe('Toggle canvas narration TTS');
+    // 2026-11-23: the second read-aloud toggle (Canvas narration) moved into the More menu.
+    expect(b.nextElementSibling.getAttribute('data-stem-more-toggle')).toBe('true');
+    expect(host.querySelector('.stem-lab-actionbar [data-stem-more-item="narration"]')).toBeNull();
     expect(b.getAttribute('aria-label')).toBe('Listen');
     expect(b.textContent).toContain('Listen');
     expect(b.getAttribute('aria-pressed')).toBe('false');
@@ -209,7 +211,8 @@ describe('what tools already have is unchanged', () => {
   });
   it('the narration toggle still writes only its own key', async () => {
     await render({});
-    await click(host.querySelector('[aria-label="Toggle canvas narration TTS"]'));
+    await click(host.querySelector('[data-stem-more-toggle]'));
+    await click(host.querySelector('[data-stem-more-item="narration"]'));
     expect(localStorage.getItem('alloflow_canvas_narrate')).toBe('on');
     expect(localStorage.getItem('alloflow_stem_listen')).toBeNull();
   });

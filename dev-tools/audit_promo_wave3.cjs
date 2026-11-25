@@ -7,7 +7,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const {stemTools, selTools} = require('./promo_site_facts.cjs').getPromoFacts();
 const shellPages = [
-    'index.html', 'about.html', 'tools.html', 'features.html', 'remediation.html', 'ways-to-use.html',
+    'index.html', 'about.html', 'principles.html', 'tour.html', 'tools.html', 'features.html', 'remediation.html', 'ways-to-use.html',
     'for-districts.html', 'students.html', 'library.html', 'calculator.html',
     'accessibility_demo.html', 'whitepaper.html', 'feedback.html', 'manuals.html'
 ];
@@ -54,6 +54,7 @@ shellPages.forEach(function (file) {
     check(html.includes('href="promotion-wave3-shell.css"'), `${file}: shell CSS is not static`);
     check(html.includes('class="footer-links footer-link-groups"'), `${file}: grouped footer navigation missing`);
     check(html.includes('href="about.html"'), `${file}: official project-facts route missing from shell`);
+    check(html.includes('href="principles.html"'), `${file}: design-principles route missing from shell`);
     check(html.includes('href="feedback.html"'), `${file}: feedback route missing from shell`);
     check(html.includes('href="./"'), `${file}: canonical homepage route missing from shell`);
     check(!html.includes('href="index.html"'), `${file}: duplicate /index.html homepage route remains`);
@@ -114,7 +115,7 @@ check(tools.includes('id="toolCatalogNoScript"'), 'tools.html: no-JavaScript cat
 check((tools.match(/class="tool-feedback-link"/g) || []).length >= cards, 'tools.html: not every static tool has a feedback link');
 check(tools.includes('id="toolCatalogSchema"'), 'tools.html: catalog structured data missing');
 
-['index.html', 'about.html', 'tools.html', 'feedback.html', 'launch.html', 'manuals.html'].forEach(function (file) {
+['index.html', 'about.html', 'principles.html', 'tour.html', 'tools.html', 'feedback.html', 'launch.html', 'manuals.html'].forEach(function (file) {
     const html = read(file);
     const blocks = Array.from(html.matchAll(/<script(?:\s+id="[^"]+")?\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi));
     check(blocks.length > 0, `${file}: JSON-LD missing`);
@@ -136,6 +137,8 @@ const sitemap = read('sitemap.xml');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/feedback.html'), 'sitemap.xml: feedback page missing');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/manuals.html'), 'sitemap.xml: manuals hub missing');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/about.html'), 'sitemap.xml: official project-facts page missing');
+check(sitemap.includes('https://apomera.github.io/AlloFlow/principles.html'), 'sitemap.xml: design-principles page missing');
+check(sitemap.includes('https://apomera.github.io/AlloFlow/tour.html'), 'sitemap.xml: illustrated tour page missing');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html'), 'sitemap.xml: Dynamic Assessment guide missing');
 const manuals = read('manuals.html');
 check((manuals.match(/data-manual-card/g) || []).length >= 13, 'manuals.html: public guide catalog is incomplete');

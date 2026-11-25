@@ -1,7 +1,7 @@
 /* Perception Lab: accessible controls and observations for the 3D gallery. */
-(function () {
+(function (global) {
   'use strict';
-  var Lab = window.StemLab;
+  var Lab = global && global.StemLab;
   if (!Lab) return;
   var STATIONS = [
     { id: 'room', title: 'The distorted room', principle: 'Perspective & size', question: 'Which object is physically taller?',
@@ -80,22 +80,22 @@
     .pg-station+.pg-station{border-left:1px solid var(--pg-line)!important}.pg-station strong,.pg-station small{display:block}.pg-station strong{font-size:15px}.pg-station small{font-size:12px;color:var(--pg-muted)}
     .pg-station-number{font-size:22px;font-weight:750;color:var(--pg-accent);flex:none;width:29px}
     .pg-workspace{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
-    .pg-scene-column{min-width:0}.pg-toolbar{margin-bottom:10px}.pg-modes{display:flex;gap:4px;flex-wrap:wrap}.pg-view-options{display:flex;align-items:center;gap:6px;font-size:13px}
+    .pg-scene-column{min-width:0}.pg-toolbar{margin-bottom:10px}.pg-modes{display:flex;gap:4px;flex-wrap:wrap}.pg-view-options{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;font-size:13px}
     .pg-view-options input{width:20px;height:20px;accent-color:var(--pg-accent)}
     .pg-stage{position:relative;width:100%;height:clamp(360px,57vh,680px);min-width:0;overflow:hidden;background:#e8eeed;isolation:isolate}
     .pg-render,.pg-diagram{position:absolute;inset:0;width:100%;height:100%}.pg-render{touch-action:pan-y}.pg-render[hidden]{display:none}.pg-diagram{display:block}
     .pg-render[data-picking=true]{cursor:pointer}.pg-hotspots{position:absolute;inset:0;pointer-events:none}
-    [data-perception-gallery] .pg-hotspot{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:44px;max-width:150px;background:#fff;color:#203032;border:2px solid #096a65;box-shadow:0 2px 5px #20303226;padding:7px 10px;font-weight:650;font-size:13px}
-    .pg-hotspot span:first-child{color:#096a65;font-weight:750}.pg-hotspot:hover{background:#edf3f2!important}
-    .pg-stage figcaption{position:absolute;bottom:0;left:0;max-width:100%;background:#fff;color:#203032;padding:7px 12px;font-size:12px;border-top:1px solid #c9d6d5;pointer-events:none}
-    .pg-render-state{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;color:#203032;border:1px solid #c9d6d5;padding:10px;font-size:14px}
+    [data-perception-gallery] .pg-hotspot{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:44px;max-width:150px;background:var(--pg-bg);color:var(--pg-ink);border:2px solid var(--pg-accent);box-shadow:0 2px 5px #20303226;padding:7px 10px;font-weight:650;font-size:13px}
+    .pg-hotspot span:first-child{color:var(--pg-accent);font-weight:750}.pg-hotspot:hover{background:var(--pg-soft)!important}
+    .pg-stage figcaption{position:absolute;bottom:0;left:0;max-width:100%;background:var(--pg-bg);color:var(--pg-ink);padding:7px 12px;font-size:12px;border-top:1px solid var(--pg-line);pointer-events:none}
+    .pg-render-state{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--pg-bg);color:var(--pg-ink);border:1px solid var(--pg-line);padding:10px;font-size:14px}
     .pg-camera-controls{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-top:10px;min-height:54px}.pg-camera-controls label{flex:1;min-width:125px;font-size:12px;color:var(--pg-muted)}
-    .pg-camera-controls input{width:100%;display:block;accent-color:var(--pg-accent)}
+    .pg-camera-controls input{width:100%;min-height:44px;display:block;accent-color:var(--pg-accent)}
     [data-perception-gallery] .pg-icon{font-size:23px;line-height:1;padding:7px;width:44px;min-width:44px}
     .pg-task{border-left:1px solid var(--pg-line);padding-left:24px;min-width:0}.pg-task>*+*{margin-top:16px!important}
     .pg-principle{color:var(--pg-accent);font-size:12px;text-transform:uppercase;font-weight:750}.pg-question{font-size:17px;font-weight:650}
     .pg-choices{display:flex;gap:6px;flex-wrap:wrap}.pg-choices button{flex:1;min-width:64px}
-    .pg-adjust{display:block;font-size:14px;font-weight:600}.pg-adjust input{display:block;width:100%;min-height:36px;accent-color:var(--pg-accent);margin:5px 0}.pg-adjust output{float:right;font-variant-numeric:tabular-nums}
+    .pg-adjust{display:block;font-size:14px;font-weight:600}.pg-adjust input{display:block;width:100%;min-height:44px;accent-color:var(--pg-accent);margin:5px 0}.pg-adjust output{float:right;font-variant-numeric:tabular-nums}
     .pg-puzzle-adjust{padding:14px 0 0;max-width:620px}
     .pg-primary{background:var(--pg-accent)!important;color:var(--pg-bg)!important;border-color:var(--pg-accent)!important;font-weight:700}
     .pg-result{font-size:14px;border-left:3px solid var(--pg-accent);padding-left:12px}.pg-result:empty{display:none}
@@ -121,7 +121,7 @@
     if (id === 'room') children = inspect ? [h('polygon', { key: 'room', points: '175,365 615,365 520,215 260,90', fill: '#fff', stroke: '#607577', strokeWidth: 3 }),h('rect', { key: 'a', x: 265, y: 143, width: 44, height: 44, fill: '#bd4935' }),h('rect', { key: 'b', x: 470, y: 272, width: 44, height: 44, fill: '#077e79' }),h('text', { key: 'label', x: 400, y: 415, textAnchor: 'middle', fill: '#203032', fontSize: 19 }, 'Top view: equal objects, unequal distances')] : [h('polygon', { key: 'walls', points: '130,340 130,100 670,100 670,340', fill: '#fff', stroke: '#71878a', strokeWidth: 3 }),h('polygon', { key: 'floor', points: '130,340 670,340 755,440 45,440', fill: '#cddedb' }),line(130,340,45,440),line(670,340,755,440),h('rect', { key: 'a', x: 210, y: 227, width: 42, height: 112, fill: '#bd4935' }),h('rect', { key: 'b', x: 514, y: 164, width: 65, height: 175, fill: '#077e79' })];
     else if (id === 'triangle') { var offset = inspect ? 80 : m.angle * 1.3; children = [line(270,338,400,113,'#087f78','a'),line(400+offset,113,530+offset,338,'#c05740','b'),line(530-offset,338+offset*.4,270-offset,338+offset*.4,'#aa7d16','c')]; }
     else { var pieces=[]; for(var i=0;i<10;i++){var a=(i*36-90)*Math.PI/180,b=((i+1)*36-90)*Math.PI/180,r=i%2?64:151,s=(i+1)%2?64:151,dx=(inspect?(i%3-1)*90:m.shift*(i%2?1:-1)*.8);pieces.push(h('polygon',{key:i,points:(400+dx)+',250 '+(400+Math.cos(a)*r+dx)+','+(250+Math.sin(a)*r)+' '+(400+Math.cos(b)*s+dx)+','+(250+Math.sin(b)*s),fill:['#087f78','#c05740','#aa7d16'][i%3],stroke:'#e8eeed',strokeWidth:1}));}children=pieces; }
-    return h('svg', { className: props.mini ? undefined : 'pg-diagram', x: props.x, y: props.y, width: props.width, height: props.height, viewBox: '0 0 800 480', role: 'img', 'aria-label': props.description, 'data-gallery-diagram': props.mini ? undefined : true }, h('rect', { width: 800, height: 480, fill: '#e8eeed' }), children);
+    return h('svg', { className: props.mini ? undefined : 'pg-diagram', x: props.x, y: props.y, width: props.width, height: props.height, viewBox: '0 0 800 480', role: props.mini ? undefined : 'img', 'aria-label': props.mini ? undefined : props.description, 'aria-hidden': props.mini ? true : undefined, 'data-gallery-diagram': props.mini ? undefined : true }, h('rect', { width: 800, height: 480, fill: '#e8eeed' }), children);
   }
   function Gallery(props) {
     var ctx = props.ctx, React = ctx.React, h = React.createElement, state = normalize((ctx.toolData || {}).perceptionGallery), meta = station(state.station), m = state.models[meta.id];
@@ -141,25 +141,33 @@
     function t(key, fallback) { var value; try { value = ctx.t && ctx.t('stem.perception.gallery_' + key, fallback); } catch (_) {} return typeof value === 'string' && value !== 'stem.perception.gallery_' + key ? value : fallback; }
     function update(fn) { var setter = ctx.setToolData || ctx.setLabToolData; if (setter) setter(function (prev) { return Object.assign({}, prev, { perceptionGallery: normalize(fn(normalize((prev || {}).perceptionGallery))) }); }); }
     function change(values) { if (comparing) return; setFeedback(''); setStatus(''); update(function (next) { next.models[meta.id] = model(Object.assign({}, next.models[meta.id], values)); return next; }); }
-    function choose(id, focusStation) { drag.current = null; if (focusStation) stationFocus.current = id; setCompareSession(null); setOrbit({ y: 0, x: 0 }); setFeedback(''); setStatus(''); update(function (next) { next.station = id; next.view = 'illusion'; return next; }); }
+    function choose(id, focusStation) { var safeId = station(id).id; drag.current = null; if (focusStation) stationFocus.current = safeId; setCompareSession(null); setOrbit({ y: 0, x: 0 }); setFeedback(''); setStatus(''); update(function (next) { next.station = safeId; next.view = 'illusion'; return next; }); }
     function setView(nextView) { if (comparing) return; drag.current = null; setOrbit({ y: 0, x: 0 }); update(function (next) { next.view = nextView; return next; }); }
     function button(label, handler, attrs) { return h('button', Object.assign({ type: 'button', onClick: handler }, attrs || {}), label); }
-    function icon(name, fallback) { var component = (ctx.icons || {})[name] || (window.LucideReact || {})[name]; return component ? h(component, { size: 20, 'aria-hidden': true, focusable: false }) : h('span', { 'aria-hidden': true }, fallback); }
+    function icon(name, fallback) { var component = (ctx.icons || {})[name] || ((global && global.LucideReact) || {})[name]; return component ? h(component, { size: 20, 'aria-hidden': true, focusable: false }) : h('span', { 'aria-hidden': true }, fallback); }
     var sceneData = { station: meta.id, view: view, angle: m.angle, shift: m.shift, galleryShift: state.models.shape.shift, reveal: m.reveal, rotY: cameraPose.y, rotX: cameraPose.x, zoom: 1, static: true, sig: [meta.id, view, m.shift, m.reveal, state.models.shape.shift].join(':') };
     latest.current = sceneData;
     React.useEffect(function () {
       if (diagram) { setRenderStatus('diagram'); return; }
       var active = true, factory = Lab.PerceptionGalleryScene;
-      if (!factory || !Lab.makeOrbitViewer) { setRenderStatus('failed'); return; }
-      var viewer = factory.createViewer(); viewerRef.current = viewer;
-      if (viewer.onLayout) viewer.onLayout(function (markers) { if (active) setLayout(markers); });
+      if (!factory || typeof factory.createViewer !== 'function' || typeof Lab.makeOrbitViewer !== 'function') { setRenderStatus('failed'); return; }
+      var viewer = factory.createViewer();
+      if (!viewer) { setRenderStatus('failed'); return; }
+      viewerRef.current = viewer;
+      var unsubLayout = typeof viewer.onLayout === 'function' ? viewer.onLayout(function (markers) { if (active) setLayout(markers); }) : null;
       viewer.onStatusChange(function (value) { if (active) { setRenderStatus(value); if (value === 'ready') viewer.push(latest.current); } });
       viewer.attach(hostRef.current); viewer.push(latest.current); setRenderStatus(viewer.status());
-      return function () { active = false; drag.current = null; viewer.dispose(); if (viewerRef.current === viewer) viewerRef.current = null; };
+      return function () { active = false; drag.current = null; if (typeof unsubLayout === 'function') { try { unsubLayout(); } catch (_) {} } viewer.dispose(); if (viewerRef.current === viewer) viewerRef.current = null; };
     }, [diagram, retry]);
     React.useEffect(function () { if (viewerRef.current) viewerRef.current.push(sceneData); }, [meta.id, view, m.angle, m.shift, m.reveal, state.models.shape.shift, cameraPose.y, cameraPose.x, diagram, retry]);
     React.useEffect(function () { setFeedback(''); setStatus(''); }, [meta.id]);
-    React.useEffect(function () { if (stationFocus.current && galleryRef.current) { var node = galleryRef.current.querySelector('[data-gallery-station="' + stationFocus.current + '"]'); stationFocus.current = ''; if (node) node.focus(); } }, [state.station, state.view]);
+    React.useEffect(function () {
+      if (stationFocus.current && galleryRef.current) {
+        var wanted = stationFocus.current; stationFocus.current = '';
+        var node = Array.from(galleryRef.current.querySelectorAll('[data-gallery-station]')).find(function (el) { return el.getAttribute('data-gallery-station') === wanted; });
+        if (node) node.focus();
+      }
+    }, [state.station, state.view]);
     React.useEffect(function () {
       if (compareSession && !comparing) { compareReturn.current = compareSession.recordId; setCompareSession(null); setStatus(t('comparison_unavailable', 'The saved observation changed. Your current view is restored.')); }
       if (comparing && compareFocus.current && compareHeading.current) { compareFocus.current = false; compareHeading.current.focus(); if (compareHeading.current.scrollIntoView) compareHeading.current.scrollIntoView({ block: 'nearest' }); }
@@ -191,14 +199,19 @@
     }
     function restore(record) { setCompareSession(null); setOrbit(record.camera); setFeedback(''); update(function (next) { var completed = next.models[record.station].solved; next.station = record.station; next.view = record.view; next.models[record.station] = model(record.model); next.models[record.station].solved = completed || next.models[record.station].solved; return next; }); setStatus(t('restored', 'Saved viewpoint and observation restored.')); }
     function exportNotebook() {
-      var blob = new Blob([JSON.stringify({ schema: 'alloflow.perception.gallery', version: 1, observations: state.observations }, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), link = document.createElement('a');
-      link.href = url; link.download = 'perception-gallery-observations.json'; document.body.appendChild(link); link.click(); link.remove(); window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      if (typeof Blob !== 'function' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined' || !document.body) return;
+      try {
+        var blob = new Blob([JSON.stringify({ schema: 'alloflow.perception.gallery', version: 1, observations: state.observations }, null, 2)], { type: 'application/json' }), url = URL.createObjectURL(blob), link = document.createElement('a');
+        link.href = url; link.download = 'perception-gallery-observations.json'; document.body.appendChild(link); link.click(); link.remove();
+        var _setTimeout = (global && global.setTimeout) || setTimeout;
+        if (typeof _setTimeout === 'function') _setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      } catch (_) {}
     }
     function reset() { setFeedback(''); setStatus(''); setOrbit({ y: 0, x: 0 }); update(function (next) { var note = next.models[meta.id].note; next.models[meta.id] = model({ note: note }); next.view = 'illusion'; return next; }); }
-    function pointerDown(event) { if (comparing || ['inspect', 'gallery'].indexOf(view) < 0 || event.button !== 0 || diagram || renderStatus !== 'ready') return; drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: orbit.y, pitch: orbit.x, view: view, moved: false }; event.currentTarget.setPointerCapture(event.pointerId); }
-    function pointerMove(event) { var d = drag.current; if (!d || d.id !== event.pointerId) return; var dx = event.clientX - d.x, dy = event.clientY - d.y; if (Math.hypot(dx, dy) > 6) d.moved = true; if (d.view !== 'inspect') return; setOrbit({ y: Math.max(-160, Math.min(160, d.yaw + dx * .35)), x: event.pointerType === 'touch' ? d.pitch : Math.max(-45, Math.min(60, d.pitch + dy * .25)) }); }
-    function pointerEnd(event, cancelled) { var d = drag.current; if (!d || d.id !== event.pointerId) return; drag.current = null; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); if (!cancelled && d.view === 'gallery' && !d.moved && Math.hypot(event.clientX - d.x, event.clientY - d.y) <= 6 && viewerRef.current && viewerRef.current.pickStation) { var picked = viewerRef.current.pickStation(event.clientX, event.clientY); if (picked) choose(picked, true); } }
-    function slider(key, label, min, max, value, handler) { return h('label', { className: 'pg-adjust', htmlFor: uid + '-' + key }, label, h('output', { htmlFor: uid + '-' + key }, value), h('input', { id: uid + '-' + key, type: 'range', min: min, max: max, step: 1, value: value, ['data-gallery-' + key]: true, onChange: function (event) { handler(Number(event.target.value)); } })); }
+    function pointerDown(event) { if (comparing || ['inspect', 'gallery'].indexOf(view) < 0 || event.button !== 0 || diagram || renderStatus !== 'ready') return; if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return; drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: orbit.y, pitch: orbit.x, view: view, moved: false }; if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') { try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} } }
+    function pointerMove(event) { var d = drag.current; if (!d || d.id !== event.pointerId) return; var dx = event.clientX - d.x, dy = event.clientY - d.y; if (!Number.isFinite(dx) || !Number.isFinite(dy)) return; if (Math.hypot(dx, dy) > 6) d.moved = true; if (d.view !== 'inspect') return; setOrbit({ y: Math.max(-160, Math.min(160, d.yaw + dx * .35)), x: event.pointerType === 'touch' ? d.pitch : Math.max(-45, Math.min(60, d.pitch + dy * .25)) }); }
+    function pointerEnd(event, cancelled) { var d = drag.current; if (!d || d.id !== event.pointerId) return; drag.current = null; if (event.currentTarget && typeof event.currentTarget.hasPointerCapture === 'function' && typeof event.currentTarget.releasePointerCapture === 'function') { try { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} } if (!cancelled && d.view === 'gallery' && !d.moved && Number.isFinite(event.clientX) && Number.isFinite(event.clientY) && Math.hypot(event.clientX - d.x, event.clientY - d.y) <= 6 && viewerRef.current && viewerRef.current.pickStation) { var picked = viewerRef.current.pickStation(event.clientX, event.clientY); if (picked) choose(picked, true); } }
+    function slider(key, label, min, max, value, handler) { return h('label', { className: 'pg-adjust', htmlFor: uid + '-' + key }, label, h('output', { htmlFor: uid + '-' + key }, value), h('input', { id: uid + '-' + key, type: 'range', min: min, max: max, step: 1, value: value, ['data-gallery-' + key]: true, onChange: function (event) { var n = Number(event.target.value); if (Number.isFinite(n)) handler(n); } })); }
     var title = t(meta.id + '_title', meta.title), description = t(meta.id + '_scene', { room: 'A coral object on the left and a teal object on the right appear different heights inside a room.', triangle: 'Three colored beams surround a triangular opening. Their ends appear separated as the viewing angle changes.', shape: 'Ten colored fragments suggest a star. Their edges separate as their alignment changes.' }[meta.id]), actualDiagram = diagram || renderStatus !== 'ready';
     var progress = STATIONS.filter(function (item) { return state.models[item.id].solved; }).length;
     var markers = actualDiagram ? STATIONS.map(function (item, index) { return { id: item.id, x: .175 + index * .325, y: .73, visible: true }; }) : layout;
@@ -241,7 +254,7 @@
         h('figure', { className: 'pg-stage', 'aria-label': view === 'gallery' ? t('overview_scene', 'A gallery containing a distorted room, an impossible sculpture, and a fragmented star.') : title + '. ' + (view === 'inspect' || m.reveal ? t(meta.id + '_explanation', meta.explanation) : description) },
           actualDiagram && h(Diagram, { h: h, t: t, station: meta.id, model: m, models: state.models, view: view, description: description }),
           h('div', { className: 'pg-render', ref: hostRef, hidden: actualDiagram, 'data-gallery-render': true, 'data-picking': view === 'gallery' && !comparing, onPointerDown: pointerDown, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: function (event) { pointerEnd(event, true); }, onLostPointerCapture: function () { drag.current = null; } }),
-          view === 'gallery' && !comparing && h('div', { className: 'pg-hotspots', role: 'group', 'aria-label': t('stations', 'Gallery stations') }, markers.filter(function (marker) { return marker.visible; }).map(function (marker) { var item = station(marker.id), index = STATIONS.indexOf(item); return button(h(React.Fragment, null, h('span', null, '0' + (index + 1)), h('span', { className: 'pg-hotspot-name' }, t(item.id + '_short', { room: 'Room', triangle: 'Sculpture', shape: 'Star' }[item.id]))), function () { choose(item.id, true); }, { key: item.id, className: 'pg-hotspot', 'data-gallery-hotspot': item.id, 'aria-label': t('enter', 'Enter this station') + ': ' + t(item.id + '_title', item.title), title: t(item.id + '_title', item.title), style: { left: (marker.x * 100) + '%', top: (marker.y * 100) + '%' } }); })),
+          view === 'gallery' && !comparing && h('div', { className: 'pg-hotspots', role: 'group', 'aria-label': t('stations', 'Gallery stations') }, markers.filter(function (marker) { return marker.visible; }).map(function (marker) { var item = station(marker.id), index = STATIONS.indexOf(item); return button(h(React.Fragment, null, h('span', { 'aria-hidden': true }, '0' + (index + 1)), h('span', { className: 'pg-hotspot-name' }, t(item.id + '_short', { room: 'Room', triangle: 'Sculpture', shape: 'Star' }[item.id]))), function () { choose(item.id, true); }, { key: item.id, className: 'pg-hotspot', 'data-gallery-hotspot': item.id, 'aria-label': t('enter', 'Enter this station') + ': ' + t(item.id + '_title', item.title), title: t(item.id + '_title', item.title), style: { left: (marker.x * 100) + '%', top: (marker.y * 100) + '%' } }); })),
           !diagram && renderStatus !== 'ready' && h('div', { className: 'pg-render-state', role: 'status' }, renderStatus === 'failed' ? t('failed', '3D unavailable. The diagram remains available.') : t('loading', 'Opening the gallery...'), renderStatus === 'failed' && button(t('retry', 'Retry 3D'), function () { setRetry(retry + 1); }, { 'data-gallery-retry': true })),
           h('figcaption', null, (comparing ? t(compareSession.view === 'saved' ? 'saved_view' : 'current_view', compareSession.view === 'saved' ? 'Saved view' : 'Current view') + ' / ' : '') + (view === 'gallery' ? t('gallery_caption', 'Three stations / one space') : (actualDiagram ? t('diagram_caption', 'Diagram') + ' / ' : '') + title + ' / ' + t('view_' + view, view === 'inspect' ? 'Inspect geometry' : 'Illusion view')))),
         !comparing && meta.id !== 'room' && view !== 'gallery' && h('div', { className: 'pg-puzzle-adjust' }, meta.id === 'triangle' ? slider('angle', t('angle', 'Viewing angle'), -60, 60, m.angle, function (value) { change({ angle: value }); }) : slider('shift', t('shift', 'Fragment alignment'), -100, 100, m.shift, function (value) { change({ shift: value }); })),
@@ -276,4 +289,4 @@
             button(icon('X', '\u00d7'), function () { update(function (next) { next.observations = next.observations.filter(function (entry) { return entry.id !== record.id; }); return next; }); setStatus(t('deleted', 'Observation deleted.')); }, { className: 'pg-icon', title: t('delete', 'Delete observation'), 'aria-label': t('delete', 'Delete observation') + ': ' + t(item.id + '_title', item.title) }))); }))));
   }
   Lab.PerceptionGallery = { Component: Gallery, normalize: normalize, normalizeModel: model, checkAnswer: checkAnswer, compareObservation: compareObservation, stations: STATIONS };
-})();
+})(typeof window !== 'undefined' && window ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

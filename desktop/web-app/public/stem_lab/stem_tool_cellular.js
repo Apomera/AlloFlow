@@ -63,6 +63,12 @@
       '@media (prefers-reduced-motion: reduce) { .cellularlab-svg rect.born, .cellularlab-beacon-pulse { animation: none !important; } [data-cellularlab-tool] * { transition: none !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
+    if (document.head && !document.getElementById('allo-cellularlab-a11y-css')) {
+      var _ast = document.createElement('style');
+      _ast.id = 'allo-cellularlab-a11y-css';
+      _ast.textContent = '[data-cellularlab-tool] :is(button,input,select,textarea,summary){touch-action:manipulation}@media (forced-colors:active){[data-cellularlab-tool] :is(button,input,select,textarea,summary,[role="grid"],[role="slider"],[tabindex]):focus-visible{outline:3px solid Highlight!important;outline-offset:2px}}';
+      document.head.appendChild(_ast);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2708,7 +2714,7 @@
           'aria-current': activeCause ? 'true' : undefined,
           'aria-label': fmt(t('stem.cellular.rt_entry', 'Neighbourhood {pattern} gives {out}. Seen {n} times, {pct} percent of steps. Press to flip.'), { pattern: '' + l + m + rt, out: out, n: usage, pct: (share * 100).toFixed(1) }) + (activeCause ? ' ' + fmt(t('stem.cellular.rt_entry_cause', 'This entry made the selected cell; {k} of its 3 parents are decisive.'), { k: caInfluence.decisiveCount }) : ''),
           onClick: (function (idx) { return function () { toggleRuleBit(idx); }; })(i),
-          onKeyDown: (function (idx) { return function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
+          onKeyDown: (function (idx) { return function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === ' ' || e.key === 'Enter') { if (e.preventDefault) e.preventDefault(); toggleRuleBit(idx); } }; })(i),
           style: { cursor: 'pointer' }
         }, col));
       }
@@ -4963,7 +4969,7 @@
     if (!TABS.some(function (tb) { return tb.id === tab; })) tab = TABS[0].id;
     var CELLULAR_TAB_IDS = TABS.map(function (tb) { return tb.id; });
     var cellularTabKeyDown = function (e, index) {
-      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var nextIndex = -1;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % CELLULAR_TAB_IDS.length;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + CELLULAR_TAB_IDS.length - 1) % CELLULAR_TAB_IDS.length;

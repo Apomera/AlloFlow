@@ -18,6 +18,21 @@ var isGoogleRedirect = function() {
 function _qsIsImeComposing(e) {
   return Boolean(e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.keyCode === 229)));
 }
+function _qsHasModifier(e) {
+  return Boolean(e && (e.ctrlKey || e.metaKey || e.altKey));
+}
+function _ensureQuickStartA11yCss() {
+  if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || typeof document.createElement !== 'function') return;
+  if (document.getElementById('allo-quickstart-a11y-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-quickstart-a11y-css';
+  st.textContent =
+    '[data-quickstart-wizard="true"] button,[data-quickstart-wizard="true"] a,[data-quickstart-wizard="true"] input,[data-quickstart-wizard="true"] select,[data-quickstart-wizard="true"] textarea,[data-quickstart-wizard="true"] summary{touch-action:manipulation;}' +
+    '[data-quickstart-wizard="true"] button:focus-visible,[data-quickstart-wizard="true"] a:focus-visible,[data-quickstart-wizard="true"] input:focus-visible,[data-quickstart-wizard="true"] select:focus-visible,[data-quickstart-wizard="true"] textarea:focus-visible,[data-quickstart-wizard="true"] summary:focus-visible{outline:2px solid #4f46e5;outline-offset:2px;}' +
+    '@media (forced-colors: active){[data-quickstart-wizard="true"] button:focus-visible,[data-quickstart-wizard="true"] a:focus-visible,[data-quickstart-wizard="true"] input:focus-visible,[data-quickstart-wizard="true"] select:focus-visible,[data-quickstart-wizard="true"] textarea:focus-visible,[data-quickstart-wizard="true"] summary:focus-visible{outline:2px solid Highlight;outline-offset:2px;}}' +
+    '@media (prefers-reduced-motion: reduce){[data-quickstart-wizard="true"],[data-quickstart-wizard="true"] *,[data-quickstart-wizard="true"] *::before,[data-quickstart-wizard="true"] *::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}}';
+  document.head.appendChild(st);
+}
 function _qsSanitizeUntrusted(val) {
   return String(val == null ? '' : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '');
 }
@@ -241,7 +256,7 @@ function StorybookPicker(props) {
         placeholder: wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
         value: q, onChange: function (ev) { setQ(ev.target.value); },
         onKeyDown: function (ev) {
-          if (_qsIsImeComposing(ev)) return;
+          if (_qsIsImeComposing(ev) || _qsHasModifier(ev)) return;
           if (ev.key === 'Escape' && q) {
             ev.preventDefault();
             ev.stopPropagation();
@@ -336,6 +351,7 @@ const useQuickStartDialogFocus = (ref, isOpen, onEscape) => {
         }
         return true;
       });
+    _ensureQuickStartA11yCss();
     const timer = setTimeout(() => (getFocusable()[0] || dialog).focus(), 0);
     const handleKeyDown = (event) => {
       const topTrap = stack[stack.length - 1];
@@ -343,13 +359,13 @@ const useQuickStartDialogFocus = (ref, isOpen, onEscape) => {
       if (event.defaultPrevented) return;
       if (event.target?.closest && event.target.closest('[role="dialog"]') && event.target.closest('[role="dialog"]') !== dialog) return;
       if (event.key === 'Escape') {
-        if (_qsIsImeComposing(event)) return;
+        if (_qsIsImeComposing(event) || _qsHasModifier(event)) return;
         event.preventDefault();
         event.stopPropagation();
         escapeRef.current();
         return;
       }
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab' || _qsHasModifier(event)) return;
       const focusable = getFocusable();
       if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
       const first = focusable[0];
@@ -393,10 +409,10 @@ function QuickStartDuplicateChoice({ info, onChoose, text }) {
       const topTrap = stack[stack.length - 1];
       if (topTrap && (topTrap.root || topTrap) !== dialog) return;
       if (event.key === 'Escape') {
-        if (_qsIsImeComposing(event)) return;
+        if (_qsIsImeComposing(event) || _qsHasModifier(event)) return;
         event.preventDefault(); event.stopPropagation(); onChoose('skip');
       }
-      if (event.key === 'Tab') {
+      if (event.key === 'Tab' && !_qsHasModifier(event)) {
         const items = buttons();
         event.preventDefault(); event.stopPropagation();
         if (items.length === 0) { dialog.focus(); return; }
@@ -1019,6 +1035,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
     <div
         ref={wizardRef}
         tabIndex={-1}
+        data-quickstart-wizard="true"
         className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-300"
         role="dialog"
         aria-modal="true"
@@ -1105,7 +1122,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                     type="text"
                                     value={learningGoal}
                                     onChange={(e) => setLearningGoal(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !isSearching && !aiOff && learningGoal.trim()) handleGoalSearch(); }}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e) && !isSearching && !aiOff && learningGoal.trim()) handleGoalSearch(); }}
                                     className="w-full text-base p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-all motion-reduce:transition-none"
                                     data-help-key="wizard_growth_goal_input"
                                     placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.learning_goal_placeholder')}
@@ -1273,7 +1290,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                       data-help-key="wizard_url_input"
                                       placeholder={t('wizard.url_placeholder')}
                                       className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/30 transition-all motion-reduce:transition-none"
-                                      onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !isFetching) handleWizardUrlFetch(urlInput); }}
+                                      onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e) && !isFetching) handleWizardUrlFetch(urlInput); }}
                                       autoFocus
                                   />
                                   <button type="button"
@@ -1320,7 +1337,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                       data-help-key="wizard_search_input"
                                       placeholder={wt('wizard.find_web_placeholder', 'Paste a URL, or describe a topic…')}
                                       className="flex-grow p-3 border-2 border-slate-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-500/30 transition-all motion-reduce:transition-none"
-                                      onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !isFetching) handleWizardWebFind(); }}
+                                      onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e) && !isFetching) handleWizardWebFind(); }}
                                       autoFocus
                                   />
                                   <button type="button"
@@ -1637,7 +1654,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                                         type="text"
                                                         value={aiStandardQuery}
                                                         onChange={(e) => setAiStandardQuery(e.target.value)}
-                                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !isFindingStandards && !aiOff && aiStandardQuery.trim()) handleFindStandards(); }}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e) && !isFindingStandards && !aiOff && aiStandardQuery.trim()) handleFindStandards(); }}
                                                         data-help-key="standards_query_input" placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                                                         className="min-w-0 w-full flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                     />
@@ -1693,7 +1710,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                                     type="text"
                                                     value={standardInputValue}
                                                     onChange={(e) => setStandardInputValue(e.target.value)}
-                                                    onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e)) handleAddStandard(); }}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e)) handleAddStandard(); }}
                                                     data-help-key="wizard_std_manual_input"
                                                     placeholder={t('standards.manual_placeholder')}
                                                     className="min-w-0 w-full flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
@@ -2043,7 +2060,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                         type="text"
                                         value={wizLangInput}
                                         onChange={(e) => setWizLangInput(e.target.value)}
-                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizLanguage(); }}
+                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e)) addWizLanguage(); }}
                                         data-help-key="wizard_lang_input"
                                         placeholder={t('wizard.language_placeholder')}
                                         className="min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
@@ -2102,7 +2119,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                         type="text"
                                         value={wizInterestInput}
                                         onChange={(e) => setWizInterestInput(e.target.value)}
-                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizInterest(); }}
+                                        onKeyDown={(e) => { if (e.key === 'Enter' && !_qsIsImeComposing(e) && !_qsHasModifier(e)) addWizInterest(); }}
                                         data-help-key="wizard_interest_input"
                                         placeholder={t('wizard.interest_placeholder')}
                                         className="min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500"
